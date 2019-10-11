@@ -1237,12 +1237,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    Commands to setup the file destination and format
 	 */
 
-    /*! \page output
-   - <b>fname [fn]</b> Sets/gets the root of the output file name \c Returns \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "fname";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFileName;
-    ++i;
 
     /* communication configuration */
 
@@ -1948,29 +1942,6 @@ std::string slsDetectorCommand::helpTrimEn(int action) {
     return os.str();
 }
 
-
-std::string slsDetectorCommand::cmdFileName(int narg, const char * const args[], int action, int detPos) {
-    if (action == HELP_ACTION)
-        return helpFileName(action);
-    if (cmd == "fname") {
-        if (action == PUT_ACTION)
-            myDet->setFileName(std::string(args[1]), detPos);
-
-        return std::string(myDet->getFileName(detPos));
-    } 
-    return std::string("unknown command") + cmd;
-}
-
-std::string slsDetectorCommand::helpFileName(int action) {
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << std::string("fname \t  gets the filename for the data without index and extension\n");
-    }
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << std::string("fname s \t  sets the filename for the data (index and extension will be automatically appended)\n");
-    }
-    return os.str();
-}
 
 
 std::string slsDetectorCommand::cmdRateCorr(int narg, const char * const args[], int action, int detPos) {

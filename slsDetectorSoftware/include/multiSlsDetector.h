@@ -1522,7 +1522,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns file index
      */
-    int setFileIndex(int i, int detPos = -1); //
+    int64_t setFileIndex(int64_t i, int detPos = -1); //
 
     /**
      * Get File index
@@ -1530,7 +1530,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * position
      * @returns file index
      */
-    int getFileIndex(int detPos = -1) const; //
+    int64_t getFileIndex(int detPos = -1) const; //
 
     /**
      * Gets the number of frames caught by receiver
@@ -1895,7 +1895,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the file index
      */
-    int incrementFileIndex(int detPos = -1);
+    int64_t incrementFileIndex(int detPos = -1);
 
     /**
      * add gap pixels to the image (only for Eiger in 4 bit mode)

@@ -2247,7 +2247,7 @@ slsDetectorDefs::fileFormat multiSlsDetector::setFileFormat(fileFormat f,
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::incrementFileIndex(int detPos) {
+int64_t multiSlsDetector::incrementFileIndex(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->incrementFileIndex();
@@ -2258,7 +2258,7 @@ int multiSlsDetector::incrementFileIndex(int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::setFileIndex(int i, int detPos) {
+int64_t multiSlsDetector::setFileIndex(int64_t i, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setFileIndex(i);
@@ -2269,7 +2269,7 @@ int multiSlsDetector::setFileIndex(int i, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::getFileIndex(int detPos) const {
+int64_t multiSlsDetector::getFileIndex(int detPos) const {
     if (detPos >= 0)
         return detectors[detPos]->getFileIndex();
     auto r = parallelCall(&slsDetector::getFileIndex);

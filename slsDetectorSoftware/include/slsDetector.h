@@ -148,7 +148,7 @@ struct sharedSlsDetector {
     char rxFileName[MAX_STR_LENGTH];
 
     /** file index */
-    int rxFileIndex;
+    int64_t rxFileIndex;
 
     /** file format */
     slsDetectorDefs::fileFormat rxFileFormat;
@@ -1440,19 +1440,19 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param i file index
      * @returns file index
      */
-    int setFileIndex(int file_index);
+    int64_t setFileIndex(int64_t file_index);
 
     /**
      * Gets the file index
      * @returns file index
      */
 
-    int getFileIndex() const;
+    int64_t getFileIndex() const;
     /**
      * increments file index
      * @returns the file index
      */
-    int incrementFileIndex();
+    int64_t incrementFileIndex();
 
     /**
      * Receiver starts listening to packets

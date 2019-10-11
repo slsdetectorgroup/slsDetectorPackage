@@ -607,11 +607,11 @@ void Detector::setFileNamePrefix(const std::string &fname, Positions pos) {
     pimpl->Parallel(&slsDetector::setFileName, pos, fname);
 }
 
-Result<int> Detector::getAcquisitionIndex(Positions pos) const {
+Result<int64_t> Detector::getAcquisitionIndex(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFileIndex, pos);
 }
 
-void Detector::setAcquisitionIndex(int i, Positions pos) {
+void Detector::setAcquisitionIndex(int64_t i, Positions pos) {
     pimpl->Parallel(&slsDetector::setFileIndex, pos, i);
 }
 

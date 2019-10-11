@@ -316,7 +316,6 @@ class CmdProxy {
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
                                     {"r_framesperfile", "rx_framesperfile"},
-                                    {"index", "findex"},
                                     {"exitreceiver", "rx_exit"},
                                     {"enablefwrite", "fwrite"},
                                     {"checkrecversion", "rx_checkversion"},
@@ -362,7 +361,9 @@ class CmdProxy {
 
                                     /* File */                                   
                                     {"fileformat", "fformat"},
-                                    {"outdir", "fpath"}
+                                    {"outdir", "fpath"},
+                                    {"index", "findex"}
+
 
 
                                     };
@@ -469,6 +470,8 @@ class CmdProxy {
                           /* File */
                           {"fformat", &CmdProxy::fformat},
                           {"fpath", &CmdProxy::fpath},
+                          {"fname", &CmdProxy::fname},
+                          {"findex", &CmdProxy::findex},
 
 
 
@@ -524,9 +527,6 @@ class CmdProxy {
 
     INTEGER_COMMAND(foverwrite, getFileOverWrite, setFileOverWrite, std::stoi,
                     "[0, 1]\n\tEnable or disable file overwriting");
-
-    INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, std::stoi,
-                    "[0, 1]\n\tFile index");
 
     INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, std::stoi,
                     "[0, 1]\n\t[Eiger] Enable or disable parallel mode.");
@@ -754,10 +754,14 @@ class CmdProxy {
     INTEGER_COMMAND(fformat, getFileFormat, setFileFormat, sls::StringTo<slsDetectorDefs::fileFormat>,
                     "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be compiled with HDF5 flags.");
 
-   STRING_COMMAND(fpath, getFilePath, setFilePath, 
-                "[string]\n\tDirectory where output data files are written in receiver pc.");
+    STRING_COMMAND(fpath, getFilePath, setFilePath, 
+                "[path]\n\tDirectory where output data files are written in receiver pc.");
 
+    STRING_COMMAND(fname, getFileNamePrefix, setFileNamePrefix, 
+                "[path]\n\tFile name prefix for output data file. File name: [file name prefix]_d[detector index]_f[sub file index]_[acquisition/file index].raw.");
 
+    INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, std::stol,
+                    "[0, 1]\n\tFile or Acquisition index.");
 
 
 

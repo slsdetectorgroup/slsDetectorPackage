@@ -2763,6 +2763,7 @@ void slsDetector::updateCachedReceiverVariables() const {
             sls::ClientSocket("Receiver", shm()->rxHostname, shm()->rxTCPPort);
         receiver.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
         int n = 0, i32 = 0;
+        int64_t i64 = 0;
         char cstring[MAX_STR_LENGTH]{};
         char lastClientIP[INET_ADDRSTRLEN]{};
 
@@ -2779,8 +2780,8 @@ void slsDetector::updateCachedReceiverVariables() const {
         sls::strcpy_safe(shm()->rxFileName, cstring);
 
         // index
-        n += receiver.Receive(&i32, sizeof(i32));
-        shm()->rxFileIndex = i32;
+        n += receiver.Receive(&i64, sizeof(i64));
+        shm()->rxFileIndex = i64;
 
         // file format
         n += receiver.Receive(&i32, sizeof(i32));
@@ -2994,9 +2995,9 @@ slsDetectorDefs::fileFormat slsDetector::getFileFormat() const {
     return shm()->rxFileFormat;
 }
 
-int slsDetector::setFileIndex(int file_index) {
+int64_t slsDetector::setFileIndex(int64_t file_index) {
     if (F_SET_RECEIVER_FILE_INDEX >= 0) {
-        int retval = -1;
+        int64_t retval = -1;
         FILE_LOG(logDEBUG1) << "Setting file index to " << file_index;
         if (shm()->useReceiverFlag) {
             sendToReceiver(F_SET_RECEIVER_FILE_INDEX, file_index, retval);
@@ -3007,9 +3008,9 @@ int slsDetector::setFileIndex(int file_index) {
     return getFileIndex();
 }
 
-int slsDetector::getFileIndex() const { return shm()->rxFileIndex; }
+int64_t slsDetector::getFileIndex() const { return shm()->rxFileIndex; }
 
-int slsDetector::incrementFileIndex() {
+int64_t slsDetector::incrementFileIndex() {
     if (shm()->rxFileWrite) {
         return setFileIndex(shm()->rxFileIndex + 1);
     }

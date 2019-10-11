@@ -348,6 +348,7 @@ int slsReceiverTCPIPInterface::update_client(Interface &socket) {
 int slsReceiverTCPIPInterface::send_update(Interface &socket) {
     int n = 0;
     int i32 = -1;
+    int64_t i64 = -1;
     char cstring[MAX_STR_LENGTH]{};
 
     char ip[INET_ADDRSTRLEN]{};
@@ -363,8 +364,8 @@ int slsReceiverTCPIPInterface::send_update(Interface &socket) {
     n += socket.Send(cstring, sizeof(cstring));
 
     // index
-    i32 = receiver->getFileIndex();
-    n += socket.Send(&i32, sizeof(i32));
+    i64 = receiver->getFileIndex();
+    n += socket.Send(&i64, sizeof(i64));
 
     // file format
     i32 = (int)receiver->getFileFormat();
@@ -448,7 +449,6 @@ int slsReceiverTCPIPInterface::send_update(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::get_id(Interface &socket) {
-    cprintf(BLUE, "IN EHERHE\n");
     return socket.sendResult(getReceiverVersion());
 }
 
@@ -738,13 +738,13 @@ int slsReceiverTCPIPInterface::set_file_name(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::set_file_index(Interface &socket) {
-    auto index = socket.Receive<int>();
+    auto index = socket.Receive<int64_t>();
     if (index >= 0) {
         VerifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting file index: " << index;
         impl()->setFileIndex(index);
     }
-    int retval = impl()->getFileIndex();
+    int64_t retval = impl()->getFileIndex();
     validate(index, retval, "set file index", DEC);
     FILE_LOG(logDEBUG1) << "file index:" << retval;
     return socket.sendResult(retval);

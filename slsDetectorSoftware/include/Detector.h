@@ -486,9 +486,9 @@ class Detector {
      */
     void setFileNamePrefix(const std::string &fname, Positions pos = {});
 
-    Result<int> getAcquisitionIndex(Positions pos = {}) const;
+    Result<int64_t> getAcquisitionIndex(Positions pos = {}) const;
 
-    void setAcquisitionIndex(int i, Positions pos = {});
+    void setAcquisitionIndex(int64_t i, Positions pos = {});
 
     Result<bool> getFileWrite(Positions pos = {}) const;
 

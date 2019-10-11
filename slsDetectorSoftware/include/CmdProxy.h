@@ -494,6 +494,10 @@ class CmdProxy {
                           {"overflow", &CmdProxy::overflow},
                           {"storeinram", &CmdProxy::storeinram},
                           {"flippeddatax", &CmdProxy::flippeddatax},
+                          {"trimval", &CmdProxy::trimval},
+                          {"trimen", &CmdProxy::TrimEnergies},
+
+
 
 
                           {"lastclient", &CmdProxy::lastclient},    
@@ -529,7 +533,7 @@ class CmdProxy {
     std::string Threshold(int action);
     std::string ThresholdNoTb(int action);  
     std::string GapPixels(int action);
-
+    std::string TrimEnergies(int action);
 
 
 
@@ -821,7 +825,12 @@ class CmdProxy {
                     "[0, 1]\n\t[Eiger] Enable or disable store in ram mode.");      
 
     INTEGER_COMMAND(flippeddatax, getBottom, setBottom, std::stoi,
-                    "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 is top.");      
+                    "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 is top. Used to let Receiver and Gui know to flip the bottom image over the x axis.");      
+
+    INTEGER_COMMAND(trimval, getAllTrimbits, setAllTrimbits, std::stoi,
+                    "[n_trimval]\n\t[Eiger] All trimbits set to this value. A get returns -1 if all trimbits are different values.");      
+
+
 
 
 

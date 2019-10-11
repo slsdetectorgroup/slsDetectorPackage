@@ -10,6 +10,47 @@ auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
 
+TEST_CASE("trimen", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("trimen 3 4500 5400 6400", PUT, nullptr, oss));
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:trimen", GET, nullptr, oss));
+            REQUIRE(oss.str() == "trimen 1 3 [4500 5400 6400 ]\n");
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("trimen", GET));
+    }
+}
+
+TEST_CASE("trimval", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("trimval 63", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "trimval 63\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("trimval", GET, nullptr, oss));
+            REQUIRE(oss.str() == "trimval 63\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("trimval 31", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "trimval 31\n");
+        }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("trimval 0", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("trimval", GET));
+    }
+}
+
+
+
 TEST_CASE("flippeddatax", "[.cmd][.eiger]") {
     if (test::type == slsDetectorDefs::EIGER) {   
         {

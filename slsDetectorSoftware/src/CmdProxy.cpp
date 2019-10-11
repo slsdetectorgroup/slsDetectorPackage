@@ -451,6 +451,51 @@ std::string CmdProxy::GapPixels(int action) {
     return os.str();
 }
 
+std::string CmdProxy::TrimEnergies(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_trim] [trim_ev1] [trim_Ev2 (optional)] [trim_ev3 (optional)] ...\n\t[Eiger] Number of trim energies and list of trim energies, where corresponding default trim files exist in corresponding trim folders." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+         if (args.size() != 0) {                                
+            WrongNumberOfParameters(0);         
+        }       
+        auto t = det->getTrimEnergies({det_id});       
+        os << t.size() << ' ';
+        for (unsigned int i = 0; i < t.size(); ++i) {
+            os << '[';
+            for (unsigned int j = 0; j < t[i].size(); ++j) {
+                os << t[i][j] << ' '; 
+            }
+             os << "] ";
+        }
+        os << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() < 1) {                                
+            WrongNumberOfParameters(1);         
+        } 
+        unsigned int ntrim = std::stoi(args[0]);
+        if (args.size() !=  ntrim + 1) {                                
+            WrongNumberOfParameters(ntrim + 1);         
+        }             
+        std::vector<int> t(ntrim);
+        for (unsigned int i = 0; i < ntrim; ++i) {
+            t[i] = std::stoi(args[i+1]);
+        }                  
+        det->setTrimEnergies(t, {det_id}); 
+        os << args.front() << ntrim;
+        // TODO cannot print args
+        for (unsigned int i = 0; i < ntrim; ++i) {
+            os << ' ' << t[i];
+        }
+        os << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+
 
 
 

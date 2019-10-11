@@ -295,13 +295,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	++i;
 
 
-    /*! \page config
-   - <b>flippeddatax [i]</b> enables/disables data being flipped across x axis. 1 enables, 0 disables. Used for EIGER only. 1 for bottom half-module, 0 for top-half module. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "flippeddatax";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
-    ++i;
-
     /* flags */
     /*! \page config
 		\section configflags Flags
@@ -2012,13 +2005,6 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
 				myDet->setQuad(val);
 			}
 		}
-
-        if (cmd == "flippeddatax") {
-            if ((!sscanf(args[1], "%d", &val)) || (val != 0 && val != 1))
-                return std::string("cannot scan flippeddata x mode: must be 0 or 1");
-
-            myDet->setFlippedDataX(val, detPos);
-        }
         else return std::string("cannot decode function");
 
     }
@@ -2033,9 +2019,7 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
         return (std::string("[") + std::to_string(roi.xmin) + std::string(",") + std::to_string(roi.xmax) + std::string("]")); 
     } else if (cmd=="quad") {
 		return std::to_string(myDet->getQuad());
-    } else if (cmd == "flippeddatax") {
-        ret = myDet->getFlippedDataX(detPos);
-    } 
+    }
     
 
     else
@@ -2054,13 +2038,11 @@ std::string slsDetectorCommand::helpDetectorSize(int action) {
         os << "clearroi \n resets region of interest" << std::endl;
         os << "roi xmin xmax \n sets region of interest " << std::endl;
  		os << "quad i \n if i = 1, sets the detector size to a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;       
-        os << "flippeddatax x \n sets if the data should be flipped on the x axis" << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "dr \n gets the dynamic range of the detector" << std::endl;
         os << "roi \n gets region of interest" << std::endl;
        os << "quad \n returns 1 if the detector size is a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;
-        os << "flippeddatax\n gets if the data will be flipped on the x axis" << std::endl;
     }
     return os.str();
 }

@@ -321,7 +321,6 @@ class CmdProxy {
                                     {"enablefwrite", "fwrite"},
                                     {"checkrecversion", "rx_checkversion"},
                                     {"masterfile", "fmaster"},
-                                    {"outdir", "fpath"},
                                     {"overwrite", "foverwrite"},
                                     {"flags", "romode"},
                                     
@@ -362,7 +361,9 @@ class CmdProxy {
                                     {"r_lastclient", "rx_lastclient"}, 
 
                                     /* File */                                   
-                                    {"fileformat", "fformat"}
+                                    {"fileformat", "fformat"},
+                                    {"outdir", "fpath"}
+
 
                                     };
 
@@ -467,7 +468,7 @@ class CmdProxy {
 
                           /* File */
                           {"fformat", &CmdProxy::fformat},
-
+                          {"fpath", &CmdProxy::fpath},
 
 
 
@@ -753,8 +754,8 @@ class CmdProxy {
     INTEGER_COMMAND(fformat, getFileFormat, setFileFormat, sls::StringTo<slsDetectorDefs::fileFormat>,
                     "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be compiled with HDF5 flags.");
 
-
-
+   STRING_COMMAND(fpath, getFilePath, setFilePath, 
+                "[string]\n\tDirectory where output data files are written in receiver pc.");
 
 
 

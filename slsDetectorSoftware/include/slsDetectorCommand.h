@@ -49,7 +49,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpExitServer(int action);
   static std::string helpSettingsDir(int action);
   static std::string helpTrimEn(int action);
-  static std::string helpOutDir(int action);
   static std::string helpFileName(int action);
   static std::string helpRateCorr(int action);
   static std::string helpThreaded(int action);
@@ -91,7 +90,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdExitServer(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdSettingsDir(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdTrimEn(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdOutDir(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdFileName(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdRateCorr(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdNetworkParameter(int narg, const char * const args[], int action, int detPos = -1);

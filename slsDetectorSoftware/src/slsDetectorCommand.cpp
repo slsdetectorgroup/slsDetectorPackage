@@ -1238,13 +1238,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page output
-   - <b>fpath [dir]</b> Sets/gets the file output directory. \c Returns \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "fpath";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOutDir;
-    ++i;
-
-    /*! \page output
    - <b>fname [fn]</b> Sets/gets the root of the output file name \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "fname";
@@ -1955,24 +1948,6 @@ std::string slsDetectorCommand::helpTrimEn(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdOutDir(int narg, const char * const args[], int action, int detPos) {
-    if (action == HELP_ACTION)
-        return helpOutDir(action);
-
-    else if (action == PUT_ACTION)
-        myDet->setFilePath(std::string(args[1]), detPos);
-
-    return std::string(myDet->getFilePath(detPos));
-}
-
-std::string slsDetectorCommand::helpOutDir(int action) {
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("fpath \t  gets the directory where the output files will be written\n");
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("fpath dir \t  sets the directory where the output files will be written\n");
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdFileName(int narg, const char * const args[], int action, int detPos) {
     if (action == HELP_ACTION)

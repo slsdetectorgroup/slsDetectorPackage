@@ -367,6 +367,9 @@ class CmdProxy {
                                     /* ZMQ Streaming Parameters (Receiver<->Client) */
                                     {"r_readfreq", "rx_readfreq"}
 
+                                    /* Eiger Specific */
+
+
 
 
 
@@ -483,6 +486,9 @@ class CmdProxy {
                           {"rx_zmqip", &CmdProxy::rx_zmqip},
                           {"zmqip", &CmdProxy::zmqip},
 
+                          /* Eiger Specific */
+                          {"dr", &CmdProxy::DynamicRange},                          
+
                           
 
                           {"lastclient", &CmdProxy::lastclient},    
@@ -515,6 +521,9 @@ class CmdProxy {
     /* Receiver Config */
     /* File */
     /* ZMQ Streaming Parameters (Receiver<->Client) */
+    /* Eiger Specific */
+    std::string DynamicRange(int action);
+
 
 
     std::string SlowAdc(int action);
@@ -794,6 +803,7 @@ class CmdProxy {
     INTEGER_COMMAND(zmqip, getClientZmqIp, setClientZmqIp, IpAddr,
                     "[x.x.x.x]\n\tZmq IP Address in client(gui) or intermediate process for data to be streamed to from receiver.  Default connects to receiver zmq Ip Address (from rx_hostname). Modified only when using an intermediate process between receiver and client(gui). Also restarts client zmq streaming if enabled.");               
     
+    /* Eiger Specific */
 
 
 

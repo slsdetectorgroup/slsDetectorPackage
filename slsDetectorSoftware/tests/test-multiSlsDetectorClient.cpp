@@ -9,6 +9,24 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("dr", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {
+        int vals[4] = {4, 8, 16, 32};
+        for (int i = 0; i < 4; ++i) {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dr " + std::to_string(vals[i]), PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dr", GET, nullptr, oss));
+            REQUIRE(oss.str() == "dr " + std::to_string(vals[i]) + '\n');
+        } 
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("dr 4", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("dr 8", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("dr 32", PUT));
+    }
+
+}
+
+
 TEST_CASE("zmqip", "[.cmd]") {
     std::string s;
     {

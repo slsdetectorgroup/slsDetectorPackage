@@ -397,6 +397,33 @@ std::string CmdProxy::Adcphase(int action) {
 /* Receiver Config */
 /* File */
 /* ZMQ Streaming Parameters (Receiver<->Client) */
+/* Eiger Specific */
+
+std::string CmdProxy::DynamicRange(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[4|8|16|32]\n\t[Eiger] Dynamic Range or number of bits per pixel in detector." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {                                
+            WrongNumberOfParameters(0);         
+        } 
+        auto t = det->getDynamicRange({det_id});       
+        os << OutString(t) << '\n';     
+    } else if (action == defs::PUT_ACTION) {
+        if (det_id != -1) { 
+            throw sls::RuntimeError("Cannot execute dynamic range at module level");
+        }        
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);  
+        }                                
+        det->setDynamicRange(std::stoi(args[0]));  
+        os << args.front() << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 
 

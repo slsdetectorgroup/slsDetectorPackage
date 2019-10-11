@@ -205,7 +205,7 @@ void qTabAdvanced::GetCltZMQIP() {
 
     try {
         auto retval =
-            det->getClientZmqIp({comboDetector->currentIndex()})[0];
+            det->getClientZmqIp({comboDetector->currentIndex()})[0].str();
         dispZMQIP->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get client zmq ip.", "qTabAdvanced::GetCltZMQIP")
 
@@ -303,7 +303,7 @@ void qTabAdvanced::GetRxrZMQIP() {
 
     try {
         auto retval =
-            det->getRxZmqIP({comboDetector->currentIndex()})[0];
+            det->getRxZmqIP({comboDetector->currentIndex()})[0].str();
         dispRxrZMQIP->setText(QString(retval.c_str()));
     } CATCH_DISPLAY ("Could not get receiver zmq ip.", "qTabAdvanced::GetRxrZMQIP")
 

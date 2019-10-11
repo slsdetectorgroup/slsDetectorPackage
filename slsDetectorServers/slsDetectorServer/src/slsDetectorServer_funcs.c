@@ -28,8 +28,8 @@ const enum detectorType myDetectorType = GENERIC;
 
 // Global variables from communication_funcs
 extern int lockStatus;
-extern char lastClientIP[INET_ADDRSTRLEN];
-extern char thisClientIP[INET_ADDRSTRLEN];
+extern uint32_t lastClientIP;
+extern uint32_t thisClientIP;
 extern int differentClients;
 extern int isControlServer;
 extern int ret;
@@ -71,8 +71,6 @@ void init_detector() {
 	}
 	else initStopServer();
 	strcpy(mess,"dummy message");
-	strcpy(lastClientIP,"none");
-	strcpy(thisClientIP,"none1");
 	lockStatus=0;
 }
 
@@ -1654,7 +1652,7 @@ int start_acquisition(int file_des) {
 			ret = startStateMachine();
 			if (ret == FAIL) {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check rx_udpip & rx_udpport.\n");
+				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check udp_dstip & udp_dstport.\n");
 #else
 				sprintf(mess, "Could not start acquisition\n");
 #endif
@@ -1762,7 +1760,7 @@ int start_and_read_all(int file_des) {
 			ret = startStateMachine();
 			if (ret == FAIL) {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check rx_udpip & rx_udpport.\n");
+				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check udp_dstip & udp_dstport.\n");
 #else
 				sprintf(mess, "Could not start acquisition\n");
 #endif
@@ -2254,15 +2252,17 @@ int lock_server(int file_des) {
 	// set
 	if (lock >= 0) {
 		if (!lockStatus || // if it was unlocked, anyone can lock
-				(!strcmp(lastClientIP, thisClientIP)) || // if it was locked, need same ip
-				(!strcmp(lastClientIP,"none"))) { // if it was locked, must be by "none"
+				(lastClientIP == thisClientIP) || // if it was locked, need same ip
+				(lastClientIP == 0u)) { // if it was locked, must be by "none"
 			lockStatus = lock;
 			if (lock) {
-				FILE_LOG(logINFO, ("Server lock to %s\n", lastClientIP));
+				char buf[INET_ADDRSTRLEN] = "";
+				getIpAddressinString(buf, lastClientIP);
+				FILE_LOG(logINFO, ("Server lock to %s\n", buf));
 			} else {
 				FILE_LOG(logINFO, ("Server unlocked\n"));
 			}
-			strcpy(lastClientIP, thisClientIP);
+			lastClientIP = thisClientIP;
 		}   else {
 			Server_LockedError();
 		}
@@ -2277,7 +2277,9 @@ int lock_server(int file_des) {
 int get_last_client_ip(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	return Server_SendResult(file_des, OTHER, UPDATE, lastClientIP, sizeof(lastClientIP));
+	uint32_t retval = lastClientIP;
+	retval = __builtin_bswap32(retval);
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 
@@ -2287,7 +2289,7 @@ int set_port(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int p_number = -1;
-	char oldLastClientIP[INET_ADDRSTRLEN] = {0};
+	uint32_t oldLastClientIP = 0;
 
 	if (receiveData(file_des, &p_number, sizeof(p_number), INT32) < 0)
 		return printSocketReadError();
@@ -2304,7 +2306,7 @@ int set_port(int file_des) {
 		} else {
 			FILE_LOG(logINFO, ("Setting %s port to %d\n",
 					(isControlServer ? "control":"stop"), p_number));
-			strcpy(oldLastClientIP, lastClientIP);
+			oldLastClientIP = lastClientIP;
 			sd = bindSocket(p_number);
 		}
 	}
@@ -2315,7 +2317,7 @@ int set_port(int file_des) {
 		closeConnection(file_des);
 		exitServer(sockfd);
 		sockfd = sd;
-		strcpy(lastClientIP, oldLastClientIP);
+		lastClientIP = oldLastClientIP;
 	}
 	return ret;
 }
@@ -2339,7 +2341,9 @@ int send_update(int file_des) {
 	int i32 = -1;
 	int64_t i64 = -1;
 
-	n = sendData(file_des,lastClientIP,sizeof(lastClientIP),OTHER);
+	i32 = lastClientIP;
+	i32 = __builtin_bswap32(i32);
+	n = sendData(file_des, &i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// dr
@@ -2442,225 +2446,12 @@ int send_update(int file_des) {
 #endif
 
     if (lockStatus == 0) {
-        strcpy(lastClientIP, thisClientIP);
+        lastClientIP = thisClientIP;
     }
 
     return ret;
 }
 
-
-
-/*
-int configure_mac(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-    const size_t array_size = 50;
-    const size_t n_args = 14;
-    const size_t n_retvals = 2;
-    char args[n_args][array_size];
-    char retvals[n_retvals][array_size];
-
-	memset(args, 0, sizeof(args));
-	memset(retvals, 0, sizeof(retvals));
-
-	if (receiveData(file_des, args, sizeof(args), OTHER) < 0)
-		return printSocketReadError();
-
-	FILE_LOG(logDEBUG1, ("\n Configuring MAC\n"));
-	// dest port
-	uint32_t dstPort = 0;
-	sscanf(args[0], "%x", 	&dstPort);
-	FILE_LOG(logDEBUG1, ("Dst Port: %x\n", dstPort));
-	// dest ip
-	uint32_t dstIp = 0;
-	sscanf(args[1], "%x", 	&dstIp);
-	{
-		char ipstring[INET_ADDRSTRLEN]; 
-		getIpAddressinString(ipstring, dstIp);
-		FILE_LOG(logINFO, ("Dst Ip Addr: %s\n", ipstring));
-	}
-
-	// dest mac
-	uint64_t dstMac = 0;
-#ifdef VIRTUAL
-	sscanf(args[2], "%lx", 	&dstMac);
-#else
-	sscanf(args[2], "%llx", 	&dstMac);
-#endif
-	{
-		char macstring[50];
-		getMacAddressinString(macstring, 50, dstMac);
-		FILE_LOG(logDEBUG1, ("Dst Mac Addr: %s\n", macstring));
-	}
-	// source ip
-	uint32_t srcIp = 0;
-	sscanf(args[3], "%x",	&srcIp);
-	{
-		char ipstring[INET_ADDRSTRLEN]; 
-		getIpAddressinString(ipstring, srcIp);
-		FILE_LOG(logINFO, ("Src Ip Addr: %s\n", ipstring));
-	}
-	// source mac
-	uint64_t srcMac = 0;
-#ifdef VIRTUAL
-	sscanf(args[4], "%lx",	&srcMac);
-#else
-	sscanf(args[4], "%llx",	&srcMac);
-#endif
-	{
-		char macstring[50];
-		getMacAddressinString(macstring, 50, srcMac);
-		FILE_LOG(logDEBUG1, ("Src Mac Addr: %s\n", macstring));
-	}
-
-#if defined(JUNGFRAUD) || defined(EIGERD)
-	// source port 2
-	uint32_t dstPort2 = 0;
-	sscanf(args[5], "%x", 	&dstPort2);
-	FILE_LOG(logDEBUG1, ("Dst Port2: %x\n", dstPort2));
-#endif
-#ifdef JUNGFRAUD
-	// dest ip2
-	uint32_t dstIp2 = 0;
-	sscanf(args[6], "%x", 	&dstIp2);
-	{
-		char ipstring[INET_ADDRSTRLEN]; 
-		getIpAddressinString(ipstring, dstIp2);
-		FILE_LOG(logDEBUG1, ("Dst Ip Addr2: %s\n", ipstring));
-	}
-	// dest mac2
-	uint64_t dstMac2 = 0;
-#ifdef VIRTUAL
-	sscanf(args[7], "%lx", 	&dstMac2);
-#else
-	sscanf(args[7], "%llx", 	&dstMac2);
-#endif
-	{
-		char macstring[50];
-		getMacAddressinString(macstring, 50, dstMac2);
-		FILE_LOG(logDEBUG1, ("Dst Mac Addr2: %s\n", macstring));
-	}
-	// source ip2
-	uint32_t srcIp2 = 0;
-	sscanf(args[8], "%x",	&srcIp2);
-	{
-		char ipstring[INET_ADDRSTRLEN]; 
-		getIpAddressinString(ipstring, srcIp2);
-		FILE_LOG(logDEBUG1, ("Src Ip Addr2: %s\n", ipstring));
-	}
-	// source mac2
-	uint64_t srcMac2 = 0;
-#ifdef VIRTUAL
-	sscanf(args[9], "%lx",	&srcMac2);
-#else
-	sscanf(args[9], "%llx",	&srcMac2);
-#endif
-	{
-		char macstring[50];
-		getMacAddressinString(macstring, 50, srcMac2);
-		FILE_LOG(logDEBUG1, ("Src Mac Addr2: %s\n", macstring));
-	}
-
-	// number of interfaces
-	int numInterfaces = 0;
-	sscanf(args[10], "%d",	&numInterfaces);
-	int selInterface = 1;
-	sscanf(args[11], "%d",	&selInterface);
-
-#endif
-#if defined(JUNGFRAUD) || defined(EIGERD)
-	int pos[2] = {0, 0};
-	sscanf(args[12], "%x", 	&pos[X]);
-	sscanf(args[13], "%x", 	&pos[Y]);
-	FILE_LOG(logDEBUG1, ("Position: [%d, %d]\n", pos[X], pos[Y]));
-#endif
-
-
-	// set only
-	if ((Server_VerifyLock() == OK)) {
-
-		// stop detector if it was running
-		enum runStatus status = getRunStatus();
-		if (status != IDLE && status != RUN_FINISHED && status != STOPPED) {
-			if (status == RUNNING)
-				stopStateMachine();
-#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
-		    cleanFifos();
-#endif
-		    status = getRunStatus();
-		    if (status != IDLE && status != RUN_FINISHED && status != STOPPED) {
-		    	ret = FAIL;
-		    	sprintf(mess, "Cannot configure mac when detector is not idle. Detector at %s state\n", getRunStateName(status));
-		    	FILE_LOG(logERROR,(mess));
-		    }
-		}
-
-		if (ret == OK) {
-#ifdef EIGERD
-			// change mac to hardware mac
-			if (srcMac != getDetectorMAC()) {
-				FILE_LOG(logWARNING, ("actual detector mac address %llx does not match "
-						"the one from client %llx\n",
-						(long long unsigned int)getDetectorMAC(),
-						(long long unsigned int)srcMac));
-				srcMac = getDetectorMAC();
-				FILE_LOG(logWARNING,("matched detectormac to the hardware mac now\n"));
-			}
-
-			// always remember the ip sent from the client (could be for 10g(if not dhcp))
-			if (srcIp != getDetectorIP())
-				custom10gIp = srcIp;
-
-			//only for 1Gbe, change ip to hardware ip
-			if (!enableTenGigabitEthernet(-1)) {
-				FILE_LOG(logWARNING, ("Using DHCP IP for Configuring MAC\n"));
-				srcIp = getDetectorIP();
-			}
-			// 10 gbe (use ip given from client)
-			else
-				srcIp = custom10gIp;
-			ret = configureMAC(dstIp, dstMac, srcMac, srcIp, dstPort, dstPort2);
-#elif JUNGFRAUD
-			ret = configureMAC(numInterfaces, selInterface, dstIp, dstMac, srcMac, srcIp, dstPort, dstIp2, dstMac2, srcMac2, srcIp2, dstPort2);
-#else
-			ret = configureMAC(dstIp, dstMac, srcMac, srcIp, dstPort);
-#endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-            if (ret != OK) {
-            	if (ret == FAIL)
-            		sprintf(mess,"Could not configure mac because of incorrect udp 1G destination IP and port\n");
-            	else if (ret == -1)
-            		sprintf(mess, "Could not allocate RAM\n");
-            	FILE_LOG(logERROR,(mess));
-            }
-#else
-			if (ret == FAIL) {
-				sprintf(mess,"Configure Mac failed\n");
-				FILE_LOG(logERROR,(mess));
-			}
-#endif
-			else {
-			    FILE_LOG(logINFO, ("\tConfigure MAC successful\n"));
-			}
-#if defined(EIGERD) || defined (JUNGFRAUD)
-			if (ret != FAIL) {
-				ret = setDetectorPosition(pos);
-				if (ret == FAIL) {
-					sprintf(mess, "Could not set detector position\n");
-					FILE_LOG(logERROR,(mess));
-				}
-			}
-#endif
-			// set retval vals
-			if (ret != FAIL) {
-				sprintf(retvals[0],"%llx", (long long unsigned int)srcMac);
-				sprintf(retvals[1],"%x", srcIp);
-			}
-		}
-	}
-	return Server_SendResult(file_des, OTHER, UPDATE, retvals, sizeof(retvals));
-}
-*/
 
 
 int enable_ten_giga(int file_des) {

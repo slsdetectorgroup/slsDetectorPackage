@@ -50,9 +50,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpTrimEn(int action);
   static std::string helpRateCorr(int action);
   static std::string helpThreaded(int action);
-  static std::string helpNetworkParameter(int action);
   static std::string helpPort(int action);
-  static std::string helpLastClient(int action);
   static std::string helpOnline(int action);
   static std::string helpDetectorSize(int action);
   static std::string helpSettings(int action);
@@ -88,9 +86,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdSettingsDir(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdTrimEn(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdRateCorr(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdNetworkParameter(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdPort(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdLastClient(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdOnline(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdDetectorSize(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdSettings(int narg, const char * const args[], int action, int detPos = -1);

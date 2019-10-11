@@ -461,7 +461,7 @@ class Detector {
     /** locks receiver server to client IP */
     void setRxLock(bool value, Positions pos = {});
 
-    Result<std::string> getRxLastClientIP(Positions pos = {}) const;
+    Result<sls::IpAddr> getRxLastClientIP(Positions pos = {}) const;
 
     /**************************************************
      *                                                *
@@ -548,23 +548,23 @@ class Detector {
      */
     void setRxZmqPort(int port, int module_id = -1);
 
-    Result<std::string> getRxZmqIP(Positions pos = {}) const;
+    Result<IpAddr> getRxZmqIP(Positions pos = {}) const;
 
-    void setRxZmqIP(const std::string &ip, Positions pos = {});
+    void setRxZmqIP(const IpAddr ip, Positions pos = {});
 
     Result<int> getClientZmqPort(Positions pos = {}) const;
 
     /**
-     * Needed only when using the client call back to get reconstructed data
-     * from multi modules module_id is -1 for all detectors, ports for each
-     * module is calculated (increments) Restarts client zmq sockets oonly if it
+     * Modified only when using an intermediate process between receiver and gui/client.
+     * Module_id is -1 for all detectors, ports for each
+     * module is calculated (increments) Restarts client zmq sockets only if it
      * was already enabled
      */
     void setClientZmqPort(int port, int module_id = -1);
 
-    Result<std::string> getClientZmqIp(Positions pos = {}) const;
+    Result<IpAddr> getClientZmqIp(Positions pos = {}) const;
 
-    void setClientZmqIp(const std::string &ip, Positions pos = {});
+    void setClientZmqIp(const IpAddr ip, Positions pos = {});
 
     /**************************************************
      *                                                *
@@ -1181,7 +1181,7 @@ class Detector {
     void setDetectorLock(bool lock, Positions pos = {});
 
     /** Get last client IP saved on detector server */
-    Result<std::string> getLastClientIP(Positions pos = {}) const;
+    Result<sls::IpAddr> getLastClientIP(Positions pos = {}) const;
 
     /** Execute a command on the detector server console */
     void executeCommand(const std::string &value, Positions pos = {});

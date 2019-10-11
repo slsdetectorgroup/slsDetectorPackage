@@ -577,7 +577,7 @@ void Detector::setRxLock(bool value, Positions pos) {
     pimpl->Parallel(&slsDetector::lockReceiver, pos, static_cast<int>(value));
 }
 
-Result<std::string> Detector::getRxLastClientIP(Positions pos) const {
+Result<sls::IpAddr> Detector::getRxLastClientIP(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverLastClientIP, pos);
 }
 
@@ -693,11 +693,11 @@ void Detector::setRxZmqPort(int port, int module_id) {
     }
 }
 
-Result<std::string> Detector::getRxZmqIP(Positions pos) const {
+Result<IpAddr> Detector::getRxZmqIP(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverStreamingIP, pos);
 }
 
-void Detector::setRxZmqIP(const std::string &ip, Positions pos) {
+void Detector::setRxZmqIP(const IpAddr ip, Positions pos) {
     bool previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(false);
     pimpl->Parallel(&slsDetector::setReceiverStreamingIP, pos, ip);
     if (previouslyReceiverStreaming) {
@@ -723,11 +723,11 @@ void Detector::setClientZmqPort(int port, int module_id) {
     }
 }
 
-Result<std::string> Detector::getClientZmqIp(Positions pos) const {
+Result<IpAddr> Detector::getClientZmqIp(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getClientStreamingIP, pos);
 }
 
-void Detector::setClientZmqIp(const std::string &ip, Positions pos) {
+void Detector::setClientZmqIp(const IpAddr ip, Positions pos) {
     int previouslyClientStreaming = pimpl->enableDataStreamingToClient(-1);
     pimpl->Parallel(&slsDetector::setClientStreamingIP, pos, ip);
     if (previouslyClientStreaming != 0) {
@@ -1538,7 +1538,7 @@ void Detector::setDetectorLock(bool lock, Positions pos) {
     pimpl->Parallel(&slsDetector::lockServer, pos, static_cast<int>(lock));
 }
 
-Result<std::string> Detector::getLastClientIP(Positions pos) const {
+Result<sls::IpAddr> Detector::getLastClientIP(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getLastClientIP, pos);
 }
 

@@ -319,7 +319,7 @@ int slsReceiverTCPIPInterface::lock_receiver(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::get_last_client_ip(Interface &socket) {
-    return socket.sendResult(server->getLastClient().arr());
+    return socket.sendResult(server->getLastClient());
 }
 
 int slsReceiverTCPIPInterface::set_port(Interface &socket) {
@@ -351,9 +351,9 @@ int slsReceiverTCPIPInterface::send_update(Interface &socket) {
     int64_t i64 = -1;
     char cstring[MAX_STR_LENGTH]{};
 
-    char ip[INET_ADDRSTRLEN]{};
-    sls::strcpy_safe(ip, server->getLastClient().str().c_str());
-    n += socket.Send(ip, sizeof(ip));
+    sls::IpAddr ip = 0u;
+    ip = server->getLastClient();
+    n += socket.Send(&ip, sizeof(ip));
 
     // filepath
     sls::strcpy_safe(cstring, receiver->getFilePath().c_str());
@@ -408,8 +408,8 @@ int slsReceiverTCPIPInterface::send_update(Interface &socket) {
     n += socket.Send(&i32, sizeof(i32));
 
     // streaming source ip
-    sls::strcpy_safe(cstring, receiver->getStreamingSourceIP().c_str());
-    n += socket.Send(cstring, sizeof(cstring));
+    ip = receiver->getStreamingSourceIP();
+    n += socket.Send(&ip, sizeof(ip));
 
     // additional json header
     sls::strcpy_safe(cstring, receiver->getAdditionalJsonHeader().c_str());
@@ -954,15 +954,19 @@ int slsReceiverTCPIPInterface::set_streaming_port(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::set_streaming_source_ip(Interface &socket) {
-    char arg[MAX_STR_LENGTH]{};
-    char retval[MAX_STR_LENGTH]{};
+    sls::IpAddr arg = 0u;
     socket.Receive(arg);
     VerifyIdle(socket);
     FILE_LOG(logDEBUG1) << "Setting streaming source ip:" << arg;
     impl()->setStreamingSourceIP(arg);
-    sls::strcpy_safe(retval, impl()->getStreamingSourceIP().c_str());
-    FILE_LOG(logDEBUG1) << "streaming source ip:" << retval;
-    return socket.sendResult(retval);
+    sls::IpAddr retval = impl()->getStreamingSourceIP();
+    if (retval != arg) {
+        std::ostringstream os;
+        os << "Could not set streaming ip. Set " << arg
+           << ", but read " << retval << '\n';
+        throw RuntimeError(os.str());
+    }
+    return socket.Send(OK);
 }
 
 int slsReceiverTCPIPInterface::set_silent_mode(Interface &socket) {

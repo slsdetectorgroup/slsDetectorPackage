@@ -697,8 +697,8 @@ bool slsDetector::lockServer(int lock) {
     return (retval == 1 ? true : false);
 }
 
-std::string slsDetector::getLastClientIP() {
-    char retval[INET_ADDRSTRLEN]{};
+sls::IpAddr slsDetector::getLastClientIP() {
+    sls::IpAddr retval = 0u;
     FILE_LOG(logDEBUG1) << "Getting last client ip to detector server";
     sendToDetector(F_GET_LAST_CLIENT_IP, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Last client IP to detector: " << retval;
@@ -730,8 +730,8 @@ void slsDetector::updateCachedDetectorVariables() {
         FORCE_UPDATE) {
         int n = 0, i32 = 0;
         int64_t i64 = 0;
-        char lastClientIP[INET_ADDRSTRLEN] = {0};
-        n += client.Receive(lastClientIP, sizeof(lastClientIP));
+        sls::IpAddr lastClientIP = 0u;
+        n += client.Receive(&lastClientIP, sizeof(lastClientIP));
         FILE_LOG(logDEBUG1)
             << "Updating detector last modified by " << lastClientIP;
 
@@ -1637,7 +1637,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
         // data streaming
         setReceiverStreamingFrequency(shm()->rxReadFreq);
         setReceiverStreamingPort(getReceiverStreamingPort());
-        setReceiverStreamingIP(getReceiverStreamingIP());
+        updateReceiverStreamingIP();
         setAdditionalJsonHeader(shm()->rxAdditionalJsonHeader);
         enableDataStreamingFromReceiver(
             static_cast<int>(enableDataStreamingFromReceiver(-1)));
@@ -1718,7 +1718,7 @@ sls::IpAddr slsDetector::getSourceUDPIP2() {
 
 void slsDetector::setDestinationUDPIP(const IpAddr ip) {
     FILE_LOG(logDEBUG1) << "Setting destination udp ip to " << ip;
-     if (ip == 0) {
+    if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address");
     }
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr); 
@@ -1903,31 +1903,23 @@ void slsDetector::setReceiverStreamingPort(int port) {
 
 int slsDetector::getReceiverStreamingPort() { return shm()->rxZmqport; }
 
-void slsDetector::setClientStreamingIP(const std::string &sourceIP) {
-    auto ip = HostnameToIp(sourceIP.c_str());
-    if (ip != 0) {
-        shm()->zmqip = ip;
-    } else {
-        throw sls::RuntimeError("Could not set zmqip");
-    }
+void slsDetector::setClientStreamingIP(const sls::IpAddr ip) {
+    FILE_LOG(logDEBUG1) << "Setting client zmq ip to " << ip;
+    if (ip == 0) {
+        throw RuntimeError("Invalid client zmq ip address");
+    } 
+    shm()->zmqip = ip;  
 }
 
-std::string slsDetector::getClientStreamingIP() { return shm()->zmqip.str(); }
+sls::IpAddr slsDetector::getClientStreamingIP() { return shm()->zmqip; }
 
-void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
-    // if empty, give rx_hostname
-    if (sourceIP.empty() || sourceIP == "0.0.0.0") {
-        if (strcmp(shm()->rxHostname, "none") == 0) {
-            throw RuntimeError("Receiver hostname not set yet. Cannot create "
-                               "rx_zmqip from none");
-        }
-        sourceIP = shm()->rxHostname;
+void slsDetector::setReceiverStreamingIP(const sls::IpAddr ip) {
+    FILE_LOG(logDEBUG1) << "Setting rx zmq ip to " << ip;
+    if (ip == 0) {
+        throw RuntimeError("Invalid receiver zmq ip address");
     }
-
-    FILE_LOG(logDEBUG1) << "Sending receiver streaming IP to receiver: "
-                        << sourceIP;
-    shm()->rxZmqip = HostnameToIp(sourceIP.c_str());
-
+    shm()->rxZmqip = ip;
+    
     // if zmqip is empty, update it
     if (shm()->zmqip == 0) {
         shm()->zmqip = shm()->rxZmqip;
@@ -1935,19 +1927,27 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 
     // send to receiver
     if (shm()->useReceiverFlag) {
-        char retvals[MAX_STR_LENGTH]{};
-        char args[MAX_STR_LENGTH]{};
-        sls::strcpy_safe(args, shm()->rxZmqip.str()); // TODO send int
         FILE_LOG(logDEBUG1)
-            << "Sending receiver streaming IP to receiver: " << args;
-        sendToReceiver(F_RECEIVER_STREAMING_SRC_IP, args, retvals);
-        FILE_LOG(logDEBUG1) << "Receiver streaming ip: " << retvals;
-        shm()->rxZmqip = retvals;
+            << "Sending receiver streaming IP to receiver: " << ip;
+        sendToReceiver(F_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
     }
 }
 
-std::string slsDetector::getReceiverStreamingIP() {
-    return shm()->rxZmqip.str();
+sls::IpAddr slsDetector::getReceiverStreamingIP() {
+    return shm()->rxZmqip;
+}
+
+void slsDetector::updateReceiverStreamingIP() {
+    auto ip = getReceiverStreamingIP();
+    if (ip == 0) {
+        // Hostname could be ip try to decode otherwise look up the hostname
+        ip = shm()->rxHostname;
+        if (ip == 0) {
+            ip = HostnameToIp(shm()->rxHostname);
+        }  
+        FILE_LOG(logINFO) << "Setting default receiver streaming zmq ip to " << ip;
+    }     
+    setReceiverStreamingIP(ip);   
 }
 
 int slsDetector::setDetectorNetworkParameter(networkParameter index,
@@ -2726,8 +2726,8 @@ int slsDetector::lockReceiver(int lock) {
     return retval;
 }
 
-std::string slsDetector::getReceiverLastClientIP() const {
-    char retval[INET_ADDRSTRLEN]{};
+sls::IpAddr slsDetector::getReceiverLastClientIP() const {
+    sls::IpAddr retval = 0u;
     FILE_LOG(logDEBUG1) << "Getting last client ip to receiver server";
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_GET_LAST_RECEIVER_CLIENT_IP, nullptr, retval);
@@ -2765,11 +2765,11 @@ void slsDetector::updateCachedReceiverVariables() const {
         int n = 0, i32 = 0;
         int64_t i64 = 0;
         char cstring[MAX_STR_LENGTH]{};
-        char lastClientIP[INET_ADDRSTRLEN]{};
+        IpAddr ip = 0u;
 
-        n += receiver.Receive(lastClientIP, sizeof(lastClientIP));
+        n += receiver.Receive(&ip, sizeof(ip));
         FILE_LOG(logDEBUG1)
-            << "Updating receiver last modified by " << lastClientIP;
+            << "Updating receiver last modified by " << ip;
 
         // filepath
         n += receiver.Receive(cstring, sizeof(cstring));
@@ -2824,8 +2824,8 @@ void slsDetector::updateCachedReceiverVariables() const {
         shm()->rxZmqport = i32;
 
         // streaming source ip
-        n += receiver.Receive(cstring, sizeof(cstring));
-        shm()->rxZmqip = cstring;
+        n += receiver.Receive(&ip, sizeof(ip));
+        shm()->rxZmqip = ip;
 
         // additional json header
         n += receiver.Receive(cstring, sizeof(cstring));

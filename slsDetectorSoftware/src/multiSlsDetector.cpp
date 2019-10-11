@@ -621,13 +621,6 @@ int multiSlsDetector::lockServer(int p, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-std::string multiSlsDetector::getLastClientIP(int detPos) {
-    if (detPos >= 0) {
-        return detectors[detPos]->getLastClientIP();
-    }
-    auto r = parallelCall(&slsDetector::getLastClientIP);
-    return sls::concatenateIfDifferent(r);
-}
 
 void multiSlsDetector::exitServer(int detPos) {
     if (detPos >= 0) {
@@ -1321,74 +1314,6 @@ int multiSlsDetector::getReceiverStreamingPort(int detPos) {
     // multi
     auto r = serialCall(&slsDetector::getReceiverStreamingPort);
     return sls::minusOneIfDifferent(r);
-}
-
-void multiSlsDetector::setClientDataStreamingInIP(const std::string &ip,
-                                                  int detPos) {
-    if (ip.length() != 0u) {
-        bool prev_streaming = enableDataStreamingToClient(-1);
-
-        // single
-        if (detPos >= 0) {
-            detectors[detPos]->setClientStreamingIP(ip);
-        }
-        // multi
-        else {
-            for (auto &d : detectors) {
-                d->setClientStreamingIP(ip);
-            }
-        }
-
-        if (prev_streaming) {
-            enableDataStreamingToClient(0);
-            enableDataStreamingToClient(1);
-        }
-    }
-}
-
-std::string multiSlsDetector::getClientStreamingIP(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getClientStreamingIP();
-    }
-
-    // multi
-    auto r = serialCall(&slsDetector::getClientStreamingIP);
-    return sls::concatenateIfDifferent(r);
-}
-
-void multiSlsDetector::setReceiverDataStreamingOutIP(const std::string &ip,
-                                                     int detPos) {
-    if (ip.length() != 0u) {
-        int prev_streaming = enableDataStreamingFromReceiver(-1, detPos);
-
-        // single
-        if (detPos >= 0) {
-            detectors[detPos]->setReceiverStreamingIP(ip);
-        }
-        // multi
-        else {
-            for (auto &d : detectors) {
-                d->setReceiverStreamingIP(ip);
-            }
-        }
-
-        if (prev_streaming != 0) {
-            enableDataStreamingFromReceiver(0, detPos);
-            enableDataStreamingFromReceiver(1, detPos);
-        }
-    }
-}
-
-std::string multiSlsDetector::getReceiverStreamingIP(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getReceiverStreamingIP();
-    }
-
-    // multi
-    auto r = serialCall(&slsDetector::getReceiverStreamingIP);
-    return sls::concatenateIfDifferent(r);
 }
 
 int multiSlsDetector::setDetectorNetworkParameter(networkParameter index,
@@ -2096,16 +2021,7 @@ int multiSlsDetector::lockReceiver(int lock, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-std::string multiSlsDetector::getReceiverLastClientIP(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getReceiverLastClientIP();
-    }
 
-    // multi
-    auto r = parallelCall(&slsDetector::getReceiverLastClientIP);
-    return sls::concatenateIfDifferent(r);
-}
 
 void multiSlsDetector::exitReceiver(int detPos) {
     // single
@@ -2354,7 +2270,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
         try {
             zmqSocket.push_back(sls::make_unique<ZmqSocket>(
                 detectors[iSocket / numSocketsPerDetector]
-                    ->getClientStreamingIP()
+                    ->getClientStreamingIP().str()
                     .c_str(),
                 portnum));
             FILE_LOG(logINFO) << "Zmq Client[" << iSocket << "] at "

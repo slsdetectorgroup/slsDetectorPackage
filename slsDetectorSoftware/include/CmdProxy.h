@@ -479,12 +479,13 @@ class CmdProxy {
                           {"rx_datastream", &CmdProxy::rx_datastream},
                           {"rx_readfreq", &CmdProxy::rx_readfreq},
                           {"rx_zmqport", &CmdProxy::rx_zmqport},
-
-
-
+                          {"zmqport", &CmdProxy::zmqport},
+                          {"rx_zmqip", &CmdProxy::rx_zmqip},
+                          {"zmqip", &CmdProxy::zmqip},
 
                           
 
+                          {"lastclient", &CmdProxy::lastclient},    
                           {"adc", &CmdProxy::SlowAdc},                            
                           {"subexptime", &CmdProxy::subexptime},  
                           {"threshold", &CmdProxy::Threshold},
@@ -690,7 +691,7 @@ class CmdProxy {
     
     INTEGER_COMMAND(udp_dstport2, getDestinationUDPPort2, setDestinationUDPPort2, std::stoi,
                     "[n]\n\tDefault is 50002.\n\t[Jungfrau] Port number of the receiver (destination) udp interface where the second half of detector data is sent to. \n[Eiger] Port number of the reciever (desintation) udp interface where the right half of the detector data is sent to."); 
-                             
+
     GET_COMMAND(rx_printconfig, printRxConfiguration, 
                 "\n\tPrints the receiver configuration.");   
     
@@ -782,16 +783,25 @@ class CmdProxy {
                     std::stoi, "[nth frame]\n\tStream out every nth frame. Default is 1. 0 means streaming every 200 ms and discarding frames in this interval.");
 
     INTEGER_COMMAND(rx_zmqport, getRxZmqPort, setRxZmqPort,
-                    std::stoi, "[port]\n\tZmq port for data to be streamed out of the receiver. Also restarts streaming. Default is 30001. Must be different for every detector (and udp port). Multi command will automatically increment for individual modules.");
+                    std::stoi, "[port]\n\tZmq port for data to be streamed out of the receiver. Also restarts receiver zmq streaming if enabled. Default is 30001. Modified only when using an intermediate process between receiver and client(gui). Must be different for every detector (and udp port). Multi command will automatically increment for individual modules.");
+
+    INTEGER_COMMAND(zmqport, getClientZmqPort, setClientZmqPort,
+                    std::stoi, "[port]\n\tZmq port in client(gui) or intermediate process for data to be streamed to from receiver. efault connects to receiver zmq streaming out port (30001). Modified only when using an intermediate process between receiver and client(gui). Also restarts client zmq streaming if enabled. Must be different for every detector (and udp port). Multi command will automatically increment for individual modules.");
+
+    INTEGER_COMMAND(rx_zmqip, getRxZmqIP, setRxZmqIP, IpAddr,
+                    "[x.x.x.x]\n\tZmq Ip Address from which data is to be streamed out of the receiver. Also restarts receiver zmq streaming if enabled. Default is from rx_hostname. Modified only when using an intermediate process between receiver and client(gui).");               
+    
+    INTEGER_COMMAND(zmqip, getClientZmqIp, setClientZmqIp, IpAddr,
+                    "[x.x.x.x]\n\tZmq IP Address in client(gui) or intermediate process for data to be streamed to from receiver.  Default connects to receiver zmq Ip Address (from rx_hostname). Modified only when using an intermediate process between receiver and client(gui). Also restarts client zmq streaming if enabled.");               
+    
 
 
 
 
 
 
-
-
-
+    GET_COMMAND(lastclient, getLastClientIP, 
+                "\n\tClient IP Address that last communicated with the detector."); 
 
     TIME_COMMAND(subexptime, getSubExptime, setSubExptime,
                  "[duration] [(optional unit) ns|us|ms|s]\n\tExposure time of EIGER subframes");

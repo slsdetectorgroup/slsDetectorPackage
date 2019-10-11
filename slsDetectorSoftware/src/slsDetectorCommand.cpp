@@ -1240,28 +1240,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
     /* communication configuration */
 
-
-   /*! \page network
-   - <b>zmqport [port]</b> sets/gets the 0MQ (TCP) port of the client to where final data is streamed to (eg. for GUI). The default already connects with rx_zmqport for the GUI. Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest. Must restart zmq client streaming in gui/external gui \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "zmqport";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    ++i;
-
-    /*! \page network
-   - <b>zmqip [ip]</b> sets/gets the 0MQ (TCP) ip of the client to where final data is streamed to (eg. for GUI). For Experts only! Default is ip of rx_hostname and works for GUI. This command to change from default can be used from command line when sockets are not already open as the command line is not aware/create the 0mq sockets in the client side. This is usually used to stream in from an external process. . If no custom ip, empty until first time connect to receiver. \c Returns \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "zmqip";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    i++;
-
-    /*! \page network
-   - <b>rx_zmqip [ip]</b> sets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from (eg. to GUI or another process for further processing). For Experts only! Default is ip of rx_hostname and works for GUI. This is usually used to stream out to an external process for further processing. . If no custom ip, empty until first time connect to receiver. \c Returns \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_zmqip";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    i++;
-
     /*! \page network
    - <b>port [port]</b> sets/gets the port of the client-detector control server TCP interface. Use single-detector command. Default value is 1952 for all detectors. Normally not changed. \c Returns \c (int)
 	 */
@@ -1276,12 +1254,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPort;
     ++i;
 
-    /*! \page network
-   - <b>lastclient </b> Gets the last client communicating with the detector. Cannot put!. \c Returns \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "lastclient";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdLastClient;
-    ++i;
 
     /* receiver functions */
 
@@ -1970,61 +1942,6 @@ std::string slsDetectorCommand::helpCounter(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdNetworkParameter(int narg, const char * const args[], int action, int detPos) {
-
-	char ans[100] = {0};
-    int i;
-    if (action == HELP_ACTION)
-        return helpNetworkParameter(action);
-
-    if (cmd == "zmqport") {
-        if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i))) {
-                return ("cannot parse argument") + std::string(args[1]);
-            }
-            myDet->setClientDataStreamingInPort(i, detPos);
-        }
-        sprintf(ans, "%d", myDet->getClientStreamingPort(detPos));
-        return ans;
-    } else if (cmd == "zmqip") {
-    	  if (action == PUT_ACTION) {
-    		  myDet->setClientDataStreamingInIP(args[1], detPos);
-    	  }
-    	  return myDet->getClientStreamingIP(detPos);
-    } else if (cmd == "rx_zmqip") {
-  	  if (action == PUT_ACTION) {
-  		myDet->setReceiverDataStreamingOutIP(args[1], detPos);
-  	  }
-  	  return myDet->getReceiverStreamingIP(detPos);
-    }
-
-    return ("unknown network parameter") + cmd;
-}
-
-std::string slsDetectorCommand::helpNetworkParameter(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-         os << "zmqport port \n sets the 0MQ (TCP) port of the client to where final data is streamed to (eg. for GUI). The default already connects with rx_zmqport for the GUI. "
-              "Use single-detector command to set individually or multi-detector command to calculate based on port for the rest."
-              "Must restart streaming in client with new port from gui/external gui"
-           << std::endl;
-        os << "zmqip ip \n sets the 0MQ (TCP) ip of the client to where final data is streamed to (eg. for GUI). Default is ip of rx_hostname and works for GUI. "
-              "This is usually used to stream in from an external process."
-              "Must restart streaming in client with new port from gui/external gui. "
-           << std::endl;
-        os << "rx_zmqip ip \n sets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from (eg. to GUI or another process for further processing). "
-              "Default is ip of rx_hostname and works for GUI. This is usually used to stream out to an external process for further processing."
-              "restarts streaming in receiver with new port"
-           << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "zmqport \n gets the 0MQ (TCP) port of the client to where final data is streamed to" << std::endl;
-        os << "zmqip \n gets the 0MQ (TCP) ip of the client to where final data is streamed to.If no custom ip, empty until first time connect to receiver" << std::endl;
-        os << "rx_zmqip \n gets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from. If no custom ip, empty until first time connect to receiver" << std::endl;
-    }
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdPort(int narg, const char * const args[], int action, int detPos) {
 
@@ -2067,29 +1984,6 @@ std::string slsDetectorCommand::helpPort(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdLastClient(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == HELP_ACTION)
-        return helpLastClient(action);
-
-    if (action == PUT_ACTION)
-        return std::string("cannot set");
-
-    if (cmd == "lastclient") {
-        return myDet->getLastClientIP(detPos);
-    }
-
-    return std::string("cannot decode command");
-}
-
-std::string slsDetectorCommand::helpLastClient(int action) {
-
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "lastclient \n returns the last client communicating with the detector" << std::endl;
-    }
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdOnline(int narg, const char * const args[], int action, int detPos) {
 

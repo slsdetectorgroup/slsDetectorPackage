@@ -25,8 +25,8 @@ extern int errno;
 
 // Variables that will be exported
 int lockStatus = 0;
-char lastClientIP[INET_ADDRSTRLEN] = "";
-char thisClientIP[INET_ADDRSTRLEN] = "";
+uint32_t lastClientIP = 0u;
+uint32_t thisClientIP = 0u;
 int differentClients = 0;
 int isControlServer = 1;
 int ret = FAIL;
@@ -34,7 +34,7 @@ int fnum = 0;
 char mess[MAX_STR_LENGTH];
 
 // Local variables
-char dummyClientIP[INET_ADDRSTRLEN] = "";
+uint32_t dummyClientIP = 0u;
 int myport = -1;
 // socket descriptor set
 fd_set readset, tempset;
@@ -220,9 +220,14 @@ int acceptConnection(int socketDescriptor) {
 				}
 				// accept success
 				else {
-					inet_ntop(AF_INET, &(addressC.sin_addr), dummyClientIP, INET_ADDRSTRLEN);
+					char buf[INET_ADDRSTRLEN] = "";
+					memset(buf, 0, INET_ADDRSTRLEN);
+					inet_ntop(AF_INET, &(addressC.sin_addr), buf, INET_ADDRSTRLEN);
 					FILE_LOG(logDEBUG3, ("%s socket accepted connection, fd= %d\n",
 							(isControlServer ? "control":"stop"), file_des));
+					
+					getIpAddressFromString(buf, &dummyClientIP);
+
 					// add the file descriptor from accept
 					FD_SET(file_des, &readset);
 					maxfd = (maxfd < file_des)?file_des:maxfd;
@@ -381,9 +386,9 @@ int receiveDataOnly(int file_des, void* buf,int length) {
 	}
 
 	if (total_received>0)
-		strcpy(thisClientIP,dummyClientIP);
+		thisClientIP = dummyClientIP;
 
-	if (strcmp(lastClientIP,thisClientIP)) {
+	if (lastClientIP == thisClientIP) {
 		differentClients = 1;
 	}
 	else
@@ -557,7 +562,9 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
 
 void Server_LockedError() {
 	ret = FAIL;
-	sprintf(mess,"Detector locked by %s\n", lastClientIP);
+	char buf[INET_ADDRSTRLEN] = "";
+	getIpAddressinString(buf, dummyClientIP);
+	sprintf(mess,"Detector locked by %s\n", buf);
 	FILE_LOG(logWARNING, (mess));
 }
 
@@ -609,4 +616,17 @@ void getMacAddressinString(char* cmac, int size, uint64_t mac) {
 void getIpAddressinString(char* cip, uint32_t ip) {
 	memset(cip, 0, INET_ADDRSTRLEN);
 	inet_ntop(AF_INET, &ip, cip, INET_ADDRSTRLEN);
+}
+
+
+void getIpAddressFromString(char* cip, uint32_t* ip) {
+	char buf[INET_ADDRSTRLEN]="";
+	memset(buf, 0, INET_ADDRSTRLEN);
+	char* byte = strtok (cip,".");
+	while (byte != NULL) {
+		sprintf(cip,"%02x",atoi(byte));
+		strcat(buf, cip);
+		byte = strtok (NULL, ".");
+	}
+	sscanf(buf, "%x", 	ip);
 }

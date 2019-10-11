@@ -460,13 +460,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int lockServer(int p = -1, int detPos = -1); //
 
     /**
-     * Get last client IP saved on detector server
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns last client IP saved on detector server
-     */
-    std::string getLastClientIP(int detPos = -1); //
-
-    /**
      * Exit detector server
      * @param detPos -1 for all detectors in  list or specific detector position
      */
@@ -910,45 +903,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int getReceiverStreamingPort(int detPos = -1); //
 
-    /**
-     * (advanced users)
-     * Set/Get client streaming in ZMQ IP and restarts client sockets
-     * @param i sets, empty string gets
-     * By default, it is the IP of receiver hostname
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void setClientDataStreamingInIP(const std::string &ip = "",
-                                    int detPos = -1); //
-
-    /**
-     * Returns the client zmq ip
-     * If detPos is -1(multi module), ip returns concatenation of all client
-     * streaming ip
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns the client zmq ip
-     */
-    std::string getClientStreamingIP(int detPos = -1); //
-
-    /**
-     * (advanced users)
-     * Set/Get receiver streaming out ZMQ IP and restarts receiver sockets
-     * @param i sets, empty string gets
-     * By default, it is the IP of receiver hostname
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void setReceiverDataStreamingOutIP(const std::string &ip = "",
-                                       int detPos = -1); //
-
-    /**
-     * Returns the receiver zmq ip
-     * If detPos is -1(multi module), ip returns concatenation of all receiver
-     * streaming ip
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns the receiver zmq ip
-     */
-    std::string getReceiverStreamingIP(int detPos = -1); //
-
-    /**
+     /**
      * Sets the transmission delay for left, right or entire frame
      * (Eiger, Jungfrau(only entire frame))
      * @param index type of delay
@@ -1415,13 +1370,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns lock status of the receiver
      */
     int lockReceiver(int lock = -1, int detPos = -1); //
-
-    /**
-     * Returns the IP of the last client connecting to the receiver
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns IP of last client connecting to receiver
-     */
-    std::string getReceiverLastClientIP(int detPos = -1); //
 
     /**
      * Turns off the receiver server!

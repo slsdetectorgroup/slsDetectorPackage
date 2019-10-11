@@ -14,6 +14,7 @@
 #include "container_utils.h"
 #include "logger.h"
 #include "receiver_defs.h"
+#include "network_utils.h"
 class GeneralData;
 class Listener;
 class DataProcessor;
@@ -352,7 +353,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
      * Get streaming source ip
      * @return streaming source ip
      */
-    std::string getStreamingSourceIP() const;
+    sls::IpAddr getStreamingSourceIP() const;
 
     /**
      * Get additional json header
@@ -571,7 +572,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
      * Set streaming source ip
      * @param c streaming source ip
      */
-    void setStreamingSourceIP(const char *c);
+    void setStreamingSourceIP(const  sls::IpAddr ip);
 
     /**
      * Set additional json header
@@ -974,7 +975,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     /** streaming port */
     uint32_t streamingPort;
     /** streaming port */
-    char streamingSrcIP[MAX_STR_LENGTH];
+     sls::IpAddr streamingSrcIP;
     /** additional json header */
     char additionalJsonHeader[MAX_STR_LENGTH];
 

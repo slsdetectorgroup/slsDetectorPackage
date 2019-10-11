@@ -112,7 +112,7 @@ void slsReceiverImplementation::InitializeMembers() {
     streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
     dataStreamEnable = false;
     streamingPort = 0;
-    memset(streamingSrcIP, 0, sizeof(streamingSrcIP));
+    streamingSrcIP = 0u;
     memset(additionalJsonHeader, 0, sizeof(additionalJsonHeader));
 
     //** class objects ***
@@ -411,9 +411,9 @@ uint32_t slsReceiverImplementation::getStreamingPort() const {
     return streamingPort;
 }
 
-std::string slsReceiverImplementation::getStreamingSourceIP() const {
+sls::IpAddr slsReceiverImplementation::getStreamingSourceIP() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return std::string(streamingSrcIP);
+    return streamingSrcIP;
 }
 
 std::string slsReceiverImplementation::getAdditionalJsonHeader() const {
@@ -925,9 +925,9 @@ void slsReceiverImplementation::setStreamingPort(const uint32_t i) {
     FILE_LOG(logINFO) << "Streaming Port: " << streamingPort;
 }
 
-void slsReceiverImplementation::setStreamingSourceIP(const char c[]) {
+void slsReceiverImplementation::setStreamingSourceIP(const sls::IpAddr ip) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    strcpy(streamingSrcIP, c);
+    streamingSrcIP = ip;
     FILE_LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 

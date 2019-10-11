@@ -302,13 +302,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
     ++i;
 
-    /*! \page config
-   - <b>gappixels [i]</b> enables/disables gap pixels in system (detector & receiver). 1 sets, 0 unsets. Used in EIGER only and only in multi detector level command. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "gappixels";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
-    ++i;
-
     /* flags */
     /*! \page config
 		\section configflags Flags
@@ -457,13 +450,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
   
     /* r/w timers */
-
-    /*! \page timing
-   - <b>subdeadtime [i]</b> sets/gets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. \c Returns \c (double with 9 decimal digits)
-     */
-    descrToFuncMap[i].m_pFuncName = "subdeadtime";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
 
     /*! \page timing
    - <b>samples [i]</b> sets/gets number of samples (both analog and digital) expected from the ctb. Used in CHIP TEST BOARD  and MOENCH only. \c Returns \c (long long int)
@@ -668,18 +654,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 		\section settingsdir Settings, trim & cal Directories
    commands to setup settings/trim/cal directories
 	 */
-    /*! \page settings
-   - <b>settingsdir [dir]</b> Sets/gets the directory where the settings files are located. \c Returns \c (string) dir
-	 */
-    descrToFuncMap[i].m_pFuncName = "settingsdir";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettingsDir;
-    ++i;
-    /*! \page settings
-   - <b>trimdir [dir]</b> obsolete \c settingsdir. \c Returns \c (string) dir
-	 */
-    descrToFuncMap[i].m_pFuncName = "trimdir";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettingsDir;
-    ++i;
 
     /*! \page settings
    - <b>trimen [n e0 e1...e(n-1)]</b> Sets/gets the number of energies n at which the detector has default trim file and their values in eV (int). \c Returns \c (int int...) n e0 e1...e(n-1)
@@ -1790,33 +1764,6 @@ std::string slsDetectorCommand::helpExitServer(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdSettingsDir(int narg, const char * const args[], int action, int detPos) {
-#ifdef VERBOSE
-    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-#endif
-    if (action == HELP_ACTION) {
-        return helpSettingsDir(action);
-    }
-    if (action == PUT_ACTION) {
-        myDet->setSettingsDir(std::string(args[1]), detPos);
-    }
-    if (myDet->getSettingsDir(detPos) == "")
-        return std::string("undefined");
-    return myDet->getSettingsDir(detPos);
-}
-
-std::string slsDetectorCommand::helpSettingsDir(int action) {
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("settingsdir \t  gets the directory where the settings files are located\n");
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("settingsdir dir \t  sets the directory where the settings files are located\n");
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("trimdir \t  obsolete for settingsdir\n");
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("trimdir dir \t  obsolete for settingsdir\n");
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdTrimEn(int narg, const char * const args[], int action, int detPos) {
     std::vector<int> energies;
@@ -2072,19 +2019,11 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
 
             myDet->setFlippedDataX(val, detPos);
         }
+        else return std::string("cannot decode function");
 
-        if (cmd == "gappixels") {
-            if ((!sscanf(args[1], "%d", &val)) || (val != 0 && val != 1))
-                return std::string("cannot scan gappixels mode: must be 0 or 1");
-
-            if (detPos < 0) // only in multi detector level to update number of channels etc.
-                myDet->enableGapPixels(val, detPos);
-        }
     }
 
-    if (cmd == "dr") {
-        ret = myDet->setDynamicRange(val, detPos);
-    } else if (cmd == "clearroi") {
+    if (cmd == "clearroi") {
         if (action == GET_ACTION) {
             return std::string("Cannot get");
         }
@@ -2096,11 +2035,7 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
 		return std::to_string(myDet->getQuad());
     } else if (cmd == "flippeddatax") {
         ret = myDet->getFlippedDataX(detPos);
-    } else if (cmd == "gappixels") {
-        if (detPos >= 0) // only in multi detector level to update number of channels etc.
-            return std::string("Cannot execute this command from slsDetector level. Please use multiSlsDetector level.\n");
-        ret = myDet->enableGapPixels(-1, detPos);
-    }
+    } 
     
 
     else
@@ -2120,14 +2055,12 @@ std::string slsDetectorCommand::helpDetectorSize(int action) {
         os << "roi xmin xmax \n sets region of interest " << std::endl;
  		os << "quad i \n if i = 1, sets the detector size to a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;       
         os << "flippeddatax x \n sets if the data should be flipped on the x axis" << std::endl;
-        os << "gappixels i \n enables/disables gap pixels in system (detector & receiver). 1 sets, 0 unsets. Used in EIGER only and multidetector level." << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "dr \n gets the dynamic range of the detector" << std::endl;
         os << "roi \n gets region of interest" << std::endl;
        os << "quad \n returns 1 if the detector size is a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;
         os << "flippeddatax\n gets if the data will be flipped on the x axis" << std::endl;
-        os << "gappixels\n gets if gap pixels is enabled in system. Used in EIGER only and multidetector level." << std::endl;
     }
     return os.str();
 }
@@ -2140,22 +2073,7 @@ std::string slsDetectorCommand::cmdSettings(int narg, const char * const args[],
     char ans[1000];
 
    
-    if (cmd == "trimbits") {
-        if (narg >= 2) {
-            std::string sval = std::string(args[1]);
-#ifdef VERBOSE
-            std::cout << " trimfile " << sval << std::endl;
-#endif
-            if (action == GET_ACTION) {
-                //create file names
-                myDet->saveSettingsFile(sval, detPos);
-            } else if (action == PUT_ACTION) {
-                myDet->loadSettingsFile(sval, detPos);
-            }
-            return sval;
-        }
-        return std::string("Specify file name for geting settings file");
-    } else if (cmd == "trimval") {
+    if (cmd == "trimval") {
         if (action == PUT_ACTION) {
             if (sscanf(args[1], "%d", &val))
                 myDet->setAllTrimbits(val, detPos);
@@ -2172,12 +2090,10 @@ std::string slsDetectorCommand::helpSettings(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "trimbits fname\n loads the trimfile fname to the detector. If no extension is specified, the serial number of each module will be attached." << std::endl;
         os << "trimval i \n sets all the trimbits to i" << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "trimbits [fname]\n returns the trimfile loaded on the detector. If fname is specified the trimbits are saved to file. If no extension is specified, the serial number of each module will be attached." << std::endl;
-        os << "trimval \n returns the value all trimbits are set to. If they are different, returns -1." << std::endl;
+         os << "trimval \n returns the value all trimbits are set to. If they are different, returns -1." << std::endl;
     }
     return os.str();
 }
@@ -2879,12 +2795,9 @@ std::string slsDetectorCommand::cmdTimer(int narg, const char * const args[], in
     if (action == HELP_ACTION)
         return helpTimer(action);
 
-    if (cmd == "subexptime")
-        index = SUBFRAME_ACQUISITION_TIME;
-    else if (cmd == "subdeadtime")
-        index = SUBFRAME_DEADTIME;
+
     // also does digital sample
-    else if (cmd == "samples") 
+    if (cmd == "samples") 
         index = ANALOG_SAMPLES; 
     else if (cmd == "asamples")
         index = ANALOG_SAMPLES;
@@ -2947,25 +2860,21 @@ std::string slsDetectorCommand::helpTimer(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "subexptime t \t sets the exposure time of subframe in s" << std::endl;
         os << "samples t \t sets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples t \t sets the number of analog samples expected from the ctb" << std::endl;
         os << "dsamples t \t sets the number of digital samples expected from the ctb" << std::endl;
         os << "storagecells t \t sets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #triggers * (#storagecells+1)." << std::endl;
         os << "storagecell_start t \t sets the storage cell that stores the first acquisition of the series. Default is 15(0xf). For very advanced users only! For JUNGFRAU only. Range: 0-15." << std::endl;
         os << "storagecell_delay t \t sets additional time to t between 2 storage cells. For very advanced users only! For JUNGFRAU only. Range: 0-1638375 ns (resolution of 25ns).. " << std::endl;
-        os << "subdeadtime t \t sets sub frame dead time in s. Subperiod is set in the detector = subexptime + subdeadtime. This value is normally a constant in the config file. Used in EIGER only in 32 bit mode. " << std::endl;
         os << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "subexptime  \t gets the exposure time of subframe in s" << std::endl;
         os << "samples \t gets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples \t gets the number of analog samples expected from the ctb" << std::endl;
         os << "dsamples \t gets the number of digital samples expected from the ctb" << std::endl;
         os << "storagecells \t gets number of storage cells per acquisition.For JUNGFRAU only." << std::endl;
         os << "storagecell_start \t gets the storage cell that stores the first acquisition of the series." << std::endl;
         os << "storagecell_delay \tgets additional time between 2 storage cells. " << std::endl;
-        os << "subperiod \t gets sub frame dead time in s. Used in EIGER in 32 bit only." << std::endl;
         os << std::endl;
     }
     return os.str();

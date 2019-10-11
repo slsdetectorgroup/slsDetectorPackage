@@ -9,6 +9,150 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+TEST_CASE("flippeddatax", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:flippeddatax", GET, nullptr, oss));
+            REQUIRE(oss.str() == "flippeddatax 0\n");
+        }
+        multiSlsDetector d;
+        if (d.size() > 1) {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("1:flippeddatax", GET, nullptr, oss));
+            REQUIRE(oss.str() == "flippeddatax 1\n");
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("flippeddatax", GET));
+    }
+}
+
+
+TEST_CASE("storeinram", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("storeinram 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "storeinram 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("storeinram", GET, nullptr, oss));
+            REQUIRE(oss.str() == "storeinram 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("storeinram 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "storeinram 0\n");
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("storeinram", GET));
+    }
+}
+
+
+TEST_CASE("overflow", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("overflow 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "overflow 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("overflow", GET, nullptr, oss));
+            REQUIRE(oss.str() == "overflow 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("overflow 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "overflow 0\n");
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("overflow", GET));
+    }
+}
+
+TEST_CASE("parallel", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("parallel 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "parallel 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("parallel", GET, nullptr, oss));
+            REQUIRE(oss.str() == "parallel 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("parallel 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "parallel 0\n");
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("parallel", GET));
+    }
+}
+
+
+TEST_CASE("gappixels", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("gappixels 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "gappixels 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("gappixels", GET, nullptr, oss));
+            REQUIRE(oss.str() == "gappixels 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("gappixels 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "gappixels 0\n");
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("gappixels", GET));
+    }
+}
+
+TEST_CASE("settingsdir", "[.cmd][.eiger]") {
+    std::string s;
+    std::ostringstream oss;
+    REQUIRE_NOTHROW(multiSlsDetectorClient("settingsdir", GET, nullptr, oss));
+    s = oss.str();
+    REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));
+}
+
+
+TEST_CASE("subdeadtime", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {
+        std::string s;
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("subdeadtime", GET, nullptr, oss));
+        s = oss.str();
+        REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("subdeadtime", GET));
+    }
+}
+
+TEST_CASE("subexptime", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {
+        std::string s;
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("subexptime", GET, nullptr, oss));
+        s = oss.str();
+        REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("subexptime", GET));
+    }
+}
+
+
 TEST_CASE("dr", "[.cmd][.eiger]") {
     if (test::type == slsDetectorDefs::EIGER) {
         int vals[4] = {4, 8, 16, 32};
@@ -22,8 +166,13 @@ TEST_CASE("dr", "[.cmd][.eiger]") {
         REQUIRE_THROWS(multiSlsDetectorClient("dr 4", PUT));
         REQUIRE_THROWS(multiSlsDetectorClient("dr 8", PUT));
         REQUIRE_THROWS(multiSlsDetectorClient("dr 32", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("dr 16", PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dr", GET, nullptr, oss));
+            REQUIRE(oss.str() == "dr " + std::to_string(16) + '\n');
+        } 
     }
-
 }
 
 

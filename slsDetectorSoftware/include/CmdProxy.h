@@ -365,9 +365,10 @@ class CmdProxy {
                                     {"r_framesperfile", "rx_framesperfile"},
 
                                     /* ZMQ Streaming Parameters (Receiver<->Client) */
-                                    {"r_readfreq", "rx_readfreq"}
+                                    {"r_readfreq", "rx_readfreq"},
 
                                     /* Eiger Specific */
+                                     {"trimdir", "settingsdir"}
 
 
 
@@ -377,13 +378,7 @@ class CmdProxy {
 
     // Initialize maps for translating name and function
     FunctionMap functions{{"list", &CmdProxy::ListCommands},
-
-                          {"parallel", &CmdProxy::parallel},
-                          {"overflow", &CmdProxy::overflow},
-                          {"storeinram", &CmdProxy::storeinram},
-                          {"findex", &CmdProxy::findex},
-                          {"lock", &CmdProxy::lock},
-                          
+                         
                           /* configuration */
                           //{"config", &CmdProxy::config},
                           {"parameters", &CmdProxy::parameters},
@@ -488,15 +483,23 @@ class CmdProxy {
 
                           /* Eiger Specific */
                           {"dr", &CmdProxy::DynamicRange},                          
+                          {"subexptime", &CmdProxy::subexptime}, 
+                          {"subdeadtime", &CmdProxy::subdeadtime},
+                          {"threshold", &CmdProxy::Threshold},
+                          {"thresholdnotb", &CmdProxy::ThresholdNoTb}, 
+                          {"settingsdir", &CmdProxy::settingsdir},
+                          {"trimbits", &CmdProxy::trimbits},
+                          {"gappixels", &CmdProxy::GapPixels},
+                          {"parallel", &CmdProxy::parallel},
+                          {"overflow", &CmdProxy::overflow},
+                          {"storeinram", &CmdProxy::storeinram},
+                          {"flippeddatax", &CmdProxy::flippeddatax},
 
-                          
 
                           {"lastclient", &CmdProxy::lastclient},    
                           {"adc", &CmdProxy::SlowAdc},                            
-                          {"subexptime", &CmdProxy::subexptime},  
-                          {"threshold", &CmdProxy::Threshold},
-                          {"thresholdnotb", &CmdProxy::ThresholdNoTb},  
                           {"runclk", &CmdProxy::runclk},  
+                          {"lock", &CmdProxy::lock},
                           {"savepattern", &CmdProxy::savepattern}                         
                           };
 
@@ -523,26 +526,16 @@ class CmdProxy {
     /* ZMQ Streaming Parameters (Receiver<->Client) */
     /* Eiger Specific */
     std::string DynamicRange(int action);
+    std::string Threshold(int action);
+    std::string ThresholdNoTb(int action);  
+    std::string GapPixels(int action);
+
+
 
 
 
     std::string SlowAdc(int action);
-    std::string Threshold(int action);
-    std::string ThresholdNoTb(int action);       
-
-
-    INTEGER_COMMAND(lock, getDetectorLock, setDetectorLock, std::stoi,
-                    "[0, 1]\n\tLock detector to one IP, 1: locks");
-
-    INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, std::stoi,
-                    "[0, 1]\n\t[Eiger] Enable or disable parallel mode.");
-
-    INTEGER_COMMAND(overflow, getOverFlowMode, setOverFlowMode, std::stoi,
-                    "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in 32 bit mode.");    
-
-    INTEGER_COMMAND(storeinram, getStoreInRamMode, setStoreInRamMode, std::stoi,
-                    "[0, 1]\n\t[Eiger] Enable or disable store in ram mode.");      
-
+    
 
 
     /* configuration */
@@ -803,9 +796,32 @@ class CmdProxy {
     INTEGER_COMMAND(zmqip, getClientZmqIp, setClientZmqIp, IpAddr,
                     "[x.x.x.x]\n\tZmq IP Address in client(gui) or intermediate process for data to be streamed to from receiver.  Default connects to receiver zmq Ip Address (from rx_hostname). Modified only when using an intermediate process between receiver and client(gui). Also restarts client zmq streaming if enabled.");               
     
+
     /* Eiger Specific */
 
+    TIME_COMMAND(subexptime, getSubExptime, setSubExptime,
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger] Exposure time of EIGER subframes");
 
+    TIME_COMMAND(subdeadtime, getSubDeadTime, setSubDeadTime,
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger] Dead time of EIGER subframes. Subperiod = subexptime + subdeadtime.");
+
+    STRING_COMMAND(settingsdir, getSettingsDir, setSettingsDir, 
+                "[path]\n\t[Eiger] Directory where settings files are loaded from/to.");
+
+    EXECUTE_SET_COMMAND_NOID_1ARG(trimbits, loadTrimbits, 
+                "[fname]\n\t[Eiger] Loads the trimbit file to detector. If no extension specified, serial number of each module is attached.");
+
+    INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, std::stoi,
+                    "[0, 1]\n\t[Eiger] Enable or disable parallel mode.");
+
+    INTEGER_COMMAND(overflow, getOverFlowMode, setOverFlowMode, std::stoi,
+                    "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in 32 bit mode.");    
+
+    INTEGER_COMMAND(storeinram, getStoreInRamMode, setStoreInRamMode, std::stoi,
+                    "[0, 1]\n\t[Eiger] Enable or disable store in ram mode.");      
+
+    INTEGER_COMMAND(flippeddatax, getBottom, setBottom, std::stoi,
+                    "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 is top.");      
 
 
 
@@ -813,12 +829,12 @@ class CmdProxy {
     GET_COMMAND(lastclient, getLastClientIP, 
                 "\n\tClient IP Address that last communicated with the detector."); 
 
-    TIME_COMMAND(subexptime, getSubExptime, setSubExptime,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\tExposure time of EIGER subframes");
-
 
     INTEGER_COMMAND(runclk, getRUNClock, setRUNClock, std::stoi,
                     "[n_clk in MHz]\n\t[Ctb] Run clk in MHz.");      
+
+    INTEGER_COMMAND(lock, getDetectorLock, setDetectorLock, std::stoi,
+                    "[0, 1]\n\tLock detector to one IP, 1: locks");
 
 
     EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 

@@ -314,7 +314,7 @@ class CmdProxy {
     using FunctionMap = std::map<std::string, std::string (CmdProxy::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
 
-    StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
+    StringMap depreciated_functions{
                                     {"exitreceiver", "rx_exit"},
                                     {"checkrecversion", "rx_checkversion"},
                                     {"flags", "romode"},
@@ -362,7 +362,12 @@ class CmdProxy {
                                     {"enablefwrite", "fwrite"},
                                     {"masterfile", "fmaster"},
                                     {"overwrite", "foverwrite"},
-                                    {"r_framesperfile", "rx_framesperfile"}
+                                    {"r_framesperfile", "rx_framesperfile"},
+
+                                    /* ZMQ Streaming Parameters (Receiver<->Client) */
+                                    {"r_readfreq", "rx_readfreq"}
+
+
 
 
                                     };
@@ -375,8 +380,6 @@ class CmdProxy {
                           {"storeinram", &CmdProxy::storeinram},
                           {"findex", &CmdProxy::findex},
                           {"lock", &CmdProxy::lock},
-                          {"rx_readfreq", &CmdProxy::rx_readfreq},
-
                           
                           /* configuration */
                           //{"config", &CmdProxy::config},
@@ -472,6 +475,9 @@ class CmdProxy {
                           {"foverwrite", &CmdProxy::foverwrite},
                           {"rx_framesperfile", &CmdProxy::rx_framesperfile},
 
+                          /* ZMQ Streaming Parameters (Receiver<->Client) */
+                          {"rx_datastream", &CmdProxy::rx_datastream},
+                          {"rx_readfreq", &CmdProxy::rx_readfreq},
 
 
                           {"adc", &CmdProxy::SlowAdc},                            
@@ -502,6 +508,7 @@ class CmdProxy {
     /* Network Configuration (Detector<->Receiver) */
     /* Receiver Config */
     /* File */
+    /* ZMQ Streaming Parameters (Receiver<->Client) */
 
 
     std::string SlowAdc(int action);
@@ -511,9 +518,6 @@ class CmdProxy {
 
     INTEGER_COMMAND(lock, getDetectorLock, setDetectorLock, std::stoi,
                     "[0, 1]\n\tLock detector to one IP, 1: locks");
-
-    INTEGER_COMMAND(rx_readfreq, getRxZmqFrequency, setRxZmqFrequency,
-                    std::stoi, "[nth frame]\n\tStream out every nth frame");
 
     INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, std::stoi,
                     "[0, 1]\n\t[Eiger] Enable or disable parallel mode.");
@@ -739,30 +743,37 @@ class CmdProxy {
     /* File */
 
     INTEGER_COMMAND(fformat, getFileFormat, setFileFormat, sls::StringTo<slsDetectorDefs::fileFormat>,
-                    "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be compiled with HDF5 flags.");
+                    "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be compiled with HDF5 flags. Default is binary.");
 
     STRING_COMMAND(fpath, getFilePath, setFilePath, 
                 "[path]\n\tDirectory where output data files are written in receiver.");
 
     STRING_COMMAND(fname, getFileNamePrefix, setFileNamePrefix, 
-                "[path]\n\tFile name prefix for output data file. File name: [file name prefix]_d[detector index]_f[sub file index]_[acquisition/file index].raw.");
+                "[path]\n\tFile name prefix for output data file. Default is run. File name: [file name prefix]_d[detector index]_f[sub file index]_[acquisition/file index].raw.");
 
     INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, std::stol,
                     "[0, 1]\n\tFile or Acquisition index.");
 
     INTEGER_COMMAND(fwrite, getFileWrite, setFileWrite, std::stoi,
-                    "[0, 1]\n\tEnable or disable receiver file write");
+                    "[0, 1]\n\tEnable or disable receiver file write. Default is 1.");
 
     INTEGER_COMMAND_NOID(fmaster, getMasterFileWrite, setMasterFileWrite, std::stoi,
-                    "[0, 1]\n\tEnable or disable receiver master file");
+                    "[0, 1]\n\tEnable or disable receiver master file. Default is 1.");
 
     INTEGER_COMMAND(foverwrite, getFileOverWrite, setFileOverWrite, std::stoi,
-                    "[0, 1]\n\tEnable or disable file overwriting");
+                    "[0, 1]\n\tEnable or disable file overwriting. Default is 1.");
 
-    INTEGER_COMMAND(rx_framesperfile, getFramesPerFile, setFramesPerFile,
-                    std::stoi, "[n_frames]\n\tNumber of frames per file in receiver. 0 is infinite or all frames in single file.");
+    INTEGER_COMMAND(rx_framesperfile, getFramesPerFile, setFramesPerFile, std::stoi, 
+                    "[n_frames]\n\tNumber of frames per file in receiver. 0 is infinite or all frames in single file.");
 
 
+    /* ZMQ Streaming Parameters (Receiver<->Client) */
+
+    INTEGER_COMMAND(rx_datastream, getRxZmqDataStream, setRxZmqDataStream, std::stoi,
+                    "[0, 1]\n\tData streaming from receiver enable. 1 enables zmq data stream (creates zmq streamer threads), 0 disables (destroys streamer threads). Switching to Gui automatically enables data streaming in receiver. Switching back to command line acquire will require disabling data streaming in receiver for fast applications.");
+
+    INTEGER_COMMAND(rx_readfreq, getRxZmqFrequency, setRxZmqFrequency,
+                    std::stoi, "[nth frame]\n\tStream out every nth frame. Default is 1. 0 means streaming every 200 ms and discarding frames in this interval.");
 
 
 

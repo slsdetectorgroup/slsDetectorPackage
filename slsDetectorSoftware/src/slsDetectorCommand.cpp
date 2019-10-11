@@ -1269,13 +1269,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b> rx_datastream </b>enables/disables data streaming from receiver. 1 enables 0MQ data stream from receiver (creates streamer threads), while 0 disables (destroys streamer threads). Switching to Gui enables data streaming in receiver and switching back to command line acquire will require disabling data streaming in receiver for fast applications \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_datastream";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDataStream;
-    ++i;
-
-    /*! \page network
    - <b>zmqip [ip]</b> sets/gets the 0MQ (TCP) ip of the client to where final data is streamed to (eg. for GUI). For Experts only! Default is ip of rx_hostname and works for GUI. This command to change from default can be used from command line when sockets are not already open as the command line is not aware/create the 0mq sockets in the client side. This is usually used to stream in from an external process. . If no custom ip, empty until first time connect to receiver. \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "zmqip";
@@ -1706,37 +1699,6 @@ std::string slsDetectorCommand::helpData(int action) {
         return std::string("data \t gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup\n");
 }
 
-
-std::string slsDetectorCommand::cmdDataStream(int narg, const char * const args[], int action, int detPos) {
-
-#ifdef VERBOSE
-    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-#endif
-    int ival = -1;
-    char ans[100] = "";
-
-    if (action == HELP_ACTION)
-        return helpDataStream(HELP_ACTION);
-
-    if (action == PUT_ACTION) {
-        if (!sscanf(args[1], "%d", &ival))
-            return std::string("cannot scan rx_datastream mode");
-        myDet->enableDataStreamingFromReceiver(ival, detPos);
-    }
-
-    sprintf(ans, "%d", myDet->enableDataStreamingFromReceiver(-1, detPos));
-    return std::string(ans);
-}
-
-std::string slsDetectorCommand::helpDataStream(int action) {
-
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("rx_datastream \t enables/disables data streaming from receiver. 1 is 0MQ data stream from receiver enabled, while 0 is 0MQ disabled. -1 for inconsistency between multiple receivers. \n");
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("rx_datastream i\t enables/disables data streaming from receiver. i is 1 enables 0MQ data stream from receiver (creates streamer threads), while 0 disables (destroys streamer threads). \n");
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdFree(int narg, const char * const args[], int action, int detPos) {
 
@@ -3519,7 +3481,6 @@ std::string slsDetectorCommand::helpConfiguration(int action) {
 
 std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[], int action, int detPos) {
     char answer[100];
-    int ival = -1;
 
     if (action == HELP_ACTION)
         return helpReceiver(action);
@@ -3564,7 +3525,6 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
-        os << "rx_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui. Default : 1" << std::endl;
         os << "rx_jsonaddheader [t]\n sets additional json header to be streamed "
               "out with the zmq from receiver. Default is empty. t must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
               "Use only if it needs to be processed by an intermediate process." << std::endl;
@@ -3573,7 +3533,6 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
-        os << "rx_readfreq \t returns the gui read frequency of the receiver. DEfault: 1" << std::endl;
         os << "rx_jsonaddheader \n gets additional json header to be streamed "
               "out with the zmq from receiver." << std::endl;
         os << "rx_jsonpara [k] \n gets value of additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found." << std::endl;

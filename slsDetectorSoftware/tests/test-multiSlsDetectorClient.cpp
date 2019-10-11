@@ -9,6 +9,23 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("rx_datastream", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_datastream 1", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_datastream 1\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_datastream", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_datastream 1\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("rx_datastream 0", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "rx_datastream 0\n");
+    }
+}
 
 TEST_CASE("fpath", "[.cmd]") {
     std::string s;

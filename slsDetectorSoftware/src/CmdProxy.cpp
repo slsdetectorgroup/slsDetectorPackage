@@ -396,6 +396,7 @@ std::string CmdProxy::Adcphase(int action) {
 /* Network Configuration (Detector<->Receiver) */
 /* Receiver Config */
 /* File */
+/* ZMQ Streaming Parameters (Receiver<->Client) */
 
 
 

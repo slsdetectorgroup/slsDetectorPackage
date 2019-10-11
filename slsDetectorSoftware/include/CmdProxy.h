@@ -315,12 +315,8 @@ class CmdProxy {
     using StringMap = std::map<std::string, std::string>;
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
-                                    {"r_framesperfile", "rx_framesperfile"},
                                     {"exitreceiver", "rx_exit"},
-                                    {"enablefwrite", "fwrite"},
                                     {"checkrecversion", "rx_checkversion"},
-                                    {"masterfile", "fmaster"},
-                                    {"overwrite", "foverwrite"},
                                     {"flags", "romode"},
                                     
                                     /* configuration */
@@ -362,8 +358,11 @@ class CmdProxy {
                                     /* File */                                   
                                     {"fileformat", "fformat"},
                                     {"outdir", "fpath"},
-                                    {"index", "findex"}
-
+                                    {"index", "findex"},
+                                    {"enablefwrite", "fwrite"},
+                                    {"masterfile", "fmaster"},
+                                    {"overwrite", "foverwrite"},
+                                    {"r_framesperfile", "rx_framesperfile"}
 
 
                                     };
@@ -374,13 +373,9 @@ class CmdProxy {
                           {"parallel", &CmdProxy::parallel},
                           {"overflow", &CmdProxy::overflow},
                           {"storeinram", &CmdProxy::storeinram},
-                          {"fwrite", &CmdProxy::fwrite},
-                          {"fmaster", &CmdProxy::fmaster},
-                          {"foverwrite", &CmdProxy::foverwrite},
                           {"findex", &CmdProxy::findex},
                           {"lock", &CmdProxy::lock},
                           {"rx_readfreq", &CmdProxy::rx_readfreq},
-                          {"rx_framesperfile", &CmdProxy::rx_framesperfile},
 
                           
                           /* configuration */
@@ -472,6 +467,10 @@ class CmdProxy {
                           {"fpath", &CmdProxy::fpath},
                           {"fname", &CmdProxy::fname},
                           {"findex", &CmdProxy::findex},
+                          {"fwrite", &CmdProxy::fwrite},
+                          {"fmaster", &CmdProxy::fmaster},
+                          {"foverwrite", &CmdProxy::foverwrite},
+                          {"rx_framesperfile", &CmdProxy::rx_framesperfile},
 
 
 
@@ -515,18 +514,6 @@ class CmdProxy {
 
     INTEGER_COMMAND(rx_readfreq, getRxZmqFrequency, setRxZmqFrequency,
                     std::stoi, "[nth frame]\n\tStream out every nth frame");
-
-    INTEGER_COMMAND(rx_framesperfile, getFramesPerFile, setFramesPerFile,
-                    std::stoi, "[n_frames]\n\tNumber of frames per file");
-
-    INTEGER_COMMAND(fwrite, getFileWrite, setFileWrite, std::stoi,
-                    "[0, 1]\n\tEnable or disable receiver file write");
-
-    INTEGER_COMMAND_NOID(fmaster, getMasterFileWrite, setMasterFileWrite, std::stoi,
-                    "[0, 1]\n\tEnable or disable receiver master file");
-
-    INTEGER_COMMAND(foverwrite, getFileOverWrite, setFileOverWrite, std::stoi,
-                    "[0, 1]\n\tEnable or disable file overwriting");
 
     INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, std::stoi,
                     "[0, 1]\n\t[Eiger] Enable or disable parallel mode.");
@@ -755,7 +742,7 @@ class CmdProxy {
                     "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be compiled with HDF5 flags.");
 
     STRING_COMMAND(fpath, getFilePath, setFilePath, 
-                "[path]\n\tDirectory where output data files are written in receiver pc.");
+                "[path]\n\tDirectory where output data files are written in receiver.");
 
     STRING_COMMAND(fname, getFileNamePrefix, setFileNamePrefix, 
                 "[path]\n\tFile name prefix for output data file. File name: [file name prefix]_d[detector index]_f[sub file index]_[acquisition/file index].raw.");
@@ -763,10 +750,17 @@ class CmdProxy {
     INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, std::stol,
                     "[0, 1]\n\tFile or Acquisition index.");
 
+    INTEGER_COMMAND(fwrite, getFileWrite, setFileWrite, std::stoi,
+                    "[0, 1]\n\tEnable or disable receiver file write");
 
+    INTEGER_COMMAND_NOID(fmaster, getMasterFileWrite, setMasterFileWrite, std::stoi,
+                    "[0, 1]\n\tEnable or disable receiver master file");
 
+    INTEGER_COMMAND(foverwrite, getFileOverWrite, setFileOverWrite, std::stoi,
+                    "[0, 1]\n\tEnable or disable file overwriting");
 
-
+    INTEGER_COMMAND(rx_framesperfile, getFramesPerFile, setFramesPerFile,
+                    std::stoi, "[n_frames]\n\tNumber of frames per file in receiver. 0 is infinite or all frames in single file.");
 
 
 

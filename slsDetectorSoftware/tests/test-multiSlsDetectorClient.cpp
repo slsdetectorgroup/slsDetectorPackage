@@ -864,7 +864,7 @@ TEST_CASE("fwrite", "[.cmd]") {
     }
 }
 
-TEST_CASE("enablefoverwrite", "[.cmd]") {
+TEST_CASE("foverwrite", "[.cmd]") {
     {
         std::ostringstream oss;
         multiSlsDetectorClient("foverwrite 1", PUT, nullptr, oss);

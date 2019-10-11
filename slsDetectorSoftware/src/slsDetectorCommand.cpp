@@ -1240,19 +1240,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
     /* communication configuration */
 
-   /*! \page network
-   - <b>rx_udpsocksize [size]</b> sets/gets the UDP socket buffer size. Already trying to set by default to 100mb, 2gb for Jungfrau. Does not remember in client shared memory, so must be initialized each time after setting receiver hostname in config file.\c Returns \c (int)
-     */
-    descrToFuncMap[i].m_pFuncName = "rx_udpsocksize";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    ++i;
-
-    /*! \page network
-   - <b>rx_realudpsocksize [size]</b> gets the actual UDP socket buffer size. Usually double the set udp socket buffer size due to kernel bookkeeping. Get only. \c Returns \c (int)
-     */
-    descrToFuncMap[i].m_pFuncName = "rx_realudpsocksize";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    ++i;
 
    /*! \page network
    - <b>zmqport [port]</b> sets/gets the 0MQ (TCP) port of the client to where final data is streamed to (eg. for GUI). The default already connects with rx_zmqport for the GUI. Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest. Must restart zmq client streaming in gui/external gui \c Returns \c (int)
@@ -1990,23 +1977,7 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, const char * const
     if (action == HELP_ACTION)
         return helpNetworkParameter(action);
 
-    if (cmd == "rx_udpsocksize") {
-        if (action == PUT_ACTION) {
-        	int64_t ival = -1;
-            if (!(sscanf(args[1], "%ld", &ival))) {
-                return ("cannot parse argument") + std::string(args[1]);
-            }
-            myDet->setReceiverUDPSocketBufferSize(ival, detPos);
-        }
-        sprintf(ans, "%ld", myDet->getReceiverUDPSocketBufferSize(detPos));
-        return ans;
-    } else if (cmd == "rx_realudpsocksize") {
-        if (action == PUT_ACTION) {
-            return ("cannot put!");
-        }
-        sprintf(ans, "%ld", myDet->getReceiverRealUDPSocketBufferSize(detPos));
-        return ans;
-    } else if (cmd == "zmqport") {
+    if (cmd == "zmqport") {
         if (action == PUT_ACTION) {
             if (!(sscanf(args[1], "%d", &i))) {
                 return ("cannot parse argument") + std::string(args[1]);
@@ -2046,18 +2017,11 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
               "Default is ip of rx_hostname and works for GUI. This is usually used to stream out to an external process for further processing."
               "restarts streaming in receiver with new port"
            << std::endl;
-        os << "rx_udpsocksize [t]\n sets the UDP socket buffer size. Different defaults for Jungfrau. "
-              "Does not remember in client shared memory, "
-              "so must be initialized each time after setting receiver "
-              "hostname in config file."
-           << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "zmqport \n gets the 0MQ (TCP) port of the client to where final data is streamed to" << std::endl;
         os << "zmqip \n gets the 0MQ (TCP) ip of the client to where final data is streamed to.If no custom ip, empty until first time connect to receiver" << std::endl;
         os << "rx_zmqip \n gets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from. If no custom ip, empty until first time connect to receiver" << std::endl;
-        os << "rx_udpsocksize \n gets the UDP socket buffer size." << std::endl;
-        os << "rx_realudpsocksize \n gets the actual UDP socket buffer size. Usually double the set udp socket buffer size due to kernel bookkeeping." << std::endl;
     }
     return os.str();
 }

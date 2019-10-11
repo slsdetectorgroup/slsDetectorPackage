@@ -1262,13 +1262,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page network
-   - <b>rx_zmqport [port]</b> sets/gets the 0MQ (TCP) port of the receiver from where data is streamed from (eg. to GUI or another process for further processing). Use single-detector command to set individually or multi-detector command to calculate based on \c port for the rest.  put restarts streaming in receiver with new port. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_zmqport";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdNetworkParameter;
-    ++i;
-
-    /*! \page network
    - <b>zmqip [ip]</b> sets/gets the 0MQ (TCP) ip of the client to where final data is streamed to (eg. for GUI). For Experts only! Default is ip of rx_hostname and works for GUI. This command to change from default can be used from command line when sockets are not already open as the command line is not aware/create the 0mq sockets in the client side. This is usually used to stream in from an external process. . If no custom ip, empty until first time connect to receiver. \c Returns \c (string)
 	 */
     descrToFuncMap[i].m_pFuncName = "zmqip";
@@ -2022,15 +2015,6 @@ std::string slsDetectorCommand::cmdNetworkParameter(int narg, const char * const
         }
         sprintf(ans, "%d", myDet->getClientStreamingPort(detPos));
         return ans;
-    } else if (cmd == "rx_zmqport") {
-        if (action == PUT_ACTION) {
-            if (!(sscanf(args[1], "%d", &i))) {
-                return ("cannot parse argument") + std::string(args[1]);
-            }
-            myDet->setReceiverDataStreamingOutPort(i, detPos);
-        }
-        sprintf(ans, "%d", myDet->getReceiverStreamingPort(detPos));
-        return ans;
     } else if (cmd == "zmqip") {
     	  if (action == PUT_ACTION) {
     		  myDet->setClientDataStreamingInIP(args[1], detPos);
@@ -2054,10 +2038,6 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
               "Use single-detector command to set individually or multi-detector command to calculate based on port for the rest."
               "Must restart streaming in client with new port from gui/external gui"
            << std::endl;
-        os << "rx_zmqport port \n sets the 0MQ (TCP) port of the receiver from where data is streamed from (eg. to GUI or another process for further processing). "
-              "Use single-detector command to set individually or multi-detector command to calculate based on port for the rest."
-              "Restarts streaming in receiver with new port"
-           << std::endl;
         os << "zmqip ip \n sets the 0MQ (TCP) ip of the client to where final data is streamed to (eg. for GUI). Default is ip of rx_hostname and works for GUI. "
               "This is usually used to stream in from an external process."
               "Must restart streaming in client with new port from gui/external gui. "
@@ -2074,7 +2054,6 @@ std::string slsDetectorCommand::helpNetworkParameter(int action) {
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "zmqport \n gets the 0MQ (TCP) port of the client to where final data is streamed to" << std::endl;
-        os << "rx_zmqport \n gets the 0MQ (TCP) port of the receiver from where data is streamed from" << std::endl;
         os << "zmqip \n gets the 0MQ (TCP) ip of the client to where final data is streamed to.If no custom ip, empty until first time connect to receiver" << std::endl;
         os << "rx_zmqip \n gets/gets the 0MQ (TCP) ip of the receiver from where data is streamed from. If no custom ip, empty until first time connect to receiver" << std::endl;
         os << "rx_udpsocksize \n gets the UDP socket buffer size." << std::endl;

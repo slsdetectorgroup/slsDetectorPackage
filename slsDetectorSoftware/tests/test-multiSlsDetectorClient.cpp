@@ -9,6 +9,30 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+
+TEST_CASE("rx_zmqport", "[.cmd]") {
+    multiSlsDetector d;
+    int socketsperdetector = 1;
+    if (test::type == slsDetectorDefs::EIGER) {
+        socketsperdetector *= 2;
+    }
+    int port = 3500;
+    multiSlsDetectorClient("rx_zmqport " + std::to_string(port), PUT);
+    for (size_t i = 0; i != d.size(); ++i) {
+        std::ostringstream oss;
+        multiSlsDetectorClient(std::to_string(i) + ":rx_zmqport", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_zmqport " + std::to_string(port + i * socketsperdetector) + '\n');   
+    }
+    port = 1954;
+    multiSlsDetectorClient("rx_zmqport " + std::to_string(port), PUT);
+    for (size_t i = 0; i != d.size(); ++i) {
+        std::ostringstream oss;
+        multiSlsDetectorClient(std::to_string(i) + ":rx_zmqport", GET, nullptr, oss);
+        REQUIRE(oss.str() == "rx_zmqport " + std::to_string(port + i * socketsperdetector) + '\n');   
+    }
+}
+
 TEST_CASE("rx_datastream", "[.cmd]") {
     {
         std::ostringstream oss;
@@ -214,6 +238,33 @@ TEST_CASE("network", "[.cmd]") {
         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport", GET, nullptr, oss));
         REQUIRE(oss.str() == "udp_dstport 6200\n");
     }  
+    {
+        multiSlsDetector d;
+        int socketsperdetector = 1;
+        if (test::type == slsDetectorDefs::EIGER) {
+            socketsperdetector *= 2;
+        } else if (test::type == slsDetectorDefs::JUNGFRAU) {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 2", PUT));      
+            socketsperdetector *= 2;
+        }
+        int port = 5500;
+        multiSlsDetectorClient("udp_dstport " + std::to_string(port), PUT);
+        for (size_t i = 0; i != d.size(); ++i) {
+            std::ostringstream oss;
+            multiSlsDetectorClient(std::to_string(i) + ":udp_dstport", GET, nullptr, oss);
+            REQUIRE(oss.str() == "udp_dstport " + std::to_string(port + i * socketsperdetector) + '\n');   
+        }
+        port = 1954;
+        multiSlsDetectorClient("udp_dstport " + std::to_string(port), PUT);
+        for (size_t i = 0; i != d.size(); ++i) {
+            std::ostringstream oss;
+            multiSlsDetectorClient(std::to_string(i) + ":udp_dstport", GET, nullptr, oss);
+            REQUIRE(oss.str() == "udp_dstport " + std::to_string(port + i * socketsperdetector) + '\n');   
+        }
+        if (test::type == slsDetectorDefs::JUNGFRAU) {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 1", PUT));      
+        }
+    }
     REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 0.0.0.0", PUT));
     REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 124586954", PUT));
     REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 999.999.0.0.0.5", PUT));

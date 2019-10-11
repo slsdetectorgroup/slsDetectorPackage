@@ -478,7 +478,12 @@ class CmdProxy {
                           /* ZMQ Streaming Parameters (Receiver<->Client) */
                           {"rx_datastream", &CmdProxy::rx_datastream},
                           {"rx_readfreq", &CmdProxy::rx_readfreq},
+                          {"rx_zmqport", &CmdProxy::rx_zmqport},
 
+
+
+
+                          
 
                           {"adc", &CmdProxy::SlowAdc},                            
                           {"subexptime", &CmdProxy::subexptime},  
@@ -681,10 +686,11 @@ class CmdProxy {
                     "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) udp interface where the second half of detector data is sent to. Can be unused as rx_hostname/udp_dstip2 retrieves it.");
     
     INTEGER_COMMAND(udp_dstport, getDestinationUDPPort, setDestinationUDPPort, std::stoi,
-                    "[n]\n\tPort number of the receiver (destination) udp interface.");               
+                    "[n]\n\tPort number of the receiver (destination) udp interface. Default is 50001.");               
     
     INTEGER_COMMAND(udp_dstport2, getDestinationUDPPort2, setDestinationUDPPort2, std::stoi,
-                    "[n]\n\t[Jungfrau] Port number of the receiver (destination) udp interface where the second half of detector data is sent to.\n[Eiger] Port number of the reciever (desintation) udp interface where the right half of the detector data is sent to.");          
+                    "[n]\n\tDefault is 50002.\n\t[Jungfrau] Port number of the receiver (destination) udp interface where the second half of detector data is sent to. \n[Eiger] Port number of the reciever (desintation) udp interface where the right half of the detector data is sent to."); 
+                             
     GET_COMMAND(rx_printconfig, printRxConfiguration, 
                 "\n\tPrints the receiver configuration.");   
     
@@ -710,7 +716,7 @@ class CmdProxy {
                 "[hostname or ip address]\n\tReceiver hostname or IP. Used for TCP control communication between client and receiver to configure receiver.");
 
     INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, std::stoi,
-                    "[port]\n\tTCP port for client-receiver communication. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter. Multi command will automatically increment for individual modules.");  
+                    "[port]\n\tTCP port for client-receiver communication. Default is 1954. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter. Multi command will automatically increment for individual modules.");  
     
     INTEGER_COMMAND(
         rx_fifodepth, getRxFifoDepth, setRxFifoDepth, std::stoi,
@@ -770,10 +776,18 @@ class CmdProxy {
     /* ZMQ Streaming Parameters (Receiver<->Client) */
 
     INTEGER_COMMAND(rx_datastream, getRxZmqDataStream, setRxZmqDataStream, std::stoi,
-                    "[0, 1]\n\tData streaming from receiver enable. 1 enables zmq data stream (creates zmq streamer threads), 0 disables (destroys streamer threads). Switching to Gui automatically enables data streaming in receiver. Switching back to command line acquire will require disabling data streaming in receiver for fast applications.");
+                    "[0, 1]\n\tData streaming from receiver enable (eg. to GUI ot another process for further processing). 1 enables zmq data stream (creates zmq streamer threads), 0 disables (destroys streamer threads). Switching to Gui automatically enables data streaming in receiver. Switching back to command line acquire will require disabling data streaming in receiver for fast applications.");
 
     INTEGER_COMMAND(rx_readfreq, getRxZmqFrequency, setRxZmqFrequency,
                     std::stoi, "[nth frame]\n\tStream out every nth frame. Default is 1. 0 means streaming every 200 ms and discarding frames in this interval.");
+
+    INTEGER_COMMAND(rx_zmqport, getRxZmqPort, setRxZmqPort,
+                    std::stoi, "[port]\n\tZmq port for data to be streamed out of the receiver. Also restarts streaming. Default is 30001. Must be different for every detector (and udp port). Multi command will automatically increment for individual modules.");
+
+
+
+
+
 
 
 

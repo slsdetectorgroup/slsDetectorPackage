@@ -9,6 +9,43 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("activate", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "activate 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 1 nopadding", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "activate 1 nopadding\n");
+        }        
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 0 padding", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "activate 0 padding\n");
+        } 
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 0 nopadding", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "activate 0 nopadding\n");
+        } 
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 1 padding", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "activate 1 padding\n");
+        }     
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate", GET, nullptr, oss));
+            REQUIRE(oss.str() == "activate 1 padding\n");
+        }               
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("activate", GET));
+    }
+}
+
 TEST_CASE("measuredsubperiod", "[.cmd][.eiger]") {
     if (test::type == slsDetectorDefs::EIGER) {   
         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
@@ -24,6 +61,7 @@ TEST_CASE("measuredsubperiod", "[.cmd][.eiger]") {
             REQUIRE(val >= 0);
             REQUIRE(val < 1000);
         }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("dr 16", PUT)); 
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("measuredsubperiod", GET));
     }
@@ -1329,26 +1367,6 @@ TEST_CASE("foverwrite", "[.cmd]") {
     }
 }
 
-// EIGER ONLY
-// TEST_CASE("activatecmd", "[.cmd]") {
-
-//     {
-//         // TODO! read padding from somewhere
-//         std::ostringstream oss;
-//         multiSlsDetectorClient("activate 0", PUT, nullptr, oss);
-//         REQUIRE(oss.str() == "activate 0 padding\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         multiSlsDetectorClient("activate", GET, nullptr, oss);
-//         REQUIRE(oss.str() == "activate 0 padding\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         multiSlsDetectorClient("activate 1", PUT, nullptr, oss);
-//         REQUIRE(oss.str() == "activate 1 padding\n");
-//     }
-// }
 
 TEST_CASE("fmaster", "[.cmd]") {
     {

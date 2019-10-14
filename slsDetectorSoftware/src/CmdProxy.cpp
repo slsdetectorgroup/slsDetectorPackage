@@ -498,6 +498,46 @@ std::string CmdProxy::RateCorrection(int action) {
     return os.str();
 }
 
+std::string CmdProxy::Activate(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[0, 1] [(optional) padding|nopadding]\n\t[Eiger] 1 is default. 0 deactivates readout and does not send data. \n\tPadding will pad data files for deactivates readouts." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0); 
+        }
+        auto t = det->getActive({det_id});
+        auto p = det->getRxPadDeactivatedMode({det_id});  
+        Result<std::string> pResult(p.size());
+        for (unsigned int i = 0; i < p.size(); ++i) {
+            pResult[i] = p[i] ? "padding" : "nopadding";
+        }
+        os << OutString(t) << ' ' << OutString(pResult) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() < 1 || args.size() > 2 ) {
+            WrongNumberOfParameters(2); 
+        }
+        int t = std::stoi(args[0]);
+        det->setActive(t, {det_id});
+        os << args[0];
+        if (args.size() == 2) {  
+            bool p = true;
+            if (args[1] == "nopadding") {
+                p = false;
+            } else if (args[1] != "padding") {
+                throw sls::RuntimeError("Unknown argument for deactivated padding.");   
+            }
+            det->setRxPadDeactivatedMode(p, {det_id});
+            //TODO print args
+            os << ' ' << args[1];
+        } 
+        os << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 
 

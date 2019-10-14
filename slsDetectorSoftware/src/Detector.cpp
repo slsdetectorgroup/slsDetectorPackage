@@ -1398,7 +1398,7 @@ Result<int> Detector::getDetectorMinMaxEnergyThreshold(const bool isEmax,
                                                        Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::getAdditionalJsonParameter, pos,
                                isEmax ? "emax" : "emin");
-    Result<int> intResult;
+    Result<int> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
             intResult[i] = stoi(res[i]);
@@ -1420,7 +1420,7 @@ void Detector::setDetectorMinMaxEnergyThreshold(const bool isEmax,
 Result<int> Detector::getFrameMode(Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::getAdditionalJsonParameter, pos,
                                "frameMode");
-    Result<int> intResult;
+    Result<int> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
             intResult[i] = defs::getFrameModeType(res[i]);
@@ -1440,7 +1440,7 @@ void Detector::setFrameMode(defs::frameModeType value, Positions pos) {
 Result<int> Detector::getDetectorMode(Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::getAdditionalJsonParameter, pos,
                                "detectorMode");
-    Result<int> intResult;
+    Result<int> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
             intResult[i] = defs::getDetectorModeType(res[i]);

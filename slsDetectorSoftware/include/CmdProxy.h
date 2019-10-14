@@ -525,6 +525,10 @@ class CmdProxy {
                           {"interruptsubframe", &CmdProxy::interruptsubframe},
                           {"measuredperiod", &CmdProxy::measuredperiod},
                           {"measuredsubperiod", &CmdProxy::measuredsubperiod},                          
+                          {"activate", &CmdProxy::Activate}, 
+
+
+
 
 
 
@@ -562,7 +566,7 @@ class CmdProxy {
     std::string GapPixels(int action);
     std::string TrimEnergies(int action);
     std::string RateCorrection(int action);
-
+    std::string Activate(int action);
 
 
     std::string SlowAdc(int action);

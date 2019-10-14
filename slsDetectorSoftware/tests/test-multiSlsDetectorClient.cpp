@@ -9,6 +9,33 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+
+TEST_CASE("readnlines", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("readnlines 256", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "readnlines 256\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("readnlines", GET, nullptr, oss));
+            REQUIRE(oss.str() == "readnlines 256\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("readnlines 16", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "readnlines 16\n");
+        }
+        REQUIRE_THROWS(multiSlsDetectorClient("readnlines 0", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("readnlines 256", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("readnlines", GET));
+    }
+}
+
+
 TEST_CASE("ratecorr", "[.cmd][.eiger]") {
     if (test::type == slsDetectorDefs::EIGER) {   
         {

@@ -497,6 +497,9 @@ class CmdProxy {
                           {"trimval", &CmdProxy::trimval},
                           {"trimen", &CmdProxy::TrimEnergies},
                           {"ratecorr", &CmdProxy::RateCorrection},
+                          {"readnlines", &CmdProxy::readnlines},
+
+
 
 
 
@@ -829,6 +832,12 @@ class CmdProxy {
 
     INTEGER_COMMAND(trimval, getAllTrimbits, setAllTrimbits, std::stoi,
                     "[n_trimval]\n\t[Eiger] All trimbits set to this value. A get returns -1 if all trimbits are different values.");      
+
+    INTEGER_COMMAND(readnlines, getPartialReadout, setPartialReadout, std::stoi,
+                    "[1 - 256]\n\t[Eiger] Number of rows to readout per half module starting from the centre. 256 is default. The permissible values depend on dynamic range and 10Gbe enabled.");      
+
+
+
 
 
 

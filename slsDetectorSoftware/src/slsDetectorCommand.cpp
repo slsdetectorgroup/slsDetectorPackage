@@ -316,13 +316,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	++i;
 
     /*! \page config
-   - <b>readnlines [i]</b> sets/gets the number of rows to read out per half module. Options: 1 - 256 (Not all values as it depends on dynamic range and 10GbE enabled). Used for EIGER only. \c Returns \c (int) 
-	 */
-    descrToFuncMap[i].m_pFuncName = "readnlines";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
-    ++i;
-
-    /*! \page config
    - <b>extsig [flag]</b> sets/gets the mode of the external signal. Options: \c trigger_in_rising_edge, \c trigger_in_falling_edge. Used in GOTTHARDonly. \c Returns \c (string)
 	*/
     descrToFuncMap[i].m_pFuncName = "extsig"; /* find command! */
@@ -2959,17 +2952,6 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
         
 	}  
     
-    else if (cmd == "readnlines") {
-        if (action == PUT_ACTION) {
-                int ival = -1;
-                if (!sscanf(args[1],"%d",&ival))
-                    return std::string("could not scan readnlines parameter ") + std::string(args[1]);
-                myDet->setReadNLines(ival);
-            }
-            return std::to_string(myDet->getReadNLines());
-
-    } 
-    
     else if (cmd == "extsig") {
         externalSignalFlag flag = GET_EXTERNAL_SIGNAL_FLAG;
 
@@ -3094,7 +3076,6 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
         os << "extsig mode \t sets the mode of the external signal. can be trigger_out_rising_edge, trigger_out_falling_edge. Gotthard only" << std::endl;
         os << "romode m \t sets the readout flag to m. Options: analog, digital, analog_digital. Used for CTB only." << std::endl;
         os << "interruptsubframe flag \t sets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER  in 32 bit mode only." << std::endl;
-        os << "readnlines f \t sets the number of rows to read out per half module. Options: 1 - 256 (Not all values as it depends on dynamic range and 10GbE enabled). Used for EIGER only. " << std::endl;
         os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
         os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
         os << "copydetectorserver s p \t copies the detector server s via tftp from pc with hostname p and changes respawn server. Not for Eiger. " << std::endl;
@@ -3110,7 +3091,6 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
         os << "extsig \t gets the mode of the external signal. can be trigger_in_rising_edge, trigger_in_falling_edge. Gotthard only" << std::endl;
         os << "romode \t gets the readout flag. Options: analog, digital, analog_digital. Used for CTB only." << std::endl;
         os << "interruptsubframe \t gets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER in 32 bit mode only." << std::endl;
-        os << "readnlines \t gets the number of rows to read out per half module. Used for EIGER only. " << std::endl;
         os << "led \t returns led status (0 off, 1 on)" << std::endl;
         os << "powerchip \t gets if the chip has been powered on or off" << std::endl;
         os << "auto_comp_disable \t  gets if the automatic comparator diable mode is enabled/disabled" << std::endl;

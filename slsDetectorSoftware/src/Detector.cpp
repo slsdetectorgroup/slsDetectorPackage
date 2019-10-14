@@ -836,11 +836,18 @@ void Detector::setAllTrimbits(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setAllTrimbits, pos, value);
 }
 
-Result<std::vector<int>> Detector::getTrimEnergies(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTrimEn, pos);
+//TODO Result<std::vector<int>> Detector::getTrimEnergies(Positions pos) const {
+Result<int> Detector::getTrimEnergies(Positions pos) const {
+    if (pos.empty() || pos[0] == -1) {
+        return pimpl->getTrimEn();
+    }
+    return pimpl->getTrimEn(pos[0]);
+    //TODO
+    //return pimpl->Parallel(&slsDetector::getTrimEn, pos);
 }
 
 void Detector::setTrimEnergies(std::vector<int> energies, Positions pos) {
+
     pimpl->Parallel(&slsDetector::setTrimEn, pos, energies);
 }
 

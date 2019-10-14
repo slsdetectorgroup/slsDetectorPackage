@@ -4,6 +4,7 @@
 #include "sls_detector_defs.h"
 #include "ToString.h"
 #include "TimeHelper.h"
+#include "container_utils.h"
 
 
 #include <iostream>
@@ -460,16 +461,9 @@ std::string CmdProxy::TrimEnergies(int action) {
          if (args.size() != 0) {                                
             WrongNumberOfParameters(0);         
         }       
-        auto t = det->getTrimEnergies({det_id});       
+        auto t = det->getTrimEnergies({det_id});
         os << t.size() << ' ';
-        for (unsigned int i = 0; i < t.size(); ++i) {
-            os << '[';
-            for (unsigned int j = 0; j < t[i].size(); ++j) {
-                os << t[i][j] << ' '; 
-            }
-             os << "] ";
-        }
-        os << '\n';
+        os << OutString(t) << '\n';     
     } else if (action == defs::PUT_ACTION) {
         if (args.size() < 1) {                                
             WrongNumberOfParameters(1);         
@@ -483,12 +477,12 @@ std::string CmdProxy::TrimEnergies(int action) {
             t[i] = std::stoi(args[i+1]);
         }                  
         det->setTrimEnergies(t, {det_id}); 
-        os << args.front() << ntrim;
+        os << ntrim << " [";
         // TODO cannot print args
         for (unsigned int i = 0; i < ntrim; ++i) {
             os << ' ' << t[i];
         }
-        os << '\n';
+        os << "]\n";
     } else { 
         throw sls::RuntimeError("Unknown action");
     }

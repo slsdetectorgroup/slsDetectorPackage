@@ -12,14 +12,11 @@ auto PUT = slsDetectorDefs::PUT_ACTION;
 
 TEST_CASE("trimen", "[.cmd][.eiger]") {
     if (test::type == slsDetectorDefs::EIGER) {   
-        {
-            std::ostringstream oss;
-            REQUIRE_NOTHROW(multiSlsDetectorClient("trimen 3 4500 5400 6400", PUT, nullptr, oss));
-        }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("trimen 3 4500 5400 6400", PUT));
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(multiSlsDetectorClient("0:trimen", GET, nullptr, oss));
-            REQUIRE(oss.str() == "trimen 1 3 [4500 5400 6400 ]\n");
+            REQUIRE(oss.str() == "trimen 3 [4500, 5400, 6400]\n");
         }
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("trimen", GET));

@@ -530,7 +530,7 @@ class CmdProxy {
                           {"pulse", &CmdProxy::PulsePixel},
                           {"pulsenmove", &CmdProxy::PulsePixelAndMove},
                           {"pulsechip", &CmdProxy::PulseChip},
-
+                          {"quad", &CmdProxy::Quad},
 
 
 
@@ -572,7 +572,7 @@ class CmdProxy {
     std::string PulsePixel(int action);
     std::string PulsePixelAndMove(int action);
     std::string PulseChip(int action);
-
+    std::string Quad(int action);
 
 
     std::string SlowAdc(int action);
@@ -884,6 +884,8 @@ class CmdProxy {
 
     INTEGER_COMMAND(partialreset, getPartialReset, setPartialReset, std::stoi,
                     "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at start of acquisition. 0 complete reset, 1 partial reset.");      
+
+
 
 
 

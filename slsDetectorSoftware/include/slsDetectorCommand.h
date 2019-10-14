@@ -64,7 +64,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpTempControl(int action);
   static std::string helpReceiver(int action);
   static std::string helpPattern(int action);
-  static std::string helpPulse(int action);
   static std::string helpProcessor(int action);
 
  private:
@@ -96,7 +95,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdTempControl(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdReceiver(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdPattern(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdPulse(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdProcessor(int narg, const char * const args[], int action, int detPos = -1);
 
   int numberOfCommands;

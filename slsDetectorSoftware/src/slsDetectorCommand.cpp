@@ -379,26 +379,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
     ++i;
 
-    /*! \page config
-   - <b>pulse [n] [x] [y]</b> pulses pixel at coordinates (x,y) n number of times. Used in EIGER only. Only put! \c Returns \c ("successful", "failed")
-	 */
-    descrToFuncMap[i].m_pFuncName = "pulse";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPulse;
-    ++i;
-
-    /*! \page config
-   - <b>pulsenmove [n] [x] [y]</b> pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis). Used in EIGER only. Only put! \c Returns \c ("successful", "failed")
-	 */
-    descrToFuncMap[i].m_pFuncName = "pulsenmove";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPulse;
-    ++i;
-
-    /*! \page config
-   - <b>pulsechip [n]</b>pulses chip n number of times, while n=-1 will reset it to normal mode. Used in EIGER only. Only put! \c Returns \c ("successful", "failed")
-	 */
-    descrToFuncMap[i].m_pFuncName = "pulsechip";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPulse;
-    ++i;
 
     /* versions/ serial numbers  getId */
     /*! \page config
@@ -3611,60 +3591,6 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
         return helpPattern(action);
 
     return os.str();
-}
-
-std::string slsDetectorCommand::helpPulse(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "pulse [n] [x] [y] \t pulses pixel at coordinates (x,y) n number of times" << std::endl;
-        os << "pulsenmove [n] [x] [y]\t pulses pixel n number of times and moves relatively by x value (x axis) and y value(y axis)" << std::endl;
-        os << "pulsechip [n] \t pulses chip n number of times, while n=-1 will reset it to normal mode" << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "pulse \t cannot get" << std::endl;
-        os << "pulsenmove \t cannot get" << std::endl;
-        os << "pulsechip \t cannot get" << std::endl;
-    }
-    return os.str();
-}
-
-std::string slsDetectorCommand::cmdPulse(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == HELP_ACTION)
-        return helpPulse(action);
-    else if (action == GET_ACTION)
-        return std::string("cannot get ") + cmd;
-
-
-    int ival1 = -1;
-    if (!sscanf(args[1], "%d", &ival1))
-        return std::string("Could not scan 1st argument ") + std::string(args[1]);
-
-    if (std::string(args[0]) == std::string("pulsechip"))
-        myDet->pulseChip(ival1, detPos);
-
-    else {
-        //next commands requires 3 addnl. arguments
-        int ival2 = -1, ival3 = -1;
-        if (narg < 4)
-            return std::string("insufficient arguments:\n" + helpPulse(action));
-        if (!sscanf(args[2], "%d", &ival2))
-            return std::string("Could not scan 2nd argument ") + std::string(args[2]);
-        if (!sscanf(args[3], "%d", &ival3))
-            return std::string("Could not scan 3rd argument ") + std::string(args[3]);
-
-        if (std::string(args[0]) == std::string("pulse"))
-            myDet->pulsePixel(ival1, ival2, ival3, detPos);
-
-        else if (std::string(args[0]) == std::string("pulsenmove"))
-            myDet->pulsePixelNMove(ival1, ival2, ival3, detPos);
-
-        else
-            std::string("could not decode command") + cmd;
-    }
-
-    return std::string(" successful");
 }
 
 

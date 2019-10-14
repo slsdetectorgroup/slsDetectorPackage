@@ -606,6 +606,31 @@ std::string CmdProxy::PulseChip(int action) {
     return os.str();
 }
 
+std::string CmdProxy::Quad(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[0, 1]\n\t[Eiger] 0 is default. 1 sets detector size to a quad (Specific hardware required)." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {                                
+            WrongNumberOfParameters(0);         
+        } 
+        auto t = det->getQuad({det_id});       
+        os << OutString(t) << '\n';     
+    } else if (action == defs::PUT_ACTION) {
+        if (det_id != -1) { 
+            throw sls::RuntimeError("Cannot execute dynamic range at module level");
+        }        
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);  
+        }                                
+        det->setQuad(std::stoi(args[0]));  
+        os << args.front() << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 
 

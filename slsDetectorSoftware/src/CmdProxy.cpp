@@ -289,28 +289,6 @@ std::string CmdProxy::DetectorSize(int action) {
 
 /* acquisition parameters */
 
-std::string CmdProxy::DelayLeft(int action) {
-    std::ostringstream os; 
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "[(optional unit) ns|us|ms|s]\n\t[Gotthard][Jungfrau][CTB] DelayLeft Delay Left in Acquisition." << '\n';   
-    } else if (action == defs::GET_ACTION) {
-        auto t = det->getDelayAfterTriggerLeft({det_id});       
-        if (args.size() == 0) {  
-            os << OutString(t) << '\n';  
-        } else if (args.size() == 1) { 
-            os << OutString(t, args[0]) << '\n';
-        } else {                                
-            WrongNumberOfParameters(0);         
-        }             
-    } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("cannot put");
-    } else { 
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
 std::string CmdProxy::Speed(int action) {
     std::ostringstream os; 
     os << cmd << ' ';

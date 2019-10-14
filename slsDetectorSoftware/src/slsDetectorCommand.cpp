@@ -308,13 +308,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
     ++i;
 
-	/*! \page config
-   - <b>interruptsubframe [i]</b> sets/gets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER  in 32 bit mode only. \c Returns \c (int).
-	 */
-	descrToFuncMap[i].m_pFuncName="interruptsubframe";
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAdvanced;
-	++i;
-
     /*! \page config
    - <b>extsig [flag]</b> sets/gets the mode of the external signal. Options: \c trigger_in_rising_edge, \c trigger_in_falling_edge. Used in GOTTHARDonly. \c Returns \c (string)
 	*/
@@ -523,19 +516,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
     ++i;
 
-    /*! \page timing
-   - <b>measuredperiod</b> gets the measured frame period (time between last frame and the previous one) in s. For Eiger only. Makes sense only for acquisitions of more than 1 frame. \c Returns \c  (double with 9 decimal digits)
-     */
-    descrToFuncMap[i].m_pFuncName = "measuredperiod";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
-    ++i;
-
-    /*! \page timing
-   - <b>measuredsubperiod</b> gets the measured subframe period (time between last subframe and the previous one) in s. For Eiger only and in 32 bit mode. \c Returns \c  (double with 9 decimal digits)
-     */
-    descrToFuncMap[i].m_pFuncName = "measuredsubperiod";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
-    ++i;
 
     /* speed */
     /*! \page config
@@ -2806,10 +2786,6 @@ std::string slsDetectorCommand::cmdTimeLeft(int narg, const char * const args[],
         index = MEASUREMENT_TIME;
     else if (cmd == "nframes")
         index = FRAMES_FROM_START;
-    else if (cmd == "measuredperiod")
-        index = MEASURED_PERIOD;
-    else if (cmd == "measuredsubperiod")
-        index = MEASURED_SUBPERIOD;
     else
         return std::string("could not decode timer ") + cmd;
 
@@ -2838,8 +2814,6 @@ std::string slsDetectorCommand::helpTimeLeft(int action) {
 
         os << "exptimel  \t gets the exposure time left" << std::endl;
         os << "periodl \t gets the frame period left" << std::endl;
-        os << "measuredperiod \t gets the measured frame period (time between last frame and the previous one) in s. For Eiger only. Makes sense only for acquisitions of more than 1 frame." << std::endl;
-        os << "measuredsubperiod \t gets the measured subframe period (time between last subframe and the previous one) in s. For Eiger only and in 32 bit mode." << std::endl;
         os << std::endl;
     }
     return os.str();
@@ -2941,18 +2915,7 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
         return getReadoutModeType(myDet->getReadoutMode());
     }
 
-    else if (cmd=="interruptsubframe") {
-		if (action==PUT_ACTION) {
-			int ival = -1;
-			if (!sscanf(args[1],"%d",&ival))
-				return std::string("could not scan interrupt sub frame parameter ") + std::string(args[1]);
-			myDet->setInterruptSubframe(ival > 0 ? true : false);
-		}
-		return std::to_string(myDet->getInterruptSubframe());
-        
-	}  
-    
-    else if (cmd == "extsig") {
+    if (cmd == "extsig") {
         externalSignalFlag flag = GET_EXTERNAL_SIGNAL_FLAG;
 
         if (action == PUT_ACTION) {
@@ -3075,7 +3038,6 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
 
         os << "extsig mode \t sets the mode of the external signal. can be trigger_out_rising_edge, trigger_out_falling_edge. Gotthard only" << std::endl;
         os << "romode m \t sets the readout flag to m. Options: analog, digital, analog_digital. Used for CTB only." << std::endl;
-        os << "interruptsubframe flag \t sets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER  in 32 bit mode only." << std::endl;
         os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
         os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
         os << "copydetectorserver s p \t copies the detector server s via tftp from pc with hostname p and changes respawn server. Not for Eiger. " << std::endl;
@@ -3090,7 +3052,6 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
 
         os << "extsig \t gets the mode of the external signal. can be trigger_in_rising_edge, trigger_in_falling_edge. Gotthard only" << std::endl;
         os << "romode \t gets the readout flag. Options: analog, digital, analog_digital. Used for CTB only." << std::endl;
-        os << "interruptsubframe \t gets the interrupt subframe flag. Setting it to 1 will interrupt the last subframe at the required exposure time. By default, this is disabled and set to 0, ie. it will wait for the last sub frame to finish exposing. Used for EIGER in 32 bit mode only." << std::endl;
         os << "led \t returns led status (0 off, 1 on)" << std::endl;
         os << "powerchip \t gets if the chip has been powered on or off" << std::endl;
         os << "auto_comp_disable \t  gets if the automatic comparator diable mode is enabled/disabled" << std::endl;

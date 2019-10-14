@@ -41,7 +41,7 @@ int sockfd = 0;
 int debugflag = 0;
 udpStruct udpDetails = {32410, 32411, 50001, 50002, 0, 0, 0, 0, 0, 0, 0, 0};
 int configured = FAIL;
-char configureMessage[MAX_STR_LENGTH]="";
+char configureMessage[MAX_STR_LENGTH]="udp parameters not configured yet";
 int maxydet = -1;
 int detectorId = -1;
 

@@ -9,7 +9,67 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("measuredsubperiod", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("dr 32", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
+        sleep(3);
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:measuredsubperiod ms", GET, nullptr, oss));
+            std::string st = oss.str();
+            std::string s = st.erase (0, strlen("measuredsubperiod "));
+            double val = std::stod(s);
+            REQUIRE(val >= 0);
+            REQUIRE(val < 1000);
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("measuredsubperiod", GET));
+    }
+}
 
+TEST_CASE("measuredperiod", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        REQUIRE_NOTHROW(multiSlsDetectorClient("frames 2", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("period 1", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
+        sleep(3);
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:measuredperiod", GET, nullptr, oss));
+            std::string st = oss.str();
+            std::string s = st.erase (0, strlen("measuredperiod "));
+            double val = std::stod(s);
+            REQUIRE(val >= 1.0);
+            REQUIRE(val < 2.0);
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("measuredperiod", GET));
+    }
+}
+
+TEST_CASE("interruptsubframe", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("interruptsubframe 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "interruptsubframe 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("interruptsubframe", GET, nullptr, oss));
+            REQUIRE(oss.str() == "interruptsubframe 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("interruptsubframe 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "interruptsubframe 0\n");
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("interruptsubframe", GET));
+    }
+}
 
 TEST_CASE("readnlines", "[.cmd][.eiger]") {
     if (test::type == slsDetectorDefs::EIGER) {   

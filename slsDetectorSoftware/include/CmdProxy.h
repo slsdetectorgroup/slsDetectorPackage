@@ -31,7 +31,7 @@
             } else if (args.size() == 1) {                                     \
                 os << OutString(t, args[0]) << '\n';                           \
             } else {                                                           \
-                WrongNumberOfParameters(2);                                    \
+                WrongNumberOfParameters(1);                                    \
             }                                                                  \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() == 1) {                                            \
@@ -51,6 +51,30 @@
             } else {                                                           \
                 os << args[0] << '\n';                                         \
             }                                                                  \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+/** time get only */
+#define TIME_GET_COMMAND(CMDNAME, GETFCN, HLPSTR)                              \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            auto t = det->GETFCN({det_id});                                    \
+            if (args.size() == 0) {                                            \
+                os << OutString(t) << '\n';                                    \
+            } else if (args.size() == 1) {                                     \
+                os << OutString(t, args[0]) << '\n';                           \
+            } else {                                                           \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            throw sls::RuntimeError("cannot put");                             \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
         }                                                                      \
@@ -403,7 +427,7 @@ class CmdProxy {
                           {"delay", &CmdProxy::delay},
                           {"framesl", &CmdProxy::framesl},
                           {"triggersl", &CmdProxy::triggersl},
-                          {"delayl", &CmdProxy::DelayLeft},
+                          {"delayl", &CmdProxy::delayl},
                           {"speed", &CmdProxy::Speed},
                           {"adcphase", &CmdProxy::Adcphase},
                           {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
@@ -498,8 +522,9 @@ class CmdProxy {
                           {"trimen", &CmdProxy::TrimEnergies},
                           {"ratecorr", &CmdProxy::RateCorrection},
                           {"readnlines", &CmdProxy::readnlines},
-
-
+                          {"interruptsubframe", &CmdProxy::interruptsubframe},
+                          {"measuredperiod", &CmdProxy::measuredperiod},
+                          {"measuredsubperiod", &CmdProxy::measuredsubperiod},                          
 
 
 
@@ -523,7 +548,6 @@ class CmdProxy {
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
     /* acquisition parameters */
-    std::string DelayLeft(int action);
     std::string Speed(int action);
     std::string Adcphase(int action);
     /* acquisition */
@@ -592,6 +616,9 @@ class CmdProxy {
     GET_COMMAND(triggersl, getNumberOfTriggersLeft, 
                 "\n\t[Gotthard][Jungfrau][CTB] Number of triggers left in acquisition.");       
 
+    TIME_GET_COMMAND(delayl, getDelayAfterTriggerLeft, 
+                "[(optional unit) ns|us|ms|s]\n\t[Gotthard][Jungfrau][CTB] DelayLeft Delay Left in Acquisition.");    
+                
     GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift, 
                 "\n\t[Jungfrau][CTB] Absolute maximum Phase shift of ADC clock.");  
 
@@ -836,9 +863,14 @@ class CmdProxy {
     INTEGER_COMMAND(readnlines, getPartialReadout, setPartialReadout, std::stoi,
                     "[1 - 256]\n\t[Eiger] Number of rows to readout per half module starting from the centre. 256 is default. The permissible values depend on dynamic range and 10Gbe enabled.");      
 
+    INTEGER_COMMAND(interruptsubframe, getInterruptSubframe, setInterruptSubframe, std::stoi,
+                    "[0, 1]\n\t[Eiger] 1 interrupts last subframe at required exposure time. 0 will wait for last sub frame to finish exposing. 0 is default.");      
 
+    TIME_GET_COMMAND(measuredperiod, getMeasuredPeriod, 
+                "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured frame period between last frame and previous one. Useful data only for acquisitions with more than 1 frame.");    
 
-
+    TIME_GET_COMMAND(measuredsubperiod, getMeasuredSubFramePeriod, 
+                "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured sub frame period between last sub frame and previous one.");    
 
 
 

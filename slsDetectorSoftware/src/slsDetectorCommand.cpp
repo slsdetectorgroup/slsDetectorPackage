@@ -618,12 +618,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    Commands to setup the data processing
 	 */
 
-    /*! \page data
-   - <b>ratecorr [ns]</b> Returns the dead time used for rate correections in ns (int). \c put sets the deadtime correction constant in ns, -1  will set it to default tau of settings (0 unset).  \c Returns \c (int). For Eiger only.
-	 */
-    descrToFuncMap[i].m_pFuncName = "ratecorr";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdRateCorr;
-    ++i;
 
      	/*! \page data
     //    - <b>threaded [i]</b> Sets/gets the data processing threaded flag. 1 is threaded, 0 unthreaded.
@@ -648,12 +642,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    commands to setup settings/trim/cal directories
 	 */
 
-    /*! \page settings
-   - <b>trimen [n e0 e1...e(n-1)]</b> Sets/gets the number of energies n at which the detector has default trim file and their values in eV (int). \c Returns \c (int int...) n e0 e1...e(n-1)
-	 */
-    descrToFuncMap[i].m_pFuncName = "trimen";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTrimEn;
-    ++i;
 
     /* settings, threshold */
     /*! \page settings
@@ -1758,64 +1746,7 @@ std::string slsDetectorCommand::helpExitServer(int action) {
 }
 
 
-std::string slsDetectorCommand::cmdTrimEn(int narg, const char * const args[], int action, int detPos) {
-    std::vector<int> energies;
-    if (action == HELP_ACTION) 
-        return helpTrimEn(action);
 
-    if (action == PUT_ACTION) {
-        energies.reserve(narg-1);
-        for(int i=1; i!=narg; ++i){
-            energies.push_back(std::stoi(args[i]));
-        }
-        myDet->setTrimEn(energies, detPos);
-        energies.clear();
-    }
-    energies = myDet->getTrimEn(detPos);
-    std::ostringstream os;
-    for(const auto& en : energies){
-        os << en << ' ';
-    }
-    return os.str();
-}
-
-std::string slsDetectorCommand::helpTrimEn(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << "trimen ne [e0 e1...ene] \t sets the number of energies at which the detector has default trim files" << std::endl;
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << "trimen  \t returns the number of energies at which the detector has default trim files and their values" << std::endl;
-    return os.str();
-}
-
-
-
-std::string slsDetectorCommand::cmdRateCorr(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == HELP_ACTION) {
-        return helpRateCorr(action);
-    }
-    int64_t ival;
-    char answer[1000];
-
-
-    if (action == PUT_ACTION) {
-        sscanf(args[1], "%ld", &ival);
-        myDet->setRateCorrection(ival, detPos);
-    }
-    sprintf(answer, "%ld", myDet->getRateCorrection(detPos));
-    return std::string(answer);
-}
-
-std::string slsDetectorCommand::helpRateCorr(int action) {
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("ratecorr \t  returns the dead time used for rate correections in ns \n");
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("ratecorr  ns \t  sets the deadtime correction constant in ns, -1 in Eiger will set it to default tau of settings\n");
-    return os.str();
-}
 
 // std::string slsDetectorCommand::cmdThreaded(int narg, const char * const args[], int action, int detPos){
 // 	int ival;

@@ -489,7 +489,36 @@ std::string CmdProxy::TrimEnergies(int action) {
     return os.str();
 }
 
-
+std::string CmdProxy::RateCorrection(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_rate (in ns)]\n\t[Eiger] Dead time correction constant in ns. -1 will set to default tau of settings. 0 will unset rate correction." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+         if (args.size() != 0) {                                
+            WrongNumberOfParameters(0);         
+        }       
+        auto t = det->getRateCorrection({det_id});
+        os << OutString(t) << '\n';     
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {                                
+            WrongNumberOfParameters(1);         
+        } 
+        int tau = std::stoi(args[0]);
+        if (tau == -1) {
+            det->setDefaultRateCorrection({det_id});
+            auto t = det->getRateCorrection({det_id});
+            os << OutString(t) << '\n';        
+        } else  {
+            auto t = StringTo<time::ns>(args[0], "ns");
+            det->setRateCorrection(t, {det_id});
+            os << args.front() << "ns\n";
+        }
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 
 

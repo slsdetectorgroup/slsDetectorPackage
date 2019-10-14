@@ -496,7 +496,7 @@ class CmdProxy {
                           {"flippeddatax", &CmdProxy::flippeddatax},
                           {"trimval", &CmdProxy::trimval},
                           {"trimen", &CmdProxy::TrimEnergies},
-
+                          {"ratecorr", &CmdProxy::RateCorrection},
 
 
 
@@ -534,7 +534,7 @@ class CmdProxy {
     std::string ThresholdNoTb(int action);  
     std::string GapPixels(int action);
     std::string TrimEnergies(int action);
-
+    std::string RateCorrection(int action);
 
 
 
@@ -829,7 +829,6 @@ class CmdProxy {
 
     INTEGER_COMMAND(trimval, getAllTrimbits, setAllTrimbits, std::stoi,
                     "[n_trimval]\n\t[Eiger] All trimbits set to this value. A get returns -1 if all trimbits are different values.");      
-
 
 
 

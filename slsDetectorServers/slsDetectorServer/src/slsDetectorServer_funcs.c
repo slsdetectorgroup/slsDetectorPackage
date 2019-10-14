@@ -3000,15 +3000,23 @@ int set_rate_correct(int file_des) {
 
 		// switching on in right mode
 		else {
-			if (tau_ns < 0)
+			if (tau_ns < 0) {
 				tau_ns = getDefaultSettingsTau_in_nsec();
+				if (tau_ns < 0) {
+					ret = FAIL;
+					strcpy(mess,"Default settings file not loaded. No default tau yet\n");
+					FILE_LOG(logERROR,(mess));
+				}
+			}
 			else if (tau_ns > 0) {
 				//changing tau to a user defined value changes settings to undefined
 				setSettings(UNDEFINED);
 				FILE_LOG(logERROR, ("Settings has been changed to undefined (tau changed)\n"));
 			}
-			int64_t retval = setRateCorrection(tau_ns);
-			validate64(tau_ns, retval, "set rate correction", DEC);
+			if (ret == OK) {
+				int64_t retval = setRateCorrection(tau_ns);
+				validate64(tau_ns, retval, "set rate correction", DEC);
+			}
 		}
 	}
 #endif

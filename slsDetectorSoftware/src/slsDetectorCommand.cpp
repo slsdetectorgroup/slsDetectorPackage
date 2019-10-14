@@ -199,13 +199,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdData;
     ++i;
 
-    /*! \page acquisition
-   - <b>resmat i </b> sets/resets counter bit in detector.gets the counter bit in Eiger
-	 */
-    descrToFuncMap[i].m_pFuncName = "resmat";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdCounter;
-    ++i;
-
     /*! \page config Configuration commands
     Commands to configure the detector. these commands are often left to the configuration file.
 	 - \ref configstructure "Data Structure": commands to configure detector data structure
@@ -1747,44 +1740,6 @@ std::string slsDetectorCommand::helpThreaded(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdCounter(int narg, const char * const args[], int action, int detPos) {
-    int ival;
-    char answer[100];
-    std::string sval;
-    int retval = FAIL;
-    if (action == HELP_ACTION)
-        return helpCounter(HELP_ACTION);
-    else if (action == PUT_ACTION)
-        ival = atoi(args[1]);
-
-    if (std::string(args[0]) == std::string("resmat")) {
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1], "%d", &ival))
-                return std::string("Could not scan resmat input ") + std::string(args[1]);
-            if (ival >= 0)
-                sprintf(answer, "%d", myDet->setCounterBit(ival, detPos));
-        } else
-            sprintf(answer, "%d", myDet->setCounterBit(-1, detPos));
-        return std::string(answer);
-    }
-
-    if (retval == OK)
-        return std::string("Counter set/reset succesfully");
-    else
-        return std::string("Counter read/reset failed");
-}
-
-std::string slsDetectorCommand::helpCounter(int action) {
-    std::ostringstream os;
-    os << std::endl;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "resmat i \t  sets/resets counter bit in detector" << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "resmat i \t  gets the counter bit in detector" << std::endl;
-    }
-    return os.str();
-}
 
 
 std::string slsDetectorCommand::cmdPort(int narg, const char * const args[], int action, int detPos) {

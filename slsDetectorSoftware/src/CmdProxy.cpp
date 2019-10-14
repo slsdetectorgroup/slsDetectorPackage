@@ -539,6 +539,72 @@ std::string CmdProxy::Activate(int action) {
     return os.str();
 }
 
+std::string CmdProxy::PulsePixel(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_times] [x] [y]\n\t[Eiger] Pulse pixel n number of times at coordinates (x, y)." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("cannot get");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 3) {
+            WrongNumberOfParameters(3); 
+        }
+        int n = std::stoi(args[0]);
+        defs::xy c;
+        c.x = std::stoi(args[1]);
+        c.y = std::stoi(args[2]);       
+        det->pulsePixel(n, c, {det_id});
+        //TODO print args
+        os << args[0] << ' ' << args[1] << ' ' << args[2] << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::PulsePixelAndMove(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_times] [x] [y]\n\t[Eiger] Pulse pixel n number of times and moves relatively by (x, y)." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("cannot get");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 3) {
+            WrongNumberOfParameters(3); 
+        }
+        int n = std::stoi(args[0]);
+        defs::xy c;
+        c.x = std::stoi(args[1]);
+        c.y = std::stoi(args[2]);       
+        det->pulsePixelNMove(n, c, {det_id});
+        //TODO print args
+        os << args[0] << ' ' << args[1] << ' ' << args[2] << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::PulseChip(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_times] \n\t[Eiger] Pulse chip n times. If n is -1, resets to normal mode (reset chip completely at start of acquisition, where partialreset = 0)." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("cannot get");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1); 
+        }
+        det->pulseChip(std::stoi(args[0]), {det_id});
+        os << args.front() << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 
 

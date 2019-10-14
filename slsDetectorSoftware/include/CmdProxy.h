@@ -392,8 +392,8 @@ class CmdProxy {
                                     {"r_readfreq", "rx_readfreq"},
 
                                     /* Eiger Specific */
-                                     {"trimdir", "settingsdir"}
-
+                                    {"trimdir", "settingsdir"},
+                                    {"resmat", "partialreset"}
 
 
 
@@ -526,8 +526,10 @@ class CmdProxy {
                           {"measuredperiod", &CmdProxy::measuredperiod},
                           {"measuredsubperiod", &CmdProxy::measuredsubperiod},                          
                           {"activate", &CmdProxy::Activate}, 
-
-
+                          {"partialreset", &CmdProxy::partialreset},
+                          {"pulse", &CmdProxy::PulsePixel},
+                          {"pulsenmove", &CmdProxy::PulsePixelAndMove},
+                          {"pulsechip", &CmdProxy::PulseChip},
 
 
 
@@ -567,6 +569,10 @@ class CmdProxy {
     std::string TrimEnergies(int action);
     std::string RateCorrection(int action);
     std::string Activate(int action);
+    std::string PulsePixel(int action);
+    std::string PulsePixelAndMove(int action);
+    std::string PulseChip(int action);
+
 
 
     std::string SlowAdc(int action);
@@ -875,6 +881,11 @@ class CmdProxy {
 
     TIME_GET_COMMAND(measuredsubperiod, getMeasuredSubFramePeriod, 
                 "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured sub frame period between last sub frame and previous one.");    
+
+    INTEGER_COMMAND(partialreset, getPartialReset, setPartialReset, std::stoi,
+                    "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at start of acquisition. 0 complete reset, 1 partial reset.");      
+
+
 
 
 

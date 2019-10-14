@@ -907,7 +907,12 @@ void Detector::setRxPadDeactivatedMode(bool pad, Positions pos) {
 }
 
 Result<bool> Detector::getPartialReset(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setCounterBit, pos, -1);
+    auto res = pimpl->Parallel(&slsDetector::setCounterBit, pos, -1);
+    Result<bool> t(res.size());
+    for (unsigned int i = 0; i < res.size(); ++i) {
+        t[i] = !res[i];
+    }
+    return t;
 }
 
 void Detector::setPartialReset(bool value, Positions pos) {

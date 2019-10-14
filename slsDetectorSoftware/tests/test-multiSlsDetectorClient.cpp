@@ -9,6 +9,47 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+TEST_CASE("pulse", "[.cmd][.eiger]") {
+    REQUIRE_THROWS(multiSlsDetectorClient("pulse", GET));
+    REQUIRE_THROWS(multiSlsDetectorClient("pulsenmove", GET));       
+    REQUIRE_THROWS(multiSlsDetectorClient("pulsechip", GET));      
+    if (test::type == slsDetectorDefs::EIGER) { 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("pulse 1 1 5", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("pulsenmove 1 1 5", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("pulsechip 1", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("pulse 1 1 5", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("pulsenmove 1 1 5", PUT));       
+        REQUIRE_THROWS(multiSlsDetectorClient("pulsechip 1", PUT));          
+    }
+}
+
+
+TEST_CASE("partialreset", "[.cmd][.eiger]") {
+    if (test::type == slsDetectorDefs::EIGER) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("partialreset 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "partialreset 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("partialreset", GET, nullptr, oss));
+            REQUIRE(oss.str() == "partialreset 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("partialreset 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "partialreset 0\n");
+        }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("partialreset 1", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("partialreset", GET));
+    }
+}
+
+
 TEST_CASE("activate", "[.cmd][.eiger]") {
     if (test::type == slsDetectorDefs::EIGER) {   
         {

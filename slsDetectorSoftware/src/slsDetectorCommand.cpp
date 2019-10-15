@@ -1021,6 +1021,106 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncName = "vipreout";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
     ++i;
+	
+    /*! \page settings
+   - <b>vref_h_adc</b> Sets/gets dac for reference voltage high of ADC for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vref_h_adc";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vb_comp_fe</b> Sets/gets dac for comparator current of analogue front end for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vb_comp_fe";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;    
+
+    /*! \page settings
+   - <b>vb_comp_adc</b> Sets/gets dac for comparator current of ADC for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vb_comp_adc";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vcom_cds</b> Sets/gets dac for common mode voltage of CDS stage for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vcom_cds";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i; 
+
+    /*! \page settings
+   - <b>vref_restore</b> Sets/gets dac for reference charging voltage of temparory storage cell in high gain for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vref_restore";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vb_opa_1st</b> Sets/gets dac for opa current for driving the other DACs in chip for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vb_opa_1st";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;    
+
+    /*! \page settings
+   - <b>vref_comp_fe</b> Sets/gets dac for reference voltage of the comparator of analogue front end for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vref_comp_fe";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vcom_adc1</b> Sets/gets dac for common mode voltage of ADC DAC bank 1 for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vcom_adc1";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;     
+
+    /*! \page settings
+   - <b>vref_prech</b> Sets/gets dac for reference votlage for precharing the preamplifier for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vref_prech";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vref_l_adc</b> Sets/gets dac for reference voltage low for ADC for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vref_l_adc";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;    
+
+    /*! \page settings
+   - <b>vref_cds</b> Sets/gets dac for reference voltage of CDS applied to the temporary storage cell in medium and low gain for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vref_cds";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vb_cs</b> Sets/gets dac for current injection into preamplifier for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vb_cs";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i; 
+
+    /*! \page settings
+   - <b>vb_opa_fd</b> Sets/gets dac for current for CDS opa stage for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vb_opa_fd";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;
+
+    /*! \page settings
+   - <b>vcom_adc2</b> Sets/gets dac for common mode voltage of ADC DAC bank 2 for Gotthard2. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
+	 */
+    descrToFuncMap[i].m_pFuncName = "vcom_adc2";
+    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
+    ++i;    
+
+
 
     /* r/w timers */
     /*! \page settings
@@ -1416,6 +1516,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 std::string slsDetectorCommand::executeLine(int narg, const char * const args[], int action, int detPos) {
     if (action == READOUT_ACTION)
         return cmdAcquire(narg, args, action, detPos);
+
     size_t s = std::string(args[0]).find(':');
     std::string key = std::string(args[0]).substr(0, s); // truncate at :
 

@@ -280,13 +280,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
     ++i;
 
-    /*! \page config
-   - <b>quad [i] </b> if 1, sets the detector size to a quad (Specific to an EIGER quad hardware). 0 by default. \c Returns \c (int)
-	 */
-	descrToFuncMap[i].m_pFuncName="quad"; //
-	descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
-	++i;
-
 
     /* flags */
     /*! \page config
@@ -1838,12 +1831,6 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
                 return std::string("cannot parse arguments for roi xmax");                   
             myDet->setROI(roi, detPos);
         }
-
-		if(cmd=="quad"){
-			if (val >=0 ) {
-				myDet->setQuad(val);
-			}
-		}
         else return std::string("cannot decode function");
 
     }
@@ -1856,8 +1843,6 @@ std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const arg
     } else if (cmd == "roi") {
         ROI roi = myDet->getROI(detPos);
         return (std::string("[") + std::to_string(roi.xmin) + std::string(",") + std::to_string(roi.xmax) + std::string("]")); 
-    } else if (cmd=="quad") {
-		return std::to_string(myDet->getQuad());
     }
     
 
@@ -1876,12 +1861,11 @@ std::string slsDetectorCommand::helpDetectorSize(int action) {
         os << "dr i \n sets the dynamic range of the detector" << std::endl;
         os << "clearroi \n resets region of interest" << std::endl;
         os << "roi xmin xmax \n sets region of interest " << std::endl;
- 		os << "quad i \n if i = 1, sets the detector size to a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;       
+   
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "dr \n gets the dynamic range of the detector" << std::endl;
         os << "roi \n gets region of interest" << std::endl;
-       os << "quad \n returns 1 if the detector size is a quad (Specific to an EIGER quad hardware). 0 by default."<< std::endl;
     }
     return os.str();
 }

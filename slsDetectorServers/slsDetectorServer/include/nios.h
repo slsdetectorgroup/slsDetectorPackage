@@ -3,6 +3,19 @@
 #include <sys/types.h>
 #include <inttypes.h>
 
+/**
+ * Write into a 32 bit register for cspbase 1
+ * @param offset address offset
+ * @param data 32 bit data
+ */
+void bus_w_csp1(u_int32_t offset, u_int32_t data);
+
+/**
+ * Read from a 32 bit register for cspbase 1
+ * @param offset address offset
+ * @retuns 32 bit data read
+ */
+u_int32_t bus_r_csp1(u_int32_t offset);
 
 /**
  * Write into a 32 bit register

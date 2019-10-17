@@ -9,6 +9,46 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("clk", "[.cmd]") {
+    REQUIRE_THROWS(multiSlsDetectorClient("clkfreq 0 2", PUT)); // cannot get
+    REQUIRE_THROWS(multiSlsDetectorClient("clkfreq", GET)); // requires clk index
+    REQUIRE_THROWS(multiSlsDetectorClient("clkfreq 7", GET)); // 7 doesnt exist
+    REQUIRE_THROWS(multiSlsDetectorClient("clkfreq 4", PUT)); // requires clk index and val
+    REQUIRE_THROWS(multiSlsDetectorClient("clkfreq 7 4", PUT)); // 7 doesnt exist  
+    REQUIRE_THROWS(multiSlsDetectorClient("clkphase", GET)); // requires clk index
+    REQUIRE_THROWS(multiSlsDetectorClient("clkphase 7", GET)); // 7 doesnt exist
+    REQUIRE_THROWS(multiSlsDetectorClient("clkphase 4", PUT)); // requires clk index and val
+    REQUIRE_THROWS(multiSlsDetectorClient("clkphase 7 4", PUT)); // 7 doesnt exist        
+    REQUIRE_THROWS(multiSlsDetectorClient("clkdiv", GET)); // requires clk index
+    REQUIRE_THROWS(multiSlsDetectorClient("clkdiv 7", GET)); // 7 doesnt exist
+    REQUIRE_THROWS(multiSlsDetectorClient("clkdiv 4", PUT)); // requires clk index and val
+    REQUIRE_THROWS(multiSlsDetectorClient("clkdiv 7 4", PUT)); // 7 doesnt exist  
+
+    int t = 0;
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("clkdiv 0", GET, nullptr, oss));
+        std::string s = (oss.str()).erase (0, strlen("clkdiv "));
+        t = std::stoi(s);
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("clkdiv 0 " + std::to_string(t), PUT, nullptr, oss));
+        REQUIRE(oss.str() == "clkdiv " + std::to_string(t) + '\n');
+    }
+    REQUIRE_NOTHROW(multiSlsDetectorClient("clkfreq 0", GET));
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("clkphase 1 20", PUT, nullptr, oss);
+        REQUIRE(oss.str() == "clkphase 20\n");
+    }
+    {
+        std::ostringstream oss;
+        multiSlsDetectorClient("clkphase 1", GET, nullptr, oss);
+        REQUIRE(oss.str() == "clkphase 20\n");
+    }  
+}
+
 TEST_CASE("rx_fifodepth", "[.cmd]") {
 
     {

@@ -284,6 +284,15 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_STOREINRAM_MODE:				return "F_GET_STOREINRAM_MODE";
 	case F_SET_READOUT_MODE:				return "F_SET_READOUT_MODE";	
 	case F_GET_READOUT_MODE:				return "F_GET_READOUT_MODE";
+	case F_SET_CLOCK_FREQUENCY:				return "F_SET_CLOCK_FREQUENCY";
+	case F_GET_CLOCK_FREQUENCY:				return "F_GET_CLOCK_FREQUENCY";
+	case F_SET_CLOCK_PHASE:					return "F_SET_CLOCK_PHASE";
+	case F_GET_CLOCK_PHASE:					return "F_GET_CLOCK_PHASE";	
+	case F_GET_MAX_CLOCK_PHASE_SHIFT:		return "F_GET_MAX_CLOCK_PHASE_SHIFT";
+	case F_SET_CLOCK_DIVIDER:				return "F_SET_CLOCK_DIVIDER";	
+	case F_GET_CLOCK_DIVIDER:				return "F_GET_CLOCK_DIVIDER";
+
+
 	default:								return "Unknown Function";
 	}
 }
@@ -403,6 +412,13 @@ void function_table() {
 	flist[F_GET_STOREINRAM_MODE]				= &get_storeinram;
 	flist[F_SET_READOUT_MODE]					= &set_readout_mode;
 	flist[F_GET_READOUT_MODE]					= &get_readout_mode;
+	flist[F_SET_CLOCK_FREQUENCY]				= &set_clock_frequency;
+	flist[F_GET_CLOCK_FREQUENCY]				= &get_clock_frequency;
+	flist[F_SET_CLOCK_PHASE]					= &set_clock_phase;
+	flist[F_GET_CLOCK_PHASE]					= &get_clock_phase;
+	flist[F_GET_MAX_CLOCK_PHASE_SHIFT]			= &get_max_clock_phase_shift;
+	flist[F_SET_CLOCK_DIVIDER]					= &set_clock_divider;
+	flist[F_GET_CLOCK_DIVIDER]					= &get_clock_divider;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -4830,11 +4846,11 @@ int get_dest_udp_port(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int retval = -1;
-	FILE_LOG(logDEBUG1, ("Getting destination port\n"));
+	FILE_LOG(logDEBUG1, ("Getting destination porstore in ram moden"));
 
 	// get only
 	retval = udpDetails.dstport;
-	FILE_LOG(logDEBUG, ("udp destination port retval: %u\n", retval));
+	FILE_LOG(logDEBUG, ("udp destination port retstore in ram model: %u\n", retval));
 
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -5179,6 +5195,270 @@ int get_readout_mode(int file_des) {
 		FILE_LOG(logERROR,(mess));	
 	} else {
 		FILE_LOG(logDEBUG1, ("readout mode retval: %u\n", retval));
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+
+int set_clock_frequency(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[2] = {-1, -1};
+
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting frequency of clock %d: %u\n", args[0], args[1]));
+
+
+	functionNotImplemented();
+/*
+	// only set
+	if (Server_VerifyLock() == OK) {
+		enum CLKINDEX c = (enum CLKINDEX)args[0];
+		if (c >= NUM_CLOCKS) {
+			ret = FAIL;
+			sprintf(mess, "Cannot set frequency of clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
+			FILE_LOG(logERROR, (mess));
+		} else {
+			ret = setFrequency(c, args[1]); 
+			if (ret == FAIL) {
+				strcpy(mess, "Set frequency in unknown state. Reconfigure did not return.\n");
+				FILE_LOG(logERROR, (mess));
+			} else {
+				int retval = getFrequency(c);
+				FILE_LOG(logDEBUG1, ("retval frequency of clock %d: %d\n", (int)c, retval));
+
+				char cval[100];
+				memset(cval, 0, 100);
+				sprintf(cval, "set frequency of clock %d Hz", (int)c);
+				validate(args[1], retval, cval, DEC);
+			}
+		}
+	}
+*/
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_clock_frequency(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = -1;
+	int retval = -1;
+	
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+		return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Getting frequency of clock %d\n", arg));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else	
+	// get only
+	enum CLKINDEX c = (enum CLKINDEX)arg;
+	if (c >= NUM_CLOCKS) {
+		ret = FAIL;
+		sprintf(mess, "Cannot get frequency of clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
+		FILE_LOG(logERROR, (mess));
+	} else {
+		retval = getFrequency(c);
+		FILE_LOG(logDEBUG1, ("retval frequency of clock %d Hz: %d\n", (int)c, retval));
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+int set_clock_phase(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[3] = {-1, -1, -1};
+
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting phase of clock %d: %u %s\n", args[0], args[1], (args[2] == 0 ? "" : "degrees")));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		enum CLKINDEX c = (enum CLKINDEX)args[0];
+		if (c >= NUM_CLOCKS) {
+			ret = FAIL;
+			sprintf(mess, "Cannot set phase for clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
+			FILE_LOG(logERROR, (mess));
+		} else {
+			int val = args[1];
+			int degrees = args[2];
+			if (degrees && (val < 0 || val > 359)) {
+				ret = FAIL;
+				sprintf(mess, "Cannot set phase. Phase provided for C%d outside limits (0 - 359°C)\n", (int)c);
+				FILE_LOG(logERROR, (mess));
+			} else if (!degrees && (val < 0 || val > getMaxPhase(c) - 1)) {
+				ret = FAIL;
+				sprintf(mess, "Cannot set phase. Phase provided for C%d outside limits (0 - %d phase shifts)\n", (int)c, getMaxPhase(c) - 1);
+				FILE_LOG(logERROR, (mess));
+			} else {
+				ret = setPhase(c, val, degrees); 
+				if (ret == FAIL) {
+					strcpy(mess, "Set phase in unknown state. Reconfigure did not return.\n");
+					FILE_LOG(logERROR, (mess));
+				} else {
+					int retval = getPhase(c, degrees);
+					FILE_LOG(logDEBUG1, ("retval phase for clock %d: %d %s \n", (int)c, retval, (degrees == 0 ? "" : "degrees")));
+
+					char cval[100];
+					memset(cval, 0, 100);
+					sprintf(cval, "set phase for clock %d",(int)c);
+					if (!degrees) {
+						validate(val, retval, cval, DEC);
+					} else {
+						ret = validatePhaseinDegrees(c, val, retval);
+						if (ret == FAIL) {
+							sprintf(mess, "Could not set %s. Set %d degrees, got %d degrees\n", cval, val, retval);
+							FILE_LOG(logERROR,(mess));
+						}			
+					}
+				}
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_clock_phase(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[2] = {-1, -1};
+	int retval = -1;
+	
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+		return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Getting phase for clock %d %s \n", args[0], (args[1] == 0 ? "" : "in degrees")));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else	
+	// get only
+	enum CLKINDEX c = (enum CLKINDEX)args[0];
+	if (c >= NUM_CLOCKS) {
+		ret = FAIL;
+		sprintf(mess, "Cannot get phase of clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
+		FILE_LOG(logERROR, (mess));
+	} else {	
+		retval = getPhase(c, args[1]);
+		FILE_LOG(logDEBUG1, ("retval phase for clock %d: %d %s\n", (int)c, retval, (args[1] == 0 ? "" : "degrees")));
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+int get_max_clock_phase_shift(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = -1;
+	int retval = -1;
+	
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+		return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Getting max phase shift of clock %d\n", arg));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else	
+	// get only
+	enum CLKINDEX c = (enum CLKINDEX)arg;
+	if (c >= NUM_CLOCKS) {
+		ret = FAIL;
+		sprintf(mess, "Cannot get frequency of clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
+		FILE_LOG(logERROR, (mess));
+	} else {
+		retval = getMaxPhase(c);
+		FILE_LOG(logDEBUG1, ("retval max phase shift of clock %d: %d\n", (int)c, retval));
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+int set_clock_divider(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[2] = {-1, -1};
+
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting divider of clock %d: %u\n", args[0], args[1]));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		enum CLKINDEX c = (enum CLKINDEX)args[0];
+		int val = args[1];
+		if (c >= NUM_CLOCKS) {
+			ret = FAIL;
+			sprintf(mess, "Cannot set divider of clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
+			FILE_LOG(logERROR, (mess));
+		} else if (getClockDivider(c) == val) {
+			FILE_LOG(logINFO, ("Same clock divider %d\n"));
+		} else if (val < 2 || val > getMaxClockDivider()) {
+			ret = FAIL;
+			sprintf(mess, "Cannot set divider of clock %d to %d. Value should be in range [2-%d]\n", (int)c, val, getMaxClockDivider());
+			FILE_LOG(logERROR, (mess));
+		} else {
+			ret = setClockDivider(c, val); 
+			if (ret == FAIL) {
+				strcpy(mess, "Set divider in unknown state. Reconfigure did not return.\n");
+				FILE_LOG(logERROR, (mess));
+			} else {
+				int retval = getClockDivider(c);
+				FILE_LOG(logDEBUG1, ("retval divider of clock %d: %d\n", (int)c, retval));
+
+				char cval[100];
+				memset(cval, 0, 100);
+				sprintf(cval, "set divider of clock %d Hz", (int)c);
+				validate(val, retval, cval, DEC);
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_clock_divider(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = -1;
+	int retval = -1;
+	
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+		return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Getting divider of clock %d\n", arg));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else	
+	// get only
+	enum CLKINDEX c = (enum CLKINDEX)arg;
+	if (c >= NUM_CLOCKS) {
+		ret = FAIL;
+		sprintf(mess, "Cannot get divider of clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
+		FILE_LOG(logERROR, (mess));
+	} else {
+		retval = getClockDivider(c);
+		FILE_LOG(logDEBUG1, ("retval divider of clock %d Hz: %d\n", (int)c, retval));
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));

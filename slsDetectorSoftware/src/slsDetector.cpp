@@ -3425,6 +3425,57 @@ void slsDetector::setDigitalIODelay(uint64_t pinMask, int delay) {
     FILE_LOG(logDEBUG1) << "Digital IO Delay successful";
 }
 
+int slsDetector::getClockFrequency(int clkIndex) {
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting Clock " << clkIndex << " frequency";
+    sendToDetector(F_GET_CLOCK_FREQUENCY, clkIndex, retval);
+    FILE_LOG(logDEBUG1) << "Clock " << clkIndex << " frequency: " << retval;
+    return retval;
+}
+
+void slsDetector::setClockFrequency(int clkIndex, int value) {
+    int args[]{clkIndex, value};
+    FILE_LOG(logDEBUG1) << "Setting Clock " << clkIndex << " frequency to " << value;
+    sendToDetector(F_SET_CLOCK_FREQUENCY, args, nullptr);
+}
+
+int slsDetector::getClockPhase(int clkIndex, bool inDegrees) {
+    int args[]{clkIndex, static_cast<int>(inDegrees)};
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting Clock " << clkIndex << " phase " << (inDegrees ? "in degrees" : "");
+    sendToDetector(F_GET_CLOCK_PHASE, args, retval);
+    FILE_LOG(logDEBUG1) << "Clock " << clkIndex << " frequency: " << retval << (inDegrees ? "degrees" : "");
+    return retval;
+}
+
+void slsDetector::setClockPhase(int clkIndex, int value, bool inDegrees) {
+    int args[]{clkIndex, value, static_cast<int>(inDegrees)};
+    FILE_LOG(logDEBUG1) << "Setting Clock " << clkIndex << " phase to " << value << (inDegrees ? "degrees" : "");
+    sendToDetector(F_SET_CLOCK_PHASE, args, nullptr);
+}
+
+int slsDetector::getMaxClockPhaseShift(int clkIndex) {
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting Max Phase Shift for Clock " << clkIndex;
+    sendToDetector(F_GET_MAX_CLOCK_PHASE_SHIFT, clkIndex, retval);
+    FILE_LOG(logDEBUG1) << "Max Phase Shift for Clock " << clkIndex << ": " << retval;
+    return retval;
+}
+
+int slsDetector::getClockDivider(int clkIndex) {
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting Clock " << clkIndex << " divider";
+    sendToDetector(F_GET_CLOCK_DIVIDER, clkIndex, retval);
+    FILE_LOG(logDEBUG1) << "Clock " << clkIndex << " divider: " << retval;
+    return retval;
+}
+
+void slsDetector::setClockDivider(int clkIndex, int value) {
+    int args[]{clkIndex, value};
+    FILE_LOG(logDEBUG1) << "Setting Clock " << clkIndex << " divider to " << value;
+    sendToDetector(F_SET_CLOCK_DIVIDER, args, nullptr);
+}
+
 sls_detector_module slsDetector::interpolateTrim(sls_detector_module *a,
                                                  sls_detector_module *b,
                                                  const int energy, const int e1,

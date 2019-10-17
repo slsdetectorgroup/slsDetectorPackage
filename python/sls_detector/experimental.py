@@ -56,8 +56,16 @@ class ExperimentalDetector(CppDetectorApi):
     def __len__(self):
         return self.size()
 
+    def __repr__(self):
+            return '{}(id = {})'.format(self.__class__.__name__,
+                                        self.getShmId())
+
+
     def free(self):
         self.freeSharedMemory()
+
+
+
 
     @property
     def config(self):
@@ -108,6 +116,14 @@ class ExperimentalDetector(CppDetectorApi):
     @property
     def detector_type(self):
         return element_if_equal(self.getDetectorType())
+
+    @property
+    def dr(self):
+        return element_if_equal(self.getDynamicRange())
+
+    @dr.setter
+    def dr(self, dr):
+        self.setDynamicRange(dr)    
 
     @property
     def module_geometry(self):
@@ -175,44 +191,9 @@ class ExperimentalDetector(CppDetectorApi):
             self.setPeriod(t)
         else:
             self.setPeriod(dt.timedelta(seconds=t))
-    # Acq
+
     
 
-    @property
-    def busy(self):
-        """
-        Checks if the detector is acquiring. Can also be set but should only be used if the acquire fails and
-        leaves the detector with busy == True
-
-        .. note ::
-
-            Only works when the measurement is launched using acquire, not with status start!
-
-        Returns
-        --------
-        bool
-            :py:obj:`True` if the detector is acquiring otherwise :py:obj:`False`
-
-        Examples
-        ----------
-
-        ::
-
-            d.busy
-            >> True
-
-            #If the detector is stuck reset by:
-            d.busy = False
-
-
-        """
-        return self.getAcquiringFlag()
-
-    @busy.setter
-    def busy(self, value):
-        self.setAcquiringFlag(value)
-
-    # Configuration
     
   
     # Time
@@ -430,3 +411,11 @@ class ExperimentalDetector(CppDetectorApi):
     @zmqip.setter
     def zmqip(self, ip):
         self.setClientZmqIp(ip)
+
+    @property
+    def vhighvoltage(self):
+        return element_if_equal(self.getHighVoltage())
+
+    @vhighvoltage.setter
+    def vhighvoltage(self, v):
+        self.setHighVoltage(v)

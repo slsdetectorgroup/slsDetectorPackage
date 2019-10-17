@@ -23,14 +23,19 @@
 #define DEFAULT_EXPTIME				(1 * 1000 * 1000)	        // 1 ms
 #define DEFAULT_PERIOD				(1 * 1000 * 1000 * 1000)	// 1 s
 #define DEFAULT_HIGH_VOLTAGE		(0)
-#define DEFAULT_RUN_CLK             (125) 
-#define DEFAULT_TICK_CLK            (20) // will be fixed later. Not configurable
-#define DEFAULT_SAMPLING_CLK        (80)
-
+#define DEFAULT_READOUT_C0          (144444448) // rdo_clk, 144 MHz  
+#define DEFAULT_READOUT_C1          (288888896) // rdo_x2_clk, 288 MHz  
+#define DEFAULT_SYSTEM_C0			(144444448) // run_clk, 144 MHz 
+#define DEFAULT_SYSTEM_C1			(72222224) // chip_clk, 72 MHz 
+#define DEFAULT_SYSTEM_C2			(18055556) // sync_clk, 18 MHz 
+#define DEFAULT_SYSTEM_C3			(144444448) // str_clk, 144 MHz
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
 
 /* Firmware Definitions */
 #define IP_HEADER_SIZE              (20)
+#define READOUT_PLL_VCO_FREQ_HZ     (866666688) // Hz 
+#define SYSTEM_PLL_VCO_FREQ_HZ      (722222240) // Hz
+
 
 /** Other Definitions */
 #define BIT16_MASK					(0xFFFF)
@@ -71,7 +76,7 @@ enum DACINDEX				        {G_VREF_H_ADC, /* 0	*/		\
 		  							0,			/* 14 (0 mV) DAC_UNUSED2*/		\
         							1400 		/* 15 (700 mV) VCOM_ADC2*/		\
 									};
-enum CLKINDEX                       {RUN_CLK, TICK_CLK, SAMPLING_CLK, NUM_CLOCKS};
+enum CLKINDEX                       {READOUT_C0, READOUT_C1, SYSTEM_C0, SYSTEM_C1, SYSTEM_C2, SYSTEM_C3, NUM_CLOCKS};
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

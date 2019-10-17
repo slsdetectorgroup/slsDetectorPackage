@@ -538,7 +538,11 @@ class CmdProxy {
                           {"adc", &CmdProxy::SlowAdc},                            
                           {"runclk", &CmdProxy::runclk},  
                           {"lock", &CmdProxy::lock},
-                          {"savepattern", &CmdProxy::savepattern}                         
+                          {"savepattern", &CmdProxy::savepattern},
+                          {"clkfreq", &CmdProxy::ClockFrequency},
+                          {"clkphase", &CmdProxy::ClockPhase},
+                          {"maxclkphaseshift", &CmdProxy::MaxClockPhaseShift},
+                          {"clkdiv", &CmdProxy::ClockDivider}                         
                           };
 
 
@@ -576,7 +580,10 @@ class CmdProxy {
 
 
     std::string SlowAdc(int action);
-    
+    std::string ClockFrequency(int action);
+    std::string ClockPhase(int action);
+    std::string MaxClockPhaseShift(int action);
+    std::string ClockDivider(int action);
 
 
     /* configuration */

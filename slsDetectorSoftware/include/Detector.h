@@ -1200,6 +1200,33 @@ class Detector {
 
     Result<uint64_t> getRxCurrentFrameIndex(Positions pos = {}) const;
 
+    /** [Gotthard2] Hz */
+    Result<int> getClockFrequency(int clkIndex, Positions pos = {});
+
+    /** [unknown] Hz */
+    void setClockFrequency(int clkIndex, int value, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<int> getClockPhase(int clkIndex, Positions pos = {});
+
+    /** [Gotthard2] */
+    void setClockPhase(int clkIndex, int value, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<int> getMaxClockPhaseShift(int clkIndex, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<int> getClockPhaseinDegrees(int clkIndex, Positions pos = {});
+
+    /** [Gotthard2] */
+    void setClockPhaseinDegrees(int clkIndex, int value, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<int> getClockDivider(int clkIndex, Positions pos = {});
+
+    /** [Gotthard2] */
+    void setClockDivider(int clkIndex, int value, Positions pos = {});
+
   private:
     std::vector<int> getPortNumbers(int start_port);
 };

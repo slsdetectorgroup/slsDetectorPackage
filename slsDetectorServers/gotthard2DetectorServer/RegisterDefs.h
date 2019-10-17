@@ -2,8 +2,35 @@
 
 /* Definitions for FPGA*/
 #define REG_OFFSET                      (4)
+
+/* cspbase 0x1804 0000 */
+#define BASE_READOUT_PLL                (0x000) 
+#define BASE_SYSTEM_PLL                 (0x800)
+
+#define READOUT_PLL_RESET_REG           (0x1 * REG_OFFSET + BASE_READOUT_PLL) //TODO
+
+#define READOUT_PLL_RESET_OFST          (0)
+#define READOUT_PLL_RESET_MSK           (0x00000001 << READOUT_PLL_RESET_OFST)
+
+#define SYSTEM_PLL_RESET_REG            (0x1 * REG_OFFSET + BASE_SYSTEM_PLL) //TODO
+
+#define SYSTEM_PLL_RESET_OFST           (0)
+#define SYSTEM_PLL_RESET_MSK            (0x00000001 << SYSTEM_PLL_RESET_OFST)
+
+#define READOUT_PLL_WAIT_REG            (0x2 * REG_OFFSET + BASE_READOUT_PLL) //TODO
+
+#define READOUT_PLL_WAIT_OFST           (0)
+#define READOUT_PLL_WAIT_MSK            (0x00000001 << READOUT_PLL_WAIT_OFST)
+
+#define SYSTEM_PLL_WAIT_REG             (0x2 * REG_OFFSET + BASE_SYSTEM_PLL) //TODO
+
+#define SYSTEM_PLL_WAIT_OFST            (0)
+#define SYSTEM_PLL_WAIT_MSK             (0x00000001 << SYSTEM_PLL_WAIT_OFST)
+
+
+/* cspbase 0x1806 0000 */
 #define BASE_CONTROL                    (0x000)
-#define BASE_ACQUISITION                (0x200)
+#define BASE_ACQUISITION                (0x200) //???TODO
 #define BASE_UDP_RAM                    (0x1000)
 
 /* Module Control Board Serial Number register */
@@ -44,7 +71,9 @@
 #define DTA_OFFSET_REG                  (0x104 * REG_OFFSET + BASE_CONTROL)
 
 
-/* Pattern Control FPGA registers TODO --------------------------------------------------*/
+
+
+/* BASE_ACQUISITION FPGA registers TODO --------------------------------------------------*/
 
 /* Triggers left 64bit Register */
 #define GET_CYCLES_LSB_REG              (0x10 + BASE_ACQUISITION)

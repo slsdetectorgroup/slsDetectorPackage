@@ -6,6 +6,7 @@
 #include "DAC6571.h"
 #include "LTC2620_Driver.h"
 #include "common.h"
+#include "ALTERA_PLL_CYCLONE10.h" // pll
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #endif
@@ -17,7 +18,7 @@
 #include <time.h>
 #endif
 
-
+enum {READOUT_PLL, SYSTEM_PLL};
 
 
 // Global variable from slsDetectorServer_funcs
@@ -34,8 +35,8 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
-
-uint32_t clkDivider[NUM_CLOCKS] = {125, 20, 80};
+int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
+uint32_t clkDivider[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
 int detPos[2] = {0, 0};
@@ -338,12 +339,20 @@ void initStopServer() {
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Gotthard2 module \n")); 
 
-	clkDivider[RUN_CLK] = DEFAULT_RUN_CLK;
-	clkDivider[TICK_CLK] = DEFAULT_TICK_CLK;
-	clkDivider[SAMPLING_CLK] = DEFAULT_SAMPLING_CLK;
+	clkDivider[READOUT_C0] = DEFAULT_READOUT_C0;
+	clkDivider[READOUT_C1] = DEFAULT_READOUT_C1;
+	clkDivider[SYSTEM_C0] = DEFAULT_SYSTEM_C0;
+	clkDivider[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
+	clkDivider[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
+	clkDivider[SYSTEM_C3] = DEFAULT_SYSTEM_C3;
+
+
 	highvoltage = 0;
 	{
 		int i;
+		for (i = 0; i < NUM_CLOCKS; ++i) {
+            clkPhase[i] = 0;
+        }
 		for (i = 0; i < NDAC; ++i) {
 			dacValues[i] = 0;
 		}
@@ -351,6 +360,10 @@ void setupDetector() {
 
 
 #ifndef VIRTUAL
+	// pll defines
+	ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL, READOUT_PLL_RESET_REG, SYSTEM_PLL_RESET_REG, READOUT_PLL_RESET_MSK, SYSTEM_PLL_RESET_MSK, READOUT_PLL_WAIT_REG, SYSTEM_PLL_WAIT_REG, READOUT_PLL_WAIT_MSK, SYSTEM_PLL_WAIT_MSK, READOUT_PLL_VCO_FREQ_HZ, SYSTEM_PLL_VCO_FREQ_HZ);
+	ALTERA_PLL_C10_ResetPLL(READOUT_PLL);
+	ALTERA_PLL_C10_ResetPLL(SYSTEM_PLL);
 	// hv
     DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
 	// dacs
@@ -396,7 +409,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 
 	int64_t retval = -1;
 
-	switch(ind){
+	switch(ind) {
 
 	case FRAME_NUMBER: // defined in sls_detector_defs.h (general)
 		if(val >= 0) {
@@ -407,20 +420,20 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		break;
 
 	case ACQUISITION_TIME:
-		if(val >= 0){
+		if(val >= 0) {
 			FILE_LOG(logINFO, ("Setting exptime: %lldns\n", (long long int)val));
-			val *= (1E-3 * RUN_CLK);
+			val *= (1E-9 * READOUT_C0); //TODO
 		}
-		retval = set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) / (1E-3 * RUN_CLK); // CLK defined in slsDetectorServer_defs.h
+		retval = set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) / (1E-9 * READOUT_C0); //TODO
 		FILE_LOG(logDEBUG1, ("Getting exptime: %lldns\n", (long long int)retval));
 		break;
 
 	case FRAME_PERIOD:
 		if(val >= 0){
 			FILE_LOG(logINFO, ("Setting period: %lldns\n",(long long int)val));
-			val *= (1E-3 * TICK_CLK);
+			val *= (1E-9 * SYSTEM_C0);//TODO
 		}
-		retval = set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG )/ (1E-3 * TICK_CLK);
+		retval = set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG )/ (1E-9 * SYSTEM_C0); //TODO
 		FILE_LOG(logDEBUG1, ("Getting period: %lldns\n", (long long int)retval));
 		break;
 	case TRIGGER_NUMBER:
@@ -445,17 +458,17 @@ int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
     switch(ind) {
     case ACQUISITION_TIME:
 		// convert to freq
-        val *= (1E-3 * RUN_CLK);
+        val *= (1E-9 * READOUT_C0);//TODO
         // convert back to timer
-        val = (val) / (1E-3 * RUN_CLK);
+        val = (val) / (1E-9 * READOUT_C0);//TODO
         if (val != retval)
             return FAIL;
         break;
     case FRAME_PERIOD:
 		// convert to freq
-        val *= (1E-3 * TICK_CLK);
+        val *= (1E-9 * SYSTEM_C0);//TODO
         // convert back to timer
-        val = (val) / (1E-3 * TICK_CLK);
+        val = (val) / (1E-9 * SYSTEM_C0);//TODO
         if (val != retval)
             return FAIL;
         break;
@@ -673,6 +686,152 @@ void calcChecksum(udp_header* udp) {
 	checksum += UDP_IP_HEADER_LENGTH_BYTES;
 	FILE_LOG(logINFO, ("\tIP checksum is 0x%lx\n",checksum));
 	udp->ip_checksum = checksum;
+}
+
+// Detector Specific
+int setPhase(enum CLKINDEX ind, int val, int degrees) {
+	char clock_names[6][15]={"Readout_c0", "Readout_c1", "System_c0", "System_c1", "System_c2", "System_c3"};
+    FILE_LOG(logDEBUG1, ("\tConfiguring Phase of C%d(%s) to %d (degree mode: %d)\n", ind, clock_names[ind], val, degrees));
+	
+	int maxShift = getMaxPhase(ind);
+	int valShift = val;
+	// convert to phase shift
+	if (degrees) {
+		ConvertToDifferentRange(0, 359, 0, maxShift - 1, val, &valShift);
+	}
+	FILE_LOG(logDEBUG1, ("\tphase shift: %d (degrees/shift: %d)\n", valShift, val));
+
+	int relativePhase = valShift - clkPhase[ind];
+	FILE_LOG(logDEBUG1, ("\trelative phase shift: %d (Current phase: %d)\n", relativePhase, clkPhase[ind]));
+
+    // same phase
+    if (!relativePhase) {
+    	FILE_LOG(logINFO, ("\tNothing to do in Phase Shift\n"));
+    	return OK;
+    }
+    FILE_LOG(logINFOBLUE, ("\tConfiguring Phase of C%d(%s) to %d (degree mode: %d)\n", ind, clock_names[ind], val, degrees));
+
+    int phase = 0;
+    if (relativePhase > 0) {
+        phase = (maxShift - relativePhase);
+    } else {
+    	phase = (-1) * relativePhase;
+    }
+    FILE_LOG(logDEBUG1, ("\t[Single Direction] Phase:%d (0x%x). Max Phase shifts:%d\n", phase, phase, maxShift));
+
+	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
+	int clkIndex = ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind;
+    int ret = ALTERA_PLL_C10_SetPhaseShift(pllIndex, clkIndex, phase, 0);
+
+    clkPhase[ind] = valShift;
+	return ret;
+}
+
+int getPhase(enum CLKINDEX ind, int degrees) {
+	if (!degrees)
+		return clkPhase[ind];
+	// convert back to degrees
+	int val = 0;
+	ConvertToDifferentRange(0, getMaxPhase(ind) - 1, 0, 359, clkPhase[ind], &val);
+	return val;
+}
+
+int getMaxPhase(enum CLKINDEX ind) {
+	int vcofreq = getVCOFrequency(ind);
+	int maxshiftstep = ALTERA_PLL_C10_GetMaxPhaseShiftStepsofVCO();
+	int ret = ((double)vcofreq / (double)clkDivider[ind]) * maxshiftstep;
+
+	char clock_names[6][15]={"Readout_c0", "Readout_c1", "System_c0", "System_c1", "System_c2", "System_c3"};
+	FILE_LOG(logDEBUG1, ("\tMax Phase Shift (%s): %d (Clock: %d Hz, VCO:%d Hz)\n",
+			clock_names[ind], ret, clkDivider[ind], vcofreq));
+
+	return ret;
+}
+
+int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval) {
+	if (val == -1)
+		return OK;
+	FILE_LOG(logDEBUG1, ("validating phase in degrees for clk %d\n", (int)ind));
+	int maxShift = getMaxPhase(ind);
+	// convert degrees to shift
+	// convert degrees to shift
+	int valShift = 0;
+	ConvertToDifferentRange(0, 359, 0, maxShift - 1, val, &valShift);
+	// convert back to degrees
+	ConvertToDifferentRange(0, maxShift - 1, 0, 359, valShift, &val);
+
+	if (val == retval)
+		return OK;
+	return FAIL;
+}
+
+
+
+int getFrequency(enum CLKINDEX ind) {
+    return clkDivider[ind];
+}
+
+int getVCOFrequency(enum CLKINDEX ind) {
+	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
+	return ALTERA_PLL_C10_GetVCOFrequency(pllIndex);
+}
+
+int getMaxClockDivider() {
+	return ALTERA_PLL_C10_GetMaxClockDivider();
+}
+
+int setClockDivider(enum CLKINDEX ind, int val) {
+	char clock_names[6][15]={"Readout_c0", "Readout_c1", "System_c0", "System_c1", "System_c2", "System_c3"};
+
+	int vcofreq = getVCOFrequency(ind);
+	int currentdiv = vcofreq / clkDivider[ind];
+	int newfreq = vcofreq / val;
+
+    FILE_LOG(logINFO, ("\tConfiguring Click Divider of C%d(%s) from %d (%d Hz) to %d (%d Hz). \n\t(Vcofreq: %d Hz)\n", ind, clock_names[ind], currentdiv, clkDivider[ind], val, newfreq, vcofreq));
+
+    // Remembering old phases
+    int oldPhases[NUM_CLOCKS];
+	{ 
+		int i = 0;
+		for (i = 0; i < NUM_CLOCKS; ++i) {
+			oldPhases	[i] = getPhase(i, 0);
+			FILE_LOG(logDEBUG1, ("\tRemembering C%d (%s) phase: %d\n", ind, clock_names, oldPhases[i]));
+		}
+	}
+
+    // Calculate and set output frequency
+	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
+	int clkIndex = ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind;
+    int ret = ALTERA_PLL_C10_SetOuputFrequency (pllIndex, clkIndex, newfreq);
+	clkDivider[ind] = newfreq;
+    FILE_LOG(logINFO, ("\tC%d(%s): Clock Divider set to %d (%d Hz)\n", ind, clock_names[ind], val, clkDivider[ind]));
+   
+    // phase is reset by pll (when setting output frequency)
+	if (ind >= READOUT_C0) {
+    	clkPhase[READOUT_C0] = 0;
+    	clkPhase[READOUT_C1] = 0;		
+	} else {
+    	clkPhase[SYSTEM_C0] = 0;
+    	clkPhase[SYSTEM_C1] = 0;
+    	clkPhase[SYSTEM_C2] = 0;
+    	clkPhase[SYSTEM_C3] = 0;
+	}
+
+    // set the phase if custom set
+	{ 
+		int i = 0;
+		for (i = 0; i < NUM_CLOCKS; ++i) {
+			if (clkPhase[i] != oldPhases[i]) {
+				FILE_LOG(logINFO, ("\tPhase reset by PLL\n\tCorrecting C%d(%s) to %d\n", i, clock_names[i], oldPhases[i]));
+				setPhase(i, oldPhases[i], 0);
+			}
+		}
+	}
+	return ret;
+}
+
+int getClockDivider(enum CLKINDEX ind) {
+	return (getVCOFrequency(ind) / clkDivider[ind]);
 }
 
 

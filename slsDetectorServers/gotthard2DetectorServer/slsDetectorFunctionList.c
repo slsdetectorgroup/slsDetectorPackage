@@ -789,13 +789,13 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 
     FILE_LOG(logINFO, ("\tConfiguring Click Divider of C%d(%s) from %d (%d Hz) to %d (%d Hz). \n\t(Vcofreq: %d Hz)\n", ind, clock_names[ind], currentdiv, clkDivider[ind], val, newfreq, vcofreq));
 
-    // Remembering old phases
+    // Remembering old phases in degrees
     int oldPhases[NUM_CLOCKS];
 	{ 
 		int i = 0;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
-			oldPhases	[i] = getPhase(i, 0);
-			FILE_LOG(logDEBUG1, ("\tRemembering C%d (%s) phase: %d\n", ind, clock_names, oldPhases[i]));
+			oldPhases	[i] = getPhase(i, 1);
+			FILE_LOG(logDEBUG1, ("\tRemembering C%d (%s) phase: %d degrees\n", ind, clock_names, oldPhases[i]));
 		}
 	}
 
@@ -817,14 +817,12 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     	clkPhase[SYSTEM_C3] = 0;
 	}
 
-    // set the phase if custom set
+    // set the phase in degreesif custom set
 	{ 
 		int i = 0;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
-			if (clkPhase[i] != oldPhases[i]) {
-				FILE_LOG(logINFO, ("\tPhase reset by PLL\n\tCorrecting C%d(%s) to %d\n", i, clock_names[i], oldPhases[i]));
-				setPhase(i, oldPhases[i], 0);
-			}
+			FILE_LOG(logINFO, ("\tPhase reset by PLL\n\tCorrecting C%d(%s) to %d degrees\n", i, clock_names[i], oldPhases[i]));
+			setPhase(i, oldPhases[i], 1);
 		}
 	}
 	return ret;

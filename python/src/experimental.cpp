@@ -434,9 +434,10 @@ void init_experimental(py::module &m) {
              py::arg() = Positions{})
         .def("getRxPadDeactivatedMode", &Detector::getRxPadDeactivatedMode,
              py::arg() = Positions{})
-        .def("setRxPadDeactivatedMode", &Detector::setRxPadDeactivatedMode, py::arg(),
+        .def("setRxPadDeactivatedMode", &Detector::setRxPadDeactivatedMode,
+             py::arg(), py::arg() = Positions{})
+        .def("getPartialReset", &Detector::getPartialReset,
              py::arg() = Positions{})
-        .def("getPartialReset", &Detector::getPartialReset, py::arg() = Positions{})
         .def("setPartialReset", &Detector::setPartialReset, py::arg(),
              py::arg() = Positions{})
 
@@ -454,10 +455,38 @@ void init_experimental(py::module &m) {
          *    Jungfrau Specific                           *
          *                                                *
          * ************************************************/
-        .def("getThresholdTemperature", &Detector::getThresholdTemperature, py::arg() = Positions{})
-        .def("setThresholdTemperature", &Detector::setThresholdTemperature, py::arg(),
+        .def("getThresholdTemperature", &Detector::getThresholdTemperature,
+             py::arg() = Positions{})
+        .def("setThresholdTemperature", &Detector::setThresholdTemperature,
+             py::arg(), py::arg() = Positions{})
+        .def("getTemperatureControl", &Detector::getTemperatureControl,
+             py::arg() = Positions{})
+        .def("setTemperatureControl", &Detector::setTemperatureControl,
+             py::arg(), py::arg() = Positions{})
+        .def("getTemperatureEvent", &Detector::getTemperatureEvent,
+             py::arg() = Positions{})
+        .def("resetTemperatureEvent", &Detector::resetTemperatureEvent,
              py::arg() = Positions{})
 
+        .def("getPowerChip", &Detector::getPowerChip, py::arg() = Positions{})
+        .def("setPowerChip", &Detector::setPowerChip, py::arg(),
+             py::arg() = Positions{})
+        .def("getAutoCompDisable", &Detector::getAutoCompDisable,
+             py::arg() = Positions{})
+        .def("setAutoCompDisable", &Detector::setAutoCompDisable, py::arg(),
+             py::arg() = Positions{})
+
+        .def("getNumberOfAdditionalStorageCells",
+             &Detector::getNumberOfAdditionalStorageCells)
+        .def("setNumberOfAdditionalStorageCells",
+             &Detector::setNumberOfAdditionalStorageCells)
+        .def("getStorageCellStart", &Detector::getStorageCellStart,
+             py::arg() = Positions{})
+        .def("setStoragecellStart", &Detector::setStoragecellStart, py::arg(),
+             py::arg() = Positions{})
+
+        .def("setStorageCellDelay", &Detector::setStorageCellDelay, py::arg(),
+             py::arg() = Positions{})
 
         // Bits and registers
         .def("setBit", &Detector::setBit, py::arg(), py::arg(),

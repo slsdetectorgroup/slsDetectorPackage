@@ -181,4 +181,110 @@ std::string CmdProxy::ListCommands(int action) {
     }
 }
 
+
+
+std::string CmdProxy::ClockFrequency(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_clock (0-8)] [freq_in_Hz]\n\t[Gotthard2] Frequency of clock n_clock in Hz. Use clkdiv to set frequency." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {                                
+            WrongNumberOfParameters(1);         
+        } 
+        auto t = det->getClockFrequency(std::stoi(args[0]), {det_id});       
+        os << OutString(t) << '\n';     
+    } else if (action == defs::PUT_ACTION) {     
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);  
+        }                                
+        det->setClockFrequency(std::stoi(args[0]), std::stoi(args[1]));  
+        //TODO print args
+        os << std::stoi(args[1]) << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+
+std::string CmdProxy::ClockPhase(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_clock (0-8)] [phase] [deg (optional)]\n\t[Gotthard2] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() == 1) {                                
+            auto t = det->getClockPhase(std::stoi(args[0]), {det_id});
+            os << OutString(t) << '\n';       
+        } else if (args.size() == 2) {    
+            if (args[1] != "deg") {
+                throw sls::RuntimeError("Cannot scan argument" + args[1] + ". Did you mean deg?");   
+            }                            
+            auto t = det->getClockPhaseinDegrees(std::stoi(args[0]), {det_id});
+            os << OutString(t) << '\n';       
+        } else {
+            WrongNumberOfParameters(1);  
+        }
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() == 2) {                                
+            det->setClockPhase(std::stoi(args[0]), std::stoi(args[1]), {det_id});
+            os << args[1] << '\n';       
+        } else if (args.size() == 3) {    
+            if (args[2] != "deg") {
+                throw sls::RuntimeError("Cannot scan argument" + args[2] + ". Did you mean deg?");     
+            }                            
+            det->setClockPhaseinDegrees(std::stoi(args[0]), std::stoi(args[1]), {det_id});
+            os << std::stoi(args[1]) << '\n';       
+        } else {
+            WrongNumberOfParameters(1);  
+        }     
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::MaxClockPhaseShift(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_clock (0-8)]\n\t[Gotthard2] Absolute Maximum Phase shift of clock n_clock." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);  
+        }                    
+        auto t = det->getMaxClockPhaseShift(std::stoi(args[0]), {det_id});
+        os << OutString(t) << '\n';       
+    } else if (action == defs::PUT_ACTION) {
+        throw sls::RuntimeError("Cannot put");   
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::ClockDivider(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_clock (0-8)] [n_divider]\n\t[Gotthard2] Clock Divider of clock n_clock. Must be greater than 1." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {                                
+            WrongNumberOfParameters(1);         
+        } 
+        auto t = det->getClockDivider(std::stoi(args[0]), {det_id});       
+        os << OutString(t) << '\n';     
+    } else if (action == defs::PUT_ACTION) {     
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);  
+        }                         
+        det->setClockDivider(std::stoi(args[0]), std::stoi(args[1]));  
+        //TODO print args
+        os << std::stoi(args[1]) << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 } // namespace sls

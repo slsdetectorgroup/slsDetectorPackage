@@ -1679,6 +1679,27 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     void setDigitalIODelay(uint64_t pinMask, int delay);
 
+    /** [Gotthard2] */
+    int getClockFrequency(int clkIndex);
+
+    /** [Gotthard2] */
+    void setClockFrequency(int clkIndex, int value);
+
+    /** [Gotthard2] */
+    int getClockPhase(int clkIndex, bool inDegrees);
+
+    /** [Gotthard2] */
+    void setClockPhase(int clkIndex, int value, bool inDegrees);
+
+    /** [Gotthard2] */
+    int getMaxClockPhaseShift(int clkIndex);
+
+    /** [Gotthard2] */
+    int getClockDivider(int clkIndex);
+
+    /** [Gotthard2] */
+    void setClockDivider(int clkIndex, int value);
+    
   private:
     /**
      * Send function parameters to detector (control server)

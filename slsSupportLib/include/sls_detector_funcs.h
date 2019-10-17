@@ -124,6 +124,13 @@ enum detFuncs{
 	F_GET_STOREINRAM_MODE,	
 	F_SET_READOUT_MODE,
 	F_GET_READOUT_MODE,	
+	F_SET_CLOCK_FREQUENCY,
+	F_GET_CLOCK_FREQUENCY,
+	F_SET_CLOCK_PHASE,
+	F_GET_CLOCK_PHASE,
+	F_GET_MAX_CLOCK_PHASE_SHIFT,
+	F_SET_CLOCK_DIVIDER,
+	F_GET_CLOCK_DIVIDER,
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -307,6 +314,14 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_STOREINRAM_MODE:				return "F_GET_STOREINRAM_MODE";
 	case F_SET_READOUT_MODE:				return "F_SET_READOUT_MODE";	
 	case F_GET_READOUT_MODE:				return "F_GET_READOUT_MODE";
+	case F_SET_CLOCK_FREQUENCY:				return "F_SET_CLOCK_FREQUENCY";
+	case F_GET_CLOCK_FREQUENCY:				return "F_GET_CLOCK_FREQUENCY";
+	case F_SET_CLOCK_PHASE:					return "F_SET_CLOCK_PHASE";
+	case F_GET_CLOCK_PHASE:					return "F_GET_CLOCK_PHASE";
+	case F_GET_MAX_CLOCK_PHASE_SHIFT:		return "F_GET_MAX_CLOCK_PHASE_SHIFT";
+	case F_SET_CLOCK_DIVIDER:				return "F_SET_CLOCK_DIVIDER";	
+	case F_GET_CLOCK_DIVIDER:				return "F_GET_CLOCK_DIVIDER";
+
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
 

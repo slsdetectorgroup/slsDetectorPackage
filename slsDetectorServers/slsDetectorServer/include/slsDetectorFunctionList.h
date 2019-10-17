@@ -380,7 +380,24 @@ uint64_t    writePatternWord(int addr, uint64_t word);
 int         setPatternWaitAddress(int level, int addr);
 uint64_t    setPatternWaitTime(int level, uint64_t t);
 void        setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
+
+
+#elif GOTTHARD2D
+int        	setPhase(enum CLKINDEX ind, int val, int degrees);
+int         getPhase(enum CLKINDEX ind, int degrees);
+int         getMaxPhase(enum CLKINDEX ind);
+int 		validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
+//int       	setFrequency(enum CLKINDEX ind, int val);
+int         getFrequency(enum CLKINDEX ind);
+int         getVCOFrequency(enum CLKINDEX ind);
+int       	getMaxClockDivider();
+int       	setClockDivider(enum CLKINDEX ind, int val);
+int         getClockDivider(enum CLKINDEX ind);
 #endif
+
+
+
+
 
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int         setNetworkParameter(enum NETWORKINDEX mode, int value);

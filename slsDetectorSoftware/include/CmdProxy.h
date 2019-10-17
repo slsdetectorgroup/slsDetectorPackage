@@ -141,7 +141,11 @@ class CmdProxy {
                           {"rx_udpport", &CmdProxy::rx_udpport},
                           {"rx_udpport2", &CmdProxy::rx_udpport2},
                           {"numinterfaces", &CmdProxy::numinterfaces},
-                          {"selinterface", &CmdProxy::selinterface}};
+                          {"selinterface", &CmdProxy::selinterface},
+                          {"clkfreq", &CmdProxy::ClockFrequency},
+                          {"clkphase", &CmdProxy::ClockPhase},
+                          {"maxclkphaseshift", &CmdProxy::MaxClockPhaseShift},
+                          {"clkdiv", &CmdProxy::ClockDivider}};
 
     StringMap depreciated_functions{{"r_readfreq", "rx_readfreq"},
                                     {"r_padding", "rx_padding"},
@@ -171,6 +175,10 @@ class CmdProxy {
     std::string Period(int action);
     std::string Exptime(int action);
     std::string SubExptime(int action);
+    std::string ClockFrequency(int action);
+    std::string ClockPhase(int action);
+    std::string MaxClockPhaseShift(int action);
+    std::string ClockDivider(int action);
 
     INTEGER_COMMAND(
         rx_fifodepth, getRxFifoDepth, setRxFifoDepth, std::stoi,

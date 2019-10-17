@@ -9,6 +9,7 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
 TEST_CASE("rx_fifodepth", "[.cmd]") {
 
     {

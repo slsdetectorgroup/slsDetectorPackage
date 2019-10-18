@@ -9,6 +9,46 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("samples", "[.cmd][.gotthard]") {
+    if (test::type == slsDetectorDefs::GOTTHARD) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("samples 1200", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "samples 1200n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("samples 1000", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "samples 1000\n");
+        }   
+         {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("asamples 2200", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "asamples 2200n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("asamples 4000", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "asamples 4000\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dsamples 1200", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "dsamples 1200n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dsamples 1000", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "dsamples 1000\n");
+        }    
+       REQUIRE_THROWS(multiSlsDetectorClient("samples", GET));   // different values            
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("samples", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("asamples", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("dsamples", GET));        
+    }
+}
+
 TEST_CASE("imagetest", "[.cmd][.gotthard]") {
     if (test::type == slsDetectorDefs::GOTTHARD) {   
         {

@@ -765,7 +765,35 @@ std::string CmdProxy::ClearROI(int action) {
 
 /* CTB Specific */
 
-
+std::string CmdProxy::Samples(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_samples]\n\t[CTB] Number of samples (both analog and digitial) expected." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {                                
+            WrongNumberOfParameters(0);         
+        } 
+        auto a = det->getNumberOfAnalogSamples({det_id});  
+        auto d = det->getNumberOfDigitalSamples({det_id});   
+        int as = a.squash(-1);
+        int ds = d.squash(-1);
+        if (as == -1 || ds == -1 || as != ds) { // check if a == d?
+            throw sls::RuntimeError("Different samples. Use asamples or dsamples.");
+        }  
+        os << OutString(a) << '\n';     
+    } else if (action == defs::PUT_ACTION) {     
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);  
+        }                                
+        det->setNumberOfAnalogSamples(std::stoi(args[0]));  
+        det->setNumberOfDigitalSamples(std::stoi(args[0]));  
+        os << args.front() << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 
 

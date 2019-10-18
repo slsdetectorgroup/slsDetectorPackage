@@ -340,27 +340,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
   
     /* r/w timers */
 
-    /*! \page timing
-   - <b>samples [i]</b> sets/gets number of samples (both analog and digital) expected from the ctb. Used in CHIP TEST BOARD  and MOENCH only. \c Returns \c (long long int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "samples";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
-    /*! \page timing
-   - <b>asamples [i]</b> sets/gets number of analog samples expected from the ctb. Used in CHIP TEST BOARD and MOENCH only. \c Returns \c (long long int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "asamples";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
-    /*! \page timing
-   - <b>dsamples [i]</b> sets/gets number of digital samples expected from the ctb. Used in CHIP TEST BOARD and MOENCH only. \c Returns \c (long long int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "dsamples";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
 
     /* read only timers */
 
@@ -2444,82 +2423,6 @@ std::string slsDetectorCommand::helpTempControl(int action) {
     return os.str();
 }
 
-
-std::string slsDetectorCommand::cmdTimer(int narg, const char * const args[], int action, int detPos) {
-    timerIndex index;
-    int64_t t = -1, ret;
-    double val, rval;
-
-    char answer[1000];
-
-    if (action == HELP_ACTION)
-        return helpTimer(action);
-
-
-    // also does digital sample
-    if (cmd == "samples") 
-        index = ANALOG_SAMPLES; 
-    else if (cmd == "asamples")
-        index = ANALOG_SAMPLES;
-    else if (cmd == "dsamples")
-        index = DIGITAL_SAMPLES;
- else
-        return std::string("could not decode timer ") + cmd;
-
-    if (action == PUT_ACTION) {
-        if (sscanf(args[1], "%lf", &val))
-            ; //printf("value:%0.9lf\n",val);
-        else
-            return std::string("cannot scan timer value ") + std::string(args[1]);
-
-        // timer
-        if (index == ACQUISITION_TIME || index == SUBFRAME_ACQUISITION_TIME ||
-            index == FRAME_PERIOD || index == DELAY_AFTER_TRIGGER ||
-            index == SUBFRAME_DEADTIME || index == STORAGE_CELL_DELAY) {
-            t = lround(val * 1E9);
-        } else
-            t = static_cast<int64_t>(val);
-    }
-
-
-    ret = myDet->setTimer(index, t, detPos);
-
-    // samples command does both asamples and dsamples
-    if (cmd == "samples" ) {
-        int64_t dret = myDet->setTimer(DIGITAL_SAMPLES, t, detPos);
-        if (dret != ret) {
-            throw sls::RuntimeError("Analog and digital number of samples are different. Check with asamples and dsamples command");
-        }
-    }
-
-    if ((ret != -1) && (index == ACQUISITION_TIME || index == SUBFRAME_ACQUISITION_TIME ||
-    		index == FRAME_PERIOD || index == DELAY_AFTER_TRIGGER ||
-                        index == SUBFRAME_DEADTIME || index == STORAGE_CELL_DELAY)) {
-        rval = (double)ret * 1E-9;
-        sprintf(answer, "%0.9f", rval);
-    } else
-        sprintf(answer, "%lld", (long long int)ret);
-
-    return std::string(answer);
-}
-
-std::string slsDetectorCommand::helpTimer(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "samples t \t sets the number of samples (both analog and digital) expected from the ctb" << std::endl;
-        os << "asamples t \t sets the number of analog samples expected from the ctb" << std::endl;
-        os << "dsamples t \t sets the number of digital samples expected from the ctb" << std::endl;
-        os << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "samples \t gets the number of samples (both analog and digital) expected from the ctb" << std::endl;
-        os << "asamples \t gets the number of analog samples expected from the ctb" << std::endl;
-        os << "dsamples \t gets the number of digital samples expected from the ctb" << std::endl;
-        os << std::endl;
-    }
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdTimeLeft(int narg, const char * const args[], int action, int detPos) {
     timerIndex index;

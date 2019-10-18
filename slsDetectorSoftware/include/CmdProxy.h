@@ -555,7 +555,9 @@ class CmdProxy {
                           {"imagetest", &CmdProxy::imagetest},
 
                           /* CTB Specific */
-
+                          {"samples", &CmdProxy::Samples},
+                          {"asamples", &CmdProxy::asamples},
+                          {"dsamples", &CmdProxy::dsamples},
 
 
 
@@ -610,6 +612,7 @@ class CmdProxy {
     std::string ROI(int action);
     std::string ClearROI(int action);
     /* CTB Specific */
+    std::string Samples(int action);
 
 
 
@@ -967,7 +970,13 @@ class CmdProxy {
 
     /* CTB Specific */
 
-    
+    INTEGER_COMMAND(asamples, getNumberOfAnalogSamples, setNumberOfAnalogSamples, std::stoi,
+                    "[0, 1]\n\t[CTB] Number of analog samples expected.");  
+
+    INTEGER_COMMAND(dsamples, getNumberOfDigitalSamples, setNumberOfDigitalSamples, std::stoi,
+                    "[0, 1]\n\t[CTB] Number of digital samples expected.");  
+
+
 
 
 

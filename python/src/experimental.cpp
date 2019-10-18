@@ -130,33 +130,42 @@ void init_experimental(py::module &m) {
         .def("selectUDPInterface", &Detector::selectUDPInterface, py::arg(),
              py::arg() = Positions{})
 
+        // Using lambda to allow for conversion from IpAddr
         .def("getSourceUDPIP",
-             [](const Detector &d) {
+             [](const Detector &d, Positions pos) {
                  std::vector<std::string> res;
-                 for (const auto &s : d.getSourceUDPIP())
+                 for (const auto &s : d.getSourceUDPIP(pos))
                      res.push_back(s.str());
                  return res;
-             })
-        .def("setSourceUDPIP", &Detector::setSourceUDPIP, py::arg(),
+             },
              py::arg() = Positions{})
 
+        .def("setSourceUDPIP",
+             [](Detector &d, std::string ip, Positions pos) {
+                 d.setSourceUDPIP(sls::IpAddr(ip), pos);
+             },
+             py::arg(), py::arg() = Positions{})
         .def("getSourceUDPIP2",
-             [](const Detector &d) {
+             [](const Detector &d, Positions pos) {
                  std::vector<std::string> res;
-                 for (const auto &s : d.getSourceUDPIP2())
+                 for (const auto &s : d.getSourceUDPIP2(pos))
                      res.push_back(s.str());
                  return res;
-             })
-        .def("setSourceUDPIP2", &Detector::setSourceUDPIP2, py::arg(),
+             },
              py::arg() = Positions{})
-
+        .def("setSourceUDPIP2",
+             [](Detector &d, std::string ip, Positions pos) {
+                 d.setSourceUDPIP2(sls::IpAddr(ip), pos);
+             },
+             py::arg(), py::arg() = Positions{})
         .def("getSourceUDPMAC",
-             [](const Detector &d) {
+             [](const Detector &d, Positions pos) {
                  std::vector<std::string> res;
-                 for (const auto &s : d.getSourceUDPMAC())
+                 for (const auto &s : d.getSourceUDPMAC(pos))
                      res.push_back(s.str());
                  return res;
-             })
+             },
+             py::arg() = Positions{})
         .def("setSourceUDPMAC", &Detector::setSourceUDPMAC, py::arg(),
              py::arg() = Positions{})
 
@@ -496,13 +505,43 @@ void init_experimental(py::module &m) {
         .def("readRegister", &Detector::readRegister, py::arg(),
              py::arg() = Positions{})
 
+        .def("writeRegister", &Detector::writeRegister, py::arg(), py::arg(),
+             py::arg() = Positions{})
+
         .def("getStartingFrameNumber", &Detector::getStartingFrameNumber,
              py::arg() = Positions{})
         .def("setStartingFrameNumber", &Detector::setStartingFrameNumber,
              py::arg(), py::arg() = Positions{})
 
-        // File
+        /**************************************************
+         *                                                *
+         *    Insignificant                               *
+         *                                                *
+         * ************************************************/
 
+        .def("getControlPort", &Detector::getControlPort,
+             py::arg() = Positions{})
+        .def("setControlPort", &Detector::setControlPort, py::arg(),
+             py::arg() = Positions{})
+        .def("getStopPort", &Detector::getStopPort, py::arg() = Positions{})
+        .def("setStopPort", &Detector::setStopPort, py::arg(),
+             py::arg() = Positions{})
+        .def("getDetectorLock", &Detector::getDetectorLock,
+             py::arg() = Positions{})
+        .def("setDetectorLock", &Detector::setDetectorLock, py::arg(),
+             py::arg() = Positions{})
+        .def("getLastClientIP", &Detector::getLastClientIP,
+             py::arg() = Positions{})
+        .def("executeCommand", &Detector::executeCommand, py::arg(),
+             py::arg() = Positions{})
+        .def("getNumberOfFramesFromStart",
+             &Detector::getNumberOfFramesFromStart, py::arg() = Positions{})
+        .def("getActualTime", &Detector::getActualTime, py::arg() = Positions{})
+        .def("getMeasurementTime", &Detector::getMeasurementTime,
+             py::arg() = Positions{})
+        .def("getUserDetails", &Detector::getUserDetails)
+        .def("getRxCurrentFrameIndex", &Detector::getRxCurrentFrameIndex,
+             py::arg() = Positions{})
         // Time
 
         .def("setSubExptime", &Detector::setSubExptime, py::arg(),

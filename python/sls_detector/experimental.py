@@ -2,12 +2,27 @@ from _sls_detector import CppDetectorApi
 from _sls_detector import slsDetectorDefs
 
 runStatus = slsDetectorDefs.runStatus
+speedLevel = slsDetectorDefs.speedLevel
 from .utils import element_if_equal, all_equal
 from .utils import Geometry, to_geo
 import datetime as dt
 
 from functools import wraps
 from collections import namedtuple
+
+class Register:
+    """
+    Helper class to read and write to registers using a
+    more Pythonic syntax
+    """
+    def __init__(self, detector):
+        self._detector = detector
+
+    def __getitem__(self, key):
+        return self._detector.readRegister(key)
+
+    def __setitem__(self, key, value):
+        self._detector.writeRegister(key, value)
 
 
 def freeze(cls):
@@ -51,6 +66,7 @@ class ExperimentalDetector(CppDetectorApi):
         slsDetectorPackage. Default value is 0. 
         """
         super().__init__(multi_id)
+        self._register = Register(self)
 
     # CONFIGURATION
     def __len__(self):
@@ -73,7 +89,7 @@ class ExperimentalDetector(CppDetectorApi):
 
     @config.setter
     def config(self, fname):
-        self.setConfig(fname)
+        self.loadConfig(fname)
 
     @property
     def parameters(self):
@@ -373,10 +389,10 @@ class ExperimentalDetector(CppDetectorApi):
     # ZMQ Streaming Parameters (Receiver<->Client)
 
     @property
-    def rx_zmqdatastream(self):
+    def rx_datastream(self):
         return element_if_equal(self.getRxZmqDataStream())
 
-    @rx_zmqdatastream.setter
+    @rx_datastream.setter
     def rx_zmqdatastream(self, enable):
         self.setRxZmqDataStream(enable)
 
@@ -412,6 +428,15 @@ class ExperimentalDetector(CppDetectorApi):
     def zmqip(self, ip):
         self.setClientZmqIp(ip)
 
+    #TODO! Change to dst
+    @property
+    def rx_udpip(self):
+        return element_if_equal(self.getDestinationUDPIP())
+
+    @rx_udpip.setter
+    def rx_udpip(self, ip):
+        self.getDestinationUDPIP(ip)
+
     @property
     def vhighvoltage(self):
         return element_if_equal(self.getHighVoltage())
@@ -419,3 +444,58 @@ class ExperimentalDetector(CppDetectorApi):
     @vhighvoltage.setter
     def vhighvoltage(self, v):
         self.setHighVoltage(v)
+
+
+    @property
+    def trimbits(self):
+        return NotImplementedError('trimbits are set only')
+
+    @trimbits.setter
+    def trimbits(self, fname):
+        self.loadTrimbits(fname)
+
+    @property
+    def lock(self):
+        return element_if_equal(self.getDetectorLock())
+
+    @lock.setter
+    def lock(self, value):
+        self.setDetectorLock(value)
+
+    @property
+    def rx_lock(self):
+        return element_if_equal(self.getRxLock())
+
+    @rx_lock.setter
+    def rx_lock(self, value):
+        self.setRxLock(value)
+
+    @property
+    def lastclient(self):
+        return element_if_equal(self.getLastClientIP())
+
+    @property
+    def reg(self):
+        return self._register
+
+    @property
+    def ratecorr(self):
+        """ tau in ns """
+        return element_if_equal(self.getRateCorrection())
+
+    @ratecorr.setter
+    def ratecorr(self, tau):
+        self.setRateCorrection(tau)
+
+    @property
+    def clkdivider(self):
+        res = [int(value) for value in self.getSpeed()]
+        return element_if_equal(res)
+
+    @clkdivider.setter
+    def clkdivider(self, value):
+        self.setSpeed(speedLevel(value))
+
+    @property
+    def frameindex(self):
+        return self.getRxCurrentFrameIndex()

@@ -3,6 +3,8 @@ from _sls_detector import slsDetectorDefs
 
 runStatus = slsDetectorDefs.runStatus
 speedLevel = slsDetectorDefs.speedLevel
+dacIndex = slsDetectorDefs.dacIndex
+
 from .utils import element_if_equal, all_equal
 from .utils import Geometry, to_geo
 import datetime as dt
@@ -213,21 +215,8 @@ class ExperimentalDetector(CppDetectorApi):
     
   
     # Time
-    @property
-    def rx_status(self):
-        """
-        Read the status of the receiver
-        """
-        return element_if_equal(self.getReceiverStatus())
 
-    @rx_status.setter
-    def rx_status(self, status_str):
-        if status_str == "start":
-            self.startReceiver()
-        elif status_str == "stop":
-            self.stopReceiver()
-        else:
-            raise NotImplementedError("Unknown argument to rx_status")
+
 
     #TODO! Rename to rx_framescaught
     @property
@@ -421,6 +410,14 @@ class ExperimentalDetector(CppDetectorApi):
         self.setClientZmqPort(port)
 
     @property
+    def rx_zmqip(self):
+        return element_if_equal(self.getRxZmqIP())
+
+    @rx_zmqip.setter
+    def rx_zmqip(self, ip):
+        self.setRxZmqIP(ip)
+
+    @property
     def zmqip(self):
         return element_if_equal(self.getClientZmqIp())
 
@@ -436,6 +433,46 @@ class ExperimentalDetector(CppDetectorApi):
     @rx_udpip.setter
     def rx_udpip(self, ip):
         self.getDestinationUDPIP(ip)
+    @property
+    def rx_udpip2(self):
+        return element_if_equal(self.getDestinationUDPIP2())
+
+    @rx_udpip2.setter
+    def rx_udpip2(self, ip):
+        self.getDestinationUDPIP2(ip)
+
+    @property
+    def rx_udpmac(self):
+        return element_if_equal(self.getDestinationUDPMAC())
+
+    @rx_udpmac.setter
+    def rx_udpmac(self, mac):
+        self.getDestinationUDPMAC2(mac)
+
+    @property
+    def rx_udpmac2(self):
+        return element_if_equal(self.getDestinationUDPMAC2())
+
+    @rx_udpmac2.setter
+    def rx_udpmac2(self, mac):
+        self.getDestinationUDPMAC2(mac)
+
+
+    @property
+    def detectormac(self):
+        return element_if_equal(self.getSourceUDPMAC())
+
+    @detectormac.setter
+    def detectormac(self, mac):
+        self.setSourceUDPMAC()
+
+    @property
+    def detectormac2(self):
+        return element_if_equal(self.getSourceUDPMAC2())
+
+    @detectormac2.setter
+    def detectormac2(self, mac):
+        self.setSourceUDPMAC2()
 
     @property
     def vhighvoltage(self):
@@ -445,6 +482,39 @@ class ExperimentalDetector(CppDetectorApi):
     def vhighvoltage(self, v):
         self.setHighVoltage(v)
 
+    @property
+    def user(self):
+        return self.getUserDetails()
+
+    @property
+    def settingsdir(self):
+        return element_if_equal(self.getSettingsDir())
+
+    @settingsdir.setter
+    def settingsdir(self, dir):
+        self.setSettingsDir(dir)
+
+    @property
+    def status(self):
+        return element_if_equal(self.getDetectorStatus())
+
+    @property
+    def rx_status(self):
+        return element_if_equal(self.getReceiverStatus())
+
+
+
+    @property
+    def rx_udpsocksize(self):
+        return element_if_equal(self.getRxUDPSocketBufferSize())
+
+    @rx_udpsocksize.setter
+    def rx_udpsocksize(self, buffer_size):
+        self.setRxUDPSocketBufferSize(buffer_size)
+
+    @property
+    def rx_realudpsocksize(self):
+        return element_if_equal(self.getRxRealUDPSocketBufferSize())
 
     @property
     def trimbits(self):
@@ -499,3 +569,31 @@ class ExperimentalDetector(CppDetectorApi):
     @property
     def frameindex(self):
         return self.getRxCurrentFrameIndex()
+
+    @property
+    def threshold(self):
+        return element_if_equal(self.getThresholdEnergy())
+
+    @threshold.setter
+    def threshold(self, eV):
+        self.setThresholdEnergy(eV)
+
+    @property
+    def timing(self):
+        return element_if_equal(self.getTimingMode()) 
+
+    @timing.setter
+    def timing(self, mode):
+        self.setTimingMode(mode) 
+
+    @property
+    def trimen(self):
+        return element_if_equal(self.getTrimEnergies())
+
+    @trimen.setter
+    def trimen(self, energies):
+        self.setTrimEnergies(energies)
+
+    @property
+    def vthreshold(self):
+        return element_if_equal(self.getDAC(dacIndex.THRESHOLD))

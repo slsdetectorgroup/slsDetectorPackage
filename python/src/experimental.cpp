@@ -87,7 +87,7 @@ void init_experimental(py::module &m) {
         .def("getTemperature", &Detector::getTemperature, py::arg(),
              py::arg() = Positions{})
 
-        .def("getDAC", &Detector::getDAC, py::arg(), py::arg(),
+        .def("getDAC", &Detector::getDAC, py::arg(), py::arg() = false,
              py::arg() = Positions{})
         .def("setDAC", &Detector::setDAC, py::arg(), py::arg(), py::arg(),
              py::arg() = Positions{})
@@ -166,57 +166,82 @@ void init_experimental(py::module &m) {
                  return res;
              },
              py::arg() = Positions{})
-        .def("setSourceUDPMAC", &Detector::setSourceUDPMAC, py::arg(),
-             py::arg() = Positions{})
+        .def("setSourceUDPMAC",
+             [](Detector &d, std::string mac, Positions pos) {
+                 d.setSourceUDPMAC(sls::MacAddr(mac), pos);
+             },
+             py::arg(), py::arg() = Positions{})
 
         .def("getSourceUDPMAC2",
-             [](const Detector &d) {
+             [](const Detector &d, Positions pos) {
                  std::vector<std::string> res;
-                 for (const auto &s : d.getSourceUDPMAC2())
+                 for (const auto &s : d.getSourceUDPMAC2(pos))
                      res.push_back(s.str());
                  return res;
-             })
-        .def("setSourceUDPMAC2", &Detector::setSourceUDPMAC2, py::arg(),
+             },
              py::arg() = Positions{})
+        .def("setSourceUDPMAC2",
+             [](Detector &d, std::string mac, Positions pos) {
+                 d.setSourceUDPMAC2(sls::MacAddr(mac), pos);
+             },
+             py::arg(), py::arg() = Positions{})
 
         .def("getDestinationUDPIP",
-             [](const Detector &d) {
+             [](const Detector &d, Positions pos) {
                  std::vector<std::string> res;
-                 for (const auto &s : d.getDestinationUDPIP())
+                 for (const auto &s : d.getDestinationUDPIP(pos))
                      res.push_back(s.str());
                  return res;
-             })
-        .def("setDestinationUDPIP", &Detector::setDestinationUDPIP, py::arg(),
+             },
              py::arg() = Positions{})
+        .def("setDestinationUDPIP",
+             [](Detector &d, std::string ip, Positions pos) {
+                 d.setDestinationUDPIP(sls::IpAddr(ip), pos);
+             },
+             py::arg(), py::arg() = Positions{})
 
         .def("getDestinationUDPIP2",
-             [](const Detector &d) {
+             [](const Detector &d, Positions pos) {
                  std::vector<std::string> res;
-                 for (const auto &s : d.getDestinationUDPIP2())
+                 for (const auto &s : d.getDestinationUDPIP2(pos))
                      res.push_back(s.str());
                  return res;
-             })
-        .def("setDestinationUDPIP2", &Detector::setDestinationUDPIP2, py::arg(),
+             },
              py::arg() = Positions{})
+        .def("setDestinationUDPIP2",
+             [](Detector &d, std::string ip, Positions pos) {
+                 d.setDestinationUDPIP2(sls::IpAddr(ip), pos);
+             },
+             py::arg(), py::arg() = Positions{})
 
         .def("getDestinationUDPMAC",
-             [](const Detector &d) {
+             [](const Detector &d, Positions pos) {
                  std::vector<std::string> res;
-                 for (const auto &s : d.getDestinationUDPMAC())
+                 for (const auto &s : d.getDestinationUDPMAC(pos))
                      res.push_back(s.str());
                  return res;
-             })
-        .def("setDestinationUDPMAC", &Detector::setDestinationUDPMAC, py::arg(),
+             },
              py::arg() = Positions{})
 
+        .def("setDestinationUDPMAC",
+             [](Detector &d, std::string mac, Positions pos) {
+                 d.setDestinationUDPMAC(sls::MacAddr(mac), pos);
+             },
+             py::arg(), py::arg() = Positions{})
+
         .def("getDestinationUDPMAC2",
-             [](const Detector &d) {
+             [](const Detector &d, Positions pos) {
                  std::vector<std::string> res;
-                 for (const auto &s : d.getDestinationUDPMAC2())
+                 for (const auto &s : d.getDestinationUDPMAC2(pos))
                      res.push_back(s.str());
                  return res;
-             })
-        .def("setDestinationUDPMAC2", &Detector::setDestinationUDPMAC2,
+             },
+             py::arg() = Positions{})
+
+        .def("setDestinationUDPMAC2",
+             [](Detector &d, std::string mac, Positions pos) {
+                 d.setDestinationUDPMAC2(sls::MacAddr(mac), pos);
+             },
              py::arg(), py::arg() = Positions{})
 
         .def("getDestinationUDPPort", &Detector::getDestinationUDPPort,
@@ -542,6 +567,44 @@ void init_experimental(py::module &m) {
         .def("getUserDetails", &Detector::getUserDetails)
         .def("getRxCurrentFrameIndex", &Detector::getRxCurrentFrameIndex,
              py::arg() = Positions{})
+
+        /**************************************************
+         *                                                *
+         *    CTB Specific                                *
+         *                                                *
+         * ************************************************/
+        .def("getNumberOfAnalogSamples", &Detector::getNumberOfAnalogSamples,
+             py::arg() = Positions{})
+        .def("setNumberOfAnalogSamples", &Detector::setNumberOfAnalogSamples,
+             py::arg(), py::arg() = Positions{})
+        .def("getNumberOfDigitalSamples", &Detector::getNumberOfDigitalSamples,
+             py::arg() = Positions{})
+        .def("setNumberOfDigitalSamples", &Detector::setNumberOfDigitalSamples,
+             py::arg(), py::arg() = Positions{})
+        .def("getReadoutMode", &Detector::getReadoutMode,
+             py::arg() = Positions{})
+        .def("setReadoutMode", &Detector::setReadoutMode, py::arg(),
+             py::arg() = Positions{})
+        .def("getDBITPhase", &Detector::getDBITPhase, py::arg() = Positions{})
+        .def("setDBITPhase", &Detector::setDBITPhase, py::arg(),
+             py::arg() = Positions{})
+        .def("getMaxDBITPhaseShift", &Detector::getMaxDBITPhaseShift,
+             py::arg() = Positions{})
+        .def("getDBITPhaseInDegrees", &Detector::getDBITPhaseInDegrees,
+             py::arg() = Positions{})
+        .def("setDBITPhaseInDegrees", &Detector::setDBITPhaseInDegrees,
+             py::arg(), py::arg() = Positions{})
+        .def("getADCClock", &Detector::getADCClock, py::arg() = Positions{})
+        .def("setADCClock", &Detector::setADCClock, py::arg(),
+             py::arg() = Positions{})
+        .def("getDBITClock", &Detector::getDBITClock, py::arg() = Positions{})
+        .def("setDBITClock", &Detector::setDBITClock, py::arg(),
+             py::arg() = Positions{})
+        .def("getRUNClock", &Detector::getRUNClock, py::arg() = Positions{})
+        .def("setRUNClock", &Detector::setRUNClock, py::arg(),
+             py::arg() = Positions{})
+        .def("getSYNCClock", &Detector::getSYNCClock, py::arg() = Positions{})
+
         // Time
 
         .def("setSubExptime", &Detector::setSubExptime, py::arg(),

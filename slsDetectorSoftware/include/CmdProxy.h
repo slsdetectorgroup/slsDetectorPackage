@@ -396,12 +396,12 @@ class CmdProxy {
                                     {"digitest", "imagetest"},
 
                                     /* CTB Specific */
-
-
-
-
-
                                     {"flags", "romode"}
+
+
+
+
+
                                     };
 
     // Initialize maps for translating name and function
@@ -558,7 +558,7 @@ class CmdProxy {
                           {"samples", &CmdProxy::Samples},
                           {"asamples", &CmdProxy::asamples},
                           {"dsamples", &CmdProxy::dsamples},
-
+                          {"romode", &CmdProxy::romode},
 
 
 
@@ -975,6 +975,9 @@ class CmdProxy {
 
     INTEGER_COMMAND(dsamples, getNumberOfDigitalSamples, setNumberOfDigitalSamples, std::stoi,
                     "[0, 1]\n\t[CTB] Number of digital samples expected.");  
+
+    INTEGER_COMMAND(romode, getReadoutMode, setReadoutMode, sls::StringTo<slsDetectorDefs::readoutMode>,
+                    "[analog|digital|analog_digital]\n\t[CTB] Readout mode. Default is analog.");
 
 
 

@@ -561,7 +561,7 @@ int slsReceiverImplementation::setReadoutMode(const readoutMode f) {
             return FAIL;
     }
 
-    FILE_LOG(logINFO) << "Readout Mode: " << getReadoutModeType(f);
+    FILE_LOG(logINFO) << "Readout Mode: " << sls::ToString(f);
     FILE_LOG(logINFO) << "Packets per Frame: "
                           << (generalData->packetsPerFrame);
     return OK;

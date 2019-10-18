@@ -630,59 +630,6 @@ format
         }
     };
 
-    /** returns string from readoutMode */
-    static std::string getReadoutModeType(readoutMode mode) {
-        switch(mode) {      
-        case ANALOG_ONLY:       
-            return "analog";   
-        case DIGITAL_ONLY:      
-            return "digital";
-        case ANALOG_AND_DIGITAL: 
-            return "analog_digital";
-        default:                
-            return "Unknown";
-        }
-    };
-
-   /** returns readoutMode from string */
-    static readoutMode getReadoutModeType(std::string smode) {
-        if (smode == "analog")          
-            return ANALOG_ONLY;
-        if (smode == "digital")         
-            return DIGITAL_ONLY;
-        if (smode == "analog_digital")  
-            return ANALOG_AND_DIGITAL;
-        throw sls::RuntimeError("Unknown readout mode " + smode);
-    }; 
-
-
-    /**
-       @short returns adc index from std::string
-       \param s can be temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl,
-       temp_sodr, temp_fpgafl, temp_fpgafr \returns  TEMPERATURE_FPGA,
-       TEMPERATURE_FPGAEXT, TEMPERATURE_10GE, TEMPERATURE_DCDC,
-       TEMPERATURE_SODL, TEMPERATURE_SODR, TEMPERATURE_FPGA2, TEMPERATURE_FPGA3,
-       -1 when unknown mode
-    */
-    static int getADCIndex(std::string s) {
-        if (s == "temp_fpga")
-            return TEMPERATURE_FPGA;
-        if (s == "temp_fpgaext")
-            return TEMPERATURE_FPGAEXT;
-        if (s == "temp_10ge")
-            return TEMPERATURE_10GE;
-        if (s == "temp_dcdc")
-            return TEMPERATURE_DCDC;
-        if (s == "temp_sodl")
-            return TEMPERATURE_SODL;
-        if (s == "temp_sodr")
-            return TEMPERATURE_SODR;
-        if (s == "temp_fpgafl")
-            return TEMPERATURE_FPGA2;
-        if (s == "temp_fpgafr")
-            return TEMPERATURE_FPGA3;
-        return -1;
-    };
 
     /**
        @short returns dac index from std::string

@@ -9,8 +9,37 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
-TEST_CASE("samples", "[.cmd][.gotthard]") {
-    if (test::type == slsDetectorDefs::GOTTHARD) {   
+
+TEST_CASE("romode", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("romode digital", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "romode digital\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("romode analog_digital", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "romode analog_digital\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("romode analog", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "romode analog\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("romode", GET, nullptr, oss));
+            REQUIRE(oss.str() == "romode analog\n");
+        } 
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("romode", GET));     
+    }
+}
+
+
+TEST_CASE("samples", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(multiSlsDetectorClient("samples 1200", PUT, nullptr, oss));

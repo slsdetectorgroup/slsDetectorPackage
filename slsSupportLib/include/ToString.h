@@ -163,6 +163,18 @@ inline std::string ToString(const defs::externalSignalFlag s){
     }
 }
 
+inline std::string ToString(const defs::readoutMode s){
+    switch (s) {
+    case defs::ANALOG_ONLY:
+        return std::string("analog");
+    case defs::DIGITAL_ONLY:
+        return std::string("digital");
+    case defs::ANALOG_AND_DIGITAL:
+        return std::string("analog_digital");               
+    default:
+        return std::string("Unknown");       
+    }
+}
 
 // in case we already have a string 
 // causes a copy but might be needed in generic code
@@ -449,6 +461,18 @@ inline defs::externalSignalFlag StringTo(const std::string& s) {
         return defs::TRIGGER_IN_FALLING_EDGE;  
     throw sls::RuntimeError("Unknown external signal flag " + s);          
 }
+
+template <>
+inline defs::readoutMode StringTo(const std::string& s) {
+    if (s == "analog")
+        return defs::ANALOG_ONLY;
+    if (s == "digital")
+        return defs::DIGITAL_ONLY; 
+     if (s == "analog_digital")
+        return defs::ANALOG_AND_DIGITAL;         
+    throw sls::RuntimeError("Unknown readout mode " + s);          
+}
+
 
 /** For types with a .str() method use this for conversion */
 template <typename T>

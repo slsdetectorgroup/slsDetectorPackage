@@ -253,13 +253,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    commands to configure detector flags
 	 */
 
-    /*! \page config
-   - <b>romode [b]</b> sets/gets the readout flag. Options: analog, digital, analog_digital. Used for CTB only. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "romode";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
-    ++i;
-
     /* fpga */
 
     /*! \page config
@@ -2557,15 +2550,7 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
     
     if (action == HELP_ACTION)
         return helpAdvanced(action);
-
-    if (cmd == "romode") {
-        if (action == PUT_ACTION) {
-            myDet->setReadoutMode(getReadoutModeType(std::string(args[1])), detPos);
-        }
-        return getReadoutModeType(myDet->getReadoutMode());
-    }
-
-   
+  
     if (cmd == "programfpga") {
         if (action == GET_ACTION)
             return std::string("cannot get");
@@ -2651,8 +2636,6 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-
-        os << "romode m \t sets the readout flag to m. Options: analog, digital, analog_digital. Used for CTB only." << std::endl;
         os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
         os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
         os << "copydetectorserver s p \t copies the detector server s via tftp from pc with hostname p and changes respawn server. Not for Eiger. " << std::endl;
@@ -2662,7 +2645,6 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
         os << "diodelay m v \tsets the delay for the digital IO pins selected by mask m and delay set by v. mask is upto 64 bits in hex, delay max is 775ps, and set in steps of 25 ps. Used for MOENCH/CTB only." << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "romode \t gets the readout flag. Options: analog, digital, analog_digital. Used for CTB only." << std::endl;
         os << "led \t returns led status (0 off, 1 on)" << std::endl;
     }
     return os.str();

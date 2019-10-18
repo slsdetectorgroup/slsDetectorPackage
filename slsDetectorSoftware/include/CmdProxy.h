@@ -703,6 +703,8 @@ class CmdProxy {
                           /* Pattern */
                           {"pattern", &CmdProxy::Pattern}, 
                           {"savepattern", &CmdProxy::savepattern}, 
+                          {"patioctrl", &CmdProxy::patioctrl}, 
+                          {"patclkctrl", &CmdProxy::patclkctrl}, 
 
 
 
@@ -1217,7 +1219,11 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
                 "[fname]\n\t[Ctb] Saves pattern to file (ascii). Also executes pattern."); 
 
+    INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl, std::stol,
+                    "[64 bit mask]\n\t[Ctb] 64 bit mask defining input (0) and output (1) signals.");
 
+    INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, std::stol,
+                    "[64 bit mask]\n\t[Ctb] 64 bit mask defining output clock enable.");
 
 
 

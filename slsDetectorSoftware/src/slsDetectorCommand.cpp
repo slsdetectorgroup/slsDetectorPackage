@@ -986,20 +986,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page prototype
-   - <b>patioctrl [word]</b> sets/gets 64 bit mask defining input (0) and output (1) signals. hex format.
-	 */
-    descrToFuncMap[i].m_pFuncName = "patioctrl";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
-   - <b>patclkctrl [word]</b> sets/gets 64 bit mask defining if output signal is a clock and runs. hex format. Unused at the moment.
-	 */
-    descrToFuncMap[i].m_pFuncName = "patclkctrl";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
    - <b>patlimits [addr1 addr2]</b> sets/gets the start and stop limits of the pattern to be executed. hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patlimits";
@@ -2242,8 +2228,6 @@ std::string slsDetectorCommand::helpPattern(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "patword addr word \t writes pattern word - only very advanced users!" << std::endl;
-        os << "patioctrl reg\t configures inputs/outputs of the chiptest board - only advanced users!" << std::endl;
-        os << "patclkctrl reg\t configures output clk enable of the chiptest board- only advanced users! " << std::endl;
         os << "patlimits addr1 addr2\t defines pattern limits between addr1 and addr2" << std::endl;
         os << "patloop0 addr1 adrr2 \t configures the limits of the 0 loop " << std::endl;
         os << "patloop1 addr1 adrr2 \t configures the limits of the 1 loop " << std::endl;
@@ -2262,8 +2246,6 @@ std::string slsDetectorCommand::helpPattern(int action) {
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "patword \t cannot get" << std::endl;
-        os << "patioctrl \t returns inputs/outputs of the chiptest board - only advanced users!" << std::endl;
-        os << "patclkctrl\t returns output clk enable of the chiptest board- only advanced users! " << std::endl;
         os << "patlimits \t returns pattern limits between addr1 and addr2" << std::endl;
         os << "patloop0  \t returns the limits of the 0 loop " << std::endl;
         os << "patloop1  \t returns the limits of the 1 loop " << std::endl;
@@ -2325,35 +2307,6 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
                 return std::string("Could not scan address (hexadecimal fomat) ") + std::string(args[1]);
             os << "0x" << std::setw(4) << std::setfill('0') << std::hex  << addr << " 0x" << std::setw(16)  << myDet->setPatternWord(addr, -1, detPos) << std::dec;
         }
-    } else if (cmd == "patioctrl") {
-        //get word from stdin
-
-        if (action == PUT_ACTION) {
-
-            if (sscanf(args[1], "%lx", &word))
-                ;
-            else
-                return std::string("Could not scan value  (hexadecimal fomat) ") + std::string(args[1]);
-
-            myDet->setPatternIOControl(word, detPos);
-        }
-
-        os << "0x" << std::setw(16) << std::setfill('0') << std::hex << myDet->setPatternIOControl(-1, detPos) << std::dec;
-    } else if (cmd == "patclkctrl") {
-        //get word from stdin
-
-        if (action == PUT_ACTION) {
-
-            if (sscanf(args[1], "%lx", &word))
-                ;
-            else
-                return std::string("Could not scan value  (hexadecimal fomat) ") + std::string(args[1]);
-
-            myDet->setPatternClockControl(word, detPos);
-        }
-
-        os << "0x" << std::setw(16) << std::setfill('0') << std::hex << myDet->setPatternClockControl(-1, detPos) << std::dec;
-
     } else if (cmd == "patlimits") {
         //get start, stop from stdin
         if (action == PUT_ACTION) {

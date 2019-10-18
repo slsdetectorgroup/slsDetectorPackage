@@ -9,6 +9,53 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+TEST_CASE("patclkctrl", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patclkctrl 0xc15004808d0a21a4", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "patclkctrl 0xc15004808d0a21a4\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patclkctrl 0x0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "patclkctrl 0x0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patclkctrl", GET, nullptr, oss));
+            REQUIRE(oss.str() == "patclkctrl 0x0\n");
+        }  
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("patclkctrl", GET));
+    }
+}
+
+
+TEST_CASE("patioctrl", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patioctrl 0xc15004808d0a21a4", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "patioctrl 0xc15004808d0a21a4\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patioctrl 0x0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "patioctrl 0x0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patioctrl", GET, nullptr, oss));
+            REQUIRE(oss.str() == "patioctrl 0x0\n");
+        }  
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("patioctrl", GET));
+    }
+}
+
+
 TEST_CASE("savepattern", "[.cmd][.ctb]") {
     REQUIRE_THROWS(multiSlsDetectorClient("savepattern", GET));
     if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 

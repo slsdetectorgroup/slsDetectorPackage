@@ -9,6 +9,53 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+TEST_CASE("temp_", "[.cmd][.jungfrau]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU) {   
+        std::string s;
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:temp_threshold", GET, nullptr, oss));
+            s = oss.str();
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
+            REQUIRE(oss.str() == s);
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("temp_control 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "temp_control 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("temp_control 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "temp_control 0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("temp_control", GET, nullptr, oss));
+            REQUIRE(oss.str() == "temp_control 0\n");
+        }       
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("temp_event", GET, nullptr, oss));
+            REQUIRE(oss.str() == "temp_event 0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("temp_event 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "temp_event 0\n");
+        }
+        REQUIRE_THROWS(multiSlsDetectorClient("temp_event 1", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("temp_threshold", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("temp_control", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("temp_event", GET));       
+    }
+}
+
 TEST_CASE("quad", "[.cmd][.eiger]") {
     if (test::type == slsDetectorDefs::EIGER) {   
         {

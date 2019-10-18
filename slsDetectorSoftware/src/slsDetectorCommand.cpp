@@ -1204,12 +1204,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
   commands to monitor and handle temperature overshoot (only JUNGFRAU)
      */
 
-    /*! \page settings
-   - <b>temp_threshold</b> Sets/gets the threshold temperature. JUNGFRAU ONLY. \c Returns \c (double"°C")
-     */
-    descrToFuncMap[i].m_pFuncName = "temp_threshold";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTempControl;
-    ++i;
 
     /*! \page settings
    - <b>temp_control</b> Enables/Disables the temperature control. 1 enables, 0 disables.  JUNGFRAU ONLY. \c Returns \c int
@@ -2632,22 +2626,7 @@ std::string slsDetectorCommand::cmdTempControl(int narg, const char * const args
         return helpTempControl(action);
 
 
-    if (cmd == "temp_threshold") {
-        if (action == PUT_ACTION) {
-            double fval = 0.0;
-            if (!sscanf(args[1], "%lf", &fval))
-                return std::string("cannot scan temp control value ") + std::string(args[1]);
-            val = fval * 1000;
-            myDet->setThresholdTemperature(val, detPos);
-        }
-        val = myDet->setThresholdTemperature(-1, detPos);
-        if (val == -1)
-            sprintf(answer, "%d", val);
-        else
-            sprintf(answer, "%.2f°C", (double)val / 1000.000);
-    }
-
-    else if (cmd == "temp_control") {
+    if (cmd == "temp_control") {
         if (action == PUT_ACTION) {
             if (!sscanf(args[1], "%d", &val))
                 return std::string("cannot scan temp control value ") + std::string(args[1]);
@@ -2678,12 +2657,10 @@ std::string slsDetectorCommand::cmdTempControl(int narg, const char * const args
 std::string slsDetectorCommand::helpTempControl(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "temp_threshold t \t sets the threshold temperature. Jungfrau only" << std::endl;
         os << "temp_control t \t Enables/Disables the temperature control. 1 enables, 0 disables. JUNGFRAU ONLY" << std::endl;
         os << "temp_event t \t Resets over-temperative event. Put only with option 0 to clear event. JUNGFRAU ONLY." << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "temp_threshold  \t gets the threshold temperature. Jungfrau only." << std::endl;
         os << "temp_control  \t gets temperature control enable. 1 enabled, 0 disabled. JUNGFRAU ONLY" << std::endl;
         os << "temp_event  \t gets over-temperative event. Gets 1 if temperature went over threshold and control is enabled, else 0. /Disables the temperature control. JUNGFRAU ONLY." << std::endl;
     }

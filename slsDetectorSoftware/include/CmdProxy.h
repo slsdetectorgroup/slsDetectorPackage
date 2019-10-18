@@ -338,11 +338,7 @@ class CmdProxy {
     using FunctionMap = std::map<std::string, std::string (CmdProxy::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
 
-    StringMap depreciated_functions{
-                                    {"exitreceiver", "rx_exit"},
-                                    {"checkrecversion", "rx_checkversion"},
-                                    {"flags", "romode"},
-                                    
+    StringMap depreciated_functions{                                   
                                     /* configuration */
                                     {"detectorversion", "firmwareversion"},
                                     {"softwareversion", "detectorserverversion"},
@@ -393,11 +389,16 @@ class CmdProxy {
 
                                     /* Eiger Specific */
                                     {"trimdir", "settingsdir"},
-                                    {"resmat", "partialreset"}
+                                    {"resmat", "partialreset"},
+
+                                    /* Jungfrau Specific */
 
 
 
 
+
+
+                                    {"flags", "romode"}
                                     };
 
     // Initialize maps for translating name and function
@@ -532,6 +533,11 @@ class CmdProxy {
                           {"pulsechip", &CmdProxy::PulseChip},
                           {"quad", &CmdProxy::Quad},
 
+                          /* Jungfrau Specific */
+                          {"temp_threshold", &CmdProxy::temp_threshold},
+                          {"temp_control", &CmdProxy::temp_control},
+                          {"temp_event", &CmdProxy::TemperatureEvent},
+ 
 
 
                           {"lastclient", &CmdProxy::lastclient},    
@@ -577,6 +583,10 @@ class CmdProxy {
     std::string PulsePixelAndMove(int action);
     std::string PulseChip(int action);
     std::string Quad(int action);
+    /* Jungfrau Specific */
+    std::string TemperatureEvent(int action);
+
+
 
 
     std::string SlowAdc(int action);
@@ -890,7 +900,17 @@ class CmdProxy {
                 "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured sub frame period between last sub frame and previous one.");    
 
     INTEGER_COMMAND(partialreset, getPartialReset, setPartialReset, std::stoi,
-                    "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at start of acquisition. 0 complete reset, 1 partial reset.");      
+                    "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at start of acquisition. 0 complete reset, 1 partial reset.");  
+
+
+    /* Jungfrau Specific */
+
+    INTEGER_COMMAND(temp_threshold, getThresholdTemperature, setThresholdTemperature, std::stoi,
+                    "[n_temp (in degrees)]\n\t[Jungfrau] Threshold temperature in degrees. If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared.");  
+
+    INTEGER_COMMAND(temp_control, getTemperatureControl, setTemperatureControl, std::stoi,
+                    "[0, 1]\n\t[Jungfrau] Temperature control enable. Default is 0 (disabled). If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared.");  
+
 
 
 

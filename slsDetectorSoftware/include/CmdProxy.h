@@ -705,7 +705,7 @@ class CmdProxy {
                           {"savepattern", &CmdProxy::savepattern}, 
                           {"patioctrl", &CmdProxy::patioctrl}, 
                           {"patclkctrl", &CmdProxy::patclkctrl}, 
-
+                          {"patword", &CmdProxy::PatternWord}, 
 
 
 
@@ -765,7 +765,7 @@ class CmdProxy {
     std::string DigitalIODelay(int action);
     /* Pattern */
     std::string Pattern(int action);
-
+    std::string PatternWord(int action);
 
     /* configuration */
     EXECUTE_SET_COMMAND_NOID_1ARG(config, loadConfig, 
@@ -881,7 +881,7 @@ class CmdProxy {
     GET_COMMAND(rx_framescaught, getFramesCaught, 
                     "\n\tNumber of frames caught by receiver."); 
 
-    INTEGER_COMMAND(startingfnum, getStartingFrameNumber, setStartingFrameNumber, std::stol,
+    INTEGER_COMMAND(startingfnum, getStartingFrameNumber, setStartingFrameNumber, std::stoul,
                     "[n_value]\n\t[Eiger[Jungfrau] Starting frame number for next acquisition."); 
 
     EXECUTE_SET_COMMAND(trigger, sendSoftwareTrigger, 
@@ -1219,10 +1219,10 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
                 "[fname]\n\t[Ctb] Saves pattern to file (ascii). Also executes pattern."); 
 
-    INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl, std::stol,
+    INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl, std::stoul,
                     "[64 bit mask]\n\t[Ctb] 64 bit mask defining input (0) and output (1) signals.");
 
-    INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, std::stol,
+    INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, std::stoul,
                     "[64 bit mask]\n\t[Ctb] 64 bit mask defining output clock enable.");
 
 

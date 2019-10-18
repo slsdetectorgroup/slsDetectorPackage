@@ -1000,7 +1000,7 @@ std::string CmdProxy::DigitalIODelay(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);  
         }                                
-        det->setDigitalIODelay(std::stol(args[0]), std::stoi(args[2]));  
+        det->setDigitalIODelay(std::stoul(args[0]), std::stoi(args[2]));  
         os << sls::ToString(args) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -1030,6 +1030,28 @@ std::string CmdProxy::Pattern(int action) {
     return os.str();
 }
 
+std::string CmdProxy::PatternWord(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[step or address] [64 bit mask]\n\t[Ctb] 64 bit pattern at address of pattern memory." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {                                
+            WrongNumberOfParameters(1);         
+        } 
+        auto t = det->getPatternWord(std::stoi(args[0]), {det_id});       
+        os << OutStringHex(t) << '\n';     
+    } else if (action == defs::PUT_ACTION) {      
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);  
+        }                                
+        det->setPatternWord(std::stoi(args[0]), std::stoul(args[1]));  
+        os << sls::ToString(args) << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 
 } // namespace sls

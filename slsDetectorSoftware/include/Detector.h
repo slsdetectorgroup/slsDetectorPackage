@@ -1008,6 +1008,9 @@ class Detector {
     /** [CTB] */
     void setPatternClockControl(uint64_t word, Positions pos = {});
 
+    /** [CTB] same as executing */
+    Result<uint64_t> getPatternWord(int addr, Positions pos = {});
+
     /** [CTB] Caution: If word is  -1  reads the addr (same as
      * executing the pattern) */
     void setPatternWord(int addr, uint64_t word, Positions pos = {});

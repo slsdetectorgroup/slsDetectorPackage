@@ -978,13 +978,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
     ++i;
 
-     /*! \page prototype
-   - <b>patword addr [word]</b> sets/gets 64 bit word at address addr of pattern memory. Both address and word in hex format. Advanced!
-	 */
-    descrToFuncMap[i].m_pFuncName = "patword";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
     /*! \page prototype
    - <b>patlimits [addr1 addr2]</b> sets/gets the start and stop limits of the pattern to be executed. hex format. Advanced!
 	 */
@@ -2227,7 +2220,6 @@ std::string slsDetectorCommand::helpPattern(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "patword addr word \t writes pattern word - only very advanced users!" << std::endl;
         os << "patlimits addr1 addr2\t defines pattern limits between addr1 and addr2" << std::endl;
         os << "patloop0 addr1 adrr2 \t configures the limits of the 0 loop " << std::endl;
         os << "patloop1 addr1 adrr2 \t configures the limits of the 1 loop " << std::endl;
@@ -2245,7 +2237,6 @@ std::string slsDetectorCommand::helpPattern(int action) {
         os << "patsetbit m \t selects bits (hex) of the 64 bits that the patmask will be applied to every pattern. Only the bits from m mask are selected to mask for the corresponding bit value from patmask." << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "patword \t cannot get" << std::endl;
         os << "patlimits \t returns pattern limits between addr1 and addr2" << std::endl;
         os << "patloop0  \t returns the limits of the 0 loop " << std::endl;
         os << "patloop1  \t returns the limits of the 1 loop " << std::endl;
@@ -2281,33 +2272,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
 
 
     std::ostringstream os;
-   if (cmd == "patword") {
-
-        if (action == PUT_ACTION) {
-            //get addr, word from stdin
-
-            if (narg < 3)
-                return std::string("wrong usage: should specify both address and value (hexadecimal fomat) ");
-
-            if (sscanf(args[1], "%x", &addr))
-                ;
-            else
-                return std::string("Could not scan address (hexadecimal fomat) ") + std::string(args[1]);
-
-            if (sscanf(args[2], "%lx", &word))
-                ;
-            else
-                return std::string("Could not scan value  (hexadecimal fomat) ") + std::string(args[2]);
-
-            os << "0x" << std::setw(4) << std::setfill('0') << std::hex  << addr << " 0x" << std::setw(16)  << myDet->setPatternWord(addr, word, detPos) << std::dec;
-        } else if (action == GET_ACTION) {
-            if (narg < 2)
-                return std::string("wrong usage: should specify address (hexadecimal fomat) ");
-            if (!sscanf(args[1], "%x", &addr))
-                return std::string("Could not scan address (hexadecimal fomat) ") + std::string(args[1]);
-            os << "0x" << std::setw(4) << std::setfill('0') << std::hex  << addr << " 0x" << std::setw(16)  << myDet->setPatternWord(addr, -1, detPos) << std::dec;
-        }
-    } else if (cmd == "patlimits") {
+ if (cmd == "patlimits") {
         //get start, stop from stdin
         if (action == PUT_ACTION) {
             if (narg < 3)

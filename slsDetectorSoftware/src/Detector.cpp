@@ -1319,6 +1319,10 @@ void Detector::setPatternClockControl(uint64_t word, Positions pos) {
     pimpl->Parallel(&slsDetector::setPatternClockControl, pos, word);
 }
 
+Result<uint64_t> Detector::getPatternWord(int addr, Positions pos) {
+    return pimpl->Parallel(&slsDetector::setPatternWord, pos, addr, -1);
+}
+
 void Detector::setPatternWord(int addr, uint64_t word, Positions pos) {
     pimpl->Parallel(&slsDetector::setPatternWord, pos, addr, word);
 }

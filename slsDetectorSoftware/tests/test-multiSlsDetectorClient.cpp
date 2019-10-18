@@ -9,6 +9,27 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("patword", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patword 0x23 0xc15004808d0a21a4", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "patword 0x23 0xc15004808d0a21a4\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patword 0x23 0x0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "patword 0x23 0x0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patword 0x23", GET, nullptr, oss));
+            REQUIRE(oss.str() == "patword 0x23 0x0\n");
+        }  
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("patword 0x23", GET));
+    }
+}
 
 TEST_CASE("patclkctrl", "[.cmd][.ctb]") {
     if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 

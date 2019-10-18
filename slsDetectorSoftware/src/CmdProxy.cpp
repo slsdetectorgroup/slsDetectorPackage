@@ -943,6 +943,21 @@ std::string CmdProxy::Dbitphase(int action) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 std::string CmdProxy::SlowAdc(int action) {
     std::ostringstream os; 
     os << cmd << ' ';

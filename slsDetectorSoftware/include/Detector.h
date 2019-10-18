@@ -911,12 +911,6 @@ class Detector {
     void setDBITPipeline(int value, Positions pos = {});
 
     /** [CTB] */
-    Result<int> getVrefVoltage(bool mV, Positions pos = {}) const;
-
-    /** [CTB] */
-    void setVrefVoltage(int value, bool mV, Positions pos = {});
-
-    /** [CTB] */
     Result<int> getVoltage(defs::dacIndex index, Positions pos = {}) const;
 
     /**
@@ -928,16 +922,13 @@ class Detector {
 
     /**
      * [CTB] mV
-     * Options: V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D, V_POWER_IO,
-     * V_POWER_CHIP
-     */
+     * Options: V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D, V_POWER_IO */
     Result<int> getMeasuredVoltage(defs::dacIndex index,
                                    Positions pos = {}) const;
 
     /**
      * [CTB] mA
-     * Options: I_POWER_A, I_POWER_B, I_POWER_C, I_POWER_D, I_POWER_IO
-     */
+     * Options: I_POWER_A, I_POWER_B, I_POWER_C, I_POWER_D, I_POWER_IO  */
     Result<int> getMeasuredCurrent(defs::dacIndex index,
                                    Positions pos = {}) const;
 

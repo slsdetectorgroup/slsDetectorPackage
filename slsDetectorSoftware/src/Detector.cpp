@@ -1170,14 +1170,6 @@ void Detector::setDBITPipeline(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setSpeed, pos, defs::DBIT_PIPELINE, value, 0);
 }
 
-Result<int> Detector::getVrefVoltage(bool mV, Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setDAC, pos, -1, defs::ADC_VPP, mV);
-}
-
-void Detector::setVrefVoltage(int value, bool mV, Positions pos) {
-    pimpl->Parallel(&slsDetector::setDAC, pos, value, defs::ADC_VPP, mV);
-}
-
 Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
     switch (index) {
     case defs::V_LIMIT:

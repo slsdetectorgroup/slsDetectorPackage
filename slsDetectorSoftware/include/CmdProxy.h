@@ -163,6 +163,69 @@
         return os.str();                                                       \
     }
 
+/** int with index, */
+#define INTEGER_IND_COMMAND(CMDNAME, GETFCN, SETFCN, CONV, INDEX, HLPSTR)      \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            auto t = det->GETFCN(INDEX, {det_id});                             \
+            if (args.size() != 0) {                                            \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            os << OutString(t) << '\n';                                        \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            auto val = CONV(args[0]);                                          \
+            det->SETFCN(val, INDEX, {det_id});                                 \
+            os << args.front() << '\n';                                        \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+
+/** dac */
+#define DAC_COMMAND(CMDNAME, GETFCN, SETFCN, DAC_INDEX, HLPSTR)                \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            bool mv = false;                                                   \
+            if (args.size() == 1) {                                            \
+                if (args[0] != "mv") {                                         \
+                    throw sls::RuntimeError("Unknown argument " + args[0] + ". Did you mean mv?"); \
+                }                                                              \
+                mv = true;                                                     \
+            } else if (args.size() > 1) {                                      \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            auto t = det->GETFCN(DAC_INDEX, mv, {det_id});                     \
+            os << OutString(t) << (args.size() > 1 ? " mv\n" : "\n");          \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            bool mv = false;                                                   \
+            if (args.size() == 2) {                                            \
+                if (args[1] != "mv") {                                         \
+                    throw sls::RuntimeError("Unknown argument " + args[1] + ". Did you mean mv?"); \
+                }                                                              \
+                mv = true;                                                     \
+            } else if (args.size() > 2 || args.size() < 1) {                   \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            det->SETFCN(std::stoi(args[0]), DAC_INDEX, mv, {det_id});          \
+            os << args.front() << (args.size() > 1 ? " mv\n" : "\n");          \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
 
 /** set only, no arguments, no id */
 #define EXECUTE_SET_COMMAND_NOID(CMDNAME, SETFCN, HLPSTR)                      \
@@ -275,7 +338,7 @@
         return os.str();                                                       \
     }
 
-#define TEMP_COMMAND(CMDNAME, GETFCN, VAL, HLPSTR)                             \
+#define GET_IND_COMMAND(CMDNAME, GETFCN, VAL, APPEND, HLPSTR)                  \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
         os << cmd << ' ';                                                      \
@@ -286,7 +349,7 @@
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN(VAL, {det_id});                               \
-            os << OutString(t) << " °C\n";                                     \
+            os << OutString(t) << APPEND << '\n';                              \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             throw sls::RuntimeError("Cannot put");                             \
         } else {                                                               \
@@ -397,13 +460,13 @@ class CmdProxy {
 
                                     /* Gotthard2 Specific */
                                     /* CTB Specific */
-                                    {"flags", "romode"}
-
+                                    {"flags", "romode"},
+                                    {"i_a", "im_a"},
+                                    {"i_b", "im_b"},
+                                    {"i_c", "im_c"},
+                                    {"i_d", "im_d"},
+                                    {"i_io", "im_io"}
                                    
-
-
-
-
 
                                     };
 
@@ -575,9 +638,26 @@ class CmdProxy {
                           {"syncclk", &CmdProxy::syncclk},  
                           {"adcpipeline", &CmdProxy::adcpipeline},
                           {"dbitpipeline", &CmdProxy::dbitpipeline},
+                          {"v_limit", &CmdProxy::v_limit},
+                          {"v_a", &CmdProxy::v_a},
+                          {"v_b", &CmdProxy::v_b},
+                          {"v_c", &CmdProxy::v_c},
+                          {"v_d", &CmdProxy::v_d},
+                          {"v_io", &CmdProxy::v_io},
+                          {"v_chip", &CmdProxy::v_chip},
+                          {"vm_a", &CmdProxy::vm_a},
+                          {"vm_b", &CmdProxy::vm_b},
+                          {"vm_c", &CmdProxy::vm_c},
+                          {"vm_d", &CmdProxy::vm_d},
+                          {"vm_io", &CmdProxy::vm_io},
+                          {"im_a", &CmdProxy::im_a},
+                          {"im_b", &CmdProxy::im_b},
+                          {"im_c", &CmdProxy::im_c},
+                          {"im_d", &CmdProxy::im_d},
+                          {"im_io", &CmdProxy::im_io},
 
 
-
+                          {"adcvpp", &CmdProxy::adcvpp},
                           {"lastclient", &CmdProxy::lastclient},    
                           {"adc", &CmdProxy::SlowAdc},                            
                           {"lock", &CmdProxy::lock},
@@ -626,6 +706,8 @@ class CmdProxy {
     /* CTB Specific */
     std::string Samples(int action);
     std::string Dbitphase(int action);
+    std::string VrefVoltage(int action);
+
 
 
     std::string SlowAdc(int action);
@@ -691,31 +773,31 @@ class CmdProxy {
     INTEGER_COMMAND(vhighvoltage, getHighVoltage, setHighVoltage, std::stoi,
                     "[n_value]\n\tHigh voltage to the sensor in Voltage.\n\t[Gotthard] [0|90|110|120|150|180|200]\n\t[Eiger] 0-200\n\t[Jungfrau][Ctb] [0|60-200]");      
 
-    TEMP_COMMAND(temp_adc, getTemperature, slsDetectorDefs::TEMPERATURE_ADC,
+    GET_IND_COMMAND(temp_adc, getTemperature, slsDetectorDefs::TEMPERATURE_ADC, " °C",
                     "[n_value]\n\t[Jungfrau][Gotthard] ADC Temperature");
 
-    TEMP_COMMAND(temp_fpga, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA,
+    GET_IND_COMMAND(temp_fpga, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA, " °C",
                     "[n_value]\n\t[Eiger][Jungfrau][Gotthard] FPGA Temperature");    
 
-    TEMP_COMMAND(temp_fpgaext, getTemperature, slsDetectorDefs::TEMPERATURE_FPGAEXT,
+    GET_IND_COMMAND(temp_fpgaext, getTemperature, slsDetectorDefs::TEMPERATURE_FPGAEXT, " °C",
                     "[n_value]\n\t[Eiger]Temperature close to the FPGA");
 
-    TEMP_COMMAND(temp_10ge, getTemperature, slsDetectorDefs::TEMPERATURE_10GE,
+    GET_IND_COMMAND(temp_10ge, getTemperature, slsDetectorDefs::TEMPERATURE_10GE, " °C",
                     "[n_value]\n\t[Eiger]Temperature close to the 10GbE");    
 
-    TEMP_COMMAND(temp_dcdc, getTemperature, slsDetectorDefs::TEMPERATURE_DCDC,
+    GET_IND_COMMAND(temp_dcdc, getTemperature, slsDetectorDefs::TEMPERATURE_DCDC, " °C",
                     "[n_value]\n\t[Eiger]Temperature close to the dc dc converter");
 
-    TEMP_COMMAND(temp_sodl, getTemperature, slsDetectorDefs::TEMPERATURE_SODL,
+    GET_IND_COMMAND(temp_sodl, getTemperature, slsDetectorDefs::TEMPERATURE_SODL, " °C",
                     "[n_value]\n\t[Eiger]Temperature close to the left so-dimm memory");    
 
-    TEMP_COMMAND(temp_sodr, getTemperature, slsDetectorDefs::TEMPERATURE_SODR,
+    GET_IND_COMMAND(temp_sodr, getTemperature, slsDetectorDefs::TEMPERATURE_SODR, " °C",
                     "[n_value]\n\t[Eiger]Temperature close to the right so-dimm memory");
 
-    TEMP_COMMAND(temp_fpgafl, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA2,
+    GET_IND_COMMAND(temp_fpgafl, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA2, " °C",
                     "[n_value]\n\t[Eiger]Temperature of the left front end board fpga");    
 
-    TEMP_COMMAND(temp_fpgafr, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA3,
+    GET_IND_COMMAND(temp_fpgafr, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA3, " °C",
                     "[n_value]\n\t[Eiger]Temperature of the left front end board fpga");  
 
     //dacs
@@ -1012,9 +1094,63 @@ class CmdProxy {
     INTEGER_COMMAND(dbitpipeline, getDBITPipeline, setDBITPipeline, std::stoi,
                     "[n_value]\n\t[Ctb] Pipeline of the clock for latching digital bits.");      
 
+    INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, std::stoi, defs::V_LIMIT,
+                    "[n_value]\n\t[Ctb] Soft limit for power supplies and DACS in mV.");      
+
+    INTEGER_IND_COMMAND(v_a, getVoltage, setVoltage, std::stoi, defs::V_POWER_A,
+                    "[n_value]\n\t[Ctb] Voltage supply a in mV.");      
+
+    INTEGER_IND_COMMAND(v_b, getVoltage, setVoltage, std::stoi, defs::V_POWER_B,
+                    "[n_value]\n\t[Ctb] Voltage supply b in mV.");      
+
+    INTEGER_IND_COMMAND(v_c, getVoltage, setVoltage, std::stoi, defs::V_POWER_C,
+                    "[n_value]\n\t[Ctb] Voltage supply c in mV.");      
+
+    INTEGER_IND_COMMAND(v_d, getVoltage, setVoltage, std::stoi, defs::V_POWER_D,
+                    "[n_value]\n\t[Ctb] Voltage supply d in mV.");      
+
+    INTEGER_IND_COMMAND(v_io, getVoltage, setVoltage, std::stoi, defs::V_POWER_IO,
+                    "[n_value]\n\t[Ctb] Voltage supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up).");      
+
+    INTEGER_IND_COMMAND(v_chip, getVoltage, setVoltage, std::stoi, defs::V_POWER_CHIP,
+                    "[n_value]\n\t[Ctb] Voltage supply chip in mV. Do not use it unless you are completely sure you will not fry the board.");      
+
+    GET_IND_COMMAND(vm_a, getMeasuredVoltage, defs::V_POWER_A, "",
+                    "\n\t[Ctb] Measured voltage of power supply a in mV.");  
+
+    GET_IND_COMMAND(vm_b, getMeasuredVoltage, defs::V_POWER_B,  "",
+                    "\n\t[Ctb] Measured voltage of power supply b in mV.");  
+
+    GET_IND_COMMAND(vm_c, getMeasuredVoltage, defs::V_POWER_C,  "",
+                    "\n\t[Ctb] Measured voltage of power supply c in mV."); 
+                    
+    GET_IND_COMMAND(vm_d, getMeasuredVoltage, defs::V_POWER_D,  "",
+                    "\n\t[Ctb] Measured voltage of power supply d in mV.");                 
+
+    GET_IND_COMMAND(vm_io, getMeasuredVoltage, defs::V_POWER_IO,  "",
+                    "\n\t[Ctb] Measured voltage of power supply io in mV."); 
+
+    GET_IND_COMMAND(im_a, getMeasuredVoltage, defs::I_POWER_A, "",
+                    "\n\t[Ctb] Measured current of power supply a in mA.");  
+
+    GET_IND_COMMAND(im_b, getMeasuredVoltage, defs::I_POWER_B,  "",
+                    "\n\t[Ctb] Measured current of power supply b in mA.");  
+
+    GET_IND_COMMAND(im_c, getMeasuredVoltage, defs::I_POWER_C,  "",
+                    "\n\t[Ctb] Measured current of power supply c in mA."); 
+                    
+    GET_IND_COMMAND(im_d, getMeasuredVoltage, defs::I_POWER_D,  "",
+                    "\n\t[Ctb] Measured current of power supply d in mA.");                 
+
+    GET_IND_COMMAND(im_io, getMeasuredVoltage, defs::I_POWER_IO,  "",
+                    "\n\t[Ctb] Measured current of power supply io in mA."); 
 
 
 
+
+
+    DAC_COMMAND(adcvpp, getDAC, setDAC, defs::ADC_VPP,
+                    "[dac or mv value][(optional unit) mv] \n\t[Ctb] Vpp of ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V.");    
 
     GET_COMMAND(lastclient, getLastClientIP, 
                 "\n\tClient IP Address that last communicated with the detector."); 

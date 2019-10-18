@@ -702,62 +702,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page settings
-   - <b>adcvpp [i] </b> Sets/gets the Vpp of the ADC  0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V . \c Returns \c (int ["mV"])
-	 */
-    descrToFuncMap[i].m_pFuncName = "adcvpp";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
-    /*! \page settings
-   - <b>v_a [i] mv</b> Sets/gets value for Va on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"])
-	 */
-    descrToFuncMap[i].m_pFuncName = "v_a";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
-    /*! \page settings
-   - <b>v_b [i] mv</b> Sets/gets value for Vb on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"])
-	 */
-    descrToFuncMap[i].m_pFuncName = "v_b";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
-    /*! \page settings
-   - <b>v_c [i] mv</b> Sets/gets value for Vc on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"])
-	 */
-    descrToFuncMap[i].m_pFuncName = "v_c";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
-    /*! \page settings
-   - <b>v_d [i] mv</b> Sets/gets value for Vd on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"])
-	 */
-    descrToFuncMap[i].m_pFuncName = "v_d";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
-    /*! \page settings
-   - <b>v_io [i] mv</b> Sets/gets value for Vio on the new chiptest board. Must be in mV. It should be minimum 1200 mV and must be the first power regulator to be set after server start up (fpga reset). To change again, reset fpga first. \c Returns \c (int ["mV"])
-	 */
-    descrToFuncMap[i].m_pFuncName = "v_io";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
-    /*! \page settings
-   - <b>v_chip [i] mv</b> Sets/gets value for Vchip on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"]). Do NOT use it, unless you are completely sure you won't fry the board!
-	 */
-    descrToFuncMap[i].m_pFuncName = "v_chip";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
-    /*! \page settings
-   - <b>v_limit [i] mv</b> Sets/gets a soft limit for the power supplies and the DACs on the new chiptest board. Must be in mV. \c Returns \c (int ["mV"])
-	 */
-    descrToFuncMap[i].m_pFuncName = "v_limit";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDAC;
-    ++i;
-
-    /*! \page settings
    - <b>vipre</b> Sets/gets dac for the preamplifier's input transistor current for Mythen3. Normally in DAC units unless \c mv is specified at the end of the command line. \c Returns \c (int ["mV"])
 	 */
     descrToFuncMap[i].m_pFuncName = "vipre";
@@ -986,41 +930,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    - <b>i_io</b> Gets the current of the power supply io on the new chiptest board \c Returns \c (int"mV")
 	 */
     descrToFuncMap[i].m_pFuncName = "i_io";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>vm_a</b> Gets the measured voltage of the power supply a on the new chiptest board \c Returns \c (int"mV")
-	 */
-    descrToFuncMap[i].m_pFuncName = "vm_a";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>vm_b</b> Gets the measured voltage of the power supply b on the new chiptest board \c Returns \c (int"mV")
-	 */
-    descrToFuncMap[i].m_pFuncName = "vm_b";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>vm_c</b> Gets the measured voltage of the power supply c on the new chiptest board \c Returns \c (int"mV")
-	 */
-    descrToFuncMap[i].m_pFuncName = "vm_c";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>vm_d</b> Gets the measured voltage of the power supply d on the new chiptest board \c Returns \c (int"mV")
-	 */
-    descrToFuncMap[i].m_pFuncName = "vm_d";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>vm_io</b> Gets the measured voltage of the power supply io on the new chiptest board \c Returns \c (int"mV")
-	 */
-    descrToFuncMap[i].m_pFuncName = "vm_io";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
     ++i;
 
@@ -1922,8 +1831,6 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
         ++iarg;
         --narg;
     }
-    else if (cmd == "adcvpp")
-        dac = ADC_VPP;
     else if (cmd == "vthreshold")
         dac = THRESHOLD;
     else if (cmd == "vcalibration")
@@ -1995,26 +1902,6 @@ std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int 
         dac = E_Vis;
     else if (cmd == "iodelay")
         dac = IO_DELAY;
-    else if (cmd == "v_a") {
-        dac = V_POWER_A;
-        mode = 1;
-    } else if (cmd == "v_b") {
-        dac = V_POWER_B;
-        mode = 1;
-    } else if (cmd == "v_c") {
-        dac = V_POWER_C;
-        mode = 1;
-    } else if (cmd == "v_d") {
-        dac = V_POWER_D;
-        mode = 1;
-    } else if (cmd == "v_io") {
-        dac = V_POWER_IO;
-        mode = 1;
-   } else if (cmd == "v_chip") {
-        dac = V_POWER_CHIP;
-        mode = 1;
-    } else if (cmd == "v_limit")
-        dac = V_LIMIT;
     else if (cmd == "vipre")
         dac = M_vIpre;
     else if (cmd == "viinsh")

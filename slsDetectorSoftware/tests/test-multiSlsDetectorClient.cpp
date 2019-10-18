@@ -9,6 +9,133 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+TEST_CASE("vm_a", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vm_a", GET));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vm_b", GET));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vm_c", GET));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vm_d", GET));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vm_io", GET));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("im_a", GET));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("im_b", GET));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("im_c", GET));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("im_d", GET));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("im_io", GET));        
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("vm_a", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vm_b", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vm_c", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vm_d", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vm_io", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("im_a", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("im_b", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("im_c", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("im_d", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("im_io", GET));        
+    }
+}
+
+TEST_CASE("v_a", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        std::string s;
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_limit", GET, nullptr, oss));
+            s = oss.str();
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("v_limit 1000", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "vlimit 1000\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("v_limit", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vlimit 1000\n");
+        }     
+        REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_a", GET, nullptr, oss));
+            s = oss.str();
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
+            REQUIRE(oss.str() == s);
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_b", GET, nullptr, oss));
+            s = oss.str();
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
+            REQUIRE(oss.str() == s);
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_c", GET, nullptr, oss));
+            s = oss.str();
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
+            REQUIRE(oss.str() == s);
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_d", GET, nullptr, oss));
+            s = oss.str();
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
+            REQUIRE(oss.str() == s);
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_io", GET));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_chip", GET)); // do not set vchip
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("v_limit", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("v_a", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("v_b", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("v_c", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("v_d", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("v_io", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("v_chip", GET));
+    }
+}
+
+TEST_CASE("adcvpp", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        int prev_val = 0;   
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("adcvpp", GET, nullptr, oss);
+            std::string s = (oss.str()).erase (0, strlen("adcvpp "));
+            prev_val = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcvpp 1", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("adcvpp", GET, nullptr, oss);
+            REQUIRE(oss.str() == "adcvpp 1\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcvpp 1140 mv", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("adcvpp", GET, nullptr, oss);
+            REQUIRE(oss.str() == "adcvpp 1140 mv\n");
+        }            
+        REQUIRE_NOTHROW(multiSlsDetectorClient("adcvpp " + std::to_string(prev_val), PUT));  
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("adcvpp", GET));
+    }
+}
+
+
 TEST_CASE("dbitpipeline", "[.cmd][.ctb]") {
     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
         {

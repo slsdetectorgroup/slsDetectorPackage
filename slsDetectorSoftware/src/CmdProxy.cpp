@@ -1009,4 +1009,27 @@ std::string CmdProxy::DigitalIODelay(int action) {
 }
 
 
+/* Pattern */
+
+std::string CmdProxy::Pattern(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[fname]\n\t[Ctb] Loads binary pattern file with only pattern words" << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("Cannot get");     
+    } else if (action == defs::PUT_ACTION) {     
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);  
+        }                                
+        det->setPattern(args[0]);  
+        os << args.front() << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+
+
 } // namespace sls

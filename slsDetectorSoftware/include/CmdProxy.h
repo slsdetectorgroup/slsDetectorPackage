@@ -444,7 +444,7 @@ class CmdProxy {
                                     /* acquisition parameters */
                                     {"cycles", "triggers"},
                                     {"cyclesl", "triggersl"},
-                                    {"clkdivider", "speed"}, // or runclk for ctb (ignore as speed doesnt exist?)
+                                    {"clkdivider", "speed"}, 
                                     
                                     /* acquisition */
                                     {"busy", "clearbusy"},
@@ -483,7 +483,8 @@ class CmdProxy {
                                     {"r_readfreq", "rx_readfreq"},
 
                                     /* Eiger Specific */
-                                    {"trimdir", "settingsdir"},
+                                    {"trimdir", "settingspath"},
+                                    {"settingsdir", "settingspath"},
                                     {"resmat", "partialreset"},
 
                                     /* Jungfrau Specific */
@@ -498,6 +499,8 @@ class CmdProxy {
                                     {"i_c", "im_c"},
                                     {"i_d", "im_d"},
                                     {"i_io", "im_io"}
+
+                                    /* Pattern */
                                    
 
                                     };
@@ -617,7 +620,7 @@ class CmdProxy {
                           {"subdeadtime", &CmdProxy::subdeadtime},
                           {"threshold", &CmdProxy::Threshold},
                           {"thresholdnotb", &CmdProxy::ThresholdNoTb}, 
-                          {"settingsdir", &CmdProxy::settingsdir},
+                          {"settingspath", &CmdProxy::settingspath},
                           {"trimbits", &CmdProxy::trimbits},
                           {"gappixels", &CmdProxy::GapPixels},
                           {"parallel", &CmdProxy::parallel},
@@ -697,13 +700,16 @@ class CmdProxy {
                           {"diodelay", &CmdProxy::DigitalIODelay}, 
                           {"led", &CmdProxy::led}, 
 
+                          /* Pattern */
+                          {"pattern", &CmdProxy::Pattern}, 
+                          {"savepattern", &CmdProxy::savepattern}, 
+
 
 
 
                           {"adcvpp", &CmdProxy::adcvpp},
                           {"lastclient", &CmdProxy::lastclient},    
-                          {"lock", &CmdProxy::lock},
-                          {"savepattern", &CmdProxy::savepattern}                 
+                          {"lock", &CmdProxy::lock}                
                           };
 
 
@@ -755,7 +761,8 @@ class CmdProxy {
     std::string SlowAdc(int action);
     std::string ReceiverDbitList(int action);
     std::string DigitalIODelay(int action);
-
+    /* Pattern */
+    std::string Pattern(int action);
 
 
     /* configuration */
@@ -1028,7 +1035,7 @@ class CmdProxy {
     TIME_COMMAND(subdeadtime, getSubDeadTime, setSubDeadTime,
                  "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger] Dead time of EIGER subframes. Subperiod = subexptime + subdeadtime.");
 
-    STRING_COMMAND(settingsdir, getSettingsDir, setSettingsDir, 
+    STRING_COMMAND(settingspath, getSettingsPath, setSettingsPath, 
                 "[path]\n\t[Eiger] Directory where settings files are loaded from/to.");
 
     EXECUTE_SET_COMMAND_NOID_1ARG(trimbits, loadTrimbits, 
@@ -1205,6 +1212,13 @@ class CmdProxy {
                     "[0, 1]\n\t[Ctb] Switches on/off all LEDs.");
 
 
+    /* Pattern */
+
+    EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
+                "[fname]\n\t[Ctb] Saves pattern to file (ascii). Also executes pattern."); 
+
+
+
 
 
 
@@ -1218,8 +1232,6 @@ class CmdProxy {
                     "[0, 1]\n\tLock detector to one IP, 1: locks");
 
 
-    EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
-                "[fname]\n\t[Ctb] Saves pattern to file (ascii). Also executes pattern."); 
 
 };
 

@@ -602,10 +602,10 @@ class Detector {
                             bool trimbits = true, Positions pos = {});
 
     /** [Eiger] */
-    Result<std::string> getSettingsDir(Positions pos = {}) const;
+    Result<std::string> getSettingsPath(Positions pos = {}) const;
 
     /** [Eiger] */
-    void setSettingsDir(const std::string &value, Positions pos = {});
+    void setSettingsPath(const std::string &value, Positions pos = {});
 
     /** [Eiger] */
     void loadTrimbits(const std::string &fname, Positions pos = {});

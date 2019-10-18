@@ -9,6 +9,25 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("savepattern", "[.cmd][.ctb]") {
+    REQUIRE_THROWS(multiSlsDetectorClient("savepattern", GET));
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("savepattern /tmp/pat.txt", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "savepattern /tmp/pat.txt\n");
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("savepattern /tmp/pat.txt", PUT));
+    }
+}
+
+TEST_CASE("pattern", "[.cmd][.ctb]") {
+    REQUIRE_THROWS(multiSlsDetectorClient("pattern", GET));
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        ;// todo test with real file?
+    }
+}
 
 TEST_CASE("led", "[.cmd][.ctb]") {
     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
@@ -1124,10 +1143,10 @@ TEST_CASE("gappixels", "[.cmd][.eiger]") {
     }
 }
 
-TEST_CASE("settingsdir", "[.cmd][.eiger]") {
+TEST_CASE("settingspath", "[.cmd][.eiger]") {
     std::string s;
     std::ostringstream oss;
-    REQUIRE_NOTHROW(multiSlsDetectorClient("settingsdir", GET, nullptr, oss));
+    REQUIRE_NOTHROW(multiSlsDetectorClient("settingspath", GET, nullptr, oss));
     s = oss.str();
     REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));
 }

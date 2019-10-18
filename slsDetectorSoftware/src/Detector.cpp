@@ -775,11 +775,11 @@ void Detector::setThresholdEnergy(int threshold_ev,
                     settings, static_cast<int>(trimbits));
 }
 
-Result<std::string> Detector::getSettingsDir(Positions pos) const {
+Result<std::string> Detector::getSettingsPath(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getSettingsDir, pos);
 }
 
-void Detector::setSettingsDir(const std::string &value, Positions pos) {
+void Detector::setSettingsPath(const std::string &value, Positions pos) {
     pimpl->Parallel(&slsDetector::setSettingsDir, pos, value);
 }
 

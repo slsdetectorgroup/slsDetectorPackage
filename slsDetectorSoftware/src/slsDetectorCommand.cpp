@@ -978,13 +978,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
     ++i;
 
-    /*! \page prototype
-   - <b>pattern fn</b> loads binary pattern file fn
-	 */
-    descrToFuncMap[i].m_pFuncName = "pattern";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
      /*! \page prototype
    - <b>patword addr [word]</b> sets/gets 64 bit word at address addr of pattern memory. Both address and word in hex format. Advanced!
 	 */
@@ -2248,7 +2241,6 @@ std::string slsDetectorCommand::helpPattern(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "pattern fname \t loads pattern file" << std::endl;
         os << "patword addr word \t writes pattern word - only very advanced users!" << std::endl;
         os << "patioctrl reg\t configures inputs/outputs of the chiptest board - only advanced users!" << std::endl;
         os << "patclkctrl reg\t configures output clk enable of the chiptest board- only advanced users! " << std::endl;
@@ -2269,7 +2261,6 @@ std::string slsDetectorCommand::helpPattern(int action) {
         os << "patsetbit m \t selects bits (hex) of the 64 bits that the patmask will be applied to every pattern. Only the bits from m mask are selected to mask for the corresponding bit value from patmask." << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "pattern \t cannot get" << std::endl;
         os << "patword \t cannot get" << std::endl;
         os << "patioctrl \t returns inputs/outputs of the chiptest board - only advanced users!" << std::endl;
         os << "patclkctrl\t returns output clk enable of the chiptest board- only advanced users! " << std::endl;
@@ -2308,16 +2299,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
 
 
     std::ostringstream os;
-    if (cmd == "pattern") {
-        //get fname fron stdin
-
-        if (action == PUT_ACTION) {
-            fname = std::string(args[1]);
-            myDet->setPattern(fname, detPos);
-            os << "successful";
-        } else if (action == GET_ACTION)
-            os << "Cannot get";
-    } else if (cmd == "patword") {
+   if (cmd == "patword") {
 
         if (action == PUT_ACTION) {
             //get addr, word from stdin

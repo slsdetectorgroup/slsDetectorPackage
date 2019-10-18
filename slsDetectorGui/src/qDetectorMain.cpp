@@ -385,7 +385,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
         }
 
         else if (action == actionLoadTrimbits) {
-            QString fName = QString((det->getSettingsDir().squash("/tmp/")).c_str());
+            QString fName = QString((det->getSettingsPath().squash("/tmp/")).c_str());
             FILE_LOG(logDEBUG) << "Loading Trimbits";
             // so that even nonexisting files can be selected
             QFileDialog *fileDialog = new QFileDialog(

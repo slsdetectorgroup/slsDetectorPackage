@@ -917,7 +917,7 @@ class Detector {
      * Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
      * V_POWER_D, V_POWER_IO, V_POWER_CHIP
      */
-    void setVoltage(int value, defs::dacIndex index, Positions pos = {});
+    void setVoltage(defs::dacIndex index, int value, Positions pos = {});
 
     /**
      * [CTB] mV

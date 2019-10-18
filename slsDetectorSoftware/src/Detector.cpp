@@ -1179,7 +1179,7 @@ Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
     return pimpl->Parallel(&slsDetector::setDAC, pos, -1, index, 1);
 }
 
-void Detector::setVoltage(int value, defs::dacIndex index, Positions pos) {
+void Detector::setVoltage(defs::dacIndex index, int value, Positions pos) {
     switch (index) {
     case defs::V_LIMIT:
     case defs::V_POWER_A:

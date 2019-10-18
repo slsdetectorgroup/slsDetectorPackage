@@ -206,7 +206,7 @@
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             auto val = CONV(args[0]);                                          \
-            det->SETFCN(val, INDEX, {det_id});                                 \
+            det->SETFCN(INDEX, val, {det_id});                                 \
             os << args.front() << '\n';                                        \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \

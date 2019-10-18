@@ -345,13 +345,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
 
     /*! \page config
-   - <b>powerchip [i]</b> Powers on/off the chip. 1 powers on, 0 powers off. Can also get the power status. Used for JUNGFRAU only. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "powerchip";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
-    ++i;
-
-    /*! \page config
    - <b>led [i]</b> sets/gets the led status. 1 on, 0 off. Used for MOENCH only ?? \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "led";
@@ -364,14 +357,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncName = "diodelay";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
     ++i;
-
-    /*! \page config
-   - <b>auto_comp_disable i </b> Currently not implemented. this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). \c Returns \c (int)
-     */
-    descrToFuncMap[i].m_pFuncName = "auto_comp_disable";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
-    ++i;
-
 
     /* versions/ serial numbers  getId */
     /*! \page config
@@ -417,33 +402,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
     ++i;
 
-    /*! \page timing
-   - <b>storagecells [i]</b> sets/gets number of additional storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #triggers * (#storagecells +1). \c Returns \c (long long int)
-     */
-    descrToFuncMap[i].m_pFuncName = "storagecells";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
-    /*! \page timing
-   - <b>storagecell_start [i]</b> sets/gets the storage cell that stores the first acquisition of the series. Default is 15(0xf).. For very advanced users only! For JUNGFRAU only. Range: 0-15. \c Returns \c (int)
-     */
-    descrToFuncMap[i].m_pFuncName = "storagecell_start";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
-    /*! \page timing
-   - <b>storagecell_start [i]</b> sets/gets the storage cell that stores the first acquisition of the series. Default is 15(0xf).. For very advanced users only! For JUNGFRAU only. Range: 0-15. \c Returns \c (int)
-     */
-    descrToFuncMap[i].m_pFuncName = "storagecell_start";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
-
-    /*! \page timing
-   - <b>storagecell_delay [i]</b> sets/gets additional time between 2 storage cells. For very advanced users only! For JUNGFRAU only. Range: 0-1638375 ns (resolution of 25ns). \c Returns \c (int)
-     */
-    descrToFuncMap[i].m_pFuncName = "storagecell_delay";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimer;
-    ++i;
 
     /* read only timers */
 
@@ -2686,20 +2644,7 @@ std::string slsDetectorCommand::cmdTimer(int narg, const char * const args[], in
         index = ANALOG_SAMPLES;
     else if (cmd == "dsamples")
         index = DIGITAL_SAMPLES;
-    else if (cmd == "storagecells")
-        index = STORAGE_CELL_NUMBER;
-    else if (cmd == "storagecell_delay")
-        index = STORAGE_CELL_DELAY;
-    else if (cmd == "storagecell_start") {
-        if (action == PUT_ACTION) {
-            int ival = -1;
-            if (!sscanf(args[1], "%d", &ival))
-                return std::string("cannot scan storage cell start value ") + std::string(args[1]);
-            myDet->setStoragecellStart(ival, detPos);
-        }
-        sprintf(answer, "%d", myDet->setStoragecellStart(-1, detPos));
-        return std::string(answer);
-    } else
+ else
         return std::string("could not decode timer ") + cmd;
 
     if (action == PUT_ACTION) {
@@ -2746,18 +2691,12 @@ std::string slsDetectorCommand::helpTimer(int action) {
         os << "samples t \t sets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples t \t sets the number of analog samples expected from the ctb" << std::endl;
         os << "dsamples t \t sets the number of digital samples expected from the ctb" << std::endl;
-        os << "storagecells t \t sets number of storage cells per acquisition. For very advanced users only! For JUNGFRAU only. Range: 0-15. The #images = #frames * #triggers * (#storagecells+1)." << std::endl;
-        os << "storagecell_start t \t sets the storage cell that stores the first acquisition of the series. Default is 15(0xf). For very advanced users only! For JUNGFRAU only. Range: 0-15." << std::endl;
-        os << "storagecell_delay t \t sets additional time to t between 2 storage cells. For very advanced users only! For JUNGFRAU only. Range: 0-1638375 ns (resolution of 25ns).. " << std::endl;
         os << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "samples \t gets the number of samples (both analog and digital) expected from the ctb" << std::endl;
         os << "asamples \t gets the number of analog samples expected from the ctb" << std::endl;
         os << "dsamples \t gets the number of digital samples expected from the ctb" << std::endl;
-        os << "storagecells \t gets number of storage cells per acquisition.For JUNGFRAU only." << std::endl;
-        os << "storagecell_start \t gets the storage cell that stores the first acquisition of the series." << std::endl;
-        os << "storagecell_delay \tgets additional time between 2 storage cells. " << std::endl;
         os << std::endl;
     }
     return os.str();
@@ -2975,18 +2914,6 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
         return std::string("successful");
     }
 
-    else if (cmd == "powerchip") {
-        char ans[100];
-        if (action == PUT_ACTION) {
-            int ival = -1;
-            if (!sscanf(args[1], "%d", &ival))
-                return std::string("could not scan powerchip parameter " + std::string(args[1]));
-            myDet->powerChip(ival, detPos);
-        }
-        sprintf(ans, "%d", myDet->powerChip(-1, detPos));
-        return std::string(ans);
-    }
-
     else if (cmd == "led") {
         if (action == PUT_ACTION) {
             int ival = -1;
@@ -3014,17 +2941,7 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
       	return std::string("successful");
     }
 
-    else if (cmd == "auto_comp_disable") {
-        char ans[100];
-        if (action == PUT_ACTION) {
-            int ival = -1;
-            if (!sscanf(args[1], "%d", &ival))
-                return std::string("could not scan auto_comp_control parameter " + std::string(args[1]));
-            myDet->setAutoComparatorDisableMode(ival, detPos);
-        }
-        sprintf(ans, "%d", myDet->setAutoComparatorDisableMode(-1, detPos));
-        return std::string(ans);
-    } else
+ else
         return std::string("unknown command ") + cmd;
 }
 
@@ -3042,16 +2959,12 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
         os << "update s p f \t updates the firmware to f and detector server to f from host p via tftp and then reboots controller (blackfin). Not for Eiger. " << std::endl;
         os << "led s \t sets led status (0 off, 1 on)" << std::endl;
         os << "diodelay m v \tsets the delay for the digital IO pins selected by mask m and delay set by v. mask is upto 64 bits in hex, delay max is 775ps, and set in steps of 25 ps. Used for MOENCH/CTB only." << std::endl;
-        os << "powerchip i \t powers on or off the chip. i = 1 for on, i = 0 for off" << std::endl;
-        os << "auto_comp_disable i \t this mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us). 1 enables mode, 0 disables mode. By default, mode is disabled (comparator is enabled throughout). (JUNGFRAU only). " << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
 
         os << "extsig \t gets the mode of the external signal. can be trigger_in_rising_edge, trigger_in_falling_edge. Gotthard only" << std::endl;
         os << "romode \t gets the readout flag. Options: analog, digital, analog_digital. Used for CTB only." << std::endl;
         os << "led \t returns led status (0 off, 1 on)" << std::endl;
-        os << "powerchip \t gets if the chip has been powered on or off" << std::endl;
-        os << "auto_comp_disable \t  gets if the automatic comparator diable mode is enabled/disabled" << std::endl;
     }
     return os.str();
 }

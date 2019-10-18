@@ -10,6 +10,131 @@ auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
 
+
+TEST_CASE("storagecell_delay", "[.cmd][.jungfrau]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU) {  
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("storagecell_delay 2.25 ms", PUT, nullptr, oss);
+            REQUIRE(oss.str() == "storagecell_delay 2.25 ms\n");
+        }
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("storagecell_delay", GET, nullptr, oss);
+            REQUIRE(oss.str() == "storagecell_delay 2.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("storagecell_delay 0", PUT, nullptr, oss);
+            REQUIRE(oss.str() == "storagecell_delay 0\n");
+        }
+    REQUIRE_THROWS(multiSlsDetectorClient("storagecell_delay 1638400 ns", PUT));       
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("storagecell_delay", GET));
+    }
+}
+
+TEST_CASE("storagecell_start", "[.cmd][.jungfrau]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_start 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "storagecell_start 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_start 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "storagecell_start 0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_start 15", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "storagecell_start 15\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_start", GET, nullptr, oss));
+            REQUIRE(oss.str() == "storagecell_start 15\n");
+        }   
+    REQUIRE_THROWS(multiSlsDetectorClient("storagecell_start 16", PUT));    
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("storagecell_start", GET));
+    }
+}
+
+TEST_CASE("storagecells", "[.cmd][.jungfrau]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("storagecells 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "storagecells 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("storagecells 15", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "storagecells 15\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("storagecells 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "storagecells 0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("storagecells", GET, nullptr, oss));
+            REQUIRE(oss.str() == "storagecells 0\n");
+        }   
+    REQUIRE_THROWS(multiSlsDetectorClient("storagecells 16", PUT));    
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("storagecells", GET));
+    }
+}
+
+
+TEST_CASE("auto_comp_disable", "[.cmd][.jungfrau]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("auto_comp_disable 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "auto_comp_disable 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("auto_comp_disable 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "auto_comp_disable 0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("auto_comp_disable", GET, nullptr, oss));
+            REQUIRE(oss.str() == "auto_comp_disable 0\n");
+        }   
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("auto_comp_disable", GET));
+    }
+}
+
+TEST_CASE("powerchip", "[.cmd][.jungfrau]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("powerchip 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "powerchip 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("powerchip 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "powerchip 0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("powerchip", GET, nullptr, oss));
+            REQUIRE(oss.str() == "powerchip 0\n");
+        }   
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("powerchip", GET));
+    }
+}
+
 TEST_CASE("temp_", "[.cmd][.jungfrau]") {
     if (test::type == slsDetectorDefs::JUNGFRAU) {   
         std::string s;

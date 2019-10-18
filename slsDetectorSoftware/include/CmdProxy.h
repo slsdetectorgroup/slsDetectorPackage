@@ -392,6 +392,8 @@ class CmdProxy {
                                     {"resmat", "partialreset"},
 
                                     /* Jungfrau Specific */
+                                    /* Gotthard Specific */
+
 
 
 
@@ -537,7 +539,18 @@ class CmdProxy {
                           {"temp_threshold", &CmdProxy::temp_threshold},
                           {"temp_control", &CmdProxy::temp_control},
                           {"temp_event", &CmdProxy::TemperatureEvent},
- 
+                          {"powerchip", &CmdProxy::powerchip}, 
+                          {"auto_comp_disable", &CmdProxy::auto_comp_disable}, 
+                          {"storagecells", &CmdProxy::storagecells}, 
+                          {"storagecell_start", &CmdProxy::storagecell_start},
+                          {"storagecell_delay", &CmdProxy::storagecell_delay},
+
+                          /* Gotthard Specific */
+
+
+
+
+
 
 
                           {"lastclient", &CmdProxy::lastclient},    
@@ -585,6 +598,8 @@ class CmdProxy {
     std::string Quad(int action);
     /* Jungfrau Specific */
     std::string TemperatureEvent(int action);
+    std::string PowerChip(int action);
+    /* Gotthard Specific */
 
 
 
@@ -911,11 +926,25 @@ class CmdProxy {
     INTEGER_COMMAND(temp_control, getTemperatureControl, setTemperatureControl, std::stoi,
                     "[0, 1]\n\t[Jungfrau] Temperature control enable. Default is 0 (disabled). If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared.");  
 
+    INTEGER_COMMAND(powerchip, getPowerChip, setPowerChip, std::stoi,
+                    "[0, 1]\n\t[Jungfrau] Power the chip. Default 0. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled.");  
+
+    INTEGER_COMMAND(auto_comp_disable, getAutoCompDisable, setAutoCompDisable, std::stoi,
+                    "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. Default 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode. This mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us).");  
+
+    INTEGER_COMMAND_NOID(storagecells, getNumberOfAdditionalStorageCells, setNumberOfAdditionalStorageCells, std::stoi,
+                    "[0-15]\n\tNumber of additional storage cells. Default is 0. For advanced users only. \n\tThe #images = #frames x #triggers x (#storagecells + 1).");
+
+    INTEGER_COMMAND(storagecell_start, getStorageCellStart, setStoragecellStart, std::stoi,
+                    "[0-15]\n\t[Jungfrau] Storage cell that stores the first acquisition of the series. Default is 15. For advanced users only.");  
+
+    TIME_COMMAND(storagecell_delay, getStorageCellDelay, setStorageCellDelay,
+                 "[duration (0-1638375 ns)] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Additional time delay between 2 storage cells. For advanced users only. Resolution is 25 ns.");
 
 
+    /* Gotthard Specific */
 
-
-
+    
 
 
 

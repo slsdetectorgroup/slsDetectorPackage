@@ -710,6 +710,9 @@ std::string CmdProxy::TemperatureEvent(int action) {
 }
 
 
+/* Gotthard Specific */
+
+
 
 
 

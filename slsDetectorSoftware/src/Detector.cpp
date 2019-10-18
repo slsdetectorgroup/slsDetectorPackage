@@ -973,7 +973,7 @@ Result<bool> Detector::getPowerChip(Positions pos) const {
 }
 
 void Detector::setPowerChip(bool on, Positions pos) {
-    if (on && pimpl->size() > 3) {
+    if ((pos.empty() || pos[0] == -1) && on && pimpl->size() > 3) {
         for (unsigned int i = 0; i != pimpl->size(); ++i) {
             pimpl->powerChip(static_cast<int>(on), i);
             usleep(1000 * 1000);

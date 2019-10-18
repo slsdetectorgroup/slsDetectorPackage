@@ -898,62 +898,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    commands to readout ADCs of detector
 	 */
 
-    /*! \page settings
-   - <b>i_a</b> Gets the current of the power supply a on the new chiptest board. \c Returns \c (int"mV")
-	 */
-    descrToFuncMap[i].m_pFuncName = "i_a";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>i_b</b> Gets the current of the power supply b on the new chiptest board \c Returns \c (int"mV")
-	 */
-    descrToFuncMap[i].m_pFuncName = "i_b";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>i_c</b> Gets the current of the power supply c on the new chiptest board \c Returns \c (int"mV")
-	 */
-    descrToFuncMap[i].m_pFuncName = "i_c";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>i_d</b> Gets the current of the power supply d on the new chiptest board \c Returns \c (int"mV")
-	 */
-    descrToFuncMap[i].m_pFuncName = "i_d";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /*! \page settings
-   - <b>i_io</b> Gets the current of the power supply io on the new chiptest board \c Returns \c (int"mV")
-	 */
-    descrToFuncMap[i].m_pFuncName = "i_io";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdADC;
-    ++i;
-
-    /* temperature control */
-    /*! \page settings
-        \section settingstmp Temp Control
-  commands to monitor and handle temperature overshoot (only JUNGFRAU)
-     */
-
-
-    /*! \page settings
-   - <b>temp_control</b> Enables/Disables the temperature control. 1 enables, 0 disables.  JUNGFRAU ONLY. \c Returns \c int
-     */
-    descrToFuncMap[i].m_pFuncName = "temp_control";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTempControl;
-    ++i;
-
-    /*! \page settings
-   - <b>temp_event</b> Resets/gets over-temperative event. Put only with option 0 to clear event. Gets 1 if temperature went over threshold and control is enabled, else 0. /Disables the temperature control.  JUNGFRAU ONLY. \c Returns \c int
-     */
-    descrToFuncMap[i].m_pFuncName = "temp_event";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTempControl;
-    ++i;
-
     /* file name */
 
     /*! \page output Output settings
@@ -1048,47 +992,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
     ++i;
 
-    /*! \page prototype
-   - <b>adcenable [mask]</b> Sets/gets ADC enable mask (8 digits hex format)
-	 */
-    descrToFuncMap[i].m_pFuncName = "adcenable";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /** not documenting this, but keeping this for backwards compatibility  */
-    descrToFuncMap[i].m_pFuncName = "adcdisable";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
-   - <b>adcinvert [mask]</b> Sets/gets ADC inversion mask (8 digits hex format) CTB or Moench only
-	 */
-    descrToFuncMap[i].m_pFuncName = "adcinvert";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
-   - <b>extsamplingsrc [i]</b> sets/gets the sampling source signal for digital data. \ci must be between 0 and 63. Advanced!  CTB only \Returns (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "extsamplingsrc";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
-   - <b>extsampling [i]</b> enables/disables the external sampling signal to the \c samplingsrc signal for digital data. Advanced!  CTB only \Returns (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "extsampling";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
-   - <b>rx_dbitlist [i]</b> sets/gets the list of digital signal bits required for chip in receiver. If set to "all", then all digital bits are enabled. Advanced! CTB only \Returns (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_dbitlist";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
+     /*! \page prototype
    - <b>rx_dbitoffset [i]</b> sets/gets the offset in bytes in receiver of digital data from chip in receiver. Advanced! CTB only \Returns (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_dbitoffset";
@@ -2155,104 +2059,8 @@ std::string slsDetectorCommand::helpDAC(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdADC(int narg, const char * const args[], int action, int detPos) {
-
-    dacIndex adc;
-    char answer[1000];
-
-    if (action == HELP_ACTION)
-        return helpADC(action);
-    else if (action == PUT_ACTION)
-        return std::string("cannot set ") + cmd;
-
-    if (cmd=="i_a")
-		adc=I_POWER_A;
-	else if (cmd=="i_b")
-		adc=I_POWER_B;
-	else if (cmd=="i_c")
-		adc=I_POWER_C;
-	else if (cmd=="i_d")
-		adc=I_POWER_D;
-	else if (cmd=="vm_a")
-		adc=V_POWER_A;
-	else if (cmd=="vm_b")
-		adc=V_POWER_B;
-	else if (cmd=="vm_c")
-		adc=V_POWER_C;
-	else if (cmd=="vm_d")
-		adc=V_POWER_D;
-	else if (cmd=="vm_io")
-		adc=V_POWER_IO;
-	else if (cmd=="i_io")
-		adc=I_POWER_IO;
-	else
-		return std::string("cannot decode adc ")+cmd;
-
-	sprintf(answer,"%d",myDet->getADC(adc, detPos));
-
-    if (adc == I_POWER_A || adc == I_POWER_B || adc == I_POWER_C || adc == I_POWER_D || adc == I_POWER_IO)
-	    strcat(answer," mA");
-	else
-		strcat(answer," mV");
-
-	return std::string(answer);
-
-}
-
-std::string slsDetectorCommand::helpADC(int action) {
-
-    std::ostringstream os;
-    return os.str();
-}
-
-std::string slsDetectorCommand::cmdTempControl(int narg, const char * const args[], int action, int detPos) {
-    char answer[1000] = "";
-    int val = -1;
-
-    if (action == HELP_ACTION)
-        return helpTempControl(action);
 
 
-    if (cmd == "temp_control") {
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1], "%d", &val))
-                return std::string("cannot scan temp control value ") + std::string(args[1]);
-            if ((val != 0) && (val != 1))
-                return std::string("temp_control option must be 0 or 1");
-            myDet->setTemperatureControl(val, detPos);
-        }
-        sprintf(answer, "%d", myDet->setTemperatureControl(-1, detPos));
-    }
-
-    else if (cmd == "temp_event") {
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1], "%d", &val))
-                return std::string("cannot scan temp control value ") + std::string(args[1]);
-            if (val != 0)
-                return std::string("temp_event option must be 0 to clear event");
-            myDet->setTemperatureEvent(val, detPos);
-        }
-        sprintf(answer, "%d", myDet->setTemperatureEvent(-1, detPos));
-    }
-
-    else
-        return std::string("cannot scan command " + cmd);
-
-    return std::string(answer);
-}
-
-std::string slsDetectorCommand::helpTempControl(int action) {
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "temp_control t \t Enables/Disables the temperature control. 1 enables, 0 disables. JUNGFRAU ONLY" << std::endl;
-        os << "temp_event t \t Resets over-temperative event. Put only with option 0 to clear event. JUNGFRAU ONLY." << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "temp_control  \t gets temperature control enable. 1 enabled, 0 disabled. JUNGFRAU ONLY" << std::endl;
-        os << "temp_event  \t gets over-temperative event. Gets 1 if temperature went over threshold and control is enabled, else 0. /Disables the temperature control. JUNGFRAU ONLY." << std::endl;
-    }
-    return os.str();
-}
 
 
 std::string slsDetectorCommand::cmdTimeLeft(int narg, const char * const args[], int action, int detPos) {
@@ -2511,11 +2319,6 @@ std::string slsDetectorCommand::helpPattern(int action) {
         os << "patwaittime2 nclk \t sets wait 2 waiting time in clock number " << std::endl;
         os << "patmask m \t sets the 64 bit mask (hex) applied to every pattern. Only the bits from patsetbit are selected to mask for the corresponding bit value from m mask" << std::endl;
         os << "patsetbit m \t selects bits (hex) of the 64 bits that the patmask will be applied to every pattern. Only the bits from m mask are selected to mask for the corresponding bit value from patmask." << std::endl;
-        os << "adcinvert mask\t sets the adcinversion mask (hex) CTB or Moench only" << std::endl;
-        os << "adcenable mask\t sets the adcenable mask (hex) CTB or Moench only" << std::endl;
-        os << "extsamplingsrc i\t  sets the external sampling source signal for digital data. i must be between 0 and 63. Advanced! CTB only " << std::endl;
-        os << "extsampling i\t enables/disables the external sampling signal to the samplingsrc signal for digital data. Advanced! CTB only" << std::endl;
-        os << "rx_dbitlist i..\t  sets the list of digital signal bits required for chip in receiver. If set to 'all', then all digital bits are enabled. Advanced! CTB only " << std::endl;
         os << "rx_dbitoffset i\t  sets the offset in bytes in receiver of digital data from chip in receiver. Advanced! CTB only " << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
@@ -2538,11 +2341,6 @@ std::string slsDetectorCommand::helpPattern(int action) {
         os << "patwaittime2 \t  returns the wait 2 waiting time in clock number " << std::endl;
         os << "patmask \t gets the 64 bit mask (hex) applied to every pattern." << std::endl;
         os << "patsetbit \t gets 64 bit mask (hex) of the selected bits that the patmask will be applied to every pattern. " << std::endl;
-        os << "adcinvert \t  returns the adcinversion mask " << std::endl;
-        os << "adcenable \t  returns the adcenable mask " << std::endl;
-        os << "extsamplingsrc \t  gets the external sampling source signal for digital data. i must be between 0 and 63. Advanced! CTB only " << std::endl;
-        os << "extsampling \t gets the external sampling signal enable to the samplingsrc signal for digital data. Advanced! CTB only" << std::endl;
-        os << "rx_dbitlist \t  gets the list of digital signal bits required for chip in receiver. If value is 'all', all digital bits are enabled. Advanced! CTB only " << std::endl;
         os << "rx_dbitoffset \t  gets the offset in bytes in receiver of digital data from chip in receiver. Advanced! CTB only " << std::endl;
 
     }
@@ -2560,7 +2358,6 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
 	 **********/
     std::string fname;
     int addr, start, stop, n;
-    uint32_t u32;
     uint64_t word, t;
 
 
@@ -2880,110 +2677,6 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
 
         os << "0x" << std::setw(16) << std::setfill('0') << std::hex << myDet->getPatternBitMask(detPos) << std::dec;
 
-    }  else if (cmd == "adcenable") {
-
-        if (action == PUT_ACTION) {
-            if (sscanf(args[1], "%x", &u32))
-                ;
-            else
-                return std::string("Could not scan adcenable reg ") + std::string(args[1]);
-            
-            myDet->setADCEnableMask(u32, detPos);
-        }
-
-        os << std::hex << myDet->getADCEnableMask(detPos) << std::dec;
-    } 
-    // kept only for backwards compatibility, use adcenable
-    else if (cmd == "adcdisable") {
-
-        if (action == PUT_ACTION) {
-            if (sscanf(args[1], "%x", &u32))
-                ;
-            else
-                return std::string("Could not scan adcdisable reg ") + std::string(args[1]);
-            
-            // get enable mask from enable mask
-            u32 ^= BIT32_MASK;
-            myDet->setADCEnableMask(u32, detPos);
-        }
-
-        u32 = myDet->getADCEnableMask(detPos);
-        // get disable mask
-        u32 ^= BIT32_MASK;
-        os << std::hex << u32 << std::dec;
-
-    } else if (cmd == "adcinvert") {
-        if (action == PUT_ACTION) {
-
-            if (sscanf(args[1], "%x", &u32))
-                ;
-            else
-                return std::string("Could not scan adcinvert reg ") + std::string(args[1]);
-
-            myDet->setADCInvert(u32, detPos);
-        }
-
-        os << std::hex << myDet->getADCInvert(detPos) << std::dec;
-
-    } else if (cmd == "extsamplingsrc") {
-        if (action == PUT_ACTION) {
-
-            if (!sscanf(args[1], "%d", &addr)) 
-                return std::string("Could not scan extsampling src ") + std::string(args[1]);
-
-            if (addr < 0 || addr > 63)
-                return std::string("extsamplingsrc must be between 0 and 63. ") + std::string(args[1]);
-
-            myDet->setExternalSamplingSource(addr, detPos); 
-        }
-
-        os << myDet->getExternalSamplingSource(detPos); 
-   
-    } else if (cmd == "extsampling") {
-        if (action == PUT_ACTION) {
-
-            if (!sscanf(args[1], "%d", &addr)) 
-                return std::string("Could not scan extsampling enable ") + std::string(args[1]);
-
-            myDet->setExternalSampling(addr, detPos); 
-        }
-
-        os << myDet->getExternalSampling(detPos);
-    
-    } else if (cmd == "rx_dbitlist") {
-
-
-        if (action == PUT_ACTION) {
-            std::vector <int> dbitlist;
-
-            // if not all digital bits enabled
-            if (std::string(args[1]) != "all") {
-                for (int i = 1; i < narg; ++i) {
-                    int temp = 0;
-                    if (!sscanf(args[i], "%d", &temp))
-                        return std::string("Could not scan dbitlist value ") +
-                               std::string(args[i]);
-                    if (temp < 0 || temp > 63)
-                        return std::string("dbitlist value should be between 0 and 63 ") +
-                               std::string(args[i]);
-                    dbitlist.push_back(temp);
-                }
-                if (dbitlist.size() > 64) {
-                    return std::string("Max number of values for dbitlist is 64 ");
-                }
-            }
-
-            myDet->setReceiverDbitList(dbitlist, detPos); 
-        }
-        
-        std::vector <int> dbitlist = myDet->getReceiverDbitList(detPos);  
-        // all digital bits enabled
-        if (dbitlist.empty()) 
-            return std::string("all");
-        // selective bits
-        for (const auto &value : dbitlist) 
-            os << value << " ";
-    
     } else if (cmd == "rx_dbitoffset") {
 
 

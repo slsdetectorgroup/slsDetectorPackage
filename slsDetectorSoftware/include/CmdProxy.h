@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-
 /** Macro to make an integer command.
  * CMDNAME name of the function that does the command
  * GETFCN Detector function to get
@@ -109,6 +108,32 @@
 
 
 /** int or enum */
+#define INTEGER_COMMAND_HEX(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)             \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            auto t = det->GETFCN({det_id});                                    \
+            if (args.size() != 0) {                                            \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            os << OutStringHex(t) << '\n';                                     \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            auto val = CONV(args[0]);                                          \
+            det->SETFCN(val, {det_id});                                        \
+            os << args.front() << '\n';                                        \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+/** int or enum  hex val */
 #define INTEGER_COMMAND(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)                 \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -398,6 +423,13 @@ class CmdProxy {
         return ToString(value, unit);
     }
 
+    inline unsigned int stoui(const std::string& s) {
+        unsigned long lresult = stoul(s, 0, 10);
+        unsigned int result = lresult;
+        if (result != lresult) throw std::out_of_range("cannot convert to unsigned int");
+        return result;
+    }
+
     using FunctionMap = std::map<std::string, std::string (CmdProxy::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
 
@@ -655,11 +687,18 @@ class CmdProxy {
                           {"im_c", &CmdProxy::im_c},
                           {"im_d", &CmdProxy::im_d},
                           {"im_io", &CmdProxy::im_io},
+                          {"adc", &CmdProxy::SlowAdc},  
+                          {"adcenable", &CmdProxy::adcenable}, 
+                          {"adcinvert", &CmdProxy::adcinvert}, 
+                          {"extsampling", &CmdProxy::extsampling}, 
+                          {"extsamplingsrc", &CmdProxy::extsamplingsrc}, 
+                          {"rx_dbitlist", &CmdProxy::ReceiverDbitList}, 
+
+
 
 
                           {"adcvpp", &CmdProxy::adcvpp},
                           {"lastclient", &CmdProxy::lastclient},    
-                          {"adc", &CmdProxy::SlowAdc},                            
                           {"lock", &CmdProxy::lock},
                           {"savepattern", &CmdProxy::savepattern}                 
                           };
@@ -679,6 +718,10 @@ class CmdProxy {
     /* acquisition parameters */
     std::string Speed(int action);
     std::string Adcphase(int action);
+    std::string ClockFrequency(int action);
+    std::string ClockPhase(int action);
+    std::string MaxClockPhaseShift(int action);
+    std::string ClockDivider(int action);
     /* acquisition */
     /* Network Configuration (Detector<->Receiver) */
     /* Receiver Config */
@@ -706,15 +749,10 @@ class CmdProxy {
     /* CTB Specific */
     std::string Samples(int action);
     std::string Dbitphase(int action);
-    std::string VrefVoltage(int action);
-
-
-
     std::string SlowAdc(int action);
-    std::string ClockFrequency(int action);
-    std::string ClockPhase(int action);
-    std::string MaxClockPhaseShift(int action);
-    std::string ClockDivider(int action);
+    std::string ReceiverDbitList(int action);
+
+
 
 
     /* configuration */
@@ -1144,6 +1182,18 @@ class CmdProxy {
 
     GET_IND_COMMAND(im_io, getMeasuredVoltage, defs::I_POWER_IO,  "",
                     "\n\t[Ctb] Measured current of power supply io in mA."); 
+
+    INTEGER_COMMAND(adcenable, getADCEnableMask, setADCEnableMask, stoui,
+                    "[bitmask]\n\t[Ctb] ADC Enable Mask.");      
+
+    INTEGER_COMMAND(adcinvert, getADCInvert, setADCInvert, stoui,
+                    "[bitmask]\n\t[Ctb] ADC Inversion Mask.");      
+
+    INTEGER_COMMAND(extsampling, getExternalSampling, setExternalSampling, std::stoi,
+                    "[0, 1]\n\t[Ctb] Enable for external sampling signal to extsamplingsrc signal for digital data. For advanced users only.");
+
+    INTEGER_COMMAND(extsamplingsrc, getExternalSamplingSource, setExternalSamplingSource, std::stoi,
+                    "[0-63]\n\t[Ctb] Sampling source signal for digital data. For advanced users only.");
 
 
 

@@ -651,8 +651,7 @@ class Detector {
     void setAllTrimbits(int value, Positions pos = {});
 
     /**[Eiger] Returns energies in eV where the module is trimmed */
-    //TODO Result<std::vector<int>> getTrimEnergies(Positions pos = {}) const;
-    Result<int> getTrimEnergies(Positions pos = {}) const; 
+    Result<std::vector<int>> getTrimEnergies(Positions pos = {}) const;
 
     /** [Eiger] Set the energies where the detector is trimmed */
     void setTrimEnergies(std::vector<int> energies, Positions pos = {});

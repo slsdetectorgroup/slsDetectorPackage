@@ -9,6 +9,120 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("rx_dbitlist", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitlist 0 4 5 8 9 10 52 63", PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_dbitlist", GET, nullptr, oss));
+            REQUIRE(oss.str() == "rx_dbitlist [0, 4, 5, 8, 9, 10, 52, 63]\n");
+        }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitlist all", PUT));
+    } else {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitlist", GET, nullptr, oss));
+        REQUIRE(oss.str() == "rx_dbitlist []\n");
+    }
+}
+
+TEST_CASE("extsampling", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("extsampling 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "extsampling 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("extsampling", GET, nullptr, oss));
+            REQUIRE(oss.str() == "extsampling 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("extsampling 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "extsampling 0\n");
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("extsampling", GET));
+    }
+}
+
+TEST_CASE("extsamplingsrc", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("extsamplingsrc 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "extsamplingsrc 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("extsamplingsrc 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "extsamplingsrc 0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("extsamplingsrc 15", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "extsamplingsrc 15\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("extsamplingsrc", GET, nullptr, oss));
+            REQUIRE(oss.str() == "extsamplingsrc 15\n");
+        }   
+    REQUIRE_THROWS(multiSlsDetectorClient("extsamplingsrc 64", PUT));    
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("extsamplingsrc", GET));
+    }
+}
+
+
+TEST_CASE("adcinvert", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        std::string s;
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcinvert", GET, nullptr, oss));
+            s = oss.str();
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcinvert 0x8d0a21d4", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "adcinvert 0x8d0a21d4\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
+            REQUIRE(oss.str() == s);
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("adcinvert", GET));
+    }
+}
+
+
+TEST_CASE("adcenable", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        std::string s;
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcenable", GET, nullptr, oss));
+            s = oss.str();
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcenable 0x8d0a21d4", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "adcenable 0x8d0a21d4\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
+            REQUIRE(oss.str() == s);
+        }
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("adcenable", GET));
+    }
+}
+
 
 TEST_CASE("vm_a", "[.cmd][.ctb]") {
     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
@@ -794,11 +908,11 @@ TEST_CASE("ratecorr", "[.cmd][.eiger]") {
 
 TEST_CASE("trimen", "[.cmd][.eiger]") {
     if (test::type == slsDetectorDefs::EIGER) {   
-        REQUIRE_NOTHROW(multiSlsDetectorClient("trimen 3 4500 5400 6400", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("trimen 4500 5400 6400", PUT));
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(multiSlsDetectorClient("0:trimen", GET, nullptr, oss));
-            REQUIRE(oss.str() == "trimen 3 [4500, 5400, 6400]\n");
+            REQUIRE(oss.str() == "trimen [4500, 5400, 6400]\n");
         }
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("trimen", GET));

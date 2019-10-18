@@ -385,7 +385,6 @@ std::string CmdProxy::ClockFrequency(int action) {
             WrongNumberOfParameters(2);  
         }                                
         det->setClockFrequency(std::stoi(args[0]), std::stoi(args[1]));  
-        //TODO print args
         os << std::stoi(args[1]) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -466,7 +465,6 @@ std::string CmdProxy::ClockDivider(int action) {
             WrongNumberOfParameters(2);  
         }                         
         det->setClockDivider(std::stoi(args[0]), std::stoi(args[1]));  
-        //TODO print args
         os << std::stoi(args[1]) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -587,33 +585,24 @@ std::string CmdProxy::TrimEnergies(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_trim] [trim_ev1] [trim_Ev2 (optional)] [trim_ev3 (optional)] ...\n\t[Eiger] Number of trim energies and list of trim energies, where corresponding default trim files exist in corresponding trim folders." << '\n';   
+        os << "[trim_ev1] [trim_Ev2 (optional)] [trim_ev3 (optional)] ...\n\t[Eiger] Number of trim energies and list of trim energies, where corresponding default trim files exist in corresponding trim folders." << '\n';   
     } else if (action == defs::GET_ACTION) {
          if (args.size() != 0) {                                
             WrongNumberOfParameters(0);         
         }       
         auto t = det->getTrimEnergies({det_id});
-        os << t.size() << ' ';
         os << OutString(t) << '\n';     
     } else if (action == defs::PUT_ACTION) {
         if (args.size() < 1) {                                
             WrongNumberOfParameters(1);         
         } 
-        unsigned int ntrim = std::stoi(args[0]);
-        if (args.size() !=  ntrim + 1) {                                
-            WrongNumberOfParameters(ntrim + 1);         
-        }             
+        unsigned int ntrim = args.size();        
         std::vector<int> t(ntrim);
         for (unsigned int i = 0; i < ntrim; ++i) {
-            t[i] = std::stoi(args[i+1]);
+            t[i] = std::stoi(args[i]);
         }                  
         det->setTrimEnergies(t, {det_id}); 
-        os << ntrim << " [";
-        // TODO cannot print args
-        for (unsigned int i = 0; i < ntrim; ++i) {
-            os << ' ' << t[i];
-        }
-        os << "]\n";
+        os << sls::ToString(args) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
     }
@@ -682,7 +671,6 @@ std::string CmdProxy::Activate(int action) {
                 throw sls::RuntimeError("Unknown argument for deactivated padding.");   
             }
             det->setRxPadDeactivatedMode(p, {det_id});
-            //TODO print args
             os << ' ' << args[1];
         } 
         os << '\n';
@@ -708,8 +696,7 @@ std::string CmdProxy::PulsePixel(int action) {
         c.x = std::stoi(args[1]);
         c.y = std::stoi(args[2]);       
         det->pulsePixel(n, c, {det_id});
-        //TODO print args
-        os << args[0] << ' ' << args[1] << ' ' << args[2] << '\n';
+        os << sls::ToString(args)  << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
     }
@@ -732,8 +719,7 @@ std::string CmdProxy::PulsePixelAndMove(int action) {
         c.x = std::stoi(args[1]);
         c.y = std::stoi(args[2]);       
         det->pulsePixelNMove(n, c, {det_id});
-        //TODO print args
-        os << args[0] << ' ' << args[1] << ' ' << args[2] << '\n';
+        os << sls::ToString(args) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
     }
@@ -938,26 +924,6 @@ std::string CmdProxy::Dbitphase(int action) {
     return os.str();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 std::string CmdProxy::SlowAdc(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
@@ -980,6 +946,43 @@ std::string CmdProxy::SlowAdc(int action) {
         }      
     } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("cannot put");
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+
+std::string CmdProxy::ReceiverDbitList(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[all] or [i0] [i1] [i2]... \n\t[Ctb] List of digital signal bits read out. If all is used instead of a list, all digital bits (64) enabled. Each element in list can be 0 - 63 and non repetitive." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {                                
+            WrongNumberOfParameters(0);         
+        } 
+        auto t = det->getRxDbitList({det_id});      
+        os << OutString(t) << '\n';      
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() < 1) {                                
+            WrongNumberOfParameters(1);         
+        } 
+        std::vector<int> t;
+        if (args[0] == "all") {
+           t.resize(64);
+            for (unsigned int i = 0; i < 64; ++i) {
+                t[i] = i;
+            } 
+        } else {
+            unsigned int ntrim = args.size();        
+            t.resize(ntrim);
+            for (unsigned int i = 0; i < ntrim; ++i) {
+                t[i] = std::stoi(args[i]);
+            }    
+        }              
+        det->setRxDbitList(t, {det_id}); 
+        os << sls::ToString(args) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
     }

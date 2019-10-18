@@ -296,20 +296,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    commands to configure chip of the detector
 	 */
 
-    /*! \page config
-   - <b>led [i]</b> sets/gets the led status. 1 on, 0 off. Used for MOENCH only ?? \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "led";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
-    ++i;
-
-    /*! \page config
-   - <b>diodelay [i] [v]</b> sets the delay for the digital IO pins selected by mask i and delay set by v. mask is upto 64 bits in hex, delay is a max is 775ps, and set in steps of 25 ps. Used for MOENCH/CTB only. Cannot get. \c Returns \c ("successful", failed")
-	 */
-    descrToFuncMap[i].m_pFuncName = "diodelay";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
-    ++i;
-
     /* versions/ serial numbers  getId */
     /*! \page config
 		\section configversions Versions
@@ -991,13 +977,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncName = "detectormode";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
     ++i;
-
-     /*! \page prototype
-   - <b>rx_dbitoffset [i]</b> sets/gets the offset in bytes in receiver of digital data from chip in receiver. Advanced! CTB only \Returns (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_dbitoffset";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;  
 
     /*! \page prototype
    - <b>pattern fn</b> loads binary pattern file fn
@@ -2165,32 +2144,6 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
         return std::string("successful");
     }
 
-    else if (cmd == "led") {
-        if (action == PUT_ACTION) {
-            int ival = -1;
-            if (!sscanf(args[1], "%d", &ival))
-                return std::string("could not scan led parameter " + std::string(args[1]));
-            myDet->setLEDEnable(ival, detPos);
-        }
-        return std::to_string(myDet->setLEDEnable(-1, detPos));
-    }
-
-    else if (cmd == "diodelay") {
-    	if (action == GET_ACTION) {
-    		return std::string("Cannot get");
-    	}
-
-
-    	uint64_t pinMask = -1;
-    	if (!sscanf(args[1], "%lx", &pinMask))
-    		return std::string("could not scan diodelay pin mask(in hex) " + std::string(args[1]));
-    	int delay = -1;
-    	if (!sscanf(args[2], "%d", &delay))
-    		return std::string("could not scan diodelay delay " + std::string(args[2]));
-
-    	myDet->setDigitalIODelay(pinMask, delay, detPos);
-      	return std::string("successful");
-    }
 
  else
         return std::string("unknown command ") + cmd;
@@ -2205,11 +2158,6 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
         os << "copydetectorserver s p \t copies the detector server s via tftp from pc with hostname p and changes respawn server. Not for Eiger. " << std::endl;
         os << "rebootcontroller \t reboot controler blackfin of the detector. Not for Eiger." << std::endl;
         os << "update s p f \t updates the firmware to f and detector server to f from host p via tftp and then reboots controller (blackfin). Not for Eiger. " << std::endl;
-        os << "led s \t sets led status (0 off, 1 on)" << std::endl;
-        os << "diodelay m v \tsets the delay for the digital IO pins selected by mask m and delay set by v. mask is upto 64 bits in hex, delay max is 775ps, and set in steps of 25 ps. Used for MOENCH/CTB only." << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "led \t returns led status (0 off, 1 on)" << std::endl;
     }
     return os.str();
 }
@@ -2319,7 +2267,6 @@ std::string slsDetectorCommand::helpPattern(int action) {
         os << "patwaittime2 nclk \t sets wait 2 waiting time in clock number " << std::endl;
         os << "patmask m \t sets the 64 bit mask (hex) applied to every pattern. Only the bits from patsetbit are selected to mask for the corresponding bit value from m mask" << std::endl;
         os << "patsetbit m \t selects bits (hex) of the 64 bits that the patmask will be applied to every pattern. Only the bits from m mask are selected to mask for the corresponding bit value from patmask." << std::endl;
-        os << "rx_dbitoffset i\t  sets the offset in bytes in receiver of digital data from chip in receiver. Advanced! CTB only " << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "pattern \t cannot get" << std::endl;
@@ -2341,7 +2288,6 @@ std::string slsDetectorCommand::helpPattern(int action) {
         os << "patwaittime2 \t  returns the wait 2 waiting time in clock number " << std::endl;
         os << "patmask \t gets the 64 bit mask (hex) applied to every pattern." << std::endl;
         os << "patsetbit \t gets 64 bit mask (hex) of the selected bits that the patmask will be applied to every pattern. " << std::endl;
-        os << "rx_dbitoffset \t  gets the offset in bytes in receiver of digital data from chip in receiver. Advanced! CTB only " << std::endl;
 
     }
     return os.str();
@@ -2677,19 +2623,6 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
 
         os << "0x" << std::setw(16) << std::setfill('0') << std::hex << myDet->getPatternBitMask(detPos) << std::dec;
 
-    } else if (cmd == "rx_dbitoffset") {
-
-
-        if (action == PUT_ACTION) {
-
-            if (!sscanf(args[1], "%d", &addr)) 
-                return std::string("Could not scan rx_dbitoffset enable ") + std::string(args[1]);
-
-            myDet->setReceiverDbitOffset(addr, detPos); 
-        }
-
-        os << myDet->getReceiverDbitOffset(detPos);
-    
     } 
 
     else

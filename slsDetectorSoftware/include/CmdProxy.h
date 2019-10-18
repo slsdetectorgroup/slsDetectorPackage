@@ -693,6 +693,9 @@ class CmdProxy {
                           {"extsampling", &CmdProxy::extsampling}, 
                           {"extsamplingsrc", &CmdProxy::extsamplingsrc}, 
                           {"rx_dbitlist", &CmdProxy::ReceiverDbitList}, 
+                          {"rx_dbitoffset", &CmdProxy::rx_dbitoffset}, 
+                          {"diodelay", &CmdProxy::DigitalIODelay}, 
+                          {"led", &CmdProxy::led}, 
 
 
 
@@ -751,7 +754,7 @@ class CmdProxy {
     std::string Dbitphase(int action);
     std::string SlowAdc(int action);
     std::string ReceiverDbitList(int action);
-
+    std::string DigitalIODelay(int action);
 
 
 
@@ -1194,6 +1197,12 @@ class CmdProxy {
 
     INTEGER_COMMAND(extsamplingsrc, getExternalSamplingSource, setExternalSamplingSource, std::stoi,
                     "[0-63]\n\t[Ctb] Sampling source signal for digital data. For advanced users only.");
+
+    INTEGER_COMMAND(rx_dbitoffset, getRxDbitOffset, setRxDbitOffset, std::stoi,
+                    "[n_bytes]\n\t[Ctb] Offset in bytes in digital data in receiver.");
+
+    INTEGER_COMMAND(led, getLEDEnable, setLEDEnable, std::stoi,
+                    "[0, 1]\n\t[Ctb] Switches on/off all LEDs.");
 
 
 

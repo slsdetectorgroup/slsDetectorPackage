@@ -989,7 +989,24 @@ std::string CmdProxy::ReceiverDbitList(int action) {
     return os.str();
 }
 
-
+std::string CmdProxy::DigitalIODelay(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[64 bit bitmask] [0-775]\n\t[Ctb] Delay for digital IO pins selected by the bitmask. Delay is in ps and max of 775 ps. Resolution is 25 ps." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+         throw sls::RuntimeError("Cannot get");     
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);  
+        }                                
+        det->setDigitalIODelay(std::stol(args[0]), std::stoi(args[2]));  
+        os << sls::ToString(args) << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 
 } // namespace sls

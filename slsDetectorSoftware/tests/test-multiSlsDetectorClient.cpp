@@ -9,6 +9,77 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+TEST_CASE("led", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("led 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "led 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("led 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "led 0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("led", GET, nullptr, oss));
+            REQUIRE(oss.str() == "led 0\n");
+        }      
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("led", GET));
+    }
+}
+
+
+TEST_CASE("diodelay", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        REQUIRE_NOTHROW(multiSlsDetectorClient("diodelay 0x01010 125", PUT)); 
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("diodelay 0x01010 775", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "diodelay 0x01010 775\n");
+        }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("diodelay 0x01010 0", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("diodelay 0x01010 776", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("diodelay", GET));
+    }
+}
+
+
+TEST_CASE("rx_dbitoffset", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitoffset 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "rx_dbitoffset 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("extsamplirx_dbitoffsetngsrc 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "rx_dbitoffset 0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitoffset 15", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "rx_dbitoffset 15\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitoffset", GET, nullptr, oss));
+            REQUIRE(oss.str() == "rx_dbitoffset 15\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitoffset 0", PUT));   
+    } else {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitoffset", GET, nullptr, oss));
+            REQUIRE(oss.str() == "rx_dbitoffset 0\n");
+    }
+}
+
+
 TEST_CASE("rx_dbitlist", "[.cmd][.ctb]") {
     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitlist 0 4 5 8 9 10 52 63", PUT));

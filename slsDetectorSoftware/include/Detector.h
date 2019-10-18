@@ -200,7 +200,7 @@ class Detector {
 
     Result<int> getDAC(defs::dacIndex index, bool mV, Positions pos = {}) const;
 
-    void setDAC(int value, defs::dacIndex index, bool mV, Positions pos = {});
+    void setDAC(defs::dacIndex index, int value, bool mV, Positions pos = {});
 
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 

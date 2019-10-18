@@ -244,7 +244,7 @@
             } else if (args.size() > 2 || args.size() < 1) {                   \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
-            det->SETFCN(std::stoi(args[0]), DAC_INDEX, mv, {det_id});          \
+            det->SETFCN(DAC_INDEX, std::stoi(args[0]), mv, {det_id});          \
             os << args.front() << (args.size() > 1 ? " mv\n" : "\n");          \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \

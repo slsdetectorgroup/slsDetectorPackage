@@ -246,7 +246,7 @@ Result<int> Detector::getDAC(defs::dacIndex index, bool mV,
     return pimpl->Parallel(&slsDetector::setDAC, pos, -1, index, mV);
 }
 
-void Detector::setDAC(int value, defs::dacIndex index, bool mV, Positions pos) {
+void Detector::setDAC(defs::dacIndex index, int value, bool mV, Positions pos) {
     pimpl->Parallel(&slsDetector::setDAC, pos, value, index, mV);
 }
 

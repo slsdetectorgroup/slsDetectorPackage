@@ -99,8 +99,10 @@ void init_experimental(py::module &m) {
 
         // ACQUISITION
         .def("acquire", &Detector::acquire)
-        .def("startAcquisition", &Detector::startAcquisition)
-        .def("stopAcquisition", &Detector::stopAcquisition)
+        .def("startDetector", &Detector::startDetector)
+        .def("stopDetector", &Detector::stopDetector)
+        .def("startReceiver", &Detector::startReceiver)
+        .def("stopReceiver", &Detector::stopReceiver)
         .def("clearAcquiringFlag", &Detector::clearAcquiringFlag)
         .def("getDetectorStatus", &Detector::getDetectorStatus,
              py::arg() = Positions{})
@@ -412,11 +414,11 @@ void init_experimental(py::module &m) {
         .def("setThresholdEnergy", &Detector::setThresholdEnergy, py::arg(),
              py::arg() = defs::STANDARD, py::arg() = true,
              py::arg() = Positions{})
-        .def("getSettingsDir", &Detector::getSettingsDir,
+        .def("getSettingsPath", &Detector::getSettingsPath,
              py::arg() = Positions{})
-        .def("setSettingsDir", &Detector::setSettingsDir, py::arg(),
+        .def("setSettingsPath", &Detector::setSettingsPath, py::arg(),
              py::arg() = Positions{})
-        .def("loadTrimbits", &Detector::setSettingsDir, py::arg(),
+        .def("loadTrimbits", &Detector::loadTrimbits, py::arg(),
              py::arg() = Positions{})
         .def("getRxAddGapPixels", &Detector::getRxAddGapPixels,
              py::arg() = Positions{})

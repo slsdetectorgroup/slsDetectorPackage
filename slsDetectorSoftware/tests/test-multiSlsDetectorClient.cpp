@@ -9,6 +9,105 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("dbitpipeline", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dbitpipeline 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "dbitpipeline 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dbitpipeline 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "dbitpipeline 0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dbitpipeline 15", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "dbitpipeline 15\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dbitpipeline", GET, nullptr, oss));
+            REQUIRE(oss.str() == "dbitpipeline 15\n");
+        }   
+    REQUIRE_THROWS(multiSlsDetectorClient("dbitpipeline 16", PUT));    
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("dbitpipeline", GET));
+    }
+}
+
+TEST_CASE("adcpipeline", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcpipeline 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "adcpipeline 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcpipeline 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "adcpipeline 0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcpipeline 15", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "adcpipeline 15\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcpipeline", GET, nullptr, oss));
+            REQUIRE(oss.str() == "adcpipeline 15\n");
+        }   
+    REQUIRE_THROWS(multiSlsDetectorClient("adcpipeline 16", PUT));    
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("adcpipeline", GET));
+    }
+}
+
+TEST_CASE("maxdbitphaseshift", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD ) {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("maxdbitphaseshift", GET));        
+    } else { 
+        REQUIRE_THROWS(multiSlsDetectorClient("maxdbitphaseshift", GET));        
+            
+    } 
+}
+
+TEST_CASE("dbitphase", "[.cmd][.ctb]") {
+    if (test::type != slsDetectorDefs::CHIPTESTBOARD) {
+       REQUIRE_THROWS(multiSlsDetectorClient("dbitphase", GET));       
+    } else { 
+        int prev_val = 0;   
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("dbitphase", GET, nullptr, oss);
+            std::string s = (oss.str()).erase (0, strlen("dbitphase "));
+            prev_val = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dbitphase 20", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("dbitphase", GET, nullptr, oss);
+            REQUIRE(oss.str() == "dbitphase 20\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dbitphase 0", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("dbitphase", GET, nullptr, oss);
+            REQUIRE(oss.str() == "dbitphase 0\n");
+        }     
+        if (test::type != slsDetectorDefs::GOTTHARD) {
+            REQUIRE_THROWS(multiSlsDetectorClient("dbitphase deg", GET));
+        } else {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dbitphase 20 deg", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("dbitphase deg", GET, nullptr, oss);
+            REQUIRE(oss.str() == "dbitphase 20 deg\n");
+        }          
+        REQUIRE_NOTHROW(multiSlsDetectorClient("dbitphase " + std::to_string(prev_val), PUT));                    
+    } 
+}
 
 TEST_CASE("romode", "[.cmd][.ctb]") {
     if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
@@ -1411,6 +1510,68 @@ TEST_CASE("adcphase", "[.cmd][.ctb][.jungfrau][.gotthard]") {
             REQUIRE(oss.str() == "adcphase 20 deg\n");
         }          
         REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase " + std::to_string(prev_val), PUT));                    
+    } 
+}
+
+TEST_CASE("syncclk", "[.cmd][.ctb]") {
+    if(test::type != slsDetectorDefs::CHIPTESTBOARD) {
+       REQUIRE_THROWS(multiSlsDetectorClient("syncclk", GET));     
+    } else { 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("syncclk", GET));
+    }  
+}
+
+TEST_CASE("adcclk", "[.cmd][.ctb]") {
+    if(test::type != slsDetectorDefs::CHIPTESTBOARD) {
+       REQUIRE_THROWS(multiSlsDetectorClient("adcclk", GET)); 
+    } else { 
+        int prev_clk = 0;   
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("adcclk", GET, nullptr, oss);
+            std::string s = (oss.str()).erase (0, strlen("adcclk "));
+            prev_clk = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcclk 20", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("adcclk", GET, nullptr, oss);
+            REQUIRE(oss.str() == "adcclk 20\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("adcclk 0", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("adcclk", GET, nullptr, oss);
+            REQUIRE(oss.str() == "adcclk 0\n");
+        }        
+        REQUIRE_NOTHROW(multiSlsDetectorClient("adcclk " + std::to_string(prev_clk), PUT));      
+    } 
+}
+
+TEST_CASE("dbitclk", "[.cmd][.ctb]") {
+    if(test::type != slsDetectorDefs::CHIPTESTBOARD) {
+       REQUIRE_THROWS(multiSlsDetectorClient("dbitclk", GET));     
+    } else { 
+        int prev_clk = 0;   
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("dbitclk", GET, nullptr, oss);
+            std::string s = (oss.str()).erase (0, strlen("dbitclk "));
+            prev_clk = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dbitclk 20", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("dbitclk", GET, nullptr, oss);
+            REQUIRE(oss.str() == "dbitclk 20\n");
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("dbitclk 0", PUT));
+            std::ostringstream oss;
+            multiSlsDetectorClient("dbitclk", GET, nullptr, oss);
+            REQUIRE(oss.str() == "dbitclk 0\n");
+        }        
+        REQUIRE_NOTHROW(multiSlsDetectorClient("dbitclk " + std::to_string(prev_clk), PUT));             
     } 
 }
 

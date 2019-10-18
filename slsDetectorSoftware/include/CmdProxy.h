@@ -395,8 +395,11 @@ class CmdProxy {
                                     /* Gotthard Specific */
                                     {"digitest", "imagetest"},
 
+                                    /* Gotthard2 Specific */
                                     /* CTB Specific */
                                     {"flags", "romode"}
+
+                                   
 
 
 
@@ -435,6 +438,10 @@ class CmdProxy {
                           {"speed", &CmdProxy::Speed},
                           {"adcphase", &CmdProxy::Adcphase},
                           {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
+                          {"clkfreq", &CmdProxy::ClockFrequency},
+                          {"clkphase", &CmdProxy::ClockPhase},
+                          {"maxclkphaseshift", &CmdProxy::MaxClockPhaseShift},
+                          {"clkdiv", &CmdProxy::ClockDivider},                           
                           {"vhighvoltage", &CmdProxy::vhighvoltage},
                           {"temp_adc", &CmdProxy::temp_adc},
                           {"temp_fpga", &CmdProxy::temp_fpga},
@@ -554,23 +561,27 @@ class CmdProxy {
                           {"extsig", &CmdProxy::extsig},
                           {"imagetest", &CmdProxy::imagetest},
 
+                          /* Gotthard2 Specific */      
                           /* CTB Specific */
                           {"samples", &CmdProxy::Samples},
                           {"asamples", &CmdProxy::asamples},
                           {"dsamples", &CmdProxy::dsamples},
                           {"romode", &CmdProxy::romode},
+                          {"dbitphase", &CmdProxy::Dbitphase},
+                          {"maxdbitphaseshift", &CmdProxy::maxdbitphaseshift},
+                          {"adcclk", &CmdProxy::adcclk},  
+                          {"dbitclk", &CmdProxy::dbitclk},  
+                          {"runclk", &CmdProxy::runclk},  
+                          {"syncclk", &CmdProxy::syncclk},  
+                          {"adcpipeline", &CmdProxy::adcpipeline},
+                          {"dbitpipeline", &CmdProxy::dbitpipeline},
 
 
 
                           {"lastclient", &CmdProxy::lastclient},    
                           {"adc", &CmdProxy::SlowAdc},                            
-                          {"runclk", &CmdProxy::runclk},  
                           {"lock", &CmdProxy::lock},
-                          {"savepattern", &CmdProxy::savepattern},
-                          {"clkfreq", &CmdProxy::ClockFrequency},
-                          {"clkphase", &CmdProxy::ClockPhase},
-                          {"maxclkphaseshift", &CmdProxy::MaxClockPhaseShift},
-                          {"clkdiv", &CmdProxy::ClockDivider}                         
+                          {"savepattern", &CmdProxy::savepattern}                 
                           };
 
 
@@ -611,9 +622,10 @@ class CmdProxy {
     /* Gotthard Specific */
     std::string ROI(int action);
     std::string ClearROI(int action);
+    /* Gotthard2 Specific */
     /* CTB Specific */
     std::string Samples(int action);
-
+    std::string Dbitphase(int action);
 
 
     std::string SlowAdc(int action);
@@ -967,7 +979,7 @@ class CmdProxy {
     INTEGER_COMMAND(imagetest, getImageTestMode, setImageTestMode, std::stoi,
                     "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0.");  
 
-
+    /* Gotthard2 Specific */
     /* CTB Specific */
 
     INTEGER_COMMAND(asamples, getNumberOfAnalogSamples, setNumberOfAnalogSamples, std::stoi,
@@ -979,6 +991,26 @@ class CmdProxy {
     INTEGER_COMMAND(romode, getReadoutMode, setReadoutMode, sls::StringTo<slsDetectorDefs::readoutMode>,
                     "[analog|digital|analog_digital]\n\t[CTB] Readout mode. Default is analog.");
 
+    GET_COMMAND(maxdbitphaseshift, getMaxDBITPhaseShift, 
+                "\n\t[CTB] Absolute maximum Phase shift of of the clock to latch digital bits.");
+
+    INTEGER_COMMAND(adcclk, getADCClock, setADCClock, std::stoi,
+                    "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz.");      
+
+    INTEGER_COMMAND(dbitclk, getDBITClock, setDBITClock, std::stoi,
+                    "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz.");      
+
+    INTEGER_COMMAND(runclk, getRUNClock, setRUNClock, std::stoi,
+                    "[n_clk in MHz]\n\t[Ctb] Run clock in MHz.");      
+
+    GET_COMMAND(syncclk, getSYNCClock,
+                    "[n_clk in MHz]\n\t[Ctb] Synch clock in MHz.");      
+
+    INTEGER_COMMAND(adcpipeline, getADCPipeline, setADCPipeline, std::stoi,
+                    "[n_value]\n\t[Ctb] Pipeline for ADC clock.");      
+
+    INTEGER_COMMAND(dbitpipeline, getDBITPipeline, setDBITPipeline, std::stoi,
+                    "[n_value]\n\t[Ctb] Pipeline of the clock for latching digital bits.");      
 
 
 
@@ -986,10 +1018,6 @@ class CmdProxy {
 
     GET_COMMAND(lastclient, getLastClientIP, 
                 "\n\tClient IP Address that last communicated with the detector."); 
-
-
-    INTEGER_COMMAND(runclk, getRUNClock, setRUNClock, std::stoi,
-                    "[n_clk in MHz]\n\t[Ctb] Run clk in MHz.");      
 
     INTEGER_COMMAND(lock, getDetectorLock, setDetectorLock, std::stoi,
                     "[0, 1]\n\tLock detector to one IP, 1: locks");

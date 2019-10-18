@@ -54,7 +54,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpRegister(int action);
   static std::string helpDAC(int action);
   static std::string helpTimeLeft(int action);
-  static std::string helpSpeed(int action);
   static std::string helpAdvanced(int action);
   static std::string helpConfiguration(int action);
   static std::string helpADC(int action);
@@ -82,7 +81,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdRegister(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdDAC(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdTimeLeft(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdSpeed(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdAdvanced(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdConfiguration(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdADC(int narg, const char * const args[], int action, int detPos = -1);

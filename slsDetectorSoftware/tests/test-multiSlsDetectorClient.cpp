@@ -9,7 +9,117 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("imagetest", "[.cmd][.gotthard]") {
+    if (test::type == slsDetectorDefs::GOTTHARD) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("imagetest 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "imagetest 1\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("imagetest 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "imagetest 0\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("imagetest", GET, nullptr, oss));
+            REQUIRE(oss.str() == "imagetest 0\n");
+        }      
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("imagetest", GET));
+    }
+}
 
+TEST_CASE("extsig", "[.cmd][.gotthard]") {
+    if (test::type == slsDetectorDefs::GOTTHARD) {   
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("extsig trigger_in_falling_edge", PUT, nullptr, oss);
+            REQUIRE(oss.str() == "extsig trigger_in_falling_edge\n");
+        }
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("extsig trigger_in_rising_edge", PUT, nullptr, oss);
+            REQUIRE(oss.str() == "extsig trigger_in_rising_edge\n");
+        }
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("extsig", GET, nullptr, oss);
+            REQUIRE(oss.str() == "extsig trigger_in_rising_edge\n");
+        }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("extsig gating", PUT));         
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("extsig", GET));
+    }
+}
+
+
+TEST_CASE("exptimel", "[.cmd][.gotthard]") {
+    if (test::type == slsDetectorDefs::GOTTHARD) {   
+        REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("exptime 5 s", PUT));        
+        REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:exptimel s", GET, nullptr, oss));
+            std::string st = oss.str();
+            std::string s = st.erase (0, strlen("exptimel "));
+            double val = std::stod(s);
+            REQUIRE(val >= 0);
+            REQUIRE(val < 1000);
+        }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("stop", PUT));      
+        REQUIRE_NOTHROW(multiSlsDetectorClient("exptime 1 ms", PUT));        
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("exptimel", GET));
+    }
+}
+
+
+TEST_CASE("periodl", "[.cmd][.gotthard]") {
+    if (test::type == slsDetectorDefs::GOTTHARD) {   
+        REQUIRE_NOTHROW(multiSlsDetectorClient("frames 2", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("period 5", PUT));        
+        REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:periodl s", GET, nullptr, oss));
+            std::string st = oss.str();
+            std::string s = st.erase (0, strlen("periodl "));
+            double val = std::stod(s);
+            REQUIRE(val >= 0);
+            REQUIRE(val < 1000);
+        }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("stop", PUT));      
+        REQUIRE_NOTHROW(multiSlsDetectorClient("period 1 s", PUT));        
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("periodl", GET));
+    }
+}
+
+TEST_CASE("roi", "[.cmd][.gotthard]") {
+    if (test::type == slsDetectorDefs::GOTTHARD) {  
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("roi 0 255", PUT, nullptr, oss);
+            REQUIRE(oss.str() == "roi [0, 255] \n");
+        }
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("roi 256 511", PUT, nullptr, oss);
+            REQUIRE(oss.str() == "roi [256, 511] \n");
+        }
+        {
+            std::ostringstream oss;
+            multiSlsDetectorClient("clearroi", GET, nullptr, oss);
+            REQUIRE(oss.str() == "clearroi [-1, -1] \n");
+        }
+    REQUIRE_THROWS(multiSlsDetectorClient("roi 0 256", PUT));       
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("roi", GET));
+    }
+}
 
 TEST_CASE("storagecell_delay", "[.cmd][.jungfrau]") {
     if (test::type == slsDetectorDefs::JUNGFRAU) {  

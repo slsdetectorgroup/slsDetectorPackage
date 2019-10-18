@@ -393,8 +393,9 @@ class CmdProxy {
 
                                     /* Jungfrau Specific */
                                     /* Gotthard Specific */
+                                    {"digitest", "imagetest"},
 
-
+                                    /* CTB Specific */
 
 
 
@@ -546,8 +547,14 @@ class CmdProxy {
                           {"storagecell_delay", &CmdProxy::storagecell_delay},
 
                           /* Gotthard Specific */
+                          {"roi", &CmdProxy::ROI},
+                          {"clearroi", &CmdProxy::ClearROI},
+                          {"exptimel", &CmdProxy::exptimel},
+                          {"periodl", &CmdProxy::periodl},
+                          {"extsig", &CmdProxy::extsig},
+                          {"imagetest", &CmdProxy::imagetest},
 
-
+                          /* CTB Specific */
 
 
 
@@ -600,7 +607,9 @@ class CmdProxy {
     std::string TemperatureEvent(int action);
     std::string PowerChip(int action);
     /* Gotthard Specific */
-
+    std::string ROI(int action);
+    std::string ClearROI(int action);
+    /* CTB Specific */
 
 
 
@@ -933,7 +942,7 @@ class CmdProxy {
                     "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. Default 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode. This mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us).");  
 
     INTEGER_COMMAND_NOID(storagecells, getNumberOfAdditionalStorageCells, setNumberOfAdditionalStorageCells, std::stoi,
-                    "[0-15]\n\tNumber of additional storage cells. Default is 0. For advanced users only. \n\tThe #images = #frames x #triggers x (#storagecells + 1).");
+                    "[0-15]\n\t[Jungfrau] Number of additional storage cells. Default is 0. For advanced users only. \n\tThe #images = #frames x #triggers x (#storagecells + 1).");
 
     INTEGER_COMMAND(storagecell_start, getStorageCellStart, setStoragecellStart, std::stoi,
                     "[0-15]\n\t[Jungfrau] Storage cell that stores the first acquisition of the series. Default is 15. For advanced users only.");  
@@ -943,8 +952,23 @@ class CmdProxy {
 
 
     /* Gotthard Specific */
+    TIME_GET_COMMAND(exptimel, getExptimeLeft, 
+                "[(optional unit) ns|us|ms|s]\n\t[Gotthard] Exposure time left for current frame. ");   
+
+    TIME_GET_COMMAND(periodl, getPeriodLeft, 
+                "[(optional unit) ns|us|ms|s]\n\t[Gotthard] Period left for current frame.");   
+
+    INTEGER_COMMAND(extsig, getExternalSignalFlags, setExternalSignalFlags, sls::StringTo<slsDetectorDefs::externalSignalFlag>,
+                    "[trigger_in_rising_edge|trigger_in_falling_edge]\n\t[Gotthard] External signal mode for trigger timing mode.");
+
+    INTEGER_COMMAND(imagetest, getImageTestMode, setImageTestMode, std::stoi,
+                    "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0.");  
+
+
+    /* CTB Specific */
 
     
+
 
 
 

@@ -625,7 +625,7 @@ void slsReceiverImplementation::setFrameDiscardPolicy(
         frameDiscardMode = i;
 
     FILE_LOG(logINFO) << "Frame Discard Policy: "
-                      << getFrameDiscardPolicyType(frameDiscardMode);
+                      << sls::ToString(frameDiscardMode);
 }
 
 void slsReceiverImplementation::setFramePaddingEnable(const bool i) {

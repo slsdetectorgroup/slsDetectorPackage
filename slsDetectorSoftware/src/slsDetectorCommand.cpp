@@ -125,13 +125,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /* digital test and debugging */
 
     /*! \page test
-   - <b>imagetest [i]</b> If 1, adds channel intensity with precalculated values. Default is 0. Gotthard only.
-	 */
-    descrToFuncMap[i].m_pFuncName = "imagetest";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDigiTest;
-    ++i;
-
-    /*! \page test
    - <b>bustest</b> performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes. Cannot set! Jungfrau only. Only get!
 	 */
     descrToFuncMap[i].m_pFuncName = "bustest";
@@ -246,39 +239,12 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    commands to configure detector status
 	 */
 
-    /*! \page config
-    - <b>activate [b] [p]</b> Activates/Deactivates the detector. \c b is 1 for activate, 0 for deactivate. Deactivated detector does not send data. \c p is optional and can be padding (default) or nonpadding for receivers for deactivated detectors. Used for EIGER only. \c Returns \c (int) (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "activate";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdOnline;
-    ++i;
 
     /* detector and data size */
     /*! \page config
 		\section configsize Data Size
    commands to configure detector data size
 	 */
-
-    /*! \page config
-   - <b>dr [i]</b> sets/gets the dynamic range of detector. Eiger [4,8,16,32]. Others cannot put! \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "dr";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
-    ++i;
-
-    /*! \page config
-   - <b>clearroi </b> resets region of interest of the detector. Used for GOTTHARD only. \c Returns \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "clearroi";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
-    ++i;
-
-    /*! \page config
-   - <b>roi [xmin] [xmax] </b> sets region of interest of the detector. Used for GOTTHARD only. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "roi";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDetectorSize;
-    ++i;
 
 
     /* flags */
@@ -291,13 +257,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    - <b>romode [b]</b> sets/gets the readout flag. Options: analog, digital, analog_digital. Used for CTB only. \c Returns \c (int)
 	 */
     descrToFuncMap[i].m_pFuncName = "romode";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
-    ++i;
-
-    /*! \page config
-   - <b>extsig [flag]</b> sets/gets the mode of the external signal. Options: \c trigger_in_rising_edge, \c trigger_in_falling_edge. Used in GOTTHARDonly. \c Returns \c (string)
-	*/
-    descrToFuncMap[i].m_pFuncName = "extsig"; /* find command! */
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
     ++i;
 
@@ -404,20 +363,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
 
     /* read only timers */
-
-    /*! \page timing
-   - <b>exptimel</b> gets exposure time left. Used in GOTTHARD only. Only get! \c Returns \c (double with 9 decimal digits)
-	 */
-    descrToFuncMap[i].m_pFuncName = "exptimel";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
-    ++i;
-
-    /*! \page timing
-   - <b>periodl</b> gets frame period left. Used in GOTTHARD  and Jungfrau only. Only get! \c Returns \c (double with 9 decimal digits)
-	 */
-    descrToFuncMap[i].m_pFuncName = "periodl";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
-    ++i;
 
    /*! \page timing
    - <b>now</b> Getting actual time of the detector from start. For Jungfrau only. Only get!
@@ -1810,118 +1755,6 @@ std::string slsDetectorCommand::helpPort(int action) {
 }
 
 
-std::string slsDetectorCommand::cmdOnline(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == HELP_ACTION) {
-        return helpOnline(action);
-    }
-    int ival;
-    char ans[1000];
-
-    if (cmd == "activate") {
-
-        if (action == PUT_ACTION) {
-            if (!sscanf(args[1], "%d", &ival))
-                return std::string("Could not scan activate mode ") + std::string(args[1]);
-            myDet->activate(ival, detPos);
-            bool padding = true;
-            if (narg > 2) {
-                if (std::string(args[2]) == "padding")
-                    padding = true;
-                else if (std::string(args[2]) == "nopadding")
-                    padding = false;
-                else
-                    return std::string("Could not scan activate mode's padding option " + std::string(args[2]));
-                myDet->setDeactivatedRxrPaddingMode(padding, detPos);
-            }
-        }
-        int ret = myDet->setDeactivatedRxrPaddingMode(-1, detPos);
-        sprintf(ans, "%d %s", myDet->activate(-1, detPos), ret == 1 ? "padding" : (ret == 0 ? "nopadding" : "unknown"));
-    } else {
-        return std::string("unknown command");
-    }
-
-    return ans;
-}
-
-std::string slsDetectorCommand::helpOnline(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "activate i [p]\n sets the detector in  activated (1) or deactivated (0) mode (does not send data).  p is optional and can be padding (default) or nonpadding for receivers for deactivated detectors. Only for Eiger." << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "activate \n gets the detector activated (1) or deactivated (0) mode. And padding or nonpadding for the deactivated receiver. Only for Eiger." << std::endl;
-    }
-    return os.str();
-}
-
-
-std::string slsDetectorCommand::cmdDetectorSize(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == HELP_ACTION)
-        return helpDetectorSize(action);
-    int ret, val = -1;
-    char ans[1000];
-
-
-    if (action == PUT_ACTION) {
-        if (cmd != "roi" && !sscanf(args[1], "%d", &val))
-            return std::string("could not scan ") + std::string(args[0]) + std::string(" ") + std::string(args[1]);
-
-        if (cmd == "clearroi") {             
-            myDet->clearROI(detPos);
-        }
-
-        if (cmd == "roi") {
-            //debug number of arguments
-            if (narg != 3)
-                return helpDetectorSize(action);
-            ROI roi;
-            if (!sscanf(args[1], "%d", &roi.xmin))
-                return std::string("cannot parse arguments for roi xmin");
-            if (!sscanf(args[2], "%d", &roi.xmax))
-                return std::string("cannot parse arguments for roi xmax");                   
-            myDet->setROI(roi, detPos);
-        }
-        else return std::string("cannot decode function");
-
-    }
-
-    if (cmd == "clearroi") {
-        if (action == GET_ACTION) {
-            return std::string("Cannot get");
-        }
-        return std::string("successful");
-    } else if (cmd == "roi") {
-        ROI roi = myDet->getROI(detPos);
-        return (std::string("[") + std::to_string(roi.xmin) + std::string(",") + std::to_string(roi.xmax) + std::string("]")); 
-    }
-    
-
-    else
-        return std::string("unknown command ") + cmd;
-
-    sprintf(ans, "%d", ret);
-
-    return std::string(ans);
-}
-
-std::string slsDetectorCommand::helpDetectorSize(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "dr i \n sets the dynamic range of the detector" << std::endl;
-        os << "clearroi \n resets region of interest" << std::endl;
-        os << "roi xmin xmax \n sets region of interest " << std::endl;
-   
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "dr \n gets the dynamic range of the detector" << std::endl;
-        os << "roi \n gets region of interest" << std::endl;
-    }
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdSettings(int narg, const char * const args[], int action, int detPos) {
 
@@ -2010,18 +1843,6 @@ std::string slsDetectorCommand::cmdDigiTest(int narg, const char * const args[],
         return std::string(answer);
     }
 
-    else if (cmd == "imagetest") {
-        if (action == PUT_ACTION) {
-            int ival = -1;
-            if (!sscanf(args[1], "%d", &ival)) {
-                return std::string("could not scan parameter for imagetest\n");
-            }
-            ival = (ival == 0) ? 0 : 1;
-            myDet->digitalTest(IMAGE_TEST, ival, detPos);
-        }
-        
-        return std::to_string(myDet->digitalTest(IMAGE_TEST, -1, detPos));
-    }
 
     return std::string("unknown test mode ") + cmd;
 }
@@ -2030,12 +1851,10 @@ std::string slsDetectorCommand::helpDigiTest(int action) {
 
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "imagetest i \t If 1, adds channel intensity with precalculated values. Default is 0. Gotthard only." << std::endl;
         os << "bustest \t performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes. Jungfrau only." << std::endl;
         os << "firmwaretest \t performs the firmware test. Jungfrau only." << std::endl;
     }
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "imagetest i \t If 1, adds channel intensity with precalculated values. Default is 0. Gotthard only." << std::endl;
         os << "bustest \t performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes. Jungfrau only." << std::endl;
         os << "firmwaretest \t performs the firmware test. Jungfrau only." << std::endl;
     }
@@ -2712,11 +2531,7 @@ std::string slsDetectorCommand::cmdTimeLeft(int narg, const char * const args[],
     if (action == HELP_ACTION)
         return helpTimeLeft(action);
 
-    if (cmd == "exptimel")
-        index = ACQUISITION_TIME;
-    else if (cmd == "periodl")
-        index = FRAME_PERIOD;
-    else if (cmd == "now")
+    if (cmd == "now")
         index = ACTUAL_TIME;
     else if (cmd == "timestamp")
         index = MEASUREMENT_TIME;
@@ -2732,8 +2547,7 @@ std::string slsDetectorCommand::cmdTimeLeft(int narg, const char * const args[],
 
     ret = myDet->getTimeLeft(index, detPos);
 
-    if ((ret != -1) && (index == ACQUISITION_TIME || index == FRAME_PERIOD || index == DELAY_AFTER_TRIGGER || index == ACTUAL_TIME || index == MEASUREMENT_TIME ||
-                        index == MEASURED_PERIOD || index == MEASURED_SUBPERIOD)) {
+    if ((ret != -1) && (index == ACTUAL_TIME || index == MEASUREMENT_TIME)) {
         rval = (double)ret * 1E-9;
         sprintf(answer,"%0.9f",rval);
     } else {
@@ -2747,9 +2561,6 @@ std::string slsDetectorCommand::helpTimeLeft(int action) {
 
     std::ostringstream os;
     if (action == GET_ACTION || action == HELP_ACTION) {
-
-        os << "exptimel  \t gets the exposure time left" << std::endl;
-        os << "periodl \t gets the frame period left" << std::endl;
         os << std::endl;
     }
     return os.str();
@@ -2851,20 +2662,8 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
         return getReadoutModeType(myDet->getReadoutMode());
     }
 
-    if (cmd == "extsig") {
-        externalSignalFlag flag = GET_EXTERNAL_SIGNAL_FLAG;
-
-        if (action == PUT_ACTION) {
-            flag = myDet->externalSignalType(args[1]);
-            if (flag == GET_EXTERNAL_SIGNAL_FLAG)
-                return std::string("could not scan external signal mode ") + std::string(args[1]);
-        }
-    
-        return myDet->externalSignalType(myDet->setExternalSignalFlags(flag, detPos));
-
-    } 
-    
-    else if (cmd == "programfpga") {
+   
+    if (cmd == "programfpga") {
         if (action == GET_ACTION)
             return std::string("cannot get");
         if (strstr(args[1], ".pof") == nullptr)
@@ -2950,7 +2749,6 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
 
-        os << "extsig mode \t sets the mode of the external signal. can be trigger_out_rising_edge, trigger_out_falling_edge. Gotthard only" << std::endl;
         os << "romode m \t sets the readout flag to m. Options: analog, digital, analog_digital. Used for CTB only." << std::endl;
         os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
         os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
@@ -2961,8 +2759,6 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
         os << "diodelay m v \tsets the delay for the digital IO pins selected by mask m and delay set by v. mask is upto 64 bits in hex, delay max is 775ps, and set in steps of 25 ps. Used for MOENCH/CTB only." << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-
-        os << "extsig \t gets the mode of the external signal. can be trigger_in_rising_edge, trigger_in_falling_edge. Gotthard only" << std::endl;
         os << "romode \t gets the readout flag. Options: analog, digital, analog_digital. Used for CTB only." << std::endl;
         os << "led \t returns led status (0 off, 1 on)" << std::endl;
     }

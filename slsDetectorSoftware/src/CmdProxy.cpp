@@ -712,7 +712,58 @@ std::string CmdProxy::TemperatureEvent(int action) {
 
 /* Gotthard Specific */
 
+std::string CmdProxy::ROI(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[xmin] [xmax] \n\t[Gotthard] Region of interest in detector. Either all channels or a single adc or 2 chips (256 channels). Default is all channels enabled (-1 -1). " << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {                                
+            WrongNumberOfParameters(0);         
+        } 
+        auto t = det->getROI({det_id});   
+        for (auto &it : t) {    
+            os << '[' << it.xmin << ", " << it.xmax << "] \n";     
+        }
+    } else if (action == defs::PUT_ACTION) {
+        if (det_id == -1) { 
+            throw sls::RuntimeError("Cannot execute ROI at multi module level");
+        }        
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);  
+        }            
+        defs::ROI t;
+        t.xmin = std::stoi(args[0]);
+        t.xmax = std::stoi(args[1]);
+        det->setROI(t, det_id);  
+        os << '[' << t.xmin << ", " << t.xmax << "] \n";  
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
+std::string CmdProxy::ClearROI(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "\n\t[Gotthard] Resets Region of interest in detector. All channels enabled. Default is all channels." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("Cannot get");   
+    } else if (action == defs::PUT_ACTION) {    
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);  
+        }                                 
+        det->clearROI({det_id});  
+        os << "[-1, -1] \n";
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+
+/* CTB Specific */
 
 
 

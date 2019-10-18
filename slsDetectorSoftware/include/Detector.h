@@ -812,13 +812,15 @@ class Detector {
      * Can set only a single ROI at a time
      * @param module position index
      */
-    void setROI(defs::ROI value, int moduleId);
+    void setROI(defs::ROI value, int module_id);
 
-    /** [Gotthard] TODO: check with jiaguo if he needs any of these functions //
-     * TODO remove */
+    /** [Gotthard] Clear ROI */
+    void clearROI(Positions pos = {});
+
+    /** [Gotthard] */
     Result<ns> getExptimeLeft(Positions pos = {}) const;
 
-    /** [Gotthard] TODO remove */
+    /** [Gotthard]  */
     Result<ns> getPeriodLeft(Positions pos = {}) const;
 
     /** [Gotthard] */

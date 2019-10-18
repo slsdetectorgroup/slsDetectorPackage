@@ -579,53 +579,6 @@ format
     };
 
 
-    /**
-     * Returns string of frame discard policy index
-     * @param f can be NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES
-     * @returns No Discard, Discard Empty Frames, Discard Partial Frames,
-     * unknown
-     */
-    static std::string getFrameDiscardPolicyType(frameDiscardPolicy f) {
-        switch (f) {
-        case NO_DISCARD:
-            return std::string("No Discard");
-        case DISCARD_EMPTY_FRAMES:
-            return std::string("Discard Empty Frames");
-        case DISCARD_PARTIAL_FRAMES:
-            return std::string("Discard Partial Frames");
-        default:
-            return std::string("unknown");
-        }
-    };
-
-    /** returns std::string from external signal type index
-        \param f can be TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,
-        \returns std::string  trigger_in_rising_edge, trigger_in_falling_edge, unknown
-    */
-    static std::string externalSignalType(externalSignalFlag f) {
-        switch (f) {
-        case TRIGGER_IN_RISING_EDGE:
-            return std::string("trigger_in_rising_edge");
-        case TRIGGER_IN_FALLING_EDGE:
-            return std::string("trigger_in_falling_edge");
-        default:
-            return std::string("unknown");
-        }
-    };
-
-    /** returns external signal type index from std::string
-        \param sval  trigger_in_rising_edge, trigger_in_falling_edge, unknown 
-        \returns can be TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,
-       GET_EXTERNAL_SIGNAL_FLAG (if unknown)
-    */
-
-    static externalSignalFlag externalSignalType(std::string sval) {
-        if (sval == "trigger_in_rising_edge")
-            return TRIGGER_IN_RISING_EDGE;
-        if (sval == "trigger_in_falling_edge")
-            return TRIGGER_IN_FALLING_EDGE;
-        return GET_EXTERNAL_SIGNAL_FLAG;
-    };
 
 
     /** returns std::string from timer index

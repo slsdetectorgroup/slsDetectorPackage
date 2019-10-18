@@ -1026,11 +1026,15 @@ Result<defs::ROI> Detector::getROI(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getROI, pos);
 }
 
-void Detector::setROI(defs::ROI value, int moduleId) {
-    if (moduleId < 0 && size() > 1) {
+void Detector::setROI(defs::ROI value, int module_id) {
+    if (module_id < 0 && size() > 1) {
         throw RuntimeError("Cannot set ROI for all modules simultaneously");
     }
-    pimpl->Parallel(&slsDetector::setROI, {moduleId}, value);
+    pimpl->Parallel(&slsDetector::setROI, {module_id}, value);
+}
+
+void Detector::clearROI(Positions pos) {
+    pimpl->Parallel(&slsDetector::clearROI, pos);
 }
 
 Result<ns> Detector::getExptimeLeft(Positions pos) const {

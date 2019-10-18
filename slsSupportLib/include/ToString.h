@@ -152,6 +152,17 @@ inline std::string ToString(const defs::fileFormat s){
     }
 }
 
+inline std::string ToString(const defs::externalSignalFlag s){
+    switch (s) {
+    case defs::TRIGGER_IN_RISING_EDGE:
+        return std::string("trigger_in_rising_edge");
+    case defs::TRIGGER_IN_FALLING_EDGE:
+        return std::string("trigger_in_falling_edge");            
+    default:
+        return std::string("Unknown");       
+    }
+}
+
 
 // in case we already have a string 
 // causes a copy but might be needed in generic code
@@ -428,6 +439,15 @@ inline defs::fileFormat StringTo(const std::string& s) {
     if (s == "binary")
         return defs::BINARY;  
     throw sls::RuntimeError("Unknown file format " + s);          
+}
+
+template <>
+inline defs::externalSignalFlag StringTo(const std::string& s) {
+    if (s == "trigger_in_rising_edge")
+        return defs::TRIGGER_IN_RISING_EDGE;
+    if (s == "trigger_in_falling_edge")
+        return defs::TRIGGER_IN_FALLING_EDGE;  
+    throw sls::RuntimeError("Unknown external signal flag " + s);          
 }
 
 /** For types with a .str() method use this for conversion */

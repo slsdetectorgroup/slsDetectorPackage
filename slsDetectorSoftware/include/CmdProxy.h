@@ -932,7 +932,7 @@ class CmdProxy {
     INTEGER_COMMAND(tengiga, getTenGiga, setTenGiga, std::stoi,
                     "[0, 1]\n\t[Eiger][Ctb] 10GbE Enable.");          
 
-    INTEGER_COMMAND(flowcontrol_10g, getTransmissionDelayFrame, setTenGigaFlowControl, std::stoi,
+    INTEGER_COMMAND(flowcontrol_10g, getTenGigaFlowControl, setTenGigaFlowControl, std::stoi,
                     "[0, 1]\n\t[Eiger][Jungfrau] 10GbE Flow Control.");          
 
     INTEGER_COMMAND(txndelay_frame, getTransmissionDelayFrame, setTransmissionDelayFrame, std::stoi,

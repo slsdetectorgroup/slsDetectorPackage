@@ -1650,12 +1650,18 @@ int start_acquisition(int file_des) {
 		// check for hardware mac and hardware ip
 		if (udpDetails.srcmac != getDetectorMAC()) {
 			ret = FAIL;
-			sprintf(mess, "Invalid udp source mac address for this detector. Must be same as hardware detector mac address \n");
+			uint64_t sourcemac = getDetectorMAC();
+			char src_mac[50];
+			getMacAddressinString(src_mac, 50, sourcemac);
+			sprintf(mess, "Invalid udp source mac address for this detector. Must be same as hardware detector mac address %s\n", src_mac);
 			FILE_LOG(logERROR,(mess));
 		}
 		else if (!enableTenGigabitEthernet(-1) && (udpDetails.srcip != getDetectorIP())) {
 			ret = FAIL;
-			sprintf(mess, "Invalid udp source ip address for this detector. Must be same as hardware detector ip address in 1G readout mode \n");
+			uint32_t sourceip = getDetectorIP();
+			char src_ip[INET_ADDRSTRLEN];
+			getIpAddressinString(src_ip, sourceip);
+			sprintf(mess, "Invalid udp source ip address for this detector. Must be same as hardware detector ip address %s in 1G readout mode \n", src_ip);
 			FILE_LOG(logERROR,(mess));			
 		}
 		else
@@ -1758,12 +1764,18 @@ int start_and_read_all(int file_des) {
 		// check for hardware mac and hardware ip
 		if (udpDetails.srcmac != getDetectorMAC()) {
 			ret = FAIL;
-			sprintf(mess, "Invalid udp source mac address for this detector. Must be same as hardware detector mac address \n");
+			uint64_t sourcemac = getDetectorMAC();
+			char src_mac[50];
+			getMacAddressinString(src_mac, 50, sourcemac);
+			sprintf(mess, "Invalid udp source mac address for this detector. Must be same as hardware detector mac address %s\n", src_mac);
 			FILE_LOG(logERROR,(mess));
 		}
 		else if (!enableTenGigabitEthernet(-1) && (udpDetails.srcip != getDetectorIP())) {
 			ret = FAIL;
-			sprintf(mess, "Invalid udp source ip address for this detector. Must be same as hardware detector ip address in 1G readout mode \n");
+			uint32_t sourceip = getDetectorIP();
+			char src_ip[INET_ADDRSTRLEN];
+			getIpAddressinString(src_ip, sourceip);
+			sprintf(mess, "Invalid udp source ip address for this detector. Must be same as hardware detector ip address %s in 1G readout mode \n", src_ip);
 			FILE_LOG(logERROR,(mess));			
 		}
 		else

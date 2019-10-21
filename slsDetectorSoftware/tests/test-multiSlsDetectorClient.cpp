@@ -659,7 +659,8 @@ TEST_CASE("periodl", "[.cmd][.gotthard]") {
             REQUIRE(val < 1000);
         }
         REQUIRE_NOTHROW(multiSlsDetectorClient("stop", PUT));      
-        REQUIRE_NOTHROW(multiSlsDetectorClient("period 1 s", PUT));        
+        REQUIRE_NOTHROW(multiSlsDetectorClient("period 1 s", PUT));     
+        REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));   
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("periodl", GET));
     }
@@ -908,6 +909,7 @@ TEST_CASE("partialreset", "[.cmd][.eiger]") {
             REQUIRE(oss.str() == "partialreset 0\n");
         }
         REQUIRE_NOTHROW(multiSlsDetectorClient("partialreset 1", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("partialreset 0", PUT));
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("partialreset", GET));
     }
@@ -987,6 +989,7 @@ TEST_CASE("measuredperiod", "[.cmd][.eiger]") {
             REQUIRE(val >= 1.0);
             REQUIRE(val < 2.0);
         }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("measuredperiod", GET));
     }
@@ -1066,12 +1069,14 @@ TEST_CASE("ratecorr", "[.cmd][.eiger]") {
 
 TEST_CASE("trimen", "[.cmd][.eiger]") {
     if (test::type == slsDetectorDefs::EIGER) {   
+        // require globals for trimen?
         REQUIRE_NOTHROW(multiSlsDetectorClient("trimen 4500 5400 6400", PUT));
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(multiSlsDetectorClient("0:trimen", GET, nullptr, oss));
             REQUIRE(oss.str() == "trimen [4500, 5400, 6400]\n");
         }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("threshold 4500 standard", PUT));
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("trimen", GET));
     }
@@ -1412,17 +1417,17 @@ TEST_CASE("rx_hostname", "[.cmd]") {
     } 
     // save rx_hostame's ip somewhere (getent hosts [rx_hostname])
     {
-        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_hostname 129.129.205.80", PUT));
-        std::ostringstream oss;
-        REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_hostname", GET, nullptr, oss));
-        REQUIRE(oss.str() == "rx_hostname 129.129.205.80\n");
-    }
-    {
         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_hostname none", PUT));
         std::ostringstream oss;
         REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_hostname", GET, nullptr, oss));
         REQUIRE(oss.str() == "rx_hostname none\n");
     }        
+    {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_hostname 129.129.205.80", PUT));
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_hostname", GET, nullptr, oss));
+        REQUIRE(oss.str() == "rx_hostname 129.129.205.80\n");
+    }
 }
 
 TEST_CASE("txndelay", "[.cmd][.eiger][.jungfrau]") {
@@ -1530,12 +1535,12 @@ TEST_CASE("rx_printconfig", "[.cmd]") {
 }
 
 TEST_CASE("network", "[.cmd]") {
-    {
-        REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip 129.129.202.84", PUT));
+    /* {TODO custom srcip in globals
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip 129.129.205.203", PUT));
         std::ostringstream oss;
         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip", GET, nullptr, oss));
-        REQUIRE(oss.str() == "udp_srcip 129.129.202.84\n");
-    }
+        REQUIRE(oss.str() == "udp_srcip 129.129.205.203\n");
+    }*/
     std::string udp_dstip;
     {
         std::ostringstream oss;
@@ -1548,12 +1553,12 @@ TEST_CASE("network", "[.cmd]") {
         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstip", GET, nullptr, oss));
         REQUIRE(oss.str() == udp_dstip);
     }   
-    {
+    /* {TODO custom dstip in globals
         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstmac 10:e7:c6:48:bd:3f", PUT));
         std::ostringstream oss;
         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstmac", GET, nullptr, oss));
         REQUIRE(oss.str() == "udp_dstmac 10:e7:c6:48:bd:3f\n");
-    }      
+    }  */    
     {
         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport 6200", PUT));
         std::ostringstream oss;
@@ -1593,12 +1598,12 @@ TEST_CASE("network", "[.cmd]") {
     REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 999.999.0.0.0.5", PUT));
 
     if (test::type == slsDetectorDefs::JUNGFRAU) {
-        {
-            REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip2 129.129.202.84", PUT));
+       /*  {TODO custom srcip2 in globals
+            REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip2 129.129.205.203", PUT));
             std::ostringstream oss;
             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip2", GET, nullptr, oss));
-            REQUIRE(oss.str() == "udp_srcip2 129.129.202.84\n");
-        }
+            REQUIRE(oss.str() == "udp_srcip2 129.129.205.203\n");
+       }*/
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstip2", GET, nullptr, oss));
@@ -1715,6 +1720,7 @@ TEST_CASE("timing", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("timing gating", PUT));
         REQUIRE_THROWS(multiSlsDetectorClient("timing burst_trigger", PUT));
     }
+    REQUIRE_NOTHROW(multiSlsDetectorClient("timing auto", PUT));
 }
 
 
@@ -1821,17 +1827,6 @@ TEST_CASE("temp", "[.cmd][.eiger]") {
 
 
 TEST_CASE("vhighvoltage", "[.cmd]") {
-    int prev_val = 0;
-    {
-        std::ostringstream oss;
-        multiSlsDetectorClient("vhighvoltage", GET, nullptr, oss);
-        std::string s = (oss.str()).erase (0, strlen("vhighvoltage "));
-        // std::stoi doesnt convert [0,-999] beccause of [
-        if (s.find('[') != std::string::npos) {
-            s.erase(0, 1);
-        }
-        prev_val = std::stoi(s);
-    }
     if (test::type == slsDetectorDefs::GOTTHARD) {
         {
             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 90", PUT));
@@ -1846,27 +1841,31 @@ TEST_CASE("vhighvoltage", "[.cmd]") {
             REQUIRE(oss.str() == "vhighvoltage 0\n");
         } 
         REQUIRE_THROWS(multiSlsDetectorClient("vhighvoltage 50", PUT));      
-    } else { 
-        if (test::type != slsDetectorDefs::EIGER) {
-            REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 50", PUT));            
-        } else {
-            REQUIRE_THROWS(multiSlsDetectorClient("vhighvoltage 50", PUT));   
-        }
+    } else if (test::type == slsDetectorDefs::EIGER) {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 50", PUT));   
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 120", PUT));
+        sleep(2);
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("0:vhighvoltage", GET, nullptr, oss));
+        REQUIRE(oss.str() == "vhighvoltage 120\n");
         {
-            REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 120", PUT));
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 0", PUT));
+            sleep(2);
             std::ostringstream oss;
-            multiSlsDetectorClient("vhighvoltage", GET, nullptr, oss);
-            std::string s = (oss.str()).erase (0, strlen("vhighvoltage "));
-            REQUIRE(s.find("120") != std::string::npos); // due to different values for highvoltage for eiger
-        }
+            multiSlsDetectorClient("0:vhighvoltage", GET, nullptr, oss);
+            REQUIRE(oss.str() == "vhighvoltage 0\n");
+        } 
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("vhighvoltage 50", PUT)); 
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage", GET, nullptr, oss));
+        REQUIRE(oss.str() == "vhighvoltage 120\n"); 
         {
             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 0", PUT));
             std::ostringstream oss;
             multiSlsDetectorClient("vhighvoltage", GET, nullptr, oss);
-            std::string s = (oss.str()).erase (0, strlen("vhighvoltage "));
-            REQUIRE(s.find("0") != std::string::npos); // due to different values for highvoltage for eiger
-        }         
-        REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage " + std::to_string(prev_val), PUT));                    
+            REQUIRE(oss.str() == "vhighvoltage 0\n");
+        }              
     } 
 }
 
@@ -2055,6 +2054,7 @@ TEST_CASE("triggers", "[.cmd]") {
         multiSlsDetectorClient("triggers", GET, nullptr, oss);
         REQUIRE(oss.str() == "triggers 10\n");
     } 
+    REQUIRE_NOTHROW(multiSlsDetectorClient("triggers 1", PUT));
 }
 
 TEST_CASE("settings", "[.cmd]") {
@@ -2094,7 +2094,7 @@ TEST_CASE("threshold", "[.cmd]") {
 
 
 TEST_CASE("detsize", "[.cmd]") {
-    CHECK_NOTHROW(multiSlsDetectorClient("detize", GET));
+    CHECK_NOTHROW(multiSlsDetectorClient("detsize", GET));
 }
 
 TEST_CASE("type", "[.cmd]") {
@@ -2133,6 +2133,7 @@ TEST_CASE("status", "[.cmd]") {
         multiSlsDetectorClient("status", GET, nullptr, oss);
         REQUIRE(oss.str() == "status idle\n");
     }
+    multiSlsDetectorClient("frames 1", PUT);
 }
 
 TEST_CASE("trigger", "[.cmd][.eiger]") {
@@ -2195,6 +2196,7 @@ TEST_CASE("framesl", "[.cmd][.jungfrau][gotthard][ctb]") {
             REQUIRE(framesl > 0);
         }
         multiSlsDetectorClient("stop", PUT);
+        REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
     }
 }
 
@@ -2214,6 +2216,8 @@ TEST_CASE("triggersl", "[.cmd][.jungfrau][gotthard][ctb]") {
             REQUIRE(triggersl  == 10);
         }
         multiSlsDetectorClient("stop", PUT);
+        REQUIRE_NOTHROW(multiSlsDetectorClient("timing auto", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("triggers 1", PUT));
     }
 }
 
@@ -2232,6 +2236,9 @@ TEST_CASE("delayl", "[.cmd][.jungfrau][gotthard][ctb]") {
             REQUIRE(oss.str()  == "delayl 1s\n");
         }
         multiSlsDetectorClient("stop", PUT);
+        multiSlsDetectorClient("timing auto", PUT);
+        REQUIRE_NOTHROW(multiSlsDetectorClient("triggers 1", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("delay 0", PUT));
     }
 }
 TEST_CASE("clk", "[.cmd]") {
@@ -2281,7 +2288,13 @@ TEST_CASE("clk", "[.cmd]") {
 }
 
 TEST_CASE("rx_fifodepth", "[.cmd]") {
-
+    int prev_val = 0;   
+    {
+            std::ostringstream oss;
+            multiSlsDetectorClient("rx_fifodepth", GET, nullptr, oss);
+            std::string s = (oss.str()).erase (0, strlen("rx_fifodepth "));
+            prev_val = std::stoi(s);
+    }
     {
         std::ostringstream oss;
         multiSlsDetectorClient("rx_fifodepth 10", PUT, nullptr, oss);
@@ -2299,8 +2312,7 @@ TEST_CASE("rx_fifodepth", "[.cmd]") {
         multiSlsDetectorClient("rx_fifodepth", GET, nullptr, oss);
         REQUIRE(oss.str() == "rx_fifodepth 100\n");
     }
-    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_fifodepth 0", PUT));
-
+    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_fifodepth " + std::to_string(prev_val), PUT)); 
 }
 
 TEST_CASE("frames", "[.cmd]") {

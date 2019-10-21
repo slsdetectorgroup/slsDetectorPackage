@@ -560,6 +560,7 @@ class CmdProxy {
                           {"start", &CmdProxy::start},
                           {"stop", &CmdProxy::stop},
                           {"rx_status", &CmdProxy::rx_status}, 
+                          {"status", &CmdProxy::status}, 
                           {"rx_framescaught", &CmdProxy::rx_framescaught},
                           {"startingfnum", &CmdProxy::startingfnum},
                           {"trigger", &CmdProxy::trigger},

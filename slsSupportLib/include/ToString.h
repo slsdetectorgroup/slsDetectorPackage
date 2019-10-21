@@ -18,11 +18,162 @@
 #include <type_traits>
 #include <vector>
 
+
 namespace sls {
 
+using defs = slsDetectorDefs;
 
-inline std::string ToString(const slsDetectorDefs::runStatus s){
-    return slsDetectorDefs::runStatusType(s);
+inline std::string ToString(const defs::runStatus s){
+    switch (s) {
+    case defs::ERROR:
+        return std::string("error");
+    case defs::WAITING:
+        return std::string("waiting");
+    case defs::RUNNING:
+        return std::string("running");
+    case defs::TRANSMITTING:
+        return std::string("data");
+    case defs::RUN_FINISHED:
+        return std::string("finished");
+    case defs::STOPPED:
+        return std::string("stopped");
+    default:
+        return std::string("idle");
+    }
+}
+
+inline std::string ToString(const defs::detectorType s){
+    switch (s) {
+    case defs::EIGER:
+        return std::string("Eiger");
+    case defs::GOTTHARD:
+        return std::string("Gotthard");
+    case defs::JUNGFRAU:
+        return std::string("Jungfrau");
+    case defs::CHIPTESTBOARD:
+        return std::string("JungfrauCTB");
+    case defs::MOENCH:
+        return std::string("Moench");
+    case defs::MYTHEN3:
+        return std::string("Mythen3");
+    case defs::GOTTHARD2:
+        return std::string("Gotthard2");  
+    default:
+        return std::string("Unknown");         
+    }
+}
+
+inline std::string ToString(const defs::detectorSettings s){
+    switch (s) {
+    case defs::STANDARD:
+        return std::string("standard");
+    case defs::FAST:
+        return std::string("fast");
+    case defs::HIGHGAIN:
+        return std::string("highgain");
+    case defs::DYNAMICGAIN:
+        return std::string("dynamicgain");
+    case defs::LOWGAIN:
+        return std::string("lowgain");
+    case defs::MEDIUMGAIN:
+        return std::string("mediumgain");
+    case defs::VERYHIGHGAIN:
+        return std::string("veryhighgain");
+    case defs::DYNAMICHG0:
+        return std::string("dynamichg0");
+    case defs::FIXGAIN1:
+        return std::string("fixgain1");
+    case defs::FIXGAIN2:
+        return std::string("fixgain2");
+    case defs::FORCESWITCHG1:
+        return std::string("forceswitchg1");
+    case defs::FORCESWITCHG2:
+        return std::string("forceswitchg2");
+    case defs::VERYLOWGAIN:
+        return std::string("verylowgain");
+    case defs::UNDEFINED:
+        return std::string("undefined");        
+    case defs::UNINITIALIZED:
+        return std::string("uninitialized");
+    default:
+        return std::string("Unknown");
+    }
+}
+
+inline std::string ToString(const defs::speedLevel s){
+    switch (s) {
+    case defs::FULL_SPEED:
+        return std::string("full_speed");
+    case defs::HALF_SPEED:
+        return std::string("half_speed");
+    case defs::QUARTER_SPEED:
+        return std::string("quarter_speed");                
+    default:
+        return std::string("Unknown");       
+    }
+}
+
+inline std::string ToString(const defs::timingMode s){
+    switch (s) {
+    case defs::AUTO_TIMING:
+        return std::string("auto");
+    case defs::TRIGGER_EXPOSURE:
+        return std::string("trigger");
+    case defs::GATED:
+        return std::string("gating");     
+    case defs::BURST_TRIGGER:
+        return std::string("burst_trigger");             
+    default:
+        return std::string("Unknown");       
+    }
+}
+
+inline std::string ToString(const defs::frameDiscardPolicy s){
+    switch (s) {
+    case defs::NO_DISCARD:
+        return std::string("nodiscard");
+    case defs::DISCARD_EMPTY_FRAMES:
+        return std::string("discardempty");
+    case defs::DISCARD_PARTIAL_FRAMES:
+        return std::string("discardpartial");               
+    default:
+        return std::string("Unknown");       
+    }
+}
+
+inline std::string ToString(const defs::fileFormat s){
+    switch (s) {
+    case defs::HDF5:
+        return std::string("hdf5");
+    case defs::BINARY:
+        return std::string("binary");            
+    default:
+        return std::string("Unknown");       
+    }
+}
+
+inline std::string ToString(const defs::externalSignalFlag s){
+    switch (s) {
+    case defs::TRIGGER_IN_RISING_EDGE:
+        return std::string("trigger_in_rising_edge");
+    case defs::TRIGGER_IN_FALLING_EDGE:
+        return std::string("trigger_in_falling_edge");            
+    default:
+        return std::string("Unknown");       
+    }
+}
+
+inline std::string ToString(const defs::readoutMode s){
+    switch (s) {
+    case defs::ANALOG_ONLY:
+        return std::string("analog");
+    case defs::DIGITAL_ONLY:
+        return std::string("digital");
+    case defs::ANALOG_AND_DIGITAL:
+        return std::string("analog_digital");               
+    default:
+        return std::string("Unknown");       
+    }
 }
 
 // in case we already have a string 
@@ -84,8 +235,37 @@ ToString(const T &value) {
     return std::to_string(value);
 }
 
+/** Conversion of integer types, do not remove trailing zeros */
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value, std::string>::type
+ToStringHex(const T &value) {
+    std::ostringstream os;
+    os << "0x" << std::hex << value << std::dec;
+    return os.str();
+}
 
-
+/** 
+ * hex
+ * For a container loop over all elements and call ToString on the element
+ * Container<std::string> is excluded
+ */
+template <typename T>
+typename std::enable_if<
+    is_container<T>::value &&
+        !std::is_same<typename T::value_type, std::string>::value,
+    std::string>::type
+ToStringHex(const T &container) {
+    std::ostringstream os;
+    os << '[';
+    if (!container.empty()) {
+        auto it = container.cbegin();
+        os << ToStringHex(*it++);
+        while (it != container.cend())
+            os << ", " << ToStringHex(*it++);
+    }
+    os << ']';
+    return os.str();   
+}
 
 /**
  * For a container loop over all elements and call ToString on the element
@@ -180,9 +360,119 @@ template <typename T> T StringTo(const std::string& t) {
 }
 
 template <>
-inline slsDetectorDefs::detectorType StringTo(const std::string& s){
-    return slsDetectorDefs::detectorTypeToEnum(s);
+inline defs::detectorType StringTo(const std::string& s){
+    if (s == "Eiger")
+        return defs::EIGER;
+    if (s == "Gotthard")
+        return defs::GOTTHARD;
+    if (s == "Jungfrau")
+        return defs::JUNGFRAU;
+    if (s == "JungfrauCTB")
+        return defs::CHIPTESTBOARD;
+    if (s == "Moench")
+        return defs::MOENCH;
+    if (s == "Mythen3")
+        return defs::MYTHEN3;
+    if (s == "Gotthard2")
+        return defs::GOTTHARD2;            
+    throw sls::RuntimeError("Unknown detector type " + s);
 }
+
+template <>
+inline defs::detectorSettings StringTo(const std::string& s){
+    if (s == "standard")
+        return defs::STANDARD;
+    if (s == "fast")
+        return defs::FAST;
+    if (s == "highgain")
+        return defs::HIGHGAIN;
+    if (s == "dynamicgain")
+        return defs::DYNAMICGAIN;
+    if (s == "lowgain")
+        return defs::LOWGAIN;
+    if (s == "mediumgain")
+        return defs::MEDIUMGAIN;
+    if (s == "veryhighgain")
+        return defs::VERYHIGHGAIN;
+    if (s == "dynamichg0")
+        return defs::DYNAMICHG0;
+    if (s == "fixgain1")
+        return defs::FIXGAIN1;
+    if (s == "fixgain2")
+        return defs::FIXGAIN2;
+    if (s == "forceswitchg1")
+        return defs::FORCESWITCHG1;
+    if (s == "forceswitchg2")
+        return defs::FORCESWITCHG2;
+    if (s == "verylowgain")
+        return defs::VERYLOWGAIN;
+    throw sls::RuntimeError("Unknown setting " + s);
+}
+
+template <>
+inline defs::speedLevel StringTo(const std::string& s) {
+    if (s == "full_speed")
+        return defs::FULL_SPEED;
+    if (s == "half_speed")
+        return defs::HALF_SPEED;
+    if (s == "quarter_speed")
+        return defs::QUARTER_SPEED;        
+    throw sls::RuntimeError("Unknown speed " + s);          
+}
+
+template <>
+inline defs::timingMode StringTo(const std::string& s) {
+    if (s == "auto")
+        return defs::AUTO_TIMING;
+    if (s == "trigger")
+        return defs::TRIGGER_EXPOSURE;
+    if (s == "gating")
+        return defs::GATED; 
+    if (s == "burst_trigger")
+        return defs::BURST_TRIGGER;        
+    throw sls::RuntimeError("Unknown timing mode " + s);          
+}
+
+template <>
+inline defs::frameDiscardPolicy StringTo(const std::string& s) {
+    if (s == "nodiscard")
+        return defs::NO_DISCARD;
+    if (s == "discardempty")
+        return defs::DISCARD_EMPTY_FRAMES;
+    if (s == "discardpartial")
+        return defs::DISCARD_PARTIAL_FRAMES;       
+    throw sls::RuntimeError("Unknown frame discard policy " + s);          
+}
+
+template <>
+inline defs::fileFormat StringTo(const std::string& s) {
+    if (s == "hdf5")
+        return defs::HDF5;
+    if (s == "binary")
+        return defs::BINARY;  
+    throw sls::RuntimeError("Unknown file format " + s);          
+}
+
+template <>
+inline defs::externalSignalFlag StringTo(const std::string& s) {
+    if (s == "trigger_in_rising_edge")
+        return defs::TRIGGER_IN_RISING_EDGE;
+    if (s == "trigger_in_falling_edge")
+        return defs::TRIGGER_IN_FALLING_EDGE;  
+    throw sls::RuntimeError("Unknown external signal flag " + s);          
+}
+
+template <>
+inline defs::readoutMode StringTo(const std::string& s) {
+    if (s == "analog")
+        return defs::ANALOG_ONLY;
+    if (s == "digital")
+        return defs::DIGITAL_ONLY; 
+     if (s == "analog_digital")
+        return defs::ANALOG_AND_DIGITAL;         
+    throw sls::RuntimeError("Unknown readout mode " + s);          
+}
+
 
 /** For types with a .str() method use this for conversion */
 template <typename T>
@@ -190,8 +480,6 @@ typename std::enable_if<has_str<T>::value, std::string>::type
 ToString(const T &obj) {
     return obj.str();
 }
-
-
 
 
 

@@ -91,7 +91,7 @@ where: \\
 \textit{v0} is the scan0 variable with the desired precision, if scan0 is enabled;\\
 \textit{v1} is the scan1 variable with the desired precision, if scan1 is enabled;\\
 \textit{p} is the position index, if different positions are configured;\\
-\textit{f} is the frame index of the first frame stored in the file, if many frames and cycles are configured;\\
+\textit{f} is the frame index of the first frame stored in the file, if many frames and triggers are configured;\\
 \textit{i} is the file index;\\
 \textit{ext} is the file extension e.g. \textit{.raw} for MYTHEN raw data, \textit{.dat} for MYTHEN processed data.
 \item[index i] Sets the starting index of the file i at the beginning of the acquisition (automatically incremented for each measurement).    
@@ -110,10 +110,10 @@ Sets the number of gates per frame in gated (stroboscopic) mode.\\
 Refere to the detailed documentation to understand how the different timing modes work.
 \item[frames n]  
 Sets the number of frames acquired sequentially per cycle (e.g. after each trigger), with the exposure time defined by exptime and the period defined by period (unless in gated mode). The frame index in the output file name will automatically be incremented.\\
-Note that the total number of images will be  frames times cycles.  Refere to detailed documentation to understand how the different timing modes work. 
-\item[cycles n] 
-Sets the number of cycles (e.g. number of triggers). The frame index in the output file name will automatically be incremented. \\ 
-Note that the total number of images will be by frames times cycles.   Refere to the detailed documentation to understand how the different timing modes work.
+Note that the total number of images will be  frames times triggers.  Refere to detailed documentation to understand how the different timing modes work. 
+\item[triggers n] 
+Sets the number of triggers (e.g. number of triggers). The frame index in the output file name will automatically be incremented. \\ 
+Note that the total number of images will be by frames times triggers.   Refere to the detailed documentation to understand how the different timing modes work.
 \item[probes]  Sets the number of probes to accumulate for stroboscopic measurements. \\
 Refere to detailed documentation to understand how the different timing modes work.
 \item[measurements] Sets the number of repetitions of the acquisitions (non real time!). The file index in the file name will be automotically incremented.\\
@@ -234,7 +234,7 @@ It is normally reccomended to use \verb=sls\_detector\_acquire [j-]=, which take
 %\item[delayl]  
 %\item[gatesl]  
 %\item[framesl] 
-%\item[cyclesl]   
+%\item[triggersl]   
 %\item[frameindex]  
 %\item[now]   
 \end{description}
@@ -393,11 +393,11 @@ Returns the number of gates per frame in gated (stroboscopic) mode.
 Refere to detailed documentation to understand how the different timing modes work.
 \item[frames]  
 Returns the number of frames acquired sequentially per cycle (e.g. after each trigger), with the exposure time defined by exptime and the period defined by period (unless in gated mode).
-Note that the total number of images is  frames times cycles.  
+Note that the total number of images is  frames times triggers.  
 Refere to detailed documentation to understand how the different timing modes work. 
-\item[cycles n] 
-Returns the number of cycles (e.g. number of triggers). 
-Note that the total number of images is  frames times cycles. 
+\item[triggers n] 
+Returns the number of triggers (e.g. number of triggers). 
+Note that the total number of images is  frames times triggers. 
 Refere to detailed documentation to understand how the different timing modes work.  
 \item[probes]  Returns the number of probes to accumulate for stroboscopic measurements.  
 Refere to detailed documentation to understand how the different timing modes work.
@@ -518,7 +518,7 @@ It is normally reccomended to use \verb=sls\_detector\_acquire [j-]=, which take
 \item[delayl]    Returns the delay after trigger left for the current frame.  
 \item[gatesl]     Returns the number of gates left for the current frame.  
 \item[framesl]   Returns the number of frames left for the current cycle.  
-\item[cyclesl]      Returns the number of cycles left for the current acquisition. 
+\item[triggersl]      Returns the number of triggers left for the current acquisition. 
 \item[now]  Returns the current timestamp of the detector clock.
 \item[timestamp]  Returns the timestamp of the acquisitions in a First-In/First-Out mode i.e. every time it is called it returns the timestamp of the first acquisition start of readout. The FIFO is reset everytime the acquisition is started. 
 \end{description}

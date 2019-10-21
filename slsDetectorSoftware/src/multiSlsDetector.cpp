@@ -13,6 +13,7 @@
 #include "container_utils.h"
 #include "network_utils.h"
 #include "string_utils.h"
+#include "ToString.h"
 
 #include <cstring>
 #include <iomanip>
@@ -164,6 +165,8 @@ int64_t multiSlsDetector::getId(idMode mode, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
+std::string multiSlsDetector::getPackageVersion() const { return GITBRANCH; }
+
 int64_t multiSlsDetector::getClientSoftwareVersion() const { return APILIB; }
 
 int64_t multiSlsDetector::getReceiverSoftwareVersion(int detPos) {
@@ -240,8 +243,7 @@ std::string multiSlsDetector::getUserDetails() {
     sstream << "\nType: ";
     // get type from multi shm
     if (multi_shm()->shmversion >= MULTI_SHMAPIVERSION) {
-        sstream << slsDetectorDefs::detectorTypeToString(
-            getDetectorTypeAsEnum());
+        sstream << ToString(getDetectorTypeAsEnum());
     }
     // get type from slsdet shm
     else {
@@ -396,7 +398,10 @@ void multiSlsDetector::setHostname(const char *name, int detPos) {
         freeSharedMemory();
         setupMultiDetector();
     }
-    addMultipleDetectors(name);
+    for (const auto &hostname : sls::split(name, '+')) {
+        addSlsDetector(hostname);
+    }
+    updateDetectorSize();
 }
 
 std::string multiSlsDetector::getHostname(int detPos) const {
@@ -410,15 +415,9 @@ std::string multiSlsDetector::getHostname(int detPos) const {
     return sls::concatenateNonEmptyStrings(r);
 }
 
-void multiSlsDetector::addMultipleDetectors(const char *name) {
-    for (const auto &hostname : sls::split(name, '+')) {
-        addSlsDetector(hostname);
-    }
-    updateDetectorSize();
-}
 
 void multiSlsDetector::addSlsDetector(const std::string &hostname) {
-    FILE_LOG(logDEBUG1) << "Adding detector " << hostname;
+    FILE_LOG(logINFO) << "Adding detector " << hostname;
 
     int port = DEFAULT_PORTNO;
     std::string host = hostname;
@@ -622,13 +621,6 @@ int multiSlsDetector::lockServer(int p, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-std::string multiSlsDetector::getLastClientIP(int detPos) {
-    if (detPos >= 0) {
-        return detectors[detPos]->getLastClientIP();
-    }
-    auto r = parallelCall(&slsDetector::getLastClientIP);
-    return sls::concatenateIfDifferent(r);
-}
 
 void multiSlsDetector::exitServer(int detPos) {
     if (detPos >= 0) {
@@ -650,7 +642,7 @@ void multiSlsDetector::readConfigurationFile(const std::string &fname) {
     FILE_LOG(logINFO) << "Loading configuration file: " << fname;
 
     std::ifstream input_file;
-    input_file.open(fname, std::ios_base::in);
+    input_file.open(fname.c_str(), std::ios_base::in);
     if (!input_file.is_open()) {
         throw RuntimeError("Could not open configuration file " + fname +
                            " for reading");
@@ -664,7 +656,7 @@ void multiSlsDetector::readConfigurationFile(const std::string &fname) {
         FILE_LOG(logDEBUG1)
             << "current_line after removing comments:\n\t" << current_line;
         if (current_line.length() > 1) {
-            multiSlsDetectorClient(current_line, PUT_ACTION, this);
+            multiSlsDetectorClient(current_line, PUT_ACTION, nullptr);
         }
     }
     input_file.close();
@@ -787,118 +779,6 @@ void multiSlsDetector::saveSettingsFile(const std::string &fname, int detPos) {
     parallelCall(&slsDetector::saveSettingsFile, fname);
 }
 
-slsDetectorDefs::runStatus multiSlsDetector::getRunStatus(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getRunStatus();
-    }
-
-    // multi
-    auto r = parallelCall(&slsDetector::getRunStatus);
-    if (sls::allEqual(r)) {
-        return r.front();
-    }
-    if (sls::anyEqualTo(r, ERROR)) {
-        return ERROR;
-    }
-    for (const auto &value : r) {
-        if (value != IDLE) {
-            return value;
-        }
-    }
-    return IDLE;
-}
-
-void multiSlsDetector::prepareAcquisition(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->prepareAcquisition();
-    }
-
-    // multi
-    parallelCall(&slsDetector::prepareAcquisition);
-}
-
-void multiSlsDetector::startAcquisition(int detPos) {
-    // single
-    if (detPos >= 0) {
-        if (detectors[detPos]->getDetectorTypeAsEnum() == EIGER) {
-            detectors[detPos]->prepareAcquisition();
-        }
-        detectors[detPos]->startAcquisition();
-    }
-
-    // multi
-    if (getDetectorTypeAsEnum() == EIGER) {
-        prepareAcquisition();
-    }
-    parallelCall(&slsDetector::startAcquisition);
-}
-
-void multiSlsDetector::stopAcquisition(int detPos) {
-    if (detPos >= 0) {
-        detectors[detPos]->stopAcquisition();
-    } else {
-        parallelCall(&slsDetector::stopAcquisition);
-    }
-}
-
-void multiSlsDetector::sendSoftwareTrigger(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->sendSoftwareTrigger();
-    }
-
-    // multi
-    parallelCall(&slsDetector::sendSoftwareTrigger);
-}
-
-void multiSlsDetector::startAndReadAll(int detPos) {
-    // single
-    if (detPos >= 0) {
-        if (detectors[detPos]->getDetectorTypeAsEnum() == EIGER) {
-            detectors[detPos]->prepareAcquisition();
-        }
-        detectors[detPos]->startAndReadAll();
-    }
-
-    // multi
-    if (getDetectorTypeAsEnum() == EIGER) {
-        prepareAcquisition();
-    }
-    parallelCall(&slsDetector::startAndReadAll);
-}
-
-void multiSlsDetector::startReadOut(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->startReadOut();
-    }
-
-    // multi
-    parallelCall(&slsDetector::startReadOut);
-}
-
-void multiSlsDetector::readAll(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->readAll();
-    }
-
-    // multi
-    parallelCall(&slsDetector::readAll);
-}
-/*
-void multiSlsDetector::configureMAC(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->configureMAC();
-    }
-
-    // multi
-    parallelCall(&slsDetector::configureMAC);
-}
-*/
 
 void multiSlsDetector::setStartingFrameNumber(const uint64_t value,
                                               int detPos) {
@@ -994,8 +874,8 @@ int64_t multiSlsDetector::setNumberOfFrames(int64_t t, int detPos) {
     return setTimer(FRAME_NUMBER, t, detPos);
 }
 
-int64_t multiSlsDetector::setNumberOfCycles(int64_t t, int detPos) {
-    return setTimer(CYCLES_NUMBER, t, detPos);
+int64_t multiSlsDetector::setNumberOfTriggers(int64_t t, int detPos) {
+    return setTimer(TRIGGER_NUMBER, t, detPos);
 }
 
 int64_t multiSlsDetector::setNumberOfStorageCells(int64_t t, int detPos) {
@@ -1434,74 +1314,6 @@ int multiSlsDetector::getReceiverStreamingPort(int detPos) {
     // multi
     auto r = serialCall(&slsDetector::getReceiverStreamingPort);
     return sls::minusOneIfDifferent(r);
-}
-
-void multiSlsDetector::setClientDataStreamingInIP(const std::string &ip,
-                                                  int detPos) {
-    if (ip.length() != 0u) {
-        bool prev_streaming = enableDataStreamingToClient(-1);
-
-        // single
-        if (detPos >= 0) {
-            detectors[detPos]->setClientStreamingIP(ip);
-        }
-        // multi
-        else {
-            for (auto &d : detectors) {
-                d->setClientStreamingIP(ip);
-            }
-        }
-
-        if (prev_streaming) {
-            enableDataStreamingToClient(0);
-            enableDataStreamingToClient(1);
-        }
-    }
-}
-
-std::string multiSlsDetector::getClientStreamingIP(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getClientStreamingIP();
-    }
-
-    // multi
-    auto r = serialCall(&slsDetector::getClientStreamingIP);
-    return sls::concatenateIfDifferent(r);
-}
-
-void multiSlsDetector::setReceiverDataStreamingOutIP(const std::string &ip,
-                                                     int detPos) {
-    if (ip.length() != 0u) {
-        int prev_streaming = enableDataStreamingFromReceiver(-1, detPos);
-
-        // single
-        if (detPos >= 0) {
-            detectors[detPos]->setReceiverStreamingIP(ip);
-        }
-        // multi
-        else {
-            for (auto &d : detectors) {
-                d->setReceiverStreamingIP(ip);
-            }
-        }
-
-        if (prev_streaming != 0) {
-            enableDataStreamingFromReceiver(0, detPos);
-            enableDataStreamingFromReceiver(1, detPos);
-        }
-    }
-}
-
-std::string multiSlsDetector::getReceiverStreamingIP(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getReceiverStreamingIP();
-    }
-
-    // multi
-    auto r = serialCall(&slsDetector::getReceiverStreamingIP);
-    return sls::concatenateIfDifferent(r);
 }
 
 int multiSlsDetector::setDetectorNetworkParameter(networkParameter index,
@@ -2209,16 +2021,7 @@ int multiSlsDetector::lockReceiver(int lock, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-std::string multiSlsDetector::getReceiverLastClientIP(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getReceiverLastClientIP();
-    }
 
-    // multi
-    auto r = parallelCall(&slsDetector::getReceiverLastClientIP);
-    return sls::concatenateIfDifferent(r);
-}
 
 void multiSlsDetector::exitReceiver(int detPos) {
     // single
@@ -2360,7 +2163,7 @@ slsDetectorDefs::fileFormat multiSlsDetector::setFileFormat(fileFormat f,
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::incrementFileIndex(int detPos) {
+int64_t multiSlsDetector::incrementFileIndex(int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->incrementFileIndex();
@@ -2371,7 +2174,7 @@ int multiSlsDetector::incrementFileIndex(int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::setFileIndex(int i, int detPos) {
+int64_t multiSlsDetector::setFileIndex(int64_t i, int detPos) {
     // single
     if (detPos >= 0) {
         return detectors[detPos]->setFileIndex(i);
@@ -2382,54 +2185,13 @@ int multiSlsDetector::setFileIndex(int i, int detPos) {
     return sls::minusOneIfDifferent(r);
 }
 
-int multiSlsDetector::getFileIndex(int detPos) const {
+int64_t multiSlsDetector::getFileIndex(int detPos) const {
     if (detPos >= 0)
         return detectors[detPos]->getFileIndex();
     auto r = parallelCall(&slsDetector::getFileIndex);
     return sls::minusOneIfDifferent(r);
 }
 
-void multiSlsDetector::startReceiver(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->startReceiver();
-    }
-
-    // multi
-    parallelCall(&slsDetector::startReceiver);
-}
-
-void multiSlsDetector::stopReceiver(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->stopReceiver();
-    }
-
-    // multi
-    parallelCall(&slsDetector::stopReceiver);
-}
-
-slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus(int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->getReceiverStatus();
-    }
-
-    // multi
-    auto r = parallelCall(&slsDetector::getReceiverStatus);
-    if (sls::allEqual(r)) {
-        return r.front();
-    }
-    if (sls::anyEqualTo(r, ERROR)) {
-        return ERROR;
-    }
-    for (const auto &value : r) {
-        if (value != IDLE) {
-            return value;
-        }
-    }
-    return IDLE;
-}
 
 int multiSlsDetector::getFramesCaughtByReceiver(int detPos) {
     // single
@@ -2508,7 +2270,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
         try {
             zmqSocket.push_back(sls::make_unique<ZmqSocket>(
                 detectors[iSocket / numSocketsPerDetector]
-                    ->getClientStreamingIP()
+                    ->getClientStreamingIP().str()
                     .c_str(),
                 portnum));
             FILE_LOG(logINFO) << "Zmq Client[" << iSocket << "] at "
@@ -3245,190 +3007,28 @@ void multiSlsDetector::setDigitalIODelay(uint64_t pinMask, int delay,
     parallelCall(&slsDetector::setDigitalIODelay, pinMask, delay);
 }
 
-int multiSlsDetector::retrieveDetectorSetup(const std::string &fname1,
-                                            int level) {
-
-    int skip = 0;
-    std::string fname;
-    std::string str;
-    std::ifstream infile;
-    int iargval;
-    int interrupt = 0;
-    char *args[10];
-
-    char myargs[10][1000];
-
-    std::string sargname, sargval;
-    int iline = 0;
-
-    if (level == 2) {
-        FILE_LOG(logDEBUG1) << "config file read";
-        fname = fname1 + std::string(".det");
-    } else {
-        fname = fname1;
+void multiSlsDetector::loadParameters(const std::string &fname) {
+    std::ifstream input_file;
+    input_file.open(fname.c_str(), std::ios_base::in);
+    if (!input_file.is_open()) {
+        throw RuntimeError("Could not open parameter file " + fname +
+                           " for reading");
     }
-
-    infile.open(fname.c_str(), std::ios_base::in);
-    if (infile.is_open()) {
-        auto cmd = slsDetectorCommand(this);
-        while (infile.good() and interrupt == 0) {
-            sargname = "none";
-            sargval = "0";
-            getline(infile, str);
-            iline++;
-            FILE_LOG(logDEBUG1) << str;
-            if (str.find('#') != std::string::npos) {
-                FILE_LOG(logDEBUG1) << "Line is a comment \n" << str;
-                continue;
-            } else {
-                std::istringstream ssstr(str);
-                iargval = 0;
-                while (ssstr.good()) {
-                    ssstr >> sargname;
-                    //  if (ssstr.good()) {
-                    sls::strcpy_safe(myargs[iargval], sargname.c_str());
-                    args[iargval] = myargs[iargval];
-                    FILE_LOG(logDEBUG1) << args[iargval];
-                    iargval++;
-                    // }
-                    skip = 0;
-                }
-                if (level != 2) {
-                    if (std::string(args[0]) == std::string("trimbits")) {
-                        skip = 1;
-                    }
-                }
-                if (skip == 0) {
-                    cmd.executeLine(iargval, args, PUT_ACTION);
-                }
-            }
-            iline++;
+    std::string current_line;
+    while (input_file.good()) {
+        getline(input_file, current_line);
+        if (current_line.find('#') != std::string::npos) {
+            current_line.erase(current_line.find('#'));
         }
-        infile.close();
-
-    } else {
-        throw RuntimeError("Error opening  " + fname + " for reading");
+        FILE_LOG(logDEBUG1)
+            << "current_line after removing comments:\n\t" << current_line;
+        if (current_line.length() > 1) {
+            multiSlsDetectorClient(current_line, PUT_ACTION, this);
+        }    
     }
-    FILE_LOG(logDEBUG1) << "Read  " << iline << " lines";
-    return OK;
+    input_file.close();
 }
 
-int multiSlsDetector::dumpDetectorSetup(const std::string &fname, int level) {
-    detectorType type = getDetectorTypeAsEnum();
-    std::vector<std::string> names;
-    // common config
-    names.emplace_back("fname");
-    names.emplace_back("index");
-    names.emplace_back("enablefwrite");
-    names.emplace_back("overwrite");
-    names.emplace_back("dr");
-    names.emplace_back("settings");
-    names.emplace_back("exptime");
-    names.emplace_back("period");
-    names.emplace_back("frames");
-    names.emplace_back("cycles");
-    names.emplace_back("timing");
-
-    switch (type) {
-    case EIGER:
-        names.emplace_back("flags");
-        names.emplace_back("clkdivider");
-        names.emplace_back("threshold");
-        names.emplace_back("ratecorr");
-        names.emplace_back("trimbits");
-        break;
-    case GOTTHARD:
-        names.emplace_back("delay");
-        break;
-    case JUNGFRAU:
-        names.emplace_back("delay");
-        names.emplace_back("clkdivider");
-        break;
-    case CHIPTESTBOARD:
-        names.emplace_back("dac:0");
-        names.emplace_back("dac:1");
-        names.emplace_back("dac:2");
-        names.emplace_back("dac:3");
-        names.emplace_back("dac:4");
-        names.emplace_back("dac:5");
-        names.emplace_back("dac:6");
-        names.emplace_back("dac:7");
-        names.emplace_back("dac:8");
-        names.emplace_back("dac:9");
-        names.emplace_back("dac:10");
-        names.emplace_back("dac:11");
-        names.emplace_back("dac:12");
-        names.emplace_back("dac:13");
-        names.emplace_back("dac:14");
-        names.emplace_back("dac:15");
-        names.emplace_back("dac:16");
-        names.emplace_back("dac:17");
-        names.emplace_back("dac:18");
-        names.emplace_back("dac:19");
-        names.emplace_back("dac:20");
-        names.emplace_back("dac:21");
-        names.emplace_back("dac:22");
-        names.emplace_back("dac:23");
-        names.emplace_back("adcvpp");
-        names.emplace_back("adcclk");
-        names.emplace_back("clkdivider");
-        names.emplace_back("adcphase");
-        names.emplace_back("adcpipeline");
-        names.emplace_back("adcinvert"); //
-        names.emplace_back("adcdisable");
-        names.emplace_back("patioctrl");
-        names.emplace_back("patclkctrl");
-        names.emplace_back("patlimits");
-        names.emplace_back("patloop0");
-        names.emplace_back("patnloop0");
-        names.emplace_back("patwait0");
-        names.emplace_back("patwaittime0");
-        names.emplace_back("patloop1");
-        names.emplace_back("patnloop1");
-        names.emplace_back("patwait1");
-        names.emplace_back("patwaittime1");
-        names.emplace_back("patloop2");
-        names.emplace_back("patnloop2");
-        names.emplace_back("patwait2");
-        names.emplace_back("patwaittime2");
-        break;
-    default:
-        break;
-    }
-
-    // Workaround to bo able to suplly ecexuteLine with char**
-    const int n_arguments = 1;
-    char buffer[1000]; // TODO! this should not be hardcoded!
-    char *args[n_arguments] = {buffer};
-
-    std::string outfname;
-    if (level == 2) {
-        writeConfigurationFile(fname + ".config");
-        outfname = fname + ".det";
-    } else {
-        outfname = fname;
-    }
-
-    std::ofstream outfile;
-    outfile.open(outfname.c_str(), std::ios_base::out);
-    if (outfile.is_open()) {
-        auto cmd = slsDetectorCommand(this);
-        for (auto &name : names) {
-            sls::strcpy_safe(buffer, name.c_str()); // this is...
-            outfile << name << " "
-                    << cmd.executeLine(n_arguments, args, GET_ACTION)
-                    << std::endl;
-        }
-        outfile.close();
-    } else {
-        throw RuntimeError("Error opening parameters file " + fname +
-                           " for writing");
-    }
-
-    FILE_LOG(logDEBUG1) << "wrote " << names.size() << " lines to  "
-                        << outfname;
-    return OK;
-}
 
 void multiSlsDetector::registerAcquisitionFinishedCallback(
     void (*func)(double, int, void *), void *pArg) {
@@ -3455,10 +3055,10 @@ void multiSlsDetector::registerDataCallback(
 int multiSlsDetector::setTotalProgress() {
     int nf = Parallel(&slsDetector::setTimer, {}, FRAME_NUMBER, -1)
                  .tsquash("Inconsistent number of frames");
-    int nc = Parallel(&slsDetector::setTimer, {}, CYCLES_NUMBER, -1)
-                 .tsquash("Inconsistent number of cycles");
+    int nc = Parallel(&slsDetector::setTimer, {}, TRIGGER_NUMBER, -1)
+                 .tsquash("Inconsistent number of triggers");
     if (nf == 0 || nc == 0) {
-        throw RuntimeError("Number of frames or cycles is 0");
+        throw RuntimeError("Number of frames or triggers is 0");
     }
 
     int ns = 1;
@@ -3520,8 +3120,8 @@ int multiSlsDetector::acquire() {
 
     // verify receiver is idle
     if (receiver) {
-        if (getReceiverStatus() != IDLE) {
-            stopReceiver();
+        if (Parallel(&slsDetector::getReceiverStatus, {}).squash(ERROR) != IDLE) {
+            Parallel(&slsDetector::stopReceiver, {});
         }
     }
     setTotalProgress();
@@ -3535,16 +3135,20 @@ int multiSlsDetector::acquire() {
 
     // start receiver
     if (receiver) {
-        startReceiver();
+        Parallel(&slsDetector::startReceiver, {});
         // let processing thread listen to these packets
         sem_post(&sem_newRTAcquisition);
     }
 
-    startAndReadAll();
+    // start and read all
+    if (getDetectorTypeAsEnum() == EIGER) {
+        Parallel(&slsDetector::prepareAcquisition, {});
+    }
+    Parallel(&slsDetector::startAndReadAll, {});
 
     // stop receiver
     if (receiver) {
-        stopReceiver();
+        Parallel(&slsDetector::stopReceiver, {});
         if (dataReady != nullptr) {
             sem_wait(&sem_endRTAcquisition); // waits for receiver's
         }
@@ -3560,7 +3164,12 @@ int multiSlsDetector::acquire() {
     dataProcessingThread.join();
 
     if (acquisition_finished != nullptr) {
-        acquisition_finished(getCurrentProgress(), getRunStatus(),
+        // same status for all, else error
+        int status = static_cast<int>(ERROR);
+        auto t = Parallel(&slsDetector::getRunStatus, {});
+        if (t.equal())
+            status = t.front();
+        acquisition_finished(getCurrentProgress(), status,
                              acqFinished_p);
     }
 
@@ -3597,7 +3206,7 @@ void multiSlsDetector::processData() {
                     if (fgetc(stdin) == 'q') {
                         FILE_LOG(logINFO)
                             << "Caught the command to stop acquisition";
-                        stopAcquisition();
+                        Parallel(&slsDetector::stopAcquisition, {});
                     }
                 }
                 // get progress

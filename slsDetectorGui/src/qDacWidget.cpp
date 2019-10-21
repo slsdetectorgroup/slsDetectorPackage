@@ -59,7 +59,7 @@ void qDacWidget::SetDac() {
 	FILE_LOG(logINFO) << "Setting dac:" << lblDac->text().toAscii().data() << " : " << val;
 
 	try {
-		det->setDAC(val, index, 0, {detectorIndex});
+		det->setDAC(index, val, 0, {detectorIndex});
     } CATCH_DISPLAY (std::string("Could not set dac ") + std::to_string(index), "qDacWidget::SetDac")
 	
 	// update mV anyway

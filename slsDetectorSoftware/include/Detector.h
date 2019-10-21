@@ -52,13 +52,16 @@ class Detector {
     /** Gets shared memory ID */
     int getShmId() const;
 
+    /** package git branch */
+    std::string getPackageVersion() const;
+
+    int64_t getClientVersion() const;
+
     Result<int64_t> getFirmwareVersion(Positions pos = {}) const;
 
     Result<int64_t> getDetectorServerVersion(Positions pos = {}) const;
 
     Result<int64_t> getSerialNumber(Positions pos = {}) const;
-
-    int64_t getClientVersion() const;
 
     Result<int64_t> getReceiverVersion(Positions pos = {}) const;
 
@@ -197,7 +200,7 @@ class Detector {
 
     Result<int> getDAC(defs::dacIndex index, bool mV, Positions pos = {}) const;
 
-    void setDAC(int value, defs::dacIndex index, bool mV, Positions pos = {});
+    void setDAC(defs::dacIndex index, int value, bool mV, Positions pos = {});
 
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
@@ -213,32 +216,32 @@ class Detector {
      *                                                *
      * ************************************************/
     /**
-     * Blocking call, starts the receiver and detector.
-     * Increments file index if file write enabled.
-     * Acquired the number of frames set.
+     * Blocking call: Acquire the number of frames set
+     * - sets acquiring flag
+     * - starts the receiver listener
+     * - starts detector acquisition for number of frames set
+     * - monitors detector status from running to idle
+     * - stops the receiver listener
+     * - increments file index if file write enabled
+     * - resets acquiring flag
      */
     void acquire();
-
-    /** Non blocking
-     * Starts the reciever (if enabled) and then the detector
-     * You have to check detector status until it is idle before you call
-     * stopACquisition
-     *
-     */
-    void startAcquisition();
-
-    /**
-     * Stops detector acquisition and then receiver (if enabled)
-     * If no receiver enabled, you can skip this for normal acquisition (no
-     * abort)
-     */
-    void stopAcquisition();
-
-    /** TODO: initially was getting acq flag, if set, check if detctor idle, then set, else exception & abort
-     * Clears the acquiring flag. This has to be done manually
-     * after an acquisition was aborted.
-     */
+        
+    /** If acquisition aborted, use this to clear before starting next acquisition */
     void clearAcquiringFlag();
+
+    /** Non Blocking: Start receiver listener*/
+    void startReceiver();
+
+    /** Non Blocking: Stop receiver listener */
+    void stopReceiver();   
+
+    /** Non blocking: start detector acquisition 
+     * detector status changes from RUNNING to IDLE when finished */
+    void startDetector();
+
+    /** Non blocking: abort detector acquisition */
+    void stopDetector();
 
     Result<defs::runStatus> getDetectorStatus(Positions pos = {}) const;
 
@@ -337,8 +340,6 @@ class Detector {
 
     /** module_id is -1 for all detectors, ports for each module is calculated
      * (increments) */
-    // TODO if Parallel takes a vector, can send multiple vaues to set in
-    // slsdetector.cp
     void setDestinationUDPPort(int port, int module_id = -1);
 
     /** [Eiger right port][Jungfrau bottom half] */
@@ -397,7 +398,7 @@ class Detector {
 
     /**************************************************
      *                                                *
-     *    RECEIVER CONFIG                             *
+     *    Receiver Config                             *
      *                                                *
      * ************************************************/
 
@@ -416,8 +417,10 @@ class Detector {
 
     Result<int> getRxPort(Positions pos = {}) const;
 
-    /** Receiver TCP port (for client communication with Receiver)  */
-    void setRxPort(int value, Positions pos = {});
+    /** Receiver TCP port (for client communication with Receiver)  
+     *  module_id is -1 for all detectors, ports for each module is calculated
+     * (increments) */
+    void setRxPort(int port, int module_id = -1);
 
     Result<int> getRxFifoDepth(Positions pos = {}) const;
 
@@ -458,11 +461,11 @@ class Detector {
     /** locks receiver server to client IP */
     void setRxLock(bool value, Positions pos = {});
 
-    Result<std::string> getRxLastClientIP(Positions pos = {}) const;
+    Result<sls::IpAddr> getRxLastClientIP(Positions pos = {}) const;
 
     /**************************************************
      *                                                *
-     *    FILE                                        *
+     *    File                                        *
      *                                                *
      * ************************************************/
     Result<defs::fileFormat> getFileFormat(Positions pos = {}) const;
@@ -483,9 +486,9 @@ class Detector {
      */
     void setFileNamePrefix(const std::string &fname, Positions pos = {});
 
-    Result<int> getAcquisitionIndex(Positions pos = {}) const;
+    Result<int64_t> getAcquisitionIndex(Positions pos = {}) const;
 
-    void setAcquisitionIndex(int i, Positions pos = {});
+    void setAcquisitionIndex(int64_t i, Positions pos = {});
 
     Result<bool> getFileWrite(Positions pos = {}) const;
 
@@ -545,23 +548,23 @@ class Detector {
      */
     void setRxZmqPort(int port, int module_id = -1);
 
-    Result<std::string> getRxZmqIP(Positions pos = {}) const;
+    Result<IpAddr> getRxZmqIP(Positions pos = {}) const;
 
-    void setRxZmqIP(const std::string &ip, Positions pos = {});
+    void setRxZmqIP(const IpAddr ip, Positions pos = {});
 
     Result<int> getClientZmqPort(Positions pos = {}) const;
 
     /**
-     * Needed only when using the client call back to get reconstructed data
-     * from multi modules module_id is -1 for all detectors, ports for each
-     * module is calculated (increments) Restarts client zmq sockets oonly if it
+     * Modified only when using an intermediate process between receiver and gui/client.
+     * Module_id is -1 for all detectors, ports for each
+     * module is calculated (increments) Restarts client zmq sockets only if it
      * was already enabled
      */
     void setClientZmqPort(int port, int module_id = -1);
 
-    Result<std::string> getClientZmqIp(Positions pos = {}) const;
+    Result<IpAddr> getClientZmqIp(Positions pos = {}) const;
 
-    void setClientZmqIp(const std::string &ip, Positions pos = {});
+    void setClientZmqIp(const IpAddr ip, Positions pos = {});
 
     /**************************************************
      *                                                *
@@ -599,10 +602,10 @@ class Detector {
                             bool trimbits = true, Positions pos = {});
 
     /** [Eiger] */
-    Result<std::string> getSettingsDir(Positions pos = {}) const;
+    Result<std::string> getSettingsPath(Positions pos = {}) const;
 
     /** [Eiger] */
-    void setSettingsDir(const std::string &value, Positions pos = {});
+    void setSettingsPath(const std::string &value, Positions pos = {});
 
     /** [Eiger] */
     void loadTrimbits(const std::string &fname, Positions pos = {});
@@ -808,13 +811,15 @@ class Detector {
      * Can set only a single ROI at a time
      * @param module position index
      */
-    void setROI(defs::ROI value, int moduleId);
+    void setROI(defs::ROI value, int module_id);
 
-    /** [Gotthard] TODO: check with jiaguo if he needs any of these functions //
-     * TODO remove */
+    /** [Gotthard] Clear ROI */
+    void clearROI(Positions pos = {});
+
+    /** [Gotthard] */
     Result<ns> getExptimeLeft(Positions pos = {}) const;
 
-    /** [Gotthard] TODO remove */
+    /** [Gotthard]  */
     Result<ns> getPeriodLeft(Positions pos = {}) const;
 
     /** [Gotthard] */
@@ -905,12 +910,6 @@ class Detector {
     void setDBITPipeline(int value, Positions pos = {});
 
     /** [CTB] */
-    Result<int> getVrefVoltage(bool mV, Positions pos = {}) const;
-
-    /** [CTB] */
-    void setVrefVoltage(int value, bool mV, Positions pos = {});
-
-    /** [CTB] */
     Result<int> getVoltage(defs::dacIndex index, Positions pos = {}) const;
 
     /**
@@ -918,20 +917,17 @@ class Detector {
      * Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
      * V_POWER_D, V_POWER_IO, V_POWER_CHIP
      */
-    void setVoltage(int value, defs::dacIndex index, Positions pos = {});
+    void setVoltage(defs::dacIndex index, int value, Positions pos = {});
 
     /**
      * [CTB] mV
-     * Options: V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D, V_POWER_IO,
-     * V_POWER_CHIP
-     */
+     * Options: V_POWER_A, V_POWER_B, V_POWER_C, V_POWER_D, V_POWER_IO */
     Result<int> getMeasuredVoltage(defs::dacIndex index,
                                    Positions pos = {}) const;
 
     /**
      * [CTB] mA
-     * Options: I_POWER_A, I_POWER_B, I_POWER_C, I_POWER_D, I_POWER_IO
-     */
+     * Options: I_POWER_A, I_POWER_B, I_POWER_C, I_POWER_D, I_POWER_IO  */
     Result<int> getMeasuredCurrent(defs::dacIndex index,
                                    Positions pos = {}) const;
 
@@ -990,7 +986,7 @@ class Detector {
 
     /**************************************************
      *                                                *
-     *    PATTERN                                     *
+     *    Pattern                                     *
      *                                                *
      * ************************************************/
 
@@ -1011,6 +1007,9 @@ class Detector {
 
     /** [CTB] */
     void setPatternClockControl(uint64_t word, Positions pos = {});
+
+    /** [CTB] same as executing */
+    Result<uint64_t> getPatternWord(int addr, Positions pos = {});
 
     /** [CTB] Caution: If word is  -1  reads the addr (same as
      * executing the pattern) */
@@ -1178,7 +1177,7 @@ class Detector {
     void setDetectorLock(bool lock, Positions pos = {});
 
     /** Get last client IP saved on detector server */
-    Result<std::string> getLastClientIP(Positions pos = {}) const;
+    Result<sls::IpAddr> getLastClientIP(Positions pos = {}) const;
 
     /** Execute a command on the detector server console */
     void executeCommand(const std::string &value, Positions pos = {});

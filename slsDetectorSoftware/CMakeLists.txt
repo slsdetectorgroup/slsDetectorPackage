@@ -1,7 +1,7 @@
 set(SOURCES
     src/multiSlsDetector.cpp 
     src/multiSlsDetectorClient.cpp
-    src/slsDetectorUsers.cpp 
+#    src/slsDetectorUsers.cpp 
     src/slsDetectorCommand.cpp
     src/slsDetector.cpp 
     src/Detector.cpp
@@ -39,7 +39,7 @@ target_link_libraries(slsDetectorShared PUBLIC
 set(PUBLICHEADERS
     include/SharedMemory.h
     include/slsDetector.h
-    include/slsDetectorUsers.h
+#    include/slsDetectorUsers.h
     include/detectorData.h
     include/multiSlsDetector.h
     include/Detector.h

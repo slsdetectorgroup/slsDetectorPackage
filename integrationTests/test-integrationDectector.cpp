@@ -163,12 +163,12 @@ TEST_CASE("Set settings", "[.integration][.single]"){
 
 TEST_CASE("Timer functions", "[.integration][cli]") {
     // FRAME_NUMBER, /**< number of real time frames: total number of
-    // acquisitions is number or frames*number of cycles */ ACQUISITION_TIME,
+    // acquisitions is number or frames*number of triggers */ ACQUISITION_TIME,
     // /**< exposure time */ FRAME_PERIOD, /**< period between exposures */
     // DELAY_AFTER_TRIGGER, /**< delay between trigger and start of exposure or
     // readout (in triggered mode) */ GATES_NUMBER, /**< number of gates per
-    // frame (in gated mode) */ CYCLES_NUMBER, /**< number of cycles: total
-    // number of acquisitions is number or frames*number of cycles */
+    // frame (in gated mode) */ TRIGGER_NUMBER, /**< number of triggers: total
+    // number of acquisitions is number or frames*number of triggers */
     // ACTUAL_TIME, /**< Actual time of the detector's internal timer */
     // MEASUREMENT_TIME,  /**< Time of the measurement from the detector (fifo)
     // */
@@ -214,9 +214,9 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
         CHECK(d.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER) == gates);
     }
 
-    auto cycles = 2;
-    d.setTimer(slsDetectorDefs::timerIndex::CYCLES_NUMBER, cycles);
-    CHECK(d.setTimer(slsDetectorDefs::timerIndex::CYCLES_NUMBER) == cycles);
+    auto triggers = 2;
+    d.setTimer(slsDetectorDefs::timerIndex::TRIGGER_NUMBER, triggers);
+    CHECK(d.setTimer(slsDetectorDefs::timerIndex::TRIGGER_NUMBER) == triggers);
 
     if (test::type == dt::EIGER) {
         auto subtime = 200;

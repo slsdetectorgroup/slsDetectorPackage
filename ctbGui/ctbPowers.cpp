@@ -99,7 +99,7 @@ void ctbPower::setValue() {
   cout << "***************************Setting power " << dacsEntry->GetIntNumber() << " " << id << " " << 1 << endl;
  
   try {
-    myDet->setVoltage(dacsEntry->GetIntNumber(), static_cast<slsDetectorDefs::dacIndex>(id));
+    myDet->setVoltage(static_cast<slsDetectorDefs::dacIndex>(id), dacsEntry->GetIntNumber());
   } CATCH_DISPLAY ("Could not set power " + to_string(id) + ".", "ctbPower::setValue")
 
   getValue();

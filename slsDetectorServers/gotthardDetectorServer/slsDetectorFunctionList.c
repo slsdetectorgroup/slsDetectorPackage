@@ -421,7 +421,7 @@ void setupDetector() {
     setExtSignal(DEFAULT_TRIGGER_MODE);
     setTiming(DEFAULT_TIMING_MODE);
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
-	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
+	setTimer(TRIGGER_NUMBER, DEFAULT_NUM_CYCLES);
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
@@ -852,12 +852,12 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 	    }
 		break;
 
-	case CYCLES_NUMBER:
+	case TRIGGER_NUMBER:
 		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting Cycles: %lld\n", (long long int)val));
+			FILE_LOG(logINFO, ("Setting Triggers: %lld\n", (long long int)val));
 		}
 		retval = set64BitReg(val,  SET_TRAINS_LSB_REG, SET_TRAINS_MSB_REG);
-		FILE_LOG(logDEBUG1, ("\tGetting Cycles: %lld\n", (long long int)retval));
+		FILE_LOG(logDEBUG1, ("\tGetting Triggers: %lld\n", (long long int)retval));
 		break;
 
 	default:
@@ -905,9 +905,9 @@ int64_t getTimeLeft(enum timerIndex ind){
         }
         break;
 
-	case CYCLES_NUMBER:
+	case TRIGGER_NUMBER:
 		retval = get64BitReg(GET_TRAINS_LSB_REG, GET_TRAINS_MSB_REG);
-		FILE_LOG(logINFO, ("Getting number of cycles left: %lld\n", (long long int)retval));
+		FILE_LOG(logINFO, ("Getting number of triggers left: %lld\n", (long long int)retval));
 		break;
 
 	default:
@@ -1466,7 +1466,7 @@ int configureMAC() {
         // remember old parameters
         enum timingMode oldtiming = getTiming();
         uint64_t oldframes = setTimer(FRAME_NUMBER, -1);
-        uint64_t oldcycles = setTimer(CYCLES_NUMBER, -1);
+        uint64_t oldtriggers = setTimer(TRIGGER_NUMBER, -1);
         uint64_t oldPeriod = setTimer(FRAME_PERIOD, -1);
         uint64_t oldExptime = setTimer(ACQUISITION_TIME, -1);
 
@@ -1474,12 +1474,12 @@ int configureMAC() {
         FILE_LOG(logINFO, ("\tSetting basic parameters\n"
                 "\tTiming: auto\n"
                 "\tframes: 1\n"
-                "\tcycles: 1\n"
+                "\ttriggers: 1\n"
                 "\tperiod: 1s\n"
                 "\texptime: 900ms\n"));
         setTiming(AUTO_TIMING);
         setTimer(FRAME_NUMBER, 1);
-        setTimer(CYCLES_NUMBER, 1);
+        setTimer(TRIGGER_NUMBER, 1);
         setTimer(FRAME_PERIOD, 1e9); // important to keep this until we have to wait for acquisition to start
         setTimer(ACQUISITION_TIME, 900 * 1000);
 
@@ -1507,14 +1507,14 @@ int configureMAC() {
         FILE_LOG(logINFO, ("\tSetting previous parameters:\n"
                 "\tTiming: %d\n"
                 "\tframes: %lld\n"
-                "\tcycles: %lld\n"
+                "\ttriggers: %lld\n"
                 "\tperiod: %lld ns\n"
                 "\texptime:%lld ns\n",
-                (int)oldtiming, (long long int)oldframes, (long long int)oldcycles,
+                (int)oldtiming, (long long int)oldframes, (long long int)oldtriggers,
                 (long long int)oldPeriod, (long long int)oldExptime));
         setTiming(oldtiming);
         setTimer(FRAME_NUMBER, oldframes);
-        setTimer(CYCLES_NUMBER, oldcycles);
+        setTimer(TRIGGER_NUMBER, oldtriggers);
         setTimer(FRAME_PERIOD, oldPeriod);
         setTimer(ACQUISITION_TIME, oldExptime);
         FILE_LOG(logINFOBLUE, ("Done sending a frame at configuration\n"));
@@ -1566,7 +1566,7 @@ int startStateMachine(){
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
 	int wait_in_s = 	(setTimer(FRAME_NUMBER, -1) *
-						setTimer(CYCLES_NUMBER, -1) *
+						setTimer(TRIGGER_NUMBER, -1) *
 						(setTimer(FRAME_PERIOD, -1)/(1E9)));
 	FILE_LOG(logDEBUG1, ("going to wait for %d s\n", wait_in_s));
 	while(!virtual_stop && (wait_in_s >= 0)) {

@@ -22,11 +22,7 @@ void Detector::loadConfig(const std::string &fname) {
 }
 
 void Detector::loadParameters(const std::string &fname) {
-    pimpl->retrieveDetectorSetup(fname, 0);
-}
-
-void Detector::savePattern(const std::string &fname) {
-    pimpl->savePattern(fname);
+    pimpl->loadParameters(fname);
 }
 
 Result<std::string> Detector::getHostname(Positions pos) const {
@@ -38,6 +34,14 @@ void Detector::setHostname(const std::vector<std::string> &value) {
 }
 
 int Detector::getShmId() const { return pimpl->getMultiId(); }
+
+std::string Detector::getPackageVersion() const {
+    return pimpl->getPackageVersion();
+}
+
+int64_t Detector::getClientVersion() const {
+    return pimpl->getClientSoftwareVersion();
+}
 
 Result<int64_t> Detector::getFirmwareVersion(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getId, pos,
@@ -52,10 +56,6 @@ Result<int64_t> Detector::getDetectorServerVersion(Positions pos) const {
 Result<int64_t> Detector::getSerialNumber(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getId, pos,
                            defs::DETECTOR_SERIAL_NUMBER);
-}
-
-int64_t Detector::getClientVersion() const {
-    return pimpl->getClientSoftwareVersion();
 }
 
 Result<int64_t> Detector::getReceiverVersion(Positions pos) const {
@@ -117,11 +117,11 @@ void Detector::setNumberOfFrames(int64_t value) {
 }
 
 Result<int64_t> Detector::getNumberOfTriggers() const {
-    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::CYCLES_NUMBER, -1);
+    return pimpl->Parallel(&slsDetector::setTimer, {}, defs::TRIGGER_NUMBER, -1);
 }
 
 void Detector::setNumberOfTriggers(int64_t value) {
-    pimpl->Parallel(&slsDetector::setTimer, {}, defs::CYCLES_NUMBER, value);
+    pimpl->Parallel(&slsDetector::setTimer, {}, defs::TRIGGER_NUMBER, value);
 }
 
 Result<ns> Detector::getExptime(Positions pos) const {
@@ -157,7 +157,7 @@ Result<int64_t> Detector::getNumberOfFramesLeft(Positions pos) const {
 }
 
 Result<int64_t> Detector::getNumberOfTriggersLeft(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::CYCLES_NUMBER);
+    return pimpl->Parallel(&slsDetector::getTimeLeft, pos, defs::TRIGGER_NUMBER);
 }
 
 Result<ns> Detector::getDelayAfterTriggerLeft(Positions pos) const {
@@ -246,7 +246,7 @@ Result<int> Detector::getDAC(defs::dacIndex index, bool mV,
     return pimpl->Parallel(&slsDetector::setDAC, pos, -1, index, mV);
 }
 
-void Detector::setDAC(int value, defs::dacIndex index, bool mV, Positions pos) {
+void Detector::setDAC(defs::dacIndex index, int value, bool mV, Positions pos) {
     pimpl->Parallel(&slsDetector::setDAC, pos, value, index, mV);
 }
 
@@ -263,19 +263,26 @@ void Detector::setTimingMode(defs::timingMode value, Positions pos) {
 
 void Detector::acquire() { pimpl->acquire(); }
 
-void Detector::startAcquisition() {
-    if (getUseReceiverFlag().squash(true))
-        pimpl->Parallel(&slsDetector::startReceiver, {});
+void Detector::clearAcquiringFlag() { pimpl->setAcquiringFlag(0); }
+
+void Detector::startReceiver() {
+    pimpl->Parallel(&slsDetector::startReceiver, {});
+}
+
+void Detector::stopReceiver() {
+    pimpl->Parallel(&slsDetector::stopReceiver, {});
+}
+
+void Detector::startDetector() {
+    if (getDetectorType({}).squash() == defs::EIGER) {
+        pimpl->Parallel(&slsDetector::prepareAcquisition, {});
+    }
     pimpl->Parallel(&slsDetector::startAcquisition, {});
 }
 
-void Detector::stopAcquisition() {
+void Detector::stopDetector() {
     pimpl->Parallel(&slsDetector::stopAcquisition, {});
-    if (getUseReceiverFlag().squash(true))
-        pimpl->Parallel(&slsDetector::stopReceiver, {});
 }
-
-void Detector::clearAcquiringFlag() { pimpl->setAcquiringFlag(0); }
 
 Result<defs::runStatus> Detector::getDetectorStatus(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getRunStatus, pos);
@@ -497,8 +504,19 @@ Result<int> Detector::getRxPort(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverPort, pos);
 }
 
-void Detector::setRxPort(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setReceiverPort, pos, value);
+void Detector::setRxPort(int port, int module_id) {
+    if (module_id == -1) {
+        std::vector<int> port_list(size());
+        for (auto &it: port_list) {
+            it = port++;
+        }
+        for (int idet = 0; idet < size(); ++idet) {
+            pimpl->Parallel(&slsDetector::setReceiverPort, {idet},
+                            port_list[idet]);
+        }
+    } else {
+        pimpl->Parallel(&slsDetector::setReceiverPort, {module_id}, port);
+    }
 }
 
 Result<int> Detector::getRxFifoDepth(Positions pos) const {
@@ -559,7 +577,7 @@ void Detector::setRxLock(bool value, Positions pos) {
     pimpl->Parallel(&slsDetector::lockReceiver, pos, static_cast<int>(value));
 }
 
-Result<std::string> Detector::getRxLastClientIP(Positions pos) const {
+Result<sls::IpAddr> Detector::getRxLastClientIP(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverLastClientIP, pos);
 }
 
@@ -589,11 +607,11 @@ void Detector::setFileNamePrefix(const std::string &fname, Positions pos) {
     pimpl->Parallel(&slsDetector::setFileName, pos, fname);
 }
 
-Result<int> Detector::getAcquisitionIndex(Positions pos) const {
+Result<int64_t> Detector::getAcquisitionIndex(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFileIndex, pos);
 }
 
-void Detector::setAcquisitionIndex(int i, Positions pos) {
+void Detector::setAcquisitionIndex(int64_t i, Positions pos) {
     pimpl->Parallel(&slsDetector::setFileIndex, pos, i);
 }
 
@@ -675,11 +693,11 @@ void Detector::setRxZmqPort(int port, int module_id) {
     }
 }
 
-Result<std::string> Detector::getRxZmqIP(Positions pos) const {
+Result<IpAddr> Detector::getRxZmqIP(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverStreamingIP, pos);
 }
 
-void Detector::setRxZmqIP(const std::string &ip, Positions pos) {
+void Detector::setRxZmqIP(const IpAddr ip, Positions pos) {
     bool previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(false);
     pimpl->Parallel(&slsDetector::setReceiverStreamingIP, pos, ip);
     if (previouslyReceiverStreaming) {
@@ -705,11 +723,11 @@ void Detector::setClientZmqPort(int port, int module_id) {
     }
 }
 
-Result<std::string> Detector::getClientZmqIp(Positions pos) const {
+Result<IpAddr> Detector::getClientZmqIp(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getClientStreamingIP, pos);
 }
 
-void Detector::setClientZmqIp(const std::string &ip, Positions pos) {
+void Detector::setClientZmqIp(const IpAddr ip, Positions pos) {
     int previouslyClientStreaming = pimpl->enableDataStreamingToClient(-1);
     pimpl->Parallel(&slsDetector::setClientStreamingIP, pos, ip);
     if (previouslyClientStreaming != 0) {
@@ -757,11 +775,11 @@ void Detector::setThresholdEnergy(int threshold_ev,
                     settings, static_cast<int>(trimbits));
 }
 
-Result<std::string> Detector::getSettingsDir(Positions pos) const {
+Result<std::string> Detector::getSettingsPath(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getSettingsDir, pos);
 }
 
-void Detector::setSettingsDir(const std::string &value, Positions pos) {
+void Detector::setSettingsPath(const std::string &value, Positions pos) {
     pimpl->Parallel(&slsDetector::setSettingsDir, pos, value);
 }
 
@@ -882,7 +900,12 @@ void Detector::setRxPadDeactivatedMode(bool pad, Positions pos) {
 }
 
 Result<bool> Detector::getPartialReset(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setCounterBit, pos, -1);
+    auto res = pimpl->Parallel(&slsDetector::setCounterBit, pos, -1);
+    Result<bool> t(res.size());
+    for (unsigned int i = 0; i < res.size(); ++i) {
+        t[i] = !res[i];
+    }
+    return t;
 }
 
 void Detector::setPartialReset(bool value, Positions pos) {
@@ -943,7 +966,7 @@ Result<bool> Detector::getPowerChip(Positions pos) const {
 }
 
 void Detector::setPowerChip(bool on, Positions pos) {
-    if (on && pimpl->size() > 3) {
+    if ((pos.empty() || pos[0] == -1) && on && pimpl->size() > 3) {
         for (unsigned int i = 0; i != pimpl->size(); ++i) {
             pimpl->powerChip(static_cast<int>(on), i);
             usleep(1000 * 1000);
@@ -996,11 +1019,15 @@ Result<defs::ROI> Detector::getROI(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getROI, pos);
 }
 
-void Detector::setROI(defs::ROI value, int moduleId) {
-    if (moduleId < 0 && size() > 1) {
+void Detector::setROI(defs::ROI value, int module_id) {
+    if (module_id < 0 && size() > 1) {
         throw RuntimeError("Cannot set ROI for all modules simultaneously");
     }
-    pimpl->Parallel(&slsDetector::setROI, {moduleId}, value);
+    pimpl->Parallel(&slsDetector::setROI, {module_id}, value);
+}
+
+void Detector::clearROI(Positions pos) {
+    pimpl->Parallel(&slsDetector::clearROI, pos);
 }
 
 Result<ns> Detector::getExptimeLeft(Positions pos) const {
@@ -1136,14 +1163,6 @@ void Detector::setDBITPipeline(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setSpeed, pos, defs::DBIT_PIPELINE, value, 0);
 }
 
-Result<int> Detector::getVrefVoltage(bool mV, Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setDAC, pos, -1, defs::ADC_VPP, mV);
-}
-
-void Detector::setVrefVoltage(int value, bool mV, Positions pos) {
-    pimpl->Parallel(&slsDetector::setDAC, pos, value, defs::ADC_VPP, mV);
-}
-
 Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
     switch (index) {
     case defs::V_LIMIT:
@@ -1160,7 +1179,7 @@ Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
     return pimpl->Parallel(&slsDetector::setDAC, pos, -1, index, 1);
 }
 
-void Detector::setVoltage(int value, defs::dacIndex index, Positions pos) {
+void Detector::setVoltage(defs::dacIndex index, int value, Positions pos) {
     switch (index) {
     case defs::V_LIMIT:
     case defs::V_POWER_A:
@@ -1276,6 +1295,10 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
 
 // Pattern
 
+void Detector::savePattern(const std::string &fname) {
+    pimpl->savePattern(fname);
+}
+
 void Detector::setPattern(const std::string &fname, Positions pos) {
     pimpl->Parallel(&slsDetector::setPattern, pos, fname);
 }
@@ -1294,6 +1317,10 @@ Result<uint64_t> Detector::getPatternClockControl(Positions pos) const {
 
 void Detector::setPatternClockControl(uint64_t word, Positions pos) {
     pimpl->Parallel(&slsDetector::setPatternClockControl, pos, word);
+}
+
+Result<uint64_t> Detector::getPatternWord(int addr, Positions pos) {
+    return pimpl->Parallel(&slsDetector::setPatternWord, pos, addr, -1);
 }
 
 void Detector::setPatternWord(int addr, uint64_t word, Positions pos) {
@@ -1369,7 +1396,7 @@ Result<int> Detector::getDetectorMinMaxEnergyThreshold(const bool isEmax,
                                                        Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::getAdditionalJsonParameter, pos,
                                isEmax ? "emax" : "emin");
-    Result<int> intResult;
+    Result<int> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
             intResult[i] = stoi(res[i]);
@@ -1391,7 +1418,7 @@ void Detector::setDetectorMinMaxEnergyThreshold(const bool isEmax,
 Result<int> Detector::getFrameMode(Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::getAdditionalJsonParameter, pos,
                                "frameMode");
-    Result<int> intResult;
+    Result<int> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
             intResult[i] = defs::getFrameModeType(res[i]);
@@ -1411,7 +1438,7 @@ void Detector::setFrameMode(defs::frameModeType value, Positions pos) {
 Result<int> Detector::getDetectorMode(Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::getAdditionalJsonParameter, pos,
                                "detectorMode");
-    Result<int> intResult;
+    Result<int> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
             intResult[i] = defs::getDetectorModeType(res[i]);
@@ -1516,7 +1543,7 @@ void Detector::setDetectorLock(bool lock, Positions pos) {
     pimpl->Parallel(&slsDetector::lockServer, pos, static_cast<int>(lock));
 }
 
-Result<std::string> Detector::getLastClientIP(Positions pos) const {
+Result<sls::IpAddr> Detector::getLastClientIP(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getLastClientIP, pos);
 }
 

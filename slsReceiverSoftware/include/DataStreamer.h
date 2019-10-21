@@ -8,6 +8,7 @@
  */
 
 #include "ThreadObject.h"
+#include "network_utils.h"
 
 class GeneralData;
 class Fifo;
@@ -107,9 +108,9 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * (throws an exception if it couldnt create zmq sockets)
 	 * @param nunits pointer to number of theads/ units per detector
 	 * @param port streaming port start index
-	 * @param srcip streaming source ip
+	 * @param ip streaming source ip
 	 */
-	void CreateZmqSockets(int* nunits, uint32_t port, const char* srcip);
+	void CreateZmqSockets(int* nunits, uint32_t port, const  sls::IpAddr ip);
 
 	/**
 	 * Shuts down and deletes Zmq Sockets

@@ -127,7 +127,7 @@ where: \\
 \textit{v0} is the scan0 variable with the desired precision, if scan0 is enabled;\\
 \textit{v1} is the scan1 variable with the desired precision, if scan1 is enabled;\\
 \textit{p} is the position index, if different positions are configured;\\
-\textit{f} is the frame index of the first frame stored in the file, if many frames and cycles are configured;\\
+\textit{f} is the frame index of the first frame stored in the file, if many frames and triggers are configured;\\
 \textit{i} is the file index;\\
 \textit{ext} is the file extension e.g. \textit{.raw} for MYTHEN raw data, \textit{.dat} for MYTHEN processed data.
 
@@ -241,7 +241,7 @@ Figure~\ref{eq:acqflow} shows in which sequence the various scripts and loops ar
 
 
 If you prefere to handle the acquisition from your acquisition enviroment, simply leave al scripts and scans disabled and call the acquition from your acquisition enviroment. \\
-Only the frames and cycles loops are defined in firmware and guarantee a precise timing of the acquisition which cannot replaced by any other method (you can synchronize to your beamline by hardware connection of the IO signals as described in~\ref{sec:timing}).
+Only the frames and triggers loops are defined in firmware and guarantee a precise timing of the acquisition which cannot replaced by any other method (you can synchronize to your beamline by hardware connection of the IO signals as described in~\ref{sec:timing}).
 
 Hereafter a description of the meaning of the various loops:
 \begin{description}
@@ -259,11 +259,11 @@ Hereafter a description of the meaning of the various loops:
  The detector is moved in the angular positions specified by the positions command.\\
  The command for moving the detector should be defined as described in~\ref{sec:usersFunc}.\\
  All data acquired during a position loop will be merged together, unless the number of positions is set to 0. In this case single frames will be converted to angle without merging.\\
- Avoid using the position loop together with many frames/cycles.
+ Avoid using the position loop together with many frames/triggers.
 
-\item[Cycles loop] is executed in real time and defines e.g. the number of triggers that will be accepted. The total number of images will be given by frames times cycles.
+\item[Triggers loop] is executed in real time and defines e.g. the number of triggers that will be accepted. The total number of images will be given by frames times triggers.
 
-\item[Frames loop] is executed in real time and defines e.g. the images acquired per trigger. The total number of images will be given by frames times cycles.
+\item[Frames loop] is executed in real time and defines e.g. the images acquired per trigger. The total number of images will be given by frames times triggers.
 \end{description}
 
 Executing a script simply consists in a system call with the arguments specified below. The various scripts are executed only if they are enabled and different than \textit{none}. \\
@@ -332,11 +332,11 @@ In the following is a list of the main parameters involved in the acquisition ti
 \item[Period] is the period of the images acquired. If it is shorter than the exposure time plus readout time, it will be ignored.
 \item[Delay after trigger] can be set as a delay between the trigger signal and the start of the detection time. 
 \item[Number of gates] is used only in \textit{gating} mode and is the number of times that the gate is toggled before the detector is read out. Useful for stroboscopic measurements with gate period shorter than the minim acquisition period of the detector, otherwise can be left to 1.
-\item[Number of frames] is the number of images to be acquired per cycle. Frames and cycles have the same meaning except in trigger mode, when frames means the number of images per trigger. The total number of images is frames time cycles.
-\item[Number of cycles] is the number of times that the frames are acquired. Frames and cycles have the same meaning except in trigger mode, when cycles means the number of triggers that will be accepted. The total number of images is frames time cycles.
+\item[Number of frames] is the number of images to be acquired per cycle. Frames and triggers have the same meaning except in trigger mode, when frames means the number of images per trigger. The total number of images is frames time triggers.
+\item[Number of triggers] is the number of times that the frames are acquired. Frames and triggers have the same meaning except in trigger mode, when triggers means the number of triggers that will be accepted. The total number of images is frames time triggers.
 \item[Number of probes] is used in stoboscopic measurements when the period is longer than the minimum acquisition period, but shorter than the frame rate.\\
 In this case the data can be summed in firmware. \\
-Currently it is implemented for Mythen only. If probes is set to 0, works normallyreturning an image for each readout, otherwise set number of cycles to 1. The maximum number of probes that can be set is 3. The detector will return a number of image equal to the number of probes, where all frames are going to be accumulated. The total number of readouts is number of frames time probes and for  probes=1 the detector will return one image where all frames have been summed, for  probes=2 two images where every second frame has been summed (each image accumulates the number of frames), for probes=3 three images where every third image has been summed (each image accumulates the number of frames).\\
+Currently it is implemented for Mythen only. If probes is set to 0, works normallyreturning an image for each readout, otherwise set number of triggers to 1. The maximum number of probes that can be set is 3. The detector will return a number of image equal to the number of probes, where all frames are going to be accumulated. The total number of readouts is number of frames time probes and for  probes=1 the detector will return one image where all frames have been summed, for  probes=2 two images where every second frame has been summed (each image accumulates the number of frames), for probes=3 three images where every third image has been summed (each image accumulates the number of frames).\\
 The returned images will always have 32~bit dynamic range, while the dynamic range if the detector defines the bit depth of the counters in rder to limit the readout time, if necessary.\\
 The probes counter waorks also in trigger and gating modes.
 \end{description}
@@ -349,14 +349,14 @@ The probes counter waorks also in trigger and gating modes.
 \begin{center}
 \includegraphics[width=\textwidth]{images/normal_acquisition.eps}
 \end{center}
-\caption{Auto timing: the detection time is defined by the exposure time and the period by period (if longer than exposure time plus readout time). The total number of images is frames (in the example 3) times cycles (in the example 2), and in this case there is no difference between the acquisition of the two.}\label{fig:autotiming}
+\caption{Auto timing: the detection time is defined by the exposure time and the period by period (if longer than exposure time plus readout time). The total number of images is frames (in the example 3) times triggers (in the example 2), and in this case there is no difference between the acquisition of the two.}\label{fig:autotiming}
 \end{figure}
 
 \begin{figure}
 \begin{center}
 \includegraphics[width=\textwidth]{images/gated_acquisition.eps}
 \end{center}
-\caption{Gating mode: the detector acquires for a number of gates define by the  user (in this case 4) before being read out, independently on the timing of the gates. The detector remains insensitive during the readout time and then starts being active again. External gates given during the readout time are ignored. The total number of images is frames (in the example 3) times cycles (in the example 2), and in this case there is no difference between the acquisition of the two. The polarity of the external gate signal can be defined by the user through the \textit{external signal flag} (in the example active high).}\label{fig:gating}
+\caption{Gating mode: the detector acquires for a number of gates define by the  user (in this case 4) before being read out, independently on the timing of the gates. The detector remains insensitive during the readout time and then starts being active again. External gates given during the readout time are ignored. The total number of images is frames (in the example 3) times triggers (in the example 2), and in this case there is no difference between the acquisition of the two. The polarity of the external gate signal can be defined by the user through the \textit{external signal flag} (in the example active high).}\label{fig:gating}
 \end{figure}
 
 
@@ -365,7 +365,7 @@ The probes counter waorks also in trigger and gating modes.
 \begin{center}
 \includegraphics[width=\textwidth]{images/trigger_acquisition.eps}
 \end{center}
-\caption{Trigger mode: the external trigger signal defines the start of the beginning of the acquisition, which starts after the delay set by the user. For each trigger, the number of frames is acquired (in the example 3) and all trigger signals ignored. The number of trigger accepted is given by the number of cycles (in the example 2). The polarity of the external trigger signal can be defined by the user through the \textit{external signal flag} (in the example rising edge).}\label{fig:trig}
+\caption{Trigger mode: the external trigger signal defines the start of the beginning of the acquisition, which starts after the delay set by the user. For each trigger, the number of frames is acquired (in the example 3) and all trigger signals ignored. The number of trigger accepted is given by the number of triggers (in the example 2). The polarity of the external trigger signal can be defined by the user through the \textit{external signal flag} (in the example rising edge).}\label{fig:trig}
 \end{figure}
 
 
@@ -373,7 +373,7 @@ The probes counter waorks also in trigger and gating modes.
 \begin{center}
 \includegraphics[width=\textwidth]{images/ro_trigger_acquisition.eps}
 \end{center}
-\caption{Read Out Trigger mode: the external trigger signal defines the beginning of the readout. The exposure time works as a time out for the waiting time for the trigger signal. The number of trigger accepted is given by the number of cycles (in the example 3) and it does not make sense to program more than one frame. The polarity of the external trigger signal can be defined by the user through the \textit{external signal flag} (in the example rising edge).}\label{fig:trig}
+\caption{Read Out Trigger mode: the external trigger signal defines the beginning of the readout. The exposure time works as a time out for the waiting time for the trigger signal. The number of trigger accepted is given by the number of triggers (in the example 3) and it does not make sense to program more than one frame. The polarity of the external trigger signal can be defined by the user through the \textit{external signal flag} (in the example rising edge).}\label{fig:trig}
 \end{figure}
 
 

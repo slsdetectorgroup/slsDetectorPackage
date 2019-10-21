@@ -116,7 +116,7 @@ void ctbDac::setValue() {
   cout << "setting dac! "<< id << " value " << dacsEntry->GetIntNumber() << " units " << dacsUnit->IsOn() << endl;
 
   try {
-    myDet->setDAC(dacsEntry->GetIntNumber(), static_cast<slsDetectorDefs::dacIndex>(id), dacsUnit->IsOn()); 
+    myDet->setDAC(static_cast<slsDetectorDefs::dacIndex>(id), dacsEntry->GetIntNumber(), dacsUnit->IsOn()); 
   } CATCH_DISPLAY ("Could not set dac " + to_string(id) + ".", "ctbDac::setValue")
 
   getValue();
@@ -128,7 +128,7 @@ void ctbDac::setOn(Bool_t b) {
     setValue();
   } else {
     try {
-      myDet->setDAC(-100, static_cast<slsDetectorDefs::dacIndex>(id), false);
+      myDet->setDAC(static_cast<slsDetectorDefs::dacIndex>(id), -100, false);
     } CATCH_DISPLAY ("Could not power off dac " + to_string(id) + ".", "ctbDac::setOn")
   }
   getValue();

@@ -5,8 +5,6 @@ pybind11_add_module(_sls_detector
     src/experimental.cpp
 )
 
-
-
 target_link_libraries(_sls_detector PUBLIC 
                         slsDetectorShared
                         slsReceiverShared
@@ -26,12 +24,12 @@ set( PYTHON_FILES
     dacs.py
     decorators.py
     detector_property.py
-    detector.py
-    eiger.py
+    # detector.py
+    # eiger.py
     errors.py
     experimental.py
-    jungfrau_ctb.py
-    jungfrau.py
+    # jungfrau_ctb.py
+    # jungfrau.py
     registers.py
     utils.py
 

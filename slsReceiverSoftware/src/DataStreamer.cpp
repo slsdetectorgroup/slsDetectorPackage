@@ -140,11 +140,11 @@ void DataStreamer::SetFlippedDataX(int fd) {
 	flippedDataX = fd;
 }
 
-void DataStreamer::CreateZmqSockets(int* nunits, uint32_t port, const char* srcip) {
+void DataStreamer::CreateZmqSockets(int* nunits, uint32_t port, const sls::IpAddr ip) {
 	uint32_t portnum = port + index;
-
+	std::string sip = ip.str();
 	try {
-		zmqSocket = new ZmqSocket(portnum, (strlen(srcip)?srcip:nullptr));
+		zmqSocket = new ZmqSocket(portnum, (ip != 0? sip.c_str(): nullptr));
 	} catch (...) {
 		FILE_LOG(logERROR) << "Could not create Zmq socket on port " << portnum << " for Streamer " << index;
 		throw;

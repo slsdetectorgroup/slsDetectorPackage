@@ -111,7 +111,7 @@
  "delay"; // sets/gets delay after trigger in s
  "gates"; // sets/gets number of gates per frame in gated mode
  "frames"; // sets/gets number of frames
- "cycles"; // sets/gets number of cycles (use in trigger mode)
+ "triggers"; // sets/gets number of triggers (use in trigger mode)
  "probes"; // sets/gets number of probes (advanced!)
  "measurements"; // sets/gets number of non-real time measurements
   /* read only timers */
@@ -120,7 +120,7 @@
  "delayl"; // gets delay left
  "gatesl"; // gets number of gates left
  "framesl"; // gets number of frames left
- "cyclesl"; // gets number of cycles left
+ "triggersl"; // gets number of triggers left
  "now"; // gets time stamp from the dteector
  "timestamp"; // gets time stamp for the frames (fifo-style)
  "framescaught";// gets the entire frames caught by receiver

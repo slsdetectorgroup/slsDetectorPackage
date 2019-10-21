@@ -340,12 +340,12 @@ public:
 	int64_t setNumberOfFrames(int64_t t = -1, int detPos = -1);
 
 	/**
-	 * Set/get number of cycles
-	 * @param t number of cycles (-1 gets)
+	 * Set/get number of triggers
+	 * @param t number of triggers (-1 gets)
 	 * @param detPos -1 for all detectors in  list or specific detector position
-	 * @returns number of cycles
+	 * @returns number of triggers
 	 */
-	int64_t setNumberOfCycles(int64_t t = -1, int detPos = -1);
+	int64_t setNumberOfTriggers(int64_t t = -1, int detPos = -1);
 
 	/**
 	 * Set/get number of additional storage cells  (Jungfrau)

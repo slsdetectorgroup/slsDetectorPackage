@@ -14,6 +14,7 @@
 #include "Listener.h"
 #include "ZmqSocket.h" //just for the zmq port define
 #include "file_utils.h"
+#include "ToString.h"
 
 #include <cerrno>  //eperm
 #include <cstdlib> //system
@@ -111,7 +112,7 @@ void slsReceiverImplementation::InitializeMembers() {
     streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
     dataStreamEnable = false;
     streamingPort = 0;
-    memset(streamingSrcIP, 0, sizeof(streamingSrcIP));
+    streamingSrcIP = 0u;
     memset(additionalJsonHeader, 0, sizeof(additionalJsonHeader));
 
     //** class objects ***
@@ -410,9 +411,9 @@ uint32_t slsReceiverImplementation::getStreamingPort() const {
     return streamingPort;
 }
 
-std::string slsReceiverImplementation::getStreamingSourceIP() const {
+sls::IpAddr slsReceiverImplementation::getStreamingSourceIP() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return std::string(streamingSrcIP);
+    return streamingSrcIP;
 }
 
 std::string slsReceiverImplementation::getAdditionalJsonHeader() const {
@@ -560,7 +561,7 @@ int slsReceiverImplementation::setReadoutMode(const readoutMode f) {
             return FAIL;
     }
 
-    FILE_LOG(logINFO) << "Readout Mode: " << getReadoutModeType(f);
+    FILE_LOG(logINFO) << "Readout Mode: " << sls::ToString(f);
     FILE_LOG(logINFO) << "Packets per Frame: "
                           << (generalData->packetsPerFrame);
     return OK;
@@ -581,7 +582,7 @@ void slsReceiverImplementation::setFileFormat(const fileFormat f) {
     for (const auto &it : dataProcessor)
         it->SetFileFormat(f);
 
-    FILE_LOG(logINFO) << "File Format: " << getFileFormatType(fileFormatType);
+    FILE_LOG(logINFO) << "File Format: " << sls::ToString(fileFormatType);
 }
 
 void slsReceiverImplementation::setFileName(const char c[]) {
@@ -624,7 +625,7 @@ void slsReceiverImplementation::setFrameDiscardPolicy(
         frameDiscardMode = i;
 
     FILE_LOG(logINFO) << "Frame Discard Policy: "
-                      << getFrameDiscardPolicyType(frameDiscardMode);
+                      << sls::ToString(frameDiscardMode);
 }
 
 void slsReceiverImplementation::setFramePaddingEnable(const bool i) {
@@ -924,9 +925,9 @@ void slsReceiverImplementation::setStreamingPort(const uint32_t i) {
     FILE_LOG(logINFO) << "Streaming Port: " << streamingPort;
 }
 
-void slsReceiverImplementation::setStreamingSourceIP(const char c[]) {
+void slsReceiverImplementation::setStreamingSourceIP(const sls::IpAddr ip) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    strcpy(streamingSrcIP, c);
+    streamingSrcIP = ip;
     FILE_LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 
@@ -1122,7 +1123,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
     case MOENCH:
-        FILE_LOG(logINFO) << " ***** " << detectorTypeToString(d)
+        FILE_LOG(logINFO) << " ***** " << sls::ToString(d)
                           << " Receiver *****";
         break;
     default:
@@ -1196,7 +1197,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
         it->SetGeneralData(generalData);
     SetThreadPriorities();
 
-    FILE_LOG(logDEBUG) << " Detector type set to " << detectorTypeToString(d);
+    FILE_LOG(logDEBUG) << " Detector type set to " << sls::ToString(d);
     return OK;
 }
 
@@ -1275,7 +1276,7 @@ int slsReceiverImplementation::startReceiver(char *c) {
     StartRunning();
 
     FILE_LOG(logINFO) << "Receiver Started";
-    FILE_LOG(logINFO) << "Status: " << runStatusType(status);
+    FILE_LOG(logINFO) << "Status: " << sls::ToString(status);
     return OK;
 }
 
@@ -1326,7 +1327,7 @@ void slsReceiverImplementation::stopReceiver() {
     }
 
     status = RUN_FINISHED;
-    FILE_LOG(logINFO) << "Status: " << runStatusType(status);
+    FILE_LOG(logINFO) << "Status: " << sls::ToString(status);
 
     { // statistics
         uint64_t tot = 0;
@@ -1368,7 +1369,7 @@ void slsReceiverImplementation::stopReceiver() {
     status = IDLE;
 
     FILE_LOG(logINFO) << "Receiver Stopped";
-    FILE_LOG(logINFO) << "Status: " << runStatusType(status);
+    FILE_LOG(logINFO) << "Status: " << sls::ToString(status);
 }
 
 void slsReceiverImplementation::startReadout() {

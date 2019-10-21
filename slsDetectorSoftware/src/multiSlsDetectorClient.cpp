@@ -30,7 +30,7 @@ void multiSlsDetectorClient::runCommand() {
         action_ = slsDetectorDefs::HELP_ACTION;
     bool verify = true;
     bool update = true;
-    if (action_ == slsDetectorDefs::PUT_ACTION && parser.n_arguments() == 0) {
+    if (action_ == slsDetectorDefs::PUT_ACTION && parser.command().empty()) {
         os << "Wrong usage - should be: " << parser.executable()
            << "[id-][pos:]channel arg" << std::endl;
         os << std::endl;
@@ -77,8 +77,9 @@ void multiSlsDetectorClient::runCommand() {
             return;
         }
     }
+
     if (parser.detector_id() >= static_cast<int>(detPtr->size())) {
-        os << "position is out of bounds.\n";
+        os << "position " << parser.detector_id() << " is out of bounds (max " << detPtr->size() << ").\n";
         return;
     }
 

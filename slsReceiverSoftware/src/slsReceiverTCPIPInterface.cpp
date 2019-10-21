@@ -14,6 +14,7 @@
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
 #include "versionAPI.h"
+#include "ToString.h"
 
 #include <array>
 #include <cstdlib>
@@ -318,7 +319,7 @@ int slsReceiverTCPIPInterface::lock_receiver(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::get_last_client_ip(Interface &socket) {
-    return socket.sendResult(server->getLastClient().arr());
+    return socket.sendResult(server->getLastClient());
 }
 
 int slsReceiverTCPIPInterface::set_port(Interface &socket) {
@@ -327,7 +328,7 @@ int slsReceiverTCPIPInterface::set_port(Interface &socket) {
         throw RuntimeError("Port Number: " + std::to_string(p_number) +
                            " is too low (<1024)");
 
-    FILE_LOG(logINFO) << "set port to " << p_number << std::endl;
+    FILE_LOG(logINFO) << "TCP port set to " << p_number << std::endl;
     auto new_server = sls::make_unique<sls::ServerSocket>(p_number);
     new_server->setLockedBy(server->getLockedBy());
     new_server->setLastClient(server->getThisClient());
@@ -347,11 +348,12 @@ int slsReceiverTCPIPInterface::update_client(Interface &socket) {
 int slsReceiverTCPIPInterface::send_update(Interface &socket) {
     int n = 0;
     int i32 = -1;
+    int64_t i64 = -1;
     char cstring[MAX_STR_LENGTH]{};
 
-    char ip[INET_ADDRSTRLEN]{};
-    sls::strcpy_safe(ip, server->getLastClient().str().c_str());
-    n += socket.Send(ip, sizeof(ip));
+    sls::IpAddr ip = 0u;
+    ip = server->getLastClient();
+    n += socket.Send(&ip, sizeof(ip));
 
     // filepath
     sls::strcpy_safe(cstring, receiver->getFilePath().c_str());
@@ -362,8 +364,8 @@ int slsReceiverTCPIPInterface::send_update(Interface &socket) {
     n += socket.Send(cstring, sizeof(cstring));
 
     // index
-    i32 = receiver->getFileIndex();
-    n += socket.Send(&i32, sizeof(i32));
+    i64 = receiver->getFileIndex();
+    n += socket.Send(&i64, sizeof(i64));
 
     // file format
     i32 = (int)receiver->getFileFormat();
@@ -406,8 +408,8 @@ int slsReceiverTCPIPInterface::send_update(Interface &socket) {
     n += socket.Send(&i32, sizeof(i32));
 
     // streaming source ip
-    sls::strcpy_safe(cstring, receiver->getStreamingSourceIP().c_str());
-    n += socket.Send(cstring, sizeof(cstring));
+    ip = receiver->getStreamingSourceIP();
+    n += socket.Send(&ip, sizeof(ip));
 
     // additional json header
     sls::strcpy_safe(cstring, receiver->getAdditionalJsonHeader().c_str());
@@ -542,7 +544,7 @@ int slsReceiverTCPIPInterface::set_timer(Interface &socket) {
             ret = impl()->setAcquisitionPeriod(value);
             break;
         case FRAME_NUMBER:
-        case CYCLES_NUMBER:
+        case TRIGGER_NUMBER:
         case STORAGE_CELL_NUMBER:
             impl()->setNumberOfFrames(value);
             break;
@@ -583,7 +585,7 @@ int slsReceiverTCPIPInterface::set_timer(Interface &socket) {
         retval = impl()->getAcquisitionPeriod();
         break;
     case FRAME_NUMBER:
-    case CYCLES_NUMBER:
+    case TRIGGER_NUMBER:
     case STORAGE_CELL_NUMBER:
         retval = impl()->getNumberOfFrames();
         break;
@@ -669,16 +671,12 @@ int slsReceiverTCPIPInterface::set_streaming_frequency(Interface &socket) {
 
 int slsReceiverTCPIPInterface::get_status(Interface &socket) {
     auto retval = impl()->getStatus();
-    FILE_LOG(logDEBUG1) << "Status:" << runStatusType(retval);
+    FILE_LOG(logDEBUG1) << "Status:" << sls::ToString(retval);
     return socket.sendResult(retval);
 }
 
 int slsReceiverTCPIPInterface::start_receiver(Interface &socket) {
-    runStatus status = impl()->getStatus();
-    if (status != IDLE) {
-        throw RuntimeError("Cannot start Receiver as it is: " +
-                           runStatusType(status));
-    } else {
+    if (impl()->getStatus() == IDLE) {
         FILE_LOG(logDEBUG1) << "Starting Receiver";
         ret = impl()->startReceiver(mess);
         if (ret == FAIL) {
@@ -689,14 +687,14 @@ int slsReceiverTCPIPInterface::start_receiver(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::stop_receiver(Interface &socket) {
-    if (impl()->getStatus() != IDLE) {
+    if (impl()->getStatus() == RUNNING) {
         FILE_LOG(logDEBUG1) << "Stopping Receiver";
         impl()->stopReceiver();
     }
     auto s = impl()->getStatus();
     if (s != IDLE)
         throw RuntimeError("Could not stop receiver. It as it is: " +
-                           runStatusType(s));
+                           sls::ToString(s));
 
     return socket.Send(OK);
 }
@@ -740,13 +738,13 @@ int slsReceiverTCPIPInterface::set_file_name(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::set_file_index(Interface &socket) {
-    auto index = socket.Receive<int>();
+    auto index = socket.Receive<int64_t>();
     if (index >= 0) {
         VerifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting file index: " << index;
         impl()->setFileIndex(index);
     }
-    int retval = impl()->getFileIndex();
+    int64_t retval = impl()->getFileIndex();
     validate(index, retval, "set file index", DEC);
     FILE_LOG(logDEBUG1) << "file index:" << retval;
     return socket.sendResult(retval);
@@ -956,15 +954,19 @@ int slsReceiverTCPIPInterface::set_streaming_port(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::set_streaming_source_ip(Interface &socket) {
-    char arg[MAX_STR_LENGTH]{};
-    char retval[MAX_STR_LENGTH]{};
+    sls::IpAddr arg = 0u;
     socket.Receive(arg);
     VerifyIdle(socket);
     FILE_LOG(logDEBUG1) << "Setting streaming source ip:" << arg;
     impl()->setStreamingSourceIP(arg);
-    sls::strcpy_safe(retval, impl()->getStreamingSourceIP().c_str());
-    FILE_LOG(logDEBUG1) << "streaming source ip:" << retval;
-    return socket.sendResult(retval);
+    sls::IpAddr retval = impl()->getStreamingSourceIP();
+    if (retval != arg) {
+        std::ostringstream os;
+        os << "Could not set streaming ip. Set " << arg
+           << ", but read " << retval << '\n';
+        throw RuntimeError(os.str());
+    }
+    return socket.Send(OK);
 }
 
 int slsReceiverTCPIPInterface::set_silent_mode(Interface &socket) {

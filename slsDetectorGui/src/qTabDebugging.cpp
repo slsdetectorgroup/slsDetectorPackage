@@ -1,6 +1,8 @@
 #include "qTabDebugging.h"
 #include "qDefs.h"
 
+#include "ToString.h"
+
 #include <QDesktopWidget>
 #include <QGridLayout>
 #include <QTreeWidget>
@@ -65,7 +67,7 @@ void qTabDebugging::GetDetectorStatus() {
     FILE_LOG(logDEBUG) << "Getting Status";
 
 	try {
-        std::string status = slsDetectorDefs::runStatusType(det->getDetectorStatus({comboDetector->currentIndex()})[0]);
+        std::string status = sls::ToString(det->getDetectorStatus({comboDetector->currentIndex()})[0]);
         lblStatus->setText(QString(status.c_str()).toUpper());
     } CATCH_DISPLAY ("Could not get detector status.", "qTabDebugging::GetDetectorStatus")
 }
@@ -88,7 +90,7 @@ void qTabDebugging::GetInfo() {
     //to make sure the size is constant
     lblDetectorFirmware->setFixedWidth(100);
     layout->addWidget(dispFrame, 0, 1);
-    QString detName = QString(slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()).c_str());
+    QString detName = QString(sls::ToString(det->getDetectorType().squash()).c_str());
 
     switch (det->getDetectorType().squash()) {
 

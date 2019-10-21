@@ -262,6 +262,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int getMultiId() const { return multiId; } // part of multi also
 
     /**
+     * Get package version (git branch)
+     * @returns package version
+     */
+    std::string getPackageVersion() const;
+    
+    /**
      * Get Client Software version
      * @returns client software version
      */
@@ -454,13 +460,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int lockServer(int p = -1, int detPos = -1); //
 
     /**
-     * Get last client IP saved on detector server
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns last client IP saved on detector server
-     */
-    std::string getLastClientIP(int detPos = -1); //
-
-    /**
      * Exit detector server
      * @param detPos -1 for all detectors in  list or specific detector position
      */
@@ -554,31 +553,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void saveSettingsFile(const std::string &fname, int detPos = -1); //
 
     /**
-     * Get Detector run status
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns status
-     */
-    runStatus getRunStatus(int detPos = -1); //
-
-    /**
-     * Start detector acquisition (Non blocking)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void startAcquisition(int detPos = -1); //
-
-    /**
-     * Stop detector acquisition
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void stopAcquisition(int detPos = -1); //
-
-    /**
-     * Give an internal software trigger to the detector (Eiger only)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void sendSoftwareTrigger(int detPos = -1); //
-
-    /**
      * Configures in detector the destination for UDP packets
      * @param detPos -1 for all detectors in  list or specific detector position
      */
@@ -669,12 +643,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int64_t setNumberOfFrames(int64_t t = -1, int detPos = -1); //
 
     /**
-     * Set/get number of cycles
-     * @param t number of cycles (-1 gets)
+     * Set/get number of triggers
+     * @param t number of triggers (-1 gets)
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns number of cycles
+     * @returns number of triggers
      */
-    int64_t setNumberOfCycles(int64_t t = -1, int detPos = -1); //
+    int64_t setNumberOfTriggers(int64_t t = -1, int detPos = -1); //
 
     /**
      * Set/get number of additional storage cells  (Jungfrau)
@@ -929,45 +903,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int getReceiverStreamingPort(int detPos = -1); //
 
-    /**
-     * (advanced users)
-     * Set/Get client streaming in ZMQ IP and restarts client sockets
-     * @param i sets, empty string gets
-     * By default, it is the IP of receiver hostname
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void setClientDataStreamingInIP(const std::string &ip = "",
-                                    int detPos = -1); //
-
-    /**
-     * Returns the client zmq ip
-     * If detPos is -1(multi module), ip returns concatenation of all client
-     * streaming ip
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns the client zmq ip
-     */
-    std::string getClientStreamingIP(int detPos = -1); //
-
-    /**
-     * (advanced users)
-     * Set/Get receiver streaming out ZMQ IP and restarts receiver sockets
-     * @param i sets, empty string gets
-     * By default, it is the IP of receiver hostname
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void setReceiverDataStreamingOutIP(const std::string &ip = "",
-                                       int detPos = -1); //
-
-    /**
-     * Returns the receiver zmq ip
-     * If detPos is -1(multi module), ip returns concatenation of all receiver
-     * streaming ip
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns the receiver zmq ip
-     */
-    std::string getReceiverStreamingIP(int detPos = -1); //
-
-    /**
+     /**
      * Sets the transmission delay for left, right or entire frame
      * (Eiger, Jungfrau(only entire frame))
      * @param index type of delay
@@ -1436,13 +1372,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     int lockReceiver(int lock = -1, int detPos = -1); //
 
     /**
-     * Returns the IP of the last client connecting to the receiver
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns IP of last client connecting to receiver
-     */
-    std::string getReceiverLastClientIP(int detPos = -1); //
-
-    /**
      * Turns off the receiver server!
      * @param detPos -1 for all detectors in  list or specific detector position
      */
@@ -1541,7 +1470,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns file index
      */
-    int setFileIndex(int i, int detPos = -1); //
+    int64_t setFileIndex(int64_t i, int detPos = -1); //
 
     /**
      * Get File index
@@ -1549,26 +1478,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * position
      * @returns file index
      */
-    int getFileIndex(int detPos = -1) const; //
-
-    /**
-     * Receiver starts listening to packets
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void startReceiver(int detPos = -1); //
-
-    /**
-     * Stops the listening mode of receiver
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void stopReceiver(int detPos = -1); //
-
-    /**
-     * Gets the status of the listening mode of receiver
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns status
-     */
-    runStatus getReceiverStatus(int detPos = -1); //
+    int64_t getFileIndex(int detPos = -1) const; //
 
     /**
      * Gets the number of frames caught by receiver
@@ -1820,21 +1730,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     /**
      * Loads the detector setup from file
      * @param fname file to read from
-     * @param level if 2 reads also reads trimbits, angular conversion
-     * coefficients etc. from files with default extensions as generated by
-     * dumpDetectorSetup
-     * @returns OK or FAIL
      */
-    int retrieveDetectorSetup(const std::string &fname, int level = 0);
-
-    /**
-     * Saves the detector setup to file
-     * @param fname file to write to
-     * @param level if 2 reads also trimbits, flat field, angular correction
-     * etc. and writes them to files with automatically added extension
-     * @returns OK or FAIL
-     */
-    int dumpDetectorSetup(const std::string &fname, int level = 0);
+    void loadParameters(const std::string &fname);
 
     /**
      * register callback for accessing acquisition final data
@@ -1917,12 +1814,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     void updateUserdetails();
 
     /**
-     * Prepares detector for acquisition (Eiger)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void prepareAcquisition(int detPos = -1); //
-
-    /**
      * Check if acquiring flag is set, set error if set
      * @returns FAIL if not ready, OK if ready
      */
@@ -1934,14 +1825,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @returns result
      */
     std::string exec(const char *cmd);
-
-    /**
-     * Appends detectors to the end of the list in shared memory
-     * Connects to them
-     * @param name concatenated hostname of the sls detectors to be appended to
-     * the list
-     */
-    void addMultipleDetectors(const char *name); //
 
     /**
      * Add sls detector
@@ -1960,7 +1843,7 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns the file index
      */
-    int incrementFileIndex(int detPos = -1);
+    int64_t incrementFileIndex(int detPos = -1);
 
     /**
      * add gap pixels to the image (only for Eiger in 4 bit mode)
@@ -2012,26 +1895,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Start data processing thread
      */
     void startProcessingThread();
-
-    /**
-     * Start detector acquisition and read all data (Blocking until end of
-     * acquisition)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void startAndReadAll(int detPos = -1); //
-
-    /**
-     * Start readout (without exposure or interrupting exposure) (Eiger store in
-     * ram)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void startReadOut(int detPos = -1); //
-
-    /**
-     * Requests and  receives all data from the detector (Eiger store in ram)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void readAll(int detPos = -1); //
 
     /**
      * Check if processing thread is ready to join main thread

@@ -10,7 +10,7 @@ namespace py = pybind11;
 void init_enums(py::module &m) {
     py::class_<slsDetectorDefs> Defs(m, "slsDetectorDefs");
     py::class_<slsDetectorDefs::xy> xy(m, "xy");
-	xy.def(py::init());
+    xy.def(py::init());
 	xy.def(py::init<int,int>());
     xy.def_readwrite("x", &slsDetectorDefs::xy::x);
     xy.def_readwrite("y", &slsDetectorDefs::xy::y);
@@ -32,7 +32,7 @@ py::enum_<slsDetectorDefs::timerIndex>(Defs, "timerIndex")
 	.value("ACQUISITION_TIME", slsDetectorDefs::timerIndex::ACQUISITION_TIME)
 	.value("FRAME_PERIOD", slsDetectorDefs::timerIndex::FRAME_PERIOD)
 	.value("DELAY_AFTER_TRIGGER", slsDetectorDefs::timerIndex::DELAY_AFTER_TRIGGER)
-	.value("CYCLES_NUMBER", slsDetectorDefs::timerIndex::CYCLES_NUMBER)
+	.value("TRIGGER_NUMBER", slsDetectorDefs::timerIndex::TRIGGER_NUMBER)
 	.value("ACTUAL_TIME", slsDetectorDefs::timerIndex::ACTUAL_TIME)
 	.value("MEASUREMENT_TIME", slsDetectorDefs::timerIndex::MEASUREMENT_TIME)
 	.value("PROGRESS", slsDetectorDefs::timerIndex::PROGRESS)
@@ -217,6 +217,20 @@ py::enum_<slsDetectorDefs::dacIndex>(Defs, "dacIndex")
 	.value("M_cas", slsDetectorDefs::dacIndex::M_cas)
 	.value("M_vIcin", slsDetectorDefs::dacIndex::M_vIcin)
 	.value("M_vIpreOut", slsDetectorDefs::dacIndex::M_vIpreOut)
+	.value("VREF_H_ADC", slsDetectorDefs::dacIndex::VREF_H_ADC)
+	.value("VB_COMP_FE", slsDetectorDefs::dacIndex::VB_COMP_FE)
+	.value("VB_COMP_ADC", slsDetectorDefs::dacIndex::VB_COMP_ADC)
+	.value("VCOM_CDS", slsDetectorDefs::dacIndex::VCOM_CDS)
+	.value("VREF_RESTORE", slsDetectorDefs::dacIndex::VREF_RESTORE)
+	.value("VB_OPA_1ST", slsDetectorDefs::dacIndex::VB_OPA_1ST)
+	.value("VREF_COMP_FE", slsDetectorDefs::dacIndex::VREF_COMP_FE)
+	.value("VCOM_ADC1", slsDetectorDefs::dacIndex::VCOM_ADC1)
+	.value("VREF_PRECH", slsDetectorDefs::dacIndex::VREF_PRECH)
+	.value("VREF_L_ADC", slsDetectorDefs::dacIndex::VREF_L_ADC)
+	.value("VREF_CDS", slsDetectorDefs::dacIndex::VREF_CDS)
+	.value("VB_CS", slsDetectorDefs::dacIndex::VB_CS)
+	.value("VB_OPA_FD", slsDetectorDefs::dacIndex::VB_OPA_FD)
+	.value("VCOM_ADC2", slsDetectorDefs::dacIndex::VCOM_ADC2)
 	.value("V_POWER_A", slsDetectorDefs::dacIndex::V_POWER_A)
 	.value("V_POWER_B", slsDetectorDefs::dacIndex::V_POWER_B)
 	.value("V_POWER_C", slsDetectorDefs::dacIndex::V_POWER_C)

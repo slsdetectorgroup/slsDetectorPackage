@@ -6,6 +6,7 @@
 #include "qCloneWidget.h"
 
 #include "detectorData.h"
+#include "ToString.h"
 
 #include <QFileDialog>
 #include <QPainter>
@@ -570,8 +571,11 @@ void qDrawPlot::AcquireFinished() {
         FILE_LOG(logERROR) << "Acquisition Finished with an exception: " << mess;
         qDefs::ExceptionMessage("Acquire unsuccessful.", mess, "qDrawPlot::AcquireFinished");
         try{
-            det->stopAcquisition();
-        } CATCH_DISPLAY("Could not stop acquisition and receiver.", "qDrawPlot::AcquireFinished");
+            det->stopDetector();
+        } CATCH_DISPLAY("Could not stop detector acquisition.", "qDrawPlot::AcquireFinished");
+        try{
+            det->stopReceiver();
+        } CATCH_DISPLAY("Could not stop receiver.", "qDrawPlot::AcquireFinished");
         emit AbortSignal();
     }
     FILE_LOG(logDEBUG) << "End of Acquisition Finished";
@@ -599,7 +603,7 @@ void qDrawPlot::GetDataCallBack(detectorData *data, uint64_t frameIndex, uint32_
 
 void qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus) {
     progress = currentProgress;
-    std::string status = slsDetectorDefs::runStatusType(static_cast<slsDetectorDefs::runStatus>(detectorStatus));
+    std::string status = sls::ToString(static_cast<slsDetectorDefs::runStatus>(detectorStatus));
     
     if (detectorStatus == slsDetectorDefs::ERROR) {
         qDefs::Message(qDefs::WARNING, std::string("<nobr>The acquisiton has ended abruptly. Current Detector Status: ") + status + std::string(".</nobr>"), "qDrawPlot::AcquisitionFinished");

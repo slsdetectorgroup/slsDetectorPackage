@@ -1670,7 +1670,7 @@ void ctbAcquisition::toggleAcquisition() {
   } else {
     StopFlag=1; 
     try{
-      myDet->stopAcquisition();
+      myDet->stopDetector();
     } CATCH_DISPLAY ("Could not stop acquisition", "ctbAcquisition::toggleAcquisition")
     stop=1;
     bStatus->SetText("Start");

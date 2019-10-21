@@ -11,6 +11,7 @@
 #include "qTabMessages.h"
 
 #include "versionAPI.h"
+#include "ToString.h"
 
 #include <QResizeEvent>
 #include <QScrollArea>
@@ -231,13 +232,13 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     default:
         std::ostringstream os;
         os << det->getHostname() << " has " <<
-            slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()) << " detector type (" <<
+            sls::ToString(det->getDetectorType().squash()) << " detector type (" <<
             std::to_string(detType) << "). Exiting GUI.";
         std::string errorMess = os.str();
         throw sls::RuntimeError(errorMess.c_str());
     }
     std::ostringstream os;
-    os << "SLS Detector GUI : " << slsDetectorDefs::detectorTypeToString(det->getDetectorType().squash()) 
+    os << "SLS Detector GUI : " << sls::ToString(det->getDetectorType().squash()) 
         << " - " << det->getHostname();
     std::string title = os.str();
     FILE_LOG(logINFO) << title;
@@ -384,7 +385,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
         }
 
         else if (action == actionLoadTrimbits) {
-            QString fName = QString((det->getSettingsDir().squash("/tmp/")).c_str());
+            QString fName = QString((det->getSettingsPath().squash("/tmp/")).c_str());
             FILE_LOG(logDEBUG) << "Loading Trimbits";
             // so that even nonexisting files can be selected
             QFileDialog *fileDialog = new QFileDialog(

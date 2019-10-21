@@ -148,7 +148,7 @@ struct sharedSlsDetector {
     char rxFileName[MAX_STR_LENGTH];
 
     /** file index */
-    int rxFileIndex;
+    int64_t rxFileIndex;
 
     /** file format */
     slsDetectorDefs::fileFormat rxFileFormat;
@@ -350,7 +350,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * Get last client IP saved on detector server
      * @returns last client IP saved on detector server
      */
-    std::string getLastClientIP();
+    sls::IpAddr getLastClientIP();
 
     /**
      * Exit detector server
@@ -896,29 +896,32 @@ class slsDetector : public virtual slsDetectorDefs {
 
     /**
      * Sets the client zmq ip\sa sharedSlsDetector
-     * @param sourceIP client zmq ip
+     * @param ip client zmq ip
      */
-    void setClientStreamingIP(const std::string &sourceIP);
+    void setClientStreamingIP(const sls::IpAddr ip);
 
     /**
      * Returns the client zmq ip \sa sharedSlsDetector
-     * @returns the client zmq ip, returns "none" if default setting and no
-     * custom ip set
+     * @returns the client zmq ip
      */
-    std::string getClientStreamingIP();
+    sls::IpAddr getClientStreamingIP();
 
     /**
      * Sets the receiver zmq ip\sa sharedSlsDetector
-     * @param sourceIP receiver zmq ip. If empty, uses rx_hostname
+     * @param ip receiver zmq ip
      */
-    void setReceiverStreamingIP(std::string sourceIP);
+    void setReceiverStreamingIP(const sls::IpAddr ip);
 
     /**
      * Returns the receiver zmq ip \sa sharedSlsDetector
-     * @returns the receiver zmq ip, returns "none" if default setting and no
-     * custom ip set
+     * @returns the receiver zmq ip
      */
-    std::string getReceiverStreamingIP();
+    sls::IpAddr getReceiverStreamingIP();
+
+    /** update receiver stremaing ip from shm to receiver
+     * if empty, use rx_hostname ip
+     */
+    void updateReceiverStreamingIP();
 
     /**
      * Sets the transmission delay for left, right or entire frame
@@ -1333,7 +1336,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * Returns the IP of the last client connecting to the receiver
      * @returns the IP of the last client connecting to the receiver
      */
-    std::string getReceiverLastClientIP() const;
+    sls::IpAddr getReceiverLastClientIP() const;
 
     /**
      * Exits the receiver TCP server
@@ -1440,19 +1443,19 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param i file index
      * @returns file index
      */
-    int setFileIndex(int file_index);
+    int64_t setFileIndex(int64_t file_index);
 
     /**
      * Gets the file index
      * @returns file index
      */
 
-    int getFileIndex() const;
+    int64_t getFileIndex() const;
     /**
      * increments file index
      * @returns the file index
      */
-    int incrementFileIndex();
+    int64_t incrementFileIndex();
 
     /**
      * Receiver starts listening to packets

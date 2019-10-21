@@ -455,7 +455,7 @@ ctbPattern::ctbPattern(TGVerticalFrame *page, sls::Detector *det)
    hframe->MapWindow();
 
 
-   sprintf(tit, "Number of cycles: ");
+   sprintf(tit, "Number of triggers: ");
 
    label= new TGLabel(hframe, tit);
    hframe->AddFrame(label,new TGLayoutHints(kLHintsTop | kLHintsLeft| kLHintsExpandX, 1, 1, 1, 1));
@@ -465,14 +465,14 @@ ctbPattern::ctbPattern(TGVerticalFrame *page, sls::Detector *det)
 
 
   
-   eCycles = new TGNumberEntry(hframe, 0, 9,999, TGNumberFormat::kNESInteger,
+   eTriggers = new TGNumberEntry(hframe, 0, 9,999, TGNumberFormat::kNESInteger,
                                                TGNumberFormat::kNEANonNegative, 
                                                TGNumberFormat::kNELNoLimits);
-   hframe->AddFrame( eCycles,new TGLayoutHints(kLHintsTop |  kLHintsExpandX, 1, 1, 1, 1));
-   eCycles->MapWindow();
-   eCycles->Resize(150,30);
-   e= eCycles->TGNumberEntry::GetNumberEntry();
-   e->Connect("ReturnPressed()","ctbPattern",this,"setCycles()");
+   hframe->AddFrame( eTriggers,new TGLayoutHints(kLHintsTop |  kLHintsExpandX, 1, 1, 1, 1));
+   eTriggers->MapWindow();
+   eTriggers->Resize(150,30);
+   e= eTriggers->TGNumberEntry::GetNumberEntry();
+   e->Connect("ReturnPressed()","ctbPattern",this,"setTriggers()");
 
 
    // sprintf(tit, "Number of measurements: ");
@@ -821,7 +821,7 @@ void ctbPattern::update() {
 
   try{
     auto retval = myDet->getNumberOfTriggers().tsquash("Different values");
-    eCycles->SetNumber(retval);
+    eTriggers->SetNumber(retval);
   } CATCH_DISPLAY ("Could not get number of triggers.", "ctbPattern::update")
 
   try{
@@ -934,10 +934,10 @@ void ctbPattern::setFrames() {
   } CATCH_DISPLAY ("Could not set number of frames", "ctbPattern::setFrames")
 }
 
-void ctbPattern::setCycles() {
+void ctbPattern::setTriggers() {
   try{
-    myDet->setNumberOfTriggers(eCycles->GetNumber());
-  } CATCH_DISPLAY ("Could not set number of triggers", "ctbPattern::setCycles")
+    myDet->setNumberOfTriggers(eTriggers->GetNumber());
+  } CATCH_DISPLAY ("Could not set number of triggers", "ctbPattern::setTriggers")
 }
 
 void ctbPattern::setPeriod() {

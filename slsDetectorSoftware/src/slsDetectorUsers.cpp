@@ -143,8 +143,8 @@ int64_t slsDetectorUsers::setNumberOfFrames(int64_t t, int detPos){
 	return detector.setNumberOfFrames(t, detPos);
 }
 
-int64_t slsDetectorUsers::setNumberOfCycles(int64_t t, int detPos){
-	return detector.setNumberOfCycles(t, detPos);
+int64_t slsDetectorUsers::setNumberOfTriggers(int64_t t, int detPos){
+	return detector.setNumberOfTriggers(t, detPos);
 }
 
 int64_t slsDetectorUsers::setNumberOfStorageCells(int64_t t, int detPos) {

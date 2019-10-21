@@ -523,7 +523,7 @@ void setupDetector() {
     setTimer(SAMPLES, DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
-	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
+	setTimer(TRIGGER_NUMBER, DEFAULT_NUM_CYCLES);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
 	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
@@ -847,12 +847,12 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		FILE_LOG(logINFO, ("\tGetting delay: %lldns\n", (long long int)retval));
 		break;
 
-	case CYCLES_NUMBER:
+	case TRIGGER_NUMBER:
 		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting #cycles: %lld\n", (long long int)val));
+			FILE_LOG(logINFO, ("Setting #triggers: %lld\n", (long long int)val));
 		}
 		retval = set64BitReg(val,  CYCLES_LSB_REG, CYCLES_MSB_REG);
-		FILE_LOG(logINFO, ("\tGetting #cycles: %lld\n", (long long int)retval));
+		FILE_LOG(logINFO, ("\tGetting #triggers: %lld\n", (long long int)retval));
 		break;
 
 	case SAMPLES:
@@ -901,9 +901,9 @@ int64_t getTimeLeft(enum timerIndex ind){
 		FILE_LOG(logINFO, ("Getting delay left: %lldns\n", (long long int)retval));
 		break;
 
-	case CYCLES_NUMBER:
+	case TRIGGER_NUMBER:
 		retval = get64BitReg(CYCLES_LEFT_LSB_REG, CYCLES_LEFT_MSB_REG);
-		FILE_LOG(logINFO, ("Getting number of cycles left: %lld\n", (long long int)retval));
+		FILE_LOG(logINFO, ("Getting number of triggers left: %lld\n", (long long int)retval));
 		break;
 
 	case ACTUAL_TIME:
@@ -1813,7 +1813,7 @@ int startStateMachine(){
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
 	int wait_in_s = 	(setTimer(FRAME_NUMBER, -1) *
-						setTimer(CYCLES_NUMBER, -1) *
+						setTimer(TRIGGER_NUMBER, -1) *
 						(setTimer(FRAME_PERIOD, -1)/(1E9)));
 	FILE_LOG(logDEBUG1, ("going to wait for %d s\n", wait_in_s));
 	while(!virtual_stop && (wait_in_s >= 0)) {

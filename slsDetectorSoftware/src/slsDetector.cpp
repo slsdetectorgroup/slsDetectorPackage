@@ -7,6 +7,8 @@
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
 #include "versionAPI.h"
+#include "ToString.h"
+
 #include <arpa/inet.h>
 #include <array>
 #include <bitset>
@@ -324,7 +326,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->timerValue[ACQUISITION_TIME] = 0;
     shm()->timerValue[FRAME_PERIOD] = 0;
     shm()->timerValue[DELAY_AFTER_TRIGGER] = 0;
-    shm()->timerValue[CYCLES_NUMBER] = 1;
+    shm()->timerValue[TRIGGER_NUMBER] = 1;
     shm()->timerValue[ACTUAL_TIME] = 0;
     shm()->timerValue[MEASUREMENT_TIME] = 0;
     shm()->timerValue[PROGRESS] = 0;
@@ -419,34 +421,34 @@ int slsDetector::sendModule(sls_detector_module *myMod,
     n = client.Send(&(myMod->nchan), sizeof(myMod->nchan));
     ts += n;
     FILE_LOG(level) << "nchan sent. " << n
-                    << " bytes. serialno: " << myMod->nchan;
+                    << " bytes. nchan: " << myMod->nchan;
 
     n = client.Send(&(myMod->nchip), sizeof(myMod->nchip));
     ts += n;
     FILE_LOG(level) << "nchip sent. " << n
-                    << " bytes. serialno: " << myMod->nchip;
+                    << " bytes. nchip: " << myMod->nchip;
 
     n = client.Send(&(myMod->ndac), sizeof(myMod->ndac));
     ts += n;
     FILE_LOG(level) << "ndac sent. " << n
-                    << " bytes. serialno: " << myMod->ndac;
+                    << " bytes. ndac: " << myMod->ndac;
 
     n = client.Send(&(myMod->reg), sizeof(myMod->reg));
     ts += n;
-    FILE_LOG(level) << "reg sent. " << n << " bytes. serialno: " << myMod->reg;
+    FILE_LOG(level) << "reg sent. " << n << " bytes. reg: " << myMod->reg;
 
     n = client.Send(&(myMod->iodelay), sizeof(myMod->iodelay));
     ts += n;
     FILE_LOG(level) << "iodelay sent. " << n
-                    << " bytes. serialno: " << myMod->iodelay;
+                    << " bytes. iodelay: " << myMod->iodelay;
 
     n = client.Send(&(myMod->tau), sizeof(myMod->tau));
     ts += n;
-    FILE_LOG(level) << "tau sent. " << n << " bytes. serialno: " << myMod->tau;
+    FILE_LOG(level) << "tau sent. " << n << " bytes. tau: " << myMod->tau;
 
     n = client.Send(&(myMod->eV), sizeof(myMod->eV));
     ts += n;
-    FILE_LOG(level) << "ev sent. " << n << " bytes. serialno: " << myMod->eV;
+    FILE_LOG(level) << "ev sent. " << n << " bytes. ev: " << myMod->eV;
 
     n = client.Send(myMod->dacs, sizeof(int) * (myMod->ndac));
     ts += n;
@@ -548,7 +550,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorTypeAsEnum() const {
 }
 
 std::string slsDetector::getDetectorTypeAsString() const {
-    return slsDetectorDefs::detectorTypeToString(getDetectorTypeAsEnum());
+    return ToString(getDetectorTypeAsEnum());
 }
 
 void slsDetector::updateNumberOfChannels() {
@@ -695,8 +697,8 @@ bool slsDetector::lockServer(int lock) {
     return (retval == 1 ? true : false);
 }
 
-std::string slsDetector::getLastClientIP() {
-    char retval[INET_ADDRSTRLEN]{};
+sls::IpAddr slsDetector::getLastClientIP() {
+    sls::IpAddr retval = 0u;
     FILE_LOG(logDEBUG1) << "Getting last client ip to detector server";
     sendToDetector(F_GET_LAST_CLIENT_IP, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Last client IP to detector: " << retval;
@@ -728,8 +730,8 @@ void slsDetector::updateCachedDetectorVariables() {
         FORCE_UPDATE) {
         int n = 0, i32 = 0;
         int64_t i64 = 0;
-        char lastClientIP[INET_ADDRSTRLEN] = {0};
-        n += client.Receive(lastClientIP, sizeof(lastClientIP));
+        sls::IpAddr lastClientIP = 0u;
+        n += client.Receive(&lastClientIP, sizeof(lastClientIP));
         FILE_LOG(logDEBUG1)
             << "Updating detector last modified by " << lastClientIP;
 
@@ -787,9 +789,9 @@ void slsDetector::updateCachedDetectorVariables() {
             shm()->timerValue[STORAGE_CELL_DELAY] = i64;
         }
 
-        // cycles
+        // triggers
         n += client.Receive(&i64, sizeof(i64));
-        shm()->timerValue[CYCLES_NUMBER] = i64;
+        shm()->timerValue[TRIGGER_NUMBER] = i64;
 
         // readout mode
         if (shm()->myDetectorType == CHIPTESTBOARD) {
@@ -934,7 +936,7 @@ slsDetector::setSettings(detectorSettings isettings) {
             return shm()->currentSettings;
         default:
             std::ostringstream ss;
-            ss << "Unknown settings " << getDetectorSettings(isettings)
+            ss << "Unknown settings " << ToString(isettings)
                << " for this detector!";
             throw RuntimeError(ss.str());
         }
@@ -1088,7 +1090,7 @@ std::string slsDetector::getTrimbitFilename(detectorSettings s, int e_eV) {
         break;
     default:
         std::ostringstream ss;
-        ss << "Unknown settings " << getDetectorSettings(s)
+        ss << "Unknown settings " << ToString(s)
            << " for this detector!";
         throw RuntimeError(ss.str());
     }
@@ -1146,7 +1148,7 @@ slsDetectorDefs::runStatus slsDetector::getRunStatus() const {
     runStatus retval = ERROR;
     FILE_LOG(logDEBUG1) << "Getting status";
     sendToDetectorStop(F_GET_RUN_STATUS, nullptr, retval);
-    FILE_LOG(logDEBUG1) << "Detector status: " << runStatusType(retval);
+    FILE_LOG(logDEBUG1) << "Detector status: " << ToString(retval);
     return retval;
 }
 
@@ -1202,116 +1204,6 @@ void slsDetector::readAll() {
     FILE_LOG(logDEBUG1) << "Detector successfully finished reading all frames";
 }
 
-/*
-void slsDetector::configureMAC() {
-    int fnum = F_CONFIGURE_MAC;
-    const size_t array_size = 50;
-    const size_t n_args = 14;
-    const size_t n_retvals = 2;
-    char args[n_args][array_size]{};
-    char retvals[n_retvals][array_size]{};
-    FILE_LOG(logDEBUG1) << "Configuring MAC";
-    if (shm()->rxUDPIP == 0) {
-        // If hostname is valid ip use that, oterwise lookup hostname
-        shm()->rxUDPIP = shm()->rxHostname;
-        if (shm()->rxUDPIP == 0) {
-            shm()->rxUDPIP = HostnameToIp(shm()->rxHostname);
-        }
-    }
-
-    if (shm()->rxUDPMAC == 0) {
-        throw RuntimeError(
-            "configureMAC: Error. Receiver UDP MAC Addresses not set");
-    }
-    FILE_LOG(logDEBUG1) << "rx_hostname and rx_udpmac are valid ";
-
-    // Jungfrau second interface
-    if (shm()->numUDPInterfaces == 2) {
-        if (shm()->rxUDPIP2 == 0) {
-            shm()->rxUDPIP2 = shm()->rxUDPIP;
-        }
-        if (shm()->rxUDPMAC2 == 0) {
-            throw RuntimeError(
-                "configureMAC: Error. Receiver UDP MAC Addresses 2 not set");
-        }
-        FILE_LOG(logDEBUG1) << "rx_udpmac2 is valid ";
-    }
-
-    // copy to args and convert to hex
-    snprintf(args[0], array_size, "%x", shm()->rxUDPPort);
-    sls::strcpy_safe(args[1], getReceiverUDPIP().hex());
-    sls::strcpy_safe(args[2], getReceiverUDPMAC().hex());
-    sls::strcpy_safe(args[3], getDetectorIP().hex());
-    sls::strcpy_safe(args[4], getDetectorMAC().hex());
-    snprintf(args[5], array_size, "%x", shm()->rxUDPPort2);
-    sls::strcpy_safe(args[6], getReceiverUDPIP2().hex());
-    sls::strcpy_safe(args[7], getReceiverUDPMAC2().hex());
-    sls::strcpy_safe(args[8], getDetectorIP2().hex());
-    sls::strcpy_safe(args[9], getDetectorMAC2().hex());
-    snprintf(args[10], array_size, "%x", shm()->numUDPInterfaces);
-    snprintf(args[11], array_size, "%x", shm()->selectedUDPInterface);
-
-    // 2d positions to detector to put into udp header
-    {
-        int pos[2] = {0, 0};
-        int max = shm()->multiSize.y * (shm()->numUDPInterfaces);
-        // row
-        pos[0] = (detId % max);
-        // col for horiz. udp ports
-        pos[1] = (detId / max) * ((shm()->myDetectorType == EIGER) ? 2 : 1);
-        // pos[2] (z is reserved)
-        FILE_LOG(logDEBUG) << "Detector [" << detId << "] - (" << pos[0] << ","
-                           << pos[1] << ")";
-        snprintf(args[12], array_size, "%x", pos[0]);
-        snprintf(args[13], array_size, "%x", pos[1]);
-    }
-
-    FILE_LOG(logDEBUG1) << "receiver udp port:" << std::dec << args[0] << "-";
-    FILE_LOG(logDEBUG1) << "receiver udp ip:" << args[1] << "-";
-    FILE_LOG(logDEBUG1) << "receiver udp mac:" << args[2] << "-";
-    FILE_LOG(logDEBUG1) << "detecotor udp ip:" << args[3] << "-";
-    FILE_LOG(logDEBUG1) << "detector udp mac:" << args[4] << "-";
-    FILE_LOG(logDEBUG1) << "receiver udp port2:" << std::dec << args[5] << "-";
-    FILE_LOG(logDEBUG1) << "receiver udp ip2:" << args[6] << "-";
-    FILE_LOG(logDEBUG1) << "receiver udp mac2:" << args[7] << "-";
-    FILE_LOG(logDEBUG1) << "detecotor udp ip2:" << args[8] << "-";
-    FILE_LOG(logDEBUG1) << "detector udp mac2:" << args[9] << "-";
-    FILE_LOG(logDEBUG1) << "number of udp interfaces:" << std::dec << args[10]
-                        << "-";
-    FILE_LOG(logDEBUG1) << "selected udp interface:" << std::dec << args[11]
-                        << "-";
-    FILE_LOG(logDEBUG1) << "row:" << args[12] << "-";
-    FILE_LOG(logDEBUG1) << "col:" << args[13] << "-";
-
-    // send to server
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    int ret = client.sendCommandThenRead(fnum, args, sizeof(args), retvals,
-                                         sizeof(retvals));
-
-    // TODO!(Erik) Send as int already from detector
-    uint64_t detector_mac = 0;
-    uint32_t detector_ip = 0;
-    sscanf(retvals[0], "%lx", &detector_mac);
-    sscanf(retvals[1], "%x", &detector_ip);
-    detector_ip = __builtin_bswap32(detector_ip);
-
-    if (shm()->detectorMAC != detector_mac) {
-        shm()->detectorMAC = detector_mac;
-        FILE_LOG(logINFO) << detId << ": Detector MAC updated to "
-                          << getDetectorMAC();
-    }
-
-    if (shm()->detectorIP != detector_ip) {
-        shm()->detectorIP = detector_ip;
-        FILE_LOG(logINFO) << detId << ": Detector IP updated to "
-                          << getDetectorIP();
-    }
-    if (ret == FORCE_UPDATE) {
-        updateCachedDetectorVariables();
-    }
-}
-*/
-
 void slsDetector::setStartingFrameNumber(uint64_t value) {
     FILE_LOG(logDEBUG1) << "Setting starting frame number to " << value;
     sendToDetector(F_SET_STARTING_FRAME_NUMBER, value, nullptr);
@@ -1361,7 +1253,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     if (shm()->useReceiverFlag) {
         timerIndex rt[]{FRAME_NUMBER,
                         FRAME_PERIOD,
-                        CYCLES_NUMBER,
+                        TRIGGER_NUMBER,
                         ACQUISITION_TIME,
                         SUBFRAME_ACQUISITION_TIME,
                         SUBFRAME_DEADTIME,
@@ -1376,11 +1268,11 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
             retval = -1;
 
             // rewrite args
-            if ((index == FRAME_NUMBER) || (index == CYCLES_NUMBER) ||
+            if ((index == FRAME_NUMBER) || (index == TRIGGER_NUMBER) ||
                 (index == STORAGE_CELL_NUMBER)) {
                 args[1] = shm()->timerValue[FRAME_NUMBER] *
-                          ((shm()->timerValue[CYCLES_NUMBER] > 0)
-                               ? (shm()->timerValue[CYCLES_NUMBER])
+                          ((shm()->timerValue[TRIGGER_NUMBER] > 0)
+                               ? (shm()->timerValue[TRIGGER_NUMBER])
                                : 1) *
                           ((shm()->timerValue[STORAGE_CELL_NUMBER] > 0)
                                ? (shm()->timerValue[STORAGE_CELL_NUMBER]) + 1
@@ -1388,9 +1280,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
             }
             FILE_LOG(logDEBUG1)
                 << "Sending "
-                << (((index == FRAME_NUMBER) || (index == CYCLES_NUMBER) ||
+                << (((index == FRAME_NUMBER) || (index == TRIGGER_NUMBER) ||
                      (index == STORAGE_CELL_NUMBER))
-                        ? "(#Frames) * (#cycles) * (#storage cells)"
+                        ? "(#Frames) * (#triggers) * (#storage cells)"
                         : getTimerType(index))
                 << " to receiver: " << args[1];
 
@@ -1630,7 +1522,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
 
     FILE_LOG(logDEBUG)
         << "detector type:"
-        << (slsDetectorDefs::detectorTypeToString(shm()->myDetectorType))
+        << (ToString(shm()->myDetectorType))
         << "\ndetector id:" << detId
         << "\ndetector hostname:" << shm()->hostname
         << "\nfile path:" << shm()->rxFilePath
@@ -1645,7 +1537,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
         << "\noverwrite enable:" << shm()->rxFileOverWrite
         << "\nframe index needed:"
         << ((shm()->timerValue[FRAME_NUMBER] *
-             shm()->timerValue[CYCLES_NUMBER]) > 1)
+             shm()->timerValue[TRIGGER_NUMBER]) > 1)
         << "\nframe period:" << (shm()->timerValue[FRAME_PERIOD])
         << "\nframe number:" << (shm()->timerValue[FRAME_NUMBER])
         << "\nsub exp time:" << (shm()->timerValue[SUBFRAME_ACQUISITION_TIME])
@@ -1745,7 +1637,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
         // data streaming
         setReceiverStreamingFrequency(shm()->rxReadFreq);
         setReceiverStreamingPort(getReceiverStreamingPort());
-        setReceiverStreamingIP(getReceiverStreamingIP());
+        updateReceiverStreamingIP();
         setAdditionalJsonHeader(shm()->rxAdditionalJsonHeader);
         enableDataStreamingFromReceiver(
             static_cast<int>(enableDataStreamingFromReceiver(-1)));
@@ -1826,7 +1718,7 @@ sls::IpAddr slsDetector::getSourceUDPIP2() {
 
 void slsDetector::setDestinationUDPIP(const IpAddr ip) {
     FILE_LOG(logDEBUG1) << "Setting destination udp ip to " << ip;
-     if (ip == 0) {
+    if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address");
     }
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr); 
@@ -2011,31 +1903,23 @@ void slsDetector::setReceiverStreamingPort(int port) {
 
 int slsDetector::getReceiverStreamingPort() { return shm()->rxZmqport; }
 
-void slsDetector::setClientStreamingIP(const std::string &sourceIP) {
-    auto ip = HostnameToIp(sourceIP.c_str());
-    if (ip != 0) {
-        shm()->zmqip = ip;
-    } else {
-        throw sls::RuntimeError("Could not set zmqip");
-    }
+void slsDetector::setClientStreamingIP(const sls::IpAddr ip) {
+    FILE_LOG(logDEBUG1) << "Setting client zmq ip to " << ip;
+    if (ip == 0) {
+        throw RuntimeError("Invalid client zmq ip address");
+    } 
+    shm()->zmqip = ip;  
 }
 
-std::string slsDetector::getClientStreamingIP() { return shm()->zmqip.str(); }
+sls::IpAddr slsDetector::getClientStreamingIP() { return shm()->zmqip; }
 
-void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
-    // if empty, give rx_hostname
-    if (sourceIP.empty() || sourceIP == "0.0.0.0") {
-        if (strcmp(shm()->rxHostname, "none") == 0) {
-            throw RuntimeError("Receiver hostname not set yet. Cannot create "
-                               "rx_zmqip from none");
-        }
-        sourceIP = shm()->rxHostname;
+void slsDetector::setReceiverStreamingIP(const sls::IpAddr ip) {
+    FILE_LOG(logDEBUG1) << "Setting rx zmq ip to " << ip;
+    if (ip == 0) {
+        throw RuntimeError("Invalid receiver zmq ip address");
     }
-
-    FILE_LOG(logDEBUG1) << "Sending receiver streaming IP to receiver: "
-                        << sourceIP;
-    shm()->rxZmqip = HostnameToIp(sourceIP.c_str());
-
+    shm()->rxZmqip = ip;
+    
     // if zmqip is empty, update it
     if (shm()->zmqip == 0) {
         shm()->zmqip = shm()->rxZmqip;
@@ -2043,19 +1927,27 @@ void slsDetector::setReceiverStreamingIP(std::string sourceIP) {
 
     // send to receiver
     if (shm()->useReceiverFlag) {
-        char retvals[MAX_STR_LENGTH]{};
-        char args[MAX_STR_LENGTH]{};
-        sls::strcpy_safe(args, shm()->rxZmqip.str()); // TODO send int
         FILE_LOG(logDEBUG1)
-            << "Sending receiver streaming IP to receiver: " << args;
-        sendToReceiver(F_RECEIVER_STREAMING_SRC_IP, args, retvals);
-        FILE_LOG(logDEBUG1) << "Receiver streaming ip: " << retvals;
-        shm()->rxZmqip = retvals;
+            << "Sending receiver streaming IP to receiver: " << ip;
+        sendToReceiver(F_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
     }
 }
 
-std::string slsDetector::getReceiverStreamingIP() {
-    return shm()->rxZmqip.str();
+sls::IpAddr slsDetector::getReceiverStreamingIP() {
+    return shm()->rxZmqip;
+}
+
+void slsDetector::updateReceiverStreamingIP() {
+    auto ip = getReceiverStreamingIP();
+    if (ip == 0) {
+        // Hostname could be ip try to decode otherwise look up the hostname
+        ip = shm()->rxHostname;
+        if (ip == 0) {
+            ip = HostnameToIp(shm()->rxHostname);
+        }  
+        FILE_LOG(logINFO) << "Setting default receiver streaming zmq ip to " << ip;
+    }     
+    setReceiverStreamingIP(ip);   
 }
 
 int slsDetector::setDetectorNetworkParameter(networkParameter index,
@@ -2834,8 +2726,8 @@ int slsDetector::lockReceiver(int lock) {
     return retval;
 }
 
-std::string slsDetector::getReceiverLastClientIP() const {
-    char retval[INET_ADDRSTRLEN]{};
+sls::IpAddr slsDetector::getReceiverLastClientIP() const {
+    sls::IpAddr retval = 0u;
     FILE_LOG(logDEBUG1) << "Getting last client ip to receiver server";
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_GET_LAST_RECEIVER_CLIENT_IP, nullptr, retval);
@@ -2871,12 +2763,13 @@ void slsDetector::updateCachedReceiverVariables() const {
             sls::ClientSocket("Receiver", shm()->rxHostname, shm()->rxTCPPort);
         receiver.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
         int n = 0, i32 = 0;
+        int64_t i64 = 0;
         char cstring[MAX_STR_LENGTH]{};
-        char lastClientIP[INET_ADDRSTRLEN]{};
+        IpAddr ip = 0u;
 
-        n += receiver.Receive(lastClientIP, sizeof(lastClientIP));
+        n += receiver.Receive(&ip, sizeof(ip));
         FILE_LOG(logDEBUG1)
-            << "Updating receiver last modified by " << lastClientIP;
+            << "Updating receiver last modified by " << ip;
 
         // filepath
         n += receiver.Receive(cstring, sizeof(cstring));
@@ -2887,8 +2780,8 @@ void slsDetector::updateCachedReceiverVariables() const {
         sls::strcpy_safe(shm()->rxFileName, cstring);
 
         // index
-        n += receiver.Receive(&i32, sizeof(i32));
-        shm()->rxFileIndex = i32;
+        n += receiver.Receive(&i64, sizeof(i64));
+        shm()->rxFileIndex = i64;
 
         // file format
         n += receiver.Receive(&i32, sizeof(i32));
@@ -2931,8 +2824,8 @@ void slsDetector::updateCachedReceiverVariables() const {
         shm()->rxZmqport = i32;
 
         // streaming source ip
-        n += receiver.Receive(cstring, sizeof(cstring));
-        shm()->rxZmqip = cstring;
+        n += receiver.Receive(&ip, sizeof(ip));
+        shm()->rxZmqip = ip;
 
         // additional json header
         n += receiver.Receive(cstring, sizeof(cstring));
@@ -3102,9 +2995,9 @@ slsDetectorDefs::fileFormat slsDetector::getFileFormat() const {
     return shm()->rxFileFormat;
 }
 
-int slsDetector::setFileIndex(int file_index) {
+int64_t slsDetector::setFileIndex(int64_t file_index) {
     if (F_SET_RECEIVER_FILE_INDEX >= 0) {
-        int retval = -1;
+        int64_t retval = -1;
         FILE_LOG(logDEBUG1) << "Setting file index to " << file_index;
         if (shm()->useReceiverFlag) {
             sendToReceiver(F_SET_RECEIVER_FILE_INDEX, file_index, retval);
@@ -3115,9 +3008,9 @@ int slsDetector::setFileIndex(int file_index) {
     return getFileIndex();
 }
 
-int slsDetector::getFileIndex() const { return shm()->rxFileIndex; }
+int64_t slsDetector::getFileIndex() const { return shm()->rxFileIndex; }
 
-int slsDetector::incrementFileIndex() {
+int64_t slsDetector::incrementFileIndex() {
     if (shm()->rxFileWrite) {
         return setFileIndex(shm()->rxFileIndex + 1);
     }
@@ -3143,7 +3036,7 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus() const {
     FILE_LOG(logDEBUG1) << "Getting Receiver Status";
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_GET_RECEIVER_STATUS, nullptr, retval);
-        FILE_LOG(logDEBUG1) << "Receiver Status: " << runStatusType(retval);
+        FILE_LOG(logDEBUG1) << "Receiver Status: " << ToString(retval);
     }
     return retval;
 }

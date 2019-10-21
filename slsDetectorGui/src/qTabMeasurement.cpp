@@ -524,7 +524,7 @@ void qTabMeasurement::StopAcquisition() {
 	FILE_LOG(logINFORED) << "Stopping Acquisition";
 	try{
 		isAcquisitionStopped = true;
-		det->stopAcquisition();
+		det->stopDetector();
 	} CATCH_DISPLAY("Could not stop acquisition.", "qTabMeasurement::StopAcquisition")
 }
 

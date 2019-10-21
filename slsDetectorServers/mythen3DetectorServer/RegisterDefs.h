@@ -76,7 +76,7 @@
 #define GET_DELAY_LSB_REG               (0x0002 * REG_OFFSET + BASE_PATTERN_CONTROL)
 #define GET_DELAY_MSB_REG               (0x0003 * REG_OFFSET + BASE_PATTERN_CONTROL)
 
-/* Cycles left 64bit Register */
+/* Triggers left 64bit Register */
 #define GET_CYCLES_LSB_REG              (0x0004 * REG_OFFSET + BASE_PATTERN_CONTROL)
 #define GET_CYCLES_MSB_REG              (0x0005 * REG_OFFSET + BASE_PATTERN_CONTROL)
 

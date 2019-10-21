@@ -360,7 +360,7 @@ void setupDetector() {
 	
 	// Initialization of acquistion parameters
 	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
-	setTimer(CYCLES_NUMBER, DEFAULT_NUM_CYCLES);
+	setTimer(TRIGGER_NUMBER, DEFAULT_NUM_CYCLES);
 
 	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
 	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
@@ -440,12 +440,12 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
 		FILE_LOG(logINFO, ("\tGetting delay: %lldns\n", (long long int)retval));
 		break;
 
-	case CYCLES_NUMBER:
+	case TRIGGER_NUMBER:
 		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting #cycles: %lld\n", (long long int)val));
+			FILE_LOG(logINFO, ("Setting #triggers: %lld\n", (long long int)val));
 		}
 		retval = set64BitReg(val,  SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
-		FILE_LOG(logDEBUG1, ("Getting #cycles: %lld\n", (long long int)retval));
+		FILE_LOG(logDEBUG1, ("Getting #triggers: %lld\n", (long long int)retval));
 		break;
 
 	default:
@@ -498,9 +498,9 @@ int64_t getTimeLeft(enum timerIndex ind){
 		FILE_LOG(logINFO, ("Getting number of frames left: %lld\n",(long long int)retval));
 		break;
 
-	case CYCLES_NUMBER:
+	case TRIGGER_NUMBER:
 		retval = get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
-		FILE_LOG(logINFO, ("Getting number of cycles left: %lld\n", (long long int)retval));
+		FILE_LOG(logINFO, ("Getting number of triggers left: %lld\n", (long long int)retval));
 		break;
 
 	default:
@@ -960,7 +960,7 @@ int startStateMachine(){
 void* start_timer(void* arg) {
 	int64_t periodns = setTimer(FRAME_PERIOD, -1);
 	int numFrames = (setTimer(FRAME_NUMBER, -1) *
-						setTimer(CYCLES_NUMBER, -1) );
+						setTimer(TRIGGER_NUMBER, -1) );
 	int64_t exp_ns = 	setTimer(ACQUISITION_TIME, -1);
 
 

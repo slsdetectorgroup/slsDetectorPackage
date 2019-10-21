@@ -107,13 +107,13 @@ class slsDetectorDefs {
      */
     enum timerIndex {
         FRAME_NUMBER,        /**< number of real time frames: total number of
-                                acquisitions is number or frames*number of cycles */
+                                acquisitions is number or frames*number of triggers */
         ACQUISITION_TIME,    /**< exposure time */
         FRAME_PERIOD,        /**< period between exposures */
         DELAY_AFTER_TRIGGER, /**< delay between trigger and start of exposure or
                                 readout (in triggered mode) */
-        CYCLES_NUMBER,    /**< number of cycles: total number of acquisitions is
-                             number or frames*number of cycles */
+        TRIGGER_NUMBER,    /**< number of triggers: total number of acquisitions is
+                             number or frames*number of triggers (* number of storage cells [jungfrau]) */
         ACTUAL_TIME,      /**< Actual time of the detector's internal timer */
         MEASUREMENT_TIME, /**< Time of the measurement from the detector (fifo)
                            */
@@ -578,286 +578,17 @@ format
             return std::string("disabled");
     };
 
-    /** returns detector type string from detector type index
-        \param t string can be EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, MYTHEN3, GOTTHARD2
-        \returns Eiger, Gotthard, Jungfrau, JungfrauCTB, Mythen3, Gotthard2, Unknown
-    */
-    static std::string detectorTypeToString(detectorType t) {
-        switch (t) {
-        case EIGER:
-            return std::string("Eiger");
-        case GOTTHARD:
-            return std::string("Gotthard");
-        case JUNGFRAU:
-            return std::string("Jungfrau");
-        case CHIPTESTBOARD:
-            return std::string("JungfrauCTB");
-        case MOENCH:
-            return std::string("Moench");
-        case MYTHEN3:
-            return std::string("Mythen3");
-        case GOTTHARD2:
-            return std::string("Gotthard2");            
-        default:
-            return std::string("Unknown");
-        }
-    };
 
-    /** returns detector type index from detector type string
-        \param type can be Eiger, Gotthard, Jungfrau, JungfrauCTB, Mythen3, Gotthard2
-        \returns  EIGER, GOTTHARD, JUNGFRAU, CHIPTESTBOARD, MYTHEN3, GOTTHARD2, GENERIC
-    */
-    static detectorType detectorTypeToEnum(const std::string &type) {
-        if (type == "Eiger")
-            return EIGER;
-        if (type == "Gotthard")
-            return GOTTHARD;
-        if (type == "Jungfrau")
-            return JUNGFRAU;
-        if (type == "JungfrauCTB")
-            return CHIPTESTBOARD;
-        if (type == "Moench")
-            return MOENCH;
-        if (type == "Mythen3")
-            return MYTHEN3;
-        if (type == "Gotthard2")
-            return GOTTHARD2;            
-        return GENERIC;
-    };
 
-    /** returns string from run status index
-        \param s can be ERROR, WAITING, RUNNING, TRANSMITTING, RUN_FINISHED,
-       STOPPED \returns string error, waiting, running, data, finished, stopped,
-       idle
-    */
-    static std::string runStatusType(runStatus s) {
-        switch (s) {
-        case ERROR:
-            return std::string("error");
-        case WAITING:
-            return std::string("waiting");
-        case RUNNING:
-            return std::string("running");
-        case TRANSMITTING:
-            return std::string("data");
-        case RUN_FINISHED:
-            return std::string("finished");
-        case STOPPED:
-            return std::string("stopped");
-        default:
-            return std::string("idle");
-        }
-    };
-
-    /** returns string from file format index
-        \param s can be BINARY, HDF5
-        \returns string binary, hdf5
-    */
-    static std::string getFileFormatType(fileFormat f) {
-        switch (f) {
-        case HDF5:
-            return std::string("hdf5");
-        case BINARY:
-            return std::string("binary");
-        default:
-            return std::string("unknown");
-        }
-    };
-
-    /**
-     * Returns string of frame discard policy index
-     * @param f can be NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES
-     * @returns No Discard, Discard Empty Frames, Discard Partial Frames,
-     * unknown
-     */
-    static std::string getFrameDiscardPolicyType(frameDiscardPolicy f) {
-        switch (f) {
-        case NO_DISCARD:
-            return std::string("No Discard");
-        case DISCARD_EMPTY_FRAMES:
-            return std::string("Discard Empty Frames");
-        case DISCARD_PARTIAL_FRAMES:
-            return std::string("Discard Partial Frames");
-        default:
-            return std::string("unknown");
-        }
-    };
-
-    /** returns std::string from external signal type index
-        \param f can be TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,
-        \returns std::string  trigger_in_rising_edge, trigger_in_falling_edge, unknown
-    */
-    static std::string externalSignalType(externalSignalFlag f) {
-        switch (f) {
-        case TRIGGER_IN_RISING_EDGE:
-            return std::string("trigger_in_rising_edge");
-        case TRIGGER_IN_FALLING_EDGE:
-            return std::string("trigger_in_falling_edge");
-        default:
-            return std::string("unknown");
-        }
-    };
-
-    /** returns external signal type index from std::string
-        \param sval  trigger_in_rising_edge, trigger_in_falling_edge, unknown 
-        \returns can be TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,
-       GET_EXTERNAL_SIGNAL_FLAG (if unknown)
-    */
-
-    static externalSignalFlag externalSignalType(std::string sval) {
-        if (sval == "trigger_in_rising_edge")
-            return TRIGGER_IN_RISING_EDGE;
-        if (sval == "trigger_in_falling_edge")
-            return TRIGGER_IN_FALLING_EDGE;
-        return GET_EXTERNAL_SIGNAL_FLAG;
-    };
-
-    /** returns detector settings std::string from index
-        \param s can be STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN,
-       MEDIUMGAIN, VERYHIGHGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2,
-       FORCESWITCHG1, FORCESWITCHG2, GET_SETTINGS \returns standard, fast,
-       highgain, dynamicgain, lowgain, mediumgain, veryhighgain, 
-        dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2,
-       verylowgain, undefined
-    */
-    static std::string getDetectorSettings(detectorSettings s) {
-        switch (s) {
-        case STANDARD:
-            return std::string("standard");
-        case FAST:
-            return std::string("fast");
-        case HIGHGAIN:
-            return std::string("highgain");
-        case DYNAMICGAIN:
-            return std::string("dynamicgain");
-        case LOWGAIN:
-            return std::string("lowgain");
-        case MEDIUMGAIN:
-            return std::string("mediumgain");
-        case VERYHIGHGAIN:
-            return std::string("veryhighgain");
-        case DYNAMICHG0:
-            return std::string("dynamichg0");
-        case FIXGAIN1:
-            return std::string("fixgain1");
-        case FIXGAIN2:
-            return std::string("fixgain2");
-        case FORCESWITCHG1:
-            return std::string("forceswitchg1");
-        case FORCESWITCHG2:
-            return std::string("forceswitchg2");
-        case VERYLOWGAIN:
-            return std::string("verylowgain");
-        case UNINITIALIZED:
-            return std::string("uninitialized");
-        default:
-            return std::string("undefined");
-        }
-    };
-
-    /** returns detector settings std::string from index
-        \param s can be standard, fast, highgain, dynamicgain, lowgain,
-       mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2,
-       forceswitchg1, forceswitchg2, undefined \returns   setting index
-       STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN,
-       VERYHIGHGAIN,DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1,
-       FORCESWITCHG2, VERYLOWGAIN, GET_SETTINGS
-    */
-
-    static detectorSettings getDetectorSettings(std::string s) {
-        if (s == "standard")
-            return STANDARD;
-        if (s == "fast")
-            return FAST;
-        if (s == "highgain")
-            return HIGHGAIN;
-        if (s == "dynamicgain")
-            return DYNAMICGAIN;
-        if (s == "lowgain")
-            return LOWGAIN;
-        if (s == "mediumgain")
-            return MEDIUMGAIN;
-        if (s == "veryhighgain")
-            return VERYHIGHGAIN;
-        if (s == "dynamichg0")
-            return DYNAMICHG0;
-        if (s == "fixgain1")
-            return FIXGAIN1;
-        if (s == "fixgain2")
-            return FIXGAIN2;
-        if (s == "forceswitchg1")
-            return FORCESWITCHG1;
-        if (s == "forceswitchg2")
-            return FORCESWITCHG2;
-        if (s == "verylowgain")
-            return VERYLOWGAIN;
-        return GET_SETTINGS;
-    };
-
-    /**
-       returns external communication mode std::string from index
-       \param f can be AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER,
-       GET_TIMING_MODE \returns  auto, trigger, gating,
-       burst_trigger, unknown
-    */
-
-    static std::string timingModeType(timingMode f) {
-        switch (f) {
-        case AUTO_TIMING:
-            return std::string("auto");
-        case TRIGGER_EXPOSURE:
-            return std::string("trigger");
-        case GATED:
-            return std::string("gating");
-        case BURST_TRIGGER:
-            return std::string("burst_trigger");
-        default:
-            return std::string("unknown");
-        }
-    };
-
-    /**
-       returns external communication mode index from std::string
-       \param sval can be auto, trigger,  gating, burst_trigger
-       \returns AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER,
-       GET_TIMING_MODE
-    */
-
-    static timingMode timingModeType(std::string sval) {
-        if (sval == "auto")
-            return AUTO_TIMING;
-        if (sval == "trigger")
-            return TRIGGER_EXPOSURE;
-        if (sval == "gating")
-            return GATED;
-        if (sval == "burst_trigger")
-            return BURST_TRIGGER;
-        return GET_TIMING_MODE;
-    };
-
-    /** returns std::string from file format index
-        \param s can be RAW, HDF5
-        \returns std::string raw, hdf5
-    */
-    static std::string fileFormats(fileFormat f) {
-        switch (f) {
-        case BINARY:
-            return std::string("binary");
-        case HDF5:
-            return std::string("hdf5");
-        default:
-            return std::string("unknown");
-        }
-    };
 
     /** returns std::string from timer index
         \param s can be FRAME_NUMBER,ACQUISITION_TIME,FRAME_PERIOD,
-       DELAY_AFTER_TRIGGER, CYCLES_NUMBER,
+       DELAY_AFTER_TRIGGER, TRIGGER_NUMBER,
        ACTUAL_TIME,MEASUREMENT_TIME,
        PROGRESS,FRAMES_FROM_START,FRAMES_FROM_START_PG,ANALOG_SAMPLES,DIGITAL_SAMPLES,SUBFRAME_ACQUISITION_TIME,STORAGE_CELL_NUMBER,
        SUBFRAME_DEADTIME \returns std::string
        frame_number,acquisition_time,frame_period,
-       delay_after_trigger, cycles_number,
+       delay_after_trigger, triggers_number,
        actual_time,measurement_time,
        progress,frames_from_start,frames_from_start_pg,analog_samples, digital_samples,subframe_acquisition_time,storage_cell_number,
        SUBFRAME_DEADTIME
@@ -872,8 +603,8 @@ format
             return std::string("frame_period");
         case DELAY_AFTER_TRIGGER:
             return std::string("delay_after_trigger");
-        case CYCLES_NUMBER:
-            return std::string("cycles_number");
+        case TRIGGER_NUMBER:
+            return std::string("triggers_number");
         case ACTUAL_TIME:
             return std::string("actual_time");
         case MEASUREMENT_TIME:
@@ -899,83 +630,6 @@ format
         }
     };
 
-    /** returns string from readoutMode */
-    static std::string getReadoutModeType(readoutMode mode) {
-        switch(mode) {      
-        case ANALOG_ONLY:       
-            return "analog";   
-        case DIGITAL_ONLY:      
-            return "digital";
-        case ANALOG_AND_DIGITAL: 
-            return "analog_digital";
-        default:                
-            return "Unknown";
-        }
-    };
-
-   /** returns readoutMode from string */
-    static readoutMode getReadoutModeType(std::string smode) {
-        if (smode == "analog")          
-            return ANALOG_ONLY;
-        if (smode == "digital")         
-            return DIGITAL_ONLY;
-        if (smode == "analog_digital")  
-            return ANALOG_AND_DIGITAL;
-        throw sls::RuntimeError("Unknown readout mode " + smode);
-    }; 
-
-    /** returns string from speedLevel */
-    static std::string getSpeedLevelType(speedLevel mode) {
-        switch(mode) {      
-        case FULL_SPEED:       
-            return "full_speed";   
-        case HALF_SPEED:      
-            return "half_speed";
-        case QUARTER_SPEED: 
-            return "quarter_speed";
-        // default:                
-        //     return "Unknown";
-        }
-    };
-
-   /** returns speedLevel from string */
-    static speedLevel getSpeedLevelType(std::string smode) {
-        if (smode == "full_speed")          
-            return FULL_SPEED;
-        if (smode == "half_speed")         
-            return HALF_SPEED;
-        if (smode == "quarter_speed")  
-            return QUARTER_SPEED;
-        throw sls::RuntimeError("Unknown speed level mode " + smode);
-    }; 
-
-    /**
-       @short returns adc index from std::string
-       \param s can be temp_fpga, temp_fpgaext, temp_10ge, temp_dcdc, temp_sodl,
-       temp_sodr, temp_fpgafl, temp_fpgafr \returns  TEMPERATURE_FPGA,
-       TEMPERATURE_FPGAEXT, TEMPERATURE_10GE, TEMPERATURE_DCDC,
-       TEMPERATURE_SODL, TEMPERATURE_SODR, TEMPERATURE_FPGA2, TEMPERATURE_FPGA3,
-       -1 when unknown mode
-    */
-    static int getADCIndex(std::string s) {
-        if (s == "temp_fpga")
-            return TEMPERATURE_FPGA;
-        if (s == "temp_fpgaext")
-            return TEMPERATURE_FPGAEXT;
-        if (s == "temp_10ge")
-            return TEMPERATURE_10GE;
-        if (s == "temp_dcdc")
-            return TEMPERATURE_DCDC;
-        if (s == "temp_sodl")
-            return TEMPERATURE_SODL;
-        if (s == "temp_sodr")
-            return TEMPERATURE_SODR;
-        if (s == "temp_fpgafl")
-            return TEMPERATURE_FPGA2;
-        if (s == "temp_fpgafr")
-            return TEMPERATURE_FPGA3;
-        return -1;
-    };
 
     /**
        @short returns dac index from std::string
@@ -1007,38 +661,6 @@ format
         return -1;
     };
 
-    /**
-       @short returns receiver frame discard policy from std::string
-       \param s can be nodiscard, discardempty, discardpartial
-       \returns NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES,
-       GET_FRAME_DISCARD_POLICY when unknown mode
-    */
-    static frameDiscardPolicy getReceiverFrameDiscardPolicy(std::string s) {
-        if (s == "nodiscard")
-            return NO_DISCARD;
-        if (s == "discardempty")
-            return DISCARD_EMPTY_FRAMES;
-        if (s == "discardpartial")
-            return DISCARD_PARTIAL_FRAMES;
-        return GET_FRAME_DISCARD_POLICY;
-    };
-
-    /** returns std::string from frame discard policy
-        \param f can be NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES
-        \returns std::string nodiscard, discardempty, discardpartial, unknown
-    */
-    static std::string getReceiverFrameDiscardPolicy(frameDiscardPolicy f) {
-        switch (f) {
-        case NO_DISCARD:
-            return std::string("nodiscard");
-        case DISCARD_EMPTY_FRAMES:
-            return std::string("discardempty");
-        case DISCARD_PARTIAL_FRAMES:
-            return std::string("discardpartial");
-        default:
-            return std::string("unknown");
-        }
-    };
 
     /**
      * returns frameModeType as enum
@@ -1215,9 +837,7 @@ struct detParameters {
             nGappixelsY = 0;
             break;    
         default:
-            throw sls::RuntimeError(
-                "Unknown detector type! " +
-                slsDetectorDefs::detectorTypeToString(type));
+            throw sls::RuntimeError("Unknown detector type! " + std::to_string(type));
         }
     }
 };

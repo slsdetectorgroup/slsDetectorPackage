@@ -54,7 +54,7 @@ def freeze(cls):
 
 
 @freeze
-class ExperimentalDetector(CppDetectorApi):
+class Detector(CppDetectorApi):
     """
     This class is the base for detector specific 
     interfaces. Most functions exists in two versions
@@ -425,54 +425,88 @@ class ExperimentalDetector(CppDetectorApi):
     def zmqip(self, ip):
         self.setClientZmqIp(ip)
 
-    #TODO! Change to dst
+
     @property
-    def rx_udpip(self):
+    def udp_dstip(self):
         return element_if_equal(self.getDestinationUDPIP())
 
-    @rx_udpip.setter
-    def rx_udpip(self, ip):
+    @udp_dstip.setter
+    def udp_dstip(self, ip):
         self.getDestinationUDPIP(ip)
+
     @property
-    def rx_udpip2(self):
+    def udp_dstip2(self):
         return element_if_equal(self.getDestinationUDPIP2())
 
-    @rx_udpip2.setter
-    def rx_udpip2(self, ip):
+    @udp_dstip2.setter
+    def udp_dstip2(self, ip):
         self.getDestinationUDPIP2(ip)
 
     @property
-    def rx_udpmac(self):
+    def udp_dstmac(self):
         return element_if_equal(self.getDestinationUDPMAC())
 
-    @rx_udpmac.setter
-    def rx_udpmac(self, mac):
+    @udp_dstmac.setter
+    def udp_dstmac(self, mac):
         self.getDestinationUDPMAC2(mac)
 
     @property
-    def rx_udpmac2(self):
+    def udp_dstmac2(self):
         return element_if_equal(self.getDestinationUDPMAC2())
 
-    @rx_udpmac2.setter
-    def rx_udpmac2(self, mac):
+    @udp_dstmac2.setter
+    def udp_dstmac2(self, mac):
         self.getDestinationUDPMAC2(mac)
 
 
     @property
-    def detectormac(self):
-        return element_if_equal(self.getSourceUDPMAC())
+    def udp_dstport(self):
+        return element_if_equal(self.getDestinationUDPPort())
 
-    @detectormac.setter
-    def detectormac(self, mac):
-        self.setSourceUDPMAC()
+    @udp_dstport.setter
+    def udp_dstport(self, port):
+        self.setDestinationUDPPort(port)
 
     @property
-    def detectormac2(self):
+    def udp_dstport2(self):
+        return element_if_equal(self.getDestinationUDPPort2())
+
+    @udp_dstport2.setter
+    def udp_dstport2(self, port):
+        self.setDestinationUDPPort2(port)
+
+    @property
+    def src_udpmac(self):
+        return element_if_equal(self.getSourceUDPMAC())
+
+    @src_udpmac.setter
+    def src_udpmac(self, mac):
+        self.setSourceUDPMAC(mac)
+
+    @property
+    def src_udpip2(self):
+        return element_if_equal(self.getSourceUDPIP())
+
+    @src_udpip2.setter
+    def src_udpip2(self, ip):
+        self.setSourceUDPIP(ip)
+
+    @property
+    def src_udpip(self):
+        return element_if_equal(self.getSourceUDPIP())
+
+    @src_udpip.setter
+    def src_udpip(self, ip):
+        self.setSourceUDPIP(ip)
+
+
+    @property
+    def src_udpmac2(self):
         return element_if_equal(self.getSourceUDPMAC2())
 
-    @detectormac2.setter
-    def detectormac2(self, mac):
-        self.setSourceUDPMAC2()
+    @src_udpmac2.setter
+    def src_udpmac2(self, mac):
+        self.setSourceUDPMAC2(mac)
 
     @property
     def vhighvoltage(self):
@@ -487,12 +521,12 @@ class ExperimentalDetector(CppDetectorApi):
         return self.getUserDetails()
 
     @property
-    def settingsdir(self):
-        return element_if_equal(self.getSettingsDir())
+    def settingspath(self):
+        return element_if_equal(self.getSettingsPath())
 
-    @settingsdir.setter
-    def settingsdir(self, dir):
-        self.setSettingsDir(dir)
+    @settingspath.setter
+    def settingspath(self, path):
+        self.setSettingsPath(path)
 
     @property
     def status(self):

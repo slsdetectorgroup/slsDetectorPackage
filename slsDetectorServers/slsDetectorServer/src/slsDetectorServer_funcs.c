@@ -4729,7 +4729,11 @@ int set_num_interfaces(int file_des) {
 #else
 	// only set
 	if (Server_VerifyLock() == OK) {
-		if (check_detector_idle() == OK) {
+		if (arg < 1 || arg > 2) {
+			ret = FAIL;
+			sprintf(mess, "Could not number of interfaces to %d. Options[1, 2]\n", arg);
+			FILE_LOG(logERROR,(mess));
+		} else if (check_detector_idle() == OK) {
 			if (getNumberofUDPInterfaces() != arg) {
 				setNumberofUDPInterfaces(arg);
 				calculate_and_set_position(); // aleady configures mac
@@ -4774,7 +4778,11 @@ int set_interface_sel(int file_des) {
 #else
 	// only set
 	if (Server_VerifyLock() == OK) {
-		if (check_detector_idle() == OK) {
+		if (arg < 0 || arg > 1) {
+			ret = FAIL;
+			sprintf(mess, "Could not set primary interface %d. Options[0, 1]\n", arg);
+			FILE_LOG(logERROR,(mess));
+		} else if (check_detector_idle() == OK) {
 			if (getPrimaryInterface() != arg) {
 				selectPrimaryInterface(arg);
 				configure_mac();	

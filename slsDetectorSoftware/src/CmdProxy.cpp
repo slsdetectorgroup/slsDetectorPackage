@@ -789,7 +789,7 @@ std::string CmdProxy::TemperatureEvent(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);  
         }        
-        if (std::stoi(args[1]) != 0) {
+        if (std::stoi(args[0]) != 0) {
             throw sls::RuntimeError("Unknown argument for temp event. Did you mean 0 to reset event?");
         }                        
         det->resetTemperatureEvent();  

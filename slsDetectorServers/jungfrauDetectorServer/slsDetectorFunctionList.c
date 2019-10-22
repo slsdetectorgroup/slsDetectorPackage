@@ -1620,6 +1620,7 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value) {
 			return ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST);
 			
 		case FLOWCTRL_10G:
+			if (value >= 0) {
 				if (value == 0) {
 					FILE_LOG(logINFO, ("Switching off 10G flow control\n"));
 					bus_w(CONFIG_REG, bus_r(CONFIG_REG) &~ CONFIG_ETHRNT_FLW_CNTRL_MSK);
@@ -1627,6 +1628,7 @@ int setNetworkParameter(enum NETWORKINDEX mode, int value) {
 					FILE_LOG(logINFO, ("Switching on 10G flow control\n"));
 					bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_ETHRNT_FLW_CNTRL_MSK);
 				}
+			}
 			return ((bus_r(CONFIG_REG) & CONFIG_ETHRNT_FLW_CNTRL_MSK) >> CONFIG_ETHRNT_FLW_CNTRL_OFST);
 
 		default:

@@ -645,7 +645,7 @@ TEST_CASE("exptimel", "[.cmd][.gotthard]") {
 
 
 TEST_CASE("periodl", "[.cmd][.gotthard]") {
-    if (test::type == slsDetectorDefs::GOTTHARD) {   
+    if (test::type == slsDetectorDefs::GOTTHARD || test::type == slsDetectorDefs::JUNGFRAU) {   
         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 2", PUT));
         REQUIRE_NOTHROW(multiSlsDetectorClient("period 5", PUT));        
         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
@@ -693,20 +693,20 @@ TEST_CASE("storagecell_delay", "[.cmd][.jungfrau]") {
     if (test::type == slsDetectorDefs::JUNGFRAU) {  
         {
             std::ostringstream oss;
-            multiSlsDetectorClient("storagecell_delay 2.25 ms", PUT, nullptr, oss);
-            REQUIRE(oss.str() == "storagecell_delay 2.25 ms\n");
+            multiSlsDetectorClient("storagecell_delay 1.62ms", PUT, nullptr, oss);
+            REQUIRE(oss.str() == "storagecell_delay 1.62ms\n");
         }
         {
             std::ostringstream oss;
             multiSlsDetectorClient("storagecell_delay", GET, nullptr, oss);
-            REQUIRE(oss.str() == "storagecell_delay 2.25s\n");
+            REQUIRE(oss.str() == "storagecell_delay 1.62ms\n");
         }
         {
             std::ostringstream oss;
             multiSlsDetectorClient("storagecell_delay 0", PUT, nullptr, oss);
             REQUIRE(oss.str() == "storagecell_delay 0\n");
         }
-    REQUIRE_THROWS(multiSlsDetectorClient("storagecell_delay 1638400 ns", PUT));       
+    REQUIRE_THROWS(multiSlsDetectorClient("storagecell_delay 1638376ns", PUT));       
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("storagecell_delay", GET));
     }

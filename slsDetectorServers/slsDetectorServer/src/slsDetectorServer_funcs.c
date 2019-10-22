@@ -1875,7 +1875,7 @@ int set_timer(int file_des) {
 	    case STORAGE_CELL_DELAY:
 	        if (tns > MAX_STORAGE_CELL_DLY_NS_VAL) {
 	            ret = FAIL;
-	            sprintf(mess,"Max Storage cell delay value should not exceed %d ns\n", MAX_STORAGE_CELL_DLY_NS_VAL);
+	            sprintf(mess,"Max Storage cell delay value should not exceed %lld ns\n", (long long unsigned int)MAX_STORAGE_CELL_DLY_NS_VAL);
 	            FILE_LOG(logERROR,(mess));
 	            break;
 	        }

@@ -1096,7 +1096,7 @@ class CmdProxy {
                     "[0-15]\n\t[Jungfrau] Storage cell that stores the first acquisition of the series. Default is 15. For advanced users only.");  
 
     TIME_COMMAND(storagecell_delay, getStorageCellDelay, setStorageCellDelay,
-                 "[duration (0-1638375 ns)] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Additional time delay between 2 storage cells. For advanced users only. Resolution is 25 ns.");
+                 "[duration (0-1638375 ns)] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] Additional time delay between 2 consecutive exposures in burst mode (total time gap = (ET + 1 + 86) * 25ns). For advanced users only.");
 
 
     /* Gotthard Specific */

@@ -653,7 +653,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val) {
                     ((val << ASIC_CTRL_EXPSRE_TMR_OFST) & ASIC_CTRL_EXPSRE_TMR_MSK));
 		}
 
-		retval = ((bus_r(ASIC_CTRL_REG) & ASIC_CTRL_EXPSRE_TMR_MSK) >> ASIC_CTRL_EXPSRE_TMR_OFST);
+		retval = (((int64_t)((bus_r(ASIC_CTRL_REG) & ASIC_CTRL_EXPSRE_TMR_MSK) >> ASIC_CTRL_EXPSRE_TMR_OFST))/ (1E-3 * CLK_RUN));
 		FILE_LOG(logDEBUG1, ("Getting storage cell delay: %lldns\n", (long long int)retval));
 		break;
 

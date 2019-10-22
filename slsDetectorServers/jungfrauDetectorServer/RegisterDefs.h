@@ -154,44 +154,6 @@
 #define ADC_PORT_INVERT_ADC_3_OFST      (24)
 #define ADC_PORT_INVERT_ADC_3_MSK       (0x000000FF << ADC_PORT_INVERT_ADC_3_OFST)
 
-/* Receiver IP Address Register */
-#define RX_IP_REG    					(0x45 << MEM_MAP_SHIFT)
-
-/* UDP Port */
-#define UDP_PORT_REG    				(0x46 << MEM_MAP_SHIFT)
-
-#define UDP_PORT_RX_OFST				(0)
-#define UDP_PORT_RX_MSK					(0x0000FFFF << UDP_PORT_RX_OFST)
-#define UDP_PORT_TX_OFST				(16)
-#define UDP_PORT_TX_MSK					(0x0000FFFF << UDP_PORT_TX_OFST)
-
-/* Receiver Mac Address 64 bit Register */
-#define RX_MAC_LSB_REG					(0x47 << MEM_MAP_SHIFT)
-#define RX_MAC_MSB_REG					(0x48 << MEM_MAP_SHIFT)
-
-#define RX_MAC_LSB_OFST					(0)
-#define RX_MAC_LSB_MSK					(0xFFFFFFFF << RX_MAC_LSB_OFST)
-#define RX_MAC_MSB_OFST					(0)
-#define RX_MAC_MSB_MSK					(0x0000FFFF << RX_MAC_MSB_OFST)
-
-/* Detector/ Transmitter Mac Address 64 bit Register */
-#define TX_MAC_LSB_REG					(0x49 << MEM_MAP_SHIFT)
-#define TX_MAC_MSB_REG					(0x4A << MEM_MAP_SHIFT)
-
-#define TX_MAC_LSB_OFST					(0)
-#define TX_MAC_LSB_MSK					(0xFFFFFFFF << TX_MAC_LSB_OFST)
-#define TX_MAC_MSB_OFST					(0)
-#define TX_MAC_MSB_MSK					(0x0000FFFF << TX_MAC_MSB_OFST)
-
-/* Detector/ Transmitter IP Address Register */
-#define TX_IP_REG						(0x4B << MEM_MAP_SHIFT)
-
-/* Detector/ Transmitter IP Checksum Register */
-#define TX_IP_CHECKSUM_REG				(0x4C << MEM_MAP_SHIFT)
-
-#define TX_IP_CHECKSUM_OFST				(0)
-#define TX_IP_CHECKSUM_MSK				(0x0000FFFF << TX_IP_CHECKSUM_OFST)
-
 /* Configuration Register */
 #define CONFIG_REG            			(0x4D << MEM_MAP_SHIFT)
 
@@ -311,12 +273,16 @@
 #define SAMPLE_DECMT_FACTOR_QUARTER_VAL	((0x2 << SAMPLE_DGTL_DECMT_FACTOR_OFST) & SAMPLE_DGTL_DECMT_FACTOR_MSK)
 
 /** Vref Comp Mod Register */
-#define VREF_COMP_MOD_REG				(0x5C << MEM_MAP_SHIFT)
+#define EXT_DAQ_CTRL_REG				(0x5C << MEM_MAP_SHIFT)
 
-#define VREF_COMP_MOD_OFST              (0)
-#define VREF_COMP_MOD_MSK               (0x00000FFF << VREF_COMP_MOD_OFST)
-#define VREF_COMP_MOD_ENABLE_OFST       (31)
-#define VREF_COMP_MOD_ENABLE_MSK        (0x00000001 << VREF_COMP_MOD_ENABLE_OFST)
+#define EXT_DAQ_CTRL_VREF_COMP_OFST    (0)
+#define EXT_DAQ_CTRL_VREF_COMP_MSK     (0x00000FFF << EXT_DAQ_CTRL_VREF_COMP_OFST)
+#define EXT_DAQ_CTRL_CMP_LGC_ENBL_OFST (15)
+#define EXT_DAQ_CTRL_CMP_LGC_ENBL_MSK  (0x00000001 << EXT_DAQ_CTRL_CMP_LGC_ENBL_OFST)
+#define EXT_DAQ_CTRL_INPT_DETECT_OFST   (16)
+#define EXT_DAQ_CTRL_INPT_DETECT_MSK    (0x00000007 << EXT_DAQ_CTRL_INPT_DETECT_OFST)
+#define EXT_DAQ_CTRL_INPT_DETECT_ENBL_OFST (19)
+#define EXT_DAQ_CTRL_INPT_DETECT_ENBL_MSK  (0x00000001 << EXT_DAQ_CTRL_INPT_DETECT_ENBL_OFST)
 
 
 /** DAQ Register */

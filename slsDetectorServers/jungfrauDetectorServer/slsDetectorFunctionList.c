@@ -910,8 +910,8 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     if (LTC2620_SetDACValue((int)ind, val, mV, &dacval) == OK) {
         dacValues[ind] = dacval;
         if (ind == J_VREF_COMP && (val >= 0)) {//FIXME: if val == pwr down value, write 0?
-            bus_w (VREF_COMP_MOD_REG, (bus_r(VREF_COMP_MOD_REG) &~ (VREF_COMP_MOD_MSK))   // reset
-                    | ((val << VREF_COMP_MOD_OFST) & VREF_COMP_MOD_MSK));   // or it with value
+            bus_w (EXT_DAQ_CTRL_REG, (bus_r(EXT_DAQ_CTRL_REG) &~ (EXT_DAQ_CTRL_VREF_COMP_MSK))   // reset
+                    | ((val << EXT_DAQ_CTRL_VREF_COMP_OFST) & EXT_DAQ_CTRL_VREF_COMP_MSK));   // or it with value
         }
     }
 #endif
@@ -1360,15 +1360,15 @@ int autoCompDisable(int on) {
     if(on != -1){
         if(on){
             FILE_LOG(logINFO, ("Auto comp disable mode: on\n"));
-            bus_w(VREF_COMP_MOD_REG, bus_r(VREF_COMP_MOD_REG) | VREF_COMP_MOD_ENABLE_MSK);
+            bus_w(EXT_DAQ_CTRL_REG, bus_r(EXT_DAQ_CTRL_REG) | EXT_DAQ_CTRL_CMP_LGC_ENBL_MSK);
         }
         else{
             FILE_LOG(logINFO, ("Auto comp disable mode: off\n"));
-            bus_w(VREF_COMP_MOD_REG, bus_r(VREF_COMP_MOD_REG) & ~VREF_COMP_MOD_ENABLE_MSK);
+            bus_w(EXT_DAQ_CTRL_REG, bus_r(EXT_DAQ_CTRL_REG) & ~EXT_DAQ_CTRL_CMP_LGC_ENBL_MSK);
         }
     }
 
-    return (bus_r(VREF_COMP_MOD_REG) & VREF_COMP_MOD_ENABLE_MSK);
+    return ((bus_r(EXT_DAQ_CTRL_REG) & EXT_DAQ_CTRL_CMP_LGC_ENBL_MSK) >> EXT_DAQ_CTRL_CMP_LGC_ENBL_OFST);
 }
 
 void configureASICTimer() {

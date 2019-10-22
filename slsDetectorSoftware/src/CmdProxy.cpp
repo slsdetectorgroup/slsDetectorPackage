@@ -817,7 +817,7 @@ std::string CmdProxy::ROI(int action) {
             os << '[' << it.xmin << ", " << it.xmax << "] \n";     
         }
     } else if (action == defs::PUT_ACTION) {
-        if (det_id == -1) { 
+        if (det_id == -1 && det->size() > 1) { 
             throw sls::RuntimeError("Cannot execute ROI at multi module level");
         }        
         if (args.size() != 2) {

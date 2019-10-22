@@ -615,7 +615,7 @@ TEST_CASE("extsig", "[.cmd][.gotthard]") {
             REQUIRE_NOTHROW(multiSlsDetectorClient("extsig", GET, nullptr, oss));
             REQUIRE(oss.str() == "extsig trigger_in_rising_edge\n");
         }
-        REQUIRE_NOTHROW(multiSlsDetectorClient("extsig gating", PUT));         
+        REQUIRE_THROWS(multiSlsDetectorClient("extsig gating", PUT));         
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("extsig", GET));
     }
@@ -680,12 +680,13 @@ TEST_CASE("roi", "[.cmd][.gotthard]") {
         }
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(multiSlsDetectorClient("clearroi", GET, nullptr, oss));
+            REQUIRE_NOTHROW(multiSlsDetectorClient("clearroi", PUT, nullptr, oss));
             REQUIRE(oss.str() == "clearroi [-1, -1] \n");
         }
     REQUIRE_THROWS(multiSlsDetectorClient("roi 0 256", PUT));       
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("roi", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("clearroi", PUT));
     }
 }
 
@@ -1893,9 +1894,11 @@ TEST_CASE("maxadcphaseshift", "[.cmd][.ctb][.jungfrau]") {
 }
 
 TEST_CASE("adcphase", "[.cmd][.ctb][.jungfrau][.gotthard]") {
-    if (test::type != slsDetectorDefs::CHIPTESTBOARD && test::type != slsDetectorDefs::JUNGFRAU && test::type != slsDetectorDefs::GOTTHARD) {
-       REQUIRE_THROWS(multiSlsDetectorClient("adcphase", GET));       
-    } else { 
+
+    if (test::type == slsDetectorDefs::GOTTHARD) { 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase 120", PUT));
+        // get is -1
+    } else if (test::type == slsDetectorDefs::CHIPTESTBOARD || test::type == slsDetectorDefs::JUNGFRAU) { 
         int prev_val = 0;   
         {
             std::ostringstream oss;
@@ -1924,7 +1927,9 @@ TEST_CASE("adcphase", "[.cmd][.ctb][.jungfrau][.gotthard]") {
             REQUIRE(oss.str() == "adcphase 20 deg\n");
         }          
         REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase " + std::to_string(prev_val), PUT));                    
-    } 
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("adcphase", GET));      
+    }
 }
 
 TEST_CASE("syncclk", "[.cmd][.ctb]") {
@@ -2249,6 +2254,10 @@ TEST_CASE("triggersl", "[.cmd][.jungfrau][gotthard][ctb]") {
 TEST_CASE("delayl", "[.cmd][.jungfrau][gotthard][ctb]") {
     if(test::type == slsDetectorDefs::EIGER) {
         REQUIRE_THROWS(multiSlsDetectorClient("delayl", GET));       
+    } else  if(test::type == slsDetectorDefs::GOTTHARD) {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("delay 0", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("delayl", GET));
+        // delayl always gives 0 for gotthard
     } else {
         REQUIRE_NOTHROW(multiSlsDetectorClient("timing trigger", PUT));
         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));

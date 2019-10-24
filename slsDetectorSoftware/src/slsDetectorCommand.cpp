@@ -978,20 +978,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
     ++i;
 
-    /*! \page prototype
-   - <b>patmask [m]</b> sets/gets the 64 bit mask (hex) applied to every pattern. Only the bits from \c patsetbit are selected to mask for the corresponding bit value from \c m mask. Returns \c (uint64_t).
-	 */
-    descrToFuncMap[i].m_pFuncName = "patmask";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
-   - <b>patsetbit [m]</b> selects/gets the 64 bits  (hex) that the patmask will be applied to every pattern. Only the bits from \c m mask are selected to mask for the corresponding bit value from \c patmask. Returns \c (uint64_t).
-	 */
-    descrToFuncMap[i].m_pFuncName = "patsetbit";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
     numberOfCommands = i;
 
     // #ifdef VERBOSE
@@ -2125,68 +2111,6 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::helpPattern(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "patmask m \t sets the 64 bit mask (hex) applied to every pattern. Only the bits from patsetbit are selected to mask for the corresponding bit value from m mask" << std::endl;
-        os << "patsetbit m \t selects bits (hex) of the 64 bits that the patmask will be applied to every pattern. Only the bits from m mask are selected to mask for the corresponding bit value from patmask." << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "patmask \t gets the 64 bit mask (hex) applied to every pattern." << std::endl;
-        os << "patsetbit \t gets 64 bit mask (hex) of the selected bits that the patmask will be applied to every pattern. " << std::endl;
-
-    }
-    return os.str();
-}
-
-std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == HELP_ACTION)
-        return helpPattern(action);
-    /********
-
-  Must implement set ctb functions in slsDetector and multiSlsDetector
-
-	 **********/
-    std::string fname;
-    uint64_t word;
-
-
-    std::ostringstream os;
-     if (cmd == "patmask") {
-        if (action == PUT_ACTION) {
-
-            if (sscanf(args[1], "%lx", &word))
-                ;
-            else
-                return std::string("Could not scan patmask argument (should be in hex) ") + std::string(args[1]);
-
-            myDet->setPatternMask(word, detPos);
-        }
-
-        os << "0x" << std::setw(16) << std::setfill('0') << std::hex << myDet->getPatternMask(detPos) << std::dec;
-
-    } else if (cmd == "patsetbit") {
-        if (action == PUT_ACTION) {
-
-            if (sscanf(args[1], "%lx", &word))
-                ;
-            else
-                return std::string("Could not scan patsetbit argument (should be in hex) ") + std::string(args[1]);
-
-            myDet->setPatternBitMask(word, detPos);
-        }
-
-        os << "0x" << std::setw(16) << std::setfill('0') << std::hex << myDet->getPatternBitMask(detPos) << std::dec;
-
-    } 
-
-    else
-        return helpPattern(action);
-
-    return os.str();
-}
 
 
 std::string slsDetectorCommand::helpProcessor(int action) {

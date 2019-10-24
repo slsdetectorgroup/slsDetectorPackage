@@ -9,6 +9,49 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+TEST_CASE("patsetbit", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        uint64_t val = 0;   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patsetbit", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("patsetbit "));
+            val = stoul(s, 0, 16);        
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patsetbit 0x842f020204200dc0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "patsetbit 0x842f020204200dc0\n");
+        }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("patsetbit " + sls::ToStringHex(val), PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("patsetbit", GET));
+    }
+}
+
+
+TEST_CASE("patmask", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        uint64_t val = 0;   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patmask", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("patmask "));
+            val = stoul(s, 0, 16);        
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patmask 0x842f020204200dc0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "patmask 0x842f020204200dc0\n");
+        }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("patmask " + sls::ToStringHex(val), PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("patmask", GET));
+    }
+}
+
+
 TEST_CASE("patwaittime", "[.cmd][.ctb]") {
     for (int loop = 0; loop < 3; ++loop) {
         if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 

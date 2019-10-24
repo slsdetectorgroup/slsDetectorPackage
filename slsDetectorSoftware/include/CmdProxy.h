@@ -727,6 +727,8 @@ class CmdProxy {
                           {"patwaittime0", &CmdProxy::PatternWaitTime}, 
                           {"patwaittime1", &CmdProxy::PatternWaitTime}, 
                           {"patwaittime2", &CmdProxy::PatternWaitTime}, 
+                          {"patmask", &CmdProxy::patmask}, 
+                          {"patsetbit", &CmdProxy::patsetbit}, 
 
 
 
@@ -1252,6 +1254,12 @@ class CmdProxy {
 
     INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, std::stoull,
                     "[64 bit mask]\n\t[Ctb] 64 bit mask defining output clock enable.");
+
+    INTEGER_COMMAND_HEX(patmask, getPatternMask, setPatternMask, std::stoull,
+                    "[64 bit mask]\n\t[Ctb] 64 bit mask applied to every pattern. Only these bits for each pattern will be masked against.");
+
+    INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask, std::stoull,
+                    "[64 bit mask]\n\t[Ctb] 64 bit values applied to the selected patmask for every pattern.");                    
 
 
 

@@ -508,6 +508,7 @@ class CmdProxy {
                                     {"i_io", "im_io"}
 
                                     /* Pattern */
+                                    /* Moench */
                                    
 
                                     };
@@ -730,6 +731,8 @@ class CmdProxy {
                           {"patmask", &CmdProxy::patmask}, 
                           {"patsetbit", &CmdProxy::patsetbit}, 
 
+                          /* Moench */
+
 
 
 
@@ -794,6 +797,7 @@ class CmdProxy {
     std::string PatternLoopCycles(int action);
     std::string PatternWaitAddress(int action);
     std::string PatternWaitTime(int action);
+    /* Moench */
 
 
 
@@ -1261,6 +1265,9 @@ class CmdProxy {
     INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask, std::stoull,
                     "[64 bit mask]\n\t[Ctb] 64 bit values applied to the selected patmask for every pattern.");                    
 
+
+    /* Moench */
+    
 
 
 

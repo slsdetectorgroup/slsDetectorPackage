@@ -9,6 +9,51 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("patwaittime", "[.cmd][.ctb]") {
+    for (int loop = 0; loop < 3; ++loop) {
+        if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+            uint64_t val = 0;   
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(multiSlsDetectorClient("patwaittime" + std::to_string(loop), GET, nullptr, oss));
+                std::string s = (oss.str()).erase (0, strlen("patwaittime") + 2);
+                val = std::stoul(s);       
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(multiSlsDetectorClient("patwaittime" + std::to_string(loop) + " 8589936640", PUT, nullptr, oss));
+                REQUIRE(oss.str() == "patwaittime" + std::to_string(loop) + " 8589936640\n");
+            }
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patwaittime" + std::to_string(loop) + ' ' + std::to_string(val), PUT));
+        } else {
+            REQUIRE_THROWS(multiSlsDetectorClient("patwaittime" + std::to_string(loop), GET));
+        }
+    }
+}
+
+
+TEST_CASE("patwait", "[.cmd][.ctb]") {
+    for (int loop = 0; loop < 3; ++loop) {
+        if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+            int val = 0;   
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(multiSlsDetectorClient("patwait" + std::to_string(loop), GET, nullptr, oss));
+                std::string s = (oss.str()).erase (0, strlen("patwait") + 2);
+                val = stoul(s, 0, 16);       
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(multiSlsDetectorClient("patwait" + std::to_string(loop) + " 0x5c", PUT, nullptr, oss));
+                REQUIRE(oss.str() == "patwait" + std::to_string(loop) + " 0x5c\n");
+            }
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patwait" + std::to_string(loop) + ' ' + sls::ToStringHex(val), PUT));
+        } else {
+            REQUIRE_THROWS(multiSlsDetectorClient("patwait" + std::to_string(loop), GET));
+        }
+    }
+}
+
 TEST_CASE("patnloop", "[.cmd][.ctb]") {
     for (int loop = 0; loop < 3; ++loop) {
         if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 

@@ -1153,4 +1153,91 @@ std::string CmdProxy::PatternLoopCycles(int action) {
     return os.str();
 }
 
+std::string CmdProxy::PatternWaitAddress(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        if (cmd == "patwait0") {
+            os << "[addr] \n\t[Ctb] Wait 0 address." << '\n'; 
+        } else if (cmd == "patwait1") {
+            os << "[addr] \n\t[Ctb] Wait 1 address." << '\n'; 
+        } else if (cmd == "patwait2") {
+            os << "[addr] \n\t[Ctb] Wait 2 address." << '\n'; 
+        } else {
+            throw sls::RuntimeError("Unknown command, use list to list all commands");
+        }
+    } else {
+        int level = -1;
+        if (cmd == "patwait0") {
+            level = 0;
+        } else if (cmd == "patwait1") {
+            level = 1;
+        } else if (cmd == "patwait2") {
+            level = 2;
+        } else{
+            throw sls::RuntimeError("Unknown command, use list to list all commands");
+        }
+        if (action == defs::GET_ACTION) {
+            if (args.size() != 0) {                                
+                WrongNumberOfParameters(0);         
+            } 
+            auto t = det->getPatternWaitAddr(level, {det_id});   
+            os << OutStringHex(t) << '\n';
+        } else if (action == defs::PUT_ACTION) {   
+            if (args.size() != 1) {                                
+                WrongNumberOfParameters(1);         
+            }                  
+            det->setPatternWaitAddr(level, stoiHex(args[0]), {det_id}); 
+            os << args.front() << '\n';   
+        } else { 
+            throw sls::RuntimeError("Unknown action");
+        }
+    }
+    return os.str();
+}
+
+std::string CmdProxy::PatternWaitTime(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        if (cmd == "patwaittime0") {
+            os << "[n_clk] \n\t[Ctb] Wait 0 time in clock cycles." << '\n'; 
+        } else if (cmd == "patwaittime1") {
+            os << "[n_clk] \n\t[Ctb] Wait 1 time in clock cycles." << '\n'; 
+        } else if (cmd == "patwaittime2") {
+            os << "[n_clk] \n\t[Ctb] Wait 2 time in clock cycles." << '\n'; 
+        } else {
+            throw sls::RuntimeError("Unknown command, use list to list all commands");
+        }
+    } else {
+        int level = -1;
+        if (cmd == "patwaittime0") {
+            level = 0;
+        } else if (cmd == "patwaittime1") {
+            level = 1;
+        } else if (cmd == "patwaittime2") {
+            level = 2;
+        } else{
+            throw sls::RuntimeError("Unknown command, use list to list all commands");
+        }
+        if (action == defs::GET_ACTION) {
+            if (args.size() != 0) {                                
+                WrongNumberOfParameters(0);         
+            } 
+            auto t = det->getPatternWaitTime(level, {det_id});   
+            os << OutString(t) << '\n';
+        } else if (action == defs::PUT_ACTION) {   
+            if (args.size() != 1) {                                
+                WrongNumberOfParameters(1);         
+            }                  
+            det->setPatternWaitTime(level, std::stoul(args[0]), {det_id}); 
+            os << args.front() << '\n';   
+        } else { 
+            throw sls::RuntimeError("Unknown action");
+        }
+    }
+    return os.str();
+}
+
+
 } // namespace sls

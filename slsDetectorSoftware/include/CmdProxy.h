@@ -721,6 +721,13 @@ class CmdProxy {
                           {"patnloop0", &CmdProxy::PatternLoopCycles}, 
                           {"patnloop1", &CmdProxy::PatternLoopCycles}, 
                           {"patnloop2", &CmdProxy::PatternLoopCycles}, 
+                          {"patwait0", &CmdProxy::PatternWaitAddress}, 
+                          {"patwait1", &CmdProxy::PatternWaitAddress}, 
+                          {"patwait2", &CmdProxy::PatternWaitAddress}, 
+                          {"patwaittime0", &CmdProxy::PatternWaitTime}, 
+                          {"patwaittime1", &CmdProxy::PatternWaitTime}, 
+                          {"patwaittime2", &CmdProxy::PatternWaitTime}, 
+
 
 
 
@@ -783,6 +790,8 @@ class CmdProxy {
     std::string PatternWord(int action);
     std::string PatternLoopAddresses(int action);
     std::string PatternLoopCycles(int action);
+    std::string PatternWaitAddress(int action);
+    std::string PatternWaitTime(int action);
 
 
 

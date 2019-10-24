@@ -388,7 +388,7 @@ int receiveDataOnly(int file_des, void* buf,int length) {
 	if (total_received>0)
 		thisClientIP = dummyClientIP;
 
-	if (lastClientIP == thisClientIP) {
+	if (lastClientIP != thisClientIP) {
 		differentClients = 1;
 	}
 	else

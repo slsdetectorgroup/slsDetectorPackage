@@ -118,7 +118,7 @@ ctbLoop::ctbLoop(TGGroupFrame *page, int i, sls::Detector *det) : TGHorizontalFr
 
 void ctbLoop::setNLoops() {
   try{
-    myDet->setPatternLoops(id, -1, -1, eLoopNumber->GetNumber());
+    myDet->setPatternLoopCycles(id, eLoopNumber->GetNumber());
   } CATCH_DISPLAY ("Could not set number of pattern loops for level " + to_string(id) + ".", "ctbLoop::setNLoops")
 }
 
@@ -127,10 +127,12 @@ void ctbLoop::setNLoops() {
 void ctbLoop::update() {
   try{
 
-    auto loop = myDet->getPatternLoops(id).tsquash("Different values");
-    eLoopStartAddr->SetHexNumber(loop[0]);
-    eLoopStopAddr->SetHexNumber(loop[1]);
-    eLoopNumber->SetNumber(loop[2]);
+    auto loop = myDet->getPatternLoopCycles(id).tsquash("Different values");
+    eLoopNumber->SetNumber(loop);
+    auto loopaddr = myDet->getPatternLoopAddresses(id).tsquash("Different values");
+    eLoopStartAddr->SetHexNumber(loopaddr[0]);
+    eLoopStopAddr->SetHexNumber(loopaddr[1]);
+
 
   } CATCH_DISPLAY ("Could not get pattern loops for level " + to_string(id) + ".", "ctbLoop::update")
 }
@@ -825,7 +827,7 @@ void ctbPattern::update() {
   } CATCH_DISPLAY ("Could not get number of triggers.", "ctbPattern::update")
 
   try{
-    auto retval = myDet->getPatternLoops(-1).tsquash("Different values");
+    auto retval = myDet->getPatternLoopAddresses(-1).tsquash("Different values");
     eStartAddr->SetHexNumber(retval[0]);
     eStopAddr->SetHexNumber(retval[1]);
   } CATCH_DISPLAY ("Could not get dbit phase shift.", "ctbPattern::update")

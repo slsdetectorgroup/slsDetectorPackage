@@ -1063,4 +1063,94 @@ std::string CmdProxy::PatternWord(int action) {
 }
 
 
+std::string CmdProxy::PatternLoopAddresses(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        if (cmd == "patlimits") {
+            os << "[start addr] [stop addr] \n\t[Ctb] Limits of complete pattern." << '\n'; 
+        } else if (cmd == "patloop0") {
+            os << "[start addr] [stop addr] \n\t[Ctb] Limits of loop 0." << '\n'; 
+        } else if (cmd == "patloop1") {
+            os << "[start addr] [stop addr] \n\t[Ctb] Limits of loop 1." << '\n'; 
+        } else if (cmd == "patloop2") {
+            os << "[start addr] [stop addr] \n\t[Ctb] Limits of loop 2." << '\n'; 
+        } else {
+            throw sls::RuntimeError("Unknown command, use list to list all commands");
+        }
+    } else {
+        int level = -1;
+        if (cmd == "patlimits") {
+            level = -1;
+        } else if (cmd == "patloop0") {
+            level = 0;
+        } else if (cmd == "patloop1") {
+            level = 1;
+        } else if (cmd == "patloop2") {
+            level = 2;
+        } else{
+            throw sls::RuntimeError("Unknown command, use list to list all commands");
+        }
+        if (action == defs::GET_ACTION) {
+            if (args.size() != 0) {                                
+                WrongNumberOfParameters(0);         
+            } 
+            auto t = det->getPatternLoopAddresses(level, {det_id});   
+            os << OutStringHex(t) << '\n'; 
+        } else if (action == defs::PUT_ACTION) {   
+            if (args.size() != 2) {                                
+                WrongNumberOfParameters(2);         
+            }                 
+            det->setPatternLoopAddresses(level, stoiHex(args[0]), stoiHex(args[1]), {det_id}); 
+            os << sls::ToString(args) << '\n';   
+        } else { 
+            throw sls::RuntimeError("Unknown action");
+        }
+    }
+    return os.str();
+}
+
+std::string CmdProxy::PatternLoopCycles(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        if (cmd == "patnloop0") {
+            os << "[n_cycles] \n\t[Ctb] Number of cycles of loop 0." << '\n'; 
+        } else if (cmd == "patnloop1") {
+            os << "[n_cycles] \n\t[Ctb] Number of cycles of loop 1." << '\n'; 
+        } else if (cmd == "patnloop2") {
+            os << "[n_cycles] \n\t[Ctb] Number of cycles of loop 2." << '\n'; 
+        } else {
+            throw sls::RuntimeError("Unknown command, use list to list all commands");
+        }
+    } else {
+        int level = -1;
+        if (cmd == "patnloop0") {
+            level = 0;
+        } else if (cmd == "patnloop1") {
+            level = 1;
+        } else if (cmd == "patnloop2") {
+            level = 2;
+        } else{
+            throw sls::RuntimeError("Unknown command, use list to list all commands");
+        }
+        if (action == defs::GET_ACTION) {
+            if (args.size() != 0) {                                
+                WrongNumberOfParameters(0);         
+            } 
+            auto t = det->getPatternLoopCycles(level, {det_id});   
+            os << OutString(t) << '\n';
+        } else if (action == defs::PUT_ACTION) {   
+            if (args.size() != 1) {                                
+                WrongNumberOfParameters(1);         
+            }                  
+            det->setPatternLoopCycles(level, std::stoi(args[0]), {det_id}); 
+            os << args.front() << '\n';   
+        } else { 
+            throw sls::RuntimeError("Unknown action");
+        }
+    }
+    return os.str();
+}
+
 } // namespace sls

@@ -3243,17 +3243,24 @@ uint64_t slsDetector::setPatternWord(int addr, uint64_t word) {
     return retval;
 }
 
-std::array<int, 3> slsDetector::setPatternLoops(int level, int start, int stop,
-                                                int n) {
-    int args[]{level, start, stop, n};
-    std::array<int, 3> retvals{};
-    FILE_LOG(logDEBUG1) << "Setting Pat Loops, level: " << level
-                        << ", start: " << start << ", stop: " << stop
-                        << ", nloops: " << n;
-    sendToDetector(F_SET_PATTERN_LOOP, args, retvals);
-    FILE_LOG(logDEBUG1) << "Set Pat Loops: " << retvals[0] << ", " << retvals[1]
-                        << ", " << retvals[2];
+std::array<int, 2> slsDetector::setPatternLoopAddresses(int level, int start, int stop) {
+    int args[]{level, start, stop};
+    std::array<int, 2> retvals{};
+    FILE_LOG(logDEBUG1) << "Setting Pat Loop Addresses, level: " << level
+                        << ", start: " << start << ", stop: " << stop;
+    sendToDetector(F_SET_PATTERN_LOOP_ADDRESSES, args, retvals);
+    FILE_LOG(logDEBUG1) << "Set Pat Loop Addresses: " << retvals[0] << ", " << retvals[1];
     return retvals;
+}
+
+int slsDetector::setPatternLoopCycles(int level, int n) {
+    int args[]{level, n};
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Setting Pat Loop cycles, level: " << level
+                        << ",nloops: " << n;
+    sendToDetector(F_SET_PATTERN_LOOP_CYCLES, args, retval);
+    FILE_LOG(logDEBUG1) << "Set Pat Loop Cycles: " << retval;
+    return retval;
 }
 
 int slsDetector::setPatternWaitAddr(int level, int addr) {

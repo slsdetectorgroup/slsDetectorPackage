@@ -1620,11 +1620,19 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param level -1 complete pattern, 0,1,2, loop level
      * @param start start address for level 0-2, -1 gets
      * @param stop stop address for level 0-2, -1 gets
-     * @param n number of loops for level 0-2, -1 gets
-     * @returns array of start addr, stop addr and number of loops
+     * @returns array of start addr and stop addr
      */
-    std::array<int, 3> setPatternLoops(int level = -1, int start = -1,
-                                       int stop = -1, int n = -1);
+    std::array<int, 2> setPatternLoopAddresses(int level = -1, int start = -1,
+                                       int stop = -1);
+
+    /**
+     * Sets the pattern or loop limits (CTB/ Moench)
+     * @param level -1 complete pattern, 0,1,2, loop level
+     * @param n number of loops for level 0-2, -1 gets
+     * @returns number of loops
+     */
+    int setPatternLoopCycles(int level = -1, int n = -1);
+
 
     /**
      * Sets the wait address (CTB/ Moench)

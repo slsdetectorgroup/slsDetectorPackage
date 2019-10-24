@@ -1327,15 +1327,20 @@ void Detector::setPatternWord(int addr, uint64_t word, Positions pos) {
     pimpl->Parallel(&slsDetector::setPatternWord, pos, addr, word);
 }
 
-Result<std::array<int, 3>> Detector::getPatternLoops(int level,
-                                                     Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setPatternLoops, pos, level, -1, -1,
-                           -1);
+Result<std::array<int, 2>> Detector::getPatternLoopAddresses(int level, Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setPatternLoopAddresses, pos, level, -1, -1);
 }
 
-void Detector::setPatternLoops(int level, int start, int stop, int n,
-                               Positions pos) {
-    pimpl->Parallel(&slsDetector::setPatternLoops, pos, level, start, stop, n);
+void Detector::setPatternLoopAddresses(int level, int start, int stop, Positions pos) {
+    pimpl->Parallel(&slsDetector::setPatternLoopAddresses, pos, level, start, stop);
+}
+
+Result<int> Detector::getPatternLoopCycles(int level, Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setPatternLoopCycles, pos, level, -1);
+}
+
+void Detector::setPatternLoopCycles(int level, int n, Positions pos) {
+    pimpl->Parallel(&slsDetector::setPatternLoopCycles, pos, level, n);
 }
 
 Result<int> Detector::getPatternWaitAddr(int level, Positions pos) const {

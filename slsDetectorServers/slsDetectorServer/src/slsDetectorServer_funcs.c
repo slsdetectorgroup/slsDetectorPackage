@@ -204,7 +204,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
 	case F_SET_PATTERN_CLOCK_CONTROL:		return "F_SET_PATTERN_CLOCK_CONTROL";
 	case F_SET_PATTERN_WORD:				return "F_SET_PATTERN_WORD";
-	case F_SET_PATTERN_LOOP:				return "F_SET_PATTERN_LOOP";
+	case F_SET_PATTERN_LOOP_ADDRESSES:		return "F_SET_PATTERN_LOOP_ADDRESSES";
+	case F_SET_PATTERN_LOOP_CYCLES:			return "F_SET_PATTERN_LOOP_CYCLES";
 	case F_SET_PATTERN_WAIT_ADDR:			return "F_SET_PATTERN_WAIT_ADDR";
 	case F_SET_PATTERN_WAIT_TIME:			return "F_SET_PATTERN_WAIT_TIME";
 	case F_SET_PATTERN_MASK:				return "F_SET_PATTERN_MASK";
@@ -332,7 +333,8 @@ void function_table() {
 	flist[F_SET_PATTERN_IO_CONTROL]				= &set_pattern_io_control;
 	flist[F_SET_PATTERN_CLOCK_CONTROL]			= &set_pattern_clock_control;
 	flist[F_SET_PATTERN_WORD]					= &set_pattern_word;
-	flist[F_SET_PATTERN_LOOP]					= &set_pattern_loop;
+	flist[F_SET_PATTERN_LOOP_ADDRESSES]			= &set_pattern_loop_addresses;
+	flist[F_SET_PATTERN_LOOP_CYCLES]			= &set_pattern_loop_cycles;
 	flist[F_SET_PATTERN_WAIT_ADDR]				= &set_pattern_wait_addr;	
 	flist[F_SET_PATTERN_WAIT_TIME]				= &set_pattern_wait_time;
 	flist[F_SET_PATTERN_MASK]					= &set_pattern_mask;
@@ -2641,13 +2643,11 @@ int set_pattern_word(int file_des) {
 
 
 
-
-
-int set_pattern_loop(int file_des) {
+int set_pattern_loop_addresses(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int args[4] = {-1, -1, -1, -1};
-    int retvals[3] = {-1, -1, -1};
+    int args[3] = {-1, -1, -1};
+    int retvals[2] = {-1, -1};
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
@@ -2657,36 +2657,67 @@ int set_pattern_loop(int file_des) {
     int loopLevel = args[0];
 	int startAddr = args[1];
 	int stopAddr = args[2];
-	int numLoops = args[3];
-	FILE_LOG(logDEBUG1, ("Setting Pattern loops (loopLevel:%d startAddr:0x%x stopAddr:0x%x numLoops:%d)\n", loopLevel, startAddr, stopAddr, numLoops));
-	if ((startAddr == -1) || (stopAddr == -1) || (numLoops == -1) || (Server_VerifyLock() == OK)) {
+	FILE_LOG(logDEBUG1, ("Setting Pattern loop addresses(loopLevel:%d startAddr:0x%x stopAddr:0x%x)\n", loopLevel, startAddr, stopAddr));
+	if ((startAddr == -1) || (stopAddr == -1) || (Server_VerifyLock() == OK)) {
 		// valid loop level
 		 if (loopLevel < -1 || loopLevel > 2) { // loop level of -1 : complete pattern
 			ret = FAIL;
-			sprintf(mess, "Cannot set Pattern loops. Level %d should be between -1 and 2\n",loopLevel);
+			sprintf(mess, "Cannot set Pattern loop addresses. Level %d should be between -1 and 2\n",loopLevel);
 			FILE_LOG(logERROR, (mess));
         } 
 		// valid addr for loop level 0-2
 		else if (startAddr >= MAX_PATTERN_LENGTH  || stopAddr >= MAX_PATTERN_LENGTH ) {
             ret = FAIL;
-            sprintf(mess, "Cannot set Pattern loops. Address (start addr:0x%x and stop addr:0x%x) "
+            sprintf(mess, "Cannot set Pattern loop addresses. Address (start addr:0x%x and stop addr:0x%x) "
 			"should be less than 0x%x\n", startAddr, stopAddr, MAX_PATTERN_LENGTH);
 			FILE_LOG(logERROR, (mess));
-        }
-		
-		else {
+        } else {
+			int numLoops = -1;
 			setPatternLoop(loopLevel, &startAddr, &stopAddr, &numLoops);
-			FILE_LOG(logDEBUG1, ("Pattern Loops retval: (start:0x%x, stop:0x%x, nloop:%d)\n", startAddr, stopAddr, numLoops));
+			FILE_LOG(logDEBUG1, ("Pattern loop addresses retval: (start:0x%x, stop:0x%x)\n", startAddr, stopAddr));
 			retvals[0] = startAddr;
 			retvals[1] = stopAddr;
-			retvals[2] = numLoops;
 			validate(args[1], startAddr, "Pattern loops' start address", HEX);
 			validate(args[2], stopAddr, "Pattern loops' stop address", HEX);
-			validate(args[3], numLoops, "Pattern loops' number of loops", DEC);
 		}
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
+}
+
+
+
+int set_pattern_loop_cycles(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = {-1, -1};
+    int retval = -1;
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    int loopLevel = args[0];
+	int numLoops = args[1];
+	FILE_LOG(logDEBUG1, ("Setting Pattern loop cycles (loopLevel:%d numLoops:%d)\n", loopLevel, numLoops));
+	if ((numLoops == -1) || (Server_VerifyLock() == OK)) {
+		// valid loop level
+		 if (loopLevel < 0 || loopLevel > 2) {
+			ret = FAIL;
+			sprintf(mess, "Cannot set Pattern loop cycles. Level %d should be between 0 and 2\n",loopLevel);
+			FILE_LOG(logERROR, (mess));
+        } else {
+			int startAddr = -1;
+			int stopAddr = -1;
+			setPatternLoop(loopLevel, &startAddr, &stopAddr, &numLoops);
+			retval = numLoops;
+			FILE_LOG(logDEBUG1, ("Pattern loop cycles retval: (ncycles:%d)\n", retval));
+			validate(args[1], retval, "Pattern loops' number of cycles", DEC);
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
 

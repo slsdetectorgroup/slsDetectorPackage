@@ -1016,15 +1016,21 @@ class Detector {
     void setPatternWord(int addr, uint64_t word, Positions pos = {});
 
     /**[CTB] Options: level: -1 (complete pattern) and 0-2 levels
-     * @returns array of start address, stop address and number of loops
+     * @returns array of start address and stop address
      */
-    Result<std::array<int, 3>> getPatternLoops(int level,
+    Result<std::array<int, 2>> getPatternLoopAddresses(int level,
                                                Positions pos = {}) const;
 
-    /** [CTB] Options: start, stop, n : 0-2
-     * level: -1 (complete pattern) and 0-2 levels */
-    void setPatternLoops(int level, int start, int stop, int n,
-                         Positions pos = {});
+    /** [CTB] Options: level: -1 (complete pattern) and 0-2 levels */
+    void setPatternLoopAddresses(int level, int start, int stop, Positions pos = {});
+
+    /**[CTB] Options: level: -1 (complete pattern) and 0-2 levels
+     * @returns number of loops
+     */
+    Result<int> getPatternLoopCycles(int level, Positions pos = {}) const;
+
+    /** [CTB] n: 0-2, level: -1 (complete pattern) and 0-2 levels */
+    void setPatternLoopCycles(int level, int n, Positions pos = {});                         
 
     /* [CTB] */
     Result<int> getPatternWaitAddr(int level, Positions pos = {}) const;

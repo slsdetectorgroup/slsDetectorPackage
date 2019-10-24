@@ -1645,25 +1645,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     uint64_t setPatternWord(int addr, uint64_t word, int detPos = -1); //
 
     /**
-     * Sets the pattern or loop limits (CTB/ Moench)
-     * @param level -1 complete pattern, 0,1,2, loop level
-     * @param start start address for level 0-2, -1 gets
-     * @param stop stop address for level 0-2, -1 gets
-     * @param n number of loops for level 0-2, -1 gets
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void setPatternLoops(int level, int start = -1, int stop = -1, int n = -1,
-                         int detPos = -1); //
-
-    /**
-     * Gets the pattern loop limits (CTB/ Moench)
-     * @param level  -1 complete pattern, 0,1,2, loop level
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns array of start address, stop address and number of loops
-     */
-    std::array<int, 3> getPatternLoops(int level, int detPos = -1); //
-
-    /**
      * Sets the wait address (CTB/ Moench)
      * @param level  0,1,2, wait level
      * @param addr wait address, -1 gets

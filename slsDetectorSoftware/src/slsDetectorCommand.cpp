@@ -979,27 +979,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page prototype
-   - <b>patlimits [addr1 addr2]</b> sets/gets the start and stop limits of the pattern to be executed. hex format. Advanced!
-	 */
-    descrToFuncMap[i].m_pFuncName = "patlimits";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
-   - <b>patloop0 [addr1 addr2]</b> sets/gets the start and stop limits of the level 0 loop. hex format. Advanced!
-	 */
-    descrToFuncMap[i].m_pFuncName = "patloop0";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
-   - <b>patnloop0 [n]</b> sets/gets the number of cyclesof the  level 0 loop (int).
-	 */
-    descrToFuncMap[i].m_pFuncName = "patnloop0";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
    - <b>patwait0 [addr]</b> sets/gets the address of the level 0 wait point. hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patwait0";
@@ -1013,21 +992,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page prototype
-   - <b>patloop1 [addr1 addr2]</b> sets/gets the start and stop limits of the level 1 loop. hex format. Advanced!
-	 */
-    descrToFuncMap[i].m_pFuncName = "patloop1";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
-   - <b>patnloop1 [n]</b> sets/gets the number of cyclesof the  level 1 loop (int).
-	 */
-    descrToFuncMap[i].m_pFuncName = "patnloop1";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
+       /*! \page prototype
    - <b>patwait1 [addr]</b> sets/gets the address of the level 1 wait point. hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patwait1";
@@ -1041,21 +1006,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
     ++i;
 
-    /*! \page prototype
-   - <b>patloop2 [addr1 addr2]</b> sets/gets the start and stop limits of the level 2 loop. hex format. Advanced!
-	 */
-    descrToFuncMap[i].m_pFuncName = "patloop2";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
-   - <b>patnloop2 [n]</b> sets/gets the number of cyclesof the  level 2 loop (int).
-	 */
-    descrToFuncMap[i].m_pFuncName = "patnloop2";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPattern;
-    ++i;
-
-    /*! \page prototype
+      /*! \page prototype
    - <b>patwait2 [addr]</b> sets/gets the address of the level 2 wait point. hex format. Advanced!
 	 */
     descrToFuncMap[i].m_pFuncName = "patwait2";
@@ -2220,13 +2171,6 @@ std::string slsDetectorCommand::helpPattern(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "patlimits addr1 addr2\t defines pattern limits between addr1 and addr2" << std::endl;
-        os << "patloop0 addr1 adrr2 \t configures the limits of the 0 loop " << std::endl;
-        os << "patloop1 addr1 adrr2 \t configures the limits of the 1 loop " << std::endl;
-        os << "patloop2 addr1 adrr2 \t configures the limits of the 2 loop " << std::endl;
-        os << "patnloop0 n \t sets number of cycles of the 0 loop " << std::endl;
-        os << "patnloop1 n \t sets number of cycles of the 1 loop " << std::endl;
-        os << "patnloop2 n \t sets number of cycles of the 2 loop " << std::endl;
         os << "patwait0 addr \t configures pattern wait 0 address " << std::endl;
         os << "patwait1 addr \t configures pattern wait 1 address " << std::endl;
         os << "patwait2 addr \t configures pattern wait 2 address " << std::endl;
@@ -2237,13 +2181,6 @@ std::string slsDetectorCommand::helpPattern(int action) {
         os << "patsetbit m \t selects bits (hex) of the 64 bits that the patmask will be applied to every pattern. Only the bits from m mask are selected to mask for the corresponding bit value from patmask." << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "patlimits \t returns pattern limits between addr1 and addr2" << std::endl;
-        os << "patloop0  \t returns the limits of the 0 loop " << std::endl;
-        os << "patloop1  \t returns the limits of the 1 loop " << std::endl;
-        os << "patloop2  \t returns the limits of the 2 loop " << std::endl;
-        os << "patnloop0 \t returns the number of cycles of the 0 loop " << std::endl;
-        os << "patnloop1 \t returns the number of cycles of the 1 loop " << std::endl;
-        os << "patnloop2 \t  returns the number of cycles of the 2 loop " << std::endl;
         os << "patwait0 \t  returns the pattern wait 0 address " << std::endl;
         os << "patwait1 \t  returns the pattern wait 1 address " << std::endl;
         os << "patwait2 \t  returns the pattern wait 2 address " << std::endl;
@@ -2272,149 +2209,7 @@ std::string slsDetectorCommand::cmdPattern(int narg, const char * const args[], 
 
 
     std::ostringstream os;
- if (cmd == "patlimits") {
-        //get start, stop from stdin
-        if (action == PUT_ACTION) {
-            if (narg < 3)
-                return std::string("wrong usage: should specify both start and stop address (hexadecimal fomat) ");
-            n = -1;
-            if (sscanf(args[1], "%x", &start))
-                ;
-            else
-                return std::string("Could not scan start address  (hexadecimal fomat) ") + std::string(args[1]);
-
-            if (sscanf(args[2], "%x", &stop))
-                ;
-            else
-                return std::string("Could not scan stop address  (hexadecimal fomat) ") + std::string(args[2]);
-
-            myDet->setPatternLoops(-1, start, stop, n, detPos);
-        }
-
-        auto r = myDet->getPatternLoops(-1, detPos);
-        os << "0x" << std::setw(4) << std::setfill('0') << std::hex << r[0] << " 0x" << std::setw(4) << std::setfill('0') << r[1];
-    } else if (cmd == "patloop0") {
-        //get start, stop from stdin
-
-        //get start, stop from stdin
-        if (action == PUT_ACTION) {
-            if (narg < 3)
-                return std::string("wrong usage: should specify both start and stop address (hexadecimal fomat) ");
-            n = -1;
-            if (sscanf(args[1], "%x", &start))
-                ;
-            else
-                return std::string("Could not scan start address  (hexadecimal fomat) ") + std::string(args[1]);
-
-            if (sscanf(args[2], "%x", &stop))
-                ;
-            else
-                return std::string("Could not scan stop address  (hexadecimal fomat) ") + std::string(args[2]);
-
-            myDet->setPatternLoops(0, start, stop, n, detPos);
-        }
-
-        auto r = myDet->getPatternLoops(0, detPos);
-        os << "0x" << std::setw(4) << std::setfill('0') << std::hex << r[0] << " 0x" << std::setw(4) << std::setfill('0') << r[1];
-
-    } else if (cmd == "patloop1") {
-
-        //get start, stop from stdin
-        if (action == PUT_ACTION) {
-            if (narg < 3)
-                return std::string("wrong usage: should specify both start and stop address (hexadecimal fomat) ");
-            n = -1;
-            if (sscanf(args[1], "%x", &start))
-                ;
-            else
-                return std::string("Could not scan start address  (hexadecimal fomat) ") + std::string(args[1]);
-
-            if (sscanf(args[2], "%x", &stop))
-                ;
-            else
-                return std::string("Could not scan stop address  (hexadecimal fomat) ") + std::string(args[2]);
-
-            myDet->setPatternLoops(1, start, stop, n, detPos);
-        }
-
-        auto r = myDet->getPatternLoops(1, detPos);
-        os << "0x" << std::setw(4) << std::setfill('0') << std::hex << r[0] << " 0x" << std::setw(4) << std::setfill('0') << r[1];
-
-    } else if (cmd == "patloop2") {
-
-        //get start, stop from stdin
-        if (action == PUT_ACTION) {
-            if (narg < 3)
-                return std::string("wrong usage: should specify both start and stop address (hexadecimal fomat) ");
-            n = -1;
-            if (sscanf(args[1], "%x", &start))
-                ;
-            else
-                return std::string("Could not scan start address  (hexadecimal fomat) ") + std::string(args[1]);
-
-            if (sscanf(args[2], "%x", &stop))
-                ;
-            else
-                return std::string("Could not scan stop address  (hexadecimal fomat) ") + std::string(args[2]);
-
-            myDet->setPatternLoops(2, start, stop, n, detPos);
-        }
-
-        auto r = myDet->getPatternLoops(2, detPos);
-        os << "0x" << std::setw(4) << std::setfill('0') << std::hex << r[0] << " 0x" << std::setw(4) << std::setfill('0') << r[1];
-    } else if (cmd == "patnloop0") {
-        start = -1;
-        stop = -1;
-
-        if (action == PUT_ACTION) {
-
-            if (sscanf(args[1], "%d", &n))
-                ;
-            else
-                return std::string("Could not scan number of loops ") + std::string(args[1]);
-
-            myDet->setPatternLoops(0, start, stop, n, detPos);
-        }
-
-        auto r = myDet->getPatternLoops(0, detPos);
-        os << std::dec << r[2];
-    } else if (cmd == "patnloop1") {
-
-        start = -1;
-        stop = -1;
-
-        if (action == PUT_ACTION) {
-
-            if (sscanf(args[1], "%d", &n))
-                ;
-            else
-                return std::string("Could not scan number of loops ") + std::string(args[1]);
-
-            myDet->setPatternLoops(1, start, stop, n, detPos);
-        }
-
-        auto r = myDet->getPatternLoops(1, detPos);
-        os << std::dec << r[2];
-
-    } else if (cmd == "patnloop2") {
-
-        start = -1;
-        stop = -1;
-
-        if (action == PUT_ACTION) {
-
-            if (sscanf(args[1], "%d", &n))
-                ;
-            else
-                return std::string("Could not scan number of loops ") + std::string(args[1]);
-
-            myDet->setPatternLoops(2, start, stop, n, detPos);
-        }
-
-        auto r = myDet->getPatternLoops(2, detPos);
-        os << std::dec << r[2];
-
-    } else if (cmd == "patwait0") {
+    if (cmd == "patwait0") {
 
         if (action == PUT_ACTION) {
 

@@ -2831,7 +2831,8 @@ void multiSlsDetector::savePattern(const std::string &fname) {
         throw RuntimeError("Could not create file to save pattern");
     }
     // get pattern limits
-    auto r = getPatternLoops(-1);
+    auto r = Parallel(&slsDetector::setPatternLoopAddresses, {}, -1, -1, -1)
+                 .tsquash("Inconsistent pattern limits");
     // pattern words
     for (int i = r[0]; i <= r[1]; ++i) {
         std::ostringstream os;
@@ -2893,28 +2894,6 @@ uint64_t multiSlsDetector::setPatternWord(int addr, uint64_t word, int detPos) {
 
     // multi
     auto r = parallelCall(&slsDetector::setPatternWord, addr, word);
-    return sls::minusOneIfDifferent(r);
-}
-
-void multiSlsDetector::setPatternLoops(int level, int start, int stop, int n,
-                                       int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->setPatternLoops(level, start, stop, n);
-    }
-
-    // multi
-    parallelCall(&slsDetector::setPatternLoops, level, start, stop, n);
-}
-
-std::array<int, 3> multiSlsDetector::getPatternLoops(int level, int detPos) {
-    // single
-    if (detPos >= 0) {
-        return detectors[detPos]->setPatternLoops(level, -1, -1, -1);
-    }
-
-    // multi
-    auto r = parallelCall(&slsDetector::setPatternLoops, level, -1, -1, -1);
     return sls::minusOneIfDifferent(r);
 }
 

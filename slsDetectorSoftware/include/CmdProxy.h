@@ -714,10 +714,17 @@ class CmdProxy {
                           {"patioctrl", &CmdProxy::patioctrl}, 
                           {"patclkctrl", &CmdProxy::patclkctrl}, 
                           {"patword", &CmdProxy::PatternWord}, 
+                          {"patlimits", &CmdProxy::PatternLoopAddresses}, 
+                          {"patloop0", &CmdProxy::PatternLoopAddresses}, 
+                          {"patloop1", &CmdProxy::PatternLoopAddresses}, 
+                          {"patloop2", &CmdProxy::PatternLoopAddresses}, 
+                          {"patnloop0", &CmdProxy::PatternLoopCycles}, 
+                          {"patnloop1", &CmdProxy::PatternLoopCycles}, 
+                          {"patnloop2", &CmdProxy::PatternLoopCycles}, 
 
 
 
-                          {"adcvpp", &CmdProxy::adcvpp},
+                          {"adcvpp", &CmdProxy::adcvpp},//dac
                           {"lastclient", &CmdProxy::lastclient},    
                           {"lock", &CmdProxy::lock}                
                           };
@@ -774,6 +781,10 @@ class CmdProxy {
     /* Pattern */
     std::string Pattern(int action);
     std::string PatternWord(int action);
+    std::string PatternLoopAddresses(int action);
+    std::string PatternLoopCycles(int action);
+
+
 
     /* configuration */
     EXECUTE_SET_COMMAND_NOID_1ARG(config, loadConfig, 

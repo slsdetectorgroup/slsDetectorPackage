@@ -9,6 +9,78 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("patnloop", "[.cmd][.ctb]") {
+    for (int loop = 0; loop < 3; ++loop) {
+        if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+            int val = 0;   
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(multiSlsDetectorClient("patnloop" + std::to_string(loop), GET, nullptr, oss));
+                std::string s = (oss.str()).erase (0, strlen("patnloop") + 2);
+                val = std::stoi(s);           
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(multiSlsDetectorClient("patnloop" + std::to_string(loop) + " 5", PUT, nullptr, oss));
+                REQUIRE(oss.str() == "patnloop" + std::to_string(loop) + " 5\n");
+            }
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patnloop" + std::to_string(loop) + ' ' + std::to_string(val), PUT));
+        } else {
+            REQUIRE_THROWS(multiSlsDetectorClient("patnloop" + std::to_string(loop), GET));
+        }
+    }
+}
+
+TEST_CASE("patloop", "[.cmd][.ctb]") {
+    for (int loop = 0; loop < 3; ++loop) {
+        if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+            uint32_t limit1 = 0, limit2 = 0;   
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(multiSlsDetectorClient("patloop" + std::to_string(loop), GET, nullptr, oss));
+                std::string s = oss.str();
+                auto t = sls::split(s, ' ');
+                s = t[1].erase (0, 1);
+                limit1 = stoul(s, 0, 16);
+                limit2 = stoul(t[2], 0, 16);            
+            }
+            {
+                std::ostringstream oss;
+                REQUIRE_NOTHROW(multiSlsDetectorClient("patloop" + std::to_string(loop) + " 0x20 0x5c", PUT, nullptr, oss));
+                REQUIRE(oss.str() == "patloop" + std::to_string(loop) + " [0x20, 0x5c]\n");
+            }
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patloop" + std::to_string(loop) + ' ' + sls::ToStringHex(limit1) + ' ' + sls::ToStringHex(limit2), PUT));     
+            REQUIRE_THROWS(multiSlsDetectorClient("patloop" + std::to_string(loop) + " 0x3", PUT));
+        } else {
+            REQUIRE_THROWS(multiSlsDetectorClient("patloop" + std::to_string(loop), GET));
+        }
+    }
+}
+
+TEST_CASE("patlimits", "[.cmd][.ctb]") {
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        uint32_t patlimit1 = 0, patlimit2 = 0;   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patlimits", GET, nullptr, oss));
+            std::string s = oss.str();
+            auto t = sls::split(s, ' ');
+            s = t[1].erase (0, 1);
+            patlimit1 = stoul(s, 0, 16);
+            patlimit2 = stoul(t[2], 0, 16);            
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("patlimits 0x20 0x5c", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "patlimits [0x20, 0x5c]\n");
+        }
+        REQUIRE_NOTHROW(multiSlsDetectorClient("patlimits " + sls::ToStringHex(patlimit1) + ' ' + sls::ToStringHex(patlimit2), PUT));     
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("patlimits", GET));
+    }
+}
+
+
 TEST_CASE("patword", "[.cmd][.ctb]") {
     if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 
         uint64_t prev_value = 0;   

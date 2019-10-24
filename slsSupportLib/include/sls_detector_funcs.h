@@ -46,7 +46,8 @@ enum detFuncs{
 	F_SET_PATTERN_IO_CONTROL, /** < set pattern i/o control */
 	F_SET_PATTERN_CLOCK_CONTROL, /** < set pattern clock control */
 	F_SET_PATTERN_WORD, /** < sets pattern word */
-	F_SET_PATTERN_LOOP,	 /** < sets pattern loop */
+	F_SET_PATTERN_LOOP_ADDRESSES,	 /** < sets pattern loop */
+	F_SET_PATTERN_LOOP_CYCLES,
 	F_SET_PATTERN_WAIT_ADDR,	/** < sets pattern wait addr */
 	F_SET_PATTERN_WAIT_TIME,	/** < sets pattern wait time */
 	F_SET_PATTERN_MASK, /** < loads a pattern mask  */
@@ -236,7 +237,8 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
 	case F_SET_PATTERN_CLOCK_CONTROL:		return "F_SET_PATTERN_CLOCK_CONTROL";
 	case F_SET_PATTERN_WORD:				return "F_SET_PATTERN_WORD";
-	case F_SET_PATTERN_LOOP:				return "F_SET_PATTERN_LOOP";
+	case F_SET_PATTERN_LOOP_ADDRESSES:		return "F_SET_PATTERN_LOOP_ADDRESSES";
+	case F_SET_PATTERN_LOOP_CYCLES:			return "F_SET_PATTERN_LOOP_CYCLES";
 	case F_SET_PATTERN_WAIT_ADDR:			return "F_SET_PATTERN_WAIT_ADDR";
 	case F_SET_PATTERN_WAIT_TIME:			return "F_SET_PATTERN_WAIT_TIME";
 	case F_SET_PATTERN_MASK:				return "F_SET_PATTERN_MASK";

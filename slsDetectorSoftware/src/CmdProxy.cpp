@@ -294,39 +294,48 @@ std::string CmdProxy::Speed(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[0 or full_speed|1 or half_speed|2 or quarter_speed]\n\t[Eiger][Jungfrau] Readout speed of chip.\n\tJungfrau also overwrites adcphase to recommended default. " << '\n';   
-    } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {                                
-            WrongNumberOfParameters(0);         
-        } 
-        auto t = det->getSpeed({det_id});       
-        os << OutString(t) << '\n';  
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 1) {                                
-            WrongNumberOfParameters(1);         
-        }        
-        defs::speedLevel t;
-        try{
-            int ival = std::stoi(args[0]);
-            switch (ival) {
-            case 0:
-                t = defs::FULL_SPEED;
-                break;
-            case 1:
-                t = defs::HALF_SPEED;
-                break; 
-            case 2:
-                t = defs::QUARTER_SPEED;
-                break;  
-            default:
-                throw sls::RuntimeError("Unknown speed " + args[0]);  
-            }
-        } catch (...) {
-            t = sls::StringTo<defs::speedLevel>(args[0]);                                   
+    } else {
+        defs::detectorType type = det->getDetectorType().squash();
+        if (type == defs::CHIPTESTBOARD || type == defs::MOENCH) {
+            throw sls::RuntimeError("Speed not implemented. Did you mean runclk?");       
         }
-        det->setSpeed(t, {det_id});    
-        os << sls::ToString(t) << '\n'; // no args to convert 0,1,2 as well
-    } else { 
-        throw sls::RuntimeError("Unknown action");
+        if (type != defs::EIGER && type != defs::JUNGFRAU) {
+            throw sls::RuntimeError("Speed not implemented.");    // setspped one function problem. tbr after change
+        }
+        if (action == defs::GET_ACTION) {
+            if (args.size() != 0) {                                
+                WrongNumberOfParameters(0);         
+            } 
+            auto t = det->getSpeed({det_id});       
+            os << OutString(t) << '\n';  
+        } else if (action == defs::PUT_ACTION) {
+            if (args.size() != 1) {                                
+                WrongNumberOfParameters(1);         
+            }        
+            defs::speedLevel t;
+            try{
+                int ival = std::stoi(args[0]);
+                switch (ival) {
+                case 0:
+                    t = defs::FULL_SPEED;
+                    break;
+                case 1:
+                    t = defs::HALF_SPEED;
+                    break; 
+                case 2:
+                    t = defs::QUARTER_SPEED;
+                    break;  
+                default:
+                    throw sls::RuntimeError("Unknown speed " + args[0]);  
+                }
+            } catch (...) {
+                t = sls::StringTo<defs::speedLevel>(args[0]);                                   
+            }
+            det->setSpeed(t, {det_id});    
+            os << sls::ToString(t) << '\n'; // no args to convert 0,1,2 as well
+        } else { 
+            throw sls::RuntimeError("Unknown action");
+        }
     }
     return os.str();
 }
@@ -1000,7 +1009,7 @@ std::string CmdProxy::DigitalIODelay(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);  
         }                                
-        det->setDigitalIODelay(std::stoul(args[0]), std::stoi(args[2]));  
+        det->setDigitalIODelay(stoulHex(args[0]), std::stoi(args[1]));  
         os << sls::ToString(args) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -1039,13 +1048,13 @@ std::string CmdProxy::PatternWord(int action) {
         if (args.size() != 1) {                                
             WrongNumberOfParameters(1);         
         } 
-        auto t = det->getPatternWord(std::stoi(args[0]), {det_id});       
+        auto t = det->getPatternWord(stoiHex(args[0]), {det_id});       
         os << OutStringHex(t) << '\n';     
     } else if (action == defs::PUT_ACTION) {      
         if (args.size() != 2) {
             WrongNumberOfParameters(2);  
         }                                
-        det->setPatternWord(std::stoi(args[0]), std::stoul(args[1]));  
+        det->setPatternWord(stoiHex(args[0]), stoulHex(args[1]));  
         os << sls::ToString(args) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");

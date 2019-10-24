@@ -233,7 +233,7 @@
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             auto t = det->GETFCN(DAC_INDEX, mv, {det_id});                     \
-            os << OutString(t) << (args.size() > 1 ? " mv\n" : "\n");          \
+            os << OutString(t) << (args.size() > 0 ? " mv\n" : "\n");          \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             bool mv = false;                                                   \
             if (args.size() == 2) {                                            \
@@ -423,10 +423,17 @@ class CmdProxy {
         return ToString(value, unit);
     }
 
-    inline unsigned int stoui(const std::string& s) {
-        unsigned long lresult = stoul(s, 0, 10);
+    inline unsigned int stoiHex(const std::string& s) {
+        unsigned long lresult = stoul(s, 0, 16);
         unsigned int result = lresult;
-        if (result != lresult) throw std::out_of_range("cannot convert to unsigned int");
+        if (result != lresult) {
+            throw std::out_of_range("cannot convert to unsigned int");
+        }
+        return result;
+    }
+
+    inline unsigned long int stoulHex(const std::string& s) {
+        unsigned long result = stoul(s, 0, 16);
         return result;
     }
 
@@ -882,7 +889,7 @@ class CmdProxy {
     GET_COMMAND(rx_framescaught, getFramesCaught, 
                     "\n\tNumber of frames caught by receiver."); 
 
-    INTEGER_COMMAND(startingfnum, getStartingFrameNumber, setStartingFrameNumber, std::stoul,
+    INTEGER_COMMAND(startingfnum, getStartingFrameNumber, setStartingFrameNumber, std::stoull,
                     "[n_value]\n\t[Eiger[Jungfrau] Starting frame number for next acquisition."); 
 
     EXECUTE_SET_COMMAND(trigger, sendSoftwareTrigger, 
@@ -1181,25 +1188,25 @@ class CmdProxy {
     GET_IND_COMMAND(vm_io, getMeasuredVoltage, defs::V_POWER_IO,  "",
                     "\n\t[Ctb] Measured voltage of power supply io in mV."); 
 
-    GET_IND_COMMAND(im_a, getMeasuredVoltage, defs::I_POWER_A, "",
+    GET_IND_COMMAND(im_a, getMeasuredCurrent, defs::I_POWER_A, "",
                     "\n\t[Ctb] Measured current of power supply a in mA.");  
 
-    GET_IND_COMMAND(im_b, getMeasuredVoltage, defs::I_POWER_B,  "",
+    GET_IND_COMMAND(im_b, getMeasuredCurrent, defs::I_POWER_B,  "",
                     "\n\t[Ctb] Measured current of power supply b in mA.");  
 
-    GET_IND_COMMAND(im_c, getMeasuredVoltage, defs::I_POWER_C,  "",
+    GET_IND_COMMAND(im_c, getMeasuredCurrent, defs::I_POWER_C,  "",
                     "\n\t[Ctb] Measured current of power supply c in mA."); 
                     
-    GET_IND_COMMAND(im_d, getMeasuredVoltage, defs::I_POWER_D,  "",
+    GET_IND_COMMAND(im_d, getMeasuredCurrent, defs::I_POWER_D,  "",
                     "\n\t[Ctb] Measured current of power supply d in mA.");                 
 
-    GET_IND_COMMAND(im_io, getMeasuredVoltage, defs::I_POWER_IO,  "",
+    GET_IND_COMMAND(im_io, getMeasuredCurrent, defs::I_POWER_IO,  "",
                     "\n\t[Ctb] Measured current of power supply io in mA."); 
 
-    INTEGER_COMMAND(adcenable, getADCEnableMask, setADCEnableMask, stoui,
+    INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask, stoiHex,
                     "[bitmask]\n\t[Ctb] ADC Enable Mask.");      
 
-    INTEGER_COMMAND(adcinvert, getADCInvert, setADCInvert, stoui,
+    INTEGER_COMMAND_HEX(adcinvert, getADCInvert, setADCInvert, stoiHex,
                     "[bitmask]\n\t[Ctb] ADC Inversion Mask.");      
 
     INTEGER_COMMAND(extsampling, getExternalSampling, setExternalSampling, std::stoi,
@@ -1220,10 +1227,10 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
                 "[fname]\n\t[Ctb] Saves pattern to file (ascii). Also executes pattern."); 
 
-    INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl, std::stoul,
+    INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl, std::stoull,
                     "[64 bit mask]\n\t[Ctb] 64 bit mask defining input (0) and output (1) signals.");
 
-    INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, std::stoul,
+    INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, std::stoull,
                     "[64 bit mask]\n\t[Ctb] 64 bit mask defining output clock enable.");
 
 

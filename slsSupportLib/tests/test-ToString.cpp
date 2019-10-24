@@ -129,7 +129,7 @@ TEST_CASE("string to detectorType"){
     REQUIRE(StringTo<dt>("Eiger") == dt::EIGER);
     REQUIRE(StringTo<dt>("Gotthard") == dt::GOTTHARD);
     REQUIRE(StringTo<dt>("Jungfrau") == dt::JUNGFRAU);
-    REQUIRE(StringTo<dt>("JungfrauCTB") == dt::CHIPTESTBOARD);
+    REQUIRE(StringTo<dt>("ChipTestBoard") == dt::CHIPTESTBOARD);
     REQUIRE(StringTo<dt>("Moench") == dt::MOENCH);
     REQUIRE(StringTo<dt>("Mythen3") == dt::MYTHEN3);
     REQUIRE(StringTo<dt>("Gotthard2") == dt::GOTTHARD2);

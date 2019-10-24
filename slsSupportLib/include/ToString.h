@@ -51,7 +51,7 @@ inline std::string ToString(const defs::detectorType s){
     case defs::JUNGFRAU:
         return std::string("Jungfrau");
     case defs::CHIPTESTBOARD:
-        return std::string("JungfrauCTB");
+        return std::string("ChipTestBoard");
     case defs::MOENCH:
         return std::string("Moench");
     case defs::MYTHEN3:
@@ -367,7 +367,7 @@ inline defs::detectorType StringTo(const std::string& s){
         return defs::GOTTHARD;
     if (s == "Jungfrau")
         return defs::JUNGFRAU;
-    if (s == "JungfrauCTB")
+    if (s == "ChipTestBoard")
         return defs::CHIPTESTBOARD;
     if (s == "Moench")
         return defs::MOENCH;

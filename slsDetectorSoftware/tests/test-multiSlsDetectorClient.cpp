@@ -9,6 +9,54 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("rx_jsonpara", "[.cmd][.moench]") {
+    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader \"key1\":\"value1\"", PUT)); 
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonpara key1", GET, nullptr, oss));
+        REQUIRE(oss.str() == "rx_jsonpara value1\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonpara key1 value2", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "rx_jsonpara [key1, value2]\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonpara key2 98", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "rx_jsonpara [key2, 98]\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader", GET, nullptr, oss));
+        REQUIRE(oss.str() == "rx_jsonaddheader \"key1\":\"value2\",\"key2\":98\n");
+    }        
+    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader \"\"", PUT));
+}
+
+TEST_CASE("rx_jsonaddheader", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader \"\"", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "rx_jsonaddheader \"\"\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader \"what\":\"bla\"", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "rx_jsonaddheader \"what\":\"bla\"\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader \"what2\":\"bla2\"", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "rx_jsonaddheader \"what2\":\"bla2\"\n");
+    }        
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader \"\"", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "rx_jsonaddheader \"\"\n");
+    }
+}
+
 
 TEST_CASE("patsetbit", "[.cmd][.ctb]") {
     if (test::type == slsDetectorDefs::CHIPTESTBOARD) { 

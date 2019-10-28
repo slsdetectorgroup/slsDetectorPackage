@@ -732,6 +732,8 @@ class CmdProxy {
                           {"patsetbit", &CmdProxy::patsetbit}, 
 
                           /* Moench */
+                          {"rx_jsonaddheader", &CmdProxy::rx_jsonaddheader}, 
+                          {"rx_jsonpara", &CmdProxy::JsonParameter}, 
 
 
 
@@ -798,6 +800,7 @@ class CmdProxy {
     std::string PatternWaitAddress(int action);
     std::string PatternWaitTime(int action);
     /* Moench */
+    std::string JsonParameter(int action);
 
 
 
@@ -1265,9 +1268,12 @@ class CmdProxy {
     INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask, std::stoull,
                     "[64 bit mask]\n\t[Ctb] 64 bit values applied to the selected patmask for every pattern.");                    
 
-
     /* Moench */
     
+    STRING_COMMAND(rx_jsonaddheader, getAdditionalJsonHeader, setAdditionalJsonHeader, 
+                "[\"label1\":\"value1\"], [\"label2\":\"value2\"]\n\t[Moench] Additional json header to be streamd out from receiver via zmq. Default is empty. Use only if to be processed by an intermediate user process listening to receiver zmq packets.");
+
+
 
 
 

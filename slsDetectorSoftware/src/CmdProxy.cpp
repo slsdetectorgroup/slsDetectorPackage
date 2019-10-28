@@ -1242,7 +1242,28 @@ std::string CmdProxy::PatternWaitTime(int action) {
 
 /* Moench */
 
-
+std::string CmdProxy::JsonParameter(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[key1] [value1]\n\t[Moench] Additional json header parameter streamed out from receiver. This is same as calling rx_jsonaddheader \"key\":\"value1\"" << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        auto t = det->getAdditionalJsonParameter(args[0], {det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        } 
+        det->setAdditionalJsonParameter(args[0], args[1], {det_id});
+        os << sls::ToString(args) << '\n';           
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 
 } // namespace sls

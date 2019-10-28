@@ -930,13 +930,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page receiver
-    - <b>rx_jsonaddheader [t]</b> sets/gets additional json header to be streamed out with the zmq from receiver. Default is empty. \c t must be in the format "\"label1\":\"value1\",\"label2\":\"value2\"" etc. Use only if it needs to be processed by an intermediate process. \c Returns \c (string)
-     */
-    descrToFuncMap[i].m_pFuncName = "rx_jsonaddheader";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    i++;
-
-    /*! \page receiver
     - <b>rx_jsonpara [k] [v]</b> sets/gets  value v for additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found Use only if it needs to be processed by an intermediate process. \c Returns \c (string)
      */
     descrToFuncMap[i].m_pFuncName = "rx_jsonpara";
@@ -2073,13 +2066,6 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
         }
     }
 
-    else if (cmd == "rx_jsonaddheader") {
-        if (action == PUT_ACTION) {
-            myDet->setAdditionalJsonHeader(args[1], detPos);
-        }
-        return myDet->getAdditionalJsonHeader(detPos);
-    }
-
     else if (cmd == "rx_jsonpara") {
         if (action == PUT_ACTION) {
             myDet->setAdditionalJsonParameter(args[1], args[2], detPos);
@@ -2095,16 +2081,11 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
-        os << "rx_jsonaddheader [t]\n sets additional json header to be streamed "
-              "out with the zmq from receiver. Default is empty. t must be in the format '\"label1\":\"value1\",\"label2\":\"value2\"' etc."
-              "Use only if it needs to be processed by an intermediate process." << std::endl;
         os << "rx_jsonpara [k] [v]\n sets value to v for additional json header parameter k to be streamed out with the zmq from receiver." << std::endl;
 
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
-        os << "rx_jsonaddheader \n gets additional json header to be streamed "
-              "out with the zmq from receiver." << std::endl;
         os << "rx_jsonpara [k] \n gets value of additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found." << std::endl;
 
     }

@@ -9,6 +9,34 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("port", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("port 1942", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "port 1942\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("port", GET, nullptr, oss));
+        REQUIRE(oss.str() == "port 1942\n");
+    }
+    REQUIRE_NOTHROW(multiSlsDetectorClient("port 1952", PUT));
+}
+
+TEST_CASE("stopport", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("stopport 1942", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "stopport 1942\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("stopport", GET, nullptr, oss));
+        REQUIRE(oss.str() == "stopport 1942\n");
+    }
+    REQUIRE_NOTHROW(multiSlsDetectorClient("stopport 1953", PUT));
+}
+
 TEST_CASE("adcreg", "[.cmd]") {
     if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD || test::type == slsDetectorDefs::GOTTHARD) {
         REQUIRE_THROWS(multiSlsDetectorClient("adcreg 0x34", PUT));

@@ -757,16 +757,18 @@ class CmdProxy {
                           {"bustest", &CmdProxy::bustest}, 
 
                           /* Insignificant */
+                          {"port", &CmdProxy::port}, 
+                          {"stopport", &CmdProxy::stopport}, 
+                          {"lock", &CmdProxy::lock},
+                          {"lastclient", &CmdProxy::lastclient},
 
 
 
 
 
-
-
-                          {"adcvpp", &CmdProxy::adcvpp},//dac
-                          {"lastclient", &CmdProxy::lastclient},    
-                          {"lock", &CmdProxy::lock}                
+                          {"adcvpp", &CmdProxy::adcvpp}//dac
+    
+               
                           };
 
 
@@ -1333,17 +1335,27 @@ class CmdProxy {
 
     /* Insignificant */
 
-    
+    INTEGER_COMMAND(port, getControlPort, setControlPort, std::stoi,
+                    "[n]\n\tPort number of the control server on detector for detector-client tcp interface. Default is 1952. Normally unchanged."); 
+
+    INTEGER_COMMAND(stopport, getStopPort, setStopPort, std::stoi,
+                    "[n]\n\tPort number of the stop server on detector for detector-client tcp interface. Default is 1953. Normally unchanged."); 
+
+    INTEGER_COMMAND(lock, getDetectorLock, setDetectorLock, std::stoi,
+                    "[0, 1]\n\tLock detector to one IP, 1: locks");
+
+    GET_COMMAND(lastclient, getLastClientIP, 
+                "\n\tClient IP Address that last communicated with the detector."); 
+
+
 
 
     DAC_COMMAND(adcvpp, getDAC, setDAC, defs::ADC_VPP,
                     "[dac or mv value][(optional unit) mv] \n\t[Ctb] Vpp of ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V.");    
 
-    GET_COMMAND(lastclient, getLastClientIP, 
-                "\n\tClient IP Address that last communicated with the detector."); 
 
-    INTEGER_COMMAND(lock, getDetectorLock, setDetectorLock, std::stoi,
-                    "[0, 1]\n\tLock detector to one IP, 1: locks");
+
+
 
 
 

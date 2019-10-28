@@ -810,21 +810,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
     /* communication configuration */
 
-    /*! \page network
-   - <b>port [port]</b> sets/gets the port of the client-detector control server TCP interface. Use single-detector command. Default value is 1952 for all detectors. Normally not changed. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "port";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPort;
-    ++i;
-
-    /*! \page network
-   - <b>stopport [port]</b> sets/gets the port of the client-detector stop server TCP interface. Use single-detector command. Default value is 1953 for all detectors. Normally not changed. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "stopport";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdPort;
-    ++i;
-
-
     /* receiver functions */
 
     /*! \page receiver Receiver commands
@@ -1165,48 +1150,6 @@ std::string slsDetectorCommand::helpThreaded(int action) {
     return os.str();
 }
 
-
-
-std::string slsDetectorCommand::cmdPort(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == HELP_ACTION)
-        return helpPort(action);
-    int val; //ret,
-    char ans[MAX_STR_LENGTH];
-    if (action == PUT_ACTION) {
-        if (sscanf(args[1], "%d", &val))
-            ;
-        else
-            return std::string("could not scan port number") + std::string(args[1]);
-    }
-
-    if (cmd == "port") {
-        if (action == PUT_ACTION)
-            myDet->setControlPort(val, detPos);
-        sprintf(ans, "%d", myDet->setControlPort(-1, detPos));
-    } else if (cmd == "stopport") {
-        if (action == PUT_ACTION)
-            myDet->setStopPort(val, detPos);
-        sprintf(ans, "%d", myDet->setStopPort(-1, detPos));
-    } else
-        return std::string("unknown port type ") + cmd;
-
-    return std::string(ans);
-}
-
-std::string slsDetectorCommand::helpPort(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "port i \n sets the communication control port" << std::endl;
-        os << "stopport i \n sets the communication stop port " << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "port  \n gets the communication control port" << std::endl;
-        os << "stopport \n gets the communication stop port " << std::endl;
-    }
-    return os.str();
-}
 
 
 

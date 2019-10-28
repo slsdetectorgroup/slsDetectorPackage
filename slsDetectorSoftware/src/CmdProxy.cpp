@@ -1329,5 +1329,144 @@ std::string CmdProxy::ProgramFpga(int action) {
     return os.str();
 }
 
+std::string CmdProxy::CopyDetectorServer(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[server_name] [pc_host_name]\n\t[Jungfrau][Ctb] Copies detector server via tftp from pc and changes respawn server name in /etc/inittab of detector." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("Cannot get");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        } 
+        det->copyDetectorServer(args[0], args[1], {det_id});
+        os << "successful\n";           
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[server_name] [pc_host_name] [fname.pof]\n\t[Jungfrau][Ctb] Updates detector server via tftp from pc, updates firmware to pof file and then reboots controller (blackfin)." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("Cannot get");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 3) {
+            WrongNumberOfParameters(3);
+        } 
+        if (args[2].find(".pof") == std::string::npos) {
+            throw sls::RuntimeError("Programming file must be a pof file.");
+        }
+        det->updateFirmwareAndServer(args[0], args[1], args[2], {det_id});
+        os << "successful\n";           
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::Register(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[address] [32 bit value]\n\tReads/writes to a 32 bit register in hex.\n\t[Eiger] +0x100 for only left, +0x200 for only right" << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {                                
+            WrongNumberOfParameters(1);         
+        } 
+        auto t = det->readRegister(stoiHex(args[0]), {det_id});       
+        os << OutStringHex(t) << '\n';     
+    } else if (action == defs::PUT_ACTION) {      
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);  
+        }                                
+        det->writeRegister(stoiHex(args[0]), stoiHex(args[1]), {det_id});  
+        os << sls::ToString(args) << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::AdcRegister(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[address] [value]\n\t[Jungfrau][Ctb][Gotthard] Writes to an adc register in hex." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("Cannot get.");
+    } else if (action == defs::PUT_ACTION) {      
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);  
+        }                                
+        det->writeAdcRegister(stoiHex(args[0]), stoiHex(args[1]), {det_id});  
+        os << sls::ToString(args) << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::BitOperations(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        if (cmd == "setbit") {
+            os << "[address] [value\n\t[Moench] Minimum energy threshold (soft setting) for processor." << '\n';   
+        } else if (cmd == "clearbit") {
+            os << "[n_value]\n\t[Moench] Maximum energy threshold (soft setting) for processor." << '\n';   
+        } else if (cmd == "getbit") {
+            os << "[n_value]\n\t[Moench] Maximum energy threshold (soft setting) for processor." << '\n';   
+        }else {
+            throw sls::RuntimeError("Unknown command, use list to list all commands");
+        }  
+    } else {
+        if (cmd != "setbit" && cmd != "clearbit" && cmd != "getbit") {
+            throw sls::RuntimeError("Unknown command, use list to list all commands");
+        }
+        if (args.size() != 2) {                                
+            WrongNumberOfParameters(2);         
+        } 
+        uint32_t addr = stoiHex(args[0]);
+        int bitnr = std::stoi(args[1]);
+        if (bitnr < 0 || bitnr > 31) {
+            return std::string("Bit number out of range") + std::to_string(bitnr);
+        }
+        if (action == defs::GET_ACTION) {
+            if (cmd == "setbit" || cmd == "clearbit") {
+                throw sls::RuntimeError("Cannot get");
+            }
+            auto t = det->readRegister(addr, {det_id});     
+            Result<int> result(t.size());
+            for (unsigned int i = 0; i < t.size(); ++i) {
+                result[i] = ((t[i] >> bitnr) & 0x1);
+            }
+            os << OutString(result) << '\n';     
+        } else if (action == defs::PUT_ACTION) {      
+            if (cmd == "getbit") {
+                throw sls::RuntimeError("Cannot put");
+            }                                  
+            if (cmd == "setbit") {
+                det->setBit(addr, bitnr, {det_id});  
+            } else if (cmd == "clearbit") {
+                det->clearBit(addr, bitnr, {det_id});  
+            }      
+            os << sls::ToString(args) << '\n';
+        } else { 
+            throw sls::RuntimeError("Unknown action");
+        }
+    }
+    return os.str();
+}
+
+
+/* Insignificant */
+
+
 
 } // namespace sls

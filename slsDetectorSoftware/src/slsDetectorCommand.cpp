@@ -124,54 +124,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
     /* digital test and debugging */
 
-    /*! \page test
-   - <b>bustest</b> performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes. Cannot set! Jungfrau only. Only get!
-	 */
-    descrToFuncMap[i].m_pFuncName = "bustest";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDigiTest;
-    ++i;
 
-    /*! \page test
-   - <b>firmwaretest</b> performs the firmware test.  Cannot set! Jungfrau only. Only get!
-	 */
-    descrToFuncMap[i].m_pFuncName = "firmwaretest";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdDigiTest;
-    ++i;
-
-    /*! \page test
-   - <b>reg [addr] [val]</b> ??? writes to an register \c addr with \c value in hexadecimal format.
-	 */
-    descrToFuncMap[i].m_pFuncName = "reg";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdRegister;
-    ++i;
-
-    /*! \page test
-   - <b>adcreg [addr] [val]</b> ??? writes to an adc register \c addr with \c value in hexadecimal format. Only put!
-	 */
-    descrToFuncMap[i].m_pFuncName = "adcreg";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdRegister;
-    ++i;
-
-    /*! \page test
-   - <b>setbit</b> ???  Only put!
-	 */
-    descrToFuncMap[i].m_pFuncName = "setbit";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdRegister;
-    ++i;
-
-    /*! \page test
-   - <b>clearbit </b> ??? Only put!
-	 */
-    descrToFuncMap[i].m_pFuncName = "clearbit";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdRegister;
-    ++i;
-
-    /*! \page test
-   - <b>getbit </b> ??? Only get!
-	 */
-    descrToFuncMap[i].m_pFuncName = "getbit";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdRegister;
-    ++i;
 
     /* Acquisition and status commands */
     /*! \page acquisition Acquition commands
@@ -253,28 +206,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    commands to configure detector flags
 	 */
 
-    /* fpga */
-
-    /*! \page config
-   - <b>copydetectorserver [sname] [phost]</b> copies the detector server sname via tftp from pc with hostname phost and changes respawn server for all detector. Not for Eiger.  Only put! \c Returns \c ("successful", "failed")
-	 */
-    descrToFuncMap[i].m_pFuncName = "copydetectorserver";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
-    ++i;
-
-    /*! \page config
-   - <b>rebootdetpc </b> reboot detector controller blackfin. Only put! Not for Eiger. \c Returns \c ("successful", "failed")
-	 */
-    descrToFuncMap[i].m_pFuncName = "rebootcontroller";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
-    ++i;
-
-    /*! \page config
-   - <b>update [sname] [phost] [file] </b> updates the firmware to file and detector server to sname from phost via tftp and then reboots controller (blackfin). Only put! Not for Eiger. \c Returns \c ("successful", "failed")
-	 */
-    descrToFuncMap[i].m_pFuncName = "update";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
-    ++i;
 
     /* chip */
     /*! \page config
@@ -1384,123 +1315,6 @@ std::string slsDetectorCommand::helpDigiTest(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdRegister(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == HELP_ACTION)
-        return helpRegister(action);
-
-    int addr, val, n;
-    char answer[1000];
-
-
-    // "reg" //
-
-    // "setbit" //
-
-    // "clearbit" //
-
-    // "getbit" //
-
-    if (action == PUT_ACTION) {
-        if (cmd == "getbit")
-            return std::string("Cannot put");
-
-        if (narg < 3) {
-            if (cmd == "reg")
-                return std::string("wrong usage: should specify both address and value (hexadecimal fomat) ");
-            else
-                return std::string("wrong usage: should specify both address (hexadecimal fomat) and bit number");
-        }
-
-        if (sscanf(args[1], "%x", &addr))
-            ;
-        else
-            return std::string("Could not scan address  (hexadecimal fomat) ") + std::string(args[1]);
-
-        if (cmd == "reg") {
-            if (sscanf(args[2], "%x", &val))
-                ;
-            else
-                return std::string("Could not scan value  (hexadecimal fomat) ") + std::string(args[2]);
-            sprintf(answer, "0x%x", myDet->writeRegister(addr, val, detPos));
-        } else if (cmd == "adcreg") {
-            if (sscanf(args[2], "%x", &val))
-                ;
-            else
-                return std::string("Could not scan value  (hexadecimal fomat) ") + std::string(args[2]);
-            myDet->writeAdcRegister(addr, val, detPos);
-            sprintf(answer, "%s","successful");
-        } else {
-
-            if (sscanf(args[2], "%d", &n))
-                ;
-            else
-                return std::string("Could not scan bit number ") + std::string(args[2]);
-
-            if (n < 0 || n > 31)
-                return std::string("Bit number out of range") + std::string(args[2]);
-
-            if (cmd == "setbit")
-                sprintf(answer, "0x%x", myDet->setBit(addr, n, detPos));
-            if (cmd == "clearbit")
-                sprintf(answer, "0x%x", myDet->clearBit(addr, n, detPos));
-        }
-
-    } else {
-        if (cmd == "setbit")
-            return std::string("Cannot get");
-        if (cmd == "clearbit")
-            return std::string("Cannot get");
-        if (cmd == "adcreg")
-            return std::string("Cannot get");
-
-        if (cmd == "reg") {
-            if (narg < 2)
-                return std::string("wrong usage: should specify address  (hexadecimal fomat) ");
-            if (sscanf(args[1], "%x", &addr))
-                ;
-            else
-                return std::string("Could not scan address  (hexadecimal fomat) ") + std::string(args[1]);
-
-            sprintf(answer, "0x%x", myDet->readRegister(addr, detPos));
-        }
-
-        if (cmd == "getbit") {
-
-            if (narg < 3)
-                return std::string("wrong usage: should specify both address (hexadecimal fomat) and bit number");
-
-            if (sscanf(args[1], "%x", &addr))
-                ;
-            else
-                return std::string("Could not scan address  (hexadecimal fomat) ") + std::string(args[1]);
-
-            if (sscanf(args[2], "%d", &n))
-                ;
-            else
-                return std::string("Could not scan bit number ") + std::string(args[2]);
-
-            if (n < 0 || n > 31)
-                return std::string("Bit number out of range") + std::string(args[2]);
-
-            sprintf(answer, "%d", (myDet->readRegister(addr, detPos) >> n) & 1);
-        }
-    }
-
-    return std::string(answer);
-}
-
-std::string slsDetectorCommand::helpRegister(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "reg addr val \n writes the register addr with the value val (hexadecimal format)" << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "reg addr \n reads the register addr" << std::endl;
-    }
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdDAC(int narg, const char * const args[], int action, int detPos) {
 
@@ -1895,61 +1709,6 @@ std::string slsDetectorCommand::helpTimeLeft(int action) {
     return os.str();
 }
 
-
-std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[], int action, int detPos) {
-
-    
-    if (action == HELP_ACTION)
-        return helpAdvanced(action);
-  
-    if (cmd == "copydetectorserver") {
-        if (action == GET_ACTION)
-            return std::string("cannot get");
-        if (narg < 3)
-        	return ("wrong usage." + helpAdvanced(PUT_ACTION));
-        std::string sval = std::string(args[1]);
-        std::string pval = std::string(args[2]);
-        myDet->copyDetectorServer(sval, pval, detPos);
-        return std::string("successful");
-    }
-
-    else if (cmd == "rebootcontroller") {
-        if (action == GET_ACTION)
-            return std::string("cannot get");
-        myDet->rebootController(detPos);
-        return std::string("successful");
-    }
-
-    else if (cmd == "update") {
-        if (action == GET_ACTION)
-            return std::string("cannot get");
-        if (narg < 4)
-        	return ("wrong usage." + helpAdvanced(PUT_ACTION));
-        // pof
-        if (strstr(args[3], ".pof") == nullptr)
-            return std::string("wrong usage: programming file should have .pof extension");
-        std::string sval = std::string(args[1]);
-        std::string pval = std::string(args[2]);
-        std::string fval = std::string(args[3]);
-        myDet->update(sval, pval, fval, detPos);
-        return std::string("successful");
-    }
-
-
- else
-        return std::string("unknown command ") + cmd;
-}
-
-std::string slsDetectorCommand::helpAdvanced(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "copydetectorserver s p \t copies the detector server s via tftp from pc with hostname p and changes respawn server. Not for Eiger. " << std::endl;
-        os << "rebootcontroller \t reboot controler blackfin of the detector. Not for Eiger." << std::endl;
-        os << "update s p f \t updates the firmware to f and detector server to f from host p via tftp and then reboots controller (blackfin). Not for Eiger. " << std::endl;
-    }
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdConfiguration(int narg, const char * const args[], int action, int detPos) {
 

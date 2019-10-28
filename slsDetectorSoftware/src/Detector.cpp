@@ -1487,7 +1487,7 @@ void Detector::updateFirmwareAndServer(const std::string &sname,
                                        const std::string &hostname,
                                        const std::string &fname,
                                        Positions pos) {
-    pimpl->Parallel(&slsDetector::copyDetectorServer, pos, fname, hostname);
+    pimpl->Parallel(&slsDetector::copyDetectorServer, pos, sname, hostname);
     programFPGA(fname, pos);
     rebootController(pos);
 }

@@ -51,10 +51,8 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpSettings(int action);
   static std::string helpSN(int action);
   static std::string helpDigiTest(int action);
-  static std::string helpRegister(int action);
   static std::string helpDAC(int action);
   static std::string helpTimeLeft(int action);
-  static std::string helpAdvanced(int action);
   static std::string helpConfiguration(int action);
   static std::string helpReceiver(int action);
 
@@ -74,10 +72,8 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdSettings(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdSN(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdDigiTest(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdRegister(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdDAC(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdTimeLeft(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdAdvanced(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdConfiguration(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdReceiver(int narg, const char * const args[], int action, int detPos = -1);
 

@@ -9,7 +9,178 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
-TEST_CASE("resetfpga", "[.cmd][.ctb][.jungfrau") {
+TEST_CASE("adcreg", "[.cmd]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD || test::type == slsDetectorDefs::GOTTHARD) {
+        REQUIRE_THROWS(multiSlsDetectorClient("adcreg 0x34", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("adcreg", GET));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("adcreg 0x45 0x3", PUT));
+    }
+}
+
+TEST_CASE("bustest", "[.cmd]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD || test::type == slsDetectorDefs::GOTTHARD) {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("bustest", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("bustest", PUT));
+    }
+}
+
+TEST_CASE("firmwaretest", "[.cmd]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD || test::type == slsDetectorDefs::GOTTHARD) {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("firmwaretest", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("firmwaretest", PUT));
+    }
+}
+
+TEST_CASE("reg", "[.cmd]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU) {
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x01", GET, nullptr, oss));
+            REQUIRE(oss.str() == "reg 0xacdc2014\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x64 5", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "reg [0x64, 5]\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr, oss));
+            REQUIRE(oss.str() == "frames 5\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("getbit 0x64 0", GET, nullptr, oss));
+            REQUIRE(oss.str() == "getbit 1\n");
+        }    
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("setbit 0x64 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "setbit [0x64, 1]\n");
+        }    
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("clearbit 0x64 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "clearbit [0x64, 0]\n");
+        } 
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr, oss));
+            REQUIRE(oss.str() == "frames 6\n");
+        }        
+        REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));    
+    } else if (test::type == slsDetectorDefs::GOTTHARD) {
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x023", GET, nullptr, oss));
+            REQUIRE(oss.str() == "reg 0xacdc1980\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x70 5", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "reg [0x70, 5]\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr, oss));
+            REQUIRE(oss.str() == "frames 5\n");
+        }   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("getbit 0x70 0", GET, nullptr, oss));
+            REQUIRE(oss.str() == "getbit 1\n");
+        }    
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("setbit 0x70 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "setbit [0x70, 1]\n");
+        }    
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("clearbit 0x70 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "clearbit [0x70, 0]\n");
+        } 
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr, oss));
+            REQUIRE(oss.str() == "frames 6\n");
+        }      
+        REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));    
+    } else if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x01", GET, nullptr, oss));
+            REQUIRE(oss.str() == "reg 0xacdc2016\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x64 5", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "reg [0x64, 5]\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr, oss));
+            REQUIRE(oss.str() == "frames 5\n");
+        }   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("getbit 0x64 0", GET, nullptr, oss));
+            REQUIRE(oss.str() == "getbit 1\n");
+        }    
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("setbit 0x64 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "setbit [0x64, 1]\n");
+        }    
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("clearbit 0x64 0", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "clearbit [0x64, 0]\n");
+        } 
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr, oss));
+            REQUIRE(oss.str() == "frames 6\n");
+        }      
+        REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));    
+    }
+}
+
+TEST_CASE("update", "[.cmd][.ctb][.jungfrau]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        REQUIRE_THROWS(multiSlsDetectorClient("update", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("update jungfrauDetectorServer_developer", PUT));  
+        REQUIRE_THROWS(multiSlsDetectorClient("update jungfrauDetectorServer_developer pc13784", PUT));  
+        REQUIRE_THROWS(multiSlsDetectorClient("update jungfrauDetectorServer_developer pc13784 dfd.pff", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("update jungfrauDetectorServer_developer pc13784 /afs/psi.ch/project/sls_det_firmware/jungfrau_firmware/cyclone_V/v0_8/Jungfrau_MCB.pof", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("update", GET));
+    }
+}
+
+TEST_CASE("copydetectorserver", "[.cmd][.ctb][.jungfrau]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        REQUIRE_THROWS(multiSlsDetectorClient("copydetectorserver", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("copydetectorserver jungfrauDetectorServer_developer", PUT));        
+        REQUIRE_NOTHROW(multiSlsDetectorClient("copydetectorserver jungfrauDetectorServer_developer pc13784", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("copydetectorserver", GET));
+    }
+}
+
+TEST_CASE("rebootcontroller", "[.cmd][.ctb][.jungfrau]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rebootcontroller", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("rebootcontroller", GET));
+    }
+}
+
+
+TEST_CASE("resetfpga", "[.cmd][.ctb][.jungfrau]") {
     if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) { 
         REQUIRE_NOTHROW(multiSlsDetectorClient("resetfpga", PUT));
     } else {
@@ -17,7 +188,7 @@ TEST_CASE("resetfpga", "[.cmd][.ctb][.jungfrau") {
     }
 }
 
-TEST_CASE("programfpga", "[.cmd][.ctb][.jungfrau") {
+TEST_CASE("programfpga", "[.cmd][.ctb][.jungfrau]") {
     if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) { 
         REQUIRE_THROWS(multiSlsDetectorClient("programfpga fdgd.oki", PUT));
     } else {

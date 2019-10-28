@@ -510,6 +510,7 @@ class CmdProxy {
                                     /* Pattern */
                                     /* Moench */
                                     /* Advanced */
+                                    /* Insignificant */
 
                                    
 
@@ -744,6 +745,21 @@ class CmdProxy {
                           /* Advanced */
                           {"programfpga", &CmdProxy::ProgramFpga}, 
                           {"resetfpga", &CmdProxy::resetfpga}, 
+                          {"copydetectorserver", &CmdProxy::CopyDetectorServer}, 
+                          {"rebootcontroller", &CmdProxy::rebootcontroller}, 
+                          {"update", &CmdProxy::UpdateFirmwareAndDetectorServer}, 
+                          {"reg", &CmdProxy::Register}, 
+                          {"adcreg", &CmdProxy::AdcRegister}, 
+                          {"setbit", &CmdProxy::BitOperations}, 
+                          {"clearbit", &CmdProxy::BitOperations}, 
+                          {"getbit", &CmdProxy::BitOperations}, 
+                          {"firmwaretest", &CmdProxy::firmwaretest}, 
+                          {"bustest", &CmdProxy::bustest}, 
+
+                          /* Insignificant */
+
+
+
 
 
 
@@ -814,6 +830,13 @@ class CmdProxy {
     std::string MinMaxEnergyThreshold(int action);
     /* Advanced */
     std::string ProgramFpga(int action);
+    std::string CopyDetectorServer(int action);
+    std::string UpdateFirmwareAndDetectorServer(int action);
+    std::string Register(int action);
+    std::string AdcRegister(int action);
+    std::string BitOperations(int action);
+    /* Insignificant */
+
 
 
 
@@ -1297,6 +1320,20 @@ class CmdProxy {
 
     EXECUTE_SET_COMMAND(resetfpga, resetFPGA, 
                 "\n\t[Jungfrau][Ctb] Reset FPGA.");   
+
+    EXECUTE_SET_COMMAND(rebootcontroller, rebootController, 
+                "\n\t[Jungfrau][Ctb] Reboot controler (blackfin) of detector.");  
+
+    EXECUTE_SET_COMMAND(firmwaretest, executeFirmwareTest, 
+                "\n\t[Jungfrau][Ctb][Gotthard] Firmware test, ie. reads a read fixed pattern from a register.");  
+
+    EXECUTE_SET_COMMAND(bustest, executeBusTest, 
+                "\n\t[Jungfrau][Ctb][Gotthard] Bus test, ie. keeps writing and reading back different values in R/W register.");  
+
+
+    /* Insignificant */
+
+    
 
 
     DAC_COMMAND(adcvpp, getDAC, setDAC, defs::ADC_VPP,

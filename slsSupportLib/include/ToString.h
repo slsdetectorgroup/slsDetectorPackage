@@ -176,6 +176,34 @@ inline std::string ToString(const defs::readoutMode s){
     }
 }
 
+inline std::string ToString(const defs::frameModeType s){
+    switch (s) {
+    case defs::PEDESTAL:
+        return std::string("pedestal");
+    case defs::NEW_PEDESTAL:
+        return std::string("newpedestal");
+    case defs::FLATFIELD:
+        return std::string("flatfield");               
+    case defs::NEW_FLATFIELD:
+        return std::string("newflatfield");  
+    default:
+        return std::string("Unknown");       
+    }
+}
+
+inline std::string ToString(const defs::detectorModeType s){
+    switch (s) {
+    case defs::COUNTING:
+        return std::string("counting");
+    case defs::INTERPOLATING:
+        return std::string("interpolating");
+    case defs::ANALOG:
+        return std::string("analog");               
+    default:
+        return std::string("Unknown");       
+    }
+}
+
 // in case we already have a string 
 // causes a copy but might be needed in generic code
 inline std::string ToString(const std::string& s){
@@ -468,11 +496,34 @@ inline defs::readoutMode StringTo(const std::string& s) {
         return defs::ANALOG_ONLY;
     if (s == "digital")
         return defs::DIGITAL_ONLY; 
-     if (s == "analog_digital")
+    if (s == "analog_digital")
         return defs::ANALOG_AND_DIGITAL;         
     throw sls::RuntimeError("Unknown readout mode " + s);          
 }
 
+template <>
+inline defs::frameModeType StringTo(const std::string& s) {
+    if (s == "pedestal")
+        return defs::PEDESTAL;
+    if (s == "newpedestal")
+        return defs::NEW_PEDESTAL; 
+    if (s == "flatfield")
+        return defs::FLATFIELD;      
+    if (s == "newflatfield")
+        return defs::NEW_FLATFIELD;              
+    throw sls::RuntimeError("Unknown frame mode " + s);          
+}
+
+template <>
+inline defs::detectorModeType StringTo(const std::string& s) {
+    if (s == "counting")
+        return defs::COUNTING;
+    if (s == "interpolating")
+        return defs::INTERPOLATING; 
+    if (s == "analog")
+        return defs::ANALOG;              
+    throw sls::RuntimeError("Unknown detector mode " + s);          
+}
 
 /** For types with a .str() method use this for conversion */
 template <typename T>

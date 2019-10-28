@@ -932,23 +932,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
     /* pattern generator */
 
-    /*! \page prototype Chip Test Board / Moench
-	  Commands specific for the chiptest board or moench
-	 */
-
-    /*! \page prototype
-  - <b>framemode [i] </b> Sets/gets frame mode for Moench (soft setting in processor). Options: pedestal, newpedestal, flatfield, newflatfield
-     */
-    descrToFuncMap[i].m_pFuncName = "framemode";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
-    ++i;
-
-    /*! \page prototype
-  - <b>detectormode [i] </b> Sets/gets detector mode for Moench (soft setting in processor). Options: counting, interpolating, analog
-     */
-    descrToFuncMap[i].m_pFuncName = "detectormode";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
-    ++i;
 
     numberOfCommands = i;
 
@@ -2063,49 +2046,6 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     return os.str();
 }
 
-
-
-std::string slsDetectorCommand::helpProcessor(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "framemode [n] \t Sets frame mode for Moench (soft setting in processor). Options: pedestal, newpedestal, flatfield, newflatfield" << std::endl;
-        os << "detectormode [n] \t Sets  detector mode for Moench (soft setting in processor). Options: counting, interpolating, analog" << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "framemode [n] \t Gets frame mode for Moench (soft setting in processor). Options: pedestal, newpedestal, flatfield, newflatfield" << std::endl;
-        os << "detectormode [n] \t Gets  detector mode for Moench (soft setting in processor). Options: counting, interpolating, analog" << std::endl;
-    }
-    return os.str();
-}
-
-std::string slsDetectorCommand::cmdProcessor(int narg, const char * const args[], int action, int detPos) {
-    if (action == HELP_ACTION)
-        return helpProcessor(action);
-
-
-
-    if (cmd == "framemode") {
-        if (action == PUT_ACTION) {
-            frameModeType ival = getFrameModeType(args[1]);
-            if (ival == GET_FRAME_MODE)
-                return std::string("cannot parse frame mode value");
-            myDet->setFrameMode(ival, detPos);
-        }
-        return getFrameModeType(frameModeType(myDet->setFrameMode(GET_FRAME_MODE, detPos)));
-    }
-
-    else if (cmd == "detectormode") {
-        if (action == PUT_ACTION) {
-            detectorModeType ival = getDetectorModeType(args[1]);
-            if (ival == GET_DETECTOR_MODE)
-                return std::string("cannot parse detector mode value");
-            myDet->setDetectorMode(ival, detPos);
-        }
-        return getDetectorModeType(detectorModeType(myDet->setDetectorMode(GET_DETECTOR_MODE, detPos)));
-    }
-    return std::string("unknown command");
-}
 
 
 

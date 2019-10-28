@@ -57,7 +57,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   static std::string helpAdvanced(int action);
   static std::string helpConfiguration(int action);
   static std::string helpReceiver(int action);
-  static std::string helpProcessor(int action);
 
  private:
   multiSlsDetector *myDet;
@@ -81,7 +80,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   std::string cmdAdvanced(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdConfiguration(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdReceiver(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdProcessor(int narg, const char * const args[], int action, int detPos = -1);
 
   int numberOfCommands;
   std::string cmd;

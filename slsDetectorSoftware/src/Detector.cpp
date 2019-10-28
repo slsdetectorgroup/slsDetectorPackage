@@ -1426,7 +1426,7 @@ Result<defs::frameModeType> Detector::getFrameMode(Positions pos) const {
     Result<defs::frameModeType> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
-            intResult[i] = defs::getFrameModeType(res[i]);
+            intResult[i] = sls::StringTo<slsDetectorDefs::frameModeType>(res[i]);
         }
     } catch (...) {
         throw RuntimeError(
@@ -1437,7 +1437,7 @@ Result<defs::frameModeType> Detector::getFrameMode(Positions pos) const {
 
 void Detector::setFrameMode(defs::frameModeType value, Positions pos) {
     pimpl->Parallel(&slsDetector::setAdditionalJsonParameter, pos, "frameMode",
-                    defs::getFrameModeType(value));
+                    sls::ToString(value));
 }
 
 Result<defs::detectorModeType> Detector::getDetectorMode(Positions pos) const {
@@ -1446,7 +1446,7 @@ Result<defs::detectorModeType> Detector::getDetectorMode(Positions pos) const {
     Result<defs::detectorModeType> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
-            intResult[i] = defs::getDetectorModeType(res[i]);
+            intResult[i] = sls::StringTo<slsDetectorDefs::detectorModeType>(res[i]);
         }
     } catch (...) {
         throw RuntimeError(
@@ -1457,7 +1457,7 @@ Result<defs::detectorModeType> Detector::getDetectorMode(Positions pos) const {
 
 void Detector::setDetectorMode(defs::detectorModeType value, Positions pos) {
     pimpl->Parallel(&slsDetector::setAdditionalJsonParameter, pos,
-                    "detectorMode", defs::getDetectorModeType(value));
+                    "detectorMode", sls::ToString(value));
 }
 
 // Advanced

@@ -1406,11 +1406,11 @@ int multiSlsDetector::setFrameMode(frameModeType value, int detPos) {
     if (value == GET_FRAME_MODE) {
         result = getAdditionalJsonParameter(parameter, detPos);
     } else {
-        result = setAdditionalJsonParameter(parameter, getFrameModeType(value),
+        result = setAdditionalJsonParameter(parameter, sls::ToString(value),
                                             detPos);
     }
 
-    return getFrameModeType(result);
+    return sls::StringTo<slsDetectorDefs::frameModeType>(result);
 }
 
 int multiSlsDetector::setDetectorMode(detectorModeType value, int detPos) {
@@ -1421,10 +1421,10 @@ int multiSlsDetector::setDetectorMode(detectorModeType value, int detPos) {
         result = getAdditionalJsonParameter(parameter, detPos);
     } else {
         result = setAdditionalJsonParameter(parameter,
-                                            getDetectorModeType(value), detPos);
+                                            sls::ToString(value), detPos);
     }
 
-    return getDetectorModeType(result);
+    return sls::StringTo<slsDetectorDefs::detectorModeType>(result);
 }
 
 int64_t multiSlsDetector::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize,

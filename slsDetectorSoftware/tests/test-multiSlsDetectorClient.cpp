@@ -9,6 +9,51 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("detectormode", "[.cmd][.moench]") {
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("detectormode counting", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "detectormode counting\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("detectormode interpolating", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "detectormode interpolating\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("detectormode analog", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "detectormode analog\n");
+    }         
+    REQUIRE_NOTHROW(multiSlsDetectorClient("detectormode counting", PUT));
+    REQUIRE_THROWS(multiSlsDetectorClient("detectormode pedestal", PUT));
+}
+
+TEST_CASE("framemode", "[.cmd][.moench]") {
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("framemode pedestal", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "framemode pedestal\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("framemode newpedestal", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "framemode newpedestal\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("framemode flatfield", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "framemode flatfield\n");
+    }   
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("framemode newflatfield", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "framemode newflatfield\n");
+    }        
+    REQUIRE_NOTHROW(multiSlsDetectorClient("framemode pedestal", PUT));
+    REQUIRE_THROWS(multiSlsDetectorClient("framemode counting", PUT));
+}
+
 TEST_CASE("emin", "[.cmd][.moench]") {
     {
         std::ostringstream oss;

@@ -9,6 +9,26 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("emin", "[.cmd][.moench]") {
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("emin 100", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "emin 100\n");
+    }
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("emax 200", PUT, nullptr, oss));
+        REQUIRE(oss.str() == "emax 200\n");
+    }   
+    {
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonpara emax", GET, nullptr, oss));
+        REQUIRE(oss.str() == "rx_jsonpara 200\n");
+    }
+    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader \"\"", PUT));
+}
+
+
 TEST_CASE("rx_jsonpara", "[.cmd][.moench]") {
     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader \"key1\":\"value1\"", PUT)); 
     {

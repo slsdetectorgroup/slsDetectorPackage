@@ -1096,13 +1096,13 @@ class Detector {
                                           Positions pos = {});
 
     /** [Moench: -1 if unknown mode] */
-    Result<int> getFrameMode(Positions pos = {}) const;
+    Result<defs::frameModeType> getFrameMode(Positions pos = {}) const;
 
     /** [Moench] */
     void setFrameMode(defs::frameModeType value, Positions pos = {});
 
     /** [Moench: -1 if unknown mode] */
-    Result<int> getDetectorMode(Positions pos = {}) const;
+    Result<defs::detectorModeType> getDetectorMode(Positions pos = {}) const;
 
     /** [Moench] */
     void setDetectorMode(defs::detectorModeType value, Positions pos = {});

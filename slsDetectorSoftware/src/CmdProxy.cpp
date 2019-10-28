@@ -1246,7 +1246,7 @@ std::string CmdProxy::JsonParameter(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[key1] [value1]\n\t[Moench] Additional json header parameter streamed out from receiver. This is same as calling rx_jsonaddheader \"key\":\"value1\"" << '\n';   
+        os << "[key1] [value1]\n\tAdditional json header parameter streamed out from receiver. If empty in a get, then no parameter found. This is same as calling rx_jsonaddheader \"key\":\"value1\"." << '\n';   
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
@@ -1264,6 +1264,36 @@ std::string CmdProxy::JsonParameter(int action) {
     }
     return os.str();
 }
+
+std::string CmdProxy::MinMaxEnergyThreshold(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        if (cmd == "emin") {
+            os << "[n_value]\n\t[Moench] Minimum energy threshold (soft setting) for processor." << '\n';   
+        } else if (cmd == "emin") {
+            os << "[n_value]\n\t[Moench] Maximum energy threshold (soft setting) for processor." << '\n';   
+        } else {
+            throw sls::RuntimeError("Unknown command, use list to list all commands");
+        }
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getDetectorMinMaxEnergyThreshold((cmd == "emax" ? true :false), {det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        } 
+        det->setDetectorMinMaxEnergyThreshold((cmd == "emax" ? true : false), std::stoi(args[0]), {det_id});
+        os << args.front() << '\n';           
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 
 
 } // namespace sls

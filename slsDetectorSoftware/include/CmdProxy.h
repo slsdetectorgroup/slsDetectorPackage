@@ -734,6 +734,8 @@ class CmdProxy {
                           /* Moench */
                           {"rx_jsonaddheader", &CmdProxy::rx_jsonaddheader}, 
                           {"rx_jsonpara", &CmdProxy::JsonParameter}, 
+                          {"emin", &CmdProxy::MinMaxEnergyThreshold}, 
+                          {"emax", &CmdProxy::MinMaxEnergyThreshold}, 
 
 
 
@@ -801,6 +803,7 @@ class CmdProxy {
     std::string PatternWaitTime(int action);
     /* Moench */
     std::string JsonParameter(int action);
+    std::string MinMaxEnergyThreshold(int action);
 
 
 
@@ -1271,7 +1274,7 @@ class CmdProxy {
     /* Moench */
     
     STRING_COMMAND(rx_jsonaddheader, getAdditionalJsonHeader, setAdditionalJsonHeader, 
-                "[\"label1\":\"value1\"], [\"label2\":\"value2\"]\n\t[Moench] Additional json header to be streamd out from receiver via zmq. Default is empty. Use only if to be processed by an intermediate user process listening to receiver zmq packets.");
+                "[\"label1\":\"value1\"], [\"label2\":\"value2\"]\n\tAdditional json header to be streamd out from receiver via zmq. Default is empty. Use only if to be processed by an intermediate user process listening to receiver zmq packets.");
 
 
 

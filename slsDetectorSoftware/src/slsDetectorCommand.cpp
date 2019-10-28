@@ -929,33 +929,12 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
-    /*! \page receiver
-    - <b>rx_jsonpara [k] [v]</b> sets/gets  value v for additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found Use only if it needs to be processed by an intermediate process. \c Returns \c (string)
-     */
-    descrToFuncMap[i].m_pFuncName = "rx_jsonpara";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    i++;
-
 
     /* pattern generator */
 
     /*! \page prototype Chip Test Board / Moench
 	  Commands specific for the chiptest board or moench
 	 */
-
-    /*! \page prototype
-  - <b>emin [i] </b> Sets/gets detector minimum energy threshold for Moench (soft setting in processor)
-     */
-    descrToFuncMap[i].m_pFuncName = "emin";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
-    ++i;
-
-    /*! \page prototype
-  - <b>emax [i] </b> Sets/gets detector maximum energy threshold for Moench (soft setting in processor)
-     */
-    descrToFuncMap[i].m_pFuncName = "emax";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdProcessor;
-    ++i;
 
     /*! \page prototype
   - <b>framemode [i] </b> Sets/gets frame mode for Moench (soft setting in processor). Options: pedestal, newpedestal, flatfield, newflatfield
@@ -2066,12 +2045,6 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
         }
     }
 
-    else if (cmd == "rx_jsonpara") {
-        if (action == PUT_ACTION) {
-            myDet->setAdditionalJsonParameter(args[1], args[2], detPos);
-        }
-        return myDet->getAdditionalJsonParameter(args[1], detPos);
-    }
 
     return std::string("could not decode command");
 }
@@ -2081,12 +2054,10 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
-        os << "rx_jsonpara [k] [v]\n sets value to v for additional json header parameter k to be streamed out with the zmq from receiver." << std::endl;
 
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
         os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
-        os << "rx_jsonpara [k] \n gets value of additional json header parameter k to be streamed out with the zmq from receiver. If empty, then no parameter found." << std::endl;
 
     }
     return os.str();
@@ -2098,14 +2069,10 @@ std::string slsDetectorCommand::helpProcessor(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "emin [n] \t Sets detector minimum energy threshold to x for Moench (soft setting in processor)" << std::endl;
-        os << "emax [n] \t Sets detector maximum energy threshold to x for Moench (soft setting in processor)" << std::endl;
         os << "framemode [n] \t Sets frame mode for Moench (soft setting in processor). Options: pedestal, newpedestal, flatfield, newflatfield" << std::endl;
         os << "detectormode [n] \t Sets  detector mode for Moench (soft setting in processor). Options: counting, interpolating, analog" << std::endl;
     }
     if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "emin [n] \t Gets detector minimum energy threshold to x for Moench (soft setting in processor)" << std::endl;
-        os << "emax [n] \t Gets detector maximum energy threshold to x for Moench (soft setting in processor)" << std::endl;
         os << "framemode [n] \t Gets frame mode for Moench (soft setting in processor). Options: pedestal, newpedestal, flatfield, newflatfield" << std::endl;
         os << "detectormode [n] \t Gets  detector mode for Moench (soft setting in processor). Options: counting, interpolating, analog" << std::endl;
     }
@@ -2117,17 +2084,8 @@ std::string slsDetectorCommand::cmdProcessor(int narg, const char * const args[]
         return helpProcessor(action);
 
 
-    if (cmd == "emin" || cmd == "emax") {
-        if (action == PUT_ACTION) {
-            int ival = -1;
-            if(!sscanf(args[1],"%d",&ival))
-                return std::string("cannot parse emin/emax value");
-            myDet->setDetectorMinMaxEnergyThreshold((cmd == "emin" ? 0 : 1), ival, detPos);
-        }
-        return std::to_string(myDet->setDetectorMinMaxEnergyThreshold(0, -1, detPos));
-    }
 
-    else if (cmd == "framemode") {
+    if (cmd == "framemode") {
         if (action == PUT_ACTION) {
             frameModeType ival = getFrameModeType(args[1]);
             if (ival == GET_FRAME_MODE)

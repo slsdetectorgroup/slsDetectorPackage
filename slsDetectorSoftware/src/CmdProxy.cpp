@@ -1276,24 +1276,58 @@ std::string CmdProxy::MinMaxEnergyThreshold(int action) {
         } else {
             throw sls::RuntimeError("Unknown command, use list to list all commands");
         }
-    } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
-            WrongNumberOfParameters(0);
+    } else {
+        bool emax = false;
+        if (cmd == "emin") {
+            emax = false;
+        } else if (cmd == "emax") {
+            emax = true;
+        } else {
+            throw sls::RuntimeError("Unknown command, use list to list all commands");
+        } 
+        if (action == defs::GET_ACTION) {
+            if (args.size() != 0) {
+                WrongNumberOfParameters(0);
+            }
+            auto t = det->getDetectorMinMaxEnergyThreshold(emax, {det_id});
+            os << OutString(t) << '\n';
+        } else if (action == defs::PUT_ACTION) {
+            if (args.size() != 1) {
+                WrongNumberOfParameters(1);
+            } 
+            det->setDetectorMinMaxEnergyThreshold(emax, std::stoi(args[0]), {det_id});
+            os << args.front() << '\n';           
+        } else { 
+            throw sls::RuntimeError("Unknown action");
         }
-        auto t = det->getDetectorMinMaxEnergyThreshold((cmd == "emax" ? true :false), {det_id});
-        os << OutString(t) << '\n';
+    }
+    return os.str();
+}
+
+
+/* Advanced */
+
+std::string CmdProxy::ProgramFpga(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[fname.pof]\n\t[Jungfrau][Ctb] Programs FPGA from pof file." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         } 
-        det->setDetectorMinMaxEnergyThreshold((cmd == "emax" ? true : false), std::stoi(args[0]), {det_id});
-        os << args.front() << '\n';           
+        if (args[0].find(".pof") == std::string::npos) {
+            throw sls::RuntimeError("Programming file must be a pof file.");
+        }
+        det->programFPGA(args[0], {det_id});
+        os << "successful\n";           
     } else { 
         throw sls::RuntimeError("Unknown action");
     }
     return os.str();
 }
-
 
 
 } // namespace sls

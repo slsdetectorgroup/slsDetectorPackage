@@ -256,20 +256,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     /* fpga */
 
     /*! \page config
-   - <b>programfpga [file]</b> programs the FPGA with file f (with .pof extension). Used for JUNGFRAU only. Only put! \c Returns \c ("successful", "failed")
-	 */
-    descrToFuncMap[i].m_pFuncName = "programfpga";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
-    ++i;
-
-    /*! \page config
-   - <b>resetfpga [f]</b> resets FPGA, where f can be any value. Used for JUNGFRAU only. Only put! \c Returns \c ("successful", "failed")
-	 */
-    descrToFuncMap[i].m_pFuncName = "resetfpga";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAdvanced;
-    ++i;
-
-    /*! \page config
    - <b>copydetectorserver [sname] [phost]</b> copies the detector server sname via tftp from pc with hostname phost and changes respawn server for all detector. Not for Eiger.  Only put! \c Returns \c ("successful", "failed")
 	 */
     descrToFuncMap[i].m_pFuncName = "copydetectorserver";
@@ -1916,24 +1902,7 @@ std::string slsDetectorCommand::cmdAdvanced(int narg, const char * const args[],
     if (action == HELP_ACTION)
         return helpAdvanced(action);
   
-    if (cmd == "programfpga") {
-        if (action == GET_ACTION)
-            return std::string("cannot get");
-        if (strstr(args[1], ".pof") == nullptr)
-            return std::string("wrong usage: programming file should have .pof extension");
-        std::string sval = std::string(args[1]);
-        myDet->programFPGA(sval, detPos);
-        return std::string("successful");
-    }
-
-    else if (cmd == "resetfpga") {
-        if (action == GET_ACTION)
-            return std::string("cannot get");
-        myDet->resetFPGA(detPos);
-        return std::string("successful");
-    }
-
-    else if (cmd == "copydetectorserver") {
+    if (cmd == "copydetectorserver") {
         if (action == GET_ACTION)
             return std::string("cannot get");
         if (narg < 3)
@@ -1975,8 +1944,6 @@ std::string slsDetectorCommand::helpAdvanced(int action) {
 
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "programfpga f \t programs the fpga with file f (with .pof extension)." << std::endl;
-        os << "resetfpga f \t resets fpga, f can be any value" << std::endl;
         os << "copydetectorserver s p \t copies the detector server s via tftp from pc with hostname p and changes respawn server. Not for Eiger. " << std::endl;
         os << "rebootcontroller \t reboot controler blackfin of the detector. Not for Eiger." << std::endl;
         os << "update s p f \t updates the firmware to f and detector server to f from host p via tftp and then reboots controller (blackfin). Not for Eiger. " << std::endl;

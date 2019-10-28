@@ -509,6 +509,8 @@ class CmdProxy {
 
                                     /* Pattern */
                                     /* Moench */
+                                    /* Advanced */
+
                                    
 
                                     };
@@ -738,6 +740,11 @@ class CmdProxy {
                           {"emax", &CmdProxy::MinMaxEnergyThreshold}, 
                           {"framemode", &CmdProxy::framemode}, 
                           {"detectormode", &CmdProxy::detectormode}, 
+                          
+                          /* Advanced */
+                          {"programfpga", &CmdProxy::ProgramFpga}, 
+                          {"resetfpga", &CmdProxy::resetfpga}, 
+
 
 
 
@@ -805,6 +812,8 @@ class CmdProxy {
     /* Moench */
     std::string JsonParameter(int action);
     std::string MinMaxEnergyThreshold(int action);
+    /* Advanced */
+    std::string ProgramFpga(int action);
 
 
 
@@ -1284,6 +1293,10 @@ class CmdProxy {
                     "[counting|interpolating|analog]\n\t[Moench] Detector mode (soft setting) in processor.");                    
 
 
+    /* Advanced */
+
+    EXECUTE_SET_COMMAND(resetfpga, resetFPGA, 
+                "\n\t[Jungfrau][Ctb] Reset FPGA.");   
 
 
     DAC_COMMAND(adcvpp, getDAC, setDAC, defs::ADC_VPP,

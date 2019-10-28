@@ -9,6 +9,22 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("resetfpga", "[.cmd][.ctb][.jungfrau") {
+    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("resetfpga", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("resetfpga", GET));
+    }
+}
+
+TEST_CASE("programfpga", "[.cmd][.ctb][.jungfrau") {
+    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) { 
+        REQUIRE_THROWS(multiSlsDetectorClient("programfpga fdgd.oki", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("programfpga", GET));
+    }
+}
+
 TEST_CASE("detectormode", "[.cmd][.moench]") {
     {
         std::ostringstream oss;

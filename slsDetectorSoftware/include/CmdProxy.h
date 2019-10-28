@@ -761,6 +761,11 @@ class CmdProxy {
                           {"stopport", &CmdProxy::stopport}, 
                           {"lock", &CmdProxy::lock},
                           {"lastclient", &CmdProxy::lastclient},
+                          {"execcommand", &CmdProxy::ExecuteCommand},
+                          {"nframes", &CmdProxy::nframes},
+                          {"now", &CmdProxy::now},
+                          {"timestamp", &CmdProxy::timestamp},
+                          {"user", &CmdProxy::UserDetails},
 
 
 
@@ -838,8 +843,8 @@ class CmdProxy {
     std::string AdcRegister(int action);
     std::string BitOperations(int action);
     /* Insignificant */
-
-
+    std::string ExecuteCommand(int action);
+    std::string UserDetails(int action);
 
 
     /* configuration */
@@ -1346,6 +1351,15 @@ class CmdProxy {
 
     GET_COMMAND(lastclient, getLastClientIP, 
                 "\n\tClient IP Address that last communicated with the detector."); 
+
+    GET_COMMAND(nframes, getNumberOfFramesFromStart, 
+                "\n\t[Gotthard][Jungfrau][CTB] Number of frames from start run control.");       
+
+    TIME_GET_COMMAND(now, getActualTime, 
+                "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][CTB] Time from detector start up.");  
+
+    TIME_GET_COMMAND(timestamp, getMeasurementTime, 
+                "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][CTB] Timestamp at a frame start.");  
 
 
 

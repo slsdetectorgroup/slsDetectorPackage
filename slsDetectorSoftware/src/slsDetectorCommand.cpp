@@ -109,13 +109,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
     /*! \page test
-   - <b>execcommand</b> Executes a command on the detector server. Don't use it!!!!
-	 */
-    descrToFuncMap[i].m_pFuncName = "execcommand";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdExitServer;
-    ++i;
-
-    /*! \page test
    - <b>rx_execcommand</b> Executes a command on the receiver server. Don't use it!!!!
 	 */
     descrToFuncMap[i].m_pFuncName = "rx_execcommand";
@@ -180,14 +173,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
 
-    /*! \page config
-   - <b>user</b> \c Returns user details from shared memory. Only allowed at multi detector level.  Cannot put. \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "user";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdUser;
-    ++i;
-
-    /*! \page config
+     /*! \page config
 		\section configstatus Status
    commands to configure detector status
 	 */
@@ -239,26 +225,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
     /* read only timers */
 
-   /*! \page timing
-   - <b>now</b> Getting actual time of the detector from start. For Jungfrau only. Only get!
-	 */
-    descrToFuncMap[i].m_pFuncName = "now";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
-    ++i;
-
-    /*! \page timing
-   - <b>timestamp</b> Getting timestamp. For Jungfrau only. Only get!
-	 */
-    descrToFuncMap[i].m_pFuncName = "timestamp";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
-    ++i;
-
-    /*! \page timing
-   - <b>nframes</b> Frames from start run control. Only Jungfrau. Only get! \c Returns \c (long long int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "nframes";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdTimeLeft;
-    ++i;
 
 
     /* speed */
@@ -1040,35 +1006,6 @@ std::string slsDetectorCommand::helpHostname(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdUser(int narg, const char * const args[], int action, int detPos) {
-#ifdef VERBOSE
-    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-#endif
-
-    if (action == HELP_ACTION) {
-        return helpHostname(HELP_ACTION);
-    }
-    if (action == PUT_ACTION) {
-        return std::string("cannot put");
-    }
-    if (detPos >= 0) {
-        return std::string("Wrong usage - getting user details only from "
-                           "multiDetector level");
-    }
-    return myDet->getUserDetails();
-}
-
-std::string slsDetectorCommand::helpUser(int action) {
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << std::string("user \t returns user details from shared memory without updating shared memory. "
-                          "Only allowed at multi detector level.\n");
-    }
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << std::string("user \t cannot put\n");
-    }
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdHelp(int narg, const char * const args[], int action, int detPos) {
 #ifdef VERBOSE
@@ -1099,9 +1036,6 @@ std::string slsDetectorCommand::cmdExitServer(int narg, const char * const args[
 
             myDet->exitReceiver(detPos);
             return std::string("Receiver shut down\n");
-        } else if (cmd == "execcommand") {
-            myDet->execCommand(std::string(args[1]), detPos);
-            return std::string("Command executed successfully\n");
         } else if (cmd == "rx_execcommand") {
 
             myDet->execReceiverCommand(std::string(args[1]), detPos);
@@ -1116,7 +1050,6 @@ std::string slsDetectorCommand::helpExitServer(int action) {
     std::ostringstream os;
     os << std::string("exitserver \t shuts down all the detector servers. Don't use it!!!!\n");
     os << std::string("rx_exit \t shuts down all the receiver servers.\n");
-    os << std::string("execcommand \t executes command in detector server. Don't use it if you do not know what you are doing.\n");
     os << std::string("rx_execcommand \t executes command in receiver server. Don't use it if you do not know what you are doing.\n");
     return os.str();
 }
@@ -1606,51 +1539,6 @@ std::string slsDetectorCommand::helpDAC(int action) {
 
 
 
-
-std::string slsDetectorCommand::cmdTimeLeft(int narg, const char * const args[], int action, int detPos) {
-    timerIndex index;
-    int64_t ret;
-    double rval;
-
-    char answer[1000];
-
-    if (action == HELP_ACTION)
-        return helpTimeLeft(action);
-
-    if (cmd == "now")
-        index = ACTUAL_TIME;
-    else if (cmd == "timestamp")
-        index = MEASUREMENT_TIME;
-    else if (cmd == "nframes")
-        index = FRAMES_FROM_START;
-    else
-        return std::string("could not decode timer ") + cmd;
-
-    if (action == PUT_ACTION) {
-        return std::string("cannot set ") + std::string(args[1]);
-    }
-
-
-    ret = myDet->getTimeLeft(index, detPos);
-
-    if ((ret != -1) && (index == ACTUAL_TIME || index == MEASUREMENT_TIME)) {
-        rval = (double)ret * 1E-9;
-        sprintf(answer,"%0.9f",rval);
-    } else {
-        sprintf(answer,"%lld",(long long int)ret);
-    }
-
-    return std::string(answer);
-}
-
-std::string slsDetectorCommand::helpTimeLeft(int action) {
-
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << std::endl;
-    }
-    return os.str();
-}
 
 
 std::string slsDetectorCommand::cmdConfiguration(int narg, const char * const args[], int action, int detPos) {

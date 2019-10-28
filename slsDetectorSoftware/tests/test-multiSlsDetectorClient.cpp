@@ -9,6 +9,41 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+TEST_CASE("user", "[.cmd]") {
+    REQUIRE_NOTHROW(multiSlsDetectorClient("user", GET));
+    REQUIRE_THROWS(multiSlsDetectorClient("user bla", PUT));
+}
+
+TEST_CASE("now", "[.cmd]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("now", GET));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("now", GET));
+    }
+}
+
+TEST_CASE("timestamp", "[.cmd]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("timestamp", GET));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("timestamp", GET));
+    }
+}
+
+TEST_CASE("nframes", "[.cmd]") {
+    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD || test::type == slsDetectorDefs::GOTTHARD) {
+        REQUIRE_NOTHROW(multiSlsDetectorClient("nframes", GET));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("nframes", GET));
+    }
+}
+
+
+TEST_CASE("execcommand", "[.cmd]") {
+    REQUIRE_NOTHROW(multiSlsDetectorClient("execcommand ls", PUT));
+}
+
 TEST_CASE("port", "[.cmd]") {
     {
         std::ostringstream oss;

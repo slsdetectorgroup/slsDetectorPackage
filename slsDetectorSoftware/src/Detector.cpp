@@ -33,6 +33,10 @@ void Detector::setHostname(const std::vector<std::string> &value) {
     pimpl->setHostname(value);
 }
 
+void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
+    pimpl->setVirtualDetectorServers(numServers, startingPort);
+}
+
 int Detector::getShmId() const { return pimpl->getMultiId(); }
 
 std::string Detector::getPackageVersion() const {
@@ -199,6 +203,42 @@ Result<int> Detector::getADCPhaseInDegrees(Positions pos) const {
 
 void Detector::setADCPhaseInDegrees(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setSpeed, pos, defs::ADC_PHASE, value, 1);
+}
+
+Result<int> Detector::getClockFrequency(int clkIndex, Positions pos) {
+    return pimpl->Parallel(&slsDetector::getClockFrequency, pos, clkIndex);
+}
+
+void Detector::setClockFrequency(int clkIndex, int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setClockFrequency, pos, clkIndex, value);
+}
+
+Result<int> Detector::getClockPhase(int clkIndex, Positions pos) {
+    return pimpl->Parallel(&slsDetector::getClockPhase, pos, clkIndex, false);
+}
+
+void Detector::setClockPhase(int clkIndex, int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setClockPhase, pos, clkIndex, value, false);
+}
+
+Result<int> Detector::getMaxClockPhaseShift(int clkIndex, Positions pos) {
+    return pimpl->Parallel(&slsDetector::getMaxClockPhaseShift, pos, clkIndex);
+}
+
+Result<int> Detector::getClockPhaseinDegrees(int clkIndex, Positions pos) {
+    return pimpl->Parallel(&slsDetector::getClockPhase, pos, clkIndex, true);
+}
+
+void Detector::setClockPhaseinDegrees(int clkIndex, int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setClockPhase, pos, clkIndex, value, true);
+}
+
+Result<int> Detector::getClockDivider(int clkIndex, Positions pos) {
+    return pimpl->Parallel(&slsDetector::getClockDivider, pos, clkIndex);
+}
+
+void Detector::setClockDivider(int clkIndex, int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setClockDivider, pos, clkIndex, value);
 }
 
 Result<int> Detector::getHighVoltage(Positions pos) const {
@@ -1574,42 +1614,6 @@ std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
 Result<uint64_t> Detector::getRxCurrentFrameIndex(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverCurrentFrameIndex, pos);
-}
-
-Result<int> Detector::getClockFrequency(int clkIndex, Positions pos) {
-    return pimpl->Parallel(&slsDetector::getClockFrequency, pos, clkIndex);
-}
-
-void Detector::setClockFrequency(int clkIndex, int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockFrequency, pos, clkIndex, value);
-}
-
-Result<int> Detector::getClockPhase(int clkIndex, Positions pos) {
-    return pimpl->Parallel(&slsDetector::getClockPhase, pos, clkIndex, false);
-}
-
-void Detector::setClockPhase(int clkIndex, int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockPhase, pos, clkIndex, value, false);
-}
-
-Result<int> Detector::getMaxClockPhaseShift(int clkIndex, Positions pos) {
-    return pimpl->Parallel(&slsDetector::getMaxClockPhaseShift, pos, clkIndex);
-}
-
-Result<int> Detector::getClockPhaseinDegrees(int clkIndex, Positions pos) {
-    return pimpl->Parallel(&slsDetector::getClockPhase, pos, clkIndex, true);
-}
-
-void Detector::setClockPhaseinDegrees(int clkIndex, int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockPhase, pos, clkIndex, value, true);
-}
-
-Result<int> Detector::getClockDivider(int clkIndex, Positions pos) {
-    return pimpl->Parallel(&slsDetector::getClockDivider, pos, clkIndex);
-}
-
-void Detector::setClockDivider(int clkIndex, int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockDivider, pos, clkIndex, value);
 }
 
 std::vector<int> Detector::getPortNumbers(int start_port) {

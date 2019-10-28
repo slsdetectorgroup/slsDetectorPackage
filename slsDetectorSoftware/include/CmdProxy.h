@@ -452,6 +452,8 @@ class CmdProxy {
                                     {"cycles", "triggers"},
                                     {"cyclesl", "triggersl"},
                                     {"clkdivider", "speed"}, 
+
+                                    /** dacs */
                                     
                                     /* acquisition */
                                     {"busy", "clearbusy"},
@@ -505,13 +507,13 @@ class CmdProxy {
                                     {"i_b", "im_b"},
                                     {"i_c", "im_c"},
                                     {"i_d", "im_d"},
-                                    {"i_io", "im_io"}
+                                    {"i_io", "im_io"},
 
                                     /* Pattern */
                                     /* Moench */
                                     /* Advanced */
                                     /* Insignificant */
-
+                                    {"frameindex", "rx_frameindex"}
                                    
 
                                     };
@@ -523,6 +525,7 @@ class CmdProxy {
                           //{"config", &CmdProxy::config},
                           {"parameters", &CmdProxy::parameters},
                           {"hostname", &CmdProxy::Hostname},
+                          {"virtual", &CmdProxy::VirtualServer},
                           {"versions", &CmdProxy::Versions},
                           {"packageversion", &CmdProxy::PackageVersion},
                           {"clientversion", &CmdProxy::ClientVersion},
@@ -561,8 +564,9 @@ class CmdProxy {
                           {"temp_sodr", &CmdProxy::temp_sodr},
                           {"temp_fpgafl", &CmdProxy::temp_fpgafl},
                           {"temp_fpgafr", &CmdProxy::temp_fpgafr},
-                          // dacs
                           {"timing", &CmdProxy::timing},
+
+                          /* dacs */
 
                           /* acquisition */
                           {"clearbusy", &CmdProxy::clearbusy}, 
@@ -766,6 +770,7 @@ class CmdProxy {
                           {"now", &CmdProxy::now},
                           {"timestamp", &CmdProxy::timestamp},
                           {"user", &CmdProxy::UserDetails},
+                          {"rx_frameindex", &CmdProxy::rx_frameindex},
 
 
 
@@ -783,6 +788,7 @@ class CmdProxy {
     std::string ListCommands(int action);
     /* configuration */
     std::string Hostname(int action); 
+    std::string VirtualServer(int action); 
     std::string FirmwareVersion(int action);     
     std::string Versions(int action); 
     std::string PackageVersion(int action);     
@@ -930,10 +936,11 @@ class CmdProxy {
     GET_IND_COMMAND(temp_fpgafr, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA3, " °C",
                     "[n_value]\n\t[Eiger]Temperature of the left front end board fpga");  
 
-    //dacs
-
     INTEGER_COMMAND(timing, getTimingMode, setTimingMode, sls::StringTo<slsDetectorDefs::timingMode>,
                     "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Gotthard][Ctb] [auto|trigger]\n\t[Eiger] [auto|trigger|gating|burst_trigger]");      
+
+    /* dacs */
+
 
     /* acquisition */
 
@@ -1360,6 +1367,9 @@ class CmdProxy {
 
     TIME_GET_COMMAND(timestamp, getMeasurementTime, 
                 "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][CTB] Timestamp at a frame start.");  
+
+    GET_COMMAND(rx_frameindex, getRxCurrentFrameIndex, 
+                "\n\tCurrent frame index received in receiver.");  
 
 
 

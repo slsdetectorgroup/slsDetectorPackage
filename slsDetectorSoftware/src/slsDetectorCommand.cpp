@@ -165,13 +165,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFree;
     ++i;
 
-    /*! \page config
-   - <b>virtual [n] [p]</b> \c connects to n virtual detector servers at local host starting at port p \c Returns the list of the hostnames of the multi-detector structure. \c (string)
-	 */
-    descrToFuncMap[i].m_pFuncName = "virtual";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdHostname;
-    ++i;
-
 
      /*! \page config
 		\section configstatus Status
@@ -283,20 +276,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
    commands to configure settings and threshold of detector
 	 */
 
-
-    /*! \page settings
-   - <b>trimbits [fname] </b> loads/stores the trimbits to/from the detector. If no extension is specified, the serial number of each module will be attached. \c Returns \c (string) fname
-	 */
-    descrToFuncMap[i].m_pFuncName = "trimbits";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettings;
-    ++i;
-
-    /*! \page settings
-   - <b>trimval [i]</b> sets all trimbits to i. Used in EIGER only. \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "trimval";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSettings;
-    ++i;
 
     /* pots */
     /*! \page settings
@@ -790,13 +769,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
     ++i;
 
-    /*! \page receiver
-   - <b>frameindex [i]</b> gets the current frame index of receiver. Average of all for multi-detector command. Only get! \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "frameindex";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    ++i;
-
 
     /* pattern generator */
 
@@ -965,47 +937,6 @@ std::string slsDetectorCommand::helpFree(int action) {
     return std::string("free \t frees the shared memory\n");
 }
 
-std::string slsDetectorCommand::cmdHostname(int narg, const char * const args[], int action, int detPos) {
-#ifdef VERBOSE
-    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-#endif
-
-    if (action == HELP_ACTION) {
-        return helpHostname(HELP_ACTION);
-    }
-
-    if (action == PUT_ACTION) {
-        if (detPos >= 0) {
-            return std::string("Wrong usage - setting hostname/virtual only from "
-                               "multiDetector level");
-        }
-
-        if (cmd == "virtual") {
-            int port = -1;
-            int numDetectors = 0;
-            if (!sscanf(args[1], "%d", &numDetectors)) {
-                throw sls::RuntimeError("Cannot scan number of detector servers from virtual command\n");
-            }
-            if (!sscanf(args[2], "%d", &port)) {
-                throw sls::RuntimeError("Cannot scan port from virtual command\n");
-            }
-            myDet->setVirtualDetectorServers(numDetectors, port);
-        } else {
-            throw sls::RuntimeError("unknown command\n");
-        }
-    }
-    return myDet->getHostname(detPos);
-}
-
-std::string slsDetectorCommand::helpHostname(int action) {
-    std::ostringstream os;
-
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << std::string("virtual [n] [p]\t connects to n virtual detector servers at local host starting at port p \n");
-    }
-    return os.str();
-}
-
 
 std::string slsDetectorCommand::cmdHelp(int narg, const char * const args[], int action, int detPos) {
 #ifdef VERBOSE
@@ -1086,38 +1017,6 @@ std::string slsDetectorCommand::helpThreaded(int action) {
 
 
 
-std::string slsDetectorCommand::cmdSettings(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == HELP_ACTION)
-        return helpSettings(action);
-    int val = -1; //ret,
-    char ans[1000];
-
-   
-    if (cmd == "trimval") {
-        if (action == PUT_ACTION) {
-            if (sscanf(args[1], "%d", &val))
-                myDet->setAllTrimbits(val, detPos);
-            else
-                return std::string("invalid trimbit value ") + cmd;
-        }
-        sprintf(ans, "%d", myDet->setAllTrimbits(-1, detPos));
-        return ans;
-    }
-    return std::string("unknown settings command ") + cmd;
-}
-
-std::string slsDetectorCommand::helpSettings(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "trimval i \n sets all the trimbits to i" << std::endl;
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-         os << "trimval \n returns the value all trimbits are set to. If they are different, returns -1." << std::endl;
-    }
-    return os.str();
-}
 
 std::string slsDetectorCommand::cmdSN(int narg, const char * const args[], int action, int detPos) {
 
@@ -1576,14 +1475,6 @@ std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[],
         }
     }
 
-    else if (cmd == "frameindex") {
-        if (action == PUT_ACTION)
-            return std::string("cannot put");
-        else {
-            sprintf(answer, "%lu", myDet->getReceiverCurrentFrameIndex(detPos));
-            return std::string(answer);
-        }
-    }
 
 
     return std::string("could not decode command");
@@ -1594,10 +1485,6 @@ std::string slsDetectorCommand::helpReceiver(int action) {
     std::ostringstream os;
     if (action == PUT_ACTION || action == HELP_ACTION) {
         os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
-
-    }
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
 
     }
     return os.str();

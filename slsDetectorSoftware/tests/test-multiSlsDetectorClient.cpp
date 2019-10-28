@@ -9,6 +9,11 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("rx_frameindex", "[.cmd]") {
+    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_frameindex", GET));
+    REQUIRE_THROWS(multiSlsDetectorClient("rx_frameindex bla", PUT));
+}
+
 
 TEST_CASE("user", "[.cmd]") {
     REQUIRE_NOTHROW(multiSlsDetectorClient("user", GET));

@@ -169,6 +169,28 @@ std::string CmdProxy::Hostname(int action) {
     return os.str();
 }
 
+std::string CmdProxy::VirtualServer(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_servers] [starting_port_number]\n\tConnecs to n virtual server at local host starting at specific control port." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("cannot get");
+    } else if (action == defs::PUT_ACTION) {
+         if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        } 
+        if (det_id != -1) { 
+            throw sls::RuntimeError("Cannot execute this at module level");
+        }   
+        det->setVirtualDetectorServers(std::stoi(args[0]), std::stoi(args[1]));
+        os << sls::ToString(args);
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::FirmwareVersion(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
@@ -482,6 +504,7 @@ std::string CmdProxy::ClockDivider(int action) {
 }
 
 
+/* dacs */
 
 /* acquisition */
 /* Network Configuration (Detector<->Receiver) */

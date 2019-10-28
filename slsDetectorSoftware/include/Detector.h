@@ -49,6 +49,9 @@ class Detector {
      * and updates local detector cache */
     void setHostname(const std::vector<std::string> &hostname);
 
+    /** connects to n servers at local host starting at specific control port */
+    void setVirtualDetectorServers(int numServers, int startingPort);
+
     /** Gets shared memory ID */
     int getShmId() const;
 
@@ -177,6 +180,33 @@ class Detector {
 
     /** [Gotthard][Jungfrau][CTB] */
     void setADCPhaseInDegrees(int value, Positions pos = {});
+
+        /** [Gotthard2] Hz */
+    Result<int> getClockFrequency(int clkIndex, Positions pos = {});
+
+    /** [not implemented] Hz */
+    void setClockFrequency(int clkIndex, int value, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<int> getClockPhase(int clkIndex, Positions pos = {});
+
+    /** [Gotthard2] */
+    void setClockPhase(int clkIndex, int value, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<int> getMaxClockPhaseShift(int clkIndex, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<int> getClockPhaseinDegrees(int clkIndex, Positions pos = {});
+
+    /** [Gotthard2] */
+    void setClockPhaseinDegrees(int clkIndex, int value, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<int> getClockDivider(int clkIndex, Positions pos = {});
+
+    /** [Gotthard2] */
+    void setClockDivider(int clkIndex, int value, Positions pos = {});
 
     Result<int> getHighVoltage(Positions pos = {}) const;
 
@@ -1200,33 +1230,6 @@ class Detector {
     std::string getUserDetails() const;
 
     Result<uint64_t> getRxCurrentFrameIndex(Positions pos = {}) const;
-
-    /** [Gotthard2] Hz */
-    Result<int> getClockFrequency(int clkIndex, Positions pos = {});
-
-    /** [unknown] Hz */
-    void setClockFrequency(int clkIndex, int value, Positions pos = {});
-
-    /** [Gotthard2] */
-    Result<int> getClockPhase(int clkIndex, Positions pos = {});
-
-    /** [Gotthard2] */
-    void setClockPhase(int clkIndex, int value, Positions pos = {});
-
-    /** [Gotthard2] */
-    Result<int> getMaxClockPhaseShift(int clkIndex, Positions pos = {});
-
-    /** [Gotthard2] */
-    Result<int> getClockPhaseinDegrees(int clkIndex, Positions pos = {});
-
-    /** [Gotthard2] */
-    void setClockPhaseinDegrees(int clkIndex, int value, Positions pos = {});
-
-    /** [Gotthard2] */
-    Result<int> getClockDivider(int clkIndex, Positions pos = {});
-
-    /** [Gotthard2] */
-    void setClockDivider(int clkIndex, int value, Positions pos = {});
 
   private:
     std::vector<int> getPortNumbers(int start_port);

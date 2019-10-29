@@ -267,12 +267,12 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("vipre", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("viinsh", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vdcsh", GET));
-        REQUIRE_THROWS(multiSlsDetectorClient("vth1", GET));
+       // REQUIRE_THROWS(multiSlsDetectorClient("vth1", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vth2", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vth3", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vpl", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vph", GET));
-        REQUIRE_THROWS(multiSlsDetectorClient("vtrim", GET));
+        //REQUIRE_THROWS(multiSlsDetectorClient("vtrim", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("cassh", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("cas", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vicin", GET));
@@ -3716,7 +3716,7 @@ TEST_CASE("settings", "[.cmd]") {
             REQUIRE_NOTHROW(multiSlsDetectorClient("settings mediumgain", PUT));
             REQUIRE_NOTHROW(multiSlsDetectorClient("settings veryhighgain", PUT));     
             break;
-            
+
         default:
             REQUIRE_THROWS(multiSlsDetectorClient("settings", GET));
             break;

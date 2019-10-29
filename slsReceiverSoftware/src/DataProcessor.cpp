@@ -54,11 +54,8 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		ctbDbitList(cdl),
 		ctbDbitOffset(cdo),
 		ctbAnalogDataBytes(cad),
-		acquisitionStartedFlag(false),
-		measurementStartedFlag(false),
-		firstAcquisitionIndex(0),
-		firstMeasurementIndex(0),
-		numTotalFramesCaught(0),
+		startedFlag(false),
+		firstIndex(0),
 		numFramesCaught(0),
 		currentFrameIndex(0),
 		rawDataReadyCallBack(nullptr),
@@ -89,32 +86,20 @@ bool DataProcessor::IsRunning() {
 	return runningFlag;
 }
 
-bool DataProcessor::GetAcquisitionStartedFlag(){
-	return acquisitionStartedFlag;
-}
-
-bool DataProcessor::GetMeasurementStartedFlag(){
-	return measurementStartedFlag;
-}
-
-uint64_t DataProcessor::GetNumTotalFramesCaught() {
-	return numTotalFramesCaught;
+bool DataProcessor::GetStartedFlag(){
+	return startedFlag;
 }
 
 uint64_t DataProcessor::GetNumFramesCaught() {
 	return numFramesCaught;
 }
 
-uint64_t DataProcessor::GetActualProcessedAcquisitionIndex() {
+uint64_t DataProcessor::GetCurrentFrameIndex() {
 	return currentFrameIndex;
 }
 
-uint64_t DataProcessor::GetProcessedAcquisitionIndex() {
-	return currentFrameIndex - firstAcquisitionIndex;
-}
-
-uint64_t DataProcessor::GetProcessedMeasurementIndex() {
-	return currentFrameIndex - firstMeasurementIndex;
+uint64_t DataProcessor::GetProcessedIndex() {
+	return currentFrameIndex - firstIndex;
 }
 
 
@@ -133,18 +118,12 @@ void DataProcessor::SetFifo(Fifo* f) {
 	fifo = f;
 }
 
-void DataProcessor::ResetParametersforNewAcquisition() {
-	numTotalFramesCaught = 0;
-	firstAcquisitionIndex = 0;
-	currentFrameIndex = 0;
-	acquisitionStartedFlag = false;
-}
-
-void DataProcessor::ResetParametersforNewMeasurement(){
+void DataProcessor::ResetParametersforNewAcquisition(){
     runningFlag = false;
+	startedFlag = false;
 	numFramesCaught = 0;
-	firstMeasurementIndex = 0;
-	measurementStartedFlag = false;
+	firstIndex = 0;
+	currentFrameIndex = 0;
 
 	if (tempBuffer != nullptr) {
 		delete [] tempBuffer;
@@ -157,21 +136,14 @@ void DataProcessor::ResetParametersforNewMeasurement(){
 }
 
 
-void DataProcessor::RecordFirstIndices(uint64_t fnum) {
+void DataProcessor::RecordFirstIndex(uint64_t fnum) {
 	//listen to this fnum, later +1
 	currentFrameIndex = fnum;
 
-	measurementStartedFlag = true;
-	firstMeasurementIndex = fnum;
+	startedFlag = true;
+	firstIndex = fnum;
 
-	//start of entire acquisition
-	if (!acquisitionStartedFlag) {
-		acquisitionStartedFlag = true;
-		firstAcquisitionIndex = fnum;
-	}
-
-	FILE_LOG(logDEBUG1) << index << " First Acquisition Index:" << firstAcquisitionIndex <<
-			"\tFirst Measurement Index:" << firstMeasurementIndex;
+	FILE_LOG(logDEBUG1) << index << " First Index:" << firstIndex;
 }
 
 
@@ -322,13 +294,12 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	uint32_t nump = header.packetNumber;
 	if (nump == generalData->packetsPerFrame) {
 		numFramesCaught++;
-		numTotalFramesCaught++;
 	}
 
 	FILE_LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
 
-	if (!measurementStartedFlag) {
-		RecordFirstIndices(fnum);
+	if (!startedFlag) {
+		RecordFirstIndex(fnum);
 
 		if (*dataStreamEnable) {
 			//restart timer
@@ -384,7 +355,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	if (file != nullptr)
 		file->WriteToFile(buf + FIFO_HEADER_NUMBYTES,
 				sizeof(sls_receiver_header) + (uint32_t)(*((uint32_t*)buf)), //+ size of data (resizable from previous call back
-				fnum-firstMeasurementIndex, nump);
+				fnum-firstIndex, nump);
 
 }
 

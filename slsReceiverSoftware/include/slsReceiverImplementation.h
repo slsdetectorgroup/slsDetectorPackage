@@ -157,22 +157,15 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
 
     //***acquisition count parameters***
     /**
-     * Get Total Frames Caught for an entire acquisition (including all scans)
-     * @return total number of frames caught for entire acquisition
-     */
-    uint64_t getTotalFramesCaught() const;
-
-    /**
-     * Get Frames Caught for each real time acquisition (eg. for each scan)
-     * @return number of frames caught for each scan
+     * Get Frames Caught 
+     * @return number of frames caught (0 if none, else min of all)
      */
     uint64_t getFramesCaught() const;
 
     /**
-     * Get Current Frame Index for an entire  acquisition (including all scans)
-     * @return 0 if no frames have been caught, else average of all current
-     * frame index
-     */
+     * Get Current Frame Index 
+     * @return current frame index (0 if none, else min of all)
+      */
     uint64_t getAcquisitionIndex() const;
 
     //***connection parameters***
@@ -709,11 +702,6 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     void setDetectorPositionId(const int id);
 
     //***acquisition functions***
-    /**
-     * Reset acquisition parameters such as total frames caught for an entire
-     * acquisition (including all scans)
-     */
-    void resetAcquisitionCount();
 
     /**
      * Start Listening for Packets by activating all configuration settings to
@@ -839,9 +827,9 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     int SetupFifoStructure();
 
     /**
-     * Reset parameters for new measurement (eg. for each scan)
+     * Reset parameters for new acquisition
      */
-    void ResetParametersforNewMeasurement();
+    void ResetParametersforNewAcquisition();
 
     /**
      * Creates UDP Sockets

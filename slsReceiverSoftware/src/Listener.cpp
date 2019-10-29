@@ -44,10 +44,8 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>*
 		silentMode(sm),
 		row(0),
 		column(0),
-		acquisitionStartedFlag(false),
-		measurementStartedFlag(false),
-		firstAcquisitionIndex(0),
-		firstMeasurementIndex(0),
+		startedFlag(false),
+		firstIndex(0),
 		numPacketsCaught(0),
 		lastCaughtFrameIndex(0),
 		currentFrameIndex(0),
@@ -82,14 +80,6 @@ bool Listener::IsRunning() {
 	return runningFlag;
 }
 
-bool Listener::GetAcquisitionStartedFlag(){
-	return acquisitionStartedFlag;
-}
-
-bool Listener::GetMeasurementStartedFlag(){
-	return measurementStartedFlag;
-}
-
 uint64_t Listener::GetPacketsCaught() {
 	return numPacketsCaught;
 }
@@ -115,18 +105,12 @@ void Listener::SetFifo(Fifo* f) {
 
 
 void Listener::ResetParametersforNewAcquisition() {
-	acquisitionStartedFlag = false;
-	firstAcquisitionIndex = 0;
+    runningFlag = false;
+	startedFlag = false;
+	numPacketsCaught = 0;
+	firstIndex = 0;
 	currentFrameIndex = 0;
 	lastCaughtFrameIndex = 0;
-}
-
-
-void Listener::ResetParametersforNewMeasurement() {
-    runningFlag = false;
-	measurementStartedFlag = false;
-	numPacketsCaught = 0;
-	firstMeasurementIndex = 0;
 	carryOverFlag = false;
 	carryOverPacket = sls::make_unique<char[]>(generalData->packetSize);
 	memset(carryOverPacket.get(),0,generalData->packetSize);
@@ -142,24 +126,17 @@ void Listener::ResetParametersforNewMeasurement() {
 
 
 
-void Listener::RecordFirstIndices(uint64_t fnum) {
+void Listener::RecordFirstIndex(uint64_t fnum) {
 	//listen to this fnum, later +1
 	currentFrameIndex = fnum;
 
-	measurementStartedFlag = true;
-	firstMeasurementIndex = fnum;
-
-	//start of entire acquisition
-	if (!acquisitionStartedFlag) {
-		acquisitionStartedFlag = true;
-		firstAcquisitionIndex = fnum;
-	}
+	startedFlag = true;
+	firstIndex = fnum;
 
 	if(!(*silentMode)) {
 		if (!index) {
 			FILE_LOG(logINFOBLUE) << index <<
-					" First Acquisition Index: " << firstAcquisitionIndex;
-			FILE_LOG(logDEBUG1) << index << " First Measurement Index: " << firstMeasurementIndex;
+					" First Index: " << firstIndex;
 		}
 	}
 }
@@ -519,7 +496,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		// -------------------old header -----------------------------------------------------------------------------
 		else {
             // set first packet to be odd or even (check required when switching from roi to no roi)
-            if (myDetectorType == GOTTHARD && !measurementStartedFlag) {
+            if (myDetectorType == GOTTHARD && !startedFlag) {
                 oddStartingPacket = generalData->SetOddStartingPacket(index, &listeningPacket[0]);
             }
 
@@ -540,8 +517,8 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		FILE_LOG(logDEBUG5) << "Listening " << index << ": currentfindex:" << currentFrameIndex <<
 				", fnum:" << fnum << ", pnum:" << pnum << ", numpackets:" << numpackets;
 
-		if (!measurementStartedFlag)
-			RecordFirstIndices(fnum);
+		if (!startedFlag)
+			RecordFirstIndex(fnum);
 
         if (pnum >= pperFrame ) {
             FILE_LOG(logERROR) << "Bad packet " << pnum <<

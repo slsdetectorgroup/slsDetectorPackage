@@ -70,43 +70,25 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * Get acquisition started flag
 	 * @return acquisition started flag
 	 */
-	bool GetAcquisitionStartedFlag();
+	bool GetStartedFlag();
 
 	/**
-	 * Get measurement started flag
-	 * @return measurement started flag
-	 */
-	bool GetMeasurementStartedFlag();
-
-	/**
-	 * Get Total Complete Frames Caught for an entire acquisition (including all scans)
-	 * @return total number of frames caught for entire acquisition
-	 */
-	uint64_t GetNumTotalFramesCaught();
-
-	/**
-	 * Get Frames Complete Caught for each real time acquisition (eg. for each scan)
-	 * @return number of frames caught for each scan
+	 * Get Frames Complete Caught
+	 * @return number of frames
 	 */
 	uint64_t GetNumFramesCaught();
 
 	/**
-	 * Gets Actual Current Frame Index (that has not been subtracted from firstAcquisitionIndex) thats been processed for an entire  acquisition (including all scans)
+	 * Gets Actual Current Frame Index (that has not been subtracted from firstAcquisitionIndex) thats been processed 
 	 * @return -1 if no frames have been caught, else current frame index (represents all scans too)
 	 */
-	uint64_t GetActualProcessedAcquisitionIndex();
+	uint64_t GetCurrentFrameIndex();
 
 	/**
-	 * Get Current Frame Index thats been processed for an entire  acquisition (including all scans)
-	 * @return -1 if no frames have been caught, else current frame index (represents all scans too)
-	 */
-	uint64_t GetProcessedAcquisitionIndex();
-
-	/**
-	 * Get Current Frame Index thats been processed for each real time acquisition (eg. for each scan)
+	 * Get Current Frame Index thats been processed 
 	 * @return -1 if no frames have been caught, else current frame index
 	 */
-	uint64_t GetProcessedMeasurementIndex();
+	uint64_t GetProcessedIndex();
 
 	//*** setters ***
 	/**
@@ -126,14 +108,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	void SetFifo(Fifo* f);
 
 	/**
-	 * Reset parameters for new acquisition (including all scans)
+	 * Reset parameters for new acquisition 
 	 */
 	void ResetParametersforNewAcquisition();
-
-	/**
-	 * Reset parameters for new measurement (eg. for each scan)
-	 */
-	void ResetParametersforNewMeasurement();
 
 	/**
 	 * Set GeneralData pointer to the one given
@@ -231,10 +208,10 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	std::string GetType() override;
 
 	/**
-	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)
+	 * Record First Index
 	 * @param fnum frame index to record
 	 */
-	void RecordFirstIndices(uint64_t fnum);
+	void RecordFirstIndex(uint64_t fnum);
 
 	/**
 	 * Destroy file writer object
@@ -382,26 +359,17 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
 	//acquisition start
 	/** Aquisition Started flag */
-	bool acquisitionStartedFlag;
+	bool startedFlag;
 
-	/** Measurement Started flag */
-	bool measurementStartedFlag;
-
-	/** Frame Number of First Frame of an entire Acquisition (including all scans) */
-	uint64_t firstAcquisitionIndex;
-
-	/** Frame Number of First Frame for each real time acquisition (eg. for each scan) */
-	uint64_t firstMeasurementIndex;
+	/** Frame Number of First Frame */
+	uint64_t firstIndex;
 
 
 	//for statistics
-	/**Number of complete frames caught for an entire acquisition (including all scans) */
-	uint64_t numTotalFramesCaught;
-
-	/** Number of complete frames caught for each real time acquisition (eg. for each scan) */
+	/** Number of complete frames caught */
 	uint64_t numFramesCaught;
 
-	/** Frame Number of latest processed frame number of an entire Acquisition (including all scans) */
+	/** Frame Number of latest processed frame number */
 	uint64_t currentFrameIndex;
 
 

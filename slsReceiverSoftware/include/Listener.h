@@ -59,20 +59,8 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     bool IsRunning() override;
 
 	/**
-	 * Get acquisition started flag
-	 * @return acquisition started flag
-	 */
-	bool GetAcquisitionStartedFlag();
-
-	/**
-	 * Get measurement started flag
-	 * @return measurement started flag
-	 */
-	bool GetMeasurementStartedFlag();
-
-	/**
-	 * Get Packets caught in a real time acquisition (start and stop of receiver)
-	 * @return Packets caught in a real time acquisition
+	 * Get Packets caught 
+	 * @return Packets caught 
 	 */
 	uint64_t GetPacketsCaught();
 
@@ -101,14 +89,9 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	void SetFifo(Fifo* f);
 
 	/**
-	 * Reset parameters for new acquisition (including all scans)
+	 * Reset parameters for new acquisition 
 	 */
 	void ResetParametersforNewAcquisition();
-
-	/**
-	 * Reset parameters for new measurement (eg. for each scan)
-	 */
-	void ResetParametersforNewMeasurement();
 
 	/**
 	 * Set GeneralData pointer to the one given
@@ -160,10 +143,10 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	std::string GetType() override;
 
 	/**
-	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)
+	 * Record First Acquisition Index
 	 * @param fnum frame index to record
 	 */
-	void RecordFirstIndices(uint64_t fnum);
+	void RecordFirstIndex(uint64_t fnum);
 
 	/**
 	 * Thread Exeution for Listener Class
@@ -263,20 +246,13 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
 	// acquisition start
 	/** Aquisition Started flag */
-	std::atomic<bool> acquisitionStartedFlag;
+	std::atomic<bool> startedFlag;
 
-	/** Measurement Started flag */
-	std::atomic<bool> measurementStartedFlag;
-
-	/** Frame Number of First Frame of an entire Acquisition (including all scans) */
-	uint64_t firstAcquisitionIndex;
-
-	/** Frame Number of First Frame for each real time acquisition (eg. for each scan) */
-	uint64_t firstMeasurementIndex;
-
+	/** Frame Number of First Frame  */
+	uint64_t firstIndex;
 
 	// for acquisition summary
-	/** Number of complete Packets caught for each real time acquisition (eg. for each scan (start& stop of receiver)) */
+	/** Number of complete Packets caught */
 	std::atomic<uint64_t> numPacketsCaught;
 
 	/** Last Frame Index caught  from udp network */
@@ -285,7 +261,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
 	// parameters to acquire image
 	/** Current Frame Index, default value is 0
-	 * ( always check acquisitionStartedFlag for validity first)
+	 * ( always check startedFlag for validity first)
 	 */
 	uint64_t currentFrameIndex;
 

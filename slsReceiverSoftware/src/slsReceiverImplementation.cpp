@@ -228,49 +228,36 @@ bool slsReceiverImplementation::getOverwriteEnable() const {
 }
 
 /***acquisition count parameters***/
-uint64_t slsReceiverImplementation::getTotalFramesCaught() const {
-    uint64_t sum = 0;
-    uint32_t flagsum = 0;
-
-    for (const auto &it : dataProcessor) {
-        flagsum += it->GetMeasurementStartedFlag();
-        sum += it->GetNumTotalFramesCaught();
-    }
-    // no data processed
-    if (flagsum != dataProcessor.size())
-        return 0;
-
-    return (sum / dataProcessor.size());
-}
-
 uint64_t slsReceiverImplementation::getFramesCaught() const {
-    uint64_t sum = 0;
+    uint64_t min = -1;
     uint32_t flagsum = 0;
 
     for (const auto &it : dataProcessor) {
-        flagsum += it->GetMeasurementStartedFlag();
-        sum += it->GetNumFramesCaught();
+        flagsum += it->GetStartedFlag();
+        uint64_t curr = it->GetNumFramesCaught();
+        min = curr < min ? curr : min;        
     }
     // no data processed
     if (flagsum != dataProcessor.size())
         return 0;
 
-    return (sum / dataProcessor.size());
+    return min;
 }
 
 uint64_t slsReceiverImplementation::getAcquisitionIndex() const {
-    uint64_t sum = 0;
+    uint64_t min = -1;
     uint32_t flagsum = 0;
 
     for (const auto &it : dataProcessor) {
-        flagsum += it->GetMeasurementStartedFlag();
-        sum += it->GetActualProcessedAcquisitionIndex();
+        flagsum += it->GetStartedFlag();
+        uint64_t curr = it->GetCurrentFrameIndex();
+        min = curr < min ? curr : min;
     }
     // no data processed
     if (flagsum != dataProcessor.size())
         return 0;
 
-    return (sum / dataProcessor.size());
+    return min;
 }
 
 /***connection parameters***/
@@ -1221,24 +1208,11 @@ void slsReceiverImplementation::setDetectorPositionId(const int id) {
     }
 }
 
-/***acquisition functions***/
-void slsReceiverImplementation::resetAcquisitionCount() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    for (const auto &it : listener)
-        it->ResetParametersforNewAcquisition();
-    for (const auto &it : dataProcessor)
-        it->ResetParametersforNewAcquisition();
-    for (const auto &it : dataStreamer)
-        it->ResetParametersforNewAcquisition();
-
-    FILE_LOG(logINFO) << "Acquisition Count has been reset";
-}
 
 int slsReceiverImplementation::startReceiver(char *c) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     FILE_LOG(logINFO) << "Starting Receiver";
-    resetAcquisitionCount();
-    ResetParametersforNewMeasurement();
+    ResetParametersforNewAcquisition();
 
     // listener
     if (CreateUDPSockets() == FAIL) {
@@ -1308,8 +1282,8 @@ void slsReceiverImplementation::stopReceiver() {
         bool anycaught = false;
         for (const auto &it : dataProcessor) {
             maxIndexCaught =
-                std::max(maxIndexCaught, it->GetProcessedMeasurementIndex());
-            if (it->GetMeasurementStartedFlag())
+                std::max(maxIndexCaught, it->GetProcessedIndex());
+            if (it->GetStartedFlag())
                 anycaught = true;
         }
         // to create virtual file & set files/acquisition to 0 (only hdf5 at the
@@ -1422,8 +1396,8 @@ void slsReceiverImplementation::closeFiles() {
     for (const auto &it : dataProcessor) {
         it->CloseFiles();
         maxIndexCaught =
-            std::max(maxIndexCaught, it->GetProcessedMeasurementIndex());
-        if (it->GetMeasurementStartedFlag())
+            std::max(maxIndexCaught, it->GetProcessedIndex());
+        if (it->GetStartedFlag())
             anycaught = true;
     }
     // to create virtual file & set files/acquisition to 0 (only hdf5 at the
@@ -1554,20 +1528,20 @@ int slsReceiverImplementation::SetupFifoStructure() {
     return OK;
 }
 
-void slsReceiverImplementation::ResetParametersforNewMeasurement() {
+void slsReceiverImplementation::ResetParametersforNewAcquisition() {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     for (const auto &it : listener)
-        it->ResetParametersforNewMeasurement();
+        it->ResetParametersforNewAcquisition();
     for (const auto &it : dataProcessor)
-        it->ResetParametersforNewMeasurement();
+        it->ResetParametersforNewAcquisition();
 
     if (dataStreamEnable) {
         char fnametostream[MAX_STR_LENGTH * 2];
         snprintf(fnametostream, MAX_STR_LENGTH * 2, "%s/%s", filePath,
                  fileName);
         for (const auto &it : dataStreamer)
-            it->ResetParametersforNewMeasurement(fnametostream);
+            it->ResetParametersforNewAcquisition(fnametostream);
     }
 }
 

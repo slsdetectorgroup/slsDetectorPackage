@@ -69,14 +69,9 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	void SetFifo(Fifo* f);
 
 	/**
-	 * Reset parameters for new acquisition (including all scans)
+	 * Reset parameters for new acquisition
 	 */
-	void ResetParametersforNewAcquisition();
-
-	/**
-	 * Reset parameters for new measurement (eg. for each scan)
-	 */
-	void ResetParametersforNewMeasurement(const std::string& fname);
+	void ResetParametersforNewAcquisition(const std::string& fname);
 
 	/**
 	 * Set GeneralData pointer to the one given
@@ -133,10 +128,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	std::string GetType();
 
 	/**
-	 * Record First Indices (firstAcquisitionIndex, firstMeasurementIndex)
+	 * Record First Index
 	 * @param fnum frame index to record
 	 */
-	void RecordFirstIndices(uint64_t fnum);
+	void RecordFirstIndex(uint64_t fnum);
 
 	/**
 	 * Thread Exeution for DataStreamer Class
@@ -205,16 +200,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	char* additionJsonHeader;
 
 	/** Aquisition Started flag */
-	bool acquisitionStartedFlag;
+	bool startedFlag;
 
-	/** Measurement Started flag */
-	bool measurementStartedFlag;
-
-	/** Frame Number of First Frame of an entire Acquisition (including all scans) */
-	uint64_t firstAcquisitionIndex;
-
-	/** Frame Number of First Frame for each real time acquisition (eg. for each scan) */
-	uint64_t firstMeasurementIndex;
+	/** Frame Number of First Frame */
+	uint64_t firstIndex;
 
 	/* File name to stream */
 	std::string fileNametoStream;

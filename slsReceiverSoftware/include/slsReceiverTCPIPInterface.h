@@ -180,13 +180,13 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
     /** Set File path */
     int set_file_dir(sls::ServerInterface2 &socket);
 
-    /** Set File name without frame index, file index and extension */
+    /** Set File name prefix */
     int set_file_name(sls::ServerInterface2 &socket);
 
     /** Set File index */
     int set_file_index(sls::ServerInterface2 &socket);
 
-    /** Gets frame index for each acquisition */
+    /** Gets current frame index  */
     int get_frame_index(sls::ServerInterface2 &socket);
 
     /** Gets Total Frames Caught */

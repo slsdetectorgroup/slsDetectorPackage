@@ -29,10 +29,8 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
 		fileIndex(fi),
 		flippedDataX(fd),
 		additionJsonHeader(ajh),
-		acquisitionStartedFlag(false),
-		measurementStartedFlag(false),
-		firstAcquisitionIndex(0),
-		firstMeasurementIndex(0),
+		startedFlag(false),
+		firstIndex(0),
 		completeBuffer(nullptr),
 		gapPixelsEnable(gpEnable),
 		quadEnable(qe)
@@ -79,15 +77,11 @@ void DataStreamer::SetFifo(Fifo* f) {
 	fifo = f;
 }
 
-void DataStreamer::ResetParametersforNewAcquisition() {
-	firstAcquisitionIndex = 0;
-	acquisitionStartedFlag = false;
-}
-
-void DataStreamer::ResetParametersforNewMeasurement(const std::string& fname){
+void DataStreamer::ResetParametersforNewAcquisition(const std::string& fname){
     runningFlag = false;
-	firstMeasurementIndex = 0;
-	measurementStartedFlag = false;
+	startedFlag = false;
+	firstIndex = 0;
+
 	// strcpy(fileNametoStream, fname);
     fileNametoStream = fname;
     if (completeBuffer) {
@@ -103,18 +97,11 @@ void DataStreamer::ResetParametersforNewMeasurement(const std::string& fname){
 	}
 }
 
-void DataStreamer::RecordFirstIndices(uint64_t fnum) {
-	measurementStartedFlag = true;
-	firstMeasurementIndex = fnum;
+void DataStreamer::RecordFirstIndex(uint64_t fnum) {
+	startedFlag = true;
+	firstIndex = fnum;
 
-	//start of entire acquisition
-	if (!acquisitionStartedFlag) {
-		acquisitionStartedFlag = true;
-		firstAcquisitionIndex = fnum;
-	}
-
-	FILE_LOG(logDEBUG1) << index << " First Acquisition Index: " << firstAcquisitionIndex <<
-			"\tFirst Measurement Index: " << firstMeasurementIndex;
+	FILE_LOG(logDEBUG1) << index << " First Index: " << firstIndex;
 }
 
 void DataStreamer::SetGeneralData(GeneralData* g) {
@@ -206,8 +193,8 @@ void DataStreamer::ProcessAnImage(char* buf) {
 	uint64_t fnum = header->detHeader.frameNumber;
 	FILE_LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
 
-	if (!measurementStartedFlag) {
-		RecordFirstIndices(fnum);
+	if (!startedFlag) {
+		RecordFirstIndex(fnum);
 	}
 
 	//shortframe gotthard
@@ -254,8 +241,8 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
 
 	sls_detector_header header = rheader->detHeader;
 
-	uint64_t frameIndex = header.frameNumber - firstMeasurementIndex;
-	uint64_t acquisitionIndex = header.frameNumber - firstAcquisitionIndex;
+	uint64_t frameIndex = header.frameNumber - firstIndex;
+	uint64_t acquisitionIndex = header.frameNumber;
 
 	return zmqSocket->SendHeaderData(index, dummy, SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange, *fileIndex,
 			numDet[0], numDet[1], nx, ny, size,

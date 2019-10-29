@@ -2467,7 +2467,7 @@ void multiSlsDetector::readFrameFromReceiver() {
 
         // send data to callback
         if (data) {
-            setCurrentProgress(currentAcquisitionIndex + 1);
+            setCurrentProgress(currentFrameIndex + 1);
             // 4bit gap pixels
             if (dynamicRange == 4 && gappixelsenable) {
                 if (quadEnable) {

@@ -757,7 +757,7 @@ int slsReceiverTCPIPInterface::get_frame_index(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::get_frames_caught(Interface &socket) {
-    int retval = impl()->getTotalFramesCaught();
+    int retval = impl()->getFramesCaught();
     FILE_LOG(logDEBUG1) << "frames caught:" << retval;
     return socket.sendResult(retval);
 }

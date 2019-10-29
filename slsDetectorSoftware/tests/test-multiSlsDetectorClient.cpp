@@ -1084,7 +1084,7 @@ TEST_CASE("timestamp", "[.cmd]") {
 }
 
 TEST_CASE("nframes", "[.cmd]") {
-    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD || test::type == slsDetectorDefs::GOTTHARD) {
+    if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) {
         REQUIRE_NOTHROW(multiSlsDetectorClient("nframes", GET));
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("nframes", GET));
@@ -3698,6 +3698,7 @@ TEST_CASE("settings", "[.cmd]") {
             REQUIRE_THROWS(multiSlsDetectorClient("settings mediumgain", PUT));
             REQUIRE_NOTHROW(multiSlsDetectorClient("settings standard", PUT));
             break;
+
         case slsDetectorDefs::JUNGFRAU:
             REQUIRE_THROWS(multiSlsDetectorClient("settings standard", PUT));
             REQUIRE_NOTHROW(multiSlsDetectorClient("settings dynamicgain", PUT));
@@ -3706,7 +3707,7 @@ TEST_CASE("settings", "[.cmd]") {
             REQUIRE_NOTHROW(multiSlsDetectorClient("settings fixgain2", PUT));
             REQUIRE_NOTHROW(multiSlsDetectorClient("settings forceswitchg1", PUT));
             REQUIRE_NOTHROW(multiSlsDetectorClient("settings forceswitchg2", PUT));
-        break;
+            break;
 
         case slsDetectorDefs::GOTTHARD:
             REQUIRE_NOTHROW(multiSlsDetectorClient("settings dynamicgain", PUT));
@@ -3714,6 +3715,8 @@ TEST_CASE("settings", "[.cmd]") {
             REQUIRE_NOTHROW(multiSlsDetectorClient("settings lowgain", PUT));
             REQUIRE_NOTHROW(multiSlsDetectorClient("settings mediumgain", PUT));
             REQUIRE_NOTHROW(multiSlsDetectorClient("settings veryhighgain", PUT));     
+            break;
+            
         default:
             REQUIRE_THROWS(multiSlsDetectorClient("settings", GET));
             break;

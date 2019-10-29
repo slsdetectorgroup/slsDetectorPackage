@@ -1582,7 +1582,7 @@ class CmdProxy {
                 "\n\tClient IP Address that last communicated with the detector."); 
 
     GET_COMMAND(nframes, getNumberOfFramesFromStart, 
-                "\n\t[Gotthard][Jungfrau][CTB] Number of frames from start run control.");       
+                "\n\t[Jungfrau][CTB] Number of frames from start run control.");       
 
     TIME_GET_COMMAND(now, getActualTime, 
                 "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][CTB] Time from detector start up.");  

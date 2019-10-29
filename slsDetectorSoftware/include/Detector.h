@@ -1218,7 +1218,7 @@ class Detector {
     /** Execute a command on the detector server console */
     void executeCommand(const std::string &value, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Jungfrau][CTB] */
     Result<int64_t> getNumberOfFramesFromStart(Positions pos = {}) const;
 
     /** [Jungfrau][CTB] Get time from detector start */

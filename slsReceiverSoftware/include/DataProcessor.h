@@ -79,8 +79,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	uint64_t GetNumFramesCaught();
 
 	/**
-	 * Gets Actual Current Frame Index (that has not been subtracted from firstAcquisitionIndex) thats been processed 
-	 * @return -1 if no frames have been caught, else current frame index (represents all scans too)
+	 * Gets Actual Current Frame Index (that has not been subtracted from firstIndex) thats been processed 
+	 * @return -1 if no frames have been caught, else current frame index 
 	 */
 	uint64_t GetCurrentFrameIndex();
 

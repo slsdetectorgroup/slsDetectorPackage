@@ -32,7 +32,7 @@ class BinaryFileStatic {
 	 * Create File Name in format fpath/fnameprefix_fx_dy_z.raw,
 	 * where x is fnum, y is (dindex * numunits + unitindex) and z is findex
 	 * @param fpath file path
-	 * @param fnameprefix file name prefix (includes scan and position variables)
+	 * @param fnameprefix file name prefix 
 	 * @param findex file index
 	 * @param subfindex sub file index
 	 * @param dindex readout index
@@ -54,7 +54,7 @@ class BinaryFileStatic {
         /**
 	 * Create file names for master file
 	 * @param fpath file path
-	 * @param fnameprefix file name prefix (includes scan and position variables)
+	 * @param fnameprefix file name prefix 
 	 * @param findex file index
 	 * @returns master file name
 	 */

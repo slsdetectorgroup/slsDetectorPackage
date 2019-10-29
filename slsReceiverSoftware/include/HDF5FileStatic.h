@@ -38,7 +38,7 @@ public:
 	 * Create File Name in format fpath/fnameprefix_fx_dy_z.raw,
 	 * where x is fnum, y is (dindex * numunits + unitindex) and z is findex
 	 * @param fpath file path
-	 * @param fnameprefix file name prefix (includes scan and position variables)
+	 * @param fnameprefix file name prefix
 	 * @param findex file index
 	 * @param subfindex sub file index
 	 * @param dindex readout index
@@ -60,7 +60,7 @@ public:
         /**
 	 * Create master file name
 	 * @param fpath file path
-	 * @param fnameprefix file name prefix (includes scan and position variables)
+	 * @param fnameprefix file name prefix 
 	 * @param findex file index
 	 * @returns master file name
 	 */
@@ -75,7 +75,7 @@ public:
 	/**
 	 * Create virtual file name
 	 * @param fpath file path
-	 * @param fnameprefix file name prefix (includes scan and position variables)
+	 * @param fnameprefix file name prefix 
 	 * @param fnum current frame number
 	 * @param findex file index
 	 * @returns virtual file name
@@ -563,7 +563,7 @@ public:
 	 * @param fd virtual file handle
 	 * @param masterFileName master file name
 	 * @param fpath file path
-	 * @param fnameprefix file name prefix (includes scan and position variables)
+	 * @param fnameprefix file name prefix 
 	 * @param findex file index
 	 * @param frindexenable frame index enable
 	 * @param dindex readout index

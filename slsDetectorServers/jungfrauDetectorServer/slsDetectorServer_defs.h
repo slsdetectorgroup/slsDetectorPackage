@@ -39,14 +39,14 @@ typedef struct udp_header_struct {
 /* Enums */
 enum ADCINDEX				{TEMP_FPGA, TEMP_ADC};
 enum DACINDEX				{J_VB_COMP, J_VDD_PROT, J_VIN_COM, J_VREF_PRECH, J_VB_PIXBUF, J_VB_DS, J_VREF_DS, J_VREF_COMP };
-#define DEFAULT_DAC_VALS   	{ 	1220,	/* VB_COMP */		\
-								3000,	/* VDD_PROT */		\
-								1053,	/* VIN_COM */		\
-								1450,	/* VREF_PRECH */	\
-								750,	/* VB_PIXBUF */		\
-								1000,	/* VB_DS */			\
-								480,	/* VREF_DS */		\
-								420		/* VREF_COMP */		\
+#define DEFAULT_DAC_VALS   	{ 	1220,	/* J_VB_COMP */		\
+								3000,	/* J_VDD_PROT */	\
+								1053,	/* J_VIN_COM */		\
+								1450,	/* J_VREF_PRECH */	\
+								750,	/* J_VB_PIXBUF */	\
+								1000,	/* J_VB_DS */		\
+								480,	/* J_VREF_DS */		\
+								420		/* J_VREF_COMP */	\
 							};
 enum NETWORKINDEX           { TXN_FRAME, FLOWCTRL_10G };
 

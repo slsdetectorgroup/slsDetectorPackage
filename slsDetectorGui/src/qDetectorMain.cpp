@@ -312,7 +312,7 @@ void qDetectorMain::EnableModes(QAction *action) {
         enable = actionDebug->isChecked();
         tabs->setTabEnabled(DEBUGGING, enable);
         FILE_LOG(logINFO) << "Debug Mode: "
-                          << sls::ToString(enable);
+                          << qDefs::stringEnable(enable);
 
     }
 
@@ -323,7 +323,7 @@ void qDetectorMain::EnableModes(QAction *action) {
         tabs->setTabEnabled(ADVANCED, enable);
         actionLoadTrimbits->setVisible(enable && detType == slsDetectorDefs::EIGER);
         FILE_LOG(logINFO) << "Expert Mode: "
-                          << sls::ToString(enable);
+                          << qDefs::stringEnable(enable);
     }
 
     // Set DockableMode
@@ -336,7 +336,7 @@ void qDetectorMain::EnableModes(QAction *action) {
             dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
         }
         FILE_LOG(logINFO) << "Dockable Mode: "
-                          << sls::ToString(enable);
+                          << qDefs::stringEnable(enable);
     }
 }
 

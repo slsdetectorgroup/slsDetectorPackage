@@ -36,7 +36,7 @@
 #define  DAC_NAMES					"cassh", "vth2", "vshaper", "vshaperneg", "vipreout", "vth3", "vth1", "vicin", "cas", "vpreamp", "vph", "vipre", "viinsh", "vpl", "vtrim", "vdcsh"
 /* Enums */
 enum CLKINDEX   {RUN_CLK, TICK_CLK, SAMPLING_CLK, NUM_CLOCKS};
-enum DACINDEX   {CASSH, VTH2, VRFSH, VRFSHNPOL, VIPREOUT, VTH3, VTH1, VICIN, CAS, VRF, VPH, VIPRE, VIINSH, VPL, VTRIM, VDCSH};
+enum DACINDEX   {M_CASSH, M_VTH2, M_VRFSH, M_VRFSHNPOL, M_VIPRE_OUT, M_VTH3, M_VTH1, M_VICIN, M_CAS, M_VRF, M_VPH, M_VIPRE, M_VIINSH, M_VPL, M_VTRIM, M_VDCSH};
 #define DEFAULT_DAC_VALS   {1200,    /* casSh */     \
                             2800,    /* Vth2 */      \
                             1280,    /* VrfSh */     \

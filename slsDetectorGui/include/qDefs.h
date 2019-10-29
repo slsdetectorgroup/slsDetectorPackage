@@ -130,6 +130,17 @@ class qDefs : public QWidget {
         NUM_GUI_FUNCS
     };
 
+    /** returns string from enabled/disabled
+        @param b true or false
+        @returns string enabled, disabled
+    */
+    static std::string stringEnable(bool b) {
+        if (b)
+            return std::string("enabled");
+        else
+            return std::string("disabled");
+    };
+
     /**
      * returns the unit in words
      * @param unit is the time unit

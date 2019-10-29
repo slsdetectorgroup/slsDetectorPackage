@@ -4,16 +4,16 @@
 
 /* Enums */
 enum ADCINDEX				        {TEMP_FPGA, TEMP_ADC};
-enum DACINDEX				        {VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN_CM, VREF_COMP, IB_TESTC};
+enum DACINDEX				        {G_VREF_DS, G_VCASCN_PB, G_VCASCP_PB, G_VOUT_CM, G_VCASC_OUT, G_VIN_CM, G_VREF_COMP, G_IB_TESTC};
 #define DEFAULT_DAC_VALS   	        { 	                        \
-                                    660,    /* VREF_DS */       \
-                                    650,    /* VCASCN_PB */     \
-                                    1480,   /* VCASCP_PB */     \
-                                    1520,   /* VOUT_CM */       \
-                                    1320,   /* VCASC_OUT */     \
-                                    1350,   /* VIN_CM */        \
-                                    350,    /* VREF_COMP */     \
-                                    2001    /* IB_TESTC */      \
+                                    660,    /* G_VREF_DS */     \
+                                    650,    /* G_VCASCN_PB */   \
+                                    1480,   /* G_VCASCP_PB */   \
+                                    1520,   /* G_VOUT_CM */     \
+                                    1320,   /* G_VCASC_OUT */   \
+                                    1350,   /* G_VIN_CM */      \
+                                    350,    /* G_VREF_COMP */   \
+                                    2001    /* G_IB_TESTC */    \
                                     };
 
 /* for 25 um */

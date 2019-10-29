@@ -959,12 +959,12 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
 
     FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
 
-	if (ind == VTHRESHOLD) {
-		setDAC(VCMP_LL, val, mV);
-        setDAC(VCMP_LR, val, mV);
-        setDAC(VCMP_RL, val, mV);
-        setDAC(VCMP_RR, val, mV);
-        setDAC(VCP, val, mV);
+	if (ind == E_VTHRESHOLD) {
+		setDAC(E_VCMP_LL, val, mV);
+        setDAC(E_VCMP_LR, val, mV);
+        setDAC(E_VCMP_RL, val, mV);
+        setDAC(E_VCMP_RR, val, mV);
+        setDAC(E_VCP, val, mV);
 		return;
 	}
 
@@ -996,13 +996,13 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
 }
 
 int getDAC(enum DACINDEX ind, int mV) {
-    if (ind == VTHRESHOLD) {
+    if (ind == E_VTHRESHOLD) {
         int ret[5] = {0};
-        ret[0] = getDAC(VCMP_LL, mV);
-        ret[1] = getDAC(VCMP_LR, mV);
-        ret[2] = getDAC(VCMP_RL, mV);
-        ret[3] = getDAC(VCMP_RR, mV);
-        ret[4] = getDAC(VCP, mV);
+        ret[0] = getDAC(E_VCMP_LL, mV);
+        ret[1] = getDAC(E_VCMP_LR, mV);
+        ret[2] = getDAC(E_VCMP_RL, mV);
+        ret[3] = getDAC(E_VCMP_RR, mV);
+        ret[4] = getDAC(E_VCP, mV);
 
         if ((ret[0]== ret[1])&&
                 (ret[1]==ret[2])&&

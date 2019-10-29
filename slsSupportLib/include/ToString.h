@@ -23,13 +23,6 @@ namespace sls {
 
 using defs = slsDetectorDefs;
 
-inline std::string ToString(const bool b) {
-    if (b) {
-        return std::string("enabled");
-    }
-    return std::string("disabled");
-}
-
 inline std::string ToString(const defs::runStatus s) {
     switch (s) {
     case defs::ERROR:
@@ -573,25 +566,25 @@ inline defs::detectorModeType StringTo(const std::string& s) {
 template <>
 inline defs::dacIndex StringTo(const std::string& s) {
     if (s == "vcmp_ll")
-        return defs::E_Vcmp_ll;
+        return defs::VCMP_LL;
     if (s == "vcmp_lr")
-        return defs::E_Vcmp_lr;
+        return defs::VCMP_LR;
     if (s == "vcmp_rl")
-        return defs::E_Vcmp_rl;
+        return defs::VCMP_RL;
     if (s == "vcmp_rr")
-        return defs::E_Vcmp_rr;
+        return defs::VCMP_RR;
     if (s == "vthreshold")
         return defs::THRESHOLD;
     if (s == "vrf")
-        return defs::E_Vrf;
+        return defs::VRF;
     if (s == "vrs")
-        return defs::E_Vrs;
+        return defs::VRS;
     if (s == "vtr")
-        return defs::E_Vtr;
+        return defs::VTR;
     if (s == "vcall")
-        return defs::E_cal;
+        return defs::CAL;
     if (s == "vcp")
-        return defs::E_Vcp;
+        return defs::VCP;
     throw sls::RuntimeError("Unknown dac Index " + s);          
 }
 

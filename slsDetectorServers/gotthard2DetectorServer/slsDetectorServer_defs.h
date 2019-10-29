@@ -39,25 +39,25 @@
 
 /** Other Definitions */
 #define BIT16_MASK					(0xFFFF)
-#define  DAC_NAMES					"VREF_H_ADC", "DAC_UNUSED", "VB_COMP_FE", "VB_COMP_ADC", "VCOM_CDS", "VREF_RESTORE", "VB_OPA_1ST", "VREF_COMP_FE", "VCOM_ADC1", "VREF_PRECH", "VREF_L_ADC", "VREF_CDS", "VB_CS", "VB_OPA_FD", "DAC_UNUSED2", "VCOM_ADC2"
+#define  DAC_NAMES					"vref_h_adc", "dac_unused", "vb_comp_fe", "vb_comp_adc", "vcom_cds", "vref_restore", "vb_opa_1st", "vref_comp_fe", "vcom_adc1", "vref_prech", "vref_l_adc", "vref_cds", "vb_cs", "vb_opa_fd", "dac_unused2", "vcom_adc2"
 
 /* Enums */
-enum DACINDEX				        {G_VREF_H_ADC, /* 0	*/		\
-									G_DAC_UNUSED,  /* 1 */ 		\
-									G_VB_COMP_FE,  /* 2 */		\
-        							G_VB_COMP_ADC, /* 3 */		\
-        							G_VCOM_CDS,    /* 4 */		\
-        							G_VREF_RESTORE,/* 5 */		\
-        							G_VB_OPA_1ST,  /* 6 */		\
-        							G_VREF_COMP_FE,/* 7 */		\
-        							G_VCOM_ADC1,   /* 8 */		\
-        							G_VREF_PRECH,  /* 9 */ 		\
-        							G_VREF_L_ADC,  /* 10 */ 	\
-        							G_VREF_CDS,    /* 11 */		\
-        							G_VB_CS,       /* 12 */		\
-        							G_VB_OPA_FD,   /* 13 */		\
-		  							G_DAC_UNUSED2, /* 14 */		\
-        							G_VCOM_ADC2    /* 15*/		\
+enum DACINDEX				        {G2_VREF_H_ADC, /* 0 */		\
+									G2_DAC_UNUSED,  /* 1 */		\
+									G2_VB_COMP_FE,  /* 2 */		\
+        							G2_VB_COMP_ADC, /* 3 */		\
+        							G2_VCOM_CDS,    /* 4 */		\
+        							G2_VREF_RESTORE,/* 5 */		\
+        							G2_VB_OPA_1ST,  /* 6 */		\
+        							G2_VREF_COMP_FE,/* 7 */		\
+        							G2_VCOM_ADC1,   /* 8 */		\
+        							G2_VREF_PRECH,  /* 9 */		\
+        							G2_VREF_L_ADC,  /* 10 */ 	\
+        							G2_VREF_CDS,    /* 11 */	\
+        							G2_VB_CS,       /* 12 */	\
+        							G2_VB_OPA_FD,   /* 13 */	\
+		  							G2_DAC_UNUSED2, /* 14 */	\
+        							G2_VCOM_ADC2    /* 15*/		\
 									};  
 #define DEFAULT_DAC_VALS   			{2099, 		/* 0 (1050 mV) VREF_H_ADC*/ 	\
 									0, 			/* 1 (0 mV) DAC_UNUSED*/ 		\

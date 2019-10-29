@@ -3388,26 +3388,26 @@ sls_detector_module slsDetector::interpolateTrim(sls_detector_module *a,
 
     sls_detector_module myMod{shm()->myDetectorType};
     enum eiger_DacIndex {
-        SVP,
-        VTR,
-        VRF,
-        VRS,
-        SVN,
-        VTGSTV,
-        VCMP_LL,
-        VCMP_LR,
-        CAL,
-        VCMP_RL,
-        RXB_RB,
-        RXB_LB,
-        VCMP_RR,
-        VCP,
-        VCN,
-        VIS
+        E_SVP,
+        E_VTR,
+        E_VRF,
+        E_VRS,
+        E_SVN,
+        E_VTGSTV,
+        E_VCMP_LL,
+        E_VCMP_LR,
+        E_CAL,
+        E_VCMP_RL,
+        E_RXB_RB,
+        E_RXB_LB,
+        E_VCMP_RR,
+        E_VCP,
+        E_VCN,
+        E_VIS
     };
 
     // Copy other dacs
-    int dacs_to_copy[] = {SVP, VTR, SVN, VTGSTV, RXB_RB, RXB_LB, VCN, VIS};
+    int dacs_to_copy[] = {E_SVP, E_VTR, E_SVN, E_VTGSTV, E_RXB_RB, E_RXB_LB, E_VCN, E_VIS};
     int num_dacs_to_copy = sizeof(dacs_to_copy) / sizeof(dacs_to_copy[0]);
     for (int i = 0; i < num_dacs_to_copy; ++i) {
         if (a->dacs[dacs_to_copy[i]] != b->dacs[dacs_to_copy[i]]) {
@@ -3417,16 +3417,16 @@ sls_detector_module slsDetector::interpolateTrim(sls_detector_module *a,
     }
 
     // Copy irrelevant dacs (without failing): CAL
-    if (a->dacs[CAL] != b->dacs[CAL]) {
+    if (a->dacs[E_CAL] != b->dacs[E_CAL]) {
         FILE_LOG(logWARNING)
-            << "DAC CAL differs in both energies (" << a->dacs[CAL] << ","
-            << b->dacs[CAL] << ")!\nTaking first: " << a->dacs[CAL];
+            << "DAC CAL differs in both energies (" << a->dacs[E_CAL] << ","
+            << b->dacs[E_CAL] << ")!\nTaking first: " << a->dacs[E_CAL];
     }
-    myMod.dacs[CAL] = a->dacs[CAL];
+    myMod.dacs[E_CAL] = a->dacs[E_CAL];
 
     // Interpolate vrf, vcmp, vcp
-    int dacs_to_interpolate[] = {VRF,     VCMP_LL, VCMP_LR, VCMP_RL,
-                                 VCMP_RR, VCP,     VRS};
+    int dacs_to_interpolate[] = {E_VRF,     E_VCMP_LL, E_VCMP_LR, E_VCMP_RL,
+                                 E_VCMP_RR, E_VCP,     E_VRS};
     int num_dacs_to_interpolate =
         sizeof(dacs_to_interpolate) / sizeof(dacs_to_interpolate[0]);
     for (int i = 0; i < num_dacs_to_interpolate; ++i) {

@@ -137,17 +137,17 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_NOTHROW(multiSlsDetectorClient("vcmp_lr " + std::to_string(prev_val), PUT));           
         {
             std::ostringstream oss;
-            REQUIRE_NOTHROW(multiSlsDetectorClient("vcall", GET, nullptr, oss));
-            std::string s = (oss.str()).erase (0, strlen("vcall "));
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vcal", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vcal "));
             prev_val = std::stoi(s);
         }
         {
-            REQUIRE_NOTHROW(multiSlsDetectorClient("vcall 1000", PUT));
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vcal 1000", PUT));
             std::ostringstream oss;
-            REQUIRE_NOTHROW(multiSlsDetectorClient("vcall", GET, nullptr, oss));
-            REQUIRE(oss.str() == "vcall 1000\n");
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vcal", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vcal 1000\n");
         } 
-        REQUIRE_NOTHROW(multiSlsDetectorClient("vcall " + std::to_string(prev_val), PUT));           
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vcal " + std::to_string(prev_val), PUT));           
         {
             std::ostringstream oss;
             REQUIRE_NOTHROW(multiSlsDetectorClient("vcmp_rl", GET, nullptr, oss));
@@ -276,29 +276,136 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("cassh", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("cas", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vicin", GET));
-        REQUIRE_THROWS(multiSlsDetectorClient("vref_h_adc", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_fe", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_adc", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vcom_cds", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vref_restore", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vb_opa_1st", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vref_comp_fe", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc1", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vref_prech", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vref_l_adc", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vref_cds", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vb_cs", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vb_opa_fd", GET));        REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc2", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vipre_out", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vref_h_adc", GET));        
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_fe", GET));        
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_adc", GET));        
+        REQUIRE_THROWS(multiSlsDetectorClient("vcom_cds", GET));        
+        REQUIRE_THROWS(multiSlsDetectorClient("vref_restore", GET));        
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_opa_1st", GET));        
+        REQUIRE_THROWS(multiSlsDetectorClient("vref_comp_fe", GET));       
+        REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc1", GET));              
+        REQUIRE_THROWS(multiSlsDetectorClient("vref_l_adc", GET));        
+        REQUIRE_THROWS(multiSlsDetectorClient("vref_cds", GET));        
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_cs", GET));        
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_opa_fd", GET));        
+        REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc2", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_ds", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_comp", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_pixbuf", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vin_com", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vdd_prot", GET));
     
     } 
     
     else if (test::type == slsDetectorDefs::JUNGFRAU) {
-
-        for (int i = 0; i < 8; ++i) {
-            {
-                std::ostringstream oss;
-                REQUIRE_NOTHROW(multiSlsDetectorClient("dac " + std::to_string(i), GET, nullptr, oss));
-                std::string s = (oss.str()).erase (0, strlen("dac "));
-                prev_val = std::stoi(s);
-            }
-            {
-                REQUIRE_NOTHROW(multiSlsDetectorClient("dac " + std::to_string(i) + " 1000", PUT));
-                std::ostringstream oss;
-                REQUIRE_NOTHROW(multiSlsDetectorClient("dac " + std::to_string(i), GET, nullptr, oss));
-                REQUIRE(oss.str() == "dac 1000\n");
-            } 
-            REQUIRE_NOTHROW(multiSlsDetectorClient("dac " + std::to_string(i) + " " + std::to_string(prev_val), PUT));  
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vb_ds", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vb_ds "));
+            prev_val = std::stoi(s);
         }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vb_ds 1000", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vb_ds", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vb_ds 1000\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vb_ds " + std::to_string(prev_val), PUT));       
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vb_comp", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vb_comp "));
+            prev_val = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vb_comp 1000", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vb_comp", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vb_comp 1000\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vb_comp " + std::to_string(prev_val), PUT));       
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vb_pixbuf", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vb_pixbuf "));
+            prev_val = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vb_pixbuf 1000", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vb_pixbuf", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vb_pixbuf 1000\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vb_pixbuf " + std::to_string(prev_val), PUT));       
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vref_ds", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vref_ds "));
+            prev_val = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vref_ds 1000", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vref_ds", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vref_ds 1000\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vref_ds " + std::to_string(prev_val), PUT));       
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vref_comp", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vref_comp "));
+            prev_val = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vref_comp 1000", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vref_comp", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vref_comp 1000\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vref_comp " + std::to_string(prev_val), PUT));       
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vref_prech", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vref_prech "));
+            prev_val = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vref_prech 1000", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vref_prech", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vref_prech 1000\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vref_prech " + std::to_string(prev_val), PUT));       
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vin_com", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vin_com "));
+            prev_val = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vin_com 1000", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vin_com", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vin_com 1000\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vin_com " + std::to_string(prev_val), PUT));       
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vdd_prot", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vdd_prot "));
+            prev_val = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vdd_prot 1000", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vdd_prot", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vdd_prot 1000\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vdd_prot " + std::to_string(prev_val), PUT));       
 
-        //REQUIRE_THROWS(multiSlsDetectorClient("vthreshold", GET)); dac0
+
+        REQUIRE_THROWS(multiSlsDetectorClient("vthreshold", GET)); 
         REQUIRE_THROWS(multiSlsDetectorClient("vsvp", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vsvn", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vtr", GET));
@@ -307,7 +414,7 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("vtgstv", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_ll", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_lr", GET));
-        REQUIRE_THROWS(multiSlsDetectorClient("vcall", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vcal", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_rl", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_rr", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("rxb_rb", GET));
@@ -316,29 +423,28 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("vcn", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vis", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("iodelay", GET));
-        //REQUIRE_THROWS(multiSlsDetectorClient("vref_ds", GET));
-       // REQUIRE_THROWS(multiSlsDetectorClient("vcascn_pb", GET));
-        //REQUIRE_THROWS(multiSlsDetectorClient("vcascp_pb", GET));
-        //REQUIRE_THROWS(multiSlsDetectorClient("vout_cm", GET));
-        //REQUIRE_THROWS(multiSlsDetectorClient("vcasc_out", GET));
-        //REQUIRE_THROWS(multiSlsDetectorClient("vin_cm", GET));
-        //REQUIRE_THROWS(multiSlsDetectorClient("vref_comp", GET));
-        //REQUIRE_THROWS(multiSlsDetectorClient("ib_test_c", GET)); 
-        //REQUIRE_THROWS(multiSlsDetectorClient("vpreamp", GET));
-        //REQUIRE_THROWS(multiSlsDetectorClient("vshaper1", GET));
-        //REQUIRE_THROWS(multiSlsDetectorClient("vshaper2", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vcascn_pb", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vcascp_pb", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vout_cm", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vcasc_out", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vin_cm", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("ib_test_c", GET)); 
+        REQUIRE_THROWS(multiSlsDetectorClient("vpreamp", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vshaper1", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vshaper2", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vipre", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("viinsh", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vdcsh", GET));
-       // REQUIRE_THROWS(multiSlsDetectorClient("vth1", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vth1", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vth2", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vth3", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vpl", GET));
-        //REQUIRE_THROWS(multiSlsDetectorClient("vph", GET));
-        //REQUIRE_THROWS(multiSlsDetectorClient("vtrim", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vph", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vtrim", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("cassh", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("cas", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vicin", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vipre_out", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vref_h_adc", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_fe", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_adc", GET));        
@@ -346,14 +452,12 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("vref_restore", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vb_opa_1st", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vref_comp_fe", GET));       
-        REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc1", GET));        
-        REQUIRE_THROWS(multiSlsDetectorClient("vref_prech", GET));        
+        REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc1", GET));              
         REQUIRE_THROWS(multiSlsDetectorClient("vref_l_adc", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vref_cds", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vb_cs", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vb_opa_fd", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc2", GET));
-    
     } 
     
     else if (test::type == slsDetectorDefs::GOTTHARD) {
@@ -471,7 +575,7 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("vtgstv", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_ll", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_lr", GET));
-        REQUIRE_THROWS(multiSlsDetectorClient("vcall", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vcal", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_rl", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_rr", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("rxb_rb", GET));
@@ -495,6 +599,7 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("cassh", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("cas", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vicin", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vipre_out", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vref_h_adc", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_fe", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_adc", GET));        
@@ -509,7 +614,11 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("vb_cs", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vb_opa_fd", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc2", GET));
-    
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_ds", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_comp", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_pixbuf", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vin_com", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vdd_prot", GET));    
     } 
     
     else if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
@@ -538,7 +647,7 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("vtgstv", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_ll", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_lr", GET));
-        REQUIRE_THROWS(multiSlsDetectorClient("vcall", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vcal", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_rl", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_rr", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("rxb_rb", GET));
@@ -570,6 +679,7 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("cassh", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("cas", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vicin", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vipre_out", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vref_h_adc", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_fe", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_adc", GET));        
@@ -584,7 +694,11 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("vb_cs", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vb_opa_fd", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc2", GET));
-    
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_ds", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_comp", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_pixbuf", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vin_com", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vdd_prot", GET));    
     } 
     
     else if (test::type == slsDetectorDefs::MYTHEN3) {
@@ -796,7 +910,19 @@ TEST_CASE("dacs", "[.cmd]") {
             REQUIRE(oss.str() == "vicin 1000\n");
         } 
         REQUIRE_NOTHROW(multiSlsDetectorClient("vicin " + std::to_string(prev_val), PUT));  
-
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vipre_out", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vipre_out "));
+            prev_val = std::stoi(s);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vipre_out 1000", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vipre_out", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vipre_out 1000\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vipre_out " + std::to_string(prev_val), PUT));  
 
 
         REQUIRE_THROWS(multiSlsDetectorClient("vsvp", GET));
@@ -807,7 +933,7 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("vtgstv", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_ll", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_lr", GET));
-        REQUIRE_THROWS(multiSlsDetectorClient("vcall", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vcal", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_rl", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_rr", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("rxb_rb", GET));
@@ -838,6 +964,11 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("vb_cs", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vb_opa_fd", GET));        
         REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc2", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_ds", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_comp", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_pixbuf", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vin_com", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vdd_prot", GET));       
     } 
     
     else if (test::type == slsDetectorDefs::GOTTHARD2) {
@@ -1034,7 +1165,7 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("vtgstv", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_ll", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_lr", GET));
-        REQUIRE_THROWS(multiSlsDetectorClient("vcall", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vcal", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_rl", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vcmp_rr", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("rxb_rb", GET));
@@ -1051,6 +1182,11 @@ TEST_CASE("dacs", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("vin_cm", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("vref_comp", GET));
         REQUIRE_THROWS(multiSlsDetectorClient("ib_test_c", GET));       
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_ds", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_comp", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vb_pixbuf", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vin_com", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vdd_prot", GET));
     }
 
 }
@@ -4132,29 +4268,7 @@ TEST_CASE("fname", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_framescaught", "[.cmd]") {
-    {
-        std::ostringstream oss;
-        REQUIRE_NOTHROW(multiSlsDetectorClient("resetframescaught 0", PUT, nullptr, oss));
-        REQUIRE(oss.str() == "resetframescaught successful\n");
-    }
-    {
-        std::ostringstream oss;
-        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_framescaught", GET, nullptr, oss));
-        REQUIRE(oss.str() == "rx_framescaught 0\n");
-    }
-    REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-    REQUIRE_NOTHROW(multiSlsDetectorClient("exptime 1", PUT));    
-    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_start", PUT));
-    REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
-    sleep(2);
-    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_stop", PUT)); 
-    {
-        std::ostringstream oss;
-        REQUIRE_NOTHROW(multiSlsDetectorClient("rx_framescaught", GET, nullptr, oss));
-       // REQUIRE(oss.str() == "rx_framescaught 1\n");
-    }      
-}
+
 
 TEST_CASE("rx_silent", "[.cmd]") {
     {

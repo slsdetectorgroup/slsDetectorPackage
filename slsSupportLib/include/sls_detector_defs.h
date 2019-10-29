@@ -82,15 +82,15 @@ class slsDetectorDefs {
    Type of the detector
      */
     enum detectorType {
-        GET_DETECTOR_TYPE = -1, /**< the detector will return its type */
-        GENERIC,                /**< generic sls detector */
-        EIGER,                  /**< eiger */
-        GOTTHARD,               /**< gotthard */
-        JUNGFRAU,               /**< jungfrau */
-        CHIPTESTBOARD,          /**< CTB */
-        MOENCH,                  /**< moench */
-        MYTHEN3,                 /**< mythen3 */
-        GOTTHARD2,              /** < gotthard2 */
+        GET_DETECTOR_TYPE = -1, 
+        GENERIC,
+        EIGER,
+        GOTTHARD, 
+        JUNGFRAU,
+        CHIPTESTBOARD,
+        MOENCH,
+        MYTHEN3,
+        GOTTHARD2,
     };
 
     /**
@@ -379,84 +379,89 @@ format
        detector dacs indexes
     */
     enum dacIndex {
-        THRESHOLD,           /**< comparator threshold level */
-        CALIBRATION_PULSE,   /**< calibration input pulse height */
-        TRIMBIT_SIZE,        /**< voltage to determine the trimbits LSB */
-        PREAMP,              /**< preamp feedback */
-        SHAPER1,             /**< shaper1 feedback */
-        SHAPER2,             /**< shaper2 feedback */
-        TEMPERATURE_ADC,     /**< temperature sensor (adc) */
-        TEMPERATURE_FPGA,    /**< temperature sensor (fpga) */
-        G_VREF_DS,           /**< gotthard */
-        G_VCASCN_PB,         /**< gotthard */
-        G_VCASCP_PB,         /**< gotthard */
-        G_VOUT_CM,           /**< gotthard */
-        G_VCASC_OUT,         /**< gotthard */
-        G_VIN_CM,            /**< gotthard */
-        G_VREF_COMP,         /**< gotthard */
-        G_IB_TESTC,          /**< gotthard */
-        E_SvP,               /**< eiger */
-        E_SvN,               /**< eiger */
-        E_Vtr,               /**< eiger */
-        E_Vrf,               /**< eiger */
-        E_Vrs,               /**< eiger */
-        E_Vtgstv,            /**< eiger */
-        E_Vcmp_ll,           /**< eiger */
-        E_Vcmp_lr,           /**< eiger */
-        E_cal,               /**< eiger */
-        E_Vcmp_rl,           /**< eiger */
-        E_Vcmp_rr,           /**< eiger */
-        E_rxb_rb,            /**< eiger */
-        E_rxb_lb,            /**< eiger */
-        E_Vcp,               /**< eiger */
-        E_Vcn,               /**< eiger */
-        E_Vis,               /**< eiger */
-        IO_DELAY,            /**< eiger io delay */
-        ADC_VPP,             /**< adc vpp for jctb */
-        HIGH_VOLTAGE,        /**< high voltage */
-        TEMPERATURE_FPGAEXT, /**< temperature sensor (close to fpga) */
-        TEMPERATURE_10GE,    /**< temperature sensor (close to 10GE) */
-        TEMPERATURE_DCDC,    /**< temperature sensor (close to DCDC) */
-        TEMPERATURE_SODL,    /**< temperature sensor (close to SODL) */
-        TEMPERATURE_SODR,    /**< temperature sensor (close to SODR) */
-        TEMPERATURE_FPGA2,   /**< temperature sensor (fpga2 (eiger:febl) */
-        TEMPERATURE_FPGA3,   /**< temperature sensor (fpga3 (eiger:febr) */
-        M_vIpre,             /**< mythen 3 >*/
-        M_vIinSh,            /**< mythen 3 >*/
-        M_VdcSh,             /**< mythen 3 >*/
-        M_Vth2,              /**< mythen 3 >*/
-        M_VPL,               /**< mythen 3 >*/
-        M_Vth3,              /**< mythen 3 >*/
-        M_casSh,             /**< mythen 3 >*/
-        M_cas,               /**< mythen 3 >*/
-        M_vIcin,             /**< mythen 3 >*/
-        M_vIpreOut,          /**< mythen 3 >*/
-        VREF_H_ADC,          /**< gotthard 2 >*/ 
-        VB_COMP_FE,          /**< gotthard 2 >*/ 
-        VB_COMP_ADC,         /**< gotthard 2 >*/ 
-        VCOM_CDS,            /**< gotthard 2 >*/ 
-        VREF_RESTORE,        /**< gotthard 2 >*/ 
-        VB_OPA_1ST,          /**< gotthard 2 >*/ 
-        VREF_COMP_FE,        /**< gotthard 2 >*/ 
-        VCOM_ADC1,           /**< gotthard 2 >*/ 
-        VREF_PRECH,          /**< gotthard 2 >*/ 
-        VREF_L_ADC,          /**< gotthard 2 >*/ 
-        VREF_CDS,            /**< gotthard 2 >*/ 
-        VB_CS,               /**< gotthard 2 >*/ 
-        VB_OPA_FD,           /**< gotthard 2 >*/ 
-        VCOM_ADC2,           /**< gotthard 2 >*/ 
-        V_POWER_A = 100,     /**new chiptest board */
-        V_POWER_B = 101,     /**new chiptest board */
-        V_POWER_C = 102,     /**new chiptest board */
-        V_POWER_D = 103,     /**new chiptest board */
-        V_POWER_IO = 104,    /**new chiptest board */
-        V_POWER_CHIP = 105,  /**new chiptest board */
-        I_POWER_A = 106,     /**new chiptest board */
-        I_POWER_B = 107,     /**new chiptest board */
-        I_POWER_C = 108,     /**new chiptest board */
-        I_POWER_D = 109,     /**new chiptest board */
-        I_POWER_IO = 110,    /**new chiptest board */
-        V_LIMIT = 111,       /**new chiptest board */
+        THRESHOLD,
+        CALIBRATION_PULSE,
+        TRIMBIT_SIZE,
+        PREAMP,
+        SHAPER1,
+        SHAPER2,
+        TEMPERATURE_ADC,
+        TEMPERATURE_FPGA,
+        VREF_DS,
+        VCASCN_PB,
+        VCASCP_PB,
+        VOUT_CM,
+        VCASC_OUT,
+        VIN_CM,
+        VREF_COMP,
+        IB_TESTC,
+        SVP,
+        SVN,
+        VTR,
+        VRF,
+        VRS,
+        VTGSTV,
+        VCMP_LL,
+        VCMP_LR,
+        CAL,
+        VCMP_RL,
+        VCMP_RR,
+        RXB_RB,
+        RXB_LB,
+        VCP,
+        VCN,
+        VIS,
+        IO_DELAY,
+        ADC_VPP,
+        HIGH_VOLTAGE,
+        TEMPERATURE_FPGAEXT,
+        TEMPERATURE_10GE,
+        TEMPERATURE_DCDC,
+        TEMPERATURE_SODL,
+        TEMPERATURE_SODR,
+        TEMPERATURE_FPGA2,
+        TEMPERATURE_FPGA3,
+        VIPRE,
+        VIINSH,
+        VDCSH,
+        VTH2, 
+        VPL,  
+        VTH3, 
+        CASSH,
+        CAS,  
+        VICIN,
+        VIPRE_OUT,
+        VREF_H_ADC,
+        VB_COMP_FE,
+        VB_COMP_ADC,
+        VCOM_CDS,  
+        VREF_RESTORE,
+        VB_OPA_1ST,
+        VREF_COMP_FE,
+        VCOM_ADC1, 
+        VREF_PRECH,
+        VREF_L_ADC,
+        VREF_CDS,  
+        VB_CS,     
+        VB_OPA_FD, 
+        VCOM_ADC2, 
+        VB_DS,
+        VB_COMP,
+        VB_PIXBUF,
+        VIN_COM,
+        VDD_PROT,
+        V_POWER_A = 100,
+        V_POWER_B = 101,
+        V_POWER_C = 102,
+        V_POWER_D = 103,
+        V_POWER_IO = 104,
+        V_POWER_CHIP = 105,
+        I_POWER_A = 106,
+        I_POWER_B = 107,
+        I_POWER_C = 108,
+        I_POWER_D = 109,
+        I_POWER_IO = 110,
+        V_LIMIT = 111,  
         SLOW_ADC0 = 1000,
         SLOW_ADC1,
         SLOW_ADC2,

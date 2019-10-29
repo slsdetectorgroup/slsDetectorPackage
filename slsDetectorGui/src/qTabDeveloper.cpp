@@ -199,37 +199,37 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorTy
 	case slsDetectorDefs::EIGER:
 		switch (index) {
 		case 0:
-			return slsDetectorDefs::E_SvP;
+			return slsDetectorDefs::SVP;
 		case 1:
-			return slsDetectorDefs::E_SvN;
+			return slsDetectorDefs::SVN;
 		case 2:
-			return slsDetectorDefs::E_Vrf;
+			return slsDetectorDefs::VRF;
 		case 3:
-			return slsDetectorDefs::E_Vrs;
+			return slsDetectorDefs::VRS;
 		case 4:
-			return slsDetectorDefs::E_Vtr;
+			return slsDetectorDefs::VTR;
 		case 5:
-			return slsDetectorDefs::E_Vtgstv;
+			return slsDetectorDefs::VTGSTV;
 		case 6:
-			return slsDetectorDefs::E_cal;
+			return slsDetectorDefs::CAL;
 		case 7:
-			return slsDetectorDefs::E_Vcp;
+			return slsDetectorDefs::VCP;
 		case 8:
-			return slsDetectorDefs::E_Vcn;
+			return slsDetectorDefs::VCN;
 		case 9:
-			return slsDetectorDefs::E_Vis;
+			return slsDetectorDefs::VIS;
 		case 10:
-			return slsDetectorDefs::E_rxb_lb;
+			return slsDetectorDefs::RXB_LB;
 		case 11:
-			return slsDetectorDefs::E_rxb_rb;
+			return slsDetectorDefs::RXB_RB;
 		case 12:
-			return slsDetectorDefs::E_Vcmp_ll;
+			return slsDetectorDefs::VCMP_LL;
 		case 13:
-			return slsDetectorDefs::E_Vcmp_lr;
+			return slsDetectorDefs::VCMP_LR;
 		case 14:
-			return slsDetectorDefs::E_Vcmp_rl;
+			return slsDetectorDefs::VCMP_RL;
 		case 15:
-			return slsDetectorDefs::E_Vcmp_rr;
+			return slsDetectorDefs::VCMP_RR;
 		case 16:
 			return slsDetectorDefs::THRESHOLD;
 		case 17:
@@ -251,21 +251,21 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorTy
 	case slsDetectorDefs::GOTTHARD:
 		switch (index) {
 		case 0:
-			return slsDetectorDefs::G_VREF_DS;
+			return slsDetectorDefs::VREF_DS;
 		case 1:
-			return slsDetectorDefs::G_VCASCN_PB;
+			return slsDetectorDefs::VCASCN_PB;
 		case 2:
-			return slsDetectorDefs::G_VCASCP_PB;
+			return slsDetectorDefs::VCASCP_PB;
 		case 3:
-			return slsDetectorDefs::G_VOUT_CM;
+			return slsDetectorDefs::VOUT_CM;
 		case 4:
-			return slsDetectorDefs::G_VCASC_OUT;
+			return slsDetectorDefs::VCASC_OUT;
 		case 5:
-			return slsDetectorDefs::G_VIN_CM;
+			return slsDetectorDefs::VIN_CM;
 		case 6:
-			return slsDetectorDefs::G_VREF_COMP;
+			return slsDetectorDefs::VREF_COMP;
 		case 7:
-			return slsDetectorDefs::G_IB_TESTC;
+			return slsDetectorDefs::IB_TESTC;
 		case 8:
 			return slsDetectorDefs::TEMPERATURE_ADC;
 		case 9:

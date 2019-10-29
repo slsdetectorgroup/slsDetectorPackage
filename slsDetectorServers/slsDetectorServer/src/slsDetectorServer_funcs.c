@@ -744,86 +744,83 @@ int set_dac(int file_des) {
     // check if dac exists for this detector
     switch (ind) {
 #ifdef GOTTHARDD
-    case G_VREF_DS :
-        serverDacIndex = VREF_DS;
+    case VREF_DS :
+        serverDacIndex = G_VREF_DS;
         break;
-    case G_VCASCN_PB:
-        serverDacIndex = VCASCN_PB;
+    case VCASCN_PB:
+        serverDacIndex = G_VCASCN_PB;
         break;
-    case G_VCASCP_PB:
-        serverDacIndex = VCASCP_PB;
+    case VCASCP_PB:
+        serverDacIndex = G_VCASCP_PB;
         break;
-    case G_VOUT_CM:
-        serverDacIndex = VOUT_CM;
+    case VOUT_CM:
+        serverDacIndex = G_VOUT_CM;
         break;
-    case G_VCASC_OUT:
-        serverDacIndex = VCASC_OUT;
+    case VCASC_OUT:
+        serverDacIndex = G_VCASC_OUT;
         break;
-    case G_VIN_CM:
-        serverDacIndex = VIN_CM;
+    case VIN_CM:
+        serverDacIndex = G_VIN_CM;
         break;
-    case G_VREF_COMP:
-        serverDacIndex = VREF_COMP;
+    case VREF_COMP:
+        serverDacIndex = G_VREF_COMP;
         break;
-    case G_IB_TESTC:
-        serverDacIndex = IB_TESTC;
+    case IB_TESTC:
+        serverDacIndex = G_IB_TESTC;
         break;
     case HIGH_VOLTAGE:
         break;
 #elif EIGERD
-    case TRIMBIT_SIZE:
-        serverDacIndex = VTR;
-        break;
     case THRESHOLD:
-        serverDacIndex = VTHRESHOLD;
+        serverDacIndex = E_VTHRESHOLD;
         break;
-    case E_SvP:
-        serverDacIndex = SVP;
+    case SVP:
+        serverDacIndex = E_SVP;
         break;
-    case E_SvN:
-        serverDacIndex = SVN;
+    case SVN:
+        serverDacIndex = E_SVN;
         break;
-    case E_Vtr:
-        serverDacIndex = VTR;
+    case VTR:
+        serverDacIndex = E_VTR;
         break;
-    case E_Vrf:
-        serverDacIndex = VRF;
+    case VRF:
+        serverDacIndex = E_VRF;
         break;
-    case E_Vrs:
-        serverDacIndex = VRS;
+    case VRS:
+        serverDacIndex = E_VRS;
         break;
-    case E_Vtgstv:
-        serverDacIndex = VTGSTV;
+    case VTGSTV:
+        serverDacIndex = E_VTGSTV;
         break;
-    case E_Vcmp_ll:
-        serverDacIndex = VCMP_LL;
+    case VCMP_LL:
+        serverDacIndex = E_VCMP_LL;
         break;
-    case E_Vcmp_lr:
-        serverDacIndex = VCMP_LR;
+    case VCMP_LR:
+        serverDacIndex = E_VCMP_LR;
         break;
-    case E_cal:
-        serverDacIndex = CAL;
+    case CAL:
+        serverDacIndex = E_CAL;
         break;
-    case E_Vcmp_rl:
-        serverDacIndex = VCMP_RL;
+    case VCMP_RL:
+        serverDacIndex = E_VCMP_RL;
         break;
-    case E_Vcmp_rr:
-        serverDacIndex = VCMP_RR;
+    case VCMP_RR:
+        serverDacIndex = E_VCMP_RR;
         break;
-    case E_rxb_rb:
-        serverDacIndex = RXB_RB;
+    case RXB_RB:
+        serverDacIndex = E_RXB_RB;
         break;
-    case E_rxb_lb:
-        serverDacIndex = RXB_LB;
+    case RXB_LB:
+        serverDacIndex = E_RXB_LB;
         break;
-    case E_Vcp:
-        serverDacIndex = VCP;
+    case VCP:
+        serverDacIndex = E_VCP;
         break;
-    case E_Vcn:
-        serverDacIndex = VCN;
+    case VCN:
+        serverDacIndex = E_VCN;
         break;
-    case E_Vis:
-        serverDacIndex = VIS;
+    case VIS:
+        serverDacIndex = E_VIS;
         break;
     case HIGH_VOLTAGE:
     case IO_DELAY:
@@ -860,107 +857,130 @@ int set_dac(int file_des) {
 #elif MYTHEN3D
     case HIGH_VOLTAGE:
 		break;
-	case M_casSh: 
-		serverDacIndex = CASSH; 
+	case CASSH: 
+		serverDacIndex = M_CASSH; 
 		break;
-	case M_Vth2:
-		serverDacIndex = VTH2;
+	case VTH2:
+		serverDacIndex = M_VTH2;
 		break;
 	case SHAPER1:
-		serverDacIndex = VRFSH;
+		serverDacIndex = M_VRFSH;
 		break;
 	case SHAPER2:
-		serverDacIndex = VRFSHNPOL;
+		serverDacIndex = M_VRFSHNPOL;
 		break;
-	case M_vIpreOut:
-		serverDacIndex = VIPREOUT;
+	case VIPRE_OUT:
+		serverDacIndex = M_VIPRE_OUT;
 		break;
-	case M_Vth3:
-		serverDacIndex = VTH3;
+	case VTH3:
+		serverDacIndex = M_VTH3;
 		break;
 	case THRESHOLD:
-		serverDacIndex = VTH1;
+		serverDacIndex = M_VTH1;
 		break;
-	case M_vIcin:
-		serverDacIndex = VICIN;
+	case VICIN:
+		serverDacIndex = M_VICIN;
 		break;
-	case M_cas:
-		serverDacIndex = CAS;
+	case CAS:
+		serverDacIndex = M_CAS;
 		break;
 	case PREAMP:
-		serverDacIndex = VRF;
+		serverDacIndex = M_VRF;
 		break;
 	case CALIBRATION_PULSE:
-		serverDacIndex = VPH;
+		serverDacIndex = M_VPH;
 		break;
-	case M_vIpre:
-		serverDacIndex = VIPRE;
+	case VIPRE:
+		serverDacIndex = M_VIPRE;
 		break;
-	case M_vIinSh:
-		serverDacIndex = VIINSH;
+	case VIINSH:
+		serverDacIndex = M_VIINSH;
 		break;
-	case M_VPL:
-		serverDacIndex = VPL;
+	case VPL:
+		serverDacIndex = M_VPL;
 		break;
 	case TRIMBIT_SIZE:
-		serverDacIndex = VTRIM;
+		serverDacIndex = M_VTRIM;
 		break;
-	case M_VdcSh:
-		serverDacIndex = VDCSH;
+	case VDCSH:
+		serverDacIndex = M_VDCSH;
 		break;
 #elif GOTTHARD2D
     case HIGH_VOLTAGE:
 		break;
 	case VREF_H_ADC:
-		serverDacIndex = G_VREF_H_ADC;
+		serverDacIndex = G2_VREF_H_ADC;
 		break;
 	case VB_COMP_FE:
-		serverDacIndex = G_VB_COMP_FE;
+		serverDacIndex = G2_VB_COMP_FE;
 		break;
 	case VB_COMP_ADC:
-		serverDacIndex = G_VB_COMP_ADC;
+		serverDacIndex = G2_VB_COMP_ADC;
 		break;
 	case VCOM_CDS:
-		serverDacIndex = G_VCOM_CDS;
+		serverDacIndex = G2_VCOM_CDS;
 		break;
 	case VREF_RESTORE:
-		serverDacIndex = G_VREF_RESTORE;
+		serverDacIndex = G2_VREF_RESTORE;
 		break;
 	case VB_OPA_1ST:
-		serverDacIndex = G_VB_OPA_1ST;
+		serverDacIndex = G2_VB_OPA_1ST;
 		break;
 	case VREF_COMP_FE:
-		serverDacIndex = G_VREF_COMP_FE;
+		serverDacIndex = G2_VREF_COMP_FE;
 		break;
 	case VCOM_ADC1:
-		serverDacIndex = G_VCOM_ADC1;
+		serverDacIndex = G2_VCOM_ADC1;
 		break;	
 	case VREF_PRECH:
-		serverDacIndex = G_VREF_PRECH;
+		serverDacIndex = G2_VREF_PRECH;
 		break;
 	case VREF_L_ADC:
-		serverDacIndex = G_VREF_L_ADC;
+		serverDacIndex = G2_VREF_L_ADC;
 		break;
 	case VREF_CDS:
-		serverDacIndex = G_VREF_CDS;
+		serverDacIndex = G2_VREF_CDS;
 		break;
 	case VB_CS:
-		serverDacIndex = G_VB_CS;
+		serverDacIndex = G2_VB_CS;
 		break;
 	case VB_OPA_FD:
-		serverDacIndex = G_VB_OPA_FD;
+		serverDacIndex = G2_VB_OPA_FD;
 		break;
 	case VCOM_ADC2:
-		serverDacIndex = G_VCOM_ADC2;
-		break;		
+		serverDacIndex = G2_VCOM_ADC2;
+		break;	
+#elif JUNGFRAUD
+    case HIGH_VOLTAGE:
+		break;
+	case VB_DS:
+		serverDacIndex = J_VB_DS;
+		break;	
+	case VB_COMP:
+		serverDacIndex = J_VB_COMP;
+		break;	
+	case VB_PIXBUF:
+		serverDacIndex = J_VB_PIXBUF;
+		break;	
+	case VREF_DS:
+		serverDacIndex = J_VREF_DS;
+		break;	
+	case VREF_COMP:
+		serverDacIndex = J_VREF_COMP;
+		break;	
+	case VREF_PRECH:
+		serverDacIndex = J_VREF_PRECH;
+		break;	
+	case VIN_COM:
+		serverDacIndex = J_VIN_COM;
+		break;	
+	case VDD_PROT:
+		serverDacIndex = J_VDD_PROT;
+		break;
 #endif
+
     default:
-#ifdef JUNGFRAUD
-        if ((ind == HIGH_VOLTAGE) || (ind < NDAC_OLDBOARD)) {  //for compatibility with old board
-            serverDacIndex = ind;
-            break;
-        }
-#elif CHIPTESTBOARDD
+#ifdef CHIPTESTBOARDD
         if (ind < NDAC_ONLY) {
             serverDacIndex = ind;
             break;

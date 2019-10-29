@@ -1270,7 +1270,7 @@ TEST_CASE("update", "[.cmd][.ctb][.jungfrau]") {
         REQUIRE_THROWS(multiSlsDetectorClient("update jungfrauDetectorServer_developer", PUT));  
         REQUIRE_THROWS(multiSlsDetectorClient("update jungfrauDetectorServer_developer pc13784", PUT));  
         REQUIRE_THROWS(multiSlsDetectorClient("update jungfrauDetectorServer_developer pc13784 dfd.pff", PUT));
-        REQUIRE_NOTHROW(multiSlsDetectorClient("update jungfrauDetectorServer_developer pc13784 /afs/psi.ch/project/sls_det_firmware/jungfrau_firmware/cyclone_V/v0_8/Jungfrau_MCB.pof", PUT));
+        //REQUIRE_NOTHROW(multiSlsDetectorClient("update jungfrauDetectorServer_developer pc13784 /afs/psi.ch/project/sls_det_firmware/jungfrau_firmware/cyclone_V/v0_8/Jungfrau_MCB.pof", PUT));
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("update", GET));
     }
@@ -1280,7 +1280,7 @@ TEST_CASE("copydetectorserver", "[.cmd][.ctb][.jungfrau]") {
     if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) { 
         REQUIRE_THROWS(multiSlsDetectorClient("copydetectorserver", PUT));
         REQUIRE_THROWS(multiSlsDetectorClient("copydetectorserver jungfrauDetectorServer_developer", PUT));        
-        REQUIRE_NOTHROW(multiSlsDetectorClient("copydetectorserver jungfrauDetectorServer_developer pc13784", PUT));
+        //REQUIRE_NOTHROW(multiSlsDetectorClient("copydetectorserver jungfrauDetectorServer_developer pc13784", PUT));
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("copydetectorserver", GET));
     }
@@ -1288,7 +1288,7 @@ TEST_CASE("copydetectorserver", "[.cmd][.ctb][.jungfrau]") {
 
 TEST_CASE("rebootcontroller", "[.cmd][.ctb][.jungfrau]") {
     if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) { 
-        REQUIRE_NOTHROW(multiSlsDetectorClient("rebootcontroller", PUT));
+        ;//REQUIRE_NOTHROW(multiSlsDetectorClient("rebootcontroller", PUT));
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("rebootcontroller", GET));
     }
@@ -1297,7 +1297,7 @@ TEST_CASE("rebootcontroller", "[.cmd][.ctb][.jungfrau]") {
 
 TEST_CASE("resetfpga", "[.cmd][.ctb][.jungfrau]") {
     if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) { 
-        REQUIRE_NOTHROW(multiSlsDetectorClient("resetfpga", PUT));
+        ;//REQUIRE_NOTHROW(multiSlsDetectorClient("resetfpga", PUT));
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("resetfpga", GET));
     }
@@ -1306,6 +1306,7 @@ TEST_CASE("resetfpga", "[.cmd][.ctb][.jungfrau]") {
 TEST_CASE("programfpga", "[.cmd][.ctb][.jungfrau]") {
     if (test::type == slsDetectorDefs::JUNGFRAU || test::type == slsDetectorDefs::CHIPTESTBOARD) { 
         REQUIRE_THROWS(multiSlsDetectorClient("programfpga fdgd.oki", PUT));
+        //REQUIRE_NOTHROW(multiSlsDetectorClient("programfpga /afs/psi.ch/project/sls_det_firmware/jungfrau_firmware/cyclone_V/v0_8/Jungfrau_MCB.pof", PUT));
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("programfpga", GET));
     }

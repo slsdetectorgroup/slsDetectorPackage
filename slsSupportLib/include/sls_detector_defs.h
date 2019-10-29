@@ -387,12 +387,6 @@ format
         SHAPER2,             /**< shaper2 feedback */
         TEMPERATURE_ADC,     /**< temperature sensor (adc) */
         TEMPERATURE_FPGA,    /**< temperature sensor (fpga) */
-        HUMIDITY,            /**< humidity sensor (adc) */
-        DETECTOR_BIAS,       /**< detector bias */
-        VA_POT,              /**< power supply va */
-        VDD_POT,             /**< chiptest board power supply vdd */
-        VSH_POT,             /**< chiptest board power supply vsh */
-        VIO_POT,             /**< chiptest board power supply va */
         G_VREF_DS,           /**< gotthard */
         G_VCASCN_PB,         /**< gotthard */
         G_VCASCP_PB,         /**< gotthard */

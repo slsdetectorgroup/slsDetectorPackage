@@ -505,6 +505,40 @@ std::string CmdProxy::ClockDivider(int action) {
 
 
 /* dacs */
+std::string CmdProxy::Dac(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[dac index] [dac or mv value] [(optional unit) mv] \n\t[Ctb][Jungfrau] Dac." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        bool mv = false;
+        if (args.size() == 2) {
+            if (args[1] != "mv") { 
+                throw sls::RuntimeError("Unknown argument " + args[1] + ". Did you mean mv?");  
+            }
+            mv = true; 
+        } else if (args.size() > 2) {
+            WrongNumberOfParameters(1);
+        } 
+        auto t = det->getDAC(static_cast<defs::dacIndex>(std::stoi(args[0])), mv, {det_id});
+        os << OutString(t) << (args.size() > 1 ? " mv\n" : "\n");     
+    } else if (action == defs::PUT_ACTION) {     
+        bool mv = false;                                                  
+        if (args.size() == 3) {                                           
+            if (args[2] != "mv") {                                         
+                throw sls::RuntimeError("Unknown argument " + args[2] + ". Did you mean mv?"); 
+            }                                                              
+            mv = true;                                                     
+        } else if (args.size() > 3 || args.size() < 2) {                   
+            WrongNumberOfParameters(2);                                    
+        }                                                                  
+        det->setDAC(static_cast<defs::dacIndex>(std::stoi(args[0])), std::stoi(args[1]), mv, {det_id});          
+        os << args[1] << (args.size() > 2 ? " mv\n" : "\n");          
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 /* acquisition */
 /* Network Configuration (Detector<->Receiver) */

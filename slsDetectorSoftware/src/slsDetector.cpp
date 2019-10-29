@@ -1220,13 +1220,13 @@ uint64_t slsDetector::getStartingFrameNumber() {
 int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
     int64_t args[]{static_cast<int64_t>(index), t};
     int64_t retval = -1;
-    FILE_LOG(logDEBUG1) << "Setting " << getTimerType(index) << " to " << t
+    FILE_LOG(logDEBUG1) << "Setting " << sls::ToString(index) << " to " << t
                         << " ns/value";
 
     // send to detector
     int64_t oldtimer = shm()->timerValue[index];
     sendToDetector(F_SET_TIMER, args, retval);
-    FILE_LOG(logDEBUG1) << getTimerType(index) << ": " << retval;
+    FILE_LOG(logDEBUG1) << sls::ToString(index) << ": " << retval;
     shm()->timerValue[index] = retval;
     // update #nchan, as it depends on #samples, adcmask,
     if (index == ANALOG_SAMPLES || index == DIGITAL_SAMPLES) {
@@ -1283,7 +1283,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
                 << (((index == FRAME_NUMBER) || (index == TRIGGER_NUMBER) ||
                      (index == STORAGE_CELL_NUMBER))
                         ? "(#Frames) * (#triggers) * (#storage cells)"
-                        : getTimerType(index))
+                        : sls::ToString(index))
                 << " to receiver: " << args[1];
 
             sendToReceiver(F_SET_RECEIVER_TIMER, args, retval);
@@ -1294,9 +1294,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
 
 int64_t slsDetector::getTimeLeft(timerIndex index) const {
     int64_t retval = -1;
-    FILE_LOG(logDEBUG1) << "Getting " << getTimerType(index) << " left";
+    FILE_LOG(logDEBUG1) << "Getting " << sls::ToString(index) << " left";
     sendToDetectorStop(F_GET_TIME_LEFT, index, retval);
-    FILE_LOG(logDEBUG1) << getTimerType(index) << " left: " << retval;
+    FILE_LOG(logDEBUG1) << sls::ToString(index) << " left: " << retval;
     return retval;
 }
 

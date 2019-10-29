@@ -531,7 +531,8 @@ int slsReceiverTCPIPInterface::set_roi(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::set_timer(Interface &socket) {
-    auto index = socket.Receive<int64_t>();
+    auto ind = socket.Receive<int64_t>();
+    slsDetectorDefs::timerIndex index = static_cast<slsDetectorDefs::timerIndex>(ind);
     auto value = socket.Receive<int64_t>();
     if (value >= 0) {
         FILE_LOG(logDEBUG1)
@@ -571,7 +572,7 @@ int slsReceiverTCPIPInterface::set_timer(Interface &socket) {
             impl()->setNumberofDigitalSamples(value);
             break;
         default:
-            modeNotImplemented("Timer index", static_cast<int>(value));
+            modeNotImplemented("Timer index", static_cast<int>(index));
             break;
         }
     }
@@ -597,14 +598,14 @@ int slsReceiverTCPIPInterface::set_timer(Interface &socket) {
         break;
     case ANALOG_SAMPLES:
         if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
-            throw RuntimeError("This timer mode (" + std::to_string(index) +
+            throw RuntimeError("This timer mode (" + sls::ToString(index) +
                                ") does not exist for this receiver type");
         }
         retval = impl()->getNumberofAnalogSamples();
         break;
     case DIGITAL_SAMPLES:
         if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
-            throw RuntimeError("This timer mode (" + std::to_string(index) +
+            throw RuntimeError("This timer mode (" + sls::ToString(index) +
                                ") does not exist for this receiver type");
         }
         retval = impl()->getNumberofDigitalSamples();
@@ -614,7 +615,7 @@ int slsReceiverTCPIPInterface::set_timer(Interface &socket) {
         break;
     }
     validate(value, retval, "set timer", DEC);
-    FILE_LOG(logDEBUG1) << slsDetectorDefs::getTimerType((timerIndex)(index))
+    FILE_LOG(logDEBUG1) << sls::ToString((index))
                         << ":" << retval;
     return socket.sendResult(retval);
 }

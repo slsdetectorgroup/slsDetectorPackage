@@ -646,21 +646,21 @@ void slsReceiverImplementation::setFileWriteEnable(const bool b) {
         }
     }
 
-    FILE_LOG(logINFO) << "File Write Enable: " << stringEnable(fileWriteEnable);
+    FILE_LOG(logINFO) << "File Write Enable: " << sls::ToString(fileWriteEnable);
 }
 
 void slsReceiverImplementation::setMasterFileWriteEnable(const bool b) {
     masterFileWriteEnable = b;
 
     FILE_LOG(logINFO) << "Master File Write Enable: "
-                      << stringEnable(masterFileWriteEnable);
+                      << sls::ToString(masterFileWriteEnable);
 }
 
 void slsReceiverImplementation::setOverwriteEnable(const bool b) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     overwriteEnable = b;
-    FILE_LOG(logINFO) << "Overwrite Enable: " << stringEnable(overwriteEnable);
+    FILE_LOG(logINFO) << "Overwrite Enable: " << sls::ToString(overwriteEnable);
 }
 
 /***connection parameters***/
@@ -1057,7 +1057,7 @@ int slsReceiverImplementation::setTenGigaEnable(const bool b) {
         if (SetupFifoStructure() == FAIL)
             return FAIL;
     }
-    FILE_LOG(logINFO) << "Ten Giga: " << stringEnable(tengigaEnable);
+    FILE_LOG(logINFO) << "Ten Giga: " << sls::ToString(tengigaEnable);
     FILE_LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
     return OK;
@@ -1077,7 +1077,7 @@ int slsReceiverImplementation::setFifoDepth(const uint32_t i) {
 bool slsReceiverImplementation::setActivate(bool enable) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     activated = enable;
-    FILE_LOG(logINFO) << "Activation: " << stringEnable(activated);
+    FILE_LOG(logINFO) << "Activation: " << sls::ToString(activated);
     return activated;
 }
 
@@ -1085,7 +1085,7 @@ bool slsReceiverImplementation::setDeactivatedPadding(bool enable) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     deactivatedPaddingEnable = enable;
     FILE_LOG(logINFO) << "Deactivated Padding Enable: "
-                      << stringEnable(deactivatedPaddingEnable);
+                      << sls::ToString(deactivatedPaddingEnable);
     return deactivatedPaddingEnable;
 }
 

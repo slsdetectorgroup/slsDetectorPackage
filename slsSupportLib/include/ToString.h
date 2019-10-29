@@ -23,7 +23,14 @@ namespace sls {
 
 using defs = slsDetectorDefs;
 
-inline std::string ToString(const defs::runStatus s){
+inline std::string ToString(const bool b) {
+    if (b) {
+        return std::string("enabled");
+    }
+    return std::string("disabled");
+}
+
+inline std::string ToString(const defs::runStatus s) {
     switch (s) {
     case defs::ERROR:
         return std::string("error");
@@ -42,7 +49,7 @@ inline std::string ToString(const defs::runStatus s){
     }
 }
 
-inline std::string ToString(const defs::detectorType s){
+inline std::string ToString(const defs::detectorType s) {
     switch (s) {
     case defs::EIGER:
         return std::string("Eiger");
@@ -63,7 +70,7 @@ inline std::string ToString(const defs::detectorType s){
     }
 }
 
-inline std::string ToString(const defs::detectorSettings s){
+inline std::string ToString(const defs::detectorSettings s) {
     switch (s) {
     case defs::STANDARD:
         return std::string("standard");
@@ -100,7 +107,7 @@ inline std::string ToString(const defs::detectorSettings s){
     }
 }
 
-inline std::string ToString(const defs::speedLevel s){
+inline std::string ToString(const defs::speedLevel s) {
     switch (s) {
     case defs::FULL_SPEED:
         return std::string("full_speed");
@@ -113,7 +120,7 @@ inline std::string ToString(const defs::speedLevel s){
     }
 }
 
-inline std::string ToString(const defs::timingMode s){
+inline std::string ToString(const defs::timingMode s) {
     switch (s) {
     case defs::AUTO_TIMING:
         return std::string("auto");
@@ -128,7 +135,7 @@ inline std::string ToString(const defs::timingMode s){
     }
 }
 
-inline std::string ToString(const defs::frameDiscardPolicy s){
+inline std::string ToString(const defs::frameDiscardPolicy s) {
     switch (s) {
     case defs::NO_DISCARD:
         return std::string("nodiscard");
@@ -141,7 +148,7 @@ inline std::string ToString(const defs::frameDiscardPolicy s){
     }
 }
 
-inline std::string ToString(const defs::fileFormat s){
+inline std::string ToString(const defs::fileFormat s) {
     switch (s) {
     case defs::HDF5:
         return std::string("hdf5");
@@ -152,7 +159,7 @@ inline std::string ToString(const defs::fileFormat s){
     }
 }
 
-inline std::string ToString(const defs::externalSignalFlag s){
+inline std::string ToString(const defs::externalSignalFlag s) {
     switch (s) {
     case defs::TRIGGER_IN_RISING_EDGE:
         return std::string("trigger_in_rising_edge");
@@ -176,7 +183,7 @@ inline std::string ToString(const defs::readoutMode s){
     }
 }
 
-inline std::string ToString(const defs::frameModeType s){
+inline std::string ToString(const defs::frameModeType s) {
     switch (s) {
     case defs::PEDESTAL:
         return std::string("pedestal");
@@ -191,7 +198,7 @@ inline std::string ToString(const defs::frameModeType s){
     }
 }
 
-inline std::string ToString(const defs::detectorModeType s){
+inline std::string ToString(const defs::detectorModeType s) {
     switch (s) {
     case defs::COUNTING:
         return std::string("counting");
@@ -204,9 +211,47 @@ inline std::string ToString(const defs::detectorModeType s){
     }
 }
 
+inline std::string ToString(const defs::timerIndex t) {
+    switch (t) {
+    case defs::FRAME_NUMBER:
+        return std::string("frame_number");
+    case defs::ACQUISITION_TIME:
+        return std::string("acquisition_time");
+    case defs::FRAME_PERIOD:
+        return std::string("frame_period");
+    case defs::DELAY_AFTER_TRIGGER:
+        return std::string("delay_after_trigger");
+    case defs::TRIGGER_NUMBER:
+        return std::string("triggers_number");
+    case defs::ACTUAL_TIME:
+        return std::string("actual_time");
+    case defs::MEASUREMENT_TIME:
+        return std::string("measurement_time");
+    case defs::PROGRESS:
+        return std::string("progress");
+    case defs::FRAMES_FROM_START:
+        return std::string("frames_from_start");
+    case defs::FRAMES_FROM_START_PG:
+        return std::string("frames_from_start_pg");
+    case defs::ANALOG_SAMPLES:
+        return std::string("analog_samples");
+    case defs::DIGITAL_SAMPLES:
+        return std::string("digital_samples");    
+    case defs::SUBFRAME_ACQUISITION_TIME:
+        return std::string("subframe_acquisition_time");
+    case defs::SUBFRAME_DEADTIME:
+        return std::string("subframe_deadtime");
+    case defs::STORAGE_CELL_NUMBER:
+        return std::string("storage_cell_number");
+    default:
+        return std::string("Unknown");
+    }
+}
+
+
 // in case we already have a string 
 // causes a copy but might be needed in generic code
-inline std::string ToString(const std::string& s){
+inline std::string ToString(const std::string& s) {
     return s;
 }
 
@@ -388,7 +433,7 @@ template <typename T> T StringTo(const std::string& t) {
 }
 
 template <>
-inline defs::detectorType StringTo(const std::string& s){
+inline defs::detectorType StringTo(const std::string& s) {
     if (s == "Eiger")
         return defs::EIGER;
     if (s == "Gotthard")
@@ -407,7 +452,7 @@ inline defs::detectorType StringTo(const std::string& s){
 }
 
 template <>
-inline defs::detectorSettings StringTo(const std::string& s){
+inline defs::detectorSettings StringTo(const std::string& s) {
     if (s == "standard")
         return defs::STANDARD;
     if (s == "fast")
@@ -523,6 +568,31 @@ inline defs::detectorModeType StringTo(const std::string& s) {
     if (s == "analog")
         return defs::ANALOG;              
     throw sls::RuntimeError("Unknown detector mode " + s);          
+}
+
+template <>
+inline defs::dacIndex StringTo(const std::string& s) {
+    if (s == "vcmp_ll")
+        return defs::E_Vcmp_ll;
+    if (s == "vcmp_lr")
+        return defs::E_Vcmp_lr;
+    if (s == "vcmp_rl")
+        return defs::E_Vcmp_rl;
+    if (s == "vcmp_rr")
+        return defs::E_Vcmp_rr;
+    if (s == "vthreshold")
+        return defs::THRESHOLD;
+    if (s == "vrf")
+        return defs::E_Vrf;
+    if (s == "vrs")
+        return defs::E_Vrs;
+    if (s == "vtr")
+        return defs::E_Vtr;
+    if (s == "vcall")
+        return defs::E_cal;
+    if (s == "vcp")
+        return defs::E_Vcp;
+    throw sls::RuntimeError("Unknown dac Index " + s);          
 }
 
 /** For types with a .str() method use this for conversion */

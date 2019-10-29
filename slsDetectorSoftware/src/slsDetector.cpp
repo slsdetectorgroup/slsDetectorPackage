@@ -3067,13 +3067,6 @@ uint64_t slsDetector::getReceiverCurrentFrameIndex() const {
     return retval;
 }
 
-void slsDetector::resetFramesCaught() {
-    FILE_LOG(logDEBUG1) << "Reset Frames Caught by Receiver";
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RESET_RECEIVER_FRAMES_CAUGHT);
-    }
-}
-
 bool slsDetector::setFileWrite(bool value) {
     int arg = static_cast<int>(value);
     int retval = -1;

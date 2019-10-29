@@ -78,14 +78,7 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
     cmd = std::string("none");
 
-    /*! \page test Developer
-    Commands to be used only for software debugging. Avoid using them!
-    - \b test returns an error
-	 */
 
-    descrToFuncMap[i].m_pFuncName = "test";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdUnderDevelopment;
-    ++i;
 
     /*! \page test
    - <b>help</b> Returns a list of possible commands.
@@ -94,28 +87,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdHelp;
     ++i;
 
-    /*! \page test
-   - <b>exitserver</b> Shuts down all the detector servers. Don't use it!!!!
-	 */
-    descrToFuncMap[i].m_pFuncName = "exitserver";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdExitServer;
-    ++i;
-
-    /*! \page test
-   - <b>rx_exit</b> Shuts down all the receivers. Don't use it!!!!
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_exit";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdExitServer;
-    ++i;
-
-    /*! \page test
-   - <b>rx_execcommand</b> Executes a command on the receiver server. Don't use it!!!!
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_execcommand";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdExitServer;
-    ++i;
-
-    /* digital test and debugging */
 
 
 
@@ -129,13 +100,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 	 */
     descrToFuncMap[i].m_pFuncName = "acquire";
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAcquire;
-    ++i;
-
-    /*! \page acquisition
-   - \b data gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup (Eigerr store in ram only). Only get!
-	 */
-    descrToFuncMap[i].m_pFuncName = "data";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdData;
     ++i;
 
 
@@ -169,30 +133,12 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     ++i;
 
 
-    /*! \page receiver
-   - <b>resetframescaught [i]</b> resets the number of frames caught to 0. i can be any number. Use this if using status start, instead of acquire (this command is included). Only put! \c Returns \c (int)
-	 */
-    descrToFuncMap[i].m_pFuncName = "resetframescaught";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdReceiver;
-    ++i;
-
-
-    /* pattern generator */
-
 
     numberOfCommands = i;
 
-    // #ifdef VERBOSE
-    //   std::cout << "Number of commands is " << numberOfCommands << std::endl;
-    // #endif
+
 }
 
-//-----------------------------------------------------------
-
-/*!
- */
-
-//-----------------------------------------------------------
 
 std::string slsDetectorCommand::executeLine(int narg, const char * const args[], int action, int detPos) {
     if (action == READOUT_ACTION)
@@ -227,9 +173,7 @@ std::string slsDetectorCommand::executeLine(int narg, const char * const args[],
 std::string slsDetectorCommand::cmdUnknown(int narg, const char * const args[], int action, int detPos) {
     return std::string("Unknown command, use list to list all commands ");
 }
-std::string slsDetectorCommand::cmdUnderDevelopment(int narg, const char * const args[], int action, int detPos) {
-    return std::string("Must still develop ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-}
+
 
 std::vector<std::string> slsDetectorCommand::getAllCommands(){
     std::vector<std::string> commands;
@@ -256,6 +200,23 @@ std::string slsDetectorCommand::helpLine(int narg, const char * const args[], in
     }
     return executeLine(narg, args, HELP_ACTION, detPos);
 }
+
+
+std::string slsDetectorCommand::cmdHelp(int narg, const char * const args[], int action, int detPos) {
+#ifdef VERBOSE
+    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
+#endif
+
+    std::cout << narg << std::endl;
+
+    if (narg >= 1)
+        return helpLine(narg - 1, args, action, detPos);
+    else
+        return helpLine(0, args, action, detPos);
+}
+
+
+
 
 std::string slsDetectorCommand::cmdAcquire(int narg, const char * const args[], int action, int detPos) {
 #ifdef VERBOSE
@@ -297,35 +258,6 @@ std::string slsDetectorCommand::helpAcquire(int action) {
     return os.str();
 }
 
-std::string slsDetectorCommand::cmdData(int narg, const char * const args[], int action, int detPos) {
-
-#ifdef VERBOSE
-    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-#endif
-    //int b;
-    if (action == PUT_ACTION) {
-        return std::string("cannot set");
-    } else if (action == HELP_ACTION) {
-        return helpData(HELP_ACTION);
-    } else {
-        // b=myDet->setThreadedProcessing(-1);
-        // myDet->setThreadedProcessing(0);
-        // myDet->readAll(detPos);
-        // //processdata in receiver is useful only for gui purposes
-        // if(myDet->getUseReceiverFlag(detPos)==OFFLINE_FLAG)
-        // 	myDet->processData();
-        // myDet->setThreadedProcessing(b);
-        return std::string("");
-    }
-}
-
-std::string slsDetectorCommand::helpData(int action) {
-
-    if (action == PUT_ACTION)
-        return std::string("");
-    else
-        return std::string("data \t gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup\n");
-}
 
 
 std::string slsDetectorCommand::cmdFree(int narg, const char * const args[], int action, int detPos) {
@@ -343,84 +275,6 @@ std::string slsDetectorCommand::cmdFree(int narg, const char * const args[], int
 std::string slsDetectorCommand::helpFree(int action) {
     return std::string("free \t frees the shared memory\n");
 }
-
-
-std::string slsDetectorCommand::cmdHelp(int narg, const char * const args[], int action, int detPos) {
-#ifdef VERBOSE
-    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-#endif
-
-    std::cout << narg << std::endl;
-
-    if (narg >= 1)
-        return helpLine(narg - 1, args, action, detPos);
-    else
-        return helpLine(0, args, action, detPos);
-}
-
-std::string slsDetectorCommand::cmdExitServer(int narg, const char * const args[], int action, int detPos) {
-#ifdef VERBOSE
-    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-#endif
-    if (action == HELP_ACTION) {
-        return helpExitServer(action);
-    }
-
-    if (action == PUT_ACTION) {
-        if (cmd == "exitserver") {
-            myDet->exitServer(detPos);
-            return std::string("Server shut down.");
-        } else if (cmd == "rx_exit") {
-
-            myDet->exitReceiver(detPos);
-            return std::string("Receiver shut down\n");
-        } else if (cmd == "rx_execcommand") {
-
-            myDet->execReceiverCommand(std::string(args[1]), detPos);
-            return std::string("Command executed successfully\n");
-         } else
-            return ("cannot decode command\n");
-    } else
-        return ("cannot get");
-}
-
-std::string slsDetectorCommand::helpExitServer(int action) {
-    std::ostringstream os;
-    os << std::string("exitserver \t shuts down all the detector servers. Don't use it!!!!\n");
-    os << std::string("rx_exit \t shuts down all the receiver servers.\n");
-    os << std::string("rx_execcommand \t executes command in receiver server. Don't use it if you do not know what you are doing.\n");
-    return os.str();
-}
-
-
-
-
-// std::string slsDetectorCommand::cmdThreaded(int narg, const char * const args[], int action, int detPos){
-// 	int ival;
-// 	char answer[1000];
-
-// 	if (action==HELP_ACTION)
-// 		return helpThreaded(action);
-
-// 	if (action==PUT_ACTION) {
-// 		if (sscanf(args[1],"%d",&ival))
-// 			myDet->setThreadedProcessing(ival);
-// 	}
-// 	sprintf(answer,"%d",myDet->setThreadedProcessing());
-// 	return std::string(answer);
-
-// }
-
-std::string slsDetectorCommand::helpThreaded(int action) {
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION)
-        os << std::string("threaded \t  returns wether the data processing is threaded. \n");
-    if (action == PUT_ACTION || action == HELP_ACTION)
-        os << std::string("threaded t \t  sets the threading flag ( 1sets, 0 unsets).\n");
-
-    return os.str();
-}
-
 
 
 
@@ -481,36 +335,6 @@ std::string slsDetectorCommand::helpConfiguration(int action) {
     std::ostringstream os;
     return os.str();
 }
-
-std::string slsDetectorCommand::cmdReceiver(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == HELP_ACTION)
-        return helpReceiver(action);
-
-    if (cmd == "resetframescaught") {
-        if (action == GET_ACTION)
-            return std::string("cannot get");
-        else {
-            myDet->resetFramesCaught(detPos);
-            return std::string("successful");
-        }
-    }
-
-
-
-    return std::string("could not decode command");
-}
-
-std::string slsDetectorCommand::helpReceiver(int action) {
-
-    std::ostringstream os;
-    if (action == PUT_ACTION || action == HELP_ACTION) {
-        os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
-
-    }
-    return os.str();
-}
-
 
 
 

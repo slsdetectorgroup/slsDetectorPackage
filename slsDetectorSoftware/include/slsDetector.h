@@ -1486,12 +1486,6 @@ class slsDetector : public virtual slsDetectorDefs {
     uint64_t getReceiverCurrentFrameIndex() const;
 
     /**
-     * Resets framescaught in receiver
-     * Use this when using startAcquisition instead of acquire
-     */
-    void resetFramesCaught();
-
-    /**
      * Sets/Gets receiver file write enable
      * @param enable 1 or 0 to set/reset file write enable
      * @returns file write enable

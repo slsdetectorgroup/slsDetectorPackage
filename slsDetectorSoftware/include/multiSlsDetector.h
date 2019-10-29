@@ -1495,13 +1495,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     uint64_t getReceiverCurrentFrameIndex(int detPos = -1); //
 
     /**
-     * Resets framescaught in receiver
-     * Use this when using startAcquisition instead of acquire
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void resetFramesCaught(int detPos = -1); //
-
-    /**
      * Sets/Gets receiver file write enable
      * @param value 1 or 0 to set/reset file write enable
      * @param detPos -1 for all detectors in  list or specific detector position

@@ -2230,16 +2230,6 @@ uint64_t multiSlsDetector::getReceiverCurrentFrameIndex(int detPos) {
     return ((sls::sum(r)) / (int)detectors.size());
 }
 
-void multiSlsDetector::resetFramesCaught(int detPos) {
-    // single
-    if (detPos >= 0) {
-        detectors[detPos]->resetFramesCaught();
-    }
-
-    // multi
-    parallelCall(&slsDetector::resetFramesCaught);
-}
-
 int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
     if (destroy) {
         FILE_LOG(logINFO) << "Going to destroy data sockets";
@@ -3106,11 +3096,6 @@ int multiSlsDetector::acquire() {
     setTotalProgress();
 
     startProcessingThread();
-
-    // resets frames caught in receiver
-    if (receiver) {
-        resetFramesCaught();
-    }
 
     // start receiver
     if (receiver) {

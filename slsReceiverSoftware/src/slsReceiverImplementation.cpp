@@ -1237,6 +1237,7 @@ void slsReceiverImplementation::resetAcquisitionCount() {
 int slsReceiverImplementation::startReceiver(char *c) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     FILE_LOG(logINFO) << "Starting Receiver";
+    resetAcquisitionCount();
     ResetParametersforNewMeasurement();
 
     // listener

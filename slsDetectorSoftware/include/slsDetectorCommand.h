@@ -41,27 +41,21 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   /*   *\/ */
   std::string helpLine(int narg, const char * const args[], int action=HELP_ACTION, int detPos = -1);
   static std::string helpAcquire(int action);
-  static std::string helpData(int action);
   static std::string helpFree(int action);
-  static std::string helpExitServer(int action);
-  static std::string helpThreaded(int action);
   static std::string helpSN(int action);
   static std::string helpConfiguration(int action);
-  static std::string helpReceiver(int action);
+
 
  private:
   multiSlsDetector *myDet;
    
-  std::string cmdUnderDevelopment(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdUnknown(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdAcquire(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdData(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdFree(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdHelp(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdExitServer(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdSN(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdConfiguration(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdReceiver(int narg, const char * const args[], int action, int detPos = -1);
+
 
   int numberOfCommands;
   std::string cmd;

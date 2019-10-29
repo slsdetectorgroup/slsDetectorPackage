@@ -192,9 +192,6 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
     /** Gets Total Frames Caught */
     int get_frames_caught(sls::ServerInterface2 &socket);
 
-    /** Resets Total Frames Caught */
-    int reset_frames_caught(sls::ServerInterface2 &socket);
-
     /** Enable File Write*/
     int enable_file_write(sls::ServerInterface2 &socket);
 

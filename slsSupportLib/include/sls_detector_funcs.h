@@ -156,7 +156,6 @@ enum detFuncs{
 	F_SET_RECEIVER_FILE_INDEX, /**< sets receiver file index */
 	F_GET_RECEIVER_FRAME_INDEX, /**< gets the receiver frame index */
 	F_GET_RECEIVER_FRAMES_CAUGHT, /**< gets the number of frames caught by receiver */
-	F_RESET_RECEIVER_FRAMES_CAUGHT, /**< resets the frames caught by receiver */
 	F_ENABLE_RECEIVER_FILE_WRITE, /**< sets the receiver file write */
 	F_ENABLE_RECEIVER_MASTER_FILE_WRITE, /**< sets the receiver master file write */
 	F_ENABLE_RECEIVER_OVERWRITE, /**< set overwrite flag in receiver */
@@ -348,7 +347,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_RECEIVER_FILE_INDEX: 		return "F_SET_RECEIVER_FILE_INDEX";
 	case F_GET_RECEIVER_FRAME_INDEX:		return "F_GET_RECEIVER_FRAME_INDEX";
 	case F_GET_RECEIVER_FRAMES_CAUGHT:		return "F_GET_RECEIVER_FRAMES_CAUGHT";
-	case F_RESET_RECEIVER_FRAMES_CAUGHT:	return "F_RESET_RECEIVER_FRAMES_CAUGHT";
 	case F_ENABLE_RECEIVER_FILE_WRITE:		return "F_ENABLE_RECEIVER_FILE_WRITE";
 	case F_ENABLE_RECEIVER_MASTER_FILE_WRITE: return "F_ENABLE_RECEIVER_MASTER_FILE_WRITE";	
 	case F_ENABLE_RECEIVER_OVERWRITE:		return "F_ENABLE_RECEIVER_OVERWRITE";

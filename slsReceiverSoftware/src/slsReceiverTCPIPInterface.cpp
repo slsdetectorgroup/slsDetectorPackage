@@ -168,7 +168,6 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_SET_RECEIVER_FILE_INDEX]		=	&slsReceiverTCPIPInterface::set_file_index;
 	flist[F_GET_RECEIVER_FRAME_INDEX]		=	&slsReceiverTCPIPInterface::get_frame_index;
 	flist[F_GET_RECEIVER_FRAMES_CAUGHT]		=	&slsReceiverTCPIPInterface::get_frames_caught;
-	flist[F_RESET_RECEIVER_FRAMES_CAUGHT]	=	&slsReceiverTCPIPInterface::reset_frames_caught;
 	flist[F_ENABLE_RECEIVER_FILE_WRITE]		=	&slsReceiverTCPIPInterface::enable_file_write;
 	flist[F_ENABLE_RECEIVER_MASTER_FILE_WRITE]	=	&slsReceiverTCPIPInterface::enable_master_file_write;
 	flist[F_ENABLE_RECEIVER_OVERWRITE]		= 	&slsReceiverTCPIPInterface::enable_overwrite;
@@ -761,12 +760,6 @@ int slsReceiverTCPIPInterface::get_frames_caught(Interface &socket) {
     int retval = impl()->getTotalFramesCaught();
     FILE_LOG(logDEBUG1) << "frames caught:" << retval;
     return socket.sendResult(retval);
-}
-
-int slsReceiverTCPIPInterface::reset_frames_caught(Interface &socket) {
-    FILE_LOG(logDEBUG1) << "Reset frames caught";
-    impl()->resetAcquisitionCount();
-    return socket.Send(OK);
 }
 
 int slsReceiverTCPIPInterface::enable_file_write(Interface &socket) {

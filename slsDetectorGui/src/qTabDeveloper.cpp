@@ -75,7 +75,7 @@ void qTabDeveloper::SetupWidgetWindow() {
 			dacWidgets.push_back(new qDacWidget(this, det, true, "v vb ds: ", getSLSIndex(detType, tempid++), false));
 			dacWidgets.push_back(new qDacWidget(this, det, true, "v vref ds: ", getSLSIndex(detType, tempid++), false));
 			dacWidgets.push_back(new qDacWidget(this, det, true, "i vref comp: ", getSLSIndex(detType, tempid++), false));
-			adcWidgets.push_back(new qDacWidget(this, det, false, "Temperature ADC/FPGA: ", getSLSIndex(detType, tempid++), true));
+			adcWidgets.push_back(new qDacWidget(this, det, false, "Temperature ADC: ", getSLSIndex(detType, tempid++), true));
 			break;
 
 		case slsDetectorDefs::MOENCH:
@@ -299,7 +299,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorTy
 			throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));
 		}
 		break;
-		
+
 	case slsDetectorDefs::MOENCH:
 		if (index >= 0 && index < (int)dacWidgets.size()) {
 			return (slsDetectorDefs::dacIndex)index;

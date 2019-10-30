@@ -1,5 +1,6 @@
 #include "slsDetectorCommand.h"
 #include "multiSlsDetector.h"
+#include "slsDetector.h"
 #include "string_utils.h"
 
 #include <cstdlib>
@@ -80,16 +81,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
 
 
 
-    /*! \page test
-   - <b>help</b> Returns a list of possible commands.
-	 */
-    descrToFuncMap[i].m_pFuncName = "help";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdHelp;
-    ++i;
-
-
-
-
     /* Acquisition and status commands */
     /*! \page acquisition Acquition commands
    Commands to control the acquisition
@@ -102,28 +93,6 @@ slsDetectorCommand::slsDetectorCommand(multiSlsDetector *det) {
     descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdAcquire;
     ++i;
 
-
-    /*! \page config
-   - \b free Free shared memory on the control PC
-	 */
-    descrToFuncMap[i].m_pFuncName = "free";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdFree;
-    ++i;
-
-
-    /*! \page config
-   - <b>checkdetversion</b> Checks the version compatibility with detector server (if hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
-	 */
-    descrToFuncMap[i].m_pFuncName = "checkdetversion";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
-    ++i;
-
-    /*! \page config
-   - <b>rx_checkversion</b> Checks the version compatibility with receiver server (if rx_hostname is in shared memory). Only get! Only for Eiger, Jungfrau & Gotthard. \c Returns \c ("compatible", "incompatible")
-	 */
-    descrToFuncMap[i].m_pFuncName = "rx_checkversion";
-    descrToFuncMap[i].m_pFuncPtr = &slsDetectorCommand::cmdSN;
-    ++i;
 
   
     /* settings dump/retrieve */
@@ -182,40 +151,6 @@ std::vector<std::string> slsDetectorCommand::getAllCommands(){
     return commands;
 }
 
-std::string slsDetectorCommand::helpLine(int narg, const char * const args[], int action, int detPos) {
-
-    std::ostringstream os;
-
-    if (action == READOUT_ACTION) {
-        return helpAcquire(HELP_ACTION);
-    }
-
-    if (narg == 0) {
-        os << "Command can be: " << std::endl;
-        for (int i = 0; i < numberOfCommands; ++i) {
-            os << descrToFuncMap[i].m_pFuncName << "\n";
-        }
-        os << std::endl;
-        return os.str();
-    }
-    return executeLine(narg, args, HELP_ACTION, detPos);
-}
-
-
-std::string slsDetectorCommand::cmdHelp(int narg, const char * const args[], int action, int detPos) {
-#ifdef VERBOSE
-    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-#endif
-
-    std::cout << narg << std::endl;
-
-    if (narg >= 1)
-        return helpLine(narg - 1, args, action, detPos);
-    else
-        return helpLine(0, args, action, detPos);
-}
-
-
 
 
 std::string slsDetectorCommand::cmdAcquire(int narg, const char * const args[], int action, int detPos) {
@@ -237,10 +172,11 @@ std::string slsDetectorCommand::cmdAcquire(int narg, const char * const args[], 
 
     if (myDet->acquire() == FAIL)
         return std::string("acquire failed");
-    if (myDet->getUseReceiverFlag(detPos)) {
-        char answer[100];
-        sprintf(answer, "\nAcquired %d", myDet->getFramesCaughtByReceiver(detPos));
-        return std::string(answer);
+    if (myDet->Parallel(&slsDetector::getUseReceiverFlag, {}).squash(false)) {
+        std::ostringstream os;
+        os << "\nAcquired ";
+        os << sls::ToString(myDet->Parallel(&slsDetector::getFramesCaughtByReceiver, {}));
+        return os.str();
     }
 
     return std::string();
@@ -257,61 +193,6 @@ std::string slsDetectorCommand::helpAcquire(int action) {
     os << "the detector will be started, the data acquired, processed and written to file according to the preferences configured " << std::endl;
     return os.str();
 }
-
-
-
-std::string slsDetectorCommand::cmdFree(int narg, const char * const args[], int action, int detPos) {
-
-#ifdef VERBOSE
-    std::cout << std::string("Executing command ") + std::string(args[0]) + std::string(" ( ") + cmd + std::string(" )\n");
-#endif
-    if (action == HELP_ACTION) {
-        return helpFree(HELP_ACTION);
-    }
-
-    return ("Error: Should have been freed before creating constructor\n");
-}
-
-std::string slsDetectorCommand::helpFree(int action) {
-    return std::string("free \t frees the shared memory\n");
-}
-
-
-
-
-std::string slsDetectorCommand::cmdSN(int narg, const char * const args[], int action, int detPos) {
-
-    if (action == PUT_ACTION)
-        return std::string("cannot set");
-
-    if (action == HELP_ACTION)
-        return helpSN(action);
-
-
-    if (cmd == "checkdetversion") {
-        myDet->checkDetectorVersionCompatibility(detPos);
-        return std::string("compatible");
-    }
-
-    if (cmd == "rx_checkversion") {
-        myDet->checkReceiverVersionCompatibility(detPos);
-        return std::string("compatible");
-    }
-
-    return std::string("unknown id mode ") + cmd;
-}
-
-std::string slsDetectorCommand::helpSN(int action) {
-
-    std::ostringstream os;
-    if (action == GET_ACTION || action == HELP_ACTION) {
-        os << "checkdetversion \n gets the version compatibility with detector server (if hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible." << std::endl;
-        os << "rx_checkversion \n gets the version compatibility with receiver server (if rx_hostname is in shared memory). Only for Eiger, Jungfrau & Gotthard. Prints compatible/ incompatible." << std::endl;
-    }
-    return os.str();
-}
-
-
 
 
 

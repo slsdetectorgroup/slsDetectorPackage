@@ -33,16 +33,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
   
 
   std::vector<std::string> getAllCommands();
-
-  /*   /\** */
-  /*      returns the help for the executeLine command  */
-  /*      \param os output stream to return the help to */
-  /*      \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition)  */
-  /*   *\/ */
-  std::string helpLine(int narg, const char * const args[], int action=HELP_ACTION, int detPos = -1);
   static std::string helpAcquire(int action);
-  static std::string helpFree(int action);
-  static std::string helpSN(int action);
   static std::string helpConfiguration(int action);
 
 
@@ -51,9 +42,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
    
   std::string cmdUnknown(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdAcquire(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdFree(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdHelp(int narg, const char * const args[], int action, int detPos = -1);
-  std::string cmdSN(int narg, const char * const args[], int action, int detPos = -1);
   std::string cmdConfiguration(int narg, const char * const args[], int action, int detPos = -1);
 
 

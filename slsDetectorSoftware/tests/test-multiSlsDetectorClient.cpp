@@ -3076,14 +3076,14 @@ TEST_CASE("zmqport", "[.cmd]") {
     }
     int port = 3500;
     REQUIRE_NOTHROW(multiSlsDetectorClient("zmqport " + std::to_string(port), PUT));
-    for (size_t i = 0; i != d.size(); ++i) {
+    for (int i = 0; i != d.size(); ++i) {
         std::ostringstream oss;
         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) + ":zmqport", GET, nullptr, oss));
         REQUIRE(oss.str() == "zmqport " + std::to_string(port + i * socketsperdetector) + '\n');   
     }
     port = 1954;
     REQUIRE_NOTHROW(multiSlsDetectorClient("zmqport " + std::to_string(port), PUT));
-    for (size_t i = 0; i != d.size(); ++i) {
+    for (int i = 0; i != d.size(); ++i) {
         std::ostringstream oss;
         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) + ":zmqport", GET, nullptr, oss));
         REQUIRE(oss.str() == "zmqport " + std::to_string(port + i * socketsperdetector) + '\n');   
@@ -3104,14 +3104,14 @@ TEST_CASE("rx_zmqport", "[.cmd]") {
     }
     int port = 3500;
     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_zmqport " + std::to_string(port), PUT));
-    for (size_t i = 0; i != d.size(); ++i) {
+    for (int i = 0; i != d.size(); ++i) {
         std::ostringstream oss;
         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) + ":rx_zmqport", GET, nullptr, oss));
         REQUIRE(oss.str() == "rx_zmqport " + std::to_string(port + i * socketsperdetector) + '\n');   
     }
     port = 30001;
     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_zmqport " + std::to_string(port), PUT));
-    for (size_t i = 0; i != d.size(); ++i) {
+    for (int i = 0; i != d.size(); ++i) {
         std::ostringstream oss;
         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) + ":rx_zmqport", GET, nullptr, oss));
         REQUIRE(oss.str() == "rx_zmqport " + std::to_string(port + i * socketsperdetector) + '\n');   
@@ -3337,14 +3337,14 @@ TEST_CASE("network", "[.cmd]") {
         }
         int port = 5500;
         REQUIRE_NOTHROW(multiSlsDetectorClient("udp_dstport " + std::to_string(port), PUT));
-        for (size_t i = 0; i != d.size(); ++i) {
+        for (int i = 0; i != d.size(); ++i) {
             std::ostringstream oss;
             REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) + ":udp_dstport", GET, nullptr, oss));
             REQUIRE(oss.str() == "udp_dstport " + std::to_string(port + i * socketsperdetector) + '\n');   
         }
         port = 50001;
         REQUIRE_NOTHROW(multiSlsDetectorClient("udp_dstport " + std::to_string(port), PUT));
-        for (size_t i = 0; i != d.size(); ++i) {
+        for (int i = 0; i != d.size(); ++i) {
             std::ostringstream oss;
             REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) + ":udp_dstport", GET, nullptr, oss));
             REQUIRE(oss.str() == "udp_dstport " + std::to_string(port + i * socketsperdetector) + '\n');   
@@ -4235,7 +4235,7 @@ TEST_CASE("rx_tcpport", "[.cmd]") {
     multiSlsDetector d;
     int port = 3500;
     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_tcpport " + std::to_string(port), PUT));
-    for (size_t i = 0; i != d.size(); ++i) {
+    for (int i = 0; i != d.size(); ++i) {
         std::ostringstream oss;
         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) + ":rx_tcpport", GET, nullptr, oss));
         REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');   
@@ -4243,7 +4243,7 @@ TEST_CASE("rx_tcpport", "[.cmd]") {
     REQUIRE_THROWS(multiSlsDetectorClient("rx_tcpport 15", PUT));
     port = 1954;
     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_tcpport " + std::to_string(port), PUT));
-    for (size_t i = 0; i != d.size(); ++i) {
+    for (int i = 0; i != d.size(); ++i) {
         std::ostringstream oss;
         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) + ":rx_tcpport", GET, nullptr, oss));
         REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');   

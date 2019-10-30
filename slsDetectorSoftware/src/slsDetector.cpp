@@ -391,6 +391,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->rxMasterFileWrite = true;
     shm()->rxFileOverWrite = true;
     shm()->rxDbitOffset = 0;
+    shm()->numUDPInterfaces = 1;
 
     // get the detector parameters based on type
     detParameters parameters{type};
@@ -545,12 +546,8 @@ int slsDetector::setDetectorType(detectorType const type) {
     return retval;
 }
 
-slsDetectorDefs::detectorType slsDetector::getDetectorTypeAsEnum() const {
+slsDetectorDefs::detectorType slsDetector::getDetectorType() const {
     return shm()->myDetectorType;
-}
-
-std::string slsDetector::getDetectorTypeAsString() const {
-    return ToString(getDetectorTypeAsEnum());
 }
 
 void slsDetector::updateNumberOfChannels() {
@@ -830,6 +827,12 @@ void slsDetector::updateCachedDetectorVariables() {
 
             // update #nchan, as it depends on #samples, adcmask,
             updateNumberOfChannels();
+        }
+
+        // num udp interfaces
+        if (shm()->myDetectorType == JUNGFRAU) {
+            n += client.Receive(&i32, sizeof(i32));
+            shm()->numUDPInterfaces = i32;
         }
 
         if (n == 0) {
@@ -1312,6 +1315,8 @@ int slsDetector::setSpeed(speedVariable sp, int value, int mode) {
 
 int slsDetector::setDynamicRange(int n) {
     // TODO! Properly handle fail
+    int prevDr = shm()->dynamicRange;
+
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting dynamic range to " << n;
     sendToDetector(F_SET_DYNAMIC_RANGE, n, retval);
@@ -1325,10 +1330,21 @@ int slsDetector::setDynamicRange(int n) {
         sendToReceiver(F_SET_RECEIVER_DYNAMIC_RANGE, n, retval);
         FILE_LOG(logDEBUG1) << "Receiver Dynamic range: " << retval;
     }
+
+    // changes in dr
+    int dr = shm()->dynamicRange;
+    if (prevDr != dr && shm()->myDetectorType == EIGER) {
+        updateRateCorrection();
+        // update speed for usability
+        if (dr == 32) {
+            FILE_LOG(logINFO) << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32";     setSpeed(CLOCK_DIVIDER, 2);
+        } else if (dr == 16) {
+            FILE_LOG(logINFO) << "Setting Clock to Half Speed to cope with Dynamic Range of 16";     setSpeed(CLOCK_DIVIDER, 1);
+        }
+    }
+    
     return shm()->dynamicRange;
 }
-
-int slsDetector::getDynamicRangeFromShm() { return shm()->dynamicRange; }
 
 int slsDetector::setDAC(int val, dacIndex index, int mV) {
     int args[]{static_cast<int>(index), mV, val};
@@ -1857,17 +1873,24 @@ int slsDetector::getDestinationUDPPort2() {
 void slsDetector::setNumberofUDPInterfaces(int n) {
     FILE_LOG(logDEBUG1) << "Setting number of udp interfaces to " << n;
     sendToDetector(F_SET_NUM_INTERFACES, n, nullptr);
+    shm()->numUDPInterfaces = n;
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_NUM_INTERFACES, n, nullptr); 
     }  
 }
+
+int slsDetector::getNumberofUDPInterfacesFromShm() {
+    return shm()->numUDPInterfaces;
+} 
+
 
 int slsDetector::getNumberofUDPInterfaces() {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Getting number of udp interfaces";
     sendToDetector(F_GET_NUM_INTERFACES, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Number of udp interfaces: " << retval;
-    return retval;
+    shm()->numUDPInterfaces = retval;
+    return shm()->numUDPInterfaces;
 }
 
 void slsDetector::selectUDPInterface(int n) {
@@ -2380,6 +2403,10 @@ int slsDetector::setAllTrimbits(int val) {
 
 int slsDetector::enableGapPixels(int val) {
     if (val >= 0) {
+        if (shm()->myDetectorType != EIGER) {
+          throw NotImplementedError(
+                "Function (enableGapPixels) not implemented for this detector");  
+        }
         int fnum = F_ENABLE_GAPPIXELS_IN_RECEIVER;
         int retval = -1;
         FILE_LOG(logDEBUG1) << "Sending gap pixels enable to receiver: " << val;

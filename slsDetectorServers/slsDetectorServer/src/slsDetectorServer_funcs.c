@@ -1167,12 +1167,12 @@ int set_dac(int file_des) {
                     if (val != -1) {
                         //changing dac changes settings to undefined
                         switch(serverDacIndex) {
-                        case VCMP_LL:
-                        case VCMP_LR:
-                        case VCMP_RL:
-                        case VCMP_RR:
-                        case VRF:
-                        case VCP:
+                        case E_VCMP_LL:
+                        case E_VCMP_LR:
+                        case E_VCMP_RL:
+                        case E_VCMP_RR:
+                        case E_VRF:
+                        case E_VCP:
                             setSettings(UNDEFINED);
                             FILE_LOG(logERROR, ("Settings has been changed "
                             		"to undefined (changed specific dacs)\n"));
@@ -2491,6 +2491,13 @@ int send_update(int file_des) {
 
 	// adcmask
     i32 = getADCEnableMask();
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+    if (n < 0) return printSocketReadError();
+#endif
+
+	// num udp interfaces
+#ifdef JUNGFRAUD
+	    i32 = getNumberofUDPInterfaces();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
     if (n < 0) return printSocketReadError();
 #endif

@@ -169,6 +169,9 @@ struct sharedSlsDetector {
 
     /** reciever dbit offset */
     int rxDbitOffset;
+
+    /** num udp interfaces */
+    int numUDPInterfaces;
 };
 
 class slsDetector : public virtual slsDetectorDefs {
@@ -258,13 +261,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * Get Detector type from shared memory variable
      * @returns detector type from shared memory variable
      */
-    detectorType getDetectorTypeAsEnum() const;
-
-    /**
-     * Gets string version of detector type from shared memory variable
-     * @returns string version of detector type from shared memory variable
-     */
-    std::string getDetectorTypeAsString() const;
+    detectorType getDetectorType() const;
 
     /**
      * Gets detector type from detector and set it in receiver
@@ -553,8 +550,6 @@ class slsDetector : public virtual slsDetectorDefs {
      * \sa sharedSlsDetector
      */
     int setDynamicRange(int n = -1);
-
-    int getDynamicRangeFromShm();
 
     /**
      * Set/get dacs value
@@ -848,6 +843,9 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     void setNumberofUDPInterfaces(int n);
 
+    /** Returns the number of udp interfaces from shared memory */
+    int getNumberofUDPInterfacesFromShm();
+    
     /**
      * Returns the number of UDP interfaces to stream data from detector
      * (Jungfrau only)

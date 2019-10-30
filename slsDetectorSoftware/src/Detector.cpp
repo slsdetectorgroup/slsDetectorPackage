@@ -67,7 +67,7 @@ Result<int64_t> Detector::getReceiverVersion(Positions pos) const {
 }
 
 Result<defs::detectorType> Detector::getDetectorType(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getDetectorTypeAsEnum, pos);
+    return pimpl->Parallel(&slsDetector::getDetectorType, pos);
 }
 
 int Detector::size() const { return pimpl->size(); }
@@ -173,7 +173,7 @@ Result<defs::speedLevel> Detector::getSpeed(Positions pos) const {
     auto res = pimpl->Parallel(&slsDetector::setSpeed, pos, defs::CLOCK_DIVIDER, -1,
                            0);
     Result<defs::speedLevel> speedResult(res.size());
-    for (size_t i = 0; i < res.size(); ++i) {
+    for (unsigned int i = 0; i < res.size(); ++i) {
         speedResult[i] = static_cast<defs::speedLevel>(res[i]);
     }
     return speedResult;
@@ -314,7 +314,7 @@ void Detector::stopReceiver() {
 }
 
 void Detector::startDetector() {
-    if (getDetectorType({}).squash() == defs::EIGER) {
+    if (getDetectorType().squash() == defs::EIGER) {
         pimpl->Parallel(&slsDetector::prepareAcquisition, {});
     }
     pimpl->Parallel(&slsDetector::startAcquisition, {});
@@ -782,7 +782,9 @@ Result<int> Detector::getDynamicRange(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setDynamicRange, pos, -1);
 }
 
-void Detector::setDynamicRange(int value) { pimpl->setDynamicRange(value); }
+void Detector::setDynamicRange(int value) {
+    pimpl->Parallel(&slsDetector::setDynamicRange, {}, value);
+}
 
 Result<ns> Detector::getSubExptime(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setTimer, pos,
@@ -832,7 +834,7 @@ Result<bool> Detector::getRxAddGapPixels(Positions pos) const {
 }
 
 void Detector::setRxAddGapPixels(bool enable) {
-    pimpl->setGapPixelsEnable(enable, {});
+    pimpl->setGapPixelsinReceiver(enable);
 }
 
 Result<bool> Detector::getParallelMode(Positions pos) const {
@@ -968,7 +970,13 @@ Result<bool> Detector::getQuad(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getQuad, pos);
 }
 
-void Detector::setQuad(const bool value) { pimpl->setQuad(value); }
+void Detector::setQuad(const bool value) {
+    if (value && size() > 1) {
+        throw RuntimeError("Cannot set Quad type as it is available only for 1 "
+                        "Eiger Quad Half module.");
+    }
+    pimpl->Parallel(&slsDetector::setQuad, {}, value);
+}
 
 // Jungfrau Specific
 
@@ -1007,8 +1015,8 @@ Result<bool> Detector::getPowerChip(Positions pos) const {
 
 void Detector::setPowerChip(bool on, Positions pos) {
     if ((pos.empty() || pos[0] == -1) && on && pimpl->size() > 3) {
-        for (unsigned int i = 0; i != pimpl->size(); ++i) {
-            pimpl->powerChip(static_cast<int>(on), i);
+        for (int i = 0; i != pimpl->size(); ++i) {
+            pimpl->Parallel(&slsDetector::powerChip, {i}, static_cast<int>(on));
             usleep(1000 * 1000);
         }
     } else {
@@ -1618,12 +1626,12 @@ Result<uint64_t> Detector::getRxCurrentFrameIndex(Positions pos) const {
 
 std::vector<int> Detector::getPortNumbers(int start_port) {
     int num_sockets_per_detector = 1;
-    switch (getDetectorType({}).squash()) {
+    switch (getDetectorType().squash()) {
     case defs::EIGER:
         num_sockets_per_detector *= 2;
         break;
     case defs::JUNGFRAU:
-        if (getNumberofUDPInterfaces({}).squash() == 2) {
+        if (getNumberofUDPInterfaces().squash() == 2) {
             num_sockets_per_detector *= 2;
         }
         break;

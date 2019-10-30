@@ -595,8 +595,8 @@ class CmdProxy {
                           {"vref_comp", &CmdProxy::vref_comp},
                           {"ib_test_c", &CmdProxy::ib_test_c},
                           {"vpreamp", &CmdProxy::vpreamp},
-                          {"vshaper1", &CmdProxy::vshaper1},
-                          {"vshaper2", &CmdProxy::vshaper2},
+                          {"vshaper", &CmdProxy::vshaper},
+                          {"vshaperneg", &CmdProxy::vshaperneg},
                           {"vipre", &CmdProxy::vipre},
                           {"viinsh", &CmdProxy::viinsh},
                           {"vdcsh", &CmdProxy::vdcsh},
@@ -606,8 +606,8 @@ class CmdProxy {
                           {"vpl", &CmdProxy::vpl},
                           {"vph", &CmdProxy::vph},
                           {"vtrim", &CmdProxy::vtrim},
-                          {"cassh", &CmdProxy::cassh},
-                          {"cas", &CmdProxy::cas},
+                          {"vcassh", &CmdProxy::vcassh},
+                          {"vcas", &CmdProxy::vcas},
                           {"vicin", &CmdProxy::vicin},
                           {"vipre_out", &CmdProxy::vipre_out},
                           {"vref_h_adc", &CmdProxy::vref_h_adc},
@@ -632,6 +632,8 @@ class CmdProxy {
                           {"vdd_prot", &CmdProxy::vdd_prot},
 
                           {"dac", &CmdProxy::Dac},
+                          {"daclist", &CmdProxy::DacList},
+                          {"dacvalues", &CmdProxy::DacValues},
     
 
                           /* acquisition */
@@ -862,6 +864,9 @@ class CmdProxy {
     std::string ClockDivider(int action);
     /* dacs */
     std::string Dac(int action);
+    std::string DacList(int action);   
+    std::string DacValues(int action);   
+    std::vector<std::string> DacCommands();
     /* acquisition */
     /* Network Configuration (Detector<->Receiver) */
     /* Receiver Config */
@@ -1083,10 +1088,10 @@ class CmdProxy {
     DAC_COMMAND(vpreamp, getDAC, setDAC, defs::PREAMP,
                     "[dac or mv value][(optional unit) mv] \n\t[Mythen3] voltage to define the preamplifier feedback resistance.");  
 
-    DAC_COMMAND(vshaper1, getDAC, setDAC, defs::SHAPER1,
+    DAC_COMMAND(vshaper, getDAC, setDAC, defs::SHAPER1,
                     "[dac or mv value][(optional unit) mv] \n\t[Mythen3] voltage to define feedback resistance of the first shaper");  
 
-    DAC_COMMAND(vshaper2, getDAC, setDAC, defs::SHAPER2,
+    DAC_COMMAND(vshaperneg, getDAC, setDAC, defs::SHAPER2,
                     "[dac or mv value][(optional unit) mv] \n\t[Mythen3] voltage to define feedback resistance of the second shaper.");  
 
     DAC_COMMAND(vipre, getDAC, setDAC, defs::VIPRE,
@@ -1116,10 +1121,10 @@ class CmdProxy {
     DAC_COMMAND(vtrim, getDAC, setDAC, defs::TRIMBIT_SIZE,
                     "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for the voltage defining the trim bit size.");  
 
-    DAC_COMMAND(cassh, getDAC, setDAC, defs::CASSH,
+    DAC_COMMAND(vcassh, getDAC, setDAC, defs::CASSH,
                     "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for the shaper's cascode voltage.");  
 
-    DAC_COMMAND(cas, getDAC, setDAC, defs::CAS,
+    DAC_COMMAND(vcas, getDAC, setDAC, defs::CAS,
                     "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for the preamplifier's cascode voltage.");  
 
     DAC_COMMAND(vicin, getDAC, setDAC, defs::VICIN,

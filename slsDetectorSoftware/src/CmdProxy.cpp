@@ -521,7 +521,7 @@ std::string CmdProxy::Dac(int action) {
             WrongNumberOfParameters(1);
         } 
         auto t = det->getDAC(static_cast<defs::dacIndex>(std::stoi(args[0])), mv, {det_id});
-        os << OutString(t) << (args.size() > 1 ? " mv\n" : "\n");     
+        os << args[0] << ' ' << OutString(t) << (args.size() > 1 ? " mv\n" : "\n");     
     } else if (action == defs::PUT_ACTION) {     
         bool mv = false;                                                  
         if (args.size() == 3) {                                           
@@ -533,7 +533,7 @@ std::string CmdProxy::Dac(int action) {
             WrongNumberOfParameters(2);                                    
         }                                                                  
         det->setDAC(static_cast<defs::dacIndex>(std::stoi(args[0])), std::stoi(args[1]), mv, {det_id});          
-        os << args[1] << (args.size() > 2 ? " mv\n" : "\n");          
+        os << args[0] << ' ' << args[1] << (args.size() > 2 ? " mv\n" : "\n");          
     } else { 
         throw sls::RuntimeError("Unknown action");
     }
@@ -567,6 +567,15 @@ std::string CmdProxy::DacValues(int action) {
         for (size_t i = 0; i < names.size(); ++i) {
             // for multiple values for each command (to use ToString on vector)
             std::ostringstream each;
+            size_t spacepos = names[i].find(' ');
+            // chip test board (dac)
+            if (spacepos != std::string::npos) {
+                if (args.size() == 0) {
+                    args.resize(1);
+                }
+                args[0] = names[i].substr(spacepos + 1 -1);
+                names[i] = names[i].substr(0, spacepos);
+            }
             Call(names[i], args, det_id, action, each);
             res[i] = each.str();
             res[i].pop_back(); //remove last \n character

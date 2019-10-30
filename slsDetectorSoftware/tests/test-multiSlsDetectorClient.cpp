@@ -11,6 +11,8 @@ auto PUT = slsDetectorDefs::PUT_ACTION;
 
 
 TEST_CASE("dacs", "[.cmd]") {
+    REQUIRE_NOTHROW(multiSlsDetectorClient("daclist", GET));
+    REQUIRE_NOTHROW(multiSlsDetectorClient("dacvalues", GET));
     int prev_val = 0; 
     if (test::type == slsDetectorDefs::EIGER) {
         {
@@ -626,14 +628,14 @@ TEST_CASE("dacs", "[.cmd]") {
             {
                 std::ostringstream oss;
                 REQUIRE_NOTHROW(multiSlsDetectorClient("dac " + std::to_string(i), GET, nullptr, oss));
-                std::string s = (oss.str()).erase (0, strlen("dac "));
+                std::string s = (oss.str()).erase (0, ("dac " + std::to_string(i)).length() + 1);
                 prev_val = std::stoi(s);
             }
             {
                 REQUIRE_NOTHROW(multiSlsDetectorClient("dac " + std::to_string(i) + " 1000", PUT));
                 std::ostringstream oss;
                 REQUIRE_NOTHROW(multiSlsDetectorClient("dac " + std::to_string(i), GET, nullptr, oss));
-                REQUIRE(oss.str() == "dac 1000\n");
+                REQUIRE(oss.str() == "dac "  + std::to_string(i) + " 1000\n");
             } 
             REQUIRE_NOTHROW(multiSlsDetectorClient("dac " + std::to_string(i) + " " + std::to_string(prev_val), PUT));  
         }

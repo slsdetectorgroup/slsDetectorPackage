@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-qDacWidget::qDacWidget(QWidget *parent, sls::Detector *detector, bool d, std::string n, slsDetectorDefs::dacIndex i, bool t) : 
-	QWidget(parent), det(detector), isDac(d), index(i), isMillideg(t) {
+qDacWidget::qDacWidget(QWidget *parent, sls::Detector *detector, bool d, std::string n, slsDetectorDefs::dacIndex i) : 
+	QWidget(parent), det(detector), isDac(d), index(i){
 	setupUi(this);
 	SetupWidgetWindow(n);
 }
@@ -74,9 +74,6 @@ void qDacWidget::GetAdc() {
 		if (retval == -1 && detectorIndex == -1) {
 			spinDac->setValue(-1);
 		} else {
-			if (isMillideg) {
-				retval /= 1000.00;
-			}
 			spinDac->setValue(retval);
 		}
 	} CATCH_DISPLAY (std::string("Could not get adc ") + std::to_string(index), "qDacWidget::GetAdc")

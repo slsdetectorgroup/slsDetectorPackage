@@ -11,7 +11,7 @@ class qDacWidget:public QWidget, private Ui::WidgetDacObject {
 	Q_OBJECT
 
 public:
-	qDacWidget(QWidget *parent, sls::Detector* detector, bool d, std::string n, slsDetectorDefs::dacIndex i, bool t);
+	qDacWidget(QWidget *parent, sls::Detector* detector, bool d, std::string n, slsDetectorDefs::dacIndex i);
 	~qDacWidget();
 	void SetDetectorIndex(int id);
 
@@ -28,7 +28,6 @@ private:
 	sls::Detector *det;
 	bool isDac{true};
 	slsDetectorDefs::dacIndex index;
-	bool isMillideg{false};
 	int detectorIndex{-1};
 };
 

@@ -953,14 +953,23 @@ int set_dac(int file_des) {
 #elif JUNGFRAUD
     case HIGH_VOLTAGE:
 		break;
-	case VB_DS:
-		serverDacIndex = J_VB_DS;
-		break;	
 	case VB_COMP:
 		serverDacIndex = J_VB_COMP;
 		break;	
+	case VDD_PROT:
+		serverDacIndex = J_VDD_PROT;
+		break;
+	case VIN_COM:
+		serverDacIndex = J_VIN_COM;
+		break;	
+	case VREF_PRECH:
+		serverDacIndex = J_VREF_PRECH;
+		break;
 	case VB_PIXBUF:
 		serverDacIndex = J_VB_PIXBUF;
+		break;	
+	case VB_DS:
+		serverDacIndex = J_VB_DS;
 		break;	
 	case VREF_DS:
 		serverDacIndex = J_VREF_DS;
@@ -968,15 +977,6 @@ int set_dac(int file_des) {
 	case VREF_COMP:
 		serverDacIndex = J_VREF_COMP;
 		break;	
-	case VREF_PRECH:
-		serverDacIndex = J_VREF_PRECH;
-		break;	
-	case VIN_COM:
-		serverDacIndex = J_VIN_COM;
-		break;	
-	case VDD_PROT:
-		serverDacIndex = J_VDD_PROT;
-		break;
 #endif
 
     default:
@@ -3829,7 +3829,7 @@ int set_adc_invert(int file_des) {
 	return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Seting ADC Invert to %u\n", arg));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD)) && (!defined(JUNGFRAUD))
 	functionNotImplemented();
 #else
 	// only set
@@ -3854,7 +3854,7 @@ int get_adc_invert(int file_des) {
 
 	FILE_LOG(logDEBUG1, ("Getting ADC Invert register \n"));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD)) && (!defined(JUNGFRAUD))
 	functionNotImplemented();
 #else	
 	// get

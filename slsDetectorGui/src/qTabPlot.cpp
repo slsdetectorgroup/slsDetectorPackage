@@ -67,7 +67,6 @@ void qTabPlot::SetupWidgetWindow() {
         case slsDetectorDefs::JUNGFRAU:
         case slsDetectorDefs::MOENCH:
             chkGainPlot->setEnabled(true);  
-            chkADCInvert->setEnabled(true);  
             break;
         default:
             break;  
@@ -130,9 +129,6 @@ void qTabPlot::Initialization() {
     // gap pixels
     if (chkGapPixels->isEnabled())
         connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(SetGapPixels(bool)));
-    // adc invert
-    if (chkADCInvert->isEnabled())
-        connect(chkADCInvert, SIGNAL(toggled(bool)), plot, SLOT(EnableADCInvert(bool)));   
 
     // Save, clone
     connect(btnSave, SIGNAL(clicked()), plot, SLOT(SavePlot()));

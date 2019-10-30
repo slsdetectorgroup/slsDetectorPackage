@@ -644,27 +644,6 @@ Displays minimum, maximum and sum of values for each plot.
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="chkADCInvert">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="toolTip">
-             <string>&lt;nobr&gt;
-Displays minimum, maximum and sum of values for each plot.
-&lt;nobr&gt;</string>
-            </property>
-            <property name="text">
-             <string>ADC Invert</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <spacer name="horizontalSpacer_17">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>

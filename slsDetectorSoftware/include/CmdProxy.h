@@ -1538,7 +1538,7 @@ class CmdProxy {
                     "[bitmask]\n\t[Ctb] ADC Enable Mask.");      
 
     INTEGER_COMMAND_HEX(adcinvert, getADCInvert, setADCInvert, stoiHex,
-                    "[bitmask]\n\t[Ctb] ADC Inversion Mask.");      
+                    "[bitmask]\n\t[Ctb][Jungfrau] ADC Inversion Mask.\n\t[Jungfrau] Inversions on top of the default mask.");      
 
     INTEGER_COMMAND(extsampling, getExternalSampling, setExternalSampling, std::stoi,
                     "[0, 1]\n\t[Ctb] Enable for external sampling signal to extsamplingsrc signal for digital data. For advanced users only.");

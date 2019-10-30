@@ -135,6 +135,10 @@ int 		setDynamicRange(int dr);
 int 		setROI(ROI arg);
 ROI			getROI();
 #endif
+#ifdef JUNGFRAUD
+void 		setADCInvertRegister(uint32_t val);
+uint32_t 	getADCInvertRegister();
+#endif
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		setADCEnableMask(uint32_t mask);
 uint32_t 	getADCEnableMask();

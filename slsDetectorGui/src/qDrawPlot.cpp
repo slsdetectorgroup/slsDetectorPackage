@@ -417,11 +417,6 @@ void qDrawPlot::EnableGainPlot(bool enable) {
     hasGainData = enable;
 }
 
-void qDrawPlot::EnableADCInvert(bool enable) {
-    FILE_LOG(logINFO) << (enable ? "Enabling" : "Disabling") << " ADC Invert";
-    isADCInvert = enable;
-}
-
 void qDrawPlot::SetSaveFileName(QString val) {
     FILE_LOG(logDEBUG) << "Setting Clone/Save File Name to " << val.toAscii().constData();
     fileSaveName = val;
@@ -904,62 +899,20 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int data
 
             // show gain plot
             if (gaindest != NULL) {
-                // adcinvert
-                if (isADCInvert) {
-                    for (ichan = 0; ichan < size; ++ichan) {
-                        uint16_t temp = (*((u_int16_t *)source));
-                        if (temp == 0xFFFF) {
-                            gaindest[ichan] = 0xFFFF;
-                            dest[ichan] = 0xFFFF;
-                        } else {
-                            gaindest[ichan] = ((temp & 0xC000) >> 14);
-                            dest[ichan] = 0x4000 - (temp & 0x3FFF);
-                        }
-                        source += 2;
-                    }
-                }
-                // normal
-                else {
-                    for (ichan = 0; ichan < size; ++ichan) {
-                        uint16_t temp = (*((u_int16_t *)source));
-                        if (temp == 0xFFFF) {
-                            gaindest[ichan] = 0xFFFF;
-                            dest[ichan] = 0xFFFF;
-                        } else {
-                            gaindest[ichan] = ((temp & 0xC000) >> 14);
-                            dest[ichan] = (temp & 0x3FFF);
-                        }
-                        source += 2;
-                    }
+                for (ichan = 0; ichan < size; ++ichan) {
+                    uint16_t temp = (*((u_int16_t *)source));
+                    gaindest[ichan] = ((temp & 0xC000) >> 14);
+                    dest[ichan] = (temp & 0x3FFF);
+                    source += 2;
                 }
             }
 
             // only data plot
             else {
-                // adcinvert
-                if (isADCInvert) {
-                    for (ichan = 0; ichan < size; ++ichan) {
-                        uint16_t temp = (*((u_int16_t *)source));
-                        if (temp == 0xFFFF) {
-                            dest[ichan] = 0xFFFF;
-                        } else {
-                            dest[ichan] = 0x4000 - (temp & 0x3FFF);
-                        }
-                        source += 2;
-                    }
+                for (ichan = 0; ichan < size; ++ichan) {
+                    dest[ichan] = ((*((u_int16_t *)source)) & 0x3FFF);
+                    source += 2;
                 }
-                // normal
-                else { 
-                    for (ichan = 0; ichan < size; ++ichan) {
-                        uint16_t temp = (*((u_int16_t *)source));
-                        if (temp == 0xFFFF) {
-                            dest[ichan] = 0xFFFF;
-                        } else {
-                            dest[ichan] = (temp & 0x3FFF);
-                        }
-                        source += 2;
-                    }
-                }  
             }
             break;
         }

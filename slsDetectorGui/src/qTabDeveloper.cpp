@@ -276,14 +276,30 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorTy
 		break;
 
 	case slsDetectorDefs::JUNGFRAU:
-		if (index >= 0 && index < (int)dacWidgets.size()) {
-			return (slsDetectorDefs::dacIndex)index;
-		}
-		if (index == (int)dacWidgets.size()) {
+		switch (index) {
+		case 0:
+			return slsDetectorDefs::VB_COMP;
+		case 1:
+			return slsDetectorDefs::VDD_PROT;
+		case 2:
+			return slsDetectorDefs::VIN_COM;
+		case 3:
+			return slsDetectorDefs::VREF_PRECH;
+		case 4:
+			return slsDetectorDefs::VB_PIXBUF;
+		case 5:
+			return slsDetectorDefs::VB_DS;
+		case 6:
+			return slsDetectorDefs::VREF_DS;
+		case 7:
+			return slsDetectorDefs::VREF_COMP;
+		case 8:
 			return slsDetectorDefs::TEMPERATURE_ADC;
-		} 			
-		throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));
-
+		default:
+			throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));
+		}
+		break;
+		
 	case slsDetectorDefs::MOENCH:
 		if (index >= 0 && index < (int)dacWidgets.size()) {
 			return (slsDetectorDefs::dacIndex)index;

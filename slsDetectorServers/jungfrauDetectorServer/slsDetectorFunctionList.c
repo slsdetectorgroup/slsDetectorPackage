@@ -525,7 +525,21 @@ int setDynamicRange(int dr){
 	return DYNAMIC_RANGE;
 }
 
+void setADCInvertRegister(uint32_t val) {
+    FILE_LOG(logINFO, ("Setting ADC Port Invert Reg to 0x%x\n", val));
+	uint32_t defaultValue = (isHardwareVersion2() ? ADC_PORT_INVERT_BOARD2_VAL : ADC_PORT_INVERT_VAL);
+	uint32_t changeValue = 	defaultValue ^ val;
+	FILE_LOG(logINFO, ("\t default: 0x%x, final:0x%x\n", defaultValue, changeValue));
+    bus_w(ADC_PORT_INVERT_REG, changeValue);
+}
 
+uint32_t getADCInvertRegister() {
+    uint32_t readValue = bus_r(ADC_PORT_INVERT_REG);
+	int32_t defaultValue = (isHardwareVersion2() ? ADC_PORT_INVERT_BOARD2_VAL : ADC_PORT_INVERT_VAL);
+	uint32_t val = defaultValue ^ readValue;
+	FILE_LOG(logDEBUG1, ("\tread:0x%x, default:0x%x returned:0x%x\n", readValue, defaultValue, val));
+	return val;
+}
 
 
 /* parameters - speed, readout */

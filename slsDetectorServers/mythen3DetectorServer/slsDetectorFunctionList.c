@@ -653,7 +653,7 @@ int configureMAC() {
 	udp->ip_protocol      	= 0x11;
 	// total length is redefined in firmware
 
-	// calcChecksum(udp);
+	calcChecksum(udp);
 
 	//TODO?
 	//cleanFifos();

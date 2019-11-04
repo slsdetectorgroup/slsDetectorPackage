@@ -10,80 +10,110 @@
 
 
 enum detFuncs{
-	F_EXEC_COMMAND=0, /**< command is executed */
-	F_GET_DETECTOR_TYPE, /**< return detector type */
-	F_SET_EXTERNAL_SIGNAL_FLAG, /**< set/get flag for external signal */
-	F_SET_TIMING_MODE, /**< set/get  external communication mode (obsolete) */
-	F_GET_ID, /**< get detector id of version */
-	F_DIGITAL_TEST, /**< digital test of the detector */
-	F_SET_DAC, /**< set DAC value */
-	F_GET_ADC, /**< get ADC value */
-	F_WRITE_REGISTER, /**< write to register */
-	F_READ_REGISTER, /**< read register */
-	F_SET_MODULE, /**< initialize module */
-	F_GET_MODULE, /**< get module status */
-	F_SET_SETTINGS, /**< set detector settings */
-	F_GET_THRESHOLD_ENERGY, /**< get detector threshold (in eV) */
-	F_START_ACQUISITION, /**< start acquisition */
-	F_STOP_ACQUISITION, /**< stop acquisition */
-	F_START_READOUT, /**< start readout */
-	F_GET_RUN_STATUS, /**< get acquisition status */
-	F_START_AND_READ_ALL, /**< start acquisition and read all frames*/
-	F_READ_ALL, /**< read alla frames */
-	F_SET_TIMER, /**< set/get timer value */
-	F_GET_TIME_LEFT, /**< get current value of the timer (time left) */
-	F_SET_DYNAMIC_RANGE, /**< set/get detector dynamic range */
-	F_SET_ROI, /**< set/get region of interest */
+	F_EXEC_COMMAND=0, 
+	F_GET_DETECTOR_TYPE, 
+	F_SET_EXTERNAL_SIGNAL_FLAG,
+	F_SET_TIMING_MODE,
+	F_GET_ID,
+	F_DIGITAL_TEST,
+	F_SET_DAC,
+	F_GET_ADC,
+	F_WRITE_REGISTER,
+	F_READ_REGISTER,
+	F_SET_MODULE,
+	F_GET_MODULE,
+	F_SET_SETTINGS,
+	F_GET_THRESHOLD_ENERGY,
+	F_START_ACQUISITION,
+	F_STOP_ACQUISITION,
+	F_START_READOUT,
+	F_GET_RUN_STATUS,
+	F_START_AND_READ_ALL,
+	F_READ_ALL,
+	F_GET_NUM_FRAMES,
+	F_SET_NUM_FRAMES,
+	F_GET_NUM_TRIGGERS,
+	F_SET_NUM_TRIGGERS,	
+	F_GET_NUM_ADDITIONAL_STORAGE_CELLS,
+	F_SET_NUM_ADDITIONAL_STORAGE_CELLS,	
+	F_GET_NUM_ANALOG_SAMPLES,
+	F_SET_NUM_ANALOG_SAMPLES,	
+	F_GET_NUM_DIGITAL_SAMPLES,
+	F_SET_NUM_DIGITAL_SAMPLES,	
+	F_GET_EXPTIME,
+	F_SET_EXPTIME,
+	F_GET_PERIOD,
+	F_SET_PERIOD,
+	F_GET_DELAY_AFTER_TRIGGER,
+	F_SET_DELAY_AFTER_TRIGGER,
+	F_GET_SUB_EXPTIME,
+	F_SET_SUB_EXPTIME,
+	F_GET_SUB_DEADTIME,
+	F_SET_SUB_DEADTIME,
+	F_GET_STORAGE_CELL_DELAY,
+	F_SET_STORAGE_CELL_DELAY,
+	F_GET_FRAMES_LEFT,
+	F_GET_TRIGGERS_LEFT,
+	F_GET_EXPTIME_LEFT,
+	F_GET_PERIOD_LEFT,
+	F_GET_DELAY_AFTER_TRIGGER_LEFT,
+	F_GET_MEASURED_PERIOD,
+	F_GET_MEASURED_SUBPERIOD,
+	F_GET_FRAMES_FROM_START,
+	F_GET_ACTUAL_TIME,
+	F_GET_MEASUREMENT_TIME,
+	F_SET_DYNAMIC_RANGE,
+	F_SET_ROI,
 	F_GET_ROI,
-	F_SET_SPEED, /**< set/get readout speed parameters */
-	F_EXIT_SERVER, /**< turn off detector server */
-	F_LOCK_SERVER, /**< Locks/Unlocks server communication to the given client */
-	F_GET_LAST_CLIENT_IP, /**< returns the IP of the client last connected to the detector */
-	F_SET_PORT, /**< Changes communication port of the server */
-	F_UPDATE_CLIENT, /**< Returns all the important parameters to update the shared memory of the client */
-	F_ENABLE_TEN_GIGA, /**< enable 10Gbe */
-	F_SET_ALL_TRIMBITS, /** < set all trimbits to this value */
-	F_SET_PATTERN_IO_CONTROL, /** < set pattern i/o control */
-	F_SET_PATTERN_CLOCK_CONTROL, /** < set pattern clock control */
-	F_SET_PATTERN_WORD, /** < sets pattern word */
-	F_SET_PATTERN_LOOP_ADDRESSES,	 /** < sets pattern loop */
+	F_SET_SPEED,
+	F_EXIT_SERVER,
+	F_LOCK_SERVER,
+	F_GET_LAST_CLIENT_IP,
+	F_SET_PORT,
+	F_UPDATE_CLIENT,
+	F_ENABLE_TEN_GIGA,
+	F_SET_ALL_TRIMBITS,
+	F_SET_PATTERN_IO_CONTROL,
+	F_SET_PATTERN_CLOCK_CONTROL,
+	F_SET_PATTERN_WORD,
+	F_SET_PATTERN_LOOP_ADDRESSES,
 	F_SET_PATTERN_LOOP_CYCLES,
-	F_SET_PATTERN_WAIT_ADDR,	/** < sets pattern wait addr */
-	F_SET_PATTERN_WAIT_TIME,	/** < sets pattern wait time */
-	F_SET_PATTERN_MASK, /** < loads a pattern mask  */
-	F_GET_PATTERN_MASK, /** < retrieves pattern mask  */
-	F_SET_PATTERN_BIT_MASK, /** < loads bitmask for the pattern  */
-	F_GET_PATTERN_BIT_MASK, /** < retrieves bitmask for the pattern  */
-	F_WRITE_ADC_REG, /** < writes an ADC register */
-	F_SET_COUNTER_BIT, /** < set/reset counter bit in detector for eiger */
-	F_PULSE_PIXEL,/** < pulse pixel n number of times in eiger at (x,y)  */
-	F_PULSE_PIXEL_AND_MOVE,/** < pulse pixel n number of times and move relatively by x and y */
-	F_PULSE_CHIP, /** < pulse chip n number of times */
-	F_SET_RATE_CORRECT,/** < set/reset rate correction tau */
-	F_GET_RATE_CORRECT,/** < get rate correction tau */
-	F_SET_NETWORK_PARAMETER,/**< set network parameters such as transmission delay, flow control */
-	F_PROGRAM_FPGA,/**< program FPGA */
-	F_RESET_FPGA, /**< reset FPGA */
-	F_POWER_CHIP, /**< power chip */
-	F_ACTIVATE,/** < activate */
-	F_PREPARE_ACQUISITION,/** < prepare acquisition */
-	F_THRESHOLD_TEMP, /** < set threshold temperature */
-	F_TEMP_CONTROL, /** < set temperature control */
-	F_TEMP_EVENT, /** < set temperature event */
-	F_AUTO_COMP_DISABLE, /** < auto comp disable mode */
-	F_STORAGE_CELL_START, /** < storage cell start */
-	F_CHECK_VERSION,/** < check version compatibility */
-	F_SOFTWARE_TRIGGER,/** < software trigger */
-	F_LED,	/** < switch on/off led */
-	F_DIGITAL_IO_DELAY,  /** < digital IO delay */
-	F_COPY_DET_SERVER,	/** < copy detector server & respawn */
-	F_REBOOT_CONTROLLER, /** < reboot detector controller (blackfin/ powerpc) */
-	F_SET_ADC_ENABLE_MASK,	/** < setting ADC enable mask */
-	F_GET_ADC_ENABLE_MASK,	/** < setting ADC enable mask */
-	F_SET_ADC_INVERT,	/** < set adc invert reg */
-	F_GET_ADC_INVERT,	/** < get adc invert reg */
-	F_EXTERNAL_SAMPLING_SOURCE,	/** < set/get external sampling source for ctb */
-	F_EXTERNAL_SAMPLING,	/**< enable/disable external sampling for ctb */
+	F_SET_PATTERN_WAIT_ADDR,
+	F_SET_PATTERN_WAIT_TIME,
+	F_SET_PATTERN_MASK,
+	F_GET_PATTERN_MASK,
+	F_SET_PATTERN_BIT_MASK,
+	F_GET_PATTERN_BIT_MASK,
+	F_WRITE_ADC_REG,
+	F_SET_COUNTER_BIT,
+	F_PULSE_PIXEL,
+	F_PULSE_PIXEL_AND_MOVE,
+	F_PULSE_CHIP,
+	F_SET_RATE_CORRECT,
+	F_GET_RATE_CORRECT,
+	F_SET_NETWORK_PARAMETER,
+	F_PROGRAM_FPGA,
+	F_RESET_FPGA,
+	F_POWER_CHIP,
+	F_ACTIVATE,
+	F_PREPARE_ACQUISITION,
+	F_THRESHOLD_TEMP, 
+	F_TEMP_CONTROL,
+	F_TEMP_EVENT, 
+	F_AUTO_COMP_DISABLE,
+	F_STORAGE_CELL_START,
+	F_CHECK_VERSION,
+	F_SOFTWARE_TRIGGER,
+	F_LED,
+	F_DIGITAL_IO_DELAY,
+	F_COPY_DET_SERVER,
+	F_REBOOT_CONTROLLER,
+	F_SET_ADC_ENABLE_MASK,
+	F_GET_ADC_ENABLE_MASK,
+	F_SET_ADC_INVERT,
+	F_GET_ADC_INVERT,
+	F_EXTERNAL_SAMPLING_SOURCE,
+	F_EXTERNAL_SAMPLING,
 	F_SET_STARTING_FRAME_NUMBER,
 	F_GET_STARTING_FRAME_NUMBER,
 	F_SET_QUAD,
@@ -134,59 +164,65 @@ enum detFuncs{
 	F_GET_CLOCK_DIVIDER,
 	NUM_DET_FUNCTIONS,
 
-	RECEIVER_ENUM_START = 128, /**< detector function should not exceed this (detector server should not compile anyway) */
-	F_EXEC_RECEIVER_COMMAND,/**< command is executed */
-	F_EXIT_RECEIVER,/**< turn off receiver server */
-	F_LOCK_RECEIVER,/**< Locks/Unlocks server communication to the given client */
-	F_GET_LAST_RECEIVER_CLIENT_IP,/**< returns the IP of the client last connected to the receiver */
-	F_SET_RECEIVER_PORT, /**< Changes communication port of the receiver */
-	F_UPDATE_RECEIVER_CLIENT, /**< Returns all the important parameters to update the shared memory of the client */
-	F_GET_RECEIVER_ID, /**< get receiver id of version */
-	F_GET_RECEIVER_TYPE, /**< return receiver type */
-	F_SEND_RECEIVER_DETHOSTNAME, /**< set detector hostname to receiver */
-	F_RECEIVER_SET_ROI, /**< Sets receiver ROI */
-	F_SET_RECEIVER_TIMER, /**< set/get timer value */
-	F_SET_RECEIVER_DYNAMIC_RANGE, /**< set/get detector dynamic range */
-	F_RECEIVER_STREAMING_FREQUENCY, /**< sets the frequency of receiver sending frames to gui */
-	F_GET_RECEIVER_STATUS, /**< gets the status of receiver listening mode */
-	F_START_RECEIVER, /**< starts the receiver listening mode */
-	F_STOP_RECEIVER, /**< stops the receiver listening mode */
-	F_SET_RECEIVER_FILE_PATH, /**< sets receiver file directory */
-	F_SET_RECEIVER_FILE_NAME, /**< sets receiver file name */
-	F_SET_RECEIVER_FILE_INDEX, /**< sets receiver file index */
-	F_GET_RECEIVER_FRAME_INDEX, /**< gets the receiver frame index */
-	F_GET_RECEIVER_FRAMES_CAUGHT, /**< gets the number of frames caught by receiver */
-	F_ENABLE_RECEIVER_FILE_WRITE, /**< sets the receiver file write */
-	F_ENABLE_RECEIVER_MASTER_FILE_WRITE, /**< sets the receiver master file write */
-	F_ENABLE_RECEIVER_OVERWRITE, /**< set overwrite flag in receiver */
-	F_ENABLE_RECEIVER_TEN_GIGA, /**< enable 10Gbe in receiver */
-	F_SET_RECEIVER_FIFO_DEPTH, /**< set receiver fifo depth */
-	F_RECEIVER_ACTIVATE, /** < activate/deactivate readout */
-	F_STREAM_DATA_FROM_RECEIVER, /**< stream data from receiver to client */
-	F_RECEIVER_STREAMING_TIMER, /** < sets the timer between each data stream in receiver */
-	F_SET_FLIPPED_DATA_RECEIVER, /** < sets the enable to flip data across x/y axis (bottom/top) */
-	F_SET_RECEIVER_FILE_FORMAT, /** < sets the receiver file format */
-	F_SEND_RECEIVER_DETPOSID, /** < sets the detector position id in the reveiver */
-	F_SEND_RECEIVER_MULTIDETSIZE, /** < sets the multi detector size to the receiver */
-	F_SET_RECEIVER_STREAMING_PORT, /** < sets the receiver streaming port */
-	F_RECEIVER_STREAMING_SRC_IP, /** < sets the receiver streaming source IP */
-	F_SET_RECEIVER_SILENT_MODE, /** < sets the receiver silent mode */
-	F_ENABLE_GAPPIXELS_IN_RECEIVER, /** < sets gap pixels in the receiver */
-	F_RESTREAM_STOP_FROM_RECEIVER, /** < restream stop from receiver */
-	F_ADDITIONAL_JSON_HEADER, /** < additional json header */
-	F_GET_ADDITIONAL_JSON_HEADER,/** < get additional json header */
-	F_RECEIVER_UDP_SOCK_BUF_SIZE, /** < UDP socket buffer size */
-	F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE, /** < real UDP socket buffer size */
-	F_SET_RECEIVER_FRAMES_PER_FILE, /** < receiver frames per file */
-	F_RECEIVER_CHECK_VERSION, /** < check receiver version compatibility */
-	F_RECEIVER_DISCARD_POLICY, /** < frames discard policy */
-	F_RECEIVER_PADDING_ENABLE, /** < partial frames padding enable */
-	F_RECEIVER_DEACTIVATED_PADDING_ENABLE, /** < deactivated receiver padding enable */
-	F_RECEIVER_SET_READOUT_MODE, /**< set/get receiver readout mode */
-	F_RECEIVER_SET_ADC_MASK, /**< set adc mask */
-	F_SET_RECEIVER_DBIT_LIST, /** < set receiver digital bit list */
-	F_GET_RECEIVER_DBIT_LIST, /** < get receiver digital bit list */
-	F_RECEIVER_DBIT_OFFSET, /** < set/get reciever digital bit offset */
+	RECEIVER_ENUM_START = 256, /**< detector function should not exceed this (detector server should not compile anyway) */
+	F_EXEC_RECEIVER_COMMAND,
+	F_EXIT_RECEIVER,
+	F_LOCK_RECEIVER,
+	F_GET_LAST_RECEIVER_CLIENT_IP,
+	F_SET_RECEIVER_PORT,
+	F_UPDATE_RECEIVER_CLIENT,
+	F_GET_RECEIVER_ID, 
+	F_GET_RECEIVER_TYPE,
+	F_SEND_RECEIVER_DETHOSTNAME,
+	F_RECEIVER_SET_ROI,
+	F_RECEIVER_SET_NUM_FRAMES,
+	F_RECEIVER_SET_NUM_ANALOG_SAMPLES,
+	F_RECEIVER_SET_NUM_DIGITAL_SAMPLES,
+	F_RECEIVER_SET_EXPTIME,
+	F_RECEIVER_SET_PERIOD,
+	F_RECEIVER_SET_SUB_EXPTIME,
+	F_RECEIVER_SET_SUB_DEADTIME,
+	F_SET_RECEIVER_DYNAMIC_RANGE,
+	F_RECEIVER_STREAMING_FREQUENCY,
+	F_GET_RECEIVER_STATUS,
+	F_START_RECEIVER,
+	F_STOP_RECEIVER,
+	F_SET_RECEIVER_FILE_PATH,
+	F_SET_RECEIVER_FILE_NAME,
+	F_SET_RECEIVER_FILE_INDEX,
+	F_GET_RECEIVER_FRAME_INDEX,
+	F_GET_RECEIVER_FRAMES_CAUGHT,
+	F_ENABLE_RECEIVER_FILE_WRITE,
+	F_ENABLE_RECEIVER_MASTER_FILE_WRITE,
+	F_ENABLE_RECEIVER_OVERWRITE,
+	F_ENABLE_RECEIVER_TEN_GIGA,
+	F_SET_RECEIVER_FIFO_DEPTH,
+	F_RECEIVER_ACTIVATE,
+	F_STREAM_DATA_FROM_RECEIVER,
+	F_RECEIVER_STREAMING_TIMER,
+	F_SET_FLIPPED_DATA_RECEIVER,
+	F_SET_RECEIVER_FILE_FORMAT,
+	F_SEND_RECEIVER_DETPOSID,
+	F_SEND_RECEIVER_MULTIDETSIZE,
+	F_SET_RECEIVER_STREAMING_PORT,
+	F_RECEIVER_STREAMING_SRC_IP,
+	F_SET_RECEIVER_SILENT_MODE, 
+	F_ENABLE_GAPPIXELS_IN_RECEIVER,
+	F_RESTREAM_STOP_FROM_RECEIVER,
+	F_ADDITIONAL_JSON_HEADER,
+	F_GET_ADDITIONAL_JSON_HEADER,
+	F_RECEIVER_UDP_SOCK_BUF_SIZE,
+	F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE,
+	F_SET_RECEIVER_FRAMES_PER_FILE,
+	F_RECEIVER_CHECK_VERSION,
+	F_RECEIVER_DISCARD_POLICY,
+	F_RECEIVER_PADDING_ENABLE,
+	F_RECEIVER_DEACTIVATED_PADDING_ENABLE,
+	F_RECEIVER_SET_READOUT_MODE,
+	F_RECEIVER_SET_ADC_MASK,
+	F_SET_RECEIVER_DBIT_LIST,
+	F_GET_RECEIVER_DBIT_LIST,
+	F_RECEIVER_DBIT_OFFSET,
 	F_SET_RECEIVER_QUAD,
 	F_SET_RECEIVER_READ_N_LINES,
 	F_SET_RECEIVER_UDP_IP,
@@ -220,8 +256,38 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_RUN_STATUS:					return "F_GET_RUN_STATUS";
 	case F_START_AND_READ_ALL:				return "F_START_AND_READ_ALL";
 	case F_READ_ALL:						return "F_READ_ALL";
-	case F_SET_TIMER:						return "F_SET_TIMER";
-	case F_GET_TIME_LEFT:					return "F_GET_TIME_LEFT";
+	case F_GET_NUM_FRAMES:					return "F_GET_NUM_FRAMES";
+	case F_SET_NUM_FRAMES:					return "F_SET_NUM_FRAMES";
+	case F_GET_NUM_TRIGGERS:				return "F_GET_NUM_TRIGGERS";
+	case F_SET_NUM_TRIGGERS:				return "F_SET_NUM_TRIGGERS";
+	case F_GET_NUM_ADDITIONAL_STORAGE_CELLS:return "F_GET_NUM_ADDITIONAL_STORAGE_CELLS";
+	case F_SET_NUM_ADDITIONAL_STORAGE_CELLS:return "F_SET_NUM_ADDITIONAL_STORAGE_CELLS";
+	case F_GET_NUM_ANALOG_SAMPLES:			return "F_GET_NUM_ANALOG_SAMPLES";
+	case F_SET_NUM_ANALOG_SAMPLES:			return "F_SET_NUM_ANALOG_SAMPLES";
+	case F_GET_NUM_DIGITAL_SAMPLES:			return "F_GET_NUM_DIGITAL_SAMPLES";
+	case F_SET_NUM_DIGITAL_SAMPLES:			return "F_SET_NUM_DIGITAL_SAMPLES";
+	case F_GET_EXPTIME:						return "F_GET_EXPTIME";
+	case F_SET_EXPTIME:						return "F_SET_EXPTIME";
+	case F_GET_PERIOD:						return "F_GET_PERIOD";
+	case F_SET_PERIOD:						return "F_SET_PERIOD";
+	case F_GET_DELAY_AFTER_TRIGGER:			return "F_GET_DELAY_AFTER_TRIGGER";
+	case F_SET_DELAY_AFTER_TRIGGER:			return "F_SET_DELAY_AFTER_TRIGGER";
+	case F_GET_SUB_EXPTIME:					return "F_GET_SUB_EXPTIME";
+	case F_SET_SUB_EXPTIME:					return "F_SET_SUB_EXPTIME";
+	case F_GET_SUB_DEADTIME:				return "F_GET_SUB_DEADTIME";
+	case F_SET_SUB_DEADTIME:				return "F_SET_SUB_DEADTIME";
+	case F_GET_STORAGE_CELL_DELAY:			return "F_GET_STORAGE_CELL_DELAY";
+	case F_SET_STORAGE_CELL_DELAY:			return "F_SET_STORAGE_CELL_DELAY";
+	case F_GET_FRAMES_LEFT:					return "F_GET_FRAMES_LEFT";
+	case F_GET_TRIGGERS_LEFT:				return "F_GET_TRIGGERS_LEFT";
+	case F_GET_EXPTIME_LEFT:				return "F_GET_EXPTIME_LEFT";
+	case F_GET_PERIOD_LEFT:					return "F_GET_PERIOD_LEFT";
+	case F_GET_DELAY_AFTER_TRIGGER_LEFT:	return "F_GET_DELAY_AFTER_TRIGGER_LEFT";
+	case F_GET_MEASURED_PERIOD:				return "F_GET_MEASURED_PERIOD";
+	case F_GET_MEASURED_SUBPERIOD:			return "F_GET_MEASURED_SUBPERIOD";
+	case F_GET_FRAMES_FROM_START:			return "F_GET_FRAMES_FROM_START";
+	case F_GET_ACTUAL_TIME:					return "F_GET_ACTUAL_TIME";
+	case F_GET_MEASUREMENT_TIME:			return "F_GET_MEASUREMENT_TIME";
 	case F_SET_DYNAMIC_RANGE:				return "F_SET_DYNAMIC_RANGE";
 	case F_SET_ROI:							return "F_SET_ROI";
 	case F_GET_ROI:							return "F_GET_ROI";
@@ -336,7 +402,13 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_RECEIVER_TYPE: 				return "F_GET_RECEIVER_TYPE";
 	case F_SEND_RECEIVER_DETHOSTNAME:		return "F_SEND_RECEIVER_DETHOSTNAME";
 	case F_RECEIVER_SET_ROI: 				return "F_RECEIVER_SET_ROI";
-	case F_SET_RECEIVER_TIMER:  			return "F_SET_RECEIVER_TIMER";
+	case F_RECEIVER_SET_NUM_FRAMES:			return "F_RECEIVER_SET_NUM_FRAMES";
+	case F_RECEIVER_SET_NUM_ANALOG_SAMPLES:	return "F_RECEIVER_SET_NUM_ANALOG_SAMPLES";
+	case F_RECEIVER_SET_NUM_DIGITAL_SAMPLES:return "F_RECEIVER_SET_NUM_DIGITAL_SAMPLES";
+	case F_RECEIVER_SET_EXPTIME:			return "F_RECEIVER_SET_EXPTIME";
+	case F_RECEIVER_SET_PERIOD:				return "F_RECEIVER_SET_PERIOD";
+	case F_RECEIVER_SET_SUB_EXPTIME:		return "F_RECEIVER_SET_SUB_EXPTIME";
+	case F_RECEIVER_SET_SUB_DEADTIME:		return "F_RECEIVER_SET_SUB_DEADTIME";
 	case F_SET_RECEIVER_DYNAMIC_RANGE:  	return "F_SET_RECEIVER_DYNAMIC_RANGE";
 	case F_RECEIVER_STREAMING_FREQUENCY:	return "F_RECEIVER_STREAMING_FREQUENCY";
 	case F_GET_RECEIVER_STATUS:				return "F_GET_RECEIVER_STATUS";

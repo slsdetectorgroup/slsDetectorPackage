@@ -1363,14 +1363,14 @@ int Feb_Control_SetNExposures(unsigned int n_images) {
 	}
 
 	Feb_Control_nimages = n_images;
-	FILE_LOG(logINFO, ("Number of images set to %d\n",Feb_Control_nimages));
+	FILE_LOG(logDEBUG1, ("Number of images set to %d\n",Feb_Control_nimages));
 	return 1;
 }
 unsigned int Feb_Control_GetNExposures() {return Feb_Control_nimages;}
 
 int Feb_Control_SetExposureTime(double the_exposure_time_in_sec) {
 	Feb_Control_exposure_time_in_sec = the_exposure_time_in_sec;
-	FILE_LOG(logINFO, ("Exposure time set to %fs\n",Feb_Control_exposure_time_in_sec));
+	FILE_LOG(logDEBUG1, ("Exposure time set to %fs\n",Feb_Control_exposure_time_in_sec));
 	return 1;
 }
 double Feb_Control_GetExposureTime() {return Feb_Control_exposure_time_in_sec;}
@@ -1378,14 +1378,14 @@ int64_t Feb_Control_GetExposureTime_in_nsec() {return (int64_t)(Feb_Control_expo
 
 int Feb_Control_SetSubFrameExposureTime(int64_t the_subframe_exposure_time_in_10nsec) {
 	Feb_Control_subframe_exposure_time_in_10nsec = the_subframe_exposure_time_in_10nsec;
-	FILE_LOG(logINFO, ("Sub Frame Exposure time set to %lldns\n",(long long int)Feb_Control_subframe_exposure_time_in_10nsec * 10));
+	FILE_LOG(logDEBUG1, ("Sub Frame Exposure time set to %lldns\n",(long long int)Feb_Control_subframe_exposure_time_in_10nsec * 10));
 	return 1;
 }
 int64_t Feb_Control_GetSubFrameExposureTime() {return Feb_Control_subframe_exposure_time_in_10nsec*10;}
 
 int Feb_Control_SetSubFramePeriod(int64_t the_subframe_period_in_10nsec) {
 	Feb_Control_subframe_period_in_10nsec = the_subframe_period_in_10nsec;
-	FILE_LOG(logINFO, ("Sub Frame Period set to %lldns\n",(long long int)Feb_Control_subframe_period_in_10nsec * 10));
+	FILE_LOG(logDEBUG1, ("Sub Frame Period set to %lldns\n",(long long int)Feb_Control_subframe_period_in_10nsec * 10));
 	return 1;
 }
 int64_t Feb_Control_GetSubFramePeriod() {return Feb_Control_subframe_period_in_10nsec*10;}
@@ -1393,7 +1393,7 @@ int64_t Feb_Control_GetSubFramePeriod() {return Feb_Control_subframe_period_in_1
 
 int Feb_Control_SetExposurePeriod(double the_exposure_period_in_sec) {
 	Feb_Control_exposure_period_in_sec = the_exposure_period_in_sec;
-	FILE_LOG(logINFO, ("Exposure period set to %fs\n",Feb_Control_exposure_period_in_sec));
+	FILE_LOG(logDEBUG1, ("Exposure period set to %fs\n",Feb_Control_exposure_period_in_sec));
 	return 1;
 }
 double Feb_Control_GetExposurePeriod() {return Feb_Control_exposure_period_in_sec;}

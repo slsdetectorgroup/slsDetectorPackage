@@ -1006,10 +1006,10 @@ void multiSlsDetector::registerDataCallback(
     }
 }
 
-int multiSlsDetector::setTotalProgress() {
-    int nf = Parallel(&slsDetector::setTimer, {}, FRAME_NUMBER, -1)
+double multiSlsDetector::setTotalProgress() {
+    int64_t nf = Parallel(&slsDetector::getNumberOfFramesFromShm, {})
                  .tsquash("Inconsistent number of frames");
-    int nc = Parallel(&slsDetector::setTimer, {}, TRIGGER_NUMBER, -1)
+    int64_t nc = Parallel(&slsDetector::getNumberOfTriggersFromShm, {})
                  .tsquash("Inconsistent number of triggers");
     if (nf == 0 || nc == 0) {
         throw RuntimeError("Number of frames or triggers is 0");
@@ -1017,7 +1017,7 @@ int multiSlsDetector::setTotalProgress() {
 
     int ns = 1;
     if (multi_shm()->multiDetectorType == JUNGFRAU) {
-        ns = Parallel(&slsDetector::setTimer, {}, STORAGE_CELL_NUMBER, -1)
+        ns = Parallel(&slsDetector::getNumberOfAdditionalStorageCellsFromShm, {})
                  .tsquash("Inconsistent number of additional storage cells");
         ++ns;
     }
@@ -1030,23 +1030,23 @@ int multiSlsDetector::setTotalProgress() {
 
 double multiSlsDetector::getCurrentProgress() {
     std::lock_guard<std::mutex> lock(mp);
-    return 100. * ((double)progressIndex) / ((double)totalProgress);
+    return 100. * progressIndex / totalProgress;
 }
 
 void multiSlsDetector::incrementProgress() {
     std::lock_guard<std::mutex> lock(mp);
-    progressIndex++;
+    progressIndex += 1;
     std::cout << std::fixed << std::setprecision(2) << std::setw(6)
-              << 100. * ((double)progressIndex) / ((double)totalProgress)
+              << 100. * progressIndex / totalProgress
               << " \%";
     std::cout << '\r' << std::flush;
 }
 
-void multiSlsDetector::setCurrentProgress(int i) {
+void multiSlsDetector::setCurrentProgress(int64_t i) {
     std::lock_guard<std::mutex> lock(mp);
-    progressIndex = i;
+    progressIndex = (double)i;
     std::cout << std::fixed << std::setprecision(2) << std::setw(6)
-              << 100. * ((double)progressIndex) / ((double)totalProgress)
+              << 100. * progressIndex / totalProgress
               << " \%";
     std::cout << '\r' << std::flush;
 }
@@ -1148,7 +1148,7 @@ void multiSlsDetector::processData() {
         }
         // only update progress
         else {
-            int caught = -1;
+            int64_t caught = -1;
             while (true) {
                 // to exit acquire by typing q
                 if (kbhit() != 0) {

@@ -544,10 +544,10 @@ class CmdProxy {
                           {"exptime", &CmdProxy::exptime},
                           {"period", &CmdProxy::period},
                           {"delay", &CmdProxy::delay},
-                          {"delay", &CmdProxy::delay},
                           {"framesl", &CmdProxy::framesl},
                           {"triggersl", &CmdProxy::triggersl},
                           {"delayl", &CmdProxy::delayl},
+                          {"periodl", &CmdProxy::periodl},
                           {"speed", &CmdProxy::Speed},
                           {"adcphase", &CmdProxy::Adcphase},
                           {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
@@ -739,7 +739,6 @@ class CmdProxy {
                           {"roi", &CmdProxy::ROI},
                           {"clearroi", &CmdProxy::ClearROI},
                           {"exptimel", &CmdProxy::exptimel},
-                          {"periodl", &CmdProxy::periodl},
                           {"extsig", &CmdProxy::extsig},
                           {"imagetest", &CmdProxy::imagetest},
 
@@ -958,17 +957,20 @@ class CmdProxy {
                  "[duration] [(optional unit) ns|us|ms|s]\n\tPeriod between frames");
 
     TIME_COMMAND(delay, getDelayAfterTrigger, setDelayAfterTrigger,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Ctb] Delay after trigger");
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Ctb][Mythen3] Delay after trigger");
 
     GET_COMMAND(framesl, getNumberOfFramesLeft, 
-                "\n\t[Gotthard][Jungfrau][CTB] Number of frames left in acquisition.");       
+                "\n\t[Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] Number of frames left in acquisition.");       
 
     GET_COMMAND(triggersl, getNumberOfTriggersLeft, 
-                "\n\t[Gotthard][Jungfrau][CTB] Number of triggers left in acquisition.");       
+                "\n\t[Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] Number of triggers left in acquisition.");       
 
     TIME_GET_COMMAND(delayl, getDelayAfterTriggerLeft, 
-                "[(optional unit) ns|us|ms|s]\n\t[Gotthard][Jungfrau][CTB] DelayLeft Delay Left in Acquisition.");    
-                
+                "\n\t[Gotthard][Jungfrau][CTB] DelayLeft Delay Left in Acquisition.");    
+
+    TIME_GET_COMMAND(periodl, getPeriodLeft, 
+                "\n\t[Gotthard][Jungfrau][CTB] Period left for current frame.");   
+
     GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift, 
                 "\n\t[Jungfrau][CTB] Absolute maximum Phase shift of ADC clock.");  
 
@@ -1440,9 +1442,6 @@ class CmdProxy {
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft, 
                 "[(optional unit) ns|us|ms|s]\n\t[Gotthard] Exposure time left for current frame. ");   
-
-    TIME_GET_COMMAND(periodl, getPeriodLeft, 
-                "[(optional unit) ns|us|ms|s]\n\t[Gotthard] Period left for current frame.");   
 
     INTEGER_COMMAND(extsig, getExternalSignalFlags, setExternalSignalFlags, sls::StringTo<slsDetectorDefs::externalSignalFlag>,
                     "[trigger_in_rising_edge|trigger_in_falling_edge]\n\t[Gotthard] External signal mode for trigger timing mode.");

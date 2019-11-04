@@ -128,11 +128,11 @@ class Detector {
      *                                                *
      * ************************************************/
 
-    Result<int64_t> getNumberOfFrames() const;
+    Result<int64_t> getNumberOfFrames(Positions pos = {}) const;
 
     void setNumberOfFrames(int64_t value);
 
-    Result<int64_t> getNumberOfTriggers() const;
+    Result<int64_t> getNumberOfTriggers(Positions pos = {}) const;
 
     void setNumberOfTriggers(int64_t value);
 
@@ -144,20 +144,23 @@ class Detector {
 
     void setPeriod(ns t, Positions pos = {});
 
-    /** [Gotthard][Jungfrau] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] */
     Result<ns> getDelayAfterTrigger(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] */
     void setDelayAfterTrigger(ns value, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     Result<int64_t> getNumberOfFramesLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     Result<int64_t> getNumberOfTriggersLeft(Positions pos = {}) const;
 
     /** [Gotthard][Jungfrau][CTB] */
     Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
+
+    /** [Gotthard][Jungfrau][CTB] */
+    Result<ns> getPeriodLeft(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau] */
     Result<defs::speedLevel> getSpeed(Positions pos = {}) const;
@@ -277,7 +280,7 @@ class Detector {
 
     Result<defs::runStatus> getReceiverStatus(Positions pos = {}) const;
 
-    Result<int> getFramesCaught(Positions pos = {}) const;
+    Result<int64_t> getFramesCaught(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau] */
     Result<uint64_t> getStartingFrameNumber(Positions pos = {}) const;
@@ -806,10 +809,10 @@ class Detector {
     void setAutoCompDisable(bool value, Positions pos = {});
 
     /** [Jungfrau] Advanced TODO naming */
-    Result<int64_t> getNumberOfAdditionalStorageCells() const;
+    Result<int> getNumberOfAdditionalStorageCells(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced */
-    void setNumberOfAdditionalStorageCells(int64_t value);
+    void setNumberOfAdditionalStorageCells(int value);
 
     /** [Jungfrau] Advanced */
     Result<int> getStorageCellStart(Positions pos = {}) const;
@@ -849,9 +852,6 @@ class Detector {
     /** [Gotthard] */
     Result<ns> getExptimeLeft(Positions pos = {}) const;
 
-    /** [Gotthard]  */
-    Result<ns> getPeriodLeft(Positions pos = {}) const;
-
     /** [Gotthard] */
     Result<defs::externalSignalFlag>
     getExternalSignalFlags(Positions pos = {}) const;
@@ -874,16 +874,16 @@ class Detector {
      * ************************************************/
 
     /** [CTB] */
-    Result<int64_t> getNumberOfAnalogSamples(Positions pos = {}) const;
+    Result<int> getNumberOfAnalogSamples(Positions pos = {}) const;
 
     /** [CTB] */
-    void setNumberOfAnalogSamples(int64_t value, Positions pos = {});
+    void setNumberOfAnalogSamples(int value, Positions pos = {});
 
     /** [CTB] */
-    Result<int64_t> getNumberOfDigitalSamples(Positions pos = {}) const;
+    Result<int> getNumberOfDigitalSamples(Positions pos = {}) const;
 
     /** [CTB] */
-    void setNumberOfDigitalSamples(int64_t value, Positions pos = {});
+    void setNumberOfDigitalSamples(int value, Positions pos = {});
 
     /** [CTB] */
     Result<defs::readoutMode> getReadoutMode(Positions pos = {}) const;

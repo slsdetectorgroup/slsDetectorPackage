@@ -157,7 +157,13 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_GET_RECEIVER_TYPE]				=	&slsReceiverTCPIPInterface::set_detector_type;
 	flist[F_SEND_RECEIVER_DETHOSTNAME]		= 	&slsReceiverTCPIPInterface::set_detector_hostname;
 	flist[F_RECEIVER_SET_ROI]				=	&slsReceiverTCPIPInterface::set_roi;
-	flist[F_SET_RECEIVER_TIMER]				= 	&slsReceiverTCPIPInterface::set_timer;
+	flist[F_RECEIVER_SET_NUM_FRAMES]        =   &slsReceiverTCPIPInterface::set_num_frames;    
+	flist[F_RECEIVER_SET_NUM_ANALOG_SAMPLES]=   &slsReceiverTCPIPInterface::set_num_analog_samples;            
+	flist[F_RECEIVER_SET_NUM_DIGITAL_SAMPLES]=  &slsReceiverTCPIPInterface::set_num_digital_samples;           
+	flist[F_RECEIVER_SET_EXPTIME]           =   &slsReceiverTCPIPInterface::set_exptime;
+	flist[F_RECEIVER_SET_PERIOD]            =   &slsReceiverTCPIPInterface::set_period;
+	flist[F_RECEIVER_SET_SUB_EXPTIME]       =   &slsReceiverTCPIPInterface::set_subexptime;    
+	flist[F_RECEIVER_SET_SUB_DEADTIME]      =   &slsReceiverTCPIPInterface::set_subdeadtime;    
 	flist[F_SET_RECEIVER_DYNAMIC_RANGE]		= 	&slsReceiverTCPIPInterface::set_dynamic_range;
 	flist[F_RECEIVER_STREAMING_FREQUENCY]	= 	&slsReceiverTCPIPInterface::set_streaming_frequency;
 	flist[F_GET_RECEIVER_STATUS]			=	&slsReceiverTCPIPInterface::get_status;
@@ -208,8 +214,8 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_SET_RECEIVER_NUM_INTERFACES]    =   &slsReceiverTCPIPInterface::set_num_interfaces;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
-		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
-				getFunctionNameFromEnum((enum detFuncs)i) << ") located at " << flist[i];
+		// FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
+		// 		getFunctionNameFromEnum((enum detFuncs)i) << ") located at " << flist[i];
 	}
 
 	return OK;
@@ -222,21 +228,21 @@ int slsReceiverTCPIPInterface::decode_function(Interface &socket) {
         throw RuntimeError("Unrecognized Function enum " +
                            std::to_string(fnum) + "\n");
     } else {
-        FILE_LOG(logDEBUG1) << "calling function fnum: " << fnum << " ("
-                            << getFunctionNameFromEnum((enum detFuncs)fnum)
-                            << ")";
+        // FILE_LOG(logDEBUG1) << "calling function fnum: " << fnum << " ("
+        //                     << getFunctionNameFromEnum((enum detFuncs)fnum)
+        //                     << ")";
         ret = (this->*flist[fnum])(socket);
-        FILE_LOG(logDEBUG1)
-            << "Function " << getFunctionNameFromEnum((enum detFuncs)fnum)
-            << " finished";
+        // FILE_LOG(logDEBUG1)
+        //     << "Function " << getFunctionNameFromEnum((enum detFuncs)fnum)
+        //     << " finished";
     }
     return ret;
 }
 
 void slsReceiverTCPIPInterface::functionNotImplemented() {
     std::ostringstream os;
-    os << "Function: " << getFunctionNameFromEnum((enum detFuncs)fnum)
-       << ", is is not implemented for this detector";
+    // os << "Function: " << getFunctionNameFromEnum((enum detFuncs)fnum)
+    //    << ", is is not implemented for this detector";
     throw RuntimeError(os.str());
 }
 
@@ -268,8 +274,8 @@ void slsReceiverTCPIPInterface::VerifyLock() {
 
 void slsReceiverTCPIPInterface::VerifyIdle(Interface &socket) {
     if (impl()->getStatus() != IDLE) {
-        sprintf(mess, "Can not execute %s when receiver is not idle\n",
-                getFunctionNameFromEnum((enum detFuncs)fnum));
+        // sprintf(mess, "Can not execute %s when receiver is not idle\n",
+        //         getFunctionNameFromEnum((enum detFuncs)fnum));
         throw sls::SocketError(mess);
     }
 }
@@ -529,94 +535,61 @@ int slsReceiverTCPIPInterface::set_roi(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_timer(Interface &socket) {
-    auto ind = socket.Receive<int64_t>();
-    slsDetectorDefs::timerIndex index = static_cast<slsDetectorDefs::timerIndex>(ind);
+int slsReceiverTCPIPInterface::set_num_frames(Interface &socket) {
     auto value = socket.Receive<int64_t>();
-    if (value >= 0) {
-        FILE_LOG(logDEBUG1)
-            << "Setting timer index " << index << " to " << value;
-        switch (index) {
-        case ACQUISITION_TIME:
-            ret = impl()->setAcquisitionTime(value);
-            break;
-        case FRAME_PERIOD:
-            ret = impl()->setAcquisitionPeriod(value);
-            break;
-        case FRAME_NUMBER:
-        case TRIGGER_NUMBER:
-        case STORAGE_CELL_NUMBER:
-            impl()->setNumberOfFrames(value);
-            break;
-        case SUBFRAME_ACQUISITION_TIME:
-            impl()->setSubExpTime(value);
-            break;
-        case SUBFRAME_DEADTIME:
-            impl()->setSubPeriod(value + impl()->getSubExpTime());
-            break;
-        case ANALOG_SAMPLES:
-            if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
-                modeNotImplemented("(Analog Samples) Timer index",
-                                   static_cast<int>(index));
-                break;
-            }
-            impl()->setNumberofAnalogSamples(value);
-            break;
-        case DIGITAL_SAMPLES:
-            if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
-                modeNotImplemented("(Digital Samples) Timer index",
-                                   static_cast<int>(index));
-                break;
-            }
-            impl()->setNumberofDigitalSamples(value);
-            break;
-        default:
-            modeNotImplemented("Timer index", static_cast<int>(index));
-            break;
-        }
-    }
-    // get
-    int64_t retval = -1;
-    switch (index) {
-    case ACQUISITION_TIME:
-        retval = impl()->getAcquisitionTime();
-        break;
-    case FRAME_PERIOD:
-        retval = impl()->getAcquisitionPeriod();
-        break;
-    case FRAME_NUMBER:
-    case TRIGGER_NUMBER:
-    case STORAGE_CELL_NUMBER:
-        retval = impl()->getNumberOfFrames();
-        break;
-    case SUBFRAME_ACQUISITION_TIME:
-        retval = impl()->getSubExpTime();
-        break;
-    case SUBFRAME_DEADTIME:
-        retval = impl()->getSubPeriod() - impl()->getSubExpTime();
-        break;
-    case ANALOG_SAMPLES:
-        if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
-            throw RuntimeError("This timer mode (" + sls::ToString(index) +
-                               ") does not exist for this receiver type");
-        }
-        retval = impl()->getNumberofAnalogSamples();
-        break;
-    case DIGITAL_SAMPLES:
-        if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
-            throw RuntimeError("This timer mode (" + sls::ToString(index) +
-                               ") does not exist for this receiver type");
-        }
-        retval = impl()->getNumberofDigitalSamples();
-        break;
-    default:
-        modeNotImplemented("Timer index", static_cast<int>(index));
-        break;
-    }
-    validate(value, retval, "set timer", DEC);
-    FILE_LOG(logDEBUG1) << sls::ToString((index))
-                        << ":" << retval;
-    return socket.sendResult(retval);
+    FILE_LOG(logDEBUG1) << "Setting num frames to " << value;
+    impl()->setNumberOfFrames(value);
+    return socket.Send(OK);
+}
+
+int slsReceiverTCPIPInterface::set_num_analog_samples(Interface &socket) {
+    auto value = socket.Receive<int>();
+    FILE_LOG(logDEBUG1) << "Setting num analog samples to " << value;
+    if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
+        functionNotImplemented();
+    }    
+    ret = impl()->setNumberofAnalogSamples(value);
+
+    return socket.Send(OK);
+}
+
+int slsReceiverTCPIPInterface::set_num_digital_samples(Interface &socket) {
+    auto value = socket.Receive<int>();
+    FILE_LOG(logDEBUG1) << "Setting num digital samples to " << value;
+    if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
+        functionNotImplemented();
+    }    
+    ret = impl()->setNumberofDigitalSamples(value);
+    return socket.Send(OK);
+}
+
+int slsReceiverTCPIPInterface::set_exptime(Interface &socket) {
+    auto value = socket.Receive<int64_t>();
+    FILE_LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
+    impl()->setAcquisitionTime(value);
+    return socket.Send(OK);
+}
+
+int slsReceiverTCPIPInterface::set_period(Interface &socket) {
+    auto value = socket.Receive<int64_t>();
+    FILE_LOG(logDEBUG1) << "Setting period to " << value << "ns";
+    impl()->setAcquisitionPeriod(value);
+    return socket.Send(OK);
+}
+
+int slsReceiverTCPIPInterface::set_subexptime(Interface &socket) {
+    auto value = socket.Receive<int64_t>();
+    FILE_LOG(logDEBUG1) << "Setting period to " << value << "ns";
+    impl()->setSubExpTime(value);
+    return socket.Send(OK);
+}
+
+int slsReceiverTCPIPInterface::set_subdeadtime(Interface &socket) {
+    auto value = socket.Receive<int64_t>();
+    FILE_LOG(logDEBUG1) << "Setting sub deadtime to " << value << "ns";
+    impl()->setSubPeriod(value + impl()->getSubExpTime());
+    FILE_LOG(logDEBUG1) << "Setting sub period to " << impl()->getSubPeriod() << "ns";    
+    return socket.Send(OK);
 }
 
 int slsReceiverTCPIPInterface::set_dynamic_range(Interface &socket) {
@@ -757,7 +730,7 @@ int slsReceiverTCPIPInterface::get_frame_index(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::get_frames_caught(Interface &socket) {
-    int retval = impl()->getFramesCaught();
+    int64_t retval = impl()->getFramesCaught();
     FILE_LOG(logDEBUG1) << "frames caught:" << retval;
     return socket.sendResult(retval);
 }

@@ -159,8 +159,26 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
     /** set roi */
     int set_roi(sls::ServerInterface2 &socket);
 
-    /** set acquisition period, frame number etc */
-    int set_timer(sls::ServerInterface2 &socket);
+    /** set num frames */
+    int set_num_frames(sls::ServerInterface2 &socket);
+
+    /** set num analog samples */
+    int set_num_analog_samples(sls::ServerInterface2 &socket);
+
+    /** set num digital samples */
+    int set_num_digital_samples(sls::ServerInterface2 &socket);
+
+    /** set exptime */
+    int set_exptime(sls::ServerInterface2 &socket);
+
+    /** set period */
+    int set_period(sls::ServerInterface2 &socket);
+
+    /** set subexptime */
+    int set_subexptime(sls::ServerInterface2 &socket);
+
+    /** set subdeadtime */
+    int set_subdeadtime(sls::ServerInterface2 &socket);
 
     /** set dynamic range  */
     int set_dynamic_range(sls::ServerInterface2 &socket);

@@ -114,29 +114,6 @@ const char* getRetName() {
 	}
 }
 
-const char* getTimerName(enum timerIndex ind) {
-    switch (ind) {
-    case FRAME_NUMBER:              return "frame_number";
-    case ACQUISITION_TIME:          return "acquisition_time";
-    case FRAME_PERIOD:              return "frame_period";
-    case DELAY_AFTER_TRIGGER:       return "delay_after_trigger";
-    case TRIGGER_NUMBER:             return "triggers_number";
-    case ACTUAL_TIME:               return "actual_time";
-    case MEASUREMENT_TIME:          return "measurement_time";
-    case PROGRESS:                  return "progress";
-    case FRAMES_FROM_START:         return "frames_from_start";
-    case FRAMES_FROM_START_PG:      return "frames_from_start_pg";
-    case ANALOG_SAMPLES:            return "analog_samples";
-	case DIGITAL_SAMPLES:           return "digital_samples";
-    case SUBFRAME_ACQUISITION_TIME: return "subframe_acquisition_time";
-    case SUBFRAME_DEADTIME:         return "subframe_deadtime";
-    case STORAGE_CELL_NUMBER:       return "storage_cell_number";
-    case STORAGE_CELL_DELAY:		return "storage_cell_delay";
-    default:                        return "unknown_timer";
-    }
-}
-
-
 const char* getSpeedName(enum speedVariable ind) {
     switch (ind) {
     case CLOCK_DIVIDER:  return "clock_divider";
@@ -188,8 +165,38 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_RUN_STATUS:					return "F_GET_RUN_STATUS";
 	case F_START_AND_READ_ALL:				return "F_START_AND_READ_ALL";
 	case F_READ_ALL:						return "F_READ_ALL";
-	case F_SET_TIMER:						return "F_SET_TIMER";
-	case F_GET_TIME_LEFT:					return "F_GET_TIME_LEFT";
+	case F_GET_NUM_FRAMES:					return "F_GET_NUM_FRAMES";
+	case F_SET_NUM_FRAMES:					return "F_SET_NUM_FRAMES";
+	case F_GET_NUM_TRIGGERS:				return "F_GET_NUM_TRIGGERS";
+	case F_SET_NUM_TRIGGERS:				return "F_SET_NUM_TRIGGERS";
+	case F_GET_NUM_ADDITIONAL_STORAGE_CELLS:return "F_GET_NUM_ADDITIONAL_STORAGE_CELLS";
+	case F_SET_NUM_ADDITIONAL_STORAGE_CELLS:return "F_SET_NUM_ADDITIONAL_STORAGE_CELLS";
+	case F_GET_NUM_ANALOG_SAMPLES:			return "F_GET_NUM_ANALOG_SAMPLES";
+	case F_SET_NUM_ANALOG_SAMPLES:			return "F_SET_NUM_ANALOG_SAMPLES";
+	case F_GET_NUM_DIGITAL_SAMPLES:			return "F_GET_NUM_DIGITAL_SAMPLES";
+	case F_SET_NUM_DIGITAL_SAMPLES:			return "F_SET_NUM_DIGITAL_SAMPLES";
+	case F_GET_EXPTIME:						return "F_GET_EXPTIME";
+	case F_SET_EXPTIME:						return "F_SET_EXPTIME";
+	case F_GET_PERIOD:						return "F_GET_PERIOD";
+	case F_SET_PERIOD:						return "F_SET_PERIOD";
+	case F_GET_DELAY_AFTER_TRIGGER:			return "F_GET_DELAY_AFTER_TRIGGER";
+	case F_SET_DELAY_AFTER_TRIGGER:			return "F_SET_DELAY_AFTER_TRIGGER";
+	case F_GET_SUB_EXPTIME:					return "F_GET_SUB_EXPTIME";
+	case F_SET_SUB_EXPTIME:					return "F_SET_SUB_EXPTIME";
+	case F_GET_SUB_DEADTIME:				return "F_GET_SUB_DEADTIME";
+	case F_SET_SUB_DEADTIME:				return "F_SET_SUB_DEADTIME";
+	case F_GET_STORAGE_CELL_DELAY:			return "F_GET_STORAGE_CELL_DELAY";
+	case F_SET_STORAGE_CELL_DELAY:			return "F_SET_STORAGE_CELL_DELAY";
+	case F_GET_FRAMES_LEFT:					return "F_GET_FRAMES_LEFT";
+	case F_GET_TRIGGERS_LEFT:				return "F_GET_TRIGGERS_LEFT";
+	case F_GET_EXPTIME_LEFT:				return "F_GET_EXPTIME_LEFT";
+	case F_GET_PERIOD_LEFT:					return "F_GET_PERIOD_LEFT";
+	case F_GET_DELAY_AFTER_TRIGGER_LEFT:	return "F_GET_DELAY_AFTER_TRIGGER_LEFT";
+	case F_GET_MEASURED_PERIOD:				return "F_GET_MEASURED_PERIOD";
+	case F_GET_MEASURED_SUBPERIOD:			return "F_GET_MEASURED_SUBPERIOD";
+	case F_GET_FRAMES_FROM_START:			return "F_GET_FRAMES_FROM_START";
+	case F_GET_ACTUAL_TIME:					return "F_GET_ACTUAL_TIME";
+	case F_GET_MEASUREMENT_TIME:			return "F_GET_MEASUREMENT_TIME";
 	case F_SET_DYNAMIC_RANGE:				return "F_SET_DYNAMIC_RANGE";
 	case F_SET_ROI:							return "F_SET_ROI";
 	case F_GET_ROI:							return "F_GET_ROI";
@@ -317,8 +324,38 @@ void function_table() {
 	flist[F_GET_RUN_STATUS]						= &get_run_status;
 	flist[F_START_AND_READ_ALL]					= &start_and_read_all;
 	flist[F_READ_ALL]							= &read_all;
-	flist[F_SET_TIMER]							= &set_timer;
-	flist[F_GET_TIME_LEFT]						= &get_time_left;
+    flist[F_GET_NUM_FRAMES]						= &get_num_frames;
+	flist[F_SET_NUM_FRAMES]						= &set_num_frames;
+	flist[F_GET_NUM_TRIGGERS]					= &get_num_triggers;
+	flist[F_SET_NUM_TRIGGERS]					= &set_num_triggers;
+	flist[F_GET_NUM_ADDITIONAL_STORAGE_CELLS]	= &get_num_additional_storage_cells;
+	flist[F_SET_NUM_ADDITIONAL_STORAGE_CELLS]	= &set_num_additional_storage_cells;
+	flist[F_GET_NUM_ANALOG_SAMPLES]				= &get_num_analog_samples;
+	flist[F_SET_NUM_ANALOG_SAMPLES]				= &set_num_analog_samples;
+	flist[F_GET_NUM_DIGITAL_SAMPLES]			= &get_num_digital_samples;
+	flist[F_SET_NUM_DIGITAL_SAMPLES]			= &set_num_digital_samples;
+	flist[F_GET_EXPTIME]						= &get_exptime;
+	flist[F_SET_EXPTIME]						= &set_exptime;
+	flist[F_GET_PERIOD]							= &get_period;
+	flist[F_SET_PERIOD]							= &set_period;
+	flist[F_GET_DELAY_AFTER_TRIGGER]			= &get_delay_after_trigger; 
+	flist[F_SET_DELAY_AFTER_TRIGGER]			= &set_delay_after_trigger;
+	flist[F_GET_SUB_EXPTIME]					= &get_sub_exptime;
+	flist[F_SET_SUB_EXPTIME]					= &set_sub_exptime;
+	flist[F_GET_SUB_DEADTIME]					= &get_sub_deadtime;
+	flist[F_SET_SUB_DEADTIME]					= &set_sub_deadtime;
+	flist[F_GET_STORAGE_CELL_DELAY]				= &get_storage_cell_delay;
+	flist[F_SET_STORAGE_CELL_DELAY]				= &set_storage_cell_delay;
+	flist[F_GET_FRAMES_LEFT]					= &get_frames_left;
+	flist[F_GET_TRIGGERS_LEFT]					= &get_triggers_left;
+	flist[F_GET_EXPTIME_LEFT]					= &get_exptime_left;
+	flist[F_GET_PERIOD_LEFT]					= &get_period_left;
+	flist[F_GET_DELAY_AFTER_TRIGGER_LEFT]		= &get_delay_after_trigger_left;
+	flist[F_GET_MEASURED_PERIOD]				= &get_measured_period;
+	flist[F_GET_MEASURED_SUBPERIOD]				= &get_measured_subperiod;
+	flist[F_GET_FRAMES_FROM_START]				= &get_frames_from_start;
+	flist[F_GET_ACTUAL_TIME]					= &get_actual_time;
+	flist[F_GET_MEASUREMENT_TIME]				= &get_measurement_time;
 	flist[F_SET_DYNAMIC_RANGE]					= &set_dynamic_range;
 	flist[F_SET_ROI]							= &set_roi;
 	flist[F_GET_ROI]							= &get_roi;
@@ -1845,219 +1882,599 @@ int read_all(int file_des) {
 
 
 
-
-
-
-int set_timer(int file_des) {
+int get_num_frames(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int64_t args[2] = {-1,-1};
 	int64_t retval = -1;
 
-	if (receiveData(file_des, args, sizeof(args), INT64) < 0)
-		return printSocketReadError();
-	enum timerIndex ind = (int)args[0];
-	int64_t tns = args[1];
-	char timerName[50] = {0};
-	strcpy(timerName, getTimerName(ind));
-#ifdef EIGERD
-	int64_t subexptime = 0;
-#endif
-	FILE_LOG(logDEBUG1, ("Setting timer %s(%d) to %lld ns\n", timerName, (int)ind, tns));
-
-	// set & get
-	if ((tns == -1) || (Server_VerifyLock() == OK)) {
-
-	    // check index
-	    switch (ind) {
-	    case FRAME_NUMBER:
-	    case ACQUISITION_TIME:
-	    case FRAME_PERIOD:
-	    case TRIGGER_NUMBER:
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	    case ANALOG_SAMPLES:
-		case DIGITAL_SAMPLES:
-#endif
-#if !defined(EIGERD) && !defined(GOTTHARD2D)
-	    case DELAY_AFTER_TRIGGER:
-#endif
-	        retval = setTimer(ind, tns);
-	        break;
-#ifdef JUNGFRAUD
-	    case STORAGE_CELL_NUMBER:
-	        if (tns > MAX_STORAGE_CELL_VAL) {
-	            ret = FAIL;
-	            strcpy(mess,"Max Storage cell number should not exceed 15\n");
-	            FILE_LOG(logERROR,(mess));
-	            break;
-	        }
-	        retval = setTimer(ind,tns);
-	        break;
-
-	    case STORAGE_CELL_DELAY:
-	        if (tns > MAX_STORAGE_CELL_DLY_NS_VAL) {
-	            ret = FAIL;
-	            sprintf(mess,"Max Storage cell delay value should not exceed %lld ns\n", (long long unsigned int)MAX_STORAGE_CELL_DLY_NS_VAL);
-	            FILE_LOG(logERROR,(mess));
-	            break;
-	        }
-	        retval = setTimer(ind,tns);
-	        break;
-#endif
-#ifdef EIGERD
-	    case SUBFRAME_ACQUISITION_TIME:
-	        if (tns > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ) {
-	            ret = FAIL;
-	            strcpy(mess,"Sub Frame exposure time should not exceed 5.368 seconds\n");
-	            FILE_LOG(logERROR,(mess));
-	            break;
-	        }
-	        retval = setTimer(ind,tns);
-	        break;
-	    case SUBFRAME_DEADTIME:
-	        subexptime = setTimer(SUBFRAME_ACQUISITION_TIME, -1);
-	        if ((tns + subexptime) > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ) {
-	            ret = FAIL;
-	            sprintf(mess,"Sub Frame Period should not exceed 5.368 seconds. "
-	                    "So sub frame dead time should not exceed %lfu seconds "
-	                    "(subexptime = %lf seconds)\n",
-	                    ((((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) - subexptime)/1E9),
-	                    (subexptime/1E9));
-	            FILE_LOG(logERROR,(mess));
-	            break;
-	        }
-	        retval = setTimer(ind,tns);
-	        break;
-#endif
-	    default:
-	        modeNotImplemented(timerName, (int)ind);
-	        break;
-	    }
-
-	    // validate
-	    if (ret != FAIL) {
-	        char vtimerName[50] = {0};
-	        sprintf(vtimerName, "set %s", timerName);
-#ifdef EIGERD
-	        validate64(tns, retval, vtimerName, DEC); // copied to server, not read from detector register
-#else
-	        switch(ind) {
-	        case FRAME_NUMBER:
-	        case TRIGGER_NUMBER:
-	        case STORAGE_CELL_NUMBER:
-	            validate64(tns, retval, vtimerName, DEC); // no conversion, so all good
-	            break;
-			case ANALOG_SAMPLES:
-	        case DIGITAL_SAMPLES:
-	            if (retval == -1) {
-	                ret = FAIL;
-	                retval = setTimer(ind, -1);
-	                sprintf(mess, "Could not %s to %lld. Could not allocate RAM\n",
-	                       vtimerName, (long long unsigned int)tns);
-	                FILE_LOG(logERROR,(mess));
-	            } else
-	                validate64(tns, retval, vtimerName, DEC); // no conversion, so all good
-	        case ACQUISITION_TIME:
-	        case FRAME_PERIOD:
-	        case DELAY_AFTER_TRIGGER:
-	        case SUBFRAME_ACQUISITION_TIME:
-	        case SUBFRAME_DEADTIME:
-	        case STORAGE_CELL_DELAY:
-	            // losing precision due to conversion to clock (also gotthard master delay is different)
-	            if (validateTimer(ind, tns, retval) == FAIL) {
-	                ret = FAIL;
-	                sprintf(mess, "Could not %s. Set %lld, but read %lld\n", vtimerName,
-	                        (long long unsigned int)tns, (long long unsigned int)retval);
-	                FILE_LOG(logERROR,(mess));
-	            }
-	            break;
-
-	        default:
-	            break;
-	        }
-#endif
-	    }
-	}
-	if (ret != FAIL) {
-		FILE_LOG(logDEBUG1, ("Timer index %d: %lld\n", ind, retval));
-	}
+	// get only
+	retval = getNumFrames();
+	FILE_LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
 	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
 }
 
+int set_num_frames(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t arg = -1;
 
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting number of frames %lld\n", (long long int)arg));
 
-
-
-
-
-int get_time_left(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    enum timerIndex ind = -1;
-    int64_t retval = -1;
-
-    if (receiveData(file_des, &ind, sizeof(ind), INT32) < 0)
-        return printSocketReadError();
-    FILE_LOG(logDEBUG1, ("Getting timer left index %d\n", ind));
-
-    // only get
-    // check index
-    if (ret == OK) {
-        switch(ind) {
-#ifdef EIGERD
-        case MEASURED_PERIOD:
-        case MEASURED_SUBPERIOD:
-#elif JUNGFRAUD
-        case FRAMES_FROM_START:
-        case FRAMES_FROM_START_PG:
-        case ACTUAL_TIME:
-        case MEASUREMENT_TIME:
-        case FRAME_NUMBER:
-        case FRAME_PERIOD:
-        case DELAY_AFTER_TRIGGER:
-        case TRIGGER_NUMBER:
-#elif GOTTHARDD
-        case ACQUISITION_TIME:
-        case FRAME_NUMBER:
-        case FRAME_PERIOD:
-        case DELAY_AFTER_TRIGGER:
-        case TRIGGER_NUMBER:
-#elif CHIPTESTBOARDD
-        case FRAMES_FROM_START:
-        case FRAMES_FROM_START_PG:
-        case ACTUAL_TIME:
-        case MEASUREMENT_TIME:
-        case FRAME_NUMBER:
-        case FRAME_PERIOD:
-        case DELAY_AFTER_TRIGGER:
-        case TRIGGER_NUMBER:
-#elif MOENCHD
-        case FRAMES_FROM_START:
-        case FRAMES_FROM_START_PG:
-        case ACTUAL_TIME:
-        case MEASUREMENT_TIME:
-        case FRAME_NUMBER:
-        case FRAME_PERIOD:
-        case DELAY_AFTER_TRIGGER:
-        case TRIGGER_NUMBER:
-#elif MYTHEN3D
-		case FRAME_NUMBER:
-		case TRIGGER_NUMBER:
-#elif GOTTHARD2D
-		case FRAME_NUMBER:
-		case TRIGGER_NUMBER:		
-#endif
-            retval = getTimeLeft(ind);
-            FILE_LOG(logDEBUG1, ("Timer left index %d: %lld\n", ind, retval));
-            break;
-        default:
-            modeNotImplemented("Timer left index", (int)ind);
-            break;
-        }
-    }
-    return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	// only set
+	if (Server_VerifyLock() == OK) {
+		setNumFrames(arg); 
+		int64_t retval = getNumFrames();
+		FILE_LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
+		validate64(arg, retval, "set number of frames", DEC);
+	}
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
 }
 
+int get_num_triggers(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+	// get only
+	retval = getNumTriggers();
+	FILE_LOG(logDEBUG1, ("retval num triggers %lld\n", (long long int)retval));
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int set_num_triggers(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting number of triggers %lld\n", (long long int)arg));
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		setNumTriggers(arg); 
+		int64_t retval = getNumTriggers();
+		FILE_LOG(logDEBUG1, ("retval num triggers %lld\n", (long long int)retval));
+		validate64(arg, retval, "set number of triggers", DEC);
+	}
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_num_additional_storage_cells(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getNumAdditionalStorageCells();
+	FILE_LOG(logDEBUG1, ("retval num addl. storage cells %d\n", retval));
+#endif	
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+int set_num_additional_storage_cells(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting number of addl. storage cells %d\n", arg));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else	
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (arg > MAX_STORAGE_CELL_VAL) {
+			ret = FAIL;
+	        sprintf(mess,"Max Storage cell number should not exceed %d\n", MAX_STORAGE_CELL_VAL);
+	        FILE_LOG(logERROR,(mess));
+		} else {
+			setNumAdditionalStorageCells(arg); 
+			int retval = getNumAdditionalStorageCells();
+			FILE_LOG(logDEBUG1, ("retval num addl. storage cells %d\n", retval));
+			validate(arg, retval, "set number of additional storage cells", DEC);
+			}
+	}
+#endif	
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_num_analog_samples(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getNumAnalogSamples();
+	FILE_LOG(logDEBUG1, ("retval num analog samples %d\n", retval));
+#endif	
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+int set_num_analog_samples(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting number of analog samples %d\n", arg));
+
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+	functionNotImplemented();
+#else	
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = setNumAnalogSamples(arg); 
+		if (ret == FAIL) {
+			sprintf(mess, "Could not set number of analog samples to %d. Could not allocate RAM\n", arg);
+	        FILE_LOG(logERROR,(mess));
+		} else {
+			int retval = getNumAnalogSamples();
+			FILE_LOG(logDEBUG1, ("retval num analog samples %d\n", retval));
+			validate(arg, retval, "set number of analog samples", DEC);
+		}
+	}
+#endif	
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_num_digital_samples(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getNumDigitalSamples();
+	FILE_LOG(logDEBUG1, ("retval num digital samples %d\n", retval));
+#endif	
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+int set_num_digital_samples(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting number of digital samples %d\n", arg));
+
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+	functionNotImplemented();
+#else	
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = setNumDigitalSamples(arg); 
+		if (ret == FAIL) {
+			sprintf(mess, "Could not set number of digital samples to %d. Could not allocate RAM\n", arg);
+	        FILE_LOG(logERROR,(mess));
+		} else {
+			int retval = getNumDigitalSamples();
+			FILE_LOG(logDEBUG1, ("retval num digital samples %d\n", retval));
+			validate(arg, retval, "set number of digital samples", DEC);
+		}
+	}
+#endif	
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_exptime(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+	// get only
+	retval = getExpTime();
+	FILE_LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int set_exptime(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting exptime %lld ns\n", (long long int)arg));
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = setExpTime(arg); 
+		int64_t retval = getExpTime();
+		FILE_LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
+		if (ret == FAIL) {
+			sprintf(mess, "Could not set exposure time. Set %lld ns, read %lld ns.\n", (long long int)arg, (long long int)retval);
+	        FILE_LOG(logERROR,(mess));			
+		}
+	}
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_period(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+	// get only
+	retval = getPeriod();
+	FILE_LOG(logDEBUG1, ("retval period %lld ns\n", (long long int)retval));
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int set_period(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting period %lld ns\n", (long long int)arg));
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = setPeriod(arg); 
+		int64_t retval = getPeriod();
+		FILE_LOG(logDEBUG1, ("retval period %lld ns\n", (long long int)retval));
+		if (ret == FAIL) {
+			sprintf(mess, "Could not set period. Set %lld ns, read %lld ns.\n", (long long int)arg, (long long int)retval);
+	        FILE_LOG(logERROR,(mess));			
+		}
+	}
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_delay_after_trigger(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getDelayAfterTrigger();
+	FILE_LOG(logDEBUG1, ("retval delay after trigger %lld ns\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int set_delay_after_trigger(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting delay after trigger %lld ns\n", (long long int)arg));
+
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+	functionNotImplemented();
+#else	
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = setDelayAfterTrigger(arg); 
+		int64_t retval = getDelayAfterTrigger();
+		FILE_LOG(logDEBUG1, ("retval delay after trigger %lld ns\n", (long long int)retval));
+		if (ret == FAIL) {
+			sprintf(mess, "Could not set delay after trigger. Set %lld ns, read %lld ns.\n", (long long int)arg, (long long int)retval);
+	        FILE_LOG(logERROR,(mess));			
+		}
+	}
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_sub_exptime(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getSubExpTime();
+	FILE_LOG(logDEBUG1, ("retval subexptime %lld ns\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int set_sub_exptime(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting subexptime %lld ns\n", (long long int)arg));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (arg > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ) {
+			ret = FAIL;
+			sprintf(mess,"Sub Frame exposure time should not exceed %lf seconds\n", ((double)((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS * 10)/ (double)(1E9)));
+			FILE_LOG(logERROR,(mess));
+		} else {
+			ret = setSubExpTime(arg); 
+			int64_t retval = getSubExpTime();
+			FILE_LOG(logDEBUG1, ("retval subexptime %lld ns\n", (long long int)retval));
+			if (ret == FAIL) {
+				sprintf(mess, "Could not set subframe exposure time. Set %lld ns, read %lld ns.\n", (long long int)arg, (long long int)retval);
+				FILE_LOG(logERROR,(mess));			
+			}
+		}
+	}
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_sub_deadtime(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getDeadTime();
+	FILE_LOG(logDEBUG1, ("retval subdeadtime %lld ns\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int set_sub_deadtime(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting subdeadtime %lld ns\n", (long long int)arg));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// only set
+	if (Server_VerifyLock() == OK) {
+		int64_t subexptime = getSubExpTime();
+		if ((arg + subexptime) > ((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) ) {
+			ret = FAIL;
+			sprintf(mess,"Sub Frame Period should not exceed %lf seconds. "
+					"So sub frame dead time should not exceed %lf seconds "
+					"(subexptime = %lf seconds)\n", 
+					((double)((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS * 10)/ (double)(1E9)),
+					((double)(((int64_t)MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS*10) - subexptime)/(double)1E9),
+					((double)subexptime/(double)1E9));
+			FILE_LOG(logERROR,(mess));
+		} else {			
+			ret = setDeadTime(arg); 
+			int64_t retval = getDeadTime();
+			FILE_LOG(logDEBUG1, ("retval subdeadtime %lld ns\n", (long long int)retval));
+			if (ret == FAIL) {
+				sprintf(mess, "Could not set subframe dead time. Set %lld ns, read %lld ns.\n", (long long int)arg, (long long int)retval);
+				FILE_LOG(logERROR,(mess));			
+			}
+		}
+	}
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_storage_cell_delay(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getStorageCellDelay();
+	FILE_LOG(logDEBUG1, ("retval storage cell delay %lld ns\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int set_storage_cell_delay(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting storage cell delay %lld ns\n", (long long int)arg));
+
+#ifndef JUNGFRAUD
+	functionNotImplemented();
+#else	
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (arg > MAX_STORAGE_CELL_DLY_NS_VAL) {
+			ret = FAIL;
+			sprintf(mess,"Max Storage cell delay value should not exceed %lld ns\n", (long long unsigned int)MAX_STORAGE_CELL_DLY_NS_VAL);
+			FILE_LOG(logERROR,(mess));
+		} else {	
+			ret = setStorageCellDelay(arg); 
+			int64_t retval = getStorageCellDelay();
+			FILE_LOG(logDEBUG1, ("retval storage cell delay %lld ns\n", (long long int)retval));
+			if (ret == FAIL) {
+				sprintf(mess, "Could not set storage cell delay. Set %lld ns, read %lld ns.\n", (long long int)arg, (long long int)retval);
+				FILE_LOG(logERROR,(mess));			
+			}
+		}
+	}
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_frames_left(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getNumFramesLeft();
+	FILE_LOG(logDEBUG1, ("retval num frames left %lld\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int get_triggers_left(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getNumTriggersLeft();
+	FILE_LOG(logDEBUG1, ("retval num triggers left %lld\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int get_exptime_left(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#ifndef GOTTHARDD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getExpTimeLeft();
+	FILE_LOG(logDEBUG1, ("retval exptime left %lld ns\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int get_period_left(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getPeriodLeft();
+	FILE_LOG(logDEBUG1, ("retval period left %lld ns\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int get_delay_after_trigger_left(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getDelayAfterTriggerLeft();
+	FILE_LOG(logDEBUG1, ("retval delay after trigger left %lld ns\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int get_measured_period(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getMeasuredPeriod();
+	FILE_LOG(logDEBUG1, ("retval measured period %lld ns\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int get_measured_subperiod(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getMeasuredSubPeriod();
+	FILE_LOG(logDEBUG1, ("retval measured sub period %lld ns\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int get_frames_from_start(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getFramesFromStart();
+	FILE_LOG(logDEBUG1, ("retval frames from start %lld\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int get_actual_time(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getActualTime();
+	FILE_LOG(logDEBUG1, ("retval actual time %lld ns\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int get_measurement_time(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getMeasurementTime();
+	FILE_LOG(logDEBUG1, ("retval measurement time %lld ns\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
 
 
 
@@ -2416,51 +2833,19 @@ int send_update(int file_des) {
 #endif
 
 	// #frames
-	i64 = setTimer(FRAME_NUMBER,GET_FLAG);
+	i64 = getNumFrames();
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
-
-	// exptime
-	i64 = setTimer(ACQUISITION_TIME,GET_FLAG);
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-
-	// subexptime, subdeadtime
-#ifdef EIGERD
-	i64 = setTimer(SUBFRAME_ACQUISITION_TIME,GET_FLAG);
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-
-	i64 = setTimer(SUBFRAME_DEADTIME,GET_FLAG);
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-#endif
-
-	// period
-	i64 = setTimer(FRAME_PERIOD,GET_FLAG);
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-
-	// delay
-#if !defined(EIGERD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
-	i64 = setTimer(DELAY_AFTER_TRIGGER,GET_FLAG);
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-#endif
 
 	// #storage cell, storage_cell_delay
 #ifdef JUNGFRAUD
-	i64 = setTimer(STORAGE_CELL_NUMBER,GET_FLAG);
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-
-	i64 = setTimer(STORAGE_CELL_DELAY,GET_FLAG);
+	i64 = getNumAdditionalStorageCells();
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 #endif
 
 	// #triggers
-	i64 = setTimer(TRIGGER_NUMBER,GET_FLAG);
+	i64 = getNumTriggers();
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
@@ -2479,16 +2864,6 @@ int send_update(int file_des) {
 #endif
 	
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	// #analog samples
-    i64 = setTimer(ANALOG_SAMPLES,GET_FLAG);
-    n = sendData(file_des,&i64,sizeof(i64),INT64);
-    if (n < 0) return printSocketReadError();
-
-	// #digital samples
-    i64 = setTimer(DIGITAL_SAMPLES,GET_FLAG);
-    n = sendData(file_des,&i64,sizeof(i64),INT64);
-    if (n < 0) return printSocketReadError();
-
 	// adcmask
     i32 = getADCEnableMask();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);

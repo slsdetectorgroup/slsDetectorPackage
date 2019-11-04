@@ -386,13 +386,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      */
     int processImageWithGapPixels(char *image, char *&gpImage, bool quadEnable);
 
-    int setTotalProgress();
+    double setTotalProgress();
 
     double getCurrentProgress();
 
     void incrementProgress();
 
-    void setCurrentProgress(int i = 0);
+    void setCurrentProgress(int64_t i = 0);
 
     void startProcessingThread();
 
@@ -446,10 +446,10 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     sem_t sem_endRTAcquisition;
 
     /** Total number of frames/images for next acquisition */
-    int totalProgress{0};
+    double totalProgress{0};
 
     /** Current progress or frames/images processed in current acquisition */
-    int progressIndex{0};
+    double progressIndex{0};
 
     /** mutex to synchronize main and data processing threads */
     mutable std::mutex mp;

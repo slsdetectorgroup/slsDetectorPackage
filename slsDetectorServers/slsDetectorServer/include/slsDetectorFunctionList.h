@@ -182,11 +182,56 @@ int         selectStoragecellStart(int pos);
 int 		setStartingFrameNumber(uint64_t value);
 int			getStartingFrameNumber(uint64_t* value);
 #endif
-int64_t 	setTimer(enum timerIndex ind, int64_t val);
-int64_t 	getTimeLeft(enum timerIndex ind);
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
-int         validateTimer(enum timerIndex ind, int64_t val, int64_t retval);
+void		setNumFrames(int64_t val);
+int64_t 	getNumFrames();
+void		setNumTriggers(int64_t val);
+int64_t 	getNumTriggers();
+int			setExpTime(int64_t val);
+int64_t 	getExpTime();
+int			setPeriod(int64_t val);
+int64_t 	getPeriod();
+#ifdef EIGERD
+int			setSubExpTime(int64_t val);
+int64_t 	getSubExpTime();
+int			setDeadTime(int64_t val);
+int64_t 	getDeadTime();
+int64_t		getMeasuredPeriod();
+int64_t		getMeasuredSubPeriod();
 #endif
+#ifdef JUNGFRAUD
+void		setNumAdditionalStorageCells(int val);
+int 		getNumAdditionalStorageCells();
+int			setStorageCellDelay(int64_t val);
+int64_t 	getStorageCellDelay();
+#endif
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+int			setNumAnalogSamples(int val);
+int 		getNumAnalogSamples();
+int			setNumDigitalSamples(int val);
+int 		getNumDigitalSamples();
+#endif
+
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) 
+int			setDelayAfterTrigger(int64_t val);
+int64_t 	getDelayAfterTrigger();
+#endif
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+int64_t		getNumFramesLeft();
+int64_t		getNumTriggersLeft();
+#endif
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+int64_t		getDelayAfterTriggerLeft();
+int64_t		getPeriodLeft();
+#endif
+#ifdef GOTTHARDD
+int64_t		getExpTimeLeft();
+#endif
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+int64_t		getFramesFromStart();
+int64_t		getActualTime();
+int64_t		getMeasurementTime();
+#endif
+
 
 // parameters - module, settings
 #if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(MYTHEN3D)) && (!defined(GOTTHARD2D))

@@ -436,12 +436,12 @@ void setupDetector() {
 
 	FILE_LOG(logINFOBLUE, ("Setting Default Parameters\n"));
 	//setting default measurement parameters
-	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
-	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
-	setTimer(SUBFRAME_ACQUISITION_TIME, DEFAULT_SUBFRAME_EXPOSURE);
-	setTimer(SUBFRAME_DEADTIME, DEFAULT_SUBFRAME_DEADTIME);
-	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
-	setTimer(TRIGGER_NUMBER, DEFAULT_NUM_CYCLES);
+	setNumFrames(DEFAULT_NUM_FRAMES);
+	setExpTime(DEFAULT_EXPTIME);
+	setSubExpTime(DEFAULT_SUBFRAME_EXPOSURE);
+	getSubExpTime(DEFAULT_SUBFRAME_DEADTIME);
+	setPeriod(DEFAULT_PERIOD);
+	setNumTriggers(DEFAULT_NUM_CYCLES);
 	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
 	eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
 	setParallelMode(DEFAULT_PARALLEL_MODE);
@@ -609,155 +609,164 @@ int getStartingFrameNumber(uint64_t* retval) {
 #endif
 }
 
-int64_t setTimer(enum timerIndex ind, int64_t val) {
+
+
+
+void setNumFrames(int64_t val) {
+    if (val > 0) {
+		FILE_LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
 #ifndef VIRTUAL
-	int64_t subdeadtime = 0;
-#endif
-	int64_t subexptime = 0;
-	switch(ind) {
-	case FRAME_NUMBER:
-		if (val >= 0) {
-			FILE_LOG(logDEBUG1, ("Setting number of frames: %d * %d\n", (unsigned int)val, eiger_ntriggers));
-#ifndef VIRTUAL
-			if (Feb_Control_SetNExposures((unsigned int)val*eiger_ntriggers)) {
-				eiger_nexposures = val;
-				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfTriggers());
-				on_dst = 0;
-				int i;
-				for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
-				ndsts_in_use = 1;
-				nimages_per_request = eiger_nexposures * eiger_ntriggers;
-			}
-#else
+		if (Feb_Control_SetNExposures((unsigned int)val * eiger_ntriggers)) {
 			eiger_nexposures = val;
+			on_dst = 0;
+			int i;
+			for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
+			ndsts_in_use = 1;
 			nimages_per_request = eiger_nexposures * eiger_ntriggers;
-#endif
-		}return eiger_nexposures;
-
-	case ACQUISITION_TIME:
-		if (val >= 0) {
-			FILE_LOG(logDEBUG1, ("Setting exp time: %fs\n", val/(1E9)));
-#ifndef VIRTUAL
-			Feb_Control_SetExposureTime(val/(1E9));
-#else
-			eiger_virtual_exptime = (val/(1E9));
-#endif
 		}
-#ifndef VIRTUAL
-		return (Feb_Control_GetExposureTime()*(1E9));
 #else
-		return eiger_virtual_exptime*1e9;
-#endif
+		eiger_nexposures = val;
+		nimages_per_request = eiger_nexposures * eiger_ntriggers;
+#endif		
+    }
+}
 
-	case SUBFRAME_ACQUISITION_TIME:
-		if (val >= 0) {
-			FILE_LOG(logDEBUG1, ("Setting sub exp time: %lldns\n", (long long int)val));
+int64_t getNumFrames() {
+    return eiger_nexposures;
+}
+
+void setNumTriggers(int64_t val) {
+    if (val > 0) {
+		FILE_LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
 #ifndef VIRTUAL
-			// calculate subdeadtime before settings subexptime
-			subdeadtime = Feb_Control_GetSubFramePeriod() -
-					Feb_Control_GetSubFrameExposureTime();
-
-			Feb_Control_SetSubFrameExposureTime(val/10);
-			// set subperiod
-			Feb_Control_SetSubFramePeriod((val+subdeadtime)/10);
-#else
-			int64_t subdeadtime = eiger_virtual_subperiod*10 -
-					eiger_virtual_subexptime*10;
-			eiger_virtual_subexptime = (val/(10));
-			eiger_virtual_subperiod = (val+subdeadtime/10);
-#endif
+		if (Feb_Control_SetNExposures((unsigned int)val * eiger_nexposures)) {
+			eiger_ntriggers = val;
+			on_dst = 0;
+			int i;
+			for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
+			nimages_per_request = eiger_nexposures * eiger_ntriggers;
 		}
-#ifndef VIRTUAL
-		return (Feb_Control_GetSubFrameExposureTime());
 #else
-		return eiger_virtual_subexptime*10;
+		eiger_ntriggers = val;
+		nimages_per_request = eiger_nexposures * eiger_ntriggers;
 #endif
+    } 
+}
 
-	case SUBFRAME_DEADTIME:
+int64_t getNumTriggers() {
+    return eiger_ntriggers;
+}
+
+int setExpTime(int64_t val) {
+	FILE_LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
 #ifndef VIRTUAL
-		// get subexptime
-		subexptime = Feb_Control_GetSubFrameExposureTime();
+	Feb_Control_SetExposureTime(val/(1E9));
 #else
-		subexptime = eiger_virtual_subexptime*10;
+	eiger_virtual_exptime = (val/(1E9));
 #endif
-		if (val >= 0) {
-			FILE_LOG(logINFO, ("Setting sub period (subdeadtime(%lld)): %lldns\n",
+    return OK;
+}
+
+int64_t getExpTime() {
+#ifndef VIRTUAL
+	return (Feb_Control_GetExposureTime()*(1E9));
+#else
+	return eiger_virtual_exptime*1e9;
+#endif
+}
+
+int setPeriod(int64_t val) {
+	FILE_LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
+#ifndef VIRTUAL
+	Feb_Control_SetExposurePeriod(val/(1E9));
+#else
+	eiger_virtual_period = (val/(1E9));
+#endif
+    return OK;
+}
+
+int64_t getPeriod() {
+#ifndef VIRTUAL
+	return (Feb_Control_GetExposurePeriod()*(1E9));
+#else
+	return eiger_virtual_period*1e9;
+#endif
+}
+
+int setSubExpTime(int64_t val) {
+	FILE_LOG(logINFO, ("Setting subexptime %lld ns\n", (long long int)val));
+#ifndef VIRTUAL
+	// calculate subdeadtime before settings subexptime
+	int64_t subdeadtime = Feb_Control_GetSubFramePeriod() - Feb_Control_GetSubFrameExposureTime();
+	Feb_Control_SetSubFrameExposureTime(val / 10);
+	// set subperiod
+	Feb_Control_SetSubFramePeriod((val+subdeadtime) / 10);
+#else
+	int64_t subdeadtime = eiger_virtual_subperiod * 10 -
+	eiger_virtual_subexptime * 10;
+	eiger_virtual_subexptime = (val / (10));
+	eiger_virtual_subperiod = (val + subdeadtime/10);
+#endif
+}
+
+int64_t getSubExpTime() {
+#ifndef VIRTUAL
+	return (Feb_Control_GetSubFrameExposureTime());
+#else
+	return eiger_virtual_subexptime*10;
+#endif
+}
+
+int setDeadTime(int64_t val) {
+	FILE_LOG(logINFO, ("Setting subdeadtime %lld ns\n", (long long int)val));
+#ifndef VIRTUAL
+	// get subexptime
+	int64_t subexptime = Feb_Control_GetSubFrameExposureTime();
+#else
+	int64_t subexptime = eiger_virtual_subexptime * 10;
+#endif
+	FILE_LOG(logINFO, ("Setting sub period (subdeadtime(%lld)): %lldns\n",
 					(long long int)subexptime,
 					(long long int)val),
 					(long long int)(val + subexptime));
-			//calculate subperiod
-			val += subexptime;
+	//calculate subperiod
+	val += subexptime;
 #ifndef VIRTUAL
-			Feb_Control_SetSubFramePeriod(val/10);
+	Feb_Control_SetSubFramePeriod(val/10);
 #else
-			eiger_virtual_subperiod = (val/10);
+	eiger_virtual_subperiod = (val/10);
 #endif
-		}
-#ifndef VIRTUAL
-		return (Feb_Control_GetSubFramePeriod() - subexptime);
-#else
-		return (eiger_virtual_subperiod*10 - subexptime);
-#endif
-
-	case FRAME_PERIOD:
-		if (val >= 0) {
-			FILE_LOG(logDEBUG1, ("Setting acq period: %fs\n", val/(1E9)));
-#ifndef VIRTUAL
-			Feb_Control_SetExposurePeriod(val/(1E9));
-#else
-			eiger_virtual_period = (val/(1E9));
-#endif
-		}
-#ifndef VIRTUAL
-		return (Feb_Control_GetExposurePeriod()*(1E9));
-#else
-		return eiger_virtual_period*1e9;
-#endif
-
-	case TRIGGER_NUMBER:
-		if (val >= 0) {
-			FILE_LOG(logDEBUG1, ("Setting number of triggers: %d * %d\n",
-					(unsigned int)val,eiger_nexposures));
-#ifndef VIRTUAL
-			if (Feb_Control_SetNExposures((unsigned int)val*eiger_nexposures)) {
-				eiger_ntriggers = val;
-				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfTriggers());
-				on_dst = 0;
-				int i;
-				for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
-				nimages_per_request = eiger_nexposures * eiger_ntriggers;
-			}
-#else
-			eiger_ntriggers = val;
-			nimages_per_request = eiger_nexposures * eiger_ntriggers;
-#endif
-		}
-		return eiger_ntriggers;
-	default:
-		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));
-		break;
-	}
-
-	return -1;
 }
 
+int64_t getDeadTime() {
+#ifndef VIRTUAL
+	// get subexptime
+	int64_t subexptime = Feb_Control_GetSubFrameExposureTime();
+#else
+	int64_t subexptime = eiger_virtual_subexptime * 10;
+#endif
+#ifndef VIRTUAL
+	return (Feb_Control_GetSubFramePeriod() - subexptime);
+#else
+	return (eiger_virtual_subperiod*10 - subexptime);
+#endif
+}
 
-int64_t getTimeLeft(enum timerIndex ind) {
+int64_t getMeasuredPeriod() {
 #ifdef VIRTUAL
 	return 0;
 #else
-	switch(ind) {
-	case MEASURED_PERIOD: return Feb_Control_GetMeasuredPeriod();
-	case MEASURED_SUBPERIOD: return Feb_Control_GetSubMeasuredPeriod();
-	return 0;
-	default:
-		FILE_LOG(logERROR, ("This timer left index (%d) not defined for Eiger\n", ind));
-		return -1;
-	}
+	return Feb_Control_GetMeasuredPeriod();
 #endif
 }
 
-
+int64_t getMeasuredSubPeriod() {
+#ifdef VIRTUAL
+	return 0;
+#else
+	return Feb_Control_GetSubMeasuredPeriod();
+#endif	
+}
 
 
 /* parameters - channel, module, settings */

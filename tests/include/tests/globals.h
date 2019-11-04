@@ -1,8 +1,6 @@
 #include "sls_detector_defs.h"
 using dt = slsDetectorDefs::detectorType;
 using di = slsDetectorDefs::dacIndex;
-using ti = slsDetectorDefs::timerIndex;
-// using ro = slsDetectorDefs::readOutFlags;
 using sv = slsDetectorDefs::speedVariable;
 using defs = slsDetectorDefs;
 

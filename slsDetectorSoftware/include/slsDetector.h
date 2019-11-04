@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x190830
+#define SLS_SHMVERSION 0x191030
 
 /**
  * @short structure allocated in shared memory to store detector settings for
@@ -77,8 +77,14 @@ struct sharedSlsDetector {
     /** detector threshold (eV) */
     int currentThresholdEV;
 
-    /** timer values */
-    int64_t timerValue[slsDetectorDefs::timerIndex::MAX_TIMERS];
+    /** number of frames */
+    int64_t nFrames;
+
+    /** number of triggers */
+    int64_t nTriggers;
+    
+    /** number of additional storage cells */
+    int nAddStorageCells;
 
     /** rate correction in ns */
     int64_t deadTime;
@@ -510,24 +516,103 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     uint64_t getStartingFrameNumber();
 
-    /**
-     * Set/get timer value (not all implemented for all detectors)
-     * @param index timer index
-     * @param t time in ns or number of...(e.g. frames, probes)
-     * @returns timer set value in ns or number of...(e.g. frames,
-     * probes)
-     */
-    int64_t setTimer(timerIndex index, int64_t t = -1);
+    void sendTotalNumFramestoReceiver();
 
-    /**
-     * Set/get timer value left in acquisition (not all implemented for all
-     * detectors)
-     * @param index timer index
-     * @param t time in ns or number of...(e.g. frames, probes)
-     * @returns timer set value in ns or number of...(e.g. frames,
-     * probes)
-     */
-    int64_t getTimeLeft(timerIndex index) const;
+    int64_t getNumberOfFramesFromShm();
+
+    int64_t getNumberOfFrames();
+
+    void setNumberOfFrames(int64_t value);
+
+    int64_t getNumberOfTriggersFromShm();
+
+    int64_t getNumberOfTriggers();
+
+    void setNumberOfTriggers(int64_t value);
+
+    /** [Jungfrau] Advanced */
+    int getNumberOfAdditionalStorageCellsFromShm();
+    
+    /** [Jungfrau] Advanced */
+    int getNumberOfAdditionalStorageCells();
+
+    /** [Jungfrau] Advanced */
+    void setNumberOfAdditionalStorageCells(int value);
+
+    /** [CTB] */
+    int getNumberOfAnalogSamples();
+
+    /** [CTB] */
+    void setNumberOfAnalogSamples(int value);
+
+    /** [CTB] */
+    int getNumberOfDigitalSamples();
+
+    /** [CTB] */
+    void setNumberOfDigitalSamples(int value);
+
+    int64_t getExptime();
+
+    void setExptime(int64_t value);
+
+    int64_t getPeriod();
+
+    void setPeriod(int64_t value);
+
+    /** [Gotthard][Jungfrau][CTB][Mythen3] */
+    int64_t getDelayAfterTrigger();
+
+    /** [Gotthard][Jungfrau][CTB][Mythen3] */
+    void setDelayAfterTrigger(int64_t value);
+
+    /** [Eiger] in 32 bit mode */
+    int64_t getSubExptime();
+
+    /** [Eiger] in 32 bit mode */
+    void setSubExptime(int64_t value);
+
+    /** [Eiger] in 32 bit mode */
+    int64_t getSubDeadTime();
+
+    /** [Eiger] in 32 bit mode */
+    void setSubDeadTime(int64_t value);
+
+    /** [Jungfrau] Advanced*/
+    int64_t getStorageCellDelay();
+
+    /** [Jungfrau] Advanced
+     * Options: (0-1638375 ns (resolution of 25ns) */
+    void setStorageCellDelay(int64_t value);
+
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    int64_t getNumberOfFramesLeft() const;
+
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    int64_t getNumberOfTriggersLeft() const;
+
+    /** [Gotthard][Jungfrau][CTB] */
+    int64_t getDelayAfterTriggerLeft() const;
+
+    /** [Gotthard] */
+    int64_t getExptimeLeft() const;
+
+    /** [Gotthard][Jungfrau][CTB]  */
+    int64_t getPeriodLeft() const;
+
+    /** [Eiger] minimum two frames */
+    int64_t getMeasuredPeriod() const;
+
+    /** [Eiger] */
+    int64_t getMeasuredSubFramePeriod() const;
+
+    /** [Jungfrau][CTB] */
+    int64_t getNumberOfFramesFromStart() const;
+
+    /** [Jungfrau][CTB] Get time from detector start */
+    int64_t getActualTime() const;
+
+    /** [Jungfrau][CTB] Get timestamp at a frame start */
+    int64_t getMeasurementTime() const;
 
     /**
      * Set speed
@@ -1475,7 +1560,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * Gets the number of frames caught by receiver
      * @returns number of frames caught by receiver
      */
-    int getFramesCaughtByReceiver() const;
+    int64_t getFramesCaughtByReceiver() const;
 
     /**
      * Gets the current frame index of receiver

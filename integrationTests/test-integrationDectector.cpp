@@ -102,8 +102,8 @@ TEST_CASE("single EIGER detector no receiver basic set and get",
 
     // Setting and reading exposure time
     auto t = 1000000000;
-    d.setTimer(slsDetectorDefs::timerIndex::ACQUISITION_TIME, t);
-    CHECK(d.setTimer(slsDetectorDefs::timerIndex::ACQUISITION_TIME) == t);
+    d.setExptime(t);
+    CHECK(d.getExptime() == t);
 
     // size of an eiger half module with and without gap pixels
     CHECK(d.getTotalNumberOfChannels() == 256 * 256 * 4);
@@ -143,8 +143,8 @@ TEST_CASE("Locking mechanism and last ip", "[.integration][.single]") {
 
     // Can we still access the detector while it's locked
     auto t = 1300000000;
-    d.setTimer(slsDetectorDefs::timerIndex::ACQUISITION_TIME, t);
-    CHECK(d.setTimer(slsDetectorDefs::timerIndex::ACQUISITION_TIME) == t);
+    d.setExptime(t);
+    CHECK(d.getExptime() == t);
 
     // unlock again and free
     d.lockServer(0);
@@ -190,49 +190,38 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
 
     // Number of frames
     auto frames = 5;
-    d.setTimer(slsDetectorDefs::timerIndex::FRAME_NUMBER, frames);
-    CHECK(d.setTimer(slsDetectorDefs::timerIndex::FRAME_NUMBER) == frames);
+    d.setNumberOfFrames(frames);
+    CHECK(d.getNumberOfFrames() == frames);
 
     auto exptime = 2000000000;
-    d.setTimer(slsDetectorDefs::timerIndex::ACQUISITION_TIME, exptime);
-    CHECK(d.setTimer(slsDetectorDefs::timerIndex::ACQUISITION_TIME) == exptime);
+    d.setExptime(exptime);
+    CHECK(d.getExptime() == exptime);
 
     auto period = 2000000000;
-    d.setTimer(slsDetectorDefs::timerIndex::FRAME_PERIOD, period);
-    CHECK(d.setTimer(slsDetectorDefs::timerIndex::FRAME_PERIOD) == period);
+    d.setPeriod(period);
+    CHECK(d.getPeriod() == period);
 
     if (test::type != dt::EIGER) {
         auto delay = 10000;
-        d.setTimer(slsDetectorDefs::timerIndex::DELAY_AFTER_TRIGGER, delay);
-        CHECK(d.setTimer(slsDetectorDefs::timerIndex::DELAY_AFTER_TRIGGER) ==
+        d.setDelayAfterTrigger(delay);
+        CHECK(d.getDelayAfterTrigger() ==
               delay);
     }
 
-    if (test::type != dt::EIGER) {
-        auto gates = 1;
-        d.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER, gates);
-        CHECK(d.setTimer(slsDetectorDefs::timerIndex::GATES_NUMBER) == gates);
-    }
-
     auto triggers = 2;
-    d.setTimer(slsDetectorDefs::timerIndex::TRIGGER_NUMBER, triggers);
-    CHECK(d.setTimer(slsDetectorDefs::timerIndex::TRIGGER_NUMBER) == triggers);
+    d.setNumberOfTriggers(triggers);
+    CHECK(d.getNumberOfTriggers() == triggers);
 
     if (test::type == dt::EIGER) {
         auto subtime = 200;
-        d.setTimer(slsDetectorDefs::timerIndex::SUBFRAME_ACQUISITION_TIME,
-                   subtime);
-        CHECK(d.setTimer(
-                  slsDetectorDefs::timerIndex::SUBFRAME_ACQUISITION_TIME) ==
-              subtime);
+        d.setSubExptime(subtime);
+        CHECK(d.getSubExptime() == subtime);
     }
     // for (int i =0; i!=frames; ++i)
         d.startAndReadAll();
 
     d.freeSharedMemory();
 
-    // If we add a timer we should add tests for the timer
-    CHECK(slsDetectorDefs::MAX_TIMERS == 19);
 }
 
 // TEST_CASE("Aquire", "[.integration][eiger]"){
@@ -243,13 +232,13 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
 
 //     auto period = 1000000000;
 //     auto exptime = 100000000;
-//     d.setTimer(slsDetectorDefs::timerIndex::FRAME_NUMBER, 5);
-//     d.setTimer(slsDetectorDefs::timerIndex::ACQUISITION_TIME, exptime);
-//     d.setTimer(slsDetectorDefs::timerIndex::FRAME_PERIOD, period);
+//     d.setNumberOfFrames(5);
+//     d.setExptime(exptime);
+//     d.setPeriod(period);
 //     d.startAndReadAll();
 
 //     auto rperiod =
-//     d.getTimeLeft(slsDetectorDefs::timerIndex::MEASURED_PERIOD);
+//     d.getMeasuredPeriod();
 //     CHECK(rperiod == 0.1);
 
 //     d.freeSharedMemory();
@@ -474,7 +463,7 @@ TEST_CASE("Eiger or Jungfrau startingfnum", "[.eigerintegration][.jungfrauintegr
     REQUIRE(((m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::EIGER) || (m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::JUNGFRAU)));
     REQUIRE(m.getHostname() == c.hostname);
 
-     CHECK(m.setTimer(slsDetectorDefs::FRAME_NUMBER, 1) == 1);
+     CHECK(m.setNumberOfFrames(1) == 1);
 
     // starting fnum
     uint64_t val = 8;

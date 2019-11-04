@@ -1973,7 +1973,7 @@ TEST_CASE("extsamplingsrc", "[.cmd][.ctb]") {
 
 
 TEST_CASE("adcinvert", "[.cmd][.ctb]") {
-    if (test::type == slsDetectorDefs::CHIPTESTBOARD) {   
+    if (test::type == slsDetectorDefs::CHIPTESTBOARD || test::type == slsDetectorDefs::JUNGFRAU) {   
         std::string s;
         {
             std::ostringstream oss;
@@ -4450,13 +4450,6 @@ TEST_CASE("rx_lastclient", "[.cmd]") {
 }
 
 
-
-TEST_CASE("rx_checkversion", "[.cmd]") {
-
-    std::ostringstream oss;
-    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_checkversion", GET, nullptr, oss));
-    REQUIRE(oss.str() == "rx_checkversion compatible\n");
-}
 
 TEST_CASE("exptime", "[.cmd]") {
     {

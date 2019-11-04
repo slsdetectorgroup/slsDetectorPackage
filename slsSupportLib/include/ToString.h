@@ -204,44 +204,6 @@ inline std::string ToString(const defs::detectorModeType s) {
     }
 }
 
-inline std::string ToString(const defs::timerIndex t) {
-    switch (t) {
-    case defs::FRAME_NUMBER:
-        return std::string("frame_number");
-    case defs::ACQUISITION_TIME:
-        return std::string("acquisition_time");
-    case defs::FRAME_PERIOD:
-        return std::string("frame_period");
-    case defs::DELAY_AFTER_TRIGGER:
-        return std::string("delay_after_trigger");
-    case defs::TRIGGER_NUMBER:
-        return std::string("triggers_number");
-    case defs::ACTUAL_TIME:
-        return std::string("actual_time");
-    case defs::MEASUREMENT_TIME:
-        return std::string("measurement_time");
-    case defs::PROGRESS:
-        return std::string("progress");
-    case defs::FRAMES_FROM_START:
-        return std::string("frames_from_start");
-    case defs::FRAMES_FROM_START_PG:
-        return std::string("frames_from_start_pg");
-    case defs::ANALOG_SAMPLES:
-        return std::string("analog_samples");
-    case defs::DIGITAL_SAMPLES:
-        return std::string("digital_samples");    
-    case defs::SUBFRAME_ACQUISITION_TIME:
-        return std::string("subframe_acquisition_time");
-    case defs::SUBFRAME_DEADTIME:
-        return std::string("subframe_deadtime");
-    case defs::STORAGE_CELL_NUMBER:
-        return std::string("storage_cell_number");
-    default:
-        return std::string("Unknown");
-    }
-}
-
-
 // in case we already have a string 
 // causes a copy but might be needed in generic code
 inline std::string ToString(const std::string& s) {

@@ -322,21 +322,9 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->roMode = ANALOG_ONLY;
     shm()->currentSettings = UNINITIALIZED;
     shm()->currentThresholdEV = -1;
-    shm()->timerValue[FRAME_NUMBER] = 1;
-    shm()->timerValue[ACQUISITION_TIME] = 0;
-    shm()->timerValue[FRAME_PERIOD] = 0;
-    shm()->timerValue[DELAY_AFTER_TRIGGER] = 0;
-    shm()->timerValue[TRIGGER_NUMBER] = 1;
-    shm()->timerValue[ACTUAL_TIME] = 0;
-    shm()->timerValue[MEASUREMENT_TIME] = 0;
-    shm()->timerValue[PROGRESS] = 0;
-    shm()->timerValue[FRAMES_FROM_START] = 0;
-    shm()->timerValue[FRAMES_FROM_START_PG] = 0;
-    shm()->timerValue[ANALOG_SAMPLES] = 1;
-    shm()->timerValue[DIGITAL_SAMPLES] = 1;
-    shm()->timerValue[SUBFRAME_ACQUISITION_TIME] = 0;
-    shm()->timerValue[STORAGE_CELL_NUMBER] = 0;
-    shm()->timerValue[SUBFRAME_DEADTIME] = 0;
+    shm()->nFrames = 1;
+    shm()->nTriggers = 1;
+    shm()->nAddStorageCells = 0;
     shm()->deadTime = 0;
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
@@ -751,44 +739,17 @@ void slsDetector::updateCachedDetectorVariables() {
 
         // frame number
         n += client.Receive(&i64, sizeof(i64));
-        shm()->timerValue[FRAME_NUMBER] = i64;
-
-        // exptime
-        n += client.Receive(&i64, sizeof(i64));
-        shm()->timerValue[ACQUISITION_TIME] = i64;
-
-        // subexptime, subdeadtime
-        if (shm()->myDetectorType == EIGER) {
-            n += client.Receive(&i64, sizeof(i64));
-            shm()->timerValue[SUBFRAME_ACQUISITION_TIME] = i64;
-
-            n += client.Receive(&i64, sizeof(i64));
-            shm()->timerValue[SUBFRAME_DEADTIME] = i64;
-        }
-
-        // period
-        n += client.Receive(&i64, sizeof(i64));
-        shm()->timerValue[FRAME_PERIOD] = i64;
-
-        // delay
-        if (shm()->myDetectorType != EIGER && shm()->myDetectorType != MYTHEN3 && shm()->myDetectorType != GOTTHARD2) {
-            n += client.Receive(&i64, sizeof(i64));
-            shm()->timerValue[DELAY_AFTER_TRIGGER] = i64;
-        }
+        shm()->nFrames = i64;
 
         if (shm()->myDetectorType == JUNGFRAU) {
             // storage cell
             n += client.Receive(&i64, sizeof(i64));
-            shm()->timerValue[STORAGE_CELL_NUMBER] = i64;
-
-            // storage cell delay
-            n += client.Receive(&i64, sizeof(i64));
-            shm()->timerValue[STORAGE_CELL_DELAY] = i64;
+            shm()->nAddStorageCells = i64;
         }
 
         // triggers
         n += client.Receive(&i64, sizeof(i64));
-        shm()->timerValue[TRIGGER_NUMBER] = i64;
+        shm()->nTriggers = i64;
 
         // readout mode
         if (shm()->myDetectorType == CHIPTESTBOARD) {
@@ -806,18 +767,6 @@ void slsDetector::updateCachedDetectorVariables() {
 
         if (shm()->myDetectorType == CHIPTESTBOARD ||
             shm()->myDetectorType == MOENCH) {
-            // analog samples
-            n += client.Receive(&i64, sizeof(i64));
-            if (i64 >= 0) {
-                shm()->timerValue[ANALOG_SAMPLES] = i64;
-            }
-
-            // digital samples
-            n += client.Receive(&i64, sizeof(i64));
-            if (i64 >= 0) {
-                shm()->timerValue[DIGITAL_SAMPLES] = i64;
-            }
-
             // adcmask
             uint32_t u32 = 0;
             n += client.Receive(&u32, sizeof(u32));
@@ -1220,87 +1169,295 @@ uint64_t slsDetector::getStartingFrameNumber() {
     return retval;
 }
 
-int64_t slsDetector::setTimer(timerIndex index, int64_t t) {
-    int64_t args[]{static_cast<int64_t>(index), t};
-    int64_t retval = -1;
-    FILE_LOG(logDEBUG1) << "Setting " << sls::ToString(index) << " to " << t
-                        << " ns/value";
-
-    // send to detector
-    int64_t oldtimer = shm()->timerValue[index];
-    sendToDetector(F_SET_TIMER, args, retval);
-    FILE_LOG(logDEBUG1) << sls::ToString(index) << ": " << retval;
-    shm()->timerValue[index] = retval;
-    // update #nchan, as it depends on #samples, adcmask,
-    if (index == ANALOG_SAMPLES || index == DIGITAL_SAMPLES) {
-        updateNumberOfChannels();
-    }
-
-    // setting timers consequences (eiger (ratecorr) )
-    // (a get can also change timer value, hence check difference)
-    if (oldtimer != shm()->timerValue[index]) {
-        // eiger: change exptime/subexptime, set rate correction to update table
-        if (shm()->myDetectorType == EIGER) {
-            int dr = shm()->dynamicRange;
-            if ((dr == 32 && index == SUBFRAME_ACQUISITION_TIME) ||
-                (dr == 16 && index == ACQUISITION_TIME)) {
-                int r = getRateCorrection();
-                if (r != 0) {
-                    setRateCorrection(r);
-                }
-            }
-        }
-    }
-
-    // send to reciever
+void slsDetector::sendTotalNumFramestoReceiver() {
     if (shm()->useReceiverFlag) {
-        timerIndex rt[]{FRAME_NUMBER,
-                        FRAME_PERIOD,
-                        TRIGGER_NUMBER,
-                        ACQUISITION_TIME,
-                        SUBFRAME_ACQUISITION_TIME,
-                        SUBFRAME_DEADTIME,
-                        ANALOG_SAMPLES,
-                        DIGITAL_SAMPLES,
-                        STORAGE_CELL_NUMBER};
-
-        // if in list (lambda)
-        if (std::any_of(std::begin(rt), std::end(rt),
-                        [index](timerIndex t) { return t == index; })) {
-            args[1] = shm()->timerValue[index];
-            retval = -1;
-
-            // rewrite args
-            if ((index == FRAME_NUMBER) || (index == TRIGGER_NUMBER) ||
-                (index == STORAGE_CELL_NUMBER)) {
-                args[1] = shm()->timerValue[FRAME_NUMBER] *
-                          ((shm()->timerValue[TRIGGER_NUMBER] > 0)
-                               ? (shm()->timerValue[TRIGGER_NUMBER])
-                               : 1) *
-                          ((shm()->timerValue[STORAGE_CELL_NUMBER] > 0)
-                               ? (shm()->timerValue[STORAGE_CELL_NUMBER]) + 1
-                               : 1);
-            }
-            FILE_LOG(logDEBUG1)
-                << "Sending "
-                << (((index == FRAME_NUMBER) || (index == TRIGGER_NUMBER) ||
-                     (index == STORAGE_CELL_NUMBER))
-                        ? "(#Frames) * (#triggers) * (#storage cells)"
-                        : sls::ToString(index))
-                << " to receiver: " << args[1];
-
-            sendToReceiver(F_SET_RECEIVER_TIMER, args, retval);
-        }
+        int64_t arg = shm()->nFrames * shm()->nTriggers * (shm()->nAddStorageCells + 1);
+        FILE_LOG(logDEBUG1) << "Sending total number of frames (#f x #t x #s) to Receiver: " << arg;
+        sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, arg, nullptr);   
     }
-    return shm()->timerValue[index];
 }
 
-int64_t slsDetector::getTimeLeft(timerIndex index) const {
+int64_t slsDetector::getNumberOfFramesFromShm() {
+    return shm()->nFrames; 
+}
+
+int64_t slsDetector::getNumberOfFrames() {
+    int64_t prevVal = shm()->nFrames;
     int64_t retval = -1;
-    FILE_LOG(logDEBUG1) << "Getting " << sls::ToString(index) << " left";
-    sendToDetectorStop(F_GET_TIME_LEFT, index, retval);
-    FILE_LOG(logDEBUG1) << sls::ToString(index) << " left: " << retval;
-    return retval;
+    sendToDetector(F_GET_NUM_FRAMES, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "number of frames :" << retval;
+    shm()->nFrames = retval;
+    if (prevVal != retval) {
+        sendTotalNumFramestoReceiver();
+    }    
+    return shm()->nFrames; 
+}
+
+void slsDetector::setNumberOfFrames(int64_t value) {
+    FILE_LOG(logDEBUG1) << "Setting number of frames to " << value;
+    sendToDetector(F_SET_NUM_FRAMES, value, nullptr);
+    shm()->nFrames = value;
+    sendTotalNumFramestoReceiver();
+}
+
+int64_t slsDetector::getNumberOfTriggersFromShm() {
+    return shm()->nTriggers; 
+}
+
+int64_t slsDetector::getNumberOfTriggers() {
+    int64_t prevVal = shm()->nTriggers;
+    int64_t retval = -1;
+    sendToDetector(F_GET_NUM_TRIGGERS, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "number of triggers :" << retval;
+    shm()->nTriggers = retval;
+    if (prevVal != retval) {
+        sendTotalNumFramestoReceiver();
+    }    
+    return shm()->nTriggers; 
+}
+
+void slsDetector::setNumberOfTriggers(int64_t value) {
+    FILE_LOG(logDEBUG1) << "Setting number of triggers to " << value;
+    sendToDetector(F_SET_NUM_TRIGGERS, value, nullptr);
+    shm()->nTriggers = value;
+    sendTotalNumFramestoReceiver();
+}
+    
+int slsDetector::getNumberOfAdditionalStorageCellsFromShm() {
+    return shm()->nAddStorageCells; 
+}
+
+int slsDetector::getNumberOfAdditionalStorageCells() {
+    int prevVal = shm()->nAddStorageCells;
+    int retval = -1;
+    sendToDetector(F_GET_NUM_ADDITIONAL_STORAGE_CELLS, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "number of storage cells :" << retval;
+    shm()->nAddStorageCells = retval;
+    if (prevVal != retval) {
+        sendTotalNumFramestoReceiver();
+    }    
+    return shm()->nAddStorageCells; 
+}
+   
+void slsDetector::setNumberOfAdditionalStorageCells(int value) {
+    FILE_LOG(logDEBUG1) << "Setting number of storage cells to " << value;
+    sendToDetector(F_SET_NUM_ADDITIONAL_STORAGE_CELLS, value, nullptr);
+    shm()->nAddStorageCells = value;
+    sendTotalNumFramestoReceiver();
+}
+
+int slsDetector::getNumberOfAnalogSamples() {
+    int retval = -1;
+    sendToDetector(F_GET_NUM_ANALOG_SAMPLES, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "number of analog samples :" << retval;
+    return retval; 
+}
+    
+void slsDetector::setNumberOfAnalogSamples(int value) {
+    FILE_LOG(logDEBUG1) << "Setting number of analog samples to " << value;
+    sendToDetector(F_SET_NUM_ANALOG_SAMPLES, value, nullptr);
+    // update #nchan, as it depends on #samples, adcmask
+    updateNumberOfChannels();
+    if (shm()->useReceiverFlag) {
+        FILE_LOG(logDEBUG1) << "Sending number of analog samples to Receiver: " << value;
+        sendToReceiver(F_RECEIVER_SET_NUM_ANALOG_SAMPLES, value, nullptr);   
+    }
+}
+   
+int slsDetector::getNumberOfDigitalSamples() {
+    int retval = -1;
+    sendToDetector(F_GET_NUM_DIGITAL_SAMPLES, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "number of digital samples :" << retval;
+    return retval; 
+}
+    
+void slsDetector::setNumberOfDigitalSamples(int value) {
+    FILE_LOG(logDEBUG1) << "Setting number of digital samples to " << value;
+    sendToDetector(F_SET_NUM_DIGITAL_SAMPLES, value, nullptr);
+    // update #nchan, as it depends on #samples, adcmask
+    updateNumberOfChannels();   
+    if (shm()->useReceiverFlag) {
+        FILE_LOG(logDEBUG1) << "Sending number of digital samples to Receiver: " << value;
+        sendToReceiver(F_RECEIVER_SET_NUM_DIGITAL_SAMPLES, value, nullptr);   
+    }
+}
+
+int64_t slsDetector::getExptime() {
+    int64_t retval = -1;
+    sendToDetector(F_GET_EXPTIME, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "exptime :" << retval << "ns";
+    return retval; 
+}
+
+void slsDetector::setExptime(int64_t value) {
+    int64_t prevVal = value;
+    if (shm()->myDetectorType == EIGER) {
+        prevVal = getExptime();
+    }
+    FILE_LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
+    sendToDetector(F_SET_EXPTIME, value, nullptr);
+    if (shm()->myDetectorType == EIGER && prevVal != value && shm()->dynamicRange == 16) {
+        int r = getRateCorrection();
+        if (r != 0) {
+            setRateCorrection(r);
+        }            
+    }
+    if (shm()->useReceiverFlag) {
+        FILE_LOG(logDEBUG1) << "Sending exptime to Receiver: " << value;
+        sendToReceiver(F_RECEIVER_SET_EXPTIME, value, nullptr);   
+    }
+}
+
+int64_t slsDetector::getPeriod() {
+    int64_t retval = -1;
+    sendToDetector(F_GET_PERIOD, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "period :" << retval << "ns";
+    return retval; 
+}
+
+void slsDetector::setPeriod(int64_t value) {
+    FILE_LOG(logDEBUG1) << "Setting period to " << value << "ns";
+    sendToDetector(F_SET_PERIOD, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        FILE_LOG(logDEBUG1) << "Sending period to Receiver: " << value;
+        sendToReceiver(F_RECEIVER_SET_PERIOD, value, nullptr);   
+    }
+}
+
+int64_t slsDetector::getDelayAfterTrigger() {
+    int64_t retval = -1;
+    sendToDetector(F_GET_DELAY_AFTER_TRIGGER, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "delay after trigger :" << retval << "ns";
+    return retval; 
+}
+
+void slsDetector::setDelayAfterTrigger(int64_t value) {
+    FILE_LOG(logDEBUG1) << "Setting delay after trigger to " << value << "ns";
+    sendToDetector(F_SET_DELAY_AFTER_TRIGGER, value, nullptr);
+}
+
+int64_t slsDetector::getSubExptime() {
+    int64_t retval = -1;
+    sendToDetector(F_GET_SUB_EXPTIME, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "sub exptime :" << retval << "ns";
+    return retval; 
+}
+
+void slsDetector::setSubExptime(int64_t value) {
+    int64_t prevVal = value;
+    if (shm()->myDetectorType == EIGER) {
+        prevVal = getSubExptime();
+    }    
+    FILE_LOG(logDEBUG1) << "Setting sub exptime to " << value << "ns";
+    sendToDetector(F_SET_SUB_EXPTIME, value, nullptr);
+    if (shm()->myDetectorType == EIGER && prevVal != value && shm()->dynamicRange == 32) {
+        int r = getRateCorrection();
+        if (r != 0) {
+            setRateCorrection(r);
+        }            
+    }    
+    if (shm()->useReceiverFlag) {
+        FILE_LOG(logDEBUG1) << "Sending sub exptime to Receiver: " << value;
+        sendToReceiver(F_RECEIVER_SET_SUB_EXPTIME, value, nullptr);   
+    }
+}
+    
+int64_t slsDetector::getSubDeadTime() {
+    int64_t retval = -1;
+    sendToDetector(F_GET_SUB_DEADTIME, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "sub deadtime :" << retval << "ns";
+    return retval; 
+}
+    
+void slsDetector::setSubDeadTime(int64_t value) {
+    FILE_LOG(logDEBUG1) << "Setting sub deadtime to " << value << "ns";
+    sendToDetector(F_SET_SUB_DEADTIME, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        FILE_LOG(logDEBUG1) << "Sending sub deadtime to Receiver: " << value;
+        sendToReceiver(F_RECEIVER_SET_SUB_DEADTIME, value, nullptr);   
+    }
+}
+    
+int64_t slsDetector::getStorageCellDelay() {
+    int64_t retval = -1;
+    sendToDetector(F_GET_STORAGE_CELL_DELAY, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "storage cell delay :" << retval;
+    return retval; 
+}
+        
+void slsDetector::setStorageCellDelay(int64_t value) {
+    FILE_LOG(logDEBUG1) << "Setting storage cell delay to " << value << "ns";
+    sendToDetector(F_SET_STORAGE_CELL_DELAY, value, nullptr);
+}
+      
+int64_t slsDetector::getNumberOfFramesLeft() const {
+    int64_t retval = -1;
+    sendToDetectorStop(F_GET_FRAMES_LEFT, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "number of frames left :" << retval;
+    return retval; 
+}
+    
+int64_t slsDetector::getNumberOfTriggersLeft() const {
+     int64_t retval = -1;
+    sendToDetectorStop(F_GET_TRIGGERS_LEFT, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "number of triggers left :" << retval;
+    return retval; 
+}
+    
+int64_t slsDetector::getDelayAfterTriggerLeft() const {
+    int64_t retval = -1;
+    sendToDetectorStop(F_GET_DELAY_AFTER_TRIGGER_LEFT, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "delay after trigger left :" << retval << "ns";
+    return retval; 
+}
+    
+int64_t slsDetector::getExptimeLeft() const {
+    int64_t retval = -1;
+    sendToDetectorStop(F_GET_EXPTIME_LEFT, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "exptime left :" << retval << "ns";
+    return retval; 
+}
+    
+int64_t slsDetector::getPeriodLeft() const {
+    int64_t retval = -1;
+    sendToDetectorStop(F_GET_PERIOD_LEFT, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "period left :" << retval << "ns";
+    return retval; 
+}
+    
+int64_t slsDetector::getMeasuredPeriod() const {
+    int64_t retval = -1;
+    sendToDetectorStop(F_GET_MEASURED_PERIOD, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "measured period :" << retval << "ns";
+    return retval; 
+}
+    
+int64_t slsDetector::getMeasuredSubFramePeriod() const {
+    int64_t retval = -1;
+    sendToDetectorStop(F_GET_MEASURED_SUBPERIOD, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "exptime :" << retval << "ns";
+    return retval; 
+}
+    
+int64_t slsDetector::getNumberOfFramesFromStart() const {
+    int64_t retval = -1;
+    sendToDetectorStop(F_GET_FRAMES_FROM_START, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "number of frames from start :" << retval;
+    return retval; 
+}
+    
+int64_t slsDetector::getActualTime() const {
+    int64_t retval = -1;
+    sendToDetectorStop(F_GET_ACTUAL_TIME, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "actual time :" << retval << "ns";
+    return retval; 
+}
+    
+int64_t slsDetector::getMeasurementTime() const {
+    int64_t retval = -1;
+    sendToDetectorStop(F_GET_MEASUREMENT_TIME, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "measurement time :" << retval << "ns";
+    return retval; 
 }
 
 int slsDetector::setSpeed(speedVariable sp, int value, int mode) {
@@ -1551,15 +1708,6 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
         << "\nwrite enable:" << shm()->rxFileWrite
         << "\nmaster write enable:" << shm()->rxMasterFileWrite
         << "\noverwrite enable:" << shm()->rxFileOverWrite
-        << "\nframe index needed:"
-        << ((shm()->timerValue[FRAME_NUMBER] *
-             shm()->timerValue[TRIGGER_NUMBER]) > 1)
-        << "\nframe period:" << (shm()->timerValue[FRAME_PERIOD])
-        << "\nframe number:" << (shm()->timerValue[FRAME_NUMBER])
-        << "\nsub exp time:" << (shm()->timerValue[SUBFRAME_ACQUISITION_TIME])
-        << "\nsub dead time:" << (shm()->timerValue[SUBFRAME_DEADTIME])
-        << "\nasamples:" << (shm()->timerValue[ANALOG_SAMPLES])
-        << "\ndsamples:" << (shm()->timerValue[DIGITAL_SAMPLES])
         << "\ndynamic range:" << shm()->dynamicRange
         << "\nflippeddatax:" << (shm()->flippedDataX)
         << "\nactivated: " << shm()->activated
@@ -1603,17 +1751,16 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
         setFileWrite(shm()->rxFileWrite);
         setMasterFileWrite(shm()->rxMasterFileWrite);
         setFileOverWrite(shm()->rxFileOverWrite);
-        setTimer(FRAME_PERIOD, shm()->timerValue[FRAME_PERIOD]);
-        setTimer(FRAME_NUMBER, shm()->timerValue[FRAME_NUMBER]);
-        setTimer(ACQUISITION_TIME, shm()->timerValue[ACQUISITION_TIME]);
+        sendTotalNumFramestoReceiver();
+        setExptime(getExptime());
+        setPeriod(getPeriod());
 
         // detector specific
         switch (shm()->myDetectorType) {
 
         case EIGER:
-            setTimer(SUBFRAME_ACQUISITION_TIME,
-                     shm()->timerValue[SUBFRAME_ACQUISITION_TIME]);
-            setTimer(SUBFRAME_DEADTIME, shm()->timerValue[SUBFRAME_DEADTIME]);
+            setSubExptime(getSubExptime());
+            setSubDeadTime(getSubDeadTime());
             setDynamicRange(shm()->dynamicRange);
             setFlippedDataX(-1);
             activate(-1);
@@ -1625,8 +1772,8 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             break;
 
         case CHIPTESTBOARD:
-            setTimer(ANALOG_SAMPLES, shm()->timerValue[ANALOG_SAMPLES]);
-            setTimer(DIGITAL_SAMPLES, shm()->timerValue[DIGITAL_SAMPLES]);
+            setNumberOfAnalogSamples(getNumberOfAnalogSamples());
+            setNumberOfDigitalSamples(getNumberOfDigitalSamples());
             enableTenGigabitEthernet(shm()->tenGigaEnable);
             setReadoutMode(shm()->roMode);
             setADCEnableMask(shm()->adcEnableMask);
@@ -1635,8 +1782,8 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             break;
 
         case MOENCH:
-            setTimer(ANALOG_SAMPLES, shm()->timerValue[ANALOG_SAMPLES]);
-            setTimer(DIGITAL_SAMPLES, shm()->timerValue[DIGITAL_SAMPLES]);
+            setNumberOfAnalogSamples(getNumberOfAnalogSamples());
+            setNumberOfDigitalSamples(getNumberOfDigitalSamples());
             enableTenGigabitEthernet(shm()->tenGigaEnable);
             setADCEnableMask(shm()->adcEnableMask);
             break;
@@ -3074,8 +3221,8 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus() const {
     return retval;
 }
 
-int slsDetector::getFramesCaughtByReceiver() const {
-    int retval = -1;
+int64_t slsDetector::getFramesCaughtByReceiver() const {
+    int64_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting Frames Caught by Receiver";
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_GET_RECEIVER_FRAMES_CAUGHT, nullptr, retval);

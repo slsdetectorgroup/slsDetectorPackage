@@ -420,11 +420,11 @@ void setupDetector() {
     setSettings(DEFAULT_SETTINGS);
     setExtSignal(DEFAULT_TRIGGER_MODE);
     setTiming(DEFAULT_TIMING_MODE);
-	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
-	setTimer(TRIGGER_NUMBER, DEFAULT_NUM_CYCLES);
-	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
-	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
-	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
+	setNumFrames(DEFAULT_NUM_FRAMES);
+	setNumTriggers(DEFAULT_NUM_CYCLES);
+	setExpTime(DEFAULT_EXPTIME);
+	setPeriod(DEFAULT_PERIOD);
+	setDelayAfterTrigger(DEFAULT_DELAY);
 
 }
 
@@ -692,7 +692,7 @@ void setMasterSlaveConfiguration() {
     // master configuration
     if (masterflags == IS_MASTER) {
         // master default delay set, so reset delay
-        setTimer(DELAY_AFTER_TRIGGER, 0);
+        setDelayAfterTrigger(0);
 
         // Set pattern phase for the master module
         u_int32_t val = (bus_r(MULTI_PURPOSE_REG) & (~(PLL_CLK_SL_MSK))); // unset mask
@@ -800,152 +800,129 @@ int getSpeed(enum speedVariable ind) {
 }
 
 /* parameters - timer */
-
-int64_t setTimer(enum timerIndex ind, int64_t val) {
-
-	int64_t retval = -1;
-	switch(ind){
-
-	case FRAME_NUMBER:
-		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting Frames: %lld\n",(long long int)val));
-		}
-		retval = set64BitReg(val,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-		FILE_LOG(logDEBUG1, ("\tGetting Frames: %lld\n", (long long int)retval));
-		break;
-
-	case ACQUISITION_TIME:
-		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting Exptime: %lld ns\n", (long long int)val));
-			val = (val * 1E-3 * CLK_FREQ) + 0.5;
-		}
-		retval = (set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) /
-		        (1E-3 * CLK_FREQ)) + 0.5;
-		FILE_LOG(logINFO, ("\tGetting Exptime: %lld ns\n", (long long int)retval));
-		break;
-
-	case FRAME_PERIOD:
-		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting Period: %lld ns\n",(long long int)val));
-			val = (val * 1E-3 * CLK_FREQ) + 0.5;
-		}
-		retval = (set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /
-		        (1E-3 * CLK_FREQ)) + 0.5;
-		FILE_LOG(logINFO, ("\tGetting Period: %lld ns\n", (long long int)retval));
-		break;
-
-	case DELAY_AFTER_TRIGGER:
-		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting Delay: %lld ns\n", (long long int)val));
-			if (masterflags == IS_MASTER) {
-			    val += masterdefaultdelay;
-			    FILE_LOG(logINFO, ("\tActual Delay (master): %lld\n", (long long int) val));
-			}
-			val = (val * 1E-3 * CLK_FREQ) + 0.5;
-		}
-		retval = (set64BitReg(val, SET_DELAY_LSB_REG, SET_DELAY_MSB_REG) /
-		        (1E-3 * CLK_FREQ)) + 0.5;
-		FILE_LOG(logINFO, ("\tGetting Delay: %lld ns\n", (long long int)retval));
-	    if (masterflags == IS_MASTER) {
-	        FILE_LOG(logDEBUG1, ("\tActual Delay read (master): %lld\n", (long long int) retval));
-	        retval -= masterdefaultdelay;
-	    }
-		break;
-
-	case TRIGGER_NUMBER:
-		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting Triggers: %lld\n", (long long int)val));
-		}
-		retval = set64BitReg(val,  SET_TRAINS_LSB_REG, SET_TRAINS_MSB_REG);
-		FILE_LOG(logDEBUG1, ("\tGetting Triggers: %lld\n", (long long int)retval));
-		break;
-
-	default:
-		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));
-		break;
-	}
-
-	return retval;
-
+void setNumFrames(int64_t val) {
+    if (val > 0) {
+        FILE_LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
+        set64BitReg(val, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+    }
 }
 
-
-
-int64_t getTimeLeft(enum timerIndex ind){
-#ifdef VIRTUAL
-    return 0;
-#endif
-	int64_t retval = -1;
-	switch(ind){
-
-	case FRAME_NUMBER:
-		retval = get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
-		FILE_LOG(logINFO, ("Getting number of frames left: %lld\n",(long long int)retval));
-		break;
-
-    case ACQUISITION_TIME:
-        retval = (get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG) /
-                (1E-3 * CLK_FREQ)) + 0.5;
-        FILE_LOG(logINFO, ("Getting exptime left: %lldns\n", (long long int)retval));
-        break;
-
-	case FRAME_PERIOD:
-		retval = (get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) /
-		        (1E-3 * CLK_FREQ)) + 0.5;
-		FILE_LOG(logINFO, ("Getting period left: %lldns\n", (long long int)retval));
-		break;
-
-	case DELAY_AFTER_TRIGGER:
-        retval = (get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) /
-                (1E-3 * CLK_FREQ)) + 0.5;
-        FILE_LOG(logINFO, ("Getting delay left: %lldns\n", (long long int)retval));
-        if (masterflags == IS_MASTER) {
-            FILE_LOG(logDEBUG1, ("\tGetting Actual delay (master): %lld\n", (long long int) retval));
-            retval -= masterdefaultdelay;
-        }
-        break;
-
-	case TRIGGER_NUMBER:
-		retval = get64BitReg(GET_TRAINS_LSB_REG, GET_TRAINS_MSB_REG);
-		FILE_LOG(logINFO, ("Getting number of triggers left: %lld\n", (long long int)retval));
-		break;
-
-	default:
-		FILE_LOG(logERROR, ("Remaining Timer index not implemented for this detector: %d\n", ind));
-		break;
-	}
-
-	return retval;
+int64_t getNumFrames() {
+    return get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
 }
 
-int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
-    if (val < 0)
-        return OK;
-    switch(ind) {
-    case ACQUISITION_TIME:
-    case FRAME_PERIOD:
-        val = (val * 1E-3 * CLK_FREQ) + 0.5;    // convert to freq
-        val = (val / (1E-3 * CLK_FREQ)) + 0.5;  // convert back to timer
-        if (val != retval)
-            return FAIL;
-        break;
-    case DELAY_AFTER_TRIGGER:
-        if (masterflags == IS_MASTER) {
-            val += masterdefaultdelay;
-        }
-        val = (val * 1E-3 * CLK_FREQ) + 0.5;    // convert to freq
-        val = (val / (1E-3 * CLK_FREQ)) + 0.5;  // convert back to timer
-        if (masterflags == IS_MASTER) {
-            val -= masterdefaultdelay;
-        }
-        if (val != retval)
-            return FAIL;
-        break;
-    default:
-        break;
+void setNumTriggers(int64_t val) {
+    if (val > 0) {
+        FILE_LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
+        set64BitReg(val, SET_TRAINS_LSB_REG, SET_TRAINS_MSB_REG);
+    } 
+}
+
+int64_t getNumTriggers() {
+    return get64BitReg(SET_TRAINS_LSB_REG, SET_TRAINS_MSB_REG);
+}
+
+int setExpTime(int64_t val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+    FILE_LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
+    val = (val * 1E-9 * CLK_FREQ) + 0.5;
+    set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG);
+
+    // validate for tolerance
+    int64_t retval = getExpTime();
+    val /= (1E-9 * CLK_FREQ);
+    if (val != retval) {
+        return FAIL;
     }
     return OK;
 }
+
+int64_t getExpTime() {
+    return get64BitReg(SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) / (1E-9 * CLK_FREQ);
+}
+
+int setPeriod(int64_t val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid period: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+    FILE_LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
+    val = (val * 1E-9 * CLK_FREQ) + 0.5;
+    set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
+
+    // validate for tolerance
+    int64_t retval = getPeriod();
+    val /= (1E-9 * CLK_FREQ);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getPeriod() {
+    return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * CLK_FREQ);
+}
+
+int setDelayAfterTrigger(int64_t val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid delay after trigger: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+    FILE_LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
+    if (masterflags == IS_MASTER) {
+        val += masterdefaultdelay;
+        FILE_LOG(logINFO, ("\tActual Delay (master): %lld\n", (long long int) val));
+    }    
+    val = (val * 1E-9 * CLK_FREQ) + 0.5; //because of the master delay of 62 ns (not really double of clkfreq), losing precision and 0 delay becomes -31ns, so adding +0.5. Also adding +0.5 for more tolerance for gotthard1.
+    set64BitReg(val, SET_DELAY_LSB_REG, SET_DELAY_MSB_REG);
+
+    // validate for tolerance
+    int64_t retval = getDelayAfterTrigger();
+    val /= (1E-9 * CLK_FREQ);
+    val -= masterdefaultdelay;
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getDelayAfterTrigger() {
+    int64_t retval = get64BitReg(SET_DELAY_LSB_REG, SET_DELAY_MSB_REG) / (1E-9 * CLK_FREQ);
+    if (masterflags == IS_MASTER) {
+        FILE_LOG(logDEBUG1, ("\tActual Delay read (master): %lld\n", (long long int) retval));
+        retval -= masterdefaultdelay;
+    }
+    return retval;    
+}
+
+int64_t getNumFramesLeft() {
+    return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
+}
+
+int64_t getNumTriggersLeft() {
+    return get64BitReg(GET_TRAINS_LSB_REG, GET_TRAINS_MSB_REG);
+}
+
+int64_t getPeriodLeft() {
+    return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-9 * CLK_FREQ);
+}
+
+int64_t getDelayAfterTriggerLeft() {
+    int64_t retval = get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-9 * CLK_FREQ);
+    if (masterflags == IS_MASTER) {
+        FILE_LOG(logDEBUG1, ("\tGetting Actual delay (master): %lld\n", (long long int) retval));
+        retval -= masterdefaultdelay;
+    }  
+    return retval; 
+}
+
+int64_t getExpTimeLeft() {
+    return get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG) / (1E-9 * CLK_FREQ);
+}
+
 
 
 /* parameters - channel, chip, module, settings */
@@ -1465,10 +1442,10 @@ int configureMAC() {
         FILE_LOG(logINFOBLUE, ("Sending an image to counter the packet numbers\n"));
         // remember old parameters
         enum timingMode oldtiming = getTiming();
-        uint64_t oldframes = setTimer(FRAME_NUMBER, -1);
-        uint64_t oldtriggers = setTimer(TRIGGER_NUMBER, -1);
-        uint64_t oldPeriod = setTimer(FRAME_PERIOD, -1);
-        uint64_t oldExptime = setTimer(ACQUISITION_TIME, -1);
+        uint64_t oldframes = getNumFrames();
+        uint64_t oldtriggers = getNumTriggers();
+        uint64_t oldPeriod = getPeriod();
+        uint64_t oldExptime = getExpTime();
 
         // set to basic parameters
         FILE_LOG(logINFO, ("\tSetting basic parameters\n"
@@ -1478,10 +1455,10 @@ int configureMAC() {
                 "\tperiod: 1s\n"
                 "\texptime: 900ms\n"));
         setTiming(AUTO_TIMING);
-        setTimer(FRAME_NUMBER, 1);
-        setTimer(TRIGGER_NUMBER, 1);
-        setTimer(FRAME_PERIOD, 1e9); // important to keep this until we have to wait for acquisition to start
-        setTimer(ACQUISITION_TIME, 900 * 1000);
+        setNumFrames(1);
+        setNumTriggers(1);
+        setPeriod(1e9); // important to keep this until we have to wait for acquisition to start
+        setExpTime(900 * 1000);
 
         // take an image
         if (masterflags == IS_MASTER)
@@ -1497,7 +1474,7 @@ int configureMAC() {
         }
 
         FILE_LOG(logINFO, ("\twaited %d loops to start\n", loop));
-        FILE_LOG(logINFO, ("\tWaiting for acquisition to end (frames left: %lld)\n", (long long int)getTimeLeft(FRAME_NUMBER)));
+        FILE_LOG(logINFO, ("\tWaiting for acquisition to end (frames left: %lld)\n", (long long int)getNumFramesLeft()));
     	// wait for status to be done
     	while(runBusy()){
     		usleep(500);
@@ -1513,10 +1490,10 @@ int configureMAC() {
                 (int)oldtiming, (long long int)oldframes, (long long int)oldtriggers,
                 (long long int)oldPeriod, (long long int)oldExptime));
         setTiming(oldtiming);
-        setTimer(FRAME_NUMBER, oldframes);
-        setTimer(TRIGGER_NUMBER, oldtriggers);
-        setTimer(FRAME_PERIOD, oldPeriod);
-        setTimer(ACQUISITION_TIME, oldExptime);
+        setNumFrames(oldframes);
+        setNumTriggers(oldtriggers);
+        setPeriod(oldPeriod);
+        setExpTime(oldExptime);
         FILE_LOG(logINFOBLUE, ("Done sending a frame at configuration\n"));
     }
     return OK;
@@ -1552,7 +1529,7 @@ int startStateMachine(){
 	return OK;
 #endif
 	FILE_LOG(logINFOBLUE, ("Starting State Machine\n"));
-	FILE_LOG(logINFO, ("#frames to acquire:%lld\n", (long long int)setTimer(FRAME_NUMBER, -1)));
+	FILE_LOG(logINFO, ("#frames to acquire:%lld\n", (long long int)getNumFrames()));
 
 	cleanFifos();
 
@@ -1565,9 +1542,9 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	int wait_in_s = 	(setTimer(FRAME_NUMBER, -1) *
-						setTimer(TRIGGER_NUMBER, -1) *
-						(setTimer(FRAME_PERIOD, -1)/(1E9)));
+	int wait_in_s = 	(getNumFrames() *
+						getNumTriggers() *
+						(getPeriod()/(1E9)));
 	FILE_LOG(logDEBUG1, ("going to wait for %d s\n", wait_in_s));
 	while(!virtual_stop && (wait_in_s >= 0)) {
 		usleep(1000 * 1000);
@@ -1697,7 +1674,7 @@ void readFrame(int *ret, char *mess){
 
 	// frames left to give status
     *ret = (int)OK;
-	int64_t retval = getTimeLeft(FRAME_NUMBER) + 1;
+	int64_t retval = getNumFramesLeft() + 1;
 	if ( retval > -1) {
 		FILE_LOG(logERROR, ("No data and run stopped: %lld frames left\n",(long  long int)retval));
 	} else {

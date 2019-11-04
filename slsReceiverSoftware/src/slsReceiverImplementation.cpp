@@ -337,12 +337,12 @@ uint64_t slsReceiverImplementation::getNumberOfFrames() const {
     return numberOfFrames;
 }
 
-uint64_t slsReceiverImplementation::getNumberofAnalogSamples() const {
+uint32_t slsReceiverImplementation::getNumberofAnalogSamples() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return numberOfAnalogSamples;
 }
 
-uint64_t slsReceiverImplementation::getNumberofDigitalSamples() const {
+uint32_t slsReceiverImplementation::getNumberofDigitalSamples() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return numberOfDigitalSamples;
 }
@@ -924,24 +924,20 @@ void slsReceiverImplementation::setAdditionalJsonHeader(const char c[]) {
     FILE_LOG(logINFO) << "Additional JSON Header: " << additionalJsonHeader;
 }
 
-int slsReceiverImplementation::setAcquisitionPeriod(const uint64_t i) {
+void slsReceiverImplementation::setAcquisitionPeriod(const uint64_t i) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     acquisitionPeriod = i;
     FILE_LOG(logINFO) << "Acquisition Period: "
                       << (double)acquisitionPeriod / (1E9) << "s";
-
-    return OK;
 }
 
-int slsReceiverImplementation::setAcquisitionTime(const uint64_t i) {
+void slsReceiverImplementation::setAcquisitionTime(const uint64_t i) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     acquisitionTime = i;
     FILE_LOG(logINFO) << "Acquisition Time: " << (double)acquisitionTime / (1E9)
                       << "s";
-
-    return OK;
 }
 
 void slsReceiverImplementation::setSubExpTime(const uint64_t i) {
@@ -967,7 +963,7 @@ void slsReceiverImplementation::setNumberOfFrames(const uint64_t i) {
     FILE_LOG(logINFO) << "Number of Frames: " << numberOfFrames;
 }
 
-int slsReceiverImplementation::setNumberofAnalogSamples(const uint64_t i) {
+int slsReceiverImplementation::setNumberofAnalogSamples(const uint32_t i) {
     if (numberOfAnalogSamples != i) {
         numberOfAnalogSamples = i;
 
@@ -986,7 +982,7 @@ int slsReceiverImplementation::setNumberofAnalogSamples(const uint64_t i) {
     return OK;
 }
 
-int slsReceiverImplementation::setNumberofDigitalSamples(const uint64_t i) {
+int slsReceiverImplementation::setNumberofDigitalSamples(const uint32_t i) {
     if (numberOfDigitalSamples != i) {
         numberOfDigitalSamples = i;
 

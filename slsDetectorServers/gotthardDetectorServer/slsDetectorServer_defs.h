@@ -28,7 +28,7 @@ enum DACINDEX				        {G_VREF_DS, G_VCASCN_PB, G_VCASCP_PB, G_VOUT_CM, G_VCAS
 #define DYNAMIC_RANGE				(16)
 #define NUM_BITS_PER_PIXEL			(DYNAMIC_RANGE / 8)
 #define DATA_BYTES					(NCHIP * NCHAN * NUM_BITS_PER_PIXEL)
-#define CLK_FREQ					(32.007729)	/* MHz */
+#define CLK_FREQ					(32007729)	/* Hz */
 
 /** Firmware Definitions */
 #define IP_PACKET_SIZE_NO_ROI       (NCHIP * (NCHAN / 2) * 2 + 14 + 20)     // 2 packets, so divide by 2

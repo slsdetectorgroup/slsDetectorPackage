@@ -444,13 +444,13 @@ void setupDetector() {
 	//Initialization of acquistion parameters
 	setSettings(DEFAULT_SETTINGS);
 
-	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
-	setTimer(TRIGGER_NUMBER, DEFAULT_NUM_CYCLES);
-	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
-	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
-	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
-	setTimer(STORAGE_CELL_NUMBER, DEFAULT_NUM_STRG_CLLS);
-	setTimer(STORAGE_CELL_DELAY, DEFAULT_STRG_CLL_DLY);
+	setNumFrames(DEFAULT_NUM_FRAMES);
+	setNumTriggers(DEFAULT_NUM_CYCLES);
+	setExpTime(DEFAULT_EXPTIME);
+	setPeriod(DEFAULT_PERIOD);
+	setDelayAfterTrigger(DEFAULT_DELAY);
+	setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
+	setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
 	selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
 	/*setClockDivider(HALF_SPEED); depends if all the previous stuff works*/
 	setTiming(DEFAULT_TIMING_MODE);
@@ -598,179 +598,164 @@ int getStartingFrameNumber(uint64_t* retval) {
 	return OK;
 }
 
-
-int64_t setTimer(enum timerIndex ind, int64_t val) {
-
-	int64_t retval = -1;
-	switch(ind){
-
-	case FRAME_NUMBER:
-		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting #frames: %lld\n",(long long int)val));
-		}
-		retval = set64BitReg(val,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-		FILE_LOG(logDEBUG1, ("Getting #frames: %lld\n", (long long int)retval));
-		break;
-
-	case ACQUISITION_TIME:
-		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting exptime: %lldns\n", (long long int)val));
-			val *= (1E-3 * CLK_RUN);
-			val -= ACQ_TIME_MIN_CLOCK;
-			if(val < 0) val = 0;
-		}
-		retval = (set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) + ACQ_TIME_MIN_CLOCK) / (1E-3 * CLK_RUN);
-		FILE_LOG(logDEBUG1, ("Getting exptime: %lldns\n", (long long int)retval));
-		break;
-
-	case FRAME_PERIOD:
-		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting period: %lldns\n",(long long int)val));
-			val *= (1E-3 * CLK_SYNC);
-		}
-		retval = set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG )/ (1E-3 * CLK_SYNC);
-		FILE_LOG(logDEBUG1, ("Getting period: %lldns\n", (long long int)retval));
-		break;
-
-	case DELAY_AFTER_TRIGGER:
-		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting delay: %lldns\n", (long long int)val));
-			val *= (1E-3 * CLK_SYNC);
-		}
-		retval = set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-3 * CLK_SYNC);
-		FILE_LOG(logDEBUG1, ("Getting delay: %lldns\n", (long long int)retval));
-		break;
-
-	case TRIGGER_NUMBER:
-		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting #triggers: %lld\n", (long long int)val));
-		}
-		retval = set64BitReg(val,  SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
-		FILE_LOG(logDEBUG1, ("Getting #triggers: %lld\n", (long long int)retval));
-		break;
-
-	case STORAGE_CELL_NUMBER:
-        if(val >= 0) {
-            FILE_LOG(logINFO, ("Setting #storage cells: %lld\n", (long long int)val));
-            bus_w(CONTROL_REG, (bus_r(CONTROL_REG) & ~CONTROL_STORAGE_CELL_NUM_MSK) |
-                    ((val << CONTROL_STORAGE_CELL_NUM_OFST) & CONTROL_STORAGE_CELL_NUM_MSK));
-        }
-        retval = ((bus_r(CONTROL_REG) & CONTROL_STORAGE_CELL_NUM_MSK) >> CONTROL_STORAGE_CELL_NUM_OFST);
-        FILE_LOG(logDEBUG1, ("Getting #storage cells: %lld\n", (long long int)retval));
-        break;
-
-	case STORAGE_CELL_DELAY:
-		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting storage cell delay: %lldns\n", (long long int)val));
-			val *= (1E-3 * CLK_RUN);
-            bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_EXPSRE_TMR_MSK) |
-                    ((val << ASIC_CTRL_EXPSRE_TMR_OFST) & ASIC_CTRL_EXPSRE_TMR_MSK));
-		}
-
-		retval = (((int64_t)((bus_r(ASIC_CTRL_REG) & ASIC_CTRL_EXPSRE_TMR_MSK) >> ASIC_CTRL_EXPSRE_TMR_OFST))/ (1E-3 * CLK_RUN));
-		FILE_LOG(logDEBUG1, ("Getting storage cell delay: %lldns\n", (long long int)retval));
-		break;
-
-	default:
-		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));
-		break;
-	}
-
-	return retval;
-
+void setNumFrames(int64_t val) {
+    if (val > 0) {
+        FILE_LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
+		set64BitReg(val, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+    }
 }
 
-
-
-int64_t getTimeLeft(enum timerIndex ind){
-#ifdef VIRTUAL
-    return 0;
-#endif
-	int64_t retval = -1;
-	switch(ind){
-
-	case FRAME_NUMBER:
-		retval = get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
-		FILE_LOG(logINFO, ("Getting number of frames left: %lld\n",(long long int)retval));
-		break;
-
-	case FRAME_PERIOD:
-		retval = get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-3 * CLK_SYNC);
-		FILE_LOG(logINFO, ("Getting period left: %lldns\n", (long long int)retval));
-		break;
-
-	case DELAY_AFTER_TRIGGER:
-		retval = get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-3 * CLK_SYNC);
-		FILE_LOG(logINFO, ("Getting delay left: %lldns\n", (long long int)retval));
-		break;
-
-	case TRIGGER_NUMBER:
-		retval = get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
-		FILE_LOG(logINFO, ("Getting number of triggers left: %lld\n", (long long int)retval));
-		break;
-
-	case ACTUAL_TIME:
-		retval = get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) / (1E-3 * CLK_SYNC);
-		FILE_LOG(logINFO, ("Getting actual time (time from start): %lld\n", (long long int)retval));
-		break;
-
-	case MEASUREMENT_TIME:
-		retval = get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) / (1E-3 * CLK_SYNC);
-		FILE_LOG(logINFO, ("Getting measurement time (timestamp/ start frame time): %lld\n", (long long int)retval));
-		break;
-
-	case FRAMES_FROM_START:
-	case FRAMES_FROM_START_PG:
-		retval = get64BitReg(FRAMES_FROM_START_LSB_REG, FRAMES_FROM_START_MSB_REG);
-		FILE_LOG(logINFO, ("Getting frames from start run control %lld\n", (long long int)retval));
-		break;
-
-	default:
-		FILE_LOG(logERROR, ("Remaining Timer index not implemented for this detector: %d\n", ind));
-		break;
-	}
-
-	return retval;
+int64_t getNumFrames() {
+    return get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
 }
 
+void setNumTriggers(int64_t val) {
+    if (val > 0) {
+		FILE_LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
+        set64BitReg(val, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+    } 
+}
 
-int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
-    if (val < 0)
-        return OK;
-    switch(ind) {
-    case ACQUISITION_TIME:
-        // convert to freq
-        val *= (1E-3 * CLK_RUN);
-        val -= ACQ_TIME_MIN_CLOCK;
-        if(val < 0) val = 0;
-        // convert back to timer
-        val = (val + ACQ_TIME_MIN_CLOCK) / (1E-3 * CLK_RUN);
-        if (val != retval)
-            return FAIL;
-        break;
-    case STORAGE_CELL_DELAY:
-        // convert to freq
-        val *= (1E-3 * CLK_RUN);
-        if(val < 0) val = 0;
-        // convert back to timer
-        val = val / (1E-3 * CLK_RUN);
-        if (val != retval)
-            return FAIL;
-        break;
-    case FRAME_PERIOD:
-    case DELAY_AFTER_TRIGGER:
-        // convert to freq
-        val *= (1E-3 * CLK_SYNC);
-        // convert back to timer
-        val = (val) / (1E-3 * CLK_SYNC);
-        if (val != retval)
-            return FAIL;
-        break;
-    default:
-        break;
+int64_t getNumTriggers() {
+    return get64BitReg(SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+}
+
+int setExpTime(int64_t val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+	FILE_LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
+    val *= (1E-3 * CLK_RUN);
+	val -= ACQ_TIME_MIN_CLOCK;
+	if (val < 0) {
+		val = 0;
+	}
+    set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG);
+
+    // validate for tolerance
+	val += ACQ_TIME_MIN_CLOCK;
+    int64_t retval = getExpTime();
+    val /= (1E-3 * CLK_RUN);
+    if (val != retval) {
+        return FAIL;
     }
     return OK;
 }
+
+int64_t getExpTime() {
+    return (get64BitReg(SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) + ACQ_TIME_MIN_CLOCK) / (1E-3 * CLK_RUN);
+}
+
+int setPeriod(int64_t val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid period: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+	FILE_LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
+    val *= (1E-3 * CLK_SYNC);
+    set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
+
+    // validate for tolerance
+    int64_t retval = getPeriod();
+    val /= (1E-3 * CLK_SYNC);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getPeriod() {
+    return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-3 * CLK_SYNC);
+}
+
+int setDelayAfterTrigger(int64_t val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid delay after trigger: %lld ns\n", (long long int)val));
+        return FAIL;
+    } 
+	FILE_LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
+    val *= (1E-3 * CLK_SYNC);
+    set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
+
+    // validate for tolerance
+    int64_t retval = getDelayAfterTrigger();
+    val /= (1E-3 * CLK_SYNC);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getDelayAfterTrigger() {
+    return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-3 * CLK_SYNC);
+  
+}
+
+void setNumAdditionalStorageCells(int val) {
+    if (val >= 0) {
+		FILE_LOG(logINFO, ("Setting number of addl. storage cells %d\n", val));
+		bus_w(CONTROL_REG, (bus_r(CONTROL_REG) & ~CONTROL_STORAGE_CELL_NUM_MSK) |
+                    ((val << CONTROL_STORAGE_CELL_NUM_OFST) & CONTROL_STORAGE_CELL_NUM_MSK));
+    } 
+}
+
+int getNumAdditionalStorageCells() {
+    return ((bus_r(CONTROL_REG) & CONTROL_STORAGE_CELL_NUM_MSK) >> CONTROL_STORAGE_CELL_NUM_OFST);
+}
+
+int setStorageCellDelay(int64_t val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid delay after trigger: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+	FILE_LOG(logINFO, ("Setting storage cell delay %lld ns\n", (long long int)val));
+    val *= (1E-3 * CLK_RUN);
+    bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_EXPSRE_TMR_MSK) |
+                    ((val << ASIC_CTRL_EXPSRE_TMR_OFST) & ASIC_CTRL_EXPSRE_TMR_MSK));
+
+    // validate for tolerance
+    int64_t retval = getStorageCellDelay();
+    val /= (1E-3 * CLK_RUN);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getStorageCellDelay() {
+    return (((int64_t)((bus_r(ASIC_CTRL_REG) & ASIC_CTRL_EXPSRE_TMR_MSK) >> ASIC_CTRL_EXPSRE_TMR_OFST))/ (1E-3 * CLK_RUN));
+  
+}
+
+int64_t getNumFramesLeft() {
+    return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
+}
+
+int64_t getNumTriggersLeft() {
+    return get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
+}
+
+int64_t getPeriodLeft() {
+    return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-3 * CLK_SYNC);
+}
+
+int64_t getDelayAfterTriggerLeft() {
+    return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-3 * CLK_SYNC);
+}
+
+int64_t getFramesFromStart() {
+    return get64BitReg(FRAMES_FROM_START_LSB_REG, FRAMES_FROM_START_MSB_REG);
+}
+
+int64_t getActualTime() {
+    return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) / (1E-3 * CLK_SYNC);
+}
+
+int64_t getMeasurementTime() {
+    return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) / (1E-3 * CLK_SYNC);
+}
+
 
 
 
@@ -1688,11 +1673,11 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	int64_t periodns = setTimer(FRAME_PERIOD, -1);
-	int numFrames = (setTimer(FRAME_NUMBER, -1) *
-						setTimer(TRIGGER_NUMBER, -1) *
-						(setTimer(STORAGE_CELL_NUMBER, -1) + 1));
-	int64_t exp_ns = 	setTimer(ACQUISITION_TIME, -1);
+	int64_t periodns = getPeriod();
+	int numFrames = (getNumFrames() *
+						getNumTriggers() *
+						(getNumAdditionalStorageCells() + 1));
+	int64_t exp_ns = 	getExpTime();
 
 		//TODO: Generate data
 		char imageData[DATA_BYTES];
@@ -1839,7 +1824,7 @@ void readFrame(int *ret, char *mess){
 
 	*ret = (int)OK;
 	// frames left to give status
-	int64_t retval = getTimeLeft(FRAME_NUMBER) + 1;
+	int64_t retval = getNumFramesLeft() + 1;
 
 	if ( retval > 0) {
 		FILE_LOG(logERROR, ("No data and run stopped: %lld frames left\n",(long  long int)retval));

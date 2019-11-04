@@ -556,13 +556,13 @@ void setupDetector() {
 	enableTenGigabitEthernet(0);
 
 	//Initialization of acquistion parameters
-    setTimer(ANALOG_SAMPLES, DEFAULT_NUM_SAMPLES); 
-    setTimer(DIGITAL_SAMPLES, DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
-	setTimer(FRAME_NUMBER, DEFAULT_NUM_FRAMES);
-	setTimer(ACQUISITION_TIME, DEFAULT_EXPTIME);
-	setTimer(TRIGGER_NUMBER, DEFAULT_NUM_CYCLES);
-	setTimer(FRAME_PERIOD, DEFAULT_PERIOD);
-	setTimer(DELAY_AFTER_TRIGGER, DEFAULT_DELAY);
+    setNumAnalogSamples(DEFAULT_NUM_SAMPLES); 
+    setNumDigitalSamples(DEFAULT_NUM_SAMPLES); // update databytes and allocate ram
+	setNumFrames(DEFAULT_NUM_FRAMES);
+	setExpTime(DEFAULT_EXPTIME);
+	setNumTriggers(DEFAULT_NUM_CYCLES);
+	setPeriod(DEFAULT_PERIOD);
+	setDelayAfterTrigger(DEFAULT_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
 	setReadoutMode(ANALOG_ONLY);
 
@@ -863,175 +863,160 @@ int getReadoutMode() {
 
 
 /* parameters - timer */
-int64_t setTimer(enum timerIndex ind, int64_t val) {
-
-	int64_t retval = -1;
-	switch(ind){
-
-	case FRAME_NUMBER:
-		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting #frames: %lld\n",(long long int)val));
-		}
-		retval = set64BitReg(val,  FRAMES_LSB_REG, FRAMES_MSB_REG);
-		FILE_LOG(logINFO, ("\tGetting #frames: %lld\n", (long long int)retval));
-		break;
-
-	case ACQUISITION_TIME:
-		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting exptime (pattern wait time level 0): %lldns\n",(long long int)val));
-			val *= (1E-3 * clkDivider[RUN_CLK]);
-			setPatternWaitTime(0, val);
-		}
-		retval = setPatternWaitTime(0, -1) / (1E-3 * clkDivider[RUN_CLK]);
-		FILE_LOG(logINFO, ("\tGetting exptime (pattern wait time level 0): %lldns\n", (long long int)retval));
-		break;
-
-	case FRAME_PERIOD:
-		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting period: %lldns\n",(long long int)val));
-			val *= (1E-3 * clkDivider[SYNC_CLK]);
-		}
-		retval = set64BitReg(val, PERIOD_LSB_REG, PERIOD_MSB_REG )/ (1E-3 * clkDivider[SYNC_CLK]);
-		FILE_LOG(logINFO, ("\tGetting period: %lldns\n", (long long int)retval));
-		break;
-
-	case DELAY_AFTER_TRIGGER:
-		if(val >= 0){
-			FILE_LOG(logINFO, ("Setting delay: %lldns\n", (long long int)val));
-			val *= (1E-3 * clkDivider[SYNC_CLK]);
-		}
-		retval = set64BitReg(val, DELAY_LSB_REG, DELAY_MSB_REG) / (1E-3 * clkDivider[SYNC_CLK]);
-		FILE_LOG(logINFO, ("\tGetting delay: %lldns\n", (long long int)retval));
-		break;
-
-	case TRIGGER_NUMBER:
-		if(val >= 0) {
-			FILE_LOG(logINFO, ("Setting #triggers: %lld\n", (long long int)val));
-		}
-		retval = set64BitReg(val,  CYCLES_LSB_REG, CYCLES_MSB_REG);
-		FILE_LOG(logINFO, ("\tGetting #triggers: %lld\n", (long long int)retval));
-		break;
-
-	case ANALOG_SAMPLES:
-	    if(val >= 0) {
-	        FILE_LOG(logINFO, ("Setting #analog samples: %lld\n", (long long int)val));
-	        naSamples = val;
-	        bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) &~ SAMPLES_ANALOG_MSK);
-            bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) | ((val << SAMPLES_ANALOG_OFST) & SAMPLES_ANALOG_MSK));
-	        if (allocateRAM() == FAIL) {
-	            return -1;
-	        }
-	    }
-        retval = naSamples;
-        FILE_LOG(logINFO, ("\tGetting #analog samples: %lld\n", (long long int)retval));
-        break;
-
-	case DIGITAL_SAMPLES:
-	    if(val >= 0) {
-	        FILE_LOG(logINFO, ("Setting #digital samples: %lld\n", (long long int)val));
-	        ndSamples = val;
-            bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) &~ SAMPLES_DIGITAL_MSK);
-            bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) | ((val << SAMPLES_DIGITAL_OFST) & SAMPLES_DIGITAL_MSK));
-
-	        if (allocateRAM() == FAIL) {
-	            return -1;
-	        }
-	    }
-        retval = ndSamples;
-        FILE_LOG(logINFO, ("\tGetting #digital samples: %lld\n", (long long int)retval));
-        break;
-
-	default:
-		FILE_LOG(logERROR, ("Timer Index not implemented for this detector: %d\n", ind));
-		break;
-	}
-
-	return retval;
-
+void setNumFrames(int64_t val) {
+    if (val > 0) {
+        FILE_LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
+        set64BitReg(val, FRAMES_LSB_REG, FRAMES_MSB_REG);
+    }
 }
 
-
-
-int64_t getTimeLeft(enum timerIndex ind){
-#ifdef VIRTUAL
-    return 0;
-#endif
-	int64_t retval = -1;
-	switch(ind){
-
-	case FRAME_NUMBER:
-		retval = get64BitReg(FRAMES_LEFT_LSB_REG, FRAMES_LEFT_MSB_REG);
-		FILE_LOG(logINFO, ("Getting number of frames left: %lld\n",(long long int)retval));
-		break;
-
-    case FRAME_PERIOD:
-        retval = get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) / (1E-3 * clkDivider[SYNC_CLK]);
-        FILE_LOG(logINFO, ("Getting period left: %lldns\n", (long long int)retval));
-        break;
-
-	case DELAY_AFTER_TRIGGER:
-		retval = get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) / (1E-3 * clkDivider[SYNC_CLK]);
-		FILE_LOG(logINFO, ("Getting delay left: %lldns\n", (long long int)retval));
-		break;
-
-	case TRIGGER_NUMBER:
-		retval = get64BitReg(CYCLES_LEFT_LSB_REG, CYCLES_LEFT_MSB_REG);
-		FILE_LOG(logINFO, ("Getting number of triggers left: %lld\n", (long long int)retval));
-		break;
-
-	case ACTUAL_TIME:
-		retval = get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) / (1E-3 * CLK_FREQ);
-		FILE_LOG(logINFO, ("Getting actual time (time from start): %lld\n", (long long int)retval));
-		break;
-
-	case MEASUREMENT_TIME:
-		retval = get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) / (1E-3 * CLK_FREQ);
-		FILE_LOG(logINFO, ("Getting measurement time (timestamp/ start frame time): %lld\n", (long long int)retval));
-		break;
-
-	case FRAMES_FROM_START:
-	case FRAMES_FROM_START_PG:
-		retval = get64BitReg(FRAMES_FROM_START_PG_LSB_REG, FRAMES_FROM_START_PG_MSB_REG);
-		FILE_LOG(logINFO, ("Getting frames from start run control %lld\n", (long long int)retval));
-		break;
-
-	default:
-		FILE_LOG(logERROR, ("Remaining Timer index not implemented for this detector: %d\n", ind));
-		break;
-	}
-
-	return retval;
+int64_t getNumFrames() {
+    return get64BitReg(FRAMES_LSB_REG, FRAMES_MSB_REG);
 }
 
+void setNumTriggers(int64_t val) {
+    if (val > 0) {
+        FILE_LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
+        set64BitReg(val, CYCLES_LSB_REG, CYCLES_MSB_REG);
+    } 
+}
 
-int validateTimer(enum timerIndex ind, int64_t val, int64_t retval) {
-    if (val < 0)
-        return OK;
-    switch(ind) {
-    case FRAME_PERIOD:
-    case DELAY_AFTER_TRIGGER:
-        // convert to freq
-        val *= (1E-3 * clkDivider[SYNC_CLK]);
-        // convert back to timer
-        val = (val) / (1E-3 * clkDivider[SYNC_CLK]);
-        if (val != retval) {
-        	return FAIL;
-        }
-        break;
-    case ACQUISITION_TIME:
-        // convert to freq
-        val *= (1E-3 * clkDivider[RUN_CLK]);
-        // convert back to timer
-        val = (val) / (1E-3 * clkDivider[RUN_CLK]);
-        if (val != retval) {
-        	return FAIL;
-        }
-    	break;
-    default:
-        break;
+int64_t getNumTriggers() {
+    return get64BitReg(CYCLES_LSB_REG, CYCLES_MSB_REG);
+}
+
+int setNumAnalogSamples(int val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid analog samples: %d\n", val));
+        return FAIL;
+    }
+    FILE_LOG(logINFO, ("Setting number of analog samples %d\n", val));
+    naSamples = val;
+    bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) &~ SAMPLES_ANALOG_MSK);
+    bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) | ((val << SAMPLES_ANALOG_OFST) & SAMPLES_ANALOG_MSK));
+    if (allocateRAM() == FAIL) {
+        return FAIL;
     }
     return OK;
 }
+
+int getNumAnalogSamples() {
+    return naSamples;
+}
+
+int setNumDigitalSamples(int val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid digital samples: %d\n", val));
+        return FAIL;
+    }
+    FILE_LOG(logINFO, ("Setting number of digital samples %d\n", val));
+    ndSamples = val;
+    bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) &~ SAMPLES_DIGITAL_MSK);
+    bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) | ((val << SAMPLES_DIGITAL_OFST) & SAMPLES_DIGITAL_MSK));
+    if (allocateRAM() == FAIL) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int getNumDigitalSamples() {
+    return ndSamples;
+}
+
+int setExpTime(int64_t val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+    FILE_LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
+    val *= (1E-3 * clkDivider[RUN_CLK]);
+    setPatternWaitTime(0, val);
+
+    // validate for tolerance
+    int64_t retval = getExpTime();
+    val /= (1E-3 * clkDivider[RUN_CLK]);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getExpTime() {
+    return setPatternWaitTime(0, -1) / (1E-3 * clkDivider[RUN_CLK]);
+}
+
+int setPeriod(int64_t val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid period: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+    FILE_LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
+    val *= (1E-3 * clkDivider[SYNC_CLK]);
+    set64BitReg(val, PERIOD_LSB_REG, PERIOD_MSB_REG);
+
+    // validate for tolerance
+    int64_t retval = getPeriod();
+    val /= (1E-3 * clkDivider[SYNC_CLK]);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getPeriod() {
+    return get64BitReg(PERIOD_LSB_REG, PERIOD_MSB_REG)/ (1E-3 * clkDivider[SYNC_CLK]);
+}
+
+int setDelayAfterTrigger(int64_t val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid delay after trigger: %lld ns\n", (long long int)val));
+        return FAIL;
+    }
+    FILE_LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
+    val *= (1E-3 * clkDivider[SYNC_CLK]);
+    set64BitReg(val, DELAY_LSB_REG, DELAY_MSB_REG);
+
+    // validate for tolerance
+    int64_t retval = getDelayAfterTrigger();
+    val /= (1E-3 * clkDivider[SYNC_CLK]);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getDelayAfterTrigger() {
+    return get64BitReg(DELAY_LSB_REG, DELAY_MSB_REG) / (1E-3 * clkDivider[SYNC_CLK]);
+}
+
+int64_t getNumFramesLeft() {
+    return get64BitReg(FRAMES_LEFT_LSB_REG, FRAMES_LEFT_MSB_REG);
+}
+
+int64_t getNumTriggersLeft() {
+    return get64BitReg(CYCLES_LEFT_LSB_REG, CYCLES_LEFT_MSB_REG);
+}
+
+int64_t getDelayAfterTriggerLeft() {
+    return get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) / (1E-3 * clkDivider[SYNC_CLK]);
+}
+
+int64_t getPeriodLeft() {
+    return get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) / (1E-3 * clkDivider[SYNC_CLK]);
+}
+
+int64_t getFramesFromStart() {
+    return get64BitReg(FRAMES_FROM_START_PG_LSB_REG, FRAMES_FROM_START_PG_MSB_REG);
+}
+
+int64_t getActualTime() {
+    return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) / (1E-3 * CLK_FREQ);
+}
+
+int64_t getMeasurementTime() {
+    return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) / (1E-3 * CLK_FREQ);
+}
+
 
 
 /* parameters - settings */
@@ -2199,9 +2184,9 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	int wait_in_s = 	(setTimer(FRAME_NUMBER, -1) *
-						setTimer(TRIGGER_NUMBER, -1) *
-						(setTimer(FRAME_PERIOD, -1)/(1E9)));
+	int wait_in_s = 	(getNumFrames() *
+						getNumTriggers() *
+						(getPeriod()/(1E9)));
 	FILE_LOG(logDEBUG1, ("going to wait for %d s\n", wait_in_s));
 	while(!virtual_stop && (wait_in_s >= 0)) {
 		usleep(1000 * 1000);
@@ -2341,7 +2326,7 @@ void readFrame(int *ret, char *mess) {
 	// ret could be fail in 1gudp for not creating udp sockets
 	if (*ret != FAIL) {
 		// frames left to give status
-		int64_t retval = getTimeLeft(FRAME_NUMBER) + 2;
+		int64_t retval = getNumFramesLeft() + 2;
 		if ( retval > 1) {
 			sprintf(mess,"No data and run stopped: %lld frames left\n",(long  long int)retval);
 			FILE_LOG(logERROR, (mess));

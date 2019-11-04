@@ -201,7 +201,7 @@ public:
 	 * @param f readout flags
 	 * @returns analog data bytes
      */
-    virtual int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readoutMode) {
+    virtual int setImageSize(uint32_t a, uint32_t as, uint32_t ds, bool t, slsDetectorDefs::readoutMode) {
         FILE_LOG(logERROR) << "setImageSize is a generic function that should be overloaded by a derived class";
 		return 0;
     };
@@ -577,7 +577,7 @@ public:
 	 * @param f readout flags
 	 * @returns analog data bytes
      */
-	int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readoutMode f) {
+	int setImageSize(uint32_t a, uint32_t as, uint32_t ds, bool t, slsDetectorDefs::readoutMode f) {
         int nachans = 0, ndchans = 0;
         int adatabytes = 0, ddatabytes = 0;
 
@@ -692,7 +692,7 @@ public:
 	 * @param f readout flags
 	 * @returns analog data bytes
      */
-	int setImageSize(uint32_t a, uint64_t as, uint64_t ds, bool t, slsDetectorDefs::readoutMode) {
+	int setImageSize(uint32_t a, uint32_t as, uint32_t ds, bool t, slsDetectorDefs::readoutMode) {
         int nachans = 0;
         int adatabytes = 0;
 

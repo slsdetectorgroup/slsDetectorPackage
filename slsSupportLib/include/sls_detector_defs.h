@@ -68,9 +68,6 @@
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
 
-// typedef char mystring[MAX_STR_LENGTH];
-
-
 
 #ifdef __cplusplus
 class slsDetectorDefs {
@@ -78,9 +75,7 @@ class slsDetectorDefs {
     slsDetectorDefs(){};
 #endif
 
-    /**
-   Type of the detector
-     */
+    /** Type of the detector */
     enum detectorType {
         GET_DETECTOR_TYPE = -1, 
         GENERIC,
@@ -93,48 +88,14 @@ class slsDetectorDefs {
         GOTTHARD2,
     };
 
-    /**
-  return values
-     */
+    /**  return values */
     enum {
         OK,   /**< function succeeded */
         FAIL, /**< function failed */
         FORCE_UPDATE
     };
 
-    /**
- indexes for the acquisition timers
-     */
-    enum timerIndex {
-        FRAME_NUMBER,        /**< number of real time frames: total number of
-                                acquisitions is number or frames*number of triggers */
-        ACQUISITION_TIME,    /**< exposure time */
-        FRAME_PERIOD,        /**< period between exposures */
-        DELAY_AFTER_TRIGGER, /**< delay between trigger and start of exposure or
-                                readout (in triggered mode) */
-        TRIGGER_NUMBER,    /**< number of triggers: total number of acquisitions is
-                             number or frames*number of triggers (* number of storage cells [jungfrau]) */
-        ACTUAL_TIME,      /**< Actual time of the detector's internal timer */
-        MEASUREMENT_TIME, /**< Time of the measurement from the detector (fifo)
-                           */
-
-        PROGRESS, /**< fraction of measurement elapsed - only get! */
-        FRAMES_FROM_START,
-        FRAMES_FROM_START_PG,
-        ANALOG_SAMPLES,
-        DIGITAL_SAMPLES,
-        SUBFRAME_ACQUISITION_TIME, /**< subframe exposure time */
-        STORAGE_CELL_NUMBER,       /**<number of storage cells */
-        SUBFRAME_DEADTIME,         /**< subframe deadtime */
-        MEASURED_PERIOD,           /**< measured period */
-        MEASURED_SUBPERIOD,        /**< measured subperiod */
-        STORAGE_CELL_DELAY,        /**< storage cell delay */
-        MAX_TIMERS
-    };
-
-    /**
-staus mask
-     */
+    /** staus mask */
     enum runStatus {
         IDLE,    /**< detector ready to start acquisition - no data in memory */
         ERROR,   /**< error i.e. normally fifo full */

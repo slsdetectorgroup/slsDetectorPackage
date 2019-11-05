@@ -107,8 +107,6 @@ void basictests() {
 	memset(firmware_message, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
 	FILE_LOG(logINFOBLUE, ("************ EIGER Virtual Server *****************\n\n"));
-	firmware_check_done = 1;
-	return;
 #endif
 	uint32_t ipadd	= getDetectorIP();
 	uint64_t macadd	= getDetectorMAC();
@@ -140,6 +138,10 @@ void basictests() {
 	udpDetails.srcip = ipadd;
 	udpDetails.srcmac = macadd;
 
+#ifdef VIRTUAL
+	firmware_check_done = 1;
+	return;	
+#endif
 	// return if debugflag is not zero, debug mode
 	if (debugflag) {
 		firmware_check_done = 1;
@@ -238,15 +240,16 @@ u_int32_t getDetectorNumber() {
 
 
 u_int64_t  getDetectorMAC() {
-#ifdef VIRTUAL
-	return 0;
-#else
 	char mac[255]="";
 	u_int64_t res=0;
 
 	//execute and get address
 	char output[255];
+#ifdef VIRTUAL
+	FILE* sysFile = popen("cat /sys/class/net/$(ip route show default | awk '/default/ {print $5}')/address", "r");
+#else
 	FILE* sysFile = popen("more /sys/class/net/eth0/address", "r");
+#endif
 	//FILE* sysFile = popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
 	fgets(output, sizeof(output), sysFile);
 	pclose(sysFile);
@@ -265,19 +268,19 @@ u_int64_t  getDetectorMAC() {
 	//FILE_LOG(logINFO, ("mac:%llx\n",res));
 
 	return res;
-#endif
 }
 
 
 u_int32_t  getDetectorIP() {
-#ifdef VIRTUAL
-	return 0;
-#endif
 	char temp[50]="";
 	u_int32_t res=0;
 	//execute and get address
 	char output[255];
+#ifdef VIRTUAL
+	FILE* sysFile = popen("ifconfig $(ip route show default | awk '/default/ {print $5}') | grep 'inet ' | cut -d ' ' -f10", "r");
+#else
 	FILE* sysFile = popen("ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2", "r");
+#endif
 	fgets(output, sizeof(output), sysFile);
 	pclose(sysFile);
 

@@ -1,7 +1,16 @@
+"""
+Code generator for enum bindings in the Python extension. 
+Reads the sls_detector_defs.h and enums_in.cpp then outputs 
+enums.cpp
+
+"""
+
+
 import re
 import subprocess
 
-def comment_remover(text):
+
+def remove_comments(text):
     def replacer(match):
         s = match.group(0)
         if s.startswith('/'):
@@ -49,7 +58,7 @@ def generate_enum_string(enums):
 with open('../../slsSupportLib/include/sls_detector_defs.h') as f:
     data = f.read()
 
-data = comment_remover(data)
+data = remove_comments(data)
 data = data.splitlines()
 enums = extract_enums(data)
 s = generate_enum_string(enums)
@@ -64,5 +73,5 @@ with open('../src/enums.cpp', 'w') as f:
     f.write(text)
 
 
-# clang-format ../src/enums.cpp -i
+# run clang format on the output
 subprocess.run(['clang-format', '../src/enums.cpp', '-i'])

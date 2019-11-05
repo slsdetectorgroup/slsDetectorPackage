@@ -1,5 +1,4 @@
 set(SOURCES
-    src/CmdLineParser.cpp
     src/string_utils.cpp
     src/file_utils.cpp
     src/ClientSocket.cpp

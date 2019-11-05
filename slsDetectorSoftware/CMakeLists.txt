@@ -87,6 +87,33 @@ set_target_properties(sls_detector_put PROPERTIES
     COMPILE_DEFINITIONS PUT=1
 )
 
+
+# Generate command line binaries
+set(list1 "put" "get" "acquire" "help2")
+set(list2 "PUT" "GET" "READOUT" "HELP")
+list(LENGTH list1 len1)
+math(EXPR len2 "${len1} - 1")
+
+foreach(val RANGE ${len2})
+    list(GET list1 ${val} val1)
+    list(GET list2 ${val} val2)
+    message(STATUS "${val1}  ${val2}")
+
+    add_executable(${val1} src/CmdLineApp.cpp)
+    target_link_libraries(${val1} 
+        slsDetectorShared
+        pthread
+        ${ZeroMQ_LIBRARIES}
+        rt
+    )
+    set_target_properties(${val1} PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        COMPILE_DEFINITIONS ${val2}=1
+    )
+endforeach()
+
+
+
 add_executable(sls_detector_acquire
     src/sls_detector_client.cpp
 )

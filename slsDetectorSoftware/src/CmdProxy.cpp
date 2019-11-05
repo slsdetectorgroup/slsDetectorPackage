@@ -191,6 +191,11 @@ std::string CmdProxy::VirtualServer(int action) {
     return os.str();
 }
 
+std::string CmdProxy::acquire(int action){
+    det->acquire();
+    return "Acquired\n";
+}
+
 std::string CmdProxy::FirmwareVersion(int action) {
     std::ostringstream os; 
     os << cmd << ' ';

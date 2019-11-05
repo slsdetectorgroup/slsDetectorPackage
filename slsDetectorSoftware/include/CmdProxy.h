@@ -565,6 +565,7 @@ class CmdProxy {
                           {"settings", &CmdProxy::settings},
 
                           /* acquisition parameters */
+                          {"acquire2", &CmdProxy::acquire},
                           {"frames", &CmdProxy::frames},                          
                           {"triggers", &CmdProxy::triggers},
                           {"exptime", &CmdProxy::exptime},
@@ -890,6 +891,7 @@ class CmdProxy {
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
     /* acquisition parameters */
+    std::string acquire(int action);
     std::string Speed(int action);
     std::string Adcphase(int action);
     std::string ClockFrequency(int action);

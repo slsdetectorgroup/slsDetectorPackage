@@ -8,6 +8,32 @@
 
 namespace sls {
 
+void freeSharedMemory(int multiId, int detPos) {
+    // single
+    if (detPos >= 0) {
+        SharedMemory<sharedSlsDetector> temp_shm(multiId, detPos);
+        if (temp_shm.IsExisting()) {
+            temp_shm.RemoveSharedMemory();
+        }
+        return;
+    }
+
+    // multi - get number of detectors from shm
+    SharedMemory<sharedMultiSlsDetector> multiShm(multiId, -1);
+    int numDetectors = 0;
+
+    if (multiShm.IsExisting()) {
+        multiShm.OpenSharedMemory();
+        numDetectors = multiShm()->numberOfDetectors;
+        multiShm.RemoveSharedMemory();
+    }
+
+    for (int i = 0; i < numDetectors; ++i) {
+        SharedMemory<sharedSlsDetector> shm(multiId, i);
+        shm.RemoveSharedMemory();
+    }
+}
+
 using defs = slsDetectorDefs;
 
 Detector::Detector(int shm_id)
@@ -472,7 +498,8 @@ void Detector::setDestinationUDPPort2(int port, int module_id) {
                             port_list[idet]);
         }
     } else {
-        pimpl->Parallel(&slsDetector::setDestinationUDPPort2, {module_id}, port);
+        pimpl->Parallel(&slsDetector::setDestinationUDPPort2, {module_id},
+                        port);
     }
 }
 
@@ -542,7 +569,7 @@ Result<int> Detector::getRxPort(Positions pos) const {
 void Detector::setRxPort(int port, int module_id) {
     if (module_id == -1) {
         std::vector<int> port_list(size());
-        for (auto &it: port_list) {
+        for (auto &it : port_list) {
             it = port++;
         }
         for (int idet = 0; idet < size(); ++idet) {
@@ -962,7 +989,7 @@ Result<bool> Detector::getQuad(Positions pos) const {
 void Detector::setQuad(const bool value) {
     if (value && size() > 1) {
         throw RuntimeError("Cannot set Quad type as it is available only for 1 "
-                        "Eiger Quad Half module.");
+                           "Eiger Quad Half module.");
     }
     pimpl->Parallel(&slsDetector::setQuad, {}, value);
 }
@@ -1023,7 +1050,8 @@ void Detector::setAutoCompDisable(bool value, Positions pos) {
 }
 
 Result<int> Detector::getNumberOfAdditionalStorageCells(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getNumberOfAdditionalStorageCells, pos);
+    return pimpl->Parallel(&slsDetector::getNumberOfAdditionalStorageCells,
+                           pos);
 }
 
 void Detector::setNumberOfAdditionalStorageCells(int value) {
@@ -1351,12 +1379,16 @@ void Detector::setPatternWord(int addr, uint64_t word, Positions pos) {
     pimpl->Parallel(&slsDetector::setPatternWord, pos, addr, word);
 }
 
-Result<std::array<int, 2>> Detector::getPatternLoopAddresses(int level, Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setPatternLoopAddresses, pos, level, -1, -1);
+Result<std::array<int, 2>>
+Detector::getPatternLoopAddresses(int level, Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setPatternLoopAddresses, pos, level,
+                           -1, -1);
 }
 
-void Detector::setPatternLoopAddresses(int level, int start, int stop, Positions pos) {
-    pimpl->Parallel(&slsDetector::setPatternLoopAddresses, pos, level, start, stop);
+void Detector::setPatternLoopAddresses(int level, int start, int stop,
+                                       Positions pos) {
+    pimpl->Parallel(&slsDetector::setPatternLoopAddresses, pos, level, start,
+                    stop);
 }
 
 Result<int> Detector::getPatternLoopCycles(int level, Positions pos) const {
@@ -1450,7 +1482,8 @@ Result<defs::frameModeType> Detector::getFrameMode(Positions pos) const {
     Result<defs::frameModeType> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
-            intResult[i] = sls::StringTo<slsDetectorDefs::frameModeType>(res[i]);
+            intResult[i] =
+                sls::StringTo<slsDetectorDefs::frameModeType>(res[i]);
         }
     } catch (...) {
         throw RuntimeError(
@@ -1470,7 +1503,8 @@ Result<defs::detectorModeType> Detector::getDetectorMode(Positions pos) const {
     Result<defs::detectorModeType> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
-            intResult[i] = sls::StringTo<slsDetectorDefs::detectorModeType>(res[i]);
+            intResult[i] =
+                sls::StringTo<slsDetectorDefs::detectorModeType>(res[i]);
         }
     } catch (...) {
         throw RuntimeError(

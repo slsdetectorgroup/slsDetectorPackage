@@ -88,7 +88,7 @@ set_target_properties(sls_detector_put PROPERTIES
 )
 
 
-# Generate command line binaries
+# New command line binaries
 set(list1 "put" "get" "acquire" "help2")
 set(list2 "PUT" "GET" "READOUT" "HELP")
 list(LENGTH list1 len1)

@@ -234,19 +234,6 @@ format
     */
     enum { GET_ACTION, PUT_ACTION, READOUT_ACTION, HELP_ACTION };
 
-    /**
-         flags to get (or set) the size of the detector
-    */
-    enum numberOf {
-        MAXMODX, /**<maximum number of module in X direction */
-        MAXMODY, /**<maximum number of module in Y direction */
-        NMODX,   /**<installed number of module in X direction */
-        NMODY,   /**<installed number of module in Y direction */
-        NCHANSX, /**<number of channels in X direction */
-        NCHANSY, /**<number of channels in Y direction */
-        NCHIPSX, /**<number of chips in X direction */
-        NCHIPSY  /**<number of chips in Y direction */
-    };
 
     /**
         dimension indexes

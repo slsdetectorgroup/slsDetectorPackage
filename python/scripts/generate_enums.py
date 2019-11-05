@@ -1,4 +1,5 @@
 import re
+import subprocess
 
 def comment_remover(text):
     def replacer(match):
@@ -61,3 +62,7 @@ warning = '/* WARINING This file is auto generated any edits might be overwritte
 with open('../src/enums.cpp', 'w') as f:
     f.write(warning)
     f.write(text)
+
+
+# clang-format ../src/enums.cpp -i
+subprocess.run(['clang-format', '../src/enums.cpp', '-i'])

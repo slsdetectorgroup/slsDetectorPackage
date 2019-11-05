@@ -114,22 +114,6 @@ const char* getRetName() {
 	}
 }
 
-const char* getSpeedName(enum speedVariable ind) {
-    switch (ind) {
-    case CLOCK_DIVIDER:  return "clock_divider";
-    case ADC_CLOCK:      return "adc_clock";
-    case ADC_PHASE:      return "adc_phase";
-    case ADC_PIPELINE:   return "adc_pipeline";
-    case DBIT_CLOCK:     return "dbit_clock";
-    case DBIT_PHASE:     return "dbit_phase";
-    case DBIT_PIPELINE:  return "dbit_pipeline";
-    case MAX_ADC_PHASE_SHIFT:  	return "max_adc_phase_shift";
-    case MAX_DBIT_PHASE_SHIFT:  return "max_dbit_phase_shift";
-	case SYNC_CLOCK:	 return "sync_clock";
-    default:             return "unknown_speed";
-    }
-}
-
 const char* getRunStateName(enum runStatus ind) {
     switch (ind) {
     case IDLE:  		return "idle";
@@ -200,7 +184,6 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_DYNAMIC_RANGE:				return "F_SET_DYNAMIC_RANGE";
 	case F_SET_ROI:							return "F_SET_ROI";
 	case F_GET_ROI:							return "F_GET_ROI";
-	case F_SET_SPEED:						return "F_SET_SPEED";
 	case F_EXIT_SERVER:						return "F_EXIT_SERVER";
 	case F_LOCK_SERVER:						return "F_LOCK_SERVER";
 	case F_GET_LAST_CLIENT_IP:				return "F_GET_LAST_CLIENT_IP";
@@ -297,7 +280,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_MAX_CLOCK_PHASE_SHIFT:		return "F_GET_MAX_CLOCK_PHASE_SHIFT";
 	case F_SET_CLOCK_DIVIDER:				return "F_SET_CLOCK_DIVIDER";	
 	case F_GET_CLOCK_DIVIDER:				return "F_GET_CLOCK_DIVIDER";
-
+	case F_SET_PIPELINE:					return "F_SET_PIPELINE";
+	case F_GET_PIPELINE:					return "F_GET_PIPELINE";
 
 	default:								return "Unknown Function";
 	}
@@ -359,7 +343,6 @@ void function_table() {
 	flist[F_SET_DYNAMIC_RANGE]					= &set_dynamic_range;
 	flist[F_SET_ROI]							= &set_roi;
 	flist[F_GET_ROI]							= &get_roi;
-	flist[F_SET_SPEED]							= &set_speed;
 	flist[F_EXIT_SERVER]						= &exit_server;
 	flist[F_LOCK_SERVER]						= &lock_server;
 	flist[F_GET_LAST_CLIENT_IP]					= &get_last_client_ip;
@@ -456,6 +439,8 @@ void function_table() {
 	flist[F_GET_MAX_CLOCK_PHASE_SHIFT]			= &get_max_clock_phase_shift;
 	flist[F_SET_CLOCK_DIVIDER]					= &set_clock_divider;
 	flist[F_GET_CLOCK_DIVIDER]					= &get_clock_divider;
+	flist[F_SET_PIPELINE]						= &set_pipeline;
+	flist[F_GET_PIPELINE]						= &get_pipeline;	
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -2570,131 +2555,6 @@ int get_roi(int file_des) {
 	}
 	return ret;
 }
-
-
-
-
-int set_speed(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	int args[3] = {-1, -1, -1};
-	int retval = -1;
-
-	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-		return printSocketReadError();
-
-#ifdef GOTTHARD2D
-	functionNotImplemented();
-#else
-
-	enum speedVariable ind = args[0];
-	int val = args[1];
-	int mode = args[2];
-
-    char speedName[20] = {0};
-    strcpy(speedName, getSpeedName(ind));
-    FILE_LOG(logDEBUG1, ("Setting speed index %s (speedVariable %d) to %d (mode: %d)\n", speedName, ind, val, mode));
-
-    // check index
-    switch(ind) {
-#ifdef JUNGFRAUD
-        case ADC_PHASE:
-        case CLOCK_DIVIDER:
-        case MAX_ADC_PHASE_SHIFT:
-#elif CHIPTESTBOARDD
-        case ADC_PHASE:
-        case DBIT_PHASE:
-        case MAX_ADC_PHASE_SHIFT:
-        case MAX_DBIT_PHASE_SHIFT:
-        case ADC_CLOCK:
-        case DBIT_CLOCK:
-		case SYNC_CLOCK:
-        case CLOCK_DIVIDER:
-        case ADC_PIPELINE:
-        case DBIT_PIPELINE:
-#elif MOENCHD
-        case ADC_PHASE:
-        case DBIT_PHASE:
-        case MAX_ADC_PHASE_SHIFT:
-        case MAX_DBIT_PHASE_SHIFT:
-        case ADC_CLOCK:
-        case DBIT_CLOCK:
-		case SYNC_CLOCK:
-        case CLOCK_DIVIDER:
-        case ADC_PIPELINE:
-        case DBIT_PIPELINE:
-#elif GOTTHARDD
-        case ADC_PHASE:
-#elif EIGERD
-        case CLOCK_DIVIDER:
-#endif
-            break;
-        default:
-            modeNotImplemented(speedName, (int)ind);
-            break;
-    }
-#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(JUNGFRAUD))
-    if (ret == OK && mode == 1) {
-		ret = FAIL;
-		strcpy(mess, "deg is not defined for this detector.\n");
-		FILE_LOG(logERROR,(mess));
-    }
-#endif
-#ifdef JUNGFRAUD
-	if (ret == OK && ind == CLOCK_DIVIDER && val == FULL_SPEED && isHardwareVersion2()) {
-		ret = FAIL;
-		strcpy(mess, "Full speed not implemented for this board version.\n");
-		FILE_LOG(logERROR,(mess));
-	}
-#endif
-
-    if (ret == OK) {
-    	// set
-    	if ((val != -1) && (Server_VerifyLock() == OK)) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
-    		setSpeed(ind, val, mode);
-#else
-    		setSpeed(ind, val);
-#endif
-    	}
-    	// get
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
-    	retval = getSpeed(ind, mode);
-#else
-    	retval = getSpeed(ind);
-#endif
-    	FILE_LOG(logDEBUG1, ("%s: %d (mode:%d)\n", speedName, retval, mode));
-    	// validate
-    	char validateName[20] = {0};
-    	sprintf(validateName, "set %s", speedName);
-#ifndef GOTTHARDD
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
-    	if ((ind == ADC_PHASE || ind == DBIT_PHASE) && mode == 1) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-    		ret = validatePhaseinDegrees(ind, val, retval);
-#else
-    		ret = validatePhaseinDegrees(val, retval);
-#endif
-    		if (ret == FAIL) {
-    			sprintf(mess, "Could not set %s. Set %d, got %d\n", validateName, val, retval);
-    			FILE_LOG(logERROR,(mess));
-    		}
-    	} else
-    		validate(val, retval, validateName, DEC);
-#else
-    	validate(val, retval, validateName, DEC);
-#endif
-#endif
-    }
-#endif
-
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
-}
-
-
-
-
-
 
 int exit_server(int file_des) {
 	FILE_LOG(logINFORED, ("Closing Server\n"));
@@ -5463,35 +5323,53 @@ int set_clock_frequency(int file_des) {
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting frequency of clock %d: %u\n", args[0], args[1]));
+	FILE_LOG(logDEBUG1, ("Setting clock (%d) frequency : %u\n", args[0], args[1]));
 
-
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
 	functionNotImplemented();
-/*
+#else
+
 	// only set
 	if (Server_VerifyLock() == OK) {
-		enum CLKINDEX c = (enum CLKINDEX)args[0];
-		if (c >= NUM_CLOCKS) {
+		int ind = args[0];
+		int val = args[1];
+		enum CLKINDEX c = 0;
+		switch (ind) {
+		case ADC_CLOCK:
+			c = ADC_CLK;
+			break;
+		case DBIT_CLOCK:
+			c = DBIT_CLK;
+			break;
+		case RUN_CLOCK:
+			c = RUN_CLK;
+			break;
+		case SYNC_CLOCK:
 			ret = FAIL;
-			sprintf(mess, "Cannot set frequency of clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
-			FILE_LOG(logERROR, (mess));
-		} else {
-			ret = setFrequency(c, args[1]); 
-			if (ret == FAIL) {
-				strcpy(mess, "Set frequency in unknown state. Reconfigure did not return.\n");
-				FILE_LOG(logERROR, (mess));
-			} else {
-				int retval = getFrequency(c);
-				FILE_LOG(logDEBUG1, ("retval frequency of clock %d: %d\n", (int)c, retval));
+			sprintf(mess, "Cannot set sync clock frequency.\n");
+			FILE_LOG(logERROR,(mess));	
+			break;
+		default:
+			modeNotImplemented("clock index (frequency set)", ind);
+			break;
+		}
 
-				char cval[100];
-				memset(cval, 0, 100);
-				sprintf(cval, "set frequency of clock %d Hz", (int)c);
-				validate(args[1], retval, cval, DEC);
+		if (ret != FAIL) {
+			char* clock_names[] = {CLK_NAMES};
+			char modeName[50] = "";
+			sprintf(modeName, "%s clock (%d) frequency", clock_names[c], (int)c);
+
+			if (getFrequency(c) == val) {
+				FILE_LOG(logINFO, ("Same %s: %d %s\n", modeName, val, myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
+			} else {
+				setFrequency(c, val); 
+				int retval = getFrequency(c);
+				FILE_LOG(logDEBUG1, ("retval %s: %d %s\n", modeName, retval, myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
+				validate(val, retval, modeName, DEC);
 			}
 		}
 	}
-*/
+#endif
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
 
@@ -5504,20 +5382,42 @@ int get_clock_frequency(int file_des) {
 	
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("Getting frequency of clock %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Getting clock (%d) frequency\n", arg));
 
-#ifndef GOTTHARD2D
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(GOTTHARD2D) 
 	functionNotImplemented();
-#else	
+#else
 	// get only
-	enum CLKINDEX c = (enum CLKINDEX)arg;
-	if (c >= NUM_CLOCKS) {
-		ret = FAIL;
-		sprintf(mess, "Cannot get frequency of clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
-		FILE_LOG(logERROR, (mess));
-	} else {
+	enum CLKINDEX c = 0;
+	switch (arg) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)		
+	case ADC_CLOCK:
+		c = ADC_CLK;
+		break;
+	case DBIT_CLOCK:
+		c = DBIT_CLK;
+		break;
+	case RUN_CLOCK:
+		c = RUN_CLK;
+		break;
+	case SYNC_CLOCK:
+		c = SYNC_CLK;	
+		break;
+#endif
+	default:
+#ifdef GOTTHARD2D
+		if (c < NUM_CLOCKS) {
+			c = (enum CLKINDEX)arg;
+			break;
+		}
+#endif
+		modeNotImplemented("clock index (frequency get)", arg);
+		break;
+	}	
+	if (ret == OK) {
 		retval = getFrequency(c);
-		FILE_LOG(logDEBUG1, ("retval frequency of clock %d Hz: %d\n", (int)c, retval));
+		char* clock_names[] = {CLK_NAMES};
+		FILE_LOG(logDEBUG1, ("retval %s clock (%d) frequency: %d %s\n", clock_names[c], (int)c, retval, myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
@@ -5533,51 +5433,86 @@ int set_clock_phase(int file_des) {
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting phase of clock %d: %u %s\n", args[0], args[1], (args[2] == 0 ? "" : "degrees")));
+	FILE_LOG(logDEBUG1, ("Setting clock (%d) phase: %u %s\n", args[0], args[1], (args[2] == 0 ? "" : "degrees")));
 
-#ifndef GOTTHARD2D
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(JUNGFRAUD)&& !defined(GOTTHARDD) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else
 	// only set
 	if (Server_VerifyLock() == OK) {
-		enum CLKINDEX c = (enum CLKINDEX)args[0];
-		if (c >= NUM_CLOCKS) {
-			ret = FAIL;
-			sprintf(mess, "Cannot set phase for clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
-			FILE_LOG(logERROR, (mess));
-		} else {
-			int val = args[1];
-			int degrees = args[2];
-			if (degrees && (val < 0 || val > 359)) {
-				ret = FAIL;
-				sprintf(mess, "Cannot set phase. Phase provided for C%d outside limits (0 - 359°C)\n", (int)c);
-				FILE_LOG(logERROR, (mess));
-			} else if (!degrees && (val < 0 || val > getMaxPhase(c) - 1)) {
-				ret = FAIL;
-				sprintf(mess, "Cannot set phase. Phase provided for C%d outside limits (0 - %d phase shifts)\n", (int)c, getMaxPhase(c) - 1);
-				FILE_LOG(logERROR, (mess));
-			} else {
-				ret = setPhase(c, val, degrees); 
-				if (ret == FAIL) {
-					strcpy(mess, "Set phase in unknown state. Reconfigure did not return.\n");
-					FILE_LOG(logERROR, (mess));
-				} else {
-					int retval = getPhase(c, degrees);
-					FILE_LOG(logDEBUG1, ("retval phase for clock %d: %d %s \n", (int)c, retval, (degrees == 0 ? "" : "degrees")));
+		int ind = args[0];
+		int val = args[1];
+		int inDegrees = args[2] == 0 ? 0 : 1;
+		enum CLKINDEX c = 0;
+		switch (ind) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)	|| defined(JUNGFRAUD) || defined(GOTTHARDD)	
+	case ADC_CLOCK:
+		c = ADC_CLK;
+		break;
+#endif
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	case DBIT_CLOCK:
+		c = DBIT_CLK;
+		break;
+#endif
+		default:
+#ifdef GOTTHARD2D
+			if (c < NUM_CLOCKS) {
+				c = (enum CLKINDEX)ind;
+				break;
+			}
+#endif
+			modeNotImplemented("clock index (phase set)", ind);
+			break;
+		}	
+		if (ret != FAIL) {
+			char* clock_names[] = {CLK_NAMES};
+			char modeName[50] = "";
+			sprintf(modeName, "%s clock (%d) phase %s", clock_names[c], (int)c, (inDegrees == 0 ? "" : "(degrees)"));
 
-					char cval[100];
-					memset(cval, 0, 100);
-					sprintf(cval, "set phase for clock %d",(int)c);
-					if (!degrees) {
-						validate(val, retval, cval, DEC);
+			// gotthard1d doesnt take degrees and cannot get phase
+#ifdef GOTTHARDD
+			if (inDegrees != 0) {
+				ret = FAIL;
+				strcpy(mess, "Cannot set phase in degrees for this detector.\n");
+				FILE_LOG(logERROR, (mess));				
+			}
+#else
+			if (getPhase(c, inDegrees) == val) {	
+				FILE_LOG(logINFO, ("Same %s: %d\n", modeName, val));
+			} else if (inDegrees && (val < 0 || val > 359)) {
+				ret = FAIL;
+				sprintf(mess, "Cannot set %s to %d degrees. Phase outside limits (0 - 359°C)\n", modeName, val);
+				FILE_LOG(logERROR, (mess));
+			} else if (!inDegrees && (val < 0 || val > getMaxPhase(c) - 1)) {
+				ret = FAIL;
+				sprintf(mess, "Cannot set %s to %d. Phase outside limits (0 - %d phase shifts)\n", modeName, val, getMaxPhase(c) - 1);
+				FILE_LOG(logERROR, (mess));
+			}
+#endif
+			else {
+				int ret = setPhase(c, val, inDegrees); 
+				if (ret == FAIL) {
+					sprintf(mess, "Could not set %s to %d.\n", modeName, val);
+					FILE_LOG(logERROR, (mess));
+				} 
+
+				// gotthard1d doesnt take degrees and cannot get phase
+#ifndef GOTTHARDD				
+				else {				
+					int retval = getPhase(c, inDegrees);				
+					FILE_LOG(logDEBUG1, ("retval %s : %d\n", modeName, retval));
+					if (!inDegrees) {
+						validate(val, retval, modeName, DEC);
 					} else {
 						ret = validatePhaseinDegrees(c, val, retval);
 						if (ret == FAIL) {
-							sprintf(mess, "Could not set %s. Set %d degrees, got %d degrees\n", cval, val, retval);
+							sprintf(mess, "Could not set %s. Set %d degrees, got %d degrees\n", modeName, val, retval);
 							FILE_LOG(logERROR,(mess));
 						}			
 					}
 				}
+#endif				
 			}
 		}
 	}
@@ -5594,20 +5529,40 @@ int get_clock_phase(int file_des) {
 	
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("Getting phase for clock %d %s \n", args[0], (args[1] == 0 ? "" : "in degrees")));
+	FILE_LOG(logDEBUG1, ("Getting clock (%d) phase %s \n", args[0], (args[1] == 0 ? "" : "in degrees")));
 
-#ifndef GOTTHARD2D
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
-	enum CLKINDEX c = (enum CLKINDEX)args[0];
-	if (c >= NUM_CLOCKS) {
-		ret = FAIL;
-		sprintf(mess, "Cannot get phase of clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
-		FILE_LOG(logERROR, (mess));
-	} else {	
-		retval = getPhase(c, args[1]);
-		FILE_LOG(logDEBUG1, ("retval phase for clock %d: %d %s\n", (int)c, retval, (args[1] == 0 ? "" : "degrees")));
+	int ind = args[0];
+	int inDegrees = args[1] == 0 ? 0 : 1;
+	enum CLKINDEX c = 0;
+	switch (ind) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)	|| defined(JUNGFRAUD)
+	case ADC_CLOCK:
+		c = ADC_CLK;
+		break;
+#endif
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	case DBIT_CLOCK:
+		c = DBIT_CLK;
+		break;
+#endif
+	default:
+#ifdef GOTTHARD2D
+		if (c < NUM_CLOCKS) {
+			c = (enum CLKINDEX)ind;
+			break;
+		}
+#endif
+		modeNotImplemented("clock index (phase get)", ind);
+		break;
+	}	
+	if (ret == OK) {
+		retval = getPhase(c, inDegrees);		
+		char* clock_names[] = {CLK_NAMES};
+		FILE_LOG(logDEBUG1, ("retval %s clock (%d) phase: %d %s\n", clock_names[c], (int)c, retval, (inDegrees == 0 ? "" : "degrees")));
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
@@ -5622,20 +5577,38 @@ int get_max_clock_phase_shift(int file_des) {
 	
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("Getting max phase shift of clock %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Getting clock (%d) max phase shift\n", arg));
 
-#ifndef GOTTHARD2D
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)  && !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
-	enum CLKINDEX c = (enum CLKINDEX)arg;
-	if (c >= NUM_CLOCKS) {
-		ret = FAIL;
-		sprintf(mess, "Cannot get frequency of clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
-		FILE_LOG(logERROR, (mess));
-	} else {
-		retval = getMaxPhase(c);
-		FILE_LOG(logDEBUG1, ("retval max phase shift of clock %d: %d\n", (int)c, retval));
+	enum CLKINDEX c = 0;
+	switch (arg) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)	|| defined(JUNGFRAUD)
+	case ADC_CLOCK:
+		c = ADC_CLK;
+		break;
+#endif
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	case DBIT_CLOCK:
+		c = DBIT_CLK;
+		break;
+#endif
+	default:
+#ifdef GOTTHARD2D
+		if (c < NUM_CLOCKS) {
+			c = (enum CLKINDEX)arg;
+			break;
+		}
+#endif
+		modeNotImplemented("clock index (max phase get)", arg);
+		break;
+	}
+	if (ret == OK) {
+		retval = getMaxPhase(c);		
+		char* clock_names[] = {CLK_NAMES};
+		FILE_LOG(logDEBUG1, ("retval %s clock (%d) max phase shift: %d\n", clock_names[c], (int)c, retval));
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
@@ -5649,38 +5622,78 @@ int set_clock_divider(int file_des) {
 
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting divider of clock %d: %u\n", args[0], args[1]));
+	FILE_LOG(logDEBUG1, ("Setting clock (%d) divider: %u\n", args[0], args[1]));
 
-#ifndef GOTTHARD2D
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D) 
 	functionNotImplemented();
 #else
 	// only set
 	if (Server_VerifyLock() == OK) {
-		enum CLKINDEX c = (enum CLKINDEX)args[0];
+		int ind = args[0];
 		int val = args[1];
-		if (c >= NUM_CLOCKS) {
-			ret = FAIL;
-			sprintf(mess, "Cannot set divider of clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
-			FILE_LOG(logERROR, (mess));
-		} else if (getClockDivider(c) == val) {
-			FILE_LOG(logINFO, ("Same clock divider %d\n"));
-		} else if (val < 2 || val > getMaxClockDivider()) {
-			ret = FAIL;
-			sprintf(mess, "Cannot set divider of clock %d to %d. Value should be in range [2-%d]\n", (int)c, val, getMaxClockDivider());
-			FILE_LOG(logERROR, (mess));
-		} else {
-			ret = setClockDivider(c, val); 
-			if (ret == FAIL) {
-				strcpy(mess, "Set divider in unknown state. Reconfigure did not return.\n");
-				FILE_LOG(logERROR, (mess));
-			} else {
-				int retval = getClockDivider(c);
-				FILE_LOG(logDEBUG1, ("retval divider of clock %d: %d\n", (int)c, retval));
+		enum CLKINDEX c = 0;
+		switch (ind) {
+		// specific clock index
+#if defined(EIGERD) || defined(JUNGFRAUD)		
+		case RUN_CLOCK:
+			c = RUN_CLK;
+			break;
+#endif
+		default:
+		// any clock index
+#ifdef GOTTHARD2D
+			if (c < NUM_CLOCKS) {
+				c = (enum CLKINDEX)ind;
+				break;
+			}
+#endif
+			modeNotImplemented("clock index (divider set)", ind);
+			break;
+		}	
 
-				char cval[100];
-				memset(cval, 0, 100);
-				sprintf(cval, "set divider of clock %d Hz", (int)c);
-				validate(val, retval, cval, DEC);
+		// validate val range
+		if (ret != FAIL) {
+#ifdef JUNGFRAUD
+			if (val == (int)FULL_SPEED && isHardwareVersion2()) {
+				ret = FAIL;
+				strcpy(mess, "Full speed not implemented for this board version.\n");
+				FILE_LOG(logERROR,(mess));
+			} else 
+#endif
+#ifdef GOTTHARD2D	
+			if (val < 2 || val > getMaxClockDivider()) {
+				char* clock_names[] = {CLK_NAMES};
+				ret = FAIL;
+				sprintf(mess, "Cannot set %s clock(%d) to %d. Value should be in range [2-%d]\n", clock_names[c], (int)c, val, getMaxClockDivider());
+				FILE_LOG(logERROR, (mess));
+			}
+#else
+			if (val < (int)FULL_SPEED || val > (int)QUARTER_SPEED) {
+				ret = FAIL;
+				sprintf(mess, "Cannot set speed to %d. Value should be in range [%d-%d]\n", val, (int)FULL_SPEED, (int)QUARTER_SPEED);
+				FILE_LOG(logERROR, (mess));
+			}
+#endif	
+		}
+
+		if (ret != FAIL) {
+			char modeName[50] = "speed";
+#ifdef GOTTHARD2D		
+			char* clock_names[] = {CLK_NAMES};
+			sprintf(modeName, "%s clock (%d) divider", clock_names[c], (int)c);
+#endif
+			if (getClockDivider(c) == val) {	
+				FILE_LOG(logINFO, ("Same %s: %d\n", modeName, val));
+			} else {
+				int ret = setClockDivider(c, val); 
+				if (ret == FAIL) {
+					sprintf(mess, "Could not set %s to %d.\n", modeName, val);
+					FILE_LOG(logERROR, (mess));
+				} else {				
+					int retval = getClockDivider(c);				
+					FILE_LOG(logDEBUG1, ("retval %s : %d\n", modeName, retval));
+					validate(val, retval, modeName, DEC);
+				}
 			}
 		}
 	}
@@ -5697,20 +5710,115 @@ int get_clock_divider(int file_des) {
 	
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("Getting divider of clock %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Getting clock (%d) divider\n", arg));
 
-#ifndef GOTTHARD2D
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D) 
 	functionNotImplemented();
 #else	
 	// get only
-	enum CLKINDEX c = (enum CLKINDEX)arg;
-	if (c >= NUM_CLOCKS) {
-		ret = FAIL;
-		sprintf(mess, "Cannot get divider of clock %d. Max number of clocks is %d.\n", (int)c, NUM_CLOCKS - 1);
-		FILE_LOG(logERROR, (mess));
-	} else {
+	enum CLKINDEX c = 0;
+	switch (arg) {
+#if defined(EIGERD) || defined(JUNGFRAUD)		
+	case RUN_CLOCK:
+		c = RUN_CLK;
+		break;
+#endif
+	default:
+#ifdef GOTTHARD2D
+		if (c < NUM_CLOCKS) {
+			c = (enum CLKINDEX)arg;
+			break;
+		}
+#endif
+		modeNotImplemented("clock index (divider get)", arg);
+		break;
+	}	
+	if (ret == OK) {
 		retval = getClockDivider(c);
-		FILE_LOG(logDEBUG1, ("retval divider of clock %d Hz: %d\n", (int)c, retval));
+		char* clock_names[] = {CLK_NAMES};
+		FILE_LOG(logDEBUG1, ("retval %s clock (%d) divider: %d\n", clock_names[c], (int)c, retval));
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+int set_pipeline(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[2] = {-1, -1};
+
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting clock (%d) pipeline : %u\n", args[0], args[1]));
+
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+	functionNotImplemented();
+#else
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		int ind = args[0];
+		int val = args[1];
+		enum CLKINDEX c = 0;
+		switch (ind) {
+		case ADC_CLOCK:
+			c = ADC_CLK;
+			break;
+		case DBIT_CLOCK:
+			c = DBIT_CLK;
+			break;
+		default:
+			modeNotImplemented("clock index (pipeline set)", ind);
+			break;
+		}
+
+		if (ret != FAIL) {
+			char* clock_names[] = {CLK_NAMES};
+			char modeName[50] = "";
+			sprintf(modeName, "%s clock (%d) piepline", clock_names[c], (int)c);
+
+			setPipeline(c, val); 
+			int retval = getPipeline(c);
+			FILE_LOG(logDEBUG1, ("retval %s: %d\n", modeName, retval));
+			validate(val, retval, modeName, DEC);
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_pipeline(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = -1;
+	int retval = -1;
+	
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+		return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Getting clock (%d) frequency\n", arg));
+
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+	functionNotImplemented();
+#else
+	// get only
+	enum CLKINDEX c = 0;
+	switch (arg) {
+	case ADC_CLOCK:
+		c = ADC_CLK;
+		break;
+	case DBIT_CLOCK:
+		c = DBIT_CLK;
+		break;
+	default:
+		modeNotImplemented("clock index (pipeline get)", arg);
+		break;
+	}	
+	if (ret == OK) {
+		retval = getPipeline(c);
+		char* clock_names[] = {CLK_NAMES};
+		FILE_LOG(logDEBUG1, ("retval %s clock (%d) pipeline: %d\n", clock_names[c], (int)c, retval));
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));

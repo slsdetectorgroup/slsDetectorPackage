@@ -431,7 +431,7 @@ void setupDetector() {
 	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
 
 	FILE_LOG(logINFOBLUE, ("Setting Default parameters\n"));
-	setClockDivider(HALF_SPEED);
+	setClockDivider(RUN_CLK, HALF_SPEED);
 	cleanFifos();
 	resetCore();
 
@@ -452,7 +452,7 @@ void setupDetector() {
 	setNumAdditionalStorageCells(DEFAULT_NUM_STRG_CLLS);
 	setStorageCellDelay(DEFAULT_STRG_CLL_DLY);
 	selectStoragecellStart(DEFAULT_STRG_CLL_STRT);
-	/*setClockDivider(HALF_SPEED); depends if all the previous stuff works*/
+	/*setClockDivider(RUN_CLK, HALF_SPEED); depends if all the previous stuff works*/
 	setTiming(DEFAULT_TIMING_MODE);
 	setStartingFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 
@@ -540,36 +540,6 @@ uint32_t getADCInvertRegister() {
 	FILE_LOG(logDEBUG1, ("\tread:0x%x, default:0x%x returned:0x%x\n", readValue, defaultValue, val));
 	return val;
 }
-
-
-/* parameters - speed, readout */
-
-void setSpeed(enum speedVariable ind, int val, int mode) {
-    switch(ind) {
-    case CLOCK_DIVIDER:
-        setClockDivider(val);
-		break;
-    case ADC_PHASE:
-        setAdcPhase(val, mode);
-		break;
-    default:
-        return;
-    }
-}
-
-int getSpeed(enum speedVariable ind, int mode) {
-    switch(ind) {
-    case CLOCK_DIVIDER:
-        return getClockDivider();
-    case ADC_PHASE:
-        return getPhase(mode);
-    case MAX_ADC_PHASE_SHIFT:
-    	return getMaxPhaseShift();
-    default:
-        return -1;
-    }
-}
-
 
 
 
@@ -1376,69 +1346,76 @@ void configureASICTimer() {
     bus_w(ASIC_CTRL_REG, (bus_r(ASIC_CTRL_REG) & ~ASIC_CTRL_DS_TMR_MSK) | ASIC_CTRL_DS_TMR_VAL);
 }
 
-void setClockDivider(int val) {
-    // setting
-    if(val >= 0) {
+int setClockDivider(enum CLKINDEX ind, int val) {
+    if (ind != RUN_CLK) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to set speed\n", ind));
+	    return FAIL;
+	}	
+	// stop state machine if running
+	if(runBusy()) {
+		stopStateMachine();
+	}
 
-        // stop state machine if running
-        if(runBusy()) {
-            stopStateMachine();
+	uint32_t adcOfst = 0;
+	uint32_t sampleAdcSpeed = 0;
+	uint32_t adcPhase = 0;
+	uint32_t config = CONFIG_FULL_SPEED_40MHZ_VAL;
+
+	switch(val) {
+
+	case FULL_SPEED:
+		if(isHardwareVersion2()) {
+			FILE_LOG(logERROR, ("Cannot set full speed. Should not be here\n"));
+			return FAIL;
 		}
+		FILE_LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
+		adcOfst = ADC_OFST_FULL_SPEED_VAL;
+		sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED;
+		adcPhase = ADC_PHASE_FULL_SPEED;
+		config = CONFIG_FULL_SPEED_40MHZ_VAL;
+		break;
+	
+	case HALF_SPEED:
+		FILE_LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
+		adcOfst = isHardwareVersion2() ? ADC_OFST_HALF_SPEED_BOARD2_VAL : ADC_OFST_HALF_SPEED_VAL;
+		sampleAdcSpeed = isHardwareVersion2() ? SAMPLE_ADC_HALF_SPEED_BOARD2 : SAMPLE_ADC_HALF_SPEED;
+		adcPhase = isHardwareVersion2() ? ADC_PHASE_HALF_SPEED_BOARD2 : ADC_PHASE_HALF_SPEED;
+		config = CONFIG_HALF_SPEED_20MHZ_VAL;
+		break;
+	
+	case QUARTER_SPEED:
+		FILE_LOG(logINFO, ("Setting Half Speed (10 MHz):\n"));
+		adcOfst = isHardwareVersion2() ? ADC_OFST_QUARTER_SPEED_BOARD2_VAL : ADC_OFST_QUARTER_SPEED_VAL;
+		sampleAdcSpeed = isHardwareVersion2() ? SAMPLE_ADC_QUARTER_SPEED_BOARD2 : SAMPLE_ADC_QUARTER_SPEED;
+		adcPhase = isHardwareVersion2() ? ADC_PHASE_QUARTER_SPEED_BOARD2 : ADC_PHASE_QUARTER_SPEED;
+		config = CONFIG_QUARTER_SPEED_10MHZ_VAL;
+		break;
+	
+	default:
+		FILE_LOG(logERROR, ("Unknown speed val %d\n", val));
+		return FAIL;
+	}
 
-		uint32_t adcOfst = 0;
-		uint32_t sampleAdcSpeed = 0;
-		uint32_t adcPhase = 0;
-		uint32_t config = CONFIG_FULL_SPEED_40MHZ_VAL;
+	bus_w(CONFIG_REG, (bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK) | config);
+	FILE_LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
 
-        switch(val) {
+	bus_w(ADC_OFST_REG, adcOfst);
+	FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
 
-        case FULL_SPEED:
-			if(isHardwareVersion2()) {
-				FILE_LOG(logERROR, ("Cannot set full speed. Should not be here\n"));
-				return;
-			}
-			FILE_LOG(logINFO, ("Setting Full Speed (40 MHz):\n"));
-			adcOfst = ADC_OFST_FULL_SPEED_VAL;
-			sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED;
-			adcPhase = ADC_PHASE_FULL_SPEED;
-			config = CONFIG_FULL_SPEED_40MHZ_VAL;
-			break;
-		
-		case HALF_SPEED:
-            FILE_LOG(logINFO, ("Setting Half Speed (20 MHz):\n"));
-			adcOfst = isHardwareVersion2() ? ADC_OFST_HALF_SPEED_BOARD2_VAL : ADC_OFST_HALF_SPEED_VAL;
-			sampleAdcSpeed = isHardwareVersion2() ? SAMPLE_ADC_HALF_SPEED_BOARD2 : SAMPLE_ADC_HALF_SPEED;
-			adcPhase = isHardwareVersion2() ? ADC_PHASE_HALF_SPEED_BOARD2 : ADC_PHASE_HALF_SPEED;
-			config = CONFIG_HALF_SPEED_20MHZ_VAL;
-			break;
-		
-		case QUARTER_SPEED:
-            FILE_LOG(logINFO, ("Setting Half Speed (10 MHz):\n"));
-			adcOfst = isHardwareVersion2() ? ADC_OFST_QUARTER_SPEED_BOARD2_VAL : ADC_OFST_QUARTER_SPEED_VAL;
-			sampleAdcSpeed = isHardwareVersion2() ? SAMPLE_ADC_QUARTER_SPEED_BOARD2 : SAMPLE_ADC_QUARTER_SPEED;
-			adcPhase = isHardwareVersion2() ? ADC_PHASE_QUARTER_SPEED_BOARD2 : ADC_PHASE_QUARTER_SPEED;
-			config = CONFIG_QUARTER_SPEED_10MHZ_VAL;
-			break;
-		
-		default:
-			break;
-		}
+	bus_w(SAMPLE_REG, sampleAdcSpeed);
+	FILE_LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
 
-		bus_w(CONFIG_REG, (bus_r(CONFIG_REG) & ~CONFIG_READOUT_SPEED_MSK) | config);
- 		FILE_LOG(logINFO, ("\tSet Config Reg to 0x%x\n", bus_r(CONFIG_REG)));
-
-		bus_w(ADC_OFST_REG, adcOfst);
-		FILE_LOG(logINFO, ("\tSet ADC Ofst Reg to 0x%x\n", bus_r(ADC_OFST_REG)));
-
-		bus_w(SAMPLE_REG, sampleAdcSpeed);
-		FILE_LOG(logINFO, ("\tSet Sample Reg to 0x%x\n", bus_r(SAMPLE_REG)));
-
-        setAdcPhase(adcPhase, 0);
-		FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", adcPhase));
-    }
+	setPhase(ADC_CLK, adcPhase, 0);
+	FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", adcPhase));
+	
+	return OK;
 }
 
-int getClockDivider() {
+int getClockDivider(enum CLKINDEX ind) {
+    if (ind != RUN_CLK) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to get speed\n", ind));
+	    return -1;
+	}
     u_int32_t speed = bus_r(CONFIG_REG) & CONFIG_READOUT_SPEED_MSK;
     switch(speed){
     case CONFIG_FULL_SPEED_40MHZ_VAL:
@@ -1448,21 +1425,26 @@ int getClockDivider() {
     case CONFIG_QUARTER_SPEED_10MHZ_VAL:
         return QUARTER_SPEED;
     default:
+		FILE_LOG(logERROR, ("Unknown speed val: %d\n", speed));
         return -1;
     }
 }
 
-void setAdcPhase(int val, int degrees){
+int setPhase(enum CLKINDEX ind, int val, int degrees){
+    if (ind != ADC_CLK) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to set phase\n", ind));
+	    return FAIL;
+	}		
 	int maxShift = MAX_PHASE_SHIFTS;
 
 	// validation
 	if (degrees && (val < 0 || val > 359)) {
 		 FILE_LOG(logERROR, ("\tPhase provided outside limits (0 - 359°C)\n"));
-		 return;
+		 return FAIL;
 	}
 	if (!degrees && (val < 0 || val > MAX_PHASE_SHIFTS - 1)) {
 		 FILE_LOG(logERROR, ("\tPhase provided outside limits (0 - %d phase shifts)\n", maxShift - 1));
-		 return;
+		 return FAIL;
 	}
 
     FILE_LOG(logINFO, ("Setting ADC Phase to %d (degree mode: %d)\n", val, degrees));
@@ -1479,7 +1461,7 @@ void setAdcPhase(int val, int degrees){
     // same phase
     if (!relativePhase) {
     	FILE_LOG(logINFO, ("Nothing to do in Phase Shift\n"));
-    	return;
+    	return OK;
     }
 
     int phase = 0;
@@ -1495,9 +1477,14 @@ void setAdcPhase(int val, int degrees){
     adcPhase = valShift;
 
 	alignDeserializer();
+	return OK;
 }
 
-int getPhase(int degrees) {
+int getPhase(enum CLKINDEX ind, int degrees) {
+    if (ind != ADC_CLK) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to get phase\n", ind));
+	    return -1;
+	}
 	if (!degrees)
 		return adcPhase;
 	// convert back to degrees
@@ -1506,13 +1493,22 @@ int getPhase(int degrees) {
 	return val;
 }
 
-int getMaxPhaseShift() {
+int getMaxPhase(enum CLKINDEX ind) {
+    if (ind != ADC_CLK) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to get max phase\n", ind));
+	    return -1;
+	}
 	return MAX_PHASE_SHIFTS;
 }
 
-int validatePhaseinDegrees(int val, int retval) {
-	if (val == -1)
+int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval) {
+    if (ind != ADC_CLK) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to validate phase in degrees\n", ind));
+	    return FAIL;
+	}	
+	if (val == -1) {
 		return OK;
+	}
 	FILE_LOG(logDEBUG1, ("validating phase in degrees\n"));
 	int maxShift = MAX_PHASE_SHIFTS;
 	// convert degrees to shift

@@ -30,7 +30,9 @@ enum DACINDEX					 			{E_SVP,E_VTR,E_VRF,E_VRS,E_SVN,E_VTGSTV,E_VCMP_LL,E_VCMP_L
 									 		};
 enum ADCINDEX						 		{TEMP_FPGAEXT, TEMP_10GE, TEMP_DCDC, TEMP_SODL, TEMP_SODR, TEMP_FPGA, TEMP_FPGAFEBL, TEMP_FPGAFEBR};
 enum NETWORKINDEX				 			{TXN_LEFT, TXN_RIGHT, TXN_FRAME,FLOWCTRL_10G};
-enum										{E_PARALLEL, E_NON_PARALLEL};
+enum ROINDEX								{E_PARALLEL, E_NON_PARALLEL};
+enum CLKINDEX                      			{RUN_CLK, NUM_CLOCKS};
+#define CLK_NAMES							"run"
 
 /* Hardware Definitions */
 #define NCHAN 						 		(256 * 256)

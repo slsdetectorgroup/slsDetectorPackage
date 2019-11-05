@@ -450,7 +450,7 @@ void setupDetector() {
 	setParallelMode(DEFAULT_PARALLEL_MODE);
 	setOverFlowMode(DEFAULT_READOUT_STOREINRAM_MODE);
 	setStoreInRamMode(DEFAULT_READOUT_OVERFLOW32_MODE);
-	setSpeed(CLOCK_DIVIDER, DEFAULT_CLK_SPEED);//clk_devider,half speed
+	setClockDivider(RUN_CLK, DEFAULT_CLK_SPEED);//clk_devider,half speed
 	setIODelay(DEFAULT_IO_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
 	setStartingFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
@@ -531,25 +531,6 @@ int setDynamicRange(int dr) {
 
 
 /* parameters - readout */
-
-void setSpeed(enum speedVariable ind, int val) {
-    if (ind != CLOCK_DIVIDER)
-        return;
-
-	if (val != -1) {
-		FILE_LOG(logDEBUG1, ("Setting Read out Speed: %d\n", val));
-#ifndef VIRTUAL
-		if (Feb_Control_SetReadoutSpeed(val))
-#endif
-			eiger_readoutspeed = val;
-	}
-}
-
-int getSpeed(enum speedVariable ind) {
-    if (ind != CLOCK_DIVIDER)
-        return -1;
-    return  eiger_readoutspeed;
-}
 
 int	setParallelMode(int mode) {
 	mode = (mode == 0 ? E_NON_PARALLEL : E_PARALLEL);
@@ -1354,6 +1335,27 @@ int enableTenGigabitEthernet(int val) {
 
 
 /* eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter */
+int setClockDivider(enum CLKINDEX ind, int val) {
+    if (ind != RUN_CLK) {
+		FILE_LOG(logERROR, ("Unknown clock index: %d\n", ind));
+	    return FAIL;
+	}
+	if (val >= 0) {
+		FILE_LOG(logINFO, ("Setting Read out Speed: %d\n", val));
+#ifndef VIRTUAL
+		if (Feb_Control_SetReadoutSpeed(val))
+#endif
+			eiger_readoutspeed = val;
+	}
+}
+
+int getClockDivider(enum CLKINDEX ind) {
+    if (ind != RUN_CLK) {
+		FILE_LOG(logERROR, ("Unknown clock index: %d\n", ind));
+	    return FAIL;
+	}
+	return  eiger_readoutspeed;
+}
 
 int setIODelay(int val) {
 	if (val!=-1) {

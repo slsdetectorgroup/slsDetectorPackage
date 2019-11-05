@@ -5,6 +5,9 @@
 /* Enums */
 enum ADCINDEX				        {TEMP_FPGA, TEMP_ADC};
 enum DACINDEX				        {G_VREF_DS, G_VCASCN_PB, G_VCASCP_PB, G_VOUT_CM, G_VCASC_OUT, G_VIN_CM, G_VREF_COMP, G_IB_TESTC};
+enum CLKINDEX                      	{ADC_CLK, NUM_CLOCKS};
+#define CLK_NAMES					"adc"
+
 #define DEFAULT_DAC_VALS   	        { 	                        \
                                     660,    /* G_VREF_DS */     \
                                     650,    /* G_VCASCN_PB */   \

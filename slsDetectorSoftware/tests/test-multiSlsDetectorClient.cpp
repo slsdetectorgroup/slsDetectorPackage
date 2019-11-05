@@ -2204,10 +2204,10 @@ TEST_CASE("adcpipeline", "[.cmd][.ctb]") {
 
 TEST_CASE("maxdbitphaseshift", "[.cmd][.ctb]") {
     if (test::type == slsDetectorDefs::CHIPTESTBOARD ) {
-        REQUIRE_NOTHROW(multiSlsDetectorClient("maxdbitphaseshift", GET));        
+        REQUIRE_NOTHROW(multiSlsDetectorClient("maxdbitphaseshift", GET));   
+        REQUIRE_THROWS(multiSlsDetectorClient("maxdbitphaseshift 120", PUT));         
     } else { 
-        REQUIRE_THROWS(multiSlsDetectorClient("maxdbitphaseshift", GET));        
-            
+        REQUIRE_THROWS(multiSlsDetectorClient("maxdbitphaseshift", GET));      
     } 
 }
 
@@ -3652,6 +3652,9 @@ TEST_CASE("adcphase", "[.cmd][.ctb][.jungfrau][.gotthard]") {
 
     if (test::type == slsDetectorDefs::GOTTHARD) { 
         REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase 120", PUT));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase 0", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("adcphase 120 deg", PUT));   
+        REQUIRE_THROWS(multiSlsDetectorClient("adcphase", GET));   
         // get is -1
     } else if (test::type == slsDetectorDefs::CHIPTESTBOARD || test::type == slsDetectorDefs::JUNGFRAU) { 
         int prev_val = 0;   
@@ -3689,9 +3692,10 @@ TEST_CASE("adcphase", "[.cmd][.ctb][.jungfrau][.gotthard]") {
 
 TEST_CASE("syncclk", "[.cmd][.ctb]") {
     if(test::type != slsDetectorDefs::CHIPTESTBOARD) {
-       REQUIRE_THROWS(multiSlsDetectorClient("syncclk", GET));     
+        REQUIRE_THROWS(multiSlsDetectorClient("syncclk", GET));     
     } else { 
         REQUIRE_NOTHROW(multiSlsDetectorClient("syncclk", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("syncclk 40", PUT));  
     }  
 }
 
@@ -3751,7 +3755,7 @@ TEST_CASE("dbitclk", "[.cmd][.ctb]") {
 
 TEST_CASE("runclk", "[.cmd][.ctb]") {
     if(test::type != slsDetectorDefs::CHIPTESTBOARD) {
-       ;// REQUIRE_THROWS(multiSlsDetectorClient("runclk", GET)); Only once setspeed is split into many  (runclk = speed for now)      
+       REQUIRE_THROWS(multiSlsDetectorClient("runclk", GET));      
     } else { 
         int prev_runclk = 0;   
         {
@@ -3780,7 +3784,7 @@ TEST_CASE("speed", "[.cmd][.eiger][.jungfrau]") {
     if(test::type != slsDetectorDefs::EIGER && test::type != slsDetectorDefs::JUNGFRAU) {
         REQUIRE_THROWS(multiSlsDetectorClient("speed", GET));         
     } else {    
-        /*{TODO : only for new boards
+        /*{TODO : only for new jungfrau boards
             REQUIRE_NOTHROW(multiSlsDetectorClient("speed 0", PUT));
             std::ostringstream oss;
             REQUIRE_NOTHROW(multiSlsDetectorClient("speed", GET, nullptr, oss));
@@ -4055,7 +4059,10 @@ TEST_CASE("clk", "[.cmd]") {
         REQUIRE_THROWS(multiSlsDetectorClient("clkdiv 7", GET)); // 7 doesnt exist
         REQUIRE_THROWS(multiSlsDetectorClient("clkdiv 4", PUT)); // requires clk index and val
         REQUIRE_THROWS(multiSlsDetectorClient("clkdiv 7 4", PUT)); // 7 doesnt exist  
+        REQUIRE_THROWS(multiSlsDetectorClient("maxclkphaseshift 7", GET)); // 7 doesnt exist  
+        REQUIRE_THROWS(multiSlsDetectorClient("maxclkphaseshift 7 4", PUT)); // cannot put
 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("maxclkphaseshift 0", GET));
         int t = 0;
         {
             std::ostringstream oss;

@@ -77,6 +77,7 @@ enum DACINDEX				        {G2_VREF_H_ADC, /* 0 */		\
         							1400 		/* 15 (700 mV) VCOM_ADC2*/		\
 									};
 enum CLKINDEX                       {READOUT_C0, READOUT_C1, SYSTEM_C0, SYSTEM_C1, SYSTEM_C2, SYSTEM_C3, NUM_CLOCKS};
+#define CLK_NAMES					"READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2", "SYSTEM_C3"
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

@@ -666,11 +666,25 @@ void calcChecksum(udp_header* udp) {
 }
 
 // Detector Specific
+
 int setPhase(enum CLKINDEX ind, int val, int degrees) {
-	char clock_names[6][15]={"Readout_c0", "Readout_c1", "System_c0", "System_c1", "System_c2", "System_c3"};
-    FILE_LOG(logDEBUG1, ("\tConfiguring Phase of C%d(%s) to %d (degree mode: %d)\n", ind, clock_names[ind], val, degrees));
-	
+   if (ind < 0 || ind >= NUM_CLOCKS) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to set phase\n", ind));
+	    return FAIL;
+	}
+	char* clock_names[] = {CLK_NAMES};
+    FILE_LOG(logINFO, ("Setting %s clock (%d) phase to %d %s\n", clock_names[ind], ind, val, degrees == 0 ? "" : "degrees"));
 	int maxShift = getMaxPhase(ind);
+	// validation
+	if (degrees && (val < 0 || val > 359)) {
+		 FILE_LOG(logERROR, ("\tPhase outside limits (0 - 359°C)\n"));
+		 return FAIL;
+	}
+	if (!degrees && (val < 0 || val > maxShift - 1)) {
+		 FILE_LOG(logERROR, ("\tPhase outside limits (0 - %d phase shifts)\n", maxShift - 1));
+		 return FAIL;
+	}
+
 	int valShift = val;
 	// convert to phase shift
 	if (degrees) {
@@ -686,7 +700,7 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
     	FILE_LOG(logINFO, ("\tNothing to do in Phase Shift\n"));
     	return OK;
     }
-    FILE_LOG(logINFOBLUE, ("\tConfiguring Phase of C%d(%s) to %d (degree mode: %d)\n", ind, clock_names[ind], val, degrees));
+    FILE_LOG(logINFOBLUE, ("Configuring Phase\n"));
 
     int phase = 0;
     if (relativePhase > 0) {
@@ -705,6 +719,10 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
 }
 
 int getPhase(enum CLKINDEX ind, int degrees) {
+   if (ind < 0 || ind >= NUM_CLOCKS) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to get phase\n", ind));
+	    return -1;
+	}
 	if (!degrees)
 		return clkPhase[ind];
 	// convert back to degrees
@@ -714,11 +732,15 @@ int getPhase(enum CLKINDEX ind, int degrees) {
 }
 
 int getMaxPhase(enum CLKINDEX ind) {
+   if (ind < 0 || ind >= NUM_CLOCKS) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to get max phase\n", ind));
+	    return -1;
+	}
 	int vcofreq = getVCOFrequency(ind);
 	int maxshiftstep = ALTERA_PLL_C10_GetMaxPhaseShiftStepsofVCO();
 	int ret = ((double)vcofreq / (double)clkDivider[ind]) * maxshiftstep;
 
-	char clock_names[6][15]={"Readout_c0", "Readout_c1", "System_c0", "System_c1", "System_c2", "System_c3"};
+	char* clock_names[] = {CLK_NAMES};
 	FILE_LOG(logDEBUG1, ("\tMax Phase Shift (%s): %d (Clock: %d Hz, VCO:%d Hz)\n",
 			clock_names[ind], ret, clkDivider[ind], vcofreq));
 
@@ -726,11 +748,15 @@ int getMaxPhase(enum CLKINDEX ind) {
 }
 
 int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval) {
-	if (val == -1)
+   if (ind < 0 || ind >= NUM_CLOCKS) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to validate phase in degrees\n", ind));
+	    return FAIL;
+	}
+	if (val == -1) {
 		return OK;
+	}
 	FILE_LOG(logDEBUG1, ("validating phase in degrees for clk %d\n", (int)ind));
 	int maxShift = getMaxPhase(ind);
-	// convert degrees to shift
 	// convert degrees to shift
 	int valShift = 0;
 	ConvertToDifferentRange(0, 359, 0, maxShift - 1, val, &valShift);
@@ -745,10 +771,18 @@ int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval) {
 
 
 int getFrequency(enum CLKINDEX ind) {
+   if (ind < 0 || ind >= NUM_CLOCKS) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
+	    return -1;
+	}
     return clkDivider[ind];
 }
 
 int getVCOFrequency(enum CLKINDEX ind) {
+   if (ind < 0 || ind >= NUM_CLOCKS) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to get vco frequency\n", ind));
+	    return -1;
+	}
 	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
 	return ALTERA_PLL_C10_GetVCOFrequency(pllIndex);
 }
@@ -758,13 +792,19 @@ int getMaxClockDivider() {
 }
 
 int setClockDivider(enum CLKINDEX ind, int val) {
-	char clock_names[6][15]={"Readout_c0", "Readout_c1", "System_c0", "System_c1", "System_c2", "System_c3"};
-
+   if (ind < 0 || ind >= NUM_CLOCKS) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to set clock divider\n", ind));
+	    return FAIL;
+	}
+	if (val < 2 || val > getMaxClockDivider()) {
+		return FAIL;
+	}
+	char* clock_names[] = {CLK_NAMES};
 	int vcofreq = getVCOFrequency(ind);
 	int currentdiv = vcofreq / clkDivider[ind];
 	int newfreq = vcofreq / val;
 
-    FILE_LOG(logINFO, ("\tConfiguring Click Divider of C%d(%s) from %d (%d Hz) to %d (%d Hz). \n\t(Vcofreq: %d Hz)\n", ind, clock_names[ind], currentdiv, clkDivider[ind], val, newfreq, vcofreq));
+    FILE_LOG(logINFO, ("\tSetting %s clock (%d) divider from %d (%d Hz) to %d (%d Hz). \n\t(Vcofreq: %d Hz)\n", clock_names[ind], ind, currentdiv, clkDivider[ind], val, newfreq, vcofreq));
 
     // Remembering old phases in degrees
     int oldPhases[NUM_CLOCKS];
@@ -772,7 +812,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 		int i = 0;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
 			oldPhases	[i] = getPhase(i, 1);
-			FILE_LOG(logDEBUG1, ("\tRemembering C%d (%s) phase: %d degrees\n", ind, clock_names, oldPhases[i]));
+			FILE_LOG(logDEBUG1, ("\tRemembering %s clock (%d) phase: %d degrees\n", clock_names[ind], ind, oldPhases[i]));
 		}
 	}
 
@@ -781,7 +821,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 	int clkIndex = ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind;
     int ret = ALTERA_PLL_C10_SetOuputFrequency (pllIndex, clkIndex, newfreq);
 	clkDivider[ind] = newfreq;
-    FILE_LOG(logINFO, ("\tC%d(%s): Clock Divider set to %d (%d Hz)\n", ind, clock_names[ind], val, clkDivider[ind]));
+    FILE_LOG(logINFO, ("\t%s clock (%d) divider set to %d (%d Hz)\n", clock_names[ind], ind, val, clkDivider[ind]));
    
     // phase is reset by pll (when setting output frequency)
 	if (ind >= READOUT_C0) {
@@ -798,7 +838,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 	{ 
 		int i = 0;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
-			FILE_LOG(logINFO, ("\tPhase reset by PLL\n\tCorrecting C%d(%s) to %d degrees\n", i, clock_names[i], oldPhases[i]));
+			FILE_LOG(logINFO, ("\tPhase reset by PLL\n\tCorrecting %s clock (%d) phase to %d degrees\n", clock_names[i], i, oldPhases[i]));
 			setPhase(i, oldPhases[i], 1);
 		}
 	}
@@ -806,6 +846,10 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 }
 
 int getClockDivider(enum CLKINDEX ind) {
+   if (ind < 0 || ind >= NUM_CLOCKS) {
+		FILE_LOG(logERROR, ("Unknown clock index %d to get clock divider\n", ind));
+	    return -1;
+	}
 	return (getVCOFrequency(ind) / clkDivider[ind]);
 }
 

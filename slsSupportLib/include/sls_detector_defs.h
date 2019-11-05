@@ -458,19 +458,10 @@ format
 
 #define TRIMBITMASK 0x3f
 
-    /**
-      important speed parameters
-    */
-    enum speedVariable {
-        CLOCK_DIVIDER,        /**< readout clock divider */
-        ADC_CLOCK,            /**< adc clock divider */
-        ADC_PHASE,            /**< adc clock phase */
-        ADC_PIPELINE,         /**< adc pipeline */
-        DBIT_CLOCK,           /**< adc clock divider */
-        DBIT_PHASE,           /**< adc clock phase */
-        DBIT_PIPELINE,        /**< adc pipeline */
-        MAX_ADC_PHASE_SHIFT,  /** max adc phase shift */
-        MAX_DBIT_PHASE_SHIFT, /** max adc phase shift */
+    enum clockIndex {
+        ADC_CLOCK,
+        DBIT_CLOCK,
+        RUN_CLOCK,
         SYNC_CLOCK
     };
 

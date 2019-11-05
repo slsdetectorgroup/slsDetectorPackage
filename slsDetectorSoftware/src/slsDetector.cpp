@@ -1460,16 +1460,6 @@ int64_t slsDetector::getMeasurementTime() const {
     return retval; 
 }
 
-int slsDetector::setSpeed(speedVariable sp, int value, int mode) {
-    int args[]{static_cast<int>(sp), value, mode};
-    int retval = -1;
-    FILE_LOG(logDEBUG1) << "Setting speed index " << sp << " to " << value
-                        << " mode: " << mode;
-    sendToDetector(F_SET_SPEED, args, retval);
-    FILE_LOG(logDEBUG1) << "Speed index " << sp << ": " << retval;
-    return retval;
-}
-
 int slsDetector::setDynamicRange(int n) {
     // TODO! Properly handle fail
     int prevDr = shm()->dynamicRange;
@@ -1494,9 +1484,9 @@ int slsDetector::setDynamicRange(int n) {
         updateRateCorrection();
         // update speed for usability
         if (dr == 32) {
-            FILE_LOG(logINFO) << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32";     setSpeed(CLOCK_DIVIDER, 2);
+            FILE_LOG(logINFO) << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32";     setClockDivider(RUN_CLOCK, 2);
         } else if (dr == 16) {
-            FILE_LOG(logINFO) << "Setting Clock to Half Speed to cope with Dynamic Range of 16";     setSpeed(CLOCK_DIVIDER, 1);
+            FILE_LOG(logINFO) << "Setting Clock to Half Speed to cope with Dynamic Range of 16";     setClockDivider(RUN_CLOCK, 1);
         }
     }
     
@@ -3548,6 +3538,21 @@ void slsDetector::setClockDivider(int clkIndex, int value) {
     FILE_LOG(logDEBUG1) << "Setting Clock " << clkIndex << " divider to " << value;
     sendToDetector(F_SET_CLOCK_DIVIDER, args, nullptr);
 }
+
+int slsDetector::getPipeline(int clkIndex) {
+    int retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting Clock " << clkIndex << " pipeline";
+    sendToDetector(F_GET_PIPELINE, clkIndex, retval);
+    FILE_LOG(logDEBUG1) << "Clock " << clkIndex << " pipeline: " << retval;
+    return retval;
+}
+
+void slsDetector::setPipeline(int clkIndex, int value) {
+    int args[]{clkIndex, value};
+    FILE_LOG(logDEBUG1) << "Setting Clock " << clkIndex << " pipeline to " << value;
+    sendToDetector(F_SET_PIPELINE, args, nullptr);
+}
+
 
 sls_detector_module slsDetector::interpolateTrim(sls_detector_module *a,
                                                  sls_detector_module *b,

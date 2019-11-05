@@ -149,16 +149,6 @@ int			setExternalSampling(int val);
 #endif
 
 // parameters - readout
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
-void 		setSpeed(enum speedVariable ind, int val, int mode);
-int         getSpeed(enum speedVariable ind, int mode);
-#else
-#ifndef GOTTHARD2D
-void 		setSpeed(enum speedVariable ind, int val);
-int         getSpeed(enum speedVariable ind);
-#endif
-#endif
-
 #ifdef EIGERD
 int			setParallelMode(int mode);
 int 		getParallelMode();
@@ -355,15 +345,15 @@ int         powerChip (int on);
 
 // chip test board or moench specific - configure frequency, phase, pll, flashing firmware
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-void        configurePhase(enum CLKINDEX ind, int val, int degrees);
+int        	setPhase(enum CLKINDEX ind, int val, int degrees);
 int         getPhase(enum CLKINDEX ind, int degrees);
 int         getMaxPhase(enum CLKINDEX ind);
-int 		validatePhaseinDegrees(enum speedVariable ind, int val, int retval);
-void        configureFrequency(enum CLKINDEX ind, int val);
+int 		validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
+int       	setFrequency(enum CLKINDEX ind, int val);
 int         getFrequency(enum CLKINDEX ind);
 void        configureSyncFrequency(enum CLKINDEX ind);
-void        setAdcOffsetRegister(int adc, int val);
-int         getAdcOffsetRegister(int adc);
+void        setPipeline(enum CLKINDEX ind, int val);
+int         getPipeline(enum CLKINDEX ind);
 extern void eraseFlash();                                                   // programfpga.h
 extern int  startWritingFPGAprogram(FILE** filefp);                         // programfpga.h
 extern void stopWritingFPGAprogram(FILE* filefp);                           // programfpga.h
@@ -390,12 +380,12 @@ void 		initReadoutConfiguration();
 int         powerChip (int on);
 int         autoCompDisable(int on);
 void        configureASICTimer();
-void        setClockDivider(int val);
-int         getClockDivider();
-void        setAdcPhase(int val, int degrees);
-int         getPhase(int degrees);
-int			getMaxPhaseShift();
-int 		validatePhaseinDegrees(int val, int retval);
+int       	setClockDivider(enum CLKINDEX ind, int val);
+int         getClockDivider(enum CLKINDEX ind);
+int        	setPhase(enum CLKINDEX ind, int val, int degrees);
+int         getPhase(enum CLKINDEX ind, int degrees);
+int         getMaxPhase(enum CLKINDEX ind);
+int 		validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
 int         setThresholdTemperature(int val);
 int         setTemperatureControl(int val);
 int         setTemperatureEvent(int val);
@@ -407,6 +397,8 @@ void		alignDeserializer();
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
 #elif EIGERD
+int       	setClockDivider(enum CLKINDEX ind, int val);
+int         getClockDivider(enum CLKINDEX ind);
 int 		setIODelay(int val);
 int 		setCounterBit(int val);
 int 		pulsePixel(int n, int x, int y);
@@ -423,6 +415,10 @@ int 		getAllTrimbits();
 int 		getBebFPGATemp();
 int 		activate(int enable);
 
+// gotthard specific - adc phase
+#elif GOTTHARDD
+int        	setPhase(enum CLKINDEX ind, int val, int degrees);
+
 #elif MYTHEN3D
 uint64_t    readPatternWord(int addr);
 uint64_t    writePatternWord(int addr, uint64_t word);
@@ -436,7 +432,7 @@ int        	setPhase(enum CLKINDEX ind, int val, int degrees);
 int         getPhase(enum CLKINDEX ind, int degrees);
 int         getMaxPhase(enum CLKINDEX ind);
 int 		validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
-//int       	setFrequency(enum CLKINDEX ind, int val);
+//void       	setFrequency(enum CLKINDEX ind, int val);
 int         getFrequency(enum CLKINDEX ind);
 int         getVCOFrequency(enum CLKINDEX ind);
 int       	getMaxClockDivider();

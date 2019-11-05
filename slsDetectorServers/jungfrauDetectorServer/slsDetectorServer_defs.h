@@ -49,6 +49,8 @@ enum DACINDEX				{J_VB_COMP, J_VDD_PROT, J_VIN_COM, J_VREF_PRECH, J_VB_PIXBUF, J
 								420		/* J_VREF_COMP */	\
 							};
 enum NETWORKINDEX           { TXN_FRAME, FLOWCTRL_10G };
+enum CLKINDEX               {RUN_CLK, ADC_CLK, NUM_CLOCKS};
+#define CLK_NAMES			"run", "adc"
 
 /* Hardware Definitions */
 #define NCHAN 						(256 * 256)

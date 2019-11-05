@@ -65,7 +65,6 @@ enum detFuncs{
 	F_SET_DYNAMIC_RANGE,
 	F_SET_ROI,
 	F_GET_ROI,
-	F_SET_SPEED,
 	F_EXIT_SERVER,
 	F_LOCK_SERVER,
 	F_GET_LAST_CLIENT_IP,
@@ -162,6 +161,8 @@ enum detFuncs{
 	F_GET_MAX_CLOCK_PHASE_SHIFT,
 	F_SET_CLOCK_DIVIDER,
 	F_GET_CLOCK_DIVIDER,
+	F_SET_PIPELINE,
+	F_GET_PIPELINE,	
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 256, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -291,7 +292,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_DYNAMIC_RANGE:				return "F_SET_DYNAMIC_RANGE";
 	case F_SET_ROI:							return "F_SET_ROI";
 	case F_GET_ROI:							return "F_GET_ROI";
-	case F_SET_SPEED:						return "F_SET_SPEED";
 	case F_EXIT_SERVER:						return "F_EXIT_SERVER";
 	case F_LOCK_SERVER:						return "F_LOCK_SERVER";
 	case F_GET_LAST_CLIENT_IP:				return "F_GET_LAST_CLIENT_IP";
@@ -388,6 +388,8 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_MAX_CLOCK_PHASE_SHIFT:		return "F_GET_MAX_CLOCK_PHASE_SHIFT";
 	case F_SET_CLOCK_DIVIDER:				return "F_SET_CLOCK_DIVIDER";	
 	case F_GET_CLOCK_DIVIDER:				return "F_GET_CLOCK_DIVIDER";
+	case F_SET_PIPELINE:					return "F_SET_PIPELINE";
+	case F_GET_PIPELINE:					return "F_GET_PIPELINE";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

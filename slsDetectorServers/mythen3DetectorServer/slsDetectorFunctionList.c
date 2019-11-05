@@ -388,14 +388,6 @@ int setDynamicRange(int dr){
 
 /* parameters - speed, readout */
 
-void setSpeed(enum speedVariable ind, int val) {
-
-}
-
-int getSpeed(enum speedVariable ind) {
-    return -1;
-}
-
 void setNumFrames(int64_t val) {
     if (val > 0) {
 		FILE_LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));

@@ -405,20 +405,25 @@ std::string CmdProxy::ClockFrequency(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_clock (0-8)] [freq_in_Hz]\n\t[Gotthard2] Frequency of clock n_clock in Hz. Use clkdiv to set frequency." << '\n';   
-    } else if (action == defs::GET_ACTION) {
-        if (args.size() != 1) {                                
-            WrongNumberOfParameters(1);         
-        } 
-        auto t = det->getClockFrequency(std::stoi(args[0]), {det_id});       
-        os << OutString(t) << '\n';     
-    } else if (action == defs::PUT_ACTION) {     
-        if (args.size() != 2) {
-            WrongNumberOfParameters(2);  
-        }                                
-        det->setClockFrequency(std::stoi(args[0]), std::stoi(args[1]));  
-        os << std::stoi(args[1]) << '\n';
-    } else { 
-        throw sls::RuntimeError("Unknown action");
+    } else {
+        if (det->getDetectorType().squash(defs::GENERIC) != defs::GOTTHARD2) {
+            throw sls::RuntimeError("Not implemented for this detector.");
+        }
+        if (action == defs::GET_ACTION) {
+            if (args.size() != 1) {                                
+                WrongNumberOfParameters(1);         
+            } 
+            auto t = det->getClockFrequency(std::stoi(args[0]), {det_id});       
+            os << OutString(t) << '\n';     
+        } else if (action == defs::PUT_ACTION) {     
+            if (args.size() != 2) {
+                WrongNumberOfParameters(2);  
+            }                                
+            det->setClockFrequency(std::stoi(args[0]), std::stoi(args[1]), {det_id});  
+            os << std::stoi(args[1]) << '\n';
+        } else { 
+            throw sls::RuntimeError("Unknown action");
+        }
     }
     return os.str();
 }
@@ -429,34 +434,39 @@ std::string CmdProxy::ClockPhase(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_clock (0-8)] [phase] [deg (optional)]\n\t[Gotthard2] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values." << '\n';   
-    } else if (action == defs::GET_ACTION) {
-        if (args.size() == 1) {                                
-            auto t = det->getClockPhase(std::stoi(args[0]), {det_id});
-            os << OutString(t) << '\n';       
-        } else if (args.size() == 2) {    
-            if (args[1] != "deg") {
-                throw sls::RuntimeError("Cannot scan argument" + args[1] + ". Did you mean deg?");   
-            }                            
-            auto t = det->getClockPhaseinDegrees(std::stoi(args[0]), {det_id});
-            os << OutString(t) << '\n';       
-        } else {
-            WrongNumberOfParameters(1);  
+    } else {
+        if (det->getDetectorType().squash(defs::GENERIC) != defs::GOTTHARD2) {
+            throw sls::RuntimeError("Not implemented for this detector.");
         }
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() == 2) {                                
-            det->setClockPhase(std::stoi(args[0]), std::stoi(args[1]), {det_id});
-            os << args[1] << '\n';       
-        } else if (args.size() == 3) {    
-            if (args[2] != "deg") {
-                throw sls::RuntimeError("Cannot scan argument" + args[2] + ". Did you mean deg?");     
-            }                            
-            det->setClockPhaseinDegrees(std::stoi(args[0]), std::stoi(args[1]), {det_id});
-            os << std::stoi(args[1]) << '\n';       
-        } else {
-            WrongNumberOfParameters(1);  
-        }     
-    } else { 
-        throw sls::RuntimeError("Unknown action");
+        if (action == defs::GET_ACTION) {
+            if (args.size() == 1) {                                
+                auto t = det->getClockPhase(std::stoi(args[0]), {det_id});
+                os << OutString(t) << '\n';       
+            } else if (args.size() == 2) {    
+                if (args[1] != "deg") {
+                    throw sls::RuntimeError("Cannot scan argument" + args[1] + ". Did you mean deg?");   
+                }                            
+                auto t = det->getClockPhaseinDegrees(std::stoi(args[0]), {det_id});
+                os << OutString(t) << '\n';       
+            } else {
+                WrongNumberOfParameters(1);  
+            }
+        } else if (action == defs::PUT_ACTION) {
+            if (args.size() == 2) {                                
+                det->setClockPhase(std::stoi(args[0]), std::stoi(args[1]), {det_id});
+                os << args[1] << '\n';       
+            } else if (args.size() == 3) {    
+                if (args[2] != "deg") {
+                    throw sls::RuntimeError("Cannot scan argument" + args[2] + ". Did you mean deg?");     
+                }                            
+                det->setClockPhaseinDegrees(std::stoi(args[0]), std::stoi(args[1]), {det_id});
+                os << std::stoi(args[1]) << '\n';       
+            } else {
+                WrongNumberOfParameters(1);  
+            }     
+        } else { 
+            throw sls::RuntimeError("Unknown action");
+        }
     }
     return os.str();
 }
@@ -466,16 +476,21 @@ std::string CmdProxy::MaxClockPhaseShift(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_clock (0-8)]\n\t[Gotthard2] Absolute Maximum Phase shift of clock n_clock." << '\n';   
-    } else if (action == defs::GET_ACTION) {
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);  
-        }                    
-        auto t = det->getMaxClockPhaseShift(std::stoi(args[0]), {det_id});
-        os << OutString(t) << '\n';       
-    } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("Cannot put");   
-    } else { 
-        throw sls::RuntimeError("Unknown action");
+    }  else {
+        if (det->getDetectorType().squash(defs::GENERIC) != defs::GOTTHARD2) {
+            throw sls::RuntimeError("Not implemented for this detector.");
+        }
+        if (action == defs::GET_ACTION) {
+            if (args.size() != 1) {
+                WrongNumberOfParameters(1);  
+            }                    
+            auto t = det->getMaxClockPhaseShift(std::stoi(args[0]), {det_id});
+            os << OutString(t) << '\n';       
+        } else if (action == defs::PUT_ACTION) {
+            throw sls::RuntimeError("Cannot put");   
+        } else { 
+            throw sls::RuntimeError("Unknown action");
+        }
     }
     return os.str();
 }
@@ -485,20 +500,25 @@ std::string CmdProxy::ClockDivider(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_clock (0-8)] [n_divider]\n\t[Gotthard2] Clock Divider of clock n_clock. Must be greater than 1." << '\n';   
-    } else if (action == defs::GET_ACTION) {
-        if (args.size() != 1) {                                
-            WrongNumberOfParameters(1);         
-        } 
-        auto t = det->getClockDivider(std::stoi(args[0]), {det_id});       
-        os << OutString(t) << '\n';     
-    } else if (action == defs::PUT_ACTION) {     
-        if (args.size() != 2) {
-            WrongNumberOfParameters(2);  
-        }                         
-        det->setClockDivider(std::stoi(args[0]), std::stoi(args[1]));  
-        os << std::stoi(args[1]) << '\n';
-    } else { 
-        throw sls::RuntimeError("Unknown action");
+    } else {
+        if (det->getDetectorType().squash(defs::GENERIC) != defs::GOTTHARD2) {
+            throw sls::RuntimeError("Not implemented for this detector.");
+        }
+        if (action == defs::GET_ACTION) {
+            if (args.size() != 1) {                                
+                WrongNumberOfParameters(1);         
+            } 
+            auto t = det->getClockDivider(std::stoi(args[0]), {det_id});       
+            os << OutString(t) << '\n';     
+        } else if (action == defs::PUT_ACTION) {     
+            if (args.size() != 2) {
+                WrongNumberOfParameters(2);  
+            }                         
+            det->setClockDivider(std::stoi(args[0]), std::stoi(args[1]), {det_id});  
+            os << std::stoi(args[1]) << '\n';
+        } else { 
+            throw sls::RuntimeError("Unknown action");
+        }
     }
     return os.str();
 }
@@ -656,7 +676,7 @@ std::string CmdProxy::Threshold(int action) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
         }
-        auto t = det->getThresholdEnergy();
+        auto t = det->getThresholdEnergy({det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {    
         if (args.size() == 1) {
@@ -932,7 +952,7 @@ std::string CmdProxy::TemperatureEvent(int action) {
         if (std::stoi(args[0]) != 0) {
             throw sls::RuntimeError("Unknown argument for temp event. Did you mean 0 to reset event?");
         }                        
-        det->resetTemperatureEvent();  
+        det->resetTemperatureEvent({det_id});  
         os << "cleared" << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -1017,8 +1037,8 @@ std::string CmdProxy::Samples(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);  
         }                                
-        det->setNumberOfAnalogSamples(std::stoi(args[0]));  
-        det->setNumberOfDigitalSamples(std::stoi(args[0]));  
+        det->setNumberOfAnalogSamples(std::stoi(args[0]), {det_id});  
+        det->setNumberOfDigitalSamples(std::stoi(args[0]), {det_id});  
         os << args.front() << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -1081,7 +1101,7 @@ std::string CmdProxy::SlowAdc(int action) {
             auto t = det->getTemperature(defs::SLOW_ADC_TEMP, {det_id});  
             os << OutString(t) << " °C\n";
         } else {
-            auto t = det->getSlowADC(static_cast<defs::dacIndex>(nchan + defs::SLOW_ADC0));
+            auto t = det->getSlowADC(static_cast<defs::dacIndex>(nchan + defs::SLOW_ADC0), {det_id});
             os << OutString(t) << '\n';
         }      
     } else if (action == defs::PUT_ACTION) {
@@ -1140,7 +1160,7 @@ std::string CmdProxy::DigitalIODelay(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);  
         }                                
-        det->setDigitalIODelay(stoulHex(args[0]), std::stoi(args[1]));  
+        det->setDigitalIODelay(stoulHex(args[0]), std::stoi(args[1]), {det_id});  
         os << sls::ToString(args) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -1162,7 +1182,7 @@ std::string CmdProxy::Pattern(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);  
         }                                
-        det->setPattern(args[0]);  
+        det->setPattern(args[0], {det_id});  
         os << args.front() << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -1185,7 +1205,7 @@ std::string CmdProxy::PatternWord(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);  
         }                                
-        det->setPatternWord(stoiHex(args[0]), stoulHex(args[1]));  
+        det->setPatternWord(stoiHex(args[0]), stoulHex(args[1]), {det_id});  
         os << sls::ToString(args) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");

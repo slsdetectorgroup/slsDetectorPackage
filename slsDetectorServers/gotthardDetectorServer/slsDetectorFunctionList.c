@@ -783,21 +783,6 @@ ROI getROI() {
     return rois;
 }
 
-// parameters - readout
-void setSpeed(enum speedVariable ind, int val) {
-    switch(ind) {
-    case ADC_PHASE:
-    	setPhaseShift(val);
-        break;
-    default:
-        return;
-    }
-}
-
-int getSpeed(enum speedVariable ind) {
-	// cannot get phase shift
-	return -1;
-}
 
 /* parameters - timer */
 void setNumFrames(int64_t val) {
@@ -1513,6 +1498,18 @@ int* getDetectorPosition() {
     return detPos;
 }
 
+/* gotthard specific - adc phase */
+int setPhase(enum CLKINDEX ind, int val, int degrees) {
+    if (ind != ADC_CLK) {
+		FILE_LOG(logERROR, ("Unknown clock index: %d\n", ind));
+	    return FAIL;
+	}
+    if (degrees != 0) {
+		FILE_LOG(logERROR, ("Cannot set phase in degrees\n"));
+	    return FAIL;        
+    }
+    setPhaseShift(val);
+}
 
 /* aquisition */
 

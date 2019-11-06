@@ -5654,7 +5654,7 @@ int set_clock_phase(int file_des) {
 			sprintf(modeName, "%s clock (%d) phase %s", clock_names[c], (int)c, (inDegrees == 0 ? "" : "(degrees)"));
 
 			// gotthard1d doesnt take degrees and cannot get phase
-#ifndef GOTTHARDD
+#ifdef GOTTHARDD
 			if (inDegrees != 0) {
 				ret = FAIL;
 				strcpy(mess, "Cannot set phase in degrees for this detector.\n");

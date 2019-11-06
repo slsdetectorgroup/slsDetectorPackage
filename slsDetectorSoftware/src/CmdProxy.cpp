@@ -407,7 +407,7 @@ std::string CmdProxy::ClockFrequency(int action) {
         os << "[n_clock (0-8)] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency." << '\n';   
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
-        if (type != defs::GOTTHARD2 && type != MYTHEN3) {
+        if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
             throw sls::RuntimeError("Not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
@@ -437,7 +437,7 @@ std::string CmdProxy::ClockPhase(int action) {
         os << "[n_clock (0-8)] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values." << '\n';   
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
-        if (type != defs::GOTTHARD2 && type != MYTHEN3) {
+        if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
             throw sls::RuntimeError("Not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
@@ -480,7 +480,7 @@ std::string CmdProxy::MaxClockPhaseShift(int action) {
         os << "[n_clock (0-8)]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock." << '\n';   
     }  else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
-        if (type != defs::GOTTHARD2 && type != MYTHEN3) {
+        if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
             throw sls::RuntimeError("Not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
@@ -505,7 +505,7 @@ std::string CmdProxy::ClockDivider(int action) {
         os << "[n_clock (0-8)] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1." << '\n';   
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
-        if (type != defs::GOTTHARD2 && type != MYTHEN3) {
+        if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
             throw sls::RuntimeError("Not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {

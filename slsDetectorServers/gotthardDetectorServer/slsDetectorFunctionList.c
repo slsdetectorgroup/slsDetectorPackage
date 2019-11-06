@@ -407,9 +407,6 @@ void setupDetector() {
 	setPeriod(DEFAULT_PERIOD);
 	setDelayAfterTrigger(DEFAULT_DELAY);
 
-    cleanFifos();
-
-
 }
 
 int setDefaultDacs() {

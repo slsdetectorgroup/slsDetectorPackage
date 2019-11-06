@@ -34,7 +34,7 @@ int virtual_stop = 0;
 #endif
 
 int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0};
-uint32_t clkDivider[NUM_CLOCKS] = {125, 20, 80};
+uint32_t clkFrequency[NUM_CLOCKS] = {125, 20, 80};
 
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
@@ -333,9 +333,9 @@ void initStopServer() {
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Mythen3 module \n")); 
 
-	clkDivider[RUN_CLK] = DEFAULT_RUN_CLK;
-	clkDivider[TICK_CLK] = DEFAULT_TICK_CLK;
-	clkDivider[SAMPLING_CLK] = DEFAULT_SAMPLING_CLK;
+	clkFrequency[RUN_CLK] = DEFAULT_RUN_CLK;
+	clkFrequency[TICK_CLK] = DEFAULT_TICK_CLK;
+	clkFrequency[SAMPLING_CLK] = DEFAULT_SAMPLING_CLK;
 
 	highvoltage = 0;
 
@@ -406,12 +406,12 @@ int setExpTime(int64_t val) {
         return FAIL;
     }
 	FILE_LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkDivider[RUN_CLK]);
+    val *= (1E-3 * clkFrequency[RUN_CLK]);
     setPatternWaitTime(0, val);
 
     // validate for tolerance
     int64_t retval = getExpTime();
-    val /= (1E-3 * clkDivider[RUN_CLK]);
+    val /= (1E-3 * clkFrequency[RUN_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -419,7 +419,7 @@ int setExpTime(int64_t val) {
 }
 
 int64_t getExpTime() {
-    return setPatternWaitTime(0, -1) / (1E-3 * clkDivider[RUN_CLK]);
+    return setPatternWaitTime(0, -1) / (1E-3 * clkFrequency[RUN_CLK]);
 }
 
 int setPeriod(int64_t val) {
@@ -428,12 +428,12 @@ int setPeriod(int64_t val) {
         return FAIL;
     }
 	FILE_LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkDivider[TICK_CLK]);
+    val *= (1E-3 * clkFrequency[TICK_CLK]);
     set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getPeriod();
-    val /= (1E-3 * clkDivider[TICK_CLK]);
+    val /= (1E-3 * clkFrequency[TICK_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -441,7 +441,7 @@ int setPeriod(int64_t val) {
 }
 
 int64_t getPeriod() {
-    return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-3 * clkDivider[TICK_CLK]);
+    return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-3 * clkFrequency[TICK_CLK]);
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -450,12 +450,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     } 
 	FILE_LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkDivider[TICK_CLK]);
+    val *= (1E-3 * clkFrequency[TICK_CLK]);
     set64BitReg(val, SET_DELAY_LSB_REG, SET_DELAY_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-3 * clkDivider[TICK_CLK]);
+    val /= (1E-3 * clkFrequency[TICK_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -463,7 +463,7 @@ int setDelayAfterTrigger(int64_t val) {
 }
 
 int64_t getDelayAfterTrigger() {
-    return get64BitReg(SET_DELAY_LSB_REG, SET_DELAY_MSB_REG) / (1E-3 * clkDivider[TICK_CLK]);
+    return get64BitReg(SET_DELAY_LSB_REG, SET_DELAY_MSB_REG) / (1E-3 * clkFrequency[TICK_CLK]);
   
 }
 

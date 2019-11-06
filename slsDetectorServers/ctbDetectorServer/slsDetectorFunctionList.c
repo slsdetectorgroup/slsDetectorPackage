@@ -52,7 +52,7 @@ char volatile *digitalDataPtr = 0;
 char udpPacketData[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
 
 int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0};
-uint32_t clkDivider[NUM_CLOCKS] = {40, 20, 20, 200};
+uint32_t clkFrequency[NUM_CLOCKS] = {40, 20, 20, 200};
 
 int dacValues[NDAC] = {0};
 // software limit that depends on the current chip on the ctb
@@ -457,10 +457,10 @@ void setupDetector() {
         for (i = 0; i < NUM_CLOCKS; ++i) {
             clkPhase[i] = 0;
         }
-        clkDivider[RUN_CLK] = DEFAULT_RUN_CLK;
-        clkDivider[ADC_CLK] = DEFAULT_ADC_CLK;
-        clkDivider[SYNC_CLK] = DEFAULT_SYNC_CLK;
-        clkDivider[DBIT_CLK] = DEFAULT_DBIT_CLK;
+        clkFrequency[RUN_CLK] = DEFAULT_RUN_CLK;
+        clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK;
+        clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK;
+        clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK;
         for (i = 0; i < NDAC; ++i)
             dacValues[i] = -1;
     }
@@ -842,12 +842,12 @@ int setExpTime(int64_t val) {
         return FAIL;
     }
     FILE_LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkDivider[RUN_CLK]);
+    val *= (1E-3 * clkFrequency[RUN_CLK]);
     setPatternWaitTime(0, val);
 
     // validate for tolerance
     int64_t retval = getExpTime();
-    val /= (1E-3 * clkDivider[RUN_CLK]);
+    val /= (1E-3 * clkFrequency[RUN_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -855,7 +855,7 @@ int setExpTime(int64_t val) {
 }
 
 int64_t getExpTime() {
-    return setPatternWaitTime(0, -1) / (1E-3 * clkDivider[RUN_CLK]);
+    return setPatternWaitTime(0, -1) / (1E-3 * clkFrequency[RUN_CLK]);
 }
 
 int setPeriod(int64_t val) {
@@ -864,12 +864,12 @@ int setPeriod(int64_t val) {
         return FAIL;
     }
     FILE_LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkDivider[SYNC_CLK]);
+    val *= (1E-3 * clkFrequency[SYNC_CLK]);
     set64BitReg(val, PERIOD_LSB_REG, PERIOD_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getPeriod();
-    val /= (1E-3 * clkDivider[SYNC_CLK]);
+    val /= (1E-3 * clkFrequency[SYNC_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -877,7 +877,7 @@ int setPeriod(int64_t val) {
 }
 
 int64_t getPeriod() {
-    return get64BitReg(PERIOD_LSB_REG, PERIOD_MSB_REG)/ (1E-3 * clkDivider[SYNC_CLK]);
+    return get64BitReg(PERIOD_LSB_REG, PERIOD_MSB_REG)/ (1E-3 * clkFrequency[SYNC_CLK]);
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -886,12 +886,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     }
     FILE_LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    val *= (1E-3 * clkDivider[SYNC_CLK]);
+    val *= (1E-3 * clkFrequency[SYNC_CLK]);
     set64BitReg(val, DELAY_LSB_REG, DELAY_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-3 * clkDivider[SYNC_CLK]);
+    val /= (1E-3 * clkFrequency[SYNC_CLK]);
     if (val != retval) {
         return FAIL;
     }
@@ -899,7 +899,7 @@ int setDelayAfterTrigger(int64_t val) {
 }
 
 int64_t getDelayAfterTrigger() {
-    return get64BitReg(DELAY_LSB_REG, DELAY_MSB_REG) / (1E-3 * clkDivider[SYNC_CLK]);
+    return get64BitReg(DELAY_LSB_REG, DELAY_MSB_REG) / (1E-3 * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getNumFramesLeft() {
@@ -911,11 +911,11 @@ int64_t getNumTriggersLeft() {
 }
 
 int64_t getDelayAfterTriggerLeft() {
-    return get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) / (1E-3 * clkDivider[SYNC_CLK]);
+    return get64BitReg(DELAY_LEFT_LSB_REG, DELAY_LEFT_MSB_REG) / (1E-3 * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getPeriodLeft() {
-    return get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) / (1E-3 * clkDivider[SYNC_CLK]);
+    return get64BitReg(PERIOD_LEFT_LSB_REG, PERIOD_LEFT_MSB_REG) / (1E-3 * clkFrequency[SYNC_CLK]);
 }
 
 int64_t getFramesFromStart() {
@@ -1593,11 +1593,11 @@ int getMaxPhase(enum CLKINDEX ind) {
 		FILE_LOG(logERROR, ("Unknown clock index %d to get max phase\n", ind));
 	    return -1;
 	}
-	int ret = ((double)PLL_VCO_FREQ_MHZ / (double)clkDivider[ind]) * MAX_PHASE_SHIFTS_STEPS;
+	int ret = ((double)PLL_VCO_FREQ_MHZ / (double)clkFrequency[ind]) * MAX_PHASE_SHIFTS_STEPS;
 
 	char* clock_names[] = {CLK_NAMES};
 	FILE_LOG(logDEBUG1, ("Max Phase Shift (%s): %d (Clock: %d MHz, VCO:%d MHz)\n",
-			clock_names[ind], ret, clkDivider[ind], PLL_VCO_FREQ_MHZ));
+			clock_names[ind], ret, clkFrequency[ind], PLL_VCO_FREQ_MHZ));
 
 	return ret;
 }
@@ -1647,8 +1647,8 @@ int setFrequency(enum CLKINDEX ind, int val) {
     FILE_LOG(logDEBUG1, ("\tRemembering DBIT phase: %d\n", dbitPhase));
 
     // Calculate and set output frequency
-    clkDivider[ind] = ALTERA_PLL_SetOuputFrequency (ind, PLL_VCO_FREQ_MHZ, val);
-    FILE_LOG(logINFO, ("\t%s clock (%d) frequency set to %d MHz\n",  clock_names[ind], ind, clkDivider[ind]));
+    clkFrequency[ind] = ALTERA_PLL_SetOuputFrequency (ind, PLL_VCO_FREQ_MHZ, val);
+    FILE_LOG(logINFO, ("\t%s clock (%d) frequency set to %d MHz\n",  clock_names[ind], ind, clkFrequency[ind]));
    
     // adc and dbit phase is reset by pll (when setting output frequency)
     clkPhase[ADC_CLK] = 0;
@@ -1678,7 +1678,7 @@ int getFrequency(enum CLKINDEX ind) {
 		FILE_LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
 	    return -1;
 	}
-    return clkDivider[ind];
+    return clkFrequency[ind];
 }
 
 void configureSyncFrequency(enum CLKINDEX ind) {

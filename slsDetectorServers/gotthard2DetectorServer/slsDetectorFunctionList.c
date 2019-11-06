@@ -36,7 +36,7 @@ int virtual_stop = 0;
 #endif
 
 int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
-uint32_t clkDivider[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
+uint32_t clkFrequency[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
 int detPos[2] = {0, 0};
@@ -329,12 +329,12 @@ void initStopServer() {
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Gotthard2 module \n")); 
 
-	clkDivider[READOUT_C0] = DEFAULT_READOUT_C0;
-	clkDivider[READOUT_C1] = DEFAULT_READOUT_C1;
-	clkDivider[SYSTEM_C0] = DEFAULT_SYSTEM_C0;
-	clkDivider[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
-	clkDivider[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
-	clkDivider[SYSTEM_C3] = DEFAULT_SYSTEM_C3;
+	clkFrequency[READOUT_C0] = DEFAULT_READOUT_C0;
+	clkFrequency[READOUT_C1] = DEFAULT_READOUT_C1;
+	clkFrequency[SYSTEM_C0] = DEFAULT_SYSTEM_C0;
+	clkFrequency[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
+	clkFrequency[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
+	clkFrequency[SYSTEM_C3] = DEFAULT_SYSTEM_C3;
 
 
 	highvoltage = 0;
@@ -728,11 +728,11 @@ int getMaxPhase(enum CLKINDEX ind) {
 	}
 	int vcofreq = getVCOFrequency(ind);
 	int maxshiftstep = ALTERA_PLL_C10_GetMaxPhaseShiftStepsofVCO();
-	int ret = ((double)vcofreq / (double)clkDivider[ind]) * maxshiftstep;
+	int ret = ((double)vcofreq / (double)clkFrequency[ind]) * maxshiftstep;
 
 	char* clock_names[] = {CLK_NAMES};
 	FILE_LOG(logDEBUG1, ("\tMax Phase Shift (%s): %d (Clock: %d Hz, VCO:%d Hz)\n",
-			clock_names[ind], ret, clkDivider[ind], vcofreq));
+			clock_names[ind], ret, clkFrequency[ind], vcofreq));
 
 	return ret;
 }
@@ -765,7 +765,7 @@ int getFrequency(enum CLKINDEX ind) {
 		FILE_LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
 	    return -1;
 	}
-    return clkDivider[ind];
+    return clkFrequency[ind];
 }
 
 int getVCOFrequency(enum CLKINDEX ind) {
@@ -791,10 +791,10 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 	}
 	char* clock_names[] = {CLK_NAMES};
 	int vcofreq = getVCOFrequency(ind);
-	int currentdiv = vcofreq / clkDivider[ind];
+	int currentdiv = vcofreq / clkFrequency[ind];
 	int newfreq = vcofreq / val;
 
-    FILE_LOG(logINFO, ("\tSetting %s clock (%d) divider from %d (%d Hz) to %d (%d Hz). \n\t(Vcofreq: %d Hz)\n", clock_names[ind], ind, currentdiv, clkDivider[ind], val, newfreq, vcofreq));
+    FILE_LOG(logINFO, ("\tSetting %s clock (%d) divider from %d (%d Hz) to %d (%d Hz). \n\t(Vcofreq: %d Hz)\n", clock_names[ind], ind, currentdiv, clkFrequency[ind], val, newfreq, vcofreq));
 
     // Remembering old phases in degrees
     int oldPhases[NUM_CLOCKS];
@@ -810,8 +810,8 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
 	int clkIndex = ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind;
     int ret = ALTERA_PLL_C10_SetOuputFrequency (pllIndex, clkIndex, newfreq);
-	clkDivider[ind] = newfreq;
-    FILE_LOG(logINFO, ("\t%s clock (%d) divider set to %d (%d Hz)\n", clock_names[ind], ind, val, clkDivider[ind]));
+	clkFrequency[ind] = newfreq;
+    FILE_LOG(logINFO, ("\t%s clock (%d) divider set to %d (%d Hz)\n", clock_names[ind], ind, val, clkFrequency[ind]));
    
     // phase is reset by pll (when setting output frequency)
 	if (ind >= READOUT_C0) {
@@ -840,7 +840,7 @@ int getClockDivider(enum CLKINDEX ind) {
 		FILE_LOG(logERROR, ("Unknown clock index %d to get clock divider\n", ind));
 	    return -1;
 	}
-	return (getVCOFrequency(ind) / clkDivider[ind]);
+	return (getVCOFrequency(ind) / clkFrequency[ind]);
 }
 
 

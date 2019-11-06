@@ -7,6 +7,8 @@
 #include <cstring> //strcmp
 #include <iostream>
 int main(int argc, char *argv[]) {
+
+    //To genereate sepereate binaries for put, get, acquire and help
 #ifdef PUT
     int action = slsDetectorDefs::PUT_ACTION;
 #endif
@@ -22,6 +24,7 @@ int main(int argc, char *argv[]) {
 #ifdef HELP
     int action = slsDetectorDefs::HELP_ACTION;
 #endif
+
     // Check for --version in the arguments
     for (int i = 1; i < argc; ++i) {
         if (!(strcmp(argv[i], "--version")) || !(strcmp(argv[i], "-v"))) {
@@ -35,20 +38,23 @@ int main(int argc, char *argv[]) {
     sls::CmdLineParser parser;
     parser.Parse(argc, argv);
 
-    //If we called sls_detector_aquire, add the command
+    // If we called sls_detector_acquire, add the acquire command
     if (action == slsDetectorDefs::READOUT_ACTION)
         parser.setCommand("acquire2");
 
     if (parser.isHelp())
         action = slsDetectorDefs::HELP_ACTION;
 
-    if (parser.command() == "free" && action != slsDetectorDefs::HELP_ACTION){
-        sls::freeSharedMemory(parser.multi_id(), parser.detector_id());
+    if (parser.command() == "free" && action != slsDetectorDefs::HELP_ACTION) {
+        // sls::freeSharedMemory(parser.multi_id(), parser.detector_id());
+        sls::CmdProxy proxy(nullptr);
+        auto cmd = proxy.Call(parser.command(), parser.arguments(),
+                              parser.detector_id(), action);
         return 0;
     }
-    //TODO fix help
+    // TODO fix help
 
-    sls::Detector det(parser.multi_id()); //This might fail on shmversion?
+    sls::Detector det(parser.multi_id()); // This might fail on shmversion?
     sls::CmdProxy proxy(&det);
 
     try {

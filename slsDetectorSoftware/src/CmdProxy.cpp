@@ -196,6 +196,11 @@ std::string CmdProxy::acquire(int action){
     return "Acquired\n";
 }
 
+std::string CmdProxy::free(int action){
+    //This  function is purely for help, actual functionality is in the caller 
+    return "Acquired\n";
+}
+
 std::string CmdProxy::FirmwareVersion(int action) {
     std::ostringstream os; 
     os << cmd << ' ';

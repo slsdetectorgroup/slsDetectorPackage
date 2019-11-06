@@ -6,7 +6,7 @@
 #include "DAC6571.h"
 #include "LTC2620_Driver.h"
 #include "common.h"
-#include "ALTERA_PLL_CYCLONE10.h" // pll
+#include "ALTERA_PLL_CYCLONE10.h" 
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #endif
@@ -17,8 +17,6 @@
 #include <pthread.h>
 #include <time.h>
 #endif
-
-enum {READOUT_PLL, SYSTEM_PLL};
 
 
 // Global variable from slsDetectorServer_funcs
@@ -363,6 +361,8 @@ void setupDetector() {
 	// Default values
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 	setDefaultDacs();
+
+	// Initialization of acquistion parameters
 	setNumFrames(DEFAULT_NUM_FRAMES);
 	setNumTriggers(DEFAULT_NUM_CYCLES);
 	setExpTime(DEFAULT_EXPTIME);
@@ -376,10 +376,7 @@ int setDefaultDacs() {
 		int i = 0;
 		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
 		for(i = 0; i < NDAC; ++i) {
-			// if not already default, set it to default
-			//if (dacValues[i] != defaultvals[i]) {
-				setDAC((enum DACINDEX)i,defaultvals[i],0);
-			//}
+			setDAC((enum DACINDEX)i,defaultvals[i],0);
 		}
 	}
 	return ret;
@@ -508,9 +505,6 @@ int getDAC(enum DACINDEX ind, int mV) {
 int getMaxDacSteps() {
     return LTC2620_D_GetMaxNumSteps();
 }
-
-
-
 
 int setHighVoltage(int val){
 	if (val > HV_SOFT_MAX_VOLTAGE) {

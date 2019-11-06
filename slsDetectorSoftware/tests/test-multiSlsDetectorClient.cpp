@@ -4044,8 +4044,8 @@ TEST_CASE("delayl", "[.cmd][.jungfrau][gotthard][ctb]") {
         REQUIRE_NOTHROW(multiSlsDetectorClient("delay 0", PUT));
     }
 }
-TEST_CASE("clk", "[.cmd]") {
-    if(test::type == slsDetectorDefs::GOTTHARD2) {
+TEST_CASE("clk", "[.cmd][.gotthard2][.mythen3]") {
+    if(test::type == slsDetectorDefs::GOTTHARD2 || test::type == slsDetectorDefs::MYTHEN3) {
         REQUIRE_THROWS(multiSlsDetectorClient("clkfreq 0 2", PUT)); // cannot get
         REQUIRE_THROWS(multiSlsDetectorClient("clkfreq", GET)); // requires clk index
         REQUIRE_THROWS(multiSlsDetectorClient("clkfreq 7", GET)); // 7 doesnt exist

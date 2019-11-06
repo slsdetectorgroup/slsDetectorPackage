@@ -8,6 +8,7 @@ add_executable(mythen3DetectorServer_virtual
     ../slsDetectorServer/src/DAC6571.c      
     ../slsDetectorServer/src/common.c 
     ../slsDetectorServer/src/LTC2620_Driver.c
+    ../slsDetectorServer/src/ALTERA_PLL_CYCLONE10.c   
 )
 
 include_directories(

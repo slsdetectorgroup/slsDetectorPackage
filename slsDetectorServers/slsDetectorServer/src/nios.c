@@ -10,7 +10,7 @@
 /* global variables */
 u_int32_t* csp0base = 0;
 #define CSP0 0x18060000
-#define MEM_SIZE 0x100000
+#define MEM_SIZE 0x100000 //TODO  (1804 0000 - 1804 07FF = 800 * 4 = 2000), (1806 0000 = 10000* 4 = 40000)
 
 u_int32_t* csp1base = 0;
 #define CSP1 0x18040000

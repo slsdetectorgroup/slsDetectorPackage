@@ -404,9 +404,10 @@ std::string CmdProxy::ClockFrequency(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_clock (0-8)] [freq_in_Hz]\n\t[Gotthard2] Frequency of clock n_clock in Hz. Use clkdiv to set frequency." << '\n';   
+        os << "[n_clock (0-8)] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency." << '\n';   
     } else {
-        if (det->getDetectorType().squash(defs::GENERIC) != defs::GOTTHARD2) {
+        defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+        if (type != defs::GOTTHARD2 && type != MYTHEN3) {
             throw sls::RuntimeError("Not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
@@ -433,9 +434,10 @@ std::string CmdProxy::ClockPhase(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_clock (0-8)] [phase] [deg (optional)]\n\t[Gotthard2] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values." << '\n';   
+        os << "[n_clock (0-8)] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values." << '\n';   
     } else {
-        if (det->getDetectorType().squash(defs::GENERIC) != defs::GOTTHARD2) {
+        defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+        if (type != defs::GOTTHARD2 && type != MYTHEN3) {
             throw sls::RuntimeError("Not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
@@ -475,9 +477,10 @@ std::string CmdProxy::MaxClockPhaseShift(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_clock (0-8)]\n\t[Gotthard2] Absolute Maximum Phase shift of clock n_clock." << '\n';   
+        os << "[n_clock (0-8)]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock." << '\n';   
     }  else {
-        if (det->getDetectorType().squash(defs::GENERIC) != defs::GOTTHARD2) {
+        defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+        if (type != defs::GOTTHARD2 && type != MYTHEN3) {
             throw sls::RuntimeError("Not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
@@ -499,9 +502,10 @@ std::string CmdProxy::ClockDivider(int action) {
     std::ostringstream os; 
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_clock (0-8)] [n_divider]\n\t[Gotthard2] Clock Divider of clock n_clock. Must be greater than 1." << '\n';   
+        os << "[n_clock (0-8)] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1." << '\n';   
     } else {
-        if (det->getDetectorType().squash(defs::GENERIC) != defs::GOTTHARD2) {
+        defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
+        if (type != defs::GOTTHARD2 && type != MYTHEN3) {
             throw sls::RuntimeError("Not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {

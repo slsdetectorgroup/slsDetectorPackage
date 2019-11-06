@@ -10,7 +10,6 @@
 #define NCHIP 						(10)
 #define NDAC 						(16)
 #define DYNAMIC_RANGE               (16) 
-
 #define HV_SOFT_MAX_VOLTAGE         (200)
 #define HV_HARD_MAX_VOLTAGE         (530)
 #define HV_DRIVER_FILE_NAME         ("/etc/devlinks/hvdac")
@@ -29,7 +28,6 @@
 #define DEFAULT_SYSTEM_C1			(72222224) // chip_clk, 72 MHz 
 #define DEFAULT_SYSTEM_C2			(18055556) // sync_clk, 18 MHz 
 #define DEFAULT_SYSTEM_C3			(144444448) // str_clk, 144 MHz
-#define DEFAULT_TX_UDP_PORT			(0x7e9a)
 
 /* Firmware Definitions */
 #define IP_HEADER_SIZE              (20)
@@ -78,6 +76,7 @@ enum DACINDEX				        {G2_VREF_H_ADC, /* 0 */		\
 									};
 enum CLKINDEX                       {READOUT_C0, READOUT_C1, SYSTEM_C0, SYSTEM_C1, SYSTEM_C2, SYSTEM_C3, NUM_CLOCKS};
 #define CLK_NAMES					"READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2", "SYSTEM_C3"
+enum PLLINDEX						{READOUT_PLL, SYSTEM_PLL};
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

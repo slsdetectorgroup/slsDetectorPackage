@@ -1,26 +1,45 @@
 #pragma once
 
-/* Definitions for FPGA*/
+
 #define REG_OFFSET                      (4)
 
-/* cspbase 0x1804 0000 */
-#define BASE_READOUT_PLL                (0x000) 
-#define BASE_SYSTEM_PLL                 (0x800)
+
+/* Base addresses 0x1804 0000 ---------------------------------------------*/
+/* Reconfiguration core for readout pll */
+#define BASE_READOUT_PLL                (0x0000) // 0x1804_0000 - 0x1804_07FF
+/* Reconfiguration core for system pll */
+#define BASE_SYSTEM_PLL                 (0x0800) // 0x1804_0800 - 0x1804_0FFF
+
+/* Base addresses 0x1806 0000 ---------------------------------------------*/
+/* General purpose control and status registers */
+#define BASE_CONTROL                    (0x0000)
+/* Acquisition? TODO */
+#define BASE_ACQUISITION                (0x0200) 
+/* UDP datagram generator */
+#define BASE_UDP_RAM                    (0x01000) // 0x1806_1000 - 0x1806_1FFF
+
+
+
+
+/* Readout PLL registers --------------------------------------------------*/
 
 #define READOUT_PLL_RESET_REG           (0x1 * REG_OFFSET + BASE_READOUT_PLL) //TODO
 
 #define READOUT_PLL_RESET_OFST          (0)
 #define READOUT_PLL_RESET_MSK           (0x00000001 << READOUT_PLL_RESET_OFST)
 
-#define SYSTEM_PLL_RESET_REG            (0x1 * REG_OFFSET + BASE_SYSTEM_PLL) //TODO
-
-#define SYSTEM_PLL_RESET_OFST           (0)
-#define SYSTEM_PLL_RESET_MSK            (0x00000001 << SYSTEM_PLL_RESET_OFST)
-
 #define READOUT_PLL_WAIT_REG            (0x2 * REG_OFFSET + BASE_READOUT_PLL) //TODO
 
 #define READOUT_PLL_WAIT_OFST           (0)
 #define READOUT_PLL_WAIT_MSK            (0x00000001 << READOUT_PLL_WAIT_OFST)
+
+
+/* System PLL registers --------------------------------------------------*/
+
+#define SYSTEM_PLL_RESET_REG            (0x1 * REG_OFFSET + BASE_SYSTEM_PLL) //TODO
+
+#define SYSTEM_PLL_RESET_OFST           (0)
+#define SYSTEM_PLL_RESET_MSK            (0x00000001 << SYSTEM_PLL_RESET_OFST)
 
 #define SYSTEM_PLL_WAIT_REG             (0x2 * REG_OFFSET + BASE_SYSTEM_PLL) //TODO
 
@@ -28,16 +47,16 @@
 #define SYSTEM_PLL_WAIT_MSK             (0x00000001 << SYSTEM_PLL_WAIT_OFST)
 
 
-/* cspbase 0x1806 0000 */
-#define BASE_CONTROL                    (0x000)
-#define BASE_ACQUISITION                (0x200) //???TODO
-#define BASE_UDP_RAM                    (0x1000)
+/* Control registers --------------------------------------------------*/
 
 /* Module Control Board Serial Number register */
-#define MCB_SERIAL_NO_REG               (0x000 * REG_OFFSET + BASE_CONTROL)
+#define MCB_SERIAL_NO_REG               (0x00 * REG_OFFSET + BASE_CONTROL)
+
+#define MCB_SERIAL_NO_VRSN_OFST			(16)
+#define MCB_SERIAL_NO_VRSN_MSK      	(0x0000001F << MCB_SERIAL_NO_VRSN_OFST)
 
 /* FPGA Version register */
-#define FPGA_VERSION_REG                (0x001 * REG_OFFSET + BASE_CONTROL)
+#define FPGA_VERSION_REG                (0x01 * REG_OFFSET + BASE_CONTROL)
 
 #define FPGA_COMPILATION_DATE_OFST		(0)
 #define FPGA_COMPILATION_DATE_MSK		(0x00FFFFFF << FPGA_COMPILATION_DATE_OFST)
@@ -45,7 +64,7 @@
 #define DETECTOR_TYPE_MSK   			(0x000000FF << DETECTOR_TYPE_OFST)
 
 /* API Version register */
-#define API_VERSION_REG                 (0x002 * REG_OFFSET + BASE_CONTROL)
+#define API_VERSION_REG                 (0x02 * REG_OFFSET + BASE_CONTROL)
 
 #define API_VERSION_OFST                (0)
 #define API_VERSION_MSK                 (0x00FFFFFF << API_VERSION_OFST)
@@ -53,11 +72,11 @@
 #define API_VERSION_DETECTOR_TYPE_MSK   (0x000000FF << API_VERSION_DETECTOR_TYPE_OFST)  //Not used in software
 
 /* Fix pattern register */
-#define FIX_PATT_REG             	    (0x003 * REG_OFFSET + BASE_CONTROL)
+#define FIX_PATT_REG             	    (0x03 * REG_OFFSET + BASE_CONTROL)
 #define FIX_PATT_VAL                    (0xACDC2019)
 
 /* Status register */
-#define STATUS_REG                      (0x004 * REG_OFFSET + BASE_CONTROL)
+#define STATUS_REG                      (0x04 * REG_OFFSET + BASE_CONTROL)
 
 #ifdef VIRTUAL
 #define RUN_BUSY_OFST					(0)
@@ -65,16 +84,40 @@
 #endif
 
 /* Look at me read only register */
-#define LOOK_AT_ME_REG          		(0x005 * REG_OFFSET + BASE_CONTROL)	
+#define LOOK_AT_ME_REG          		(0x05 * REG_OFFSET + BASE_CONTROL)	
+
+/* System status register */
+#define SYSTEM_STATUS_REG          		(0x06 * REG_OFFSET + BASE_CONTROL)	
+
+/* Config RW regiseter */
+#define CONFIG_REG                      (0x20 * REG_OFFSET + BASE_CONTROL)
+
+/* Control RW register */ 
+#define CONTROL_REG           			(0x21 * REG_OFFSET + BASE_CONTROL)
+
+#define CONTROL_STRT_ACQSTN_OFST       	(0)
+#define CONTROL_STRT_ACQSTN_MSK			(0x00000001 << CONTROL_STRT_ACQSTN_OFST)
+#define CONTROL_STP_ACQSTN_OFST			(1)
+#define CONTROL_STP_ACQSTN_MSK			(0x00000001 << CONTROL_STP_ACQSTN_OFST)
+#define CONTROL_CRE_RST_OFST			(10)
+#define CONTROL_CRE_RST_MSK			    (0x00000001 << CONTROL_CRE_RST_OFST)
+#define CONTROL_PRPHRL_RST_OFST		    (11)										// Only GBE10?
+#define CONTROL_PRPHRL_RST_MSK		    (0x00000001 << CONTROL_PRPHRL_RST_OFST)
+#define CONTROL_CLR_ACQSTN_FIFO_OFST    (15)
+#define CONTROL_CLR_ACQSTN_FIFO_MSK		(0x00000001 << CONTROL_CLR_ACQSTN_FIFO_OFST)
+
+/* Pattern IO Control 64 bit register */
+#define PATTERN_IO_CTRL_LSB_REG         (0x22 * REG_OFFSET + BASE_CONTROL)   
+#define PATTERN_IO_CTRL_MSB_REG         (0x23 * REG_OFFSET + BASE_CONTROL)   
 
 /** DTA Offset Register */
-#define DTA_OFFSET_REG                  (0x104 * REG_OFFSET + BASE_CONTROL)
+#define DTA_OFFSET_REG                  (0x24 * REG_OFFSET + BASE_CONTROL)
 
 
 
 
-/* BASE_ACQUISITION FPGA registers TODO --------------------------------------------------*/
-
+/* Acquisition registers --------------------------------------------------*/
+//TODO
 /* Triggers left 64bit Register */
 #define GET_CYCLES_LSB_REG              (0x10 + BASE_ACQUISITION)
 #define GET_CYCLES_MSB_REG              (0x14 + BASE_ACQUISITION)

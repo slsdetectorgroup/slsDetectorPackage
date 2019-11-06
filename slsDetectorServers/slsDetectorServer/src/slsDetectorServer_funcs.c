@@ -2393,7 +2393,7 @@ int get_period_left(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2408,7 +2408,7 @@ int get_delay_after_trigger_left(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2453,7 +2453,7 @@ int get_frames_from_start(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2468,7 +2468,7 @@ int get_actual_time(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2483,7 +2483,7 @@ int get_measurement_time(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -3188,7 +3188,7 @@ int write_adc_register(int file_des) {
 	uint32_t val = args[1];
 	FILE_LOG(logDEBUG1, ("Writing 0x%x to ADC Register 0x%x\n", val, addr));
 
-#if defined(EIGERD) || defined(GOTTHARD2D)
+#if defined(EIGERD) || defined(GOTTHARD2D) || defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 #ifndef VIRTUAL
@@ -3722,7 +3722,7 @@ int reset_fpga(int file_des) {
 	memset(mess, 0, sizeof(mess));
 
 	FILE_LOG(logDEBUG1, ("Reset FPGA\n"));
-#if defined(EIGERD) || defined(GOTTHARDD) || defined(GOTTHARD2D)
+#if defined(EIGERD) || defined(GOTTHARDD) || defined(GOTTHARD2D) || defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// only set
@@ -5567,7 +5567,7 @@ int get_clock_frequency(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Getting clock (%d) frequency\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(GOTTHARD2D) 
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D) 
 	functionNotImplemented();
 #else
 	// get only
@@ -5588,7 +5588,7 @@ int get_clock_frequency(int file_des) {
 		break;
 #endif
 	default:
-#ifdef GOTTHARD2D
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
 		if (c < NUM_CLOCKS) {
 			c = (enum CLKINDEX)arg;
 			break;
@@ -5600,7 +5600,7 @@ int get_clock_frequency(int file_des) {
 	if (ret == OK) {
 		retval = getFrequency(c);
 		char* clock_names[] = {CLK_NAMES};
-		FILE_LOG(logDEBUG1, ("retval %s clock (%d) frequency: %d %s\n", clock_names[c], (int)c, retval, myDetectorType == GOTTHARD2 ? "Hz" : "MHz"));
+		FILE_LOG(logDEBUG1, ("retval %s clock (%d) frequency: %d %s\n", clock_names[c], (int)c, retval, myDetectorType == GOTTHARD2 || myDetectorType == MYTHEN3 ? "Hz" : "MHz"));
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
@@ -5618,7 +5618,7 @@ int set_clock_phase(int file_des) {
 	return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting clock (%d) phase: %u %s\n", args[0], args[1], (args[2] == 0 ? "" : "degrees")));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(JUNGFRAUD)&& !defined(GOTTHARDD) && !defined(GOTTHARD2D)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(JUNGFRAUD)&& !defined(GOTTHARDD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// only set
@@ -5639,7 +5639,7 @@ int set_clock_phase(int file_des) {
 		break;
 #endif
 		default:
-#ifdef GOTTHARD2D
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
 			if (c < NUM_CLOCKS) {
 				c = (enum CLKINDEX)ind;
 				break;
@@ -5654,7 +5654,7 @@ int set_clock_phase(int file_des) {
 			sprintf(modeName, "%s clock (%d) phase %s", clock_names[c], (int)c, (inDegrees == 0 ? "" : "(degrees)"));
 
 			// gotthard1d doesnt take degrees and cannot get phase
-#ifdef GOTTHARDD
+#ifndef GOTTHARDD
 			if (inDegrees != 0) {
 				ret = FAIL;
 				strcpy(mess, "Cannot set phase in degrees for this detector.\n");
@@ -5714,7 +5714,7 @@ int get_clock_phase(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Getting clock (%d) phase %s \n", args[0], (args[1] == 0 ? "" : "in degrees")));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -5733,7 +5733,7 @@ int get_clock_phase(int file_des) {
 		break;
 #endif
 	default:
-#ifdef GOTTHARD2D
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
 		if (c < NUM_CLOCKS) {
 			c = (enum CLKINDEX)ind;
 			break;
@@ -5762,7 +5762,7 @@ int get_max_clock_phase_shift(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Getting clock (%d) max phase shift\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)  && !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)  && !defined(JUNGFRAUD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -5779,7 +5779,7 @@ int get_max_clock_phase_shift(int file_des) {
 		break;
 #endif
 	default:
-#ifdef GOTTHARD2D
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
 		if (c < NUM_CLOCKS) {
 			c = (enum CLKINDEX)arg;
 			break;
@@ -5807,7 +5807,7 @@ int set_clock_divider(int file_des) {
 	return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting clock (%d) divider: %u\n", args[0], args[1]));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D) 
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// only set
@@ -5824,7 +5824,7 @@ int set_clock_divider(int file_des) {
 #endif
 		default:
 		// any clock index
-#ifdef GOTTHARD2D
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
 			if (c < NUM_CLOCKS) {
 				c = (enum CLKINDEX)ind;
 				break;
@@ -5843,7 +5843,7 @@ int set_clock_divider(int file_des) {
 				FILE_LOG(logERROR,(mess));
 			} else 
 #endif
-#ifdef GOTTHARD2D	
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
 			if (val < 2 || val > getMaxClockDivider()) {
 				char* clock_names[] = {CLK_NAMES};
 				ret = FAIL;
@@ -5861,7 +5861,7 @@ int set_clock_divider(int file_des) {
 
 		if (ret != FAIL) {
 			char modeName[50] = "speed";
-#ifdef GOTTHARD2D		
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
 			char* clock_names[] = {CLK_NAMES};
 			sprintf(modeName, "%s clock (%d) divider", clock_names[c], (int)c);
 #endif
@@ -5895,7 +5895,7 @@ int get_clock_divider(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Getting clock (%d) divider\n", arg));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D) 
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -5907,7 +5907,7 @@ int get_clock_divider(int file_des) {
 		break;
 #endif
 	default:
-#ifdef GOTTHARD2D
+#if defined(GOTTHARD2D) || defined(MYTHEN3D)
 		if (c < NUM_CLOCKS) {
 			c = (enum CLKINDEX)arg;
 			break;

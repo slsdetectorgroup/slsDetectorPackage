@@ -103,7 +103,7 @@ extern u_int32_t    readRegister(u_int32_t offset);                     // black
 
 
 // firmware functions (resets)
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
 void 		cleanFifos();
 void 		resetCore();
 void 		resetPeripheral();
@@ -118,14 +118,6 @@ void        setROIADC(int adc);
 void        setGbitReadout();
 int         readConfigFile();
 void        setMasterSlaveConfiguration();
-#elif CHIPTESTBOARDD
-void        cleanFifos();
-void        resetCore();
-void        resetPeripheral();
-#elif MOENCHD
-void        cleanFifos();
-void        resetCore();
-void        resetPeripheral();
 #endif
 
 // parameters - dr, roi
@@ -208,14 +200,14 @@ int64_t 	getDelayAfterTrigger();
 int64_t		getNumFramesLeft();
 int64_t		getNumTriggersLeft();
 #endif
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
 int64_t		getDelayAfterTriggerLeft();
 int64_t		getPeriodLeft();
 #endif
 #ifdef GOTTHARDD
 int64_t		getExpTimeLeft();
 #endif
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
 int64_t		getFramesFromStart();
 int64_t		getActualTime();
 int64_t		getMeasurementTime();
@@ -425,7 +417,16 @@ int         setPatternWaitAddress(int level, int addr);
 uint64_t    setPatternWaitTime(int level, uint64_t t);
 void        setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
 int         powerChip (int on);
-
+int        	setPhase(enum CLKINDEX ind, int val, int degrees);
+int         getPhase(enum CLKINDEX ind, int degrees);
+int         getMaxPhase(enum CLKINDEX ind);
+int 		validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
+//void       	setFrequency(enum CLKINDEX ind, int val);
+int         getFrequency(enum CLKINDEX ind);
+int         getVCOFrequency(enum CLKINDEX ind);
+int       	getMaxClockDivider();
+int       	setClockDivider(enum CLKINDEX ind, int val);
+int         getClockDivider(enum CLKINDEX ind);
 
 #elif GOTTHARD2D
 int        	setPhase(enum CLKINDEX ind, int val, int degrees);

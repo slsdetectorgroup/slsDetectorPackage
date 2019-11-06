@@ -1,17 +1,69 @@
 #pragma once
 
-/* Base addresses */
+
 #define REG_OFFSET                      (4)
-#define BASE_CONTROL                    (0x0000)
-#define BASE_PATTERN_CONTROL            (0x00200)
-#define BASE_UDP_RAM                    (0x01000) 
-#define BASE_PATTERN_RAM                (0x10000)
+
+/* Base addresses 0x1804 0000 ---------------------------------------------*/
+/* Reconfiguration core for readout pll */
+#define BASE_READOUT_PLL                (0x0000) // 0x1804_0000 - 0x1804_07FF
+/* Reconfiguration core for system pll */
+#define BASE_SYSTEM_PLL                 (0x0800) // 0x1804_0800 - 0x1804_0FFF
+
+/* Base addresses 0x1806 0000 ---------------------------------------------*/
+/* General purpose control and status registers */
+#define BASE_CONTROL                    (0x0000) // 0x1806_0000 - 0x1806_00FF https://git.psi.ch/sls_detectors_firmware/mythen_III_mcb/blob/master/code/hdl/ctrl/ctrl.vhd
+
+/* ASIC Control */
+#define BASE_ASIC                       (0x0100) // 0x1806_0100 - 0x1806_010F 
+/* ASIC Digital Interface. Data recovery core */
+#define BASE_ADIF                       (0x0110) // 0x1806_0110 - 0x1806_011F https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/2e81ccbdbc5cb81813ba190fbdba43e8d6884eb9/adif/adif_ctrl.vhd
+
+/* Formatting of data core */
+#define BASE_FMT                        (0x0120) // 0x1806_0120 - 0x1806_012F
+/* Pattern control and status registers */
+#define BASE_PATTERN_CONTROL            (0x00200) // 0x1806_0200 - 0x1806_02FF  https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/2e81ccbdbc5cb81813ba190fbdba43e8d6884eb9/pattern_flow/pattern_flow_ctrl.vhd
+
+/* UDP datagram generator */
+#define BASE_UDP_RAM                    (0x01000) // 0x1806_1000 - 0x1806_1FFF
+/* Pattern RAM. Pattern table */
+#define BASE_PATTERN_RAM                (0x10000) // 0x1807_0000 - 0x1807_FFFF
+
+
+
+
+/* Readout PLL registers --------------------------------------------------*/
+
+#define READOUT_PLL_RESET_REG           (0x1 * REG_OFFSET + BASE_READOUT_PLL) //TODO
+
+#define READOUT_PLL_RESET_OFST          (0)
+#define READOUT_PLL_RESET_MSK           (0x00000001 << READOUT_PLL_RESET_OFST)
+
+#define READOUT_PLL_WAIT_REG            (0x2 * REG_OFFSET + BASE_READOUT_PLL) //TODO
+
+#define READOUT_PLL_WAIT_OFST           (0)
+#define READOUT_PLL_WAIT_MSK            (0x00000001 << READOUT_PLL_WAIT_OFST)
+
+
+/* System PLL registers --------------------------------------------------*/
+
+#define SYSTEM_PLL_RESET_REG            (0x1 * REG_OFFSET + BASE_SYSTEM_PLL) //TODO
+
+#define SYSTEM_PLL_RESET_OFST           (0)
+#define SYSTEM_PLL_RESET_MSK            (0x00000001 << SYSTEM_PLL_RESET_OFST)
+
+#define SYSTEM_PLL_WAIT_REG             (0x2 * REG_OFFSET + BASE_SYSTEM_PLL) //TODO
+
+#define SYSTEM_PLL_WAIT_OFST            (0)
+#define SYSTEM_PLL_WAIT_MSK             (0x00000001 << SYSTEM_PLL_WAIT_OFST)
 
 
 /* Control registers --------------------------------------------------*/
 
 /* Module Control Board Serial Number Register */
 #define MCB_SERIAL_NO_REG               (0x00 * REG_OFFSET + BASE_CONTROL)
+
+#define MCB_SERIAL_NO_VRSN_OFST			(16)
+#define MCB_SERIAL_NO_VRSN_MSK      	(0x0000001F << MCB_SERIAL_NO_VRSN_OFST)
 
 /* FPGA Version register */
 #define FPGA_VERSION_REG                (0x01 * REG_OFFSET + BASE_CONTROL)
@@ -47,6 +99,7 @@
 
 #define SYSTEM_STATUS_REG               (0x06 * REG_OFFSET + BASE_CONTROL)  //Not used in software
 
+
 /* Config RW regiseter */
 #define CONFIG_REG                      (0x20 * REG_OFFSET + BASE_CONTROL)
 
@@ -57,17 +110,13 @@
 #define CONTROL_STRT_ACQSTN_MSK			(0x00000001 << CONTROL_STRT_ACQSTN_OFST)
 #define CONTROL_STP_ACQSTN_OFST			(1)
 #define CONTROL_STP_ACQSTN_MSK			(0x00000001 << CONTROL_STP_ACQSTN_OFST)
-#define CONTROL_RN_BSY_OFST             (2) // assumed for MY3
+#define CONTROL_RN_BSY_OFST             (2) // assumed for MY3 TODO
 #define CONTROL_RN_BSY_MSK              (0x00000001 << CONTROL_RN_BSY_OFST)
-#define CONTROL_STRT_EXPSR_OFST         (6)
-#define CONTROL_STRT_EXPSR_MSK          (0x00000001 << CONTROL_STRT_EXPSR_OFST)
 #define CONTROL_CRE_RST_OFST			(10)
 #define CONTROL_CRE_RST_MSK			    (0x00000001 << CONTROL_CRE_RST_OFST)
 #define CONTROL_PRPHRL_RST_OFST		    (11)										// Only GBE10?
 #define CONTROL_PRPHRL_RST_MSK		    (0x00000001 << CONTROL_PRPHRL_RST_OFST)
-// #define CONTROL_MMRY_RST_OFST		    (12)
-// #define CONTROL_MMRY_RST_MSK		    (0x00000001 << CONTROL_MMRY_RST_OFST)
-#define CONTROL_CLR_ACQSTN_FIFO_OFST    (14)
+#define CONTROL_CLR_ACQSTN_FIFO_OFST    (15)
 #define CONTROL_CLR_ACQSTN_FIFO_MSK		(0x00000001 << CONTROL_CLR_ACQSTN_FIFO_OFST)
 #define CONTROL_PWR_CHIP_OFST           (31)
 #define CONTROL_PWR_CHIP_MSK    		(0x00000001 << CONTROL_PWR_CHIP_OFST)

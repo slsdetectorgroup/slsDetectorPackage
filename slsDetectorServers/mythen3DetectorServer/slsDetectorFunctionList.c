@@ -888,6 +888,20 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
     }
 }
 
+int powerChip (int on){
+    if(on != -1){
+        if(on){
+            FILE_LOG(logINFO, ("Powering chip: on\n"));
+            bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);
+        }
+        else{
+            FILE_LOG(logINFO, ("Powering chip: off\n"));
+            bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PWR_CHIP_MSK);
+        }
+    }
+
+    return ((bus_r(CONTROL_REG) & CONTROL_PWR_CHIP_MSK) >> CONTROL_PWR_CHIP_OFST);
+}
 
 
 /* aquisition */

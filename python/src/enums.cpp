@@ -101,17 +101,6 @@ void init_enums(py::module &m) {
             slsDetectorDefs::networkParameter::RECEIVER_REAL_UDP_SCKT_BUF_SIZE)
         .export_values();
 
-    py::enum_<slsDetectorDefs::numberOf>(Defs, "numberOf")
-        .value("MAXMODX", slsDetectorDefs::numberOf::MAXMODX)
-        .value("MAXMODY", slsDetectorDefs::numberOf::MAXMODY)
-        .value("NMODX", slsDetectorDefs::numberOf::NMODX)
-        .value("NMODY", slsDetectorDefs::numberOf::NMODY)
-        .value("NCHANSX", slsDetectorDefs::numberOf::NCHANSX)
-        .value("NCHANSY", slsDetectorDefs::numberOf::NCHANSY)
-        .value("NCHIPSX", slsDetectorDefs::numberOf::NCHIPSX)
-        .value("NCHIPSY", slsDetectorDefs::numberOf::NCHIPSY)
-        .export_values();
-
     py::enum_<slsDetectorDefs::dimension>(Defs, "dimension")
         .value("X", slsDetectorDefs::dimension::X)
         .value("Y", slsDetectorDefs::dimension::Y)
@@ -308,19 +297,11 @@ void init_enums(py::module &m) {
                slsDetectorDefs::detectorSettings::UNINITIALIZED)
         .export_values();
 
-    py::enum_<slsDetectorDefs::speedVariable>(Defs, "speedVariable")
-        .value("CLOCK_DIVIDER", slsDetectorDefs::speedVariable::CLOCK_DIVIDER)
-        .value("ADC_CLOCK", slsDetectorDefs::speedVariable::ADC_CLOCK)
-        .value("ADC_PHASE", slsDetectorDefs::speedVariable::ADC_PHASE)
-        .value("ADC_PIPELINE", slsDetectorDefs::speedVariable::ADC_PIPELINE)
-        .value("DBIT_CLOCK", slsDetectorDefs::speedVariable::DBIT_CLOCK)
-        .value("DBIT_PHASE", slsDetectorDefs::speedVariable::DBIT_PHASE)
-        .value("DBIT_PIPELINE", slsDetectorDefs::speedVariable::DBIT_PIPELINE)
-        .value("MAX_ADC_PHASE_SHIFT",
-               slsDetectorDefs::speedVariable::MAX_ADC_PHASE_SHIFT)
-        .value("MAX_DBIT_PHASE_SHIFT",
-               slsDetectorDefs::speedVariable::MAX_DBIT_PHASE_SHIFT)
-        .value("SYNC_CLOCK", slsDetectorDefs::speedVariable::SYNC_CLOCK)
+    py::enum_<slsDetectorDefs::clockIndex>(Defs, "clockIndex")
+        .value("ADC_CLOCK", slsDetectorDefs::clockIndex::ADC_CLOCK)
+        .value("DBIT_CLOCK", slsDetectorDefs::clockIndex::DBIT_CLOCK)
+        .value("RUN_CLOCK", slsDetectorDefs::clockIndex::RUN_CLOCK)
+        .value("SYNC_CLOCK", slsDetectorDefs::clockIndex::SYNC_CLOCK)
         .export_values();
 
     py::enum_<slsDetectorDefs::readoutMode>(Defs, "readoutMode")

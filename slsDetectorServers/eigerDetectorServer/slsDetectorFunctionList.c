@@ -69,10 +69,10 @@ int eiger_ntriggers = 1;
 
 #ifdef VIRTUAL
 //values for virtual server
-double eiger_virtual_exptime = 0;
+int64_t eiger_virtual_exptime = 0;
 int64_t eiger_virtual_subexptime = 0;
 int64_t eiger_virtual_subperiod = 0;
-double eiger_virtual_period = 0;
+int64_t eiger_virtual_period = 0;
 int eiger_virtual_counter_bit=1;
 int eiger_virtual_ratecorrection_variable=0;
 int64_t eiger_virtual_ratetable_tau_in_ns=-1;
@@ -646,7 +646,7 @@ int setExpTime(int64_t val) {
 #ifndef VIRTUAL
 	Feb_Control_SetExposureTime(val/(1E9));
 #else
-	eiger_virtual_exptime = (val/(1E9));
+	eiger_virtual_exptime = val;
 #endif
     return OK;
 }
@@ -655,7 +655,7 @@ int64_t getExpTime() {
 #ifndef VIRTUAL
 	return (Feb_Control_GetExposureTime()*(1E9));
 #else
-	return eiger_virtual_exptime*1e9;
+	return eiger_virtual_exptime;
 #endif
 }
 
@@ -664,7 +664,7 @@ int setPeriod(int64_t val) {
 #ifndef VIRTUAL
 	Feb_Control_SetExposurePeriod(val/(1E9));
 #else
-	eiger_virtual_period = (val/(1E9));
+	eiger_virtual_period = val;
 #endif
     return OK;
 }
@@ -673,7 +673,7 @@ int64_t getPeriod() {
 #ifndef VIRTUAL
 	return (Feb_Control_GetExposurePeriod()*(1E9));
 #else
-	return eiger_virtual_period*1e9;
+	return eiger_virtual_period;
 #endif
 }
 
@@ -1707,7 +1707,7 @@ int startStateMachine() {
 void* start_timer(void* arg) {
 	int64_t periodns = eiger_virtual_period;
 	int numFrames = nimages_per_request;
-	int64_t exp_ns = eiger_virtual_exptime;
+	int64_t exp_us = eiger_virtual_exptime / 1000;
 
 	int dr = eiger_dynamicrange;
 	double bytesPerPixel  = (double)dr/8.00;
@@ -1717,7 +1717,7 @@ void* start_timer(void* arg) {
 	int numPacketsPerFrame =  (tgEnable ? 4 : 16) * dr;
 	int npixelsx = 256 * 2 * bytesPerPixel; 
 	int databytes = 256 * 256 * 2 * bytesPerPixel;
-	FILE_LOG(logINFO, (" dr:%f\n bytesperpixel:%d\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:5d\n npixelsx:%d\n databytes:%d\n",
+	FILE_LOG(logINFO, (" dr:%f\n bytesperpixel:%d\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n",
 	dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame, npixelsx, databytes));
 
 
@@ -1731,19 +1731,22 @@ void* start_timer(void* arg) {
 			}
 		}
 		
-		
 		//TODO: Send data
 		{
 			int frameNr = 1;
 			for(frameNr=1; frameNr <= numFrames; ++frameNr ) {
+
+				//check if virtual_stop is high
+				if(eiger_virtual_stop == 1){
+					break;
+				}
+
 				int srcOffset = 0;
 				int srcOffset2 = npixelsx;
 			
 				struct timespec begin, end;
 				clock_gettime(CLOCK_REALTIME, &begin);
-
-				usleep(exp_ns / 1000);
-
+				usleep(exp_us);
 				char packetData[packetsize];
 				memset(packetData, 0, packetsize);
 				char packetData2[packetsize];
@@ -1762,10 +1765,12 @@ void* start_timer(void* arg) {
 						header = (sls_detector_header*)(packetData2);
 						header->frameNumber = frameNr;
 						header->packetNumber = i;
+
 						// fill data	
 						{		
 							int psize = 0;	
 							for (psize = 0; psize < datasize; psize += npixelsx) {
+
 								if (dr == 32 && tgEnable == 0) {
 									memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx/2);
 									memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx/2);
@@ -1783,7 +1788,7 @@ void* start_timer(void* arg) {
 								}
 							}
 						}
-						
+
 						sendUDPPacket(0, packetData, packetsize);
 						sendUDPPacket(1, packetData2, packetsize);
 					}
@@ -1792,7 +1797,7 @@ void* start_timer(void* arg) {
 				clock_gettime(CLOCK_REALTIME, &end);
 				int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
 						(end.tv_nsec - begin.tv_nsec));
-	  
+
 				if (periodns > time_ns) {
 					usleep((periodns - time_ns)/ 1000);
 				}
@@ -1803,6 +1808,7 @@ void* start_timer(void* arg) {
 	closeUDPSocket(1);
 	
 	eiger_virtual_status = 0;
+	FILE_LOG(logINFOBLUE, ("Finished Acquiring\n"));
 	return NULL;
 }
 #endif
@@ -1903,6 +1909,10 @@ enum runStatus getRunStatus() {
 
 void readFrame(int *ret, char *mess) {
 #ifdef VIRTUAL
+	// wait for status to be done
+	while(eiger_virtual_status == 1){
+		usleep(500);
+	}
 	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #else

@@ -2149,17 +2149,43 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	int wait_in_s = 	(getNumFrames() *
-						getNumTriggers() *
-						(getPeriod()/(1E9)));
-	FILE_LOG(logDEBUG1, ("going to wait for %d s\n", wait_in_s));
-	while(!virtual_stop && (wait_in_s >= 0)) {
-		usleep(1000 * 1000);
-		wait_in_s--;
-	}
-	FILE_LOG(logINFOGREEN, ("Virtual Timer Done\n"));
+	int64_t periodns = getPeriod();
+	int numFrames = (getNumFrames() *
+						getNumTriggers() );
+	int64_t exp_ns = 	getExpTime();
 
+    int frameNr = 0;
+	// loop over number of frames
+    for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
+
+		//check if virtual_stop is high
+		if(virtual_stop == 1){
+			break;
+		}
+
+		// sleep for exposure time
+        struct timespec begin, end;
+        clock_gettime(CLOCK_REALTIME, &begin);
+        usleep(exp_ns / 1000);
+        clock_gettime(CLOCK_REALTIME, &end);
+
+		// calculate time left in period
+        int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
+                (end.tv_nsec - begin.tv_nsec));
+
+		// sleep for (period - exptime)
+		if (frameNr < numFrames) { // if there is a next frame
+			if (periodns > time_ns) {
+				usleep((periodns - time_ns)/ 1000);
+			}
+		}
+
+		// set register frames left
+    }
+
+	// set status to idle
 	virtual_status = 0;
+	FILE_LOG(logINFOBLUE, ("Finished Acquiring\n"));        
 	return NULL;
 }
 #endif
@@ -2270,10 +2296,11 @@ void readandSendUDPFrames(int *ret, char *mess) {
 
 void readFrame(int *ret, char *mess) {
 #ifdef VIRTUAL
-	while(virtual_status) {
-		//FILE_LOG(logERROR, ("Waiting for finished flag\n");
-		usleep(5000);
-	}
+    // wait for acquisition to be done
+    while(runBusy()){
+        usleep(500); // random
+    }
+    FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #endif
 	// 1G

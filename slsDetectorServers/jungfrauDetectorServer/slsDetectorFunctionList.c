@@ -1743,6 +1743,7 @@ void* start_timer(void* arg) {
 	closeUDPSocket(0);
 
 	virtual_status = 0;
+	FILE_LOG(logINFOBLUE, ("Finished Acquiring\n"));
 	return NULL;
 }
 #endif

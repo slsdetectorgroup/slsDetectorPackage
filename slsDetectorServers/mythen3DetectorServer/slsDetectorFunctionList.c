@@ -960,9 +960,11 @@ void* start_timer(void* arg) {
                 (end.tv_nsec - begin.tv_nsec));
 
 		// sleep for (period - exptime)
-        if (periodns > time_ns) {
-            usleep((periodns - time_ns)/ 1000);
-        }
+		if (frameNr < numFrames) { // if there is a next frame
+			if (periodns > time_ns) {
+				usleep((periodns - time_ns)/ 1000);
+			}
+		}
 
 		// set register frames left
     }
@@ -970,6 +972,7 @@ void* start_timer(void* arg) {
 	closeUDPSocket(0);
 	// set status to idle
 	virtual_status = 0;
+	FILE_LOG(logINFOBLUE, ("Finished Acquiring\n"));
 	return NULL;
 }
 #endif

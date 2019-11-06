@@ -1798,8 +1798,11 @@ void* start_timer(void* arg) {
 				int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
 						(end.tv_nsec - begin.tv_nsec));
 
-				if (periodns > time_ns) {
-					usleep((periodns - time_ns)/ 1000);
+				// sleep for (period - exptime)
+				if (frameNr < numFrames) { // if there is a next frame
+					if (periodns > time_ns) {
+						usleep((periodns - time_ns)/ 1000);
+					}
 				}
 			}
 		}

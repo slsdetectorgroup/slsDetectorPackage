@@ -915,9 +915,11 @@ void* start_timer(void* arg) {
                 (end.tv_nsec - begin.tv_nsec));
 
 		// sleep for (period - exptime)
-        if (periodns > time_ns) {
-            usleep((periodns - time_ns)/ 1000);
-        }
+		if (frameNr < numFrames) { // if there is a next frame
+			if (periodns > time_ns) {
+				usleep((periodns - time_ns)/ 1000);
+			}
+		}
 
 		// set register frames left
     }

@@ -1831,7 +1831,7 @@ int start_and_read_all(int file_des) {
 		} else {
 			ret = startStateMachine();
 			if (ret == FAIL) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(VIRTUAL) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check udp_dstip & udp_dstport.\n");
 #else
 				sprintf(mess, "Could not start acquisition\n");

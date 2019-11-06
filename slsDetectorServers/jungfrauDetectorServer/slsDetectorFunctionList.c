@@ -1673,7 +1673,7 @@ void* start_timer(void* arg) {
 	int numFrames = (getNumFrames() *
 						getNumTriggers() *
 						(getNumAdditionalStorageCells() + 1));
-	int64_t exp_ns = 	getExpTime();
+	int64_t exp_us = 	getExpTime() / 1000;
 
 		//TODO: Generate data
 		char imageData[DATA_BYTES];
@@ -1691,12 +1691,18 @@ void* start_timer(void* arg) {
 		{
 			int frameNr = 0;
 			for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
+
+				//check if virtual_stop is high
+				if(virtual_stop == 1){
+					break;
+				}
+
 				int srcOffset = 0;
 			
 				struct timespec begin, end;
 				clock_gettime(CLOCK_REALTIME, &begin);
 
-				usleep(exp_ns / 1000);
+				usleep(exp_us);
 
 				const int size = datasize + 112;
 				char packetData[size];
@@ -1722,8 +1728,11 @@ void* start_timer(void* arg) {
 				int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
 						(end.tv_nsec - begin.tv_nsec));
 	  
-				if (periodns > time_ns) {
-					usleep((periodns - time_ns)/ 1000);
+				// sleep for (period - exptime)
+				if (frameNr < numFrames) { // if there is a next frame
+					if (periodns > time_ns) {
+						usleep((periodns - time_ns)/ 1000);
+					}
 				}
 			}
 		}
@@ -1810,13 +1819,13 @@ enum runStatus getRunStatus(){
 
 void readFrame(int *ret, char *mess){
 #ifdef VIRTUAL
-	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
-	return;
-#endif
 	// wait for status to be done
 	while(runBusy()){
 		usleep(500);
 	}
+	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
+	return;
+#endif
 
 	*ret = (int)OK;
 	// frames left to give status

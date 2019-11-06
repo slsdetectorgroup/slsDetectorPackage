@@ -926,6 +926,7 @@ void* start_timer(void* arg) {
 
 	// set status to idle
 	virtual_status = 0;
+	FILE_LOG(logINFOBLUE, ("Finished Acquiring\n"));
 	return NULL;
 }
 #endif

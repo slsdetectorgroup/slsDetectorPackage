@@ -110,10 +110,10 @@ void basictests() {
 #endif
 	uint32_t ipadd	= getDetectorIP();
 	uint64_t macadd	= getDetectorMAC();
-	int64_t fwversion = getDetectorId(DETECTOR_FIRMWARE_VERSION);
-	int64_t swversion = getDetectorId(DETECTOR_SOFTWARE_VERSION);
-	int64_t sw_fw_apiversion = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
-	int64_t client_sw_apiversion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+	int64_t fwversion = getFirmwareVersion();
+	int64_t swversion = getServerVersion();
+	int64_t sw_fw_apiversion = getFirmwareAPIVersion();
+	int64_t client_sw_apiversion = getClientServerAPIVersion();
 
 	FILE_LOG(logINFOBLUE, ("**************** EIGER Server *********************\n\n"
 			"Detector IP Addr:\t\t 0x%x\n"
@@ -190,26 +190,12 @@ void basictests() {
 
 /* Ids */
 
-int64_t getDetectorId(enum idMode arg) {
+uint64_t getServerVersion() {
+    return APIEIGER;
+}
 
-	int64_t retval = -1;
-	switch(arg) {
-	case DETECTOR_SERIAL_NUMBER:
-		retval =  getDetectorNumber();/** to be implemented with mac? */
-		break;
-	case DETECTOR_FIRMWARE_VERSION:
-		return (int64_t)getFirmwareVersion();
-	case SOFTWARE_FIRMWARE_API_VERSION:
-		return (int64_t)getFirmwareAPIVersion();
-	case DETECTOR_SOFTWARE_VERSION:
-	case CLIENT_SOFTWARE_API_VERSION:
-		return APIEIGER;
-	default:
-		break;
-	}
-
-	return retval;
-
+uint64_t getClientServerAPIVersion() {
+    return APIEIGER;
 }
 
 u_int64_t getFirmwareVersion() {
@@ -1347,6 +1333,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 #endif
 			eiger_readoutspeed = val;
 	}
+	return OK;
 }
 
 int getClockDivider(enum CLKINDEX ind) {
@@ -1600,43 +1587,82 @@ int activate(int enable) {
 #endif
 }
 
-int setNetworkParameter(enum NETWORKINDEX mode, int value) {
-#ifndef VIRTUAL
-	return Beb_SetNetworkParameter(mode, value);
+int getTenGigaFlowControl() {
+#ifdef VIRTUAL
+	return eiger_virtual_transmission_flowcontrol_10g;
 #else
-	if (value>-1) {
-		switch(mode) {
-		case TXN_LEFT:
-			eiger_virtual_transmission_delay_left = value;
-			break;
-		case TXN_RIGHT:
-			eiger_virtual_transmission_delay_right = value;
-			break;
-		case TXN_FRAME:
-			eiger_virtual_transmission_delay_frame = value;
-			break;
-		case FLOWCTRL_10G:
-			eiger_virtual_transmission_flowcontrol_10g = value;
-			if (value>0) value = 1;
-			break;
-		default: FILE_LOG(logERROR, ("Unrecognized mode in network parameter: %d\n",mode));
-		return -1;
-		}
-	}
-	switch(mode) {
-	case TXN_LEFT:
-		return eiger_virtual_transmission_delay_left;
-	case TXN_RIGHT:
-		return eiger_virtual_transmission_delay_right;
-	case TXN_FRAME:
-		return eiger_virtual_transmission_delay_frame;
-	case FLOWCTRL_10G:
-		return eiger_virtual_transmission_flowcontrol_10g;
-	default: FILE_LOG(logERROR, ("Unrecognized mode in network parameter: %d\n",mode));
-	return -1;
-	}
+	return Beb_GetTenGigaFlowControl();
 #endif
 }
+
+int setTenGigaFlowControl(int value) {
+#ifdef VIRTUAL
+	eiger_virtual_transmission_flowcontrol_10g = (value == 0? 0 : 1);
+#else
+	if (!Beb_SetTenGigaFlowControl(value)) {
+		return FAIL;
+	}
+#endif
+	return OK;
+}
+
+int getTransmissionDelayFrame() {
+#ifdef VIRTUAL
+	return eiger_virtual_transmission_delay_frame;
+#else
+	return Beb_GetTransmissionDelayFrame();
+#endif
+}
+
+int setTransmissionDelayFrame(int value) {
+#ifdef VIRTUAL
+	eiger_virtual_transmission_delay_frame = value;
+#else
+	if (!Beb_SetTransmissionDelayFrame(value)) {
+		return FAIL;
+	}
+#endif
+	return OK;
+}
+
+int getTransmissionDelayLeft() {
+#ifdef VIRTUAL
+	return eiger_virtual_transmission_delay_left;
+#else
+	return Beb_GetTransmissionDelayLeft();
+#endif
+}
+
+int setTransmissionDelayLeft(int value) {
+#ifdef VIRTUAL
+	eiger_virtual_transmission_delay_left = value;	
+#else
+	if (!Beb_SetTransmissionDelayLeft(value)) {
+		return FAIL;
+	}
+#endif
+	return OK;
+}
+
+int getTransmissionDelayRight() {
+#ifdef VIRTUAL
+	return eiger_virtual_transmission_delay_right;
+#else
+	return Beb_GetTransmissionDelayRight();
+#endif
+}
+
+int setTransmissionDelayRight(int value) {
+#ifdef VIRTUAL
+	eiger_virtual_transmission_delay_right = value;
+#else
+	if (!Beb_SetTransmissionDelayRight(value)) {
+		return FAIL;
+	}
+#endif
+	return OK;
+}
+
 
 
 

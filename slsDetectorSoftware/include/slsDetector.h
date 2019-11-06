@@ -223,12 +223,11 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     void checkDetectorVersionCompatibility();
 
-    /**
-     * Get ID or version numbers
-     * @param mode version type
-     * @returns Id or version number of that type
-     */
-    int64_t getId(idMode mode);
+    int64_t getFirmwareVersion();
+
+    int64_t getDetectorServerVersion();
+
+    int64_t getSerialNumber();
 
     /**
      * Get Receiver Software version
@@ -994,14 +993,42 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     void updateReceiverStreamingIP();
 
+    /** [Eiger, Jungfrau] */
+    bool getTenGigaFlowControl();
+
+    /** [Eiger, Jungfrau] */
+    void setTenGigaFlowControl(bool enable);
+
+    /** [Eiger, Jungfrau] */
+    int getTransmissionDelayFrame();
+
     /**
-     * Sets the transmission delay for left, right or entire frame
-     * (Eiger, Jungfrau(only entire frame))
-     * @param index type of delay
-     * @param delay delay
-     * @returns transmission delay
+     * [Jungfrau]: Sets the transmission delay of the first UDP packet being
+     * streamed out of the module. Options: 0 - 31, each value represenets 1 ms
+     * [Eiger]: Sets the transmission delay of entire frame streamed out for
+     * both left and right UDP ports. Options: //TODO possible values
      */
-    int setDetectorNetworkParameter(networkParameter index, int delay);
+    void setTransmissionDelayFrame(int value);
+
+    /** [Eiger] */
+    int getTransmissionDelayLeft();
+
+    /**
+     * [Eiger]
+     * Sets the transmission delay of first packet streamed out of the left UDP
+     * port
+     */
+    void setTransmissionDelayLeft(int value);
+
+    /** [Eiger] */
+    int getTransmissionDelayRight();
+
+    /**
+     * [Eiger]
+     * Sets the transmission delay of first packet streamed ut of the right UDP
+     * port
+     */
+    void setTransmissionDelayRight(int value);
 
     /**
      * Sets the additional json header\sa sharedSlsDetector
@@ -1056,13 +1083,18 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     int64_t getReceiverRealUDPSocketBufferSize() const;
 
-    /**
-     * Execute a digital test (Gotthard, Jungfrau, CTB)
-     * @param mode testmode type
-     * @param value 1 to set or 0 to clear the digital test bit
-     * @returns result of test
-     */
-    int digitalTest(digitalTestMode mode, int ival = -1);
+    /** [Gotthard][Jungfrau][CTB] */
+    void executeFirmwareTest();
+
+    /** [Gotthard][Jungfrau][CTB] */
+    void executeBusTest();
+
+    /** [Gotthard] */
+    int getImageTestMode();
+
+    /** [Gotthard] If 1, adds channel intensity with precalculated values.
+     * Default is 0 */
+    void setImageTestMode(const int value);
 
     /**
      * Set/get counter bit in detector (Gotthard)

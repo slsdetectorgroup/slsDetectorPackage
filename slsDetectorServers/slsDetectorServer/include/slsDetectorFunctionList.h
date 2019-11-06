@@ -41,14 +41,13 @@ int 		testBus();
 #endif
 
 #ifdef GOTTHARDD
-int         detectorTest(enum digitalTestMode arg,  int ival);
-int 		testImage(int ival);
-#elif defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-int 		detectorTest(enum digitalTestMode arg);
+void 		setTestImageMode(int ival);
+int			getTestImageMode();
 #endif
 
 // Ids
-int64_t 	getDetectorId(enum idMode arg);
+u_int64_t 	getServerVersion();
+u_int64_t 	getClientServerAPIVersion();
 u_int64_t  	getFirmwareVersion();
 u_int64_t   getFirmwareAPIVersion();
 #if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
@@ -445,7 +444,16 @@ int         getClockDivider(enum CLKINDEX ind);
 
 
 #if defined(JUNGFRAUD) || defined(EIGERD)
-int         setNetworkParameter(enum NETWORKINDEX mode, int value);
+int 		getTenGigaFlowControl();
+int 		setTenGigaFlowControl(int value);
+int 		getTransmissionDelayFrame();
+int 		setTransmissionDelayFrame(int value);
+#endif
+#ifdef EIGERD
+int 		getTransmissionDelayLeft();
+int 		setTransmissionDelayLeft(int value);
+int 		getTransmissionDelayRight();
+int 		setTransmissionDelayRight(int value);
 #endif
 
 

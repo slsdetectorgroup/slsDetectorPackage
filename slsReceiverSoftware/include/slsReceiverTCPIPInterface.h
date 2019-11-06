@@ -147,8 +147,8 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
     /** Sends the updated parameters to client */
     int send_update(sls::ServerInterface2 &socket);
 
-    /** get version, calls get_version */
-    int get_id(sls::ServerInterface2 &socket);
+    /** get version */
+    int get_version(sls::ServerInterface2 &socket);
 
     /** Set detector type */
     int set_detector_type(sls::ServerInterface2 &socket);

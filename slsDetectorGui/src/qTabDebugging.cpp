@@ -186,25 +186,20 @@ void qTabDebugging::TestDetector() {
 
         //detector firmware
         if (chkDetectorFirmware->isChecked()) {
-            auto retval = det->executeFirmwareTest({comboDetector->currentIndex()})[0];
-            if (retval == slsDetectorDefs::FAIL) {
-                message.append(QString("<nobr>%1 Firmware: FAIL</nobr><br>").arg(moduleName));
-                FILE_LOG(logERROR) << "Firmware fail";
-            }
-            else
-                message.append(QString("<nobr>%1 Firmware: %2</nobr><br>").arg(moduleName, QString::number(retval)));
-            FILE_LOG(logINFO) << "Detector Firmware Test: " << retval;
+            try {
+                det->executeFirmwareTest({comboDetector->currentIndex()});
+                message.append(QString("<nobr>%1 Firmware: PASS</nobr><br>").arg(moduleName));
+                FILE_LOG(logINFO) << "Detector Firmware Test: Pass";
+            } CATCH_DISPLAY ("Firmware test failed.", "qTabDebugging::TestDetector")
         }
 
         //detector CPU-FPGA bus
         if (chkDetectorBus->isChecked()) {
-            auto retval = det->executeBusTest({comboDetector->currentIndex()})[0];
-            if (retval == slsDetectorDefs::FAIL) {
-                message.append(QString("<nobr>%1 Bus: &nbsp;&nbsp;&nbsp;&nbsp;FAIL</nobr><br>").arg(moduleName));
-                FILE_LOG(logERROR) << "Bus Test fail";
-            } else
-                message.append(QString("<nobr>%1 Bus: &nbsp;&nbsp;&nbsp;&nbsp;%2</nobr><br>").arg(moduleName, QString::number(retval)));
-            FILE_LOG(logINFO) << "Detector Bus Test: " << retval;
+            try {
+                det->executeBusTest({comboDetector->currentIndex()});
+                message.append(QString("<nobr>%1 Bus: PASS</nobr><br>").arg(moduleName));
+                FILE_LOG(logINFO) << "Detector Bus Test: Pass";
+            } CATCH_DISPLAY ("Bus test failed.", "qTabDebugging::TestDetector")
         }
 
         //display message

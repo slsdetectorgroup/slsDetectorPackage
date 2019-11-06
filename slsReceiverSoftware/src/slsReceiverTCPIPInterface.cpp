@@ -153,7 +153,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&slsReceiverTCPIPInterface::get_last_client_ip;
 	flist[F_SET_RECEIVER_PORT]				=	&slsReceiverTCPIPInterface::set_port;
 	flist[F_UPDATE_RECEIVER_CLIENT]			=	&slsReceiverTCPIPInterface::update_client;
-	flist[F_GET_RECEIVER_ID]				=	&slsReceiverTCPIPInterface::get_id;
+	flist[F_GET_RECEIVER_VERSION]			=	&slsReceiverTCPIPInterface::get_version;
 	flist[F_GET_RECEIVER_TYPE]				=	&slsReceiverTCPIPInterface::set_detector_type;
 	flist[F_SEND_RECEIVER_DETHOSTNAME]		= 	&slsReceiverTCPIPInterface::set_detector_hostname;
 	flist[F_RECEIVER_SET_ROI]				=	&slsReceiverTCPIPInterface::set_roi;
@@ -453,7 +453,7 @@ int slsReceiverTCPIPInterface::send_update(Interface &socket) {
     return OK;
 }
 
-int slsReceiverTCPIPInterface::get_id(Interface &socket) {
+int slsReceiverTCPIPInterface::get_version(Interface &socket) {
     return socket.sendResult(getReceiverVersion());
 }
 

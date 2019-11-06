@@ -104,27 +104,33 @@ void slsDetector::checkReceiverVersionCompatibility() {
     sendToReceiver(F_RECEIVER_CHECK_VERSION, arg, nullptr);
 }
 
-int64_t slsDetector::getId(idMode mode) {
-    // These should not go to detector...
-    assert(mode != THIS_SOFTWARE_VERSION);
-    assert(mode != RECEIVER_VERSION);
-    assert(mode != CLIENT_SOFTWARE_API_VERSION);
-    assert(mode != CLIENT_RECEIVER_API_VERSION);
-
-    int arg = static_cast<int>(mode);
+int64_t slsDetector::getFirmwareVersion() {
     int64_t retval = -1;
-    FILE_LOG(logDEBUG1) << "Getting id type " << mode;
-    sendToDetector(F_GET_ID, arg, retval);
-    FILE_LOG(logDEBUG1) << "Id (" << mode << "): 0x" << std::hex << retval
-                        << std::dec;
+    sendToDetector(F_GET_FIRMWARE_VERSION, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "firmware version: 0x" << std::hex << retval << std::dec;
     return retval;
 }
+
+int64_t slsDetector::getDetectorServerVersion() {
+    int64_t retval = -1;
+    sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "firmware version: 0x" << std::hex << retval << std::dec;
+    return retval;
+}
+
+int64_t slsDetector::getSerialNumber() {
+    int64_t retval = -1;
+    sendToDetector(F_GET_SERIAL_NUMBER, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "firmware version: 0x" << std::hex << retval << std::dec;
+    return retval;
+}
+
 
 int64_t slsDetector::getReceiverSoftwareVersion() const {
     FILE_LOG(logDEBUG1) << "Getting receiver software version";
     int64_t retval = -1;
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_GET_RECEIVER_ID, nullptr, retval);
+        sendToReceiver(F_GET_RECEIVER_VERSION, nullptr, retval);
     }
     return retval;
 }
@@ -1049,7 +1055,7 @@ std::string slsDetector::getTrimbitFilename(detectorSettings s, int e_eV) {
     std::ostringstream ostfn;
     ostfn << shm()->settingsDir << ssettings << "/" << e_eV << "eV"
           << "/noise.sn" << std::setfill('0') << std::setw(3) << std::dec
-          << getId(DETECTOR_SERIAL_NUMBER) << std::setbase(10);
+          << getSerialNumber() << std::setbase(10);
     return ostfn.str();
 }
 
@@ -1073,7 +1079,7 @@ void slsDetector::loadSettingsFile(const std::string &fname) {
             fname.find(".trim") == std::string::npos &&
             fname.find(".settings") == std::string::npos) {
             ostfn << ".sn" << std::setfill('0') << std::setw(3) << std::dec
-                  << getId(DETECTOR_SERIAL_NUMBER);
+                  << getSerialNumber();
         }
     }
     fn = ostfn.str();
@@ -1089,7 +1095,7 @@ void slsDetector::saveSettingsFile(const std::string &fname) {
     // find specific file if it has detid in file name (.snxxx)
     if (shm()->myDetectorType == EIGER) {
         ostfn << ".sn" << std::setfill('0') << std::setw(3) << std::dec
-              << getId(DETECTOR_SERIAL_NUMBER);
+              << getSerialNumber();
     }
     fn = ostfn.str();
     sls_detector_module myMod = getModule();
@@ -2110,16 +2116,56 @@ void slsDetector::updateReceiverStreamingIP() {
     setReceiverStreamingIP(ip);   
 }
 
-int slsDetector::setDetectorNetworkParameter(networkParameter index,
-                                             int delay) {
-    int args[]{static_cast<int>(index), delay};
+
+bool slsDetector::getTenGigaFlowControl() {
     int retval = -1;
-    FILE_LOG(logDEBUG1) << "Setting network parameter index " << index << " to "
-                        << delay;
-    sendToDetector(F_SET_NETWORK_PARAMETER, args, retval);
-    FILE_LOG(logDEBUG1) << "Network Parameter (" << index << "): " << retval;
-    return retval;
+    sendToDetector(F_GET_TEN_GIGA_FLOW_CONTROL, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "ten giga flow control :" << retval;
+    return retval == 1 ? true : false;
 }
+
+void slsDetector::setTenGigaFlowControl(bool enable) {
+    int arg = static_cast<int>(enable);
+    FILE_LOG(logDEBUG1) << "Setting ten giga flow control to " << arg;
+    sendToDetector(F_SET_TEN_GIGA_FLOW_CONTROL, arg, nullptr);
+}
+
+int slsDetector::getTransmissionDelayFrame() {
+    int retval = -1;
+    sendToDetector(F_GET_TRANSMISSION_DELAY_FRAME, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "transmission delay frame :" << retval;
+    return retval; 
+}
+
+void slsDetector::setTransmissionDelayFrame(int value) {
+    FILE_LOG(logDEBUG1) << "Setting transmission delay frame to " << value;
+    sendToDetector(F_SET_TRANSMISSION_DELAY_FRAME, value, nullptr);
+}
+
+int slsDetector::getTransmissionDelayLeft() {
+    int retval = -1;
+    sendToDetector(F_GET_TRANSMISSION_DELAY_LEFT, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "transmission delay left :" << retval;
+    return retval; 
+}
+
+void slsDetector::setTransmissionDelayLeft(int value) {
+    FILE_LOG(logDEBUG1) << "Setting transmission delay left to " << value;
+    sendToDetector(F_SET_TRANSMISSION_DELAY_LEFT, value, nullptr);
+}
+
+int slsDetector::getTransmissionDelayRight() {
+    int retval = -1;
+    sendToDetector(F_GET_TRANSMISSION_DELAY_RIGHT, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "transmission delay right :" << retval;
+    return retval; 
+}
+
+void slsDetector::setTransmissionDelayRight(int value) {
+    FILE_LOG(logDEBUG1) << "Setting transmission delay right to " << value;
+    sendToDetector(F_SET_TRANSMISSION_DELAY_RIGHT, value, nullptr);
+}
+
 
 std::string
 slsDetector::setAdditionalJsonHeader(const std::string &jsonheader) {
@@ -2262,14 +2308,26 @@ int64_t slsDetector::getReceiverRealUDPSocketBufferSize() const {
     return retval;
 }
 
-int slsDetector::digitalTest(digitalTestMode mode, int ival) {
-    int args[]{static_cast<int>(mode), ival};
+void slsDetector::executeFirmwareTest() {
+    FILE_LOG(logDEBUG1) << "Executing firmware test";
+    sendToDetector(F_SET_FIRMWARE_TEST);
+}
+
+void slsDetector::executeBusTest() {
+    FILE_LOG(logDEBUG1) << "Executing bus test";
+    sendToDetector(F_SET_BUS_TEST);
+}
+
+int slsDetector::getImageTestMode() {
     int retval = -1;
-    FILE_LOG(logDEBUG1) << "Sending digital test of mode " << mode << ", ival "
-                        << ival;
-    sendToDetector(F_DIGITAL_TEST, args, retval);
-    FILE_LOG(logDEBUG1) << "Digital Test returned: " << retval;
+    sendToDetector(F_GET_IMAGE_TEST_MODE, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "image test mode: " << retval;
     return retval;
+}
+
+void slsDetector::setImageTestMode(const int value) {
+    FILE_LOG(logDEBUG1) << "Sending image test mode " << value;
+    sendToDetector(F_SET_IMAGE_TEST_MODE, value, nullptr);
 }
 
 int slsDetector::setCounterBit(int cb) {

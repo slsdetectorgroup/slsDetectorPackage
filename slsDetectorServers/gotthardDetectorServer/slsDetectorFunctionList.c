@@ -101,9 +101,9 @@ void basictests() {
 	uint32_t boardrev           = getBoardRevision();
 	uint32_t ipadd				= getDetectorIP();
 	uint64_t macadd				= getDetectorMAC();
-    int64_t fwversion           = getDetectorId(DETECTOR_FIRMWARE_VERSION);
-	int64_t swversion 			= getDetectorId(DETECTOR_SOFTWARE_VERSION);
-	int64_t client_sw_apiversion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+    int64_t fwversion           = getFirmwareVersion();
+	int64_t swversion 			= getServerVersion();
+	int64_t client_sw_apiversion = getClientServerAPIVersion();
 
 	FILE_LOG(logINFOBLUE, ("************ Gotthard Server *********************\n"
 	        "Board Revision         : 0x%x\n"
@@ -243,51 +243,32 @@ int testBus() {
 	return ret;
 }
 
-int detectorTest( enum digitalTestMode arg, int ival) {
-#ifdef VIRTUAL
-    return OK;
-#endif
-	switch(arg){
-	case IMAGE_TEST:                return testImage(ival);
-	case DETECTOR_FIRMWARE_TEST:	return testFpga();
-	case DETECTOR_BUS_TEST: 		return testBus();
-	default:
-		FILE_LOG(logERROR, ("Test not implemented for this detector %d\n", (int)arg));
-		break;
-	}
-	return OK;
-}
 
-int testImage(int ival) {
+void setTestImageMode(int ival) {
     uint32_t addr = MULTI_PURPOSE_REG;
     if (ival >= 0) {
         if (ival == 0) {
-            FILE_LOG(logINFO, ("Switching on Image Test\n"));
+            FILE_LOG(logINFO, ("Switching on Image Test Mode\n"));
             bus_w (addr, bus_r(addr) & ~DGTL_TST_MSK);
         } else {
-            FILE_LOG(logINFO, ("Switching off Image Test\n"));
+            FILE_LOG(logINFO, ("Switching off Image Test Mode\n"));
             bus_w (addr, bus_r(addr) | DGTL_TST_MSK);
         }
     }
-    return ((bus_r(addr) & DGTL_TST_MSK) >> DGTL_TST_OFST);
+}
+
+int getTestImageMode() {
+    return ((bus_r(MULTI_PURPOSE_REG) & DGTL_TST_MSK) >> DGTL_TST_OFST);
 }
 
 /* Ids */
 
-int64_t getDetectorId(enum idMode arg){
-	int64_t retval = -1;
+uint64_t getServerVersion() {
+    return APIGOTTHARD;
+}
 
-	switch(arg){
-	case DETECTOR_SERIAL_NUMBER:
-		return getDetectorNumber();
-	case DETECTOR_FIRMWARE_VERSION:
-		return getFirmwareVersion();
-	case DETECTOR_SOFTWARE_VERSION:
-	case CLIENT_SOFTWARE_API_VERSION:
-		return APIGOTTHARD;
-	default:
-		return retval;
-	}
+uint64_t getClientServerAPIVersion() {
+    return APIGOTTHARD;
 }
 
 u_int64_t getFirmwareVersion() {
@@ -425,6 +406,9 @@ void setupDetector() {
 	setExpTime(DEFAULT_EXPTIME);
 	setPeriod(DEFAULT_PERIOD);
 	setDelayAfterTrigger(DEFAULT_DELAY);
+
+    cleanFifos();
+
 
 }
 
@@ -1509,6 +1493,7 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
 	    return FAIL;        
     }
     setPhaseShift(val);
+    return OK;
 }
 
 /* aquisition */

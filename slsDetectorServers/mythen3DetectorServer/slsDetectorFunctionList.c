@@ -87,15 +87,15 @@ void basictests() {
 	uint16_t hversion			= getHardwareVersionNumber();
 	uint32_t ipadd				= getDetectorIP();
 	uint64_t macadd				= getDetectorMAC();
-	int64_t fwversion 			= getDetectorId(DETECTOR_FIRMWARE_VERSION);
-	int64_t swversion 			= getDetectorId(DETECTOR_SOFTWARE_VERSION);
+	int64_t fwversion 			= getFirmwareVersion();
+	int64_t swversion 			= getServerVersion();
 	int64_t sw_fw_apiversion    = 0;
-	int64_t client_sw_apiversion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+	int64_t client_sw_apiversion = getClientServerAPIVersion();
 	uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
 
 	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
-	    sw_fw_apiversion 	    = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
+	    sw_fw_apiversion 	    = getFirmwareAPIVersion();
 	FILE_LOG(logINFOBLUE, ("************ Mythen3 Server *********************\n"
 			"Hardware Version:\t\t 0x%x\n"
 
@@ -228,22 +228,12 @@ int testBus() {
 
 /* Ids */
 
-int64_t getDetectorId(enum idMode arg){
-	int64_t retval = -1;
+uint64_t getServerVersion() {
+    return APIMYTHEN3;
+}
 
-	switch(arg){
-	case DETECTOR_SERIAL_NUMBER:
-		return getDetectorNumber();// or getDetectorMAC()
-	case DETECTOR_FIRMWARE_VERSION:
-		return getFirmwareVersion();
-	case SOFTWARE_FIRMWARE_API_VERSION:
-	    return getFirmwareAPIVersion();
-	case DETECTOR_SOFTWARE_VERSION:
-	case CLIENT_SOFTWARE_API_VERSION:
-		return APIMYTHEN3;
-	default:
-		return retval;
-	}
+uint64_t getClientServerAPIVersion() {
+    return APIMYTHEN3;
 }
 
 u_int64_t getFirmwareVersion() {

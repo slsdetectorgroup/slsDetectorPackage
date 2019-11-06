@@ -41,7 +41,16 @@ int Beb_SetSlaveViaSoftware();
 int Beb_Activate(int enable);
 int Beb_GetActivate();
 int Beb_Set32bitOverflow(int val);
-int Beb_SetNetworkParameter(enum NETWORKINDEX mode, int val);
+
+int Beb_GetTenGigaFlowControl();
+int Beb_SetTenGigaFlowControl(int value);
+int Beb_GetTransmissionDelayFrame();
+int Beb_SetTransmissionDelayFrame(int value);
+int Beb_GetTransmissionDelayLeft();
+int Beb_SetTransmissionDelayLeft(int value);
+int Beb_GetTransmissionDelayRight();
+int Beb_SetTransmissionDelayRight(int value);
+
 int Beb_ResetToHardwareSettings();
 u_int32_t Beb_GetFirmwareRevision();
 u_int32_t Beb_GetFirmwareSoftwareAPIVersion();

@@ -78,7 +78,7 @@ void basictests() {
 	// does check only if flag is 0 (by default), set by command line
 	if ((!debugflag) && ((testFpga() == FAIL) || (testBus() == FAIL))) {
 		sprintf(firmware_message,
-				"Could not pass basic tests of FPGA and bus. Dangerous to continue. (Firmware version:0x%llx) \n", getDetectorId(DETECTOR_FIRMWARE_VERSION));
+				"Could not pass basic tests of FPGA and bus. Dangerous to continue. (Firmware version:0x%llx) \n", getFirmwareVersion());
 		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
 		firmware_compatibility = FAIL;
 		firmware_check_done = 1;
@@ -88,10 +88,10 @@ void basictests() {
 	uint16_t hversion			= getHardwareVersionNumber();
 	uint32_t ipadd				= getDetectorIP();
 	uint64_t macadd				= getDetectorMAC();
-	int64_t fwversion 			= getDetectorId(DETECTOR_FIRMWARE_VERSION);
-	int64_t swversion 			= getDetectorId(DETECTOR_SOFTWARE_VERSION);
-	int64_t sw_fw_apiversion    = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
-	int64_t client_sw_apiversion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+	int64_t fwversion 			= getFirmwareVersion();
+	int64_t swversion 			= getServerVersion();
+	int64_t sw_fw_apiversion    = getFirmwareAPIVersion();
+	int64_t client_sw_apiversion = getClientServerAPIVersion();
 	uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
 	FILE_LOG(logINFOBLUE, ("************ Gotthard2 Server *********************\n"
@@ -223,22 +223,12 @@ int testBus() {
 
 /* Ids */
 
-int64_t getDetectorId(enum idMode arg){
-	int64_t retval = -1;
+uint64_t getServerVersion() {
+    return APIGOTTHARD2;
+}
 
-	switch(arg){
-	case DETECTOR_SERIAL_NUMBER:
-		return getDetectorNumber();// or getDetectorMAC()
-	case DETECTOR_FIRMWARE_VERSION:
-		return getFirmwareVersion();
-	case SOFTWARE_FIRMWARE_API_VERSION:
-	    return getFirmwareAPIVersion();
-	case DETECTOR_SOFTWARE_VERSION:
-	case CLIENT_SOFTWARE_API_VERSION:
-		return APIGOTTHARD2;
-	default:
-		return retval;
-	}
+uint64_t getClientServerAPIVersion() {
+    return APIGOTTHARD2;
 }
 
 u_int64_t getFirmwareVersion() {

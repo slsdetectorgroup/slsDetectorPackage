@@ -95,15 +95,15 @@ void basictests() {
 	uint16_t hsnumber			= getHardwareSerialNumber();
 	uint32_t ipadd				= getDetectorIP();
 	uint64_t macadd				= getDetectorMAC();
-	int64_t fwversion 			= getDetectorId(DETECTOR_FIRMWARE_VERSION);
-	int64_t swversion 			= getDetectorId(DETECTOR_SOFTWARE_VERSION);
+	int64_t fwversion 			= getFirmwareVersion();
+	int64_t swversion 			= getServerVersion();
 	int64_t sw_fw_apiversion    = 0;
-	int64_t client_sw_apiversion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
+	int64_t client_sw_apiversion = getClientServerAPIVersion();
 	uint32_t requiredFirmwareVersion = (isHardwareVersion2() ? REQRD_FRMWRE_VRSN_BOARD2 : REQRD_FRMWRE_VRSN);
 
 
 	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
-	    sw_fw_apiversion 	    = getDetectorId(SOFTWARE_FIRMWARE_API_VERSION);
+	    sw_fw_apiversion 	    = getFirmwareAPIVersion();
 	FILE_LOG(logINFOBLUE, ("************ Jungfrau Server *********************\n"
 			"Hardware Version:\t\t 0x%x\n"
 			"Hardware Serial Nr:\t\t 0x%x\n"
@@ -240,44 +240,15 @@ int testBus() {
 
 
 
-int detectorTest( enum digitalTestMode arg){
-#ifdef VIRTUAL
-    return OK;
-#endif
-	switch(arg){
-	case DETECTOR_FIRMWARE_TEST:	return testFpga();
-	case DETECTOR_BUS_TEST: 		return testBus();
-	//DETECTOR_MEMORY_TEST:testRAM
-	//DETECTOR_SOFTWARE_TEST:
-	default:
-		FILE_LOG(logERROR, ("Test %s not implemented for this detector\n", (int)arg));
-		break;
-	}
-	return OK;
-}
-
-
-
-
 
 /* Ids */
 
-int64_t getDetectorId(enum idMode arg){
-	int64_t retval = -1;
+uint64_t getServerVersion() {
+    return APIJUNGFRAU;
+}
 
-	switch(arg){
-	case DETECTOR_SERIAL_NUMBER:
-		return getDetectorNumber();// or getDetectorMAC()
-	case DETECTOR_FIRMWARE_VERSION:
-		return getFirmwareVersion();
-	case SOFTWARE_FIRMWARE_API_VERSION:
-	    return getFirmwareAPIVersion();
-	case DETECTOR_SOFTWARE_VERSION:
-		case CLIENT_SOFTWARE_API_VERSION:
-		return APIJUNGFRAU;
-	default:
-		return retval;
-	}
+uint64_t getClientServerAPIVersion() {
+    return APIJUNGFRAU;
 }
 
 u_int64_t getFirmwareVersion() {
@@ -1593,45 +1564,44 @@ void alignDeserializer() {
 	bus_w(ADC_DSRLZR_3_REG, bus_r(ADC_DSRLZR_3_REG) & (~(ADC_DSRLZR_3_RFRSH_ALGNMNT_MSK)));
 }
 
-
-int setNetworkParameter(enum NETWORKINDEX mode, int value) {
-	switch(mode) {
-
-		case TXN_FRAME:
-			if (value >= 0) {
-				FILE_LOG(logINFO, ("Setting transmission delay: %d\n", value));
-				bus_w(CONFIG_REG, (bus_r(CONFIG_REG) &~CONFIG_TDMA_TIMESLOT_MSK)
-						| (((value  << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK)));
-				if (value == 0) {
-					FILE_LOG(logINFO, ("Switching off transmission delay\n"));
-					bus_w(CONFIG_REG, bus_r(CONFIG_REG) &~ CONFIG_TDMA_ENABLE_MSK);
-				} else {
-					FILE_LOG(logINFO, ("Switching on transmission delay\n"));
-					bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_TDMA_ENABLE_MSK);
-				}
-				FILE_LOG(logDEBUG1, ("Transmission delay read %d\n",
-						((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST)));
-			}
-			return ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST);
-			
-		case FLOWCTRL_10G:
-			if (value >= 0) {
-				if (value == 0) {
-					FILE_LOG(logINFO, ("Switching off 10G flow control\n"));
-					bus_w(CONFIG_REG, bus_r(CONFIG_REG) &~ CONFIG_ETHRNT_FLW_CNTRL_MSK);
-				} else {
-					FILE_LOG(logINFO, ("Switching on 10G flow control\n"));
-					bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_ETHRNT_FLW_CNTRL_MSK);
-				}
-			}
-			return ((bus_r(CONFIG_REG) & CONFIG_ETHRNT_FLW_CNTRL_MSK) >> CONFIG_ETHRNT_FLW_CNTRL_OFST);
-
-		default:
-			return -1;	
-	}
+int getTenGigaFlowControl() {
+	return ((bus_r(CONFIG_REG) & CONFIG_ETHRNT_FLW_CNTRL_MSK) >> CONFIG_ETHRNT_FLW_CNTRL_OFST);
 }
 
+int setTenGigaFlowControl(int value) {
+	if (value >= 0) {
+		if (value == 0) {
+			FILE_LOG(logINFO, ("Switching off 10G flow control\n"));
+			bus_w(CONFIG_REG, bus_r(CONFIG_REG) &~ CONFIG_ETHRNT_FLW_CNTRL_MSK);
+		} else {
+			FILE_LOG(logINFO, ("Switching on 10G flow control\n"));
+			bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_ETHRNT_FLW_CNTRL_MSK);
+		}
+	}
+	return OK;
+}
 
+int getTransmissionDelayFrame() {
+	return ((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST);
+}
+
+int setTransmissionDelayFrame(int value) {
+	if (value >= 0) {
+		FILE_LOG(logINFO, ("Setting transmission delay: %d\n", value));
+		bus_w(CONFIG_REG, (bus_r(CONFIG_REG) &~CONFIG_TDMA_TIMESLOT_MSK)
+				| (((value  << CONFIG_TDMA_TIMESLOT_OFST) & CONFIG_TDMA_TIMESLOT_MSK)));
+		if (value == 0) {
+			FILE_LOG(logINFO, ("Switching off transmission delay\n"));
+			bus_w(CONFIG_REG, bus_r(CONFIG_REG) &~ CONFIG_TDMA_ENABLE_MSK);
+		} else {
+			FILE_LOG(logINFO, ("Switching on transmission delay\n"));
+			bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_TDMA_ENABLE_MSK);
+		}
+		FILE_LOG(logDEBUG1, ("Transmission delay read %d\n",
+				((bus_r(CONFIG_REG) & CONFIG_TDMA_TIMESLOT_MSK) >> CONFIG_TDMA_TIMESLOT_OFST)));
+	}
+	return OK;
+}
 
 
 

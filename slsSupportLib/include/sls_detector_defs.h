@@ -199,37 +199,6 @@ format
     #endif
 
     /**
-         network parameters
-    */
-
-    enum networkParameter {
-        DETECTOR_MAC,       /**< detector MAC */
-        DETECTOR_IP,        /**< detector IP */
-        RECEIVER_HOSTNAME,  /**< receiver IP/hostname */
-        RECEIVER_UDP_IP,    /**< receiever UDP IP */
-        RECEIVER_UDP_PORT,  /**< receiever UDP Port */
-        RECEIVER_UDP_MAC,   /**< receiever UDP MAC */
-        RECEIVER_UDP_PORT2, /**< receiever UDP Port of second half module for
-                               eiger */
-        DETECTOR_TXN_DELAY_LEFT,  /**< transmission delay on the (left) port for
-                                     next frame */
-        DETECTOR_TXN_DELAY_RIGHT, /**< transmission delay on the right port for
-                                     next frame  */
-        DETECTOR_TXN_DELAY_FRAME, /**< transmission delay of a whole frame for
-                                     all the ports */
-        FLOW_CONTROL_10G,         /**< flow control for 10GbE */
-        FLOW_CONTROL_WR_PTR,      /**< memory write pointer for flow control */
-        FLOW_CONTROL_RD_PTR,      /**< memory read pointer for flow control */
-        RECEIVER_STREAMING_PORT,  /**< receiever streaming TCP(ZMQ) port */
-        CLIENT_STREAMING_PORT,    /**< client streaming TCP(ZMQ) port */
-        RECEIVER_STREAMING_SRC_IP,      /**< receiever streaming TCP(ZMQ) ip */
-        CLIENT_STREAMING_SRC_IP,        /**< client streaming TCP(ZMQ) ip */
-        ADDITIONAL_JSON_HEADER,         /**< additional json header (ZMQ) */
-        RECEIVER_UDP_SCKT_BUF_SIZE,     /**< UDP socket buffer size */
-        RECEIVER_REAL_UDP_SCKT_BUF_SIZE /**< real UDP socket buffer size */
-    };
-
-    /**
         type of action performed (for text client)
     */
     enum { GET_ACTION, PUT_ACTION, READOUT_ACTION, HELP_ACTION };
@@ -249,13 +218,7 @@ format
         int y;
     };
 #endif
-    /**
-       enable/disable flags
-    */
-    enum {
-        DISABLED, /**<flag disabled */
-        ENABLED   /**<flag enabled */
-    };
+
 
     /**
       use of the external signals
@@ -295,32 +258,6 @@ format
         TRIGGER_EXPOSURE, /**< trigger mode i.e. exposure is triggered */
         GATED,            /**< gated  */
         BURST_TRIGGER     /**< trigger a burst of frames */
-    };
-    /**
-        detector IDs/versions
-    */
-    enum idMode {
-        DETECTOR_SERIAL_NUMBER,    /**<return detector system serial number */
-        DETECTOR_FIRMWARE_VERSION, /**<return detector system firmware version
-                                    */
-        DETECTOR_SOFTWARE_VERSION, /**<return detector system software version
-                                    */
-        THIS_SOFTWARE_VERSION,     /**<return this software version */
-        RECEIVER_VERSION,          /**<return receiver software version */
-        SOFTWARE_FIRMWARE_API_VERSION, /** return software firmware API version
-                                          */
-        CLIENT_SOFTWARE_API_VERSION, /** return detector software and client api
-                                        version */
-        CLIENT_RECEIVER_API_VERSION  /** return client and  receiver api version
-                                      */
-    };
-    /**
-        detector digital test modes
-    */
-    enum digitalTestMode {
-        DETECTOR_FIRMWARE_TEST, /**< test detector system firmware */
-        DETECTOR_BUS_TEST,      /**< test detector system CPU-FPGA bus */
-        IMAGE_TEST              /**< gotthard digital bit test */
     };
 
     /**

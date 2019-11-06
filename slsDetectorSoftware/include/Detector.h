@@ -865,7 +865,7 @@ class Detector {
 
     /** [Gotthard] If 1, adds channel intensity with precalculated values.
      * Default is 0 */
-    Result<int> setImageTestMode(const int value, Positions pos = {});
+    void setImageTestMode(const int value, Positions pos = {});
 
     /**************************************************
      *                                                *
@@ -1182,10 +1182,10 @@ class Detector {
     void clearBit(uint32_t addr, int bitnr, Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB] */
-    Result<int> executeFirmwareTest(Positions pos = {});
+    void executeFirmwareTest(Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB] */
-    Result<int> executeBusTest(Positions pos = {});
+    void executeBusTest(Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB] not possible to read back*/
     void writeAdcRegister(uint32_t addr, uint32_t value, Positions pos = {});

@@ -48,18 +48,15 @@ int64_t Detector::getClientVersion() const {
 }
 
 Result<int64_t> Detector::getFirmwareVersion(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getId, pos,
-                           defs::DETECTOR_FIRMWARE_VERSION);
+    return pimpl->Parallel(&slsDetector::getFirmwareVersion, pos);
 }
 
 Result<int64_t> Detector::getDetectorServerVersion(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getId, pos,
-                           defs::DETECTOR_SOFTWARE_VERSION);
+    return pimpl->Parallel(&slsDetector::getDetectorServerVersion, pos);
 }
 
 Result<int64_t> Detector::getSerialNumber(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getId, pos,
-                           defs::DETECTOR_SERIAL_NUMBER);
+    return pimpl->Parallel(&slsDetector::getSerialNumber, pos);
 }
 
 Result<int64_t> Detector::getReceiverVersion(Positions pos) const {
@@ -485,43 +482,35 @@ void Detector::setTenGiga(bool value, Positions pos) {
 }
 
 Result<bool> Detector::getTenGigaFlowControl(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setDetectorNetworkParameter, pos,
-                           defs::FLOW_CONTROL_10G, -1);
+    return pimpl->Parallel(&slsDetector::getTenGigaFlowControl, pos);
 }
 
 void Detector::setTenGigaFlowControl(bool enable, Positions pos) {
-    pimpl->Parallel(&slsDetector::setDetectorNetworkParameter, pos,
-                    defs::FLOW_CONTROL_10G, static_cast<int>(enable));
+    pimpl->Parallel(&slsDetector::setTenGigaFlowControl, pos, enable);
 }
 
 Result<int> Detector::getTransmissionDelayFrame(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setDetectorNetworkParameter, pos,
-                           defs::DETECTOR_TXN_DELAY_FRAME, -1);
+    return pimpl->Parallel(&slsDetector::getTransmissionDelayFrame, pos);
 }
 
 void Detector::setTransmissionDelayFrame(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setDetectorNetworkParameter, pos,
-                    defs::DETECTOR_TXN_DELAY_FRAME, value);
+    pimpl->Parallel(&slsDetector::setTransmissionDelayFrame, pos, value);
 }
 
 Result<int> Detector::getTransmissionDelayLeft(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setDetectorNetworkParameter, pos,
-                           defs::DETECTOR_TXN_DELAY_LEFT, -1);
+    return pimpl->Parallel(&slsDetector::getTransmissionDelayLeft, pos);
 }
 
 void Detector::setTransmissionDelayLeft(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setDetectorNetworkParameter, pos,
-                    defs::DETECTOR_TXN_DELAY_LEFT, value);
+    pimpl->Parallel(&slsDetector::setTransmissionDelayLeft, pos, value);
 }
 
 Result<int> Detector::getTransmissionDelayRight(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setDetectorNetworkParameter, pos,
-                           defs::DETECTOR_TXN_DELAY_RIGHT, -1);
+    return pimpl->Parallel(&slsDetector::getTransmissionDelayRight, pos);
 }
 
 void Detector::setTransmissionDelayRight(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setDetectorNetworkParameter, pos,
-                    defs::DETECTOR_TXN_DELAY_RIGHT, value);
+    pimpl->Parallel(&slsDetector::setTransmissionDelayRight, pos, value);
 }
 
 // Receiver
@@ -1082,13 +1071,11 @@ void Detector::setExternalSignalFlags(defs::externalSignalFlag value,
 }
 
 Result<int> Detector::getImageTestMode(Positions pos) {
-    return pimpl->Parallel(&slsDetector::digitalTest, pos, defs::IMAGE_TEST,
-                           -1);
+    return pimpl->Parallel(&slsDetector::getImageTestMode, pos);
 }
 
-Result<int> Detector::setImageTestMode(int value, Positions pos) {
-    return pimpl->Parallel(&slsDetector::digitalTest, pos, defs::IMAGE_TEST,
-                           value);
+void Detector::setImageTestMode(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setImageTestMode, pos, value);
 }
 
 // CTB Specific
@@ -1527,14 +1514,12 @@ void Detector::clearBit(uint32_t addr, int bitnr, Positions pos) {
     pimpl->Parallel(&slsDetector::clearBit, pos, addr, bitnr);
 }
 
-Result<int> Detector::executeFirmwareTest(Positions pos) {
-    return pimpl->Parallel(&slsDetector::digitalTest, pos,
-                           defs::DETECTOR_FIRMWARE_TEST, -1);
+void Detector::executeFirmwareTest(Positions pos) {
+    pimpl->Parallel(&slsDetector::executeFirmwareTest, pos);
 }
 
-Result<int> Detector::executeBusTest(Positions pos) {
-    return pimpl->Parallel(&slsDetector::digitalTest, pos,
-                           defs::DETECTOR_BUS_TEST, -1);
+void Detector::executeBusTest(Positions pos) {
+    pimpl->Parallel(&slsDetector::executeBusTest, pos);
 }
 
 void Detector::writeAdcRegister(uint32_t addr, uint32_t value, Positions pos) {

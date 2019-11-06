@@ -133,8 +133,13 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_DETECTOR_TYPE:				return "F_GET_DETECTOR_TYPE";
 	case F_SET_EXTERNAL_SIGNAL_FLAG:		return "F_SET_EXTERNAL_SIGNAL_FLAG";
 	case F_SET_TIMING_MODE:					return "F_SET_TIMING_MODE";
-	case F_GET_ID:							return "F_GET_ID";
-	case F_DIGITAL_TEST:					return "F_DIGITAL_TEST";
+	case F_GET_FIRMWARE_VERSION:			return "F_GET_FIRMWARE_VERSION";	
+	case F_GET_SERVER_VERSION:				return "F_GET_SERVER_VERSION";
+	case F_GET_SERIAL_NUMBER:				return "F_GET_SERIAL_NUMBER";
+	case F_SET_FIRMWARE_TEST:				return "F_SET_FIRMWARE_TEST";	
+	case F_SET_BUS_TEST:					return "F_SET_BUS_TEST";
+	case F_SET_IMAGE_TEST_MODE:				return "F_SET_IMAGE_TEST_MODE";	
+	case F_GET_IMAGE_TEST_MODE:				return "F_GET_IMAGE_TEST_MODE";	
 	case F_SET_DAC:							return "F_SET_DAC";
 	case F_GET_ADC:							return "F_GET_ADC";
 	case F_WRITE_REGISTER:					return "F_WRITE_REGISTER";
@@ -209,7 +214,14 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_PULSE_CHIP:						return "F_PULSE_CHIP";
 	case F_SET_RATE_CORRECT:				return "F_SET_RATE_CORRECT";
 	case F_GET_RATE_CORRECT:				return "F_GET_RATE_CORRECT";
-	case F_SET_NETWORK_PARAMETER:			return "F_SET_NETWORK_PARAMETER";
+	case F_SET_TEN_GIGA_FLOW_CONTROL:		return "F_SET_TEN_GIGA_FLOW_CONTROL";
+	case F_GET_TEN_GIGA_FLOW_CONTROL:		return "F_GET_TEN_GIGA_FLOW_CONTROL";
+	case F_SET_TRANSMISSION_DELAY_FRAME:	return "F_SET_TRANSMISSION_DELAY_FRAME";	
+	case F_GET_TRANSMISSION_DELAY_FRAME:	return "F_GET_TRANSMISSION_DELAY_FRAME";	
+	case F_SET_TRANSMISSION_DELAY_LEFT:		return "F_SET_TRANSMISSION_DELAY_LEFT";	
+	case F_GET_TRANSMISSION_DELAY_LEFT:		return "F_GET_TRANSMISSION_DELAY_LEFT";
+	case F_SET_TRANSMISSION_DELAY_RIGHT:	return "F_SET_TRANSMISSION_DELAY_RIGHT";		
+	case F_GET_TRANSMISSION_DELAY_RIGHT:	return "F_GET_TRANSMISSION_DELAY_RIGHT";
 	case F_PROGRAM_FPGA:					return "F_PROGRAM_FPGA";
 	case F_RESET_FPGA:						return "F_RESET_FPGA";
 	case F_POWER_CHIP:						return "F_POWER_CHIP";
@@ -292,8 +304,13 @@ void function_table() {
 	flist[F_GET_DETECTOR_TYPE]					= &get_detector_type;
 	flist[F_SET_EXTERNAL_SIGNAL_FLAG]			= &set_external_signal_flag;
 	flist[F_SET_TIMING_MODE]					= &set_timing_mode;
-	flist[F_GET_ID]								= &get_id;
-	flist[F_DIGITAL_TEST]						= &digital_test;
+	flist[F_GET_FIRMWARE_VERSION]				= &get_firmware_version;	
+	flist[F_GET_SERVER_VERSION]					= &get_server_version;
+	flist[F_GET_SERIAL_NUMBER]					= &get_serial_number;
+	flist[F_SET_FIRMWARE_TEST]					= &set_firmware_test;	
+	flist[F_SET_BUS_TEST]						= &set_bus_test;
+	flist[F_SET_IMAGE_TEST_MODE]				= &set_image_test_mode;		
+	flist[F_GET_IMAGE_TEST_MODE]				= &get_image_test_mode;		
 	flist[F_SET_DAC]							= &set_dac;
 	flist[F_GET_ADC]							= &get_adc;
 	flist[F_WRITE_REGISTER]						= &write_register;
@@ -368,7 +385,14 @@ void function_table() {
 	flist[F_PULSE_CHIP]							= &pulse_chip;
 	flist[F_SET_RATE_CORRECT]					= &set_rate_correct;
 	flist[F_GET_RATE_CORRECT]					= &get_rate_correct;
-	flist[F_SET_NETWORK_PARAMETER]				= &set_network_parameter;
+	flist[F_SET_TEN_GIGA_FLOW_CONTROL]			= &set_ten_giga_flow_control;
+	flist[F_GET_TEN_GIGA_FLOW_CONTROL]			= &get_ten_giga_flow_control;
+	flist[F_SET_TRANSMISSION_DELAY_FRAME]		= &set_transmission_delay_frame;	
+	flist[F_GET_TRANSMISSION_DELAY_FRAME]		= &get_transmission_delay_frame;	
+	flist[F_SET_TRANSMISSION_DELAY_LEFT]		= &set_transmission_delay_left;	
+	flist[F_GET_TRANSMISSION_DELAY_LEFT]		= &get_transmission_delay_left;	
+	flist[F_SET_TRANSMISSION_DELAY_RIGHT]		= &set_transmission_delay_right;	
+	flist[F_GET_TRANSMISSION_DELAY_RIGHT]		= &get_transmission_delay_right;	
 	flist[F_PROGRAM_FPGA]						= &program_fpga;
 	flist[F_RESET_FPGA]							= &reset_fpga;
 	flist[F_POWER_CHIP]							= &power_chip;
@@ -666,82 +690,90 @@ int set_timing_mode(int file_des) {
 
 
 
-
-int get_id(int file_des) {
+int get_firmware_version(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	enum idMode arg = 0;
 	int64_t retval = -1;
-
-	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-		return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("Getting Id %d\n", arg));
-
-	// get
-	switch (arg) {
-#ifndef GOTTHARDD
-	case SOFTWARE_FIRMWARE_API_VERSION:
-	case DETECTOR_SERIAL_NUMBER:
-#endif
-	case DETECTOR_FIRMWARE_VERSION:
-	case DETECTOR_SOFTWARE_VERSION:
-		retval = getDetectorId(arg);
-		FILE_LOG(logDEBUG1, ("Id(%d): %lld\n", retval));
-		break;
-	default:
-		modeNotImplemented("ID Index", (int)arg);
-		break;
-	}
+	retval = getFirmwareVersion();
+	FILE_LOG(logDEBUG1, ("firmware version retval: 0x%llx\n", (long long int)retval));
 	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
 }
 
-
-
-
-
-int digital_test(int file_des) {
+int get_server_version(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int args[2] = {-1, -1};
-	int retval = -1;
+	int64_t retval = -1;
+	retval = getServerVersion();
+	FILE_LOG(logDEBUG1, ("firmware version retval: 0x%llx\n", (long long int)retval));
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
 
-	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-		return printSocketReadError();
-	enum digitalTestMode mode = args[0];
-#ifdef GOTTHARDD
-	int ival = args[1];
-	FILE_LOG(logDEBUG1, ("Digital test, mode = %d, ival:%d\n", mode, ival));
-#else
-	FILE_LOG(logDEBUG1, ("Digital test, mode = %d\n", mode));
-#endif
+int get_serial_number(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+	retval = getDetectorNumber();
+	FILE_LOG(logDEBUG1, ("firmware version retval: 0x%llx\n", (long long int)retval));
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
 
-#if defined(EIGERD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+int set_firmware_test(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	FILE_LOG(logDEBUG1, ("Executing firmware test\n"));
+
+#if !defined(GOTTHARDD) && !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else
-	// only set
-	if (Server_VerifyLock() == OK) {
-		switch (mode) {
-
-		case DETECTOR_FIRMWARE_TEST:
-		case DETECTOR_BUS_TEST:
-#ifdef GOTTHARDD
-        case IMAGE_TEST:
-            retval = detectorTest(mode, ival);
-            break;
-#else
-            retval = detectorTest(mode);
+	ret = testFpga();
 #endif
-			FILE_LOG(logDEBUG1, ("Digital Test (%d): %d\n", mode, retval));
-			break;
-		default:
-			modeNotImplemented("Digital Test Mode", (int)mode);
-			break;
-		}
-	}
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int set_bus_test(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	FILE_LOG(logDEBUG1, ("Executing bus test\n"));
+
+#if !defined(GOTTHARDD) && !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
+	functionNotImplemented();
+#else
+	ret = testBus();
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int set_image_test_mode(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+		return printSocketReadError();	
+	FILE_LOG(logDEBUG1, ("Setting image test mode to \n", arg));
+
+#ifndef GOTTHARDD
+	functionNotImplemented();
+#else
+	setTestImageMode(arg);
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_image_test_mode(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting image test mode\n"));
+
+#ifndef GOTTHARDD
+	functionNotImplemented();
+#else
+	retval = getTestImageMode();
+	FILE_LOG(logDEBUG1, ("image test mode retval: %d\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
-
 
 
 
@@ -3365,68 +3397,219 @@ int get_rate_correct(int file_des) {
 
 
 
-
-
-int set_network_parameter(int file_des) {
-	ret = OK;
+int set_ten_giga_flow_control(int file_des) {
+  	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int args[2] = {-1,-1};
-	int retval = -1;
+	int arg = 0;
 
-	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-		return printSocketReadError();
-	enum networkParameter mode = args[0];
-	int value = args[1];
-	FILE_LOG(logDEBUG1, ("Set network parameter index %d to %d\n", mode, value));
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting ten giga flow control: %d\n", arg));
 
-#if defined(GOTTHARDD) || defined (CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if !defined(EIGERD) && !defined(JUNGFRAUD)
 	functionNotImplemented();
 #else
-    enum NETWORKINDEX serverIndex = 0;
-
-	// set & get
-	if ((value == -1) || (Server_VerifyLock() == OK)) {
-		// check index
-		switch (mode) {
-
-        case FLOW_CONTROL_10G:
-        	serverIndex = FLOWCTRL_10G;
-            break;
-
-#ifdef EIGERD
-		case DETECTOR_TXN_DELAY_LEFT:
-			serverIndex = TXN_LEFT;
-			break;
-		case DETECTOR_TXN_DELAY_RIGHT:
-			serverIndex = TXN_RIGHT;
-			break;
-#endif
-		case DETECTOR_TXN_DELAY_FRAME:
-			serverIndex = TXN_FRAME;
-#ifdef JUNGFRAUD
-			if (value > MAX_TIMESLOT_VAL)	{
-			    ret = FAIL;
-			    sprintf(mess,"Transmission delay %d should be in range: 0 - %d\n",
-			    		value, MAX_TIMESLOT_VAL);
-			    FILE_LOG(logERROR, (mess));
-			}
-#endif
-			break;
-		default:
-			modeNotImplemented("Image index", (int)serverIndex);
-			break;
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = setTenGigaFlowControl(arg);
+		if (ret == FAIL) {
+			strcpy(mess,"Could not set ten giga flow control.\n");
+			FILE_LOG(logERROR,(mess));			
+		} else {
+			int retval = getTenGigaFlowControl();
+			FILE_LOG(logDEBUG1, ("ten giga flow control retval: %d\n", retval));
+			validate(arg, retval, "set ten giga flow control", DEC);
 		}
-		// valid index
-		if (ret == OK) {
-			retval = setNetworkParameter(serverIndex, value);
-			FILE_LOG(logDEBUG1, ("Network Parameter index %d: %d\n", serverIndex, retval));
-			validate(value, retval, "set network parameter", DEC);
-		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_ten_giga_flow_control(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting ten giga flow control\n"));
+
+#if !defined(EIGERD) && !defined(JUNGFRAUD)
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getTenGigaFlowControl();
+	FILE_LOG(logDEBUG1, ("ten giga flow control retval: %d\n", retval));
+	if (retval == -1) {
+		strcpy(mess,"Could not get ten giga flow control.\n");
+		FILE_LOG(logERROR,(mess));			
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
+
+
+int set_transmission_delay_frame(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting transmission delay frame: %d\n", arg));
+
+#if !defined(EIGERD) && !defined(JUNGFRAUD)
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+#ifdef JUNGFRAUD
+		if (arg > MAX_TIMESLOT_VAL)	{
+			ret = FAIL;
+			sprintf(mess,"Transmission delay %d should be in range: 0 - %d\n",
+					arg, MAX_TIMESLOT_VAL);
+			FILE_LOG(logERROR, (mess));
+		}
+#endif	
+		if (ret == OK) {	
+			ret = setTransmissionDelayFrame(arg);
+			if (ret == FAIL) {
+				strcpy(mess,"Could not set transmission delay frame.\n");
+				FILE_LOG(logERROR,(mess));			
+			} else {
+				int retval = getTransmissionDelayFrame();
+				FILE_LOG(logDEBUG1, ("transmission delay frame retval: %d\n", retval));
+				validate(arg, retval, "set transmission delay frame", DEC);
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_transmission_delay_frame(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting transmission delay frame\n"));
+
+#if !defined(EIGERD) && !defined(JUNGFRAUD)
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getTransmissionDelayFrame();
+	FILE_LOG(logDEBUG1, ("transmission delay frame retval: %d\n", retval));
+	if (retval == -1) {
+		strcpy(mess,"Could not get transmission delay frame.\n");
+		FILE_LOG(logERROR,(mess));			
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+int set_transmission_delay_left(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting transmission delay left: %d\n", arg));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = setTransmissionDelayLeft(arg);
+		if (ret == FAIL) {
+			strcpy(mess,"Could not set transmission delay left.\n");
+			FILE_LOG(logERROR,(mess));			
+		} else {
+			int retval = getTransmissionDelayLeft();
+			FILE_LOG(logDEBUG1, ("transmission delay left retval: %d\n", retval));
+			validate(arg, retval, "set transmission delay left", DEC);
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_transmission_delay_left(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting transmission delay left\n"));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getTransmissionDelayLeft();
+	FILE_LOG(logDEBUG1, ("transmission delay left: %d\n", retval));
+	if (retval == -1) {
+		strcpy(mess,"Could not get transmission delay left.\n");
+		FILE_LOG(logERROR,(mess));			
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+
+int set_transmission_delay_right(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting transmission delay right: %d\n", arg));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = setTransmissionDelayRight(arg);
+		if (ret == FAIL) {
+			strcpy(mess,"Could not set transmission delay right.\n");
+			FILE_LOG(logERROR,(mess));			
+		} else {
+			int retval = getTransmissionDelayRight();
+			FILE_LOG(logDEBUG1, ("transmission delay right retval: %d\n", retval));
+			validate(arg, retval, "set transmission delay right", DEC);
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+int get_transmission_delay_right(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting transmission delay right\n"));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getTransmissionDelayRight();
+	FILE_LOG(logDEBUG1, ("transmission delay right retval: %d\n", retval));
+	if (retval == -1) {
+		strcpy(mess,"Could not get transmission delay right.\n");
+		FILE_LOG(logERROR,(mess));			
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
 
 
 
@@ -3825,8 +4008,8 @@ int check_version(int file_des) {
 		FILE_LOG(logDEBUG1, ("Checking versioning compatibility with value 0x%llx\n",arg));
 
 		int64_t client_requiredVersion = arg;
-		int64_t det_apiVersion = getDetectorId(CLIENT_SOFTWARE_API_VERSION);
-		int64_t det_version = getDetectorId(DETECTOR_SOFTWARE_VERSION);
+		int64_t det_apiVersion = getClientServerAPIVersion();
+		int64_t det_version = getServerVersion();
 
 		// old client
 		if (det_apiVersion > client_requiredVersion) {

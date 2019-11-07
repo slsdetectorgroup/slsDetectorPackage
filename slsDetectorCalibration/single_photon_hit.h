@@ -212,7 +212,7 @@ class single_photon_hit {
   void print() {
 
    // int ix, iy;
-    
+    printf("*** %d %d %d\n",iframe, x, y);
     for (int iy=0; iy<dy; iy++) {
       for (int ix=0; ix<dx; ix++) {
 	printf("%d \t",data[ix+iy*dx]);
@@ -220,7 +220,7 @@ class single_photon_hit {
       }
     printf("\n");
     }
-
+    printf("***\n");
   }
 
 

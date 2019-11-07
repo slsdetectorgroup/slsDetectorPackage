@@ -65,7 +65,6 @@ target_link_libraries(sls_detector_process
 )
 set_target_properties(sls_detector_process PROPERTIES 
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    COMPILE_DEFINITIONS READOUT=1 
     COMPILE_DEFINITIONS PROCESS=1
 )
 

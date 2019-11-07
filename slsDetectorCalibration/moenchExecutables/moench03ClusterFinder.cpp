@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
   int csize=3;
   int nx=400, ny=400;
   int save=1;
-  int nsigma=5;
+  int nsigma=1;
   int nped=1000;
   int ndark=100;
   int ok;
@@ -201,14 +201,15 @@ int main(int argc, char *argv[]) {
 	//       cout <<  ifr << " " << ff << " " << ix << " " << iy << " " << decoder->getChannel(buff, ix, iy) << endl ;
 	//     }
 	//   }
-
-  	mt->pushData(buff);
-  // 	//         //pop
-  	mt->nextThread();
-  // // 		//	cout << " " << (void*)buff;
-  	mt->popFree(buff);
-	ifr++;
-	if (ifr%10000==0) cout << ifr << " " << ff << endl;
+	if (np==40) {
+	  mt->pushData(buff);
+	  // 	//         //pop
+	  mt->nextThread();
+	  // // 		//	cout << " " << (void*)buff;
+	  mt->popFree(buff);
+	  ifr++;
+	  if (ifr%10000==0) cout << ifr << " " << ff << endl;
+	}
 	ff=-1;
       }
         cout << "--" << endl;

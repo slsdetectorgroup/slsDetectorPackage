@@ -19,27 +19,27 @@ int main(int argc, char *argv[])
 			return 0;
 		}
 	}
-
+	int action=slsDetectorDefs::HELP_ACTION;
 #ifdef PUT
-  int action=slsDetectorDefs::PUT_ACTION;
+  action=slsDetectorDefs::PUT_ACTION;
 #endif
     
 #ifdef GET
-  int action=slsDetectorDefs::GET_ACTION;
+  action=slsDetectorDefs::GET_ACTION;
 #endif
     
 
 #ifdef READOUT
-  int action=slsDetectorDefs::READOUT_ACTION;
+  action=slsDetectorDefs::READOUT_ACTION;
 #endif
   
 #ifdef PROCESS
-  int action=slsDetectorDefs::PROCESS_ACTION;
+ action=slsDetectorDefs::PROCESS_ACTION;
 #endif
     
 
 #ifdef HELP
-  int action=slsDetectorDefs::HELP_ACTION;
+ action=slsDetectorDefs::HELP_ACTION;
 #endif
 
   multiSlsDetectorClient *cl;

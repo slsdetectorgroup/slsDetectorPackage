@@ -675,7 +675,7 @@ template <class dataType> class analogDetector {
       delete [] gm;
       return 1;
     }
-    return NULL;
+    return 0;
   }
   
  /**
@@ -700,7 +700,7 @@ template <class dataType> class analogDetector {
       delete [] gm;
       return 1;
     }
-    return NULL;
+    return 0;
   }
   
    

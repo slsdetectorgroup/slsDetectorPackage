@@ -33,8 +33,8 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
-int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
-uint32_t clkFrequency[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
+int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0, 0};
+uint32_t clkFrequency[NUM_CLOCKS] = {0, 0, 0, 0, 0};
 
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
@@ -338,7 +338,6 @@ void setupDetector() {
 	clkFrequency[SYSTEM_C0] = DEFAULT_SYSTEM_C0;
 	clkFrequency[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
 	clkFrequency[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
-	clkFrequency[SYSTEM_C3] = DEFAULT_SYSTEM_C3;
 
 	highvoltage = 0;
 	{
@@ -362,10 +361,9 @@ void setupDetector() {
 	LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC);
 #endif
 
-	//TODO?
-	//resetCore();
-	//resetPeripheral();
-	//cleanFifos();
+	resetCore();
+	resetPeripheral();
+	cleanFifos();
 
 	// defaults
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
@@ -408,7 +406,6 @@ void resetCore() {
 #endif
 	FILE_LOG(logINFO, ("Resetting Core\n"));
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_CRE_RST_MSK);
-	usleep(1000 * 1000);
 }
 
 void resetPeripheral() {
@@ -478,12 +475,12 @@ int setPeriod(int64_t val) {
         return FAIL;
     }
 	FILE_LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-9 * clkFrequency[SYSTEM_C2]);
+    val *= (1E-9 * FIXED_PLL_FREQUENCY);
     set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getPeriod();
-    val /= (1E-9 * clkFrequency[SYSTEM_C2]);
+    val /= (1E-9 * FIXED_PLL_FREQUENCY);
     if (val != retval) {
         return FAIL;
     }
@@ -491,7 +488,7 @@ int setPeriod(int64_t val) {
 }
 
 int64_t getPeriod() {
-    return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * clkFrequency[SYSTEM_C2]);
+    return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * FIXED_PLL_FREQUENCY);
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -500,12 +497,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     } 
 	FILE_LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    val *= (1E-9 * clkFrequency[SYSTEM_C2]);
+    val *= (1E-9 * FIXED_PLL_FREQUENCY);
     set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-9 * clkFrequency[SYSTEM_C2]);
+    val /= (1E-9 * FIXED_PLL_FREQUENCY);
     if (val != retval) {
         return FAIL;
     }
@@ -513,7 +510,7 @@ int setDelayAfterTrigger(int64_t val) {
 }
 
 int64_t getDelayAfterTrigger() {
-    return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-9 * clkFrequency[SYSTEM_C2]);
+    return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
   
 }
 
@@ -526,11 +523,11 @@ int64_t getNumTriggersLeft() {
 }
 
 int64_t getDelayAfterTriggerLeft() {
-    return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-9 * clkFrequency[SYSTEM_C2]);
+    return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
 }
 
 int64_t getPeriodLeft() {
-    return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-9 * clkFrequency[SYSTEM_C2]);
+    return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
 }
 
 int64_t getFramesFromStart() {
@@ -538,11 +535,11 @@ int64_t getFramesFromStart() {
 }
 
 int64_t getActualTime() {
-    return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) / (1E-9 * clkFrequency[SYSTEM_C3]);//TODO which clock
+    return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY * 2);
 }
 
 int64_t getMeasurementTime() {
-    return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) / (1E-9 * clkFrequency[SYSTEM_C3]);//TODO which clock
+    return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
 }
 
 
@@ -693,7 +690,7 @@ int configureMAC() {
 
 	//TODO?
 	cleanFifos();
-	//resetCore();
+	resetCore();
 	//alignDeserializer();
 	return OK;
 }
@@ -1127,7 +1124,6 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     	clkPhase[SYSTEM_C0] = 0;
     	clkPhase[SYSTEM_C1] = 0;
     	clkPhase[SYSTEM_C2] = 0;
-    	clkPhase[SYSTEM_C3] = 0;
 	}
 
     // set the phase in degreesif custom set

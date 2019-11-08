@@ -2515,9 +2515,13 @@ int set_dynamic_range(int file_des) {
 		// check dr
 		switch(dr) {
 		case -1:
+#ifdef MYTHEN3D
+		case 32:
+#elif EIGERD
+		case 4:	case 8:	case 16: case 32:
+#endif
+#if defined(GOTTHARD) || defined(JUNGFRAU) || defined(CHIPTESTBOARD) || defined(MOENCH) || defined(GOTTHARD2)
 		case 16:
-#ifdef EIGERD
-		case 4:	case 8:	case 32:
 #endif
 			retval = setDynamicRange(dr);
 			FILE_LOG(logDEBUG1, ("Dynamic range: %d\n", retval));

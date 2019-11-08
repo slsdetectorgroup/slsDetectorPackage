@@ -472,6 +472,7 @@ int slsReceiverTCPIPInterface::set_detector_type(Interface &socket) {
         case CHIPTESTBOARD:
         case MOENCH:
         case JUNGFRAU:
+        case MYTHEN3:
             break;
         default:
             throw RuntimeError("Unknown detector type: " + std::to_string(arg));
@@ -598,17 +599,21 @@ int slsReceiverTCPIPInterface::set_dynamic_range(Interface &socket) {
         VerifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting dynamic range: " << dr;
         bool exists = false;
-        switch (dr) {
-        case 16:
-            exists = true;
-            break;
-        case 4:
-        case 8:
-        case 32:
-            if (myDetectorType == EIGER)
+        switch(myDetectorType) {
+        case EIGER:
+            if (dr == 4 || dr == 8 || dr == 16 || dr == 32) {
                 exists = true;
+            }
+            break;
+        case MYTHEN3:
+            if (dr == 32) {
+                exists = true;
+            }
             break;
         default:
+            if (dr == 16)  {
+                exists = true;
+            }
             break;
         }
         if (!exists) {

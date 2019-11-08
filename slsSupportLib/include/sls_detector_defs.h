@@ -525,7 +525,7 @@ struct detParameters {
             nChipX = 10;
             nChipY = 1;
             nDacs = 16;
-            dynamicRange = 16;
+            dynamicRange = 32;
             nGappixelsX = 0;
             nGappixelsY = 0;
             break;

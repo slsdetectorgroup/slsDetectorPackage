@@ -1106,6 +1106,7 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
     case MOENCH:
+    case MYTHEN3:
         FILE_LOG(logINFO) << " ***** " << sls::ToString(d)
                           << " Receiver *****";
         break;
@@ -1131,6 +1132,9 @@ int slsReceiverImplementation::setDetectorType(const detectorType d) {
     case MOENCH:
         generalData = new MoenchData();
         break;
+    case MYTHEN3:
+        generalData = new Mythen3Data();
+        break;        
     default:
         break;
     }

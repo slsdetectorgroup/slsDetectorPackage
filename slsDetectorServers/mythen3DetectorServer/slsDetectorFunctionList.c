@@ -419,7 +419,7 @@ void resetPeripheral() {
 /* set parameters -  dr, roi */
 
 int setDynamicRange(int dr){
-	return 16; //TODO
+	return 32; //TODO
 }
 
 

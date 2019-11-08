@@ -331,7 +331,7 @@ private:
 			packetIndexMask 	= 0;
 			maxFramesPerFile 	= SHORT_MAX_FRAMES_PER_FILE;
 			fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-			defaultFifoDepth 	= 25000;
+			defaultFifoDepth 	= 75000;
 			nPixelsXComplete 	= 1280;
 			nPixelsYComplete 	= 1;
 			imageSizeComplete 	= 1280 * 2;
@@ -527,6 +527,27 @@ class JungfrauData : public GeneralData {
     }
 };
 
+class Mythen3Data : public GeneralData {
+
+ public:
+
+	/** Constructor */
+	Mythen3Data(){
+		myDetectorType		= slsDetectorDefs::MYTHEN3;
+		nPixelsX 			= (256* 4 * 512);
+		nPixelsY 			= 1;
+		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
+		dataSize 			= 7680;//8192;
+		packetSize 			= headerSizeinPacket + dataSize;
+		packetsPerFrame 	= 2;
+		imageSize 			= dataSize * packetsPerFrame;
+		maxFramesPerFile 	= MYTHEN3_MAX_FRAMES_PER_FILE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
+		defaultFifoDepth 	= 50000;
+		standardheader		= true;
+		defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
+	};
+};
 
 
 class ChipTestBoardData : public GeneralData {

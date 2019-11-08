@@ -235,6 +235,12 @@ class Detector {
 
     void setDAC(defs::dacIndex index, int value, bool mV, Positions pos = {});
 
+    /* [Gotthard2] */
+    Result<int> getOnChipDAC(defs::dacIndex index, int chipIndex, Positions pos = {}) const;
+    
+    /* [Gotthard2] */
+    void setOnChipDAC(defs::dacIndex index, int chipIndex, int value, Positions pos = {});    
+
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**

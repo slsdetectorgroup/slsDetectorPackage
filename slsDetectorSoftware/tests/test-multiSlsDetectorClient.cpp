@@ -9,6 +9,110 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("vchip", "[.cmd]") {
+    int prev_val = 0; 
+   
+    if (test::type == slsDetectorDefs::GOTTHARD2) {
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_comp_fe", GET)); // needs a chip index
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_comp_fe -1 0x400", GET)); // max val is 0x3ff        
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_comp_fe -1", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vchip_comp_fe -1 "));
+            prev_val = stoul(s, 0, 16);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_comp_fe -1 0x137", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_comp_fe -1", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vchip_comp_fe -1 0x137\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_comp_fe -1 " + sls::ToStringHex(prev_val), PUT));  
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_opa_1st", GET)); // needs a chip index
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_opa_1st -1", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vchip_opa_1st -1 "));
+            prev_val = stoul(s, 0, 16);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_opa_1st -1 0x137", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_opa_1st -1", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vchip_opa_1st -1 0x137\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_opa_1st -1 " + sls::ToStringHex(prev_val), PUT)); 
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_opa_fd", GET)); // needs a chip index
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_opa_fd -1", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vchip_opa_fd -1 "));
+            prev_val = stoul(s, 0, 16);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_opa_fd -1 0x137", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_opa_fd -1", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vchip_opa_fd -1 0x137\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_opa_fd -1 " + sls::ToStringHex(prev_val), PUT)); 
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_comp_adc", GET)); // needs a chip index
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_comp_adc -1", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vchip_comp_adc -1 "));
+            prev_val = stoul(s, 0, 16);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_comp_adc -1 0x137", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_comp_adc -1", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vchip_comp_adc -1 0x137\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_comp_adc -1 " + sls::ToStringHex(prev_val), PUT)); 
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_ref_comp_fe", GET)); // needs a chip index
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_ref_comp_fe -1", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vchip_ref_comp_fe -1 "));
+            prev_val = stoul(s, 0, 16);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_ref_comp_fe -1 0x137", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_ref_comp_fe -1", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vchip_ref_comp_fe -1 0x137\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_ref_comp_fe -1 " + sls::ToStringHex(prev_val), PUT)); 
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_cs", GET)); // needs a chip index
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_cs -1", GET, nullptr, oss));
+            std::string s = (oss.str()).erase (0, strlen("vchip_cs -1 "));
+            prev_val = stoul(s, 0, 16);
+        }
+        {
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_cs -1 0x137", PUT));
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_cs -1", GET, nullptr, oss));
+            REQUIRE(oss.str() == "vchip_cs -1 0x137\n");
+        } 
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vchip_cs -1 " + sls::ToStringHex(prev_val), PUT)); 
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_comp_fe", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_opa_1st", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_opa_fd", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_comp_adc", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_ref_comp_fe", GET));
+        REQUIRE_THROWS(multiSlsDetectorClient("vchip_cs", GET));
+    }
+
+}
+
+
+
+
+
 
 TEST_CASE("dacs", "[.cmd]") {
     REQUIRE_NOTHROW(multiSlsDetectorClient("daclist", GET));

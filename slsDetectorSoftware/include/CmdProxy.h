@@ -188,7 +188,7 @@
         return os.str();                                                       \
     }
 
-/** int with index, */
+/** int with index */
 #define INTEGER_IND_COMMAND(CMDNAME, GETFCN, SETFCN, CONV, INDEX, HLPSTR)      \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -208,6 +208,32 @@
             auto val = CONV(args[0]);                                          \
             det->SETFCN(INDEX, val, {det_id});                                 \
             os << args.front() << '\n';                                        \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+/** int with user index */
+#define INTEGER_USER_IND_COMMAND(CMDNAME, GETFCN, SETFCN, CONV, INDEX, HLPSTR) \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            auto t = det->GETFCN(INDEX, std::stoi(args[0]), {det_id});         \
+            os << args [0] << ' ' << OutStringHex(t) << '\n';                  \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 2) {                                            \
+                WrongNumberOfParameters(2);                                    \
+            }                                                                  \
+            auto val = CONV(args[1]);                                          \
+            det->SETFCN(INDEX, std::stoi(args[0]), val, {det_id});             \
+            os << args[0] << ' ' << args[1] << '\n';                           \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
         }                                                                      \
@@ -634,7 +660,14 @@ class CmdProxy {
                           {"dac", &CmdProxy::Dac},
                           {"daclist", &CmdProxy::DacList},
                           {"dacvalues", &CmdProxy::DacValues},
-    
+
+                          /* on chip dacs */
+                          {"vchip_comp_fe", &CmdProxy::vchip_comp_fe},
+                          {"vchip_opa_1st", &CmdProxy::vchip_opa_1st},
+                          {"vchip_opa_fd", &CmdProxy::vchip_opa_fd},
+                          {"vchip_comp_adc", &CmdProxy::vchip_comp_adc},
+                          {"vchip_ref_comp_fe", &CmdProxy::vchip_ref_comp_fe},
+                          {"vchip_cs", &CmdProxy::vchip_cs},
 
                           /* acquisition */
                           {"clearbusy", &CmdProxy::clearbusy}, 
@@ -866,6 +899,7 @@ class CmdProxy {
     std::string DacList(int action);   
     std::string DacValues(int action);   
     std::vector<std::string> DacCommands();
+    std::string OnChipDac(int action);   
     /* acquisition */
     /* Network Configuration (Detector<->Receiver) */
     /* Receiver Config */
@@ -1193,6 +1227,27 @@ class CmdProxy {
 
     DAC_COMMAND(vdd_prot, getDAC, setDAC, defs::VDD_PROT,
                     "[dac or mv value][(optional unit) mv] \n\t[Jungfrau] Dac for ??"); //TODO 
+
+
+    /* on chip dacs */
+    INTEGER_USER_IND_COMMAND(vchip_comp_fe, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_COMP_FE, 
+                    "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for comparator current of analogue front end.");
+
+    INTEGER_USER_IND_COMMAND(vchip_opa_1st, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_OPA_1ST, 
+                    "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for opa current for driving the other DACs in chip.");
+
+    INTEGER_USER_IND_COMMAND(vchip_opa_fd, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_OPA_FD, 
+                    "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac current for CDS opa stage.");
+
+    INTEGER_USER_IND_COMMAND(vchip_comp_adc, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_COMP_ADC, 
+                    "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for comparator current of ADC.");
+
+    INTEGER_USER_IND_COMMAND(vchip_ref_comp_fe, getOnChipDAC, setOnChipDAC, stoiHex, defs::VREF_COMP_FE,
+                    "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for reference voltage of the comparator of analogue front end.");
+
+    INTEGER_USER_IND_COMMAND(vchip_cs, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_CS,
+                    "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for current injection into preamplifier.");                                          
+
 
 
     /* acquisition */

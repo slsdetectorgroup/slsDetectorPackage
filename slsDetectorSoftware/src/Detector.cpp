@@ -285,6 +285,14 @@ void Detector::setDAC(defs::dacIndex index, int value, bool mV, Positions pos) {
     pimpl->Parallel(&slsDetector::setDAC, pos, value, index, mV);
 }
 
+Result<int> Detector::getOnChipDAC(defs::dacIndex index, int chipIndex, Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getOnChipDAC, pos, index, chipIndex);
+}
+    
+void Detector::setOnChipDAC(defs::dacIndex index, int chipIndex, int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setOnChipDAC, pos, index, chipIndex, value);
+}
+
 Result<defs::timingMode> Detector::getTimingMode(Positions pos) const {
     return pimpl->Parallel(&slsDetector::setTimingMode, pos,
                            defs::GET_TIMING_MODE);

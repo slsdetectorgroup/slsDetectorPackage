@@ -294,6 +294,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_CLOCK_DIVIDER:				return "F_GET_CLOCK_DIVIDER";
 	case F_SET_PIPELINE:					return "F_SET_PIPELINE";
 	case F_GET_PIPELINE:					return "F_GET_PIPELINE";
+	case F_SET_ON_CHIP_DAC:					return "F_SET_ON_CHIP_DAC";
+	case F_GET_ON_CHIP_DAC:					return "F_GET_ON_CHIP_DAC";
 
 	default:								return "Unknown Function";
 	}
@@ -465,6 +467,8 @@ void function_table() {
 	flist[F_GET_CLOCK_DIVIDER]					= &get_clock_divider;
 	flist[F_SET_PIPELINE]						= &set_pipeline;
 	flist[F_GET_PIPELINE]						= &get_pipeline;	
+	flist[F_SET_ON_CHIP_DAC]					= &set_on_chip_dac;
+	flist[F_GET_ON_CHIP_DAC]					= &get_on_chip_dac;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -1032,7 +1036,6 @@ int set_dac(int file_des) {
 		serverDacIndex = J_VREF_COMP;
 		break;	
 #endif
-
     default:
 #ifdef CHIPTESTBOARDD
         if (ind < NDAC_ONLY) {
@@ -6007,3 +6010,135 @@ int get_pipeline(int file_des) {
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
 
+
+
+
+int set_on_chip_dac(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[3] = {-1, -1, -1};
+
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting On chip dac (%d), chip %d: 0x%x\n", args[0], args[1], args[2]));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+
+	// only set
+	if (Server_VerifyLock() == OK) {
+		int ind = args[0];
+		int chipIndex = args[1];
+		int val = args[2];
+		enum ONCHIP_DACINDEX dacIndex = 0;
+		switch (ind) {
+		case VB_COMP_FE:
+			dacIndex = G2_VCHIP_COMP_FE;
+			break;
+		case VB_OPA_1ST:
+			dacIndex = G2_VCHIP_OPA_1ST;
+			break;
+		case VB_OPA_FD:
+			dacIndex = G2_VCHIP_OPA_FD;
+			break;
+		case VB_COMP_ADC:
+			dacIndex = G2_VCHIP_COMP_ADC;
+			break;
+		case VREF_COMP_FE:
+			dacIndex = G2_VCHIP_REF_COMP_FE;
+			break;
+		case VB_CS:
+			dacIndex = G2_VCHIP_CS;
+			break;
+		default:
+			modeNotImplemented("on chip dac index", ind);
+			break;
+		}
+
+		if (ret != FAIL) {
+			char* names[] = {ONCHIP_DAC_NAMES};
+			char modeName[50] = "";
+			sprintf(modeName, "on-chip-dac (%s, %d, chip:%d)", names[dacIndex], (int)dacIndex, chipIndex);
+			if (chipIndex < -1 || chipIndex >= NCHIP) {
+				ret = FAIL;
+				sprintf(mess, "Could not set %s to %d. Invalid Chip Index. Options[-1, 0 - %d]\n", modeName, val, NCHIP -1);
+				FILE_LOG(logERROR, (mess));				
+			} else if (val < 0 || val > ONCHIP_DAC_MAX_VAL ) {
+				ret = FAIL;
+				sprintf(mess, "Could not set %s to 0x%x. Invalid value. Options:[0 - 0x%x]\n", modeName, val, ONCHIP_DAC_MAX_VAL);
+				FILE_LOG(logERROR, (mess));				
+			} else {
+				ret = setOnChipDAC(dacIndex, chipIndex, val); 
+				if (ret == FAIL) {
+					sprintf(mess, "Could not set %s to 0x%x.\n", modeName, val);
+					FILE_LOG(logERROR, (mess));		
+				} else {
+					int retval = getOnChipDAC(dacIndex, chipIndex);
+					FILE_LOG(logDEBUG1, ("retval %s: 0x%x\n", modeName, retval));
+					validate(val, retval, modeName, DEC);
+				}
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_on_chip_dac(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[2] = {-1, -1};
+	int retval = -1;
+	
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+		return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Getting On chip dac (%d), chip %d\n", args[0], args[1]));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+	// get only
+		int ind = args[0];
+		int chipIndex = args[1];
+		enum ONCHIP_DACINDEX dacIndex = 0;
+		switch (ind) {
+		case VB_COMP_FE:
+			dacIndex = G2_VCHIP_COMP_FE;
+			break;
+		case VB_OPA_1ST:
+			dacIndex = G2_VCHIP_OPA_1ST;
+			break;
+		case VB_OPA_FD:
+			dacIndex = G2_VCHIP_OPA_FD;
+			break;
+		case VB_COMP_ADC:
+			dacIndex = G2_VCHIP_COMP_ADC;
+			break;
+		case VREF_COMP_FE:
+			dacIndex = G2_VCHIP_REF_COMP_FE;
+			break;
+		case VB_CS:
+			dacIndex = G2_VCHIP_CS;
+			break;
+		default:
+			modeNotImplemented("on chip dac index", ind);
+			break;
+		}	
+	if (ret == OK) {
+		char* names[] = {ONCHIP_DAC_NAMES};
+		char modeName[50] = "";
+		sprintf(modeName, "on-chip-dac (%s, %d, chip:%d)", names[dacIndex], (int)dacIndex, chipIndex);
+		if (chipIndex < -1 || chipIndex >= NCHIP) {
+			ret = FAIL;
+			sprintf(mess, "Could not get %s. Invalid Chip Index. Options[-1, 0 - %d]\n", modeName, NCHIP -1);
+			FILE_LOG(logERROR, (mess));				
+		} else {
+			retval = getOnChipDAC(dacIndex, chipIndex);
+			FILE_LOG(logDEBUG1, ("retval %s: 0x%x\n", modeName, retval));
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}

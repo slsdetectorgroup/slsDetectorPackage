@@ -7,6 +7,7 @@
 #include "LTC2620_Driver.h"
 #include "common.h"
 #include "ALTERA_PLL_CYCLONE10.h" 
+#include "ASIC_Driver.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #endif
@@ -37,6 +38,7 @@ int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
 uint32_t clkFrequency[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
+int onChipdacValues[ONCHIP_NDAC][NCHIP + 1] = {0};
 int detPos[2] = {0, 0};
 
 int isFirmwareCheckDone() {
@@ -337,13 +339,17 @@ void setupDetector() {
 
 	highvoltage = 0;
 	{
-		int i;
+		int i, j;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
             clkPhase[i] = 0;
         }
 		for (i = 0; i < NDAC; ++i) {
 			dacValues[i] = 0;
 		}
+		for (i = 0; i < ONCHIP_NDAC; ++i) {
+			for (j = 0; j < NCHIP + 1; ++j)
+			onChipdacValues[i][j] = -1;
+		}		
 	}
 
 
@@ -356,12 +362,15 @@ void setupDetector() {
     DAC6571_SetDefines(HV_HARD_MAX_VOLTAGE, HV_DRIVER_FILE_NAME);
 	// dacs
 	LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC);
+	// on chip dacs
+	ASIC_Driver_SetDefines(ONCHIP_DAC_DRIVER_FILE_NAME);
 #endif
 
 	// Default values
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 	setDefaultDacs();
-
+	setDefaultOnChipDacs();
+	
 	// Initialization of acquistion parameters
 	setNumFrames(DEFAULT_NUM_FRAMES);
 	setNumTriggers(DEFAULT_NUM_CYCLES);
@@ -381,6 +390,20 @@ int setDefaultDacs() {
 	}
 	return ret;
 }
+
+int setDefaultOnChipDacs() {
+	int ret = OK;
+	FILE_LOG(logINFOBLUE, ("Setting Default On chip Dac values\n"));
+	{
+		int i = 0;
+		const int defaultOnChipVals[ONCHIP_NDAC] = DEFAULT_ONCHIP_DAC_VALS;
+		for(i = 0; i < ONCHIP_NDAC; ++i) {
+			setOnChipDAC((enum ONCHIP_DACINDEX)i, -1, defaultOnChipVals[i]);
+		}
+	}	
+	return ret;
+}
+
 
 /* set parameters -  dr, roi */
 
@@ -467,6 +490,38 @@ int64_t getNumTriggersLeft() {
 
 
 /* parameters - dac, hv */
+int	setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val) {
+	char* names[] = {ONCHIP_DAC_NAMES};
+	FILE_LOG(logDEBUG1, ("Setting on chip dac[%d - %s]: 0x%x\n", (int)ind, names[ind], val));
+
+	if (ind >= ONCHIP_NDAC) {
+		FILE_LOG(logERROR, ("Invalid dac index %d\n", (int)ind));
+		return FAIL;
+	}
+	if (chipIndex >= NCHIP) {
+		FILE_LOG(logERROR, ("Invalid chip index %d\n", chipIndex));
+		return FAIL;		
+	}
+	if (val > ONCHIP_DAC_MAX_VAL) {
+		FILE_LOG(logERROR, ("Invalid val %d\n", val));
+		return FAIL;			
+	}
+
+	char buffer[2];
+	buffer[1] = ((val & 0xF) << 4) | (((int)ind) & 0xF); // LSB (4 bits) + ADDR (4 bits)
+	buffer[0] = (val >> 4) & 0x3F; // MSB (6 bits)
+		
+	if (ASIC_Driver_Set(chipIndex, sizeof(buffer), buffer) == FAIL) {
+		return FAIL;				
+	}
+	onChipdacValues[ind][chipIndex + 1] = val;
+	return OK;
+}
+
+int	getOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex) {
+	return onChipdacValues[ind][chipIndex + 1];
+}
+
 void setDAC(enum DACINDEX ind, int val, int mV) {
     if (val < 0) {
         return;

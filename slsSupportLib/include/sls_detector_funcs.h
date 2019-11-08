@@ -175,6 +175,8 @@ enum detFuncs{
 	F_GET_CLOCK_DIVIDER,
 	F_SET_PIPELINE,
 	F_GET_PIPELINE,	
+	F_SET_ON_CHIP_DAC,
+	F_GET_ON_CHIP_DAC,
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 256, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -414,6 +416,9 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_CLOCK_DIVIDER:				return "F_GET_CLOCK_DIVIDER";
 	case F_SET_PIPELINE:					return "F_SET_PIPELINE";
 	case F_GET_PIPELINE:					return "F_GET_PIPELINE";
+	case F_SET_ON_CHIP_DAC:					return "F_SET_ON_CHIP_DAC";
+	case F_GET_ON_CHIP_DAC:					return "F_GET_ON_CHIP_DAC";
+
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

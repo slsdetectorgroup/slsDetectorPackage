@@ -1510,6 +1510,20 @@ int slsDetector::setDAC(int val, dacIndex index, int mV) {
     return retval;
 }
 
+int slsDetector::getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex) {
+    int args[]{static_cast<int>(index), chipIndex}; 
+    int retval = -1;
+    sendToDetector(F_GET_ON_CHIP_DAC, args, retval);
+    FILE_LOG(logDEBUG1) << "On chip DAC " << index << " (chip index:" << chipIndex << "): " << retval;
+    return retval;
+}
+    
+void slsDetector::setOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex, int value) {
+    int args[]{static_cast<int>(index), chipIndex, value}; 
+    FILE_LOG(logDEBUG1) << "Setting On chip DAC " << index << " (chip index:" << chipIndex << ") to " << value;
+    sendToDetector(F_SET_ON_CHIP_DAC, args, nullptr);
+}    
+
 int slsDetector::getADC(dacIndex index) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Getting ADC " << index;

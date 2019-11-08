@@ -17,7 +17,7 @@ char LTC2620_D_DriverFileName[MAX_STR_LENGTH];
 int LTC2620_D_NumDacs = 0;
 
 void LTC2620_D_SetDefines(int hardMaxV, char* driverfname, int numdacs) {
-    FILE_LOG(logINFOBLUE, ("Configuring DACs (LTC2620)\n"));
+    FILE_LOG(logINFOBLUE, ("Configuring DACs (LTC2620) to %s (numdacs:%d, hard max: %dmV)\n", driverfname, numdacs, hardMaxV));
     LTC2620_D_HardMaxVoltage = hardMaxV;
     memset(LTC2620_D_DriverFileName, 0, MAX_STR_LENGTH);
     strcpy(LTC2620_D_DriverFileName, driverfname);

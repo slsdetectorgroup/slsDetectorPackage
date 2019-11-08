@@ -193,3 +193,5 @@ int set_clock_divider(int);
 int get_clock_divider(int);
 int set_pipeline(int);
 int get_pipeline(int);
+int set_on_chip_dac(int);
+int get_on_chip_dac(int);

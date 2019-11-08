@@ -632,6 +632,12 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     int setDAC(int val, dacIndex index, int mV);
 
+    /* [Gotthard2] */
+    int getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex);
+    
+    /* [Gotthard2] */
+    void setOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex, int value);    
+
     /**
      * Get adc value
      * @param index adc(DAC) index

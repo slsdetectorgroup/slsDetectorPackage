@@ -87,6 +87,9 @@ void        updateDataBytes();
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MYTHEN3D) || GOTTHARD2D
 int			setDefaultDacs();
 #endif
+#ifdef GOTTHARD2D
+int			setDefaultOnChipDacs();
+#endif
 
 
 // advanced read/write reg
@@ -242,6 +245,10 @@ extern int AD9257_GetVrefVoltage(int mV);                  // AD9257.h
 extern int AD9257_SetVrefVoltage(int val, int mV);   // AD9257.h
 #endif
 
+#ifdef GOTTHARD2D
+int			setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val);
+int			getOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex);
+#endif
 void 		setDAC(enum DACINDEX ind, int val, int mV);
 int         getDAC(enum DACINDEX ind, int mV);
 int         getMaxDacSteps();

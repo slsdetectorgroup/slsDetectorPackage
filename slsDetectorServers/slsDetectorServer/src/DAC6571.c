@@ -15,7 +15,7 @@ int DAC6571_HardMaxVoltage = 0;
 char DAC6571_DriverFileName[MAX_STR_LENGTH];
 
 void DAC6571_SetDefines(int hardMaxV, char* driverfname) {
-    FILE_LOG(logINFOBLUE, ("Configuring High Voltage\n"));
+    FILE_LOG(logINFOBLUE, ("Configuring High Voltage to %s (hard max: %dV)\n", driverfname, hardMaxV));
     DAC6571_HardMaxVoltage = hardMaxV;
     memset(DAC6571_DriverFileName, 0, MAX_STR_LENGTH);
     strcpy(DAC6571_DriverFileName, driverfname);

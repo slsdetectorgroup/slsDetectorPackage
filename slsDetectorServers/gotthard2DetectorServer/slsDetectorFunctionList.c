@@ -515,6 +515,12 @@ int	setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val) {
 		return FAIL;				
 	}
 	onChipdacValues[ind][chipIndex + 1] = val;
+	if (chipIndex == -1) {
+		int i;
+		for (i = 1; i < NCHIP + 1; ++i) {
+			onChipdacValues[ind][i] = val;
+		}
+	}
 	return OK;
 }
 

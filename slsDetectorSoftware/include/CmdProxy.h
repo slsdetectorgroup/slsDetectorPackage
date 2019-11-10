@@ -550,7 +550,8 @@ class CmdProxy {
                          
                           /* configuration */
                           //{"config", &CmdProxy::config},
-                          {"free", &CmdProxy::free},
+                          {"free2", &CmdProxy::free},
+                          {"config2", &CmdProxy::config2},
                           {"parameters", &CmdProxy::parameters},
                           {"hostname", &CmdProxy::Hostname},
                           {"virtual", &CmdProxy::VirtualServer},
@@ -884,6 +885,8 @@ class CmdProxy {
     /* Commands */
     std::string ListCommands(int action);
     /* configuration */
+    std::string free(int action); 
+    std::string config2(int action);
     std::string Hostname(int action); 
     std::string VirtualServer(int action); 
     std::string FirmwareVersion(int action);     

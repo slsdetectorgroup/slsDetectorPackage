@@ -449,6 +449,32 @@ void multiSlsDetector::readConfigurationFile(const std::string &fname) {
     input_file.close();
 }
 
+void multiSlsDetector::readConfigurationFile2(const std::string &fname) {
+    freeSharedMemory();
+    setupMultiDetector();
+    FILE_LOG(logINFO) << "Loading configuration file: " << fname;
+
+    // std::ifstream input_file;
+    // input_file.open(fname.c_str(), std::ios_base::in);
+    // if (!input_file.is_open()) {
+    //     throw RuntimeError("Could not open configuration file " + fname +
+    //                        " for reading");
+    // }
+    // std::string current_line;
+    // while (input_file.good()) {
+    //     getline(input_file, current_line);
+    //     if (current_line.find('#') != std::string::npos) {
+    //         current_line.erase(current_line.find('#'));
+    //     }
+    //     FILE_LOG(logDEBUG1)
+    //         << "current_line after removing comments:\n\t" << current_line;
+    //     if (current_line.length() > 1) {
+    //         multiSlsDetectorClient(current_line, PUT_ACTION, nullptr);
+    //     }
+    // }
+    // input_file.close();
+}
+
 void multiSlsDetector::setGapPixelsinReceiver(bool enable) {
     Parallel(&slsDetector::enableGapPixels, {}, static_cast<int>(enable));
     // update number of channels

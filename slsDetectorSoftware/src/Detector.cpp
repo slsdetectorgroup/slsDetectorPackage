@@ -47,6 +47,10 @@ void Detector::loadConfig(const std::string &fname) {
     pimpl->readConfigurationFile(fname);
 }
 
+void Detector::loadConfig2(const std::string &fname) {
+    pimpl->readConfigurationFile2(fname);
+}
+
 void Detector::loadParameters(const std::string &fname) {
     pimpl->loadParameters(fname);
 }
@@ -94,6 +98,8 @@ Result<defs::detectorType> Detector::getDetectorType(Positions pos) const {
 }
 
 int Detector::size() const { return pimpl->size(); }
+
+bool Detector::empty() const { return pimpl->size() == 0; }
 
 defs::xy Detector::getModuleGeometry() const {
     return pimpl->getNumberOfDetectors();

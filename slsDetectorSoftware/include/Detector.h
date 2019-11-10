@@ -46,6 +46,7 @@ class Detector {
     void freeSharedMemory();
 
     void loadConfig(const std::string &fname);
+    void loadConfig2(const std::string &fname);
 
     void loadParameters(const std::string &fname);
 
@@ -78,6 +79,8 @@ class Detector {
     
     /** Gets the total number of detectors */
     int size() const;
+
+    bool empty() const;
 
     defs::xy getModuleGeometry() const;
 

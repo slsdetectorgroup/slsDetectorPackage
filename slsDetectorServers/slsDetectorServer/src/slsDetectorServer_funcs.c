@@ -3991,9 +3991,9 @@ int check_version(int file_des) {
 		FILE_LOG(logDEBUG1, ("Checking software-firmware compatibility and basic test result\n"));
 
 		// check if firmware check is done
-		if (!isFirmwareCheckDone()) {
+		if (!isInitCheckDone()) {
 			usleep(3 * 1000 * 1000);
-			if (!isFirmwareCheckDone()) {
+			if (!isInitCheckDone()) {
 				ret = FAIL;
 				strcpy(mess,"Firmware Software Compatibility Check (Server Initialization) "
 						"still not done done in server. Unexpected.\n");
@@ -4003,7 +4003,7 @@ int check_version(int file_des) {
 		// check firmware check result
 		if (ret == OK) {
 			char* firmware_message = NULL;
-			if (getFirmwareCheckResult(&firmware_message) == FAIL) {
+			if (getInitResult(&firmware_message) == FAIL) {
 				ret = FAIL;
 				strcpy(mess, firmware_message);
 				FILE_LOG(logERROR,(mess));

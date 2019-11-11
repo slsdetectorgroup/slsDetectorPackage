@@ -16,6 +16,7 @@
 #define HV_DRIVER_FILE_NAME         ("/etc/devlinks/hvdac")
 #define DAC_DRIVER_FILE_NAME        ("/etc/devlinks/dac")
 #define ONCHIP_DAC_DRIVER_FILE_NAME ("/etc/devlinks/chipdac")
+#define CONFIG_FILE                 ("config.txt")
 #define DAC_MAX_MV                  (2048)
 #define ONCHIP_DAC_MAX_VAL			(0x3FF)
 
@@ -60,23 +61,6 @@ enum DACINDEX				        {G2_VREF_H_ADC, /* 0 */		\
         							G2_VCOM_ADC2    /* 15*/		\
 									};  
 #define  DAC_NAMES					"vref_h_adc", "dac_unused", "vb_comp_fe", "vb_comp_adc", "vcom_cds", "vref_restore", "vb_opa_1st", "vref_comp_fe", "vcom_adc1", "vref_prech", "vref_l_adc", "vref_cds", "vb_cs", "vb_opa_fd", "dac_unused2", "vcom_adc2"
-#define DEFAULT_DAC_VALS   			{2099, 		/* 0 (1050 mV) VREF_H_ADC*/ 	\
-									0, 			/* 1 (0 mV) DAC_UNUSED*/ 		\
-									0, 			/* 2 (0 mV) VB_COMP_FE*/   		\
-        							0,			/* 3 (0 mV) VB_COMP_ADC*/  		\
-        							1400, 		/* 4 (700 mV) VCOM_CDS*/   		\
-        							640, 		/* 5 (320 mV) VREF_RESTORE*/	\
-        							0, 			/* 6 (0 mV) VB_OPA_1ST*/    	\
-        							0, 			/* 7 (0 mV) VREF_COMP_FE*/ 		\
-        							1400, 		/* 8 (700 mV) VCOM_ADC1*/  		\
-        							1720, 		/* 9 (860 mV) VREF_PRECH*/ 		\
-        							700, 		/* 10 (350 mV) VREF_L_ADC*/		\
-        							1200, 		/* 11 (600 mV) VREF_CDS*/  		\
-        							2799, 		/* 12 (1400 mV) VB_CS*/   		\
-        							0, 			/* 13 (0 mV) VB_OPA_FD*/  		\
-		  							0,			/* 14 (0 mV) DAC_UNUSED2*/		\
-        							1400 		/* 15 (700 mV) VCOM_ADC2*/		\
-									};
 									
 enum ONCHIP_DACINDEX				{G2_VCHIP_COMP_FE, 		/* 0 */		\
 									G2_VCHIP_OPA_1ST,  		/* 1 */		\
@@ -87,13 +71,6 @@ enum ONCHIP_DACINDEX				{G2_VCHIP_COMP_FE, 		/* 0 */		\
 									};  
 #define  ONCHIP_DAC_NAMES			"vchip_comp_fe", "vchip_opa_1st", "vchip_opa_fd", "vchip_comp_adc", "vchip_ref_comp_fe", "vchip_cs"	
 
-#define DEFAULT_ONCHIP_DAC_VALS 	{0x137, /* 0 G2_VCHIP_COMP_FE*/ 	\
-									0x000, 	/* 1 G2_VCHIP_OPA_1ST*/ 	\
-									0x134, 	/* 2 G2_VCHIP_OPA_FD*/ 		\
-									0x3FF, 	/* 3 G2_VCHIP_COMP_ADC*/ 	\
-									0x100, 	/* 4 G2_VCHIP_REF_COMP_FE*/ \
-									0x0D0 	/* 5 G2_VCHIP_CS*/ 			\
-									};
 
 enum CLKINDEX                       {READOUT_C0, READOUT_C1, SYSTEM_C0, SYSTEM_C1, SYSTEM_C2, SYSTEM_C3, NUM_CLOCKS};
 #define CLK_NAMES					"READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2", "SYSTEM_C3"

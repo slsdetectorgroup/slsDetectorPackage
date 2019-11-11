@@ -31,8 +31,8 @@ typedef struct udpStruct_s {
 
 
 // basic tests
-int			isFirmwareCheckDone();
-int			getFirmwareCheckResult(char** mess);
+int			isInitCheckDone();
+int			getInitResult(char** mess);
 void 		basictests();
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int 		checkType();
@@ -89,6 +89,7 @@ int			setDefaultDacs();
 #endif
 #ifdef GOTTHARD2D
 int			setDefaultOnChipDacs();
+int         readConfigFile();
 #endif
 
 
@@ -122,6 +123,7 @@ void        setGbitReadout();
 int         readConfigFile();
 void        setMasterSlaveConfiguration();
 #endif
+
 
 // parameters - dr, roi
 int 		setDynamicRange(int dr);

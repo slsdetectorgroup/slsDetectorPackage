@@ -368,6 +368,13 @@ void setupDetector() {
 	// defaults
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 	setDefaultDacs();
+
+	// dynamic range
+	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
+	// enable all counters
+	bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_COUNTER_ENA_MSK);
+	bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_COUNTER_ENA_ALL_VAL);
+
 	
 	// Initialization of acquistion parameters
 	setNumFrames(DEFAULT_NUM_FRAMES);
@@ -419,7 +426,45 @@ void resetPeripheral() {
 /* set parameters -  dr, roi */
 
 int setDynamicRange(int dr){
-	return 32; //TODO
+	if (dr > 0) {
+		uint32_t regval = 0;
+		switch(dr) {
+			case 1:
+				regval = CONFIG_DYNAMIC_RANGE_1_VAL;
+				break;
+			case 4:
+				regval = CONFIG_DYNAMIC_RANGE_4_VAL;
+				break;
+			case 16:
+				regval = CONFIG_DYNAMIC_RANGE_16_VAL;
+				break;		
+			case 24:				
+			case 32:
+				regval = CONFIG_DYNAMIC_RANGE_24_VAL;
+				break;	
+			default:
+				FILE_LOG(logERROR, ("Invalid dynamic range %d\n", dr));
+				return -1;		 
+		}
+		// set it
+		bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_DYNAMIC_RANGE_MSK);
+		bus_w(CONFIG_REG, bus_r(CONFIG_REG) | regval);
+	}
+
+	uint32_t regval = bus_r(CONFIG_REG & CONFIG_DYNAMIC_RANGE_MSK);
+	switch(regval) {
+		case CONFIG_DYNAMIC_RANGE_1_VAL:
+			return 1;
+		case CONFIG_DYNAMIC_RANGE_4_VAL:
+			return 4;
+		case CONFIG_DYNAMIC_RANGE_16_VAL:
+			return 16;
+		case CONFIG_DYNAMIC_RANGE_24_VAL:
+			return 32;
+		default:
+			FILE_LOG(logERROR, ("Invalid dynamic range %d read back\n", regval >> CONFIG_DYNAMIC_RANGE_OFST));
+			return -1;	
+	}
 }
 
 

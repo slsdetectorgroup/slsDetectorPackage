@@ -17,6 +17,7 @@
 #define DAC_MAX_MV                  (2048)
 
 /** Default Parameters */
+#define DEFAULT_DYNAMIC_RANGE		(24)
 #define DEFAULT_NUM_FRAMES			(1)
 #define DEFAULT_NUM_CYCLES			(1)
 #define DEFAULT_EXPTIME				(100*1000*1000)		//ns

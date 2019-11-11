@@ -1,0 +1,23 @@
+#onchip dacs        chip index   value
+vchip_comp_fe       -1          0x137
+vchip_opa_1st       -1          0x000
+vchip_opa_fd        -1          0x134
+vchip_comp_adc      -1          0x3FF   
+vchip_ref_comp_fe   -1          0x100
+vchip_cs            -1          0x0D0
+
+#dacs
+vref_h_adc      2099
+vb_comp_fe      0
+vb_comp_adc     0
+vcom_cds        1400
+vref_restore    640
+vb_opa_1st      0
+vref_comp_fe    0
+vcom_adc1       1400
+vref_prech      1720
+vref_l_adc      700
+vref_cds        1200
+vb_cs           2799
+vb_opa_fd       0
+vcom_adc2       1400

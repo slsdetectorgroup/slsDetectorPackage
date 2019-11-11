@@ -139,12 +139,10 @@ void basictests() {
 	udpDetails.srcmac = macadd;
 
 #ifdef VIRTUAL
-	initCheckDone = 1;
 	return;	
 #endif
 	// return if debugflag is not zero, debug mode
 	if (debugflag) {
-		initCheckDone = 1;
 		return;
 	}
 
@@ -153,7 +151,6 @@ void basictests() {
 		strcpy(initErrorMessage, "Cant read versions from FPGA. Please update firmware.\n");
 		FILE_LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
-		initCheckDone = 1;
 		return;
 	}
 
@@ -165,7 +162,6 @@ void basictests() {
 				(long long int)REQUIRED_FIRMWARE_VERSION);
 		FILE_LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
-		initCheckDone = 1;
 		return;
 	}
 
@@ -177,11 +173,9 @@ void basictests() {
 				(long long int)REQUIRED_FIRMWARE_VERSION);
 		FILE_LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
-		initCheckDone = 1;
 		return;
 	}
 	FILE_LOG(logINFO, ("Compatibility - success\n"));
-	initCheckDone = 1;
 }
 
 
@@ -292,27 +286,32 @@ u_int32_t  getDetectorIP() {
 
 void initControlServer() {
 #ifdef VIRTUAL
-	getModuleConfiguration();
-	setupDetector();
-	return;
-#else
-	//Feb and Beb Initializations
-	getModuleConfiguration();
-	Feb_Interface_FebInterface();
-	Feb_Control_FebControl();
-	Feb_Control_Init(master,top,normal, getDetectorNumber());
-	//master of 9M, check high voltage serial communication to blackfin
-	if (master && !normal) {
-		if (Feb_Control_OpenSerialCommunication())
-			;//	Feb_Control_CloseSerialCommunication();
+	if (initError == OK) {
+		getModuleConfiguration();
+		setupDetector();
 	}
-	FILE_LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
-	Beb_Beb(detid);
-	Beb_SetDetectorNumber(getDetectorNumber());
-	FILE_LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
+	initCheckDone = 1;
+	return;
+#else	
+	if (initError == OK) {
+		//Feb and Beb Initializations
+		getModuleConfiguration();
+		Feb_Interface_FebInterface();
+		Feb_Control_FebControl();
+		Feb_Control_Init(master,top,normal, getDetectorNumber());
+		//master of 9M, check high voltage serial communication to blackfin
+		if (master && !normal) {
+			if (Feb_Control_OpenSerialCommunication())
+				;//	Feb_Control_CloseSerialCommunication();
+		}
+		FILE_LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
+		Beb_Beb(detid);
+		Beb_SetDetectorNumber(getDetectorNumber());
+		FILE_LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
 
-
-	setupDetector();
+		setupDetector();
+	}
+	initCheckDone = 1;
 #endif
 }
 

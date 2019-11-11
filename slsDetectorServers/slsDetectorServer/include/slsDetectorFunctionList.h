@@ -89,6 +89,7 @@ int			setDefaultDacs();
 #endif
 #ifdef GOTTHARD2D
 int			setDefaultOnChipDacs();
+int         readConfigFile();
 #endif
 
 
@@ -122,6 +123,7 @@ void        setGbitReadout();
 int         readConfigFile();
 void        setMasterSlaveConfiguration();
 #endif
+
 
 // parameters - dr, roi
 int 		setDynamicRange(int dr);

@@ -38,7 +38,9 @@ int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
 uint32_t clkFrequency[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
-int onChipdacValues[ONCHIP_NDAC][NCHIP + 1] = {0};
+int onChipdacValues[ONCHIP_NDAC][NCHIP] = {0};
+int defaultDacValues[NDAC] = {0};
+int defaultOnChipdacValues[ONCHIP_NDAC][NCHIP] = {0};
 int detPos[2] = {0, 0};
 
 int isInitCheckDone() {
@@ -61,10 +63,8 @@ void basictests() {
 				"Could not map to memory. Dangerous to continue.\n");
 		FILE_LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
-		initCheckDone = 1;
 		return;
     }
-    initCheckDone = 1;
     return;
 #else
 	if (mapCSP0() == FAIL) {
@@ -72,7 +72,6 @@ void basictests() {
 				"Could not map to memory. Dangerous to continue.\n");
 		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
 		initError = FAIL;
-		initCheckDone = 1;
 		return;
     }
 	// does check only if flag is 0 (by default), set by command line
@@ -81,7 +80,6 @@ void basictests() {
 				"Could not pass basic tests of FPGA and bus. Dangerous to continue. (Firmware version:0x%llx) \n", getFirmwareVersion());
 		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
 		initError = FAIL;
-		initCheckDone = 1;
 		return;
 	}
 
@@ -118,7 +116,6 @@ void basictests() {
 
 	// return if flag is not zero, debug mode
 	if (debugflag) {
-		initCheckDone = 1;
 		return;
 	}
 
@@ -129,7 +126,6 @@ void basictests() {
 				"Cant read versions from FPGA. Please update firmware.\n");
 		FILE_LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
-		initCheckDone = 1;
 		return;
 	}
 
@@ -142,7 +138,6 @@ void basictests() {
 				(long long int)requiredFirmwareVersion);
 		FILE_LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
-		initCheckDone = 1;
 		return;
 	}
 
@@ -155,11 +150,10 @@ void basictests() {
 				(long long int)requiredFirmwareVersion);
 		FILE_LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
-		initCheckDone = 1;
 		return;
 	}
 	FILE_LOG(logINFO, ("Compatibility - success\n"));
-	initCheckDone = 1;		
+
 #endif
 }
 
@@ -311,7 +305,10 @@ u_int32_t  getDetectorIP(){
 /* initialization */
 
 void initControlServer(){
-	setupDetector();
+	if (initError == OK) {
+		setupDetector();
+	}
+	initCheckDone = 1;
 }
 
 void initStopServer() {
@@ -347,7 +344,7 @@ void setupDetector() {
 			dacValues[i] = 0;
 		}
 		for (i = 0; i < ONCHIP_NDAC; ++i) {
-			for (j = 0; j < NCHIP + 1; ++j)
+			for (j = 0; j < NCHIP; ++j)
 			onChipdacValues[i][j] = -1;
 		}		
 	}
@@ -368,8 +365,7 @@ void setupDetector() {
 
 	// Default values
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
-	setDefaultDacs();
-	setDefaultOnChipDacs();
+	readConfigFile(); // also sets default dac and on chip dac values 
 	
 	// Initialization of acquistion parameters
 	setNumFrames(DEFAULT_NUM_FRAMES);
@@ -382,10 +378,9 @@ int setDefaultDacs() {
 	int ret = OK;
 	FILE_LOG(logINFOBLUE, ("Setting Default Dac values\n"));
 	{
-		int i = 0;
-		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
-		for(i = 0; i < NDAC; ++i) {
-			setDAC((enum DACINDEX)i,defaultvals[i],0);
+		int idac = 0;
+		for(idac = 0; idac < NDAC; ++idac) {
+			setDAC((enum DACINDEX)idac, defaultDacValues[idac], 0);
 		}
 	}
 	return ret;
@@ -395,13 +390,158 @@ int setDefaultOnChipDacs() {
 	int ret = OK;
 	FILE_LOG(logINFOBLUE, ("Setting Default On chip Dac values\n"));
 	{
-		int i = 0;
-		const int defaultOnChipVals[ONCHIP_NDAC] = DEFAULT_ONCHIP_DAC_VALS;
-		for(i = 0; i < ONCHIP_NDAC; ++i) {
-			setOnChipDAC((enum ONCHIP_DACINDEX)i, -1, defaultOnChipVals[i]);
+		int idac = 0, ichip = 0;
+		for(idac = 0; idac < ONCHIP_NDAC; ++idac) {
+			for(ichip = 0; ichip < NCHIP; ++ichip) {
+				setOnChipDAC((enum ONCHIP_DACINDEX)idac, ichip, defaultOnChipdacValues[idac][ichip]);
+			}
 		}
 	}	
 	return ret;
+}
+
+
+int readConfigFile() {
+
+	if (initError == FAIL) {
+		return initError;
+	}
+
+    FILE* fd = fopen(CONFIG_FILE, "r");
+    if(fd == NULL) {
+		sprintf(initErrorMessage, "Could not open on-board detector server config file [%s].\n", CONFIG_FILE);
+		initError = FAIL;		
+		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+        return FAIL;
+    }
+
+    FILE_LOG(logINFOBLUE, ("Reading config file %s\n", CONFIG_FILE));
+
+    // Initialization
+    const size_t LZ = 256;
+    char line[LZ];
+    memset(line, 0, LZ);
+    char command[LZ];
+
+    // keep reading a line
+    while (fgets(line, LZ, fd)) {
+
+		// ignore comments
+        if (line[0] == '#') {
+			FILE_LOG(logDEBUG1, ("Ignoring Comment\n"));
+            continue;
+		}
+
+		// ignore empty lines
+		if (strlen(line) <= 1) {
+			FILE_LOG(logDEBUG1, ("Ignoring Empty line\n"));
+			continue;
+		}
+
+		FILE_LOG(logDEBUG1, ("Command to process: (size:%d) %s\n", strlen(line), line));
+		memset(command, 0, LZ);
+
+        // vchip command
+        if (!strncmp(line, "vchip_", strlen("vchip_"))) {
+
+			enum ONCHIP_DACINDEX idac = 0;
+			int ichip = -1;
+			int value = 0;
+
+			// cannot scan values
+			if (sscanf(line, "%s %d 0x%x", command, &ichip, &value) != 3) {
+				sprintf(initErrorMessage, "Could not scan on-chip dac commands from on-board server config file. Line:[%s].\n", line);
+				break;
+			}
+
+            if  (!strcmp(command,"vchip_comp_fe")) {
+                idac = G2_VCHIP_COMP_FE;
+            } else if (!strcasecmp(command,"vchip_opa_1st")) {
+                idac = G2_VCHIP_OPA_1ST;
+            } else if (!strcasecmp(command,"vchip_opa_fd")) {
+                idac = G2_VCHIP_OPA_FD;
+            } else if (!strcasecmp(command,"vchip_comp_adc")) {
+                idac = G2_VCHIP_COMP_ADC;
+            } else if (!strcasecmp(command,"vchip_ref_comp_fe")) {
+                idac = G2_VCHIP_REF_COMP_FE;
+            } else if (!strcasecmp(command,"vchip_cs")) {
+                idac = G2_VCHIP_CS;
+            } else {
+				sprintf(initErrorMessage, "Unknown on-chip dac command in on-board server config file. Command:[%s].\n", command);
+                break;
+            }
+
+			// set on chip dac
+			if (setOnChipDAC(idac, ichip, value) == FAIL) {
+				sprintf(initErrorMessage, "Set on-chip dac failed from on-board server config file. Command:[%s].\n", command);
+                break;				
+			}
+        }
+
+        // dac command
+        else {
+
+			enum DACINDEX idac = 0;
+			int value = 0;
+
+			// cannot scan values
+			if (sscanf(line, "%s %d", command, &value) != 2) {
+				sprintf(initErrorMessage, "Could not scan dac commands from on-board server config file. Line:[%s].\n", line);
+				break;
+			}
+
+            if  (!strcmp(command,"vref_h_adc")) {
+                idac = G2_VREF_H_ADC;
+            } else if (!strcasecmp(command,"vb_comp_fe")) {
+                idac = G2_VB_COMP_FE;
+            } else if (!strcasecmp(command,"vb_comp_adc")) {
+                idac = G2_VB_COMP_ADC;
+            } else if (!strcasecmp(command,"vcom_cds")) {
+                idac = G2_VCOM_CDS;
+            } else if (!strcasecmp(command,"vref_restore")) {
+                idac = G2_VREF_RESTORE;
+            } else if (!strcasecmp(command,"vb_opa_1st")) {
+                idac = G2_VB_OPA_1ST;
+            } else if (!strcasecmp(command,"vref_comp_fe")) {
+                idac = G2_VREF_COMP_FE;
+            } else if (!strcasecmp(command,"vcom_adc1")) {
+                idac = G2_VCOM_ADC1;
+            } else if (!strcasecmp(command,"vref_prech")) {
+                idac = G2_VREF_PRECH;
+            } else if (!strcasecmp(command,"vref_l_adc")) {
+                idac = G2_VREF_L_ADC;
+            } else if (!strcasecmp(command,"vref_cds")) {
+                idac = G2_VREF_CDS;
+            } else if (!strcasecmp(command,"vb_cs")) {
+                idac = G2_VB_CS;
+            } else if (!strcasecmp(command,"vb_opa_fd")) {
+                idac = G2_VB_OPA_FD;
+            } else if (!strcasecmp(command,"vcom_adc2")) {
+                idac = G2_VCOM_ADC2;
+            } else {
+				sprintf(initErrorMessage, "Unknown command in on-board server config file. Command:[%s].\n", command);
+                break;
+            }
+
+			// set dac
+			setDAC(idac, value, 0);
+			int retval = getDAC(idac, 0);
+			if (retval != value) {
+				sprintf(initErrorMessage, "Set dac %s failed from on-board server config file. Set %d, got %d.\n", command, value, retval);
+                break;				
+			}
+        }
+		memset(line, 0, LZ);
+    }
+    fclose(fd);
+
+	if (strlen(initErrorMessage)) {
+		initError = FAIL;		
+		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+	} else {
+		FILE_LOG(logINFOBLUE, ("Successfully read config file\n"));
+	}
+    return initError;
 }
 
 
@@ -506,6 +646,8 @@ int	setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val) {
 		FILE_LOG(logERROR, ("Invalid val %d\n", val));
 		return FAIL;			
 	}
+	FILE_LOG(logINFO, ("Setting on chip dac[%d - %s]: 0x%x\n", (int)ind, names[ind], val));
+
 
 	char buffer[2];
 	buffer[1] = ((val & 0xF) << 4) | (((int)ind) & 0xF); // LSB (4 bits) + ADDR (4 bits)
@@ -514,18 +656,36 @@ int	setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val) {
 	if (ASIC_Driver_Set(chipIndex, sizeof(buffer), buffer) == FAIL) {
 		return FAIL;				
 	}
-	onChipdacValues[ind][chipIndex + 1] = val;
+	// all chips
 	if (chipIndex == -1) {
-		int i;
-		for (i = 1; i < NCHIP + 1; ++i) {
-			onChipdacValues[ind][i] = val;
+		int ichip = 0;
+		for (ichip = 0; ichip < NCHIP; ++ichip) {
+			onChipdacValues[ind][ichip] = val;
 		}
+	} 
+	
+	// specific chip
+	else {
+		onChipdacValues[ind][chipIndex] = val;
 	}
 	return OK;
 }
 
 int	getOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex) {
-	return onChipdacValues[ind][chipIndex + 1];
+	// all chips
+	if (chipIndex == -1) {
+		int retval = onChipdacValues[ind][0];
+		int ichip = 0;
+		// check if same value for remaining chips
+		for (ichip = 1; ichip < NCHIP; ++ichip) {
+			if (onChipdacValues[ind][ichip] != retval) {
+				return -1;
+			}
+		}
+		return retval;
+	}
+	// specific chip
+	return onChipdacValues[ind][chipIndex];
 }
 
 void setDAC(enum DACINDEX ind, int val, int mV) {

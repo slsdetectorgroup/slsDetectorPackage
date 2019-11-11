@@ -26,20 +26,22 @@ void ASIC_Driver_SetDefines(char* driverfname) {
 }
 
 int ASIC_Driver_Set (int index, int length, char* buffer) {
-    FILE_LOG(logDEBUG1, ("\tchip index: %d length: %d\n", index, length)); 
- 
-    {
-        FILE_LOG(logDEBUG1, ("\tvalues:\n"));
-        int i;
-        for (i = 0; i < length; ++i) {
-            FILE_LOG(logDEBUG1, ("\t\t0x%02hhx\n", buffer[i]));
-        }
-        FILE_LOG(logDEBUG1, ("\n"));
-    }
-
     char fname[MAX_STR_LENGTH];
     sprintf(fname, "%s%d", ASIC_Driver_DriverFileName, index + 1);
-    FILE_LOG(logDEBUG1, ("fname %s\n",fname));
+    FILE_LOG(logDEBUG1, ("\t[chip index: %d, length: %d, fname: %s]\n", index, length, fname)); 
+    {
+        char printbuffer[2 * length + 15];
+        memset(printbuffer, 0, 2 * length);
+        strcpy(printbuffer, "\t values: [");
+        int i;
+        for (i = 0; i < length; ++i) {
+            char bytes[10]="";
+            sprintf(bytes, "\t0x%02hhx", buffer[i]);
+            strcat(printbuffer, bytes);
+        }
+        strcat(printbuffer, "]");
+        FILE_LOG(logDEBUG1, ("%s\n", printbuffer));
+    }
     
     int fd=open(fname, O_RDWR);
     if (fd == -1) {

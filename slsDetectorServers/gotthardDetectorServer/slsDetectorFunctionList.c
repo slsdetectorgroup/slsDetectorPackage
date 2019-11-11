@@ -73,10 +73,7 @@ void basictests() {
 				"Could not map to memory. Dangerous to continue.\n");
 		FILE_LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
-		initCheckDone = 1;
-		return;
     }
-    initCheckDone = 1;
     return;
 #else
     if (mapCSP0() == FAIL) {
@@ -84,7 +81,6 @@ void basictests() {
 				"Could not map to memory. Dangerous to continue.\n");
 		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
 		initError = FAIL;
-		initCheckDone = 1;
 		return;
     }
 
@@ -94,7 +90,6 @@ void basictests() {
 				"Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
 		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
 		initError = FAIL;
-		initCheckDone = 1;
 		return;
 	}
 
@@ -126,7 +121,6 @@ void basictests() {
 	));
 
 	FILE_LOG(logINFO, ("Basic Tests - success\n"));
-	initCheckDone = 1;
 #endif
 }
 
@@ -343,7 +337,10 @@ u_int32_t getBoardRevision() {
 /* initialization */
 
 void initControlServer(){
-	setupDetector();
+	if (initError == OK) {
+		setupDetector();
+	}
+	initCheckDone = 1;
 }
 
 void initStopServer() {

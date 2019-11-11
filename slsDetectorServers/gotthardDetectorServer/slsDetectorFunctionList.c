@@ -20,9 +20,9 @@ extern udpStruct udpDetails;
 // Variables that will be exported
 int phaseShift = DEFAULT_PHASE_SHIFT;
 
-int firmware_compatibility = OK;
-int firmware_check_done = 0;
-char firmware_message[MAX_STR_LENGTH];
+int initError = OK;
+int initCheckDone = 0;
+char initErrorMessage[MAX_STR_LENGTH];
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
@@ -53,48 +53,48 @@ int slaveadcphase = 0;
 int rsttosw1delay = 2;
 int startacqdelay = 1;
 
-int isFirmwareCheckDone() {
-	return firmware_check_done;
+int isInitCheckDone() {
+	return initCheckDone;
 }
 
-int getFirmwareCheckResult(char** mess) {
-	*mess = firmware_message;
-	return firmware_compatibility;
+int getInitResult(char** mess) {
+	*mess = initErrorMessage;
+	return initError;
 }
 
 void basictests() {
-    firmware_compatibility = OK;
-    firmware_check_done = 0;
-    memset(firmware_message, 0, MAX_STR_LENGTH);
+    initError = OK;
+    initCheckDone = 0;
+    memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
     FILE_LOG(logINFOBLUE, ("******** Gotthard Virtual Server *****************\n"));
     if (mapCSP0() == FAIL) {
-    	strcpy(firmware_message,
+    	strcpy(initErrorMessage,
 				"Could not map to memory. Dangerous to continue.\n");
-		FILE_LOG(logERROR, (firmware_message));
-		firmware_compatibility = FAIL;
-		firmware_check_done = 1;
+		FILE_LOG(logERROR, (initErrorMessage));
+		initError = FAIL;
+		initCheckDone = 1;
 		return;
     }
-    firmware_check_done = 1;
+    initCheckDone = 1;
     return;
 #else
     if (mapCSP0() == FAIL) {
-    	strcpy(firmware_message,
+    	strcpy(initErrorMessage,
 				"Could not map to memory. Dangerous to continue.\n");
-		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
-		firmware_compatibility = FAIL;
-		firmware_check_done = 1;
+		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+		initError = FAIL;
+		initCheckDone = 1;
 		return;
     }
 
     // does check only if flag is 0 (by default), set by command line
 	if (((checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL))) {
-		strcpy(firmware_message,
+		strcpy(initErrorMessage,
 				"Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
-		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
-		firmware_compatibility = FAIL;
-		firmware_check_done = 1;
+		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+		initError = FAIL;
+		initCheckDone = 1;
 		return;
 	}
 
@@ -126,7 +126,7 @@ void basictests() {
 	));
 
 	FILE_LOG(logINFO, ("Basic Tests - success\n"));
-	firmware_check_done = 1;
+	initCheckDone = 1;
 #endif
 }
 

@@ -25,9 +25,9 @@
 extern int debugflag;
 extern udpStruct udpDetails;
 
-int firmware_compatibility = OK;
-int firmware_check_done = 0;
-char firmware_message[MAX_STR_LENGTH];
+int initError = OK;
+int initCheckDone = 0;
+char initErrorMessage[MAX_STR_LENGTH];
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
@@ -43,51 +43,51 @@ int detPos[4] = {0, 0, 0, 0};
 int numUDPInterfaces = 1;
 
 
-int isFirmwareCheckDone() {
-	return firmware_check_done;
+int isInitCheckDone() {
+	return initCheckDone;
 }
 
-int getFirmwareCheckResult(char** mess) {
-	*mess = firmware_message;
-	return firmware_compatibility;
+int getInitResult(char** mess) {
+	*mess = initErrorMessage;
+	return initError;
 }
 
 void basictests() {
-    firmware_compatibility = OK;
-    firmware_check_done = 0;
-    memset(firmware_message, 0, MAX_STR_LENGTH);
+    initError = OK;
+    initCheckDone = 0;
+    memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
     FILE_LOG(logINFOBLUE, ("******** Jungfrau Virtual Server *****************\n"));
     if (mapCSP0() == FAIL) {
-    	strcpy(firmware_message,
+    	strcpy(initErrorMessage,
 				"Could not map to memory. Dangerous to continue.\n");
-		FILE_LOG(logERROR, (firmware_message));
-		firmware_compatibility = FAIL;
-		firmware_check_done = 1;
+		FILE_LOG(logERROR, (initErrorMessage));
+		initError = FAIL;
+		initCheckDone = 1;
 		return;
     }
-    firmware_check_done = 1;
+    initCheckDone = 1;
     return;
 #else
 
 	defineGPIOpins();
 	resetFPGA();
     if (mapCSP0() == FAIL) {
-    	strcpy(firmware_message,
+    	strcpy(initErrorMessage,
 				"Could not map to memory. Dangerous to continue.\n");
-		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
-		firmware_compatibility = FAIL;
-		firmware_check_done = 1;
+		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+		initError = FAIL;
+		initCheckDone = 1;
 		return;
     }
 
     // does check only if flag is 0 (by default), set by command line
 	if ((!debugflag) && ((checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL))) {
-		strcpy(firmware_message,
+		strcpy(initErrorMessage,
 				"Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
-		FILE_LOG(logERROR, ("%s\n\n", firmware_message));
-		firmware_compatibility = FAIL;
-		firmware_check_done = 1;
+		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+		initError = FAIL;
+		initCheckDone = 1;
 		return;
 	}
 
@@ -129,7 +129,7 @@ void basictests() {
 
 	// return if flag is not zero, debug mode
 	if (debugflag) {
-		firmware_check_done = 1;
+		initCheckDone = 1;
 		return;
 	}
 
@@ -137,41 +137,41 @@ void basictests() {
 	//cant read versions
     FILE_LOG(logINFO, ("Testing Firmware-software compatibility:\n"));
 	if(!fwversion || !sw_fw_apiversion){
-		strcpy(firmware_message,
+		strcpy(initErrorMessage,
 				"Cant read versions from FPGA. Please update firmware.\n");
-		FILE_LOG(logERROR, (firmware_message));
-		firmware_compatibility = FAIL;
-		firmware_check_done = 1;
+		FILE_LOG(logERROR, (initErrorMessage));
+		initError = FAIL;
+		initCheckDone = 1;
 		return;
 	}
 
 	//check for API compatibility - old server
 	if(sw_fw_apiversion > requiredFirmwareVersion){
-		sprintf(firmware_message,
+		sprintf(initErrorMessage,
 				"This detector software software version (0x%llx) is incompatible.\n"
 				"Please update detector software (min. 0x%llx) to be compatible with this firmware.\n",
 				(long long int)sw_fw_apiversion,
 				(long long int)requiredFirmwareVersion);
-		FILE_LOG(logERROR, (firmware_message));
-		firmware_compatibility = FAIL;
-		firmware_check_done = 1;
+		FILE_LOG(logERROR, (initErrorMessage));
+		initError = FAIL;
+		initCheckDone = 1;
 		return;
 	}
 
 	//check for firmware compatibility - old firmware
 	if( requiredFirmwareVersion > fwversion) {
-		sprintf(firmware_message,
+		sprintf(initErrorMessage,
 				"This firmware version (0x%llx) is incompatible.\n"
 				"Please update firmware (min. 0x%llx) to be compatible with this server.\n",
 				(long long int)fwversion,
 				(long long int)requiredFirmwareVersion);
-		FILE_LOG(logERROR, (firmware_message));
-		firmware_compatibility = FAIL;
-		firmware_check_done = 1;
+		FILE_LOG(logERROR, (initErrorMessage));
+		initError = FAIL;
+		initCheckDone = 1;
 		return;
 	}
 	FILE_LOG(logINFO, ("Compatibility - success\n"));
-	firmware_check_done = 1;
+	initCheckDone = 1;
 #endif
 }
 

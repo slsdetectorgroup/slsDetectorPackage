@@ -25,9 +25,9 @@ extern int isControlServer;
 extern void getMacAddressinString(char* cmac, int size, uint64_t mac);
 extern void getIpAddressinString(char* cip, uint32_t ip);
 
-int firmware_compatibility = OK;
-int firmware_check_done = 0;
-char firmware_message[MAX_STR_LENGTH];
+int initError = OK;
+int initCheckDone = 0;
+char initErrorMessage[MAX_STR_LENGTH];
 
 
 const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
@@ -92,19 +92,19 @@ int eiger_virtual_detPos[2] = {0, 0};
 
 
 
-int isFirmwareCheckDone() {
-	return firmware_check_done;
+int isInitCheckDone() {
+	return initCheckDone;
 }
 
-int getFirmwareCheckResult(char** mess) {
-	*mess = firmware_message;
-	return firmware_compatibility;
+int getInitResult(char** mess) {
+	*mess = initErrorMessage;
+	return initError;
 }
 
 void basictests() {
-	firmware_compatibility = OK;
-	firmware_check_done = 0;
-	memset(firmware_message, 0, MAX_STR_LENGTH);
+	initError = OK;
+	initCheckDone = 0;
+	memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
 	FILE_LOG(logINFOBLUE, ("************ EIGER Virtual Server *****************\n\n"));
 #endif
@@ -139,49 +139,49 @@ void basictests() {
 	udpDetails.srcmac = macadd;
 
 #ifdef VIRTUAL
-	firmware_check_done = 1;
+	initCheckDone = 1;
 	return;	
 #endif
 	// return if debugflag is not zero, debug mode
 	if (debugflag) {
-		firmware_check_done = 1;
+		initCheckDone = 1;
 		return;
 	}
 
 	//cant read versions
 	if (!fwversion || !sw_fw_apiversion) {
-		strcpy(firmware_message, "Cant read versions from FPGA. Please update firmware.\n");
-		FILE_LOG(logERROR, (firmware_message));
-		firmware_compatibility = FAIL;
-		firmware_check_done = 1;
+		strcpy(initErrorMessage, "Cant read versions from FPGA. Please update firmware.\n");
+		FILE_LOG(logERROR, (initErrorMessage));
+		initError = FAIL;
+		initCheckDone = 1;
 		return;
 	}
 
 	//check for API compatibility - old server
 	if (sw_fw_apiversion > REQUIRED_FIRMWARE_VERSION) {
-		sprintf(firmware_message, "This detector software software version (%lld) is incompatible.\n"
+		sprintf(initErrorMessage, "This detector software software version (%lld) is incompatible.\n"
 				"Please update detector software (min. %lld) to be compatible with this firmware.\n",
 				(long long int)sw_fw_apiversion,
 				(long long int)REQUIRED_FIRMWARE_VERSION);
-		FILE_LOG(logERROR, (firmware_message));
-		firmware_compatibility = FAIL;
-		firmware_check_done = 1;
+		FILE_LOG(logERROR, (initErrorMessage));
+		initError = FAIL;
+		initCheckDone = 1;
 		return;
 	}
 
 	//check for firmware compatibility - old firmware
 	if ( REQUIRED_FIRMWARE_VERSION > fwversion) {
-		sprintf(firmware_message, "This firmware version (%lld) is incompatible.\n"
+		sprintf(initErrorMessage, "This firmware version (%lld) is incompatible.\n"
 				"Please update firmware (min. %lld) to be compatible with this server.\n",
 				(long long int)fwversion,
 				(long long int)REQUIRED_FIRMWARE_VERSION);
-		FILE_LOG(logERROR, (firmware_message));
-		firmware_compatibility = FAIL;
-		firmware_check_done = 1;
+		FILE_LOG(logERROR, (initErrorMessage));
+		initError = FAIL;
+		initCheckDone = 1;
 		return;
 	}
 	FILE_LOG(logINFO, ("Compatibility - success\n"));
-	firmware_check_done = 1;
+	initCheckDone = 1;
 }
 
 

@@ -534,7 +534,7 @@ class Mythen3Data : public GeneralData {
 	/** Constructor */
 	Mythen3Data(){
 		myDetectorType		= slsDetectorDefs::MYTHEN3;
-		nPixelsX 			= (256* 4 * 512);
+		nPixelsX 			= (1280 * 3); // 1280 channels, 3 counters
 		nPixelsY 			= 1;
 		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
 		dataSize 			= 7680;//8192;

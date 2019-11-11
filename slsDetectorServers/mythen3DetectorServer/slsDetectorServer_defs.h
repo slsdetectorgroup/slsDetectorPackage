@@ -43,8 +43,8 @@
 #define BIT16_MASK					(0xFFFF)
 
 /* Enums */
-enum DACINDEX   					{M_CASSH, M_VTH2, M_VRFSH, M_VRFSHNPOL, M_VIPRE_OUT, M_VTH3, M_VTH1, M_VICIN, M_CAS, M_VRF, M_VPH, M_VIPRE, M_VIINSH, M_VPL, M_VTRIM, M_VDCSH};
-#define  DAC_NAMES					"vcassh", "vth2", "vshaper", "vshaperneg", "vipre_out", "vth3", "vth1", "vicin", "vcas", "vpreamp", "vph", "vipre", "viinsh", "vpl", "vtrim", "vdcsh"
+enum DACINDEX   					{M_CASSH, M_VTH2, M_VRFSH, M_VRFSHNPOL, M_VIPRE_OUT, M_VTH3, M_VTH1, M_VICIN, M_CAS, M_VRF, M_VPL, M_VIPRE, M_VIINSH, M_VPH, M_VTRIM, M_VDCSH};
+#define  DAC_NAMES					"vcassh", "vth2", "vshaper", "vshaperneg", "vipre_out", "vth3", "vth1", "vicin", "vcas", "vpreamp", "vpl", "vipre", "viinsh", "vph", "vtrim", "vdcsh"
 #define DEFAULT_DAC_VALS   			{1200,    /* casSh */     \
                             		2800,    /* Vth2 */      \
                             		1280,    /* VrfSh */     \
@@ -55,10 +55,10 @@ enum DACINDEX   					{M_CASSH, M_VTH2, M_VRFSH, M_VRFSHNPOL, M_VIPRE_OUT, M_VTH3
                             		1708,    /* vIcin */     \
                             		1800,    /* cas */       \
                             		1100,    /* Vrf */       \
-                            		1712,    /* VPH */       \
+                            		1100,    /* VPL */       \
                             		2624,    /* vIpre */     \
                             		1708,    /* vIinSh */    \
-                            		1100,    /* VPL */       \
+                            		1712,    /* VPH */       \
                             		2800,    /* vTrim */     \
                             		800      /* VdcSh */     \
                             		};

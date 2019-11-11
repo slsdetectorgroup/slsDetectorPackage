@@ -444,7 +444,7 @@ int setDynamicRange(int dr){
 		bus_w(CONFIG_REG, bus_r(CONFIG_REG) | regval);
 	}
 
-	uint32_t regval = bus_r(CONFIG_REG & CONFIG_DYNAMIC_RANGE_MSK);
+	uint32_t regval = bus_r(CONFIG_REG) & CONFIG_DYNAMIC_RANGE_MSK;
 	switch(regval) {
 		case CONFIG_DYNAMIC_RANGE_1_VAL:
 			return 1;
@@ -775,7 +775,7 @@ uint64_t readPatternWord(int addr) {
         return -1;
     }
 
-    FILE_LOG(logINFORED, ("  Reading Pattern Word (addr:0x%x)\n", addr));
+    FILE_LOG(logINFO, ("  Reading Pattern Word (addr:0x%x)\n", addr));
     uint32_t reg_lsb = PATTERN_STEP0_LSB_REG + addr * REG_OFFSET * 2; // the first word in RAM as base plus the offset of the word to write (addr)
 	uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr * REG_OFFSET * 2;
 

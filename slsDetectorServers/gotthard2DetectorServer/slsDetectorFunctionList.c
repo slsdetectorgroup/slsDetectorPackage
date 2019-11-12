@@ -438,7 +438,7 @@ int readConfigFile() {
 			continue;
 		}
 
-		FILE_LOG(logDEBUG1, ("Command to process: (size:%d) %s\n", strlen(line), line));
+		FILE_LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", strlen(line), strlen(line) -1, line));
 		memset(command, 0, LZ);
 
         // vchip command
@@ -647,7 +647,6 @@ int	setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val) {
 		return FAIL;			
 	}
 	FILE_LOG(logINFO, ("Setting on chip dac[%d - %s]: 0x%x\n", (int)ind, names[ind], val));
-
 
 	char buffer[2];
 	buffer[1] = ((val & 0xF) << 4) | (((int)ind) & 0xF); // LSB (4 bits) + ADDR (4 bits)

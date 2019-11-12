@@ -9,7 +9,7 @@
 #define NCHAN 						(128)
 #define NCHIP 						(10)
 #define NDAC 						(16)
-#define ONCHIP_NDAC 				(6)
+#define ONCHIP_NDAC 				(7)
 #define DYNAMIC_RANGE               (16) 
 #define HV_SOFT_MAX_VOLTAGE         (200)
 #define HV_HARD_MAX_VOLTAGE         (530)
@@ -66,10 +66,11 @@ enum ONCHIP_DACINDEX				{G2_VCHIP_COMP_FE, 		/* 0 */		\
 									G2_VCHIP_OPA_1ST,  		/* 1 */		\
 									G2_VCHIP_OPA_FD,  		/* 2 */		\
         							G2_VCHIP_COMP_ADC, 		/* 3 */		\
-        							G2_VCHIP_REF_COMP_FE,	/* 4 */		\
-        							G2_VCHIP_CS				/* 5 */		\
+									G2_VCHIP_UNUSED, 		/* 4 */		\
+        							G2_VCHIP_REF_COMP_FE,	/* 5 */		\
+        							G2_VCHIP_CS				/* 6 */		\
 									};  
-#define  ONCHIP_DAC_NAMES			"vchip_comp_fe", "vchip_opa_1st", "vchip_opa_fd", "vchip_comp_adc", "vchip_ref_comp_fe", "vchip_cs"	
+#define  ONCHIP_DAC_NAMES			"vchip_comp_fe", "vchip_opa_1st", "vchip_opa_fd", "vchip_comp_adc", "vchip_unused", "vchip_ref_comp_fe", "vchip_cs"	
 
 
 enum CLKINDEX                       {READOUT_C0, READOUT_C1, SYSTEM_C0, SYSTEM_C1, SYSTEM_C2, SYSTEM_C3, NUM_CLOCKS};

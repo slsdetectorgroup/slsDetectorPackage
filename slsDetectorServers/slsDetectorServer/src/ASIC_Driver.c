@@ -32,14 +32,19 @@ int ASIC_Driver_Set (int index, int length, char* buffer) {
     {
         char printbuffer[2 * length + 15];
         memset(printbuffer, 0, 2 * length);
-        strcpy(printbuffer, "\t values: [");
+        strcpy(printbuffer, "\t[values: ");
         int i;
         for (i = 0; i < length; ++i) {
             char bytes[10]="";
-            sprintf(bytes, "\t0x%02hhx", buffer[i]);
+            sprintf(bytes, "0x%02hhx", buffer[i]);
             strcat(printbuffer, bytes);
+            if (i < length - 1) {
+                strcat(printbuffer, "\t");
+            }
         }
-        strcat(printbuffer, "]");
+        int len = strlen(printbuffer);
+        printbuffer[len - 1] = ']';
+        printbuffer[len] = '\0';
         FILE_LOG(logDEBUG1, ("%s\n", printbuffer));
     }
     

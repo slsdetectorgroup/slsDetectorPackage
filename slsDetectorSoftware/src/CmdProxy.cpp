@@ -1017,7 +1017,33 @@ std::string CmdProxy::ClearROI(int action) {
     return os.str();
 }
 
+
 /* Gotthard2 Specific */
+
+std::string CmdProxy::InjectChannel(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[offset] [increment]\n\t[Gotthard2] Inject channels with current source for calibration. Offset is starting channel that is injected, increment determines succeeding channels to be injected." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {                                
+            WrongNumberOfParameters(0);         
+        } 
+        auto t = det->getInjectChannel({det_id});  
+        os << OutString(t) << '\n';     
+    } else if (action == defs::PUT_ACTION) {     
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);  
+        }                                
+        det->setInjectChannel(std::stoi(args[0]), std::stoi(args[1]),{det_id});  
+        os << sls::ToString(args) << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+
 /* CTB Specific */
 
 std::string CmdProxy::Samples(int action) {

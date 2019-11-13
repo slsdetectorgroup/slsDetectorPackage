@@ -775,7 +775,9 @@ class CmdProxy {
                           {"extsig", &CmdProxy::extsig},
                           {"imagetest", &CmdProxy::imagetest},
 
-                          /* Gotthard2 Specific */      
+                          /* Gotthard2 Specific */  
+                          {"inj_ch", &CmdProxy::InjectChannel},
+
                           /* CTB Specific */
                           {"samples", &CmdProxy::Samples},
                           {"asamples", &CmdProxy::asamples},

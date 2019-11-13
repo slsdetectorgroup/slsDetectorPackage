@@ -1102,6 +1102,15 @@ class slsDetector : public virtual slsDetectorDefs {
      * Default is 0 */
     void setImageTestMode(const int value);
 
+
+    /** [Gotthard2] */
+    std::array<int, 2> getInjectChannel();
+
+    /** [Gotthard2] 
+     * @param offsetChannel starting channel to be injected
+     * @param incrementChannel determines succeeding channels to be injected */
+    void setInjectChannel(int offsetChannel, int incrementChannel);
+
     /**
      * Set/get counter bit in detector (Gotthard)
      * @param i is -1 to get, 0 to reset and any other value to set the counter

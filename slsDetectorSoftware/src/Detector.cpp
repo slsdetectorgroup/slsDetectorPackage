@@ -1086,6 +1086,16 @@ void Detector::setImageTestMode(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setImageTestMode, pos, value);
 }
 
+// Gotthard2 Specific
+
+Result<std::array<int, 2>> Detector::getInjectChannel(Positions pos) {
+    return pimpl->Parallel(&slsDetector::getInjectChannel, pos);
+}
+
+void Detector::setInjectChannel(int offsetChannel, int incrementChannel, Positions pos) {
+    pimpl->Parallel(&slsDetector::setInjectChannel, pos, offsetChannel, incrementChannel);
+}
+
 // CTB Specific
 
 Result<int> Detector::getNumberOfAnalogSamples(Positions pos) const {

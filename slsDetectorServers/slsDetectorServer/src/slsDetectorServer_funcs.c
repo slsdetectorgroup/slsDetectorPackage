@@ -296,6 +296,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_PIPELINE:					return "F_GET_PIPELINE";
 	case F_SET_ON_CHIP_DAC:					return "F_SET_ON_CHIP_DAC";
 	case F_GET_ON_CHIP_DAC:					return "F_GET_ON_CHIP_DAC";
+	case F_SET_INJECT_CHANNEL:				return "F_SET_INJECT_CHANNEL";
+	case F_GET_INJECT_CHANNEL:				return "F_GET_INJECT_CHANNEL";
 
 	default:								return "Unknown Function";
 	}
@@ -469,6 +471,8 @@ void function_table() {
 	flist[F_GET_PIPELINE]						= &get_pipeline;	
 	flist[F_SET_ON_CHIP_DAC]					= &set_on_chip_dac;
 	flist[F_GET_ON_CHIP_DAC]					= &get_on_chip_dac;
+	flist[F_SET_INJECT_CHANNEL]					= &set_inject_channel;
+	flist[F_GET_INJECT_CHANNEL]					= &get_inject_channel;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -6145,4 +6149,60 @@ int get_on_chip_dac(int file_des) {
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+int set_inject_channel(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[2] = {-1, -1};
+
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting inject channel: [%d, %d]\n", args[0], args[1]));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		int offset = args[0];
+		int increment = args[1];
+		if (offset < 0 || increment < 1) {
+			ret = FAIL;
+			sprintf(mess, "Could not inject channel. Invalid offset %d or increment %d\n", offset, increment);
+			FILE_LOG(logERROR, (mess));				
+		} else {
+			ret = setInjectChannel(offset, increment); 
+			if (ret == FAIL) {
+				ret = FAIL;
+				sprintf(mess, "Could not inject channel\n", offset, increment);
+				FILE_LOG(logERROR, (mess));					
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_inject_channel(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retvals[2] = {-1, -1};
+
+	FILE_LOG(logDEBUG1, ("Getting injected channels\n"));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else	
+	// get only
+	int offset = -1, increment = -1;
+	getInjectedChannels(&offset, &increment);
+	FILE_LOG(logDEBUG1, ("Get Injected channels: [offset:%d, increment:%d]\n", offset, increment));
+	retvals[0] = offset;
+	retvals[1] = increment;
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
 }

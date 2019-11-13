@@ -875,6 +875,19 @@ class Detector {
 
     /**************************************************
      *                                                *
+     *    Gotthard2 Specific                          *
+     *                                                *
+     * ************************************************/
+    
+    /** [Gotthard2] offset channel, increment channel */
+    Result<std::array<int, 2>> getInjectChannel(Positions pos = {});
+    /** [Gotthard2] 
+     * @param offsetChannel starting channel to be injected
+     * @param incrementChannel determines succeeding channels to be injected */
+    void setInjectChannel(int offsetChannel, int incrementChannel, Positions pos = {});
+
+    /**************************************************
+     *                                                *
      *    CTB Specific                                *
      *                                                *
      * ************************************************/

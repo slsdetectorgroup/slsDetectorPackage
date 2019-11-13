@@ -195,3 +195,5 @@ int set_pipeline(int);
 int get_pipeline(int);
 int set_on_chip_dac(int);
 int get_on_chip_dac(int);
+int set_inject_channel(int);
+int get_inject_channel(int);

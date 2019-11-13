@@ -41,6 +41,8 @@ int dacValues[NDAC] = {0};
 int onChipdacValues[ONCHIP_NDAC][NCHIP] = {0};
 int defaultDacValues[NDAC] = {0};
 int defaultOnChipdacValues[ONCHIP_NDAC][NCHIP] = {0};
+int injectedChannelsOffset = 0;
+int injectedChannelsIncrement = 0;
 int detPos[2] = {0, 0};
 
 int isInitCheckDone() {
@@ -649,6 +651,7 @@ int	setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val) {
 	FILE_LOG(logINFO, ("Setting on chip dac[%d - %s]: 0x%x\n", (int)ind, names[ind], val));
 
 	char buffer[2];
+	memset(buffer, 0, sizeof(buffer));
 	buffer[1] = ((val & 0xF) << 4) | (((int)ind) & 0xF); // LSB (4 bits) + ADDR (4 bits)
 	buffer[0] = (val >> 4) & 0x3F; // MSB (6 bits)
 		
@@ -1056,6 +1059,43 @@ int getClockDivider(enum CLKINDEX ind) {
 	}
 	return (getVCOFrequency(ind) / clkFrequency[ind]);
 }
+
+int setInjectChannel(int offset, int increment) {
+	if (offset < 0 || increment  < 1) {
+		FILE_LOG(logERROR, ("Cannot inject channel. Invalid offset %d or increment %d\n", offset, increment));
+		return FAIL;
+	}
+
+	FILE_LOG(logINFO, ("Injecting channels [offset:%d, increment:%d]\n", offset, increment));
+	
+	// 4 bits of padding + 128 bits + 4 bits for address = 136 bits
+	char buffer[17]; 
+	memset(buffer, 0, sizeof(buffer));
+	int startCh = 4; // 4 due to padding
+	int ich = 0; 
+	for (ich = startCh + offset; ich < startCh + NCHAN; ich = ich + increment) {
+		buffer[ich] = 1;
+	}
+
+	for (ich = 0; ich < sizeof(buffer); ++ich) {
+		printf("%d : 0x%02hhx\n", ich, buffer[ich]);
+	}
+
+	//int chipIndex = -1; // for all chips
+	//if (ASIC_Driver_Set(chipIndex, sizeof(buffer), buffer) == FAIL) {
+	//	return FAIL;				
+	//}
+
+	injectedChannelsOffset = offset;
+	injectedChannelsIncrement = increment;
+	return OK;
+}
+
+void getInjectedChannels(int* offset, int* increment) {
+	*offset = injectedChannelsOffset;
+	*increment = injectedChannelsIncrement;
+}
+
 
 
 /* aquisition */

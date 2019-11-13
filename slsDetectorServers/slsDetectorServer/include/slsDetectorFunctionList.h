@@ -448,6 +448,8 @@ int         getVCOFrequency(enum CLKINDEX ind);
 int       	getMaxClockDivider();
 int       	setClockDivider(enum CLKINDEX ind, int val);
 int         getClockDivider(enum CLKINDEX ind);
+int 		setInjectChannel(int offset, int increment);
+void		getInjectedChannels(int* offset, int* increment);
 #endif
 
 

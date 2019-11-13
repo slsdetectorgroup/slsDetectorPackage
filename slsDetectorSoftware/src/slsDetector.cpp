@@ -2345,6 +2345,19 @@ void slsDetector::setImageTestMode(const int value) {
     sendToDetector(F_SET_IMAGE_TEST_MODE, value, nullptr);
 }
 
+std::array<int, 2> slsDetector::getInjectChannel() {
+    std::array<int, 2> retvals{};
+    sendToDetector(F_GET_INJECT_CHANNEL, nullptr, retvals);
+    FILE_LOG(logDEBUG1) << "Inject Channel: [offset: " << retvals[0] << ", increment: " << retvals[1] << ']';
+    return retvals; 
+}
+
+void slsDetector::setInjectChannel(int offsetChannel, int incrementChannel) {
+    int args[]{offsetChannel, incrementChannel};
+    FILE_LOG(logDEBUG1) << "Setting inject channels [offset: " << offsetChannel << ", increment: " << incrementChannel << ']';
+    sendToDetector(F_SET_INJECT_CHANNEL, args, nullptr);
+}
+
 int slsDetector::setCounterBit(int cb) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending counter bit " << cb;

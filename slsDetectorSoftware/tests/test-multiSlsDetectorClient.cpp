@@ -22,7 +22,7 @@ TEST_CASE("inj_ch", "[.cmd][.gotthard2]") {
             REQUIRE(oss.str() == "inj_ch [0, 1]\n");
         }
         REQUIRE_THROWS(multiSlsDetectorClient("inj_ch -1 1", PUT));
-        REQUIRE_THROWS(multiSlsDetectorClient("inj_ch 0 1", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("inj_ch 0 0", PUT));
     } else {
         REQUIRE_THROWS(multiSlsDetectorClient("inj_ch", GET));
     }

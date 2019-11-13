@@ -78,6 +78,11 @@ enum CLKINDEX                       {READOUT_C0, READOUT_C1, SYSTEM_C0, SYSTEM_C
 
 enum PLLINDEX						{READOUT_PLL, SYSTEM_PLL};
 
+
+/** Chip Definitions */
+#define ASIC_CURRENT_INJECT_ADDR	(0x9)
+
+
 /* Struct Definitions */
 typedef struct udp_header_struct {
 	uint32_t	udp_destmac_msb;

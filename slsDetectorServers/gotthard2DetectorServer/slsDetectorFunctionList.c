@@ -1074,17 +1074,18 @@ int setInjectChannel(int offset, int increment) {
 	int startCh = 4; // 4 due to padding
 	int ich = 0; 
 	for (ich = startCh + offset; ich < startCh + NCHAN; ich = ich + increment) {
-		buffer[ich] = 1;
+		int byteIndex = ich / 8;
+		int bitIndex = ich % 8;
+		buffer[byteIndex] |= (1 << (8 - 1 - bitIndex));
 	}
 
-	for (ich = 0; ich < sizeof(buffer); ++ich) {
-		printf("%d : 0x%02hhx\n", ich, buffer[ich]);
-	}
+	// address at the end
+	buffer[16] |= (ASIC_CURRENT_INJECT_ADDR);
 
-	//int chipIndex = -1; // for all chips
-	//if (ASIC_Driver_Set(chipIndex, sizeof(buffer), buffer) == FAIL) {
-	//	return FAIL;				
-	//}
+	int chipIndex = -1; // for all chips
+	if (ASIC_Driver_Set(chipIndex, sizeof(buffer), buffer) == FAIL) {
+		return FAIL;				
+	}
 
 	injectedChannelsOffset = offset;
 	injectedChannelsIncrement = increment;

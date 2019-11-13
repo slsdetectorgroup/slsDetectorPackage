@@ -30,22 +30,12 @@ int ASIC_Driver_Set (int index, int length, char* buffer) {
     sprintf(fname, "%s%d", ASIC_Driver_DriverFileName, index + 1);
     FILE_LOG(logDEBUG1, ("\t[chip index: %d, length: %d, fname: %s]\n", index, length, fname)); 
     {
-        char printbuffer[2 * length + 15];
-        memset(printbuffer, 0, 2 * length);
-        strcpy(printbuffer, "\t[values: ");
+        FILE_LOG(logDEBUG1, ("\t[values: \n"));
         int i;
         for (i = 0; i < length; ++i) {
-            char bytes[10]="";
-            sprintf(bytes, "0x%02hhx", buffer[i]);
-            strcat(printbuffer, bytes);
-            if (i < length - 1) {
-                strcat(printbuffer, "\t");
-            }
+            FILE_LOG(logDEBUG1, ("\t%d: 0x%02hhx\n", i, buffer[i]));
         }
-        int len = strlen(printbuffer);
-        printbuffer[len - 1] = ']';
-        printbuffer[len] = '\0';
-        FILE_LOG(logDEBUG1, ("%s\n", printbuffer));
+        FILE_LOG(logDEBUG1, ("\t]\n"));
     }
     
     int fd=open(fname, O_RDWR);

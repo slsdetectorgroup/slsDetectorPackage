@@ -9,6 +9,26 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("inj_ch", "[.cmd][.gotthard2]") {
+    if (test::type == slsDetectorDefs::GOTTHARD2) {   
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("inj_ch 0 1", PUT, nullptr, oss));
+            REQUIRE(oss.str() == "inj_ch [0, 1]\n");
+        }
+        {
+            std::ostringstream oss;
+            REQUIRE_NOTHROW(multiSlsDetectorClient("inj_ch", GET, nullptr, oss));
+            REQUIRE(oss.str() == "inj_ch [0, 1]\n");
+        }
+        REQUIRE_THROWS(multiSlsDetectorClient("inj_ch -1 1", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("inj_ch 0 1", PUT));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("inj_ch", GET));
+    }
+}
+
+
 TEST_CASE("vchip", "[.cmd]") {
     int prev_val = 0; 
    

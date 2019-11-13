@@ -6177,7 +6177,7 @@ int set_inject_channel(int file_des) {
 			ret = setInjectChannel(offset, increment); 
 			if (ret == FAIL) {
 				ret = FAIL;
-				sprintf(mess, "Could not inject channel\n", offset, increment);
+				strcpy(mess, "Could not inject channel\n");
 				FILE_LOG(logERROR, (mess));					
 			}
 		}

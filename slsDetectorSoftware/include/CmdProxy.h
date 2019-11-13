@@ -925,6 +925,7 @@ class CmdProxy {
     std::string ROI(int action);
     std::string ClearROI(int action);
     /* Gotthard2 Specific */
+    std::string InjectChannel(int action);    
     /* CTB Specific */
     std::string Samples(int action);
     std::string Dbitphase(int action);

@@ -24,6 +24,7 @@ void CmdLineParser::Print() {
 };
 
 void CmdLineParser::Parse(int argc, const char *const argv[]) {
+    Reset();
     executable_ = argv[0]; // first arg is calling binary
     if (argc > 1) {
         std::string s = argv[1];
@@ -36,6 +37,7 @@ void CmdLineParser::Parse(int argc, const char *const argv[]) {
 }
 
 void CmdLineParser::Parse(const std::string &s) {
+    Reset();
     std::istringstream iss(s);
     auto it = std::istream_iterator<std::string>(iss);
     arguments_ =
@@ -107,6 +109,15 @@ std::string CmdLineParser::cli_line() const{
     for (const auto & arg : arguments_)
         os << " " << arg;
     return os.str();
+}
+
+void CmdLineParser::Reset(){
+    multi_id_ = 0;
+    detector_id_ = -1;
+    help_ = false;
+    command_.clear();
+    executable_.clear();
+    arguments_.clear();
 }
 
 } // namespace sls

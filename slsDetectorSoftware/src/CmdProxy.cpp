@@ -209,7 +209,7 @@ std::string CmdProxy::acquire(int action) {
 
         if (det->getUseReceiverFlag().squash(false)) {
                 os << "\nAcquired ";
-                os << det->getFramesCaught();
+                os << det->getFramesCaught() << '\n';
             }
     }
     return os.str();
@@ -229,6 +229,7 @@ std::string CmdProxy::config2(int action){
 
     //put
     if (action == defs::PUT_ACTION){
+        // Detector d(///);
         det->loadConfig2(args[0]);
         os << "Done!\n";
     }

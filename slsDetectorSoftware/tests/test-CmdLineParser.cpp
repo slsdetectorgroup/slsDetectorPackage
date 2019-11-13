@@ -158,6 +158,25 @@ SCENARIO("Parsing strings with -h or --help", "[support]") {
     }
 }
 
+TEST_CASE("Parsing consecutive strings resets not found det id"){
+    CmdLineParser p;
+    p.Parse("1:exptime 0.5");
+    REQUIRE(p.detector_id() == 1);
+    p.Parse("exptime 0.5");
+    REQUIRE(p.detector_id() == -1);
+    p.Parse("3:exptime 0.5");
+    REQUIRE(p.detector_id() == 3);
+
+}
+
+TEST_CASE("Parsing consecutive strings resets not found multi id"){
+    CmdLineParser p;
+    p.Parse("1-1:exptime 0.5");
+    REQUIRE(p.multi_id() == 1);
+    p.Parse("1:exptime 0.5");
+    REQUIRE(p.multi_id() == 0);
+}
+
 TEST_CASE("Parse with no arguments results in no command and default id",
           "[support]") {
     // build up argc and argv

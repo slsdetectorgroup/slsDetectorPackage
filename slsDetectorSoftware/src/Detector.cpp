@@ -1,10 +1,14 @@
 #include "Detector.h"
+#include "CmdLineParser.h"
+#include "CmdProxy.h"
 #include "container_utils.h"
 #include "detectorData.h"
 #include "logger.h"
 #include "multiSlsDetector.h"
 #include "slsDetector.h"
 #include "sls_detector_defs.h"
+
+#include <fstream>
 
 namespace sls {
 
@@ -38,6 +42,7 @@ using defs = slsDetectorDefs;
 
 Detector::Detector(int shm_id)
     : pimpl(sls::make_unique<multiSlsDetector>(shm_id)) {}
+
 Detector::~Detector() = default;
 
 // Configuration
@@ -48,7 +53,41 @@ void Detector::loadConfig(const std::string &fname) {
 }
 
 void Detector::loadConfig2(const std::string &fname) {
-    pimpl->readConfigurationFile2(fname);
+    //
+    std::cout << "load config start!\n";
+    int shm_id = getShmId();
+    freeSharedMemory();
+    pimpl = sls::make_unique<multiSlsDetector>(shm_id);
+    CmdProxy proxy(this);
+    CmdLineParser parser;
+    // proxy.Call("exptime", {"0.5"}, -1, defs::GET_ACTION);
+
+    // new code
+    FILE_LOG(logINFO) << "Loading configuration file: " << fname;
+
+    std::ifstream input_file;
+    input_file.open(fname.c_str(), std::ios_base::in);
+    if (!input_file.is_open()) {
+        throw RuntimeError("Could not open configuration file " + fname +
+                           " for reading");
+    }
+    std::string current_line;
+    while (input_file.good()) {
+        getline(input_file, current_line);
+        if (current_line.find('#') != std::string::npos) {
+            current_line.erase(current_line.find('#'));
+        }
+        FILE_LOG(logDEBUG1)
+            << "current_line after removing comments:\n\t" << current_line;
+        if (current_line.length() > 1) {
+            // multiSlsDetectorClient(current_line, PUT_ACTION, nullptr);
+            parser.Parse(current_line);
+            proxy.Call(parser.command(), parser.arguments(),
+                       parser.detector_id(), defs::PUT_ACTION);
+            // proxy.Call("exptime", {"0.5"}, -1, defs::GET_ACTION);
+        }
+    }
+    input_file.close();
 }
 
 void Detector::loadParameters(const std::string &fname) {
@@ -198,7 +237,8 @@ Result<ns> Detector::getPeriodLeft(Positions pos) const {
 }
 
 Result<defs::speedLevel> Detector::getSpeed(Positions pos) const {
-    auto res = pimpl->Parallel(&slsDetector::getClockDivider, pos, defs::RUN_CLOCK);
+    auto res =
+        pimpl->Parallel(&slsDetector::getClockDivider, pos, defs::RUN_CLOCK);
     Result<defs::speedLevel> speedResult(res.size());
     for (unsigned int i = 0; i < res.size(); ++i) {
         speedResult[i] = static_cast<defs::speedLevel>(res[i]);
@@ -212,11 +252,13 @@ void Detector::setSpeed(defs::speedLevel value, Positions pos) {
 }
 
 Result<int> Detector::getADCPhase(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::ADC_CLOCK, false);
+    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::ADC_CLOCK,
+                           false);
 }
 
 void Detector::setADCPhase(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::ADC_CLOCK, value, false);
+    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::ADC_CLOCK, value,
+                    false);
 }
 
 Result<int> Detector::getMaxADCPhaseShift(Positions pos) const {
@@ -225,11 +267,13 @@ Result<int> Detector::getMaxADCPhaseShift(Positions pos) const {
 }
 
 Result<int> Detector::getADCPhaseInDegrees(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::ADC_CLOCK, true);
+    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::ADC_CLOCK,
+                           true);
 }
 
 void Detector::setADCPhaseInDegrees(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::ADC_CLOCK, value, true);
+    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::ADC_CLOCK, value,
+                    true);
 }
 
 Result<int> Detector::getClockFrequency(int clkIndex, Positions pos) {
@@ -317,11 +361,13 @@ void Detector::setDAC(defs::dacIndex index, int value, bool mV, Positions pos) {
     pimpl->Parallel(&slsDetector::setDAC, pos, value, index, mV);
 }
 
-Result<int> Detector::getOnChipDAC(defs::dacIndex index, int chipIndex, Positions pos) const {
+Result<int> Detector::getOnChipDAC(defs::dacIndex index, int chipIndex,
+                                   Positions pos) const {
     return pimpl->Parallel(&slsDetector::getOnChipDAC, pos, index, chipIndex);
 }
-    
-void Detector::setOnChipDAC(defs::dacIndex index, int chipIndex, int value, Positions pos) {
+
+void Detector::setOnChipDAC(defs::dacIndex index, int chipIndex, int value,
+                            Positions pos) {
     pimpl->Parallel(&slsDetector::setOnChipDAC, pos, index, chipIndex, value);
 }
 
@@ -1157,11 +1203,13 @@ void Detector::setReadoutMode(defs::readoutMode value, Positions pos) {
 }
 
 Result<int> Detector::getDBITPhase(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::DBIT_CLOCK, false);
+    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::DBIT_CLOCK,
+                           false);
 }
 
 void Detector::setDBITPhase(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::DBIT_CLOCK, value, false);
+    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::DBIT_CLOCK, value,
+                    false);
 }
 
 Result<int> Detector::getMaxDBITPhaseShift(Positions pos) const {
@@ -1170,39 +1218,48 @@ Result<int> Detector::getMaxDBITPhaseShift(Positions pos) const {
 }
 
 Result<int> Detector::getDBITPhaseInDegrees(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::DBIT_CLOCK, true);
+    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::DBIT_CLOCK,
+                           true);
 }
 
 void Detector::setDBITPhaseInDegrees(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::DBIT_CLOCK, value, true);
+    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::DBIT_CLOCK, value,
+                    true);
 }
 
 Result<int> Detector::getADCClock(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockFrequency, pos, defs::ADC_CLOCK);
+    return pimpl->Parallel(&slsDetector::getClockFrequency, pos,
+                           defs::ADC_CLOCK);
 }
 
 void Detector::setADCClock(int value_in_MHz, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockFrequency, pos, defs::ADC_CLOCK, value_in_MHz);
+    pimpl->Parallel(&slsDetector::setClockFrequency, pos, defs::ADC_CLOCK,
+                    value_in_MHz);
 }
 
 Result<int> Detector::getDBITClock(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockFrequency, pos, defs::DBIT_CLOCK);
+    return pimpl->Parallel(&slsDetector::getClockFrequency, pos,
+                           defs::DBIT_CLOCK);
 }
 
 void Detector::setDBITClock(int value_in_MHz, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockFrequency, pos, defs::DBIT_CLOCK, value_in_MHz);
+    pimpl->Parallel(&slsDetector::setClockFrequency, pos, defs::DBIT_CLOCK,
+                    value_in_MHz);
 }
 
 Result<int> Detector::getRUNClock(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockFrequency, pos, defs::RUN_CLOCK);
+    return pimpl->Parallel(&slsDetector::getClockFrequency, pos,
+                           defs::RUN_CLOCK);
 }
 
 void Detector::setRUNClock(int value_in_MHz, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockFrequency, pos, defs::RUN_CLOCK, value_in_MHz);
+    pimpl->Parallel(&slsDetector::setClockFrequency, pos, defs::RUN_CLOCK,
+                    value_in_MHz);
 }
 
 Result<int> Detector::getSYNCClock(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockFrequency, pos, defs::SYNC_CLOCK);
+    return pimpl->Parallel(&slsDetector::getClockFrequency, pos,
+                           defs::SYNC_CLOCK);
 }
 
 Result<int> Detector::getADCPipeline(Positions pos) const {

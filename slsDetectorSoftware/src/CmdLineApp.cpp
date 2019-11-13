@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
 
     // If we called sls_detector_acquire, add the acquire command
     if (action == slsDetectorDefs::READOUT_ACTION)
-        parser.setCommand("acquire2");
+        parser.setCommand("acquire");
 
     if (parser.isHelp())
         action = slsDetectorDefs::HELP_ACTION;

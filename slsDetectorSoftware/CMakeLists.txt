@@ -52,7 +52,7 @@ set_target_properties(slsDetectorShared PROPERTIES
 
 
 
-# Loop over two lists to generate command line binaries
+# Loop over list to generate command line binaries
 set(bin_names "sls_detector_put" 
           "sls_detector_get" 
           "sls_detector_acquire" 

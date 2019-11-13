@@ -26,7 +26,6 @@
 #include "ctbAdcs.h"
 #include "ctbDefs.h"
 #include "Detector.h"
-#include "slsDetectorCommand.h"
 
 using namespace std;
 

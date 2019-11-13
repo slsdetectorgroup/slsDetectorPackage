@@ -1399,7 +1399,45 @@ void Detector::setLEDEnable(bool enable, Positions pos) {
 // Pattern
 
 void Detector::savePattern(const std::string &fname) {
-    pimpl->savePattern(fname);
+    std::ofstream outfile;
+    outfile.open(fname.c_str(), std::ios_base::out);
+    if (!outfile.is_open()) {
+        throw RuntimeError("Could not create file to save pattern");
+    }
+    // get pattern limits
+    auto r = pimpl->Parallel(&slsDetector::setPatternLoopAddresses, {}, -1, -1, -1)
+                 .tsquash("Inconsistent pattern limits");
+
+    CmdProxy proxy(this);
+    // pattern words
+    for (int i = r[0]; i <= r[1]; ++i) {
+        std::ostringstream os;
+        os << "0x" << std::hex << i;
+        auto addr = os.str();
+        proxy.Call("patword", {addr}, -1, defs::GET_ACTION, outfile);
+    }
+    // rest of pattern file
+    const std::vector<std::string> commands{
+        "patioctrl", 
+        "patclkctrl",
+        "patlimits",
+        "patloop0",
+        "patnloop0",
+        "patloop1",
+        "patnloop1",
+        "patloop2",
+        "patnloop2",
+        "patwait0",
+        "patwaittime0",
+        "patwait1",
+        "patwaittime1",
+        "patwait2",
+        "patwaittime2",
+        "patmask",
+        "patsetbit",
+    };
+    for (const auto &cmd : commands)
+        proxy.Call(cmd, {}, -1, defs::GET_ACTION, outfile);
 }
 
 void Detector::setPattern(const std::string &fname, Positions pos) {

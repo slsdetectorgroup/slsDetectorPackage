@@ -417,7 +417,7 @@ class CmdProxy {
     explicit CmdProxy(Detector *ptr) : det(ptr) {}
 
     std::string Call(const std::string &command,
-                     const std::vector<std::string> &arguments, int detector_id,
+                     const std::vector<std::string> &arguments, int detector_id = -1,
                      int action = -1, std::ostream &os = std::cout);
 
     bool ReplaceIfDepreciated(std::string &command);
@@ -565,7 +565,7 @@ class CmdProxy {
                           {"settings", &CmdProxy::settings},
 
                           /* acquisition parameters */
-                          {"acquire2", &CmdProxy::acquire},
+                          {"acquire", &CmdProxy::acquire},
                           {"frames", &CmdProxy::frames},                          
                           {"triggers", &CmdProxy::triggers},
                           {"exptime", &CmdProxy::exptime},

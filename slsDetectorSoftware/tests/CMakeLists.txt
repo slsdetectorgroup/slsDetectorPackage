@@ -2,7 +2,8 @@ target_sources(tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/test-SharedMemory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test-slsDetector.cpp
     # ${CMAKE_CURRENT_SOURCE_DIR}/test-multiSlsDetectorClient.cpp
-    # TODO! Enable!
+    # TODO! Migrate tests!
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test-Result.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdLineParser.cpp
 )

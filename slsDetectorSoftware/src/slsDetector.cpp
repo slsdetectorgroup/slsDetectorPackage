@@ -2068,16 +2068,16 @@ void slsDetector::setClientStreamingPort(int port) { shm()->zmqport = port; }
 int slsDetector::getClientStreamingPort() { return shm()->zmqport; }
 
 void slsDetector::setReceiverStreamingPort(int port) {
-    // copy now else it is lost if rx_hostname not set yet
-    shm()->rxZmqport = port;
     int fnum = F_SET_RECEIVER_STREAMING_PORT;
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending receiver streaming port to receiver: "
                         << port;
     if (shm()->useReceiverFlag) {
-        sendToReceiver(fnum, &port, sizeof(port), &retval, sizeof(retval));
+        sendToReceiver(fnum, port, retval);
         FILE_LOG(logDEBUG1) << "Receiver streaming port: " << retval;
         shm()->rxZmqport = retval;
+    } else {
+        shm()->rxZmqport = port;
     }
 }
 
@@ -2098,11 +2098,10 @@ void slsDetector::setReceiverStreamingIP(const sls::IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid receiver zmq ip address");
     }
-    shm()->rxZmqip = ip;
     
     // if zmqip is empty, update it
     if (shm()->zmqip == 0) {
-        shm()->zmqip = shm()->rxZmqip;
+        shm()->zmqip = ip;
     }
 
     // send to receiver
@@ -2110,6 +2109,8 @@ void slsDetector::setReceiverStreamingIP(const sls::IpAddr ip) {
         FILE_LOG(logDEBUG1)
             << "Sending receiver streaming IP to receiver: " << ip;
         sendToReceiver(F_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
+    } else {
+        shm()->rxZmqip = ip;
     }
 }
 
@@ -2189,13 +2190,13 @@ slsDetector::setAdditionalJsonHeader(const std::string &jsonheader) {
     sls::strcpy_safe(args, jsonheader.c_str());
     FILE_LOG(logDEBUG1) << "Sending additional json header " << args;
 
-    if (!shm()->useReceiverFlag) {
-        sls::strcpy_safe(shm()->rxAdditionalJsonHeader, jsonheader.c_str());
-    } else {
-        sendToReceiver(fnum, args, sizeof(args), retvals, sizeof(retvals));
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(fnum, args, retvals);
         FILE_LOG(logDEBUG1) << "Additional json header: " << retvals;
         memset(shm()->rxAdditionalJsonHeader, 0, MAX_STR_LENGTH);
         sls::strcpy_safe(shm()->rxAdditionalJsonHeader, retvals);
+    } else {
+        sls::strcpy_safe(shm()->rxAdditionalJsonHeader, jsonheader.c_str());
     }
     return shm()->rxAdditionalJsonHeader;
 }
@@ -2205,7 +2206,7 @@ std::string slsDetector::getAdditionalJsonHeader() {
     char retvals[MAX_STR_LENGTH]{};
     FILE_LOG(logDEBUG1) << "Getting additional json header ";
     if (shm()->useReceiverFlag) {
-        sendToReceiver(fnum, nullptr, 0, retvals, sizeof(retvals));
+        sendToReceiver(fnum, nullptr, retvals);
         FILE_LOG(logDEBUG1) << "Additional json header: " << retvals;
         memset(shm()->rxAdditionalJsonHeader, 0, MAX_STR_LENGTH);
         sls::strcpy_safe(shm()->rxAdditionalJsonHeader, retvals);
@@ -2451,7 +2452,7 @@ void slsDetector::setADCEnableMask(uint32_t mask) {
         mask = shm()->adcEnableMask;
         FILE_LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex
                             << mask << std::dec << " in receiver";
-        sendToReceiver(fnum, &mask, sizeof(mask), &retval, sizeof(retval));
+        sendToReceiver(fnum, mask, retval);
     }
 }
 
@@ -2515,9 +2516,11 @@ void slsDetector::setReceiverDbitList(std::vector<int> list) {
                 "Dbit list value must be between 0 and 63\n");
         }
     }
-    shm()->rxDbitList = list;
+    sls::FixedCapacityContainer<int, MAX_RX_DBIT> arg = list;
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_SET_RECEIVER_DBIT_LIST, shm()->rxDbitList, nullptr);
+        sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);
+    } else {
+        shm()->rxDbitList = list;
     }
 }
 
@@ -2533,13 +2536,13 @@ std::vector<int> slsDetector::getReceiverDbitList() const {
 
 int slsDetector::setReceiverDbitOffset(int value) {
     int retval = -1;
-    if (value >= 0)
-        shm()->rxDbitOffset = value;
     FILE_LOG(logDEBUG1) << "Setting digital bit offset in receiver to "
                         << value;
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_RECEIVER_DBIT_OFFSET, value, retval);
         FILE_LOG(logDEBUG1) << "Receiver digital bit offset: " << retval;
+    } else {
+        shm()->rxDbitOffset = value;
     }
     return shm()->rxDbitOffset;
 }
@@ -2565,7 +2568,7 @@ int slsDetector::activate(int enable) {
         retval = -1;
         FILE_LOG(logDEBUG1)
             << "Setting activate flag " << enable << " to receiver";
-        sendToReceiver(fnum, &enable, sizeof(enable), &retval, sizeof(retval));
+        sendToReceiver(fnum, enable, retval);
     }
     return static_cast<int>(shm()->activated);
 }
@@ -2575,10 +2578,11 @@ bool slsDetector::setDeactivatedRxrPaddingMode(int padding) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Deactivated Receiver Padding Enable: " << padding;
     if (shm()->useReceiverFlag) {
-        sendToReceiver(fnum, &padding, sizeof(padding), &retval,
-                       sizeof(retval));
+        sendToReceiver(fnum, padding, retval);
         FILE_LOG(logDEBUG1) << "Deactivated Receiver Padding Enable:" << retval;
         shm()->rxPadDeactivatedModules = static_cast<bool>(retval);
+    } else {
+        shm()->rxPadDeactivatedModules = padding;
     }
     return shm()->rxPadDeactivatedModules;
 }
@@ -2620,7 +2624,7 @@ int slsDetector::enableGapPixels(int val) {
         int retval = -1;
         FILE_LOG(logDEBUG1) << "Sending gap pixels enable to receiver: " << val;
         if (shm()->useReceiverFlag) {
-            sendToReceiver(fnum, &val, sizeof(val), &retval, sizeof(retval));
+            sendToReceiver(fnum, val, retval);
             FILE_LOG(logDEBUG1) << "Gap pixels enable to receiver:" << retval;
             shm()->gappixels = retval;
         }
@@ -3152,6 +3156,8 @@ std::string slsDetector::setFilePath(const std::string &path) {
             sendToReceiver(F_SET_RECEIVER_FILE_PATH, args, retvals);
             FILE_LOG(logDEBUG1) << "Receiver file path: " << retvals;
             sls::strcpy_safe(shm()->rxFilePath, retvals);
+        } else {
+            sls::strcpy_safe(shm()->rxFilePath, args);
         }
     }
     return shm()->rxFilePath;
@@ -3169,6 +3175,8 @@ std::string slsDetector::setFileName(const std::string &fname) {
             sendToReceiver(F_SET_RECEIVER_FILE_NAME, args, retvals);
             FILE_LOG(logDEBUG1) << "Receiver file name: " << retvals;
             sls::strcpy_safe(shm()->rxFileName, retvals);
+        } else {
+            sls::strcpy_safe(shm()->rxFileName, args);
         }
     }
     return shm()->rxFileName;
@@ -3183,6 +3191,8 @@ int slsDetector::setFramesPerFile(int n_frames) {
             sendToReceiver(F_SET_RECEIVER_FRAMES_PER_FILE, n_frames, retval);
             FILE_LOG(logDEBUG1) << "Receiver frames per file: " << retval;
             shm()->rxFramesPerFile = retval;
+        } else {
+            shm()->rxFramesPerFile = n_frames;
         }
     }
     return getFramesPerFile();
@@ -3199,6 +3209,8 @@ slsDetector::setReceiverFramesDiscardPolicy(frameDiscardPolicy f) {
         sendToReceiver(F_RECEIVER_DISCARD_POLICY, arg, retval);
         FILE_LOG(logDEBUG1) << "Receiver frames discard policy: " << retval;
         shm()->rxFrameDiscardMode = retval;
+    } else {
+        shm()->rxFrameDiscardMode = f;
     }
     return shm()->rxFrameDiscardMode;
 }
@@ -3210,8 +3222,10 @@ bool slsDetector::setPartialFramesPadding(bool padding) {
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_RECEIVER_PADDING_ENABLE, arg, retval);
         FILE_LOG(logDEBUG1) << "Receiver partial frames enable: " << retval;
+        shm()->rxFramePadding = static_cast<bool>(retval);
+    } else {
+        shm()->rxFramePadding = padding;
     }
-    shm()->rxFramePadding = static_cast<bool>(retval);
     return getPartialFramesPadding();
 }
 
@@ -3228,6 +3242,8 @@ slsDetectorDefs::fileFormat slsDetector::setFileFormat(fileFormat f) {
             sendToReceiver(F_SET_RECEIVER_FILE_FORMAT, arg, retval);
             FILE_LOG(logDEBUG1) << "Receiver file format: " << retval;
             shm()->rxFileFormat = retval;
+        } else {
+            shm()->rxFileFormat = f;
         }
     }
     return getFileFormat();
@@ -3238,13 +3254,15 @@ slsDetectorDefs::fileFormat slsDetector::getFileFormat() const {
 }
 
 int64_t slsDetector::setFileIndex(int64_t file_index) {
-    if (F_SET_RECEIVER_FILE_INDEX >= 0) {
+    if (file_index >= 0) {
         int64_t retval = -1;
         FILE_LOG(logDEBUG1) << "Setting file index to " << file_index;
         if (shm()->useReceiverFlag) {
             sendToReceiver(F_SET_RECEIVER_FILE_INDEX, file_index, retval);
             FILE_LOG(logDEBUG1) << "Receiver file index: " << retval;
             shm()->rxFileIndex = retval;
+        } else {
+            shm()->rxFileIndex = file_index;
         }
     }
     return getFileIndex();
@@ -3311,6 +3329,8 @@ bool slsDetector::setFileWrite(bool value) {
         sendToReceiver(F_ENABLE_RECEIVER_FILE_WRITE, arg, retval);
         FILE_LOG(logDEBUG1) << "Receiver file write enable: " << retval;
         shm()->rxFileWrite = static_cast<bool>(retval);
+    } else {
+        shm()->rxFileWrite = value;
     }
     return getFileWrite();
 }
@@ -3326,6 +3346,8 @@ bool slsDetector::setMasterFileWrite(bool value) {
         sendToReceiver(F_ENABLE_RECEIVER_MASTER_FILE_WRITE, arg, retval);
         FILE_LOG(logDEBUG1) << "Receiver master file write enable: " << retval;
         shm()->rxMasterFileWrite = static_cast<bool>(retval);
+    } else {
+        shm()->rxMasterFileWrite = value;
     }
     return getMasterFileWrite();
 }
@@ -3342,6 +3364,8 @@ bool slsDetector::setFileOverWrite(bool value) {
         sendToReceiver(F_ENABLE_RECEIVER_OVERWRITE, arg, retval);
         FILE_LOG(logDEBUG1) << "Receiver file overwrite enable: " << retval;
         shm()->rxFileOverWrite = static_cast<bool>(retval);
+    } else {
+        shm()->rxFileOverWrite = value;
     }
     return getFileOverWrite();
 }
@@ -3356,6 +3380,8 @@ int slsDetector::setReceiverStreamingFrequency(int freq) {
             sendToReceiver(F_RECEIVER_STREAMING_FREQUENCY, freq, retval);
             FILE_LOG(logDEBUG1) << "Receiver read frequency: " << retval;
             shm()->rxReadFreq = retval;
+        } else {
+            shm()->rxReadFreq = freq;
         }
     }
     return shm()->rxReadFreq;
@@ -3379,6 +3405,8 @@ bool slsDetector::enableDataStreamingFromReceiver(int enable) {
             sendToReceiver(F_STREAM_DATA_FROM_RECEIVER, enable, retval);
             FILE_LOG(logDEBUG1) << "Receiver Data Streaming: " << retval;
             shm()->rxUpstream = static_cast<bool>(retval);
+        } else {
+            shm()->rxUpstream = enable;
         }
     }
     return shm()->rxUpstream;
@@ -3417,6 +3445,8 @@ bool slsDetector::setReceiverSilentMode(int value) {
         sendToReceiver(F_SET_RECEIVER_SILENT_MODE, value, retval);
         FILE_LOG(logDEBUG1) << "Receiver Data Streaming: " << retval;
         shm()->rxSilentMode = static_cast<bool>(retval);
+    } else {
+        shm()->rxSilentMode = value;
     }
     return shm()->rxSilentMode;
 }

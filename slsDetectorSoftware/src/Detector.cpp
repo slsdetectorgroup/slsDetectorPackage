@@ -49,22 +49,16 @@ Detector::~Detector() = default;
 void Detector::freeSharedMemory() { pimpl->freeSharedMemory(); }
 
 void Detector::loadConfig(const std::string &fname) {
-    pimpl->readConfigurationFile(fname);
-}
-
-void Detector::loadConfig2(const std::string &fname) {
-    //
-    std::cout << "load config start!\n";
     int shm_id = getShmId();
     freeSharedMemory();
     pimpl = sls::make_unique<multiSlsDetector>(shm_id);
+    FILE_LOG(logINFO) << "Loading configuration file: " << fname;
+    loadParameters(fname);
+}
+
+void Detector::loadParameters(const std::string &fname) {
     CmdProxy proxy(this);
     CmdLineParser parser;
-    // proxy.Call("exptime", {"0.5"}, -1, defs::GET_ACTION);
-
-    // new code
-    FILE_LOG(logINFO) << "Loading configuration file: " << fname;
-
     std::ifstream input_file;
     input_file.open(fname.c_str(), std::ios_base::in);
     if (!input_file.is_open()) {
@@ -80,18 +74,12 @@ void Detector::loadConfig2(const std::string &fname) {
         FILE_LOG(logDEBUG1)
             << "current_line after removing comments:\n\t" << current_line;
         if (current_line.length() > 1) {
-            // multiSlsDetectorClient(current_line, PUT_ACTION, nullptr);
             parser.Parse(current_line);
             proxy.Call(parser.command(), parser.arguments(),
                        parser.detector_id(), defs::PUT_ACTION);
-            // proxy.Call("exptime", {"0.5"}, -1, defs::GET_ACTION);
         }
     }
     input_file.close();
-}
-
-void Detector::loadParameters(const std::string &fname) {
-    pimpl->loadParameters(fname);
 }
 
 Result<std::string> Detector::getHostname(Positions pos) const {

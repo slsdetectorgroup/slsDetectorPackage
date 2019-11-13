@@ -422,7 +422,6 @@ class CmdProxy {
 
     bool ReplaceIfDepreciated(std::string &command);
     size_t GetFunctionMapSize() const noexcept { return functions.size(); };
-    std::vector<std::string> GetAllCommands();
     std::vector<std::string> GetProxyCommands();
 
   private:
@@ -549,9 +548,8 @@ class CmdProxy {
     FunctionMap functions{{"list", &CmdProxy::ListCommands},
                          
                           /* configuration */
-                          //{"config", &CmdProxy::config},
+                          {"config", &CmdProxy::config},
                           {"free2", &CmdProxy::free},
-                          {"config2", &CmdProxy::config2},
                           {"parameters", &CmdProxy::parameters},
                           {"hostname", &CmdProxy::Hostname},
                           {"virtual", &CmdProxy::VirtualServer},
@@ -886,7 +884,7 @@ class CmdProxy {
     std::string ListCommands(int action);
     /* configuration */
     std::string free(int action); 
-    std::string config2(int action);
+    // std::string config2(int action);
     std::string Hostname(int action); 
     std::string VirtualServer(int action); 
     std::string FirmwareVersion(int action);     

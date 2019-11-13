@@ -3,7 +3,6 @@
 #include "SharedMemory.h"
 #include "file_utils.h"
 #include "network_utils.h"
-#include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
 #include "versionAPI.h"

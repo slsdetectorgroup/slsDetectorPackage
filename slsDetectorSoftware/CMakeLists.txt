@@ -1,8 +1,6 @@
 set(SOURCES
     src/multiSlsDetector.cpp 
-    src/multiSlsDetectorClient.cpp
     src/slsDetectorUsers.cpp 
-    src/slsDetectorCommand.cpp
     src/slsDetector.cpp 
     src/Detector.cpp
     src/CmdProxy.cpp
@@ -18,9 +16,9 @@ add_library(slsDetectorShared SHARED
 )
 
 
-
-check_ipo_supported(RESULT result)
-if(result)
+# Do we have link time optimization?
+check_ipo_supported(RESULT LTO_AVAILABLE)
+if(LTO_AVAILABLE)
     set_property(TARGET slsDetectorShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 
@@ -52,51 +50,20 @@ set_target_properties(slsDetectorShared PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
-# add_subdirectory(slsDetectorClient)
-
-add_executable(sls_detector_get
-    src/sls_detector_client.cpp
-)
-target_link_libraries(sls_detector_get
-   slsProjectOptions
-   slsProjectWarnings
-   slsDetectorShared
-   slsSupportLib
-   pthread
-   ${ZeroMQ_LIBRARIES}
-   rt
-)
-set_target_properties(sls_detector_get PROPERTIES 
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    COMPILE_DEFINITIONS GET=1
-)
-
-add_executable(sls_detector_put
-    src/sls_detector_client.cpp
-)
-target_link_libraries(sls_detector_put
-   slsProjectOptions
-   slsProjectWarnings
-   slsDetectorShared
-   pthread
-   ${ZeroMQ_LIBRARIES}
-   rt
-)
-set_target_properties(sls_detector_put PROPERTIES 
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    COMPILE_DEFINITIONS PUT=1
-)
 
 
-# New command line binaries
-set(list1 "put" "get" "acquire" "help2")
-set(list2 "PUT" "GET" "READOUT" "HELP")
-list(LENGTH list1 len1)
+# Loop over two lists to generate command line binaries
+set(bin_names "sls_detector_put" 
+          "sls_detector_get" 
+          "sls_detector_acquire" 
+          "sls_detector_help")
+set(cmd_name "PUT" "GET" "READOUT" "HELP")
+list(LENGTH bin_names len1)
 math(EXPR len2 "${len1} - 1")
 
 foreach(val RANGE ${len2})
-    list(GET list1 ${val} val1)
-    list(GET list2 ${val} val2)
+    list(GET bin_names ${val} val1)
+    list(GET cmd_name ${val} val2)
     message(STATUS "${val1}  ${val2}")
 
     add_executable(${val1} src/CmdLineApp.cpp)
@@ -110,61 +77,14 @@ foreach(val RANGE ${len2})
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
         COMPILE_DEFINITIONS ${val2}=1
     )
+    if(LTO_AVAILABLE)
+        set_property(TARGET ${val1} PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    endif()
 endforeach()
 
 
+install(TARGETS ${bin_names} DESTINATION bin)
 
-add_executable(sls_detector_acquire
-    src/sls_detector_client.cpp
-)
-target_link_libraries(sls_detector_acquire
-   slsProjectOptions
-   slsProjectWarnings
-   slsDetectorShared
-   pthread
-   ${ZeroMQ_LIBRARIES}
-   rt
-)
-set_target_properties(sls_detector_acquire PROPERTIES 
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    COMPILE_DEFINITIONS READOUT=1
-)
-
-add_executable(sls_detector_help
-    src/sls_detector_client.cpp
-)
-target_link_libraries(sls_detector_help
-   slsProjectOptions
-   slsProjectWarnings
-   slsDetectorShared
-   pthread
-   ${ZeroMQ_LIBRARIES}
-   rt
-)
-set_target_properties(sls_detector_help PROPERTIES 
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    COMPILE_DEFINITIONS HELP=1
-)
-
-check_ipo_supported(RESULT result)
-if(result)
-    set_property(TARGET sls_detector_help PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-    set_property(TARGET sls_detector_get PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-    set_property(TARGET sls_detector_put PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-    set_property(TARGET sls_detector_acquire PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-endif()
-
-install(TARGETS sls_detector_put sls_detector_get sls_detector_acquire sls_detector_help DESTINATION bin)
-
-
-# if(DOXYGEN_FOUND)
-#     add_custom_target(doc
-#         ${DOXYGEN_EXECUTABLE}
-#         ${CMAKE_CURRENT_SOURCE_DIR}/slsDetectorUsers.doxy
-#         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-#         COMMENT "Generating API documentation with Doxygen" VERBATIM
-#     )
-# endif()
 
 if (SLS_USE_TESTS)
     add_subdirectory(tests)

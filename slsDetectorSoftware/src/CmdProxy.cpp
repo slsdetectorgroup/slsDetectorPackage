@@ -3,7 +3,6 @@
 #include "ToString.h"
 #include "container_utils.h"
 #include "logger.h"
-#include "slsDetectorCommand.h"
 #include "sls_detector_defs.h"
 
 #include <iomanip>
@@ -57,13 +56,6 @@ bool CmdProxy::ReplaceIfDepreciated(std::string &command) {
     return false;
 }
 
-std::vector<std::string> CmdProxy::GetAllCommands() {
-    auto commands = slsDetectorCommand(nullptr).getAllCommands();
-    for (const auto &it : functions)
-        commands.emplace_back(it.first);
-    std::sort(begin(commands), end(commands));
-    return commands;
-}
 
 std::vector<std::string> CmdProxy::GetProxyCommands() {
     std::vector<std::string> commands;
@@ -91,11 +83,7 @@ std::string CmdProxy::ListCommands(int action) {
                "list deprecated commands\n";
 
     if (args.size() == 0) {
-        auto commands = slsDetectorCommand(nullptr).getAllCommands();
-        for (const auto &it : functions)
-            commands.emplace_back(it.first);
-        std::sort(begin(commands), end(commands));
-
+        auto commands = GetProxyCommands();
         std::cout << "These " << commands.size() << " commands are available\n";
         for (auto &c : commands)
             std::cout << c << '\n';
@@ -208,33 +196,16 @@ std::string CmdProxy::acquire(int action) {
         det->acquire();
 
         if (det->getUseReceiverFlag().squash(false)) {
-                os << "\nAcquired ";
-                os << det->getFramesCaught() << '\n';
-            }
+            os << "\nAcquired ";
+            os << det->getFramesCaught() << '\n';
+        }
     }
     return os.str();
 }
 
 std::string CmdProxy::free(int action) {
     // This  function is purely for help, actual functionality is in the caller
-    return "\n\tFree detector shared memory";
-}
-
-std::string CmdProxy::config2(int action){
-    std::ostringstream os;
-    os << cmd << ' ';
-    //help
-
-    //get ?
-
-    //put
-    if (action == defs::PUT_ACTION){
-        // Detector d(///);
-        det->loadConfig2(args[0]);
-        os << "Done!\n";
-    }
-
-    return os.str();
+    return "\n\tFree detector shared memory\n";
 }
 
 std::string CmdProxy::FirmwareVersion(int action) {
@@ -472,7 +443,9 @@ std::string CmdProxy::ClockFrequency(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_clock (0-8)] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency of clock n_clock in Hz. Use clkdiv to set frequency." << '\n';   
+        os << "[n_clock (0-8)] [freq_in_Hz]\n\t[Gotthard2][Mythen3] Frequency "
+              "of clock n_clock in Hz. Use clkdiv to set frequency."
+           << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
@@ -502,7 +475,11 @@ std::string CmdProxy::ClockPhase(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_clock (0-8)] [phase] [deg (optional)]\n\t[Gotthard2][Mythen3] Phase of clock n_clock. If deg, then phase shift in degrees, else absolute phase shift values." << '\n';   
+        os << "[n_clock (0-8)] [phase] [deg "
+              "(optional)]\n\t[Gotthard2][Mythen3] Phase of clock n_clock. If "
+              "deg, then phase shift in degrees, else absolute phase shift "
+              "values."
+           << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
@@ -550,8 +527,10 @@ std::string CmdProxy::MaxClockPhaseShift(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_clock (0-8)]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase shift of clock n_clock." << '\n';   
-    }  else {
+        os << "[n_clock (0-8)]\n\t[Gotthard2][Mythen3] Absolute Maximum Phase "
+              "shift of clock n_clock."
+           << '\n';
+    } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
             throw sls::RuntimeError("Not implemented for this detector.");
@@ -575,7 +554,9 @@ std::string CmdProxy::ClockDivider(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_clock (0-8)] [n_divider]\n\t[Gotthard2][Mythen3] Clock Divider of clock n_clock. Must be greater than 1." << '\n';   
+        os << "[n_clock (0-8)] [n_divider]\n\t[Gotthard2][Mythen3] Clock "
+              "Divider of clock n_clock. Must be greater than 1."
+           << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {

@@ -4,9 +4,7 @@
 #include "detectorData.h"
 #include "file_utils.h"
 #include "logger.h"
-#include "multiSlsDetectorClient.h"
 #include "slsDetector.h"
-#include "slsDetectorCommand.h"
 #include "sls_detector_exceptions.h"
 #include "versionAPI.h"
 
@@ -421,58 +419,6 @@ void multiSlsDetector::setNumberOfChannels(const slsDetectorDefs::xy c) {
             "Set the number of channels before setting hostname.");
     }
     multi_shm()->numberOfChannels = c;
-}
-
-void multiSlsDetector::readConfigurationFile(const std::string &fname) {
-    freeSharedMemory();
-    setupMultiDetector();
-    FILE_LOG(logINFO) << "Loading configuration file: " << fname;
-
-    std::ifstream input_file;
-    input_file.open(fname.c_str(), std::ios_base::in);
-    if (!input_file.is_open()) {
-        throw RuntimeError("Could not open configuration file " + fname +
-                           " for reading");
-    }
-    std::string current_line;
-    while (input_file.good()) {
-        getline(input_file, current_line);
-        if (current_line.find('#') != std::string::npos) {
-            current_line.erase(current_line.find('#'));
-        }
-        FILE_LOG(logDEBUG1)
-            << "current_line after removing comments:\n\t" << current_line;
-        if (current_line.length() > 1) {
-            multiSlsDetectorClient(current_line, PUT_ACTION, nullptr);
-        }
-    }
-    input_file.close();
-}
-
-void multiSlsDetector::readConfigurationFile2(const std::string &fname) {
-    freeSharedMemory();
-    setupMultiDetector();
-    FILE_LOG(logINFO) << "Loading configuration file: " << fname;
-
-    // std::ifstream input_file;
-    // input_file.open(fname.c_str(), std::ios_base::in);
-    // if (!input_file.is_open()) {
-    //     throw RuntimeError("Could not open configuration file " + fname +
-    //                        " for reading");
-    // }
-    // std::string current_line;
-    // while (input_file.good()) {
-    //     getline(input_file, current_line);
-    //     if (current_line.find('#') != std::string::npos) {
-    //         current_line.erase(current_line.find('#'));
-    //     }
-    //     FILE_LOG(logDEBUG1)
-    //         << "current_line after removing comments:\n\t" << current_line;
-    //     if (current_line.length() > 1) {
-    //         multiSlsDetectorClient(current_line, PUT_ACTION, nullptr);
-    //     }
-    // }
-    // input_file.close();
 }
 
 void multiSlsDetector::setGapPixelsinReceiver(bool enable) {
@@ -948,66 +894,45 @@ bool multiSlsDetector::enableDataStreamingToClient(int enable) {
 
 
 void multiSlsDetector::savePattern(const std::string &fname) {
-    std::ofstream outfile;
-    outfile.open(fname.c_str(), std::ios_base::out);
-    if (!outfile.is_open()) {
-        throw RuntimeError("Could not create file to save pattern");
-    }
-    // get pattern limits
-    auto r = Parallel(&slsDetector::setPatternLoopAddresses, {}, -1, -1, -1)
-                 .tsquash("Inconsistent pattern limits");
-    // pattern words
-    for (int i = r[0]; i <= r[1]; ++i) {
-        std::ostringstream os;
-        os << "patword 0x" << std::hex << i;
-        std::string cmd = os.str();
-        multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
-    }
-    // rest of pattern file
-    const std::vector<std::string> commands{
-        "patioctrl", 
-        "patclkctrl",
-        "patlimits",
-        "patloop0",
-        "patnloop0",
-        "patloop1",
-        "patnloop1",
-        "patloop2",
-        "patnloop2",
-        "patwait0",
-        "patwaittime0",
-        "patwait1",
-        "patwaittime1",
-        "patwait2",
-        "patwaittime2",
-        "patmask",
-        "patsetbit",
-    };
-    for (const auto &cmd : commands)
-        multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
+    // std::ofstream outfile;
+    // outfile.open(fname.c_str(), std::ios_base::out);
+    // if (!outfile.is_open()) {
+    //     throw RuntimeError("Could not create file to save pattern");
+    // }
+    // // get pattern limits
+    // auto r = Parallel(&slsDetector::setPatternLoopAddresses, {}, -1, -1, -1)
+    //              .tsquash("Inconsistent pattern limits");
+    // // pattern words
+    // for (int i = r[0]; i <= r[1]; ++i) {
+    //     std::ostringstream os;
+    //     os << "patword 0x" << std::hex << i;
+    //     std::string cmd = os.str();
+    //     multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
+    // }
+    // // rest of pattern file
+    // const std::vector<std::string> commands{
+    //     "patioctrl", 
+    //     "patclkctrl",
+    //     "patlimits",
+    //     "patloop0",
+    //     "patnloop0",
+    //     "patloop1",
+    //     "patnloop1",
+    //     "patloop2",
+    //     "patnloop2",
+    //     "patwait0",
+    //     "patwaittime0",
+    //     "patwait1",
+    //     "patwaittime1",
+    //     "patwait2",
+    //     "patwaittime2",
+    //     "patmask",
+    //     "patsetbit",
+    // };
+    // for (const auto &cmd : commands)
+    //     multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
 }
 
-void multiSlsDetector::loadParameters(const std::string &fname) {
-    std::ifstream input_file;
-    input_file.open(fname.c_str(), std::ios_base::in);
-    if (!input_file.is_open()) {
-        throw RuntimeError("Could not open parameter file " + fname +
-                           " for reading");
-    }
-    std::string current_line;
-    while (input_file.good()) {
-        getline(input_file, current_line);
-        if (current_line.find('#') != std::string::npos) {
-            current_line.erase(current_line.find('#'));
-        }
-        FILE_LOG(logDEBUG1)
-            << "current_line after removing comments:\n\t" << current_line;
-        if (current_line.length() > 1) {
-            multiSlsDetectorClient(current_line, PUT_ACTION, this);
-        }    
-    }
-    input_file.close();
-}
 
 
 void multiSlsDetector::registerAcquisitionFinishedCallback(

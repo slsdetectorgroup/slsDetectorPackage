@@ -777,6 +777,7 @@ class CmdProxy {
 
                           /* Gotthard2 Specific */  
                           {"inj_ch", &CmdProxy::InjectChannel},
+                          {"vetophoton", &CmdProxy::VetoPhoton},
 
                           /* CTB Specific */
                           {"samples", &CmdProxy::Samples},
@@ -925,7 +926,8 @@ class CmdProxy {
     std::string ROI(int action);
     std::string ClearROI(int action);
     /* Gotthard2 Specific */
-    std::string InjectChannel(int action);    
+    std::string InjectChannel(int action);   
+    std::string VetoPhoton(int action);        
     /* CTB Specific */
     std::string Samples(int action);
     std::string Dbitphase(int action);

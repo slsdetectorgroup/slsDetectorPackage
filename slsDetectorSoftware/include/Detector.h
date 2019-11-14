@@ -881,10 +881,17 @@ class Detector {
     
     /** [Gotthard2] offset channel, increment channel */
     Result<std::array<int, 2>> getInjectChannel(Positions pos = {});
+
     /** [Gotthard2] 
      * @param offsetChannel starting channel to be injected
      * @param incrementChannel determines succeeding channels to be injected */
-    void setInjectChannel(int offsetChannel, int incrementChannel, Positions pos = {});
+    void setInjectChannel(const int offsetChannel, const int incrementChannel, Positions pos = {});
+
+    /** [Gotthard2] adu values for each channel */
+    Result<std::vector<int>> getVetoPhoton(const int chipIndex, Positions pos = {});
+
+    /** [Gotthard2] energy in keV */
+    void setVetoPhoton(const int chipIndex, const int numPhotons, const int energy, const std::string& fname,  Positions pos = {});    
 
     /**************************************************
      *                                                *

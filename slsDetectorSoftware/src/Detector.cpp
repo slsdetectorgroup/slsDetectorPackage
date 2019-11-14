@@ -1092,9 +1092,17 @@ Result<std::array<int, 2>> Detector::getInjectChannel(Positions pos) {
     return pimpl->Parallel(&slsDetector::getInjectChannel, pos);
 }
 
-void Detector::setInjectChannel(int offsetChannel, int incrementChannel, Positions pos) {
+void Detector::setInjectChannel(const int offsetChannel, const int incrementChannel, Positions pos) {
     pimpl->Parallel(&slsDetector::setInjectChannel, pos, offsetChannel, incrementChannel);
 }
+
+Result<std::vector<int>> Detector::getVetoPhoton(const int chipIndex, Positions pos) {
+    return pimpl->Parallel(&slsDetector::getVetoPhoton, pos, chipIndex);
+}
+
+void Detector::setVetoPhoton(const int chipIndex, const int numPhotons, const int energy, const std::string& fname,  Positions pos) {
+    pimpl->Parallel(&slsDetector::setVetoPhoton, pos, chipIndex, numPhotons, energy, fname);
+}    
 
 // CTB Specific
 

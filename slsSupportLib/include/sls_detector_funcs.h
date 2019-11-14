@@ -179,6 +179,8 @@ enum detFuncs{
 	F_GET_ON_CHIP_DAC,
 	F_SET_INJECT_CHANNEL,
 	F_GET_INJECT_CHANNEL,
+	F_SET_VETO_PHOTON,
+	F_GET_VETO_PHOTON,
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 256, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -422,7 +424,8 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_ON_CHIP_DAC:					return "F_GET_ON_CHIP_DAC";
 	case F_SET_INJECT_CHANNEL:				return "F_SET_INJECT_CHANNEL";
 	case F_GET_INJECT_CHANNEL:				return "F_GET_INJECT_CHANNEL";
-
+	case F_SET_VETO_PHOTON:					return "F_SET_VETO_PHOTON";
+	case F_GET_VETO_PHOTON:					return "F_GET_VETO_PHOTON";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

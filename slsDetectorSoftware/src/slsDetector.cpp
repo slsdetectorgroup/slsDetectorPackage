@@ -2352,11 +2352,128 @@ std::array<int, 2> slsDetector::getInjectChannel() {
     return retvals; 
 }
 
-void slsDetector::setInjectChannel(int offsetChannel, int incrementChannel) {
+void slsDetector::setInjectChannel(const int offsetChannel, const int incrementChannel) {
     int args[]{offsetChannel, incrementChannel};
     FILE_LOG(logDEBUG1) << "Setting inject channels [offset: " << offsetChannel << ", increment: " << incrementChannel << ']';
     sendToDetector(F_SET_INJECT_CHANNEL, args, nullptr);
 }
+
+std::vector<int> slsDetector::getVetoPhoton(const int chipIndex) {
+    int fnum = F_GET_VETO_PHOTON;
+    int ret = FAIL;
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(&chipIndex, sizeof(chipIndex));
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Detector " + std::to_string(detId) +
+                           " returned error: " + std::string(mess));
+    } else {
+        int nch = -1;
+        client.Receive(&nch, sizeof(nch));
+
+        int adus[nch];
+        memset(adus, 0, sizeof(adus));
+        client.Receive(adus, sizeof(adus));
+        std::vector<int> retvals(adus, adus + nch);
+        FILE_LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]: " << nch << " channels\n";
+        if (ret == FORCE_UPDATE) {
+            updateCachedDetectorVariables();
+        }
+        return retvals;
+    } 
+}
+
+void slsDetector::setVetoPhoton(const int chipIndex, const int numPhotons, const int energy, const std::string& fname) {
+    if (shm()->myDetectorType != GOTTHARD2) {
+        throw RuntimeError("Set Veto reference is not implemented for this detector");
+    }
+    if (chipIndex < -1 || chipIndex >= shm()->nChip.x) {
+        throw RuntimeError("Could not set veto photon. Invalid chip index: " + std::to_string(chipIndex));
+    }
+    if (numPhotons < 1) {
+        throw RuntimeError("Could not set veto photon. Invalid number of photons: " + std::to_string(numPhotons));
+    }
+    if (energy < 1) {
+        throw RuntimeError("Could not set veto photon. Invalid energy: " + std::to_string(energy));
+    }    
+    std::ifstream infile(fname.c_str());
+    if (!infile.is_open()) {
+        throw RuntimeError("Could not set veto photon. Could not open file: " + fname);
+    }
+
+    int totalEnergy = numPhotons * energy;
+    int ch = shm()->nChan.x;
+    int gainIndex = 2;
+    int nRead = 0;
+    int value[ch];
+    memset(value, 0, sizeof(value));
+    bool firstLine = true;
+
+    while (infile.good()) {
+        std::string line;
+        getline(infile, line);
+        if (line.find('#') != std::string::npos) {
+            line.erase(line.find('#'));
+        }
+        if (line.length() < 1) {
+            continue;
+        }
+        std::istringstream ss(line);
+        // first line: caluclate gain index from gain thresholds from file
+        if (firstLine) {
+            int g0 = -1, g1 = -1;
+            if (!(ss >> g0 >> g1)) { 
+                throw RuntimeError("Could not set veto photon. Invalid gain thresholds");
+            }
+            // set gain index and gain bit values
+            if (totalEnergy < g0) {
+                gainIndex = 0;
+            } else if (totalEnergy < g1) {
+                gainIndex = 1;
+            }           
+            FILE_LOG(logINFO) << "Setting veto photon. Reading Gain " << gainIndex << " values";
+            firstLine = false;
+        } 
+        // read pedestal and gain values
+        else {
+            double p[3] = {-1, -1, -1}, g[3] = {-1, -1, -1};
+            if (!(ss >> p[0] >> p[1] >> p[2] >> g[0] >> g[1] >> g[2])) { 
+                throw RuntimeError("Could not set veto photon. Invalid pedestal or gain values for channel " + std::to_string(nRead));
+            }
+            value[nRead] = p[gainIndex] + (g[gainIndex] * totalEnergy); //ADU value = pedestal  + gain * total energy
+            ++nRead;
+            if (nRead >= ch) {
+                break;
+            }
+        }
+    }
+    if (nRead != ch) {
+        throw RuntimeError("Could not set veto photon. Insufficient pedestal pr gain values: " + std::to_string(nRead));
+    }
+
+    int fnum = F_SET_VETO_PHOTON;
+    int ret = FAIL;
+    int args[]{chipIndex, gainIndex, ch};
+    FILE_LOG(logDEBUG) << "Sending veto photon value to detector [chip:" << chipIndex << ", G" << gainIndex << "]: " << args;
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(args, sizeof(args));
+    client.Send(value, sizeof(value));    
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Detector " + std::to_string(detId) +
+                           " returned error: " + std::string(mess));
+    } else {
+        if (ret == FORCE_UPDATE) {
+            updateCachedDetectorVariables();
+        }
+    } 
+} 
 
 int slsDetector::setCounterBit(int cb) {
     int retval = -1;

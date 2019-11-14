@@ -9,6 +9,20 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+TEST_CASE("vetophoton", "[.cmd][.gotthard2]") {
+    if (test::type == slsDetectorDefs::GOTTHARD2) {   
+        REQUIRE_THROWS(multiSlsDetectorClient("vetophoton 12 1 39950 examples/gotthard2_veto_photon.txt", PUT)); // invalid chip index
+        REQUIRE_THROWS(multiSlsDetectorClient("vetophoton -1 0 39950 examples/gotthard2_veto_photon.txt", PUT)); // invalid photon number
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vetophoton -1 1 39950 examples/gotthard2_veto_photon.txt", PUT));
+        REQUIRE_THROWS(multiSlsDetectorClient("vetophoton", GET));
+        REQUIRE_NOTHROW(multiSlsDetectorClient("vetophoton -1", GET));
+    } else {
+        REQUIRE_THROWS(multiSlsDetectorClient("vetophoton -1", GET));
+    }
+}
+
+
+
 TEST_CASE("inj_ch", "[.cmd][.gotthard2]") {
     if (test::type == slsDetectorDefs::GOTTHARD2) {   
         {

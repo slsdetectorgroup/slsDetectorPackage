@@ -1109,8 +1109,13 @@ class slsDetector : public virtual slsDetectorDefs {
     /** [Gotthard2] 
      * @param offsetChannel starting channel to be injected
      * @param incrementChannel determines succeeding channels to be injected */
-    void setInjectChannel(int offsetChannel, int incrementChannel);
+    void setInjectChannel(const int offsetChannel, const int incrementChannel);
 
+    /** [Gotthard2] asic input */
+    std::vector<int> getVetoPhoton(const int chipIndex);
+
+    /** [Gotthard2] energy in keV */
+    void setVetoPhoton(const int chipIndex, const int numPhotons, const int energy, const std::string& fname);    
     /**
      * Set/get counter bit in detector (Gotthard)
      * @param i is -1 to get, 0 to reset and any other value to set the counter

@@ -83,8 +83,8 @@ int ALTERA_PLL_C10_GetMaxPhaseShiftStepsofVCO() {
 
 int ALTERA_PLL_C10_Reconfigure(int pllIndex) {
     FILE_LOG(logINFO, ("\tReconfiguring PLL %d\n", pllIndex));
-    uint32_t waitreg = ALTERA_PLL_C10_Wait_Reg[pllIndex];
-    uint32_t waitmsk = ALTERA_PLL_C10_Wait_Msk[pllIndex];
+    //uint32_t waitreg = ALTERA_PLL_C10_Wait_Reg[pllIndex];
+    //uint32_t waitmsk = ALTERA_PLL_C10_Wait_Msk[pllIndex];
 
     // write anything to base address to start reconfiguring
     FILE_LOG(logDEBUG1, ("\tWriting 1 to base address 0x%x to start reconfiguring\n", ALTERA_PLL_C10_BaseAddress[pllIndex]));
@@ -115,8 +115,8 @@ int ALTERA_PLL_C10_Reconfigure(int pllIndex) {
 
 void ALTERA_PLL_C10_ResetPLL (int pllIndex) {
     FILE_LOG(logINFO, ("Resetting PLL %d\n", pllIndex));
-    uint32_t resetreg = ALTERA_PLL_C10_Reset_Reg[pllIndex];
-    uint32_t resetmsk = ALTERA_PLL_C10_Reset_Msk[pllIndex];
+    //uint32_t resetreg = ALTERA_PLL_C10_Reset_Reg[pllIndex];
+    //uint32_t resetmsk = ALTERA_PLL_C10_Reset_Msk[pllIndex];
 
     FILE_LOG(logERROR, ("Reset not implemented yet!\n"));
     /* TODO reset reg and reset mask to be done in firware, so wait instead (above)

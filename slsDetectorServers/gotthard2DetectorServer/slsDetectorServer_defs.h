@@ -19,6 +19,9 @@
 #define CONFIG_FILE                 ("config.txt")
 #define DAC_MAX_MV                  (2048)
 #define ONCHIP_DAC_MAX_VAL			(0x3FF)
+#define ADU_MAX_VAL					(0xFFF)
+#define ADU_MAX_BITS				(12)
+
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES			(1)
@@ -37,7 +40,6 @@
 #define IP_HEADER_SIZE              (20)
 #define READOUT_PLL_VCO_FREQ_HZ     (866666688) // Hz 
 #define SYSTEM_PLL_VCO_FREQ_HZ      (722222240) // Hz
-
 
 /** Other Definitions */
 #define BIT16_MASK					(0xFFFF)
@@ -81,7 +83,13 @@ enum PLLINDEX						{READOUT_PLL, SYSTEM_PLL};
 
 /** Chip Definitions */
 #define ASIC_CURRENT_INJECT_ADDR	(0x9)
+#define ASIC_VETO_REF_ADDR			(0xA)
+#define ASIC_GAIN_MAX_BITS			(2)
+#define ASIC_GAIN_MSK				(0x3)
 
+#define ASIC_G0_VAL					((0x0 & ASIC_GAIN_MSK) << ADU_MAX_BITS)
+#define ASIC_G1_VAL					((0x1 & ASIC_GAIN_MSK) << ADU_MAX_BITS)
+#define ASIC_G2_VAL					((0x3 & ASIC_GAIN_MSK) << ADU_MAX_BITS)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

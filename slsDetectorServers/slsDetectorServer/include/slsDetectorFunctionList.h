@@ -450,6 +450,8 @@ int       	setClockDivider(enum CLKINDEX ind, int val);
 int         getClockDivider(enum CLKINDEX ind);
 int 		setInjectChannel(int offset, int increment);
 void		getInjectedChannels(int* offset, int* increment);
+int			setVetoPhoton(int chipIndex, int gainIndex, int* values); 
+int			getVetoPhoton(int chipIndex, int* retvals);
 #endif
 
 

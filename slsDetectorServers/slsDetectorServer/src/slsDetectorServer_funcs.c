@@ -298,6 +298,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_ON_CHIP_DAC:					return "F_GET_ON_CHIP_DAC";
 	case F_SET_INJECT_CHANNEL:				return "F_SET_INJECT_CHANNEL";
 	case F_GET_INJECT_CHANNEL:				return "F_GET_INJECT_CHANNEL";
+	case F_SET_VETO_PHOTON:					return "F_SET_VETO_PHOTON";
+	case F_GET_VETO_PHOTON:					return "F_GET_VETO_PHOTON";
 
 	default:								return "Unknown Function";
 	}
@@ -473,7 +475,9 @@ void function_table() {
 	flist[F_GET_ON_CHIP_DAC]					= &get_on_chip_dac;
 	flist[F_SET_INJECT_CHANNEL]					= &set_inject_channel;
 	flist[F_GET_INJECT_CHANNEL]					= &get_inject_channel;
-
+	flist[F_SET_VETO_PHOTON]					= &set_veto_photon;
+	flist[F_GET_VETO_PHOTON]					= &get_veto_photon;
+	
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
 		FILE_LOG(logERROR, ("The last detector function enum has reached its limit\nGoodbye!\n"));
@@ -6176,7 +6180,6 @@ int set_inject_channel(int file_des) {
 		} else {
 			ret = setInjectChannel(offset, increment); 
 			if (ret == FAIL) {
-				ret = FAIL;
 				strcpy(mess, "Could not inject channel\n");
 				FILE_LOG(logERROR, (mess));					
 			}
@@ -6205,4 +6208,103 @@ int get_inject_channel(int file_des) {
 	retvals[1] = increment;
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
+}
+
+
+int set_veto_photon(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[3] = {-1, -1, -1};
+
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+		return printSocketReadError();
+	int values[args[2]];
+	if (receiveData(file_des, values, sizeof(values), INT32) < 0)
+		return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting Veto Photon: [chipIndex:%d, G%d, nch:%d]\n", args[0], args[1], args[2]));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		int chipIndex = args[0];
+		int gainIndex = args[1];
+		int numChannels = args[2];
+		if (chipIndex < -1 || chipIndex >= NCHIP) {
+			ret = FAIL;
+			sprintf(mess, "Could not set veto photon. Invalid chip index %d\n", chipIndex);
+			FILE_LOG(logERROR, (mess));				
+		} else if (gainIndex < 0 || gainIndex > 2) {
+			ret = FAIL;
+			sprintf(mess, "Could not set veto photon. Invalid gain index %d\n", gainIndex);
+			FILE_LOG(logERROR, (mess));				
+		} else if (numChannels != NCHAN) {
+			ret = FAIL;
+			sprintf(mess, "Could not set veto photon. Invalid number of channels %d. Expected %d\n", numChannels, NCHAN);
+			FILE_LOG(logERROR, (mess));				
+		} else {
+			int i = 0;
+			for (i = 0; i < NCHAN; ++i) {
+				if (values[i] > ADU_MAX_VAL) {
+					ret = FAIL;
+					sprintf(mess, "Could not set veto photon. Invalid ADU value 0x%x for channel %d, must be 12 bit.\n", i, values[i]);
+					FILE_LOG(logERROR, (mess));		
+					break;				
+				}
+			}
+			if (ret == OK) {
+				ret = setVetoPhoton(chipIndex, gainIndex, values); 
+				if (ret == FAIL) {
+					sprintf(mess, "Could not set veto photon for chip index %d\n", chipIndex);
+					FILE_LOG(logERROR, (mess));					
+				}
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_veto_photon(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = -1;
+	int retvals[NCHAN];
+	memset(retvals, 0, sizeof(retvals));
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+		return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Getting veto photon [chip Index:%d]\n", arg));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else	
+	// get only
+	int chipIndex = arg;
+	if (chipIndex < -1 || chipIndex >= NCHIP) {
+		ret = FAIL;
+		sprintf(mess, "Could not get veto photon. Invalid chip index %d\n", chipIndex);
+		FILE_LOG(logERROR, (mess));				
+	} else {
+		ret = getVetoPhoton(chipIndex, retvals);
+		if (ret == FAIL) {
+			strcpy(mess, "Could not get veto photon for chipIndex -1. Not the same for all chips.\n");
+			FILE_LOG(logERROR, (mess));	
+		} else {
+			int i = 0;
+			for (i = 0; i < NCHAN; ++i) {
+				FILE_LOG(logDEBUG1, ("%d:0x%x\n", i, retvals[i]));
+			}
+		}
+	}
+#endif
+	Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	if (ret != FAIL) {
+		int nch = NCHAN;
+		sendData(file_des, &nch, sizeof(nch), INT32);
+		sendData(file_des, retvals, sizeof(retvals), INT32);
+	}
+	return ret;
 }

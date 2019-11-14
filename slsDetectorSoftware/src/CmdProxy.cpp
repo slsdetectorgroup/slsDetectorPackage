@@ -1035,7 +1035,7 @@ std::string CmdProxy::InjectChannel(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);  
         }                                
-        det->setInjectChannel(std::stoi(args[0]), std::stoi(args[1]),{det_id});  
+        det->setInjectChannel(std::stoi(args[0]), std::stoi(args[1]), {det_id});  
         os << sls::ToString(args) << '\n';
     } else { 
         throw sls::RuntimeError("Unknown action");
@@ -1043,6 +1043,28 @@ std::string CmdProxy::InjectChannel(int action) {
     return os.str();
 }
 
+std::string CmdProxy::VetoPhoton(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_chip] [#photons] [energy in keV] [reference file]\n\t[Gotthard2] Set veto reference for 128 channels for chip n_chip according to referenc file and #photons and energy in keV." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {                                
+            WrongNumberOfParameters(1);         
+        } 
+        auto t = det->getVetoPhoton(std::stoi(args[0]), {det_id});  
+        os << args[0] << ' ' << OutStringHex(t) << '\n';     
+    } else if (action == defs::PUT_ACTION) {     
+        if (args.size() != 4) {
+            WrongNumberOfParameters(4);  
+        }                                
+        det->setVetoPhoton(std::stoi(args[0]), std::stoi(args[1]), std::stoi(args[2]), args[3], {det_id});  
+        os << sls::ToString(args) << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 
 /* CTB Specific */
 

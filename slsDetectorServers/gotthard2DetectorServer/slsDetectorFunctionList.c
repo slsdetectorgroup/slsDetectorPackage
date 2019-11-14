@@ -43,6 +43,7 @@ int defaultDacValues[NDAC] = {0};
 int defaultOnChipdacValues[ONCHIP_NDAC][NCHIP] = {0};
 int injectedChannelsOffset = 0;
 int injectedChannelsIncrement = 0;
+int vetoReference[NCHIP][NCHAN];
 int detPos[2] = {0, 0};
 
 int isInitCheckDone() {
@@ -334,9 +335,13 @@ void setupDetector() {
 	clkFrequency[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
 	clkFrequency[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
 	clkFrequency[SYSTEM_C3] = DEFAULT_SYSTEM_C3;
-
+	detPos[0] = 0;
+	detPos[1] = 0;
 
 	highvoltage = 0;
+	injectedChannelsOffset = 0;
+	injectedChannelsIncrement = 0;
+
 	{
 		int i, j;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
@@ -344,11 +349,19 @@ void setupDetector() {
         }
 		for (i = 0; i < NDAC; ++i) {
 			dacValues[i] = 0;
+			defaultDacValues[i] = 0;
 		}
 		for (i = 0; i < ONCHIP_NDAC; ++i) {
-			for (j = 0; j < NCHIP; ++j)
-			onChipdacValues[i][j] = -1;
-		}		
+			for (j = 0; j < NCHIP; ++j) {
+				onChipdacValues[i][j] = -1;
+				defaultOnChipdacValues[i][j] = -1;
+			}
+		}
+		for	(i = 0; i < NCHIP; ++i) {
+			for (j = 0; j < NCHAN; ++j) {
+				vetoReference[i][j] = 0;
+			}
+		}	
 	}
 
 
@@ -1095,6 +1108,111 @@ int setInjectChannel(int offset, int increment) {
 void getInjectedChannels(int* offset, int* increment) {
 	*offset = injectedChannelsOffset;
 	*increment = injectedChannelsIncrement;
+}
+
+int	setVetoPhoton(int chipIndex, int gainIndex, int* values) {
+	FILE_LOG(logINFO, ("Setting veto photon [chip:%d, G%d]\n", chipIndex, gainIndex));
+
+	// add gain bits
+	{
+		int gainValue = 0;
+		switch (gainIndex) {
+			case 0:
+				gainValue = ASIC_G0_VAL;
+				break;
+			case 1:
+				gainValue = ASIC_G1_VAL;
+				break;
+			case 2:
+				gainValue = ASIC_G2_VAL;
+				break;	
+			default:
+				FILE_LOG(logERROR, ("Unknown gain index %d\n", gainIndex));
+				return FAIL;			
+		}
+		FILE_LOG(logDEBUG1, ("Adding gain bits\n"));
+		int i = 0;
+		for (i = 0; i < NCHAN; ++i) {
+			values[i] |= gainValue;
+			FILE_LOG(logDEBUG1, ("Value %d: 0x%x\n", i, values[i]));
+		}
+	}
+	// create command
+	const int lenAduBits = ASIC_GAIN_MAX_BITS + ADU_MAX_BITS;
+	const int lenBits = lenAduBits * NCHAN;
+	const int len = lenBits / 8;
+	char buffer[len];
+	memset(buffer, 0, len);
+	int iBit = 4; // 4 due to padding
+	int ich = 0; 
+	for (ich = 0; ich < NCHAN; ++ich) {
+		// copy 14 bits for each channel
+		int totalToCopy = lenAduBits;
+		while (totalToCopy > 0) {
+			int byteIndex = iBit / 8;
+			int bitIndex = iBit % 8;
+			// how much to copy in a byte
+			int toCopy = 8 - bitIndex;
+			if (toCopy > totalToCopy) {
+				toCopy = totalToCopy;
+			}
+			int copyMask = (1 << toCopy) - 1;
+			// value pushed out by whats left and masked 
+			int val = (values[ich] >> (totalToCopy - toCopy)) & copyMask;
+			if (toCopy + bitIndex != 8) {
+				val = val << (8 - bitIndex - toCopy);
+			}
+			buffer[byteIndex] |= val;
+			// incrememnt indices
+			iBit += toCopy;
+			totalToCopy -= toCopy;
+		}
+	}
+
+	// address at the end
+	buffer[16] |= (ASIC_VETO_REF_ADDR);
+
+	if (ASIC_Driver_Set(chipIndex, sizeof(buffer), buffer) == FAIL) {
+		return FAIL;				
+	}
+
+	// all chips
+	if (chipIndex == -1) {
+		int ichip = 0;
+		int ichan = 0;
+		for (ichan = 0; ichan < NCHAN; ++ichan) {
+			for (ichip = 0; ichip < NCHIP; ++ichip) {
+				vetoReference[ichip][ichan] = values[ichan];
+			}
+		}
+	} 
+	
+	// specific chip
+	else {
+		int ichan = 0;
+		for (ichan = 0; ichan < NCHAN; ++ichan) {
+			vetoReference[chipIndex][chipIndex] = values[ichan];;
+		}
+	}
+	return OK;
+} 
+
+int getVetoPhoton(int chipIndex, int* retvals) {
+	if (chipIndex == -1) {
+		int i = 0, j = 0;
+		for	(i = 0; i < NCHAN; ++i) {
+			int val = vetoReference[0][i];
+			for (j = 1; j < NCHIP; ++j) {
+				if (vetoReference[j][i] != val) {
+					FILE_LOG(logERROR, ("Get vet photon fail for chipIndex:%d. Different values between [nchip:%d, nchan:%d, value:%d] and [nchip:0, nchan:%d, value:%d]\n", chipIndex, j, i, vetoReference[j][i], i, val));
+					return FAIL;
+				}
+			}
+		}
+		chipIndex = 0;
+	}
+	memcpy((char*)retvals, ((char*)vetoReference) + NCHAN * chipIndex * sizeof(int), sizeof(int) * NCHAN);
+	return OK;
 }
 
 

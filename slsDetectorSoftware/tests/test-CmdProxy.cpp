@@ -4346,150 +4346,155 @@ using sls::Detector;
 //     }
 // }
 
-// TEST_CASE("rx_fifodepth", "[.cmd]") {
-//     int prev_val = 0;
-//     {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("rx_fifodepth", GET,
-//             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("rx_fifodepth ")); prev_val = std::stoi(s);
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_fifodepth 10", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "rx_fifodepth 10\n");
-//     }
+TEST_CASE("rx_fifodepth", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    int prev_val = det.getRxFifoDepth().squash();
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_fifodepth", {"10"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_fifodepth 10\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_fifodepth", {"100"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_fifodepth 100\n");
+    }
 
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_fifodepth 100", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "rx_fifodepth 100\n");
-//     }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_fifodepth", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_fifodepth 100\n");
+    }
+    det.setRxFifoDepth(prev_val);
+}
 
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_fifodepth", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "rx_fifodepth 100\n");
-//     }
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_fifodepth " +
-//     std::to_string(prev_val), PUT));
-// }
+TEST_CASE("frames", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("frames", {"1000"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "frames 1000\n");
+    }
 
-// TEST_CASE("frames", "[.cmd]") {
+    {
+        std::ostringstream oss;
+        proxy.Call("frames", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "frames 1000\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("frames", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "frames 1\n");
+    }
+}
 
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1000", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "frames 1000\n");
-//     }
+TEST_CASE("rx_status", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_start", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_start successful\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_status running\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_stop", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_stop successful\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_status idle\n");
+    }
+}
 
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr, oss));
-//         REQUIRE(oss.str() == "frames 1000\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "frames 1\n");
-//     }
-// }
+TEST_CASE("fwrite", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("fwrite", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fwrite 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fwrite", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fwrite 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fwrite", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fwrite 0\n");
+    }
+}
 
-// TEST_CASE("rx_status", "[.cmd]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_start", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "rx_start successful\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_status", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "rx_status running\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_stop", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "rx_stop successful\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_status", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "rx_status idle\n");
-//     }
-// }
+TEST_CASE("foverwrite", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("foverwrite", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "foverwrite 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("foverwrite", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "foverwrite 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("foverwrite", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "foverwrite 0\n");
+    }
+}
 
-// TEST_CASE("fwrite", "[.cmd]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("fwrite 1", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "fwrite 1\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("fwrite", GET, nullptr, oss));
-//         REQUIRE(oss.str() == "fwrite 1\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("fwrite 0", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "fwrite 0\n");
-//     }
-// }
+TEST_CASE("fmaster", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("fmaster", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fmaster 0\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fmaster", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fmaster 0\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fmaster", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fmaster 1\n");
+    }
+}
 
-// TEST_CASE("foverwrite", "[.cmd]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("foverwrite 1", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "foverwrite 1\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("foverwrite", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "foverwrite 1\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("foverwrite 0", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "foverwrite 0\n");
-//     }
-// }
+TEST_CASE("findex", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("findex", {"57"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "findex 57\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("findex", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "findex 57\n");
+    }
+    {
 
-// TEST_CASE("fmaster", "[.cmd]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("fmaster 0", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "fmaster 0\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("fmaster", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "fmaster 0\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("fmaster 1", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "fmaster 1\n");
-//     }
-// }
-
-// TEST_CASE("findex", "[.cmd]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("findex 57", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "findex 57\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("findex", GET, nullptr, oss));
-//         REQUIRE(oss.str() == "findex 57\n");
-//     }
-//     {
-
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("findex 0", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "findex 0\n");
-//     }
-// }
+        std::ostringstream oss;
+        proxy.Call("findex", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "findex 0\n");
+    }
+}
 
 // TEST_CASE("rx_tcpport", "[.cmd]") {
 //     multiSlsDetector d;
@@ -4513,95 +4518,113 @@ using sls::Detector;
 //     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_tcpport 1954", PUT));
 // }
 
-// TEST_CASE("fname", "[.cmd]") {
+TEST_CASE("fname", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("fname", {"somename"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fname somename\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fname", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fname somename\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fname", {"run"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fname run\n");
+    }
+}
 
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("fname somename", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "fname somename\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("fname", GET, nullptr, oss));
-//         REQUIRE(oss.str() == "fname somename\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("fname run", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "fname run\n");
-//     }
-// }
+TEST_CASE("rx_silent", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_silent", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_silent 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_silent", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_silent 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_silent", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_silent 0\n");
+    }
+}
 
-// TEST_CASE("rx_silent", "[.cmd]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_silent 1", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "rx_silent 1\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_silent", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "rx_silent 1\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_silent 0", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "rx_silent 0\n");
-//     }
-// }
+TEST_CASE("rx_jsonaddheader", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
 
-// // TEST_CASE("rx_jsonaddheader", "[.cmd]") {
-// //     std::ostringstream oss;
-// //     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader
-// \"hej\":\"5\"", PUT, nullptr,
-// //     oss)); REQUIRE(oss.str() == "rx_jsonaddheader \"hej\":\"5\"\n");
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonaddheader", {"\"hej\":\"5\""}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_jsonaddheader \"hej\":\"5\"\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonaddheader", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_jsonaddheader \"hej\":\"5\"\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonaddheader", {"\"\""}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_jsonaddheader \"\"\n");
+    }
+}
 
-// //     std::ostringstream oss;
-// //     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader", GET,
-// nullptr, oss));
-// //     REQUIRE(oss.str() == "rx_jsonaddheader \"hej\":\"5\"\n");
+TEST_CASE("rx_udpsocksize", "[.cmd]") {
+    // TODO! Is the real socket size always twice?
+    Detector det;
+    CmdProxy proxy(&det);
 
-// //     std::ostringstream oss;
-// //     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader \"\"", PUT,
-// nullptr, oss));
-// //     REQUIRE(oss.str() == "rx_jsonaddheader\n");
-// // }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_udpsocksize", {"4857600"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_udpsocksize 4857600\n");
+    }
+    uint64_t val = 0;
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_udpsocksize", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_udpsocksize 4857600\n");
+        std::string s = (oss.str()).erase(0, strlen("rx_udpsocksize "));
+        val = std::stol(s);
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_realudpsocksize", {}, -1, GET, oss);
+        std::string s = (oss.str()).erase(0, strlen("rx_realudpsocksize "));
+        uint64_t rval = std::stol(s);
+        REQUIRE(rval == val * 2);
+    }
+}
 
-// TEST_CASE("rx_udpsocksize", "[.cmd]") {
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_udpsocksize 4857600", PUT));
-//     uint64_t val = 0;
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_udpsocksize", GET,
-//         nullptr, oss)); std::string s = (oss.str()).erase (0,
-//         strlen("rx_udpsocksize ")); val = std::stol(s);
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_realudpsocksize", GET,
-//         nullptr, oss)); std::string s = (oss.str()).erase (0,
-//         strlen("rx_realudpsocksize ")); uint64_t rval = std::stol(s);
-//         REQUIRE(rval == val * 2);
-//     }
-// }
-
-// TEST_CASE("rx_framesperfile", "[.cmd]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_framesperfile 50", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "rx_framesperfile 50\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_framesperfile", GET,
-//         nullptr, oss)); REQUIRE(oss.str() == "rx_framesperfile 50\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_framesperfile 10000", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "rx_framesperfile 10000\n");
-//     }
-// }
+TEST_CASE("rx_framesperfile", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_framesperfile", {"50"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_framesperfile 50\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_framesperfile", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_framesperfile 50\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_framesperfile", {"10000"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_framesperfile 10000\n");
+    }
+}
 
 TEST_CASE("rx_discardpolicy", "[.cmd]") {
     Detector det;

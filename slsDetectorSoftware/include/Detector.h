@@ -891,7 +891,16 @@ class Detector {
     Result<std::vector<int>> getVetoPhoton(const int chipIndex, Positions pos = {});
 
     /** [Gotthard2] energy in keV */
-    void setVetoPhoton(const int chipIndex, const int numPhotons, const int energy, const std::string& fname,  Positions pos = {});    
+    void setVetoPhoton(const int chipIndex, const int numPhotons, const int energy, const std::string& fname, Positions pos = {});  
+
+    /** [Gotthard2]  */
+    void setVetoReference(const int gainIndex, const int value, Positions pos = {}); 
+
+    /** [Gotthard2]  burst mode or continuous mode */
+    void setBurstMode(bool enable, Positions pos = {});
+
+    /** [Gotthard2]  */
+    Result<bool> getBurstMode(Positions pos = {});    
 
     /**************************************************
      *                                                *

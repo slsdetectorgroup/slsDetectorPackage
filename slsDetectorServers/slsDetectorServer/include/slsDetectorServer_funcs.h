@@ -199,3 +199,6 @@ int set_inject_channel(int);
 int get_inject_channel(int);
 int set_veto_photon(int);
 int get_veto_photon(int);
+int set_veto_refernce(int);
+int get_burst_mode(int);
+int set_burst_mode(int);

@@ -44,6 +44,8 @@ int defaultOnChipdacValues[ONCHIP_NDAC][NCHIP] = {0};
 int injectedChannelsOffset = 0;
 int injectedChannelsIncrement = 0;
 int vetoReference[NCHIP][NCHAN];
+uint8_t adcConfiguration[NCHIP][NADC];
+int burstMode = 0;
 int detPos[2] = {0, 0};
 
 int isInitCheckDone() {
@@ -341,6 +343,7 @@ void setupDetector() {
 	highvoltage = 0;
 	injectedChannelsOffset = 0;
 	injectedChannelsIncrement = 0;
+	burstMode = 0;
 
 	{
 		int i, j;
@@ -360,6 +363,7 @@ void setupDetector() {
 		for	(i = 0; i < NCHIP; ++i) {
 			for (j = 0; j < NCHAN; ++j) {
 				vetoReference[i][j] = 0;
+				adcConfiguration[i][j] = 0;
 			}
 		}	
 	}
@@ -380,7 +384,11 @@ void setupDetector() {
 
 	// Default values
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
-	readConfigFile(); // also sets default dac and on chip dac values 
+	 // also sets default dac and on chip dac values 
+	if (readConfigFile() == FAIL) {
+		return;
+	}
+	setBurstMode(1);
 	
 	// Initialization of acquistion parameters
 	setNumFrames(DEFAULT_NUM_FRAMES);
@@ -438,6 +446,8 @@ int readConfigFile() {
     memset(line, 0, LZ);
     char command[LZ];
 
+	int nadcRead = 0;
+
     // keep reading a line
     while (fgets(line, LZ, fd)) {
 
@@ -456,8 +466,86 @@ int readConfigFile() {
 		FILE_LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", strlen(line), strlen(line) -1, line));
 		memset(command, 0, LZ);
 
+		// vetoref command
+		if (!strncmp(line, "vetoref", strlen("vetoref"))) {
+			int igain = 0;
+			int value = 0;
+
+			// cannot scan values
+			if (sscanf(line, "%s %d 0x%x", command, &igain, &value) != 3) {
+				sprintf(initErrorMessage, "Could not scan vetoref commands from on-board server config file. Line:[%s].\n", line);
+				break;
+			}	
+			//validations
+			if (igain < 0 || igain > 2) {
+				sprintf(initErrorMessage, "Could not set veto reference from on-board server config file. Invalid gain index. Line:[%s].\n", line);
+				break;				
+			}
+			//validations
+			if (value > ADU_MAX_VAL) {
+				sprintf(initErrorMessage, "Could not set veto reference from on-board server config file. Invalid value (max 0x%x). Line:[%s].\n", ADU_MAX_VAL, line);
+				break;				
+			}
+			if (setVetoReference(igain, value) == FAIL) {
+				sprintf(initErrorMessage, "Could not set veto reference from on-board server config file. Line:[%s].\n", line);
+				break;					
+			}
+		}
+
+		// confadc command
+		else if (!strncmp(line, "confadc", strlen("confadc"))) {
+			int ichip = -1;
+			int iadc = -1;
+			int value = 0;
+			
+			// cannot scan values
+			if (sscanf(line, "%s %d %d 0x%x", command, &ichip, &iadc, &value) != 4) {
+				sprintf(initErrorMessage, "Could not scan confadc commands from on-board server config file. Line:[%s].\n", line);
+				break;
+			}	
+			//validations
+			if (ichip < -1 ||ichip >= NCHIP) {
+				sprintf(initErrorMessage, "Could not configure adc from on-board server config file. Invalid chip index. Line:[%s].\n", line);
+				break;
+			}
+			if (iadc < -1 || iadc >= NADC) {
+				sprintf(initErrorMessage, "Could not configure adc from on-board server config file. Invalid adc index. Line:[%s].\n", line);
+				break;				
+			}
+			//validations
+			if (value > ASIC_ADC_MAX_VAL) {
+				sprintf(initErrorMessage, "Could not configure adc from on-board server config file. Invalid value (max 0x%x). Line:[%s].\n", ASIC_ADC_MAX_VAL, line);
+				break;				
+			}
+
+			int chipmin = 0;
+			int chipmax = NCHIP;
+			int adcmin = 0;
+			int adcmax = NADC;
+
+			// specific chip
+			if (ichip != -1) {
+				chipmin = ichip;
+				chipmax = ichip + 1;
+			}
+			// specific adc
+			if (iadc != -1) {
+				adcmin = iadc;
+				adcmax = iadc + 1;
+			}
+
+			int i, j;
+			for (i = chipmin; i < chipmax; ++i) {
+				for (j = adcmin; j < adcmax; ++j) {
+					adcConfiguration[i][j] = (uint8_t)value;
+					++nadcRead;
+				}
+			}
+		}
+
+
         // vchip command
-        if (!strncmp(line, "vchip_", strlen("vchip_"))) {
+        else if (!strncmp(line, "vchip_", strlen("vchip_"))) {
 
 			enum ONCHIP_DACINDEX idac = 0;
 			int ichip = -1;
@@ -549,6 +637,20 @@ int readConfigFile() {
 		memset(line, 0, LZ);
     }
     fclose(fd);
+
+	if (!strlen(initErrorMessage)) {
+		if (nadcRead != NADC * NCHIP) {
+			sprintf(initErrorMessage, "Could not configure adc from on-board server config file. Insufficient adcconf commands. Read %d, expected %d\n", nadcRead, NADC * NCHIP);				
+		}
+	}
+	{
+		int i = 0, j = 0;
+		for (i = 0; i < NCHIP; ++i) {
+			for (j = 0; j < NADC; ++j) {
+				FILE_LOG(logDEBUG1, ("adc read %d %d: 0x%02hhx\n", i, j, adcConfiguration[i][j]));
+			}
+		}
+	}
 
 	if (strlen(initErrorMessage)) {
 		initError = FAIL;		
@@ -1110,6 +1212,17 @@ void getInjectedChannels(int* offset, int* increment) {
 	*increment = injectedChannelsIncrement;
 }
 
+int	setVetoReference(int gainIndex, int value) {
+	FILE_LOG(logINFO, ("Setting veto reference [chip:-1, G%d, value:0x%x]\n", gainIndex, value));
+	int vals[NCHAN];
+	memset(vals, 0, sizeof(vals));
+	int ich = 0;
+	for (ich = 0; ich < NCHAN; ++ich) {
+		vals[ich] = value;
+	}
+	return setVetoPhoton(-1, gainIndex, vals);
+}
+
 int	setVetoPhoton(int chipIndex, int gainIndex, int* values) {
 	FILE_LOG(logINFO, ("Setting veto photon [chip:%d, G%d]\n", chipIndex, gainIndex));
 
@@ -1171,7 +1284,7 @@ int	setVetoPhoton(int chipIndex, int gainIndex, int* values) {
 	}
 
 	// address at the end
-	buffer[len -1] |= (ASIC_VETO_REF_ADDR);
+	buffer[len - 1] |= (ASIC_VETO_REF_ADDR);
 
 	if (ASIC_Driver_Set(chipIndex, sizeof(buffer), buffer) == FAIL) {
 		return FAIL;				
@@ -1216,8 +1329,147 @@ int getVetoPhoton(int chipIndex, int* retvals) {
 	return OK;
 }
 
+int configureSingleADCDriver(int chipIndex) {
+	FILE_LOG(logINFO, ("Configuring ADC for %s chips [chipIndex:%d Burst Mode:%d]\n", chipIndex == -1 ? "All" : "Single", chipIndex, burstMode));
+
+	int ind = chipIndex;
+	if (ind == -1) {
+		ind = 0;
+	}
+	uint8_t values[NADC];
+	memcpy(values, adcConfiguration + ind * NADC, NADC);
+
+	// change adc values if continuous mode
+	{
+		int i = 0;
+		for (i = 0; i < NADC; ++i) {
+			if (!burstMode) {
+				values[i] |= ASIC_CONTINUOUS_MODE_MSK;
+			}
+			FILE_LOG(logDEBUG1, ("Value %d: 0x%02hhx\n", i, values[i]));
+		}
+	}
 
 
+	const int lenDataBitsPerADC = ASIC_ADC_MAX_BITS; // 7
+	const int lenBits = lenDataBitsPerADC * NADC; // 224
+	const int padding  = 4; // due to address (4) to make it byte aligned
+	const int lenTotalBits =  padding + lenBits + ASIC_ADDR_MAX_BITS; // 232 
+	const int len = lenTotalBits / 8; // 29
+
+	// assign each bit into 4 + 224  into byte array
+	uint8_t commandBytes[lenTotalBits];
+	memset(commandBytes, 0, sizeof(commandBytes));
+	int offset = padding; // bit offset for commandbytes
+	int ich = 0;
+	for (ich = 0; ich < NADC; ++ich) {
+		// loop through all bits in a value
+		int iBit = 0; 
+		for (iBit = 0; iBit < lenDataBitsPerADC; ++iBit) {
+			commandBytes[offset++] = ((values[ich] >> (lenDataBitsPerADC - 1 - iBit)) & 0x1);
+		}
+	}
+
+	// create command for 4 padding + 224 bits + 4 bits address = 232 bits = 29 bytes
+	char buffer[len];
+	memset(buffer, 0, len);
+	offset = 0;
+	// loop through buffer elements
+	for (ich = 0; ich < len; ++ich) {
+		// loop through each bit in buffer element
+		int iBit = 0; 
+		for (iBit = 0; iBit < 8; ++iBit) {
+			buffer[ich] |= (commandBytes[offset++] << (8 - 1 - iBit));
+		}
+	}
+
+	// address at the end
+	buffer[len - 1] |= (ASIC_CONF_ADC_ADDR);
+
+	if (ASIC_Driver_Set(chipIndex, sizeof(buffer), buffer) == FAIL) {
+		return FAIL;				
+	}
+
+	return OK;
+}
+
+int configureADC() {
+	FILE_LOG(logINFO, ("Configuring ADC \n"));
+
+	int equal = 1;
+	{
+		int i = 0, j = 0;
+		for	(i = 0; i < NADC; ++i) {
+			int val = adcConfiguration[0][i];
+			for (j = 1; j < NCHIP; ++j) {
+				if (adcConfiguration[j][i] != val) {
+					equal = 0;
+					break;
+				}
+			}
+		}
+	}
+	if (equal) {
+		return configureSingleADCDriver(-1);
+	} else {
+		int i = 0;
+		for (i = 0; i < NCHIP; ++i) {
+			if (configureSingleADCDriver(i) == FAIL) {
+				return FAIL;
+			}
+		}
+	}
+	return OK;
+}
+
+
+int	setBurstMode(int burst) {
+	FILE_LOG(logINFO, ("Setting %s Mode\n", burst == 1 ? "Burst" : "Continuous"));
+	int value = burst ? ASIC_GLOBAL_BURST_VALUE : ASIC_GLOBAL_CONT_VALUE;
+
+	const int padding = 6; // due to address (4) to make it byte aligned
+	const int lenTotalBits = padding + ASIC_GLOBAL_SETT_MAX_BITS + ASIC_ADDR_MAX_BITS; // 4 + 6 + 4 = 16
+	const int len = lenTotalBits / 8; // 2
+
+	// assign each bit into 4 + 224  into byte array
+	uint8_t commandBytes[lenTotalBits];
+	memset(commandBytes, 0, sizeof(commandBytes));
+	int offset = padding; // bit offset for commandbytes
+	int ich = 0;
+	// loop through all bits in a value
+	int iBit = 0; 
+	for (iBit = 0; iBit < ASIC_GLOBAL_SETT_MAX_BITS; ++iBit) {
+		commandBytes[offset++] = ((value >> (ASIC_GLOBAL_SETT_MAX_BITS - 1 - iBit)) & 0x1);
+	}
+
+	// create command for 4 padding + 224 bits + 4 bits address = 232 bits = 29 bytes
+	char buffer[len];
+	memset(buffer, 0, len);
+	offset = 0;
+	// loop through buffer elements
+	for (ich = 0; ich < len; ++ich) {
+		// loop through each bit in buffer element
+		int iBit = 0; 
+		for (iBit = 0; iBit < 8; ++iBit) {
+			buffer[ich] |= (commandBytes[offset++] << (8 - 1 - iBit));
+		}
+	}
+
+	// address at the end
+	buffer[len - 1] |= (ASIC_CONF_GLOBAL_SETT);
+
+	int chipIndex = -1;
+	if (ASIC_Driver_Set(chipIndex, sizeof(buffer), buffer) == FAIL) {
+		return FAIL;				
+	}
+
+	burstMode = burst;
+	return configureADC();
+}
+
+int getBurstMode() {
+	return burstMode;
+}
 /* aquisition */
 
 int setDetectorPosition(int pos[]) {
@@ -1230,6 +1482,9 @@ int* getDetectorPosition() {
 }
 
 int startStateMachine(){
+	if (burstMode && getNumFrames() > MAX_FRAMES_IN_BURST_MODE) {
+		return FAIL;
+	}
 #ifdef VIRTUAL
 	// create udp socket
 	if(createUDPSocket(0) != OK) {

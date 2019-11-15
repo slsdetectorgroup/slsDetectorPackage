@@ -300,6 +300,9 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_INJECT_CHANNEL:				return "F_GET_INJECT_CHANNEL";
 	case F_SET_VETO_PHOTON:					return "F_SET_VETO_PHOTON";
 	case F_GET_VETO_PHOTON:					return "F_GET_VETO_PHOTON";
+	case F_SET_VETO_REFERENCE:				return "F_SET_VETO_REFERENCE";	
+	case F_GET_BURST_MODE:					return "F_GET_BURST_MODE";
+	case F_SET_BURST_MODE:					return "F_SET_BURST_MODE";
 
 	default:								return "Unknown Function";
 	}
@@ -477,7 +480,10 @@ void function_table() {
 	flist[F_GET_INJECT_CHANNEL]					= &get_inject_channel;
 	flist[F_SET_VETO_PHOTON]					= &set_veto_photon;
 	flist[F_GET_VETO_PHOTON]					= &get_veto_photon;
-	
+	flist[F_SET_VETO_REFERENCE]					= &set_veto_refernce;	
+	flist[F_GET_BURST_MODE]						= &get_burst_mode;
+	flist[F_SET_BURST_MODE]						= &set_burst_mode;
+
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
 		FILE_LOG(logERROR, ("The last detector function enum has reached its limit\nGoodbye!\n"));
@@ -1760,10 +1766,14 @@ int start_acquisition(int file_des) {
 		} else {
 			ret = startStateMachine();
 			if (ret == FAIL) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(VIRTUAL)
 				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check udp_dstip & udp_dstport.\n");
 #else
+#if defined(GOTTHARD2D)
+				sprintf(mess, "Could not start acquisition due to #frames > %d in burst mode\n", MAX_FRAMES_IN_BURST_MODE);
+#else
 				sprintf(mess, "Could not start acquisition\n");
+#endif
 #endif
 				FILE_LOG(logERROR,(mess));
 			}
@@ -1877,7 +1887,11 @@ int start_and_read_all(int file_des) {
 #if defined(VIRTUAL) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check udp_dstip & udp_dstport.\n");
 #else
+#if defined(GOTTHARD2D)
+				sprintf(mess, "Could not start acquisition due to #frames > %d in burst mode\n", MAX_FRAMES_IN_BURST_MODE);
+#else
 				sprintf(mess, "Could not start acquisition\n");
+#endif
 #endif
 				FILE_LOG(logERROR,(mess));
 			}
@@ -6307,4 +6321,85 @@ int get_veto_photon(int file_des) {
 		sendData(file_des, retvals, sizeof(retvals), INT32);
 	}
 	return ret;
+}
+
+
+int set_veto_refernce(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int args[2] = {-1, -1};
+
+	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+		return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting Veto Reference: [G%d, value:0x%x]\n", args[0], args[1]));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		int gainIndex = args[0];
+		int value = args[1];
+		if (gainIndex < 0 || gainIndex > 2) {
+			ret = FAIL;
+			sprintf(mess, "Could not set veto reference. Invalid gain index %d\n", gainIndex);
+			FILE_LOG(logERROR, (mess));				
+		} else if (value > ADU_MAX_VAL) {
+			ret = FAIL;
+			sprintf(mess, "Could not set veto reference. Invalid ADU value 0x%x, must be 12 bit.\n", value);
+			FILE_LOG(logERROR, (mess));				
+		} else {
+			ret = setVetoReference(gainIndex, value); 
+			if (ret == FAIL) {
+				sprintf(mess, "Could not set veto reference\n");
+				FILE_LOG(logERROR, (mess));					
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int set_burst_mode(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting burst mode: %d\n", arg));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		arg = arg == 0 ? 0 : 1;
+		ret = setBurstMode(arg); 
+		if (ret == FAIL) {
+			sprintf(mess, "Could not set burst mode to %d\n", arg);
+			FILE_LOG(logERROR, (mess));					
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_burst_mode(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting burst mode\n"));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getBurstMode();
+	FILE_LOG(logDEBUG1, ("Get burst mode:%d\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

@@ -1116,6 +1116,15 @@ class slsDetector : public virtual slsDetectorDefs {
 
     /** [Gotthard2] energy in keV */
     void setVetoPhoton(const int chipIndex, const int numPhotons, const int energy, const std::string& fname);    
+
+    void setVetoReference(const int gainIndex, const int value); 
+
+    /** [Gotthard2]  burst mode or continuous mode */
+    void setBurstMode(bool enable);
+
+    /** [Gotthard2]  */
+    bool getBurstMode();
+
     /**
      * Set/get counter bit in detector (Gotthard)
      * @param i is -1 to get, 0 to reset and any other value to set the counter

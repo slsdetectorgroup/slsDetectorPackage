@@ -1,4 +1,4 @@
-#onchip dacs        chip index   value
+#onchip dacs        chip index   value (max 0x3ff)
 vchip_comp_fe       -1          0x137
 vchip_opa_1st       -1          0x000
 vchip_opa_fd        -1          0x134
@@ -6,7 +6,7 @@ vchip_comp_adc      -1          0x3FF
 vchip_ref_comp_fe   -1          0x100
 vchip_cs            -1          0x0D0
 
-#dacs
+#dacs           value (max 4096)
 vref_h_adc      2099
 vb_comp_fe      0
 vb_comp_adc     0
@@ -21,3 +21,9 @@ vref_cds        1200
 vb_cs           2799
 vb_opa_fd       0
 vcom_adc2       1400
+
+#configure adc  chip index      adc index   value(max 0x7F)
+confadc         -1              -1          0x22
+
+#vetoreference  gain index  value(max 0x3ff)
+vetoref         1           0x0

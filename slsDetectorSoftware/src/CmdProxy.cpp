@@ -1066,6 +1066,25 @@ std::string CmdProxy::VetoPhoton(int action) {
     return os.str();
 }
 
+std::string CmdProxy::VetoReference(int action) {
+    std::ostringstream os; 
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[gain index] [12 bit value in hex] \n\t[Gotthard2] Set veto reference for all 128 channels for all chips." << '\n';   
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError("cannot get vetoref. Did you mean vetophoton?");
+    } else if (action == defs::PUT_ACTION) {     
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);  
+        }                                
+        det->setVetoReference(std::stoi(args[0]), stoiHex(args[1]), {det_id});  
+        os << sls::ToString(args) << '\n';
+    } else { 
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* CTB Specific */
 
 std::string CmdProxy::Samples(int action) {

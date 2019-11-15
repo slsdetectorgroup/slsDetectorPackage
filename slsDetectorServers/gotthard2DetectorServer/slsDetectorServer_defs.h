@@ -9,6 +9,7 @@
 #define NCHAN 						(128)
 #define NCHIP 						(10)
 #define NDAC 						(16)
+#define NADC						(32)
 #define ONCHIP_NDAC 				(7)
 #define DYNAMIC_RANGE               (16) 
 #define HV_SOFT_MAX_VOLTAGE         (200)
@@ -21,6 +22,7 @@
 #define ONCHIP_DAC_MAX_VAL			(0x3FF)
 #define ADU_MAX_VAL					(0xFFF)
 #define ADU_MAX_BITS				(12)
+#define MAX_FRAMES_IN_BURST_MODE	(2720)
 
 
 /** Default Parameters */
@@ -85,12 +87,20 @@ enum PLLINDEX						{READOUT_PLL, SYSTEM_PLL};
 #define ASIC_ADDR_MAX_BITS			(4)
 #define ASIC_CURRENT_INJECT_ADDR	(0x9)
 #define ASIC_VETO_REF_ADDR			(0xA)
+#define ASIC_CONF_ADC_ADDR			(0xB)
+#define ASIC_CONF_GLOBAL_SETT		(0xC)
+
 #define ASIC_GAIN_MAX_BITS			(2)
 #define ASIC_GAIN_MSK				(0x3)
-
 #define ASIC_G0_VAL					((0x0 & ASIC_GAIN_MSK) << ADU_MAX_BITS)
 #define ASIC_G1_VAL					((0x1 & ASIC_GAIN_MSK) << ADU_MAX_BITS)
 #define ASIC_G2_VAL					((0x3 & ASIC_GAIN_MSK) << ADU_MAX_BITS)
+#define ASIC_CONTINUOUS_MODE_MSK	(0x7)
+#define ASIC_ADC_MAX_BITS			(7)
+#define ASIC_ADC_MAX_VAL			(0x7F)
+#define ASIC_GLOBAL_SETT_MAX_BITS	(6)
+#define ASIC_GLOBAL_BURST_VALUE		(0x0)
+#define ASIC_GLOBAL_CONT_VALUE		(0x1E)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

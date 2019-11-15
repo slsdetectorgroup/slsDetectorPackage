@@ -778,6 +778,8 @@ class CmdProxy {
                           /* Gotthard2 Specific */  
                           {"inj_ch", &CmdProxy::InjectChannel},
                           {"vetophoton", &CmdProxy::VetoPhoton},
+                          {"vetoref", &CmdProxy::VetoReference},
+                          {"burstmode", &CmdProxy::burstmode},
 
                           /* CTB Specific */
                           {"samples", &CmdProxy::Samples},
@@ -927,7 +929,8 @@ class CmdProxy {
     std::string ClearROI(int action);
     /* Gotthard2 Specific */
     std::string InjectChannel(int action);   
-    std::string VetoPhoton(int action);        
+    std::string VetoPhoton(int action); 
+    std::string VetoReference(int action);       
     /* CTB Specific */
     std::string Samples(int action);
     std::string Dbitphase(int action);
@@ -1509,6 +1512,9 @@ class CmdProxy {
                     "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0.");  
 
     /* Gotthard2 Specific */
+    INTEGER_COMMAND(burstmode, getBurstMode, setBurstMode, std::stoi,
+                    "[0, 1]\n\t[Gotthard2] 1 sets to burst mode. 0 sets to continuous mode. Default is burst mode.");
+
     /* CTB Specific */
 
     INTEGER_COMMAND(asamples, getNumberOfAnalogSamples, setNumberOfAnalogSamples, std::stoi,

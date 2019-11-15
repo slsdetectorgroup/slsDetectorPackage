@@ -2475,6 +2475,25 @@ void slsDetector::setVetoPhoton(const int chipIndex, const int numPhotons, const
     } 
 } 
 
+void slsDetector::setVetoReference(const int gainIndex, const int value) {
+    int args[]{gainIndex, value};
+    FILE_LOG(logDEBUG1) << "Setting veto reference [gainIndex: " << gainIndex << ", value: 0x" << std::hex << value << std::dec << ']';
+    sendToDetector(F_SET_VETO_REFERENCE, args, nullptr);
+}
+
+bool slsDetector::getBurstMode() {
+    int retval = -1;
+    sendToDetector(F_GET_BURST_MODE, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Burst mode:" << retval;
+    return static_cast<bool>(retval); 
+}
+
+void slsDetector::setBurstMode(bool enable) {
+    int arg = static_cast<int>(enable);
+    FILE_LOG(logDEBUG1) << "Setting burst mode to " << arg;
+    sendToDetector(F_SET_BURST_MODE, arg, nullptr);
+}
+
 int slsDetector::setCounterBit(int cb) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending counter bit " << cb;

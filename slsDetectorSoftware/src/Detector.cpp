@@ -1104,6 +1104,18 @@ void Detector::setVetoPhoton(const int chipIndex, const int numPhotons, const in
     pimpl->Parallel(&slsDetector::setVetoPhoton, pos, chipIndex, numPhotons, energy, fname);
 }    
 
+void Detector::setVetoReference(const int gainIndex, const int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setVetoReference, pos, gainIndex, value);
+} 
+
+void Detector::setBurstMode(bool enable, Positions pos) {
+    pimpl->Parallel(&slsDetector::setBurstMode, pos, enable);
+}
+
+Result<bool> Detector::getBurstMode(Positions pos) {
+    return pimpl->Parallel(&slsDetector::getBurstMode, pos);
+}    
+
 // CTB Specific
 
 Result<int> Detector::getNumberOfAnalogSamples(Positions pos) const {

@@ -450,8 +450,13 @@ int       	setClockDivider(enum CLKINDEX ind, int val);
 int         getClockDivider(enum CLKINDEX ind);
 int 		setInjectChannel(int offset, int increment);
 void		getInjectedChannels(int* offset, int* increment);
+int			setVetoReference(int gainIndex, int value);
 int			setVetoPhoton(int chipIndex, int gainIndex, int* values); 
 int			getVetoPhoton(int chipIndex, int* retvals);
+int			configureSingleADCDriver(int chipIndex);
+int			configureADC();
+int			setBurstMode(int burst);
+int			getBurstMode();
 #endif
 
 

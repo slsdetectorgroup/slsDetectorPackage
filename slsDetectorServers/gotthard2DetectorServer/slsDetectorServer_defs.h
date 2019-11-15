@@ -82,6 +82,7 @@ enum PLLINDEX						{READOUT_PLL, SYSTEM_PLL};
 
 
 /** Chip Definitions */
+#define ASIC_ADDR_MAX_BITS			(4)
 #define ASIC_CURRENT_INJECT_ADDR	(0x9)
 #define ASIC_VETO_REF_ADDR			(0xA)
 #define ASIC_GAIN_MAX_BITS			(2)

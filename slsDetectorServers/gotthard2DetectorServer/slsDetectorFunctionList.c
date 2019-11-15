@@ -1137,40 +1137,41 @@ int	setVetoPhoton(int chipIndex, int gainIndex, int* values) {
 			FILE_LOG(logDEBUG1, ("Value %d: 0x%x\n", i, values[i]));
 		}
 	}
-	// create command
-	const int lenAduBits = ASIC_GAIN_MAX_BITS + ADU_MAX_BITS;
-	const int lenBits = lenAduBits * NCHAN;
-	const int len = lenBits / 8;
+
+	const int lenDataBitsPerchannel = ASIC_GAIN_MAX_BITS + ADU_MAX_BITS; // 14
+	const int lenBits = lenDataBitsPerchannel * NCHAN; // 1792
+	const int padding  = 4; // due to address (4) to make it byte aligned
+	const int lenTotalBits =  padding + lenBits + ASIC_ADDR_MAX_BITS; // 1800 
+	const int len = lenTotalBits / 8; // 225
+
+	// assign each bit into 4 + 1792  into byte array
+	uint8_t commandBytes[lenTotalBits];
+	memset(commandBytes, 0, sizeof(commandBytes));
+	int offset = padding; // bit offset for commandbytes
+	int ich = 0;
+	for (ich = 0; ich < NCHAN; ++ich) {
+		// loop through all bits in a value
+		int iBit = 0; 
+		for (iBit = 0; iBit < lenDataBitsPerchannel; ++iBit) {
+			commandBytes[offset++] = ((values[ich] >> (lenDataBitsPerchannel - 1 - iBit)) & 0x1);
+		}
+	}
+
+	// create command for 4 padding  + 1792 bits + 4 bits address = 1800 bits = 225 bytes
 	char buffer[len];
 	memset(buffer, 0, len);
-	int iBit = 4; // 4 due to padding
-	int ich = 0; 
-	for (ich = 0; ich < NCHAN; ++ich) {
-		// copy 14 bits for each channel
-		int totalToCopy = lenAduBits;
-		while (totalToCopy > 0) {
-			int byteIndex = iBit / 8;
-			int bitIndex = iBit % 8;
-			// how much to copy in a byte
-			int toCopy = 8 - bitIndex;
-			if (toCopy > totalToCopy) {
-				toCopy = totalToCopy;
-			}
-			int copyMask = (1 << toCopy) - 1;
-			// value pushed out by whats left and masked 
-			int val = (values[ich] >> (totalToCopy - toCopy)) & copyMask;
-			if (toCopy + bitIndex != 8) {
-				val = val << (8 - bitIndex - toCopy);
-			}
-			buffer[byteIndex] |= val;
-			// incrememnt indices
-			iBit += toCopy;
-			totalToCopy -= toCopy;
+	offset = 0;
+	// loop through buffer elements
+	for (ich = 0; ich < len; ++ich) {
+		// loop through each bit in buffer element
+		int iBit = 0; 
+		for (iBit = 0; iBit < 8; ++iBit) {
+			buffer[ich] |= (commandBytes[offset++] << (8 - 1 - iBit));
 		}
 	}
 
 	// address at the end
-	buffer[16] |= (ASIC_VETO_REF_ADDR);
+	buffer[len -1] |= (ASIC_VETO_REF_ADDR);
 
 	if (ASIC_Driver_Set(chipIndex, sizeof(buffer), buffer) == FAIL) {
 		return FAIL;				

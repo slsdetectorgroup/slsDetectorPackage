@@ -2,8 +2,9 @@
    The port number is passed as an argument */
 
 #include "logger.h"
-#include "slsReceiverUsers.h"
+#include "Receiver.h"
 #include "sls_detector_defs.h"
+#include "container_utils.h" 
 
 #include <csignal>	//SIGINT
 #include <cstdlib>		//system
@@ -13,7 +14,7 @@
 #include <sys/wait.h>	//wait
 #include <syscall.h>
 #include <unistd.h> 	//usleep
-
+#include <memory>
 
 bool keeprunning;
 
@@ -88,15 +89,13 @@ int main(int argc, char *argv[]) {
 		FILE_LOG(logERROR) << "Could not set handler function for SIGPIPE";
 	}
 
-
-	int ret = slsDetectorDefs::OK;
-	slsReceiverUsers *receiver = new slsReceiverUsers(argc, argv, ret);
-	if(ret==slsDetectorDefs::FAIL){
-		delete receiver;
+	std::unique_ptr<Receiver> receiver = nullptr;
+	try {
+		receiver = sls::make_unique<Receiver>(argc, argv);
+	} catch (...) {
 		FILE_LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
-		exit(EXIT_FAILURE);
+		throw;
 	}
-
 
 	//register callbacks
 
@@ -137,21 +136,10 @@ int main(int argc, char *argv[]) {
 	 */
 	//receiver->registerCallBackRawDataReady(rawDataReadyCallBack,NULL);
 
-
-
-	//start tcp server thread
-	if (receiver->start() == slsDetectorDefs::FAIL){
-		delete receiver;
-		FILE_LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
-		exit(EXIT_FAILURE);
-	}
-
 	FILE_LOG(logINFO) << "Ready ... ";
 	FILE_LOG(logINFO) << "[ Press \'Ctrl+c\' to exit ]";
 	while(keeprunning)
 		pause();
-
-	delete receiver;
 	FILE_LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
 	FILE_LOG(logINFO) << "Exiting Receiver";
 	return 0;

@@ -81,6 +81,6 @@ LATEX_HIDE_INDICES = YES
 
 PREDEFINED           = __cplusplus
 
-INPUT            = include/slsReceiverUsers.h 
+INPUT            = include/Receiver.h 
 
 OUTPUT_DIRECTORY = slsReceiverUsersDocs

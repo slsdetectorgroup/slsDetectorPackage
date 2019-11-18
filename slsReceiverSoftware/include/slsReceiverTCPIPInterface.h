@@ -37,9 +37,8 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
 
     /**
      * Starts listening on the TCP port for client comminication
-     \returns OK or FAIL
      */
-    int start();
+    void start();
 
     /** stop listening on the TCP & UDP port for client comminication */
     void stop();

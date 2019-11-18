@@ -1,8 +1,7 @@
 set(SOURCES
     src/slsReceiverImplementation.cpp
     src/slsReceiverTCPIPInterface.cpp
-    src/slsReceiver.cpp
-    src/slsReceiverUsers.cpp
+    src/Receiver.cpp
     src/File.cpp
     src/BinaryFile.cpp
     src/ThreadObject.cpp
@@ -60,7 +59,7 @@ endif (SLS_USE_HDF5)
 
 #What is included in slsReceiverLib?
 set(PUBLICHEADERS
-    include/slsReceiverUsers.h
+    include/Receiver.h
 )
 
 

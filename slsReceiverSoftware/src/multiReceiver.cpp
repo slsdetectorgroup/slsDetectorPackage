@@ -1,7 +1,7 @@
 /**
  \file mainReceiver.cpp
 
-This file is an example of how to implement the slsReceiverUsers class
+This file is an example of how to implement the Receiver class
 You can compile it linking it to the slsReceiver library
 
 g++ mainReceiver.cpp -L lib -lSlsReceiver -L/usr/lib64/ -L lib2 -lzmq  -pthread -lrt -lm -lstdc++
@@ -17,14 +17,12 @@ It is linked in manual/manual-api from slsReceiverSoftware/include ]
  */
 
 #include "sls_detector_defs.h"
-#include "slsReceiverUsers.h"
+#include "Receiver.h"
 
 #include <csignal>	//SIGINT
-#include <cstdlib>		//system
+#include <cstdlib>	//system
 #include <cstring>
 #include <iostream>
-//#include "utilities.h"
-//#include "logger.h"
 #include <cerrno>
 #include <string>
 #include <sys/types.h>	//wait
@@ -155,7 +153,7 @@ void GetData(char* metadata, char* datapointer, uint32_t &revDatasize, void* p){
 
 
 /**
- * Example of main program using the slsReceiverUsers class
+ * Example of main program using the Receiver class
  *
  * - Defines in file for:
  *  	- Default Number of receivers is 1
@@ -214,18 +212,8 @@ int main(int argc, char *argv[]) {
 			/**	- if child process */
 		else if (pid == 0) {
 			cprintf(BLUE,"Child process %d [ Tid: %ld ]\n", i, (long)syscall(SYS_gettid));
-
-			char temp[10];
-			sprintf(temp,"%d",startTCPPort + i);
-			char* args[] = {(char*)"ignored", (char*)"--rx_tcpport", temp};
-			int ret = slsDetectorDefs::OK;
-			/**	-  create slsReceiverUsers object with appropriate arguments */
-			slsReceiverUsers *receiver = new slsReceiverUsers(3, args, ret);
-			if(ret==slsDetectorDefs::FAIL){
-				delete receiver;
-				exit(EXIT_FAILURE);
-			}
-
+			
+			Receiver *receiver = new Receiver(startTCPPort + i);
 
 			/**	- register callbacks. remember to set file write enable to 0 (using the client)
 		  if we should not write files and you will write data using the callbacks */
@@ -245,19 +233,10 @@ int main(int argc, char *argv[]) {
 				else if (withCallback == 2) receiver->registerCallBackRawDataModifyReady(GetData,nullptr);
 			}
 
-
-
-			/**	- start tcp server thread */
-			if (receiver->start() == slsDetectorDefs::FAIL){
-				delete receiver;
-				cprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
-				exit(EXIT_FAILURE);
-			}
-
 			/**	- as long as keeprunning is true (changes with Ctrl+C) */
 			while(keeprunning)
 				pause();
-			/**	- interrupt caught, delete slsReceiverUsers object and exit */
+			/**	- interrupt caught, delete Receiver object and exit */
 			delete receiver;
 			cprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 			exit(EXIT_SUCCESS);

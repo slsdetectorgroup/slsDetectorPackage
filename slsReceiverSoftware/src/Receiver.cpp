@@ -1,7 +1,9 @@
-/********************************************//**
- * @file slsReceiver.cpp
- * @short creates the UDP and TCP class objects
- ***********************************************/
+#include "Receiver.h"
+#include "slsReceiverTCPIPInterface.h"
+#include "sls_detector_exceptions.h"
+#include "versionAPI.h"
+#include "container_utils.h" 
+#include "logger.h"
 
 #include <cstdlib>
 #include <fstream>
@@ -11,15 +13,7 @@
 #include <sstream>
 #include <string>
 
-#include "container_utils.h" // For sls::make_unique<>
-
-#include "logger.h"
-#include "slsReceiver.h"
-#include "slsReceiverTCPIPInterface.h"
-#include "sls_detector_exceptions.h"
-#include "versionAPI.h"
-
-slsReceiver::slsReceiver(int argc, char *argv[]):
+Receiver::Receiver(int argc, char *argv[]):
 		tcpipInterface (nullptr) {
 
 	// options
@@ -81,47 +75,36 @@ slsReceiver::slsReceiver(int argc, char *argv[]):
 }
 
 
-slsReceiver::slsReceiver(int tcpip_port_no)
+Receiver::Receiver(int tcpip_port_no)
 {
 	// might throw an exception
 	tcpipInterface = sls::make_unique<slsReceiverTCPIPInterface>(tcpip_port_no);
 }
 
-
-int slsReceiver::start() {
-	return tcpipInterface->start();
-}
-
-
-void slsReceiver::stop() {
-	tcpipInterface->stop();
-}
-
-
-int64_t slsReceiver::getReceiverVersion(){
+int64_t Receiver::getReceiverVersion(){
 	return tcpipInterface->getReceiverVersion();
 }
 
 
-void slsReceiver::registerCallBackStartAcquisition(int (*func)(
+void Receiver::registerCallBackStartAcquisition(int (*func)(
 		std::string, std::string, uint64_t, uint32_t, void*),void *arg){
 	tcpipInterface->registerCallBackStartAcquisition(func,arg);
 }
 
 
-void slsReceiver::registerCallBackAcquisitionFinished(
+void Receiver::registerCallBackAcquisitionFinished(
 		void (*func)(uint64_t, void*),void *arg){
 	tcpipInterface->registerCallBackAcquisitionFinished(func,arg);
 }
 
 
-void slsReceiver::registerCallBackRawDataReady(void (*func)(char*,
+void Receiver::registerCallBackRawDataReady(void (*func)(char*,
 		char*, uint32_t, void*),void *arg){
 	tcpipInterface->registerCallBackRawDataReady(func,arg);
 }
 
 
-void slsReceiver::registerCallBackRawDataModifyReady(void (*func)(char*,
+void Receiver::registerCallBackRawDataModifyReady(void (*func)(char*,
         char*, uint32_t &, void*),void *arg){
 	tcpipInterface->registerCallBackRawDataModifyReady(func,arg);
 }

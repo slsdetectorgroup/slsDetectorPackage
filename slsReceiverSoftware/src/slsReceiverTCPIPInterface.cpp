@@ -8,9 +8,7 @@
 #include "slsReceiverTCPIPInterface.h"
 #include "FixedCapacityContainer.h"
 #include "ServerSocket.h"
-#include "slsReceiver.h"
 #include "slsReceiverImplementation.h"
-#include "slsReceiverUsers.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
 #include "versionAPI.h"
@@ -35,19 +33,18 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() { stop(); }
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn)
     : myDetectorType(GOTTHARD), portNumber(pn > 0 ? pn : DEFAULT_PORTNO + 2) {
     function_table();
+    start();
 }
 
-int slsReceiverTCPIPInterface::start() {
+void slsReceiverTCPIPInterface::start() {
     FILE_LOG(logDEBUG) << "Creating TCP Server Thread";
     killTCPServerThread = 0;
     if (pthread_create(&TCPServer_thread, nullptr, startTCPServerThread,
                        (void *)this)) {
-        FILE_LOG(logERROR) << "Could not create TCP Server thread";
-        return FAIL;
+        throw RuntimeError("Could not create TCP Server thread");
     }
     tcpThreadCreated = true;
     FILE_LOG(logDEBUG) << "TCP Server thread created successfully.";
-    return OK;
 }
 
 void slsReceiverTCPIPInterface::stop() {

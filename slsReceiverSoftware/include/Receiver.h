@@ -1,20 +1,10 @@
 #pragma once
-/********************************************//**
- * @file slsReceiver.h
- * @short creates the UDP and TCP class objects
- ***********************************************/
-
-#include <memory>
-
 #include "slsReceiverTCPIPInterface.h"
 #include "sls_detector_defs.h"
 
+#include <memory>
 
-/**
- *@short creates the UDP and TCP class objects
- */
-
-class slsReceiver : private virtual slsDetectorDefs {
+class Receiver : private virtual slsDetectorDefs {
 	
  public:
 	/**
@@ -25,7 +15,7 @@ class slsReceiver : private virtual slsDetectorDefs {
 	 * @param argc from command line
 	 * @param argv from command line
 	 */
-	slsReceiver(int argc, char *argv[]);
+	Receiver(int argc, char *argv[]);
 	
 	/**
 	 * Constructor
@@ -34,18 +24,7 @@ class slsReceiver : private virtual slsDetectorDefs {
 	 * throws an exception in case of failure
 	 * @param tcpip_port_no TCP/IP port number
 	 */
-	slsReceiver(int tcpip_port_no = 1954);
-
-	/**
-	 * starts listening on the TCP port for client comminication
-	 \return 0 for success or 1 for FAIL in creating TCP server
-	 */
-	int start();
-
-	/**
-	 * stops listening to the TCP & UDP port and exit receiver program
-	 */
-	void stop();
+	Receiver(int tcpip_port_no = 1954);
 
 	/**
 	 * get get Receiver Version
@@ -70,16 +49,16 @@ class slsReceiver : private virtual slsDetectorDefs {
 	/**
 	 * Call back for acquisition finished
 	 * callback argument is
-	 * total frames caught
+	 * @param total frames caught
 	 */
 	void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg);
 
 	/**
 	 * Call back for raw data
 	 * args to raw data ready callback are
-	 * sls_receiver_header frame metadata
-	 * dataPointer is the pointer to the data
-	 * dataSize in bytes is the size of the data in bytes.
+	 * @param sls_receiver_header frame metadata
+	 * @param dataPointer is the pointer to the data
+	 * @param dataSize in bytes is the size of the data in bytes.
 	 */
 	void registerCallBackRawDataReady(void (*func)(char* ,
 			char*, uint32_t, void*),void *arg);
@@ -87,9 +66,9 @@ class slsReceiver : private virtual slsDetectorDefs {
     /**
      * Call back for raw data (modified)
      * args to raw data ready callback are
-     * sls_receiver_header frame metadata
-     * dataPointer is the pointer to the data
-     * revDatasize is the reference of data size in bytes.
+     * @param sls_receiver_header frame metadata
+     * @param dataPointer is the pointer to the data
+     * @param revDatasize is the reference of data size in bytes.
      * Can be modified to the new size to be written/streamed. (only smaller value).
      */
     void registerCallBackRawDataModifyReady(void (*func)(char* ,

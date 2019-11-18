@@ -35,7 +35,7 @@ class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFi
 	 * @param smode pointer to silent mode
 	 */
 	BinaryFile(int ind, uint32_t* maxf,
-			int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
+			int* nd, std::string* fname, std::string* fpath, uint64_t* findex, bool* owenable,
 			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 			bool* smode);
 

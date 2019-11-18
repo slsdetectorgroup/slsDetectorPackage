@@ -40,7 +40,7 @@ class BinaryFileStatic {
 	 * @param unitindex unit index
 	 * @returns complete file name created
 	 */
-	static std::string CreateFileName(char *fpath, char *fprefix,
+	static std::string CreateFileName(std::string fpath, std::string fprefix,
 										uint64_t findex, uint64_t subfindex,
 										int dindex, int numunits = 1,
 										int unitindex = 0) {
@@ -58,7 +58,7 @@ class BinaryFileStatic {
 	 * @param findex file index
 	 * @returns master file name
 	 */
-	static std::string CreateMasterFileName(char *fpath, char *fnameprefix,
+	static std::string CreateMasterFileName(std::string fpath, std::string fnameprefix,
 											uint64_t findex) {
 		std::ostringstream os;
 		os << fpath << "/" << fnameprefix << "_master"

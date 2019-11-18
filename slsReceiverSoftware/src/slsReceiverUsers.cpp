@@ -28,7 +28,7 @@ int64_t slsReceiverUsers::getReceiverVersion(){
 	return receiver->getReceiverVersion();
 }
 
-void slsReceiverUsers::registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg){
+void slsReceiverUsers::registerCallBackStartAcquisition(int (*func)(std::string, std::string, uint64_t, uint32_t, void*),void *arg){
 	receiver->registerCallBackStartAcquisition(func,arg);
 }
 

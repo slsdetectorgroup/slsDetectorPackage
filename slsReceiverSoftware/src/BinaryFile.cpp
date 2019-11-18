@@ -14,7 +14,7 @@
 FILE* BinaryFile::masterfd = nullptr;
 
 BinaryFile::BinaryFile(int ind, uint32_t* maxf,
-		int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
+		int* nd, std::string* fname, std::string* fpath, uint64_t* findex, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 		bool* smode):
 		File(ind, maxf, nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, portno, smode),
@@ -46,7 +46,7 @@ int BinaryFile::CreateFile() {
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 
-	currentFileName = BinaryFileStatic::CreateFileName(filePath, fileNamePrefix, *fileIndex,
+	currentFileName = BinaryFileStatic::CreateFileName(*filePath, *fileNamePrefix, *fileIndex,
 			 subFileIndex, *detIndex, *numUnitsPerDetector, index);
 
 	if (BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName, FILE_BUFFER_SIZE) == FAIL)
@@ -120,8 +120,8 @@ int BinaryFile::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
 	numActualPacketsInFile = 0;
 
 	if (mfwenable && master && (*detIndex==0)) {
-		masterFileName = BinaryFileStatic::CreateMasterFileName(filePath,
-				fileNamePrefix, *fileIndex);
+		masterFileName = BinaryFileStatic::CreateMasterFileName(*filePath,
+				*fileNamePrefix, *fileIndex);
 		if(!(*silentMode)) {
 			FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		}

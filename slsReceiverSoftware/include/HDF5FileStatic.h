@@ -46,7 +46,7 @@ public:
 	 * @param unitindex unit index
 	 * @returns complete file name created
 	 */
-	static std::string CreateFileName(char *fpath, char *fprefix,
+	static std::string CreateFileName(std::string fpath, std::string fprefix,
 										uint64_t findex, uint64_t subfindex,
 										int dindex, int numunits = 1,
 										int unitindex = 0) {
@@ -64,7 +64,7 @@ public:
 	 * @param findex file index
 	 * @returns master file name
 	 */
-	static std::string CreateMasterFileName(char* fpath, char* fnameprefix, uint64_t findex)
+	static std::string CreateMasterFileName(std::string fpath, std::string fnameprefix, uint64_t findex)
 	{
 		std::ostringstream os;
 		os << fpath << "/" << fnameprefix << "_master"
@@ -80,7 +80,7 @@ public:
 	 * @param findex file index
 	 * @returns virtual file name
 	 */
-	static std::string CreateVirtualFileName(char* fpath, char* fnameprefix, uint64_t findex)
+	static std::string CreateVirtualFileName(std::string fpath, std::string fnameprefix, uint64_t findex)
 	{
 		std::ostringstream osfn;
 		osfn << fpath << "/" << fnameprefix;
@@ -584,7 +584,7 @@ public:
 	static int CreateVirtualDataFile(
 			std::string virtualFileName,
 			hid_t& fd, std::string masterFileName,
-			char* fpath, char* fnameprefix, uint64_t findex, bool frindexenable,
+			std::string fpath, std::string fnameprefix, uint64_t findex, bool frindexenable,
 			int dindex, int numunits,
 			uint32_t maxFramesPerFile, uint64_t numf,
 			std::string srcDataseName, DataType dataType,

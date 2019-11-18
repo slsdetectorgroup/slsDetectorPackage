@@ -173,7 +173,7 @@ void DataProcessor::SetFileFormat(const fileFormat f) {
 		//remember the pointer values before they are destroyed
 		int nd[MAX_DIMENSIONS];nd[0] = 0; nd[1] = 0;
 		uint32_t* maxf = nullptr;
-		char* fname=nullptr; char* fpath=nullptr; uint64_t* findex=nullptr;
+		std::string* fname=nullptr; std::string* fpath=nullptr; uint64_t* findex=nullptr;
 		bool* owenable=nullptr; int* dindex=nullptr; int* nunits=nullptr; uint64_t* nf = nullptr;
 		uint32_t* dr = nullptr; uint32_t* port = nullptr;
 		file->GetMemberPointerValues(nd, maxf, fname, fpath, findex,
@@ -186,7 +186,7 @@ void DataProcessor::SetFileFormat(const fileFormat f) {
 
 
 void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
-		char* fname, char* fpath, uint64_t* findex,
+		std::string* fname, std::string* fpath, uint64_t* findex,
 		bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr,
 		uint32_t* portno,
 		GeneralData* g)

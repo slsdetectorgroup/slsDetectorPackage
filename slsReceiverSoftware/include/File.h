@@ -36,7 +36,7 @@ class File : private virtual slsDetectorDefs {
 	 * @param smode pointer to silent mode
 	 */
 	File(int ind, uint32_t* maxf,
-			int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
+			int* nd, std::string* fname, std::string* fpath, uint64_t* findex, bool* owenable,
 			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 			bool* smode);
 
@@ -78,7 +78,7 @@ class File : private virtual slsDetectorDefs {
 	 * @param dr pointer to dynamic range
 	 * @param portno pointer to dynamic range
 	 */
-	void GetMemberPointerValues(int* nd, uint32_t*& maxf, char*& fname, char*& fpath,
+	void GetMemberPointerValues(int* nd, uint32_t*& maxf, std::string*& fname, std::string*& fpath,
 			uint64_t*& findex, bool*& owenable,
 			int*& dindex, int*& nunits, uint64_t*& nf, uint32_t*& dr, uint32_t*& portno);
 
@@ -161,10 +161,10 @@ class File : private virtual slsDetectorDefs {
 	int numDetY;
 
 	/** File Name Prefix */
-	char* fileNamePrefix;
+	std::string* fileNamePrefix;
 
 	/** File Path */
-	char* filePath;
+	std::string* filePath;
 
 	/** File Index */
 	uint64_t* fileIndex;

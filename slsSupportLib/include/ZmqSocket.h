@@ -278,7 +278,7 @@ public:
 			uint32_t debug = 0, uint16_t roundRNumber = 0,
 			uint8_t detType = 0, uint8_t version = 0, int gapPixelsEnable = 0, int flippedDataX = 0,
 			uint32_t quadEnable = 0, 
-			char* additionalJsonHeader = 0) {
+			std::string* additionalJsonHeader = 0) {
 
 
 		
@@ -331,9 +331,9 @@ public:
 						quadEnable
 		);
 		
-		if (additionalJsonHeader && strlen(additionalJsonHeader)) {
+		if (additionalJsonHeader && !((*additionalJsonHeader).empty())) {
             strcat(buf, ", ");
-            strcat(buf, additionalJsonHeader);
+            strcat(buf, (*additionalJsonHeader).c_str());
         }
         strcat(buf, "}\n");
         int length = strlen(buf);

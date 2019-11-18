@@ -60,7 +60,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
      * we write depending on file write enable
      * users get data to write depending on call backs registered
      */
-    void registerCallBackStartAcquisition(int (*func)(char *, char *, uint64_t,
+    void registerCallBackStartAcquisition(int (*func)(std::string, std::string, uint64_t,
                                                       uint32_t, void *),
                                           void *arg);
 
@@ -338,9 +338,6 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
     int (slsReceiverTCPIPInterface::*flist[NUM_REC_FUNCTIONS])(
         sls::ServerInterface2 &socket);
 
-    /** Message */
-    char mess[MAX_STR_LENGTH]{};
-
     /** success/failure */
     int ret{OK};
 
@@ -375,7 +372,7 @@ class slsReceiverTCPIPInterface : private virtual slsDetectorDefs {
      * we write depending on file write enable
      * users get data to write depending on call backs registered
      */
-    int (*startAcquisitionCallBack)(char *, char *, uint64_t, uint32_t,
+    int (*startAcquisitionCallBack)(std::string, std::string, uint64_t, uint32_t,
                                     void *) = nullptr;
     void *pStartAcquisition{nullptr};
 

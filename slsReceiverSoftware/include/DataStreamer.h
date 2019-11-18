@@ -35,7 +35,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param qe pointer to quad Enable
 	 */
 	DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
-			uint64_t* fi, int fd, char* ajh, int* nd, bool* gpEnable, bool* qe);
+			uint64_t* fi, int fd, std::string* ajh, int* nd, bool* gpEnable, bool* qe);
 
 	/**
 	 * Destructor
@@ -197,7 +197,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	int flippedDataX;
 
 	/** additional json header */
-	char* additionJsonHeader;
+	std::string* additionJsonHeader;
 
 	/** Aquisition Started flag */
 	bool startedFlag;

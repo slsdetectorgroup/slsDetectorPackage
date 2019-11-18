@@ -147,8 +147,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param portno pointer to udp port number
 	 * @param g address of GeneralData (Detector Data) pointer
 	 */
-	void SetupFileWriter(bool fwe, int* nd, uint32_t* maxf, char* fname,
-			char* fpath, uint64_t* findex,
+	void SetupFileWriter(bool fwe, int* nd, uint32_t* maxf, std::string* fname,
+			std::string* fpath, uint64_t* findex,
 			 bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr,
 			 uint32_t* portno, GeneralData* g = nullptr);
 

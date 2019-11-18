@@ -65,7 +65,7 @@ class slsReceiver : private virtual slsDetectorDefs {
 	 * we write depending on file write enable
 	 * users get data to write depending on call backs registered
 	 */
-	void registerCallBackStartAcquisition(int (*func)(char*, char*, uint64_t, uint32_t, void*),void *arg);
+	void registerCallBackStartAcquisition(int (*func)(std::string, std::string, uint64_t, uint32_t, void*),void *arg);
 
 	/**
 	 * Call back for acquisition finished

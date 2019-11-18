@@ -1,11 +1,3 @@
-/********************************************/ /**
-                                                * @file
-                                                *slsReceiverImplementation.cpp
-                                                * @short does all the functions
-                                                *for a receiver, set/get
-                                                *parameters, start/stop etc.
-                                                ***********************************************/
-
 #include "slsReceiverImplementation.h"
 #include "DataProcessor.h"
 #include "DataStreamer.h"
@@ -57,7 +49,6 @@ void slsReceiverImplementation::InitializeMembers() {
     for (int i = 0; i < MAX_DIMENSIONS; ++i)
         numDet[i] = 0;
     detID = 0;
-    strcpy(detHostname, "");
     acquisitionPeriod = SAMPLE_TIME_IN_NS;
     acquisitionTime = 0;
     subExpTime = 0;
@@ -96,8 +87,7 @@ void slsReceiverImplementation::InitializeMembers() {
 
     //***file parameters***
     fileFormatType = BINARY;
-    strcpy(fileName, "run");
-    strcpy(filePath, "");
+    fileName = "run";
     fileIndex = 0;
     framesPerFile = 0;
     fileWriteEnable = true;
@@ -113,7 +103,6 @@ void slsReceiverImplementation::InitializeMembers() {
     dataStreamEnable = false;
     streamingPort = 0;
     streamingSrcIP = 0u;
-    memset(additionalJsonHeader, 0, sizeof(additionalJsonHeader));
 
     //** class objects ***
     generalData = nullptr;
@@ -146,7 +135,7 @@ int slsReceiverImplementation::getDetectorPositionId() const {
 
 std::string slsReceiverImplementation::getDetectorHostname() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return std::string(detHostname);
+    return detHostname;
 }
 
 int slsReceiverImplementation::getFlippedDataX() const {
@@ -183,12 +172,12 @@ slsDetectorDefs::fileFormat slsReceiverImplementation::getFileFormat() const {
 
 std::string slsReceiverImplementation::getFileName() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return std::string(fileName);
+    return fileName;
 }
 
 std::string slsReceiverImplementation::getFilePath() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return std::string(filePath);
+    return filePath;
 }
 
 uint64_t slsReceiverImplementation::getFileIndex() const {
@@ -405,7 +394,7 @@ sls::IpAddr slsReceiverImplementation::getStreamingSourceIP() const {
 
 std::string slsReceiverImplementation::getAdditionalJsonHeader() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return std::string(additionalJsonHeader);
+    return additionalJsonHeader;
 }
 
 int64_t slsReceiverImplementation::getUDPSocketBufferSize() const {
@@ -425,11 +414,11 @@ int64_t slsReceiverImplementation::getActualUDPSocketBufferSize() const {
 
 /**initial parameters***/
 
-void slsReceiverImplementation::setDetectorHostname(const char *c) {
+void slsReceiverImplementation::setDetectorHostname(const std::string& c) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
-    if (strlen(c))
-        strcpy(detHostname, c);
+    if (!c.empty())
+        detHostname = c;
     FILE_LOG(logINFO) << "Detector Hostname: " << detHostname;
 }
 
@@ -572,20 +561,20 @@ void slsReceiverImplementation::setFileFormat(const fileFormat f) {
     FILE_LOG(logINFO) << "File Format: " << sls::ToString(fileFormatType);
 }
 
-void slsReceiverImplementation::setFileName(const char c[]) {
+void slsReceiverImplementation::setFileName(const std::string& c) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
-    if (strlen(c))
-        strcpy(fileName, c);
+    if (!c.empty())
+       fileName = c;
     FILE_LOG(logINFO) << "File name: " << fileName;
 }
 
-void slsReceiverImplementation::setFilePath(const char c[]) {
+void slsReceiverImplementation::setFilePath(const std::string& c) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
-    if (strlen(c)) {
+    if (!c.empty()) {
         mkdir_p(c); //throws if it can't create
-        strcpy(filePath, c);
+        filePath = c;
     }
     FILE_LOG(logINFO) << "File path: " << filePath;
 }
@@ -627,8 +616,8 @@ void slsReceiverImplementation::setFileWriteEnable(const bool b) {
         fileWriteEnable = b;
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             dataProcessor[i]->SetupFileWriter(
-                fileWriteEnable, (int *)numDet, &framesPerFile, fileName,
-                filePath, &fileIndex, &overwriteEnable, &detID, &numThreads,
+                fileWriteEnable, (int *)numDet, &framesPerFile, &fileName,
+                &filePath, &fileIndex, &overwriteEnable, &detID, &numThreads,
                 &numberOfFrames, &dynamicRange, &udpPortNum[i], generalData);
         }
     }
@@ -747,7 +736,7 @@ int slsReceiverImplementation::setNumberofUDPInterfaces(const int n) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, additionalJsonHeader, (int*)nd, &gapPixelsEnable, &quadEnable));
+                        fd, &additionalJsonHeader, (int*)nd, &gapPixelsEnable, &quadEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
@@ -889,7 +878,7 @@ int slsReceiverImplementation::setDataStreamEnable(const bool enable) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, additionalJsonHeader, (int*)nd, &gapPixelsEnable, &quadEnable));
+                        fd, &additionalJsonHeader, (int*)nd, &gapPixelsEnable, &quadEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
@@ -918,9 +907,9 @@ void slsReceiverImplementation::setStreamingSourceIP(const sls::IpAddr ip) {
     FILE_LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 
-void slsReceiverImplementation::setAdditionalJsonHeader(const char c[]) {
+void slsReceiverImplementation::setAdditionalJsonHeader(const std::string& c) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    strcpy(additionalJsonHeader, c);
+    additionalJsonHeader = c;
     FILE_LOG(logINFO) << "Additional JSON Header: " << additionalJsonHeader;
 }
 
@@ -1194,7 +1183,7 @@ void slsReceiverImplementation::setDetectorPositionId(const int id) {
     FILE_LOG(logINFO) << "Detector Position Id:" << detID;
     for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
         dataProcessor[i]->SetupFileWriter(
-            fileWriteEnable, (int *)numDet, &framesPerFile, fileName, filePath,
+            fileWriteEnable, (int *)numDet, &framesPerFile, &fileName, &filePath,
             &fileIndex, &overwriteEnable, &detID, &numThreads, &numberOfFrames,
             &dynamicRange, &udpPortNum[i], generalData);
     }
@@ -1209,15 +1198,15 @@ void slsReceiverImplementation::setDetectorPositionId(const int id) {
 }
 
 
-int slsReceiverImplementation::startReceiver(char *c) {
+int slsReceiverImplementation::startReceiver(std::string& err) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     FILE_LOG(logINFO) << "Starting Receiver";
     ResetParametersforNewAcquisition();
 
     // listener
     if (CreateUDPSockets() == FAIL) {
-        strcpy(c, "Could not create UDP Socket(s).");
-        FILE_LOG(logERROR) << c;
+        err.assign("Could not create UDP Socket(s).");
+        FILE_LOG(logERROR) << err;
         return FAIL;
     }
 
@@ -1235,8 +1224,8 @@ int slsReceiverImplementation::startReceiver(char *c) {
     // processor->writer
     if (fileWriteEnable) {
         if (SetupWriter() == FAIL) {
-            strcpy(c, "Could not create file.\n");
-            FILE_LOG(logERROR) << c;
+            err.assign("Could not create file.\n");
+            FILE_LOG(logERROR) << err;
             return FAIL;
         }
     } else
@@ -1417,7 +1406,7 @@ int slsReceiverImplementation::restreamStop() {
 
 /***callback functions***/
 void slsReceiverImplementation::registerCallBackStartAcquisition(
-    int (*func)(char *, char *, uint64_t, uint32_t, void *), void *arg) {
+    int (*func)(std::string, std::string, uint64_t, uint32_t, void *), void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }
@@ -1537,9 +1526,9 @@ void slsReceiverImplementation::ResetParametersforNewAcquisition() {
         it->ResetParametersforNewAcquisition();
 
     if (dataStreamEnable) {
-        char fnametostream[MAX_STR_LENGTH * 2];
-        snprintf(fnametostream, MAX_STR_LENGTH * 2, "%s/%s", filePath,
-                 fileName);
+        std::ostringstream os;
+        os << filePath << '/' << fileName;
+        std::string fnametostream = os.str();
         for (const auto &it : dataStreamer)
             it->ResetParametersforNewAcquisition(fnametostream);
     }

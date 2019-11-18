@@ -69,7 +69,7 @@ int64_t slsReceiverTCPIPInterface::getReceiverVersion() { return APIRECEIVER; }
 
 /***callback functions***/
 void slsReceiverTCPIPInterface::registerCallBackStartAcquisition(
-    int (*func)(char *, char *, uint64_t, uint32_t, void *), void *arg) {
+    int (*func)(std::string, std::string, uint64_t, uint32_t, void *), void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }
@@ -112,6 +112,7 @@ void slsReceiverTCPIPInterface::startTCPServer() {
                 ret = decode_function(socket);
             } catch (const RuntimeError &e) {
                 // We had an error needs to be sent to client
+                char mess[MAX_STR_LENGTH]{};
                 sls::strcpy_safe(mess, e.what());
                 socket.Send(FAIL);
                 socket.Send(mess);
@@ -274,9 +275,10 @@ void slsReceiverTCPIPInterface::VerifyLock() {
 
 void slsReceiverTCPIPInterface::VerifyIdle(Interface &socket) {
     if (impl()->getStatus() != IDLE) {
-        // sprintf(mess, "Can not execute %s when receiver is not idle\n",
-        //         getFunctionNameFromEnum((enum detFuncs)fnum));
-        throw sls::SocketError(mess);
+        std::ostringstream oss;
+        oss << "Can not execute " << getFunctionNameFromEnum((enum detFuncs)fnum) 
+            << " when receiver is not idle";
+        throw sls::SocketError(oss.str());
     }
 }
 
@@ -656,9 +658,10 @@ int slsReceiverTCPIPInterface::get_status(Interface &socket) {
 int slsReceiverTCPIPInterface::start_receiver(Interface &socket) {
     if (impl()->getStatus() == IDLE) {
         FILE_LOG(logDEBUG1) << "Starting Receiver";
-        ret = impl()->startReceiver(mess);
+        std::string err;
+        ret = impl()->startReceiver(err);
         if (ret == FAIL) {
-            throw RuntimeError(mess);
+            throw RuntimeError(err);
         }
     }
     return socket.Send(OK);
@@ -852,8 +855,6 @@ int slsReceiverTCPIPInterface::set_streaming_timer(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::set_flipped_data(Interface &socket) {
-    // TODO! Why 2 args?
-    memset(mess, 0, sizeof(mess));
     auto arg = socket.Receive<int>();
 
     if (myDetectorType != EIGER)
@@ -983,7 +984,6 @@ int slsReceiverTCPIPInterface::restream_stop(Interface &socket) {
 }
 
 int slsReceiverTCPIPInterface::set_additional_json_header(Interface &socket) {
-    memset(mess, 0, sizeof(mess));
     char arg[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
     socket.Receive(arg);

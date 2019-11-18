@@ -104,7 +104,7 @@ int64_t slsReceiver::getReceiverVersion(){
 
 
 void slsReceiver::registerCallBackStartAcquisition(int (*func)(
-		char*, char*, uint64_t, uint32_t, void*),void *arg){
+		std::string, std::string, uint64_t, uint32_t, void*),void *arg){
 	tcpipInterface->registerCallBackStartAcquisition(func,arg);
 }
 

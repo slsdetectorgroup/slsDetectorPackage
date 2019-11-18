@@ -25,7 +25,7 @@ void sigInterruptHandler(int p){
 /*
 #define PRINT_IN_COLOR(c,f, ...) 	printf ("\033[%dm" f RESET, 30 + c+1, ##__VA_ARGS__)
 
-int StartAcq(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*p){
+int StartAcq(std::string filepath, std::string filename, uint64_t fileindex, uint32_t datasize, void*p){
   FILE_LOG(logINFO) << "#### StartAcq:  "
 		  "filepath: " << filepath << "filename: " << filename <<
 		  "fileindex: " << fileindex << "datasize: " << datasize << " ####";
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
 	   1 callback writes file, we have to open, close it
 	   2 we open, close, write file, callback does not do anything
 
-	   registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg);
+	   registerCallBackStartAcquisition(int (*func)(std::string, std::string, int, int, void*),void *arg);
 	 */
 	//receiver->registerCallBackStartAcquisition(startAcquisitionCallBack,NULL);
 

@@ -20,7 +20,7 @@ hid_t HDF5File::virtualfd = 0;
 
 
 HDF5File::HDF5File(int ind, uint32_t* maxf,
-		int* nd, char* fname, char* fpath, uint64_t* findex, bool* owenable,
+		int* nd, std::string* fname, std::string* fpath, uint64_t* findex, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 		uint32_t nx, uint32_t ny,
 		bool* smode):
@@ -132,7 +132,7 @@ int HDF5File::CreateFile() {
 	numFilesinAcquisition++;
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
-	currentFileName = HDF5FileStatic::CreateFileName(filePath, fileNamePrefix, *fileIndex,
+	currentFileName = HDF5FileStatic::CreateFileName(*filePath, *fileNamePrefix, *fileIndex,
 			subFileIndex, *detIndex, *numUnitsPerDetector, index);
 
 	//first time
@@ -249,8 +249,8 @@ int HDF5File::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
 
 	if (mfwenable && master && (*detIndex==0)) {
 		virtualfd = 0;
-		masterFileName = HDF5FileStatic::CreateMasterFileName(filePath,
-				fileNamePrefix, *fileIndex);
+		masterFileName = HDF5FileStatic::CreateMasterFileName(*filePath,
+				*fileNamePrefix, *fileIndex);
 		if(!(*silentMode)) {
 			FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		}
@@ -289,14 +289,14 @@ void HDF5File::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 int HDF5File::CreateVirtualFile(uint64_t numf) {
 	pthread_mutex_lock(&Mutex);
 
-	std::string vname = HDF5FileStatic::CreateVirtualFileName(filePath, fileNamePrefix, *fileIndex);
+	std::string vname = HDF5FileStatic::CreateVirtualFileName(*filePath, *fileNamePrefix, *fileIndex);
 	if(!(*silentMode)) {
 		FILE_LOG(logINFO) << "Virtual File: " << vname;
 	}
 
 	int ret = HDF5FileStatic::CreateVirtualDataFile(vname,
 			virtualfd, masterFileName,
-			filePath, fileNamePrefix, *fileIndex, (*numImages > 1),
+			*filePath, *fileNamePrefix, *fileIndex, (*numImages > 1),
 			*detIndex, *numUnitsPerDetector,
 			// infinite images in 1 file, then maxfrperfile = numf
 			((*maxFramesPerFile == 0) ? numf+1 : *maxFramesPerFile),

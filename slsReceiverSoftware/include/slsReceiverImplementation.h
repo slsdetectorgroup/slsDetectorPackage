@@ -60,7 +60,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
 
     /*
      * Get detector hostname
-     * @return hostname  (max of 1000 characters)
+     * @return hostname
      */
     std::string getDetectorHostname() const;
 
@@ -376,7 +376,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
      * Sets detector hostname
      * @param c detector hostname
      */
-    void setDetectorHostname(const char *c);
+    void setDetectorHostname(const std::string& c);
 
     /*
      * Set multi detector size
@@ -428,17 +428,17 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
      * Set File Name Prefix (without frame index, file index and extension
      * (_d0_f000000000000_8.raw)) Does not check for file existence since it is
      * created only at startReceiver
-     * @param c file name (max of 1000 characters)
+     * @param c file name
      */
-    void setFileName(const char c[]);
+    void setFileName(const std::string& c);
 
     /**
      * Set File Path
      * Checks for file directory existence before setting file path,
      * If it exists, it sets it
-     * @param c file path (max of 1000 characters)
+     * @param c file path
      */
-    void setFilePath(const char c[]);
+    void setFilePath(const std::string& c);
 
     /**
      * Set File Index of acquisition
@@ -570,7 +570,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     /**
      * Set additional json header
      */
-    void setAdditionalJsonHeader(const char *c);
+    void setAdditionalJsonHeader(const std::string& c);
 
     /**
      * Set Acquisition Period
@@ -708,7 +708,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
      * @param c error message if FAIL
      * @return OK or FAIL
      */
-    int startReceiver(char *c = NULL);
+    int startReceiver(std::string& err);
 
     /**
      * Stop Listening for Packets
@@ -760,7 +760,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
      * we write depending on file write enable
      * users get data to write depending on call backs registered
      */
-    void registerCallBackStartAcquisition(int (*func)(char *, char *, uint64_t,
+    void registerCallBackStartAcquisition(int (*func)(std::string, std::string, uint64_t,
                                                       uint32_t, void *),
                                           void *arg);
 
@@ -860,7 +860,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     /*Detector Readout ID*/
     int detID;
     /** detector hostname */
-    char detHostname[MAX_STR_LENGTH];
+    std::string detHostname;
     /** Acquisition Period */
     uint64_t acquisitionPeriod;
     /** Acquisition Time */
@@ -932,10 +932,10 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     /** File format */
     fileFormat fileFormatType;
     /** File Name without frame index, file index and extension
-     * (_d0_f000000000000_8.raw)*/
-    char fileName[MAX_STR_LENGTH];
+     * (_d0_f0_8.raw)*/
+    std::string fileName;
     /** File Path */
-    char filePath[MAX_STR_LENGTH];
+    std::string filePath;
     /** File Index */
     uint64_t fileIndex;
     /** Frames per file  (0 means infinite) */
@@ -963,7 +963,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
     /** streaming port */
      sls::IpAddr streamingSrcIP;
     /** additional json header */
-    char additionalJsonHeader[MAX_STR_LENGTH];
+    std::string additionalJsonHeader;
 
     //** class objects ***
     /** General Data Properties */
@@ -990,7 +990,7 @@ class slsReceiverImplementation : private virtual slsDetectorDefs {
      * we write depending on file write enable
      * users get data to write depending on call backs registered
      */
-    int (*startAcquisitionCallBack)(char *, char *, uint64_t, uint32_t, void *);
+    int (*startAcquisitionCallBack)(std::string, std::string, uint64_t, uint32_t, void *);
     void *pStartAcquisition;
     /**
      * Call back for acquisition finished

@@ -55,7 +55,7 @@ public:
 	 \param arg argument
 	 \return value is insignificant at the moment, we write depending on file write enable, users get data to write depending on call backs registered
 	*/
-	void registerCallBackStartAcquisition(int (*func)(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*),void *arg);
+	void registerCallBackStartAcquisition(int (*func)(std::string filepath, std::string filename, uint64_t fileindex, uint32_t datasize, void*),void *arg);
 
 
 	/**	

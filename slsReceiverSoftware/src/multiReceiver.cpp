@@ -69,11 +69,8 @@ void printHelp() {
  * @param p pointer to object
  * \returns ignored
  */
-int StartAcq(char* filepath, char* filename, uint64_t fileindex, uint32_t datasize, void*p){
-	cprintf(BLUE, "#### StartAcq:  filepath:%s  filename:%s fileindex:%llu  datasize:%u ####\n",
-			filepath, filename, (long long unsigned int)fileindex, datasize);
-
-	cprintf(BLUE, "--StartAcq: returning 0\n");
+int StartAcq(std::string filepath, std::string filename, uint64_t fileindex, uint32_t datasize, void*p){
+	FILE_LOG(logINFOBLUE) << "#### StartAcq:  filepath:" << filepath << "  filename:" << filename << " fileindex:" << fileindex << "  datasize:" << datasize << " ####";
 	return 0;
 }
 
@@ -83,7 +80,7 @@ int StartAcq(char* filepath, char* filename, uint64_t fileindex, uint32_t datasi
  * @param p pointer to object
  */
 void AcquisitionFinished(uint64_t frames, void*p){
-	cprintf(BLUE, "#### AcquisitionFinished: frames:%llu ####\n",(long long unsigned int)frames);
+	FILE_LOG(logINFOBLUE) << "#### AcquisitionFinished: frames:" << frames << " ####";
 }
 
 

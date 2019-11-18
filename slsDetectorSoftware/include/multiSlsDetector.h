@@ -89,6 +89,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) {
 
+        if (detectors.size() == 0) 
+            throw sls::RuntimeError("No detectors added");                      
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(detectors.size());
@@ -115,6 +117,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) const {
 
+        if (detectors.size() == 0) 
+            throw sls::RuntimeError("No detectors added");  
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(detectors.size());
@@ -141,6 +145,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) {
 
+        if (detectors.size() == 0) 
+            throw sls::RuntimeError("No detectors added");  
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(detectors.size());
@@ -164,6 +170,8 @@ class multiSlsDetector : public virtual slsDetectorDefs {
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) const {
 
+        if (detectors.size() == 0) 
+            throw sls::RuntimeError("No detectors added");  
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(detectors.size());

@@ -992,16 +992,19 @@ int Implementation::setNumberofDigitalSamples(const uint32_t i) {
 }
 
 int Implementation::setDynamicRange(const uint32_t i) {
-    // only eiger
+
     if (dynamicRange != i) {
         dynamicRange = i;
-        generalData->SetDynamicRange(i, tengigaEnable);
-        generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
-        // to update npixelsx, npixelsy in file writer
-        for (const auto &it : dataProcessor)
-            it->SetPixelDimension();
-        if (SetupFifoStructure() == FAIL)
-            return FAIL;
+
+        if (myDetectorType == EIGER) {
+            generalData->SetDynamicRange(i, tengigaEnable);
+            generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
+            // to update npixelsx, npixelsy in file writer
+            for (const auto &it : dataProcessor)
+                it->SetPixelDimension();
+            if (SetupFifoStructure() == FAIL)
+                return FAIL;
+        }
     }
     FILE_LOG(logINFO) << "Dynamic Range: " << dynamicRange;
     return OK;

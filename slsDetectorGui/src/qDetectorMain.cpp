@@ -228,6 +228,7 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     case slsDetectorDefs::GOTTHARD:
     case slsDetectorDefs::JUNGFRAU:
     case slsDetectorDefs::MOENCH:
+    case slsDetectorDefs::MYTHEN3:
          break;
     default:
         std::ostringstream os;

@@ -375,6 +375,7 @@ void setupDetector() {
 	setExpTime(DEFAULT_EXPTIME);
 	setPeriod(DEFAULT_PERIOD);
 	setDelayAfterTrigger(DEFAULT_DELAY_AFTER_TRIGGER);
+	setTiming(DEFAULT_TIMING_MODE);
 }
 
 int setDefaultDacs() {
@@ -641,6 +642,16 @@ int setHighVoltage(int val){
 	    highvoltage = val;
 	}
 	return highvoltage;
+}
+
+
+/* parameters - timing */
+void setTiming( enum timingMode arg){
+ // to be implemented
+}
+
+enum timingMode getTiming() {
+    return AUTO_TIMING;
 }
 
 

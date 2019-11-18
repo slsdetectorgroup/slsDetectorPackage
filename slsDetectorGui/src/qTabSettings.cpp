@@ -21,6 +21,7 @@ void qTabSettings::SetupWidgetWindow() {
 	// enabling according to det type
     switch(det->getDetectorType().squash()) {
         case slsDetectorDefs::MOENCH:
+        case slsDetectorDefs::MYTHEN3:
             lblSettings->setEnabled(false);
             comboSettings->setEnabled(false);
             break;

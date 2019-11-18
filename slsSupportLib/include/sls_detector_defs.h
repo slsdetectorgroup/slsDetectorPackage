@@ -520,7 +520,7 @@ struct detParameters {
             nGappixelsY = 1;
             break;
         case slsDetectorDefs::detectorType::MYTHEN3:
-            nChanX = 128;
+            nChanX = 128 * 3;
             nChanY = 1;
             nChipX = 10;
             nChipY = 1;

@@ -286,7 +286,7 @@ int 		setHighVoltage(int val);
 
 
 // parameters - timing, extsig
-#if !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(GOTTHARD2D)
 void 		setTiming( enum timingMode arg);
 enum 		timingMode getTiming();
 #endif

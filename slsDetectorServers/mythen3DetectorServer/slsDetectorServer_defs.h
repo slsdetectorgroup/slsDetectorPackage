@@ -7,7 +7,7 @@
 #define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
 
 /* Hardware Definitions */
-#define NCHAN 						(128)
+#define NCHAN 						(128 * 3)
 #define NCHIP 						(10)
 #define NDAC 						(16)
 #define HV_SOFT_MAX_VOLTAGE         (200)
@@ -24,6 +24,7 @@
 #define DEFAULT_PERIOD              (2*1000*1000)	    //ns 
 #define DEFAULT_DELAY_AFTER_TRIGGER (0)
 #define DEFAULT_HIGH_VOLTAGE        (0)
+#define DEFAULT_TIMING_MODE			(AUTO_TIMING)
 #define DEFAULT_READOUT_C0          (125000000) // rdo_clk, 125 MHz  
 #define DEFAULT_READOUT_C1          (250000000) // rdo_x2_clk, 250 MHz  
 #define DEFAULT_SYSTEM_C0			(250000000) // run_clk, 250 MHz 

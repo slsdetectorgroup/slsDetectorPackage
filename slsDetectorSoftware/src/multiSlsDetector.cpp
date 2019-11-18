@@ -700,7 +700,7 @@ void multiSlsDetector::readFrameFromReceiver() {
                     currentFileIndex);
             }
             dataReady(thisData, currentFrameIndex,
-                      ((dynamicRange == 32) ? currentSubFrameIndex : -1),
+                      ((dynamicRange == 32 && eiger) ? currentSubFrameIndex : -1),
                       pCallbackArg);
             delete thisData;
         }

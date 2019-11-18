@@ -19,6 +19,7 @@ void qTabDeveloper::SetupWidgetWindow() {
 	lblComboHV->hide();
 	lblSpinHV->hide();
 	spinHV->hide();
+	hvmin = HV_MIN;
 
 	try{
 		slsDetectorDefs::detectorType detType = det->getDetectorType().squash();
@@ -91,6 +92,27 @@ void qTabDeveloper::SetupWidgetWindow() {
 			dacWidgets.push_back(new qDacWidget(this, det, true, "i Dac 7: ", getSLSIndex(detType, tempid++)));
 			break;
 
+		case slsDetectorDefs::MYTHEN3:
+			lblSpinHV->show();
+			spinHV->show();
+			hvmin = 0;
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vcassh: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vth2: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vshaper: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vshaperneg: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vipre_out: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vth3: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vth1: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vicin: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vcas: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vpreamp: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vph: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vipre: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "viinsh: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vpl: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vtrim: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vdcsh: ", getSLSIndex(detType, tempid++)));
+			break;					
 		default:
 			break;
 		}
@@ -145,7 +167,7 @@ void qTabDeveloper::GetHighVoltage() {
 		auto retval = det->getHighVoltage({comboDetector->currentIndex() - 1}).tsquash("Inconsistent values for high voltage.");
 		//spinHV
 		if (spinHV->isVisible()) {
-			if (retval != 0 && retval < HV_MIN &&  retval > HV_MAX) {
+			if (retval != 0 && retval < hvmin &&  retval > HV_MAX) {
 				throw sls::RuntimeError(std::string("Unknown High Voltage: ") + std::to_string(retval));
 			} 
 			spinHV->setValue(retval);	
@@ -305,6 +327,45 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorTy
 			return (slsDetectorDefs::dacIndex)index;
 		} 
 		throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));
+
+	case slsDetectorDefs::MYTHEN3:
+		switch (index) {
+		case 0:
+			return slsDetectorDefs::CASSH;
+		case 1:
+			return slsDetectorDefs::VTH2;
+		case 2:
+			return slsDetectorDefs::SHAPER1;
+		case 3:
+			return slsDetectorDefs::SHAPER2;
+		case 4:
+			return slsDetectorDefs::VIPRE_OUT;
+		case 5:
+			return slsDetectorDefs::VTH3;
+		case 6:
+			return slsDetectorDefs::THRESHOLD;
+		case 7:
+			return slsDetectorDefs::VICIN;
+		case 8:
+			return slsDetectorDefs::CAS;
+		case 9:
+			return slsDetectorDefs::PREAMP;
+		case 10:
+			return slsDetectorDefs::CALIBRATION_PULSE;
+		case 11:
+			return slsDetectorDefs::VIPRE;
+		case 12:
+			return slsDetectorDefs::VIINSH;
+		case 13:
+			return slsDetectorDefs::VPL;
+		case 14:
+			return slsDetectorDefs::TRIMBIT_SIZE;
+		case 15:
+			return slsDetectorDefs::VDCSH;
+		default:
+			throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));		
+		}
+		break;
 
 	default:
 		throw sls::RuntimeError(std::string("Unknown detector type"));	

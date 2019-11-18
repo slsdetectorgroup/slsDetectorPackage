@@ -42,7 +42,7 @@ private:
 		HV_180,
 		HV_200
 	};
-
+	int hvmin;
 	static const int HV_MIN = 60;
 	static const int HV_MAX = 200;
 };

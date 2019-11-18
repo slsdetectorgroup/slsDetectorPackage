@@ -677,7 +677,7 @@ int set_timing_mode(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting external communication mode to %d\n", arg));
 
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+#ifdef GOTTHARD2D
     functionNotImplemented();
 #else
 

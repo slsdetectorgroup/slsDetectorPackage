@@ -412,6 +412,11 @@ void qDrawPlot::DisplayStatistics(bool enable) {
     displayStatistics = enable;
 }
 
+void qDrawPlot::SetNumDiscardBits(int value) {
+    FILE_LOG(logINFO) << "Setting number of bits to discard: " << value;
+    numDiscardBits = value;
+}
+
 void qDrawPlot::EnableGainPlot(bool enable) {
     FILE_LOG(logINFO) << (enable ? "Enabling" : "Disabling") << " Gain Plot";
     hasGainData = enable;
@@ -874,6 +879,9 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int data
     int halfbyte = 0;
     char cbyte = '\0';
 
+    // mythen 3 debugging
+    int discardBits = numDiscardBits;
+
     switch (dr) {
 
     case 4:
@@ -926,7 +934,7 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int data
 
     default:
         for (ichan = 0; ichan < size; ++ichan) {
-            dest[ichan] = *((u_int32_t *)source);
+            dest[ichan] = ((*((u_int32_t *)source)) >> discardBits);
             source += 4;
         }
         break;

@@ -2,13 +2,15 @@
 
 #include "ui_form_tab_advanced.h"
 
+class qDrawPlot;
+
 #include "Detector.h"
 
 class qTabAdvanced:public QWidget, private Ui::TabAdvancedObject{
 	Q_OBJECT
 
 public:
-	qTabAdvanced(QWidget *parent, sls::Detector* detector);
+	qTabAdvanced(QWidget *parent, sls::Detector* detector, qDrawPlot* p);
 	~qTabAdvanced();
 
 public slots:
@@ -61,6 +63,7 @@ private:
 	void GetSubDeadTime();
 
 	sls::Detector *det;
+	qDrawPlot *plot;
 };
 
 

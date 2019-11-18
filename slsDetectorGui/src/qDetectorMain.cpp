@@ -135,7 +135,7 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabDataOutput = sls::make_unique<qTabDataOutput>(this, det.get());
     tabPlot = sls::make_unique<qTabPlot>(this, det.get(), plot.get());
     tabSettings = sls::make_unique<qTabSettings>(this, det.get());
-    tabAdvanced = sls::make_unique<qTabAdvanced>(this, det.get());
+    tabAdvanced = sls::make_unique<qTabAdvanced>(this, det.get(), plot.get());
     tabDebugging = sls::make_unique<qTabDebugging>(this, det.get());
     tabDeveloper = sls::make_unique<qTabDeveloper>(this, det.get());
 

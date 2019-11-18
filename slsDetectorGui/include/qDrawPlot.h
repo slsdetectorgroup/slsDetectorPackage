@@ -54,6 +54,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void SetAccumulate(bool enable);
     void ResetAccumulate();
     void DisplayStatistics(bool enable);
+    void SetNumDiscardBits(int value);
     void EnableGainPlot(bool enable);
     void ClonePlot();
 	  void SavePlot();
@@ -148,6 +149,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     bool hasGainData{false};
     bool isGainDataExtracted{false};
     bool disableZoom{false};
+    int numDiscardBits{0};
 
     int progress{0};
     int64_t currentFrame{0};

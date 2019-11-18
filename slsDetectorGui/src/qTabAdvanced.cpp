@@ -1,11 +1,12 @@
 #include "qTabAdvanced.h"
 #include "qDefs.h"
+#include "qDrawPlot.h"
 #include "network_utils.h"
 
 #include <iostream>
 
-qTabAdvanced::qTabAdvanced(QWidget *parent, sls::Detector *detector)
-    : QWidget(parent), det(detector) {
+qTabAdvanced::qTabAdvanced(QWidget *parent, sls::Detector *detector, qDrawPlot *p)
+    : QWidget(parent), det(detector), plot(p) {
     setupUi(this);
     SetupWidgetWindow();
     FILE_LOG(logDEBUG) << "Advanced ready";
@@ -28,6 +29,9 @@ void qTabAdvanced::SetupWidgetWindow() {
     case slsDetectorDefs::GOTTHARD:
         tab_roi->setEnabled(true);
         break;
+    case slsDetectorDefs::MYTHEN3:
+        lblDiscardBits->setEnabled(true);
+        spinDiscardBits->setEnabled(true);
     default:
         break;
     }
@@ -104,6 +108,12 @@ void qTabAdvanced::Initialization() {
                 SLOT(SetSubDeadTime()));
         connect(comboSubDeadTimeUnit, SIGNAL(currentIndexChanged(int)), this,
                 SLOT(SetSubDeadTime()));
+    }
+
+    // throw bits
+    if (lblDiscardBits->isEnabled()) {
+        connect(spinDiscardBits, SIGNAL(valueChanged(int)), plot,
+                SLOT(SetNumDiscardBits(int)));  
     }
 }
 

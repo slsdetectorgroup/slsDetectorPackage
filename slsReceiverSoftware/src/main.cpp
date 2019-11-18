@@ -4,7 +4,6 @@
 #include "logger.h"
 #include "Receiver.h"
 #include "sls_detector_defs.h"
-#include "container_utils.h" 
 
 #include <csignal>	//SIGINT
 #include <cstdlib>		//system

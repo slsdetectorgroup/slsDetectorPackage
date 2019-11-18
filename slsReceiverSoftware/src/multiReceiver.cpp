@@ -213,8 +213,13 @@ int main(int argc, char *argv[]) {
 		else if (pid == 0) {
 			cprintf(BLUE,"Child process %d [ Tid: %ld ]\n", i, (long)syscall(SYS_gettid));
 			
-			Receiver *receiver = new Receiver(startTCPPort + i);
-
+			std::unique_ptr<Receiver> receiver = nullptr;
+			try {
+				receiver = sls::make_unique<Receiver>(startTCPPort + i);
+			} catch (...) {
+				FILE_LOG(logINFOBLUE) << "Exiting Child Process [ Tid: " << syscall(SYS_gettid) << " ]";
+				throw;
+			}			
 			/**	- register callbacks. remember to set file write enable to 0 (using the client)
 		  if we should not write files and you will write data using the callbacks */
 			if (withCallback) {
@@ -236,8 +241,6 @@ int main(int argc, char *argv[]) {
 			/**	- as long as keeprunning is true (changes with Ctrl+C) */
 			while(keeprunning)
 				pause();
-			/**	- interrupt caught, delete Receiver object and exit */
-			delete receiver;
 			cprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 			exit(EXIT_SUCCESS);
 			break;

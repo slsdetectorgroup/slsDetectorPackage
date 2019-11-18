@@ -19,7 +19,7 @@ void init_experimental(py::module &m) {
         .def(py::init<int>())
 
         // Configuration
-        .def("freeSharedMemory", &Detector::freeSharedMemory)
+        .def("freeSharedMemory", (void (Detector::*)()) &Detector::freeSharedMemory)
         .def("loadConfig", &Detector::loadConfig)
         .def("loadParameters", &Detector::loadParameters)
         .def("setHostname", &Detector::setHostname)

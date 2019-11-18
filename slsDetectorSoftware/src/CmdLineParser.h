@@ -39,9 +39,10 @@ class CmdLineParser {
 
   private:
     void DecodeIdAndPosition(const char *c);
+    void Reset(); // reset all private variables
     int multi_id_ = 0;
     int detector_id_ = -1;
-    bool help_{false};
+    bool help_ = false;
     std::string command_;
     std::string executable_;
     std::vector<std::string> arguments_;

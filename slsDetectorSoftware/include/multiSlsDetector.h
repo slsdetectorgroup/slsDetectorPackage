@@ -261,8 +261,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * Sets maximum number of channels of all sls detectors */
     void setNumberOfChannels(const slsDetectorDefs::xy c); 
 
-    void readConfigurationFile(const std::string &fname); 
-
     /**
      * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. (Eiger)
      * 4 bit mode gap pixels only in gui call back
@@ -277,8 +275,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     bool enableDataStreamingToClient(int enable = -1);
 
     void savePattern(const std::string &fname); 
-
-    void loadParameters(const std::string &fname);
 
     /**
      * register callback for accessing acquisition final data

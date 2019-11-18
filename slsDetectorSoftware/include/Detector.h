@@ -13,6 +13,12 @@ using ns = std::chrono::nanoseconds;
 class MacAddr;
 class IpAddr;
 
+//Free function to avoid dependence on class
+//and avoid the option to free another objects
+//shm by mistake
+void freeSharedMemory(int multiId, int detPos = -1);
+
+
 /**
  * \class Detector
  */
@@ -72,6 +78,8 @@ class Detector {
     
     /** Gets the total number of detectors */
     int size() const;
+
+    bool empty() const;
 
     defs::xy getModuleGeometry() const;
 

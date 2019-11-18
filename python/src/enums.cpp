@@ -59,48 +59,6 @@ void init_enums(py::module &m) {
                slsDetectorDefs::fileFormat::NUM_FILE_FORMATS)
         .export_values();
 
-    py::enum_<slsDetectorDefs::networkParameter>(Defs, "networkParameter")
-        .value("DETECTOR_MAC", slsDetectorDefs::networkParameter::DETECTOR_MAC)
-        .value("DETECTOR_IP", slsDetectorDefs::networkParameter::DETECTOR_IP)
-        .value("RECEIVER_HOSTNAME",
-               slsDetectorDefs::networkParameter::RECEIVER_HOSTNAME)
-        .value("RECEIVER_UDP_IP",
-               slsDetectorDefs::networkParameter::RECEIVER_UDP_IP)
-        .value("RECEIVER_UDP_PORT",
-               slsDetectorDefs::networkParameter::RECEIVER_UDP_PORT)
-        .value("RECEIVER_UDP_MAC",
-               slsDetectorDefs::networkParameter::RECEIVER_UDP_MAC)
-        .value("RECEIVER_UDP_PORT2",
-               slsDetectorDefs::networkParameter::RECEIVER_UDP_PORT2)
-        .value("DETECTOR_TXN_DELAY_LEFT",
-               slsDetectorDefs::networkParameter::DETECTOR_TXN_DELAY_LEFT)
-        .value("DETECTOR_TXN_DELAY_RIGHT",
-               slsDetectorDefs::networkParameter::DETECTOR_TXN_DELAY_RIGHT)
-        .value("DETECTOR_TXN_DELAY_FRAME",
-               slsDetectorDefs::networkParameter::DETECTOR_TXN_DELAY_FRAME)
-        .value("FLOW_CONTROL_10G",
-               slsDetectorDefs::networkParameter::FLOW_CONTROL_10G)
-        .value("FLOW_CONTROL_WR_PTR",
-               slsDetectorDefs::networkParameter::FLOW_CONTROL_WR_PTR)
-        .value("FLOW_CONTROL_RD_PTR",
-               slsDetectorDefs::networkParameter::FLOW_CONTROL_RD_PTR)
-        .value("RECEIVER_STREAMING_PORT",
-               slsDetectorDefs::networkParameter::RECEIVER_STREAMING_PORT)
-        .value("CLIENT_STREAMING_PORT",
-               slsDetectorDefs::networkParameter::CLIENT_STREAMING_PORT)
-        .value("RECEIVER_STREAMING_SRC_IP",
-               slsDetectorDefs::networkParameter::RECEIVER_STREAMING_SRC_IP)
-        .value("CLIENT_STREAMING_SRC_IP",
-               slsDetectorDefs::networkParameter::CLIENT_STREAMING_SRC_IP)
-        .value("ADDITIONAL_JSON_HEADER",
-               slsDetectorDefs::networkParameter::ADDITIONAL_JSON_HEADER)
-        .value("RECEIVER_UDP_SCKT_BUF_SIZE",
-               slsDetectorDefs::networkParameter::RECEIVER_UDP_SCKT_BUF_SIZE)
-        .value(
-            "RECEIVER_REAL_UDP_SCKT_BUF_SIZE",
-            slsDetectorDefs::networkParameter::RECEIVER_REAL_UDP_SCKT_BUF_SIZE)
-        .export_values();
-
     py::enum_<slsDetectorDefs::dimension>(Defs, "dimension")
         .value("X", slsDetectorDefs::dimension::X)
         .value("Y", slsDetectorDefs::dimension::Y)
@@ -148,32 +106,6 @@ void init_enums(py::module &m) {
                slsDetectorDefs::timingMode::TRIGGER_EXPOSURE)
         .value("GATED", slsDetectorDefs::timingMode::GATED)
         .value("BURST_TRIGGER", slsDetectorDefs::timingMode::BURST_TRIGGER)
-        .export_values();
-
-    py::enum_<slsDetectorDefs::idMode>(Defs, "idMode")
-        .value("DETECTOR_SERIAL_NUMBER",
-               slsDetectorDefs::idMode::DETECTOR_SERIAL_NUMBER)
-        .value("DETECTOR_FIRMWARE_VERSION",
-               slsDetectorDefs::idMode::DETECTOR_FIRMWARE_VERSION)
-        .value("DETECTOR_SOFTWARE_VERSION",
-               slsDetectorDefs::idMode::DETECTOR_SOFTWARE_VERSION)
-        .value("THIS_SOFTWARE_VERSION",
-               slsDetectorDefs::idMode::THIS_SOFTWARE_VERSION)
-        .value("RECEIVER_VERSION", slsDetectorDefs::idMode::RECEIVER_VERSION)
-        .value("SOFTWARE_FIRMWARE_API_VERSION",
-               slsDetectorDefs::idMode::SOFTWARE_FIRMWARE_API_VERSION)
-        .value("CLIENT_SOFTWARE_API_VERSION",
-               slsDetectorDefs::idMode::CLIENT_SOFTWARE_API_VERSION)
-        .value("CLIENT_RECEIVER_API_VERSION",
-               slsDetectorDefs::idMode::CLIENT_RECEIVER_API_VERSION)
-        .export_values();
-
-    py::enum_<slsDetectorDefs::digitalTestMode>(Defs, "digitalTestMode")
-        .value("DETECTOR_FIRMWARE_TEST",
-               slsDetectorDefs::digitalTestMode::DETECTOR_FIRMWARE_TEST)
-        .value("DETECTOR_BUS_TEST",
-               slsDetectorDefs::digitalTestMode::DETECTOR_BUS_TEST)
-        .value("IMAGE_TEST", slsDetectorDefs::digitalTestMode::IMAGE_TEST)
         .export_values();
 
     py::enum_<slsDetectorDefs::dacIndex>(Defs, "dacIndex")

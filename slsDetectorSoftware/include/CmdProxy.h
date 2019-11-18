@@ -417,12 +417,11 @@ class CmdProxy {
     explicit CmdProxy(Detector *ptr) : det(ptr) {}
 
     std::string Call(const std::string &command,
-                     const std::vector<std::string> &arguments, int detector_id,
+                     const std::vector<std::string> &arguments, int detector_id = -1,
                      int action = -1, std::ostream &os = std::cout);
 
     bool ReplaceIfDepreciated(std::string &command);
     size_t GetFunctionMapSize() const noexcept { return functions.size(); };
-    std::vector<std::string> GetAllCommands();
     std::vector<std::string> GetProxyCommands();
 
   private:
@@ -549,7 +548,8 @@ class CmdProxy {
     FunctionMap functions{{"list", &CmdProxy::ListCommands},
                          
                           /* configuration */
-                          //{"config", &CmdProxy::config},
+                          {"config", &CmdProxy::config},
+                          {"free2", &CmdProxy::free},
                           {"parameters", &CmdProxy::parameters},
                           {"hostname", &CmdProxy::Hostname},
                           {"virtual", &CmdProxy::VirtualServer},
@@ -565,6 +565,7 @@ class CmdProxy {
                           {"settings", &CmdProxy::settings},
 
                           /* acquisition parameters */
+                          {"acquire", &CmdProxy::acquire},
                           {"frames", &CmdProxy::frames},                          
                           {"triggers", &CmdProxy::triggers},
                           {"exptime", &CmdProxy::exptime},
@@ -885,6 +886,8 @@ class CmdProxy {
     /* Commands */
     std::string ListCommands(int action);
     /* configuration */
+    std::string free(int action); 
+    // std::string config2(int action);
     std::string Hostname(int action); 
     std::string VirtualServer(int action); 
     std::string FirmwareVersion(int action);     
@@ -893,6 +896,7 @@ class CmdProxy {
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
     /* acquisition parameters */
+    std::string acquire(int action);
     std::string Speed(int action);
     std::string Adcphase(int action);
     std::string ClockFrequency(int action);

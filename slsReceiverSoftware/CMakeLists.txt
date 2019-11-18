@@ -1,6 +1,6 @@
 set(SOURCES
-    src/slsReceiverImplementation.cpp
-    src/slsReceiverTCPIPInterface.cpp
+    src/Implementation.cpp
+    src/ClientInterface.cpp
     src/Receiver.cpp
     src/File.cpp
     src/BinaryFile.cpp

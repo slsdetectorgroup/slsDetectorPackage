@@ -1,14 +1,6 @@
-/**********************************************
- * @file
- *slsReceiverTCPIPInterface.cpp
- * @short interface between
- *receiver and client
- ***********************************************/
-
-#include "slsReceiverTCPIPInterface.h"
+#include "ClientInterface.h"
 #include "FixedCapacityContainer.h"
 #include "ServerSocket.h"
-#include "slsReceiverImplementation.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
 #include "versionAPI.h"
@@ -28,15 +20,15 @@ using sls::RuntimeError;
 using sls::SocketError;
 using Interface = sls::ServerInterface2;
 
-slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() { stop(); }
+ClientInterface::~ClientInterface() { stopTCPSocket(); }
 
-slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int pn)
-    : myDetectorType(GOTTHARD), portNumber(pn > 0 ? pn : DEFAULT_PORTNO + 2) {
+ClientInterface::ClientInterface(int portNumber)
+    : myDetectorType(GOTTHARD), portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2) {
     function_table();
-    start();
+    startTCPSocket();
 }
 
-void slsReceiverTCPIPInterface::start() {
+void ClientInterface::startTCPSocket() {
     FILE_LOG(logDEBUG) << "Creating TCP Server Thread";
     killTCPServerThread = 0;
     if (pthread_create(&TCPServer_thread, nullptr, startTCPServerThread,
@@ -47,7 +39,7 @@ void slsReceiverTCPIPInterface::start() {
     FILE_LOG(logDEBUG) << "TCP Server thread created successfully.";
 }
 
-void slsReceiverTCPIPInterface::stop() {
+void ClientInterface::stopTCPSocket() {
     if (tcpThreadCreated) {
         FILE_LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
         killTCPServerThread = 1;
@@ -62,39 +54,39 @@ void slsReceiverTCPIPInterface::stop() {
     }
 }
 
-int64_t slsReceiverTCPIPInterface::getReceiverVersion() { return APIRECEIVER; }
+int64_t ClientInterface::getReceiverVersion() { return APIRECEIVER; }
 
 /***callback functions***/
-void slsReceiverTCPIPInterface::registerCallBackStartAcquisition(
+void ClientInterface::registerCallBackStartAcquisition(
     int (*func)(std::string, std::string, uint64_t, uint32_t, void *), void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }
 
-void slsReceiverTCPIPInterface::registerCallBackAcquisitionFinished(
+void ClientInterface::registerCallBackAcquisitionFinished(
     void (*func)(uint64_t, void *), void *arg) {
     acquisitionFinishedCallBack = func;
     pAcquisitionFinished = arg;
 }
 
-void slsReceiverTCPIPInterface::registerCallBackRawDataReady(
+void ClientInterface::registerCallBackRawDataReady(
     void (*func)(char *, char *, uint32_t, void *), void *arg) {
     rawDataReadyCallBack = func;
     pRawDataReady = arg;
 }
 
-void slsReceiverTCPIPInterface::registerCallBackRawDataModifyReady(
+void ClientInterface::registerCallBackRawDataModifyReady(
     void (*func)(char *, char *, uint32_t &, void *), void *arg) {
     rawDataModifyReadyCallBack = func;
     pRawDataReady = arg;
 }
 
-void *slsReceiverTCPIPInterface::startTCPServerThread(void *this_pointer) {
-    ((slsReceiverTCPIPInterface *)this_pointer)->startTCPServer();
+void *ClientInterface::startTCPServerThread(void *this_pointer) {
+    ((ClientInterface *)this_pointer)->startTCPServer();
     return this_pointer;
 }
 
-void slsReceiverTCPIPInterface::startTCPServer() {
+void ClientInterface::startTCPServer() {
     FILE_LOG(logINFOBLUE) << "Created [ TCP server Tid: " << syscall(SYS_gettid)
                           << "]";
     FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port "
@@ -144,72 +136,72 @@ void slsReceiverTCPIPInterface::startTCPServer() {
     }
 }
 // clang-format off
-int slsReceiverTCPIPInterface::function_table(){
-	flist[F_EXEC_RECEIVER_COMMAND]			=	&slsReceiverTCPIPInterface::exec_command;
-	flist[F_EXIT_RECEIVER]					=	&slsReceiverTCPIPInterface::exit_server;
-	flist[F_LOCK_RECEIVER]					=	&slsReceiverTCPIPInterface::lock_receiver;
-	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&slsReceiverTCPIPInterface::get_last_client_ip;
-	flist[F_SET_RECEIVER_PORT]				=	&slsReceiverTCPIPInterface::set_port;
-	flist[F_UPDATE_RECEIVER_CLIENT]			=	&slsReceiverTCPIPInterface::update_client;
-	flist[F_GET_RECEIVER_VERSION]			=	&slsReceiverTCPIPInterface::get_version;
-	flist[F_GET_RECEIVER_TYPE]				=	&slsReceiverTCPIPInterface::set_detector_type;
-	flist[F_SEND_RECEIVER_DETHOSTNAME]		= 	&slsReceiverTCPIPInterface::set_detector_hostname;
-	flist[F_RECEIVER_SET_ROI]				=	&slsReceiverTCPIPInterface::set_roi;
-	flist[F_RECEIVER_SET_NUM_FRAMES]        =   &slsReceiverTCPIPInterface::set_num_frames;    
-	flist[F_RECEIVER_SET_NUM_ANALOG_SAMPLES]=   &slsReceiverTCPIPInterface::set_num_analog_samples;            
-	flist[F_RECEIVER_SET_NUM_DIGITAL_SAMPLES]=  &slsReceiverTCPIPInterface::set_num_digital_samples;           
-	flist[F_RECEIVER_SET_EXPTIME]           =   &slsReceiverTCPIPInterface::set_exptime;
-	flist[F_RECEIVER_SET_PERIOD]            =   &slsReceiverTCPIPInterface::set_period;
-	flist[F_RECEIVER_SET_SUB_EXPTIME]       =   &slsReceiverTCPIPInterface::set_subexptime;    
-	flist[F_RECEIVER_SET_SUB_DEADTIME]      =   &slsReceiverTCPIPInterface::set_subdeadtime;    
-	flist[F_SET_RECEIVER_DYNAMIC_RANGE]		= 	&slsReceiverTCPIPInterface::set_dynamic_range;
-	flist[F_RECEIVER_STREAMING_FREQUENCY]	= 	&slsReceiverTCPIPInterface::set_streaming_frequency;
-	flist[F_GET_RECEIVER_STATUS]			=	&slsReceiverTCPIPInterface::get_status;
-	flist[F_START_RECEIVER]					=	&slsReceiverTCPIPInterface::start_receiver;
-	flist[F_STOP_RECEIVER]					=	&slsReceiverTCPIPInterface::stop_receiver;
-	flist[F_SET_RECEIVER_FILE_PATH]			=	&slsReceiverTCPIPInterface::set_file_dir;
-	flist[F_SET_RECEIVER_FILE_NAME]			=	&slsReceiverTCPIPInterface::set_file_name;
-	flist[F_SET_RECEIVER_FILE_INDEX]		=	&slsReceiverTCPIPInterface::set_file_index;
-	flist[F_GET_RECEIVER_FRAME_INDEX]		=	&slsReceiverTCPIPInterface::get_frame_index;
-	flist[F_GET_RECEIVER_FRAMES_CAUGHT]		=	&slsReceiverTCPIPInterface::get_frames_caught;
-	flist[F_ENABLE_RECEIVER_FILE_WRITE]		=	&slsReceiverTCPIPInterface::enable_file_write;
-	flist[F_ENABLE_RECEIVER_MASTER_FILE_WRITE]	=	&slsReceiverTCPIPInterface::enable_master_file_write;
-	flist[F_ENABLE_RECEIVER_OVERWRITE]		= 	&slsReceiverTCPIPInterface::enable_overwrite;
-	flist[F_ENABLE_RECEIVER_TEN_GIGA]		= 	&slsReceiverTCPIPInterface::enable_tengiga;
-	flist[F_SET_RECEIVER_FIFO_DEPTH]		= 	&slsReceiverTCPIPInterface::set_fifo_depth;
-	flist[F_RECEIVER_ACTIVATE]				= 	&slsReceiverTCPIPInterface::set_activate;
-	flist[F_STREAM_DATA_FROM_RECEIVER]		= 	&slsReceiverTCPIPInterface::set_data_stream_enable;
-	flist[F_RECEIVER_STREAMING_TIMER]		= 	&slsReceiverTCPIPInterface::set_streaming_timer;
-	flist[F_SET_FLIPPED_DATA_RECEIVER]		= 	&slsReceiverTCPIPInterface::set_flipped_data;
-	flist[F_SET_RECEIVER_FILE_FORMAT]		= 	&slsReceiverTCPIPInterface::set_file_format;
-	flist[F_SEND_RECEIVER_DETPOSID]			= 	&slsReceiverTCPIPInterface::set_detector_posid;
-	flist[F_SEND_RECEIVER_MULTIDETSIZE]		= 	&slsReceiverTCPIPInterface::set_multi_detector_size;
-	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&slsReceiverTCPIPInterface::set_streaming_port;
-	flist[F_RECEIVER_STREAMING_SRC_IP]		= 	&slsReceiverTCPIPInterface::set_streaming_source_ip;
-	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&slsReceiverTCPIPInterface::set_silent_mode;
-	flist[F_ENABLE_GAPPIXELS_IN_RECEIVER]	=	&slsReceiverTCPIPInterface::enable_gap_pixels;
-	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&slsReceiverTCPIPInterface::restream_stop;
-	flist[F_ADDITIONAL_JSON_HEADER]         =   &slsReceiverTCPIPInterface::set_additional_json_header;
-	flist[F_GET_ADDITIONAL_JSON_HEADER]     =   &slsReceiverTCPIPInterface::get_additional_json_header;
-    flist[F_RECEIVER_UDP_SOCK_BUF_SIZE]     =   &slsReceiverTCPIPInterface::set_udp_socket_buffer_size;
-    flist[F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE]=   &slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size;
-    flist[F_SET_RECEIVER_FRAMES_PER_FILE]	=   &slsReceiverTCPIPInterface::set_frames_per_file;
-    flist[F_RECEIVER_CHECK_VERSION]			=   &slsReceiverTCPIPInterface::check_version_compatibility;
-    flist[F_RECEIVER_DISCARD_POLICY]		=   &slsReceiverTCPIPInterface::set_discard_policy;
-	flist[F_RECEIVER_PADDING_ENABLE]		=   &slsReceiverTCPIPInterface::set_padding_enable;
-	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &slsReceiverTCPIPInterface::set_deactivated_padding_enable;
-	flist[F_RECEIVER_SET_READOUT_MODE] 	    = 	&slsReceiverTCPIPInterface::set_readout_mode;
-	flist[F_RECEIVER_SET_ADC_MASK]			=	&slsReceiverTCPIPInterface::set_adc_mask;
-	flist[F_SET_RECEIVER_DBIT_LIST]			=	&slsReceiverTCPIPInterface::set_dbit_list;
-	flist[F_GET_RECEIVER_DBIT_LIST]			=	&slsReceiverTCPIPInterface::get_dbit_list;
-	flist[F_RECEIVER_DBIT_OFFSET]			= 	&slsReceiverTCPIPInterface::set_dbit_offset;
-    flist[F_SET_RECEIVER_QUAD]			    = 	&slsReceiverTCPIPInterface::set_quad_type;
-    flist[F_SET_RECEIVER_READ_N_LINES]      =   &slsReceiverTCPIPInterface::set_read_n_lines;
-    flist[F_SET_RECEIVER_UDP_IP]            =   &slsReceiverTCPIPInterface::set_udp_ip;
-	flist[F_SET_RECEIVER_UDP_IP2]           =   &slsReceiverTCPIPInterface::set_udp_ip2;
-	flist[F_SET_RECEIVER_UDP_PORT]          =   &slsReceiverTCPIPInterface::set_udp_port;
-	flist[F_SET_RECEIVER_UDP_PORT2]         =   &slsReceiverTCPIPInterface::set_udp_port2;
-	flist[F_SET_RECEIVER_NUM_INTERFACES]    =   &slsReceiverTCPIPInterface::set_num_interfaces;
+int ClientInterface::function_table(){
+	flist[F_EXEC_RECEIVER_COMMAND]			=	&ClientInterface::exec_command;
+	flist[F_EXIT_RECEIVER]					=	&ClientInterface::exit_server;
+	flist[F_LOCK_RECEIVER]					=	&ClientInterface::lock_receiver;
+	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&ClientInterface::get_last_client_ip;
+	flist[F_SET_RECEIVER_PORT]				=	&ClientInterface::set_port;
+	flist[F_UPDATE_RECEIVER_CLIENT]			=	&ClientInterface::update_client;
+	flist[F_GET_RECEIVER_VERSION]			=	&ClientInterface::get_version;
+	flist[F_GET_RECEIVER_TYPE]				=	&ClientInterface::set_detector_type;
+	flist[F_SEND_RECEIVER_DETHOSTNAME]		= 	&ClientInterface::set_detector_hostname;
+	flist[F_RECEIVER_SET_ROI]				=	&ClientInterface::set_roi;
+	flist[F_RECEIVER_SET_NUM_FRAMES]        =   &ClientInterface::set_num_frames;    
+	flist[F_RECEIVER_SET_NUM_ANALOG_SAMPLES]=   &ClientInterface::set_num_analog_samples;            
+	flist[F_RECEIVER_SET_NUM_DIGITAL_SAMPLES]=  &ClientInterface::set_num_digital_samples;           
+	flist[F_RECEIVER_SET_EXPTIME]           =   &ClientInterface::set_exptime;
+	flist[F_RECEIVER_SET_PERIOD]            =   &ClientInterface::set_period;
+	flist[F_RECEIVER_SET_SUB_EXPTIME]       =   &ClientInterface::set_subexptime;    
+	flist[F_RECEIVER_SET_SUB_DEADTIME]      =   &ClientInterface::set_subdeadtime;    
+	flist[F_SET_RECEIVER_DYNAMIC_RANGE]		= 	&ClientInterface::set_dynamic_range;
+	flist[F_RECEIVER_STREAMING_FREQUENCY]	= 	&ClientInterface::set_streaming_frequency;
+	flist[F_GET_RECEIVER_STATUS]			=	&ClientInterface::get_status;
+	flist[F_START_RECEIVER]					=	&ClientInterface::start_receiver;
+	flist[F_STOP_RECEIVER]					=	&ClientInterface::stop_receiver;
+	flist[F_SET_RECEIVER_FILE_PATH]			=	&ClientInterface::set_file_dir;
+	flist[F_SET_RECEIVER_FILE_NAME]			=	&ClientInterface::set_file_name;
+	flist[F_SET_RECEIVER_FILE_INDEX]		=	&ClientInterface::set_file_index;
+	flist[F_GET_RECEIVER_FRAME_INDEX]		=	&ClientInterface::get_frame_index;
+	flist[F_GET_RECEIVER_FRAMES_CAUGHT]		=	&ClientInterface::get_frames_caught;
+	flist[F_ENABLE_RECEIVER_FILE_WRITE]		=	&ClientInterface::enable_file_write;
+	flist[F_ENABLE_RECEIVER_MASTER_FILE_WRITE]	=	&ClientInterface::enable_master_file_write;
+	flist[F_ENABLE_RECEIVER_OVERWRITE]		= 	&ClientInterface::enable_overwrite;
+	flist[F_ENABLE_RECEIVER_TEN_GIGA]		= 	&ClientInterface::enable_tengiga;
+	flist[F_SET_RECEIVER_FIFO_DEPTH]		= 	&ClientInterface::set_fifo_depth;
+	flist[F_RECEIVER_ACTIVATE]				= 	&ClientInterface::set_activate;
+	flist[F_STREAM_DATA_FROM_RECEIVER]		= 	&ClientInterface::set_data_stream_enable;
+	flist[F_RECEIVER_STREAMING_TIMER]		= 	&ClientInterface::set_streaming_timer;
+	flist[F_SET_FLIPPED_DATA_RECEIVER]		= 	&ClientInterface::set_flipped_data;
+	flist[F_SET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::set_file_format;
+	flist[F_SEND_RECEIVER_DETPOSID]			= 	&ClientInterface::set_detector_posid;
+	flist[F_SEND_RECEIVER_MULTIDETSIZE]		= 	&ClientInterface::set_multi_detector_size;
+	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::set_streaming_port;
+	flist[F_RECEIVER_STREAMING_SRC_IP]		= 	&ClientInterface::set_streaming_source_ip;
+	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::set_silent_mode;
+	flist[F_ENABLE_GAPPIXELS_IN_RECEIVER]	=	&ClientInterface::enable_gap_pixels;
+	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&ClientInterface::restream_stop;
+	flist[F_ADDITIONAL_JSON_HEADER]         =   &ClientInterface::set_additional_json_header;
+	flist[F_GET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::get_additional_json_header;
+    flist[F_RECEIVER_UDP_SOCK_BUF_SIZE]     =   &ClientInterface::set_udp_socket_buffer_size;
+    flist[F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE]=   &ClientInterface::get_real_udp_socket_buffer_size;
+    flist[F_SET_RECEIVER_FRAMES_PER_FILE]	=   &ClientInterface::set_frames_per_file;
+    flist[F_RECEIVER_CHECK_VERSION]			=   &ClientInterface::check_version_compatibility;
+    flist[F_RECEIVER_DISCARD_POLICY]		=   &ClientInterface::set_discard_policy;
+	flist[F_RECEIVER_PADDING_ENABLE]		=   &ClientInterface::set_padding_enable;
+	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &ClientInterface::set_deactivated_padding_enable;
+	flist[F_RECEIVER_SET_READOUT_MODE] 	    = 	&ClientInterface::set_readout_mode;
+	flist[F_RECEIVER_SET_ADC_MASK]			=	&ClientInterface::set_adc_mask;
+	flist[F_SET_RECEIVER_DBIT_LIST]			=	&ClientInterface::set_dbit_list;
+	flist[F_GET_RECEIVER_DBIT_LIST]			=	&ClientInterface::get_dbit_list;
+	flist[F_RECEIVER_DBIT_OFFSET]			= 	&ClientInterface::set_dbit_offset;
+    flist[F_SET_RECEIVER_QUAD]			    = 	&ClientInterface::set_quad_type;
+    flist[F_SET_RECEIVER_READ_N_LINES]      =   &ClientInterface::set_read_n_lines;
+    flist[F_SET_RECEIVER_UDP_IP]            =   &ClientInterface::set_udp_ip;
+	flist[F_SET_RECEIVER_UDP_IP2]           =   &ClientInterface::set_udp_ip2;
+	flist[F_SET_RECEIVER_UDP_PORT]          =   &ClientInterface::set_udp_port;
+	flist[F_SET_RECEIVER_UDP_PORT2]         =   &ClientInterface::set_udp_port2;
+	flist[F_SET_RECEIVER_NUM_INTERFACES]    =   &ClientInterface::set_num_interfaces;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		// FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -219,7 +211,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	return OK;
 }
 // clang-format on
-int slsReceiverTCPIPInterface::decode_function(Interface &socket) {
+int ClientInterface::decode_function(Interface &socket) {
     ret = FAIL;
     socket.Receive(fnum);
     if (fnum <= NUM_DET_FUNCTIONS || fnum >= NUM_REC_FUNCTIONS) {
@@ -237,14 +229,14 @@ int slsReceiverTCPIPInterface::decode_function(Interface &socket) {
     return ret;
 }
 
-void slsReceiverTCPIPInterface::functionNotImplemented() {
+void ClientInterface::functionNotImplemented() {
     std::ostringstream os;
     // os << "Function: " << getFunctionNameFromEnum((enum detFuncs)fnum)
     //    << ", is is not implemented for this detector";
     throw RuntimeError(os.str());
 }
 
-void slsReceiverTCPIPInterface::modeNotImplemented(const std::string &modename,
+void ClientInterface::modeNotImplemented(const std::string &modename,
                                                    int mode) {
     std::ostringstream os;
     os << modename << " (" << mode << ") is not implemented for this detector";
@@ -252,7 +244,7 @@ void slsReceiverTCPIPInterface::modeNotImplemented(const std::string &modename,
 }
 
 template <typename T>
-void slsReceiverTCPIPInterface::validate(T arg, T retval, std::string modename,
+void ClientInterface::validate(T arg, T retval, std::string modename,
                                          numberMode hex) {
     if (ret == OK && arg != -1 && retval != arg) {
         auto format = (hex == HEX) ? std::hex : std::dec;
@@ -264,13 +256,13 @@ void slsReceiverTCPIPInterface::validate(T arg, T retval, std::string modename,
     }
 }
 
-void slsReceiverTCPIPInterface::VerifyLock() {
+void ClientInterface::VerifyLock() {
     if (lockStatus && server->getThisClient() != server->getLockedBy()) {
         throw sls::SocketError("Receiver locked\n");
     }
 }
 
-void slsReceiverTCPIPInterface::VerifyIdle(Interface &socket) {
+void ClientInterface::VerifyIdle(Interface &socket) {
     if (impl()->getStatus() != IDLE) {
         std::ostringstream oss;
         oss << "Can not execute " << getFunctionNameFromEnum((enum detFuncs)fnum) 
@@ -279,7 +271,7 @@ void slsReceiverTCPIPInterface::VerifyIdle(Interface &socket) {
     }
 }
 
-int slsReceiverTCPIPInterface::exec_command(Interface &socket) {
+int ClientInterface::exec_command(Interface &socket) {
     char cmd[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
     socket.Receive(cmd);
@@ -301,13 +293,13 @@ int slsReceiverTCPIPInterface::exec_command(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::exit_server(Interface &socket) {
+int ClientInterface::exit_server(Interface &socket) {
     FILE_LOG(logINFO) << "Closing server";
     socket.Send(OK);
     return GOODBYE;
 }
 
-int slsReceiverTCPIPInterface::lock_receiver(Interface &socket) {
+int ClientInterface::lock_receiver(Interface &socket) {
     auto lock = socket.Receive<int>();
     FILE_LOG(logDEBUG1) << "Locking Server to " << lock;
     if (lock >= 0) {
@@ -322,11 +314,11 @@ int slsReceiverTCPIPInterface::lock_receiver(Interface &socket) {
     return socket.sendResult(lockStatus);
 }
 
-int slsReceiverTCPIPInterface::get_last_client_ip(Interface &socket) {
+int ClientInterface::get_last_client_ip(Interface &socket) {
     return socket.sendResult(server->getLastClient());
 }
 
-int slsReceiverTCPIPInterface::set_port(Interface &socket) {
+int ClientInterface::set_port(Interface &socket) {
     auto p_number = socket.Receive<int>();
     if (p_number < 1024)
         throw RuntimeError("Port Number: " + std::to_string(p_number) +
@@ -341,7 +333,7 @@ int slsReceiverTCPIPInterface::set_port(Interface &socket) {
     return OK;
 }
 
-int slsReceiverTCPIPInterface::update_client(Interface &socket) {
+int ClientInterface::update_client(Interface &socket) {
     if (receiver == nullptr)
         throw sls::SocketError(
             "Receiver not set up. Please use rx_hostname first.\n");
@@ -349,7 +341,7 @@ int slsReceiverTCPIPInterface::update_client(Interface &socket) {
     return send_update(socket);
 }
 
-int slsReceiverTCPIPInterface::send_update(Interface &socket) {
+int ClientInterface::send_update(Interface &socket) {
     int n = 0;
     int i32 = -1;
     int64_t i64 = -1;
@@ -452,11 +444,11 @@ int slsReceiverTCPIPInterface::send_update(Interface &socket) {
     return OK;
 }
 
-int slsReceiverTCPIPInterface::get_version(Interface &socket) {
+int ClientInterface::get_version(Interface &socket) {
     return socket.sendResult(getReceiverVersion());
 }
 
-int slsReceiverTCPIPInterface::set_detector_type(Interface &socket) {
+int ClientInterface::set_detector_type(Interface &socket) {
     auto arg = socket.Receive<detectorType>();
     // set
     if (arg >= 0) {
@@ -479,7 +471,7 @@ int slsReceiverTCPIPInterface::set_detector_type(Interface &socket) {
         }
 
         if (receiver == nullptr) {
-            receiver = sls::make_unique<slsReceiverImplementation>();
+            receiver = sls::make_unique<Implementation>();
         }
         myDetectorType = arg;
         if (impl()->setDetectorType(myDetectorType) == FAIL) {
@@ -503,7 +495,7 @@ int slsReceiverTCPIPInterface::set_detector_type(Interface &socket) {
     return socket.sendResult(myDetectorType);
 }
 
-int slsReceiverTCPIPInterface::set_detector_hostname(Interface &socket) {
+int ClientInterface::set_detector_hostname(Interface &socket) {
     char hostname[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
     socket.Receive(hostname);
@@ -520,7 +512,7 @@ int slsReceiverTCPIPInterface::set_detector_hostname(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_roi(Interface &socket) {
+int ClientInterface::set_roi(Interface &socket) {
     static_assert(sizeof(ROI) == 2 * sizeof(int), "ROI not packed");
     ROI arg;
     socket.Receive(arg);
@@ -535,14 +527,14 @@ int slsReceiverTCPIPInterface::set_roi(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_num_frames(Interface &socket) {
+int ClientInterface::set_num_frames(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     FILE_LOG(logDEBUG1) << "Setting num frames to " << value;
     impl()->setNumberOfFrames(value);
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_num_analog_samples(Interface &socket) {
+int ClientInterface::set_num_analog_samples(Interface &socket) {
     auto value = socket.Receive<int>();
     FILE_LOG(logDEBUG1) << "Setting num analog samples to " << value;
     if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
@@ -553,7 +545,7 @@ int slsReceiverTCPIPInterface::set_num_analog_samples(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_num_digital_samples(Interface &socket) {
+int ClientInterface::set_num_digital_samples(Interface &socket) {
     auto value = socket.Receive<int>();
     FILE_LOG(logDEBUG1) << "Setting num digital samples to " << value;
     if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
@@ -563,28 +555,28 @@ int slsReceiverTCPIPInterface::set_num_digital_samples(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_exptime(Interface &socket) {
+int ClientInterface::set_exptime(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     FILE_LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
     impl()->setAcquisitionTime(value);
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_period(Interface &socket) {
+int ClientInterface::set_period(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     FILE_LOG(logDEBUG1) << "Setting period to " << value << "ns";
     impl()->setAcquisitionPeriod(value);
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_subexptime(Interface &socket) {
+int ClientInterface::set_subexptime(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     FILE_LOG(logDEBUG1) << "Setting period to " << value << "ns";
     impl()->setSubExpTime(value);
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_subdeadtime(Interface &socket) {
+int ClientInterface::set_subdeadtime(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     FILE_LOG(logDEBUG1) << "Setting sub deadtime to " << value << "ns";
     impl()->setSubPeriod(value + impl()->getSubExpTime());
@@ -592,7 +584,7 @@ int slsReceiverTCPIPInterface::set_subdeadtime(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_dynamic_range(Interface &socket) {
+int ClientInterface::set_dynamic_range(Interface &socket) {
     auto dr = socket.Receive<int>();
     if (dr >= 0) {
         VerifyIdle(socket);
@@ -631,7 +623,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_streaming_frequency(Interface &socket) {
+int ClientInterface::set_streaming_frequency(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
         VerifyIdle(socket);
@@ -646,13 +638,13 @@ int slsReceiverTCPIPInterface::set_streaming_frequency(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::get_status(Interface &socket) {
+int ClientInterface::get_status(Interface &socket) {
     auto retval = impl()->getStatus();
     FILE_LOG(logDEBUG1) << "Status:" << sls::ToString(retval);
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::start_receiver(Interface &socket) {
+int ClientInterface::start_receiver(Interface &socket) {
     if (impl()->getStatus() == IDLE) {
         FILE_LOG(logDEBUG1) << "Starting Receiver";
         std::string err;
@@ -664,7 +656,7 @@ int slsReceiverTCPIPInterface::start_receiver(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::stop_receiver(Interface &socket) {
+int ClientInterface::stop_receiver(Interface &socket) {
     if (impl()->getStatus() == RUNNING) {
         FILE_LOG(logDEBUG1) << "Stopping Receiver";
         impl()->stopReceiver();
@@ -677,7 +669,7 @@ int slsReceiverTCPIPInterface::stop_receiver(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_file_dir(Interface &socket) {
+int ClientInterface::set_file_dir(Interface &socket) {
     char fPath[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
     socket.Receive(fPath);
@@ -698,7 +690,7 @@ int slsReceiverTCPIPInterface::set_file_dir(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_file_name(Interface &socket) {
+int ClientInterface::set_file_name(Interface &socket) {
     char fName[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
     socket.Receive(fName);
@@ -715,7 +707,7 @@ int slsReceiverTCPIPInterface::set_file_name(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_file_index(Interface &socket) {
+int ClientInterface::set_file_index(Interface &socket) {
     auto index = socket.Receive<int64_t>();
     if (index >= 0) {
         VerifyIdle(socket);
@@ -728,19 +720,19 @@ int slsReceiverTCPIPInterface::set_file_index(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::get_frame_index(Interface &socket) {
+int ClientInterface::get_frame_index(Interface &socket) {
     uint64_t retval = impl()->getAcquisitionIndex();
     FILE_LOG(logDEBUG1) << "frame index:" << retval;
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::get_frames_caught(Interface &socket) {
+int ClientInterface::get_frames_caught(Interface &socket) {
     int64_t retval = impl()->getFramesCaught();
     FILE_LOG(logDEBUG1) << "frames caught:" << retval;
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::enable_file_write(Interface &socket) {
+int ClientInterface::enable_file_write(Interface &socket) {
     auto enable = socket.Receive<int>();
     if (enable >= 0) {
         VerifyIdle(socket);
@@ -753,7 +745,7 @@ int slsReceiverTCPIPInterface::enable_file_write(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::enable_master_file_write(Interface &socket) {
+int ClientInterface::enable_master_file_write(Interface &socket) {
     auto enable = socket.Receive<int>();
     if (enable >= 0) {
         VerifyIdle(socket);
@@ -766,7 +758,7 @@ int slsReceiverTCPIPInterface::enable_master_file_write(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::enable_overwrite(Interface &socket) {
+int ClientInterface::enable_overwrite(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
         VerifyIdle(socket);
@@ -779,7 +771,7 @@ int slsReceiverTCPIPInterface::enable_overwrite(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::enable_tengiga(Interface &socket) {
+int ClientInterface::enable_tengiga(Interface &socket) {
     auto val = socket.Receive<int>();
     if (myDetectorType != EIGER && myDetectorType != CHIPTESTBOARD &&
         myDetectorType != MOENCH)
@@ -796,7 +788,7 @@ int slsReceiverTCPIPInterface::enable_tengiga(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_fifo_depth(Interface &socket) {
+int ClientInterface::set_fifo_depth(Interface &socket) {
     auto value = socket.Receive<int>();
     if (value >= 0) {
         VerifyIdle(socket);
@@ -809,7 +801,7 @@ int slsReceiverTCPIPInterface::set_fifo_depth(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_activate(Interface &socket) {
+int ClientInterface::set_activate(Interface &socket) {
     auto enable = socket.Receive<int>();
     if (myDetectorType != EIGER)
         functionNotImplemented();
@@ -825,7 +817,7 @@ int slsReceiverTCPIPInterface::set_activate(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_data_stream_enable(Interface &socket) {
+int ClientInterface::set_data_stream_enable(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
         VerifyIdle(socket);
@@ -838,7 +830,7 @@ int slsReceiverTCPIPInterface::set_data_stream_enable(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_streaming_timer(Interface &socket) {
+int ClientInterface::set_streaming_timer(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
         VerifyIdle(socket);
@@ -851,7 +843,7 @@ int slsReceiverTCPIPInterface::set_streaming_timer(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_flipped_data(Interface &socket) {
+int ClientInterface::set_flipped_data(Interface &socket) {
     auto arg = socket.Receive<int>();
 
     if (myDetectorType != EIGER)
@@ -868,7 +860,7 @@ int slsReceiverTCPIPInterface::set_flipped_data(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_file_format(Interface &socket) {
+int ClientInterface::set_file_format(Interface &socket) {
     fileFormat f = GET_FILE_FORMAT;
     socket.Receive(f);
     if (f >= 0) {
@@ -882,7 +874,7 @@ int slsReceiverTCPIPInterface::set_file_format(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_detector_posid(Interface &socket) {
+int ClientInterface::set_detector_posid(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
         VerifyIdle(socket);
@@ -895,7 +887,7 @@ int slsReceiverTCPIPInterface::set_detector_posid(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_multi_detector_size(Interface &socket) {
+int ClientInterface::set_multi_detector_size(Interface &socket) {
     int arg[]{-1, -1};
     socket.Receive(arg);
     if ((arg[0] > 0) && (arg[1] > 0)) {
@@ -910,7 +902,7 @@ int slsReceiverTCPIPInterface::set_multi_detector_size(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_streaming_port(Interface &socket) {
+int ClientInterface::set_streaming_port(Interface &socket) {
     auto port = socket.Receive<int>();
     if (port >= 0) {
         VerifyIdle(socket);
@@ -923,7 +915,7 @@ int slsReceiverTCPIPInterface::set_streaming_port(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_streaming_source_ip(Interface &socket) {
+int ClientInterface::set_streaming_source_ip(Interface &socket) {
     sls::IpAddr arg = 0u;
     socket.Receive(arg);
     VerifyIdle(socket);
@@ -939,7 +931,7 @@ int slsReceiverTCPIPInterface::set_streaming_source_ip(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_silent_mode(Interface &socket) {
+int ClientInterface::set_silent_mode(Interface &socket) {
     auto value = socket.Receive<int>();
     if (value >= 0) {
         VerifyIdle(socket);
@@ -952,7 +944,7 @@ int slsReceiverTCPIPInterface::set_silent_mode(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::enable_gap_pixels(Interface &socket) {
+int ClientInterface::enable_gap_pixels(Interface &socket) {
     auto enable = socket.Receive<int>();
     if (myDetectorType != EIGER)
         functionNotImplemented();
@@ -968,7 +960,7 @@ int slsReceiverTCPIPInterface::enable_gap_pixels(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::restream_stop(Interface &socket) {
+int ClientInterface::restream_stop(Interface &socket) {
     VerifyIdle(socket);
     if (!impl()->getDataStreamEnable()) {
         throw RuntimeError(
@@ -980,7 +972,7 @@ int slsReceiverTCPIPInterface::restream_stop(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_additional_json_header(Interface &socket) {
+int ClientInterface::set_additional_json_header(Interface &socket) {
     char arg[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
     socket.Receive(arg);
@@ -992,14 +984,14 @@ int slsReceiverTCPIPInterface::set_additional_json_header(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::get_additional_json_header(Interface &socket) {
+int ClientInterface::get_additional_json_header(Interface &socket) {
     char retval[MAX_STR_LENGTH]{};
     sls::strcpy_safe(retval, impl()->getAdditionalJsonHeader().c_str());
     FILE_LOG(logDEBUG1) << "additional json header:" << retval;
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_udp_socket_buffer_size(Interface &socket) {
+int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
     auto index = socket.Receive<int64_t>();
     if (index >= 0) {
         VerifyIdle(socket);
@@ -1018,14 +1010,14 @@ int slsReceiverTCPIPInterface::set_udp_socket_buffer_size(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::get_real_udp_socket_buffer_size(
+int ClientInterface::get_real_udp_socket_buffer_size(
     Interface &socket) {
     auto size = impl()->getActualUDPSocketBufferSize();
     FILE_LOG(logDEBUG1) << "Actual UDP socket size :" << size;
     return socket.sendResult(size);
 }
 
-int slsReceiverTCPIPInterface::set_frames_per_file(Interface &socket) {
+int ClientInterface::set_frames_per_file(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
         VerifyIdle(socket);
@@ -1038,7 +1030,7 @@ int slsReceiverTCPIPInterface::set_frames_per_file(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::check_version_compatibility(Interface &socket) {
+int ClientInterface::check_version_compatibility(Interface &socket) {
     auto arg = socket.Receive<int64_t>();
     FILE_LOG(logDEBUG1) << "Checking versioning compatibility with value "
                         << arg;
@@ -1066,7 +1058,7 @@ int slsReceiverTCPIPInterface::check_version_compatibility(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_discard_policy(Interface &socket) {
+int ClientInterface::set_discard_policy(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
         VerifyIdle(socket);
@@ -1079,7 +1071,7 @@ int slsReceiverTCPIPInterface::set_discard_policy(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_padding_enable(Interface &socket) {
+int ClientInterface::set_padding_enable(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
         VerifyIdle(socket);
@@ -1092,7 +1084,7 @@ int slsReceiverTCPIPInterface::set_padding_enable(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_deactivated_padding_enable(
+int ClientInterface::set_deactivated_padding_enable(
     Interface &socket) {
     auto enable = socket.Receive<int>();
     if (myDetectorType != EIGER)
@@ -1109,7 +1101,7 @@ int slsReceiverTCPIPInterface::set_deactivated_padding_enable(
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_readout_mode(Interface &socket) {
+int ClientInterface::set_readout_mode(Interface &socket) {
     auto arg = socket.Receive<readoutMode>();
 
     if (myDetectorType != CHIPTESTBOARD)
@@ -1127,7 +1119,7 @@ int slsReceiverTCPIPInterface::set_readout_mode(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_adc_mask(Interface &socket) {
+int ClientInterface::set_adc_mask(Interface &socket) {
     auto arg = socket.Receive<uint32_t>();
     VerifyIdle(socket);
     FILE_LOG(logDEBUG1) << "Setting ADC enable mask: " << arg;
@@ -1143,7 +1135,7 @@ int slsReceiverTCPIPInterface::set_adc_mask(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_dbit_list(Interface &socket) {
+int ClientInterface::set_dbit_list(Interface &socket) {
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> args;
     socket.Receive(args);
     FILE_LOG(logDEBUG1) << "Setting DBIT list";
@@ -1156,14 +1148,14 @@ int slsReceiverTCPIPInterface::set_dbit_list(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::get_dbit_list(Interface &socket) {
+int ClientInterface::get_dbit_list(Interface &socket) {
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
     retval = impl()->getDbitList();
     FILE_LOG(logDEBUG1) << "Dbit list size retval:" << retval.size();
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_dbit_offset(Interface &socket) {
+int ClientInterface::set_dbit_offset(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
         VerifyIdle(socket);
@@ -1176,7 +1168,7 @@ int slsReceiverTCPIPInterface::set_dbit_offset(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_quad_type(Interface &socket) {
+int ClientInterface::set_quad_type(Interface &socket) {
     auto quadEnable = socket.Receive<int>();
     if (quadEnable >= 0) {
         VerifyIdle(socket);
@@ -1192,7 +1184,7 @@ int slsReceiverTCPIPInterface::set_quad_type(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_read_n_lines(Interface &socket) {
+int ClientInterface::set_read_n_lines(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
         VerifyIdle(socket);
@@ -1206,7 +1198,7 @@ int slsReceiverTCPIPInterface::set_read_n_lines(Interface &socket) {
 }
 
 
-int slsReceiverTCPIPInterface::set_udp_ip(Interface &socket) {
+int ClientInterface::set_udp_ip(Interface &socket) {
     auto arg = socket.Receive<sls::IpAddr>();
     VerifyIdle(socket);
     FILE_LOG(logINFO) << "Received UDP IP: " << arg;
@@ -1233,7 +1225,7 @@ int slsReceiverTCPIPInterface::set_udp_ip(Interface &socket) {
 }
 
 
-int slsReceiverTCPIPInterface::set_udp_ip2(Interface &socket) {
+int ClientInterface::set_udp_ip2(Interface &socket) {
     auto arg = socket.Receive<sls::IpAddr>();
     VerifyIdle(socket);
     if (myDetectorType != JUNGFRAU) {
@@ -1260,7 +1252,7 @@ int slsReceiverTCPIPInterface::set_udp_ip2(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int slsReceiverTCPIPInterface::set_udp_port(Interface &socket) {
+int ClientInterface::set_udp_port(Interface &socket) {
     auto arg = socket.Receive<int>();
     VerifyIdle(socket);
     FILE_LOG(logDEBUG1) << "Setting UDP Port:" << arg;
@@ -1268,7 +1260,7 @@ int slsReceiverTCPIPInterface::set_udp_port(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_udp_port2(Interface &socket) {
+int ClientInterface::set_udp_port2(Interface &socket) {
     auto arg = socket.Receive<int>();
     VerifyIdle(socket);
     if (myDetectorType != JUNGFRAU && myDetectorType != EIGER) {
@@ -1279,7 +1271,7 @@ int slsReceiverTCPIPInterface::set_udp_port2(Interface &socket) {
     return socket.Send(OK);
 }
 
-int slsReceiverTCPIPInterface::set_num_interfaces(Interface &socket) {
+int ClientInterface::set_num_interfaces(Interface &socket) {
     auto arg = socket.Receive<int>();
     arg = (arg > 1 ? 2 : 1);
     VerifyIdle(socket);

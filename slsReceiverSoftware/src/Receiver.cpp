@@ -1,5 +1,4 @@
 #include "Receiver.h"
-#include "slsReceiverTCPIPInterface.h"
 #include "sls_detector_exceptions.h"
 #include "versionAPI.h"
 #include "container_utils.h" 
@@ -71,14 +70,14 @@ Receiver::Receiver(int argc, char *argv[]):
 	}
 
 	// might throw an exception
-	tcpipInterface = sls::make_unique<slsReceiverTCPIPInterface>(tcpip_port_no);
+	tcpipInterface = sls::make_unique<ClientInterface>(tcpip_port_no);
 }
 
 
 Receiver::Receiver(int tcpip_port_no)
 {
 	// might throw an exception
-	tcpipInterface = sls::make_unique<slsReceiverTCPIPInterface>(tcpip_port_no);
+	tcpipInterface = sls::make_unique<ClientInterface>(tcpip_port_no);
 }
 
 int64_t Receiver::getReceiverVersion(){

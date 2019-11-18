@@ -1,5 +1,5 @@
 #pragma once
-#include "slsReceiverTCPIPInterface.h"
+#include "ClientInterface.h"
 #include "sls_detector_defs.h"
 
 #include <memory>
@@ -76,5 +76,5 @@ class Receiver : private virtual slsDetectorDefs {
 
 
  private:
-	std::unique_ptr<slsReceiverTCPIPInterface> tcpipInterface;
+	std::unique_ptr<ClientInterface> tcpipInterface;
 };

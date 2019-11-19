@@ -276,7 +276,7 @@ bool multiSlsDetector::isAcquireReady() {
         FILE_LOG(logWARNING)
             << "Acquire has already started. "
                "If previous acquisition terminated unexpectedly, "
-               "reset busy flag to restart.(sls_detector_put busy 0)";
+               "reset busy flag to restart.(sls_detector_put clearbusy)";
         return false;
     }
     multi_shm()->acquiringFlag = true;

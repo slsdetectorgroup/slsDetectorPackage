@@ -388,6 +388,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 			if (fnum < currentFrameIndex) {
 				FILE_LOG(logERROR) << "(Weird), With carry flag: Frame number " <<
 						fnum << " less than current frame number " << currentFrameIndex;
+				carryOverFlag = false;		
 				return 0;
 			}
 			switch(*frameDiscardMode) {

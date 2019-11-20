@@ -17,6 +17,9 @@
 #include <pthread.h>
 #include <time.h>
 #endif
+// ------------------------------------------
+#include <time.h>
+// ------------------------------------------
 
 
 // Global variable from slsDetectorServer_funcs
@@ -32,6 +35,9 @@ pthread_t pthread_virtual_tid;
 int virtual_status = 0;
 int virtual_stop = 0;
 #endif
+// ------------------------------------------
+int temp_status = 0;
+// ------------------------------------------
 
 int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0, 0};
 uint32_t clkFrequency[NUM_CLOCKS] = {0, 0, 0, 0, 0};
@@ -1225,7 +1231,10 @@ int startStateMachine(){
 #endif
 	FILE_LOG(logINFOBLUE, ("Starting State Machine\n"));
 	cleanFifos();
-
+	
+	// ------------------------------------------
+	temp_status = 1;
+	// ------------------------------------------
 	//start state machine
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK);
 
@@ -1305,11 +1314,14 @@ enum runStatus getRunStatus(){
 #endif
 	FILE_LOG(logDEBUG1, ("Getting status\n"));
 
-	uint32_t retval = bus_r(STATUS_REG);
-	FILE_LOG(logINFO, ("Status Register: %08x\n",retval));
+	// ------------------------------------------
+	//uint32_t retval = bus_r(STATUS_REG);
+	//FILE_LOG(logINFO, ("Status Register: %08x\n",retval));
 
 	// running
-	if(retval & CONTROL_RN_BSY_MSK) {
+	if (temp_status) {
+	//if(retval & CONTROL_RN_BSY_MSK) {
+	// ------------------------------------------
 	    FILE_LOG(logINFOBLUE, ("Status: Running\n"));
 	    return RUNNING;
 
@@ -1319,9 +1331,28 @@ enum runStatus getRunStatus(){
 
 void readFrame(int *ret, char *mess){
 	// wait for status to be done
-	while(runBusy()){
-		usleep(500);
-	}
+	
+	// ------------------------------------------
+	//while(runBusy()){
+	//	usleep(500);
+	//}
+
+	int64_t periodns = getPeriod();
+	int numFrames = getNumFrames();
+	    int frameNr = 0;
+	// loop over number of frames
+    for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
+		// sleep for exposure time
+        struct timespec begin, end;
+        clock_gettime(CLOCK_REALTIME, &begin);
+        usleep(periodns / 1000);
+        clock_gettime(CLOCK_REALTIME, &end);
+    }
+	usleep(1 * 1000 * 1000);
+	temp_status = 0;
+	// ------------------------------------------
+
+
 #ifdef VIRTUAL
 	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
@@ -1344,10 +1375,12 @@ u_int32_t runBusy() {
     return virtual_status;
 #endif
 
-	u_int32_t s = (bus_r(CONTROL_REG) & CONTROL_RN_BSY_OFST);
-	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
-	return s;
-
+	// ------------------------------------------
+	return temp_status;
+	//u_int32_t s = (bus_r(CONTROL_REG) & CONTROL_RN_BSY_OFST);
+	//FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
+	//return s;
+	// ------------------------------------------
 }
 
 /* common */

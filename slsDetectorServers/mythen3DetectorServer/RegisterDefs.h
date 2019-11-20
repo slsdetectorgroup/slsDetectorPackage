@@ -89,11 +89,6 @@
 /* Status register */
 #define STATUS_REG                      (0x04 * REG_OFFSET + BASE_CONTROL)
 
-#ifdef VIRTUAL // until firmware is ready
-#define RUN_BUSY_OFST					(0)
-#define RUN_BUSY_MSK      				(0x00000001 << RUN_BUSY_OFST)
-#endif
-
 /* Look at me register, read only */
 #define LOOK_AT_ME_REG          		(0x05 * REG_OFFSET + BASE_CONTROL)	//Not used in firmware or software, good to play with
 
@@ -123,8 +118,8 @@
 #define CONTROL_STRT_ACQSTN_MSK			(0x00000001 << CONTROL_STRT_ACQSTN_OFST)
 #define CONTROL_STP_ACQSTN_OFST			(1)
 #define CONTROL_STP_ACQSTN_MSK			(0x00000001 << CONTROL_STP_ACQSTN_OFST)
-#define CONTROL_RN_BSY_OFST             (2) // assumed for MY3 TODO
-#define CONTROL_RN_BSY_MSK              (0x00000001 << CONTROL_RN_BSY_OFST)
+//#define CONTROL_RN_BSY_OFST             (2) // assumed for MY3 TODO
+//#define CONTROL_RN_BSY_MSK              (0x00000001 << CONTROL_RN_BSY_OFST)
 #define CONTROL_CRE_RST_OFST			(10)
 #define CONTROL_CRE_RST_MSK			    (0x00000001 << CONTROL_CRE_RST_OFST)
 #define CONTROL_PRPHRL_RST_OFST		    (11)										// Only GBE10?

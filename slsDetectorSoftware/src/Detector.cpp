@@ -405,6 +405,10 @@ Result<int64_t> Detector::getFramesCaught(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getFramesCaughtByReceiver, pos);
 }
 
+Result<std::vector<uint64_t>> Detector::getNumMissingPackets(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getNumMissingPackets, pos);
+}
+
 Result<uint64_t> Detector::getStartingFrameNumber(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getStartingFrameNumber, pos);
 }

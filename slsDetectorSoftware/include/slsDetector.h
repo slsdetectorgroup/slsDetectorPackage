@@ -178,6 +178,9 @@ struct sharedSlsDetector {
 
     /** num udp interfaces */
     int numUDPInterfaces;
+
+    /** stopped flag to inform rxr */
+    bool stoppedFlag;
 };
 
 class slsDetector : public virtual slsDetectorDefs {
@@ -1610,6 +1613,9 @@ class slsDetector : public virtual slsDetectorDefs {
      * @returns number of frames caught by receiver
      */
     int64_t getFramesCaughtByReceiver() const;
+
+    /** Gets number of missing packets */
+    std::vector<uint64_t> getNumMissingPackets() const;
 
     /**
      * Gets the current frame index of receiver

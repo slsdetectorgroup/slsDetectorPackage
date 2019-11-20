@@ -58,6 +58,7 @@ class Implementation : private virtual slsDetectorDefs {
     //***acquisition count parameters***
     uint64_t getFramesCaught() const;
     uint64_t getAcquisitionIndex() const;
+    std::vector<uint64_t> getNumMissingPackets() const;
 
     //***connection parameters***
     uint32_t getUDPPortNumber() const;
@@ -198,6 +199,7 @@ class Implementation : private virtual slsDetectorDefs {
 
     //***acquisition functions***
     int startReceiver(std::string& err);
+    void setStoppedFlag(bool stopped);
     void stopReceiver();
     void startReadout();
     void shutDownUDPSockets();
@@ -291,6 +293,7 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t streamingPort;
      sls::IpAddr streamingSrcIP;
     std::string additionalJsonHeader;
+    bool stoppedFlag;
 
     //** class objects ***
     GeneralData *generalData;

@@ -9,6 +9,12 @@
 auto GET = slsDetectorDefs::GET_ACTION;
 auto PUT = slsDetectorDefs::PUT_ACTION;
 
+
+
+TEST_CASE("rx_missingpackets", "[.cmd]") {
+    REQUIRE_NOTHROW(multiSlsDetectorClient("rx_missingpackets", GET));
+}
+
 TEST_CASE("burstmode", "[.cmd][.gotthard2]") {
     if (test::type == slsDetectorDefs::GOTTHARD2) {   
         REQUIRE_NOTHROW(multiSlsDetectorClient("burstmode 0", PUT));

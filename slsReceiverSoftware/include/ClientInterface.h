@@ -77,6 +77,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_file_name(sls::ServerInterface2 &socket);
     int set_file_index(sls::ServerInterface2 &socket);
     int get_frame_index(sls::ServerInterface2 &socket);
+    int get_missing_packets(sls::ServerInterface2 &socket);
     int get_frames_caught(sls::ServerInterface2 &socket);
     int enable_file_write(sls::ServerInterface2 &socket);
     int enable_master_file_write(sls::ServerInterface2 &socket);

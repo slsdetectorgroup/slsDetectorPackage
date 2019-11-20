@@ -103,6 +103,7 @@ void Implementation::InitializeMembers() {
     dataStreamEnable = false;
     streamingPort = 0;
     streamingSrcIP = 0u;
+    stoppedFlag = false;
 
     //** class objects ***
     generalData = nullptr;
@@ -247,6 +248,21 @@ uint64_t Implementation::getAcquisitionIndex() const {
         return 0;
 
     return min;
+}
+
+std::vector<uint64_t> Implementation::getNumMissingPackets() const {
+    std::vector<uint64_t> mp(numThreads);
+    for (int i = 0; i < numThreads; i++) {
+        int np = generalData->packetsPerFrame;
+        uint64_t totnp = np;
+        // partial readout
+        if (numLinesReadout != MAX_EIGER_ROWS_PER_READOUT) {
+            totnp = ((numLinesReadout * np) / MAX_EIGER_ROWS_PER_READOUT);
+        }     
+        totnp *= numberOfFrames;
+        mp[i] = listener[i]->GetNumMissingPacket(stoppedFlag, totnp);
+    }
+    return mp;
 }
 
 /***connection parameters***/
@@ -1204,6 +1220,7 @@ void Implementation::setDetectorPositionId(const int id) {
 int Implementation::startReceiver(std::string& err) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     FILE_LOG(logINFO) << "Starting Receiver";
+    stoppedFlag = false;
     ResetParametersforNewAcquisition();
 
     // listener
@@ -1245,6 +1262,10 @@ int Implementation::startReceiver(std::string& err) {
     FILE_LOG(logINFO) << "Receiver Started";
     FILE_LOG(logINFO) << "Status: " << sls::ToString(status);
     return OK;
+}
+
+void Implementation::setStoppedFlag(bool stopped) {
+    stoppedFlag = stopped;
 }
 
 void Implementation::stopReceiver() {
@@ -1297,29 +1318,20 @@ void Implementation::stopReceiver() {
     FILE_LOG(logINFO) << "Status: " << sls::ToString(status);
 
     { // statistics
+        std::vector<uint64_t> mp = getNumMissingPackets();
         uint64_t tot = 0;
         for (int i = 0; i < numThreads; i++) {
-            tot += dataProcessor[i]->GetNumFramesCaught();
-            int64_t missingpackets =
-                numberOfFrames * generalData->packetsPerFrame -
-                listener[i]->GetPacketsCaught();
-
-            // partial readout
-            if (numLinesReadout != MAX_EIGER_ROWS_PER_READOUT) {
-                int maxnp = generalData->packetsPerFrame;
-                int np = ((numLinesReadout * maxnp) / MAX_EIGER_ROWS_PER_READOUT);
-                missingpackets = numberOfFrames * np - listener[i]->GetPacketsCaught();
-            }
+            int nf = dataProcessor[i]->GetNumFramesCaught();
+            tot += nf;
 
             TLogLevel lev =
-                (((int64_t)missingpackets) > 0) ? logINFORED : logINFOGREEN;
+                (((int64_t)mp[i]) > 0) ? logINFORED : logINFOGREEN;
             FILE_LOG(lev) <<
                 // udp port number could be the second if selected interface is
                 // 2 for jungfrau
                 "Summary of Port " << udpPortNum[i]
-                          << "\n\tMissing Packets\t\t: " << missingpackets
-                          << "\n\tComplete Frames\t\t: "
-                          << dataProcessor[i]->GetNumFramesCaught()
+                          << "\n\tMissing Packets\t\t: " << mp[i]
+                          << "\n\tComplete Frames\t\t: " << nf
                           << "\n\tLast Frame Caught\t: "
                           << listener[i]->GetLastFrameIndexCaught();
         }

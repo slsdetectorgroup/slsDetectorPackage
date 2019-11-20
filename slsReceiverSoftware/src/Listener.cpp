@@ -88,6 +88,13 @@ uint64_t Listener::GetLastFrameIndexCaught() {
 	return lastCaughtFrameIndex;
 }
 
+uint64_t Listener::GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) {
+	if (!stoppedFlag) {
+		return (numPackets - numPacketsCaught);
+	}
+	return (lastCaughtFrameIndex - firstIndex + 1) * generalData->packetsPerFrame - numPacketsCaught;
+}
+
 /** setters */
 void Listener::StartRunning() {
     runningFlag = true;

@@ -70,6 +70,9 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	 */
 	uint64_t GetLastFrameIndexCaught();
 
+	/** Get  number of missing packets */
+	uint64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets);
+
 
 	//*** setters ***
 	/**

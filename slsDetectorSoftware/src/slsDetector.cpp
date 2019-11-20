@@ -385,6 +385,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->rxFileOverWrite = true;
     shm()->rxDbitOffset = 0;
     shm()->numUDPInterfaces = 1;
+    shm()->stoppedFlag = false;
 
     // get the detector parameters based on type
     detParameters parameters{type};
@@ -1117,6 +1118,7 @@ void slsDetector::prepareAcquisition() {
 
 void slsDetector::startAcquisition() {
     FILE_LOG(logDEBUG1) << "Starting Acquisition";
+    shm()->stoppedFlag = false;
     sendToDetector(F_START_ACQUISITION);
     FILE_LOG(logDEBUG1) << "Starting Acquisition successful";
 }
@@ -1130,6 +1132,7 @@ void slsDetector::stopAcquisition() {
     }
     FILE_LOG(logDEBUG1) << "Stopping Acquisition";
     sendToDetectorStop(F_STOP_ACQUISITION);
+    shm()->stoppedFlag = true;
     FILE_LOG(logDEBUG1) << "Stopping Acquisition successful";
     // if rxr streaming and acquisition finished, restream dummy stop packet
     if ((shm()->rxUpstream) && (s == IDLE) && (r == IDLE)) {
@@ -1145,6 +1148,7 @@ void slsDetector::sendSoftwareTrigger() {
 
 void slsDetector::startAndReadAll() {
     FILE_LOG(logDEBUG1) << "Starting and reading all frames";
+    shm()->stoppedFlag = false;
     sendToDetector(F_START_AND_READ_ALL);
     FILE_LOG(logDEBUG1) << "Detector successfully finished acquisition";
 }
@@ -3435,7 +3439,8 @@ void slsDetector::startReceiver() {
 void slsDetector::stopReceiver() {
     FILE_LOG(logDEBUG1) << "Stopping Receiver";
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_STOP_RECEIVER);
+        int arg = static_cast<int>(shm()->stoppedFlag);
+        sendToReceiver(F_STOP_RECEIVER, arg, nullptr);
     }
 }
 
@@ -3457,6 +3462,33 @@ int64_t slsDetector::getFramesCaughtByReceiver() const {
         FILE_LOG(logDEBUG1) << "Frames Caught by Receiver: " << retval;
     }
     return retval;
+}
+
+std::vector<uint64_t> slsDetector::getNumMissingPackets() const {
+    FILE_LOG(logDEBUG1) << "Getting num missing packets";
+    if (shm()->useReceiverFlag) {
+        int fnum = F_GET_NUM_MISSING_PACKETS;
+        int ret = FAIL;
+        auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+        client.Send(&fnum, sizeof(fnum));
+        client.Receive(&ret, sizeof(ret));
+        if (ret == FAIL) {
+            char mess[MAX_STR_LENGTH]{};
+            client.Receive(mess, MAX_STR_LENGTH);
+            throw RuntimeError("Receiver " + std::to_string(detId) +
+                            " returned error: " + std::string(mess));
+        } else {
+            int nports = -1;
+            client.Receive(&nports, sizeof(nports));
+            uint64_t mp[nports];
+            memset(mp, 0, sizeof(mp));
+            client.Receive(mp, sizeof(mp));
+            std::vector<uint64_t> retval(mp, mp + nports);
+            FILE_LOG(logDEBUG1) << "Missing packets of Receiver" << detId << ": " << sls::ToString(retval);
+            return retval;
+        }
+    }
+    throw RuntimeError("No receiver to get missing packets.");
 }
 
 uint64_t slsDetector::getReceiverCurrentFrameIndex() const {

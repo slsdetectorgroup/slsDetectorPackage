@@ -679,6 +679,7 @@ class CmdProxy {
                           {"rx_status", &CmdProxy::rx_status}, 
                           {"status", &CmdProxy::status}, 
                           {"rx_framescaught", &CmdProxy::rx_framescaught},
+                          {"rx_missingpackets", &CmdProxy::rx_missingpackets},
                           {"startingfnum", &CmdProxy::startingfnum},
                           {"trigger", &CmdProxy::trigger},
 
@@ -1287,6 +1288,9 @@ class CmdProxy {
 
     GET_COMMAND(rx_framescaught, getFramesCaught, 
                     "\n\tNumber of frames caught by receiver."); 
+
+    GET_COMMAND(rx_missingpackets, getNumMissingPackets, 
+                    "\n\tNumber of missing packets for each port in receiver."); 
 
     INTEGER_COMMAND(startingfnum, getStartingFrameNumber, setStartingFrameNumber, std::stoull,
                     "[n_value]\n\t[Eiger[Jungfrau] Starting frame number for next acquisition."); 

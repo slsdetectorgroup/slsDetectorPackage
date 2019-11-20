@@ -162,8 +162,9 @@ int ClientInterface::function_table(){
 	flist[F_SET_RECEIVER_FILE_PATH]			=	&ClientInterface::set_file_dir;
 	flist[F_SET_RECEIVER_FILE_NAME]			=	&ClientInterface::set_file_name;
 	flist[F_SET_RECEIVER_FILE_INDEX]		=	&ClientInterface::set_file_index;
-	flist[F_GET_RECEIVER_FRAME_INDEX]		=	&ClientInterface::get_frame_index;
+	flist[F_GET_RECEIVER_FRAME_INDEX]		=	&ClientInterface::get_frame_index;    
 	flist[F_GET_RECEIVER_FRAMES_CAUGHT]		=	&ClientInterface::get_frames_caught;
+    flist[F_GET_NUM_MISSING_PACKETS]		=	&ClientInterface::get_missing_packets;
 	flist[F_ENABLE_RECEIVER_FILE_WRITE]		=	&ClientInterface::enable_file_write;
 	flist[F_ENABLE_RECEIVER_MASTER_FILE_WRITE]	=	&ClientInterface::enable_master_file_write;
 	flist[F_ENABLE_RECEIVER_OVERWRITE]		= 	&ClientInterface::enable_overwrite;
@@ -657,8 +658,10 @@ int ClientInterface::start_receiver(Interface &socket) {
 }
 
 int ClientInterface::stop_receiver(Interface &socket) {
+    auto arg = socket.Receive<int>();
     if (impl()->getStatus() == RUNNING) {
         FILE_LOG(logDEBUG1) << "Stopping Receiver";
+        impl()->setStoppedFlag(static_cast<bool>(arg));
         impl()->stopReceiver();
     }
     auto s = impl()->getStatus();
@@ -724,6 +727,18 @@ int ClientInterface::get_frame_index(Interface &socket) {
     uint64_t retval = impl()->getAcquisitionIndex();
     FILE_LOG(logDEBUG1) << "frame index:" << retval;
     return socket.sendResult(retval);
+}
+
+int ClientInterface::get_missing_packets(Interface &socket) {
+    std::vector<uint64_t> m = impl()->getNumMissingPackets();
+    FILE_LOG(logDEBUG1) << "missing packets:" << sls::ToString(m);
+    int retvalsize = m.size();
+    uint64_t retval[retvalsize];
+    std::copy(std::begin(m), std::end(m), retval);
+    socket.Send(OK);
+    socket.Send(&retvalsize, sizeof(retvalsize));
+    socket.Send(retval, sizeof(retval));
+    return OK;
 }
 
 int ClientInterface::get_frames_caught(Interface &socket) {

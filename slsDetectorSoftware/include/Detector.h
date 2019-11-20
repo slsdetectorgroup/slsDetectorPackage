@@ -296,6 +296,8 @@ class Detector {
 
     Result<int64_t> getFramesCaught(Positions pos = {}) const;
 
+    Result<std::vector<uint64_t>> getNumMissingPackets(Positions pos = {}) const;
+
     /** [Eiger][Jungfrau] */
     Result<uint64_t> getStartingFrameNumber(Positions pos = {}) const;
 

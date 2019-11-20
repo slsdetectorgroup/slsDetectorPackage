@@ -933,9 +933,16 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int data
         break;
 
     default:
-        for (ichan = 0; ichan < size; ++ichan) {
-            dest[ichan] = ((*((u_int32_t *)source)) >> discardBits);
-            source += 4;
+        if (discardBits > 0) {
+            for (ichan = 0; ichan < size; ++ichan) {
+                dest[ichan] = ((*((u_int32_t *)source)) >> discardBits);
+                source += 4;
+            }
+        } else {
+            for (ichan = 0; ichan < size; ++ichan) {
+                dest[ichan] = (*((u_int32_t *)source));
+                source += 4;
+            }
         }
         break;
     }

@@ -1021,7 +1021,7 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
 	    return FAIL;
 	}
 	char* clock_names[] = {CLK_NAMES};
-    FILE_LOG(logINFO, ("Setting %s clock (%d) phase to %d %s\n", clock_names[ind], ind, val, degrees == 0 ? "" : "degrees"));
+    FILE_LOG(logINFOBLUE, ("Setting %s clock (%d) phase to %d %s\n", clock_names[ind], ind, val, degrees == 0 ? "" : "degrees"));
 	int maxShift = getMaxPhase(ind);
 	// validation
 	if (degrees && (val < 0 || val > 359)) {
@@ -1048,19 +1048,17 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
     	FILE_LOG(logINFO, ("\tNothing to do in Phase Shift\n"));
     	return OK;
     }
-    FILE_LOG(logINFOBLUE, ("Configuring Phase\n"));
 
-    int phase = 0;
-    if (relativePhase > 0) {
-        phase = (maxShift - relativePhase);
-    } else {
-    	phase = (-1) * relativePhase;
-    }
-    FILE_LOG(logDEBUG1, ("\t[Single Direction] Phase:%d (0x%x). Max Phase shifts:%d\n", phase, phase, maxShift));
+	int direction = 1;
+	if (relativePhase < 0) {
+		relativePhase *= -1;
+		direction = 0;
+	}
+    FILE_LOG(logDEBUG1, ("\tConfiguring Phase: [phase:%d (0x%x), direction:%d]\n", relativePhase, relativePhase, direction));
 
 	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
 	int clkIndex = ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind;
-    int ret = ALTERA_PLL_C10_SetPhaseShift(pllIndex, clkIndex, phase, 0);
+    int ret = ALTERA_PLL_C10_SetPhaseShift(pllIndex, clkIndex, relativePhase, direction);
 
     clkPhase[ind] = valShift;
 	return ret;

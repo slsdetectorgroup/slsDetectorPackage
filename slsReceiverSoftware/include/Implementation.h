@@ -17,187 +17,70 @@ class slsDetectorDefs;
 
 class Implementation : private virtual slsDetectorDefs {
   public:
-    //*** cosntructor & destructor ***
-    /**
-     * Constructor
-     */
     Implementation();
-
-    /**
-     * Destructor
-     */
     virtual ~Implementation();
 
-    /*************************************************************************
-     * Getters ***************************************************************
-     * They access local cache of configuration or detector parameters *******
-     *************************************************************************/
 
-    //**initial parameters***
-    int *getMultiDetectorSize() const;
-    int getDetectorPositionId() const;
-    std::string getDetectorHostname() const;
-    int getFlippedDataX() const;
-    bool getGapPixelsEnable() const;
-    bool getQuad() const;
-    int getReadNLines() const;
-    readoutMode getReadoutMode() const;
-
-    //***file parameters***
-    fileFormat getFileFormat() const;
-    std::string getFileName() const;
-    std::string getFilePath() const;
-    uint64_t getFileIndex() const;
-    uint32_t getFramesPerFile() const;
-    frameDiscardPolicy getFrameDiscardPolicy() const;
-    bool getFramePaddingEnable() const;
-    bool getFileWriteEnable() const;
-    bool getMasterFileWriteEnable() const;
-    bool getOverwriteEnable() const;
-
-    //***acquisition count parameters***
-    uint64_t getFramesCaught() const;
-    uint64_t getAcquisitionIndex() const;
-    std::vector<uint64_t> getNumMissingPackets() const;
-
-    //***connection parameters***
-    uint32_t getUDPPortNumber() const;
-    uint32_t getUDPPortNumber2() const;
-    std::string getEthernetInterface() const;
-    std::string getEthernetInterface2() const;
-    int getNumberofUDPInterfaces() const;
-
-    //***acquisition parameters***
-    ROI getROI() const;
-    uint32_t getADCEnableMask() const;
-    uint32_t getStreamingFrequency() const;
-    uint32_t getStreamingTimer() const;
-    bool getDataStreamEnable() const;
-    uint64_t getAcquisitionPeriod() const;
-    uint64_t getAcquisitionTime() const;
-    uint64_t getSubExpTime() const;
-    uint64_t getSubPeriod() const;
-    uint64_t getNumberOfFrames() const;
-    uint32_t getNumberofAnalogSamples() const;
-    uint32_t getNumberofDigitalSamples() const;
-    uint32_t getDynamicRange() const;
-    bool getTenGigaEnable() const;
-    uint32_t getFifoDepth() const;
-
-    //***receiver status***
-    runStatus getStatus() const;
-    bool getSilentMode() const;
-    std::vector<int> getDbitList() const;
-    int getDbitOffset() const;
-    bool getActivate() const;
-    bool getDeactivatedPadding() const;
-    uint32_t getStreamingPort() const;
-    sls::IpAddr getStreamingSourceIP() const;
-    std::string getAdditionalJsonHeader() const;
-    int64_t getUDPSocketBufferSize() const;
-    int64_t getActualUDPSocketBufferSize() const;
-
-    /*************************************************************************
-     * Setters ***************************************************************
-     * They modify the local cache of configuration or detector parameters ***
-     *************************************************************************/
-
-    //**initial parameters***
-    void setDetectorHostname(const std::string& c);
-    void setMultiDetectorSize(const int *size);
-    void setFlippedDataX(int enable = -1);
-    /* [Eiger] */
-    int setGapPixelsEnable(const bool b);
-    /* [Eiger] */
-    int setQuad(const bool b);
-    /* [Eiger] */
-    void setReadNLines(const int value);
-    /* [Ctb] */
-    int setReadoutMode(const readoutMode f);
-
-    //***file parameters***
-    void setFileFormat(slsDetectorDefs::fileFormat f);
-    void setFileName(const std::string& c);
-    /* check for existence */
-    void setFilePath(const std::string& c);
-    void setFileIndex(const uint64_t i);
-    /* 0 means infinite */
-    void setFramesPerFile(const uint32_t i);
-    void setFrameDiscardPolicy(const frameDiscardPolicy i);
-    void setFramePaddingEnable(const bool i);
-    void setFileWriteEnable(const bool b);
-    void setMasterFileWriteEnable(const bool b);
-    void setOverwriteEnable(const bool b);
-
-    //***connection parameters***
-    void setUDPPortNumber(const uint32_t i);
-    /* [Eiger][Jungfrau] */
-    void setUDPPortNumber2(const uint32_t i);
-    void setEthernetInterface(const std::string &c);
-    /* [Jungfrau] */
-    void setEthernetInterface2(const std::string &c);
-    /* [Jungfrau] */
-    int setNumberofUDPInterfaces(const int n);
-    int setUDPSocketBufferSize(const int64_t s);
-
-    //***acquisition parameters***
-    /* [Gotthard] */
-    int setROI(ROI arg);
-    /* [Ctb][Moench] */
-    int setADCEnableMask(const uint32_t mask);
-    /* 0 for timer */    
-    int setStreamingFrequency(const uint32_t freq);
-    void setStreamingTimer(const uint32_t time_in_ms);
-    int setDataStreamEnable(const bool enable);
-    void setStreamingPort(const uint32_t i);
-    void setStreamingSourceIP(const  sls::IpAddr ip);
-    void setAdditionalJsonHeader(const std::string& c);
-    void setAcquisitionPeriod(const uint64_t i);
-    void setAcquisitionTime(const uint64_t i);
-    void setSubExpTime(const uint64_t i);
-    void setSubPeriod(const uint64_t i);
-    void setNumberOfFrames(const uint64_t i);
-    int setNumberofAnalogSamples(const uint32_t i);
-    int setNumberofDigitalSamples(const uint32_t i);
-    int setDynamicRange(const uint32_t i);
-    /* [Eiger][Ctb] */    
-    int setTenGigaEnable(const bool b);
-    int setFifoDepth(const uint32_t i);
-
-    //***receiver parameters***
-    /** [Eiger]
-     * Activate / Deactivate Receiver
-     * If deactivated, receiver will create dummy data if deactivated padding is
-     * enabled (as it will receive nothing from detector)
-     * @param enable enable
-     * @return false for disabled, true for enabled
-     */
-    bool setActivate(const bool enable);
-    /* [Eiger] */
-    bool setDeactivatedPadding(const bool enable);
-    void setSilentMode(const bool i);
-    /* [Ctb] */
-    void setDbitList(const std::vector<int> v);
-    /* [Ctb] */
-    void setDbitOffset(const int s);
-
-    /*************************************************************************
-     * Behavioral functions***************************************************
-     * They may modify the status of the receiver ****************************
-     *************************************************************************/
-
-    //***initial functions***
+    /**************************************************
+     *                                                 *
+     *   Configuration Parameters                      *
+     *                                                 *
+     * ************************************************/
     /**
-     * Set receiver type (and corresponding detector variables in derived
-     * STANDARD class) It is the first function called by the client when
+     * Set receiver type. It is the first function called by the client when
      * connecting to receiver
      * @param d detector type
      * @return OK or FAIL
      */
     int setDetectorType(const detectorType d);
+    int *getMultiDetectorSize() const;
+    void setMultiDetectorSize(const int *size);
+    int getDetectorPositionId() const;
     void setDetectorPositionId(const int id);
+    std::string getDetectorHostname() const;
+    void setDetectorHostname(const std::string& c);
+    bool getSilentMode() const;
+    void setSilentMode(const bool i);
+    uint32_t getFifoDepth() const;
+    int setFifoDepth(const uint32_t i);
+    frameDiscardPolicy getFrameDiscardPolicy() const;
+    void setFrameDiscardPolicy(const frameDiscardPolicy i);
+    bool getFramePaddingEnable() const;
+    void setFramePaddingEnable(const bool i);
 
-    //***acquisition functions***
+    /**************************************************
+     *                                                 *
+     *   File Parameters                               *
+     *                                                 *
+     * ************************************************/
+    fileFormat getFileFormat() const;
+    void setFileFormat(slsDetectorDefs::fileFormat f);
+    std::string getFilePath() const;
+    /* check for existence */
+    void setFilePath(const std::string& c);
+    std::string getFileName() const;
+    void setFileName(const std::string& c);
+    uint64_t getFileIndex() const;
+    void setFileIndex(const uint64_t i);
+    bool getFileWriteEnable() const;
+    void setFileWriteEnable(const bool b);
+    bool getMasterFileWriteEnable() const;
+    void setMasterFileWriteEnable(const bool b);
+    bool getOverwriteEnable() const;
+    void setOverwriteEnable(const bool b);
+    uint32_t getFramesPerFile() const;
+    /* 0 means infinite */
+    void setFramesPerFile(const uint32_t i);
+
+    /**************************************************
+     *                                                 *
+     *   Acquisition                                   *
+     *                                                 *
+     * ************************************************/
+    runStatus getStatus() const;
+    uint64_t getFramesCaught() const;
+    uint64_t getAcquisitionIndex() const;
+    std::vector<uint64_t> getNumMissingPackets() const;
     int startReceiver(std::string& err);
     void setStoppedFlag(bool stopped);
     void stopReceiver();
@@ -206,18 +89,123 @@ class Implementation : private virtual slsDetectorDefs {
     void closeFiles();
     int restreamStop();
 
-    //***callback functions***
-    void registerCallBackStartAcquisition(int (*func)(std::string, std::string, uint64_t,
-                                                      uint32_t, void *),
-                                          void *arg);
-    void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
-                                             void *arg);
-    void registerCallBackRawDataReady(void (*func)(char *, char *, uint32_t,
-                                                   void *),
-                                      void *arg);
-    void registerCallBackRawDataModifyReady(void (*func)(char *, char *,
-                                                         uint32_t &, void *),
-                                            void *arg);
+
+    /**************************************************
+     *                                                 *
+     *   Network Configuration (UDP)                   *
+     *                                                 *
+     * ************************************************/
+    int getNumberofUDPInterfaces() const;
+    /* [Jungfrau] */
+    int setNumberofUDPInterfaces(const int n);
+    std::string getEthernetInterface() const;
+    void setEthernetInterface(const std::string &c);
+    std::string getEthernetInterface2() const;
+    /* [Jungfrau] */
+    void setEthernetInterface2(const std::string &c);
+    uint32_t getUDPPortNumber() const;
+    void setUDPPortNumber(const uint32_t i);
+    uint32_t getUDPPortNumber2() const;
+    /* [Eiger][Jungfrau] */
+    void setUDPPortNumber2(const uint32_t i);
+    int64_t getUDPSocketBufferSize() const;
+    int setUDPSocketBufferSize(const int64_t s);
+    int64_t getActualUDPSocketBufferSize() const;    
+
+
+    /**************************************************
+     *                                                 *
+     *   ZMQ Streaming Parameters (ZMQ)                *
+     *                                                 *
+     * ************************************************/
+    bool getDataStreamEnable() const;
+    int setDataStreamEnable(const bool enable);
+    uint32_t getStreamingFrequency() const;
+    /* 0 for timer */    
+    int setStreamingFrequency(const uint32_t freq);
+    uint32_t getStreamingTimer() const;
+    void setStreamingTimer(const uint32_t time_in_ms);
+    uint32_t getStreamingPort() const;
+    void setStreamingPort(const uint32_t i);
+    sls::IpAddr getStreamingSourceIP() const;
+    void setStreamingSourceIP(const  sls::IpAddr ip);
+    std::string getAdditionalJsonHeader() const;
+    void setAdditionalJsonHeader(const std::string& c);
+
+    /**************************************************
+     *                                                 *
+     *   Detector Parameters                           *
+     *                                                 *
+     * ************************************************/
+    uint64_t getNumberOfFrames() const;
+    void setNumberOfFrames(const uint64_t i);
+    uint64_t getAcquisitionTime() const;
+    void setAcquisitionTime(const uint64_t i);
+    uint64_t getAcquisitionPeriod() const;
+    void setAcquisitionPeriod(const uint64_t i);
+    uint64_t getSubExpTime() const;
+    /* [Eiger] */
+    void setSubExpTime(const uint64_t i);
+    uint64_t getSubPeriod() const;
+    /* [Eiger] */
+    void setSubPeriod(const uint64_t i);
+    uint32_t getNumberofAnalogSamples() const;
+    /**[Ctb][Moench] */
+    int setNumberofAnalogSamples(const uint32_t i);
+    uint32_t getNumberofDigitalSamples() const;
+    /**[Ctb] */
+    int setNumberofDigitalSamples(const uint32_t i);
+    uint32_t getDynamicRange() const;
+    int setDynamicRange(const uint32_t i);
+    ROI getROI() const;
+    /* [Gotthard] */
+    int setROI(ROI arg);
+    bool getTenGigaEnable() const;
+    /* [Eiger][Ctb] */    
+    int setTenGigaEnable(const bool b);
+    int getFlippedDataX() const;
+    void setFlippedDataX(int enable = -1);
+    bool getGapPixelsEnable() const;
+    /* [Eiger] */
+    int setGapPixelsEnable(const bool b);
+    bool getQuad() const;
+    /* [Eiger] */
+    int setQuad(const bool b);
+    bool getActivate() const;
+    /** [Eiger] If deactivated, receiver will create dummy data if deactivated padding is enabled (as it will receive nothing from detector) */
+    bool setActivate(const bool enable);
+    bool getDeactivatedPadding() const;
+    /* [Eiger] */
+    bool setDeactivatedPadding(const bool enable);
+    int getReadNLines() const;
+    /* [Eiger] */
+    void setReadNLines(const int value);
+    readoutMode getReadoutMode() const;
+    /* [Ctb] */
+    int setReadoutMode(const readoutMode f);
+    uint32_t getADCEnableMask() const;
+    /* [Ctb][Moench] */
+    int setADCEnableMask(const uint32_t mask);
+    std::vector<int> getDbitList() const;
+    /* [Ctb] */
+    void setDbitList(const std::vector<int> v);
+    int getDbitOffset() const;
+    /* [Ctb] */
+    void setDbitOffset(const int s);
+
+    /**************************************************
+     *                                                *
+     *    Callbacks                                   *
+     *                                                *
+     * ************************************************/
+    void registerCallBackStartAcquisition(
+      int (*func)(std::string, std::string, uint64_t, uint32_t, void *), void *arg);
+    void registerCallBackAcquisitionFinished(
+      void (*func)(uint64_t, void *), void *arg);
+    void registerCallBackRawDataReady(
+      void (*func)(char *, char *, uint32_t, void *), void *arg);
+    void registerCallBackRawDataModifyReady(
+      void (*func)(char *, char *, uint32_t &, void *), void *arg);
 
   private:
     void DeleteMembers();
@@ -225,84 +213,84 @@ class Implementation : private virtual slsDetectorDefs {
     void SetLocalNetworkParameters();
     void SetThreadPriorities();
     int SetupFifoStructure();
+    
     void ResetParametersforNewAcquisition();
     int CreateUDPSockets();
     int SetupWriter();
     void StartRunning();
 
-    /*************************************************************************
-     * Class Members *********************************************************
-     *************************************************************************/
-    //**detector parameters***
+
+    /**************************************************
+     *                                                *
+     *    Class Members                               *
+     *                                                *
+     * ************************************************/
+ 
+    // config parameters
+    int numThreads;
+    const static int MAX_NUMBER_OF_LISTENING_THREADS = 2;
     detectorType myDetectorType;
     int numDet[MAX_DIMENSIONS];
     int detID;
     std::string detHostname;
-    uint64_t acquisitionPeriod;
-    uint64_t acquisitionTime;
-    uint64_t subExpTime;
-    uint64_t subPeriod;
-    uint64_t numberOfFrames;
-    uint64_t numberOfAnalogSamples;
-    uint64_t numberOfDigitalSamples;
-    uint32_t dynamicRange;
-    bool tengigaEnable;
+    bool silentMode;
     uint32_t fifoDepth;
-    int flippedDataX;
-    bool gapPixelsEnable;
-    bool quadEnable;   
-    int numLinesReadout;
-    readoutMode readoutType;
-
-    //*** receiver parameters ***
-    int numThreads;
-    const static int MAX_NUMBER_OF_LISTENING_THREADS = 2;
-    std::atomic<runStatus> status;
-    bool activated;
-    bool deactivatedPaddingEnable;
     frameDiscardPolicy frameDiscardMode;
     bool framePadding;
-    bool silentMode;
-    std::vector<int> ctbDbitList;
-    int ctbDbitOffset;
-    int ctbAnalogDataBytes;
 
-    //***connection parameters***
+    // file parameters
+    fileFormat fileFormatType;
+    std::string filePath;
+    std::string fileName;
+    uint64_t fileIndex;
+    bool fileWriteEnable;
+    bool masterFileWriteEnable;
+    bool overwriteEnable;
+    uint32_t framesPerFile;
+
+    // acquisition
+    std::atomic<runStatus> status;
+    bool stoppedFlag;
+
+    // network configuration (UDP)
     int numUDPInterfaces;
     std::vector <std::string> eth;
     uint32_t udpPortNum[MAX_NUMBER_OF_LISTENING_THREADS];
     int64_t udpSocketBufferSize;
     int64_t actualUDPSocketBufferSize;
 
-    //***file parameters***
-    fileFormat fileFormatType;
-    std::string fileName;
-    std::string filePath;
-    uint64_t fileIndex;
-    uint32_t framesPerFile;
-    bool fileWriteEnable;
-    bool masterFileWriteEnable;
-    bool overwriteEnable;
-
-    //***acquisition parameters***
-    ROI roi;
-    uint32_t adcEnableMask;
+    // zmq parameters
+    bool dataStreamEnable;
     uint32_t streamingFrequency;
     uint32_t streamingTimerInMs;
-    bool dataStreamEnable;
     uint32_t streamingPort;
-     sls::IpAddr streamingSrcIP;
+    sls::IpAddr streamingSrcIP;
     std::string additionalJsonHeader;
-    bool stoppedFlag;
 
-    //** class objects ***
-    GeneralData *generalData;
-    std::vector<std::unique_ptr<Listener>> listener;
-    std::vector<std::unique_ptr<DataProcessor>> dataProcessor;
-    std::vector<std::unique_ptr<DataStreamer>> dataStreamer;
-    std::vector<std::unique_ptr<Fifo>> fifo;
+    // detector parameters
+    uint64_t numberOfFrames;
+    uint64_t acquisitionPeriod;
+    uint64_t acquisitionTime;
+    uint64_t subExpTime;
+    uint64_t subPeriod;
+    uint64_t numberOfAnalogSamples;
+    uint64_t numberOfDigitalSamples;
+    uint32_t dynamicRange;
+    ROI roi;
+    bool tengigaEnable;
+    int flippedDataX;
+    bool gapPixelsEnable;
+    bool quadEnable; 
+    bool activated;
+    bool deactivatedPaddingEnable;
+    int numLinesReadout;
+    readoutMode readoutType;
+    uint32_t adcEnableMask;
+    std::vector<int> ctbDbitList;
+    int ctbDbitOffset;
+    int ctbAnalogDataBytes;
 
-    //***callback parameters***
+    // callbacks
     int (*startAcquisitionCallBack)(std::string, std::string, uint64_t, uint32_t, void *);
     void *pStartAcquisition;
     void (*acquisitionFinishedCallBack)(uint64_t, void *);
@@ -310,4 +298,11 @@ class Implementation : private virtual slsDetectorDefs {
     void (*rawDataReadyCallBack)(char *, char *, uint32_t, void *);
     void (*rawDataModifyReadyCallBack)(char *, char *, uint32_t &, void *);
     void *pRawDataReady;
+
+    // class objects
+    GeneralData *generalData;
+    std::vector<std::unique_ptr<Listener>> listener;
+    std::vector<std::unique_ptr<DataProcessor>> dataProcessor;
+    std::vector<std::unique_ptr<DataStreamer>> dataStreamer;
+    std::vector<std::unique_ptr<Fifo>> fifo;
 };

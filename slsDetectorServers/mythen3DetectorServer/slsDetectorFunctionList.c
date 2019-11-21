@@ -1179,11 +1179,11 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     	clkPhase[SYSTEM_C2] = 0;
 	}
 
-    // set the phase in degreesif custom set
+    // set the phase in degrees (reset by pll)
 	{ 
 		int i = 0;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
-			FILE_LOG(logINFO, ("\tPhase reset by PLL\n\tCorrecting %s clock (%d) phase to %d degrees\n", clock_names[i], i, oldPhases[i]));
+			FILE_LOG(logINFO, ("\tCorrecting %s clock (%d) phase to %d degrees\n", clock_names[i], i, oldPhases[i]));
 			setPhase(i, oldPhases[i], 1);
 		}
 	}

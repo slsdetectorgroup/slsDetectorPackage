@@ -1633,29 +1633,25 @@ int setFrequency(enum CLKINDEX ind, int val) {
         return FAIL;
     }
 
-    // Remembering adcphase/ dbit phase
-    int adcPhase = getPhase(ADC_CLK, 0);
-    FILE_LOG(logDEBUG1, ("\tRemembering ADC phase: %d\n", adcPhase));
-    int dbitPhase = getPhase(DBIT_CLK, 0);
-    FILE_LOG(logDEBUG1, ("\tRemembering DBIT phase: %d\n", dbitPhase));
+    // Remembering adcphase/ dbit phase in degrees
+    int adcPhase = getPhase(ADC_CLK, 1);
+    FILE_LOG(logDEBUG1, ("\tRemembering ADC phase: %d degrees\n", adcPhase));
+    int dbitPhase = getPhase(DBIT_CLK, 1);
+    FILE_LOG(logDEBUG1, ("\tRemembering DBIT phase: %d degrees\n", dbitPhase));
 
     // Calculate and set output frequency
     clkFrequency[ind] = ALTERA_PLL_SetOuputFrequency (ind, PLL_VCO_FREQ_MHZ, val);
     FILE_LOG(logINFO, ("\t%s clock (%d) frequency set to %d MHz\n",  clock_names[ind], ind, clkFrequency[ind]));
    
-    // adc and dbit phase is reset by pll (when setting output frequency)
+    // phase reset by pll (when setting output frequency)
     clkPhase[ADC_CLK] = 0;
     clkPhase[DBIT_CLK] = 0;
 
-    // set the phase if custom set
-    if (clkPhase[ADC_CLK] != adcPhase) {
-        FILE_LOG(logINFO, ("\tPhase reset by PLL\n\tCorrecting ADC phase to %d\n", adcPhase));
-        setPhase(ADC_CLK, adcPhase, 0);
-    }  
-    if (clkPhase[DBIT_CLK] != dbitPhase) {
-        FILE_LOG(logINFO, ("\tPhase reset by PLL\n\tCorrecting DBIT phase to %d\n", dbitPhase));
-        setPhase(DBIT_CLK, dbitPhase, 0);  
-    }
+    // set the phase (reset by pll)
+    FILE_LOG(logINFO, ("\tCorrecting ADC phase to %d degrees\n", adcPhase));
+    setPhase(ADC_CLK, adcPhase, 1);
+    FILE_LOG(logINFO, ("\tCorrecting DBIT phase to %d degrees\n", dbitPhase));
+    setPhase(DBIT_CLK, dbitPhase, 1);  
 
     // required to reconfigure as adc clock is stopped temporarily when resetting pll (in changing output frequency)
     AD9257_Configure();

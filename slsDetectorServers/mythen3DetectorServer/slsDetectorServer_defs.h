@@ -35,8 +35,8 @@
 /* Firmware Definitions */
 #define IP_HEADER_SIZE              (20)
 #define FIXED_PLL_FREQUENCY			(020000000) // 20MHz
-#define READOUT_PLL_VCO_FREQ_HZ     (750000000) // 750MHz 
-#define SYSTEM_PLL_VCO_FREQ_HZ      (750000000) // 750MHz
+#define READOUT_PLL_VCO_FREQ_HZ     (1250000000) // 1.25GHz 
+#define SYSTEM_PLL_VCO_FREQ_HZ      (1250000000) // 1.25GHz
 #define MAX_PATTERN_LENGTH  		(0x2000) // maximum number of words (64bit)
 #define WAIT_TIME_US_STP_ACQ        (100)
 

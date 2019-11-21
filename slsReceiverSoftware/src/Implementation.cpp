@@ -39,6 +39,8 @@ void Implementation::DeleteMembers() {
     dataProcessor.clear();
     dataStreamer.clear();
     fifo.clear();
+    eth.clear();
+    udpPortNum.clear();
     ctbDbitList.clear();
 }
 
@@ -74,9 +76,10 @@ void Implementation::InitializeMembers() {
     // network configuration (UDP)
     numUDPInterfaces = 1;
     eth.resize(MAX_NUMBER_OF_LISTENING_THREADS);
-    for (int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; i++) {
+    udpPortNum.resize(MAX_NUMBER_OF_LISTENING_THREADS);
+    for (int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; ++i) {
         eth[i] = "";
-        udpPortNum[i] = DEFAULT_UDP_PORTNO + i;
+        udpPortNum[i] =  DEFAULT_UDP_PORTNO + i;
     }
     udpSocketBufferSize = 0;
     actualUDPSocketBufferSize = 0;

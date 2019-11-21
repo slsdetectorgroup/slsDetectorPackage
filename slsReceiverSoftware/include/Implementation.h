@@ -228,7 +228,6 @@ class Implementation : private virtual slsDetectorDefs {
  
     // config parameters
     int numThreads;
-    const static int MAX_NUMBER_OF_LISTENING_THREADS = 2;
     detectorType myDetectorType;
     int numDet[MAX_DIMENSIONS];
     int detID;
@@ -255,7 +254,7 @@ class Implementation : private virtual slsDetectorDefs {
     // network configuration (UDP)
     int numUDPInterfaces;
     std::vector <std::string> eth;
-    uint32_t udpPortNum[MAX_NUMBER_OF_LISTENING_THREADS];
+    std::vector <uint32_t> udpPortNum;
     int64_t udpSocketBufferSize;
     int64_t actualUDPSocketBufferSize;
 

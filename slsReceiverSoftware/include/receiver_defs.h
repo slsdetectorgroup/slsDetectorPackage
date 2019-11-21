@@ -4,6 +4,8 @@
 #include <stdint.h> 
 
 #define MAX_DIMENSIONS					(2)
+#define MAX_NUMBER_OF_LISTENING_THREADS (2)
+
 //socket
 #define GOODBYE 						(-200)
 #define RECEIVE_SOCKET_BUFFER_SIZE 		(100*1024*1024)

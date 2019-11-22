@@ -8,6 +8,8 @@
 #define BASE_READOUT_PLL                (0x0000) // 0x1804_0000 - 0x1804_07FF
 /* Reconfiguration core for system pll */
 #define BASE_SYSTEM_PLL                 (0x0800) // 0x1804_0800 - 0x1804_0FFF
+/* Clock Generation */
+#define BASE_CLK_GENERATION             (0x1000) // 0x1804_1000 - 0x1804_XXXX //TODO
 
 /* Base addresses 0x1806 0000 ---------------------------------------------*/
 /* General purpose control and status registers */
@@ -30,21 +32,13 @@
 
 
 
+/* Clock Generation registers ------------------------------------------------------*/
+#define PLL_RESET_REG                   (0x00 * REG_OFFSET + BASE_CLK_GENERATION)
 
-/* Readout PLL registers --------------------------------------------------*/
-
-#define READOUT_PLL_RESET_REG           (0x1 * REG_OFFSET + BASE_READOUT_PLL) //TODO
-
-#define READOUT_PLL_RESET_OFST          (0)
-#define READOUT_PLL_RESET_MSK           (0x00000001 << READOUT_PLL_RESET_OFST)
-
-
-/* System PLL registers --------------------------------------------------*/
-
-#define SYSTEM_PLL_RESET_REG            (0x1 * REG_OFFSET + BASE_SYSTEM_PLL) //TODO
-
-#define SYSTEM_PLL_RESET_OFST           (0)
-#define SYSTEM_PLL_RESET_MSK            (0x00000001 << SYSTEM_PLL_RESET_OFST)
+#define PLL_RESET_READOUT_OFST          (0)
+#define PLL_RESET_READOUT_MSK           (0x00000001 << PLL_RESET_READOUT_OFST)
+#define PLL_RESET_SYSTEM_OFST           (1)
+#define PLL_RESET_SYSTEM_MSK            (0x00000001 << PLL_RESET_SYSTEM_OFST)
 
 
 

@@ -88,9 +88,12 @@ void ALTERA_PLL_C10_ResetPLL (int pllIndex) {
     uint32_t resetreg = ALTERA_PLL_C10_Reset_Reg[pllIndex];
     uint32_t resetmsk = ALTERA_PLL_C10_Reset_Msk[pllIndex];
 
-    //FILE_LOG(logINFO, ("Resetting PLL %d\n", pllIndex));
-    FILE_LOG(logWARNING, ("Reset PLL not implemented!\n"));
-   // bus_w_csp1(resetreg, bus_r_csp1(resetreg) | resetmsk);
+#ifdef MYTHEN3D
+    FILE_LOG(logINFO, ("Resetting PLL %d\n", pllIndex));
+    bus_w_csp1(resetreg, bus_r_csp1(resetreg) | resetmsk);
+#else
+    FILE_LOG(logWARNING, ("Resetting PLL %d not implemented!\n", pllIndex));
+#endif
     usleep(ALTERA_PLL_C10_WAIT_TIME_US); 
 }
 

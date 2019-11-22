@@ -135,7 +135,6 @@ int main(int argc, char *argv[]) {
 	 */
 	//receiver->registerCallBackRawDataReady(rawDataReadyCallBack,NULL);
 
-	FILE_LOG(logINFO) << "Ready ... ";
 	FILE_LOG(logINFO) << "[ Press \'Ctrl+c\' to exit ]";
 	while(keeprunning)
 		pause();

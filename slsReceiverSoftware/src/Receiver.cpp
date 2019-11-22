@@ -11,6 +11,8 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <syscall.h>
+
 
 Receiver::Receiver(int argc, char *argv[]):
 		tcpipInterface (nullptr) {
@@ -18,13 +20,15 @@ Receiver::Receiver(int argc, char *argv[]):
 	// options
 	std::map<std::string, std::string> configuration_map;
 	int tcpip_port_no = 1954;
+	uid_t userid = -1;
 
 	//parse command line for config
 	static struct option long_options[] = {
 			// These options set a flag.
 			//{"verbose", no_argument,       &verbose_flag, 1},
 			// These options don’t set a flag. We distinguish them by their indices.
-			{"rx_tcpport",  required_argument,  nullptr, 't'},
+			{"rx_tcpport",  required_argument,  nullptr, 't'}, //TODO change or backward compatible to "port, p"?
+			{"uid",  		required_argument,  nullptr, 'u'},
 			{"version",  	no_argument,  		nullptr, 'v'},
 			{"help",  		no_argument,       	nullptr, 'h'},
 			{nullptr, 			0, 					nullptr, 	0}
@@ -37,7 +41,7 @@ Receiver::Receiver(int argc, char *argv[]):
 	int c = 0;
 
 	while ( c != -1 ){
-		c = getopt_long (argc, argv, "hvf:t:", long_options, &option_index);
+		c = getopt_long (argc, argv, "hvf:t:u:", long_options, &option_index);
 
 		// Detect the end of the options.
 		if (c == -1)
@@ -49,23 +53,48 @@ Receiver::Receiver(int argc, char *argv[]):
 			sscanf(optarg, "%d", &tcpip_port_no);
 			break;
 
+		case 'u':
+			if (sscanf(optarg, "%u", &userid) != 1) {
+				throw sls::RuntimeError("Could not scan uid");
+			}
+			break;
+
 		case 'v':
-			std::cout << "SLS Receiver " << GITBRANCH << " (0x" << std::hex << APIRECEIVER << ")" << std::endl;
-			throw sls::RuntimeError();
+			std::cout << "SLS Receiver Version: " << GITBRANCH << " (0x" << std::hex << APIRECEIVER << ")" << std::endl;
+			FILE_LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
+			exit(EXIT_SUCCESS);
 
 		case 'h':
 		default:
-			std::string help_message = "\n"
-					+ std::string(argv[0]) + "\n"
-					+ "Usage: " + std::string(argv[0]) + " [arguments]\n"
+			std::cout << std::endl;
+			
+			std::string help_message = "Usage: " + std::string(argv[0]) + " [arguments]\n"
 					+ "Possible arguments are:\n"
 					+ "\t-t, --rx_tcpport <port> : TCP Communication Port with client. \n"
-					+ "\t                          Default: 1954. Required for multiple \n"
-					+ "\t                          receivers\n\n";
+					+ "\t-u, --uid <user id>     : Set effective user id if receiver \n"
+					+ "\t                          started with privileges. \n\n";
 
-			FILE_LOG(logINFO) << help_message << std::endl;
-			throw sls::RuntimeError();
+			//std::cout << help_message << std::endl;
+			throw sls::RuntimeError(help_message);
+		}
+	}
 
+	// set effective id if provided
+	if (userid != static_cast<uid_t>(-1)) {
+		if (geteuid() == userid) {
+			FILE_LOG(logINFO) << "Process already has the same Effective UID " << userid;
+		} else {
+			if (seteuid(userid) != 0) {
+				std::ostringstream oss;
+				oss << "Could not set Effective UID to " << userid;
+				throw sls::RuntimeError(oss.str());
+			}
+			if(geteuid() != userid) {
+				std::ostringstream oss;
+				oss << "Could not set Effective UID to " << userid << ". Got " << geteuid();
+				throw sls::RuntimeError(oss.str());
+			}
+			FILE_LOG(logINFO) << "Process Effective UID changed to " << userid;
 		}
 	}
 

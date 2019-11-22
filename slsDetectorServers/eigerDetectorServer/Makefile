@@ -17,8 +17,8 @@ SRCS		+=	$(main_src)communication_funcs.c $(main_src)slsDetectorServer.c $(main_
 
 OBJS 		= 	$(SRCS:.c=.o) 
 
-all: clean  versioning  $(PROGS) #hv9m_blackfin_server 
-
+all: clean $(PROGS) #hv9m_blackfin_server 
+version: clean versioning $(PROGS) #hv9m_blackfin_server 
 	
 boot: $(OBJS) 
 

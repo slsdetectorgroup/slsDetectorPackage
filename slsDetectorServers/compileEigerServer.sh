@@ -9,7 +9,7 @@ do
 	echo -e "Compiling $dir [$file]"
 	cd $dir
 	make clean
-	if make ; then
+	if make version; then
 		deterror[i]="OK"
 	else
 		deterror[i]="FAIL"

@@ -41,7 +41,7 @@
 #define ALTERA_PLL_C10_SHIFT_UP_DOWN_POS_VAL        ((0x1 << ALTERA_PLL_C10_SHIFT_UP_DOWN_OFST) & ALTERA_PLL_C10_SHIFT_UP_DOWN_MSK)
 
 #define ALTERA_PLL_C10_PHASE_SHIFT_STEP_OF_VCO      (8)
-#define ALTERA_PLL_C10_WAIT_TIME_US                 (10 * 1000)
+#define ALTERA_PLL_C10_WAIT_TIME_US                 (1 * 1000) // 1 ms
 
 
 int ALTERA_PLL_C10_Reg_offset = 0x0;
@@ -49,11 +49,9 @@ const int ALTERA_PLL_C10_NUM = 2;
 uint32_t ALTERA_PLL_C10_BaseAddress[2] = {0x0, 0x0};
 uint32_t ALTERA_PLL_C10_Reset_Reg[2] = {0x0, 0x0};
 uint32_t ALTERA_PLL_C10_Reset_Msk[2] = {0x0, 0x0};
-uint32_t ALTERA_PLL_C10_Wait_Reg[2] = {0x0, 0x0};
-uint32_t ALTERA_PLL_C10_Wait_Msk[2] = {0x0, 0x0};
 int ALTERA_PLL_C10_VCO_FREQ[2] = {0, 0};
 
-void ALTERA_PLL_C10_SetDefines(int regofst, uint32_t baseaddr0, uint32_t baseaddr1, uint32_t resetreg0, uint32_t resetreg1, uint32_t resetmsk0, uint32_t resetmsk1, uint32_t waitreg0, uint32_t waitreg1, uint32_t waitmsk0, uint32_t waitmsk1, int vcofreq0, int vcofreq1) {
+void ALTERA_PLL_C10_SetDefines(int regofst, uint32_t baseaddr0, uint32_t baseaddr1, uint32_t resetreg0, uint32_t resetreg1, uint32_t resetmsk0, uint32_t resetmsk1, int vcofreq0, int vcofreq1) {
     ALTERA_PLL_C10_Reg_offset = regofst;
     ALTERA_PLL_C10_BaseAddress[0] = baseaddr0;
     ALTERA_PLL_C10_BaseAddress[1] = baseaddr1;
@@ -61,10 +59,6 @@ void ALTERA_PLL_C10_SetDefines(int regofst, uint32_t baseaddr0, uint32_t baseadd
     ALTERA_PLL_C10_Reset_Reg[1] = resetreg1;
     ALTERA_PLL_C10_Reset_Msk[0] = resetmsk0;
     ALTERA_PLL_C10_Reset_Msk[1] = resetmsk1;
-    ALTERA_PLL_C10_Wait_Reg[0] = waitreg0;
-    ALTERA_PLL_C10_Wait_Reg[1] = waitreg1;
-    ALTERA_PLL_C10_Wait_Msk[0] = waitmsk0;
-    ALTERA_PLL_C10_Wait_Msk[1] = waitmsk1;
     ALTERA_PLL_C10_VCO_FREQ[0] = vcofreq0;
     ALTERA_PLL_C10_VCO_FREQ[1] = vcofreq1;
 }
@@ -81,63 +75,32 @@ int ALTERA_PLL_C10_GetMaxPhaseShiftStepsofVCO() {
     return ALTERA_PLL_C10_PHASE_SHIFT_STEP_OF_VCO;
 }
 
-int ALTERA_PLL_C10_Reconfigure(int pllIndex) {
+void ALTERA_PLL_C10_Reconfigure(int pllIndex) {
     FILE_LOG(logINFO, ("\tReconfiguring PLL %d\n", pllIndex));
-    //uint32_t waitreg = ALTERA_PLL_C10_Wait_Reg[pllIndex];
-    //uint32_t waitmsk = ALTERA_PLL_C10_Wait_Msk[pllIndex];
 
     // write anything to base address to start reconfiguring
     FILE_LOG(logDEBUG1, ("\tWriting 1 to base address 0x%x to start reconfiguring\n", ALTERA_PLL_C10_BaseAddress[pllIndex]));
     bus_w_csp1(ALTERA_PLL_C10_BaseAddress[pllIndex], 0x1);
-
-    // wait for write operation to be completed by polling wait request bit
-    int ret = OK;
-
-    FILE_LOG(logDEBUG1, ("\tWaiting a second (instead of wait request bit in fw)\n"));
-    usleep(1 * 1000 * 1000);
-
-    /* TODO wait reg and wait mask to be done in firware, so wait instead (above)
-    int counter = 0;
-    while (bus_r_csp1(waitreg) & waitmsk) {
-        usleep(ALTERA_PLL_C10_WAIT_TIME_US);
-        ++counter;
-        if (counter >= 100) {
-            FILE_LOG(logERROR, ("Waited for the pll wait request for 1 s. Not waiting anymore."));
-            ret = FAIL;
-            break;
-        }
-    }
-    FILE_LOG(logINFO, ("\tReconfiguring PLL %d done with %s\n", pllIndex, ret == FAIL ? "failure" : "success"));
-    */
-    FILE_LOG(logDEBUG1, ("\tWaiting done\n"));
-    return ret;
+    usleep(ALTERA_PLL_C10_WAIT_TIME_US);
 }
 
 void ALTERA_PLL_C10_ResetPLL (int pllIndex) {
-    FILE_LOG(logINFO, ("Resetting PLL %d\n", pllIndex));
-    //uint32_t resetreg = ALTERA_PLL_C10_Reset_Reg[pllIndex];
-    //uint32_t resetmsk = ALTERA_PLL_C10_Reset_Msk[pllIndex];
+    uint32_t resetreg = ALTERA_PLL_C10_Reset_Reg[pllIndex];
+    uint32_t resetmsk = ALTERA_PLL_C10_Reset_Msk[pllIndex];
 
-    FILE_LOG(logERROR, ("Reset not implemented yet!\n"));
-    /* TODO reset reg and reset mask to be done in firware, so wait instead (above)
+    FILE_LOG(logINFO, ("Resetting PLL %d\n", pllIndex));
     bus_w_csp1(resetreg, bus_r_csp1(resetreg) | resetmsk);
-    usleep(ALTERA_PLL_C10_WAIT_TIME_US); //FIXME
-    bus_w_csp1(resetreg, bus_r_csp1(resetreg) & ~resetmsk);//FIXME
-    */
+    usleep(ALTERA_PLL_C10_WAIT_TIME_US); 
 }
 
 
-int ALTERA_PLL_C10_SetPhaseShift(int pllIndex, int clkIndex, int phase, int pos) {
-    FILE_LOG(logINFO, ("\tC%d: Writing PLL %d Phase Shift [phase:%d, pos:%d]\n", clkIndex, pllIndex, phase, pos));
-    FILE_LOG(logDEBUG1, ("\tBase address: 0x%x phasebasereg:0x%x\n", ALTERA_PLL_C10_BaseAddress[pllIndex], ALTERA_PLL_C10_PHASE_SHIFT_BASE_REG));
+void ALTERA_PLL_C10_SetPhaseShift(int pllIndex, int clkIndex, int phase, int pos) {
+    FILE_LOG(logINFO, ("\tC%d: Writing PLL %d Phase Shift [phase:%d, pos dir:%d]\n", clkIndex, pllIndex, phase, pos));
 
     uint32_t addr = ALTERA_PLL_C10_BaseAddress[pllIndex] + (ALTERA_PLL_C10_PHASE_SHIFT_BASE_REG + (int)clkIndex) * ALTERA_PLL_C10_Reg_offset;
-
-
     int maxshifts = ALTERA_PLL_C10_MAX_SHIFTS_PER_OPERATION;
 
     // only 7 shifts at a time
-    int ret = OK;
     while (phase > 0) {
         int phaseToDo = (phase > maxshifts) ? maxshifts : phase;
         uint32_t value = (((phaseToDo << ALTERA_PLL_C10_SHIFT_NUM_SHIFTS_OFST) & ALTERA_PLL_C10_SHIFT_NUM_SHIFTS_MSK) |
@@ -145,17 +108,13 @@ int ALTERA_PLL_C10_SetPhaseShift(int pllIndex, int clkIndex, int phase, int pos)
         FILE_LOG(logDEBUG1, ("\t[addr:0x%x, phaseTodo:%d phaseleft:%d phase word:0x%08x]\n", addr, phaseToDo, phase, value));
         bus_w_csp1(addr, value);
         
-        if (ALTERA_PLL_C10_Reconfigure(pllIndex) == FAIL) {
-            ret = FAIL;
-        }
-
+        ALTERA_PLL_C10_Reconfigure(pllIndex);
         phase -= phaseToDo;
     }
-    return ret;
 }
 
 
-int ALTERA_PLL_C10_SetOuputFrequency (int pllIndex, int clkIndex, int value) {
+void ALTERA_PLL_C10_SetOuputFrequency (int pllIndex, int clkIndex, int value) {
     int pllVCOFreqHz = ALTERA_PLL_C10_VCO_FREQ[pllIndex];
     FILE_LOG(logDEBUG1, ("\tC%d: Setting output frequency for pll %d to %d (pllvcofreq: %dHz)\n", clkIndex, pllIndex, value, pllVCOFreqHz));
 
@@ -184,12 +143,10 @@ int ALTERA_PLL_C10_SetOuputFrequency (int pllIndex, int clkIndex, int value) {
     // write frequency 
     bus_w_csp1(addr, val);
 
-    int ret = ALTERA_PLL_C10_Reconfigure(pllIndex);
+    ALTERA_PLL_C10_Reconfigure(pllIndex);
 
     // reset required to keep the phase relationships 
     ALTERA_PLL_C10_ResetPLL (pllIndex);
-
-	return ret;
 }
 
 

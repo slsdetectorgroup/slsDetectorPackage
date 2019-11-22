@@ -371,7 +371,7 @@ void setupDetector() {
 
 #ifndef VIRTUAL
 	// pll defines
-	ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL, READOUT_PLL_RESET_REG, SYSTEM_PLL_RESET_REG, READOUT_PLL_RESET_MSK, SYSTEM_PLL_RESET_MSK, READOUT_PLL_WAIT_REG, SYSTEM_PLL_WAIT_REG, READOUT_PLL_WAIT_MSK, SYSTEM_PLL_WAIT_MSK, READOUT_PLL_VCO_FREQ_HZ, SYSTEM_PLL_VCO_FREQ_HZ);
+	ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL, READOUT_PLL_RESET_REG, SYSTEM_PLL_RESET_REG, READOUT_PLL_RESET_MSK, SYSTEM_PLL_RESET_MSK, READOUT_PLL_VCO_FREQ_HZ, SYSTEM_PLL_VCO_FREQ_HZ);
 	ALTERA_PLL_C10_ResetPLL(READOUT_PLL);
 	ALTERA_PLL_C10_ResetPLL(SYSTEM_PLL);
 	// hv
@@ -1028,14 +1028,12 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
 		relativePhase *= -1;
 		direction = 0;
 	}
-    FILE_LOG(logDEBUG1, ("\tConfiguring Phase: [phase:%d (0x%x), direction:%d]\n", relativePhase, relativePhase, direction));
-
 	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
 	int clkIndex = ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind;
-    int ret = ALTERA_PLL_C10_SetPhaseShift(pllIndex, clkIndex, relativePhase, direction);
+    ALTERA_PLL_C10_SetPhaseShift(pllIndex, clkIndex, relativePhase, direction);
 
     clkPhase[ind] = valShift;
-	return ret;
+	return OK;
 }
 
 int getPhase(enum CLKINDEX ind, int degrees) {
@@ -1139,7 +1137,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     // Calculate and set output frequency
 	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
 	int clkIndex = ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind;
-    int ret = ALTERA_PLL_C10_SetOuputFrequency (pllIndex, clkIndex, newfreq);
+    ALTERA_PLL_C10_SetOuputFrequency (pllIndex, clkIndex, newfreq);
 	clkFrequency[ind] = newfreq;
     FILE_LOG(logINFO, ("\t%s clock (%d) divider set to %d (%d Hz)\n", clock_names[ind], ind, val, clkFrequency[ind]));
    
@@ -1162,7 +1160,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 			setPhase(i, oldPhases[i], 1);
 		}
 	}
-	return ret;
+	return OK;
 }
 
 int getClockDivider(enum CLKINDEX ind) {

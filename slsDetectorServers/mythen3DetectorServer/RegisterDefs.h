@@ -38,11 +38,6 @@
 #define READOUT_PLL_RESET_OFST          (0)
 #define READOUT_PLL_RESET_MSK           (0x00000001 << READOUT_PLL_RESET_OFST)
 
-#define READOUT_PLL_WAIT_REG            (0x2 * REG_OFFSET + BASE_READOUT_PLL) //TODO
-
-#define READOUT_PLL_WAIT_OFST           (0)
-#define READOUT_PLL_WAIT_MSK            (0x00000001 << READOUT_PLL_WAIT_OFST)
-
 
 /* System PLL registers --------------------------------------------------*/
 
@@ -51,10 +46,6 @@
 #define SYSTEM_PLL_RESET_OFST           (0)
 #define SYSTEM_PLL_RESET_MSK            (0x00000001 << SYSTEM_PLL_RESET_OFST)
 
-#define SYSTEM_PLL_WAIT_REG             (0x2 * REG_OFFSET + BASE_SYSTEM_PLL) //TODO
-
-#define SYSTEM_PLL_WAIT_OFST            (0)
-#define SYSTEM_PLL_WAIT_MSK             (0x00000001 << SYSTEM_PLL_WAIT_OFST)
 
 
 /* Control registers --------------------------------------------------*/

@@ -25,7 +25,7 @@ for fname in files:
             cmd = line.split("\"")[1]
             tested.append(cmd)
 
-out = subprocess.run(['g', 'list'], capture_output = True, encoding=locale.getpreferredencoding())
+out = subprocess.run(['g', 'list'], stdout = subprocess.PIPE, encoding=locale.getpreferredencoding())
 all_cmd = out.stdout.splitlines()
 all_cmd.pop(0)
 

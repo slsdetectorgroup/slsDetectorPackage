@@ -363,6 +363,8 @@ void setupDetector() {
 		for	(i = 0; i < NCHIP; ++i) {
 			for (j = 0; j < NCHAN; ++j) {
 				vetoReference[i][j] = 0;
+			}
+			for (j = 0; j < NADC; ++j) {
 				adcConfiguration[i][j] = 0;
 			}
 		}	

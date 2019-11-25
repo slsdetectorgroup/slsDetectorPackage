@@ -1454,6 +1454,8 @@ TEST_CASE("stopport", "[.cmd]") {
         REQUIRE(oss.str() == "stopport 1942\n");
     }
     proxy.Call("stopport", {"1953"}, -1, PUT);
+    auto port = det.getStopPort().squash();
+    REQUIRE(port == 1953);
 }
 
 

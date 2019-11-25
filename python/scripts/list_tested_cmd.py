@@ -23,14 +23,13 @@ for fname in files:
     for line in data:
         if 'TEST_CASE' in line:
             cmd = line.split("\"")[1]
-            print(cmd)
             tested.append(cmd)
 
 out = subprocess.run(['g', 'list'], capture_output = True, encoding=locale.getpreferredencoding())
 all_cmd = out.stdout.splitlines()
+all_cmd.pop(0)
 
-if 'vrf' in all_cmd:
-    print('HEY\n')
+
 
 if args.startswith is not None:
     all_cmd = [cmd for cmd in all_cmd if cmd.startswith(args.startswith)]

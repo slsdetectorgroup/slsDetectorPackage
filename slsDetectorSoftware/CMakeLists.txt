@@ -36,11 +36,8 @@ target_link_libraries(slsDetectorShared PUBLIC
 )
 
 set(PUBLICHEADERS
-    include/SharedMemory.h
-    include/slsDetector.h
     include/slsDetectorUsers.h
     include/detectorData.h
-    include/multiSlsDetector.h
     include/Detector.h
     include/Result.h
 )

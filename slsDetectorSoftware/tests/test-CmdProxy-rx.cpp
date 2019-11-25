@@ -45,6 +45,67 @@ rx_zmqport
 
 */
 
+TEST_CASE("rx_hostname", "[.cmd]") {
+    // TODO! find a proper way to test, now we read out the rx_hostname
+    // and then put it to see that we don't crash
+    Detector det;
+    CmdProxy proxy(&det);
+    std::string hostname =
+        det.getRxHostname().tsquash("hostname must be same for test");
+
+    {
+        // disable receiver
+        std::ostringstream oss1, oss2;
+        proxy.Call("rx_hostname", {"none"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "rx_hostname none\n");
+        proxy.Call("rx_hostname", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "rx_hostname none\n");
+        // receiver should be disabled
+        REQUIRE(det.getUseReceiverFlag().tsquash(
+                    "different values of flag in test") == false);
+    }
+    {
+        // put back the old hostname
+        std::ostringstream oss1, oss2;
+        proxy.Call("rx_hostname", {hostname}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "rx_hostname " + hostname + "\n");
+        proxy.Call("rx_hostname", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "rx_hostname " + hostname + "\n");
+    }
+}
+
+TEST_CASE("rx_framescaught", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    // This ensures 0 caught frames
+    det.startReceiver();
+    det.stopReceiver();
+
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_framescaught", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_framescaught 0\n");
+    }
+
+    // Now take one frame and see that we caught it
+    det.setNumberOfFrames(1);
+    det.acquire();
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_framescaught", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_framescaught 1\n");
+    }
+}
+
+TEST_CASE("rx_status", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    std::ostringstream oss;
+    proxy.Call("rx_status", {}, -1, GET, oss);
+    REQUIRE(oss.str() == "rx_status idle\n");
+}
+
 TEST_CASE("rx_version", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -58,7 +119,7 @@ TEST_CASE("rx_version", "[.cmd]") {
 TEST_CASE("rx_start", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-    //PUT only command
+    // PUT only command
     REQUIRE_THROWS(proxy.Call("rx_start", {}, -1, GET));
     {
         std::ostringstream oss;
@@ -75,7 +136,7 @@ TEST_CASE("rx_start", "[.cmd]") {
 TEST_CASE("rx_stop", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-    //PUT only command
+    // PUT only command
     REQUIRE_THROWS(proxy.Call("rx_stop", {}, -1, GET));
     {
         std::ostringstream oss;
@@ -141,31 +202,6 @@ TEST_CASE("rx_fifodepth", "[.cmd]") {
         REQUIRE(oss.str() == "rx_fifodepth 100\n");
     }
     det.setRxFifoDepth(prev_val);
-}
-
-TEST_CASE("rx_status", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_start", {}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_start successful\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_status", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "rx_status running\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_stop", {}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_stop successful\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_status", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "rx_status idle\n");
-    }
 }
 
 TEST_CASE("rx_silent", "[.cmd]") {
@@ -349,35 +385,40 @@ TEST_CASE("rx_lock", "[.cmd]") {
     }
 }
 
-// TEST_CASE("rx_zmqport", "[.cmd]") {
-//     multiSlsDetector d;
-//     int socketsperdetector = 1;
-//     if (test::type == slsDetectorDefs::EIGER) {
-//         socketsperdetector *= 2;
-//     } else if (test::type == slsDetectorDefs::JUNGFRAU) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 2", PUT));
-//         socketsperdetector *= 2;
-//     }
-//     int port = 3500;
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_zmqport " +
-//     std::to_string(port), PUT)); for (int i = 0; i != d.size(); ++i) {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) +
-//         ":rx_zmqport", GET, nullptr, oss)); REQUIRE(oss.str() == "rx_zmqport
-//         " + std::to_string(port + i * socketsperdetector) + '\n');
-//     }
-//     port = 30001;
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_zmqport " +
-//     std::to_string(port), PUT)); for (int i = 0; i != d.size(); ++i) {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) +
-//         ":rx_zmqport", GET, nullptr, oss)); REQUIRE(oss.str() == "rx_zmqport
-//         " + std::to_string(port + i * socketsperdetector) + '\n');
-//     }
-//     if (test::type == slsDetectorDefs::JUNGFRAU) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 1", PUT));
-//     }
-// }
+TEST_CASE("rx_zmqport", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    int socketsperdetector = 1;
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        socketsperdetector *= 2;
+    } else if (det_type == defs::JUNGFRAU) {
+        proxy.Call("numinterfaces", {"2"}, -1, PUT);
+        socketsperdetector *= 2;
+    }
+    int port = 3500;
+    proxy.Call("rx_zmqport", {std::to_string(port)}, -1, PUT);
+    for (int i = 0; i != det.size(); ++i) {
+        std::ostringstream oss;
+        proxy.Call("rx_zmqport", {}, i, GET, oss);
+        std::cout << "oss: " << oss.str() << "\n";
+        REQUIRE(oss.str() == "rx_zmqport " +
+                                 std::to_string(port + i * socketsperdetector) +
+                                 '\n');
+    }
+    port = 30001;
+    proxy.Call("rx_zmqport", {std::to_string(port)}, -1, PUT);
+    for (int i = 0; i != det.size(); ++i) {
+        std::ostringstream oss;
+        proxy.Call("rx_zmqport", {}, i, GET, oss);
+        REQUIRE(oss.str() == "rx_zmqport " +
+                                 std::to_string(port + i * socketsperdetector) +
+                                 '\n');
+    }
+    if (det_type == slsDetectorDefs::JUNGFRAU) {
+        proxy.Call("numinterfaces", {"1"}, -1, PUT);
+    }
+}
 
 TEST_CASE("rx_datastream", "[.cmd]") {
     Detector det;
@@ -410,7 +451,7 @@ TEST_CASE("rx_tcpport", "[.cmd]") {
     proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
     for (int i = 0; i != det.size(); ++i) {
         std::ostringstream oss;
-        proxy.Call("rx_tcpport", {}, -1, GET, oss);
+        proxy.Call("rx_tcpport", {}, i, GET, oss);
         REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
     }
     REQUIRE_THROWS(proxy.Call("rx_tcpport", {"15"}, -1, PUT));
@@ -418,25 +459,26 @@ TEST_CASE("rx_tcpport", "[.cmd]") {
     proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
     for (int i = 0; i != det.size(); ++i) {
         std::ostringstream oss;
-        proxy.Call("rx_tcpport", {}, -1, GET, oss);
+        proxy.Call("rx_tcpport", {}, i, GET, oss);
         REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
     }
 }
 
-// TEST_CASE("rx_zmqip", "[.cmd]") {
-//     std::string s;
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_zmqip", GET, nullptr,
-//         oss)); s = oss.str();
-//     }
-//     {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_zmqip", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == s);
-//     }
-// }
+TEST_CASE("rx_zmqip", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_zmqip", {"127.0.0.1"}, 0, PUT, oss);
+        REQUIRE(oss.str() == "rx_zmqip 127.0.0.1\n");
+        std::cout << "ZMQIP: " << det.getRxZmqIP() << '\n';
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_zmqip", {}, 0, GET, oss);
+        REQUIRE(oss.str() == "rx_zmqip 127.0.0.1\n");
+    }
+}
 
 // TEST_CASE("burstmode", "[.cmd][.gotthard2]") {
 //     if (test::type == slsDetectorDefs::GOTTHARD2) {

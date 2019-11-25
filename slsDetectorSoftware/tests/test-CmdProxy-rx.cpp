@@ -5,13 +5,14 @@
 #include <sstream>
 
 #include "tests/globals.h"
+#include "versionAPI.h"
 
 using sls::CmdProxy;
 using sls::Detector;
 using test::GET;
 using test::PUT;
 
-/* 
+/*
 This file should contain receiver specific tests
 25/11/2019 we have:
 rx_datastream
@@ -43,6 +44,50 @@ rx_zmqip
 rx_zmqport
 
 */
+
+TEST_CASE("rx_version", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    std::ostringstream oss;
+    proxy.Call("rx_version", {}, -1, GET, oss);
+    std::ostringstream vs;
+    vs << "rx_version 0x" << std::hex << APIRECEIVER << '\n';
+    REQUIRE(oss.str() == vs.str());
+}
+
+TEST_CASE("rx_start", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    //PUT only command
+    REQUIRE_THROWS(proxy.Call("rx_start", {}, -1, GET));
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_start", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_start successful\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_status running\n");
+    }
+}
+
+TEST_CASE("rx_stop", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    //PUT only command
+    REQUIRE_THROWS(proxy.Call("rx_stop", {}, -1, GET));
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_stop", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_stop successful\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_status idle\n");
+    }
+}
 
 TEST_CASE("rx_missingpackets", "[.cmd]") {
     // TODO! This only tests for no crash how can we test
@@ -165,20 +210,28 @@ TEST_CASE("rx_jsonaddheader", "[.cmd]") {
 }
 
 TEST_CASE("rx_udpsocksize", "[.cmd]") {
-    // TODO! Is the real socket size always twice?
     Detector det;
     CmdProxy proxy(&det);
-
     {
         std::ostringstream oss;
         proxy.Call("rx_udpsocksize", {"4857600"}, -1, PUT, oss);
         REQUIRE(oss.str() == "rx_udpsocksize 4857600\n");
     }
-    uint64_t val = 0;
     {
         std::ostringstream oss;
         proxy.Call("rx_udpsocksize", {}, -1, GET, oss);
         REQUIRE(oss.str() == "rx_udpsocksize 4857600\n");
+    }
+}
+
+TEST_CASE("rx_realudpsocksize", "[.cmd]") {
+    // TODO! Is the real socket size always twice?
+    Detector det;
+    CmdProxy proxy(&det);
+    uint64_t val = 0;
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_udpsocksize", {}, -1, GET, oss);
         std::string s = (oss.str()).erase(0, strlen("rx_udpsocksize "));
         val = std::stol(s);
     }
@@ -326,45 +379,49 @@ TEST_CASE("rx_lock", "[.cmd]") {
 //     }
 // }
 
-// TEST_CASE("rx_datastream", "[.cmd]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_datastream 1", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "rx_datastream 1\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_datastream", GET,
-//         nullptr, oss)); REQUIRE(oss.str() == "rx_datastream 1\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_datastream 0", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "rx_datastream 0\n");
-//     }
-// }
+TEST_CASE("rx_datastream", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_datastream", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_datastream 1\n");
+        REQUIRE(det.getRxZmqDataStream().squash() == true);
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_datastream", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_datastream 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_datastream", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_datastream 0\n");
+        REQUIRE(det.getRxZmqDataStream().squash() == false);
+    }
+}
 
-// TEST_CASE("rx_tcpport", "[.cmd]") {
-//     multiSlsDetector d;
-//     int port = 3500;
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_tcpport " +
-//     std::to_string(port), PUT)); for (int i = 0; i != d.size(); ++i) {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) +
-//         ":rx_tcpport", GET, nullptr, oss)); REQUIRE(oss.str() == "rx_tcpport
-//         " + std::to_string(port + i) + '\n');
-//     }
-//     REQUIRE_THROWS(multiSlsDetectorClient("rx_tcpport 15", PUT));
-//     port = 1954;
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_tcpport " +
-//     std::to_string(port), PUT)); for (int i = 0; i != d.size(); ++i) {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) +
-//         ":rx_tcpport", GET, nullptr, oss)); REQUIRE(oss.str() == "rx_tcpport
-//         " + std::to_string(port + i) + '\n');
-//     }
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_tcpport 1954", PUT));
-// }
+TEST_CASE("rx_tcpport", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    int port = 3500;
+
+    proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
+    for (int i = 0; i != det.size(); ++i) {
+        std::ostringstream oss;
+        proxy.Call("rx_tcpport", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
+    }
+    REQUIRE_THROWS(proxy.Call("rx_tcpport", {"15"}, -1, PUT));
+    port = 1954;
+    proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
+    for (int i = 0; i != det.size(); ++i) {
+        std::ostringstream oss;
+        proxy.Call("rx_tcpport", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
+    }
+}
 
 // TEST_CASE("rx_zmqip", "[.cmd]") {
 //     std::string s;

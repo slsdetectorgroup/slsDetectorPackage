@@ -3,9 +3,11 @@ find_package(Sphinx)
 
 
 if (DOXYGEN_FOUND AND SPHINX_FOUND)
-
-    # #Utility to generate command line documentation
+    message(${CMAKE_PROJECT_SORURCE_DIR}/slsDetectorSoftware/src)
+    # Utility to generate command line documentation
     add_executable(gendoc src/gendoc.cpp)
+    # This is a bit hacky, but better than exposing stuff? 
+    target_include_directories(gendoc PRIVATE ${PROJECT_SOURCE_DIR}/slsDetectorSoftware/src)
     target_link_libraries(gendoc PRIVATE
       slsDetectorShared
     )

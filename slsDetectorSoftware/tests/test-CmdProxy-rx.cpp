@@ -296,6 +296,53 @@ TEST_CASE("rx_lock", "[.cmd]") {
     }
 }
 
+// TEST_CASE("rx_zmqport", "[.cmd]") {
+//     multiSlsDetector d;
+//     int socketsperdetector = 1;
+//     if (test::type == slsDetectorDefs::EIGER) {
+//         socketsperdetector *= 2;
+//     } else if (test::type == slsDetectorDefs::JUNGFRAU) {
+//         REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 2", PUT));
+//         socketsperdetector *= 2;
+//     }
+//     int port = 3500;
+//     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_zmqport " +
+//     std::to_string(port), PUT)); for (int i = 0; i != d.size(); ++i) {
+//         std::ostringstream oss;
+//         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) +
+//         ":rx_zmqport", GET, nullptr, oss)); REQUIRE(oss.str() == "rx_zmqport
+//         " + std::to_string(port + i * socketsperdetector) + '\n');
+//     }
+//     port = 30001;
+//     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_zmqport " +
+//     std::to_string(port), PUT)); for (int i = 0; i != d.size(); ++i) {
+//         std::ostringstream oss;
+//         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) +
+//         ":rx_zmqport", GET, nullptr, oss)); REQUIRE(oss.str() == "rx_zmqport
+//         " + std::to_string(port + i * socketsperdetector) + '\n');
+//     }
+//     if (test::type == slsDetectorDefs::JUNGFRAU) {
+//         REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 1", PUT));
+//     }
+// }
+
+// TEST_CASE("rx_datastream", "[.cmd]") {
+//     {
+//         std::ostringstream oss;
+//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_datastream 1", PUT,
+//         nullptr, oss)); REQUIRE(oss.str() == "rx_datastream 1\n");
+//     }
+//     {
+//         std::ostringstream oss;
+//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_datastream", GET,
+//         nullptr, oss)); REQUIRE(oss.str() == "rx_datastream 1\n");
+//     }
+//     {
+//         std::ostringstream oss;
+//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_datastream 0", PUT,
+//         nullptr, oss)); REQUIRE(oss.str() == "rx_datastream 0\n");
+//     }
+// }
 
 // TEST_CASE("rx_tcpport", "[.cmd]") {
 //     multiSlsDetector d;

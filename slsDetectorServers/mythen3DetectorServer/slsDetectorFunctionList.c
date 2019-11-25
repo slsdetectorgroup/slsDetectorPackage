@@ -1156,7 +1156,6 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 		int i = 0;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
 			oldPhases	[i] = getPhase(i, 1);
-			FILE_LOG(logDEBUG1, ("\tRemembering %s clock (%d) phase: %d degrees\n", clock_names[ind], ind, oldPhases[i]));
 		}
 	}
 
@@ -1181,8 +1180,11 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 	{ 
 		int i = 0;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
-			FILE_LOG(logINFO, ("\tCorrecting %s clock (%d) phase to %d degrees\n", clock_names[i], i, oldPhases[i]));
-			setPhase(i, oldPhases[i], 1);
+			int currPhaseDeg = getPhase(i, 1);
+			if (oldPhases[i] != currPhaseDeg) {
+				FILE_LOG(logINFO, ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n", clock_names[i], i, currPhaseDeg, oldPhases[i]));
+				setPhase(i, oldPhases[i], 1);
+			}
 		}
 	}
 	return OK;

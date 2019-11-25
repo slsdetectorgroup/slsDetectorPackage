@@ -18,6 +18,8 @@ std::string hostname;
 std::string detector_type;
 std::string my_ip;
 dt type;
+auto GET = slsDetectorDefs::GET_ACTION;
+auto PUT = slsDetectorDefs::PUT_ACTION;
 } // namespace test
 
 int main(int argc, char *argv[]) {

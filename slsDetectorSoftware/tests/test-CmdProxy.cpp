@@ -6,11 +6,13 @@
 
 #include "tests/globals.h"
 
-auto GET = slsDetectorDefs::GET_ACTION;
-auto PUT = slsDetectorDefs::PUT_ACTION;
+// auto GET = slsDetectorDefs::GET_ACTION;
+// auto PUT = slsDetectorDefs::PUT_ACTION;
 
 using sls::CmdProxy;
 using sls::Detector;
+using test::GET;
+using test::PUT;
 
 // TEST_CASE("vchip", "[.cmd]") {
 //     int prev_val = 0;

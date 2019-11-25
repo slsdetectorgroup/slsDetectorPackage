@@ -1375,15 +1375,23 @@ using sls::Detector;
 
 // }
 
-// TEST_CASE("rx_frameindex", "[.cmd]") {
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_frameindex", GET));
-//     REQUIRE_THROWS(multiSlsDetectorClient("rx_frameindex bla", PUT));
-// }
+TEST_CASE("rx_frameindex", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    proxy.Call("rx_frameindex", {}, -1, GET);
 
-// TEST_CASE("user", "[.cmd]") {
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("user", GET));
-//     REQUIRE_THROWS(multiSlsDetectorClient("user bla", PUT));
-// }
+    // This is a get only command
+    REQUIRE_THROWS(proxy.Call("rx_frameindex", {"2"}, -1, PUT));
+}
+
+TEST_CASE("user", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    proxy.Call("user", {}, -1, GET);
+
+    // This is a get only command
+    REQUIRE_THROWS(proxy.Call("user", {}, -1, PUT));
+}
 
 // TEST_CASE("now", "[.cmd]") {
 //     if (test::type == slsDetectorDefs::JUNGFRAU || test::type ==
@@ -1416,33 +1424,38 @@ using sls::Detector;
 //     REQUIRE_NOTHROW(multiSlsDetectorClient("execcommand ls", PUT));
 // }
 
-// TEST_CASE("port", "[.cmd]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("port 1942", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "port 1942\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("port", GET, nullptr, oss));
-//         REQUIRE(oss.str() == "port 1942\n");
-//     }
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("port 1952", PUT));
-// }
+TEST_CASE("port", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("port", {"1942"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "port 1942\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("port", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "port 1942\n");
+    }
+    proxy.Call("port", {"1952"}, -1, PUT);
+}
 
-// TEST_CASE("stopport", "[.cmd]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("stopport 1942", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "stopport 1942\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("stopport", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "stopport 1942\n");
-//     }
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("stopport 1953", PUT));
-// }
+TEST_CASE("stopport", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    {
+        std::ostringstream oss;
+        proxy.Call("stopport", {"1942"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "stopport 1942\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("stopport", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "stopport 1942\n");
+    }
+    proxy.Call("stopport", {"1953"}, -1, PUT);
+}
+
 
 // TEST_CASE("adcreg", "[.cmd]") {
 //     if (test::type == slsDetectorDefs::JUNGFRAU || test::type ==
@@ -4147,34 +4160,37 @@ using sls::Detector;
 //     }
 // }
 // TEST_CASE("status", "[.cmd]") {
+//     Detector det;
+//     CmdProxy proxy(&det);
 
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("timing auto", PUT));
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("frames 10", PUT));
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("period 1", PUT));
+//     proxy.Call("timing", {"auto"}, -1, PUT);
+//     proxy.Call("frames", {"10"}, -1, PUT);
+//     proxy.Call("period", {"1"}, -1, PUT);
 
 //     {
 //         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT, nullptr, oss));
+//         proxy.Call("start", {}, -1, PUT, oss);
 //         REQUIRE(oss.str() == "start successful\n");
 //     }
 //     {
 //         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("status", GET, nullptr, oss));
+//         proxy.Call("status", {}, -1, GET, oss);
 //         REQUIRE(oss.str() == "status running\n");
 //     }
 //     {
 //         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("stop", PUT, nullptr, oss));
+//         proxy.Call("stop", {}, -1, PUT, oss);
 //         REQUIRE(oss.str() == "stop successful\n");
 //     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("status", GET, nullptr, oss));
-//         REQUIRE(oss.str() != "status running\n");
-//         REQUIRE(oss.str() != "status waiting\n");
-//         REQUIRE(oss.str() != "status transmitting\n");
-//     }
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
+// {
+//     std::ostringstream oss;
+//     REQUIRE_NOTHROW(multiSlsDetectorClient("status", GET, nullptr, oss));
+//     REQUIRE(oss.str() != "status running\n");
+//     REQUIRE(oss.str() != "status waiting\n");
+//     REQUIRE(oss.str() != "status transmitting\n");
+// }
+// REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
+// proxy.Call("frames", {"1"}, -1, PUT);
 // }
 
 // TEST_CASE("trigger", "[.cmd][.eiger]") {

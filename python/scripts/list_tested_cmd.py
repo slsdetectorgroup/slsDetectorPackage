@@ -21,7 +21,7 @@ for fname in files:
 
 
     for line in data:
-        if 'TEST_CASE' in line:
+        if 'TEST_CASE' in line or 'SECTION' in line:
             cmd = line.split("\"")[1]
             tested.append(cmd)
 
@@ -37,15 +37,10 @@ if args.startswith is not None:
 
 
 
-not_tested = []
-misnamed = []
-for cmd in all_cmd:
-    if cmd not in tested:
-        not_tested.append(cmd)
+not_tested = [cmd for cmd in all_cmd if cmd not in tested]
+misnamed = [cmd for cmd in tested if cmd not in all_cmd]
+tested = [cmd for cmd in tested if cmd in all_cmd]
 
-for cmd in tested:
-    if cmd not in all_cmd:
-        misnamed.append(cmd)
 
 print("\nThe following commands are tested:")
 for cmd in tested:
@@ -55,7 +50,7 @@ print("\nThe following commands are NOT tested:")
 for cmd in not_tested:
     print(cmd)
 
-print(f"\nThe following {len(misnamed)} tests are misnamed and should be renamed:")
+print(f"\nThe following {len(misnamed)} tests does not match commands and might be misnamed:")
 for cmd in misnamed:
     print(cmd)
 print(f'\nTests cover {len(tested)} of {len(all_cmd)} commands')

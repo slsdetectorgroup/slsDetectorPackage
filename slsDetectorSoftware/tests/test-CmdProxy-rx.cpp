@@ -13,35 +13,8 @@ using test::GET;
 using test::PUT;
 
 /*
-This file should contain receiver specific tests
-25/11/2019 we have:
-rx_datastream
-rx_dbitlist
-rx_dbitoffset
-rx_discardpolicy
-rx_fifodepth
-rx_frameindex
-rx_framescaught
-rx_framesperfile
-rx_hostname
-rx_jsonaddheader
-rx_jsonpara
-rx_lastclient
-rx_lock
-rx_missingpackets
-rx_padding
-rx_printconfig
-rx_readfreq
-rx_realudpsocksize
-rx_silent
-rx_start
-rx_status
-rx_stop
-rx_tcpport
-rx_udpsocksize
-rx_version
-rx_zmqip
-rx_zmqport
+This file should contain receiver specific tests use python/scripts/list_tested_cmd.py
+to check if all commands are covered
 
 */
 

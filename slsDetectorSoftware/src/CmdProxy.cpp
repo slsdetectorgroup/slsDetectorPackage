@@ -81,7 +81,7 @@ std::string CmdProxy::ListCommands(int action) {
         return "list\n\tlists all available commands, list deprecated - "
                "list deprecated commands\n";
 
-    if (args.size() == 0) {
+    if (args.empty()) {
         auto commands = GetProxyCommands();
         std::cout << "These " << commands.size() << " commands are available\n";
         for (auto &c : commands)
@@ -124,13 +124,13 @@ std::string CmdProxy::Hostname(int action) {
               "all modules concatenated by +."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getHostname({det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() < 1) {
+        if (args.empty()) {
             WrongNumberOfParameters(1);
         }
         if (det_id != -1) {
@@ -215,7 +215,7 @@ std::string CmdProxy::FirmwareVersion(int action) {
               "for Eiger."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getFirmwareVersion({det_id});
@@ -238,7 +238,7 @@ std::string CmdProxy::Versions(int action) {
     if (action == defs::HELP_ACTION) {
         os << "\n\tPrint all versions and detector type" << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getFirmwareVersion();
@@ -271,7 +271,7 @@ std::string CmdProxy::PackageVersion(int action) {
     if (action == defs::HELP_ACTION) {
         os << "\n\tPackage version (git branch)." << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         os << det->getPackageVersion() << '\n';
@@ -289,7 +289,7 @@ std::string CmdProxy::ClientVersion(int action) {
     if (action == defs::HELP_ACTION) {
         os << "\n\tClient software version in format [0xYYMMDD]." << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         os << ToStringHex(det->getClientVersion()) << '\n';
@@ -311,7 +311,7 @@ std::string CmdProxy::DetectorSize(int action) {
               "packet header."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getDetectorSize();
@@ -354,7 +354,7 @@ std::string CmdProxy::Speed(int action) {
                                            // after change
         }
         if (action == defs::GET_ACTION) {
-            if (args.size() != 0) {
+            if (!args.empty()) {
                 WrongNumberOfParameters(0);
             }
             auto t = det->getSpeed({det_id});
@@ -405,7 +405,7 @@ std::string CmdProxy::Adcphase(int action) {
            << '\n';
     } else if (action == defs::GET_ACTION) {
         Result<int> t;
-        if (args.size() == 0) {
+        if (args.empty()) {
             t = det->getADCPhase({det_id});
             os << OutString(t) << '\n';
         } else if (args.size() == 1) {
@@ -656,7 +656,7 @@ std::string CmdProxy::DacValues(int action) {
             size_t spacepos = names[i].find(' ');
             // chip test board (dac)
             if (spacepos != std::string::npos) {
-                if (args.size() == 0) {
+                if (args.empty()) {
                     args.resize(1);
                 }
                 args[0] = names[i].substr(spacepos + 1 - 1);
@@ -732,7 +732,7 @@ std::string CmdProxy::DynamicRange(int action) {
               "pixel in detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getDynamicRange({det_id});
@@ -763,7 +763,7 @@ std::string CmdProxy::Threshold(int action) {
               "eV"
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getThresholdEnergy({det_id});
@@ -827,7 +827,7 @@ std::string CmdProxy::GapPixels(int action) {
               "back. 4 bit mode gap pixels only ind ata call back."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getRxAddGapPixels({det_id});
@@ -858,13 +858,13 @@ std::string CmdProxy::TrimEnergies(int action) {
               "corresponding trim folders."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getTrimEnergies({det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() < 1) {
+        if (args.empty()) {
             WrongNumberOfParameters(1);
         }
         unsigned int ntrim = args.size();
@@ -889,7 +889,7 @@ std::string CmdProxy::RateCorrection(int action) {
               "correction."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getRateCorrection({det_id});
@@ -923,7 +923,7 @@ std::string CmdProxy::Activate(int action) {
               "pad data files for deactivates readouts."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getActive({det_id});
@@ -934,7 +934,7 @@ std::string CmdProxy::Activate(int action) {
         }
         os << OutString(t) << ' ' << OutString(pResult) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() < 1 || args.size() > 2) {
+        if (args.empty() || args.size() > 2) {
             WrongNumberOfParameters(2);
         }
         int t = std::stoi(args[0]);
@@ -1038,7 +1038,7 @@ std::string CmdProxy::Quad(int action) {
               "(Specific hardware required)."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getQuad({det_id});
@@ -1073,7 +1073,7 @@ std::string CmdProxy::TemperatureEvent(int action) {
               "temperature and temperature event has to be cleared."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getTemperatureEvent({det_id});
@@ -1105,7 +1105,7 @@ std::string CmdProxy::ROI(int action) {
               "Default is all channels enabled (-1 -1). "
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getROI({det_id});
@@ -1140,7 +1140,7 @@ std::string CmdProxy::ClearROI(int action) {
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         det->clearROI({det_id});
@@ -1160,7 +1160,7 @@ std::string CmdProxy::InjectChannel(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[offset] [increment]\n\t[Gotthard2] Inject channels with current source for calibration. Offset is starting channel that is injected, increment determines succeeding channels to be injected." << '\n';   
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {                                
+        if (!args.empty()) {                                
             WrongNumberOfParameters(0);         
         } 
         auto t = det->getInjectChannel({det_id});  
@@ -1229,7 +1229,7 @@ std::string CmdProxy::Samples(int action) {
               "digitial) expected."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto a = det->getNumberOfAnalogSamples({det_id});
@@ -1265,7 +1265,7 @@ std::string CmdProxy::Dbitphase(int action) {
            << '\n';
     } else if (action == defs::GET_ACTION) {
         Result<int> t;
-        if (args.size() == 0) {
+        if (args.empty()) {
             t = det->getDBITPhase({det_id});
             os << OutString(t) << '\n';
         } else if (args.size() == 1) {
@@ -1339,13 +1339,13 @@ std::string CmdProxy::ReceiverDbitList(int action) {
               "repetitive."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getRxDbitList({det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() < 1) {
+        if (args.empty()) {
             WrongNumberOfParameters(1);
         }
         std::vector<int> t;
@@ -1475,7 +1475,7 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
                 "Unknown command, use list to list all commands");
         }
         if (action == defs::GET_ACTION) {
-            if (args.size() != 0) {
+            if (!args.empty()) {
                 WrongNumberOfParameters(0);
             }
             auto t = det->getPatternLoopAddresses(level, {det_id});
@@ -1521,7 +1521,7 @@ std::string CmdProxy::PatternLoopCycles(int action) {
                 "Unknown command, use list to list all commands");
         }
         if (action == defs::GET_ACTION) {
-            if (args.size() != 0) {
+            if (!args.empty()) {
                 WrongNumberOfParameters(0);
             }
             auto t = det->getPatternLoopCycles(level, {det_id});
@@ -1566,7 +1566,7 @@ std::string CmdProxy::PatternWaitAddress(int action) {
                 "Unknown command, use list to list all commands");
         }
         if (action == defs::GET_ACTION) {
-            if (args.size() != 0) {
+            if (!args.empty()) {
                 WrongNumberOfParameters(0);
             }
             auto t = det->getPatternWaitAddr(level, {det_id});
@@ -1611,7 +1611,7 @@ std::string CmdProxy::PatternWaitTime(int action) {
                 "Unknown command, use list to list all commands");
         }
         if (action == defs::GET_ACTION) {
-            if (args.size() != 0) {
+            if (!args.empty()) {
                 WrongNumberOfParameters(0);
             }
             auto t = det->getPatternWaitTime(level, {det_id});
@@ -1684,7 +1684,7 @@ std::string CmdProxy::MinMaxEnergyThreshold(int action) {
                 "Unknown command, use list to list all commands");
         }
         if (action == defs::GET_ACTION) {
-            if (args.size() != 0) {
+            if (!args.empty()) {
                 WrongNumberOfParameters(0);
             }
             auto t = det->getDetectorMinMaxEnergyThreshold(emax, {det_id});
@@ -1912,7 +1912,7 @@ std::string CmdProxy::UserDetails(int action) {
         if (det_id != -1) {
             throw sls::RuntimeError("Cannot execute this at module level");
         }
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getUserDetails();

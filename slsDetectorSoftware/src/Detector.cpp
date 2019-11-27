@@ -1,5 +1,5 @@
 #include "Detector.h"
-#include "CmdLineParser.h"
+#include "CmdParser.h"
 #include "CmdProxy.h"
 #include "container_utils.h"
 #include "detectorData.h"
@@ -58,7 +58,7 @@ void Detector::loadConfig(const std::string &fname) {
 
 void Detector::loadParameters(const std::string &fname) {
     CmdProxy proxy(this);
-    CmdLineParser parser;
+    CmdParser parser;
     std::ifstream input_file;
     input_file.open(fname.c_str(), std::ios_base::in);
     if (!input_file.is_open()) {

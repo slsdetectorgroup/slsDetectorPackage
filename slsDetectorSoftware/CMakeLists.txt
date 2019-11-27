@@ -4,7 +4,7 @@ set(SOURCES
     src/slsDetector.cpp 
     src/Detector.cpp
     src/CmdProxy.cpp
-    src/CmdLineParser.cpp
+    src/CmdParser.cpp
 )
 
 set(HEADERS

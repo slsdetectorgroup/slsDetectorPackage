@@ -1,5 +1,11 @@
 
-#include "CmdLineParser.h"
+/*
+This file is used to generate the command line binaries
+(sls_detector_get/put/acquire/help). By defines in CMake 
+we get the different files. 
+
+*/
+#include "CmdParser.h"
 #include "CmdProxy.h"
 #include "Detector.h"
 #include "sls_detector_defs.h"
@@ -35,7 +41,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    sls::CmdLineParser parser;
+    sls::CmdParser parser;
     parser.Parse(argc, argv);
 
     // If we called sls_detector_acquire, add the acquire command
@@ -57,11 +63,11 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        //How big should this try block be?
+        // How big should this try block be?
         sls::Detector det(parser.multi_id());
         sls::CmdProxy proxy(&det);
-        proxy.Call(parser.command(), parser.arguments(),
-                              parser.detector_id(), action);
+        proxy.Call(parser.command(), parser.arguments(), parser.detector_id(),
+                   action);
     } catch (const sls::RuntimeError &e) {
         // OK to catch and do nothing since this will print the error message
         // and command line app will anyway exit

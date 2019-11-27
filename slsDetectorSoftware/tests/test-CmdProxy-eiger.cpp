@@ -12,6 +12,26 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
+// TEST_CASE("tengiga", "[.cmd][.eiger][.ctb]") {
+//     if (test::type == slsDetectorDefs::EIGER || test::type ==
+//     slsDetectorDefs::CHIPTESTBOARD) {
+//         {
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("tengiga 1", PUT));
+//             std::ostringstream oss;
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:tengiga", GET, nullptr,
+//             oss)); REQUIRE(oss.str() == "tengiga 1\n");
+//         }
+//         {
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("tengiga 0", PUT));
+//             std::ostringstream oss;
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:tengiga", GET, nullptr,
+//             oss)); REQUIRE(oss.str() == "tengiga 0\n");
+//         }
+//     } else {
+//         REQUIRE_THROWS(multiSlsDetectorClient("tengiga", GET));
+//     }
+// }
+
 TEST_CASE("quad", "[.cmd]") {
     // TODO! set and get once available in virtual detector
     Detector det;

@@ -202,3 +202,5 @@ int get_veto_photon(int);
 int set_veto_refernce(int);
 int get_burst_mode(int);
 int set_burst_mode(int);
+int set_adc_enable_mask_10g(int);
+int get_adc_enable_mask_10g(int);

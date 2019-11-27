@@ -4,23 +4,36 @@
 
 
 #define MIN_REQRD_VRSN_T_RD_API     0x181130
-#define REQRD_FRMWR_VRSN            0x190821
+#define REQRD_FRMWR_VRSN            0x191127
 
 #define CTRL_SRVR_INIT_TIME_US      (2 * 1000 * 1000)
 
 /* Struct Definitions */
-typedef struct ip_header_struct {
-	uint16_t     ip_len;
-	uint8_t      ip_tos;
-	uint8_t      ip_ihl:4 ,ip_ver:4;
-	uint16_t     ip_offset:13,ip_flag:3;
-	uint16_t     ip_ident;
-	uint16_t     ip_chksum;
-	uint8_t      ip_protocol;
-	uint8_t      ip_ttl;
-	uint32_t     ip_sourceip;
-	uint32_t     ip_destip;
-} ip_header;
+typedef struct udp_header_struct {
+	uint32_t	udp_destmac_msb;
+	uint16_t	udp_srcmac_msb;
+	uint16_t	udp_destmac_lsb;
+	uint32_t	udp_srcmac_lsb;
+	uint8_t		ip_tos;
+	uint8_t		ip_ihl: 4, ip_ver: 4;
+	uint16_t	udp_ethertype;
+	uint16_t	ip_identification;
+	uint16_t	ip_totallength;
+	uint8_t		ip_protocol;
+	uint8_t		ip_ttl;
+	uint16_t	ip_fragmentoffset: 13, ip_flags: 3;
+	uint16_t	ip_srcip_msb;
+	uint16_t	ip_checksum;
+	uint16_t	ip_destip_msb;
+	uint16_t	ip_srcip_lsb;
+	uint16_t	udp_srcport;
+	uint16_t	ip_destip_lsb;
+	uint16_t	udp_checksum;
+	uint16_t	udp_destport;
+} udp_header;
+
+#define IP_HEADER_SIZE				(20)
+#define UDP_IP_HEADER_LENGTH_BYTES	(28)
 
 /* Enums */
 enum ADCINDEX				{V_PWR_IO, V_PWR_A, V_PWR_B, V_PWR_C, V_PWR_D, I_PWR_IO, I_PWR_A, I_PWR_B, I_PWR_C, I_PWR_D};
@@ -91,9 +104,9 @@ enum CLKINDEX               {RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS};
 /* MSB & LSB DEFINES */
 #define MSB_OF_64_BIT_REG_OFST		(32)
 #define LSB_OF_64_BIT_REG_OFST		(0)
-#define BIT_32_MSK					(0xFFFFFFFF)
+#define BIT32_MSK					(0xFFFFFFFF)
+#define BIT16_MASK					(0xFFFF)
 
-#define IP_PACKETSIZE               (0x2032)
 #define ADC_PORT_INVERT_VAL         (0x453b2593)
 #define MAXIMUM_ADC_CLK             (65)
 #define PLL_VCO_FREQ_MHZ            (800)

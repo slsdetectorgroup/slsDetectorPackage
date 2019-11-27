@@ -1368,6 +1368,14 @@ void Detector::setADCEnableMask(uint32_t mask, Positions pos) {
     pimpl->Parallel(&slsDetector::setADCEnableMask, pos, mask);
 }
 
+Result<uint32_t> Detector::getTenGigaADCEnableMask(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTenGigaADCEnableMask, pos);
+}
+
+void Detector::setTenGigaADCEnableMask(uint32_t mask, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTenGigaADCEnableMask, pos, mask);
+}
+
 Result<uint32_t> Detector::getADCInvert(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getADCInvert, pos);
 }

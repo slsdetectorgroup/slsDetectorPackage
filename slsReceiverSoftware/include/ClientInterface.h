@@ -118,6 +118,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_udp_port(sls::ServerInterface2 &socket);
     int set_udp_port2(sls::ServerInterface2 &socket);
     int set_num_interfaces(sls::ServerInterface2 &socket);
+    int set_adc_mask_10g(sls::ServerInterface2 &socket);  
 
     detectorType myDetectorType;
     std::unique_ptr<Implementation> receiver{nullptr};

@@ -33,7 +33,8 @@ typedef struct udp_header_struct {
 	uint16_t	udp_destport;
 } udp_header;
 
-#define IP_HEADER_SIZE	20
+#define IP_HEADER_SIZE				(20)
+#define UDP_IP_HEADER_LENGTH_BYTES	(28)
 
 
 /* Enums */
@@ -93,7 +94,6 @@ enum CLKINDEX               {RUN_CLK, ADC_CLK, NUM_CLOCKS};
 
 #define MAX_PHASE_SHIFTS			(160)
 #define BIT16_MASK					(0xFFFF)
-#define UDP_IP_HEADER_LENGTH_BYTES	(28)
 
 
 

@@ -303,6 +303,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_VETO_REFERENCE:				return "F_SET_VETO_REFERENCE";	
 	case F_GET_BURST_MODE:					return "F_GET_BURST_MODE";
 	case F_SET_BURST_MODE:					return "F_SET_BURST_MODE";
+	case F_SET_ADC_ENABLE_MASK_10G:         return "F_SET_ADC_ENABLE_MASK_10G";
+	case F_GET_ADC_ENABLE_MASK_10G:         return "F_GET_ADC_ENABLE_MASK_10G";
 
 	default:								return "Unknown Function";
 	}
@@ -483,6 +485,8 @@ void function_table() {
 	flist[F_SET_VETO_REFERENCE]					= &set_veto_refernce;	
 	flist[F_GET_BURST_MODE]						= &get_burst_mode;
 	flist[F_SET_BURST_MODE]						= &set_burst_mode;
+	flist[F_SET_ADC_ENABLE_MASK_10G]			= &set_adc_enable_mask_10g;
+	flist[F_GET_ADC_ENABLE_MASK_10G]			= &get_adc_enable_mask_10g;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -2783,12 +2787,23 @@ int send_update(int file_des) {
 	sendData(file_des, &retval.xmin, sizeof(int), INT32);
 	sendData(file_des, &retval.xmax, sizeof(int), INT32);
 #endif
+
+	// tengiga
+#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	i32 =  enableTenGigabitEthernet(-1);
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+    if (n < 0) return printSocketReadError();
+#endif
 	
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	// adcmask
+	// 1g adcmask
     i32 = getADCEnableMask();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
     if (n < 0) return printSocketReadError();
+	// 10g adc mask
+    i32 = getADCEnableMask_10G();
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+    if (n < 0) return printSocketReadError();	
 #endif
 
 	// num udp interfaces
@@ -4231,7 +4246,7 @@ int set_adc_enable_mask(int file_des) {
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 	return printSocketReadError();
-	FILE_LOG(logDEBUG1, ("Seting ADC Enable Mask to %u\n", arg));
+	FILE_LOG(logDEBUG1, ("Seting 1Gb ADC Enable Mask to %u\n", arg));
 
 #if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
 	functionNotImplemented();
@@ -4240,13 +4255,13 @@ int set_adc_enable_mask(int file_des) {
 	if (Server_VerifyLock() == OK) {
 		ret = setADCEnableMask(arg);
 		if (ret == FAIL) {
-			sprintf(mess, "Could not set ADC Enable mask to 0x%x. Could not allocate ram\n", arg);
+			sprintf(mess, "Could not set 1Gb ADC Enable mask to 0x%x.\n", arg);
 			FILE_LOG(logERROR,(mess));	
 		} else {
 			uint32_t retval = getADCEnableMask();
 			if (arg != retval) {
 				ret = FAIL;
-				sprintf(mess, "Could not set ADC Enable mask. Set 0x%x, but read 0x%x\n", arg, retval);
+				sprintf(mess, "Could not set 1Gb ADC Enable mask. Set 0x%x, but read 0x%x\n", arg, retval);
 				FILE_LOG(logERROR,(mess));
 			}
 		}
@@ -4261,14 +4276,58 @@ int get_adc_enable_mask(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	uint32_t retval = -1;
 
-	FILE_LOG(logDEBUG1, ("Getting ADC Enable Mask \n"));
+	FILE_LOG(logDEBUG1, ("Getting 1Gb ADC Enable Mask \n"));
 
 #if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
 	functionNotImplemented();
 #else	
 	// get
 	retval = getADCEnableMask();
-	FILE_LOG(logDEBUG1, ("ADC Enable Mask retval: %u\n", retval));
+	FILE_LOG(logDEBUG1, ("1Gb ADC Enable Mask retval: %u\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+int set_adc_enable_mask_10g(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Seting 10Gb ADC Enable Mask to %u\n", arg));
+
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		setADCEnableMask_10G(arg);
+		uint32_t retval = getADCEnableMask_10G();
+		if (arg != retval) {
+			ret = FAIL;
+			sprintf(mess, "Could not set 10Gb ADC Enable mask. Set 0x%x, but read 0x%x\n", arg, retval);
+			FILE_LOG(logERROR,(mess));
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_adc_enable_mask_10g(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting 10Gb ADC Enable Mask\n"));
+
+#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+	functionNotImplemented();
+#else	
+	// get
+	retval = getADCEnableMask_10G();
+	FILE_LOG(logDEBUG1, ("10Gb ADC Enable Mask retval: %u\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -5481,7 +5540,7 @@ int set_readout_mode(int file_des) {
 		if (ret == OK) {
 			if (setReadoutMode(arg) == FAIL) {
 				ret = FAIL;
-				sprintf(mess, "Could not set allocate RAM to set readout mode\n");
+				sprintf(mess, "Could not set readout mode\n");
 				FILE_LOG(logERROR,(mess));
 			} else {
 				int retval = getReadoutMode();

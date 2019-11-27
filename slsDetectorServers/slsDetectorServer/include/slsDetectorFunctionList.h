@@ -80,7 +80,7 @@ void		allocateDetectorStructureMemory();
 #endif
 void 		setupDetector();
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-int         allocateRAM();
+int         updateDatabytesandAllocateRAM();
 void        updateDataBytes();
 #endif
 
@@ -138,6 +138,8 @@ uint32_t 	getADCInvertRegister();
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int 		setADCEnableMask(uint32_t mask);
 uint32_t 	getADCEnableMask();
+void 		setADCEnableMask_10G(uint32_t mask);
+uint32_t 	getADCEnableMask_10G();
 void 		setADCInvertRegister(uint32_t val);
 uint32_t 	getADCInvertRegister();
 int			setExternalSamplingSource(int val);
@@ -305,11 +307,8 @@ void 	selectPrimaryInterface(int val);
 int 	getPrimaryInterface();
 void 	setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip, uint64_t destmac, uint32_t destport, uint64_t sourcemac, uint32_t sourceip, uint32_t sourceport);
 #endif
-#if defined(JUNGFRAUD) || defined(GOTTHARD2D) || defined(MYTHEN3D)
+#if defined(JUNGFRAUD) || defined(GOTTHARD2D) || defined(MYTHEN3D) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 void 	calcChecksum(udp_header* udp);
-#endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-long int 	calcChecksum(int sourceip, int destip);
 #endif
 #ifdef GOTTHARDD
 int         getAdcConfigured();

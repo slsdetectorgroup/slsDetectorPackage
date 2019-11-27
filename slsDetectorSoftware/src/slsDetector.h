@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x191030
+#define SLS_SHMVERSION 0x191127
 
 /**
  * @short structure allocated in shared memory to store detector settings for
@@ -65,8 +65,11 @@ struct sharedSlsDetector {
     /** roi */
     slsDetectorDefs::ROI roi;
 
-    /** adc enable mask */
-    uint32_t adcEnableMask;
+    /** 1gb adc enable mask */
+    uint32_t adcEnableMaskOneGiga;
+
+    /** 10gb adc enable mask */
+    uint32_t adcEnableMaskTenGiga;
 
     /** readout mode */
     slsDetectorDefs::readoutMode roMode;
@@ -100,10 +103,10 @@ struct sharedSlsDetector {
     bool useReceiverFlag;
 
     /** 10 Gbe enable*/
-    int tenGigaEnable;
+    bool tenGigaEnable;
 
     /** flipped data across x or y axis */
-    int flippedDataX;
+    bool flippedDataX;
 
     /** tcp port from gui/different process to receiver (only data) */
     int zmqport;
@@ -1172,6 +1175,18 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     uint32_t getADCEnableMask();
 
+     /**
+     * Set 10Gb  ADC Enable Mask (CTB, Moench)
+     * @param mask ADC Enable mask
+     */
+    void setTenGigaADCEnableMask(uint32_t mask);
+
+    /**
+     * Get 10Gb ADC Enable Mask (CTB, Moench)
+     * @returns ADC Enable mask
+     */
+    uint32_t getTenGigaADCEnableMask();   
+
     /**
      * Set ADC invert register (CTB, Moench)
      * @param value ADC invert value
@@ -1269,17 +1284,16 @@ class slsDetector : public virtual slsDetectorDefs {
 
     /**
      * Returns the enable if data will be flipped across x axis (Eiger)
-     * @returns 1 for flipped, else 0
+     * @returns if flipped across x axis
      */
-    int getFlippedDataX() const;
+    bool getFlippedDataX() const;
 
     /**
      * Sets the enable which determines if
      * data will be flipped across x axis (Eiger)
      * @param value 0 or 1 to reset/set or -1 to get value
-     * @returns enable flipped data across x axis
      */
-    int setFlippedDataX(int value = -1);
+    void setFlippedDataX(int value = -1);
 
     /**
      * Sets all the trimbits to a particular value (Eiger)
@@ -1694,7 +1708,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param i is -1 to get, 0 to disable and 1 to enable
      * @returns if 10Gbe is enabled
      */
-    int enableTenGigabitEthernet(int value = -1);
+    bool enableTenGigabitEthernet(int value = -1);
 
     /**
      * Set/get receiver fifo depth

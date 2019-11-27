@@ -66,6 +66,7 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
         SECTION("vcp") { test_dac(defs::VCP, "vcp", 1400); }
         SECTION("vcn") { test_dac(defs::VCN, "vcn", 1400); }
         SECTION("vis") { test_dac(defs::VIS, "vis", 1400); }
+        SECTION("iodelay") { test_dac(defs::IO_DELAY, "iodelay", 1400); }
         SECTION("vthreshold") {
             // Read out individual vcmp to be able to reset after
             // the test is done
@@ -74,7 +75,6 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
             auto vcmp_rl = det.getDAC(defs::VCMP_RL, false);
             auto vcmp_rr = det.getDAC(defs::VCMP_RR, false);
             auto vcp = det.getDAC(defs::VCP, false);
-
 
             {
                 std::ostringstream oss;
@@ -86,7 +86,6 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
                 proxy.Call("vthreshold", {}, -1, GET, oss);
                 REQUIRE(oss.str() == "vthreshold 1234\n");
             }
-
 
             // Reset dacs after test
             for (int i = 0; i != det.size(); ++i) {
@@ -100,62 +99,84 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
     }
 }
 
-// TEST_CASE("trigger", "[.cmd][.eiger]") {
-//     if(test::type != slsDetectorDefs::EIGER) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("trigger", PUT));
+// TEST_CASE("trigger", "[.cmd]") {
+//     Detector det;
+//     CmdProxy proxy(&det);
+//     auto det_type = det.getDetectorType().squash();
+//     if (det_type != defs::EIGER) {
+//         proxy.Call("trigger", {}, -1, PUT);
 //     } else {
-//         // trigger
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("timing trigger", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "timing trigger\n");
-//         }
-//         int startingfnum = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("startingfnum", GET,
-//             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("startingfnum ")); startingfnum = std::stoi(s);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT, nullptr,
-//             oss)); REQUIRE(oss.str() == "start successful\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("status", GET, nullptr,
-//             oss)); REQUIRE(oss.str() != "status idle\n"); REQUIRE(oss.str()
-//             != "status stopped\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("trigger", PUT, nullptr,
-//             oss)); REQUIRE(oss.str() == "trigger successful\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("stop", PUT));
-//         int currentfnum = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("startingfnum", GET,
-//             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("startingfnum ")); currentfnum = std::stoi(s);
-//         }
-//         REQUIRE((startingfnum + 1) == currentfnum);
 
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("timing auto", PUT));
-//     }
-// }
-
-// TEST_CASE("quad", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
 //         {
 //             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("quad", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "quad 0\n");
+//             proxy.Call("timing", {"trigger"}, -1, PUT, oss);
+//             REQUIRE(oss.str() == "timing trigger\n");
 //         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("quad 0", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("quad", GET));
+//         auto startingfnum = det.getStartingFrameNumber().tsquash(
+//             "inconsistent frame nr in test");
+//         det.startDetector();
+
+//         {
+//             std::ostringstream oss;
+//             proxy.Call("trigger", {}, -1, PUT, oss);
+//             REQUIRE(oss.str() == "trigger successful\n");
+//         }
+
+
+//         auto currentfnum = det.getStartingFrameNumber().tsquash(
+//             "inconsistent frame nr in test");
+
+//         REQUIRE(startingfnum +1 == currentfnum);
+//         det.stopDetector();
+//         {
+//             std::ostringstream oss;
+//             proxy.Call("timing", {"auto"}, -1, PUT, oss);
+//             REQUIRE(oss.str() == "timing auto\n");
+//         }
 //     }
+    //     if(test::type != slsDetectorDefs::EIGER) {
+    //         REQUIRE_THROWS(multiSlsDetectorClient("trigger", PUT));
+    //     } else {
+    //         // trigger
+    //         {
+    //             std::ostringstream oss;
+    //             REQUIRE_NOTHROW(multiSlsDetectorClient("timing trigger", PUT,
+    //             nullptr, oss)); REQUIRE(oss.str() == "timing trigger\n");
+    //         }
+    //         int startingfnum = 0;
+    //         {
+    //             std::ostringstream oss;
+    //             REQUIRE_NOTHROW(multiSlsDetectorClient("startingfnum", GET,
+    //             nullptr, oss)); std::string s = (oss.str()).erase (0,
+    //             strlen("startingfnum ")); startingfnum = std::stoi(s);
+    //         }
+    //         {
+    //             std::ostringstream oss;
+    //             REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT, nullptr,
+    //             oss)); REQUIRE(oss.str() == "start successful\n");
+    //         }
+    //         {
+    //             std::ostringstream oss;
+    //             REQUIRE_NOTHROW(multiSlsDetectorClient("status", GET,
+    //             nullptr, oss)); REQUIRE(oss.str() != "status idle\n");
+    //             REQUIRE(oss.str()
+    //             != "status stopped\n");
+    //         }
+    //         {
+    //             std::ostringstream oss;
+    //             REQUIRE_NOTHROW(multiSlsDetectorClient("trigger", PUT,
+    //             nullptr, oss)); REQUIRE(oss.str() == "trigger successful\n");
+    //         }
+    //         REQUIRE_NOTHROW(multiSlsDetectorClient("stop", PUT));
+    //         int currentfnum = 0;
+    //         {
+    //             std::ostringstream oss;
+    //             REQUIRE_NOTHROW(multiSlsDetectorClient("startingfnum", GET,
+    //             nullptr, oss)); std::string s = (oss.str()).erase (0,
+    //             strlen("startingfnum ")); currentfnum = std::stoi(s);
+    //         }
+    //         REQUIRE((startingfnum + 1) == currentfnum);
+
+    //         REQUIRE_NOTHROW(multiSlsDetectorClient("timing auto", PUT));
+    //     }
 // }

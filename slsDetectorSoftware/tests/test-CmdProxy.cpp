@@ -1386,32 +1386,9 @@ TEST_CASE("user", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("user", {}, -1, PUT));
 }
 
-// TEST_CASE("now", "[.cmd]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU || test::type ==
-//     slsDetectorDefs::CHIPTESTBOARD) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("now", GET));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("now", GET));
-//     }
-// }
 
-// TEST_CASE("timestamp", "[.cmd]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU || test::type ==
-//     slsDetectorDefs::CHIPTESTBOARD) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("timestamp", GET));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("timestamp", GET));
-//     }
-// }
 
-// TEST_CASE("nframes", "[.cmd]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU || test::type ==
-//     slsDetectorDefs::CHIPTESTBOARD) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("nframes", GET));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("nframes", GET));
-//     }
-// }
+
 
 // TEST_CASE("execcommand", "[.cmd]") {
 //     REQUIRE_NOTHROW(multiSlsDetectorClient("execcommand ls", PUT));
@@ -1451,16 +1428,7 @@ TEST_CASE("stopport", "[.cmd]") {
     REQUIRE(port == 1953);
 }
 
-// TEST_CASE("adcreg", "[.cmd]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU || test::type ==
-//     slsDetectorDefs::CHIPTESTBOARD || test::type ==
-//     slsDetectorDefs::GOTTHARD) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("adcreg 0x34", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("adcreg", GET));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("adcreg 0x45 0x3", PUT));
-//     }
-// }
+
 
 // TEST_CASE("bustest", "[.cmd]") {
 //     if (test::type == slsDetectorDefs::JUNGFRAU || test::type ==
@@ -2773,27 +2741,7 @@ TEST_CASE("stopport", "[.cmd]") {
 //     }
 // }
 
-// TEST_CASE("powerchip", "[.cmd][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("powerchip 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "powerchip 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("powerchip 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "powerchip 0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("powerchip", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "powerchip 0\n");
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("powerchip", GET));
-//     }
-// }
+
 
 // TEST_CASE("temp_", "[.cmd][.jungfrau]") {
 //     if (test::type == slsDetectorDefs::JUNGFRAU) {

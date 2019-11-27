@@ -2112,6 +2112,7 @@ void slsDetector::setReceiverStreamingIP(const sls::IpAddr ip) {
         FILE_LOG(logDEBUG1)
             << "Sending receiver streaming IP to receiver: " << ip;
         sendToReceiver(F_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
+        shm()->rxZmqip = ip;
     } else {
         shm()->rxZmqip = ip;
     }
@@ -2671,6 +2672,7 @@ void slsDetector::setReceiverDbitList(std::vector<int> list) {
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> arg = list;
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);
+        shm()->rxDbitList = list;
     } else {
         shm()->rxDbitList = list;
     }
@@ -2693,6 +2695,7 @@ int slsDetector::setReceiverDbitOffset(int value) {
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_RECEIVER_DBIT_OFFSET, value, retval);
         FILE_LOG(logDEBUG1) << "Receiver digital bit offset: " << retval;
+        shm()->rxDbitOffset = value;
     } else {
         shm()->rxDbitOffset = value;
     }

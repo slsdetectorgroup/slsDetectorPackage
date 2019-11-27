@@ -60,13 +60,8 @@ int main(int argc, char *argv[]) {
         //How big should this try block be?
         sls::Detector det(parser.multi_id());
         sls::CmdProxy proxy(&det);
-        auto cmd = proxy.Call(parser.command(), parser.arguments(),
+        proxy.Call(parser.command(), parser.arguments(),
                               parser.detector_id(), action);
-        // TODO! move this check into CmdProxy
-        if (!cmd.empty()) {
-            std::cout << cmd
-                      << " Unknown command, use list to list all commands\n";
-        }
     } catch (const sls::RuntimeError &e) {
         // OK to catch and do nothing since this will print the error message
         // and command line app will anyway exit

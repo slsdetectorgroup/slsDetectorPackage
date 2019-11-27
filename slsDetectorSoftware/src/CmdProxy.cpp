@@ -25,7 +25,7 @@ std::ostream &operator<<(std::ostream &os,
     return os;
 }
 
-std::string CmdProxy::Call(const std::string &command,
+void CmdProxy::Call(const std::string &command,
                            const std::vector<std::string> &arguments,
                            int detector_id, int action, std::ostream &os) {
     cmd = command;
@@ -37,9 +37,8 @@ std::string CmdProxy::Call(const std::string &command,
     auto it = functions.find(cmd);
     if (it != functions.end()) {
         os << ((*this).*(it->second))(action);
-        return {};
     } else {
-        return cmd;
+        throw sls::RuntimeError(cmd + " Unknown command, use list to list all commands");
     }
 }
 

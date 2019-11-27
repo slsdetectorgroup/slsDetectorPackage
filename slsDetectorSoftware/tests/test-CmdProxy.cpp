@@ -14,6 +14,12 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
+TEST_CASE("Unknown command", "[.cmd]"){
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("vsaevrreavv", {}, -1, PUT));
+}
+
 // TEST_CASE("vchip", "[.cmd]") {
 //     int prev_val = 0;
 
@@ -3100,66 +3106,27 @@ TEST_CASE("stopport", "[.cmd]") {
 //     oss)); s = oss.str(); REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));
 // }
 
-// TEST_CASE("subdeadtime", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
-//         std::string s;
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("subdeadtime", GET, nullptr,
-//         oss)); s = oss.str(); REQUIRE_NOTHROW(multiSlsDetectorClient(s,
-//         PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("subdeadtime", GET));
-//     }
-// }
 
-// TEST_CASE("subexptime", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
-//         std::string s;
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("subexptime", GET, nullptr,
-//         oss)); s = oss.str(); REQUIRE_NOTHROW(multiSlsDetectorClient(s,
-//         PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("subexptime", GET));
-//     }
-// }
 
-// TEST_CASE("dr", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
-//         int vals[4] = {4, 8, 16, 32};
-//         for (int i = 0; i < 4; ++i) {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dr " +
-//             std::to_string(vals[i]), PUT)); std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dr", GET, nullptr, oss));
-//             REQUIRE(oss.str() == "dr " + std::to_string(vals[i]) + '\n');
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("dr 4", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("dr 8", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("dr 32", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("dr 16", PUT));
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dr", GET, nullptr, oss));
-//             REQUIRE(oss.str() == "dr " + std::to_string(16) + '\n');
-//         }
-//     }
-// }
 
-// TEST_CASE("zmqip", "[.cmd]") {
-//     std::string s;
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:zmqip", GET, nullptr,
-//         oss)); s = oss.str();
-//     }
-//     {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:zmqip", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == s);
-//     }
-// }
+
+
+
+TEST_CASE("zmqip", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    std::ostringstream oss1, oss2;
+    auto zmqip = det.getClientZmqIp(); 
+    proxy.Call("zmqip", {}, 0, GET, oss1);
+    REQUIRE(oss1.str() == "zmqip " + zmqip[0].str() + '\n');
+
+    proxy.Call("zmqip", {zmqip[0].str()}, 0, PUT, oss2);
+    REQUIRE(oss2.str() == "zmqip " + zmqip[0].str() + '\n');
+
+    for (int i = 0; i!=det.size(); ++i){
+        det.setRxZmqIP(zmqip[i], {i});
+    }
+}
 
 // TEST_CASE("zmqport", "[.cmd]") {
 //     multiSlsDetector d;

@@ -203,6 +203,8 @@ int ClientInterface::function_table(){
 	flist[F_SET_RECEIVER_UDP_PORT]          =   &ClientInterface::set_udp_port;
 	flist[F_SET_RECEIVER_UDP_PORT2]         =   &ClientInterface::set_udp_port2;
 	flist[F_SET_RECEIVER_NUM_INTERFACES]    =   &ClientInterface::set_num_interfaces;
+	flist[F_RECEIVER_SET_ADC_MASK_10G]		=	&ClientInterface::set_adc_mask_10g;
+
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		// FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -1137,16 +1139,16 @@ int ClientInterface::set_readout_mode(Interface &socket) {
 int ClientInterface::set_adc_mask(Interface &socket) {
     auto arg = socket.Receive<uint32_t>();
     VerifyIdle(socket);
-    FILE_LOG(logDEBUG1) << "Setting ADC enable mask: " << arg;
+    FILE_LOG(logDEBUG1) << "Setting 1Gb ADC enable mask: " << arg;
     impl()->setADCEnableMask(arg);
     auto retval = impl()->getADCEnableMask();
     if (retval != arg) {
         std::ostringstream os;
-        os << "Could not ADC enable mask. Set 0x" << std::hex << arg
+        os << "Could not set 1Gb ADC enable mask. Set 0x" << std::hex << arg
            << " but read 0x" << std::hex << retval;
         throw RuntimeError(os.str());
     }
-    FILE_LOG(logDEBUG1) << "ADC enable mask retval: " << retval;
+    FILE_LOG(logDEBUG1) << "1Gb ADC enable mask retval: " << retval;
     return socket.sendResult(retval);
 }
 
@@ -1298,4 +1300,20 @@ int ClientInterface::set_num_interfaces(Interface &socket) {
         throw RuntimeError("Failed to set number of interfaces");
     }
     return socket.Send(OK);
+}
+
+int ClientInterface::set_adc_mask_10g(Interface &socket) {
+    auto arg = socket.Receive<uint32_t>();
+    VerifyIdle(socket);
+    FILE_LOG(logDEBUG1) << "Setting 10Gb ADC enable mask: " << arg;
+    impl()->setTenGigaADCEnableMask(arg);
+    auto retval = impl()->getTenGigaADCEnableMask();
+    if (retval != arg) {
+        std::ostringstream os;
+        os << "Could not 10gb ADC enable mask. Set 0x" << std::hex << arg
+           << " but read 0x" << std::hex << retval;
+        throw RuntimeError(os.str());
+    }
+    FILE_LOG(logDEBUG1) << "10Gb ADC enable mask retval: " << retval;
+    return socket.sendResult(retval);
 }

@@ -186,6 +186,9 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t getADCEnableMask() const;
     /* [Ctb][Moench] */
     int setADCEnableMask(const uint32_t mask);
+    uint32_t getTenGigaADCEnableMask() const;
+    /* [Ctb][Moench] */
+    int setTenGigaADCEnableMask(const uint32_t mask);    
     std::vector<int> getDbitList() const;
     /* [Ctb] */
     void setDbitList(const std::vector<int> v);
@@ -284,7 +287,8 @@ class Implementation : private virtual slsDetectorDefs {
     bool deactivatedPaddingEnable;
     int numLinesReadout;
     readoutMode readoutType;
-    uint32_t adcEnableMask;
+    uint32_t adcEnableMaskOneGiga;
+    uint32_t adcEnableMaskTenGiga;    
     std::vector<int> ctbDbitList;
     int ctbDbitOffset;
     int ctbAnalogDataBytes;

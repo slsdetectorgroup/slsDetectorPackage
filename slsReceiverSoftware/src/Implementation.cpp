@@ -111,7 +111,9 @@ void Implementation::InitializeMembers() {
     deactivatedPaddingEnable = true;
     numLinesReadout = MAX_EIGER_ROWS_PER_READOUT;
     readoutType = ANALOG_ONLY;
-    adcEnableMask = BIT32_MASK;
+    adcEnableMaskOneGiga = BIT32_MASK;
+    adcEnableMaskTenGiga = BIT32_MASK;
+
     ctbDbitOffset = 0;
     ctbAnalogDataBytes = 0;
 
@@ -882,7 +884,7 @@ int Implementation::SetupWriter() {
     attr.quadEnable = quadEnable;
     attr.analogFlag = (readoutType == ANALOG_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1 : 0;
     attr.digitalFlag = (readoutType == DIGITAL_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1 : 0;
-    attr.adcmask = adcEnableMask;
+    attr.adcmask = tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
     attr.dbitoffset = ctbDbitOffset;
     attr.dbitlist = 0;
     attr.roiXmin = roi.xmin;
@@ -1310,7 +1312,8 @@ int Implementation::setNumberofAnalogSamples(const uint32_t i) {
         numberOfAnalogSamples = i;
 
         ctbAnalogDataBytes = generalData->setImageSize(
-            adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples,
+            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga, 
+            numberOfAnalogSamples, numberOfDigitalSamples,
             tengigaEnable, readoutType);
         
         for (const auto &it : dataProcessor)
@@ -1334,7 +1337,8 @@ int Implementation::setNumberofDigitalSamples(const uint32_t i) {
         numberOfDigitalSamples = i;
 
         ctbAnalogDataBytes = generalData->setImageSize(
-            adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples,
+            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga, 
+            numberOfAnalogSamples, numberOfDigitalSamples,
             tengigaEnable, readoutType);
         
         for (const auto &it : dataProcessor)
@@ -1415,7 +1419,8 @@ int Implementation::setTenGigaEnable(const bool b) {
         case MOENCH:
         case CHIPTESTBOARD:
             ctbAnalogDataBytes = generalData->setImageSize(
-                adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples,
+                tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga, 
+                numberOfAnalogSamples, numberOfDigitalSamples,
                 tengigaEnable, readoutType);
             break;
         default:
@@ -1558,7 +1563,8 @@ int Implementation::setReadoutMode(const readoutMode f) {
 
         // side effects
         ctbAnalogDataBytes = generalData->setImageSize(
-            adcEnableMask, numberOfAnalogSamples, numberOfDigitalSamples,
+            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga, 
+            numberOfAnalogSamples, numberOfDigitalSamples,
             tengigaEnable, readoutType);
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
@@ -1574,15 +1580,16 @@ int Implementation::setReadoutMode(const readoutMode f) {
 
 uint32_t Implementation::getADCEnableMask() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return adcEnableMask;
+    return adcEnableMaskOneGiga;
 }
 
 int Implementation::setADCEnableMask(uint32_t mask) {
-    if (adcEnableMask != mask) {
-        adcEnableMask = mask;
+    if (adcEnableMaskOneGiga != mask) {
+        adcEnableMaskOneGiga = mask;
 
         ctbAnalogDataBytes = generalData->setImageSize(
-            mask, numberOfAnalogSamples, numberOfDigitalSamples,
+            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga, 
+            numberOfAnalogSamples, numberOfDigitalSamples,
             tengigaEnable, readoutType);
 
         for (const auto &it : dataProcessor)
@@ -1591,7 +1598,34 @@ int Implementation::setADCEnableMask(uint32_t mask) {
             return FAIL;
     }
 
-    FILE_LOG(logINFO) << "ADC Enable Mask: 0x" << std::hex << adcEnableMask
+    FILE_LOG(logINFO) << "ADC Enable Mask for 1Gb mode: 0x" << std::hex << adcEnableMaskOneGiga
+                      << std::dec;
+    FILE_LOG(logINFO) << "Packets per Frame: "
+                      << (generalData->packetsPerFrame);
+    return OK;
+}
+
+uint32_t Implementation::getTenGigaADCEnableMask() const {
+    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    return adcEnableMaskTenGiga;
+}
+
+int Implementation::setTenGigaADCEnableMask(uint32_t mask) {
+    if (adcEnableMaskTenGiga != mask) {
+        adcEnableMaskTenGiga = mask;
+
+        ctbAnalogDataBytes = generalData->setImageSize(
+            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga, 
+            numberOfAnalogSamples, numberOfDigitalSamples,
+            tengigaEnable, readoutType);
+
+        for (const auto &it : dataProcessor)
+            it->SetPixelDimension();
+        if (SetupFifoStructure() == FAIL)
+            return FAIL;
+    }
+
+    FILE_LOG(logINFO) << "ADC Enable Mask for 10Gb mode: 0x" << std::hex << adcEnableMaskTenGiga
                       << std::dec;
     FILE_LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);

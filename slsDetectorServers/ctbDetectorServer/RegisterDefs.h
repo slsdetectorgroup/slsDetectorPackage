@@ -497,14 +497,14 @@
 #define PATTERN_WAIT_TIMER_2_LSB_REG        (0x76 << MEM_MAP_SHIFT)
 #define PATTERN_WAIT_TIMER_2_MSB_REG        (0x77 << MEM_MAP_SHIFT)
 
-/* ADC Disable RW register TODO */
-#define ADC_DISABLE_REG                     (0x78 << MEM_MAP_SHIFT)
+/* Readout enable RW register */
+#define READOUT_10G_ENABLE_REG              (0x79 << MEM_MAP_SHIFT)
 
-/* DAC Value RW register TODO  */
-//#define DAC_VALUE_REG                       (0x79 << MEM_MAP_SHIFT)
+#define READOUT_10G_ENABLE_ANLG_OFST        (0)
+#define READOUT_10G_ENABLE_ANLG_MSK         (0x000000FF << READOUT_10G_ENABLE_ANLG_OFST)
+#define READOUT_10G_ENABLE_DGTL_OFST        (8)
+#define READOUT_10G_ENABLE_DGTL_MSK         (0x00000001 << READOUT_10G_ENABLE_DGTL_OFST)
 
-/* DAC Number RW register TODO */
-//#define DAC_NUMBER_REG                      (0x7A << MEM_MAP_SHIFT)
 
 /* Digital Bit External Trigger RW register */
 #define DBIT_EXT_TRG_REG                    (0x7B << MEM_MAP_SHIFT)
@@ -548,9 +548,8 @@
 #define I2C_SDA_HOLD_REG                    (0x10A << MEM_MAP_SHIFT)
 //fixme: upto 0x10f
 
-
-
-
+/* Round Robin  */
+#define RXR_ENDPOINT_START_REG	            (0x1000 << MEM_MAP_SHIFT)
 
 
 

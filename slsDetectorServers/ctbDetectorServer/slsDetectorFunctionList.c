@@ -41,6 +41,7 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
+// 1g readout
 int dataBytes = 0;
 int analogDataBytes = 0;
 int digitalDataBytes = 0;
@@ -48,18 +49,19 @@ char* analogData = 0;
 char* digitalData = 0;
 char volatile *analogDataPtr = 0;
 char volatile *digitalDataPtr = 0;
-
 char udpPacketData[UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header)];
+uint32_t adcEnableMask_1g = 0;
+
+// 10g readout
+uint8_t adcEnableMask_10g = 0;
+
 
 int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0};
 uint32_t clkFrequency[NUM_CLOCKS] = {40, 20, 20, 200};
-
 int dacValues[NDAC] = {0};
 // software limit that depends on the current chip on the ctb
 int vLimit = 0;
-
 int highvoltage = 0;
-uint32_t adcEnableMask = 0;
 int analogEnable = 1;
 int digitalEnable = 0;
 int naSamples = 1;
@@ -459,7 +461,8 @@ void setupDetector() {
     }
     vLimit = DEFAULT_VLIMIT;
     highvoltage = 0;
-    adcEnableMask = BIT_32_MSK;
+    adcEnableMask_1g = 0;
+    adcEnableMask_10g = 0;
     analogEnable = 1;
     digitalEnable = 0;
     naSamples = 1;
@@ -533,21 +536,21 @@ void setupDetector() {
 	setPeriod(DEFAULT_PERIOD);
 	setDelayAfterTrigger(DEFAULT_DELAY);
 	setTiming(DEFAULT_TIMING_MODE);
-	setReadoutMode(ANALOG_ONLY);
-
-    // enable all ADC channels
-    setADCEnableMask(BIT_32_MSK);
+    setADCEnableMask(BIT32_MSK);
+    setADCEnableMask_10G(BIT32_MSK);   
+	if (setReadoutMode(ANALOG_ONLY) == FAIL) {
+        strcpy(initErrorMessage,
+				"Could not set readout mode to analog only.\n");
+		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+		initError = FAIL;
+    }
 }
 
-int allocateRAM() {
+int updateDatabytesandAllocateRAM() {
+
 	int oldAnalogDataBytes = analogDataBytes;
     int oldDigitalDataBytes = digitalDataBytes;
 	updateDataBytes();
-
-	// only allcoate RAM for 1 giga udp (if 10G, return)
-	if (enableTenGigabitEthernet(-1))
-		return OK;
-
 
 	// update only if change in databytes
 	if (analogDataBytes == oldAnalogDataBytes && digitalDataBytes == oldDigitalDataBytes) {
@@ -602,12 +605,12 @@ void updateDataBytes() {
 
     // analog
     if (analogEnable) {
-        if (adcEnableMask == BIT_32_MSK)
+        if (adcEnableMask_1g == BIT32_MSK)
             nachans = 32;
         else {
             int ichan = 0;
             for (ichan = 0; ichan < NCHAN_ANALOG; ++ichan) {
-                if (adcEnableMask & (1 << ichan))
+                if (adcEnableMask_1g & (1 << ichan))
                     ++nachans;
             }
         }
@@ -666,23 +669,71 @@ int setDynamicRange(int dr){
 }
 
 int setADCEnableMask(uint32_t mask) {
-    FILE_LOG(logINFO, ("Setting adcEnableMask to 0x%08x\n", mask));
-    adcEnableMask = mask;
-
-    // get disable mask
-    mask ^= BIT_32_MSK;
-    bus_w(ADC_DISABLE_REG, mask);
-
-    // update databytes and allocate ram
-    return allocateRAM();
+    if (mask == 0u) {
+        FILE_LOG(logERROR, ("Cannot set 1gb adc mask to 0\n"));
+        return FAIL;
+    }
+    FILE_LOG(logINFO, ("Setting adcEnableMask 1G to 0x%08x\n", mask));
+    adcEnableMask_1g = mask;
+    // 1Gb enabled
+    if (!enableTenGigabitEthernet(-1)) {
+        if (updateDatabytesandAllocateRAM() == FAIL) {
+            return FAIL;
+        }
+    }
+    return OK;
 }
 
 uint32_t getADCEnableMask() {
-    uint32_t retval = bus_r(ADC_DISABLE_REG);
+    return adcEnableMask_1g;
+}
 
-    // get enable mask
-    retval ^= BIT_32_MSK;
-    adcEnableMask = retval;
+void setADCEnableMask_10G(uint32_t mask) {
+    if (mask == 0u) {
+        FILE_LOG(logERROR, ("Cannot set 10gb adc mask to 0\n"));
+        return;
+    }  
+    // convert 32 bit mask to 8 bit mask
+    uint8_t actualMask = 0;
+    if (mask != 0) {
+        int ival = 0;
+        int ich = 0;
+        for (ich = 0; ich < NCHAN_ANALOG; ich = ich + 4) {
+            if ((1 << ich) & mask) {
+                actualMask |= (1 << ival++);
+            }
+        }
+    }   
+
+    FILE_LOG(logINFO, ("Setting adcEnableMask 10G to 0x%x (from 0x%08x)\n", actualMask, mask));
+    adcEnableMask_10g = actualMask;
+    if (analogEnable) {
+        uint32_t addr = READOUT_10G_ENABLE_REG;
+        bus_w(addr, bus_r(addr) & (~READOUT_10G_ENABLE_ANLG_MSK));
+        bus_w(addr, bus_r(addr) | ((adcEnableMask_10g << READOUT_10G_ENABLE_ANLG_OFST) & READOUT_10G_ENABLE_ANLG_MSK));
+    }
+}
+
+uint32_t getADCEnableMask_10G() {
+    if (analogEnable) {
+        adcEnableMask_10g = ((bus_r(READOUT_10G_ENABLE_REG) & READOUT_10G_ENABLE_ANLG_MSK) >> READOUT_10G_ENABLE_ANLG_OFST);
+    }
+
+    // convert 8 bit mask to 32 bit mask
+    uint32_t retval = 0;
+    if (adcEnableMask_10g) {
+        int ival = 0;
+        int iloop = 0;
+        for (ival = 0; ival < 8; ++ival) {
+            // if bit in 8 bit mask set
+            if ((1 << ival) & adcEnableMask_10g) {
+                // set it for 4 bits in 32 bit mask
+                for (iloop = 0; iloop < 4; ++iloop) {
+                    retval |= (1 << (ival * 4 + iloop));
+                }
+            }
+        }
+    }
     return retval;
 }
 
@@ -722,31 +773,61 @@ int setExternalSampling(int val) {
 /* parameters - readout */
 
 int setReadoutMode(enum readoutMode mode) {
-    uint32_t addr = CONFIG_REG;
+    analogEnable = 0;
+    digitalEnable = 0;
     switch(mode) {
     case ANALOG_ONLY:
         FILE_LOG(logINFO, ("Setting Analog Only Readout\n"));
-        bus_w(addr, bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) & (~CONFIG_ENBLE_DGTL_OTPT_MSK));
+        analogEnable = 1;
         break;
     case DIGITAL_ONLY:
         FILE_LOG(logINFO, ("Setting Digital Only Readout\n"));
-        bus_w(addr, bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK | CONFIG_ENBLE_DGTL_OTPT_MSK);
+        digitalEnable = 1;
         break;
     case ANALOG_AND_DIGITAL:
         FILE_LOG(logINFO, ("Setting Analog & Digital Readout\n"));
-        bus_w(addr, (bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK)) | CONFIG_ENBLE_DGTL_OTPT_MSK);
+        analogEnable = 1;
+        digitalEnable = 1;
         break;
     default:
         FILE_LOG(logERROR, ("Cannot set unknown readout flag. 0x%x\n", mode));
         return FAIL;
     }
-    uint32_t regval = bus_r(addr);
-    analogEnable = (((regval & CONFIG_DSBL_ANLG_OTPT_MSK) >> CONFIG_DSBL_ANLG_OTPT_OFST) ? 0 : 1);
-    digitalEnable = ((regval & CONFIG_ENBLE_DGTL_OTPT_MSK) >> CONFIG_ENBLE_DGTL_OTPT_OFST);
 
-    // update databytes and allocate ram
-    if (allocateRAM() == FAIL) {
-        return FAIL;
+
+    uint32_t addr = CONFIG_REG;
+    uint32_t addr_readout_10g = READOUT_10G_ENABLE_REG;
+    //  default: analog only
+    bus_w(addr, bus_r(addr) & (~CONFIG_DSBL_ANLG_OTPT_MSK) & (~CONFIG_ENBLE_DGTL_OTPT_MSK));
+    bus_w(addr_readout_10g, bus_r(addr_readout_10g) & (~READOUT_10G_ENABLE_ANLG_MSK) & ~(READOUT_10G_ENABLE_DGTL_MSK));
+    bus_w(addr_readout_10g, bus_r(addr_readout_10g) | ((adcEnableMask_10g << READOUT_10G_ENABLE_ANLG_OFST) & READOUT_10G_ENABLE_ANLG_MSK));
+
+    // disable analog (digital only)
+    if (!analogEnable) {
+        bus_w(addr, bus_r(addr) | CONFIG_DSBL_ANLG_OTPT_MSK);
+        bus_w(addr_readout_10g, bus_r(addr_readout_10g) & (~READOUT_10G_ENABLE_ANLG_MSK));
+    }
+    // enable digital (analog and digital)
+    if (digitalEnable) {
+        bus_w(addr, bus_r(addr) | CONFIG_ENBLE_DGTL_OTPT_MSK);
+        bus_w(addr_readout_10g, bus_r(addr_readout_10g) | READOUT_10G_ENABLE_DGTL_MSK);
+    }
+
+
+    // 1Gb
+    if (!enableTenGigabitEthernet(-1)) {
+        if (updateDatabytesandAllocateRAM() == FAIL) {
+            return FAIL;
+        }
+    }
+
+    // 10Gb
+    else {
+        // validate adcenablemask for 10g
+        if (analogEnable && adcEnableMask_10g != ((bus_r(READOUT_10G_ENABLE_REG) & READOUT_10G_ENABLE_ANLG_MSK) >> READOUT_10G_ENABLE_ANLG_OFST)) {
+            FILE_LOG(logERROR, ("Setting readout mode failed. Could not set 10g adc enable mask to 0x%x\n.", adcEnableMask_10g));
+            return FAIL;
+        }
     }
     return OK;
 }
@@ -800,8 +881,12 @@ int setNumAnalogSamples(int val) {
     naSamples = val;
     bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) &~ SAMPLES_ANALOG_MSK);
     bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) | ((val << SAMPLES_ANALOG_OFST) & SAMPLES_ANALOG_MSK));
-    if (allocateRAM() == FAIL) {
-        return FAIL;
+
+    // 1Gb
+    if (!enableTenGigabitEthernet(-1)) {
+        if (updateDatabytesandAllocateRAM() == FAIL) {
+            return FAIL;
+        }
     }
     return OK;
 }
@@ -819,8 +904,11 @@ int setNumDigitalSamples(int val) {
     ndSamples = val;
     bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) &~ SAMPLES_DIGITAL_MSK);
     bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) | ((val << SAMPLES_DIGITAL_OFST) & SAMPLES_DIGITAL_MSK));
-    if (allocateRAM() == FAIL) {
-        return FAIL;
+    // 1Gb
+    if (!enableTenGigabitEthernet(-1)) {
+        if (updateDatabytesandAllocateRAM() == FAIL) {
+            return FAIL;
+        }
     }
     return OK;
 }
@@ -1359,40 +1447,37 @@ enum timingMode getTiming() {
 /* configure mac */
 
 
-long int calcChecksum(int sourceip, int destip) {
-	ip_header ip;
-	ip.ip_ver            = 0x4;
-	ip.ip_ihl            = 0x5;
-	ip.ip_tos            = 0x0;
-	ip.ip_len            = IP_PACKETSIZE;
-	ip.ip_ident          = 0x0000;
-	ip.ip_flag           = 0x2; 	//not nibble aligned (flag& offset
-	ip.ip_offset         = 0x000;
-	ip.ip_ttl            = 0x40;
-	ip.ip_protocol       = 0x11;
-	ip.ip_chksum         = 0x0000 ; // pseudo
-	ip.ip_sourceip       = sourceip;
-	ip.ip_destip         = destip;
-
-	int count = sizeof(ip);
-
-	unsigned short *addr;
-    addr = (unsigned short*) &(ip); /* warning: assignment from incompatible pointer type */
-
+void calcChecksum(udp_header* udp) {
+	int count = IP_HEADER_SIZE;
 	long int sum = 0;
-    while( count > 1 )  {
+	
+	// start at ip_tos as the memory is not continous for ip header
+	uint16_t *addr = (uint16_t*) (&(udp->ip_tos)); 
+
+	sum += *addr++;
+	count -= 2;
+
+	// ignore ethertype (from udp header)
+	addr++;
+
+	// from identification to srcip_lsb
+    while( count > 2 )  {
 		sum += *addr++;
 		count -= 2;
 	}
+
+	// ignore src udp port (from udp header)
+	addr++;
+	
 	if (count > 0)
 	    sum += *addr;                     // Add left-over byte, if any
-	while (sum>>16)
+	while (sum >> 16)
 	    sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
-	long int checksum = (~sum) & 0xffff;
-	FILE_LOG(logINFO, ("IP checksum is 0x%lx\n",checksum));
-	return checksum;
+	long int checksum = sum & 0xffff;
+	checksum += UDP_IP_HEADER_LENGTH_BYTES;
+	FILE_LOG(logINFO, ("\tIP checksum is 0x%lx\n",checksum));
+	udp->ip_checksum = checksum;
 }
-
 
 
 int configureMAC(){
@@ -1409,8 +1494,7 @@ int configureMAC(){
 	// 1 giga udp
 	if (!enableTenGigabitEthernet(-1)) {
         FILE_LOG(logINFOBLUE, ("Configuring 1G MAC\n"));
-		// if it was in 10G mode, it was not allocating RAM
-		if (allocateRAM() == FAIL)
+		if (updateDatabytesandAllocateRAM() == FAIL)
 			return -1;
 		char cDestIp[MAX_STR_LENGTH];
 		memset(cDestIp, 0, MAX_STR_LENGTH);
@@ -1450,35 +1534,40 @@ int configureMAC(){
             (long  long unsigned int)destmac));
     FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",destport, destport));
 
-    long int checksum=calcChecksum(sourceip, destip);
-    bus_w(TX_IP_REG, sourceip);
-    bus_w(RX_IP_REG, destip);
+	// start addr
+	uint32_t addr = RXR_ENDPOINT_START_REG;
+	// get struct memory
+	udp_header *udp = (udp_header*) (Blackfin_getBaseAddress() + addr * 2);
+	memset(udp, 0, sizeof(udp_header));
 
-    uint32_t val = 0;
+	//  mac addresses	
+	// msb (32) + lsb (16)
+	udp->udp_destmac_msb	= ((destmac >> 16) & BIT32_MASK);
+	udp->udp_destmac_lsb	= ((destmac >> 0) & BIT16_MASK);
+	// msb (16) + lsb (32)
+	udp->udp_srcmac_msb		= ((sourcemac >> 32) & BIT16_MASK);
+	udp->udp_srcmac_lsb		= ((sourcemac >> 0) & BIT32_MASK);
 
-    val = ((sourcemac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-    bus_w(TX_MAC_LSB_REG, val);
-    FILE_LOG(logDEBUG1, ("Read from TX_MAC_LSB_REG: 0x%08x\n", bus_r(TX_MAC_LSB_REG)));
+	// ip addresses
+	udp->ip_srcip_msb		= ((sourceip >> 16) & BIT16_MASK);
+	udp->ip_srcip_lsb		= ((sourceip >> 0) & BIT16_MASK);	
+	udp->ip_destip_msb		= ((destip >> 16) & BIT16_MASK);
+	udp->ip_destip_lsb		= ((destip >> 0) & BIT16_MASK);	
 
-    val = ((sourcemac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-    bus_w(TX_MAC_MSB_REG,val);
-    FILE_LOG(logDEBUG1, ("Read from TX_MAC_MSB_REG: 0x%08x\n", bus_r(TX_MAC_MSB_REG)));
+	// source port
+	udp->udp_srcport 		= sourceport;
+	udp->udp_destport		= destport;
 
-    val = ((destmac >> LSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-    bus_w(RX_MAC_LSB_REG, val);
-    FILE_LOG(logDEBUG1, ("Read from RX_MAC_LSB_REG: 0x%08x\n", bus_r(RX_MAC_LSB_REG)));
+	// other defines
+	udp->udp_ethertype		= 0x800;
+	udp->ip_ver				= 0x4;
+	udp->ip_ihl				= 0x5;
+	udp->ip_flags			= 0x2; //FIXME
+	udp->ip_ttl           	= 0x40;
+	udp->ip_protocol      	= 0x11;
+	// total length is redefined in firmware
 
-    val = ((destmac >> MSB_OF_64_BIT_REG_OFST) & BIT_32_MSK);
-    bus_w(RX_MAC_MSB_REG, val);
-    FILE_LOG(logDEBUG1, ("Read from RX_MAC_MSB_REG: 0x%08x\n", bus_r(RX_MAC_MSB_REG)));
-
-    val = (((sourceport << UDP_PORT_TX_OFST) & UDP_PORT_TX_MSK) |
-            ((destport << UDP_PORT_RX_OFST) & UDP_PORT_RX_MSK));
-    bus_w(UDP_PORT_REG, val);
-    FILE_LOG(logDEBUG1, ("Read from UDP_PORT_REG: 0x%08x\n", bus_r(UDP_PORT_REG)));
-
-    bus_w(TX_IP_CHECKSUM_REG,(checksum << TX_IP_CHECKSUM_OFST) & TX_IP_CHECKSUM_MSK);
-    FILE_LOG(logDEBUG1, ("Read from TX_IP_CHECKSUM_REG: 0x%08x\n", bus_r(TX_IP_CHECKSUM_REG)));
+	calcChecksum(udp);
 
     cleanFifos();//FIXME: resetPerpheral() for ctb?
     resetPeripheral();
@@ -2327,7 +2416,7 @@ void readSample(int ns) {
         for (ich = 0; ich < NCHAN_ANALOG; ++ich) {
 
             // if channel is in enable mask
-            if ((1 << ich) & (adcEnableMask)) {
+            if ((1 << ich) & (adcEnableMask_1g)) {
 
                 // unselect channel
                 bus_w(addr, bus_r(addr) & ~(DUMMY_FIFO_CHNNL_SLCT_MSK));

@@ -17,7 +17,7 @@ class detectorData;
 #include <vector>
 
 #define MULTI_SHMAPIVERSION 0x190809
-#define MULTI_SHMVERSION 0x190814
+#define MULTI_SHMVERSION 0x190819
 #define SHORT_STRING_LENGTH 50
 #define DATE_LENGTH 30
 

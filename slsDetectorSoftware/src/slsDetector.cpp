@@ -323,7 +323,8 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
     shm()->roi.xmin = -1;
     shm()->roi.xmax = -1;
-    shm()->adcEnableMask = BIT32_MASK;
+    shm()->adcEnableMaskOneGiga = BIT32_MASK;
+    shm()->adcEnableMaskTenGiga = BIT32_MASK;
     shm()->roMode = ANALOG_ONLY;
     shm()->currentSettings = UNINITIALIZED;
     shm()->currentThresholdEV = -1;
@@ -334,8 +335,8 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
     shm()->useReceiverFlag = false;
-    shm()->tenGigaEnable = 0;
-    shm()->flippedDataX = 0;
+    shm()->tenGigaEnable = false;
+    shm()->flippedDataX = false;
     shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
                      (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->rxZmqport = DEFAULT_ZMQ_RX_PORTNO +
@@ -552,7 +553,7 @@ void slsDetector::updateNumberOfChannels() {
         // analog channels (normal, analog/digital readout)
         if (shm()->roMode == slsDetectorDefs::ANALOG_ONLY ||
             shm()->roMode == slsDetectorDefs::ANALOG_AND_DIGITAL) {
-            uint32_t mask = shm()->adcEnableMask;
+            uint32_t mask = shm()->tenGigaEnable ? shm()->adcEnableMaskTenGiga : shm()->adcEnableMaskOneGiga;
             if (mask == BIT32_MASK) {
                 nachans = 32;
             } else {
@@ -771,14 +772,27 @@ void slsDetector::updateCachedDetectorVariables() {
             shm()->roi.xmax = i32;
         }
 
+        // 10GbE
+        if (shm()->myDetectorType == EIGER ||
+            shm()->myDetectorType == CHIPTESTBOARD ||
+            shm()->myDetectorType == MOENCH) {
+            n += client.Receive(&i32, sizeof(i32));
+            shm()->tenGigaEnable = static_cast<bool>(i32);        
+        }
+
         if (shm()->myDetectorType == CHIPTESTBOARD ||
             shm()->myDetectorType == MOENCH) {
-            // adcmask
+            // 1gb adcmask
             uint32_t u32 = 0;
             n += client.Receive(&u32, sizeof(u32));
-            shm()->adcEnableMask = u32;
+            shm()->adcEnableMaskOneGiga = u32;
+
+            // 10gb adcmask
+            n += client.Receive(&u32, sizeof(u32));
+            shm()->adcEnableMaskTenGiga = u32;
+
             if (shm()->myDetectorType == MOENCH)
-                setAdditionalJsonParameter("adcmask", std::to_string(u32));
+                setAdditionalJsonParameter("adcmask", std::to_string(shm()->tenGigaEnable ? shm()->adcEnableMaskTenGiga : shm()->adcEnableMaskOneGiga));
 
             // update #nchan, as it depends on #samples, adcmask,
             updateNumberOfChannels();
@@ -1780,16 +1794,17 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             setDeactivatedRxrPaddingMode(
                 static_cast<int>(shm()->rxPadDeactivatedModules));
             enableGapPixels(shm()->gappixels);
-            enableTenGigabitEthernet(shm()->tenGigaEnable);
+            enableTenGigabitEthernet(static_cast<int>(shm()->tenGigaEnable));
             setQuad(getQuad());
             break;
 
         case CHIPTESTBOARD:
             setNumberOfAnalogSamples(getNumberOfAnalogSamples());
             setNumberOfDigitalSamples(getNumberOfDigitalSamples());
-            enableTenGigabitEthernet(shm()->tenGigaEnable);
+            enableTenGigabitEthernet(static_cast<int>(shm()->tenGigaEnable));
             setReadoutMode(shm()->roMode);
-            setADCEnableMask(shm()->adcEnableMask);
+            setADCEnableMask(shm()->adcEnableMaskOneGiga);
+            setTenGigaADCEnableMask(shm()->adcEnableMaskTenGiga);
             setReceiverDbitOffset(shm()->rxDbitOffset);
             setReceiverDbitList(shm()->rxDbitList);
             break;
@@ -1797,8 +1812,9 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
         case MOENCH:
             setNumberOfAnalogSamples(getNumberOfAnalogSamples());
             setNumberOfDigitalSamples(getNumberOfDigitalSamples());
-            enableTenGigabitEthernet(shm()->tenGigaEnable);
-            setADCEnableMask(shm()->adcEnableMask);
+            enableTenGigabitEthernet(static_cast<int>(shm()->tenGigaEnable));
+            setADCEnableMask(shm()->adcEnableMaskOneGiga);
+            setTenGigaADCEnableMask(shm()->adcEnableMaskTenGiga);
             break;
 
         case GOTTHARD:
@@ -2589,20 +2605,20 @@ void slsDetector::setADCEnableMask(uint32_t mask) {
     FILE_LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex << arg
                         << std::dec;
     sendToDetector(F_SET_ADC_ENABLE_MASK, &arg, sizeof(arg), nullptr, 0);
-    shm()->adcEnableMask = mask;
+    shm()->adcEnableMaskOneGiga = mask;
 
     // update #nchan, as it depends on #samples, adcmask,
     updateNumberOfChannels();
 
     // send to processor
-    if (shm()->myDetectorType == MOENCH)
+    if (shm()->myDetectorType == MOENCH && shm()->tenGigaEnable == 0)
         setAdditionalJsonParameter("adcmask",
-                                   std::to_string(shm()->adcEnableMask));
+                                   std::to_string(shm()->adcEnableMaskOneGiga));
 
     if (shm()->useReceiverFlag) {
         int fnum = F_RECEIVER_SET_ADC_MASK;
         int retval = -1;
-        mask = shm()->adcEnableMask;
+        mask = shm()->adcEnableMaskOneGiga;
         FILE_LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex
                             << mask << std::dec << " in receiver";
         sendToReceiver(fnum, mask, retval);
@@ -2613,10 +2629,45 @@ uint32_t slsDetector::getADCEnableMask() {
     uint32_t retval = -1;
     FILE_LOG(logDEBUG1) << "Getting ADC Enable mask";
     sendToDetector(F_GET_ADC_ENABLE_MASK, nullptr, 0, &retval, sizeof(retval));
-    shm()->adcEnableMask = retval;
+    shm()->adcEnableMaskOneGiga = retval;
     FILE_LOG(logDEBUG1) << "ADC Enable Mask: 0x" << std::hex << retval
                         << std::dec;
-    return shm()->adcEnableMask;
+    return shm()->adcEnableMaskOneGiga;
+}
+
+void slsDetector::setTenGigaADCEnableMask(uint32_t mask) {
+    uint32_t arg = mask;
+    FILE_LOG(logDEBUG1) << "Setting 10Gb ADC Enable mask to 0x" << std::hex << arg
+                        << std::dec;
+    sendToDetector(F_SET_ADC_ENABLE_MASK_10G, &arg, sizeof(arg), nullptr, 0);
+    shm()->adcEnableMaskTenGiga = mask;
+
+    // update #nchan, as it depends on #samples, adcmask,
+    updateNumberOfChannels();
+
+    // send to processor
+    if (shm()->myDetectorType == MOENCH && shm()->tenGigaEnable == 1)
+        setAdditionalJsonParameter("adcmask",
+                                   std::to_string(shm()->adcEnableMaskTenGiga));
+
+    if (shm()->useReceiverFlag) {
+        int fnum = F_RECEIVER_SET_ADC_MASK_10G;
+        int retval = -1;
+        mask = shm()->adcEnableMaskTenGiga;
+        FILE_LOG(logDEBUG1) << "Setting 10Gb ADC Enable mask to 0x" << std::hex
+                            << mask << std::dec << " in receiver";
+        sendToReceiver(fnum, mask, retval);
+    }
+}
+
+uint32_t slsDetector::getTenGigaADCEnableMask() {
+    uint32_t retval = -1;
+    FILE_LOG(logDEBUG1) << "Getting 10Gb ADC Enable mask";
+    sendToDetector(F_GET_ADC_ENABLE_MASK_10G, nullptr, 0, &retval, sizeof(retval));
+    shm()->adcEnableMaskTenGiga = retval;
+    FILE_LOG(logDEBUG1) << "10Gb ADC Enable Mask: 0x" << std::hex << retval
+                        << std::dec;
+    return shm()->adcEnableMaskTenGiga;
 }
 
 void slsDetector::setADCInvert(uint32_t value) {
@@ -2742,23 +2793,22 @@ bool slsDetector::setDeactivatedRxrPaddingMode(int padding) {
     return shm()->rxPadDeactivatedModules;
 }
 
-int slsDetector::getFlippedDataX() const { return shm()->flippedDataX; }
+bool slsDetector::getFlippedDataX() const { return shm()->flippedDataX; }
 
-int slsDetector::setFlippedDataX(int value) {
+void slsDetector::setFlippedDataX(int value) {
     // replace get with shm value (write to shm right away as it is a det value,
     // not rx value)
     if (value > -1) {
-        shm()->flippedDataX = (value > 0) ? 1 : 0;
+        shm()->flippedDataX = (value > 0);
     }
     int retval = -1;
-    int arg = shm()->flippedDataX;
+    int arg = static_cast<int>(shm()->flippedDataX);
     FILE_LOG(logDEBUG1) << "Setting flipped data across x axis with value: "
                         << arg;
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_FLIPPED_DATA_RECEIVER, arg, retval);
         FILE_LOG(logDEBUG1) << "Flipped data:" << retval;
     }
-    return shm()->flippedDataX;
 }
 
 int slsDetector::setAllTrimbits(int val) {
@@ -3595,15 +3645,15 @@ bool slsDetector::enableDataStreamingFromReceiver(int enable) {
     return shm()->rxUpstream;
 }
 
-int slsDetector::enableTenGigabitEthernet(int value) {
+bool slsDetector::enableTenGigabitEthernet(int value) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Enabling / Disabling 10Gbe: " << value;
     sendToDetector(F_ENABLE_TEN_GIGA, value, retval);
     FILE_LOG(logDEBUG1) << "10Gbe: " << retval;
-    shm()->tenGigaEnable = retval;
+    shm()->tenGigaEnable = static_cast<bool>(retval);
     if (shm()->useReceiverFlag) {
         retval = -1;
-        value = shm()->tenGigaEnable;
+        value = static_cast<int>(shm()->tenGigaEnable);
         FILE_LOG(logDEBUG1) << "Sending 10Gbe enable to receiver: " << value;
         sendToReceiver(F_ENABLE_RECEIVER_TEN_GIGA, value, retval);
         FILE_LOG(logDEBUG1) << "Receiver 10Gbe enable: " << retval;

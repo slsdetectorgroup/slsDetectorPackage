@@ -497,6 +497,8 @@ class CmdProxy {
                                     {"rx_udpmac2", "udp_dstmac2"},   
                                     {"rx_udpport", "udp_dstport"},
                                     {"rx_udpport2", "udp_dstport2"},
+                                    {"flowcontrol_10g", "flowcontrol10g"}, 
+
                                     
                                     /* Receiver Config */ 
                                     {"r_silent", "rx_silent"},
@@ -698,7 +700,7 @@ class CmdProxy {
                           {"udp_dstport2", &CmdProxy::udp_dstport2},
                           {"rx_printconfig", &CmdProxy::rx_printconfig}, 
                           {"tengiga", &CmdProxy::tengiga},                          
-                          {"flowcontrol_10g", &CmdProxy::flowcontrol_10g}, 
+                          {"flowcontrol10g", &CmdProxy::flowcontrol10g}, 
                           {"txndelay_frame", &CmdProxy::txndelay_frame}, 
                           {"txndelay_left", &CmdProxy::txndelay_left},
                           {"txndelay_right", &CmdProxy::txndelay_right},
@@ -815,6 +817,7 @@ class CmdProxy {
                           {"im_io", &CmdProxy::im_io},
                           {"adc", &CmdProxy::SlowAdc},  
                           {"adcenable", &CmdProxy::adcenable}, 
+                          {"adcenable10g", &CmdProxy::adcenable10g}, 
                           {"adcinvert", &CmdProxy::adcinvert}, 
                           {"extsampling", &CmdProxy::extsampling}, 
                           {"extsamplingsrc", &CmdProxy::extsamplingsrc}, 
@@ -1343,7 +1346,7 @@ class CmdProxy {
     INTEGER_COMMAND(tengiga, getTenGiga, setTenGiga, std::stoi,
                     "[0, 1]\n\t[Eiger][Ctb] 10GbE Enable.");          
 
-    INTEGER_COMMAND(flowcontrol_10g, getTenGigaFlowControl, setTenGigaFlowControl, std::stoi,
+    INTEGER_COMMAND(flowcontrol10g, getTenGigaFlowControl, setTenGigaFlowControl, std::stoi,
                     "[0, 1]\n\t[Eiger][Jungfrau] 10GbE Flow Control.");          
 
     INTEGER_COMMAND(txndelay_frame, getTransmissionDelayFrame, setTransmissionDelayFrame, std::stoi,
@@ -1607,7 +1610,10 @@ class CmdProxy {
                     "\n\t[Ctb] Measured current of power supply io in mA."); 
 
     INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask, stoiHex,
-                    "[bitmask]\n\t[Ctb] ADC Enable Mask.");      
+                    "[bitmask]\n\t[Ctb] ADC Enable Mask for 1Gb Mode for each 32 ADC channel.");      
+
+    INTEGER_COMMAND_HEX(adcenable10g, getTenGigaADCEnableMask, setTenGigaADCEnableMask, stoiHex,
+                    "[bitmask]\n\t[Ctb] ADC Enable Mask for 10Gb mode for each 32 ADC channel. However, if any of consecutive 4 bits are enabled, the complete 4 bits are enabled.");     
 
     INTEGER_COMMAND_HEX(adcinvert, getADCInvert, setADCInvert, stoiHex,
                     "[bitmask]\n\t[Ctb][Jungfrau] ADC Inversion Mask.\n\t[Jungfrau] Inversions on top of the default mask.");      

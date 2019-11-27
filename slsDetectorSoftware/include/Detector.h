@@ -1015,6 +1015,12 @@ class Detector {
     /** [CTB]*/
     void setADCEnableMask(uint32_t mask, Positions pos = {});
 
+    /** [CTB]*/
+    Result<uint32_t> getTenGigaADCEnableMask(Positions pos = {}) const;
+
+    /** [CTB]*/
+    void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
+
     /** [CTB] */
     Result<uint32_t> getADCInvert(Positions pos = {}) const;
 

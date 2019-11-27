@@ -632,20 +632,21 @@ public:
         nPixelsY = 1;
         // 10G
         if (t) {
-			/*
             headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
-            dataSize = UDP_PACKET_DATA_BYTES;
+            dataSize = 464;
 			packetSize = headerSizeinPacket + dataSize;
             imageSize = adatabytes + ddatabytes;
             packetsPerFrame = ceil((double)imageSize / (double)dataSize);
             standardheader = true;	    
-			*/
+
+			/*
 			headerSizeinPacket = 22;
 			dataSize = 8192;
 			packetSize = headerSizeinPacket + dataSize;
 			imageSize = adatabytes + ddatabytes;
 			packetsPerFrame	= ceil((double)imageSize / (double)dataSize);
 			standardheader = false;
+			*/
 		}
 	    // 1g udp (via fifo readout)
 	    else {

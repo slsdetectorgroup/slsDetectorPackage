@@ -406,7 +406,7 @@ class Detector {
     Result<bool> getTenGiga(Positions pos = {}) const;
 
     /** [Eiger][CTB] */
-    void setTenGiga(bool enable, Positions pos = {});
+    void setTenGiga(bool value, Positions pos = {});
 
     /** [Eiger, Jungfrau] */
     Result<bool> getTenGigaFlowControl(Positions pos = {}) const;
@@ -525,7 +525,7 @@ class Detector {
 
     Result<std::string> getFilePath(Positions pos = {}) const;
 
-    void setFilePath(const std::string &fname, Positions pos = {});
+    void setFilePath(const std::string &fpath, Positions pos = {});
 
     Result<std::string> getFileNamePrefix(Positions pos = {}) const;
 
@@ -755,7 +755,7 @@ class Detector {
 
     /** [Eiger] Advanced
      * used for pulsing chips */
-    void setPartialReset(bool enable, Positions pos = {});
+    void setPartialReset(bool value, Positions pos = {});
 
     /** [Eiger] Advanced
      * Pulse Pixel n times at x and y coordinates */

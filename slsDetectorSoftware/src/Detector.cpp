@@ -86,8 +86,8 @@ Result<std::string> Detector::getHostname(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getHostname, pos);
 }
 
-void Detector::setHostname(const std::vector<std::string> &value) {
-    pimpl->setHostname(value);
+void Detector::setHostname(const std::vector<std::string> &hostname) {
+    pimpl->setHostname(hostname);
 }
 
 void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
@@ -760,9 +760,9 @@ Result<bool> Detector::getRxZmqDataStream(Positions pos) const {
                            -1);
 }
 
-void Detector::setRxZmqDataStream(bool enable, Positions pos) {
+void Detector::setRxZmqDataStream(bool value, Positions pos) {
     pimpl->Parallel(&slsDetector::enableDataStreamingFromReceiver, pos,
-                    static_cast<int>(enable));
+                    static_cast<int>(value));
 }
 
 Result<int> Detector::getRxZmqFrequency(Positions pos) const {
@@ -887,8 +887,8 @@ void Detector::setSettingsPath(const std::string &value, Positions pos) {
     pimpl->Parallel(&slsDetector::setSettingsDir, pos, value);
 }
 
-void Detector::loadTrimbits(const std::string &value, Positions pos) {
-    pimpl->Parallel(&slsDetector::loadSettingsFile, pos, value);
+void Detector::loadTrimbits(const std::string &fname, Positions pos) {
+    pimpl->Parallel(&slsDetector::loadSettingsFile, pos, fname);
 }
 
 Result<bool> Detector::getRxAddGapPixels(Positions pos) const {
@@ -1030,12 +1030,12 @@ Result<bool> Detector::getQuad(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getQuad, pos);
 }
 
-void Detector::setQuad(const bool value) {
-    if (value && size() > 1) {
+void Detector::setQuad(const bool enable) {
+    if (enable && size() > 1) {
         throw RuntimeError("Cannot set Quad type as it is available only for 1 "
                            "Eiger Quad Half module.");
     }
-    pimpl->Parallel(&slsDetector::setQuad, {}, value);
+    pimpl->Parallel(&slsDetector::setQuad, {}, enable);
 }
 
 // Jungfrau Specific

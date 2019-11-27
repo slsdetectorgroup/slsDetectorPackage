@@ -91,7 +91,7 @@ std::string CmdProxy::ListCommands(int action) {
         if (args[0] == "deprecated") {
             std::cout << "The following " << depreciated_functions.size()
                       << " commands are deprecated\n";
-            size_t field_width = 20;
+            const size_t field_width = 20;
             for (const auto &it : depreciated_functions) {
                 std::cout << std::right << std::setw(field_width) << it.first
                           << " -> " << it.second << '\n';

@@ -994,7 +994,7 @@ void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip, uint64_
 	// calculate rxr endpoint offset
 	addr += (iRxEntry * RXR_ENDPOINT_OFST);
 	// get struct memory
-	udp_header *udp = (udp_header*) (Blackfin_getBaseAddress() + addr * 2);
+	udp_header *udp = (udp_header*) (Blackfin_getBaseAddress() + addr / 2);
 	memset(udp, 0, sizeof(udp_header));
 
 	//  mac addresses	

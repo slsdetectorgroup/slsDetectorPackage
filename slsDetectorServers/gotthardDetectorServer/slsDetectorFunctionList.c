@@ -1326,7 +1326,7 @@ int configureMAC() {
     FILE_LOG(logDEBUG1, ("\tWrite back released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
     FILE_LOG(logDEBUG1, ("\tConfiguring MAC CONF\n"));
-    mac_conf *mac_conf_regs = (mac_conf*)(Blackfin_getBaseAddress() + ENET_CONF_REG * 2);    // direct write
+    mac_conf *mac_conf_regs = (mac_conf*)(Blackfin_getBaseAddress() + ENET_CONF_REG / 2);    // direct write
     mac_conf_regs->mac.mac_dest_mac1  = ((destmac >> (8 * 5)) & 0xFF);
     mac_conf_regs->mac.mac_dest_mac2  = ((destmac >> (8 * 4)) & 0xFF);
     mac_conf_regs->mac.mac_dest_mac3  = ((destmac >> (8 * 3)) & 0xFF);
@@ -1364,7 +1364,7 @@ int configureMAC() {
     mac_conf_regs->udp.udp_chksum       = 0x0000;
 
     FILE_LOG(logDEBUG1, ("\tConfiguring TSE\n"));
-    tse_conf *tse_conf_regs = (tse_conf*)(Blackfin_getBaseAddress() + TSE_CONF_REG * 2);     // direct write
+    tse_conf *tse_conf_regs = (tse_conf*)(Blackfin_getBaseAddress() + TSE_CONF_REG / 2);     // direct write
     tse_conf_regs->rev                 = 0xA00;
     tse_conf_regs->scratch             = 0xCCCCCCCC;
     tse_conf_regs->command_config      = 0xB;

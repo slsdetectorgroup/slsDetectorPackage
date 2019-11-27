@@ -8,32 +8,32 @@
 #include <sys/mman.h>	// mmap
 
 /* global variables */
-u_int64_t CSP0BASE = 0;
+u_int32_t* csp0base = 0;
 #define CSP0 0x20200000
 #define MEM_SIZE 0x100000
 
 
 void bus_w16(u_int32_t offset, u_int16_t data) {
 	volatile u_int16_t  *ptr1;
-	ptr1=(u_int16_t*)(CSP0BASE+offset*2);
+	ptr1=(u_int16_t*)(csp0base + offset / 2);
 	*ptr1=data;
 }
 
 u_int16_t bus_r16(u_int32_t offset){
 	volatile u_int16_t *ptr1;
-	ptr1=(u_int16_t*)(CSP0BASE+offset*2);
+	ptr1=(u_int16_t*)(csp0base + offset / 2);
 	return *ptr1;
 }
 
 void bus_w(u_int32_t offset, u_int32_t data) {
 	volatile  u_int32_t  *ptr1;
-	ptr1=(u_int32_t*)(CSP0BASE+offset*2);
+	ptr1=(u_int32_t*)(csp0base + offset / 2);
 	*ptr1=data;
 }
 
 u_int32_t bus_r(u_int32_t offset) {
 	volatile u_int32_t  *ptr1;
-	ptr1=(u_int32_t*)(CSP0BASE+offset*2);
+	ptr1=(u_int32_t*)(csp0base + offset / 2);
 	return *ptr1;
 }
 
@@ -93,11 +93,11 @@ u_int32_t writeRegister16(u_int32_t offset, u_int32_t data) {
 
 int mapCSP0(void) {
 	// if not mapped
-	if (CSP0BASE == 0) {
+	if (csp0base == 0) {
 	    FILE_LOG(logINFO, ("Mapping memory\n"));
 #ifdef VIRTUAL
-		CSP0BASE = malloc(MEM_SIZE);
-		if (CSP0BASE == NULL) {
+		csp0base = malloc(MEM_SIZE);
+		if (csp0base == NULL) {
 		    FILE_LOG(logERROR, ("Could not allocate virtual memory.\n"));
 		    return FAIL;
 		}
@@ -110,15 +110,14 @@ int mapCSP0(void) {
 			return FAIL;
 		}
 		FILE_LOG(logDEBUG1, ("/dev/mem opened\n"));
-		CSP0BASE = mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
-		if (CSP0BASE == MAP_FAILED) {
+		csp0base = mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
+		if (csp0base == MAP_FAILED) {
 		    FILE_LOG(logERROR, ("Can't map memmory area\n"));
 			return FAIL;
 		}
 #endif
-		FILE_LOG(logINFO, ("CSPOBASE mapped from 0x%llx to 0x%llx\n",
-				(long long unsigned int)CSP0BASE,
-				(long long unsigned int)(CSP0BASE+MEM_SIZE)));
+		FILE_LOG(logINFO, ("csp0base mapped from %p to %p\n",
+				csp0base, (csp0base + MEM_SIZE)));
 		FILE_LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
 	}else
 	    FILE_LOG(logINFO, ("Memory already mapped before\n"));
@@ -126,6 +125,6 @@ int mapCSP0(void) {
 }
 
 
-uint64_t Blackfin_getBaseAddress() {
-	return CSP0BASE;
+uint32_t* Blackfin_getBaseAddress() {
+	return csp0base;
 }

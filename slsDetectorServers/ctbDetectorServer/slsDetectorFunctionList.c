@@ -1537,7 +1537,7 @@ int configureMAC(){
 	// start addr
 	uint32_t addr = RXR_ENDPOINT_START_REG;
 	// get struct memory
-	udp_header *udp = (udp_header*) (Blackfin_getBaseAddress() + addr * 2);
+	udp_header *udp = (udp_header*) (Blackfin_getBaseAddress() + addr / 2);
 	memset(udp, 0, sizeof(udp_header));
 
 	//  mac addresses	

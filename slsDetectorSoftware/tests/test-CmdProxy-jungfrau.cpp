@@ -156,15 +156,6 @@ TEST_CASE("resetfpga", "[.cmd]") {
     }
 }
 
-// TEST_CASE("resetfpga", "[.cmd][.ctb][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU || test::type ==
-//     slsDetectorDefs::CHIPTESTBOARD) {
-//         ;//REQUIRE_NOTHROW(multiSlsDetectorClient("resetfpga", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("resetfpga", GET));
-//     }
-// }
-
 
 
 // void test_dac(defs::dacIndex index, const std::string &dacname, int dacvalue)

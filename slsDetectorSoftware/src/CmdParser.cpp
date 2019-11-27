@@ -1,5 +1,5 @@
 
-#include "CmdLineParser.h"
+#include "CmdParser.h"
 #include "sls_detector_defs.h"
 #include <cstdio>
 #include <cstring>
@@ -9,8 +9,8 @@
 
 namespace sls {
 
-void CmdLineParser::Print() {
-    std::cout << "\nCmdLineParser::Print()\n";
+void CmdParser::Print() {
+    std::cout << "\nCmdParser::Print()\n";
     std::cout << "\tmulti_id: " << multi_id_
               << ", detector_id: " << detector_id_ << std::endl;
     std::cout << "\texecutable: " << executable_ << '\n';
@@ -23,7 +23,7 @@ void CmdLineParser::Print() {
     std::cout << "\n\n";
 };
 
-void CmdLineParser::Parse(int argc, const char *const argv[]) {
+void CmdParser::Parse(int argc, const char *const argv[]) {
     Reset();
     executable_ = argv[0]; // first arg is calling binary
     if (argc > 1) {
@@ -36,7 +36,7 @@ void CmdLineParser::Parse(int argc, const char *const argv[]) {
     }
 }
 
-void CmdLineParser::Parse(const std::string &s) {
+void CmdParser::Parse(const std::string &s) {
     Reset();
     std::istringstream iss(s);
     auto it = std::istream_iterator<std::string>(iss);
@@ -59,7 +59,7 @@ void CmdLineParser::Parse(const std::string &s) {
     DecodeIdAndPosition(command_.c_str());
 }
 
-void CmdLineParser::DecodeIdAndPosition(const char *c) {
+void CmdParser::DecodeIdAndPosition(const char *c) {
     bool contains_id = std::strchr(c, '-') != nullptr;
     bool contains_pos = std::strchr(c, ':') != nullptr;
     char tmp[100];
@@ -91,7 +91,7 @@ void CmdLineParser::DecodeIdAndPosition(const char *c) {
     }
 }
 
-std::vector<const char *> CmdLineParser::argv() const {
+std::vector<const char *> CmdParser::argv() const {
     std::vector<const char *> vec;
     if (command_.empty() != true) {
         vec.push_back(&command_.front());
@@ -103,7 +103,7 @@ std::vector<const char *> CmdLineParser::argv() const {
 }
 
 
-std::string CmdLineParser::cli_line() const{
+std::string CmdParser::cli_line() const{
     std::ostringstream os;
     os << command_;
     for (const auto & arg : arguments_)
@@ -111,7 +111,7 @@ std::string CmdLineParser::cli_line() const{
     return os.str();
 }
 
-void CmdLineParser::Reset(){
+void CmdParser::Reset(){
     multi_id_ = 0;
     detector_id_ = -1;
     help_ = false;

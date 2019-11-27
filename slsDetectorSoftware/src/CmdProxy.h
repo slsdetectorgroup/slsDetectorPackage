@@ -416,7 +416,7 @@ class CmdProxy {
   public:
     explicit CmdProxy(Detector *ptr) : det(ptr) {}
 
-    std::string Call(const std::string &command,
+    void Call(const std::string &command,
                      const std::vector<std::string> &arguments, int detector_id = -1,
                      int action = -1, std::ostream &os = std::cout);
 

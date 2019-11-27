@@ -19,7 +19,7 @@ reason that the header file is not exposed.
 
 namespace sls {
 
-class CmdLineParser {
+class CmdParser {
   public:
     void Parse(int argc, const char *const argv[]);
     void Parse(const std::string &s);

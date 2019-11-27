@@ -1,4 +1,4 @@
-#include "CmdLineParser.h"
+#include "CmdParser.h"
 #include "catch.hpp"
 #include <exception>
 #include <string>
@@ -9,11 +9,11 @@
 // command for all depreciated commands
 
 using vs = std::vector<std::string>;
-using sls::CmdLineParser;
+using sls::CmdParser;
 
 SCENARIO("Construction", "[support]") {
-    GIVEN("A default constructed CmdLineParser") {
-        CmdLineParser p;
+    GIVEN("A default constructed CmdParser") {
+        CmdParser p;
         THEN("The state of the object is valid") {
             REQUIRE(p.detector_id() == -1);
             REQUIRE(p.multi_id() == 0);
@@ -26,8 +26,8 @@ SCENARIO("Construction", "[support]") {
 }
 
 SCENARIO("Parsing a string with the command line parser", "[support]") {
-    GIVEN("A CmdLineParser") {
-        CmdLineParser p;
+    GIVEN("A CmdParser") {
+        CmdParser p;
         WHEN("Parsing an empty string") {
             std::string s;
             p.Parse(s);
@@ -121,7 +121,7 @@ SCENARIO("Parsing a string with the command line parser", "[support]") {
 
 SCENARIO("Parsing strings with -h or --help", "[support]") {
     GIVEN("A parser") {
-        CmdLineParser p;
+        CmdParser p;
         WHEN("Parsing a string with a command and help ") {
             std::string s = "-h list";
 
@@ -159,7 +159,7 @@ SCENARIO("Parsing strings with -h or --help", "[support]") {
 }
 
 TEST_CASE("Parsing consecutive strings resets not found det id"){
-    CmdLineParser p;
+    CmdParser p;
     p.Parse("1:exptime 0.5");
     REQUIRE(p.detector_id() == 1);
     p.Parse("exptime 0.5");
@@ -170,7 +170,7 @@ TEST_CASE("Parsing consecutive strings resets not found det id"){
 }
 
 TEST_CASE("Parsing consecutive strings resets not found multi id"){
-    CmdLineParser p;
+    CmdParser p;
     p.Parse("1-1:exptime 0.5");
     REQUIRE(p.multi_id() == 1);
     p.Parse("1:exptime 0.5");
@@ -183,7 +183,7 @@ TEST_CASE("Parse with no arguments results in no command and default id",
     // first argument is the command used to call the binary
     int argc = 1;
     const char *const argv[]{"call"};
-    CmdLineParser p;
+    CmdParser p;
     p.Parse(argc, argv);
 
     REQUIRE(p.detector_id() == -1);
@@ -197,7 +197,7 @@ TEST_CASE(
     "[support]") {
     int argc = 2;
     const char *const argv[]{"caller", "vrf"};
-    CmdLineParser p;
+    CmdParser p;
     p.Parse(argc, argv);
 
     REQUIRE(p.detector_id() == -1);
@@ -210,7 +210,7 @@ TEST_CASE("Parse a command with value but without client or detector id",
           "[support]") {
     int argc = 3;
     const char *const argv[]{"caller", "vrf", "3000"};
-    CmdLineParser p;
+    CmdParser p;
     p.Parse(argc, argv);
 
     REQUIRE(p.detector_id() == -1);
@@ -224,7 +224,7 @@ TEST_CASE("Decodes position") {
     int argc = 2;
     const char *const argv[]{"caller", "7:vrf"};
 
-    CmdLineParser p;
+    CmdParser p;
     p.Parse(argc, argv);
 
     REQUIRE(p.detector_id() == 7);
@@ -236,7 +236,7 @@ TEST_CASE("Decodes position") {
 TEST_CASE("Decodes double digit position", "[support]") {
     int argc = 2;
     const char *const argv[]{"caller", "73:vcmp"};
-    CmdLineParser p;
+    CmdParser p;
     p.Parse(argc, argv);
 
     REQUIRE(p.detector_id() == 73);
@@ -248,7 +248,7 @@ TEST_CASE("Decodes double digit position", "[support]") {
 TEST_CASE("Decodes position and id", "[support]") {
     int argc = 2;
     const char *const argv[]{"caller", "5-8:vrf"};
-    CmdLineParser p;
+    CmdParser p;
     p.Parse(argc, argv);
 
     REQUIRE(p.detector_id() == 8);
@@ -260,7 +260,7 @@ TEST_CASE("Decodes position and id", "[support]") {
 TEST_CASE("Double digit id", "[support]") {
     int argc = 2;
     const char *const argv[]{"caller", "56-8:vrf"};
-    CmdLineParser p;
+    CmdParser p;
     p.Parse(argc, argv);
     REQUIRE(p.detector_id() == 8);
     REQUIRE(p.multi_id() == 56);
@@ -271,19 +271,19 @@ TEST_CASE("Double digit id", "[support]") {
 TEST_CASE("Calling with wrong id throws invalid_argument", "[support]") {
     int argc = 2;
     const char *const argv[]{"caller", "asvldkn:vrf"};
-    CmdLineParser p;
+    CmdParser p;
     CHECK_THROWS(p.Parse(argc, argv));
 }
 
 TEST_CASE("Calling with wrong client throws invalid_argument", "[support]") {
     int argc = 2;
     const char *const argv[]{"caller", "lki-3:vrf"};
-    CmdLineParser p;
+    CmdParser p;
     CHECK_THROWS(p.Parse(argc, argv));
 }
 
 TEST_CASE("Build up argv", "[support]") {
-    CmdLineParser p;
+    CmdParser p;
     REQUIRE(p.argv().empty());
     REQUIRE(p.argv().data() == nullptr);
 

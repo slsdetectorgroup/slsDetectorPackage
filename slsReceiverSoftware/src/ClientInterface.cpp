@@ -20,38 +20,24 @@ using sls::RuntimeError;
 using sls::SocketError;
 using Interface = sls::ServerInterface2;
 
-ClientInterface::~ClientInterface() { stopTCPSocket(); }
+ClientInterface::~ClientInterface() { 
+    killTcpThread = true;
+    // shut down tcp sockets
+    if (server.get() != nullptr) {
+        FILE_LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
+        server->shutDownSocket(); 
+        FILE_LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
+    }
+    // shut down tcp thread
+    tcpThread->join();
+}
 
 ClientInterface::ClientInterface(int portNumber)
-    : myDetectorType(GOTTHARD), portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2) {
-    function_table();
-    startTCPSocket();
-}
-
-void ClientInterface::startTCPSocket() {
-    FILE_LOG(logDEBUG) << "Creating TCP Server Thread";
-    killTCPServerThread = 0;
-    if (pthread_create(&TCPServer_thread, nullptr, startTCPServerThread,
-                       (void *)this)) {
-        throw RuntimeError("Could not create TCP Server thread");
-    }
-    tcpThreadCreated = true;
-    FILE_LOG(logDEBUG) << "TCP Server thread created successfully.";
-}
-
-void ClientInterface::stopTCPSocket() {
-    if (tcpThreadCreated) {
-        FILE_LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
-        killTCPServerThread = 1;
-        if (server)
-            server->shutDownSocket();
-        FILE_LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
-        pthread_join(TCPServer_thread, nullptr);
-        tcpThreadCreated = false;
-        killTCPServerThread = 0;
-        FILE_LOG(logDEBUG) << "Exiting TCP Server Thread on port "
-                           << portNumber;
-    }
+    : myDetectorType(GOTTHARD), 
+    portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2) {
+    functionTable();
+    // start up tcp thread
+    tcpThread = sls::make_unique<std::thread>(&ClientInterface::startTCPServer, this);
 }
 
 int64_t ClientInterface::getReceiverVersion() { return APIRECEIVER; }
@@ -81,14 +67,8 @@ void ClientInterface::registerCallBackRawDataModifyReady(
     pRawDataReady = arg;
 }
 
-void *ClientInterface::startTCPServerThread(void *this_pointer) {
-    ((ClientInterface *)this_pointer)->startTCPServer();
-    return this_pointer;
-}
-
 void ClientInterface::startTCPServer() {
-    FILE_LOG(logINFOBLUE) << "Created [ TCP server Tid: " << syscall(SYS_gettid)
-                          << "]";
+    FILE_LOG(logINFOBLUE) << "Created [ TCP server Tid: " << syscall(SYS_gettid) << "]";
     FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port "
                       << portNumber << '\n';
     server = sls::make_unique<sls::ServerSocket>(portNumber);
@@ -97,8 +77,8 @@ void ClientInterface::startTCPServer() {
         try {
             auto socket = server->accept();
             try {
-                VerifyLock();
-                ret = decode_function(socket);
+                verifyLock();
+                ret = decodeFunction(socket);
             } catch (const RuntimeError &e) {
                 // We had an error needs to be sent to client
                 char mess[MAX_STR_LENGTH]{};
@@ -106,37 +86,27 @@ void ClientInterface::startTCPServer() {
                 socket.Send(FAIL);
                 socket.Send(mess);
             }
-
             // if tcp command was to exit server
             if (ret == GOODBYE) {
-                FILE_LOG(logINFO) << "Shutting down UDP Socket";
-                if (receiver) {
-                    receiver->shutDownUDPSockets();
-                }
-                FILE_LOG(logINFOBLUE)
-                    << "Exiting [ TCP server Tid: " << syscall(SYS_gettid)
-                    << "]";
-                pthread_exit(nullptr);
+                break;
             }
         } catch (const RuntimeError &e) {
             FILE_LOG(logERROR) << "Accept failed";
         }
-
-        // if user entered exit
-        if (killTCPServerThread) {
-            if (ret != GOODBYE) {
-                if (receiver) {
-                    receiver->shutDownUDPSockets();
-                }
-            }
-            FILE_LOG(logINFOBLUE)
-                << "Exiting [ TCP server Tid: " << syscall(SYS_gettid) << "]";
-            pthread_exit(nullptr);
+        // destructor to kill this thread
+        if (killTcpThread) {
+            break;
         }
     }
+
+    if (receiver) {
+        receiver->shutDownUDPSockets();
+    }
+    FILE_LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << syscall(SYS_gettid) << "]";
 }
+
 // clang-format off
-int ClientInterface::function_table(){
+int ClientInterface::functionTable(){
 	flist[F_EXEC_RECEIVER_COMMAND]			=	&ClientInterface::exec_command;
 	flist[F_EXIT_RECEIVER]					=	&ClientInterface::exit_server;
 	flist[F_LOCK_RECEIVER]					=	&ClientInterface::lock_receiver;
@@ -207,35 +177,35 @@ int ClientInterface::function_table(){
 
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
-		// FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
-		// 		getFunctionNameFromEnum((enum detFuncs)i) << ") located at " << flist[i];
+		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
+				getFunctionNameFromEnum((enum detFuncs)i) << ") located at " << flist[i];
 	}
 
 	return OK;
 }
 // clang-format on
-int ClientInterface::decode_function(Interface &socket) {
+int ClientInterface::decodeFunction(Interface &socket) {
     ret = FAIL;
     socket.Receive(fnum);
     if (fnum <= NUM_DET_FUNCTIONS || fnum >= NUM_REC_FUNCTIONS) {
         throw RuntimeError("Unrecognized Function enum " +
                            std::to_string(fnum) + "\n");
     } else {
-        // FILE_LOG(logDEBUG1) << "calling function fnum: " << fnum << " ("
-        //                     << getFunctionNameFromEnum((enum detFuncs)fnum)
-        //                     << ")";
+        FILE_LOG(logDEBUG1) << "calling function fnum: " << fnum << " ("
+                            << getFunctionNameFromEnum((enum detFuncs)fnum)
+                            << ")";
         ret = (this->*flist[fnum])(socket);
-        // FILE_LOG(logDEBUG1)
-        //     << "Function " << getFunctionNameFromEnum((enum detFuncs)fnum)
-        //     << " finished";
+        FILE_LOG(logDEBUG1)
+            << "Function " << getFunctionNameFromEnum((enum detFuncs)fnum)
+            << " finished";
     }
     return ret;
 }
 
 void ClientInterface::functionNotImplemented() {
     std::ostringstream os;
-    // os << "Function: " << getFunctionNameFromEnum((enum detFuncs)fnum)
-    //    << ", is is not implemented for this detector";
+    os << "Function: " << getFunctionNameFromEnum((enum detFuncs)fnum)
+       << ", is is not implemented for this detector";
     throw RuntimeError(os.str());
 }
 
@@ -259,13 +229,13 @@ void ClientInterface::validate(T arg, T retval, std::string modename,
     }
 }
 
-void ClientInterface::VerifyLock() {
-    if (lockStatus && server->getThisClient() != server->getLockedBy()) {
+void ClientInterface::verifyLock() {
+    if (lockedByClient && server->getThisClient() != server->getLockedBy()) {
         throw sls::SocketError("Receiver locked\n");
     }
 }
 
-void ClientInterface::VerifyIdle(Interface &socket) {
+void ClientInterface::verifyIdle(Interface &socket) {
     if (impl()->getStatus() != IDLE) {
         std::ostringstream oss;
         oss << "Can not execute " << getFunctionNameFromEnum((enum detFuncs)fnum) 
@@ -306,15 +276,15 @@ int ClientInterface::lock_receiver(Interface &socket) {
     auto lock = socket.Receive<int>();
     FILE_LOG(logDEBUG1) << "Locking Server to " << lock;
     if (lock >= 0) {
-        if (!lockStatus || (server->getLockedBy() == server->getThisClient())) {
-            lockStatus = lock;
+        if (!lockedByClient || (server->getLockedBy() == server->getThisClient())) {
+            lockedByClient = lock;
             lock ? server->setLockedBy(server->getThisClient())
                  : server->setLockedBy(sls::IpAddr{});
         } else {
             throw RuntimeError("Receiver locked\n");
         }
     }
-    return socket.sendResult(lockStatus);
+    return socket.sendResult(lockedByClient);
 }
 
 int ClientInterface::get_last_client_ip(Interface &socket) {
@@ -458,7 +428,7 @@ int ClientInterface::set_detector_type(Interface &socket) {
         // if object exists, verify unlocked and idle, else only verify lock
         // (connecting first time)
         if (receiver != nullptr) {
-            VerifyIdle(socket);
+            verifyIdle(socket);
         }
         switch (arg) {
         case GOTTHARD:
@@ -504,7 +474,7 @@ int ClientInterface::set_detector_hostname(Interface &socket) {
     socket.Receive(hostname);
 
     if (strlen(hostname) != 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         impl()->setDetectorHostname(hostname);
     }
     auto s = impl()->getDetectorHostname();
@@ -524,7 +494,7 @@ int ClientInterface::set_roi(Interface &socket) {
     if (myDetectorType != GOTTHARD)
         functionNotImplemented();
 
-    VerifyIdle(socket);
+    verifyIdle(socket);
     try {
         impl()->setROI(arg);
     } catch(const RuntimeError &e) {
@@ -601,7 +571,7 @@ int ClientInterface::set_subdeadtime(Interface &socket) {
 int ClientInterface::set_dynamic_range(Interface &socket) {
     auto dr = socket.Receive<int>();
     if (dr >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting dynamic range: " << dr;
         bool exists = false;
         switch(myDetectorType) {
@@ -641,7 +611,7 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
 int ClientInterface::set_streaming_frequency(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting streaming frequency: " << index;
         impl()->setStreamingFrequency(index);
     }
@@ -720,7 +690,7 @@ int ClientInterface::set_file_name(Interface &socket) {
 int ClientInterface::set_file_index(Interface &socket) {
     auto index = socket.Receive<int64_t>();
     if (index >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting file index: " << index;
         impl()->setFileIndex(index);
     }
@@ -757,7 +727,7 @@ int ClientInterface::get_frames_caught(Interface &socket) {
 int ClientInterface::enable_file_write(Interface &socket) {
     auto enable = socket.Receive<int>();
     if (enable >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting File write enable:" << enable;
         impl()->setFileWriteEnable(enable);
     }
@@ -770,7 +740,7 @@ int ClientInterface::enable_file_write(Interface &socket) {
 int ClientInterface::enable_master_file_write(Interface &socket) {
     auto enable = socket.Receive<int>();
     if (enable >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting Master File write enable:" << enable;
         impl()->setMasterFileWriteEnable(enable);
     }
@@ -783,7 +753,7 @@ int ClientInterface::enable_master_file_write(Interface &socket) {
 int ClientInterface::enable_overwrite(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting File overwrite enable:" << index;
         impl()->setOverwriteEnable(index);
     }
@@ -800,7 +770,7 @@ int ClientInterface::enable_tengiga(Interface &socket) {
         functionNotImplemented();
 
     if (val >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting 10GbE:" << val;
         try {
             impl()->setTenGigaEnable(val);
@@ -817,7 +787,7 @@ int ClientInterface::enable_tengiga(Interface &socket) {
 int ClientInterface::set_fifo_depth(Interface &socket) {
     auto value = socket.Receive<int>();
     if (value >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting fifo depth:" << value;
         try {
             impl()->setFifoDepth(value);
@@ -837,7 +807,7 @@ int ClientInterface::set_activate(Interface &socket) {
         functionNotImplemented();
 
     if (enable >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting activate:" << enable;
         impl()->setActivate(static_cast<bool>(enable));
     }
@@ -850,7 +820,7 @@ int ClientInterface::set_activate(Interface &socket) {
 int ClientInterface::set_data_stream_enable(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting data stream enable:" << index;
         try {
             impl()->setDataStreamEnable(index);
@@ -867,7 +837,7 @@ int ClientInterface::set_data_stream_enable(Interface &socket) {
 int ClientInterface::set_streaming_timer(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting streaming timer:" << index;
         impl()->setStreamingTimer(index);
     }
@@ -884,7 +854,7 @@ int ClientInterface::set_flipped_data(Interface &socket) {
         functionNotImplemented();
 
     if (arg >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting flipped data:" << arg;
         impl()->setFlippedDataX(arg);
     }
@@ -898,7 +868,7 @@ int ClientInterface::set_file_format(Interface &socket) {
     fileFormat f = GET_FILE_FORMAT;
     socket.Receive(f);
     if (f >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting file format:" << f;
         impl()->setFileFormat(f);
     }
@@ -911,7 +881,7 @@ int ClientInterface::set_file_format(Interface &socket) {
 int ClientInterface::set_detector_posid(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting detector position id:" << arg;
         impl()->setDetectorPositionId(arg);
     }
@@ -925,7 +895,7 @@ int ClientInterface::set_multi_detector_size(Interface &socket) {
     int arg[]{-1, -1};
     socket.Receive(arg);
     if ((arg[0] > 0) && (arg[1] > 0)) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1)
             << "Setting multi detector size:" << arg[0] << "," << arg[1];
         impl()->setMultiDetectorSize(arg);
@@ -939,7 +909,7 @@ int ClientInterface::set_multi_detector_size(Interface &socket) {
 int ClientInterface::set_streaming_port(Interface &socket) {
     auto port = socket.Receive<int>();
     if (port >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting streaming port:" << port;
         impl()->setStreamingPort(port);
     }
@@ -952,7 +922,7 @@ int ClientInterface::set_streaming_port(Interface &socket) {
 int ClientInterface::set_streaming_source_ip(Interface &socket) {
     sls::IpAddr arg = 0u;
     socket.Receive(arg);
-    VerifyIdle(socket);
+    verifyIdle(socket);
     FILE_LOG(logDEBUG1) << "Setting streaming source ip:" << arg;
     impl()->setStreamingSourceIP(arg);
     sls::IpAddr retval = impl()->getStreamingSourceIP();
@@ -968,7 +938,7 @@ int ClientInterface::set_streaming_source_ip(Interface &socket) {
 int ClientInterface::set_silent_mode(Interface &socket) {
     auto value = socket.Receive<int>();
     if (value >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting silent mode:" << value;
         impl()->setSilentMode(value);
     }
@@ -984,7 +954,7 @@ int ClientInterface::enable_gap_pixels(Interface &socket) {
         functionNotImplemented();
 
     if (enable >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting gap pixels enable:" << enable;
         try {
             impl()->setGapPixelsEnable(static_cast<bool>(enable));
@@ -999,7 +969,7 @@ int ClientInterface::enable_gap_pixels(Interface &socket) {
 }
 
 int ClientInterface::restream_stop(Interface &socket) {
-    VerifyIdle(socket);
+    verifyIdle(socket);
     if (!impl()->getDataStreamEnable()) {
         throw RuntimeError(
             "Could not restream stop packet as data Streaming is disabled");
@@ -1014,7 +984,7 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
     char arg[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
     socket.Receive(arg);
-    VerifyIdle(socket);
+    verifyIdle(socket);
     FILE_LOG(logDEBUG1) << "Setting additional json header: " << arg;
     impl()->setAdditionalJsonHeader(arg);
     sls::strcpy_safe(retval, impl()->getAdditionalJsonHeader().c_str());
@@ -1032,7 +1002,7 @@ int ClientInterface::get_additional_json_header(Interface &socket) {
 int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
     auto index = socket.Receive<int64_t>();
     if (index >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting UDP Socket Buffer size: " << index;
         impl()->setUDPSocketBufferSize(index);
     }
@@ -1055,7 +1025,7 @@ int ClientInterface::get_real_udp_socket_buffer_size(
 int ClientInterface::set_frames_per_file(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting frames per file: " << index;
         impl()->setFramesPerFile(index);
     }
@@ -1096,7 +1066,7 @@ int ClientInterface::check_version_compatibility(Interface &socket) {
 int ClientInterface::set_discard_policy(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting frames discard policy: " << index;
         impl()->setFrameDiscardPolicy(static_cast<frameDiscardPolicy>(index));
     }
@@ -1109,7 +1079,7 @@ int ClientInterface::set_discard_policy(Interface &socket) {
 int ClientInterface::set_padding_enable(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting frames padding enable: " << index;
         impl()->setFramePaddingEnable(static_cast<bool>(index));
     }
@@ -1126,7 +1096,7 @@ int ClientInterface::set_deactivated_padding_enable(
         functionNotImplemented();
 
     if (enable >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting deactivated padding enable: " << enable;
         impl()->setDeactivatedPadding(enable > 0);
     }
@@ -1143,7 +1113,7 @@ int ClientInterface::set_readout_mode(Interface &socket) {
         functionNotImplemented();
 
     if (arg >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting readout mode: " << arg;
         try {
             impl()->setReadoutMode(arg);
@@ -1160,7 +1130,7 @@ int ClientInterface::set_readout_mode(Interface &socket) {
 
 int ClientInterface::set_adc_mask(Interface &socket) {
     auto arg = socket.Receive<uint32_t>();
-    VerifyIdle(socket);
+    verifyIdle(socket);
     FILE_LOG(logDEBUG1) << "Setting 1Gb ADC enable mask: " << arg;
     try {
         impl()->setADCEnableMask(arg);
@@ -1186,7 +1156,7 @@ int ClientInterface::set_dbit_list(Interface &socket) {
         FILE_LOG(logDEBUG1) << it << " ";
     }
     FILE_LOG(logDEBUG1) << "\n";
-    VerifyIdle(socket);
+    verifyIdle(socket);
     impl()->setDbitList(args);
     return socket.Send(OK);
 }
@@ -1201,7 +1171,7 @@ int ClientInterface::get_dbit_list(Interface &socket) {
 int ClientInterface::set_dbit_offset(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting Dbit offset: " << arg;
         impl()->setDbitOffset(arg);
     }
@@ -1214,7 +1184,7 @@ int ClientInterface::set_dbit_offset(Interface &socket) {
 int ClientInterface::set_quad_type(Interface &socket) {
     auto quadEnable = socket.Receive<int>();
     if (quadEnable >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting quad:" << quadEnable;
         try {
             impl()->setQuad(quadEnable == 0 ? false : true);
@@ -1231,7 +1201,7 @@ int ClientInterface::set_quad_type(Interface &socket) {
 int ClientInterface::set_read_n_lines(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
-        VerifyIdle(socket);
+        verifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting Read N Lines:" << arg;
         impl()->setReadNLines(arg);
     }
@@ -1244,7 +1214,7 @@ int ClientInterface::set_read_n_lines(Interface &socket) {
 
 int ClientInterface::set_udp_ip(Interface &socket) {
     auto arg = socket.Receive<sls::IpAddr>();
-    VerifyIdle(socket);
+    verifyIdle(socket);
     FILE_LOG(logINFO) << "Received UDP IP: " << arg;
     // getting eth
     std::string eth = sls::IpToInterfaceName(arg.str());
@@ -1271,7 +1241,7 @@ int ClientInterface::set_udp_ip(Interface &socket) {
 
 int ClientInterface::set_udp_ip2(Interface &socket) {
     auto arg = socket.Receive<sls::IpAddr>();
-    VerifyIdle(socket);
+    verifyIdle(socket);
     if (myDetectorType != JUNGFRAU) {
         throw RuntimeError("UDP Destination IP2 not implemented for this detector");
     }
@@ -1298,7 +1268,7 @@ int ClientInterface::set_udp_ip2(Interface &socket) {
 
 int ClientInterface::set_udp_port(Interface &socket) {
     auto arg = socket.Receive<int>();
-    VerifyIdle(socket);
+    verifyIdle(socket);
     FILE_LOG(logDEBUG1) << "Setting UDP Port:" << arg;
     impl()->setUDPPortNumber(arg);
     return socket.Send(OK);
@@ -1306,7 +1276,7 @@ int ClientInterface::set_udp_port(Interface &socket) {
 
 int ClientInterface::set_udp_port2(Interface &socket) {
     auto arg = socket.Receive<int>();
-    VerifyIdle(socket);
+    verifyIdle(socket);
     if (myDetectorType != JUNGFRAU && myDetectorType != EIGER) {
         throw RuntimeError("UDP Destination Port2 not implemented for this detector");
     }    
@@ -1318,7 +1288,7 @@ int ClientInterface::set_udp_port2(Interface &socket) {
 int ClientInterface::set_num_interfaces(Interface &socket) {
     auto arg = socket.Receive<int>();
     arg = (arg > 1 ? 2 : 1);
-    VerifyIdle(socket);
+    verifyIdle(socket);
     if (myDetectorType != JUNGFRAU) {
         throw RuntimeError("Number of interfaces not implemented for this detector");
     }    
@@ -1333,7 +1303,7 @@ int ClientInterface::set_num_interfaces(Interface &socket) {
 
 int ClientInterface::set_adc_mask_10g(Interface &socket) {
     auto arg = socket.Receive<uint32_t>();
-    VerifyIdle(socket);
+    verifyIdle(socket);
     FILE_LOG(logDEBUG1) << "Setting 10Gb ADC enable mask: " << arg;
     try {
         impl()->setTenGigaADCEnableMask(arg);

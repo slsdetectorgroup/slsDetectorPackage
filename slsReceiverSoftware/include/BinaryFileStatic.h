@@ -98,23 +98,20 @@ class BinaryFileStatic {
 	 * @param fname master file name
 	 * @param owenable overwrite enable
 	 * @param attr master file attributes
-	 * @returns 0 for success and 1 for fail
 	 */
-	static int CreateMasterDataFile(FILE*& fd, std::string fname, bool owenable,
+	static void CreateMasterDataFile(FILE*& fd, std::string fname, bool owenable,
 					masterAttributes& attr)
 	{
 		if(!owenable){
 			if (NULL == (fd = fopen((const char *) fname.c_str(), "wx"))){
-				FILE_LOG(logERROR) << "Could not create binary master file "
-						"(without overwrite enable) " << fname;
 				fd = 0;
-				return 1;
+				throw sls::RuntimeError("Could not create binary master file "
+						"(without overwrite enable) " + fname);
 			}
 		}else if (NULL == (fd = fopen((const char *) fname.c_str(), "w"))){
-			FILE_LOG(logERROR) << "Could not create binary master file "
-					"(with overwrite enable) " << fname;
 			fd = 0;
-			return 1;
+				throw sls::RuntimeError("Could not create binary master file "
+						"(with overwrite enable) " + fname);
 		}
 		time_t t = time(0);
 		char message[MAX_MASTER_FILE_LENGTH];
@@ -182,16 +179,15 @@ class BinaryFileStatic {
 				attr.roiXmax,
 				ctime(&t));
 		if (strlen(message) > MAX_MASTER_FILE_LENGTH) {
-			FILE_LOG(logERROR) << "Master File Size " << strlen(message) <<
-					" is greater than max str size " << MAX_MASTER_FILE_LENGTH;
-			return 1;
+			throw sls::RuntimeError("Master File Size " + std::to_string(strlen(message)) +
+			" is greater than max str size " + std::to_string(MAX_MASTER_FILE_LENGTH));
 		}
 
-		if (fwrite((void*)message, 1, strlen(message), fd) !=  strlen(message))
-			return 1;
+		if (fwrite((void*)message, 1, strlen(message), fd) !=  strlen(message)) {
+			throw sls::RuntimeError("Master binary file incorrect number of bytes written to file");
+		}
 
 		BinaryFileStatic::CloseDataFile(fd);
-		return 0;
 	}
 
 
@@ -203,22 +199,19 @@ class BinaryFileStatic {
 	 * @param filebuffersize file buffer size
 	 * @returns 0 for success and 1 for fail
 	 */
-	static int CreateDataFile(FILE*& fd, bool owenable, std::string fname, size_t filebuffersize)
+	static void CreateDataFile(FILE*& fd, bool owenable, std::string fname, size_t filebuffersize)
 	 {
 		if(!owenable){
 			if (NULL == (fd = fopen((const char *) fname.c_str(), "wx"))){
-				FILE_LOG(logERROR) << "Could not create/overwrite file" << fname;
 				fd = 0;
-				return 1;
+				throw sls::RuntimeError("Could not create/overwrite file " + fname);
 			}
-		}else if (NULL == (fd = fopen((const char *) fname.c_str(), "w"))){
-			FILE_LOG(logERROR) << "Could not create file" << fname;
+		} else if (NULL == (fd = fopen((const char *) fname.c_str(), "w"))){
 			fd = 0;
-			return 1;
+			throw sls::RuntimeError("Could not create file " + fname);
 		}
 		//setting file buffer size to 16mb
 		setvbuf(fd,NULL,_IOFBF,filebuffersize);
-		return 0;
 	}
 
 };

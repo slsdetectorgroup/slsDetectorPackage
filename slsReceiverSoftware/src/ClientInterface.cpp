@@ -473,11 +473,11 @@ int ClientInterface::set_detector_type(Interface &socket) {
             break;
         }
 
-        if (receiver == nullptr) {
-            receiver = sls::make_unique<Implementation>();
-        }
-        myDetectorType = arg;
-        if (impl()->setDetectorType(myDetectorType) == FAIL) {
+        try {
+            myDetectorType = GENERIC;
+            receiver = sls::make_unique<Implementation>(arg);
+            myDetectorType = arg;
+        } catch (...) {
             throw RuntimeError("Could not set detector type");
         }
 
@@ -525,8 +525,11 @@ int ClientInterface::set_roi(Interface &socket) {
         functionNotImplemented();
 
     VerifyIdle(socket);
-    if (impl()->setROI(arg) == FAIL)
+    try {
+        impl()->setROI(arg);
+    } catch(const RuntimeError &e) {
         throw RuntimeError("Could not set ROI");
+    }
     return socket.Send(OK);
 }
 
@@ -543,7 +546,11 @@ int ClientInterface::set_num_analog_samples(Interface &socket) {
     if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
         functionNotImplemented();
     }    
-    ret = impl()->setNumberofAnalogSamples(value);
+    try {
+        impl()->setNumberofAnalogSamples(value);
+    } catch(const RuntimeError &e) {
+        throw RuntimeError("Could not set num analog samples to " + std::to_string(value) + " due to fifo structure memory allocation.");
+    }
 
     return socket.Send(OK);
 }
@@ -554,7 +561,11 @@ int ClientInterface::set_num_digital_samples(Interface &socket) {
     if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
         functionNotImplemented();
     }    
-    ret = impl()->setNumberofDigitalSamples(value);
+    try {
+        impl()->setNumberofDigitalSamples(value);
+    } catch(const RuntimeError &e) {
+        throw RuntimeError("Could not set num digital samples to " + std::to_string(value) + " due to fifo structure memory allocation.");
+    }
     return socket.Send(OK);
 }
 
@@ -613,8 +624,9 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
         if (!exists) {
             modeNotImplemented("Dynamic range", dr);
         } else {
-            ret = impl()->setDynamicRange(dr);
-            if (ret == FAIL) {
+            try {
+                impl()->setDynamicRange(dr);
+            } catch(const RuntimeError &e) {
                 throw RuntimeError("Could not allocate memory for fifo or "
                                    "could not start listening/writing threads");
             }
@@ -631,10 +643,7 @@ int ClientInterface::set_streaming_frequency(Interface &socket) {
     if (index >= 0) {
         VerifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting streaming frequency: " << index;
-        ret = impl()->setStreamingFrequency(index);
-        if (ret == FAIL) {
-            throw RuntimeError("Could not allocate memory for listening fifo");
-        }
+        impl()->setStreamingFrequency(index);
     }
     int retval = impl()->getStreamingFrequency();
     validate(index, retval, "set streaming frequency", DEC);
@@ -650,11 +659,7 @@ int ClientInterface::get_status(Interface &socket) {
 int ClientInterface::start_receiver(Interface &socket) {
     if (impl()->getStatus() == IDLE) {
         FILE_LOG(logDEBUG1) << "Starting Receiver";
-        std::string err;
-        ret = impl()->startReceiver(err);
-        if (ret == FAIL) {
-            throw RuntimeError(err);
-        }
+        impl()->startReceiver();
     }
     return socket.Send(OK);
 }
@@ -797,7 +802,11 @@ int ClientInterface::enable_tengiga(Interface &socket) {
     if (val >= 0) {
         VerifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting 10GbE:" << val;
-        ret = impl()->setTenGigaEnable(val);
+        try {
+            impl()->setTenGigaEnable(val);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set 10GbE.");
+        }
     }
     int retval = impl()->getTenGigaEnable();
     validate(val, retval, "set 10GbE", DEC);
@@ -810,7 +819,11 @@ int ClientInterface::set_fifo_depth(Interface &socket) {
     if (value >= 0) {
         VerifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting fifo depth:" << value;
-        impl()->setFifoDepth(value);
+        try {
+            impl()->setFifoDepth(value);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set fifo depth due to fifo structure memory allocation.");
+        }
     }
     int retval = impl()->getFifoDepth();
     validate(value, retval, std::string("set fifo depth"), DEC);
@@ -839,7 +852,11 @@ int ClientInterface::set_data_stream_enable(Interface &socket) {
     if (index >= 0) {
         VerifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting data stream enable:" << index;
-        impl()->setDataStreamEnable(index);
+        try {
+            impl()->setDataStreamEnable(index);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set data stream enable to " + std::to_string(index));
+        }
     }
     auto retval = static_cast<int>(impl()->getDataStreamEnable());
     validate(index, retval, "set data stream enable", DEC);
@@ -969,7 +986,11 @@ int ClientInterface::enable_gap_pixels(Interface &socket) {
     if (enable >= 0) {
         VerifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting gap pixels enable:" << enable;
-        impl()->setGapPixelsEnable(static_cast<bool>(enable));
+        try {
+            impl()->setGapPixelsEnable(static_cast<bool>(enable));
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set gap pixels enable to " + std::to_string(enable));
+        }
     }
     auto retval = static_cast<int>(impl()->getGapPixelsEnable());
     validate(enable, retval, "set gap pixels enable", DEC);
@@ -1013,10 +1034,7 @@ int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
     if (index >= 0) {
         VerifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting UDP Socket Buffer size: " << index;
-        if (impl()->setUDPSocketBufferSize(index) == FAIL) {
-            throw RuntimeError(
-                "Could not create dummy UDP Socket to test buffer size");
-        }
+        impl()->setUDPSocketBufferSize(index);
     }
     int64_t retval = impl()->getUDPSocketBufferSize();
     if (index != 0)
@@ -1127,7 +1145,11 @@ int ClientInterface::set_readout_mode(Interface &socket) {
     if (arg >= 0) {
         VerifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting readout mode: " << arg;
-        impl()->setReadoutMode(arg);
+        try {
+            impl()->setReadoutMode(arg);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set read out mode due to fifo memory allocation.");
+        }
     }
     auto retval = impl()->getReadoutMode();
     validate(static_cast<int>(arg), static_cast<int>(retval),
@@ -1140,7 +1162,11 @@ int ClientInterface::set_adc_mask(Interface &socket) {
     auto arg = socket.Receive<uint32_t>();
     VerifyIdle(socket);
     FILE_LOG(logDEBUG1) << "Setting 1Gb ADC enable mask: " << arg;
-    impl()->setADCEnableMask(arg);
+    try {
+        impl()->setADCEnableMask(arg);
+    } catch(const RuntimeError &e) {
+        throw RuntimeError("Could not set adc enable mask due to fifo memory allcoation");
+    }
     auto retval = impl()->getADCEnableMask();
     if (retval != arg) {
         std::ostringstream os;
@@ -1190,10 +1216,11 @@ int ClientInterface::set_quad_type(Interface &socket) {
     if (quadEnable >= 0) {
         VerifyIdle(socket);
         FILE_LOG(logDEBUG1) << "Setting quad:" << quadEnable;
-        ret = impl()->setQuad(quadEnable == 0 ? false : true);
-        if (ret == FAIL) {
-            throw RuntimeError("Could not set Quad due to fifo structure");
-        } 
+        try {
+            impl()->setQuad(quadEnable == 0 ? false : true);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set quad to " + std::to_string(quadEnable) + " due to fifo strucutre memory allocation");
+        }
     }
     int retval = impl()->getQuad() ? 1 : 0;
     validate(quadEnable, retval, "set quad", DEC);
@@ -1296,8 +1323,10 @@ int ClientInterface::set_num_interfaces(Interface &socket) {
         throw RuntimeError("Number of interfaces not implemented for this detector");
     }    
     FILE_LOG(logDEBUG1) << "Setting Number of UDP Interfaces:" << arg;
-    if (impl()->setNumberofUDPInterfaces(arg) == FAIL) {
-        throw RuntimeError("Failed to set number of interfaces");
+    try {
+        impl()->setNumberofUDPInterfaces(arg);
+    } catch(const RuntimeError &e) {
+        throw RuntimeError("Failed to set number of interfaces to " + std::to_string(arg));
     }
     return socket.Send(OK);
 }
@@ -1306,7 +1335,11 @@ int ClientInterface::set_adc_mask_10g(Interface &socket) {
     auto arg = socket.Receive<uint32_t>();
     VerifyIdle(socket);
     FILE_LOG(logDEBUG1) << "Setting 10Gb ADC enable mask: " << arg;
-    impl()->setTenGigaADCEnableMask(arg);
+    try {
+        impl()->setTenGigaADCEnableMask(arg);
+    } catch(const RuntimeError &e) {
+        throw RuntimeError("Could not set 10Gb adc enable mask due to fifo memory allcoation");
+    }
     auto retval = impl()->getTenGigaADCEnableMask();
     if (retval != arg) {
         std::ostringstream os;

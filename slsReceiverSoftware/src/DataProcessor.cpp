@@ -62,11 +62,8 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		rawDataModifyReadyCallBack(nullptr),
 		pRawDataReady(nullptr)
 {
-     if(ThreadObject::CreateThread() == FAIL)
-         throw sls::RuntimeError("Could not create processing thread");
-
+    ThreadObject::CreateThread();
     FILE_LOG(logDEBUG) << "DataProcessor " << ind << " created";
-
 	memset((void*)&timerBegin, 0, sizeof(timespec));
 }
 
@@ -158,13 +155,17 @@ void DataProcessor::SetGeneralData(GeneralData* g) {
 }
 
 
-int DataProcessor::SetThreadPriority(int priority) {
+void DataProcessor::SetThreadPriority(int priority) {
 	struct sched_param param;
 	param.sched_priority = priority;
-	if (pthread_setschedparam(thread, SCHED_FIFO, &param) == EPERM)
-		return FAIL;
-	FILE_LOG(logINFO) << "Processor Thread Priority set to " << priority;
-	return OK;
+	if (pthread_setschedparam(thread, SCHED_FIFO, &param) == EPERM) {
+		if (!index) {
+			FILE_LOG(logWARNING) << "Could not prioritize dataprocessing thread. "
+                                    "(No Root Privileges?)";
+		}
+	} else {
+		FILE_LOG(logINFO) << "Priorities set - DataProcessor: " << priority;
+	}
 }
 
 
@@ -220,16 +221,14 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
 }
 
 // only the first file
-int DataProcessor::CreateNewFile(masterAttributes& attr) {
-	if (file == nullptr)
-		return FAIL;
+void DataProcessor::CreateNewFile(masterAttributes& attr) {
+	if (file == nullptr) {
+		throw sls::RuntimeError("file object not contstructed");
+	}
 	file->CloseAllFiles();
 	file->resetSubFileIndex();
-	if (file->CreateMasterFile(*masterFileWriteEnable, attr) == FAIL)
-		return FAIL;
-	if (file->CreateFile() == FAIL)
-		return FAIL;
-	return OK;
+	file->CreateMasterFile(*masterFileWriteEnable, attr);
+	file->CreateFile();
 }
 
 
@@ -240,7 +239,11 @@ void DataProcessor::CloseFiles() {
 
 void DataProcessor::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 	if ((file != nullptr) && file->GetFileType() == HDF5) {
-		file->EndofAcquisition(anyPacketsCaught, numf);
+		try {
+			file->EndofAcquisition(anyPacketsCaught, numf);
+		} catch (const sls::RuntimeError &e) {
+			;// ignore for now //TODO: send error to client via stop receiver
+		}
 	}
 }
 
@@ -352,10 +355,15 @@ void DataProcessor::ProcessAnImage(char* buf) {
 	
 
 	// write to file
-	if (file != nullptr)
-		file->WriteToFile(buf + FIFO_HEADER_NUMBYTES,
-				sizeof(sls_receiver_header) + (uint32_t)(*((uint32_t*)buf)), //+ size of data (resizable from previous call back
-				fnum-firstIndex, nump);
+	if (file != nullptr) {
+		try {
+			file->WriteToFile(buf + FIFO_HEADER_NUMBYTES,
+					sizeof(sls_receiver_header) + (uint32_t)(*((uint32_t*)buf)), //+ size of data (resizable from previous call back
+					fnum-firstIndex, nump);
+		} catch(const sls::RuntimeError &e) {
+			; //ignore write exception for now (TODO: send error message via stopReceiver tcp)
+		}
+	}
 
 }
 

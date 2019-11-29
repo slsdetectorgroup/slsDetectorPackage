@@ -82,9 +82,8 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	/**
 	 * Set thread priority
 	 * @priority priority
-	 * @returns OK or FAIL
 	 */
-	int SetThreadPriority(int priority);
+	void SetThreadPriority(int priority);
 
 	/** 
 	 * Set number of detectors
@@ -114,9 +113,8 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
 	/**
 	 * Restream stop dummy packet
-	 * @return OK or FAIL
 	 */
-	int RestreamStop();
+	void RestreamStop();
 
 
  private:

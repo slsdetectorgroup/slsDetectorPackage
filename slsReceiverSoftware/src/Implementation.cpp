@@ -18,9 +18,10 @@
 
 /** cosntructor & destructor */
 
-Implementation::Implementation() {
+Implementation::Implementation(const detectorType d) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     InitializeMembers();
+    setDetectorType(d);
 }
 
 Implementation::~Implementation() {
@@ -160,23 +161,12 @@ void Implementation::SetLocalNetworkParameters() {
 
 void Implementation::SetThreadPriorities() {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-
     for (const auto &it : listener) {
-        if (it->SetThreadPriority(LISTENER_PRIORITY) == FAIL) {
-            FILE_LOG(logWARNING) << "Could not prioritize listener threads. "
-                                    "(No Root Privileges?)";
-            return;
-        }
+        it->SetThreadPriority(LISTENER_PRIORITY);
     }
-    std::ostringstream osfn;
-    osfn << "Priorities set - "
-            "Listener:"
-         << LISTENER_PRIORITY;
-
-    FILE_LOG(logINFO) << osfn.str();
 }
 
-int Implementation::SetupFifoStructure() {
+void Implementation::SetupFifoStructure() {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     fifo.clear();
@@ -189,11 +179,8 @@ int Implementation::SetupFifoStructure() {
                 (generalData->imageSize) + (generalData->fifoBufferHeaderSize),
                 fifoDepth));
         } catch (...) {
-            FILE_LOG(logERROR)
-                << "Could not allocate memory for fifo structure of index "
-                << i;
             fifo.clear();
-            return FAIL;
+            throw sls::RuntimeError("Could not allocate memory for fifo structure " + std::to_string(i));
         }
         // set the listener & dataprocessor threads to point to the right fifo
         if (listener.size())
@@ -210,7 +197,6 @@ int Implementation::SetupFifoStructure() {
                           fifoDepth)
                       << " bytes";
     FILE_LOG(logINFO) << numThreads << " Fifo structure(s) reconstructed";
-    return OK;
 }
 
 
@@ -221,10 +207,8 @@ int Implementation::SetupFifoStructure() {
  *                                                 *
  * ************************************************/
 
-int Implementation::setDetectorType(const detectorType d) {
+void Implementation::setDetectorType(const detectorType d) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    DeleteMembers();
-    InitializeMembers();
     myDetectorType = d;
     switch (myDetectorType) {
     case GOTTHARD:
@@ -237,8 +221,7 @@ int Implementation::setDetectorType(const detectorType d) {
                           << " Receiver *****";
         break;
     default:
-        FILE_LOG(logERROR) << "This is an unknown receiver type " << (int)d;
-        return FAIL;
+        throw sls::RuntimeError("This is an unknown receiver type "  + std::to_string(static_cast<int>(d)));
     }
 
     // set detector specific variables
@@ -270,10 +253,7 @@ int Implementation::setDetectorType(const detectorType d) {
     framesPerFile = generalData->maxFramesPerFile;
 
     SetLocalNetworkParameters();
-    if (SetupFifoStructure() == FAIL) {
-        FILE_LOG(logERROR) << "Could not allocate memory for fifo structure";
-        return FAIL;
-    }
+    SetupFifoStructure();
 
     // create threads
     for (int i = 0; i < numThreads; ++i) {
@@ -293,12 +273,9 @@ int Implementation::setDetectorType(const detectorType d) {
                 &silentMode, &quadEnable, &ctbDbitList, &ctbDbitOffset,
                 &ctbAnalogDataBytes));
         } catch (...) {
-            FILE_LOG(logERROR)
-                << "Could not create listener/dataprocessor threads (index:"
-                << i << ")";
             listener.clear();
             dataProcessor.clear();
-            return FAIL;
+            throw sls::RuntimeError("Could not create listener/dataprocessor threads (index:" + std::to_string(i) + ")");
         }
     }
 
@@ -311,7 +288,6 @@ int Implementation::setDetectorType(const detectorType d) {
     SetThreadPriorities();
 
     FILE_LOG(logDEBUG) << " Detector type set to " << sls::ToString(d);
-    return OK;
 }
 
 int *Implementation::getMultiDetectorSize() const {
@@ -404,14 +380,12 @@ uint32_t Implementation::getFifoDepth() const {
     return fifoDepth;
 }
 
-int Implementation::setFifoDepth(const uint32_t i) {
+void Implementation::setFifoDepth(const uint32_t i) {
     if (fifoDepth != i) {
         fifoDepth = i;
-        if (SetupFifoStructure() == FAIL)
-            throw sls::RuntimeError("Failed to setup fifo structure");
+        SetupFifoStructure();
     }
     FILE_LOG(logINFO) << "Fifo Depth: " << i;
-    return OK;
 }
 
 slsDetectorDefs::frameDiscardPolicy
@@ -625,18 +599,14 @@ std::vector<uint64_t> Implementation::getNumMissingPackets() const {
     return mp;
 }
 
-int Implementation::startReceiver(std::string& err) {
+void Implementation::startReceiver() {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     FILE_LOG(logINFO) << "Starting Receiver";
     stoppedFlag = false;
     ResetParametersforNewAcquisition();
 
     // listener
-    if (CreateUDPSockets() == FAIL) {
-        err.assign("Could not create UDP Socket(s).");
-        FILE_LOG(logERROR) << err;
-        return FAIL;
-    }
+    CreateUDPSockets();
 
     // callbacks
     if (startAcquisitionCallBack) {
@@ -651,11 +621,7 @@ int Implementation::startReceiver(std::string& err) {
 
     // processor->writer
     if (fileWriteEnable) {
-        if (SetupWriter() == FAIL) {
-            err.assign("Could not create file.\n");
-            FILE_LOG(logERROR) << err;
-            return FAIL;
-        }
+        SetupWriter();
     } else
         FILE_LOG(logINFO) << "File Write Disabled";
 
@@ -669,7 +635,6 @@ int Implementation::startReceiver(std::string& err) {
 
     FILE_LOG(logINFO) << "Receiver Started";
     FILE_LOG(logINFO) << "Status: " << sls::ToString(status);
-    return OK;
 }
 
 void Implementation::setStoppedFlag(bool stopped) {
@@ -817,14 +782,12 @@ void Implementation::closeFiles() {
     dataProcessor[0]->EndofAcquisition(anycaught, maxIndexCaught);
 }
 
-int Implementation::restreamStop() {
+void Implementation::restreamStop() {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     for (const auto &it : dataStreamer) {
-        if (it->RestreamStop() == FAIL)
-            throw sls::RuntimeError("Could not restream stop packet");
+        it->RestreamStop();
     }
     FILE_LOG(logINFO) << "Restreaming Dummy Header via ZMQ successful";
-    return OK;
 }
 
 void Implementation::ResetParametersforNewAcquisition() {
@@ -844,29 +807,23 @@ void Implementation::ResetParametersforNewAcquisition() {
     }
 }
 
-int Implementation::CreateUDPSockets() {
+void Implementation::CreateUDPSockets() {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    bool error = false;
 
-    for (unsigned int i = 0; i < listener.size(); ++i) {
-        if (listener[i]->CreateUDPSockets() == FAIL) {
-            error = true;
-            break;
+    try{
+        for (unsigned int i = 0; i < listener.size(); ++i) {
+            listener[i]->CreateUDPSockets();
         }
-    }
-
-    if (error) {
+    } catch(const sls::RuntimeError &e) {
         shutDownUDPSockets();
-        return FAIL;
+        throw sls::RuntimeError("Could not create UDP Socket(s).");
     }
 
     FILE_LOG(logDEBUG) << "UDP socket(s) created successfully.";
-    return OK;
 }
 
-int Implementation::SetupWriter() {
+void Implementation::SetupWriter() {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    bool error = false;
 	masterAttributes attr;
 	attr.detectorType = myDetectorType;
 	attr.dynamicRange = dynamicRange;
@@ -892,18 +849,16 @@ int Implementation::SetupWriter() {
     for (auto &i : ctbDbitList) {
         attr.dbitlist |= (1 << i);
     }
-    for (unsigned int i = 0; i < dataProcessor.size(); ++i)
-        if (dataProcessor[i]->CreateNewFile(attr) == FAIL) {
-            error = true;
-            break;
+
+    try {
+        for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
+            dataProcessor[i]->CreateNewFile(attr);
         }
-    if (error) {
+    } catch(const sls::RuntimeError &e) {
         shutDownUDPSockets();
         closeFiles();
-        return FAIL;
+        throw sls::RuntimeError("Could not create file.");
     }
-
-    return OK;
 }
 
 void Implementation::StartRunning() {
@@ -935,7 +890,7 @@ int Implementation::getNumberofUDPInterfaces() const {
     return numUDPInterfaces;
 }
 
-int Implementation::setNumberofUDPInterfaces(const int n) {
+void Implementation::setNumberofUDPInterfaces(const int n) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     if (numUDPInterfaces != n) {
@@ -959,8 +914,7 @@ int Implementation::setNumberofUDPInterfaces(const int n) {
         udpSocketBufferSize = generalData->defaultUdpSocketBufferSize;
 
         // fifo
-        if (SetupFifoStructure() == FAIL)
-            return FAIL;
+        SetupFifoStructure();
 
         // create threads
         for (int i = 0; i < numThreads; ++i) {
@@ -984,12 +938,9 @@ int Implementation::setNumberofUDPInterfaces(const int n) {
                     &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
             } catch (...) {
-                FILE_LOG(logERROR)
-                    << "Could not create listener/dataprocessor threads (index:"
-                    << i << ")";
                 listener.clear();
                 dataProcessor.clear();
-                return FAIL;
+                throw sls::RuntimeError("Could not create listener/dataprocessor threads (index:" + std::to_string(i) + ")");
             }
             // streamer threads
             if (dataStreamEnable) {
@@ -1009,14 +960,11 @@ int Implementation::setNumberofUDPInterfaces(const int n) {
                         &numThreads, streamingPort, streamingSrcIP);
 
                 } catch (...) {
-                    FILE_LOG(logERROR)
-                        << "Could not create datastreamer threads (index:" << i
-                        << ")";
                     if (dataStreamEnable) {
                         dataStreamer.clear();
                         dataStreamEnable = false;
                     }
-                    return FAIL;
+                    throw sls::RuntimeError("Could not create datastreamer threads (index:" + std::to_string(i) + ")");
                 }
             }
         }
@@ -1041,13 +989,10 @@ int Implementation::setNumberofUDPInterfaces(const int n) {
         }
 
         // test socket buffer size with current set up
-        if (setUDPSocketBufferSize(0) == FAIL) {
-            return FAIL;
-        }
+        setUDPSocketBufferSize(0);
     }
 
     FILE_LOG(logINFO) << "Number of Interfaces: " << numUDPInterfaces;
-    return OK;
 }
 
 std::string Implementation::getEthernetInterface() const {
@@ -1103,22 +1048,17 @@ int64_t Implementation::getUDPSocketBufferSize() const {
     return udpSocketBufferSize;
 }
 
-int Implementation::setUDPSocketBufferSize(const int64_t s) {
+void Implementation::setUDPSocketBufferSize(const int64_t s) {
     int64_t size = (s == 0) ? udpSocketBufferSize : s;
     size_t listSize = listener.size();
 
     if (myDetectorType == JUNGFRAU && (int)listSize != numUDPInterfaces) {
-        FILE_LOG(logERROR) << "Number of Interfaces " << numUDPInterfaces
-                           << " do not match listener size " << listSize;
-        return FAIL;
+        throw sls::RuntimeError("Number of Interfaces " + std::to_string(numUDPInterfaces) + " do not match listener size " + std::to_string(listSize));
     }
 
     for (unsigned int i = 0; i < listSize; ++i) {
-        if (listener[i]->CreateDummySocketForUDPSocketBufferSize(size) == FAIL)
-            return FAIL;
+        listener[i]->CreateDummySocketForUDPSocketBufferSize(size);
     }
-
-    return OK;
 }
 
 int64_t Implementation::getActualUDPSocketBufferSize() const {
@@ -1137,7 +1077,7 @@ bool Implementation::getDataStreamEnable() const {
     return dataStreamEnable;
 }
 
-int Implementation::setDataStreamEnable(const bool enable) {
+void Implementation::setDataStreamEnable(const bool enable) {
 
     if (dataStreamEnable != enable) {
         dataStreamEnable = enable;
@@ -1164,14 +1104,13 @@ int Implementation::setDataStreamEnable(const bool enable) {
                 } catch (...) {
                     dataStreamer.clear();
                     dataStreamEnable = false;
-                    return FAIL;
+                    throw sls::RuntimeError("Could not set data stream enable.");
                 }
             }
             SetThreadPriorities();
         }
     }
     FILE_LOG(logINFO) << "Data Send to Gui: " << dataStreamEnable;
-    return OK;
 }
 
 uint32_t Implementation::getStreamingFrequency() const {
@@ -1179,12 +1118,11 @@ uint32_t Implementation::getStreamingFrequency() const {
     return streamingFrequency;
 }
 
-int Implementation::setStreamingFrequency(const uint32_t freq) {
+void Implementation::setStreamingFrequency(const uint32_t freq) {
     if (streamingFrequency != freq) {
         streamingFrequency = freq;
     }
     FILE_LOG(logINFO) << "Streaming Frequency: " << streamingFrequency;
-    return OK;
 }
 
 uint32_t Implementation::getStreamingTimer() const {
@@ -1307,7 +1245,7 @@ uint32_t Implementation::getNumberofAnalogSamples() const {
     return numberOfAnalogSamples;
 }
 
-int Implementation::setNumberofAnalogSamples(const uint32_t i) {
+void Implementation::setNumberofAnalogSamples(const uint32_t i) {
     if (numberOfAnalogSamples != i) {
         numberOfAnalogSamples = i;
 
@@ -1318,13 +1256,11 @@ int Implementation::setNumberofAnalogSamples(const uint32_t i) {
         
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
-        if (SetupFifoStructure() == FAIL)
-            return FAIL;
+        SetupFifoStructure();
     }
     FILE_LOG(logINFO) << "Number of Analog Samples: " << numberOfAnalogSamples;
     FILE_LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
-    return OK;
 }
 
 uint32_t Implementation::getNumberofDigitalSamples() const {
@@ -1332,7 +1268,7 @@ uint32_t Implementation::getNumberofDigitalSamples() const {
     return numberOfDigitalSamples;
 }
 
-int Implementation::setNumberofDigitalSamples(const uint32_t i) {
+void Implementation::setNumberofDigitalSamples(const uint32_t i) {
     if (numberOfDigitalSamples != i) {
         numberOfDigitalSamples = i;
 
@@ -1343,14 +1279,12 @@ int Implementation::setNumberofDigitalSamples(const uint32_t i) {
         
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
-        if (SetupFifoStructure() == FAIL)
-            return FAIL;
+        SetupFifoStructure();
     }
     FILE_LOG(logINFO) << "Number of Digital Samples: "
                       << numberOfDigitalSamples;
     FILE_LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
-    return OK;
 }
 
 uint32_t Implementation::getDynamicRange() const {
@@ -1358,7 +1292,7 @@ uint32_t Implementation::getDynamicRange() const {
     return dynamicRange;
 }
 
-int Implementation::setDynamicRange(const uint32_t i) {
+void Implementation::setDynamicRange(const uint32_t i) {
 
     if (dynamicRange != i) {
         dynamicRange = i;
@@ -1369,12 +1303,10 @@ int Implementation::setDynamicRange(const uint32_t i) {
             // to update npixelsx, npixelsy in file writer
             for (const auto &it : dataProcessor)
                 it->SetPixelDimension();
-            if (SetupFifoStructure() == FAIL)
-                return FAIL;
+            SetupFifoStructure();
         }
     }
     FILE_LOG(logINFO) << "Dynamic Range: " << dynamicRange;
-    return OK;
 }
 
 slsDetectorDefs::ROI Implementation::getROI() const {
@@ -1382,7 +1314,7 @@ slsDetectorDefs::ROI Implementation::getROI() const {
     return roi;
 }
 
-int Implementation::setROI(slsDetectorDefs::ROI arg) {
+void Implementation::setROI(slsDetectorDefs::ROI arg) {
     if (roi.xmin != arg.xmin || roi.xmax != arg.xmax) {
         roi.xmin = arg.xmin;
         roi.xmax = arg.xmax;
@@ -1392,14 +1324,12 @@ int Implementation::setROI(slsDetectorDefs::ROI arg) {
         framesPerFile = generalData->maxFramesPerFile;
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
-        if (SetupFifoStructure() == FAIL)
-            return FAIL;
+        SetupFifoStructure();
     }
 
     FILE_LOG(logINFO) << "ROI: [" << roi.xmin << ", " << roi.xmax << "]";;
     FILE_LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
-    return OK;
 }
 
 bool Implementation::getTenGigaEnable() const {
@@ -1407,7 +1337,7 @@ bool Implementation::getTenGigaEnable() const {
     return tengigaEnable;
 }
 
-int Implementation::setTenGigaEnable(const bool b) {
+void Implementation::setTenGigaEnable(const bool b) {
     if (tengigaEnable != b) {
         tengigaEnable = b;
         // side effects
@@ -1427,13 +1357,11 @@ int Implementation::setTenGigaEnable(const bool b) {
             break;
         }
 
-        if (SetupFifoStructure() == FAIL)
-            return FAIL;
+        SetupFifoStructure();
     }
     FILE_LOG(logINFO) << "Ten Giga: " << (tengigaEnable ? "enabled" : "disabled");
     FILE_LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
-    return OK;
 }
 
 int Implementation::getFlippedDataX() const {
@@ -1465,7 +1393,7 @@ bool Implementation::getGapPixelsEnable() const {
     return gapPixelsEnable;
 }
 
-int Implementation::setGapPixelsEnable(const bool b) {
+void Implementation::setGapPixelsEnable(const bool b) {
     if (gapPixelsEnable != b) {
         gapPixelsEnable = b;
 
@@ -1473,11 +1401,9 @@ int Implementation::setGapPixelsEnable(const bool b) {
         generalData->SetGapPixelsEnable(b, dynamicRange, quadEnable);
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
-        if (SetupFifoStructure() == FAIL)
-            return FAIL;
+        SetupFifoStructure();
     }
     FILE_LOG(logINFO) << "Gap Pixels Enable: " << gapPixelsEnable;
-    return OK;
 }
 
 bool Implementation::getQuad() const {
@@ -1485,7 +1411,7 @@ bool Implementation::getQuad() const {
 	return quadEnable;
 }
 
-int Implementation::setQuad(const bool b) {
+void Implementation::setQuad(const bool b) {
 	if (quadEnable != b) {
 		quadEnable = b;
 
@@ -1493,8 +1419,7 @@ int Implementation::setQuad(const bool b) {
 		// to update npixelsx, npixelsy in file writer
         for (const auto &it : dataProcessor)
 		    it->SetPixelDimension();
-		if (SetupFifoStructure() == FAIL)
-			return FAIL;	
+		SetupFifoStructure();
 
 		if (!quadEnable) {
 			for (const auto &it : dataStreamer) {
@@ -1513,7 +1438,6 @@ int Implementation::setQuad(const bool b) {
 		}
 	}
 	FILE_LOG(logINFO)  << "Quad Enable: " << quadEnable;
-    return OK;
 }
 
 bool Implementation::getActivate() const {
@@ -1557,7 +1481,7 @@ Implementation::getReadoutMode() const {
     return readoutType;
 }
 
-int Implementation::setReadoutMode(const readoutMode f) {
+void Implementation::setReadoutMode(const readoutMode f) {
     if (readoutType != f) {
         readoutType = f;
 
@@ -1568,14 +1492,12 @@ int Implementation::setReadoutMode(const readoutMode f) {
             tengigaEnable, readoutType);
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
-        if (SetupFifoStructure() == FAIL)
-            return FAIL;
+        SetupFifoStructure();
     }
 
     FILE_LOG(logINFO) << "Readout Mode: " << sls::ToString(f);
     FILE_LOG(logINFO) << "Packets per Frame: "
                           << (generalData->packetsPerFrame);
-    return OK;
 }
 
 uint32_t Implementation::getADCEnableMask() const {
@@ -1583,7 +1505,7 @@ uint32_t Implementation::getADCEnableMask() const {
     return adcEnableMaskOneGiga;
 }
 
-int Implementation::setADCEnableMask(uint32_t mask) {
+void Implementation::setADCEnableMask(uint32_t mask) {
     if (adcEnableMaskOneGiga != mask) {
         adcEnableMaskOneGiga = mask;
 
@@ -1594,15 +1516,13 @@ int Implementation::setADCEnableMask(uint32_t mask) {
 
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
-        if (SetupFifoStructure() == FAIL)
-            return FAIL;
+        SetupFifoStructure();
     }
 
     FILE_LOG(logINFO) << "ADC Enable Mask for 1Gb mode: 0x" << std::hex << adcEnableMaskOneGiga
                       << std::dec;
     FILE_LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
-    return OK;
 }
 
 uint32_t Implementation::getTenGigaADCEnableMask() const {
@@ -1610,7 +1530,7 @@ uint32_t Implementation::getTenGigaADCEnableMask() const {
     return adcEnableMaskTenGiga;
 }
 
-int Implementation::setTenGigaADCEnableMask(uint32_t mask) {
+void Implementation::setTenGigaADCEnableMask(uint32_t mask) {
     if (adcEnableMaskTenGiga != mask) {
         adcEnableMaskTenGiga = mask;
 
@@ -1621,15 +1541,13 @@ int Implementation::setTenGigaADCEnableMask(uint32_t mask) {
 
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
-        if (SetupFifoStructure() == FAIL)
-            return FAIL;
+        SetupFifoStructure();
     }
 
     FILE_LOG(logINFO) << "ADC Enable Mask for 10Gb mode: 0x" << std::hex << adcEnableMaskTenGiga
                       << std::dec;
     FILE_LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
-    return OK;
 }
 
 std::vector<int> Implementation::getDbitList() const {

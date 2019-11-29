@@ -48,22 +48,18 @@ void  ThreadObject::DestroyThread() {
 }
 
 
-int ThreadObject::CreateThread() {
-	if(alive){
-		FILE_LOG(logERROR) << "Cannot create thread " << index << ". Already alive";
-		return FAIL;
+void ThreadObject::CreateThread() {
+	if (alive) {
+		throw sls::RuntimeError("Cannot create " + GetType() + " thread " + std::to_string(index) + ". Already alive");
 	}
 	sem_init(&semaphore,1,0);
 	killThread = false;
 
-	if(pthread_create(&thread, nullptr,StartThread, (void*) this)){
-		FILE_LOG(logERROR) << "Could not create "  << GetType() << " thread with index " << index;
-		return FAIL;
+	if (pthread_create(&thread, nullptr,StartThread, (void*) this)){
+		throw sls::RuntimeError("Could not create " + GetType() + " thread with index " + std::to_string(index));
 	}
 	alive = true;
 	FILE_LOG(logDEBUG) << GetType() << " thread " << index << " created successfully.";
-
-	return OK;
 }
 
 

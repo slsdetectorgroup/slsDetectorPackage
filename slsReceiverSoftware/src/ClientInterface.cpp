@@ -268,7 +268,7 @@ void ClientInterface::VerifyLock() {
 void ClientInterface::VerifyIdle(Interface &socket) {
     if (impl()->getStatus() != IDLE) {
         std::ostringstream oss;
-        oss << "Can not execute " << GetFunctionNameFromEnum((enum detFuncs)fnum) 
+        oss << "Can not execute " << getFunctionNameFromEnum((enum detFuncs)fnum) 
             << " when receiver is not idle";
         throw sls::SocketError(oss.str());
     }
@@ -286,7 +286,7 @@ int ClientInterface::exec_command(Interface &socket) {
     if (!pipe) {
         throw RuntimeError("Executing Command failed\n");
     } else {
-        while (!feof(pipe.Get())) {
+        while (!feof(pipe.get())) {
             if (fgets(temp.data(), tempsize, pipe.get()) != nullptr)
                 sresult += temp.data();
         }

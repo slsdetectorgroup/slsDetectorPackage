@@ -157,10 +157,13 @@ void Listener::SetThreadPriority(int priority) {
 	struct sched_param param;
 	param.sched_priority = priority;
 	if (pthread_setschedparam(thread, SCHED_FIFO, &param) == EPERM) {
-		throw sls::RuntimeError("Could not prioritize listener threads. "
-                                    "(No Root Privileges?)");
+		if (!index) {
+			FILE_LOG(logWARNING) << "Could not prioritize listener thread. "
+                                    "(No Root Privileges?)";
+		}
+	} else {
+		FILE_LOG(logINFO) << "Priorities set - Listener: " << priority;
 	}
-	FILE_LOG(logINFO) << "Listener Thread Priority set to " << priority;
 }
 
 void Listener::CreateUDPSockets() {

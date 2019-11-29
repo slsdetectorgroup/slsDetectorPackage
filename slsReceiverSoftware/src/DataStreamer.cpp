@@ -108,10 +108,13 @@ void DataStreamer::SetThreadPriority(int priority) {
 	struct sched_param param;
 	param.sched_priority = priority;
 	if (pthread_setschedparam(thread, SCHED_FIFO, &param) == EPERM) {
-		throw sls::RuntimeError("Could not prioritize datastreaming threads. "
-                                    "(No Root Privileges?)");
+		if (!index) {
+			FILE_LOG(logWARNING) << "Could not prioritize datastreaming thread. "
+                                    "(No Root Privileges?)";
+		}
+	} else {
+		FILE_LOG(logINFO) << "Priorities set - DataStreamer: " << priority;
 	}
-	FILE_LOG(logINFO) << "Streamer Thread Priority set to " << priority;
 }
 
 void DataStreamer::SetNumberofDetectors(int* nd) {

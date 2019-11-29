@@ -161,16 +161,9 @@ void Implementation::SetLocalNetworkParameters() {
 
 void Implementation::SetThreadPriorities() {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-
     for (const auto &it : listener) {
         it->SetThreadPriority(LISTENER_PRIORITY);
     }
-    std::ostringstream osfn;
-    osfn << "Priorities set - "
-            "Listener:"
-         << LISTENER_PRIORITY;
-
-    FILE_LOG(logINFO) << osfn.str();
 }
 
 void Implementation::SetupFifoStructure() {

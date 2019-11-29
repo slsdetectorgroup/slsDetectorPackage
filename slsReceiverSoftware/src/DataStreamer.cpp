@@ -18,7 +18,7 @@ const std::string DataStreamer::TypeName = "DataStreamer";
 
 DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
 		uint64_t* fi, int fd, std::string* ajh, int* nd, bool* gpEnable, bool* qe) :
-		ThreadObject(ind),
+		ThreadObject(ind, TypeName),
 		runningFlag(0),
 		generalData(nullptr),
 		fifo(f),
@@ -38,7 +38,6 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
 	numDet[0] = nd[0];
 	numDet[1] = nd[1];
 	
-	ThreadObject::CreateThread();
     FILE_LOG(logDEBUG) << "DataStreamer " << ind << " created";
 }
 
@@ -46,13 +45,9 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
 DataStreamer::~DataStreamer() {
 	CloseZmqSocket();
 	delete [] completeBuffer;
-	ThreadObject::DestroyThread();
 }
 
 /** getters */
-std::string DataStreamer::GetType(){
-	return TypeName;
-}
 
 bool DataStreamer::IsRunning() {
 	return runningFlag;
@@ -102,19 +97,6 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum) {
 void DataStreamer::SetGeneralData(GeneralData* g) {
 	generalData = g;
 	generalData->Print();
-}
-
-void DataStreamer::SetThreadPriority(int priority) {
-	struct sched_param param;
-	param.sched_priority = priority;
-	if (pthread_setschedparam(thread, SCHED_FIFO, &param) == EPERM) {
-		if (!index) {
-			FILE_LOG(logWARNING) << "Could not prioritize datastreaming thread. "
-                                    "(No Root Privileges?)";
-		}
-	} else {
-		FILE_LOG(logINFO) << "Priorities set - DataStreamer: " << priority;
-	}
 }
 
 void DataStreamer::SetNumberofDetectors(int* nd) {

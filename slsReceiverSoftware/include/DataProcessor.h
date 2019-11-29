@@ -119,12 +119,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	void SetGeneralData(GeneralData* g);
 
 	/**
-	 * Set thread priority
-	 * @priority priority
-	 */
-	void SetThreadPriority(int priority);
-
-	/**
 	 * Set File Format
 	 * @param f file format
 	 */
@@ -198,12 +192,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
 
  private:
-
-	/**
-	 * Get Type
-	 * @return type
-	 */
-	std::string GetType() override;
 
 	/**
 	 * Record First Index

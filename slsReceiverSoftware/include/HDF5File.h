@@ -17,6 +17,7 @@
 #ifndef H5_NO_NAMESPACE
     using namespace H5;
 #endif
+#include <mutex>
 
 
 class HDF5File : private virtual slsDetectorDefs, public File, public HDF5FileStatic {
@@ -130,9 +131,8 @@ class HDF5File : private virtual slsDetectorDefs, public File, public HDF5FileSt
 	void UpdateDataType();
 
 
-
 	/** mutex to update static items among objects (threads)*/
-	static pthread_mutex_t Mutex;
+	static mutable std::mutex mutex;
 
 	/** Master File handle */
 	static H5File* masterfd;

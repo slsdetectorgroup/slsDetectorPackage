@@ -103,12 +103,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	void SetGeneralData(GeneralData* g);
 
 	/**
-	 * Set thread priority
-	 * @priority priority
-	 */
-	void SetThreadPriority(int priority);
-
-	/**
 	 * Creates UDP Sockets
 	 */
 	void CreateUDPSockets();
@@ -135,12 +129,6 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 
 
  private:
-
-	/**
-	 * Get Type
-	 * @return type
-	 */
-	std::string GetType() override;
 
 	/**
 	 * Record First Acquisition Index

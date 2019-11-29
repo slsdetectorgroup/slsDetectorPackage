@@ -79,12 +79,6 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 */
 	void SetGeneralData(GeneralData* g);
 
-	/**
-	 * Set thread priority
-	 * @priority priority
-	 */
-	void SetThreadPriority(int priority);
-
 	/** 
 	 * Set number of detectors
 	 * @param number of detectors in both dimensions
@@ -118,12 +112,6 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
 
  private:
-
-	/**
-	 * Get Type
-	 * @return type
-	 */
-	std::string GetType();
 
 	/**
 	 * Record First Index

@@ -10,76 +10,27 @@
 #include "sls_detector_defs.h"
 #include "logger.h"
 
-#include <pthread.h>
+
 #include <semaphore.h>
 #include <string>
+#include <atomic>
+#include <future>
 
 class ThreadObject : private virtual slsDetectorDefs {
 	
  public:
-	/**
-	 * Constructor
-	 * @param ind self index
-	 */
-	ThreadObject(int ind);
-
-	/**
-	 * Destructor
-	 * if alive, destroys thread
-	 */
+	ThreadObject(int threadIndex, std::string threadType);
 	virtual ~ThreadObject();
-
-	/**
-	 * Print all member values
-	 */
-	void PrintMembers();
-
-
-	/**
-	 * Get Type
-	 * @return type
-	 */
-	virtual std::string GetType() = 0;
-
-	/**
-	 * Returns if the thread is currently running
-	 * @returns true if thread is running, else false
-	 */
 	virtual bool IsRunning() = 0;
-
-	/**
-	 * What is really being executed in the thread
-	 */
-	virtual void ThreadExecution() = 0;
-
-	/**
-	 * Post semaphore so thread can continue & start an acquisition
-	 */
 	void Continue();
+	void SetThreadPriority(int priority);
 
  protected:
-
-	/**
-	 * Destroy thread, semaphore and resets alive and killThread
-	 */
-	void DestroyThread();
-
-	/**
-	 * Create Thread, sets semaphore, alive and killThread
-	 */
-	void CreateThread();
-
+ 	virtual void ThreadExecution() = 0;
 
  private:
-
 	/**
-	 * Static function using pointer from argument to call RunningThread()
-	 * @param thisPointer pointer to an object of ThreadObject
-	 */
-	static void* StartThread(void *thisPointer);
-
-	/**
-	 * Actual Thread called:  An infinite while loop in which,
+	 * Thread called:  An infinite while loop in which,
 	 * semaphore starts executing its contents as long RunningMask is satisfied
 	 * Then it exits the thread on its own if killThread is true
 	 */
@@ -87,22 +38,10 @@ class ThreadObject : private virtual slsDetectorDefs {
 
 
  protected:
-	/** Self Index */
-	int index;
-
-	/** Thread is alive/dead */
-	volatile bool alive;
-
-	/** Variable monitored by thread to kills itself */
-	volatile bool killThread;
-
-	/** Thread variable */
-	pthread_t thread;
-
-	/** Semaphore to synchonize starting of each run */
+	int index{0};
+	std::string type;
+	std::atomic<bool> killThread{false};
+	std::unique_ptr<std::thread> threadObject;
 	sem_t semaphore;
-
-
-
 };
 

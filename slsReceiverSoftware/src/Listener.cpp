@@ -24,7 +24,7 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>*
         uint32_t* portno, std::string* e, uint64_t* nf, uint32_t* dr,
         int64_t* us, int64_t* as, uint32_t* fpf,
 		frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm) :
-		ThreadObject(ind),
+		ThreadObject(ind, TypeName),
 		runningFlag(0),
 		generalData(nullptr),
 		fifo(f),
@@ -55,7 +55,6 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>*
 		numFramesStatistic(0),
 		oddStartingPacket(true)
 {
-	ThreadObject::CreateThread();
 	FILE_LOG(logDEBUG) << "Listener " << ind << " created";
 }
 
@@ -65,15 +64,9 @@ Listener::~Listener() {
 		sem_post(&semaphore_socket);
     	sem_destroy(&semaphore_socket);
 	} 
-
-	ThreadObject::DestroyThread();
 }
 
 /** getters */
-std::string Listener::GetType(){
-	return TypeName;
-}
-
 bool Listener::IsRunning() {
 	return runningFlag;
 }
@@ -152,19 +145,6 @@ void Listener::SetGeneralData(GeneralData* g) {
 	generalData->Print();
 }
 
-
-void Listener::SetThreadPriority(int priority) {
-	struct sched_param param;
-	param.sched_priority = priority;
-	if (pthread_setschedparam(thread, SCHED_FIFO, &param) == EPERM) {
-		if (!index) {
-			FILE_LOG(logWARNING) << "Could not prioritize listener thread. "
-                                    "(No Root Privileges?)";
-		}
-	} else {
-		FILE_LOG(logINFO) << "Priorities set - Listener: " << priority;
-	}
-}
 
 void Listener::CreateUDPSockets() {
 

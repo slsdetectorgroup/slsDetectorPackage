@@ -30,7 +30,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		bool* fp, bool* act, bool* depaden, bool* sm, bool* qe,
 		std::vector <int> * cdl, int* cdo, int* cad) :
 
-		ThreadObject(ind),
+		ThreadObject(ind, TypeName),
 		runningFlag(false),
 		generalData(nullptr),
 		fifo(f),
@@ -62,7 +62,6 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		rawDataModifyReadyCallBack(nullptr),
 		pRawDataReady(nullptr)
 {
-    ThreadObject::CreateThread();
     FILE_LOG(logDEBUG) << "DataProcessor " << ind << " created";
 	memset((void*)&timerBegin, 0, sizeof(timespec));
 }
@@ -71,13 +70,9 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 DataProcessor::~DataProcessor() {
 	delete file;
 	delete [] tempBuffer;
-	ThreadObject::DestroyThread();
 }
 
 /** getters */
-std::string DataProcessor::GetType(){
-	return TypeName;
-}
 
 bool DataProcessor::IsRunning() {
 	return runningFlag;
@@ -151,20 +146,6 @@ void DataProcessor::SetGeneralData(GeneralData* g) {
 		if (file->GetFileType() == HDF5) {
 			file->SetNumberofPixels(generalData->nPixelsX, generalData->nPixelsY);
 		}
-	}
-}
-
-
-void DataProcessor::SetThreadPriority(int priority) {
-	struct sched_param param;
-	param.sched_priority = priority;
-	if (pthread_setschedparam(thread, SCHED_FIFO, &param) == EPERM) {
-		if (!index) {
-			FILE_LOG(logWARNING) << "Could not prioritize dataprocessing thread. "
-                                    "(No Root Privileges?)";
-		}
-	} else {
-		FILE_LOG(logINFO) << "Priorities set - DataProcessor: " << priority;
 	}
 }
 

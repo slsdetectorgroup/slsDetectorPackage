@@ -55,9 +55,7 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>*
 		numFramesStatistic(0),
 		oddStartingPacket(true)
 {
-	if(ThreadObject::CreateThread() == FAIL)
-	    throw sls::RuntimeError("Could not create listener thread");
-
+	ThreadObject::CreateThread();
 	FILE_LOG(logDEBUG) << "Listener " << ind << " created";
 }
 
@@ -155,19 +153,20 @@ void Listener::SetGeneralData(GeneralData* g) {
 }
 
 
-int Listener::SetThreadPriority(int priority) {
+void Listener::SetThreadPriority(int priority) {
 	struct sched_param param;
 	param.sched_priority = priority;
-	if (pthread_setschedparam(thread, SCHED_FIFO, &param) == EPERM)
-		return FAIL;
+	if (pthread_setschedparam(thread, SCHED_FIFO, &param) == EPERM) {
+		throw sls::RuntimeError("Could not prioritize listener threads. "
+                                    "(No Root Privileges?)");
+	}
 	FILE_LOG(logINFO) << "Listener Thread Priority set to " << priority;
-	return OK;
 }
 
-int Listener::CreateUDPSockets() {
+void Listener::CreateUDPSockets() {
 
     if (!(*activated)) {
-    	return OK;
+    	return;
     }
 
 	//if eth is mistaken with ip address
@@ -186,8 +185,7 @@ int Listener::CreateUDPSockets() {
 				*udpSocketBufferSize);
 		FILE_LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
 	} catch (...) {
-		FILE_LOG(logERROR) << "Could not create UDP socket on port " << *udpPortNumber;
-		return FAIL;
+		throw sls::RuntimeError("Could not create UDP socket on port "+ std::to_string(*udpPortNumber));
 	}
 
 	udpSocketAlive = true;
@@ -195,8 +193,6 @@ int Listener::CreateUDPSockets() {
 
     // doubled due to kernel bookkeeping (could also be less due to permissions)
     *actualUDPSocketBufferSize = udpSocket->getActualUDPSocketBufferSize();
-
-	return OK;
 }
 
 
@@ -216,12 +212,12 @@ void Listener::ShutDownUDPSocket() {
 }
 
 
-int Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
+void Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
     FILE_LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port " << *udpPortNumber;
 
     if (!(*activated)) {
     	*actualUDPSocketBufferSize = (s*2);
-    	return OK;
+    	return;
     }
 
     int64_t temp = *udpSocketBufferSize;
@@ -247,12 +243,8 @@ int Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
 		}
 
     } catch (...) {
-        FILE_LOG(logERROR) << "Could not create a test UDP socket on port " << *udpPortNumber;
-        return FAIL;
+        throw sls::RuntimeError("Could not create a test UDP socket on port " + std::to_string(*udpPortNumber));
     }
-
-
-    return OK;
 }
 
 void Listener::SetHardCodedPosition(uint16_t r, uint16_t c) {

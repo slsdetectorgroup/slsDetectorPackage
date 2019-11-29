@@ -84,9 +84,8 @@ class File : private virtual slsDetectorDefs {
 
 	/**
 	 * Create file
-	 * @returns OK or FAIL
 	 */
-	virtual int CreateFile() = 0;
+	virtual void CreateFile() = 0;
 
 	/**
 	 * Close Current File
@@ -103,17 +102,15 @@ class File : private virtual slsDetectorDefs {
 	 * @param buffer buffer to write from
 	 * @param fnum current image number
 	 * @param nump number of packets caught
-	 * @param OK or FAIL
 	 */
-	virtual int WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) = 0;
+	virtual void WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) = 0;
 
 	 /**
 	  * Create master file
 	  * @param mfwenable master file write enable
 	  * @param attr master file attributes
-	  * @returns OK or FAIL
 	  */
-	virtual int CreateMasterFile(bool mfwenable, masterAttributes& attr) = 0;
+	virtual void CreateMasterFile(bool mfwenable, masterAttributes& attr) = 0;
 
 	// HDf5 specific
 	/**

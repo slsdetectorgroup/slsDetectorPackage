@@ -128,7 +128,7 @@ void HDF5File::UpdateDataType() {
 }
 
 
-int HDF5File::CreateFile() {
+void HDF5File::CreateFile() {
 	numFilesinAcquisition++;
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
@@ -143,21 +143,22 @@ int HDF5File::CreateFile() {
 			(((extNumImages - subFileIndex) > (*maxFramesPerFile)) ?  // save up to maximum at a time
 					(*maxFramesPerFile) : (extNumImages-subFileIndex)));
 	pthread_mutex_lock(&Mutex);
-	if (HDF5FileStatic::CreateDataFile(index, *overWriteEnable, currentFileName, (*numImages > 1),
+	try{
+		HDF5FileStatic::CreateDataFile(index, *overWriteEnable, currentFileName, (*numImages > 1),
 			subFileIndex, framestosave, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			datatype, filefd, dataspace, dataset,
 			HDF5_WRITER_VERSION, MAX_CHUNKED_IMAGES,
 			dataspace_para,	dataset_para,
-			parameterNames, parameterDataTypes) == FAIL) {
+			parameterNames, parameterDataTypes);
+	} catch(const RuntimeError &e) {
 		pthread_mutex_unlock(&Mutex);
-		return FAIL;
+		throw;
 	}
 	pthread_mutex_unlock(&Mutex);
 
 	if(!(*silentMode)) {
 		FILE_LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
 	}
-	return OK;
 }
 
 
@@ -195,7 +196,7 @@ void HDF5File::CloseAllFiles() {
 }
 
 
-int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
+void HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
 
 	// check if maxframesperfile = 0 for infinite
 	if ((*maxFramesPerFile) && (numFramesInFile >= (*maxFramesPerFile))) {
@@ -207,40 +208,38 @@ int HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t 
 	numActualPacketsInFile += nump;
 	pthread_mutex_lock(&Mutex);
 
+	try {
 	// extend dataset (when receiver start followed by many status starts (jungfrau)))
 	if (fnum >= extNumImages) {
-		if (HDF5FileStatic::ExtendDataset(index, dataspace, dataset,
-				dataspace_para, dataset_para, *numImages) == OK) {
-			if (!(*silentMode)) {
-				FILE_LOG(logINFO) << index << " Extending HDF5 dataset by " <<
-						extNumImages << ", Total x Dimension: " << (extNumImages + *numImages);
-			}
-			extNumImages += *numImages;
+		HDF5FileStatic::ExtendDataset(index, dataspace, dataset,
+				dataspace_para, dataset_para, *numImages);
+		if (!(*silentMode)) {
+			FILE_LOG(logINFO) << index << " Extending HDF5 dataset by " <<
+					extNumImages << ", Total x Dimension: " << (extNumImages + *numImages);
 		}
+		extNumImages += *numImages;
 	}
 
-	if (HDF5FileStatic::WriteDataFile(index, buffer + sizeof(sls_receiver_header),
+	HDF5FileStatic::WriteDataFile(index, buffer + sizeof(sls_receiver_header),
 			// infinite then no need for %maxframesperfile
 			((*maxFramesPerFile == 0) ? fnum : fnum%(*maxFramesPerFile)),
 			nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
-			dataspace, dataset, datatype) == OK) {
+			dataspace, dataset, datatype);
 
-		if (HDF5FileStatic::WriteParameterDatasets(index, dataspace_para,
+	HDF5FileStatic::WriteParameterDatasets(index, dataspace_para,
 				// infinite then no need for %maxframesperfile
 				((*maxFramesPerFile == 0) ? fnum : fnum%(*maxFramesPerFile)),
 				dataset_para, (sls_receiver_header*) (buffer),
-				parameterDataTypes) == OK) {
-			pthread_mutex_unlock(&Mutex);
-			return OK;
-		}
+				parameterDataTypes);
+	} catch (const RuntimeError &e) {
+		pthread_mutex_unlock(&Mutex);
+		throw;
 	}
 	pthread_mutex_unlock(&Mutex);
-	FILE_LOG(logERROR) << index << "Write to file failed";
-	return FAIL;
 }
 
 
-int HDF5File::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
+void HDF5File::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
 
 	//beginning of every acquisition
 	numFramesInFile = 0;
@@ -256,12 +255,14 @@ int HDF5File::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
 		}
 		pthread_mutex_lock(&Mutex);
 		attr.version = HDF5_WRITER_VERSION;
-		int ret = HDF5FileStatic::CreateMasterDataFile(masterfd, masterFileName,
+		try{
+			HDF5FileStatic::CreateMasterDataFile(masterfd, masterFileName,
 				*overWriteEnable, attr);
-		pthread_mutex_unlock(&Mutex);
-		return ret;
+		} catch (const RuntimeError &e) {
+			pthread_mutex_unlock(&Mutex);
+			throw;
+		}
 	}
-	return OK;
 }
 
 
@@ -286,15 +287,15 @@ void HDF5File::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 
 
 // called only by the one maser receiver
-int HDF5File::CreateVirtualFile(uint64_t numf) {
+void HDF5File::CreateVirtualFile(uint64_t numf) {
 	pthread_mutex_lock(&Mutex);
 
 	std::string vname = HDF5FileStatic::CreateVirtualFileName(*filePath, *fileNamePrefix, *fileIndex);
 	if(!(*silentMode)) {
 		FILE_LOG(logINFO) << "Virtual File: " << vname;
 	}
-
-	int ret = HDF5FileStatic::CreateVirtualDataFile(vname,
+	try {
+		HDF5FileStatic::CreateVirtualDataFile(vname,
 			virtualfd, masterFileName,
 			*filePath, *fileNamePrefix, *fileIndex, (*numImages > 1),
 			*detIndex, *numUnitsPerDetector,
@@ -305,12 +306,15 @@ int HDF5File::CreateVirtualFile(uint64_t numf) {
 			numDetY, numDetX, nPixelsY, ((*dynamicRange==4) ? (nPixelsX/2) : nPixelsX),
 			HDF5_WRITER_VERSION,
 			parameterNames, parameterDataTypes);
-	pthread_mutex_unlock(&Mutex);
-	return ret;
+	} catch (const RuntimeError &e) {
+		pthread_mutex_unlock(&Mutex);
+		throw;
+	}
+ 	pthread_mutex_unlock(&Mutex);
 }
 
 // called only by the one maser receiver
-int HDF5File::LinkVirtualFileinMasterFile() {
+void HDF5File::LinkVirtualFileinMasterFile() {
 	//dataset name
 	std::ostringstream osfn;
 	osfn << "/data";
@@ -318,8 +322,12 @@ int HDF5File::LinkVirtualFileinMasterFile() {
 	std::string dsetname = osfn.str();
 
 	pthread_mutex_lock(&Mutex);
-	int ret = HDF5FileStatic::LinkVirtualInMaster(masterFileName, currentFileName,
+	try {
+		HDF5FileStatic::LinkVirtualInMaster(masterFileName, currentFileName,
 			dsetname, parameterNames);
+	} catch (const RuntimeError &e) {
+		pthread_mutex_unlock(&Mutex);
+		throw;
+	}
 	pthread_mutex_unlock(&Mutex);
-	return ret;
 }

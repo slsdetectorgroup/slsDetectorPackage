@@ -42,20 +42,18 @@ slsDetectorDefs::fileFormat BinaryFile::GetFileType() {
 }
 
 
-int BinaryFile::CreateFile() {
+void BinaryFile::CreateFile() {
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 
 	currentFileName = BinaryFileStatic::CreateFileName(*filePath, *fileNamePrefix, *fileIndex,
 			 subFileIndex, *detIndex, *numUnitsPerDetector, index);
 
-	if (BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName, FILE_BUFFER_SIZE) == FAIL)
-		return FAIL;
+	BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName, FILE_BUFFER_SIZE);
 
 	if(!(*silentMode)) {
 		FILE_LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;
 	}
-	return OK;
 }
 
 void BinaryFile::CloseCurrentFile() {
@@ -68,7 +66,7 @@ void BinaryFile::CloseAllFiles() {
 		BinaryFileStatic::CloseDataFile(masterfd);
 }
 
-int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
+void BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
 	// check if maxframesperfile = 0 for infinite
 	if ((*maxFramesPerFile) && (numFramesInFile >= (*maxFramesPerFile))) {
 		CloseCurrentFile();
@@ -107,14 +105,12 @@ int BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_
 
 	// if write error
     if (ret != buffersize) {
-    	 FILE_LOG(logERROR) << index << " Error: Write to file failed for image number " << fnum;
-        return FAIL;
+    	throw sls::RuntimeError(std::to_string(index) + " : Write to file failed for image number " + std::to_string(fnum));
     }
-    return OK;
 }
 
 
-int BinaryFile::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
+void BinaryFile::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
 	//beginning of every acquisition
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
@@ -126,10 +122,9 @@ int BinaryFile::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
 			FILE_LOG(logINFO) << "Master File: " << masterFileName;
 		}
 		attr.version = BINARY_WRITER_VERSION;
-		return BinaryFileStatic::CreateMasterDataFile(masterfd, masterFileName,
+		BinaryFileStatic::CreateMasterDataFile(masterfd, masterFileName,
 				*overWriteEnable, attr);
 	}
-	return OK;
 }
 
 

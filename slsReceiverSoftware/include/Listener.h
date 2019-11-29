@@ -105,15 +105,13 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	/**
 	 * Set thread priority
 	 * @priority priority
-	 * @returns OK or FAIL
 	 */
-	int SetThreadPriority(int priority);
+	void SetThreadPriority(int priority);
 
 	/**
 	 * Creates UDP Sockets
-	 * @return OK or FAIL
 	 */
-	int CreateUDPSockets();
+	void CreateUDPSockets();
 
 	/**
 	 * Shuts down and deletes UDP Sockets
@@ -124,9 +122,8 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
      * Create & closes a dummy UDP socket
      * to set & get actual buffer size
      * @param s UDP socket buffer size to be set
-     * @return OK or FAIL of dummy socket creation
      */
-    int CreateDummySocketForUDPSocketBufferSize(int64_t s);
+    void CreateDummySocketForUDPSocketBufferSize(int64_t s);
 
     /**
      * Set hard coded (calculated but not from detector) row and column

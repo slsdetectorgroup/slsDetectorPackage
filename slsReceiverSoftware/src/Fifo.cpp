@@ -23,8 +23,7 @@ Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth):
 		status_fifoBound(0),
 		status_fifoFree(depth){
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-	if(CreateFifos(fifoItemSize) == FAIL)
-	    throw sls::RuntimeError("Could not create FIFO");
+	CreateFifos(fifoItemSize);
 }
 
 
@@ -35,7 +34,7 @@ Fifo::~Fifo() {
 
 
 
-int Fifo::CreateFifos(uint32_t fifoItemSize) {
+void Fifo::CreateFifos(uint32_t fifoItemSize) {
 	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	//destroy if not already
@@ -49,8 +48,7 @@ int Fifo::CreateFifos(uint32_t fifoItemSize) {
 	size_t mem_len = fifoItemSize * fifoDepth * sizeof(char);
 	memory = (char*) malloc (mem_len);
 	if (memory == nullptr){
-		FILE_LOG(logERROR) << "Could not allocate memory for fifos";
-		return FAIL;
+		throw sls::RuntimeError("Could not allocate memory for fifos");
 	}
     memset(memory, 0, mem_len);
 	FILE_LOG(logDEBUG) << "Memory Allocated " << index << ": " << mem_len << " bytes";
@@ -64,7 +62,6 @@ int Fifo::CreateFifos(uint32_t fifoItemSize) {
 		}
 	}
 	FILE_LOG(logINFO) << "Fifo " << index << " reconstructed Depth (rx_fifodepth): " << fifoFree->getDataValue();
-	return OK;
 }
 
 

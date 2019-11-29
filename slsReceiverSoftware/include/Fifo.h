@@ -78,9 +78,8 @@ class Fifo : private virtual slsDetectorDefs {
 	/**
 	 * Create Fifos, allocate memory & push addresses into fifo
 	 * @param fifoItemSize size of each fifo item
-	 * @return OK if successful, else FAIL
 	 */
-	int CreateFifos(uint32_t fifoItemSize);
+	void CreateFifos(uint32_t fifoItemSize);
 
 	/**
 	 * Destroy Fifos and deallocate memory

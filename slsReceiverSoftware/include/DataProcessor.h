@@ -121,9 +121,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	/**
 	 * Set thread priority
 	 * @priority priority
-	 * @returns OK or FAIL
 	 */
-	int SetThreadPriority(int priority);
+	void SetThreadPriority(int priority);
 
 	/**
 	 * Set File Format
@@ -155,9 +154,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	/**
 	 * Create New File
 	 * @param attr master file attributes
-	 * @returns OK or FAIL
 	 */
-	int CreateNewFile(masterAttributes& attr);
+	void CreateNewFile(masterAttributes& attr);
 
 	/**
 	 * Closes files
@@ -212,12 +210,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param fnum frame index to record
 	 */
 	void RecordFirstIndex(uint64_t fnum);
-
-	/**
-	 * Destroy file writer object
-	 * @return OK or FAIL
-	 */
-	void DestroyFileWriter();
 
 	/**
 	 * Thread Exeution for DataProcessor Class

@@ -66,9 +66,8 @@ class ThreadObject : private virtual slsDetectorDefs {
 
 	/**
 	 * Create Thread, sets semaphore, alive and killThread
-	 * @return OK if successful, else FAIL
 	 */
-	int CreateThread();
+	void CreateThread();
 
 
  private:

@@ -15,6 +15,8 @@ using test::GET;
 using test::PUT;
 
 TEST_CASE("Unknown command", "[.cmd]"){
+    
+
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_THROWS(proxy.Call("vsaevrreavv", {}, -1, PUT));
@@ -2797,46 +2799,7 @@ TEST_CASE("stopport", "[.cmd]") {
 //     }
 // }
 
-// TEST_CASE("activate", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "activate 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 1 nopadding",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "activate 1
-//             nopadding\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 0 padding",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "activate 0
-//             padding\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 0 nopadding",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "activate 0
-//             nopadding\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 1 padding",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "activate 1
-//             padding\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "activate 1 padding\n");
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("activate", GET));
-//     }
-// }
+
 
 // TEST_CASE("measuredsubperiod", "[.cmd][.eiger]") {
 //     if (test::type == slsDetectorDefs::EIGER) {
@@ -2876,29 +2839,7 @@ TEST_CASE("stopport", "[.cmd]") {
 //     }
 // }
 
-// TEST_CASE("interruptsubframe", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("interruptsubframe 1",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "interruptsubframe
-//             1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("interruptsubframe", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "interruptsubframe 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("interruptsubframe 0",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "interruptsubframe
-//             0\n");
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("interruptsubframe", GET));
-//     }
-// }
+
 
 // TEST_CASE("readnlines", "[.cmd][.eiger]") {
 //     if (test::type == slsDetectorDefs::EIGER) {
@@ -4205,6 +4146,7 @@ TEST_CASE("lock", "[.cmd]") {
 TEST_CASE("exptime", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
+
     {
         std::ostringstream oss;
         proxy.Call("exptime", {"0.05"}, -1, PUT, oss);

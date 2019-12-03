@@ -13,10 +13,9 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
-TEST_CASE("dr", "[.cmd][.eiger]") {
+TEST_CASE("dr", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
-
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER) {
         // The only detector currently supporting setting dr
@@ -46,31 +45,119 @@ TEST_CASE("dr", "[.cmd][.eiger]") {
     }
 }
 
-// TEST_CASE("subexptime", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
-//         std::string s;
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("subexptime", GET, nullptr,
-//         oss)); s = oss.str(); REQUIRE_NOTHROW(multiSlsDetectorClient(s,
-//         PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("subexptime", GET));
+// TEST_CASE("interruptsubframe", "[.cmd][.eiger]") {
+
+//     Detector det;
+//     CmdProxy proxy(&det);
+
+//     auto det_type = det.getDetectorType().squash();
+//     if (det_type == defs::EIGER){
+//         auto previous = det.getInterruptSubframe();
+
+//         std::ostringstream oss1, oss2, oss3;
+//         proxy.Call("interruptsubframe", {"1"}, -1, PUT, oss1);
+//         REQUIRE(oss1.str() == "interruptsubframe 1\n");
+//         proxy.Call("interruptsubframe", {}, -1, GET, oss2);
+//         REQUIRE(oss2.str() == "interruptsubframe 1\n");
+//         proxy.Call("interruptsubframe", {"0"}, -1, PUT, oss3);
+//         REQUIRE(oss3.str() == "interruptsubframe 0\n");
+//         for (int i=0; i!=det.size(); ++i){
+//             det.setInterruptSubframe(previous[i], {i});
+//         }
+
+//     }else{
+//         REQUIRE_THROWS(proxy.Call("interruptsubframe", {}, -1, GET));
+//         REQUIRE_THROWS(proxy.Call("interruptsubframe", {"1"}, -1, PUT));
 //     }
 // }
 
-// TEST_CASE("subdeadtime", "[.cmd][.eiger]") {
+// TEST_CASE("activate", "[.cmd][.eiger]") {
 //     if (test::type == slsDetectorDefs::EIGER) {
-//         std::string s;
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("subdeadtime", GET, nullptr,
-//         oss)); s = oss.str(); REQUIRE_NOTHROW(multiSlsDetectorClient(s,
-//         PUT));
+//         {
+//             std::ostringstream oss;
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 1", PUT,
+//             nullptr, oss)); REQUIRE(oss.str() == "activate 1\n");
+//         }
+//         {
+//             std::ostringstream oss;
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 1 nopadding",
+//             PUT, nullptr, oss)); REQUIRE(oss.str() == "activate 1
+//             nopadding\n");
+//         }
+//         {
+//             std::ostringstream oss;
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 0 padding",
+//             PUT, nullptr, oss)); REQUIRE(oss.str() == "activate 0
+//             padding\n");
+//         }
+//         {
+//             std::ostringstream oss;
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 0 nopadding",
+//             PUT, nullptr, oss)); REQUIRE(oss.str() == "activate 0
+//             nopadding\n");
+//         }
+//         {
+//             std::ostringstream oss;
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 1 padding",
+//             PUT, nullptr, oss)); REQUIRE(oss.str() == "activate 1
+//             padding\n");
+//         }
+//         {
+//             std::ostringstream oss;
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate", GET,
+//             nullptr, oss)); REQUIRE(oss.str() == "activate 1 padding\n");
+//         }
 //     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("subdeadtime", GET));
+//         REQUIRE_THROWS(multiSlsDetectorClient("activate", GET));
 //     }
 // }
 
-TEST_CASE("tengiga", "[.cmd][.eiger][.ctb]") {
+TEST_CASE("subexptime", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER){
+        auto time = det.getSubExptime();
+        std::ostringstream oss1, oss2;
+        proxy.Call("subexptime", {"2.5us"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "subexptime 2.5us\n");
+        proxy.Call("subexptime", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "subexptime 2.5us\n");
+        for (int i = 0; i!=det.size(); ++i){
+            det.setSubExptime(time[i], {i});
+        }
+    }else{
+        REQUIRE_THROWS(proxy.Call("subexptime", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("subexptime", {"2.13"}, -1, PUT));
+    }
+}
+
+TEST_CASE("subdeadtime", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    
+
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER){
+        auto time = det.getSubDeadTime();
+        std::ostringstream oss1, oss2;
+        proxy.Call("subdeadtime", {"500us"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "subdeadtime 500us\n");
+        proxy.Call("subdeadtime", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "subdeadtime 500us\n");
+        for (int i = 0; i!=det.size(); ++i){
+            det.setSubDeadTime(time[i], {i});
+        }
+    }else{
+        REQUIRE_THROWS(proxy.Call("subdeadtime", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("subdeadtime", {"2.13"}, -1, PUT));
+    }
+}
+
+
+TEST_CASE("tengiga", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
 

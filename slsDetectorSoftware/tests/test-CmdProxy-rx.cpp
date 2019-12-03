@@ -13,10 +13,21 @@ using test::GET;
 using test::PUT;
 
 /*
-This file should contain receiver specific tests use python/scripts/list_tested_cmd.py
-to check if all commands are covered
+This file should contain receiver specific tests use
+python/scripts/list_tested_cmd.py to check if all commands are covered
 
 */
+
+// TEST_CASE("A test", "[.hey]"){
+//     std::cout << "start\n";
+//     SECTION("a section"){
+//         std::cout << "s1\n";
+//     }
+//     SECTION("another section"){
+//         std::cout << "s2\n";
+//     }
+//     std::cout << "end\n";
+// }
 
 TEST_CASE("rx_hostname", "[.cmd]") {
     // TODO! find a proper way to test, now we read out the rx_hostname
@@ -25,6 +36,12 @@ TEST_CASE("rx_hostname", "[.cmd]") {
     CmdProxy proxy(&det);
     std::string hostname =
         det.getRxHostname().tsquash("hostname must be same for test");
+
+    auto det_type = det.getDetectorType().squash();
+    sls::Result<sls::ns> time;
+    if (det_type == defs::EIGER) {
+        time = det.getSubDeadTime();
+    }
 
     {
         // disable receiver
@@ -44,6 +61,14 @@ TEST_CASE("rx_hostname", "[.cmd]") {
         REQUIRE(oss1.str() == "rx_hostname " + hostname + "\n");
         proxy.Call("rx_hostname", {}, -1, GET, oss2);
         REQUIRE(oss2.str() == "rx_hostname " + hostname + "\n");
+    }
+
+    //Bug rx_hostname could change subdeadtime
+    if (det_type == defs::EIGER) {
+        auto time2 = det.getSubDeadTime();
+        for (int i = 0; i != det.size(); ++i) {
+            REQUIRE(time[i].count() == time2[i].count());
+        }
     }
 }
 

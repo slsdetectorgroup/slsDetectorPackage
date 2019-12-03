@@ -122,7 +122,7 @@ std::string IpToInterfaceName(const std::string &ip) {
     return std::string(buf);
 }
 
-MacAddr InterfaceNameToMac(std::string inf) {
+MacAddr InterfaceNameToMac(const std::string& inf) {
         //TODO! Copied from genericSocket needs to be refactored!
 		struct ifreq ifr;
 		char mac[32];

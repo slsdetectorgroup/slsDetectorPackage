@@ -119,13 +119,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	void SetGeneralData(GeneralData* g);
 
 	/**
-	 * Set thread priority
-	 * @priority priority
-	 * @returns OK or FAIL
-	 */
-	int SetThreadPriority(int priority);
-
-	/**
 	 * Set File Format
 	 * @param f file format
 	 */
@@ -155,9 +148,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	/**
 	 * Create New File
 	 * @param attr master file attributes
-	 * @returns OK or FAIL
 	 */
-	int CreateNewFile(masterAttributes& attr);
+	void CreateNewFile(masterAttributes& attr);
 
 	/**
 	 * Closes files
@@ -202,22 +194,10 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
  private:
 
 	/**
-	 * Get Type
-	 * @return type
-	 */
-	std::string GetType() override;
-
-	/**
 	 * Record First Index
 	 * @param fnum frame index to record
 	 */
 	void RecordFirstIndex(uint64_t fnum);
-
-	/**
-	 * Destroy file writer object
-	 * @return OK or FAIL
-	 */
-	void DestroyFileWriter();
 
 	/**
 	 * Thread Exeution for DataProcessor Class

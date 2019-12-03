@@ -6,7 +6,8 @@
 class MySocketTCP;
 class ServerInterface;
 
-
+#include <atomic>
+#include <future>
 
 class ClientInterface : private virtual slsDetectorDefs {
   private:
@@ -38,17 +39,16 @@ class ClientInterface : private virtual slsDetectorDefs {
                                             void *arg);
 
   private:
-    void startTCPSocket();
-    void stopTCPSocket();
-    static void *startTCPServerThread(void *this_pointer);
     void startTCPServer();
-
-    int function_table();
-    int decode_function(sls::ServerInterface2 &socket);
+    int functionTable();
+    int decodeFunction(sls::ServerInterface2 &socket);
     void functionNotImplemented();
     void modeNotImplemented(const std::string& modename, int mode);
     template <typename T>
     void validate(T arg, T retval, std::string modename, numberMode hex);
+    void verifyLock();
+    void verifyIdle(sls::ServerInterface2 &socket);
+
 
     int exec_command(sls::ServerInterface2 &socket);
     int exit_server(sls::ServerInterface2 &socket);
@@ -120,20 +120,27 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_num_interfaces(sls::ServerInterface2 &socket);
     int set_adc_mask_10g(sls::ServerInterface2 &socket);  
 
+    Implementation *impl() {
+        if (receiver != nullptr) {
+            return receiver.get();
+        } else {
+            throw sls::SocketError(
+                "Receiver not set up. Please use rx_hostname first.\n");
+        }
+    }
+
     detectorType myDetectorType;
     std::unique_ptr<Implementation> receiver{nullptr};
     int (ClientInterface::*flist[NUM_REC_FUNCTIONS])(
         sls::ServerInterface2 &socket);
     int ret{OK};
     int fnum{-1};
-    /** Lock Status if server locked to a client */
-    int lockStatus{0};
+    int lockedByClient{0};
+    int portNumber{0};
+    std::atomic<bool> killTcpThread{false};
+    std::unique_ptr<std::thread> tcpThread;
 
-    int killTCPServerThread{0};
-    pthread_t TCPServer_thread;
-    bool tcpThreadCreated{false};
 
-    int portNumber;
 
     //***callback parameters***
    
@@ -149,17 +156,4 @@ class ClientInterface : private virtual slsDetectorDefs {
 
   protected:
     std::unique_ptr<sls::ServerSocket> server{nullptr};
-
-  private:
-    void VerifyLock();
-    void VerifyIdle(sls::ServerInterface2 &socket);
-
-    Implementation *impl() {
-        if (receiver != nullptr) {
-            return receiver.get();
-        } else {
-            throw sls::SocketError(
-                "Receiver not set up. Please use rx_hostname first.\n");
-        }
-    }
 };

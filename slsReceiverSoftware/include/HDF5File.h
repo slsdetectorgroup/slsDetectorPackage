@@ -17,6 +17,7 @@
 #ifndef H5_NO_NAMESPACE
     using namespace H5;
 #endif
+#include <mutex>
 
 
 class HDF5File : private virtual slsDetectorDefs, public File, public HDF5FileStatic {
@@ -67,9 +68,8 @@ class HDF5File : private virtual slsDetectorDefs, public File, public HDF5FileSt
 	/**
 	 * Create file
 	 * @param fnum current frame index to include in file name
-	 * @returns OK or FAIL
 	 */
-	int CreateFile();
+	void CreateFile();
 
 	/**
 	 * Close Current File
@@ -87,17 +87,15 @@ class HDF5File : private virtual slsDetectorDefs, public File, public HDF5FileSt
 	 * @param bsize size of buffer (not used)
 	 * @param fnum current image number
 	 * @param nump number of packets caught
-	 * @returns OK or FAIL
 	 */
-	int WriteToFile(char* buffer, int bsize, uint64_t fnum, uint32_t nump);
+	void WriteToFile(char* buffer, int bsize, uint64_t fnum, uint32_t nump);
 
 	/**
 	 * Create master file
 	 * @param mfwenable master file write enable
 	 * @param attr master file attributes
-	 * @returns OK or FAIL
 	 */
-	int CreateMasterFile(bool mfwenable, masterAttributes& attr);
+	void CreateMasterFile(bool mfwenable, masterAttributes& attr);
 
 	/**
 	 * End of Acquisition
@@ -112,16 +110,14 @@ class HDF5File : private virtual slsDetectorDefs, public File, public HDF5FileSt
 	/**
 	 * Create Virtual File
 	 * @param numf number of images caught
-	 * @returns OK or FAIL
 	 */
-	int CreateVirtualFile(uint64_t numf);
+	void CreateVirtualFile(uint64_t numf);
 
 	/**
 	 * Link virtual file in master file
 	 * Only for Jungfrau at the moment for 1 module and 1 data file
-	 * @returns OK or FAIL
 	 */
-	int LinkVirtualFileinMasterFile();
+	void LinkVirtualFileinMasterFile();
 
 	/**
 	 * Get Type
@@ -135,9 +131,8 @@ class HDF5File : private virtual slsDetectorDefs, public File, public HDF5FileSt
 	void UpdateDataType();
 
 
-
 	/** mutex to update static items among objects (threads)*/
-	static pthread_mutex_t Mutex;
+	static mutable std::mutex mutex;
 
 	/** Master File handle */
 	static H5File* masterfd;

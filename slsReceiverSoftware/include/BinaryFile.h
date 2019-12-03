@@ -51,17 +51,15 @@ class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFi
 
 	/**
 	 * Create file
-	 * @returns OK or FAIL
 	 */
-	int CreateFile() override;
+	void CreateFile() override;
 
 	 /**
 	  * Create master file
 	 * @param mfwenable master file write enable
 	 * @param attr master file attributes
-	  * @returns OK or FAIL
 	  */
-	 int CreateMasterFile(bool mfwenable, masterAttributes& attr) override;
+	 void CreateMasterFile(bool mfwenable, masterAttributes& attr) override;
 
 	/**
 	 * Close Current File
@@ -79,9 +77,8 @@ class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFi
 	 * @param buffersize size of buffer
 	 * @param fnum current image number
 	 * @param nump number of packets caught
-	 * @returns OK or FAIL
 	 */
-	 int WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) override;
+	 void WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) override;
 
 
 

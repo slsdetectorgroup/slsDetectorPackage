@@ -18,7 +18,7 @@ const std::string DataStreamer::TypeName = "DataStreamer";
 
 DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
 		uint64_t* fi, int fd, std::string* ajh, int* nd, bool* gpEnable, bool* qe) :
-		ThreadObject(ind),
+		ThreadObject(ind, TypeName),
 		runningFlag(0),
 		generalData(nullptr),
 		fifo(f),
@@ -38,25 +38,16 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
 	numDet[0] = nd[0];
 	numDet[1] = nd[1];
 	
-	if(ThreadObject::CreateThread() == FAIL)
-        throw sls::RuntimeError("Could not create streaming thread");
-
     FILE_LOG(logDEBUG) << "DataStreamer " << ind << " created";
-
-	// memset(fileNametoStream, 0, MAX_STR_LENGTH);
 }
 
 
 DataStreamer::~DataStreamer() {
 	CloseZmqSocket();
 	delete [] completeBuffer;
-	ThreadObject::DestroyThread();
 }
 
 /** getters */
-std::string DataStreamer::GetType(){
-	return TypeName;
-}
 
 bool DataStreamer::IsRunning() {
 	return runningFlag;
@@ -82,7 +73,6 @@ void DataStreamer::ResetParametersforNewAcquisition(const std::string& fname){
 	startedFlag = false;
 	firstIndex = 0;
 
-	// strcpy(fileNametoStream, fname);
     fileNametoStream = fname;
     if (completeBuffer) {
             delete[] completeBuffer;
@@ -107,15 +97,6 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum) {
 void DataStreamer::SetGeneralData(GeneralData* g) {
 	generalData = g;
 	generalData->Print();
-}
-
-int DataStreamer::SetThreadPriority(int priority) {
-	struct sched_param param;
-	param.sched_priority = priority;
-	if (pthread_setschedparam(thread, SCHED_FIFO, &param) == EPERM)
-		return FAIL;
-	FILE_LOG(logINFO) << "Streamer Thread Priority set to " << priority;
-	return OK;
 }
 
 void DataStreamer::SetNumberofDetectors(int* nd) {
@@ -258,14 +239,12 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
 
 
 
-int DataStreamer::RestreamStop() {
+void DataStreamer::RestreamStop() {
 	//send dummy header
 	int ret = zmqSocket->SendHeaderData(index, true, SLS_DETECTOR_JSON_HEADER_VERSION);
 	if (!ret) {
-		FILE_LOG(logERROR) << "Could not Restream Dummy Header via ZMQ for port " << zmqSocket->GetPortNumber();
-		return FAIL;
+		throw sls::RuntimeError("Could not restream Dummy Header via ZMQ for port " + std::to_string(zmqSocket->GetPortNumber()));
 	}
-	return OK;
 }
 
 

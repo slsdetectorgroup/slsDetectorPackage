@@ -462,7 +462,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
     bool jointhread{false};
 
     /** the data processing thread */
-    // pthread_t dataProcessingThread;
     std::thread dataProcessingThread;
 
     /** detector data packed for the gui */

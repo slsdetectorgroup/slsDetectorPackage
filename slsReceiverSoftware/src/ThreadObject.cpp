@@ -6,98 +6,55 @@
 
 
 #include "ThreadObject.h"
+#include "container_utils.h"
 
 #include <iostream>
 #include <syscall.h>
 
 
 
-ThreadObject::ThreadObject(int ind):
-		index(ind),
-		alive(false),
-		killThread(false),
-		thread(0)
-{
-	PrintMembers();
+ThreadObject::ThreadObject(int threadIndex, std::string threadType)
+	: index(threadIndex), type(threadType) {
+	FILE_LOG(logDEBUG) 	<< type << " thread created: " << 	index;
+
+	sem_init(&semaphore,1,0);
+
+	try {
+		threadObject = sls::make_unique<std::thread>(&ThreadObject::RunningThread, this);
+	} catch (...) {
+		throw sls::RuntimeError("Could not create " + type + " thread with index " + std::to_string(index));
+	}
 }
 
 
 ThreadObject::~ThreadObject() {
-	DestroyThread();
-}
+	killThread = true;
+	sem_post(&semaphore);
 
+	threadObject->join();
 
-void ThreadObject::PrintMembers() {
-	FILE_LOG(logDEBUG) 	<< "Index : " << 	index
-						<< "\nalive: " <<	alive
-						<< "\nkillThread: " << killThread
-						<< "\npthread: " << thread;
-}
-
-
-void  ThreadObject::DestroyThread() {
-	if(alive){
-		killThread = true;
-		sem_post(&semaphore);
-		pthread_join(thread,nullptr);
-		sem_destroy(&semaphore);
-		killThread = false;
-		alive = false;
-		FILE_LOG(logDEBUG) << GetType() << " thread with index " << index << " destroyed successfully.";
-	}
-}
-
-
-int ThreadObject::CreateThread() {
-	if(alive){
-		FILE_LOG(logERROR) << "Cannot create thread " << index << ". Already alive";
-		return FAIL;
-	}
-	sem_init(&semaphore,1,0);
-	killThread = false;
-
-	if(pthread_create(&thread, nullptr,StartThread, (void*) this)){
-		FILE_LOG(logERROR) << "Could not create "  << GetType() << " thread with index " << index;
-		return FAIL;
-	}
-	alive = true;
-	FILE_LOG(logDEBUG) << GetType() << " thread " << index << " created successfully.";
-
-	return OK;
-}
-
-
-void* ThreadObject::StartThread(void* thisPointer) {
-	((ThreadObject*)thisPointer)->RunningThread();
-	return thisPointer;
+	sem_destroy(&semaphore);
 }
 
 
 void ThreadObject::RunningThread() {
-	FILE_LOG(logINFOBLUE) << "Created [ " << GetType() << "Thread " << index << ", "
-			"Tid: " << syscall(SYS_gettid) << "]";
+	FILE_LOG(logINFOBLUE) << "Created [ " << type << "Thread " << index << ", Tid: " << syscall(SYS_gettid) << "]";
+	FILE_LOG(logDEBUG) << type << " thread " << index << " created successfully.";
+
 	while(true)	{
-
 		while(IsRunning()) {
-
 			ThreadExecution();
-
-		}//end of inner loop
-
-
+		}
 		//wait till the next acquisition
 		sem_wait(&semaphore);
-
 		if(killThread)	{
-			FILE_LOG(logINFOBLUE) << "Exiting [ " << GetType() <<
-					" Thread " << index << ", Tid: " << syscall(SYS_gettid) << "]";
-			pthread_exit(nullptr);
+			break;
 		}
-
-	}//end of outer loop
+	}
+	
+	FILE_LOG(logDEBUG) << type << " thread with index " << index << " destroyed successfully.";
+	FILE_LOG(logINFOBLUE) << "Exiting [ " << type << " Thread " << index << ", Tid: " << syscall(SYS_gettid) << "]";
 }
-
-
 
 
 void ThreadObject::Continue() {
@@ -105,4 +62,15 @@ void ThreadObject::Continue() {
 }
 
 
-
+void ThreadObject::SetThreadPriority(int priority) {
+	struct sched_param param;
+	param.sched_priority = priority;
+	if (pthread_setschedparam(threadObject->native_handle(), SCHED_FIFO, &param) == EPERM) {
+		if (!index) {
+			FILE_LOG(logWARNING) << "Could not prioritize " << type << " thread. "
+                                    "(No Root Privileges?)";
+		}
+	} else {
+		FILE_LOG(logINFO) << "Priorities set - " << type << ": " << priority;
+	}
+}

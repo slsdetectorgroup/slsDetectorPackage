@@ -13,6 +13,45 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
+TEST_CASE("Eiger transmission delay") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    auto frame = det.getTransmissionDelayFrame();
+    auto left = det.getTransmissionDelayLeft();
+    auto right = det.getTransmissionDelayRight();
+    if (det_type == defs::EIGER) {
+        SECTION("txndelay_frame") {
+            std::ostringstream oss1, oss2;
+            proxy.Call("txndelay_frame", {"5000"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txndealy_frame 5000\n");
+            proxy.Call("txndelay_frame", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txndealy_frame 5000\n");
+        }
+        SECTION("txndelay_left") {
+            std::ostringstream oss1, oss2;
+            proxy.Call("txndelay_left", {"5000"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txndelay_left 5000\n");
+            proxy.Call("txndelay_frame", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txndelay_left 5000\n");
+        }
+        SECTION("txndelay_right") {
+            std::ostringstream oss1, oss2;
+            proxy.Call("txndelay_right", {"5000"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txndelay_right 5000\n");
+            proxy.Call("txndelay_right", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txndelay_right 5000\n");
+        }
+    }
+
+    //Reset to previous values
+    for (int i=0; i!=det.size(); ++i){
+        det.setTransmissionDelayFrame(frame[i]);
+        det.setTransmissionDelayLeft(left[i]);
+        det.setTransmissionDelayRight(right[i]);
+    }
+}
+
 TEST_CASE("dr", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -117,17 +156,17 @@ TEST_CASE("subexptime", "[.cmd]") {
     CmdProxy proxy(&det);
 
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER){
+    if (det_type == defs::EIGER) {
         auto time = det.getSubExptime();
         std::ostringstream oss1, oss2;
         proxy.Call("subexptime", {"2.5us"}, -1, PUT, oss1);
         REQUIRE(oss1.str() == "subexptime 2.5us\n");
         proxy.Call("subexptime", {}, -1, GET, oss2);
         REQUIRE(oss2.str() == "subexptime 2.5us\n");
-        for (int i = 0; i!=det.size(); ++i){
+        for (int i = 0; i != det.size(); ++i) {
             det.setSubExptime(time[i], {i});
         }
-    }else{
+    } else {
         REQUIRE_THROWS(proxy.Call("subexptime", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("subexptime", {"2.13"}, -1, PUT));
     }
@@ -137,32 +176,29 @@ TEST_CASE("subdeadtime", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
 
-    
-
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER){
+    if (det_type == defs::EIGER) {
         auto time = det.getSubDeadTime();
         std::ostringstream oss1, oss2;
         proxy.Call("subdeadtime", {"500us"}, -1, PUT, oss1);
         REQUIRE(oss1.str() == "subdeadtime 500us\n");
         proxy.Call("subdeadtime", {}, -1, GET, oss2);
         REQUIRE(oss2.str() == "subdeadtime 500us\n");
-        for (int i = 0; i!=det.size(); ++i){
+        for (int i = 0; i != det.size(); ++i) {
             det.setSubDeadTime(time[i], {i});
         }
-    }else{
+    } else {
         REQUIRE_THROWS(proxy.Call("subdeadtime", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("subdeadtime", {"2.13"}, -1, PUT));
     }
 }
-
 
 TEST_CASE("tengiga", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
 
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::CHIPTESTBOARD){
+    if (det_type == defs::EIGER || det_type == defs::CHIPTESTBOARD) {
         auto tengiga = det.getTenGiga();
         det.setTenGiga(false);
 
@@ -172,7 +208,7 @@ TEST_CASE("tengiga", "[.cmd]") {
         proxy.Call("tengiga", {}, -1, GET, oss2);
         REQUIRE(oss2.str() == "tengiga 1\n");
 
-        for (int i = 0; i!=det.size(); ++i){
+        for (int i = 0; i != det.size(); ++i) {
             det.setTenGiga(tengiga[i], {i});
         }
     }

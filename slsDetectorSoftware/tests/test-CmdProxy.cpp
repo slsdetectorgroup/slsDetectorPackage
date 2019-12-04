@@ -14,8 +14,7 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
-TEST_CASE("Unknown command", "[.cmd]"){
-    
+TEST_CASE("Unknown command", "[.cmd]") {
 
     Detector det;
     CmdProxy proxy(&det);
@@ -2799,8 +2798,6 @@ TEST_CASE("stopport", "[.cmd]") {
 //     }
 // }
 
-
-
 // TEST_CASE("measuredsubperiod", "[.cmd][.eiger]") {
 //     if (test::type == slsDetectorDefs::EIGER) {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
@@ -2838,8 +2835,6 @@ TEST_CASE("stopport", "[.cmd]") {
 //         REQUIRE_THROWS(multiSlsDetectorClient("measuredperiod", GET));
 //     }
 // }
-
-
 
 // TEST_CASE("readnlines", "[.cmd][.eiger]") {
 //     if (test::type == slsDetectorDefs::EIGER) {
@@ -3047,57 +3042,66 @@ TEST_CASE("stopport", "[.cmd]") {
 //     oss)); s = oss.str(); REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));
 // }
 
-
-
-
-
-
-
 TEST_CASE("zmqip", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     std::ostringstream oss1, oss2;
-    auto zmqip = det.getClientZmqIp(); 
+    auto zmqip = det.getClientZmqIp();
     proxy.Call("zmqip", {}, 0, GET, oss1);
     REQUIRE(oss1.str() == "zmqip " + zmqip[0].str() + '\n');
 
     proxy.Call("zmqip", {zmqip[0].str()}, 0, PUT, oss2);
     REQUIRE(oss2.str() == "zmqip " + zmqip[0].str() + '\n');
 
-    for (int i = 0; i!=det.size(); ++i){
+    for (int i = 0; i != det.size(); ++i) {
         det.setRxZmqIP(zmqip[i], {i});
     }
 }
 
-// TEST_CASE("zmqport", "[.cmd]") {
-//     multiSlsDetector d;
-//     int socketsperdetector = 1;
-//     if (test::type == slsDetectorDefs::EIGER) {
-//         socketsperdetector *= 2;
-//     } else if (test::type == slsDetectorDefs::JUNGFRAU) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 2", PUT));
-//         socketsperdetector *= 2;
-//     }
-//     int port = 3500;
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("zmqport " + std::to_string(port),
-//     PUT)); for (int i = 0; i != d.size(); ++i) {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) +
-//         ":zmqport", GET, nullptr, oss)); REQUIRE(oss.str() == "zmqport " +
-//         std::to_string(port + i * socketsperdetector) + '\n');
-//     }
-//     port = 1954;
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("zmqport " + std::to_string(port),
-//     PUT)); for (int i = 0; i != d.size(); ++i) {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) +
-//         ":zmqport", GET, nullptr, oss)); REQUIRE(oss.str() == "zmqport " +
-//         std::to_string(port + i * socketsperdetector) + '\n');
-//     }
-//     if (test::type == slsDetectorDefs::JUNGFRAU) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 1", PUT));
-//     }
-// }
+TEST_CASE("zmqport") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    int socketsperdetector = 1;
+    auto det_type = det.getDetectorType().squash();
+    int prev;
+    if (det_type == slsDetectorDefs::EIGER) {
+        socketsperdetector *= 2;
+    } else if (det_type == slsDetectorDefs::JUNGFRAU) {
+        prev = det.getNumberofUDPInterfaces().squash();
+        det.setNumberofUDPInterfaces(2);
+        socketsperdetector *= 2;
+    }
+    int port = 3500;
+    auto port_str = std::to_string(port);
+    {
+        std::ostringstream oss;
+        proxy.Call("zmqport", {port_str}, -1, PUT, oss);
+        REQUIRE(oss.str() == "zmqport " + port_str + '\n');
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        std::ostringstream oss;
+        proxy.Call("zmqport", {}, i, GET, oss);
+        REQUIRE(oss.str() == "zmqport " + std::to_string(port + i * socketsperdetector) + '\n');
+    }
+
+    port = 1954;
+    port_str = std::to_string(port);
+    {
+        std::ostringstream oss;
+        proxy.Call("zmqport", {port_str}, -1, PUT, oss);
+        REQUIRE(oss.str() == "zmqport " + port_str + '\n');
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        std::ostringstream oss;
+        proxy.Call("zmqport", {}, i, GET, oss);
+        REQUIRE(oss.str() == "zmqport " + std::to_string(port + i * socketsperdetector) + '\n');
+    }
+    if (det_type == slsDetectorDefs::JUNGFRAU) {
+        det.setNumberofUDPInterfaces(prev);
+    }
+}
+
 
 TEST_CASE("fpath", "[.cmd]") {
     Detector det;
@@ -3133,7 +3137,6 @@ TEST_CASE("fformat", "[.cmd]") {
         det.setFileFormat(fformat[i], {i});
     }
 }
-
 
 // TEST_CASE("txndelay", "[.cmd][.eiger][.jungfrau]") {
 //     if (test::type == slsDetectorDefs::EIGER) {
@@ -3215,8 +3218,6 @@ TEST_CASE("fformat", "[.cmd]") {
 //         REQUIRE_THROWS(multiSlsDetectorClient("flowcontrol_10g", GET));
 //     }
 // }
-
-
 
 // TEST_CASE("network", "[.cmd]") {
 //     /* {TODO custom srcip in globals

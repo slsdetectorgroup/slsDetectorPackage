@@ -633,7 +633,7 @@ public:
         // 10G
         if (t) {
             headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
-            dataSize = 464;
+            dataSize = 8144;
 			packetSize = headerSizeinPacket + dataSize;
             imageSize = adatabytes + ddatabytes;
             packetsPerFrame = ceil((double)imageSize / (double)dataSize);

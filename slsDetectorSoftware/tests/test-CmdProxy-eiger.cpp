@@ -44,8 +44,8 @@ TEST_CASE("Eiger transmission delay") {
         }
     }
 
-    //Reset to previous values
-    for (int i=0; i!=det.size(); ++i){
+    // Reset to previous values
+    for (int i = 0; i != det.size(); ++i) {
         det.setTransmissionDelayFrame(frame[i]);
         det.setTransmissionDelayLeft(left[i]);
         det.setTransmissionDelayRight(right[i]);
@@ -84,31 +84,81 @@ TEST_CASE("dr", "[.cmd]") {
     }
 }
 
-// TEST_CASE("interruptsubframe", "[.cmd][.eiger]") {
+TEST_CASE("interruptsubframe", "[.cmd][!mayfail]") {
+    // TODO! Fix this for virtual server
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto previous = det.getInterruptSubframe();
 
-//     Detector det;
-//     CmdProxy proxy(&det);
+        std::ostringstream oss1, oss2, oss3;
+        proxy.Call("interruptsubframe", {"1"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "interruptsubframe 1\n");
+        proxy.Call("interruptsubframe", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "interruptsubframe 1\n");
+        proxy.Call("interruptsubframe", {"0"}, -1, PUT, oss3);
+        REQUIRE(oss3.str() == "interruptsubframe 0\n");
+        for (int i = 0; i != det.size(); ++i) {
+            det.setInterruptSubframe(previous[i], {i});
+        }
 
-//     auto det_type = det.getDetectorType().squash();
-//     if (det_type == defs::EIGER){
-//         auto previous = det.getInterruptSubframe();
+    } else {
+        REQUIRE_THROWS(proxy.Call("interruptsubframe", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("interruptsubframe", {"1"}, -1, PUT));
+    }
+}
 
-//         std::ostringstream oss1, oss2, oss3;
-//         proxy.Call("interruptsubframe", {"1"}, -1, PUT, oss1);
-//         REQUIRE(oss1.str() == "interruptsubframe 1\n");
-//         proxy.Call("interruptsubframe", {}, -1, GET, oss2);
-//         REQUIRE(oss2.str() == "interruptsubframe 1\n");
-//         proxy.Call("interruptsubframe", {"0"}, -1, PUT, oss3);
-//         REQUIRE(oss3.str() == "interruptsubframe 0\n");
-//         for (int i=0; i!=det.size(); ++i){
-//             det.setInterruptSubframe(previous[i], {i});
-//         }
+TEST_CASE("overflow", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto previous = det.getOverFlowMode();
 
-//     }else{
-//         REQUIRE_THROWS(proxy.Call("interruptsubframe", {}, -1, GET));
-//         REQUIRE_THROWS(proxy.Call("interruptsubframe", {"1"}, -1, PUT));
-//     }
-// }
+        std::ostringstream oss1, oss2, oss3;
+        proxy.Call("overflow", {"1"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "overflow 1\n");
+        proxy.Call("overflow", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "overflow 1\n");
+        proxy.Call("overflow", {"0"}, -1, PUT, oss3);
+        REQUIRE(oss3.str() == "overflow 0\n");
+        for (int i = 0; i != det.size(); ++i) {
+            det.setOverFlowMode(previous[i], {i});
+        }
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("overflow", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("overflow", {"1"}, -1, PUT));
+    }
+}
+
+TEST_CASE("trimen", "[.cmd][.this]") {
+    //TODO! Also Mythen?
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+
+        auto previous = det.getTrimEnergies();
+        std::ostringstream oss1, oss2;
+        proxy.Call("trimen", {"4500", "5400", "6400"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "trimen [4500, 5400, 6400]\n");
+        proxy.Call("trimen", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "trimen [4500, 5400, 6400]\n");
+
+        for (int i = 0; i!=det.size(); ++i){
+            det.setTrimEnergies(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("trimen", {"4500", "5400", "6400"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("trimen", {}, -1, GET));
+    }
+}
+
+// TEST_CASE("threshold"{
+
+// })
 
 // TEST_CASE("activate", "[.cmd][.eiger]") {
 //     if (test::type == slsDetectorDefs::EIGER) {

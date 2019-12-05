@@ -1636,16 +1636,16 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
                 "[fname]\n\t[Ctb] Saves pattern to file (ascii). Also executes pattern."); 
 
-    INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl, std::stoull,
+    INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl, stoulHex,
                     "[64 bit mask]\n\t[Ctb] 64 bit mask defining input (0) and output (1) signals.");
 
-    INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, std::stoull,
+    INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, stoulHex,
                     "[64 bit mask]\n\t[Ctb] 64 bit mask defining output clock enable.");
 
-    INTEGER_COMMAND_HEX(patmask, getPatternMask, setPatternMask, std::stoull,
+    INTEGER_COMMAND_HEX(patmask, getPatternMask, setPatternMask, stoulHex,
                     "[64 bit mask]\n\t[Ctb] 64 bit mask applied to every pattern. Only these bits for each pattern will be masked against.");
 
-    INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask, std::stoull,
+    INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask, stoulHex,
                     "[64 bit mask]\n\t[Ctb] 64 bit values applied to the selected patmask for every pattern.");                    
 
     /* Moench */

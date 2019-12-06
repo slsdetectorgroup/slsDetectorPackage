@@ -1,48 +1,12 @@
-#ifndef MOENCH03T1RECDATANEWRECT_H
-#define  MOENCH03T1RECDATANEWRECT_H
+#ifndef MOENCH03T1ZMQNEWRECT_H
+#define  MOENCH03T1ZMQNEWRECT_H
 #include "slsDetectorData.h"
 
 #define VERT 1
 
-    /**
-        @short  structure for a Detector Packet or Image Header
-        @li frameNumber is the frame number
-        @li expLength is the subframe number (32 bit eiger) or real time exposure time in 100ns (others)
-        @li packetNumber is the packet number
-        @li bunchId is the bunch id from beamline
-        @li timestamp is the time stamp with 10 MHz clock
-        @li modId is the unique module id (unique even for left, right, top, bottom)
-        @li xCoord is the x coordinate in the complete detector system
-        @li yCoord is the y coordinate in the complete detector system
-        @li zCoord is the z coordinate in the complete detector system
-        @li debug is for debugging purposes
-        @li roundRNumber is the round robin set number
-        @li detType is the detector type see :: detectorType
-        @li version is the version number of this structure format
-    */
-    typedef struct {
-        uint64_t frameNumber;    /**< is the frame number */
-        uint32_t expLength;        /**< is the subframe number (32 bit eiger) or real time exposure time in 100ns (others) */
-        uint32_t packetNumber;    /**< is the packet number */
-        uint64_t bunchId;        /**< is the bunch id from beamline */
-        uint64_t timestamp;        /**< is the time stamp with 10 MHz clock */
-        uint16_t modId;            /**< is the unique module id (unique even for left, right, top, bottom) */
-        uint16_t xCoord;        /**< is the x coordinate in the complete detector system */
-        uint16_t yCoord;        /**< is the y coordinate in the complete detector system */
-        uint16_t zCoord;        /**< is the z coordinate in the complete detector system */
-        uint32_t debug;            /**< is for debugging purposes */
-        uint16_t roundRNumber;    /**< is the round robin set number */
-        uint8_t detType;        /**< is the detector type see :: detectorType */
-        uint8_t version;        /**< is the version number of this structure format */
-#ifndef VERSION_V1
-      uint64_t packetCaught[8];        /**< is the version number of this structure format */
-#endif
-    } sls_detector_header;
 
 
-
-
-class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
+class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
  
  private:
   
@@ -51,10 +15,10 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
   int sc_width;
   int sc_height;
   const int nSamples;
+  const int offset;
 
 
  public:
-
 
 
 
@@ -65,11 +29,12 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 
   */
 #ifdef HOR
-    moench03T1ReceiverDataNew(int ns=5000): slsDetectorData<uint16_t>(800, 200, ns*2*32+sizeof(sls_detector_header)), nSamples(ns) {
+ moench03T1ZmqDataNew(int ns=5000): slsDetectorData<uint16_t>(800, 200, ns*2*32), nSamples(ns), offset(sizeof(int)) {
 #endif
 #ifdef VERT
-    moench03T1ReceiverDataNew(int ns=5000): slsDetectorData<uint16_t>(200, 800, ns*2*32+sizeof(sls_detector_header)), nSamples(ns) {
+   moench03T1ZmqDataNew(int ns=5000): slsDetectorData<uint16_t>(200, 800, ns*2*32), nSamples(ns), offset(sizeof(int)) {
 #endif
+
     int nadc=32;
     int sc_width=25;
     int sc_height=200;
@@ -111,11 +76,13 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 	    } else {
 	      row=200+i/sc_width;
 	    }
-	    pix=sizeof(sls_detector_header)+(nadc*i+iadc)*2;//+16*(ip+1);
-	    if (pix<0 || pix>=nSamples*2*32+sizeof(sls_detector_header))
-	      cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
+	    pix=(nadc*i+iadc)*2+offset;//+16*(ip+1);
+	    if (pix<0 || pix>=nSamples*2*32)
+	      cout << "Error: pointer " << pix << " out of range "<< endl;
 	    ix=col;
 	    iy=row;
+	    //col and row have to do with data sequence
+	    //ix and iy have to do with implant position
 #ifdef HOR
 	    if (row%2==off) {
 	      ix=2*col;
@@ -195,7 +162,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 
 
 
-  int getFrameNumber(char *buff){return ((sls_detector_header*)buff)->frameNumber;};//*((int*)(buff+5))&0xffffff;};   
+  int getFrameNumber(char *buff){return *((int*)buff);};//*((int*)(buff+5))&0xffffff;};   
 
   /**
 
@@ -206,7 +173,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 
 
   */
-  int getPacketNumber(char *buff){return ((sls_detector_header*)buff)->packetNumber;}//((*(((int*)(buff+4))))&0xff)+1;};   
+  int getPacketNumber(char *buff){return 0;}//((*(((int*)(buff+4))))&0xff)+1;};   
 
 /*    /\** */
 
@@ -261,7 +228,7 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
   };
 
   virtual char *readNextFrame(ifstream &filebin, int& ff, int &np) {
-	  char *data=new char[dataSize];
+	  char *data=new char[32*2*nSamples];
 	  char *d=readNextFrame(filebin, ff, np, data);
 	  if (d==NULL) {delete [] data; data=NULL;}
 	  return data;
@@ -271,24 +238,24 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 
 
   virtual char *readNextFrame(ifstream &filebin, int& ff, int &np, char *data) {
-	  char *retval=0;
-	  int  nd;
-	  int fnum = -1;
+	  /* char *retval=0; */
+	  /* int  nd; */
+	  /* int fnum = -1; */
 	  np=0;
-	  int  pn;
+	  /* int  pn; */
 	  
-	  //  cout << dataSize << endl;
-	  if (ff>=0)
-	    fnum=ff;
+
+	  /* if (ff>=0) */
+	  /*   fnum=ff; */
 
 	  if (filebin.is_open()) {
-	    if (filebin.read(data, dataSize) ){
-	      ff=getFrameNumber(data);
-	      np=getPacketNumber(data);
+	    if (filebin.read(data, 32*2*nSamples) ){
+	      // iframe++;
+	      //ff=iframe;
 	      return data;
 	    }
 	  }
-	    return NULL;
+	  return NULL;
 	    
 	    
 	  
@@ -306,15 +273,29 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
      
   */
   virtual  char *findNextFrame(char *data, int &ndata, int dsize){
-    if (dsize<dataSize) ndata=dsize;
-    else ndata=dataSize;
+    if (dsize<32*2*nSamples) ndata=dsize;
+    else ndata=32*2*nSamples;
     return data;
 
   }
+  
 
 
 
-  //int getPacketNumber(int x, int y) {return dataMap[y][x]/packetSize;};
+
+
+  // virtual int setFrameNumber(int ff){iframe=ff};
+
+
+
+
+
+
+
+
+
+
+int getPacketNumber(int x, int y) {return 0;};
 
 };
 
@@ -322,3 +303,4 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 
 
 #endif
+

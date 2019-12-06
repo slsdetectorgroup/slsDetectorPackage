@@ -105,7 +105,7 @@ public:
    { stop=0;  
      cout << "Detector number " << det->getId() << endl; 
      cout << "common mode is " << det->getCommonModeSubtraction()<< endl;
-     cout << "ghos summation is " << det->getGhostSummation()<< endl;
+     cout << "ghost summation is " << det->getGhostSummation()<< endl;
      return (pthread_create(&_thread, NULL, processData, this) == 0);
    }
 
@@ -123,7 +123,13 @@ public:
      return fifoFree->pop(ptr);
    }
 
-   virtual int isBusy() {return busy;}
+   virtual int isBusy() {
+     if (fifoData->isEmpty()) 
+       busy=0; 
+     else 
+       busy=1; 
+     return busy;
+   }
    
    //protected:
    /** Implement this method in your subclass with the code you want your thread to run. */
@@ -249,13 +255,13 @@ protected:
    }
 
    void * processData() {
-     busy=1;
+     // busy=1;
      while (!stop) {
        if (fifoData->isEmpty()) {
-	 busy=0;
+	 // busy=0;
 	 usleep(100);
        } else {
-	 busy=1;
+	 // busy=1;
 	 fifoData->pop(data); //blocking!
 	 det->processData(data);
 	 fifoFree->push(data); 

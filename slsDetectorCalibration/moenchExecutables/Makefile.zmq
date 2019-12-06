@@ -5,11 +5,13 @@ LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff   -O3 
 
 #DESTDIR?=../bin
 
-all:  moenchZmqProcess moenchZmqProcessHighZ
+all:  moenchZmqProcess moenchZmqProcessHighZ moenchZmqProcessRect
 
 moenchZmqProcess:  moenchZmqProcess.cpp   clean
 		      g++ -o moenchZmqProcess  moenchZmqProcess.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWZMQ -DINTERP
-
+moenchZmqProcessRect:  moenchZmqProcess.cpp   clean
+		      g++ -o moenchZmqProcessRect  moenchZmqProcess.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWZMQ -DINTERP -DRECT
+		      
 moenchZmqProcessHighZ:  moenchZmqProcess.cpp   clean
 		      g++ -o moenchZmqProcessHighZ  moenchZmqProcess.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWZMQ -DINTERP -DHIGHZ
 

@@ -7,7 +7,12 @@
 
 #include "sls_detector_defs.h"
 #include "ZmqSocket.h"
+#ifndef RECT
 #include "moench03T1ZmqDataNew.h"
+#endif
+#ifdef RECT
+#include "moench03T1ZmqDataNewRect.h"
+#endif
 #include "moench03GhostSummation.h"
 #include "moench03CommonMode.h"
 #include <vector> 

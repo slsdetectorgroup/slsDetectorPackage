@@ -14,7 +14,7 @@ using namespace std;
 //   }							
 //   }
 
-void *WriteToTiff(float * imgData, const char * imgname, int nrow, int ncol){
+void *WriteToTiff(float * imgData, const char * imgname, int ncol, int nrow){
   int sampleperpixel=1;
   // unsigned char * buff=NULL;
   //tsize_t linebytes;
@@ -43,7 +43,7 @@ void *WriteToTiff(float * imgData, const char * imgname, int nrow, int ncol){
   return NULL;
 };
 
-float *ReadFromTiff( const char * imgname, uint32 &nrow, uint32 &ncol){
+float *ReadFromTiff( const char * imgname, uint32 &ncol, uint32 &nrow){
   // unsigned char * buff=NULL;
 
   TIFF * tif = TIFFOpen(imgname,"r");

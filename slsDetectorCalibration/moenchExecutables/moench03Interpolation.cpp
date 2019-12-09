@@ -102,8 +102,8 @@ int main(int argc, char *argv[]) {
     int nSubPixels=nsubpix;
     int nSubPixelsY=nsubpix;
 #ifdef RECT
-    nSubPixelsY=1; //might make more sense using 2?
-    etabinsY=2;
+    nSubPixels=1; //might make more sense using 2?
+    etabins=2;
 #endif
 #ifndef NOINTERPOLATION
     eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(NC, NR, nSubPixels, nSubPixelsY, etabins, etabinsY, etamin, etamax);

@@ -227,10 +227,11 @@ FILE *getFilePointer(){return det->getFilePointer();};
    }
 
 
-   virtual int setNSubPixels(int ns)  { 
+   virtual void setNSubPixels(int ns, int nsy=-1) {
      slsInterpolation *interp=(det)->getInterpolation();
-     if (interp)  return interp->setNSubPixels(ns);
-     else return 1;};
+     if (interp) interp->setNSubPixels(ns, nsy);
+     //else return 1;
+   };
 
 
    virtual slsInterpolation *setInterpolation(slsInterpolation *f){

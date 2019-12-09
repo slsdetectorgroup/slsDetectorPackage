@@ -14,13 +14,21 @@
 #include "single_photon_hit.h"
 #endif
 
-//#include "etaInterpolationPosXY.h"
+#include "etaInterpolationPosXY.h"
 #include "noInterpolation.h"
-#include "etaInterpolationCleverAdaptiveBins.h"
+//#include "etaInterpolationCleverAdaptiveBins.h"
 //#include "etaInterpolationRandomBins.h"
 using namespace std;
+#ifndef RECT
 #define NC 400
 #define NR 400
+#endif
+#ifdef RECT
+#define NC 200
+#define NR 800
+#endif
+
+
 #define MAX_ITERATIONS (nSubPixels*100)
 
 #define XTALK
@@ -67,6 +75,7 @@ int main(int argc, char *argv[]) {
   cout << "Energy max: " << cmax << endl;
   //int etabins=500;
   int etabins=1000;//nsubpix*2*100;
+  int etabinsY=etabins;//nsubpix*2*100;
   double etamin=-1, etamax=2;
   //double etamin=-0.1, etamax=1.1;
   double eta3min=-2, eta3max=2;
@@ -90,14 +99,18 @@ int main(int argc, char *argv[]) {
 #ifndef DOUBLE_SPH
     single_photon_hit cl(3,3);
 #endif
-
     int nSubPixels=nsubpix;
+    int nSubPixelsY=nsubpix;
+#ifdef RECT
+    nSubPixelsY=1; //might make more sense using 2?
+    etabinsY=2;
+#endif
 #ifndef NOINTERPOLATION
-   eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(NC, NR, nsubpix, etabins, etamin, etamax);
+    eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(NC, NR, nSubPixels, nSubPixelsY, etabins, etabinsY, etamin, etamax);
    //eta2InterpolationCleverAdaptiveBins *interp=new eta2InterpolationCleverAdaptiveBins(NC, NR, nsubpix, etabins, etamin, etamax);  
 #endif
 #ifdef NOINTERPOLATION
-    noInterpolation *interp=new noInterpolation(NC, NR, nsubpix);  
+    noInterpolation *interp=new noInterpolation(NC, NR, nsubpix, nSubPixelsY);  
 #endif
 
 
@@ -116,12 +129,12 @@ int main(int argc, char *argv[]) {
 #endif
 
     int *img;
-    float *totimg=new float[NC*NR*nsubpix*nsubpix];
+    float *totimg=new float[NC*NR*nSubPixels*nSubPixelsY];
     for (ix=0; ix<NC; ix++) {
       for (iy=0; iy<NR; iy++) {
-	for (isx=0; isx<nsubpix; isx++) {
-	  for (isy=0; isy<nsubpix; isy++) {
-	    totimg[ix*nsubpix+isx+(iy*nsubpix+isy)*(NC*nsubpix)]=0;
+	for (isx=0; isx<nSubPixels; isx++) {
+	  for (isy=0; isy<nSubPixelsY; isy++) {
+	    totimg[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)]=0;
 	      }
 	}
       }
@@ -172,7 +185,7 @@ int main(int argc, char *argv[]) {
 	      // cout <<"**************"<< endl;
 	    //  if (etax!=0 && etay!=0 && etax!=1 && etay!=1)
 	    interp->addToImage(int_x, int_y);
-	    if (int_x<0 || int_y<0 || int_x>400 || int_y>400) {
+	    if (int_x<0 || int_y<0 || int_x>NC || int_y>NR) {
 	      cout <<"**************"<< endl;
 	      cout << cl.x << " " << cl.y << " " << sum << endl;
 	      cl.print();
@@ -220,9 +233,9 @@ int main(int argc, char *argv[]) {
 	img=interp->getInterpolatedImage();
 	for (ix=0; ix<NC; ix++) {
 	  for (iy=0; iy<NR; iy++) {
-	    for (isx=0; isx<nsubpix; isx++) {
-	      for (isy=0; isy<nsubpix; isy++) {
-		totimg[ix*nsubpix+isx+(iy*nsubpix+isy)*(NC*nsubpix)]+=img[ix*nsubpix+isx+(iy*nsubpix+isy)*(NC*nsubpix)];
+	    for (isx=0; isx<nSubPixels; isx++) {
+	      for (isy=0; isy<nSubPixelsY; isy++) {
+		totimg[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)]+=img[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)];
 		}
 	    }
 	  }
@@ -236,7 +249,7 @@ int main(int argc, char *argv[]) {
     }
 #ifndef FF
     sprintf(outfname,argv[3],11111);
-    WriteToTiff(totimg, outfname,NC*nsubpix,NR*nsubpix);
+    WriteToTiff(totimg, outfname,NC*nSubPixels,NR*nSubPixelsY);
 #endif 
     
 #ifdef FF

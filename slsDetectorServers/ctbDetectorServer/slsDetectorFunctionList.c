@@ -700,8 +700,9 @@ void setADCEnableMask_10G(uint32_t mask) {
         int ich = 0;
         for (ich = 0; ich < NCHAN_ANALOG; ich = ich + 4) {
             if ((1 << ich) & mask) {
-                actualMask |= (1 << ival++);
+                actualMask |= (1 << ival);
             }
+            ++ival;
         }
     }   
 

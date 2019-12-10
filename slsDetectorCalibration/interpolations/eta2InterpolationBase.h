@@ -195,11 +195,11 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
 	 ex=nbetaX-1;
        }
        if (ey<0) {
-	 cout << "y*"<< ey << endl;
+	 cout << "y*"<< ey << " " << nbetaY << endl;
 	 ey=0;
        } 
        if (ey>=nbetaY) {
-	 cout << "y?"<< ey << endl;
+	 cout << "y?"<< ey << " " << nbetaY << endl;
 	 ey=nbetaY-1;
        }
     

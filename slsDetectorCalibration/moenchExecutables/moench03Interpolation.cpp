@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
 #ifndef NOINTERPOLATION
     cout << "read ff " << argv[2] << endl;
     sprintf(fname,"%s",argv[2]);
-    interp->readFlatField(fname);
+    interp->readFlatField(fname, etamin, etamax);
     interp->prepareInterpolation(ok);//, MAX_ITERATIONS);
 #endif
     // return 0;
@@ -161,23 +161,20 @@ int main(int argc, char *argv[]) {
 	  totph++;
 	  if (lastframe!=cl.iframe) {
 	    lastframe=cl.iframe;
-	    // cout << cl.iframe << endl;
-	    // f0=cl.iframe;
 	    if (nframes==0) f0=lastframe;
 	    nframes++;
 	  }
-	  //quad=interp->calcQuad(cl.get_cluster(), sum, totquad, sDum);
 	  quad=interp->calcEta(cl.get_cluster(), etax, etay, sum, totquad, sDum);
 	    if (sum>cmin && totquad/sum>0.8 && totquad/sum<1.2 && sum<cmax ) {
-	    nph++;
+	      nph++;
 	    //  if (sum>200 && sum<580) {
 	    //  interp->getInterpolatedPosition(cl.x,cl.y, totquad,quad,cl.get_cluster(),int_x, int_y);
 // #ifdef SOLEIL
 // 	    if (cl.x>210 && cl.x<240 && cl.y>210 && cl.y<240) {
 // #endif
 #ifndef FF
-	    // interp->getInterpolatedPosition(cl.x,cl.y, cl.get_cluster(),int_x, int_y);  
-	    interp->getInterpolatedPosition(cl.x,cl.y, etax, etay, quad,int_x, int_y);
+	      // interp->getInterpolatedPosition(cl.x,cl.y, cl.get_cluster(),int_x, int_y);  
+	      interp->getInterpolatedPosition(cl.x,cl.y, etax, etay, quad,int_x, int_y);
 	      // cout <<"**************"<< endl;
 	      // cout << cl.x << " " << cl.y << " " << sum << endl;
 	      // cl.print();

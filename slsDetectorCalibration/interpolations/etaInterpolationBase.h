@@ -152,7 +152,7 @@ class etaInterpolationBase : public slsInterpolation {
     /*   return 0; */
     /* } */
     nbetaX=nnx;
-    nbetaY=nnx;
+    nbetaY=nny;
     if (gm) {
       if (heta) {
 	delete [] heta;

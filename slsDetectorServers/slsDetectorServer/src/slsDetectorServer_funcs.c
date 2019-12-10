@@ -2910,10 +2910,16 @@ int set_all_trimbits(int file_des) {
 
 	// set
 	if (arg >= 0 && Server_VerifyLock() == OK) {
-		ret = setAllTrimbits(arg);
-		//changes settings to undefined
-		setSettings(UNDEFINED);
-		FILE_LOG(logERROR, ("Settings has been changed to undefined (change all trimbits)\n"));
+		if (arg > 63) {
+			ret = FAIL;
+			strcpy(mess, "Cannot set all trimbits. Range: 0 - 63\n");
+			FILE_LOG(logERROR, (mess));
+		} else {
+			ret = setAllTrimbits(arg);
+			//changes settings to undefined
+			setSettings(UNDEFINED);
+			FILE_LOG(logERROR, ("Settings has been changed to undefined (change all trimbits)\n"));
+		}
 	}
 	// get
 	retval = getAllTrimbits();

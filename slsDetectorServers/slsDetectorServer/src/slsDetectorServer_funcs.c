@@ -1743,6 +1743,22 @@ int start_acquisition(int file_des) {
 	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	int mode = getReadoutMode();
+	int asamples = getNumAnalogSamples();
+	int dsamples = getNumDigitalSamples();
+	if ((mode == ANALOG_AND_DIGITAL || mode == ANALOG_ONLY) && (asamples <= 0)) {
+		ret = FAIL;
+		sprintf(mess, "Could not start acquisition. Invalid number of analog samples: %d.\n", asamples);
+		FILE_LOG(logERROR,(mess));	
+	}
+	else if ((mode == ANALOG_AND_DIGITAL || mode == DIGITAL_ONLY) && (dsamples <= 0)) {
+		ret = FAIL;
+		sprintf(mess, "Could not start acquisition. Invalid number of digital samples: %d.\n", dsamples);
+		FILE_LOG(logERROR,(mess));	
+	}
+	else
+#endif
 #ifdef EIGERD
 		// check for hardware mac and hardware ip
 		if (udpDetails.srcmac != getDetectorMAC()) {
@@ -1861,6 +1877,22 @@ int start_and_read_all(int file_des) {
 	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	int mode = getReadoutMode();
+	int asamples = getNumAnalogSamples();
+	int dsamples = getNumDigitalSamples();
+	if ((mode == ANALOG_AND_DIGITAL || mode == ANALOG_ONLY) && (asamples <= 0)) {
+		ret = FAIL;
+		sprintf(mess, "Could not start acquisition. Invalid number of analog samples: %d.\n", asamples);
+		FILE_LOG(logERROR,(mess));	
+	}
+	else if ((mode == ANALOG_AND_DIGITAL || mode == DIGITAL_ONLY) && (dsamples <= 0)) {
+		ret = FAIL;
+		sprintf(mess, "Could not start acquisition. Invalid number of digital samples: %d.\n", dsamples);
+		FILE_LOG(logERROR,(mess));	
+	}
+	else
+#endif
 #ifdef EIGERD
 		// check for hardware mac and hardware ip
 		if (udpDetails.srcmac != getDetectorMAC()) {

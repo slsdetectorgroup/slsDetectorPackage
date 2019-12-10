@@ -1008,82 +1008,90 @@ int multiSlsDetector::acquire() {
         return FAIL;
     }
 
-    struct timespec begin, end;
-    clock_gettime(CLOCK_REALTIME, &begin);
+    try {
+        struct timespec begin, end;
+        clock_gettime(CLOCK_REALTIME, &begin);
 
-    // in the real time acquisition loop, processing thread will wait for a post
-    // each time
-    sem_init(&sem_newRTAcquisition, 1, 0);
-    // in the real time acquistion loop, main thread will wait for processing
-    // thread to be done each time (which in turn waits for receiver/ext
-    // process)
-    sem_init(&sem_endRTAcquisition, 1, 0);
+        // in the real time acquisition loop, processing thread will wait for a post
+        // each time
+        sem_init(&sem_newRTAcquisition, 1, 0);
+        // in the real time acquistion loop, main thread will wait for processing
+        // thread to be done each time (which in turn waits for receiver/ext
+        // process)
+        sem_init(&sem_endRTAcquisition, 1, 0);
 
-    bool receiver = Parallel(&slsDetector::getUseReceiverFlag, {}).squash(false);
-    progressIndex = 0;
-    setJoinThreadFlag(false);
+        bool receiver = Parallel(&slsDetector::getUseReceiverFlag, {}).squash(false);
+        progressIndex = 0;
+        setJoinThreadFlag(false);
 
-    // verify receiver is idle
-    if (receiver) {
-        if (Parallel(&slsDetector::getReceiverStatus, {}).squash(ERROR) != IDLE) {
+        // verify receiver is idle
+        if (receiver) {
+            if (Parallel(&slsDetector::getReceiverStatus, {}).squash(ERROR) != IDLE) {
+                Parallel(&slsDetector::stopReceiver, {});
+            }
+        }
+        setTotalProgress();
+
+        startProcessingThread();
+
+        // start receiver
+        if (receiver) {
+            Parallel(&slsDetector::startReceiver, {});
+            // let processing thread listen to these packets
+            sem_post(&sem_newRTAcquisition);
+        }
+
+        // start and read all
+        try {
+            if (multi_shm()->multiDetectorType == EIGER) {
+                Parallel(&slsDetector::prepareAcquisition, {});
+            }
+            Parallel(&slsDetector::startAndReadAll, {});
+        } catch (...) {
             Parallel(&slsDetector::stopReceiver, {});
+            throw;
         }
-    }
-    setTotalProgress();
 
-    startProcessingThread();
+        // stop receiver
+        if (receiver) {
+            Parallel(&slsDetector::stopReceiver, {});
+            if (dataReady != nullptr) {
+                sem_wait(&sem_endRTAcquisition); // waits for receiver's
+            }
+            // external process to be
+            // done sending data to gui
 
-    // start receiver
-    if (receiver) {
-        Parallel(&slsDetector::startReceiver, {});
-        // let processing thread listen to these packets
+            Parallel(&slsDetector::incrementFileIndex, {});
+        }
+
+        // waiting for the data processing thread to finish!
+        setJoinThreadFlag(true);
         sem_post(&sem_newRTAcquisition);
-    }
+        dataProcessingThread.join();
 
-    // start and read all
-    if (multi_shm()->multiDetectorType == EIGER) {
-        Parallel(&slsDetector::prepareAcquisition, {});
-    }
-    Parallel(&slsDetector::startAndReadAll, {});
-
-    // stop receiver
-    if (receiver) {
-        Parallel(&slsDetector::stopReceiver, {});
-        if (dataReady != nullptr) {
-            sem_wait(&sem_endRTAcquisition); // waits for receiver's
+        if (acquisition_finished != nullptr) {
+            // same status for all, else error
+            int status = static_cast<int>(ERROR);
+            auto t = Parallel(&slsDetector::getRunStatus, {});
+            if (t.equal())
+                status = t.front();
+            acquisition_finished(getCurrentProgress(), status,
+                                acqFinished_p);
         }
-        // external process to be
-        // done sending data to gui
 
-        Parallel(&slsDetector::incrementFileIndex, {});
+        sem_destroy(&sem_newRTAcquisition);
+        sem_destroy(&sem_endRTAcquisition);
+
+        clock_gettime(CLOCK_REALTIME, &end);
+        FILE_LOG(logDEBUG1) << "Elapsed time for acquisition:"
+                            << ((end.tv_sec - begin.tv_sec) +
+                                (end.tv_nsec - begin.tv_nsec) / 1000000000.0)
+                            << " seconds";
+    } catch (...) {
+        setAcquiringFlag(false);
+        throw;
     }
-
-    // waiting for the data processing thread to finish!
-    setJoinThreadFlag(true);
-    sem_post(&sem_newRTAcquisition);
-    dataProcessingThread.join();
-
-    if (acquisition_finished != nullptr) {
-        // same status for all, else error
-        int status = static_cast<int>(ERROR);
-        auto t = Parallel(&slsDetector::getRunStatus, {});
-        if (t.equal())
-            status = t.front();
-        acquisition_finished(getCurrentProgress(), status,
-                             acqFinished_p);
-    }
-
-    sem_destroy(&sem_newRTAcquisition);
-    sem_destroy(&sem_endRTAcquisition);
-
-    clock_gettime(CLOCK_REALTIME, &end);
-    FILE_LOG(logDEBUG1) << "Elapsed time for acquisition:"
-                        << ((end.tv_sec - begin.tv_sec) +
-                            (end.tv_nsec - begin.tv_nsec) / 1000000000.0)
-                        << " seconds";
-
     setAcquiringFlag(false);
-
     return OK;
 }
 

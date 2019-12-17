@@ -14,7 +14,12 @@
 #include "single_photon_hit.h"
 #endif
 
+#ifdef RECT
+#include "etaInterpolationGlobal.h"
+#endif
+#ifndef RECT
 #include "etaInterpolationPosXY.h"
+#endif
 #include "noInterpolation.h"
 //#include "etaInterpolationCleverAdaptiveBins.h"
 //#include "etaInterpolationRandomBins.h"
@@ -36,6 +41,7 @@ using namespace std;
 int main(int argc, char *argv[]) {
 
 #ifndef FF
+  cout << "INTERPOLATING" << endl;
   if (argc<9) {
     cout << "Wrong usage! Should be: "<< argv[0] << " infile  etafile outfile runmin runmax ns cmin cmax" << endl;
     return 1;
@@ -43,6 +49,7 @@ int main(int argc, char *argv[]) {
 #endif
   
 #ifdef FF
+  cout << "CALC ETA" << endl;
   if (argc<7) {
     cout << "Wrong usage! Should be: "<< argv[0] << " infile  etafile runmin runmax cmin cmax" << endl;
     return 1;
@@ -74,11 +81,11 @@ int main(int argc, char *argv[]) {
   cout << "Energy min: " << cmin << endl;
   cout << "Energy max: " << cmax << endl;
   //int etabins=500;
-  int etabins=1000;//nsubpix*2*100;
+  int etabins=999;//nsubpix*2*100;
   int etabinsY=etabins;//nsubpix*2*100;
-  double etamin=-1, etamax=2;
+  double etamin=0, etamax=1;
   //double etamin=-0.1, etamax=1.1;
-  double eta3min=-2, eta3max=2;
+  double eta3min=-1, eta3max=1;
   int quad;
   double sum, totquad;
   double sDum[2][2];
@@ -92,6 +99,9 @@ int main(int argc, char *argv[]) {
   int nph=0, badph=0, totph=0;
     FILE *f=NULL;
 
+
+    char fff[10000];
+
 #ifdef DOUBLE_SPH
     single_photon_hit_double cl(3,3);
 #endif
@@ -102,12 +112,23 @@ int main(int argc, char *argv[]) {
     int nSubPixels=nsubpix;
     int nSubPixelsY=nsubpix;
 #ifdef RECT
-    nSubPixels=1; //might make more sense using 2?
-    etabins=2;
+    nSubPixels=5; //might make more sense using 2?
+    // etabins=5;
 #endif
 #ifndef NOINTERPOLATION
-    eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(NC, NR, nSubPixels, nSubPixelsY, etabins, etabinsY, etamin, etamax);
+    etaInterpolationBase *interp;
+#ifndef RECT
+    interp=new eta2InterpolationPosXY(NC, NR, nSubPixels, nSubPixelsY, etabins, etabinsY, etamin, etamax);
    //eta2InterpolationCleverAdaptiveBins *interp=new eta2InterpolationCleverAdaptiveBins(NC, NR, nsubpix, etabins, etamin, etamax);  
+#endif
+#ifdef RECT
+    interp=new eta2InterpolationGlobal(NC, NR, nSubPixels, nSubPixelsY, etabins, etabinsY, eta3min, eta3max);
+ 
+    //  eta3InterpolationPosXY *interpOdd=new eta3InterpolationPosXY(NC, NR, nSubPixels, nSubPixelsY, etabins, etabinsY, eta3min, eta3max);
+   //eta2InterpolationCleverAdaptiveBins *interp=new eta2InterpolationCleverAdaptiveBins(NC, NR, nsubpix, etabins, etamin, etamax);  
+ 
+#endif
+
 #endif
 #ifdef NOINTERPOLATION
     noInterpolation *interp=new noInterpolation(NC, NR, nsubpix, nSubPixelsY);  
@@ -119,8 +140,21 @@ int main(int argc, char *argv[]) {
 #ifndef NOINTERPOLATION
     cout << "read ff " << argv[2] << endl;
     sprintf(fname,"%s",argv[2]);
+    //#ifndef RECT
     interp->readFlatField(fname, etamin, etamax);
     interp->prepareInterpolation(ok);//, MAX_ITERATIONS);
+    interp->debugSaveAll(0);
+    //#endif
+// #ifdef RECT
+//     sprintf(fff,"%s.even",fname);
+//     interpEven->readFlatField(fff, etamin, etamax);
+//     interpEven->prepareInterpolation(ok);, MAX_ITERATIONS);
+//     interpEven->debugSaveAll(1);
+//     sprintf(fff,"%s.odd",fname);
+//     interpOdd->readFlatField(fff, etamin, etamax);
+//     interpOdd->prepareInterpolation(ok);, MAX_ITERATIONS);
+//     interpOdd->debugSaveAll(2);
+// #endif
 #endif
     // return 0;
 #endif
@@ -143,6 +177,9 @@ int main(int argc, char *argv[]) {
 #ifdef FF
       sprintf(outfname,argv[2]);
 #endif     
+ 
+
+      int tl=0, tr=0, bl=0, br=0;
 
     int irun;
     for (irun=runmin; irun<runmax; irun++) {
@@ -164,53 +201,80 @@ int main(int argc, char *argv[]) {
 	    if (nframes==0) f0=lastframe;
 	    nframes++;
 	  }
+#ifdef RECT
+	  //	  quad=interp->calcEta3(cl.get_cluster(), etax, etay, sum);  
 	  quad=interp->calcEta(cl.get_cluster(), etax, etay, sum, totquad, sDum);
-	    if (sum>cmin && totquad/sum>0.8 && totquad/sum<1.2 && sum<cmax ) {
+	  // if (cl.y%2==0)
+	  //   if (etay>0)
+	  //     interp=interpEven;
+	  //   else
+	  //     interp=interpOdd;
+	  // else
+	  //   if (etay>0)
+	  //     interp=interpOdd;
+	  //   else
+	  //     interp=interpEven;
+	  
+#endif
+
+#ifndef RECT
+	  quad=interp->calcEta(cl.get_cluster(), etax, etay, sum, totquad, sDum);
+
+	
+#endif
+	  switch(quad) {
+	  case TOP_LEFT:
+	    tl++;
+	    break;
+	  case TOP_RIGHT:
+	    tr++;
+	    break;
+	  case BOTTOM_LEFT:
+	    bl++;
+	    break;
+	  case BOTTOM_RIGHT:
+	    br++;
+	    break;
+	  }
+	  //  if (sum>cmin && totquad/sum>0.8 && totquad/sum<1.2 && sum<cmax ) {
+	  if (sum>cmin &&  sum<cmax ) {
 	      nph++;
-	    //  if (sum>200 && sum<580) {
-	    //  interp->getInterpolatedPosition(cl.x,cl.y, totquad,quad,cl.get_cluster(),int_x, int_y);
-// #ifdef SOLEIL
-// 	    if (cl.x>210 && cl.x<240 && cl.y>210 && cl.y<240) {
-// #endif
-#ifndef FF
-	      // interp->getInterpolatedPosition(cl.x,cl.y, cl.get_cluster(),int_x, int_y);  
+#ifndef FF 
 	      interp->getInterpolatedPosition(cl.x,cl.y, etax, etay, quad,int_x, int_y);
-	      // cout <<"**************"<< endl;
-	      // cout << cl.x << " " << cl.y << " " << sum << endl;
-	      // cl.print();
-	      // cout << int_x << " " << int_y << endl;
-	      // cout <<"**************"<< endl;
-	    //  if (etax!=0 && etay!=0 && etax!=1 && etay!=1)
 	    interp->addToImage(int_x, int_y);
-	    if (int_x<0 || int_y<0 || int_x>NC || int_y>NR) {
-	      cout <<"**************"<< endl;
-	      cout << cl.x << " " << cl.y << " " << sum << endl;
-	      cl.print();
-	      cout << int_x << " " << int_y << endl;
-	      cout <<"**************"<< endl;
-	    }
 #endif
 #ifdef FF
-	    //	interp->addToFlatField(cl.get_cluster(), etax, etay);
-// #ifdef UCL
-// 	    if (cl.x>50)
-// #endif
-// 	    if (etax!=0 && etay!=0 && etax!=1 && etay!=1)
 	      interp->addToFlatField(etax, etay);
-	    //  if (etax==0 || etay==0) cout << cl.x << " " << cl.y << endl;
-	     
 #endif
-// #ifdef SOLEIL
-// 	    }
-// #endif
 	    
 	    if (nph%1000000==0) cout << nph << endl;
 	    if (nph%10000000==0) { 
 #ifndef FF
-		interp->writeInterpolatedImage(outfname);
+	      
+	      cout << "writing interpolated iamge" << endl;
+	      //#ifndef RECT
+	interp->writeInterpolatedImage(outfname); 
+	//#endif
+// #ifdef RECT
+// 	sprintf(fff,"%s.even",outfname);
+// 	interpEven->writeInterpolatedImage(fff); 
+// 	sprintf(fff,"%s.odd",outfname);
+// 	interpOdd->writeInterpolatedImage(fff); 
+// #endif
+		cout << "done" << endl;
 #endif
 #ifdef FF 
-		interp->writeFlatField(outfname);
+		cout << "writing eta" << endl;
+		//#ifndef RECT
+	interp->writeFlatField(outfname);
+	//#endif
+// #ifdef RECT
+// 	sprintf(fff,"%s.even",outfname);
+// 	interpEven->writeFlatField(fff);
+// 	sprintf(fff,"%s.odd",outfname);
+// 	interpOdd->writeFlatField(fff);
+// #endif
+		cout << "done" << endl;
 #endif
 		
 		}
@@ -221,24 +285,64 @@ int main(int argc, char *argv[]) {
 	  
 	fclose(f);
 #ifdef FF
+	//#ifndef RECT
 	interp->writeFlatField(outfname);
+// #endif
+// #ifdef RECT
+// 	sprintf(fff,"%s.even",outfname);
+// 	interpEven->writeFlatField(outfname);
+// 	sprintf(fff,"%s.odd",outfname);
+// 	interpOdd->writeFlatField(outfname);
+// #endif
 #endif
 	
 #ifndef FF
+	  //#ifndef RECT
 	interp->writeInterpolatedImage(outfname); 
+// #endif
+// #ifdef RECT
+// 	sprintf(fff,"%s.even",outfname);
+// 	interpEven->writeInterpolatedImage(fff); 
+// 	sprintf(fff,"%s.odd",outfname);
+// 	interpOdd->writeInterpolatedImage(fff); 
+// #endif
 
+//#ifdef RECT
+	  //interp=interpEven;
+	//#endif
 	img=interp->getInterpolatedImage();
 	for (ix=0; ix<NC; ix++) {
 	  for (iy=0; iy<NR; iy++) {
 	    for (isx=0; isx<nSubPixels; isx++) {
 	      for (isy=0; isy<nSubPixelsY; isy++) {
 		totimg[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)]+=img[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)];
+		//	cout << "--" << ix << " " << iy <<" " << ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels) << endl;
 		}
 	    }
 	  }
 	}
 	cout << "Read " << nframes << " frames (first frame: " << f0 << " last frame: " << lastframe << " delta:" << lastframe-f0 << ") nph="<< nph <<endl;
+	cout << "Top-Left=" << tl << " " << " Top-Right=" << tr << " Bottom-Left="<< bl << " Bottom-Right=" << br << endl;
 	interp->clearInterpolatedImage();
+// #ifdef RECT
+
+// 	interp=interpOdd;
+// 	img=interp->getInterpolatedImage();
+// 	for (ix=0; ix<NC; ix++) {
+// 	  for (iy=0; iy<NR; iy++) {
+// 	    for (isx=0; isx<nSubPixels; isx++) {
+// 	      for (isy=0; isy<nSubPixelsY; isy++) {
+// 		totimg[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)]+=img[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)];
+// 		//	cout << "--" << ix << " " << iy <<" " << ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels) << endl;
+// 		}
+// 	    }
+// 	  }
+// 	}
+
+// 	interp->clearInterpolatedImage();
+// #endif
+
+
 #endif
 	
       } else
@@ -250,7 +354,15 @@ int main(int argc, char *argv[]) {
 #endif 
     
 #ifdef FF
+    //#ifndef RECT
 	interp->writeFlatField(outfname);
+	//#endif
+// #ifdef RECT
+// 	sprintf(fff,"%s.even",outfname);
+// 	interpEven->writeFlatField(fff);
+// 	sprintf(fff,"%s.odd",outfname);
+// 	interpOdd->writeFlatField(fff);
+// #endif
 #endif
 
     cout << "Filled " << nph << " (/"<< totph <<") " << endl; 

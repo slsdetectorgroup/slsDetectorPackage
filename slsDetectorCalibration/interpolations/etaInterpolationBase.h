@@ -12,6 +12,19 @@
 #include "tiffIO.h"
 
 class etaInterpolationBase : public slsInterpolation {
+
+ protected:
+  float *hhx;
+  float *hhy;
+  int *heta;
+  int nbetaX, nbetaY;
+  double etamin, etamax, etastepX, etastepY;
+  double rangeMin, rangeMax;
+  
+  
+  
+  double *flat;
+  int *hintcorr;
   
  public:
  
@@ -190,19 +203,10 @@ float *gethhx()
     // hhy->Scale((double)nSubPixels);
     return hhy;
     };
-  virtual int addToFlatField(double etax, double etay){
-    int ex,ey; 
-    ex=(etax-etamin)/etastepX;
-    ey=(etay-etamin)/etastepY;
-    if (ey<nbetaY && ex<nbetaX && ex>=0 && ey>=0)
-      heta[ey*nbetaX+ex]++; 
-    return 0;    
-  };
-  
-  
-  // virtual void prepareInterpolation(int &ok)=0;
 
 
+  
+  
   void debugSaveAll(int ind=0) {
     int  ibx, iby;
    char tit[10000];
@@ -223,15 +227,15 @@ float *gethhx()
 
 
   for (int ii=0; ii<nbetaX*nbetaY; ii++) {
-    ibb=(hhx[ii]*nSubPixelsX);
-    etah[ii]=ibb;
+    //ibb=hhx[ii];//*nSubPixelsX);
+    etah[ii]=hhx[ii];
   }
   sprintf(tit,"/scratch/eta_hhx_%d.tiff",ind);
   WriteToTiff(etah, tit, nbetaX, nbetaY);
 	  
   for (int ii=0; ii<nbetaX*nbetaY; ii++) {
-    ibb=hhy[ii]*nSubPixelsY;
-    etah[ii]=ibb;
+    //ibb=hhy[ii];//*nSubPixelsY;
+    etah[ii]=hhy[ii];
   }
   sprintf(tit,"/scratch/eta_hhy_%d.tiff",ind);
   WriteToTiff(etah, tit, nbetaX, nbetaY);
@@ -290,6 +294,37 @@ float *gethhx()
   delete [] etah;
 
   }
+
+  virtual int *getInterpolatedImage(){ 
+  
+   /* int ipx, ipy; */
+   /* // cout << "ff" << endl; */
+   /* calcDiff(1, hhx, hhy); //get flat */
+   /* double avg=0; */
+   /* for (ipx=0; ipx<nSubPixelsX; ipx++) */
+   /*   for (ipy=0; ipy<nSubPixelsY; ipy++) */
+   /*     avg+=flat[ipx+ipy*nSubPixelsX]; */
+   /* avg/=nSubPixelsY*nSubPixelsX; */
+
+   /* for (int ibx=0 ; ibx<nSubPixelsX*nPixelsX; ibx++) { */
+   /*   ipx=ibx%nSubPixelsX-nSubPixelsX/2; */
+   /*     if (ipx<0) ipx=nSubPixelsX+ipx; */
+   /*   for (int iby=0 ; iby<nSubPixelsY*nPixelsY; iby++) { */
+   /*     ipy=iby%nSubPixelsY-nSubPixelsY/2; */
+   /*   if (ipy<0) ipy=nSubPixelsY+ipy; */
+   /*   // cout << ipx << " " << ipy << " " << ibx << " " << iby << endl; */
+   /*   if (flat[ipx+ipy*nSubPixelsX]>0) */
+   /*     hintcorr[ibx+iby*nSubPixelsX*nPixelsX]=hint[ibx+iby*nSubPixelsX*nPixelsX]*(avg/flat[ipx+ipy*nSubPixelsX]); */
+   /*   else */
+   /*     hintcorr[ibx+iby*nSubPixelsX*nPixelsX]=hint[ibx+iby*nSubPixelsX*nPixelsX]; */
+   /*   } */
+   /* } */
+
+
+      return hint;
+  /*   return hintcorr; */
+   }; 
+
 
 
  protected:
@@ -363,19 +398,575 @@ float *gethhx()
     return sqrt(diff);
   }
   
-  float *hhx;
-  float *hhy;
-  int *heta;
-  int nbetaX, nbetaY;
-  double etamin, etamax, etastepX, etastepY;
-  double rangeMin, rangeMax;
+
+};
 
 
 
-  double *flat;
-  int *hintcorr;
+
+class eta2InterpolationBase : public virtual etaInterpolationBase {
+  
+ public:
+ eta2InterpolationBase(int nx=400, int ny=400, int ns=25, int nsy=25, int nb=-1, int nby=-1, double emin=1, double emax=0) :  etaInterpolationBase(nx,ny, ns, nsy, nb, nby, emin, emax) {
+    
+   
+    
+  };
+  
+ eta2InterpolationBase(eta2InterpolationBase *orig): etaInterpolationBase(orig){ };
+
+ 
+  //////////////////////////////////////////////////////////////////////////////
+  //////////// /*It return position hit for the event in input */ //////////////
+  virtual void getInterpolatedPosition(int x, int y, int *data, double &int_x, double &int_y)
+  {
+    double sDum[2][2];
+    double tot, totquad;
+    double etax=0,etay=0;
+    
+    int corner;
+    corner=calcQuad(data, tot, totquad, sDum); 
+    if (nSubPixelsX>2 || nSubPixelsY>2) 
+      calcEta(totquad, sDum, etax, etay); 
+    getInterpolatedPosition(x,y,etax,etay,corner,int_x,int_y);
+
+    return;
+  };
   
 
+  virtual void getInterpolatedPosition(int x, int y, double *data, double &int_x, double &int_y)
+  {
+    double sDum[2][2];
+    double tot, totquad;
+    double etax=0,etay=0;
+    
+    int corner;
+    corner=calcQuad(data, tot, totquad, sDum); 
+    if (nSubPixelsX>2 || nSubPixelsY>2  ) 
+      calcEta(totquad, sDum, etax, etay); 
+    getInterpolatedPosition(x,y,etax,etay,corner,int_x,int_y);
+
+    return;
+  };
+  
+  virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,double *cl,double &int_x, double &int_y) {
+    
+     double cc[2][2];
+     int xoff=0, yoff=0;
+     switch (quad) {
+     case BOTTOM_LEFT:
+       xoff=0;
+       yoff=0;
+       break;
+     case BOTTOM_RIGHT:
+       xoff=1;
+       yoff=0;
+       break;
+     case TOP_LEFT:
+       xoff=0;
+       yoff=1;
+       break;
+     case TOP_RIGHT:
+       xoff=1;
+       yoff=1;
+       break;
+     default:
+       ;
+     } 
+     double etax=0, etay=0;
+     if (nSubPixelsX>2 || nSubPixelsY>2) { 
+       cc[0][0]=cl[xoff+3*yoff];
+       cc[1][0]=cl[xoff+3*(yoff+1)];
+       cc[0][1]=cl[xoff+1+3*yoff];
+       cc[1][1]=cl[xoff+1+3*(yoff+1)];
+       calcEta(totquad,cc,etax,etay);
+     }
+     
+     return getInterpolatedPosition(x,y,etax, etay,quad,int_x,int_y);
+
+  }
+
+
+
+  virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,int *cl,double &int_x, double &int_y) {
+    
+     double cc[2][2];
+     int xoff=0, yoff=0;
+     
+     switch (quad) {
+     case BOTTOM_LEFT:
+       xoff=0;
+       yoff=0;
+       break;
+     case BOTTOM_RIGHT:
+       xoff=1;
+       yoff=0;
+       break;
+     case TOP_LEFT:
+       xoff=0;
+       yoff=1;
+       break;
+     case TOP_RIGHT:
+       xoff=1;
+       yoff=1;
+       break;
+     default:
+       ;
+     } 
+     double etax=0, etay=0;
+     if (nSubPixelsX>2 || nSubPixelsY>2) { 
+       cc[0][0]=cl[xoff+3*yoff];
+       cc[1][0]=cl[xoff+3*(yoff+1)];
+       cc[0][1]=cl[xoff+1+3*yoff];
+       cc[1][1]=cl[xoff+1+3*(xoff+1)];
+       calcEta(totquad,cc,etax,etay);
+     }
+     return getInterpolatedPosition(x,y,etax, etay,quad,int_x,int_y);
+
+  }
+
+  virtual void getInterpolatedPosition(int x, int y, double etax, double etay, int corner, double &int_x, double &int_y)
+  {
+
+
+    double xpos_eta=0,ypos_eta=0;
+    double dX,dY;
+    int ex,ey;
+    switch (corner)
+      {
+      case TOP_LEFT:
+	dX=-1.;
+	dY=0;
+	break;
+      case TOP_RIGHT:
+	;
+	dX=0;
+	dY=0;
+	break;
+      case BOTTOM_LEFT:
+	dX=-1.;
+	dY=-1.;
+	break;
+      case BOTTOM_RIGHT:
+	dX=0;
+	dY=-1.;
+	break;
+      default:
+	cout << "bad quadrant" << endl;
+	dX=0.; 
+	dY=0.;
+      }
+    
+
+     if (nSubPixelsX>2 || nSubPixelsY>2 ) { 
+
+       ex=(etax-etamin)/etastepX;
+       ey=(etay-etamin)/etastepY;
+       if (ex<0) {
+	 cout << "x*"<< ex << endl;
+	 ex=0;
+       } 
+       if (ex>=nbetaX) {
+	 cout << "x?"<< ex << endl;
+	 ex=nbetaX-1;
+       }
+       if (ey<0) {
+	 cout << "y*"<< ey << " " << nbetaY << endl;
+	 ey=0;
+       } 
+       if (ey>=nbetaY) {
+	 cout << "y?"<< ey << " " << nbetaY << endl;
+	 ey=nbetaY-1;
+       }
+    
+    
+   
+       xpos_eta=(((double)hhx[(ey*nbetaX+ex)]));
+       ypos_eta=(((double)hhy[(ey*nbetaX+ex)]));
+       
+       
+     if (xpos_eta<0 || xpos_eta>1)
+       xpos_eta=-100;
+     else
+       xpos_eta+=dX ;///((double)nSubPixels);
+
+     if (ypos_eta<0 || ypos_eta>1)
+       ypos_eta=-100;
+     else
+       ypos_eta+=dY ;///((double)nSubPixels);
+       
+     } else {
+       xpos_eta=0.5*dX+0.25;
+       ypos_eta=0.5*dY+0.25;
+     }
+     
+  
+     if (xpos_eta<-1)
+       int_x=-100;
+     else
+       int_x=((double)x) + xpos_eta+0.5;
+
+     if (ypos_eta<-1)
+       int_y=-100;
+     else 
+       int_y=((double)y) +  ypos_eta+0.5;
+           
+    
+     
+
+  }
+  
+
+  
+  virtual int addToFlatField(double totquad,int quad,int *cl,double &etax, double &etay) {
+     double cc[2][2];
+     int xoff=0, yoff=0;
+     
+     switch (quad) {
+     case BOTTOM_LEFT:
+       xoff=0;
+       yoff=0;
+       break;
+     case BOTTOM_RIGHT:
+       xoff=1;
+       yoff=0;
+       break;
+     case TOP_LEFT:
+       xoff=0;
+       yoff=1;
+       break;
+     case TOP_RIGHT:
+       xoff=1;
+       yoff=1;
+       break;
+     default:
+       ;
+     } 
+     cc[0][0]=cl[xoff+3*yoff];
+     cc[1][0]=cl[xoff+3*(yoff+1)];
+     cc[0][1]=cl[xoff+1+3*yoff];
+     cc[1][1]=cl[xoff+1+3*(yoff+1)];
+     
+     //calcMyEta(totquad,quad,cl,etax, etay);
+     calcEta(totquad, cc,etax, etay);
+
+     //     cout <<"******"<< etax << " " << etay << endl;
+
+
+     return addToFlatField(etax,etay);
+   }
+
+   virtual int addToFlatField(double totquad,int quad,double *cl,double &etax, double &etay) {
+     double cc[2][2];
+     int xoff=0, yoff=0;
+     
+     switch (quad) {
+     case BOTTOM_LEFT:
+       xoff=0;
+       yoff=0;
+       break;
+     case BOTTOM_RIGHT:
+       xoff=1;
+       yoff=0;
+       break;
+     case TOP_LEFT:
+       xoff=0;
+       yoff=1;
+       break;
+     case TOP_RIGHT:
+       xoff=1;
+       yoff=1;
+       break;
+     default:
+       ;
+     } 
+     cc[0][0]=cl[xoff+3*yoff];
+     cc[1][0]=cl[(yoff+1)*3+xoff];
+     cc[0][1]=cl[yoff*3+xoff+1];
+     cc[1][1]=cl[(yoff+1)*3+xoff+1];
+     
+      /* cout << cl[0] << " " << cl[1] << " " << cl[2] << endl;   */
+      /* cout << cl[3] << " " << cl[4] << " " << cl[5] << endl;   */
+      /* cout << cl[6] << " " << cl[7] << " " << cl[8] << endl;   */
+      /* cout <<"******"<<totquad << " " << quad << endl;  */
+      /* cout << cc[0][0]<< " " << cc[0][1] << endl;  */
+      /* cout << cc[1][0]<< " " << cc[1][1] << endl;  */
+     //calcMyEta(totquad,quad,cl,etax, etay);
+     calcEta(totquad, cc,etax, etay);
+
+     //     cout <<"******"<< etax << " " << etay << endl;
+
+
+     return addToFlatField(etax,etay);
+   }
+
+
+
+  //////////////////////////////////////////////////////////////////////////////////////
+  virtual int addToFlatField(double *cluster, double &etax, double &etay){
+    double sDum[2][2];
+    double tot, totquad;
+    // int corner;
+    //corner=
+    calcQuad(cluster, tot, totquad, sDum); 
+    
+    //double xpos_eta,ypos_eta;
+    //double dX,dY;
+  
+    
+    calcEta(totquad, sDum, etax, etay); 
+   
+    return addToFlatField(etax,etay);
+
+    };
+
+  virtual int addToFlatField(int *cluster, double &etax, double &etay){
+    double sDum[2][2];
+    double tot, totquad;
+    //int corner;
+    //corner=
+    calcQuad(cluster, tot, totquad, sDum); 
+    
+    // double xpos_eta,ypos_eta;
+    //double dX,dY;
+  
+    
+    calcEta(totquad, sDum, etax, etay); 
+   
+    return addToFlatField(etax,etay);
+
+    };
+
+
+  virtual int addToFlatField(double etax, double etay){
+#ifdef MYROOT1
+    heta->Fill(etax,etay);
+#endif
+#ifndef MYROOT1
+    int ex,ey;
+    ex=(etax-etamin)/etastepX;
+    ey=(etay-etamin)/etastepY;
+    if (ey<nbetaY && ex<nbetaX && ex>=0 && ey>=0)
+      heta[ey*nbetaX+ex]++;
+#endif
+    return 0;
+  };
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class eta3InterpolationBase : public virtual etaInterpolationBase  {
+  
+ public:
+ eta3InterpolationBase(int nx=400, int ny=400, int ns=25, int nsy=25, int nb=-1, int nby=-1, double emin=1, double emax=0) : etaInterpolationBase(nx, ny, ns, nsy, nb, nby, emin, emax) {
+    cout << "e3ib " << nb << " " << emin << " " << emax << endl; 
+  
+};
+  
+ eta3InterpolationBase(eta3InterpolationBase *orig): etaInterpolationBase(orig){ };
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  //////////// /*It return position hit for the event in input */ //////////////
+  virtual void getInterpolatedPosition(int x, int y, int *data, double &int_x, double &int_y)
+  {
+   double tot;
+    double etax,etay;
+    
+    int corner=calcEta3(data,etax,etay, tot);
+    
+    getInterpolatedPosition(x,y,etax,etay,corner,int_x,int_y);
+
+    return;
+  };
+  
+
+  virtual void getInterpolatedPosition(int x, int y, double *data, double &int_x, double &int_y)
+  {
+    //double sDum[2][2];
+    double tot;
+    double etax,etay;
+    
+    int corner=calcEta3(data,etax,etay, tot);
+    
+    getInterpolatedPosition(x,y,etax,etay,corner,int_x,int_y);
+
+    return;
+  };
+  
+
+  virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,double *cl,double &int_x, double &int_y) {
+    
+  
+    double etax, etay;
+     if (nSubPixelsX>2 || nSubPixelsY>2 ) { 
+       calcEta3(cl,etax,etay, totquad);
+     } 
+     return getInterpolatedPosition(x,y,etax, etay,quad,int_x,int_y);
+
+  }
+
+
+
+  virtual void getInterpolatedPosition(int x, int y, double totquad,int quad,int *cl,double &int_x, double &int_y) {
+    
+    
+     double etax, etay;
+     if (nSubPixelsX>2 || nSubPixelsY>2 ) { 
+       calcEta3(cl,etax,etay, totquad);
+     }
+     return getInterpolatedPosition(x,y,etax, etay,quad,int_x,int_y);
+
+  }
+
+
+
+  virtual void getInterpolatedPosition(int x, int y, double etax, double etay, int corner, double &int_x, double &int_y)
+  {
+
+
+    //cout << "**";
+    double xpos_eta=0,ypos_eta=0;
+    int ex,ey;
+
+     if (nSubPixelsX>2 || nSubPixelsY>2 ) { 
+
+#ifdef MYROOT1
+    xpos_eta=(hhx->GetBinContent(hhx->GetXaxis()->FindBin(etax),hhy->GetYaxis()->FindBin(etay)))/((double)nSubPixelsX);
+    ypos_eta=(hhy->GetBinContent(hhx->GetXaxis()->FindBin(etax),hhy->GetYaxis()->FindBin(etay)))/((double)nSubPixelsY);
+#endif
+#ifndef MYROOT1
+    ex=(etax-etamin)/etastepX;
+    ey=(etay-etamin)/etastepY;
+    if (ex<0) {
+      /* cout << etax << " " << etamin << " "; */
+      /*  cout << "3x*"<< ex << endl; */
+      ex=0;
+	} 
+    if (ex>=nbetaX) {
+      /* cout << etax << " " << etamin << " "; */
+      /* cout << "3x?"<< ex << endl; */
+      ex=nbetaX-1;
+    }
+    if (ey<0) {
+      /* cout << etay << " " << etamin << " "; */
+      /* cout << "3y*"<< ey << endl; */
+      ey=0;
+	} 
+    if (ey>=nbetaY) {
+      /* cout << etay << " " << etamin << " "; */
+      /* cout << "3y?"<< ey << endl; */
+      ey=nbetaY-1;
+      
+    }
+    xpos_eta=(((double)hhx[(ey*nbetaX+ex)]));///((double)nSubPixels);
+    ypos_eta=(((double)hhy[(ey*nbetaX+ex)]));///((double)nSubPixels);
+
+#endif
+   
+     } else {
+       switch (corner) {
+       case BOTTOM_LEFT:
+	 xpos_eta=-0.25;
+	 ypos_eta=-0.25;
+	 break;
+       case BOTTOM_RIGHT:
+	 xpos_eta=0.25;
+	 ypos_eta=-0.25;
+	 break;
+       case TOP_LEFT:
+	 xpos_eta=-0.25;
+	 ypos_eta=0.25;
+	 break;
+       case TOP_RIGHT:
+	 xpos_eta=0.25;
+	 ypos_eta=0.25;
+	 break;
+       default:
+	 xpos_eta=0;
+	 ypos_eta=0;
+       } 
+       
+     }
+     /* if (xpos_eta<0 || xpos_eta>1) */
+     /*   int_x=-1; */
+     /* else */
+       int_x=((double)x) + xpos_eta;
+     /* if (ypos_eta<0 || ypos_eta>1) */
+     /*   int_y=-1; */
+     /* else */
+       int_y=((double)y) + ypos_eta;
+     // int_x=5. + xpos_eta;
+     //  int_y=5. + ypos_eta;
+    
+
+  }
+
+  
+   virtual int addToFlatField(double totquad,int quad,int *cl,double &etax, double &etay) {
+   
+     calcEta3(cl, etax, etay, totquad);
+     return addToFlatField(etax,etay);
+   }
+
+   virtual int addToFlatField(double totquad,int quad,double *cl,double &etax, double &etay) {
+    
+
+     calcEta3(cl, etax, etay, totquad);
+     return addToFlatField(etax,etay);
+   }
+
+
+
+  //////////////////////////////////////////////////////////////////////////////////////
+  virtual int addToFlatField(double *cluster, double &etax, double &etay){
+    double totquad;
+     calcEta3(cluster, etax, etay, totquad);
+    return addToFlatField(etax,etay);
+
+    };
+
+  virtual int addToFlatField(int *cluster, double &etax, double &etay){
+  
+    double totquad;
+   
+     calcEta3(cluster, etax, etay, totquad);
+    return addToFlatField(etax,etay);
+
+    };
+
+  
+
+  virtual int addToFlatField(double etax, double etay){
+#ifdef MYROOT1
+    heta->Fill(etax,etay);
+#endif
+#ifndef MYROOT1
+    int ex,ey;
+    ex=(etax-etamin)/etastepX;
+    ey=(etay-etamin)/etastepY;
+    if (ey<nbetaY && ex<nbetaX && ex>=0 && ey>=0)
+      heta[ey*nbetaX+ex]++;
+#endif
+    return 0;
+  };
+  
+  
 };
 
 #endif

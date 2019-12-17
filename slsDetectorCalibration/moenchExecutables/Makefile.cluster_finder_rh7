@@ -17,22 +17,22 @@ all: moenchClusterFinder moenchMakeEta  moenchInterpolation  moenchNoInterpolati
 
 
 moenchClusterFinder :  moench03ClusterFinder.cpp  $(INCS) clean
-			 g++ -o moenchClusterFinder   moench03ClusterFinder.cpp $(LDFLAG) $(INCDIR) -DSAVE_ALL  -DNEWRECEIVER 
+			 g++ -o moenchClusterFinder   moench03ClusterFinder.cpp $(LDFLAG) $(INCDIR) -DSAVE_ALL  -DNEWRECEIVER -DWRITE_QUAD
 
 moenchMakeEta :  moench03Interpolation.cpp  $(INCS) clean
-			 g++ -o moenchMakeEta  moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DFF 
+			 g++ -o moenchMakeEta  moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DFF -DWRITE_QUAD
 
 moenchInterpolation :  moench03Interpolation.cpp  $(INCS) clean
-			 g++ -o moenchInterpolation  moench03Interpolation.cpp    $(LDFLAG) $(INCDIR)  
+			 g++ -o moenchInterpolation  moench03Interpolation.cpp    $(LDFLAG) $(INCDIR)  -DWRITE_QUAD
 
 moenchNoInterpolation :  moench03NoInterpolation.cpp  $(INCS) clean
-			 g++ -o moenchNoInterpolation  moench03NoInterpolation.cpp    $(LDFLAG) $(INCDIR)  
+			 g++ -o moenchNoInterpolation  moench03NoInterpolation.cpp    $(LDFLAG) $(INCDIR)  -DWRITE_QUAD
 
 moenchPhotonCounter : moenchPhotonCounter.cpp   $(INCS) clean
-			 g++ -o moenchPhotonCounter   moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $  -DNEWRECEIVER 
+			 g++ -o moenchPhotonCounter   moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR) $  -DNEWRECEIVER -DWRITE_QUAD
 
 moenchAnalog : moenchPhotonCounter.cpp  $(INCS) clean
-			 g++ -o moenchAnalog   moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR)   -DNEWRECEIVER -DANALOG 
+			 g++ -o moenchAnalog   moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR)   -DNEWRECEIVER -DANALOG -DWRITE_QUAD
 
 clean: 	
 	rm -f  moenchClusterFinder  moenchMakeEta  moenchInterpolation  moenchNoInterpolation  moenchPhotonCounter  moenchAnalog 

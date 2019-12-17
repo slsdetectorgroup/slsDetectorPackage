@@ -94,10 +94,7 @@ class slsInterpolation
   //create interpolated image
   //returns interpolated image
   virtual int *getInterpolatedImage(){
-    //  cout << "return interpolated image " << endl;
-    /* for (int i=0; i<nSubPixels*  nSubPixels* nPixelsX*nPixelsY; i++) { */
-    /*   cout << i << " " << hint[i] << endl; */
-    /* } */
+    //cout << "?" <<endl;
     return hint;
   };
 
@@ -105,17 +102,21 @@ class slsInterpolation
 
     
   void *writeInterpolatedImage(const char * imgname) {
-    //cout << "!" <<endl;
     float *gm=NULL;
+    //cout << "!" <<endl;
     int *dummy=getInterpolatedImage();
+    cout << "got interpolated image " << endl;
     gm=new float[ nSubPixelsX*  nSubPixelsY* nPixelsX*nPixelsY];
+    cout << "created dummy " << endl;
     if (gm) {
       for (int ix=0; ix<nPixelsX*nSubPixelsX; ix++) {
 	for (int iy=0; iy<nPixelsY*nSubPixelsY; iy++) {
 	  gm[iy*nPixelsX*nSubPixelsX+ix]=dummy[iy*nPixelsX*nSubPixelsX+ix];
+	  //  cout << "++" << ix << " " << iy << " " << iy*nPixelsX*nSubPixelsX+ix << endl;
 	}
       }
-      WriteToTiff(gm, imgname,nSubPixelsY* nPixelsX ,nSubPixelsY* nPixelsY); 
+      WriteToTiff(gm, imgname,nSubPixelsX* nPixelsX ,nSubPixelsY* nPixelsY); 
+      // cout << "wrote to tiff " << endl;
       delete [] gm;
     } else cout << "Could not allocate float image " << endl;
     return NULL;    
@@ -188,6 +189,7 @@ class slsInterpolation
     
 
   static int calcQuad(double *cl, double &sum, double &totquad, double sDum[2][2]){
+    //cout << "2";
     
     int corner = UNDEFINED_QUADRANT;
     /* double *cluster[3]; */
@@ -368,6 +370,7 @@ class slsInterpolation
 
 
   static int calcEta3(double *cl, double &etax, double &etay, double &sum) {
+    // cout << "3";
     double l=0,r=0,t=0,b=0, val;
     sum=0;
     //  int quad;
@@ -375,10 +378,10 @@ class slsInterpolation
       for (int iy=0; iy<3; iy++) {
 	val=cl[ix+3*iy];
 	sum+=val;
-	if (iy==0) l+=val;
-	if (iy==2) r+=val;
-	if (ix==0) b+=val;
-	if (ix==2) t+=val;
+	if (ix==0) l+=val;
+	if (ix==2) r+=val;
+	if (iy==0) b+=val;
+	if (iy==2) t+=val;
       }
     }
     if (sum>0) {

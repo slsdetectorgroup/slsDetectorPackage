@@ -64,9 +64,12 @@ int  slsDetectorUtils::acquire(int delflag){
 	if(!receiver){
 		setDetectorIndex(-1);
 	}
-
+	pthread_mutex_lock(&mg);
 	int nc=setTimer(CYCLES_NUMBER,-1);
 	int nf=setTimer(FRAME_NUMBER,-1);
+	pthread_mutex_unlock(&mg);
+
+
 	if (nc==0) nc=1;
 	if (nf==0) nf=1;
 	int multiframe = nc*nf;

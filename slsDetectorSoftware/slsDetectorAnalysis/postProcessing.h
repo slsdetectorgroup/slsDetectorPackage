@@ -239,10 +239,7 @@ s
   void registerDataCallback(int( *userCallback)(detectorData*, int, int, void*),  void *pArg) {	\
 	  dataReady = userCallback;																	\
 	  pCallbackArg = pArg;																		\
-	  if (setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {								\
-		  enableDataStreamingToClient(1);														\
-		  enableDataStreamingFromReceiver(1);}};												\
-  
+    enableDataStreamingToClient(dataReady == NULL ? 0 : 1);};  \
 
   void registerRawDataCallback(int( *userCallback)(double*, int, void*),  void *pArg) {rawDataReady = userCallback; pRawDataArg = pArg;};
   

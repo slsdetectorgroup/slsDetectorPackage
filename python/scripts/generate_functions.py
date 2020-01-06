@@ -40,6 +40,8 @@ def get_arguments(node):
         for item in args
     ]
     args = ', '.join(args)
+    if args:
+        args = f', {args}'
     return args
 
 
@@ -49,11 +51,11 @@ def visit(node):
             for child in node.get_children():
                 if (
                     child.kind == cindex.CursorKind.CXX_METHOD
-                    and cindex.AccessSpecifier.PUBLIC
+                    and child.access_specifier == cindex.AccessSpecifier.PUBLIC
                 ):
                     m.append(child)
                     args = get_arguments(child)
-                    lines.append(f'.def({child.spelling}, &Detector::{child.spelling}, {args})')
+                    lines.append(f'.def(\"{child.spelling}\", &Detector::{child.spelling}{args})')
     for child in node.get_children():
         visit(child)
 
@@ -64,6 +66,7 @@ visit(tu.cursor)
 with open('../src/detector_in.cpp') as f:
     data = f.read()
 s = ''.join(lines)
+s += ';'
 text = data.replace('[[FUNCTIONS]]', s)
 warning = '/* WARINING This file is auto generated any edits might be overwritten without warning */\n\n'
 with open('../src/detector.cpp', 'w') as f:

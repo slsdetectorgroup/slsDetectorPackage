@@ -3,6 +3,7 @@ pybind11_add_module(_sls_detector
     src/main.cpp 
     src/enums.cpp
     src/experimental.cpp
+    src/detector.cpp
 )
 
 target_link_libraries(_sls_detector PUBLIC 

@@ -373,8 +373,8 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	// callbacks
 	// Setting the callback function to get data from detector class
-	if (setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
-		enableDataStreamingFromReceiver(1);
+	if (myDet->setReceiverOnline() == slsDetectorDefs::ONLINE_FLAG) {
+		myDet->enableDataStreamingFromReceiver(1);
 	}
 	myDet->registerDataCallback(&(GetDataCallBack),this); // also enables data streaming in client and receiver (if receiver exists)
 	//Setting the callback function to alert when acquisition finished from detector class

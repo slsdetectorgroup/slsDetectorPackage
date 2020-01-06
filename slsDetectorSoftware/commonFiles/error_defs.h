@@ -25,6 +25,8 @@
 #define MULTI_DETECTORS_NOT_ADDED			0x8000000000000000ULL
 #define MULTI_HAVE_DIFFERENT_VALUES			0x4000000000000000ULL
 #define MULTI_CONFIG_FILE_ERROR             0x2000000000000000ULL
+#define MULTI_PARM_FILE_ERROR               0x1000000000000000ULL
+
 
 // sls errors
 #define CRITICAL_ERROR_MASK 				0xFFFFFFF
@@ -302,7 +304,7 @@ public:
                 retval.append("Could not set/get auto comparator disable\n");
 
         if(slsErrorMask&CONFIG_FILE)
-                retval.append("Could not load/write config file\n");
+                retval.append("Could not load/write config/parameter file\n");
 
 		//------------------------------------------------------ length of message
 

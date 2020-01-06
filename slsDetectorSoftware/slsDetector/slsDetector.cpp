@@ -2407,254 +2407,126 @@ int slsDetector::updateDetector() {
 
 
 int slsDetector::readConfigurationFile(string const fname) {
-
-
-
-	string ans;
-	string str;
-	ifstream infile;
-	//char *args[1000];
-
-	string sargname, sargval;
-#ifdef VERBOSE
-	int iline=0;
-	std::cout<< "config file name "<< fname << std::endl;
-#endif
-	infile.open(fname.c_str(), ios_base::in);
-	if (infile.is_open()) {
-#ifdef VERBOSE
-		iline=readConfigurationFile(infile);
-#else
-		readConfigurationFile(infile);
-#endif
-		infile.close();
-	} else {
-		std::cout<< "Error opening configuration file " << fname <<
-				" for reading" << std::endl;
-		setErrorMask((getErrorMask())|(CONFIG_FILE));
-		return FAIL;
-	}
-#ifdef VERBOSE
-	std::cout<< "Read configuration file of " << iline << " lines" << std::endl;
-#endif
-	return OK;
-
+	std::cout << "Cannot read config file from slsDetector level" << std::endl;
+	setErrorMask((getErrorMask())|(CONFIG_FILE));
+	return FAIL;
 }
-
-
-int slsDetector::readConfigurationFile(ifstream &infile) {
-
-
-
-
-	slsDetectorCommand *cmd=new slsDetectorCommand(this);
-
-	string ans;
-	string str;
-	int iargval;
-	int interrupt=0;
-	char *args[100];
-	char myargs[1000][1000];
-
-	string sargname, sargval;
-	int iline=0;
-	while (infile.good() and interrupt==0) {
-		sargname="none";
-		sargval="0";
-		getline(infile,str);
-		++iline;
-#ifdef VERBOSE
-		std::cout<<  str << std::endl;
-#endif
-		if (str.find('#')!=string::npos) {
-#ifdef VERBOSE
-			std::cout<< "Line is a comment " << std::endl;
-			std::cout<< str << std::endl;
-#endif
-			continue;
-		} else if (str.length()<2) {
-#ifdef VERBOSE
-			std::cout<< "Empty line " << std::endl;
-#endif
-			continue;
-		} else {
-			istringstream ssstr(str);
-			iargval=0;
-			while (ssstr.good()) {
-				ssstr >> sargname;
-				//if (ssstr.good()) {
-#ifdef VERBOSE
-				std::cout<< iargval << " " << sargname  << std::endl;
-#endif
-				strcpy(myargs[iargval],sargname.c_str());
-				args[iargval]=myargs[iargval];
-				++iargval;
-				//}
-			}
-			ans=cmd->executeLine(iargval,args,PUT_ACTION);
-#ifdef VERBOSE
-			std::cout<< ans << std::endl;
-#endif
-		}
-		++iline;
-	}
-	delete cmd;
-	return OK;
-
-}
-
-
-
-
-
-
-
-
-
 
 int slsDetector::writeConfigurationFile(string const fname) {
-
-	ofstream outfile;
-#ifdef VERBOSE
-	int ret;
-#endif
-	outfile.open(fname.c_str(),ios_base::out);
-	if (outfile.is_open()) {
-#ifdef VERBOSE
-		ret=writeConfigurationFile(outfile);
-#else
-		writeConfigurationFile(outfile);
-#endif
-		outfile.close();
-	}
-	else {
-		std::cout<< "Error opening configuration file " << fname <<
-				" for writing" << std::endl;
-		setErrorMask((getErrorMask())|(CONFIG_FILE));
-		return FAIL;
-	}
-#ifdef VERBOSE
-	std::cout<< "wrote " <<ret << " lines to configuration file " << std::endl;
-#endif
-	return OK;
-
-
+	std::cout << "Cannot write config file from slsDetector level" << std::endl;
+	setErrorMask((getErrorMask())|(CONFIG_FILE));
+	return FAIL;
 }
 
-
 int slsDetector::writeConfigurationFile(ofstream &outfile, int id) {
-	;
-	slsDetectorCommand *cmd=new slsDetectorCommand(this);
-	detectorType type = thisDetector->myDetectorType;
-	string names[100];
-	int nvar=0;
 
+	std::vector <std::string> commands;
 	// common config
-	names[nvar++] = "hostname";
-	names[nvar++] = "port";
-	names[nvar++] = "stopport";
-	names[nvar++] = "settingsdir";
-	names[nvar++] = "caldir";
-	names[nvar++] = "ffdir";
-	names[nvar++] = "outdir";
-	names[nvar++] = "angdir";
-	names[nvar++] = "moveflag";
-	names[nvar++] = "lock";
+	commands.push_back("port");
+	commands.push_back("stopport");
+	commands.push_back("settingsdir");
+	commands.push_back("caldir");
+	commands.push_back("ffdir");
+	commands.push_back("outdir");
+	commands.push_back("angdir");
+	commands.push_back("moveflag");
+	commands.push_back("lock");
 
 	// receiver config
-	if (type != MYTHEN) {
-		names[nvar++] = "detectormac";
-		names[nvar++] = "detectorip";
-		names[nvar++] = "zmqport";
-		names[nvar++] = "rx_zmqport";
-		names[nvar++] = "zmqip";
-		names[nvar++] = "rx_zmqip";
-		names[nvar++] = "rx_tcpport";
-		names[nvar++] = "rx_udpport";
-		names[nvar++] = "rx_udpport2";
-		names[nvar++] = "rx_udpip";
-		names[nvar++] = "rx_hostname";
-		names[nvar++] = "r_readfreq";
+	if (thisDetector->myDetectorType != MYTHEN) {
+		commands.push_back("detectormac");
+		commands.push_back("detectorip");
+		commands.push_back("zmqport");
+		commands.push_back("rx_zmqport");
+		commands.push_back("zmqip");
+		commands.push_back("rx_zmqip");
+		commands.push_back("rx_tcpport");
+		commands.push_back("rx_udpport");
+		commands.push_back("rx_udpport2");
+		commands.push_back("rx_udpip");
+		commands.push_back("rx_hostname");
+		commands.push_back("r_readfreq");
 	}
 
 	// detector specific config
-	switch (type) {
+	switch (thisDetector->myDetectorType) {
 	case MYTHEN:
-		names[nvar++] = "nmod";
-		names[nvar++] = "waitstates";
-		names[nvar++] = "setlength";
-		names[nvar++] = "clkdivider";
-		names[nvar++] = "extsig";
+		commands.push_back("waitstates");
+		commands.push_back("setlength");
+		commands.push_back("clkdivider");
+		commands.push_back("extsig");
 		break;
 	case GOTTHARD:
 	case PROPIX:
-		names[nvar++] = "extsig";
-		names[nvar++] = "vhighvoltage";
-		break;
-		break;
 	case MOENCH:
-		names[nvar++] = "extsig";
-		names[nvar++] = "vhighvoltage";
+		commands.push_back("vhighvoltage");
 		break;
 	case EIGER:
-		names[nvar++] = "vhighvoltage";
-		names[nvar++] = "trimen";
-		names[nvar++] = "iodelay";
-		names[nvar++] = "tengiga";
+		commands.push_back("vhighvoltage");
+		commands.push_back("trimen");
+		commands.push_back("iodelay");
+		commands.push_back("tengiga");
 		break;
 	case JUNGFRAU:
-		names[nvar++] = "powerchip";
-		names[nvar++] = "vhighvoltage";
-		break;
 	case JUNGFRAUCTB:
-		names[nvar++] = "powerchip";
-		names[nvar++] = "vhighvoltage";
+		commands.push_back("powerchip");
+		commands.push_back("vhighvoltage");
 		break;
 	default:
 		std::cout << "detector type " <<
 		getDetectorType(thisDetector->myDetectorType) << " not implemented in "
 				"writing config file" << std::endl;
-		nvar = 0;
-		break;
+		return FAIL;
 	}
 
 
-
-	int nsig=4;
-	int iv=0;
-	char *args[100];
-	char myargs[100][1000];
-
-	for (int ia=0; ia<100; ++ia) {
-		args[ia]=myargs[ia];
-	}
-
-
-	for (iv=0; iv<nvar; ++iv) {
-		cout << iv << " " << names[iv] << endl;
-		if (names[iv]=="extsig") {
-			for (int is=0; is<nsig; ++is) {
-				sprintf(args[0],"%s:%d",names[iv].c_str(),is);
-
-				if (id>=0)
+	slsDetectorCommand *cmd = new slsDetectorCommand(this);
+	char* args[2];
+	args[0] = new char[MAX_STR_LENGTH];
+	for (unsigned int i = 0; i < commands.size(); ++i) {
+		if (commands[i] == "extsig") {
+			for (int is = 0; is < 4; ++is) {
+				if (id >= 0) {
 					outfile << id << ":";
-
-				outfile << args[0] << " " << cmd->executeLine(1,args,GET_ACTION)
-						<< std::endl;
+				}
+				memset(args[0], 0, MAX_STR_LENGTH);
+				sprintf(args[0],"extsig:%d", is);
+				outfile << args[0] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
 			}
 		} else {
-			strcpy(args[0],names[iv].c_str());
-			if (id>=0)
+			if (id >= 0) {
 				outfile << id << ":";
-			outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION)
-					<< std::endl;
+			}
+			memset(args[0], 0, MAX_STR_LENGTH);
+			strcpy(args[0], commands[i].c_str());
+			outfile << commands[i] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
 		}
 	}
 
-	delete cmd;
+	delete args[0];
+	delete cmd;	
+
+	if (getErrorMask()) {
+		int c = 0;
+		cprintf(RED, "\n----------------\n Error Messages\n----------------\n%s\n",
+				getErrorMessage(c).c_str());
+		return FAIL;
+	}
+
 	return OK;
 }
 
+int slsDetector::retrieveDetectorSetup(std::string const fname, int level) {
+	std::cout << "Cannot read parameter file from slsDetector level" << std::endl;
+	setErrorMask((getErrorMask())|(CONFIG_FILE));
+	return FAIL;
+}
+
+int slsDetector::dumpDetectorSetup(std::string const fname, int level) {
+	std::cout << "Cannot write parameter file from slsDetector level" << std::endl;
+	setErrorMask((getErrorMask())|(CONFIG_FILE));
+	return FAIL;
+}
 
 
 string slsDetector::getSettingsFile() {

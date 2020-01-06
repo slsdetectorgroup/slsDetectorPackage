@@ -26,6 +26,7 @@ ID:         $Id$
 #include <rapidjson/document.h> //json header in zmq stream
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <iterator>
 
 
 
@@ -523,7 +524,10 @@ std::string multiSlsDetector::getErrorMessage(int& critical) {
 			retval.append("Could not load Config File\n");
 			critical = 0;
 		}
-
+		if (multiMask & MULTI_PARM_FILE_ERROR) {
+			retval.append("Could not load parameter File\n");
+			critical = 0;
+		}
 		for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
 			//if the detector has error
 			if (multiMask & (1 << idet)) {
@@ -1441,81 +1445,119 @@ int multiSlsDetector::readConfigurationFile(std::string const fname) {
 	freeSharedMemory();
 	setupMultiDetector();
 
-
-	multiSlsDetectorClient* cmd;
-	std::string ans;
-	std::string str;
-	std::ifstream infile;
-	int iargval;
-	int interrupt = 0;
-	char* args[1000];
-
-	char myargs[1000][1000];
-
-	std::string sargname, sargval;
-	int iline = 0;
-	std::cout << "config file name " << fname << std::endl;
-	infile.open(fname.c_str(), std::ios_base::in);
-	if (infile.is_open()) {
-
-		while (infile.good() and interrupt == 0) {
-			sargname = "none";
-			sargval  = "0";
-			getline(infile, str);
-			++iline;
-
-			// remove comments that come after
-			if (str.find('#') != std::string::npos)
-				str.erase(str.find('#'));
-#ifdef VERBOSE
-			std::cout << "string:" << str << std::endl;
-#endif
-			if (str.length() < 2) {
-#ifdef VERBOSE
-				std::cout << "Empty line or Comment " << std::endl;
-#endif
-				continue;
-			} else {
-				std::istringstream ssstr(str);
-				iargval = 0;
-				while (ssstr.good()) {
-					ssstr >> sargname;
-#ifdef VERBOSE
-					std::cout << iargval << " " << sargname << std::endl;
-#endif
-					strcpy(myargs[iargval], sargname.c_str());
-					args[iargval] = myargs[iargval];
-#ifdef VERBOSE
-					std::cout << "--" << iargval << " " << args[iargval] << std::endl;
-#endif
-					++iargval;
-				}
-#ifdef VERBOSE
-				cout << endl;
-				for (int ia = 0; ia < iargval; ia++)
-					cout << args[ia] << " ??????? ";
-				cout << endl;
-#endif
-				cmd = new multiSlsDetectorClient(iargval, args, PUT_ACTION, this);
-				delete cmd;
-			}
-			++iline;
-		}
-
-		infile.close();
-	} else {
-		std::cout << "Error opening configuration file " << fname << " for reading" << std::endl;
-		setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);
-		return FAIL;
+	std::ifstream inFile;
+ 	inFile.open(fname.c_str(), std::ifstream::in);
+	if (!inFile.is_open()) {
+  		cprintf(RED, "Cannot open config file %s\n", fname.c_str());
+  		setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);
+    	return FAIL;
 	}
-#ifdef VERBOSE
-	std::cout << "Read configuration file of " << iline << " lines" << std::endl;
-#endif
+		
+	while(inFile.good()) {
+		std::string sLine;
+		getline(inFile,sLine);
+		// delete lines after comments
+        if (sLine.find('#') != std::string::npos) {
+            sLine.erase(sLine.find('#'));
+        }
+		// scan arguments
+		std::istringstream iss(sLine);
+		std::vector<std::string> vec = std::vector<std::string>(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>());
+		// blank lines
+		if (vec.size() == 0 || vec[0].empty()) {
+			continue;
+		}
+		int iarg = vec.size();
+		// copy to char array
+		char arr[iarg][MAX_STR_LENGTH];
+		memset(arr, 0, sizeof(arr));
+		char* args[iarg];
+		for (int i = 0; i < iarg; ++i) {
+			args[i] = arr[i];
+			strcpy(args[i], vec[i].c_str());
+		}
+		// execute command
+		multiSlsDetectorClient(iarg, args, PUT_ACTION, this);
+	}
+
+	inFile.close();
 
 	setNumberOfModules(-1);
 	getMaxNumberOfModules();
 
+	// check error
 	if (getErrorMask()) {
+		int c;
+		cprintf(RED, "\n----------------\n Error Messages\n----------------\n%s\n",
+				getErrorMessage(c).c_str());
+		return FAIL;
+	}
+	return OK;
+}
+
+
+int multiSlsDetector::writeConfigurationFile(std::string const fname) {
+
+	std::vector <std::string> commands;
+	commands.push_back("master");
+	commands.push_back("sync");
+	commands.push_back("outdir");
+	commands.push_back("ffdir");
+	commands.push_back("headerbefore");
+	commands.push_back("headerafter");
+	commands.push_back("headerbeforepar");
+	commands.push_back("headerafterpar");
+	commands.push_back("badchannels");
+	commands.push_back("angconv");
+	commands.push_back("globaloff");
+	commands.push_back("binsize");
+	commands.push_back("threaded");
+
+	std::ofstream outfile;
+	outfile.open(fname.c_str(), std::ios_base::out);
+	if (!outfile.is_open()) {
+  		cprintf(RED, "Cannot open config file %s for writing\n", fname.c_str());
+  		setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);
+    	return FAIL;
+	}
+
+	int ret = OK;
+	slsDetectorCommand* cmd = new slsDetectorCommand(this);
+	char arr[MAX_STR_LENGTH];
+	char* args[1];
+	args[0] = arr;
+
+	// detsizechan
+	memset(args[0], 0, MAX_STR_LENGTH);
+	strcpy(args[0], "detsizechan");
+	outfile << args[0] << ' ' << cmd->executeLine(1, args, GET_ACTION) << std::endl;
+	// hostname
+	memset(args[0], 0, MAX_STR_LENGTH);
+	strcpy(args[0], "hostname");
+	outfile << args[0] << ' ' << cmd->executeLine(1, args, GET_ACTION) << std::endl;
+
+	// single detector configuration
+	for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
+		outfile << endl;
+		int ret1 = detectors[idet]->writeConfigurationFile(outfile, idet);
+		if (detectors[idet]->getErrorMask())
+			setErrorMask(getErrorMask() | (1 << idet));
+		if (ret1 == FAIL)
+			ret = FAIL;
+	}
+	
+	// other configurations
+	outfile << endl;
+	for (unsigned int i = 0; i < commands.size(); ++i) {
+		memset(args[0], 0, MAX_STR_LENGTH);
+		strcpy(args[0], commands[i].c_str());
+		outfile << commands[i] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
+	}
+
+	delete cmd;	
+	outfile.close();
+
+	if (ret == FAIL || getErrorMask()) {
 		int c;
 		cprintf(RED, "\n----------------\n Error Messages\n----------------\n%s\n",
 				getErrorMessage(c).c_str());
@@ -1526,90 +1568,258 @@ int multiSlsDetector::readConfigurationFile(std::string const fname) {
 }
 
 
-int multiSlsDetector::writeConfigurationFile(std::string const fname) {
+int multiSlsDetector::retrieveDetectorSetup(std::string const fname1, int level){
+ 	std::string fname = fname1;
+	// setup
+ 	if (level==2) {
+  		fname += std::string(".det");
+ 	}
 
-	std::string names[] = {
-			"detsizechan",
-			"hostname",
-			"master",
-			"sync",
-			"outdir",
-			"ffdir",
-			"headerbefore",
-			"headerafter",
-			"headerbeforepar",
-			"headerafterpar",
-			"badchannels",
-			"angconv",
-			"globaloff",
-			"binsize",
-			"threaded"
-	};
-
-	int nvar = 15;
-	char* args[100];
-	for (int ia = 0; ia < 100; ++ia) {
-		args[ia] = new char[1000];
+	std::ifstream inFile;
+ 	inFile.open(fname.c_str(), std::ifstream::in);
+	if (!inFile.is_open()) {
+  		cprintf(RED, "Cannot open parameter file %s\n", fname.c_str());
+  		setErrorMask(getErrorMask() | MULTI_PARM_FILE_ERROR);
+    	return FAIL;
 	}
-	int ret = OK, ret1 = OK;
 
-	std::ofstream outfile;
-	int iline = 0;
-
-	outfile.open(fname.c_str(), std::ios_base::out);
-	if (outfile.is_open()) {
-
-		slsDetectorCommand* cmd = new slsDetectorCommand(this);
-
-		// complete size of detector
-		cout << iline << " " << names[iline] << endl;
-		strcpy(args[0], names[iline].c_str());
-		outfile << names[iline] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
-		++iline;
-
-		// hostname of the detectors
-		cout << iline << " " << names[iline] << endl;
-		strcpy(args[0], names[iline].c_str());
-		outfile << names[iline] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
-		++iline;
-
-		// single detector configuration
-		for (unsigned int idet = 0; idet < detectors.size(); ++idet) {
-			outfile << endl;
-			ret1 = detectors[idet]->writeConfigurationFile(outfile, idet);
-			if (detectors[idet]->getErrorMask())
-				setErrorMask(getErrorMask() | (1 << idet));
-			if (ret1 == FAIL)
-				ret = FAIL;
+	while(inFile.good()) {
+		std::string sLine;
+		getline(inFile,sLine);
+		// delete lines after comments
+        if (sLine.find('#') != std::string::npos) {
+            sLine.erase(sLine.find('#'));
+        }
+		// scan arguments
+		std::istringstream iss(sLine);
+		std::vector<std::string> vec = std::vector<std::string>(std::istream_iterator<std::string>(iss), std::istream_iterator<std::string>());
+		// blank lines
+		if (vec.size() == 0 || vec[0].empty()) {
+			continue;
 		}
 
-		outfile << endl;
-		//other configurations
-		while (iline < nvar) {
-			cout << iline << " " << names[iline] << endl;
-			strcpy(args[0], names[iline].c_str());
-			outfile << names[iline] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
-			++iline;
+		// skip commands according to level (setup=2)
+		if (level!=2) {
+			if (vec[0] == "flatfield" ||
+				vec[0] == "badchannels" ||
+				vec[0] == "trimbits") {
+				continue;
+			}
 		}
-
-		delete cmd;
-		outfile.close();
-#ifdef VERBOSE
-		std::cout << "wrote " << iline << " lines to configuration file " << std::endl;
-#endif
-	} else {
-		std::cout << "Error opening configuration file " << fname << " for writing" << std::endl;
-		setErrorMask(getErrorMask() | MULTI_CONFIG_FILE_ERROR);
-		ret = FAIL;
+		int iarg = vec.size();
+		// copy to char array
+		char arr[iarg][MAX_STR_LENGTH];
+		memset(arr, 0, sizeof(arr));
+		char* args[iarg];
+		for (int i = 0; i < iarg; ++i) {
+			args[i] = arr[i];
+			strcpy(args[i], vec[i].c_str());
+		}
+		// execute command
+		multiSlsDetectorClient(iarg, args, PUT_ACTION, this);
 	}
 
-	for (int ia = 0; ia < 100; ++ia) {
-		delete[] args[ia];
-	}
+	inFile.close();
 
-	return ret;
+	// check error
+	if (getErrorMask()) {
+		int c;
+		cprintf(RED, "\n----------------\n Error Messages\n----------------\n%s\n",
+				getErrorMessage(c).c_str());
+		return FAIL;
+	}
+	return OK;
 }
 
+
+int multiSlsDetector::dumpDetectorSetup(std::string const fname1, int level){
+
+	std::vector <std::string> commands;
+	// common config
+	commands.push_back("fname");
+	commands.push_back("index");
+	commands.push_back("enablefwrite");
+	commands.push_back("overwrite");
+	commands.push_back("dr");
+	commands.push_back("settings");
+	commands.push_back("exptime");
+	commands.push_back("period");
+	commands.push_back("frames");
+	commands.push_back("cycles");
+	commands.push_back("measurements");
+	commands.push_back("timing");
+
+	switch (getDetectorsType()) {
+	case EIGER:
+		commands.push_back("flags");
+		commands.push_back("clkdivider");
+		commands.push_back("threshold");
+		commands.push_back("ratecorr");
+		break;
+	case GOTTHARD:
+	case PROPIX:
+		commands.push_back("flags");
+		commands.push_back("delay");
+		commands.push_back("gates");
+		commands.push_back("ratecorr");
+		break;
+	case JUNGFRAU:
+		commands.push_back("flags");
+		commands.push_back("delay");
+		commands.push_back("gates");
+		commands.push_back("ratecorr");
+		commands.push_back("clkdivider");
+		break;
+	case MYTHEN:
+		commands.push_back("flags");
+		commands.push_back("threshold");
+		commands.push_back("delay");
+		commands.push_back("gates");
+		commands.push_back("probes");
+		commands.push_back("fineoff");
+		commands.push_back("ratecorr");
+		break;
+	case JUNGFRAUCTB:
+		commands.push_back("dac:0");
+		commands.push_back("dac:1");
+		commands.push_back("dac:2");
+		commands.push_back("dac:3");
+		commands.push_back("dac:4");
+		commands.push_back("dac:5");
+		commands.push_back("dac:6");
+		commands.push_back("dac:7");
+		commands.push_back("dac:8");
+		commands.push_back("dac:9");
+		commands.push_back("dac:10");
+		commands.push_back("dac:11");
+		commands.push_back("dac:12");
+		commands.push_back("dac:13");
+		commands.push_back("dac:14");
+		commands.push_back("dac:15");
+		commands.push_back("adcvpp");
+		commands.push_back("adcclk");
+		commands.push_back("clkdivider");
+		commands.push_back("adcphase");
+		commands.push_back("adcpipeline");
+		commands.push_back("adcinvert"); //
+		commands.push_back("adcdisable");
+		commands.push_back("patioctrl");
+		commands.push_back("patclkctrl");
+		commands.push_back("patlimits");
+		commands.push_back("patloop0");
+		commands.push_back("patnloop0");
+		commands.push_back("patwait0");
+		commands.push_back("patwaittime0");
+		commands.push_back("patloop1");
+		commands.push_back("patnloop1");
+		commands.push_back("patwait1");
+		commands.push_back("patwaittime1");
+		commands.push_back("patloop2");
+		commands.push_back("patnloop2");
+		commands.push_back("patwait2");
+		commands.push_back("patwaittime2");
+		break;
+	default:
+		break;
+	}
+	
+	// more common config
+	commands.push_back("startscript");
+	commands.push_back("startscriptpar");
+	commands.push_back("stopscript");
+	commands.push_back("stopscriptpar");
+	commands.push_back("scriptbefore");
+	commands.push_back("scriptbeforepar");
+	commands.push_back("scriptafter");
+	commands.push_back("scriptafterpar");
+	commands.push_back("scan0script");
+	commands.push_back("scan0par");
+	commands.push_back("scan0prec");
+	commands.push_back("scan0steps");
+	commands.push_back("scan1script");
+	commands.push_back("scan1par");
+	commands.push_back("scan1prec");
+	commands.push_back("scan1steps");
+
+	std::string fname = fname1;
+	// setup
+	if (level == 2) {
+		// config
+		fname += std::string(".config");
+		writeConfigurationFile(fname);
+		// parameters
+		fname = fname1 + std::string(".det");
+	} 
+
+	std::ofstream outfile;
+	outfile.open(fname.c_str(), std::ios_base::out);
+	if (!outfile.is_open()) {
+  		cprintf(RED, "Cannot open parameter file %s for writing\n", fname.c_str());
+  		setErrorMask(getErrorMask() | MULTI_PARM_FILE_ERROR);
+    	return FAIL;
+	}
+
+	slsDetectorCommand* cmd = new slsDetectorCommand(this);
+	char arr[2][MAX_STR_LENGTH];
+	char* args[2];
+	args[0] = arr[0];
+	args[1] = arr[1];
+	memset(args[1], 0, MAX_STR_LENGTH);
+
+	for (unsigned int i = 0; i < commands.size(); ++i) {
+		memset(args[0], 0, MAX_STR_LENGTH);
+		strcpy(args[0], commands[i].c_str());
+		outfile << commands[i] << " " << cmd->executeLine(1, args, GET_ACTION) << std::endl;
+	}	
+
+	if (getDetectorsType() == MYTHEN) {
+		// flatfield
+		memset(args[0], 0, MAX_STR_LENGTH);
+		strcpy(args[0], "flatfield ");
+		if (level == 2) {
+			fname = fname1 + std::string(".ff");
+			memset(args[1], 0, MAX_STR_LENGTH);
+			strcpy(args[1], fname.c_str());
+		}	
+		outfile << "flatfield " << cmd->executeLine(2, args, GET_ACTION) << std::endl;
+
+		// badchannels
+		memset(args[0], 0, MAX_STR_LENGTH);
+		strcpy(args[0], "badchannels ");
+		if (level == 2) {
+			fname = fname1 + std::string(".bad");
+			memset(args[1], 0, MAX_STR_LENGTH);
+			strcpy(args[1], fname.c_str());
+		}	
+		outfile << "badchannels " << cmd->executeLine(2, args, GET_ACTION) << std::endl;
+
+		// trimbits
+		if (level == 2) {
+			size_t c = fname1.rfind('/');
+			if (c < std::string::npos) {
+				fname = fname1.substr(0, c + 1) + std::string("trim_") + fname.substr(c + 1);
+			} else {
+				fname = std::string("trim_") + fname1;
+			}
+			memset(args[0], 0, MAX_STR_LENGTH);
+			strcpy(args[0], "trimbits ");
+			memset(args[1], 0, MAX_STR_LENGTH);
+			strcpy(args[1], fname.c_str());
+			outfile << "trimbits " << cmd->executeLine(2, args, GET_ACTION) << std::endl;
+		}
+	}
+
+	delete cmd;
+	outfile.close();
+
+	if (getErrorMask()) {
+		int c;
+		cprintf(RED, "\n----------------\n Error Messages\n----------------\n%s\n",
+				getErrorMessage(c).c_str());
+		return FAIL;
+	}
+	return OK;
+} 
 
 
 std::string multiSlsDetector::getSettingsFile() {

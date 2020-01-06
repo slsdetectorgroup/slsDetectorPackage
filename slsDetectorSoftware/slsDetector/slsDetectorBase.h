@@ -540,10 +540,8 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */
   virtual int readConfigurationFile(std::string const fname)=0; 
 
-  virtual int dumpDetectorSetup(std::string const fname, int level)=0;  
-  int dumpDetectorSetup(std::string const fname){return dumpDetectorSetup(fname,0);};
-  virtual int retrieveDetectorSetup(std::string const fname, int level)=0;
-  int retrieveDetectorSetup(std::string const fname){return retrieveDetectorSetup(fname,0);};
+  virtual int dumpDetectorSetup(std::string const fname, int level = 0)=0;  
+  virtual int retrieveDetectorSetup(std::string const fname, int level = 0)=0;
   /** 
       @short 
       \returns the default output file index

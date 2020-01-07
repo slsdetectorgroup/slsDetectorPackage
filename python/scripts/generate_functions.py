@@ -17,8 +17,6 @@ default_build_path = "/home/l_frojdh/sls/build/"
 fpath = "../../slsDetectorSoftware/src/Detector.cpp"
 
 
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument("-p", "--build_path", help="Path to the build database", type = str, default=default_build_path)
 cargs = parser.parse_args()
@@ -27,20 +25,8 @@ db = cindex.CompilationDatabase.fromDirectory(cargs.build_path)
 index = cindex.Index.create()
 args = db.getCompileCommands(fpath)
 args = list(iter(args).__next__().arguments)[0:-1]
-
-
 args = args + "-x c++ --std=c++11".split()
-
 syspath = system_include_paths('clang++')
-
-# syspath = [
-#     "/usr/bin/../lib/gcc/x86_64-redhat-linux/9/../../../../include/c++/9",
-#     "/usr/bin/../lib/gcc/x86_64-redhat-linux/9/../../../../include/c++/9/x86_64-redhat-linux",
-#     "/usr/bin/../lib/gcc/x86_64-redhat-linux/9/../../../../include/c++/9/backward",
-#     "/usr/local/include",
-#     "/usr/lib64/clang/9.0.0/include",
-#     "/usr/include",
-# ]
 incargs = ["-I" + inc for inc in syspath]
 args = args + incargs
 

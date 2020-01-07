@@ -13,7 +13,7 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
-TEST_CASE("Eiger transmission delay") {
+TEST_CASE("Eiger transmission delay", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();

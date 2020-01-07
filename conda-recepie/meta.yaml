@@ -65,10 +65,10 @@ outputs:
         - setuptools
         - sls_detector_lib
         - pyzmq
-        - pybind11 2.2
+        - pybind11 2.4
       host:
         - python
-        - pybind11 2.2 
+        - pybind11 2.4 
         - pyzmq
         - sls_detector_lib
         - libstdcxx-ng

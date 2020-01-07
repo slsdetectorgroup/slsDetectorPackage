@@ -38,6 +38,7 @@ class MacAddr {
     std::string to_hex(const char delimiter = 0) const;
 
   public:
+    constexpr MacAddr() noexcept{}
     constexpr MacAddr(uint64_t mac) noexcept : addr_{mac} {}
     MacAddr(std::string mac);
     MacAddr(const char *address);

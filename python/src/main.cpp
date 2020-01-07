@@ -18,6 +18,7 @@ namespace py = pybind11;
 void init_enums(py::module &);
 void init_experimental(py::module &);
 void init_det(py::module &);
+void init_network(py::module &);
 PYBIND11_MODULE(_sls_detector, m) {
     m.doc() = R"pbdoc(
         C/C++ API
@@ -31,6 +32,7 @@ PYBIND11_MODULE(_sls_detector, m) {
 
      init_enums(m);
      init_det(m);
+     init_network(m);
     //  init_experimental(m);
     
 

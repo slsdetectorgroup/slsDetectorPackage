@@ -631,3 +631,19 @@ class Detector(CppDetectorApi):
     @property
     def vthreshold(self):
         return element_if_equal(self.getDAC(dacIndex.THRESHOLD))
+
+    @property
+    def asamples(self):
+        return element_if_equal(self.getNumberOfAnalogSamples())
+
+    @asamples.setter
+    def asamples(self, N):
+        self.setNumberOfAnalogSamples(N)
+
+    @property
+    def dsamples(self):
+        return element_if_equal(self.getNumberOfDigitalSamples())
+
+    @dsamples.setter
+    def dsamples(self, N):
+        self.setNumberOfDigitalSamples(N)

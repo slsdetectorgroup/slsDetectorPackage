@@ -15,3 +15,6 @@ timingMode = _sls_detector.slsDetectorDefs.timingMode
 dacIndex = _sls_detector.slsDetectorDefs.dacIndex
 detectorType = _sls_detector.slsDetectorDefs.detectorType
 detectorSettings = _sls_detector.slsDetectorDefs.detectorSettings
+
+IpAddr = _sls_detector.IpAddr
+MacAddr = _sls_detector.MacAddr

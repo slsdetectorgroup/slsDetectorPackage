@@ -3014,7 +3014,7 @@ TEST_CASE("zmqip", "[.cmd]") {
     }
 }
 
-TEST_CASE("zmqport") {
+TEST_CASE("zmqport", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
 

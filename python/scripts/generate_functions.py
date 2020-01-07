@@ -1,11 +1,29 @@
-# import clang.cindex
+"""
+This file is used to auto generate Python bindings for the 
+sls::Detector class. The tool needs the libclang bindings
+to be installed. 
+
+When the Detector API is updated this file should be run
+manually
+"""
 from clang import cindex
 import subprocess
+import argparse
 
-path = "/home/l_frojdh/sls/build/"
-fpath = "/home/l_frojdh/sls/slsDetectorPackage/slsDetectorSoftware/src/Detector.cpp"
+
+from parse import system_include_paths
+
+default_build_path = "/home/l_frojdh/sls/build/" 
 fpath = "../../slsDetectorSoftware/src/Detector.cpp"
-db = cindex.CompilationDatabase.fromDirectory(path)
+
+
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-p", "--build_path", help="Path to the build database", type = str, default=default_build_path)
+cargs = parser.parse_args()
+
+db = cindex.CompilationDatabase.fromDirectory(cargs.build_path)
 index = cindex.Index.create()
 args = db.getCompileCommands(fpath)
 args = list(iter(args).__next__().arguments)[0:-1]
@@ -13,14 +31,16 @@ args = list(iter(args).__next__().arguments)[0:-1]
 
 args = args + "-x c++ --std=c++11".split()
 
-syspath = [
-    "/usr/bin/../lib/gcc/x86_64-redhat-linux/9/../../../../include/c++/9",
-    "/usr/bin/../lib/gcc/x86_64-redhat-linux/9/../../../../include/c++/9/x86_64-redhat-linux",
-    "/usr/bin/../lib/gcc/x86_64-redhat-linux/9/../../../../include/c++/9/backward",
-    "/usr/local/include",
-    "/usr/lib64/clang/9.0.0/include",
-    "/usr/include",
-]
+syspath = system_include_paths('clang++')
+
+# syspath = [
+#     "/usr/bin/../lib/gcc/x86_64-redhat-linux/9/../../../../include/c++/9",
+#     "/usr/bin/../lib/gcc/x86_64-redhat-linux/9/../../../../include/c++/9/x86_64-redhat-linux",
+#     "/usr/bin/../lib/gcc/x86_64-redhat-linux/9/../../../../include/c++/9/backward",
+#     "/usr/local/include",
+#     "/usr/lib64/clang/9.0.0/include",
+#     "/usr/include",
+# ]
 incargs = ["-I" + inc for inc in syspath]
 args = args + incargs
 

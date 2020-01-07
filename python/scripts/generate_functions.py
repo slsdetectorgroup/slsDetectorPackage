@@ -4,6 +4,7 @@ import subprocess
 
 path = "/home/l_frojdh/sls/build/"
 fpath = "/home/l_frojdh/sls/slsDetectorPackage/slsDetectorSoftware/src/Detector.cpp"
+fpath = "../../slsDetectorSoftware/src/Detector.cpp"
 db = cindex.CompilationDatabase.fromDirectory(path)
 index = cindex.Index.create()
 args = db.getCompileCommands(fpath)

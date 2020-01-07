@@ -38,7 +38,7 @@ ext_modules = [
         '_sls_detector',
         ['src/main.cpp',
         'src/enums.cpp',
-        'src/detectpr.cpp',
+        'src/detector.cpp',
         'src/network.cpp'],
         include_dirs=[
             # Path to pybind11 headers

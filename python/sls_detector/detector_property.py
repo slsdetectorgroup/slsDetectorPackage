@@ -14,21 +14,20 @@ class DetectorProperty:
 
     def __getitem__(self, key):
         if key == slice(None, None, None):
-            return [self.get(i) for i in range(self.get_nmod())]
+            return self.get()
         elif isinstance(key, Iterable):
-            return [self.get(k) for k in key]
+            return self.get(list(key))
         else:
-            return self.get(key)
+            return self.get([key])[0] #No list for single value
 
     def __setitem__(self, key, value):
         #operate on all values
         if key == slice(None, None, None):
             if isinstance(value, (np.integer, int)):
-                for i in range(self.get_nmod()):
-                    self.set(i, value)
+                self.set(value, [])
             elif isinstance(value, Iterable):
                 for i in range(self.get_nmod()):
-                    self.set(i, value[i])
+                    self.set(value[i], [i])
             else:
                 raise ValueError('Value should be int or np.integer not', type(value))
         
@@ -36,15 +35,14 @@ class DetectorProperty:
         elif isinstance(key, Iterable):
             if isinstance(value, Iterable):
                 for k,v in zip(key, value):
-                    self.set(k,v)
+                    self.set(v, [k])
 
             elif isinstance(value, int):
-                for k in key:
-                    self.set(k, value)
+                self.set(value, list(key))
 
         #Set single value
         elif isinstance(key, int):
-            self.set(key, value)
+            self.set(value, [key])
 
     def __repr__(self):
         s = ', '.join(str(v) for v in self[:])

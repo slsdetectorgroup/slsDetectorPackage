@@ -28,10 +28,10 @@ class Register:
 
 
 def freeze(cls):
-    cls.__frozen = False
+    cls._frozen = False
 
     def frozensetattr(self, key, value):
-        if self.__frozen and not hasattr(self, key):
+        if self._frozen and not hasattr(self, key):
             raise AttributeError(
                 "Class {} is frozen. Cannot set {} = {}".format(
                     cls.__name__, key, value
@@ -44,7 +44,7 @@ def freeze(cls):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             func(self, *args, **kwargs)
-            self.__frozen = True
+            self._frozen = True
 
         return wrapper
 
@@ -69,6 +69,8 @@ class Detector(CppDetectorApi):
         """
         super().__init__(multi_id)
         self._register = Register(self)
+
+
 
     # CONFIGURATION
     def __len__(self):
@@ -197,6 +199,18 @@ class Detector(CppDetectorApi):
         else:
             self.setSubExptime(dt.timedelta(seconds=t))
 
+    @property
+    def subdeadtime(self):
+        res = self.getSubDeadTime()
+        return element_if_equal([it.total_seconds() for it in res])
+
+    @subdeadtime.setter
+    def subdeadtime(self, t):
+        if isinstance(t, dt.timedelta):
+            self.setSubDeadTime(t)
+        else:
+            self.setSubDeadTime(dt.timedelta(seconds=t))
+
 
     @property
     def period(self):
@@ -232,14 +246,7 @@ class Detector(CppDetectorApi):
     def startingfnum(self, value):
         self.setStartingFrameNumber(value)
 
-   #TODO! testing switches on automatically?
-    @property
-    def flowcontrol_10g(self):
-        return element_if_equal(self.getTenGigaFlowControl())
 
-    @flowcontrol_10g.setter
-    def flowcontrol_10g(self, enable):
-        self.setTenGigaFlowControl(enable)
 
      #TODO! add txdelay
 
@@ -647,3 +654,32 @@ class Detector(CppDetectorApi):
     @dsamples.setter
     def dsamples(self, N):
         self.setNumberOfDigitalSamples(N)
+
+
+    """
+    Some Eiger stuff, does this have to be here or can we move it to subclass?
+    """
+    @property
+    def partialreset(self):
+        return element_if_equal(self.getPartialReset())
+
+    @partialreset.setter
+    def partialreset(self, value):
+        self.setPartialReset(value)
+
+    @property
+    def tengiga(self):
+        return element_if_equal(self.getTenGiga())
+    
+    @tengiga.setter
+    def tengiga(self, value):
+        self.setTenGiga(value)
+
+
+    @property
+    def flowcontrol10g(self):
+        return element_if_equal(self.getTenGigaFlowControl())
+
+    @flowcontrol10g.setter
+    def flowcontrol10g(self, enable):
+        self.setTenGigaFlowControl(enable)

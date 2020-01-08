@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 project(slsDetectorPackage)
 set(PROJECT_VERSION 5.0.0)
-
 include(CheckIPOSupported)
 
 

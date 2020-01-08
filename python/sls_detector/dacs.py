@@ -1,7 +1,8 @@
 from .detector_property import DetectorProperty
 from functools import partial
 import numpy as np
-
+import _sls_detector
+dacIndex = _sls_detector.slsDetectorDefs.dacIndex
 class Dac(DetectorProperty):
     """
     This class represents a dac on the detector. One instance handles all
@@ -14,11 +15,11 @@ class Dac(DetectorProperty):
 
 
     """
-    def __init__(self, name, low, high, default, detector):
+    def __init__(self, name, enum, low, high, default, detector):
 
-        super().__init__(partial(detector._api.getDac, name),
-                         partial(detector._api.setDac, name),
-                         detector._api.getNumberOfDetectors,
+        super().__init__(partial(detector.getDAC, enum, False),
+                         lambda x, y : detector.setDAC(enum, x, False, y),
+                         detector.size,
                          name)
 
         self.min_value = low
@@ -29,29 +30,28 @@ class Dac(DetectorProperty):
 
     def __repr__(self):
         """String representation for a single dac in all modules"""
-        r_str = ['{:10s}: '.format(self.__name__)]
-        r_str += ['{:5d}, '.format(self.get(i)) for i in range(self.get_nmod())]
-        return ''.join(r_str).strip(', ')
+        dacstr = ''.join([f'{item:5d}' for item in self.get()])
+        return f'{self.__name__:10s}:{dacstr}'
 
-
+# a = Dac('vrf', dacIndex.VRF, 0, 4000, 2500, d )
 class DetectorDacs:
-    _dacs = [('vsvp',    0, 4000,    0),
-             ('vtr',     0, 4000, 2500),
-             ('vrf',     0, 4000, 3300),
-             ('vrs',     0, 4000, 1400),
-             ('vsvn',    0, 4000, 4000),
-             ('vtgstv',  0, 4000, 2556),
-             ('vcmp_ll', 0, 4000, 1500),
-             ('vcmp_lr', 0, 4000, 1500),
-             ('vcall',   0, 4000, 4000),
-             ('vcmp_rl', 0, 4000, 1500),
-             ('rxb_rb',  0, 4000, 1100),
-             ('rxb_lb',  0, 4000, 1100),
-             ('vcmp_rr', 0, 4000, 1500),
-             ('vcp',     0, 4000,  200),
-             ('vcn',     0, 4000, 2000),
-             ('vis',     0, 4000, 1550),
-             ('iodelay', 0, 4000,  660)]
+    _dacs = [('vsvp',    dacIndex.SVP,0, 4000,    0),
+             ('vtr',     dacIndex.VTR,0, 4000, 2500),
+             ('vrf',     dacIndex.VRF,0, 4000, 3300),
+             ('vrs',     dacIndex.VRS,0, 4000, 1400),
+             ('vsvn',    dacIndex.SVN,0, 4000, 4000),
+             ('vtgstv',  dacIndex.VTGSTV,0, 4000, 2556),
+             ('vcmp_ll', dacIndex.VCMP_LL,0, 4000, 1500),
+             ('vcmp_lr', dacIndex.VCMP_LR,0, 4000, 1500),
+             ('vcall',   dacIndex.CAL,0, 4000, 4000),
+             ('vcmp_rl', dacIndex.VCMP_RL,0, 4000, 1500),
+             ('rxb_rb',  dacIndex.RXB_RB,0, 4000, 1100),
+             ('rxb_lb',  dacIndex.RXB_LB,0, 4000, 1100),
+             ('vcmp_rr', dacIndex.VCMP_RR,0, 4000, 1500),
+             ('vcp',     dacIndex.VCP,0, 4000,  200),
+             ('vcn',     dacIndex.VCN,0, 4000, 2000),
+             ('vis',     dacIndex.VIS,0, 4000, 1550),
+             ('iodelay', dacIndex.IO_DELAY,0, 4000,  660)]
     _dacnames = [_d[0] for _d in _dacs]
 
     def __init__(self, detector):
@@ -95,7 +95,7 @@ class DetectorDacs:
         """
         Read the dacs into a numpy array with dimensions [ndacs, nmodules]
         """
-        dac_array = np.zeros((len(self._dacs), self._detector.n_modules))
+        dac_array = np.zeros((len(self._dacs), len(self._detector)))
         for i, _d in enumerate(self):
             dac_array[i,:] = _d[:]
         return dac_array
@@ -114,12 +114,4 @@ class DetectorDacs:
         """
         for _d in self:
             _d[:] = _d.default
-
-    def update_nmod(self):
-        """
-        Update the cached value of nmod, needs to be run after adding or
-        removing detectors
-        """
-        for _d in self:
-            _d._n_modules = self._detector.n_modules
 

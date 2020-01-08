@@ -26,7 +26,7 @@ set( PYTHON_FILES
     decorators.py
     detector_property.py
     # detector.py
-    # eiger.py
+    eiger.py
     errors.py
     experimental.py
     # jungfrau_ctb.py

@@ -4,6 +4,7 @@ but not directly used in controlling the detector
 """
 from collections import namedtuple
 import _sls_detector #C++ lib
+import functools
 
 Geometry = namedtuple('Geometry', ['x', 'y'])
 
@@ -28,6 +29,11 @@ def element_if_equal(mylist):
     else:
         return mylist
 
+def element(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        return element_if_equal(func(self, *args, **kwargs))
+    return wrapper
 
 def eiger_register_to_time(register):
     """

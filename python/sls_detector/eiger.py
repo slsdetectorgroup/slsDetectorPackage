@@ -45,7 +45,6 @@ class EigerVcmp:
             else:
                 dacs = _dacs[::-1]
             for d in dacs:
-                print(d, i)
                 self.set.append(lambda x, d=d, i=i : detector.setDAC(d, x, False, [i]))
                 self.get.append(lambda d=d, i=i : detector.getDAC(d, False, [i])[0])
     

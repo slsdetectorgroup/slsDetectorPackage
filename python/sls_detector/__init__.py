@@ -1,5 +1,6 @@
 # from .detector import Detector, DetectorError, free_shared_memory
 from .eiger import Eiger
+from .ctb import Ctb
 from .dacs import DetectorDacs, Dac
 from .experimental import Detector
 

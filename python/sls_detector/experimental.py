@@ -7,24 +7,25 @@ dacIndex = slsDetectorDefs.dacIndex
 
 from .utils import element_if_equal, all_equal
 from .utils import Geometry, to_geo
+from .registers import Register, Adc_register
 import datetime as dt
 
 from functools import wraps
 from collections import namedtuple
 
-class Register:
-    """
-    Helper class to read and write to registers using a
-    more Pythonic syntax
-    """
-    def __init__(self, detector):
-        self._detector = detector
+# class Register:
+#     """
+#     Helper class to read and write to registers using a
+#     more Pythonic syntax
+#     """
+#     def __init__(self, detector):
+#         self._detector = detector
 
-    def __getitem__(self, key):
-        return self._detector.readRegister(key)
+#     def __getitem__(self, key):
+#         return self._detector.readRegister(key)
 
-    def __setitem__(self, key, value):
-        self._detector.writeRegister(key, value)
+#     def __setitem__(self, key, value):
+#         self._detector.writeRegister(key, value)
 
 
 def freeze(cls):
@@ -69,6 +70,7 @@ class Detector(CppDetectorApi):
         """
         super().__init__(multi_id)
         self._register = Register(self)
+        self._adc_register = Adc_register(self)
 
 
 
@@ -590,6 +592,10 @@ class Detector(CppDetectorApi):
         return self._register
 
     @property
+    def adcreg(self):
+        return self._adc_register
+
+    @property
     def ratecorr(self):
         """ tau in ns """
         return element_if_equal(self.getRateCorrection())
@@ -639,21 +645,7 @@ class Detector(CppDetectorApi):
     def vthreshold(self):
         return element_if_equal(self.getDAC(dacIndex.THRESHOLD))
 
-    @property
-    def asamples(self):
-        return element_if_equal(self.getNumberOfAnalogSamples())
-
-    @asamples.setter
-    def asamples(self, N):
-        self.setNumberOfAnalogSamples(N)
-
-    @property
-    def dsamples(self):
-        return element_if_equal(self.getNumberOfDigitalSamples())
-
-    @dsamples.setter
-    def dsamples(self, N):
-        self.setNumberOfDigitalSamples(N)
+    
 
 
     """
@@ -683,3 +675,67 @@ class Detector(CppDetectorApi):
     @flowcontrol10g.setter
     def flowcontrol10g(self, enable):
         self.setTenGigaFlowControl(enable)
+
+    """
+    CTB stuff 
+    """
+
+    @property
+    def asamples(self):
+        return element_if_equal(self.getNumberOfAnalogSamples())
+
+    @asamples.setter
+    def asamples(self, N):
+        self.setNumberOfAnalogSamples(N)
+
+    @property
+    def dsamples(self):
+        return element_if_equal(self.getNumberOfDigitalSamples())
+
+    @dsamples.setter
+    def dsamples(self, N):
+        self.setNumberOfDigitalSamples(N)
+
+    @property
+    def dbitphase(self):
+        return element_if_equal(self.getDBITPhase())
+
+    @dbitphase.setter
+    def dbitphase(self, value):
+        self.setDBITPhase(value)
+
+    @property
+    def dbitclk(self):
+        return element_if_equal(self.getDBITClock())
+    
+    @dbitclk.setter
+    def dbitclk(self, value):
+        self.setDBITClock(value)
+
+    @property
+    def dbitpipeline(self):
+        return element_if_equal(self.getDBITPipeline())
+
+    @dbitpipeline.setter
+    def dbitpipeline(self, value):
+        self.setDBITPipeline(value)
+
+    @property
+    def maxdbitphaseshift(self):
+        return element_if_equal(self.getMaxDBITPhaseShift())
+
+    @property
+    def rx_dbitlist(self):
+        return element_if_equal(self.getRxDbitList())
+
+    @rx_dbitlist.setter
+    def rx_dbitlist(self, value):
+        self.setRxDbitList(value)
+
+    @property
+    def rx_dbitoffset(self):
+        return element_if_equal(self.getRxDbitOffset())
+
+    @rx_dbitoffset.setter
+    def rx_dbitoffset(self, value):
+        self.setRxDbitOffset(value)

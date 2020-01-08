@@ -7,7 +7,7 @@ from .detector_property import DetectorProperty
 
 class CtbDacs(DetectorDacs):
     """
-    Eiger specific dacs
+    Ctb dacs
     """
     _dacs = [('dac0',  dacIndex(0), 0, 4000,    1400),
              ('dac1',  dacIndex(1), 0, 4000,    1200),

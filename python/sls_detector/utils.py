@@ -30,6 +30,9 @@ def element_if_equal(mylist):
         return mylist
 
 def element(func):
+    """
+    Wrapper to return either list or element
+    """
     @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
         return element_if_equal(func(self, *args, **kwargs))

@@ -7,7 +7,7 @@ Created on Wed Dec  6 11:51:18 2017
 """
 
 
-from .experimental import Detector
+from .detector import Detector
 # import socket
 # from collections.abc import Iterable
 # from collections import namedtuple
@@ -136,7 +136,7 @@ class EigerDacs(DetectorDacs):
 #             r_str.append('{:2d}:{:8s}{:>8d}{:>8d}{:>8d}'.format(i, hn[i], self.left[i], self.right[i], self.frame[i]))
 #         return '\n'.join(r_str)
 
-from .experimental import freeze
+from .detector import freeze
 
 @freeze
 class Eiger(Detector):

@@ -2,7 +2,7 @@
 from .eiger import Eiger
 from .ctb import Ctb
 from .dacs import DetectorDacs, Dac
-from .experimental import Detector
+from .detector import Detector
 
 # from .jungfrau import Jungfrau
 # from .jungfrau_ctb import JungfrauCTB

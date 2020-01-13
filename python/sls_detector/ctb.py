@@ -1,4 +1,4 @@
-from .experimental import Detector
+from .detector import Detector
 from .utils import element_if_equal
 from .dacs import DetectorDacs
 import _sls_detector

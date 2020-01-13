@@ -25,10 +25,9 @@ set( PYTHON_FILES
     dacs.py
     decorators.py
     detector_property.py
-    # detector.py
+    detector.py
     eiger.py
     errors.py
-    experimental.py
     ctb.py
     # jungfrau.py
     registers.py

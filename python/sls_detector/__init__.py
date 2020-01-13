@@ -3,8 +3,7 @@ from .eiger import Eiger
 from .ctb import Ctb
 from .dacs import DetectorDacs, Dac
 from .detector import Detector
-
-# from .jungfrau import Jungfrau
+from .jungfrau import Jungfrau
 # from .jungfrau_ctb import JungfrauCTB
 # from _sls_detector import DetectorApi
 

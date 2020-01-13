@@ -29,7 +29,7 @@ set( PYTHON_FILES
     eiger.py
     errors.py
     ctb.py
-    # jungfrau.py
+    jungfrau.py
     registers.py
     utils.py
 

@@ -8,10 +8,6 @@ Created on Wed Dec  6 11:51:18 2017
 
 
 from .detector import Detector
-# import socket
-# from collections.abc import Iterable
-# from collections import namedtuple
-# from functools import partial
 
 # from .adcs import Adc, DetectorAdcs
 from .dacs import DetectorDacs

@@ -2,6 +2,7 @@ from .detector_property import DetectorProperty
 from functools import partial
 import numpy as np
 import _sls_detector
+from .detector import freeze
 dacIndex = _sls_detector.slsDetectorDefs.dacIndex
 class Dac(DetectorProperty):
     """
@@ -34,25 +35,12 @@ class Dac(DetectorProperty):
         return f'{self.__name__:10s}:{dacstr}'
 
 # a = Dac('vrf', dacIndex.VRF, 0, 4000, 2500, d )
+# @freeze
 class DetectorDacs:
-    _dacs = [('vsvp',    dacIndex.SVP,0, 4000,    0),
-             ('vtr',     dacIndex.VTR,0, 4000, 2500),
-             ('vrf',     dacIndex.VRF,0, 4000, 3300),
-             ('vrs',     dacIndex.VRS,0, 4000, 1400),
-             ('vsvn',    dacIndex.SVN,0, 4000, 4000),
-             ('vtgstv',  dacIndex.VTGSTV,0, 4000, 2556),
-             ('vcmp_ll', dacIndex.VCMP_LL,0, 4000, 1500),
-             ('vcmp_lr', dacIndex.VCMP_LR,0, 4000, 1500),
-             ('vcall',   dacIndex.CAL,0, 4000, 4000),
-             ('vcmp_rl', dacIndex.VCMP_RL,0, 4000, 1500),
-             ('rxb_rb',  dacIndex.RXB_RB,0, 4000, 1100),
-             ('rxb_lb',  dacIndex.RXB_LB,0, 4000, 1100),
-             ('vcmp_rr', dacIndex.VCMP_RR,0, 4000, 1500),
-             ('vcp',     dacIndex.VCP,0, 4000,  200),
-             ('vcn',     dacIndex.VCN,0, 4000, 2000),
-             ('vis',     dacIndex.VIS,0, 4000, 1550),
-             ('iodelay', dacIndex.IO_DELAY,0, 4000,  660)]
+    _dacs = []
     _dacnames = [_d[0] for _d in _dacs]
+    _allowed_attr = ['_detector', '_current']
+    _frozen = False
 
     def __init__(self, detector):
         # We need to at least initially know which detector we are connected to
@@ -65,6 +53,8 @@ class DetectorDacs:
         for _d in self._dacs:
             setattr(self, '_'+_d[0], Dac(*_d, detector))
 
+        self._frozen = True
+
     def __getattr__(self, name):
         return self.__getattribute__('_' + name)
 
@@ -73,7 +63,10 @@ class DetectorDacs:
         if name in self._dacnames:
             return self.__getattribute__('_' + name).__setitem__(slice(None, None, None), value)
         else:
+            if self._frozen == True and name not in self._allowed_attr:
+                raise AttributeError(f'Dac not found: {name}')
             super().__setattr__(name, value)
+
 
     def __next__(self):
         if self._current >= len(self._dacs):

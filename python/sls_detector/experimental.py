@@ -231,12 +231,8 @@ class Detector(CppDetectorApi):
     
   
     # Time
-
-
-
-    #TODO! Rename to rx_framescaught
     @property
-    def framescaught(self):
+    def rx_framescaught(self):
         return element_if_equal(self.getFramesCaught())
     
 
@@ -469,6 +465,22 @@ class Detector(CppDetectorApi):
 
 
     @property
+    def udp_srcip(self):
+        return element_if_equal(self.getSourceUDPIP())
+
+    @udp_srcip.setter
+    def udp_srcip(self, ip):
+        self.setSourceUDPIP(ip)
+
+    @property
+    def udp_srcip2(self):
+        return element_if_equal(self.getSourceUDPIP2())
+
+    @udp_srcip2.setter
+    def udp_srcip2(self, ip):
+        self.setSourceUDPIP2(ip)
+
+    @property
     def udp_dstport(self):
         return element_if_equal(self.getDestinationUDPPort())
 
@@ -595,6 +607,15 @@ class Detector(CppDetectorApi):
     def adcreg(self):
         return self._adc_register
 
+
+    @property
+    def led(self):
+        return element_if_equal(self.getLEDEnable())
+
+    @led.setter
+    def led(self, value):
+        self.setLEDEnable(value)
+
     @property
     def ratecorr(self):
         """ tau in ns """
@@ -647,6 +668,18 @@ class Detector(CppDetectorApi):
 
     
 
+    @property
+    def type(self):
+        return element_if_equal(self.getDetectorType())
+
+    @property
+    def rx_frameindex(self):
+        return element_if_equal(self.getRxCurrentFrameIndex())
+
+    @property
+    def rx_missingpackets(self):
+        return element_if_equal(self.getNumMissingPackets())
+
 
     """
     Some Eiger stuff, does this have to be here or can we move it to subclass?
@@ -667,6 +700,13 @@ class Detector(CppDetectorApi):
     def tengiga(self, value):
         self.setTenGiga(value)
 
+    @property
+    def overflow(self):
+        return element_if_equal(self.getOverFlowMode())
+
+    @overflow.setter
+    def overflow(self, value):
+        self.setOverFlowMode(value)
 
     @property
     def flowcontrol10g(self):
@@ -675,6 +715,42 @@ class Detector(CppDetectorApi):
     @flowcontrol10g.setter
     def flowcontrol10g(self, enable):
         self.setTenGigaFlowControl(enable)
+
+    @property
+    def interruptsubframe(self):
+        return element_if_equal(self.getInterruptSubframe())
+
+    @interruptsubframe.setter
+    def interruptsubframe(self, value):
+        self.setInterruptSubframe(value)
+
+    @property
+    def gappixels(self):
+        return element_if_equal(self.getRxAddGapPixels())
+
+    @gappixels.setter
+    def gappixels(self, value):
+        self.setRxAddGapPixels(value)
+
+    @property
+    def measuredperiod(self):
+        res = self.getMeasuredPeriod()
+        return element_if_equal([it.total_seconds() for it in res])
+
+    @property
+    def measuredsubperiod(self):
+        res = self.getMeasuredSubFramePeriod()
+        return element_if_equal([it.total_seconds() for it in res])
+
+
+    @property
+    def storeinram(self):
+        return element_if_equal(self.getStoreInRamMode())
+
+    @storeinram.setter
+    def storeinram(self, value):
+        self.setStoreInRamMode(value)
+
 
     """
     CTB stuff 
@@ -739,3 +815,15 @@ class Detector(CppDetectorApi):
     @rx_dbitoffset.setter
     def rx_dbitoffset(self, value):
         self.setRxDbitOffset(value)
+
+    @property
+    def maxadcphaseshift(self):
+        return element_if_equal(self.getMaxADCPhaseShift())
+
+    @property
+    def maxclkphaseshift(self):
+        return element_if_equal(self.getMaxClockPhaseShift())
+
+    @property
+    def adcphase(self):
+        return element_if_equal()

@@ -551,7 +551,7 @@ class CmdProxy {
                          
                           /* configuration */
                           {"config", &CmdProxy::config},
-                          {"free2", &CmdProxy::free},
+                          {"free", &CmdProxy::free},
                           {"parameters", &CmdProxy::parameters},
                           {"hostname", &CmdProxy::Hostname},
                           {"virtual", &CmdProxy::VirtualServer},

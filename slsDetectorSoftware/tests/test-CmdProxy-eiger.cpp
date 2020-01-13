@@ -24,15 +24,15 @@ TEST_CASE("Eiger transmission delay", "[.cmd]") {
         SECTION("txndelay_frame") {
             std::ostringstream oss1, oss2;
             proxy.Call("txndelay_frame", {"5000"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "txndealy_frame 5000\n");
+            REQUIRE(oss1.str() == "txndelay_frame 5000\n");
             proxy.Call("txndelay_frame", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "txndealy_frame 5000\n");
+            REQUIRE(oss2.str() == "txndelay_frame 5000\n");
         }
         SECTION("txndelay_left") {
             std::ostringstream oss1, oss2;
             proxy.Call("txndelay_left", {"5000"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "txndelay_left 5000\n");
-            proxy.Call("txndelay_frame", {}, -1, GET, oss2);
+            proxy.Call("txndelay_left", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "txndelay_left 5000\n");
         }
         SECTION("txndelay_right") {
@@ -269,7 +269,7 @@ TEST_CASE("quad", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER && det.size() == 1) {
+    if (det_type == defs::EIGER) {
         // Quad only works with a single half module EIGER
         std::ostringstream oss;
         proxy.Call("quad", {}, -1, GET, oss);

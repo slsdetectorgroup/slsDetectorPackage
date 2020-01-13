@@ -3020,7 +3020,7 @@ TEST_CASE("zmqport", "[.cmd]") {
 
     int socketsperdetector = 1;
     auto det_type = det.getDetectorType().squash();
-    int prev;
+    int prev = 1;
     if (det_type == slsDetectorDefs::EIGER) {
         socketsperdetector *= 2;
     } else if (det_type == slsDetectorDefs::JUNGFRAU) {

@@ -674,7 +674,7 @@ int setSubExpTime(int64_t val) {
 	int64_t subdeadtime = eiger_virtual_subperiod * 10 -
 	eiger_virtual_subexptime * 10;
 	eiger_virtual_subexptime = (val / (10));
-	eiger_virtual_subperiod = (val + subdeadtime/10);
+	eiger_virtual_subperiod = (val + subdeadtime) /10;
 #endif
 	return OK;
 }

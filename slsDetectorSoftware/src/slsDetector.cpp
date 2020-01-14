@@ -3873,12 +3873,7 @@ void slsDetector::setCounterMask(uint32_t countermask) {
 
 void slsDetector::sendNumberofCounterstoReceiver(uint32_t countermask) {
     if (shm()->useReceiverFlag) {
-        int ncounters = 0;
-        for (int i = 0; i < 32; ++i) {
-            if (countermask & (1 << i)) {
-                ++ncounters;
-            }
-        }
+        int ncounters = __builtin_popcount(countermask);
         FILE_LOG(logDEBUG1) << "Sending Reciver #counters: " << ncounters;
         sendToReceiver(F_RECEIVER_SET_NUM_COUNTERS, ncounters, nullptr);
     }

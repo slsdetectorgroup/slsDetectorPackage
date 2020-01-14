@@ -1062,6 +1062,33 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
     }
 }
 
+int checkDetectorType() {
+	FILE_LOG(logINFO, ("Checking type of module\n"));
+	FILE* fd = fopen(TYPE_FILE_NAME, "r");
+    if (fd == NULL) {
+        FILE_LOG(logERROR, ("Could not open file %s to get type of the module attached\n", TYPE_FILE_NAME));
+        return -1;
+    }	
+	char buffer[MAX_STR_LENGTH];
+	memset(buffer, 0, sizeof(buffer));
+	fread (buffer, MAX_STR_LENGTH, sizeof(char), fd);
+	if (strlen(buffer) == 0) {
+        FILE_LOG(logERROR, ("Could not read file %s to get type of the module attached\n", TYPE_FILE_NAME));
+        return -1;		
+	}
+	int type = atoi(buffer);
+	if (type > TYPE_TOLERANCE) {
+        FILE_LOG(logERROR, ("No Module attached! Expected %d for Mythen, got %d\n", TYPE_MYTHEN3_MODULE_VAL, type));
+        return -2;	
+	}
+
+	if (abs(type - TYPE_MYTHEN3_MODULE_VAL) > TYPE_TOLERANCE) {
+        FILE_LOG(logERROR, ("Wrong Module attached! Expected %d for Mythen, got %d\n", TYPE_MYTHEN3_MODULE_VAL, type));
+        return FAIL;	
+	}
+	return OK;
+}
+
 int powerChip (int on){
     if(on != -1){
         if(on){

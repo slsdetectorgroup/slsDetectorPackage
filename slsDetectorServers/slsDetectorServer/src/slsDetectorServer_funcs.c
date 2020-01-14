@@ -3841,8 +3841,29 @@ int power_chip(int file_des) {
 #else
 	// set & get
 	if ((arg == -1) || (Server_VerifyLock() == OK)) {
-		retval = powerChip(arg);
-		FILE_LOG(logDEBUG1, ("Power chip: %d\n", retval));
+#ifdef MYTHEN3D
+		// check only when powering on
+		if (arg != -1 && arg != 0) {
+			int type_ret = checkDetectorType();
+			if (type_ret == -1) {
+				ret = FAIL;
+				sprintf(mess, "Could not power on chip. Could not open file to get type of module attached.\n");
+				FILE_LOG(logERROR,(mess));			
+			} else if (type_ret == -2) {
+				ret = FAIL;
+				sprintf(mess, "Could not power on chip. No module attached!\n");
+				FILE_LOG(logERROR,(mess));			
+			} else if (type_ret == FAIL) {
+				ret = FAIL;
+				sprintf(mess, "Could not power on chip. Wrong module attached!\n");
+				FILE_LOG(logERROR,(mess));			
+			}
+		}
+#endif
+		if (ret == OK) {
+			retval = powerChip(arg);
+			FILE_LOG(logDEBUG1, ("Power chip: %d\n", retval));
+		}
 		validate(arg, retval, "power on/off chip", DEC);
 #ifdef JUNGFRAUD
 		// narrow down error when powering on

@@ -3567,14 +3567,16 @@ int slsDetector::sendSoftwareTrigger() {
 #endif
 	thisDetector->stoppedFlag=0;
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
-		if (connectControl() == OK){
-			stopSocket->SendDataOnly(&fnum,sizeof(fnum));
-			stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
-			if (ret==FAIL) {
-				stopSocket->ReceiveDataOnly(mess,sizeof(mess));
-				std::cout<< "Detector returned error: " << mess << std::endl;
+		if (stopSocket) {
+			if (connectStop() == OK){
+				stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+				stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL) {
+					stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+				}
+				disconnectStop();
 			}
-			disconnectControl();
 		}
 	}
 	return ret;

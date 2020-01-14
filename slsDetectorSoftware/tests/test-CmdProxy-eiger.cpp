@@ -5,8 +5,8 @@
 #include <array>
 #include <sstream>
 
-#include "tests/globals.h"
 #include "test-CmdProxy-global.h"
+#include "tests/globals.h"
 #include "versionAPI.h"
 
 using sls::CmdProxy;
@@ -43,13 +43,13 @@ TEST_CASE("Eiger transmission delay", "[.cmd]") {
             proxy.Call("txndelay_right", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "txndelay_right 5000\n");
         }
-    }
 
-    // Reset to previous values
-    for (int i = 0; i != det.size(); ++i) {
-        det.setTransmissionDelayFrame(frame[i]);
-        det.setTransmissionDelayLeft(left[i]);
-        det.setTransmissionDelayRight(right[i]);
+        // Reset to previous values
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTransmissionDelayFrame(frame[i]);
+            det.setTransmissionDelayLeft(left[i]);
+            det.setTransmissionDelayRight(right[i]);
+        }
     }
 }
 
@@ -135,7 +135,7 @@ TEST_CASE("overflow", "[.cmd]") {
 }
 
 TEST_CASE("trimen", "[.cmd][.this]") {
-    //TODO! Also Mythen?
+    // TODO! Also Mythen?
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -148,7 +148,7 @@ TEST_CASE("trimen", "[.cmd][.this]") {
         proxy.Call("trimen", {}, -1, GET, oss2);
         REQUIRE(oss2.str() == "trimen [4500, 5400, 6400]\n");
 
-        for (int i = 0; i!=det.size(); ++i){
+        for (int i = 0; i != det.size(); ++i) {
             det.setTrimEnergies(previous[i], {i});
         }
     } else {
@@ -352,7 +352,7 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("vth3", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vpl", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vph", {}, -1, GET));
-        //REQUIRE_THROWS(proxy.Call("vtrim", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vtrim", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcassh", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcas", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vicin", {}, -1, GET));
@@ -374,7 +374,7 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("vb_comp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_pixbuf", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vin_com", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vdd_prot", {}, -1, GET));      
+        REQUIRE_THROWS(proxy.Call("vdd_prot", {}, -1, GET));
     }
 }
 

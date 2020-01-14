@@ -208,11 +208,20 @@ public:
 
     /**
      * set number of interfaces (jungfrau)
-     * @param number of interfaces
+     * @param n number of interfaces
      */
     virtual void SetNumberofInterfaces(const int n) {
         FILE_LOG(logERROR) << "SetNumberofInterfaces is a generic function that should be overloaded by a derived class";
     }
+
+    /**
+     * set number of counters (mythen3)
+     * @param n number of counters
+	 * @param dr dynamic range
+     */
+    virtual void SetNumberofCounters(const int n, const int dr) {
+        FILE_LOG(logERROR) << "SetNumberofCounters is a generic function that should be overloaded by a derived class";
+    }	
 
 	/**
 	 * Print all variables
@@ -528,16 +537,19 @@ class JungfrauData : public GeneralData {
 };
 
 class Mythen3Data : public GeneralData {
-
- public:
+private:
+	int ncounters;
+	const int NCHAN = 1280;
+public:
 
 	/** Constructor */
 	Mythen3Data(){
 		myDetectorType		= slsDetectorDefs::MYTHEN3;
-		nPixelsX 			= (1280 * 3); // 1280 channels, 3 counters
+		ncounters			= 3;
+		nPixelsX 			= (NCHAN * ncounters); // max 1280 channels x 3 counters
 		nPixelsY 			= 1;
 		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
-		dataSize 			= 7680;//8192;
+		dataSize 			= 7680;
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= 2;
 		imageSize 			= dataSize * packetsPerFrame;
@@ -547,6 +559,39 @@ class Mythen3Data : public GeneralData {
 		standardheader		= true;
 		defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
 	};
+
+    /**
+     * set number of counters (mythen3)
+     * @param n number of counters
+	 * @param dr dynamic range
+     */
+    virtual void SetNumberofCounters(const int n, const int dr) {
+		if (n < 1 || n > 3) {
+			throw sls::RuntimeError("Invalid number of counters " + std::to_string(n));
+		}
+		ncounters = n;
+		nPixelsX = NCHAN * ncounters;
+		imageSize = nPixelsX * nPixelsY * 	((dr > 16) ? 4 : 	// 32 bit
+											((dr > 8)  ? 2 : 	// 16 bit
+											((dr > 4)  ? 0.5 : 	// 4 bit
+											0.125)));			// 1 bit
+		dataSize = imageSize / packetsPerFrame;
+		packetSize 			= headerSizeinPacket + dataSize;
+	}
+
+	/**
+	 * Setting dynamic range changes member variables
+	 * @param dr dynamic range
+	 * @param tgEnable (discarded, of no value to mythen3)
+	 */
+	void SetDynamicRange(int dr, bool tgEnable) {
+		imageSize = nPixelsX * nPixelsY * 	((dr > 16) ? 4 : 	// 32 bit
+											((dr > 8)  ? 2 : 	// 16 bit
+											((dr > 4)  ? 0.5 : 	// 4 bit
+											0.125)));			// 1 bit
+		dataSize = imageSize / packetsPerFrame;
+		packetSize 			= headerSizeinPacket + dataSize;		
+	}	
 };
 
 

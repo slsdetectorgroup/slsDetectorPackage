@@ -26,8 +26,8 @@ std::ostream &operator<<(std::ostream &os,
 }
 
 void CmdProxy::Call(const std::string &command,
-                           const std::vector<std::string> &arguments,
-                           int detector_id, int action, std::ostream &os) {
+                    const std::vector<std::string> &arguments, int detector_id,
+                    int action, std::ostream &os) {
     cmd = command;
     args = arguments;
     det_id = detector_id;
@@ -38,7 +38,8 @@ void CmdProxy::Call(const std::string &command,
     if (it != functions.end()) {
         os << ((*this).*(it->second))(action);
     } else {
-        throw sls::RuntimeError(cmd + " Unknown command, use list to list all commands");
+        throw sls::RuntimeError(
+            cmd + " Unknown command, use list to list all commands");
     }
 }
 
@@ -54,7 +55,6 @@ bool CmdProxy::ReplaceIfDepreciated(std::string &command) {
     }
     return false;
 }
-
 
 std::vector<std::string> CmdProxy::GetProxyCommands() {
     std::vector<std::string> commands;
@@ -703,8 +703,8 @@ std::vector<std::string> CmdProxy::DacCommands() {
     case defs::MYTHEN3:
         return std::vector<std::string>{
             "vcassh", "vth2",  "vshaper", "vshaperneg", "vipre_out", "vth3",
-            "vth1",   "vicin", "vcas",    "vpreamp",    "vph",       "vipre",
-            "viinsh", "vpl",   "vtrim",   "vdcsh"};
+            "vth1",   "vicin", "vcas",    "vpreamp",    "vpl",       "vipre",
+            "viinsh", "vph",   "vtrim",   "vdcsh"};
         break;
     case defs::CHIPTESTBOARD:
         return std::vector<std::string>{
@@ -1151,69 +1151,125 @@ std::string CmdProxy::ClearROI(int action) {
     return os.str();
 }
 
-
 /* Gotthard2 Specific */
 
 std::string CmdProxy::InjectChannel(int action) {
-    std::ostringstream os; 
+    std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[offset] [increment]\n\t[Gotthard2] Inject channels with current source for calibration. Offset is starting channel that is injected, increment determines succeeding channels to be injected." << '\n';   
+        os << "[offset] [increment]\n\t[Gotthard2] Inject channels with "
+              "current source for calibration. Offset is starting channel that "
+              "is injected, increment determines succeeding channels to be "
+              "injected."
+           << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (!args.empty()) {                                
-            WrongNumberOfParameters(0);         
-        } 
-        auto t = det->getInjectChannel({det_id});  
-        os << OutString(t) << '\n';     
-    } else if (action == defs::PUT_ACTION) {     
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getInjectChannel({det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
-            WrongNumberOfParameters(2);  
-        }                                
-        det->setInjectChannel(std::stoi(args[0]), std::stoi(args[1]), {det_id});  
+            WrongNumberOfParameters(2);
+        }
+        det->setInjectChannel(std::stoi(args[0]), std::stoi(args[1]), {det_id});
         os << sls::ToString(args) << '\n';
-    } else { 
+    } else {
         throw sls::RuntimeError("Unknown action");
     }
     return os.str();
 }
 
 std::string CmdProxy::VetoPhoton(int action) {
-    std::ostringstream os; 
+    std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_chip] [#photons] [energy in keV] [reference file]\n\t[Gotthard2] Set veto reference for 128 channels for chip n_chip according to referenc file and #photons and energy in keV." << '\n';   
+        os << "[n_chip] [#photons] [energy in keV] [reference "
+              "file]\n\t[Gotthard2] Set veto reference for 128 channels for "
+              "chip n_chip according to referenc file and #photons and energy "
+              "in keV."
+           << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 1) {                                
-            WrongNumberOfParameters(1);         
-        } 
-        auto t = det->getVetoPhoton(std::stoi(args[0]), {det_id});  
-        os << args[0] << ' ' << OutStringHex(t) << '\n';     
-    } else if (action == defs::PUT_ACTION) {     
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        auto t = det->getVetoPhoton(std::stoi(args[0]), {det_id});
+        os << args[0] << ' ' << OutStringHex(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
         if (args.size() != 4) {
-            WrongNumberOfParameters(4);  
-        }                                
-        det->setVetoPhoton(std::stoi(args[0]), std::stoi(args[1]), std::stoi(args[2]), args[3], {det_id});  
+            WrongNumberOfParameters(4);
+        }
+        det->setVetoPhoton(std::stoi(args[0]), std::stoi(args[1]),
+                           std::stoi(args[2]), args[3], {det_id});
         os << sls::ToString(args) << '\n';
-    } else { 
+    } else {
         throw sls::RuntimeError("Unknown action");
     }
     return os.str();
 }
 
 std::string CmdProxy::VetoReference(int action) {
-    std::ostringstream os; 
+    std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[gain index] [12 bit value in hex] \n\t[Gotthard2] Set veto reference for all 128 channels for all chips." << '\n';   
+        os << "[gain index] [12 bit value in hex] \n\t[Gotthard2] Set veto "
+              "reference for all 128 channels for all chips."
+           << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("cannot get vetoref. Did you mean vetophoton?");
-    } else if (action == defs::PUT_ACTION) {     
+    } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
-            WrongNumberOfParameters(2);  
-        }                                
-        det->setVetoReference(std::stoi(args[0]), stoiHex(args[1]), {det_id});  
+            WrongNumberOfParameters(2);
+        }
+        det->setVetoReference(std::stoi(args[0]), stoiHex(args[1]), {det_id});
         os << sls::ToString(args) << '\n';
-    } else { 
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+/* Mythen3 Specific */
+
+std::string CmdProxy::Counters(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[i0] [i1] [i2]... \n\t[Mythen3] List of counters enabled. Each "
+              "element in list can be 0 - 2 and must be non repetitive."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto mask = det->getCounterMask({det_id}).squash(-1);
+        // scan counter enable mask to get vector
+        std::vector <int> result;
+        for (size_t i = 0; i < 32; ++i) {
+            if (mask & (1 << i)) {
+                result.push_back((int)i);
+            }
+        }
+        os << sls::ToString(result) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.empty()) {
+            WrongNumberOfParameters(1);
+        }
+        // convert vector to counter enable mask
+        uint32_t mask = 0;
+        for (size_t i = 0; i < args.size(); ++i) {
+            int val = std::stoi(args[i]);
+            // already enabled earlier
+            if (mask & (1 << val)) {
+                std::ostringstream oss;
+                oss << "Duplicate counter values (" << val << ") in arguments";
+                throw sls::RuntimeError(oss.str());
+            }
+            mask |= (1 << val);
+        }
+        det->setCounterMask(mask, {det_id});
+        os << sls::ToString(args) << '\n';
+    } else {
         throw sls::RuntimeError("Unknown action");
     }
     return os.str();
@@ -1335,7 +1391,8 @@ std::string CmdProxy::ReceiverDbitList(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[all] or [i0] [i1] [i2]... \n\t[Ctb] List of digital signal "
               "bits read out. If all is used instead of a list, all digital "
-              "bits (64) enabled. Each element in list can be 0 - 63 and non "
+              "bits (64) enabled. Each element in list can be 0 - 63 and must "
+              "be non "
               "repetitive."
            << '\n';
     } else if (action == defs::GET_ACTION) {

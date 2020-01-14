@@ -198,6 +198,10 @@ int 		getNumAnalogSamples();
 int			setNumDigitalSamples(int val);
 int 		getNumDigitalSamples();
 #endif
+#ifdef MYTHEN3D
+void		setCounterMask(uint32_t arg);
+uint32_t	getCounterMask();
+#endif
 
 #if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) 
 int			setDelayAfterTrigger(int64_t val);
@@ -219,6 +223,7 @@ int64_t		getFramesFromStart();
 int64_t		getActualTime();
 int64_t		getMeasurementTime();
 #endif
+
 
 
 // parameters - module, settings
@@ -424,6 +429,7 @@ uint64_t    writePatternWord(int addr, uint64_t word);
 int         setPatternWaitAddress(int level, int addr);
 uint64_t    setPatternWaitTime(int level, uint64_t t);
 void        setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
+int			checkDetectorType();
 int         powerChip (int on);
 int        	setPhase(enum CLKINDEX ind, int val, int degrees);
 int         getPhase(enum CLKINDEX ind, int degrees);

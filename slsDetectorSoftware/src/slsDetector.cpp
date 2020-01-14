@@ -1720,36 +1720,6 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
     shm()->useReceiverFlag = true;
     checkReceiverVersionCompatibility();
 
-    FILE_LOG(logDEBUG)
-        << "detector type:"
-        << (ToString(shm()->myDetectorType))
-        << "\ndetector id:" << detId
-        << "\ndetector hostname:" << shm()->hostname
-        << "\nfile path:" << shm()->rxFilePath
-        << "\nfile name:" << shm()->rxFileName
-        << "\nfile index:" << shm()->rxFileIndex
-        << "\nfile format:" << shm()->rxFileFormat
-        << "\nr_framesperfile:" << shm()->rxFramesPerFile
-        << "\nr_discardpolicy:" << shm()->rxFrameDiscardMode
-        << "\nr_padding:" << shm()->rxFramePadding
-        << "\nwrite enable:" << shm()->rxFileWrite
-        << "\nmaster write enable:" << shm()->rxMasterFileWrite
-        << "\noverwrite enable:" << shm()->rxFileOverWrite
-        << "\ndynamic range:" << shm()->dynamicRange
-        << "\nflippeddatax:" << (shm()->flippedDataX)
-        << "\nactivated: " << shm()->activated
-        << "\nreceiver deactivated padding: " << shm()->rxPadDeactivatedModules
-        << "\nsilent Mode:" << shm()->rxSilentMode
-        << "\n10GbE:" << shm()->tenGigaEnable
-        << "\nGap pixels: " << shm()->gappixels
-        << "\nr_readfreq:" << shm()->rxReadFreq
-        << "\nrx streaming port:" << shm()->rxZmqport
-        << "\nrx streaming source ip:" << shm()->rxZmqip
-        << "\nrx additional json header:" << shm()->rxAdditionalJsonHeader
-        << "\nrx_datastream:" << enableDataStreamingFromReceiver(-1)
-        << "\nrx_dbitlistsize:" << shm()->rxDbitList.size()
-        << "\nrx_DbitOffset:" << shm()->rxDbitOffset << std::endl;
-
     if (setDetectorType(shm()->myDetectorType) != GENERIC) {
         sendMultiDetectorSize();
         setDetectorId();
@@ -1819,6 +1789,10 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
 
         case GOTTHARD:
             sendROItoReceiver();
+            break;
+
+        case MYTHEN3:
+            sendNumberofCounterstoReceiver(getCounterMask());
             break;
 
         default:
@@ -3531,6 +3505,9 @@ std::vector<uint64_t> slsDetector::getNumMissingPackets() const {
             throw RuntimeError("Receiver " + std::to_string(detId) +
                             " returned error: " + std::string(mess));
         } else {
+            if (ret == FORCE_UPDATE) {
+                updateCachedReceiverVariables();
+            }
             int nports = -1;
             client.Receive(&nports, sizeof(nports));
             uint64_t mp[nports];
@@ -3886,6 +3863,27 @@ void slsDetector::setPipeline(int clkIndex, int value) {
     int args[]{clkIndex, value};
     FILE_LOG(logDEBUG1) << "Setting Clock " << clkIndex << " pipeline to " << value;
     sendToDetector(F_SET_PIPELINE, args, nullptr);
+}
+
+void slsDetector::setCounterMask(uint32_t countermask) {
+    FILE_LOG(logDEBUG1) << "Setting Counter mask to " << countermask;
+    sendToDetector(F_SET_COUNTER_MASK, countermask, nullptr);
+    sendNumberofCounterstoReceiver(countermask);
+}
+
+void slsDetector::sendNumberofCounterstoReceiver(uint32_t countermask) {
+    if (shm()->useReceiverFlag) {
+        int ncounters = __builtin_popcount(countermask);
+        FILE_LOG(logDEBUG1) << "Sending Reciver #counters: " << ncounters;
+        sendToReceiver(F_RECEIVER_SET_NUM_COUNTERS, ncounters, nullptr);
+    }
+}
+
+uint32_t slsDetector::getCounterMask() {
+    uint32_t retval = 0;
+    sendToDetector(F_GET_COUNTER_MASK, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Received counter mask: " << retval;
+    return retval;
 }
 
 

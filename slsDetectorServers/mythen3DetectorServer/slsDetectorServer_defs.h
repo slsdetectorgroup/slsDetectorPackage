@@ -7,14 +7,21 @@
 #define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
 
 /* Hardware Definitions */
-#define NCHAN 						(128 * 3)
+#define NCOUNTERS					(3)
+#define MAX_COUNTER_MSK					(0x7)
+#define NCHAN 						(128 * NCOUNTERS)
 #define NCHIP 						(10)
 #define NDAC 						(16)
 #define HV_SOFT_MAX_VOLTAGE         (200)
 #define HV_HARD_MAX_VOLTAGE         (530)
 #define HV_DRIVER_FILE_NAME         ("/etc/devlinks/hvdac")
-#define DAC_DRIVER_FILE_NAME         ("/etc/devlinks/dac")
+#define DAC_DRIVER_FILE_NAME        ("/etc/devlinks/dac")
+#define TYPE_FILE_NAME				("/etc/devlinks/type")
 #define DAC_MAX_MV                  (2048)
+#define TYPE_MYTHEN3_MODULE_VAL		(93)
+#define TYPE_TOLERANCE				(10)
+#define TYPE_NO_MODULE_STARTING_VAL	(800)
+
 
 /** Default Parameters */
 #define DEFAULT_DYNAMIC_RANGE		(24)

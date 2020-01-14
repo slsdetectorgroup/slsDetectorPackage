@@ -305,6 +305,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_BURST_MODE:					return "F_SET_BURST_MODE";
 	case F_SET_ADC_ENABLE_MASK_10G:         return "F_SET_ADC_ENABLE_MASK_10G";
 	case F_GET_ADC_ENABLE_MASK_10G:         return "F_GET_ADC_ENABLE_MASK_10G";
+	case F_SET_COUNTER_MASK:         		return "F_SET_COUNTER_MASK";
+	case F_GET_COUNTER_MASK:         		return "F_GET_COUNTER_MASK";
 
 	default:								return "Unknown Function";
 	}
@@ -487,6 +489,8 @@ void function_table() {
 	flist[F_SET_BURST_MODE]						= &set_burst_mode;
 	flist[F_SET_ADC_ENABLE_MASK_10G]			= &set_adc_enable_mask_10g;
 	flist[F_GET_ADC_ENABLE_MASK_10G]			= &get_adc_enable_mask_10g;
+	flist[F_SET_COUNTER_MASK]					= &set_counter_mask;
+	flist[F_GET_COUNTER_MASK]					= &get_counter_mask;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -3837,8 +3841,29 @@ int power_chip(int file_des) {
 #else
 	// set & get
 	if ((arg == -1) || (Server_VerifyLock() == OK)) {
-		retval = powerChip(arg);
-		FILE_LOG(logDEBUG1, ("Power chip: %d\n", retval));
+#ifdef MYTHEN3D
+		// check only when powering on
+		if (arg != -1 && arg != 0) {
+			int type_ret = checkDetectorType();
+			if (type_ret == -1) {
+				ret = FAIL;
+				sprintf(mess, "Could not power on chip. Could not open file to get type of module attached.\n");
+				FILE_LOG(logERROR,(mess));			
+			} else if (type_ret == -2) {
+				ret = FAIL;
+				sprintf(mess, "Could not power on chip. No module attached!\n");
+				FILE_LOG(logERROR,(mess));			
+			} else if (type_ret == FAIL) {
+				ret = FAIL;
+				sprintf(mess, "Could not power on chip. Wrong module attached!\n");
+				FILE_LOG(logERROR,(mess));			
+			}
+		}
+#endif
+		if (ret == OK) {
+			retval = powerChip(arg);
+			FILE_LOG(logDEBUG1, ("Power chip: %d\n", retval));
+		}
 		validate(arg, retval, "power on/off chip", DEC);
 #ifdef JUNGFRAUD
 		// narrow down error when powering on
@@ -5715,7 +5740,7 @@ int get_clock_frequency(int file_des) {
 #endif
 	default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-		if (c < NUM_CLOCKS) {
+		if (arg < NUM_CLOCKS) {
 			c = (enum CLKINDEX)arg;
 			break;
 		}
@@ -6497,6 +6522,62 @@ int get_burst_mode(int file_des) {
 	// get only
 	retval = getBurstMode();
 	FILE_LOG(logDEBUG1, ("Get burst mode:%d\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+int set_counter_mask(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+		return printSocketReadError();
+
+	FILE_LOG(logINFO, ("Setting Counter mask:0x%x\n", arg));
+
+#ifndef MYTHEN3D
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		if (arg == 0) {
+			ret = FAIL;
+			sprintf(mess, "Could not set counter mask. Cannot set it to 0.\n");
+			FILE_LOG(logERROR, (mess));				
+		} else if (arg > MAX_COUNTER_MSK) {
+			ret = FAIL;
+			sprintf(mess, "Could not set counter mask. Invalid counter bit enabled. Max number of counters: %d\n", NCOUNTERS);
+			FILE_LOG(logERROR, (mess));				
+		} else {
+			setCounterMask(arg);
+			uint32_t retval = getCounterMask();
+			FILE_LOG(logDEBUG, ("counter mask retval: 0x%x\n", retval));
+			if (retval != arg) {
+				ret = FAIL;
+				sprintf(mess, "Could not set counter mask. Set 0x%x mask, got 0x%x mask\n", arg, retval);
+				FILE_LOG(logERROR, (mess));						
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_counter_mask(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	uint32_t retval = -1;
+	FILE_LOG(logDEBUG1, ("Getting counter mask\n"));
+
+#ifndef MYTHEN3D
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getCounterMask();
+	FILE_LOG(logDEBUG, ("counter mask retval: 0x%x\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

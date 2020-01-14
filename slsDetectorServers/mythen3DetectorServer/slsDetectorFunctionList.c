@@ -536,9 +536,12 @@ void setCounters(uint32_t arg) {
 	countermask = arg;
 	// convert mask into number of counters (until firmware converts to mask)
 	int ncounters = 0;
-	for (size_t i = 0; i < NCOUNTERS; ++i) {
-		if (arg & (1 << i)) {
-			++ncounters;
+	{
+		int i = 0;
+		for (i = 0; i < NCOUNTERS; ++i) {
+			if (arg & (1 << i)) {
+				++ncounters;
+			}
 		}
 	}
 	FILE_LOG(logINFO, ("Setting number of counters to %d\n", ncounters));
@@ -577,9 +580,12 @@ uint32_t getCounters() {
 	}
 	// confirm ncounters work with mask saved in server (until firmware converts to mask)
 	int nc = 0;
-	for (size_t i = 0; i < NCOUNTERS; ++i) {
-		if (countermask & (1 << i)) {
-			++nc;
+	{
+		int i = 0;
+		for (i = 0; i < NCOUNTERS; ++i) {
+			if (countermask & (1 << i)) {
+				++nc;
+			}
 		}
 	}	
 	// if not equal, make a mask of what is in register (will change once firmware changes)

@@ -180,7 +180,7 @@ TEST_CASE("counters", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("counters", {"0", "-1"}, -1, GET));
         REQUIRE_THROWS(proxy.Call("counters", {"0", "1", "1"}, -1, GET));
 
-        auto mask = det.getCounters({0}).squash(-1);
+        auto mask = det.getCounterMask({0}).squash(-1);
         std::vector<std::string> list_str;
         for (int i = 0; i < 32; ++i) {
             if (mask & (1 << i)) {

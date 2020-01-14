@@ -204,5 +204,5 @@ int get_burst_mode(int);
 int set_burst_mode(int);
 int set_adc_enable_mask_10g(int);
 int get_adc_enable_mask_10g(int);
-int set_counters(int);
-int get_counters(int);
+int set_counter_mask(int);
+int get_counter_mask(int);

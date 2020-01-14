@@ -918,10 +918,10 @@ class Detector {
      *                                                *
      * ************************************************/
     /** [Mythen3] */
-    Result<uint32_t> getCounters(Positions pos = {}) const;
+    Result<uint32_t> getCounterMask(Positions pos = {}) const;
 
     /** [Mythen3] countermask bit set for each counter enabled */
-    void setCounters(uint32_t countermask, Positions pos = {});
+    void setCounterMask(uint32_t countermask, Positions pos = {});
 
     /**************************************************
      *                                                *

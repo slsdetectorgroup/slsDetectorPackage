@@ -8,7 +8,7 @@
 
 /* Hardware Definitions */
 #define NCOUNTERS					(3)
-#define COUNTER_MSK					(0x7)
+#define MAX_COUNTER_MSK					(0x7)
 #define NCHAN 						(128 * NCOUNTERS)
 #define NCHIP 						(10)
 #define NDAC 						(16)

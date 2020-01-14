@@ -186,8 +186,8 @@ enum detFuncs{
 	F_SET_BURST_MODE,
 	F_SET_ADC_ENABLE_MASK_10G,
 	F_GET_ADC_ENABLE_MASK_10G,
-	F_SET_COUNTERS,
-	F_GET_COUNTERS,
+	F_SET_COUNTER_MASK,
+	F_GET_COUNTER_MASK,
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 256, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -258,7 +258,7 @@ enum detFuncs{
 	F_SET_RECEIVER_UDP_PORT2,
 	F_SET_RECEIVER_NUM_INTERFACES,
 	F_RECEIVER_SET_ADC_MASK_10G,
-	F_RECEIVER_SET_COUNTERS,
+	F_RECEIVER_SET_NUM_COUNTERS,
 	NUM_REC_FUNCTIONS
 };
 
@@ -441,8 +441,8 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_BURST_MODE:					return "F_SET_BURST_MODE";
 	case F_SET_ADC_ENABLE_MASK_10G:         return "F_SET_ADC_ENABLE_MASK_10G";
 	case F_GET_ADC_ENABLE_MASK_10G:         return "F_GET_ADC_ENABLE_MASK_10G";
-	case F_SET_COUNTERS:         			return "F_SET_COUNTERS";
-	case F_GET_COUNTERS:         			return "F_GET_COUNTERS";
+	case F_SET_COUNTER_MASK:         		return "F_SET_COUNTER_MASK";
+	case F_GET_COUNTER_MASK:         		return "F_GET_COUNTER_MASK";
 
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
@@ -515,7 +515,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_RECEIVER_UDP_PORT2:			return "F_SET_RECEIVER_UDP_PORT2";
 	case F_SET_RECEIVER_NUM_INTERFACES:		return "F_SET_RECEIVER_NUM_INTERFACES";
 	case F_RECEIVER_SET_ADC_MASK_10G:		return "F_RECEIVER_SET_ADC_MASK_10G";
-	case F_RECEIVER_SET_COUNTERS:			return "F_RECEIVER_SET_COUNTERS";
+	case F_RECEIVER_SET_NUM_COUNTERS:		return "F_RECEIVER_SET_NUM_COUNTERS";
 
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";

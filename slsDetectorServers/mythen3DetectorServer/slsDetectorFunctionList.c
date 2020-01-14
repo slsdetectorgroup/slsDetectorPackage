@@ -365,7 +365,7 @@ void setupDetector() {
 	// dynamic range
 	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
 	// enable all counters
-	bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_COUNTER_ENA_ALL_VAL);
+	setCounterMask(MAX_COUNTER_MSK);
 
 	
 	// Initialization of acquistion parameters
@@ -529,8 +529,8 @@ int64_t getPeriod() {
     return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * FIXED_PLL_FREQUENCY);
 }
 
-void setCounters(uint32_t arg) {
-	if (arg == 0 || arg > COUNTER_MSK) {
+void setCounterMask(uint32_t arg) {
+	if (arg == 0 || arg > MAX_COUNTER_MSK) {
 		return;
 	}
 	countermask = arg;
@@ -563,7 +563,7 @@ void setCounters(uint32_t arg) {
 	FILE_LOG(logDEBUG, ("Config Reg: 0x%x\n", bus_r(addr)));
 }
 
-uint32_t getCounters() {
+uint32_t getCounterMask() {
 	uint32_t addr = CONFIG_REG;
 	uint32_t regval = (bus_r(addr) & CONFIG_COUNTER_ENA_MSK);
 	int ncounters = 0;

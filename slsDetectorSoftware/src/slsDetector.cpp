@@ -1792,7 +1792,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
             break;
 
         case MYTHEN3:
-            sendCounterstoReceiver(getCounters());
+            sendNumberofCounterstoReceiver(getCounterMask());
             break;
 
         default:
@@ -3865,13 +3865,13 @@ void slsDetector::setPipeline(int clkIndex, int value) {
     sendToDetector(F_SET_PIPELINE, args, nullptr);
 }
 
-void slsDetector::setCounters(uint32_t countermask) {
-    FILE_LOG(logDEBUG1) << "Setting Counters to " << countermask;
-    sendToDetector(F_SET_COUNTERS, countermask, nullptr);
-    sendCounterstoReceiver(countermask);
+void slsDetector::setCounterMask(uint32_t countermask) {
+    FILE_LOG(logDEBUG1) << "Setting Counter mask to " << countermask;
+    sendToDetector(F_SET_COUNTER_MASK, countermask, nullptr);
+    sendNumberofCounterstoReceiver(countermask);
 }
 
-void slsDetector::sendCounterstoReceiver(uint32_t countermask) {
+void slsDetector::sendNumberofCounterstoReceiver(uint32_t countermask) {
     if (shm()->useReceiverFlag) {
         int ncounters = 0;
         for (int i = 0; i < 32; ++i) {
@@ -3880,13 +3880,13 @@ void slsDetector::sendCounterstoReceiver(uint32_t countermask) {
             }
         }
         FILE_LOG(logDEBUG1) << "Sending Reciver #counters: " << ncounters;
-        sendToReceiver(F_RECEIVER_SET_COUNTERS, ncounters, nullptr);
+        sendToReceiver(F_RECEIVER_SET_NUM_COUNTERS, ncounters, nullptr);
     }
 }
 
-uint32_t slsDetector::getCounters() {
+uint32_t slsDetector::getCounterMask() {
     uint32_t retval = 0;
-    sendToDetector(F_GET_COUNTERS, nullptr, retval);
+    sendToDetector(F_GET_COUNTER_MASK, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Received counter mask: " << retval;
     return retval;
 }

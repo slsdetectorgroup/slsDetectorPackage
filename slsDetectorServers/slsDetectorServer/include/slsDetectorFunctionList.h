@@ -199,8 +199,8 @@ int			setNumDigitalSamples(int val);
 int 		getNumDigitalSamples();
 #endif
 #ifdef MYTHEN3D
-void		setCounters(uint32_t arg);
-uint32_t	getCounters();
+void		setCounterMask(uint32_t arg);
+uint32_t	getCounterMask();
 #endif
 
 #if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) 

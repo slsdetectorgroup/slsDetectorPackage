@@ -1242,7 +1242,7 @@ std::string CmdProxy::Counters(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        auto mask = det->getCounters({det_id}).squash(-1);
+        auto mask = det->getCounterMask({det_id}).squash(-1);
         // scan counter enable mask to get vector
         std::vector <int> result;
         for (size_t i = 0; i < 32; ++i) {
@@ -1267,7 +1267,7 @@ std::string CmdProxy::Counters(int action) {
             }
             mask |= (1 << val);
         }
-        det->setCounters(mask, {det_id});
+        det->setCounterMask(mask, {det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");

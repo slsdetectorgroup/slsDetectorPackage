@@ -119,7 +119,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_udp_port2(sls::ServerInterface2 &socket);
     int set_num_interfaces(sls::ServerInterface2 &socket);
     int set_adc_mask_10g(sls::ServerInterface2 &socket);  
-    int set_counters(sls::ServerInterface2 &socket);  
+    int set_num_counters(sls::ServerInterface2 &socket);  
 
     Implementation *impl() {
         if (receiver != nullptr) {

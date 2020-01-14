@@ -1864,13 +1864,13 @@ class slsDetector : public virtual slsDetectorDefs {
     void setPipeline(int clkIndex, int value);
 
     /** [Mythen3] */
-    void setCounters(uint32_t countermask);
+    void setCounterMask(uint32_t countermask);
 
     /** [Mythen3] */
-    void sendCounterstoReceiver(uint32_t countermask);
+    void sendNumberofCounterstoReceiver(uint32_t countermask);
 
     /** [Mythen3] */
-    uint32_t getCounters();
+    uint32_t getCounterMask();
     
   private:
     /**

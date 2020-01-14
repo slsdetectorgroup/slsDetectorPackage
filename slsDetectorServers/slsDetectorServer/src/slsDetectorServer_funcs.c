@@ -305,8 +305,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_BURST_MODE:					return "F_SET_BURST_MODE";
 	case F_SET_ADC_ENABLE_MASK_10G:         return "F_SET_ADC_ENABLE_MASK_10G";
 	case F_GET_ADC_ENABLE_MASK_10G:         return "F_GET_ADC_ENABLE_MASK_10G";
-	case F_SET_COUNTERS:         			return "F_SET_COUNTERS";
-	case F_GET_COUNTERS:         			return "F_GET_COUNTERS";
+	case F_SET_COUNTER_MASK:         		return "F_SET_COUNTER_MASK";
+	case F_GET_COUNTER_MASK:         		return "F_GET_COUNTER_MASK";
 
 	default:								return "Unknown Function";
 	}
@@ -489,8 +489,8 @@ void function_table() {
 	flist[F_SET_BURST_MODE]						= &set_burst_mode;
 	flist[F_SET_ADC_ENABLE_MASK_10G]			= &set_adc_enable_mask_10g;
 	flist[F_GET_ADC_ENABLE_MASK_10G]			= &get_adc_enable_mask_10g;
-	flist[F_SET_COUNTERS]						= &set_counters;
-	flist[F_GET_COUNTERS]						= &get_counters;
+	flist[F_SET_COUNTER_MASK]					= &set_counter_mask;
+	flist[F_GET_COUNTER_MASK]					= &get_counter_mask;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -6527,7 +6527,7 @@ int get_burst_mode(int file_des) {
 }
 
 
-int set_counters(int file_des) {
+int set_counter_mask(int file_des) {
   	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	uint32_t arg = 0;
@@ -6535,7 +6535,7 @@ int set_counters(int file_des) {
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 		return printSocketReadError();
 
-	FILE_LOG(logINFO, ("Setting Counters [mask:0x%x]\n", arg));
+	FILE_LOG(logINFO, ("Setting Counter mask:0x%x\n", arg));
 
 #ifndef MYTHEN3D
 	functionNotImplemented();
@@ -6544,19 +6544,19 @@ int set_counters(int file_des) {
 	if (Server_VerifyLock() == OK) {
 		if (arg == 0) {
 			ret = FAIL;
-			sprintf(mess, "Could not set counters. Cannot set it to 0.\n");
+			sprintf(mess, "Could not set counter mask. Cannot set it to 0.\n");
 			FILE_LOG(logERROR, (mess));				
-		} else if (arg > COUNTER_MSK) {
+		} else if (arg > MAX_COUNTER_MSK) {
 			ret = FAIL;
-			sprintf(mess, "Could not set counters. Invalid counter bit enabled. Max number of counters: %d\n", NCOUNTERS);
+			sprintf(mess, "Could not set counter mask. Invalid counter bit enabled. Max number of counters: %d\n", NCOUNTERS);
 			FILE_LOG(logERROR, (mess));				
 		} else {
-			setCounters(arg);
-			uint32_t retval = getCounters();
-			FILE_LOG(logDEBUG, ("counters retval: 0x%x\n", retval));
+			setCounterMask(arg);
+			uint32_t retval = getCounterMask();
+			FILE_LOG(logDEBUG, ("counter mask retval: 0x%x\n", retval));
 			if (retval != arg) {
 				ret = FAIL;
-				sprintf(mess, "Could not set counters. Set 0x%x mask, got 0x%x mask\n", arg, retval);
+				sprintf(mess, "Could not set counter mask. Set 0x%x mask, got 0x%x mask\n", arg, retval);
 				FILE_LOG(logERROR, (mess));						
 			}
 		}
@@ -6566,17 +6566,18 @@ int set_counters(int file_des) {
 }
 
 
-int get_counters(int file_des) {
+int get_counter_mask(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	uint32_t retval = -1;
-	FILE_LOG(logDEBUG1, ("Getting counters mask\n"));
+	FILE_LOG(logDEBUG1, ("Getting counter mask\n"));
 
 #ifndef MYTHEN3D
 	functionNotImplemented();
 #else	
 	// get only
-	retval = getCounters();
+	retval = getCounterMask();
+	FILE_LOG(logDEBUG, ("counter mask retval: 0x%x\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

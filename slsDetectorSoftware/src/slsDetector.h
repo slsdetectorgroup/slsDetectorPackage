@@ -1862,6 +1862,15 @@ class slsDetector : public virtual slsDetectorDefs {
 
     /** [Ctb][Moench] */
     void setPipeline(int clkIndex, int value);
+
+    /** [Mythen3] */
+    void setCounters(uint32_t countermask);
+
+    /** [Mythen3] */
+    void sendCounterstoReceiver(uint32_t countermask);
+
+    /** [Mythen3] */
+    uint32_t getCounters();
     
   private:
     /**

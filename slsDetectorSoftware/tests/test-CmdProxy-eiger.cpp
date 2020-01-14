@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "tests/globals.h"
+#include "test-CmdProxy-global.h"
 #include "versionAPI.h"
 
 using sls::CmdProxy;
@@ -279,22 +280,6 @@ TEST_CASE("quad", "[.cmd]") {
     }
 }
 
-void test_dac(defs::dacIndex index, const std::string &dacname, int dacvalue) {
-    Detector det;
-    CmdProxy proxy(&det);
-    std::ostringstream oss_set, oss_get;
-    auto dacstr = std::to_string(dacvalue);
-    auto previous = det.getDAC(index, false);
-    proxy.Call(dacname, {dacstr}, -1, PUT, oss_set);
-    REQUIRE(oss_set.str() == dacname + " " + dacstr + "\n");
-    proxy.Call(dacname, {}, -1, GET, oss_get);
-    REQUIRE(oss_set.str() == dacname + " " + dacstr + "\n");
-    // Reset all dacs to previous value
-    for (int i = 0; i != det.size(); ++i) {
-        det.setDAC(index, previous[i], false, {i});
-    }
-}
-
 TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
     // vsvp, vtr, vrf, vrs, vsvn, vtgstv, vcmp_ll, vcmp_lr, vcal, vcmp_rl,
     // rxb_rb, rxb_lb, vcmp_rr, vcp, vcn, vis, vthreshold
@@ -348,6 +333,48 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
                 det.setDAC(defs::VCP, vcp[i], false, {i});
             }
         }
+        REQUIRE_THROWS(proxy.Call("vref_ds", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vcascn_pb", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vcascp_pb", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vout_cm", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vcasc_out", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vin_cm", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("ib_test_c", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vpreamp", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vshaper", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vshaperneg", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vipre", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("viinsh", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vdcsh", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vth1", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vth2", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vth3", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vpl", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vph", {}, -1, GET));
+        //REQUIRE_THROWS(proxy.Call("vtrim", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vcassh", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vcas", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vicin", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vipre_out", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_h_adc", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vb_comp_fe", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vb_comp_adc", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vcom_cds", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_restore", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vb_opa_1st", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_comp_fe", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vcom_adc1", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_l_adc", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_cds", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vb_cs", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vb_opa_fd", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vcom_adc2", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vb_ds", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vb_comp", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vb_pixbuf", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vin_com", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vdd_prot", {}, -1, GET));      
     }
 }
 

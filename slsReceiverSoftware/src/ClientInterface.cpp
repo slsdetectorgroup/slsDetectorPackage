@@ -174,7 +174,7 @@ int ClientInterface::functionTable(){
 	flist[F_SET_RECEIVER_UDP_PORT2]         =   &ClientInterface::set_udp_port2;
 	flist[F_SET_RECEIVER_NUM_INTERFACES]    =   &ClientInterface::set_num_interfaces;
 	flist[F_RECEIVER_SET_ADC_MASK_10G]		=	&ClientInterface::set_adc_mask_10g;
-
+    flist[F_RECEIVER_SET_COUNTERS]          =   &ClientInterface::set_counters;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -1319,4 +1319,12 @@ int ClientInterface::set_adc_mask_10g(Interface &socket) {
     }
     FILE_LOG(logDEBUG1) << "10Gb ADC enable mask retval: " << retval;
     return socket.sendResult(retval);
+}
+
+int ClientInterface::set_counters(Interface &socket) {
+    auto arg = socket.Receive<int>();
+    verifyIdle(socket);
+    FILE_LOG(logDEBUG1) << "Setting counters: " << arg;
+    impl()->setNumberofCounters(arg);
+    return socket.Send(OK);
 }

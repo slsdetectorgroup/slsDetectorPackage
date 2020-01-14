@@ -910,7 +910,18 @@ class Detector {
     void setBurstMode(bool enable, Positions pos = {});
 
     /** [Gotthard2]  */
-    Result<bool> getBurstMode(Positions pos = {});    
+    Result<bool> getBurstMode(Positions pos = {});   
+
+    /**************************************************
+     *                                                *
+     *    Mythen3 Specific                            *
+     *                                                *
+     * ************************************************/
+    /** [Mythen3] */
+    Result<uint32_t> getCounters(Positions pos = {}) const;
+
+    /** [Mythen3] countermask bit set for each counter enabled */
+    void setCounters(uint32_t countermask, Positions pos = {});
 
     /**************************************************
      *                                                *

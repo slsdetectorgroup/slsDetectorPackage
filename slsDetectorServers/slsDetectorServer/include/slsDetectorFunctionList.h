@@ -198,6 +198,10 @@ int 		getNumAnalogSamples();
 int			setNumDigitalSamples(int val);
 int 		getNumDigitalSamples();
 #endif
+#ifdef MYTHEN3D
+void		setCounters(uint32_t arg);
+uint32_t	getCounters();
+#endif
 
 #if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) 
 int			setDelayAfterTrigger(int64_t val);
@@ -219,6 +223,7 @@ int64_t		getFramesFromStart();
 int64_t		getActualTime();
 int64_t		getMeasurementTime();
 #endif
+
 
 
 // parameters - module, settings

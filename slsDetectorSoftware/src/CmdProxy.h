@@ -529,6 +529,7 @@ class CmdProxy {
                                     {"digitest", "imagetest"},
 
                                     /* Gotthard2 Specific */
+                                    /* Mythen3 Specific */ 
                                     /* CTB Specific */
                                     {"flags", "romode"},
                                     {"i_a", "im_a"},
@@ -785,6 +786,9 @@ class CmdProxy {
                           {"vetoref", &CmdProxy::VetoReference},
                           {"burstmode", &CmdProxy::burstmode},
 
+                          /* Mythen3 Specific */  
+                          {"counters", &CmdProxy::Counters},
+
                           /* CTB Specific */
                           {"samples", &CmdProxy::Samples},
                           {"asamples", &CmdProxy::asamples},
@@ -938,7 +942,9 @@ class CmdProxy {
     /* Gotthard2 Specific */
     std::string InjectChannel(int action);   
     std::string VetoPhoton(int action); 
-    std::string VetoReference(int action);       
+    std::string VetoReference(int action);      
+    /* Mythen3 Specific */ 
+    std::string Counters(int action); 
     /* CTB Specific */
     std::string Samples(int action);
     std::string Dbitphase(int action);
@@ -1525,6 +1531,8 @@ class CmdProxy {
     /* Gotthard2 Specific */
     INTEGER_COMMAND(burstmode, getBurstMode, setBurstMode, std::stoi,
                     "[0, 1]\n\t[Gotthard2] 1 sets to burst mode. 0 sets to continuous mode. Default is burst mode.");
+
+    /* Mythen3 Specific */ 
 
     /* CTB Specific */
 

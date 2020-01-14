@@ -38,6 +38,7 @@ uint32_t clkFrequency[NUM_CLOCKS] = {0, 0, 0, 0, 0};
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
 int detPos[2] = {0, 0};
+uint32_t countermask = 0; // will be removed later when in firmware converted to mask
 
 int isInitCheckDone() {
 	return initCheckDone;
@@ -364,7 +365,6 @@ void setupDetector() {
 	// dynamic range
 	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
 	// enable all counters
-	bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_COUNTER_ENA_MSK);
 	bus_w(CONFIG_REG, bus_r(CONFIG_REG) | CONFIG_COUNTER_ENA_ALL_VAL);
 
 	
@@ -527,6 +527,76 @@ int setPeriod(int64_t val) {
 
 int64_t getPeriod() {
     return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * FIXED_PLL_FREQUENCY);
+}
+
+void setCounters(uint32_t arg) {
+	if (arg == 0 || arg > COUNTER_MSK) {
+		return;
+	}
+	countermask = arg;
+	// convert mask into number of counters (until firmware converts to mask)
+	int ncounters = 0;
+	for (size_t i = 0; i < NCOUNTERS; ++i) {
+		if (arg & (1 << i)) {
+			++ncounters;
+		}
+	}
+	FILE_LOG(logINFO, ("Setting number of counters to %d\n", ncounters));
+	uint32_t val = 0;
+	switch (ncounters) {
+		case 1:
+			val = CONFIG_COUNTER_ENA_1_VAL;
+			break;
+		case 2:
+			val = CONFIG_COUNTER_ENA_2_VAL;
+			break;
+		default:
+			val = CONFIG_COUNTER_ENA_ALL_VAL;
+			break;
+	}
+	uint32_t addr = CONFIG_REG;
+	bus_w(addr, bus_r(addr) &~ CONFIG_COUNTER_ENA_MSK);
+	bus_w(addr, bus_r(addr) | val);
+	FILE_LOG(logDEBUG, ("Config Reg: 0x%x\n", bus_r(addr)));
+}
+
+uint32_t getCounters() {
+	uint32_t addr = CONFIG_REG;
+	uint32_t regval = (bus_r(addr) & CONFIG_COUNTER_ENA_MSK);
+	int ncounters = 0;
+	switch (regval) {
+		case CONFIG_COUNTER_ENA_1_VAL:
+			ncounters = 1;
+			break;
+		case CONFIG_COUNTER_ENA_2_VAL:
+			ncounters = 2;
+			break;		
+		default:
+			ncounters = 3;
+			break;
+	}
+	// confirm ncounters work with mask saved in server (until firmware converts to mask)
+	int nc = 0;
+	for (size_t i = 0; i < NCOUNTERS; ++i) {
+		if (countermask & (1 << i)) {
+			++nc;
+		}
+	}	
+	// if not equal, make a mask of what is in register (will change once firmware changes)
+	if (nc != ncounters) {
+		switch (ncounters) {
+			case 1:
+				countermask = 0x1;
+				break;
+			case 2:
+				countermask = 0x3;
+				break;
+			default:
+				countermask = 0x7;
+				break;
+		}
+	}
+	return countermask;
 }
 
 int setDelayAfterTrigger(int64_t val) {

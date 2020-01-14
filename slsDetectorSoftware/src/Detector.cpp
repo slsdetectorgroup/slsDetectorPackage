@@ -1188,6 +1188,16 @@ Result<bool> Detector::getBurstMode(Positions pos) {
     return pimpl->Parallel(&slsDetector::getBurstMode, pos);
 }    
 
+// Mythen3 Specific
+
+Result<uint32_t> Detector::getCounters(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getCounters, pos);
+}
+
+void Detector::setCounters(uint32_t countermask, Positions pos) {
+    pimpl->Parallel(&slsDetector::setCounters, pos, countermask);
+}
+
 // CTB Specific
 
 Result<int> Detector::getNumberOfAnalogSamples(Positions pos) const {

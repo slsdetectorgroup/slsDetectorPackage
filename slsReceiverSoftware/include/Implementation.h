@@ -149,6 +149,8 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t getNumberofDigitalSamples() const;
     /**[Ctb] */
     void setNumberofDigitalSamples(const uint32_t i);
+    int getNumberofCounters() const;
+    void setNumberofCounters(const int i);
     uint32_t getDynamicRange() const;
     void setDynamicRange(const uint32_t i);
     ROI getROI() const;
@@ -271,6 +273,7 @@ class Implementation : private virtual slsDetectorDefs {
     uint64_t subPeriod;
     uint64_t numberOfAnalogSamples;
     uint64_t numberOfDigitalSamples;
+    int numberOfCounters;
     uint32_t dynamicRange;
     ROI roi;
     bool tengigaEnable;

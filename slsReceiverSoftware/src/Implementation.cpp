@@ -101,6 +101,7 @@ void Implementation::InitializeMembers() {
     subPeriod = 0;
     numberOfAnalogSamples = 0;
     numberOfDigitalSamples = 0;
+    numberOfCounters = 0;
     dynamicRange = 16;
     roi.xmin = -1;
     roi.xmax = -1;
@@ -1287,6 +1288,26 @@ void Implementation::setNumberofDigitalSamples(const uint32_t i) {
                       << (generalData->packetsPerFrame);
 }
 
+int Implementation::getNumberofCounters() const {
+    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    return numberOfCounters;
+}
+
+void Implementation::setNumberofCounters(const int i) {
+    if (numberOfCounters != i) {
+        numberOfCounters = i;
+
+        if (myDetectorType == MYTHEN3) {
+            generalData->SetDynamicRange(i, tengigaEnable);
+            // to update npixelsx, npixelsy in file writer
+            for (const auto &it : dataProcessor)
+                it->SetPixelDimension();
+            SetupFifoStructure();
+        }
+    }
+    FILE_LOG(logINFO) << "Number of Counters: " << numberOfCounters;
+}
+
 uint32_t Implementation::getDynamicRange() const {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return dynamicRange;
@@ -1297,9 +1318,11 @@ void Implementation::setDynamicRange(const uint32_t i) {
     if (dynamicRange != i) {
         dynamicRange = i;
 
-        if (myDetectorType == EIGER) {
+        if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
             generalData->SetDynamicRange(i, tengigaEnable);
-            generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
+            if (myDetectorType == EIGER) {
+                generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
+            }
             // to update npixelsx, npixelsy in file writer
             for (const auto &it : dataProcessor)
                 it->SetPixelDimension();

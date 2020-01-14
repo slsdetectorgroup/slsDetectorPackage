@@ -7,7 +7,9 @@
 #define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
 
 /* Hardware Definitions */
-#define NCHAN 						(128 * 3)
+#define NCOUNTERS					(3)
+#define COUNTER_MSK					(0x7)
+#define NCHAN 						(128 * NCOUNTERS)
 #define NCHIP 						(10)
 #define NDAC 						(16)
 #define HV_SOFT_MAX_VOLTAGE         (200)

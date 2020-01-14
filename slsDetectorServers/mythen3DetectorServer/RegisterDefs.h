@@ -82,7 +82,6 @@
 
 /* Config RW regiseter */
 #define CONFIG_REG                      (0x20 * REG_OFFSET + BASE_CONTROL)
-
 #define CONFIG_COUNTER_ENA_OFST		    (0)
 #define CONFIG_COUNTER_ENA_MSK          (0x00000003 << CONFIG_COUNTER_ENA_OFST)
 #define CONFIG_COUNTER_ENA_DEFAULT_VAL  ((0x0 << CONFIG_COUNTER_ENA_OFST) & CONFIG_COUNTER_ENA_MSK)
@@ -117,6 +116,8 @@
 #define PATTERN_IO_CTRL_MSB_REG         (0x23 * REG_OFFSET + BASE_CONTROL)   
 
 #define DTA_OFFSET_REG                  (0x24 * REG_OFFSET + BASE_CONTROL)
+
+
 
 
 /* Pattern Control registers --------------------------------------------------*/

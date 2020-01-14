@@ -1,8 +1,8 @@
-SLS Detector Package 4.1.0 released on 04.10.2019 (Minor Release)
-=================================================================
+SLS Detector Package 4.1.1 released on 15.01.2020 (Bug Fix Release)
+===================================================================
 
 
-This document describes the differences between 4.1.0 and 4.0.2 releases.   
+This document describes the differences between 4.1.0 and 4.1.1 releases.   
     
     CONTENTS
     --------
@@ -17,12 +17,14 @@ This document describes the differences between 4.1.0 and 4.0.2 releases.
 1. Topics Concerning
 ====================
 
-    - software for eiger quad hardware integrated
-    - command line framesl, cyclesl was printing in float (jungfrau, gotthard)
-    - eiger interrupt subframe flag
-    - eiger server reg command (+0x100 for left and +0x200 for right)
-    - additional eiger parameters included i master file
+    - detangled receiver streaming from data call back in client
+      and allow for unregister data call back in client
+    - (eiger) software trigger made to work along with blocking acquire
+    - bug fix for locks in blocking acquire
+    - parameter file allows for modular commands
 
+    Compared to 4.1.0, 
+        no firmware or on-board detector server update required for this release.
 
 
 2. Resolved Issues
@@ -31,36 +33,21 @@ This document describes the differences between 4.1.0 and 4.0.2 releases.
     Client
     ------
     
-    1.  Command line quad integrates Eiger quad hardware
+    1.  Registering data call back (registerDataCallback) used to enable data streaming 
+        via zmq in both receiver and client. Sending NULL unregistered call back, 
+        but did not disable streaming. 
+        Now, registering/unregistering this call back will only enable data streaming
+        in client. Data streaming in receiver will have to be explicitly enabled.
+
+    2.  (Eiger)
+        Software trigger triggered via the stop server and hence, can be triggered
+        also during blocking acquire.
+
+    3.  If stop acquisition command was given immediately after starting a blocking acquire,
+        it might have hanged the process. This bug is fixed now.
+
+    4.  Parameter file now allows modular commands (using ':'). They are not ignored anymore.
     
-    2.  Command line commands framesl, cyclesl, fatesl, problesl and nframes was 
-        printing the result in decimals. It is now fixed to print as whole numbers.
-    
-
-    Detector Server (Eiger)
-    -----------------------
-
-    1.  Command line quad integrates Eiger quad hardware
-
-    2.  Control flag to set last subframe to be interrupted depending on subexptime.
-        By default, it is disabled and will wait till the last sub frame has finished
-        exposing.
-
-    3.  Left and Right FEB registers accessed independently using addr (+0x100 and +0x200)
-        respectively.
-
-
-    Receiver
-    --------
-
-    1.  Command line quad integrates Eiger quad hardware
-    
-    2.  Master file has additional parameters for Eiger (Quad Enable, Gap Pixels Enable).
-        Writer version update to 4.0.
-    
-    3.  Zmq Json Header has additional informaion
-
-
 
 3. Known Issues
 ===============
@@ -69,7 +56,7 @@ This document describes the differences between 4.1.0 and 4.0.2 releases.
     
 4. Firmware Requirements
 ========================
-
+        
         Gotthard
         ========   
         Minimum compatible version  : 11.01.2013

@@ -1,0 +1,154 @@
+SLS Detector Package 4.1.1 released on 15.01.2020 (Bug Fix Release)
+===================================================================
+
+
+This document describes the differences between 4.1.0 and 4.1.1 releases.   
+    
+    CONTENTS
+    --------
+    1.  Topics Concerning
+    2.  Resolved Issues
+    3.  Known Issues
+    4.  Firmware Requirements
+    5.  Download, Documentation & Support
+    
+
+
+1. Topics Concerning
+====================
+
+    - detangled receiver streaming from data call back in client
+      and allow for unregister data call back in client
+    - (eiger) software trigger made to work along with blocking acquire
+    - bug fix for locks in blocking acquire
+    - parameter file allows for modular commands
+
+    Compared to 4.1.0, 
+        no firmware or on-board detector server update required for this release.
+
+
+2. Resolved Issues
+==================          
+
+    Client
+    ------
+    
+    1.  Registering data call back (registerDataCallback) used to enable data streaming 
+        via zmq in both receiver and client. Sending NULL unregistered call back, 
+        but did not disable streaming. 
+        Now, registering/unregistering this call back will only enable data streaming
+        in client. Data streaming in receiver will have to be explicitly enabled.
+
+    2.  (Eiger)
+        Software trigger triggered via the stop server and hence, can be triggered
+        also during blocking acquire.
+
+    3.  If stop acquisition command was given immediately after starting a blocking acquire,
+        it might have hanged the process. This bug is fixed now.
+
+    4.  Parameter file now allows modular commands (using ':'). They are not ignored anymore.
+    
+
+3. Known Issues
+===============
+    
+    
+    
+4. Firmware Requirements
+========================
+        
+        Gotthard
+        ========   
+        Minimum compatible version  : 11.01.2013
+        Latest compatible version   : 08.02.2018 (50um and 25um Master)
+                                      09.02.2018 (25 um Slave) 
+        Eiger
+        =====  
+        Minimum compatible version  : 24
+        Latest compatible version   : 24
+        
+        Jungfrau
+        ========       
+        Minimum compatible version  : 26.02.2018
+        Latest compatible version   : 06.12.2018
+
+        
+        Detector Upgrade
+        ================
+        Gotthard    Cannot be upgraded remotely. Requires programming via USB blaster
+        Eiger       Can be upgraded remotely via bit files
+        Jungfrau    Can be upgraded remotely using sls_detector_put programfpga <pof>
+        
+        Instructions available at
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/html/slsDetectorInstall/GOTTHARD_Firmware.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/html/slsDetectorInstall/EIGER_Firmware.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/html/slsDetectorInstall/JUNGFRAU_Firmware.html
+
+         
+    Please refer to the link below for more details on the firmware versions.
+    https://www.psi.ch/en/detectors/firmware
+    
+    
+        
+5. Download, Documentation & Support
+====================================
+
+    Download
+    --------
+    
+    The Source Code (Default C++ API):
+         https://github.com/slsdetectorgroup/slsDetectorPackage
+         
+    The Conda Lib Package:
+        https://github.com/slsdetectorgroup/sls_detector_lib
+        
+    The Conda GUI Package:
+        https://github.com/slsdetectorgroup/sls_detector_gui    
+        
+    The Python Interface (including the package):
+        https://github.com/slsdetectorgroup/sls_detector
+    
+    
+    Documentation
+    -------------
+    
+    Manual (HTML & PDF):
+        https://www.psi.ch/en/detectors/documentation
+        slsDetectorPackage/manual/docs/
+        
+    Command Line Documentation:
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/html/slsDetectorClientDocs/index.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/pdf/slsDetectorClientDocs.pdf
+
+        manual/docs/html/slsDetectorClientDocs/index.html
+        manual/docs/pdf/slsDetectorClientDocs.pdf
+        
+    C++ API Documentation:
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/html/slsDetectorUsersDocs/index.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/pdf/slsDetectorUsersDocs.pdf
+
+        manual/docs/html/slsDetectorUsersDocs/index.html
+        manual/docs/pdf/slsDetectorUsersDocs.pdf
+        
+    C++ API Example:
+        https://slsdetectorgroup.github.io/slsDetectorPackage/exampleCode/slsDetectorUsersExample/index.html
+
+        manual/manual-api/mainClient.cpp
+        manual/manual-api/mainReceiver.cpp
+        
+    Python API Documentation:
+        https://slsdetectorgroup.github.io/sls_detector/
+
+    TroubleShotting:
+        https://www.psi.ch/en/detectors/troubleshooting
+        
+    Further Documentation:
+        https://www.psi.ch/en/detectors/users-support
+        
+    
+    Support
+    -------
+
+        dhanya.thattil@psi.ch
+        erik.frojdh@psi.ch
+        anna.bergamaschi@psi.ch

@@ -224,6 +224,15 @@ Result<ns> Detector::getPeriodLeft(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getPeriodLeft, pos);
 }
 
+Result<defs::timingMode> Detector::getTimingMode(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::setTimingMode, pos,
+                           defs::GET_TIMING_MODE);
+}
+
+void Detector::setTimingMode(defs::timingMode value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimingMode, pos, value);
+}
+
 Result<defs::speedLevel> Detector::getSpeed(Positions pos) const {
     auto res =
         pimpl->Parallel(&slsDetector::getClockDivider, pos, defs::RUN_CLOCK);
@@ -309,6 +318,21 @@ void Detector::setHighVoltage(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setDAC, pos, value, defs::HIGH_VOLTAGE, 0);
 }
 
+Result<bool> Detector::getPowerChip(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::powerChip, pos, -1);
+}
+
+void Detector::setPowerChip(bool on, Positions pos) {
+    if ((pos.empty() || pos[0] == -1) && on && pimpl->size() > 3) {
+        for (int i = 0; i != pimpl->size(); ++i) {
+            pimpl->Parallel(&slsDetector::powerChip, {i}, static_cast<int>(on));
+            usleep(1000 * 1000);
+        }
+    } else {
+        pimpl->Parallel(&slsDetector::powerChip, pos, static_cast<int>(on));
+    }
+}
+
 Result<int> Detector::getTemperature(defs::dacIndex index,
                                      Positions pos) const {
     switch (index) {
@@ -357,15 +381,6 @@ Result<int> Detector::getOnChipDAC(defs::dacIndex index, int chipIndex,
 void Detector::setOnChipDAC(defs::dacIndex index, int chipIndex, int value,
                             Positions pos) {
     pimpl->Parallel(&slsDetector::setOnChipDAC, pos, index, chipIndex, value);
-}
-
-Result<defs::timingMode> Detector::getTimingMode(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::setTimingMode, pos,
-                           defs::GET_TIMING_MODE);
-}
-
-void Detector::setTimingMode(defs::timingMode value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setTimingMode, pos, value);
 }
 
 // Acquisition
@@ -1067,21 +1082,6 @@ Result<int> Detector::getTemperatureEvent(Positions pos) const {
 
 void Detector::resetTemperatureEvent(Positions pos) {
     pimpl->Parallel(&slsDetector::setTemperatureEvent, pos, 0);
-}
-
-Result<bool> Detector::getPowerChip(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::powerChip, pos, -1);
-}
-
-void Detector::setPowerChip(bool on, Positions pos) {
-    if ((pos.empty() || pos[0] == -1) && on && pimpl->size() > 3) {
-        for (int i = 0; i != pimpl->size(); ++i) {
-            pimpl->Parallel(&slsDetector::powerChip, {i}, static_cast<int>(on));
-            usleep(1000 * 1000);
-        }
-    } else {
-        pimpl->Parallel(&slsDetector::powerChip, pos, static_cast<int>(on));
-    }
 }
 
 Result<bool> Detector::getAutoCompDisable(Positions pos) const {

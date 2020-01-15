@@ -620,6 +620,13 @@ class slsDetector : public virtual slsDetectorDefs {
     int64_t getMeasurementTime() const;
 
     /**
+     * Set/get timing mode
+     * @param pol timing mode (-1 gets)
+     * @returns current timing mode
+     */
+    timingMode setTimingMode(timingMode pol = GET_TIMING_MODE);
+
+    /**
      * Set/get dynamic range
      * (Eiger: If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to
      * 1)
@@ -651,13 +658,6 @@ class slsDetector : public virtual slsDetectorDefs {
      * millidegrees)
      */
     int getADC(dacIndex index);
-
-    /**
-     * Set/get timing mode
-     * @param pol timing mode (-1 gets)
-     * @returns current timing mode
-     */
-    timingMode setTimingMode(timingMode pol = GET_TIMING_MODE);
 
     /**
      * Set/get external signal flags (to specify triggerinrising edge etc)

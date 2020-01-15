@@ -1483,6 +1483,16 @@ int64_t slsDetector::getMeasurementTime() const {
     return retval; 
 }
 
+slsDetectorDefs::timingMode slsDetector::setTimingMode(timingMode pol) {
+    int fnum = F_SET_TIMING_MODE;
+    auto arg = static_cast<int>(pol);
+    timingMode retval = GET_TIMING_MODE;
+    FILE_LOG(logDEBUG1) << "Setting communication to mode " << pol;
+    sendToDetector(fnum, arg, retval);
+    FILE_LOG(logDEBUG1) << "Timing Mode: " << retval;
+    return retval;
+}
+
 int slsDetector::setDynamicRange(int n) {
     // TODO! Properly handle fail
     int prevDr = shm()->dynamicRange;
@@ -1546,16 +1556,6 @@ int slsDetector::getADC(dacIndex index) {
     FILE_LOG(logDEBUG1) << "Getting ADC " << index;
     sendToDetector(F_GET_ADC, static_cast<int>(index), retval);
     FILE_LOG(logDEBUG1) << "ADC (" << index << "): " << retval;
-    return retval;
-}
-
-slsDetectorDefs::timingMode slsDetector::setTimingMode(timingMode pol) {
-    int fnum = F_SET_TIMING_MODE;
-    auto arg = static_cast<int>(pol);
-    timingMode retval = GET_TIMING_MODE;
-    FILE_LOG(logDEBUG1) << "Setting communication to mode " << pol;
-    sendToDetector(fnum, arg, retval);
-    FILE_LOG(logDEBUG1) << "Timing Mode: " << retval;
     return retval;
 }
 

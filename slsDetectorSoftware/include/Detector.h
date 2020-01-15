@@ -170,6 +170,14 @@ class Detector {
     /** [Gotthard][Jungfrau][CTB] */
     Result<ns> getPeriodLeft(Positions pos = {}) const;
 
+    Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
+
+    /**
+     * [Gotthard, Jungfrau, CTB Options: AUTO_TIMING, TRIGGER_EXPOSURE]
+     * [Eiger Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER]
+     */
+    void setTimingMode(defs::timingMode value, Positions pos = {});
+
     /** [Eiger][Jungfrau] */
     Result<defs::speedLevel> getSpeed(Positions pos = {}) const;
 
@@ -221,6 +229,12 @@ class Detector {
 
     Result<int> getHighVoltage(Positions pos = {}) const;
 
+    /** [Jungfrau][Mythen3] */
+    Result<bool> getPowerChip(Positions pos = {}) const;
+
+    /** [Jungfrau][Mythen3] */
+    void setPowerChip(bool on, Positions pos = {});
+
     /**
      * [Gotthard Options: 0, 90, 110, 120, 150, 180, 200]
      * [Jungfrau, CTB Options: 0, 60 - 200]
@@ -248,14 +262,6 @@ class Detector {
     
     /* [Gotthard2] */
     void setOnChipDAC(defs::dacIndex index, int chipIndex, int value, Positions pos = {});    
-
-    Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
-
-    /**
-     * [Gotthard, Jungfrau, CTB Options: AUTO_TIMING, TRIGGER_EXPOSURE]
-     * [Eiger Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER]
-     */
-    void setTimingMode(defs::timingMode value, Positions pos = {});
 
     /**************************************************
      *                                                *
@@ -806,12 +812,6 @@ class Detector {
 
     /** [Jungfrau] */
     void resetTemperatureEvent(Positions pos = {});
-
-    /** [Jungfrau] */
-    Result<bool> getPowerChip(Positions pos = {}) const;
-
-    /** [Jungfrau] */
-    void setPowerChip(bool on, Positions pos = {});
 
     /** [Jungfrau] */
     Result<bool> getAutoCompDisable(Positions pos = {}) const;

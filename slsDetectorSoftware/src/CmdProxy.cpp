@@ -581,6 +581,7 @@ std::string CmdProxy::ClockDivider(int action) {
     return os.str();
 }
 
+/** temperature */
 /* dacs */
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;

@@ -12,12 +12,12 @@ MAIN=moench03ClusterFinder.cpp
 #-lhdf5
 #DESTDIR?=../bin
 
-all: moenchClusterFinderRect moenchMakeEtaRect moenchInterpolationRect moenchNoInterpolationRect moenchPhotonCounterRect moenchAnalogRect
+all: moenchClusterFinderRect moenchMakeEtaRect moenchInterpolationRect moenchNoInterpolationRect moenchPhotonCounterRect moenchAnalogRect moenchMakeEtaRect1 moenchInterpolationRect1 
 
 
 
 moenchClusterFinderRect:  moench03ClusterFinder.cpp  $(INCS) clean
-			 g++ -o moenchClusterFinderRect  moench03ClusterFinder.cpp $(LDFLAG) $(INCDIR) -DSAVE_ALL  -DNEWRECEIVER -DRECT
+			 g++ -o moenchClusterFinderRect  moench03ClusterFinder.cpp $(LDFLAG) $(INCDIR) -DSAVE_ALL  -DNEWRECEIVER -DRECT 
 
 moenchMakeEtaRect:  moench03Interpolation.cpp  $(INCS) clean
 			 g++ -o moenchMakeEtaRect moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DFF -DRECT
@@ -33,6 +33,12 @@ moenchPhotonCounterRect: moenchPhotonCounter.cpp   $(INCS) clean
 
 moenchAnalogRect: moenchPhotonCounter.cpp  $(INCS) clean
 			 g++ -o moenchAnalogRect  moenchPhotonCounter.cpp  $(LDFLAG) $(INCDIR)   -DNEWRECEIVER -DANALOG -DRECT
+
+moenchMakeEtaRect1:  moench03Interpolation.cpp  $(INCS) clean
+			 g++ -o moenchMakeEtaRect1 moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DFF -DRECT -DRECT1
+
+moenchInterpolationRect1:  moench03Interpolation.cpp  $(INCS) clean
+			 g++ -o moenchInterpolationRect1 moench03Interpolation.cpp    $(LDFLAG) $(INCDIR)   -DRECT  -DRECT1
 
 clean: 	
 	rm -f  moenchClusterFinderRect moenchMakeEtaRect moenchInterpolationRect moenchNoInterpolationRect moenchPhotonCounterRect moenchAnalogRect

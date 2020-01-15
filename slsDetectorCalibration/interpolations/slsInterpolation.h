@@ -196,11 +196,12 @@ class slsInterpolation
     /* cluster[2]=cl+6; */
     
     sum=0;
+    int xoff=0, yoff=0;
+#ifndef WRITE_QUAD 
     double sumBL=0;
     double sumTL=0;
     double sumBR=0;
     double sumTR=0;
-    int xoff=0, yoff=0;
     for (int ix=0; ix<3; ix++) {
       for (int iy=0; iy<3; iy++) {
 	sum+=cl[ix+3*iy];
@@ -220,34 +221,95 @@ class slsInterpolation
 
     
     if(sumTL  >= totquad){
-      /* sDum[0][0] = cluster[1][0]; sDum[1][0] = cluster[2][0]; */
-      /* sDum[0][1] = cluster[1][1]; sDum[1][1] = cluster[2][1]; */
-      
+/* #ifdef WRITE_QUAD */
+/*       /\* sDum[0][0] = cluster[1][0]; sDum[1][0] = cluster[2][0]; *\/ */
+/*       /\* sDum[0][1] = cluster[1][1]; sDum[1][1] = cluster[2][1]; *\/ */
+/*       if (sumTL  ==sum) { */
+/* #endif */
       corner = TOP_LEFT;
       totquad=sumTL;
       xoff=0;
       yoff=1;
+/* #ifdef WRITE_QUAD */
+/*       } */
+/* #endif */
     } 
 
     if(sumBR  >= totquad){
       /* sDum[0][0] = cluster[0][1]; sDum[1][0] = cluster[1][1]; */
       /* sDum[0][1] = cluster[0][2]; sDum[1][1] = cluster[1][2]; */
       
+/* #ifdef WRITE_QUAD */
+/*       /\* sDum[0][0] = cluster[1][0]; sDum[1][0] = cluster[2][0]; *\/ */
+/*       /\* sDum[0][1] = cluster[1][1]; sDum[1][1] = cluster[2][1]; *\/ */
+/*       if (sumBR   ==sum) { */
+/* #endif */
+      corner = BOTTOM_RIGHT;
       xoff=1;
       yoff=0;
-      corner = BOTTOM_RIGHT;
       totquad=sumBR;
+/* #ifdef WRITE_QUAD */
+/*       } */
+/* #endif */
     }
     
     if(sumTR  >= totquad){
+/* #ifdef WRITE_QUAD */
+/*       /\* sDum[0][0] = cluster[1][0]; sDum[1][0] = cluster[2][0]; *\/ */
+/*       /\* sDum[0][1] = cluster[1][1]; sDum[1][1] = cluster[2][1]; *\/ */
+/*       if (sumTR ==sum) { */
+/* #endif */
       xoff=1;
       yoff=1;
       /* sDum[0][0] = cluster[1][1]; sDum[1][0] = cluster[2][1]; */
       /* sDum[0][1] = cluster[1][2]; sDum[1][1] = cluster[2][2]; */
       corner = TOP_RIGHT;
       totquad=sumTR;
+/* #ifdef WRITE_QUAD */
+/*       } */
+/* #endif */
     }
+ 
+#endif    
+#ifdef WRITE_QUAD    
+   
+    double sumB=0;
+    double sumT=0;
+    double sumR=0;
+    double sumL=0;
+
+    for (int ix=0; ix<3; ix++) {
+      for (int iy=0; iy<3; iy++) {
+	sum+=cl[ix+3*iy];
+	if (ix<1 ) sumL+=cl[ix+iy*3];
+	if (ix>1) sumR+=cl[ix+iy*3];
+	if (iy<1) sumB=cl[ix+iy*3];
+	if (iy>1) sumT+=cl[ix+iy*3];
+      }
+    } 
     
+    totquad=sum;
+    if ( sumT==0 && sumR==0) {
+        corner = BOTTOM_LEFT;
+	xoff=0;
+	yoff=0;
+    } else if ( sumB==0 && sumR==0 ) {
+        corner = TOP_LEFT;
+      xoff=0;
+      yoff=1;
+    } else if ( sumT==0 && sumL==0) {
+      corner = BOTTOM_RIGHT;
+      xoff=1;
+      yoff=0;
+    } else if ( sumB==0 && sumL==0) {
+      xoff=1;
+      yoff=1;
+      corner = TOP_RIGHT;
+    } else
+      printf("** bad 2x2 cluster!\n");
+
+#endif
+
 
     for (int ix=0; ix<2; ix++) {
       for (int iy=0; iy<2; iy++) {

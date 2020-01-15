@@ -5,7 +5,7 @@
 //#include "moench03T1ZmqData.h"
 //#define DOUBLE_SPH
 //#define MANYFILES
-
+#define WRITE_QUAD
 #ifdef DOUBLE_SPH
 #include "single_photon_hit_double.h"
 #endif
@@ -101,10 +101,14 @@ int main(int argc, char *argv[]) {
 #endif
     int nSubPixels=nsubpix;
     int nSubPixelsY=nsubpix;
-#ifdef RECT
-    nSubPixels=1; //might make more sense using 2?
-    etabins=2;
+#ifdef RECT1
+//     nSubPixels=2; //might make more sense using 2?
+//     etabins=100;
+    
+    
+    float *rectimg=new float[NC*NR*nSubPixelsY];;
 #endif
+// #endif
 #ifndef NOINTERPOLATION
     eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(NC, NR, nSubPixels, nSubPixelsY, etabins, etabinsY, etamin, etamax);
    //eta2InterpolationCleverAdaptiveBins *interp=new eta2InterpolationCleverAdaptiveBins(NC, NR, nsubpix, etabins, etamin, etamax);  
@@ -172,6 +176,8 @@ int main(int argc, char *argv[]) {
 // #ifdef SOLEIL
 // 	    if (cl.x>210 && cl.x<240 && cl.y>210 && cl.y<240) {
 // #endif
+	    if (cl.x<0 || cl.y<0 || cl.x>NC || cl.y>NR) {
+	    } else  {
 #ifndef FF
 	      // interp->getInterpolatedPosition(cl.x,cl.y, cl.get_cluster(),int_x, int_y);  
 	      interp->getInterpolatedPosition(cl.x,cl.y, etax, etay, quad,int_x, int_y);
@@ -181,14 +187,14 @@ int main(int argc, char *argv[]) {
 	      // cout << int_x << " " << int_y << endl;
 	      // cout <<"**************"<< endl;
 	    //  if (etax!=0 && etay!=0 && etax!=1 && etay!=1)
-	    interp->addToImage(int_x, int_y);
-	    if (int_x<0 || int_y<0 || int_x>NC || int_y>NR) {
-	      cout <<"**************"<< endl;
-	      cout << cl.x << " " << cl.y << " " << sum << endl;
-	      cl.print();
-	      cout << int_x << " " << int_y << endl;
-	      cout <<"**************"<< endl;
-	    }
+	      if (int_x<-1 || int_y<-1 || int_x>NC+1 || int_y>NR+1) {
+		cout <<"**************"<< endl;
+		cout << cl.x << " " << cl.y << " " << sum << endl;
+		cl.print();
+		cout << int_x << " " << int_y << endl;
+		cout <<"**************"<< endl;
+	      } else
+		interp->addToImage(int_x, int_y);
 #endif
 #ifdef FF
 	    //	interp->addToFlatField(cl.get_cluster(), etax, etay);
@@ -200,6 +206,7 @@ int main(int argc, char *argv[]) {
 	    //  if (etax==0 || etay==0) cout << cl.x << " " << cl.y << endl;
 	     
 #endif
+	    }
 // #ifdef SOLEIL
 // 	    }
 // #endif
@@ -225,18 +232,31 @@ int main(int argc, char *argv[]) {
 #endif
 	
 #ifndef FF
+#ifndef RECT1
 	interp->writeInterpolatedImage(outfname); 
-
+#endif
 	img=interp->getInterpolatedImage();
 	for (ix=0; ix<NC; ix++) {
-	  for (iy=0; iy<NR; iy++) {
-	    for (isx=0; isx<nSubPixels; isx++) {
+	  for (iy=0; iy<NR; iy++) {	
+	     
+	      for (isx=0; isx<nSubPixels; isx++) {
 	      for (isy=0; isy<nSubPixelsY; isy++) {
 		totimg[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)]+=img[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)];
+#ifdef RECT1
+		if (isx==0) 
+		  rectimg[ix+(iy*nSubPixelsY+isy)*(NC)]=img[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)];
+		else
+		  rectimg[ix+(iy*nSubPixelsY+isy)*(NC)]+=img[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)];
+
+#endif
 		}
 	    }
 	  }
 	}
+	
+#ifdef RECT1
+	WriteToTiff(rectimg, outfname,NC,NR*nSubPixelsY);
+#endif
 	cout << "Read " << nframes << " frames (first frame: " << f0 << " last frame: " << lastframe << " delta:" << lastframe-f0 << ") nph="<< nph <<endl;
 	interp->clearInterpolatedImage();
 #endif
@@ -246,7 +266,29 @@ int main(int argc, char *argv[]) {
     }
 #ifndef FF
     sprintf(outfname,argv[3],11111);
+    
+#ifndef RECT1
     WriteToTiff(totimg, outfname,NC*nSubPixels,NR*nSubPixelsY);
+#endif
+#ifdef RECT1
+	img=interp->getInterpolatedImage();
+	for (ix=0; ix<NC; ix++) {
+	  for (iy=0; iy<NR; iy++) {	
+	     
+	      for (isx=0; isx<nSubPixels; isx++) {
+	      for (isy=0; isy<nSubPixelsY; isy++) {
+		if (isx==0) 
+		  rectimg[ix+(iy*nSubPixelsY+isy)*(NC)]=totimg[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)];
+		else
+		  rectimg[ix+(iy*nSubPixelsY+isy)*(NC)]+=totimg[ix*nSubPixels+isx+(iy*nSubPixelsY+isy)*(NC*nSubPixels)];
+		}
+	    }
+	  }
+	}
+	WriteToTiff(rectimg, outfname,NC,NR*nSubPixelsY);
+	
+#endif
+    
 #endif 
     
 #ifdef FF

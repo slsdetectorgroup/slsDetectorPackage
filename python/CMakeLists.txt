@@ -30,6 +30,7 @@ set( PYTHON_FILES
     errors.py
     ctb.py
     jungfrau.py
+    mythen3.py
     registers.py
     utils.py
 

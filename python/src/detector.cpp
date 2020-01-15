@@ -441,6 +441,10 @@ void init_det(py::module &m) {
         .def("setBurstMode", &Detector::setBurstMode, py::arg(),
              py::arg() = Positions{})
         .def("getBurstMode", &Detector::getBurstMode, py::arg() = Positions{})
+        .def("getCounterMask", &Detector::getCounterMask,
+             py::arg() = Positions{})
+        .def("setCounterMask", &Detector::setCounterMask, py::arg(),
+             py::arg() = Positions{})
         .def("getNumberOfAnalogSamples", &Detector::getNumberOfAnalogSamples,
              py::arg() = Positions{})
         .def("setNumberOfAnalogSamples", &Detector::setNumberOfAnalogSamples,

@@ -8,7 +8,7 @@ from sls_detector import Detector, Eiger, Jungfrau, DetectorDacs, Dac, Ctb
 from sls_detector import dacIndex
 
 
-# d = Detector()
+d = Detector()
 # e = Eiger()
 # c = Ctb()
 j = Jungfrau()

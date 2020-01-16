@@ -320,7 +320,7 @@ int ClientInterface::send_update(Interface &socket) {
     int64_t i64 = -1;
     char cstring[MAX_STR_LENGTH]{};
 
-    sls::IpAddr ip = 0u;
+    sls::IpAddr ip;
     ip = server->getLastClient();
     n += socket.Send(&ip, sizeof(ip));
 
@@ -920,7 +920,7 @@ int ClientInterface::set_streaming_port(Interface &socket) {
 }
 
 int ClientInterface::set_streaming_source_ip(Interface &socket) {
-    sls::IpAddr arg = 0u;
+    sls::IpAddr arg;
     socket.Receive(arg);
     verifyIdle(socket);
     FILE_LOG(logDEBUG1) << "Setting streaming source ip:" << arg;

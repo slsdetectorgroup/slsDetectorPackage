@@ -343,8 +343,8 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
                        (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->rxUpstream = false;
     shm()->rxReadFreq = 1;
-    shm()->zmqip = 0U;
-    shm()->rxZmqip = 0U;
+    shm()->zmqip = IpAddr{};
+    shm()->rxZmqip = IpAddr{};
     shm()->gappixels = 0U;
     memset(shm()->rxAdditionalJsonHeader, 0, MAX_STR_LENGTH);
     shm()->rxFrameDiscardMode = NO_DISCARD;
@@ -690,7 +690,7 @@ bool slsDetector::lockServer(int lock) {
 }
 
 sls::IpAddr slsDetector::getLastClientIP() {
-    sls::IpAddr retval = 0U;
+    sls::IpAddr retval;
     FILE_LOG(logDEBUG1) << "Getting last client ip to detector server";
     sendToDetector(F_GET_LAST_CLIENT_IP, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Last client IP to detector: " << retval;
@@ -1908,7 +1908,7 @@ void slsDetector::updateRxDestinationUDPIP() {
     auto ip = getDestinationUDPIP();
     if (ip == 0) {
         // Hostname could be ip try to decode otherwise look up the hostname
-        ip = shm()->rxHostname;
+        ip = sls::IpAddr{shm()->rxHostname};
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }  
@@ -1944,7 +1944,7 @@ void slsDetector::updateRxDestinationUDPIP2() {
     auto ip = getDestinationUDPIP2();
     if (ip == 0) {
         // Hostname could be ip try to decode otherwise look up the hostname
-        ip = shm()->rxHostname;
+        ip = sls::IpAddr{shm()->rxHostname};
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }  
@@ -2116,7 +2116,7 @@ void slsDetector::updateReceiverStreamingIP() {
     auto ip = getReceiverStreamingIP();
     if (ip == 0) {
         // Hostname could be ip try to decode otherwise look up the hostname
-        ip = shm()->rxHostname;
+        ip = sls::IpAddr{shm()->rxHostname};
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }  

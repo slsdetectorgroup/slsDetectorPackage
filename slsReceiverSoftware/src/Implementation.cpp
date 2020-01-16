@@ -90,7 +90,7 @@ void Implementation::InitializeMembers() {
     streamingFrequency = 1;
     streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
     streamingPort = 0;
-    streamingSrcIP = 0u;
+    streamingSrcIP = sls::IpAddr{};
     additionalJsonHeader = "";
 
     // detector parameters

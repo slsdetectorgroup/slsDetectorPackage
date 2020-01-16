@@ -12,8 +12,8 @@ class IpAddr {
   public:
     constexpr IpAddr() noexcept = default;
     explicit constexpr IpAddr(uint32_t address) noexcept : addr_{address} {}
-    IpAddr(const std::string &address);
-    IpAddr(const char *address);
+    explicit IpAddr(const std::string &address);
+    explicit IpAddr(const char *address);
     std::string str() const;
     std::string hex() const;
     std::array<char, 16u> arr() const;

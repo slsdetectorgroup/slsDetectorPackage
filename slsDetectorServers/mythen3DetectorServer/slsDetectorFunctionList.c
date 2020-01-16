@@ -84,13 +84,10 @@ void basictests() {
 	uint64_t macadd				= getDetectorMAC();
 	int64_t fwversion 			= getFirmwareVersion();
 	int64_t swversion 			= getServerVersion();
-	int64_t sw_fw_apiversion    = 0;
+	int64_t sw_fw_apiversion    = getFirmwareAPIVersion();;
 	int64_t client_sw_apiversion = getClientServerAPIVersion();
 	uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
-
-	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
-	    sw_fw_apiversion 	    = getFirmwareAPIVersion();
 	FILE_LOG(logINFOBLUE, ("*************************************************\n"
 			"Hardware Version:\t\t 0x%x\n"
 
@@ -609,7 +606,6 @@ int setDelayAfterTrigger(int64_t val) {
 
 int64_t getDelayAfterTrigger() {
     return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
-  
 }
 
 int64_t getNumFramesLeft() {
@@ -706,10 +702,26 @@ int setHighVoltage(int val){
 
 /* parameters - timing */
 void setTiming( enum timingMode arg){
- // to be implemented
+	if(arg != GET_TIMING_MODE){
+		switch((int)arg){
+		case AUTO_TIMING:
+		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
+		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+		    break;
+		case TRIGGER_EXPOSURE:
+		    FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
+		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+		    break;
+		default:
+			FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
+			return;
+		}
+	}
 }
 
 enum timingMode getTiming() {
+    if (bus_r(EXT_SIGNAL_REG) == EXT_SIGNAL_MSK)
+        return TRIGGER_EXPOSURE;
     return AUTO_TIMING;
 }
 
@@ -1068,12 +1080,12 @@ int checkDetectorType() {
 	}
 	int type = atoi(buffer);
 	if (type > TYPE_TOLERANCE) {
-        FILE_LOG(logERROR, ("No Module attached! Expected %d for Mythen, got %d\n", TYPE_MYTHEN3_MODULE_VAL, type));
+        FILE_LOG(logERROR, ("No Module attached! Expected %d for Mythen3, got %d\n", TYPE_MYTHEN3_MODULE_VAL, type));
         return -2;	
 	}
 
 	if (abs(type - TYPE_MYTHEN3_MODULE_VAL) > TYPE_TOLERANCE) {
-        FILE_LOG(logERROR, ("Wrong Module attached! Expected %d for Mythen, got %d\n", TYPE_MYTHEN3_MODULE_VAL, type));
+        FILE_LOG(logERROR, ("Wrong Module attached! Expected %d for Mythen3, got %d\n", TYPE_MYTHEN3_MODULE_VAL, type));
         return FAIL;	
 	}
 	return OK;
@@ -1373,7 +1385,7 @@ int stopStateMachine(){
 #endif
 	//stop state machine
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STP_ACQSTN_MSK);
-	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
+	FILE_LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
     return OK;
 }
 
@@ -1430,7 +1442,7 @@ enum runStatus getRunStatus(){
 	return s;
 }
 
-void readFrame(int *ret, char *mess){
+void readFrame(int *ret, char *mess) {
 	// wait for status to be done
 	while(runBusy()){
 		usleep(500);
@@ -1450,7 +1462,6 @@ void readFrame(int *ret, char *mess){
 	} else {
 		FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 	}
-
 }
 
 u_int32_t runBusy() {
@@ -1464,11 +1475,11 @@ u_int32_t runBusy() {
 
 /* common */
 
-int calculateDataBytes(){
+int calculateDataBytes() {
 	return 0;
 }
 
-int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
-int getNumberOfChips(){return  NCHIP;}
-int getNumberOfDACs(){return  NDAC;}
-int getNumberOfChannelsPerChip(){return  NCHAN;}
+int getTotalNumberOfChannels() {return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
+int getNumberOfChips() {return  NCHIP;}
+int getNumberOfDACs() {return  NDAC;}
+int getNumberOfChannelsPerChip() {return  NCHAN;}

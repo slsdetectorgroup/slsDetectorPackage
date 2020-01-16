@@ -152,10 +152,10 @@ class Detector {
 
     void setPeriod(ns t, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     Result<ns> getDelayAfterTrigger(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     void setDelayAfterTrigger(ns value, Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
@@ -164,10 +164,10 @@ class Detector {
     /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     Result<int64_t> getNumberOfTriggersLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     Result<ns> getPeriodLeft(Positions pos = {}) const;
 
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
@@ -200,45 +200,45 @@ class Detector {
     /** [Gotthard][Jungfrau][CTB] */
     void setADCPhaseInDegrees(int value, Positions pos = {});
 
-        /** [Gotthard2] Hz */
+    /** [Mythen3][Gotthard2] Hz */
     Result<int> getClockFrequency(int clkIndex, Positions pos = {});
 
     /** [not implemented] Hz */
     void setClockFrequency(int clkIndex, int value, Positions pos = {});
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     Result<int> getClockPhase(int clkIndex, Positions pos = {});
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     void setClockPhase(int clkIndex, int value, Positions pos = {});
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     Result<int> getMaxClockPhaseShift(int clkIndex, Positions pos = {});
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     Result<int> getClockPhaseinDegrees(int clkIndex, Positions pos = {});
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     void setClockPhaseinDegrees(int clkIndex, int value, Positions pos = {});
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     Result<int> getClockDivider(int clkIndex, Positions pos = {});
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     void setClockDivider(int clkIndex, int value, Positions pos = {});
 
     Result<int> getHighVoltage(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3] */
+    /** [Jungfrau][Mythen3][Gotthard2] */
     Result<bool> getPowerChip(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3] */
+    /** [Jungfrau][Mythen3][Gotthard2] */
     void setPowerChip(bool on, Positions pos = {});
 
     /**
-     * [Gotthard Options: 0, 90, 110, 120, 150, 180, 200]
-     * [Jungfrau, CTB Options: 0, 60 - 200]
-     * [Eiger Options: 0 - 200]
+     * [Gotthard] Options: 0, 90, 110, 120, 150, 180, 200
+     * [Jungfrau], CTB Options: 0, 60 - 200
+     * [Eiger][Mythen3][Gotthard2] Options: 0 - 200
      */
     void setHighVoltage(int value, Positions pos = {});
 
@@ -1100,40 +1100,40 @@ class Detector {
     /** [CTB] */
     void setPatternClockControl(uint64_t word, Positions pos = {});
 
-    /** [CTB] same as executing */
+    /** [Mythen3][CTB] same as executing for CTB */
     Result<uint64_t> getPatternWord(int addr, Positions pos = {});
 
-    /** [CTB] Caution: If word is  -1  reads the addr (same as
+    /** [Mythen3][CTB] Caution: If word is  -1  reads the addr (same as
      * executing the pattern) */
     void setPatternWord(int addr, uint64_t word, Positions pos = {});
 
-    /**[CTB] Options: level: -1 (complete pattern) and 0-2 levels
+    /** [Mythen3][CTB] Options: level: -1 (complete pattern) and 0-2 levels
      * @returns array of start address and stop address
      */
     Result<std::array<int, 2>> getPatternLoopAddresses(int level,
                                                Positions pos = {}) const;
 
-    /** [CTB] Options: level: -1 (complete pattern) and 0-2 levels */
+    /** [Mythen3][CTB] Options: level: -1 (complete pattern) and 0-2 levels */
     void setPatternLoopAddresses(int level, int start, int stop, Positions pos = {});
 
-    /**[CTB] Options: level: -1 (complete pattern) and 0-2 levels
+    /** [Mythen3][CTB] Options: level: -1 (complete pattern) and 0-2 levels
      * @returns number of loops
      */
     Result<int> getPatternLoopCycles(int level, Positions pos = {}) const;
 
-    /** [CTB] n: 0-2, level: -1 (complete pattern) and 0-2 levels */
+    /** [Mythen3][CTB] n: 0-2, level: -1 (complete pattern) and 0-2 levels */
     void setPatternLoopCycles(int level, int n, Positions pos = {});                         
 
-    /* [CTB] */
+    /* [Mythen3][CTB] */
     Result<int> getPatternWaitAddr(int level, Positions pos = {}) const;
 
-    /** [CTB] Options: level 0-2 */
+    /** [Mythen3][CTB] Options: level 0-2 */
     void setPatternWaitAddr(int level, int addr, Positions pos = {});
 
-    /** [CTB]  */
+    /** [Mythen3][CTB]  */
     Result<uint64_t> getPatternWaitTime(int level, Positions pos = {}) const;
 
-    /** [CTB] Options: level 0-2 */
+    /** [Mythen3][CTB] Options: level 0-2 */
     void setPatternWaitTime(int level, uint64_t t, Positions pos = {});
 
     /** [CTB] */
@@ -1243,10 +1243,10 @@ class Detector {
 
     void clearBit(uint32_t addr, int bitnr, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] */
     void executeFirmwareTest(Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] */
     void executeBusTest(Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB] not possible to read back*/
@@ -1280,13 +1280,13 @@ class Detector {
     /** Execute a command on the detector server console */
     void executeCommand(const std::string &value, Positions pos = {});
 
-    /** [Jungfrau][CTB] */
+    /** [Jungfrau][Mythen3][Gotthard2][CTB] */
     Result<int64_t> getNumberOfFramesFromStart(Positions pos = {}) const;
 
-    /** [Jungfrau][CTB] Get time from detector start */
+    /** [Jungfrau][Mythen3][Gotthard2][CTB] Get time from detector start */
     Result<ns> getActualTime(Positions pos = {}) const;
 
-    /** [Jungfrau][CTB] Get timestamp at a frame start */
+    /** [Jungfrau][Mythen3][Gotthard2][CTB] Get timestamp at a frame start */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
 
     std::string getUserDetails() const;

@@ -39,13 +39,14 @@ uint32_t clkFrequency[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
 int onChipdacValues[ONCHIP_NDAC][NCHIP] = {0};
-int defaultDacValues[NDAC] = {0};
-int defaultOnChipdacValues[ONCHIP_NDAC][NCHIP] = {0};
 int injectedChannelsOffset = 0;
 int injectedChannelsIncrement = 0;
 int vetoReference[NCHIP][NCHAN];
 uint8_t adcConfiguration[NCHIP][NADC];
 int burstMode = 0;
+int64_t exptime_ns = 0;
+int64_t period_ns = 0;
+int64_t nframes = 0;
 int detPos[2] = {0, 0};
 
 int isInitCheckDone() {
@@ -72,6 +73,7 @@ void basictests() {
     }
     return;
 #else
+	FILE_LOG(logINFOBLUE, ("************ Gotthard2 Server *********************\n"));
 	if (mapCSP0() == FAIL) {
     	strcpy(initErrorMessage,
 				"Could not map to memory. Dangerous to continue.\n");
@@ -97,7 +99,7 @@ void basictests() {
 	int64_t client_sw_apiversion = getClientServerAPIVersion();
 	uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
-	FILE_LOG(logINFOBLUE, ("************ Gotthard2 Server *********************\n"
+	FILE_LOG(logINFOBLUE, ("*************************************************\n"
 			"Hardware Version:\t\t 0x%x\n"
 			
 			"Detector IP Addr:\t\t 0x%x\n"
@@ -158,7 +160,6 @@ void basictests() {
 		return;
 	}
 	FILE_LOG(logINFO, ("Compatibility - success\n"));
-
 #endif
 }
 
@@ -352,12 +353,10 @@ void setupDetector() {
         }
 		for (i = 0; i < NDAC; ++i) {
 			dacValues[i] = 0;
-			defaultDacValues[i] = 0;
 		}
 		for (i = 0; i < ONCHIP_NDAC; ++i) {
 			for (j = 0; j < NCHIP; ++j) {
 				onChipdacValues[i][j] = -1;
-				defaultOnChipdacValues[i][j] = -1;
 			}
 		}
 		for	(i = 0; i < NCHIP; ++i) {
@@ -397,34 +396,9 @@ void setupDetector() {
 	setNumTriggers(DEFAULT_NUM_CYCLES);
 	setExpTime(DEFAULT_EXPTIME);
 	setPeriod(DEFAULT_PERIOD);
+	setDelayAfterTrigger(DEFAULT_DELAY_AFTER_TRIGGER);
+	setTiming(DEFAULT_TIMING_MODE);
 }
-
-int setDefaultDacs() {
-	int ret = OK;
-	FILE_LOG(logINFOBLUE, ("Setting Default Dac values\n"));
-	{
-		int idac = 0;
-		for(idac = 0; idac < NDAC; ++idac) {
-			setDAC((enum DACINDEX)idac, defaultDacValues[idac], 0);
-		}
-	}
-	return ret;
-}
-
-int setDefaultOnChipDacs() {
-	int ret = OK;
-	FILE_LOG(logINFOBLUE, ("Setting Default On chip Dac values\n"));
-	{
-		int idac = 0, ichip = 0;
-		for(idac = 0; idac < ONCHIP_NDAC; ++idac) {
-			for(ichip = 0; ichip < NCHIP; ++ichip) {
-				setOnChipDAC((enum ONCHIP_DACINDEX)idac, ichip, defaultOnChipdacValues[idac][ichip]);
-			}
-		}
-	}	
-	return ret;
-}
-
 
 int readConfigFile() {
 
@@ -663,6 +637,31 @@ int readConfigFile() {
     return initError;
 }
 
+/* firmware functions (resets) */
+
+void cleanFifos() {
+#ifdef VIRTUAL
+    return;
+#endif
+	FILE_LOG(logINFO, ("Clearing Acquisition Fifos\n"));
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_CLR_ACQSTN_FIFO_MSK);
+}
+
+void resetCore() {
+#ifdef VIRTUAL
+    return;
+#endif
+	FILE_LOG(logINFO, ("Resetting Core\n"));
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_CRE_RST_MSK);
+}
+
+void resetPeripheral() {
+#ifdef VIRTUAL
+    return;
+#endif
+	FILE_LOG(logINFO, ("Resetting Peripheral\n"));
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PRPHRL_RST_MSK);
+}
 
 /* set parameters -  dr, roi */
 
@@ -671,16 +670,16 @@ int setDynamicRange(int dr){
 }
 
 
-/* parameters  */
+/* parameters - timer */
 void setNumFrames(int64_t val) {
     if (val > 0) {
-        FILE_LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
-		set64BitReg(val, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+		FILE_LOG(logINFO, ("Setting number of frames %lld [local]\n", (long long int)val));
+        nframes = val;
     }
 }
 
 int64_t getNumFrames() {
-    return get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+    return nframes;
 }
 
 void setNumTriggers(int64_t val) {
@@ -699,21 +698,13 @@ int setExpTime(int64_t val) {
         FILE_LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
         return FAIL;
     }
-	FILE_LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
-    val *= (1E-9 * READOUT_C0);
-    set64BitReg(val, SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG);
-
-    // validate for tolerance
-    int64_t retval = getExpTime();
-    val /= (1E-9 * READOUT_C0);
-    if (val != retval) {
-        return FAIL;
-    }
+	FILE_LOG(logINFO, ("Setting exptime %lld ns [local]\n", (long long int)val));
+	exptime_ns = val;
     return OK;
 }
 
 int64_t getExpTime() {
-    return get64BitReg(SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) / (1E-9 * READOUT_C0);
+    return exptime_ns;
 }
 
 int setPeriod(int64_t val) {
@@ -721,9 +712,65 @@ int setPeriod(int64_t val) {
         FILE_LOG(logERROR, ("Invalid period: %lld ns\n", (long long int)val));
         return FAIL;
     }
-	FILE_LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
+	FILE_LOG(logINFO, ("Setting period %lld ns [local]\n", (long long int)val));
+	period_ns = val;
+    return OK;
+}
+
+int64_t getPeriod() {
+    return period_ns;
+}
+
+void setNumFramesBurst(int64_t val) {
+    FILE_LOG(logINFO, ("Setting number of frames %d [Burst mode]\n", (int)val));
+	bus_w(ASIC_INT_FRAMES_REG, bus_r(ASIC_INT_FRAMES_REG) | (((int)val << ASIC_INT_FRAMES_OFST) & ASIC_INT_FRAMES_MSK));
+}
+
+int64_t	getNumFramesBurst() {
+	return ((bus_r(ASIC_INT_FRAMES_REG) & ASIC_INT_FRAMES_MSK) >> ASIC_INT_FRAMES_OFST);
+}
+
+void setNumFramesCont(int64_t val) {
+    FILE_LOG(logINFO, ("Setting number of frames %lld [Continuous mode]\n", (long long int)val));
+	set64BitReg(val, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+}
+
+int64_t	getNumFramesCont() {
+	return get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+}
+
+int	setExptimeBurst(int64_t val) {
+	FILE_LOG(logINFO, ("Setting exptime %lld ns [Burst mode]\n", (long long int)val));
+	return setExptimeBoth(val);
+}
+
+int	setExptimeCont(int64_t val) {
+	FILE_LOG(logINFO, ("Setting exptime %lld ns [Continuous mode]\n", (long long int)val));
+	return setExptimeBoth(val);
+}
+
+int	setExptimeBoth(int64_t val) {
     val *= (1E-9 * SYSTEM_C0);
-    set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
+    set64BitReg(val, ASIC_INT_EXPTIME_LSB_REG, ASIC_INT_EXPTIME_MSB_REG);
+
+    // validate for tolerance
+    int64_t retval = getExptimeBoth();
+    val /= (1E-9 * SYSTEM_C0);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t	getExptimeBoth() {
+	return get64BitReg(ASIC_INT_EXPTIME_LSB_REG, ASIC_INT_EXPTIME_MSB_REG) / (1E-9 * SYSTEM_C0);
+}
+
+
+int	setPeriodBurst(int64_t val) {
+	FILE_LOG(logINFO, ("Setting period %lld ns [Burst mode]\n", (long long int)val));
+    val *= (1E-9 * SYSTEM_C0);
+    set64BitReg(val, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getPeriod();
@@ -734,8 +781,48 @@ int setPeriod(int64_t val) {
     return OK;
 }
 
-int64_t getPeriod() {
-    return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * SYSTEM_C0);
+int64_t	getPeriodBurst() {
+	return get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG)/ (1E-9 * SYSTEM_C0);
+}
+
+int	setPeriodCont(int64_t val) {
+	FILE_LOG(logINFO, ("Setting period %lld ns [Continuous mode]\n", (long long int)val));
+    val *= (1E-9 * FIXED_PLL_FREQUENCY);
+    set64BitReg(val, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
+
+    // validate for tolerance
+    int64_t retval = getPeriod();
+    val /= (1E-9 * FIXED_PLL_FREQUENCY);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t	getPeriodCont() {
+	return get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG)/ (1E-9 * FIXED_PLL_FREQUENCY);
+}
+
+int setDelayAfterTrigger(int64_t val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid delay after trigger: %lld ns\n", (long long int)val));
+        return FAIL;
+    } 
+	FILE_LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
+    val *= (1E-9 * FIXED_PLL_FREQUENCY);
+    set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
+
+    // validate for tolerance
+    int64_t retval = getDelayAfterTrigger();
+    val /= (1E-9 * FIXED_PLL_FREQUENCY);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getDelayAfterTrigger() {
+    return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
 }
 
 int64_t getNumFramesLeft() {
@@ -746,7 +833,25 @@ int64_t getNumTriggersLeft() {
     return get64BitReg(GET_CYCLES_LSB_REG, GET_CYCLES_MSB_REG);
 }
 
+int64_t getDelayAfterTriggerLeft() {
+    return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
+}
 
+int64_t getPeriodLeft() {
+    return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
+}
+
+int64_t getFramesFromStart() {
+    return get64BitReg(FRAMES_FROM_START_LSB_REG, FRAMES_FROM_START_MSB_REG);
+}
+
+int64_t getActualTime() {
+    return get64BitReg(TIME_FROM_START_LSB_REG, TIME_FROM_START_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY * 2);
+}
+
+int64_t getMeasurementTime() {
+    return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
+}
 
 /* parameters - dac, hv */
 int	setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val) {
@@ -866,6 +971,31 @@ int setHighVoltage(int val){
 	return highvoltage;
 }
 
+/* parameters - timing */
+void setTiming( enum timingMode arg){
+	if(arg != GET_TIMING_MODE){
+		switch((int)arg){
+		case AUTO_TIMING:
+		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
+		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+		    break;
+		case TRIGGER_EXPOSURE:
+		    FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
+		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+		    break;
+		default:
+			FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
+			return;
+		}
+	}
+}
+
+enum timingMode getTiming() {
+    if (bus_r(EXT_SIGNAL_REG) == EXT_SIGNAL_MSK)
+        return TRIGGER_EXPOSURE;
+    return AUTO_TIMING;
+}
+
 
 int configureMAC() {
 
@@ -951,9 +1081,9 @@ int configureMAC() {
 	calcChecksum(udp);
 
 	//TODO?
-	//cleanFifos();
-	//resetCore();
-
+	cleanFifos();
+	resetCore();
+	//alignDeserializer();
 	return OK;
 }
 
@@ -989,7 +1119,57 @@ void calcChecksum(udp_header* udp) {
 	udp->ip_checksum = checksum;
 }
 
+int setDetectorPosition(int pos[]) {
+    memcpy(detPos, pos, sizeof(detPos));
+	return OK;
+}
+
+int* getDetectorPosition() {
+    return detPos;
+}
+
 // Detector Specific
+
+int checkDetectorType() {
+	FILE_LOG(logINFO, ("Checking type of module\n"));
+	FILE* fd = fopen(TYPE_FILE_NAME, "r");
+    if (fd == NULL) {
+        FILE_LOG(logERROR, ("Could not open file %s to get type of the module attached\n", TYPE_FILE_NAME));
+        return -1;
+    }	
+	char buffer[MAX_STR_LENGTH];
+	memset(buffer, 0, sizeof(buffer));
+	fread (buffer, MAX_STR_LENGTH, sizeof(char), fd);
+	if (strlen(buffer) == 0) {
+        FILE_LOG(logERROR, ("Could not read file %s to get type of the module attached\n", TYPE_FILE_NAME));
+        return -1;		
+	}
+	int type = atoi(buffer);
+	if (type > TYPE_TOLERANCE) {
+        FILE_LOG(logERROR, ("No Module attached! Expected %d for Gotthard2, got %d\n", TYPE_GOTTHARD2_MODULE_VAL, type));
+        return -2;	
+	}
+
+	if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) > TYPE_TOLERANCE) {
+        FILE_LOG(logERROR, ("Wrong Module attached! Expected %d for Gotthard2, got %d\n", TYPE_GOTTHARD2_MODULE_VAL, type));
+        return FAIL;	
+	}
+	return OK;
+}
+
+int powerChip (int on){
+    if(on != -1){
+        if(on){
+            FILE_LOG(logINFO, ("Powering chip: on\n"));
+            bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);
+        }
+        else{
+            FILE_LOG(logINFO, ("Powering chip: off\n"));
+            bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PWR_CHIP_MSK);
+        }
+    }
+    return ((bus_r(CONTROL_REG) & CONTROL_PWR_CHIP_MSK) >> CONTROL_PWR_CHIP_OFST);
+}
 
 int setPhase(enum CLKINDEX ind, int val, int degrees) {
    if (ind < 0 || ind >= NUM_CLOCKS) {
@@ -1471,21 +1651,58 @@ int	setBurstMode(int burst) {
 int getBurstMode() {
 	return burstMode;
 }
+
+
 /* aquisition */
 
-int setDetectorPosition(int pos[]) {
-    memcpy(detPos, pos, sizeof(detPos));
+int updateAcquisitionRegisters(char* mess) {
+	int64_t exptime_ns = 0;
+int64_t period_ns = 0;
+int64_t nframes = 0;
+
+	// burst mode
+	if (burstMode) {
+		// validate #frames in burst mode
+		if (nframes > MAX_FRAMES_IN_BURST_MODE) {
+			sprintf(mess, "Could not start acquisition because number of frames %lld must be <= %d in burst mode.\n", (long long unsigned int)nframes, MAX_FRAMES_IN_BURST_MODE);
+			FILE_LOG(logERROR,(mess));		
+			return FAIL;
+		}
+		setNumFramesBurst(nframes);
+		// exptime
+		if (setExptimeBurst(exptime_ns) == FAIL) {
+			sprintf(mess, "Could not start acquisition because exptime could not be set in burst mode. Set %lld ns, got %lld ns.\n", (long long unsigned int)exptime_ns, getExptimeBoth());
+			FILE_LOG(logERROR,(mess));		
+			return FAIL;			
+		}
+		// period
+		if (setPeriodBurst(period_ns) == FAIL) {
+			sprintf(mess, "Could not start acquisition because period could not be set in burst mode. Set %lld ns, got %lld ns.\n", (long long unsigned int)period_ns, getPeriodBurst());
+			FILE_LOG(logERROR,(mess));		
+			return FAIL;			
+		}		
+	} 
+	// continuous
+	else {
+		// frames
+		setNumFramesCont(nframes);
+		// exptime
+		if (setExptimeCont(exptime_ns) == FAIL) {
+			sprintf(mess, "Could not start acquisition because exptime could not be set in continuous mode. Set %lld ns, got %lld ns.\n", (long long unsigned int)exptime_ns, getExptimeBoth());
+			FILE_LOG(logERROR,(mess));		
+			return FAIL;			
+		}
+		// period
+		if (setPeriodCont(period_ns) == FAIL) {
+			sprintf(mess, "Could not start acquisition because period could not be set in continuous mode. Set %lld ns, got %lld ns.\n", (long long unsigned int)period_ns, getPeriodCont());
+			FILE_LOG(logERROR,(mess));		
+			return FAIL;			
+		}	
+	}
 	return OK;
 }
 
-int* getDetectorPosition() {
-    return detPos;
-}
-
 int startStateMachine(){
-	if (burstMode && getNumFrames() > MAX_FRAMES_IN_BURST_MODE) {
-		return FAIL;
-	}
 #ifdef VIRTUAL
 	// create udp socket
 	if(createUDPSocket(0) != OK) {
@@ -1503,6 +1720,13 @@ int startStateMachine(){
 	FILE_LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
 	return OK;
 #endif
+	FILE_LOG(logINFOBLUE, ("Starting State Machine\n"));
+	cleanFifos();
+	
+	//start state machine
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK);
+
+	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
     return OK;
 }
 
@@ -1544,6 +1768,7 @@ void* start_timer(void* arg) {
 		// set register frames left
     }
 
+	closeUDPSocket(0);
 	// set status to idle
 	virtual_status = 0;
 	FILE_LOG(logINFOBLUE, ("Finished Acquiring\n"));
@@ -1558,6 +1783,9 @@ int stopStateMachine(){
 	virtual_stop = 0;
 	return OK;
 #endif
+    //stop state machine
+	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STP_ACQSTN_MSK);
+	FILE_LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
     return OK;
 }
 
@@ -1571,10 +1799,50 @@ enum runStatus getRunStatus(){
 		return RUNNING;
 	}
 #endif
-    return IDLE;
+	FILE_LOG(logDEBUG1, ("Getting status\n"));
+	uint32_t retval = bus_r(FLOW_STATUS_REG);
+	FILE_LOG(logINFO, ("Status Register: %08x\n",retval));
+
+	enum runStatus s;
+
+	//running
+	if (retval & FLOW_STATUS_RUN_BUSY_MSK) {
+		if (retval & FLOW_STATUS_WAIT_FOR_TRGGR_MSK) {
+			FILE_LOG(logINFOBLUE, ("Status: WAITING\n"));
+			s = WAITING;
+		} else {
+			if (retval & FLOW_STATUS_DLY_BFRE_TRGGR_MSK) {
+				FILE_LOG(logINFO, ("Status: Delay before Trigger\n"));
+			} else if (retval & FLOW_STATUS_DLY_AFTR_TRGGR_MSK) {
+				FILE_LOG(logINFO, ("Status: Delay after Trigger\n"));
+			}
+			FILE_LOG(logINFOBLUE, ("Status: RUNNING\n"));
+			s = RUNNING;
+		}
+	}
+
+	//not running
+	else {
+	    // stopped or error
+		if (retval & FLOW_STATUS_FIFO_FULL_MSK) {
+			FILE_LOG(logINFOBLUE, ("Status: STOPPED\n")); //FIFO FULL??
+			s = STOPPED;
+		} else if (retval & FLOW_STATUS_CSM_BUSY_MSK) {
+			FILE_LOG(logINFOBLUE, ("Status: READ MACHINE BUSY\n"));
+			s = TRANSMITTING;
+		} else if (!retval) {
+			FILE_LOG(logINFOBLUE, ("Status: IDLE\n"));
+			s = IDLE;
+		} else {
+			FILE_LOG(logERROR, ("Status: Unknown status %08x\n", retval));
+			s = ERROR;
+		}
+	}
+
+	return s;
 }
 
-void readFrame(int *ret, char *mess){
+void readFrame(int *ret, char *mess) {
 	// wait for status to be done
 	while(runBusy()){
 		usleep(500);
@@ -1583,29 +1851,36 @@ void readFrame(int *ret, char *mess){
 	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #endif
+
+	*ret = (int)OK;
+	// frames left to give status
+	int64_t retval = getNumFramesLeft() + 1;
+
+	if ( retval > 0) {
+		FILE_LOG(logERROR, ("No data and run stopped: %lld frames left\n",(long  long int)retval));
+	} else {
+		FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+	}
 }
 
 u_int32_t runBusy() {
 #ifdef VIRTUAL
     return virtual_status;
 #endif
-#ifdef VIRTUAL
-	u_int32_t s = (bus_r(STATUS_REG) & RUN_BUSY_MSK);
+	u_int32_t s = (bus_r(FLOW_STATUS_REG) & FLOW_STATUS_RUN_BUSY_MSK);
 	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
-#endif
-	return -1;
 }
 
 
 
 /* common */
 
-int calculateDataBytes(){
+int calculateDataBytes() {
 	return getTotalNumberOfChannels() * DYNAMIC_RANGE;
 }
 
-int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
-int getNumberOfChips(){return  NCHIP;}
-int getNumberOfDACs(){return  NDAC;}
-int getNumberOfChannelsPerChip(){return  NCHAN;}
+int getTotalNumberOfChannels() {return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
+int getNumberOfChips() {return  NCHIP;}
+int getNumberOfDACs() {return  NDAC;}
+int getNumberOfChannelsPerChip() {return  NCHAN;}

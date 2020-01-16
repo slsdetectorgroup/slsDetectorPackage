@@ -4,29 +4,38 @@
 #define REG_OFFSET                      (4)
 
 /* Base addresses 0x1804 0000 ---------------------------------------------*/
+
 /* Reconfiguration core for readout pll */
 #define BASE_READOUT_PLL                (0x0000) // 0x1804_0000 - 0x1804_07FF
+
 /* Reconfiguration core for system pll */
 #define BASE_SYSTEM_PLL                 (0x0800) // 0x1804_0800 - 0x1804_0FFF
+
 /* Clock Generation */
 #define BASE_CLK_GENERATION             (0x1000) // 0x1804_1000 - 0x1804_XXXX //TODO
 
 /* Base addresses 0x1806 0000 ---------------------------------------------*/
 /* General purpose control and status registers */
-#define BASE_CONTROL                    (0x0000) // 0x1806_0000 - 0x1806_00FF https://git.psi.ch/sls_detectors_firmware/mythen_III_mcb/blob/master/code/hdl/ctrl/ctrl.vhd
+#define BASE_CONTROL                    (0x0000) // 0x1806_0000 - 0x1806_00FF 
+// https://git.psi.ch/sls_detectors_firmware/mythen_III_mcb/blob/master/code/hdl/ctrl/ctrl.vhd
 
 /* ASIC Control */
 #define BASE_ASIC                       (0x0100) // 0x1806_0100 - 0x1806_010F 
+
 /* ASIC Digital Interface. Data recovery core */
-#define BASE_ADIF                       (0x0110) // 0x1806_0110 - 0x1806_011F https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/2e81ccbdbc5cb81813ba190fbdba43e8d6884eb9/adif/adif_ctrl.vhd
+#define BASE_ADIF                       (0x0110) // 0x1806_0110 - 0x1806_011F 
+// https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/2e81ccbdbc5cb81813ba190fbdba43e8d6884eb9/adif/adif_ctrl.vhd
 
 /* Formatting of data core */
 #define BASE_FMT                        (0x0120) // 0x1806_0120 - 0x1806_012F
+
 /* Pattern control and status registers */
-#define BASE_PATTERN_CONTROL            (0x00200) // 0x1806_0200 - 0x1806_02FF  https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/2e81ccbdbc5cb81813ba190fbdba43e8d6884eb9/pattern_flow/pattern_flow_ctrl.vhd
+#define BASE_PATTERN_CONTROL            (0x00200) // 0x1806_0200 - 0x1806_02FF  
+// https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/2e81ccbdbc5cb81813ba190fbdba43e8d6884eb9/pattern_flow/pattern_flow_ctrl.vhd
 
 /* UDP datagram generator */
 #define BASE_UDP_RAM                    (0x01000) // 0x1806_1000 - 0x1806_1FFF
+
 /* Pattern RAM. Pattern table */
 #define BASE_PATTERN_RAM                (0x10000) // 0x1807_0000 - 0x1807_FFFF
 
@@ -126,15 +135,15 @@
 #define PAT_STATUS_REG                  (0x00 * REG_OFFSET  + BASE_PATTERN_CONTROL)
 #define PAT_STATUS_RUN_BUSY_OFST       	(0)
 #define PAT_STATUS_RUN_BUSY_MSK			(0x00000001 << PAT_STATUS_RUN_BUSY_OFST)
-#define PAT_STATUS_WAIT_FOR_TRGGR_OFST  (0)
+#define PAT_STATUS_WAIT_FOR_TRGGR_OFST  (3)
 #define PAT_STATUS_WAIT_FOR_TRGGR_MSK	(0x00000001 << PAT_STATUS_WAIT_FOR_TRGGR_OFST)
-#define PAT_STATUS_DLY_BFRE_TRGGR_OFST  (0)
+#define PAT_STATUS_DLY_BFRE_TRGGR_OFST  (4)
 #define PAT_STATUS_DLY_BFRE_TRGGR_MSK	(0x00000001 << PAT_STATUS_DLY_BFRE_TRGGR_OFST)
-#define PAT_STATUS_FIFO_FULL_OFST       (0)
+#define PAT_STATUS_FIFO_FULL_OFST       (5)
 #define PAT_STATUS_FIFO_FULL_MSK		(0x00000001 << PAT_STATUS_FIFO_FULL_OFST)
-#define PAT_STATUS_DLY_AFTR_TRGGR_OFST  (0)
+#define PAT_STATUS_DLY_AFTR_TRGGR_OFST  (15)
 #define PAT_STATUS_DLY_AFTR_TRGGR_MSK	(0x00000001 << PAT_STATUS_DLY_AFTR_TRGGR_OFST)
-#define PAT_STATUS_CSM_BUSY_OFST       	(0)
+#define PAT_STATUS_CSM_BUSY_OFST       	(17)
 #define PAT_STATUS_CSM_BUSY_MSK			(0x00000001 << PAT_STATUS_CSM_BUSY_OFST)
 
 /* Delay left 64bit Register */
@@ -183,6 +192,9 @@
 
 /* External Signal register */
 #define EXT_SIGNAL_REG        			(0x30 * REG_OFFSET + BASE_PATTERN_CONTROL)
+
+#define EXT_SIGNAL_OFST                 (0)
+#define EXT_SIGNAL_MSK		            (0x00000001 << EXT_SIGNAL_OFST)
 
 /* Trigger Delay 64 bit register */
 #define SET_TRIGGER_DELAY_LSB_REG       (0x32 * REG_OFFSET + BASE_PATTERN_CONTROL)

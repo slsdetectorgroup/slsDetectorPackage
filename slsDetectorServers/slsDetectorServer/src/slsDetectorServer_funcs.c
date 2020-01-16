@@ -484,7 +484,7 @@ void function_table() {
 	flist[F_GET_INJECT_CHANNEL]					= &get_inject_channel;
 	flist[F_SET_VETO_PHOTON]					= &set_veto_photon;
 	flist[F_GET_VETO_PHOTON]					= &get_veto_photon;
-	flist[F_SET_VETO_REFERENCE]					= &set_veto_refernce;	
+	flist[F_SET_VETO_REFERENCE]					= &set_veto_reference;	
 	flist[F_GET_BURST_MODE]						= &get_burst_mode;
 	flist[F_SET_BURST_MODE]						= &set_burst_mode;
 	flist[F_SET_ADC_ENABLE_MASK_10G]			= &set_adc_enable_mask_10g;
@@ -685,10 +685,6 @@ int set_timing_mode(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting external communication mode to %d\n", arg));
 
-#ifdef GOTTHARD2D
-    functionNotImplemented();
-#else
-
 	// set
 	if ((arg != GET_TIMING_MODE) && (Server_VerifyLock() == OK)) {
 		switch (arg) {
@@ -709,7 +705,6 @@ int set_timing_mode(int file_des) {
 	retval = getTiming();
 	validate((int)arg, (int)retval, "set timing mode", DEC);
 	FILE_LOG(logDEBUG1, ("Timing Mode: %d\n",retval));
-#endif
 
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -1783,6 +1778,12 @@ int start_acquisition(int file_des) {
 		}
 		else
 #endif
+#ifdef GOTTHARD2D
+		if (updateAcquisitionRegisters(mess) == FAIL) {
+			ret = FAIL;	
+		}
+		else
+#endif
 		if (configured == FAIL) {
 			ret = FAIL;
 			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
@@ -1793,11 +1794,7 @@ int start_acquisition(int file_des) {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(VIRTUAL)
 				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check udp_dstip & udp_dstport.\n");
 #else
-#if defined(GOTTHARD2D)
-				sprintf(mess, "Could not start acquisition due to #frames > %d in burst mode\n", MAX_FRAMES_IN_BURST_MODE);
-#else
 				sprintf(mess, "Could not start acquisition\n");
-#endif
 #endif
 				FILE_LOG(logERROR,(mess));
 			}
@@ -1917,6 +1914,12 @@ int start_and_read_all(int file_des) {
 		}
 		else
 #endif
+#ifdef GOTTHARD2D
+		if (updateAcquisitionRegisters(mess) == FAIL) {
+			ret = FAIL;	
+		}
+		else
+#endif
 		if (configured == FAIL) {
 			ret = FAIL;
 			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
@@ -1927,11 +1930,7 @@ int start_and_read_all(int file_des) {
 #if defined(VIRTUAL) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check udp_dstip & udp_dstport.\n");
 #else
-#if defined(GOTTHARD2D)
-				sprintf(mess, "Could not start acquisition due to #frames > %d in burst mode\n", MAX_FRAMES_IN_BURST_MODE);
-#else
 				sprintf(mess, "Could not start acquisition\n");
-#endif
 #endif
 				FILE_LOG(logERROR,(mess));
 			}
@@ -2225,7 +2224,7 @@ int get_delay_after_trigger(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2244,7 +2243,7 @@ int set_delay_after_trigger(int file_des) {
 	return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting delay after trigger %lld ns\n", (long long int)arg));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// only set
@@ -2458,7 +2457,7 @@ int get_period_left(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2473,7 +2472,7 @@ int get_delay_after_trigger_left(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2518,7 +2517,7 @@ int get_frames_from_start(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2533,7 +2532,7 @@ int get_actual_time(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2548,7 +2547,7 @@ int get_measurement_time(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -3836,12 +3835,12 @@ int power_chip(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Powering chip to %d\n", arg));
 
-#if (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) && (!defined(MYTHEN3D))
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else
 	// set & get
 	if ((arg == -1) || (Server_VerifyLock() == OK)) {
-#ifdef MYTHEN3D
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
 		// check only when powering on
 		if (arg != -1 && arg != 0) {
 			int type_ret = checkDetectorType();
@@ -6446,7 +6445,7 @@ int get_veto_photon(int file_des) {
 }
 
 
-int set_veto_refernce(int file_des) {
+int set_veto_reference(int file_des) {
   	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int args[2] = {-1, -1};

@@ -564,10 +564,10 @@ class slsDetector : public virtual slsDetectorDefs {
 
     void setPeriod(int64_t value);
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     int64_t getDelayAfterTrigger();
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     void setDelayAfterTrigger(int64_t value);
 
     /** [Eiger] in 32 bit mode */
@@ -595,13 +595,13 @@ class slsDetector : public virtual slsDetectorDefs {
     /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     int64_t getNumberOfTriggersLeft() const;
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][CTB][Gotthard2] */
     int64_t getDelayAfterTriggerLeft() const;
 
     /** [Gotthard] */
     int64_t getExptimeLeft() const;
 
-    /** [Gotthard][Jungfrau][CTB]  */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2]  */
     int64_t getPeriodLeft() const;
 
     /** [Eiger] minimum two frames */
@@ -610,13 +610,13 @@ class slsDetector : public virtual slsDetectorDefs {
     /** [Eiger] */
     int64_t getMeasuredSubFramePeriod() const;
 
-    /** [Jungfrau][CTB] */
+    /** [Jungfrau][CTB][Mythen3][Gotthard2] */
     int64_t getNumberOfFramesFromStart() const;
 
-    /** [Jungfrau][CTB] Get time from detector start */
+    /** [Jungfrau][CTB][Mythen3][Gotthard2] Get time from detector start */
     int64_t getActualTime() const;
 
-    /** [Jungfrau][CTB] Get timestamp at a frame start */
+    /** [Jungfrau][CTB][Mythen3][Gotthard2] Get timestamp at a frame start */
     int64_t getMeasurementTime() const;
 
     /**
@@ -1836,25 +1836,25 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     void setDigitalIODelay(uint64_t pinMask, int delay);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     int getClockFrequency(int clkIndex);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     void setClockFrequency(int clkIndex, int value);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     int getClockPhase(int clkIndex, bool inDegrees);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     void setClockPhase(int clkIndex, int value, bool inDegrees);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     int getMaxClockPhaseShift(int clkIndex);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     int getClockDivider(int clkIndex);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     void setClockDivider(int clkIndex, int value);
 
     /** [Ctb][Moench] */

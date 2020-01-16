@@ -1003,47 +1003,54 @@ class CmdProxy {
 
     INTEGER_COMMAND_NOID(frames, getNumberOfFrames, setNumberOfFrames,
                          std::stol,
-                         "[n_frames]\n\tNumber of frames per aquire. In trigger mode, number of frames per trigger.");
+                         "[n_frames]\n\tNumber of frames per aquire. In trigger mode, number of frames per trigger."
+                         "\n\t[Gotthard2] Burst mode has a maximum of 2720 frames. Frames number for both modes are uploaded to detector just before acquisition starts");
 
     INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
                          std::stol,
                          "[n_triggers]\n\tNumber of triggers per aquire. Use timing command to set timing mode.");
 
     TIME_COMMAND(exptime, getExptime, setExptime,
-        "[duration] [(optional unit) ns|us|ms|s]\n\tExposure time");
+        "[duration] [(optional unit) ns|us|ms|s]\n\tExposure time"
+        "\n\t[Gotthard2] Uploaded to detector just before acquisition starts");
 
     TIME_COMMAND(period, getPeriod, setPeriod,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\tPeriod between frames");
+                 "[duration] [(optional unit) ns|us|ms|s]\n\tPeriod between frames"
+                 "\n\t[Gotthard2] Uploaded to detector just before acquisition starts");
 
     TIME_COMMAND(delay, getDelayAfterTrigger, setDelayAfterTrigger,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Ctb][Mythen3] Delay after trigger");
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] Delay after trigger");
 
     GET_COMMAND(framesl, getNumberOfFramesLeft, 
-                "\n\t[Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] Number of frames left in acquisition.");       
+                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Number of frames left in acquisition.");       
 
     GET_COMMAND(triggersl, getNumberOfTriggersLeft, 
-                "\n\t[Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] Number of triggers left in acquisition.");       
+                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Number of triggers left in acquisition.");       
 
     TIME_GET_COMMAND(delayl, getDelayAfterTriggerLeft, 
-                "\n\t[Gotthard][Jungfrau][CTB] DelayLeft Delay Left in Acquisition.");    
+                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] DelayLeft Delay Left in Acquisition.");    
 
     TIME_GET_COMMAND(periodl, getPeriodLeft, 
-                "\n\t[Gotthard][Jungfrau][CTB] Period left for current frame.");   
+                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Period left for current frame.");   
 
     INTEGER_COMMAND(timing, getTimingMode, setTimingMode, sls::StringTo<slsDetectorDefs::timingMode>,
-                    "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Gotthard][Ctb] [auto|trigger]\n\t[Eiger] [auto|trigger|gating|burst_trigger]");      
+                    "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] [auto|trigger]\n\t[Eiger] [auto|trigger|gating|burst_trigger]");      
 
     GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift, 
                 "\n\t[Jungfrau][CTB] Absolute maximum Phase shift of ADC clock.");  
 
     INTEGER_COMMAND(vhighvoltage, getHighVoltage, setHighVoltage, std::stoi,
-                    "[n_value]\n\tHigh voltage to the sensor in Voltage.\n\t[Gotthard] [0|90|110|120|150|180|200]\n\t[Eiger] 0-200\n\t[Jungfrau][Ctb] [0|60-200]");      
+                    "[n_value]\n\tHigh voltage to the sensor in Voltage."
+                    "\n\t[Gotthard] [0|90|110|120|150|180|200]"
+                    "\n\t[Eiger][Mythen3][Gotthard2] 0-200"
+                    "\n\t[Jungfrau][Ctb] [0|60-200]");      
 
     INTEGER_COMMAND(powerchip, getPowerChip, setPowerChip, std::stoi,
-                    "[0, 1]\n\t[Jungfrau][Mythen3] Power the chip. Default 0. 
-                    \n\t[Jungfrau] Get will return power status. 
-                    Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled.
-                    \n\t[Mythen3] If module not connected or wrong module, 1 will fail. By default, not powered on");  
+                    "[0, 1]\n\t[Jungfrau][Mythen3][Gotthard2] Power the chip. Default 0." 
+                    "\n\t[Jungfrau] Get will return power status." 
+                    "Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled."
+                    "\n\t[Mythen3] If module not connected or wrong module, 1 will fail. By default, not powered on"
+                    "\n\t[Gotthard2] If module not connected or wrong module, 1 will fail. By default, powered on at server start up.");  
 
     /** temperature */                
 
@@ -1385,8 +1392,7 @@ class CmdProxy {
     INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, std::stoi,
                     "[port]\n\tTCP port for client-receiver communication. Default is 1954. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter. Multi command will automatically increment for individual modules.");  
     
-    INTEGER_COMMAND(
-        rx_fifodepth, getRxFifoDepth, setRxFifoDepth, std::stoi,
+    INTEGER_COMMAND(rx_fifodepth, getRxFifoDepth, setRxFifoDepth, std::stoi,
         "[n_frames]\n\tSet the number of frames in the receiver fifo (buffer between listener and writer threads).");
 
     INTEGER_COMMAND(rx_silent, getRxSilentMode, setRxSilentMode, std::stoi,
@@ -1686,10 +1692,10 @@ class CmdProxy {
                 "\n\t[Jungfrau][Ctb] Reboot controler (blackfin) of detector.");  
 
     EXECUTE_SET_COMMAND(firmwaretest, executeFirmwareTest, 
-                "\n\t[Jungfrau][Ctb][Gotthard] Firmware test, ie. reads a read fixed pattern from a register.");  
+                "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test, ie. reads a read fixed pattern from a register.");  
 
     EXECUTE_SET_COMMAND(bustest, executeBusTest, 
-                "\n\t[Jungfrau][Ctb][Gotthard] Bus test, ie. keeps writing and reading back different values in R/W register.");  
+                "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] Bus test, ie. keeps writing and reading back different values in R/W register.");  
 
 
     /* Insignificant */
@@ -1707,13 +1713,13 @@ class CmdProxy {
                 "\n\tClient IP Address that last communicated with the detector."); 
 
     GET_COMMAND(nframes, getNumberOfFramesFromStart, 
-                "\n\t[Jungfrau][CTB] Number of frames from start run control.");       
+                "\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Number of frames from start run control.");       
 
     TIME_GET_COMMAND(now, getActualTime, 
-                "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][CTB] Time from detector start up.");  
+                "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Time from detector start up.");  
 
     TIME_GET_COMMAND(timestamp, getMeasurementTime, 
-                "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][CTB] Timestamp at a frame start.");  
+                "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Timestamp at a frame start.");  
 
     GET_COMMAND(rx_frameindex, getRxCurrentFrameIndex, 
                 "\n\tCurrent frame index received in receiver.");  

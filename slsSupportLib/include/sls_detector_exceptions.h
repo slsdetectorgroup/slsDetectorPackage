@@ -54,7 +54,7 @@ public:
 	GuiError(const std::string& msg):RuntimeError(msg) {}
 };
 
-} //  namespce sls
+} //  namespace sls
 
 
 

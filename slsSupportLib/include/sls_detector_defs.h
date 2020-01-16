@@ -20,8 +20,8 @@
 //C++ includes
 #include "sls_detector_exceptions.h"
 #include <algorithm>
-#include <cstdint>
 #include <bitset>
+#include <cstdint>
 #include <string>
 #else
 //C includes

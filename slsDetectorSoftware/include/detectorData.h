@@ -1,5 +1,5 @@
-#include <unistd.h>
 #include <cstring>
+#include <unistd.h>
 #pragma once
 /**
    @short data structure to hold the detector data after postprocessing

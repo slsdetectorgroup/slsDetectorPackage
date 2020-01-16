@@ -10,15 +10,15 @@
 #include "ansi.h"
 #include "sls_detector_exceptions.h"
 
-#include <iostream>
-#include <zmq.h>
-#include <errno.h>
-#include <netdb.h>				//gethostbyname()
 #include <arpa/inet.h>			//inet_ntoa
+#include <errno.h>
+#include <iostream>
+#include <netdb.h>				//gethostbyname()
 #include <rapidjson/document.h> //json header in zmq stream
 #include <string.h>
 #include <unistd.h> 			//usleep in some machines
 #include <vector>
+#include <zmq.h>
 using namespace rapidjson;
 
 

@@ -18,11 +18,11 @@
 /*! \file reader.h */
 
 #include "allocators.h"
-#include "stream.h"
 #include "encodedstream.h"
 #include "internal/meta.h"
 #include "internal/stack.h"
 #include "internal/strtod.h"
+#include "stream.h"
 #include <limits>
 
 #if defined(RAPIDJSON_SIMD) && defined(_MSC_VER)

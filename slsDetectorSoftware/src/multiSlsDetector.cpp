@@ -643,7 +643,7 @@ void multiSlsDetector::readFrameFromReceiver() {
                         << "\n\tsingledetrowoffset: " << singledetrowoffset
                         << "\n\trowoffset: " << rowoffset;
 
-                    if (eiger && (flippedDataX != 0u)) {
+                    if (eiger && (flippedDataX != 0U)) {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
                             memcpy(((char *)multiframe) +
                                        ((yoffset + (nPixelsY - 1 - i)) *

@@ -1054,7 +1054,7 @@ class Detector {
     Result<std::vector<int>> getRxDbitList(Positions pos = {}) const;
 
     /** [CTB] list contains the set of bits (0-63) to save */
-    void setRxDbitList(std::vector<int> list, Positions pos = {});
+    void setRxDbitList(const std::vector<int>& list, Positions pos = {});
 
     /** [CTB] */
     Result<int> getRxDbitOffset(Positions pos = {}) const;

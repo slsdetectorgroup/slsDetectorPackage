@@ -722,7 +722,7 @@ void slsDetector::updateCachedDetectorVariables() {
         FORCE_UPDATE) {
         int n = 0, i32 = 0;
         int64_t i64 = 0;
-        sls::IpAddr lastClientIP = 0U;
+        sls::IpAddr lastClientIP;
         n += client.Receive(&lastClientIP, sizeof(lastClientIP));
         FILE_LOG(logDEBUG1)
             << "Updating detector last modified by " << lastClientIP;
@@ -3152,7 +3152,7 @@ int slsDetector::lockReceiver(int lock) {
 }
 
 sls::IpAddr slsDetector::getReceiverLastClientIP() const {
-    sls::IpAddr retval = 0U;
+    sls::IpAddr retval;
     FILE_LOG(logDEBUG1) << "Getting last client ip to receiver server";
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_GET_LAST_RECEIVER_CLIENT_IP, nullptr, retval);
@@ -3190,7 +3190,7 @@ void slsDetector::updateCachedReceiverVariables() const {
         int n = 0, i32 = 0;
         int64_t i64 = 0;
         char cstring[MAX_STR_LENGTH]{};
-        IpAddr ip = 0U;
+        IpAddr ip;
 
         n += receiver.Receive(&ip, sizeof(ip));
         FILE_LOG(logDEBUG1)

@@ -449,7 +449,7 @@ class CmdProxy {
     }
 
     inline unsigned int stoiHex(const std::string& s) {
-        unsigned long lresult = stoul(s, 0, 16);
+        unsigned long lresult = stoul(s, nullptr, 16);
         unsigned int result = lresult;
         if (result != lresult) {
             throw std::out_of_range("cannot convert to unsigned int");
@@ -458,7 +458,7 @@ class CmdProxy {
     }
 
     inline unsigned long int stoulHex(const std::string& s) {
-        unsigned long result = stoul(s, 0, 16);
+        unsigned long result = stoul(s, nullptr, 16);
         return result;
     }
 

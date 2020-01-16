@@ -14,14 +14,20 @@
 #define __cplusplus
 #endif
 
-#include <stdint.h>
+#include "ansi.h"
+
 #ifdef __cplusplus
+//C++ includes
 #include "sls_detector_exceptions.h"
 #include <algorithm>
+#include <cstdint>
 #include <bitset>
 #include <string>
+#else
+//C includes
+#include <stdint.h>
 #endif
-#include "ansi.h"
+
 
 #define BIT32_MASK  0xFFFFFFFF
 #define MAX_RX_DBIT 64
@@ -72,7 +78,6 @@
 #ifdef __cplusplus
 class slsDetectorDefs {
   public:
-    slsDetectorDefs(){};
 #endif
 
     /** Type of the detector */
@@ -146,20 +151,13 @@ class slsDetectorDefs {
 
 #ifdef __cplusplus
 #define MAX_NUM_PACKETS 512
-
-    typedef std::bitset<MAX_NUM_PACKETS> sls_bitset;
-
-    typedef struct {
+    using sls_bitset = std::bitset<MAX_NUM_PACKETS>;
+    using bitset_storage = uint8_t[MAX_NUM_PACKETS / 8];
+    struct sls_receiver_header{
         sls_detector_header detHeader; /**< is the detector header */
         sls_bitset packetsMask;        /**< is the packets caught bit mask */
-    } sls_receiver_header;
-
-    typedef uint8_t bitset_storage[MAX_NUM_PACKETS / 8];
-
+    };
 #endif
-    /**
-     * frameDiscardPolicy
-     */
     enum frameDiscardPolicy {
         GET_FRAME_DISCARD_POLICY = -1, /**< to get the missing packet mode */
         NO_DISCARD, /**< pad incomplete packets with -1, default mode */
@@ -171,9 +169,6 @@ class slsDetectorDefs {
         NUM_DISCARD_POLICIES
     };
 
-    /**
-format
- */
     enum fileFormat {
         GET_FILE_FORMAT = -1, /**< the receiver will return its file format */
         BINARY,               /**< binary format */
@@ -214,8 +209,8 @@ format
 
 #ifdef __cplusplus
     struct xy {
-        int x=0;
-        int y=0;
+        int x{0};
+        int y{0};
     };
 #endif
 
@@ -466,8 +461,8 @@ struct detParameters {
     int nGappixelsX{0};
     int nGappixelsY{0};
 
-    detParameters() {}
-    detParameters(slsDetectorDefs::detectorType type) {
+    detParameters() = default;
+    explicit detParameters(slsDetectorDefs::detectorType type) {
         switch (type) {
         case slsDetectorDefs::detectorType::GOTTHARD:
             nChanX = 128;
@@ -582,7 +577,7 @@ typedef struct {
         : serialnumber(0), nchan(0), nchip(0), ndac(0), reg(0), iodelay(0),
           tau(0), eV(0), dacs(nullptr), chanregs(nullptr) {}
 
-    sls_detector_module(slsDetectorDefs::detectorType type)
+    explicit sls_detector_module(slsDetectorDefs::detectorType type)
         : sls_detector_module() {
         detParameters parameters{type};
         int nch = parameters.nChanX * parameters.nChanY;
@@ -633,5 +628,5 @@ typedef struct {
 namespace sls{
 using Positions = const std::vector<int> &;
 using defs = slsDetectorDefs;
-}
+} // namespace sls
 #endif

@@ -1298,7 +1298,7 @@ void Implementation::setNumberofCounters(const int i) {
         numberOfCounters = i;
 
         if (myDetectorType == MYTHEN3) {
-            generalData->SetDynamicRange(i, tengigaEnable);
+            generalData->SetNumberofCounters(i, dynamicRange);
             // to update npixelsx, npixelsy in file writer
             for (const auto &it : dataProcessor)
                 it->SetPixelDimension();

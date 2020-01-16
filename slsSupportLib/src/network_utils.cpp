@@ -106,7 +106,7 @@ std::string IpToInterfaceName(const std::string &ip) {
     strcpy(buf, "none");
 
     getifaddrs(&addrs);
-    for (iap = addrs; iap != NULL; iap = iap->ifa_next) {
+    for (iap = addrs; iap != nullptr; iap = iap->ifa_next) {
         if (iap->ifa_addr && (iap->ifa_flags & IFF_UP) &&
             iap->ifa_addr->sa_family == AF_INET) {
             sa = (struct sockaddr_in *)(iap->ifa_addr);

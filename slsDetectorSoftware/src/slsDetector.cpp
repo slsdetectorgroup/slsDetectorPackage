@@ -1,12 +1,12 @@
 #include "slsDetector.h"
 #include "ClientSocket.h"
 #include "SharedMemory.h"
+#include "ToString.h"
 #include "file_utils.h"
 #include "network_utils.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
 #include "versionAPI.h"
-#include "ToString.h"
 
 #include <arpa/inet.h>
 #include <array>
@@ -343,9 +343,9 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
                        (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->rxUpstream = false;
     shm()->rxReadFreq = 1;
-    shm()->zmqip = 0u;
-    shm()->rxZmqip = 0u;
-    shm()->gappixels = 0u;
+    shm()->zmqip = 0U;
+    shm()->rxZmqip = 0U;
+    shm()->gappixels = 0U;
     memset(shm()->rxAdditionalJsonHeader, 0, MAX_STR_LENGTH);
     shm()->rxFrameDiscardMode = NO_DISCARD;
     shm()->rxFramePadding = true;
@@ -558,7 +558,7 @@ void slsDetector::updateNumberOfChannels() {
                 nachans = 32;
             } else {
                 for (int ich = 0; ich < 32; ++ich) {
-                    if ((mask & (1 << ich)) != 0u)
+                    if ((mask & (1 << ich)) != 0U)
                         ++nachans;
                 }
             }
@@ -578,7 +578,7 @@ void slsDetector::updateNumberOfChannels() {
 }
 
 slsDetectorDefs::xy slsDetector::getNumberOfChannels() const {
-    slsDetectorDefs::xy coord;
+    slsDetectorDefs::xy coord{};
     coord.x = (shm()->nChan.x * shm()->nChip.x +
                shm()->gappixels * shm()->nGappixels.x);
     coord.y = (shm()->nChan.y * shm()->nChip.y +
@@ -591,7 +591,7 @@ bool slsDetector::getQuad() {
     FILE_LOG(logDEBUG1) << "Getting Quad Type";
     sendToDetector(F_GET_QUAD, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Quad Type :" << retval;
-    return (retval == 0 ? false : true);
+    return retval != 0;
 }
 
 void slsDetector::setQuad(const bool enable) {
@@ -686,11 +686,11 @@ bool slsDetector::lockServer(int lock) {
     FILE_LOG(logDEBUG1) << "Setting detector server lock to " << lock;
     sendToDetector(F_LOCK_SERVER, lock, retval);
     FILE_LOG(logDEBUG1) << "Lock: " << retval;
-    return (retval == 1 ? true : false);
+    return retval == 1;
 }
 
 sls::IpAddr slsDetector::getLastClientIP() {
-    sls::IpAddr retval = 0u;
+    sls::IpAddr retval = 0U;
     FILE_LOG(logDEBUG1) << "Getting last client ip to detector server";
     sendToDetector(F_GET_LAST_CLIENT_IP, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Last client IP to detector: " << retval;
@@ -709,7 +709,7 @@ void slsDetector::execCommand(const std::string &cmd) {
     sls::strcpy_safe(arg, cmd.c_str());
     FILE_LOG(logDEBUG1) << "Sending command to detector " << arg;
     sendToDetector(F_EXEC_COMMAND, arg, retval);
-    if (strlen(retval) != 0u) {
+    if (strlen(retval) != 0U) {
         FILE_LOG(logINFO) << "Detector " << detId << " returned:\n" << retval;
     }
 }
@@ -722,7 +722,7 @@ void slsDetector::updateCachedDetectorVariables() {
         FORCE_UPDATE) {
         int n = 0, i32 = 0;
         int64_t i64 = 0;
-        sls::IpAddr lastClientIP = 0u;
+        sls::IpAddr lastClientIP;
         n += client.Receive(&lastClientIP, sizeof(lastClientIP));
         FILE_LOG(logDEBUG1)
             << "Updating detector last modified by " << lastClientIP;
@@ -1612,7 +1612,7 @@ bool slsDetector::getStoreInRamMode() {
 }
 
 void slsDetector::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
-    uint32_t arg = static_cast<uint32_t>(mode);
+    auto arg = static_cast<uint32_t>(mode);
     FILE_LOG(logDEBUG1) << "Setting readout mode to " << arg;
     sendToDetector(F_SET_READOUT_MODE, arg, nullptr);
     shm()->roMode = mode;
@@ -1825,7 +1825,7 @@ void slsDetector::setSourceUDPMAC(const sls::MacAddr mac) {
 }
 
 sls::MacAddr slsDetector::getSourceUDPMAC() {
-    sls::MacAddr retval(0lu);
+    sls::MacAddr retval(0LU);
     FILE_LOG(logDEBUG1) << "Getting source udp mac";
     sendToDetector(F_GET_SOURCE_UDP_MAC, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Source udp mac: " << retval;
@@ -1841,7 +1841,7 @@ void slsDetector::setSourceUDPMAC2(const sls::MacAddr mac) {
 }
 
 sls::MacAddr slsDetector::getSourceUDPMAC2() {
-    sls::MacAddr retval(0lu);
+    sls::MacAddr retval(0LU);
     FILE_LOG(logDEBUG1) << "Getting source udp mac2";
     sendToDetector(F_GET_SOURCE_UDP_MAC2, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Source udp mac2: " << retval;
@@ -1858,7 +1858,7 @@ void slsDetector::setSourceUDPIP(const IpAddr ip) {
 }
 
 sls::IpAddr slsDetector::getSourceUDPIP() {
-    sls::IpAddr retval(0u);
+    sls::IpAddr retval(0U);
     FILE_LOG(logDEBUG1) << "Getting source udp ip";
     sendToDetector(F_GET_SOURCE_UDP_IP, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Source udp ip: " << retval;
@@ -1875,7 +1875,7 @@ void slsDetector::setSourceUDPIP2(const IpAddr ip) {
 }
 
 sls::IpAddr slsDetector::getSourceUDPIP2() {
-    sls::IpAddr retval(0u);
+    sls::IpAddr retval(0U);
     FILE_LOG(logDEBUG1) << "Getting source udp ip2";
     sendToDetector(F_GET_SOURCE_UDP_IP2, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Source udp ip2: " << retval;
@@ -1889,7 +1889,7 @@ void slsDetector::setDestinationUDPIP(const IpAddr ip) {
     }
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr); 
     if (shm()->useReceiverFlag) {
-        sls::MacAddr retval(0lu);
+        sls::MacAddr retval(0LU);
         sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
         FILE_LOG(logINFO) << "Setting destination udp mac to " << retval;
         sendToDetector(F_SET_DEST_UDP_MAC, retval, nullptr); 
@@ -1897,7 +1897,7 @@ void slsDetector::setDestinationUDPIP(const IpAddr ip) {
 }
 
 sls::IpAddr slsDetector::getDestinationUDPIP() {
-    sls::IpAddr retval(0u);
+    sls::IpAddr retval(0U);
     FILE_LOG(logDEBUG1) << "Getting destination udp ip";
     sendToDetector(F_GET_DEST_UDP_IP, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Destination udp ip: " << retval;
@@ -1925,7 +1925,7 @@ void slsDetector::setDestinationUDPIP2(const IpAddr ip) {
 
     sendToDetector(F_SET_DEST_UDP_IP2, ip, nullptr); 
     if (shm()->useReceiverFlag) {
-        sls::MacAddr retval(0lu);
+        sls::MacAddr retval(0LU);
         sendToReceiver(F_SET_RECEIVER_UDP_IP2, ip, retval);
         FILE_LOG(logINFO) << "Setting destination udp mac2 to " << retval;
         sendToDetector(F_SET_DEST_UDP_MAC2, retval, nullptr); 
@@ -1933,7 +1933,7 @@ void slsDetector::setDestinationUDPIP2(const IpAddr ip) {
 }
 
 sls::IpAddr slsDetector::getDestinationUDPIP2() {
-    sls::IpAddr retval(0u);
+    sls::IpAddr retval(0U);
     FILE_LOG(logDEBUG1) << "Getting destination udp ip2";
     sendToDetector(F_GET_DEST_UDP_IP2, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Destination udp ip2: " << retval;
@@ -1963,7 +1963,7 @@ void slsDetector::setDestinationUDPMAC(const MacAddr mac) {
 }
 
 sls::MacAddr slsDetector::getDestinationUDPMAC() {
-    sls::MacAddr retval(0lu);
+    sls::MacAddr retval(0LU);
     FILE_LOG(logDEBUG1) << "Getting destination udp mac";
     sendToDetector(F_GET_DEST_UDP_MAC, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Destination udp mac: " << retval;
@@ -1980,7 +1980,7 @@ void slsDetector::setDestinationUDPMAC2(const MacAddr mac) {
 }
 
 sls::MacAddr slsDetector::getDestinationUDPMAC2() {
-    sls::MacAddr retval(0lu);
+    sls::MacAddr retval(0LU);
     FILE_LOG(logDEBUG1) << "Getting destination udp mac2";
     sendToDetector(F_GET_DEST_UDP_MAC2, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Destination udp mac2: " << retval;
@@ -2130,7 +2130,7 @@ bool slsDetector::getTenGigaFlowControl() {
     int retval = -1;
     sendToDetector(F_GET_TEN_GIGA_FLOW_CONTROL, nullptr, retval);
     FILE_LOG(logDEBUG1) << "ten giga flow control :" << retval;
-    return retval == 1 ? true : false;
+    return retval == 1;
 }
 
 void slsDetector::setTenGigaFlowControl(bool enable) {
@@ -2252,7 +2252,7 @@ std::string slsDetector::setAdditionalJsonParameter(const std::string &key,
 
     // key not found, append key value pair
     else {
-        if (header.length() != 0u) {
+        if (header.length() != 0U) {
             header.append(",");
         }
         header.append(keyLiteral + valueLiteral);
@@ -2265,7 +2265,7 @@ std::string slsDetector::setAdditionalJsonParameter(const std::string &key,
 
 std::string slsDetector::getAdditionalJsonParameter(const std::string &key) {
     // additional json header is empty
-    if (strlen(shm()->rxAdditionalJsonHeader) == 0u)
+    if (strlen(shm()->rxAdditionalJsonHeader) == 0U)
         return std::string();
 
     // add quotations before and after the key value
@@ -2585,7 +2585,7 @@ void slsDetector::setADCEnableMask(uint32_t mask) {
     updateNumberOfChannels();
 
     // send to processor
-    if (shm()->myDetectorType == MOENCH && shm()->tenGigaEnable == 0)
+    if (shm()->myDetectorType == MOENCH && !shm()->tenGigaEnable)
         setAdditionalJsonParameter("adcmask",
                                    std::to_string(shm()->adcEnableMaskOneGiga));
 
@@ -2620,7 +2620,7 @@ void slsDetector::setTenGigaADCEnableMask(uint32_t mask) {
     updateNumberOfChannels();
 
     // send to processor
-    if (shm()->myDetectorType == MOENCH && shm()->tenGigaEnable == 1)
+    if (shm()->myDetectorType == MOENCH && shm()->tenGigaEnable)
         setAdditionalJsonParameter("adcmask",
                                    std::to_string(shm()->adcEnableMaskTenGiga));
 
@@ -2682,7 +2682,7 @@ int slsDetector::setExternalSampling(int value) {
 
 int slsDetector::getExternalSampling() { return setExternalSampling(-1); }
 
-void slsDetector::setReceiverDbitList(std::vector<int> list) {
+void slsDetector::setReceiverDbitList(const std::vector<int>& list) {
     FILE_LOG(logDEBUG1) << "Setting Receiver Dbit List";
 
     if (list.size() > 64) {
@@ -2811,7 +2811,7 @@ int slsDetector::enableGapPixels(int val) {
     return shm()->gappixels;
 }
 
-int slsDetector::setTrimEn(std::vector<int> energies) {
+int slsDetector::setTrimEn(const std::vector<int>& energies) {
     if (shm()->myDetectorType != EIGER) {
          throw RuntimeError("Not implemented for this detector.");
     }
@@ -3152,7 +3152,7 @@ int slsDetector::lockReceiver(int lock) {
 }
 
 sls::IpAddr slsDetector::getReceiverLastClientIP() const {
-    sls::IpAddr retval = 0u;
+    sls::IpAddr retval;
     FILE_LOG(logDEBUG1) << "Getting last client ip to receiver server";
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_GET_LAST_RECEIVER_CLIENT_IP, nullptr, retval);
@@ -3190,7 +3190,7 @@ void slsDetector::updateCachedReceiverVariables() const {
         int n = 0, i32 = 0;
         int64_t i64 = 0;
         char cstring[MAX_STR_LENGTH]{};
-        IpAddr ip = 0u;
+        IpAddr ip;
 
         n += receiver.Receive(&ip, sizeof(ip));
         FILE_LOG(logDEBUG1)
@@ -3673,7 +3673,7 @@ void slsDetector::setPattern(const std::string &fname) {
     uint64_t addr = 0;
     FILE *fd = fopen(fname.c_str(), "r");
     if (fd != nullptr) {
-        while (fread(&word, sizeof(word), 1, fd) != 0u) {
+        while (fread(&word, sizeof(word), 1, fd) != 0U) {
             setPatternWord(addr, word); // TODO! (Erik) do we need to send
                                         // pattern in 64bit chunks?
             ++addr;

@@ -5,7 +5,7 @@ runStatus = slsDetectorDefs.runStatus
 speedLevel = slsDetectorDefs.speedLevel
 dacIndex = slsDetectorDefs.dacIndex
 
-from .utils import element_if_equal, all_equal
+from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo
 from .registers import Register, Adc_register
 import datetime as dt
@@ -752,6 +752,24 @@ class Detector(CppDetectorApi):
         self.setStoreInRamMode(value)
 
 
+    """
+    Mythen3 specific
+    """
+
+    @property
+    def counters(self):
+        mask = self.getCounterMask()
+        mask = element_if_equal(mask)
+        if type(mask) == int:
+            return get_set_bits(mask)
+        else:
+            return [get_set_bits(m) for m in mask]
+
+
+    @counters.setter
+    def counters(self, values):
+        self.setCounterMask(list_to_bitmask(values))
+        
     """
     CTB stuff 
     """

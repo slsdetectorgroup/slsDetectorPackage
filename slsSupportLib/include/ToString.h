@@ -9,9 +9,9 @@
 
 #include "TimeHelper.h"
 #include "TypeTraits.h"
+#include "sls_detector_defs.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
-#include "sls_detector_defs.h"
 #include <chrono>
 #include <iomanip>
 #include <sstream>

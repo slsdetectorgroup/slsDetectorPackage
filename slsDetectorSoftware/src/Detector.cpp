@@ -1414,7 +1414,7 @@ Result<std::vector<int>> Detector::getRxDbitList(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getReceiverDbitList, pos);
 }
 
-void Detector::setRxDbitList(std::vector<int> list, Positions pos) {
+void Detector::setRxDbitList(const std::vector<int>& list, Positions pos) {
     pimpl->Parallel(&slsDetector::setReceiverDbitList, pos, list);
 }
 
@@ -1776,6 +1776,7 @@ std::vector<int> Detector::getPortNumbers(int start_port) {
         break;
     }
     std::vector<int> res;
+    res.reserve(size());
     for (int idet = 0; idet < size(); ++idet) {
         res.push_back(start_port + (idet * num_sockets_per_detector));
     }

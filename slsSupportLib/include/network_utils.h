@@ -1,7 +1,7 @@
 #pragma once
+#include <array>
 #include <iostream>
 #include <string>
-#include <array>
 
 namespace sls {
 
@@ -10,8 +10,8 @@ class IpAddr {
     uint32_t addr_{0};
 
   public:
-    constexpr IpAddr() noexcept{}
-    constexpr IpAddr(uint32_t address) noexcept : addr_{address} {}
+    constexpr IpAddr() noexcept = default;
+    explicit constexpr IpAddr(uint32_t address) noexcept : addr_{address} {}
     IpAddr(const std::string &address);
     IpAddr(const char *address);
     std::string str() const;
@@ -38,8 +38,8 @@ class MacAddr {
     std::string to_hex(const char delimiter = 0) const;
 
   public:
-    constexpr MacAddr() noexcept{}
-    constexpr MacAddr(uint64_t mac) noexcept : addr_{mac} {}
+    constexpr MacAddr() noexcept = default;
+    explicit constexpr MacAddr(uint64_t mac) noexcept : addr_{mac} {}
     MacAddr(std::string mac);
     MacAddr(const char *address);
     std::string str() const;

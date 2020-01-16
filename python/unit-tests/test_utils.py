@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Testing parameters and methods of the Detector class using mocks
+Testing functions from utils.py
 """
 
 import pytest
-from sls_detector.utils import eiger_register_to_time
-from sls_detector.utils import all_equal, element_if_equal
+from sls_detector.utils import *
+
 
 def test_convert_zero():
     assert eiger_register_to_time(0) == 0
@@ -48,3 +48,15 @@ def test_element_if_equal_str():
 
 def test_element_if_equal_int_fails():
     assert element_if_equal([5, 6, 7]) == [5, 6, 7]
+
+def test_get_set_bits():
+    assert(get_set_bits(0) == [])
+    assert get_set_bits(7) == [0, 1, 2]
+    
+def test_list_to_mask():
+    assert(list_to_bitmask([0,1,2]) == 7)
+    assert(list_to_bitmask([]) == 0)
+    assert(list_to_bitmask([0]) == 1)
+    assert(list_to_bitmask([1]) == 2)
+    assert(list_to_bitmask([3]) == 8)
+    assert(list_to_bitmask([1,1,1]) == 2)

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <sstream>
-#include <string>
-#include <stdio.h>
-#include <unistd.h>
 #include <ansi.h>
+#include <sstream>
+#include <stdio.h>
+#include <string>
+#include <unistd.h>
 
 
 
@@ -89,7 +89,7 @@ inline std::string NowTime()
     strftime(buffer, buffer_len, "%X", localtime_r(&t, &r));
     buffer[buffer_len - 1] = 0;
     struct timeval tv;
-    gettimeofday(&tv, 0);
+    gettimeofday(&tv, nullptr);
     char result[100];
     const int result_len = sizeof(result);
     snprintf(result, result_len, "%s.%03ld", buffer, (long)tv.tv_usec / 1000);

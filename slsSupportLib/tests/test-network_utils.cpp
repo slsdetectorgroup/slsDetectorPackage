@@ -22,8 +22,8 @@ TEST_CASE("Convert mac address using classes", "[support]") {
 
         CHECK(mac0 == vec_addr[i]);
         CHECK(mac1 == vec_addr[i]);
-        CHECK(mac0 == vec_ans[i]);
-        CHECK(mac1 == vec_ans[i]);
+        CHECK(mac0.str() == vec_ans[i]);
+        CHECK(mac1.str() == vec_ans[i]);
         CHECK(mac0.str() == vec_ans[i]);
         CHECK(mac1.str() == vec_ans[i]);
     }
@@ -59,8 +59,8 @@ TEST_CASE("Convert IP using classes ", "[support]") {
         CHECK(ip0 == ip1);
         CHECK(ip0 == vec_addr[i]);
         CHECK(ip1 == vec_addr[i]);
-        CHECK(ip0 == vec_ans[i]);
-        CHECK(ip1 == vec_ans[i]);
+        CHECK(ip0.str() == vec_ans[i]);
+        CHECK(ip1.str() == vec_ans[i]);
         CHECK(ip0.str() == vec_ans[i]);
         CHECK(ip0.arr().data() == vec_ans[i]);
         CHECK(ip1.str() == vec_ans[i]);

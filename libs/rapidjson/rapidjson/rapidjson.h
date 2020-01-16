@@ -164,8 +164,8 @@
 #include "msinttypes/inttypes.h"
 #else
 // Other compilers should have this.
-#include <stdint.h>
 #include <inttypes.h>
+#include <stdint.h>
 #endif
 //!@endcond
 #ifdef RAPIDJSON_DOXYGEN_RUNNING

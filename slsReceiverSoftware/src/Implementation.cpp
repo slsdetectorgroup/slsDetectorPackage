@@ -90,7 +90,7 @@ void Implementation::InitializeMembers() {
     streamingFrequency = 1;
     streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
     streamingPort = 0;
-    streamingSrcIP = 0u;
+    streamingSrcIP = sls::IpAddr{};
     additionalJsonHeader = "";
 
     // detector parameters
@@ -1298,7 +1298,7 @@ void Implementation::setNumberofCounters(const int i) {
         numberOfCounters = i;
 
         if (myDetectorType == MYTHEN3) {
-            generalData->SetDynamicRange(i, tengigaEnable);
+            generalData->SetNumberofCounters(i, dynamicRange);
             // to update npixelsx, npixelsy in file writer
             for (const auto &it : dataProcessor)
                 it->SetPixelDimension();

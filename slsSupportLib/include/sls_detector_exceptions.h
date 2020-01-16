@@ -11,7 +11,7 @@ public:
 	RuntimeError(): runtime_error("SLS Detector Package Failed") {
 		FILE_LOG(logERROR) << "SLS Detector Package Failed";
 	}
-	RuntimeError(std::string msg): runtime_error(msg) {
+	RuntimeError(const std::string& msg): runtime_error(msg) {
 		FILE_LOG(logERROR) << msg;
 	}
 	RuntimeError(const char* msg): runtime_error(msg) {
@@ -21,40 +21,40 @@ public:
 
 struct SharedMemoryError : public RuntimeError {
 public:
-    SharedMemoryError(std::string msg):RuntimeError(msg) {}
+    SharedMemoryError(const std::string& msg):RuntimeError(msg) {}
 };
 
 struct SocketError : public RuntimeError {
 public:
-	SocketError(std::string msg):RuntimeError(msg) {}
+	SocketError(const std::string& msg):RuntimeError(msg) {}
 };
 
 struct ZmqSocketError : public RuntimeError {
 public:
-	ZmqSocketError(std::string msg):RuntimeError(msg) {}
+	ZmqSocketError(const std::string& msg):RuntimeError(msg) {}
 };
 
 struct NotImplementedError : public RuntimeError {
 public:
-	NotImplementedError(std::string msg):RuntimeError(msg) {}
+	NotImplementedError(const std::string& msg):RuntimeError(msg) {}
 };
 
 struct DetectorError : public RuntimeError {
 public:
-	DetectorError(std::string msg):RuntimeError(msg) {}
+	DetectorError(const std::string& msg):RuntimeError(msg) {}
 };
 
 struct ReceiverError : public RuntimeError {
 public:
-	ReceiverError(std::string msg):RuntimeError(msg) {}
+	ReceiverError(const std::string& msg):RuntimeError(msg) {}
 };
 
 struct GuiError : public RuntimeError {
 public:
-	GuiError(std::string msg):RuntimeError(msg) {}
+	GuiError(const std::string& msg):RuntimeError(msg) {}
 };
 
-}
+} //  namespace sls
 
 
 

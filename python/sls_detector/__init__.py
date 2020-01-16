@@ -4,6 +4,7 @@ from .ctb import Ctb
 from .dacs import DetectorDacs, Dac
 from .detector import Detector
 from .jungfrau import Jungfrau
+from .mythen3 import Mythen3
 # from .jungfrau_ctb import JungfrauCTB
 # from _sls_detector import DetectorApi
 

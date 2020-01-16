@@ -17,13 +17,13 @@
 
 /*! \file document.h */
 
-#include "reader.h"
+#include "encodedstream.h"
 #include "internal/meta.h"
 #include "internal/strfunc.h"
 #include "memorystream.h"
-#include "encodedstream.h"
-#include <new>      // placement new
+#include "reader.h"
 #include <limits>
+#include <new>      // placement new
 
 RAPIDJSON_DIAG_PUSH
 #ifdef _MSC_VER

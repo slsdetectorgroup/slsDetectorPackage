@@ -8,10 +8,10 @@
 #include "sls_detector_exceptions.h"
 #include "versionAPI.h"
 
+#include "ToString.h"
 #include "container_utils.h"
 #include "network_utils.h"
 #include "string_utils.h"
-#include "ToString.h"
 
 #include <cstring>
 #include <iomanip>
@@ -643,7 +643,7 @@ void multiSlsDetector::readFrameFromReceiver() {
                         << "\n\tsingledetrowoffset: " << singledetrowoffset
                         << "\n\trowoffset: " << rowoffset;
 
-                    if (eiger && (flippedDataX != 0u)) {
+                    if (eiger && (flippedDataX != 0U)) {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
                             memcpy(((char *)multiframe) +
                                        ((yoffset + (nPixelsY - 1 - i)) *

@@ -1236,7 +1236,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param list external sampling source (Option: 0-63)
      * @param detPos -1 for all detectors in  list or specific detector position
      */
-    void setReceiverDbitList(std::vector<int> list);
+    void setReceiverDbitList(const std::vector<int>& list);
 
     /**
      * Get external sampling source (CTB only)
@@ -1317,7 +1317,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param vector os trimmed energies
      * @returns number of trim energies
      */
-    int setTrimEn(std::vector<int> energies = {});
+    int setTrimEn(const std::vector<int>& energies = {});
 
     /**
      * Returns a vector with the trimmed energies  (Eiger)

@@ -8,6 +8,23 @@ import functools
 
 Geometry = namedtuple('Geometry', ['x', 'y'])
 
+def get_set_bits(mask):
+    """
+    Return a list of the set bits in a python integer
+    """
+    return [i for i in range(mask.bit_length()) if (mask>>i)&1]
+
+def list_to_bitmask(values):
+    """
+    Convert a list of integers to a bitmask with set bits
+    where the list indicates
+    """
+    mask = int(0)
+    values = list(set(values)) #Remove duplicates
+    for v in values:
+        mask += 1 << v
+    return mask
+
 def to_geo(value):
     if isinstance(value, _sls_detector.xy):
         return Geometry(x = value.x, y = value.y)

@@ -3,9 +3,9 @@
 
 #include "sls_detector_defs.h"
 
-#include <string>
+#include <cstdio>
 #include <fstream>
-#include <stdio.h>
+#include <string>
 
 
 /** (used by multi and sls)

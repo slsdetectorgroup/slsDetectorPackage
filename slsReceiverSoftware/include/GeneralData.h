@@ -571,12 +571,14 @@ public:
 		}
 		ncounters = n;
 		nPixelsX = NCHAN * ncounters;
+		FILE_LOG(logINFO) << "nPixelsX: " << nPixelsX;
 		imageSize = nPixelsX * nPixelsY * 	((dr > 16) ? 4 : 	// 32 bit
 											((dr > 8)  ? 2 : 	// 16 bit
 											((dr > 4)  ? 0.5 : 	// 4 bit
 											0.125)));			// 1 bit
 		dataSize = imageSize / packetsPerFrame;
 		packetSize 			= headerSizeinPacket + dataSize;
+		FILE_LOG(logINFO) << "PacketSize: " << packetSize;
 	}
 
 	/**
@@ -590,7 +592,8 @@ public:
 											((dr > 4)  ? 0.5 : 	// 4 bit
 											0.125)));			// 1 bit
 		dataSize = imageSize / packetsPerFrame;
-		packetSize 			= headerSizeinPacket + dataSize;		
+		packetSize 			= headerSizeinPacket + dataSize;
+		FILE_LOG(logINFO) << "PacketSize: " << packetSize;
 	}	
 };
 

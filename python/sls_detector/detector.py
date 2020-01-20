@@ -775,6 +775,22 @@ class Detector(CppDetectorApi):
     """
 
     @property
+    def runclk(self):
+        return element_if_equal(self.getRUNClock())
+
+    @runclk.setter
+    def runclk(self, freq):
+        self.setRUNClock(freq)
+
+    @property
+    def romode(self):
+        return element_if_equal(self.getReadoutMode())
+
+    @romode.setter
+    def romode(self, mode):
+        self.setReadoutMode(mode)
+
+    @property
     def asamples(self):
         return element_if_equal(self.getNumberOfAnalogSamples())
 
@@ -844,4 +860,16 @@ class Detector(CppDetectorApi):
 
     @property
     def adcphase(self):
-        return element_if_equal()
+        return element_if_equal(self.getADCPhase())
+    
+    @adcphase.setter
+    def adcphase(self, value):
+        self.setADCPhase(value)
+
+    @property
+    def adcpipeline(self):
+        return element_if_equal(self.getADCPipeline())
+
+    @adcpipeline.setter
+    def adcpipeline(self, value):
+        self.setADCPipeline(value)

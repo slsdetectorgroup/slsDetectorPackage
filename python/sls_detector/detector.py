@@ -855,10 +855,6 @@ class Detector(CppDetectorApi):
         return element_if_equal(self.getMaxADCPhaseShift())
 
     @property
-    def maxclkphaseshift(self):
-        return element_if_equal(self.getMaxClockPhaseShift())
-
-    @property
     def adcphase(self):
         return element_if_equal(self.getADCPhase())
     
@@ -873,3 +869,16 @@ class Detector(CppDetectorApi):
     @adcpipeline.setter
     def adcpipeline(self, value):
         self.setADCPipeline(value)
+
+    @property
+    def adcclk(self):
+        return element_if_equal(self.getADCClock())
+
+    @adcclk.setter
+    def adcclk(self, value):
+        self.setADCClock(value)
+
+    @property
+    def syncclk(self):
+        return element_if_equal(self.getSYNCClock())
+    

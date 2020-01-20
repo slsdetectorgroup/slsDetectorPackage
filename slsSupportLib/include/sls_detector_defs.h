@@ -211,6 +211,8 @@ class slsDetectorDefs {
     struct xy {
         int x{0};
         int y{0};
+        xy() = default;
+        xy(int x, int y):x(x),y(y){};
     };
 #endif
 

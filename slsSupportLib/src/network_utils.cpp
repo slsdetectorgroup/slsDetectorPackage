@@ -136,7 +136,7 @@ MacAddr InterfaceNameToMac(const std::string& inf) {
 
 		if (-1==ioctl(sock, SIOCGIFHWADDR, &ifr)) {
 			perror("ioctl(SIOCGIFHWADDR) ");
-			return std::string("00:00:00:00:00:00");
+			return MacAddr{};
 		}
 		for (int j=0, k=0; j<6; j++) {
 			k+=snprintf(mac+k, mac_len-k-1, j ? ":%02X" : "%02X",

@@ -1079,8 +1079,8 @@ int checkDetectorType() {
         return -1;		
 	}
 	int type = atoi(buffer);
-	if (type > TYPE_TOLERANCE) {
-        FILE_LOG(logERROR, ("No Module attached! Expected %d for Mythen3, got %d\n", TYPE_MYTHEN3_MODULE_VAL, type));
+	if (type > TYPE_NO_MODULE_STARTING_VAL) {
+        FILE_LOG(logERROR, ("No Module attached! Expected %d for Mythen, got %d\n", TYPE_MYTHEN3_MODULE_VAL, type));
         return -2;	
 	}
 

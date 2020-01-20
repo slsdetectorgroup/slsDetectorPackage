@@ -40,8 +40,8 @@ class MacAddr {
   public:
     constexpr MacAddr() noexcept = default;
     explicit constexpr MacAddr(uint64_t mac) noexcept : addr_{mac} {}
-    MacAddr(std::string mac);
-    MacAddr(const char *address);
+    explicit MacAddr(std::string mac);
+    explicit MacAddr(const char *address);
     std::string str() const;
     std::string hex() const;
     constexpr bool operator==(const MacAddr &other) const noexcept {

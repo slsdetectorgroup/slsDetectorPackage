@@ -1978,7 +1978,7 @@ u_int32_t runBusy() {
     return virtual_status;
 #endif
 	u_int32_t s = (bus_r(FLOW_STATUS_REG) & FLOW_STATUS_RUN_BUSY_MSK);
-	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
+	//FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
 }
 

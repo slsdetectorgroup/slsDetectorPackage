@@ -598,6 +598,28 @@ public:
 };
 
 
+class Gotthard2Data : public GeneralData {
+public:
+
+	/** Constructor */
+	Gotthard2Data(){
+		myDetectorType		= slsDetectorDefs::GOTTHARD2;
+		nPixelsX 			= 128 * 10;
+		nPixelsY 			= 1;
+		headerSizeinPacket  = sizeof(slsDetectorDefs::sls_detector_header);
+		dataSize 			= 2560; // 1280 channels * 2 bytes
+		packetSize 			= headerSizeinPacket + dataSize;
+		packetsPerFrame 	= 1;
+		imageSize 			= dataSize * packetsPerFrame;
+		maxFramesPerFile 	= GOTTHARD2_MAX_FRAMES_PER_FILE;
+		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
+		defaultFifoDepth 	= 50000;
+		standardheader		= true;
+		defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
+	};
+};
+
+
 class ChipTestBoardData : public GeneralData {
 private:
 	/** Number of analog channels */

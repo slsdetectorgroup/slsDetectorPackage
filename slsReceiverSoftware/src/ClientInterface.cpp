@@ -437,6 +437,7 @@ int ClientInterface::set_detector_type(Interface &socket) {
         case MOENCH:
         case JUNGFRAU:
         case MYTHEN3:
+        case GOTTHARD2:
             break;
         default:
             throw RuntimeError("Unknown detector type: " + std::to_string(arg));
@@ -581,7 +582,7 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
             }
             break;
         case MYTHEN3:
-            if (dr == 32) {
+            if (dr == 1 || dr == 4 || dr == 16 || dr == 32) {
                 exists = true;
             }
             break;

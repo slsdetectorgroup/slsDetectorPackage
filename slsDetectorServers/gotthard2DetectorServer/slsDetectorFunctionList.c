@@ -1193,7 +1193,7 @@ int checkDetectorType() {
         return -1;		
 	}
 	int type = atoi(buffer);
-	if (type > TYPE_TOLERANCE) {
+	if (type > TYPE_NO_MODULE_STARTING_VAL) {
         FILE_LOG(logERROR, ("No Module attached! Expected %d for Gotthard2, got %d\n", TYPE_GOTTHARD2_MODULE_VAL, type));
         return -2;	
 	}

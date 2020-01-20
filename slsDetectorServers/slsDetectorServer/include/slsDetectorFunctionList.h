@@ -470,6 +470,8 @@ int			configureSingleADCDriver(int chipIndex);
 int			configureADC();
 int			setBurstMode(int burst);
 int			getBurstMode();
+void		setBurstType(enum burstModeType val);
+enum burstModeType getBurstType();
 #endif
 
 

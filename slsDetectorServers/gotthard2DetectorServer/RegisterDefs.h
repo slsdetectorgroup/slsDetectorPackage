@@ -144,10 +144,22 @@
 #define ASIC_INT_EXPTIME_MSB_REG        (0x05 * REG_OFFSET + BASE_ASIC)
 
 
+
+/* Packetizer -------------------------------------------------------------*/
+
+/* Packetizer Config Register*/
+#define PKT_CONFIG_REG                  (0x00 * REG_OFFSET + BASE_PKT)
+
+#define PKT_CONFIG_NRXR_MAX_OFST        (0)
+#define PKT_CONFIG_NRXR_MAX_MSK         (0x0000003F << PKT_CONFIG_NRXR_MAX_OFST)
+#define PKT_CONFIG_RXR_START_ID_OFST    (8)
+#define PKT_CONFIG_RXR_START_ID_MSK     (0x0000003F << PKT_CONFIG_RXR_START_ID_OFST)
+
 /* Flow control registers --------------------------------------------------*/
 
 /* Flow status Register*/
 #define FLOW_STATUS_REG                 (0x00 * REG_OFFSET  + BASE_FLOW_CONTROL)
+
 #define FLOW_STATUS_RUN_BUSY_OFST       (0)
 #define FLOW_STATUS_RUN_BUSY_MSK		(0x00000001 << FLOW_STATUS_RUN_BUSY_OFST)
 #define FLOW_STATUS_WAIT_FOR_TRGGR_OFST (3)

@@ -29,6 +29,8 @@
 #define TYPE_NO_MODULE_STARTING_VAL	(800)
 
 /** Default Parameters */
+#define DEFAULT_BURST_MODE			(1)
+#define DEFAULT_BURST_TYPE			(INTERNAL)
 #define DEFAULT_NUM_FRAMES			(1)
 #define DEFAULT_NUM_CYCLES			(1)
 #define DEFAULT_EXPTIME				(1 * 1000 * 1000)	        // 1 ms

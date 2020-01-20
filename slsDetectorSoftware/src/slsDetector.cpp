@@ -2488,6 +2488,19 @@ void slsDetector::setBurstMode(bool enable) {
     sendToDetector(F_SET_BURST_MODE, arg, nullptr);
 }
 
+slsDetectorDefs::burstModeType slsDetector::getBurstType() {
+    int retval = -1;
+    sendToDetector(F_GET_BURST_TYPE, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Burst mode:" << retval;
+    return static_cast<burstModeType>(retval); 
+}
+
+void slsDetector::setBurstType (burstModeType val) {
+    int arg = static_cast<int>(val);
+    FILE_LOG(logDEBUG1) << "Setting burst type to " << ToString(val);
+    sendToDetector(F_SET_BURST_TYPE, arg, nullptr);
+}
+
 int slsDetector::setCounterBit(int cb) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending counter bit " << cb;

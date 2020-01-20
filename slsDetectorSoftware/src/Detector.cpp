@@ -1180,13 +1180,21 @@ void Detector::setVetoReference(const int gainIndex, const int value, Positions 
     pimpl->Parallel(&slsDetector::setVetoReference, pos, gainIndex, value);
 } 
 
+Result<bool> Detector::getBurstMode(Positions pos) {
+    return pimpl->Parallel(&slsDetector::getBurstMode, pos);
+}
+
 void Detector::setBurstMode(bool enable, Positions pos) {
     pimpl->Parallel(&slsDetector::setBurstMode, pos, enable);
 }
 
-Result<bool> Detector::getBurstMode(Positions pos) {
-    return pimpl->Parallel(&slsDetector::getBurstMode, pos);
-}    
+Result<defs::burstModeType> Detector::getBurstType(Positions pos) {
+    return pimpl->Parallel(&slsDetector::getBurstType, pos);
+}
+
+void Detector::setBurstType(defs::burstModeType value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setBurstType, pos, value);
+}
 
 // Mythen3 Specific
 

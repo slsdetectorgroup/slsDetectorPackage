@@ -173,8 +173,8 @@ class Detector {
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
-     * [Gotthard, Jungfrau, CTB Options: AUTO_TIMING, TRIGGER_EXPOSURE]
-     * [Eiger Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER]
+     * [Gotthard][Jungfrau][CTB] Options: AUTO_TIMING, TRIGGER_EXPOSURE
+     * [Eiger] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
      */
     void setTimingMode(defs::timingMode value, Positions pos = {});
 
@@ -906,11 +906,17 @@ class Detector {
     /** [Gotthard2]  */
     void setVetoReference(const int gainIndex, const int value, Positions pos = {}); 
 
-    /** [Gotthard2]  burst mode or continuous mode */
-    void setBurstMode(bool enable, Positions pos = {});
-
     /** [Gotthard2]  */
     Result<bool> getBurstMode(Positions pos = {});   
+
+    /** [Gotthard2]  true = burst mode or false = continuous mode */
+    void setBurstMode(bool enable, Positions pos = {});
+    
+    /** [Gotthard2]  */
+    Result<defs::burstModeType> getBurstType(Positions pos = {});  
+    
+    /** [Gotthard2] Options: INTERNAL, EXTERNAL */
+    void setBurstType(defs::burstModeType val, Positions pos = {});
 
     /**************************************************
      *                                                *

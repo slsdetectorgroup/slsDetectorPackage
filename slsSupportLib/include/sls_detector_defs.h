@@ -436,6 +436,14 @@ class slsDetectorDefs {
         ANALOG         /** < analog */
     };
 
+    /**
+     * burst mode type for gotthard2
+     */
+    enum burstModeType {
+        INTERNAL,      
+        EXTERNAL, 
+    };    
+
 
 #ifdef __cplusplus
   protected:

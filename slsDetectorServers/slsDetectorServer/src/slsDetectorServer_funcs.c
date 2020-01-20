@@ -39,6 +39,7 @@ extern char mess[MAX_STR_LENGTH];
 // Variables that will be exported
 int sockfd = 0;
 int debugflag = 0;
+int checkModuleFlag = 1;
 udpStruct udpDetails = {32410, 32411, 50001, 50002, 0, 0, 0, 0, 0, 0, 0, 0};
 int configured = FAIL;
 char configureMessage[MAX_STR_LENGTH]="udp parameters not configured yet";
@@ -307,6 +308,8 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_ADC_ENABLE_MASK_10G:         return "F_GET_ADC_ENABLE_MASK_10G";
 	case F_SET_COUNTER_MASK:         		return "F_SET_COUNTER_MASK";
 	case F_GET_COUNTER_MASK:         		return "F_GET_COUNTER_MASK";
+	case F_SET_BURST_TYPE:					return "F_SET_BURST_TYPE";
+	case F_GET_BURST_TYPE:					return "F_GET_BURST_TYPE";
 
 	default:								return "Unknown Function";
 	}
@@ -491,6 +494,8 @@ void function_table() {
 	flist[F_GET_ADC_ENABLE_MASK_10G]			= &get_adc_enable_mask_10g;
 	flist[F_SET_COUNTER_MASK]					= &set_counter_mask;
 	flist[F_GET_COUNTER_MASK]					= &get_counter_mask;
+	flist[F_SET_BURST_TYPE]						= &set_burst_type;
+	flist[F_GET_BURST_TYPE]						= &get_burst_type;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -3843,19 +3848,23 @@ int power_chip(int file_des) {
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 		// check only when powering on
 		if (arg != -1 && arg != 0) {
-			int type_ret = checkDetectorType();
-			if (type_ret == -1) {
-				ret = FAIL;
-				sprintf(mess, "Could not power on chip. Could not open file to get type of module attached.\n");
-				FILE_LOG(logERROR,(mess));			
-			} else if (type_ret == -2) {
-				ret = FAIL;
-				sprintf(mess, "Could not power on chip. No module attached!\n");
-				FILE_LOG(logERROR,(mess));			
-			} else if (type_ret == FAIL) {
-				ret = FAIL;
-				sprintf(mess, "Could not power on chip. Wrong module attached!\n");
-				FILE_LOG(logERROR,(mess));			
+			if (checkModuleFlag) {
+				int type_ret = checkDetectorType();
+				if (type_ret == -1) {
+					ret = FAIL;
+					sprintf(mess, "Could not power on chip. Could not open file to get type of module attached.\n");
+					FILE_LOG(logERROR,(mess));			
+				} else if (type_ret == -2) {
+					ret = FAIL;
+					sprintf(mess, "Could not power on chip. No module attached!\n");
+					FILE_LOG(logERROR,(mess));			
+				} else if (type_ret == FAIL) {
+					ret = FAIL;
+					sprintf(mess, "Could not power on chip. Wrong module attached!\n");
+					FILE_LOG(logERROR,(mess));			
+				}
+			} else {
+				FILE_LOG(logINFOBLUE, ("In No-Module mode: Ignoring module type. Continuing.\n"));
 			}
 		}
 #endif
@@ -6577,6 +6586,63 @@ int get_counter_mask(int file_des) {
 	// get only
 	retval = getCounterMask();
 	FILE_LOG(logDEBUG, ("counter mask retval: 0x%x\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+
+int set_burst_type(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	enum burstModeType arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+		return printSocketReadError();
+
+	FILE_LOG(logINFO, ("Setting burst type: %d\n", arg));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		switch (arg) {
+			case INTERNAL:
+			case EXTERNAL:
+				break;
+			default:
+			modeNotImplemented("Burst type", (int)arg);
+			break;				
+		}
+		if (ret == OK) {
+			setBurstType(arg);
+			enum burstModeType retval = getBurstType();
+			FILE_LOG(logDEBUG, ("burst type retval: %d\n", retval));
+			if (retval != arg) {
+				ret = FAIL;
+				sprintf(mess, "Could not set burst type. Set %s, got %s\n", (arg == 0 ? "internal" : "external"), (retval == 0 ? "internal" : "external"));
+				FILE_LOG(logERROR, (mess));		
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_burst_type(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	enum burstModeType retval = 0;
+	FILE_LOG(logDEBUG1, ("Getting burst type\n"));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getBurstType();
+	FILE_LOG(logDEBUG, ("burst type retval: %d\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

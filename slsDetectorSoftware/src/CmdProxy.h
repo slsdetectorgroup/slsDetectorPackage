@@ -788,6 +788,7 @@ class CmdProxy {
                           {"vetophoton", &CmdProxy::VetoPhoton},
                           {"vetoref", &CmdProxy::VetoReference},
                           {"burstmode", &CmdProxy::burstmode},
+                          {"bursttype", &CmdProxy::bursttype},
 
                           /* Mythen3 Specific */  
                           {"counters", &CmdProxy::Counters},
@@ -1546,6 +1547,9 @@ class CmdProxy {
     /* Gotthard2 Specific */
     INTEGER_COMMAND(burstmode, getBurstMode, setBurstMode, std::stoi,
                     "[0, 1]\n\t[Gotthard2] 1 sets to burst mode. 0 sets to continuous mode. Default is burst mode.");
+
+    INTEGER_COMMAND(bursttype, getBurstType, setBurstType, sls::StringTo<slsDetectorDefs::burstModeType>,
+                    "[internal, external]\n\t[Gotthard2] Default is internal type.");
 
     /* Mythen3 Specific */ 
 

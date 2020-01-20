@@ -22,6 +22,7 @@
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
+extern int checkModuleFlag;
 extern udpStruct udpDetails;
 
 int initError = OK;
@@ -44,6 +45,7 @@ int injectedChannelsIncrement = 0;
 int vetoReference[NCHIP][NCHAN];
 uint8_t adcConfiguration[NCHIP][NADC];
 int burstMode = 0;
+enum burstModeType burstType = INTERNAL;
 int64_t exptime_ns = 0;
 int64_t period_ns = 0;
 int64_t nframes = 0;
@@ -345,7 +347,10 @@ void setupDetector() {
 	injectedChannelsOffset = 0;
 	injectedChannelsIncrement = 0;
 	burstMode = 0;
-
+	burstType = INTERNAL;
+	exptime_ns = 0;
+	period_ns = 0;
+	nframes = 0;
 	{
 		int i, j;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
@@ -385,11 +390,45 @@ void setupDetector() {
 
 	// Default values
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
-	 // also sets default dac and on chip dac values 
+
+	// check module type attached if not in debug mode
+	{
+		int ret = checkDetectorType();
+		if (checkModuleFlag) {
+			switch (ret) {
+				case -1:
+					sprintf(initErrorMessage, "Could not get the module type attached.\n");
+					initError = FAIL;		
+					FILE_LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
+					return;
+				case -2:
+					sprintf(initErrorMessage, "No Module attached! Run server with -nomodule.\n");
+					initError = FAIL;		
+					FILE_LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
+					return;
+				case FAIL:
+					sprintf(initErrorMessage, "Wrong Module (Not Gotthard2) attached!\n");
+					initError = FAIL;		
+					FILE_LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
+					return;
+				default:
+					break;
+			}
+		} else {
+			FILE_LOG(logINFOBLUE, ("In No-Module mode: Ignoring module type. Continuing.\n"));
+		}
+	}
+
+	// power on chip
+	powerChip(1);
+
+	// also sets default dac and on chip dac values 
 	if (readConfigFile() == FAIL) {
 		return;
 	}
-	setBurstMode(1);
+	// set burst mode will take in burstType and also set it
+	burstType = DEFAULT_BURST_TYPE;
+	setBurstMode(DEFAULT_BURST_MODE);
 	
 	// Initialization of acquistion parameters
 	setNumFrames(DEFAULT_NUM_FRAMES);
@@ -405,6 +444,10 @@ int readConfigFile() {
 	if (initError == FAIL) {
 		return initError;
 	}
+
+	// inform FPGA that onchip dacs will be configured soon
+	FILE_LOG(logINFO, ("Setting configuration starting bit\n"));
+	bus_w(ASIC_CONFIG_REG, bus_r(ASIC_CONFIG_REG) | ASIC_CONFIG_RST_DAC_MSK);
 
     FILE* fd = fopen(CONFIG_FILE, "r");
     if(fd == NULL) {
@@ -623,7 +666,7 @@ int readConfigFile() {
 		int i = 0, j = 0;
 		for (i = 0; i < NCHIP; ++i) {
 			for (j = 0; j < NADC; ++j) {
-				FILE_LOG(logDEBUG1, ("adc read %d %d: 0x%02hhx\n", i, j, adcConfiguration[i][j]));
+				FILE_LOG(logDEBUG2, ("adc read %d %d: 0x%02hhx\n", i, j, adcConfiguration[i][j]));
 			}
 		}
 	}
@@ -633,6 +676,10 @@ int readConfigFile() {
 		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
 	} else {
 		FILE_LOG(logINFOBLUE, ("Successfully read config file\n"));
+
+		// inform FPGA that onchip dacs will be configured soon
+		FILE_LOG(logINFO, ("Setting configuration done bit\n"));
+		bus_w(ASIC_CONFIG_REG, bus_r(ASIC_CONFIG_REG) | ASIC_CONFIG_DONE_MSK);
 	}
     return initError;
 }
@@ -723,6 +770,7 @@ int64_t getPeriod() {
 
 void setNumFramesBurst(int64_t val) {
     FILE_LOG(logINFO, ("Setting number of frames %d [Burst mode]\n", (int)val));
+	bus_w(ASIC_INT_FRAMES_REG, bus_r(ASIC_INT_FRAMES_REG) &~ ASIC_INT_FRAMES_MSK);
 	bus_w(ASIC_INT_FRAMES_REG, bus_r(ASIC_INT_FRAMES_REG) | (((int)val << ASIC_INT_FRAMES_OFST) & ASIC_INT_FRAMES_MSK));
 }
 
@@ -750,12 +798,12 @@ int	setExptimeCont(int64_t val) {
 }
 
 int	setExptimeBoth(int64_t val) {
-    val *= (1E-9 * SYSTEM_C0);
+    val *= (1E-9 * clkFrequency[SYSTEM_C0]);
     set64BitReg(val, ASIC_INT_EXPTIME_LSB_REG, ASIC_INT_EXPTIME_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getExptimeBoth();
-    val /= (1E-9 * SYSTEM_C0);
+    val /= (1E-9 * clkFrequency[SYSTEM_C0]);
     if (val != retval) {
         return FAIL;
     }
@@ -763,18 +811,18 @@ int	setExptimeBoth(int64_t val) {
 }
 
 int64_t	getExptimeBoth() {
-	return get64BitReg(ASIC_INT_EXPTIME_LSB_REG, ASIC_INT_EXPTIME_MSB_REG) / (1E-9 * SYSTEM_C0);
+	return get64BitReg(ASIC_INT_EXPTIME_LSB_REG, ASIC_INT_EXPTIME_MSB_REG) / (1E-9 * clkFrequency[SYSTEM_C0]);
 }
 
 
 int	setPeriodBurst(int64_t val) {
 	FILE_LOG(logINFO, ("Setting period %lld ns [Burst mode]\n", (long long int)val));
-    val *= (1E-9 * SYSTEM_C0);
+    val *= (1E-9 * clkFrequency[SYSTEM_C0]);
     set64BitReg(val, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
 
     // validate for tolerance
-    int64_t retval = getPeriod();
-    val /= (1E-9 * SYSTEM_C0);
+    int64_t retval = getPeriodBurst();
+    val /= (1E-9 * clkFrequency[SYSTEM_C0]);
     if (val != retval) {
         return FAIL;
     }
@@ -782,16 +830,16 @@ int	setPeriodBurst(int64_t val) {
 }
 
 int64_t	getPeriodBurst() {
-	return get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG)/ (1E-9 * SYSTEM_C0);
+	return get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG)/ (1E-9 * clkFrequency[SYSTEM_C0]);
 }
 
 int	setPeriodCont(int64_t val) {
 	FILE_LOG(logINFO, ("Setting period %lld ns [Continuous mode]\n", (long long int)val));
     val *= (1E-9 * FIXED_PLL_FREQUENCY);
-    set64BitReg(val, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
+    set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
 
     // validate for tolerance
-    int64_t retval = getPeriod();
+    int64_t retval = getPeriodCont();
     val /= (1E-9 * FIXED_PLL_FREQUENCY);
     if (val != retval) {
         return FAIL;
@@ -800,7 +848,7 @@ int	setPeriodCont(int64_t val) {
 }
 
 int64_t	getPeriodCont() {
-	return get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG)/ (1E-9 * FIXED_PLL_FREQUENCY);
+	return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * FIXED_PLL_FREQUENCY);
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -1018,7 +1066,7 @@ int configureMAC() {
     return OK;
 #endif
 	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
-	
+
 	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (srcip>>24)&0xff,(srcip>>16)&0xff,(srcip>>8)&0xff,(srcip)&0xff, srcip));
 	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
@@ -1424,11 +1472,11 @@ int	setVetoPhoton(int chipIndex, int gainIndex, int* values) {
 				FILE_LOG(logERROR, ("Unknown gain index %d\n", gainIndex));
 				return FAIL;			
 		}
-		FILE_LOG(logDEBUG1, ("Adding gain bits\n"));
+		FILE_LOG(logDEBUG2, ("Adding gain bits\n"));
 		int i = 0;
 		for (i = 0; i < NCHAN; ++i) {
 			values[i] |= gainValue;
-			FILE_LOG(logDEBUG1, ("Value %d: 0x%x\n", i, values[i]));
+			FILE_LOG(logDEBUG2, ("Value %d: 0x%x\n", i, values[i]));
 		}
 	}
 
@@ -1606,6 +1654,10 @@ int configureADC() {
 
 int	setBurstMode(int burst) {
 	FILE_LOG(logINFO, ("Setting %s Mode\n", burst == 1 ? "Burst" : "Continuous"));
+	burstMode = burst;
+	setBurstType(burstType);
+
+	FILE_LOG(logINFO, ("\tSetting %s Mode in Chip\n", burst == 1 ? "Burst" : "Continuous"));
 	int value = burst ? ASIC_GLOBAL_BURST_VALUE : ASIC_GLOBAL_CONT_VALUE;
 
 	const int padding = 6; // due to address (4) to make it byte aligned
@@ -1644,22 +1696,59 @@ int	setBurstMode(int burst) {
 		return FAIL;				
 	}
 
-	burstMode = burst;
 	return configureADC();
 }
 
 int getBurstMode() {
-	return burstMode;
+	uint32_t addr = ASIC_CONFIG_REG;
+	int runmode = bus_r (addr) & ASIC_CONFIG_RUN_MODE_MSK;
+	switch (runmode) {
+		case ASIC_CONFIG_RUN_MODE_INT_BURST_VAL:
+		case ASIC_CONFIG_RUN_MODE_EXT_BURST_VAL:
+			return 1;
+		default:
+			return 0;
+	}
 }
 
+void setBurstType(enum burstModeType val) {
+	uint32_t addr = ASIC_CONFIG_REG;
+	uint32_t runmode = ASIC_CONFIG_RUN_MODE_CONT_VAL;
+	if (burstMode) {
+		switch (val) {
+			case INTERNAL:
+				runmode = ASIC_CONFIG_RUN_MODE_INT_BURST_VAL;
+				break;
+			case EXTERNAL:
+				runmode = ASIC_CONFIG_RUN_MODE_EXT_BURST_VAL;
+				break;
+			default:
+				FILE_LOG(logERROR, ("Unknown burst type %d\n", val));
+				return;
+		}
+		FILE_LOG(logDEBUG1, ("Run mode: %d\n", runmode));
+		bus_w(addr, bus_r(addr) &~ ASIC_CONFIG_RUN_MODE_MSK);
+		bus_w(addr, bus_r(addr) | ((runmode << ASIC_CONFIG_RUN_MODE_OFST) & ASIC_CONFIG_RUN_MODE_MSK));
+	}
+}
+
+enum burstModeType getBurstType() {
+	uint32_t addr = ASIC_CONFIG_REG;
+	int runmode = bus_r (addr) & ASIC_CONFIG_RUN_MODE_MSK;
+	switch (runmode) {
+		case ASIC_CONFIG_RUN_MODE_INT_BURST_VAL:
+			return INTERNAL;
+		case ASIC_CONFIG_RUN_MODE_EXT_BURST_VAL:
+			return EXTERNAL;
+		default:
+			FILE_LOG(logERROR, ("Unknown burst type read from FPGA: %d\n", runmode));
+			return -1;
+	}
+}
 
 /* aquisition */
 
 int updateAcquisitionRegisters(char* mess) {
-	int64_t exptime_ns = 0;
-int64_t period_ns = 0;
-int64_t nframes = 0;
-
 	// burst mode
 	if (burstMode) {
 		// validate #frames in burst mode
@@ -1680,7 +1769,18 @@ int64_t nframes = 0;
 			sprintf(mess, "Could not start acquisition because period could not be set in burst mode. Set %lld ns, got %lld ns.\n", (long long unsigned int)period_ns, getPeriodBurst());
 			FILE_LOG(logERROR,(mess));		
 			return FAIL;			
-		}		
+		}	
+
+		// set continuous values to default (exptime same register)
+		FILE_LOG(logINFO, ("Setting continuous mode registers to defaults\n"));
+		// frames
+		setNumFramesCont(1);
+		// period
+		if (setPeriodCont(0) == FAIL) {
+			sprintf(mess, "Could not start acquisition because period could not be set in continuous mode. Set 0 ns, got %lld ns.\n", getPeriodCont());
+			FILE_LOG(logERROR,(mess));		
+			return FAIL;			
+		}	
 	} 
 	// continuous
 	else {
@@ -1698,6 +1798,16 @@ int64_t nframes = 0;
 			FILE_LOG(logERROR,(mess));		
 			return FAIL;			
 		}	
+
+		// set burst values to default (exptime same register)
+		FILE_LOG(logINFO, ("Setting burst mode registers to defaults\n"));
+		setNumFramesBurst(1);
+		// period
+		if (setPeriodBurst(0) == FAIL) {
+			sprintf(mess, "Could not start acquisition because period could not be set in burst mode. Set 0 ns, got %lld ns.\n", getPeriodBurst());
+			FILE_LOG(logERROR,(mess));		
+			return FAIL;			
+		}
 	}
 	return OK;
 }

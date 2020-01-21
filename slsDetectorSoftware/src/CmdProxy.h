@@ -998,7 +998,11 @@ class CmdProxy {
                 "\n\tSerial number or MAC of detector (hex).");   
 
     INTEGER_COMMAND(settings, getSettings, setSettings, sls::StringTo<slsDetectorDefs::detectorSettings>,
-                    "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\t[Jungfrau][Gotthard] Detector Settings.\n\t[Eiger] Use threshold or thresholdnotb.");      
+                    "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain]"
+                    "\n\t[Jungfrau] - Detector Settings [dynamicgain | dynamichg0 | fixgain1 | fixgain2 | forceswitchg1 | forceswitchg2]"
+                    "\n\t[Gotthard] - Detector Settings [dynamicgain | highgain | lowgain | mediumgain | veryhighgain]"
+                    "\n\t[Gotthard2] - Detector Settings [dynamicgain | fixgain1 | fixgain2]"
+                    "\n\t[Eiger] Use threshold or thresholdnotb.");      
 
     /* acquisition parameters */
 

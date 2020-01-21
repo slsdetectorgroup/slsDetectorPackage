@@ -38,6 +38,7 @@
 #define DEFAULT_DELAY_AFTER_TRIGGER (0)
 #define DEFAULT_HIGH_VOLTAGE		(0)
 #define DEFAULT_TIMING_MODE			(AUTO_TIMING)
+#define DEFAULT_SETTINGS			(DYNAMICGAIN)
 #define DEFAULT_READOUT_C0          (144444448) // rdo_clk, 144 MHz  
 #define DEFAULT_READOUT_C1          (144444448) // rdo_x2_clk, 144 MHz  
 #define DEFAULT_SYSTEM_C0			(144444448) // run_clk, 144 MHz 

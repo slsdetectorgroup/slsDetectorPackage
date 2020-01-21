@@ -36,6 +36,7 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
+enum detectorSettings thisSettings = UNINITIALIZED;
 int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
 uint32_t clkFrequency[NUM_CLOCKS] = {0, 0, 0, 0, 0, 0};
 int highvoltage = 0;
@@ -344,6 +345,7 @@ void setupDetector() {
 	detPos[0] = 0;
 	detPos[1] = 0;
 
+	thisSettings = UNINITIALIZED;
 	highvoltage = 0;
 	injectedChannelsOffset = 0;
 	injectedChannelsIncrement = 0;
@@ -432,7 +434,8 @@ void setupDetector() {
 	// set burst mode will take in burstType and also set it
 	burstType = DEFAULT_BURST_TYPE;
 	setBurstMode(DEFAULT_BURST_MODE);
-	
+	setSettings(DEFAULT_SETTINGS);
+
 	// Initialization of acquistion parameters
 	setNumFrames(DEFAULT_NUM_FRAMES);
 	setNumTriggers(DEFAULT_NUM_CYCLES);
@@ -903,6 +906,70 @@ int64_t getActualTime() {
 int64_t getMeasurementTime() {
     return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
 }
+
+
+/* parameters - module, settings */
+enum detectorSettings setSettings(enum detectorSettings sett){
+	if(sett == UNINITIALIZED)
+		return thisSettings;
+
+	// set settings
+	uint32_t addr = ASIC_CONFIG_REG;
+	uint32_t mask = ASIC_CONFIG_GAIN_MSK;
+	if(sett != GET_SETTINGS) {
+	    switch (sett) {
+	    case DYNAMICGAIN:
+	        bus_w(addr, bus_r(addr) & ~mask);
+            bus_w(addr, bus_r(addr) | ASIC_CONFIG_DYNAMIC_GAIN_VAL);
+            FILE_LOG(logINFO, ("Set settings - Dyanmic Gain, val: 0x%x\n", bus_r(addr) & mask));
+	        break;
+	    case FIXGAIN1:
+	        bus_w(addr, bus_r(addr) & ~mask);
+            bus_w(addr, bus_r(addr) | ASIC_CONFIG_FIX_GAIN_1_VAL);
+            FILE_LOG(logINFO, ("Set settings - Fix Gain 1, val: 0x%x\n", bus_r(addr) & mask));
+	        break;
+	    case FIXGAIN2:
+	        bus_w(addr, bus_r(addr) & ~mask);
+            bus_w(addr, bus_r(addr) | ASIC_CONFIG_FIX_GAIN_2_VAL);
+            FILE_LOG(logINFO, ("Set settings - Fix Gain 2, val: 0x%x\n", bus_r(addr) & mask));
+	        break;
+	    default:
+	        FILE_LOG(logERROR, ("This settings is not defined for this detector %d\n", (int)sett));
+	        return -1;
+	    }
+		thisSettings = sett;
+	}
+
+	return getSettings();
+}
+
+
+enum detectorSettings getSettings(){
+	uint32_t regval = bus_r(ASIC_CONFIG_REG);
+	uint32_t val = regval & ASIC_CONFIG_GAIN_MSK;
+	FILE_LOG(logDEBUG1, ("Getting Settings\n Reading val :0x%x\n", val));
+
+	switch(val) {
+	case ASIC_CONFIG_RESERVED_VAL:
+	case ASIC_CONFIG_DYNAMIC_GAIN_VAL:
+        thisSettings = DYNAMICGAIN;
+        FILE_LOG(logDEBUG1, ("Settings read: Dynamic Gain. val: 0x%x\n", val));
+        break;
+	case ASIC_CONFIG_FIX_GAIN_1_VAL:
+        thisSettings = FIXGAIN1;
+        FILE_LOG(logDEBUG1, ("Settings read: Fix Gain 1. val: 0x%x\n", val));
+        break;
+	case ASIC_CONFIG_FIX_GAIN_2_VAL:
+        thisSettings = FIXGAIN2;
+        FILE_LOG(logDEBUG1, ("Settings read: Fix Gain 2. val: 0x%x\n", val));
+        break;
+    default:
+        thisSettings = UNDEFINED;
+        FILE_LOG(logERROR, ("Settings read: Undefined. val: 0x%x\n", val));
+	}
+	return thisSettings;
+}
+
 
 /* parameters - dac, hv */
 int	setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val) {

@@ -1658,7 +1658,7 @@ int set_settings(int file_des) {
 	if (receiveData(file_des, &isett, sizeof(isett), INT32) < 0)
 		return printSocketReadError();
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
     functionNotImplemented();
 #else
 	FILE_LOG(logDEBUG1, ("Setting settings %d\n", isett));
@@ -1682,12 +1682,16 @@ int set_settings(int file_des) {
 		case LOWGAIN:
 		case MEDIUMGAIN:
 		case VERYHIGHGAIN:
+#elif GOTTHARD2D
+		case DYNAMICGAIN:
+		case FIXGAIN1:
+		case FIXGAIN2:
 #endif
 			break;
 		default:
 			if (myDetectorType == EIGER) {
 				ret = FAIL;
-				sprintf(mess, "Cannot set settings via SET_SETTINGS, use SET_MODULE\n");
+				sprintf(mess, "Cannot set settings via SET_SETTINGS, use SET_MODULE (set threshold)\n");
 				FILE_LOG(logERROR,(mess));
 			} else
 				modeNotImplemented("Settings Index", (int)isett);
@@ -1700,6 +1704,7 @@ int set_settings(int file_des) {
 			FILE_LOG(logDEBUG1, ("Settings: %d\n", retval));
 			validate((int)isett, (int)retval, "set settings", DEC);
 #if defined(JUNGFRAUD) || defined (GOTTHARDD)
+			// gotthard2 does not set default dacs
 			if (ret == OK && isett >= 0) {
 				ret = setDefaultDacs();
 				if (ret == FAIL) {

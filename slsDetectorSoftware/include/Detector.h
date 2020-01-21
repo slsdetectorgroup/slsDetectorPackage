@@ -95,10 +95,13 @@ class Detector {
      */
     void setDetectorSize(const defs::xy value);
 
-    /** [Jungfrau][Gotthard] */
+    /** [Jungfrau][Gotthard][Gotthard2] */
     Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
 
-    /** [Jungfrau][Gotthard] */
+    /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2
+     * [Gotthard] Options: DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN
+     * [Gotthard2] Options: DYNAMICGAIN, FIXGAIN1, FIXGAIN2
+     */
     void setSettings(defs::detectorSettings value, Positions pos = {});
 
     /**************************************************

@@ -389,13 +389,10 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     detectorSettings getSettings();
 
-    /**
-     * Load detector settings from the settings file picked from the
-     * trimdir/settingsdir Eiger only stores in shared memory ( a get will
-     * overwrite this) For Eiger, one must use threshold Gotthard, Propix,
-     * Jungfrau and Moench only sends the settings enum to the detector
-     * @param isettings settings
-     * @returns current settings
+    /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2
+     * [Gotthard] Options: DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN
+     * [Gotthard2] Options: DYNAMICGAIN, FIXGAIN1, FIXGAIN2
+     * [Eiger] Only stores them locally in shm Options: STANDARD, HIGHGAIN, LOWGAIN, VERYHIGHGAIN, VERYLOWGAIN
      */
     detectorSettings setSettings(detectorSettings isettings);
 

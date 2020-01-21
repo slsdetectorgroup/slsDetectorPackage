@@ -564,10 +564,12 @@ class slsDetector : public virtual slsDetectorDefs {
 
     void setPeriod(int64_t value);
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     int64_t getDelayAfterTrigger();
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     void setDelayAfterTrigger(int64_t value);
 
     /** [Eiger] in 32 bit mode */
@@ -589,13 +591,16 @@ class slsDetector : public virtual slsDetectorDefs {
      * Options: (0-1638375 ns (resolution of 25ns) */
     void setStorageCellDelay(int64_t value);
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     int64_t getNumberOfFramesLeft() const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     int64_t getNumberOfTriggersLeft() const;
 
-    /** [Gotthard][Jungfrau][CTB][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB] 
+     * [Gotthard2] only in continuous mode */
     int64_t getDelayAfterTriggerLeft() const;
 
     /** [Gotthard] */
@@ -610,13 +615,16 @@ class slsDetector : public virtual slsDetectorDefs {
     /** [Eiger] */
     int64_t getMeasuredSubFramePeriod() const;
 
-    /** [Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     int64_t getNumberOfFramesFromStart() const;
 
-    /** [Jungfrau][CTB][Mythen3][Gotthard2] Get time from detector start */
+    /** [Jungfrau][CTB][Mythen3] Get time from detector start 
+     * [Gotthard2] only in continuous mode */
     int64_t getActualTime() const;
 
-    /** [Jungfrau][CTB][Mythen3][Gotthard2] Get timestamp at a frame start */
+    /** [Jungfrau][CTB][Mythen3] Get timestamp at a frame start 
+     * [Gotthard2] only in continuous mode */
     int64_t getMeasurementTime() const;
 
     /**

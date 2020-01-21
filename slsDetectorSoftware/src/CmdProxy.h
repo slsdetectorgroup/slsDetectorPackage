@@ -1020,19 +1020,24 @@ class CmdProxy {
                  "\n\t[Gotthard2] Uploaded to detector just before acquisition starts");
 
     TIME_COMMAND(delay, getDelayAfterTrigger, setDelayAfterTrigger,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] Delay after trigger");
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] Delay after trigger"
+                "\n\t[Gotthard2] only in continuous mode.");
 
     GET_COMMAND(framesl, getNumberOfFramesLeft, 
-                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Number of frames left in acquisition.");       
+                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Number of frames left in acquisition."
+                "\n\t[Gotthard2] only in continuous mode.");       
 
     GET_COMMAND(triggersl, getNumberOfTriggersLeft, 
-                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Number of triggers left in acquisition.");       
+                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Number of triggers left in acquisition."
+                "\n\t[Gotthard2] only in continuous mode.");       
 
     TIME_GET_COMMAND(delayl, getDelayAfterTriggerLeft, 
-                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] DelayLeft Delay Left in Acquisition.");    
+                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] DelayLeft Delay Left in Acquisition."
+                "\n\t[Gotthard2] only in continuous mode.");    
 
     TIME_GET_COMMAND(periodl, getPeriodLeft, 
-                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Period left for current frame.");   
+                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Period left for current frame."
+                "\n\t[Gotthard2] only in continuous mode.");   
 
     INTEGER_COMMAND(timing, getTimingMode, setTimingMode, sls::StringTo<slsDetectorDefs::timingMode>,
                     "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] [auto|trigger]\n\t[Eiger] [auto|trigger|gating|burst_trigger]");      
@@ -1717,13 +1722,16 @@ class CmdProxy {
                 "\n\tClient IP Address that last communicated with the detector."); 
 
     GET_COMMAND(nframes, getNumberOfFramesFromStart, 
-                "\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Number of frames from start run control.");       
+                "\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Number of frames from start run control."
+                "\n\t[Gotthard2] only in continuous mode.");       
 
     TIME_GET_COMMAND(now, getActualTime, 
-                "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Time from detector start up.");  
+                "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Time from detector start up."
+                "\n\t[Gotthard2] only in continuous mode.");  
 
     TIME_GET_COMMAND(timestamp, getMeasurementTime, 
-                "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Timestamp at a frame start.");  
+                "[(optional unit) ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Timestamp at a frame start."
+                "\n\t[Gotthard2] only in continuous mode.");  
 
     GET_COMMAND(rx_frameindex, getRxCurrentFrameIndex, 
                 "\n\tCurrent frame index received in receiver.");  

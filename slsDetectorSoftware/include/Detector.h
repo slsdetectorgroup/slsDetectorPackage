@@ -152,23 +152,29 @@ class Detector {
 
     void setPeriod(ns t, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     Result<ns> getDelayAfterTrigger(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     void setDelayAfterTrigger(ns value, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfFramesLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfTriggersLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
-    Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
-
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     Result<ns> getPeriodLeft(Positions pos = {}) const;
+
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
+    Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
 
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
@@ -1286,13 +1292,16 @@ class Detector {
     /** Execute a command on the detector server console */
     void executeCommand(const std::string &value, Positions pos = {});
 
-    /** [Jungfrau][Mythen3][Gotthard2][CTB] */
+    /** [Jungfrau][Mythen3][CTB] 
+     * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfFramesFromStart(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3][Gotthard2][CTB] Get time from detector start */
+    /** [Jungfrau][Mythen3][CTB] Get time from detector start 
+     * [Gotthard2] only in continuous mode */
     Result<ns> getActualTime(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3][Gotthard2][CTB] Get timestamp at a frame start */
+    /** [Jungfrau][Mythen3][CTB] Get timestamp at a frame start 
+     * [Gotthard2] only in continuous mode */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
 
     std::string getUserDetails() const;

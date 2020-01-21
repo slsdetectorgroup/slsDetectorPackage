@@ -867,3 +867,142 @@ class Detector(CppDetectorApi):
     def syncclk(self):
         return element_if_equal(self.getSYNCClock())
     
+    @property
+    def pattern(self):
+        #TODO! Clean fix
+        print("Set only")
+        return 0
+
+    @property
+    def patclkctrl(self):
+        return element_if_equal(self.getPatternClockControl())
+
+    @patclkctrl.setter
+    def patclkctrl(self, mask):
+        self.setPatternClockControl(mask)
+
+    # patioctrl
+    @property
+    def patioctrl(self):
+        return element_if_equal(self.getPatternIOControl())
+
+    @patioctrl.setter
+    def patioctrl(self, mask):
+        self.setPatternIOControl(mask)
+
+    @property
+    def patlimits(self):
+        return element_if_equal(self.getPatternLoopAddresses(-1))
+
+    @patlimits.setter
+    def patlimits(self, lim):
+        self.setPatternLoopAddresses(-1, lim[0], lim[1])
+
+    @property
+    def patmask(self):
+        return element_if_equal(self.getPatternMask())
+
+    @patmask.setter
+    def patmask(self, mask):
+        self.setPatternMask(mask)
+
+    @pattern.setter
+    def pattern(self, fname):
+        self.setPattern(fname)
+
+    @property
+    def patwait0(self):
+        return element_if_equal(self.getPatternWaitAddr(0))
+
+    @patwait0.setter
+    def patwait0(self, addr):
+        self.setPatternWaitAddr(0, addr)
+
+    @property
+    def patwait1(self):
+        return element_if_equal(self.getPatternWaitAddr(1))
+
+    @patwait1.setter
+    def patwait1(self, addr):
+        self.setPatternWaitAddr(1, addr)
+
+    @property
+    def patwait2(self):
+        return element_if_equal(self.getPatternWaitAddr(2))
+
+    @patwait2.setter
+    def patwait2(self, addr):
+        self.setPatternWaitAddr(2, addr)
+
+    @property
+    def patwaittime0(self):
+        return element_if_equal(self.getPatternWaitTime(0))
+
+    @patwaittime0.setter
+    def patwaittime0(self, nclk):
+        self.setPatternWaitTime(0, nclk)
+
+    @property
+    def patwaittime1(self):
+        return element_if_equal(self.getPatternWaitTime(1))
+
+    @patwaittime1.setter
+    def patwaittime1(self, nclk):
+        self.setPatternWaitTime(1, nclk)
+
+    @property
+    def patwaittime2(self):
+        return element_if_equal(self.getPatternWaitTime(2))
+
+    @patwaittime2.setter
+    def patwaittime2(self, nclk):
+        self.setPatternWaitTime(2, nclk)
+
+
+    @property
+    def patloop0(self):
+        return element_if_equal(self.getPatternLoopAddresses(0))
+
+    @patloop0.setter
+    def patloop0(self, addr):
+        self.setPatternLoopAddresses(0, addr[0], addr[1])
+
+    @property
+    def patloop1(self):
+        return element_if_equal(self.getPatternLoopAddresses(1))
+
+    @patloop1.setter
+    def patloop1(self, addr):
+        self.setPatternLoopAddresses(1, addr[0], addr[1])
+
+    @property
+    def patloop2(self):
+        return element_if_equal(self.getPatternLoopAddresses(2))
+
+    @patloop2.setter
+    def patloop2(self, addr):
+        self.setPatternLoopAddresses(2, addr[0], addr[1])
+
+    @property
+    def patnloop0(self):
+        return element_if_equal(self.getPatternLoopCycles(0))
+
+    @patnloop0.setter
+    def patnloop0(self, n):
+        self.setPatternLoopCycles(0, n)
+
+    @property
+    def patnloop1(self):
+        return element_if_equal(self.getPatternLoopCycles(1))
+
+    @patnloop1.setter
+    def patnloop1(self, n):
+        self.setPatternLoopCycles(1, n)
+
+    @property
+    def patnloop2(self):
+        return element_if_equal(self.getPatternLoopCycles(2))
+
+    @patnloop2.setter
+    def patnloop2(self, n):
+        self.setPatternLoopCycles(2, n)

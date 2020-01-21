@@ -13,21 +13,6 @@ import datetime as dt
 from functools import wraps
 from collections import namedtuple
 
-# class Register:
-#     """
-#     Helper class to read and write to registers using a
-#     more Pythonic syntax
-#     """
-#     def __init__(self, detector):
-#         self._detector = detector
-
-#     def __getitem__(self, key):
-#         return self._detector.readRegister(key)
-
-#     def __setitem__(self, key, value):
-#         self._detector.writeRegister(key, value)
-
-
 def freeze(cls):
     cls._frozen = False
 

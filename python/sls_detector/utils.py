@@ -2,9 +2,12 @@
 Utility functions that are useful for testing and troubleshooting
 but not directly used in controlling the detector
 """
+
+
 from collections import namedtuple
 import _sls_detector #C++ lib
 import functools
+
 
 Geometry = namedtuple('Geometry', ['x', 'y'])
 
@@ -65,3 +68,4 @@ def eiger_register_to_time(register):
     clocks = register >> 3
     exponent = register & 0b111
     return clocks*10**exponent / 100e6
+

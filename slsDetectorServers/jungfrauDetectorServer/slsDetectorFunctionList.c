@@ -24,6 +24,7 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern udpStruct udpDetails;
+extern const enum detectorType myDetectorType;
 
 int initError = OK;
 int initCheckDone = 0;
@@ -1667,7 +1668,7 @@ void* start_timer(void* arg) {
 
 				usleep(exp_us);
 
-				const int size = datasize + 112;
+				const int size = datasize + sizeof(sls_detector_header);
 				char packetData[size];
 				memset(packetData, 0, sizeof(sls_detector_header));
 				
@@ -1679,6 +1680,11 @@ void* start_timer(void* arg) {
 						sls_detector_header* header = (sls_detector_header*)(packetData);
 						header->frameNumber = frameNr;
 						header->packetNumber = i;
+						header->modId = 0;
+						header->row = detPos[X];
+						header->column = detPos[Y];
+						header->detType = (uint16_t)myDetectorType;
+						header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
 						// fill data
 						memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);
 						srcOffset += datasize;

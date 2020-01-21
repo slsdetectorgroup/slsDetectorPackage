@@ -147,13 +147,28 @@
 
 /* Packetizer -------------------------------------------------------------*/
 
-/* Packetizer Config Register*/
+/* Packetizer Config Register */
 #define PKT_CONFIG_REG                  (0x00 * REG_OFFSET + BASE_PKT)
 
 #define PKT_CONFIG_NRXR_MAX_OFST        (0)
 #define PKT_CONFIG_NRXR_MAX_MSK         (0x0000003F << PKT_CONFIG_NRXR_MAX_OFST)
 #define PKT_CONFIG_RXR_START_ID_OFST    (8)
 #define PKT_CONFIG_RXR_START_ID_MSK     (0x0000003F << PKT_CONFIG_RXR_START_ID_OFST)
+
+/* Module Coordinates Register */
+#define COORD_0_REG                     (0x02 * REG_OFFSET + BASE_PKT)
+#define COORD_ROW_OFST			        (0)
+#define COORD_ROW_MSK				    (0x0000FFFF << COORD_ROW_OFST)
+#define COORD_COL_OFST			        (16)
+#define COORD_COL_MSK				    (0x0000FFFF << COORD_COL_OFST)
+
+/* Module ID Register */
+#define COORD_1_REG                     (0x03 * REG_OFFSET + BASE_PKT)
+#define COORD_RESERVED_OFST			    (0)
+#define COORD_RESERVED_MSK		        (0x0000FFFF << COORD_RESERVED_OFST)
+#define COORD_ID_OFST			        (16)                            // Not connected in firmware TODO
+#define COORD_ID_MSK				    (0x0000FFFF << COORD_ID_OFST)   // Not connected in firmware TODO
+
 
 /* Flow control registers --------------------------------------------------*/
 

@@ -24,6 +24,7 @@
 extern int debugflag;
 extern int checkModuleFlag;
 extern udpStruct udpDetails;
+extern const enum detectorType myDetectorType;
 
 int initError = OK;
 int initCheckDone = 0;
@@ -422,10 +423,12 @@ void setupDetector() {
 	// power on chip
 	powerChip(1);
 
+#ifndef VIRTUAL
 	// also sets default dac and on chip dac values 
 	if (readConfigFile() == FAIL) {
 		return;
 	}
+#endif
 	// set burst mode will take in burstType and also set it
 	burstType = DEFAULT_BURST_TYPE;
 	setBurstMode(DEFAULT_BURST_MODE);
@@ -1169,7 +1172,35 @@ void calcChecksum(udp_header* udp) {
 
 int setDetectorPosition(int pos[]) {
     memcpy(detPos, pos, sizeof(detPos));
-	return OK;
+
+	uint32_t addr = COORD_0_REG;
+	int value = 0;
+	int valueRead = 0;
+	int ret = OK;
+
+	// row
+	value = detPos[X];
+	bus_w(addr, (bus_r(addr) &~COORD_ROW_MSK) | ((value << COORD_ROW_OFST) & COORD_ROW_MSK));
+	valueRead = ((bus_r(addr) &  COORD_ROW_MSK) >> COORD_ROW_OFST);
+	if (valueRead != value) {
+		FILE_LOG(logERROR, ("Could not set row. Set %d, read %d\n", value, valueRead));
+		ret = FAIL;
+	}
+
+	// col
+	value = detPos[Y];
+	bus_w(addr, (bus_r(addr) &~COORD_COL_MSK) | ((value << COORD_COL_OFST) & COORD_COL_MSK));
+	valueRead = ((bus_r(addr) &  COORD_COL_MSK) >> COORD_COL_OFST);
+	if (valueRead != value) {
+		FILE_LOG(logERROR, ("Could not set column. Set %d, read %d\n", value, valueRead));
+		ret = FAIL;
+	}
+
+	if (ret == OK) {
+		FILE_LOG(logINFO, ("\tPosition set to [%d, %d]\n", detPos[X], detPos[Y]));
+	} 
+	
+	return ret;
 }
 
 int* getDetectorPosition() {
@@ -1847,6 +1878,8 @@ void* start_timer(void* arg) {
 	int numFrames = (getNumFrames() *
 						getNumTriggers() );
 	int64_t exp_ns = 	getExpTime();
+	int datasize = 2560;
+	int packetsize = datasize + sizeof(sls_detector_header);
 
 
     int frameNr = 0;
@@ -1863,6 +1896,22 @@ void* start_timer(void* arg) {
         clock_gettime(CLOCK_REALTIME, &begin);
         usleep(exp_ns / 1000);
         clock_gettime(CLOCK_REALTIME, &end);
+
+		char packetData[packetsize];
+		memset(packetData, 0, packetsize);
+		// set header
+		sls_detector_header* header = (sls_detector_header*)(packetData);
+		header->frameNumber = frameNr;
+		header->packetNumber = 0;
+		header->modId = 0;
+		header->row = detPos[X];
+		header->column = detPos[Y];
+		header->detType = (uint16_t)myDetectorType;
+		header->version = SLS_DETECTOR_HEADER_VERSION - 1;		
+
+		// send 1 packet = 1 frame
+		sendUDPPacket(0, packetData, packetsize);
+		FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
 
 		// calculate time left in period
         int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +

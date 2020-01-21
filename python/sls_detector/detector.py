@@ -6,27 +6,12 @@ speedLevel = slsDetectorDefs.speedLevel
 dacIndex = slsDetectorDefs.dacIndex
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
-from .utils import Geometry, to_geo
+from .utils import Geometry, to_geo, element
 from .registers import Register, Adc_register
 import datetime as dt
 
 from functools import wraps
 from collections import namedtuple
-
-# class Register:
-#     """
-#     Helper class to read and write to registers using a
-#     more Pythonic syntax
-#     """
-#     def __init__(self, detector):
-#         self._detector = detector
-
-#     def __getitem__(self, key):
-#         return self._detector.readRegister(key)
-
-#     def __setitem__(self, key, value):
-#         self._detector.writeRegister(key, value)
-
 
 def freeze(cls):
     cls._frozen = False
@@ -775,6 +760,22 @@ class Detector(CppDetectorApi):
     """
 
     @property
+    def runclk(self):
+        return element_if_equal(self.getRUNClock())
+
+    @runclk.setter
+    def runclk(self, freq):
+        self.setRUNClock(freq)
+
+    @property
+    def romode(self):
+        return element_if_equal(self.getReadoutMode())
+
+    @romode.setter
+    def romode(self, mode):
+        self.setReadoutMode(mode)
+
+    @property
     def asamples(self):
         return element_if_equal(self.getNumberOfAnalogSamples())
 
@@ -839,9 +840,249 @@ class Detector(CppDetectorApi):
         return element_if_equal(self.getMaxADCPhaseShift())
 
     @property
-    def maxclkphaseshift(self):
-        return element_if_equal(self.getMaxClockPhaseShift())
+    def adcphase(self):
+        return element_if_equal(self.getADCPhase())
+    
+    @adcphase.setter
+    def adcphase(self, value):
+        self.setADCPhase(value)
 
     @property
-    def adcphase(self):
-        return element_if_equal()
+    def adcpipeline(self):
+        return element_if_equal(self.getADCPipeline())
+
+    @adcpipeline.setter
+    def adcpipeline(self, value):
+        self.setADCPipeline(value)
+
+    @property
+    def adcclk(self):
+        return element_if_equal(self.getADCClock())
+
+    @adcclk.setter
+    def adcclk(self, value):
+        self.setADCClock(value)
+
+    @property
+    def syncclk(self):
+        return element_if_equal(self.getSYNCClock())
+    
+    @property
+    def pattern(self):
+        #TODO! Clean fix
+        print("Set only")
+        return 0
+
+    @property
+    def patclkctrl(self):
+        return element_if_equal(self.getPatternClockControl())
+
+    @patclkctrl.setter
+    def patclkctrl(self, mask):
+        self.setPatternClockControl(mask)
+
+    # patioctrl
+    @property
+    def patioctrl(self):
+        return element_if_equal(self.getPatternIOControl())
+
+    @patioctrl.setter
+    def patioctrl(self, mask):
+        self.setPatternIOControl(mask)
+
+    @property
+    def patlimits(self):
+        return element_if_equal(self.getPatternLoopAddresses(-1))
+
+    @patlimits.setter
+    def patlimits(self, lim):
+        self.setPatternLoopAddresses(-1, lim[0], lim[1])
+
+    @property
+    def patmask(self):
+        return element_if_equal(self.getPatternMask())
+
+    @patmask.setter
+    def patmask(self, mask):
+        self.setPatternMask(mask)
+
+    @pattern.setter
+    def pattern(self, fname):
+        self.setPattern(fname)
+
+    @property
+    def patwait0(self):
+        return element_if_equal(self.getPatternWaitAddr(0))
+
+    @patwait0.setter
+    def patwait0(self, addr):
+        self.setPatternWaitAddr(0, addr)
+
+    @property
+    def patwait1(self):
+        return element_if_equal(self.getPatternWaitAddr(1))
+
+    @patwait1.setter
+    def patwait1(self, addr):
+        self.setPatternWaitAddr(1, addr)
+
+    @property
+    def patwait2(self):
+        return element_if_equal(self.getPatternWaitAddr(2))
+
+    @patwait2.setter
+    def patwait2(self, addr):
+        self.setPatternWaitAddr(2, addr)
+
+    @property
+    def patwaittime0(self):
+        return element_if_equal(self.getPatternWaitTime(0))
+
+    @patwaittime0.setter
+    def patwaittime0(self, nclk):
+        self.setPatternWaitTime(0, nclk)
+
+    @property
+    def patwaittime1(self):
+        return element_if_equal(self.getPatternWaitTime(1))
+
+    @patwaittime1.setter
+    def patwaittime1(self, nclk):
+        self.setPatternWaitTime(1, nclk)
+
+    @property
+    def patwaittime2(self):
+        return element_if_equal(self.getPatternWaitTime(2))
+
+    @patwaittime2.setter
+    def patwaittime2(self, nclk):
+        self.setPatternWaitTime(2, nclk)
+
+
+    @property
+    def patloop0(self):
+        return element_if_equal(self.getPatternLoopAddresses(0))
+
+    @patloop0.setter
+    def patloop0(self, addr):
+        self.setPatternLoopAddresses(0, addr[0], addr[1])
+
+    @property
+    def patloop1(self):
+        return element_if_equal(self.getPatternLoopAddresses(1))
+
+    @patloop1.setter
+    def patloop1(self, addr):
+        self.setPatternLoopAddresses(1, addr[0], addr[1])
+
+    @property
+    def patloop2(self):
+        return element_if_equal(self.getPatternLoopAddresses(2))
+
+    @patloop2.setter
+    def patloop2(self, addr):
+        self.setPatternLoopAddresses(2, addr[0], addr[1])
+
+    @property
+    def patnloop0(self):
+        return element_if_equal(self.getPatternLoopCycles(0))
+
+    @patnloop0.setter
+    def patnloop0(self, n):
+        self.setPatternLoopCycles(0, n)
+
+    @property
+    def patnloop1(self):
+        return element_if_equal(self.getPatternLoopCycles(1))
+
+    @patnloop1.setter
+    def patnloop1(self, n):
+        self.setPatternLoopCycles(1, n)
+
+    @property
+    def patnloop2(self):
+        return element_if_equal(self.getPatternLoopCycles(2))
+
+    @patnloop2.setter
+    def patnloop2(self, n):
+        self.setPatternLoopCycles(2, n)
+
+
+    @property
+    @element
+    def v_a(self):
+        return self.getDAC(dacIndex.V_POWER_A, True)
+
+    @v_a.setter
+    def v_a(self, value):
+        self.setDAC(dacIndex.V_POWER_A, value, True)
+
+    @property
+    @element
+    def v_b(self):
+        return self.getDAC(dacIndex.V_POWER_B, True)
+
+    @v_b.setter
+    def v_b(self, value):
+        self.setDAC(dacIndex.V_POWER_B, value, True)
+
+    @property
+    @element
+    def v_c(self):
+        return self.getDAC(dacIndex.V_POWER_C, True)
+
+    @v_c.setter
+    def v_c(self, value):
+        self.setDAC(dacIndex.V_POWER_C, value, True)
+
+    @property
+    @element
+    def v_d(self):
+        return self.getDAC(dacIndex.V_POWER_D, True)
+
+    @v_d.setter
+    def v_d(self, value):
+        self.setDAC(dacIndex.V_POWER_D, value, True)
+
+    @property
+    @element
+    def v_io(self):
+        return self.getDAC(dacIndex.V_POWER_IO, True)
+
+    @v_io.setter
+    def v_io(self, value):
+        self.setDAC(dacIndex.V_POWER_IO, value, True)
+
+    @property
+    @element
+    def v_limit(self):
+        return self.getDAC(dacIndex.V_LIMIT, True)
+
+    @v_limit.setter
+    def v_limit(self, value):
+        self.setDAC(dacIndex.V_LIMIT, value, True)
+
+    @property
+    @element
+    def im_a(self):
+        return self.getMeasuredCurrent(dacIndex.I_POWER_A)
+
+    @property
+    @element
+    def im_b(self):
+        return self.getMeasuredCurrent(dacIndex.I_POWER_B)
+
+    @property
+    @element
+    def im_c(self):
+        return self.getMeasuredCurrent(dacIndex.I_POWER_C)
+
+    @property
+    @element
+    def im_d(self):
+        return self.getMeasuredCurrent(dacIndex.I_POWER_D)
+
+    @property
+    @element
+    def im_io(self):
+        return self.getMeasuredCurrent(dacIndex.I_POWER_IO)

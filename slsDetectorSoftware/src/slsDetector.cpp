@@ -1793,6 +1793,7 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
 
         case MYTHEN3:
             sendNumberofCounterstoReceiver(getCounterMask());
+            setDynamicRange(shm()->dynamicRange);
             break;
 
         default:

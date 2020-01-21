@@ -32,6 +32,7 @@ set( PYTHON_FILES
     jungfrau.py
     mythen3.py
     registers.py
+    lookup.py
     utils.py
 
 )

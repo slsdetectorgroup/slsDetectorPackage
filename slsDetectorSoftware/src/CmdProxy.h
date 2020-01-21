@@ -1651,10 +1651,10 @@ class CmdProxy {
                     "[64 bit mask]\n\t[Ctb] 64 bit mask defining output clock enable.");
 
     INTEGER_COMMAND_HEX(patmask, getPatternMask, setPatternMask, stoulHex,
-                    "[64 bit mask]\n\t[Ctb] 64 bit mask applied to every pattern. Only these bits for each pattern will be masked against.");
+                    "[64 bit mask]\n\t[Ctb][Mythen3] 64 bit mask applied to every pattern. Only these bits for each pattern will be masked against.");
 
     INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask, stoulHex,
-                    "[64 bit mask]\n\t[Ctb] 64 bit values applied to the selected patmask for every pattern.");                    
+                    "[64 bit mask]\n\t[Ctb][Mythen3] 64 bit values applied to the selected patmask for every pattern.");                    
 
     /* Moench */
     

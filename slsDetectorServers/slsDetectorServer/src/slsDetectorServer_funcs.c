@@ -3190,7 +3190,7 @@ int set_pattern_mask(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Set Pattern Mask to %d\n", arg));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// only set
@@ -3211,7 +3211,7 @@ int get_pattern_mask(int file_des) {
 
 	FILE_LOG(logDEBUG1, ("Get Pattern Mask\n"));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// only get
@@ -3231,7 +3231,7 @@ int set_pattern_bit_mask(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Set Pattern Bit Mask to %d\n", arg));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// only set
@@ -3252,7 +3252,7 @@ int get_pattern_bit_mask(int file_des){
 
 	FILE_LOG(logDEBUG1, ("Get Pattern Bit Mask\n"));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// only get

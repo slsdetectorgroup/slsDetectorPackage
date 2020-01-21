@@ -8,7 +8,8 @@
 
 /* Hardware Definitions */
 #define NCOUNTERS					(3)
-#define MAX_COUNTER_MSK					(0x7)
+#define MAX_COUNTER_MSK				(0x7)
+#define NCHAN_1_COUNTER				(128)
 #define NCHAN 						(128 * NCOUNTERS)
 #define NCHIP 						(10)
 #define NDAC 						(16)
@@ -98,3 +99,4 @@ typedef struct udp_header_struct {
 	uint16_t	udp_destport;
 } udp_header;
 #define UDP_IP_HEADER_LENGTH_BYTES	(28)
+#define PACKETS_PER_FRAME			(2)

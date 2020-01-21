@@ -19,7 +19,7 @@ enum DACINDEX					 			{E_SVP,E_VTR,E_VRF,E_VRS,E_SVN,E_VTGSTV,E_VCMP_LL,E_VCMP_L
 								 			2556, 	/* Vtgstv	*/	\
 								  			1000, 	/* Vcmp_ll	*/	\
 								 			1000, 	/* Vcmp_lr	*/	\
-								 			4000, 	/* cal		*/	\
+								 			0, 		/* cal		*/	\
 									 		1000, 	/* Vcmp_rl	*/	\
 									 		1100, 	/* rxb_rb	*/	\
 									 		1100, 	/* rxb_lb	*/	\

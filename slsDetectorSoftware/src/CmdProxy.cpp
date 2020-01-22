@@ -697,7 +697,7 @@ std::vector<std::string> CmdProxy::DacCommands() {
     case defs::GOTTHARD2:
         return std::vector<std::string>{
             "vref_h_adc",   "vb_comp_fe", "vb_comp_adc",  "vcom_cds",
-            "vref_restore", "vb_opa_1st", "vref_comp_fe", "vcom_adc1",
+            "vref_rstore", "vb_opa_1st", "vref_comp_fe", "vcom_adc1",
             "vref_prech",   "vref_l_adc", "vref_cds",     "vb_cs",
             "vb_opa_fd",    "vcom_adc2"};
         break;

@@ -1000,8 +1000,8 @@ int set_dac(int file_des) {
 	case VCOM_CDS:
 		serverDacIndex = G2_VCOM_CDS;
 		break;
-	case VREF_RESTORE:
-		serverDacIndex = G2_VREF_RESTORE;
+	case VREF_RSTORE:
+		serverDacIndex = G2_VREF_RSTORE;
 		break;
 	case VB_OPA_1ST:
 		serverDacIndex = G2_VB_OPA_1ST;

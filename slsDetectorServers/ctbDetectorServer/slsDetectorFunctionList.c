@@ -1418,22 +1418,18 @@ int setHighVoltage(int val){
 
 
 void setTiming( enum timingMode arg){
-
-	if(arg != GET_TIMING_MODE){
-		switch(arg){
-		case AUTO_TIMING:
-		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
-		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
-		    break;
-		case TRIGGER_EXPOSURE:
-		    FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
-		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
-		    break;
-		default:
-			FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
-			return;
-		}
-	}
+    switch(arg){
+    case AUTO_TIMING:
+        FILE_LOG(logINFO, ("Set Timing: Auto\n"));
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+        break;
+    case TRIGGER_EXPOSURE:
+        FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+        break;
+    default:
+        FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
+    }
 }
 
 

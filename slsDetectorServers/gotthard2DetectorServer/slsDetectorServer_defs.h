@@ -61,7 +61,7 @@ enum DACINDEX				        {G2_VREF_H_ADC, /* 0 */		\
 									G2_VB_COMP_FE,  /* 2 */		\
         							G2_VB_COMP_ADC, /* 3 */		\
         							G2_VCOM_CDS,    /* 4 */		\
-        							G2_VREF_RESTORE,/* 5 */		\
+        							G2_VREF_RSTORE,/* 5 */		\
         							G2_VB_OPA_1ST,  /* 6 */		\
         							G2_VREF_COMP_FE,/* 7 */		\
         							G2_VCOM_ADC1,   /* 8 */		\
@@ -73,7 +73,7 @@ enum DACINDEX				        {G2_VREF_H_ADC, /* 0 */		\
 		  							G2_DAC_UNUSED2, /* 14 */	\
         							G2_VCOM_ADC2    /* 15*/		\
 									};  
-#define  DAC_NAMES					"vref_h_adc", "dac_unused", "vb_comp_fe", "vb_comp_adc", "vcom_cds", "vref_restore", "vb_opa_1st", "vref_comp_fe", "vcom_adc1", "vref_prech", "vref_l_adc", "vref_cds", "vb_cs", "vb_opa_fd", "dac_unused2", "vcom_adc2"
+#define  DAC_NAMES					"vref_h_adc", "dac_unused", "vb_comp_fe", "vb_comp_adc", "vcom_cds", "vref_rstore", "vb_opa_1st", "vref_comp_fe", "vcom_adc1", "vref_prech", "vref_l_adc", "vref_cds", "vb_cs", "vb_opa_fd", "dac_unused2", "vcom_adc2"
 									
 enum ONCHIP_DACINDEX				{G2_VCHIP_COMP_FE, 		/* 0 */		\
 									G2_VCHIP_OPA_1ST,  		/* 1 */		\

@@ -626,8 +626,8 @@ int readConfigFile() {
                 idac = G2_VB_COMP_ADC;
             } else if (!strcasecmp(command,"vcom_cds")) {
                 idac = G2_VCOM_CDS;
-            } else if (!strcasecmp(command,"vref_restore")) {
-                idac = G2_VREF_RESTORE;
+            } else if (!strcasecmp(command,"vref_rstore")) {
+                idac = G2_VREF_RSTORE;
             } else if (!strcasecmp(command,"vb_opa_1st")) {
                 idac = G2_VB_OPA_1ST;
             } else if (!strcasecmp(command,"vref_comp_fe")) {
@@ -1091,21 +1091,18 @@ int setHighVoltage(int val){
 
 /* parameters - timing */
 void setTiming( enum timingMode arg){
-	if(arg != GET_TIMING_MODE){
-		switch(arg){
-		case AUTO_TIMING:
-		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
-		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
-		    break;
-		case TRIGGER_EXPOSURE:
-		    FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
-		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
-		    break;
-		default:
-			FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
-			return;
-		}
-	}
+    switch(arg){
+    case AUTO_TIMING:
+        FILE_LOG(logINFO, ("Set Timing: Auto\n"));
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+        break;
+    case TRIGGER_EXPOSURE:
+        FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+        break;
+    default:
+        FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
+    }
 }
 
 enum timingMode getTiming() {
@@ -1945,9 +1942,19 @@ void* start_timer(void* arg) {
 	int numFrames = (getNumFrames() *
 						getNumTriggers() );
 	int64_t exp_ns = 	getExpTime();
-	int datasize = 2560;
+	int imagesize = NCHAN * NCHIP * 2;
+	int datasize = imagesize;
 	int packetsize = datasize + sizeof(sls_detector_header);
 
+	// Generate data
+	char imageData[imagesize];
+	memset(imageData, 0, imagesize);
+	{
+		int i = 0;
+		for (i = 0; i < imagesize; i += sizeof(uint8_t)) {
+			*((uint8_t*)(imageData + i)) = i;
+		}
+	}
 
     int frameNr = 0;
 	// loop over number of frames
@@ -1974,7 +1981,10 @@ void* start_timer(void* arg) {
 		header->row = detPos[X];
 		header->column = detPos[Y];
 		header->detType = (uint16_t)myDetectorType;
-		header->version = SLS_DETECTOR_HEADER_VERSION - 1;		
+		header->version = SLS_DETECTOR_HEADER_VERSION - 1;	
+
+		// fill data	
+		memcpy(packetData + sizeof(sls_detector_header), imageData, datasize);	
 
 		// send 1 packet = 1 frame
 		sendUDPPacket(0, packetData, packetsize);

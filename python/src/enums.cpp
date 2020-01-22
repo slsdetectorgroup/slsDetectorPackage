@@ -169,7 +169,7 @@ void init_enums(py::module &m) {
         .value("VB_COMP_FE", slsDetectorDefs::dacIndex::VB_COMP_FE)
         .value("VB_COMP_ADC", slsDetectorDefs::dacIndex::VB_COMP_ADC)
         .value("VCOM_CDS", slsDetectorDefs::dacIndex::VCOM_CDS)
-        .value("VREF_RESTORE", slsDetectorDefs::dacIndex::VREF_RESTORE)
+        .value("VREF_RSTORE", slsDetectorDefs::dacIndex::VREF_RSTORE)
         .value("VB_OPA_1ST", slsDetectorDefs::dacIndex::VB_OPA_1ST)
         .value("VREF_COMP_FE", slsDetectorDefs::dacIndex::VREF_COMP_FE)
         .value("VCOM_ADC1", slsDetectorDefs::dacIndex::VCOM_ADC1)

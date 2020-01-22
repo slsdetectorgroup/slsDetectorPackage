@@ -648,7 +648,7 @@ class CmdProxy {
                           {"vb_comp_fe", &CmdProxy::vb_comp_fe},
                           {"vb_comp_adc", &CmdProxy::vb_comp_adc},
                           {"vcom_cds", &CmdProxy::vcom_cds},
-                          {"vref_restore", &CmdProxy::vref_restore},
+                          {"vref_rstore", &CmdProxy::vref_rstore},
                           {"vb_opa_1st", &CmdProxy::vb_opa_1st},
                           {"vref_comp_fe", &CmdProxy::vref_comp_fe},
                           {"vcom_adc1", &CmdProxy::vcom_adc1},
@@ -1231,7 +1231,7 @@ class CmdProxy {
     DAC_COMMAND(vcom_cds, getDAC, setDAC, defs::VCOM_CDS,
                     "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for common mode voltage of CDS stage.");  
                     
-    DAC_COMMAND(vref_restore, getDAC, setDAC, defs::VREF_RESTORE,
+    DAC_COMMAND(vref_rstore, getDAC, setDAC, defs::VREF_RSTORE,
                     "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for reference charging voltage of temparory storage cell in high gain.");  
                     
     DAC_COMMAND(vb_opa_1st, getDAC, setDAC, defs::VB_OPA_1ST,

@@ -1383,13 +1383,7 @@ void* start_timer(void* arg) {
 						getNumTriggers() );
 	int64_t exp_ns = 	getExpTime();
 
-	int numCounters = __builtin_popcount(getCounterMask());
-	int dr = setDynamicRange(-1);
-	int imagesize = NCHAN_1_COUNTER * NCHIP * numCounters * 
-		((dr > 16) ? 4 : 	// 32 bit
-		((dr > 8)  ? 2 : 	// 16 bit
-		((dr > 4)  ? 0.5 : 	// 4 bit
-		0.125)));			// 1 bit
+	int imagesize = calculateDataBytes();
 	int datasize = imagesize / PACKETS_PER_FRAME;
 	int packetsize = datasize + sizeof(sls_detector_header);
 
@@ -1568,7 +1562,15 @@ u_int32_t runBusy() {
 /* common */
 
 int calculateDataBytes() {
-	return 0;
+	int numCounters = __builtin_popcount(getCounterMask());
+	int dr = setDynamicRange(-1);
+	int databytes = NCHAN_1_COUNTER * NCHIP * numCounters * 
+		((dr > 16) ? 4 : 	// 32 bit
+		((dr > 8)  ? 2 : 	// 16 bit
+		((dr > 4)  ? 0.5 : 	// 4 bit
+		0.125)));			// 1 bit
+
+	return databytes;
 }
 
 int getTotalNumberOfChannels() {return  (getNumberOfChannelsPerChip() * getNumberOfChips());}

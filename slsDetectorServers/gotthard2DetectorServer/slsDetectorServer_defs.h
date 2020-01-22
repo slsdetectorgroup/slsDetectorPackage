@@ -17,22 +17,30 @@
 #define HV_DRIVER_FILE_NAME         ("/etc/devlinks/hvdac")
 #define DAC_DRIVER_FILE_NAME        ("/etc/devlinks/dac")
 #define ONCHIP_DAC_DRIVER_FILE_NAME ("/etc/devlinks/chipdac")
+#define TYPE_FILE_NAME				("/etc/devlinks/type")
 #define CONFIG_FILE                 ("config.txt")
 #define DAC_MAX_MV                  (2048)
 #define ONCHIP_DAC_MAX_VAL			(0x3FF)
 #define ADU_MAX_VAL					(0xFFF)
 #define ADU_MAX_BITS				(12)
 #define MAX_FRAMES_IN_BURST_MODE	(2720)
-
+#define TYPE_GOTTHARD2_MODULE_VAL	(512)
+#define TYPE_TOLERANCE				(10)
+#define TYPE_NO_MODULE_STARTING_VAL	(800)
 
 /** Default Parameters */
+#define DEFAULT_BURST_MODE			(1)
+#define DEFAULT_BURST_TYPE			(INTERNAL)
 #define DEFAULT_NUM_FRAMES			(1)
 #define DEFAULT_NUM_CYCLES			(1)
 #define DEFAULT_EXPTIME				(1 * 1000 * 1000)	        // 1 ms
 #define DEFAULT_PERIOD				(1 * 1000 * 1000 * 1000)	// 1 s
+#define DEFAULT_DELAY_AFTER_TRIGGER (0)
 #define DEFAULT_HIGH_VOLTAGE		(0)
+#define DEFAULT_TIMING_MODE			(AUTO_TIMING)
+#define DEFAULT_SETTINGS			(DYNAMICGAIN)
 #define DEFAULT_READOUT_C0          (144444448) // rdo_clk, 144 MHz  
-#define DEFAULT_READOUT_C1          (288888896) // rdo_x2_clk, 288 MHz  
+#define DEFAULT_READOUT_C1          (144444448) // rdo_x2_clk, 144 MHz  
 #define DEFAULT_SYSTEM_C0			(144444448) // run_clk, 144 MHz 
 #define DEFAULT_SYSTEM_C1			(72222224) // chip_clk, 72 MHz 
 #define DEFAULT_SYSTEM_C2			(18055556) // sync_clk, 18 MHz 
@@ -40,6 +48,7 @@
 
 /* Firmware Definitions */
 #define IP_HEADER_SIZE              (20)
+#define FIXED_PLL_FREQUENCY			(020000000) // 20MHz
 #define READOUT_PLL_VCO_FREQ_HZ     (866666688) // Hz 
 #define SYSTEM_PLL_VCO_FREQ_HZ      (722222240) // Hz
 

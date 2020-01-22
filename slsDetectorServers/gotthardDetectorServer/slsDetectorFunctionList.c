@@ -30,10 +30,10 @@ int virtual_status = 0;
 int virtual_stop = 0;
 int highvoltage = 0;
 #endif
-int detPos[2] = {0, 0};
+int detPos[2] = {};
 
 int detectorFirstServer = 1;
-int dacValues[NDAC] = {0};
+int dacValues[NDAC] = {};
 enum detectorSettings thisSettings = UNINITIALIZED;
 enum externalSignalFlag signalMode = 0;
 
@@ -128,7 +128,7 @@ int checkType() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	volatile u_int32_t type = ((bus_r(BOARD_REVISION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
+	u_int32_t type = ((bus_r(BOARD_REVISION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type == DETECTOR_TYPE_MOENCH_VAL){
 			FILE_LOG(logERROR, ("This is not a Gotthard Server (read %d, expected ?)\n", type));
 			return FAIL;
@@ -1180,7 +1180,7 @@ void setTiming( enum timingMode arg){
     u_int32_t addr = EXT_SIGNAL_REG;
 
 	if (arg != GET_TIMING_MODE){
-		switch((int)arg){
+		switch(arg){
 		case AUTO_TIMING:
 		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
 		    bus_w(addr, EXT_SIGNAL_OFF_VAL);
@@ -1680,7 +1680,7 @@ int calculateDataBytes(){
 	return DATA_BYTES;
 }
 
-int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
+int getTotalNumberOfChannels() {return  (getNumberOfChannelsPerChip() * getNumberOfChips());}
 int getNumberOfChips(){return  NCHIP;}
 int getNumberOfDACs(){return  NDAC;}
 int getNumberOfChannelsPerChip(){return  NCHAN;}

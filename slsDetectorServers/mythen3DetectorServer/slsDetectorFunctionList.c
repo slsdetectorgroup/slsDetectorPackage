@@ -32,12 +32,12 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
-int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0, 0};
-uint32_t clkFrequency[NUM_CLOCKS] = {0, 0, 0, 0, 0};
+int32_t clkPhase[NUM_CLOCKS] = {};
+uint32_t clkFrequency[NUM_CLOCKS] = {};
 
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
-int detPos[2] = {0, 0};
+int detPos[2] = {};
 uint32_t countermask = 0; // will be removed later when in firmware converted to mask
 
 int isInitCheckDone() {
@@ -84,13 +84,10 @@ void basictests() {
 	uint64_t macadd				= getDetectorMAC();
 	int64_t fwversion 			= getFirmwareVersion();
 	int64_t swversion 			= getServerVersion();
-	int64_t sw_fw_apiversion    = 0;
+	int64_t sw_fw_apiversion    = getFirmwareAPIVersion();;
 	int64_t client_sw_apiversion = getClientServerAPIVersion();
 	uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
-
-	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
-	    sw_fw_apiversion 	    = getFirmwareAPIVersion();
 	FILE_LOG(logINFOBLUE, ("*************************************************\n"
 			"Hardware Version:\t\t 0x%x\n"
 
@@ -161,7 +158,7 @@ int checkType() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	volatile u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
+	u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type != MYTHEN3){
 		FILE_LOG(logERROR, ("This is not a Mythen3 Server (read %d, expected %d)\n", type, MYTHEN3));
 		return FAIL;
@@ -609,7 +606,6 @@ int setDelayAfterTrigger(int64_t val) {
 
 int64_t getDelayAfterTrigger() {
     return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
-  
 }
 
 int64_t getNumFramesLeft() {
@@ -706,10 +702,25 @@ int setHighVoltage(int val){
 
 /* parameters - timing */
 void setTiming( enum timingMode arg){
- // to be implemented
+	if(arg != GET_TIMING_MODE){
+		switch (arg) {
+		case AUTO_TIMING:
+		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
+		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+		    break;
+		case TRIGGER_EXPOSURE:
+		    FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
+		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+		    break;
+		default:
+			FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
+		}
+	}
 }
 
 enum timingMode getTiming() {
+    if (bus_r(EXT_SIGNAL_REG) == EXT_SIGNAL_MSK)
+        return TRIGGER_EXPOSURE;
     return AUTO_TIMING;
 }
 
@@ -1073,7 +1084,7 @@ int checkDetectorType() {
 	}
 
 	if (abs(type - TYPE_MYTHEN3_MODULE_VAL) > TYPE_TOLERANCE) {
-        FILE_LOG(logERROR, ("Wrong Module attached! Expected %d for Mythen, got %d\n", TYPE_MYTHEN3_MODULE_VAL, type));
+        FILE_LOG(logERROR, ("Wrong Module attached! Expected %d for Mythen3, got %d\n", TYPE_MYTHEN3_MODULE_VAL, type));
         return FAIL;	
 	}
 	return OK;
@@ -1134,8 +1145,8 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
 		relativePhase *= -1;
 		direction = 0;
 	}
-	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
-	int clkIndex = ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind;
+	int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
+	int clkIndex = (int)(ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind);
     ALTERA_PLL_C10_SetPhaseShift(pllIndex, clkIndex, relativePhase, direction);
 
     clkPhase[ind] = valShift;
@@ -1207,7 +1218,7 @@ int getVCOFrequency(enum CLKINDEX ind) {
 		FILE_LOG(logERROR, ("Unknown clock index %d to get vco frequency\n", ind));
 	    return -1;
 	}
-	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
+	int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
 	return ALTERA_PLL_C10_GetVCOFrequency(pllIndex);
 }
 
@@ -1225,7 +1236,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 	}
 	char* clock_names[] = {CLK_NAMES};
 	int vcofreq = getVCOFrequency(ind);
-	int currentdiv = vcofreq / clkFrequency[ind];
+	int currentdiv = vcofreq / (int)clkFrequency[ind];
 	int newfreq = vcofreq / val;
 
     FILE_LOG(logINFO, ("\tSetting %s clock (%d) divider from %d (%d Hz) to %d (%d Hz). \n\t(Vcofreq: %d Hz)\n", clock_names[ind], ind, currentdiv, clkFrequency[ind], val, newfreq, vcofreq));
@@ -1240,8 +1251,8 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 	}
 
     // Calculate and set output frequency
-	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
-	int clkIndex = ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind;
+	int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
+	int clkIndex = (int)(ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind);
     ALTERA_PLL_C10_SetOuputFrequency (pllIndex, clkIndex, newfreq);
 	clkFrequency[ind] = newfreq;
     FILE_LOG(logINFO, ("\t%s clock (%d) divider set to %d (%d Hz)\n", clock_names[ind], ind, val, clkFrequency[ind]));
@@ -1275,7 +1286,7 @@ int getClockDivider(enum CLKINDEX ind) {
 		FILE_LOG(logERROR, ("Unknown clock index %d to get clock divider\n", ind));
 	    return -1;
 	}
-	return (getVCOFrequency(ind) / clkFrequency[ind]);
+	return (getVCOFrequency(ind) / (int)clkFrequency[ind]);
 }
 
 /* aquisition */
@@ -1373,7 +1384,7 @@ int stopStateMachine(){
 #endif
 	//stop state machine
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STP_ACQSTN_MSK);
-	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
+	FILE_LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
     return OK;
 }
 
@@ -1430,7 +1441,7 @@ enum runStatus getRunStatus(){
 	return s;
 }
 
-void readFrame(int *ret, char *mess){
+void readFrame(int *ret, char *mess) {
 	// wait for status to be done
 	while(runBusy()){
 		usleep(500);
@@ -1450,7 +1461,6 @@ void readFrame(int *ret, char *mess){
 	} else {
 		FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 	}
-
 }
 
 u_int32_t runBusy() {
@@ -1464,11 +1474,11 @@ u_int32_t runBusy() {
 
 /* common */
 
-int calculateDataBytes(){
+int calculateDataBytes() {
 	return 0;
 }
 
-int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
-int getNumberOfChips(){return  NCHIP;}
-int getNumberOfDACs(){return  NDAC;}
-int getNumberOfChannelsPerChip(){return  NCHAN;}
+int getTotalNumberOfChannels() {return  (getNumberOfChannelsPerChip() * getNumberOfChips());}
+int getNumberOfChips() {return  NCHIP;}
+int getNumberOfDACs() {return  NDAC;}
+int getNumberOfChannelsPerChip() {return  NCHAN;}

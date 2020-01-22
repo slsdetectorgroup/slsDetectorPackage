@@ -389,13 +389,10 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     detectorSettings getSettings();
 
-    /**
-     * Load detector settings from the settings file picked from the
-     * trimdir/settingsdir Eiger only stores in shared memory ( a get will
-     * overwrite this) For Eiger, one must use threshold Gotthard, Propix,
-     * Jungfrau and Moench only sends the settings enum to the detector
-     * @param isettings settings
-     * @returns current settings
+    /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2
+     * [Gotthard] Options: DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN
+     * [Gotthard2] Options: DYNAMICGAIN, FIXGAIN1, FIXGAIN2
+     * [Eiger] Only stores them locally in shm Options: STANDARD, HIGHGAIN, LOWGAIN, VERYHIGHGAIN, VERYLOWGAIN
      */
     detectorSettings setSettings(detectorSettings isettings);
 
@@ -564,10 +561,12 @@ class slsDetector : public virtual slsDetectorDefs {
 
     void setPeriod(int64_t value);
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     int64_t getDelayAfterTrigger();
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     void setDelayAfterTrigger(int64_t value);
 
     /** [Eiger] in 32 bit mode */
@@ -589,19 +588,22 @@ class slsDetector : public virtual slsDetectorDefs {
      * Options: (0-1638375 ns (resolution of 25ns) */
     void setStorageCellDelay(int64_t value);
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     int64_t getNumberOfFramesLeft() const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     int64_t getNumberOfTriggersLeft() const;
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][CTB] 
+     * [Gotthard2] only in continuous mode */
     int64_t getDelayAfterTriggerLeft() const;
 
     /** [Gotthard] */
     int64_t getExptimeLeft() const;
 
-    /** [Gotthard][Jungfrau][CTB]  */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2]  */
     int64_t getPeriodLeft() const;
 
     /** [Eiger] minimum two frames */
@@ -610,14 +612,24 @@ class slsDetector : public virtual slsDetectorDefs {
     /** [Eiger] */
     int64_t getMeasuredSubFramePeriod() const;
 
-    /** [Jungfrau][CTB] */
+    /** [Jungfrau][CTB][Mythen3] 
+     * [Gotthard2] only in continuous mode */
     int64_t getNumberOfFramesFromStart() const;
 
-    /** [Jungfrau][CTB] Get time from detector start */
+    /** [Jungfrau][CTB][Mythen3] Get time from detector start 
+     * [Gotthard2] only in continuous mode */
     int64_t getActualTime() const;
 
-    /** [Jungfrau][CTB] Get timestamp at a frame start */
+    /** [Jungfrau][CTB][Mythen3] Get timestamp at a frame start 
+     * [Gotthard2] only in continuous mode */
     int64_t getMeasurementTime() const;
+
+    /**
+     * Set/get timing mode
+     * @param value timing mode (-1 gets)
+     * @returns current timing mode
+     */
+    timingMode setTimingMode(timingMode value = GET_TIMING_MODE);
 
     /**
      * Set/get dynamic range
@@ -651,13 +663,6 @@ class slsDetector : public virtual slsDetectorDefs {
      * millidegrees)
      */
     int getADC(dacIndex index);
-
-    /**
-     * Set/get timing mode
-     * @param pol timing mode (-1 gets)
-     * @returns current timing mode
-     */
-    timingMode setTimingMode(timingMode pol = GET_TIMING_MODE);
 
     /**
      * Set/get external signal flags (to specify triggerinrising edge etc)
@@ -1125,12 +1130,18 @@ class slsDetector : public virtual slsDetectorDefs {
 
     void setVetoReference(const int gainIndex, const int value); 
 
-    /** [Gotthard2]  burst mode or continuous mode */
-    void setBurstMode(bool enable);
-
     /** [Gotthard2]  */
     bool getBurstMode();
 
+    /** [Gotthard2]  true = burst mode or false = continuous mode */
+    void setBurstMode(bool enable);
+    
+    /** [Gotthard2]  */
+    burstModeType getBurstType();    
+
+    /** [Gotthard2] Options: INTERNAL, EXTERNAL */
+    void setBurstType(burstModeType val);
+    
     /**
      * Set/get counter bit in detector (Gotthard)
      * @param i is -1 to get, 0 to reset and any other value to set the counter
@@ -1836,25 +1847,25 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     void setDigitalIODelay(uint64_t pinMask, int delay);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     int getClockFrequency(int clkIndex);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     void setClockFrequency(int clkIndex, int value);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     int getClockPhase(int clkIndex, bool inDegrees);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     void setClockPhase(int clkIndex, int value, bool inDegrees);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     int getMaxClockPhaseShift(int clkIndex);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     int getClockDivider(int clkIndex);
 
-    /** [Gotthard2] */
+    /** [Mythen3][Gotthard2] */
     void setClockDivider(int clkIndex, int value);
 
     /** [Ctb][Moench] */

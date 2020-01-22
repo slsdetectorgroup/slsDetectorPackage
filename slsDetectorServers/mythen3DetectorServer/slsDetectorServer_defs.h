@@ -2,7 +2,6 @@
 #include "sls_detector_defs.h"
 
 #define REQRD_FRMWRE_VRSN     		0x190000
-#define MIN_REQRD_VRSN_T_RD_API     0x190000
 
 #define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
 
@@ -46,7 +45,6 @@
 #define READOUT_PLL_VCO_FREQ_HZ     (1250000000) // 1.25GHz 
 #define SYSTEM_PLL_VCO_FREQ_HZ      (1250000000) // 1.25GHz
 #define MAX_PATTERN_LENGTH  		(0x2000) // maximum number of words (64bit)
-#define WAIT_TIME_US_STP_ACQ        (100)
 
 /** Other Definitions */
 #define BIT16_MASK					(0xFFFF)

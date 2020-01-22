@@ -204,6 +204,17 @@ inline std::string ToString(const defs::detectorModeType s) {
     }
 }
 
+inline std::string ToString(const defs::burstModeType s) {
+    switch (s) {
+    case defs::INTERNAL:
+        return std::string("internal");
+    case defs::EXTERNAL:
+        return std::string("external");            
+    default:
+        return std::string("Unknown");       
+    }
+}
+
 // in case we already have a string 
 // causes a copy but might be needed in generic code
 inline std::string ToString(const std::string& s) {
@@ -549,6 +560,16 @@ inline defs::dacIndex StringTo(const std::string& s) {
         return defs::VCP;
     throw sls::RuntimeError("Unknown dac Index " + s);          
 }
+
+template <>
+inline defs::burstModeType StringTo(const std::string& s) {
+    if (s == "internal")
+        return defs::INTERNAL;
+    if (s == "external")
+        return defs::EXTERNAL;           
+    throw sls::RuntimeError("Unknown burst mode type" + s);          
+}
+
 
 /** For types with a .str() method use this for conversion */
 template <typename T>

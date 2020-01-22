@@ -218,6 +218,7 @@ void Implementation::setDetectorType(const detectorType d) {
     case CHIPTESTBOARD:
     case MOENCH:
     case MYTHEN3:
+    case GOTTHARD2:
         FILE_LOG(logINFO) << " ***** " << sls::ToString(d)
                           << " Receiver *****";
         break;
@@ -244,7 +245,10 @@ void Implementation::setDetectorType(const detectorType d) {
         break;
     case MYTHEN3:
         generalData = new Mythen3Data();
-        break;        
+        break;   
+    case GOTTHARD2:
+        generalData = new Gotthard2Data();
+        break;                 
     default:
         break;
     }

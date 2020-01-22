@@ -4,10 +4,13 @@
 #define REG_OFFSET                      (4)
 
 /* Base addresses 0x1804 0000 ---------------------------------------------*/
+
 /* Reconfiguration core for readout pll */
 #define BASE_READOUT_PLL                (0x0000) // 0x1804_0000 - 0x1804_07FF
+
 /* Reconfiguration core for system pll */
 #define BASE_SYSTEM_PLL                 (0x0800) // 0x1804_0800 - 0x1804_0FFF
+
 /* Clock Generation */
 #define BASE_CLK_GENERATION             (0x1000) // 0x1804_1000 - 0x1804_XXXX //TODO
 
@@ -160,15 +163,15 @@
 #define PAT_STATUS_REG                  (0x00 * REG_OFFSET  + BASE_PATTERN_CONTROL)
 #define PAT_STATUS_RUN_BUSY_OFST       	(0)
 #define PAT_STATUS_RUN_BUSY_MSK			(0x00000001 << PAT_STATUS_RUN_BUSY_OFST)
-#define PAT_STATUS_WAIT_FOR_TRGGR_OFST  (0)
+#define PAT_STATUS_WAIT_FOR_TRGGR_OFST  (3)
 #define PAT_STATUS_WAIT_FOR_TRGGR_MSK	(0x00000001 << PAT_STATUS_WAIT_FOR_TRGGR_OFST)
-#define PAT_STATUS_DLY_BFRE_TRGGR_OFST  (0)
+#define PAT_STATUS_DLY_BFRE_TRGGR_OFST  (4)
 #define PAT_STATUS_DLY_BFRE_TRGGR_MSK	(0x00000001 << PAT_STATUS_DLY_BFRE_TRGGR_OFST)
-#define PAT_STATUS_FIFO_FULL_OFST       (0)
+#define PAT_STATUS_FIFO_FULL_OFST       (5)
 #define PAT_STATUS_FIFO_FULL_MSK		(0x00000001 << PAT_STATUS_FIFO_FULL_OFST)
-#define PAT_STATUS_DLY_AFTR_TRGGR_OFST  (0)
+#define PAT_STATUS_DLY_AFTR_TRGGR_OFST  (15)
 #define PAT_STATUS_DLY_AFTR_TRGGR_MSK	(0x00000001 << PAT_STATUS_DLY_AFTR_TRGGR_OFST)
-#define PAT_STATUS_CSM_BUSY_OFST       	(0)
+#define PAT_STATUS_CSM_BUSY_OFST       	(17)
 #define PAT_STATUS_CSM_BUSY_MSK			(0x00000001 << PAT_STATUS_CSM_BUSY_OFST)
 
 /* Delay left 64bit Register */

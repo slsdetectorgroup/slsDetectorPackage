@@ -581,6 +581,7 @@ std::string CmdProxy::ClockDivider(int action) {
     return os.str();
 }
 
+/** temperature */
 /* dacs */
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;
@@ -757,11 +758,8 @@ std::string CmdProxy::Threshold(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[eV] [(optinal settings) standard, fast, highgain, dynamicgain, "
-              "lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, "
-              "fixgain2, forceswitchg1, forceswitchg2]\n\t[Eiger] Threshold in "
-              "eV"
-           << '\n';
+        os << "[eV] [(optinal settings) standard, lowgain, veryhighgain, verylowgain]"
+        "\n\t[Eiger] Threshold in eV" << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
@@ -792,10 +790,8 @@ std::string CmdProxy::ThresholdNoTb(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[eV] [(optional settings) standard, fast, highgain, "
-              "dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, "
-              "fixgain1, fixgain2, forceswitchg1, forceswitchg2]\n\t[Eiger] "
-              "Threshold in eV set without setting trimbits"
+        os << "[eV] [(optional settings) standard, lowgain, veryhighgain, verylowgain]"
+               "\n\t[Eiger] Threshold in eV set without setting trimbits"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("cannot get");
@@ -1454,7 +1450,7 @@ std::string CmdProxy::Pattern(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Ctb] Loads binary pattern file with only pattern "
+        os << "[fname]\n\t[Mythen3][Ctb] Loads binary pattern file with only pattern "
               "words"
            << '\n';
     } else if (action == defs::GET_ACTION) {

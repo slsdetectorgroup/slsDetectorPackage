@@ -24,6 +24,7 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern udpStruct udpDetails;
+extern const enum detectorType myDetectorType;
 
 int initError = OK;
 int initCheckDone = 0;
@@ -37,9 +38,9 @@ int virtual_stop = 0;
 
 enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
-int dacValues[NDAC] = {0};
+int dacValues[NDAC] = {};
 int adcPhase = 0;
-int detPos[4] = {0, 0, 0, 0};
+int detPos[4] = {};
 int numUDPInterfaces = 1;
 
 
@@ -170,7 +171,7 @@ int checkType() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	volatile u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
+	u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type != JUNGFRAU){
 			FILE_LOG(logERROR, ("This is not a Jungfrau Server (read %d, expected %d)\n", type, JUNGFRAU));
 			return FAIL;
@@ -920,7 +921,7 @@ int setHighVoltage(int val){
 void setTiming( enum timingMode arg){
 
 	if(arg != GET_TIMING_MODE){
-		switch((int)arg){
+		switch(arg){
 		case AUTO_TIMING:
 		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
 		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
@@ -1667,7 +1668,7 @@ void* start_timer(void* arg) {
 
 				usleep(exp_us);
 
-				const int size = datasize + 112;
+				const int size = datasize + sizeof(sls_detector_header);
 				char packetData[size];
 				memset(packetData, 0, sizeof(sls_detector_header));
 				
@@ -1679,6 +1680,11 @@ void* start_timer(void* arg) {
 						sls_detector_header* header = (sls_detector_header*)(packetData);
 						header->frameNumber = frameNr;
 						header->packetNumber = i;
+						header->modId = 0;
+						header->row = detPos[X];
+						header->column = detPos[Y];
+						header->detType = (uint16_t)myDetectorType;
+						header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
 						// fill data
 						memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);
 						srcOffset += datasize;
@@ -1826,7 +1832,7 @@ int calculateDataBytes(){
 	return DATA_BYTES;
 }
 
-int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
+int getTotalNumberOfChannels() {return  (getNumberOfChannelsPerChip() * getNumberOfChips());}
 int getNumberOfChips(){return  NCHIP;}
 int getNumberOfDACs(){return  NDAC;}
 int getNumberOfChannelsPerChip(){return  NCHAN;}

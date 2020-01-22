@@ -1483,12 +1483,12 @@ int64_t slsDetector::getMeasurementTime() const {
     return retval; 
 }
 
-slsDetectorDefs::timingMode slsDetector::setTimingMode(timingMode pol) {
+slsDetectorDefs::timingMode slsDetector::setTimingMode(timingMode value) {
     int fnum = F_SET_TIMING_MODE;
-    auto arg = static_cast<int>(pol);
+    //auto arg = static_cast<int>(pol);
     timingMode retval = GET_TIMING_MODE;
-    FILE_LOG(logDEBUG1) << "Setting communication to mode " << pol;
-    sendToDetector(fnum, arg, retval);
+    FILE_LOG(logDEBUG1) << "Setting communication to mode " << value;
+    sendToDetector(fnum, static_cast<int>(value), retval);
     FILE_LOG(logDEBUG1) << "Timing Mode: " << retval;
     return retval;
 }

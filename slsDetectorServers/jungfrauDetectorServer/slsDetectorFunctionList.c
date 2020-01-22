@@ -38,9 +38,9 @@ int virtual_stop = 0;
 
 enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
-int dacValues[NDAC] = {0};
+int dacValues[NDAC] = {};
 int adcPhase = 0;
-int detPos[4] = {0, 0, 0, 0};
+int detPos[4] = {};
 int numUDPInterfaces = 1;
 
 
@@ -171,7 +171,7 @@ int checkType() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	volatile u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
+	u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type != JUNGFRAU){
 			FILE_LOG(logERROR, ("This is not a Jungfrau Server (read %d, expected %d)\n", type, JUNGFRAU));
 			return FAIL;
@@ -921,7 +921,7 @@ int setHighVoltage(int val){
 void setTiming( enum timingMode arg){
 
 	if(arg != GET_TIMING_MODE){
-		switch((int)arg){
+		switch(arg){
 		case AUTO_TIMING:
 		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
 		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
@@ -1832,7 +1832,7 @@ int calculateDataBytes(){
 	return DATA_BYTES;
 }
 
-int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
+int getTotalNumberOfChannels() {return  (getNumberOfChannelsPerChip() * getNumberOfChips());}
 int getNumberOfChips(){return  NCHIP;}
 int getNumberOfDACs(){return  NDAC;}
 int getNumberOfChannelsPerChip(){return  NCHAN;}

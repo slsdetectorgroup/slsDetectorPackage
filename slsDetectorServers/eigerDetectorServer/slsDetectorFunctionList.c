@@ -1108,7 +1108,7 @@ int setHighVoltage(int val) {
 void setTiming( enum timingMode arg) {
 	enum timingMode ret=GET_TIMING_MODE;
 	if (arg != GET_TIMING_MODE) {
-		switch((int)arg) {
+		switch(arg) {
 		case AUTO_TIMING:			ret = 0;	break;
 		case TRIGGER_EXPOSURE:		ret = 2;	break;
 		case BURST_TRIGGER:			ret = 1;	break;
@@ -2041,7 +2041,7 @@ int calculateDataBytes() {
 
 
 
-int getTotalNumberOfChannels() {return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
+int getTotalNumberOfChannels() {return  (getNumberOfChannelsPerChip() * getNumberOfChips());}
 int getNumberOfChips() {return  NCHIP;}
 int getNumberOfDACs() {return  NDAC;}
 int getNumberOfChannelsPerChip() {return  NCHAN;}

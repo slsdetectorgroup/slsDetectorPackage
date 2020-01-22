@@ -626,10 +626,10 @@ class slsDetector : public virtual slsDetectorDefs {
 
     /**
      * Set/get timing mode
-     * @param pol timing mode (-1 gets)
+     * @param value timing mode (-1 gets)
      * @returns current timing mode
      */
-    timingMode setTimingMode(timingMode pol = GET_TIMING_MODE);
+    timingMode setTimingMode(timingMode value = GET_TIMING_MODE);
 
     /**
      * Set/get dynamic range

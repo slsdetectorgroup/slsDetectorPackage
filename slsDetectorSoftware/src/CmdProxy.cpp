@@ -697,7 +697,7 @@ std::vector<std::string> CmdProxy::DacCommands() {
     case defs::GOTTHARD2:
         return std::vector<std::string>{
             "vref_h_adc",   "vb_comp_fe", "vb_comp_adc",  "vcom_cds",
-            "vref_restore", "vb_opa_1st", "vref_comp_fe", "vcom_adc1",
+            "vref_rstore", "vb_opa_1st", "vref_comp_fe", "vcom_adc1",
             "vref_prech",   "vref_l_adc", "vref_cds",     "vb_cs",
             "vb_opa_fd",    "vcom_adc2"};
         break;
@@ -1225,6 +1225,51 @@ std::string CmdProxy::VetoReference(int action) {
     return os.str();
 }
 
+std::string CmdProxy::BurstMode(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[off or 0, internal or 1, external or 2]\n\t[Gotthard2] Default is burst internal type"
+           << '\n';
+    } else {
+        if (action == defs::GET_ACTION) {
+            if (!args.empty()) {
+                WrongNumberOfParameters(0);
+            }
+            auto t = det->getBurstMode({det_id});
+            os << OutString(t) << '\n';
+        } else if (action == defs::PUT_ACTION) {
+            if (args.size() != 1) {
+                WrongNumberOfParameters(1);
+            }
+            defs::burstMode t;
+            try {
+                int ival = std::stoi(args[0]);
+                switch (ival) {
+                case 0:
+                    t = defs::BURST_OFF;
+                    break;
+                case 1:
+                    t = defs::BURST_INTERNAL;
+                    break;
+                case 2:
+                    t = defs::BURST_EXTERNAL;
+                    break;
+                default:
+                    throw sls::RuntimeError("Unknown burst mode " + args[0]);
+                }
+            } catch (...) {
+                t = sls::StringTo<defs::burstMode>(args[0]);
+            }
+            det->setBurstMode(t, {det_id});
+            os << sls::ToString(t) << '\n'; // no args to convert 0,1,2 as well
+        } else {
+            throw sls::RuntimeError("Unknown action");
+        }
+    }
+    return os.str();
+}
+
 /* Mythen3 Specific */
 
 std::string CmdProxy::Counters(int action) {
@@ -1471,7 +1516,7 @@ std::string CmdProxy::PatternWord(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[step or address] [64 bit mask]\n\t[Mythen3][Ctb] 64 bit pattern at "
+        os << "[step or address] [64 bit mask]\n\t[Ctb][Mythen3] 64 bit pattern at "
               "address of pattern memory."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -1497,17 +1542,17 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patlimits") {
-            os << "[start addr] [stop addr] \n\t[Mythen3][Ctb] Limits of complete "
+            os << "[start addr] [stop addr] \n\t[Ctb][Mythen3] Limits of complete "
                   "pattern."
                << '\n';
         } else if (cmd == "patloop0") {
-            os << "[start addr] [stop addr] \n\t[Mythen3][Ctb] Limits of loop 0."
+            os << "[start addr] [stop addr] \n\t[Ctb][Mythen3] Limits of loop 0."
                << '\n';
         } else if (cmd == "patloop1") {
-            os << "[start addr] [stop addr] \n\t[Mythen3][Ctb] Limits of loop 1."
+            os << "[start addr] [stop addr] \n\t[Ctb][Mythen3] Limits of loop 1."
                << '\n';
         } else if (cmd == "patloop2") {
-            os << "[start addr] [stop addr] \n\t[Mythen3][Ctb] Limits of loop 2."
+            os << "[start addr] [stop addr] \n\t[Ctb][Mythen3] Limits of loop 2."
                << '\n';
         } else {
             throw sls::RuntimeError(
@@ -1552,11 +1597,11 @@ std::string CmdProxy::PatternLoopCycles(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patnloop0") {
-            os << "[n_cycles] \n\t[Mythen3][Ctb] Number of cycles of loop 0." << '\n';
+            os << "[n_cycles] \n\t[Ctb][Mythen3] Number of cycles of loop 0." << '\n';
         } else if (cmd == "patnloop1") {
-            os << "[n_cycles] \n\t[Mythen3][Ctb] Number of cycles of loop 1." << '\n';
+            os << "[n_cycles] \n\t[Ctb][Mythen3] Number of cycles of loop 1." << '\n';
         } else if (cmd == "patnloop2") {
-            os << "[n_cycles] \n\t[Mythen3][Ctb] Number of cycles of loop 2." << '\n';
+            os << "[n_cycles] \n\t[Ctb][Mythen3] Number of cycles of loop 2." << '\n';
         } else {
             throw sls::RuntimeError(
                 "Unknown command, use list to list all commands");
@@ -1597,11 +1642,11 @@ std::string CmdProxy::PatternWaitAddress(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patwait0") {
-            os << "[addr] \n\t[Mythen3][Ctb] Wait 0 address." << '\n';
+            os << "[addr] \n\t[Ctb][Mythen3] Wait 0 address." << '\n';
         } else if (cmd == "patwait1") {
-            os << "[addr] \n\t[Mythen3][Ctb] Wait 1 address." << '\n';
+            os << "[addr] \n\t[Ctb][Mythen3] Wait 1 address." << '\n';
         } else if (cmd == "patwait2") {
-            os << "[addr] \n\t[Mythen3][Ctb] Wait 2 address." << '\n';
+            os << "[addr] \n\t[Ctb][Mythen3] Wait 2 address." << '\n';
         } else {
             throw sls::RuntimeError(
                 "Unknown command, use list to list all commands");
@@ -1642,11 +1687,11 @@ std::string CmdProxy::PatternWaitTime(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "patwaittime0") {
-            os << "[n_clk] \n\t[Mythen3][Ctb] Wait 0 time in clock cycles." << '\n';
+            os << "[n_clk] \n\t[Ctb][Mythen3] Wait 0 time in clock cycles." << '\n';
         } else if (cmd == "patwaittime1") {
-            os << "[n_clk] \n\t[Mythen3][Ctb] Wait 1 time in clock cycles." << '\n';
+            os << "[n_clk] \n\t[Ctb][Mythen3] Wait 1 time in clock cycles." << '\n';
         } else if (cmd == "patwaittime2") {
-            os << "[n_clk] \n\t[Mythen3][Ctb] Wait 2 time in clock cycles." << '\n';
+            os << "[n_clk] \n\t[Ctb][Mythen3] Wait 2 time in clock cycles." << '\n';
         } else {
             throw sls::RuntimeError(
                 "Unknown command, use list to list all commands");

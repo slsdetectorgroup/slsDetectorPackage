@@ -188,8 +188,6 @@ enum detFuncs{
 	F_GET_ADC_ENABLE_MASK_10G,
 	F_SET_COUNTER_MASK,
 	F_GET_COUNTER_MASK,
-	F_SET_BURST_TYPE,	
-	F_GET_BURST_TYPE,
 	NUM_DET_FUNCTIONS,
 
 	RECEIVER_ENUM_START = 256, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -445,8 +443,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_ADC_ENABLE_MASK_10G:         return "F_GET_ADC_ENABLE_MASK_10G";
 	case F_SET_COUNTER_MASK:         		return "F_SET_COUNTER_MASK";
 	case F_GET_COUNTER_MASK:         		return "F_GET_COUNTER_MASK";
-	case F_SET_BURST_TYPE:					return "F_SET_BURST_TYPE";
-	case F_GET_BURST_TYPE:					return "F_GET_BURST_TYPE";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

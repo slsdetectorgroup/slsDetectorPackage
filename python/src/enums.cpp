@@ -169,7 +169,7 @@ void init_enums(py::module &m) {
         .value("VB_COMP_FE", slsDetectorDefs::dacIndex::VB_COMP_FE)
         .value("VB_COMP_ADC", slsDetectorDefs::dacIndex::VB_COMP_ADC)
         .value("VCOM_CDS", slsDetectorDefs::dacIndex::VCOM_CDS)
-        .value("VREF_RESTORE", slsDetectorDefs::dacIndex::VREF_RESTORE)
+        .value("VREF_RSTORE", slsDetectorDefs::dacIndex::VREF_RSTORE)
         .value("VB_OPA_1ST", slsDetectorDefs::dacIndex::VB_OPA_1ST)
         .value("VREF_COMP_FE", slsDetectorDefs::dacIndex::VREF_COMP_FE)
         .value("VCOM_ADC1", slsDetectorDefs::dacIndex::VCOM_ADC1)
@@ -277,5 +277,11 @@ void init_enums(py::module &m) {
         .value("INTERPOLATING",
                slsDetectorDefs::detectorModeType::INTERPOLATING)
         .value("ANALOG", slsDetectorDefs::detectorModeType::ANALOG)
+        .export_values();
+
+    py::enum_<slsDetectorDefs::burstMode>(Defs, "burstMode")
+        .value("BURST_OFF", slsDetectorDefs::burstMode::BURST_OFF)
+        .value("BURST_INTERNAL", slsDetectorDefs::burstMode::BURST_INTERNAL)
+        .value("BURST_EXTERNAL", slsDetectorDefs::burstMode::BURST_EXTERNAL)
         .export_values();
 }

@@ -74,9 +74,12 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("getNumberOfTriggersLeft", &Detector::getNumberOfTriggersLeft,
              py::arg() = Positions{})
+        .def("getPeriodLeft", &Detector::getPeriodLeft, py::arg() = Positions{})
         .def("getDelayAfterTriggerLeft", &Detector::getDelayAfterTriggerLeft,
              py::arg() = Positions{})
-        .def("getPeriodLeft", &Detector::getPeriodLeft, py::arg() = Positions{})
+        .def("getTimingMode", &Detector::getTimingMode, py::arg() = Positions{})
+        .def("setTimingMode", &Detector::setTimingMode, py::arg(),
+             py::arg() = Positions{})
         .def("getSpeed", &Detector::getSpeed, py::arg() = Positions{})
         .def("setSpeed", &Detector::setSpeed, py::arg(),
              py::arg() = Positions{})
@@ -109,6 +112,9 @@ void init_det(py::module &m) {
              py::arg(), py::arg() = Positions{})
         .def("getHighVoltage", &Detector::getHighVoltage,
              py::arg() = Positions{})
+        .def("getPowerChip", &Detector::getPowerChip, py::arg() = Positions{})
+        .def("setPowerChip", &Detector::setPowerChip, py::arg(),
+             py::arg() = Positions{})
         .def("setHighVoltage", &Detector::setHighVoltage, py::arg(),
              py::arg() = Positions{})
         .def("getTemperature", &Detector::getTemperature, py::arg(),
@@ -121,9 +127,6 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("setOnChipDAC", &Detector::setOnChipDAC, py::arg(), py::arg(),
              py::arg(), py::arg() = Positions{})
-        .def("getTimingMode", &Detector::getTimingMode, py::arg() = Positions{})
-        .def("setTimingMode", &Detector::setTimingMode, py::arg(),
-             py::arg() = Positions{})
         .def("acquire", &Detector::acquire)
         .def("clearAcquiringFlag", &Detector::clearAcquiringFlag)
         .def("startReceiver", &Detector::startReceiver)
@@ -395,9 +398,6 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("resetTemperatureEvent", &Detector::resetTemperatureEvent,
              py::arg() = Positions{})
-        .def("getPowerChip", &Detector::getPowerChip, py::arg() = Positions{})
-        .def("setPowerChip", &Detector::setPowerChip, py::arg(),
-             py::arg() = Positions{})
         .def("getAutoCompDisable", &Detector::getAutoCompDisable,
              py::arg() = Positions{})
         .def("setAutoCompDisable", &Detector::setAutoCompDisable, py::arg(),
@@ -438,9 +438,9 @@ void init_det(py::module &m) {
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("setVetoReference", &Detector::setVetoReference, py::arg(),
              py::arg(), py::arg() = Positions{})
+        .def("getBurstMode", &Detector::getBurstMode, py::arg() = Positions{})
         .def("setBurstMode", &Detector::setBurstMode, py::arg(),
              py::arg() = Positions{})
-        .def("getBurstMode", &Detector::getBurstMode, py::arg() = Positions{})
         .def("getCounterMask", &Detector::getCounterMask,
              py::arg() = Positions{})
         .def("setCounterMask", &Detector::setCounterMask, py::arg(),

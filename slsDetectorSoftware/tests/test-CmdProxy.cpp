@@ -311,7 +311,7 @@ TEST_CASE("type", "[.cmd]"){
 //         REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_fe", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_adc", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vcom_cds", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("vref_restore", GET));
+//         REQUIRE_THROWS(multiSlsDetectorClient("vref_rstore", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vb_opa_1st", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vref_comp_fe", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc1", GET));
@@ -474,7 +474,7 @@ TEST_CASE("type", "[.cmd]"){
 //         REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_fe", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_adc", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vcom_cds", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("vref_restore", GET));
+//         REQUIRE_THROWS(multiSlsDetectorClient("vref_rstore", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vb_opa_1st", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vref_comp_fe", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc1", GET));
@@ -557,7 +557,7 @@ TEST_CASE("type", "[.cmd]"){
 //         REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_fe", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vb_comp_adc", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vcom_cds", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("vref_restore", GET));
+//         REQUIRE_THROWS(multiSlsDetectorClient("vref_rstore", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vb_opa_1st", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vref_comp_fe", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("vcom_adc1", GET));
@@ -634,17 +634,17 @@ TEST_CASE("type", "[.cmd]"){
 //         std::to_string(prev_val), PUT));
 //         {
 //             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vref_restore", GET,
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("vref_rstore", GET,
 //             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("vref_restore ")); prev_val = std::stoi(s);
+//             strlen("vref_rstore ")); prev_val = std::stoi(s);
 //         }
 //         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vref_restore 1000",
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("vref_rstore 1000",
 //             PUT)); std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vref_restore", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "vref_restore 1000\n");
+//             REQUIRE_NOTHROW(multiSlsDetectorClient("vref_rstore", GET,
+//             nullptr, oss)); REQUIRE(oss.str() == "vref_rstore 1000\n");
 //         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("vref_restore " +
+//         REQUIRE_NOTHROW(multiSlsDetectorClient("vref_rstore " +
 //         std::to_string(prev_val), PUT));
 //         {
 //             std::ostringstream oss;

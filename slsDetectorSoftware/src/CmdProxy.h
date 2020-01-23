@@ -648,7 +648,7 @@ class CmdProxy {
                           {"vb_comp_fe", &CmdProxy::vb_comp_fe},
                           {"vb_comp_adc", &CmdProxy::vb_comp_adc},
                           {"vcom_cds", &CmdProxy::vcom_cds},
-                          {"vref_restore", &CmdProxy::vref_restore},
+                          {"vref_rstore", &CmdProxy::vref_rstore},
                           {"vb_opa_1st", &CmdProxy::vb_opa_1st},
                           {"vref_comp_fe", &CmdProxy::vref_comp_fe},
                           {"vcom_adc1", &CmdProxy::vcom_adc1},
@@ -787,8 +787,7 @@ class CmdProxy {
                           {"inj_ch", &CmdProxy::InjectChannel},
                           {"vetophoton", &CmdProxy::VetoPhoton},
                           {"vetoref", &CmdProxy::VetoReference},
-                          {"burstmode", &CmdProxy::burstmode},
-                          {"bursttype", &CmdProxy::bursttype},
+                          {"burstmode", &CmdProxy::BurstMode},
 
                           /* Mythen3 Specific */  
                           {"counters", &CmdProxy::Counters},
@@ -948,6 +947,7 @@ class CmdProxy {
     std::string InjectChannel(int action);   
     std::string VetoPhoton(int action); 
     std::string VetoReference(int action);      
+    std::string BurstMode(int action);      
     /* Mythen3 Specific */ 
     std::string Counters(int action); 
     /* CTB Specific */
@@ -1231,7 +1231,7 @@ class CmdProxy {
     DAC_COMMAND(vcom_cds, getDAC, setDAC, defs::VCOM_CDS,
                     "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for common mode voltage of CDS stage.");  
                     
-    DAC_COMMAND(vref_restore, getDAC, setDAC, defs::VREF_RESTORE,
+    DAC_COMMAND(vref_rstore, getDAC, setDAC, defs::VREF_RSTORE,
                     "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for reference charging voltage of temparory storage cell in high gain.");  
                     
     DAC_COMMAND(vb_opa_1st, getDAC, setDAC, defs::VB_OPA_1ST,
@@ -1554,12 +1554,6 @@ class CmdProxy {
                     "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0.");  
 
     /* Gotthard2 Specific */
-    INTEGER_COMMAND(burstmode, getBurstMode, setBurstMode, std::stoi,
-                    "[0, 1]\n\t[Gotthard2] 1 sets to burst mode. 0 sets to continuous mode. Default is burst mode.");
-
-    INTEGER_COMMAND(bursttype, getBurstType, setBurstType, sls::StringTo<slsDetectorDefs::burstModeType>,
-                    "[internal, external]\n\t[Gotthard2] Default is internal type.");
-
     /* Mythen3 Specific */ 
 
     /* CTB Specific */
@@ -1679,10 +1673,10 @@ class CmdProxy {
                     "[64 bit mask]\n\t[Ctb] 64 bit mask defining output clock enable.");
 
     INTEGER_COMMAND_HEX(patmask, getPatternMask, setPatternMask, stoulHex,
-                    "[64 bit mask]\n\t[Ctb] 64 bit mask applied to every pattern. Only these bits for each pattern will be masked against.");
+                    "[64 bit mask]\n\t[Ctb][Mythen3] 64 bit mask applied to every pattern. Only these bits for each pattern will be masked against.");
 
     INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask, stoulHex,
-                    "[64 bit mask]\n\t[Ctb] 64 bit values applied to the selected patmask for every pattern.");                    
+                    "[64 bit mask]\n\t[Ctb][Mythen3] 64 bit values applied to the selected patmask for every pattern.");                    
 
     /* Moench */
     

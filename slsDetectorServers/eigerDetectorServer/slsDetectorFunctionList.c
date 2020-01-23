@@ -1106,36 +1106,46 @@ int setHighVoltage(int val) {
 /* parameters - timing, extsig */
 
 void setTiming( enum timingMode arg) {
-	enum timingMode ret=GET_TIMING_MODE;
-	if (arg != GET_TIMING_MODE) {
-		switch(arg) {
-		case AUTO_TIMING:			ret = 0;	break;
-		case TRIGGER_EXPOSURE:		ret = 2;	break;
-		case BURST_TRIGGER:			ret = 1;	break;
-		case GATED:					ret = 3;	break;
-		}
-		FILE_LOG(logDEBUG1, ("Setting Triggering Mode: %d\n", (int)ret));
-#ifndef VIRTUAL
-		if (Feb_Control_SetTriggerMode(ret,1))
-#endif
-			eiger_triggermode = ret;
+	int ret = 0;
+	switch(arg) {
+	case AUTO_TIMING:			
+		ret = 0;	
+		break;
+	case TRIGGER_EXPOSURE:		
+		ret = 2;	
+		break;
+	case BURST_TRIGGER:			
+		ret = 1;	
+		break;
+	case GATED:					
+		ret = 3;	
+		break;
+	default:
+		FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
+		return;
 	}
+	FILE_LOG(logDEBUG1, ("Setting Triggering Mode: %d\n", (int)ret));
+#ifndef VIRTUAL
+	if (Feb_Control_SetTriggerMode(ret,1))
+#endif
+		eiger_triggermode = ret;
 }
 
 
 enum timingMode getTiming() {
-	enum timingMode ret = GET_TIMING_MODE;
-	ret = eiger_triggermode;
-	switch((int)ret) {
-	case 0:		ret = AUTO_TIMING;		break;
-	case 2:		ret = TRIGGER_EXPOSURE; break;
-	case 1:		ret = BURST_TRIGGER;	break;
-	case 3:		ret = GATED;			break;
+	switch(eiger_triggermode) {
+	case 0:		
+		return AUTO_TIMING;		
+	case 2:		
+		return TRIGGER_EXPOSURE; 
+	case 1:		
+		return BURST_TRIGGER;	
+	case 3:		
+		return GATED;			
 	default:
-		FILE_LOG(logERROR, ("Unknown trigger mode found %d\n", ret));
-		ret = 0;
+		FILE_LOG(logERROR, ("Unknown trigger mode found %d\n", eiger_triggermode));
+		return GET_TIMING_MODE;
 	}
-	return ret;
 }
 
 

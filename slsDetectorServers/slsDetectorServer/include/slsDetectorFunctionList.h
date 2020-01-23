@@ -437,6 +437,10 @@ uint64_t    writePatternWord(int addr, uint64_t word);
 int         setPatternWaitAddress(int level, int addr);
 uint64_t    setPatternWaitTime(int level, uint64_t t);
 void        setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
+void 		setPatternMask(uint64_t mask);
+uint64_t	getPatternMask();
+void 		setPatternBitMask(uint64_t mask);
+uint64_t	getPatternBitMask();
 int			checkDetectorType();
 int         powerChip (int on);
 int        	setPhase(enum CLKINDEX ind, int val, int degrees);
@@ -470,10 +474,9 @@ int			setVetoPhoton(int chipIndex, int gainIndex, int* values);
 int			getVetoPhoton(int chipIndex, int* retvals);
 int			configureSingleADCDriver(int chipIndex);
 int			configureADC();
-int			setBurstMode(int burst);
-int			getBurstMode();
-void		setBurstType(enum burstModeType val);
-enum burstModeType getBurstType();
+int			setBurstModeinFPGA(enum burstMode value);
+int			setBurstMode(enum burstMode burst);
+enum burstMode	getBurstMode();
 #endif
 
 

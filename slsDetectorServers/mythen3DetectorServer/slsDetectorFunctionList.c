@@ -21,6 +21,7 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern udpStruct udpDetails;
+extern const enum detectorType myDetectorType;
 
 int initError = OK;
 int initCheckDone = 0;
@@ -846,6 +847,43 @@ void calcChecksum(udp_header* udp) {
 	udp->ip_checksum = checksum;
 }
 
+int setDetectorPosition(int pos[]) {
+    memcpy(detPos, pos, sizeof(detPos));
+
+	uint32_t addr = COORD_0_REG;
+	int value = 0;
+	int valueRead = 0;
+	int ret = OK;
+
+	// row
+	value = detPos[X];
+	bus_w(addr, (bus_r(addr) &~COORD_ROW_MSK) | ((value << COORD_ROW_OFST) & COORD_ROW_MSK));
+	valueRead = ((bus_r(addr) &  COORD_ROW_MSK) >> COORD_ROW_OFST);
+	if (valueRead != value) {
+		FILE_LOG(logERROR, ("Could not set row. Set %d, read %d\n", value, valueRead));
+		ret = FAIL;
+	}
+
+	// col
+	value = detPos[Y];
+	bus_w(addr, (bus_r(addr) &~COORD_COL_MSK) | ((value << COORD_COL_OFST) & COORD_COL_MSK));
+	valueRead = ((bus_r(addr) &  COORD_COL_MSK) >> COORD_COL_OFST);
+	if (valueRead != value) {
+		FILE_LOG(logERROR, ("Could not set column. Set %d, read %d\n", value, valueRead));
+		ret = FAIL;
+	}
+
+	if (ret == OK) {
+		FILE_LOG(logINFO, ("\tPosition set to [%d, %d]\n", detPos[X], detPos[Y]));
+	} 
+	
+	return ret;
+}
+
+int* getDetectorPosition() {
+    return detPos;
+}
+
 /* pattern */
 
 uint64_t readPatternWord(int addr) {
@@ -1061,6 +1099,22 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
     	FILE_LOG(logDEBUG1, ("Getting Pattern Loop Stop Address (level:%d, Read stopAddr:0x%x)\n",
     			level, *stopAddr));
     }
+}
+
+void setPatternMask(uint64_t mask) {
+	set64BitReg(mask, PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
+}
+
+uint64_t getPatternMask() {
+	return 	get64BitReg(PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
+}
+
+void setPatternBitMask(uint64_t mask) {
+	set64BitReg(mask, PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
+}
+
+uint64_t getPatternBitMask() {
+	return 	get64BitReg(PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
 }
 
 int checkDetectorType() {
@@ -1291,15 +1345,6 @@ int getClockDivider(enum CLKINDEX ind) {
 
 /* aquisition */
 
-int setDetectorPosition(int pos[]) {
-    memcpy(detPos, pos, sizeof(detPos));
-	return OK;
-}
-
-int* getDetectorPosition() {
-    return detPos;
-}
-
 int startStateMachine(){
 #ifdef VIRTUAL
 	// create udp socket
@@ -1338,22 +1383,64 @@ void* start_timer(void* arg) {
 						getNumTriggers() );
 	int64_t exp_ns = 	getExpTime();
 
+	int imagesize = calculateDataBytes();
+	int datasize = imagesize / PACKETS_PER_FRAME;
+	int packetsize = datasize + sizeof(sls_detector_header);
 
-    int frameNr = 0;
+	// Generate data
+	char imageData[imagesize];
+	memset(imageData, 0, imagesize);
+	{
+		int i = 0;
+		for (i = 0; i < imagesize; i += sizeof(uint8_t)) {
+			*((uint8_t*)(imageData + i)) = i;
+		}
+	}
+
+    int frameNr = 1;
 	// loop over number of frames
-    for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
+    for (frameNr = 0; frameNr != numFrames; ++frameNr) {
 
 		//check if virtual_stop is high
 		if(virtual_stop == 1){
 			break;
 		}
+
+		int srcOffset = 0;
+
 		// sleep for exposure time
         struct timespec begin, end;
         clock_gettime(CLOCK_REALTIME, &begin);
         usleep(exp_ns / 1000);
-        clock_gettime(CLOCK_REALTIME, &end);
+
+		// loop packet
+		{
+			int i = 0;
+			for(i = 0; i!=PACKETS_PER_FRAME; ++i) {			
+				char packetData[packetsize];
+				memset(packetData, 0, packetsize);
+
+				// set header
+				sls_detector_header* header = (sls_detector_header*)(packetData);
+				header->frameNumber = frameNr + 1;
+				header->packetNumber = i;
+				header->modId = 0;
+				header->row = detPos[X];
+				header->column = detPos[Y];
+				header->detType = (uint16_t)myDetectorType;
+				header->version = SLS_DETECTOR_HEADER_VERSION - 1; 
+
+				// fill data	
+				memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);	
+				srcOffset += datasize;
+
+				sendUDPPacket(0, packetData, packetsize);
+			}
+		}
+		FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
 
 		// calculate time left in period
+        clock_gettime(CLOCK_REALTIME, &end);
         int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
                 (end.tv_nsec - begin.tv_nsec));
 
@@ -1468,14 +1555,22 @@ u_int32_t runBusy() {
     return virtual_status;
 #endif
 	u_int32_t s = (bus_r(PAT_STATUS_REG) & PAT_STATUS_RUN_BUSY_MSK);
-	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
+	//FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
 }
 
 /* common */
 
 int calculateDataBytes() {
-	return 0;
+	int numCounters = __builtin_popcount(getCounterMask());
+	int dr = setDynamicRange(-1);
+	int databytes = NCHAN_1_COUNTER * NCHIP * numCounters * 
+		((dr > 16) ? 4 : 	// 32 bit
+		((dr > 8)  ? 2 : 	// 16 bit
+		((dr > 4)  ? 0.5 : 	// 4 bit
+		0.125)));			// 1 bit
+
+	return databytes;
 }
 
 int getTotalNumberOfChannels() {return  (getNumberOfChannelsPerChip() * getNumberOfChips());}

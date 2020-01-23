@@ -204,11 +204,13 @@ inline std::string ToString(const defs::detectorModeType s) {
     }
 }
 
-inline std::string ToString(const defs::burstModeType s) {
+inline std::string ToString(const defs::burstMode s) {
     switch (s) {
-    case defs::INTERNAL:
+    case defs::BURST_OFF:
+        return std::string("off");
+    case defs::BURST_INTERNAL:
         return std::string("internal");
-    case defs::EXTERNAL:
+    case defs::BURST_EXTERNAL:
         return std::string("external");            
     default:
         return std::string("Unknown");       
@@ -562,12 +564,14 @@ inline defs::dacIndex StringTo(const std::string& s) {
 }
 
 template <>
-inline defs::burstModeType StringTo(const std::string& s) {
+inline defs::burstMode StringTo(const std::string& s) {
+    if (s == "off")
+        return defs::BURST_OFF;
     if (s == "internal")
-        return defs::INTERNAL;
+        return defs::BURST_INTERNAL;
     if (s == "external")
-        return defs::EXTERNAL;           
-    throw sls::RuntimeError("Unknown burst mode type" + s);          
+        return defs::BURST_EXTERNAL;           
+    throw sls::RuntimeError("Unknown burst mode " + s);          
 }
 
 

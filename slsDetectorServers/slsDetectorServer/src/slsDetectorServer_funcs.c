@@ -308,8 +308,6 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_ADC_ENABLE_MASK_10G:         return "F_GET_ADC_ENABLE_MASK_10G";
 	case F_SET_COUNTER_MASK:         		return "F_SET_COUNTER_MASK";
 	case F_GET_COUNTER_MASK:         		return "F_GET_COUNTER_MASK";
-	case F_SET_BURST_TYPE:					return "F_SET_BURST_TYPE";
-	case F_GET_BURST_TYPE:					return "F_GET_BURST_TYPE";
 
 	default:								return "Unknown Function";
 	}
@@ -494,8 +492,6 @@ void function_table() {
 	flist[F_GET_ADC_ENABLE_MASK_10G]			= &get_adc_enable_mask_10g;
 	flist[F_SET_COUNTER_MASK]					= &set_counter_mask;
 	flist[F_GET_COUNTER_MASK]					= &get_counter_mask;
-	flist[F_SET_BURST_TYPE]						= &set_burst_type;
-	flist[F_GET_BURST_TYPE]						= &get_burst_type;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -6499,22 +6495,35 @@ int set_veto_reference(int file_des) {
 int set_burst_mode(int file_des) {
   	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int arg = -1;
+	enum burstMode arg = BURST_OFF;
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting burst mode: %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Setting burst mode: %d\n", arg));
 
 #ifndef GOTTHARD2D
 	functionNotImplemented();
 #else
 	// only set
 	if (Server_VerifyLock() == OK) {
-		arg = arg == 0 ? 0 : 1;
-		ret = setBurstMode(arg); 
-		if (ret == FAIL) {
-			sprintf(mess, "Could not set burst mode to %d\n", arg);
-			FILE_LOG(logERROR, (mess));					
+		switch (arg) {
+			case BURST_OFF:
+			case BURST_INTERNAL:
+			case BURST_EXTERNAL:
+				break;
+			default:
+			modeNotImplemented("Burst mode", (int)arg);
+			break;	
+		}
+		if (ret == OK) {
+			setBurstMode(arg);
+			enum burstMode retval = getBurstMode();
+			FILE_LOG(logDEBUG, ("burst mode retval: %d\n", retval));
+			if (retval != arg) {
+				ret = FAIL;
+				sprintf(mess, "Could not set burst type. Set %d, got %d\n", arg, retval);
+				FILE_LOG(logERROR, (mess));		
+			}
 		}
 	}
 #endif
@@ -6525,7 +6534,7 @@ int set_burst_mode(int file_des) {
 int get_burst_mode(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int retval = -1;
+	enum burstMode retval = BURST_OFF;
 
 	FILE_LOG(logDEBUG1, ("Getting burst mode\n"));
 
@@ -6534,7 +6543,7 @@ int get_burst_mode(int file_des) {
 #else	
 	// get only
 	retval = getBurstMode();
-	FILE_LOG(logDEBUG1, ("Get burst mode:%d\n", retval));
+	FILE_LOG(logDEBUG1, ("Get burst mode retval:%d\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -6591,63 +6600,6 @@ int get_counter_mask(int file_des) {
 	// get only
 	retval = getCounterMask();
 	FILE_LOG(logDEBUG, ("counter mask retval: 0x%x\n", retval));
-#endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
-}
-
-
-
-int set_burst_type(int file_des) {
-  	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	enum burstModeType arg = 0;
-
-	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-		return printSocketReadError();
-
-	FILE_LOG(logINFO, ("Setting burst type: %d\n", arg));
-
-#ifndef GOTTHARD2D
-	functionNotImplemented();
-#else
-	// only set
-	if (Server_VerifyLock() == OK) {
-		switch (arg) {
-			case INTERNAL:
-			case EXTERNAL:
-				break;
-			default:
-			modeNotImplemented("Burst type", (int)arg);
-			break;				
-		}
-		if (ret == OK) {
-			setBurstType(arg);
-			enum burstModeType retval = getBurstType();
-			FILE_LOG(logDEBUG, ("burst type retval: %d\n", retval));
-			if (retval != arg) {
-				ret = FAIL;
-				sprintf(mess, "Could not set burst type. Set %s, got %s\n", (arg == 0 ? "internal" : "external"), (retval == 0 ? "internal" : "external"));
-				FILE_LOG(logERROR, (mess));		
-			}
-		}
-	}
-#endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
-}
-
-
-int get_burst_type(int file_des) {
-	ret = OK;
-	memset(mess, 0, sizeof(mess));
-	enum burstModeType retval = 0;
-	FILE_LOG(logDEBUG1, ("Getting burst type\n"));
-
-#ifndef GOTTHARD2D
-	functionNotImplemented();
-#else	
-	// get only
-	retval = getBurstType();
-	FILE_LOG(logDEBUG, ("burst type retval: %d\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

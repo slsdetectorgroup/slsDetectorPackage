@@ -474,10 +474,9 @@ int			setVetoPhoton(int chipIndex, int gainIndex, int* values);
 int			getVetoPhoton(int chipIndex, int* retvals);
 int			configureSingleADCDriver(int chipIndex);
 int			configureADC();
-int			setBurstMode(int burst);
-int			getBurstMode();
-void		setBurstType(enum burstModeType val);
-enum burstModeType getBurstType();
+int			setBurstModeinFPGA(enum burstMode value);
+int			setBurstMode(enum burstMode burst);
+enum burstMode	getBurstMode();
 #endif
 
 

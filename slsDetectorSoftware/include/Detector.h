@@ -916,16 +916,10 @@ class Detector {
     void setVetoReference(const int gainIndex, const int value, Positions pos = {}); 
 
     /** [Gotthard2]  */
-    Result<bool> getBurstMode(Positions pos = {});   
+    Result<defs::burstMode> getBurstMode(Positions pos = {});   
 
-    /** [Gotthard2]  true = burst mode or false = continuous mode */
-    void setBurstMode(bool enable, Positions pos = {});
-    
-    /** [Gotthard2]  */
-    Result<defs::burstModeType> getBurstType(Positions pos = {});  
-    
-    /** [Gotthard2] Options: INTERNAL, EXTERNAL */
-    void setBurstType(defs::burstModeType val, Positions pos = {});
+    /** [Gotthard2]  BURST_OFF, BURST_INTERNAL (default), BURST_EXTERNAL */
+    void setBurstMode(defs::burstMode value, Positions pos = {});
 
     /**************************************************
      *                                                *

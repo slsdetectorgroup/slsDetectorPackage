@@ -1225,6 +1225,51 @@ std::string CmdProxy::VetoReference(int action) {
     return os.str();
 }
 
+std::string CmdProxy::BurstMode(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[off or 0, internal or 1, external or 2]\n\t[Gotthard2] Default is burst internal type"
+           << '\n';
+    } else {
+        if (action == defs::GET_ACTION) {
+            if (!args.empty()) {
+                WrongNumberOfParameters(0);
+            }
+            auto t = det->getBurstMode({det_id});
+            os << OutString(t) << '\n';
+        } else if (action == defs::PUT_ACTION) {
+            if (args.size() != 1) {
+                WrongNumberOfParameters(1);
+            }
+            defs::burstMode t;
+            try {
+                int ival = std::stoi(args[0]);
+                switch (ival) {
+                case 0:
+                    t = defs::BURST_OFF;
+                    break;
+                case 1:
+                    t = defs::BURST_INTERNAL;
+                    break;
+                case 2:
+                    t = defs::BURST_EXTERNAL;
+                    break;
+                default:
+                    throw sls::RuntimeError("Unknown burst mode " + args[0]);
+                }
+            } catch (...) {
+                t = sls::StringTo<defs::burstMode>(args[0]);
+            }
+            det->setBurstMode(t, {det_id});
+            os << sls::ToString(t) << '\n'; // no args to convert 0,1,2 as well
+        } else {
+            throw sls::RuntimeError("Unknown action");
+        }
+    }
+    return os.str();
+}
+
 /* Mythen3 Specific */
 
 std::string CmdProxy::Counters(int action) {

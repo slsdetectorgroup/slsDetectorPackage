@@ -1131,17 +1131,11 @@ class slsDetector : public virtual slsDetectorDefs {
     void setVetoReference(const int gainIndex, const int value); 
 
     /** [Gotthard2]  */
-    bool getBurstMode();
+    burstMode getBurstMode();
 
-    /** [Gotthard2]  true = burst mode or false = continuous mode */
-    void setBurstMode(bool enable);
-    
-    /** [Gotthard2]  */
-    burstModeType getBurstType();    
-
-    /** [Gotthard2] Options: INTERNAL, EXTERNAL */
-    void setBurstType(burstModeType val);
-    
+    /** [Gotthard2] BURST_OFF, BURST_INTERNAL (default), BURST_EXTERNAL */
+    void setBurstMode(burstMode value);
+       
     /**
      * Set/get counter bit in detector (Gotthard)
      * @param i is -1 to get, 0 to reset and any other value to set the counter

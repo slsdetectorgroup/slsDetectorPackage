@@ -439,11 +439,12 @@ class slsDetectorDefs {
     };
 
     /**
-     * burst mode type for gotthard2
+     * burst mode for gotthard2
      */
-    enum burstModeType {
-        INTERNAL,      
-        EXTERNAL, 
+    enum burstMode {
+        BURST_OFF,
+        BURST_INTERNAL,      
+        BURST_EXTERNAL, 
     };    
 
 

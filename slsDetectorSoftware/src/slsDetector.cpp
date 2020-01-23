@@ -2476,30 +2476,17 @@ void slsDetector::setVetoReference(const int gainIndex, const int value) {
     sendToDetector(F_SET_VETO_REFERENCE, args, nullptr);
 }
 
-bool slsDetector::getBurstMode() {
+slsDetectorDefs::burstMode slsDetector::getBurstMode() {
     int retval = -1;
     sendToDetector(F_GET_BURST_MODE, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Burst mode:" << retval;
-    return static_cast<bool>(retval); 
+    return static_cast<slsDetectorDefs::burstMode>(retval); 
 }
 
-void slsDetector::setBurstMode(bool enable) {
-    int arg = static_cast<int>(enable);
+void slsDetector::setBurstMode(slsDetectorDefs::burstMode value) {
+    int arg = static_cast<int>(value);
     FILE_LOG(logDEBUG1) << "Setting burst mode to " << arg;
     sendToDetector(F_SET_BURST_MODE, arg, nullptr);
-}
-
-slsDetectorDefs::burstModeType slsDetector::getBurstType() {
-    int retval = -1;
-    sendToDetector(F_GET_BURST_TYPE, nullptr, retval);
-    FILE_LOG(logDEBUG1) << "Burst mode:" << retval;
-    return static_cast<burstModeType>(retval); 
-}
-
-void slsDetector::setBurstType (burstModeType val) {
-    int arg = static_cast<int>(val);
-    FILE_LOG(logDEBUG1) << "Setting burst type to " << ToString(val);
-    sendToDetector(F_SET_BURST_TYPE, arg, nullptr);
 }
 
 int slsDetector::setCounterBit(int cb) {

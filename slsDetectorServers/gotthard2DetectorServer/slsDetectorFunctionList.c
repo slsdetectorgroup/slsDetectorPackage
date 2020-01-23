@@ -46,8 +46,7 @@ int injectedChannelsOffset = 0;
 int injectedChannelsIncrement = 0;
 int vetoReference[NCHIP][NCHAN];
 uint8_t adcConfiguration[NCHIP][NADC];
-int burstMode = 0;
-enum burstModeType burstType = INTERNAL;
+int burstMode = BURST_INTERNAL;
 int64_t exptime_ns = 0;
 int64_t period_ns = 0;
 int64_t nframes = 0;
@@ -349,8 +348,7 @@ void setupDetector() {
 	highvoltage = 0;
 	injectedChannelsOffset = 0;
 	injectedChannelsIncrement = 0;
-	burstMode = 0;
-	burstType = INTERNAL;
+	burstMode = BURST_INTERNAL;
 	exptime_ns = 0;
 	period_ns = 0;
 	nframes = 0;
@@ -431,8 +429,6 @@ void setupDetector() {
 		return;
 	}
 #endif
-	// set burst mode will take in burstType and also set it
-	burstType = DEFAULT_BURST_TYPE;
 	setBurstMode(DEFAULT_BURST_MODE);
 	setSettings(DEFAULT_SETTINGS);
 
@@ -626,8 +622,8 @@ int readConfigFile() {
                 idac = G2_VB_COMP_ADC;
             } else if (!strcasecmp(command,"vcom_cds")) {
                 idac = G2_VCOM_CDS;
-            } else if (!strcasecmp(command,"vref_restore")) {
-                idac = G2_VREF_RESTORE;
+            } else if (!strcasecmp(command,"vref_rstore")) {
+                idac = G2_VREF_RSTORE;
             } else if (!strcasecmp(command,"vb_opa_1st")) {
                 idac = G2_VB_OPA_1ST;
             } else if (!strcasecmp(command,"vref_comp_fe")) {
@@ -1091,21 +1087,18 @@ int setHighVoltage(int val){
 
 /* parameters - timing */
 void setTiming( enum timingMode arg){
-	if(arg != GET_TIMING_MODE){
-		switch(arg){
-		case AUTO_TIMING:
-		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
-		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
-		    break;
-		case TRIGGER_EXPOSURE:
-		    FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
-		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
-		    break;
-		default:
-			FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
-			return;
-		}
-	}
+    switch(arg){
+    case AUTO_TIMING:
+        FILE_LOG(logINFO, ("Set Timing: Auto\n"));
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+        break;
+    case TRIGGER_EXPOSURE:
+        FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+        break;
+    default:
+        FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
+    }
 }
 
 enum timingMode getTiming() {
@@ -1670,10 +1663,10 @@ int configureSingleADCDriver(int chipIndex) {
 	{
 		int i = 0;
 		for (i = 0; i < NADC; ++i) {
-			if (!burstMode) {
+			if (burstMode == BURST_OFF) {
 				values[i] |= ASIC_CONTINUOUS_MODE_MSK;
 			}
-			FILE_LOG(logDEBUG1, ("Value %d: 0x%02hhx\n", i, values[i]));
+			FILE_LOG(logDEBUG2, ("Value %d: 0x%02hhx\n", i, values[i]));
 		}
 	}
 
@@ -1749,14 +1742,39 @@ int configureADC() {
 	return OK;
 }
 
+int	setBurstModeinFPGA(enum burstMode value) {
+	uint32_t addr = ASIC_CONFIG_REG;
+	uint32_t runmode = 0;
+	switch (value) {
+		case BURST_OFF:
+			runmode = ASIC_CONFIG_RUN_MODE_CONT_VAL;
+			break;
+		case BURST_INTERNAL:
+			runmode = ASIC_CONFIG_RUN_MODE_INT_BURST_VAL;
+			break;
+		case BURST_EXTERNAL:
+			runmode = ASIC_CONFIG_RUN_MODE_EXT_BURST_VAL;
+			break;
+		default:
+			FILE_LOG(logERROR, ("Unknown burst mode %d\n", value));
+			return FAIL;
+	}
+	FILE_LOG(logDEBUG1, ("Run mode (FPGA val): %d\n", runmode));
+	bus_w(addr, bus_r(addr) &~ ASIC_CONFIG_RUN_MODE_MSK);
+	bus_w(addr, bus_r(addr) | ((runmode << ASIC_CONFIG_RUN_MODE_OFST) & ASIC_CONFIG_RUN_MODE_MSK));
+	burstMode = value;
+	return OK;
+}
 
-int	setBurstMode(int burst) {
-	FILE_LOG(logINFO, ("Setting %s Mode\n", burst == 1 ? "Burst" : "Continuous"));
-	burstMode = burst;
-	setBurstType(burstType);
+int	setBurstMode(enum burstMode burst) {
+	FILE_LOG(logINFO, ("Setting burst mode to %s\n", burst == BURST_OFF ? "off" : (burst == BURST_INTERNAL ? "internal" : "external")));
 
-	FILE_LOG(logINFO, ("\tSetting %s Mode in Chip\n", burst == 1 ? "Burst" : "Continuous"));
-	int value = burst ? ASIC_GLOBAL_BURST_VALUE : ASIC_GLOBAL_CONT_VALUE;
+	if (setBurstModeinFPGA(burst) == FAIL) {
+		return FAIL;
+	}
+
+	FILE_LOG(logINFO, ("\tSetting %s Mode in Chip\n", burstMode == BURST_OFF ? "Continuous" : "Burst"));
+	int value = burstMode ? ASIC_GLOBAL_BURST_VALUE : ASIC_GLOBAL_CONT_VALUE;
 
 	const int padding = 6; // due to address (4) to make it byte aligned
 	const int lenTotalBits = padding + ASIC_GLOBAL_SETT_MAX_BITS + ASIC_ADDR_MAX_BITS; // 4 + 6 + 4 = 16
@@ -1797,58 +1815,28 @@ int	setBurstMode(int burst) {
 	return configureADC();
 }
 
-int getBurstMode() {
+enum burstMode getBurstMode() {
 	uint32_t addr = ASIC_CONFIG_REG;
 	int runmode = bus_r (addr) & ASIC_CONFIG_RUN_MODE_MSK;
 	switch (runmode) {
+		case ASIC_CONFIG_RUN_MODE_CONT_VAL:
+			return BURST_OFF;
 		case ASIC_CONFIG_RUN_MODE_INT_BURST_VAL:
+			return BURST_INTERNAL;
 		case ASIC_CONFIG_RUN_MODE_EXT_BURST_VAL:
-			return 1;
+			return BURST_EXTERNAL;
 		default:
-			return 0;
-	}
-}
-
-void setBurstType(enum burstModeType val) {
-	uint32_t addr = ASIC_CONFIG_REG;
-	uint32_t runmode = ASIC_CONFIG_RUN_MODE_CONT_VAL;
-	if (burstMode) {
-		switch (val) {
-			case INTERNAL:
-				runmode = ASIC_CONFIG_RUN_MODE_INT_BURST_VAL;
-				break;
-			case EXTERNAL:
-				runmode = ASIC_CONFIG_RUN_MODE_EXT_BURST_VAL;
-				break;
-			default:
-				FILE_LOG(logERROR, ("Unknown burst type %d\n", val));
-				return;
-		}
-		FILE_LOG(logDEBUG1, ("Run mode: %d\n", runmode));
-		bus_w(addr, bus_r(addr) &~ ASIC_CONFIG_RUN_MODE_MSK);
-		bus_w(addr, bus_r(addr) | ((runmode << ASIC_CONFIG_RUN_MODE_OFST) & ASIC_CONFIG_RUN_MODE_MSK));
-	}
-}
-
-enum burstModeType getBurstType() {
-	uint32_t addr = ASIC_CONFIG_REG;
-	int runmode = bus_r (addr) & ASIC_CONFIG_RUN_MODE_MSK;
-	switch (runmode) {
-		case ASIC_CONFIG_RUN_MODE_INT_BURST_VAL:
-			return INTERNAL;
-		case ASIC_CONFIG_RUN_MODE_EXT_BURST_VAL:
-			return EXTERNAL;
-		default:
-			FILE_LOG(logERROR, ("Unknown burst type read from FPGA: %d\n", runmode));
+			FILE_LOG(logERROR, ("Unknown run mode read from FPGA %d\n", runmode));
 			return -1;
 	}
 }
+
 
 /* aquisition */
 
 int updateAcquisitionRegisters(char* mess) {
 	// burst mode
-	if (burstMode) {
+	if (burstMode != BURST_OFF) {
 		// validate #frames in burst mode
 		if (nframes > MAX_FRAMES_IN_BURST_MODE) {
 			sprintf(mess, "Could not start acquisition because number of frames %lld must be <= %d in burst mode.\n", (long long unsigned int)nframes, MAX_FRAMES_IN_BURST_MODE);
@@ -1945,9 +1933,19 @@ void* start_timer(void* arg) {
 	int numFrames = (getNumFrames() *
 						getNumTriggers() );
 	int64_t exp_ns = 	getExpTime();
-	int datasize = 2560;
+	int imagesize = NCHAN * NCHIP * 2;
+	int datasize = imagesize;
 	int packetsize = datasize + sizeof(sls_detector_header);
 
+	// Generate data
+	char imageData[imagesize];
+	memset(imageData, 0, imagesize);
+	{
+		int i = 0;
+		for (i = 0; i < imagesize; i += sizeof(uint8_t)) {
+			*((uint8_t*)(imageData + i)) = i;
+		}
+	}
 
     int frameNr = 0;
 	// loop over number of frames
@@ -1974,7 +1972,10 @@ void* start_timer(void* arg) {
 		header->row = detPos[X];
 		header->column = detPos[Y];
 		header->detType = (uint16_t)myDetectorType;
-		header->version = SLS_DETECTOR_HEADER_VERSION - 1;		
+		header->version = SLS_DETECTOR_HEADER_VERSION - 1;	
+
+		// fill data	
+		memcpy(packetData + sizeof(sls_detector_header), imageData, datasize);	
 
 		// send 1 packet = 1 frame
 		sendUDPPacket(0, packetData, packetsize);

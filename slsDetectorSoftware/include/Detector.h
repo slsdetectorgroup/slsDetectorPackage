@@ -916,16 +916,10 @@ class Detector {
     void setVetoReference(const int gainIndex, const int value, Positions pos = {}); 
 
     /** [Gotthard2]  */
-    Result<bool> getBurstMode(Positions pos = {});   
+    Result<defs::burstMode> getBurstMode(Positions pos = {});   
 
-    /** [Gotthard2]  true = burst mode or false = continuous mode */
-    void setBurstMode(bool enable, Positions pos = {});
-    
-    /** [Gotthard2]  */
-    Result<defs::burstModeType> getBurstType(Positions pos = {});  
-    
-    /** [Gotthard2] Options: INTERNAL, EXTERNAL */
-    void setBurstType(defs::burstModeType val, Positions pos = {});
+    /** [Gotthard2]  BURST_OFF, BURST_INTERNAL (default), BURST_EXTERNAL */
+    void setBurstMode(defs::burstMode value, Positions pos = {});
 
     /**************************************************
      *                                                *
@@ -1115,52 +1109,54 @@ class Detector {
     /** [CTB] */
     void setPatternClockControl(uint64_t word, Positions pos = {});
 
-    /** [Mythen3][CTB] same as executing for CTB */
+    /** [CTB] same as executing
+     * [Mythen3] */
     Result<uint64_t> getPatternWord(int addr, Positions pos = {});
 
-    /** [Mythen3][CTB] Caution: If word is  -1  reads the addr (same as
-     * executing the pattern) */
+    /** [CTB] Caution: If word is  -1  reads the addr (same as
+     * executing the pattern)
+     * [Mythen3] */
     void setPatternWord(int addr, uint64_t word, Positions pos = {});
 
-    /** [Mythen3][CTB] Options: level: -1 (complete pattern) and 0-2 levels
+    /**[CTB][Mythen3] Options: level: -1 (complete pattern) and 0-2 levels
      * @returns array of start address and stop address
      */
     Result<std::array<int, 2>> getPatternLoopAddresses(int level,
                                                Positions pos = {}) const;
 
-    /** [Mythen3][CTB] Options: level: -1 (complete pattern) and 0-2 levels */
+    /** [CTB][Mythen3] Options: level: -1 (complete pattern) and 0-2 levels */
     void setPatternLoopAddresses(int level, int start, int stop, Positions pos = {});
 
-    /** [Mythen3][CTB] Options: level: -1 (complete pattern) and 0-2 levels
+    /**[CTB][Mythen3] Options: level: -1 (complete pattern) and 0-2 levels
      * @returns number of loops
      */
     Result<int> getPatternLoopCycles(int level, Positions pos = {}) const;
 
-    /** [Mythen3][CTB] n: 0-2, level: -1 (complete pattern) and 0-2 levels */
+    /** [CTB][Mythen3] n: 0-2, level: -1 (complete pattern) and 0-2 levels */
     void setPatternLoopCycles(int level, int n, Positions pos = {});                         
 
-    /* [Mythen3][CTB] */
+    /* [CTB][Mythen3] */
     Result<int> getPatternWaitAddr(int level, Positions pos = {}) const;
 
-    /** [Mythen3][CTB] Options: level 0-2 */
+    /** [CTB][Mythen3] Options: level 0-2 */
     void setPatternWaitAddr(int level, int addr, Positions pos = {});
 
-    /** [Mythen3][CTB]  */
+    /** [CTB][Mythen3]  */
     Result<uint64_t> getPatternWaitTime(int level, Positions pos = {}) const;
 
-    /** [Mythen3][CTB] Options: level 0-2 */
+    /** [CTB][Mythen3] Options: level 0-2 */
     void setPatternWaitTime(int level, uint64_t t, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB][Mythen3] */
     Result<uint64_t> getPatternMask(Positions pos = {});
 
-    /** [CTB] Sets the mask applied to every pattern to the selected bit mask */
+    /** [CTB][Mythen3] Sets the mask applied to every pattern to the selected bit mask */
     void setPatternMask(uint64_t mask, Positions pos = {});
 
-    /** [CTB]  */
+    /** [CTB][Mythen3]  */
     Result<uint64_t> getPatternBitMask(Positions pos = {}) const;
 
-    /** [CTB] Sets the bitmask that the mask will be applied to for every
+    /** [CTB][Mythen3] Sets the bitmask that the mask will be applied to for every
      * pattern
      */
     void setPatternBitMask(uint64_t mask, Positions pos = {});

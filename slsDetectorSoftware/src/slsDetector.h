@@ -1131,17 +1131,11 @@ class slsDetector : public virtual slsDetectorDefs {
     void setVetoReference(const int gainIndex, const int value); 
 
     /** [Gotthard2]  */
-    bool getBurstMode();
+    burstMode getBurstMode();
 
-    /** [Gotthard2]  true = burst mode or false = continuous mode */
-    void setBurstMode(bool enable);
-    
-    /** [Gotthard2]  */
-    burstModeType getBurstType();    
-
-    /** [Gotthard2] Options: INTERNAL, EXTERNAL */
-    void setBurstType(burstModeType val);
-    
+    /** [Gotthard2] BURST_OFF, BURST_INTERNAL (default), BURST_EXTERNAL */
+    void setBurstMode(burstMode value);
+       
     /**
      * Set/get counter bit in detector (Gotthard)
      * @param i is -1 to get, 0 to reset and any other value to set the counter
@@ -1764,16 +1758,16 @@ class slsDetector : public virtual slsDetectorDefs {
     uint64_t setPatternClockControl(uint64_t word = -1);
 
     /**
-     * Writes a pattern word (CTB/ Moench)
+     * Writes a pattern word (CTB/ Moench/ Mythen3)
      * @param addr address of the word
      * @param word 64bit word to be written, -1 reads the addr (same as
-     * executing the pattern)
+     * executing the pattern for ctb)
      * @returns actual value
      */
     uint64_t setPatternWord(int addr, uint64_t word);
 
     /**
-     * Sets the pattern or loop limits (CTB/ Moench)
+     * Sets the pattern or loop limits (CTB/ Moench/ Mythen3)
      * @param level -1 complete pattern, 0,1,2, loop level
      * @param start start address for level 0-2, -1 gets
      * @param stop stop address for level 0-2, -1 gets
@@ -1783,7 +1777,7 @@ class slsDetector : public virtual slsDetectorDefs {
                                        int stop = -1);
 
     /**
-     * Sets the pattern or loop limits (CTB/ Moench)
+     * Sets the pattern or loop limits (CTB/ Moench/ Mythen3)
      * @param level -1 complete pattern, 0,1,2, loop level
      * @param n number of loops for level 0-2, -1 gets
      * @returns number of loops
@@ -1792,7 +1786,7 @@ class slsDetector : public virtual slsDetectorDefs {
 
 
     /**
-     * Sets the wait address (CTB/ Moench)
+     * Sets the wait address (CTB/ Moench/ Mythen3)
      * @param level  0,1,2, wait level
      * @param addr wait address, -1 gets
      * @returns actual value
@@ -1800,7 +1794,7 @@ class slsDetector : public virtual slsDetectorDefs {
     int setPatternWaitAddr(int level, int addr = -1);
 
     /**
-     * Sets the wait time (CTB/ Moench)
+     * Sets the wait time (CTB/ Moench/ Mythen3)
      * @param level  0,1,2, wait level
      * @param t wait time, -1 gets
      * @returns actual value
@@ -1808,27 +1802,27 @@ class slsDetector : public virtual slsDetectorDefs {
     uint64_t setPatternWaitTime(int level, uint64_t t = -1);
 
     /**
-     * Sets the mask applied to every pattern (CTB/ Moench)
+     * Sets the mask applied to every pattern (CTB/ Moench/ Mythen3)
      * @param mask mask to be applied
      */
     void setPatternMask(uint64_t mask);
 
     /**
-     * Gets the mask applied to every pattern (CTB/ Moench)
+     * Gets the mask applied to every pattern (CTB/ Moench/ Mythen3)
      * @returns mask set
      */
     uint64_t getPatternMask();
 
     /**
      * Selects the bits that the mask will be applied to for every pattern (CTB/
-     * Moench)
+     * Moench/ Mythen3)
      * @param mask mask to select bits
      */
     void setPatternBitMask(uint64_t mask);
 
     /**
      * Gets the bits that the mask will be applied to for every pattern (CTB/
-     * Moench)
+     * Moench/ Mythen3)
      * @returns mask  of bits selected
      */
     uint64_t getPatternBitMask();

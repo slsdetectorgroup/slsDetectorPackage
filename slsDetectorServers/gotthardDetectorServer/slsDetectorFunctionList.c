@@ -1178,27 +1178,23 @@ int setHighVoltage(int val){
 
 void setTiming( enum timingMode arg){
     u_int32_t addr = EXT_SIGNAL_REG;
-
-	if (arg != GET_TIMING_MODE){
-		switch(arg){
-		case AUTO_TIMING:
-		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
-		    bus_w(addr, EXT_SIGNAL_OFF_VAL);
-		    break;
-		case TRIGGER_EXPOSURE:
-		    if (signalMode == TRIGGER_IN_FALLING_EDGE) {
-                FILE_LOG(logINFO, ("Set Timing: Trigger (Falling Edge)\n"));
-                bus_w(addr, EXT_SIGNAL_TRGGR_IN_FLLNG_VAL);
-		    } else {
-                FILE_LOG(logINFO, ("Set Timing: Trigger (Rising Edge)\n"));
-                bus_w(addr, EXT_SIGNAL_TRGGR_IN_RSNG_VAL);
-		    }
-		    break;
-		default:
-			FILE_LOG(logERROR, ("Unknown timing mode %d for this detector\n", (int)arg));
-			return;
-		}
-	}
+    switch(arg) {
+    case AUTO_TIMING:
+        FILE_LOG(logINFO, ("Set Timing: Auto\n"));
+        bus_w(addr, EXT_SIGNAL_OFF_VAL);
+        break;
+    case TRIGGER_EXPOSURE:
+        if (signalMode == TRIGGER_IN_FALLING_EDGE) {
+            FILE_LOG(logINFO, ("Set Timing: Trigger (Falling Edge)\n"));
+            bus_w(addr, EXT_SIGNAL_TRGGR_IN_FLLNG_VAL);
+        } else {
+            FILE_LOG(logINFO, ("Set Timing: Trigger (Rising Edge)\n"));
+            bus_w(addr, EXT_SIGNAL_TRGGR_IN_RSNG_VAL);
+        }
+        break;
+    default:
+        FILE_LOG(logERROR, ("Unknown timing mode %d for this detector\n", (int)arg));
+    }
 }
 
 enum timingMode getTiming() {

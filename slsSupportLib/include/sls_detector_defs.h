@@ -317,7 +317,7 @@ class slsDetectorDefs {
         VB_COMP_FE,
         VB_COMP_ADC,
         VCOM_CDS,  
-        VREF_RESTORE,
+        VREF_RSTORE,
         VB_OPA_1ST,
         VREF_COMP_FE,
         VCOM_ADC1, 
@@ -439,11 +439,12 @@ class slsDetectorDefs {
     };
 
     /**
-     * burst mode type for gotthard2
+     * burst mode for gotthard2
      */
-    enum burstModeType {
-        INTERNAL,      
-        EXTERNAL, 
+    enum burstMode {
+        BURST_OFF,
+        BURST_INTERNAL,      
+        BURST_EXTERNAL, 
     };    
 
 

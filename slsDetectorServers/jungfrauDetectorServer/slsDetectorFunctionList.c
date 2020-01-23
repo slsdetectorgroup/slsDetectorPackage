@@ -1788,11 +1788,11 @@ enum runStatus getRunStatus(){
 
 
 void readFrame(int *ret, char *mess){
-#ifdef VIRTUAL
 	// wait for status to be done
 	while(runBusy()){
 		usleep(500);
 	}
+#ifdef VIRTUAL
 	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #endif

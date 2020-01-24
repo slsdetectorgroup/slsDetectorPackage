@@ -1483,6 +1483,16 @@ int64_t slsDetector::getMeasurementTime() const {
     return retval; 
 }
 
+slsDetectorDefs::timingMode slsDetector::setTimingMode(timingMode value) {
+    int fnum = F_SET_TIMING_MODE;
+    //auto arg = static_cast<int>(pol);
+    timingMode retval = GET_TIMING_MODE;
+    FILE_LOG(logDEBUG1) << "Setting communication to mode " << value;
+    sendToDetector(fnum, static_cast<int>(value), retval);
+    FILE_LOG(logDEBUG1) << "Timing Mode: " << retval;
+    return retval;
+}
+
 int slsDetector::setDynamicRange(int n) {
     // TODO! Properly handle fail
     int prevDr = shm()->dynamicRange;
@@ -1546,16 +1556,6 @@ int slsDetector::getADC(dacIndex index) {
     FILE_LOG(logDEBUG1) << "Getting ADC " << index;
     sendToDetector(F_GET_ADC, static_cast<int>(index), retval);
     FILE_LOG(logDEBUG1) << "ADC (" << index << "): " << retval;
-    return retval;
-}
-
-slsDetectorDefs::timingMode slsDetector::setTimingMode(timingMode pol) {
-    int fnum = F_SET_TIMING_MODE;
-    auto arg = static_cast<int>(pol);
-    timingMode retval = GET_TIMING_MODE;
-    FILE_LOG(logDEBUG1) << "Setting communication to mode " << pol;
-    sendToDetector(fnum, arg, retval);
-    FILE_LOG(logDEBUG1) << "Timing Mode: " << retval;
     return retval;
 }
 
@@ -2476,15 +2476,15 @@ void slsDetector::setVetoReference(const int gainIndex, const int value) {
     sendToDetector(F_SET_VETO_REFERENCE, args, nullptr);
 }
 
-bool slsDetector::getBurstMode() {
+slsDetectorDefs::burstMode slsDetector::getBurstMode() {
     int retval = -1;
     sendToDetector(F_GET_BURST_MODE, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Burst mode:" << retval;
-    return static_cast<bool>(retval); 
+    return static_cast<slsDetectorDefs::burstMode>(retval); 
 }
 
-void slsDetector::setBurstMode(bool enable) {
-    int arg = static_cast<int>(enable);
+void slsDetector::setBurstMode(slsDetectorDefs::burstMode value) {
+    int arg = static_cast<int>(value);
     FILE_LOG(logDEBUG1) << "Setting burst mode to " << arg;
     sendToDetector(F_SET_BURST_MODE, arg, nullptr);
 }

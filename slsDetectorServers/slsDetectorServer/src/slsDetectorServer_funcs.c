@@ -39,6 +39,7 @@ extern char mess[MAX_STR_LENGTH];
 // Variables that will be exported
 int sockfd = 0;
 int debugflag = 0;
+int checkModuleFlag = 1;
 udpStruct udpDetails = {32410, 32411, 50001, 50002, 0, 0, 0, 0, 0, 0, 0, 0};
 int configured = FAIL;
 char configureMessage[MAX_STR_LENGTH]="udp parameters not configured yet";
@@ -484,7 +485,7 @@ void function_table() {
 	flist[F_GET_INJECT_CHANNEL]					= &get_inject_channel;
 	flist[F_SET_VETO_PHOTON]					= &set_veto_photon;
 	flist[F_GET_VETO_PHOTON]					= &get_veto_photon;
-	flist[F_SET_VETO_REFERENCE]					= &set_veto_refernce;	
+	flist[F_SET_VETO_REFERENCE]					= &set_veto_reference;	
 	flist[F_GET_BURST_MODE]						= &get_burst_mode;
 	flist[F_SET_BURST_MODE]						= &set_burst_mode;
 	flist[F_SET_ADC_ENABLE_MASK_10G]			= &set_adc_enable_mask_10g;
@@ -685,10 +686,6 @@ int set_timing_mode(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting external communication mode to %d\n", arg));
 
-#ifdef GOTTHARD2D
-    functionNotImplemented();
-#else
-
 	// set
 	if ((arg != GET_TIMING_MODE) && (Server_VerifyLock() == OK)) {
 		switch (arg) {
@@ -709,7 +706,6 @@ int set_timing_mode(int file_des) {
 	retval = getTiming();
 	validate((int)arg, (int)retval, "set timing mode", DEC);
 	FILE_LOG(logDEBUG1, ("Timing Mode: %d\n",retval));
-#endif
 
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -1000,8 +996,8 @@ int set_dac(int file_des) {
 	case VCOM_CDS:
 		serverDacIndex = G2_VCOM_CDS;
 		break;
-	case VREF_RESTORE:
-		serverDacIndex = G2_VREF_RESTORE;
+	case VREF_RSTORE:
+		serverDacIndex = G2_VREF_RSTORE;
 		break;
 	case VB_OPA_1ST:
 		serverDacIndex = G2_VB_OPA_1ST;
@@ -1658,7 +1654,7 @@ int set_settings(int file_des) {
 	if (receiveData(file_des, &isett, sizeof(isett), INT32) < 0)
 		return printSocketReadError();
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
     functionNotImplemented();
 #else
 	FILE_LOG(logDEBUG1, ("Setting settings %d\n", isett));
@@ -1682,12 +1678,16 @@ int set_settings(int file_des) {
 		case LOWGAIN:
 		case MEDIUMGAIN:
 		case VERYHIGHGAIN:
+#elif GOTTHARD2D
+		case DYNAMICGAIN:
+		case FIXGAIN1:
+		case FIXGAIN2:
 #endif
 			break;
 		default:
 			if (myDetectorType == EIGER) {
 				ret = FAIL;
-				sprintf(mess, "Cannot set settings via SET_SETTINGS, use SET_MODULE\n");
+				sprintf(mess, "Cannot set settings via SET_SETTINGS, use SET_MODULE (set threshold)\n");
 				FILE_LOG(logERROR,(mess));
 			} else
 				modeNotImplemented("Settings Index", (int)isett);
@@ -1700,6 +1700,7 @@ int set_settings(int file_des) {
 			FILE_LOG(logDEBUG1, ("Settings: %d\n", retval));
 			validate((int)isett, (int)retval, "set settings", DEC);
 #if defined(JUNGFRAUD) || defined (GOTTHARDD)
+			// gotthard2 does not set default dacs
 			if (ret == OK && isett >= 0) {
 				ret = setDefaultDacs();
 				if (ret == FAIL) {
@@ -1783,6 +1784,12 @@ int start_acquisition(int file_des) {
 		}
 		else
 #endif
+#ifdef GOTTHARD2D
+		if (updateAcquisitionRegisters(mess) == FAIL) {
+			ret = FAIL;	
+		}
+		else
+#endif
 		if (configured == FAIL) {
 			ret = FAIL;
 			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
@@ -1793,11 +1800,7 @@ int start_acquisition(int file_des) {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(VIRTUAL)
 				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check udp_dstip & udp_dstport.\n");
 #else
-#if defined(GOTTHARD2D)
-				sprintf(mess, "Could not start acquisition due to #frames > %d in burst mode\n", MAX_FRAMES_IN_BURST_MODE);
-#else
 				sprintf(mess, "Could not start acquisition\n");
-#endif
 #endif
 				FILE_LOG(logERROR,(mess));
 			}
@@ -1917,6 +1920,12 @@ int start_and_read_all(int file_des) {
 		}
 		else
 #endif
+#ifdef GOTTHARD2D
+		if (updateAcquisitionRegisters(mess) == FAIL) {
+			ret = FAIL;	
+		}
+		else
+#endif
 		if (configured == FAIL) {
 			ret = FAIL;
 			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
@@ -1927,11 +1936,7 @@ int start_and_read_all(int file_des) {
 #if defined(VIRTUAL) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 				sprintf(mess, "Could not start acquisition. Could not create udp socket in server. Check udp_dstip & udp_dstport.\n");
 #else
-#if defined(GOTTHARD2D)
-				sprintf(mess, "Could not start acquisition due to #frames > %d in burst mode\n", MAX_FRAMES_IN_BURST_MODE);
-#else
 				sprintf(mess, "Could not start acquisition\n");
-#endif
 #endif
 				FILE_LOG(logERROR,(mess));
 			}
@@ -2225,7 +2230,7 @@ int get_delay_after_trigger(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2244,7 +2249,7 @@ int set_delay_after_trigger(int file_des) {
 	return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting delay after trigger %lld ns\n", (long long int)arg));
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// only set
@@ -2458,7 +2463,7 @@ int get_period_left(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2473,7 +2478,7 @@ int get_delay_after_trigger_left(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2518,7 +2523,7 @@ int get_frames_from_start(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2533,7 +2538,7 @@ int get_actual_time(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2548,7 +2553,7 @@ int get_measurement_time(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+#if !defined(JUNGFRAUD) && !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else	
 	// get only
@@ -3190,7 +3195,7 @@ int set_pattern_mask(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Set Pattern Mask to %d\n", arg));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// only set
@@ -3211,7 +3216,7 @@ int get_pattern_mask(int file_des) {
 
 	FILE_LOG(logDEBUG1, ("Get Pattern Mask\n"));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// only get
@@ -3231,7 +3236,7 @@ int set_pattern_bit_mask(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Set Pattern Bit Mask to %d\n", arg));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// only set
@@ -3252,7 +3257,7 @@ int get_pattern_bit_mask(int file_des){
 
 	FILE_LOG(logDEBUG1, ("Get Pattern Bit Mask\n"));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD) && !defined(MYTHEN3D)
 	functionNotImplemented();
 #else
 	// only get
@@ -3836,27 +3841,31 @@ int power_chip(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Powering chip to %d\n", arg));
 
-#if (!defined(JUNGFRAUD)) && (!defined(MOENCHD)) && (!defined(MYTHEN3D))
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else
 	// set & get
 	if ((arg == -1) || (Server_VerifyLock() == OK)) {
-#ifdef MYTHEN3D
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
 		// check only when powering on
 		if (arg != -1 && arg != 0) {
-			int type_ret = checkDetectorType();
-			if (type_ret == -1) {
-				ret = FAIL;
-				sprintf(mess, "Could not power on chip. Could not open file to get type of module attached.\n");
-				FILE_LOG(logERROR,(mess));			
-			} else if (type_ret == -2) {
-				ret = FAIL;
-				sprintf(mess, "Could not power on chip. No module attached!\n");
-				FILE_LOG(logERROR,(mess));			
-			} else if (type_ret == FAIL) {
-				ret = FAIL;
-				sprintf(mess, "Could not power on chip. Wrong module attached!\n");
-				FILE_LOG(logERROR,(mess));			
+			if (checkModuleFlag) {
+				int type_ret = checkDetectorType();
+				if (type_ret == -1) {
+					ret = FAIL;
+					sprintf(mess, "Could not power on chip. Could not open file to get type of module attached.\n");
+					FILE_LOG(logERROR,(mess));			
+				} else if (type_ret == -2) {
+					ret = FAIL;
+					sprintf(mess, "Could not power on chip. No module attached!\n");
+					FILE_LOG(logERROR,(mess));			
+				} else if (type_ret == FAIL) {
+					ret = FAIL;
+					sprintf(mess, "Could not power on chip. Wrong module attached!\n");
+					FILE_LOG(logERROR,(mess));			
+				}
+			} else {
+				FILE_LOG(logINFOBLUE, ("In No-Module mode: Ignoring module type. Continuing.\n"));
 			}
 		}
 #endif
@@ -6446,7 +6455,7 @@ int get_veto_photon(int file_des) {
 }
 
 
-int set_veto_refernce(int file_des) {
+int set_veto_reference(int file_des) {
   	ret = OK;
 	memset(mess, 0, sizeof(mess));
 	int args[2] = {-1, -1};
@@ -6486,22 +6495,35 @@ int set_veto_refernce(int file_des) {
 int set_burst_mode(int file_des) {
   	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int arg = -1;
+	enum burstMode arg = BURST_OFF;
 
 	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
 	return printSocketReadError();
-	FILE_LOG(logINFO, ("Setting burst mode: %d\n", arg));
+	FILE_LOG(logDEBUG1, ("Setting burst mode: %d\n", arg));
 
 #ifndef GOTTHARD2D
 	functionNotImplemented();
 #else
 	// only set
 	if (Server_VerifyLock() == OK) {
-		arg = arg == 0 ? 0 : 1;
-		ret = setBurstMode(arg); 
-		if (ret == FAIL) {
-			sprintf(mess, "Could not set burst mode to %d\n", arg);
-			FILE_LOG(logERROR, (mess));					
+		switch (arg) {
+			case BURST_OFF:
+			case BURST_INTERNAL:
+			case BURST_EXTERNAL:
+				break;
+			default:
+			modeNotImplemented("Burst mode", (int)arg);
+			break;	
+		}
+		if (ret == OK) {
+			setBurstMode(arg);
+			enum burstMode retval = getBurstMode();
+			FILE_LOG(logDEBUG, ("burst mode retval: %d\n", retval));
+			if (retval != arg) {
+				ret = FAIL;
+				sprintf(mess, "Could not set burst type. Set %d, got %d\n", arg, retval);
+				FILE_LOG(logERROR, (mess));		
+			}
 		}
 	}
 #endif
@@ -6512,7 +6534,7 @@ int set_burst_mode(int file_des) {
 int get_burst_mode(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	int retval = -1;
+	enum burstMode retval = BURST_OFF;
 
 	FILE_LOG(logDEBUG1, ("Getting burst mode\n"));
 
@@ -6521,7 +6543,7 @@ int get_burst_mode(int file_des) {
 #else	
 	// get only
 	retval = getBurstMode();
-	FILE_LOG(logDEBUG1, ("Get burst mode:%d\n", retval));
+	FILE_LOG(logDEBUG1, ("Get burst mode retval:%d\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

@@ -444,7 +444,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_COUNTER_MASK:         		return "F_SET_COUNTER_MASK";
 	case F_GET_COUNTER_MASK:         		return "F_GET_COUNTER_MASK";
 
-
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
 

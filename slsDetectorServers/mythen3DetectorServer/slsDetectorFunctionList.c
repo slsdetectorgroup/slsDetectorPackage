@@ -21,6 +21,7 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern udpStruct udpDetails;
+extern const enum detectorType myDetectorType;
 
 int initError = OK;
 int initCheckDone = 0;
@@ -32,12 +33,12 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
-int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0, 0};
-uint32_t clkFrequency[NUM_CLOCKS] = {0, 0, 0, 0, 0};
+int32_t clkPhase[NUM_CLOCKS] = {};
+uint32_t clkFrequency[NUM_CLOCKS] = {};
 
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
-int detPos[2] = {0, 0};
+int detPos[2] = {};
 uint32_t countermask = 0; // will be removed later when in firmware converted to mask
 
 int isInitCheckDone() {
@@ -84,13 +85,10 @@ void basictests() {
 	uint64_t macadd				= getDetectorMAC();
 	int64_t fwversion 			= getFirmwareVersion();
 	int64_t swversion 			= getServerVersion();
-	int64_t sw_fw_apiversion    = 0;
+	int64_t sw_fw_apiversion    = getFirmwareAPIVersion();;
 	int64_t client_sw_apiversion = getClientServerAPIVersion();
 	uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
-
-	if (fwversion >= MIN_REQRD_VRSN_T_RD_API)
-	    sw_fw_apiversion 	    = getFirmwareAPIVersion();
 	FILE_LOG(logINFOBLUE, ("*************************************************\n"
 			"Hardware Version:\t\t 0x%x\n"
 
@@ -161,7 +159,7 @@ int checkType() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	volatile u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
+	u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type != MYTHEN3){
 		FILE_LOG(logERROR, ("This is not a Mythen3 Server (read %d, expected %d)\n", type, MYTHEN3));
 		return FAIL;
@@ -609,7 +607,6 @@ int setDelayAfterTrigger(int64_t val) {
 
 int64_t getDelayAfterTrigger() {
     return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
-  
 }
 
 int64_t getNumFramesLeft() {
@@ -706,10 +703,25 @@ int setHighVoltage(int val){
 
 /* parameters - timing */
 void setTiming( enum timingMode arg){
- // to be implemented
+	if(arg != GET_TIMING_MODE){
+		switch (arg) {
+		case AUTO_TIMING:
+		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
+		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+		    break;
+		case TRIGGER_EXPOSURE:
+		    FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
+		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+		    break;
+		default:
+			FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
+		}
+	}
 }
 
 enum timingMode getTiming() {
+    if (bus_r(EXT_SIGNAL_REG) == EXT_SIGNAL_MSK)
+        return TRIGGER_EXPOSURE;
     return AUTO_TIMING;
 }
 
@@ -833,6 +845,43 @@ void calcChecksum(udp_header* udp) {
 	checksum += UDP_IP_HEADER_LENGTH_BYTES;
 	FILE_LOG(logINFO, ("\tIP checksum is 0x%lx\n",checksum));
 	udp->ip_checksum = checksum;
+}
+
+int setDetectorPosition(int pos[]) {
+    memcpy(detPos, pos, sizeof(detPos));
+
+	uint32_t addr = COORD_0_REG;
+	int value = 0;
+	int valueRead = 0;
+	int ret = OK;
+
+	// row
+	value = detPos[X];
+	bus_w(addr, (bus_r(addr) &~COORD_ROW_MSK) | ((value << COORD_ROW_OFST) & COORD_ROW_MSK));
+	valueRead = ((bus_r(addr) &  COORD_ROW_MSK) >> COORD_ROW_OFST);
+	if (valueRead != value) {
+		FILE_LOG(logERROR, ("Could not set row. Set %d, read %d\n", value, valueRead));
+		ret = FAIL;
+	}
+
+	// col
+	value = detPos[Y];
+	bus_w(addr, (bus_r(addr) &~COORD_COL_MSK) | ((value << COORD_COL_OFST) & COORD_COL_MSK));
+	valueRead = ((bus_r(addr) &  COORD_COL_MSK) >> COORD_COL_OFST);
+	if (valueRead != value) {
+		FILE_LOG(logERROR, ("Could not set column. Set %d, read %d\n", value, valueRead));
+		ret = FAIL;
+	}
+
+	if (ret == OK) {
+		FILE_LOG(logINFO, ("\tPosition set to [%d, %d]\n", detPos[X], detPos[Y]));
+	} 
+	
+	return ret;
+}
+
+int* getDetectorPosition() {
+    return detPos;
 }
 
 /* pattern */
@@ -1052,6 +1101,22 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
     }
 }
 
+void setPatternMask(uint64_t mask) {
+	set64BitReg(mask, PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
+}
+
+uint64_t getPatternMask() {
+	return 	get64BitReg(PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
+}
+
+void setPatternBitMask(uint64_t mask) {
+	set64BitReg(mask, PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
+}
+
+uint64_t getPatternBitMask() {
+	return 	get64BitReg(PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
+}
+
 int checkDetectorType() {
 	FILE_LOG(logINFO, ("Checking type of module\n"));
 	FILE* fd = fopen(TYPE_FILE_NAME, "r");
@@ -1073,7 +1138,7 @@ int checkDetectorType() {
 	}
 
 	if (abs(type - TYPE_MYTHEN3_MODULE_VAL) > TYPE_TOLERANCE) {
-        FILE_LOG(logERROR, ("Wrong Module attached! Expected %d for Mythen, got %d\n", TYPE_MYTHEN3_MODULE_VAL, type));
+        FILE_LOG(logERROR, ("Wrong Module attached! Expected %d for Mythen3, got %d\n", TYPE_MYTHEN3_MODULE_VAL, type));
         return FAIL;	
 	}
 	return OK;
@@ -1134,8 +1199,8 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
 		relativePhase *= -1;
 		direction = 0;
 	}
-	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
-	int clkIndex = ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind;
+	int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
+	int clkIndex = (int)(ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind);
     ALTERA_PLL_C10_SetPhaseShift(pllIndex, clkIndex, relativePhase, direction);
 
     clkPhase[ind] = valShift;
@@ -1207,7 +1272,7 @@ int getVCOFrequency(enum CLKINDEX ind) {
 		FILE_LOG(logERROR, ("Unknown clock index %d to get vco frequency\n", ind));
 	    return -1;
 	}
-	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
+	int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
 	return ALTERA_PLL_C10_GetVCOFrequency(pllIndex);
 }
 
@@ -1225,7 +1290,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 	}
 	char* clock_names[] = {CLK_NAMES};
 	int vcofreq = getVCOFrequency(ind);
-	int currentdiv = vcofreq / clkFrequency[ind];
+	int currentdiv = vcofreq / (int)clkFrequency[ind];
 	int newfreq = vcofreq / val;
 
     FILE_LOG(logINFO, ("\tSetting %s clock (%d) divider from %d (%d Hz) to %d (%d Hz). \n\t(Vcofreq: %d Hz)\n", clock_names[ind], ind, currentdiv, clkFrequency[ind], val, newfreq, vcofreq));
@@ -1240,8 +1305,8 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 	}
 
     // Calculate and set output frequency
-	int pllIndex = ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL;
-	int clkIndex = ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind;
+	int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
+	int clkIndex = (int)(ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind);
     ALTERA_PLL_C10_SetOuputFrequency (pllIndex, clkIndex, newfreq);
 	clkFrequency[ind] = newfreq;
     FILE_LOG(logINFO, ("\t%s clock (%d) divider set to %d (%d Hz)\n", clock_names[ind], ind, val, clkFrequency[ind]));
@@ -1275,19 +1340,10 @@ int getClockDivider(enum CLKINDEX ind) {
 		FILE_LOG(logERROR, ("Unknown clock index %d to get clock divider\n", ind));
 	    return -1;
 	}
-	return (getVCOFrequency(ind) / clkFrequency[ind]);
+	return (getVCOFrequency(ind) / (int)clkFrequency[ind]);
 }
 
 /* aquisition */
-
-int setDetectorPosition(int pos[]) {
-    memcpy(detPos, pos, sizeof(detPos));
-	return OK;
-}
-
-int* getDetectorPosition() {
-    return detPos;
-}
 
 int startStateMachine(){
 #ifdef VIRTUAL
@@ -1327,22 +1383,64 @@ void* start_timer(void* arg) {
 						getNumTriggers() );
 	int64_t exp_ns = 	getExpTime();
 
+	int imagesize = calculateDataBytes();
+	int datasize = imagesize / PACKETS_PER_FRAME;
+	int packetsize = datasize + sizeof(sls_detector_header);
 
-    int frameNr = 0;
+	// Generate data
+	char imageData[imagesize];
+	memset(imageData, 0, imagesize);
+	{
+		int i = 0;
+		for (i = 0; i < imagesize; i += sizeof(uint8_t)) {
+			*((uint8_t*)(imageData + i)) = i;
+		}
+	}
+
+    int frameNr = 1;
 	// loop over number of frames
-    for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
+    for (frameNr = 0; frameNr != numFrames; ++frameNr) {
 
 		//check if virtual_stop is high
 		if(virtual_stop == 1){
 			break;
 		}
+
+		int srcOffset = 0;
+
 		// sleep for exposure time
         struct timespec begin, end;
         clock_gettime(CLOCK_REALTIME, &begin);
         usleep(exp_ns / 1000);
-        clock_gettime(CLOCK_REALTIME, &end);
+
+		// loop packet
+		{
+			int i = 0;
+			for(i = 0; i!=PACKETS_PER_FRAME; ++i) {			
+				char packetData[packetsize];
+				memset(packetData, 0, packetsize);
+
+				// set header
+				sls_detector_header* header = (sls_detector_header*)(packetData);
+				header->frameNumber = frameNr + 1;
+				header->packetNumber = i;
+				header->modId = 0;
+				header->row = detPos[X];
+				header->column = detPos[Y];
+				header->detType = (uint16_t)myDetectorType;
+				header->version = SLS_DETECTOR_HEADER_VERSION - 1; 
+
+				// fill data	
+				memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);	
+				srcOffset += datasize;
+
+				sendUDPPacket(0, packetData, packetsize);
+			}
+		}
+		FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
 
 		// calculate time left in period
+        clock_gettime(CLOCK_REALTIME, &end);
         int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
                 (end.tv_nsec - begin.tv_nsec));
 
@@ -1373,7 +1471,7 @@ int stopStateMachine(){
 #endif
 	//stop state machine
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STP_ACQSTN_MSK);
-	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
+	FILE_LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
     return OK;
 }
 
@@ -1430,7 +1528,7 @@ enum runStatus getRunStatus(){
 	return s;
 }
 
-void readFrame(int *ret, char *mess){
+void readFrame(int *ret, char *mess) {
 	// wait for status to be done
 	while(runBusy()){
 		usleep(500);
@@ -1450,7 +1548,6 @@ void readFrame(int *ret, char *mess){
 	} else {
 		FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 	}
-
 }
 
 u_int32_t runBusy() {
@@ -1458,17 +1555,25 @@ u_int32_t runBusy() {
     return virtual_status;
 #endif
 	u_int32_t s = (bus_r(PAT_STATUS_REG) & PAT_STATUS_RUN_BUSY_MSK);
-	FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
+	//FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
 }
 
 /* common */
 
-int calculateDataBytes(){
-	return 0;
+int calculateDataBytes() {
+	int numCounters = __builtin_popcount(getCounterMask());
+	int dr = setDynamicRange(-1);
+	int databytes = NCHAN_1_COUNTER * NCHIP * numCounters * 
+		((dr > 16) ? 4 : 	// 32 bit
+		((dr > 8)  ? 2 : 	// 16 bit
+		((dr > 4)  ? 0.5 : 	// 4 bit
+		0.125)));			// 1 bit
+
+	return databytes;
 }
 
-int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
-int getNumberOfChips(){return  NCHIP;}
-int getNumberOfDACs(){return  NDAC;}
-int getNumberOfChannelsPerChip(){return  NCHAN;}
+int getTotalNumberOfChannels() {return  (getNumberOfChannelsPerChip() * getNumberOfChips());}
+int getNumberOfChips() {return  NCHIP;}
+int getNumberOfDACs() {return  NDAC;}
+int getNumberOfChannelsPerChip() {return  NCHAN;}

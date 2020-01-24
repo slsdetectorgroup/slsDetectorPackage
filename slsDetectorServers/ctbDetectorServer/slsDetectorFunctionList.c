@@ -56,9 +56,9 @@ uint32_t adcEnableMask_1g = 0;
 uint8_t adcEnableMask_10g = 0;
 
 
-int32_t clkPhase[NUM_CLOCKS] = {0, 0, 0, 0};
+int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkFrequency[NUM_CLOCKS] = {40, 20, 20, 200};
-int dacValues[NDAC] = {0};
+int dacValues[NDAC] = {};
 // software limit that depends on the current chip on the ctb
 int vLimit = 0;
 int highvoltage = 0;
@@ -1418,22 +1418,18 @@ int setHighVoltage(int val){
 
 
 void setTiming( enum timingMode arg){
-
-	if(arg != GET_TIMING_MODE){
-		switch((int)arg){
-		case AUTO_TIMING:
-		    FILE_LOG(logINFO, ("Set Timing: Auto\n"));
-		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
-		    break;
-		case TRIGGER_EXPOSURE:
-		    FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
-		    bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
-		    break;
-		default:
-			FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
-			return;
-		}
-	}
+    switch(arg){
+    case AUTO_TIMING:
+        FILE_LOG(logINFO, ("Set Timing: Auto\n"));
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+        break;
+    case TRIGGER_EXPOSURE:
+        FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+        break;
+    default:
+        FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
+    }
 }
 
 
@@ -2559,7 +2555,7 @@ int calculateDataBytes(){
 	return dataBytes;
 }
 
-int getTotalNumberOfChannels(){return  ((int)getNumberOfChannelsPerChip() * (int)getNumberOfChips());}
+int getTotalNumberOfChannels() {return  (getNumberOfChannelsPerChip() * getNumberOfChips());}
 int getNumberOfChips(){return  NCHIP;}
 int getNumberOfDACs(){return  NDAC;}
 int getNumberOfChannelsPerChip(){return  NCHAN;}

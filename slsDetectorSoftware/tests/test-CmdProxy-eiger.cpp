@@ -364,7 +364,7 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("vb_comp_fe", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_comp_adc", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcom_cds", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vref_restore", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_rstore", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_opa_1st", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vref_comp_fe", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcom_adc1", {}, -1, GET));

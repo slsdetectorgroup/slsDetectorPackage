@@ -11,7 +11,7 @@ vref_h_adc      2099
 vb_comp_fe      0
 vb_comp_adc     0
 vcom_cds        1400
-vref_restore    640
+vref_rstore    640
 vb_opa_1st      0
 vref_comp_fe    0
 vcom_adc1       1400

@@ -317,7 +317,7 @@ class slsDetectorDefs {
         VB_COMP_FE,
         VB_COMP_ADC,
         VCOM_CDS,  
-        VREF_RESTORE,
+        VREF_RSTORE,
         VB_OPA_1ST,
         VREF_COMP_FE,
         VCOM_ADC1, 
@@ -437,6 +437,15 @@ class slsDetectorDefs {
         INTERPOLATING, /** < interpolating */
         ANALOG         /** < analog */
     };
+
+    /**
+     * burst mode for gotthard2
+     */
+    enum burstMode {
+        BURST_OFF,
+        BURST_INTERNAL,      
+        BURST_EXTERNAL, 
+    };    
 
 
 #ifdef __cplusplus

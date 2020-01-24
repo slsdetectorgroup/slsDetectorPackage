@@ -22,7 +22,7 @@ target_include_directories(gotthard2DetectorServer_virtual
 )
 
 target_compile_definitions(gotthard2DetectorServer_virtual
-    PUBLIC GOTTHARD2D VIRTUAL STOP_SERVER
+    PUBLIC GOTTHARD2D VIRTUAL STOP_SERVER DEBUG1 
 )
 
 target_link_libraries(gotthard2DetectorServer_virtual

@@ -84,11 +84,10 @@ int         updateDatabytesandAllocateRAM();
 void        updateDataBytes();
 #endif
 
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MYTHEN3D) || GOTTHARD2D
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MYTHEN3D)
 int			setDefaultDacs();
 #endif
 #ifdef GOTTHARD2D
-int			setDefaultOnChipDacs();
 int         readConfigFile();
 #endif
 
@@ -101,13 +100,13 @@ int  		readRegister(uint32_t offset, uint32_t* retval);
 uint32_t    writeRegister16And32(uint32_t offset, uint32_t data); //FIXME its not there in ctb or moench?
 uint32_t    readRegister16And32(uint32_t offset);
 #else
-extern u_int32_t    writeRegister(u_int32_t offset, u_int32_t data);    // blackfin.h
-extern u_int32_t    readRegister(u_int32_t offset);                     // blackfin.h
+extern u_int32_t    writeRegister(u_int32_t offset, u_int32_t data);    // blackfin.h or nios.h
+extern u_int32_t    readRegister(u_int32_t offset);                     // blackfin.h or nios.h
 #endif
 
 
 // firmware functions (resets)
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 void 		cleanFifos();
 void 		resetCore();
 void 		resetPeripheral();
@@ -178,6 +177,20 @@ int			setExpTime(int64_t val);
 int64_t 	getExpTime();
 int			setPeriod(int64_t val);
 int64_t 	getPeriod();
+#ifdef GOTTHARD2D
+void		setNumFramesBurst(int64_t val);
+int64_t		getNumFramesBurst();
+void		setNumFramesCont(int64_t val);
+int64_t		getNumFramesCont();
+int			setExptimeBurst(int64_t val);
+int			setExptimeCont(int64_t val);
+int			setExptimeBoth(int64_t val);
+int64_t		getExptimeBoth();
+int			setPeriodBurst(int64_t val);
+int64_t		getPeriodBurst();
+int			setPeriodCont(int64_t val);
+int64_t		getPeriodCont();
+#endif
 #ifdef EIGERD
 int			setSubExpTime(int64_t val);
 int64_t 	getSubExpTime();
@@ -203,22 +216,18 @@ void		setCounterMask(uint32_t arg);
 uint32_t	getCounterMask();
 #endif
 
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) 
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int			setDelayAfterTrigger(int64_t val);
 int64_t 	getDelayAfterTrigger();
-#endif
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int64_t		getNumFramesLeft();
 int64_t		getNumTriggersLeft();
-#endif
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
 int64_t		getDelayAfterTriggerLeft();
 int64_t		getPeriodLeft();
 #endif
 #ifdef GOTTHARDD
 int64_t		getExpTimeLeft();
 #endif
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
 int64_t		getFramesFromStart();
 int64_t		getActualTime();
 int64_t		getMeasurementTime();
@@ -230,9 +239,11 @@ int64_t		getMeasurementTime();
 #if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(MYTHEN3D)) && (!defined(GOTTHARD2D))
 int 		setModule(sls_detector_module myMod, char* mess);
 int 		getModule(sls_detector_module *myMod);
+#endif
+#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(MYTHEN3D)) 
 enum 		detectorSettings setSettings(enum detectorSettings sett);
 #endif
-#if !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(MYTHEN3D)
 enum 		detectorSettings getSettings();
 #endif
 
@@ -293,10 +304,8 @@ int 		setHighVoltage(int val);
 
 
 // parameters - timing, extsig
-#if !defined(GOTTHARD2D)
 void 		setTiming( enum timingMode arg);
 enum 		timingMode getTiming();
-#endif
 #ifdef GOTTHARDD
 void        setExtSignal(enum externalSignalFlag  mode);
 int         getExtSignal();
@@ -324,7 +333,6 @@ int         getAdcConfigured();
 int 		configureMAC();
 int 		setDetectorPosition(int pos[]);
 int*		getDetectorPosition();
-int			isConfigurable();
 
 
 #ifdef EIGERD
@@ -429,6 +437,10 @@ uint64_t    writePatternWord(int addr, uint64_t word);
 int         setPatternWaitAddress(int level, int addr);
 uint64_t    setPatternWaitTime(int level, uint64_t t);
 void        setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
+void 		setPatternMask(uint64_t mask);
+uint64_t	getPatternMask();
+void 		setPatternBitMask(uint64_t mask);
+uint64_t	getPatternBitMask();
 int			checkDetectorType();
 int         powerChip (int on);
 int        	setPhase(enum CLKINDEX ind, int val, int degrees);
@@ -443,6 +455,8 @@ int       	setClockDivider(enum CLKINDEX ind, int val);
 int         getClockDivider(enum CLKINDEX ind);
 
 #elif GOTTHARD2D
+int			checkDetectorType();
+int         powerChip (int on);
 int        	setPhase(enum CLKINDEX ind, int val, int degrees);
 int         getPhase(enum CLKINDEX ind, int degrees);
 int         getMaxPhase(enum CLKINDEX ind);
@@ -460,8 +474,9 @@ int			setVetoPhoton(int chipIndex, int gainIndex, int* values);
 int			getVetoPhoton(int chipIndex, int* retvals);
 int			configureSingleADCDriver(int chipIndex);
 int			configureADC();
-int			setBurstMode(int burst);
-int			getBurstMode();
+int			setBurstModeinFPGA(enum burstMode value);
+int			setBurstMode(enum burstMode burst);
+enum burstMode	getBurstMode();
 #endif
 
 
@@ -485,6 +500,9 @@ int 		setTransmissionDelayRight(int value);
 
 
 // aquisition
+#ifdef GOTTHARD2D
+int			updateAcquisitionRegisters(char* mess);
+#endif
 #ifdef EIGERD
 int 		prepareAcquisition();
 #endif

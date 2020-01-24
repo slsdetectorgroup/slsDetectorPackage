@@ -19,6 +19,8 @@ extern int ret;
 // Global variables from slsDetectorServer_funcs
 extern int sockfd;
 extern int debugflag;
+extern int checkModuleFlag;
+
 
 // Global variables from slsDetectorFunctionList
 #ifdef GOTTHARDD
@@ -67,7 +69,11 @@ int main(int argc, char *argv[]){
                 FILE_LOG(logINFO, ("Detected developer mode\n"));
                 debugflag = 1;
             }
-			else if(!strcasecmp(argv[i],"--port")){
+            else if(!strcasecmp(argv[i],"-nomodule")){
+                FILE_LOG(logINFO, ("Detected No Module mode\n"));
+                checkModuleFlag = 0;
+            }	
+			else if(!strcasecmp(argv[i],"-port")){
 			    if ((i + 1) >= argc) {
 			        FILE_LOG(logERROR, ("no port value given. Exiting.\n"));
 			        return -1;
@@ -105,7 +111,7 @@ int main(int argc, char *argv[]){
 			int i;
 			for (i = 0; i < argc; ++i)
 				sprintf(cmd, "%s %s", cmd, argv[i]);
-			sprintf(cmd,"%s -stopserver --port %d &", cmd, portno + 1);
+			sprintf(cmd,"%s -stopserver -port %d &", cmd, portno + 1);
 			FILE_LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
 			system(cmd);
 		}

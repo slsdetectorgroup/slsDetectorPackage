@@ -5,7 +5,7 @@
 //#include "moench03T1ZmqData.h"
 //#define DOUBLE_SPH
 //#define MANYFILES
-#define WRITE_QUAD
+//#define WRITE_QUAD
 #ifdef DOUBLE_SPH
 #include "single_photon_hit_double.h"
 #endif
@@ -177,6 +177,12 @@ int main(int argc, char *argv[]) {
 // 	    if (cl.x>210 && cl.x<240 && cl.y>210 && cl.y<240) {
 // #endif
 	    if (cl.x<0 || cl.y<0 || cl.x>NC || cl.y>NR) {
+	      if (cl.x<-1 || cl.y<-1 || cl.x>NC+1 || cl.y>NR+1) {
+		cout <<"**************"<< endl;
+		cout << cl.x << " " << cl.y << " " << sum << endl;
+		cl.print();
+		cout <<"**************"<< endl;
+	      }
 	    } else  {
 #ifndef FF
 	      // interp->getInterpolatedPosition(cl.x,cl.y, cl.get_cluster(),int_x, int_y);  

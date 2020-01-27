@@ -51,6 +51,10 @@ void Fifo::CreateFifos(uint32_t fifoItemSize) {
 		throw sls::RuntimeError("Could not allocate memory for fifos");
 	}
     memset(memory, 0, mem_len);
+	int pagesize = getpagesize();
+	for (size_t i = 0; i < mem_len; i += pagesize) {
+		strcpy(memory + i, "memory");
+	}	
 	FILE_LOG(logDEBUG) << "Memory Allocated " << index << ": " << (double)mem_len/(1000.00 * 1000.00) << " Mb";
 
 	{ //push free addresses into fifoFree fifo

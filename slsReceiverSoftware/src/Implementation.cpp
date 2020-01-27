@@ -193,9 +193,9 @@ void Implementation::SetupFifoStructure() {
     }
 
     FILE_LOG(logINFO) << "Memory Allocated Per Fifo: "
-                      << (double)(((generalData->imageSize) +
-                           (generalData->fifoBufferHeaderSize)) *
-                          fifoDepth) / (1000.00 * 1000.00)
+                      << (double)(((size_t)(generalData->imageSize) +
+                           (size_t)(generalData->fifoBufferHeaderSize)) *
+                          (size_t)fifoDepth) / (1000.00 * 1000.00)
                       << " Mb";
     FILE_LOG(logINFO) << numThreads << " Fifo structure(s) reconstructed";
 }

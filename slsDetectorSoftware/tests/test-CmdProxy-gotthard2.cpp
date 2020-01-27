@@ -29,7 +29,7 @@ TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs]") {
         SECTION("vb_comp_fe") { test_dac(defs::VB_COMP_FE, "vb_comp_fe", 0); }
         SECTION("vb_comp_adc") { test_dac(defs::VB_COMP_ADC, "vb_comp_adc", 0); }
         SECTION("vcom_cds") { test_dac(defs::VCOM_CDS, "vcom_cds", 1400); }
-        SECTION("vref_restore") { test_dac(defs::VREF_RESTORE, "vref_restore", 640); }
+        SECTION("vref_rstore") { test_dac(defs::VREF_RSTORE, "vref_rstore", 640); }
         SECTION("vb_opa_1st") { test_dac(defs::VB_OPA_1ST, "vb_opa_1st", 0); }
         SECTION("vref_comp_fe") { test_dac(defs::VREF_COMP_FE, "vref_comp_fe", 0); }
         SECTION("vcom_adc1") { test_dac(defs::VCOM_ADC1, "vcom_adc1", 1400); }
@@ -98,30 +98,30 @@ TEST_CASE("vchip", "[.cmd][.onchipdacs]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
-        std::vector<std::string> onChipDacNames = {"vchip_comp_fe", "vchip_opa_1st", "vchip_opa_fd", "vchip_comp_adc", "vchip_ref_comp_fe", "vchip_cs"};
-        std::vector>defs::dacIndex> on_chip_dac_indices = {defs::VB_COMP_FE, defs::VB_OPA_1ST, defs::VB_OPA_FD, defs::VB_COMP_ADC, defs::VREF_COMP_FE, defs::VB_CS};
+        std::vector<std::string> on_chip_dac_names = {"vchip_comp_fe", "vchip_opa_1st", "vchip_opa_fd", "vchip_comp_adc", "vchip_ref_comp_fe", "vchip_cs"};
+        std::vector<defs::dacIndex> on_chip_dac_indices = {defs::VB_COMP_FE, defs::VB_OPA_1ST, defs::VB_OPA_FD, defs::VB_COMP_ADC, defs::VREF_COMP_FE, defs::VB_CS};
         std::vector<int> values = {0x137, 0x000, 0x134, 0x3FF, 0x100, 0x0D0};
 
         for (size_t i = 0; i < on_chip_dac_names.size(); ++i) {
             REQUIRE_THROWS(proxy.Call(on_chip_dac_names[i], {}, -1, GET));
             REQUIRE_THROWS(proxy.Call(on_chip_dac_names[i], {"10", "0x0"}, -1, GET)); // chip index (-1 to 9)
             REQUIRE_THROWS(proxy.Call(on_chip_dac_names[i], {"-1", "0x400"}, -1, GET)); // max val is 0x3ff
-        }
-        auto previous = det.getOnChipDAC(on_chip_dac_indices[i], -1);
-        auto dacstr = std::to_string(values[i]);
-        int chip_index = -1;
-        auto chip_index_str = std::to_string(chip_index);
-
-        std::ostringstream oss_set, oss_get;
-        proxy.Call(on_chip_dac_names[i], {chip_index_str, dacstr}, -1, PUT, oss_set);
-        REQUIRE(oss_set.str() == on_chip_dac_names[i] + " " + dacstr + "\n");
-        proxy.Call(on_chip_dac_names[i], {chip_index_str}, -1, GET, oss_get);
-        REQUIRE(oss_get.str() == on_chip_dac_names[i] + " " + dacstr + "\n");
-        // Reset all dacs to previous value
-        for (int i = 0; i != det.size(); ++i) {
-            det.setOnChipDAC(on_chip_dac_indices[i], chip_index, previous[i], false, {i});
-        }
         
+            auto previous = det.getOnChipDAC(on_chip_dac_indices[i], -1);
+            auto dacstr = std::to_string(values[i]);
+            int chip_index = -1;
+            auto chip_index_str = std::to_string(chip_index);
+
+            std::ostringstream oss_set, oss_get;
+            proxy.Call(on_chip_dac_names[i], {chip_index_str, dacstr}, -1, PUT, oss_set);
+            REQUIRE(oss_set.str() == on_chip_dac_names[i] + " " + dacstr + "\n");
+            proxy.Call(on_chip_dac_names[i], {chip_index_str}, -1, GET, oss_get);
+            REQUIRE(oss_get.str() == on_chip_dac_names[i] + " " + dacstr + "\n");
+            // Reset all dacs to previous value
+            for (int i = 0; i != det.size(); ++i) {
+                det.setOnChipDAC(on_chip_dac_indices[i], chip_index, previous[i], {i});
+            }
+        }
     } else {
         REQUIRE_THROWS(proxy.Call("vchip_comp_fe", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vchip_opa_1st", {}, -1, GET));

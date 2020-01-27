@@ -56,7 +56,7 @@ void Fifo::CreateFifos(uint32_t fifoItemSize) {
 	{ //push free addresses into fifoFree fifo
 		char* buffer = memory;
 		for (int i = 0; i < fifoDepth; ++i) {
-			//sprintf(buffer,"memory");
+			strcpy(buffer, "memory"); //ensures the memory is allocated
 			FreeAddress(buffer);
 			buffer += fifoItemSize;
 		}

@@ -55,7 +55,7 @@ void Fifo::CreateFifos(uint32_t fifoItemSize) {
 	for (size_t i = 0; i < mem_len; i += pagesize) {
 		strcpy(memory + i, "memory");
 	}	
-	FILE_LOG(logDEBUG) << "Memory Allocated " << index << ": " << (double)mem_len/(1000.00 * 1000.00) << " Mb";
+	FILE_LOG(logDEBUG) << "Memory Allocated " << index << ": " << (double)mem_len/(double)(1024 * 1024) << " MB";
 
 	{ //push free addresses into fifoFree fifo
 		char* buffer = memory;

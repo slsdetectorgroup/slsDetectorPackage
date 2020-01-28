@@ -361,7 +361,7 @@ void qTabAdvanced::SetDetectorUDPIP() {
     std::string s = dispDetectorUDPIP->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Detector UDP IP:" << s;
     try {
-        det->setSourceUDPIP(s, {comboDetector->currentIndex()});
+        det->setSourceUDPIP(sls::IpAddr{s}, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Detector UDP IP.",
                                 "qTabAdvanced::SetDetectorUDPIP", this,
                                 &qTabAdvanced::GetDetectorUDPIP)
@@ -371,7 +371,7 @@ void qTabAdvanced::SetDetectorUDPMAC() {
     std::string s = dispDetectorUDPMAC->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Detector UDP MAC:" << s;
     try {
-        det->setSourceUDPMAC(s, {comboDetector->currentIndex()});
+        det->setSourceUDPMAC(sls::MacAddr{s}, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Detector UDP MAC.",
                                 "qTabAdvanced::SetDetectorUDPMAC", this,
                                 &qTabAdvanced::GetDetectorUDPMAC)
@@ -390,7 +390,7 @@ void qTabAdvanced::SetCltZMQIP() {
     std::string s = dispZMQIP->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Client ZMQ IP:" << s;
     try {
-        det->setClientZmqIp(s, {comboDetector->currentIndex()});
+        det->setClientZmqIp(sls::IpAddr{s}, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Client ZMQ IP.",
                                 "qTabAdvanced::SetCltZMQIP", this,
                                 &qTabAdvanced::GetCltZMQIP)
@@ -431,7 +431,7 @@ void qTabAdvanced::SetRxrUDPIP() {
     std::string s = dispRxrUDPIP->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Receiver UDP IP:" << s;
     try {
-        det->setDestinationUDPIP(s, {comboDetector->currentIndex()});
+        det->setDestinationUDPIP(sls::IpAddr{s}, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Receiver UDP IP.",
                                 "qTabAdvanced::SetRxrUDPIP", this,
                                 &qTabAdvanced::GetRxrUDPIP)
@@ -441,7 +441,7 @@ void qTabAdvanced::SetRxrUDPMAC() {
     std::string s = dispRxrUDPMAC->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Receiver UDP MAC:" << s;
     try {
-        det->setDestinationUDPMAC(s, {comboDetector->currentIndex()});
+        det->setDestinationUDPMAC(sls::MacAddr{s}, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Receiver UDP MAC.",
                                 "qTabAdvanced::SetRxrUDPMAC", this,
                                 &qTabAdvanced::GetRxrUDPMAC)
@@ -460,7 +460,7 @@ void qTabAdvanced::SetRxrZMQIP() {
     std::string s = dispRxrZMQIP->text().toAscii().constData();
     FILE_LOG(logINFO) << "Setting Receiver ZMQ IP:" << s;
     try {
-        det->setRxZmqIP(s, {comboDetector->currentIndex()});
+        det->setRxZmqIP(sls::IpAddr{s}, {comboDetector->currentIndex()});
     } CATCH_HANDLE ("Could not set Receiver ZMQ IP.",
                                 "qTabAdvanced::SetRxrZMQIP", this,
                                 &qTabAdvanced::GetRxrZMQIP)

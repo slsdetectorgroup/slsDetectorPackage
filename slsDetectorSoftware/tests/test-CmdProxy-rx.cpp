@@ -479,42 +479,7 @@ TEST_CASE("rx_zmqip", "[.cmd]") {
     }
 }
 
-// TEST_CASE("burstmode", "[.cmd][.gotthard2]") {
-//     if (test::type == slsDetectorDefs::GOTTHARD2) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("burstmode 0", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("burstmode 1", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("burstmode", GET));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("burstmod", GET));
-//     }
-// }
 
-// TEST_CASE("vetoref", "[.cmd][.gotthard2]") {
-//     if (test::type == slsDetectorDefs::GOTTHARD2) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("vetoref 3 0x3ff", PUT)); //
-//         invalid chip index REQUIRE_THROWS(multiSlsDetectorClient("vetoref 0
-//         0xFFFF", PUT)); // invalid value
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("vetoref 1 0x010", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("vetoref", GET));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("vetoref 3 0x0", PUT));
-//     }
-// }
-
-// TEST_CASE("vetophoton", "[.cmd][.gotthard2]") {
-//     if (test::type == slsDetectorDefs::GOTTHARD2) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("vetophoton 12 1 39950
-//         examples/gotthard2_veto_photon.txt", PUT)); // invalid chip index
-//         REQUIRE_THROWS(multiSlsDetectorClient("vetophoton -1 0 39950
-//         examples/gotthard2_veto_photon.txt", PUT)); // invalid photon number
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("vetophoton -1 1 39950
-//         examples/gotthard2_veto_photon.txt", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("vetophoton", GET));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("vetophoton -1", GET));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("vetophoton -1", GET));
-//     }
-// }
 
 // TEST_CASE("inj_ch", "[.cmd][.gotthard2]") {
 //     if (test::type == slsDetectorDefs::GOTTHARD2) {

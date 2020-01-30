@@ -13,7 +13,7 @@
 #include "ALTERA_PLL.h" // pll
 #include "blackfin.h"
 #ifndef VIRTUAL
-#include "programfpga.h"
+#include "programFpgaBlackfin.h"
 #endif
 
 #include <string.h>

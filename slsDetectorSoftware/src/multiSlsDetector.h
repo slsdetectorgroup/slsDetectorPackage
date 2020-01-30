@@ -323,11 +323,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Convert raw file
-     * @param fname name of pof file
-     * @param fpgasrc pointer in memory to read pof to
+     * [Jungfrau][Ctb] from pof file
+     * [Mythen3][Gotthard2] from rbf file
+     * @param fname name of pof/rbf file 
+     * @param fpgasrc pointer in memory to read programming file to
      * @returns file size
      */
-    std::vector<char> readPofFile(const std::string &fname);
+    std::vector<char> readProgrammingFile(const std::string &fname);
 
   private:
     /**

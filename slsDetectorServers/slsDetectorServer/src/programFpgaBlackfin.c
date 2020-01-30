@@ -1,4 +1,4 @@
-#include "programfpga.h"
+#include "programFpgaBlackfin.h"
 #include "ansi.h"
 #include "clogger.h"
 #include "slsDetectorServer_defs.h"
@@ -57,6 +57,12 @@ int startWritingFPGAprogram(FILE** filefp){
     FILE_LOG(logDEBUG1, ("Start Writing of FPGA program\n"));
 
 	//getting the drive
+	//root:/>  cat /proc/mtd
+	//dev:    size   erasesize  name
+	//mtd0: 00040000 00020000 "bootloader(nor)"
+	//mtd1: 00100000 00020000 "linux kernel(nor)"
+	//mtd2: 002c0000 00020000 "file system(nor)"
+	//mtd3: 01000000 00010000 "bitfile(spi)"
 	char output[255];
 	memset(output, 0, 255);
 	FILE* fp = popen("awk \'$4== \"\\\"bitfile(spi)\\\"\" {print $1}\' /proc/mtd", "r");
@@ -120,14 +126,14 @@ void stopWritingFPGAprogram(FILE* filefp){
 	FILE_LOG(logINFO, ("FPGA has picked up the program from flash\n"));
 }
 
-int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp){
+int writeFPGAProgram(char* fpgasrc, uint64_t fsize, FILE* filefp){
     FILE_LOG(logDEBUG1, ("Writing of FPGA Program\n"
             "\taddress of fpgasrc:%p\n"
-            "\tfsize:%lu\n\tpointer:%p\n",
-            (void *)fpgasrc, fsize, (void*)filefp));
+            "\tfsize:%llu\n\tpointer:%p\n",
+            (void *)fpgasrc, (long long unsigned int)fsize, (void*)filefp));
 
 	if(fwrite((void*)fpgasrc , sizeof(char) , fsize , filefp )!= fsize){
-	    FILE_LOG(logERROR, ("Could not write FPGA source to flash (size:%lu)\n", fsize));
+	    FILE_LOG(logERROR, ("Could not write FPGA source to flash (size:%llu)\n", (long long unsigned int)fsize));
 		return 1;
 	}
 	FILE_LOG(logDEBUG1, ("program written to flash\n"));

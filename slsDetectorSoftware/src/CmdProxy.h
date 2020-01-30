@@ -1696,7 +1696,7 @@ class CmdProxy {
                 "\n\t[Jungfrau][Ctb] Reset FPGA.");   
 
     EXECUTE_SET_COMMAND(rebootcontroller, rebootController, 
-                "\n\t[Jungfrau][Ctb] Reboot controler (blackfin) of detector.");  
+                "\n\t[Jungfrau][Ctb][Gotthard][Mythen3][Gotthard2] Reboot controler (blackfin) of detector.");  
 
     EXECUTE_SET_COMMAND(firmwaretest, executeFirmwareTest, 
                 "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test, ie. reads a read fixed pattern from a register.");  

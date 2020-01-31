@@ -52,6 +52,19 @@ qDrawPlot::~qDrawPlot() {
 
 void qDrawPlot::SetupWidgetWindow() {
     detType = det->getDetectorType().squash();
+    switch (detType) {
+        case slsDetectorDefs::JUNGFRAU:
+        case slsDetectorDefs::MOENCH:
+            pixelMask = ((1 << 15) - 1);
+            FILE_LOG(logINFO) << "Pixel Mask: " << std::hex << pixelMask << std::dec;
+            break;
+        case slsDetectorDefs::GOTTHARD2:
+            pixelMask = ((1 << 13) - 1);
+            FILE_LOG(logINFO) << "Pixel Mask: " << std::hex << pixelMask << std::dec;
+            break;
+        default:
+            break;
+    }
     // save
     try {
         std::string temp = det->getFilePath().squash("/tmp/");
@@ -879,7 +892,7 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int data
     int halfbyte = 0;
     char cbyte = '\0';
 
-    // mythen 3 debugging
+    // mythen3 / gotthard2 debugging
     int discardBits = numDiscardBits;
 
     switch (dr) {
@@ -903,14 +916,15 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int data
 
     case 16:
         if (detType == slsDetectorDefs::JUNGFRAU ||
-            detType == slsDetectorDefs::MOENCH) {
+            detType == slsDetectorDefs::MOENCH ||
+            detType == slsDetectorDefs::GOTTHARD2) {
 
             // show gain plot
             if (gaindest != NULL) {
                 for (ichan = 0; ichan < size; ++ichan) {
                     uint16_t temp = (*((u_int16_t *)source));
                     gaindest[ichan] = ((temp & 0xC000) >> 14);
-                    dest[ichan] = (temp & 0x3FFF);
+                    dest[ichan] = (temp & pixelMask);
                     source += 2;
                 }
             }
@@ -918,7 +932,7 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int data
             // only data plot
             else {
                 for (ichan = 0; ichan < size; ++ichan) {
-                    dest[ichan] = ((*((u_int16_t *)source)) & 0x3FFF);
+                    dest[ichan] = ((*((u_int16_t *)source)) & pixelMask);
                     source += 2;
                 }
             }

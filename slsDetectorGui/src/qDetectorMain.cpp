@@ -229,6 +229,7 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     case slsDetectorDefs::JUNGFRAU:
     case slsDetectorDefs::MOENCH:
     case slsDetectorDefs::MYTHEN3:
+    case slsDetectorDefs::GOTTHARD2:
          break;
     default:
         std::ostringstream os;
@@ -446,7 +447,7 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
                            clientVersion +
                            "<br><br>"
                            "Common GUI to control the SLS Detectors: "
-                           "Eiger, Gotthard, Jungfrau and Moench.<br><br>"
+                           "Eiger, Jungfrau, Mythen3, Gotthard, Gotthard2 and Moench.<br><br>"
                            "It can be operated in parallel with the command "
                            "line interface:<br>"
                            "sls_detector_put,<br>sls_detector_get,<br>sls_"

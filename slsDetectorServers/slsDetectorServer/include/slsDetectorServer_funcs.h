@@ -19,7 +19,6 @@ void validate(int arg, int retval, char* modename, enum numberMode nummode);
 void validate64(int64_t arg, int64_t retval, char* modename, enum numberMode nummode);
 int executeCommand(char* command, char* result, enum TLogLevel level);
 int M_nofunc(int);
-int M_nofuncMode(int);
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 extern void rebootControllerAndFPGA();
 #endif

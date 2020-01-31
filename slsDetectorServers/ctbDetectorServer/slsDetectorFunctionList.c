@@ -12,9 +12,6 @@
 #include "INA226.h"     // i2c
 #include "ALTERA_PLL.h" // pll
 #include "blackfin.h"
-#ifndef VIRTUAL
-#include "programFpgaBlackfin.h"
-#endif
 
 #include <string.h>
 #include <unistd.h>     // usleep

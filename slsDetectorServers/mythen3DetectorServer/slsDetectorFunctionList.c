@@ -7,9 +7,7 @@
 #include "common.h"
 #include "RegisterDefs.h"
 #include "ALTERA_PLL_CYCLONE10.h" 
-#ifndef VIRTUAL
-#include "programFpgaNios.h"
-#else
+#ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #endif
 

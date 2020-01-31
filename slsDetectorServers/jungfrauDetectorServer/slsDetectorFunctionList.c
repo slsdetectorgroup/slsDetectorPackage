@@ -8,9 +8,7 @@
 #include "ALTERA_PLL.h" // pll
 #include "blackfin.h"
 #include "common.h"
-#ifndef VIRTUAL
-#include "programFpgaBlackfin.h"
-#else
+#ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #endif
 

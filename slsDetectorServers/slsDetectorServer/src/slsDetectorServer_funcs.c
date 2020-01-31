@@ -2,6 +2,13 @@
 #include "slsDetectorFunctionList.h"
 #include "communication_funcs.h"
 #include "clogger.h"
+#ifndef VIRTUAL
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+#include "programFpgaNios.h"
+#elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#include "programFpgaBlackfin.h"
+#endif
+#endif
 
 #include <string.h>
 #include <arpa/inet.h>
@@ -592,27 +599,6 @@ int  M_nofunc(int file_des) {
 	FILE_LOG(logERROR, (mess));
 	return Server_SendResult(file_des, OTHER, NO_UPDATE, NULL, 0);
 }
-
-
-// Jungfrau program mode
-int  M_nofuncMode(int file_des) {
-	ret = FAIL;
-	memset(mess, 0, sizeof(mess));
-
-	// to receive any arguments
-	int n = 1;
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	sprintf(mess,"This Function %s cannot be executed as the "
-			"On-board detector server in update mode.\n"
-			"Restart detector server in normal mode (without any arguments) to continue.\n",
-			getFunctionName((enum detFuncs)fnum));
-	FILE_LOG(logERROR, (mess));
-	return Server_SendResult(file_des, OTHER, NO_UPDATE, NULL, 0);
-}
-
-
 
 
 int exec_command(int file_des) {
@@ -3728,19 +3714,27 @@ int program_fpga(int file_des) {
 		// filesize
 		if (receiveData(file_des,&filesize,sizeof(filesize),INT64) < 0)
 			return printSocketReadError();
-		FILE_LOG(logDEBUG1, ("Total program size is: %lld\n", (long long unsigned int)filesize));
-
-		// receive program
-		char* fpgasrc = (char*)malloc(filesize);
-		if (receiveData(file_des, fpgasrc, filesize, OTHER) < 0)
-			return printSocketReadError();
-
-		ret = eraseAndWriteToFlash(mess, fpgasrc, filesize);
+		FILE_LOG(logDEBUG1, ("Total program size is: %llx\n", (long long unsigned int)filesize));
+		if (filesize > NIOS_MAX_APP_IMAGE_SIZE) {
+			ret = FAIL;
+			sprintf(mess,"Could not start programming FPGA. File size 0x%llx exceeds max size 0x%llx. Forgot Compression?\n", (long long unsigned int) filesize, (long long unsigned int)NIOS_MAX_APP_IMAGE_SIZE);
+			FILE_LOG(logERROR,(mess));			
+		} 
 		Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+		
+		// receive program
+		if (ret == OK) {
+			char* fpgasrc = (char*)malloc(filesize);
+			if (receiveData(file_des, fpgasrc, filesize, OTHER) < 0)
+				return printSocketReadError();
 
-		//free resources
-		if (fpgasrc != NULL)
-			free(fpgasrc);
+			ret = eraseAndWriteToFlash(mess, fpgasrc, filesize);
+			Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+
+			//free resources
+			if (fpgasrc != NULL)
+				free(fpgasrc);
+		}
 
 
 #else // jungfrau, ctb, moench
@@ -3817,9 +3811,9 @@ int program_fpga(int file_des) {
 		if (fp != NULL)
 			fclose(fp);
 
-#endif
+#endif // end of Blackfin programming
 		if (ret == FAIL) {
-			FILE_LOG(logINFORED, ("Program FPGA fail!\n"));
+			FILE_LOG(logERROR, ("Program FPGA FAIL!\n"));
 		} else {
 			FILE_LOG(logINFOGREEN, ("Programming FPGA completed successfully\n"));
 		}

@@ -2989,8 +2989,6 @@ void slsDetector::programFPGAviaBlackfin(std::vector<char> buffer) {
 
 void slsDetector::programFPGAviaNios(std::vector<char> buffer) {
     uint64_t filesize = buffer.size();
-
-    // send program from memory to detector
     int fnum = F_PROGRAM_FPGA;
     int ret = FAIL;
     char mess[MAX_STR_LENGTH] = {0};
@@ -2999,11 +2997,20 @@ void slsDetector::programFPGAviaNios(std::vector<char> buffer) {
 
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(&fnum, sizeof(fnum));
+    // filesize
     client.Send(&filesize, sizeof(filesize));
+    client.Receive(&ret, sizeof(ret));   
+    if (ret == FAIL) {
+        client.Receive(mess, sizeof(mess));
+        std::ostringstream os;
+        os << "Detector " << detId << " (" << shm()->hostname << ")"
+            << " returned error: " << mess;
+        throw RuntimeError(os.str());
+    }    
+    // program
     client.Send(&buffer[0], filesize);
     client.Receive(&ret, sizeof(ret));
     if (ret == FAIL) {
-        printf("\n");
         client.Receive(mess, sizeof(mess));
         std::ostringstream os;
         os << "Detector " << detId << " (" << shm()->hostname << ")"

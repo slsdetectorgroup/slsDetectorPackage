@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#define NIOS_MAX_APP_IMAGE_SIZE (0x00580000)
+
 /** Notify microcontroller of successful server start up */
 void NotifyServerStartSuccess();
 

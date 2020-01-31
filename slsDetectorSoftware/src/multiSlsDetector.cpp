@@ -212,6 +212,15 @@ std::string multiSlsDetector::getUserDetails() {
     return sstream.str();
 }
 
+
+bool multiSlsDetector::getInitialChecks() const {
+    return multi_shm()->initialChecks;
+}
+
+void multiSlsDetector::setInitialChecks(const bool value) {
+    multi_shm()->initialChecks = value;
+}
+
 void multiSlsDetector::initSharedMemory(bool verify) {
     if (!multi_shm.IsExisting()) {
         multi_shm.CreateSharedMemory();
@@ -240,6 +249,7 @@ void multiSlsDetector::initializeDetectorStructure() {
     multi_shm()->numberOfChannels.y = 0;
     multi_shm()->acquiringFlag = false;
     multi_shm()->receiver_upstream = false;
+    multi_shm()->initialChecks = true;
 }
 
 void multiSlsDetector::initializeMembers(bool verify) {
@@ -323,8 +333,10 @@ void multiSlsDetector::setHostname(const std::vector<std::string> &name) {
         FILE_LOG(logWARNING)
             << "There are already detector(s) in shared memory."
                "Freeing Shared memory now.";
+        bool initialChecks = multi_shm()->initialChecks;
         freeSharedMemory();
         setupMultiDetector();
+        multi_shm()->initialChecks = initialChecks;
     }
     for (const auto &hostname : name) {
         addSlsDetector(hostname);
@@ -363,7 +375,7 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     multi_shm()->numberOfDetectors = detectors.size();
     detectors[pos]->setControlPort(port);
     detectors[pos]->setStopPort(port + 1);
-    detectors[pos]->setHostname(host);
+    detectors[pos]->setHostname(host, multi_shm()->initialChecks);
     // detector type updated by now
     multi_shm()->multiDetectorType = Parallel(&slsDetector::getDetectorType, {}).tsquash("Inconsistent detector types.");
 }

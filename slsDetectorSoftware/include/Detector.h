@@ -1265,6 +1265,12 @@ class Detector {
     /** [Gotthard][Jungfrau][CTB] not possible to read back*/
     void writeAdcRegister(uint32_t addr, uint32_t value, Positions pos = {});
 
+    bool getInitialChecks() const;
+
+    /** initial compaibility and other server start up checks
+     * default enabled */
+    void setInitialChecks(const bool value);
+
     /**************************************************
      *                                                *
      *    Insignificant                               *

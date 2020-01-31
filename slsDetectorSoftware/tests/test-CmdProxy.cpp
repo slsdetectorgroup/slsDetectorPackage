@@ -35,6 +35,34 @@ TEST_CASE("type", "[.cmd]"){
 }
 
 
+TEST_CASE("initialchecks", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto check = det.getInitialChecks();
+    auto dtstr = sls::ToString(check);
+    auto hostname = det.getHostname();
+    std::string hostnamestr;
+    for (auto &it : hostname) {
+        hostnamestr += (it + "+");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("initialchecks", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "initialchecks 0\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("initialchecks", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "initialchecks 0\n");        
+    }
+    {
+        det.setHostname(hostname);
+        std::ostringstream oss;
+        proxy.Call("initialchecks", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "initialchecks 0\n");        
+    }   
+    det.setInitialChecks(check);
+}
 
 // TEST_CASE("dacs", "[.cmd]") {
 //     REQUIRE_NOTHROW(multiSlsDetectorClient("daclist", GET));

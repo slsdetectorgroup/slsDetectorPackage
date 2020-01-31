@@ -876,6 +876,7 @@ class CmdProxy {
                           {"getbit", &CmdProxy::BitOperations}, 
                           {"firmwaretest", &CmdProxy::firmwaretest}, 
                           {"bustest", &CmdProxy::bustest}, 
+                          {"initialchecks", &CmdProxy::InitialChecks}, 
 
                           /* Insignificant */
                           {"port", &CmdProxy::port}, 
@@ -973,6 +974,7 @@ class CmdProxy {
     std::string Register(int action);
     std::string AdcRegister(int action);
     std::string BitOperations(int action);
+    std::string InitialChecks(int action);
     /* Insignificant */
     std::string ExecuteCommand(int action);
     std::string UserDetails(int action);

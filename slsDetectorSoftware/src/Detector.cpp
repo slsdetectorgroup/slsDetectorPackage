@@ -1707,6 +1707,14 @@ void Detector::writeAdcRegister(uint32_t addr, uint32_t value, Positions pos) {
     pimpl->Parallel(&slsDetector::writeAdcRegister, pos, addr, value);
 }
 
+bool Detector::getInitialChecks() const {
+    return pimpl->getInitialChecks();
+}
+
+void Detector::setInitialChecks(const bool value) {
+    pimpl->setInitialChecks(value);
+}
+
 // Insignificant
 
 Result<int> Detector::getControlPort(Positions pos) const {

@@ -1652,9 +1652,7 @@ void Detector::setDetectorMode(defs::detectorModeType value, Positions pos) {
 // Advanced
 
 void Detector::programFPGA(const std::string &fname, Positions pos) {
-    FILE_LOG(logINFO)
-        << "Updating Firmware. This can take awhile. Please be patient...";
-    std::vector<char> buffer = pimpl->readPofFile(fname);
+    std::vector<char> buffer = pimpl->readProgrammingFile(fname);
     pimpl->Parallel(&slsDetector::programFPGA, pos, buffer);
 }
 

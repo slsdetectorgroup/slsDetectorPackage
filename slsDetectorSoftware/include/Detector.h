@@ -1216,7 +1216,9 @@ class Detector {
      *                                                *
      * ************************************************/
 
-    /** [Jungfrau][CTB] */
+    /** [Jungfrau][CTB] fname is a pof file
+     * [Mythen3][Gotthard2] fname is an rbf file
+     */
     void programFPGA(const std::string &fname, Positions pos = {});
 
     /** [Jungfrau][CTB] */
@@ -1229,7 +1231,7 @@ class Detector {
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname, Positions pos = {});
 
-    /** [Jungfrau][Gotthard][CTB] */
+    /** [Jungfrau][Gotthard][CTB][Mythen3][Gotthard2] */
     void rebootController(Positions pos = {});
 
     /**

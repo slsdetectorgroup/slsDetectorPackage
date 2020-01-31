@@ -1382,11 +1382,17 @@ class slsDetector : public virtual slsDetectorDefs {
     int setStoragecellStart(int pos = -1);
 
     /**
-     * Programs FPGA with pof file (Jungfrau, CTB, Moench)
+     * [Jungfau][Ctb] Programs FPGA with raw file from pof file
+     * [Mythen3][Gotthard2] Programs FPGA with raw file from rbf file
      * @param buffer programming file in memory
      */
     void programFPGA(std::vector<char> buffer);
+    
+    /** [Jungfau][Ctb] */
+    void programFPGAviaBlackfin(std::vector<char> buffer);    
 
+    /** [Mythen3][Gotthard2] */
+    void programFPGAviaNios(std::vector<char> buffer); 
     /**
      * Resets FPGA (Jungfrau)
      */
@@ -1401,6 +1407,7 @@ class slsDetector : public virtual slsDetectorDefs {
                             const std::string &hostname);
 
     /**
+     * [Jungfrau][Ctb][Gotthard][Mythen3][Gotthard2]
      * Reboot detector controller (blackfin/ powerpc)
      */
     void rebootController();

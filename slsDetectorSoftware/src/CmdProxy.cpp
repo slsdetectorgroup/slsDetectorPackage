@@ -1807,16 +1807,14 @@ std::string CmdProxy::ProgramFpga(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname.pof]\n\t[Jungfrau][Ctb] Programs FPGA from pof file."
+        os << "[fname.pof | fname.rbf]\n\t[Jungfrau][Ctb] Programs FPGA from pof file."
+        << "\n\t[Mythen3][Gotthard2] Programs FPGA from rbf file."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
-        }
-        if (args[0].find(".pof") == std::string::npos) {
-            throw sls::RuntimeError("Programming file must be a pof file.");
         }
         det->programFPGA(args[0], {det_id});
         os << "successful\n";

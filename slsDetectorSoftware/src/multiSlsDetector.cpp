@@ -1156,11 +1156,34 @@ int multiSlsDetector::kbhit() {
     return FD_ISSET(STDIN_FILENO, &fds);
 }
 
-std::vector<char> multiSlsDetector::readPofFile(const std::string &fname) {
+std::vector<char> multiSlsDetector::readProgrammingFile(const std::string &fname) {
+    // validate type of file
+    bool isPof = false;
+    switch (multi_shm()->multiDetectorType) {
+        case JUNGFRAU:
+        case CHIPTESTBOARD:
+            if (fname.find(".pof") == std::string::npos) {
+                throw RuntimeError("Programming file must be a pof file.");
+            }
+            isPof = true;
+            break;
+        case MYTHEN3:
+        case GOTTHARD2:
+            if (fname.find(".rbf") == std::string::npos) {
+                throw RuntimeError("Programming file must be an rbf file.");
+            }
+            break;  
+        default:
+            throw RuntimeError("Not implemented for this detector"); 
+    }
+
+    FILE_LOG(logINFO)
+        << "Updating Firmware. This can take awhile. Please be patient...";
     FILE_LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
+
+
     size_t filesize = 0;
     // check if it exists
-
     struct stat st;
     if (stat(fname.c_str(), &st) != 0) {
         throw RuntimeError("Program FPGA: Programming file does not exist");
@@ -1188,35 +1211,50 @@ std::vector<char> multiSlsDetector::readPofFile(const std::string &fname) {
     // convert src to dst rawbin
     FILE_LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
     {
-        int filepos, x, y, i;
-        // Remove header (0...11C)
-        for (filepos = 0; filepos < 0x11C; ++filepos) {
-            fgetc(src);
-        }
-        // Write 0x80 times 0xFF (0...7F)
-        {
-            char c = 0xFF;
-            for (filepos = 0; filepos < 0x80; ++filepos) {
-                write(dst, &c, 1);
+        const int pofNumHeaderBytes = 0x11C;
+        const int pofNumPadding = 0x80;
+        const int pofFooterOfst = 0x1000000;
+        int dstFilePos = 0;       
+        if (isPof) {
+            // Read header and discard
+            for (int i = 0; i < pofNumHeaderBytes; ++i) {
+                fgetc(src);
+            }
+            // Write 0xFF to destination 0x80 times (padding)
+            {
+                char c = 0xFF;
+                while (dstFilePos < pofNumPadding) {
+                    write(dst, &c, 1);
+                    ++dstFilePos;
+                }
             }
         }
-        // Swap bits and write to file
-        for (filepos = 0x80; filepos < 0x1000000; ++filepos) {
-            x = fgetc(src);
-            if (x < 0) {
+        // Swap bits from source and write to dest
+        while (!feof(src)) {
+            // pof: exit early to discard footer
+            if (isPof && dstFilePos >= pofFooterOfst) {
                 break;
             }
-            y = 0;
-            for (i = 0; i < 8; ++i) {
-                y = y |
-                    (((x & (1 << i)) >> i) << (7 - i)); // This swaps the bits
+            // read source
+            int s = fgetc(src);
+            if (s < 0) {
+                break;
+            }      
+            // swap bits     
+            int d = 0;
+            for (int i = 0; i < 8; ++i) {
+                d = d |
+                    (((s & (1 << i)) >> i) << (7 - i));
             }
-            write(dst, &y, 1);
+            write(dst, &d, 1);
+            ++dstFilePos;
         }
-        if (filepos < 0x1000000) {
+        // validate pof: read less than footer offset
+        if (isPof && dstFilePos < pofFooterOfst) {
             throw RuntimeError(
                 "Could not convert programming file. EOF before end of flash");
         }
+
     }
     if (fclose(src) != 0) {
         throw RuntimeError("Program FPGA: Could not close source file");

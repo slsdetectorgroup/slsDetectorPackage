@@ -8,7 +8,9 @@
 #include "common.h"
 #include "ALTERA_PLL_CYCLONE10.h" 
 #include "ASIC_Driver.h"
-#ifdef VIRTUAL
+#ifndef VIRTUAL
+#include "programFpgaNios.h"
+#else
 #include "communication_funcs_UDP.h"
 #endif
 
@@ -252,7 +254,7 @@ u_int16_t getHardwareVersionNumber() {
 #ifdef VIRTUAL
     return 0;
 #endif
-	return ((bus_r(MCB_SERIAL_NO_REG)));// & HARDWARE_VERSION_NUM_MSK) >> HARDWARE_VERSION_NUM_OFST);
+	return ((bus_r(MCB_SERIAL_NO_REG) & MCB_SERIAL_NO_VRSN_MSK) >> MCB_SERIAL_NO_VRSN_OFST);
 }
 
 u_int32_t getDetectorNumber(){
@@ -314,10 +316,14 @@ u_int32_t  getDetectorIP(){
 /* initialization */
 
 void initControlServer(){
+	CreateNotificationForCriticalTasks();
 	if (initError == OK) {
 		setupDetector();
 	}
 	initCheckDone = 1;
+	if (initError == OK) {
+		NotifyServerStartSuccess();
+	}
 }
 
 void initStopServer() {

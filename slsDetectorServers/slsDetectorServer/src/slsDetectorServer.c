@@ -10,7 +10,7 @@
 
 #include <signal.h>
 #include <string.h>
-
+#include <unistd.h>
 
 // Global variables from  communication_funcs
 extern int isControlServer;
@@ -149,9 +149,13 @@ int main(int argc, char *argv[]){
 	exitServer(sockfd);
 
 	if (retval == REBOOT) {
-		FILE_LOG(logINFOBLUE,("Rebooting!\n"));
+		FILE_LOG(logINFORED,("Rebooting!\n"));
 		fflush(stdout);
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+		rebootControllerAndFPGA();
+#else
 		system("reboot");
+#endif
 	}
 	FILE_LOG(logINFO,("Goodbye!\n"));
 	return 0;

@@ -30,6 +30,7 @@ void qTabAdvanced::SetupWidgetWindow() {
         tab_roi->setEnabled(true);
         break;
     case slsDetectorDefs::MYTHEN3:
+    case slsDetectorDefs::GOTTHARD2:
         lblDiscardBits->setEnabled(true);
         spinDiscardBits->setEnabled(true);
     default:

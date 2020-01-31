@@ -160,4 +160,5 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     unsigned int nPixelsY{0};
     const static int npixelsx_jctb = 400;
     int npixelsy_jctb{0};
+    uint32_t pixelMask{0};
 };

@@ -16,27 +16,27 @@
 template <typename Element> class CircularFifo {
   private:
     std::vector<Element *> array;
-    unsigned int tail; // input index
-    unsigned int head; // output index
-    unsigned int Capacity;
+    size_t tail; // input index
+    size_t head; // output index
+    size_t capacity;
     mutable sem_t data_mutex;
     mutable sem_t free_mutex;
-    unsigned int increment(unsigned int idx_) const;
+    size_t increment(size_t i) const;
 
   public:
-    CircularFifo(unsigned int Size) : tail(0), head(0) {
-        Capacity = Size + 1;
-        array.resize(Capacity);
+    CircularFifo(size_t size) : tail(0), head(0) {
+        capacity = size + 1;
+        array.resize(capacity);
         sem_init(&data_mutex, 0, 0);
-        sem_init(&free_mutex, 0, Size);
+        sem_init(&free_mutex, 0, size);
     }
     virtual ~CircularFifo() {
         sem_destroy(&data_mutex);
         sem_destroy(&free_mutex);
     }
 
-    bool push(Element *&item_, bool no_block = false);
-    bool pop(Element *&item_, bool no_block = false);
+    bool push(Element *&item, bool no_block = false);
+    bool pop(Element *&item, bool no_block = false);
 
     bool isEmpty() const;
     bool isFull() const;
@@ -65,13 +65,13 @@ template <typename Element> int CircularFifo<Element>::getFreeValue() const {
  * \param no_block if true, return immediately if fifo is full
  * \return whether operation was successful or not */
 template <typename Element>
-bool CircularFifo<Element>::push(Element *&item_, bool no_block) {
+bool CircularFifo<Element>::push(Element *&item, bool no_block) {
     // check for fifo full
     if (no_block && isFull())
         return false;
 
     sem_wait(&free_mutex);
-    array[tail] = item_;
+    array[tail] = item;
     tail = increment(tail);
     sem_post(&data_mutex);
     return true;
@@ -85,21 +85,21 @@ bool CircularFifo<Element>::push(Element *&item_, bool no_block) {
  * \param no_block if true, return immediately if fifo is full
  * \return whether operation was successful or not */
 template <typename Element>
-bool CircularFifo<Element>::pop(Element *&item_, bool no_block) {
+bool CircularFifo<Element>::pop(Element *&item, bool no_block) {
     // check for fifo empty
     if (no_block && isEmpty())
         return false;
 
     sem_wait(&data_mutex);
-    item_ = array[head];
+    item = array[head];
     head = increment(head);
     sem_post(&free_mutex);
     return true;
 }
 
-/** Useful for testinng and Consumer check of status
+/** Useful for testing and Consumer check of status
  * Remember that the 'empty' status can change quickly
- * as the Procuder adds more items.
+ * as the Producer adds more items.
  *
  * \return true if circular buffer is empty */
 template <typename Element> bool CircularFifo<Element>::isEmpty() const {
@@ -116,19 +116,12 @@ template <typename Element> bool CircularFifo<Element>::isFull() const {
 }
 
 /** Increment helper function for index of the circular queue
- * index is inremented or wrapped
+ * index is incremented or wrapped
  *
  *  \param idx_ the index to the incremented/wrapped
  *  \return new value for the index */
 template <typename Element>
-unsigned int CircularFifo<Element>::increment(unsigned int idx_) const {
-    // increment or wrap
-    // =================
-    //    index++;
-    //    if(index == array.lenght) -> index = 0;
-    //
-    // or as written below:
-    //    index = (index+1) % array.length
-    idx_ = (idx_ + 1) % Capacity;
-    return idx_;
+size_t CircularFifo<Element>::increment(size_t i) const {
+    i = (i + 1) % capacity;
+    return i;
 }

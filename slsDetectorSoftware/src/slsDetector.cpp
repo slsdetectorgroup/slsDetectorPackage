@@ -279,13 +279,21 @@ void slsDetector::freeSharedMemory() {
     }
 }
 
-void slsDetector::setHostname(const std::string &hostname) {
+void slsDetector::setHostname(const std::string &hostname, const bool initialChecks) {
     sls::strcpy_safe(shm()->hostname, hostname.c_str());
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.close();
 
     FILE_LOG(logINFO) << "Checking Detector Version Compatibility";
-    checkDetectorVersionCompatibility();
+    if (!initialChecks) {
+        try {
+            checkDetectorVersionCompatibility();
+        } catch (const DetectorError& e) {
+            FILE_LOG(logWARNING) << "Bypassing Initial Checks at your own risk!";  
+        }
+    } else {
+        checkDetectorVersionCompatibility();
+    }
 
     FILE_LOG(logINFO) << "Detector connecting - updating!";
     updateCachedDetectorVariables();

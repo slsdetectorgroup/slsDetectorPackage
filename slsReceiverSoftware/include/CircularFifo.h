@@ -4,7 +4,7 @@
  * published at http://www.kjellkod.cc/threadsafecircularqueue
  * 2009-11-02
  * @author Kjell Hedstr�m, hedstrom@kjellkod.cc
- * modified by the sls detetor group
+ * modified by the sls detector group
  * */
 
 #include <iostream>
@@ -15,21 +15,24 @@
  * Thread safe for one reader, and one writer */
 template <typename Element> class CircularFifo {
   private:
-    std::vector<Element *> array;
-    size_t tail; // input index
-    size_t head; // output index
+    size_t tail{0};
+    size_t head{0};
     size_t capacity;
+    std::vector<Element *> data;
     mutable sem_t data_mutex;
     mutable sem_t free_mutex;
     size_t increment(size_t i) const;
 
   public:
-    CircularFifo(size_t size) : tail(0), head(0) {
-        capacity = size + 1;
-        array.resize(capacity);
+    explicit CircularFifo(size_t size) : capacity(size + 1), data(capacity) {
         sem_init(&data_mutex, 0, 0);
         sem_init(&free_mutex, 0, size);
     }
+
+    
+    CircularFifo(const CircularFifo &) = delete;
+    CircularFifo(CircularFifo&&) = delete;
+
     virtual ~CircularFifo() {
         sem_destroy(&data_mutex);
         sem_destroy(&free_mutex);
@@ -71,7 +74,7 @@ bool CircularFifo<Element>::push(Element *&item, bool no_block) {
         return false;
 
     sem_wait(&free_mutex);
-    array[tail] = item;
+    data[tail] = item;
     tail = increment(tail);
     sem_post(&data_mutex);
     return true;
@@ -91,7 +94,7 @@ bool CircularFifo<Element>::pop(Element *&item, bool no_block) {
         return false;
 
     sem_wait(&data_mutex);
-    item = array[head];
+    item = data[head];
     head = increment(head);
     sem_post(&free_mutex);
     return true;

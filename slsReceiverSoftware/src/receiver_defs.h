@@ -1,7 +1,7 @@
 #pragma once
 
 #include "sls_detector_defs.h"
-#include <stdint.h> 
+#include <cstdint> 
 
 #define MAX_DIMENSIONS					(2)
 #define MAX_NUMBER_OF_LISTENING_THREADS (2)

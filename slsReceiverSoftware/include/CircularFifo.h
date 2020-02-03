@@ -29,7 +29,6 @@ template <typename Element> class CircularFifo {
         sem_init(&free_mutex, 0, size);
     }
 
-    
     CircularFifo(const CircularFifo &) = delete;
     CircularFifo(CircularFifo&&) = delete;
 

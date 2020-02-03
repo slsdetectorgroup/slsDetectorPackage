@@ -18,6 +18,7 @@ It is linked in manual/manual-api from slsReceiverSoftware/include ]
 
 #include "sls_detector_defs.h"
 #include "Receiver.h"
+#include "container_utils.h"
 
 #include <csignal>	//SIGINT
 #include <cstdlib>	//system

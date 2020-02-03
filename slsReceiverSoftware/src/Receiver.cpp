@@ -1,4 +1,5 @@
 #include "Receiver.h"
+#include "ClientInterface.h"
 #include "sls_detector_exceptions.h"
 #include "versionAPI.h"
 #include "container_utils.h" 
@@ -13,6 +14,7 @@
 #include <string>
 #include <syscall.h>
 
+Receiver::~Receiver() = default;
 
 Receiver::Receiver(int argc, char *argv[]):
 		tcpipInterface (nullptr) {

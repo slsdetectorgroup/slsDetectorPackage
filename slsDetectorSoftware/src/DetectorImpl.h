@@ -193,44 +193,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
         }
     }
 
-    /**
-     * Loop through the detectors serially and return the result as a vector
-     */
-
-    template <typename RT, typename... CT>
-    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...),
-                               typename NonDeduced<CT>::type... Args);
-
-    /**
-     * Loop through the detectors serially and return the result as a vector
-     * Const qualified version
-     */
-    template <typename RT, typename... CT>
-    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...) const,
-                               typename NonDeduced<CT>::type... Args) const;
-
-    /**
-     * Loop through the detectors in parallel and return the result as a vector
-     */
-    template <typename RT, typename... CT>
-    std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...),
-                                 typename NonDeduced<CT>::type... Args);
-
-    /**
-     * Loop through the detectors in parallel and return the result as a vector
-     * Const qualified version
-     */
-    template <typename RT, typename... CT>
-    std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...) const,
-                                 typename NonDeduced<CT>::type... Args) const;
-
-    template <typename... CT>
-    void parallelCall(void (slsDetector::*somefunc)(CT...),
-                      typename NonDeduced<CT>::type... Args);
-
-    template <typename... CT>
-    void parallelCall(void (slsDetector::*somefunc)(CT...) const,
-                      typename NonDeduced<CT>::type... Args) const;
 
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag); 

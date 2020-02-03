@@ -1978,6 +1978,39 @@ std::string CmdProxy::BitOperations(int action) {
     return os.str();
 }
 
+std::string CmdProxy::InitialChecks(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[0, 1]\n\tEnable or disable intial compatibility and other checks at detector start up. It is enabled by default. Must come before 'hostname' command to take effect. Can be used to reprogram fpga when current firmware is incompatible."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (det_id != -1) {
+            throw sls::RuntimeError(
+                "Cannot enable/disable initial checks at module level");
+        }
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getInitialChecks();
+        os << t << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (det_id != -1) {
+            throw sls::RuntimeError(
+                "Cannot get initial checks enable at module level");
+        }
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->setInitialChecks(std::stoi(args[0]));
+        os << args.front() << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+
 /* Insignificant */
 
 std::string CmdProxy::ExecuteCommand(int action) {

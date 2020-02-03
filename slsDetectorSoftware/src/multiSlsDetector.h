@@ -17,7 +17,7 @@ class detectorData;
 #include <vector>
 
 #define MULTI_SHMAPIVERSION 0x190809
-#define MULTI_SHMVERSION 0x190819
+#define MULTI_SHMVERSION 0x200131
 #define SHORT_STRING_LENGTH 50
 #define DATE_LENGTH 30
 
@@ -64,6 +64,9 @@ struct sharedMultiSlsDetector {
 
     /** data streaming (up stream) enable in receiver */
     bool receiver_upstream;
+
+    /** initial checks */
+    bool initialChecks;
 };
 
 class multiSlsDetector : public virtual slsDetectorDefs {
@@ -247,6 +250,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /** Get user details of shared memory */
     std::string getUserDetails(); 
+
+    bool getInitialChecks() const;
+
+    /** initial compaibility and other server start up checks
+     * default enabled */
+    void setInitialChecks(const bool value);
 
     /**
      * Connect to Virtual Detector Servers at local host

@@ -252,8 +252,11 @@ class slsDetector : public virtual slsDetectorDefs {
     /**
      * Sets the hostname, if online flag is set connects to update the detector
      * @param name hostname
+     * @param initialChecks enable or disable initial compatibility checks 
+     * and other server start up checks. Enabled by default. Disable only
+     * for advanced users!
      */
-    void setHostname(const std::string &hostname);
+    void setHostname(const std::string &hostname, const bool initialChecks);
 
     /**
      * Gets the hostname of detector

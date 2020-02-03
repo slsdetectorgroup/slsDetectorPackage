@@ -183,8 +183,8 @@ void DetectorImpl::initializeMembers(bool verify) {
 
 void DetectorImpl::updateUserdetails() {
     multi_shm()->lastPID = getpid();
-    memset(multi_shm()->lastUser, 0, SHORT_STRING_LENGTH);
-    memset(multi_shm()->lastDate, 0, SHORT_STRING_LENGTH);
+    memset(multi_shm()->lastUser, 0, sizeof(multi_shm()->lastUser));
+    memset(multi_shm()->lastDate, 0, sizeof(multi_shm()->lastDate));
     try {
         sls::strcpy_safe(multi_shm()->lastUser, exec("whoami").c_str());
         sls::strcpy_safe(multi_shm()->lastDate, exec("date").c_str());

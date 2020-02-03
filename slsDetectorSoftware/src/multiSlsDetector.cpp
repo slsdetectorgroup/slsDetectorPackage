@@ -958,15 +958,7 @@ void multiSlsDetector::registerDataCallback(
     void *pArg) {
     dataReady = userCallback;
     pCallbackArg = pArg;
-    if (Parallel(&slsDetector::getUseReceiverFlag, {}).squash(false)) {
-        if (dataReady == nullptr) {
-            enableDataStreamingToClient(0);
-            Parallel(&slsDetector::enableDataStreamingFromReceiver, {}, 0);
-        } else {
-            enableDataStreamingToClient(1);
-            Parallel(&slsDetector::enableDataStreamingFromReceiver, {}, 1);
-        }
-    }
+    enableDataStreamingToClient(dataReady == nullptr ? 0 : 1); 
 }
 
 double multiSlsDetector::setTotalProgress() {

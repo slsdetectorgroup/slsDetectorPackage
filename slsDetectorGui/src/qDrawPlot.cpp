@@ -330,9 +330,11 @@ void qDrawPlot::SetDataCallBack(bool enable) {
     FILE_LOG(logINFO) << "Setting data call back to " << std::boolalpha << enable << std::noboolalpha;
     if (enable) {
         isPlot = true;
+        det->setRxZmqDataStream(true);
         det->registerDataCallback(&(GetDataCallBack), this); 
     } else {
         isPlot = false;
+        det->setRxZmqDataStream(false);
         det->registerDataCallback(nullptr, this);
     }
   

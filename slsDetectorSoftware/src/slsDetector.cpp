@@ -1164,7 +1164,7 @@ void slsDetector::stopAcquisition() {
 
 void slsDetector::sendSoftwareTrigger() {
     FILE_LOG(logDEBUG1) << "Sending software trigger";
-    sendToDetector(F_SOFTWARE_TRIGGER);
+    sendToDetectorStop(F_SOFTWARE_TRIGGER);
     FILE_LOG(logDEBUG1) << "Sending software trigger successful";
 }
 

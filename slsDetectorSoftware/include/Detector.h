@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-class multiSlsDetector;
+class DetectorImpl;
 class detectorData;
 
 namespace sls {
@@ -23,7 +23,7 @@ void freeSharedMemory(int multiId, int detPos = -1);
  * \class Detector
  */
 class Detector {
-    std::unique_ptr<multiSlsDetector> pimpl;
+    std::unique_ptr<DetectorImpl> pimpl;
 
   public:
     /**

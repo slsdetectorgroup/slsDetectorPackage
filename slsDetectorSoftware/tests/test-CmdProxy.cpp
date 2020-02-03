@@ -2023,7 +2023,7 @@ TEST_CASE("stopport", "[.cmd]") {
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("0:flippeddatax", GET,
 //             nullptr, oss)); REQUIRE(oss.str() == "flippeddatax 0\n");
 //         }
-//         multiSlsDetector d;
+//         DetectorImpl d;
 //         if (d.size() > 1) {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("1:flippeddatax", GET,
@@ -2301,7 +2301,7 @@ TEST_CASE("fformat", "[.cmd]") {
 //         oss)); REQUIRE(oss.str() == "udp_dstport 6200\n");
 //     }
 //     {
-//         multiSlsDetector d;
+//         DetectorImpl d;
 //         int socketsperdetector = 1;
 //         if (test::type == slsDetectorDefs::EIGER) {
 //             socketsperdetector *= 2;

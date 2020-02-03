@@ -1,4 +1,4 @@
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "SharedMemory.h"
 #include "ZmqSocket.h"
 #include "detectorData.h"
@@ -28,14 +28,14 @@
 
 using namespace sls;
 
-multiSlsDetector::multiSlsDetector(int multi_id, bool verify, bool update)
+DetectorImpl::DetectorImpl(int multi_id, bool verify, bool update)
     : multiId(multi_id), multi_shm(multi_id, -1) {
     setupMultiDetector(verify, update);
 }
 
-multiSlsDetector::~multiSlsDetector() = default;
+DetectorImpl::~DetectorImpl() = default;
 
-void multiSlsDetector::setupMultiDetector(bool verify, bool update) {
+void DetectorImpl::setupMultiDetector(bool verify, bool update) {
     initSharedMemory(verify);
     initializeMembers(verify);
     if (update) {
@@ -45,7 +45,7 @@ void multiSlsDetector::setupMultiDetector(bool verify, bool update) {
 
 template <typename RT, typename... CT>
 std::vector<RT>
-multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...),
+DetectorImpl::serialCall(RT (slsDetector::*somefunc)(CT...),
                              typename NonDeduced<CT>::type... Args) {
     std::vector<RT> result;
     result.reserve(detectors.size());
@@ -57,7 +57,7 @@ multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...),
 
 template <typename RT, typename... CT>
 std::vector<RT>
-multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...) const,
+DetectorImpl::serialCall(RT (slsDetector::*somefunc)(CT...) const,
                              typename NonDeduced<CT>::type... Args) const {
     std::vector<RT> result;
     result.reserve(detectors.size());
@@ -69,7 +69,7 @@ multiSlsDetector::serialCall(RT (slsDetector::*somefunc)(CT...) const,
 
 template <typename RT, typename... CT>
 std::vector<RT>
-multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...),
+DetectorImpl::parallelCall(RT (slsDetector::*somefunc)(CT...),
                                typename NonDeduced<CT>::type... Args) {
     std::vector<std::future<RT>> futures;
     for (auto &d : detectors) {
@@ -86,7 +86,7 @@ multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...),
 
 template <typename RT, typename... CT>
 std::vector<RT>
-multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...) const,
+DetectorImpl::parallelCall(RT (slsDetector::*somefunc)(CT...) const,
                                typename NonDeduced<CT>::type... Args) const {
     std::vector<std::future<RT>> futures;
     for (auto &d : detectors) {
@@ -102,7 +102,7 @@ multiSlsDetector::parallelCall(RT (slsDetector::*somefunc)(CT...) const,
 }
 
 template <typename... CT>
-void multiSlsDetector::parallelCall(void (slsDetector::*somefunc)(CT...),
+void DetectorImpl::parallelCall(void (slsDetector::*somefunc)(CT...),
                                     typename NonDeduced<CT>::type... Args) {
     std::vector<std::future<void>> futures;
     for (auto &d : detectors) {
@@ -116,7 +116,7 @@ void multiSlsDetector::parallelCall(void (slsDetector::*somefunc)(CT...),
 }
 
 template <typename... CT>
-void multiSlsDetector::parallelCall(
+void DetectorImpl::parallelCall(
     void (slsDetector::*somefunc)(CT...) const,
     typename NonDeduced<CT>::type... Args) const {
     std::vector<std::future<void>> futures;
@@ -130,17 +130,17 @@ void multiSlsDetector::parallelCall(
     return;
 }
 
-void multiSlsDetector::setAcquiringFlag(bool flag) {
+void DetectorImpl::setAcquiringFlag(bool flag) {
     multi_shm()->acquiringFlag = flag;
 }
 
-int multiSlsDetector::getMultiId() const { return multiId; }
+int DetectorImpl::getMultiId() const { return multiId; }
 
-std::string multiSlsDetector::getPackageVersion() const { return GITBRANCH; }
+std::string DetectorImpl::getPackageVersion() const { return GITBRANCH; }
 
-int64_t multiSlsDetector::getClientSoftwareVersion() const { return APILIB; }
+int64_t DetectorImpl::getClientSoftwareVersion() const { return APILIB; }
 
-void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
+void DetectorImpl::freeSharedMemory(int multiId, int detPos) {
     // single
     if (detPos >= 0) {
         SharedMemory<sharedSlsDetector> temp_shm(multiId, detPos);
@@ -166,7 +166,7 @@ void multiSlsDetector::freeSharedMemory(int multiId, int detPos) {
     }
 }
 
-void multiSlsDetector::freeSharedMemory() {
+void DetectorImpl::freeSharedMemory() {
     zmqSocket.clear();
     for (auto &d : detectors) {
         d->freeSharedMemory();
@@ -178,7 +178,7 @@ void multiSlsDetector::freeSharedMemory() {
     client_downstream = false;
 }
 
-std::string multiSlsDetector::getUserDetails() {
+std::string DetectorImpl::getUserDetails() {
     if (detectors.empty()) {
         return std::string("none");
     }
@@ -213,15 +213,15 @@ std::string multiSlsDetector::getUserDetails() {
 }
 
 
-bool multiSlsDetector::getInitialChecks() const {
+bool DetectorImpl::getInitialChecks() const {
     return multi_shm()->initialChecks;
 }
 
-void multiSlsDetector::setInitialChecks(const bool value) {
+void DetectorImpl::setInitialChecks(const bool value) {
     multi_shm()->initialChecks = value;
 }
 
-void multiSlsDetector::initSharedMemory(bool verify) {
+void DetectorImpl::initSharedMemory(bool verify) {
     if (!multi_shm.IsExisting()) {
         multi_shm.CreateSharedMemory();
         initializeDetectorStructure();
@@ -239,7 +239,7 @@ void multiSlsDetector::initSharedMemory(bool verify) {
     }
 }
 
-void multiSlsDetector::initializeDetectorStructure() {
+void DetectorImpl::initializeDetectorStructure() {
     multi_shm()->shmversion = MULTI_SHMVERSION;
     multi_shm()->numberOfDetectors = 0;
     multi_shm()->multiDetectorType = GENERIC;
@@ -252,8 +252,8 @@ void multiSlsDetector::initializeDetectorStructure() {
     multi_shm()->initialChecks = true;
 }
 
-void multiSlsDetector::initializeMembers(bool verify) {
-    // multiSlsDetector
+void DetectorImpl::initializeMembers(bool verify) {
+    // DetectorImpl
     zmqSocket.clear();
 
     // get objects from single det shared memory (open)
@@ -268,7 +268,7 @@ void multiSlsDetector::initializeMembers(bool verify) {
     }
 }
 
-void multiSlsDetector::updateUserdetails() {
+void DetectorImpl::updateUserdetails() {
     multi_shm()->lastPID = getpid();
     memset(multi_shm()->lastUser, 0, SHORT_STRING_LENGTH);
     memset(multi_shm()->lastDate, 0, SHORT_STRING_LENGTH);
@@ -281,7 +281,7 @@ void multiSlsDetector::updateUserdetails() {
     }
 }
 
-bool multiSlsDetector::isAcquireReady() {
+bool DetectorImpl::isAcquireReady() {
     if (multi_shm()->acquiringFlag) {
         FILE_LOG(logWARNING)
             << "Acquire has already started. "
@@ -293,7 +293,7 @@ bool multiSlsDetector::isAcquireReady() {
     return true;
 }
 
-std::string multiSlsDetector::exec(const char *cmd) {
+std::string DetectorImpl::exec(const char *cmd) {
     int bufsize = 128;
     char buffer[bufsize];
     std::string result = "";
@@ -316,7 +316,7 @@ std::string multiSlsDetector::exec(const char *cmd) {
     return result;
 }
 
-void multiSlsDetector::setVirtualDetectorServers(const int numdet,
+void DetectorImpl::setVirtualDetectorServers(const int numdet,
                                                  const int port) {
     std::vector<std::string> hostnames;
     for (int i = 0; i < numdet; ++i) {
@@ -327,7 +327,7 @@ void multiSlsDetector::setVirtualDetectorServers(const int numdet,
     setHostname(hostnames);
 }
 
-void multiSlsDetector::setHostname(const std::vector<std::string> &name) {
+void DetectorImpl::setHostname(const std::vector<std::string> &name) {
     // this check is there only to allow the previous detsizechan command
     if (multi_shm()->numberOfDetectors != 0) {
         FILE_LOG(logWARNING)
@@ -344,7 +344,7 @@ void multiSlsDetector::setHostname(const std::vector<std::string> &name) {
     updateDetectorSize();
 }
 
-void multiSlsDetector::addSlsDetector(const std::string &hostname) {
+void DetectorImpl::addSlsDetector(const std::string &hostname) {
     FILE_LOG(logINFO) << "Adding detector " << hostname;
 
     int port = DEFAULT_PORTNO;
@@ -380,7 +380,7 @@ void multiSlsDetector::addSlsDetector(const std::string &hostname) {
     multi_shm()->multiDetectorType = Parallel(&slsDetector::getDetectorType, {}).tsquash("Inconsistent detector types.");
 }
 
-void multiSlsDetector::updateDetectorSize() {
+void DetectorImpl::updateDetectorSize() {
     FILE_LOG(logDEBUG) << "Updating Multi-Detector Size: " << size();
 
     const slsDetectorDefs::xy det_size = detectors[0]->getNumberOfChannels();
@@ -415,17 +415,17 @@ void multiSlsDetector::updateDetectorSize() {
     }
 }
 
-int multiSlsDetector::size() const { return detectors.size(); }
+int DetectorImpl::size() const { return detectors.size(); }
 
-slsDetectorDefs::xy multiSlsDetector::getNumberOfDetectors() const {
+slsDetectorDefs::xy DetectorImpl::getNumberOfDetectors() const {
     return multi_shm()->numberOfDetector;
 }
 
-slsDetectorDefs::xy multiSlsDetector::getNumberOfChannels() const {
+slsDetectorDefs::xy DetectorImpl::getNumberOfChannels() const {
     return multi_shm()->numberOfChannels;
 }
 
-void multiSlsDetector::setNumberOfChannels(const slsDetectorDefs::xy c) {
+void DetectorImpl::setNumberOfChannels(const slsDetectorDefs::xy c) {
     if (size() > 1) {
         throw RuntimeError(
             "Set the number of channels before setting hostname.");
@@ -433,7 +433,7 @@ void multiSlsDetector::setNumberOfChannels(const slsDetectorDefs::xy c) {
     multi_shm()->numberOfChannels = c;
 }
 
-void multiSlsDetector::setGapPixelsinReceiver(bool enable) {
+void DetectorImpl::setGapPixelsinReceiver(bool enable) {
     Parallel(&slsDetector::enableGapPixels, {}, static_cast<int>(enable));
     // update number of channels
     Result<slsDetectorDefs::xy> res =
@@ -446,7 +446,7 @@ void multiSlsDetector::setGapPixelsinReceiver(bool enable) {
     }
 }
 
-int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
+int DetectorImpl::createReceivingDataSockets(const bool destroy) {
     if (destroy) {
         FILE_LOG(logINFO) << "Going to destroy data sockets";
         // close socket
@@ -494,7 +494,7 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
     return OK;
 }
 
-void multiSlsDetector::readFrameFromReceiver() {
+void DetectorImpl::readFrameFromReceiver() {
 
     int nX = 0;
     int nY = 0;
@@ -754,7 +754,7 @@ void multiSlsDetector::readFrameFromReceiver() {
         delete[] multigappixels;
 }
 
-int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage,
+int DetectorImpl::processImageWithGapPixels(char *image, char *&gpImage,
                                                 bool quadEnable) {
     // eiger 4 bit mode
     int nxb =
@@ -889,7 +889,7 @@ int multiSlsDetector::processImageWithGapPixels(char *image, char *&gpImage,
     return gapdatabytes;
 }
 
-bool multiSlsDetector::enableDataStreamingToClient(int enable) {
+bool DetectorImpl::enableDataStreamingToClient(int enable) {
     if (enable >= 0) {
         // destroy data threads
         if (enable == 0) {
@@ -905,7 +905,7 @@ bool multiSlsDetector::enableDataStreamingToClient(int enable) {
 }
 
 
-void multiSlsDetector::savePattern(const std::string &fname) {
+void DetectorImpl::savePattern(const std::string &fname) {
     // std::ofstream outfile;
     // outfile.open(fname.c_str(), std::ios_base::out);
     // if (!outfile.is_open()) {
@@ -947,13 +947,13 @@ void multiSlsDetector::savePattern(const std::string &fname) {
 
 
 
-void multiSlsDetector::registerAcquisitionFinishedCallback(
+void DetectorImpl::registerAcquisitionFinishedCallback(
     void (*func)(double, int, void *), void *pArg) {
     acquisition_finished = func;
     acqFinished_p = pArg;
 }
 
-void multiSlsDetector::registerDataCallback(
+void DetectorImpl::registerDataCallback(
     void (*userCallback)(detectorData *, uint64_t, uint32_t, void *),
     void *pArg) {
     dataReady = userCallback;
@@ -961,7 +961,7 @@ void multiSlsDetector::registerDataCallback(
     enableDataStreamingToClient(dataReady == nullptr ? 0 : 1); 
 }
 
-double multiSlsDetector::setTotalProgress() {
+double DetectorImpl::setTotalProgress() {
     int64_t nf = Parallel(&slsDetector::getNumberOfFramesFromShm, {})
                  .tsquash("Inconsistent number of frames");
     int64_t nc = Parallel(&slsDetector::getNumberOfTriggersFromShm, {})
@@ -983,12 +983,12 @@ double multiSlsDetector::setTotalProgress() {
     return totalProgress;
 }
 
-double multiSlsDetector::getCurrentProgress() {
+double DetectorImpl::getCurrentProgress() {
     std::lock_guard<std::mutex> lock(mp);
     return 100. * progressIndex / totalProgress;
 }
 
-void multiSlsDetector::incrementProgress() {
+void DetectorImpl::incrementProgress() {
     std::lock_guard<std::mutex> lock(mp);
     progressIndex += 1;
     std::cout << std::fixed << std::setprecision(2) << std::setw(6)
@@ -997,7 +997,7 @@ void multiSlsDetector::incrementProgress() {
     std::cout << '\r' << std::flush;
 }
 
-void multiSlsDetector::setCurrentProgress(int64_t i) {
+void DetectorImpl::setCurrentProgress(int64_t i) {
     std::lock_guard<std::mutex> lock(mp);
     progressIndex = (double)i;
     std::cout << std::fixed << std::setprecision(2) << std::setw(6)
@@ -1006,7 +1006,7 @@ void multiSlsDetector::setCurrentProgress(int64_t i) {
     std::cout << '\r' << std::flush;
 }
 
-int multiSlsDetector::acquire() {
+int DetectorImpl::acquire() {
     // ensure acquire isnt started multiple times by same client
     if (!isAcquireReady()) {
         return FAIL;
@@ -1099,12 +1099,12 @@ int multiSlsDetector::acquire() {
     return OK;
 }
 
-void multiSlsDetector::startProcessingThread() {
+void DetectorImpl::startProcessingThread() {
     setTotalProgress();
-    dataProcessingThread = std::thread(&multiSlsDetector::processData, this);
+    dataProcessingThread = std::thread(&DetectorImpl::processData, this);
 }
 
-void multiSlsDetector::processData() {
+void DetectorImpl::processData() {
     if (Parallel(&slsDetector::getUseReceiverFlag, {}).squash(false)) {
         if (dataReady != nullptr) {
             readFrameFromReceiver();
@@ -1139,17 +1139,17 @@ void multiSlsDetector::processData() {
     }
 }
 
-bool multiSlsDetector::getJoinThreadFlag() const {
+bool DetectorImpl::getJoinThreadFlag() const {
     std::lock_guard<std::mutex> lock(mp);
     return jointhread;
 }
 
-void multiSlsDetector::setJoinThreadFlag(bool value) {
+void DetectorImpl::setJoinThreadFlag(bool value) {
     std::lock_guard<std::mutex> lock(mp);
     jointhread = value;
 }
 
-int multiSlsDetector::kbhit() {
+int DetectorImpl::kbhit() {
     struct timeval tv;
     fd_set fds;
     tv.tv_sec = 0;
@@ -1160,7 +1160,7 @@ int multiSlsDetector::kbhit() {
     return FD_ISSET(STDIN_FILENO, &fds);
 }
 
-std::vector<char> multiSlsDetector::readProgrammingFile(const std::string &fname) {
+std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     // validate type of file
     bool isPof = false;
     switch (multi_shm()->multiDetectorType) {

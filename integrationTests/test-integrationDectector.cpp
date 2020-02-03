@@ -3,7 +3,7 @@
 
 #include "ClientSocket.h"
 #include "logger.h"
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "slsDetector.h"
 #include "sls_detector_defs.h"
 
@@ -252,7 +252,7 @@ TEST_CASE(
     int ratecorr = 125;
 
     // pick up multi detector from shm id 0
-    multiSlsDetector m(0);
+    DetectorImpl m(0);
 
     // ensure eiger detector type, hostname and online
     REQUIRE(m.getDetectorTypeAsEnum() == c.type_enum);
@@ -302,7 +302,7 @@ TEST_CASE("Chiptestboard Loading Patterns", "[.ctbintegration]") {
     SingleDetectorConfig c;
 
     // pick up multi detector from shm id 0
-    multiSlsDetector m(0);
+    DetectorImpl m(0);
 
     // ensure ctb detector type, hostname and online
     REQUIRE(m.getDetectorTypeAsEnum() == c.type_enum);
@@ -387,7 +387,7 @@ TEST_CASE("Chiptestboard Dbit offset, list, sampling, advinvert", "[.ctbintegrat
     SingleDetectorConfig c;
 
     // pick up multi detector from shm id 0
-    multiSlsDetector m(0);
+    DetectorImpl m(0);
 
     // ensure ctb detector type, hostname and online
     REQUIRE(m.getDetectorTypeAsEnum() == c.type_enum);
@@ -457,7 +457,7 @@ TEST_CASE("Eiger or Jungfrau startingfnum", "[.eigerintegration][.jungfrauintegr
     SingleDetectorConfig c;
 
     // pick up multi detector from shm id 0
-    multiSlsDetector m(0);
+    DetectorImpl m(0);
 
     // ensure ctb detector type, hostname and online
     REQUIRE(((m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::EIGER) || (m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::JUNGFRAU)));
@@ -495,7 +495,7 @@ TEST_CASE("Eiger readnlines", "[.eigerintegration][readnlines]") {
     SingleDetectorConfig c;
 
     // pick up multi detector from shm id 0
-    multiSlsDetector m(0);
+    DetectorImpl m(0);
 
     // ensure detector type, hostname
     REQUIRE((m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::EIGER));

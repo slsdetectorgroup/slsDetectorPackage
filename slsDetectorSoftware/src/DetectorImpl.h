@@ -69,7 +69,7 @@ struct sharedMultiSlsDetector {
     bool initialChecks;
 };
 
-class multiSlsDetector : public virtual slsDetectorDefs {
+class DetectorImpl : public virtual slsDetectorDefs {
   public:
     /**
      * Constructor
@@ -78,13 +78,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * one
      * @param update true to update last user pid, date etc
      */
-    explicit multiSlsDetector(int multi_id = 0, bool verify = true,
+    explicit DetectorImpl(int multi_id = 0, bool verify = true,
                               bool update = true);
 
     /**
      * Destructor
      */
-    virtual ~multiSlsDetector();
+    virtual ~DetectorImpl();
 
     template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>

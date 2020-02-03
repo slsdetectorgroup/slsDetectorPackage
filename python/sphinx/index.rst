@@ -2,7 +2,7 @@ sls_detector - Python interface for the slsDetectorsPackage
 ==============================================================
 
 sls_detector provide Python bindings to the slsDetectorsPackage using mainly the 
-multiSlsDetector API. This module contains two parts, a compiled C module to
+DetectorImpl API. This module contains two parts, a compiled C module to
 expose the API and a Python class to offer a more Pythonic interface.
 
 

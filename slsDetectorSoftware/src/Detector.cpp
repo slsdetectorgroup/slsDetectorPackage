@@ -4,7 +4,7 @@
 #include "container_utils.h"
 #include "detectorData.h"
 #include "logger.h"
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "slsDetector.h"
 #include "sls_detector_defs.h"
 
@@ -41,7 +41,7 @@ void freeSharedMemory(int multiId, int detPos) {
 using defs = slsDetectorDefs;
 
 Detector::Detector(int shm_id)
-    : pimpl(sls::make_unique<multiSlsDetector>(shm_id)) {}
+    : pimpl(sls::make_unique<DetectorImpl>(shm_id)) {}
 
 Detector::~Detector() = default;
 
@@ -51,7 +51,7 @@ void Detector::freeSharedMemory() { pimpl->freeSharedMemory(); }
 void Detector::loadConfig(const std::string &fname) {
     int shm_id = getShmId();
     freeSharedMemory();
-    pimpl = sls::make_unique<multiSlsDetector>(shm_id);
+    pimpl = sls::make_unique<DetectorImpl>(shm_id);
     FILE_LOG(logINFO) << "Loading configuration file: " << fname;
     loadParameters(fname);
 }

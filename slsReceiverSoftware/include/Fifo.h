@@ -12,7 +12,7 @@
 #include "sls_detector_defs.h"
 #include "logger.h"
 
-#include "circularFifo.h"
+#include "CircularFifo.h"
 
 class Fifo : private virtual slsDetectorDefs {
 	

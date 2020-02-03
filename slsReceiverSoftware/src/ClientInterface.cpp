@@ -557,7 +557,9 @@ int ClientInterface::set_period(Interface &socket) {
 int ClientInterface::set_subexptime(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     FILE_LOG(logDEBUG1) << "Setting period to " << value << "ns";
+    uint64_t subdeadtime = impl()->getSubPeriod() - impl()->getSubExpTime();
     impl()->setSubExpTime(value);
+    impl()->setSubPeriod(impl()->getSubExpTime() + subdeadtime);
     return socket.Send(OK);
 }
 

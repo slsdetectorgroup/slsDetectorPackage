@@ -1,0 +1,2 @@
+Draft
+- dr 4, 8, 16 in eiger -> speed 0, 32 stays same (speed 1)

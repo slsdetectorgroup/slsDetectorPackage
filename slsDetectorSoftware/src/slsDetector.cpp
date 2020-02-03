@@ -1526,8 +1526,8 @@ int slsDetector::setDynamicRange(int n) {
         // update speed for usability
         if (dr == 32) {
             FILE_LOG(logINFO) << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32";     setClockDivider(RUN_CLOCK, 2);
-        } else if (dr == 16) {
-            FILE_LOG(logINFO) << "Setting Clock to Half Speed to cope with Dynamic Range of 16";     setClockDivider(RUN_CLOCK, 1);
+        } else {
+            FILE_LOG(logINFO) << "Setting Clock to Full Speed to cope with Dynamic Range of " << dr;     setClockDivider(RUN_CLOCK, 0);
         }
     }
     

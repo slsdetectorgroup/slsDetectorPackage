@@ -369,8 +369,8 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
 
     // get type by connecting
     detectorType type = slsDetector::getTypeFromDetector(host, port);
-    int pos = (int)detectors.size();
-    detectors.push_back(
+    auto pos = detectors.size();
+    detectors.emplace_back(
         sls::make_unique<slsDetector>(type, multiId, pos, false));
     multi_shm()->numberOfDetectors = detectors.size();
     detectors[pos]->setControlPort(port);
@@ -657,18 +657,18 @@ void DetectorImpl::readFrameFromReceiver() {
 
                     if (eiger && (flippedDataX != 0U)) {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
-                            memcpy(((char *)multiframe) +
+                            memcpy((multiframe) +
                                        ((yoffset + (nPixelsY - 1 - i)) *
                                         rowoffset) +
                                        xoffset,
-                                   (char *)image + (i * singledetrowoffset),
+                                   image + (i * singledetrowoffset),
                                    singledetrowoffset);
                         }
                     } else {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
-                            memcpy(((char *)multiframe) +
+                            memcpy((multiframe) +
                                        ((yoffset + i) * rowoffset) + xoffset,
-                                   (char *)image + (i * singledetrowoffset),
+                                   image + (i * singledetrowoffset),
                                    singledetrowoffset);
                         }
                     }

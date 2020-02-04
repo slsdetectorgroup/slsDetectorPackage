@@ -206,23 +206,19 @@ bool DetectorImpl::isAcquireReady() {
 }
 
 std::string DetectorImpl::exec(const char *cmd) {
-    int bufsize = 128;
-    char buffer[bufsize];
-    std::string result = "";
+    char buffer[128];
+    std::string result;
     FILE *pipe = popen(cmd, "r");
     if (pipe == nullptr) {
         throw RuntimeError("Could not open pipe");
     }
-    try {
-        while (feof(pipe) == 0) {
-            if (fgets(buffer, bufsize, pipe) != nullptr) {
-                result += buffer;
-            }
+
+    while (feof(pipe) == 0) {
+        if (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+            result += buffer;
         }
-    } catch (...) {
-        pclose(pipe);
-        throw;
     }
+
     pclose(pipe);
     result.erase(result.find_last_not_of(" \t\n\r") + 1);
     return result;

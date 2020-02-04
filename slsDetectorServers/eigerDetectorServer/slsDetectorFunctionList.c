@@ -1824,8 +1824,8 @@ void* start_timer(void* arg) {
 							}
 						}
 
-						sendUDPPacket(0, packetData, packetsize);
-						sendUDPPacket(1, packetData2, packetsize);
+						// sendUDPPacket(0, packetData, packetsize);
+						// sendUDPPacket(1, packetData2, packetsize);
 					}
 				}
 				FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));

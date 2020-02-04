@@ -19,7 +19,6 @@ class detectorData;
 #define MULTI_SHMAPIVERSION 0x190809
 #define MULTI_SHMVERSION 0x200131
 #define SHORT_STRING_LENGTH 50
-#define DATE_LENGTH 30
 
 #include <future>
 #include <numeric>

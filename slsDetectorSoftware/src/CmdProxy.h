@@ -1011,7 +1011,7 @@ class CmdProxy {
     INTEGER_COMMAND_NOID(frames, getNumberOfFrames, setNumberOfFrames,
                          std::stol,
                          "[n_frames]\n\tNumber of frames per aquire. In trigger mode, number of frames per trigger."
-                         "\n\t[Gotthard2] Burst mode has a maximum of 2720 frames. Frames number for both modes are uploaded to detector just before acquisition starts");
+                         "\n\t[Gotthard2] Burst mode has a maximum of 2720 frames.");
 
     INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
                          std::stol,

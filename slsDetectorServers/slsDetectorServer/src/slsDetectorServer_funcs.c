@@ -1770,12 +1770,6 @@ int start_acquisition(int file_des) {
 		}
 		else
 #endif
-#ifdef GOTTHARD2D
-		if (updateAcquisitionRegisters(mess) == FAIL) {
-			ret = FAIL;	
-		}
-		else
-#endif
 		if (configured == FAIL) {
 			ret = FAIL;
 			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
@@ -1906,12 +1900,6 @@ int start_and_read_all(int file_des) {
 		}
 		else
 #endif
-#ifdef GOTTHARD2D
-		if (updateAcquisitionRegisters(mess) == FAIL) {
-			ret = FAIL;	
-		}
-		else
-#endif
 		if (configured == FAIL) {
 			ret = FAIL;
 			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
@@ -1977,10 +1965,20 @@ int set_num_frames(int file_des) {
 
 	// only set
 	if (Server_VerifyLock() == OK) {
-		setNumFrames(arg); 
-		int64_t retval = getNumFrames();
-		FILE_LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
-		validate64(arg, retval, "set number of frames", DEC);
+#ifdef GOTTHARD2D
+		// validate #frames in burst mode
+		if (getBurstMode() != BURST_OFF && arg > MAX_FRAMES_IN_BURST_MODE) {
+			ret = FAIL;
+			sprintf(mess, "Could not set number of frames %lld. Must be <= %d in burst mode.\n", (long long unsigned int)arg, MAX_FRAMES_IN_BURST_MODE);
+			FILE_LOG(logERROR,(mess));		
+		}  
+#endif
+		if (ret == OK) {
+			setNumFrames(arg); 
+			int64_t retval = getNumFrames();
+			FILE_LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
+			validate64(arg, retval, "set number of frames", DEC);
+		}
 	}
 	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
 }

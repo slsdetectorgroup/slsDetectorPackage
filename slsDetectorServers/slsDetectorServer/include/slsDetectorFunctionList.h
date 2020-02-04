@@ -508,9 +508,6 @@ int 		setTransmissionDelayRight(int value);
 
 
 // aquisition
-#ifdef GOTTHARD2D
-int			updateAcquisitionRegisters(char* mess);
-#endif
 #ifdef EIGERD
 int 		prepareAcquisition();
 #endif

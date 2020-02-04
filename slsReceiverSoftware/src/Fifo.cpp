@@ -76,18 +76,12 @@ void Fifo::DestroyFifos(){
 		free(memory);
 		memory = nullptr;
 	}
-	if (fifoBound) {
-		delete fifoBound;
-		fifoBound = nullptr;
-	}
-	if (fifoFree) {
-		delete fifoFree;
-		fifoFree = nullptr;
-	}
-	if (fifoStream) {
-		delete fifoStream;
-		fifoStream = nullptr;
-	}
+	delete fifoBound;
+	fifoBound = nullptr;
+	delete fifoFree;
+	fifoFree = nullptr;
+	delete fifoStream;
+	fifoStream = nullptr;
 }
 
 

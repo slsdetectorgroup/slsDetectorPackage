@@ -217,7 +217,7 @@ void ClientInterface::modeNotImplemented(const std::string &modename,
 }
 
 template <typename T>
-void ClientInterface::validate(T arg, T retval, std::string modename,
+void ClientInterface::validate(T arg, T retval, const std::string& modename,
                                          numberMode hex) {
     if (ret == OK && arg != -1 && retval != arg) {
         auto format = (hex == HEX) ? std::hex : std::dec;

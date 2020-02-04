@@ -45,7 +45,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     void functionNotImplemented();
     void modeNotImplemented(const std::string& modename, int mode);
     template <typename T>
-    void validate(T arg, T retval, std::string modename, numberMode hex);
+    void validate(T arg, T retval, const std::string& modename, numberMode hex);
     void verifyLock();
     void verifyIdle(sls::ServerInterface &socket);
 

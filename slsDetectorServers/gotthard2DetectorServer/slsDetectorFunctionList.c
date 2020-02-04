@@ -860,6 +860,7 @@ int	setPeriodBurst(int64_t val) {
 }
 
 int64_t	getPeriodBurst() {
+	FILE_LOG(logDEBUG, ("Getting period [Burst mode]\n"));
 	return get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG)/ (1E-9 * clkFrequency[SYSTEM_C0]);
 }
 
@@ -878,6 +879,7 @@ int	setPeriodCont(int64_t val) {
 }
 
 int64_t	getPeriodCont() {
+	FILE_LOG(logDEBUG, ("Getting period [Continuous mode]\n"));
 	return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * FIXED_PLL_FREQUENCY);
 }
 
@@ -1849,10 +1851,13 @@ enum burstMode getBurstMode() {
 	switch (runmode) {
 		case ASIC_CONFIG_RUN_MODE_CONT_VAL:
 			burstMode = BURST_OFF;
+			break;
 		case ASIC_CONFIG_RUN_MODE_INT_BURST_VAL:
 			burstMode = BURST_INTERNAL;
+			break;
 		case ASIC_CONFIG_RUN_MODE_EXT_BURST_VAL:
 			burstMode = BURST_EXTERNAL;
+			break;
 		default:
 			FILE_LOG(logERROR, ("Unknown run mode read from FPGA %d\n", runmode));
 			return -1;

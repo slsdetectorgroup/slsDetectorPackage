@@ -34,7 +34,7 @@
 #define DEFAULT_NUM_FRAMES			(1)
 #define DEFAULT_NUM_CYCLES			(1)
 #define DEFAULT_EXPTIME				(0)	        // 0 ms (220ns in firmware)
-#define DEFAULT_PERIOD				(0)			// 1 ms
+#define DEFAULT_PERIOD				(0)			// 0 ms
 #define DEFAULT_DELAY_AFTER_TRIGGER (0)
 #define DEFAULT_HIGH_VOLTAGE		(0)
 #define DEFAULT_TIMING_MODE			(AUTO_TIMING)

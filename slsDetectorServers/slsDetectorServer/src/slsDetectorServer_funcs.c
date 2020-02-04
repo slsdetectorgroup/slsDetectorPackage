@@ -1967,7 +1967,7 @@ int set_num_frames(int file_des) {
 	if (Server_VerifyLock() == OK) {
 #ifdef GOTTHARD2D
 		// validate #frames in burst mode
-		if (getBurstMode() != BURST_OFF && arg > MAX_FRAMES_IN_BURST_MODE) {
+		if (getBurstMode() == BURST_OFF && arg > MAX_FRAMES_IN_BURST_MODE) {
 			ret = FAIL;
 			sprintf(mess, "Could not set number of frames %lld. Must be <= %d in burst mode.\n", (long long unsigned int)arg, MAX_FRAMES_IN_BURST_MODE);
 			FILE_LOG(logERROR,(mess));		

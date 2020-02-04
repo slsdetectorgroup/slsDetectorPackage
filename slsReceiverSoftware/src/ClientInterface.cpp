@@ -18,7 +18,7 @@
 
 using sls::RuntimeError;
 using sls::SocketError;
-using Interface = sls::ServerInterface2;
+using Interface = sls::ServerInterface;
 
 ClientInterface::~ClientInterface() { 
     killTcpThread = true;

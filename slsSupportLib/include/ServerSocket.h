@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DataSocket.h"
-#include "ServerInterface2.h"
+#include "ServerInterface.h"
 #include "network_utils.h"
 #include <cstdint>
 #include <netdb.h>
@@ -14,7 +14,7 @@ namespace sls {
 class ServerSocket : public DataSocket {
   public:
     ServerSocket(int port);
-    ServerInterface2 accept();
+    ServerInterface accept();
     IpAddr getLastClient() const noexcept { return lastClient; }
     IpAddr getThisClient() const noexcept { return thisClient; }
     IpAddr getLockedBy() const noexcept { return lockedBy; }

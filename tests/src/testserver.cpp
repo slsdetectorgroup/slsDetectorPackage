@@ -3,7 +3,7 @@
 
 #include "tests/testenum.h"
 
-#include "ServerInterface2.h"
+#include "ServerInterface.h"
 #include "container_utils.h"
 #include <iostream>
 #include <unordered_map>
@@ -15,7 +15,7 @@ struct EnumClassHash {
     }
 };
 
-using Interface = sls::ServerInterface2;
+using Interface = sls::ServerInterface;
 using func_ptr = void (*)(Interface &);
 
 /********************************************

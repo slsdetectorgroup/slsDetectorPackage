@@ -148,7 +148,7 @@ Result<defs::detectorSettings> Detector::getSettings(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getSettings, pos);
 }
 
-void Detector::setSettings(defs::detectorSettings value, Positions pos) {
+void Detector::setSettings(const defs::detectorSettings value, Positions pos) {
     pimpl->Parallel(&slsDetector::setSettings, pos, value);
 }
 

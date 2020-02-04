@@ -4,7 +4,7 @@ set(SOURCES
     src/ClientSocket.cpp
     src/DataSocket.cpp
     src/ServerSocket.cpp
-    src/ServerInterface2.cpp
+    src/ServerInterface.cpp
     src/network_utils.cpp
 )
 
@@ -25,7 +25,7 @@ set(PUBLICHEADERS
     include/ClientSocket.h
     include/DataSocket.h
     include/ServerSocket.h
-    include/ServerInterface2.h
+    include/ServerInterface.h
     include/network_utils.h
     include/FixedCapacityContainer.h
     include/ToString.h

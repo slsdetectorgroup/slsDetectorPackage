@@ -43,93 +43,6 @@ void DetectorImpl::setupMultiDetector(bool verify, bool update) {
     }
 }
 
-template <typename RT, typename... CT>
-std::vector<RT>
-DetectorImpl::serialCall(RT (slsDetector::*somefunc)(CT...),
-                             typename NonDeduced<CT>::type... Args) {
-    std::vector<RT> result;
-    result.reserve(detectors.size());
-    for (auto &d : detectors) {
-        result.push_back((d.get()->*somefunc)(Args...));
-    }
-    return result;
-}
-
-template <typename RT, typename... CT>
-std::vector<RT>
-DetectorImpl::serialCall(RT (slsDetector::*somefunc)(CT...) const,
-                             typename NonDeduced<CT>::type... Args) const {
-    std::vector<RT> result;
-    result.reserve(detectors.size());
-    for (auto &d : detectors) {
-        result.push_back((d.get()->*somefunc)(Args...));
-    }
-    return result;
-}
-
-template <typename RT, typename... CT>
-std::vector<RT>
-DetectorImpl::parallelCall(RT (slsDetector::*somefunc)(CT...),
-                               typename NonDeduced<CT>::type... Args) {
-    std::vector<std::future<RT>> futures;
-    for (auto &d : detectors) {
-        futures.push_back(
-            std::async(std::launch::async, somefunc, d.get(), Args...));
-    }
-    std::vector<RT> result;
-    result.reserve(detectors.size());
-    for (auto &i : futures) {
-        result.push_back(i.get());
-    }
-    return result;
-}
-
-template <typename RT, typename... CT>
-std::vector<RT>
-DetectorImpl::parallelCall(RT (slsDetector::*somefunc)(CT...) const,
-                               typename NonDeduced<CT>::type... Args) const {
-    std::vector<std::future<RT>> futures;
-    for (auto &d : detectors) {
-        futures.push_back(
-            std::async(std::launch::async, somefunc, d.get(), Args...));
-    }
-    std::vector<RT> result;
-    result.reserve(detectors.size());
-    for (auto &i : futures) {
-        result.push_back(i.get());
-    }
-    return result;
-}
-
-template <typename... CT>
-void DetectorImpl::parallelCall(void (slsDetector::*somefunc)(CT...),
-                                    typename NonDeduced<CT>::type... Args) {
-    std::vector<std::future<void>> futures;
-    for (auto &d : detectors) {
-        futures.push_back(
-            std::async(std::launch::async, somefunc, d.get(), Args...));
-    }
-    for (auto &i : futures) {
-        i.get();
-    }
-    return;
-}
-
-template <typename... CT>
-void DetectorImpl::parallelCall(
-    void (slsDetector::*somefunc)(CT...) const,
-    typename NonDeduced<CT>::type... Args) const {
-    std::vector<std::future<void>> futures;
-    for (auto &d : detectors) {
-        futures.push_back(
-            std::async(std::launch::async, somefunc, d.get(), Args...));
-    }
-    for (auto &i : futures) {
-        i.get();
-    }
-    return;
-}
-
 void DetectorImpl::setAcquiringFlag(bool flag) {
     multi_shm()->acquiringFlag = flag;
 }
@@ -212,7 +125,6 @@ std::string DetectorImpl::getUserDetails() {
     return sstream.str();
 }
 
-
 bool DetectorImpl::getInitialChecks() const {
     return multi_shm()->initialChecks;
 }
@@ -270,8 +182,8 @@ void DetectorImpl::initializeMembers(bool verify) {
 
 void DetectorImpl::updateUserdetails() {
     multi_shm()->lastPID = getpid();
-    memset(multi_shm()->lastUser, 0, SHORT_STRING_LENGTH);
-    memset(multi_shm()->lastDate, 0, SHORT_STRING_LENGTH);
+    memset(multi_shm()->lastUser, 0, sizeof(multi_shm()->lastUser));
+    memset(multi_shm()->lastDate, 0, sizeof(multi_shm()->lastDate));
     try {
         sls::strcpy_safe(multi_shm()->lastUser, exec("whoami").c_str());
         sls::strcpy_safe(multi_shm()->lastDate, exec("date").c_str());
@@ -316,8 +228,7 @@ std::string DetectorImpl::exec(const char *cmd) {
     return result;
 }
 
-void DetectorImpl::setVirtualDetectorServers(const int numdet,
-                                                 const int port) {
+void DetectorImpl::setVirtualDetectorServers(const int numdet, const int port) {
     std::vector<std::string> hostnames;
     for (int i = 0; i < numdet; ++i) {
         // * 2 is for control and stop port
@@ -369,15 +280,17 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
 
     // get type by connecting
     detectorType type = slsDetector::getTypeFromDetector(host, port);
-    int pos = (int)detectors.size();
-    detectors.push_back(
+    auto pos = detectors.size();
+    detectors.emplace_back(
         sls::make_unique<slsDetector>(type, multiId, pos, false));
     multi_shm()->numberOfDetectors = detectors.size();
     detectors[pos]->setControlPort(port);
     detectors[pos]->setStopPort(port + 1);
     detectors[pos]->setHostname(host, multi_shm()->initialChecks);
     // detector type updated by now
-    multi_shm()->multiDetectorType = Parallel(&slsDetector::getDetectorType, {}).tsquash("Inconsistent detector types.");
+    multi_shm()->multiDetectorType =
+        Parallel(&slsDetector::getDetectorType, {})
+            .tsquash("Inconsistent detector types.");
 }
 
 void DetectorImpl::updateDetectorSize() {
@@ -464,7 +377,8 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
     if (multi_shm()->multiDetectorType == EIGER) {
         numSocketsPerDetector = 2;
     }
-    if (Parallel(&slsDetector::getNumberofUDPInterfacesFromShm, {}).squash() == 2) {
+    if (Parallel(&slsDetector::getNumberofUDPInterfacesFromShm, {}).squash() ==
+        2) {
         numSocketsPerDetector = 2;
     }
     numSockets *= numSocketsPerDetector;
@@ -476,7 +390,8 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
         try {
             zmqSocket.push_back(sls::make_unique<ZmqSocket>(
                 detectors[iSocket / numSocketsPerDetector]
-                    ->getClientStreamingIP().str()
+                    ->getClientStreamingIP()
+                    .str()
                     .c_str(),
                 portnum));
             FILE_LOG(logINFO) << "Zmq Client[" << iSocket << "] at "
@@ -503,7 +418,9 @@ void DetectorImpl::readFrameFromReceiver() {
     bool gappixelsenable = false;
     bool quadEnable = false;
     bool eiger = false;
-    bool numInterfaces = Parallel(&slsDetector::getNumberofUDPInterfacesFromShm, {}).squash(); // cannot pick up from zmq
+    bool numInterfaces =
+        Parallel(&slsDetector::getNumberofUDPInterfacesFromShm, {})
+            .squash(); // cannot pick up from zmq
 
     bool runningList[zmqSocket.size()], connectList[zmqSocket.size()];
     int numRunning = 0;
@@ -530,7 +447,7 @@ void DetectorImpl::readFrameFromReceiver() {
     uint32_t size = 0, nPixelsX = 0, nPixelsY = 0, dynamicRange = 0;
     float bytesPerPixel = 0;
     // header info every header
-    std::string currentFileName = "";
+    std::string currentFileName;
     uint64_t currentAcquisitionIndex = -1, currentFrameIndex = -1,
              currentFileIndex = -1;
     uint32_t currentSubFrameIndex = -1, coordX = -1, coordY = -1,
@@ -657,18 +574,18 @@ void DetectorImpl::readFrameFromReceiver() {
 
                     if (eiger && (flippedDataX != 0U)) {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
-                            memcpy(((char *)multiframe) +
+                            memcpy((multiframe) +
                                        ((yoffset + (nPixelsY - 1 - i)) *
                                         rowoffset) +
                                        xoffset,
-                                   (char *)image + (i * singledetrowoffset),
+                                   image + (i * singledetrowoffset),
                                    singledetrowoffset);
                         }
                     } else {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
-                            memcpy(((char *)multiframe) +
-                                       ((yoffset + i) * rowoffset) + xoffset,
-                                   (char *)image + (i * singledetrowoffset),
+                            memcpy((multiframe) + ((yoffset + i) * rowoffset) +
+                                       xoffset,
+                                   image + (i * singledetrowoffset),
                                    singledetrowoffset);
                         }
                     }
@@ -699,21 +616,22 @@ void DetectorImpl::readFrameFromReceiver() {
                                    << "\n\t nDetPixelsX: " << nDetPixelsX
                                    << "\n\t nDetPixelsY: " << nDetPixelsY
                                    << "\n\t databytes: " << n;
-                thisData = new detectorData(
-                    getCurrentProgress(), currentFileName.c_str(), nDetPixelsX,
-                    nDetPixelsY, multigappixels, n, dynamicRange,
-                    currentFileIndex);
+                thisData =
+                    new detectorData(getCurrentProgress(), currentFileName,
+                                     nDetPixelsX, nDetPixelsY, multigappixels,
+                                     n, dynamicRange, currentFileIndex);
             }
             // normal pixels
             else {
-                thisData = new detectorData(
-                    getCurrentProgress(), currentFileName.c_str(), nDetPixelsX,
-                    nDetPixelsY, multiframe, multisize, dynamicRange,
-                    currentFileIndex);
+                thisData =
+                    new detectorData(getCurrentProgress(), currentFileName,
+                                     nDetPixelsX, nDetPixelsY, multiframe,
+                                     multisize, dynamicRange, currentFileIndex);
             }
-            dataReady(thisData, currentFrameIndex,
-                      ((dynamicRange == 32 && eiger) ? currentSubFrameIndex : -1),
-                      pCallbackArg);
+            dataReady(
+                thisData, currentFrameIndex,
+                ((dynamicRange == 32 && eiger) ? currentSubFrameIndex : -1),
+                pCallbackArg);
             delete thisData;
         }
 
@@ -755,7 +673,7 @@ void DetectorImpl::readFrameFromReceiver() {
 }
 
 int DetectorImpl::processImageWithGapPixels(char *image, char *&gpImage,
-                                                bool quadEnable) {
+                                            bool quadEnable) {
     // eiger 4 bit mode
     int nxb =
         multi_shm()->numberOfDetector.x * (512 + 3); //(divided by 2 already)
@@ -904,7 +822,6 @@ bool DetectorImpl::enableDataStreamingToClient(int enable) {
     return client_downstream;
 }
 
-
 void DetectorImpl::savePattern(const std::string &fname) {
     // std::ofstream outfile;
     // outfile.open(fname.c_str(), std::ios_base::out);
@@ -923,7 +840,7 @@ void DetectorImpl::savePattern(const std::string &fname) {
     // }
     // // rest of pattern file
     // const std::vector<std::string> commands{
-    //     "patioctrl", 
+    //     "patioctrl",
     //     "patclkctrl",
     //     "patlimits",
     //     "patloop0",
@@ -945,35 +862,36 @@ void DetectorImpl::savePattern(const std::string &fname) {
     //     multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
 }
 
-
-
-void DetectorImpl::registerAcquisitionFinishedCallback(
-    void (*func)(double, int, void *), void *pArg) {
+void DetectorImpl::registerAcquisitionFinishedCallback(void (*func)(double, int,
+                                                                    void *),
+                                                       void *pArg) {
     acquisition_finished = func;
     acqFinished_p = pArg;
 }
 
-void DetectorImpl::registerDataCallback(
-    void (*userCallback)(detectorData *, uint64_t, uint32_t, void *),
-    void *pArg) {
+void DetectorImpl::registerDataCallback(void (*userCallback)(detectorData *,
+                                                             uint64_t, uint32_t,
+                                                             void *),
+                                        void *pArg) {
     dataReady = userCallback;
     pCallbackArg = pArg;
-    enableDataStreamingToClient(dataReady == nullptr ? 0 : 1); 
+    enableDataStreamingToClient(dataReady == nullptr ? 0 : 1);
 }
 
 double DetectorImpl::setTotalProgress() {
     int64_t nf = Parallel(&slsDetector::getNumberOfFramesFromShm, {})
-                 .tsquash("Inconsistent number of frames");
+                     .tsquash("Inconsistent number of frames");
     int64_t nc = Parallel(&slsDetector::getNumberOfTriggersFromShm, {})
-                 .tsquash("Inconsistent number of triggers");
+                     .tsquash("Inconsistent number of triggers");
     if (nf == 0 || nc == 0) {
         throw RuntimeError("Number of frames or triggers is 0");
     }
 
     int ns = 1;
     if (multi_shm()->multiDetectorType == JUNGFRAU) {
-        ns = Parallel(&slsDetector::getNumberOfAdditionalStorageCellsFromShm, {})
-                 .tsquash("Inconsistent number of additional storage cells");
+        ns =
+            Parallel(&slsDetector::getNumberOfAdditionalStorageCellsFromShm, {})
+                .tsquash("Inconsistent number of additional storage cells");
         ++ns;
     }
 
@@ -992,8 +910,7 @@ void DetectorImpl::incrementProgress() {
     std::lock_guard<std::mutex> lock(mp);
     progressIndex += 1;
     std::cout << std::fixed << std::setprecision(2) << std::setw(6)
-              << 100. * progressIndex / totalProgress
-              << " \%";
+              << 100. * progressIndex / totalProgress << " \%";
     std::cout << '\r' << std::flush;
 }
 
@@ -1001,8 +918,7 @@ void DetectorImpl::setCurrentProgress(int64_t i) {
     std::lock_guard<std::mutex> lock(mp);
     progressIndex = (double)i;
     std::cout << std::fixed << std::setprecision(2) << std::setw(6)
-              << 100. * progressIndex / totalProgress
-              << " \%";
+              << 100. * progressIndex / totalProgress << " \%";
     std::cout << '\r' << std::flush;
 }
 
@@ -1016,21 +932,23 @@ int DetectorImpl::acquire() {
         struct timespec begin, end;
         clock_gettime(CLOCK_REALTIME, &begin);
 
-        // in the real time acquisition loop, processing thread will wait for a post
-        // each time
+        // in the real time acquisition loop, processing thread will wait for a
+        // post each time
         sem_init(&sem_newRTAcquisition, 1, 0);
-        // in the real time acquistion loop, main thread will wait for processing
-        // thread to be done each time (which in turn waits for receiver/ext
-        // process)
+        // in the real time acquistion loop, main thread will wait for
+        // processing thread to be done each time (which in turn waits for
+        // receiver/ext process)
         sem_init(&sem_endRTAcquisition, 1, 0);
 
-        bool receiver = Parallel(&slsDetector::getUseReceiverFlag, {}).squash(false);
+        bool receiver =
+            Parallel(&slsDetector::getUseReceiverFlag, {}).squash(false);
         progressIndex = 0;
         setJoinThreadFlag(false);
 
         // verify receiver is idle
         if (receiver) {
-            if (Parallel(&slsDetector::getReceiverStatus, {}).squash(ERROR) != IDLE) {
+            if (Parallel(&slsDetector::getReceiverStatus, {}).squash(ERROR) !=
+                IDLE) {
                 Parallel(&slsDetector::stopReceiver, {});
             }
         }
@@ -1079,8 +997,7 @@ int DetectorImpl::acquire() {
             auto t = Parallel(&slsDetector::getRunStatus, {});
             if (t.equal())
                 status = t.front();
-            acquisition_finished(getCurrentProgress(), status,
-                                acqFinished_p);
+            acquisition_finished(getCurrentProgress(), status, acqFinished_p);
         }
 
         sem_destroy(&sem_newRTAcquisition);
@@ -1122,7 +1039,8 @@ void DetectorImpl::processData() {
                     }
                 }
                 // get progress
-                caught = Parallel(&slsDetector::getFramesCaughtByReceiver, {0}).squash();
+                caught = Parallel(&slsDetector::getFramesCaughtByReceiver, {0})
+                             .squash();
 
                 // updating progress
                 if (caught != -1) {
@@ -1164,27 +1082,26 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     // validate type of file
     bool isPof = false;
     switch (multi_shm()->multiDetectorType) {
-        case JUNGFRAU:
-        case CHIPTESTBOARD:
-            if (fname.find(".pof") == std::string::npos) {
-                throw RuntimeError("Programming file must be a pof file.");
-            }
-            isPof = true;
-            break;
-        case MYTHEN3:
-        case GOTTHARD2:
-            if (fname.find(".rbf") == std::string::npos) {
-                throw RuntimeError("Programming file must be an rbf file.");
-            }
-            break;  
-        default:
-            throw RuntimeError("Not implemented for this detector"); 
+    case JUNGFRAU:
+    case CHIPTESTBOARD:
+        if (fname.find(".pof") == std::string::npos) {
+            throw RuntimeError("Programming file must be a pof file.");
+        }
+        isPof = true;
+        break;
+    case MYTHEN3:
+    case GOTTHARD2:
+        if (fname.find(".rbf") == std::string::npos) {
+            throw RuntimeError("Programming file must be an rbf file.");
+        }
+        break;
+    default:
+        throw RuntimeError("Not implemented for this detector");
     }
 
     FILE_LOG(logINFO)
         << "Updating Firmware. This can take awhile. Please be patient...";
     FILE_LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
-
 
     size_t filesize = 0;
     // check if it exists
@@ -1215,22 +1132,20 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     // convert src to dst rawbin
     FILE_LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
     {
-        const int pofNumHeaderBytes = 0x11C;
-        const int pofNumPadding = 0x80;
-        const int pofFooterOfst = 0x1000000;
-        int dstFilePos = 0;       
+        constexpr int pofNumHeaderBytes = 0x11C;
+        constexpr int pofFooterOfst = 0x1000000;
+        int dstFilePos = 0;
         if (isPof) {
             // Read header and discard
             for (int i = 0; i < pofNumHeaderBytes; ++i) {
                 fgetc(src);
             }
             // Write 0xFF to destination 0x80 times (padding)
-            {
-                char c = 0xFF;
-                while (dstFilePos < pofNumPadding) {
-                    write(dst, &c, 1);
-                    ++dstFilePos;
-                }
+            constexpr int pofNumPadding{0x80};
+            constexpr uint8_t c{0xFF};
+            while (dstFilePos < pofNumPadding) {
+                write(dst, &c, sizeof(c));
+                ++dstFilePos;
             }
         }
         // Swap bits from source and write to dest
@@ -1243,12 +1158,11 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             int s = fgetc(src);
             if (s < 0) {
                 break;
-            }      
-            // swap bits     
+            }
+            // swap bits
             int d = 0;
             for (int i = 0; i < 8; ++i) {
-                d = d |
-                    (((s & (1 << i)) >> i) << (7 - i));
+                d = d | (((s & (1 << i)) >> i) << (7 - i));
             }
             write(dst, &d, 1);
             ++dstFilePos;
@@ -1258,7 +1172,6 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             throw RuntimeError(
                 "Could not convert programming file. EOF before end of flash");
         }
-
     }
     if (fclose(src) != 0) {
         throw RuntimeError("Program FPGA: Could not close source file");

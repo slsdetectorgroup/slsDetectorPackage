@@ -1,4 +1,4 @@
-#include "ServerInterface2.h"
+#include "ServerInterface.h"
 #include "ServerSocket.h"
 
 #include "DataSocket.h"
@@ -37,7 +37,7 @@ ServerSocket::ServerSocket(int port)
     }
 }
 
-ServerInterface2 ServerSocket::accept() {
+ServerInterface ServerSocket::accept() {
     lastClient = thisClient; //update from previous connection
     struct sockaddr_in clientAddr;
     socklen_t addr_size = sizeof clientAddr;
@@ -49,7 +49,7 @@ ServerInterface2 ServerSocket::accept() {
     char tc[INET_ADDRSTRLEN]{};
     inet_ntop(AF_INET, &(clientAddr.sin_addr), tc, INET_ADDRSTRLEN);
     thisClient = IpAddr{tc};
-    return ServerInterface2(newSocket);
+    return ServerInterface(newSocket);
 }
 
 }; // namespace sls

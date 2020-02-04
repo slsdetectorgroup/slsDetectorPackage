@@ -1288,7 +1288,7 @@ std::string CmdProxy::Counters(int action) {
         std::vector <int> result;
         for (size_t i = 0; i < 32; ++i) {
             if (mask & (1 << i)) {
-                result.push_back((int)i);
+                result.push_back(static_cast<int>(i));
             }
         }
         os << sls::ToString(result) << '\n';

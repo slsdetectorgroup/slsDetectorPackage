@@ -32,8 +32,8 @@
 #define DEFAULT_BURST_MODE			(BURST_INTERNAL)
 #define DEFAULT_NUM_FRAMES			(1)
 #define DEFAULT_NUM_CYCLES			(1)
-#define DEFAULT_EXPTIME				(1 * 1000 * 1000)	        // 1 ms
-#define DEFAULT_PERIOD				(1 * 1000 * 1000 * 1000)	// 1 s
+#define DEFAULT_EXPTIME				(0)	        // 0 ms (220ns in firmware)
+#define DEFAULT_PERIOD				(1 * 1000)	// 1 ms
 #define DEFAULT_DELAY_AFTER_TRIGGER (0)
 #define DEFAULT_HIGH_VOLTAGE		(0)
 #define DEFAULT_TIMING_MODE			(AUTO_TIMING)

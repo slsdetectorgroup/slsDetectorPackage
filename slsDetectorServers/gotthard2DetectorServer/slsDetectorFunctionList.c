@@ -452,13 +452,13 @@ int readConfigFile() {
 	}
 
 	// require a sleep before and after the rst dac signal
-	usleep (1 * 1000);	
+	usleep (INITIAL_STARTUP_WAIT);	
 
 	// inform FPGA that onchip dacs will be configured soon
 	FILE_LOG(logINFO, ("Setting configuration starting bit\n"));
 	bus_w(ASIC_CONFIG_REG, bus_r(ASIC_CONFIG_REG) | ASIC_CONFIG_RST_DAC_MSK);
 
-	usleep (1 * 1000);
+	usleep (INITIAL_STARTUP_WAIT);
 
     FILE* fd = fopen(CONFIG_FILE, "r");
     if(fd == NULL) {

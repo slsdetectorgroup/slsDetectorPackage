@@ -727,7 +727,7 @@ void setNumFrames(int64_t val) {
     if (val > 0) {
 		FILE_LOG(logINFO, ("Setting number of frames %lld [local]\n", (long long int)val));
 		// continuous mode
-		if (burstMode != BURST_OFF) {
+		if (burstMode == BURST_OFF) {
 			setNumFramesCont(val);
 			setNumFramesBurst(1);
 		} else {
@@ -738,7 +738,7 @@ void setNumFrames(int64_t val) {
 }
 
 int64_t getNumFrames() {
-	if (burstMode != BURST_OFF) {
+	if (burstMode == BURST_OFF) {
 		return getNumFramesCont();
 	} else {
 		return getNumFramesBurst();
@@ -763,7 +763,7 @@ int setExpTime(int64_t val) {
     }
 	FILE_LOG(logINFO, ("Setting exptime %lld ns [local]\n", (long long int)val));
 	// continuous mode
-	if (burstMode != BURST_OFF) {
+	if (burstMode == BURST_OFF) {
 		return setExptimeCont(val);
 	} else {
 		return setExptimeBurst(val);
@@ -781,7 +781,7 @@ int setPeriod(int64_t val) {
     }
 	FILE_LOG(logINFO, ("Setting period %lld ns [local]\n", (long long int)val));
 	// continuous mode
-	if (burstMode != BURST_OFF) {
+	if (burstMode == BURST_OFF) {
 		setPeriodBurst(0);
 		return setPeriodCont(val);
 	} else {
@@ -791,7 +791,7 @@ int setPeriod(int64_t val) {
 }
 
 int64_t getPeriod() {
-	if (burstMode != BURST_OFF) {
+	if (burstMode == BURST_OFF) {
 		return getPeriodCont();
 	} else {
 		return getPeriodBurst();

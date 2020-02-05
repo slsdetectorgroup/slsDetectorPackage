@@ -26,6 +26,7 @@ target_link_libraries(udp
     slsSupportLib
     pthread
     rt
+    fmt
 )  
 
 set_target_properties(udp PROPERTIES

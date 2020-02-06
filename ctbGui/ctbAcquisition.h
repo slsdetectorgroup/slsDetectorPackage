@@ -42,7 +42,7 @@ using namespace std;
 class ctbAcquisition : public TGGroupFrame {
 
 
-  enum {DESERIALIZER, MOENCH04, MOENCH02, ADCSAR2, MYTHEN301, MYTHEN302};
+  enum {DESERIALIZER, MOENCH04, MOENCH02, MOENCH03, IMAGE16B, ADCSAR2, MYTHEN301, MYTHEN302};
 
 
  private:
@@ -56,6 +56,9 @@ class ctbAcquisition : public TGGroupFrame {
   TGNumberEntry *eDynRange;
   TGNumberEntry *eNumCount;
 
+
+  TGNumberEntry *ePixX;
+  TGNumberEntry *ePixY;
 
   TGNumberEntry *eFitADC;
   TGNumberEntry *eBitPlot;
@@ -231,7 +234,8 @@ class ctbAcquisition : public TGGroupFrame {
    void ChangeNumberOfChannels(Long_t);
    void ChangeDynamicRange();
    void ChangeDynamicRange(Long_t);
-
+   void ChangeImagePixels();
+   void ChangeImagePixels(Long_t);
 
    void canvasClicked();
    void FitADC();

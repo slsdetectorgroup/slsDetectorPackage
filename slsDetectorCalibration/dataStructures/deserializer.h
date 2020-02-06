@@ -1,6 +1,7 @@
 #ifndef DESERIALIZER_H
 #define DESERIALIZER_H
 #include <vector>
+#include "slsDetectorData.h"
 
 class deserializer : public slsDetectorData<int> {
 
@@ -52,7 +53,13 @@ class deserializer : public slsDetectorData<int> {
  static int* deserializeAll(char *ptr, std::vector <int> dbl, int dr=24,  int nch=64*3, int off=5) {
    // off=0;
    //int iarg;
-   int64_t word, *wp;
+
+
+    cout <<"** deserializer: " << endl;
+    cout << "** Number of chans:\t" << nch << endl;
+    cout << "** Serial Offset:\t" << off << endl;
+    cout << "** Dynamic range:\t" << dr << endl;
+    int64_t word, *wp, ww,one=1, bit ;
    int* val=new int[nch];
    int ioff=0;
    int idr=0;
@@ -66,39 +73,62 @@ class deserializer : public slsDetectorData<int> {
      val[ib]=0;
    }
    wp=(int64_t*)ptr;
+
+   int nw=nch/nb;
+
+   cout << "** Number of bits:\t" << nb << endl;
+   cout << "** Samples:\t" << nw << endl;
+    
+  for (ib=0; ib<nb; ib++) {
+    cout << dbl[ib] << " " ;
+  }
+  cout << endl;
    
-   for (iw=0; iw<nch/nb; iw) {
+  for (ib=0; ib<nch; ib++) {
+    val[ib]=0;
+  }
+   
+   for (iw=0; iw<nw; iw) {
      word=*wp;;
      if (ioff<off) {
        ioff++;
        // cout <<"*";
      }  else {
        //if (idr<16) {
-       ib=0;
-	for (const auto &bit : dbl) {
-	  ich=iw+nch/nb*(ib);
-	  if (word&(1<<bit) && ich<nch)  {
+       //ib=0; 
+       // cout << hex << "*************" << word << endl;
+      for (ib=0; ib<nb; ib++) {
+	//	for (const auto &bit : dbl) {
+	  ich=iw+nch*ib/nb;
+	  /* if (ich>1060) */
+	  /* cout << iw << " " << idr << " " << ib << " " << bit << " " << ich << " " << val[ich] << " **  " ; */ 
+	  bit=dbl[ib];
+	  ww=one<<bit;
+	  if (word&(ww) && ich<nch)  {
 	    //cout << "+" ;
 	    val[ich]|=(1<<idr);
-	  }  //else { 
+	  }
+	  /* if (ich>1060) */
+	  /*   cout << val[ich]  << " " << hex << word << " " << ww << " " << (word&(ww)) << dec <<endl; */
+	  /* //else {  */
 	  //cout << "-" ; 
 	  //}
-	  ib++;
+	  //ib++;
 	}
 	
+      idr++; 
      }
      
-     idr++; 
      if (idr==dr) {
        idr=0;
 	//  cout << dec << " " << iw << " " << val[iw] << " " << val[iw+nch/2] << endl;
-       cout <<dec << iw<<endl;
+       // cout <<dec << iw<<endl;
        iw++;
      }//end if()
      
       //end else()
      wp+=1;
-     ii++;
+     // ii++;
    }//end for
    
     
@@ -117,7 +147,7 @@ class deserializer : public slsDetectorData<int> {
    int ii=0;
    int ich;
    int nb=dbl.size();
-
+   int bit;
    char *dval;
 
    idr=0;
@@ -127,8 +157,13 @@ class deserializer : public slsDetectorData<int> {
    dval=ptr;
    
    ib=0;
-   ich=0;
-   for (const auto &bit : dbl) {
+   ich=0; 
+     for (ib=0; ib<nb; ib++) {
+       //	for (const auto &bit : dbl) {
+
+       /* if (ich>1060) */
+       /* cout << iw << " " << idr << " " << ib << " " << bit << " " << ich << " " << val[ich] << " **  " ; */ 
+       bit=dbl[ib];
      //ioff=off;
      idr=0;
      for (iw=0; iw<(nch*dr/nb)/8; iw++) {
@@ -141,7 +176,7 @@ class deserializer : public slsDetectorData<int> {
        }	
      }
      ii++;
-     ib++;
+     // ib++;
    }//end for
    
     

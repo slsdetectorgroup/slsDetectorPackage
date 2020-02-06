@@ -293,7 +293,8 @@ int main(int argc, char *argv[]) {
 	uint8_t detType = 0;
 	uint8_t version = 0;
 	//	int* flippedData = 0;
-	char* additionalJsonHeader = 0;
+	string* additionalJsonHeader = 0;
+	//char* additionalJsonHeader = 0;
 
 	int32_t threshold=0;
 	

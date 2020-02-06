@@ -28,7 +28,8 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
      \param c crosstalk parameter for the output buffer
 
   */
- moench03T1ZmqDataNew(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*32*2+sizeof(int)), nSamples(ns), offset(sizeof(int)), xtalk(0.00021) {
+  // moench03T1ZmqDataNew(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*32*2+sizeof(int)), nSamples(ns), offset(sizeof(int)), xtalk(0.00021) {
+moench03T1ZmqDataNew(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*32*2+sizeof(int)), nSamples(ns), offset(0), xtalk(0.00021) {
 
     int nadc=32;
     int sc_width=25;
@@ -137,6 +138,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
     /* vout+=0.0008*val-6224; */
     /* return vout; //(double)getChannel(data, ix, iy);
      */
+    // cout << ix << " "<< iy << " " << dataMap[iy][ix] << endl;
     return ((double)getChannel(data, ix, iy))+xtalk*getGhost(iy,iy);
   };
 

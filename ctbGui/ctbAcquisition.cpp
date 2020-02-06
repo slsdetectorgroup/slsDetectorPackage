@@ -29,9 +29,10 @@
 #include "sls_detector_defs.h"
 #include "ctbMain.h"
 #include "moench03CtbData.h" 
-#include "moench03TCtbData.h" 
-#include "moench03T1CtbData.h" 
+//#include "moench03TCtbData.h" 
+//#include "moench03T1CtbData.h" 
 #include "moench03CommonMode.h" 
+#include "moench03T1ZmqDataNew.h" 
 #include "moench02CtbData.h" 
 //#include "jungfrau10ModuleData.h" 
 #include "moenchCommonMode.h" 
@@ -43,6 +44,8 @@
 #include "moench04CtbZmq10GbData.h"
 #include "deserializer.h"
 #include "detectorData.h"
+#include "imageZmq16bit.h"
+
 
 using namespace std;
 
@@ -232,7 +235,9 @@ hframe=new TGHorizontalFrame(this, 800,50);
   cbDetType->AddEntry("MOENCH02", MOENCH02);
   cbDetType->AddEntry("MOENCH04", MOENCH04);
   // cbDetType->AddEntry("JUNGFRAU1.0", 2);
-  //cbDetType->AddEntry("MOENCH03 T", iiii++);
+  cbDetType->AddEntry("MOENCH03",MOENCH03);
+  cbDetType->AddEntry("IMAGE16BIT",IMAGE16B);
+
   //cbDetType->AddEntry("MOENCH03", iiii++);
   // cbDetType->AddEntry("MYTHEN3 0.1", MYTHEN301);
   // cbDetType->AddEntry("ADCSAR2", ADCSAR2);
@@ -271,7 +276,7 @@ hframe=new TGHorizontalFrame(this, 800,50);
 
 
 
-    cout << "off "<< endl;
+  //  cout << "off "<< endl;
 
 
   hframe=new TGHorizontalFrame(this, 800,50);
@@ -290,8 +295,8 @@ hframe=new TGHorizontalFrame(this, 800,50);
                                                TGNumberFormat::kNEANonNegative, 
 			     TGNumberFormat::kNELLimitMinMax,0,16535);
    hframe->AddFrame(eSerOff,new TGLayoutHints(kLHintsTop |  kLHintsExpandX, 1, 1, 1, 1));
-   eSerOff->MapWindow();;
-   eSerOff->SetNumber(5);
+   eSerOff->MapWindow();
+   eSerOff->SetNumber(0);
    e= eSerOff->TGNumberEntry::GetNumberEntry();
    eSerOff->Connect("ValueSet(Long_t)","ctbAcquisition",this,"ChangeSerialOffset(Long_t)");
    e->Connect("ReturnPressed()","ctbAcquisition",this,"ChangeSerialOffset()");
@@ -335,6 +340,53 @@ hframe=new TGHorizontalFrame(this, 800,50);
 
    
    
+
+
+  hframe=new TGHorizontalFrame(this, 800,50);
+  AddFrame(hframe,new TGLayoutHints(kLHintsTop | kLHintsExpandX , 10,10,10,10));
+  hframe->MapWindow();
+    
+ 
+
+  label=new TGLabel(hframe,"Image Pixels");
+  hframe->AddFrame(label,new TGLayoutHints(kLHintsTop | kLHintsLeft| kLHintsExpandX, 5, 5, 5, 5));
+  label->MapWindow();
+  label->SetTextJustify(kTextLeft);
+
+
+  label=new TGLabel(hframe,"X: ");
+  hframe->AddFrame(label,new TGLayoutHints(kLHintsTop | kLHintsLeft| kLHintsExpandX, 5, 5, 5, 5));
+  label->MapWindow();
+  label->SetTextJustify(kTextRight);
+
+
+  ePixX=new TGNumberEntry(hframe, 0, 9,999, TGNumberFormat::kNESInteger,
+                                               TGNumberFormat::kNEANonNegative, 
+			     TGNumberFormat::kNELLimitMinMax,0,16535);
+   hframe->AddFrame(ePixX,new TGLayoutHints(kLHintsTop |  kLHintsExpandX, 1, 1, 1, 1));
+   ePixX->MapWindow();
+   ePixX->SetNumber(0);
+   e= ePixX->TGNumberEntry::GetNumberEntry();
+   ePixX->Connect("ValueSet(Long_t)","ctbAcquisition",this,"ChangeImagePixels(Long_t)");
+   e->Connect("ReturnPressed()","ctbAcquisition",this,"ChangeImagePixels()");
+
+
+
+  label=new TGLabel(hframe,"Y: ");
+  hframe->AddFrame(label,new TGLayoutHints(kLHintsTop | kLHintsLeft| kLHintsExpandX, 5, 5, 5, 5));
+  label->MapWindow();
+  label->SetTextJustify(kTextRight);
+
+
+  ePixY=new TGNumberEntry(hframe, 0, 9,999, TGNumberFormat::kNESInteger,
+                                               TGNumberFormat::kNEANonNegative, 
+			     TGNumberFormat::kNELLimitMinMax,0,16535);
+   hframe->AddFrame(ePixY,new TGLayoutHints(kLHintsTop |  kLHintsExpandX, 1, 1, 1, 1));
+   ePixY->MapWindow();
+   ePixY->SetNumber(0);
+   e= ePixY->TGNumberEntry::GetNumberEntry();
+   ePixY->Connect("ValueSet(Long_t)","ctbAcquisition",this,"ChangeImagePixels(Long_t)");
+   e->Connect("ReturnPressed()","ctbAcquisition",this,"ChangeImagePixels()");
 
 
 
@@ -859,6 +911,11 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
     nx=eNumCount->GetIntNumber();
     dr=eDynRange->GetIntNumber();
     soff=eSerOff->GetIntNumber();
+    cout <<"deserializer: " << endl;
+    cout << "Number of chans:\t" << nx << endl;
+    cout << "Serial Offset:\t" << soff << endl;
+    cout << "Dynamic range:\t" << dr << endl;
+    
   }
 
   i=0;
@@ -1200,6 +1257,9 @@ void ctbAcquisition::changeDetector(){
    eNumCount->SetState(kFALSE);
   eDynRange->SetState(kFALSE);
   eSerOff->SetState(kFALSE);
+  ePixX->SetState(kFALSE);
+  ePixY->SetState(kFALSE);
+    
   deserializer=0;
   if (rb2D->IsOn() ) {//|| rbScan->IsOn()
     switch  (cbDetType->GetSelected()) {
@@ -1210,7 +1270,6 @@ void ctbAcquisition::changeDetector(){
       // commonMode=new moench03CommonMode();
       break;
      case MOENCH04:
-
       try {
         auto retval = myDet->getTenGiga().tsquash("Different values");
         if (retval) {
@@ -1222,6 +1281,36 @@ void ctbAcquisition::changeDetector(){
 
        cout << "MOENCH 0.4!" << endl;
        commonMode=new moench03CommonMode();
+      break;
+     case MOENCH03:
+       //try {
+	// auto retval = myDet->getTenGiga().tsquash("Different values");
+	// if (retval) {
+          dataStructure=new moench03T1ZmqDataNew(nAnalogSamples); 
+        // } else {
+        //   dataStructure=new moench04CtbZmqData(nAnalogSamples, nDigitalSamples); 
+        // }
+	  //} CATCH_DISPLAY ("Could not get ten giga enable.", "ctbAcquisition::changeDetector")
+
+       cout << "MOENCH 0.3! USE JUNGFRAU MODULE!" << endl;
+       commonMode=new moench03CommonMode();
+      break;
+       case IMAGE16B:
+       //try {
+	// auto retval = myDet->getTenGiga().tsquash("Different values");
+	// if (retval) {
+	 if (deserializer) {
+	   ePixX->SetState(kTRUE);
+	   ePixY->SetState(kTRUE);
+	 }
+	 dataStructure=new imageZmq16bit(ePixX->GetIntNumber(),ePixY->GetIntNumber()); 
+        // } else {
+        //   dataStructure=new moench04CtbZmqData(nAnalogSamples, nDigitalSamples); 
+        // }
+	  //} CATCH_DISPLAY ("Could not get ten giga enable.", "ctbAcquisition::changeDetector")
+
+       cout << "Image, no channel shuffling" << endl;
+       commonMode=NULL;
       break;
    
     // case 1:
@@ -1511,13 +1600,13 @@ void ctbAcquisition::update() {
 
    if (dataStructure) {
      cout << cbDetType->GetSelected()<< endl;
-    if (cbDetType->GetSelected()==MYTHEN301 || cbDetType->GetSelected()==MYTHEN302){
-      cout << "settings deserialiation parameters for MYTHEN" << endl;
-      mythen3_01_jctbData* ms=(mythen3_01_jctbData*)dataStructure;
-      eSerOff->SetNumber( ms->setSerialOffset(-1));
-      eDynRange->SetNumber( ms->setDynamicRange(-1));
-      eNumCount->SetNumber( ms->setNumberOfCounters(-1));
-    }
+    // if (cbDetType->GetSelected()==MYTHEN301 || cbDetType->GetSelected()==MYTHEN302){
+    //   cout << "settings deserialiation parameters for MYTHEN" << endl;
+    //   mythen3_01_jctbData* ms=(mythen3_01_jctbData*)dataStructure;
+    //   eSerOff->SetNumber( ms->setSerialOffset(-1));
+    //   eDynRange->SetNumber( ms->setDynamicRange(-1));
+    //   eNumCount->SetNumber( ms->setNumberOfCounters(-1));
+    // }
     
    }
 
@@ -1977,20 +2066,22 @@ void ctbAcquisition::ChangeNumberOfChannels(Long_t a){
 
 
 void ctbAcquisition::ChangeSerialOffset(){
+  changeDetector();
   // if (dataStructure) {
 
-  //   //  cout << cbDetType->GetSelected()<< endl;
-  //   // if (cbDetType->GetSelected()==MYTHEN301 || cbDetType->GetSelected()==MYTHEN302 ){
-  //   //   cout << "settings offsets for MYTHEN" << endl;
-  //   //   mythen3_01_jctbData* ms=(mythen3_01_jctbData*)dataStructure;
-  //   //   ms->setSerialOffset(eSerOff->GetIntNumber());
+  //    cout << cbDetType->GetSelected()<< endl;
+  //   if (cbDetType->GetSelected()==MYTHEN301 || cbDetType->GetSelected()==MYTHEN302 ){
+  //     cout << "settings offsets for MYTHEN" << endl;
+  //     mythen3_01_jctbData* ms=(mythen3_01_jctbData*)dataStructure;
+  //     ms->setSerialOffset(eSerOff->GetIntNumber());
       
-  //   // }
+  //   }
   // }
 };
 
 
 void ctbAcquisition::ChangeDynamicRange(){
+  changeDetector();
   // if (dataStructure) {
 
   //    cout << cbDetType->GetSelected()<< endl;
@@ -2004,6 +2095,7 @@ void ctbAcquisition::ChangeDynamicRange(){
 };
 
 void ctbAcquisition::ChangeNumberOfChannels(){
+  changeDetector();
   // if (dataStructure) {
   //    cout << cbDetType->GetSelected()<< endl;
   //   if (cbDetType->GetSelected()==MYTHEN301 || cbDetType->GetSelected()==MYTHEN302){
@@ -2017,6 +2109,24 @@ void ctbAcquisition::ChangeNumberOfChannels(){
     changePlot();
 };
 
+void ctbAcquisition::ChangeImagePixels(Long_t a){
+  ChangeImagePixels();
+};
+
+void ctbAcquisition::ChangeImagePixels(){
+  changeDetector();
+  // if (dataStructure) {
+  //    cout << cbDetType->GetSelected()<< endl;
+  //   if (cbDetType->GetSelected()==MYTHEN301 || cbDetType->GetSelected()==MYTHEN302){
+  //     cout << "settings number of channels for MYTHEN" << endl;
+  //     mythen3_01_jctbData* ms=(mythen3_01_jctbData*)dataStructure;
+  //     ms->setNumberOfCounters(eNumCount->GetIntNumber());
+      
+  //   }
+  // }
+  // if (deserializer)
+  //  changePlot();
+};
 
 
 void ctbAcquisition::ChangeHistoLimitsPedSub(Long_t a){

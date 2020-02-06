@@ -53,6 +53,8 @@ class UdpRxSocket {
         hints.ai_protocol = 0;
         hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
         struct addrinfo *res = 0;
+
+        std::cout << "HOSTNAME: " << hostname << '\n';
         if (getaddrinfo(hostname, portname.c_str(), &hints, &res)) {
             throw RuntimeError("Failed getaddinfo");
         }
@@ -106,14 +108,27 @@ class UdpRxSocket {
 
     // Not sure we keep this
     bool ReceivePacket(char *dst) {
+        
         ssize_t count = recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
         return count == packet_size;
     }
 
     // Only for backwards compatibility will be removed
     ssize_t ReceiveDataOnly(char *dst) {
-        return recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
+        // TODO! Clean up?
+        // which detector do have a header packet?
+        // logic should probably be in another place? 
+        ssize_t r = 0;
+        r = recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
+
+        // if we read an eiger header pkg read again
+        if (r==40){
+            r = recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
+        }
+        return r;
     }
+
+
 
     ssize_t getBufferSize() const {
         uint64_t ret_size = 0;

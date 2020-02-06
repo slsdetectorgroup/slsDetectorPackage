@@ -125,8 +125,7 @@ IpAddr InterfaceNameToIp(const std::string &ifn) {
     char host[NI_MAXHOST];
 
     if (getifaddrs(&ifaddr) == -1) {
-        perror("getifaddrs");
-        exit(EXIT_FAILURE);
+        return {};
     }
 
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
@@ -138,6 +137,10 @@ IpAddr InterfaceNameToIp(const std::string &ifn) {
 
         if ((strcmp(ifa->ifa_name, ifn.c_str()) == 0) &&
             (ifa->ifa_addr->sa_family == AF_INET)) {
+            if (s != 0) {
+                return {};
+            }
+            break;
         }
     }
 

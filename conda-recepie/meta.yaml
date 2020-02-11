@@ -51,7 +51,7 @@ requirements:
 
 
 outputs:
-  - name: slslib
+  - name: slsdetlib
     script: copy_lib.sh
 
     requirements:
@@ -72,7 +72,7 @@ outputs:
       run:
         - python {{ python }}
         - numpy
-        - slslib=udp
+        - slsdetlib=udp
 
 
     test:
@@ -84,10 +84,9 @@ outputs:
     #     - {{ compiler('c') }}
     #     - {{compiler('cxx')}}
 
-  # - name: sls_detector_gui
-  #   version: "developer"
-  #   script: copy_gui.sh
-  #   requirements:
+  - name: slsdetgui
+    script: copy_gui.sh
+    requirements:
   #     build:
   #     - {{ compiler('c') }}
   #     - {{compiler('cxx')}}
@@ -109,7 +108,7 @@ outputs:
   #     - {{ cdt('libselinux') }}      # [linux]
   #     - {{ cdt('libxdamage') }}            # [linux]
   #     - {{ cdt('libxxf86vm') }}            # [linux]
-  #     run:
-  #       - sls_detector_lib=refactor
-  #       - qwt 6.*
-  #       - qt=4.8.*
+      run:
+        - slsdetlib=udp
+        - qwt 6.*
+        - qt=4.8.*

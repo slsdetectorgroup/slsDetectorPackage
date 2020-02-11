@@ -80,14 +80,14 @@ outputs:
         - pyzmq
         - libstdcxx-ng
         - libgcc-ng
-    test:
-      imports:
-        - sls_detector
+    # test:
+    #   imports:
+    #     - sls_detector
 
-    requirements:
-      build:
-        - {{ compiler('c') }}
-        - {{compiler('cxx')}}
+    # requirements:
+    #   build:
+    #     - {{ compiler('c') }}
+    #     - {{compiler('cxx')}}
 
   # - name: sls_detector_gui
   #   version: "developer"

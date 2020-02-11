@@ -117,18 +117,14 @@ def get_shared_lib():
     return [f for f in os.listdir('.') if '_sls_detector' in f]
 
 setup(
-    name='sls_detector',
+    name='slsdetector',
     version=__version__,
     author='Erik Frojdh',
     author_email='erik.frojdh@psi.ch',
     url='https://github.com/slsdetectorgroup/sls_detector',
     description='Detector API for SLS Detector Group detectors',
     long_description='',
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    # ext_modules=ext_modules,
+    packages=['sls_detector'],
     data_files = [('', get_shared_lib())],
-    # package_data={'sls_detector': ['../build/bin/_sls_detector.cpython-38-x86_64-linux-gnu.so']},
-    # install_requires=['pybind11>=2.2'],
-    # cmdclass={'build_ext': BuildExt},
     zip_safe=False,
 )

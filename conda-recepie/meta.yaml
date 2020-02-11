@@ -1,7 +1,7 @@
 
 package:
   name: sls_detector_software
-  version: "developer"
+  version: "udp"
 
 source:
   - path: ..
@@ -51,38 +51,33 @@ requirements:
 
 
 outputs:
-  - name: sls_detector_lib
+  - name: slslib
     script: copy_lib.sh
 
-  - name: sls_detector
+    requirements:
+      run: 
+        - libstdcxx-ng
+        - libgcc-ng
+        - pyzmq
+
+  - name: slsdet
     script: build_pylib.sh
 
     requirements:
       build:
-        - {{ compiler('c') }}
-        - {{compiler('cxx')}}
         - python {{ python }}
         - setuptools
-        - sls_detector_lib
-        - pyzmq
-        # - pybind11 2.4
-      host:
-        - python
-        # - pybind11 2.4 
-        - pyzmq
-        - sls_detector_lib
-        - libstdcxx-ng
-        - libgcc-ng
+        - wheel
+
       run:
-        - python
+        - python {{ python }}
         - numpy
-        - sls_detector_lib=developer
-        - pyzmq
-        - libstdcxx-ng
-        - libgcc-ng
-    # test:
-    #   imports:
-    #     - sls_detector
+        - slslib=developer
+
+
+    test:
+      imports:
+        - sls_detector
 
     # requirements:
     #   build:

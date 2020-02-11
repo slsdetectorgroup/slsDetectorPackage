@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.12)
 project(slsDetectorPackage)
 set(PROJECT_VERSION 5.0.0)
 include(CheckIPOSupported)
@@ -126,7 +126,7 @@ install(TARGETS slsProjectOptions slsProjectWarnings rapidjson
 )
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_INSTALL_RPATH "$ORIGIN")
+set(CMAKE_INSTALL_RPATH $ORIGIN)
 # set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 

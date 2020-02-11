@@ -8,7 +8,7 @@ import sys
 import setuptools
 import os
 
-__version__ = 'refactor'
+__version__ = 'developer'
 
 
 def get_conda_path():
@@ -19,43 +19,44 @@ def get_conda_path():
     return os.environ['CONDA_PREFIX']
 
 
-class get_pybind_include(object):
-    """Helper class to determine the pybind11 include path
-    The purpose of this class is to postpone importing pybind11
-    until it is actually installed, so that the ``get_include()``
-    method can be invoked. """
+# class get_pybind_include(object):
+#     """Helper class to determine the pybind11 include path
+#     The purpose of this class is to postpone importing pybind11
+#     until it is actually installed, so that the ``get_include()``
+#     method can be invoked. """
 
-    def __init__(self, user=False):
-        self.user = user
+#     def __init__(self, user=False):
+#         self.user = user
 
-    def __str__(self):
-        import pybind11
-        return pybind11.get_include(self.user)
+#     def __str__(self):
+#         import pybind11
+#         return pybind11.get_include(self.user)
 
 
-ext_modules = [
-    Extension(
-        '_sls_detector',
-        ['src/main.cpp',
-        'src/enums.cpp',
-        'src/detector.cpp',
-        'src/network.cpp'],
-        include_dirs=[
-            # Path to pybind11 headers
-            get_pybind_include(),
-            get_pybind_include(user=True),
-            os.path.join(get_conda_path(), 'include/slsDetectorPackage'),
+# ext_modules = [
+#     Extension(
+#         '_sls_detector',
+#         ['src/main.cpp',
+#         'src/enums.cpp',
+#         'src/detector.cpp',
+#         'src/network.cpp'],
+#         include_dirs=[
+#             # Path to pybind11 headers
+#             # get_pybind_include(),
+#             # get_pybind_include(user=True),
+#             os.path.join(get_conda_path(), 'include/slsDetectorPackage/libs/pybind11'),
+#             os.path.join(get_conda_path(), 'include/slsDetectorPackage'),
 
-        ],
-        libraries=['SlsDetector', 'SlsReceiver', 'zmq'],
-        library_dirs=[
-            os.path.join(get_conda_path(), 'lib'),
-            os.path.join(get_conda_path(), 'bin'),
-        ],
+#         ],
+#         libraries=['SlsDetector', 'SlsReceiver', 'zmq'],
+#         library_dirs=[
+#             os.path.join(get_conda_path(), 'lib'),
+#             os.path.join(get_conda_path(), 'bin'),
+#         ],
 
-        language='c++'
-    ),
-]
+#         language='c++'
+#     ),
+# ]
 
 
 # As of Python 3.6, CCompiler has a `has_flag` method.
@@ -112,6 +113,9 @@ class BuildExt(build_ext):
         build_ext.build_extensions(self)
 
 
+def get_shared_lib():
+    return [f for f in os.listdir('.') if '_sls_detector' in f]
+
 setup(
     name='sls_detector',
     version=__version__,
@@ -121,8 +125,10 @@ setup(
     description='Detector API for SLS Detector Group detectors',
     long_description='',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    ext_modules=ext_modules,
-    install_requires=['pybind11>=2.2'],
-    cmdclass={'build_ext': BuildExt},
+    # ext_modules=ext_modules,
+    data_files = [('', get_shared_lib())],
+    # package_data={'sls_detector': ['../build/bin/_sls_detector.cpython-38-x86_64-linux-gnu.so']},
+    # install_requires=['pybind11>=2.2'],
+    # cmdclass={'build_ext': BuildExt},
     zip_safe=False,
 )

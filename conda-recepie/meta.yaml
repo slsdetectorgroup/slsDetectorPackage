@@ -16,7 +16,7 @@ requirements:
     - {{ compiler('c') }}
     - {{compiler('cxx')}}
     - cmake
-    # - qwt 6.* #require qt5 investigate befor activating gui
+    # - qwt 6.* #require qt5 investigate before activating gui
     # - qt=4.8.7=7
     - zeromq=4.2.5=hfc679d8_5
     - pyzmq
@@ -65,10 +65,10 @@ outputs:
         - setuptools
         - sls_detector_lib
         - pyzmq
-        - pybind11 2.4
+        # - pybind11 2.4
       host:
         - python
-        - pybind11 2.4 
+        # - pybind11 2.4 
         - pyzmq
         - sls_detector_lib
         - libstdcxx-ng
@@ -84,13 +84,13 @@ outputs:
       imports:
         - sls_detector
 
-    # requirements:
-    #   build:
-    #     - {{ compiler('c') }}
-    #     - {{compiler('cxx')}}
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{compiler('cxx')}}
 
   # - name: sls_detector_gui
-  #   version: "refactor"
+  #   version: "developer"
   #   script: copy_gui.sh
   #   requirements:
   #     build:
@@ -98,7 +98,7 @@ outputs:
   #     - {{compiler('cxx')}}
   #     - cmake
   #     - qwt 6.*
-  #     - qt=4.8.7=7
+  #     - qt=4.8.*
   #     - zeromq=4.2.5=hfc679d8_5
   #     - pyzmq
   #     - xorg-libx11
@@ -117,4 +117,4 @@ outputs:
   #     run:
   #       - sls_detector_lib=refactor
   #       - qwt 6.*
-  #       - qt=4.8.7=7
+  #       - qt=4.8.*

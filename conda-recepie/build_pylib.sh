@@ -10,5 +10,8 @@
 # #Binaries
 # cp -r build/bin/sls_detector $PREFIX/lib/.
 
+#copy shared lib 
+cp build/bin/_sls_detector* python/.
+
 cd python
-${PYTHON} setup.py install
+$PYTHON setup.py install 

@@ -8,7 +8,7 @@ cmake .. \
       -DSLS_USE_RECEIVER=ON \
       -DSLS_USE_GUI=OFF \
       -DSLS_USE_TESTS=ON \
-      -DSLS_USE_PYTHON=OFF \
+      -DSLS_USE_PYTHON=ON \
       -DCMAKE_BUILD_TYPE=Release \
       -DSLS_USE_HDF5=OFF\
      

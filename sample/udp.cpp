@@ -15,17 +15,21 @@ using header_t = slsDetectorDefs::sls_detector_header;
 int main() {
     fmt::print("Hej!\n");
 
-    // constexpr ssize_t expected_packages = 128;
-    // constexpr ssize_t n_pixels = 512 * 1024;
-    constexpr ssize_t packet_size = 8240;
-    constexpr ssize_t payload_size = 8240 - sizeof(header_t);
-    int port = 50020;
-    // fmt::print("header size: {}\n", sizeof(header_t));
 
-    sls::UdpRxSocket s(port, packet_size, nullptr, 212992*2);
-    fmt::print("buffer: {}\n", s.getBufferSize());
-    s.setBufferSize(212992*4);
-    fmt::print("buffer: {}\n", s.getBufferSize());
+    constexpr ssize_t packet_size = 4144;
+    constexpr ssize_t payload_size = packet_size - sizeof(header_t);
+    int port = 50012;
+
+    char * buffer = new char[packet_size];
+
+    sls::UdpRxSocket s(port, packet_size, "10.1.1.107");
+    int n = 0;
+    while(true){
+        // s.ReceiveDataOnly(buffer);
+        if (s.ReceivePacket())
+            std::cout << n++ << std::endl;
+    }
+
     // auto header = reinterpret_cast<header_t *>(s.buffer());
     // char *data = s.buffer() + sizeof(header_t);
     // fmt::print("buffer start: {}\nheader: {}\ndata: {}\n", fmt::ptr(s.buffer()),

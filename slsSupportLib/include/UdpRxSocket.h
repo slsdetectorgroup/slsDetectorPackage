@@ -26,26 +26,16 @@ this might be deprecated in the future.
 namespace sls {
 
 class UdpRxSocket {
-    int port;
     const ssize_t packet_size;
-    ssize_t buffer_size;
     char *buff;
     int fd = -1;
-
-    // If possible we could listen to only one source but for our setup
-    // we should have only our data on this port network???
-    // recvfrom(fd, buff, packet_size, 0, (struct sockaddr *)&src_addr,
-    //          &src_addr_len);
-
-    // struct sockaddr_storage src_addr;
-    // socklen_t src_addr_len = sizeof(src_addr);
 
   public:
     UdpRxSocket(int port, ssize_t packet_size, const char *hostname = nullptr,
                 ssize_t buffer_size = 0)
-        : port(port), packet_size(packet_size), buffer_size(buffer_size) {
+        : packet_size(packet_size) {
         /* hostname = nullptr -> wildcard */
-        const std::string portname = std::to_string(port);
+        
         struct addrinfo hints;
         memset(&hints, 0, sizeof(hints));
         hints.ai_family = AF_UNSPEC;
@@ -54,16 +44,16 @@ class UdpRxSocket {
         hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
         struct addrinfo *res = 0;
 
-        std::cout << "HOSTNAME: " << hostname << '\n';
+        const std::string portname = std::to_string(port);
         if (getaddrinfo(hostname, portname.c_str(), &hints, &res)) {
-            throw RuntimeError("Failed getaddinfo");
+            throw RuntimeError("Failed at getaddrinfo with " + std::string(hostname));
         }
         fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
         if (fd == -1) {
-            throw RuntimeError("Failed creating socket");
+            throw RuntimeError("Failed to create UDP RX socket");
         }
         if (bind(fd, res->ai_addr, res->ai_addrlen) == -1) {
-            throw RuntimeError("Failed to bind socket");
+            throw RuntimeError("Failed to bind UDP RX socket");
         }
         freeaddrinfo(res);
 
@@ -75,7 +65,9 @@ class UdpRxSocket {
             if (current < buffer_size) {
                 setBufferSize(buffer_size);
                 if (getBufferSize() / 2 < buffer_size) {
-                    FILE_LOG(logWARNING) << "Could not set buffer size. Got: " << getBufferSize()/2 << " instead of " << buffer_size;
+                    FILE_LOG(logWARNING)
+                        << "Could not set buffer size. Got: "
+                        << getBufferSize() / 2 << " instead of " << buffer_size;
                 }
             }
         }
@@ -102,33 +94,28 @@ class UdpRxSocket {
     // Receive one packet to the internal buffer of the socket class, preferred
     // method?
     bool ReceivePacket() {
-        ssize_t count = recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
-        return count == packet_size;
+        auto bytes_received = recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
+        return bytes_received == packet_size;
     }
 
-    // Not sure we keep this
+    // Receive to an external buffer, do we need it? 
     bool ReceivePacket(char *dst) {
-        
-        ssize_t count = recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
-        return count == packet_size;
+        auto bytes_received = recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
+        return bytes_received == packet_size;
     }
 
-    // Only for backwards compatibility will be removed
+    // Only for backwards compatibility this function will be removed during
+    // refactoring of the receiver
     ssize_t ReceiveDataOnly(char *dst) {
-        // TODO! Clean up?
-        // which detector do have a header packet?
-        // logic should probably be in another place? 
-        ssize_t r = 0;
-        r = recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
-
-        // if we read an eiger header pkg read again
-        if (r==40){
+        auto r = recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
+        // if we read an eiger header pkg read again, with new firmware
+        // this check can be removed
+        if (r == 40) {
+            FILE_LOG(logWARNING) << "Got header pkg";
             r = recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
         }
         return r;
     }
-
-
 
     ssize_t getBufferSize() const {
         uint64_t ret_size = 0;

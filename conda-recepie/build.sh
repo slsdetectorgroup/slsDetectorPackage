@@ -1,6 +1,7 @@
 
 echo "|<-------------------- CMAKE setup"
 echo "CONDA_PY: $CONDA_PY"
+echo "PYTHON_VERSION: $PYTHON_VERSION"
 mkdir build
 mkdir install
 cd build
@@ -11,7 +12,7 @@ cmake .. \
       -DSLS_USE_RECEIVER=ON \
       -DSLS_USE_GUI=ON \
       -DSLS_USE_TESTS=ON \
-      -DPYBIND11_PYTHON_VERSION=$CONDA_PY \
+      -DPYBIND11_PYTHON_VERSION=$PYTHON_VERSION \
       -DSLS_USE_PYTHON=ON \
       -DCMAKE_BUILD_TYPE=Release \
       -DSLS_USE_HDF5=OFF\

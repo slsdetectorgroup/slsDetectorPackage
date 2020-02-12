@@ -18,22 +18,18 @@ install:
   - ldd --version
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
-  # - export PATH="$HOME/miniconda/bin:$PATH"
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
   - rm -f miniconda.sh
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda config --add channels conda-forge
   - conda config --add channels slsdetectorgroup
-  - conda update -n base -c defaults conda
-
+  - conda update -q conda
+  - conda info -a
 
   # Useful for debugging any issues with conda
-  - conda info -a
-  - conda create -q -n testenv python=$CONDA_PY
+  - conda create -q -n testenv python=$CONDA_PY conda-build anaconda-client conda-verify
   - conda activate testenv
-  - conda install conda-build
-  - conda install anaconda-client
-  - conda install conda-verify
   - conda-build .
 
 script:

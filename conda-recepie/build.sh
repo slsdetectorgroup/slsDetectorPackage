@@ -1,3 +1,6 @@
+
+echo "|<-------------------- CMAKE setup"
+echo "CONDA_PY: $CONDA_PY"
 mkdir build
 mkdir install
 cd build

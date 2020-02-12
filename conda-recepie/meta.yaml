@@ -15,6 +15,7 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{compiler('cxx')}}
+    - python {{python}}
     - cmake
     - qwt 6.* #require qt5 investigate before activating gui
     - qt=4.8*
@@ -65,12 +66,12 @@ outputs:
 
     requirements:
       build:
-        - python {{ python }}
+        - python {{python}}
         - setuptools
         - wheel
 
       run:
-        - python {{ python }}
+        - python {{python}}
         - numpy
         - slsdetlib=udp
 

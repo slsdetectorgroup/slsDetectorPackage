@@ -8,6 +8,7 @@ cmake .. \
       -DSLS_USE_RECEIVER=ON \
       -DSLS_USE_GUI=ON \
       -DSLS_USE_TESTS=ON \
+      -DPYBIND11_PYTHON_VERSION=$CONDA_PY \
       -DSLS_USE_PYTHON=ON \
       -DCMAKE_BUILD_TYPE=Release \
       -DSLS_USE_HDF5=OFF\

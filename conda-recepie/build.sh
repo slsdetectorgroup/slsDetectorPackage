@@ -1,7 +1,20 @@
 
 echo "|<-------------------- CMAKE setup"
-echo "CONDA_PY: $CONDA_PY"
-echo "PYTHON_VERSION: $PYTHON_VERSION"
+echo `which python`
+echo "path: $CONDA_PREFIX/bin/python"
+echo ".. \
+      -DCMAKE_PREFIX_PATH=$CONDA_PREFIX \
+      -DCMAKE_INSTALL_PREFIX=install \
+      -DSLS_USE_TEXTCLIENT=ON \
+      -DSLS_USE_RECEIVER=ON \
+      -DSLS_USE_GUI=ON \
+      -DSLS_USE_TESTS=ON \
+      -DPYTHON_EXECUTABLE=$CONDA_PREFIX/bin/python
+      -DSLS_USE_PYTHON=ON \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DSLS_USE_HDF5=OFF "
+
+
 mkdir build
 mkdir install
 cd build

@@ -1,8 +1,4 @@
 
-echo "|<-------------------- CMAKE setup"
-echo `which python`
-echo "path: $CONDA_PREFIX/bin/python"
-
 mkdir build
 mkdir install
 cd build

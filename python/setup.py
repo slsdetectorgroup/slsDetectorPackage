@@ -110,6 +110,10 @@ class BuildExt(build_ext):
             opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
         for ext in self.extensions:
             ext.extra_compile_args = opts
+
+        print('--------------')
+        print(ct)
+        print(opts)
         build_ext.build_extensions(self)
 
 
@@ -125,6 +129,7 @@ setup(
     description='Detector API for SLS Detector Group detectors',
     long_description='',
     ext_modules=ext_modules,
+    cmdclass={'build_ext': BuildExt},
     packages=['sls_detector'],
     # data_files = [('', get_shared_lib())],
     zip_safe=False,

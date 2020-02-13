@@ -120,7 +120,7 @@ class BuildExt(build_ext):
 
 
 def get_shared_lib():
-    return [f for f in os.listdir('.') if '_sls_detector' in f]
+    return [f for f in os.listdir('.') if '_slsdet' in f]
 
 setup(
     name='slsdet',

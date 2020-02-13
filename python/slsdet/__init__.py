@@ -6,18 +6,18 @@ from .detector import Detector
 from .jungfrau import Jungfrau
 from .mythen3 import Mythen3
 # from .jungfrau_ctb import JungfrauCTB
-# from _sls_detector import DetectorApi
+# from _slsdet import DetectorApi
 
-import _sls_detector
+import _slsdet
 
-defs = _sls_detector.slsDetectorDefs
-runStatus = _sls_detector.slsDetectorDefs.runStatus
-speedLevel = _sls_detector.slsDetectorDefs.speedLevel
-timingMode = _sls_detector.slsDetectorDefs.timingMode
-dacIndex = _sls_detector.slsDetectorDefs.dacIndex
-detectorType = _sls_detector.slsDetectorDefs.detectorType
-detectorSettings = _sls_detector.slsDetectorDefs.detectorSettings
-readoutMode = _sls_detector.slsDetectorDefs.readoutMode
+defs = _slsdet.slsDetectorDefs
+runStatus = _slsdet.slsDetectorDefs.runStatus
+speedLevel = _slsdet.slsDetectorDefs.speedLevel
+timingMode = _slsdet.slsDetectorDefs.timingMode
+dacIndex = _slsdet.slsDetectorDefs.dacIndex
+detectorType = _slsdet.slsDetectorDefs.detectorType
+detectorSettings = _slsdet.slsDetectorDefs.detectorSettings
+readoutMode = _slsdet.slsDetectorDefs.readoutMode
 
-IpAddr = _sls_detector.IpAddr
-MacAddr = _sls_detector.MacAddr
+IpAddr = _slsdet.IpAddr
+MacAddr = _slsdet.MacAddr

@@ -2,7 +2,7 @@ C++ API
 =====================================================
 
 
-.. py:currentmodule:: _sls_detector
+.. py:currentmodule:: _slsdet
 
 .. autoclass:: DetectorApi
     :members:  

@@ -5,7 +5,7 @@ but not directly used in controlling the detector
 
 
 from collections import namedtuple
-import _sls_detector #C++ lib
+import _slsdet #C++ lib
 import functools
 
 
@@ -29,7 +29,7 @@ def list_to_bitmask(values):
     return mask
 
 def to_geo(value):
-    if isinstance(value, _sls_detector.xy):
+    if isinstance(value, _slsdet.xy):
         return Geometry(x = value.x, y = value.y)
     else:
         raise ValueError("Can only convert sls_detector.xy")

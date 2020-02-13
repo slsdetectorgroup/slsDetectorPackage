@@ -11,8 +11,8 @@ from .detector import Detector
 
 # from .adcs import Adc, DetectorAdcs
 from .dacs import DetectorDacs
-import _sls_detector
-dacIndex = _sls_detector.slsDetectorDefs.dacIndex
+import _slsdet
+dacIndex = _slsdet.slsDetectorDefs.dacIndex
 from .detector_property import DetectorProperty
 # from .utils import element_if_equal
 # from sls_detector.errors import DetectorValueError, DetectorError

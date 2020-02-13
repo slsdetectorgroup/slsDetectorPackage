@@ -83,14 +83,14 @@ outputs:
         - {{ pin_subpackage('slsdetlib', exact=True) }}
 
 
-    # test:
-    #   imports:
-    #     - sls_detector
+    test:
+      imports:
+        - slsdet
 
   - name: slsdetgui
     script: copy_gui.sh
     requirements:
       run:
         - {{ pin_subpackage('slsdetlib', exact=True) }}
-        - qwt 6
-        - qt=4.8
+        - {{ pin_compatible('qwt') }}
+        - {{ pin_compatible('qt') }}

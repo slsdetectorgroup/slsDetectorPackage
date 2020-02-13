@@ -72,6 +72,8 @@ outputs:
         - {{ pin_subpackage('slsdetlib', exact=True) }}
         - setuptools
 
+      host:
+        - python
 
       run:
         - libstdcxx-ng

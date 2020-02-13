@@ -15,5 +15,6 @@ echo "|<-------- starting python build"
 # cp build/bin/_sls_detector* python/.
 
 cd python
-python setup.py install
+${PYTHON} setup.py install
+# python setup.py install
 # $PYTHON setup.py install 

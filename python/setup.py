@@ -8,7 +8,7 @@ import sys
 import setuptools
 import os
 
-__version__ = 'developer'
+__version__ = 'udp'
 
 
 def get_conda_path():
@@ -35,7 +35,7 @@ def get_conda_path():
 
 ext_modules = [
     Extension(
-        '_sls_detector',
+        '_slsdet',
         ['src/main.cpp',
         'src/enums.cpp',
         'src/detector.cpp',
@@ -111,26 +111,27 @@ class BuildExt(build_ext):
         for ext in self.extensions:
             ext.extra_compile_args = opts
 
-        print('--------------')
+        print('**************************************************')
         print(ct)
         print(opts)
+        print('**************************************************')
         build_ext.build_extensions(self)
+        
 
 
 def get_shared_lib():
     return [f for f in os.listdir('.') if '_sls_detector' in f]
 
 setup(
-    name='slsdetector',
+    name='slsdet',
     version=__version__,
     author='Erik Frojdh',
     author_email='erik.frojdh@psi.ch',
-    url='https://github.com/slsdetectorgroup/sls_detector',
+    url='https://github.com/slsdetectorgroup/slsDetectorPackage',
     description='Detector API for SLS Detector Group detectors',
     long_description='',
+    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     ext_modules=ext_modules,
     cmdclass={'build_ext': BuildExt},
-    packages=['sls_detector'],
-    # data_files = [('', get_shared_lib())],
     zip_safe=False,
 )

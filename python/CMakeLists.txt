@@ -1,14 +1,14 @@
 
 # find_package (Python COMPONENTS Interpreter Development)
 
-pybind11_add_module(_sls_detector 
+pybind11_add_module(_slsdet 
     src/main.cpp 
     src/enums.cpp
     src/detector.cpp
     src/network.cpp
 )
 
-target_link_libraries(_sls_detector PUBLIC 
+target_link_libraries(_slsdet PUBLIC 
                         slsDetectorShared
                         slsReceiverShared
                         slsSupportLib
@@ -16,7 +16,7 @@ target_link_libraries(_sls_detector PUBLIC
 
 
 
-set_target_properties(_sls_detector PROPERTIES
+set_target_properties(_slsdet PROPERTIES
                         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
                     )
 
@@ -40,8 +40,8 @@ set( PYTHON_FILES
 )
 
 foreach(FILE ${PYTHON_FILES})
-    configure_file( sls_detector/${FILE}  
-    ${CMAKE_BINARY_DIR}/bin/sls_detector/${FILE}  )
+    configure_file( slsdet/${FILE}  
+    ${CMAKE_BINARY_DIR}/bin/slsdet/${FILE}  )
 
 endforeach(FILE ${PYTHON_FILES})
 

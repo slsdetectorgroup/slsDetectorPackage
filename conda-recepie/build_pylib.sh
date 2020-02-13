@@ -12,7 +12,7 @@
 
 #copy shared lib 
 echo "|<-------- starting python build"
-cp build/bin/_sls_detector* python/.
+# cp build/bin/_sls_detector* python/.
 
 cd python
 python setup.py install

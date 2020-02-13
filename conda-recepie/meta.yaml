@@ -15,12 +15,13 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{compiler('cxx')}}
-    - python {{python}}
+    # - python {{python}}
     - cmake
-    - qwt 6.* #require qt5 investigate before activating gui
-    - qt=4.8*
-    - zeromq=4.2.5=hfc679d8_5
-    - pyzmq
+    - qwt 6 #require qt5 investigate before activating gui
+    - qt=4.8
+    # - zeromq=4.2.5=hfc679d8_5
+    - zeromq
+    # - pyzmq
     - xorg-libx11
     - xorg-libice
     - xorg-libxext
@@ -59,21 +60,23 @@ outputs:
       run: 
         - libstdcxx-ng
         - libgcc-ng
-        - pyzmq
+        - zeromq
 
   - name: slsdet
+
     script: build_pylib.sh
 
     requirements:
       build:
-        - python {{python}}
+        - python
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
         - setuptools
         - wheel
 
       run:
-        - python {{python}}
+        - python
         - numpy
-        - slsdetlib=udp
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
 
 
     test:
@@ -84,6 +87,6 @@ outputs:
     script: copy_gui.sh
     requirements:
       run:
-        - slsdetlib=udp
-        - qwt 6.*
-        - qt=4.8.*
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
+        - qwt 6
+        - qt=4.8

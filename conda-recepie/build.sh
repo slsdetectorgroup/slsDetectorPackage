@@ -13,8 +13,7 @@ cmake .. \
       -DSLS_USE_RECEIVER=ON \
       -DSLS_USE_GUI=ON \
       -DSLS_USE_TESTS=ON \
-      -DPYTHON_EXECUTABLE=$CONDA_PREFIX/bin/python \
-      -DSLS_USE_PYTHON=ON \
+      -DSLS_USE_PYTHON=OFF \
       -DCMAKE_BUILD_TYPE=Release \
       -DSLS_USE_HDF5=OFF\
      

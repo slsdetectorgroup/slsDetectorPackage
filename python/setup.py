@@ -33,30 +33,30 @@ def get_conda_path():
 #         return pybind11.get_include(self.user)
 
 
-# ext_modules = [
-#     Extension(
-#         '_sls_detector',
-#         ['src/main.cpp',
-#         'src/enums.cpp',
-#         'src/detector.cpp',
-#         'src/network.cpp'],
-#         include_dirs=[
-#             # Path to pybind11 headers
-#             # get_pybind_include(),
-#             # get_pybind_include(user=True),
-#             os.path.join(get_conda_path(), 'include/slsDetectorPackage/libs/pybind11'),
-#             os.path.join(get_conda_path(), 'include/slsDetectorPackage'),
+ext_modules = [
+    Extension(
+        '_sls_detector',
+        ['src/main.cpp',
+        'src/enums.cpp',
+        'src/detector.cpp',
+        'src/network.cpp'],
+        include_dirs=[
+            # Path to pybind11 headers
+            # get_pybind_include(),
+            # get_pybind_include(user=True),
+            os.path.join('../libs/pybind11'),
+            os.path.join(get_conda_path(), 'include/slsDetectorPackage'),
 
-#         ],
-#         libraries=['SlsDetector', 'SlsReceiver', 'zmq'],
-#         library_dirs=[
-#             os.path.join(get_conda_path(), 'lib'),
-#             os.path.join(get_conda_path(), 'bin'),
-#         ],
+        ],
+        libraries=['SlsDetector', 'SlsReceiver', 'zmq'],
+        library_dirs=[
+            os.path.join(get_conda_path(), 'lib'),
+            os.path.join(get_conda_path(), 'bin'),
+        ],
 
-#         language='c++'
-#     ),
-# ]
+        language='c++'
+    ),
+]
 
 
 # As of Python 3.6, CCompiler has a `has_flag` method.
@@ -124,7 +124,8 @@ setup(
     url='https://github.com/slsdetectorgroup/sls_detector',
     description='Detector API for SLS Detector Group detectors',
     long_description='',
+    ext_modules=ext_modules,
     packages=['sls_detector'],
-    data_files = [('', get_shared_lib())],
+    # data_files = [('', get_shared_lib())],
     zip_safe=False,
 )

@@ -66,12 +66,15 @@ outputs:
 
     script: build_pylib.sh
 
+    rpaths:
+    - lib/
+
     requirements:
       build:
         - python
         - {{ pin_subpackage('slsdetlib', exact=True) }}
         - setuptools
-        - wheel
+
 
       run:
         - python

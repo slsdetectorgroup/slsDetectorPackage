@@ -4,13 +4,13 @@ language: cpp
 
 os: linux
 
-env: 
-  matrix: 
-     - CONDA_PY="3.7"
+# env: 
+#   matrix: 
+#      - CONDA_PY="3.7"
 
 
 
-dist: trusty
+dist: bionic
 
 install:
   - sudo apt-get update
@@ -27,7 +27,7 @@ install:
   - conda info -a
 
   # Useful for debugging any issues with conda
-  - conda create -q -n testenv python=$CONDA_PY conda-build anaconda-client conda-verify
+  - conda create -q -n testenv conda-build anaconda-client conda-verify
   - conda activate testenv
   - conda-build .
 

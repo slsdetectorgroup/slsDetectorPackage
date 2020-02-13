@@ -8,6 +8,7 @@ source:
 
 build:
   number: 1
+  binary_relocation: True
   rpaths:
     - lib/
 
@@ -71,12 +72,16 @@ outputs:
 
     requirements:
       build:
+        - {{ compiler('c') }}
+        - {{compiler('cxx')}}
         - python
         - {{ pin_subpackage('slsdetlib', exact=True) }}
         - setuptools
 
 
       run:
+        - libstdcxx-ng
+        - libgcc-ng
         - python
         - numpy
         - {{ pin_subpackage('slsdetlib', exact=True) }}

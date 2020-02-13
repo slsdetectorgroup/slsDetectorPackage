@@ -67,9 +67,6 @@ outputs:
 
     script: build_pylib.sh
 
-    rpaths:
-    - lib/
-
     requirements:
       build:
         - {{ compiler('c') }}
@@ -87,9 +84,9 @@ outputs:
         - {{ pin_subpackage('slsdetlib', exact=True) }}
 
 
-    test:
-      imports:
-        - sls_detector
+    # test:
+    #   imports:
+    #     - sls_detector
 
   - name: slsdetgui
     script: copy_gui.sh

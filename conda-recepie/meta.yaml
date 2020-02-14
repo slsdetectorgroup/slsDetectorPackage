@@ -17,8 +17,8 @@ requirements:
     - {{ compiler('c') }}
     - {{compiler('cxx')}}
     - cmake
-    - qwt 6
-    - qt 4.8
+    - qwt 6.*
+    - qt 4.8.*
     - zeromq
     - xorg-libx11
     - xorg-libice
@@ -92,5 +92,5 @@ outputs:
     requirements:
       run:
         - {{ pin_subpackage('slsdetlib', exact=True) }}
-        - {{ pin_compatible('qwt') }}
-        - {{ pin_compatible('qt') }}
+        - qwt 6.*
+        - qt 4.8.*

@@ -5,8 +5,7 @@ data on a udp socket.
 
 It provides a drop in replacement for
 genericSocket. But please be careful since
-this might be deprecated in the future.
-
+this might be deprecated in the future
 
 */
 
@@ -108,13 +107,16 @@ class UdpRxSocket {
     // refactoring of the receiver
     ssize_t ReceiveDataOnly(char *dst) {
         auto r = recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
-        // if we read an eiger header pkg read again, with new firmware
-        // this check can be removed
-        if (r == 40) {
+        constexpr ssize_t eiger_header_packet = 40; //only detector that has this
+        if (r == eiger_header_packet) {
             FILE_LOG(logWARNING) << "Got header pkg";
             r = recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
         }
         return r;
+    }
+
+    ssize_t getPacketSize() const{
+        return packet_size;
     }
 
     ssize_t getBufferSize() const {

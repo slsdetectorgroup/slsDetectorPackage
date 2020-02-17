@@ -121,7 +121,7 @@ std::string IpToInterfaceName(const std::string &ip) {
 
 IpAddr InterfaceNameToIp(const std::string &ifn) {
     struct ifaddrs *ifaddr, *ifa;
-    int family, s;
+    // int family, s;
     char host[NI_MAXHOST];
 
     if (getifaddrs(&ifaddr) == -1) {
@@ -132,7 +132,7 @@ IpAddr InterfaceNameToIp(const std::string &ifn) {
         if (ifa->ifa_addr == NULL)
             continue;
 
-        s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host,
+        auto s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host,
                         NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
 
         if ((strcmp(ifa->ifa_name, ifn.c_str()) == 0) &&

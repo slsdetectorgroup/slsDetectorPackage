@@ -5,8 +5,7 @@
 #include <thread>
 #include <vector>
 
-TEST_CASE("Receive a packet on localhost") {
-    constexpr int port = 50001;
+int open_socket(int port) {
     const char *host = nullptr; // localhost
 
     // Create a socket for sending
@@ -28,17 +27,30 @@ TEST_CASE("Receive a packet on localhost") {
         throw sls::RuntimeError("Failed to create UDP RX socket");
     }
 
+    if (connect(fd, res->ai_addr, res->ai_addrlen)){
+        throw sls::RuntimeError("Failed to connect socket");
+    }
+    freeaddrinfo(res);
+    return fd;
+}
+
+TEST_CASE("Receive a packet on localhost") {
+    constexpr int port = 50001;
+
     std::vector<int> data_to_send{4, 5, 3, 2, 5, 7, 2, 3};
     ssize_t packet_size =
         sizeof(decltype(data_to_send)::value_type) * data_to_send.size();
-    sls::UdpRxSocket udpsock{port, packet_size, host};
+    sls::UdpRxSocket udpsock{port, packet_size};
 
-    int n = sendto(fd, data_to_send.data(), packet_size, 0, res->ai_addr,
-                   res->ai_addrlen);
 
+    int fd = open_socket(port);
+    // int n = sendto(fd, data_to_send.data(), packet_size, 0, res->ai_addr,
+    //                res->ai_addrlen);
+
+    auto n = write(fd, data_to_send.data(), packet_size);
     CHECK(n == packet_size);
     CHECK(udpsock.ReceivePacket());
-
+    close(fd);
     // Copy data from buffer and compare values
     std::vector<int> data_received(data_to_send.size());
     memcpy(data_received.data(), udpsock.LastPacket(), udpsock.getPacketSize());
@@ -64,4 +76,14 @@ TEST_CASE("Shutdown socket without hanging") {
     auto r = ret.get();
 
     CHECK(r == false); // since we didn't get the packet
+}
+
+TEST_CASE("Too small packet"){
+    constexpr int port = 50001;
+    sls::UdpRxSocket s(port, 2*sizeof(uint32_t));
+    auto fd = open_socket(port);
+    uint32_t val = 10;
+    write(fd, &val, sizeof(val));
+    CHECK(s.ReceivePacket() == false);
+    close(fd);
 }

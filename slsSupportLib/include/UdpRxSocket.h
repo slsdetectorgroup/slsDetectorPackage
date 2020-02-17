@@ -34,7 +34,7 @@ class UdpRxSocket {
                 ssize_t buffer_size = 0)
         : packet_size(packet_size) {
         /* hostname = nullptr -> wildcard */
-        
+
         struct addrinfo hints;
         memset(&hints, 0, sizeof(hints));
         hints.ai_family = AF_UNSPEC;
@@ -45,7 +45,8 @@ class UdpRxSocket {
 
         const std::string portname = std::to_string(port);
         if (getaddrinfo(hostname, portname.c_str(), &hints, &res)) {
-            throw RuntimeError("Failed at getaddrinfo with " + std::string(hostname));
+            throw RuntimeError("Failed at getaddrinfo with " +
+                               std::string(hostname));
         }
         fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
         if (fd == -1) {
@@ -83,23 +84,23 @@ class UdpRxSocket {
         : UdpRxSocket(port_number, ps, InterfaceNameToIp(eth).str().c_str(),
                       buf_size) {}
 
-    const char *LastPacket() const { return buff; }
-
     ~UdpRxSocket() {
         delete[] buff;
         Shutdown();
     }
 
-    // Receive one packet to the internal buffer of the socket class, preferred
-    // method?
-    bool ReceivePacket() {
-        auto bytes_received = recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
+    const char *LastPacket() const noexcept { return buff; }
+    constexpr ssize_t getPacketSize() const noexcept { return packet_size; }
+
+    bool ReceivePacket() noexcept {
+        auto bytes_received =
+            recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
         return bytes_received == packet_size;
     }
 
-    // Receive to an external buffer, do we need it? 
-    bool ReceivePacket(char *dst) {
-        auto bytes_received = recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
+    bool ReceivePacket(char *dst) noexcept {
+        auto bytes_received =
+            recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
         return bytes_received == packet_size;
     }
 
@@ -107,16 +108,13 @@ class UdpRxSocket {
     // refactoring of the receiver
     ssize_t ReceiveDataOnly(char *dst) {
         auto r = recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
-        constexpr ssize_t eiger_header_packet = 40; //only detector that has this
+        constexpr ssize_t eiger_header_packet =
+            40; // only detector that has this
         if (r == eiger_header_packet) {
             FILE_LOG(logWARNING) << "Got header pkg";
             r = recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
         }
         return r;
-    }
-
-    ssize_t getPacketSize() const{
-        return packet_size;
     }
 
     ssize_t getBufferSize() const {

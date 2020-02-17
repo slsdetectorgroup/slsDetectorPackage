@@ -8,6 +8,7 @@ source:
 
 build:
   number: 1
+  binary_relocation: True
   rpaths:
     - lib/
 
@@ -16,10 +17,9 @@ requirements:
     - {{ compiler('c') }}
     - {{compiler('cxx')}}
     - cmake
-    # - qwt 6.* #require qt5 investigate befor activating gui
-    # - qt=4.8.7=7
-    - zeromq=4.2.5=hfc679d8_5
-    - pyzmq
+    - qwt 6.*
+    - qt 4.8.*
+    - zeromq
     - xorg-libx11
     - xorg-libice
     - xorg-libxext
@@ -51,70 +51,46 @@ requirements:
 
 
 outputs:
-  - name: sls_detector_lib
+  - name: slsdetlib
     script: copy_lib.sh
 
-  - name: sls_detector
+    requirements:
+      run: 
+        - libstdcxx-ng
+        - libgcc-ng
+        - zeromq
+
+  - name: slsdet
+
     script: build_pylib.sh
 
     requirements:
       build:
+        - python
         - {{ compiler('c') }}
         - {{compiler('cxx')}}
-        - python {{ python }}
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
         - setuptools
-        - sls_detector_lib
-        - pyzmq
-        - pybind11 2.4
+
       host:
         - python
-        - pybind11 2.4 
-        - pyzmq
-        - sls_detector_lib
+
+      run:
         - libstdcxx-ng
         - libgcc-ng
-      run:
         - python
         - numpy
-        - sls_detector_lib=developer
-        - pyzmq
-        - libstdcxx-ng
-        - libgcc-ng
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
+
+
     test:
       imports:
-        - sls_detector
+        - slsdet
 
-    # requirements:
-    #   build:
-    #     - {{ compiler('c') }}
-    #     - {{compiler('cxx')}}
-
-  # - name: sls_detector_gui
-  #   version: "refactor"
-  #   script: copy_gui.sh
-  #   requirements:
-  #     build:
-  #     - {{ compiler('c') }}
-  #     - {{compiler('cxx')}}
-  #     - cmake
-  #     - qwt 6.*
-  #     - qt=4.8.7=7
-  #     - zeromq=4.2.5=hfc679d8_5
-  #     - pyzmq
-  #     - xorg-libx11
-  #     - xorg-libice
-  #     - xorg-libxext
-  #     - xorg-libsm
-  #     - xorg-libxau
-  #     - xorg-libxrender
-  #     - xorg-libxfixes
-  #     - {{ cdt('mesa-libgl-devel') }}      # [linux]
-  #     - {{ cdt('mesa-libegl-devel') }}     # [linux]
-  #     - {{ cdt('mesa-dri-drivers') }}      # [linux]
-  #     - {{ cdt('libselinux') }}      # [linux]
-  #     - {{ cdt('libxdamage') }}            # [linux]
-  #     - {{ cdt('libxxf86vm') }}            # [linux]
-  #     run:
-  #       - sls_detector_lib=refactor
-  #       - qwt 6.*
-  #       - qt=4.8.7=7
+  - name: slsdetgui
+    script: copy_gui.sh
+    requirements:
+      run:
+        - {{ pin_subpackage('slsdetlib', exact=True) }}
+        - qwt 6.*
+        - qt 4.8.*

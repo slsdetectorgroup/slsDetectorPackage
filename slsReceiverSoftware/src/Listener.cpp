@@ -12,6 +12,7 @@
 #include "container_utils.h" // For sls::make_unique<>
 #include "genericSocket.h"
 #include "sls_detector_exceptions.h"
+#include "UdpRxSocket.h"
 
 #include <cerrno>
 #include <cstring>
@@ -147,7 +148,6 @@ void Listener::SetGeneralData(GeneralData* g) {
 
 
 void Listener::CreateUDPSockets() {
-
     if (!(*activated)) {
     	return;
     }
@@ -163,7 +163,7 @@ void Listener::CreateUDPSockets() {
 	ShutDownUDPSocket();
 
 	try{
-	    udpSocket = sls::make_unique<genericSocket>(*udpPortNumber, genericSocket::UDP,
+	    udpSocket = sls::make_unique<SELECTED_SOCKET>(*udpPortNumber, genericSocket::UDP,
 				generalData->packetSize, ((*eth).length() ? (*eth).c_str() : nullptr), generalData->headerPacketSize,
 				*udpSocketBufferSize);
 		FILE_LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
@@ -213,7 +213,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
 
     //create dummy socket
     try {
-    	genericSocket g(*udpPortNumber, genericSocket::UDP,
+    	SELECTED_SOCKET g(*udpPortNumber, genericSocket::UDP,
             generalData->packetSize, ((*eth).length() ? (*eth).c_str() : nullptr), generalData->headerPacketSize,
             *udpSocketBufferSize);
 

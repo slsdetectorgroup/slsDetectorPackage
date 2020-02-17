@@ -610,6 +610,8 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("writeAdcRegister", &Detector::writeAdcRegister, py::arg(),
              py::arg(), py::arg() = Positions{})
+        .def("getInitialChecks", &Detector::getInitialChecks)
+        .def("setInitialChecks", &Detector::setInitialChecks, py::arg())
         .def("getControlPort", &Detector::getControlPort,
              py::arg() = Positions{})
         .def("setControlPort", &Detector::setControlPort, py::arg(),

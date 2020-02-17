@@ -71,6 +71,11 @@ target_link_libraries(ctbRootLib PUBLIC
     ${ROOT_EXE_LINKER_FLAGS}
 )
 
+set_target_properties(
+    ctbRootLib PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
 target_link_libraries(ctbGui PUBLIC 
     slsDetectorShared
     slsSupportLib
@@ -80,4 +85,5 @@ target_link_libraries(ctbGui PUBLIC
 
 set_target_properties(ctbGui PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+
 )

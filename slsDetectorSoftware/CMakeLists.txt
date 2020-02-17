@@ -32,7 +32,9 @@ target_link_libraries(slsDetectorShared PUBLIC
     slsProjectOptions
     slsProjectWarnings
     slsSupportLib
-	${ZeroMQ_LIBRARIES}
+    ${ZeroMQ_LIBRARIES}
+    pthread
+    rt
 )
 
 set(PUBLICHEADERS

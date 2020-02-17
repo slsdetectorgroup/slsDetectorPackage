@@ -58,6 +58,7 @@ set_target_properties(slsSupportLib PROPERTIES
 target_link_libraries(slsSupportLib 
     slsProjectOptions 
     slsProjectWarnings 
+    ${ZeroMQ_LIBRARIES}
     rapidjson)
 
 if (SLS_USE_TESTS)

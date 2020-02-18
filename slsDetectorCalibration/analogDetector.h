@@ -423,7 +423,7 @@ template <class dataType> class analogDetector {
 	  if (g==0) g=-1.;
 	}
       
-	return stat[iy][ix].getPedestalRMS()/g;//divide by gain?
+	return stat[iy][ix].getPedestalRMS();//divide by gain?
       }
       return -1;
     };

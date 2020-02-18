@@ -461,6 +461,50 @@ public:
     return ped;
   };
    
+  
+  virtual double *getPedestalRMS(){
+    int nx, ny;
+    dets[0]->getDetectorSize(nx,ny);
+    // if (ped) delete [] ped;
+    double *rms=new double[nx*ny];
+    double *p0=new double[nx*ny];
+    
+    for (int i=0; i<nThreads; i++) {
+      //inte=(slsInterpolation*)dets[i]->getInterpolation(nb,emi,ema);
+      //  cout << i << endl;
+      p0=dets[i]->getPedestalRMS(p0);
+      if (p0) {
+	if (i==0) {
+	  
+	  for (int ib=0; ib<nx*ny; ib++) {
+	    rms[ib]=p0[ib]*p0[ib]/((double)nThreads);
+	  //  cout << p0[ib] << " ";
+	}
+	} else {
+	for (int ib=0; ib<nx*ny; ib++) {
+	  rms[ib]+=p0[ib]*p0[ib]/((double)nThreads);
+	  //  cout << p0[ib] << " ";
+	}
+	}
+      }
+	
+    }
+    delete [] p0;
+    
+    /* for (int ib=0; ib<nx*ny; ib++) { */
+    /*   if (rms[ib]>0) */
+    /* 	rms[ib]=sqrt(ped[ib]); */
+    /*   else */
+    /* 	rms[ib]=0; */
+    /* } */
+
+
+    return rms;
+  };
+   
+  
+
+
    
    virtual double *setPedestal(double *h=NULL){
      //int nb=0;
@@ -491,6 +535,27 @@ public:
        }    
        WriteToTiff(gm,imgname ,nx, ny); 
        delete [] gm;
+     } else cout << "Could not allocate float image " << endl;
+    
+    return NULL;
+
+   };
+
+
+   virtual void *writePedestalRMS(const char * imgname){     
+    
+     int nx, ny;
+     dets[0]->getDetectorSize(nx,ny);
+   
+      double *rms=getPedestalRMS();
+      float *gm=new float[nx*ny];
+      if (gm) {
+       for (int ix=0; ix<nx*ny; ix++) {
+	 gm[ix]=rms[ix];
+       }    
+       WriteToTiff(gm,imgname ,nx, ny); 
+       delete [] gm;
+       delete [] rms;
      } else cout << "Could not allocate float image " << endl;
     
     return NULL;

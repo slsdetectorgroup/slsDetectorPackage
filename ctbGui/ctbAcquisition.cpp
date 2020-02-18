@@ -45,6 +45,7 @@
 #include "deserializer.h"
 #include "detectorData.h"
 #include "imageZmq16bit.h"
+#include "imageZmq32bit.h"
 
 
 using namespace std;
@@ -236,6 +237,7 @@ hframe=new TGHorizontalFrame(this, 800,50);
   cbDetType->AddEntry("MOENCH04", MOENCH04);
   // cbDetType->AddEntry("JUNGFRAU1.0", 2);
   cbDetType->AddEntry("MOENCH03",MOENCH03);
+  cbDetType->AddEntry("IMAGE32BIT",IMAGE32B);
   cbDetType->AddEntry("IMAGE16BIT",IMAGE16B);
 
   //cbDetType->AddEntry("MOENCH03", iiii++);
@@ -365,7 +367,7 @@ hframe=new TGHorizontalFrame(this, 800,50);
 			     TGNumberFormat::kNELLimitMinMax,0,16535);
    hframe->AddFrame(ePixX,new TGLayoutHints(kLHintsTop |  kLHintsExpandX, 1, 1, 1, 1));
    ePixX->MapWindow();
-   ePixX->SetNumber(0);
+   ePixX->SetNumber(400);
    e= ePixX->TGNumberEntry::GetNumberEntry();
    ePixX->Connect("ValueSet(Long_t)","ctbAcquisition",this,"ChangeImagePixels(Long_t)");
    e->Connect("ReturnPressed()","ctbAcquisition",this,"ChangeImagePixels()");
@@ -383,7 +385,7 @@ hframe=new TGHorizontalFrame(this, 800,50);
 			     TGNumberFormat::kNELLimitMinMax,0,16535);
    hframe->AddFrame(ePixY,new TGLayoutHints(kLHintsTop |  kLHintsExpandX, 1, 1, 1, 1));
    ePixY->MapWindow();
-   ePixY->SetNumber(0);
+   ePixY->SetNumber(400);
    e= ePixY->TGNumberEntry::GetNumberEntry();
    ePixY->Connect("ValueSet(Long_t)","ctbAcquisition",this,"ChangeImagePixels(Long_t)");
    e->Connect("ReturnPressed()","ctbAcquisition",this,"ChangeImagePixels()");
@@ -911,10 +913,10 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
     nx=eNumCount->GetIntNumber();
     dr=eDynRange->GetIntNumber();
     soff=eSerOff->GetIntNumber();
-    cout <<"deserializer: " << endl;
-    cout << "Number of chans:\t" << nx << endl;
-    cout << "Serial Offset:\t" << soff << endl;
-    cout << "Dynamic range:\t" << dr << endl;
+    // cout <<"deserializer: " << endl;
+    // cout << "Number of chans:\t" << nx << endl;
+    // cout << "Serial Offset:\t" << soff << endl;
+    // cout << "Dynamic range:\t" << dr << endl;
     
   }
 
@@ -980,7 +982,7 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
       for (int y=0; y<ny; y++) {
 	ped=0;
 	aval=dataStructure->getValue(data->data,x,y);
-      
+	//	cout << x << " " <<y << " "<< aval << endl;
 	if (cbGetPedestal->IsOn()) {
 	  if (photonFinder) {
 	    photonFinder->addToPedestal(aval,x,y);
@@ -1295,23 +1297,41 @@ void ctbAcquisition::changeDetector(){
        cout << "MOENCH 0.3! USE JUNGFRAU MODULE!" << endl;
        commonMode=new moench03CommonMode();
       break;
+       case IMAGE32B:
+       //try {
+       	// auto retval = myDet->getTenGiga().tsquash("Different values");
+       	// if (retval) {
+       	// if (deserializer) {
+       	   ePixX->SetState(kTRUE);
+       	   ePixY->SetState(kTRUE);
+       	   // }
+       	 dataStructure=new imageZmq32bit(ePixX->GetIntNumber(),ePixY->GetIntNumber()); 
+        // } else {
+        //   dataStructure=new moench04CtbZmqData(nAnalogSamples, nDigitalSamples); 
+        // }
+       	  //} CATCH_DISPLAY ("Could not get ten giga enable.", "ctbAcquisition::changeDetector")
+
+       	 cout << "Image 32bit, no channel shuffling" << endl;
+       commonMode=NULL;
+       break;
+   
        case IMAGE16B:
        //try {
 	// auto retval = myDet->getTenGiga().tsquash("Different values");
 	// if (retval) {
-	 if (deserializer) {
+	// if (deserializer) {
 	   ePixX->SetState(kTRUE);
 	   ePixY->SetState(kTRUE);
-	 }
+	   // }
 	 dataStructure=new imageZmq16bit(ePixX->GetIntNumber(),ePixY->GetIntNumber()); 
         // } else {
         //   dataStructure=new moench04CtbZmqData(nAnalogSamples, nDigitalSamples); 
         // }
 	  //} CATCH_DISPLAY ("Could not get ten giga enable.", "ctbAcquisition::changeDetector")
 
-       cout << "Image, no channel shuffling" << endl;
+	 cout << "Image 16bit, no channel shuffling" << endl;
        commonMode=NULL;
-      break;
+       break;
    
     // case 1:
     //   cout << "************** T!!!!!!!!!!" << endl;
@@ -1375,6 +1395,7 @@ void ctbAcquisition::changeDetector(){
 	photonFinder=new singlePhotonDetector(dataStructure,csize,nsigma,1,cm); //sign is positive - should correct with ADC mask, no common mode 
 	//photonFinder=new singlePhotonDetector(dataStructure,csize,nsigma,1,cm); //sign is positive - should correct with ADC mask, no common mode
 	dataStructure->getDetectorSize(nx,ny);
+	
       }
       if (deserializer) {
 	ny=1;

@@ -561,16 +561,19 @@ void multiSlsDetector::readFrameFromReceiver() {
                     if (image == nullptr) {
                         // allocate
                         size = doc["size"].GetUint();
+			//std::cout << "SIZE: "<< size << 	std::endl;
                         multisize = size * zmqSocket.size();
                         image = new char[size];
                         multiframe = new char[multisize];
                         memset(multiframe, 0xFF, multisize);
                         // dynamic range
-                        dynamicRange = doc["bitmode"].GetUint();
+			// dynamicRange = doc["bitmode"].GetUint();
                         bytesPerPixel = (float)dynamicRange / 8;
+			//	std::cout << "DR: "<< dynamicRange << 	std::endl;
                         // shape
                         nPixelsX = doc["shape"][0].GetUint();
                         nPixelsY = doc["shape"][1].GetUint();
+			//	std::cout << "shape: "<< nPixelsX << " "<< nPixelsY << 	std::endl;
                         // detector shape
                         nX = doc["detshape"][0].GetUint();
                         nY = doc["detshape"][1].GetUint();
@@ -587,8 +590,8 @@ void multiSlsDetector::readFrameFromReceiver() {
                             (doc["gappixels"].GetUint() == 0) ? false : true;
                         quadEnable =
                             (doc["quad"].GetUint() == 0) ? false : true;
-                        FILE_LOG(logDEBUG1)
-                            << "One Time Header Info:"
+			FILE_LOG(logDEBUG1)
+			  << "One Time Header Info:"
                                "\n\tsize: "
                             << size << "\n\tmultisize: " << multisize
                             << "\n\tdynamicRange: " << dynamicRange
@@ -597,7 +600,7 @@ void multiSlsDetector::readFrameFromReceiver() {
                             << "\n\tnPixelsY: " << nPixelsY << "\n\tnX: " << nX
                             << "\n\tnY: " << nY << "\n\teiger: " << eiger
                             << "\n\tgappixelsenable: " << gappixelsenable
-                            << "\n\tquadEnable: " << quadEnable;
+				    << "\n\tquadEnable: " << quadEnable;
                     }
                     // each time, parse rest of header
                     currentFileName = doc["fname"].GetString();
@@ -611,8 +614,8 @@ void multiSlsDetector::readFrameFromReceiver() {
                         coordY = (nY - 1) - coordY;
                     }
                     flippedDataX = doc["flippedDataX"].GetUint();
-                    FILE_LOG(logDEBUG1)
-                        << "Header Info:"
+		    FILE_LOG(logDEBUG1)
+		      << "Header Info:"
                            "\n\tcurrentFileName: "
                         << currentFileName << "\n\tcurrentAcquisitionIndex: "
                         << currentAcquisitionIndex
@@ -626,18 +629,21 @@ void multiSlsDetector::readFrameFromReceiver() {
                 // DATA
                 data = true;
                 zmqSocket[isocket]->ReceiveData(isocket, image, size);
-
                 // creating multi image
                 {
                     uint32_t xoffset = coordX * nPixelsX * bytesPerPixel;
                     uint32_t yoffset = coordY * nPixelsY;
                     uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
                     uint32_t rowoffset = nX * singledetrowoffset;
-                    if (multi_shm()->multiDetectorType == CHIPTESTBOARD) {
+		    if (multi_shm()->multiDetectorType == CHIPTESTBOARD) {
                         singledetrowoffset = size;
-                    }
-                    FILE_LOG(logDEBUG1)
-                        << "Multi Image Info:"
+			nPixelsY=1;
+			
+		    }
+
+
+                   FILE_LOG(logDEBUG1)
+		     << "Multi Image Info:"
                            "\n\txoffset: "
                         << xoffset << "\n\tyoffset: " << yoffset
                         << "\n\tsingledetrowoffset: " << singledetrowoffset
@@ -654,6 +660,7 @@ void multiSlsDetector::readFrameFromReceiver() {
                         }
                     } else {
                         for (uint32_t i = 0; i < nPixelsY; ++i) {
+			  std::cout << i << " " << std::endl;
                             memcpy(((char *)multiframe) +
                                        ((yoffset + i) * rowoffset) + xoffset,
                                    (char *)image + (i * singledetrowoffset),
@@ -663,11 +670,11 @@ void multiSlsDetector::readFrameFromReceiver() {
                 }
             }
         }
-        FILE_LOG(logDEBUG) << "Call Back Info:"
+ FILE_LOG(logDEBUG)<< "Call Back Info:"
                            << "\n\t nDetPixelsX: " << nDetPixelsX
                            << "\n\t nDetPixelsY: " << nDetPixelsY
                            << "\n\t databytes: " << multisize
-                           << "\n\t dynamicRange: " << dynamicRange;
+		  << "\n\t dynamicRange: " << dynamicRange ;
 
         // send data to callback
         if (data) {
@@ -683,7 +690,8 @@ void multiSlsDetector::readFrameFromReceiver() {
                 }
                 int n = processImageWithGapPixels(multiframe, multigappixels,
                                                   quadEnable);
-                FILE_LOG(logDEBUG) << "Call Back Info Recalculated:"
+                FILE_LOG(logDEBUG) 
+		  	 << "Call Back Info Recalculated:"
                                    << "\n\t nDetPixelsX: " << nDetPixelsX
                                    << "\n\t nDetPixelsY: " << nDetPixelsY
                                    << "\n\t databytes: " << n;
@@ -704,7 +712,7 @@ void multiSlsDetector::readFrameFromReceiver() {
                       pCallbackArg);
             delete thisData;
         }
-
+	
         // all done
         if (numRunning == 0) {
             // let main thread know that all dummy packets have been received

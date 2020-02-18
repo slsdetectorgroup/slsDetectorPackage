@@ -54,10 +54,11 @@ int main(int argc, char *argv[]) {
  */
   FILE *of=NULL;
   int fifosize=5000;
-  int etabins=1000;//nsubpix*2*100;
+  int etabins=1000, etabinsy=1000;//nsubpix*2*100;
   double etamin=-1, etamax=2;
-  int nSubPixels=2;
+  int nSubPixelsX=2;
   //	int emin, emax;
+  int nSubPixelsY=2;
 	// help
   if (argc < 3 ) {
     cprintf(RED, "Help: ./trial [receive socket ip] [receive starting port number] [send_socket ip] [send starting port number] [nthreads] [nsubpix] [gainmap]  [etafile]\n");
@@ -98,10 +99,14 @@ int main(int argc, char *argv[]) {
     nthreads=atoi(argv[5]);
 
   cout << "Number of threads is: " << nthreads << endl;
-  if (argc>6)
-    nSubPixels=atoi(argv[6]);
-  cout << "Number of subpixels is: " << nSubPixels << endl;
-  
+  if (argc>6) {
+    nSubPixelsX=atoi(argv[6]);
+    nSubPixelsY=nSubPixelsX;
+#ifdef RECT
+    nSubPixelsY=2;
+#endif
+  }
+  cout << "Number of subpixels is: " << nSubPixelsX << " " <<  nSubPixelsY << endl;
 
   char *gainfname=NULL;
   if (argc>7) {
@@ -170,7 +175,7 @@ int main(int argc, char *argv[]) {
     // multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
 #endif
 #ifdef INTERP
-  eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(npx, npy, nSubPixels, etabins, etamin, etamax);
+    eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(npx, npy, nSubPixelsX,nSubPixelsY, etabins,  etabinsy, etamin, etamax);
 
   if (etafname) interp->readFlatField(etafname);
 

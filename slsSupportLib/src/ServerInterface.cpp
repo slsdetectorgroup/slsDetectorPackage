@@ -1,10 +1,10 @@
-#include "ServerInterface2.h"
+#include "ServerInterface.h"
 #include <cassert>
 #include <cstring>
 #include <sstream>
 namespace sls {
 
-int ServerInterface2::sendResult(int ret, void *retval, int retvalSize,
+int ServerInterface::sendResult(int ret, void *retval, int retvalSize,
                                  char *mess) {
 
     write(&ret, sizeof(ret));

@@ -12,7 +12,7 @@ file writing etc.
 
 .. code-block:: python
  
-    from sls_detector import Eiger
+    from slsdet import Eiger
 
     d = Eiger()
     threshold = range(0, 2000, 200)

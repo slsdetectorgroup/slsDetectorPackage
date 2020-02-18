@@ -17,7 +17,7 @@
 #include <pthread.h>
 
 #include "analogDetector.h"
-#include "circularFifo.h"
+#include "CircularFifo.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>

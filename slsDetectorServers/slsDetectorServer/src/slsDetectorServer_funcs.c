@@ -2,6 +2,13 @@
 #include "slsDetectorFunctionList.h"
 #include "communication_funcs.h"
 #include "clogger.h"
+#ifndef VIRTUAL
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+#include "programFpgaNios.h"
+#elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#include "programFpgaBlackfin.h"
+#endif
+#endif
 
 #include <string.h>
 #include <arpa/inet.h>
@@ -592,27 +599,6 @@ int  M_nofunc(int file_des) {
 	FILE_LOG(logERROR, (mess));
 	return Server_SendResult(file_des, OTHER, NO_UPDATE, NULL, 0);
 }
-
-
-// Jungfrau program mode
-int  M_nofuncMode(int file_des) {
-	ret = FAIL;
-	memset(mess, 0, sizeof(mess));
-
-	// to receive any arguments
-	int n = 1;
-	while (n > 0)
-		n = receiveData(file_des,mess,MAX_STR_LENGTH,OTHER);
-
-	sprintf(mess,"This Function %s cannot be executed as the "
-			"On-board detector server in update mode.\n"
-			"Restart detector server in normal mode (without any arguments) to continue.\n",
-			getFunctionName((enum detFuncs)fnum));
-	FILE_LOG(logERROR, (mess));
-	return Server_SendResult(file_des, OTHER, NO_UPDATE, NULL, 0);
-}
-
-
 
 
 int exec_command(int file_des) {
@@ -1784,12 +1770,6 @@ int start_acquisition(int file_des) {
 		}
 		else
 #endif
-#ifdef GOTTHARD2D
-		if (updateAcquisitionRegisters(mess) == FAIL) {
-			ret = FAIL;	
-		}
-		else
-#endif
 		if (configured == FAIL) {
 			ret = FAIL;
 			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
@@ -1920,12 +1900,6 @@ int start_and_read_all(int file_des) {
 		}
 		else
 #endif
-#ifdef GOTTHARD2D
-		if (updateAcquisitionRegisters(mess) == FAIL) {
-			ret = FAIL;	
-		}
-		else
-#endif
 		if (configured == FAIL) {
 			ret = FAIL;
 			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
@@ -1991,10 +1965,20 @@ int set_num_frames(int file_des) {
 
 	// only set
 	if (Server_VerifyLock() == OK) {
-		setNumFrames(arg); 
-		int64_t retval = getNumFrames();
-		FILE_LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
-		validate64(arg, retval, "set number of frames", DEC);
+#ifdef GOTTHARD2D
+		// validate #frames in burst mode
+		if (getBurstMode() != BURST_OFF && arg > MAX_FRAMES_IN_BURST_MODE) {
+			ret = FAIL;
+			sprintf(mess, "Could not set number of frames %lld. Must be <= %d in burst mode.\n", (long long unsigned int)arg, MAX_FRAMES_IN_BURST_MODE);
+			FILE_LOG(logERROR,(mess));		
+		}  
+#endif
+		if (ret == OK) {
+			setNumFrames(arg); 
+			int64_t retval = getNumFrames();
+			FILE_LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
+			validate64(arg, retval, "set number of frames", DEC);
+		}
 	}
 	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
 }
@@ -2587,7 +2571,7 @@ int set_dynamic_range(int file_des) {
 #elif EIGERD
 		case 4:	case 8:	case 16: case 32:
 #endif
-#if defined(GOTTHARD) || defined(JUNGFRAU) || defined(CHIPTESTBOARD) || defined(MOENCH) || defined(GOTTHARD2)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARD2D)
 		case 16:
 #endif
 			retval = setDynamicRange(dr);
@@ -3710,7 +3694,7 @@ int program_fpga(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
 
-#if defined(EIGERD) || defined(GOTTHARDD) || defined(MYTHEN3D) || defined(GOTTHARD2D)
+#if defined(EIGERD) || defined(GOTTHARDD)
 	//to receive any arguments
 	int n = 1;
 	while (n > 0)
@@ -3723,9 +3707,38 @@ int program_fpga(int file_des) {
 
 		FILE_LOG(logINFOBLUE, ("Programming FPGA...\n"));
 
-		size_t filesize = 0;
-		size_t totalsize = 0;
-		size_t unitprogramsize = 0;
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+		uint64_t filesize = 0;
+		// filesize
+		if (receiveData(file_des,&filesize,sizeof(filesize),INT64) < 0)
+			return printSocketReadError();
+		FILE_LOG(logDEBUG1, ("Total program size is: %llx\n", (long long unsigned int)filesize));
+		if (filesize > NIOS_MAX_APP_IMAGE_SIZE) {
+			ret = FAIL;
+			sprintf(mess,"Could not start programming FPGA. File size 0x%llx exceeds max size 0x%llx. Forgot Compression?\n", (long long unsigned int) filesize, (long long unsigned int)NIOS_MAX_APP_IMAGE_SIZE);
+			FILE_LOG(logERROR,(mess));			
+		} 
+		Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+		
+		// receive program
+		if (ret == OK) {
+			char* fpgasrc = (char*)malloc(filesize);
+			if (receiveData(file_des, fpgasrc, filesize, OTHER) < 0)
+				return printSocketReadError();
+
+			ret = eraseAndWriteToFlash(mess, fpgasrc, filesize);
+			Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+
+			//free resources
+			if (fpgasrc != NULL)
+				free(fpgasrc);
+		}
+
+
+#else // jungfrau, ctb, moench
+		uint64_t filesize = 0;
+		uint64_t totalsize = 0;
+		uint64_t unitprogramsize = 0;
 		char* fpgasrc = NULL;
 		FILE* fp = NULL;
 
@@ -3733,7 +3746,7 @@ int program_fpga(int file_des) {
 		if (receiveData(file_des,&filesize,sizeof(filesize),INT32) < 0)
 			return printSocketReadError();
 		totalsize = filesize;
-		FILE_LOG(logDEBUG1, ("Total program size is: %d\n", totalsize));
+		FILE_LOG(logDEBUG1, ("Total program size is: %lld\n", (long long unsigned int)totalsize));
 
 
 		// opening file pointer to flash and telling FPGA to not touch flash
@@ -3758,7 +3771,7 @@ int program_fpga(int file_des) {
 			unitprogramsize = MAX_FPGAPROGRAMSIZE;  //2mb
 			if (unitprogramsize > filesize) //less than 2mb
 				unitprogramsize = filesize;
-			FILE_LOG(logDEBUG1, ("unit size to receive is:%d\nfilesize:%d\n", unitprogramsize, filesize));
+			FILE_LOG(logDEBUG1, ("unit size to receive is:%lld\nfilesize:%lld\n", (long long unsigned int)unitprogramsize, (long long unsigned int)filesize));
 
 			//receive part of program
 			if (receiveData(file_des,fpgasrc,unitprogramsize,OTHER) < 0)
@@ -3783,7 +3796,6 @@ int program_fpga(int file_des) {
 				fflush(stdout);
 			}
 		}
-		printf("\n");
 		if (ret == OK) {
 			FILE_LOG(logINFO, ("Done copying program\n"));
 		}
@@ -3797,8 +3809,13 @@ int program_fpga(int file_des) {
 		if (fp != NULL)
 			fclose(fp);
 
-		FILE_LOG(logINFO, ("Completed program fpga command with %s\n", (ret == OK ? "success" : "fail")));
-	}
+#endif // end of Blackfin programming
+		if (ret == FAIL) {
+			FILE_LOG(logERROR, ("Program FPGA FAIL!\n"));
+		} else {
+			FILE_LOG(logINFOGREEN, ("Programming FPGA completed successfully\n"));
+		}
+	}	
 #endif
 #endif
 	return ret;
@@ -4301,13 +4318,22 @@ int copy_detector_server(int file_des) {
 int reboot_controller(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-#ifdef EIGERD
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+	if (getHardwareVersionNumber() == 0) {
+		ret = FAIL;
+		strcpy(mess, "Old board version, reboot by yourself please!\n");
+		FILE_LOG(logINFORED, (mess)); 
+		Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+		return GOODBYE;
+	} 
+	ret = REBOOT;
+#elif EIGERD
 	functionNotImplemented();
-	return ret;
 #else
-	FILE_LOG(logINFORED, ("Rebooting controller\n"));
-	return REBOOT;
+	ret = REBOOT;
 #endif
+	Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+	return ret;
 }
 
 

@@ -10,7 +10,7 @@ add_executable(jungfrauDetectorServer_virtual
     ../slsDetectorServer/src/ALTERA_PLL.c
     ../slsDetectorServer/src/LTC2620.c
     ../slsDetectorServer/src/MAX1932.c
-    ../slsDetectorServer/src/programfpga.c
+    ../slsDetectorServer/src/programFpgaBlackfin.c
     ../slsDetectorServer/src/communication_funcs_UDP.c    
 )
 
@@ -28,7 +28,7 @@ target_compile_definitions(jungfrauDetectorServer_virtual
 )
 
 target_link_libraries(jungfrauDetectorServer_virtual
-    PUBLIC pthread rt
+    PUBLIC pthread rt slsProjectOptions slsProjectWarnings
 )
 
 set_target_properties(jungfrauDetectorServer_virtual PROPERTIES

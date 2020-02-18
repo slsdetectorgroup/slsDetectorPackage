@@ -1,5 +1,8 @@
 set(CMAKE_AUTOMOC ON)
 
+find_package(PNG REQUIRED)
+find_package(ZLIB REQUIRED)
+
 set(SOURCES
     slsDetectorPlotting/src/SlsQt1DPlot.cxx
     slsDetectorPlotting/src/SlsQt1DZoomer.cxx
@@ -89,8 +92,8 @@ target_link_libraries(slsDetectorGui PUBLIC
     ${QT_QTCORE_LIBRARIES}
     ${QT_QTGUI_LIBRARIES}
     ${QWT_LIBRARIES}
-    png
-    z
+    PNG::PNG
+    ZLIB::ZLIB
     Qt4::QtOpenGL
     Qt4::QtSvg
 )

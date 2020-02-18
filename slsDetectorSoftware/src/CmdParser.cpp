@@ -45,9 +45,7 @@ void CmdParser::Parse(const std::string &s) {
     auto old_size = arguments_.size();
     arguments_.erase(std::remove_if(begin(arguments_), end(arguments_),
                                     [](const std::string &item) {
-                                        if (item == "-h" || item == "--help")
-                                            return true;
-                                        return false;
+                                        return (item == "-h" || item == "--help");
                                     }),
                      end(arguments_));
     if (old_size - arguments_.size() > 0)

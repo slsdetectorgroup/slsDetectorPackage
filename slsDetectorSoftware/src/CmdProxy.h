@@ -876,6 +876,7 @@ class CmdProxy {
                           {"getbit", &CmdProxy::BitOperations}, 
                           {"firmwaretest", &CmdProxy::firmwaretest}, 
                           {"bustest", &CmdProxy::bustest}, 
+                          {"initialchecks", &CmdProxy::InitialChecks}, 
 
                           /* Insignificant */
                           {"port", &CmdProxy::port}, 
@@ -973,6 +974,7 @@ class CmdProxy {
     std::string Register(int action);
     std::string AdcRegister(int action);
     std::string BitOperations(int action);
+    std::string InitialChecks(int action);
     /* Insignificant */
     std::string ExecuteCommand(int action);
     std::string UserDetails(int action);
@@ -1009,7 +1011,7 @@ class CmdProxy {
     INTEGER_COMMAND_NOID(frames, getNumberOfFrames, setNumberOfFrames,
                          std::stol,
                          "[n_frames]\n\tNumber of frames per aquire. In trigger mode, number of frames per trigger."
-                         "\n\t[Gotthard2] Burst mode has a maximum of 2720 frames. Frames number for both modes are uploaded to detector just before acquisition starts");
+                         "\n\t[Gotthard2] Burst mode has a maximum of 2720 frames.");
 
     INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
                          std::stol,
@@ -1696,7 +1698,7 @@ class CmdProxy {
                 "\n\t[Jungfrau][Ctb] Reset FPGA.");   
 
     EXECUTE_SET_COMMAND(rebootcontroller, rebootController, 
-                "\n\t[Jungfrau][Ctb] Reboot controler (blackfin) of detector.");  
+                "\n\t[Jungfrau][Ctb][Gotthard][Mythen3][Gotthard2] Reboot controler (blackfin) of detector.");  
 
     EXECUTE_SET_COMMAND(firmwaretest, executeFirmwareTest, 
                 "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test, ie. reads a read fixed pattern from a register.");  

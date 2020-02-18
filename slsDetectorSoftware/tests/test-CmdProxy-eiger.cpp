@@ -333,6 +333,7 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
                 det.setDAC(defs::VCP, vcp[i], false, {i});
             }
         }
+        // gotthard
         REQUIRE_THROWS(proxy.Call("vref_ds", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcascn_pb", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcascp_pb", {}, -1, GET));
@@ -341,6 +342,7 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("vin_cm", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("ib_test_c", {}, -1, GET));
+        // mythen3
         REQUIRE_THROWS(proxy.Call("vpreamp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vshaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vshaperneg", {}, -1, GET));
@@ -357,6 +359,7 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("vcas", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vicin", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vipre_out", {}, -1, GET));
+        // gotthard2
         REQUIRE_THROWS(proxy.Call("vref_h_adc", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_comp_fe", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_comp_adc", {}, -1, GET));
@@ -370,6 +373,7 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("vb_cs", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_opa_fd", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcom_adc2", {}, -1, GET));
+        // jungfrau
         REQUIRE_THROWS(proxy.Call("vb_ds", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_comp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_pixbuf", {}, -1, GET));

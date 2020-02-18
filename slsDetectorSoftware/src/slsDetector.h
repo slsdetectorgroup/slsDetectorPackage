@@ -252,8 +252,11 @@ class slsDetector : public virtual slsDetectorDefs {
     /**
      * Sets the hostname, if online flag is set connects to update the detector
      * @param name hostname
+     * @param initialChecks enable or disable initial compatibility checks 
+     * and other server start up checks. Enabled by default. Disable only
+     * for advanced users!
      */
-    void setHostname(const std::string &hostname);
+    void setHostname(const std::string &hostname, const bool initialChecks);
 
     /**
      * Gets the hostname of detector
@@ -1382,11 +1385,17 @@ class slsDetector : public virtual slsDetectorDefs {
     int setStoragecellStart(int pos = -1);
 
     /**
-     * Programs FPGA with pof file (Jungfrau, CTB, Moench)
+     * [Jungfau][Ctb] Programs FPGA with raw file from pof file
+     * [Mythen3][Gotthard2] Programs FPGA with raw file from rbf file
      * @param buffer programming file in memory
      */
     void programFPGA(std::vector<char> buffer);
+    
+    /** [Jungfau][Ctb] */
+    void programFPGAviaBlackfin(std::vector<char> buffer);    
 
+    /** [Mythen3][Gotthard2] */
+    void programFPGAviaNios(std::vector<char> buffer); 
     /**
      * Resets FPGA (Jungfrau)
      */
@@ -1401,6 +1410,7 @@ class slsDetector : public virtual slsDetectorDefs {
                             const std::string &hostname);
 
     /**
+     * [Jungfrau][Ctb][Gotthard][Mythen3][Gotthard2]
      * Reboot detector controller (blackfin/ powerpc)
      */
     void rebootController();

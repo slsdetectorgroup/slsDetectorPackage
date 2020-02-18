@@ -1,8 +1,8 @@
 #pragma once
-#include "ClientInterface.h"
 #include "sls_detector_defs.h"
-
 #include <memory>
+
+class ClientInterface;
 
 class Receiver : private virtual slsDetectorDefs {
 	
@@ -25,6 +25,8 @@ class Receiver : private virtual slsDetectorDefs {
 	 * @param tcpip_port_no TCP/IP port number
 	 */
 	Receiver(int tcpip_port_no = 1954);
+
+	~Receiver();
 
 	/**
 	 * get get Receiver Version

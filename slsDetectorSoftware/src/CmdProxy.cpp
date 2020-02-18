@@ -1288,7 +1288,7 @@ std::string CmdProxy::Counters(int action) {
         std::vector <int> result;
         for (size_t i = 0; i < 32; ++i) {
             if (mask & (1 << i)) {
-                result.push_back((int)i);
+                result.push_back(static_cast<int>(i));
             }
         }
         os << sls::ToString(result) << '\n';
@@ -1807,16 +1807,14 @@ std::string CmdProxy::ProgramFpga(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname.pof]\n\t[Jungfrau][Ctb] Programs FPGA from pof file."
+        os << "[fname.pof | fname.rbf]\n\t[Jungfrau][Ctb] Programs FPGA from pof file."
+        << "\n\t[Mythen3][Gotthard2] Programs FPGA from rbf file."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
-        }
-        if (args[0].find(".pof") == std::string::npos) {
-            throw sls::RuntimeError("Programming file must be a pof file.");
         }
         det->programFPGA(args[0], {det_id});
         os << "successful\n";
@@ -1979,6 +1977,39 @@ std::string CmdProxy::BitOperations(int action) {
     }
     return os.str();
 }
+
+std::string CmdProxy::InitialChecks(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[0, 1]\n\tEnable or disable intial compatibility and other checks at detector start up. It is enabled by default. Must come before 'hostname' command to take effect. Can be used to reprogram fpga when current firmware is incompatible."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (det_id != -1) {
+            throw sls::RuntimeError(
+                "Cannot enable/disable initial checks at module level");
+        }
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getInitialChecks();
+        os << t << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (det_id != -1) {
+            throw sls::RuntimeError(
+                "Cannot get initial checks enable at module level");
+        }
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->setInitialChecks(std::stoi(args[0]));
+        os << args.front() << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 
 /* Insignificant */
 

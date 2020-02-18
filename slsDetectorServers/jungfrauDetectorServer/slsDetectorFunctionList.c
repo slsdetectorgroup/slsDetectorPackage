@@ -8,9 +8,7 @@
 #include "ALTERA_PLL.h" // pll
 #include "blackfin.h"
 #include "common.h"
-#ifndef VIRTUAL
-#include "programfpga.h"
-#else
+#ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #endif
 
@@ -67,7 +65,6 @@ void basictests() {
     }
     return;
 #else
-
 	defineGPIOpins();
 	resetFPGA();
     if (mapCSP0() == FAIL) {

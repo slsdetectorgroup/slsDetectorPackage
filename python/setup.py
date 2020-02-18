@@ -8,7 +8,7 @@ import sys
 import setuptools
 import os
 
-__version__ = 'refactor'
+__version__ = 'udp'
 
 
 def get_conda_path():
@@ -19,31 +19,32 @@ def get_conda_path():
     return os.environ['CONDA_PREFIX']
 
 
-class get_pybind_include(object):
-    """Helper class to determine the pybind11 include path
-    The purpose of this class is to postpone importing pybind11
-    until it is actually installed, so that the ``get_include()``
-    method can be invoked. """
+# class get_pybind_include(object):
+#     """Helper class to determine the pybind11 include path
+#     The purpose of this class is to postpone importing pybind11
+#     until it is actually installed, so that the ``get_include()``
+#     method can be invoked. """
 
-    def __init__(self, user=False):
-        self.user = user
+#     def __init__(self, user=False):
+#         self.user = user
 
-    def __str__(self):
-        import pybind11
-        return pybind11.get_include(self.user)
+#     def __str__(self):
+#         import pybind11
+#         return pybind11.get_include(self.user)
 
 
 ext_modules = [
     Extension(
-        '_sls_detector',
+        '_slsdet',
         ['src/main.cpp',
         'src/enums.cpp',
         'src/detector.cpp',
         'src/network.cpp'],
         include_dirs=[
             # Path to pybind11 headers
-            get_pybind_include(),
-            get_pybind_include(user=True),
+            # get_pybind_include(),
+            # get_pybind_include(user=True),
+            os.path.join('../libs/pybind11/include'),
             os.path.join(get_conda_path(), 'include/slsDetectorPackage'),
 
         ],
@@ -109,20 +110,28 @@ class BuildExt(build_ext):
             opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
         for ext in self.extensions:
             ext.extra_compile_args = opts
-        build_ext.build_extensions(self)
 
+        print('**************************************************')
+        print(ct)
+        print(opts)
+        print('**************************************************')
+        build_ext.build_extensions(self)
+        
+
+
+def get_shared_lib():
+    return [f for f in os.listdir('.') if '_slsdet' in f]
 
 setup(
-    name='sls_detector',
+    name='slsdet',
     version=__version__,
     author='Erik Frojdh',
     author_email='erik.frojdh@psi.ch',
-    url='https://github.com/slsdetectorgroup/sls_detector',
+    url='https://github.com/slsdetectorgroup/slsDetectorPackage',
     description='Detector API for SLS Detector Group detectors',
     long_description='',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     ext_modules=ext_modules,
-    install_requires=['pybind11>=2.2'],
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
 )

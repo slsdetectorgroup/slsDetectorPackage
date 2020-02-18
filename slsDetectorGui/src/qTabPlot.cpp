@@ -60,6 +60,7 @@ void qTabPlot::SetupWidgetWindow() {
     switch(det->getDetectorType().squash()) {
         case slsDetectorDefs::GOTTHARD:
         case slsDetectorDefs::MYTHEN3:
+        case slsDetectorDefs::GOTTHARD2:
             is1d = true;
             break;
         case slsDetectorDefs::EIGER:

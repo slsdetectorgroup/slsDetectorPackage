@@ -112,7 +112,27 @@ void qTabDeveloper::SetupWidgetWindow() {
 			dacWidgets.push_back(new qDacWidget(this, det, true, "vpl: ", getSLSIndex(detType, tempid++)));
 			dacWidgets.push_back(new qDacWidget(this, det, true, "vtrim: ", getSLSIndex(detType, tempid++)));
 			dacWidgets.push_back(new qDacWidget(this, det, true, "vdcsh: ", getSLSIndex(detType, tempid++)));
-			break;					
+			break;
+
+		case slsDetectorDefs::GOTTHARD2:
+			lblSpinHV->show();
+			spinHV->show();
+			hvmin = 0;
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vref_h_adc: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vb_comp_fe: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vb_comp_adc: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vcom_cds: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vref_rstore: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vb_opa_1st: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vref_comp_fe: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vcom_adc1: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vref_prech: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vref_l_adc: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vref_cds: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vb_cs: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vb_opa_fd: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vcom_adc2: ", getSLSIndex(detType, tempid++)));
+			break;								
 		default:
 			break;
 		}
@@ -362,6 +382,41 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorTy
 			return slsDetectorDefs::TRIMBIT_SIZE;
 		case 15:
 			return slsDetectorDefs::VDCSH;
+		default:
+			throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));		
+		}
+		break;
+
+	case slsDetectorDefs::GOTTHARD2:
+		switch (index) {
+		case 0:
+			return slsDetectorDefs::VREF_H_ADC;
+		case 1:
+			return slsDetectorDefs::VB_COMP_FE;
+		case 2:
+			return slsDetectorDefs::VB_COMP_ADC;
+		case 3:
+			return slsDetectorDefs::VCOM_CDS;
+		case 4:
+			return slsDetectorDefs::VREF_RSTORE;
+		case 5:
+			return slsDetectorDefs::VB_OPA_1ST;
+		case 6:
+			return slsDetectorDefs::VREF_COMP_FE;
+		case 7:
+			return slsDetectorDefs::VCOM_ADC1;
+		case 8:
+			return slsDetectorDefs::VREF_PRECH;
+		case 9:
+			return slsDetectorDefs::VREF_L_ADC;
+		case 10:
+			return slsDetectorDefs::VREF_CDS;
+		case 11:
+			return slsDetectorDefs::VB_CS;
+		case 12:
+			return slsDetectorDefs::VB_OPA_FD;
+		case 13:
+			return slsDetectorDefs::VCOM_ADC2;
 		default:
 			throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));		
 		}

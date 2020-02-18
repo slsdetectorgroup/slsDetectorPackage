@@ -66,7 +66,7 @@ void ThreadObject::SetThreadPriority(int priority) {
 	struct sched_param param;
 	param.sched_priority = priority;
 	if (pthread_setschedparam(threadObject->native_handle(), SCHED_FIFO, &param) == EPERM) {
-		if (!index) {
+		if (index == 0) {
 			FILE_LOG(logWARNING) << "Could not prioritize " << type << " thread. "
                                     "(No Root Privileges?)";
 		}

@@ -18,7 +18,7 @@
 
 using sls::RuntimeError;
 using sls::SocketError;
-using Interface = sls::ServerInterface2;
+using Interface = sls::ServerInterface;
 
 ClientInterface::~ClientInterface() { 
     killTcpThread = true;
@@ -217,7 +217,7 @@ void ClientInterface::modeNotImplemented(const std::string &modename,
 }
 
 template <typename T>
-void ClientInterface::validate(T arg, T retval, std::string modename,
+void ClientInterface::validate(T arg, T retval, const std::string& modename,
                                          numberMode hex) {
     if (ret == OK && arg != -1 && retval != arg) {
         auto format = (hex == HEX) ? std::hex : std::dec;
@@ -557,7 +557,9 @@ int ClientInterface::set_period(Interface &socket) {
 int ClientInterface::set_subexptime(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     FILE_LOG(logDEBUG1) << "Setting period to " << value << "ns";
+    uint64_t subdeadtime = impl()->getSubPeriod() - impl()->getSubExpTime();
     impl()->setSubExpTime(value);
+    impl()->setSubPeriod(impl()->getSubExpTime() + subdeadtime);
     return socket.Send(OK);
 }
 

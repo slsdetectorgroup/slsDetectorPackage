@@ -49,7 +49,7 @@ void BinaryFile::CreateFile() {
 	currentFileName = BinaryFileStatic::CreateFileName(*filePath, *fileNamePrefix, *fileIndex,
 			 subFileIndex, *detIndex, *numUnitsPerDetector, index);
 
-	BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName, FILE_BUFFER_SIZE);
+	BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName);
 
 	if(!(*silentMode)) {
 		FILE_LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;

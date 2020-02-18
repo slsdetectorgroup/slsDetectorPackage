@@ -366,10 +366,10 @@ int         getFrequency(enum CLKINDEX ind);
 void        configureSyncFrequency(enum CLKINDEX ind);
 void        setPipeline(enum CLKINDEX ind, int val);
 int         getPipeline(enum CLKINDEX ind);
-extern void eraseFlash();                                                   // programfpga.h
-extern int  startWritingFPGAprogram(FILE** filefp);                         // programfpga.h
-extern void stopWritingFPGAprogram(FILE* filefp);                           // programfpga.h
-extern int  writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);    // programfpga.h
+extern void eraseFlash();                                                   // programFpgaBlackfin.h
+extern int  startWritingFPGAprogram(FILE** filefp);                         // programFpgaBlackfin.h
+extern void stopWritingFPGAprogram(FILE* filefp);                           // programFpgaBlackfin.h
+extern int  writeFPGAProgram(char* fpgasrc, uint64_t fsize, FILE* filefp);    // programFpgaBlackfin.h
 // patterns
 uint64_t    writePatternIOControl(uint64_t word);
 uint64_t    writePatternClkControl(uint64_t word);
@@ -401,10 +401,10 @@ int 		validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
 int         setThresholdTemperature(int val);
 int         setTemperatureControl(int val);
 int         setTemperatureEvent(int val);
-extern void eraseFlash();													// programfpga.h
-extern int 	startWritingFPGAprogram(FILE** filefp);							// programfpga.h
-extern void stopWritingFPGAprogram(FILE* filefp);							// programfpga.h
-extern int 	writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);	// programfpga.h
+extern void eraseFlash();													// programFpgaBlackfin.h
+extern int 	startWritingFPGAprogram(FILE** filefp);							// programFpgaBlackfin.h
+extern void stopWritingFPGAprogram(FILE* filefp);							// programFpgaBlackfin.h
+extern int 	writeFPGAProgram(char* fpgasrc, uint64_t fsize, FILE* filefp);	// programFpgaBlackfin.h
 void		alignDeserializer();
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
@@ -480,7 +480,15 @@ enum burstMode	getBurstMode();
 #endif
 
 
-
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+extern void NotifyServerStartSuccess();
+extern void CreateNotificationForCriticalTasks();
+extern void rebootControllerAndFPGA();										// programFpgaNios.h
+extern int findFlash(char* mess);											// programFpgaNios.h
+extern void eraseFlash();													// programFpgaNios.h
+extern int eraseAndWriteToFlash(char* mess, char* fpgasrc, uint64_t fsize);	// programFpgaNios.h
+extern int writeFPGAProgram(char* mess, char* fpgasrc, uint64_t fsize, FILE* filefp);	// programFpgaNios.h
+#endif
 
 
 #if defined(JUNGFRAUD) || defined(EIGERD)
@@ -500,9 +508,6 @@ int 		setTransmissionDelayRight(int value);
 
 
 // aquisition
-#ifdef GOTTHARD2D
-int			updateAcquisitionRegisters(char* mess);
-#endif
 #ifdef EIGERD
 int 		prepareAcquisition();
 #endif

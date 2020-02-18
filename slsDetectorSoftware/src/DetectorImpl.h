@@ -17,9 +17,8 @@ class detectorData;
 #include <vector>
 
 #define MULTI_SHMAPIVERSION 0x190809
-#define MULTI_SHMVERSION 0x190819
+#define MULTI_SHMVERSION 0x200131
 #define SHORT_STRING_LENGTH 50
-#define DATE_LENGTH 30
 
 #include <future>
 #include <numeric>
@@ -64,9 +63,12 @@ struct sharedMultiSlsDetector {
 
     /** data streaming (up stream) enable in receiver */
     bool receiver_upstream;
+
+    /** initial checks */
+    bool initialChecks;
 };
 
-class multiSlsDetector : public virtual slsDetectorDefs {
+class DetectorImpl : public virtual slsDetectorDefs {
   public:
     /**
      * Constructor
@@ -75,13 +77,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
      * one
      * @param update true to update last user pid, date etc
      */
-    explicit multiSlsDetector(int multi_id = 0, bool verify = true,
+    explicit DetectorImpl(int multi_id = 0, bool verify = true,
                               bool update = true);
 
     /**
      * Destructor
      */
-    virtual ~multiSlsDetector();
+    virtual ~DetectorImpl();
 
     template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
@@ -190,44 +192,6 @@ class multiSlsDetector : public virtual slsDetectorDefs {
         }
     }
 
-    /**
-     * Loop through the detectors serially and return the result as a vector
-     */
-
-    template <typename RT, typename... CT>
-    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...),
-                               typename NonDeduced<CT>::type... Args);
-
-    /**
-     * Loop through the detectors serially and return the result as a vector
-     * Const qualified version
-     */
-    template <typename RT, typename... CT>
-    std::vector<RT> serialCall(RT (slsDetector::*somefunc)(CT...) const,
-                               typename NonDeduced<CT>::type... Args) const;
-
-    /**
-     * Loop through the detectors in parallel and return the result as a vector
-     */
-    template <typename RT, typename... CT>
-    std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...),
-                                 typename NonDeduced<CT>::type... Args);
-
-    /**
-     * Loop through the detectors in parallel and return the result as a vector
-     * Const qualified version
-     */
-    template <typename RT, typename... CT>
-    std::vector<RT> parallelCall(RT (slsDetector::*somefunc)(CT...) const,
-                                 typename NonDeduced<CT>::type... Args) const;
-
-    template <typename... CT>
-    void parallelCall(void (slsDetector::*somefunc)(CT...),
-                      typename NonDeduced<CT>::type... Args);
-
-    template <typename... CT>
-    void parallelCall(void (slsDetector::*somefunc)(CT...) const,
-                      typename NonDeduced<CT>::type... Args) const;
 
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag); 
@@ -247,6 +211,12 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /** Get user details of shared memory */
     std::string getUserDetails(); 
+
+    bool getInitialChecks() const;
+
+    /** initial compaibility and other server start up checks
+     * default enabled */
+    void setInitialChecks(const bool value);
 
     /**
      * Connect to Virtual Detector Servers at local host
@@ -323,11 +293,13 @@ class multiSlsDetector : public virtual slsDetectorDefs {
 
     /**
      * Convert raw file
-     * @param fname name of pof file
-     * @param fpgasrc pointer in memory to read pof to
+     * [Jungfrau][Ctb] from pof file
+     * [Mythen3][Gotthard2] from rbf file
+     * @param fname name of pof/rbf file 
+     * @param fpgasrc pointer in memory to read programming file to
      * @returns file size
      */
-    std::vector<char> readPofFile(const std::string &fname);
+    std::vector<char> readProgrammingFile(const std::string &fname);
 
   private:
     /**

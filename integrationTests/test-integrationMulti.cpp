@@ -1,5 +1,5 @@
 #include "catch.hpp"
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "string_utils.h"
 #include "tests/globals.h"
 #include <iostream>
@@ -9,7 +9,7 @@ using namespace Catch::literals;
 TEST_CASE("Initialize a multi detector", "[.integration][.multi]") {
     auto hostnames = sls::split(test::hostname, '+');
 
-    multiSlsDetector d(0, true, true);
+    DetectorImpl d(0, true, true);
     d.setHostname(test::hostname.c_str());
 
     CHECK(d.getHostname() == test::hostname);
@@ -28,7 +28,7 @@ TEST_CASE("Initialize a multi detector", "[.integration][.multi]") {
 
 TEST_CASE("Set and read timers", "[.integration][.multi]") {
 
-    multiSlsDetector d(0, true, true);
+    DetectorImpl d(0, true, true);
     d.setHostname(test::hostname.c_str());
 
     // FRAME_NUMBER

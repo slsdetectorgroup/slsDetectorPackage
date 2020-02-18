@@ -1,5 +1,5 @@
-from _sls_detector import CppDetectorApi
-from _sls_detector import slsDetectorDefs
+from _slsdet import CppDetectorApi
+from _slsdet import slsDetectorDefs
 
 runStatus = slsDetectorDefs.runStatus
 speedLevel = slsDetectorDefs.speedLevel

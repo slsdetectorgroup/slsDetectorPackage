@@ -28,14 +28,14 @@ void ASIC_Driver_SetDefines(char* driverfname) {
 int ASIC_Driver_Set (int index, int length, char* buffer) {
     char fname[MAX_STR_LENGTH];
     sprintf(fname, "%s%d", ASIC_Driver_DriverFileName, index + 1);
-    FILE_LOG(logDEBUG1, ("\t[chip index: %d, length: %d, fname: %s]\n", index, length, fname)); 
+    FILE_LOG(logDEBUG2, ("\t[chip index: %d, length: %d, fname: %s]\n", index, length, fname)); 
     {
-        FILE_LOG(logDEBUG1, ("\t[values: \n"));
+        FILE_LOG(logDEBUG2, ("\t[values: \n"));
         int i;
         for (i = 0; i < length; ++i) {
-            FILE_LOG(logDEBUG1, ("\t%d: 0x%02hhx\n", i, buffer[i]));
+            FILE_LOG(logDEBUG2, ("\t%d: 0x%02hhx\n", i, buffer[i]));
         }
-        FILE_LOG(logDEBUG1, ("\t]\n"));
+        FILE_LOG(logDEBUG2, ("\t]\n"));
     }
     
 #ifdef VIRTUAL

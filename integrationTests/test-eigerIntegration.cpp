@@ -1,12 +1,12 @@
 #include "catch.hpp"
-#include "multiSlsDetector.h"
+#include "DetectorImpl.h"
 #include "string_utils.h"
 #include "tests/globals.h"
 #include <iostream>
 
 class MultiDetectorFixture {
   protected:
-    multiSlsDetector d;
+    DetectorImpl d;
 
   public:
     MultiDetectorFixture() : d(0, true, true) {

@@ -1,9 +1,9 @@
 from .detector_property import DetectorProperty
 from functools import partial
 import numpy as np
-import _sls_detector
+import _slsdet
 from .detector import freeze
-dacIndex = _sls_detector.slsDetectorDefs.dacIndex
+dacIndex = _slsdet.slsDetectorDefs.dacIndex
 class Dac(DetectorProperty):
     """
     This class represents a dac on the detector. One instance handles all

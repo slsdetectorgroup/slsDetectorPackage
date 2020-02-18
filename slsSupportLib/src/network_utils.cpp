@@ -1,24 +1,23 @@
 #include "sls_detector_exceptions.h"
 
 #include <algorithm>
+#include <arpa/inet.h>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
+#include <ifaddrs.h>
 #include <iomanip>
-#include <sstream>
-#include <sys/prctl.h> 
-#include <arpa/inet.h>
+#include <net/if.h>
 #include <netdb.h>
+#include <sstream>
+#include <sys/ioctl.h>
+#include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <sys/ioctl.h>
-#include <ifaddrs.h>
-#include <net/if.h>
 
 #include "network_utils.h"
 
 namespace sls {
-
 
 IpAddr::IpAddr(const std::string &address) {
     inet_pton(AF_INET, address.c_str(), &addr_);
@@ -26,11 +25,9 @@ IpAddr::IpAddr(const std::string &address) {
 
 IpAddr::IpAddr(const char *address) { inet_pton(AF_INET, address, &addr_); }
 
-std::string IpAddr::str() const {
-    return arr().data();
-}
+std::string IpAddr::str() const { return arr().data(); }
 
-std::array<char, INET_ADDRSTRLEN> IpAddr::arr() const{
+std::array<char, INET_ADDRSTRLEN> IpAddr::arr() const {
     std::array<char, INET_ADDRSTRLEN> ipstring{};
     inet_ntop(AF_INET, &addr_, ipstring.data(), INET_ADDRSTRLEN);
     return ipstring;
@@ -96,7 +93,7 @@ IpAddr HostnameToIp(const char *hostname) {
 }
 
 std::string IpToInterfaceName(const std::string &ip) {
-    //TODO! Copied from genericSocket needs to be refactored!
+    // TODO! Copied from genericSocket needs to be refactored!
     struct ifaddrs *addrs, *iap;
     struct sockaddr_in *sa;
 
@@ -122,33 +119,61 @@ std::string IpToInterfaceName(const std::string &ip) {
     return std::string(buf);
 }
 
-MacAddr InterfaceNameToMac(const std::string& inf) {
-        //TODO! Copied from genericSocket needs to be refactored!
-		struct ifreq ifr;
-		char mac[32];
-		const int mac_len = sizeof(mac);
-		memset(mac,0,mac_len);
+IpAddr InterfaceNameToIp(const std::string &ifn) {
+    struct ifaddrs *ifaddr, *ifa;
+    // int family, s;
+    char host[NI_MAXHOST];
 
-		int sock=socket(PF_INET, SOCK_STREAM, 0);
-		strncpy(ifr.ifr_name,inf.c_str(),sizeof(ifr.ifr_name)-1);
-		ifr.ifr_name[sizeof(ifr.ifr_name)-1]='\0';
+    if (getifaddrs(&ifaddr) == -1) {
+        return {};
+    }
 
+    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == NULL)
+            continue;
 
-		if (-1==ioctl(sock, SIOCGIFHWADDR, &ifr)) {
-			perror("ioctl(SIOCGIFHWADDR) ");
-			return MacAddr{};
-		}
-		for (int j=0, k=0; j<6; j++) {
-			k+=snprintf(mac+k, mac_len-k-1, j ? ":%02X" : "%02X",
-					(int)(unsigned int)(unsigned char)ifr.ifr_hwaddr.sa_data[j]);
-		}
-		mac[mac_len-1]='\0';
+        auto s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host,
+                        NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
 
-		if(sock!=1){
-			close(sock);
-		}
-		return MacAddr(mac);
+        if ((strcmp(ifa->ifa_name, ifn.c_str()) == 0) &&
+            (ifa->ifa_addr->sa_family == AF_INET)) {
+            if (s != 0) {
+                return {};
+            }
+            break;
+        }
+    }
 
-	}
+    freeifaddrs(ifaddr);
+    return IpAddr{host};
+}
+
+MacAddr InterfaceNameToMac(const std::string &inf) {
+    // TODO! Copied from genericSocket needs to be refactored!
+    struct ifreq ifr;
+    char mac[32];
+    const int mac_len = sizeof(mac);
+    memset(mac, 0, mac_len);
+
+    int sock = socket(PF_INET, SOCK_STREAM, 0);
+    strncpy(ifr.ifr_name, inf.c_str(), sizeof(ifr.ifr_name) - 1);
+    ifr.ifr_name[sizeof(ifr.ifr_name) - 1] = '\0';
+
+    if (-1 == ioctl(sock, SIOCGIFHWADDR, &ifr)) {
+        perror("ioctl(SIOCGIFHWADDR) ");
+        return MacAddr{};
+    }
+    for (int j = 0, k = 0; j < 6; j++) {
+        k += snprintf(
+            mac + k, mac_len - k - 1, j ? ":%02X" : "%02X",
+            (int)(unsigned int)(unsigned char)ifr.ifr_hwaddr.sa_data[j]);
+    }
+    mac[mac_len - 1] = '\0';
+
+    if (sock != 1) {
+        close(sock);
+    }
+    return MacAddr(mac);
+}
 
 } // namespace sls

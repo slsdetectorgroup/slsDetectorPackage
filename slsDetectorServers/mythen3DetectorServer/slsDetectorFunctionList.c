@@ -249,7 +249,7 @@ u_int32_t getDetectorNumber(){
 #ifdef VIRTUAL
     return 0;
 #endif
-	return bus_r(MCB_SERIAL_NO_REG);
+	return ((bus_r(MCB_SERIAL_NO_REG) & MCB_SERIAL_NO_VRSN_MSK) >> MCB_SERIAL_NO_VRSN_OFST);
 }
 
 
@@ -303,10 +303,14 @@ u_int32_t  getDetectorIP(){
 /* initialization */
 
 void initControlServer(){
+	CreateNotificationForCriticalTasks();
 	if (initError == OK) {
 		setupDetector();
 	}
 	initCheckDone = 1;
+	if (initError == OK) {
+		NotifyServerStartSuccess();
+	}
 }
 
 void initStopServer() {

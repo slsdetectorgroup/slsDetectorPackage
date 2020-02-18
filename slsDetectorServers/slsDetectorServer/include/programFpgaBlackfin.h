@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdint.h>
 
 /**
  * Define GPIO pins if not defined
@@ -49,4 +50,4 @@ void stopWritingFPGAprogram(FILE* filefp);
  * @param filefp pointer to flash
  * @return 0 for success, 1 for fail (cannot write)
  */
-int writeFPGAProgram(char* fpgasrc, size_t fsize, FILE* filefp);
+int writeFPGAProgram(char* fpgasrc, uint64_t fsize, FILE* filefp);

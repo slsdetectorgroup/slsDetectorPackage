@@ -70,7 +70,7 @@ set_target_properties(slsReceiverShared PROPERTIES
 )
 
 add_executable(slsReceiver
-    src/main.cpp)
+    src/ReceiverApp.cpp)
 
 
 set_target_properties(slsReceiver PROPERTIES
@@ -88,7 +88,7 @@ target_link_libraries(slsReceiver PUBLIC
 )
 
 add_executable(slsMultiReceiver
-    src/multiReceiver.cpp)
+    src/MultiReceiverApp.cpp)
 
 
 set_target_properties(slsMultiReceiver PROPERTIES

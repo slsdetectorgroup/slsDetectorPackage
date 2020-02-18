@@ -2,18 +2,18 @@
 
 #include "DataSocket.h"
 namespace sls {
-class ServerInterface2;
+class ServerInterface;
 }
 
 #include "ServerSocket.h"
 #include "sls_detector_defs.h"
 namespace sls {
 
-class ServerInterface2 : public DataSocket {
+class ServerInterface : public DataSocket {
     using defs = slsDetectorDefs;
 
   public:
-    ServerInterface2(int socketId) : DataSocket(socketId) {}
+    ServerInterface(int socketId) : DataSocket(socketId) {}
 
     int sendResult(int ret, void *retval, int retvalSize, char *mess = nullptr);
 

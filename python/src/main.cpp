@@ -19,7 +19,7 @@ void init_enums(py::module &);
 void init_experimental(py::module &);
 void init_det(py::module &);
 void init_network(py::module &);
-PYBIND11_MODULE(_sls_detector, m) {
+PYBIND11_MODULE(_slsdet, m) {
     m.doc() = R"pbdoc(
         C/C++ API
         -----------------------

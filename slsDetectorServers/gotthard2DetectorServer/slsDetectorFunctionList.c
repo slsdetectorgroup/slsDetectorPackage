@@ -47,9 +47,6 @@ int injectedChannelsIncrement = 0;
 int vetoReference[NCHIP][NCHAN];
 uint8_t adcConfiguration[NCHIP][NADC];
 int burstMode = BURST_INTERNAL;
-int64_t exptime_ns = 0;
-int64_t period_ns = 0;
-int64_t nframes = 0;
 int detPos[2] = {};
 
 int isInitCheckDone() {
@@ -252,7 +249,7 @@ u_int16_t getHardwareVersionNumber() {
 #ifdef VIRTUAL
     return 0;
 #endif
-	return ((bus_r(MCB_SERIAL_NO_REG)));// & HARDWARE_VERSION_NUM_MSK) >> HARDWARE_VERSION_NUM_OFST);
+	return ((bus_r(MCB_SERIAL_NO_REG) & MCB_SERIAL_NO_VRSN_MSK) >> MCB_SERIAL_NO_VRSN_OFST);
 }
 
 u_int32_t getDetectorNumber(){
@@ -314,10 +311,14 @@ u_int32_t  getDetectorIP(){
 /* initialization */
 
 void initControlServer(){
+	CreateNotificationForCriticalTasks();
 	if (initError == OK) {
 		setupDetector();
 	}
 	initCheckDone = 1;
+	if (initError == OK) {
+		NotifyServerStartSuccess();
+	}
 }
 
 void initStopServer() {
@@ -349,9 +350,6 @@ void setupDetector() {
 	injectedChannelsOffset = 0;
 	injectedChannelsIncrement = 0;
 	burstMode = BURST_INTERNAL;
-	exptime_ns = 0;
-	period_ns = 0;
-	nframes = 0;
 	{
 		int i, j;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
@@ -447,9 +445,14 @@ int readConfigFile() {
 		return initError;
 	}
 
+	// require a sleep before and after the rst dac signal
+	usleep (INITIAL_STARTUP_WAIT);	
+
 	// inform FPGA that onchip dacs will be configured soon
 	FILE_LOG(logINFO, ("Setting configuration starting bit\n"));
 	bus_w(ASIC_CONFIG_REG, bus_r(ASIC_CONFIG_REG) | ASIC_CONFIG_RST_DAC_MSK);
+
+	usleep (INITIAL_STARTUP_WAIT);
 
     FILE* fd = fopen(CONFIG_FILE, "r");
     if(fd == NULL) {
@@ -723,12 +726,23 @@ int setDynamicRange(int dr){
 void setNumFrames(int64_t val) {
     if (val > 0) {
 		FILE_LOG(logINFO, ("Setting number of frames %lld [local]\n", (long long int)val));
-        nframes = val;
+		// continuous mode
+		if (burstMode == BURST_OFF) {
+			setNumFramesCont(val);
+			setNumFramesBurst(1);
+		} else {
+			setNumFramesBurst(val);
+    		setNumFramesCont(1);
+		}
     }
 }
 
 int64_t getNumFrames() {
-    return nframes;
+	if (burstMode == BURST_OFF) {
+		return getNumFramesCont();
+	} else {
+		return getNumFramesBurst();
+	}	
 }
 
 void setNumTriggers(int64_t val) {
@@ -748,12 +762,16 @@ int setExpTime(int64_t val) {
         return FAIL;
     }
 	FILE_LOG(logINFO, ("Setting exptime %lld ns [local]\n", (long long int)val));
-	exptime_ns = val;
-    return OK;
+	// continuous mode
+	if (burstMode == BURST_OFF) {
+		return setExptimeCont(val);
+	} else {
+		return setExptimeBurst(val);
+	}
 }
 
 int64_t getExpTime() {
-    return exptime_ns;
+    return getExptimeBoth();
 }
 
 int setPeriod(int64_t val) {
@@ -762,12 +780,22 @@ int setPeriod(int64_t val) {
         return FAIL;
     }
 	FILE_LOG(logINFO, ("Setting period %lld ns [local]\n", (long long int)val));
-	period_ns = val;
-    return OK;
+	// continuous mode
+	if (burstMode == BURST_OFF) {
+		setPeriodBurst(0);
+		return setPeriodCont(val);
+	} else {
+		setPeriodCont(0);
+		return setPeriodBurst(val);
+	}
 }
 
 int64_t getPeriod() {
-    return period_ns;
+	if (burstMode == BURST_OFF) {
+		return getPeriodCont();
+	} else {
+		return getPeriodBurst();
+	}
 }
 
 void setNumFramesBurst(int64_t val) {
@@ -832,6 +860,7 @@ int	setPeriodBurst(int64_t val) {
 }
 
 int64_t	getPeriodBurst() {
+	FILE_LOG(logDEBUG, ("Getting period [Burst mode]\n"));
 	return get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG)/ (1E-9 * clkFrequency[SYSTEM_C0]);
 }
 
@@ -850,6 +879,7 @@ int	setPeriodCont(int64_t val) {
 }
 
 int64_t	getPeriodCont() {
+	FILE_LOG(logDEBUG, ("Getting period [Continuous mode]\n"));
 	return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * FIXED_PLL_FREQUENCY);
 }
 
@@ -1820,83 +1850,23 @@ enum burstMode getBurstMode() {
 	int runmode = bus_r (addr) & ASIC_CONFIG_RUN_MODE_MSK;
 	switch (runmode) {
 		case ASIC_CONFIG_RUN_MODE_CONT_VAL:
-			return BURST_OFF;
+			burstMode = BURST_OFF;
+			break;
 		case ASIC_CONFIG_RUN_MODE_INT_BURST_VAL:
-			return BURST_INTERNAL;
+			burstMode = BURST_INTERNAL;
+			break;
 		case ASIC_CONFIG_RUN_MODE_EXT_BURST_VAL:
-			return BURST_EXTERNAL;
+			burstMode = BURST_EXTERNAL;
+			break;
 		default:
 			FILE_LOG(logERROR, ("Unknown run mode read from FPGA %d\n", runmode));
 			return -1;
 	}
+	return burstMode;
 }
 
 
 /* aquisition */
-
-int updateAcquisitionRegisters(char* mess) {
-	// burst mode
-	if (burstMode != BURST_OFF) {
-		// validate #frames in burst mode
-		if (nframes > MAX_FRAMES_IN_BURST_MODE) {
-			sprintf(mess, "Could not start acquisition because number of frames %lld must be <= %d in burst mode.\n", (long long unsigned int)nframes, MAX_FRAMES_IN_BURST_MODE);
-			FILE_LOG(logERROR,(mess));		
-			return FAIL;
-		}
-		setNumFramesBurst(nframes);
-		// exptime
-		if (setExptimeBurst(exptime_ns) == FAIL) {
-			sprintf(mess, "Could not start acquisition because exptime could not be set in burst mode. Set %lld ns, got %lld ns.\n", (long long unsigned int)exptime_ns, getExptimeBoth());
-			FILE_LOG(logERROR,(mess));		
-			return FAIL;			
-		}
-		// period
-		if (setPeriodBurst(period_ns) == FAIL) {
-			sprintf(mess, "Could not start acquisition because period could not be set in burst mode. Set %lld ns, got %lld ns.\n", (long long unsigned int)period_ns, getPeriodBurst());
-			FILE_LOG(logERROR,(mess));		
-			return FAIL;			
-		}	
-
-		// set continuous values to default (exptime same register)
-		FILE_LOG(logINFO, ("Setting continuous mode registers to defaults\n"));
-		// frames
-		setNumFramesCont(1);
-		// period
-		if (setPeriodCont(0) == FAIL) {
-			sprintf(mess, "Could not start acquisition because period could not be set in continuous mode. Set 0 ns, got %lld ns.\n", getPeriodCont());
-			FILE_LOG(logERROR,(mess));		
-			return FAIL;			
-		}	
-	} 
-	// continuous
-	else {
-		// frames
-		setNumFramesCont(nframes);
-		// exptime
-		if (setExptimeCont(exptime_ns) == FAIL) {
-			sprintf(mess, "Could not start acquisition because exptime could not be set in continuous mode. Set %lld ns, got %lld ns.\n", (long long unsigned int)exptime_ns, getExptimeBoth());
-			FILE_LOG(logERROR,(mess));		
-			return FAIL;			
-		}
-		// period
-		if (setPeriodCont(period_ns) == FAIL) {
-			sprintf(mess, "Could not start acquisition because period could not be set in continuous mode. Set %lld ns, got %lld ns.\n", (long long unsigned int)period_ns, getPeriodCont());
-			FILE_LOG(logERROR,(mess));		
-			return FAIL;			
-		}	
-
-		// set burst values to default (exptime same register)
-		FILE_LOG(logINFO, ("Setting burst mode registers to defaults\n"));
-		setNumFramesBurst(1);
-		// period
-		if (setPeriodBurst(0) == FAIL) {
-			sprintf(mess, "Could not start acquisition because period could not be set in burst mode. Set 0 ns, got %lld ns.\n", getPeriodBurst());
-			FILE_LOG(logERROR,(mess));		
-			return FAIL;			
-		}
-	}
-	return OK;
-}
 
 int startStateMachine(){
 #ifdef VIRTUAL

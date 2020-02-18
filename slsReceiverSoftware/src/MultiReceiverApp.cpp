@@ -18,6 +18,7 @@ It is linked in manual/manual-api from slsReceiverSoftware/include ]
 
 #include "sls_detector_defs.h"
 #include "Receiver.h"
+#include "container_utils.h"
 
 #include <csignal>	//SIGINT
 #include <cstdlib>	//system
@@ -29,6 +30,7 @@ It is linked in manual/manual-api from slsReceiverSoftware/include ]
 #include <sys/wait.h>	//wait
 #include <syscall.h>	//tid
 #include <unistd.h> 	//usleep
+#include <semaphore.h>
 using namespace std;
 
 
@@ -36,15 +38,14 @@ using namespace std;
 #define PRINT_IN_COLOR(c,f, ...) 	printf ("\033[%dm" f RESET, 30 + c+1, ##__VA_ARGS__)
 
 
-/** Variable is true to continue running, set to false upon interrupt */
-bool keeprunning;
+sem_t semaphore;
 
 /**
  * Control+C Interrupt Handler
- * Sets the variable keeprunning to false, to let all the processes know to exit properly
+ * to let all the processes know to exit properly
  */
 void sigInterruptHandler(int p){
-	keeprunning = false;
+	sem_post(&semaphore);
 }
 
 /**
@@ -165,7 +166,7 @@ int main(int argc, char *argv[]) {
 	int numReceivers = 1;
 	int startTCPPort = 1954;
 	int withCallback = 0;
-	keeprunning = true;
+	sem_init(&semaphore,1,0);
 
 	/**	- get number of receivers and start tcp port from command line arguments */
 	if ( (argc != 4) || (!sscanf(argv[1],"%d", &startTCPPort)) || (!sscanf(argv[2],"%d", &numReceivers)) || (!sscanf(argv[3],"%d", &withCallback)) )
@@ -238,9 +239,9 @@ int main(int argc, char *argv[]) {
 				else if (withCallback == 2) receiver->registerCallBackRawDataModifyReady(GetData,nullptr);
 			}
 
-			/**	- as long as keeprunning is true (changes with Ctrl+C) */
-			while(keeprunning)
-				pause();
+			/**	- as long as no Ctrl+C */
+			sem_wait(&semaphore);
+			sem_destroy(&semaphore);
 			cprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 			exit(EXIT_SUCCESS);
 			break;

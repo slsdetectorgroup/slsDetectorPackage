@@ -83,6 +83,11 @@ void qTabSettings::SetupDetectorSettings() {
             item[(int)FORCESWITCHG1]->setEnabled(true);
             item[(int)FORCESWITCHG2]->setEnabled(true);
             break;
+         case slsDetectorDefs::GOTTHARD2:
+            item[(int)DYNAMICGAIN]->setEnabled(true);
+            item[(int)FIXGAIN1]->setEnabled(true);
+            item[(int)FIXGAIN2]->setEnabled(true);
+            break;           
         default:
             FILE_LOG(logDEBUG) << "Unknown detector type. Exiting GUI.";
             qDefs::Message(qDefs::CRITICAL,

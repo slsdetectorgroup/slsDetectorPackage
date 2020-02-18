@@ -4,39 +4,25 @@ language: cpp
 
 os: linux
 
-env: 
-  matrix: 
-     - CONDA_PY=3.6
-     - CONDA_PY=3.7
-     - CONDA_PY=3.8
-
-
-dist: trusty
+dist: bionic
 
 install:
   - sudo apt-get update
   - ldd --version
   - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
   - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
   - rm -f miniconda.sh
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda config --add channels conda-forge
   - conda config --add channels slsdetectorgroup
-  - conda update conda
-  - conda update --all
-  - conda install conda-build=3.17 
-  - conda install anaconda-client
-  - conda install conda-verify
-
-  # Useful for debugging any issues with conda
+  - conda update -q conda
   - conda info -a
 
-
-  # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$CONDA_PY
-  - source activate test-environment
+  # Useful for debugging any issues with conda
+  - conda create -q -n testenv conda-build anaconda-client conda-verify
+  - conda activate testenv
   - conda-build .
 
 script:
@@ -45,7 +31,7 @@ script:
 
 deploy:
   provider: script
-  script: find $HOME/miniconda/conda-bld/${TRAVIS_OS_NAME}-64 -name "*.tar.bz2" -exec anaconda -t $CONDA_TOKEN upload --force {} \;
+  script: find $HOME/miniconda/envs/testenv/conda-bld/${TRAVIS_OS_NAME}-64 -name "*.tar.bz2" -exec anaconda -t $CONDA_TOKEN upload --force {} \;
   on:
     branch: developer
 

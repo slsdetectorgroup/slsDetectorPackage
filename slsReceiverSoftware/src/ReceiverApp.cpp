@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "Receiver.h"
 #include "sls_detector_defs.h"
+#include "container_utils.h"
 
 #include <csignal>	//SIGINT
 #include <cstdlib>		//system
@@ -14,11 +15,12 @@
 #include <syscall.h>
 #include <unistd.h> 	//usleep
 #include <memory>
+#include <semaphore.h>
 
-bool keeprunning;
+sem_t semaphore;
 
 void sigInterruptHandler(int p){
-	keeprunning = false;
+	sem_post(&semaphore);
 }
 
 /** Define Colors to print data call back in different colors for different recievers */
@@ -65,7 +67,8 @@ void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
 
 int main(int argc, char *argv[]) {
 
-	keeprunning = true;
+	sem_init(&semaphore,1,0);
+
 	FILE_LOG(logINFOBLUE) << "Created [ Tid: " << syscall(SYS_gettid) << " ]";
 
 	// Catch signal SIGINT to close files and call destructors properly
@@ -136,8 +139,8 @@ int main(int argc, char *argv[]) {
 	//receiver->registerCallBackRawDataReady(rawDataReadyCallBack,NULL);
 
 	FILE_LOG(logINFO) << "[ Press \'Ctrl+c\' to exit ]";
-	while(keeprunning)
-		pause();
+	sem_wait(&semaphore);
+	sem_destroy(&semaphore);
 	FILE_LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
 	FILE_LOG(logINFO) << "Exiting Receiver";
 	return 0;

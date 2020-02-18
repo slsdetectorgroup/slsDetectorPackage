@@ -279,13 +279,21 @@ void slsDetector::freeSharedMemory() {
     }
 }
 
-void slsDetector::setHostname(const std::string &hostname) {
+void slsDetector::setHostname(const std::string &hostname, const bool initialChecks) {
     sls::strcpy_safe(shm()->hostname, hostname.c_str());
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.close();
 
     FILE_LOG(logINFO) << "Checking Detector Version Compatibility";
-    checkDetectorVersionCompatibility();
+    if (!initialChecks) {
+        try {
+            checkDetectorVersionCompatibility();
+        } catch (const DetectorError& e) {
+            FILE_LOG(logWARNING) << "Bypassing Initial Checks at your own risk!";  
+        }
+    } else {
+        checkDetectorVersionCompatibility();
+    }
 
     FILE_LOG(logINFO) << "Detector connecting - updating!";
     updateCachedDetectorVariables();
@@ -1156,7 +1164,7 @@ void slsDetector::stopAcquisition() {
 
 void slsDetector::sendSoftwareTrigger() {
     FILE_LOG(logDEBUG1) << "Sending software trigger";
-    sendToDetector(F_SOFTWARE_TRIGGER);
+    sendToDetectorStop(F_SOFTWARE_TRIGGER);
     FILE_LOG(logDEBUG1) << "Sending software trigger successful";
 }
 
@@ -1518,8 +1526,8 @@ int slsDetector::setDynamicRange(int n) {
         // update speed for usability
         if (dr == 32) {
             FILE_LOG(logINFO) << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32";     setClockDivider(RUN_CLOCK, 2);
-        } else if (dr == 16) {
-            FILE_LOG(logINFO) << "Setting Clock to Half Speed to cope with Dynamic Range of 16";     setClockDivider(RUN_CLOCK, 1);
+        } else {
+            FILE_LOG(logINFO) << "Setting Clock to Full Speed to cope with Dynamic Range of " << dr;     setClockDivider(RUN_CLOCK, 0);
         }
     }
     
@@ -2888,23 +2896,28 @@ int slsDetector::setStoragecellStart(int pos) {
 }
 
 void slsDetector::programFPGA(std::vector<char> buffer) {
-    // validate type
     switch (shm()->myDetectorType) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
-    case MOENCH:
+        programFPGAviaBlackfin(buffer);
+        break;
+    case MYTHEN3:
+    case GOTTHARD2:
+        programFPGAviaNios(buffer);
         break;
     default:
         throw RuntimeError("Program FPGA is not implemented for this detector");
     }
+}
 
-    size_t filesize = buffer.size();
+void slsDetector::programFPGAviaBlackfin(std::vector<char> buffer) {
+    uint64_t filesize = buffer.size();
 
     // send program from memory to detector
     int fnum = F_PROGRAM_FPGA;
     int ret = FAIL;
     char mess[MAX_STR_LENGTH] = {0};
-    FILE_LOG(logINFO) << "Sending programming binary to detector " << detId
+    FILE_LOG(logINFO) << "Sending programming binary (from pof) to detector " << detId
                       << " (" << shm()->hostname << ")";
 
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
@@ -2921,35 +2934,34 @@ void slsDetector::programFPGA(std::vector<char> buffer) {
     }
 
     // erasing flash
-    if (ret != FAIL) {
-        FILE_LOG(logINFO) << "Erasing Flash for detector " << detId << " ("
-                          << shm()->hostname << ")";
-        printf("%d%%\r", 0);
-        std::cout << std::flush;
-        // erasing takes 65 seconds, printing here (otherwise need threads
-        // in server-unnecessary)
-        const int ERASE_TIME = 65;
-        int count = ERASE_TIME + 1;
-        while (count > 0) {
-            usleep(1 * 1000 * 1000);
-            --count;
-            printf("%d%%\r",
-                   static_cast<int>(
-                       (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) *
-                       100));
-            std::cout << std::flush;
-        }
-        printf("\n");
-        FILE_LOG(logINFO) << "Writing to Flash to detector " << detId << " ("
-                          << shm()->hostname << ")";
-        printf("%d%%\r", 0);
+    FILE_LOG(logINFO) << "Erasing Flash for detector " << detId << " ("
+                        << shm()->hostname << ")";
+    printf("%d%%\r", 0);
+    std::cout << std::flush;
+    // erasing takes 65 seconds, printing here (otherwise need threads
+    // in server-unnecessary)
+    const int ERASE_TIME = 65;
+    int count = ERASE_TIME + 1;
+    while (count > 0) {
+        usleep(1 * 1000 * 1000);
+        --count;
+        printf("%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(ERASE_TIME - count) / ERASE_TIME) *
+                    100));
         std::cout << std::flush;
     }
+    printf("\n");
+    FILE_LOG(logINFO) << "Writing to Flash to detector " << detId << " ("
+                        << shm()->hostname << ")";
+    printf("%d%%\r", 0);
+    std::cout << std::flush;
 
-    // sending program in parts of 2mb each
-    size_t unitprogramsize = 0;
+
+    // sending program in parts of 2mb each 
+    uint64_t unitprogramsize = 0;
     int currentPointer = 0;
-    size_t totalsize = filesize;
+    uint64_t totalsize = filesize;
     while (filesize > 0) {
         unitprogramsize = MAX_FPGAPROGRAMSIZE; // 2mb
         if (unitprogramsize > filesize) {      // less than 2mb
@@ -2967,19 +2979,53 @@ void slsDetector::programFPGA(std::vector<char> buffer) {
             os << "Detector " << detId << " (" << shm()->hostname << ")"
                << " returned error: " << mess;
             throw RuntimeError(os.str());
-        } else {
-            filesize -= unitprogramsize;
-            currentPointer += unitprogramsize;
-
-            // print progress
-            printf("%d%%\r",
-                   static_cast<int>(
-                       (static_cast<double>(totalsize - filesize) / totalsize) *
-                       100));
-            std::cout << std::flush;
         }
+        filesize -= unitprogramsize;
+        currentPointer += unitprogramsize;
+
+        // print progress
+        printf("%d%%\r",
+                static_cast<int>(
+                    (static_cast<double>(totalsize - filesize) / totalsize) *
+                    100));
+        std::cout << std::flush;
     }
     printf("\n");
+    FILE_LOG(logINFO) << "FPGA programmed successfully";
+    rebootController();
+}   
+
+void slsDetector::programFPGAviaNios(std::vector<char> buffer) {
+    uint64_t filesize = buffer.size();
+    int fnum = F_PROGRAM_FPGA;
+    int ret = FAIL;
+    char mess[MAX_STR_LENGTH] = {0};
+    FILE_LOG(logINFO) << "Sending programming binary (from rbf) to detector " << detId
+                      << " (" << shm()->hostname << ")";
+
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    // filesize
+    client.Send(&filesize, sizeof(filesize));
+    client.Receive(&ret, sizeof(ret));   
+    if (ret == FAIL) {
+        client.Receive(mess, sizeof(mess));
+        std::ostringstream os;
+        os << "Detector " << detId << " (" << shm()->hostname << ")"
+            << " returned error: " << mess;
+        throw RuntimeError(os.str());
+    }    
+    // program
+    client.Send(&buffer[0], filesize);
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        client.Receive(mess, sizeof(mess));
+        std::ostringstream os;
+        os << "Detector " << detId << " (" << shm()->hostname << ")"
+            << " returned error: " << mess;
+        throw RuntimeError(os.str());
+    }
+    FILE_LOG(logINFO) << "FPGA programmed successfully";
     rebootController();
 }
 
@@ -2999,15 +3045,9 @@ void slsDetector::copyDetectorServer(const std::string &fname,
 }
 
 void slsDetector::rebootController() {
-    if (shm()->myDetectorType == EIGER) {
-        throw RuntimeError(
-            "Reboot controller not implemented for this detector");
-    }
-    int fnum = F_REBOOT_CONTROLLER;
-    FILE_LOG(logINFO) << "Sending reboot controller to detector " << detId
-                      << " (" << shm()->hostname << ")";
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
+    FILE_LOG(logDEBUG1) << "Rebooting Controller";
+    sendToDetector(F_REBOOT_CONTROLLER, nullptr, nullptr);
+    FILE_LOG(logINFO) << "Controller rebooted successfully!";
 }
 
 int slsDetector::powerChip(int ival) {

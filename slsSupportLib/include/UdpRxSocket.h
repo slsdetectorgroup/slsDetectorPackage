@@ -9,12 +9,14 @@ this might be deprecated in the future
 
 */
 
+#include "container_utils.h"
 #include "genericSocket.h"
 #include "network_utils.h"
 #include "sls_detector_exceptions.h"
 #include <cstdint>
 #include <errno.h>
 #include <iostream>
+#include <memory>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -26,12 +28,12 @@ namespace sls {
 
 class UdpRxSocket {
     const ssize_t packet_size;
-    char *buff;
-    int fd = -1;
+    std::unique_ptr<char[]> buff;
+    int sockfd = -1;
 
   public:
     UdpRxSocket(int port, ssize_t packet_size, const char *hostname = nullptr,
-                ssize_t buffer_size = 0)
+                ssize_t kernel_rbuffer_size = 0)
         : packet_size(packet_size) {
         /* hostname = nullptr -> wildcard */
 
@@ -48,11 +50,11 @@ class UdpRxSocket {
             throw RuntimeError("Failed at getaddrinfo with " +
                                std::string(hostname));
         }
-        fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-        if (fd == -1) {
+        sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+        if (sockfd == -1) {
             throw RuntimeError("Failed to create UDP RX socket");
         }
-        if (bind(fd, res->ai_addr, res->ai_addrlen) == -1) {
+        if (bind(sockfd, res->ai_addr, res->ai_addrlen) == -1) {
             throw RuntimeError("Failed to bind UDP RX socket");
         }
         freeaddrinfo(res);
@@ -60,19 +62,19 @@ class UdpRxSocket {
         // If we get a specified buffer size that is larger than the set one
         // we set it. Otherwise we leave it there since it could have been
         // set by the rx_udpsocksize command
-        if (buffer_size) {
+        if (kernel_rbuffer_size) {
             auto current = getBufferSize() / 2;
-            if (current < buffer_size) {
-                setBufferSize(buffer_size);
-                if (getBufferSize() / 2 < buffer_size) {
+            if (current < kernel_rbuffer_size) {
+                setBufferSize(kernel_rbuffer_size);
+                if (getBufferSize() / 2 < kernel_rbuffer_size) {
                     FILE_LOG(logWARNING)
                         << "Could not set buffer size. Got: "
-                        << getBufferSize() / 2 << " instead of " << buffer_size;
+                        << getBufferSize() / 2 << " instead of "
+                        << kernel_rbuffer_size;
                 }
             }
         }
-        // Allocate at the end to avoid memory leak if we throw
-        buff = new char[packet_size];
+        buff = sls::make_unique<char[]>(packet_size);
     }
 
     // Delegating constructor to allow drop in replacement for old socket class
@@ -85,34 +87,38 @@ class UdpRxSocket {
                       buf_size) {}
 
     ~UdpRxSocket() {
-        delete[] buff;
-        Shutdown();
+        if (sockfd >= 0)
+            close(sockfd);
     }
 
-    const char *LastPacket() const noexcept { return buff; }
+    UdpRxSocket(const UdpRxSocket &) = delete;
+    UdpRxSocket(UdpRxSocket &&) = delete;
+
+    const char *LastPacket() const noexcept { return buff.get(); }
     constexpr ssize_t getPacketSize() const noexcept { return packet_size; }
 
     bool ReceivePacket() noexcept {
-        auto bytes_received =
-            recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
-        return bytes_received == packet_size;
+        return ReceivePacket(buff.get());
+        // auto bytes_received =
+        //     recvfrom(sockfd, buff.get(), packet_size, 0, nullptr, nullptr);
+        // return bytes_received == packet_size;
     }
 
     bool ReceivePacket(char *dst) noexcept {
         auto bytes_received =
-            recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
+            recvfrom(sockfd, dst, packet_size, 0, nullptr, nullptr);
         return bytes_received == packet_size;
     }
 
     // Only for backwards compatibility this function will be removed during
     // refactoring of the receiver
     ssize_t ReceiveDataOnly(char *dst) {
-        auto r = recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
+        auto r = recvfrom(sockfd, dst, packet_size, 0, nullptr, nullptr);
         constexpr ssize_t eiger_header_packet =
             40; // only detector that has this
         if (r == eiger_header_packet) {
             FILE_LOG(logWARNING) << "Got header pkg";
-            r = recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
+            r = recvfrom(sockfd, dst, packet_size, 0, nullptr, nullptr);
         }
         return r;
     }
@@ -120,7 +126,7 @@ class UdpRxSocket {
     ssize_t getBufferSize() const {
         uint64_t ret_size = 0;
         socklen_t optlen = sizeof(uint64_t);
-        if (getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &ret_size, &optlen) == -1)
+        if (getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &ret_size, &optlen) == -1)
             return -1;
         else
             return ret_size;
@@ -130,20 +136,20 @@ class UdpRxSocket {
     ssize_t getActualUDPSocketBufferSize() const { return getBufferSize(); }
 
     // Only for backwards compatibility will be removed
-    void ShutDownSocket() { Shutdown(); }
+    void ShutDownSocket() { Close(); }
 
     void setBufferSize(ssize_t size) {
         socklen_t optlen = sizeof(size);
-        if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &size, optlen)) {
+        if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &size, optlen)) {
             throw RuntimeError("Could not set socket buffer size");
         }
     }
 
-    void Shutdown() {
-        shutdown(fd, SHUT_RDWR);
-        if (fd >= 0) {
-            close(fd);
-            fd = -1;
+    // Do we need this function or can we rely on scope?
+    void Close() {
+        if (sockfd >= 0) {
+            close(sockfd);
+            sockfd = -1;
         }
     }
 };

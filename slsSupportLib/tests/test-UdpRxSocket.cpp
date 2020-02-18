@@ -5,6 +5,8 @@
 #include <thread>
 #include <vector>
 
+constexpr int default_port = 50001;
+
 int open_socket(int port) {
     const char *host = nullptr; // localhost
 
@@ -34,9 +36,8 @@ int open_socket(int port) {
     return fd;
 }
 
-TEST_CASE("Receive a packet on localhost") {
+TEST_CASE("Receive data on localhost") {
     constexpr int port = 50001;
-
     std::vector<int> data_to_send{4, 5, 3, 2, 5, 7, 2, 3};
     ssize_t packet_size =
         sizeof(decltype(data_to_send)::value_type) * data_to_send.size();
@@ -44,9 +45,6 @@ TEST_CASE("Receive a packet on localhost") {
 
 
     int fd = open_socket(port);
-    // int n = sendto(fd, data_to_send.data(), packet_size, 0, res->ai_addr,
-    //                res->ai_addrlen);
-
     auto n = write(fd, data_to_send.data(), packet_size);
     CHECK(n == packet_size);
     CHECK(udpsock.ReceivePacket());
@@ -60,7 +58,7 @@ TEST_CASE("Receive a packet on localhost") {
     }
 }
 
-TEST_CASE("Shutdown socket without hanging") {
+TEST_CASE("Shutdown socket without hanging when waiting for data") {
     constexpr int port = 50001;
     constexpr ssize_t packet_size = 8000;
     sls::UdpRxSocket s{port, packet_size};
@@ -72,7 +70,7 @@ TEST_CASE("Shutdown socket without hanging") {
                        &sls::UdpRxSocket::ReceivePacket),
                    &s);
 
-    s.Shutdown();
+    s.Close();
     auto r = ret.get();
 
     CHECK(r == false); // since we didn't get the packet
@@ -86,4 +84,26 @@ TEST_CASE("Too small packet"){
     write(fd, &val, sizeof(val));
     CHECK(s.ReceivePacket() == false);
     close(fd);
+}
+
+
+TEST_CASE("Receive an int to internal buffer"){
+    int to_send = 5;
+    int received = -1;
+    auto fd = open_socket(default_port);
+    sls::UdpRxSocket s(default_port, sizeof(int));
+    write(fd, &to_send, sizeof(to_send));
+    CHECK(s.ReceivePacket());
+    memcpy(&received, s.LastPacket(), sizeof(int));
+    CHECK(received == to_send);
+}
+
+TEST_CASE("Receive an int to an external buffer"){
+    int to_send = 5;
+    int received = -1;
+    auto fd = open_socket(default_port);
+    sls::UdpRxSocket s(default_port, sizeof(int));
+    write(fd, &to_send, sizeof(to_send));
+    CHECK(s.ReceivePacket(reinterpret_cast<char*>(&received)));
+    CHECK(received == to_send);
 }

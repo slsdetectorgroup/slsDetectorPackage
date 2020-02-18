@@ -990,13 +990,14 @@ Packets Caught Mask        : 64 bytes
 Note that if one wants to  reconstruct the real time the detector was acquiring in 32 bit (autosumming mode), one would have to multiply the SubExptime (ns) for the SubFrame Number. 
 
 \subsection{Offline image reconstruction}
-The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore. The code is still available doing \\
-{\tt{git clone git@git.psi.ch:sls\_detectors\_software/sls\_image\_reconstruction.git slsImageReconstruction}}.
-Checkout the {\tt{developer}} branch if in a 3.1.X release, the {\tt{v4.0.0}} branch if in 4.0.X release, or the {\tt{v4.1}} branch if in 4.1.X release of the {\tt{slsDetector}} code.
+The offline image reconstruction{\tt{slsImageReconstruction}} is not part of the package anymore. However, it can be retrieved from \\
+{\tt{git clone https://github.com/slsdetectorgroup/slsImageReconstruction.git slsImageReconstruction}}.\\
+Checkout the {\tt{v3.1}} branch if in a 3.1.X release, the {\tt{v4.0.0}} branch if in 4.0.X release, or the {\tt{v4.1}} branch if in 4.1.X release of the {\tt{slsDetector}} code. There is a {\tt{developer}} branch that has newer updates but needs to be tested.
 
-Three possible conversions are possible: into \textbf{cbf}, \textbf{hdf5} and \textbf{root} format. The detector writes 4 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
+Three possible conversions are possible: into \textbf{cbf}, \textbf{hdf5}. \textbf{tiff} and  \textbf{root} format. The detector writes 2 raw files per receiver. An offline image reconstruction executable has been written to collate the possible files together and produce output files. By default an interpolation between the values of the large pixels is performed. Gap pixels between modules are also inserted.
 
-Note that the number of images per file in the 3.1.X release is hardcoded and needs to match whatever you are using in {\tt{slsDetectorsPackage/slsReceiverSoftware/include/sls\_receiver\_defs.h}}:
+Note that the number of images per file in the 3.1.X release is hardcoded and needs to match whatever you are using in \\
+{\tt{slsDetectorsPackage/slsReceiverSoftware/include/sls\_receiver\_defs.h}}:
 \begin{verbatim}
 #define EIGER_MAX_FRAMES_PER_FILE	2000
 \end{verbatim}
@@ -1045,11 +1046,12 @@ cbfMaker9M [file_name_with_dir]
 contain the hardcoded geometry for the 1.5M (3 modules horizontal on the long side), the 1.5M OMNY geometry (3 modules next to each other on the long side) and for the 9M at cSAXS: 6(short side)$\times$3 (long side) modules.\\ 
 Missing packets in a frame and border pixels ($\times 2$ and $\times 4$ are given with value $-1$ at the present time.
 
+From the new {{v4.1.1}} all the define that you see below need only to be modified in the Makefile.
+
 Make sure the following options are uncommented in the {\tt{slsImageReconstruction/src/main\_csaxs.cpp}} file. 
 \begin{verbatim}
 #define MYCBF
-##following line only if you need to process with 
-##BUBBLE (Material Science / uXAS beamlines).
+##following line only if you need to process with BUBBLE
 #define MSHeader 
 \end{verbatim}
 Compile it with: 
@@ -1097,6 +1099,10 @@ To use it any geometry:\\
 {\tt{image [filename] [pixels x, def=1024] [pixels y, def=512] [singlemodulelongside\_x, def=1] [fillgaps, def=Interpolate Big Pixels] [hdf5datasetname, def="Eiger"] [start det,def=0]}}\\
 eg.
 {\tt image /scratch/run\_63\_d0\_f000000000000\_3.raw  3072 512 1 2 ``Eiger'' 0}.\\
+
+With new new software, the new options to run the cbfMaker/hdf5Maker executablesare: 
+
+./hdf5Maker -f [filename] -d [outdirname] -x [npix\_x] -y [npix\_y] -v  (v flags that longedge is vertical, no argument) -n [name\_of\_hdf5\_dataset] -m (mask\_hot\_pixels, need to be in file maskpix.txt in the samedir as executable, no argument) -g [0,no filling/1,division/2,interpolation/3,interpolate,alternative]  
 
 \subsection{Read temperatures/HV from boards}
 

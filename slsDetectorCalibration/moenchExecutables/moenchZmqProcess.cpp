@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     nSubPixelsX=atoi(argv[6]);
     nSubPixelsY=nSubPixelsX;
 #ifdef RECT
-    nSubPixelsY=2;
+    nSubPixelsX=2;
 #endif
   }
   cout << "Number of subpixels is: " << nSubPixelsX << " " <<  nSubPixelsY << endl;

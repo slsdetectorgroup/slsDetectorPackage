@@ -97,12 +97,7 @@ class UdpRxSocket {
     const char *LastPacket() const noexcept { return buff.get(); }
     constexpr ssize_t getPacketSize() const noexcept { return packet_size; }
 
-    bool ReceivePacket() noexcept {
-        return ReceivePacket(buff.get());
-        // auto bytes_received =
-        //     recvfrom(sockfd, buff.get(), packet_size, 0, nullptr, nullptr);
-        // return bytes_received == packet_size;
-    }
+    bool ReceivePacket() noexcept { return ReceivePacket(buff.get()); }
 
     bool ReceivePacket(char *dst) noexcept {
         auto bytes_received =

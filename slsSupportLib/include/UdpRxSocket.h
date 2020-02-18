@@ -95,7 +95,7 @@ class UdpRxSocket {
     UdpRxSocket(UdpRxSocket &&) = delete;
 
     const char *LastPacket() const noexcept { return buff.get(); }
-    constexpr ssize_t getPacketSize() const noexcept { return packet_size; }
+    ssize_t getPacketSize() const noexcept { return packet_size; }
 
     bool ReceivePacket() noexcept { return ReceivePacket(buff.get()); }
 

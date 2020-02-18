@@ -288,7 +288,7 @@ int main(int argc, char *argv[]) {
 	char fname[10000];
 	//	int length;
 	int *detimage=NULL;
-	int nnx, nny,nns;
+	int nnx, nny,nnsx, nnsy;
 	//uint32_t imageSize = 0, nPixelsX = 0, nPixelsY = 0, 
 	//uint32_t  dynamicRange = 0;
 	// infinite loop
@@ -326,7 +326,7 @@ int main(int argc, char *argv[]) {
 	frameMode fMode=eFrame;
 	double *ped;
 
-	filter->getImageSize(nnx, nny,nns);
+	filter->getImageSize(nnx, nny,nnsx, nnsy);
 
 	
 
@@ -424,11 +424,13 @@ int main(int argc, char *argv[]) {
 	      
 	    if (fMode==ePedestal) {   
 	      cprintf(MAGENTA,"Get pedestal!\n");
-	      nns=1;
+	      nnsx=1;
+	      nnsy=1;
+	      
 	      nnx=npx;
 	      nny=npy;
 	      //dout= new int16_t[nnx*nny*nns*nns];
-	      dout= new int32_t[nnx*nny*nns*nns];
+	      dout= new int32_t[nnx*nny*nnsx*nnsy];
 	      // cout << "get pedestal " << endl;
 	      ped=mt->getPedestal();
 	      // cout << "got pedestal " << endl;
@@ -454,9 +456,9 @@ int main(int argc, char *argv[]) {
 	     }
 #endif
 	    else {
-	      detimage=mt->getImage(nnx,nny,nns);
+	      detimage=mt->getImage(nnx,nny,nnsx, nnsy);
 	      cprintf(MAGENTA,"Get image!\n");
-	      cout << nnx << " " << nny << " " << nns << endl;
+	      cout << nnx << " " << nny << " " << nnsx << " " << nnsy << endl;
 	      // nns=1;
 	      // nnx=npx;
 	      // nny=npy;
@@ -821,7 +823,7 @@ int main(int argc, char *argv[]) {
 
 	  if (subframes>0 && insubframe>=subframes && fMode==eFrame) {
 	    while (mt->isBusy()) {;}//wait until all data are processed from the queues
-	    detimage=mt->getImage(nnx,nny,nns);
+	    detimage=mt->getImage(nnx,nny,nnsx, nnsy);
 	    cprintf(MAGENTA,"Get image!\n");
 	    dout= new int32_t[nnx*nny];
 	    doutf= new float[nnx*nny];

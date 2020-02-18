@@ -199,7 +199,7 @@ template <class dataType> class analogDetector {
      \param nns reference to number of subpixels for interpolating detector, will always be 1 in this case
      \returns number of pixels of the detector image
    */
-  virtual int getImageSize(int &nnx, int &nny, int &nns){nnx=nx; nny=ny; nns=1; return nx*ny;}; 
+  virtual int getImageSize(int &nnx, int &nny, int &nnsx, int &nnsy){nnx=nx; nny=ny; nnsx=1; nnsy=1; return nx*ny;}; 
  /**
      Returns data size of the detector image matrix
      \param nnx reference to pixel size in x

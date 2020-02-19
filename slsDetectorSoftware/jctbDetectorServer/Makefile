@@ -6,7 +6,7 @@
 CROSS  = bfin-uclinux-
 CC    = $(CROSS)gcc
 
-CFLAGS += -Wall -DMOENCHD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DV1 -DCTB 
+CFLAGS += -Wall -DMOENCHD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DV1 -DCTB -DOLDVERSION
 
 
 PROGS= 	 jctbDetectorServer 

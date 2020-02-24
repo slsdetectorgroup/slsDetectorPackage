@@ -55,11 +55,11 @@ void qDrawPlot::SetupWidgetWindow() {
     switch (detType) {
         case slsDetectorDefs::JUNGFRAU:
         case slsDetectorDefs::MOENCH:
-            pixelMask = ((1 << 15) - 1);
+            pixelMask = ((1 << 14) - 1);
             FILE_LOG(logINFO) << "Pixel Mask: " << std::hex << pixelMask << std::dec;
             break;
         case slsDetectorDefs::GOTTHARD2:
-            pixelMask = ((1 << 13) - 1);
+            pixelMask = ((1 << 12) - 1);
             FILE_LOG(logINFO) << "Pixel Mask: " << std::hex << pixelMask << std::dec;
             break;
         default:

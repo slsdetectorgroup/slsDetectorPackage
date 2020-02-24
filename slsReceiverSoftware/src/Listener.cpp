@@ -84,6 +84,9 @@ uint64_t Listener::GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) {
 	if (!stoppedFlag) {
 		return (numPackets - numPacketsCaught);
 	}
+	if (numPacketsCaught == 0) {
+		return numPacketsCaught;
+	}
 	return (lastCaughtFrameIndex - firstIndex + 1) * generalData->packetsPerFrame - numPacketsCaught;
 }
 

@@ -33,7 +33,7 @@
 #define DEFAULT_HIGH_VOLTAGE        (0)
 #define DEFAULT_TIMING_MODE			(AUTO_TIMING)
 #define DEFAULT_READOUT_C0          (125000000) // rdo_clk, 125 MHz  
-#define DEFAULT_READOUT_C1          (250000000) // rdo_x2_clk, 250 MHz  
+#define DEFAULT_READOUT_C1          (125000000) // rdo_x2_clk, 125 MHz  
 #define DEFAULT_SYSTEM_C0			(250000000) // run_clk, 250 MHz 
 #define DEFAULT_SYSTEM_C1			(125000000) // chip_clk, 125 MHz 
 #define DEFAULT_SYSTEM_C2			(125000000) // sync_clk, 125 MHz 

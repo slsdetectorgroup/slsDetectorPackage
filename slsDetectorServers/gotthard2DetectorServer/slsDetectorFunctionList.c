@@ -1799,9 +1799,18 @@ int	setBurstModeinFPGA(enum burstMode value) {
 int	setBurstMode(enum burstMode burst) {
 	FILE_LOG(logINFO, ("Setting burst mode to %s\n", burst == BURST_OFF ? "off" : (burst == BURST_INTERNAL ? "internal" : "external")));
 
+	// remember the number of frames and period (before changing burst mode)
+	int64_t frames = getNumFrames();
+	int64_t period = getPeriod();
+
 	if (setBurstModeinFPGA(burst) == FAIL) {
 		return FAIL;
 	}
+
+	// set number of frames and period again (set registers according to timing mode)
+	FILE_LOG(logINFO, ("\tUpdating #frames and period registers"));
+	setNumFrames(frames);
+	setPeriod(period);
 
 	FILE_LOG(logINFO, ("\tSetting %s Mode in Chip\n", burstMode == BURST_OFF ? "Continuous" : "Burst"));
 	int value = burstMode ? ASIC_GLOBAL_BURST_VALUE : ASIC_GLOBAL_CONT_VALUE;

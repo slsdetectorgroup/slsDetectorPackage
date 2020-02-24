@@ -197,7 +197,7 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
 
 void qTabMeasurement::GetTimingMode() {
 	FILE_LOG(logDEBUG) << "Getting timing mode";
-	connect(comboTimingMode, SIGNAL(currentIndexChanged(int)), this, SLOT(SetTimingMode(int)));
+	disconnect(comboTimingMode, SIGNAL(currentIndexChanged(int)), this, SLOT(SetTimingMode(int)));
 	try {
 		auto oldMode = comboTimingMode->currentIndex();
         auto retval = det->getTimingMode().tsquash("Inconsistent timing mode for all detectors.");
@@ -216,7 +216,7 @@ void qTabMeasurement::GetTimingMode() {
 				throw sls::RuntimeError(std::string("Unknown timing mode: ")+ std::to_string(retval));
 		}
     } CATCH_DISPLAY("Could not get timing mode.", "qTabMeasurement::GetTimingMode")
-	disconnect(comboTimingMode, SIGNAL(currentIndexChanged(int)), this, SLOT(SetTimingMode(int)));
+	connect(comboTimingMode, SIGNAL(currentIndexChanged(int)), this, SLOT(SetTimingMode(int)));
 }
 
 void qTabMeasurement::SetTimingMode(int val) {

@@ -192,6 +192,7 @@ void qDrawPlot::SetupPlots() {
     gainplot1d->axisScaleDraw(QwtPlot::xBottom)->enableComponent(QwtScaleDraw::Ticks, false);
     gainplot1d->axisScaleDraw(QwtPlot::yLeft)->enableComponent(QwtScaleDraw::Labels, false);
     gainplot1d->axisScaleDraw(QwtPlot::yLeft)->enableComponent(QwtScaleDraw::Ticks, false);
+    gainhist1d->setItemAttribute(QwtPlotItem::Legend, false);
     gainhist1d->Attach(gainplot1d);
     gainplot1d->hide();
 

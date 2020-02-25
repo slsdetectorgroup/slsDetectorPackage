@@ -90,18 +90,13 @@ class UdpRxSocket {
     }
 
     const char *LastPacket() const noexcept { return buff; }
-    //constexpr 
-      ssize_t getPacketSize() const noexcept { return packet_size; }
-
-    bool ReceivePacket() noexcept {
-        auto bytes_received =
-            recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
-        return bytes_received == packet_size;
-    }
+    ssize_t getPacketSize() const noexcept { return packet_size; }
+    
+    bool ReceivePacket() noexcept { return ReceivePacket(buff); }
 
     bool ReceivePacket(char *dst) noexcept {
         auto bytes_received =
-            recvfrom(fd, buff, packet_size, 0, nullptr, nullptr);
+            recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
         return bytes_received == packet_size;
     }
 

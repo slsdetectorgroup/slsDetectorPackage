@@ -32,6 +32,8 @@ qDrawPlot::~qDrawPlot() {
         delete [] datax1d;
     for (auto &it : datay1d)
         delete [] it;
+    if (gainDatay1d)
+        delete [] gainDatay1d;    
     if (data2d)
         delete [] data2d;
      if (gainData)
@@ -39,6 +41,10 @@ qDrawPlot::~qDrawPlot() {
 
     if (plot1d)
         delete plot1d;
+    if (gainhist1d)
+        delete gainhist1d;  
+    if (gainplot1d)
+        delete gainplot1d;    
     if (plot2d)
         delete plot2d;
     if (gainplot2d)
@@ -56,11 +62,17 @@ void qDrawPlot::SetupWidgetWindow() {
         case slsDetectorDefs::JUNGFRAU:
         case slsDetectorDefs::MOENCH:
             pixelMask = ((1 << 14) - 1);
-            FILE_LOG(logINFO) << "Pixel Mask: " << std::hex << pixelMask << std::dec;
+            gainMask = (3 << 14);
+            gainOffset = 14;
+            FILE_LOG(logINFO) << "Pixel Mask: " << std::hex << pixelMask 
+            << ", Gain Mask:" << gainMask << ", Gain Offset:" << std::dec << gainOffset;
             break;
         case slsDetectorDefs::GOTTHARD2:
             pixelMask = ((1 << 12) - 1);
-            FILE_LOG(logINFO) << "Pixel Mask: " << std::hex << pixelMask << std::dec;
+            gainMask = (3 << 12);
+            gainOffset = 12;
+            FILE_LOG(logINFO) << "Pixel Mask: " << std::hex << pixelMask 
+            << ", Gain Mask:" << gainMask << ", Gain Offset:" << std::dec << gainOffset;
             break;
         default:
             break;
@@ -160,6 +172,29 @@ void qDrawPlot::SetupPlots() {
     h->Attach(plot1d);
     plot1d->hide();
 
+    if (gainDatay1d)
+    delete[] gainDatay1d;
+   gainDatay1d = new double[nPixelsX];
+    // default display data
+    for (unsigned int px = 0; px < nPixelsX; ++px) {
+        gainDatay1d[px] = 0;
+    }
+    // set gain hist 
+    gainhist1d = new SlsQtH1D("", nPixelsX, datax1d, gainDatay1d);
+    gainhist1d->SetLineColor(0);
+    gainhist1d->setStyleLinesorDots(isLines);
+    gainhist1d->setSymbolMarkers(isMarkers);
+    // setup 1d gain plot
+    gainplot1d = new SlsQt1DPlot(boxPlot);
+    //gainplot1d->setFont(QFont("Sans Serif", 3, 20));
+    gainplot1d->SetTitle("");
+    gainplot1d->axisScaleDraw(QwtPlot::xBottom)->enableComponent(QwtScaleDraw::Labels, false);
+    gainplot1d->axisScaleDraw(QwtPlot::xBottom)->enableComponent(QwtScaleDraw::Ticks, false);
+    gainplot1d->axisScaleDraw(QwtPlot::yLeft)->enableComponent(QwtScaleDraw::Labels, false);
+    gainplot1d->axisScaleDraw(QwtPlot::yLeft)->enableComponent(QwtScaleDraw::Ticks, false);
+    gainhist1d->Attach(gainplot1d);
+    gainplot1d->hide();
+
     // setup 2d data
     if (data2d)
         delete [] data2d;    
@@ -208,6 +243,7 @@ void qDrawPlot::SetupPlots() {
     int ratio = qDefs::DATA_GAIN_PLOT_RATIO - 1;
     plotLayout->addWidget(plot1d, 0, 0, ratio, ratio);
     plotLayout->addWidget(plot2d, 0, 0, ratio, ratio);
+    plotLayout->addWidget(gainplot1d, 0, ratio, 1, 1, Qt::AlignRight | Qt::AlignTop);
     plotLayout->addWidget(gainplot2d, 0, ratio, 1, 1, Qt::AlignRight | Qt::AlignTop);
 }
 
@@ -216,6 +252,10 @@ void qDrawPlot::resizeEvent(QResizeEvent *event) {
         gainplot2d->setFixedWidth(plot2d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
         gainplot2d->setFixedHeight(plot2d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
     }
+    if (gainplot1d->isVisible()) {
+        gainplot1d->setFixedWidth(plot1d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
+        gainplot1d->setFixedHeight(plot1d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
+    }   
     event->accept();
 }
 
@@ -547,6 +587,9 @@ void qDrawPlot::DetachHists() {
     for (QVector<SlsQtH1D *>::iterator h = hists1d.begin(); h != hists1d.end(); ++h) {
         (*h)->Detach(plot1d);
     }
+    if (gainhist1d) {
+        gainhist1d->Detach(gainplot1d);
+    }
 }
 
 void qDrawPlot::StartAcquisition() {
@@ -666,7 +709,8 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
     unsigned int nPixels = nPixelsX * (is1d ? 1 : nPixelsY);
     double* rawData = new double[nPixels];
     if (hasGainData) {
-        toDoublePixelData(rawData, data->data, nPixels, data->databytes, data->dynamicRange, gainData);
+        toDoublePixelData(rawData, data->data, nPixels, data->databytes, data->dynamicRange, 
+            is1d ? gainDatay1d : gainData);
         isGainDataExtracted = true;
     } else {
         toDoublePixelData(rawData, data->data, nPixels, data->databytes, data->dynamicRange);
@@ -819,6 +863,20 @@ void qDrawPlot::Update1dPlot() {
             h->Attach(plot1d);
         }
     }
+    if (isGainDataExtracted) {
+        gainhist1d->SetData(nPixelsX, datax1d, gainDatay1d);
+        gainhist1d->SetLineColor(0);
+        gainhist1d->setStyleLinesorDots(isLines);
+        gainhist1d->setSymbolMarkers(isMarkers);
+        gainhist1d->Attach(gainplot1d); 
+        if (!gainplot1d->isVisible()) {
+            gainplot1d->setFixedWidth(plot1d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
+            gainplot1d->setFixedHeight(plot1d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
+            gainplot1d->show();
+          }
+    } else if (gainplot1d->isVisible()) {
+        gainplot1d->hide();  
+    }
     if (xyRangeChanged) {
         Update1dXYRange();
         xyRangeChanged = false;
@@ -832,7 +890,7 @@ void qDrawPlot::Update2dPlot() {
     plot2d->SetYTitle(yTitle2d);
     plot2d->SetZTitle(zTitle2d);
     plot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5, nPixelsY - 0.5, data2d);
-     if (isGainDataExtracted) {
+    if (isGainDataExtracted) {
         gainplot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5, nPixelsY - 0.5, gainData);
         if (!gainplot2d->isVisible()) {
             gainplot2d->setFixedWidth(plot2d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
@@ -925,7 +983,7 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int data
             if (gaindest != NULL) {
                 for (ichan = 0; ichan < size; ++ichan) {
                     uint16_t temp = (*((u_int16_t *)source));
-                    gaindest[ichan] = ((temp & 0xC000) >> 14);
+                    gaindest[ichan] = ((temp & gainMask) >> gainOffset);
                     dest[ichan] = (temp & pixelMask);
                     source += 2;
                 }

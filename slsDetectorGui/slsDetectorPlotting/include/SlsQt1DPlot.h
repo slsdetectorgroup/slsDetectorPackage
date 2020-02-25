@@ -132,6 +132,7 @@ class SlsQt1DPlot:public QwtPlot{
   void DisableZoom(bool disable);
   void EnableXAutoScaling() {setAxisAutoScale(QwtPlot::xBottom, true);Update();};
   void EnableYAutoScaling() {setAxisAutoScale(QwtPlot::yLeft, true);Update();};
+  void SetYStep (int step) {ystep = step;};
   void SetXMinMax(double min,double max){setAxisScale(QwtPlot::xBottom,min,max);};
   void SetYMinMax(double min,double max){setAxisScale(QwtPlot::yLeft,min,max);};
   double GetXMinimum(){return hist_list->Hist()->GetXMin();};
@@ -157,6 +158,7 @@ class SlsQt1DPlot:public QwtPlot{
   QwtPlotMarker *hline;
   QwtPlotMarker *vline;
   bool disableZoom{false};
+  int ystep{0};
   
   void SetupZoom();
   void UnknownStuff();

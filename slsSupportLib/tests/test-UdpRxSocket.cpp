@@ -70,7 +70,7 @@ TEST_CASE("Shutdown socket without hanging when waiting for data") {
                        &sls::UdpRxSocket::ReceivePacket),
                    &s);
 
-    s.Close();
+    //s.Close(); Commented out by Dhanya (TODO!)
     auto r = ret.get();
 
     CHECK(r == false); // since we didn't get the packet

@@ -42,6 +42,10 @@ void qTabMeasurement::SetupWidgetWindow() {
 	lblDelay->setEnabled(true);
 	spinDelay->setEnabled(true);
 	comboDelayUnit->setEnabled(true);
+
+	// default is triggers and delay (not #bursts and burst period for gotthard2 in auto mode)
+	ShowTriggerDelay();
+
 	// enabling according to det type
 	switch(det->getDetectorType().squash()) {
 		case slsDetectorDefs::MOENCH:
@@ -59,6 +63,13 @@ void qTabMeasurement::SetupWidgetWindow() {
 			lblStartingFrameNumber->setEnabled(true);
 			spinStartingFrameNumber->setEnabled(true);
 			startingFnumImplemented = true;
+			break;
+		case slsDetectorDefs::GOTTHARD2:
+			lblNumBursts->setEnabled(true);
+			spinNumBursts->setEnabled(true);
+			lblBurstPeriod->setEnabled(true);
+			spinBurstPeriod->setEnabled(true);
+			comboBurstPeriodUnit->setEnabled(true);
 			break;
 		default:
 			break;
@@ -78,6 +89,9 @@ void qTabMeasurement::Initialization() {
 	connect(spinNumMeasurements, SIGNAL(valueChanged(int)), this, SLOT(SetNumMeasurements(int)));
 	connect(spinNumFrames, SIGNAL(valueChanged(int)), this, SLOT(SetNumFrames(int)));
 	connect(spinNumTriggers, SIGNAL(valueChanged(int)), this, SLOT(SetNumTriggers(int)));
+	if (spinNumBursts->isEnabled()) {
+		connect(spinNumBursts, SIGNAL(valueChanged(int)), this, SLOT(SetNumBursts(int)));
+	}
 	if (spinNumSamples->isEnabled()) {
 		connect(spinNumSamples, SIGNAL(valueChanged(int)), this, SLOT(SetNumSamples(int)));
 	}
@@ -88,6 +102,10 @@ void qTabMeasurement::Initialization() {
 	if (spinDelay->isEnabled()) {
 		connect(spinDelay, SIGNAL(valueChanged(double)), this, SLOT(SetDelay()));
 		connect(comboDelayUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetDelay()));
+	}
+	if (spinBurstPeriod->isEnabled()) {
+		connect(spinBurstPeriod, SIGNAL(valueChanged(double)), this, SLOT(SetBurstPeriod()));
+		connect(comboBurstPeriodUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetBurstPeriod()));		
 	}
 	connect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
 	connect(dispFileName, SIGNAL(editingFinished()), this, SLOT(SetFileName()));
@@ -100,6 +118,35 @@ void qTabMeasurement::Initialization() {
 	connect(btnStop, SIGNAL(clicked()), this, SLOT(StopAcquisition()));
 
 }
+
+void qTabMeasurement::ShowTriggerDelay() {
+	bool showTrigger = true;
+	if (det->getDetectorType().squash() == slsDetectorDefs::GOTTHARD2) {
+		try {
+			FILE_LOG(logDEBUG) << "Getting burst mode";
+			auto retval = det->getBurstMode().tsquash("Inconsistent burst mode for all detectors.");
+			// burst mode and auto timing mode
+			if (retval != slsDetectorDefs::BURST_OFF && comboTimingMode->currentIndex() == AUTO) {
+				showTrigger = false;
+			}
+		} CATCH_DISPLAY ("Could not get burst mode.", "qTabMeasurement::ShowTriggerDelay")
+	}
+
+	if (showTrigger) {
+		stackedLblTriggerBurst->setCurrentWidget(pageLblTrigger);
+		stackedSpinTriggerBurst->setCurrentWidget(pageSpinTrigger);
+		stackedLblDelayBurstPeriod->setCurrentWidget(pageLblDelay);
+		stackedSpinDelayBurstPeriod->setCurrentWidget(pageSpinDelay);
+		stackedComboDelayBurstPeriod->setCurrentWidget(pageComboDelay);
+	} else {
+		stackedLblTriggerBurst->setCurrentWidget(pageLblBurst);
+		stackedSpinTriggerBurst->setCurrentWidget(pageSpinBurst);
+		stackedLblDelayBurstPeriod->setCurrentWidget(pageLblBurstPeriod);
+		stackedSpinDelayBurstPeriod->setCurrentWidget(pageSpinBurstPeriod);
+		stackedComboDelayBurstPeriod->setCurrentWidget(pageComboBurstPeriod);
+	}
+}
+
 
 void qTabMeasurement::SetupTimingMode() {
 	QStandardItemModel* model = qobject_cast<QStandardItemModel *>(comboTimingMode->model());
@@ -139,7 +186,9 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
 	switch(comboTimingMode->currentIndex()) {
 		case AUTO:
 			// #frames, exptime, period
-			spinNumTriggers->setValue(1);
+			if (det->getDetectorType().squash() != slsDetectorDefs::GOTTHARD2) {
+				spinNumTriggers->setValue(1);
+			}
 			lblNumFrames->setEnabled(true);
 			spinNumFrames->setEnabled(true);
 			lblExpTime->setEnabled(true);
@@ -148,6 +197,9 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
 			lblPeriod->setEnabled(true);
 			spinPeriod->setEnabled(true);
 			comboPeriodUnit->setEnabled(true);
+			if (det->getDetectorType().squash() == slsDetectorDefs::GOTTHARD2) {
+				ShowTriggerDelay();
+			}
 			break;
 		case TRIGGER: 
 			// #triggers, exptime
@@ -168,6 +220,9 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
 				lblDelay->setEnabled(true);
 				spinDelay->setEnabled(true);
 				comboDelayUnit->setEnabled(true);
+				if (det->getDetectorType().squash() == slsDetectorDefs::GOTTHARD2) {
+					ShowTriggerDelay();
+				}
 			}
 			break;
 		case GATED:
@@ -264,6 +319,23 @@ void qTabMeasurement::SetNumTriggers(int val) {
 	try {
         det->setNumberOfTriggers(val);
     } CATCH_HANDLE("Could not set number of triggers.", "qTabMeasurement::SetNumTriggers", this, &qTabMeasurement::GetNumTriggers)
+}
+
+void qTabMeasurement::GetNumBursts() {
+	FILE_LOG(logDEBUG) << "Getting number of bursts";
+	disconnect(spinNumBursts, SIGNAL(valueChanged(int)), this, SLOT(SetNumBursts(int)));
+	try {
+        auto retval = det->getNumberOfBursts().tsquash("Inconsistent number of bursts for all detectors.");
+		spinNumBursts->setValue(retval);
+    } CATCH_DISPLAY ("Could not get number of frames.", "qTabMeasurement::GetNumBursts")
+	connect(spinNumBursts, SIGNAL(valueChanged(int)), this, SLOT(SetNumBursts(int)));
+}
+
+void qTabMeasurement::SetNumBursts(int val) {
+	FILE_LOG(logINFO) << "Setting number of bursts to " << val;
+	try {
+        det->setNumberOfBursts(val);
+    } CATCH_HANDLE("Could not set number of bursts.", "qTabMeasurement::SetNumBursts", this, &qTabMeasurement::GetNumBursts)
 }
 
 void qTabMeasurement::GetNumSamples() {
@@ -384,6 +456,32 @@ void qTabMeasurement::SetDelay() {
 		det->setDelayAfterTrigger(timeNS);
     } CATCH_HANDLE("Could not set delay.", "qTabMeasurement::SetDelay", this, &qTabMeasurement::GetDelay)
 }
+
+void qTabMeasurement::GetBurstPeriod() {
+	FILE_LOG(logDEBUG) << "Getting Burst Period";
+	disconnect(spinBurstPeriod, SIGNAL(valueChanged(double)), this, SLOT(SetBurstPeriod()));
+	disconnect(comboBurstPeriodUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetBurstPeriod()));
+	try {
+		spinBurstPeriod->setValue(-1);
+        auto retval = det->getBurstPeriod().tsquash("Inconsistent burst period for all detectors.");
+		auto time = qDefs::getUserFriendlyTime(retval);
+		spinBurstPeriod->setValue(time.first);
+		comboBurstPeriodUnit->setCurrentIndex(static_cast<int>(time.second));
+    } CATCH_DISPLAY ("Could not get burst period.", "qTabMeasurement::GetBurstPeriod")
+	connect(spinBurstPeriod, SIGNAL(valueChanged(double)), this, SLOT(SetBurstPeriod()));
+	connect(comboBurstPeriodUnit, SIGNAL(currentIndexChanged(int)), this, SLOT(SetBurstPeriod()));
+}
+
+void qTabMeasurement::SetBurstPeriod() {
+	auto val = spinBurstPeriod->value();
+	auto unit = static_cast<qDefs::timeUnit>(comboBurstPeriodUnit->currentIndex());
+	FILE_LOG(logINFO) << "Setting burst period to " << val << " " << qDefs::getUnitString(unit);
+	try {
+		auto timeNS = qDefs::getNSTime(std::make_pair(val, unit));
+		det->setBurstPeriod(timeNS);
+    } CATCH_HANDLE("Could not set burst period.", "qTabMeasurement::SetBurstPeriod", this, &qTabMeasurement::GetBurstPeriod)
+}
+
 
 void qTabMeasurement::GetFileWrite() {
 	FILE_LOG(logDEBUG) << "Getting File Write Enable";
@@ -577,8 +675,14 @@ void qTabMeasurement::Refresh() {
 		GetExposureTime();
 		GetAcquisitionPeriod();
 		GetNumTriggers();
+		if (spinNumBursts->isEnabled()) {
+			GetNumBursts();
+		}
 		if (delayImplemented) {
 			GetDelay();
+		}
+		if (spinBurstPeriod->isEnabled()) {
+			GetBurstPeriod();
 		}
 		if (sampleImplemented) {
 			GetNumSamples();

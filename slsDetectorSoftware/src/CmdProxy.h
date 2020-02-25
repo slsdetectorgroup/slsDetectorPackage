@@ -572,9 +572,11 @@ class CmdProxy {
                           {"acquire", &CmdProxy::acquire},
                           {"frames", &CmdProxy::frames},                          
                           {"triggers", &CmdProxy::triggers},
+                          {"bursts", &CmdProxy::bursts},
                           {"exptime", &CmdProxy::exptime},
                           {"period", &CmdProxy::period},
                           {"delay", &CmdProxy::delay},
+                          {"burstperiod", &CmdProxy::burstperiod},
                           {"framesl", &CmdProxy::framesl},
                           {"triggersl", &CmdProxy::triggersl},
                           {"delayl", &CmdProxy::delayl},
@@ -1017,6 +1019,10 @@ class CmdProxy {
                          std::stol,
                          "[n_triggers]\n\tNumber of triggers per aquire. Use timing command to set timing mode.");
 
+    INTEGER_COMMAND_NOID(bursts, getNumberOfBursts, setNumberOfBursts,
+                         std::stol,
+                         "[n_bursts]\n\t[Gotthard2] Number of bursts per aquire. Only in auto timing mode and burst mode. Use timing command to set timing mode and burstmode command to set burst mode.");
+
     TIME_COMMAND(exptime, getExptime, setExptime,
         "[duration] [(optional unit) ns|us|ms|s]\n\tExposure time"
         "\n\t[Gotthard2] Uploaded to detector just before acquisition starts");
@@ -1026,8 +1032,10 @@ class CmdProxy {
                  "\n\t[Gotthard2] Uploaded to detector just before acquisition starts");
 
     TIME_COMMAND(delay, getDelayAfterTrigger, setDelayAfterTrigger,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] Delay after trigger"
-                "\n\t[Gotthard2] only in continuous mode.");
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] Delay after trigger");
+
+    TIME_COMMAND(burstperiod, getBurstPeriod, setBurstPeriod,
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] Burst period. Only in burst mode and auto timing mode.");
 
     GET_COMMAND(framesl, getNumberOfFramesLeft, 
                 "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Number of frames left in acquisition."

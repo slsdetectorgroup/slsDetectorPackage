@@ -1160,6 +1160,22 @@ void Detector::setImageTestMode(int value, Positions pos) {
 
 // Gotthard2 Specific
 
+Result<int64_t> Detector::getNumberOfBursts(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getNumberOfBursts, pos);
+}
+
+void Detector::setNumberOfBursts(int64_t value) {
+    pimpl->Parallel(&slsDetector::setNumberOfBursts, {}, value);
+}
+
+Result<ns> Detector::getBurstPeriod(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getBurstPeriod, pos);
+}
+
+void Detector::setBurstPeriod(ns value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setBurstPeriod, pos, value.count());
+}
+
 Result<std::array<int, 2>> Detector::getInjectChannel(Positions pos) {
     return pimpl->Parallel(&slsDetector::getInjectChannel, pos);
 }

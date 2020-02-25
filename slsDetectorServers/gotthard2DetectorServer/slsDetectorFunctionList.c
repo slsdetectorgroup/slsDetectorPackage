@@ -47,6 +47,10 @@ int injectedChannelsIncrement = 0;
 int vetoReference[NCHIP][NCHAN];
 uint8_t adcConfiguration[NCHIP][NADC];
 int burstMode = BURST_INTERNAL;
+int64_t numTriggers = 1;
+int64_t numBursts = 1;
+int64_t delayAfterTriggerNs = 0;
+int64_t burstPeriodNs = 0;
 int detPos[2] = {};
 
 int isInitCheckDone() {
@@ -350,6 +354,10 @@ void setupDetector() {
 	injectedChannelsOffset = 0;
 	injectedChannelsIncrement = 0;
 	burstMode = BURST_INTERNAL;
+ 	numTriggers = 1;
+ 	numBursts = 1;
+ 	delayAfterTriggerNs = 0;
+ 	burstPeriodNs = 0;
 	{
 		int i, j;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
@@ -433,9 +441,11 @@ void setupDetector() {
 	// Initialization of acquistion parameters
 	setNumFrames(DEFAULT_NUM_FRAMES);
 	setNumTriggers(DEFAULT_NUM_CYCLES);
+	setNumBursts(DEFAULT_NUM_BURSTS);
 	setExpTime(DEFAULT_EXPTIME);
 	setPeriod(DEFAULT_PERIOD);
 	setDelayAfterTrigger(DEFAULT_DELAY_AFTER_TRIGGER);
+	setBurstPeriod(DEFAULT_BURST_PERIOD);
 	setTiming(DEFAULT_TIMING_MODE);
 }
 
@@ -748,12 +758,39 @@ int64_t getNumFrames() {
 void setNumTriggers(int64_t val) {
     if (val > 0) {
 		FILE_LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
-        set64BitReg(val, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+		numTriggers = val;
+		if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
+			FILE_LOG(logINFO, ("\tBurst and Auto mode: not writing #triggers to register\n"));
+		} else {
+        	set64BitReg(val, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+		}
     } 
 }
 
 int64_t getNumTriggers() {
-    return get64BitReg(SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+	if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
+		return numTriggers;
+	}
+	return get64BitReg(SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+}
+
+void setNumBursts(int64_t val) {
+    if (val > 0) {
+		FILE_LOG(logINFO, ("Setting number of bursts %lld\n", (long long int)val));
+		numBursts = val;
+		if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
+			set64BitReg(val, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+		} else {
+        	FILE_LOG(logINFO, ("\tNot (Burst and Auto mode): not writing #bursts to register\n"));
+		}
+    } 
+}
+
+int64_t getNumBursts() {
+	if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
+		return get64BitReg(SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+	}
+	return numBursts;
 }
 
 int setExpTime(int64_t val) {
@@ -889,8 +926,13 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     } 
 	FILE_LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    val *= (1E-9 * FIXED_PLL_FREQUENCY);
-    set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
+    delayAfterTriggerNs = val;
+	val *= (1E-9 * FIXED_PLL_FREQUENCY);
+	if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
+		FILE_LOG(logINFO, ("\tBurst and Auto mode: not writing delay to register\n"));
+	} else {
+    	set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
+	}
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
@@ -902,7 +944,40 @@ int setDelayAfterTrigger(int64_t val) {
 }
 
 int64_t getDelayAfterTrigger() {
+	if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
+		return delayAfterTriggerNs;
+	}
     return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
+}
+
+int setBurstPeriod(int64_t val) {
+    if (val < 0) {
+        FILE_LOG(logERROR, ("Invalid burst period: %lld ns\n", (long long int)val));
+        return FAIL;
+    } 
+	FILE_LOG(logINFO, ("Setting burst period %lld ns\n", (long long int)val));
+    burstPeriodNs = val;
+	val *= (1E-9 * FIXED_PLL_FREQUENCY);
+	if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
+    	set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
+	} else {
+		FILE_LOG(logINFO, ("\tNot (Burst and Auto mode): not writing burst period to register\n"));
+	}
+
+    // validate for tolerance
+    int64_t retval = getBurstPeriod();
+    val /= (1E-9 * FIXED_PLL_FREQUENCY);
+    if (val != retval) {
+        return FAIL;
+    }
+    return OK;
+}
+
+int64_t getBurstPeriod() {
+	if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
+    	return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
+	}
+	return burstPeriodNs;
 }
 
 int64_t getNumFramesLeft() {
@@ -1129,6 +1204,12 @@ void setTiming( enum timingMode arg){
     default:
         FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
     }
+
+	FILE_LOG(logINFO, ("\tUpdating trigger/burst and delay/burst period registers\n"))
+	setNumTriggers(numTriggers);
+	setNumBursts(numBursts);
+	setDelayAfterTrigger(delayAfterTriggerNs);
+	setBurstPeriod(burstPeriodNs);
 }
 
 enum timingMode getTiming() {
@@ -1807,8 +1888,14 @@ int	setBurstMode(enum burstMode burst) {
 		return FAIL;
 	}
 
+	FILE_LOG(logINFO, ("\tUpdating trigger/burst and delay/burst period registers\n"))
+	setNumTriggers(numTriggers);
+	setNumBursts(numBursts);
+	setDelayAfterTrigger(delayAfterTriggerNs);
+	setBurstPeriod(burstPeriodNs);
+
 	// set number of frames and period again (set registers according to timing mode)
-	FILE_LOG(logINFO, ("\tUpdating #frames and period registers"));
+	FILE_LOG(logINFO, ("\tUpdating #frames and period registers\n"));
 	setNumFrames(frames);
 	setPeriod(period);
 

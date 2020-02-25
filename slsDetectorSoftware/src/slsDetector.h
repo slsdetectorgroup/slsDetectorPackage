@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x191127
+#define SLS_SHMVERSION 0x200225
 
 /**
  * @short structure allocated in shared memory to store detector settings for
@@ -86,8 +86,17 @@ struct sharedSlsDetector {
     /** number of triggers */
     int64_t nTriggers;
     
+    /** number of bursts */
+    int64_t nBursts;
+
     /** number of additional storage cells */
     int nAddStorageCells;
+    
+    /** timing mode */
+    slsDetectorDefs::timingMode timingMode;
+
+    /** burst mode */
+    slsDetectorDefs::burstMode burstMode;
 
     /** rate correction in ns */
     int64_t deadTime;
@@ -535,6 +544,15 @@ class slsDetector : public virtual slsDetectorDefs {
 
     void setNumberOfTriggers(int64_t value);
 
+    /** [Gotthard2] only in burst mode and in auto timing mode */
+    int64_t getNumberOfBurstsFromShm();
+
+    /** [Gotthard2] only in burst mode and in auto timing mode */
+    int64_t getNumberOfBursts();
+
+    /** [Gotthard2] only in burst mode and in auto timing mode */
+    void setNumberOfBursts(int64_t value);
+
     /** [Jungfrau] Advanced */
     int getNumberOfAdditionalStorageCellsFromShm();
     
@@ -564,13 +582,17 @@ class slsDetector : public virtual slsDetectorDefs {
 
     void setPeriod(int64_t value);
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] 
-     * [Gotthard2] only in continuous mode */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     int64_t getDelayAfterTrigger();
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] 
-     * [Gotthard2] only in continuous mode */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     void setDelayAfterTrigger(int64_t value);
+
+    /** [Gotthard2] only in burst mode and in auto timing mode */
+    int64_t getBurstPeriod();
+
+    /** [Gotthard2] only in burst mode and in auto timing mode */
+    void setBurstPeriod(int64_t value);   
 
     /** [Eiger] in 32 bit mode */
     int64_t getSubExptime();

@@ -315,6 +315,10 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_ADC_ENABLE_MASK_10G:         return "F_GET_ADC_ENABLE_MASK_10G";
 	case F_SET_COUNTER_MASK:         		return "F_SET_COUNTER_MASK";
 	case F_GET_COUNTER_MASK:         		return "F_GET_COUNTER_MASK";
+	case F_GET_NUM_BURSTS:					return "F_GET_NUM_BURSTS";
+	case F_SET_NUM_BURSTS:					return "F_SET_NUM_BURSTS";
+	case F_GET_BURST_PERIOD:				return "F_GET_BURST_PERIOD";	
+	case F_SET_BURST_PERIOD:				return "F_SET_BURST_PERIOD";
 
 	default:								return "Unknown Function";
 	}
@@ -499,6 +503,10 @@ void function_table() {
 	flist[F_GET_ADC_ENABLE_MASK_10G]			= &get_adc_enable_mask_10g;
 	flist[F_SET_COUNTER_MASK]					= &set_counter_mask;
 	flist[F_GET_COUNTER_MASK]					= &get_counter_mask;
+	flist[F_GET_NUM_BURSTS]	 					= &get_num_bursts;				
+	flist[F_SET_NUM_BURSTS]	 					= &set_num_bursts;				
+	flist[F_GET_BURST_PERIOD]					= &get_burst_period;					
+	flist[F_SET_BURST_PERIOD]					= &set_burst_period;					
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -2799,7 +2807,26 @@ int send_update(int file_des) {
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
-	// readout flags
+	// #bursts
+#ifdef GOTTHARD2D
+	i64 = getNumBursts();
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+#endif
+
+	// timing mode
+	i32 = (int)getTiming();
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// burst mode
+#ifdef GOTTHARD2D
+	i32 = (int)getBurstMode();
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+#endif
+
+	// readout mode
 #ifdef CHIPTESTBOARDD
     i32 = getReadoutMode();
     n = sendData(file_des,&i32,sizeof(i32),INT32);
@@ -6628,4 +6655,84 @@ int get_counter_mask(int file_des) {
 	FILE_LOG(logDEBUG, ("counter mask retval: 0x%x\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+int get_num_bursts(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+	// get only
+	retval = getNumBursts();
+	FILE_LOG(logDEBUG1, ("retval num bursts %lld\n", (long long int)retval));
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int set_num_bursts(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting number of bursts %lld\n", (long long int)arg));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		setNumBursts(arg); 
+		int64_t retval = getNumBursts();
+		FILE_LOG(logDEBUG1, ("retval num bursts %lld\n", (long long int)retval));
+		validate64(arg, retval, "set number of bursts", DEC);
+	}
+#endif
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+int get_burst_period(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t retval = -1;
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getBurstPeriod();
+	FILE_LOG(logDEBUG1, ("retval burst period %lld ns\n", (long long int)retval));
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+}
+
+int set_burst_period(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int64_t arg = -1;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting burst period %lld ns\n", (long long int)arg));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else	
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = setBurstPeriod(arg); 
+		int64_t retval = getBurstPeriod();
+		FILE_LOG(logDEBUG1, ("retval burst period %lld ns\n", (long long int)retval));
+		if (ret == FAIL) {
+			sprintf(mess, "Could not set burst period. Set %lld ns, read %lld ns.\n", (long long int)arg, (long long int)retval);
+	        FILE_LOG(logERROR,(mess));			
+		}
+	}
+#endif	
+	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
 }

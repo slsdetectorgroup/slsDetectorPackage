@@ -155,12 +155,10 @@ class Detector {
 
     void setPeriod(ns t, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] 
-     * [Gotthard2] only in continuous mode */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     Result<ns> getDelayAfterTrigger(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] 
-     * [Gotthard2] only in continuous mode */
+    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
     void setDelayAfterTrigger(ns value, Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB][Mythen3] 
@@ -898,6 +896,18 @@ class Detector {
      *                                                *
      * ************************************************/
     
+    /** [Gotthard2] only in burst mode and auto timing mode */
+    Result<int64_t> getNumberOfBursts(Positions pos = {}) const;
+
+    /** [Gotthard2] only in burst mode and auto timing mode */
+    void setNumberOfBursts(int64_t value);
+
+    /** [Gotthard2] only in burst mode and auto timing mode */
+    Result<ns> getBurstPeriod(Positions pos = {}) const;
+
+    /** [Gotthard2] only in burst mode and auto timing mode */
+    void setBurstPeriod(ns value, Positions pos = {});
+
     /** [Gotthard2] offset channel, increment channel */
     Result<std::array<int, 2>> getInjectChannel(Positions pos = {});
 

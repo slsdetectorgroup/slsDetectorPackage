@@ -60,8 +60,11 @@ void qTabPlot::SetupWidgetWindow() {
     switch(det->getDetectorType().squash()) {
         case slsDetectorDefs::GOTTHARD:
         case slsDetectorDefs::MYTHEN3:
+            is1d = true;
+            break;
         case slsDetectorDefs::GOTTHARD2:
             is1d = true;
+            chkGainPlot1D->setEnabled(true);  
             break;
         case slsDetectorDefs::EIGER:
             chkGapPixels->setEnabled(true);
@@ -128,6 +131,8 @@ void qTabPlot::Initialization() {
     //gainplot
     if (chkGainPlot->isEnabled())
         connect(chkGainPlot, SIGNAL(toggled(bool)), plot, SLOT(EnableGainPlot(bool)));
+    if (chkGainPlot1D->isEnabled())
+        connect(chkGainPlot1D, SIGNAL(toggled(bool)), plot, SLOT(EnableGainPlot(bool)));        
     // gap pixels
     if (chkGapPixels->isEnabled())
         connect(chkGapPixels, SIGNAL(toggled(bool)), this, SLOT(SetGapPixels(bool)));
@@ -579,6 +584,9 @@ void qTabPlot::Refresh() {
             case slsDetectorDefs::MOENCH:
                 chkGainPlot->setEnabled(true);  
                 break;
+            case slsDetectorDefs::GOTTHARD2:
+                chkGainPlot1D->setEnabled(true);  
+                break;
             default:
                 break;             
         }
@@ -586,6 +594,7 @@ void qTabPlot::Refresh() {
         boxPlotType->setEnabled(false);
         boxFrequency->setEnabled(false);
         chkGainPlot->setEnabled(false);
+        chkGainPlot1D->setEnabled(false);
         chkGapPixels->setEnabled(false);
     }
 

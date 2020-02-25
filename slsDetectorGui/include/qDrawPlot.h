@@ -98,6 +98,8 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
 
     SlsQt1DPlot *plot1d{nullptr};
 	  QVector<SlsQtH1D *> hists1d;
+    SlsQt1DPlot *gainplot1d{nullptr};
+	  SlsQtH1D * gainhist1d{nullptr};
     SlsQt2DPlot *plot2d{nullptr};
     SlsQt2DPlot *gainplot2d{nullptr};
     QFutureWatcher<std::string> *acqResultWatcher;
@@ -124,6 +126,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     int nHists{1};
     double *datax1d{nullptr};
     std::vector<double *> datay1d;
+    double *gainDatay1d{nullptr};
     double *data2d{nullptr};
     double *gainData{nullptr};
 
@@ -161,4 +164,6 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     const static int npixelsx_jctb = 400;
     int npixelsy_jctb{0};
     uint32_t pixelMask{0};
+    uint32_t gainMask{0};
+    int gainOffset{0};
 };

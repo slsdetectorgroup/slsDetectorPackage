@@ -822,7 +822,7 @@ Displays minimum, maximum and sum of values for each plot.
       <item row="0" column="1">
        <widget class="QStackedWidget" name="stackedWidget1D">
         <property name="currentIndex">
-         <number>3</number>
+         <number>5</number>
         </property>
         <widget class="QWidget" name="pageSuperImpose">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -1359,6 +1359,27 @@ Displays minimum, maximum and sum of values for each plot.
              </size>
             </property>
            </spacer>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="chkGainPlot1D">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>&lt;nobr&gt;
+Displays minimum, maximum and sum of values for each plot.
+&lt;nobr&gt;</string>
+            </property>
+            <property name="text">
+             <string>Gain Plot</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

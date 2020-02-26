@@ -20,7 +20,7 @@ class SlsQt2DPlot: public QwtPlot{
 
 public:
     SlsQt2DPlot(QWidget * = NULL);
-
+    ~SlsQt2DPlot();
     void SetTitle(QString title);
     void SetXTitle(QString title);
     void SetYTitle(QString title);
@@ -77,17 +77,17 @@ private:
     QwtLinearColorMap* myColourMap(QVector<double> colourStops);
     QwtLinearColorMap* myColourMap(int log=0);
 
-    QwtPlotSpectrogram *d_spectrogram;
-    SlsQt2DHist* hist;
-    SlsQt2DZoomer* zoomer;
-    QwtPlotPanner* panner;
-    QwtScaleWidget *rightAxis;
+    QwtPlotSpectrogram *d_spectrogram{nullptr};
+    SlsQt2DHist* hist{nullptr};
+    SlsQt2DZoomer* zoomer{nullptr};
+    QwtPlotPanner* panner{nullptr};
+    QwtScaleWidget *rightAxis{nullptr};
 
-    QwtLinearColorMap* colorMapLinearScale;
-    QwtLinearColorMap* colorMapLogScale;
+    QwtLinearColorMap* colorMapLinearScale{nullptr};
+    QwtLinearColorMap* colorMapLogScale{nullptr};
 #if QWT_VERSION<0x060000
-    QwtValueList* contourLevelsLinear;
-    QwtValueList* contourLevelsLog;
+    QwtValueList* contourLevelsLinear{nullptr};
+    QwtValueList* contourLevelsLog{nullptr};
 #else 
     QList<double> contourLevelsLinear;
     QList<double> contourLevelsLog;

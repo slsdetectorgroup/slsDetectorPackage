@@ -145,6 +145,10 @@
   <property name="windowTitle">
    <string>SLS Detector GUI</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../include/icons.qrc">
+    <normaloff>:/icons/images/mountain.png</normaloff>:/icons/images/mountain.png</iconset>
+  </property>
   <property name="inputMethodHints">
    <set>Qt::ImhNone</set>
   </property>
@@ -416,6 +420,8 @@ p, li { white-space: pre-wrap; }
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="../include/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

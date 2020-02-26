@@ -26,27 +26,10 @@
 #include <sys/stat.h>
 
 int main(int argc, char **argv) {
-    QApplication *theApp = new QApplication(argc, argv);
-    theApp->setStyle(new QPlastiqueStyle);
-    theApp->setWindowIcon(QIcon(":/icons/images/mountain.png"));
-    try {
-        qDetectorMain *det = new qDetectorMain(argc, argv, theApp, 0);
-        det->show();
-        theApp->exec();
-    } catch (const std::exception &e) {
-        qDefs::Message(qDefs::CRITICAL,
-                       std::string(e.what()) + "\nExiting Gui :'( ", "main");
-    }
-    return 0;
-}
-
-qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app,
-                             QWidget *parent)
-    : QMainWindow(parent), detType(slsDetectorDefs::GENERIC), isDeveloper(0),
-      heightPlotWindow(0), heightCentralWidget(0) {
 
     // options
     std::string fname = "";
+    bool isDeveloper = false;
     int64_t tempval = 0;
     int multiId = 0;
 
@@ -81,7 +64,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app,
             break;
 
         case 'd':
-            isDeveloper = 1;
+            isDeveloper = true;
             break;
 
         case 'i':
@@ -92,7 +75,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app,
             tempval = APIGUI;
             FILE_LOG(logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x"
                               << std::hex << tempval << ")";
-            return;
+            return 0;
 
         case 'h':
         default:
@@ -107,9 +90,28 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app,
                 "\t                            only when more than one multi "
                 "detector object is needed.\n\n";
             FILE_LOG(logERROR) << help_message;
-            exit(EXIT_FAILURE);
+            return -1;
         }
     }
+
+
+    QApplication app(argc, argv);
+    app.setStyle(new QPlastiqueStyle);
+    //app.setWindowIcon(QIcon(":/icons/images/mountain.png"));
+    try {
+        qDetectorMain det(multiId, fname, isDeveloper);
+        det.show();
+        app.exec();
+    } catch (const std::exception &e) {
+        qDefs::Message(qDefs::CRITICAL,
+                       std::string(e.what()) + "\nExiting Gui :'( ", "main");
+    }
+    return 0;
+}
+
+qDetectorMain::qDetectorMain(int multiId, std::string fname, bool isDevel)
+    : QMainWindow(0), detType(slsDetectorDefs::GENERIC), isDeveloper(isDevel),
+      heightPlotWindow(0), heightCentralWidget(0) {
 
     setupUi(this);
     SetUpDetector(fname, multiId);

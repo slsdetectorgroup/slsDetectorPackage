@@ -21,7 +21,7 @@
 #define QwtLog10ScaleEngine QwtLogScaleEngine
 #endif
 
-SlsQtH1D::SlsQtH1D(QString title, int n, double min, double max, double *data) : QwtPlotCurve(title) {
+SlsQtH1D::SlsQtH1D(QString title, int n, double min, double max, double *data) : QwtPlotCurve(title), x(nullptr), y(nullptr), pen_ptr(nullptr) {
     Initailize();
     SetData(n, min, max, data);
 }
@@ -33,15 +33,18 @@ SlsQtH1D::SlsQtH1D(QString title, int n, double *data_x, double *data_y) : QwtPl
 
 void SlsQtH1D::Initailize() {
     ndata = n_array = 0;
-    x = y = 0;
+    x = y = nullptr;
     pen_ptr = new QPen();
     SetLineColor();
 }
 
 SlsQtH1D::~SlsQtH1D() {
-    delete x;
-    delete y;
-    delete pen_ptr;
+    if (x)
+        delete [] x;
+    if (y)
+        delete [] y;
+    if (pen_ptr)   
+        delete pen_ptr;
 }
 
 void SlsQtH1D::Attach(SlsQt1DPlot *p) {
@@ -358,12 +361,16 @@ SlsQt1DPlot::SlsQt1DPlot(QWidget *parent) : QwtPlot(parent) {
 }
 
 SlsQt1DPlot::~SlsQt1DPlot() {
-    delete hist_list;
-
+    if (hist_list)
+        delete hist_list;
     if (hline)
         delete hline;
     if (vline)
         delete vline;
+    if (zoomer)
+        delete zoomer;
+     if (panner)
+        delete panner;       
 }
 
 void SlsQt1DPlot::CalculateNResetZoomBase() {

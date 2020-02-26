@@ -52,6 +52,30 @@ SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
 }
 
 
+SlsQt2DPlot::~SlsQt2DPlot() {
+    if (d_spectrogram) {
+        d_spectrogram->detach();
+    }
+    if (hist)
+        delete hist;  
+    if (colorMapLinearScale)
+        delete colorMapLinearScale;   
+    if (colorMapLogScale)
+        delete colorMapLogScale;  
+
+
+    if (zoomer)
+        delete zoomer;   
+    if (panner)
+        delete panner;   
+#if QWT_VERSION<0x060000        
+     if (contourLevelsLinear)
+        delete contourLevelsLinear;   
+     if (contourLevelsLog)
+        delete contourLevelsLog;  
+#endif 
+}
+
 void SlsQt2DPlot::SetTitle(QString title) {
 	setTitle(title);
 }
@@ -94,7 +118,7 @@ void SlsQt2DPlot::SetZFont(const QFont& f) {
 }
 
 void SlsQt2DPlot::SetupColorMap() {
-
+   
     colorMapLinearScale = myColourMap(0);
 #if QWT_VERSION < 0x060000
     d_spectrogram->setColorMap(*colorMapLinearScale);

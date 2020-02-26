@@ -77,14 +77,14 @@ class SlsQtH1D:public QwtPlotCurve{
   int    ndata;
   int    n_array;
   double dx;
-  double *x,*y;
+  double *x{nullptr},*y{nullptr};
   double ymin,ymax;
   double firstXgt0,firstYgt0;
   void Initailize();
   int  SetUpArrays(int n);
   int  CheckIndex(int bx);
 
-  QPen* pen_ptr;
+  QPen* pen_ptr{nullptr};
 };
 
 
@@ -151,12 +151,12 @@ class SlsQt1DPlot:public QwtPlot{
   void SetLogY(bool yes=1);
  private:
   
-  SlsQtH1DList*     hist_list;
-  SlsQt1DZoomer*    zoomer;
-  QwtPlotPanner* panner;
+  SlsQtH1DList*     hist_list{nullptr};
+  SlsQt1DZoomer*    zoomer{nullptr};
+  QwtPlotPanner* panner{nullptr};
 
-  QwtPlotMarker *hline;
-  QwtPlotMarker *vline;
+  QwtPlotMarker *hline{nullptr};
+  QwtPlotMarker *vline{nullptr};
   bool disableZoom{false};
   int ystep{0};
   

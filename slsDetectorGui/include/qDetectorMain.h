@@ -30,8 +30,7 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     Q_OBJECT
 
   public:
-    qDetectorMain(int argc, char **argv, QApplication *app,
-                  QWidget *parent = 0);
+    qDetectorMain(int multiId, std::string fname, bool isDevel);
     ~qDetectorMain();
 
   private slots:

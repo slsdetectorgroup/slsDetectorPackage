@@ -280,7 +280,7 @@ TEST_CASE("quad", "[.cmd]") {
     }
 }
 
-TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
+TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs]") {
     // vsvp, vtr, vrf, vrs, vsvn, vtgstv, vcmp_ll, vcmp_lr, vcal, vcmp_rl,
     // rxb_rb, rxb_lb, vcmp_rr, vcp, vcn, vis, vthreshold
     Detector det;
@@ -374,11 +374,14 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("vb_opa_fd", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcom_adc2", {}, -1, GET));
         // jungfrau
-        REQUIRE_THROWS(proxy.Call("vb_ds", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_comp", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vb_pixbuf", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vin_com", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vdd_prot", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vin_com", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_prech", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vb_pixbuf", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vb_ds", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_ds", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
     }
 }
 

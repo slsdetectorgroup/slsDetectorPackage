@@ -735,7 +735,7 @@ int setDynamicRange(int dr){
 /* parameters - timer */
 void setNumFrames(int64_t val) {
     if (val > 0) {
-		FILE_LOG(logINFO, ("Setting number of frames %lld [local]\n", (long long int)val));
+		FILE_LOG(logINFO, ("Setting number of frames %lld [local]\n", val));
 		// continuous mode
 		if (burstMode == BURST_OFF) {
 			setNumFramesCont(val);
@@ -757,7 +757,7 @@ int64_t getNumFrames() {
 
 void setNumTriggers(int64_t val) {
     if (val > 0) {
-		FILE_LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
+		FILE_LOG(logINFO, ("Setting number of triggers %lld\n", val));
 		numTriggers = val;
 		if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
 			FILE_LOG(logINFO, ("\tBurst and Auto mode: not writing #triggers to register\n"));
@@ -776,7 +776,7 @@ int64_t getNumTriggers() {
 
 void setNumBursts(int64_t val) {
     if (val > 0) {
-		FILE_LOG(logINFO, ("Setting number of bursts %lld\n", (long long int)val));
+		FILE_LOG(logINFO, ("Setting number of bursts %lld\n", val));
 		numBursts = val;
 		if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
 			set64BitReg(val, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
@@ -795,10 +795,10 @@ int64_t getNumBursts() {
 
 int setExpTime(int64_t val) {
     if (val < 0) {
-        FILE_LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
+        FILE_LOG(logERROR, ("Invalid exptime: %lld ns\n", val));
         return FAIL;
     }
-	FILE_LOG(logINFO, ("Setting exptime %lld ns [local]\n", (long long int)val));
+	FILE_LOG(logINFO, ("Setting exptime %lld ns [local]\n", val));
 	// continuous mode
 	if (burstMode == BURST_OFF) {
 		return setExptimeCont(val);
@@ -813,10 +813,10 @@ int64_t getExpTime() {
 
 int setPeriod(int64_t val) {
     if (val < 0) {
-        FILE_LOG(logERROR, ("Invalid period: %lld ns\n", (long long int)val));
+        FILE_LOG(logERROR, ("Invalid period: %lld ns\n", val));
         return FAIL;
     }
-	FILE_LOG(logINFO, ("Setting period %lld ns [local]\n", (long long int)val));
+	FILE_LOG(logINFO, ("Setting period %lld ns [local]\n", val));
 	// continuous mode
 	if (burstMode == BURST_OFF) {
 		setPeriodBurst(0);
@@ -846,7 +846,7 @@ int64_t	getNumFramesBurst() {
 }
 
 void setNumFramesCont(int64_t val) {
-    FILE_LOG(logINFO, ("Setting number of frames %lld [Continuous mode]\n", (long long int)val));
+    FILE_LOG(logINFO, ("Setting number of frames %lld [Continuous mode]\n", val));
 	set64BitReg(val, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
 }
 
@@ -855,12 +855,12 @@ int64_t	getNumFramesCont() {
 }
 
 int	setExptimeBurst(int64_t val) {
-	FILE_LOG(logINFO, ("Setting exptime %lld ns [Burst mode]\n", (long long int)val));
+	FILE_LOG(logINFO, ("Setting exptime %lld ns [Burst mode]\n", val));
 	return setExptimeBoth(val);
 }
 
 int	setExptimeCont(int64_t val) {
-	FILE_LOG(logINFO, ("Setting exptime %lld ns [Continuous mode]\n", (long long int)val));
+	FILE_LOG(logINFO, ("Setting exptime %lld ns [Continuous mode]\n", val));
 	return setExptimeBoth(val);
 }
 
@@ -883,7 +883,7 @@ int64_t	getExptimeBoth() {
 
 
 int	setPeriodBurst(int64_t val) {
-	FILE_LOG(logINFO, ("Setting period %lld ns [Burst mode]\n", (long long int)val));
+	FILE_LOG(logINFO, ("Setting period %lld ns [Burst mode]\n", val));
     val *= (1E-9 * clkFrequency[SYSTEM_C0]);
     set64BitReg(val, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
 
@@ -902,7 +902,7 @@ int64_t	getPeriodBurst() {
 }
 
 int	setPeriodCont(int64_t val) {
-	FILE_LOG(logINFO, ("Setting period %lld ns [Continuous mode]\n", (long long int)val));
+	FILE_LOG(logINFO, ("Setting period %lld ns [Continuous mode]\n", val));
     val *= (1E-9 * FIXED_PLL_FREQUENCY);
     set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
 
@@ -922,10 +922,10 @@ int64_t	getPeriodCont() {
 
 int setDelayAfterTrigger(int64_t val) {
     if (val < 0) {
-        FILE_LOG(logERROR, ("Invalid delay after trigger: %lld ns\n", (long long int)val));
+        FILE_LOG(logERROR, ("Invalid delay after trigger: %lld ns\n", val));
         return FAIL;
     } 
-	FILE_LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
+	FILE_LOG(logINFO, ("Setting delay after trigger %lld ns\n", val));
     delayAfterTriggerNs = val;
 	val *= (1E-9 * FIXED_PLL_FREQUENCY);
 	if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
@@ -952,10 +952,10 @@ int64_t getDelayAfterTrigger() {
 
 int setBurstPeriod(int64_t val) {
     if (val < 0) {
-        FILE_LOG(logERROR, ("Invalid burst period: %lld ns\n", (long long int)val));
+        FILE_LOG(logERROR, ("Invalid burst period: %lld ns\n", val));
         return FAIL;
     } 
-	FILE_LOG(logINFO, ("Setting burst period %lld ns\n", (long long int)val));
+	FILE_LOG(logINFO, ("Setting burst period %lld ns\n", val));
     burstPeriodNs = val;
 	val *= (1E-9 * FIXED_PLL_FREQUENCY);
 	if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {

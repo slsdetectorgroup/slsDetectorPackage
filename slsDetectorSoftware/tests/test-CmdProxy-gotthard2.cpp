@@ -68,11 +68,14 @@ TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs]") {
         REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("ib_test_c", {}, -1, GET));
         // jungfrau
-        REQUIRE_THROWS(proxy.Call("vb_ds", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_comp", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vb_pixbuf", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vin_com", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vdd_prot", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vin_com", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vref_prech", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vb_pixbuf", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vb_ds", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_ds", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
         // mythen3
         REQUIRE_THROWS(proxy.Call("vpreamp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vshaper", {}, -1, GET));

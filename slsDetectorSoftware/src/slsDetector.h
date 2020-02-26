@@ -530,32 +530,24 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     uint64_t getStartingFrameNumber();
 
-    void sendTotalNumFramestoReceiver();
+    int64_t getTotalNumFramesToReceive();
 
-    int64_t getNumberOfFramesFromShm();
+    void sendTotalNumFramestoReceiver();
 
     int64_t getNumberOfFrames();
 
     void setNumberOfFrames(int64_t value);
-
-    int64_t getNumberOfTriggersFromShm();
 
     int64_t getNumberOfTriggers();
 
     void setNumberOfTriggers(int64_t value);
 
     /** [Gotthard2] only in burst mode and in auto timing mode */
-    int64_t getNumberOfBurstsFromShm();
-
-    /** [Gotthard2] only in burst mode and in auto timing mode */
     int64_t getNumberOfBursts();
 
     /** [Gotthard2] only in burst mode and in auto timing mode */
     void setNumberOfBursts(int64_t value);
-
-    /** [Jungfrau] Advanced */
-    int getNumberOfAdditionalStorageCellsFromShm();
-    
+   
     /** [Jungfrau] Advanced */
     int getNumberOfAdditionalStorageCells();
 

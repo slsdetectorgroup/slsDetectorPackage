@@ -877,24 +877,12 @@ void DetectorImpl::registerDataCallback(void (*userCallback)(detectorData *,
 }
 
 double DetectorImpl::setTotalProgress() {
-    int64_t nf = Parallel(&slsDetector::getNumberOfFramesFromShm, {})
-                     .tsquash("Inconsistent number of frames");
-    int64_t nc = Parallel(&slsDetector::getNumberOfTriggersFromShm, {})
-                     .tsquash("Inconsistent number of triggers");
-    if (nf == 0 || nc == 0) {
-        throw RuntimeError("Number of frames or triggers is 0");
+    int64_t tot = Parallel(&slsDetector::getTotalNumFramesToReceive, {})
+                     .tsquash("Inconsistent number of total frames (#frames x #triggers(or bursts) x #storage cells)");
+    if (tot == 0) {
+        throw RuntimeError("Invalid Total Number of frames (0)");
     }
-
-    int ns = 1;
-    if (multi_shm()->multiDetectorType == JUNGFRAU) {
-        ns =
-            Parallel(&slsDetector::getNumberOfAdditionalStorageCellsFromShm, {})
-                .tsquash("Inconsistent number of additional storage cells");
-        ++ns;
-    }
-
-    totalProgress = nf * nc * ns;
-    FILE_LOG(logDEBUG1) << "nf " << nf << " nc " << nc << " ns " << ns;
+    totalProgress = tot;
     FILE_LOG(logDEBUG1) << "Set total progress " << totalProgress << std::endl;
     return totalProgress;
 }

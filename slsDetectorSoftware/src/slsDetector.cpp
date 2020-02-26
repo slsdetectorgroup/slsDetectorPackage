@@ -1219,23 +1219,23 @@ uint64_t slsDetector::getStartingFrameNumber() {
     return retval;
 }
 
+int64_t slsDetector::getTotalNumFramesToReceive() {
+    int64_t repeats = shm()->nTriggers;
+    // gotthard2 & auto & burst mode, use nBursts instead of nTriggers
+    if (shm()->myDetectorType == GOTTHARD2) {
+        if (shm()->burstMode != BURST_OFF && shm()->timingMode == AUTO_TIMING) {
+            repeats = shm()->nBursts;
+        }
+    }
+    return (shm()->nFrames * repeats * (int64_t)(shm()->nAddStorageCells + 1));    
+}
+
 void slsDetector::sendTotalNumFramestoReceiver() {
     if (shm()->useReceiverFlag) {
-        int64_t repeats = shm()->nTriggers;
-        // gotthard2 & auto & burst mode, use nBursts instead of nTriggers
-        if (shm()->myDetectorType == GOTTHARD2) {
-            if (shm()->burstMode != BURST_OFF && shm()->timingMode == AUTO_TIMING) {
-                repeats = shm()->nBursts;
-            }
-        }
-        int64_t arg = shm()->nFrames * repeats * (shm()->nAddStorageCells + 1);
+        int64_t arg = getTotalNumFramesToReceive();
         FILE_LOG(logDEBUG1) << "Sending total number of frames (#f x #t x #s) to Receiver: " << arg;
         sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, arg, nullptr);   
     }
-}
-
-int64_t slsDetector::getNumberOfFramesFromShm() {
-    return shm()->nFrames; 
 }
 
 int64_t slsDetector::getNumberOfFrames() {
@@ -1257,10 +1257,6 @@ void slsDetector::setNumberOfFrames(int64_t value) {
     sendTotalNumFramestoReceiver();
 }
 
-int64_t slsDetector::getNumberOfTriggersFromShm() {
-    return shm()->nTriggers; 
-}
-
 int64_t slsDetector::getNumberOfTriggers() {
     int64_t prevVal = shm()->nTriggers;
     int64_t retval = -1;
@@ -1278,10 +1274,6 @@ void slsDetector::setNumberOfTriggers(int64_t value) {
     sendToDetector(F_SET_NUM_TRIGGERS, value, nullptr);
     shm()->nTriggers = value;
     sendTotalNumFramestoReceiver();
-}
-
-int64_t slsDetector::getNumberOfBurstsFromShm() {
-    return shm()->nBursts; 
 }
 
 int64_t slsDetector::getNumberOfBursts() {
@@ -1303,10 +1295,6 @@ void slsDetector::setNumberOfBursts(int64_t value) {
     sendTotalNumFramestoReceiver();
 }
     
-int slsDetector::getNumberOfAdditionalStorageCellsFromShm() {
-    return shm()->nAddStorageCells; 
-}
-
 int slsDetector::getNumberOfAdditionalStorageCells() {
     int prevVal = shm()->nAddStorageCells;
     int retval = -1;

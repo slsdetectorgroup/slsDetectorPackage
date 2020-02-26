@@ -1239,12 +1239,11 @@ void slsDetector::sendTotalNumFramestoReceiver() {
 }
 
 int64_t slsDetector::getNumberOfFrames() {
-    int64_t prevVal = shm()->nFrames;
     int64_t retval = -1;
     sendToDetector(F_GET_NUM_FRAMES, nullptr, retval);
     FILE_LOG(logDEBUG1) << "number of frames :" << retval;
-    shm()->nFrames = retval;
-    if (prevVal != retval) {
+    if (shm()->nFrames != retval) {
+        shm()->nFrames = retval;
         sendTotalNumFramestoReceiver();
     }    
     return shm()->nFrames; 
@@ -1258,12 +1257,11 @@ void slsDetector::setNumberOfFrames(int64_t value) {
 }
 
 int64_t slsDetector::getNumberOfTriggers() {
-    int64_t prevVal = shm()->nTriggers;
     int64_t retval = -1;
     sendToDetector(F_GET_NUM_TRIGGERS, nullptr, retval);
     FILE_LOG(logDEBUG1) << "number of triggers :" << retval;
-    shm()->nTriggers = retval;
-    if (prevVal != retval) {
+    if (shm()->nTriggers != retval) {
+        shm()->nTriggers = retval;
         sendTotalNumFramestoReceiver();
     }    
     return shm()->nTriggers; 
@@ -1277,12 +1275,11 @@ void slsDetector::setNumberOfTriggers(int64_t value) {
 }
 
 int64_t slsDetector::getNumberOfBursts() {
-    int64_t prevVal = shm()->nBursts;
     int64_t retval = -1;
     sendToDetector(F_GET_NUM_BURSTS, nullptr, retval);
     FILE_LOG(logDEBUG1) << "number of bursts :" << retval;
-    shm()->nBursts = retval;
-    if (prevVal != retval) {
+    if (shm()->nBursts != retval) {
+        shm()->nBursts = retval;
         sendTotalNumFramestoReceiver();
     }    
     return shm()->nBursts; 

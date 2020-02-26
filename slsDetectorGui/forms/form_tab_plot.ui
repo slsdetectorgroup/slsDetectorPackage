@@ -2368,7 +2368,6 @@ Displays minimum, maximum and sum of values for each plot.
   <zorder>box1D</zorder>
   <zorder>boxFrequency</zorder>
   <zorder>box2D</zorder>
-  <zorder>horizontalSpacer_6</zorder>
   <zorder>boxPlotAxis</zorder>
   <zorder>boxSave</zorder>
  </widget>

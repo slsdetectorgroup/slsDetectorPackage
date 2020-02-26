@@ -227,3 +227,58 @@ TEST_CASE("inj_ch", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("inj_ch", {}, -1, GET));
     }
 }
+
+
+TEST_CASE("bursts", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2) {
+        auto previous = det.getNumberOfBursts().squash(1);
+        auto previousTrigger = det.getNumberOfTriggers().squash(1);
+
+        std::ostringstream oss_set, oss_get;
+        proxy.Call("bursts", {"3"}, -1, PUT, oss_set);
+        REQUIRE(oss_set.str() == "bursts 3\n");
+
+        // change to trigger and back (bursts should still be same)
+        proxy.Call("timing", {"trigger"}, -1, PUT);
+        proxy.Call("triggers", {"2"}, -1, PUT);
+        proxy.Call("timing", {"auto"}, -1, PUT);
+
+
+        proxy.Call("bursts", {}, -1, GET, oss_get);
+        REQUIRE(oss_get.str() == "bursts 3\n");
+
+
+        det.setNumberOfBursts(previous);
+        det.setNumberOfTriggers(previousTrigger);
+    } else {
+        REQUIRE_THROWS(proxy.Call("bursts", {}, -1, GET));
+    }
+}
+
+TEST_CASE("burstperiod", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2) {
+        auto previous = det.getBurstPeriod();
+
+        std::ostringstream oss_set, oss_get;
+        proxy.Call("burstperiod", {"30ms"}, -1, PUT, oss_set);
+        REQUIRE(oss_set.str() == "burstperiod 30ms\n");
+        proxy.Call("burstperiod", {}, -1, GET, oss_get);
+        REQUIRE(oss_get.str() == "burstperiod 30ms\n");
+        // Reset all dacs to previous value
+        for (int i = 0; i != det.size(); ++i) {
+            det.setBurstPeriod(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("burstperiod", {}, -1, GET));
+    }
+}
+
+

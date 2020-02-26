@@ -26,10 +26,12 @@ private slots:
 	void SetNumMeasurements(int val);
 	void SetNumFrames(int val);
 	void SetNumTriggers(int val);
+	void SetNumBursts(int val);
 	void SetNumSamples(int val);
 	void SetExposureTime();
 	void SetAcquisitionPeriod();
 	void SetDelay();
+	void SetBurstPeriod();
 	void SetFileWrite(bool val);
 	void SetFileName();
 	void SetRunIndex(int val);
@@ -41,17 +43,24 @@ private slots:
 private:
 	void SetupWidgetWindow();
 	void Initialization();
+	/** default, show trigger and delay,
+	 * otherwise for gotthard2 in auto timing mode and burst mode, 
+	 * show bursts and burst period
+	*/
+	void ShowTriggerDelay();
 	void SetupTimingMode();
 	void EnableWidgetsforTimingMode();
 
 	void GetTimingMode();
 	void GetNumFrames();
 	void GetNumTriggers();
+	void GetNumBursts();
 	void GetNumSamples();
 	void GetExposureTime();
 	void GetAcquisitionPeriod();
 	void CheckAcqPeriodGreaterThanExp();
 	void GetDelay();
+	void GetBurstPeriod();
 	void GetFileWrite();
 	void GetFileName();
 	void GetRunIndex();

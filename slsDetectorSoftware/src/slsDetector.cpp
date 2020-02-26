@@ -338,7 +338,10 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->currentThresholdEV = -1;
     shm()->nFrames = 1;
     shm()->nTriggers = 1;
+    shm()->nBursts = 1;
     shm()->nAddStorageCells = 0;
+    shm()->timingMode = AUTO_TIMING;
+    shm()->burstMode = BURST_INTERNAL;
     shm()->deadTime = 0;
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
@@ -756,8 +759,8 @@ void slsDetector::updateCachedDetectorVariables() {
         n += client.Receive(&i64, sizeof(i64));
         shm()->nFrames = i64;
 
+        // storage cell
         if (shm()->myDetectorType == JUNGFRAU) {
-            // storage cell
             n += client.Receive(&i64, sizeof(i64));
             shm()->nAddStorageCells = i64;
         }
@@ -765,6 +768,22 @@ void slsDetector::updateCachedDetectorVariables() {
         // triggers
         n += client.Receive(&i64, sizeof(i64));
         shm()->nTriggers = i64;
+
+        // bursts
+        if (shm()->myDetectorType == GOTTHARD2) {
+            n += client.Receive(&i64, sizeof(i64));
+            shm()->nBursts = i64;
+        }
+
+        // timing mode
+        n += client.Receive(&i32, sizeof(i32));
+        shm()->timingMode = static_cast<timingMode>(i32);        
+
+        // burst mode
+        if (shm()->myDetectorType == GOTTHARD2) {
+            n += client.Receive(&i32, sizeof(i32));
+            shm()->burstMode = static_cast<burstMode>(i32); 
+        }        
 
         // readout mode
         if (shm()->myDetectorType == CHIPTESTBOARD) {
@@ -1200,25 +1219,31 @@ uint64_t slsDetector::getStartingFrameNumber() {
     return retval;
 }
 
+int64_t slsDetector::getTotalNumFramesToReceive() {
+    int64_t repeats = shm()->nTriggers;
+    // gotthard2 & auto & burst mode, use nBursts instead of nTriggers
+    if (shm()->myDetectorType == GOTTHARD2) {
+        if (shm()->burstMode != BURST_OFF && shm()->timingMode == AUTO_TIMING) {
+            repeats = shm()->nBursts;
+        }
+    }
+    return (shm()->nFrames * repeats * (int64_t)(shm()->nAddStorageCells + 1));    
+}
+
 void slsDetector::sendTotalNumFramestoReceiver() {
     if (shm()->useReceiverFlag) {
-        int64_t arg = shm()->nFrames * shm()->nTriggers * (shm()->nAddStorageCells + 1);
+        int64_t arg = getTotalNumFramesToReceive();
         FILE_LOG(logDEBUG1) << "Sending total number of frames (#f x #t x #s) to Receiver: " << arg;
         sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, arg, nullptr);   
     }
 }
 
-int64_t slsDetector::getNumberOfFramesFromShm() {
-    return shm()->nFrames; 
-}
-
 int64_t slsDetector::getNumberOfFrames() {
-    int64_t prevVal = shm()->nFrames;
     int64_t retval = -1;
     sendToDetector(F_GET_NUM_FRAMES, nullptr, retval);
     FILE_LOG(logDEBUG1) << "number of frames :" << retval;
-    shm()->nFrames = retval;
-    if (prevVal != retval) {
+    if (shm()->nFrames != retval) {
+        shm()->nFrames = retval;
         sendTotalNumFramestoReceiver();
     }    
     return shm()->nFrames; 
@@ -1231,17 +1256,12 @@ void slsDetector::setNumberOfFrames(int64_t value) {
     sendTotalNumFramestoReceiver();
 }
 
-int64_t slsDetector::getNumberOfTriggersFromShm() {
-    return shm()->nTriggers; 
-}
-
 int64_t slsDetector::getNumberOfTriggers() {
-    int64_t prevVal = shm()->nTriggers;
     int64_t retval = -1;
     sendToDetector(F_GET_NUM_TRIGGERS, nullptr, retval);
     FILE_LOG(logDEBUG1) << "number of triggers :" << retval;
-    shm()->nTriggers = retval;
-    if (prevVal != retval) {
+    if (shm()->nTriggers != retval) {
+        shm()->nTriggers = retval;
         sendTotalNumFramestoReceiver();
     }    
     return shm()->nTriggers; 
@@ -1253,11 +1273,25 @@ void slsDetector::setNumberOfTriggers(int64_t value) {
     shm()->nTriggers = value;
     sendTotalNumFramestoReceiver();
 }
-    
-int slsDetector::getNumberOfAdditionalStorageCellsFromShm() {
-    return shm()->nAddStorageCells; 
+
+int64_t slsDetector::getNumberOfBursts() {
+    int64_t retval = -1;
+    sendToDetector(F_GET_NUM_BURSTS, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "number of bursts :" << retval;
+    if (shm()->nBursts != retval) {
+        shm()->nBursts = retval;
+        sendTotalNumFramestoReceiver();
+    }    
+    return shm()->nBursts; 
 }
 
+void slsDetector::setNumberOfBursts(int64_t value) {
+    FILE_LOG(logDEBUG1) << "Setting number of bursts to " << value;
+    sendToDetector(F_SET_NUM_BURSTS, value, nullptr);
+    shm()->nBursts = value;
+    sendTotalNumFramestoReceiver();
+}
+    
 int slsDetector::getNumberOfAdditionalStorageCells() {
     int prevVal = shm()->nAddStorageCells;
     int retval = -1;
@@ -1365,6 +1399,18 @@ int64_t slsDetector::getDelayAfterTrigger() {
 void slsDetector::setDelayAfterTrigger(int64_t value) {
     FILE_LOG(logDEBUG1) << "Setting delay after trigger to " << value << "ns";
     sendToDetector(F_SET_DELAY_AFTER_TRIGGER, value, nullptr);
+}
+
+int64_t slsDetector::getBurstPeriod() {
+    int64_t retval = -1;
+    sendToDetector(F_GET_BURST_PERIOD, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "burst period :" << retval << "ns";
+    return retval; 
+}
+
+void slsDetector::setBurstPeriod(int64_t value) {
+    FILE_LOG(logDEBUG1) << "Setting burst period to " << value << "ns";
+    sendToDetector(F_SET_BURST_PERIOD, value, nullptr);
 }
 
 int64_t slsDetector::getSubExptime() {
@@ -1498,6 +1544,7 @@ slsDetectorDefs::timingMode slsDetector::setTimingMode(timingMode value) {
     FILE_LOG(logDEBUG1) << "Setting communication to mode " << value;
     sendToDetector(fnum, static_cast<int>(value), retval);
     FILE_LOG(logDEBUG1) << "Timing Mode: " << retval;
+    shm()->timingMode = retval;
     return retval;
 }
 
@@ -2488,13 +2535,15 @@ slsDetectorDefs::burstMode slsDetector::getBurstMode() {
     int retval = -1;
     sendToDetector(F_GET_BURST_MODE, nullptr, retval);
     FILE_LOG(logDEBUG1) << "Burst mode:" << retval;
-    return static_cast<slsDetectorDefs::burstMode>(retval); 
+    shm()->burstMode = static_cast<slsDetectorDefs::burstMode>(retval);
+    return shm()->burstMode; 
 }
 
 void slsDetector::setBurstMode(slsDetectorDefs::burstMode value) {
     int arg = static_cast<int>(value);
     FILE_LOG(logDEBUG1) << "Setting burst mode to " << arg;
     sendToDetector(F_SET_BURST_MODE, arg, nullptr);
+    shm()->burstMode = value;
 }
 
 int slsDetector::setCounterBit(int cb) {

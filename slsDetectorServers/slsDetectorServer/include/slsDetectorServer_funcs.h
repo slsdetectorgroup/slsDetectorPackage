@@ -208,3 +208,7 @@ int set_adc_enable_mask_10g(int);
 int get_adc_enable_mask_10g(int);
 int set_counter_mask(int);
 int get_counter_mask(int);
+int get_num_bursts(int);
+int set_num_bursts(int);
+int get_burst_period(int);
+int set_burst_period(int);

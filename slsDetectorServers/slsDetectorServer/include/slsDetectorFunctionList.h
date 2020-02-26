@@ -178,6 +178,11 @@ int64_t 	getExpTime();
 int			setPeriod(int64_t val);
 int64_t 	getPeriod();
 #ifdef GOTTHARD2D
+void		setNumBursts(int64_t val);
+int64_t 	getNumBursts();
+int			setBurstPeriod(int64_t val);
+int64_t 	getBurstPeriod();
+
 void		setNumFramesBurst(int64_t val);
 int64_t		getNumFramesBurst();
 void		setNumFramesCont(int64_t val);

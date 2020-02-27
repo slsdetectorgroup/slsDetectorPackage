@@ -126,7 +126,6 @@ int AD7689_GetTemperature() {
             // overwrite configuration
             AD7689_CFG_CFG_OVRWRTE_VAL);
 
-    // FIXME: do we have to read it 8 times?? (sequencer is disabled anyway) or are we sequencing, then we read only last channel
     int regval = AD7689_Get();
 
     // value in mV FIXME: page 17? reference voltage temperature coefficient or t do with -40 to 85 °C
@@ -138,8 +137,7 @@ int AD7689_GetTemperature() {
 
     // value in °C
     double tempValue = AD7689_TMP_C_FOR_1_MV * (double)retval;
-
-    FILE_LOG(logINFO, ("\ttemp read : %f °C\n", tempValue));
+    FILE_LOG(logINFO, ("\ttemp read : %f °C (%d unit)\n", tempValue, regval));
 
     return tempValue;
 
@@ -169,7 +167,6 @@ int AD7689_GetChannel(int ichan) {
            // overwrite configuration
            AD7689_CFG_CFG_OVRWRTE_VAL);
 
-   // FIXME: do we have to read it 8 times?? (sequencer is disabled anyway) or are we sequencing, then we read only last channel
    int regval = AD7689_Get();
 
    // value in mV

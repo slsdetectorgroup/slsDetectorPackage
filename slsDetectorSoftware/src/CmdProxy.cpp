@@ -1400,7 +1400,7 @@ std::string CmdProxy::SlowAdc(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_channel (0-7 for channel|8 for temperature)]\n\t[Ctb] Slow "
-              "ADC channel."
+              "ADC channel in mV or °C."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
@@ -1416,7 +1416,7 @@ std::string CmdProxy::SlowAdc(int action) {
         } else {
             auto t = det->getSlowADC(
                 static_cast<defs::dacIndex>(nchan + defs::SLOW_ADC0), {det_id});
-            os << OutString(t) << '\n';
+            os << OutString(t) << " mV\n";
         }
     } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("cannot put");

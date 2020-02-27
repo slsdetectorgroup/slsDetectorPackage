@@ -8,12 +8,15 @@ void SPIChipSelect (uint32_t* valw, uint32_t addr,  uint32_t csmask, uint32_t cl
     FILE_LOG(logDEBUG2, ("SPI chip select. valw:0x%08x addr:0x%x csmask:0x%x, clkmask:0x%x digmask:0x%x convbit:%d\n",
             *valw, addr, csmask, clkmask, digoutmask, convBit));
 
-    // needed for the slow adcs for apprx 20 ns before and after rising of convbit (usleep val is vague assumption)
-    if (convBit)
-    	usleep(20);
-
     // start point
-    (*valw) = ((bus_r(addr) | csmask | clkmask) &(~digoutmask));
+    if (convBit) {
+        // needed for the slow adcs for apprx 20 ns before and after rising of convbit (usleep val is vague assumption)
+      	usleep(20);
+        // clkmask has to be down for conversion to have correct value (for conv bit = 1)
+        (*valw) = (((bus_r(addr) | csmask) &(~clkmask)) &(~digoutmask));
+    } else {
+         (*valw) = ((bus_r(addr) | csmask | clkmask) &(~digoutmask));
+    }
     bus_w (addr, (*valw));
     FILE_LOG(logDEBUG2, ("startpoint. valw:0x%08x\n", *valw));
 
@@ -93,6 +96,7 @@ uint32_t receiveDataFromSPI (uint32_t* valw, uint32_t addr, int numbitstoreceive
 
     uint32_t retval = 0;
     int i = 0;
+
     for (i = 0; i < numbitstoreceive; ++i) {
 
         // clk down
@@ -104,11 +108,16 @@ uint32_t receiveDataFromSPI (uint32_t* valw, uint32_t addr, int numbitstoreceive
         retval |= ((bus_r(readaddr) & 0x1) << (numbitstoreceive - 1 - i));
         FILE_LOG(logDEBUG2, ("read data %d. retval:0x%08x\n", i, retval));
 
+        usleep(20);
+
         // clk up
         (*valw) |= clkmask ;
         bus_w (addr, (*valw));
         FILE_LOG(logDEBUG2, ("clk up. valw:0x%08x\n", *valw));
+
+        usleep(20);
     }
+    
     return retval;
 }
 
@@ -135,7 +144,8 @@ uint32_t serializeFromSPI(uint32_t addr, uint32_t csmask, int numbitstoreceive, 
 
     uint32_t retval = receiveDataFromSPI(&valw, addr, numbitstoreceive, clkmask, readaddr);
 
-    SPIChipDeselect(&valw, addr, csmask, clkmask, digoutmask, convBit); // moving this before bringin up earlier changes temp of slow adc
+    // not needed for conv bit (not a chip select)
+    //SPIChipDeselect(&valw, addr, csmask, clkmask, digoutmask, convBit); // moving this before bringin up earlier changes temp of slow adc
 
     if (numbitstoreceive == 16) {
         FILE_LOG(logDEBUG2, ("Read From SPI Register: 0x%04x\n", retval));

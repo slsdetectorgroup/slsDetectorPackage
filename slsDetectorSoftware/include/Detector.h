@@ -1036,7 +1036,7 @@ class Detector {
     Result<int> getMeasuredCurrent(defs::dacIndex index,
                                    Positions pos = {}) const;
 
-    /** [CTB] Options: SLOW_ADC0 - SLOW_ADC7 */
+    /** [CTB] Options: SLOW_ADC0 - SLOW_ADC7  in mV */
     Result<int> getSlowADC(defs::dacIndex index, Positions pos = {}) const;
 
     /** [CTB]*/

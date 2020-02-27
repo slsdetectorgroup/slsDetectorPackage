@@ -1416,7 +1416,11 @@ std::string CmdProxy::SlowAdc(int action) {
         } else {
             auto t = det->getSlowADC(
                 static_cast<defs::dacIndex>(nchan + defs::SLOW_ADC0), {det_id});
-            os << OutString(t) << " mV\n";
+            Result<double> result(t.size());
+            for (unsigned int i = 0; i < t.size(); ++i) {
+                result[i] = t[i] / 1000.00;
+            }    
+            os << OutString(result) << " mV\n";
         }
     } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("cannot put");

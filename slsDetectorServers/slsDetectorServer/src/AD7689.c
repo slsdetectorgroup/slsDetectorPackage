@@ -68,6 +68,8 @@
 
 #define AD7689_INT_REF_MAX_MV               (2500) // chosen using reference buffer selection in config reg
 #define AD7689_INT_REF_MIN_MV               (0)
+#define AD7689_INT_REF_MAX_UV               (2500 * 1000) 
+#define AD7689_INT_REF_MIN_UV               (0)
 #define AD7689_INT_MAX_STEPS                (0xFFFF + 1)
 #define AD7689_TMP_C_FOR_1_MV               (25.00 / 283.00)
 
@@ -144,14 +146,14 @@ int AD7689_GetTemperature() {
 }
 
 int AD7689_GetChannel(int ichan) {
-   // filter channels val
-   if (ichan < 0 || ichan >= AD7689_NUM_CHANNELS) {
+    // filter channels val
+    if (ichan < 0 || ichan >= AD7689_NUM_CHANNELS) {
        FILE_LOG(logERROR, ("Cannot get slow adc channel. "
                "%d out of bounds (0 to %d)\n", ichan, AD7689_NUM_CHANNELS - 1));
        return -1;
-   }
+    }
 
-   AD7689_Set(
+    AD7689_Set(
            // read back
            AD7689_CFG_RB_MSK |
            // disable sequencer (different from config)
@@ -167,15 +169,17 @@ int AD7689_GetChannel(int ichan) {
            // overwrite configuration
            AD7689_CFG_CFG_OVRWRTE_VAL);
 
-   int regval = AD7689_Get();
+    int regval = AD7689_Get();
 
-   // value in mV
-   int retval = 0;
-   ConvertToDifferentRange(0, AD7689_INT_MAX_STEPS,
+    // value in uV
+    int retval = ((double)(regval - 0) * (double)(AD7689_INT_REF_MAX_UV - AD7689_INT_REF_MIN_UV))
+            / (double)(AD7689_INT_MAX_STEPS - 0) + AD7689_INT_REF_MIN_UV;
+
+    /*ConvertToDifferentRange(0, AD7689_INT_MAX_STEPS,
            AD7689_INT_REF_MIN_MV, AD7689_INT_REF_MAX_MV,
-           regval, &retval);
-   FILE_LOG(logINFO, ("\tvoltage read for chan %d: %d mV\n", ichan, retval));
+           regval, &retval);*/
 
+   FILE_LOG(logINFO, ("\tvoltage read for chan %d: %d uV (regVal: %d)\n", ichan, retval, regval));
    return retval;
 }
 

@@ -1152,6 +1152,18 @@ class slsDetector : public virtual slsDetectorDefs {
 
     /** [Gotthard2] BURST_OFF, BURST_INTERNAL (default), BURST_EXTERNAL */
     void setBurstMode(burstMode value);
+
+    /** [Gotthard2] */
+    bool getCurrentSource();
+
+    /** default disabled */
+    void setCurrentSource(bool value);
+
+    /** [Gotthard2] */
+    slsDetectorDefs::timingSourceType getTimingSource();
+
+    /** [Gotthard2] Options: TIMING_INTERNAL, TIMING_EXTERNAL */
+    void setTimingSource(slsDetectorDefs::timingSourceType value);
        
     /**
      * Set/get counter bit in detector (Gotthard)

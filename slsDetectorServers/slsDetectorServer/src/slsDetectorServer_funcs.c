@@ -319,6 +319,10 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_NUM_BURSTS:					return "F_SET_NUM_BURSTS";
 	case F_GET_BURST_PERIOD:				return "F_GET_BURST_PERIOD";	
 	case F_SET_BURST_PERIOD:				return "F_SET_BURST_PERIOD";
+	case F_GET_CURRENT_SOURCE:				return "F_GET_CURRENT_SOURCE";
+	case F_SET_CURRENT_SOURCE:				return "F_SET_CURRENT_SOURCE";
+	case F_GET_TIMING_SOURCE:				return "F_GET_TIMING_SOURCE";
+	case F_SET_TIMING_SOURCE:				return "F_SET_TIMING_SOURCE";
 
 	default:								return "Unknown Function";
 	}
@@ -507,6 +511,10 @@ void function_table() {
 	flist[F_SET_NUM_BURSTS]	 					= &set_num_bursts;				
 	flist[F_GET_BURST_PERIOD]					= &get_burst_period;					
 	flist[F_SET_BURST_PERIOD]					= &set_burst_period;					
+	flist[F_GET_CURRENT_SOURCE]					= &get_current_source;
+	flist[F_SET_CURRENT_SOURCE]					= &set_current_source;
+	flist[F_GET_TIMING_SOURCE]					= &get_timing_source;
+	flist[F_SET_TIMING_SOURCE]					= &set_timing_source;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -6735,4 +6743,102 @@ int set_burst_period(int file_des) {
 	}
 #endif	
 	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+}
+
+
+int set_current_source(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int arg = 0;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logINFO, ("Setting current source enable: %u\n", arg));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		setCurrentSource(arg); 
+		int retval = getCurrentSource();
+		FILE_LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
+		validate(arg, retval, "current source enable", DEC);
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_current_source(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retval = -1;
+
+	FILE_LOG(logDEBUG1, ("Getting current source enable\n"));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getCurrentSource();
+	FILE_LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+int set_timing_source(int file_des) {
+  	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	enum timingSourceType arg = TIMING_INTERNAL;
+
+	if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+	return printSocketReadError();
+	FILE_LOG(logDEBUG1, ("Setting timing source: %d\n", arg));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else
+	// only set
+	if (Server_VerifyLock() == OK) {
+		switch (arg) {
+			case TIMING_INTERNAL:
+			case TIMING_EXTERNAL:
+				break;
+			default:
+				modeNotImplemented("timing source", (int)arg);
+				break;	
+		}
+		if (ret == OK) {
+			setTimingSource(arg);
+			enum timingSourceType retval = getTimingSource();
+			FILE_LOG(logDEBUG, ("timing source retval: %d\n", retval));
+			if (retval != arg) {
+				ret = FAIL;
+				sprintf(mess, "Could not set timing source. Set %d, got %d\n", arg, retval);
+				FILE_LOG(logERROR, (mess));		
+			}
+		}
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+}
+
+
+int get_timing_source(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	enum timingSourceType retval = TIMING_INTERNAL;
+
+	FILE_LOG(logDEBUG1, ("Getting timing source\n"));
+
+#ifndef GOTTHARD2D
+	functionNotImplemented();
+#else	
+	// get only
+	retval = getTimingSource();
+	FILE_LOG(logDEBUG1, ("Get timing source retval:%d\n", retval));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }

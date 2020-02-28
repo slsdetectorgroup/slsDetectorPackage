@@ -482,6 +482,10 @@ int			configureADC();
 int			setBurstModeinFPGA(enum burstMode value);
 int			setBurstMode(enum burstMode burst);
 enum burstMode	getBurstMode();
+void		setCurrentSource(int value);
+int			getCurrentSource();
+void		setTimingSource(enum timingSourceType value);
+enum timingSourceType	getTimingSource();
 #endif
 
 

@@ -217,6 +217,18 @@ inline std::string ToString(const defs::burstMode s) {
     }
 }
 
+
+inline std::string ToString(const defs::timingSourceType s) {
+    switch (s) {
+    case defs::TIMING_INTERNAL:
+        return std::string("internal");
+    case defs::TIMING_EXTERNAL:
+        return std::string("external");
+    default:
+        return std::string("Unknown");       
+    }
+}
+
 // in case we already have a string 
 // causes a copy but might be needed in generic code
 inline std::string ToString(const std::string& s) {
@@ -572,6 +584,15 @@ inline defs::burstMode StringTo(const std::string& s) {
     if (s == "external")
         return defs::BURST_EXTERNAL;           
     throw sls::RuntimeError("Unknown burst mode " + s);          
+}
+
+template <>
+inline defs::timingSourceType StringTo(const std::string& s) {
+    if (s == "internal")
+        return defs::TIMING_INTERNAL;
+    if (s == "external")
+        return defs::TIMING_EXTERNAL;
+    throw sls::RuntimeError("Unknown timing source type " + s);          
 }
 
 

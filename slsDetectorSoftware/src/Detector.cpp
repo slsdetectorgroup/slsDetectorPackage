@@ -1204,6 +1204,22 @@ void Detector::setBurstMode(defs::burstMode value, Positions pos) {
     pimpl->Parallel(&slsDetector::setBurstMode, pos, value);
 }
 
+Result<bool> Detector::getCurrentSource(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getCurrentSource, pos);
+}
+
+void Detector::setCurrentSource(bool value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setCurrentSource, pos, value);
+}
+
+Result<defs::timingSourceType> Detector::getTimingSource(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTimingSource, pos);
+}
+
+void Detector::setTimingSource(defs::timingSourceType value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTimingSource, pos, value);
+}
+
 // Mythen3 Specific
 
 Result<uint32_t> Detector::getCounterMask(Positions pos) const {

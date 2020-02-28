@@ -790,6 +790,8 @@ class CmdProxy {
                           {"vetophoton", &CmdProxy::VetoPhoton},
                           {"vetoref", &CmdProxy::VetoReference},
                           {"burstmode", &CmdProxy::BurstMode},
+                          {"currentsource", &CmdProxy::currentsource},
+                          {"timingsource", &CmdProxy::timingsource},
 
                           /* Mythen3 Specific */  
                           {"counters", &CmdProxy::Counters},
@@ -1564,6 +1566,12 @@ class CmdProxy {
                     "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0.");  
 
     /* Gotthard2 Specific */
+    INTEGER_COMMAND(currentsource, getCurrentSource, setCurrentSource, std::stoi,
+                    "[0, 1]\n\t[Gotthard2] Enable or disable current source. Default is disabled.");
+
+    INTEGER_COMMAND(timingsource, getTimingSource, setTimingSource, sls::StringTo<slsDetectorDefs::timingSourceType>,
+                    "[internal|external]\n\t[Gotthard2] Timing source. Internal is crystal and external is system timing. Default is internal.");
+
     /* Mythen3 Specific */ 
 
     /* CTB Specific */

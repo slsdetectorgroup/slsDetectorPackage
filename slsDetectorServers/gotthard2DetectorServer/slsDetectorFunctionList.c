@@ -447,6 +447,8 @@ void setupDetector() {
 	setDelayAfterTrigger(DEFAULT_DELAY_AFTER_TRIGGER);
 	setBurstPeriod(DEFAULT_BURST_PERIOD);
 	setTiming(DEFAULT_TIMING_MODE);
+	setCurrentSource(DEFAULT_CURRENT_SOURCE);
+	setTimingSource(DEFAULT_TIMING_SOURCE);
 }
 
 int readConfigFile() {
@@ -1960,6 +1962,44 @@ enum burstMode getBurstMode() {
 	}
 	return burstMode;
 }
+
+void setCurrentSource(int value) {
+	uint32_t addr = ASIC_CONFIG_REG;
+	if (value > 0) {
+		bus_w(addr, (bus_r(addr) | ASIC_CONFIG_CURRENT_SRC_EN_MSK));
+	} else if (value == 0) {
+		bus_w(addr, (bus_r(addr) &~ ASIC_CONFIG_CURRENT_SRC_EN_MSK));
+	}
+}
+
+int	getCurrentSource() {
+	return ((bus_r(ASIC_CONFIG_REG) & ASIC_CONFIG_CURRENT_SRC_EN_MSK) >> ASIC_CONFIG_CURRENT_SRC_EN_OFST);
+}
+
+void setTimingSource(enum timingSourceType value) {
+	uint32_t addr = CONTROL_REG;
+	switch (value) {
+		case TIMING_INTERNAL:
+			FILE_LOG(logINFO, ("Setting timing source to internal\n"));
+			bus_w(addr, (bus_r(addr) &~ CONTROL_TIMING_SOURCE_EXT_MSK));
+			break;
+		case TIMING_EXTERNAL:
+			FILE_LOG(logINFO, ("Setting timing source to exernal\n"));
+			bus_w(addr, (bus_r(addr) | CONTROL_TIMING_SOURCE_EXT_MSK));
+			break;		
+		default:
+			FILE_LOG(logERROR, ("Unknown timing source %d\n", value));
+			break;	
+	}
+}
+
+enum timingSourceType getTimingSource() {
+	if (bus_r(CONTROL_REG) & CONTROL_TIMING_SOURCE_EXT_MSK) {
+		return TIMING_EXTERNAL;
+	}
+	return TIMING_INTERNAL;
+}
+
 
 
 /* aquisition */

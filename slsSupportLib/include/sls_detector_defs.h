@@ -444,8 +444,16 @@ class slsDetectorDefs {
     enum burstMode {
         BURST_OFF,
         BURST_INTERNAL,      
-        BURST_EXTERNAL, 
+        BURST_EXTERNAL 
     };    
+
+    /**
+     * timing source for gotthard2
+     */
+    enum timingSourceType {
+        TIMING_INTERNAL,
+        TIMING_EXTERNAL 
+    };       
 
 
 #ifdef __cplusplus

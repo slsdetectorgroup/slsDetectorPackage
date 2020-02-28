@@ -192,6 +192,10 @@ enum detFuncs{
 	F_SET_NUM_BURSTS,
 	F_GET_BURST_PERIOD,
 	F_SET_BURST_PERIOD,
+	F_GET_CURRENT_SOURCE,
+	F_SET_CURRENT_SOURCE,
+	F_GET_TIMING_SOURCE,
+	F_SET_TIMING_SOURCE,
 
 	NUM_DET_FUNCTIONS,
 	RECEIVER_ENUM_START = 256, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -451,7 +455,11 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_NUM_BURSTS:					return "F_GET_NUM_BURSTS";
 	case F_SET_NUM_BURSTS:					return "F_SET_NUM_BURSTS";
 	case F_GET_BURST_PERIOD:				return "F_GET_BURST_PERIOD";	
-	case F_SET_BURST_PERIOD:				return "F_SET_BURST_PERIOD";	
+	case F_SET_BURST_PERIOD:				return "F_SET_BURST_PERIOD";
+	case F_GET_CURRENT_SOURCE:				return "F_GET_CURRENT_SOURCE";
+	case F_SET_CURRENT_SOURCE:				return "F_SET_CURRENT_SOURCE";
+	case F_GET_TIMING_SOURCE:				return "F_GET_TIMING_SOURCE";
+	case F_SET_TIMING_SOURCE:				return "F_SET_TIMING_SOURCE";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

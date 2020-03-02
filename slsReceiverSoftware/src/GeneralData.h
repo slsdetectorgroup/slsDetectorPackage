@@ -629,13 +629,6 @@ private:
 	/** Number of bytes per analog channel */
 	const int NUM_BYTES_PER_ANALOG_CHANNEL = 2;
 
-	struct ctb_10g_packet_header {
-		unsigned char emptyHeader[6];
-		unsigned char reserved[4];
-		uint32_t packetFrameNumber;
-		uint64_t bunchid;
-	} __attribute__((packed));
-
 public:
 
 
@@ -660,7 +653,7 @@ public:
 	};
 
     /**
-     * Set databytes (ctb, moench)
+     * Set databytes 
      * @param a adc enable mask
 	 * @param as analog number of samples
      * @param ds digital number of samples
@@ -700,50 +693,21 @@ public:
 
         nPixelsX = nachans + ndchans;
         nPixelsY = 1;
+		
         // 10G
         if (t) {
-            headerSizeinPacket = sizeof(slsDetectorDefs::sls_detector_header);
             dataSize = 8144;
-			packetSize = headerSizeinPacket + dataSize;
-            imageSize = adatabytes + ddatabytes;
-            packetsPerFrame = ceil((double)imageSize / (double)dataSize);
-            standardheader = true;	    
-
-			/*
-			headerSizeinPacket = 22;
-			dataSize = 8192;
-			packetSize = headerSizeinPacket + dataSize;
-			imageSize = adatabytes + ddatabytes;
-			packetsPerFrame	= ceil((double)imageSize / (double)dataSize);
-			standardheader = false;
-			*/
 		}
 	    // 1g udp (via fifo readout)
 	    else {
-			headerSizeinPacket 	= sizeof(slsDetectorDefs::sls_detector_header);
 			dataSize 			= UDP_PACKET_DATA_BYTES;
-			packetSize 			= headerSizeinPacket + dataSize;
-			imageSize 			= adatabytes + ddatabytes;
-			packetsPerFrame 	= ceil((double)imageSize / (double)dataSize);
-			standardheader		= true;
 	    }
-		return adatabytes;
-	}
 
-	/**
-	 * Get Header Infomation (frame number, packet number)
-	 * @param index thread index for debugging purposes
-	 * @param packetData pointer to data
-	 * @param oddStartingPacket odd starting packet (gotthard)
-	 * @param frameNumber frame number
-	 * @param packetNumber packet number
-	 */
-	void GetHeaderInfo(int index, char* packetData, bool oddStartingPacket,
-			uint64_t& frameNumber, uint32_t& packetNumber) const
-	{
-		auto header = reinterpret_cast<ctb_10g_packet_header*>(packetData);
-		frameNumber = (header->packetFrameNumber >> frameIndexOffset) & frameIndexMask;
-		packetNumber = header->packetFrameNumber & packetIndexMask;
+		packetSize = headerSizeinPacket + dataSize;
+        imageSize = adatabytes + ddatabytes;
+        packetsPerFrame = ceil((double)imageSize / (double)dataSize);
+
+		return adatabytes;
 	}
 
 };
@@ -769,14 +733,14 @@ public:
       imageSize 				= nPixelsX * nPixelsY * 2;
       packetsPerFrame 			= ceil((double)imageSize / (double)UDP_PACKET_DATA_BYTES);
       frameIndexMask 			= 0xFFFFFF;
-      maxFramesPerFile 			= CTB_MAX_FRAMES_PER_FILE;
+      maxFramesPerFile 			= MOENCH_MAX_FRAMES_PER_FILE;
       fifoBufferHeaderSize 		= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
       defaultFifoDepth 			= 2500;
       standardheader 			= true;
 	};
 
     /**
-     * Set databytes (ctb, moench)
+     * Set databytes 
      * @param a adc enable mask
 	 * @param as analog number of samples
      * @param ds digital number of samples
@@ -785,41 +749,37 @@ public:
 	 * @returns analog data bytes
      */
 	int setImageSize(uint32_t a, uint32_t as, uint32_t ds, bool t, slsDetectorDefs::readoutMode) {
-        int nachans = 0;
-        int adatabytes = 0;
+        
+		// count number of channels in x, each adc has 25 channels each
+        int nchanTop =  __builtin_popcount(a & 0xF0F0F0F0) * 25;
+        int nchanBot = __builtin_popcount(a & 0x0F0F0F0F) * 25;
+        nPixelsX = nchanTop > 0 ? nchanTop : nchanBot; 
 
-		// analog channels (normal, analog/digital readout)
-		if (a == BIT32_MASK) {
-			nachans = 32;
-		} else {
-			for (int ich = 0; ich < 32; ++ich) {
-				if (a & (1 << ich))
-					++nachans;
-			}
-		}
-		adatabytes = nachans * NUM_BYTES_PER_ANALOG_CHANNEL * as;
-		FILE_LOG(logDEBUG1) << "Total Number of Channels:" << nachans
-							<< " Databytes: " << adatabytes;
+        // if both top and bottom adcs enabled, rows = 2
+        int nrows = 1;
+        if (nchanTop > 0 && nchanBot > 0) {
+            nrows = 2;
+        }        
+        nPixelsY = as / 25 * nrows;
+		FILE_LOG(logINFO) << "Number of Pixels: [" << nPixelsX << ", " << nPixelsY << "]";
 
-        nPixelsX = nachans;
-        nPixelsY = 1;
+
         // 10G
         if (t) {
-            headerSizeinPacket 	= sizeof(slsDetectorDefs::sls_detector_header);
-            dataSize 			= UDP_PACKET_DATA_BYTES;
-			packetSize 			= headerSizeinPacket + dataSize;
-            imageSize 			= adatabytes;
-            packetsPerFrame 	= ceil((double)imageSize / (double)dataSize);  
+            dataSize = 8144;
 		}
 	    // 1g udp (via fifo readout)
 	    else {
-			headerSizeinPacket 	= sizeof(slsDetectorDefs::sls_detector_header);
-			dataSize 			= UDP_PACKET_DATA_BYTES;
-			packetSize 			= headerSizeinPacket + dataSize;
-			imageSize 			= adatabytes;
-			packetsPerFrame 	= ceil((double)imageSize / (double)dataSize);
+			dataSize = UDP_PACKET_DATA_BYTES;
 	    }
-		return adatabytes;
+
+		imageSize 			= nPixelsX * nPixelsY * NUM_BYTES_PER_ANALOG_CHANNEL;
+		packetSize 			= headerSizeinPacket + dataSize;
+		packetsPerFrame 	= ceil((double)imageSize / (double)dataSize);
+		
+		FILE_LOG(logDEBUG) << "Databytes: " << imageSize;
+
+		return imageSize;
 	}
 };
 

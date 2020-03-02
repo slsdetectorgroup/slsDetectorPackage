@@ -557,7 +557,7 @@ void DetectorImpl::readFrameFromReceiver() {
                     uint32_t yoffset = coordY * nPixelsY;
                     uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
                     uint32_t rowoffset = nX * singledetrowoffset;
-		            if (multi_shm()->multiDetectorType == CHIPTESTBOARD) {
+		            if (multi_shm()->multiDetectorType == MOENCH) {
                         singledetrowoffset = size;
 			            nPixelsY = 1; // TODO: nDetPixelsY is not updated.
 		            }
@@ -1070,6 +1070,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     switch (multi_shm()->multiDetectorType) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
+    case MOENCH:
         if (fname.find(".pof") == std::string::npos) {
             throw RuntimeError("Programming file must be a pof file.");
         }

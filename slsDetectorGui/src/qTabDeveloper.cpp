@@ -82,14 +82,14 @@ void qTabDeveloper::SetupWidgetWindow() {
 		case slsDetectorDefs::MOENCH:
 			lblSpinHV->show();
 			spinHV->show();
-			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 0: ", getSLSIndex(detType, tempid++)));
-			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 1: ", getSLSIndex(detType, tempid++)));
-			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 2: ", getSLSIndex(detType, tempid++)));
-			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 3: ", getSLSIndex(detType, tempid++)));
-			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 4: ", getSLSIndex(detType, tempid++)));
-			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 5: ", getSLSIndex(detType, tempid++)));
-			dacWidgets.push_back(new qDacWidget(this, det, true, "v Dac 6: ", getSLSIndex(detType, tempid++)));
-			dacWidgets.push_back(new qDacWidget(this, det, true, "i Dac 7: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vbp_colbuf: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vipre: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vin_cm: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vb_sda: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vcasc_sfp: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vout_cm: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "vipre_cds: ", getSLSIndex(detType, tempid++)));
+			dacWidgets.push_back(new qDacWidget(this, det, true, "ibias_sfp: ", getSLSIndex(detType, tempid++)));
 			break;
 
 		case slsDetectorDefs::MYTHEN3:
@@ -343,10 +343,27 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorTy
 		break;
 
 	case slsDetectorDefs::MOENCH:
-		if (index >= 0 && index < (int)dacWidgets.size()) {
-			return (slsDetectorDefs::dacIndex)index;
-		} 
-		throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));
+		switch (index) {
+		case 0:
+			return slsDetectorDefs::VBP_COLBUF;
+		case 1:
+			return slsDetectorDefs::VIPRE;
+		case 2:
+			return slsDetectorDefs::VIN_CM;
+		case 3:
+			return slsDetectorDefs::VB_SDA;
+		case 4:
+			return slsDetectorDefs::VCASC_SFP;
+		case 5:
+			return slsDetectorDefs::VOUT_CM;
+		case 6:
+			return slsDetectorDefs::VIPRE_CDS;
+		case 7:
+			return slsDetectorDefs::IBIAS_SFP;
+		default:
+			throw sls::RuntimeError(std::string("Unknown dac/adc index") + std::to_string(index));	
+		}
+		break;
 
 	case slsDetectorDefs::MYTHEN3:
 		switch (index) {

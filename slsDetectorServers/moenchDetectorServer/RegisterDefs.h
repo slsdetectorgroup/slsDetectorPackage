@@ -16,7 +16,7 @@
 /* Fix pattern RO register */
 #define FIX_PATT_REG          			    (0x01 << MEM_MAP_SHIFT)
 
-#define FIX_PATT_VAL                        (0xACDC2014)
+#define FIX_PATT_VAL                        (0xACDC2016)
 
 /* Status RO register */
 #define STATUS_REG            			    (0x02 << MEM_MAP_SHIFT)
@@ -289,7 +289,7 @@
 /* Configuration RW register */
 #define CONFIG_REG            			    (0x4D << MEM_MAP_SHIFT)
 
-#define CONFIG_LED_DSBL_OFST                (0)
+#define CONFIG_LED_DSBL_OFST                (0)                                         // Not used in firmware or software
 #define CONFIG_LED_DSBL_MSK                 (0x00000001 << CONFIG_LED_DSBL_OFST)
 #define CONFIG_DSBL_ANLG_OTPT_OFST          (8)
 #define CONFIG_DSBL_ANLG_OTPT_MSK           (0x00000001 << CONFIG_DSBL_ANLG_OTPT_OFST)
@@ -365,23 +365,23 @@
 #define PATTERN_CNTRL_RD_OFST               (1)
 #define PATTERN_CNTRL_RD_MSK                (0x00000001 << PATTERN_CNTRL_RD_OFST)
 #define PATTERN_CNTRL_ADDR_OFST             (16)
-#define PATTERN_CNTRL_ADDR_MSK              (0x0000FFFF << PATTERN_CNTRL_ADDR_OFST)
+#define PATTERN_CNTRL_ADDR_MSK              (0x00001FFF << PATTERN_CNTRL_ADDR_OFST)
 
 /* Pattern Limit RW regiser */
 #define PATTERN_LIMIT_REG                   (0x53 << MEM_MAP_SHIFT)
 
 #define PATTERN_LIMIT_STRT_OFST       		(0)
-#define PATTERN_LIMIT_STRT_MSK        		(0x0000FFFF << PATTERN_LIMIT_STRT_OFST)
+#define PATTERN_LIMIT_STRT_MSK        		(0x00001FFF << PATTERN_LIMIT_STRT_OFST)
 #define PATTERN_LIMIT_STP_OFST        		(16)
-#define PATTERN_LIMIT_STP_MSK         		(0x0000FFFF << PATTERN_LIMIT_STP_OFST)
+#define PATTERN_LIMIT_STP_MSK         		(0x00001FFF << PATTERN_LIMIT_STP_OFST)
 
 /* Pattern Loop 0 Address RW regiser */
 #define PATTERN_LOOP_0_ADDR_REG             (0x54 << MEM_MAP_SHIFT)
 
 #define PATTERN_LOOP_0_ADDR_STRT_OFST       (0)
-#define PATTERN_LOOP_0_ADDR_STRT_MSK        (0x0000FFFF << PATTERN_LOOP_0_ADDR_STRT_OFST)
+#define PATTERN_LOOP_0_ADDR_STRT_MSK        (0x00001FFF << PATTERN_LOOP_0_ADDR_STRT_OFST)
 #define PATTERN_LOOP_0_ADDR_STP_OFST        (16)
-#define PATTERN_LOOP_0_ADDR_STP_MSK         (0x0000FFFF << PATTERN_LOOP_0_ADDR_STP_OFST)
+#define PATTERN_LOOP_0_ADDR_STP_MSK         (0x00001FFF << PATTERN_LOOP_0_ADDR_STP_OFST)
 
 /* Pattern Loop 0 Iteration RW regiser */
 #define PATTERN_LOOP_0_ITERATION_REG        (0x55 << MEM_MAP_SHIFT)
@@ -390,9 +390,9 @@
 #define PATTERN_LOOP_1_ADDR_REG             (0x56 << MEM_MAP_SHIFT)
 
 #define PATTERN_LOOP_1_ADDR_STRT_OFST       (0)
-#define PATTERN_LOOP_1_ADDR_STRT_MSK        (0x0000FFFF << PATTERN_LOOP_1_ADDR_STRT_OFST)
+#define PATTERN_LOOP_1_ADDR_STRT_MSK        (0x00001FFF << PATTERN_LOOP_1_ADDR_STRT_OFST)
 #define PATTERN_LOOP_1_ADDR_STP_OFST        (16)
-#define PATTERN_LOOP_1_ADDR_STP_MSK         (0x0000FFFF << PATTERN_LOOP_1_ADDR_STP_OFST)
+#define PATTERN_LOOP_1_ADDR_STP_MSK         (0x00001FFF << PATTERN_LOOP_1_ADDR_STP_OFST)
 
 /* Pattern Loop 1 Iteration RW regiser */
 #define PATTERN_LOOP_1_ITERATION_REG        (0x57 << MEM_MAP_SHIFT)
@@ -401,9 +401,9 @@
 #define PATTERN_LOOP_2_ADDR_REG             (0x58 << MEM_MAP_SHIFT)
 
 #define PATTERN_LOOP_2_ADDR_STRT_OFST       (0)
-#define PATTERN_LOOP_2_ADDR_STRT_MSK        (0x0000FFFF << PATTERN_LOOP_2_ADDR_STRT_OFST)
+#define PATTERN_LOOP_2_ADDR_STRT_MSK        (0x00001FFF << PATTERN_LOOP_2_ADDR_STRT_OFST)
 #define PATTERN_LOOP_2_ADDR_STP_OFST        (16)
-#define PATTERN_LOOP_2_ADDR_STP_MSK         (0x0000FFFF << PATTERN_LOOP_2_ADDR_STP_OFST)
+#define PATTERN_LOOP_2_ADDR_STP_MSK         (0x00001FFF << PATTERN_LOOP_2_ADDR_STP_OFST)
 
 /* Pattern Loop 2 Iteration RW regiser */
 #define PATTERN_LOOP_2_ITERATION_REG        (0x59 << MEM_MAP_SHIFT)
@@ -412,31 +412,36 @@
 #define PATTERN_WAIT_0_ADDR_REG             (0x5A << MEM_MAP_SHIFT)
 
 #define PATTERN_WAIT_0_ADDR_OFST            (0)
-#define PATTERN_WAIT_0_ADDR_MSK             (0x0000FFFF << PATTERN_WAIT_0_ADDR_OFST)
+#define PATTERN_WAIT_0_ADDR_MSK             (0x00001FFF << PATTERN_WAIT_0_ADDR_OFST)
 //FIXME: is mask 3FF
 
 /* Pattern Wait 1 RW regiser */
 #define PATTERN_WAIT_1_ADDR_REG             (0x5B << MEM_MAP_SHIFT)
 
 #define PATTERN_WAIT_1_ADDR_OFST            (0)
-#define PATTERN_WAIT_1_ADDR_MSK             (0x0000FFFF << PATTERN_WAIT_1_ADDR_OFST)
+#define PATTERN_WAIT_1_ADDR_MSK             (0x00001FFF << PATTERN_WAIT_1_ADDR_OFST)
 
 /* Pattern Wait 2 RW regiser */
 #define PATTERN_WAIT_2_ADDR_REG             (0x5C << MEM_MAP_SHIFT)
 
 #define PATTERN_WAIT_2_ADDR_OFST            (0)
-#define PATTERN_WAIT_2_ADDR_MSK             (0x0000FFFF << PATTERN_WAIT_2_ADDR_OFST)
+#define PATTERN_WAIT_2_ADDR_MSK             (0x00001FFF << PATTERN_WAIT_2_ADDR_OFST)
 
 /* Samples RW register */
 #define SAMPLES_REG 						(0x5D << MEM_MAP_SHIFT)
 
+#define SAMPLES_DIGITAL_OFST                (0)
+#define SAMPLES_DIGITAL_MSK                 (0x0000FFFF << SAMPLES_DIGITAL_OFST)
+#define SAMPLES_ANALOG_OFST                 (16)
+#define SAMPLES_ANALOG_MSK                  (0x0000FFFF << SAMPLES_ANALOG_OFST)
+
 /** Power RW register */
 #define POWER_REG					        (0x5E << MEM_MAP_SHIFT)
 
-#define POWER_ENBL_VLTG_RGLTR_OFST          (16)
-#define POWER_ENBL_VLTG_RGLTR_MSK           (0x0000001F << POWER_ENBL_VLTG_RGLTR_OFST)
-#define POWER_HV_SLCT_OFST                  (31)
-#define POWER_HV_SLCT_MSK                   (0x00000001 << POWER_HV_SLCT_OFST)
+#define POWER_CHIP_OFST                     (16)
+#define POWER_CHIP_MSK                      (0x00000001 << POWER_CHIP_OFST)
+#define POWER_HV_INTERNAL_SLCT_OFST         (31)
+#define POWER_HV_INTERNAL_SLCT_MSK          (0x00000001 << POWER_HV_INTERNAL_SLCT_OFST)
 
 /* Number of Words RW register TODO */
 #define NUMBER_OF_WORDS_REG                 (0x5F << MEM_MAP_SHIFT)
@@ -493,17 +498,16 @@
 #define PATTERN_WAIT_TIMER_2_LSB_REG        (0x76 << MEM_MAP_SHIFT)
 #define PATTERN_WAIT_TIMER_2_MSB_REG        (0x77 << MEM_MAP_SHIFT)
 
-/* ADC Disable RW register TODO */
-#define ADC_DISABLE_REG                     (0x78 << MEM_MAP_SHIFT)
+/* Readout enable RW register */
+#define READOUT_10G_ENABLE_REG              (0x79 << MEM_MAP_SHIFT)
 
-/* DAC Value RW register TODO  */
-//#define DAC_VALUE_REG                       (0x79 << MEM_MAP_SHIFT)
-
-/* DAC Number RW register TODO */
-//#define DAC_NUMBER_REG                      (0x7A << MEM_MAP_SHIFT)
+#define READOUT_10G_ENABLE_ANLG_OFST        (0)
+#define READOUT_10G_ENABLE_ANLG_MSK         (0x000000FF << READOUT_10G_ENABLE_ANLG_OFST)
+#define READOUT_10G_ENABLE_DGTL_OFST        (8)
+#define READOUT_10G_ENABLE_DGTL_MSK         (0x00000001 << READOUT_10G_ENABLE_DGTL_OFST)
 
 /* Digital Bit External Trigger RW register */
-#define DBIT_EXT_TRG_REG                    (0x7B << MEM_MAP_SHIFT)
+#define DBIT_EXT_TRG_REG                    (0x7B << MEM_MAP_SHIFT)                 // Not used in firmware or software
 
 #define DBIT_EXT_TRG_SRC_OFST               (0)
 #define DBIT_EXT_TRG_SRC_MSK                (0x0000003F << DBIT_EXT_TRG_SRC_OFST)
@@ -511,7 +515,8 @@
 #define DBIT_EXT_TRG_OPRTN_MD_MSK           (0x00000001 << DBIT_EXT_TRG_OPRTN_MD_OFST)
 
 /* Pin Delay 0 RW register */
-#define OUTPUT_DELAY_0_REG                  (0x7C << MEM_MAP_SHIFT)
+#define OUTPUT_DELAY_0_REG                  (0x7C << MEM_MAP_SHIFT)                 // Not used in firmware or software
+
 #define OUTPUT_DELAY_0_OTPT_STTNG_STEPS		(25)
 #define OUTPUT_DELAY_0_OTPT_STTNG_OFST      (0)     //t = OTPT_STTNG * 25 ps, max for Cyclone V = 775 ps
 #define OUTPUT_DELAY_0_OTPT_STTNG_MSK       (0x0000001F << OUTPUT_DELAY_0_OTPT_STTNG_OFST)
@@ -523,7 +528,7 @@
 
 /* Pin Delay 1 RW register
  * Each bit configured as enable for dynamic output delay configuration */
-#define PIN_DELAY_1_REG                     (0x7D << MEM_MAP_SHIFT)
+#define PIN_DELAY_1_REG                     (0x7D << MEM_MAP_SHIFT)                 // Not used in firmware or software
 
 /** Pattern Mask 64 bit RW regiser */
 #define PATTERN_MASK_LSB_REG                (0x80 << MEM_MAP_SHIFT)
@@ -533,7 +538,7 @@
 #define PATTERN_SET_LSB_REG                 (0x82 << MEM_MAP_SHIFT)
 #define PATTERN_SET_MSB_REG                 (0x83 << MEM_MAP_SHIFT)
 
-
-
+/* Round Robin  */
+#define RXR_ENDPOINT_START_REG	            (0x1000 << MEM_MAP_SHIFT)
 
 

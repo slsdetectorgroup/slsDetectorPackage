@@ -155,32 +155,32 @@ class Detector {
 
     void setPeriod(ns t, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] */
     Result<ns> getDelayAfterTrigger(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] */
     void setDelayAfterTrigger(ns value, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3] 
      * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfFramesLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3] 
      * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfTriggersLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3] 
      * [Gotthard2] only in continuous mode */
     Result<ns> getPeriodLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3] 
      * [Gotthard2] only in continuous mode */
     Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
 
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
-     * [Gotthard][Jungfrau][CTB] Options: AUTO_TIMING, TRIGGER_EXPOSURE
+     * [Gotthard][Jungfrau][CTB][Moench] Options: AUTO_TIMING, TRIGGER_EXPOSURE
      * [Eiger] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
      */
     void setTimingMode(defs::timingMode value, Positions pos = {});
@@ -192,19 +192,19 @@ class Detector {
      * Options: FULL_SPEED, HALF_SPEED, QUARTER_SPEED */
     void setSpeed(defs::speedLevel value, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][CTB][Moench] */
     Result<int> getADCPhase(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][CTB][Moench] */
     void setADCPhase(int value, Positions pos = {});
 
-    /** [Jungfrau][CTB] */
+    /** [Jungfrau][CTB][Moench] */
     Result<int> getMaxADCPhaseShift(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][CTB][Moench] */
     Result<int> getADCPhaseInDegrees(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][CTB][Moench] */
     void setADCPhaseInDegrees(int value, Positions pos = {});
 
     /** [Mythen3][Gotthard2] Hz */
@@ -244,7 +244,7 @@ class Detector {
 
     /**
      * [Gotthard] Options: 0, 90, 110, 120, 150, 180, 200
-     * [Jungfrau], CTB Options: 0, 60 - 200
+     * [Jungfrau][CTB][Moench] Options: 0, 60 - 200
      * [Eiger][Mythen3][Gotthard2] Options: 0 - 200
      */
     void setHighVoltage(int value, Positions pos = {});
@@ -415,10 +415,10 @@ class Detector {
 
     Result<std::string> printRxConfiguration(Positions pos = {}) const;
 
-    /** [Eiger][CTB] */
+    /** [Eiger][CTB][Moench] */
     Result<bool> getTenGiga(Positions pos = {}) const;
 
-    /** [Eiger][CTB] */
+    /** [Eiger][CTB][Moench] */
     void setTenGiga(bool value, Positions pos = {});
 
     /** [Eiger, Jungfrau] */
@@ -956,15 +956,64 @@ class Detector {
 
     /**************************************************
      *                                                *
+     *    CTB / Moench Specific                       *
+     *                                                *
+     * ************************************************/
+    /** [CTB][Moench] */
+    Result<int> getNumberOfAnalogSamples(Positions pos = {}) const;
+
+    /** [CTB][Moench] */
+    void setNumberOfAnalogSamples(int value, Positions pos = {});
+
+    /** [CTB][Moench] */
+    Result<int> getADCClock(Positions pos = {}) const;
+
+    /** [CTB][Moench] */
+    void setADCClock(int value_in_MHz, Positions pos = {});
+
+    /** [CTB][Moench] */
+    Result<int> getRUNClock(Positions pos = {}) const;
+
+    /** [CTB][Moench] */
+    void setRUNClock(int value_in_MHz, Positions pos = {});
+
+    /** [CTB][Moench] */
+    Result<int> getSYNCClock(Positions pos = {}) const;
+
+    /** [CTB][Moench] */
+    Result<int> getADCPipeline(Positions pos = {}) const;
+
+    /** [CTB][Moench] */
+    void setADCPipeline(int value, Positions pos = {});
+
+    /** [CTB][Moench] */
+    Result<int> getVoltage(defs::dacIndex index, Positions pos = {}) const;
+
+    /**
+     * [CTB][Moench] mV
+     * [Ctb] Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
+     * V_POWER_D, V_POWER_IO, V_POWER_CHIP
+     * [Moench] Options: V_LIMIT
+     */
+    void setVoltage(defs::dacIndex index, int value, Positions pos = {});
+
+    /** [CTB][Moench] */
+    Result<uint32_t> getADCEnableMask(Positions pos = {}) const;
+
+    /** [CTB][Moench] */
+    void setADCEnableMask(uint32_t mask, Positions pos = {});
+
+    /** [CTB][Moench] */
+    Result<uint32_t> getTenGigaADCEnableMask(Positions pos = {}) const;
+
+    /** [CTB][Moench] */
+    void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
+
+    /**************************************************
+     *                                                *
      *    CTB Specific                                *
      *                                                *
      * ************************************************/
-
-    /** [CTB] */
-    Result<int> getNumberOfAnalogSamples(Positions pos = {}) const;
-
-    /** [CTB] */
-    void setNumberOfAnalogSamples(int value, Positions pos = {});
 
     /** [CTB] */
     Result<int> getNumberOfDigitalSamples(Positions pos = {}) const;
@@ -977,6 +1026,12 @@ class Detector {
 
     /** [CTB] Options: ANALOG_ONLY = 0, DIGITAL_ONLY = 1, ANALOG_AND_DIGITAL */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
+
+    /** [CTB] */
+    Result<int> getDBITClock(Positions pos = {}) const;
+
+    /** [CTB] */
+    void setDBITClock(int value_in_MHz, Positions pos = {});
 
     /** [CTB] */
     Result<int> getDBITPhase(Positions pos = {}) const;
@@ -994,47 +1049,10 @@ class Detector {
     void setDBITPhaseInDegrees(int value, Positions pos = {});
 
     /** [CTB] */
-    Result<int> getADCClock(Positions pos = {}) const;
-
-    /** [CTB] */
-    void setADCClock(int value_in_MHz, Positions pos = {});
-
-    /** [CTB] */
-    Result<int> getDBITClock(Positions pos = {}) const;
-
-    /** [CTB] */
-    void setDBITClock(int value_in_MHz, Positions pos = {});
-
-    /** [CTB] */
-    Result<int> getRUNClock(Positions pos = {}) const;
-
-    /** [CTB] */
-    void setRUNClock(int value_in_MHz, Positions pos = {});
-
-    /** [CTB] */
-    Result<int> getSYNCClock(Positions pos = {}) const;
-
-    /** [CTB] */
-    Result<int> getADCPipeline(Positions pos = {}) const;
-
-    /** [CTB] */
-    void setADCPipeline(int value, Positions pos = {});
-
-    /** [CTB] */
     Result<int> getDBITPipeline(Positions pos = {}) const;
 
     /** [CTB] */
     void setDBITPipeline(int value, Positions pos = {});
-
-    /** [CTB] */
-    Result<int> getVoltage(defs::dacIndex index, Positions pos = {}) const;
-
-    /**
-     * [CTB] mV
-     * Options: V_LIMIT, V_POWER_A, V_POWER_B, V_POWER_C,
-     * V_POWER_D, V_POWER_IO, V_POWER_CHIP
-     */
-    void setVoltage(defs::dacIndex index, int value, Positions pos = {});
 
     /**
      * [CTB] mV
@@ -1050,24 +1068,6 @@ class Detector {
 
     /** [CTB] Options: SLOW_ADC0 - SLOW_ADC7  in uV */
     Result<int> getSlowADC(defs::dacIndex index, Positions pos = {}) const;
-
-    /** [CTB]*/
-    Result<uint32_t> getADCEnableMask(Positions pos = {}) const;
-
-    /** [CTB]*/
-    void setADCEnableMask(uint32_t mask, Positions pos = {});
-
-    /** [CTB]*/
-    Result<uint32_t> getTenGigaADCEnableMask(Positions pos = {}) const;
-
-    /** [CTB]*/
-    void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
-
-    /** [CTB] */
-    Result<uint32_t> getADCInvert(Positions pos = {}) const;
-
-    /** [CTB]*/
-    void setADCInvert(uint32_t value, Positions pos = {});
 
     /** [CTB] */
     Result<int> getExternalSamplingSource(Positions pos = {}) const;
@@ -1113,72 +1113,71 @@ class Detector {
      *                                                *
      * ************************************************/
 
-    /** [CTB] */
+    /** [CTB][Moench][Mythen3] */
     void setPattern(const std::string &fname, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB][Moench][Mythen3] */
     void savePattern(const std::string &fname); 
 
-    /** [CTB] */
+    /** [CTB][Moench][Mythen3] */
     Result<uint64_t> getPatternIOControl(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB][Moench][Mythen3] */
     void setPatternIOControl(uint64_t word, Positions pos = {});
 
-    /** [CTB] */
+    /** [CTB][Moench][Mythen3] */
     Result<uint64_t> getPatternClockControl(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB][Moench][Mythen3] */
     void setPatternClockControl(uint64_t word, Positions pos = {});
 
-    /** [CTB] same as executing
-     * [Mythen3] */
+    /** [CTB][Moench][Mythen3] same as executing for ctb and moench */
     Result<uint64_t> getPatternWord(int addr, Positions pos = {});
 
     /** [CTB] Caution: If word is  -1  reads the addr (same as
      * executing the pattern)
-     * [Mythen3] */
+     * [Mythen3][Moench] */
     void setPatternWord(int addr, uint64_t word, Positions pos = {});
 
-    /**[CTB][Mythen3] Options: level: -1 (complete pattern) and 0-2 levels
+    /**[CTB][Moench][Mythen3] Options: level: -1 (complete pattern) and 0-2 levels
      * @returns array of start address and stop address
      */
     Result<std::array<int, 2>> getPatternLoopAddresses(int level,
                                                Positions pos = {}) const;
 
-    /** [CTB][Mythen3] Options: level: -1 (complete pattern) and 0-2 levels */
+    /** [CTB][Moench][Mythen3] Options: level: -1 (complete pattern) and 0-2 levels */
     void setPatternLoopAddresses(int level, int start, int stop, Positions pos = {});
 
-    /**[CTB][Mythen3] Options: level: -1 (complete pattern) and 0-2 levels
+    /**[CTB][Moench][Mythen3] Options: level: -1 (complete pattern) and 0-2 levels
      * @returns number of loops
      */
     Result<int> getPatternLoopCycles(int level, Positions pos = {}) const;
 
-    /** [CTB][Mythen3] n: 0-2, level: -1 (complete pattern) and 0-2 levels */
+    /** [CTB][Moench][Mythen3] n: 0-2, level: -1 (complete pattern) and 0-2 levels */
     void setPatternLoopCycles(int level, int n, Positions pos = {});                         
 
-    /* [CTB][Mythen3] */
+    /* [CTB][Moench][Mythen3] */
     Result<int> getPatternWaitAddr(int level, Positions pos = {}) const;
 
-    /** [CTB][Mythen3] Options: level 0-2 */
+    /** [CTB][Moench][Mythen3] Options: level 0-2 */
     void setPatternWaitAddr(int level, int addr, Positions pos = {});
 
-    /** [CTB][Mythen3]  */
+    /** [CTB][Moench][Mythen3]  */
     Result<uint64_t> getPatternWaitTime(int level, Positions pos = {}) const;
 
-    /** [CTB][Mythen3] Options: level 0-2 */
+    /** [CTB][Moench][Mythen3] Options: level 0-2 */
     void setPatternWaitTime(int level, uint64_t t, Positions pos = {});
 
-    /** [CTB][Mythen3] */
+    /** [CTB][Moench][Mythen3] */
     Result<uint64_t> getPatternMask(Positions pos = {});
 
-    /** [CTB][Mythen3] Sets the mask applied to every pattern to the selected bit mask */
+    /** [CTB][Moench][Mythen3] Sets the mask applied to every pattern to the selected bit mask */
     void setPatternMask(uint64_t mask, Positions pos = {});
 
-    /** [CTB][Mythen3]  */
+    /** [CTB][Moench][Mythen3]  */
     Result<uint64_t> getPatternBitMask(Positions pos = {}) const;
 
-    /** [CTB][Mythen3] Sets the bitmask that the mask will be applied to for every
+    /** [CTB][Moench][Mythen3] Sets the bitmask that the mask will be applied to for every
      * pattern
      */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
@@ -1238,26 +1237,26 @@ class Detector {
      *                                                *
      * ************************************************/
 
-    /** [Jungfrau][CTB] fname is a pof file
+    /** [Jungfrau][CTB][Moench] fname is a pof file
      * [Mythen3][Gotthard2] fname is an rbf file
      */
     void programFPGA(const std::string &fname, Positions pos = {});
 
-    /** [Jungfrau][CTB] */
+    /** [Jungfrau][CTB][Moench] */
     void resetFPGA(Positions pos = {});
 
-    /** [Jungfrau][Gotthard][CTB]
+    /** [Jungfrau][Gotthard][CTB][Moench]
      * Copy detector server fname from tftp folder of hostname to detector
      * Also changes respawn server, which is effective after a reboot.
      */
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname, Positions pos = {});
 
-    /** [Jungfrau][Gotthard][CTB][Mythen3][Gotthard2] */
+    /** [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2] */
     void rebootController(Positions pos = {});
 
     /**
-     * [Jungfrau][Gotthard][CTB]
+     * [Jungfrau][Gotthard][CTB][Moench]
      * Updates the firmware, detector server and then reboots detector
      * controller blackfin.
      * @param sname name of detector server binary found on tftp folder of host
@@ -1278,13 +1277,13 @@ class Detector {
 
     void clearBit(uint32_t addr, int bitnr, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] */
+    /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] */
     void executeFirmwareTest(Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] */
+    /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] */
     void executeBusTest(Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB] not possible to read back*/
+    /** [Gotthard][Jungfrau][CTB][Moench] not possible to read back*/
     void writeAdcRegister(uint32_t addr, uint32_t value, Positions pos = {});
 
     bool getInitialChecks() const;
@@ -1292,6 +1291,12 @@ class Detector {
     /** initial compaibility and other server start up checks
      * default enabled */
     void setInitialChecks(const bool value);
+
+    /** [CTB][Moench][Jungfrau] */
+    Result<uint32_t> getADCInvert(Positions pos = {}) const;
+
+    /** [CTB][Moench][Jungfrau] */
+    void setADCInvert(uint32_t value, Positions pos = {});
 
     /**************************************************
      *                                                *
@@ -1321,15 +1326,15 @@ class Detector {
     /** Execute a command on the detector server console */
     void executeCommand(const std::string &value, Positions pos = {});
 
-    /** [Jungfrau][Mythen3][CTB] 
+    /** [Jungfrau][Mythen3][CTB][Moench] 
      * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfFramesFromStart(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3][CTB] Get time from detector start 
+    /** [Jungfrau][Mythen3][CTB][Moench] Get time from detector start 
      * [Gotthard2] only in continuous mode */
     Result<ns> getActualTime(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3][CTB] Get timestamp at a frame start 
+    /** [Jungfrau][Mythen3][CTB][Moench] Get timestamp at a frame start 
      * [Gotthard2] only in continuous mode */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
 

@@ -34,6 +34,7 @@ $(PROGS): $(OBJS)
 	mv $(PROGS) $(DESTDIR)
 	rm *.gdb
 	rm $(main_src)*.o
+	rm *.o
 
 clean:
 	rm -rf $(DESTDIR)/$(PROGS)  *.o *.gdb $(main_src)*.o

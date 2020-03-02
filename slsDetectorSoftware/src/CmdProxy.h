@@ -666,6 +666,12 @@ class CmdProxy {
                           {"vb_pixbuf", &CmdProxy::vb_pixbuf},
                           {"vin_com", &CmdProxy::vin_com},
                           {"vdd_prot", &CmdProxy::vdd_prot},
+                          {"vbp_colbuf", &CmdProxy::vbp_colbuf},
+                          {"vb_sda", &CmdProxy::vb_sda},
+                          {"vcasc_sfp", &CmdProxy::vcasc_sfp},
+                          {"vipre_cds", &CmdProxy::vipre_cds},
+                          {"ibias_sfp", &CmdProxy::ibias_sfp},
+
 
                           {"dac", &CmdProxy::Dac},
                           {"daclist", &CmdProxy::DacList},
@@ -796,20 +802,24 @@ class CmdProxy {
                           /* Mythen3 Specific */  
                           {"counters", &CmdProxy::Counters},
 
-                          /* CTB Specific */
+                          /* CTB/ Moench Specific */
                           {"samples", &CmdProxy::Samples},
                           {"asamples", &CmdProxy::asamples},
-                          {"dsamples", &CmdProxy::dsamples},
-                          {"romode", &CmdProxy::romode},
-                          {"dbitphase", &CmdProxy::Dbitphase},
-                          {"maxdbitphaseshift", &CmdProxy::maxdbitphaseshift},
                           {"adcclk", &CmdProxy::adcclk},  
-                          {"dbitclk", &CmdProxy::dbitclk},  
                           {"runclk", &CmdProxy::runclk},  
                           {"syncclk", &CmdProxy::syncclk},  
                           {"adcpipeline", &CmdProxy::adcpipeline},
-                          {"dbitpipeline", &CmdProxy::dbitpipeline},
                           {"v_limit", &CmdProxy::v_limit},
+                          {"adcenable", &CmdProxy::adcenable}, 
+                          {"adcenable10g", &CmdProxy::adcenable10g}, 
+
+                          /* CTB Specific */
+                          {"dsamples", &CmdProxy::dsamples},
+                          {"romode", &CmdProxy::romode},
+                          {"dbitclk", &CmdProxy::dbitclk},  
+                          {"dbitphase", &CmdProxy::Dbitphase},
+                          {"maxdbitphaseshift", &CmdProxy::maxdbitphaseshift},
+                          {"dbitpipeline", &CmdProxy::dbitpipeline},
                           {"v_a", &CmdProxy::v_a},
                           {"v_b", &CmdProxy::v_b},
                           {"v_c", &CmdProxy::v_c},
@@ -827,9 +837,6 @@ class CmdProxy {
                           {"im_d", &CmdProxy::im_d},
                           {"im_io", &CmdProxy::im_io},
                           {"adc", &CmdProxy::SlowAdc},  
-                          {"adcenable", &CmdProxy::adcenable}, 
-                          {"adcenable10g", &CmdProxy::adcenable10g}, 
-                          {"adcinvert", &CmdProxy::adcinvert}, 
                           {"extsampling", &CmdProxy::extsampling}, 
                           {"extsamplingsrc", &CmdProxy::extsamplingsrc}, 
                           {"rx_dbitlist", &CmdProxy::ReceiverDbitList}, 
@@ -881,6 +888,7 @@ class CmdProxy {
                           {"firmwaretest", &CmdProxy::firmwaretest}, 
                           {"bustest", &CmdProxy::bustest}, 
                           {"initialchecks", &CmdProxy::InitialChecks}, 
+                          {"adcinvert", &CmdProxy::adcinvert}, 
 
                           /* Insignificant */
                           {"port", &CmdProxy::port}, 
@@ -955,8 +963,9 @@ class CmdProxy {
     std::string BurstMode(int action);      
     /* Mythen3 Specific */ 
     std::string Counters(int action); 
-    /* CTB Specific */
+    /* CTB/ Moench Specific */
     std::string Samples(int action);
+    /* CTB Specific */
     std::string Dbitphase(int action);
     std::string SlowAdc(int action);
     std::string ReceiverDbitList(int action);
@@ -1034,38 +1043,38 @@ class CmdProxy {
                  "\n\t[Gotthard2] Uploaded to detector just before acquisition starts");
 
     TIME_COMMAND(delay, getDelayAfterTrigger, setDelayAfterTrigger,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] Delay after trigger");
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb][Moench] Delay after trigger");
 
     TIME_COMMAND(burstperiod, getBurstPeriod, setBurstPeriod,
                  "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] Burst period. Only in burst mode and auto timing mode.");
 
     GET_COMMAND(framesl, getNumberOfFramesLeft, 
-                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Number of frames left in acquisition."
+                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Number of frames left in acquisition."
                 "\n\t[Gotthard2] only in continuous mode.");       
 
     GET_COMMAND(triggersl, getNumberOfTriggersLeft, 
-                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Number of triggers left in acquisition."
+                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Number of triggers left in acquisition."
                 "\n\t[Gotthard2] only in continuous mode.");       
 
     TIME_GET_COMMAND(delayl, getDelayAfterTriggerLeft, 
-                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] DelayLeft Delay Left in Acquisition."
+                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] DelayLeft Delay Left in Acquisition."
                 "\n\t[Gotthard2] only in continuous mode.");    
 
     TIME_GET_COMMAND(periodl, getPeriodLeft, 
-                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB] Period left for current frame."
+                "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Period left for current frame."
                 "\n\t[Gotthard2] only in continuous mode.");   
 
     INTEGER_COMMAND(timing, getTimingMode, setTimingMode, sls::StringTo<slsDetectorDefs::timingMode>,
-                    "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] [auto|trigger]\n\t[Eiger] [auto|trigger|gating|burst_trigger]");      
+                    "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of detector.\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb][Moench] [auto|trigger]\n\t[Eiger] [auto|trigger|gating|burst_trigger]");      
 
     GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift, 
-                "\n\t[Jungfrau][CTB] Absolute maximum Phase shift of ADC clock.");  
+                "\n\t[Jungfrau][CTB][Moench] Absolute maximum Phase shift of ADC clock.");  
 
     INTEGER_COMMAND(vhighvoltage, getHighVoltage, setHighVoltage, std::stoi,
                     "[n_value]\n\tHigh voltage to the sensor in Voltage."
                     "\n\t[Gotthard] [0|90|110|120|150|180|200]"
                     "\n\t[Eiger][Mythen3][Gotthard2] 0-200"
-                    "\n\t[Jungfrau][Ctb] [0|60-200]");      
+                    "\n\t[Jungfrau][Ctb][Moench] [0|60-200]");      
 
     INTEGER_COMMAND(powerchip, getPowerChip, setPowerChip, std::stoi,
                     "[0, 1]\n\t[Jungfrau][Mythen3][Gotthard2] Power the chip. Default 0." 
@@ -1169,13 +1178,13 @@ class CmdProxy {
                     "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for ?? ");  //TODO
 
     DAC_COMMAND(vout_cm, getDAC, setDAC, defs::VOUT_CM,
-                    "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for ?? ");  //TODO
+                    "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for ?? \n\t[Moench] Dac for 5");  //TODO
 
     DAC_COMMAND(vcasc_out, getDAC, setDAC, defs::VCASC_OUT,
                     "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for ?? ");  //TODO
 
     DAC_COMMAND(vin_cm, getDAC, setDAC, defs::VIN_CM,
-                    "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for ?? ");  //TODO
+                    "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for ?? \n\t[Moench] Dac for 2");  //TODO
 
     DAC_COMMAND(vref_comp, getDAC, setDAC, defs::VREF_COMP,
                     "[dac or mv value][(optional unit) mv] \n\t[Gotthard][Jungfrau] Dac for ?? ");  //TODO
@@ -1193,7 +1202,7 @@ class CmdProxy {
                     "[dac or mv value][(optional unit) mv] \n\t[Mythen3] voltage to define feedback resistance of the second shaper.");  
 
     DAC_COMMAND(vipre, getDAC, setDAC, defs::VIPRE,
-                    "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for the preamplifier's input transistor current.");  
+                    "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for the preamplifier's input transistor current.\n\t[Moench] Dac for 1");  
 
     DAC_COMMAND(viinsh, getDAC, setDAC, defs::VIINSH,
                     "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for the bias current for the shaper.");  
@@ -1274,7 +1283,7 @@ class CmdProxy {
                     "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for common mode voltage of ADC DAC bank 2.");  
                     
     DAC_COMMAND(adcvpp, getDAC, setDAC, defs::ADC_VPP,
-                    "[dac or mv value][(optional unit) mv] \n\t[Ctb] Vpp of ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V.");    
+                    "[dac or mv value][(optional unit) mv] \n\t[Ctb][Moench] Vpp of ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V.");    
 
     DAC_COMMAND(vb_ds, getDAC, setDAC, defs::VB_DS,
                     "[dac or mv value][(optional unit) mv] \n\t[Jungfrau] Dac for ??"); //TODO
@@ -1290,6 +1299,21 @@ class CmdProxy {
 
     DAC_COMMAND(vdd_prot, getDAC, setDAC, defs::VDD_PROT,
                     "[dac or mv value][(optional unit) mv] \n\t[Jungfrau] Dac for ??"); //TODO 
+
+    DAC_COMMAND(vbp_colbuf, getDAC, setDAC, defs::VBP_COLBUF,
+                    "[dac or mv value][(optional unit) mv] \n\t[Moench] Dac for 0");  
+
+    DAC_COMMAND(vb_sda, getDAC, setDAC, defs::VB_SDA,
+                    "[dac or mv value][(optional unit) mv] \n\t[Moench] Dac for 3");  
+
+    DAC_COMMAND(vcasc_sfp, getDAC, setDAC, defs::VCASC_SFP,
+                    "[dac or mv value][(optional unit) mv] \n\t[Moench] Dac for 4");  
+
+    DAC_COMMAND(vipre_cds, getDAC, setDAC, defs::VIPRE_CDS,
+                    "[dac or mv value][(optional unit) mv] \n\t[Moench] Dac for 6");  
+
+    DAC_COMMAND(ibias_sfp, getDAC, setDAC, defs::IBIAS_SFP,
+                    "[dac or mv value][(optional unit) mv] \n\t[Moench] Dac for 7");  
 
 
     /* on chip dacs */
@@ -1391,7 +1415,7 @@ class CmdProxy {
                 "\n\tPrints the receiver configuration.");   
     
     INTEGER_COMMAND(tengiga, getTenGiga, setTenGiga, std::stoi,
-                    "[0, 1]\n\t[Eiger][Ctb] 10GbE Enable.");          
+                    "[0, 1]\n\t[Eiger][Ctb][Moench] 10GbE Enable.");          
 
     INTEGER_COMMAND(flowcontrol10g, getTenGigaFlowControl, setTenGigaFlowControl, std::stoi,
                     "[0, 1]\n\t[Eiger][Jungfrau] 10GbE Flow Control.");          
@@ -1574,10 +1598,34 @@ class CmdProxy {
 
     /* Mythen3 Specific */ 
 
-    /* CTB Specific */
+    /* CTB/ Moench Specific */
 
     INTEGER_COMMAND(asamples, getNumberOfAnalogSamples, setNumberOfAnalogSamples, std::stoi,
-                    "[0, 1]\n\t[CTB] Number of analog samples expected.");  
+                    "[0, 1]\n\t[CTB][Moench] Number of analog samples expected.");  
+
+    INTEGER_COMMAND(adcclk, getADCClock, setADCClock, std::stoi,
+                    "[n_clk in MHz]\n\t[Ctb][Moench] ADC clock frequency in MHz.");      
+
+    INTEGER_COMMAND(runclk, getRUNClock, setRUNClock, std::stoi,
+                    "[n_clk in MHz]\n\t[Ctb][Moench] Run clock in MHz.");      
+
+    GET_COMMAND(syncclk, getSYNCClock,
+                    "[n_clk in MHz]\n\t[Ctb][Moench] Sync clock in MHz.");      
+
+    INTEGER_COMMAND(adcpipeline, getADCPipeline, setADCPipeline, std::stoi,
+                    "[n_value]\n\t[Ctb][Moench] Pipeline for ADC clock.");      
+
+    INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, std::stoi, defs::V_LIMIT,
+                    "[n_value]\n\t[Ctb][Moench] Soft limit for power supplies(ctb only) and DACS in mV.");      
+
+    INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask, stoiHex,
+                    "[bitmask]\n\t[Ctb][Moench] ADC Enable Mask for 1Gb Mode for each 32 ADC channel.");      
+
+    INTEGER_COMMAND_HEX(adcenable10g, getTenGigaADCEnableMask, setTenGigaADCEnableMask, stoiHex,
+                    "[bitmask]\n\t[Ctb][Moench] ADC Enable Mask for 10Gb mode for each 32 ADC channel. However, if any of consecutive 4 bits are enabled, the complete 4 bits are enabled.");   
+
+    /* CTB Specific */
+
 
     INTEGER_COMMAND(dsamples, getNumberOfDigitalSamples, setNumberOfDigitalSamples, std::stoi,
                     "[0, 1]\n\t[CTB] Number of digital samples expected.");  
@@ -1585,29 +1633,14 @@ class CmdProxy {
     INTEGER_COMMAND(romode, getReadoutMode, setReadoutMode, sls::StringTo<slsDetectorDefs::readoutMode>,
                     "[analog|digital|analog_digital]\n\t[CTB] Readout mode. Default is analog.");
 
-    GET_COMMAND(maxdbitphaseshift, getMaxDBITPhaseShift, 
-                "\n\t[CTB] Absolute maximum Phase shift of of the clock to latch digital bits.");
-
-    INTEGER_COMMAND(adcclk, getADCClock, setADCClock, std::stoi,
-                    "[n_clk in MHz]\n\t[Ctb] ADC clock frequency in MHz.");      
-
     INTEGER_COMMAND(dbitclk, getDBITClock, setDBITClock, std::stoi,
                     "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz.");      
 
-    INTEGER_COMMAND(runclk, getRUNClock, setRUNClock, std::stoi,
-                    "[n_clk in MHz]\n\t[Ctb] Run clock in MHz.");      
-
-    GET_COMMAND(syncclk, getSYNCClock,
-                    "[n_clk in MHz]\n\t[Ctb] Synch clock in MHz.");      
-
-    INTEGER_COMMAND(adcpipeline, getADCPipeline, setADCPipeline, std::stoi,
-                    "[n_value]\n\t[Ctb] Pipeline for ADC clock.");      
+    GET_COMMAND(maxdbitphaseshift, getMaxDBITPhaseShift, 
+                "\n\t[CTB] Absolute maximum Phase shift of of the clock to latch digital bits.");
 
     INTEGER_COMMAND(dbitpipeline, getDBITPipeline, setDBITPipeline, std::stoi,
                     "[n_value]\n\t[Ctb] Pipeline of the clock for latching digital bits.");      
-
-    INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, std::stoi, defs::V_LIMIT,
-                    "[n_value]\n\t[Ctb] Soft limit for power supplies and DACS in mV.");      
 
     INTEGER_IND_COMMAND(v_a, getVoltage, setVoltage, std::stoi, defs::V_POWER_A,
                     "[n_value]\n\t[Ctb] Voltage supply a in mV.");      
@@ -1655,16 +1688,7 @@ class CmdProxy {
                     "\n\t[Ctb] Measured current of power supply d in mA.");                 
 
     GET_IND_COMMAND(im_io, getMeasuredCurrent, defs::I_POWER_IO,  "",
-                    "\n\t[Ctb] Measured current of power supply io in mA."); 
-
-    INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask, stoiHex,
-                    "[bitmask]\n\t[Ctb] ADC Enable Mask for 1Gb Mode for each 32 ADC channel.");      
-
-    INTEGER_COMMAND_HEX(adcenable10g, getTenGigaADCEnableMask, setTenGigaADCEnableMask, stoiHex,
-                    "[bitmask]\n\t[Ctb] ADC Enable Mask for 10Gb mode for each 32 ADC channel. However, if any of consecutive 4 bits are enabled, the complete 4 bits are enabled.");     
-
-    INTEGER_COMMAND_HEX(adcinvert, getADCInvert, setADCInvert, stoiHex,
-                    "[bitmask]\n\t[Ctb][Jungfrau] ADC Inversion Mask.\n\t[Jungfrau] Inversions on top of the default mask.");      
+                    "\n\t[Ctb] Measured current of power supply io in mA.");  
 
     INTEGER_COMMAND(extsampling, getExternalSampling, setExternalSampling, std::stoi,
                     "[0, 1]\n\t[Ctb] Enable for external sampling signal to extsamplingsrc signal for digital data. For advanced users only.");
@@ -1682,19 +1706,19 @@ class CmdProxy {
     /* Pattern */
 
     EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
-                "[fname]\n\t[Ctb] Saves pattern to file (ascii). Also executes pattern."); 
+                "[fname]\n\t[Ctb][Moench][Mythen3] Saves pattern to file (ascii). Also executes pattern."); 
 
     INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl, stoulHex,
-                    "[64 bit mask]\n\t[Ctb] 64 bit mask defining input (0) and output (1) signals.");
+                    "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask defining input (0) and output (1) signals.");
 
     INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, stoulHex,
-                    "[64 bit mask]\n\t[Ctb] 64 bit mask defining output clock enable.");
+                    "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask defining output clock enable.");
 
     INTEGER_COMMAND_HEX(patmask, getPatternMask, setPatternMask, stoulHex,
-                    "[64 bit mask]\n\t[Ctb][Mythen3] 64 bit mask applied to every pattern. Only these bits for each pattern will be masked against.");
+                    "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask applied to every pattern. Only these bits for each pattern will be masked against.");
 
     INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask, stoulHex,
-                    "[64 bit mask]\n\t[Ctb][Mythen3] 64 bit values applied to the selected patmask for every pattern.");                    
+                    "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit values applied to the selected patmask for every pattern.");                    
 
     /* Moench */
     
@@ -1711,17 +1735,19 @@ class CmdProxy {
     /* Advanced */
 
     EXECUTE_SET_COMMAND(resetfpga, resetFPGA, 
-                "\n\t[Jungfrau][Ctb] Reset FPGA.");   
+                "\n\t[Jungfrau][Ctb][Moench] Reset FPGA.");   
 
     EXECUTE_SET_COMMAND(rebootcontroller, rebootController, 
-                "\n\t[Jungfrau][Ctb][Gotthard][Mythen3][Gotthard2] Reboot controler (blackfin) of detector.");  
+                "\n\t[Jungfrau][Ctb][Moench][Gotthard][Mythen3][Gotthard2] Reboot controler (blackfin) of detector.");  
 
     EXECUTE_SET_COMMAND(firmwaretest, executeFirmwareTest, 
-                "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] Firmware test, ie. reads a read fixed pattern from a register.");  
+                "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb][Moench] Firmware test, ie. reads a read fixed pattern from a register.");  
 
     EXECUTE_SET_COMMAND(bustest, executeBusTest, 
-                "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb] Bus test, ie. keeps writing and reading back different values in R/W register.");  
+                "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb][Moench] Bus test, ie. keeps writing and reading back different values in R/W register.");  
 
+    INTEGER_COMMAND_HEX(adcinvert, getADCInvert, setADCInvert, stoiHex,
+                    "[bitmask]\n\t[Ctb][Moench][Jungfrau][Moench] ADC Inversion Mask.\n\t[Jungfrau][Moench] Inversions on top of the default mask.");   
 
     /* Insignificant */
 
@@ -1738,7 +1764,7 @@ class CmdProxy {
                 "\n\tClient IP Address that last communicated with the detector."); 
 
     GET_COMMAND(nframes, getNumberOfFramesFromStart, 
-                "\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Number of frames from start run control."
+                "\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB][Moench] Number of frames from start run control."
                 "\n\t[Gotthard2] only in continuous mode.");       
 
     TIME_GET_COMMAND(now, getActualTime, 

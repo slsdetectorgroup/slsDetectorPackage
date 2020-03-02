@@ -515,7 +515,7 @@ void setupDetector() {
 	// altera pll
 	ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK, PLL_CNTRL_ADDR_OFST);
 
-    bus_w(ADC_PORT_INVERT_REG, 0);// depends on chip
+    setADCInvertRegister(0);// depends on chip
 
 	FILE_LOG(logINFOBLUE, ("Setting Default parameters\n"));
 	cleanFifos(); // FIXME: why twice?

@@ -166,7 +166,7 @@ void qDrawPlot::SetupPlots() {
     plot1d->SetTitleFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     plot1d->SetXFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     plot1d->SetYFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    plot1d->SetTitle("--");
+    plot1d->SetTitle("");
     plot1d->SetXTitle(xTitle1d);
     plot1d->SetYTitle(yTitle1d);
     h->Attach(plot1d);
@@ -186,12 +186,16 @@ void qDrawPlot::SetupPlots() {
     gainhist1d->setSymbolMarkers(isMarkers);
     // setup 1d gain plot
     gainplot1d = new SlsQt1DPlot(boxPlot);
-    //gainplot1d->setFont(QFont("Sans Serif", 3, 20));
+    gainplot1d->SetTitleFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
+    gainplot1d->SetYFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     gainplot1d->SetTitle("");
-    gainplot1d->axisScaleDraw(QwtPlot::xBottom)->enableComponent(QwtScaleDraw::Labels, false);
-    gainplot1d->axisScaleDraw(QwtPlot::xBottom)->enableComponent(QwtScaleDraw::Ticks, false);
-    gainplot1d->axisScaleDraw(QwtPlot::yLeft)->enableComponent(QwtScaleDraw::Labels, false);
-    gainplot1d->axisScaleDraw(QwtPlot::yLeft)->enableComponent(QwtScaleDraw::Ticks, false);
+    gainplot1d->SetYTitle("Gain");
+    // set ticks to just 3
+    QList<double> majorTicks({0, 1, 2, 3});
+    QwtScaleDiv div( 0, 3, QList<double>(), QList<double>(), majorTicks); 
+    gainplot1d->setAxisScaleDiv( QwtPlot::yLeft, div );
+    //gainplot1d->axisScaleDraw(QwtPlot::xBottom)->enableComponent(QwtScaleDraw::Ticks, false);
+    //gainplot1d->axisScaleDraw(QwtPlot::yLeft)->enableComponent(QwtScaleDraw::Labels, false);
     gainhist1d->setItemAttribute(QwtPlotItem::Legend, false);
     gainhist1d->Attach(gainplot1d);
     gainplot1d->hide();
@@ -233,18 +237,21 @@ void qDrawPlot::SetupPlots() {
 
     gainplot2d = new SlsQt2DPlot(boxPlot);
     gainplot2d->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5, nPixelsY - 0.5, gainData);
-    gainplot2d->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
-    gainplot2d->setTitle("");
-    gainplot2d->enableAxis(0, false);
-    gainplot2d->enableAxis(1, false);
-    gainplot2d->enableAxis(2, false);
+    gainplot2d->SetTitleFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
+    gainplot2d->setTitle("Gain");
+    gainplot2d->SetZTitle(""); 
+    gainplot2d->enableAxis(QwtPlot::yLeft, false);
+    //gainplot2d->enableAxis(1, false);
+    gainplot2d->enableAxis(QwtPlot::xBottom, false);
+    // set ticks to just 3
+    gainplot2d->setAxisScaleDiv( QwtPlot::yRight, div );
     gainplot2d->hide();
 
     // layout of plots
     int ratio = qDefs::DATA_GAIN_PLOT_RATIO - 1;
     plotLayout->addWidget(plot1d, 0, 0, ratio, ratio);
     plotLayout->addWidget(plot2d, 0, 0, ratio, ratio);
-    plotLayout->addWidget(gainplot1d, 0, ratio, 1, 1, Qt::AlignRight | Qt::AlignTop);
+    plotLayout->addWidget(gainplot1d, ratio, 0, 1, ratio, Qt::AlignTop);
     plotLayout->addWidget(gainplot2d, 0, ratio, 1, 1, Qt::AlignRight | Qt::AlignTop);
 }
 
@@ -254,7 +261,7 @@ void qDrawPlot::resizeEvent(QResizeEvent *event) {
         gainplot2d->setFixedHeight(plot2d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
     }
     if (gainplot1d->isVisible()) {
-        gainplot1d->setFixedWidth(plot1d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
+        gainplot1d->setFixedWidth(plot1d->width());
         gainplot1d->setFixedHeight(plot1d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
     }   
     event->accept();
@@ -871,7 +878,7 @@ void qDrawPlot::Update1dPlot() {
         gainhist1d->setSymbolMarkers(isMarkers);
         gainhist1d->Attach(gainplot1d); 
         if (!gainplot1d->isVisible()) {
-            gainplot1d->setFixedWidth(plot1d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
+            gainplot1d->setFixedWidth(plot1d->width() );
             gainplot1d->setFixedHeight(plot1d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
             gainplot1d->show();
           }

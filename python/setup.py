@@ -8,7 +8,7 @@ import sys
 import setuptools
 import os
 
-__version__ = 'udp'
+__version__ = os.environ.get('GIT_DESCRIBE_TAG', 'developer')
 
 
 def get_conda_path():

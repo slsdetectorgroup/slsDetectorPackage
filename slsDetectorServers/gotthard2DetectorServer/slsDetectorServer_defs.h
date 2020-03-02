@@ -41,6 +41,9 @@
 #define DEFAULT_HIGH_VOLTAGE		(0)
 #define DEFAULT_TIMING_MODE			(AUTO_TIMING)
 #define DEFAULT_SETTINGS			(DYNAMICGAIN)
+#define DEFAULT_CURRENT_SOURCE		(0)
+#define DEFAULT_TIMING_SOURCE		(TIMING_INTERNAL)
+
 #define DEFAULT_READOUT_C0          (144444448) // rdo_clk, 144 MHz  
 #define DEFAULT_READOUT_C1          (144444448) // rdo_x2_clk, 144 MHz  
 #define DEFAULT_SYSTEM_C0			(144444448) // run_clk, 144 MHz 
@@ -50,7 +53,7 @@
 
 /* Firmware Definitions */
 #define IP_HEADER_SIZE              (20)
-#define FIXED_PLL_FREQUENCY			(020000000) // 20MHz
+#define FIXED_PLL_FREQUENCY			(20000000) // 20MHz
 #define READOUT_PLL_VCO_FREQ_HZ     (866666688) // 866 MHz 
 #define SYSTEM_PLL_VCO_FREQ_HZ      (722222224) // 722 MHz
 

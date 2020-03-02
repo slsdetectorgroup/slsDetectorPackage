@@ -931,6 +931,18 @@ class Detector {
     /** [Gotthard2]  BURST_OFF, BURST_INTERNAL (default), BURST_EXTERNAL */
     void setBurstMode(defs::burstMode value, Positions pos = {});
 
+    /** [Gotthard2] */
+    Result<bool> getCurrentSource(Positions pos = {}) const;
+
+    /** default disabled */
+    void setCurrentSource(bool value, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<defs::timingSourceType> getTimingSource(Positions pos = {}) const;
+
+    /** [Gotthard2] Options: TIMING_INTERNAL, TIMING_EXTERNAL */
+    void setTimingSource(defs::timingSourceType value, Positions pos = {});
+
     /**************************************************
      *                                                *
      *    Mythen3 Specific                            *

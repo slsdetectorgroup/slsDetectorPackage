@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project(slsDetectorPackage)
 set(PROJECT_VERSION 5.0.0)
 include(CheckIPOSupported)
-
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 cmake_policy(SET CMP0074 NEW)
 include(cmake/project_version.cmake)
@@ -44,6 +44,9 @@ option(SLS_USE_PYTHON "Python bindings" OFF)
 option(SLS_USE_CTBGUI "ctb GUI" OFF)
 option(SLS_BUILD_DOCS "docs" OFF)
 option(SLS_BUILD_EXAMPLES "examples" OFF)
+option(SLS_TUNE_LOCAL "tune to local machine" OFF)
+
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -110,6 +113,11 @@ if(SLS_USE_SANITIZER)
     # target_compile_options(slsProjectOptions INTERFACE -fsanitize=thread)
     # target_link_libraries(slsProjectOptions INTERFACE -fsanitize=thread)
 endif()
+
+if(SLS_TUNE_LOCAL)
+    target_compile_options(slsProjectOptions INTERFACE -mtune=native -march=native)
+endif()
+
 
 #rapidjson
 add_library(rapidjson INTERFACE)

@@ -2546,6 +2546,32 @@ void slsDetector::setBurstMode(slsDetectorDefs::burstMode value) {
     shm()->burstMode = value;
 }
 
+bool slsDetector::getCurrentSource() {
+    int retval = -1;
+    sendToDetector(F_GET_CURRENT_SOURCE, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Current source enable:" << retval;
+    return static_cast<bool>(retval);
+}
+
+void slsDetector::setCurrentSource(bool value) {
+    int arg = static_cast<int>(value);
+    FILE_LOG(logDEBUG1) << "Setting current source enable to " << arg;
+    sendToDetector(F_SET_CURRENT_SOURCE, arg, nullptr);
+}
+
+slsDetectorDefs::timingSourceType slsDetector::getTimingSource() {
+    int retval = -1;
+    sendToDetector(F_GET_TIMING_SOURCE, nullptr, retval);
+    FILE_LOG(logDEBUG1) << "Timing source:" << retval;
+    return static_cast<slsDetectorDefs::timingSourceType>(retval);
+}
+
+void slsDetector::setTimingSource(slsDetectorDefs::timingSourceType value) {
+    int arg = static_cast<int>(value);
+    FILE_LOG(logDEBUG1) << "Setting timing source to " << arg;
+    sendToDetector(F_SET_TIMING_SOURCE, arg, nullptr);
+}
+
 int slsDetector::setCounterBit(int cb) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Sending counter bit " << cb;

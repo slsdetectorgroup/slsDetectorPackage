@@ -284,4 +284,11 @@ void init_enums(py::module &m) {
         .value("BURST_INTERNAL", slsDetectorDefs::burstMode::BURST_INTERNAL)
         .value("BURST_EXTERNAL", slsDetectorDefs::burstMode::BURST_EXTERNAL)
         .export_values();
+
+    py::enum_<slsDetectorDefs::timingSourceType>(Defs, "timingSourceType")
+        .value("TIMING_INTERNAL",
+               slsDetectorDefs::timingSourceType::TIMING_INTERNAL)
+        .value("TIMING_EXTERNAL",
+               slsDetectorDefs::timingSourceType::TIMING_EXTERNAL)
+        .export_values();
 }

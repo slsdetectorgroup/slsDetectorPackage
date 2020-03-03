@@ -18,29 +18,21 @@ conda install slsdet=2020.03.02.dev0 #developer version from 3 March 2020
 ```
 
 ### Source code
-One can also obtain the source code from this repository and compile while realizing the setup dependencies as required.
+One can also obtain the source code from this repository and compile.
 ```
 git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git
 
 ```
-#### Setup dependencies 
-* Gui Client <br>
-Requirements: Qt 4.8 and Qwt 6.0
-```
-    export QTDIR=/usr/local/Trolltech/
-    export QWTDIR=/usr/local/qwt-6.0.1/
-```
-If either of them does not exist, the GUI client will not be built.
+#### Dependencies 
+* Lib: ZeroMQ 4
+* Gui Client: Qt 4.8 and Qwt 6.0
+* Calibration wizards and ctbGUI: ROOT
 
-* Advanced user Calibration wizards<br>
-Requirements: ROOT
-```
-    export ROOTSYS=/usr/local/root-5.34
-```
 
 #### Compilation 
 
-Compiling can be done in two ways.
+Compiling can be done in two ways. Either with the convenience script
+cmk.sh or directly with cmake for more control.
 
 **1. Compile using script cmk.sh**<br>
 
@@ -83,22 +75,17 @@ For rebuilding only certain sections<br>
 
 
 **2. Compile without script**<br>
-Use cmake to create out-of-source builds, by creating a build folder parallel to source directory.
+Use cmake to create out-of-source builds, by creating a build folder parallel to source directory. This would crete a debug build with address sanitizers.
 ```
-    $ cd ..
-    $ mkdir slsDetectorPackage-build
-    $ cd slsDetectorPackage-build
-    $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_HDF5=OFF 
+    $ mkdir build
+    $ cd build
+    $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_SANITIZER=ON
     $ make
 ```
 
-Use the following as an example to compile statically and using specific hdf5 folder
-```
-    $ HDF5_ROOT=/opt/hdf5v1.10.0 cmake ../slsDetectorPackage -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_HDF5=ON
- ```  
-After compiling, the libraries and executables will be found at `bin` directory
+After compiling, the libraries and executable will be found at `bin` directory
 ```
     $ ls bin/
-    gui_client  libSlsDetector.a  libSlsDetector.so  libSlsReceiver.a  libSlsReceiver.so
+    libSlsDetector.a  libSlsDetector.so  libSlsReceiver.a  libSlsReceiver.so
     sls_detector_acquire  sls_detector_get  slsDetectorGui  sls_detector_help  sls_detector_put  slsReceiver slsMultiReceiver
 ```

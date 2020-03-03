@@ -1,21 +1,4 @@
-/**
- \file mainReceiver.cpp
-
-This file is an example of how to implement the Receiver class
-You can compile it linking it to the slsReceiver library
-
-g++ mainReceiver.cpp -L lib -lSlsReceiver -L/usr/lib64/ -L lib2 -lzmq  -pthread -lrt -lm -lstdc++
-
-where,
-
-lib is the location of lSlsReceiver.so
-
-lib2 is the location of the libzmq.a.
-[ libzmq.a is required only when using data call backs and enabling data streaming from receiver to client.
-It is linked in manual/manual-api from slsReceiverSoftware/include ]
-
- */
-
+/* Creates the slsMultiReceiver for running multiple receivers form a single binary */
 #include "sls_detector_defs.h"
 #include "Receiver.h"
 #include "container_utils.h"

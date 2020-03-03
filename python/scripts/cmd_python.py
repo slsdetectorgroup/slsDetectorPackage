@@ -4,10 +4,11 @@ out = subprocess.run(['g', 'list'], stdout = subprocess.PIPE, encoding=locale.ge
 cmd = out.stdout.splitlines()
 cmd.pop(0)
 
-from sls_detector import Detector, Eiger, Ctb
+from slsdet import Detector, Eiger, Ctb
 
 pycmd = dir(Detector)+dir(Eiger)+dir(Ctb)
 
+#Add commands that we should not expect as direct commands in python
 pycmd += ['vrf', 'vtr', 'vrs', 'vtgstv', 'vsvn', 'vtrim',
 'vsvp', 'vth1', 'vth2', 'vth3', 'vshaper', 'vshaperneg', 'rxb_rb',
 'rxb_lb', 'vref_prech', 'vref_rstore', 'vref_cds',

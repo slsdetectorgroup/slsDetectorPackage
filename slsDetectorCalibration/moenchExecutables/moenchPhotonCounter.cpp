@@ -149,6 +149,7 @@ int main(int argc, char *argv[]) {
   if (argc>=9) {
     nframes=atoi(argv[8]);
   }
+
   int xmin=0, xmax=nx, ymin=0, ymax=ny;
   if (argc>=13) {
     xmin=atoi(argv[9]);
@@ -185,6 +186,7 @@ int main(int argc, char *argv[]) {
     cout << "pedestal file is " << pedfile << endl;
  if (thr>0) 
     cout << "threshold is " << thr << endl;
+ cout << "Nframes is " << nframes << endl;
  
  uint32 nnx, nny;
  double *gmap;

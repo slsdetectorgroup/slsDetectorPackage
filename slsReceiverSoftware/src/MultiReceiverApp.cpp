@@ -1,38 +1,14 @@
-/**
- \file mainReceiver.cpp
-
-This file is an example of how to implement the Receiver class
-You can compile it linking it to the slsReceiver library
-
-g++ mainReceiver.cpp -L lib -lSlsReceiver -L/usr/lib64/ -L lib2 -lzmq  -pthread -lrt -lm -lstdc++
-
-where,
-
-lib is the location of lSlsReceiver.so
-
-lib2 is the location of the libzmq.a.
-[ libzmq.a is required only when using data call backs and enabling data streaming from receiver to client.
-It is linked in manual/manual-api from slsReceiverSoftware/include ]
-
- */
-
+/* Creates the slsMultiReceiver for running multiple receivers form a single binary */
 #include "sls_detector_defs.h"
 #include "Receiver.h"
 #include "container_utils.h"
 
 #include <csignal>	//SIGINT
-#include <cstdlib>	//system
 #include <cstring>
 #include <iostream>
-#include <cerrno>
-#include <string>
-#include <sys/types.h>	//wait
 #include <sys/wait.h>	//wait
 #include <syscall.h>	//tid
-#include <unistd.h> 	//usleep
 #include <semaphore.h>
-using namespace std;
-
 
 /** Define Colors to print data call back in different colors for different recievers */
 #define PRINT_IN_COLOR(c,f, ...) 	printf ("\033[%dm" f RESET, 30 + c+1, ##__VA_ARGS__)
@@ -258,7 +234,7 @@ int main(int argc, char *argv[]) {
 
 
 	/** - Print Ready and Instructions how to exit */
-	cout << "Ready ... " << endl;
+	std::cout << "Ready ... \n";
 	cprintf(RESET, "\n[ Press \'Ctrl+c\' to exit ]\n");
 
 	/** - Parent process waits for all child processes to exit */
@@ -280,7 +256,7 @@ int main(int argc, char *argv[]) {
 		cprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long int) childPid);
 	}
 
-	cout << "Goodbye!" << endl;
+	std::cout << "Goodbye!\n";
 	return 0;
 }
 

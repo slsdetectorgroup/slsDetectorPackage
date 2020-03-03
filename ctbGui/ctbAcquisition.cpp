@@ -663,8 +663,10 @@ hframe=new TGHorizontalFrame(this, 800,50);
   cout <<"Registering data callback" << endl;
   try {
     myDet->registerDataCallback(&dataCallback, (void*)this);
-  } CATCH_DISPLAY ("Could not get register call back.", "ctbAcquisition::ctbAcquisition")
-
+  } CATCH_DISPLAY ("Could not get register call back.", "ctbAcquisition::ctbAcquisition") 
+      try {
+	myDet->setRxZmqDataStream(true); 
+      } CATCH_DISPLAY ("Could not get set RxZmqDataStream.", "ctbAcquisition::ctbAcquisition") 
   cout <<"Done" << endl;
   
     //  mgAdcs=new TMultiGraph();
@@ -1153,8 +1155,20 @@ void ctbAcquisition::Draw(){
 void ctbAcquisition::changePlot(){
   if (rbPlotOff->IsOn()) {
     adcPlot=0;
-    dbitPlot=0;
+    dbitPlot=0;   
+    try {
+      myDet->registerDataCallback(nullptr, this);  
+    } CATCH_DISPLAY ("Could not get unregister call back.", "ctbAcquisition::ctbAcquisition")   
+    try {
+      myDet->setRxZmqDataStream(false); 
+    } CATCH_DISPLAY ("Could not get unset RxZmqDataStream.", "ctbAcquisition::ctbAcquisition") 
   } else {
+  try {
+    myDet->registerDataCallback(&dataCallback, (void*)this);
+  } CATCH_DISPLAY ("Could not get register call back.", "ctbAcquisition::ctbAcquisition")   
+    try {
+      myDet->setRxZmqDataStream(true); 
+    } CATCH_DISPLAY ("Could not get set RxZmqDataStream.", "ctbAcquisition::ctbAcquisition") 
     adcPlot=0;
     dbitPlot=0;
     for (int ii=0; ii<NADCS; ii++)

@@ -428,6 +428,13 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("setImageTestMode", &Detector::setImageTestMode, py::arg(),
              py::arg() = Positions{})
+        .def("getNumberOfBursts", &Detector::getNumberOfBursts,
+             py::arg() = Positions{})
+        .def("setNumberOfBursts", &Detector::setNumberOfBursts, py::arg())
+        .def("getBurstPeriod", &Detector::getBurstPeriod,
+             py::arg() = Positions{})
+        .def("setBurstPeriod", &Detector::setBurstPeriod, py::arg(),
+             py::arg() = Positions{})
         .def("getInjectChannel", &Detector::getInjectChannel,
              py::arg() = Positions{})
         .def("setInjectChannel", &Detector::setInjectChannel, py::arg(),
@@ -440,6 +447,14 @@ void init_det(py::module &m) {
              py::arg(), py::arg() = Positions{})
         .def("getBurstMode", &Detector::getBurstMode, py::arg() = Positions{})
         .def("setBurstMode", &Detector::setBurstMode, py::arg(),
+             py::arg() = Positions{})
+        .def("getCurrentSource", &Detector::getCurrentSource,
+             py::arg() = Positions{})
+        .def("setCurrentSource", &Detector::setCurrentSource, py::arg(),
+             py::arg() = Positions{})
+        .def("getTimingSource", &Detector::getTimingSource,
+             py::arg() = Positions{})
+        .def("setTimingSource", &Detector::setTimingSource, py::arg(),
              py::arg() = Positions{})
         .def("getCounterMask", &Detector::getCounterMask,
              py::arg() = Positions{})

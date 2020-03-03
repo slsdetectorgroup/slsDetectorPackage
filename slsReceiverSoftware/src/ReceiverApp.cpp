@@ -1,19 +1,11 @@
 /* slsReceiver */
-
 #include "logger.h"
 #include "Receiver.h"
 #include "sls_detector_defs.h"
 #include "container_utils.h"
 
-#include <csignal>	//SIGINT
-#include <cstdlib>		//system
-#include <cstring>
-#include <iostream>
-#include <sys/types.h>	//wait
-#include <sys/wait.h>	//wait
+#include <csignal>	    //SIGINT
 #include <syscall.h>
-#include <unistd.h> 	//usleep
-#include <memory>
 #include <semaphore.h>
 
 sem_t semaphore;

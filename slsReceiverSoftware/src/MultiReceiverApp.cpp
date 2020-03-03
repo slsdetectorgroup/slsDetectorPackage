@@ -4,18 +4,11 @@
 #include "container_utils.h"
 
 #include <csignal>	//SIGINT
-#include <cstdlib>	//system
 #include <cstring>
 #include <iostream>
-#include <cerrno>
-#include <string>
-#include <sys/types.h>	//wait
 #include <sys/wait.h>	//wait
 #include <syscall.h>	//tid
-#include <unistd.h> 	//usleep
 #include <semaphore.h>
-using namespace std;
-
 
 /** Define Colors to print data call back in different colors for different recievers */
 #define PRINT_IN_COLOR(c,f, ...) 	printf ("\033[%dm" f RESET, 30 + c+1, ##__VA_ARGS__)
@@ -241,7 +234,7 @@ int main(int argc, char *argv[]) {
 
 
 	/** - Print Ready and Instructions how to exit */
-	cout << "Ready ... " << endl;
+	std::cout << "Ready ... \n";
 	cprintf(RESET, "\n[ Press \'Ctrl+c\' to exit ]\n");
 
 	/** - Parent process waits for all child processes to exit */
@@ -263,7 +256,7 @@ int main(int argc, char *argv[]) {
 		cprintf(BLUE,"Exiting Child Process [ Tid: %ld ]\n", (long int) childPid);
 	}
 
-	cout << "Goodbye!" << endl;
+	std::cout << "Goodbye!\n";
 	return 0;
 }
 

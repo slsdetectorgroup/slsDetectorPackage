@@ -968,9 +968,12 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     if (val < 0 && val != LTC2620_GetPowerDownValue())
         return;
 
-    FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
+	char* dac_names[] = {DAC_NAMES};
+    FILE_LOG(logINFO, ("Setting DAC %s\n", dac_names[ind]));
+	FILE_LOG(logDEBUG, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind], val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
+	FILE_LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind], val, (mV ? "mV" : "dac units")));
     if (!mV) {
         dacValues[ind] = val;
     }

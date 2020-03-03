@@ -37,6 +37,7 @@ typedef struct udp_header_struct {
 
 /* Enums */
 enum DACINDEX               {MO_VBP_COLBUF, MO_VIPRE, MO_VIN_CM, MO_VB_SDA, MO_VCASC_SFP, MO_VOUT_CM, MO_VIPRE_CDS, MO_IBIAS_SFP};
+#define DAC_NAMES			"vbp_colbuf", "vipre", "vin_cm", "vb_sda", "vcasc_sfp", "vout_cm", "vipre_cds", "ibias_sfp"
 #define DEFAULT_DAC_VALS   	{ 	1300,	/* MO_VBP_COLBUF */		\
 								1000,	/* MO_VIPRE */			\
 								1400,	/* MO_VIN_CM */			\

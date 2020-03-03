@@ -24,8 +24,8 @@ git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git
 
 ```
 #### Dependencies 
-* Lib: ZeroMQ 4
-* Gui Client: Qt 4.8 and Qwt 6.0
+* Lib: c++11 compiler (gcc=>4.8), ZeroMQ 4
+* Gui: Qt 4.8 and Qwt 6.0
 * Calibration wizards and ctbGUI: ROOT
 
 

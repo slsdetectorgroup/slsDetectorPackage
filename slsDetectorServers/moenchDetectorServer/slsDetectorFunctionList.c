@@ -424,7 +424,7 @@ void initStopServer() {
 /* set up detector */
 
 void setupDetector() {
-    FILE_LOG(logINFO, ("This Server is for 1 Chip Test Board module\n"));
+    FILE_LOG(logINFO, ("This Server is for 1 Moench Board module\n"));
 
     // default variables
     dataBytes = 0;

@@ -27,6 +27,7 @@ git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git
 * Lib: c++11 compiler (gcc=>4.8), ZeroMQ 4
 * Gui: Qt 4.8 and Qwt 6.0
 * Calibration wizards and ctbGUI: ROOT
+* Optional: HDF5
 
 
 #### Compilation 
@@ -80,12 +81,5 @@ Use cmake to create out-of-source builds, by creating a build folder parallel to
     $ mkdir build
     $ cd build
     $ cmake ../slsDetectorPackage  -DCMAKE_BUILD_TYPE=Debug -DSLS_USE_SANITIZER=ON
-    $ make
-```
-
-After compiling, the libraries and executable will be found at `bin` directory
-```
-    $ ls bin/
-    libSlsDetector.a  libSlsDetector.so  libSlsReceiver.a  libSlsReceiver.so
-    sls_detector_acquire  sls_detector_get  slsDetectorGui  sls_detector_help  sls_detector_put  slsReceiver slsMultiReceiver
+    $ make -j12 #or whatever number of threads wanted
 ```

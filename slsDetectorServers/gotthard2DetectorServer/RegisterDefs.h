@@ -228,7 +228,7 @@
 #define SET_DELAY_LSB_REG               (0x22 * REG_OFFSET + BASE_FLOW_CONTROL)
 #define SET_DELAY_MSB_REG               (0x23 * REG_OFFSET + BASE_FLOW_CONTROL)
 
-/* Cylces 64bit Write-register */
+/* Cylces (also #bursts) 64bit Write-register */
 #define SET_CYCLES_LSB_REG              (0x24 * REG_OFFSET + BASE_FLOW_CONTROL)
 #define SET_CYCLES_MSB_REG              (0x25 * REG_OFFSET + BASE_FLOW_CONTROL)
 
@@ -236,7 +236,7 @@
 #define SET_FRAMES_LSB_REG              (0x26 * REG_OFFSET + BASE_FLOW_CONTROL)
 #define SET_FRAMES_MSB_REG              (0x27 * REG_OFFSET + BASE_FLOW_CONTROL)
 
-/* Period 64bit Write-register */
+/* Period (also burst period) 64bit Write-register */
 #define SET_PERIOD_LSB_REG              (0x28 * REG_OFFSET + BASE_FLOW_CONTROL)
 #define SET_PERIOD_MSB_REG              (0x29 * REG_OFFSET + BASE_FLOW_CONTROL)
 

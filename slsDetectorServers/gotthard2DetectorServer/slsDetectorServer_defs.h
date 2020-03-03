@@ -54,6 +54,7 @@
 /* Firmware Definitions */
 #define IP_HEADER_SIZE              (20)
 #define FIXED_PLL_FREQUENCY			(20000000) // 20MHz
+#define INT_SYSTEM_C0_FREQUENCY		(144000000) //144 MHz
 #define READOUT_PLL_VCO_FREQ_HZ     (866666688) // 866 MHz 
 #define SYSTEM_PLL_VCO_FREQ_HZ      (722222224) // 722 MHz
 

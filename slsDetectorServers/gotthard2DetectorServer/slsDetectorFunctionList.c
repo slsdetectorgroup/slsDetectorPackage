@@ -39,6 +39,7 @@ int virtual_stop = 0;
 enum detectorSettings thisSettings = UNINITIALIZED;
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkFrequency[NUM_CLOCKS] = {};
+uint32_t systemFrequency = 0;
 int highvoltage = 0;
 int dacValues[NDAC] = {0};
 int onChipdacValues[ONCHIP_NDAC][NCHIP] = {0};
@@ -49,7 +50,6 @@ uint8_t adcConfiguration[NCHIP][NADC];
 int burstMode = BURST_INTERNAL;
 int64_t numTriggers = 1;
 int64_t numBursts = 1;
-int64_t delayAfterTriggerNs = 0;
 int64_t burstPeriodNs = 0;
 int detPos[2] = {};
 
@@ -346,6 +346,7 @@ void setupDetector() {
 	clkFrequency[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
 	clkFrequency[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
 	clkFrequency[SYSTEM_C3] = DEFAULT_SYSTEM_C3;
+	systemFrequency = INT_SYSTEM_C0_FREQUENCY;
 	detPos[0] = 0;
 	detPos[1] = 0;
 
@@ -356,7 +357,6 @@ void setupDetector() {
 	burstMode = BURST_INTERNAL;
  	numTriggers = 1;
  	numBursts = 1;
- 	delayAfterTriggerNs = 0;
  	burstPeriodNs = 0;
 	{
 		int i, j;
@@ -394,6 +394,7 @@ void setupDetector() {
 	// on chip dacs
 	ASIC_Driver_SetDefines(ONCHIP_DAC_DRIVER_FILE_NAME);
 #endif
+	setTimingSource(DEFAULT_TIMING_SOURCE);
 
 	// Default values
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
@@ -448,7 +449,6 @@ void setupDetector() {
 	setBurstPeriod(DEFAULT_BURST_PERIOD);
 	setTiming(DEFAULT_TIMING_MODE);
 	setCurrentSource(DEFAULT_CURRENT_SOURCE);
-	setTimingSource(DEFAULT_TIMING_SOURCE);
 }
 
 int readConfigFile() {
@@ -867,12 +867,12 @@ int	setExptimeCont(int64_t val) {
 }
 
 int	setExptimeBoth(int64_t val) {
-    val *= (1E-9 * clkFrequency[SYSTEM_C0]);
+    val *= (1E-9 * systemFrequency);
     set64BitReg(val, ASIC_INT_EXPTIME_LSB_REG, ASIC_INT_EXPTIME_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getExptimeBoth();
-    val /= (1E-9 * clkFrequency[SYSTEM_C0]);
+    val /= (1E-9 * systemFrequency);
     if (val != retval) {
         return FAIL;
     }
@@ -880,18 +880,18 @@ int	setExptimeBoth(int64_t val) {
 }
 
 int64_t	getExptimeBoth() {
-	return get64BitReg(ASIC_INT_EXPTIME_LSB_REG, ASIC_INT_EXPTIME_MSB_REG) / (1E-9 * clkFrequency[SYSTEM_C0]);
+	return get64BitReg(ASIC_INT_EXPTIME_LSB_REG, ASIC_INT_EXPTIME_MSB_REG) / (1E-9 * systemFrequency);
 }
 
 
 int	setPeriodBurst(int64_t val) {
 	FILE_LOG(logINFO, ("Setting period %lld ns [Burst mode]\n", val));
-    val *= (1E-9 * clkFrequency[SYSTEM_C0]);
+    val *= (1E-9 * systemFrequency);
     set64BitReg(val, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getPeriodBurst();
-    val /= (1E-9 * clkFrequency[SYSTEM_C0]);
+    val /= (1E-9 * systemFrequency);
     if (val != retval) {
         return FAIL;
     }
@@ -900,17 +900,17 @@ int	setPeriodBurst(int64_t val) {
 
 int64_t	getPeriodBurst() {
 	FILE_LOG(logDEBUG, ("Getting period [Burst mode]\n"));
-	return get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG)/ (1E-9 * clkFrequency[SYSTEM_C0]);
+	return get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG)/ (1E-9 * systemFrequency);
 }
 
 int	setPeriodCont(int64_t val) {
 	FILE_LOG(logINFO, ("Setting period %lld ns [Continuous mode]\n", val));
-    val *= (1E-9 * FIXED_PLL_FREQUENCY);
+    val *= (1E-9 * systemFrequency);
     set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getPeriodCont();
-    val /= (1E-9 * FIXED_PLL_FREQUENCY);
+    val /= (1E-9 * systemFrequency);
     if (val != retval) {
         return FAIL;
     }
@@ -919,7 +919,7 @@ int	setPeriodCont(int64_t val) {
 
 int64_t	getPeriodCont() {
 	FILE_LOG(logDEBUG, ("Getting period [Continuous mode]\n"));
-	return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * FIXED_PLL_FREQUENCY);
+	return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * systemFrequency);
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -928,17 +928,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     } 
 	FILE_LOG(logINFO, ("Setting delay after trigger %lld ns\n", val));
-    delayAfterTriggerNs = val;
-	val *= (1E-9 * FIXED_PLL_FREQUENCY);
-	if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
-		FILE_LOG(logINFO, ("\tBurst and Auto mode: not writing delay to register\n"));
-	} else {
-    	set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
-	}
+	val *= (1E-9 * systemFrequency);
+   	set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-9 * FIXED_PLL_FREQUENCY);
+    val /= (1E-9 * systemFrequency);
     if (val != retval) {
         return FAIL;
     }
@@ -946,10 +941,7 @@ int setDelayAfterTrigger(int64_t val) {
 }
 
 int64_t getDelayAfterTrigger() {
-	if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
-		return delayAfterTriggerNs;
-	}
-    return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
+    return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-9 * systemFrequency);
 }
 
 int setBurstPeriod(int64_t val) {
@@ -959,16 +951,16 @@ int setBurstPeriod(int64_t val) {
     } 
 	FILE_LOG(logINFO, ("Setting burst period %lld ns\n", val));
     burstPeriodNs = val;
-	val *= (1E-9 * FIXED_PLL_FREQUENCY);
-	if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
-    	set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
+	val *= (1E-9 * systemFrequency);
+	if (burstMode != BURST_OFF) {
+    	set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
 	} else {
-		FILE_LOG(logINFO, ("\tNot (Burst and Auto mode): not writing burst period to register\n"));
+		FILE_LOG(logINFO, ("\t(Continuous mode): not writing burst period to register\n"));
 	}
 
     // validate for tolerance
     int64_t retval = getBurstPeriod();
-    val /= (1E-9 * FIXED_PLL_FREQUENCY);
+    val /= (1E-9 * systemFrequency);
     if (val != retval) {
         return FAIL;
     }
@@ -976,8 +968,8 @@ int setBurstPeriod(int64_t val) {
 }
 
 int64_t getBurstPeriod() {
-	if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
-    	return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
+	if (burstMode != BURST_OFF) {
+    	return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) / (1E-9 * systemFrequency);
 	}
 	return burstPeriodNs;
 }
@@ -991,11 +983,11 @@ int64_t getNumTriggersLeft() {
 }
 
 int64_t getDelayAfterTriggerLeft() {
-    return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
+    return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-9 * systemFrequency);
 }
 
 int64_t getPeriodLeft() {
-    return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-9 * FIXED_PLL_FREQUENCY);
+    return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-9 * systemFrequency);
 }
 
 int64_t getFramesFromStart() {
@@ -1210,8 +1202,6 @@ void setTiming( enum timingMode arg){
 	FILE_LOG(logINFO, ("\tUpdating trigger/burst and delay/burst period registers\n"))
 	setNumTriggers(numTriggers);
 	setNumBursts(numBursts);
-	setDelayAfterTrigger(delayAfterTriggerNs);
-	setBurstPeriod(burstPeriodNs);
 }
 
 enum timingMode getTiming() {
@@ -1574,6 +1564,10 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     ALTERA_PLL_C10_SetOuputFrequency (pllIndex, clkIndex, newfreq);
 	clkFrequency[ind] = newfreq;
     FILE_LOG(logINFO, ("\t%s clock (%d) divider set to %d (%d Hz)\n", clock_names[ind], ind, val, clkFrequency[ind]));
+	// update system frequency
+	if (ind == SYSTEM_C0) {
+		setTimingSource(getTimingSource());
+	}
    
     // phase is reset by pll (when setting output frequency)
 	if (ind >= READOUT_C0) {
@@ -1890,10 +1884,9 @@ int	setBurstMode(enum burstMode burst) {
 		return FAIL;
 	}
 
-	FILE_LOG(logINFO, ("\tUpdating trigger/burst and delay/burst period registers\n"))
+	FILE_LOG(logINFO, ("\tUpdating trigger/burst and burst period registers\n"))
 	setNumTriggers(numTriggers);
 	setNumBursts(numBursts);
-	setDelayAfterTrigger(delayAfterTriggerNs);
 	setBurstPeriod(burstPeriodNs);
 
 	// set number of frames and period again (set registers according to timing mode)
@@ -1982,10 +1975,12 @@ void setTimingSource(enum timingSourceType value) {
 		case TIMING_INTERNAL:
 			FILE_LOG(logINFO, ("Setting timing source to internal\n"));
 			bus_w(addr, (bus_r(addr) &~ CONTROL_TIMING_SOURCE_EXT_MSK));
+			systemFrequency = INT_SYSTEM_C0_FREQUENCY;
 			break;
 		case TIMING_EXTERNAL:
 			FILE_LOG(logINFO, ("Setting timing source to exernal\n"));
 			bus_w(addr, (bus_r(addr) | CONTROL_TIMING_SOURCE_EXT_MSK));
+			systemFrequency = clkFrequency[SYSTEM_C0];
 			break;		
 		default:
 			FILE_LOG(logERROR, ("Unknown timing source %d\n", value));

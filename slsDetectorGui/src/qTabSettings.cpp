@@ -20,7 +20,6 @@ void qTabSettings::SetupWidgetWindow() {
 
 	// enabling according to det type
     switch(det->getDetectorType().squash()) {
-        case slsDetectorDefs::MOENCH:
         case slsDetectorDefs::MYTHEN3:
             lblSettings->setEnabled(false);
             comboSettings->setEnabled(false);
@@ -83,11 +82,21 @@ void qTabSettings::SetupDetectorSettings() {
             item[(int)FORCESWITCHG1]->setEnabled(true);
             item[(int)FORCESWITCHG2]->setEnabled(true);
             break;
-         case slsDetectorDefs::GOTTHARD2:
+        case slsDetectorDefs::GOTTHARD2:
             item[(int)DYNAMICGAIN]->setEnabled(true);
             item[(int)FIXGAIN1]->setEnabled(true);
             item[(int)FIXGAIN2]->setEnabled(true);
-            break;           
+            break;     
+        case slsDetectorDefs::MOENCH:
+            item[(int)G1_HIGHGAIN]->setEnabled(true);
+            item[(int)G1_LOWGAIN]->setEnabled(true);
+            item[(int)G2_HIGHCAP_HIGHGAIN]->setEnabled(true);
+            item[(int)G2_HIGHCAP_LOWGAIN]->setEnabled(true);
+            item[(int)G2_LOWCAP_HIGHGAIN]->setEnabled(true);
+            item[(int)G2_LOWCAP_LOWGAIN]->setEnabled(true);
+            item[(int)G4_HIGHGAIN]->setEnabled(true);
+            item[(int)G4_LOWGAIN]->setEnabled(true);
+            break;	  
         default:
             FILE_LOG(logDEBUG) << "Unknown detector type. Exiting GUI.";
             qDefs::Message(qDefs::CRITICAL,

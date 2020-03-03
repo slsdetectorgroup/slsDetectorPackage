@@ -257,7 +257,7 @@ int64_t		getMeasurementTime();
 int 		setModule(sls_detector_module myMod, char* mess);
 int 		getModule(sls_detector_module *myMod);
 #endif
-#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(MYTHEN3D)) 
+#if (!defined(CHIPTESTBOARDD)) && (!defined(MYTHEN3D)) 
 enum 		detectorSettings setSettings(enum detectorSettings sett);
 #endif
 #if !defined(MYTHEN3D)
@@ -402,6 +402,9 @@ void 		setPatternMask(uint64_t mask);
 uint64_t	getPatternMask();
 void 		setPatternBitMask(uint64_t mask);
 uint64_t	getPatternBitMask();
+#endif
+#ifdef MOENCHD
+extern int 	loadDefaultPattern(char* fname);  								// readDefaultPattern.h
 #endif
 
 // jungfrau specific - powerchip, autocompdisable, clockdiv, asictimer, clock, pll, flashing firmware

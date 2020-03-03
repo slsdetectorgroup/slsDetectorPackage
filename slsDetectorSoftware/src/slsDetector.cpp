@@ -758,8 +758,9 @@ void slsDetector::updateCachedDetectorVariables() {
         shm()->dynamicRange = i32;
 
         // settings
-        if (shm()->myDetectorType == EIGER ||
-            shm()->myDetectorType == JUNGFRAU || shm()->myDetectorType == GOTTHARD) {
+        if (shm()->myDetectorType == EIGER || shm()->myDetectorType == JUNGFRAU || 
+            shm()->myDetectorType == GOTTHARD || shm()->myDetectorType == GOTTHARD2 ||
+            shm()->myDetectorType == MOENCH) {
             n += client.Receive(&i32, sizeof(i32));
             shm()->currentSettings = static_cast<detectorSettings>(i32);
         }

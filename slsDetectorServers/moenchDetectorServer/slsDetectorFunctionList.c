@@ -9,6 +9,7 @@
 #include "MAX1932.h"    // hv
 #include "ALTERA_PLL.h" // pll
 #include "blackfin.h"
+#include "readDefaultPattern.h"
 #include "common.h"
 
 #include <string.h>
@@ -55,6 +56,7 @@ uint32_t clkFrequency[NUM_CLOCKS] = {40, 20, 20, 200};
 int dacValues[NDAC] = {};
 // software limit that depends on the current chip on the ctb
 int vLimit = 0;
+enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
 int nSamples = 1;
 int detPos[2] = {0, 0};
@@ -521,6 +523,8 @@ void setupDetector() {
 		initError = FAIL;
     }
     setPipeline(ADC_CLK, DEFAULT_PIPELINE);
+    loadDefaultPattern(DEFAULT_PATTERN_FILE);
+    setSettings(DEFAULT_SETTINGS);
 }
 
 int updateDatabytesandAllocateRAM() {
@@ -862,10 +866,99 @@ int64_t getMeasurementTime() {
 }
 
 
-
 /* parameters - settings */
+
+enum detectorSettings setSettings(enum detectorSettings sett){
+	if (sett == UNINITIALIZED)
+		return thisSettings;
+
+	// set settings
+	if(sett != GET_SETTINGS) {
+	    switch (sett) {
+	    case G1_HIGHGAIN:
+            FILE_LOG(logINFO, ("Set settings - G1_HIGHGAIN\n"));
+            setPatternMask(G1_HIGHGAIN_PATMASK);
+	        break;
+	    case G1_LOWGAIN:
+            FILE_LOG(logINFO, ("Set settings - G1_LOWGAIN\n"));
+            setPatternMask(G1_LOWGAIN_PATMASK);
+	        break;
+	    case G2_HIGHCAP_HIGHGAIN:
+            FILE_LOG(logINFO, ("Set settings - G2_HIGHCAP_HIGHGAIN\n"));
+            setPatternMask(G2_HIGHCAP_HIGHGAIN_PATMASK);
+	        break;
+	    case G2_HIGHCAP_LOWGAIN:
+            FILE_LOG(logINFO, ("Set settings - G2_HIGHCAP_LOWGAIN\n"));
+            setPatternMask(G2_HIGHCAP_LOWGAIN_PATMASK);
+	        break;
+	    case G2_LOWCAP_HIGHGAIN:
+            FILE_LOG(logINFO, ("Set settings - G2_LOWCAP_HIGHGAIN\n"));
+            setPatternMask(G2_LOWCAP_HIGHGAIN_PATMASK);
+	        break;
+	    case G2_LOWCAP_LOWGAIN:
+            FILE_LOG(logINFO, ("Set settings - G2_LOWCAP_LOWGAIN\n"));
+            setPatternMask(G2_LOWCAP_LOWGAIN_PATMASK);
+	        break;
+	    case G4_HIGHGAIN:
+            FILE_LOG(logINFO, ("Set settings - G4_HIGHGAIN\n"));
+            setPatternMask(G4_HIGHGAIN_PATMASK);
+	        break;
+	    case G4_LOWGAIN:
+            FILE_LOG(logINFO, ("Set settings - G4_LOWGAIN\n"));
+            setPatternMask(G4_LOWGAIN_PATMASK);
+	        break;
+	    default:
+	        FILE_LOG(logERROR, ("This settings is not defined for this detector %d\n", (int)sett));
+	        return -1;
+	    }
+        setPatternBitMask(DEFAULT_PATSETBIT);
+        thisSettings = sett;
+	}
+
+	return getSettings();
+}
+
 enum detectorSettings getSettings() {
-    return UNDEFINED;
+
+    uint64_t patsetbit = getPatternBitMask();
+    if (patsetbit != DEFAULT_PATSETBIT) {
+        FILE_LOG(logERROR, ("Patsetbit is 0x%llx, and not 0x%llx. Undefined Settings!\n", patsetbit, DEFAULT_PATSETBIT));
+        thisSettings = UNDEFINED;
+        return thisSettings;
+    }
+
+    uint64_t patsetmask = getPatternMask();
+    switch (patsetmask) {
+        case G1_HIGHGAIN_PATMASK:
+            thisSettings = G1_HIGHGAIN;
+            break;
+        case G1_LOWGAIN_PATMASK:
+            thisSettings = G1_LOWGAIN;
+            break;
+        case G2_HIGHCAP_HIGHGAIN_PATMASK:
+            thisSettings = G2_HIGHCAP_HIGHGAIN;
+            break;
+        case G2_HIGHCAP_LOWGAIN_PATMASK:
+            thisSettings = G2_HIGHCAP_LOWGAIN;
+            break;
+        case G2_LOWCAP_HIGHGAIN_PATMASK:
+            thisSettings = G2_LOWCAP_HIGHGAIN;
+            break;
+        case G2_LOWCAP_LOWGAIN_PATMASK:
+            thisSettings = G2_LOWCAP_LOWGAIN;
+            break;
+        case G4_HIGHGAIN_PATMASK:
+            thisSettings = G4_HIGHGAIN;
+            break;
+        case G4_LOWGAIN_PATMASK:
+            thisSettings = G4_LOWGAIN;
+            break;
+        default:
+            FILE_LOG(logERROR, ("Patsetmask is 0x%llx. Undefined Settings!\n", patsetmask));
+            thisSettings = UNDEFINED;
+            break;
+    }
+    return thisSettings;
 }
 
 /* parameters - dac, adc, hv */
@@ -1690,6 +1783,7 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
 
 
 void setPatternMask(uint64_t mask) {
+    FILE_LOG(logINFO, ("Setting pattern mask to 0x%llx\n", mask));
 	set64BitReg(mask, PATTERN_MASK_LSB_REG, PATTERN_MASK_MSB_REG);
 }
 
@@ -1698,12 +1792,14 @@ uint64_t getPatternMask() {
 }
 
 void setPatternBitMask(uint64_t mask) {
+    FILE_LOG(logINFO, ("Setting pattern bit mask to 0x%llx\n", mask));
 	set64BitReg(mask, PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
 }
 
 uint64_t getPatternBitMask() {
 	return 	get64BitReg(PATTERN_SET_LSB_REG, PATTERN_SET_MSB_REG);
 }
+
 
 
 /* aquisition */

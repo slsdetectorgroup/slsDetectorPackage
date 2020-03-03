@@ -91,6 +91,22 @@ inline std::string ToString(const defs::detectorSettings s) {
         return std::string("forceswitchg2");
     case defs::VERYLOWGAIN:
         return std::string("verylowgain");
+    case defs::G1_HIGHGAIN:
+        return std::string("g1_hg");
+    case defs::G1_LOWGAIN:
+        return std::string("g1_lg");
+    case defs::G2_HIGHCAP_HIGHGAIN:
+        return std::string("g2_hc_hg");
+    case defs::G2_HIGHCAP_LOWGAIN:
+        return std::string("g2_hc_lg");
+    case defs::G2_LOWCAP_HIGHGAIN:
+        return std::string("g2_lc_hg");
+    case defs::G2_LOWCAP_LOWGAIN:
+        return std::string("g2_lc_lg");
+    case defs::G4_HIGHGAIN:
+        return std::string("g4_hg");
+    case defs::G4_LOWGAIN:
+        return std::string("g4_lg");
     case defs::UNDEFINED:
         return std::string("undefined");        
     case defs::UNINITIALIZED:
@@ -459,6 +475,22 @@ inline defs::detectorSettings StringTo(const std::string& s) {
         return defs::FORCESWITCHG2;
     if (s == "verylowgain")
         return defs::VERYLOWGAIN;
+    if (s == "g1_hg")
+        return defs::G1_HIGHGAIN;
+    if (s == "g1_lg")
+        return defs::G1_LOWGAIN;
+    if (s == "g2_hc_hg")
+        return defs::G2_HIGHCAP_HIGHGAIN;
+    if (s == "g2_hc_lg")
+        return defs::G2_HIGHCAP_LOWGAIN;
+    if (s == "g2_lc_hg")
+        return defs::G2_LOWCAP_HIGHGAIN;
+    if (s == "g2_lc_lg")
+        return defs::G2_LOWCAP_LOWGAIN;
+    if (s == "g4_hg")
+        return defs::G4_HIGHGAIN;
+    if (s == "g4_lg")
+        return defs::G4_LOWGAIN;
     throw sls::RuntimeError("Unknown setting " + s);
 }
 

@@ -1013,10 +1013,14 @@ class CmdProxy {
                 "\n\tSerial number or MAC of detector (hex).");   
 
     INTEGER_COMMAND(settings, getSettings, setSettings, sls::StringTo<slsDetectorDefs::detectorSettings>,
-                    "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain]"
-                    "\n\t[Jungfrau] - Detector Settings [dynamicgain | dynamichg0 | fixgain1 | fixgain2 | forceswitchg1 | forceswitchg2]"
-                    "\n\t[Gotthard] - Detector Settings [dynamicgain | highgain | lowgain | mediumgain | veryhighgain]"
-                    "\n\t[Gotthard2] - Detector Settings [dynamicgain | fixgain1 | fixgain2]"
+                    "[standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, dynamichg0, "
+                    "fixgain1, fixgain2, forceswitchg1, forceswitchg2, verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, "
+                    "g2_lc_hg, g2_lc_lg, g4_hg, g4_lg]"
+                    "\n\t Detector Settings"
+                    "\n\t[Jungfrau] - [dynamicgain | dynamichg0 | fixgain1 | fixgain2 | forceswitchg1 | forceswitchg2]"
+                    "\n\t[Gotthard] - [dynamicgain | highgain | lowgain | mediumgain | veryhighgain]"
+                    "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
+                    "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
                     "\n\t[Eiger] Use threshold or thresholdnotb.");      
 
     /* acquisition parameters */

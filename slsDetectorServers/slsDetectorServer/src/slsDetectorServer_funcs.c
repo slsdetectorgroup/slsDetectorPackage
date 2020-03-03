@@ -1670,7 +1670,7 @@ int set_settings(int file_des) {
 	if (receiveData(file_des, &isett, sizeof(isett), INT32) < 0)
 		return printSocketReadError();
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
+#if defined(CHIPTESTBOARDD) || defined(MYTHEN3D)
     functionNotImplemented();
 #else
 	FILE_LOG(logDEBUG1, ("Setting settings %d\n", isett));
@@ -1698,6 +1698,15 @@ int set_settings(int file_des) {
 		case DYNAMICGAIN:
 		case FIXGAIN1:
 		case FIXGAIN2:
+#elif MOENCHD
+		case G1_HIGHGAIN:
+        case G1_LOWGAIN:
+        case G2_HIGHCAP_HIGHGAIN:
+        case G2_HIGHCAP_LOWGAIN:
+        case G2_LOWCAP_HIGHGAIN:
+        case G2_LOWCAP_LOWGAIN:
+        case G4_HIGHGAIN:
+        case G4_LOWGAIN:
 #endif
 			break;
 		default:
@@ -2818,7 +2827,7 @@ int send_update(int file_des) {
 	if (n < 0) return printSocketReadError();
 
 	// settings
-#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)  || defined(GOTTHARD2D)|| defined(MOENCHD)
 	i32 = (int)getSettings();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();

@@ -2,7 +2,20 @@
 Detailed documentation can be found on the [official site.](https://www.psi.ch/detectors/users-support)
 
 ### Binaries
-Documentation to obtain the binaries via the conda package is available for [lib](https://github.com/slsdetectorgroup/sls_detector_lib) and [gui](https://github.com/slsdetectorgroup/sls_detector_gui)
+Binaries for the slsDetectorPackage are available through conda. 
+```
+#Add conda channels
+conda config --add channels conda-forge
+conda config --add channels slsdetectorgroup
+
+conda install slsdetlib   #only shared lib and command line
+conda install slsdet      #python bindings (includes slsdetlib)
+conda install slsdetgui   #gui (includes qt4)
+
+#Install specific version
+conda install slsdet=2020.03.02.dev0 #developer version from 3 March 2020
+
+```
 
 ### Source code
 One can also obtain the source code from this repository and compile while realizing the setup dependencies as required.

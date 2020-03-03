@@ -39,44 +39,27 @@ cmk.sh or directly with cmake for more control.
 
 After compiling, the libraries and executables will be found in `slsDetectorPackage/build/bin` directory<br>
 
-Usage: [-c] [-b] [-h] [-d HDF5 directory] [-j]<br>
- * -[no option]: only make<br>
- * -c: Clean<br>
- * -b: Builds/Rebuilds CMake files normal mode<br>
- * -h: Builds/Rebuilds Cmake files with HDF5 package<br>
- * -d: HDF5 Custom Directory<br>
- * -t: Build/Rebuilds only text client<br>
- * -r: Build/Rebuilds only receiver<br>
- * -g: Build/Rebuilds only gui<br>
- * -j: Number of threads to compile through<br>
- * -e: Debug mode
- 
-Basic Option:
-./cmk.sh -b
- 
-For only make:
-./cmk.sh
-
-For make clean;make:
-./cmk.sh -c
-
-For using hdf5 without custom dir /blabla:
-./cmk.sh -h -d /blabla
-
-For rebuilding cmake without hdf5 
-./cmk.sh -b
-
-For using multiple cores to compile faster:
-./cmk.sh -j9<br>
-
-
-For rebuilding only certain sections<br>
-./cmk.sh -tg #only text client and gui<br>
-./cmk.sh -r #only receiver<br>
-
+Usage: [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [-h] [-d <HDF5 directory>] [-j] <Number of threads>
+ -[no option]: only make
+ -c: Clean
+ -b: Builds/Rebuilds CMake files normal mode
+ -p: Builds/Rebuilds Python API
+ -h: Builds/Rebuilds Cmake files with HDF5 package
+ -d: HDF5 Custom Directory
+ -t: Build/Rebuilds only text client
+ -r: Build/Rebuilds only receiver
+ -g: Build/Rebuilds only gui
+ -s: Simulator
+ -u: Chip Test Gui
+ -j: Number of threads to compile through
+ -e: Debug mode
+ -i: Builds tests
+  
+eg. Rebuild when you switch to a new build and compile in parallel:
+./cmk.sh -bj5
 
 **2. Compile without script**<br>
-Use cmake to create out-of-source builds, by creating a build folder parallel to source directory. This would crete a debug build with address sanitizers.
+Use cmake to create out-of-source builds, by creating a build folder parallel to source directory. This would create a debug build with address sanitizers.
 ```
     $ mkdir build
     $ cd build

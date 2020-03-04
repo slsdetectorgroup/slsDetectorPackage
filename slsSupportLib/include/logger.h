@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string>
 #include <unistd.h>
-#include <iostream>
+
 
 
 #ifdef FIFODEBUG
@@ -22,8 +22,8 @@
 #endif
 
 
-// #define STRINGIFY(x) #x
-// #define TOSTRING(x) STRINGIFY(x)
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 #define MYCONCAT(x,y)  
 #define __AT__  std::string(__FILE__) + std::string("::") + std::string(__func__) + std::string("(): ")
 #define __SHORT_FORM_OF_FILE__ \
@@ -162,23 +162,13 @@ inline FILE*& Output2FILE::Stream()
     return pStream;
 }
 
-// inline void Output2FILE::Output(const std::string& msg)
-// {   
-//     FILE* pStream = Stream();
-//     if (!pStream)
-//         return;
-//     fprintf(pStream, "%s", msg.c_str());
-//     fflush(pStream);
-// }
-
 inline void Output2FILE::Output(const std::string& msg)
 {   
-    std::cout << msg;
-    // FILE* pStream = Stream();
-    // if (!pStream)
-    //     return;
-    // fprintf(pStream, "%s", msg.c_str());
-    // fflush(pStream);
+    FILE* pStream = Stream();
+    if (!pStream)
+        return;
+    fprintf(pStream, "%s", msg.c_str());
+    fflush(pStream);
 }
 
 inline void Output2FILE::Output(const std::string& msg, TLogLevel level)

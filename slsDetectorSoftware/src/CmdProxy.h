@@ -1081,7 +1081,7 @@ class CmdProxy {
                     "\n\t[Jungfrau][Ctb][Moench] [0|60-200]");      
 
     INTEGER_COMMAND(powerchip, getPowerChip, setPowerChip, std::stoi,
-                    "[0, 1]\n\t[Jungfrau][Mythen3][Gotthard2] Power the chip. Default 0." 
+                    "[0, 1]\n\t[Jungfrau][Mythen3][Gotthard2][Moench] Power the chip. Default 0." 
                     "\n\t[Jungfrau] Get will return power status." 
                     "Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled."
                     "\n\t[Mythen3] If module not connected or wrong module, 1 will fail. By default, not powered on"

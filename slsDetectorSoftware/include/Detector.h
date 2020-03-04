@@ -238,10 +238,10 @@ class Detector {
 
     Result<int> getHighVoltage(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3][Gotthard2] */
+    /** [Jungfrau][Mythen3][Gotthard2][Moench] */
     Result<bool> getPowerChip(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3][Gotthard2] */
+    /** [Jungfrau][Mythen3][Gotthard2][Moench] */
     void setPowerChip(bool on, Positions pos = {});
 
     /**

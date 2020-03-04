@@ -561,14 +561,9 @@ void qDrawPlot::ClonePlot() {
         }
     }
 
-    qCloneWidget* q = new qCloneWidget(this, cloneplot1D, cloneplot2D, clonegainplot1D,             
+    new qCloneWidget(this, cloneplot1D, cloneplot2D, clonegainplot1D,             
         clonegainplot2D, boxPlot->title(), fileSavePath, fileSaveName, currentAcqIndex, 
         displayStatistics, lblMinDisp->text(), lblMaxDisp->text(), lblSumDisp->text());
-    q->show();
-    if (clonegainplot1D != nullptr) {
-        clonegainplot1D->setFixedWidth(cloneplot1D->width());
-        //clonegainplot1D->setFixedHeight(cloneplot1D->height());// / qDefs::DATA_GAIN_PLOT_RATIO - 1);
-    }
 }
 
 void qDrawPlot::SavePlot() {

@@ -55,14 +55,22 @@ void qCloneWidget::SetupWidgetWindow(QString title) {
         if (gainplot2d == nullptr) {
             plotLayout->addWidget(plot2d);
         } else {
-            gainplot2d->setFixedWidth(plot2d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
-            gainplot2d->setFixedHeight(plot2d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
             int ratio = qDefs::DATA_GAIN_PLOT_RATIO - 1;
             plotLayout->addWidget(plot2d, 0, 0, ratio, ratio);
             plotLayout->addWidget(gainplot2d, 0, ratio, 1, 1, Qt::AlignRight | Qt::AlignTop);
         }
     }
     connect(actionSaveClone, SIGNAL(triggered()), this, SLOT(SavePlot()));
+    this->show();
+    if (gainplot1d != nullptr) {
+        gainplot1d->setMinimumHeight(qDefs::MIN_HEIGHT_GAIN_PLOT_1D);
+        gainplot1d->setFixedWidth(plot1d->width());
+       // gainplot1d->setFixedHeight(plot1d->height() / qDefs::DATA_GAIN_PLOT_RATIO - 1);
+    }
+    if (gainplot2d != nullptr) {
+        gainplot2d->setFixedWidth(plot2d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
+        gainplot2d->setFixedHeight(plot2d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
+    }
 }
 
 void qCloneWidget::DisplayStats(bool enable, QString min, QString max, QString sum) {

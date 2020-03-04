@@ -1,6 +1,5 @@
 /** API versions */
 #define GITBRANCH "developer"
-#define APIMOENCH 0x200131
 #define APIMYTHEN3 0x200226
 #define APIJUNGFRAU 0x200226
 #define APIEIGER 0x200226
@@ -9,4 +8,5 @@
 #define APIRECEIVER 0x200227
 #define APIGUI 0x200227
 #define APICTB 0x200227
+#define APIMOENCH 0x200303
 #define APIGOTTHARD2 0x200304

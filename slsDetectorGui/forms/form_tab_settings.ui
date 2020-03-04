@@ -216,6 +216,46 @@
      </item>
      <item>
       <property name="text">
+       <string>G1_HG</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>G1_LG</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>G2_HC_HG</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>G2_HC_LG</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>G2_LC_HG</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>G2_LC_LG</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>G4_HG</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>G4_LG</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Undefined</string>
       </property>
      </item>

@@ -332,6 +332,11 @@ class slsDetectorDefs {
         VB_PIXBUF,
         VIN_COM,
         VDD_PROT,
+        VBP_COLBUF,
+        VB_SDA,
+        VCASC_SFP,
+        VIPRE_CDS,
+        IBIAS_SFP,
         V_POWER_A = 100,
         V_POWER_B = 101,
         V_POWER_C = 102,
@@ -359,20 +364,28 @@ class slsDetectorDefs {
        detector settings indexes
     */
     enum detectorSettings {
-        GET_SETTINGS = -1, /**< return current detector settings */
-        STANDARD,          /**< standard settings */
-        FAST,              /**< fast settings */
-        HIGHGAIN,          /**< highgain  settings */
-        DYNAMICGAIN,       /**< dynamic gain  settings */
-        LOWGAIN,           /**< low gain  settings */
-        MEDIUMGAIN,        /**< medium gain  settings */
-        VERYHIGHGAIN,      /**< very high gain  settings */
-        DYNAMICHG0,        /**< dynamic high gain 0 */
-        FIXGAIN1,          /**< fix gain 1 */
-        FIXGAIN2,          /**< fix gain 2 */
-        FORCESWITCHG1,     /**< force switch gain 1 */
-        FORCESWITCHG2,     /**< force switch gain 2 */
-        VERYLOWGAIN,       /**< very low gain settings */
+        GET_SETTINGS = -1, 
+        STANDARD,          
+        FAST,              
+        HIGHGAIN,          
+        DYNAMICGAIN,       
+        LOWGAIN,           
+        MEDIUMGAIN,        
+        VERYHIGHGAIN,      
+        DYNAMICHG0,        
+        FIXGAIN1,          
+        FIXGAIN2,          
+        FORCESWITCHG1,     
+        FORCESWITCHG2,     
+        VERYLOWGAIN,       
+        G1_HIGHGAIN,
+        G1_LOWGAIN,
+        G2_HIGHCAP_HIGHGAIN,
+        G2_HIGHCAP_LOWGAIN,
+        G2_LOWCAP_HIGHGAIN,
+        G2_LOWCAP_LOWGAIN,
+        G4_HIGHGAIN,
+        G4_LOWGAIN,
         UNDEFINED = 200,   /**< undefined or custom  settings */
         UNINITIALIZED      /**< uninitialiazed (status at startup) */
     };

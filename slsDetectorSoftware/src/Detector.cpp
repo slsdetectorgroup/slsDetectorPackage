@@ -1230,7 +1230,7 @@ void Detector::setCounterMask(uint32_t countermask, Positions pos) {
     pimpl->Parallel(&slsDetector::setCounterMask, pos, countermask);
 }
 
-// CTB Specific
+// CTB/ Moench Specific
 
 Result<int> Detector::getNumberOfAnalogSamples(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getNumberOfAnalogSamples, pos);
@@ -1240,46 +1240,6 @@ void Detector::setNumberOfAnalogSamples(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setNumberOfAnalogSamples, pos, value);
 }
 
-Result<int> Detector::getNumberOfDigitalSamples(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getNumberOfDigitalSamples, pos);
-}
-
-void Detector::setNumberOfDigitalSamples(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setNumberOfDigitalSamples, pos, value);
-}
-
-Result<defs::readoutMode> Detector::getReadoutMode(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getReadoutMode, pos);
-}
-
-void Detector::setReadoutMode(defs::readoutMode value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setReadoutMode, pos, value);
-}
-
-Result<int> Detector::getDBITPhase(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::DBIT_CLOCK,
-                           false);
-}
-
-void Detector::setDBITPhase(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::DBIT_CLOCK, value,
-                    false);
-}
-
-Result<int> Detector::getMaxDBITPhaseShift(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getMaxClockPhaseShift, pos,
-                           defs::DBIT_CLOCK);
-}
-
-Result<int> Detector::getDBITPhaseInDegrees(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::DBIT_CLOCK,
-                           true);
-}
-
-void Detector::setDBITPhaseInDegrees(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::DBIT_CLOCK, value,
-                    true);
-}
 
 Result<int> Detector::getADCClock(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getClockFrequency, pos,
@@ -1288,16 +1248,6 @@ Result<int> Detector::getADCClock(Positions pos) const {
 
 void Detector::setADCClock(int value_in_MHz, Positions pos) {
     pimpl->Parallel(&slsDetector::setClockFrequency, pos, defs::ADC_CLOCK,
-                    value_in_MHz);
-}
-
-Result<int> Detector::getDBITClock(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockFrequency, pos,
-                           defs::DBIT_CLOCK);
-}
-
-void Detector::setDBITClock(int value_in_MHz, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockFrequency, pos, defs::DBIT_CLOCK,
                     value_in_MHz);
 }
 
@@ -1326,10 +1276,6 @@ void Detector::setADCPipeline(int value, Positions pos) {
 
 Result<int> Detector::getDBITPipeline(Positions pos) const {
     return pimpl->Parallel(&slsDetector::getPipeline, pos, defs::DBIT_CLOCK);
-}
-
-void Detector::setDBITPipeline(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setPipeline, pos, defs::DBIT_CLOCK, value);
 }
 
 Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
@@ -1362,6 +1308,81 @@ void Detector::setVoltage(defs::dacIndex index, int value, Positions pos) {
         throw RuntimeError("Unknown Voltage Index");
     }
     pimpl->Parallel(&slsDetector::setDAC, pos, value, index, 1);
+}
+
+Result<uint32_t> Detector::getADCEnableMask(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getADCEnableMask, pos);
+}
+
+void Detector::setADCEnableMask(uint32_t mask, Positions pos) {
+    pimpl->Parallel(&slsDetector::setADCEnableMask, pos, mask);
+}
+
+Result<uint32_t> Detector::getTenGigaADCEnableMask(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getTenGigaADCEnableMask, pos);
+}
+
+void Detector::setTenGigaADCEnableMask(uint32_t mask, Positions pos) {
+    pimpl->Parallel(&slsDetector::setTenGigaADCEnableMask, pos, mask);
+}
+
+// CTB Specific
+
+
+Result<int> Detector::getNumberOfDigitalSamples(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getNumberOfDigitalSamples, pos);
+}
+
+void Detector::setNumberOfDigitalSamples(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setNumberOfDigitalSamples, pos, value);
+}
+
+Result<defs::readoutMode> Detector::getReadoutMode(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getReadoutMode, pos);
+}
+
+void Detector::setReadoutMode(defs::readoutMode value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setReadoutMode, pos, value);
+}
+
+Result<int> Detector::getDBITClock(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getClockFrequency, pos,
+                           defs::DBIT_CLOCK);
+}
+
+void Detector::setDBITClock(int value_in_MHz, Positions pos) {
+    pimpl->Parallel(&slsDetector::setClockFrequency, pos, defs::DBIT_CLOCK,
+                    value_in_MHz);
+}
+
+Result<int> Detector::getDBITPhase(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::DBIT_CLOCK,
+                           false);
+}
+
+void Detector::setDBITPhase(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::DBIT_CLOCK, value,
+                    false);
+}
+
+Result<int> Detector::getMaxDBITPhaseShift(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getMaxClockPhaseShift, pos,
+                           defs::DBIT_CLOCK);
+}
+
+Result<int> Detector::getDBITPhaseInDegrees(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::DBIT_CLOCK,
+                           true);
+}
+
+void Detector::setDBITPhaseInDegrees(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::DBIT_CLOCK, value,
+                    true);
+}
+
+
+void Detector::setDBITPipeline(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setPipeline, pos, defs::DBIT_CLOCK, value);
 }
 
 Result<int> Detector::getMeasuredVoltage(defs::dacIndex index,
@@ -1400,30 +1421,6 @@ Result<int> Detector::getSlowADC(defs::dacIndex index, Positions pos) const {
         throw RuntimeError("Unknown Slow ADC Index");
     }
     return pimpl->Parallel(&slsDetector::getADC, pos, index);
-}
-
-Result<uint32_t> Detector::getADCEnableMask(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getADCEnableMask, pos);
-}
-
-void Detector::setADCEnableMask(uint32_t mask, Positions pos) {
-    pimpl->Parallel(&slsDetector::setADCEnableMask, pos, mask);
-}
-
-Result<uint32_t> Detector::getTenGigaADCEnableMask(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getTenGigaADCEnableMask, pos);
-}
-
-void Detector::setTenGigaADCEnableMask(uint32_t mask, Positions pos) {
-    pimpl->Parallel(&slsDetector::setTenGigaADCEnableMask, pos, mask);
-}
-
-Result<uint32_t> Detector::getADCInvert(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getADCInvert, pos);
-}
-
-void Detector::setADCInvert(uint32_t value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setADCInvert, pos, value);
 }
 
 Result<int> Detector::getExternalSamplingSource(Positions pos) const {
@@ -1745,6 +1742,14 @@ bool Detector::getInitialChecks() const {
 
 void Detector::setInitialChecks(const bool value) {
     pimpl->setInitialChecks(value);
+}
+
+Result<uint32_t> Detector::getADCInvert(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getADCInvert, pos);
+}
+
+void Detector::setADCInvert(uint32_t value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setADCInvert, pos, value);
 }
 
 // Insignificant

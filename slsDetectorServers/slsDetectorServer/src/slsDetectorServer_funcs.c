@@ -2,13 +2,6 @@
 #include "slsDetectorFunctionList.h"
 #include "communication_funcs.h"
 #include "clogger.h"
-#ifndef VIRTUAL
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
-#include "programFpgaNios.h"
-#elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
-#include "programFpgaBlackfin.h"
-#endif
-#endif
 
 #include <string.h>
 #include <arpa/inet.h>
@@ -928,10 +921,35 @@ int set_dac(int file_des) {
     case V_LIMIT:
         break;
 #elif MOENCHD
+	case VBP_COLBUF: 
+		serverDacIndex = MO_VBP_COLBUF; 
+		break;
+	case VIPRE: 
+		serverDacIndex = MO_VIPRE; 
+		break;
+	case VIN_CM: 
+		serverDacIndex = MO_VIN_CM; 
+		break;
+	case VB_SDA: 
+		serverDacIndex = MO_VB_SDA; 
+		break;
+	case VCASC_SFP: 
+		serverDacIndex = MO_VCASC_SFP; 
+		break;
+	case VOUT_CM: 
+		serverDacIndex = MO_VOUT_CM; 
+		break;
+	case VIPRE_CDS: 
+		serverDacIndex = MO_VIPRE_CDS; 
+		break;
+	case IBIAS_SFP: 
+		serverDacIndex = MO_IBIAS_SFP; 
+		break;
     case ADC_VPP:
     case HIGH_VOLTAGE:
     case V_LIMIT:
         break;
+
 #elif MYTHEN3D
     case HIGH_VOLTAGE:
 		break;
@@ -1056,14 +1074,10 @@ int set_dac(int file_des) {
 		serverDacIndex = J_VREF_COMP;
 		break;	
 #endif
+
     default:
 #ifdef CHIPTESTBOARDD
         if (ind < NDAC_ONLY) {
-            serverDacIndex = ind;
-            break;
-        }
-#elif MOENCHD
-        if (ind < NDAC) {
             serverDacIndex = ind;
             break;
         }
@@ -1656,7 +1670,7 @@ int set_settings(int file_des) {
 	if (receiveData(file_des, &isett, sizeof(isett), INT32) < 0)
 		return printSocketReadError();
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D)
+#if defined(CHIPTESTBOARDD) || defined(MYTHEN3D)
     functionNotImplemented();
 #else
 	FILE_LOG(logDEBUG1, ("Setting settings %d\n", isett));
@@ -1684,6 +1698,15 @@ int set_settings(int file_des) {
 		case DYNAMICGAIN:
 		case FIXGAIN1:
 		case FIXGAIN2:
+#elif MOENCHD
+		case G1_HIGHGAIN:
+        case G1_LOWGAIN:
+        case G2_HIGHCAP_HIGHGAIN:
+        case G2_HIGHCAP_LOWGAIN:
+        case G2_LOWCAP_HIGHGAIN:
+        case G2_LOWCAP_LOWGAIN:
+        case G4_HIGHGAIN:
+        case G4_LOWGAIN:
 #endif
 			break;
 		default:
@@ -1750,18 +1773,23 @@ int start_acquisition(int file_des) {
 	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	int mode = getReadoutMode();
-	int asamples = getNumAnalogSamples();
-	int dsamples = getNumDigitalSamples();
-	if ((mode == ANALOG_AND_DIGITAL || mode == ANALOG_ONLY) && (asamples <= 0)) {
+#if defined(MOENCHD)
+	if (getNumAnalogSamples() <= 0) {
 		ret = FAIL;
-		sprintf(mess, "Could not start acquisition. Invalid number of analog samples: %d.\n", asamples);
+		sprintf(mess, "Could not start acquisition. Invalid number of analog samples: %d.\n", getNumAnalogSamples());
 		FILE_LOG(logERROR,(mess));	
 	}
-	else if ((mode == ANALOG_AND_DIGITAL || mode == DIGITAL_ONLY) && (dsamples <= 0)) {
+	else
+#endif
+#if defined(CHIPTESTBOARDD)	
+	if ((getReadoutMode() == ANALOG_AND_DIGITAL || mode == ANALOG_ONLY) && (getNumAnalogSamples() <= 0)) {
 		ret = FAIL;
-		sprintf(mess, "Could not start acquisition. Invalid number of digital samples: %d.\n", dsamples);
+		sprintf(mess, "Could not start acquisition. Invalid number of analog samples: %d.\n", getNumAnalogSamples());
+		FILE_LOG(logERROR,(mess));	
+	}
+	else if ((getReadoutMode() == ANALOG_AND_DIGITAL || mode == DIGITAL_ONLY) && (getNumDigitalSamples() <= 0)) {
+		ret = FAIL;
+		sprintf(mess, "Could not start acquisition. Invalid number of digital samples: %d.\n", getNumDigitalSamples());
 		FILE_LOG(logERROR,(mess));	
 	}
 	else
@@ -1880,18 +1908,23 @@ int start_and_read_all(int file_des) {
 	FILE_LOG(logDEBUG1, ("Starting Acquisition\n"));
 	// only set
 	if (Server_VerifyLock() == OK) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	int mode = getReadoutMode();
-	int asamples = getNumAnalogSamples();
-	int dsamples = getNumDigitalSamples();
-	if ((mode == ANALOG_AND_DIGITAL || mode == ANALOG_ONLY) && (asamples <= 0)) {
+#if defined(MOENCHD)
+	if (getNumAnalogSamples() <= 0) {
 		ret = FAIL;
-		sprintf(mess, "Could not start acquisition. Invalid number of analog samples: %d.\n", asamples);
+		sprintf(mess, "Could not start acquisition. Invalid number of analog samples: %d.\n", getNumAnalogSamples());
 		FILE_LOG(logERROR,(mess));	
 	}
-	else if ((mode == ANALOG_AND_DIGITAL || mode == DIGITAL_ONLY) && (dsamples <= 0)) {
+	else
+#endif
+#if defined(CHIPTESTBOARDD)	
+	if ((getReadoutMode() == ANALOG_AND_DIGITAL || mode == ANALOG_ONLY) && (getNumAnalogSamples() <= 0)) {
 		ret = FAIL;
-		sprintf(mess, "Could not start acquisition. Invalid number of digital samples: %d.\n", dsamples);
+		sprintf(mess, "Could not start acquisition. Invalid number of analog samples: %d.\n", getNumAnalogSamples());
+		FILE_LOG(logERROR,(mess));	
+	}
+	else if ((getReadoutMode() == ANALOG_AND_DIGITAL || mode == DIGITAL_ONLY) && (getNumDigitalSamples() <= 0)) {
+		ret = FAIL;
+		sprintf(mess, "Could not start acquisition. Invalid number of digital samples: %d.\n", getNumDigitalSamples());
 		FILE_LOG(logERROR,(mess));	
 	}
 	else
@@ -2102,14 +2135,23 @@ int set_num_analog_samples(int file_des) {
 #else	
 	// only set
 	if (Server_VerifyLock() == OK) {
-		ret = setNumAnalogSamples(arg); 
-		if (ret == FAIL) {
-			sprintf(mess, "Could not set number of analog samples to %d. Could not allocate RAM\n", arg);
-	        FILE_LOG(logERROR,(mess));
-		} else {
-			int retval = getNumAnalogSamples();
-			FILE_LOG(logDEBUG1, ("retval num analog samples %d\n", retval));
-			validate(arg, retval, "set number of analog samples", DEC);
+#ifdef MOENCHD
+		if (arg % NSAMPLES_PER_ROW != 0) {
+			ret = FAIL;
+			sprintf(mess, "Could not set number of analog samples to %d. Must be divisible by %d\n", arg, NSAMPLES_PER_ROW);
+	        FILE_LOG(logERROR,(mess));			
+		}
+#endif
+		if (ret == OK) {
+			ret = setNumAnalogSamples(arg); 
+			if (ret == FAIL) {
+				sprintf(mess, "Could not set number of analog samples to %d. Could not allocate RAM\n", arg);
+				FILE_LOG(logERROR,(mess));
+			} else {
+				int retval = getNumAnalogSamples();
+				FILE_LOG(logDEBUG1, ("retval num analog samples %d\n", retval));
+				validate(arg, retval, "set number of analog samples", DEC);
+			}
 		}
 	}
 #endif	
@@ -2121,7 +2163,7 @@ int get_num_digital_samples(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	int retval = -1;
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD)
 	functionNotImplemented();
 #else	
 	// get only
@@ -2140,7 +2182,7 @@ int set_num_digital_samples(int file_des) {
 	return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Setting number of digital samples %d\n", arg));
 
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
+#if !defined(CHIPTESTBOARDD)
 	functionNotImplemented();
 #else	
 	// only set
@@ -2785,7 +2827,7 @@ int send_update(int file_des) {
 	if (n < 0) return printSocketReadError();
 
 	// settings
-#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)
+#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)  || defined(GOTTHARD2D)|| defined(MOENCHD)
 	i32 = (int)getSettings();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
@@ -2856,10 +2898,16 @@ int send_update(int file_des) {
 #endif
 	
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	// analog samples
+    i32 = getNumAnalogSamples();
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+    if (n < 0) return printSocketReadError();
+
 	// 1g adcmask
     i32 = getADCEnableMask();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
     if (n < 0) return printSocketReadError();
+
 	// 10g adc mask
     i32 = getADCEnableMask_10G();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
@@ -4237,7 +4285,7 @@ int led(int file_des) {
         return printSocketReadError();
     FILE_LOG(logDEBUG1, ("Setting led enable to %d\n", arg));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if (!defined(CHIPTESTBOARDD))
     functionNotImplemented();
 #else
     // set & get
@@ -4262,7 +4310,7 @@ int digital_io_delay(int file_des) {
         return printSocketReadError();
     FILE_LOG(logDEBUG1, ("Digital IO Delay, pinMask: 0x%llx, delay:%d ps\n", args[0], (int)args[1]));
 
-#if (!defined(MOENCHD)) && (!defined(CHIPTESTBOARDD))
+#if (!defined(CHIPTESTBOARDD))
 	functionNotImplemented();
 #else
 	// only set
@@ -6169,9 +6217,11 @@ int set_pipeline(int file_des) {
 		case ADC_CLOCK:
 			c = ADC_CLK;
 			break;
+#ifdef CHIPTESTBOARDD
 		case DBIT_CLOCK:
 			c = DBIT_CLK;
 			break;
+#endif
 		default:
 			modeNotImplemented("clock index (pipeline set)", ind);
 			break;

@@ -1,33 +1,26 @@
 #pragma once
 /*Utility to log to console*/
 
-#include "ansi.h" //Colors
-#include "logger.h"
+#include "ansi.h"   //Colors
+#include "logger.h" //for enum, to be removed
 #include <iostream>
-#include <chrono>
 #include <sstream>
-#include <iomanip>
-#include <map>
 
-/*
-Define the max level that is visible
-The compiler should optimize away any calls below
-this level
-*/
-#ifndef LOG_MAX_LEVEL
-#define LOG_MAX_LEVEL logINFO
+// Compiler should optimize away anything below this value
+#ifndef LOG_MAX_REPORTING_LEVEL
+#define LOG_MAX_REPORTING_LEVEL logINFO
 #endif
 
 namespace sls {
 class Logger {
     std::ostringstream os;
-    TLogLevel level = LOG_MAX_LEVEL;
+    TLogLevel level = LOG_MAX_REPORTING_LEVEL;
 
   public:
     Logger() = default;
     Logger(TLogLevel level) : level(level){};
     ~Logger() {
-        // output happens in the destructor to allow for <<
+        // output in the destructor to allow for << syntax
         os << Reset() << '\n';
         std::clog << os.str(); // Single write
     }
@@ -38,13 +31,14 @@ class Logger {
     }
 
     // Danger this buffer need as many elements as TLogLevel
-    static const char *Color(TLogLevel level) {
+    static const char *Color(TLogLevel level) noexcept {
         static const char *const colors[] = {
             RED BOLD, YELLOW BOLD, RESET, BLUE,  RED,   RESET,
             RESET,    RESET,       RESET, RESET, RESET, RESET};
         return colors[level];
     }
-    static const char *Reset() {
+
+    static const char *Reset() noexcept {
         static const char *reset = RESET;
         return reset;
     }
@@ -58,26 +52,32 @@ class Logger {
     }
 
     std::ostringstream &Get() {
-        os << Color(level);
-        os << "- " << Time();
-        os << " " << ToString(level) << ": ";
+        os << Color(level) << "- " << Timestamp() << " " << ToString(level)
+           << ": ";
         return os;
     }
-    std::string Time(decltype(std::chrono::system_clock::now()) now =
-                         std::chrono::system_clock::now()) {
-        std::ostringstream oss;
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                      now.time_since_epoch()) %
-                  1000;
-        std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-        oss << std::put_time(std::localtime(&now_time), "%H:%M:%S") << "."
-            << std::setw(3) << std::setfill('0') << ms.count();
-        return oss.str();
+
+    std::string Timestamp() {
+        constexpr size_t buffer_len = 12;
+        char buffer[buffer_len];
+        time_t t;
+        time(&t);
+        tm r;
+        strftime(buffer, buffer_len, "%X", localtime_r(&t, &r));
+        buffer[buffer_len - 1] = '\0';
+        struct timeval tv;
+        gettimeofday(&tv, nullptr);
+        constexpr size_t result_len = 100;
+        char result[result_len];
+        snprintf(result, result_len, "%s.%03ld", buffer,
+                 (long)tv.tv_usec / 1000);
+        result[result_len - 1] = '\0';
+        return result;
     }
 };
 
 #define LOG(level)                                                             \
-    if (level > LOG_MAX_LEVEL)                                                 \
+    if (level > LOG_MAX_REPORTING_LEVEL)                                       \
         ;                                                                      \
     else if (level > sls::Logger::ReportingLevel())                            \
         ;                                                                      \

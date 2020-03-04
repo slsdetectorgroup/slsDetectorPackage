@@ -6,54 +6,53 @@
 #include <fstream>
 #include <chrono>
 
-TEST_CASE("Get time"){
-    auto now = std::chrono::system_clock::now();
-    sls::Logger log;
-    auto time = log.Time(now); 
+using sls::Logger;
 
+TEST_CASE("LogLevel to string") {
+    CHECK(Logger::ToString(logERROR) == "ERROR");
+    CHECK(Logger::ToString(logWARNING) == "WARNING");
+    CHECK(Logger::ToString(logINFOBLUE) == "INFO");
+    CHECK(Logger::ToString(logINFOGREEN) == "INFO");
+    CHECK(Logger::ToString(logINFORED) == "INFO");
+    CHECK(Logger::ToString(logINFO) == "INFO");
+    CHECK(Logger::ToString(logDEBUG) == "DEBUG");
+    CHECK(Logger::ToString(logDEBUG1) == "DEBUG1");
+    CHECK(Logger::ToString(logDEBUG2) == "DEBUG2");
+    CHECK(Logger::ToString(logDEBUG3) == "DEBUG3");
+    CHECK(Logger::ToString(logDEBUG4) == "DEBUG4");
+    CHECK(Logger::ToString(logDEBUG5) == "DEBUG5");
 }
 
-TEST_CASE("fail"){
+TEST_CASE("get reset string"){
+    std::string reset(Logger::Reset());
+    CHECK(reset == RESET);
+}
 
-    FILE_LOG(logINFO) << "A message";
-    FILE_LOG(logWARNING) << "An error";
-    FILE_LOG(logERROR) << "A warning";
+TEST_CASE("Test output") {
 
-// sls::Logger::ReportingLevel() = logERROR;
-    // std::cout << sls::Logger::ReportingLevel() << '\n';
-    LOG(logINFO) << "A new message";
-    LOG(logERROR) << "A new error";
-    LOG(logWARNING) << "A new warning";
+    auto old_value = Logger::ReportingLevel();
 
-    LOG(logDEBUG3) << "This should not be printed";
+    Logger::ReportingLevel() = logERROR;
 
+    //Redirect std::clog to local buffer
     std::ostringstream local;
     auto clog_buff = std::clog.rdbuf();
     std::clog.rdbuf(local.rdbuf());
-    LOG(logERROR) << "This should also not be printed";
 
+    //Try printing something with too low level
+    LOG(logDEBUG) << "This should not be printed";
+    CHECK(local.str().empty());
+
+    //Try printing something with a higher level
+    LOG(logERROR) << "This should be printed";
+    CHECK(!local.str().empty());
     std::clog.rdbuf(clog_buff); // restore
-    LOG(logERROR) << "But this should";
-
-    std::cout << "we got: " << local.str() << '\n';
+    Logger::ReportingLevel() = old_value; //reset
 
 
-    // sls::Logger::ReportingLevel() = logDEBUG1;
-    // std::cout << sls::Logger::ReportingLevel() << '\n';
-    // std::ostream& os = std::cout;
-    // Output2FILE::Stream();
-
-    // os << "hej pa dig\n";
-
-    // std::ostringstream oss;
-    // std::ostream& os = oss;
-    // auto& out = Output2FILE::Stream();
-    // out = os;
-    // Output2FILE::Stream() = std::cout;
-    // FILE_LOG(logERROR) << "An error message";
-
-
-    // CHECK(false);
-
-
+    //Check that the message is in the printed string
+    auto r = local.str();
+    auto pos = r.find("This should be printed");
+    CHECK(pos != std::string::npos);
+    
 }

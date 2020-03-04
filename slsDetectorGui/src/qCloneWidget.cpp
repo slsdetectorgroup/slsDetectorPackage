@@ -11,10 +11,10 @@
 
 int qCloneWidget::NumClones{0};
 
-qCloneWidget::qCloneWidget(QWidget *parent, SlsQt1DPlot* p1, SlsQt2DPlot* p2, SlsQt2DPlot* gp, 
+qCloneWidget::qCloneWidget(QWidget *parent, SlsQt1DPlot* p1, SlsQt2DPlot* p2, SlsQt1DPlot *gp1, SlsQt2DPlot* gp, 
                 QString title, QString fPath, QString fName, int64_t aIndex, 
                  bool displayStats, QString min, QString max, QString sum):
-                 QMainWindow(parent), plot1d(p1), plot2d(p2), gainplot2d(gp), filePath(fPath), fileName(fName), acqIndex(aIndex) {
+                 QMainWindow(parent), plot1d(p1), plot2d(p2), gainplot1d(gp1), gainplot2d(gp), filePath(fPath), fileName(fName), acqIndex(aIndex) {
     setupUi(this);  
     id = qCloneWidget::NumClones++;   
     SetupWidgetWindow(title);
@@ -26,6 +26,8 @@ qCloneWidget::~qCloneWidget() {
         delete plot1d;
     if (plot2d)
         delete plot2d;
+    if (gainplot1d)
+        delete gainplot1d;        
     if (gainplot2d)
         delete gainplot2d;      
 }
@@ -40,7 +42,13 @@ void qCloneWidget::SetupWidgetWindow(QString title) {
     
     // 1d
     if (plot1d != nullptr) {
-        plotLayout->addWidget(plot1d);
+        if (gainplot1d == nullptr) {
+            plotLayout->addWidget(plot1d);
+        } else {
+            int ratio = qDefs::DATA_GAIN_PLOT_RATIO - 1;
+            plotLayout->addWidget(plot1d, 0, 0, ratio, ratio);
+            plotLayout->addWidget(gainplot1d, ratio, 0, 1, ratio, Qt::AlignTop);
+        }
     } 
     // 2d
     else {
@@ -92,6 +100,10 @@ void qCloneWidget::SavePlot() {
 }
 
 void qCloneWidget::resizeEvent(QResizeEvent *event) {
+    if (gainplot1d != nullptr) {
+        gainplot1d->setFixedWidth(plot1d->width());
+        gainplot1d->setFixedHeight(plot1d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
+    }
     if (gainplot2d != nullptr) {
         gainplot2d->setFixedWidth(plot2d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
         gainplot2d->setFixedHeight(plot2d->height() / qDefs::DATA_GAIN_PLOT_RATIO);

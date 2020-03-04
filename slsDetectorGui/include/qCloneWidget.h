@@ -16,7 +16,7 @@ class qCloneWidget : public QMainWindow, private Ui::ClonePlotObject {
     Q_OBJECT
 
   public:
-    qCloneWidget(QWidget *parent, SlsQt1DPlot *p1, SlsQt2DPlot *p2, SlsQt2DPlot *gp,
+    qCloneWidget(QWidget *parent, SlsQt1DPlot *p1, SlsQt2DPlot *p2, SlsQt1DPlot *gp1, SlsQt2DPlot *gp,
                  QString title, QString filePath, QString fileName,
                  int64_t aIndex, bool displayStats, QString min, QString max,
                  QString sum);
@@ -37,6 +37,7 @@ class qCloneWidget : public QMainWindow, private Ui::ClonePlotObject {
     int id;
     SlsQt1DPlot *plot1d{nullptr};
     SlsQt2DPlot *plot2d{nullptr};
+    SlsQt1DPlot *gainplot1d{nullptr};
     SlsQt2DPlot *gainplot2d{nullptr};
     QString filePath{"/"};
     QString fileName{"run"};

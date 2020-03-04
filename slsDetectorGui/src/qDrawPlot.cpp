@@ -193,7 +193,7 @@ void qDrawPlot::SetupPlots() {
     // set ticks to just 3
     QList<double> majorTicks({0, 1, 2, 3});
     QwtScaleDiv div( 0, 3, QList<double>(), QList<double>(), majorTicks); 
-    gainplot1d->setAxisScaleDiv( QwtPlot::yLeft, div );
+    gainplot1d->setAxisScaleDiv( QwtPlot::yLeft, div);
     //gainplot1d->axisScaleDraw(QwtPlot::xBottom)->enableComponent(QwtScaleDraw::Ticks, false);
     //gainplot1d->axisScaleDraw(QwtPlot::yLeft)->enableComponent(QwtScaleDraw::Labels, false);
     gainhist1d->setItemAttribute(QwtPlotItem::Legend, false);
@@ -244,7 +244,7 @@ void qDrawPlot::SetupPlots() {
     //gainplot2d->enableAxis(1, false);
     gainplot2d->enableAxis(QwtPlot::xBottom, false);
     // set ticks to just 3
-    gainplot2d->setAxisScaleDiv( QwtPlot::yRight, div );
+    gainplot2d->setAxisScaleDiv( QwtPlot::yRight, div);
     gainplot2d->hide();
 
     // layout of plots
@@ -495,6 +495,7 @@ void qDrawPlot::ClonePlot() {
     
     SlsQt1DPlot* cloneplot1D = nullptr;
     SlsQt2DPlot* cloneplot2D = nullptr;
+    SlsQt1DPlot* clonegainplot1D = nullptr;
     SlsQt2DPlot* clonegainplot2D = nullptr;
 
     if (is1d) {
@@ -516,6 +517,24 @@ void qDrawPlot::ClonePlot() {
             cloneplotHists1D.append(h);
             h->Attach(cloneplot1D);
         }
+        if (isGainDataExtracted) {
+            SlsQtH1D *h = new SlsQtH1D("", nPixelsX, datax1d, gainDatay1d);
+            h->SetLineColor(0);
+            h->setStyleLinesorDots(isLines);
+            h->setSymbolMarkers(isMarkers);
+            h->setItemAttribute(QwtPlotItem::Legend, false);
+            clonegainplot1D = new SlsQt1DPlot();
+            clonegainplot1D->SetTitleFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
+            clonegainplot1D->SetYFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
+            clonegainplot1D->SetTitle("");
+            clonegainplot1D->SetYTitle("Gain");
+            // set ticks to just 3
+            QList<double> majorTicks({0, 1, 2, 3});
+            QwtScaleDiv div( 0, 3, QList<double>(), QList<double>(), majorTicks); 
+            clonegainplot1D->setAxisScaleDiv( QwtPlot::yLeft, div);              
+            h->Attach(clonegainplot1D);
+  
+        }
     } else  {
         FILE_LOG(logDEBUG) << "Cloning 2D Image";
         cloneplot2D = new SlsQt2DPlot();
@@ -533,19 +552,31 @@ void qDrawPlot::ClonePlot() {
 
         if (isGainDataExtracted) {
             clonegainplot2D = new SlsQt2DPlot();
-            clonegainplot2D->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
+            clonegainplot2D->SetTitleFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
+            clonegainplot2D->SetTitle("Gain"); 
+            clonegainplot2D->SetZTitle(""); 
+            clonegainplot2D->enableAxis(QwtPlot::yLeft, false);
+            clonegainplot2D->enableAxis(QwtPlot::xBottom, false);
+            // set ticks to just 3
+            QList<double> majorTicks({0, 1, 2, 3});
+            QwtScaleDiv div( 0, 3, QList<double>(), QList<double>(), majorTicks); 
+            clonegainplot2D->setAxisScaleDiv( QwtPlot::yRight, div);
+
             clonegainplot2D->enableAxis(0, false);
             clonegainplot2D->enableAxis(1, false);
             clonegainplot2D->enableAxis(2, false);
             clonegainplot2D->SetData(nPixelsX, -0.5, nPixelsX - 0.5, nPixelsY, -0.5, nPixelsY - 0.5, gainData);
-            clonegainplot2D->SetTitle(""); 
         }
     }
 
-    qCloneWidget* q = new qCloneWidget(this, cloneplot1D, cloneplot2D, clonegainplot2D,
-        boxPlot->title(), fileSavePath, fileSaveName, currentAcqIndex, 
+    qCloneWidget* q = new qCloneWidget(this, cloneplot1D, cloneplot2D, clonegainplot1D,             
+        clonegainplot2D, boxPlot->title(), fileSavePath, fileSaveName, currentAcqIndex, 
         displayStatistics, lblMinDisp->text(), lblMaxDisp->text(), lblSumDisp->text());
-    q->show(); 
+    q->show();
+    if (clonegainplot1D != nullptr) {
+        clonegainplot1D->setFixedWidth(cloneplot1D->width());
+        //clonegainplot1D->setFixedHeight(cloneplot1D->height());// / qDefs::DATA_GAIN_PLOT_RATIO - 1);
+    }
 }
 
 void qDrawPlot::SavePlot() {

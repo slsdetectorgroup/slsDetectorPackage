@@ -23,11 +23,6 @@ TEST_CASE("LogLevel to string") {
     CHECK(Logger::ToString(logDEBUG5) == "DEBUG5");
 }
 
-TEST_CASE("get reset string"){
-    std::string reset(Logger::Reset());
-    CHECK(reset == RESET);
-}
-
 TEST_CASE("Test output") {
 
     auto old_value = Logger::ReportingLevel();

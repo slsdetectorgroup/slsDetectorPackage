@@ -18,10 +18,10 @@ class Logger {
 
   public:
     Logger() = default;
-    Logger(TLogLevel level) : level(level){};
+    explicit Logger(TLogLevel level) : level(level){};
     ~Logger() {
         // output in the destructor to allow for << syntax
-        os << Reset() << '\n';
+        os << RESET << '\n';
         std::clog << os.str(); // Single write
     }
 
@@ -33,14 +33,9 @@ class Logger {
     // Danger this buffer need as many elements as TLogLevel
     static const char *Color(TLogLevel level) noexcept {
         static const char *const colors[] = {
-            RED BOLD, YELLOW BOLD, RESET, BLUE,  RED,   RESET,
+            RED BOLD, YELLOW BOLD, BLUE,  GREEN, RED,   RESET,
             RESET,    RESET,       RESET, RESET, RESET, RESET};
         return colors[level];
-    }
-
-    static const char *Reset() noexcept {
-        static const char *reset = RESET;
-        return reset;
     }
 
     // Danger this buffer need as many elements as TLogLevel

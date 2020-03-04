@@ -3941,7 +3941,7 @@ int power_chip(int file_des) {
 		return printSocketReadError();
 	FILE_LOG(logDEBUG1, ("Powering chip to %d\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 	functionNotImplemented();
 #else
 	// set & get

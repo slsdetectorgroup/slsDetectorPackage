@@ -107,7 +107,6 @@ enum CLKINDEX               {RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS};
 #define BIT32_MSK					(0xFFFFFFFF)
 #define BIT16_MASK					(0xFFFF)
 
-#define ADC_PORT_INVERT_VAL         (0x453b2593)
 #define MAXIMUM_ADC_CLK             (65)
 #define PLL_VCO_FREQ_MHZ            (800)
 

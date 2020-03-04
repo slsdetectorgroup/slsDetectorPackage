@@ -1,7 +1,7 @@
 #include "slsDetectorFunctionList.h"
 #include "versionAPI.h"
 #include "clogger.h"
-#include <sys/select.h>
+
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
@@ -14,6 +14,7 @@
 
 #include <string.h>
 #include <unistd.h>     // usleep
+#include <sys/select.h>
 #ifdef VIRTUAL
 #include <pthread.h>
 #include <time.h>

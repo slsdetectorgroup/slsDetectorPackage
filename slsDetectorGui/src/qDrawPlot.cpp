@@ -60,7 +60,6 @@ void qDrawPlot::SetupWidgetWindow() {
     detType = det->getDetectorType().squash();
     switch (detType) {
         case slsDetectorDefs::JUNGFRAU:
-        case slsDetectorDefs::MOENCH:
             pixelMask = ((1 << 14) - 1);
             gainMask = (3 << 14);
             gainOffset = 14;
@@ -111,13 +110,6 @@ void qDrawPlot::SetupPlots() {
     nPixelsX = res.x;
     nPixelsY = res.y;
     switch(detType) {
-    case slsDetectorDefs::MOENCH:
-        try{
-            npixelsy_jctb = (det->getNumberOfAnalogSamples().tsquash("Inconsistent values for number of analog samples") * 2)/25;// for moench 03
-            nPixelsX = npixelsx_jctb;
-            nPixelsY = npixelsy_jctb;
-        } CATCH_DISPLAY ("Could not get number of analog samples.", "qDrawPlot::SetupPlots")
-        break;
     case slsDetectorDefs::EIGER:
         try{
             if (det->getQuad().tsquash("Inconsistent values for quad type")) {
@@ -984,7 +976,6 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size, int data
 
     case 16:
         if (detType == slsDetectorDefs::JUNGFRAU ||
-            detType == slsDetectorDefs::MOENCH ||
             detType == slsDetectorDefs::GOTTHARD2) {
 
             // show gain plot

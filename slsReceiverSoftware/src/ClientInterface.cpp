@@ -529,7 +529,7 @@ int ClientInterface::set_num_analog_samples(Interface &socket) {
 int ClientInterface::set_num_digital_samples(Interface &socket) {
     auto value = socket.Receive<int>();
     FILE_LOG(logDEBUG1) << "Setting num digital samples to " << value;
-    if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
+    if (myDetectorType != CHIPTESTBOARD) {
         functionNotImplemented();
     }    
     try {

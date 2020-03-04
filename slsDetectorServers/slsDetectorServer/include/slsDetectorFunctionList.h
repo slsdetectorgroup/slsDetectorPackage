@@ -3,6 +3,14 @@
 #ifdef GOTTHARDD
 #include "clogger.h"                 // runState(enum TLogLevel)
 #endif
+#ifndef VIRTUAL
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+#include "programFpgaNios.h"
+#elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
+#include "programFpgaBlackfin.h"
+#endif
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>					// FILE
 #include <sys/types.h>
@@ -84,7 +92,7 @@ int         updateDatabytesandAllocateRAM();
 void        updateDataBytes();
 #endif
 
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MYTHEN3D)
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(MYTHEN3D) || defined(MOENCHD)
 int			setDefaultDacs();
 #endif
 #ifdef GOTTHARD2D
@@ -141,6 +149,8 @@ void 		setADCEnableMask_10G(uint32_t mask);
 uint32_t 	getADCEnableMask_10G();
 void 		setADCInvertRegister(uint32_t val);
 uint32_t 	getADCInvertRegister();
+#endif
+#if defined(CHIPTESTBOARDD)
 int			setExternalSamplingSource(int val);
 int			setExternalSampling(int val);
 #endif
@@ -213,6 +223,8 @@ int64_t 	getStorageCellDelay();
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 int			setNumAnalogSamples(int val);
 int 		getNumAnalogSamples();
+#endif
+#ifdef CHIPTESTBOARDD
 int			setNumDigitalSamples(int val);
 int 		getNumDigitalSamples();
 #endif
@@ -245,7 +257,7 @@ int64_t		getMeasurementTime();
 int 		setModule(sls_detector_module myMod, char* mess);
 int 		getModule(sls_detector_module *myMod);
 #endif
-#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(MYTHEN3D)) 
+#if (!defined(CHIPTESTBOARDD)) && (!defined(MYTHEN3D)) 
 enum 		detectorSettings setSettings(enum detectorSettings sett);
 #endif
 #if !defined(MYTHEN3D)
@@ -298,10 +310,8 @@ void        setPower(enum DACINDEX ind, int val);
 void        powerOff();
 #endif
 
-#ifndef MOENCHD
-#if !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if  !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
 int 		getADC(enum ADCINDEX ind);
-#endif
 #endif
 
 int 		setHighVoltage(int val);
@@ -358,6 +368,7 @@ int 		enableTenGigabitEthernet(int val);
 // moench specific - powerchip
 #ifdef MOENCHD
 int         powerChip (int on);
+int			setAnalogOnlyReadout();
 #endif
 
 // chip test board or moench specific - configure frequency, phase, pll, flashing firmware
@@ -383,12 +394,17 @@ uint64_t    writePatternWord(int addr, uint64_t word);
 int         setPatternWaitAddress(int level, int addr);
 uint64_t    setPatternWaitTime(int level, uint64_t t);
 void        setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop);
+#ifdef CHIPTESTBOARDD
 int			setLEDEnable(int enable);
 void		setDigitalIODelay(uint64_t pinMask, int delay);
+#endif
 void 		setPatternMask(uint64_t mask);
 uint64_t	getPatternMask();
 void 		setPatternBitMask(uint64_t mask);
 uint64_t	getPatternBitMask();
+#endif
+#ifdef MOENCHD
+extern int 	loadDefaultPattern(char* fname);  								// readDefaultPattern.h
 #endif
 
 // jungfrau specific - powerchip, autocompdisable, clockdiv, asictimer, clock, pll, flashing firmware

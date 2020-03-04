@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200225
+#define SLS_SHMVERSION 0x200302
 
 /**
  * @short structure allocated in shared memory to store detector settings for
@@ -79,6 +79,9 @@ struct sharedSlsDetector {
 
     /** detector threshold (eV) */
     int currentThresholdEV;
+
+    /** number of analog samples */
+    int nASamples;
 
     /** number of frames */
     int64_t nFrames;
@@ -295,7 +298,7 @@ class slsDetector : public virtual slsDetectorDefs {
 
     /**
      * Update total number of channels (chiptestboard or moench)
-     * depending on the number of samples, adenablemask, readout flags(ctb)
+     * depending on the number of samples, adcenablemask, readout flags(ctb)
      */
     void updateNumberOfChannels();
 
@@ -404,6 +407,8 @@ class slsDetector : public virtual slsDetectorDefs {
     /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2
      * [Gotthard] Options: DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN
      * [Gotthard2] Options: DYNAMICGAIN, FIXGAIN1, FIXGAIN2
+     * [Moench] Options: G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, 
+     *                   G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
      * [Eiger] Only stores them locally in shm Options: STANDARD, HIGHGAIN, LOWGAIN, VERYHIGHGAIN, VERYLOWGAIN
      */
     detectorSettings setSettings(detectorSettings isettings);
@@ -554,10 +559,10 @@ class slsDetector : public virtual slsDetectorDefs {
     /** [Jungfrau] Advanced */
     void setNumberOfAdditionalStorageCells(int value);
 
-    /** [CTB] */
+    /** [CTB][Moench] */
     int getNumberOfAnalogSamples();
 
-    /** [CTB] */
+    /** [CTB][Moench] */
     void setNumberOfAnalogSamples(int value);
 
     /** [CTB] */
@@ -574,10 +579,10 @@ class slsDetector : public virtual slsDetectorDefs {
 
     void setPeriod(int64_t value);
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] */
     int64_t getDelayAfterTrigger();
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2] */
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] */
     void setDelayAfterTrigger(int64_t value);
 
     /** [Gotthard2] only in burst mode and in auto timing mode */
@@ -605,22 +610,22 @@ class slsDetector : public virtual slsDetectorDefs {
      * Options: (0-1638375 ns (resolution of 25ns) */
     void setStorageCellDelay(int64_t value);
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3] 
      * [Gotthard2] only in continuous mode */
     int64_t getNumberOfFramesLeft() const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3] 
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3] 
      * [Gotthard2] only in continuous mode */
     int64_t getNumberOfTriggersLeft() const;
 
-    /** [Gotthard][Jungfrau][CTB] 
+    /** [Gotthard][Jungfrau][CTB][Moench] 
      * [Gotthard2] only in continuous mode */
     int64_t getDelayAfterTriggerLeft() const;
 
     /** [Gotthard] */
     int64_t getExptimeLeft() const;
 
-    /** [Gotthard][Jungfrau][CTB][Mythen3][Gotthard2]  */
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2]  */
     int64_t getPeriodLeft() const;
 
     /** [Eiger] minimum two frames */
@@ -629,15 +634,15 @@ class slsDetector : public virtual slsDetectorDefs {
     /** [Eiger] */
     int64_t getMeasuredSubFramePeriod() const;
 
-    /** [Jungfrau][CTB][Mythen3] 
+    /** [Jungfrau][CTB][Moench][Mythen3] 
      * [Gotthard2] only in continuous mode */
     int64_t getNumberOfFramesFromStart() const;
 
-    /** [Jungfrau][CTB][Mythen3] Get time from detector start 
+    /** [Jungfrau][CTB][Moench][Mythen3] Get time from detector start 
      * [Gotthard2] only in continuous mode */
     int64_t getActualTime() const;
 
-    /** [Jungfrau][CTB][Mythen3] Get timestamp at a frame start 
+    /** [Jungfrau][CTB][Moench][Mythen3] Get timestamp at a frame start 
      * [Gotthard2] only in continuous mode */
     int64_t getMeasurementTime() const;
 
@@ -727,13 +732,13 @@ class slsDetector : public virtual slsDetectorDefs {
     bool getStoreInRamMode();
 
     /**
-     * Set readout mode (Only for CTB and Moench)
+     * [Ctb]
      * @param mode readout mode Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL
      */
     void setReadoutMode(const readoutMode mode);
 
     /**
-     * Get readout mode(Only for CTB and Moench)
+     * [Ctb]
      * @returns readout mode
      */
     readoutMode getReadoutMode();
@@ -1117,10 +1122,10 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     int64_t getReceiverRealUDPSocketBufferSize() const;
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][CTB][Moench] */
     void executeFirmwareTest();
 
-    /** [Gotthard][Jungfrau][CTB] */
+    /** [Gotthard][Jungfrau][CTB][Moench] */
     void executeBusTest();
 
     /** [Gotthard] */
@@ -1222,14 +1227,14 @@ class slsDetector : public virtual slsDetectorDefs {
     uint32_t getTenGigaADCEnableMask();   
 
     /**
-     * Set ADC invert register (CTB, Moench)
+     * Set ADC invert register (CTB, Moench, Jungfrau)
      * @param value ADC invert value
      * @param detPos -1 for all detectors in  list or specific detector position
      */
     void setADCInvert(uint32_t value);
 
     /**
-     * Get ADC invert register (CTB, Moench)
+     * Get ADC invert register (CTB, Moench, Jungfrau)
      * @param detPos -1 for all detectors in  list or specific detector position
      * @returns ADC invert value
      */

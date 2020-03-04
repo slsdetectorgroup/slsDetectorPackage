@@ -431,8 +431,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
 
 void qDetectorMain::ExecuteHelp(QAction *action) {
     if (action == actionAbout) {
-        FILE_LOG(logINFO) << "About Common GUI for Eiger, Gotthard, Jungfrau "
-                             "and Moench detectors";
+        FILE_LOG(logINFO) << "About Common GUI for Jungfrau, Eiger, Mythen3, Gotthard, Gotthard2 and Moench detectors";
 
         std::string guiVersion = std::to_string(APIGUI);
         std::string clientVersion = "unknown";
@@ -449,7 +448,7 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
                            clientVersion +
                            "<br><br>"
                            "Common GUI to control the SLS Detectors: "
-                           "Eiger, Jungfrau, Mythen3, Gotthard, Gotthard2 and Moench.<br><br>"
+                           "Jungfrau, Eiger, Mythen3, Gotthard, Gotthard2 and Moench.<br><br>"
                            "It can be operated in parallel with the command "
                            "line interface:<br>"
                            "sls_detector_put,<br>sls_detector_get,<br>sls_"

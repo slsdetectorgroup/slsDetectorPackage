@@ -336,6 +336,7 @@ void slsDetector::initializeDetectorStructure(detectorType type) {
     shm()->roMode = ANALOG_ONLY;
     shm()->currentSettings = UNINITIALIZED;
     shm()->currentThresholdEV = -1;
+    shm()->nASamples = 1;
     shm()->nFrames = 1;
     shm()->nTriggers = 1;
     shm()->nBursts = 1;
@@ -557,8 +558,8 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType() const {
 }
 
 void slsDetector::updateNumberOfChannels() {
-    if (shm()->myDetectorType == CHIPTESTBOARD ||
-        shm()->myDetectorType == MOENCH) {
+
+    if (shm()->myDetectorType == CHIPTESTBOARD) {
 
         int nachans = 0, ndchans = 0;
         // analog channels (normal, analog/digital readout)
@@ -577,14 +578,28 @@ void slsDetector::updateNumberOfChannels() {
         }
 
         // digital channels (ctb only, digital, analog/digital readout)
-        if (shm()->myDetectorType == CHIPTESTBOARD &&
-            (shm()->roMode == DIGITAL_ONLY ||
-             shm()->roMode == ANALOG_AND_DIGITAL)) {
+        if (shm()->roMode == DIGITAL_ONLY ||
+             shm()->roMode == ANALOG_AND_DIGITAL) {
             ndchans = 64;
             FILE_LOG(logDEBUG1) << "#Digital Channels:" << ndchans;
         }
         shm()->nChan.x = nachans + ndchans;
         FILE_LOG(logDEBUG1) << "# Total #Channels:" << shm()->nChan.x;
+    }
+
+
+    else if (shm()->myDetectorType == MOENCH) {
+        uint32_t mask = shm()->tenGigaEnable ? shm()->adcEnableMaskTenGiga : shm()->adcEnableMaskOneGiga;
+        // count number of channels in x, each adc has 25 channels each
+        int nchanTop =  __builtin_popcount(mask & 0xF0F0F0F0) * 25;
+        int nchanBot = __builtin_popcount(mask & 0x0F0F0F0F) * 25;
+        shm()->nChan.x = nchanTop > 0 ? nchanTop : nchanBot;  
+        // if both top and bottom adcs enabled, rows = 2
+        int nrows = 1;
+        if (nchanTop > 0 && nchanBot > 0) {
+            nrows = 2;
+        }        
+        shm()->nChan.y = shm()->nASamples / 25 * nrows;
     }
 }
 
@@ -743,8 +758,9 @@ void slsDetector::updateCachedDetectorVariables() {
         shm()->dynamicRange = i32;
 
         // settings
-        if (shm()->myDetectorType == EIGER ||
-            shm()->myDetectorType == JUNGFRAU || shm()->myDetectorType == GOTTHARD) {
+        if (shm()->myDetectorType == EIGER || shm()->myDetectorType == JUNGFRAU || 
+            shm()->myDetectorType == GOTTHARD || shm()->myDetectorType == GOTTHARD2 ||
+            shm()->myDetectorType == MOENCH) {
             n += client.Receive(&i32, sizeof(i32));
             shm()->currentSettings = static_cast<detectorSettings>(i32);
         }
@@ -807,10 +823,17 @@ void slsDetector::updateCachedDetectorVariables() {
             shm()->tenGigaEnable = static_cast<bool>(i32);        
         }
 
+        // analog samples and adc enable masks
         if (shm()->myDetectorType == CHIPTESTBOARD ||
             shm()->myDetectorType == MOENCH) {
-            // 1gb adcmask
+
+            // analog samples
             uint32_t u32 = 0;
+            n += client.Receive(&u32, sizeof(u32));
+            shm()->nASamples = u32; 
+
+            // 1gb adcmask
+            u32 = 0;
             n += client.Receive(&u32, sizeof(u32));
             shm()->adcEnableMaskOneGiga = u32;
 
@@ -1321,6 +1344,7 @@ int slsDetector::getNumberOfAnalogSamples() {
 void slsDetector::setNumberOfAnalogSamples(int value) {
     FILE_LOG(logDEBUG1) << "Setting number of analog samples to " << value;
     sendToDetector(F_SET_NUM_ANALOG_SAMPLES, value, nullptr);
+    shm()->nASamples = value;
     // update #nchan, as it depends on #samples, adcmask
     updateNumberOfChannels();
     if (shm()->useReceiverFlag) {
@@ -1836,7 +1860,6 @@ std::string slsDetector::setReceiverHostname(const std::string &receiverIP) {
 
         case MOENCH:
             setNumberOfAnalogSamples(getNumberOfAnalogSamples());
-            setNumberOfDigitalSamples(getNumberOfDigitalSamples());
             enableTenGigabitEthernet(static_cast<int>(shm()->tenGigaEnable));
             setADCEnableMask(shm()->adcEnableMaskOneGiga);
             setTenGigaADCEnableMask(shm()->adcEnableMaskTenGiga);
@@ -2974,6 +2997,7 @@ void slsDetector::programFPGA(std::vector<char> buffer) {
     switch (shm()->myDetectorType) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
+    case MOENCH:
         programFPGAviaBlackfin(buffer);
         break;
     case MYTHEN3:

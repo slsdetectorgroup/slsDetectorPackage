@@ -585,6 +585,8 @@ class CmdProxy {
                           {"speed", &CmdProxy::Speed},
                           {"adcphase", &CmdProxy::Adcphase},
                           {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
+                          {"dbitphase", &CmdProxy::Dbitphase},
+                          {"maxdbitphaseshift", &CmdProxy::maxdbitphaseshift},
                           {"clkfreq", &CmdProxy::ClockFrequency},
                           {"clkphase", &CmdProxy::ClockPhase},
                           {"maxclkphaseshift", &CmdProxy::MaxClockPhaseShift},
@@ -817,8 +819,6 @@ class CmdProxy {
                           {"dsamples", &CmdProxy::dsamples},
                           {"romode", &CmdProxy::romode},
                           {"dbitclk", &CmdProxy::dbitclk},  
-                          {"dbitphase", &CmdProxy::Dbitphase},
-                          {"maxdbitphaseshift", &CmdProxy::maxdbitphaseshift},
                           {"dbitpipeline", &CmdProxy::dbitpipeline},
                           {"v_a", &CmdProxy::v_a},
                           {"v_b", &CmdProxy::v_b},
@@ -923,6 +923,7 @@ class CmdProxy {
     std::string acquire(int action);
     std::string Speed(int action);
     std::string Adcphase(int action);
+    std::string Dbitphase(int action);
     std::string ClockFrequency(int action);
     std::string ClockPhase(int action);
     std::string MaxClockPhaseShift(int action);
@@ -966,7 +967,6 @@ class CmdProxy {
     /* CTB/ Moench Specific */
     std::string Samples(int action);
     /* CTB Specific */
-    std::string Dbitphase(int action);
     std::string SlowAdc(int action);
     std::string ReceiverDbitList(int action);
     std::string DigitalIODelay(int action);
@@ -1073,6 +1073,9 @@ class CmdProxy {
 
     GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift, 
                 "\n\t[Jungfrau][CTB][Moench] Absolute maximum Phase shift of ADC clock.");  
+
+    GET_COMMAND(maxdbitphaseshift, getMaxDBITPhaseShift, 
+                "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits.");
 
     INTEGER_COMMAND(vhighvoltage, getHighVoltage, setHighVoltage, std::stoi,
                     "[n_value]\n\tHigh voltage to the sensor in Voltage."
@@ -1639,9 +1642,6 @@ class CmdProxy {
 
     INTEGER_COMMAND(dbitclk, getDBITClock, setDBITClock, std::stoi,
                     "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz.");      
-
-    GET_COMMAND(maxdbitphaseshift, getMaxDBITPhaseShift, 
-                "\n\t[CTB] Absolute maximum Phase shift of of the clock to latch digital bits.");
 
     INTEGER_COMMAND(dbitpipeline, getDBITPipeline, setDBITPipeline, std::stoi,
                     "[n_value]\n\t[Ctb] Pipeline of the clock for latching digital bits.");      

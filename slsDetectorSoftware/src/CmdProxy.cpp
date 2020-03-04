@@ -438,6 +438,50 @@ std::string CmdProxy::Adcphase(int action) {
     return os.str();
 }
 
+std::string CmdProxy::Dbitphase(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_value] [(optional)deg]\n\t[Ctb][Jungfrau] Phase shift of clock to "
+              "latch digital bits. Absolute phase shift. If deg used, then "
+              "shift in degrees. \n\t[Ctb]Changing dbitclk also resets dbitphase and "
+              "sets to previous values."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        Result<int> t;
+        if (args.empty()) {
+            t = det->getDBITPhase({det_id});
+            os << OutString(t) << '\n';
+        } else if (args.size() == 1) {
+            if (args[0] != "deg") {
+                throw sls::RuntimeError("Unknown dbitphase argument " +
+                                        args[0] + ". Did you mean deg?");
+            }
+            t = det->getDBITPhaseInDegrees({det_id});
+            os << OutString(t) << " deg\n";
+        } else {
+            WrongNumberOfParameters(0);
+        }
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() == 1) {
+            det->setDBITPhase(std::stoi(args[0]), {det_id});
+            os << args.front() << '\n';
+        } else if (args.size() == 2) {
+            if (args[1] != "deg") {
+                throw sls::RuntimeError("Unknown dbitphase 2nd argument " +
+                                        args[1] + ". Did you mean deg?");
+            }
+            det->setDBITPhaseInDegrees(std::stoi(args[0]), {det_id});
+            os << args[0] << args[1] << '\n';
+        } else {
+            WrongNumberOfParameters(1);
+        }
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::ClockFrequency(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -1365,50 +1409,6 @@ std::string CmdProxy::Samples(int action) {
 }
 
 /* CTB Specific */
-
-std::string CmdProxy::Dbitphase(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "[n_value] [(optional)deg]\n\t[Ctb] Phase shift of clock to "
-              "latch digital bits. Absolute phase shift. If deg used, then "
-              "shift in degrees. Changing dbitclk also resets dbitphase and "
-              "sets to previous values."
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        Result<int> t;
-        if (args.empty()) {
-            t = det->getDBITPhase({det_id});
-            os << OutString(t) << '\n';
-        } else if (args.size() == 1) {
-            if (args[0] != "deg") {
-                throw sls::RuntimeError("Unknown dbitphase argument " +
-                                        args[0] + ". Did you mean deg?");
-            }
-            t = det->getDBITPhaseInDegrees({det_id});
-            os << OutString(t) << " deg\n";
-        } else {
-            WrongNumberOfParameters(0);
-        }
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() == 1) {
-            det->setDBITPhase(std::stoi(args[0]), {det_id});
-            os << args.front() << '\n';
-        } else if (args.size() == 2) {
-            if (args[1] != "deg") {
-                throw sls::RuntimeError("Unknown dbitphase 2nd argument " +
-                                        args[1] + ". Did you mean deg?");
-            }
-            det->setDBITPhaseInDegrees(std::stoi(args[0]), {det_id});
-            os << args[0] << args[1] << '\n';
-        } else {
-            WrongNumberOfParameters(1);
-        }
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
 
 std::string CmdProxy::SlowAdc(int action) {
     std::ostringstream os;

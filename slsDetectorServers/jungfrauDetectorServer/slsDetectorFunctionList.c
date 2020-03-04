@@ -38,7 +38,7 @@ int virtual_stop = 0;
 enum detectorSettings thisSettings = UNINITIALIZED;
 int highvoltage = 0;
 int dacValues[NDAC] = {};
-int adcPhase = 0;
+int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
 int numUDPInterfaces = 1;
 
@@ -366,7 +366,12 @@ void initStopServer() {
 void setupDetector() {
     FILE_LOG(logINFO, ("This Server is for 1 Jungfrau module (500k)\n"));
 
-    adcPhase = 0;
+    {
+        int i = 0;
+        for (i = 0; i < NUM_CLOCKS; ++i) {
+            clkPhase[i] = 0;
+        }
+	}
     ALTERA_PLL_ResetPLL();
 	resetCore();
 	resetPeripheral();
@@ -389,7 +394,7 @@ void setupDetector() {
 	setDefaultDacs();
 
     // altera pll
-    ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK, PLL_CNTRL_ADDR_OFST);
+    ALTERA_PLL_SetDefines(PLL_CNTRL_REG, PLL_PARAM_REG, PLL_CNTRL_RCNFG_PRMTR_RST_MSK, PLL_CNTRL_WR_PRMTR_MSK, PLL_CNTRL_PLL_RST_MSK, PLL_CNTRL_ADDR_MSK, PLL_CNTRL_ADDR_OFST, PLL_CNTRL_DBIT_WR_PRMTR_MSK, DBIT_CLK_INDEX);
 
 	bus_w(DAQ_REG, 0x0);         /* Only once at server startup */
 
@@ -1390,12 +1395,13 @@ int getClockDivider(enum CLKINDEX ind) {
 }
 
 int setPhase(enum CLKINDEX ind, int val, int degrees){
-    if (ind != ADC_CLK) {
+    if (ind != ADC_CLK && ind != DBIT_CLK) {
 		FILE_LOG(logERROR, ("Unknown clock index %d to set phase\n", ind));
 	    return FAIL;
 	}		
+	char* clock_names[] = {CLK_NAMES};
+    FILE_LOG(logINFO, ("Setting %s clock (%d) phase to %d %s\n", clock_names[ind], ind, val, degrees == 0 ? "" : "degrees"));	
 	int maxShift = MAX_PHASE_SHIFTS;
-
 	// validation
 	if (degrees && (val < 0 || val > 359)) {
 		 FILE_LOG(logERROR, ("\tPhase provided outside limits (0 - 359°C)\n"));
@@ -1406,7 +1412,6 @@ int setPhase(enum CLKINDEX ind, int val, int degrees){
 		 return FAIL;
 	}
 
-    FILE_LOG(logINFO, ("Setting ADC Phase to %d (degree mode: %d)\n", val, degrees));
 	int valShift = val;
 	// convert to phase shift
 	if (degrees) {
@@ -1414,14 +1419,15 @@ int setPhase(enum CLKINDEX ind, int val, int degrees){
 	}
 	FILE_LOG(logDEBUG1, ("phase shift: %d (degrees/shift: %d)\n", valShift, val));
 
-	int relativePhase = valShift - adcPhase;
-	FILE_LOG(logDEBUG1, ("relative phase shift: %d (Current phase: %d)\n", relativePhase, adcPhase));
+	int relativePhase = valShift - clkPhase[ind];
+	FILE_LOG(logDEBUG1, ("relative phase shift: %d (Current phase: %d)\n", relativePhase, clkPhase[ind]));
 
     // same phase
     if (!relativePhase) {
     	FILE_LOG(logINFO, ("Nothing to do in Phase Shift\n"));
     	return OK;
     }
+	FILE_LOG(logINFOBLUE, ("Configuring Phase\n"));
 
     int phase = 0;
     if (relativePhase > 0) {
@@ -1431,29 +1437,29 @@ int setPhase(enum CLKINDEX ind, int val, int degrees){
     }
     FILE_LOG(logDEBUG1, ("[Single Direction] Phase:%d (0x%x). Max Phase shifts:%d\n", phase, phase, maxShift));
 
-    ALTERA_PLL_SetPhaseShift(phase, 1, 0);
+    ALTERA_PLL_SetPhaseShift(phase, (ind == ADC_CLK ? ADC_CLK_INDEX : DBIT_CLK_INDEX), 0);
 
-    adcPhase = valShift;
+    clkPhase[ind] = valShift;
 
 	alignDeserializer();
 	return OK;
 }
 
 int getPhase(enum CLKINDEX ind, int degrees) {
-    if (ind != ADC_CLK) {
+    if (ind != ADC_CLK && ind != DBIT_CLK) {
 		FILE_LOG(logERROR, ("Unknown clock index %d to get phase\n", ind));
 	    return -1;
 	}
 	if (!degrees)
-		return adcPhase;
+		return clkPhase[ind];
 	// convert back to degrees
 	int val = 0;
-	ConvertToDifferentRange(0, MAX_PHASE_SHIFTS - 1, 0, 359, adcPhase, &val);
+	ConvertToDifferentRange(0, MAX_PHASE_SHIFTS - 1, 0, 359, clkPhase[ind], &val);
 	return val;
 }
 
 int getMaxPhase(enum CLKINDEX ind) {
-    if (ind != ADC_CLK) {
+    if (ind != ADC_CLK && ind != DBIT_CLK) {
 		FILE_LOG(logERROR, ("Unknown clock index %d to get max phase\n", ind));
 	    return -1;
 	}
@@ -1461,7 +1467,7 @@ int getMaxPhase(enum CLKINDEX ind) {
 }
 
 int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval) {
-    if (ind != ADC_CLK) {
+    if (ind != ADC_CLK && ind != DBIT_CLK) {
 		FILE_LOG(logERROR, ("Unknown clock index %d to validate phase in degrees\n", ind));
 	    return FAIL;
 	}	

@@ -273,6 +273,31 @@ void Detector::setADCPhaseInDegrees(int value, Positions pos) {
                     true);
 }
 
+Result<int> Detector::getDBITPhase(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::DBIT_CLOCK,
+                           false);
+}
+
+void Detector::setDBITPhase(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::DBIT_CLOCK, value,
+                    false);
+}
+
+Result<int> Detector::getMaxDBITPhaseShift(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getMaxClockPhaseShift, pos,
+                           defs::DBIT_CLOCK);
+}
+
+Result<int> Detector::getDBITPhaseInDegrees(Positions pos) const {
+    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::DBIT_CLOCK,
+                           true);
+}
+
+void Detector::setDBITPhaseInDegrees(int value, Positions pos) {
+    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::DBIT_CLOCK, value,
+                    true);
+}
+
 Result<int> Detector::getClockFrequency(int clkIndex, Positions pos) {
     return pimpl->Parallel(&slsDetector::getClockFrequency, pos, clkIndex);
 }
@@ -1354,32 +1379,6 @@ void Detector::setDBITClock(int value_in_MHz, Positions pos) {
     pimpl->Parallel(&slsDetector::setClockFrequency, pos, defs::DBIT_CLOCK,
                     value_in_MHz);
 }
-
-Result<int> Detector::getDBITPhase(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::DBIT_CLOCK,
-                           false);
-}
-
-void Detector::setDBITPhase(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::DBIT_CLOCK, value,
-                    false);
-}
-
-Result<int> Detector::getMaxDBITPhaseShift(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getMaxClockPhaseShift, pos,
-                           defs::DBIT_CLOCK);
-}
-
-Result<int> Detector::getDBITPhaseInDegrees(Positions pos) const {
-    return pimpl->Parallel(&slsDetector::getClockPhase, pos, defs::DBIT_CLOCK,
-                           true);
-}
-
-void Detector::setDBITPhaseInDegrees(int value, Positions pos) {
-    pimpl->Parallel(&slsDetector::setClockPhase, pos, defs::DBIT_CLOCK, value,
-                    true);
-}
-
 
 void Detector::setDBITPipeline(int value, Positions pos) {
     pimpl->Parallel(&slsDetector::setPipeline, pos, defs::DBIT_CLOCK, value);

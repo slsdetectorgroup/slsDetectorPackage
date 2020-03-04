@@ -209,6 +209,21 @@ class Detector {
     /** [Gotthard][Jungfrau][CTB][Moench] */
     void setADCPhaseInDegrees(int value, Positions pos = {});
 
+    /** [CTB][Jungfrau] */
+    Result<int> getDBITPhase(Positions pos = {}) const;
+
+    /** [CTB][Jungfrau] */
+    void setDBITPhase(int value, Positions pos = {});
+
+    /** [CTB][Jungfrau] */
+    Result<int> getMaxDBITPhaseShift(Positions pos = {}) const;
+
+    /** [CTB][Jungfrau] */
+    Result<int> getDBITPhaseInDegrees(Positions pos = {}) const;
+
+    /** [CTB][Jungfrau] */
+    void setDBITPhaseInDegrees(int value, Positions pos = {});
+
     /** [Mythen3][Gotthard2] Hz */
     Result<int> getClockFrequency(int clkIndex, Positions pos = {});
 
@@ -1034,21 +1049,6 @@ class Detector {
 
     /** [CTB] */
     void setDBITClock(int value_in_MHz, Positions pos = {});
-
-    /** [CTB] */
-    Result<int> getDBITPhase(Positions pos = {}) const;
-
-    /** [CTB] */
-    void setDBITPhase(int value, Positions pos = {});
-
-    /** [CTB] */
-    Result<int> getMaxDBITPhaseShift(Positions pos = {}) const;
-
-    /** [CTB] */
-    Result<int> getDBITPhaseInDegrees(Positions pos = {}) const;
-
-    /** [CTB] */
-    void setDBITPhaseInDegrees(int value, Positions pos = {});
 
     /** [CTB] */
     Result<int> getDBITPipeline(Positions pos = {}) const;

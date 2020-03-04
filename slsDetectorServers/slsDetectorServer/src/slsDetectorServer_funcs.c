@@ -5902,7 +5902,7 @@ int set_clock_phase(int file_des) {
 		c = ADC_CLK;
 		break;
 #endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;
@@ -5995,8 +5995,6 @@ int get_clock_phase(int file_des) {
 	case ADC_CLOCK:
 		c = ADC_CLK;
 		break;
-#endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;
@@ -6041,8 +6039,6 @@ int get_max_clock_phase_shift(int file_des) {
 	case ADC_CLOCK:
 		c = ADC_CLK;
 		break;
-#endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;

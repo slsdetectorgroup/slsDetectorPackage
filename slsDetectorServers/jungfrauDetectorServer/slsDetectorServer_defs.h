@@ -50,8 +50,8 @@ enum DACINDEX				{J_VB_COMP, J_VDD_PROT, J_VIN_COM, J_VREF_PRECH, J_VB_PIXBUF, J
 								420		/* J_VREF_COMP */	\
 							};
 enum NETWORKINDEX           { TXN_FRAME, FLOWCTRL_10G };
-enum CLKINDEX               {RUN_CLK, ADC_CLK, NUM_CLOCKS};
-#define CLK_NAMES			"run", "adc"
+enum CLKINDEX               {RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS};
+#define CLK_NAMES			"run", "adc", "dbit"
 
 /* Hardware Definitions */
 #define NCHAN 						(256 * 256)
@@ -63,6 +63,8 @@ enum CLKINDEX               {RUN_CLK, ADC_CLK, NUM_CLOCKS};
 #define DATA_BYTES					(NCHIP * NCHAN * NUM_BYTES_PER_PIXEL)
 #define CLK_RUN						(40)	/* MHz */
 #define CLK_SYNC					(20)	/* MHz */
+#define ADC_CLK_INDEX				(1)
+#define DBIT_CLK_INDEX				(0)
 
 /** Default Parameters */
 #define DEFAULT_NUM_FRAMES			(100*1000*1000)

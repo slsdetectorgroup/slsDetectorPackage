@@ -471,48 +471,19 @@ int main(int argc, char *argv[]) {
 
 // #ifndef DEVELOPER
 // #ifndef MOENCH_BRANCH
-// 	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, 0,0, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex,0 , packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, additionalJsonHeader);
+// 	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, 1,1, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex,0 , packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, additionalJsonHeader);
 // #endif
 // #endif
 
 
 // #ifdef DEVELOPER
-#ifdef CTBGUI
- 	    zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,additionalJsonHeader);
-#endif
-#ifndef CTBGUI
- 	    zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,1,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,additionalJsonHeader);
-#endif
-// #endif	
-// #ifdef MOENCH_BRANCH
-// 	    /*
-//  int SendHeaderData ( int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0, uint64_t fileIndex = 0,
-//                         uint32_t npixelsx = 0, uint32_t npixelsy = 0, uint32_t imageSize = 0,
-//                         uint64_t acqIndex = 0, uint64_t fIndex = 0, char* fname = NULL,
-//                         uint64_t frameNumber = 0, uint32_t expLength = 0, uint32_t packetNumber = 0,
-//                         uint64_t bunchId = 0, uint64_t timestamp = 0,
-//                         uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0, uint16_t reserved = 0,
-//                         uint32_t debug = 0, uint16_t roundRNumber = 0,
-//                         uint8_t detType = 0, uint8_t version = 0, int* flippedData = 0,
-//                         char* additionalJsonHeader = 0) {
-// int ZmqSocket::SendHeaderData(int 0, bool false, uint32_t SLS_DETECTOR_JSON_HEADER_VERSION , uint32_t dr, uint64_t fileindex, uint32_t 0, uint32_t 0, uint32_t, uint64_t, uint64_t, char*, uint64_t, uint32_t, uint32_t, uint64_t, uint64_t, uint16_t, uint16_t, uint16_t, uint16_t, uint32_t, uint16_t, uint8_t, uint8_t, int*, char*)
-
-// 	     */
-// 	    //zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version);//, 0,additionalJsonHeader);
-// 	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
-
-// 	    /* old 
-// 	       zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
-// 	    */
-// 	    /*
-
-
-// 	      new
-// 	      zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,additionalJsonHeader);
-// 	     */
-// #endif		
-	       
-			
+// #ifdef CTBGUI
+//  	    zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,additionalJsonHeader);
+// #endif
+// #ifndef CTBGUI
+ 	    zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 1,1,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,additionalJsonHeader);
+	    //#endif
+		
 
 		zmqsocket2->SendData((char*)dout,nnx*nny*dr/8);
 		cprintf(GREEN, "Sent Data\n");

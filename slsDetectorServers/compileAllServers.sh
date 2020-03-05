@@ -4,13 +4,14 @@ if [ $# -eq 0 ]; then
 		"gotthard2DetectorServer"
 		"jungfrauDetectorServer"
 		"mythen3DetectorServer"
+		"moenchDetectorServer"
 		)
 else
 	declare -a det=("${1}")
 	echo "got something"
 fi
 
-declare -a deterror=("OK" "OK" "OK" "OK")
+declare -a deterror=("OK" "OK" "OK" "OK" "OK" "OK")
 
 for ((i=0;i<${#det[@]};++i))
 do

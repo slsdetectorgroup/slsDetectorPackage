@@ -76,7 +76,7 @@ enum CLKINDEX               {RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS};
 #define DEFAULT_RUN_CLK             (40) 
 #define DEFAULT_ADC_CLK             (20) 
 #define DEFAULT_SYNC_CLK            (20) 
-#define DEFAULT_DBIT_CLK            (20)
+#define DEFAULT_DBIT_CLK            (40)
 #define DEFAULT_ADC_PHASE_DEG		(30)
 #define DEFAULT_PIPELINE			(14)
 #define DEFAULT_SETTINGS			(G4_HIGHGAIN)

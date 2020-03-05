@@ -365,9 +365,11 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
         FILE_LOG(logINFO) << "Destroyed Receiving Data Socket(s)";
         return OK;
     }
-
+    if (client_downstream) {
+        return OK;
+    }
     FILE_LOG(logINFO) << "Going to create data sockets";
-
+    
     size_t numSockets = detectors.size();
     size_t numSocketsPerDetector = 1;
     if (multi_shm()->multiDetectorType == EIGER) {
@@ -557,7 +559,9 @@ void DetectorImpl::readFrameFromReceiver() {
                     uint32_t yoffset = coordY * nPixelsY;
                     uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
                     uint32_t rowoffset = nX * singledetrowoffset;
-
+                    if (multi_shm()->multiDetectorType == CHIPTESTBOARD) {
+                        singledetrowoffset = size;
+		            }
                     FILE_LOG(logDEBUG1)
 		            << "Multi Image Info:"
                         "\n\txoffset: "

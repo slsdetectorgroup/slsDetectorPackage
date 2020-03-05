@@ -1782,12 +1782,12 @@ int start_acquisition(int file_des) {
 	else
 #endif
 #if defined(CHIPTESTBOARDD)	
-	if ((getReadoutMode() == ANALOG_AND_DIGITAL || mode == ANALOG_ONLY) && (getNumAnalogSamples() <= 0)) {
+	if ((getReadoutMode() == ANALOG_AND_DIGITAL || getReadoutMode() == ANALOG_ONLY) && (getNumAnalogSamples() <= 0)) {
 		ret = FAIL;
 		sprintf(mess, "Could not start acquisition. Invalid number of analog samples: %d.\n", getNumAnalogSamples());
 		FILE_LOG(logERROR,(mess));	
 	}
-	else if ((getReadoutMode() == ANALOG_AND_DIGITAL || mode == DIGITAL_ONLY) && (getNumDigitalSamples() <= 0)) {
+	else if ((getReadoutMode() == ANALOG_AND_DIGITAL || getReadoutMode() == DIGITAL_ONLY) && (getNumDigitalSamples() <= 0)) {
 		ret = FAIL;
 		sprintf(mess, "Could not start acquisition. Invalid number of digital samples: %d.\n", getNumDigitalSamples());
 		FILE_LOG(logERROR,(mess));	
@@ -1917,12 +1917,12 @@ int start_and_read_all(int file_des) {
 	else
 #endif
 #if defined(CHIPTESTBOARDD)	
-	if ((getReadoutMode() == ANALOG_AND_DIGITAL || mode == ANALOG_ONLY) && (getNumAnalogSamples() <= 0)) {
+	if ((getReadoutMode() == ANALOG_AND_DIGITAL || getReadoutMode() == ANALOG_ONLY) && (getNumAnalogSamples() <= 0)) {
 		ret = FAIL;
 		sprintf(mess, "Could not start acquisition. Invalid number of analog samples: %d.\n", getNumAnalogSamples());
 		FILE_LOG(logERROR,(mess));	
 	}
-	else if ((getReadoutMode() == ANALOG_AND_DIGITAL || mode == DIGITAL_ONLY) && (getNumDigitalSamples() <= 0)) {
+	else if ((getReadoutMode() == ANALOG_AND_DIGITAL || getReadoutMode() == DIGITAL_ONLY) && (getNumDigitalSamples() <= 0)) {
 		ret = FAIL;
 		sprintf(mess, "Could not start acquisition. Invalid number of digital samples: %d.\n", getNumDigitalSamples());
 		FILE_LOG(logERROR,(mess));	

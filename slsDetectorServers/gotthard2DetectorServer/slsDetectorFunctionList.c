@@ -824,7 +824,7 @@ int setPeriod(int64_t val) {
 		setPeriodBurst(0);
 		return setPeriodCont(val);
 	} else {
-		setPeriodCont(0);
+		//setPeriodCont(0);
 		return setPeriodBurst(val);
 	}
 }

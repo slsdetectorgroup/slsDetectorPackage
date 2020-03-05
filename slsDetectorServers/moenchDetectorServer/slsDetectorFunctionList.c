@@ -1269,8 +1269,13 @@ int powerChip (int on) {
 /* parameters - readout */
 
 int setAnalogOnlyReadout() {
-    FILE_LOG(logINFOBLUE, ("Setting Analog Only Readout\n"));
+    FILE_LOG(logINFOBLUE, ("Setting Number of Digital samples to 0\n"));
 
+    // digital num samples = 0
+    bus_w(SAMPLES_REG, bus_r(SAMPLES_REG) &~ SAMPLES_DIGITAL_MSK);
+
+    FILE_LOG(logINFOBLUE, ("Setting Analog Only Readout\n"));
+    // analog only readout
     uint32_t addr = CONFIG_REG;
     uint32_t addr_readout_10g = READOUT_10G_ENABLE_REG;
     //  default: analog only

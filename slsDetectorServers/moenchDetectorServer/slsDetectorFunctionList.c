@@ -445,11 +445,12 @@ void setupDetector() {
         for (i = 0; i < NUM_CLOCKS; ++i) {
             clkPhase[i] = 0;
         }
-        clkFrequency[RUN_CLK] = DEFAULT_RUN_CLK;
-        clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK;
-        clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK;
-        clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK;
+        clkFrequency[RUN_CLK] = DEFAULT_RUN_CLK_AT_STARTUP;
+        clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK_AT_STARTUP;
+        clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK_AT_STARTUP;
+        clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK_AT_STARTUP;
         // default adc phase in deg
+/*
         { 
             int phase_shifts = 0;
             ConvertToDifferentRange(0, 359, 0, getMaxPhase(ADC_CLK) - 1, DEFAULT_ADC_PHASE_DEG, &phase_shifts);
@@ -460,7 +461,7 @@ void setupDetector() {
         FILE_LOG(logINFO, ("Default Sync clk: %d MHz\n", clkFrequency[SYNC_CLK]));
         FILE_LOG(logINFO, ("Default Dbit clk: %d MHz\n", clkFrequency[DBIT_CLK]));
         FILE_LOG(logINFO, ("Default Adc Phase: %d (%d deg)\n", clkPhase[ADC_CLK], getPhase(ADC_CLK, 1)));
-
+*/
         for (i = 0; i < NDAC; ++i)
             dacValues[i] = -1;
     }
@@ -525,6 +526,12 @@ void setupDetector() {
     setPipeline(ADC_CLK, DEFAULT_PIPELINE);
     loadDefaultPattern(DEFAULT_PATTERN_FILE);
     setSettings(DEFAULT_SETTINGS);
+
+
+    setFrequency(RUN_CLK, DEFAULT_RUN_CLK);
+    setFrequency(ADC_CLK, DEFAULT_ADC_CLK);
+    setFrequency(DBIT_CLK, DEFAULT_DBIT_CLK);
+    setPhase(ADC_CLK, DEFAULT_ADC_PHASE_DEG, 1);
 }
 
 int updateDatabytesandAllocateRAM() {
@@ -1409,7 +1416,7 @@ int setFrequency(enum CLKINDEX ind, int val) {
         return FAIL;
     }
 	char* clock_names[] = {CLK_NAMES};
-    FILE_LOG(logINFO, ("\tSetting %s clock (%d) frequency to %d MHz\n", clock_names[ind], ind, val));
+    FILE_LOG(logINFOBLUE, ("Setting %s clock (%d) frequency to %d MHz\n", clock_names[ind], ind, val));
 
     // check adc clk too high
     if (ind == ADC_CLK && val > MAXIMUM_ADC_CLK) {

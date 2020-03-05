@@ -73,11 +73,17 @@ enum CLKINDEX               {RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS};
 #define DEFAULT_VLIMIT              (-100)
 #define DEFAULT_TIMING_MODE			(AUTO_TIMING)
 #define DEFAULT_TX_UDP_PORT			(0x7e9a)
+
+#define DEFAULT_RUN_CLK_AT_STARTUP  (200) // 40
+#define DEFAULT_ADC_CLK_AT_STARTUP  (40) // 20
+#define DEFAULT_SYNC_CLK_AT_STARTUP (40) // 20
+#define DEFAULT_DBIT_CLK_AT_STARTUP (200)
+
 #define DEFAULT_RUN_CLK             (40) 
 #define DEFAULT_ADC_CLK             (20) 
-#define DEFAULT_SYNC_CLK            (20) 
 #define DEFAULT_DBIT_CLK            (40)
 #define DEFAULT_ADC_PHASE_DEG		(30)
+
 #define DEFAULT_PIPELINE			(14)
 #define DEFAULT_SETTINGS			(G4_HIGHGAIN)
 

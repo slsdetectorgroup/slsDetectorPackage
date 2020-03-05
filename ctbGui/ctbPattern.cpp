@@ -1035,33 +1035,42 @@ void ctbPattern::readoutModeChanged(int flags) {
 
 }
 
-int ctbPattern::getReadoutMode() {
-  try{
-    auto retval = myDet->getReadoutMode().tsquash("Different values");
-    switch(retval) {
-      case slsDetectorDefs::ANALOG_AND_DIGITAL:
-        cout << "analog and digital" << endl;
-        cbAnalog->SetOn(kTRUE);
-        cbDigital->SetOn(kTRUE);
-        break;
-      case slsDetectorDefs::DIGITAL_ONLY:
-        cout << "digital only" << endl;
-        cbAnalog->SetOn(kFALSE);
-        cbDigital->SetOn(kTRUE);
-        break;
-      case slsDetectorDefs::ANALOG_ONLY:
-        cout << "analog only" << endl;
-        cbAnalog->SetOn(kTRUE);
-        cbDigital->SetOn(kFALSE);    
-        break;
-      default:
-        throw("unknown readout flag");
-    }
+int ctbPattern::getReadoutMode() {  
+ int retval=slsDetectorDefs::ANALOG_ONLY;
+    
+ if (myDet->getDetectorType().squash() == slsDetectorDefs::CHIPTESTBOARD) {
+   try{
+     retval = myDet->getReadoutMode().tsquash("Different values");
+   } CATCH_DISPLAY ("Could not get readout flags", "ctbPattern::getReadoutMode")
+      
+   switch(retval) {
+   case slsDetectorDefs::ANALOG_AND_DIGITAL:
+     cout << "analog and digital" << endl;
+     cbAnalog->SetOn(kTRUE);
+     cbDigital->SetOn(kTRUE);
+     break;
+   case slsDetectorDefs::DIGITAL_ONLY:
+     cout << "digital only" << endl;
+     cbAnalog->SetOn(kFALSE);
+     cbDigital->SetOn(kTRUE);
+     break;
+   case slsDetectorDefs::ANALOG_ONLY:
+     cout << "analog only" << endl;
+     cbAnalog->SetOn(kTRUE);
+     cbDigital->SetOn(kFALSE);    
+     break;
+   default:
+     throw("unknown readout flag");
+   }
+ } else {
+   cbAnalog->SetOn(kTRUE);
+   cbDigital->SetOn(kFALSE);    
+ }
+    
     Emit("readoutModeChanged(int)",static_cast<int>(retval));
     return retval;
-  } CATCH_DISPLAY ("Could not get readout flags", "ctbPattern::getReadoutMode")
-
-  return -1;
+ 
+ 
 }
 
 int ctbPattern::getAnalogSamples() {
@@ -1075,13 +1084,17 @@ int ctbPattern::getAnalogSamples() {
   return -1;
 }
    
-int ctbPattern::getDigitalSamples() {
-  try{
-    auto retval = myDet->getNumberOfDigitalSamples().tsquash("Different values");
-    eDigitalSamples->SetNumber((Double_t)retval);
-    Emit("digitalSamplesChanged(const int)", eDigitalSamples->GetNumber());
-    return eDigitalSamples->GetNumber();
-  } CATCH_DISPLAY ("Could not get number of triggers.", "ctbPattern::update")
+int ctbPattern::getDigitalSamples() { 
+  int retval=0;
+  if (myDet->getDetectorType().squash() == slsDetectorDefs::CHIPTESTBOARD) {
+    try{
+      auto retval = myDet->getNumberOfDigitalSamples().tsquash("Different values"); 
+    } CATCH_DISPLAY ("Could not get number of digital samples.", "ctbPattern::getDigitalSamples")
+	}
+  eDigitalSamples->SetNumber((Double_t)retval);
+  Emit("digitalSamplesChanged(const int)", eDigitalSamples->GetNumber());
+  return eDigitalSamples->GetNumber();
+ 
 
   return -1;
 }

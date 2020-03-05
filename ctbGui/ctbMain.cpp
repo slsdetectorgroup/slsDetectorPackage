@@ -259,8 +259,10 @@ ctbMain::ctbMain(const TGWindow *p, sls::Detector *det)
 
    cout << "connect mtab" << endl;
 
-   
-   setReadoutMode(pat->getReadoutMode());
+  try{  
+   setReadoutMode(pat->getReadoutMode());  
+  } CATCH_DISPLAY ("Could not get readout flags", "ctbPattern::getReadoutMode")
+
    setADCEnable(adcs->setEnable());
    setAnalogSamples(pat->getAnalogSamples());
    setDigitalSamples(pat->getDigitalSamples());

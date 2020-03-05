@@ -45,7 +45,7 @@ class ctbDac : public TGHorizontalFrame {
    
    int setLabel(char *tit, int mv);
    string getLabel();
-
+int getMoenchDacId();
 
 
    ClassDef(ctbDac,0)
@@ -54,8 +54,6 @@ class ctbDac : public TGHorizontalFrame {
 class ctbDacs : public TGGroupFrame {
 private:
   
-
-
    ctbDac *dacs[NDACS+2];
 
    sls::Detector* myDet;

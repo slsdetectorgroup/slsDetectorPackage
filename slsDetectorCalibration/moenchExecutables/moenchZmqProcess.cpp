@@ -780,6 +780,7 @@ int main(int argc, char *argv[]) {
 		mt->pushData(buff);
 		mt->nextThread();
 		mt->popFree(buff);
+		cprintf(GREEN, "Frame\n");
 	      } else {
 		cprintf(RED, "Incomplete frame: received only %d packet\n", packetNumber);
 		//length = 

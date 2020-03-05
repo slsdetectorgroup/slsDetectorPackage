@@ -888,7 +888,7 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
 
   //  cout <<"global plot is " << globalPlot << endl;
   // cout << "*******************************************" <<endl;
-  // cout <<"------Plot: "<<  index << " prog:" << data->progressIndex << " npoints:" << data->npoints << " npy: " << data->npy << " " << data->fileName << " bytes: " << data->databytes << " dr:"<< data->dynamicRange << " fi: " << data ->fileIndex <<  endl;
+   cout <<"------Plot: "<<  index << " prog:" << data->progressIndex << " nx:" << data->nx << " ny: " << data->ny << " " << data->fileName << " bytes: " << data->databytes << " dr:"<< data->dynamicRange << " fi: " << data ->fileIndex <<  endl;
   if (globalPlot || cbGetPedestal->IsOn()) {
     //#ifdef TESTADC
     //  cout <<"------"<<  index << " " << ip << " " << data->npoints << endl;
@@ -984,7 +984,8 @@ sample1 (dbit0 + dbit1 +...)if (cmd == "rx_dbitlist") {
       for (int y=0; y<ny; y++) {
 	ped=0;
 	aval=dataStructure->getValue(data->data,x,y);
-	//	cout << x << " " <<y << " "<< aval << endl;
+	//aval=dataStructure->getChannel(data->data,x,y);
+	cout << x << " " <<y << " "<< aval << endl;
 	if (cbGetPedestal->IsOn()) {
 	  if (photonFinder) {
 	    photonFinder->addToPedestal(aval,x,y);

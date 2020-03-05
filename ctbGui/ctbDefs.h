@@ -71,10 +71,10 @@ class ctbDefs {
                     std::string exceptionMessage,
                     std::string source) {
         // because sls_detector_exceptions cannot be included
-        if (exceptionMessage.find("hared memory")) {
+      if (exceptionMessage.find("hared memory") != std::string::npos) {
             throw;
         }
-        if (exceptionMessage.find("annot connect")) {
+      if (exceptionMessage.find("annot connect") != std::string::npos) {
             throw;
         }
         cprintf(RED, "Warning (%s): %s [Caught Exception: %s]\n", source.c_str(), message.c_str(), exceptionMessage.c_str());

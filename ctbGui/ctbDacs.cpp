@@ -108,15 +108,26 @@ string ctbDac::getLabel() {
 
 }
 
+int ctbDac::getMoenchDacId() {
+  slsDetectorDefs::dacIndex moenchDacIndices[8] = {slsDetectorDefs::VBP_COLBUF, slsDetectorDefs::VIPRE, slsDetectorDefs::VIN_CM, slsDetectorDefs::VB_SDA, slsDetectorDefs::VCASC_SFP, slsDetectorDefs::VOUT_CM, slsDetectorDefs::VIPRE_CDS, slsDetectorDefs::IBIAS_SFP}; 
+
+  if (id >= 8) {
+    return id;
+  }
+  return static_cast<int>(moenchDacIndices[id]);
+}
 
 void ctbDac::setValue(Long_t a) {setValue();}
 
 void ctbDac::setValue() {
-
   cout << "setting dac! "<< id << " value " << dacsEntry->GetIntNumber() << " units " << dacsUnit->IsOn() << endl;
 
   try {
-    myDet->setDAC(static_cast<slsDetectorDefs::dacIndex>(id), dacsEntry->GetIntNumber(), dacsUnit->IsOn()); 
+    int sid = id;
+    if (myDet->getDetectorType().squash() == slsDetectorDefs::MOENCH) {
+      sid = getMoenchDacId();
+    }
+    myDet->setDAC(static_cast<slsDetectorDefs::dacIndex>(sid), dacsEntry->GetIntNumber(), dacsUnit->IsOn()); 
   } CATCH_DISPLAY ("Could not set dac " + to_string(id) + ".", "ctbDac::setValue")
 
   getValue();
@@ -128,7 +139,11 @@ void ctbDac::setOn(Bool_t b) {
     setValue();
   } else {
     try {
-      myDet->setDAC(static_cast<slsDetectorDefs::dacIndex>(id), -100, false);
+      int sid = id;
+      if (myDet->getDetectorType().squash() == slsDetectorDefs::MOENCH) {
+	sid = getMoenchDacId();
+      }
+      myDet->setDAC(static_cast<slsDetectorDefs::dacIndex>(sid), -100, false);
     } CATCH_DISPLAY ("Could not power off dac " + to_string(id) + ".", "ctbDac::setOn")
   }
   getValue();
@@ -136,7 +151,11 @@ void ctbDac::setOn(Bool_t b) {
 
 int ctbDac::getValue() { 
   try {
-    int val = myDet->getDAC(static_cast<slsDetectorDefs::dacIndex>(id), dacsUnit->IsOn()).tsquash("Different values"); 
+    int sid = id;
+    if (myDet->getDetectorType().squash() == slsDetectorDefs::MOENCH) {
+      sid = getMoenchDacId();
+    }
+    int val = myDet->getDAC(static_cast<slsDetectorDefs::dacIndex>(sid), dacsUnit->IsOn()).tsquash("Different values"); 
     cout << "dac " << id << " " << val << endl;
     dacsValue->SetText(to_string(val).c_str());
     if (val >= 0) {

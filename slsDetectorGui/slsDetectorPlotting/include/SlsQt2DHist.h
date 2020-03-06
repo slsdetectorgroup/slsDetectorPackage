@@ -26,7 +26,7 @@ class SlsQt2DHist: public QwtRasterData{
   double  x_width,y_width;
 
   int     nx,ny,nb;
-  double  *data;
+  double  *data{nullptr};
   double  z_min,z_mean,z_max;
   bool    z_mean_has_been_calculated;
   

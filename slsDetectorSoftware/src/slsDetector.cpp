@@ -2920,7 +2920,7 @@ int slsDetector::enableGapPixels(int val) {
 
 int slsDetector::setTrimEn(const std::vector<int>& energies) {
     if (shm()->myDetectorType != EIGER) {
-         throw RuntimeError("Not implemented for this detector.");
+         throw RuntimeError("setTrimEn not implemented for this detector.");
     }
     if (energies.size() > MAX_TRIMEN) {
         std::ostringstream os;
@@ -2935,7 +2935,7 @@ int slsDetector::setTrimEn(const std::vector<int>& energies) {
 
 std::vector<int> slsDetector::getTrimEn() {
     if (shm()->myDetectorType != EIGER) {
-         throw RuntimeError("Not implemented for this detector.");
+         throw RuntimeError("getTrimEn not implemented for this detector.");
     }
     return std::vector<int>(shm()->trimEnergies.begin(),
                             shm()->trimEnergies.end());

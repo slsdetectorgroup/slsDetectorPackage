@@ -12,7 +12,6 @@ class detectorData;
 #include "Detector.h"
 
 class QResizeEvent;
-#include <QFutureWatcher>
 
 #include <mutex>
 
@@ -64,11 +63,11 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
 
   private slots:
     void SetSaveFileName(QString val);
-    void AcquireFinished();
+    void AcquireThread();
     void UpdatePlot();
   
-
   signals:
+    void StartAcquireSignal();
     void AcquireFinishedSignal();
     void AbortSignal();
     void UpdateSignal();
@@ -81,7 +80,6 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void DetachHists();
     static void GetAcquisitionFinishedCallBack(double currentProgress, int detectorStatus, void *this_pointer);
     static void GetDataCallBack(detectorData *data, uint64_t frameIndex, uint32_t subFrameIndex, void *this_pointer);
-    std::string AcquireThread();
     void AcquisitionFinished(double currentProgress, int detectorStatus);
     void GetData(detectorData *data, uint64_t frameIndex, uint32_t subFrameIndex);
     void toDoublePixelData(double *dest, char *source, int size, int databytes, int dr, double *gaindest = NULL);
@@ -102,7 +100,6 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
 	  SlsQtH1D * gainhist1d{nullptr};
     SlsQt2DPlot *plot2d{nullptr};
     SlsQt2DPlot *gainplot2d{nullptr};
-    QFutureWatcher<std::string> *acqResultWatcher;
 
     bool is1d{true};
     bool isRunning{false};

@@ -55,9 +55,11 @@ SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
 SlsQt2DPlot::~SlsQt2DPlot() {
     if (d_spectrogram) {
         d_spectrogram->detach();
+        //delete d_spectrogram;
     }
-    if (hist)
+    if (hist) {
         delete hist;  
+    }
     if (colorMapLinearScale)
         delete colorMapLinearScale;   
     if (colorMapLogScale)

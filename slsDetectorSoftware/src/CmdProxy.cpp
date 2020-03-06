@@ -492,7 +492,7 @@ std::string CmdProxy::ClockFrequency(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw sls::RuntimeError("Not implemented for this detector.");
+            throw sls::RuntimeError("clkfreq not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
             if (args.size() != 1) {
@@ -526,7 +526,7 @@ std::string CmdProxy::ClockPhase(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw sls::RuntimeError("Not implemented for this detector.");
+            throw sls::RuntimeError("clkphase not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
             if (args.size() == 1) {
@@ -576,7 +576,7 @@ std::string CmdProxy::MaxClockPhaseShift(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw sls::RuntimeError("Not implemented for this detector.");
+            throw sls::RuntimeError("maxclkphaseshift not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
             if (args.size() != 1) {
@@ -603,7 +603,7 @@ std::string CmdProxy::ClockDivider(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw sls::RuntimeError("Not implemented for this detector.");
+            throw sls::RuntimeError("clkdiv not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
             if (args.size() != 1) {

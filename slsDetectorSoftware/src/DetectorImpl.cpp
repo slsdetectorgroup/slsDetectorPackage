@@ -1083,7 +1083,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         }
         break;
     default:
-        throw RuntimeError("Not implemented for this detector");
+        throw RuntimeError("programfpga not implemented for this detector");
     }
 
     FILE_LOG(logINFO)

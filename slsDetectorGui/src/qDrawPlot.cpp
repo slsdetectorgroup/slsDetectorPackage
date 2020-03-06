@@ -13,7 +13,6 @@
 #include <QtConcurrentRun>
 #include <QResizeEvent>
 
-
 qDrawPlot::qDrawPlot(QWidget *parent, sls::Detector *detector) : QWidget(parent), det(detector) {
     setupUi(this);
     SetupWidgetWindow();
@@ -91,15 +90,12 @@ void qDrawPlot::SetupWidgetWindow() {
     SetupPlots();
     SetDataCallBack(true);
     det->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack), this);
-    // future watcher to watch result of AcquireThread only because it uses signals/slots to handle acquire exception
-    acqResultWatcher = new QFutureWatcher<std::string>();
-
     Initialization();
 }
 
 void qDrawPlot::Initialization() {
     connect(this, SIGNAL(UpdateSignal()), this, SLOT(UpdatePlot()));
-    connect(acqResultWatcher, SIGNAL(finished()), this, SLOT(AcquireFinished()));
+    connect(this, SIGNAL(StartAcquireSignal()), this, SLOT(AcquireThread()));
 }
 
 void qDrawPlot::SetupPlots() {
@@ -640,16 +636,19 @@ void qDrawPlot::StartAcquisition() {
         xyRangeChanged = true; 
     }
 
-    // acquisition in another thread
-    QFuture<std::string> future = QtConcurrent::run(this, &qDrawPlot::AcquireThread);
-    acqResultWatcher->setFuture(future);
-
+    emit StartAcquireSignal();
     FILE_LOG(logDEBUG) << "End of Starting Acquisition in qDrawPlot";
 }
 
-void qDrawPlot::AcquireFinished() {
-    FILE_LOG(logDEBUG) << "Acquisition Finished";
-    std::string mess = acqResultWatcher->result();
+void qDrawPlot::AcquireThread() {
+    FILE_LOG(logDEBUG) << "Acquire Thread";
+    std::string mess;
+    try {
+        det->acquire();
+    } catch (const std::exception &e) {
+        mess = std::string(e.what());
+    }
+    FILE_LOG(logINFO) << "Acquisition Finished";
     // exception in acquire will not call acquisition finished call back, so handle it
     if (!mess.empty()) {
         FILE_LOG(logERROR) << "Acquisition Finished with an exception: " << mess;
@@ -662,17 +661,7 @@ void qDrawPlot::AcquireFinished() {
         } CATCH_DISPLAY("Could not stop receiver.", "qDrawPlot::AcquireFinished");
         emit AbortSignal();
     }
-    FILE_LOG(logDEBUG) << "End of Acquisition Finished";
-}
-
-std::string qDrawPlot::AcquireThread() {
-    FILE_LOG(logDEBUG) << "Acquire Thread";
-    try {
-        det->acquire();
-    } catch (const std::exception &e) {
-        return std::string(e.what());
-    }
-    return std::string("");
+    FILE_LOG(logDEBUG) << "End of Acquisition Finished";    
 }
 
 void qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress, int detectorStatus, void *this_pointer) {
@@ -786,6 +775,7 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
     } else {   
         Get2dData(rawData);
     }
+    delete [] rawData;
 
     FILE_LOG(logDEBUG) << "End of Get Data";
     emit UpdateSignal();

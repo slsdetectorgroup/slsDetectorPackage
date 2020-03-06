@@ -1323,6 +1323,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 	uint32_t adcOfst = 0;
 	uint32_t sampleAdcSpeed = 0;
 	uint32_t adcPhase = 0;
+	uint32_t dbitPhase = 0;
 	uint32_t config = CONFIG_FULL_SPEED_40MHZ_VAL;
 
 	switch(val) {
@@ -1336,6 +1337,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 		adcOfst = ADC_OFST_FULL_SPEED_VAL;
 		sampleAdcSpeed = SAMPLE_ADC_FULL_SPEED;
 		adcPhase = ADC_PHASE_FULL_SPEED;
+		dbitPhase = DBIT_PHASE_FULL_SPEED;
 		config = CONFIG_FULL_SPEED_40MHZ_VAL;
 		break;
 	
@@ -1344,6 +1346,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 		adcOfst = isHardwareVersion2() ? ADC_OFST_HALF_SPEED_BOARD2_VAL : ADC_OFST_HALF_SPEED_VAL;
 		sampleAdcSpeed = isHardwareVersion2() ? SAMPLE_ADC_HALF_SPEED_BOARD2 : SAMPLE_ADC_HALF_SPEED;
 		adcPhase = isHardwareVersion2() ? ADC_PHASE_HALF_SPEED_BOARD2 : ADC_PHASE_HALF_SPEED;
+		dbitPhase = isHardwareVersion2() ? DBIT_PHASE_HALF_SPEED_BOARD2 : DBIT_PHASE_HALF_SPEED;
 		config = CONFIG_HALF_SPEED_20MHZ_VAL;
 		break;
 	
@@ -1352,6 +1355,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 		adcOfst = isHardwareVersion2() ? ADC_OFST_QUARTER_SPEED_BOARD2_VAL : ADC_OFST_QUARTER_SPEED_VAL;
 		sampleAdcSpeed = isHardwareVersion2() ? SAMPLE_ADC_QUARTER_SPEED_BOARD2 : SAMPLE_ADC_QUARTER_SPEED;
 		adcPhase = isHardwareVersion2() ? ADC_PHASE_QUARTER_SPEED_BOARD2 : ADC_PHASE_QUARTER_SPEED;
+		dbitPhase = isHardwareVersion2() ? DBIT_PHASE_QUARTER_SPEED_BOARD2 : DBIT_PHASE_QUARTER_SPEED;
 		config = CONFIG_QUARTER_SPEED_10MHZ_VAL;
 		break;
 	
@@ -1371,6 +1375,12 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 
 	setPhase(ADC_CLK, adcPhase, 0);
 	FILE_LOG(logINFO, ("\tSet ADC Phase Reg to %d\n", adcPhase));
+
+	// only implemented in the new boards now
+	if (!isHardwareVersion2()) {
+		setPhase(DBIT_CLK, dbitPhase, 0);
+		FILE_LOG(logINFO, ("\tSet DBIT Phase Reg to %d\n", dbitPhase));
+	}
 	
 	return OK;
 }

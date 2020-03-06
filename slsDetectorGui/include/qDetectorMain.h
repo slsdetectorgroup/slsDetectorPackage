@@ -16,13 +16,15 @@ class qTabMessages;
 #include "Detector.h"
 
 #include <QTabWidget>
+
+class QScrollArea;
 class QResizeEvent;
 
-/** To Over-ride the QTabWidget class to get the tabBar */
+/** To Over-ride the QTabWidget class to get the tabBar protected methodTabWidget */
 class MyTabWidget : public QTabWidget {
   public:
     MyTabWidget(QWidget *parent = 0) { setParent(parent); }
-    /** Overridden method from QTabWidget */
+    /** Overridden protected method from QTabWidget */
     QTabBar *tabBar() { return QTabWidget::tabBar(); }
 };
 
@@ -72,6 +74,7 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     std::unique_ptr<sls::Detector> det;
     std::unique_ptr<qDrawPlot> plot;
     std::unique_ptr<MyTabWidget> tabs;
+    std::unique_ptr<QScrollArea> scroll[NumberOfTabs];
     std::unique_ptr<qTabMeasurement> tabMeasurement;
     std::unique_ptr<qTabDataOutput> tabDataOutput;
     std::unique_ptr<qTabPlot> tabPlot;

@@ -142,9 +142,8 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabDeveloper = sls::make_unique<qTabDeveloper>(this, det.get());
 
     //	creating the scroll area widgets for the tabs
-    QScrollArea *scroll[NumberOfTabs];
     for (int i = 0; i < NumberOfTabs; ++i) {
-        scroll[i] = new QScrollArea;
+        scroll[i] = sls::make_unique<QScrollArea>();
         scroll[i]->setFrameShape(QFrame::NoFrame);
     }
     // setting the tab widgets to the scrollareas
@@ -156,13 +155,13 @@ void qDetectorMain::SetUpWidgetWindow() {
     scroll[DEBUGGING]->setWidget(tabDebugging.get());
     scroll[DEVELOPER]->setWidget(tabDeveloper.get());
     // inserting all the tabs
-    tabs->insertTab(MEASUREMENT, scroll[MEASUREMENT], "Measurement");
-    tabs->insertTab(DATAOUTPUT, scroll[DATAOUTPUT], "Data Output");
-    tabs->insertTab(PLOT, scroll[PLOT], "Plot");
-    tabs->insertTab(SETTINGS, scroll[SETTINGS], "Settings");
-    tabs->insertTab(ADVANCED, scroll[ADVANCED], "Advanced");
-    tabs->insertTab(DEBUGGING, scroll[DEBUGGING], "Debugging");
-    tabs->insertTab(DEVELOPER, scroll[DEVELOPER], "Developer");
+    tabs->insertTab(MEASUREMENT, scroll[MEASUREMENT].get(), "Measurement");
+    tabs->insertTab(DATAOUTPUT, scroll[DATAOUTPUT].get(), "Data Output");
+    tabs->insertTab(PLOT, scroll[PLOT].get(), "Plot");
+    tabs->insertTab(SETTINGS, scroll[SETTINGS].get(), "Settings");
+    tabs->insertTab(ADVANCED, scroll[ADVANCED].get(), "Advanced");
+    tabs->insertTab(DEBUGGING, scroll[DEBUGGING].get(), "Debugging");
+    tabs->insertTab(DEVELOPER, scroll[DEVELOPER].get(), "Developer");
     // no scroll buttons this way
     tabs->insertTab(MESSAGES, tabMessages.get(), "Terminal");
 
@@ -182,8 +181,7 @@ void qDetectorMain::SetUpWidgetWindow() {
     defaultTabColor = tabs->tabBar()->tabTextColor(DATAOUTPUT);
     // Set the current tab(measurement) to blue as it is the current one
     tabs->tabBar()->setTabTextColor(0, QColor(0, 0, 200, 255));
-    // increase the width so it uses all the empty space for the tab titles
-    tabs->tabBar()->setFixedWidth(width() + 61);
+    tabs->tabBar()->setExpanding(true);
 
     // mode setup - to set up the tabs initially as disabled, not in form so
     // done here

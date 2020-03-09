@@ -22,7 +22,7 @@ class Logger {
     ~Logger() {
         // output in the destructor to allow for << syntax
         os << RESET << '\n';
-        std::clog << os.str(); // Single write
+        std::clog << os.str() << std::flush; // Single write
     }
 
     static TLogLevel &ReportingLevel() { // singelton eeh

@@ -43,4 +43,5 @@ int main() {
     LOG(logINFOBLUE) << "some infoBLUE text";
     LOG(logINFOGREEN) << "some infoGREEN text";
     LOG(logINFORED) << "some infoRED text";
+
 }

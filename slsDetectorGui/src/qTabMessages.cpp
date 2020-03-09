@@ -19,8 +19,7 @@ qTabMessages::qTabMessages(QWidget *parent) : QWidget(parent) {
 
 qTabMessages::~qTabMessages() {
     process->close();
-    if (process)
-        delete process;
+    delete process;
 }
 
 void qTabMessages::SetupWidgetWindow() {

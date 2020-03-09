@@ -25,11 +25,8 @@ class SlsQt2DZoomer:public QwtPlotZoomer{
   SlsQt2DHist* hist;
 
  public:
-#if QWT_VERSION < 0x060100
-  SlsQt2DZoomer(QwtPlotCanvas *canvas):QwtPlotZoomer(canvas){
-#else
+
   SlsQt2DZoomer(QWidget *canvas):QwtPlotZoomer(canvas){
-#endif
     setTrackerMode(AlwaysOn);
   }
 
@@ -38,15 +35,11 @@ class SlsQt2DZoomer:public QwtPlotZoomer{
   }
   
  
-#if QWT_VERSION<0x060000
-    virtual QwtText trackerText(const QwtDoublePoint &pos) const{
-#else
+
   virtual QwtText trackerTextF(const QPointF &pos) const{
-#endif
     QColor bg(Qt::white);
-#if QT_VERSION >= 0x040300
     bg.setAlpha(200);
-#endif
+
 
     
     //QwtText text = QwtPlotZoomer::trackerText(pos);
@@ -57,12 +50,10 @@ class SlsQt2DZoomer:public QwtPlotZoomer{
       sprintf(t,"%3.2f, %3.2f, %3.2f",pos.x(),pos.y(),hist->value(pos.x(),pos.y()));
       text.setText(t);
     }else {
-#if QWT_VERSION<0x060000
-    QwtText text = QwtPlotZoomer::trackerText(pos);
-#else
+
     QPoint p=pos.toPoint();
     QwtText text = QwtPlotZoomer::trackerText(p);
-#endif
+
 
     }
     text.setBackgroundBrush( QBrush( bg ));

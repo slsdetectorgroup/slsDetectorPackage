@@ -167,7 +167,7 @@ endif (SLS_USE_RECEIVER)
 
 if (SLS_USE_GUI)   
     find_package(Qt4 REQUIRED)
-    find_package(Qwt 6 REQUIRED)
+    find_package(Qwt 6.1 REQUIRED)
     if (QT4_FOUND AND QWT_FOUND)
         add_subdirectory(slsDetectorGui)
     endif()

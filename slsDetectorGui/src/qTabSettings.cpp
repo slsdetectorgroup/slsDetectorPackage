@@ -40,12 +40,9 @@ void qTabSettings::SetupWidgetWindow() {
         SetupDetectorSettings();
     }
     spinThreshold->setValue(-1);
-
     Initialization();
-    
     // default for the disabled
     GetDynamicRange();
-
     Refresh();
 }
 

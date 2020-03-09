@@ -22,13 +22,13 @@ qCloneWidget::qCloneWidget(QWidget *parent, SlsQt1DPlot* p1, SlsQt2DPlot* p2, Sl
 }
 
 qCloneWidget::~qCloneWidget() {
-    if (plot1d)
+    
         delete plot1d;
-    if (plot2d)
+    
         delete plot2d;
-    if (gainplot1d)
+    
         delete gainplot1d;        
-    if (gainplot2d)
+    
         delete gainplot2d;      
 }
 

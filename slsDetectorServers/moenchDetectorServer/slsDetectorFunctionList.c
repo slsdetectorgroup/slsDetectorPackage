@@ -2177,9 +2177,26 @@ int calculateDataBytes(){
 	return dataBytes;
 }
 
-int getTotalNumberOfChannels() {return  (getNumberOfChannelsPerChip() * getNumberOfChips());}
+int getTotalNumberOfChannels() {
+    int nchanx = 0, nchany = 0;
+    getTotalNumberOfChannels(&nchanx, &nchany);
+    return nchanx * nchany;
+}
+
+int getNumberOfChannels(int* nchanx, int* nchany) {
+    uint32_t mask = enableTenGigabitEthernet(-1) ? adcEnableMask_10g : adcEnableMask_1g;
+    // count number of channels in x, each adc has 25 channels each
+    int nchanTop =  __builtin_popcount(mask & 0xF0F0F0F0) * NCHANS_PER_ADC;
+    int nchanBot = __builtin_popcount(mask & 0x0F0F0F0F) * NCHANS_PER_ADC;  
+    *nchanx = nchanTop > 0 ? nchanTop : nchanBot;  
+    // if both top and bottom adcs enabled, rows = 2
+    int nrows = 1;
+    if (nchanTop > 0 && nchanBot > 0) {
+        nrows = 2;
+    }      
+    *nchany = nSamples / NSAMPLES_PER_ROW * nrows;
+}
+
 int getNumberOfChips(){return  NCHIP;}
 int getNumberOfDACs(){return  NDAC;}
 int getNumberOfChannelsPerChip(){return  NCHAN;}
-
-

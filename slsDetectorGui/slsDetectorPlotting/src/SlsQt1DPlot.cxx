@@ -39,11 +39,11 @@ void SlsQtH1D::Initailize() {
 }
 
 SlsQtH1D::~SlsQtH1D() {
-    if (x)
+    
         delete [] x;
-    if (y)
+    
         delete [] y;
-    if (pen_ptr)   
+      
         delete pen_ptr;
 }
 
@@ -210,9 +210,9 @@ int SlsQtH1D::SetUpArrays(int n) {
 
     if (n + 1 > n_array) {
         n_array = n + 1;
-        if (x)
+        
             delete x;
-        if (y)
+        
             delete y;
         x = new double[n_array];
         y = new double[n_array];
@@ -276,7 +276,7 @@ SlsQtH1DList::SlsQtH1DList(SlsQtH1D *hist) {
 }
 
 SlsQtH1DList::~SlsQtH1DList() {
-    if (the_next)
+    
         delete the_next;
 }
 
@@ -352,15 +352,15 @@ SlsQt1DPlot::SlsQt1DPlot(QWidget *parent) : QwtPlot(parent) {
 }
 
 SlsQt1DPlot::~SlsQt1DPlot() {
-    if (hist_list)
+    
         delete hist_list;
-    if (hline)
+    
         delete hline;
-    if (vline)
+    
         delete vline;
-    if (zoomer)
+    
         delete zoomer;
-     if (panner)
+     
         delete panner;       
 }
 

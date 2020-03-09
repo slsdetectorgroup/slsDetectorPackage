@@ -17,13 +17,9 @@ qTabDebugging::qTabDebugging(QWidget *parent, sls::Detector *detector) :
 }
 
 qTabDebugging::~qTabDebugging() {
-    if (treeDet)
         delete treeDet;
-    if (lblDetectorHostname)
         delete lblDetectorHostname;
-    if (lblDetectorFirmware)
         delete lblDetectorFirmware;
-    if (lblDetectorSoftware)
         delete lblDetectorSoftware;
 }
 

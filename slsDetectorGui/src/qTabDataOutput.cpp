@@ -17,7 +17,6 @@ qTabDataOutput::qTabDataOutput(QWidget *parent, sls::Detector *detector) : QWidg
 }
 
 qTabDataOutput::~qTabDataOutput() {
-	if (btnGroupRate)
 		delete btnGroupRate;
 }
 

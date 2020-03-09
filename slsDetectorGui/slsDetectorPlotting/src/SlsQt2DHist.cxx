@@ -20,7 +20,7 @@ SlsQt2DHist::SlsQt2DHist(int nbinsx, double xmin, double xmax, int nbinsy, doubl
 }
 
 
-SlsQt2DHist::~SlsQt2DHist(){if(data) delete [] data;}
+SlsQt2DHist::~SlsQt2DHist(){ delete [] data;}
 
 int SlsQt2DHist::GetBinIndex(int bx, int by){
   int b = bx*ny+by;
@@ -65,7 +65,7 @@ void SlsQt2DHist::SetData(int nbinsx, double xmin, double xmax, int nbinsy,doubl
   }
 
   if(nbinsx*nbinsy>nx_array*ny_array){
-    if(data) delete [] data;
+    delete [] data;
     data = new double [nbinsx*nbinsy+1];  //one for under/overflow bin
     nx_array = nbinsx;
     ny_array = nbinsy;

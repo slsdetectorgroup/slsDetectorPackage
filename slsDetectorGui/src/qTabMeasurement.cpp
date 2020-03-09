@@ -18,7 +18,6 @@ qTabMeasurement::qTabMeasurement(QWidget *parent, sls::Detector *detector, qDraw
 }
 
 qTabMeasurement::~qTabMeasurement() {
-	if (progressTimer)
 		delete progressTimer;
 }
 

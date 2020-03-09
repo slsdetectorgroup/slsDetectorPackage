@@ -34,43 +34,27 @@ void SlsQt1DZoomer::SetZoomBase(double xmin,double ymin,double x_width, double y
 
   if(plot()){
     if(xIsLog){
-      #if QWT_VERSION < 0x50200
-        double xmin_curr = plot()->axisScaleDiv(QwtPlot::xBottom)->lBound();
-        double xmax_curr = plot()->axisScaleDiv(QwtPlot::xBottom)->hBound();
-      #elif QWT_VERSION < 0x060100
-        double xmin_curr = plot()->axisScaleDiv(QwtPlot::xBottom)->lowerBound();
-        double xmax_curr = plot()->axisScaleDiv(QwtPlot::xBottom)->upperBound();
-      #else
-        double xmin_curr = plot()->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-        double xmax_curr = plot()->axisScaleDiv(QwtPlot::xBottom).upperBound();
-      #endif
-      if(xmin_curr<xmin)         xmin_curr=xmin;
-      if(xmax_curr>xmin+x_width) xmax_curr=xmin+x_width;
+      double xmin_curr = plot()->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+      double xmax_curr = plot()->axisScaleDiv(QwtPlot::xBottom).upperBound();
+      if(xmin_curr<xmin)
+        xmin_curr=xmin;
+      if(xmax_curr>xmin+x_width)
+        xmax_curr=xmin+x_width;
       plot()->setAxisScale(QwtPlot::xBottom,xmin_curr,xmax_curr);
     }
     if(yIsLog){
-      #if QWT_VERSION < 0x50200
-        double ymin_curr = plot()->axisScaleDiv(QwtPlot::yLeft)->lBound();
-        double ymax_curr = plot()->axisScaleDiv(QwtPlot::yLeft)->hBound();
-      #elif QWT_VERSION < 0x060100
-        double ymin_curr = plot()->axisScaleDiv(QwtPlot::yLeft)->lowerBound();
-        double ymax_curr = plot()->axisScaleDiv(QwtPlot::yLeft)->upperBound();
-      #else
-        double ymin_curr = plot()->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-        double ymax_curr = plot()->axisScaleDiv(QwtPlot::yLeft).upperBound();
-      #endif
-      if(ymin_curr<ymin)         ymin_curr=ymin;
-      if(ymax_curr>ymin+y_width) ymax_curr=ymin+y_width;
+      double ymin_curr = plot()->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+      double ymax_curr = plot()->axisScaleDiv(QwtPlot::yLeft).upperBound();
+      if(ymin_curr<ymin)
+        ymin_curr=ymin;
+      if(ymax_curr>ymin+y_width)
+        ymax_curr=ymin+y_width;
       plot()->setAxisScale(QwtPlot::yLeft,ymin_curr,ymax_curr);
     }
     plot()->replot();
   }
-
-#if QWT_VERSION<0x060000
-  setZoomBase(QwtDoubleRect(xmin,ymin,x_width,y_width));
-#else
   setZoomBase(QRectF(xmin,ymin,x_width,y_width));
-#endif
+
 }
 
 void SlsQt1DZoomer::SetZoomBase(SlsQtH1D* h){

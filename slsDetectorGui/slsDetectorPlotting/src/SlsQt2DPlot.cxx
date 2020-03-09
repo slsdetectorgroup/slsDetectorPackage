@@ -21,32 +21,21 @@
 
 
 
-#if QWT_VERSION >= 0x060100
-#define QwtLog10ScaleEngine QwtLogScaleEngine
-#endif
+
+#define QwtLog10ScaleEngine QwtLogScaleEngine //hmm remove? 
+
 
 SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
     isLog = 0;
-
     axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Floating);
     axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Floating);
-
     d_spectrogram = new QwtPlotSpectrogram();
-
     hist = new SlsQt2DHist();
     SetupZoom();
     SetupColorMap();
-
-#if QWT_VERSION < 0x060000
-    d_spectrogram->setData(*hist);
-#else
     d_spectrogram->setData(hist);
-#endif
-
     d_spectrogram->attach(this);
-
     plotLayout()->setAlignCanvasToScales(true);
-
     FillTestPlot();
     Update();
 }
@@ -57,25 +46,11 @@ SlsQt2DPlot::~SlsQt2DPlot() {
         d_spectrogram->detach();
         //delete d_spectrogram;
     }
-    if (hist) {
-        delete hist;  
-    }
-    if (colorMapLinearScale)
-        delete colorMapLinearScale;   
-    if (colorMapLogScale)
-        delete colorMapLogScale;  
-
-
-    if (zoomer)
-        delete zoomer;   
-    if (panner)
-        delete panner;   
-#if QWT_VERSION<0x060000        
-     if (contourLevelsLinear)
-        delete contourLevelsLinear;   
-     if (contourLevelsLog)
-        delete contourLevelsLog;  
-#endif 
+    delete hist;  
+    delete colorMapLinearScale;   
+    delete colorMapLogScale;  
+    delete zoomer;   
+    delete panner;   
 }
 
 void SlsQt2DPlot::SetTitle(QString title) {
@@ -120,40 +95,16 @@ void SlsQt2DPlot::SetZFont(const QFont& f) {
 }
 
 void SlsQt2DPlot::SetupColorMap() {
-   
     colorMapLinearScale = myColourMap(0);
-#if QWT_VERSION < 0x060000
-    d_spectrogram->setColorMap(*colorMapLinearScale);
-#else
     d_spectrogram->setColorMap(colorMapLinearScale);
-#endif
-
     colorMapLogScale = myColourMap(1);
-#if QWT_VERSION < 0x060000
-    contourLevelsLinear = new QwtValueList();
-    for (double level = 0.5; level < 10.0; level += 1.0)
-        (*contourLevelsLinear) += level;
-    d_spectrogram->setContourLevels(*contourLevelsLinear);
-#else
-    ;
-
     for (double level = 0.5; level < 10.0; level += 1.0)
         (contourLevelsLinear) += level;
     d_spectrogram->setContourLevels(contourLevelsLinear);
-#endif
-
-    //
-#if QWT_VERSION < 0x060000
-    contourLevelsLog = new QwtValueList();
-    for (double level = 0.5; level < 10.0; level += 1.0)
-        (*contourLevelsLog) += (pow(10, 2 * level / 10.0) - 1) / 99.0 * 10;
-
-#else
-    ;
 
     for (double level = 0.5; level < 10.0; level += 1.0)
         (contourLevelsLog) += (pow(10, 2 * level / 10.0) - 1) / 99.0 * 10;
-#endif
+
 
     // A color bar on the right axis
     rightAxis = axisWidget(QwtPlot::yRight);
@@ -225,23 +176,14 @@ void SlsQt2DPlot::SetupZoom() {
 }*/
 
 void SlsQt2DPlot::UnZoom(bool replot) {
-#if QWT_VERSION < 0x060000
-    zoomer->setZoomBase(QwtDoubleRect(hist->GetXMin(), hist->GetYMin(), hist->GetXMax() - hist->GetXMin(), hist->GetYMax() - hist->GetYMin()));
-#else
+
     zoomer->setZoomBase(QRectF(hist->GetXMin(), hist->GetYMin(), hist->GetXMax() - hist->GetXMin(), hist->GetYMax() - hist->GetYMin()));
-#endif
     zoomer->setZoomBase(replot); //Call replot for the attached plot before initializing the zoomer with its scales.
                                  // zoomer->zoom(0);
 }
 
 void SlsQt2DPlot::SetZoom(double xmin, double ymin, double x_width, double y_width) {
-
-#if QWT_VERSION < 0x060000
-    zoomer->setZoomBase(QwtDoubleRect(xmin, ymin, x_width, y_width));
-
-#else
     zoomer->setZoomBase(QRectF(xmin, ymin, x_width, y_width));
-#endif
 }
 
 void SlsQt2DPlot::DisableZoom(bool disable) {
@@ -330,28 +272,16 @@ QwtLinearColorMap *SlsQt2DPlot::myColourMap(int log) {
 }
 
 void SlsQt2DPlot::Update() {
-#if QWT_VERSION < 0x060000
-    rightAxis->setColorMap(d_spectrogram->data().range(), d_spectrogram->colorMap());
-#else
     if (isLog)
         hist->SetMinimumToFirstGreaterThanZero();
-
     const QwtInterval zInterval = d_spectrogram->data()->interval(Qt::ZAxis);
-
     rightAxis->setColorMap(zInterval, myColourMap(isLog));
-#endif
+
     if (!zoomer->zoomRectIndex())
         UnZoom();
-#if QWT_VERSION < 0x060000
-    setAxisScale(QwtPlot::yRight, d_spectrogram->data().range().minValue(),
-                 d_spectrogram->data().range().maxValue());
-#else
-    //cprintf(MAGENTA, "zmin:%f zmax:%f\n", zInterval.minValue(), zInterval.maxValue());
     setAxisScale(QwtPlot::yRight, zInterval.minValue(), zInterval.maxValue());
     plotLayout()->setAlignCanvasToScales(true);
-#endif
     replot();
-
 }
 
 void SlsQt2DPlot::SetInterpolate(bool enable) {
@@ -387,63 +317,20 @@ void SlsQt2DPlot::SetZRange(bool isMin, bool isMax, double min, double max){
 void SlsQt2DPlot::LogZ(bool on) {
     if (on) {
         isLog = 1;
-        //if(hist->GetMinimum()<=0) hist->SetMinimumToFirstGreaterThanZero();
-#if QWT_VERSION < 0x060000
-        d_spectrogram->setColorMap(*colorMapLogScale);
-#else
         d_spectrogram->setColorMap(myColourMap(isLog));
-#endif
         setAxisScaleEngine(QwtPlot::yRight, new QwtLog10ScaleEngine);
-#if QWT_VERSION < 0x060000
-        d_spectrogram->setContourLevels(*contourLevelsLog);
-#else
         d_spectrogram->setContourLevels(contourLevelsLog);
-#endif
     } else {
         isLog = 0;
-
-#if QWT_VERSION < 0x060000
-        d_spectrogram->setColorMap(*colorMapLinearScale);
-#else
         d_spectrogram->setColorMap(myColourMap(isLog));
-#endif
-
         setAxisScaleEngine(QwtPlot::yRight, new QwtLinearScaleEngine);
-
-#if QWT_VERSION < 0x060000
-        d_spectrogram->setContourLevels(*contourLevelsLinear);
-#else
         d_spectrogram->setContourLevels(contourLevelsLinear);
-#endif
     }
     Update();
 }
 
 void SlsQt2DPlot::showSpectrogram(bool on) {
-    //  static int io=0;
-    //  FillTestPlot(io++);
     d_spectrogram->setDisplayMode(QwtPlotSpectrogram::ImageMode, on);
     d_spectrogram->setDefaultContourPen(on ? QPen() : QPen(Qt::NoPen));
     Update();
 }
-
-
-/*
-void SlsQt2DPlot::printPlot(){
-  QPrinter printer;
-    printer.setOrientation(QPrinter::Landscape);
-#if QT_VERSION < 0x040000
-    printer.setColorMode(QPrinter::Color);
-    printer.setOutputFileName("spectrogram.ps");
-    if (printer.setup())
-#else
-    printer.setOutputFileName("spectrogram.pdf");
-    QPrintDialog dialog(&printer);
-    if ( dialog.exec() )
-#endif
-      {
-        print(printer);
-      }
-}
-
-*/

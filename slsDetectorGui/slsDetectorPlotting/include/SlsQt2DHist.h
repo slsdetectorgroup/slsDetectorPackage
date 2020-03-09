@@ -77,9 +77,7 @@ class SlsQt2DHist: public QwtRasterData{
     return (QwtRasterData*) this;
   }
 
-#if QWT_VERSION<0x060000
-   virtual QwtDoubleInterval range() const{ return QwtDoubleInterval(z_min,z_max);}
-#else
+
   virtual QwtInterval range() const{ return QwtInterval(z_min,z_max);}
   virtual QwtInterval interval(Qt::Axis axis) const { 
     switch (axis){
@@ -93,7 +91,7 @@ class SlsQt2DHist: public QwtRasterData{
       return QwtInterval(z_min,z_max);
     };
   };
-#endif
+
 
 
 

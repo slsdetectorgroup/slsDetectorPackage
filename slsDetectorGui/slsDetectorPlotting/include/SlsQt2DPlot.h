@@ -85,13 +85,8 @@ private:
 
     QwtLinearColorMap* colorMapLinearScale{nullptr};
     QwtLinearColorMap* colorMapLogScale{nullptr};
-#if QWT_VERSION<0x060000
-    QwtValueList* contourLevelsLinear{nullptr};
-    QwtValueList* contourLevelsLog{nullptr};
-#else 
     QList<double> contourLevelsLinear;
     QList<double> contourLevelsLog;
-#endif
     bool disableZoom{false};
     int isLog;
 };

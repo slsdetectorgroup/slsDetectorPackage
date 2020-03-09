@@ -20,11 +20,7 @@ class SlsQt1DZoomer:public QwtPlotZoomer{
   bool xIsLog,yIsLog;
 
  public:
-#if QWT_VERSION < 0x060100
-  SlsQt1DZoomer(QwtPlotCanvas *canvas):QwtPlotZoomer(canvas){
-#else
-  SlsQt1DZoomer(QWidget *canvas):QwtPlotZoomer(canvas){
-#endif
+    SlsQt1DZoomer(QWidget *canvas):QwtPlotZoomer(canvas){
     setTrackerMode(AlwaysOn);
     xIsLog=yIsLog=0;
   }
@@ -48,25 +44,15 @@ class SlsQt1DZoomer:public QwtPlotZoomer{
   bool SetLogY(bool yes) { return yIsLog=yes;}
 
  
-#if QWT_VERSION<0x060000
-    virtual QwtText trackerText(const QwtDoublePoint &pos) const{
-#else
-using QwtPlotPicker::trackerText;
+
+  using QwtPlotPicker::trackerText;
   virtual QwtText trackerText(const QPoint &pos) const{
-#endif
-    QColor bg(Qt::white);
 
-#if QT_VERSION >= 0x040300
-    bg.setAlpha(200);
-#endif
-
-#if QWT_VERSION<0x060000
-    QwtText text = QwtPlotZoomer::trackerText(pos);
-#else
-    QwtText text = QwtPlotPicker::trackerText(pos);
-#endif
-    text.setBackgroundBrush( QBrush( bg ));
-    return text;
+  QColor bg(Qt::white);
+  bg.setAlpha(200);
+  QwtText text = QwtPlotPicker::trackerText(pos);
+  text.setBackgroundBrush( QBrush( bg ));
+  return text;
   }
 
 };

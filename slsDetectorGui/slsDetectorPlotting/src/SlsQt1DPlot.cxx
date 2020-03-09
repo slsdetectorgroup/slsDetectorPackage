@@ -17,9 +17,9 @@
 #include "qwt_symbol.h"
 #include <stdlib.h>
 
-#if QWT_VERSION >= 0x060100
-#define QwtLog10ScaleEngine QwtLogScaleEngine
-#endif
+
+#define QwtLog10ScaleEngine QwtLogScaleEngine //hmm 
+
 
 SlsQtH1D::SlsQtH1D(QString title, int n, double min, double max, double *data) : QwtPlotCurve(title), x(nullptr), y(nullptr), pen_ptr(nullptr) {
     Initailize();
@@ -39,11 +39,11 @@ void SlsQtH1D::Initailize() {
 }
 
 SlsQtH1D::~SlsQtH1D() {
-    if (x)
+    
         delete [] x;
-    if (y)
+    
         delete [] y;
-    if (pen_ptr)   
+      
         delete pen_ptr;
 }
 
@@ -138,11 +138,8 @@ void  SlsQtH1D::setSymbolMarkers(bool isMarker) {
         marker->setStyle(QwtSymbol::Cross);
         marker->setSize(5, 5);
     }
-#if QWT_VERSION < 0x060000
-    setSymbol(*marker);
-#else
     setSymbol(marker);
-#endif
+
 }
 
 void SlsQtH1D::SetData(int n, double xmin, double xmax, double *data) {
@@ -173,11 +170,9 @@ void SlsQtH1D::SetData(int n, double xmin, double xmax, double *data) {
             firstYgt0 = y[i];
     }
 
-#if QWT_VERSION < 0x060000
-    setRawData(x, y, ndata);
-#else
+
     setRawSamples(x, y, ndata);
-#endif
+
 }
 
 void SlsQtH1D::SetData(int n, double *data_x, double *data_y) {
@@ -206,12 +201,8 @@ void SlsQtH1D::SetData(int n, double *data_x, double *data_y) {
         if (y[b] > 0 && (firstYgt0 < 0 || firstYgt0 > y[b]))
             firstYgt0 = y[b];
     }
-
-    // #if QWT_VERSION<0x060000
-    //   setRawData(x,y,ndata);
-    // #else
     setRawSamples(x, y, ndata);
-    // #endif
+
 }
 
 int SlsQtH1D::SetUpArrays(int n) {
@@ -219,9 +210,9 @@ int SlsQtH1D::SetUpArrays(int n) {
 
     if (n + 1 > n_array) {
         n_array = n + 1;
-        if (x)
+        
             delete x;
-        if (y)
+        
             delete y;
         x = new double[n_array];
         y = new double[n_array];
@@ -285,7 +276,7 @@ SlsQtH1DList::SlsQtH1DList(SlsQtH1D *hist) {
 }
 
 SlsQtH1DList::~SlsQtH1DList() {
-    if (the_next)
+    
         delete the_next;
 }
 
@@ -361,15 +352,15 @@ SlsQt1DPlot::SlsQt1DPlot(QWidget *parent) : QwtPlot(parent) {
 }
 
 SlsQt1DPlot::~SlsQt1DPlot() {
-    if (hist_list)
+    
         delete hist_list;
-    if (hline)
+    
         delete hline;
-    if (vline)
+    
         delete vline;
-    if (zoomer)
+    
         delete zoomer;
-     if (panner)
+     
         delete panner;       
 }
 
@@ -554,45 +545,24 @@ void SlsQt1DPlot::alignScales() {
 }
 
 void SlsQt1DPlot::UnknownStuff() {
-#if QWT_VERSION < 0x060000
-    // Disable polygon clipping
-    //not supported for version 6
-    QwtPainter::setDeviceClipping(false);
-    canvas()->setPaintAttribute(QwtPlotCanvas::PaintCached, false);
-    canvas()->setPaintAttribute(QwtPlotCanvas::PaintPacked, false);
-#else
     // We don't need the cache here
     ((QwtPlotCanvas *)canvas())->setPaintAttribute(QwtPlotCanvas::BackingStore, false);
-
-#endif
-
-#if QT_VERSION >= 0x040000
 #ifdef Q_WS_X11
     //  Qt::WA_PaintOnScreen is only supported for X11, but leads
     //  to substantial bugs with Qt 4.2.x/Windows
     canvas()->setAttribute(Qt::WA_PaintOnScreen, true);
 #endif
-#endif
+
 }
 
 //Added by Dhanya on 19.06.2012 to disable zooming when any of the axes range has been set
 void SlsQt1DPlot::DisableZoom(bool disable) {
     if (disableZoom != disable) {
         disableZoom = disable;
-#ifdef VERBOSE
-        if (disable)
-            std::cout << "Disabling zoom\n";
-        else
-            std::cout << "Enabling zoom\n";
-#endif
         if (disable) {
             if (zoomer) {
                 zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::NoButton);
-#if QT_VERSION < 0x040000
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlButton);
-#else
                 zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlModifier);
-#endif
                 zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::NoButton);
             }
             if (panner)
@@ -600,11 +570,7 @@ void SlsQt1DPlot::DisableZoom(bool disable) {
         } else {
             if (zoomer) {
                 zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::LeftButton);
-#if QT_VERSION < 0x040000
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlButton);
-#else
                 zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
-#endif
                 zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
             }
             if (panner)

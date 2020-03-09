@@ -20,7 +20,7 @@ SlsQt2DHist::SlsQt2DHist(int nbinsx, double xmin, double xmax, int nbinsy, doubl
 }
 
 
-SlsQt2DHist::~SlsQt2DHist(){if(data) delete [] data;}
+SlsQt2DHist::~SlsQt2DHist(){ delete [] data;}
 
 int SlsQt2DHist::GetBinIndex(int bx, int by){
   int b = bx*ny+by;
@@ -55,16 +55,8 @@ void SlsQt2DHist::SetData(int nbinsx, double xmin, double xmax, int nbinsy,doubl
   if(x_min!=xmin||x_max!=xmax||y_min!=ymin||y_max!=ymax){
     x_min=xmin;x_max=xmax;
     y_min=ymin;y_max=ymax;
-   
-#if QWT_VERSION<0x060000	  
-    setBoundingRect(QRectF(xmin,ymin,x_max-x_min,y_max-y_min));
-#else
     setInterval( Qt::XAxis,QwtInterval(xmin,xmax));
     setInterval( Qt::YAxis,QwtInterval(ymin,ymax));
-    	//  setInterval( Qt::ZAxis,QwtInterval(zmin,zmax));
-    //setInterval( Qt::ZAxis,QwtInterval(0.,1.));
-#endif
-
   }
 
   if(nbinsx*nbinsy<1){
@@ -73,7 +65,7 @@ void SlsQt2DHist::SetData(int nbinsx, double xmin, double xmax, int nbinsy,doubl
   }
 
   if(nbinsx*nbinsy>nx_array*ny_array){
-    if(data) delete [] data;
+    delete [] data;
     data = new double [nbinsx*nbinsy+1];  //one for under/overflow bin
     nx_array = nbinsx;
     ny_array = nbinsy;
@@ -107,12 +99,7 @@ void SlsQt2DHist::SetMinMax(double zmin,double zmax){
     if(z_min>0) z_min/=1.02; else z_min*=1.02;
     if(z_max>0) z_max*=1.02; else z_max/=1.02;
   }
-#if QWT_VERSION<0x060000	  
-    ;
-#else
 	setInterval( Qt::ZAxis,QwtInterval(z_min,z_max));
-#endif
- 
 }
 
 double SlsQt2DHist::GetMean(){
@@ -131,11 +118,8 @@ double SlsQt2DHist::SetMinimumToFirstGreaterThanZero(){
   for(int i=0;i<nb;i++){
     if(data[i]>0 && data[i]<z_min) z_min=data[i];
   }
-#if QWT_VERSION<0x060000	  
-    ;
-#else
 	setInterval( Qt::ZAxis,QwtInterval(z_min,z_max));
-#endif
+
  
   return z_min;
 }

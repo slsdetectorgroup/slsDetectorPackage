@@ -20,39 +20,27 @@ qDrawPlot::qDrawPlot(QWidget *parent, sls::Detector *detector) : QWidget(parent)
 }
 
 qDrawPlot::~qDrawPlot() {
-
     DetachHists();
     for (QVector<SlsQtH1D *>::iterator h = hists1d.begin();
-         h != hists1d.end(); ++h)
-        delete *h;
+         h != hists1d.end(); ++h){
+             delete *h;
+         }
+        
     hists1d.clear();
-
-    if (datax1d)
-        delete [] datax1d;
+    delete [] datax1d;
     for (auto &it : datay1d)
         delete [] it;
-    if (gainDatay1d)
-        delete [] gainDatay1d;    
-    if (data2d)
-        delete [] data2d;
-     if (gainData)
-        delete [] gainData;       
-
-    if (plot1d)
-        delete plot1d;
-    if (gainhist1d)
-        delete gainhist1d;  
-    if (gainplot1d)
-        delete gainplot1d;    
-    if (plot2d)
-        delete plot2d;
-    if (gainplot2d)
-        delete gainplot2d;
-
-    if (pedestalVals)
-        delete [] pedestalVals;
-    if (tempPedestalVals)
-        delete [] tempPedestalVals;          
+    
+    delete [] gainDatay1d;    
+    delete [] data2d;
+    delete [] gainData;       
+    delete plot1d;
+    delete gainhist1d;  
+    delete gainplot1d;    
+    delete plot2d;
+    delete gainplot2d;
+    delete [] pedestalVals;
+    delete [] tempPedestalVals;          
 }
 
 void qDrawPlot::SetupWidgetWindow() {
@@ -127,7 +115,7 @@ void qDrawPlot::SetupPlots() {
     widgetStatistics->hide();
 
     // setup 1d data
-    if (datax1d)
+    
         delete[] datax1d;
     datax1d = new double[nPixelsX];
     if (datay1d.size()) {
@@ -160,7 +148,7 @@ void qDrawPlot::SetupPlots() {
     h->Attach(plot1d);
     plot1d->hide();
 
-    if (gainDatay1d)
+    
     delete[] gainDatay1d;
    gainDatay1d = new double[nPixelsX];
     // default display data
@@ -189,7 +177,7 @@ void qDrawPlot::SetupPlots() {
     gainplot1d->hide();
 
     // setup 2d data
-    if (data2d)
+    
         delete [] data2d;    
     data2d = new double[nPixelsY * nPixelsX];
     for (unsigned int px = 0; px < nPixelsX; ++px)
@@ -199,7 +187,7 @@ void qDrawPlot::SetupPlots() {
                          pow(nPixelsX / 2, 2) / pow(1 + 1, 2) +
                      pow(double(py) - nPixelsY / 2, 2) / pow(nPixelsY / 2, 2)) /
                 sqrt(2);
-    if (gainData)
+    
         delete [] gainData;    
     gainData = new double[nPixelsY * nPixelsX];
     for (unsigned int px = 0; px < nPixelsX; ++px)
@@ -714,7 +702,7 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
         nPixelsX = data->nx;
         nPixelsY = data->ny;
         FILE_LOG(logINFO) << "Change in Detector Shape:\n\tnPixelsX:" << nPixelsX << " nPixelsY:" << nPixelsY;
-        if (data2d)
+        
             delete [] data2d;    
         data2d = new double[nPixelsY * nPixelsX];
         std::fill(data2d, data2d + nPixelsX * nPixelsY, 0);
@@ -742,11 +730,11 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex, uint32_t subFra
     // reset pedestal
     if (resetPedestal) {
         pedestalCount = 0;
-        if (pedestalVals != nullptr)
+        
             delete [] pedestalVals;
         pedestalVals = new double[nPixels];
         std::fill(pedestalVals, pedestalVals + nPixels, 0);
-        if (tempPedestalVals != nullptr)
+        
             delete [] tempPedestalVals;
         tempPedestalVals = new double[nPixels];
         std::fill(tempPedestalVals, tempPedestalVals + nPixels, 0);

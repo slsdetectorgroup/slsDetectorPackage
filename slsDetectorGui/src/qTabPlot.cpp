@@ -27,8 +27,7 @@ qTabPlot::qTabPlot(QWidget *parent, sls::Detector *detector, qDrawPlot *p) :
 }
 
 qTabPlot::~qTabPlot() {
-    if (btnGroupPlotType)
-        delete btnGroupPlotType;
+    delete btnGroupPlotType;
 }
 
 void qTabPlot::SetupWidgetWindow() {

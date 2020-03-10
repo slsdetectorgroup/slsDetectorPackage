@@ -73,9 +73,7 @@ void SlsQt2DPlot::SetZFont(const QFont &f) {
 }
 
 void SlsQt2DPlot::SetupColorMap() {
-    colorMapLinearScale = myColourMap(0);
-    d_spectrogram->setColorMap(colorMapLinearScale);
-    colorMapLogScale = myColourMap(1);
+    d_spectrogram->setColorMap(myColourMap(0));
     for (double level = 0.5; level < 10.0; level += 1.0)
         (contourLevelsLinear) += level;
     d_spectrogram->setContourLevels(contourLevelsLinear);

@@ -29,7 +29,7 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     Q_OBJECT
 
   public:
-    qDetectorMain(int multiId, std::string fname, bool isDevel);
+    qDetectorMain(int multiId, const std::string& fname, bool isDevel);
     ~qDetectorMain();
 
   private slots:
@@ -51,9 +51,9 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
 
   private:
     void SetUpWidgetWindow();
-    void SetUpDetector(const std::string fName, int multiID);
+    void SetUpDetector(const std::string& config_file, int multiID);
     void Initialization();
-    void LoadConfigFile(const std::string fName);
+    void LoadConfigFile(const std::string& config_file);
 
     /** enumeration of the tabs */
     enum {

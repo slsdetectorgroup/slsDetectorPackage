@@ -104,8 +104,8 @@ void SlsQt2DPlot::SetupColorMap() {
 void SlsQt2DPlot::FillTestPlot(int mode) {
     static int nx = 50;
     static int ny = 50;
-    static double *the_data = 0;
-    if (the_data == 0)
+    static double *the_data = nullptr;
+    if (the_data == nullptr)
         the_data = new double[nx * ny];
 
     double dmax = sqrt(pow(nx / 2.0 - 0.5, 2) + pow(ny / 2.0 - 0.5, 2));

@@ -109,7 +109,7 @@ void qCloneWidget::SavePlot() {
 
     fName = QFileDialog::getSaveFileName(
         this, tr("Save Snapshot "), fName,
-        tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"), 0,
+        tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"), nullptr,
         QFileDialog::ShowDirsOnly);
     if (!fName.isEmpty()) {
         if ((img.save(fName))) {

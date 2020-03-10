@@ -26,7 +26,7 @@
 int main(int argc, char **argv) {
 
     // options
-    std::string fname = "";
+    std::string fname;
     bool isDeveloper = false;
     int64_t tempval = 0;
     int multiId = 0;
@@ -36,12 +36,12 @@ int main(int argc, char **argv) {
         // These options set a flag.
         //{"verbose", no_argument,       &verbose_flag, 1},
         // These options don’t set a flag. We distinguish them by their indices.
-        {"developer", no_argument, 0, 'd'},
-        {"config", required_argument, 0, 'f'},
-        {"id", required_argument, 0, 'i'},
-        {"version", no_argument, 0, 'v'},
-        {"help", no_argument, 0, 'h'},
-        {0, 0, 0, 0}};
+        {"developer", no_argument, nullptr, 'd'},
+        {"config", required_argument, nullptr, 'f'},
+        {"id", required_argument, nullptr, 'i'},
+        {"version", no_argument, nullptr, 'v'},
+        {"help", no_argument, nullptr, 'h'},
+        {nullptr, 0, nullptr, 0}};
 
     // getopt_long stores the option index here
     optind = 1;
@@ -93,8 +93,7 @@ int main(int argc, char **argv) {
     }
 
     QApplication app(argc, argv);
-    app.setStyle(new QPlastiqueStyle);
-    // app.setWindowIcon(QIcon(":/icons/images/mountain.png"));
+    app.setStyle(new QPlastiqueStyle); //style is deleted by QApplication
     try {
         qDetectorMain det(multiId, fname, isDeveloper);
         det.show();
@@ -106,8 +105,8 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-qDetectorMain::qDetectorMain(int multiId, std::string fname, bool isDevel)
-    : QMainWindow(0), detType(slsDetectorDefs::GENERIC), isDeveloper(isDevel),
+qDetectorMain::qDetectorMain(int multiId, const std::string& fname, bool isDevel)
+    : QMainWindow(nullptr), detType(slsDetectorDefs::GENERIC), isDeveloper(isDevel),
       heightPlotWindow(0), heightCentralWidget(0) {
 
     setupUi(this);
@@ -115,7 +114,7 @@ qDetectorMain::qDetectorMain(int multiId, std::string fname, bool isDevel)
     SetUpWidgetWindow();
 }
 
-qDetectorMain::~qDetectorMain() {}
+qDetectorMain::~qDetectorMain() = default;
 
 void qDetectorMain::SetUpWidgetWindow() {
     setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
@@ -204,7 +203,7 @@ void qDetectorMain::SetUpWidgetWindow() {
     Initialization();
 }
 
-void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
+void qDetectorMain::SetUpDetector(const std::string& config_file, int multiID) {
 
     // instantiate detector and set window title
     det = sls::make_unique<sls::Detector>(multiID);
@@ -213,8 +212,8 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     tabMessages = sls::make_unique<qTabMessages>(this);
 
     // loads the config file at startup
-    if (!fName.empty())
-        LoadConfigFile(fName);
+    if (!config_file.empty())
+        LoadConfigFile(config_file);
 
     // validate detector type (for GUI) and update menu
     detType = det->getDetectorType().tsquash(
@@ -282,20 +281,20 @@ void qDetectorMain::Initialization() {
             SLOT(ExecuteHelp(QAction *)));
 }
 
-void qDetectorMain::LoadConfigFile(const std::string fName) {
+void qDetectorMain::LoadConfigFile(const std::string& config_file) {
 
-    FILE_LOG(logINFO) << "Loading config file at start up:" << fName;
+    FILE_LOG(logINFO) << "Loading config file at start up:" << config_file;
 
     struct stat st_buf;
-    QString file = QString(fName.c_str());
+    QString file = QString(config_file.c_str());
 
     // path doesnt exist
-    if (stat(fName.c_str(), &st_buf)) {
+    if (stat(config_file.c_str(), &st_buf)) {
         qDefs::Message(
             qDefs::WARNING,
             std::string("<nobr>Start up configuration failed to load. The "
                         "following file does not exist:</nobr><br><nobr>") +
-                fName,
+                config_file,
             "qDetectorMain::LoadConfigFile");
         FILE_LOG(logWARNING) << "Config file does not exist";
     }
@@ -306,12 +305,12 @@ void qDetectorMain::LoadConfigFile(const std::string fName) {
             std::string(
                 "<nobr>Start up configuration failed to load. The following "
                 "file is not a recognized file format:</nobr><br><nobr>") +
-                fName,
+                config_file,
             "qDetectorMain::LoadConfigFile");
         FILE_LOG(logWARNING) << "File not recognized";
     } else {
         try {
-            det->loadConfig(fName);
+            det->loadConfig(config_file);
         }
         CATCH_DISPLAY("Could not load config file.",
                       "qDetectorMain::LoadConfigFile")

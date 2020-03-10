@@ -598,8 +598,8 @@ void qDrawPlot::SavePlot() {
                     QString(".png");
 
     fName = QFileDialog::getSaveFileName(
-        0, tr("Save Image"), fName,
-        tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"), 0,
+        nullptr, tr("Save Image"), fName,
+        tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"), nullptr,
         QFileDialog::ShowDirsOnly);
 
     if (!fName.isEmpty()) {
@@ -1068,7 +1068,7 @@ void qDrawPlot::toDoublePixelData(double *dest, char *source, int size,
             detType == slsDetectorDefs::GOTTHARD2) {
 
             // show gain plot
-            if (gaindest != NULL) {
+            if (gaindest != nullptr) {
                 for (ichan = 0; ichan < size; ++ichan) {
                     uint16_t temp = (*((u_int16_t *)source));
                     gaindest[ichan] = ((temp & gainMask) >> gainOffset);

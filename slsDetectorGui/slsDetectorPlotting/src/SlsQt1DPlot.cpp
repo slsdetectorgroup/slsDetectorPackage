@@ -270,7 +270,7 @@ SlsQtH1D *SlsQtH1D::Add(double v) {
 // 1d hist list stuff
 SlsQtH1DList::SlsQtH1DList(SlsQtH1D *hist) {
     the_hist = hist;
-    the_next = 0;
+    the_next = nullptr;
 }
 
 SlsQtH1DList::~SlsQtH1DList() { delete the_next; }
@@ -314,12 +314,12 @@ void SlsQtH1DList::Remove(SlsQtH1D *hist) {
             hl = hl->the_next;
         else { // match
             if (!hl->the_next)
-                hl->the_hist = 0; // first the_hist is zero when there's no next
+                hl->the_hist = nullptr; // first the_hist is zero when there's no next
             else {
                 SlsQtH1DList *t = hl->the_next;
                 hl->the_hist = t->the_hist;
                 hl->the_next = t->the_next;
-                t->the_next = 0;
+                t->the_next = nullptr;
                 delete t;
             }
         }
@@ -329,7 +329,7 @@ void SlsQtH1DList::Remove(SlsQtH1D *hist) {
 // 1d plot stuff
 SlsQt1DPlot::SlsQt1DPlot(QWidget *parent) : QwtPlot(parent) {
     //  n_histograms_attached=0;
-    hline = vline = 0;
+    hline = vline = nullptr;
     hist_list = new SlsQtH1DList();
 
     UnknownStuff();
@@ -459,7 +459,7 @@ void SlsQt1DPlot::RemoveHLine() {
     if (hline)
         hline->detach();
     delete hline;
-    hline = 0;
+    hline = nullptr;
 }
 
 void SlsQt1DPlot::InsertHLine(double y) {
@@ -476,7 +476,7 @@ void SlsQt1DPlot::RemoveVLine() {
     if (vline)
         vline->detach();
     delete vline;
-    vline = 0;
+    vline = nullptr;
 }
 
 void SlsQt1DPlot::InsertVLine(double x) {

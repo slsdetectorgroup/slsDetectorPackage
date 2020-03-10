@@ -152,7 +152,7 @@ int main(int argc, char *argv[]){
 		FILE_LOG(logINFORED,("Rebooting!\n"));
 		fflush(stdout);
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
-		rebootControllerAndFPGA();
+		rebootNiosControllerAndFPGA();
 #else
 		system("reboot");
 #endif

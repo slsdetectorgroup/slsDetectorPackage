@@ -611,6 +611,11 @@ int  M_nofunc(int file_des) {
 	return Server_SendResult(file_des, OTHER, NO_UPDATE, NULL, 0);
 }
 
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+void rebootNiosControllerAndFPGA() {
+	rebootControllerAndFPGA();
+}
+#endif
 
 int exec_command(int file_des) {
 	ret = OK;

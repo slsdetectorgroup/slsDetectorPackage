@@ -2,11 +2,9 @@
 #include "versionAPI.h"
 #include "clogger.h"
 
-#include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
 #include "ALTERA_PLL.h" // pll
-#include "blackfin.h"
 #include "common.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"

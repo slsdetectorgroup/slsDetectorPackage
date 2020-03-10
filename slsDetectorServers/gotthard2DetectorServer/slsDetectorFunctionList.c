@@ -2,7 +2,6 @@
 #include "RegisterDefs.h"
 #include "versionAPI.h"
 #include "clogger.h"
-#include "nios.h"
 #include "DAC6571.h"
 #include "LTC2620_Driver.h"
 #include "common.h"

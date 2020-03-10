@@ -5,13 +5,11 @@
 #include "communication_funcs_UDP.h"
 #include "UDPPacketHeaderGenerator.h"
 #include "common.h"
-#include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "AD7689.h"     // slow adcs
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
 #include "INA226.h"     // i2c
 #include "ALTERA_PLL.h" // pll
-#include "blackfin.h"
 
 #include <string.h>
 #include <unistd.h>     // usleep

@@ -127,7 +127,7 @@ int checkType() {
 #endif
 	u_int32_t type = ((bus_r(BOARD_REVISION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type == DETECTOR_TYPE_MOENCH_VAL){
-			FILE_LOG(logERROR, ("This is not a Gotthard Server (read %d, expected ?)\n", type));
+			FILE_LOG(logERROR, ("This is not a Gotthard firmware (read %d, expected ?)\n", type));
 			return FAIL;
 		}
 	return OK;

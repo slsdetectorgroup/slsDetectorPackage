@@ -192,7 +192,7 @@ int checkType() {
 	uint32_t expectedType = (((FPGA_VERSION_DTCTR_TYP_CTB_VAL) & FPGA_VERSION_DTCTR_TYP_MSK) >> FPGA_VERSION_DTCTR_TYP_OFST);
 
 	if (type != expectedType) {
-        FILE_LOG(logERROR, ("(Type Fail) - This is not a Chip Test Board Server (read %d, expected %d)\n",
+        FILE_LOG(logERROR, ("(Type Fail) - This is not a Chip Test Board firmware (read %d, expected %d)\n",
                 type, expectedType));
         return FAIL;
 	}

@@ -72,7 +72,7 @@ void basictests() {
 		return;
     }
 	// does check only if flag is 0 (by default), set by command line
-	if ((!debugflag) && ((testFpga() == FAIL)|| (testBus() == FAIL))) {
+	if ((!debugflag) && ((checkType() == FAIL) || (testFpga() == FAIL)|| (testBus() == FAIL))) {
 		strcpy(initErrorMessage,
 				"Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
 		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
@@ -160,7 +160,7 @@ int checkType() {
 #endif
 	u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type != MYTHEN3){
-		FILE_LOG(logERROR, ("This is not a Mythen3 Server (read %d, expected %d)\n", type, MYTHEN3));
+		FILE_LOG(logERROR, ("This is not a Mythen3 firmware (read %d, expected %d)\n", type, MYTHEN3));
 		return FAIL;
 	}
 

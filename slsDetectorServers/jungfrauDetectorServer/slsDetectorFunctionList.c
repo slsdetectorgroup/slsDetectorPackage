@@ -169,7 +169,7 @@ int checkType() {
 #endif
 	u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type != JUNGFRAU){
-			FILE_LOG(logERROR, ("This is not a Jungfrau Server (read %d, expected %d)\n", type, JUNGFRAU));
+			FILE_LOG(logERROR, ("This is not a Jungfrau firmware (read %d, expected %d)\n", type, JUNGFRAU));
 			return FAIL;
 		}
 

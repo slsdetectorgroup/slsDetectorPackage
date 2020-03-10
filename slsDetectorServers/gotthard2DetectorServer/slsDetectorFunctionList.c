@@ -85,7 +85,7 @@ void basictests() {
 		return;
     }
 	// does check only if flag is 0 (by default), set by command line
-	if ((!debugflag) && ((testFpga() == FAIL) || (testBus() == FAIL))) {
+	if ((!debugflag) && ((checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL))) {
 		sprintf(initErrorMessage,
 				"Could not pass basic tests of FPGA and bus. Dangerous to continue. (Firmware version:0x%llx) \n", getFirmwareVersion());
 		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
@@ -172,7 +172,7 @@ int checkType() {
 #endif
 	u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type != GOTTHARD2){
-			FILE_LOG(logERROR, ("This is not a Gotthard2 Server (read %d, expected %d)\n", type, GOTTHARD2));
+			FILE_LOG(logERROR, ("This is not a Gotthard2 firmware (read %d, expected %d)\n", type, GOTTHARD2));
 			return FAIL;
 		}
 	return OK;

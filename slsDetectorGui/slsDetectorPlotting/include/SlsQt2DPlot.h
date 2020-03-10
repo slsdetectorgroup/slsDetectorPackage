@@ -80,9 +80,6 @@ class SlsQt2DPlot : public QwtPlot {
     SlsQt2DZoomer *zoomer{nullptr};
     QwtPlotPanner *panner{nullptr};
     QwtScaleWidget *rightAxis{nullptr};
-
-    QwtLinearColorMap *colorMapLinearScale{nullptr};
-    QwtLinearColorMap *colorMapLogScale{nullptr};
     QList<double> contourLevelsLinear;
     QList<double> contourLevelsLog;
     bool disableZoom{false};

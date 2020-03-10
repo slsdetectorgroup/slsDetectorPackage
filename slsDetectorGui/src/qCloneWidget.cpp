@@ -27,11 +27,8 @@ qCloneWidget::qCloneWidget(QWidget *parent, SlsQt1DPlot *p1, SlsQt2DPlot *p2,
 qCloneWidget::~qCloneWidget() {
 
     delete plot1d;
-
     delete plot2d;
-
     delete gainplot1d;
-
     delete gainplot2d;
 }
 

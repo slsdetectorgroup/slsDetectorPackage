@@ -287,6 +287,8 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
     multi_shm()->multiDetectorType =
         Parallel(&slsDetector::getDetectorType, {})
             .tsquash("Inconsistent detector types.");
+    // for moench and ctb
+    detectors[pos]->updateNumberOfChannels();     
 }
 
 void DetectorImpl::updateDetectorSize() {

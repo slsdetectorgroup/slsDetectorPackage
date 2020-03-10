@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200302
+#define SLS_SHMVERSION 0x200309
 
 /**
  * @short structure allocated in shared memory to store detector settings for
@@ -62,26 +62,8 @@ struct sharedSlsDetector {
     /** dynamic range of the detector data */
     int dynamicRange;
 
-    /** roi */
-    slsDetectorDefs::ROI roi;
-
-    /** 1gb adc enable mask */
-    uint32_t adcEnableMaskOneGiga;
-
-    /** 10gb adc enable mask */
-    uint32_t adcEnableMaskTenGiga;
-
-    /** readout mode */
-    slsDetectorDefs::readoutMode roMode;
-
     /** detector settings (standard, fast, etc.) */
     slsDetectorDefs::detectorSettings currentSettings;
-
-    /** detector threshold (eV) */
-    int currentThresholdEV;
-
-    /** number of analog samples */
-    int nASamples;
 
     /** number of frames */
     int64_t nFrames;
@@ -101,7 +83,7 @@ struct sharedSlsDetector {
     /** burst mode */
     slsDetectorDefs::burstMode burstMode;
 
-    /** rate correction in ns */
+    /** rate correction in ns (needed for default -1) */
     int64_t deadTime;
 
     /** ip address/hostname of the receiver for client control via TCP */
@@ -114,9 +96,6 @@ struct sharedSlsDetector {
      * unset if socket connection is not possible  */
     bool useReceiverFlag;
 
-    /** 10 Gbe enable*/
-    bool tenGigaEnable;
-
     /** flipped data across x or y axis */
     bool flippedDataX;
 
@@ -126,7 +105,8 @@ struct sharedSlsDetector {
     /** tcp port from receiver to gui/different process (only data) */
     int rxZmqport;
 
-    /** data streaming (up stream) enable in receiver */
+    /** data streaming (up stream) enable in receiver  
+     * (needed for restreaming dummy packet) */
     bool rxUpstream;
 
     /* Receiver read frequency */
@@ -298,7 +278,7 @@ class slsDetector : public virtual slsDetectorDefs {
 
     /**
      * Update total number of channels (chiptestboard or moench)
-     * depending on the number of samples, adcenablemask, readout flags(ctb)
+     * from the detector server
      */
     void updateNumberOfChannels();
 
@@ -1189,11 +1169,6 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param arg roi
      */
     void setROI(slsDetectorDefs::ROI arg);
-
-    /**
-     *  Send ROI from shared memory to Receiver (Gotthard)
-     */
-    void sendROItoReceiver();
 
     /**
      * Get ROI (Gotthard)

@@ -2552,9 +2552,39 @@ int calculateDataBytes(){
 	return dataBytes;
 }
 
-int getTotalNumberOfChannels() {return  (getNumberOfChannelsPerChip() * getNumberOfChips());}
+int getTotalNumberOfChannels() {
+    int nchanx = 0, nchany = 0;
+    getTotalNumberOfChannels(&nchanx, &nchany);
+    return nchanx * nchany;
+}
+
+int getNumberOfChannels(int* nchanx, int* nchany) {
+    int nachans = 0, ndchans = 0;
+    // analog channels (normal, analog/digital readout)
+    if (analogEnable) {
+        uint32_t mask = enableTenGigabitEthernet(-1) ? adcEnableMask_10g : adcEnableMask_1g;
+        if (mask == BIT32_MASK) {
+            nachans = NCHAN_ANALOG;
+        } else {
+            int ich = 0;
+            for (ich = 0; ich < NCHAN_ANALOG; ++ich) {
+                if ((mask & (1 << ich)) != 0U)
+                    ++nachans;
+            }            
+        }
+        FILE_LOG(logDEBUG1, ("Analog Channels: %d\n", nachans));
+    }
+
+    // digital channels (digital, analog/digital readout)
+    if (digitalEnable) {
+        ndchans = 64;
+        FILE_LOG(logDEBUG, ("Digital Channels: %d\n", ndchans));
+    }
+    *nchanx = nachans + ndchans;
+    FILE_LOG(logDEBUG, ("Total #Channels: %d\n", *nchanx));
+    *nchany = 1;
+}
+
 int getNumberOfChips(){return  NCHIP;}
 int getNumberOfDACs(){return  NDAC;}
 int getNumberOfChannelsPerChip(){return  NCHAN;}
-
-

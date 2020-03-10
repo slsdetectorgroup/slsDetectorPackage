@@ -59,6 +59,7 @@ enum CLKINDEX               {RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS};
 #define NUM_BYTES_PER_PIXEL         (DYNAMIC_RANGE / 8)
 #define CLK_FREQ					(156.25)	/* MHz */
 #define NSAMPLES_PER_ROW			(25)
+#define NCHANS_PER_ADC				(25)
 
 /** Default Parameters */
 #define DEFAULT_PATTERN_FILE        ("DefaultPattern.txt")

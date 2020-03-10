@@ -316,6 +316,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_CURRENT_SOURCE:				return "F_SET_CURRENT_SOURCE";
 	case F_GET_TIMING_SOURCE:				return "F_GET_TIMING_SOURCE";
 	case F_SET_TIMING_SOURCE:				return "F_SET_TIMING_SOURCE";
+	case F_GET_NUM_CHANNELS:				return "F_GET_NUM_CHANNELS";
 
 	default:								return "Unknown Function";
 	}
@@ -508,6 +509,7 @@ void function_table() {
 	flist[F_SET_CURRENT_SOURCE]					= &set_current_source;
 	flist[F_GET_TIMING_SOURCE]					= &get_timing_source;
 	flist[F_SET_TIMING_SOURCE]					= &set_timing_source;
+	flist[F_GET_NUM_CHANNELS]					= &get_num_channels;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -2833,19 +2835,12 @@ int send_update(int file_des) {
 	if (n < 0) return printSocketReadError();
 #endif
 
-	// threshold energy
-#ifdef EIGERD
-	i32 = getThresholdEnergy(GET_FLAG);
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-#endif
-
 	// #frames
 	i64 = getNumFrames();
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
-	// #storage cell, storage_cell_delay
+	// #storage cell
 #ifdef JUNGFRAUD
 	i64 = getNumAdditionalStorageCells();
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
@@ -2876,42 +2871,18 @@ int send_update(int file_des) {
 	if (n < 0) return printSocketReadError();
 #endif
 
-	// readout mode
-#ifdef CHIPTESTBOARDD
-    i32 = getReadoutMode();
-    n = sendData(file_des,&i32,sizeof(i32),INT32);
-    if (n < 0) return printSocketReadError();
-#endif
-
-    // roi
-#if defined(GOTTHARDD)
-    ROI retval = getROI();
-	sendData(file_des, &retval.xmin, sizeof(int), INT32);
-	sendData(file_des, &retval.xmax, sizeof(int), INT32);
-#endif
-
-	// tengiga
-#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	i32 =  enableTenGigabitEthernet(-1);
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-    if (n < 0) return printSocketReadError();
-#endif
-	
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-	// analog samples
-    i32 = getNumAnalogSamples();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-    if (n < 0) return printSocketReadError();
-
-	// 1g adcmask
-    i32 = getADCEnableMask();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-    if (n < 0) return printSocketReadError();
-
-	// 10g adc mask
-    i32 = getADCEnableMask_10G();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-    if (n < 0) return printSocketReadError();	
+	// number of channels
+#if defined(MOENCHD) || defined(CHIPTESTBOARDD)
+	{
+		int nx = 0, ny = 0;
+		getNumberOfChannels(&nx, &ny);
+		i32 = nx;
+		n = sendData(file_des,&i32,sizeof(i32),INT32);
+		if (n < 0) return printSocketReadError();
+		i32 = ny;
+		n = sendData(file_des,&i32,sizeof(i32),INT32);
+		if (n < 0) return printSocketReadError();				
+	}
 #endif
 
 	// num udp interfaces
@@ -6887,4 +6858,22 @@ int get_timing_source(int file_des) {
 	FILE_LOG(logDEBUG1, ("Get timing source retval:%d\n", retval));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+}
+
+
+int get_num_channels(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+	int retvals[2] = {-1, -1};
+
+	FILE_LOG(logDEBUG1, ("Getting number of channels\n"));
+
+#if !defined(MOENCHD) && !defined(CHIPTESTBOARDD)
+	functionNotImplemented();
+#else	
+	// get only
+	getNumberOfChannels(&retvals[0], &retvals[1]);
+	FILE_LOG(logDEBUG1, ("Get number of channels sretval:[%d, %d]\n", retvals[0], retvals[1]));
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
 }

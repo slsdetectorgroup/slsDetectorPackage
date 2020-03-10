@@ -49,7 +49,7 @@ int BinaryFile::CreateFile(uint64_t fnum) {
 	currentFileName = BinaryFileStatic::CreateFileName(filePath, fileNamePrefix, *fileIndex,
 			(*numImages > 1), fnum, *detIndex, *numUnitsPerDetector, index);
 
-	if (BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName, FILE_BUFFER_SIZE) == FAIL)
+	if (BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName) == FAIL)
 		return FAIL;
 
 	if(!(*silentMode)) {

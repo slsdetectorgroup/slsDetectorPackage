@@ -7,8 +7,8 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
     CONTENTS
     --------
     1.  Topics Concerning
-    2.  Resolved Issues
-    3.  Known Issues
+    2.  New Features
+    3.  Resolved Issues
     4.  Firmware Requirements
     5.  Download, Documentation & Support
     
@@ -17,41 +17,65 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
 1. Topics Concerning
 ====================
 
-    - (Eiger) detector server startup with vcal = 0 to reduce noise
-    - Deactivate will deactivate a module even if FEB does not work.
-    - trimbits check
-    - zmqsocket
-    - fifo size (memory allocation print to mb)
-    - subexptime also sets subperiod in master fle
-    - minor check if no detectors ()xxxxxxxxxxxxxxxxxxxxxxx
-    - setflippeddatax in users xxxxx
-    - memory alignment in receiver
+    - (Eiger) Change in vcal dac value
+    - (Eiger) Deactivate a module
+    - (Eiger) Setting all trimbits argument check
+    - (Receiver) rx_fifodepth has a higher range
+    - (Receiver) subperiod in master file
+    - (Receiver) performance (memory allocation and alignment, file buffering)
+    - (Package) Removed warnings including memory overlap copy
+    - (Users) Added setflippeddatax to users class
+
+    Compared to 4.1.1, 
+        - no firmware update required for this release
+        - eiger on-board detector server update required for this release
 
 
 
-2. Resolved Issues
+2. New Features
+===============
+
+    Receiver
+    --------
+    1.  Memory in receiver is now byte aligned and write to every page
+        at memory allocation to ensure complete memory allocated right
+        from start. Removed file buffering when writing to file. Replaced
+        pausing on keepRunning variable with semaphore to reduce cpu
+        load.
+
+    Client
+    ------
+    1.  Added setflippeddatax to users class.
+
+
+
+3. Resolved Issues
 ==================          
 
     Detector Server (Eiger)
     -----------------------
-    
     1.  Vcal dac set to 0 at on-board detector server start up to
         reduce noise.
 
-    2.  Deactivate will deactivate a module even if FEB does not work.
+    2.  Setting activate to 0 sent to both control and stop server.
+        So, deactivate a module can be done even if FEB communication fails.
+        Restarting the server will activate the module again.
 
-    3.  Trimbits values checked for values 0 - 63.
+    3.  Setting all trimbits values checked for values 0 - 63.
 
     Receiver
     --------
+    1.  Earlier, setting rx_fifodepth to a high value would set to 
+        a lower value, printing this low value to console, 
+        but not giving an error. Memory allocated can now take in 64 bits.
+    
+    2.  Modifying subexptime now also updates subperiod in master file.
+        Also, the print for subperiod name to console is corrected.
 
-    1.  zmq socket send memory not overlapping
-    2. fifo size not be large (and memory allocated print to mb)
-
-    - subexptime also sets subperiod in master fle
-
-3. Known Issues
-===============
+    Package
+    -------
+    1.  Many warnings have been fixed, including those with overlapping 
+        memory copies for source and destination. 
     
     
     

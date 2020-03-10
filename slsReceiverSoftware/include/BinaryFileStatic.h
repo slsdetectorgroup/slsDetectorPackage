@@ -188,10 +188,9 @@ class BinaryFileStatic {
 	 * @param fd file pointer
 	 * @param owenable overwrite enable
 	 * @param fname complete file name
-	 * @param filebuffersize file buffer size
 	 * @returns 0 for success and 1 for fail
 	 */
-	static int CreateDataFile(FILE*& fd, bool owenable, std::string fname, size_t filebuffersize)
+	static int CreateDataFile(FILE*& fd, bool owenable, std::string fname)
 	 {
 		if(!owenable){
 			if (NULL == (fd = fopen((const char *) fname.c_str(), "wx"))){
@@ -204,8 +203,8 @@ class BinaryFileStatic {
 			fd = 0;
 			return 1;
 		}
-		//setting file buffer size to 16mb
-		setvbuf(fd,NULL,_IOFBF,filebuffersize);
+		//setting to no file buffering
+		setvbuf(fd,NULL, _IONBF, 0);
 		return 0;
 	}
 

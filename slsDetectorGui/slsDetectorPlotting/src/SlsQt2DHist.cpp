@@ -1,9 +1,4 @@
-
-/**
- * @author Ian Johnson
- * @version 1.0
- */
-
+/* TODO! short description */
 #include "SlsQt2DHist.h"
 #include "ansi.h"
 #include <cmath>

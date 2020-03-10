@@ -1,10 +1,7 @@
 #pragma once
-
 #include "ui_form_dac.h"
-
 #include "Detector.h"
 #include "sls_detector_defs.h"
-
 #include <string>
 
 class qDacWidget : public QWidget, private Ui::WidgetDacObject {

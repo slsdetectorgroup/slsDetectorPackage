@@ -1,14 +1,9 @@
 #include "qTabMeasurement.h"
 #include "qDefs.h"
 #include "qDrawPlot.h"
-
 #include "string_utils.h"
-
 #include <QStandardItemModel>
 #include <QTimer>
-
-#include <cmath>
-#include <iostream>
 
 qTabMeasurement::qTabMeasurement(QWidget *parent, sls::Detector *detector,
                                  qDrawPlot *p)

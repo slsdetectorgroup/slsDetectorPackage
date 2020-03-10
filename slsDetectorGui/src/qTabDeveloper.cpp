@@ -2,8 +2,6 @@
 #include "qDacWidget.h"
 #include "qDefs.h"
 
-#include <iostream>
-
 qTabDeveloper::qTabDeveloper(QWidget *parent, sls::Detector *detector)
     : QWidget(parent), det(detector) {
     setupUi(this);

@@ -1,22 +1,9 @@
-
-/**
- * @author Ian Johnson
- * @version 1.0
- * Dhanya-05.12.2012- included an additional header
- */
-
 #ifndef SLSQT2DZOOMER_H
 #define SLSQT2DZOOMER_H
-
-/**included by Dhanya on 05.12.2012 to avoid compile time errors with the latest
- * gcc*/
-#include <cstdio>
-/**end of Change by Dhanya*/
-
+#include "SlsQt2DHist.h"
 #include <qwt_plot_panner.h>
 #include <qwt_plot_zoomer.h>
-
-#include "SlsQt2DHist.h"
+#include <cstdio>
 
 class SlsQt2DZoomer : public QwtPlotZoomer {
   private:

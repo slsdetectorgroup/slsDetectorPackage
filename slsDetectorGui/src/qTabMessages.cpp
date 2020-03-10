@@ -7,8 +7,6 @@
 #include <QKeyEvent>
 #include <QProcess>
 #include <QTextStream>
-
-#include <iostream>
 #include <string>
 
 qTabMessages::qTabMessages(QWidget *parent) : QWidget(parent) {

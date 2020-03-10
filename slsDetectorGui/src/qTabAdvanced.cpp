@@ -3,8 +3,6 @@
 #include "qDefs.h"
 #include "qDrawPlot.h"
 
-#include <iostream>
-
 qTabAdvanced::qTabAdvanced(QWidget *parent, sls::Detector *detector,
                            qDrawPlot *p)
     : QWidget(parent), det(detector), plot(p) {

@@ -1,16 +1,9 @@
-
-/**
- * @author Ian Johnson
- * @version 1.0
- */
-
-#include <iostream>
-
+/* TODO! short description */
+#include "SlsQt1DZoomer.h"
+#include "SlsQt1DPlot.h"
 #include <qwt_plot.h>
 #include <qwt_scale_div.h>
-
-#include "SlsQt1DPlot.h"
-#include "SlsQt1DZoomer.h"
+#include <iostream>
 
 void SlsQt1DZoomer::ResetZoomBase() {
     SetZoomBase(x0, y0, x1 - x0,

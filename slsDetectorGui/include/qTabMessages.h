@@ -1,5 +1,4 @@
 #pragma once
-
 #include "ui_form_tab_messages.h"
 
 class QProcess;

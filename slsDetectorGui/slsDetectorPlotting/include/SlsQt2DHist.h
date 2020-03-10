@@ -1,15 +1,7 @@
 
-/**
- * @author Ian Johnson
- * @version 1.0
- */
-
 #ifndef SLSQT2DHIST_H
 #define SLSQT2DHIST_H
 
-#if QT_VERSION >= 0x040000
-#include <qprintdialog.h>
-#endif
 #include <qwt_color_map.h>
 #include <qwt_plot_spectrogram.h>
 #include <qwt_scale_draw.h>

@@ -1,12 +1,7 @@
 #include "qTabSettings.h"
 #include "qDefs.h"
-
 #include "ToString.h"
-
 #include <QStandardItemModel>
-
-#include <cmath>
-#include <iostream>
 
 qTabSettings::qTabSettings(QWidget *parent, sls::Detector *detector)
     : QWidget(parent), det(detector) {

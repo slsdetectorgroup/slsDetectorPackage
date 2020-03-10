@@ -1,9 +1,4 @@
 
-/**
- * @author Ian Johnson
- * @version 1.0
- */
-
 #ifndef SLSQT1DZOOMER_H
 #define SLSQT1DZOOMER_H
 

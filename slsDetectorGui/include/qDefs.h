@@ -8,8 +8,9 @@
 #include <chrono>
 #include <iostream>
 #include <ostream>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
+
 using std::chrono::duration;
 using std::chrono::duration_cast;
 using std::chrono::hours;

@@ -19,9 +19,8 @@
 #include <QScrollArea>
 #include <QSizePolicy>
 
-#include <getopt.h>
-#include <iostream>
 #include <string>
+#include <getopt.h>
 #include <sys/stat.h>
 
 int main(int argc, char **argv) {

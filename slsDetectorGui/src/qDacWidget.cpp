@@ -1,7 +1,6 @@
 #include "qDacWidget.h"
 #include "qDefs.h"
 
-#include <iostream>
 
 qDacWidget::qDacWidget(QWidget *parent, sls::Detector *detector, bool d,
                        std::string n, slsDetectorDefs::dacIndex i)

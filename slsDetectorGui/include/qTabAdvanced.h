@@ -1,10 +1,8 @@
 #pragma once
-
 #include "ui_form_tab_advanced.h"
+#include "Detector.h"
 
 class qDrawPlot;
-
-#include "Detector.h"
 
 class qTabAdvanced : public QWidget, private Ui::TabAdvancedObject {
     Q_OBJECT

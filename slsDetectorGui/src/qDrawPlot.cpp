@@ -1,5 +1,4 @@
 #include "qDrawPlot.h"
-
 #include "SlsQt1DPlot.h"
 #include "SlsQt2DPlot.h"
 #include "detectorData.h"

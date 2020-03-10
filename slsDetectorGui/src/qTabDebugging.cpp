@@ -1,13 +1,9 @@
 #include "qTabDebugging.h"
 #include "qDefs.h"
-
 #include "ToString.h"
-
 #include <QDesktopWidget>
 #include <QGridLayout>
 #include <QTreeWidget>
-
-#include <iostream>
 
 qTabDebugging::qTabDebugging(QWidget *parent, sls::Detector *detector)
     : QWidget(parent), det(detector), treeDet(nullptr),

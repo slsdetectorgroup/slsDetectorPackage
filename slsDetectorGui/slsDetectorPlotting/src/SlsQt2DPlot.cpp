@@ -1,15 +1,9 @@
 #include "SlsQt2DPlot.h"
-
 #include "ansi.h"
-#include <cmath>
-#include <iostream>
+
 #include <qlist.h>
 #include <qprinter.h>
 #include <qtoolbutton.h>
-
-#if QT_VERSION >= 0x040000
-#include <qprintdialog.h>
-#endif
 #include <qwt_color_map.h>
 #include <qwt_plot_layout.h>
 #include <qwt_plot_panner.h>
@@ -19,7 +13,8 @@
 #include <qwt_scale_engine.h>
 #include <qwt_scale_widget.h>
 
-#define QwtLog10ScaleEngine QwtLogScaleEngine // hmm remove?
+#include <cmath>
+#include <iostream>
 
 SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
     isLog = 0;
@@ -137,16 +132,9 @@ void SlsQt2DPlot::SetupZoom() {
 
     zoomer = new SlsQt2DZoomer(canvas());
     zoomer->SetHist(hist);
-
-#if QT_VERSION < 0x040000
-    zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton,
-                            Qt::ControlButton);
-#else
     zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton,
                             Qt::ControlModifier);
-#endif
     zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
-
     panner = new QwtPlotPanner(canvas());
     panner->setAxisEnabled(QwtPlot::yRight, false);
     panner->setMouseButton(Qt::MidButton);
@@ -162,13 +150,6 @@ void SlsQt2DPlot::SetupZoom() {
     zoomer->setRubberBandPen(c);
     zoomer->setTrackerPen(c);
 }
-
-/*void SlsQt2DPlot::CompletelyUnZoom(){
-          setAxisScale(QwtPlot::xBottom,hist->GetXMin(),hist->GetXMin()+(hist->GetXMax()-hist->GetXMin()));
-          setAxisScale(QwtPlot::yLeft,hist->GetYMin(),hist->GetYMin()+(hist->GetYMax()-hist->GetYMin()));
-          zoomer->setZoomBase();
-          //replot();
-}*/
 
 void SlsQt2DPlot::UnZoom(bool replot) {
 
@@ -199,13 +180,8 @@ void SlsQt2DPlot::DisableZoom(bool disable) {
             if (zoomer) {
                 zoomer->setMousePattern(QwtEventPattern::MouseSelect1,
                                         Qt::NoButton);
-#if QT_VERSION < 0x040000
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
-                                        Qt::NoButton, Qt::ControlButton);
-#else
                 zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
                                         Qt::NoButton, Qt::ControlModifier);
-#endif
                 zoomer->setMousePattern(QwtEventPattern::MouseSelect3,
                                         Qt::NoButton);
             }
@@ -215,13 +191,8 @@ void SlsQt2DPlot::DisableZoom(bool disable) {
             if (zoomer) {
                 zoomer->setMousePattern(QwtEventPattern::MouseSelect1,
                                         Qt::LeftButton);
-#if QT_VERSION < 0x040000
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
-                                        Qt::RightButton, Qt::ControlButton);
-#else
                 zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
                                         Qt::RightButton, Qt::ControlModifier);
-#endif
                 zoomer->setMousePattern(QwtEventPattern::MouseSelect3,
                                         Qt::RightButton);
             }
@@ -325,7 +296,7 @@ void SlsQt2DPlot::LogZ(bool on) {
     if (on) {
         isLog = 1;
         d_spectrogram->setColorMap(myColourMap(isLog));
-        setAxisScaleEngine(QwtPlot::yRight, new QwtLog10ScaleEngine);
+        setAxisScaleEngine(QwtPlot::yRight, new QwtLogScaleEngine);
         d_spectrogram->setContourLevels(contourLevelsLog);
     } else {
         isLog = 0;

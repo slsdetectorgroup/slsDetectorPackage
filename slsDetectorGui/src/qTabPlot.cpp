@@ -1,15 +1,11 @@
 #include "qTabPlot.h"
 #include "qDefs.h"
 #include "qDrawPlot.h"
-
 #include <QAbstractButton>
 #include <QButtonGroup>
 #include <QStackedLayout>
 #include <QStandardItemModel>
 
-#include <iostream>
-#include <math.h>
-#include <string>
 
 QString qTabPlot::defaultPlotTitle("");
 QString qTabPlot::defaultHistXAxisTitle("Channel Number");

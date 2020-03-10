@@ -1,12 +1,7 @@
 
-/**
- * @author Ian Johnson
- * @version 1.0
- */
-
+/* TODO! short description */
 #include "SlsQt1DPlot.h"
-#include "qwt_symbol.h"
-#include <iostream>
+#include <qwt_symbol.h>
 #include <qwt_legend.h>
 #include <qwt_math.h>
 #include <qwt_painter.h>
@@ -16,6 +11,7 @@
 #include <qwt_scale_engine.h>
 #include <qwt_scale_widget.h>
 #include <stdlib.h>
+#include <iostream>
 
 #define QwtLog10ScaleEngine QwtLogScaleEngine // hmm
 
@@ -500,14 +496,9 @@ void SlsQt1DPlot::SetupZoom() {
     // Ctrl+RighButton: zoom out to full size
 
     zoomer = new SlsQt1DZoomer(canvas());
-
-#if QT_VERSION < 0x040000
-    zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton,
-                            Qt::ControlButton);
-#else
     zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton,
                             Qt::ControlModifier);
-#endif
+
     zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
 
     panner = new QwtPlotPanner((QwtPlotCanvas *)canvas());

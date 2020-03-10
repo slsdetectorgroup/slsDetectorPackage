@@ -1,24 +1,8 @@
-
-/**
- * @author Ian Johnson
- * @version 1.0
- * Modifications:
- * 19.06.2012: {Some functions have been added by Dhanya to enable zooming in
- * and out without using mouse control: DisableZoom, SetXMinMax,SetYMinMax,
- * GetXMinimum,GetXMaximum,GetYMinimum,GetYMaximum}
- *  */
-
 #ifndef SLSQT1DPLOT_H
 #define SLSQT1DPLOT_H
 
-typedef double double32_t;
-typedef float float32_t;
-typedef int int32_t;
-
 #include "ansi.h"
-
 #include "SlsQt1DZoomer.h"
-#include <iostream>
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_marker.h>

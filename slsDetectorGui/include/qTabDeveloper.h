@@ -1,13 +1,10 @@
 #pragma once
-
 #include "ui_form_tab_developer.h"
-class qDacWidget;
-
 #include "Detector.h"
 #include "sls_detector_defs.h"
-
-#include <string>
 #include <vector>
+
+class qDacWidget;
 
 class qTabDeveloper : public QWidget, private Ui::TabDeveloperObject {
     Q_OBJECT

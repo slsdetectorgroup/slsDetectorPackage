@@ -1,16 +1,11 @@
 #pragma once
-
 #include "ui_form_cloneplot.h"
+#include <QMainWindow>
+#include <QString>
 
 class SlsQtH1D;
 class SlsQt1DPlot;
 class SlsQt2DPlot;
-
-#include <QMainWindow>
-#include <QString>
-
-#include <iostream>
-#include <string>
 
 class qCloneWidget : public QMainWindow, private Ui::ClonePlotObject {
     Q_OBJECT

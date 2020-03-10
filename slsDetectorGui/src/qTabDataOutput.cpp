@@ -5,8 +5,6 @@
 #include <QFileDialog>
 #include <QStandardItemModel>
 #include <QString>
-
-#include <iostream>
 #include <string>
 
 qTabDataOutput::qTabDataOutput(QWidget *parent, sls::Detector *detector)

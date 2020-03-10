@@ -1,11 +1,8 @@
 #pragma once
-
 #include "ui_form_tab_measurement.h"
-
-class qDrawPlot;
-
 #include "Detector.h"
 
+class qDrawPlot;
 class QStandardItemModel;
 
 class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {

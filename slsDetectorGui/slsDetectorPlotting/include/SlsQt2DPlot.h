@@ -1,11 +1,9 @@
 #pragma once
-
+#include "SlsQt2DHist.h"
+#include "SlsQt2DZoomer.h"
 #include <qlist.h>
 #include <qwt_plot.h>
 #include <qwt_plot_spectrogram.h>
-
-#include "SlsQt2DHist.h"
-#include "SlsQt2DZoomer.h"
 
 class QwtPlotPanner;
 class QwtScaleWidget;

@@ -1,11 +1,8 @@
 #pragma once
-
 #include "ui_form_tab_plot.h"
-
-class qDrawPlot;
-
 #include "Detector.h"
 
+class qDrawPlot;
 class QButtonGroup;
 
 class qTabPlot : public QWidget, private Ui::TabPlotObject {

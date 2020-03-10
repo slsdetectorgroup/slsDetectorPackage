@@ -1,19 +1,15 @@
 #pragma once
-
 #include "ui_form_plot.h"
-
 #include "qDefs.h"
+#include "Detector.h"
+#include <mutex>
+
 class SlsQt1DPlot;
 class SlsQtH1D;
 class SlsQt2DPlot;
 class qCloneWidget;
-
 class detectorData;
-#include "Detector.h"
-
 class QResizeEvent;
-
-#include <mutex>
 
 class qDrawPlot : public QWidget, private Ui::PlotObject {
     Q_OBJECT

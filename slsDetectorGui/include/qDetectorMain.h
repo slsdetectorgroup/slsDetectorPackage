@@ -1,8 +1,9 @@
 #pragma once
-
 #include "ui_form_detectormain.h"
-
 #include "qDefs.h"
+#include "Detector.h"
+#include <QTabWidget>
+
 class qDrawPlot;
 class qTabMeasurement;
 class qTabDataOutput;
@@ -12,11 +13,6 @@ class qTabSettings;
 class qTabDebugging;
 class qTabDeveloper;
 class qTabMessages;
-
-#include "Detector.h"
-
-#include <QTabWidget>
-
 class QScrollArea;
 class QResizeEvent;
 

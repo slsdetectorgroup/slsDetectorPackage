@@ -1,7 +1,5 @@
 #pragma once
-
 #include "ui_form_tab_settings.h"
-
 #include "Detector.h"
 
 class qTabSettings : public QWidget, private Ui::TabSettingsObject {

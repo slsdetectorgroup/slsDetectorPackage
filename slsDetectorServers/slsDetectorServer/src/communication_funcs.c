@@ -21,7 +21,7 @@
 
 
 // Global variables  from errno.h
-extern int errno;
+//extern int errno;
 
 // Variables that will be exported
 int lockStatus = 0;

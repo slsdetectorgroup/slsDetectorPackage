@@ -2,7 +2,6 @@
 #include "RegisterDefs.h"
 #include "versionAPI.h"
 #include "clogger.h"
-#include "nios.h"
 #include "DAC6571.h"
 #include "LTC2620_Driver.h"
 #include "common.h"
@@ -41,8 +40,8 @@ int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkFrequency[NUM_CLOCKS] = {};
 uint32_t systemFrequency = 0;
 int highvoltage = 0;
-int dacValues[NDAC] = {0};
-int onChipdacValues[ONCHIP_NDAC][NCHIP] = {0};
+int dacValues[NDAC] = {};
+int onChipdacValues[ONCHIP_NDAC][NCHIP] = {};
 int injectedChannelsOffset = 0;
 int injectedChannelsIncrement = 0;
 int vetoReference[NCHIP][NCHAN];
@@ -205,8 +204,8 @@ int testBus() {
 
 	int ret = OK;
 	u_int32_t addr = DTA_OFFSET_REG; 
-	int times = 1000 * 1000;
-	int i = 0;
+	u_int32_t times = 1000 * 1000;
+	u_int32_t i = 0;
 
 	for (i = 0; i < times; ++i) {
 		bus_w(addr, i * 100);

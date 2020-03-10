@@ -36,7 +36,7 @@ typedef struct udp_header_struct {
 #define UDP_IP_HEADER_LENGTH_BYTES	(28)
 
 /* Enums */
-enum ADCINDEX				{V_PWR_IO, V_PWR_A, V_PWR_B, V_PWR_C, V_PWR_D, I_PWR_IO, I_PWR_A, I_PWR_B, I_PWR_C, I_PWR_D};
+enum ADCINDEX				{V_PWR_IO, V_PWR_A, V_PWR_B, V_PWR_C, V_PWR_D, I_PWR_IO, I_PWR_A, I_PWR_B, I_PWR_C, I_PWR_D, S_ADC0, S_ADC1, S_ADC2, S_ADC3, S_ADC4, S_ADC5, S_ADC6, S_ADC7, S_TMP};
 enum DACINDEX               {D0, D1, D2, D3, D4, D5, D6, D7, D8, D9,
                              D10, D11, D12, D13, D14, D15, D16, D17,
                              D_PWR_D, D_PWR_CHIP, D_PWR_C, D_PWR_B, D_PWR_A, D_PWR_IO};

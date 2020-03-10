@@ -3,10 +3,7 @@
 #include "clogger.h"
 #include "RegisterDefs.h"
 
-#include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
-#include "AD9252.h"     // old board compatibility
 #include "LTC2620.h"    // dacs
-#include "blackfin.h"
 
 #include "string.h"
 #include <unistd.h>     // usleep

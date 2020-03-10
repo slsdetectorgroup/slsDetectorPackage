@@ -4,12 +4,9 @@
 
 #include "communication_funcs_UDP.h"
 #include "UDPPacketHeaderGenerator.h"
-#include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
 #include "ALTERA_PLL.h" // pll
-#include "blackfin.h"
-#include "readDefaultPattern.h"
 #include "common.h"
 
 #include <string.h>
@@ -1544,7 +1541,7 @@ int getPipeline(enum CLKINDEX ind) {
 // patterns
 
 uint64_t writePatternIOControl(uint64_t word) {
-    if (word != -1) {
+    if ((int64_t)word != -1) {
         FILE_LOG(logINFO, ("Setting Pattern I/O Control: 0x%llx\n", (long long int) word));
         set64BitReg(word, PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
     }
@@ -1554,7 +1551,7 @@ uint64_t writePatternIOControl(uint64_t word) {
 }
 
 uint64_t writePatternClkControl(uint64_t word) {
-    if (word != -1) {
+    if ((int64_t)word != -1) {
         FILE_LOG(logINFO, ("Setting Pattern Clock Control: 0x%llx\n", (long long int) word));
         set64BitReg(word, PATTERN_IO_CLK_CNTRL_LSB_REG, PATTERN_IO_CLK_CNTRL_MSB_REG);
     }
@@ -1593,7 +1590,7 @@ uint64_t readPatternWord(int addr) {
 
 uint64_t writePatternWord(int addr, uint64_t word) {
     // get
-    if (word == -1)
+    if ((int64_t)word == -1)
         return readPatternWord(addr);
 
     // error (handled in tcp)
@@ -1694,7 +1691,7 @@ uint64_t setPatternWaitTime(int level, uint64_t t) {
     }
 
     // set
-    if (t >= 0) {
+    if ((int64_t)t >= 0) {
         FILE_LOG(logINFO, ("Setting Pattern Wait Time (level:%d, t:%lld)\n", level, (long long int)t));
         set64BitReg(t, regl, regm);
     }
@@ -2183,7 +2180,7 @@ int getTotalNumberOfChannels() {
     return nchanx * nchany;
 }
 
-int getNumberOfChannels(int* nchanx, int* nchany) {
+void getNumberOfChannels(int* nchanx, int* nchany) {
     uint32_t mask = enableTenGigabitEthernet(-1) ? adcEnableMask_10g : adcEnableMask_1g;
     // count number of channels in x, each adc has 25 channels each
     int nchanTop =  __builtin_popcount(mask & 0xF0F0F0F0) * NCHANS_PER_ADC;

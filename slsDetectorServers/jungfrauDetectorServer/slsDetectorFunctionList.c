@@ -2,11 +2,9 @@
 #include "versionAPI.h"
 #include "clogger.h"
 
-#include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
 #include "LTC2620.h"    // dacs
 #include "MAX1932.h"    // hv
 #include "ALTERA_PLL.h" // pll
-#include "blackfin.h"
 #include "common.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
@@ -207,8 +205,8 @@ int testBus() {
 
 	int ret = OK;
 	u_int32_t addr = SET_TRIGGER_DELAY_LSB_REG;
-	int times = 1000 * 1000;
-	int i = 0;
+	u_int32_t times = 1000 * 1000;
+	u_int32_t i = 0;
 
 	for (i = 0; i < times; ++i) {
 		bus_w(addr, i * 100);
@@ -1173,8 +1171,8 @@ int configureMAC() {
 
 int setDetectorPosition(int pos[]) {
 	int ret = OK;
-	int innerPos[2] = {pos[X], pos[Y]};
-	int outerPos[2] = {pos[X], pos[Y]};
+	uint32_t innerPos[2] = {pos[X], pos[Y]};
+	uint32_t outerPos[2] = {pos[X], pos[Y]};
 	int selInterface = getPrimaryInterface();
 
 	if (getNumberofUDPInterfaces() == 1) {
@@ -1514,7 +1512,7 @@ int setThresholdTemperature(int val) {
     // conversion
     temp = (temp * (625.0/10.0));
 
-    float ftemp = (double)temp/1000.00;
+    double ftemp = (double)temp/1000.00;
     FILE_LOG(logDEBUG1, ("Threshold Temperature read %f °C\n",ftemp));
 
     return temp;

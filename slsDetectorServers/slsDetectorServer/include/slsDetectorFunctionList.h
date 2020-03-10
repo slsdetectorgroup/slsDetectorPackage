@@ -2,14 +2,27 @@
 #include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
 #ifdef GOTTHARDD
 #include "clogger.h"                 // runState(enum TLogLevel)
+#include "AD9252.h"     			// old board compatibility
 #endif
-#ifndef VIRTUAL
+#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h
+#endif
+#ifdef MOENCHD
+#include "readDefaultPattern.h"
+#endif
+
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 #include "programFpgaNios.h"
 #elif defined(CHIPTESTBOARDD) || defined(JUNGFRAUD) || defined(MOENCHD)
 #include "programFpgaBlackfin.h"
 #endif
+
+#if defined(MYTHEN3D) || defined(GOTTHARD2D)
+#include "nios.h"
+#elif defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#include "blackfin.h"
 #endif
+
 
 #include <stdlib.h>
 #include <stdio.h>					// FILE
@@ -107,9 +120,6 @@ int  		readRegister(uint32_t offset, uint32_t* retval);
 #elif GOTTHARDD
 uint32_t    writeRegister16And32(uint32_t offset, uint32_t data); //FIXME its not there in ctb or moench?
 uint32_t    readRegister16And32(uint32_t offset);
-#else
-extern u_int32_t    writeRegister(u_int32_t offset, u_int32_t data);    // blackfin.h or nios.h
-extern u_int32_t    readRegister(u_int32_t offset);                     // blackfin.h or nios.h
 #endif
 
 
@@ -271,16 +281,6 @@ int 		setThresholdEnergy(int ev);
 #endif
 
 // parameters - dac, adc, hv
-#ifdef GOTTHARDD
-extern void AD9252_Set(int addr, int val);      // AD9252.h (old board)
-#endif
-#if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-extern void AD9257_Set(int addr, int val);      // AD9257.h
-#endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-extern int AD9257_GetVrefVoltage(int mV);                  // AD9257.h
-extern int AD9257_SetVrefVoltage(int val, int mV);   // AD9257.h
-#endif
 
 #ifdef GOTTHARD2D
 int			setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val);
@@ -382,10 +382,6 @@ int         getFrequency(enum CLKINDEX ind);
 void        configureSyncFrequency(enum CLKINDEX ind);
 void        setPipeline(enum CLKINDEX ind, int val);
 int         getPipeline(enum CLKINDEX ind);
-extern void eraseFlash();                                                   // programFpgaBlackfin.h
-extern int  startWritingFPGAprogram(FILE** filefp);                         // programFpgaBlackfin.h
-extern void stopWritingFPGAprogram(FILE* filefp);                           // programFpgaBlackfin.h
-extern int  writeFPGAProgram(char* fpgasrc, uint64_t fsize, FILE* filefp);    // programFpgaBlackfin.h
 // patterns
 uint64_t    writePatternIOControl(uint64_t word);
 uint64_t    writePatternClkControl(uint64_t word);
@@ -403,9 +399,6 @@ uint64_t	getPatternMask();
 void 		setPatternBitMask(uint64_t mask);
 uint64_t	getPatternBitMask();
 #endif
-#ifdef MOENCHD
-extern int 	loadDefaultPattern(char* fname);  								// readDefaultPattern.h
-#endif
 
 // jungfrau specific - powerchip, autocompdisable, clockdiv, asictimer, clock, pll, flashing firmware
 #ifdef JUNGFRAUD
@@ -422,10 +415,6 @@ int 		validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval);
 int         setThresholdTemperature(int val);
 int         setTemperatureControl(int val);
 int         setTemperatureEvent(int val);
-extern void eraseFlash();													// programFpgaBlackfin.h
-extern int 	startWritingFPGAprogram(FILE** filefp);							// programFpgaBlackfin.h
-extern void stopWritingFPGAprogram(FILE* filefp);							// programFpgaBlackfin.h
-extern int 	writeFPGAProgram(char* fpgasrc, uint64_t fsize, FILE* filefp);	// programFpgaBlackfin.h
 void		alignDeserializer();
 
 // eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter
@@ -504,18 +493,6 @@ void		setTimingSource(enum timingSourceType value);
 enum timingSourceType	getTimingSource();
 #endif
 
-
-#if defined(MYTHEN3D) || defined(GOTTHARD2D)
-extern void NotifyServerStartSuccess();
-extern void CreateNotificationForCriticalTasks();
-extern void rebootControllerAndFPGA();										// programFpgaNios.h
-extern int findFlash(char* mess);											// programFpgaNios.h
-extern void eraseFlash();													// programFpgaNios.h
-extern int eraseAndWriteToFlash(char* mess, char* fpgasrc, uint64_t fsize);	// programFpgaNios.h
-extern int writeFPGAProgram(char* mess, char* fpgasrc, uint64_t fsize, FILE* filefp);	// programFpgaNios.h
-#endif
-
-
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int 		getTenGigaFlowControl();
 int 		setTenGigaFlowControl(int value);
@@ -575,7 +552,7 @@ int 		copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);
 int 		calculateDataBytes();
 int 		getTotalNumberOfChannels();
 #if defined(MOENCHD) || defined(CHIPTESTBOARDD) 
-int			getNumberOfChannels(int* nchanx, int* nchany);
+void			getNumberOfChannels(int* nchanx, int* nchany);
 #endif
 int 		getNumberOfChips();
 int 		getNumberOfDACs();

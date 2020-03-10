@@ -553,6 +553,12 @@ class slsDetectorUsers
    */
   int enableGapPixels(int enable=-1);
 
+   /** sets the enable which determines if data will be flipped across x axis
+   *  @param value 0 or 1 to reset/set or -1 to get value
+   *  @return enable flipped data across x axis
+   */
+  int setFlippedDataX(int value=-1);
+
   /**
    * Sets the frames discard policy in receiver
    * frame discard policy options:

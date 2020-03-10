@@ -3689,7 +3689,7 @@ int* slsDetector::getDataFromDetector(int *retval) {
 
 	int nodatadetectortype = false;
 	detectorType types = getDetectorsType();
-	if(types == EIGER || types == JUNGFRAU || GOTTHARD || PROPIX){
+	if(types == EIGER || types == JUNGFRAU || types == GOTTHARD || types == PROPIX){
 		nodatadetectortype = true;
 	}
 
@@ -3906,7 +3906,9 @@ int slsDetector::configureMAC() {
 		bzero(cword, 50);
 		string s;
 		while (getline(ss, s, '.')) {
-			sprintf(cword,"%s%02x",cword,atoi(s.c_str()));
+			char cnum[50]="";
+			sprintf(cnum, "%02x", atoi(s.c_str()));
+			strcat(cword, cnum);
 		}
 		bzero(arg[0], 50);
 		strcpy(arg[0],cword);
@@ -3922,7 +3924,7 @@ int slsDetector::configureMAC() {
 		bzero(cword, 50);
 		string s;
 		while (getline(ss, s, ':')) {
-			sprintf(cword,"%s%s",cword,s.c_str());
+			strcat(cword, s.c_str());
 		}
 		bzero(arg[1], 50);
 		strcpy(arg[1],cword);
@@ -3941,7 +3943,7 @@ int slsDetector::configureMAC() {
 		bzero(cword, 50);
 		string s;
 		while (getline(ss, s, ':')) {
-			sprintf(cword,"%s%s",cword,s.c_str());
+			strcat(cword, s.c_str());
 		}
 		bzero(arg[3], 50);
 		strcpy(arg[3],cword);
@@ -3957,7 +3959,9 @@ int slsDetector::configureMAC() {
 		bzero(cword, 50);
 		string s;
 		while (getline(ss, s, '.')) {
-			sprintf(cword,"%s%02x",cword,atoi(s.c_str()));
+			char cnum[50]="";
+			sprintf(cnum, "%02x", atoi(s.c_str()));
+			strcat(cword, cnum);			
 		}
 		bzero(arg[4], 50);
 		strcpy(arg[4],cword);
@@ -6121,6 +6125,19 @@ int slsDetector::activate(int const enable) {
 			disconnectControl();
 			if (ret==FORCE_UPDATE)
 				updateDetector();
+		}
+		if (connectStop() == OK){
+			stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+			stopSocket->SendDataOnly(&arg,sizeof(arg));
+			stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL) {
+				stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector (Stop server) returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(DETECTOR_ACTIVATE));
+			} else {
+				stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+			}
+			disconnectStop();
 		}
 	}
 #ifdef VERBOSE

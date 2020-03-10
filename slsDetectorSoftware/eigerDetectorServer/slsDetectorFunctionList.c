@@ -284,6 +284,9 @@ u_int32_t  getDetectorIP(){
 	FILE* sysFile = popen("ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2", "r");
 	fgets(output, sizeof(output), sysFile);
 	pclose(sysFile);
+	if (strlen(output) <= 1) {
+		return 0;
+	}
 
 	//converting IPaddress to hex.
 	char* pcword = strtok (output,".");
@@ -329,7 +332,16 @@ void initControlServer(){
 
 
 	setupDetector();
-#endif
+
+	// activate (if it gets ip) (later FW will deactivate at startup)
+	if (getDetectorIP() != 0) {
+		Beb_Activate(1);
+		Feb_Control_activate(1);
+	} else {
+		Beb_Activate(0);
+		Feb_Control_activate(0);
+	}
+#endif	
 	printf("\n");
 }
 
@@ -344,6 +356,16 @@ void initStopServer(){
 	Feb_Control_FebControl();
 	Feb_Control_Init(master,top,normal,getDetectorNumber());
 	printf("FEB Initialization done\n");
+
+	// activate (if it gets ip) (later FW will deactivate at startup)
+	// also needed for stop server for status
+	if (getDetectorIP() != 0) {
+		Beb_Activate(1);
+		Feb_Control_activate(1);
+	} else {
+		Beb_Activate(0);
+		Feb_Control_activate(0);
+	}
 #endif
 	printf("\n");
 }

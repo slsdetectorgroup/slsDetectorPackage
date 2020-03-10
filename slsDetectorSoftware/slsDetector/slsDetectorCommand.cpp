@@ -3066,7 +3066,9 @@ string slsDetectorCommand::cmdTrimEn(int narg, char *args[], int action){
 		npos = myDet->getTrimEn(opos);
 		if (npos != -1) {
 			for (int ip=0; ip<npos;++ip) {
-				sprintf(answer,"%s %d",answer,opos[ip]);
+				char cnum[50]="";
+				sprintf(cnum, " %d", opos[ip]);
+				strcat(answer, cnum);
 			}
 		}
 	}
@@ -3708,7 +3710,9 @@ string slsDetectorCommand::cmdPositions(int narg, char *args[], int action){
 	double opos[npos];
 	myDet->getPositions(opos);
 	for (int ip=0; ip<npos;++ip) {
-		sprintf(answer,"%s %f",answer,opos[ip]);
+		char cnum[50]="";
+		sprintf(cnum, " %f", opos[ip]);
+		strcat(answer, cnum);
 	}
 	return string(answer);
 
@@ -3887,9 +3891,11 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 			ns=myDet->getScanSteps(is, values);
 			int p=myDet->getScanPrecision(is);
 			char format[1000];
-			sprintf(format, "%%s %%0.%df",p);
+			sprintf(format, " %%0.%df",p);
 			for (int i=0; i<ns; ++i) {
-				sprintf(answer,format,answer,values[i]);
+				char cnum[50]="";
+				sprintf(cnum, format, values[i]);
+				strcat(answer, cnum);
 			}
 			delete [] values;
 		}
@@ -3954,10 +3960,11 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 		ns=myDet->getScanSteps(is, values);
 		int p=myDet->getScanPrecision(is);
 		char format[1000];
-		sprintf(format, "%%s %%0.%df",p);
-		sprintf(answer,"%d ",ns);
+		sprintf(format, " %%0.%df",p);
 		for (int i=0; i<ns; ++i) {
-			sprintf(answer,format,answer,values[i]);
+			char cnum[50]="";
+			sprintf(cnum, format, values[i]);
+			strcat(answer, cnum);
 		}
 		delete [] values;
 		return string(answer);
@@ -5850,7 +5857,7 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
 
 	if ((ret!=-1) && (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER
 			|| index==ACTUAL_TIME || index==MEASUREMENT_TIME ||
-			MEASURED_PERIOD || MEASURED_SUBPERIOD)) {
+			index==MEASURED_PERIOD || index==MEASURED_SUBPERIOD)) {
 		rval=(double)ret*1E-9;
 		sprintf(answer,"%0.9f",rval);
 	} else {

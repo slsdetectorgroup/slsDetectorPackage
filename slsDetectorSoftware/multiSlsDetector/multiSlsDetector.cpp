@@ -2670,7 +2670,7 @@ int* multiSlsDetector::getDataFromDetector() {
 	int nodatadet          = -1;
 	int nodatadetectortype = false;
 	detectorType types     = getDetectorsType();
-	if (types == EIGER || types == JUNGFRAU || GOTTHARD || PROPIX) {
+	if (types == EIGER || types == JUNGFRAU || types == GOTTHARD || types == PROPIX) {
 		nodatadetectortype = true;
 	}
 
@@ -3108,17 +3108,18 @@ slsDetectorDefs::externalCommunicationMode multiSlsDetector::setExternalCommunic
 		externalCommunicationMode pol) {
 	externalCommunicationMode ret, ret1;
 	//(Dhanya) FIXME: why first detector or is it the master one?
-	if (detectors.size())
+	if (detectors.size()) {
 		ret = detectors[0]->setExternalCommunicationMode(pol);
-	if (detectors[0]->getErrorMask())
-		setErrorMask(getErrorMask() | (1 << 0));
+		if (detectors[0]->getErrorMask())
+			setErrorMask(getErrorMask() | (1 << 0));
 
-	for (unsigned int idet = 1; idet < detectors.size(); ++idet) {
-		ret1 = detectors[idet]->setExternalCommunicationMode(pol);
-		if (detectors[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-		if (ret != ret1)
-			ret = GET_EXTERNAL_COMMUNICATION_MODE;
+		for (unsigned int idet = 1; idet < detectors.size(); ++idet) {
+			ret1 = detectors[idet]->setExternalCommunicationMode(pol);
+			if (detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask() | (1 << idet));
+			if (ret != ret1)
+				ret = GET_EXTERNAL_COMMUNICATION_MODE;
+		}
 	}
 	setMaster();
 	setSynchronization();
@@ -3129,17 +3130,18 @@ slsDetectorDefs::externalSignalFlag multiSlsDetector::setExternalSignalFlags(
 		externalSignalFlag pol, int signalindex) {
 	externalSignalFlag ret, ret1;
 	//(Dhanya) FIXME: why first detector or is it the master one?
-	if (detectors.size())
+	if (detectors.size()) {
 		ret = detectors[0]->setExternalSignalFlags(pol, signalindex);
-	if (detectors[0]->getErrorMask())
-		setErrorMask(getErrorMask() | (1 << 0));
+		if (detectors[0]->getErrorMask())
+			setErrorMask(getErrorMask() | (1 << 0));
 
-	for (unsigned int idet = 1; idet < detectors.size(); ++idet) {
-		ret1 = detectors[idet]->setExternalSignalFlags(pol, signalindex);
-		if (detectors[idet]->getErrorMask())
-			setErrorMask(getErrorMask() | (1 << idet));
-		if (ret != ret1)
-			ret = GET_EXTERNAL_SIGNAL_FLAG;
+		for (unsigned int idet = 1; idet < detectors.size(); ++idet) {
+			ret1 = detectors[idet]->setExternalSignalFlags(pol, signalindex);
+			if (detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask() | (1 << idet));
+			if (ret != ret1)
+				ret = GET_EXTERNAL_SIGNAL_FLAG;
+		}
 	}
 	setMaster();
 	setSynchronization();
@@ -5592,8 +5594,10 @@ int multiSlsDetector::enableDataStreamingToClient(int enable) {
 				std::cout << "Could not create data threads in client." << std::endl;
 				//only for the first det as theres no general one
 				setErrorMask(getErrorMask() | (1 << 0));
-				detectors[0]->setErrorMask((detectors[0]->getErrorMask()) |
+				if (detectors.size()) {
+					detectors[0]->setErrorMask((detectors[0]->getErrorMask()) |
 						(DATA_STREAMING));
+				}
 			}
 		}
 	}

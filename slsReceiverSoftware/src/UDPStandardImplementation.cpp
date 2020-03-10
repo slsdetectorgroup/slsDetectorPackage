@@ -119,7 +119,9 @@ void UDPStandardImplementation::setMultiDetectorSize(const int* size) {
 			numDet[i] = size[i]*2;
 		else
 			numDet[i] = size[i];
-		sprintf(message,"%s%d",message,numDet[i]);
+		char cnum[20]="";
+		sprintf(cnum, "%d", numDet[i]);
+		strcat(message, cnum);
 		if (i < MAX_DIMENSIONS-1 )
 			strcat(message,",");
 	}
@@ -834,7 +836,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
 		if(dataStreamer.size())dataStreamer[i]->SetFifo(fifo[i]);
 	}
 
-	FILE_LOG(logINFO) << "Memory Allocated Per Fifo: " << ( ((generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize)) * fifoDepth) << " bytes" ;
+	FILE_LOG(logINFO) << "Memory Allocated Per Fifo: " << (double)( ((generalData->imageSize) * numberofJobs + (generalData->fifoBufferHeaderSize)) * fifoDepth)/ (double)(1024 * 1024) << " MB" ;
 	FILE_LOG(logINFO) << numThreads << " Fifo structure(s) reconstructed";
 	return OK;
 }

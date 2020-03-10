@@ -85,15 +85,21 @@ public:
 	static double getNSTime(timeUnit unit, double value){
 		double valueNS=value;
 		switch(unit){
-		case HOURS:			valueNS*=60;
-		case MINUTES:		valueNS*=60;
-		case SECONDS:		valueNS*=1000;
-		case MILLISECONDS:	valueNS*=1000;
-		case MICROSECONDS:	valueNS*=1000;
+		case HOURS:			
+			return valueNS * 60 * 60 * 1000 * 1000 * 1000;
+		case MINUTES:		
+			return valueNS * 60 * 1000 * 1000 * 1000;
+		case SECONDS:		
+			return valueNS * 1000 * 1000 * 1000;
+		case MILLISECONDS:	
+			return valueNS * 1000 * 1000;
+		case MICROSECONDS:	
+			return valueNS * 1000;
 		case NANOSECONDS:
-		default:;
+			return valueNS;
+		default:
+			return 0;
 		}
-		return valueNS;
 	};
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

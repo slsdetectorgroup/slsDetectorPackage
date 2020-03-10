@@ -46,14 +46,14 @@ int Fifo::CreateFifos(uint32_t fifoItemSize) {
 	fifoFree = new CircularFifo<char>(fifoDepth);
 	fifoStream = new CircularFifo<char>(fifoDepth);
 	//allocate memory
-	size_t mem_len = fifoItemSize * fifoDepth * sizeof(char);
+	size_t mem_len = (size_t)fifoItemSize * (size_t)fifoDepth * sizeof(char);
 	memory = (char*) malloc (mem_len);
 	if (memory == NULL){
 		FILE_LOG(logERROR) << "Could not allocate memory for fifos";
 		return FAIL;
 	}
     memset(memory, 0, mem_len);
-	FILE_LOG(logDEBUG) << "Memory Allocated " << index << ": " << mem_len << " bytes";
+	FILE_LOG(logDEBUG) << "Memory Allocated " << index << ": " << (double)mem_len/(double)(1024 * 1024) << " MB";
 
 	{ //push free addresses into fifoFree fifo
 		char* buffer = memory;

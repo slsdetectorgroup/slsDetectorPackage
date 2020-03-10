@@ -397,7 +397,9 @@ void UDPBaseImplementation::setMultiDetectorSize(const int* size) {
 			numDet[i] = size[i]*2;
 		else
 			numDet[i] = size[i];
-		sprintf(message,"%s%d",message,numDet[i]);
+		char cnum[20]="";
+		sprintf(cnum, "%d", numDet[i]);
+		strcat(message, cnum);
 		if (i < MAX_DIMENSIONS-1 )
 			strcat(message,",");
 	}
@@ -650,7 +652,7 @@ void UDPBaseImplementation::setSubPeriod(const uint64_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	subPeriod = i;
-	FILE_LOG(logINFO) << "Sub Exposure Time: " <<  (double)subPeriod/(1E9) << "s";
+	FILE_LOG(logINFO) << "Sub Period: " <<  (double)subPeriod/(1E9) << "s";
 }
 
 int UDPBaseImplementation::setNumberOfFrames(const uint64_t i){

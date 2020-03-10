@@ -314,6 +314,10 @@ int slsDetectorUsers::enableGapPixels(int enable) {
     return myDetector->enableGapPixels(enable);
 }
 
+int slsDetectorUsers::setFlippedDataX(int value) {
+	return myDetector->setFlippedData(slsDetectorDefs::X, value);
+}
+
 std::string slsDetectorUsers::setReceiverFramesDiscardPolicy(std::string f) {
 	return myDetector->getReceiverFrameDiscardPolicy(
 			myDetector->setReceiverFramesDiscardPolicy(

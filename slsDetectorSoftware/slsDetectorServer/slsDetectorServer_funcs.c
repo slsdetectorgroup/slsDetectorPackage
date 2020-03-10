@@ -4361,11 +4361,11 @@ int set_all_trimbits(int file_des){
 #ifdef VERBOSE
 		printf("setting all trimbits to %d\n",arg);
 #endif
-		if(arg < -1){
+		if(arg < -1 || arg > MAX_TRIMBITS_VALUE){
 			ret = FAIL;
-			strcpy(mess,"Cant set trimbits to this value\n");
+			sprintf(mess,"Cant set all trimbits to %d. Range 0 - %d\n", arg, MAX_TRIMBITS_VALUE);
 			cprintf(RED, "Warning: %s", mess);
-		}else {
+		} else {
 			if(arg >= 0){
 				ret = setAllTrimbits(arg);
 				//changes settings to undefined

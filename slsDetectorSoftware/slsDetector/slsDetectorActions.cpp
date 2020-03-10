@@ -471,6 +471,14 @@ int slsDetectorActions::executeAction(int level) {
      case headerBefore:
        fName=getCurrentFileName();
        nowIndex=getFileIndexFromFileName(getCurrentFileName());
+// all other parameters should be taken using text client calls in the header scripts!
+
+	sprintf(cmd,"%s nrun=%d fn=%s par=%s", \
+		getActionScript(level).c_str(),		\
+		nowIndex,  \
+		fName.c_str(),		    \
+		getActionParameter(level).c_str());
+      break;       
      case headerAfter:
 
 // all other parameters should be taken using text client calls in the header scripts!

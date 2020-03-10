@@ -542,7 +542,7 @@ int slsReceiverTCPIPInterface::set_port() {
 			try {
 				mySocket = new MySocketTCP(p_number);
 				strcpy(mySock->lastClientIP,oldLastClientIP);
-			} catch(SamePortSocketException e) {
+			} catch(SamePortSocketException& e) {
 				ret = FAIL;
 				sprintf(mess, "Could not bind port %d. It is already set\n", p_number);
 				FILE_LOG(logERROR) << mess;
@@ -1039,6 +1039,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 		//	else if (receiverBase->getStatus() != IDLE)
 		//		receiverNotIdle();
 			else {
+				uint64_t subdeadtime = 0;
 				switch (index[0]) {
 				case ACQUISITION_TIME:
 					ret = receiverBase->setAcquisitionTime(index[1]);
@@ -1052,7 +1053,9 @@ int slsReceiverTCPIPInterface::set_timer() {
 					receiverBase->setNumberOfFrames(index[1]);
 					break;
 				case SUBFRAME_ACQUISITION_TIME:
+					subdeadtime = receiverBase->getSubPeriod() - receiverBase->getSubExpTime();
 					receiverBase->setSubExpTime(index[1]);
+					receiverBase->setSubPeriod(receiverBase->getSubExpTime() + subdeadtime);
 					break;
 				case SUBFRAME_DEADTIME:
 					receiverBase->setSubPeriod(index[1] + receiverBase->getSubExpTime());

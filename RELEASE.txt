@@ -1,8 +1,8 @@
-SLS Detector Package 4.1.1 released on 15.01.2020 (Bug Fix Release)
+SLS Detector Package 4.2.0 released on 10.03.2020 (Minor Release)
 ===================================================================
 
 
-This document describes the differences between 4.1.0 and 4.1.1 releases.   
+This document describes the differences between 4.2.0 and 4.1.1 releases.   
     
     CONTENTS
     --------
@@ -17,37 +17,38 @@ This document describes the differences between 4.1.0 and 4.1.1 releases.
 1. Topics Concerning
 ====================
 
-    - detangled receiver streaming from data call back in client
-      and allow for unregister data call back in client
-    - (eiger) software trigger made to work along with blocking acquire
-    - bug fix for locks in blocking acquire
-    - parameter file allows for modular commands
+    - (Eiger) detector server startup with vcal = 0 to reduce noise
+    - Deactivate will deactivate a module even if FEB does not work.
+    - trimbits check
+    - zmqsocket
+    - fifo size (memory allocation print to mb)
+    - subexptime also sets subperiod in master fle
+    - minor check if no detectors ()xxxxxxxxxxxxxxxxxxxxxxx
+    - setflippeddatax in users xxxxx
+    - memory alignment in receiver
 
-    Compared to 4.1.0, 
-        no firmware or on-board detector server update required for this release.
 
 
 2. Resolved Issues
 ==================          
 
-    Client
-    ------
+    Detector Server (Eiger)
+    -----------------------
     
-    1.  Registering data call back (registerDataCallback) used to enable data streaming 
-        via zmq in both receiver and client. Sending NULL unregistered call back, 
-        but did not disable streaming. 
-        Now, registering/unregistering this call back will only enable data streaming
-        in client. Data streaming in receiver will have to be explicitly enabled.
+    1.  Vcal dac set to 0 at on-board detector server start up to
+        reduce noise.
 
-    2.  (Eiger)
-        Software trigger triggered via the stop server and hence, can be triggered
-        also during blocking acquire.
+    2.  Deactivate will deactivate a module even if FEB does not work.
 
-    3.  If stop acquisition command was given immediately after starting a blocking acquire,
-        it might have hanged the process. This bug is fixed now.
+    3.  Trimbits values checked for values 0 - 63.
 
-    4.  Parameter file now allows modular commands (using ':'). They are not ignored anymore.
-    
+    Receiver
+    --------
+
+    1.  zmq socket send memory not overlapping
+    2. fifo size not be large (and memory allocated print to mb)
+
+    - subexptime also sets subperiod in master fle
 
 3. Known Issues
 ===============

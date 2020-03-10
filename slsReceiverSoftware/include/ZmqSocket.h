@@ -312,7 +312,7 @@ public:
 				"\"quad\":%u"
 
 				;//"}\n";
-		int length = sprintf(buf, jsonHeaderFormat,
+		sprintf(buf, jsonHeaderFormat,
 				jsonversion, dynamicrange, fileIndex, ndetx, ndety, npixelsx, npixelsy, imageSize,
 				acqIndex, fIndex, (fname == NULL)? "":fname, dummy?0:1,
 
@@ -326,10 +326,11 @@ public:
 						quadEnable
 		);
 		if (additionalJsonHeader && strlen(additionalJsonHeader)) {
-		    length = sprintf(buf, "%s, %s}\n", buf, additionalJsonHeader);
-		} else {
-		    length = sprintf(buf, "%s}\n", buf);
+			strcat(buf, ", ");
+			strcat(buf, additionalJsonHeader);
 		}
+		strcat(buf,"}\n");
+		int length = strlen(buf);
 
 #ifdef VERBOSE
 		if(!index)

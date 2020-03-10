@@ -31,7 +31,7 @@ enum DACINDEX					 			{SVP,VTR,VRF,VRS,SVN,VTGSTV,VCMP_LL,VCMP_LR,CAL,VCMP_RL,RX
 								 			2556, 	/* Vtgstv	*/	\
 								  			1000, 	/* Vcmp_ll	*/	\
 								 			1000, 	/* Vcmp_lr	*/	\
-								 			4000, 	/* cal		*/	\
+								 			0, 		/* cal		*/	\
 									 		1000, 	/* Vcmp_rl	*/	\
 									 		1100, 	/* rxb_rb	*/	\
 									 		1100, 	/* rxb_lb	*/	\
@@ -90,6 +90,7 @@ enum NETWORKINDEX				 			{TXN_LEFT, TXN_RIGHT, TXN_FRAME,FLOWCTRL_10G};
 #define DEFAULT_TEST_MODE					(0)
 #define DEFAULT_HIGH_VOLTAGE				(0)
 
+#define MAX_TRIMBITS_VALUE					(63)
 
 #define MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS	(0x1FFFFFFF) /** 29 bit register for max subframe exposure value */
 

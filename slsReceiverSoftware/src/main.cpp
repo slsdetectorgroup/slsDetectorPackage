@@ -16,12 +16,12 @@
 #include <sys/wait.h>	//wait
 #include <unistd.h> 	//usleep
 #include <syscall.h>
+#include <semaphore.h>
 
-
-bool keeprunning;
+sem_t semaphore;
 
 void sigInterruptHandler(int p){
-	keeprunning = false;
+	sem_post(&semaphore);
 }
 
 /*
@@ -65,7 +65,7 @@ void GetData(char* metadata, char* datapointer, uint32_t datasize, void* p){
 
 int main(int argc, char *argv[]) {
 
-	keeprunning = true;
+	sem_init(&semaphore,1,0);
 	cprintf(BLUE,"Created [ Tid: %ld ]\n", (long)syscall(SYS_gettid));
 
 	// Catch signal SIGINT to close files and call destructors properly
@@ -148,8 +148,8 @@ int main(int argc, char *argv[]) {
 
 	FILE_LOG(logINFO) << "Ready ... ";
 	cprintf(RESET, "\n[ Press \'Ctrl+c\' to exit ]\n");
-	while(keeprunning)
-		pause();
+	sem_wait(&semaphore);
+	sem_destroy(&semaphore);
 
 	delete receiver;
 	cprintf(BLUE,"Exiting [ Tid: %ld ]\n", (long)syscall(SYS_gettid));

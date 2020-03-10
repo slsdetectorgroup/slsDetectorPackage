@@ -106,13 +106,13 @@ void qTabDebugging::GetInfo() {
         // get num modules
         for (int i = 0; i < comboDetector->count() / 2; ++i)
             items.append(new QTreeWidgetItem(
-                (QTreeWidget *)0, QStringList(QString("Module %1").arg(i))));
+                (QTreeWidget *)nullptr, QStringList(QString("Module %1").arg(i))));
         treeDet->insertTopLevelItems(0, items);
         // gets det names
         for (int i = 0; i < comboDetector->count(); ++i) {
             QList<QTreeWidgetItem *> childItems;
             childItems.append(new QTreeWidgetItem(
-                (QTreeWidget *)0,
+                (QTreeWidget *)nullptr,
                 QStringList(QString("Half Module (%1)")
                                 .arg(comboDetector->itemText(i)))));
             treeDet->topLevelItem(i * 2)->insertChildren(0, childItems);
@@ -133,7 +133,7 @@ void qTabDebugging::GetInfo() {
         // gets det names
         for (int i = 0; i < comboDetector->count(); ++i)
             items.append(new QTreeWidgetItem(
-                (QTreeWidget *)0,
+                (QTreeWidget *)nullptr,
                 QStringList(
                     QString("Module (%1)").arg(comboDetector->itemText(i)))));
         treeDet->insertTopLevelItems(0, items);

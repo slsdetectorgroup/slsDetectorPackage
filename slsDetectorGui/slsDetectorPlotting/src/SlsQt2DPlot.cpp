@@ -31,17 +31,7 @@ SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
     Update();
 }
 
-SlsQt2DPlot::~SlsQt2DPlot() {
-    if (d_spectrogram) {
-        d_spectrogram->detach();
-        // delete d_spectrogram;
-    }
-    delete hist;
-    delete colorMapLinearScale;
-    delete colorMapLogScale;
-    delete zoomer;
-    delete panner;
-}
+SlsQt2DPlot::~SlsQt2DPlot() = default;
 
 void SlsQt2DPlot::SetTitle(QString title) { setTitle(title); }
 
@@ -104,8 +94,8 @@ void SlsQt2DPlot::SetupColorMap() {
 void SlsQt2DPlot::FillTestPlot(int mode) {
     static int nx = 50;
     static int ny = 50;
-    static double *the_data = 0;
-    if (the_data == 0)
+    static double *the_data = nullptr;
+    if (the_data == nullptr)
         the_data = new double[nx * ny];
 
     double dmax = sqrt(pow(nx / 2.0 - 0.5, 2) + pow(ny / 2.0 - 0.5, 2));
@@ -221,32 +211,23 @@ QwtLinearColorMap *SlsQt2DPlot::myColourMap(QVector<double> colourStops) {
 
     for (int is = 0; is < ns - 1; is++) {
         c.setRgbF(r[is], g[is], b[is]);
-        copyMap->addColorStop(colourStops.value(is), c);
+        copyMap->addColorStop(colourStops[is], c);
     }
 
     return copyMap;
 }
+
 QwtLinearColorMap *SlsQt2DPlot::myColourMap(int log) {
-
-    int ns = 5;
-
-    QVector<double> cs1(0);
-    QVector<double> lcs1(0);
-
-    cs1.append(0.);
-    cs1.append(0.34);
-    cs1.append(0.61);
-    cs1.append(0.84);
-    cs1.append(1.);
+    QVector<double> cs1{0.0, 0.34, 0.61 ,0.84, 1.0};
     if (log) {
-        for (int is = 0; is < ns; is++) {
-            lcs1.append((pow(10, 2 * cs1.value(is)) - 1) / 99.0);
-        }
+        QVector<double> lcs1(cs1.size());
+        for (int i = 0; i < cs1.size(); ++i)
+            lcs1[i] = (pow(10, 2 * cs1[i]) - 1) / 99.0;
         return myColourMap(lcs1);
     }
-
     return myColourMap(cs1);
 }
+
 
 void SlsQt2DPlot::Update() {
     if (isLog)

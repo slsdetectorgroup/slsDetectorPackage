@@ -17,7 +17,7 @@ SlsQt2DHist::SlsQt2DHist(int nbinsx, double xmin, double xmax, int nbinsy,
     y_max = 0;
     interp = 0;
     nx_array = ny_array = 0;
-    data = 0;
+    data = nullptr;
     SetData(nbinsx, xmin, xmax, nbinsy, ymin, ymax, d, zmin, zmax);
 }
 

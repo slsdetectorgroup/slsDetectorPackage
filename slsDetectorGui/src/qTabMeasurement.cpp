@@ -802,7 +802,7 @@ void qTabMeasurement::Enable(bool enable) {
 
     // shortcut each time, else it doesnt work a second time
     btnStart->setShortcut(QApplication::translate(
-        "TabMeasurementObject", "Shift+Space", 0, QApplication::UnicodeUTF8));
+        "TabMeasurementObject", "Shift+Space", nullptr, QApplication::UnicodeUTF8));
 }
 
 void qTabMeasurement::Refresh() {

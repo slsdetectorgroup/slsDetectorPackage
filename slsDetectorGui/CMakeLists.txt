@@ -4,10 +4,10 @@ find_package(PNG REQUIRED)
 find_package(ZLIB REQUIRED)
 
 set(SOURCES
-    slsDetectorPlotting/src/SlsQt1DPlot.cxx
-    slsDetectorPlotting/src/SlsQt1DZoomer.cxx
-    slsDetectorPlotting/src/SlsQt2DHist.cxx
-    slsDetectorPlotting/src/SlsQt2DPlot.cxx
+    slsDetectorPlotting/src/SlsQt1DPlot.cpp
+    slsDetectorPlotting/src/SlsQt1DZoomer.cpp
+    slsDetectorPlotting/src/SlsQt2DHist.cpp
+    slsDetectorPlotting/src/SlsQt2DPlot.cpp
     src/qDetectorMain.cpp
     src/qDrawPlot.cpp
     src/qCloneWidget.cpp

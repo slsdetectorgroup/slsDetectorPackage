@@ -27,7 +27,7 @@ target_compile_definitions(eigerDetectorServerMaster_virtual
 )
 
 target_link_libraries(eigerDetectorServerMaster_virtual
-    PUBLIC pthread rt
+    PUBLIC pthread rt slsProjectCWarnings
 )
 
 set_target_properties(eigerDetectorServerMaster_virtual PROPERTIES

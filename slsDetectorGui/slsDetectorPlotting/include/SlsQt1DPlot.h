@@ -3,181 +3,179 @@
  * @author Ian Johnson
  * @version 1.0
  * Modifications:
- * 19.06.2012: {Some functions have been added by Dhanya to enable zooming in and out
- * without using mouse control:
- * DisableZoom,
- * SetXMinMax,SetYMinMax,
+ * 19.06.2012: {Some functions have been added by Dhanya to enable zooming in
+ * and out without using mouse control: DisableZoom, SetXMinMax,SetYMinMax,
  * GetXMinimum,GetXMaximum,GetYMinimum,GetYMaximum}
  *  */
 
 #ifndef SLSQT1DPLOT_H
 #define SLSQT1DPLOT_H
 
-
-typedef  double double32_t;
-typedef  float float32_t;
-typedef  int int32_t;
+typedef double double32_t;
+typedef float float32_t;
+typedef int int32_t;
 
 #include "ansi.h"
 
-
+#include "SlsQt1DZoomer.h"
+#include <iostream>
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_marker.h>
 #include <qwt_scale_div.h>
-#include  "SlsQt1DZoomer.h"
-#include <iostream>
-
 
 class QPen;
 class SlsQt1DPlot;
 class QwtSymbol;
 
-class SlsQtH1D:public QwtPlotCurve{
+class SlsQtH1D : public QwtPlotCurve {
 
- public:
-  SlsQtH1D(QString title, int n, double xmin, double xmax, double* data=0);
-  SlsQtH1D(QString title, int n, double* data_x, double* data_y);
-  ~SlsQtH1D();
+  public:
+    SlsQtH1D(QString title, int n, double xmin, double xmax, double *data = 0);
+    SlsQtH1D(QString title, int n, double *data_x, double *data_y);
+    ~SlsQtH1D();
 
-  void Attach(SlsQt1DPlot* p);
-  void Detach(SlsQt1DPlot* p);
+    void Attach(SlsQt1DPlot *p);
+    void Detach(SlsQt1DPlot *p);
 
-  int   SetLineColor(int c=-1);
-  int   SetLineWidth(int w=1);
-  void  SetLineStyle(int s=0);
-  void  setStyleLinesorDots(bool isLines);
-  void  setSymbolMarkers(bool isMarker);
+    int SetLineColor(int c = -1);
+    int SetLineWidth(int w = 1);
+    void SetLineStyle(int s = 0);
+    void setStyleLinesorDots(bool isLines);
+    void setSymbolMarkers(bool isMarker);
 
-  void SetData(int n, double xmin, double xmax, double* d=0);
-  void SetData(int n, double* dx, double* dy);
+    void SetData(int n, double xmin, double xmax, double *d = 0);
+    void SetData(int n, double *dx, double *dy);
 
-  double*  GetX()      {return x;}
-  double*  GetY()      {return y;}
-  int      GetNBinsX() {return ndata;}
+    double *GetX() { return x; }
+    double *GetY() { return y; }
+    int GetNBinsX() { return ndata; }
 
-  double   FillBin(int bx, double v=1);
-  double   Fill(double x, double v=1);
-  double   SetBinContent(int bx,double v);
-  double   SetContent(double x,double v);
-  int      FindBinIndex(double px);
+    double FillBin(int bx, double v = 1);
+    double Fill(double x, double v = 1);
+    double SetBinContent(int bx, double v);
+    double SetContent(double x, double v);
+    int FindBinIndex(double px);
 
-  double   GetXMin()         {return x[0];}
-  double   GetFirstXgtZero() {return firstXgt0;}
-  double   GetXMax()         {return x[ndata-1];}
-  double   GetYMin()         {return ymin;}
-  double   GetFirstYgtZero() {return firstYgt0;}
-  double   GetYMax()         {return ymax;}
+    double GetXMin() { return x[0]; }
+    double GetFirstXgtZero() { return firstXgt0; }
+    double GetXMax() { return x[ndata - 1]; }
+    double GetYMin() { return ymin; }
+    double GetFirstYgtZero() { return firstYgt0; }
+    double GetYMax() { return ymax; }
 
-  SlsQtH1D*   Add(double v);
+    SlsQtH1D *Add(double v);
 
+  private:
+    int ndata;
+    int n_array;
+    double dx;
+    double *x{nullptr}, *y{nullptr};
+    double ymin, ymax;
+    double firstXgt0, firstYgt0;
+    void Initailize();
+    int SetUpArrays(int n);
+    int CheckIndex(int bx);
 
-
- private:
-  int    ndata;
-  int    n_array;
-  double dx;
-  double *x{nullptr},*y{nullptr};
-  double ymin,ymax;
-  double firstXgt0,firstYgt0;
-  void Initailize();
-  int  SetUpArrays(int n);
-  int  CheckIndex(int bx);
-
-  QPen* pen_ptr{nullptr};
+    QPen *pen_ptr{nullptr};
 };
 
+class SlsQtH1DList {
+  public:
+    SlsQtH1DList(SlsQtH1D *hist = 0);
+    ~SlsQtH1DList();
 
-class SlsQtH1DList{
- public:
-  SlsQtH1DList(SlsQtH1D* hist=0);
-  ~SlsQtH1DList();
+    SlsQtH1D *Add(SlsQtH1D *h);
+    void Remove(SlsQtH1D *h);
+    void Print();
 
-  SlsQtH1D*     Add(SlsQtH1D* h); 
-  void       Remove(SlsQtH1D* h); 
-  void       Print();
+    SlsQtH1D *Hist() { return the_hist; } // if no hist returns 0
+    SlsQtH1DList *Next() { return the_next; }
 
-  SlsQtH1D*     Hist() {return the_hist;} //if no hist returns 0
-  SlsQtH1DList* Next() {return the_next;}
-
-
-private:
-   SlsQtH1DList*  the_next;
-   SlsQtH1D*      the_hist;
+  private:
+    SlsQtH1DList *the_next;
+    SlsQtH1D *the_hist;
 };
- 
 
-class SlsQt1DPlot:public QwtPlot{
-  Q_OBJECT
+class SlsQt1DPlot : public QwtPlot {
+    Q_OBJECT
 
- public:
-  SlsQt1DPlot(QWidget* = NULL);
-  ~SlsQt1DPlot();
-    
-  void SetTitle(QString title);
-  void SetXTitle(QString title);
-  void SetYTitle(QString title);
-  void SetTitleFont(const QFont& f);
-  void SetXFont(const QFont& f);
-  void SetYFont(const QFont& f);
-  
-  void InsertHLine(double y);
-  void RemoveHLine();
-  void InsertVLine(double v);
-  void RemoveVLine();
+  public:
+    SlsQt1DPlot(QWidget * = NULL);
+    ~SlsQt1DPlot();
 
+    void SetTitle(QString title);
+    void SetXTitle(QString title);
+    void SetYTitle(QString title);
+    void SetTitleFont(const QFont &f);
+    void SetXFont(const QFont &f);
+    void SetYFont(const QFont &f);
 
-  /**	This group of functions have been added by Dhanya on 19.06.2012 to be able to
-  	use zooming functionality without mouse control*/
-  void DisableZoom(bool disable);
-  void EnableXAutoScaling() {setAxisAutoScale(QwtPlot::xBottom, true);Update();};
-  void EnableYAutoScaling() {setAxisAutoScale(QwtPlot::yLeft, true);Update();};
-  void SetYStep (int step) {ystep = step;};
-  void SetXMinMax(double min,double max){setAxisScale(QwtPlot::xBottom,min,max);};
-  void SetYMinMax(double min,double max){setAxisScale(QwtPlot::yLeft,min,max);};
-  double GetXMinimum(){return hist_list->Hist()->GetXMin();};
-  double GetXMaximum(){return hist_list->Hist()->GetXMax();};
-  double GetYMinimum(){return hist_list->Hist()->GetYMin();};
-  double GetYMaximum(){return hist_list->Hist()->GetYMax();};
-  /**---*/
+    void InsertHLine(double y);
+    void RemoveHLine();
+    void InsertVLine(double v);
+    void RemoveVLine();
 
+    /**	This group of functions have been added by Dhanya on 19.06.2012 to be
+       able to use zooming functionality without mouse control*/
+    void DisableZoom(bool disable);
+    void EnableXAutoScaling() {
+        setAxisAutoScale(QwtPlot::xBottom, true);
+        Update();
+    };
+    void EnableYAutoScaling() {
+        setAxisAutoScale(QwtPlot::yLeft, true);
+        Update();
+    };
+    void SetYStep(int step) { ystep = step; };
+    void SetXMinMax(double min, double max) {
+        setAxisScale(QwtPlot::xBottom, min, max);
+    };
+    void SetYMinMax(double min, double max) {
+        setAxisScale(QwtPlot::yLeft, min, max);
+    };
+    double GetXMinimum() { return hist_list->Hist()->GetXMin(); };
+    double GetXMaximum() { return hist_list->Hist()->GetXMax(); };
+    double GetYMinimum() { return hist_list->Hist()->GetYMin(); };
+    double GetYMaximum() { return hist_list->Hist()->GetYMax(); };
+    /**---*/
 
-  void SetZoom(double xmin,double ymin,double x_width,double y_width);
-  void SetZoomBase(double xmin,double ymin,double x_width, double y_width){ zoomer->SetZoomBase(xmin,ymin,x_width,y_width);}
+    void SetZoom(double xmin, double ymin, double x_width, double y_width);
+    void SetZoomBase(double xmin, double ymin, double x_width, double y_width) {
+        zoomer->SetZoomBase(xmin, ymin, x_width, y_width);
+    }
 
-  void alignScales();
+    void alignScales();
 
-  void SetLogX(bool yes=1);  
-  void SetLogY(bool yes=1);
- private:
-  
-  SlsQtH1DList*     hist_list{nullptr};
-  SlsQt1DZoomer*    zoomer{nullptr};
-  QwtPlotPanner* panner{nullptr};
+    void SetLogX(bool yes = 1);
+    void SetLogY(bool yes = 1);
 
-  QwtPlotMarker *hline{nullptr};
-  QwtPlotMarker *vline{nullptr};
-  bool disableZoom{false};
-  int ystep{0};
-  
-  void SetupZoom();
-  void UnknownStuff();
-  //void alignScales();
-  
-  void CalculateNResetZoomBase();
-  void NewHistogramAttached(SlsQtH1D* h);
-  void HistogramDetached(SlsQtH1D* h);
+  private:
+    SlsQtH1DList *hist_list{nullptr};
+    SlsQt1DZoomer *zoomer{nullptr};
+    QwtPlotPanner *panner{nullptr};
 
-  void SetLog(int axisId, bool yes);
-  
-  friend void SlsQtH1D::Attach(SlsQt1DPlot* p);
-  friend void SlsQtH1D::Detach(SlsQt1DPlot* p);
-  
-  
- public slots:
-  void UnZoom();
-  void Update();
+    QwtPlotMarker *hline{nullptr};
+    QwtPlotMarker *vline{nullptr};
+    bool disableZoom{false};
+    int ystep{0};
 
+    void SetupZoom();
+    void UnknownStuff();
+    // void alignScales();
+
+    void CalculateNResetZoomBase();
+    void NewHistogramAttached(SlsQtH1D *h);
+    void HistogramDetached(SlsQtH1D *h);
+
+    void SetLog(int axisId, bool yes);
+
+    friend void SlsQtH1D::Attach(SlsQt1DPlot *p);
+    friend void SlsQtH1D::Detach(SlsQt1DPlot *p);
+
+  public slots:
+    void UnZoom();
+    void Update();
 };
 
 #endif

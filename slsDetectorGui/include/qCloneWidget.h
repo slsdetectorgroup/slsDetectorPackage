@@ -16,10 +16,10 @@ class qCloneWidget : public QMainWindow, private Ui::ClonePlotObject {
     Q_OBJECT
 
   public:
-    qCloneWidget(QWidget *parent, SlsQt1DPlot *p1, SlsQt2DPlot *p2, SlsQt1DPlot *gp1, SlsQt2DPlot *gp,
-                 QString title, QString filePath, QString fileName,
-                 int64_t aIndex, bool displayStats, QString min, QString max,
-                 QString sum);
+    qCloneWidget(QWidget *parent, SlsQt1DPlot *p1, SlsQt2DPlot *p2,
+                 SlsQt1DPlot *gp1, SlsQt2DPlot *gp, QString title,
+                 QString filePath, QString fileName, int64_t aIndex,
+                 bool displayStats, QString min, QString max, QString sum);
 
     ~qCloneWidget();
 
@@ -28,7 +28,7 @@ class qCloneWidget : public QMainWindow, private Ui::ClonePlotObject {
 
   protected:
     void resizeEvent(QResizeEvent *event);
-    
+
   private:
     void SetupWidgetWindow(QString title);
     void DisplayStats(bool enable, QString min, QString max, QString sum);

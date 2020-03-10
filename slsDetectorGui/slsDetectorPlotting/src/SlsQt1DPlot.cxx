@@ -5,6 +5,7 @@
  */
 
 #include "SlsQt1DPlot.h"
+#include "qwt_symbol.h"
 #include <iostream>
 #include <qwt_legend.h>
 #include <qwt_math.h>
@@ -14,19 +15,18 @@
 #include <qwt_scale_draw.h>
 #include <qwt_scale_engine.h>
 #include <qwt_scale_widget.h>
-#include "qwt_symbol.h"
 #include <stdlib.h>
 
+#define QwtLog10ScaleEngine QwtLogScaleEngine // hmm
 
-#define QwtLog10ScaleEngine QwtLogScaleEngine //hmm 
-
-
-SlsQtH1D::SlsQtH1D(QString title, int n, double min, double max, double *data) : QwtPlotCurve(title), x(nullptr), y(nullptr), pen_ptr(nullptr) {
+SlsQtH1D::SlsQtH1D(QString title, int n, double min, double max, double *data)
+    : QwtPlotCurve(title), x(nullptr), y(nullptr), pen_ptr(nullptr) {
     Initailize();
     SetData(n, min, max, data);
 }
 
-SlsQtH1D::SlsQtH1D(QString title, int n, double *data_x, double *data_y) : QwtPlotCurve(title) {
+SlsQtH1D::SlsQtH1D(QString title, int n, double *data_x, double *data_y)
+    : QwtPlotCurve(title) {
     Initailize();
     SetData(n, data_x, data_y);
 }
@@ -39,12 +39,12 @@ void SlsQtH1D::Initailize() {
 }
 
 SlsQtH1D::~SlsQtH1D() {
-    
-        delete [] x;
-    
-        delete [] y;
-      
-        delete pen_ptr;
+
+    delete[] x;
+
+    delete[] y;
+
+    delete pen_ptr;
 }
 
 void SlsQtH1D::Attach(SlsQt1DPlot *p) {
@@ -128,18 +128,17 @@ void SlsQtH1D::SetLineStyle(int s) {
     setPen(*pen_ptr);
 }
 
-void  SlsQtH1D::setStyleLinesorDots(bool isLines) {
+void SlsQtH1D::setStyleLinesorDots(bool isLines) {
     setStyle(isLines ? QwtPlotCurve::Lines : QwtPlotCurve::Dots);
 }
 
-void  SlsQtH1D::setSymbolMarkers(bool isMarker) {
-    QwtSymbol* marker = new QwtSymbol();
+void SlsQtH1D::setSymbolMarkers(bool isMarker) {
+    QwtSymbol *marker = new QwtSymbol();
     if (isMarker) {
         marker->setStyle(QwtSymbol::Cross);
         marker->setSize(5, 5);
     }
     setSymbol(marker);
-
 }
 
 void SlsQtH1D::SetData(int n, double xmin, double xmax, double *data) {
@@ -170,9 +169,7 @@ void SlsQtH1D::SetData(int n, double xmin, double xmax, double *data) {
             firstYgt0 = y[i];
     }
 
-
     setRawSamples(x, y, ndata);
-
 }
 
 void SlsQtH1D::SetData(int n, double *data_x, double *data_y) {
@@ -181,7 +178,7 @@ void SlsQtH1D::SetData(int n, double *data_x, double *data_y) {
     n = SetUpArrays(n);
 
     ndata = n;
-    dx = -1; //signifies not regular intervals
+    dx = -1; // signifies not regular intervals
 
     ymin = ymax = data_y ? data_y[0] : 0;
 
@@ -202,18 +199,17 @@ void SlsQtH1D::SetData(int n, double *data_x, double *data_y) {
             firstYgt0 = y[b];
     }
     setRawSamples(x, y, ndata);
-
 }
 
 int SlsQtH1D::SetUpArrays(int n) {
-    n = n < 1 ? 1 : n; //overflow bin
+    n = n < 1 ? 1 : n; // overflow bin
 
     if (n + 1 > n_array) {
         n_array = n + 1;
-        
-            delete x;
-        
-            delete y;
+
+        delete x;
+
+        delete y;
         x = new double[n_array];
         y = new double[n_array];
     }
@@ -225,7 +221,9 @@ double SlsQtH1D::FillBin(int bx, double v) {
     bx = CheckIndex(bx);
     return SetBinContent(bx, y[bx] + v);
 }
-double SlsQtH1D::Fill(double x, double v) { return FillBin(FindBinIndex(x), v); }
+double SlsQtH1D::Fill(double x, double v) {
+    return FillBin(FindBinIndex(x), v);
+}
 
 double SlsQtH1D::SetBinContent(int bx, double v) {
     bx = CheckIndex(bx);
@@ -241,13 +239,15 @@ double SlsQtH1D::SetBinContent(int bx, double v) {
     return y[bx];
 }
 
-double SlsQtH1D::SetContent(double x, double v) { return SetBinContent(FindBinIndex(x), v); }
+double SlsQtH1D::SetContent(double x, double v) {
+    return SetBinContent(FindBinIndex(x), v);
+}
 
 int SlsQtH1D::FindBinIndex(double px) {
     if (dx > 0)
         CheckIndex(int((px - x[0]) / dx));
 
-    //find closest bin
+    // find closest bin
     int b = 0;
     for (; b < ndata; b++)
         if (x[b] > px)
@@ -261,7 +261,9 @@ int SlsQtH1D::FindBinIndex(double px) {
     return b;
 }
 
-int SlsQtH1D::CheckIndex(int bx) { return (bx < 0 || bx > ndata) ? ndata : bx; } //ndata is the overflow bin
+int SlsQtH1D::CheckIndex(int bx) {
+    return (bx < 0 || bx > ndata) ? ndata : bx;
+} // ndata is the overflow bin
 
 SlsQtH1D *SlsQtH1D::Add(double v) {
     for (int bx = 0; bx < ndata; bx++)
@@ -269,23 +271,20 @@ SlsQtH1D *SlsQtH1D::Add(double v) {
     return this;
 }
 
-//1d hist list stuff
+// 1d hist list stuff
 SlsQtH1DList::SlsQtH1DList(SlsQtH1D *hist) {
     the_hist = hist;
     the_next = 0;
 }
 
-SlsQtH1DList::~SlsQtH1DList() {
-    
-        delete the_next;
-}
+SlsQtH1DList::~SlsQtH1DList() { delete the_next; }
 
 SlsQtH1D *SlsQtH1DList::Add(SlsQtH1D *hist) {
     SlsQtH1DList *hl = this;
 
     while (hl) {
         if (hist == hl->the_hist)
-            return hist; //already added
+            return hist; // already added
         if (!hl->the_next)
             break;
         hl = hl->the_next;
@@ -304,7 +303,8 @@ void SlsQtH1DList::Print() {
     SlsQtH1DList *hl = this;
     int i = 0;
     while (hl) {
-        std::cout << "    " << i++ << ") " << hl << "  " << hl->the_hist << "  " << hl->the_next << '\n';
+        std::cout << "    " << i++ << ") " << hl << "  " << hl->the_hist << "  "
+                  << hl->the_next << '\n';
         hl = hl->the_next;
         if (i > 10)
             break;
@@ -313,10 +313,10 @@ void SlsQtH1DList::Print() {
 
 void SlsQtH1DList::Remove(SlsQtH1D *hist) {
     SlsQtH1DList *hl = this;
-    while (hl) { //every match will be removed
+    while (hl) { // every match will be removed
         if (hl->the_hist != hist)
             hl = hl->the_next;
-        else { //match
+        else { // match
             if (!hl->the_next)
                 hl->the_hist = 0; // first the_hist is zero when there's no next
             else {
@@ -330,7 +330,7 @@ void SlsQtH1DList::Remove(SlsQtH1D *hist) {
     }
 }
 
-//1d plot stuff
+// 1d plot stuff
 SlsQt1DPlot::SlsQt1DPlot(QWidget *parent) : QwtPlot(parent) {
     //  n_histograms_attached=0;
     hline = vline = 0;
@@ -352,16 +352,16 @@ SlsQt1DPlot::SlsQt1DPlot(QWidget *parent) : QwtPlot(parent) {
 }
 
 SlsQt1DPlot::~SlsQt1DPlot() {
-    
-        delete hist_list;
-    
-        delete hline;
-    
-        delete vline;
-    
-        delete zoomer;
-     
-        delete panner;       
+
+    delete hist_list;
+
+    delete hline;
+
+    delete vline;
+
+    delete zoomer;
+
+    delete panner;
 }
 
 void SlsQt1DPlot::CalculateNResetZoomBase() {
@@ -378,8 +378,8 @@ void SlsQt1DPlot::CalculateNResetZoomBase() {
 void SlsQt1DPlot::NewHistogramAttached(SlsQtH1D *h) {
     hist_list->Add(h);
     CalculateNResetZoomBase();
-    //commented out by dhanya to take off zooming every hist in 1d plots
-    //if(!hist_list->Next()) UnZoom();
+    // commented out by dhanya to take off zooming every hist in 1d plots
+    // if(!hist_list->Next()) UnZoom();
     Update();
 }
 
@@ -389,13 +389,9 @@ void SlsQt1DPlot::HistogramDetached(SlsQtH1D *h) {
     Update();
 }
 
-void SlsQt1DPlot::Update() {
-    replot();
-}
+void SlsQt1DPlot::Update() { replot(); }
 
-void SlsQt1DPlot::SetTitle(QString title) {
-    setTitle(title);
-}
+void SlsQt1DPlot::SetTitle(QString title) { setTitle(title); }
 
 void SlsQt1DPlot::SetXTitle(QString title) {
     setAxisTitle(QwtPlot::xBottom, title);
@@ -405,20 +401,20 @@ void SlsQt1DPlot::SetYTitle(QString title) {
     setAxisTitle(QwtPlot::yLeft, title);
 }
 
-void SlsQt1DPlot::SetTitleFont(const QFont& f) {
+void SlsQt1DPlot::SetTitleFont(const QFont &f) {
     QwtText t("");
     t.setFont(f);
-    t.setRenderFlags( Qt::AlignLeft | Qt::AlignVCenter);
+    t.setRenderFlags(Qt::AlignLeft | Qt::AlignVCenter);
     setTitle(t);
 }
 
-void SlsQt1DPlot::SetXFont(const QFont& f) {
+void SlsQt1DPlot::SetXFont(const QFont &f) {
     QwtText t("");
     t.setFont(f);
     setAxisTitle(QwtPlot::xBottom, t);
 }
 
-void SlsQt1DPlot::SetYFont(const QFont& f) {
+void SlsQt1DPlot::SetYFont(const QFont &f) {
     QwtText t("");
     t.setFont(f);
     setAxisTitle(QwtPlot::yLeft, t);
@@ -432,9 +428,10 @@ void SlsQt1DPlot::SetLog(int axisId, bool yes) {
     if (axisId == QwtPlot::yLeft)
         zoomer->SetLogY(yes);
 
-    zoomer->ResetZoomBase(); //needs to be done before setting Engine
+    zoomer->ResetZoomBase(); // needs to be done before setting Engine
 
-    //the old ones are deleted by in the setAxisScaleFunction() function see: 128 of file qwt_plot_axis.cpp
+    // the old ones are deleted by in the setAxisScaleFunction() function see:
+    // 128 of file qwt_plot_axis.cpp
     if (yes)
         setAxisScaleEngine(axisId, new QwtLog10ScaleEngine());
     else
@@ -450,11 +447,13 @@ void SlsQt1DPlot::UnZoom() {
     setAxisScale(QwtPlot::xBottom, zoomer->x(), zoomer->x() + zoomer->w());
     setAxisScale(QwtPlot::yLeft, zoomer->y(), zoomer->y() + zoomer->h());
 
-    zoomer->setZoomBase(); //Call replot for the attached plot before initializing the zoomer with its scales.
+    zoomer->setZoomBase(); // Call replot for the attached plot before
+                           // initializing the zoomer with its scales.
     Update();
 }
 
-void SlsQt1DPlot::SetZoom(double xmin, double ymin, double x_width, double y_width) {
+void SlsQt1DPlot::SetZoom(double xmin, double ymin, double x_width,
+                          double y_width) {
     setAxisScale(QwtPlot::xBottom, xmin, xmin + x_width);
     setAxisScale(QwtPlot::yLeft, ymin, ymin + y_width);
     Update();
@@ -503,9 +502,11 @@ void SlsQt1DPlot::SetupZoom() {
     zoomer = new SlsQt1DZoomer(canvas());
 
 #if QT_VERSION < 0x040000
-    zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlButton);
+    zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton,
+                            Qt::ControlButton);
 #else
-    zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
+    zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton,
+                            Qt::ControlModifier);
 #endif
     zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
 
@@ -546,32 +547,39 @@ void SlsQt1DPlot::alignScales() {
 
 void SlsQt1DPlot::UnknownStuff() {
     // We don't need the cache here
-    ((QwtPlotCanvas *)canvas())->setPaintAttribute(QwtPlotCanvas::BackingStore, false);
+    ((QwtPlotCanvas *)canvas())
+        ->setPaintAttribute(QwtPlotCanvas::BackingStore, false);
 #ifdef Q_WS_X11
     //  Qt::WA_PaintOnScreen is only supported for X11, but leads
     //  to substantial bugs with Qt 4.2.x/Windows
     canvas()->setAttribute(Qt::WA_PaintOnScreen, true);
 #endif
-
 }
 
-//Added by Dhanya on 19.06.2012 to disable zooming when any of the axes range has been set
+// Added by Dhanya on 19.06.2012 to disable zooming when any of the axes range
+// has been set
 void SlsQt1DPlot::DisableZoom(bool disable) {
     if (disableZoom != disable) {
         disableZoom = disable;
         if (disable) {
             if (zoomer) {
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::NoButton);
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlModifier);
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::NoButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect1,
+                                        Qt::NoButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
+                                        Qt::NoButton, Qt::ControlModifier);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect3,
+                                        Qt::NoButton);
             }
             if (panner)
                 panner->setMouseButton(Qt::NoButton);
         } else {
             if (zoomer) {
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::LeftButton);
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect1,
+                                        Qt::LeftButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
+                                        Qt::RightButton, Qt::ControlModifier);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect3,
+                                        Qt::RightButton);
             }
             if (panner)
                 panner->setMouseButton(Qt::MidButton);

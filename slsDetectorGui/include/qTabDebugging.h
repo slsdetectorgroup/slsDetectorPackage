@@ -7,30 +7,29 @@
 class QTreeWidget;
 class QTreeWidgetItem;
 
-class qTabDebugging:public QWidget, private Ui::TabDebuggingObject{
-	Q_OBJECT
+class qTabDebugging : public QWidget, private Ui::TabDebuggingObject {
+    Q_OBJECT
 
-public:
-	qTabDebugging(QWidget *parent, sls::Detector* detector);
-	~qTabDebugging();
-	void Refresh();
+  public:
+    qTabDebugging(QWidget *parent, sls::Detector *detector);
+    ~qTabDebugging();
+    void Refresh();
 
-private slots:
-		void GetDetectorStatus();
-		void GetInfo();
-		void SetParameters(QTreeWidgetItem *item);
-		void TestDetector();
+  private slots:
+    void GetDetectorStatus();
+    void GetInfo();
+    void SetParameters(QTreeWidgetItem *item);
+    void TestDetector();
 
-private:
-	void SetupWidgetWindow();
-	void Initialization();
-	void PopulateDetectors();
+  private:
+    void SetupWidgetWindow();
+    void Initialization();
+    void PopulateDetectors();
 
-	sls::Detector *det;
-	/** Tree Widget displaying the detectors, modules */
-	QTreeWidget *treeDet;
-	QLabel *lblDetectorHostname;
-	QLabel *lblDetectorFirmware;
-	QLabel *lblDetectorSoftware;
+    sls::Detector *det;
+    /** Tree Widget displaying the detectors, modules */
+    QTreeWidget *treeDet;
+    QLabel *lblDetectorHostname;
+    QLabel *lblDetectorFirmware;
+    QLabel *lblDetectorSoftware;
 };
-

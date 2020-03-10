@@ -1,12 +1,12 @@
 #include "qTabMessages.h"
 #include "qDefs.h"
 
+#include <QDir>
 #include <QFile>
 #include <QFileDialog>
-#include <QTextStream>
-#include <QDir>
-#include <QProcess>
 #include <QKeyEvent>
+#include <QProcess>
+#include <QTextStream>
 
 #include <iostream>
 #include <string>
@@ -37,32 +37,32 @@ void qTabMessages::Initialization() {
     connect(dispCommand, SIGNAL(returnPressed()), this, SLOT(ExecuteCommand()));
 }
 
-void qTabMessages::keyPressEvent(QKeyEvent* event) {
-	//cout<<"inside KeyPressEvent()\n";
-	if (event->key() == Qt::Key_Up) {
+void qTabMessages::keyPressEvent(QKeyEvent *event) {
+    // cout<<"inside KeyPressEvent()\n";
+    if (event->key() == Qt::Key_Up) {
         GetLastCommand();
-    }
- 	else if (event->key() == Qt::Key_Down) {
+    } else if (event->key() == Qt::Key_Down) {
         ClearCommand();
-    }   
-     /* else if((event->key() == Qt::Key_Return) ||(event->key() == Qt::Key_Enter)) {
-        ExecuteCommand();
-    }*/ else {
-		event->ignore();
+    }
+    /* else if((event->key() == Qt::Key_Return) ||(event->key() ==
+   Qt::Key_Enter)) { ExecuteCommand();
+   }*/
+    else {
+        event->ignore();
     }
 }
 
 void qTabMessages::PrintNextLine() {
-    dispLog->append(QString("<font color = \"DarkGrey\">") + QDir::current().dirName() + QString("$ ") + QString("</font>"));
+    dispLog->append(QString("<font color = \"DarkGrey\">") +
+                    QDir::current().dirName() + QString("$ ") +
+                    QString("</font>"));
 }
 
 void qTabMessages::GetLastCommand() {
-   dispCommand->setText(lastCommand.join(" "));  
+    dispCommand->setText(lastCommand.join(" "));
 }
 
-void qTabMessages::ClearCommand() {
-   dispCommand->setText("");  
-}
+void qTabMessages::ClearCommand() { dispCommand->setText(""); }
 
 void qTabMessages::ExecuteCommand() {
     QStringList param = dispCommand->text().split(" ");
@@ -70,16 +70,19 @@ void qTabMessages::ExecuteCommand() {
     lastCommand += param;
     dispCommand->clear();
     // appending command to log without newline
-    dispLog->moveCursor (QTextCursor::End);
-    dispLog->insertHtml(QString("<font color = \"DarkBlue\">") + param.join(" ") + QString("</font>"));
- 
+    dispLog->moveCursor(QTextCursor::End);
+    dispLog->insertHtml(QString("<font color = \"DarkBlue\">") +
+                        param.join(" ") + QString("</font>"));
+
     QString command = param.at(0);
     param.removeFirst();
-    FILE_LOG(logINFO) << "Executing Command:[" << command.toAscii().constData() << "] with Arguments:[" << param.join(" ").toAscii().constData() << "]";
+    FILE_LOG(logINFO) << "Executing Command:[" << command.toAscii().constData()
+                      << "] with Arguments:["
+                      << param.join(" ").toAscii().constData() << "]";
 
     process->setProcessChannelMode(QProcess::MergedChannels);
     process->start(command, param);
-    if(!process->waitForFinished()) {
+    if (!process->waitForFinished()) {
         AppendError();
     } else {
         AppendOutput();
@@ -89,34 +92,40 @@ void qTabMessages::ExecuteCommand() {
 void qTabMessages::AppendOutput() {
     QByteArray result = process->readAll();
     result.replace("\n", "<br>");
-    dispLog->append(QString("<font color = \"DarkBlue\">") + result + QString("</font>"));
+    dispLog->append(QString("<font color = \"DarkBlue\">") + result +
+                    QString("</font>"));
     FILE_LOG(logDEBUG) << "Command executed successfully";
     PrintNextLine();
 }
 
 void qTabMessages::AppendError() {
-    dispLog->append(QString("<font color = \"Red\">") + process->errorString() + QString("</font>"));
+    dispLog->append(QString("<font color = \"Red\">") + process->errorString() +
+                    QString("</font>"));
     FILE_LOG(logERROR) << "Error executing command";
     PrintNextLine();
 }
 
-
 void qTabMessages::SaveLog() {
     QString fName = QDir::cleanPath(QDir::currentPath()) + "/LogFile.txt";
-    fName = QFileDialog::getSaveFileName(this, tr("Save Snapshot "),
-                                         fName, tr("Text files (*.txt);;All Files(*)"));
+    fName =
+        QFileDialog::getSaveFileName(this, tr("Save Snapshot "), fName,
+                                     tr("Text files (*.txt);;All Files(*)"));
     if (!fName.isEmpty()) {
         QFile outfile;
         outfile.setFileName(fName);
         if (outfile.open(QIODevice::WriteOnly | QIODevice::Text)) {
             QTextStream out(&outfile);
             out << dispLog->toPlainText() << endl;
-            std::string mess  = std::string("The Log has been successfully saved to ") + fName.toAscii().constData();
+            std::string mess =
+                std::string("The Log has been successfully saved to ") +
+                fName.toAscii().constData();
             qDefs::Message(qDefs::INFORMATION, mess, "TabMessages::SaveLog");
             FILE_LOG(logINFO) << mess;
         } else {
-        	FILE_LOG(logWARNING) << "Attempt to save log file failed: " << fName.toAscii().constData();
-        	qDefs::Message(qDefs::WARNING, "Attempt to save log file failed.", "qTabMessages::SaveLog");
+            FILE_LOG(logWARNING) << "Attempt to save log file failed: "
+                                 << fName.toAscii().constData();
+            qDefs::Message(qDefs::WARNING, "Attempt to save log file failed.",
+                           "qTabMessages::SaveLog");
         }
     }
     dispCommand->setFocus();
@@ -133,4 +142,3 @@ void qTabMessages::Refresh() {
     dispCommand->clear();
     dispCommand->setFocus();
 }
-

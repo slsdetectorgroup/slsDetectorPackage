@@ -20,7 +20,8 @@ class qTabMessages;
 class QScrollArea;
 class QResizeEvent;
 
-/** To Over-ride the QTabWidget class to get the tabBar protected methodTabWidget */
+/** To Over-ride the QTabWidget class to get the tabBar protected
+ * methodTabWidget */
 class MyTabWidget : public QTabWidget {
   public:
     MyTabWidget(QWidget *parent = 0) { setParent(parent); }

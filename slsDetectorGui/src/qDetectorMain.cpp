@@ -1,25 +1,24 @@
 #include "qDetectorMain.h"
 #include "qDefs.h"
 #include "qDrawPlot.h"
-#include "qTabMeasurement.h"
-#include "qTabDataOutput.h"
-#include "qTabPlot.h"
 #include "qTabAdvanced.h"
-#include "qTabSettings.h"
+#include "qTabDataOutput.h"
 #include "qTabDebugging.h"
 #include "qTabDeveloper.h"
+#include "qTabMeasurement.h"
 #include "qTabMessages.h"
+#include "qTabPlot.h"
+#include "qTabSettings.h"
 
-#include "versionAPI.h"
 #include "ToString.h"
+#include "versionAPI.h"
 
-#include <QResizeEvent>
-#include <QScrollArea>
 #include <QFileDialog>
 #include <QPlastiqueStyle>
+#include <QResizeEvent>
+#include <QScrollArea>
 #include <QSizePolicy>
 
-#include <iostream>
 #include <getopt.h>
 #include <iostream>
 #include <string>
@@ -94,10 +93,9 @@ int main(int argc, char **argv) {
         }
     }
 
-
     QApplication app(argc, argv);
     app.setStyle(new QPlastiqueStyle);
-    //app.setWindowIcon(QIcon(":/icons/images/mountain.png"));
+    // app.setWindowIcon(QIcon(":/icons/images/mountain.png"));
     try {
         qDetectorMain det(multiId, fname, isDeveloper);
         det.show();
@@ -133,7 +131,8 @@ void qDetectorMain::SetUpWidgetWindow() {
     layoutTabs->addWidget(tabs.get());
 
     // creating all the other tab widgets
-    tabMeasurement = sls::make_unique<qTabMeasurement>(this, det.get(), plot.get());
+    tabMeasurement =
+        sls::make_unique<qTabMeasurement>(this, det.get(), plot.get());
     tabDataOutput = sls::make_unique<qTabDataOutput>(this, det.get());
     tabPlot = sls::make_unique<qTabPlot>(this, det.get(), plot.get());
     tabSettings = sls::make_unique<qTabSettings>(this, det.get());
@@ -219,7 +218,8 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
         LoadConfigFile(fName);
 
     // validate detector type (for GUI) and update menu
-    detType = det->getDetectorType().tsquash("Different detector type for all modules.");
+    detType = det->getDetectorType().tsquash(
+        "Different detector type for all modules.");
     actionLoadTrimbits->setEnabled(false);
     switch (detType) {
     case slsDetectorDefs::EIGER:
@@ -230,18 +230,20 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
     case slsDetectorDefs::MOENCH:
     case slsDetectorDefs::MYTHEN3:
     case slsDetectorDefs::GOTTHARD2:
-         break;
+        break;
     default:
         std::ostringstream os;
-        os << det->getHostname() << " has " <<
-            sls::ToString(det->getDetectorType().squash()) << " detector type (" <<
-            std::to_string(detType) << "). Exiting GUI.";
+        os << det->getHostname() << " has "
+           << sls::ToString(det->getDetectorType().squash())
+           << " detector type (" << std::to_string(detType)
+           << "). Exiting GUI.";
         std::string errorMess = os.str();
         throw sls::RuntimeError(errorMess.c_str());
     }
     std::ostringstream os;
-    os << "SLS Detector GUI : " << sls::ToString(det->getDetectorType().squash()) 
-        << " - " << det->getHostname();
+    os << "SLS Detector GUI : "
+       << sls::ToString(det->getDetectorType().squash()) << " - "
+       << det->getHostname();
     std::string title = os.str();
     FILE_LOG(logINFO) << title;
     setWindowTitle(QString(title.c_str()));
@@ -249,27 +251,36 @@ void qDetectorMain::SetUpDetector(const std::string fName, int multiID) {
 
 void qDetectorMain::Initialization() {
     // Dockable Plot
-	connect(dockWidgetPlot, SIGNAL(topLevelChanged(bool)), this, SLOT(ResizeMainWindow(bool)));
+    connect(dockWidgetPlot, SIGNAL(topLevelChanged(bool)), this,
+            SLOT(ResizeMainWindow(bool)));
     // tabs
-	connect(tabs.get(),SIGNAL(currentChanged(int)), this, SLOT(Refresh(int)));//( QWidget*)));
+    connect(tabs.get(), SIGNAL(currentChanged(int)), this,
+            SLOT(Refresh(int))); //( QWidget*)));
     //	Measurement tab
-    connect(tabMeasurement.get(), SIGNAL(EnableTabsSignal(bool)), this, SLOT(EnableTabs(bool)));
-    connect(tabMeasurement.get(), SIGNAL(FileNameChangedSignal(QString)), plot.get(), SLOT(SetSaveFileName(QString)));
+    connect(tabMeasurement.get(), SIGNAL(EnableTabsSignal(bool)), this,
+            SLOT(EnableTabs(bool)));
+    connect(tabMeasurement.get(), SIGNAL(FileNameChangedSignal(QString)),
+            plot.get(), SLOT(SetSaveFileName(QString)));
     // Plot tab
-    connect(tabPlot.get(), SIGNAL(DisableZoomSignal(bool)), this, SLOT(SetZoomToolTip(bool)));
+    connect(tabPlot.get(), SIGNAL(DisableZoomSignal(bool)), this,
+            SLOT(SetZoomToolTip(bool)));
 
     // Plotting
-    connect(plot.get(), SIGNAL(AcquireFinishedSignal()), tabMeasurement.get(), SLOT(AcquireFinished()));
-    connect(plot.get(), SIGNAL(AbortSignal()), tabMeasurement.get(), SLOT(AbortAcquire()));
+    connect(plot.get(), SIGNAL(AcquireFinishedSignal()), tabMeasurement.get(),
+            SLOT(AcquireFinished()));
+    connect(plot.get(), SIGNAL(AbortSignal()), tabMeasurement.get(),
+            SLOT(AbortAcquire()));
 
     // menubar
     // Modes Menu
-    connect(menuModes, SIGNAL(triggered(QAction *)), this, SLOT(EnableModes(QAction *)));
+    connect(menuModes, SIGNAL(triggered(QAction *)), this,
+            SLOT(EnableModes(QAction *)));
     // Utilities Menu
-    connect(menuUtilities, SIGNAL(triggered(QAction *)), this, SLOT(ExecuteUtilities(QAction *)));
+    connect(menuUtilities, SIGNAL(triggered(QAction *)), this,
+            SLOT(ExecuteUtilities(QAction *)));
     // Help Menu
-    connect(menuHelp, SIGNAL(triggered(QAction *)), this, SLOT(ExecuteHelp(QAction *)));
-
+    connect(menuHelp, SIGNAL(triggered(QAction *)), this,
+            SLOT(ExecuteHelp(QAction *)));
 }
 
 void qDetectorMain::LoadConfigFile(const std::string fName) {
@@ -302,7 +313,9 @@ void qDetectorMain::LoadConfigFile(const std::string fName) {
     } else {
         try {
             det->loadConfig(fName);
-        } CATCH_DISPLAY ("Could not load config file.", "qDetectorMain::LoadConfigFile")
+        }
+        CATCH_DISPLAY("Could not load config file.",
+                      "qDetectorMain::LoadConfigFile")
     }
 }
 
@@ -313,8 +326,7 @@ void qDetectorMain::EnableModes(QAction *action) {
     if (action == actionDebug) {
         enable = actionDebug->isChecked();
         tabs->setTabEnabled(DEBUGGING, enable);
-        FILE_LOG(logINFO) << "Debug Mode: "
-                          << qDefs::stringEnable(enable);
+        FILE_LOG(logINFO) << "Debug Mode: " << qDefs::stringEnable(enable);
 
     }
 
@@ -323,9 +335,9 @@ void qDetectorMain::EnableModes(QAction *action) {
         enable = actionExpert->isChecked();
 
         tabs->setTabEnabled(ADVANCED, enable);
-        actionLoadTrimbits->setVisible(enable && detType == slsDetectorDefs::EIGER);
-        FILE_LOG(logINFO) << "Expert Mode: "
-                          << qDefs::stringEnable(enable);
+        actionLoadTrimbits->setVisible(enable &&
+                                       detType == slsDetectorDefs::EIGER);
+        FILE_LOG(logINFO) << "Expert Mode: " << qDefs::stringEnable(enable);
     }
 
     // Set DockableMode
@@ -337,8 +349,7 @@ void qDetectorMain::EnableModes(QAction *action) {
             dockWidgetPlot->setFloating(false);
             dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
         }
-        FILE_LOG(logINFO) << "Dockable Mode: "
-                          << qDefs::stringEnable(enable);
+        FILE_LOG(logINFO) << "Dockable Mode: " << qDefs::stringEnable(enable);
     }
 }
 
@@ -355,8 +366,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
                 refreshTabs = true;
-                det->loadConfig(
-                    std::string(fName.toAscii().constData()));
+                det->loadConfig(std::string(fName.toAscii().constData()));
                 qDefs::Message(qDefs::INFORMATION,
                                "The Configuration Parameters have been "
                                "configured successfully.",
@@ -375,19 +385,18 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
                 refreshTabs = true;
-                det->loadParameters(
-                    std::string(fName.toAscii().constData()));
+                det->loadParameters(std::string(fName.toAscii().constData()));
                 qDefs::Message(qDefs::INFORMATION,
                                "The Detector Parameters have been "
                                "configured successfully.",
                                "qDetectorMain::ExecuteUtilities");
-                FILE_LOG(logINFO)
-                    << "Parameters loaded successfully";
+                FILE_LOG(logINFO) << "Parameters loaded successfully";
             }
         }
 
         else if (action == actionLoadTrimbits) {
-            QString fName = QString((det->getSettingsPath().squash("/tmp/")).c_str());
+            QString fName =
+                QString((det->getSettingsPath().squash("/tmp/")).c_str());
             FILE_LOG(logDEBUG) << "Loading Trimbits";
             // so that even nonexisting files can be selected
             QFileDialog *fileDialog = new QFileDialog(
@@ -399,18 +408,16 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
 
             // Gets called when cancelled as well
             if (!fName.isEmpty()) {
-                det->loadTrimbits(
-                    std::string(fName.toAscii().constData()));
-                qDefs::Message(
-                    qDefs::INFORMATION,
-                    "The Trimbits have been loaded successfully.",
-                    "qDetectorMain::ExecuteUtilities");
+                det->loadTrimbits(std::string(fName.toAscii().constData()));
+                qDefs::Message(qDefs::INFORMATION,
+                               "The Trimbits have been loaded successfully.",
+                               "qDetectorMain::ExecuteUtilities");
                 FILE_LOG(logINFO) << "Trimbits loaded successfully";
             }
-            
         }
-
-    } CATCH_DISPLAY ("Could not execute utilities.", "qDetectorMain::ExecuteUtilities")
+    }
+    CATCH_DISPLAY("Could not execute utilities.",
+                  "qDetectorMain::ExecuteUtilities")
 
     Refresh(tabs->currentIndex());
     if (refreshTabs) {
@@ -429,13 +436,16 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
 
 void qDetectorMain::ExecuteHelp(QAction *action) {
     if (action == actionAbout) {
-        FILE_LOG(logINFO) << "About Common GUI for Jungfrau, Eiger, Mythen3, Gotthard, Gotthard2 and Moench detectors";
+        FILE_LOG(logINFO) << "About Common GUI for Jungfrau, Eiger, Mythen3, "
+                             "Gotthard, Gotthard2 and Moench detectors";
 
         std::string guiVersion = std::to_string(APIGUI);
         std::string clientVersion = "unknown";
         try {
             clientVersion = std::to_string(det->getClientVersion());
-        } CATCH_DISPLAY ("Could not get client version.", "qDetectorMain::ExecuteHelp")
+        }
+        CATCH_DISPLAY("Could not get client version.",
+                      "qDetectorMain::ExecuteHelp")
 
         qDefs::Message(qDefs::INFORMATION,
                        "<p style=\"font-family:verdana;\">"
@@ -446,7 +456,8 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
                            clientVersion +
                            "<br><br>"
                            "Common GUI to control the SLS Detectors: "
-                           "Jungfrau, Eiger, Mythen3, Gotthard, Gotthard2 and Moench.<br><br>"
+                           "Jungfrau, Eiger, Mythen3, Gotthard, Gotthard2 and "
+                           "Moench.<br><br>"
                            "It can be operated in parallel with the command "
                            "line interface:<br>"
                            "sls_detector_put,<br>sls_detector_get,<br>sls_"
@@ -553,7 +564,8 @@ void qDetectorMain::EnableTabs(bool enable) {
     // expert
     bool expertTab = enable && (actionExpert->isChecked());
     tabs->setTabEnabled(ADVANCED, expertTab);
-    actionLoadTrimbits->setVisible(expertTab && detType == slsDetectorDefs::EIGER);
+    actionLoadTrimbits->setVisible(expertTab &&
+                                   detType == slsDetectorDefs::EIGER);
 
     // moved to here, so that its all in order, instead of signals and different
     // threads

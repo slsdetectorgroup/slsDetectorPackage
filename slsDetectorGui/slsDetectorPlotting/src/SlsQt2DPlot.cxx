@@ -19,11 +19,7 @@
 #include <qwt_scale_engine.h>
 #include <qwt_scale_widget.h>
 
-
-
-
-#define QwtLog10ScaleEngine QwtLogScaleEngine //hmm remove? 
-
+#define QwtLog10ScaleEngine QwtLogScaleEngine // hmm remove?
 
 SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
     isLog = 0;
@@ -40,55 +36,52 @@ SlsQt2DPlot::SlsQt2DPlot(QWidget *parent) : QwtPlot(parent) {
     Update();
 }
 
-
 SlsQt2DPlot::~SlsQt2DPlot() {
     if (d_spectrogram) {
         d_spectrogram->detach();
-        //delete d_spectrogram;
+        // delete d_spectrogram;
     }
-    delete hist;  
-    delete colorMapLinearScale;   
-    delete colorMapLogScale;  
-    delete zoomer;   
-    delete panner;   
+    delete hist;
+    delete colorMapLinearScale;
+    delete colorMapLogScale;
+    delete zoomer;
+    delete panner;
 }
 
-void SlsQt2DPlot::SetTitle(QString title) {
-	setTitle(title);
-}
+void SlsQt2DPlot::SetTitle(QString title) { setTitle(title); }
 
 void SlsQt2DPlot::SetXTitle(QString title) {
-	setAxisTitle(QwtPlot::xBottom, title);
+    setAxisTitle(QwtPlot::xBottom, title);
 }
 
 void SlsQt2DPlot::SetYTitle(QString title) {
-	setAxisTitle(QwtPlot::yLeft, title);
+    setAxisTitle(QwtPlot::yLeft, title);
 }
 
 void SlsQt2DPlot::SetZTitle(QString title) {
-	setAxisTitle(QwtPlot::yRight, title);
+    setAxisTitle(QwtPlot::yRight, title);
 }
 
-void SlsQt2DPlot::SetTitleFont(const QFont& f) {
+void SlsQt2DPlot::SetTitleFont(const QFont &f) {
     QwtText t("");
     t.setFont(f);
-    t.setRenderFlags( Qt::AlignLeft | Qt::AlignVCenter);
+    t.setRenderFlags(Qt::AlignLeft | Qt::AlignVCenter);
     setTitle(t);
 }
 
-void SlsQt2DPlot::SetXFont(const QFont& f) {
+void SlsQt2DPlot::SetXFont(const QFont &f) {
     QwtText t("");
     t.setFont(f);
     setAxisTitle(QwtPlot::xBottom, t);
 }
 
-void SlsQt2DPlot::SetYFont(const QFont& f) {
+void SlsQt2DPlot::SetYFont(const QFont &f) {
     QwtText t("");
     t.setFont(f);
     setAxisTitle(QwtPlot::yLeft, t);
 }
 
-void SlsQt2DPlot::SetZFont(const QFont& f) {
+void SlsQt2DPlot::SetZFont(const QFont &f) {
     QwtText t("");
     t.setFont(f);
     setAxisTitle(QwtPlot::yRight, t);
@@ -104,7 +97,6 @@ void SlsQt2DPlot::SetupColorMap() {
 
     for (double level = 0.5; level < 10.0; level += 1.0)
         (contourLevelsLog) += (pow(10, 2 * level / 10.0) - 1) / 99.0 * 10;
-
 
     // A color bar on the right axis
     rightAxis = axisWidget(QwtPlot::yRight);
@@ -124,7 +116,8 @@ void SlsQt2DPlot::FillTestPlot(int mode) {
     double dmax = sqrt(pow(nx / 2.0 - 0.5, 2) + pow(ny / 2.0 - 0.5, 2));
     for (int i = 0; i < nx; i++) {
         for (int j = 0; j < ny; j++) {
-            double d = sqrt(pow(nx / 2.0 - (i + 0.5), 2) + pow(ny / 2.0 - (j + 0.5), 2));
+            double d = sqrt(pow(nx / 2.0 - (i + 0.5), 2) +
+                            pow(ny / 2.0 - (j + 0.5), 2));
 
             if (mode % 3)
                 the_data[i + j * nx] = 10 * d / dmax;
@@ -146,9 +139,11 @@ void SlsQt2DPlot::SetupZoom() {
     zoomer->SetHist(hist);
 
 #if QT_VERSION < 0x040000
-    zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlButton);
+    zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton,
+                            Qt::ControlButton);
 #else
-    zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
+    zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton,
+                            Qt::ControlModifier);
 #endif
     zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
 
@@ -169,27 +164,31 @@ void SlsQt2DPlot::SetupZoom() {
 }
 
 /*void SlsQt2DPlot::CompletelyUnZoom(){
-	  setAxisScale(QwtPlot::xBottom,hist->GetXMin(),hist->GetXMin()+(hist->GetXMax()-hist->GetXMin()));
-	  setAxisScale(QwtPlot::yLeft,hist->GetYMin(),hist->GetYMin()+(hist->GetYMax()-hist->GetYMin()));
-	  zoomer->setZoomBase();
-	  //replot();
+          setAxisScale(QwtPlot::xBottom,hist->GetXMin(),hist->GetXMin()+(hist->GetXMax()-hist->GetXMin()));
+          setAxisScale(QwtPlot::yLeft,hist->GetYMin(),hist->GetYMin()+(hist->GetYMax()-hist->GetYMin()));
+          zoomer->setZoomBase();
+          //replot();
 }*/
 
 void SlsQt2DPlot::UnZoom(bool replot) {
 
-    zoomer->setZoomBase(QRectF(hist->GetXMin(), hist->GetYMin(), hist->GetXMax() - hist->GetXMin(), hist->GetYMax() - hist->GetYMin()));
-    zoomer->setZoomBase(replot); //Call replot for the attached plot before initializing the zoomer with its scales.
+    zoomer->setZoomBase(QRectF(hist->GetXMin(), hist->GetYMin(),
+                               hist->GetXMax() - hist->GetXMin(),
+                               hist->GetYMax() - hist->GetYMin()));
+    zoomer->setZoomBase(replot); // Call replot for the attached plot before
+                                 // initializing the zoomer with its scales.
                                  // zoomer->zoom(0);
 }
 
-void SlsQt2DPlot::SetZoom(double xmin, double ymin, double x_width, double y_width) {
+void SlsQt2DPlot::SetZoom(double xmin, double ymin, double x_width,
+                          double y_width) {
     zoomer->setZoomBase(QRectF(xmin, ymin, x_width, y_width));
 }
 
 void SlsQt2DPlot::DisableZoom(bool disable) {
     if (disableZoom != disable) {
         disableZoom = disable;
-    
+
 #ifdef VERBOSE
         if (disable)
             std::cout << "Disabling zoom\n";
@@ -198,32 +197,39 @@ void SlsQt2DPlot::DisableZoom(bool disable) {
 #endif
         if (disable) {
             if (zoomer) {
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::NoButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect1,
+                                        Qt::NoButton);
 #if QT_VERSION < 0x040000
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
+                                        Qt::NoButton, Qt::ControlButton);
 #else
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::NoButton, Qt::ControlModifier);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
+                                        Qt::NoButton, Qt::ControlModifier);
 #endif
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::NoButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect3,
+                                        Qt::NoButton);
             }
             if (panner)
                 panner->setMouseButton(Qt::NoButton);
         } else {
             if (zoomer) {
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::LeftButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect1,
+                                        Qt::LeftButton);
 #if QT_VERSION < 0x040000
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
+                                        Qt::RightButton, Qt::ControlButton);
 #else
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
+                                        Qt::RightButton, Qt::ControlModifier);
 #endif
-                zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton);
+                zoomer->setMousePattern(QwtEventPattern::MouseSelect3,
+                                        Qt::RightButton);
             }
             if (panner)
                 panner->setMouseButton(Qt::MidButton);
         }
     }
 }
-
 
 void SlsQt2DPlot::SetZMinMax(double zmin, double zmax) {
     hist->SetMinMax(zmin, zmax);
@@ -294,24 +300,25 @@ void SlsQt2DPlot::SetContour(bool enable) {
     Update();
 }
 
-void SlsQt2DPlot::SetLogz(bool enable, bool isMin, bool isMax, double min, double max) {
-	LogZ(enable);
-	SetZRange(isMin, isMax, min, max);
+void SlsQt2DPlot::SetLogz(bool enable, bool isMin, bool isMax, double min,
+                          double max) {
+    LogZ(enable);
+    SetZRange(isMin, isMax, min, max);
 }
 
-void SlsQt2DPlot::SetZRange(bool isMin, bool isMax, double min, double max){
-	if(isLog) {
-		SetZMinimumToFirstGreaterThanZero();
-	}
+void SlsQt2DPlot::SetZRange(bool isMin, bool isMax, double min, double max) {
+    if (isLog) {
+        SetZMinimumToFirstGreaterThanZero();
+    }
 
-	// set zmin and zmax
-	if (isMin || isMax) {
-		double zmin = (isMin ? min : GetZMinimum());
-		double zmax = (isMax ? max : GetZMaximum());
-		SetZMinMax(zmin, zmax);
-	} 
+    // set zmin and zmax
+    if (isMin || isMax) {
+        double zmin = (isMin ? min : GetZMinimum());
+        double zmax = (isMax ? max : GetZMaximum());
+        SetZMinMax(zmin, zmax);
+    }
 
-	Update();
+    Update();
 }
 
 void SlsQt2DPlot::LogZ(bool on) {

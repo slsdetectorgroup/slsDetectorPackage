@@ -2685,6 +2685,7 @@ int slsDetector::activate(int enable) {
     int retval = -1;
     FILE_LOG(logDEBUG1) << "Setting activate flag to " << enable;
     sendToDetector(F_ACTIVATE, enable, retval);
+    sendToDetectorStop(F_ACTIVATE, enable, retval);
     FILE_LOG(logDEBUG1) << "Activate: " << retval;
     shm()->activated = static_cast<bool>(retval);
     if (shm()->useReceiverFlag) {

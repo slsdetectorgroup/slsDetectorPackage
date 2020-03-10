@@ -1241,7 +1241,7 @@ void Implementation::setSubPeriod(const uint64_t i) {
     FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     subPeriod = i;
-    FILE_LOG(logINFO) << "Sub Exposure Period: " << (double)subPeriod / (1E9)
+    FILE_LOG(logINFO) << "Sub Period: " << (double)subPeriod / (1E9)
                       << "s";
 }
 

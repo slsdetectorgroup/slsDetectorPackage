@@ -2983,9 +2983,9 @@ int set_all_trimbits(int file_des) {
 
 	// set
 	if (arg >= 0 && Server_VerifyLock() == OK) {
-		if (arg > 63) {
+		if (arg > MAX_TRIMBITS_VALUE) {
 			ret = FAIL;
-			strcpy(mess, "Cannot set all trimbits. Range: 0 - 63\n");
+			sprintf(mess, "Cannot set all trimbits. Range: 0 - %d\n", MAX_TRIMBITS_VALUE);
 			FILE_LOG(logERROR, (mess));
 		} else {
 			ret = setAllTrimbits(arg);

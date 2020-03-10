@@ -197,10 +197,7 @@ void SlsQt2DPlot::SetZMinMax(double zmin, double zmax) {
 }
 
 QwtLinearColorMap *SlsQt2DPlot::myColourMap(QVector<double> colourStops) {
-    std::cout << "Got: ";
-    for (int i = 0; i!=colourStops.size(); ++i)
-        std::cout << " " << colourStops[i];
-    std::cout << '\n';
+
     int ns = 5;
 
     double r[] = {0.00, 0.00, 0.87, 1.00, 0.51};

@@ -194,8 +194,8 @@ int testBus() {
 
 	int ret = OK;
 	u_int32_t addr = DTA_OFFSET_REG;
-	int times = 1000 * 1000;
-	int i = 0;
+	u_int32_t times = 1000 * 1000;
+	u_int32_t i = 0;
 
 	for (i = 0; i < times; ++i) {
 		bus_w(addr, i * 100);
@@ -911,7 +911,7 @@ uint64_t readPatternWord(int addr) {
 
 uint64_t writePatternWord(int addr, uint64_t word) {
     // get
-    if (word == -1)
+    if ((int64_t)word == -1)
         return readPatternWord(addr);
 
     // error (handled in tcp)
@@ -1003,7 +1003,7 @@ uint64_t setPatternWaitTime(int level, uint64_t t) {
     }
 
     // set
-    if (t >= 0) {
+    if ((int64_t)t >= 0) {
         FILE_LOG(logINFO, ("Setting Pattern Wait Time (level:%d, t:%lld)\n", level, (long long int)t));
         set64BitReg(t, regl, regm);
     }

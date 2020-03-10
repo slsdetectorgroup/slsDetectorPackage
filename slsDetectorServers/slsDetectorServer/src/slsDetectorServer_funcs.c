@@ -1377,14 +1377,35 @@ int get_adc(int file_des) {
     case I_POWER_IO:
         serverAdcIndex = I_PWR_IO;
         break;
+    case SLOW_ADC0:
+        serverAdcIndex = S_ADC0;
+        break;		
+    case SLOW_ADC1:
+        serverAdcIndex = S_ADC1;
+        break;		
+    case SLOW_ADC2:
+        serverAdcIndex = S_ADC2;
+        break;		
+    case SLOW_ADC3:
+        serverAdcIndex = S_ADC3;
+        break;		
+    case SLOW_ADC4:
+        serverAdcIndex = S_ADC4;
+        break;		
+    case SLOW_ADC5:
+        serverAdcIndex = S_ADC5;
+        break;		
+    case SLOW_ADC6:
+        serverAdcIndex = S_ADC6;
+        break;		
+    case SLOW_ADC7:
+        serverAdcIndex = S_ADC7;
+        break;	
+    case SLOW_ADC_TEMP:
+        serverAdcIndex = S_TMP;
+        break;			
 #endif
 	default:
-#ifdef CHIPTESTBOARDD
-        if (ind >= SLOW_ADC0 && ind <= SLOW_ADC_TEMP) {
-            serverAdcIndex = ind;
-            break;
-        }
-#endif
 		modeNotImplemented("Adc Index", (int)ind);
 		break;
 	}
@@ -1535,7 +1556,7 @@ int set_module(int file_des) {
 				module.reg, module.nchan, module.nchip,
 				module.ndac, module.iodelay, module.tau, module.eV));
 		// should at least have a dac
-		if (ts <= sizeof(sls_detector_module)) {
+		if (ts <= (int)sizeof(sls_detector_module)) {
 			ret = FAIL;
 			sprintf(mess, "Cannot set module. Received incorrect number of dacs or channels\n");
 			FILE_LOG(logERROR,(mess));
@@ -2992,7 +3013,7 @@ int set_pattern_io_control(int file_des) {
     functionNotImplemented();
 #else
 	FILE_LOG(logDEBUG1, ("Setting Pattern IO Control to 0x%llx\n", (long long int)arg));
-	if ((arg == -1) || (Server_VerifyLock() == OK)) {
+	if (((int64_t)arg == -1) || (Server_VerifyLock() == OK)) {
 		retval = writePatternIOControl(arg);
 		FILE_LOG(logDEBUG1, ("Pattern IO Control retval: 0x%llx\n", (long long int) retval));
 		validate64(arg, retval, "Pattern IO Control", HEX);
@@ -3018,7 +3039,7 @@ int set_pattern_clock_control(int file_des) {
     functionNotImplemented();
 #else
 	FILE_LOG(logDEBUG1, ("Setting Pattern Clock Control to 0x%llx\n", (long long int)arg));
-	if ((arg == -1) || (Server_VerifyLock() == OK)) {
+	if (((int64_t)arg == -1) || (Server_VerifyLock() == OK)) {
 		retval = writePatternClkControl(arg);
 		FILE_LOG(logDEBUG1, ("Pattern Clock Control retval: 0x%llx\n", (long long int) retval));
 		validate64(arg, retval, "Pattern Clock Control", HEX);
@@ -3204,7 +3225,7 @@ int set_pattern_wait_time(int file_des) {
     int loopLevel = (int)args[0];
 	uint64_t timeval = args[1];
 	FILE_LOG(logDEBUG1, ("Setting Pattern wait time (loopLevel:%d timeval:0x%llx)\n", loopLevel, (long long int)timeval));
-	if ((timeval == -1) || (Server_VerifyLock() == OK)) {
+	if (((int64_t)timeval == -1) || (Server_VerifyLock() == OK)) {
 		// valid loop level 0-2
 		 if (loopLevel < 0 || loopLevel > 2) { 
 			ret = FAIL;
@@ -4608,7 +4629,11 @@ int set_starting_frame_number(int file_des) {
 #ifdef EIGERD
 		else if (arg > UDP_HEADER_MAX_FRAME_VALUE) {
 			ret = FAIL;
+#ifdef VIRTUAL
+			sprintf(mess, "Could not set starting frame number. Must be less then %ld (0x%lx)\n", UDP_HEADER_MAX_FRAME_VALUE, UDP_HEADER_MAX_FRAME_VALUE);
+#else
 			sprintf(mess, "Could not set starting frame number. Must be less then %lld (0x%llx)\n", UDP_HEADER_MAX_FRAME_VALUE, UDP_HEADER_MAX_FRAME_VALUE);
+#endif
 			FILE_LOG(logERROR,(mess));
 		}
 #endif	
@@ -4630,7 +4655,11 @@ int set_starting_frame_number(int file_des) {
 				} else {
 					if (arg != retval) {
 						ret = FAIL;
+#ifdef VIRTUAL
+						sprintf(mess, "Could not set starting frame number. Set 0x%lx, but read 0x%lx\n", arg, retval);
+#else
 						sprintf(mess, "Could not set starting frame number. Set 0x%llx, but read 0x%llx\n", arg, retval);
+#endif
 						FILE_LOG(logERROR,(mess));
 					}
 				}

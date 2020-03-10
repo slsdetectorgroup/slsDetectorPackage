@@ -1360,19 +1360,19 @@ int getADC(enum ADCINDEX ind){
         return INA226_ReadCurrent(I2C_POWER_VIO_DEVICE_ID + (int)(ind - I_PWR_IO));
 
         // slow adcs
-    case SLOW_ADC_TEMP:
+    case S_TMP:
         FILE_LOG(logDEBUG1, ("Reading Slow ADC Temperature\n"));
         return AD7689_GetTemperature();
-    case SLOW_ADC0:
-    case SLOW_ADC1:
-    case SLOW_ADC2:
-    case SLOW_ADC3:
-    case SLOW_ADC4:
-    case SLOW_ADC5:
-    case SLOW_ADC6:
-    case SLOW_ADC7:
-        FILE_LOG(logDEBUG1, ("Reading Slow ADC Channel %d\n", (int)ind - SLOW_ADC0));
-        return AD7689_GetChannel((int)ind - SLOW_ADC0);
+    case S_ADC0:
+    case S_ADC1:
+    case S_ADC2:
+    case S_ADC3:
+    case S_ADC4:
+    case S_ADC5:
+    case S_ADC6:
+    case S_ADC7:
+        FILE_LOG(logDEBUG1, ("Reading Slow ADC Channel %d\n", (int)ind - S_ADC0));
+        return AD7689_GetChannel((int)ind - S_ADC0);
     default:
         FILE_LOG(logERROR, ("Adc Index %d not defined \n", (int)ind));
         return -1;
@@ -1844,7 +1844,7 @@ int getPipeline(enum CLKINDEX ind) {
 // patterns
 
 uint64_t writePatternIOControl(uint64_t word) {
-    if (word != -1) {
+    if ((int64_t)word != -1) {
         FILE_LOG(logINFO, ("Setting Pattern I/O Control: 0x%llx\n", (long long int) word));
         set64BitReg(word, PATTERN_IO_CNTRL_LSB_REG, PATTERN_IO_CNTRL_MSB_REG);
     }
@@ -1854,7 +1854,7 @@ uint64_t writePatternIOControl(uint64_t word) {
 }
 
 uint64_t writePatternClkControl(uint64_t word) {
-    if (word != -1) {
+    if ((int64_t)word != -1) {
         FILE_LOG(logINFO, ("Setting Pattern Clock Control: 0x%llx\n", (long long int) word));
         set64BitReg(word, PATTERN_IO_CLK_CNTRL_LSB_REG, PATTERN_IO_CLK_CNTRL_MSB_REG);
     }
@@ -1893,7 +1893,7 @@ uint64_t readPatternWord(int addr) {
 
 uint64_t writePatternWord(int addr, uint64_t word) {
     // get
-    if (word == -1)
+    if ((int64_t)word == -1)
         return readPatternWord(addr);
 
     // error (handled in tcp)
@@ -1994,7 +1994,7 @@ uint64_t setPatternWaitTime(int level, uint64_t t) {
     }
 
     // set
-    if (t >= 0) {
+    if ((int64_t)t >= 0) {
         FILE_LOG(logINFO, ("Setting Pattern Wait Time (level:%d, t:%lld)\n", level, (long long int)t));
         set64BitReg(t, regl, regm);
     }
@@ -2558,7 +2558,7 @@ int getTotalNumberOfChannels() {
     return nchanx * nchany;
 }
 
-int getNumberOfChannels(int* nchanx, int* nchany) {
+void getNumberOfChannels(int* nchanx, int* nchany) {
     int nachans = 0, ndchans = 0;
     // analog channels (normal, analog/digital readout)
     if (analogEnable) {

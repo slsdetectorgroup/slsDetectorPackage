@@ -11,6 +11,7 @@
 #include <unistd.h> //to gethostname
 #include <string.h>
 #ifdef VIRTUAL
+#include <netinet/in.h>
 #include "communication_funcs_UDP.h"
 #include <pthread.h>
 #include <time.h>
@@ -241,7 +242,11 @@ u_int64_t  getDetectorMAC() {
 		strcat(mac,pch);
 		pch = strtok (NULL, ":");
 	}
-	sscanf(mac,"%llx",&res);
+#ifdef VIRTUAL
+	sscanf(mac,"%lx",&res);
+#else
+	sscanf(mac, "%llx", &res);
+#endif
 	//increment by 1 for 10g
 	if (send_to_ten_gig)
 		res++;
@@ -1161,6 +1166,25 @@ int configureMAC() {
 	int destport = udpDetails.dstport;		
 	int destport2 = udpDetails.dstport2;			
 
+    FILE_LOG(logINFO, ("Configuring MAC\n"));
+	
+	char src_mac[50], src_ip[INET_ADDRSTRLEN],dst_mac[50], dst_ip[INET_ADDRSTRLEN];
+	getMacAddressinString(src_mac, 50, sourcemac);
+	getMacAddressinString(dst_mac, 50, destmac);
+	getIpAddressinString(src_ip, sourceip);
+	getIpAddressinString(dst_ip, destip);
+
+	FILE_LOG(logINFO, (
+	        "\tSource IP   : %s\n"
+	        "\tSource MAC  : %s\n"
+	        "\tSource Port : %d\n"
+	        "\tDest IP     : %s\n"
+	        "\tDest MAC    : %s\n"
+			"\tDest Port   : %d\n"
+			"\tDest Port2  : %d\n",
+	        src_ip, src_mac, src_port,
+	        dst_ip, dst_mac, destport, destport2));
+
 #ifdef VIRTUAL
 	char cDestIp[MAX_STR_LENGTH];
 	memset(cDestIp, 0, MAX_STR_LENGTH);
@@ -1176,23 +1200,6 @@ int configureMAC() {
 	}
     return OK;
 #else
-    FILE_LOG(logINFO, ("Configuring MAC\n"));
-	
-	char src_mac[50], src_ip[INET_ADDRSTRLEN],dst_mac[50], dst_ip[INET_ADDRSTRLEN];
-	getMacAddressinString(src_mac, 50, sourcemac);
-	getMacAddressinString(dst_mac, 50, destmac);
-	getIpAddressinString(src_ip, sourceip);
-	getIpAddressinString(dst_ip, destip);
-
-	FILE_LOG(logINFO, (
-	        "\tSource IP   : %s\n"
-	        "\tSource MAC  : %s\n"
-	        "\tSource Port : %d\n"
-	        "\tDest IP     : %s\n"
-	        "\tDest MAC    : %s\n",
-	        src_ip, src_mac, src_port,
-	        dst_ip, dst_mac));
-
 
 	int beb_num =  detid;
 	int header_number = 0;
@@ -1283,8 +1290,8 @@ int setInterruptSubframe(int value) {
 	if(!Feb_Control_SetInterruptSubframe(value)) {
 		return FAIL;
 	}
-	return OK;
 #endif
+	return OK;
 }
 
 int	getInterruptSubframe() {
@@ -1303,8 +1310,8 @@ int setReadNLines(int value) {
 		return FAIL;
 	}
 	Beb_SetReadNLines(value);
-	return OK;
 #endif
+	return OK;
 }
 
 int	getReadNLines() {
@@ -1531,7 +1538,7 @@ int64_t getCurrentTau() {
 }
 
 void setExternalGating(int enable[]) {
-	if (enable>=0) {
+	if (enable[0]>=0 && enable[1]>=0) {
 #ifndef VIRTUAL
 		Feb_Control_SetExternalEnableMode(enable[0], enable[1]);//enable = 0 or 1, polarity = 0 or 1 , where 1 is positive
 #endif

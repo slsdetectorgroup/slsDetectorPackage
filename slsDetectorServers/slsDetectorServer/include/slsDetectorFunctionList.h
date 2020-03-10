@@ -575,7 +575,7 @@ int 		copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);
 int 		calculateDataBytes();
 int 		getTotalNumberOfChannels();
 #if defined(MOENCHD) || defined(CHIPTESTBOARDD) 
-int			getNumberOfChannels(int* nchanx, int* nchany);
+void			getNumberOfChannels(int* nchanx, int* nchany);
 #endif
 int 		getNumberOfChips();
 int 		getNumberOfDACs();

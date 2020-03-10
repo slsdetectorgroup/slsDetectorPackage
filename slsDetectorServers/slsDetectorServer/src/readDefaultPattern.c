@@ -63,7 +63,11 @@ int	loadDefaultPattern(char* fname) {
             uint64_t word = 0;
 
 			// cannot scan values
+#ifdef VIRTUAL
+			if (sscanf(line, "%s 0x%x 0x%lx", command, &addr, &word) != 3) {
+#else
 			if (sscanf(line, "%s 0x%x 0x%llx", command, &addr, &word) != 3) {
+#endif
 				sprintf(initErrorMessage, "Could not scan patword arguments from default "
                     "pattern file. Line:[%s].\n", line);
 				break;
@@ -79,7 +83,11 @@ int	loadDefaultPattern(char* fname) {
             uint64_t arg = 0;
 
 			// cannot scan values
+#ifdef VIRTUAL
+			if (sscanf(line, "%s 0x%lx", command, &arg) != 2) {
+#else
 			if (sscanf(line, "%s 0x%llx", command, &arg) != 2) {
+#endif
 				sprintf(initErrorMessage, "Could not scan patioctrl arguments from default "
                     "pattern file. Line:[%s].\n", line);
 				break;
@@ -95,7 +103,11 @@ int	loadDefaultPattern(char* fname) {
             uint64_t arg = 0;
 
 			// cannot scan values
+#ifdef VIRTUAL
+			if (sscanf(line, "%s 0x%lx", command, &arg) != 2) {
+#else
 			if (sscanf(line, "%s 0x%llx", command, &arg) != 2) {
+#endif
 				sprintf(initErrorMessage, "Could not scan patclkctrl arguments from default "
                     "pattern file. Line:[%s].\n", line);
 				break;
@@ -226,7 +238,11 @@ int	loadDefaultPattern(char* fname) {
             uint64_t waittime = 0;
 
 			// cannot scan values
+#ifdef VIRTUAL
+			if (sscanf(line, "%s %ld", command, &waittime) != 2) {
+#else
 			if (sscanf(line, "%s %lld", command, &waittime) != 2) {
+#endif
 				sprintf(initErrorMessage, "Could not scan patwaittime%d arguments from default "
                     "pattern file. Line:[%s].\n", level, line);
 				break;
@@ -253,7 +269,7 @@ int	loadDefaultPattern(char* fname) {
 
 int default_writePatternWord(char* line, uint32_t addr, uint64_t word) {
     //validations 
-    if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
+    if ((int32_t)addr < 0 || addr >= MAX_PATTERN_LENGTH) {
         sprintf(initErrorMessage, "Cannot set pattern word from default "
             "pattern file. Addr must be between 0 and 0x%x. Line:[%s]\n",
             MAX_PATTERN_LENGTH, line);
@@ -267,8 +283,13 @@ int default_writePatternWord(char* line, uint32_t addr, uint64_t word) {
 int default_writePatternIOControl(char* line, uint64_t arg) {
     uint64_t retval = writePatternIOControl(arg);
     if (retval != arg) {
+#ifdef VIRTUAL
+        sprintf(initErrorMessage, "Could not set patioctrl from default pattern "
+            "file. Set 0x%lx, read 0x%lx. Line:[%s]\n", arg, retval, line);
+#else
         sprintf(initErrorMessage, "Could not set patioctrl from default pattern "
             "file. Set 0x%llx, read 0x%llx. Line:[%s]\n", arg, retval, line);
+#endif
         return FAIL;               
     }    
     return OK;
@@ -278,8 +299,13 @@ int default_writePatternIOControl(char* line, uint64_t arg) {
 int default_writePatternClkControl(char* line, uint64_t arg) {
     uint64_t retval = writePatternClkControl(arg);
     if (retval != arg) {
+#ifdef VIRTUAL
+        sprintf(initErrorMessage, "Could not set patclkctrl from default pattern "
+            "file. Set 0x%lx, read 0x%lx. Line:[%s]\n", arg, retval, line);
+#else
         sprintf(initErrorMessage, "Could not set patclkctrl from default pattern "
             "file. Set 0x%llx, read 0x%llx. Line:[%s]\n", arg, retval, line);
+#endif
         return FAIL;               
     }    
     return OK;
@@ -287,8 +313,8 @@ int default_writePatternClkControl(char* line, uint64_t arg) {
 
 int default_setPatternLoopLimits(char* line, uint32_t startAddr, uint32_t stopAddr) {
     //validations 
-    if (startAddr < 0 || startAddr >= MAX_PATTERN_LENGTH || 
-        stopAddr < 0 || stopAddr >= MAX_PATTERN_LENGTH) {
+    if ((int32_t)startAddr < 0 || startAddr >= MAX_PATTERN_LENGTH || 
+        (int32_t)stopAddr < 0 || stopAddr >= MAX_PATTERN_LENGTH) {
         sprintf(initErrorMessage, "Cannot set patlimits from default "
             "pattern file. Addr must be between 0 and 0x%x. Line:[%s]\n", 
             MAX_PATTERN_LENGTH, line);
@@ -299,7 +325,7 @@ int default_setPatternLoopLimits(char* line, uint32_t startAddr, uint32_t stopAd
     setPatternLoop(-1, &r_startAddr, &r_stopAddr, &numLoops);
 
     // validate
-    if (r_startAddr != startAddr || r_stopAddr != stopAddr) {
+    if (r_startAddr != (int)startAddr || r_stopAddr != (int)stopAddr) {
         sprintf(initErrorMessage, "Could not set patlimits from default pattern "
         "file. Read start addr:0x%x, stop addr: 0x%x. Line:[%s]\n", 
         r_startAddr, r_stopAddr, line);
@@ -316,8 +342,8 @@ int default_setPatternLoopAddresses(char* line, int level, uint32_t startAddr, u
             line);
         return FAIL;
     }
-    if (startAddr < 0 || startAddr >= MAX_PATTERN_LENGTH || 
-        stopAddr < 0 || stopAddr >= MAX_PATTERN_LENGTH) {
+    if ((int32_t)startAddr < 0 || startAddr >= MAX_PATTERN_LENGTH || 
+        (int32_t)stopAddr < 0 || stopAddr >= MAX_PATTERN_LENGTH) {
         sprintf(initErrorMessage, "Cannot set patloop (level: %d) from default "
             "pattern file. Addr must be between 0 and 0x%x. Line:[%s]\n", 
             level, MAX_PATTERN_LENGTH, line);
@@ -328,7 +354,7 @@ int default_setPatternLoopAddresses(char* line, int level, uint32_t startAddr, u
     setPatternLoop(level, &r_startAddr, &r_stopAddr, &numLoops);
 
     // validate
-    if (r_startAddr != startAddr || r_stopAddr != stopAddr) {
+    if (r_startAddr != (int)startAddr || r_stopAddr != (int)stopAddr) {
         sprintf(initErrorMessage, "Could not set patloop (level: %d) from default "
         "pattern file. Read start addr:0x%x, stop addr: 0x%x. Line:[%s]\n", 
         level, r_startAddr, r_stopAddr, line);
@@ -374,14 +400,14 @@ int default_setPatternWaitAddresses(char* line, int level, uint32_t addr) {
             line);
         return FAIL;
     }
-    if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
+    if ((int32_t)addr < 0 || addr >= MAX_PATTERN_LENGTH) {
         sprintf(initErrorMessage, "Cannot set patwait address (level: %d) from default "
             "pattern file. Addr must be between 0 and 0x%x. Line:[%s]\n", 
             level, MAX_PATTERN_LENGTH, line);
         return FAIL;
     } 
 
-    int retval = setPatternWaitAddress(level, addr);
+    uint32_t retval = setPatternWaitAddress(level, addr);
 
     // validate
     if (retval != addr) {
@@ -405,9 +431,15 @@ int default_setPatternWaitTime(char* line, int level, uint64_t waittime) {
 
     // validate
     if (retval != waittime) {
+#ifdef VIRTUAL
+        sprintf(initErrorMessage, "Could not set patwaittime (level: %d) from default "
+        "pattern file. Read %ld wait time. Line:[%s]\n", 
+        level, retval, line);
+#else
         sprintf(initErrorMessage, "Could not set patwaittime (level: %d) from default "
         "pattern file. Read %lld wait time. Line:[%s]\n", 
         level, retval, line);
+#endif
         return FAIL;
     }  
     return OK;  

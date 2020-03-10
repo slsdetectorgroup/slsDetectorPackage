@@ -205,8 +205,8 @@ int testBus() {
 
 	int ret = OK;
 	u_int32_t addr = DTA_OFFSET_REG; 
-	int times = 1000 * 1000;
-	int i = 0;
+	u_int32_t times = 1000 * 1000;
+	u_int32_t i = 0;
 
 	for (i = 0; i < times; ++i) {
 		bus_w(addr, i * 100);

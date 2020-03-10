@@ -3,7 +3,6 @@
 #include "clogger.h"
 #include "RegisterDefs.h"
 
-#include "AD9252.h"     // old board compatibility
 #include "LTC2620.h"    // dacs
 
 #include "string.h"

@@ -2,6 +2,7 @@
 #include "slsDetectorServer_defs.h" // DAC_INDEX, ADC_INDEX, also include RegisterDefs.h
 #ifdef GOTTHARDD
 #include "clogger.h"                 // runState(enum TLogLevel)
+#include "AD9252.h"     			// old board compatibility
 #endif
 #if defined(GOTTHARDD) || defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 #include "AD9257.h"		// commonServerFunctions.h, blackfin.h, ansi.h

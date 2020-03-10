@@ -36,7 +36,7 @@ int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkFrequency[NUM_CLOCKS] = {};
 
 int highvoltage = 0;
-int dacValues[NDAC] = {0};
+int dacValues[NDAC] = {};
 int detPos[2] = {};
 uint32_t countermask = 0; // will be removed later when in firmware converted to mask
 

@@ -25,6 +25,7 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
     - (Receiver) performance (memory allocation and alignment, file buffering)
     - (Package) Removed warnings including memory overlap copy
     - (Users) Added setflippeddatax to users class
+    - (zmq) Client zmq threads created each time client data streaming enabled
 
     Compared to 4.1.1, 
         - no firmware update required for this release
@@ -76,6 +77,12 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
     -------
     1.  Many warnings have been fixed, including those with overlapping 
         memory copies for source and destination. 
+
+    Client
+    ------
+    1.  Each time client data streaming was enabled to receive, it
+        creates zmq sockets without checking if they were already created.
+        This is fixed now.
     
     
     

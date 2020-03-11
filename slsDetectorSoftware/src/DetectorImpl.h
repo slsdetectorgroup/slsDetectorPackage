@@ -5,10 +5,6 @@
 #include "logger.h"
 #include "sls_detector_defs.h"
 
-namespace sls{
-    class Module;
-}
-
 class ZmqSocket;
 class detectorData;
 
@@ -25,6 +21,11 @@ class detectorData;
 
 #include <future>
 #include <numeric>
+
+namespace sls{
+
+class Module;
+
 /**
  * @short structure allocated in shared memory to store detector settings
  * for IPC and cache
@@ -199,10 +200,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** return multi detector shared memory ID */
     int getMultiId() const;
 
-    std::string getPackageVersion() const;
-    
-    int64_t getClientSoftwareVersion() const; 
-
     /** Free specific shared memory from the command line without creating object */
     static void freeSharedMemory(int multiId, int detPos = -1);
 
@@ -251,8 +248,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @returns data streaming to client enable
      */
     bool enableDataStreamingToClient(int enable = -1);
-
-    void savePattern(const std::string &fname); 
 
     /**
      * register callback for accessing acquisition final data
@@ -437,3 +432,5 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void (*dataReady)(detectorData *, uint64_t, uint32_t, void *){nullptr};
     void *pCallbackArg{nullptr};
 };
+
+}//namespace sls

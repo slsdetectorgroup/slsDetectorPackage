@@ -5,11 +5,12 @@
 #include <memory>
 #include <vector>
 
-class DetectorImpl;
+
 class detectorData;
 
 namespace sls {
 using ns = std::chrono::nanoseconds;
+class DetectorImpl;
 class MacAddr;
 class IpAddr;
 

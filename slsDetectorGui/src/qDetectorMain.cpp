@@ -114,29 +114,32 @@ qDetectorMain::qDetectorMain(int multiId, const std::string& fname, bool isDevel
     SetUpWidgetWindow();
 }
 
-qDetectorMain::~qDetectorMain() = default;
+qDetectorMain::~qDetectorMain(){
+    disconnect(tabs, SIGNAL(currentChanged(int)), this,
+            SLOT(Refresh(int)));
+}
 
 void qDetectorMain::SetUpWidgetWindow() {
     setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
 
     // plot setup
-    plot = sls::make_unique<qDrawPlot>(dockWidgetPlot, det.get());
+    plot = new qDrawPlot(dockWidgetPlot, det.get());
     FILE_LOG(logDEBUG) << "DockPlot ready";
-    dockWidgetPlot->setWidget(plot.get());
+    dockWidgetPlot->setWidget(plot);
 
     // tabs setup
-    tabs = sls::make_unique<MyTabWidget>(this);
-    layoutTabs->addWidget(tabs.get());
+    tabs = new MyTabWidget(this);
+    layoutTabs->addWidget(tabs);
 
     // creating all the other tab widgets
     tabMeasurement =
-        sls::make_unique<qTabMeasurement>(this, det.get(), plot.get());
-    tabDataOutput = sls::make_unique<qTabDataOutput>(this, det.get());
-    tabPlot = sls::make_unique<qTabPlot>(this, det.get(), plot.get());
-    tabSettings = sls::make_unique<qTabSettings>(this, det.get());
-    tabAdvanced = sls::make_unique<qTabAdvanced>(this, det.get(), plot.get());
-    tabDebugging = sls::make_unique<qTabDebugging>(this, det.get());
-    tabDeveloper = sls::make_unique<qTabDeveloper>(this, det.get());
+        new qTabMeasurement(this, det.get(), plot);
+    tabDataOutput = new qTabDataOutput(this, det.get());
+    tabPlot = new qTabPlot(this, det.get(), plot);
+    tabSettings = new qTabSettings(this, det.get());
+    tabAdvanced = new qTabAdvanced(this, det.get(), plot);
+    tabDebugging = new qTabDebugging(this, det.get());
+    tabDeveloper = new qTabDeveloper(this, det.get());
 
     //	creating the scroll area widgets for the tabs
     for (int i = 0; i < NumberOfTabs; ++i) {
@@ -144,13 +147,13 @@ void qDetectorMain::SetUpWidgetWindow() {
         scroll[i]->setFrameShape(QFrame::NoFrame);
     }
     // setting the tab widgets to the scrollareas
-    scroll[MEASUREMENT]->setWidget(tabMeasurement.get());
-    scroll[DATAOUTPUT]->setWidget(tabDataOutput.get());
-    scroll[PLOT]->setWidget(tabPlot.get());
-    scroll[SETTINGS]->setWidget(tabSettings.get());
-    scroll[ADVANCED]->setWidget(tabAdvanced.get());
-    scroll[DEBUGGING]->setWidget(tabDebugging.get());
-    scroll[DEVELOPER]->setWidget(tabDeveloper.get());
+    scroll[MEASUREMENT]->setWidget(tabMeasurement);
+    scroll[DATAOUTPUT]->setWidget(tabDataOutput);
+    scroll[PLOT]->setWidget(tabPlot);
+    scroll[SETTINGS]->setWidget(tabSettings);
+    scroll[ADVANCED]->setWidget(tabAdvanced);
+    scroll[DEBUGGING]->setWidget(tabDebugging);
+    scroll[DEVELOPER]->setWidget(tabDeveloper);
     // inserting all the tabs
     tabs->insertTab(MEASUREMENT, scroll[MEASUREMENT].get(), "Measurement");
     tabs->insertTab(DATAOUTPUT, scroll[DATAOUTPUT].get(), "Data Output");
@@ -160,17 +163,17 @@ void qDetectorMain::SetUpWidgetWindow() {
     tabs->insertTab(DEBUGGING, scroll[DEBUGGING].get(), "Debugging");
     tabs->insertTab(DEVELOPER, scroll[DEVELOPER].get(), "Developer");
     // no scroll buttons this way
-    tabs->insertTab(MESSAGES, tabMessages.get(), "Terminal");
+    tabs->insertTab(MESSAGES, tabMessages, "Terminal");
 
     // swap tabs so that messages is last tab
-    tabs->tabBar()->moveTab(tabs->indexOf(tabMeasurement.get()), MEASUREMENT);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabSettings.get()), SETTINGS);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabDataOutput.get()), DATAOUTPUT);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabPlot.get()), PLOT);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabAdvanced.get()), ADVANCED);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabDebugging.get()), DEBUGGING);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabDeveloper.get()), DEVELOPER);
-    tabs->tabBar()->moveTab(tabs->indexOf(tabMessages.get()), MESSAGES);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabMeasurement), MEASUREMENT);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabSettings), SETTINGS);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabDataOutput), DATAOUTPUT);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabPlot), PLOT);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabAdvanced), ADVANCED);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabDebugging), DEBUGGING);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabDeveloper), DEVELOPER);
+    tabs->tabBar()->moveTab(tabs->indexOf(tabMessages), MESSAGES);
     tabs->setCurrentIndex(MEASUREMENT);
 
     // other tab properties
@@ -209,7 +212,7 @@ void qDetectorMain::SetUpDetector(const std::string& config_file, int multiID) {
     det = sls::make_unique<sls::Detector>(multiID);
 
     // create messages tab to capture config file loading logs
-    tabMessages = sls::make_unique<qTabMessages>(this);
+    tabMessages = new qTabMessages(this);
 
     // loads the config file at startup
     if (!config_file.empty())
@@ -252,21 +255,21 @@ void qDetectorMain::Initialization() {
     connect(dockWidgetPlot, SIGNAL(topLevelChanged(bool)), this,
             SLOT(ResizeMainWindow(bool)));
     // tabs
-    connect(tabs.get(), SIGNAL(currentChanged(int)), this,
+    connect(tabs, SIGNAL(currentChanged(int)), this,
             SLOT(Refresh(int))); //( QWidget*)));
     //	Measurement tab
-    connect(tabMeasurement.get(), SIGNAL(EnableTabsSignal(bool)), this,
+    connect(tabMeasurement, SIGNAL(EnableTabsSignal(bool)), this,
             SLOT(EnableTabs(bool)));
-    connect(tabMeasurement.get(), SIGNAL(FileNameChangedSignal(QString)),
-            plot.get(), SLOT(SetSaveFileName(QString)));
+    connect(tabMeasurement, SIGNAL(FileNameChangedSignal(QString)),
+            plot, SLOT(SetSaveFileName(QString)));
     // Plot tab
-    connect(tabPlot.get(), SIGNAL(DisableZoomSignal(bool)), this,
+    connect(tabPlot, SIGNAL(DisableZoomSignal(bool)), this,
             SLOT(SetZoomToolTip(bool)));
 
     // Plotting
-    connect(plot.get(), SIGNAL(AcquireFinishedSignal()), tabMeasurement.get(),
+    connect(plot, SIGNAL(AcquireFinishedSignal()), tabMeasurement,
             SLOT(AcquireFinished()));
-    connect(plot.get(), SIGNAL(AbortSignal()), tabMeasurement.get(),
+    connect(plot, SIGNAL(AbortSignal()), tabMeasurement,
             SLOT(AbortAcquire()));
 
     // menubar

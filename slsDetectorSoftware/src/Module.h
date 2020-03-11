@@ -1915,6 +1915,9 @@ class Module : public virtual slsDetectorDefs {
     void sendToDetector(int fnum, std::nullptr_t, Ret &retval);
     void sendToDetector(int fnum);
 
+    template <typename Ret>
+    Ret sendToDetector(int fnum);
+
     /**
      * Send function parameters to detector (stop server)
      * @param fnum function enum

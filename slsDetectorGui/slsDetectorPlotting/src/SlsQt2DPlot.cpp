@@ -202,8 +202,8 @@ QwtLinearColorMap *SlsQt2DPlot::myColourMap(QVector<double> colourStops) {
     double g[] = {0.00, 0.81, 1.00, 0.20, 0.00};
     double b[] = {0.51, 1.00, 0.12, 0.00, 0.00};
 
-    QColor c1, c2, c;
-    c1.setRgbF(r[0], g[0], b[0], 0);
+    // QColor c1, c2, c;
+    QColor c2, c;
     c2.setRgbF(r[ns - 1], g[ns - 1], b[ns - 1]);
     QwtLinearColorMap *copyMap = new QwtLinearColorMap(Qt::lightGray, c2);
 
@@ -216,14 +216,12 @@ QwtLinearColorMap *SlsQt2DPlot::myColourMap(QVector<double> colourStops) {
 }
 
 QwtLinearColorMap *SlsQt2DPlot::myColourMap(int log) {
-    QVector<double> cs1{0.0, 0.34, 0.61 ,0.84, 1.0};
+    QVector<double> cs{0.0, 0.34, 0.61 ,0.84, 1.0};
     if (log) {
-        QVector<double> lcs1(cs1.size());
-        for (int i = 0; i < cs1.size(); ++i)
-            lcs1[i] = (pow(10, 2 * cs1[i]) - 1) / 99.0;
-        return myColourMap(lcs1);
+        for (int i = 0; i < cs.size(); ++i)
+            cs[i] = (pow(10, 2 * cs[i]) - 1) / 99.0;
     }
-    return myColourMap(cs1);
+    return myColourMap(cs);
 }
 
 

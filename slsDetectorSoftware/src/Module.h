@@ -98,9 +98,6 @@ struct sharedSlsDetector {
      * unset if socket connection is not possible  */
     bool useReceiverFlag;
 
-    /** flipped data across x or y axis */
-    bool flippedDataX;
-
     /** tcp port from gui/different process to receiver (only data) */
     int zmqport;
 
@@ -1302,14 +1299,14 @@ class Module : public virtual slsDetectorDefs {
      * Returns the enable if data will be flipped across x axis (Eiger)
      * @returns if flipped across x axis
      */
-    bool getFlippedDataX() const;
+    bool getFlippedDataX();
 
     /**
      * Sets the enable which determines if
      * data will be flipped across x axis (Eiger)
-     * @param value 0 or 1 to reset/set or -1 to get value
+     * @param value 0 or 1 to reset/set 
      */
-    void setFlippedDataX(int value = -1);
+    void setFlippedDataX(bool value);
 
     /**
      * Sets all the trimbits to a particular value (Eiger)

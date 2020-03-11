@@ -968,8 +968,7 @@ Result<bool> Detector::getBottom(Positions pos) const {
 }
 
 void Detector::setBottom(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setFlippedDataX, pos,
-                    static_cast<int>(value));
+    pimpl->Parallel(&Module::setFlippedDataX, pos, value);
 }
 
 Result<int> Detector::getAllTrimbits(Positions pos) const {

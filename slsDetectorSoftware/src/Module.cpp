@@ -340,7 +340,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
     shm()->useReceiverFlag = false;
-    shm()->flippedDataX = false;
     shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
                      (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->rxZmqport = DEFAULT_ZMQ_RX_PORTNO +
@@ -1730,7 +1729,6 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
             setSubExptime(getSubExptime());
             setSubDeadTime(getSubDeadTime());
             setDynamicRange(shm()->dynamicRange);
-            setFlippedDataX(-1);
             activate(-1);
             setDeactivatedRxrPaddingMode(
                 static_cast<int>(shm()->rxPadDeactivatedModules));
@@ -2713,22 +2711,26 @@ bool Module::setDeactivatedRxrPaddingMode(int padding) {
     return shm()->rxPadDeactivatedModules;
 }
 
-bool Module::getFlippedDataX() const { return shm()->flippedDataX; }
-
-void Module::setFlippedDataX(int value) {
-    // replace get with shm value (write to shm right away as it is a det value,
-    // not rx value)
-    if (value > -1) {
-        shm()->flippedDataX = (value > 0);
+bool Module::getFlippedDataX() { 
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to get receiver parameters (flipped data x)");
     }
     int retval = -1;
-    int arg = static_cast<int>(shm()->flippedDataX);
-    LOG(logDEBUG1) << "Setting flipped data across x axis with value: "
-                        << arg;
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_SET_FLIPPED_DATA_RECEIVER, arg, retval);
-        LOG(logDEBUG1) << "Flipped data:" << retval;
+    int arg = -1;
+    sendToReceiver(F_SET_FLIPPED_DATA_RECEIVER, arg, retval);
+    LOG(logDEBUG1) << "Flipped data:" << retval;
+    return retval;
+}
+
+void Module::setFlippedDataX(bool value) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to set receiver parameters (flipped data x)");
     }
+    int retval = -1;
+    int arg = static_cast<int>(value);
+    LOG(logDEBUG1) << "Setting flipped data across x axis with value: "
+                        << value;
+    sendToReceiver(F_SET_FLIPPED_DATA_RECEIVER, arg, retval);
 }
 
 int Module::setAllTrimbits(int val) {

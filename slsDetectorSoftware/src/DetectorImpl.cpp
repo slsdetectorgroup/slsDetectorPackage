@@ -140,7 +140,7 @@ void DetectorImpl::initSharedMemory(bool verify) {
     } else {
         multi_shm.OpenSharedMemory();
         if (verify && multi_shm()->shmversion != MULTI_SHMVERSION) {
-            FILE_LOG(logERROR) << "Multi shared memory (" << multiId
+            LOG(logERROR) << "Multi shared memory (" << multiId
                                << ") version mismatch "
                                   "(expected 0x"
                                << std::hex << MULTI_SHMVERSION << " but got 0x"
@@ -195,7 +195,7 @@ void DetectorImpl::updateUserdetails() {
 
 bool DetectorImpl::isAcquireReady() {
     if (multi_shm()->acquiringFlag) {
-        FILE_LOG(logWARNING)
+        LOG(logWARNING)
             << "Acquire has already started. "
                "If previous acquisition terminated unexpectedly, "
                "reset busy flag to restart.(sls_detector_put clearbusy)";
@@ -237,7 +237,7 @@ void DetectorImpl::setVirtualDetectorServers(const int numdet, const int port) {
 void DetectorImpl::setHostname(const std::vector<std::string> &name) {
     // this check is there only to allow the previous detsizechan command
     if (multi_shm()->numberOfDetectors != 0) {
-        FILE_LOG(logWARNING)
+        LOG(logWARNING)
             << "There are already detector(s) in shared memory."
                "Freeing Shared memory now.";
         bool initialChecks = multi_shm()->initialChecks;
@@ -252,7 +252,7 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
 }
 
 void DetectorImpl::addSlsDetector(const std::string &hostname) {
-    FILE_LOG(logINFO) << "Adding detector " << hostname;
+    LOG(logINFO) << "Adding detector " << hostname;
 
     int port = DEFAULT_PORTNO;
     std::string host = hostname;
@@ -265,7 +265,7 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
     if (host != "localhost") {
         for (auto &d : detectors) {
             if (d->getHostname() == host) {
-                FILE_LOG(logWARNING)
+                LOG(logWARNING)
                     << "Detector " << host
                     << "already part of the multiDetector!" << std::endl
                     << "Remove it before adding it back in a new position!";
@@ -292,7 +292,7 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
 }
 
 void DetectorImpl::updateDetectorSize() {
-    FILE_LOG(logDEBUG) << "Updating Multi-Detector Size: " << size();
+    LOG(logDEBUG) << "Updating Multi-Detector Size: " << size();
 
     const slsDetectorDefs::xy det_size = detectors[0]->getNumberOfChannels();
 
@@ -312,7 +312,7 @@ void DetectorImpl::updateDetectorSize() {
     multi_shm()->numberOfChannels.x = det_size.x * ndetx;
     multi_shm()->numberOfChannels.y = det_size.y * ndety;
 
-    FILE_LOG(logDEBUG) << "\n\tNumber of Detectors in X direction:"
+    LOG(logDEBUG) << "\n\tNumber of Detectors in X direction:"
                        << multi_shm()->numberOfDetector.x
                        << "\n\tNumber of Detectors in Y direction:"
                        << multi_shm()->numberOfDetector.y
@@ -359,18 +359,18 @@ void DetectorImpl::setGapPixelsinReceiver(bool enable) {
 
 int DetectorImpl::createReceivingDataSockets(const bool destroy) {
     if (destroy) {
-        FILE_LOG(logINFO) << "Going to destroy data sockets";
+        LOG(logINFO) << "Going to destroy data sockets";
         // close socket
         zmqSocket.clear();
 
         client_downstream = false;
-        FILE_LOG(logINFO) << "Destroyed Receiving Data Socket(s)";
+        LOG(logINFO) << "Destroyed Receiving Data Socket(s)";
         return OK;
     }
     if (client_downstream) {
         return OK;
     }
-    FILE_LOG(logINFO) << "Going to create data sockets";
+    LOG(logINFO) << "Going to create data sockets";
     
     size_t numSockets = detectors.size();
     size_t numSocketsPerDetector = 1;
@@ -394,10 +394,10 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
                     .str()
                     .c_str(),
                 portnum));
-            FILE_LOG(logINFO) << "Zmq Client[" << iSocket << "] at "
+            LOG(logINFO) << "Zmq Client[" << iSocket << "] at "
                               << zmqSocket.back()->GetZmqServerAddress();
         } catch (...) {
-            FILE_LOG(logERROR)
+            LOG(logERROR)
                 << "Could not create Zmq socket on port " << portnum;
             createReceivingDataSockets(true);
             return FAIL;
@@ -405,7 +405,7 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
     }
 
     client_downstream = true;
-    FILE_LOG(logINFO) << "Receiving Data Socket(s) created";
+    LOG(logINFO) << "Receiving Data Socket(s) created";
     return OK;
 }
 
@@ -432,7 +432,7 @@ void DetectorImpl::readFrameFromReceiver() {
         } else {
             // to remember the list it connected to, to disconnect later
             connectList[i] = false;
-            FILE_LOG(logERROR) << "Could not connect to socket  "
+            LOG(logERROR) << "Could not connect to socket  "
                                << zmqSocket[i]->GetZmqServerAddress();
             runningList[i] = false;
         }
@@ -516,7 +516,7 @@ void DetectorImpl::readFrameFromReceiver() {
                             (doc["gappixels"].GetUint() == 0) ? false : true;
                         quadEnable =
                             (doc["quad"].GetUint() == 0) ? false : true;
-                        FILE_LOG(logDEBUG1)
+                        LOG(logDEBUG1)
                             << "One Time Header Info:"
                             "\n\tsize: "
                             << size << "\n\tmultisize: " << multisize
@@ -540,7 +540,7 @@ void DetectorImpl::readFrameFromReceiver() {
                         coordY = (nY - 1) - coordY;
                     }
                     flippedDataX = doc["flippedDataX"].GetUint();
-		            FILE_LOG(logDEBUG1)
+		            LOG(logDEBUG1)
 		                << "Header Info:"
                         "\n\tcurrentFileName: "
                         << currentFileName << "\n\tcurrentAcquisitionIndex: "
@@ -564,7 +564,7 @@ void DetectorImpl::readFrameFromReceiver() {
                     if (multi_shm()->multiDetectorType == CHIPTESTBOARD) {
                         singledetrowoffset = size;
 		            }
-                    FILE_LOG(logDEBUG1)
+                    LOG(logDEBUG1)
 		            << "Multi Image Info:"
                         "\n\txoffset: "
                         << xoffset << "\n\tyoffset: " << yoffset
@@ -591,7 +591,7 @@ void DetectorImpl::readFrameFromReceiver() {
                 }
             }
         }
-        FILE_LOG(logDEBUG)<< "Call Back Info:"
+        LOG(logDEBUG)<< "Call Back Info:"
             << "\n\t nDetPixelsX: " << nDetPixelsX
             << "\n\t nDetPixelsY: " << nDetPixelsY
             << "\n\t databytes: " << multisize
@@ -611,7 +611,7 @@ void DetectorImpl::readFrameFromReceiver() {
                 }
                 int n = processImageWithGapPixels(multiframe, multigappixels,
                                                   quadEnable);
-                FILE_LOG(logDEBUG) 
+                LOG(logDEBUG) 
 		  	        << "Call Back Info Recalculated:"
                     << "\n\t nDetPixelsX: " << nDetPixelsX
                     << "\n\t nDetPixelsY: " << nDetPixelsY
@@ -885,7 +885,7 @@ double DetectorImpl::setTotalProgress() {
         throw RuntimeError("Invalid Total Number of frames (0)");
     }
     totalProgress = tot;
-    FILE_LOG(logDEBUG1) << "Set total progress " << totalProgress << std::endl;
+    LOG(logDEBUG1) << "Set total progress " << totalProgress << std::endl;
     return totalProgress;
 }
 
@@ -992,7 +992,7 @@ int DetectorImpl::acquire() {
         sem_destroy(&sem_endRTAcquisition);
 
         clock_gettime(CLOCK_REALTIME, &end);
-        FILE_LOG(logDEBUG1) << "Elapsed time for acquisition:"
+        LOG(logDEBUG1) << "Elapsed time for acquisition:"
                             << ((end.tv_sec - begin.tv_sec) +
                                 (end.tv_nsec - begin.tv_nsec) / 1000000000.0)
                             << " seconds";
@@ -1021,7 +1021,7 @@ void DetectorImpl::processData() {
                 // to exit acquire by typing q
                 if (kbhit() != 0) {
                     if (fgetc(stdin) == 'q') {
-                        FILE_LOG(logINFO)
+                        LOG(logINFO)
                             << "Caught the command to stop acquisition";
                         Parallel(&slsDetector::stopAcquisition, {});
                     }
@@ -1088,9 +1088,9 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         throw RuntimeError("programfpga not implemented for this detector");
     }
 
-    FILE_LOG(logINFO)
+    LOG(logINFO)
         << "Updating Firmware. This can take awhile. Please be patient...";
-    FILE_LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
+    LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
 
     size_t filesize = 0;
     // check if it exists
@@ -1119,7 +1119,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     }
 
     // convert src to dst rawbin
-    FILE_LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
+    LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
     {
         constexpr int pofNumHeaderBytes = 0x11C;
         constexpr int pofFooterOfst = 0x1000000;
@@ -1168,7 +1168,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     if (close(dst) != 0) {
         throw RuntimeError("Program FPGA: Could not close destination file");
     }
-    FILE_LOG(logDEBUG1) << "File has been converted to " << destfname;
+    LOG(logDEBUG1) << "File has been converted to " << destfname;
 
     // loading dst file to memory
     FILE *fp = fopen(destfname, "r");
@@ -1194,8 +1194,8 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             "Program FPGA: Could not close destination file after converting");
     }
     unlink(destfname); // delete temporary file
-    FILE_LOG(logDEBUG1)
+    LOG(logDEBUG1)
         << "Successfully loaded the rawbin file to program memory";
-    FILE_LOG(logINFO) << "Read file into memory";
+    LOG(logINFO) << "Read file into memory";
     return buffer;
 }

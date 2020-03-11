@@ -188,3 +188,5 @@ inline void Output2FILE::Output(const std::string& msg, TLogLevel level)
     }
     fflush(out ? stdout : pStream);
 }
+
+#include "logger2.h"

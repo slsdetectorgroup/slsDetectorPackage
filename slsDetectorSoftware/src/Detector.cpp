@@ -52,7 +52,7 @@ void Detector::loadConfig(const std::string &fname) {
     int shm_id = getShmId();
     freeSharedMemory();
     pimpl = sls::make_unique<DetectorImpl>(shm_id);
-    FILE_LOG(logINFO) << "Loading configuration file: " << fname;
+    LOG(logINFO) << "Loading configuration file: " << fname;
     loadParameters(fname);
 }
 
@@ -71,7 +71,7 @@ void Detector::loadParameters(const std::string &fname) {
         if (current_line.find('#') != std::string::npos) {
             current_line.erase(current_line.find('#'));
         }
-        FILE_LOG(logDEBUG1)
+        LOG(logDEBUG1)
             << "current_line after removing comments:\n\t" << current_line;
         if (current_line.length() > 1) {
             parser.Parse(current_line);

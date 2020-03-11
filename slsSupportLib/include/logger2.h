@@ -2,7 +2,7 @@
 /*Utility to log to console*/
 
 #include "ansi.h"   //Colors
-#include "logger.h" //for enum, to be removed
+// #include "logger.h" //for enum, to be removed
 #include <iostream>
 #include <sstream>
 
@@ -56,7 +56,7 @@ class Logger {
         constexpr size_t buffer_len = 12;
         char buffer[buffer_len];
         time_t t;
-        time(&t);
+        ::time(&t);
         tm r;
         strftime(buffer, buffer_len, "%X", localtime_r(&t, &r));
         buffer[buffer_len - 1] = '\0';

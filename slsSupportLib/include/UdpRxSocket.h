@@ -9,7 +9,7 @@ this might be deprecated in the future
 
 */
 
-#include "genericSocket.h"
+// #include "genericSocket.h"
 #include "network_utils.h"
 #include "sls_detector_exceptions.h"
 #include <cstdint>
@@ -75,14 +75,14 @@ class UdpRxSocket {
         buff = new char[packet_size];
     }
 
-    // Delegating constructor to allow drop in replacement for old socket class
-    // This one might be removed in the future
-    UdpRxSocket(unsigned short int const port_number,
-                genericSocket::communicationProtocol p,
-                int ps = DEFAULT_PACKET_SIZE, const char *eth = NULL,
-                int hsize = 0, uint64_t buf_size = SOCKET_BUFFER_SIZE)
-        : UdpRxSocket(port_number, ps, InterfaceNameToIp(eth).str().c_str(),
-                      buf_size) {}
+    // // Delegating constructor to allow drop in replacement for old socket class
+    // // This one might be removed in the future
+    // UdpRxSocket(unsigned short int const port_number,
+    //             genericSocket::communicationProtocol p,
+    //             int ps = DEFAULT_PACKET_SIZE, const char *eth = NULL,
+    //             int hsize = 0, uint64_t buf_size = SOCKET_BUFFER_SIZE)
+    //     : UdpRxSocket(port_number, ps, InterfaceNameToIp(eth).str().c_str(),
+    //                   buf_size) {}
 
     ~UdpRxSocket() {
         delete[] buff;

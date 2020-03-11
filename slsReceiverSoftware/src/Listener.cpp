@@ -10,7 +10,6 @@
 #include "Fifo.h"
 #include "GeneralData.h"
 #include "container_utils.h" // For sls::make_unique<>
-#include "genericSocket.h"
 #include "sls_detector_exceptions.h"
 #include "UdpRxSocket.h"
 
@@ -164,10 +163,10 @@ void Listener::CreateUDPSockets() {
 	}
 
 	ShutDownUDPSocket();
-
+	// InterfaceNameToIp(eth).str().c_str()
 	try{
-	    udpSocket = sls::make_unique<SELECTED_SOCKET>(*udpPortNumber, genericSocket::UDP,
-				generalData->packetSize, ((*eth).length() ? (*eth).c_str() : nullptr), generalData->headerPacketSize,
+	    udpSocket = sls::make_unique<sls::UdpRxSocket>(*udpPortNumber,
+				generalData->packetSize, ((*eth).length() ? sls::InterfaceNameToIp(*eth).str().c_str() : nullptr),
 				*udpSocketBufferSize);
 		LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
 	} catch (...) {
@@ -216,8 +215,8 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
 
     //create dummy socket
     try {
-    	SELECTED_SOCKET g(*udpPortNumber, genericSocket::UDP,
-            generalData->packetSize, ((*eth).length() ? (*eth).c_str() : nullptr), generalData->headerPacketSize,
+    	sls::UdpRxSocket g(*udpPortNumber,
+            generalData->packetSize, ((*eth).length() ? sls::InterfaceNameToIp(*eth).str().c_str() : nullptr),
             *udpSocketBufferSize);
 
         // doubled due to kernel bookkeeping (could also be less due to permissions)

@@ -64,9 +64,6 @@ struct sharedMultiSlsDetector {
     /** flag for acquiring */
     bool acquiringFlag;
 
-    /** data streaming (up stream) enable in receiver */
-    bool receiver_upstream;
-
     /** initial checks */
     bool initialChecks;
 };
@@ -392,14 +389,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * when using acquire command
      */
     int kbhit();
-
-    /**
-     * Convert a double holding time in seconds to an int64_t with nano seconds
-     * Used for conversion when sending time to detector
-     * @param t time in seconds
-     * @returns time in nano seconds
-     */
-    int64_t secondsToNanoSeconds(double t);
 
     /** Multi detector Id */
     const int multiId{0};

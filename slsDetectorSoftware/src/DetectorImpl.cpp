@@ -160,7 +160,6 @@ void DetectorImpl::initializeDetectorStructure() {
     multi_shm()->numberOfChannels.x = 0;
     multi_shm()->numberOfChannels.y = 0;
     multi_shm()->acquiringFlag = false;
-    multi_shm()->receiver_upstream = false;
     multi_shm()->initialChecks = true;
 }
 

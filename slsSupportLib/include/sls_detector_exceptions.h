@@ -9,13 +9,13 @@ namespace sls{
 struct RuntimeError : public std::runtime_error {
 public:
 	RuntimeError(): runtime_error("SLS Detector Package Failed") {
-		FILE_LOG(logERROR) << "SLS Detector Package Failed";
+		LOG(logERROR) << "SLS Detector Package Failed";
 	}
 	RuntimeError(const std::string& msg): runtime_error(msg) {
-		FILE_LOG(logERROR) << msg;
+		LOG(logERROR) << msg;
 	}
 	RuntimeError(const char* msg): runtime_error(msg) {
-		FILE_LOG(logERROR) << msg;
+		LOG(logERROR) << msg;
 	}
 };
 

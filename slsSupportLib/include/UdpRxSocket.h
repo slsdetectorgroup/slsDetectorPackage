@@ -65,7 +65,7 @@ class UdpRxSocket {
             if (current < buffer_size) {
                 setBufferSize(buffer_size);
                 if (getBufferSize() / 2 < buffer_size) {
-                    FILE_LOG(logWARNING)
+                    LOG(logWARNING)
                         << "Could not set buffer size. Got: "
                         << getBufferSize() / 2 << " instead of " << buffer_size;
                 }
@@ -107,7 +107,7 @@ class UdpRxSocket {
         constexpr ssize_t eiger_header_packet =
             40; // only detector that has this
         if (r == eiger_header_packet) {
-            FILE_LOG(logWARNING) << "Got header pkg";
+            LOG(logWARNING) << "Got header pkg";
             r = recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
         }
         return r;

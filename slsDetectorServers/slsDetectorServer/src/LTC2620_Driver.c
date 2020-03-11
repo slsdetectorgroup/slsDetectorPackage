@@ -17,7 +17,7 @@ char LTC2620_D_DriverFileName[MAX_STR_LENGTH];
 int LTC2620_D_NumDacs = 0;
 
 void LTC2620_D_SetDefines(int hardMaxV, char* driverfname, int numdacs) {
-    FILE_LOG(logINFOBLUE, ("Configuring DACs (LTC2620) to %s (numdacs:%d, hard max: %dmV)\n", driverfname, numdacs, hardMaxV));
+    LOG(logINFOBLUE, ("Configuring DACs (LTC2620) to %s (numdacs:%d, hard max: %dmV)\n", driverfname, numdacs, hardMaxV));
     LTC2620_D_HardMaxVoltage = hardMaxV;
     memset(LTC2620_D_DriverFileName, 0, MAX_STR_LENGTH);
     strcpy(LTC2620_D_DriverFileName, driverfname);
@@ -40,10 +40,10 @@ int LTC2620_D_DacToVoltage(int dacval, int* voltage) {
 
 
 int LTC2620_D_SetDACValue (int dacnum, int val, int mV, char* dacname, int* dacval) {
-    FILE_LOG(logDEBUG1, ("dacnum:%d, val:%d, ismV:%d\n", dacnum, val, mV));
+    LOG(logDEBUG1, ("dacnum:%d, val:%d, ismV:%d\n", dacnum, val, mV));
     // validate index
     if (dacnum < 0 || dacnum >= LTC2620_D_NumDacs) {
-        FILE_LOG(logERROR, ("Dac index %d is out of bounds (0 to %d)\n", dacnum, LTC2620_D_NumDacs - 1));
+        LOG(logERROR, ("Dac index %d is out of bounds (0 to %d)\n", dacnum, LTC2620_D_NumDacs - 1));
         return FAIL;
     }
 
@@ -64,22 +64,22 @@ int LTC2620_D_SetDACValue (int dacnum, int val, int mV, char* dacname, int* dacv
 
     // conversion out of bounds
     if (ret == FAIL) {
-        FILE_LOG(logERROR, ("Setting Dac %d %s is out of bounds\n", dacnum, (mV ? "mV" : "dac units")));
+        LOG(logERROR, ("Setting Dac %d %s is out of bounds\n", dacnum, (mV ? "mV" : "dac units")));
         return FAIL;
     }
 
     // set
     if ( (*dacval >= 0) || (*dacval == LTC2620_D_PWR_DOWN_VAL)) {
-        FILE_LOG(logINFO, ("Setting DAC %2d [%-12s] : %d dac (%d mV)\n",dacnum, dacname, *dacval, dacmV));
+        LOG(logINFO, ("Setting DAC %2d [%-12s] : %d dac (%d mV)\n",dacnum, dacname, *dacval, dacmV));
  
         char fname[MAX_STR_LENGTH];
         sprintf(fname, "%s%d", LTC2620_D_DriverFileName, dacnum);
-        FILE_LOG(logDEBUG1, ("fname %s\n",fname));
+        LOG(logDEBUG1, ("fname %s\n",fname));
         
         //open file
         FILE* fd=fopen(fname,"w");
         if (fd==NULL) {
-            FILE_LOG(logERROR, ("Could not open file %s for writing to set dac %d\n", fname, dacnum));
+            LOG(logERROR, ("Could not open file %s for writing to set dac %d\n", fname, dacnum));
             return FAIL;
         }
         //convert to string, add 0 and write to file

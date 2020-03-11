@@ -7,11 +7,13 @@
 #include <QString>
 #include <string>
 
+#include <unistd.h>
+
 qTabDataOutput::qTabDataOutput(QWidget *parent, sls::Detector *detector)
     : QWidget(parent), det(detector), btnGroupRate(nullptr) {
     setupUi(this);
     SetupWidgetWindow();
-    FILE_LOG(logDEBUG) << "DataOutput ready";
+    LOG(logDEBUG) << "DataOutput ready";
 }
 
 qTabDataOutput::~qTabDataOutput() { delete btnGroupRate; }
@@ -80,7 +82,7 @@ void qTabDataOutput::Initialization() {
 }
 
 void qTabDataOutput::PopulateDetectors() {
-    FILE_LOG(logDEBUG) << "Populating detectors";
+    LOG(logDEBUG) << "Populating detectors";
 
     comboDetector->clear();
     comboDetector->addItem("All");
@@ -93,7 +95,7 @@ void qTabDataOutput::PopulateDetectors() {
 }
 
 void qTabDataOutput::EnableBrowse() {
-    FILE_LOG(logDEBUG) << "Getting browse enable";
+    LOG(logDEBUG) << "Getting browse enable";
     try {
         btnOutputBrowse->setEnabled(false); // exception default
         std::string rxHostname =
@@ -123,7 +125,7 @@ void qTabDataOutput::EnableBrowse() {
 }
 
 void qTabDataOutput::GetFileWrite() {
-    FILE_LOG(logDEBUG) << "Getting file write enable";
+    LOG(logDEBUG) << "Getting file write enable";
     try {
         boxFileWriteEnabled->setEnabled(true); // exception default
         auto retval = det->getFileWrite().tsquash(
@@ -134,7 +136,7 @@ void qTabDataOutput::GetFileWrite() {
 }
 
 void qTabDataOutput::GetFileName() {
-    FILE_LOG(logDEBUG) << "Getting file name";
+    LOG(logDEBUG) << "Getting file name";
     try {
         auto retval = det->getFileNamePrefix().tsquash(
             "File name is inconsistent for all detectors.");
@@ -145,7 +147,7 @@ void qTabDataOutput::GetFileName() {
 }
 
 void qTabDataOutput::GetOutputDir() {
-    FILE_LOG(logDEBUG) << "Getting file path";
+    LOG(logDEBUG) << "Getting file path";
     disconnect(dispOutputDir, SIGNAL(editingFinished()), this,
                SLOT(SetOutputDir()));
     try {
@@ -160,7 +162,7 @@ void qTabDataOutput::GetOutputDir() {
 }
 
 void qTabDataOutput::BrowseOutputDir() {
-    FILE_LOG(logDEBUG) << "Browsing output directory";
+    LOG(logDEBUG) << "Browsing output directory";
     QString directory = QFileDialog::getExistingDirectory(
         this, tr("Choose Output Directory "), dispOutputDir->text());
     if (!directory.isEmpty())
@@ -169,7 +171,7 @@ void qTabDataOutput::BrowseOutputDir() {
 
 void qTabDataOutput::SetOutputDir() {
     QString path = dispOutputDir->text();
-    FILE_LOG(logDEBUG) << "Setting output directory to "
+    LOG(logDEBUG) << "Setting output directory to "
                        << path.toAscii().constData();
 
     // empty
@@ -177,7 +179,7 @@ void qTabDataOutput::SetOutputDir() {
         qDefs::Message(qDefs::WARNING,
                        "Invalid Output Path. Must not be empty.",
                        "qTabDataOutput::SetOutputDir");
-        FILE_LOG(logWARNING) << "Invalid Output Path. Must not be empty.";
+        LOG(logWARNING) << "Invalid Output Path. Must not be empty.";
         GetOutputDir();
     } else {
         // chop off trailing '/'
@@ -197,7 +199,7 @@ void qTabDataOutput::SetOutputDir() {
 }
 
 void qTabDataOutput::GetFileFormat() {
-    FILE_LOG(logDEBUG) << "Getting File Format";
+    LOG(logDEBUG) << "Getting File Format";
     disconnect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetFileFormat(int)));
     try {
@@ -219,7 +221,7 @@ void qTabDataOutput::GetFileFormat() {
 }
 
 void qTabDataOutput::SetFileFormat(int format) {
-    FILE_LOG(logINFO) << "Setting File Format to "
+    LOG(logINFO) << "Setting File Format to "
                       << comboFileFormat->currentText().toAscii().data();
     try {
         det->setFileFormat(static_cast<slsDetectorDefs::fileFormat>(
@@ -230,7 +232,7 @@ void qTabDataOutput::SetFileFormat(int format) {
 }
 
 void qTabDataOutput::GetFileOverwrite() {
-    FILE_LOG(logDEBUG) << "Getting File Over Write Enable";
+    LOG(logDEBUG) << "Getting File Over Write Enable";
     disconnect(chkOverwriteEnable, SIGNAL(toggled(bool)), this,
                SLOT(SetOverwriteEnable(bool)));
     try {
@@ -246,7 +248,7 @@ void qTabDataOutput::GetFileOverwrite() {
 }
 
 void qTabDataOutput::SetOverwriteEnable(bool enable) {
-    FILE_LOG(logINFO) << "Setting File Over Write Enable to " << enable;
+    LOG(logINFO) << "Setting File Over Write Enable to " << enable;
     try {
         det->setFileOverWrite(enable);
     }
@@ -256,7 +258,7 @@ void qTabDataOutput::SetOverwriteEnable(bool enable) {
 }
 
 void qTabDataOutput::GetTenGigaEnable() {
-    FILE_LOG(logDEBUG) << "Getting 10GbE enable";
+    LOG(logDEBUG) << "Getting 10GbE enable";
     disconnect(chkTenGiga, SIGNAL(toggled(bool)), this,
                SLOT(SetTenGigaEnable(bool)));
     try {
@@ -271,7 +273,7 @@ void qTabDataOutput::GetTenGigaEnable() {
 }
 
 void qTabDataOutput::SetTenGigaEnable(bool enable) {
-    FILE_LOG(logINFO) << "Setting 10GbE to " << enable;
+    LOG(logINFO) << "Setting 10GbE to " << enable;
     try {
         det->setTenGiga(enable);
     }
@@ -281,7 +283,7 @@ void qTabDataOutput::SetTenGigaEnable(bool enable) {
 }
 
 void qTabDataOutput::GetRateCorrection() {
-    FILE_LOG(logDEBUG) << "Getting Rate Correction";
+    LOG(logDEBUG) << "Getting Rate Correction";
     disconnect(chkRate, SIGNAL(toggled(bool)), this,
                SLOT(EnableRateCorrection()));
     disconnect(btnGroupRate, SIGNAL(buttonClicked(int)), this,
@@ -313,7 +315,7 @@ void qTabDataOutput::EnableRateCorrection() {
         SetRateCorrection();
         return;
     }
-    FILE_LOG(logINFO) << "Disabling Rate correction";
+    LOG(logINFO) << "Disabling Rate correction";
     // disable
     try {
         det->setRateCorrection(sls::ns(0));
@@ -332,14 +334,14 @@ void qTabDataOutput::SetRateCorrection() {
         // custom dead time
         if (radioCustomDeadtime->isChecked()) {
             int64_t deadtime = spinCustomDeadTime->value();
-            FILE_LOG(logINFO)
+            LOG(logINFO)
                 << "Setting Rate Correction with custom dead time: "
                 << deadtime;
             det->setRateCorrection(sls::ns(deadtime));
         }
         // default dead time
         else {
-            FILE_LOG(logINFO)
+            LOG(logINFO)
                 << "Setting Rate Correction with default dead time";
             det->setDefaultRateCorrection();
         }
@@ -350,7 +352,7 @@ void qTabDataOutput::SetRateCorrection() {
 }
 
 void qTabDataOutput::GetSpeed() {
-    FILE_LOG(logDEBUG) << "Getting Speed";
+    LOG(logDEBUG) << "Getting Speed";
     disconnect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetSpeed(int)));
     try {
@@ -364,7 +366,7 @@ void qTabDataOutput::GetSpeed() {
 }
 
 void qTabDataOutput::SetSpeed(int speed) {
-    FILE_LOG(logINFO) << "Setting Speed to "
+    LOG(logINFO) << "Setting Speed to "
                       << comboEigerClkDivider->currentText().toAscii().data();
     ;
     try {
@@ -375,7 +377,7 @@ void qTabDataOutput::SetSpeed(int speed) {
 }
 
 void qTabDataOutput::GetFlags() {
-    FILE_LOG(logDEBUG) << "Getting readout flags";
+    LOG(logDEBUG) << "Getting readout flags";
     disconnect(comboEigerParallelFlag, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetFlags()));
     try {
@@ -396,7 +398,7 @@ void qTabDataOutput::SetFlags() {
     auto mode =
         comboEigerParallelFlag->currentIndex() == PARALLEL ? true : false;
     try {
-        FILE_LOG(logINFO)
+        LOG(logINFO)
             << "Setting Readout Flags to "
             << comboEigerParallelFlag->currentText().toAscii().data();
         det->setParallelMode(mode);
@@ -406,7 +408,7 @@ void qTabDataOutput::SetFlags() {
 }
 
 void qTabDataOutput::Refresh() {
-    FILE_LOG(logDEBUG) << "**Updating DataOutput Tab";
+    LOG(logDEBUG) << "**Updating DataOutput Tab";
 
     EnableBrowse();
     GetFileWrite();
@@ -425,5 +427,5 @@ void qTabDataOutput::Refresh() {
         GetFlags();
     }
 
-    FILE_LOG(logDEBUG) << "**Updated DataOutput Tab";
+    LOG(logDEBUG) << "**Updated DataOutput Tab";
 }

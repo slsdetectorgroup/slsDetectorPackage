@@ -66,21 +66,21 @@ void basictests() {
     initCheckDone = 0;
     memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
-    FILE_LOG(logINFOBLUE, ("******** Gotthard2 Virtual Server *****************\n"));
+    LOG(logINFOBLUE, ("******** Gotthard2 Virtual Server *****************\n"));
     if (mapCSP0() == FAIL) {
     	strcpy(initErrorMessage,
 				"Could not map to memory. Dangerous to continue.\n");
-		FILE_LOG(logERROR, (initErrorMessage));
+		LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
 		return;
     }
     return;
 #else
-	FILE_LOG(logINFOBLUE, ("************ Gotthard2 Server *********************\n"));
+	LOG(logINFOBLUE, ("************ Gotthard2 Server *********************\n"));
 	if (mapCSP0() == FAIL) {
     	strcpy(initErrorMessage,
 				"Could not map to memory. Dangerous to continue.\n");
-		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+		LOG(logERROR, ("%s\n\n", initErrorMessage));
 		initError = FAIL;
 		return;
     }
@@ -88,7 +88,7 @@ void basictests() {
 	if ((!debugflag) && ((checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL))) {
 		sprintf(initErrorMessage,
 				"Could not pass basic tests of FPGA and bus. Dangerous to continue. (Firmware version:0x%llx) \n", getFirmwareVersion());
-		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+		LOG(logERROR, ("%s\n\n", initErrorMessage));
 		initError = FAIL;
 		return;
 	}
@@ -102,7 +102,7 @@ void basictests() {
 	int64_t client_sw_apiversion = getClientServerAPIVersion();
 	uint32_t requiredFirmwareVersion = REQRD_FRMWRE_VRSN;
 
-	FILE_LOG(logINFOBLUE, ("*************************************************\n"
+	LOG(logINFOBLUE, ("*************************************************\n"
 			"Hardware Version:\t\t 0x%x\n"
 			
 			"Detector IP Addr:\t\t 0x%x\n"
@@ -130,11 +130,11 @@ void basictests() {
 	}
 
 	//cant read versions
-    FILE_LOG(logINFO, ("Testing Firmware-software compatibility:\n"));
+    LOG(logINFO, ("Testing Firmware-software compatibility:\n"));
 	if(!fwversion || !sw_fw_apiversion){
 		strcpy(initErrorMessage,
 				"Cant read versions from FPGA. Please update firmware.\n");
-		FILE_LOG(logERROR, (initErrorMessage));
+		LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
 		return;
 	}
@@ -146,7 +146,7 @@ void basictests() {
 				"Please update detector software (min. 0x%llx) to be compatible with this firmware.\n",
 				(long long int)sw_fw_apiversion,
 				(long long int)requiredFirmwareVersion);
-		FILE_LOG(logERROR, (initErrorMessage));
+		LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
 		return;
 	}
@@ -158,11 +158,11 @@ void basictests() {
 				"Please update firmware (min. 0x%llx) to be compatible with this server.\n",
 				(long long int)fwversion,
 				(long long int)requiredFirmwareVersion);
-		FILE_LOG(logERROR, (initErrorMessage));
+		LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
 		return;
 	}
-	FILE_LOG(logINFO, ("Compatibility - success\n"));
+	LOG(logINFO, ("Compatibility - success\n"));
 #endif
 }
 
@@ -172,7 +172,7 @@ int checkType() {
 #endif
 	u_int32_t type = ((bus_r(FPGA_VERSION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
 	if (type != GOTTHARD2){
-			FILE_LOG(logERROR, ("This is not a Gotthard2 firmware (read %d, expected %d)\n", type, GOTTHARD2));
+			LOG(logERROR, ("This is not a Gotthard2 firmware (read %d, expected %d)\n", type, GOTTHARD2));
 			return FAIL;
 		}
 	return OK;
@@ -182,15 +182,15 @@ int testFpga() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	FILE_LOG(logINFO, ("Testing FPGA:\n"));
+	LOG(logINFO, ("Testing FPGA:\n"));
 
 	//fixed pattern
 	int ret = OK;
 	volatile u_int32_t val = bus_r(FIX_PATT_REG);
 	if (val == FIX_PATT_VAL) {
-		FILE_LOG(logINFO, ("Fixed pattern: successful match 0x%08x\n",val));
+		LOG(logINFO, ("Fixed pattern: successful match 0x%08x\n",val));
 	} else {
-		FILE_LOG(logERROR, ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL));
+		LOG(logERROR, ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL));
 		ret = FAIL;
 	}
 	return ret;
@@ -200,7 +200,7 @@ int testBus() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	FILE_LOG(logINFO, ("Testing Bus:\n"));
+	LOG(logINFO, ("Testing Bus:\n"));
 
 	int ret = OK;
 	u_int32_t addr = DTA_OFFSET_REG; 
@@ -210,7 +210,7 @@ int testBus() {
 	for (i = 0; i < times; ++i) {
 		bus_w(addr, i * 100);
 		if (i * 100 != bus_r(addr)) {
-			FILE_LOG(logERROR, ("Mismatch! Wrote 0x%x, read 0x%x\n",
+			LOG(logERROR, ("Mismatch! Wrote 0x%x, read 0x%x\n",
 					i * 100, bus_r(addr)));
 			ret = FAIL;
 		}
@@ -219,7 +219,7 @@ int testBus() {
 	bus_w(addr, 0);
 
 	if (ret == OK) {
-		FILE_LOG(logINFO, ("Successfully tested bus %d times\n", times));
+		LOG(logINFO, ("Successfully tested bus %d times\n", times));
 	}
 	return ret;
 }
@@ -305,7 +305,7 @@ u_int32_t  getDetectorIP(){
 	}
 	strcpy(output,temp);
 	sscanf(output, "%x", 	&res);
-	//FILE_LOG(logINFO, ("ip:%x\n",res);
+	//LOG(logINFO, ("ip:%x\n",res);
 
 	return res;
 }
@@ -328,7 +328,7 @@ void initStopServer() {
 
 	usleep(CTRL_SRVR_INIT_TIME_US);
 	if (mapCSP0() == FAIL) {
-		FILE_LOG(logERROR, ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
+		LOG(logERROR, ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
 		exit(EXIT_FAILURE);
 	}
 }
@@ -337,7 +337,7 @@ void initStopServer() {
 /* set up detector */
 
 void setupDetector() {
-    FILE_LOG(logINFO, ("This Server is for 1 Gotthard2 module \n")); 
+    LOG(logINFO, ("This Server is for 1 Gotthard2 module \n")); 
 
 	clkFrequency[READOUT_C0] = DEFAULT_READOUT_C0;
 	clkFrequency[READOUT_C1] = DEFAULT_READOUT_C1;
@@ -406,23 +406,23 @@ void setupDetector() {
 				case -1:
 					sprintf(initErrorMessage, "Could not get the module type attached.\n");
 					initError = FAIL;		
-					FILE_LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
+					LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
 					return;
 				case -2:
 					sprintf(initErrorMessage, "No Module attached! Run server with -nomodule.\n");
 					initError = FAIL;		
-					FILE_LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
+					LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
 					return;
 				case FAIL:
 					sprintf(initErrorMessage, "Wrong Module (Not Gotthard2) attached!\n");
 					initError = FAIL;		
-					FILE_LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
+					LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
 					return;
 				default:
 					break;
 			}
 		} else {
-			FILE_LOG(logINFOBLUE, ("In No-Module mode: Ignoring module type. Continuing.\n"));
+			LOG(logINFOBLUE, ("In No-Module mode: Ignoring module type. Continuing.\n"));
 		}
 	}
 
@@ -460,7 +460,7 @@ int readConfigFile() {
 	usleep (INITIAL_STARTUP_WAIT);	
 
 	// inform FPGA that onchip dacs will be configured soon
-	FILE_LOG(logINFO, ("Setting configuration starting bit\n"));
+	LOG(logINFO, ("Setting configuration starting bit\n"));
 	bus_w(ASIC_CONFIG_REG, bus_r(ASIC_CONFIG_REG) | ASIC_CONFIG_RST_DAC_MSK);
 
 	usleep (INITIAL_STARTUP_WAIT);
@@ -469,11 +469,11 @@ int readConfigFile() {
     if(fd == NULL) {
 		sprintf(initErrorMessage, "Could not open on-board detector server config file [%s].\n", CONFIG_FILE);
 		initError = FAIL;		
-		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+		LOG(logERROR, ("%s\n\n", initErrorMessage));
         return FAIL;
     }
 
-    FILE_LOG(logINFOBLUE, ("Reading config file %s\n", CONFIG_FILE));
+    LOG(logINFOBLUE, ("Reading config file %s\n", CONFIG_FILE));
 
     // Initialization
     const size_t LZ = 256;
@@ -488,17 +488,17 @@ int readConfigFile() {
 
 		// ignore comments
         if (line[0] == '#') {
-			FILE_LOG(logDEBUG1, ("Ignoring Comment\n"));
+			LOG(logDEBUG1, ("Ignoring Comment\n"));
             continue;
 		}
 
 		// ignore empty lines
 		if (strlen(line) <= 1) {
-			FILE_LOG(logDEBUG1, ("Ignoring Empty line\n"));
+			LOG(logDEBUG1, ("Ignoring Empty line\n"));
 			continue;
 		}
 
-		FILE_LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", strlen(line), strlen(line) -1, line));
+		LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", strlen(line), strlen(line) -1, line));
 		memset(command, 0, LZ);
 
 		// vetoref command
@@ -682,19 +682,19 @@ int readConfigFile() {
 		int i = 0, j = 0;
 		for (i = 0; i < NCHIP; ++i) {
 			for (j = 0; j < NADC; ++j) {
-				FILE_LOG(logDEBUG2, ("adc read %d %d: 0x%02hhx\n", i, j, adcConfiguration[i][j]));
+				LOG(logDEBUG2, ("adc read %d %d: 0x%02hhx\n", i, j, adcConfiguration[i][j]));
 			}
 		}
 	}
 
 	if (strlen(initErrorMessage)) {
 		initError = FAIL;		
-		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+		LOG(logERROR, ("%s\n\n", initErrorMessage));
 	} else {
-		FILE_LOG(logINFOBLUE, ("Successfully read config file\n"));
+		LOG(logINFOBLUE, ("Successfully read config file\n"));
 
 		// inform FPGA that onchip dacs will be configured soon
-		FILE_LOG(logINFO, ("Setting configuration done bit\n"));
+		LOG(logINFO, ("Setting configuration done bit\n"));
 		bus_w(ASIC_CONFIG_REG, bus_r(ASIC_CONFIG_REG) | ASIC_CONFIG_DONE_MSK);
 	}
     return initError;
@@ -706,7 +706,7 @@ void cleanFifos() {
 #ifdef VIRTUAL
     return;
 #endif
-	FILE_LOG(logINFO, ("Clearing Acquisition Fifos\n"));
+	LOG(logINFO, ("Clearing Acquisition Fifos\n"));
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_CLR_ACQSTN_FIFO_MSK);
 }
 
@@ -714,7 +714,7 @@ void resetCore() {
 #ifdef VIRTUAL
     return;
 #endif
-	FILE_LOG(logINFO, ("Resetting Core\n"));
+	LOG(logINFO, ("Resetting Core\n"));
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_CRE_RST_MSK);
 }
 
@@ -722,7 +722,7 @@ void resetPeripheral() {
 #ifdef VIRTUAL
     return;
 #endif
-	FILE_LOG(logINFO, ("Resetting Peripheral\n"));
+	LOG(logINFO, ("Resetting Peripheral\n"));
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PRPHRL_RST_MSK);
 }
 
@@ -736,7 +736,7 @@ int setDynamicRange(int dr){
 /* parameters - timer */
 void setNumFrames(int64_t val) {
     if (val > 0) {
-		FILE_LOG(logINFO, ("Setting number of frames %lld [local]\n", val));
+		LOG(logINFO, ("Setting number of frames %lld [local]\n", val));
 		// continuous mode
 		if (burstMode == BURST_OFF) {
 			setNumFramesCont(val);
@@ -758,10 +758,10 @@ int64_t getNumFrames() {
 
 void setNumTriggers(int64_t val) {
     if (val > 0) {
-		FILE_LOG(logINFO, ("Setting number of triggers %lld\n", val));
+		LOG(logINFO, ("Setting number of triggers %lld\n", val));
 		numTriggers = val;
 		if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
-			FILE_LOG(logINFO, ("\tBurst and Auto mode: not writing #triggers to register\n"));
+			LOG(logINFO, ("\tBurst and Auto mode: not writing #triggers to register\n"));
 		} else {
         	set64BitReg(val, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
 		}
@@ -777,12 +777,12 @@ int64_t getNumTriggers() {
 
 void setNumBursts(int64_t val) {
     if (val > 0) {
-		FILE_LOG(logINFO, ("Setting number of bursts %lld\n", val));
+		LOG(logINFO, ("Setting number of bursts %lld\n", val));
 		numBursts = val;
 		if (burstMode != BURST_OFF && getTiming() == AUTO_TIMING) {
 			set64BitReg(val, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
 		} else {
-        	FILE_LOG(logINFO, ("\tNot (Burst and Auto mode): not writing #bursts to register\n"));
+        	LOG(logINFO, ("\tNot (Burst and Auto mode): not writing #bursts to register\n"));
 		}
     } 
 }
@@ -796,10 +796,10 @@ int64_t getNumBursts() {
 
 int setExpTime(int64_t val) {
     if (val < 0) {
-        FILE_LOG(logERROR, ("Invalid exptime: %lld ns\n", val));
+        LOG(logERROR, ("Invalid exptime: %lld ns\n", val));
         return FAIL;
     }
-	FILE_LOG(logINFO, ("Setting exptime %lld ns [local]\n", val));
+	LOG(logINFO, ("Setting exptime %lld ns [local]\n", val));
 	// continuous mode
 	if (burstMode == BURST_OFF) {
 		return setExptimeCont(val);
@@ -814,10 +814,10 @@ int64_t getExpTime() {
 
 int setPeriod(int64_t val) {
     if (val < 0) {
-        FILE_LOG(logERROR, ("Invalid period: %lld ns\n", val));
+        LOG(logERROR, ("Invalid period: %lld ns\n", val));
         return FAIL;
     }
-	FILE_LOG(logINFO, ("Setting period %lld ns [local]\n", val));
+	LOG(logINFO, ("Setting period %lld ns [local]\n", val));
 	// continuous mode
 	if (burstMode == BURST_OFF) {
 		setPeriodBurst(0);
@@ -837,7 +837,7 @@ int64_t getPeriod() {
 }
 
 void setNumFramesBurst(int64_t val) {
-    FILE_LOG(logINFO, ("Setting number of frames %d [Burst mode]\n", (int)val));
+    LOG(logINFO, ("Setting number of frames %d [Burst mode]\n", (int)val));
 	bus_w(ASIC_INT_FRAMES_REG, bus_r(ASIC_INT_FRAMES_REG) &~ ASIC_INT_FRAMES_MSK);
 	bus_w(ASIC_INT_FRAMES_REG, bus_r(ASIC_INT_FRAMES_REG) | (((int)val << ASIC_INT_FRAMES_OFST) & ASIC_INT_FRAMES_MSK));
 }
@@ -847,7 +847,7 @@ int64_t	getNumFramesBurst() {
 }
 
 void setNumFramesCont(int64_t val) {
-    FILE_LOG(logINFO, ("Setting number of frames %lld [Continuous mode]\n", val));
+    LOG(logINFO, ("Setting number of frames %lld [Continuous mode]\n", val));
 	set64BitReg(val, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
 }
 
@@ -856,12 +856,12 @@ int64_t	getNumFramesCont() {
 }
 
 int	setExptimeBurst(int64_t val) {
-	FILE_LOG(logINFO, ("Setting exptime %lld ns [Burst mode]\n", val));
+	LOG(logINFO, ("Setting exptime %lld ns [Burst mode]\n", val));
 	return setExptimeBoth(val);
 }
 
 int	setExptimeCont(int64_t val) {
-	FILE_LOG(logINFO, ("Setting exptime %lld ns [Continuous mode]\n", val));
+	LOG(logINFO, ("Setting exptime %lld ns [Continuous mode]\n", val));
 	return setExptimeBoth(val);
 }
 
@@ -884,7 +884,7 @@ int64_t	getExptimeBoth() {
 
 
 int	setPeriodBurst(int64_t val) {
-	FILE_LOG(logINFO, ("Setting period %lld ns [Burst mode]\n", val));
+	LOG(logINFO, ("Setting period %lld ns [Burst mode]\n", val));
     val *= (1E-9 * systemFrequency);
     set64BitReg(val, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
 
@@ -898,12 +898,12 @@ int	setPeriodBurst(int64_t val) {
 }
 
 int64_t	getPeriodBurst() {
-	FILE_LOG(logDEBUG, ("Getting period [Burst mode]\n"));
+	LOG(logDEBUG, ("Getting period [Burst mode]\n"));
 	return get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG)/ (1E-9 * systemFrequency);
 }
 
 int	setPeriodCont(int64_t val) {
-	FILE_LOG(logINFO, ("Setting period %lld ns [Continuous mode]\n", val));
+	LOG(logINFO, ("Setting period %lld ns [Continuous mode]\n", val));
     val *= (1E-9 * systemFrequency);
     set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
 
@@ -917,16 +917,16 @@ int	setPeriodCont(int64_t val) {
 }
 
 int64_t	getPeriodCont() {
-	FILE_LOG(logDEBUG, ("Getting period [Continuous mode]\n"));
+	LOG(logDEBUG, ("Getting period [Continuous mode]\n"));
 	return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * systemFrequency);
 }
 
 int setDelayAfterTrigger(int64_t val) {
     if (val < 0) {
-        FILE_LOG(logERROR, ("Invalid delay after trigger: %lld ns\n", val));
+        LOG(logERROR, ("Invalid delay after trigger: %lld ns\n", val));
         return FAIL;
     } 
-	FILE_LOG(logINFO, ("Setting delay after trigger %lld ns\n", val));
+	LOG(logINFO, ("Setting delay after trigger %lld ns\n", val));
 	val *= (1E-9 * systemFrequency);
    	set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
 
@@ -945,16 +945,16 @@ int64_t getDelayAfterTrigger() {
 
 int setBurstPeriod(int64_t val) {
     if (val < 0) {
-        FILE_LOG(logERROR, ("Invalid burst period: %lld ns\n", val));
+        LOG(logERROR, ("Invalid burst period: %lld ns\n", val));
         return FAIL;
     } 
-	FILE_LOG(logINFO, ("Setting burst period %lld ns\n", val));
+	LOG(logINFO, ("Setting burst period %lld ns\n", val));
     burstPeriodNs = val;
 	val *= (1E-9 * systemFrequency);
 	if (burstMode != BURST_OFF) {
     	set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
 	} else {
-		FILE_LOG(logINFO, ("\t(Continuous mode): not writing burst period to register\n"));
+		LOG(logINFO, ("\t(Continuous mode): not writing burst period to register\n"));
 	}
 
     // validate for tolerance
@@ -1015,20 +1015,20 @@ enum detectorSettings setSettings(enum detectorSettings sett){
 	    case DYNAMICGAIN:
 	        bus_w(addr, bus_r(addr) & ~mask);
             bus_w(addr, bus_r(addr) | ASIC_CONFIG_DYNAMIC_GAIN_VAL);
-            FILE_LOG(logINFO, ("Set settings - Dyanmic Gain, val: 0x%x\n", bus_r(addr) & mask));
+            LOG(logINFO, ("Set settings - Dyanmic Gain, val: 0x%x\n", bus_r(addr) & mask));
 	        break;
 	    case FIXGAIN1:
 	        bus_w(addr, bus_r(addr) & ~mask);
             bus_w(addr, bus_r(addr) | ASIC_CONFIG_FIX_GAIN_1_VAL);
-            FILE_LOG(logINFO, ("Set settings - Fix Gain 1, val: 0x%x\n", bus_r(addr) & mask));
+            LOG(logINFO, ("Set settings - Fix Gain 1, val: 0x%x\n", bus_r(addr) & mask));
 	        break;
 	    case FIXGAIN2:
 	        bus_w(addr, bus_r(addr) & ~mask);
             bus_w(addr, bus_r(addr) | ASIC_CONFIG_FIX_GAIN_2_VAL);
-            FILE_LOG(logINFO, ("Set settings - Fix Gain 2, val: 0x%x\n", bus_r(addr) & mask));
+            LOG(logINFO, ("Set settings - Fix Gain 2, val: 0x%x\n", bus_r(addr) & mask));
 	        break;
 	    default:
-	        FILE_LOG(logERROR, ("This settings is not defined for this detector %d\n", (int)sett));
+	        LOG(logERROR, ("This settings is not defined for this detector %d\n", (int)sett));
 	        return -1;
 	    }
 		thisSettings = sett;
@@ -1041,25 +1041,25 @@ enum detectorSettings setSettings(enum detectorSettings sett){
 enum detectorSettings getSettings(){
 	uint32_t regval = bus_r(ASIC_CONFIG_REG);
 	uint32_t val = regval & ASIC_CONFIG_GAIN_MSK;
-	FILE_LOG(logDEBUG1, ("Getting Settings\n Reading val :0x%x\n", val));
+	LOG(logDEBUG1, ("Getting Settings\n Reading val :0x%x\n", val));
 
 	switch(val) {
 	case ASIC_CONFIG_RESERVED_VAL:
 	case ASIC_CONFIG_DYNAMIC_GAIN_VAL:
         thisSettings = DYNAMICGAIN;
-        FILE_LOG(logDEBUG1, ("Settings read: Dynamic Gain. val: 0x%x\n", val));
+        LOG(logDEBUG1, ("Settings read: Dynamic Gain. val: 0x%x\n", val));
         break;
 	case ASIC_CONFIG_FIX_GAIN_1_VAL:
         thisSettings = FIXGAIN1;
-        FILE_LOG(logDEBUG1, ("Settings read: Fix Gain 1. val: 0x%x\n", val));
+        LOG(logDEBUG1, ("Settings read: Fix Gain 1. val: 0x%x\n", val));
         break;
 	case ASIC_CONFIG_FIX_GAIN_2_VAL:
         thisSettings = FIXGAIN2;
-        FILE_LOG(logDEBUG1, ("Settings read: Fix Gain 2. val: 0x%x\n", val));
+        LOG(logDEBUG1, ("Settings read: Fix Gain 2. val: 0x%x\n", val));
         break;
     default:
         thisSettings = UNDEFINED;
-        FILE_LOG(logERROR, ("Settings read: Undefined. val: 0x%x\n", val));
+        LOG(logERROR, ("Settings read: Undefined. val: 0x%x\n", val));
 	}
 	return thisSettings;
 }
@@ -1068,21 +1068,21 @@ enum detectorSettings getSettings(){
 /* parameters - dac, hv */
 int	setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val) {
 	char* names[] = {ONCHIP_DAC_NAMES};
-	FILE_LOG(logDEBUG1, ("Setting on chip dac[%d - %s]: 0x%x\n", (int)ind, names[ind], val));
+	LOG(logDEBUG1, ("Setting on chip dac[%d - %s]: 0x%x\n", (int)ind, names[ind], val));
 
 	if (ind >= ONCHIP_NDAC) {
-		FILE_LOG(logERROR, ("Invalid dac index %d\n", (int)ind));
+		LOG(logERROR, ("Invalid dac index %d\n", (int)ind));
 		return FAIL;
 	}
 	if (chipIndex >= NCHIP) {
-		FILE_LOG(logERROR, ("Invalid chip index %d\n", chipIndex));
+		LOG(logERROR, ("Invalid chip index %d\n", chipIndex));
 		return FAIL;		
 	}
 	if (val > ONCHIP_DAC_MAX_VAL) {
-		FILE_LOG(logERROR, ("Invalid val %d\n", val));
+		LOG(logERROR, ("Invalid val %d\n", val));
 		return FAIL;			
 	}
-	FILE_LOG(logINFO, ("Setting on chip dac[%d - %s]: 0x%x\n", (int)ind, names[ind], val));
+	LOG(logINFO, ("Setting on chip dac[%d - %s]: 0x%x\n", (int)ind, names[ind], val));
 
 	char buffer[2];
 	memset(buffer, 0, sizeof(buffer));
@@ -1130,10 +1130,10 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
 	}
 
 	char* dac_names[] = {DAC_NAMES};
-    FILE_LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind], val, (mV ? "mV" : "dac units")));
+    LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind], val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
-    FILE_LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind], val, (mV ? "mV" : "dac units")));
+    LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind], val, (mV ? "mV" : "dac units")));
     if (!mV) {
         dacValues[ind] = val;
     }
@@ -1150,12 +1150,12 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
 
 int getDAC(enum DACINDEX ind, int mV) {
     if (!mV) {
-        FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac\n",ind, dacValues[ind]));
+        LOG(logDEBUG1, ("Getting DAC %d : %d dac\n",ind, dacValues[ind]));
         return dacValues[ind];
     }
     int voltage = -1;
     LTC2620_D_DacToVoltage(dacValues[ind], &voltage);
-    FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, dacValues[ind], voltage));
+    LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, dacValues[ind], voltage));
     return voltage;
 }
 
@@ -1176,7 +1176,7 @@ int setHighVoltage(int val){
 
 	// setting hv
 	if (val >= 0) {
-	    FILE_LOG(logINFO, ("Setting High voltage: %d V\n", val));
+	    LOG(logINFO, ("Setting High voltage: %d V\n", val));
 	    DAC6571_Set(val);
 	    highvoltage = val;
 	}
@@ -1187,18 +1187,18 @@ int setHighVoltage(int val){
 void setTiming( enum timingMode arg){
     switch(arg){
     case AUTO_TIMING:
-        FILE_LOG(logINFO, ("Set Timing: Auto\n"));
+        LOG(logINFO, ("Set Timing: Auto\n"));
         bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
         break;
     case TRIGGER_EXPOSURE:
-        FILE_LOG(logINFO, ("Set Timing: Trigger\n"));
+        LOG(logINFO, ("Set Timing: Trigger\n"));
         bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
         break;
     default:
-        FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
+        LOG(logERROR, ("Unknown timing mode %d\n", arg));
     }
 
-	FILE_LOG(logINFO, ("\tUpdating trigger/burst and delay/burst period registers\n"))
+	LOG(logINFO, ("\tUpdating trigger/burst and delay/burst period registers\n"))
 	setNumTriggers(numTriggers);
 	setNumBursts(numBursts);
 }
@@ -1223,18 +1223,18 @@ int configureMAC() {
 	char cDestIp[MAX_STR_LENGTH];
 	memset(cDestIp, 0, MAX_STR_LENGTH);
 	sprintf(cDestIp, "%d.%d.%d.%d", (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff);
-	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, dstport));
+	LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, dstport));
 	if (setUDPDestinationDetails(0, cDestIp, dstport) == FAIL) {
-		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
+		LOG(logERROR, ("could not set udp destination IP and port\n"));
 		return FAIL;
 	}
     return OK;
 #endif
-	FILE_LOG(logINFOBLUE, ("Configuring MAC\n"));
+	LOG(logINFOBLUE, ("Configuring MAC\n"));
 
-	FILE_LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
+	LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (srcip>>24)&0xff,(srcip>>16)&0xff,(srcip>>8)&0xff,(srcip)&0xff, srcip));
-	FILE_LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+	LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
 			(unsigned int)((srcmac>>40)&0xFF),
 			(unsigned int)((srcmac>>32)&0xFF),
 			(unsigned int)((srcmac>>24)&0xFF),
@@ -1242,11 +1242,11 @@ int configureMAC() {
 			(unsigned int)((srcmac>>8)&0xFF),
 			(unsigned int)((srcmac>>0)&0xFF),
 			(long  long unsigned int)srcmac));
-	FILE_LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n", srcport, srcport));
+	LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n", srcport, srcport));
 
-	FILE_LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
+	LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
 	        (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff, dstip));
-	FILE_LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
+	LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
 			(unsigned int)((dstmac>>40)&0xFF),
 			(unsigned int)((dstmac>>32)&0xFF),
 			(unsigned int)((dstmac>>24)&0xFF),
@@ -1254,7 +1254,7 @@ int configureMAC() {
 			(unsigned int)((dstmac>>8)&0xFF),
 			(unsigned int)((dstmac>>0)&0xFF),
 			(long  long unsigned int)dstmac));
-	FILE_LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",dstport, dstport));
+	LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",dstport, dstport));
 
 	// start addr
 	uint32_t addr = BASE_UDP_RAM;
@@ -1328,7 +1328,7 @@ void calcChecksum(udp_header* udp) {
 	    sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
 	long int checksum = sum & 0xffff;
 	checksum += UDP_IP_HEADER_LENGTH_BYTES;
-	FILE_LOG(logINFO, ("\tIP checksum is 0x%lx\n",checksum));
+	LOG(logINFO, ("\tIP checksum is 0x%lx\n",checksum));
 	udp->ip_checksum = checksum;
 }
 
@@ -1345,7 +1345,7 @@ int setDetectorPosition(int pos[]) {
 	bus_w(addr, (bus_r(addr) &~COORD_ROW_MSK) | ((value << COORD_ROW_OFST) & COORD_ROW_MSK));
 	valueRead = ((bus_r(addr) &  COORD_ROW_MSK) >> COORD_ROW_OFST);
 	if (valueRead != value) {
-		FILE_LOG(logERROR, ("Could not set row. Set %d, read %d\n", value, valueRead));
+		LOG(logERROR, ("Could not set row. Set %d, read %d\n", value, valueRead));
 		ret = FAIL;
 	}
 
@@ -1354,12 +1354,12 @@ int setDetectorPosition(int pos[]) {
 	bus_w(addr, (bus_r(addr) &~COORD_COL_MSK) | ((value << COORD_COL_OFST) & COORD_COL_MSK));
 	valueRead = ((bus_r(addr) &  COORD_COL_MSK) >> COORD_COL_OFST);
 	if (valueRead != value) {
-		FILE_LOG(logERROR, ("Could not set column. Set %d, read %d\n", value, valueRead));
+		LOG(logERROR, ("Could not set column. Set %d, read %d\n", value, valueRead));
 		ret = FAIL;
 	}
 
 	if (ret == OK) {
-		FILE_LOG(logINFO, ("\tPosition set to [%d, %d]\n", detPos[X], detPos[Y]));
+		LOG(logINFO, ("\tPosition set to [%d, %d]\n", detPos[X], detPos[Y]));
 	} 
 	
 	return ret;
@@ -1372,27 +1372,27 @@ int* getDetectorPosition() {
 // Detector Specific
 
 int checkDetectorType() {
-	FILE_LOG(logINFO, ("Checking type of module\n"));
+	LOG(logINFO, ("Checking type of module\n"));
 	FILE* fd = fopen(TYPE_FILE_NAME, "r");
     if (fd == NULL) {
-        FILE_LOG(logERROR, ("Could not open file %s to get type of the module attached\n", TYPE_FILE_NAME));
+        LOG(logERROR, ("Could not open file %s to get type of the module attached\n", TYPE_FILE_NAME));
         return -1;
     }	
 	char buffer[MAX_STR_LENGTH];
 	memset(buffer, 0, sizeof(buffer));
 	fread (buffer, MAX_STR_LENGTH, sizeof(char), fd);
 	if (strlen(buffer) == 0) {
-        FILE_LOG(logERROR, ("Could not read file %s to get type of the module attached\n", TYPE_FILE_NAME));
+        LOG(logERROR, ("Could not read file %s to get type of the module attached\n", TYPE_FILE_NAME));
         return -1;		
 	}
 	int type = atoi(buffer);
 	if (type > TYPE_NO_MODULE_STARTING_VAL) {
-        FILE_LOG(logERROR, ("No Module attached! Expected %d for Gotthard2, got %d\n", TYPE_GOTTHARD2_MODULE_VAL, type));
+        LOG(logERROR, ("No Module attached! Expected %d for Gotthard2, got %d\n", TYPE_GOTTHARD2_MODULE_VAL, type));
         return -2;	
 	}
 
 	if (abs(type - TYPE_GOTTHARD2_MODULE_VAL) > TYPE_TOLERANCE) {
-        FILE_LOG(logERROR, ("Wrong Module attached! Expected %d for Gotthard2, got %d\n", TYPE_GOTTHARD2_MODULE_VAL, type));
+        LOG(logERROR, ("Wrong Module attached! Expected %d for Gotthard2, got %d\n", TYPE_GOTTHARD2_MODULE_VAL, type));
         return FAIL;	
 	}
 	return OK;
@@ -1401,11 +1401,11 @@ int checkDetectorType() {
 int powerChip (int on){
     if(on != -1){
         if(on){
-            FILE_LOG(logINFO, ("Powering chip: on\n"));
+            LOG(logINFO, ("Powering chip: on\n"));
             bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_PWR_CHIP_MSK);
         }
         else{
-            FILE_LOG(logINFO, ("Powering chip: off\n"));
+            LOG(logINFO, ("Powering chip: off\n"));
             bus_w(CONTROL_REG, bus_r(CONTROL_REG) & ~CONTROL_PWR_CHIP_MSK);
         }
     }
@@ -1414,19 +1414,19 @@ int powerChip (int on){
 
 int setPhase(enum CLKINDEX ind, int val, int degrees) {
    if (ind < 0 || ind >= NUM_CLOCKS) {
-		FILE_LOG(logERROR, ("Unknown clock index %d to set phase\n", ind));
+		LOG(logERROR, ("Unknown clock index %d to set phase\n", ind));
 	    return FAIL;
 	}
 	char* clock_names[] = {CLK_NAMES};
-    FILE_LOG(logINFOBLUE, ("Setting %s clock (%d) phase to %d %s\n", clock_names[ind], ind, val, degrees == 0 ? "" : "degrees"));
+    LOG(logINFOBLUE, ("Setting %s clock (%d) phase to %d %s\n", clock_names[ind], ind, val, degrees == 0 ? "" : "degrees"));
 	int maxShift = getMaxPhase(ind);
 	// validation
 	if (degrees && (val < 0 || val > 359)) {
-		 FILE_LOG(logERROR, ("\tPhase outside limits (0 - 359°C)\n"));
+		 LOG(logERROR, ("\tPhase outside limits (0 - 359°C)\n"));
 		 return FAIL;
 	}
 	if (!degrees && (val < 0 || val > maxShift - 1)) {
-		 FILE_LOG(logERROR, ("\tPhase outside limits (0 - %d phase shifts)\n", maxShift - 1));
+		 LOG(logERROR, ("\tPhase outside limits (0 - %d phase shifts)\n", maxShift - 1));
 		 return FAIL;
 	}
 
@@ -1435,14 +1435,14 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
 	if (degrees) {
 		ConvertToDifferentRange(0, 359, 0, maxShift - 1, val, &valShift);
 	}
-	FILE_LOG(logDEBUG1, ("\tphase shift: %d (degrees/shift: %d)\n", valShift, val));
+	LOG(logDEBUG1, ("\tphase shift: %d (degrees/shift: %d)\n", valShift, val));
 
 	int relativePhase = valShift - clkPhase[ind];
-	FILE_LOG(logDEBUG1, ("\trelative phase shift: %d (Current phase: %d)\n", relativePhase, clkPhase[ind]));
+	LOG(logDEBUG1, ("\trelative phase shift: %d (Current phase: %d)\n", relativePhase, clkPhase[ind]));
 
     // same phase
     if (!relativePhase) {
-    	FILE_LOG(logINFO, ("\tNothing to do in Phase Shift\n"));
+    	LOG(logINFO, ("\tNothing to do in Phase Shift\n"));
     	return OK;
     }
 
@@ -1461,7 +1461,7 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
 
 int getPhase(enum CLKINDEX ind, int degrees) {
    if (ind < 0 || ind >= NUM_CLOCKS) {
-		FILE_LOG(logERROR, ("Unknown clock index %d to get phase\n", ind));
+		LOG(logERROR, ("Unknown clock index %d to get phase\n", ind));
 	    return -1;
 	}
 	if (!degrees)
@@ -1474,7 +1474,7 @@ int getPhase(enum CLKINDEX ind, int degrees) {
 
 int getMaxPhase(enum CLKINDEX ind) {
    if (ind < 0 || ind >= NUM_CLOCKS) {
-		FILE_LOG(logERROR, ("Unknown clock index %d to get max phase\n", ind));
+		LOG(logERROR, ("Unknown clock index %d to get max phase\n", ind));
 	    return -1;
 	}
 	int vcofreq = getVCOFrequency(ind);
@@ -1482,7 +1482,7 @@ int getMaxPhase(enum CLKINDEX ind) {
 	int ret = ((double)vcofreq / (double)clkFrequency[ind]) * maxshiftstep;
 
 	char* clock_names[] = {CLK_NAMES};
-	FILE_LOG(logDEBUG1, ("\tMax Phase Shift (%s): %d (Clock: %d Hz, VCO:%d Hz)\n",
+	LOG(logDEBUG1, ("\tMax Phase Shift (%s): %d (Clock: %d Hz, VCO:%d Hz)\n",
 			clock_names[ind], ret, clkFrequency[ind], vcofreq));
 
 	return ret;
@@ -1490,13 +1490,13 @@ int getMaxPhase(enum CLKINDEX ind) {
 
 int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval) {
    if (ind < 0 || ind >= NUM_CLOCKS) {
-		FILE_LOG(logERROR, ("Unknown clock index %d to validate phase in degrees\n", ind));
+		LOG(logERROR, ("Unknown clock index %d to validate phase in degrees\n", ind));
 	    return FAIL;
 	}
 	if (val == -1) {
 		return OK;
 	}
-	FILE_LOG(logDEBUG1, ("validating phase in degrees for clk %d\n", (int)ind));
+	LOG(logDEBUG1, ("validating phase in degrees for clk %d\n", (int)ind));
 	int maxShift = getMaxPhase(ind);
 	// convert degrees to shift
 	int valShift = 0;
@@ -1513,7 +1513,7 @@ int validatePhaseinDegrees(enum CLKINDEX ind, int val, int retval) {
 
 int getFrequency(enum CLKINDEX ind) {
    if (ind < 0 || ind >= NUM_CLOCKS) {
-		FILE_LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
+		LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
 	    return -1;
 	}
     return clkFrequency[ind];
@@ -1521,7 +1521,7 @@ int getFrequency(enum CLKINDEX ind) {
 
 int getVCOFrequency(enum CLKINDEX ind) {
    if (ind < 0 || ind >= NUM_CLOCKS) {
-		FILE_LOG(logERROR, ("Unknown clock index %d to get vco frequency\n", ind));
+		LOG(logERROR, ("Unknown clock index %d to get vco frequency\n", ind));
 	    return -1;
 	}
 	int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
@@ -1534,7 +1534,7 @@ int getMaxClockDivider() {
 
 int setClockDivider(enum CLKINDEX ind, int val) {
    if (ind < 0 || ind >= NUM_CLOCKS) {
-		FILE_LOG(logERROR, ("Unknown clock index %d to set clock divider\n", ind));
+		LOG(logERROR, ("Unknown clock index %d to set clock divider\n", ind));
 	    return FAIL;
 	}
 	if (val < 2 || val > getMaxClockDivider()) {
@@ -1545,7 +1545,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 	int currentdiv = vcofreq / (int)clkFrequency[ind];
 	int newfreq = vcofreq / val;
 
-    FILE_LOG(logINFO, ("\tSetting %s clock (%d) divider from %d (%d Hz) to %d (%d Hz). \n\t(Vcofreq: %d Hz)\n", clock_names[ind], ind, currentdiv, clkFrequency[ind], val, newfreq, vcofreq));
+    LOG(logINFO, ("\tSetting %s clock (%d) divider from %d (%d Hz) to %d (%d Hz). \n\t(Vcofreq: %d Hz)\n", clock_names[ind], ind, currentdiv, clkFrequency[ind], val, newfreq, vcofreq));
 
     // Remembering old phases in degrees
     int oldPhases[NUM_CLOCKS];
@@ -1553,7 +1553,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 		int i = 0;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
 			oldPhases	[i] = getPhase(i, 1);
-			FILE_LOG(logDEBUG1, ("\tRemembering %s clock (%d) phase: %d degrees\n", clock_names[ind], ind, oldPhases[i]));
+			LOG(logDEBUG1, ("\tRemembering %s clock (%d) phase: %d degrees\n", clock_names[ind], ind, oldPhases[i]));
 		}
 	}
 
@@ -1562,7 +1562,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 	int clkIndex = (int)(ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind);
     ALTERA_PLL_C10_SetOuputFrequency (pllIndex, clkIndex, newfreq);
 	clkFrequency[ind] = newfreq;
-    FILE_LOG(logINFO, ("\t%s clock (%d) divider set to %d (%d Hz)\n", clock_names[ind], ind, val, clkFrequency[ind]));
+    LOG(logINFO, ("\t%s clock (%d) divider set to %d (%d Hz)\n", clock_names[ind], ind, val, clkFrequency[ind]));
 	// update system frequency
 	if (ind == SYSTEM_C0) {
 		setTimingSource(getTimingSource());
@@ -1585,7 +1585,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 		for (i = 0; i < NUM_CLOCKS; ++i) {
 			int currPhaseDeg = getPhase(i, 1);
 			if (oldPhases[i] != currPhaseDeg) {
-				FILE_LOG(logINFO, ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n", clock_names[i], i, currPhaseDeg, oldPhases[i]));
+				LOG(logINFO, ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n", clock_names[i], i, currPhaseDeg, oldPhases[i]));
 				setPhase(i, oldPhases[i], 1);
 			}
 		}
@@ -1595,7 +1595,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 
 int getClockDivider(enum CLKINDEX ind) {
    if (ind < 0 || ind >= NUM_CLOCKS) {
-		FILE_LOG(logERROR, ("Unknown clock index %d to get clock divider\n", ind));
+		LOG(logERROR, ("Unknown clock index %d to get clock divider\n", ind));
 	    return -1;
 	}
 	return (getVCOFrequency(ind) / (int)clkFrequency[ind]);
@@ -1603,11 +1603,11 @@ int getClockDivider(enum CLKINDEX ind) {
 
 int setInjectChannel(int offset, int increment) {
 	if (offset < 0 || increment  < 1) {
-		FILE_LOG(logERROR, ("Cannot inject channel. Invalid offset %d or increment %d\n", offset, increment));
+		LOG(logERROR, ("Cannot inject channel. Invalid offset %d or increment %d\n", offset, increment));
 		return FAIL;
 	}
 
-	FILE_LOG(logINFO, ("Injecting channels [offset:%d, increment:%d]\n", offset, increment));
+	LOG(logINFO, ("Injecting channels [offset:%d, increment:%d]\n", offset, increment));
 	
 	// 4 bits of padding + 128 bits + 4 bits for address = 136 bits
 	char buffer[17]; 
@@ -1639,7 +1639,7 @@ void getInjectedChannels(int* offset, int* increment) {
 }
 
 int	setVetoReference(int gainIndex, int value) {
-	FILE_LOG(logINFO, ("Setting veto reference [chip:-1, G%d, value:0x%x]\n", gainIndex, value));
+	LOG(logINFO, ("Setting veto reference [chip:-1, G%d, value:0x%x]\n", gainIndex, value));
 	int vals[NCHAN];
 	memset(vals, 0, sizeof(vals));
 	int ich = 0;
@@ -1650,7 +1650,7 @@ int	setVetoReference(int gainIndex, int value) {
 }
 
 int	setVetoPhoton(int chipIndex, int gainIndex, int* values) {
-	FILE_LOG(logINFO, ("Setting veto photon [chip:%d, G%d]\n", chipIndex, gainIndex));
+	LOG(logINFO, ("Setting veto photon [chip:%d, G%d]\n", chipIndex, gainIndex));
 
 	// add gain bits
 	{
@@ -1666,14 +1666,14 @@ int	setVetoPhoton(int chipIndex, int gainIndex, int* values) {
 				gainValue = ASIC_G2_VAL;
 				break;	
 			default:
-				FILE_LOG(logERROR, ("Unknown gain index %d\n", gainIndex));
+				LOG(logERROR, ("Unknown gain index %d\n", gainIndex));
 				return FAIL;			
 		}
-		FILE_LOG(logDEBUG2, ("Adding gain bits\n"));
+		LOG(logDEBUG2, ("Adding gain bits\n"));
 		int i = 0;
 		for (i = 0; i < NCHAN; ++i) {
 			values[i] |= gainValue;
-			FILE_LOG(logDEBUG2, ("Value %d: 0x%x\n", i, values[i]));
+			LOG(logDEBUG2, ("Value %d: 0x%x\n", i, values[i]));
 		}
 	}
 
@@ -1744,7 +1744,7 @@ int getVetoPhoton(int chipIndex, int* retvals) {
 			int val = vetoReference[0][i];
 			for (j = 1; j < NCHIP; ++j) {
 				if (vetoReference[j][i] != val) {
-					FILE_LOG(logERROR, ("Get vet photon fail for chipIndex:%d. Different values between [nchip:%d, nchan:%d, value:%d] and [nchip:0, nchan:%d, value:%d]\n", chipIndex, j, i, vetoReference[j][i], i, val));
+					LOG(logERROR, ("Get vet photon fail for chipIndex:%d. Different values between [nchip:%d, nchan:%d, value:%d] and [nchip:0, nchan:%d, value:%d]\n", chipIndex, j, i, vetoReference[j][i], i, val));
 					return FAIL;
 				}
 			}
@@ -1756,7 +1756,7 @@ int getVetoPhoton(int chipIndex, int* retvals) {
 }
 
 int configureSingleADCDriver(int chipIndex) {
-	FILE_LOG(logINFO, ("Configuring ADC for %s chips [chipIndex:%d Burst Mode:%d]\n", chipIndex == -1 ? "All" : "Single", chipIndex, burstMode));
+	LOG(logINFO, ("Configuring ADC for %s chips [chipIndex:%d Burst Mode:%d]\n", chipIndex == -1 ? "All" : "Single", chipIndex, burstMode));
 
 	int ind = chipIndex;
 	if (ind == -1) {
@@ -1772,7 +1772,7 @@ int configureSingleADCDriver(int chipIndex) {
 			if (burstMode == BURST_OFF) {
 				values[i] |= ASIC_CONTINUOUS_MODE_MSK;
 			}
-			FILE_LOG(logDEBUG2, ("Value %d: 0x%02hhx\n", i, values[i]));
+			LOG(logDEBUG2, ("Value %d: 0x%02hhx\n", i, values[i]));
 		}
 	}
 
@@ -1820,7 +1820,7 @@ int configureSingleADCDriver(int chipIndex) {
 }
 
 int configureADC() {
-	FILE_LOG(logINFO, ("Configuring ADC \n"));
+	LOG(logINFO, ("Configuring ADC \n"));
 
 	int equal = 1;
 	{
@@ -1862,10 +1862,10 @@ int	setBurstModeinFPGA(enum burstMode value) {
 			runmode = ASIC_CONFIG_RUN_MODE_EXT_BURST_VAL;
 			break;
 		default:
-			FILE_LOG(logERROR, ("Unknown burst mode %d\n", value));
+			LOG(logERROR, ("Unknown burst mode %d\n", value));
 			return FAIL;
 	}
-	FILE_LOG(logDEBUG1, ("Run mode (FPGA val): %d\n", runmode));
+	LOG(logDEBUG1, ("Run mode (FPGA val): %d\n", runmode));
 	bus_w(addr, bus_r(addr) &~ ASIC_CONFIG_RUN_MODE_MSK);
 	bus_w(addr, bus_r(addr) | ((runmode << ASIC_CONFIG_RUN_MODE_OFST) & ASIC_CONFIG_RUN_MODE_MSK));
 	burstMode = value;
@@ -1873,7 +1873,7 @@ int	setBurstModeinFPGA(enum burstMode value) {
 }
 
 int	setBurstMode(enum burstMode burst) {
-	FILE_LOG(logINFO, ("Setting burst mode to %s\n", burst == BURST_OFF ? "off" : (burst == BURST_INTERNAL ? "internal" : "external")));
+	LOG(logINFO, ("Setting burst mode to %s\n", burst == BURST_OFF ? "off" : (burst == BURST_INTERNAL ? "internal" : "external")));
 
 	// remember the number of frames and period (before changing burst mode)
 	int64_t frames = getNumFrames();
@@ -1883,17 +1883,17 @@ int	setBurstMode(enum burstMode burst) {
 		return FAIL;
 	}
 
-	FILE_LOG(logINFO, ("\tUpdating trigger/burst and burst period registers\n"))
+	LOG(logINFO, ("\tUpdating trigger/burst and burst period registers\n"))
 	setNumTriggers(numTriggers);
 	setNumBursts(numBursts);
 	setBurstPeriod(burstPeriodNs);
 
 	// set number of frames and period again (set registers according to timing mode)
-	FILE_LOG(logINFO, ("\tUpdating #frames and period registers\n"));
+	LOG(logINFO, ("\tUpdating #frames and period registers\n"));
 	setNumFrames(frames);
 	setPeriod(period);
 
-	FILE_LOG(logINFO, ("\tSetting %s Mode in Chip\n", burstMode == BURST_OFF ? "Continuous" : "Burst"));
+	LOG(logINFO, ("\tSetting %s Mode in Chip\n", burstMode == BURST_OFF ? "Continuous" : "Burst"));
 	int value = burstMode ? ASIC_GLOBAL_BURST_VALUE : ASIC_GLOBAL_CONT_VALUE;
 
 	const int padding = 6; // due to address (4) to make it byte aligned
@@ -1949,7 +1949,7 @@ enum burstMode getBurstMode() {
 			burstMode = BURST_EXTERNAL;
 			break;
 		default:
-			FILE_LOG(logERROR, ("Unknown run mode read from FPGA %d\n", runmode));
+			LOG(logERROR, ("Unknown run mode read from FPGA %d\n", runmode));
 			return -1;
 	}
 	return burstMode;
@@ -1972,17 +1972,17 @@ void setTimingSource(enum timingSourceType value) {
 	uint32_t addr = CONTROL_REG;
 	switch (value) {
 		case TIMING_INTERNAL:
-			FILE_LOG(logINFO, ("Setting timing source to internal\n"));
+			LOG(logINFO, ("Setting timing source to internal\n"));
 			bus_w(addr, (bus_r(addr) &~ CONTROL_TIMING_SOURCE_EXT_MSK));
 			systemFrequency = INT_SYSTEM_C0_FREQUENCY;
 			break;
 		case TIMING_EXTERNAL:
-			FILE_LOG(logINFO, ("Setting timing source to exernal\n"));
+			LOG(logINFO, ("Setting timing source to exernal\n"));
 			bus_w(addr, (bus_r(addr) | CONTROL_TIMING_SOURCE_EXT_MSK));
 			systemFrequency = clkFrequency[SYSTEM_C0];
 			break;		
 		default:
-			FILE_LOG(logERROR, ("Unknown timing source %d\n", value));
+			LOG(logERROR, ("Unknown timing source %d\n", value));
 			break;	
 	}
 }
@@ -2004,25 +2004,25 @@ int startStateMachine(){
 	if(createUDPSocket(0) != OK) {
 		return FAIL;
 	}
-	FILE_LOG(logINFOBLUE, ("starting state machine\n"));
+	LOG(logINFOBLUE, ("starting state machine\n"));
 	// set status to running
 	virtual_status = 1;
 	virtual_stop = 0;
 	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
-		FILE_LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
+		LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
 		virtual_status = 0;
 		return FAIL;
 	}
-	FILE_LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
+	LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
 	return OK;
 #endif
-	FILE_LOG(logINFOBLUE, ("Starting State Machine\n"));
+	LOG(logINFOBLUE, ("Starting State Machine\n"));
 	cleanFifos();
 	
 	//start state machine
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_ACQSTN_MSK);
 
-	FILE_LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
+	LOG(logINFO, ("Status Register: %08x\n",bus_r(STATUS_REG)));
     return OK;
 }
 
@@ -2079,7 +2079,7 @@ void* start_timer(void* arg) {
 
 		// send 1 packet = 1 frame
 		sendUDPPacket(0, packetData, packetsize);
-		FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
+		LOG(logINFO, ("Sent frame: %d\n", frameNr));
 
 		// calculate time left in period
         int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
@@ -2098,52 +2098,52 @@ void* start_timer(void* arg) {
 	closeUDPSocket(0);
 	// set status to idle
 	virtual_status = 0;
-	FILE_LOG(logINFOBLUE, ("Finished Acquiring\n"));
+	LOG(logINFOBLUE, ("Finished Acquiring\n"));
 	return NULL;
 }
 #endif
 
 
 int stopStateMachine(){
-	FILE_LOG(logINFORED, ("Stopping State Machine\n"));
+	LOG(logINFORED, ("Stopping State Machine\n"));
 #ifdef VIRTUAL
 	virtual_stop = 0;
 	return OK;
 #endif
     //stop state machine
 	bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STP_ACQSTN_MSK);
-	FILE_LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
+	LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
     return OK;
 }
 
 enum runStatus getRunStatus(){
 #ifdef VIRTUAL
 	if(virtual_status == 0){
-		FILE_LOG(logINFOBLUE, ("Status: IDLE\n"));
+		LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
 	}else{
-		FILE_LOG(logINFOBLUE, ("Status: RUNNING\n"));
+		LOG(logINFOBLUE, ("Status: RUNNING\n"));
 		return RUNNING;
 	}
 #endif
-	FILE_LOG(logDEBUG1, ("Getting status\n"));
+	LOG(logDEBUG1, ("Getting status\n"));
 	uint32_t retval = bus_r(FLOW_STATUS_REG);
-	FILE_LOG(logINFO, ("Status Register: %08x\n",retval));
+	LOG(logINFO, ("Status Register: %08x\n",retval));
 
 	enum runStatus s;
 
 	//running
 	if (retval & FLOW_STATUS_RUN_BUSY_MSK) {
 		if (retval & FLOW_STATUS_WAIT_FOR_TRGGR_MSK) {
-			FILE_LOG(logINFOBLUE, ("Status: WAITING\n"));
+			LOG(logINFOBLUE, ("Status: WAITING\n"));
 			s = WAITING;
 		} else {
 			if (retval & FLOW_STATUS_DLY_BFRE_TRGGR_MSK) {
-				FILE_LOG(logINFO, ("Status: Delay before Trigger\n"));
+				LOG(logINFO, ("Status: Delay before Trigger\n"));
 			} else if (retval & FLOW_STATUS_DLY_AFTR_TRGGR_MSK) {
-				FILE_LOG(logINFO, ("Status: Delay after Trigger\n"));
+				LOG(logINFO, ("Status: Delay after Trigger\n"));
 			}
-			FILE_LOG(logINFOBLUE, ("Status: RUNNING\n"));
+			LOG(logINFOBLUE, ("Status: RUNNING\n"));
 			s = RUNNING;
 		}
 	}
@@ -2152,16 +2152,16 @@ enum runStatus getRunStatus(){
 	else {
 	    // stopped or error
 		if (retval & FLOW_STATUS_FIFO_FULL_MSK) {
-			FILE_LOG(logINFOBLUE, ("Status: STOPPED\n")); //FIFO FULL??
+			LOG(logINFOBLUE, ("Status: STOPPED\n")); //FIFO FULL??
 			s = STOPPED;
 		} else if (retval & FLOW_STATUS_CSM_BUSY_MSK) {
-			FILE_LOG(logINFOBLUE, ("Status: READ MACHINE BUSY\n"));
+			LOG(logINFOBLUE, ("Status: READ MACHINE BUSY\n"));
 			s = TRANSMITTING;
 		} else if (!retval) {
-			FILE_LOG(logINFOBLUE, ("Status: IDLE\n"));
+			LOG(logINFOBLUE, ("Status: IDLE\n"));
 			s = IDLE;
 		} else {
-			FILE_LOG(logERROR, ("Status: Unknown status %08x\n", retval));
+			LOG(logERROR, ("Status: Unknown status %08x\n", retval));
 			s = ERROR;
 		}
 	}
@@ -2175,7 +2175,7 @@ void readFrame(int *ret, char *mess) {
 		usleep(500);
 	}
 #ifdef VIRTUAL
-	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
+	LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #endif
 
@@ -2184,9 +2184,9 @@ void readFrame(int *ret, char *mess) {
 	int64_t retval = getNumFramesLeft() + 1;
 
 	if ( retval > 0) {
-		FILE_LOG(logERROR, ("No data and run stopped: %lld frames left\n",(long  long int)retval));
+		LOG(logERROR, ("No data and run stopped: %lld frames left\n",(long  long int)retval));
 	} else {
-		FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+		LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 	}
 }
 
@@ -2195,7 +2195,7 @@ u_int32_t runBusy() {
     return virtual_status;
 #endif
 	u_int32_t s = (bus_r(FLOW_STATUS_REG) & FLOW_STATUS_RUN_BUSY_MSK);
-	//FILE_LOG(logDEBUG1, ("Status Register: %08x\n", s));
+	//LOG(logDEBUG1, ("Status Register: %08x\n", s));
 	return s;
 }
 

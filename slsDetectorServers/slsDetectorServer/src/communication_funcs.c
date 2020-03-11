@@ -55,7 +55,7 @@ int bindSocket(unsigned short int port_number) {
 	if (myport == port_number) {
 		sprintf(mess, "Cannot create %s socket with port %d. Already in use before.\n",
 				(isControlServer ? "control":"stop"), port_number);
-		FILE_LOG(logERROR, (mess));
+		LOG(logERROR, (mess));
 	}
 	// port ok
 	else {
@@ -66,7 +66,7 @@ int bindSocket(unsigned short int port_number) {
 		if (socketDescriptor < 0) {
 			sprintf(mess, "Cannot create %s socket with port %d\n",
 					(isControlServer ? "control":"stop"), port_number);
-			FILE_LOG(logERROR, (mess));
+			LOG(logERROR, (mess));
 		}
 		// socket success
 		else {
@@ -82,7 +82,7 @@ int bindSocket(unsigned short int port_number) {
 			if(bind(socketDescriptor,(struct sockaddr *) &addressS,sizeof(addressS)) < 0){
 				sprintf(mess, "Cannot bind %s socket to port %d.\n",
 						(isControlServer ? "control":"stop"), port_number);
-				FILE_LOG(logERROR, (mess));
+				LOG(logERROR, (mess));
 			}
 			// bind socket ok
 			else {
@@ -100,7 +100,7 @@ int bindSocket(unsigned short int port_number) {
 					// success
 					myport = port_number;
 					ret = OK;
-					FILE_LOG(logDEBUG1, ("%s socket bound: isock=%d, port=%d, fd=%d\n",
+					LOG(logDEBUG1, ("%s socket bound: isock=%d, port=%d, fd=%d\n",
 							(isControlServer ? "Control":"Stop"), isock, port_number, socketDescriptor));
 
 				}
@@ -108,7 +108,7 @@ int bindSocket(unsigned short int port_number) {
 				else {
 					sprintf(mess, "Cannot bind %s socket to port %d.\n",
 							(isControlServer ? "control":"stop"), port_number);
-					FILE_LOG(logERROR, (mess));
+					LOG(logERROR, (mess));
 				}
 			}
 		}
@@ -141,81 +141,81 @@ int acceptConnection(int socketDescriptor) {
 
 	// timeout
 	if (result == 0) {
-		FILE_LOG(logDEBUG3, ("%s socket select() timed out!\n",
+		LOG(logDEBUG3, ("%s socket select() timed out!\n",
 				(isControlServer ? "control":"stop"), myport));
 	}
 
 	// error (not signal caught)
 	else if (result < 0 && errno != EINTR) {
-		FILE_LOG(logERROR, ("%s socket select() error: %s\n",
+		LOG(logERROR, ("%s socket select() error: %s\n",
 				(isControlServer ? "control":"stop"), myport, strerror(errno)));
 	}
 
 	// activity in descriptor set
 	else if (result > 0) {
-		FILE_LOG(logDEBUG3, ("%s select returned!\n", (isControlServer ? "control":"stop")));
+		LOG(logDEBUG3, ("%s select returned!\n", (isControlServer ? "control":"stop")));
 
 		// loop through the file descriptor set
 		for (j = 0; j < maxfd + 1; ++j) {
 
 			// checks if file descriptor part of set
 			if (FD_ISSET(j, &tempset)) {
-				FILE_LOG(logDEBUG3, ("fd %d is set\n",j));
+				LOG(logDEBUG3, ("fd %d is set\n",j));
 
 				// clear the temporary set
 				FD_CLR(j, &tempset);
 
 				// accept connection (if error)
 				if ((file_des = accept(j,(struct sockaddr *) &addressC, &address_length)) < 0) {
-					FILE_LOG(logERROR, ("%s socket accept() error. Connection refused.\n",
+					LOG(logERROR, ("%s socket accept() error. Connection refused.\n",
 							"Error Number: %d, Message: %s\n",
 							(isControlServer ? "control":"stop"),
 							myport, errno, strerror(errno)));
 					switch(errno) {
 					case EWOULDBLOCK:
-						FILE_LOG(logERROR, ("ewouldblock eagain"));
+						LOG(logERROR, ("ewouldblock eagain"));
 						break;
 					case EBADF:
-						FILE_LOG(logERROR, ("ebadf\n"));
+						LOG(logERROR, ("ebadf\n"));
 						break;
 					case ECONNABORTED:
-						FILE_LOG(logERROR, ("econnaborted\n"));
+						LOG(logERROR, ("econnaborted\n"));
 						break;
 					case EFAULT:
-						FILE_LOG(logERROR, ("efault\n"));
+						LOG(logERROR, ("efault\n"));
 						break;
 					case EINTR:
-						FILE_LOG(logERROR, ("eintr\n"));
+						LOG(logERROR, ("eintr\n"));
 						break;
 					case EINVAL:
-						FILE_LOG(logERROR, ("einval\n"));
+						LOG(logERROR, ("einval\n"));
 						break;
 					case EMFILE:
-						FILE_LOG(logERROR, ("emfile\n"));
+						LOG(logERROR, ("emfile\n"));
 						break;
 					case ENFILE:
-						FILE_LOG(logERROR, ("enfile\n"));
+						LOG(logERROR, ("enfile\n"));
 						break;
 					case ENOTSOCK:
-						FILE_LOG(logERROR, ("enotsock\n"));
+						LOG(logERROR, ("enotsock\n"));
 						break;
 					case EOPNOTSUPP:
-						FILE_LOG(logERROR, ("eOPNOTSUPP\n"));
+						LOG(logERROR, ("eOPNOTSUPP\n"));
 						break;
 					case ENOBUFS:
-						FILE_LOG(logERROR, ("ENOBUFS\n"));
+						LOG(logERROR, ("ENOBUFS\n"));
 						break;
 					case ENOMEM:
-						FILE_LOG(logERROR, ("ENOMEM\n"));
+						LOG(logERROR, ("ENOMEM\n"));
 						break;
 					case ENOSR:
-						FILE_LOG(logERROR, ("ENOSR\n"));
+						LOG(logERROR, ("ENOSR\n"));
 						break;
 					case EPROTO:
-						FILE_LOG(logERROR, ("EPROTO\n"));
+						LOG(logERROR, ("EPROTO\n"));
 						break;
 					default:
-						FILE_LOG(logERROR, ("unknown error\n"));
+						LOG(logERROR, ("unknown error\n"));
 					}
 				}
 				// accept success
@@ -223,7 +223,7 @@ int acceptConnection(int socketDescriptor) {
 					char buf[INET_ADDRSTRLEN] = "";
 					memset(buf, 0, INET_ADDRSTRLEN);
 					inet_ntop(AF_INET, &(addressC.sin_addr), buf, INET_ADDRSTRLEN);
-					FILE_LOG(logDEBUG3, ("%s socket accepted connection, fd= %d\n",
+					LOG(logDEBUG3, ("%s socket accepted connection, fd= %d\n",
 							(isControlServer ? "control":"stop"), file_des));
 					
 					getIpAddressFromString(buf, &dummyClientIP);
@@ -255,7 +255,7 @@ void exitServer(int socketDescriptor) {
 	if (socketDescriptor >= 0) {
 		close(socketDescriptor);
 	}
-	FILE_LOG(logINFO, ("Closing %s server\n", (isControlServer ? "control":"stop")));
+	LOG(logINFO, ("Closing %s server\n", (isControlServer ? "control":"stop")));
 	FD_CLR(socketDescriptor, &readset);
 	isock--;
 	fflush(stdout);
@@ -332,18 +332,18 @@ int sendDataOnly(int file_des, void* buf,int length) {
           int rc = write(file_des, (char*)((char*)buf + bytesSent), bytesToSend);
           // error
           if (rc < 0) {
-              FILE_LOG(logERROR, ("Could not write to %s socket. Possible socket crash\n",
+              LOG(logERROR, ("Could not write to %s socket. Possible socket crash\n",
                               (isControlServer ? "control":"stop")));
               return bytesSent;
           }
           // also error, wrote nothing, buffer blocked up, too fast sending for client
           if (rc == 0) {
-              FILE_LOG(logERROR, ("Could not write to %s socket. Buffer full. Retry: %d\n",
+              LOG(logERROR, ("Could not write to %s socket. Buffer full. Retry: %d\n",
                               (isControlServer ? "control":"stop"), retry));
               ++retry;
               // wrote nothing for many loops
               if (retry >= CPU_RSND_PCKT_LOOP) {
-                  FILE_LOG(logERROR, ("Could not write to %s socket. Buffer full! Too fast! No more.\n",
+                  LOG(logERROR, ("Could not write to %s socket. Buffer full! Too fast! No more.\n",
                                   (isControlServer ? "control":"stop")));
                   return bytesSent;
               }
@@ -353,7 +353,7 @@ int sendDataOnly(int file_des, void* buf,int length) {
           else  {
               retry = 0;
               if (rc != bytesToSend) {
-                  FILE_LOG(logWARNING, ("Only partial write to %s socket. Expected to write %d bytes, wrote %d\n",
+                  LOG(logWARNING, ("Only partial write to %s socket. Expected to write %d bytes, wrote %d\n",
                                                 (isControlServer ? "control":"stop"), bytesToSend, rc));
               }
           }
@@ -370,7 +370,7 @@ int receiveDataOnly(int file_des, void* buf,int length) {
 	int nreceiving;
 	int nreceived;
 	if (file_des<0) return -1;
-	FILE_LOG(logDEBUG3, ("want to receive %d Bytes to %s server\n",
+	LOG(logDEBUG3, ("want to receive %d Bytes to %s server\n",
 			length, (isControlServer ? "control":"stop")));
 
 	while(length > 0) {
@@ -459,7 +459,7 @@ int sendModule(int file_des, sls_detector_module *myMod) {
 	}
 	ts += n;
 #endif
-	FILE_LOG(logDEBUG1, ("module of size %d sent register %x\n", ts, myMod->reg));
+	LOG(logDEBUG1, ("module of size %d sent register %x\n", ts, myMod->reg));
 	return ts;
 }
 
@@ -467,70 +467,70 @@ int sendModule(int file_des, sls_detector_module *myMod) {
 
 int  receiveModule(int file_des, sls_detector_module* myMod) {
     enum TLogLevel level = logDEBUG1;
-    FILE_LOG(level, ("Receiving Module\n"));
+    LOG(level, ("Receiving Module\n"));
 	int ts = 0, n = 0;
 	int nDacs = myMod->ndac;
 #ifdef EIGERD
 	int nChans = myMod->nchan; // can be zero for no trimbits
-	FILE_LOG(level, ("nChans: %d\n",nChans));
+	LOG(level, ("nChans: %d\n",nChans));
 #endif
 	n = receiveData(file_des,&(myMod->serialnumber), sizeof(myMod->serialnumber), INT32);
 	if (!n) {
 		return -1;
 	}
 	ts += n;
-	FILE_LOG(level, ("serialno received. %d bytes. serialno: %d\n", n,
+	LOG(level, ("serialno received. %d bytes. serialno: %d\n", n,
 						myMod->serialnumber));
 	n = receiveData(file_des, &(myMod->nchan), sizeof(myMod->nchan), INT32);
 	if (!n) {
 		return -1;
 	}
 	ts += n;
-	FILE_LOG(level,
+	LOG(level,
 				("nchan received. %d bytes. nchan: %d\n", n, myMod->nchan));
 	n = receiveData(file_des, &(myMod->nchip), sizeof(myMod->nchip), INT32);
 	if (!n) {
 		return -1;
 	}
 	ts += n;
-	FILE_LOG(level,
+	LOG(level,
 				("nchip received. %d bytes. nchip: %d\n", n, myMod->nchip));
 	n = receiveData(file_des, &(myMod->ndac), sizeof(myMod->ndac), INT32);
 	if (!n) {
 		return -1;
 	}
 	ts += n;
-	FILE_LOG(level,
+	LOG(level,
 				("ndac received. %d bytes. ndac: %d\n", n, myMod->ndac));
 	n = receiveData(file_des, &(myMod->reg), sizeof(myMod->reg), INT32);
 	if (!n) {
 		return -1;
 	}
 	ts += n;
-	FILE_LOG(level, ("reg received. %d bytes. reg: %d\n", n, myMod->reg));
+	LOG(level, ("reg received. %d bytes. reg: %d\n", n, myMod->reg));
 	n = receiveData(file_des, &(myMod->iodelay), sizeof(myMod->iodelay),
 					INT32);
 	if (!n) {
 		return -1;
 	}
 	ts += n;
-	FILE_LOG(level, ("iodelay received. %d bytes. iodelay: %d\n", n,
+	LOG(level, ("iodelay received. %d bytes. iodelay: %d\n", n,
 						myMod->iodelay));
 	n = receiveData(file_des, &(myMod->tau), sizeof(myMod->tau), INT32);
 	if (!n) {
 		return -1;
 	}
 	ts += n;
-	FILE_LOG(level, ("tau received. %d bytes. tau: %d\n", n, myMod->tau));
+	LOG(level, ("tau received. %d bytes. tau: %d\n", n, myMod->tau));
 	n = receiveData(file_des, &(myMod->eV), sizeof(myMod->eV), INT32);
 	if (!n) {
 		return -1;
 	}
 	ts += n;
-	FILE_LOG(level, ("eV received. %d bytes. eV: %d\n", n, myMod->eV));
+	LOG(level, ("eV received. %d bytes. eV: %d\n", n, myMod->eV));
 	// dacs
 	if (nDacs != (myMod->ndac)) {
-		FILE_LOG(logERROR, ("received wrong number of dacs. "
+		LOG(logERROR, ("received wrong number of dacs. "
 							"Expected %d, got %d\n",
 							nDacs, myMod->ndac));
 		return 0;
@@ -540,23 +540,23 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
 		return -1;
 	} 
 	ts += n;
-    FILE_LOG(level, ("dacs received. %d bytes.\n", n));
+    LOG(level, ("dacs received. %d bytes.\n", n));
 	// channels
 #ifdef EIGERD
 	if (((myMod->nchan) != 0 ) &&  // no trimbits
 			(nChans != (myMod->nchan))) { // with trimbits
-		FILE_LOG(logERROR, ("received wrong number of channels. "
+		LOG(logERROR, ("received wrong number of channels. "
 				"Expected %d, got %d\n",	nChans, (myMod->nchan)));
 		return 0;
 	}
 	n = receiveData(file_des, myMod->chanregs, sizeof(int) * (myMod->nchan), INT32);
-    FILE_LOG(level, ("chanregs received. %d bytes.\n", n));
+    LOG(level, ("chanregs received. %d bytes.\n", n));
     if (!n && myMod->nchan != 0){
 		return -1;
 	} 
 	ts += n;
 #endif
-	FILE_LOG(level, ("received module of size %d register %x\n",ts,myMod->reg));
+	LOG(level, ("received module of size %d register %x\n",ts,myMod->reg));
 	return ts;
 }
 
@@ -566,7 +566,7 @@ void Server_LockedError() {
 	char buf[INET_ADDRSTRLEN] = "";
 	getIpAddressinString(buf, dummyClientIP);
 	sprintf(mess,"Detector locked by %s\n", buf);
-	FILE_LOG(logWARNING, (mess));
+	LOG(logWARNING, (mess));
 }
 
 
@@ -592,7 +592,7 @@ int Server_SendResult(int fileDes, intType itype, int update, void* retval, int 
 			sendData(fileDes, mess, MAX_STR_LENGTH, OTHER);
 		// debugging feature. should not happen.
 		else
-			FILE_LOG(logERROR, ("No error message provided for this failure in %s "
+			LOG(logERROR, ("No error message provided for this failure in %s "
 					"server. Will mess up TCP.\n",
 					(isControlServer ? "control":"stop")));
 	}

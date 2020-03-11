@@ -14,7 +14,7 @@
 #include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-
+#include <unistd.h>
 #include "network_utils.h"
 
 namespace sls {

@@ -7,15 +7,15 @@
 
 #include "ThreadObject.h"
 #include "container_utils.h"
-
 #include <iostream>
-#include <syscall.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 
 
 
 ThreadObject::ThreadObject(int threadIndex, std::string threadType)
 	: index(threadIndex), type(threadType) {
-	FILE_LOG(logDEBUG) 	<< type << " thread created: " << 	index;
+	LOG(logDEBUG) 	<< type << " thread created: " << 	index;
 
 	sem_init(&semaphore,1,0);
 
@@ -38,8 +38,8 @@ ThreadObject::~ThreadObject() {
 
 
 void ThreadObject::RunningThread() {
-	FILE_LOG(logINFOBLUE) << "Created [ " << type << "Thread " << index << ", Tid: " << syscall(SYS_gettid) << "]";
-	FILE_LOG(logDEBUG) << type << " thread " << index << " created successfully.";
+	LOG(logINFOBLUE) << "Created [ " << type << "Thread " << index << ", Tid: " << syscall(SYS_gettid) << "]";
+	LOG(logDEBUG) << type << " thread " << index << " created successfully.";
 
 	while(true)	{
 		while(IsRunning()) {
@@ -52,8 +52,8 @@ void ThreadObject::RunningThread() {
 		}
 	}
 	
-	FILE_LOG(logDEBUG) << type << " thread with index " << index << " destroyed successfully.";
-	FILE_LOG(logINFOBLUE) << "Exiting [ " << type << " Thread " << index << ", Tid: " << syscall(SYS_gettid) << "]";
+	LOG(logDEBUG) << type << " thread with index " << index << " destroyed successfully.";
+	LOG(logINFOBLUE) << "Exiting [ " << type << " Thread " << index << ", Tid: " << syscall(SYS_gettid) << "]";
 }
 
 
@@ -67,10 +67,10 @@ void ThreadObject::SetThreadPriority(int priority) {
 	param.sched_priority = priority;
 	if (pthread_setschedparam(threadObject->native_handle(), SCHED_FIFO, &param) == EPERM) {
 		if (index == 0) {
-			FILE_LOG(logWARNING) << "Could not prioritize " << type << " thread. "
+			LOG(logWARNING) << "Could not prioritize " << type << " thread. "
                                     "(No Root Privileges?)";
 		}
 	} else {
-		FILE_LOG(logINFO) << "Priorities set - " << type << ": " << priority;
+		LOG(logINFO) << "Priorities set - " << type << ": " << priority;
 	}
 }

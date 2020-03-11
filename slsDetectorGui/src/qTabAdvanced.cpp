@@ -8,7 +8,7 @@ qTabAdvanced::qTabAdvanced(QWidget *parent, sls::Detector *detector,
     : QWidget(parent), det(detector), plot(p) {
     setupUi(this);
     SetupWidgetWindow();
-    FILE_LOG(logDEBUG) << "Advanced ready";
+    LOG(logDEBUG) << "Advanced ready";
 }
 
 qTabAdvanced::~qTabAdvanced() {}
@@ -119,7 +119,7 @@ void qTabAdvanced::Initialization() {
 }
 
 void qTabAdvanced::PopulateDetectors() {
-    FILE_LOG(logDEBUG) << "Populating detectors";
+    LOG(logDEBUG) << "Populating detectors";
     disconnect(comboDetector, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetDetector()));
     disconnect(comboReadout, SIGNAL(currentIndexChanged(int)), this,
@@ -142,7 +142,7 @@ void qTabAdvanced::PopulateDetectors() {
 }
 
 void qTabAdvanced::GetControlPort() {
-    FILE_LOG(logDEBUG) << "Getting control port ";
+    LOG(logDEBUG) << "Getting control port ";
     disconnect(spinControlPort, SIGNAL(valueChanged(int)), this,
                SLOT(SetControlPort(int)));
 
@@ -158,7 +158,7 @@ void qTabAdvanced::GetControlPort() {
 }
 
 void qTabAdvanced::GetStopPort() {
-    FILE_LOG(logDEBUG) << "Getting stop port";
+    LOG(logDEBUG) << "Getting stop port";
     disconnect(spinStopPort, SIGNAL(valueChanged(int)), this,
                SLOT(SetStopPort(int)));
 
@@ -174,7 +174,7 @@ void qTabAdvanced::GetStopPort() {
 }
 
 void qTabAdvanced::GetDetectorUDPIP() {
-    FILE_LOG(logDEBUG) << "Getting Detector UDP IP";
+    LOG(logDEBUG) << "Getting Detector UDP IP";
     disconnect(dispDetectorUDPIP, SIGNAL(editingFinished()), this,
                SLOT(SetDetectorUDPIP()));
 
@@ -191,7 +191,7 @@ void qTabAdvanced::GetDetectorUDPIP() {
 }
 
 void qTabAdvanced::GetDetectorUDPMAC() {
-    FILE_LOG(logDEBUG) << "Getting Detector UDP MAC";
+    LOG(logDEBUG) << "Getting Detector UDP MAC";
     disconnect(dispDetectorUDPMAC, SIGNAL(editingFinished()), this,
                SLOT(SetDetectorUDPMAC()));
 
@@ -208,7 +208,7 @@ void qTabAdvanced::GetDetectorUDPMAC() {
 }
 
 void qTabAdvanced::GetCltZMQPort() {
-    FILE_LOG(logDEBUG) << "Getting Client ZMQ port";
+    LOG(logDEBUG) << "Getting Client ZMQ port";
     disconnect(spinZMQPort, SIGNAL(valueChanged(int)), this,
                SLOT(SetCltZMQPort(int)));
 
@@ -224,7 +224,7 @@ void qTabAdvanced::GetCltZMQPort() {
 }
 
 void qTabAdvanced::GetCltZMQIP() {
-    FILE_LOG(logDEBUG) << "Getting Client ZMQ IP";
+    LOG(logDEBUG) << "Getting Client ZMQ IP";
     disconnect(dispZMQIP, SIGNAL(editingFinished()), this, SLOT(SetCltZMQIP()));
 
     try {
@@ -238,7 +238,7 @@ void qTabAdvanced::GetCltZMQIP() {
 }
 
 void qTabAdvanced::GetRxrHostname() {
-    FILE_LOG(logDEBUG) << "Getting Receiver Hostname";
+    LOG(logDEBUG) << "Getting Receiver Hostname";
     disconnect(dispRxrHostname, SIGNAL(editingFinished()), this,
                SLOT(SetRxrHostname()));
 
@@ -254,7 +254,7 @@ void qTabAdvanced::GetRxrHostname() {
 }
 
 void qTabAdvanced::GetRxrTCPPort() {
-    FILE_LOG(logDEBUG) << "Getting Receiver TCP port";
+    LOG(logDEBUG) << "Getting Receiver TCP port";
     disconnect(spinRxrTCPPort, SIGNAL(valueChanged(int)), this,
                SLOT(SetRxrTCPPort(int)));
 
@@ -270,7 +270,7 @@ void qTabAdvanced::GetRxrTCPPort() {
 }
 
 void qTabAdvanced::GetRxrUDPPort() {
-    FILE_LOG(logDEBUG) << "Getting Receiver UDP port";
+    LOG(logDEBUG) << "Getting Receiver UDP port";
     disconnect(spinRxrUDPPort, SIGNAL(valueChanged(int)), this,
                SLOT(SetRxrUDPPort(int)));
 
@@ -287,7 +287,7 @@ void qTabAdvanced::GetRxrUDPPort() {
 }
 
 void qTabAdvanced::GetRxrUDPIP() {
-    FILE_LOG(logDEBUG) << "Getting Receiver UDP IP";
+    LOG(logDEBUG) << "Getting Receiver UDP IP";
     disconnect(dispRxrUDPIP, SIGNAL(editingFinished()), this,
                SLOT(SetRxrUDPIP()));
 
@@ -302,7 +302,7 @@ void qTabAdvanced::GetRxrUDPIP() {
 }
 
 void qTabAdvanced::GetRxrUDPMAC() {
-    FILE_LOG(logDEBUG) << "Getting Receiver UDP MAC";
+    LOG(logDEBUG) << "Getting Receiver UDP MAC";
     disconnect(dispRxrUDPMAC, SIGNAL(editingFinished()), this,
                SLOT(SetRxrUDPMAC()));
 
@@ -319,7 +319,7 @@ void qTabAdvanced::GetRxrUDPMAC() {
 }
 
 void qTabAdvanced::GetRxrZMQPort() {
-    FILE_LOG(logDEBUG) << "Getting Receiver ZMQ port";
+    LOG(logDEBUG) << "Getting Receiver ZMQ port";
     disconnect(spinRxrZMQPort, SIGNAL(valueChanged(int)), this,
                SLOT(SetRxrZMQPort(int)));
 
@@ -335,7 +335,7 @@ void qTabAdvanced::GetRxrZMQPort() {
 }
 
 void qTabAdvanced::GetRxrZMQIP() {
-    FILE_LOG(logDEBUG) << "Getting Receiver ZMQ IP";
+    LOG(logDEBUG) << "Getting Receiver ZMQ IP";
     disconnect(dispRxrZMQIP, SIGNAL(editingFinished()), this,
                SLOT(SetRxrZMQIP()));
 
@@ -349,7 +349,7 @@ void qTabAdvanced::GetRxrZMQIP() {
 }
 
 void qTabAdvanced::SetDetector() {
-    FILE_LOG(logDEBUG) << "Set Detector: "
+    LOG(logDEBUG) << "Set Detector: "
                        << comboDetector->currentText().toAscii().data();
 
     GetControlPort();
@@ -366,11 +366,11 @@ void qTabAdvanced::SetDetector() {
     GetRxrZMQPort();
     GetRxrZMQIP();
 
-    FILE_LOG(logDEBUG) << det->printRxConfiguration();
+    LOG(logDEBUG) << det->printRxConfiguration();
 }
 
 void qTabAdvanced::SetControlPort(int port) {
-    FILE_LOG(logINFO) << "Setting Control Port:" << port;
+    LOG(logINFO) << "Setting Control Port:" << port;
     try {
         det->setControlPort(port, {comboDetector->currentIndex()});
     }
@@ -379,7 +379,7 @@ void qTabAdvanced::SetControlPort(int port) {
 }
 
 void qTabAdvanced::SetStopPort(int port) {
-    FILE_LOG(logINFO) << "Setting Stop Port:" << port;
+    LOG(logINFO) << "Setting Stop Port:" << port;
     try {
         det->setStopPort(port, {comboDetector->currentIndex()});
     }
@@ -389,7 +389,7 @@ void qTabAdvanced::SetStopPort(int port) {
 
 void qTabAdvanced::SetDetectorUDPIP() {
     std::string s = dispDetectorUDPIP->text().toAscii().constData();
-    FILE_LOG(logINFO) << "Setting Detector UDP IP:" << s;
+    LOG(logINFO) << "Setting Detector UDP IP:" << s;
     try {
         det->setSourceUDPIP(sls::IpAddr{s}, {comboDetector->currentIndex()});
     }
@@ -400,7 +400,7 @@ void qTabAdvanced::SetDetectorUDPIP() {
 
 void qTabAdvanced::SetDetectorUDPMAC() {
     std::string s = dispDetectorUDPMAC->text().toAscii().constData();
-    FILE_LOG(logINFO) << "Setting Detector UDP MAC:" << s;
+    LOG(logINFO) << "Setting Detector UDP MAC:" << s;
     try {
         det->setSourceUDPMAC(sls::MacAddr{s}, {comboDetector->currentIndex()});
     }
@@ -410,7 +410,7 @@ void qTabAdvanced::SetDetectorUDPMAC() {
 }
 
 void qTabAdvanced::SetCltZMQPort(int port) {
-    FILE_LOG(logINFO) << "Setting Client ZMQ Port:" << port;
+    LOG(logINFO) << "Setting Client ZMQ Port:" << port;
     try {
         det->setClientZmqPort(port, {comboDetector->currentIndex()});
     }
@@ -421,7 +421,7 @@ void qTabAdvanced::SetCltZMQPort(int port) {
 
 void qTabAdvanced::SetCltZMQIP() {
     std::string s = dispZMQIP->text().toAscii().constData();
-    FILE_LOG(logINFO) << "Setting Client ZMQ IP:" << s;
+    LOG(logINFO) << "Setting Client ZMQ IP:" << s;
     try {
         det->setClientZmqIp(sls::IpAddr{s}, {comboDetector->currentIndex()});
     }
@@ -431,7 +431,7 @@ void qTabAdvanced::SetCltZMQIP() {
 
 void qTabAdvanced::SetRxrHostname() {
     std::string s = dispZMQIP->text().toAscii().constData();
-    FILE_LOG(logINFO) << "Setting Receiver Hostname:" << s;
+    LOG(logINFO) << "Setting Receiver Hostname:" << s;
     try {
         det->setRxHostname(s, {comboDetector->currentIndex()});
     }
@@ -443,7 +443,7 @@ void qTabAdvanced::SetRxrHostname() {
 }
 
 void qTabAdvanced::SetRxrTCPPort(int port) {
-    FILE_LOG(logINFO) << "Setting Receiver TCP Port:" << port;
+    LOG(logINFO) << "Setting Receiver TCP Port:" << port;
     try {
         det->setRxPort(port, {comboDetector->currentIndex()});
     }
@@ -453,7 +453,7 @@ void qTabAdvanced::SetRxrTCPPort(int port) {
 }
 
 void qTabAdvanced::SetRxrUDPPort(int port) {
-    FILE_LOG(logINFO) << "Setting Receiver UDP Port:" << port;
+    LOG(logINFO) << "Setting Receiver UDP Port:" << port;
     try {
         det->setRxPort(port, {comboDetector->currentIndex()});
     }
@@ -464,7 +464,7 @@ void qTabAdvanced::SetRxrUDPPort(int port) {
 
 void qTabAdvanced::SetRxrUDPIP() {
     std::string s = dispRxrUDPIP->text().toAscii().constData();
-    FILE_LOG(logINFO) << "Setting Receiver UDP IP:" << s;
+    LOG(logINFO) << "Setting Receiver UDP IP:" << s;
     try {
         det->setDestinationUDPIP(sls::IpAddr{s},
                                  {comboDetector->currentIndex()});
@@ -475,7 +475,7 @@ void qTabAdvanced::SetRxrUDPIP() {
 
 void qTabAdvanced::SetRxrUDPMAC() {
     std::string s = dispRxrUDPMAC->text().toAscii().constData();
-    FILE_LOG(logINFO) << "Setting Receiver UDP MAC:" << s;
+    LOG(logINFO) << "Setting Receiver UDP MAC:" << s;
     try {
         det->setDestinationUDPMAC(sls::MacAddr{s},
                                   {comboDetector->currentIndex()});
@@ -486,7 +486,7 @@ void qTabAdvanced::SetRxrUDPMAC() {
 }
 
 void qTabAdvanced::SetRxrZMQPort(int port) {
-    FILE_LOG(logINFO) << "Setting Receiver ZMQ Port:" << port;
+    LOG(logINFO) << "Setting Receiver ZMQ Port:" << port;
     try {
         det->setRxZmqPort(port, {comboDetector->currentIndex()});
     }
@@ -497,7 +497,7 @@ void qTabAdvanced::SetRxrZMQPort(int port) {
 
 void qTabAdvanced::SetRxrZMQIP() {
     std::string s = dispRxrZMQIP->text().toAscii().constData();
-    FILE_LOG(logINFO) << "Setting Receiver ZMQ IP:" << s;
+    LOG(logINFO) << "Setting Receiver ZMQ IP:" << s;
     try {
         det->setRxZmqIP(sls::IpAddr{s}, {comboDetector->currentIndex()});
     }
@@ -506,7 +506,7 @@ void qTabAdvanced::SetRxrZMQIP() {
 }
 
 void qTabAdvanced::GetROI() {
-    FILE_LOG(logDEBUG) << "Getting ROI";
+    LOG(logDEBUG) << "Getting ROI";
     try {
         slsDetectorDefs::ROI roi =
             det->getROI({comboReadout->currentIndex()})[0];
@@ -517,11 +517,11 @@ void qTabAdvanced::GetROI() {
 }
 
 void qTabAdvanced::ClearROI() {
-    FILE_LOG(logINFO) << "Clearing ROI";
+    LOG(logINFO) << "Clearing ROI";
     spinXmin->setValue(-1);
     spinXmax->setValue(-1);
     SetROI();
-    FILE_LOG(logDEBUG) << "ROIs cleared";
+    LOG(logDEBUG) << "ROIs cleared";
 }
 
 void qTabAdvanced::SetROI() {
@@ -531,7 +531,7 @@ void qTabAdvanced::SetROI() {
     roi.xmax = spinXmax->value();
 
     // set roi
-    FILE_LOG(logINFO) << "Setting ROI: [" << roi.xmin << ", " << roi.xmax
+    LOG(logINFO) << "Setting ROI: [" << roi.xmin << ", " << roi.xmax
                       << "]";
     try {
         det->setROI(roi, {comboReadout->currentIndex()});
@@ -543,7 +543,7 @@ void qTabAdvanced::SetROI() {
 }
 
 void qTabAdvanced::GetAllTrimbits() {
-    FILE_LOG(logDEBUG) << "Getting all trimbits value";
+    LOG(logDEBUG) << "Getting all trimbits value";
     disconnect(spinSetAllTrimbits, SIGNAL(editingFinished()), this,
                SLOT(SetAllTrimbits()));
 
@@ -559,7 +559,7 @@ void qTabAdvanced::GetAllTrimbits() {
 
 void qTabAdvanced::SetAllTrimbits() {
     int value = spinSetAllTrimbits->value();
-    FILE_LOG(logINFO) << "Setting all trimbits:" << value;
+    LOG(logINFO) << "Setting all trimbits:" << value;
 
     try {
         det->setAllTrimbits(value);
@@ -569,7 +569,7 @@ void qTabAdvanced::SetAllTrimbits() {
 }
 
 void qTabAdvanced::GetNumStoragecells() {
-    FILE_LOG(logDEBUG) << "Getting number of additional storage cells";
+    LOG(logDEBUG) << "Getting number of additional storage cells";
     disconnect(spinNumStoragecells, SIGNAL(valueChanged(int)), this,
                SLOT(SetNumStoragecells(int)));
 
@@ -586,7 +586,7 @@ void qTabAdvanced::GetNumStoragecells() {
 }
 
 void qTabAdvanced::SetNumStoragecells(int value) {
-    FILE_LOG(logINFO) << "Setting number of additional stoarge cells: "
+    LOG(logINFO) << "Setting number of additional stoarge cells: "
                       << value;
     try {
         det->setNumberOfAdditionalStorageCells(value);
@@ -597,7 +597,7 @@ void qTabAdvanced::SetNumStoragecells(int value) {
 }
 
 void qTabAdvanced::GetSubExposureTime() {
-    FILE_LOG(logDEBUG) << "Getting sub exposure time";
+    LOG(logDEBUG) << "Getting sub exposure time";
     disconnect(spinSubExpTime, SIGNAL(valueChanged(double)), this,
                SLOT(SetSubExposureTime()));
     disconnect(comboSubExpTimeUnit, SIGNAL(currentIndexChanged(int)), this,
@@ -621,7 +621,7 @@ void qTabAdvanced::SetSubExposureTime() {
     auto timeNS = qDefs::getNSTime(std::make_pair(
         spinSubExpTime->value(),
         static_cast<qDefs::timeUnit>(comboSubExpTimeUnit->currentIndex())));
-    FILE_LOG(logINFO)
+    LOG(logINFO)
         << "Setting sub frame acquisition time to " << timeNS.count() << " ns"
         << "/" << spinSubExpTime->value()
         << qDefs::getUnitString(
@@ -636,7 +636,7 @@ void qTabAdvanced::SetSubExposureTime() {
 }
 
 void qTabAdvanced::GetSubDeadTime() {
-    FILE_LOG(logDEBUG) << "Getting sub dead time";
+    LOG(logDEBUG) << "Getting sub dead time";
     disconnect(spinSubDeadTime, SIGNAL(valueChanged(double)), this,
                SLOT(SetSubDeadTime()));
     disconnect(comboSubDeadTimeUnit, SIGNAL(currentIndexChanged(int)), this,
@@ -661,7 +661,7 @@ void qTabAdvanced::SetSubDeadTime() {
         spinSubDeadTime->value(),
         static_cast<qDefs::timeUnit>(comboSubDeadTimeUnit->currentIndex())));
 
-    FILE_LOG(logINFO)
+    LOG(logINFO)
         << "Setting sub frame dead time to " << timeNS.count() << " ns"
         << "/" << spinSubDeadTime->value()
         << qDefs::getUnitString(
@@ -675,7 +675,7 @@ void qTabAdvanced::SetSubDeadTime() {
 }
 
 void qTabAdvanced::Refresh() {
-    FILE_LOG(logDEBUG) << "**Updating Advanced Tab";
+    LOG(logDEBUG) << "**Updating Advanced Tab";
 
     // trimming
     if (tab_trimming->isEnabled()) {
@@ -701,5 +701,5 @@ void qTabAdvanced::Refresh() {
         GetSubDeadTime();
     }
 
-    FILE_LOG(logDEBUG) << "**Updated Advanced Tab";
+    LOG(logDEBUG) << "**Updated Advanced Tab";
 }

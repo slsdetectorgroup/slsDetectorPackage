@@ -38,7 +38,7 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
 	numDet[0] = nd[0];
 	numDet[1] = nd[1];
 	
-    FILE_LOG(logDEBUG) << "DataStreamer " << ind << " created";
+    LOG(logDEBUG) << "DataStreamer " << ind << " created";
 }
 
 
@@ -91,7 +91,7 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum) {
 	startedFlag = true;
 	firstIndex = fnum;
 
-	FILE_LOG(logDEBUG1) << index << " First Index: " << firstIndex;
+	LOG(logDEBUG1) << index << " First Index: " << firstIndex;
 }
 
 void DataStreamer::SetGeneralData(GeneralData* g) {
@@ -114,10 +114,10 @@ void DataStreamer::CreateZmqSockets(int* nunits, uint32_t port, const sls::IpAdd
 	try {
 		zmqSocket = new ZmqSocket(portnum, (ip != 0? sip.c_str(): nullptr));
 	} catch (...) {
-		FILE_LOG(logERROR) << "Could not create Zmq socket on port " << portnum << " for Streamer " << index;
+		LOG(logERROR) << "Could not create Zmq socket on port " << portnum << " for Streamer " << index;
 		throw;
 	}
-	FILE_LOG(logINFO) << index << " Streamer: Zmq Server started at " << zmqSocket->GetZmqServerAddress();
+	LOG(logINFO) << index << " Streamer: Zmq Server started at " << zmqSocket->GetZmqServerAddress();
 }
 
 
@@ -132,13 +132,13 @@ void DataStreamer::CloseZmqSocket() {
 void DataStreamer::ThreadExecution() {
 	char* buffer=nullptr;
 	fifo->PopAddressToStream(buffer);
-	FILE_LOG(logDEBUG5) << "DataStreamer " << index << ", "
+	LOG(logDEBUG5) << "DataStreamer " << index << ", "
 			"pop 0x" << std::hex << (void*)(buffer) << std::dec << ":" << buffer;
 
 
 	//check dummy
 	uint32_t numBytes = (uint32_t)(*((uint32_t*)buffer));
-	FILE_LOG(logDEBUG1) << "DataStreamer " << index << ", Numbytes:" << numBytes;
+	LOG(logDEBUG1) << "DataStreamer " << index << ", Numbytes:" << numBytes;
 	if (numBytes == DUMMY_PACKET_VALUE) {
 		StopProcessing(buffer);
 		return;
@@ -154,17 +154,17 @@ void DataStreamer::ThreadExecution() {
 
 
 void DataStreamer::StopProcessing(char* buf) {
-	FILE_LOG(logDEBUG1) << "DataStreamer " << index << ": Dummy";
+	LOG(logDEBUG1) << "DataStreamer " << index << ": Dummy";
 
 	sls_receiver_header* header = (sls_receiver_header*) (buf);
 	//send dummy header and data
 	if (!SendHeader(header, 0, 0, 0, true)) {
-		FILE_LOG(logERROR) << "Could not send zmq dummy header for streamer " << index;
+		LOG(logERROR) << "Could not send zmq dummy header for streamer " << index;
 	}
 
 	fifo->FreeAddress(buf);
 	StopRunning();
-	FILE_LOG(logDEBUG1) << index << ": Streaming Completed";
+	LOG(logDEBUG1) << index << ": Streaming Completed";
 }
 
 /** buf includes only the standard header */
@@ -172,7 +172,7 @@ void DataStreamer::ProcessAnImage(char* buf) {
 
 	sls_receiver_header* header = (sls_receiver_header*) (buf + FIFO_HEADER_NUMBYTES);
 	uint64_t fnum = header->detHeader.frameNumber;
-	FILE_LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
+	LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
 
 	if (!startedFlag) {
 		RecordFirstIndex(fnum);
@@ -187,14 +187,14 @@ void DataStreamer::ProcessAnImage(char* buf) {
 
 		if (!SendHeader(header, generalData->imageSizeComplete,
 				generalData->nPixelsXComplete, generalData->nPixelsYComplete, false)) {
-			FILE_LOG(logERROR) << "Could not send zmq header for fnum " << fnum << " and streamer " << index;
+			LOG(logERROR) << "Could not send zmq header for fnum " << fnum << " and streamer " << index;
 		}
 		memcpy(completeBuffer + ((generalData->imageSize) * adcConfigured),
 				buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
 				(uint32_t)(*((uint32_t*)buf)) );
 
 		if (!zmqSocket->SendData(completeBuffer, generalData->imageSizeComplete)) {
-			FILE_LOG(logERROR) << "Could not send zmq data for fnum " << fnum << " and streamer " << index;
+			LOG(logERROR) << "Could not send zmq data for fnum " << fnum << " and streamer " << index;
 		}
 	}
 
@@ -204,11 +204,11 @@ void DataStreamer::ProcessAnImage(char* buf) {
 
 		if (!SendHeader(header, (uint32_t)(*((uint32_t*)buf)),
 				generalData->nPixelsX, generalData->nPixelsY, false))  {// new size possibly from callback
-			FILE_LOG(logERROR) << "Could not send zmq header for fnum " << fnum << " and streamer " << index;
+			LOG(logERROR) << "Could not send zmq header for fnum " << fnum << " and streamer " << index;
 		}
 		if (!zmqSocket->SendData(buf + FIFO_HEADER_NUMBYTES + sizeof(sls_receiver_header),
 				(uint32_t)(*((uint32_t*)buf)) )) {// new size possibly from callback
-			FILE_LOG(logERROR) << "Could not send zmq data for fnum " << fnum << " and streamer " << index;
+			LOG(logERROR) << "Could not send zmq data for fnum " << fnum << " and streamer " << index;
 		}
 	}
 }

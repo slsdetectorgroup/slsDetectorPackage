@@ -18,7 +18,7 @@ qTabPlot::qTabPlot(QWidget *parent, sls::Detector *detector, qDrawPlot *p)
     : QWidget(parent), det(detector), plot(p), is1d(false) {
     setupUi(this);
     SetupWidgetWindow();
-    FILE_LOG(logDEBUG) << "Plot ready";
+    LOG(logDEBUG) << "Plot ready";
 }
 
 qTabPlot::~qTabPlot() { delete btnGroupPlotType; }
@@ -188,7 +188,7 @@ void qTabPlot::Initialization() {
 }
 
 void qTabPlot::Select1DPlot(bool enable) {
-    FILE_LOG(logDEBUG) << "Selecting " << (enable ? "1" : "2") << "D Plot";
+    LOG(logDEBUG) << "Selecting " << (enable ? "1" : "2") << "D Plot";
     is1d = enable;
     box1D->setEnabled(enable);
     box2D->setEnabled(!enable);
@@ -209,9 +209,9 @@ void qTabPlot::Select1DPlot(bool enable) {
 void qTabPlot::SetPlot() {
     bool plotEnable = false;
     if (radioNoPlot->isChecked()) {
-        FILE_LOG(logINFO) << "Setting Plot Type: No Plot";
+        LOG(logINFO) << "Setting Plot Type: No Plot";
     } else if (radioDataGraph->isChecked()) {
-        FILE_LOG(logINFO) << "Setting Plot Type: Datagraph";
+        LOG(logINFO) << "Setting Plot Type: Datagraph";
         plotEnable = true;
     }
     boxFrequency->setEnabled(plotEnable);
@@ -232,7 +232,7 @@ void qTabPlot::SetPlot() {
 }
 
 void qTabPlot::Set1DPlotOptionsRight() {
-    FILE_LOG(logDEBUG) << "1D Options Right";
+    LOG(logDEBUG) << "1D Options Right";
     int i = stackedWidget1D->currentIndex();
     if (i == (stackedWidget1D->count() - 1))
         stackedWidget1D->setCurrentIndex(0);
@@ -243,7 +243,7 @@ void qTabPlot::Set1DPlotOptionsRight() {
 }
 
 void qTabPlot::Set1DPlotOptionsLeft() {
-    FILE_LOG(logDEBUG) << "1D Options Left";
+    LOG(logDEBUG) << "1D Options Left";
     int i = stackedWidget1D->currentIndex();
     if (i == 0)
         stackedWidget1D->setCurrentIndex(stackedWidget1D->count() - 1);
@@ -254,7 +254,7 @@ void qTabPlot::Set1DPlotOptionsLeft() {
 }
 
 void qTabPlot::Set2DPlotOptionsRight() {
-    FILE_LOG(logDEBUG) << "2D Options Right";
+    LOG(logDEBUG) << "2D Options Right";
     int i = stackedWidget2D->currentIndex();
     if (i == (stackedWidget2D->count() - 1))
         stackedWidget2D->setCurrentIndex(0);
@@ -265,7 +265,7 @@ void qTabPlot::Set2DPlotOptionsRight() {
 }
 
 void qTabPlot::Set2DPlotOptionsLeft() {
-    FILE_LOG(logDEBUG) << "2D Options Left";
+    LOG(logDEBUG) << "2D Options Left";
     int i = stackedWidget2D->currentIndex();
     if (i == 0)
         stackedWidget2D->setCurrentIndex(stackedWidget2D->count() - 1);
@@ -276,7 +276,7 @@ void qTabPlot::Set2DPlotOptionsLeft() {
 }
 
 void qTabPlot::EnablePersistency(bool enable) {
-    FILE_LOG(logINFO) << "Superimpose " << (enable ? "enabled" : "disabled");
+    LOG(logINFO) << "Superimpose " << (enable ? "enabled" : "disabled");
     lblPersistency->setEnabled(enable);
     spinPersistency->setEnabled(enable);
     if (enable)
@@ -289,7 +289,7 @@ void qTabPlot::SetBinary() {
     bool binary1D = chkBinary->isChecked();
     bool binary2D = chkBinary_2->isChecked();
     if (is1d) {
-        FILE_LOG(logINFO) << "Binary Plot "
+        LOG(logINFO) << "Binary Plot "
                           << (binary1D ? "enabled" : "disabled");
         lblFrom->setEnabled(binary1D);
         lblTo->setEnabled(binary1D);
@@ -297,7 +297,7 @@ void qTabPlot::SetBinary() {
         spinTo->setEnabled(binary1D);
         plot->SetBinary(binary1D, spinFrom->value(), spinTo->value());
     } else {
-        FILE_LOG(logINFO) << "Binary Plot "
+        LOG(logINFO) << "Binary Plot "
                           << (binary2D ? "enabled" : "disabled");
         lblFrom_2->setEnabled(binary2D);
         lblTo_2->setEnabled(binary2D);
@@ -308,7 +308,7 @@ void qTabPlot::SetBinary() {
 }
 
 void qTabPlot::GetGapPixels() {
-    FILE_LOG(logDEBUG) << "Getting gap pixels";
+    LOG(logDEBUG) << "Getting gap pixels";
     disconnect(chkGapPixels, SIGNAL(toggled(bool)), this,
                SLOT(SetGapPixels(bool)));
     try {
@@ -322,7 +322,7 @@ void qTabPlot::GetGapPixels() {
 }
 
 void qTabPlot::SetGapPixels(bool enable) {
-    FILE_LOG(logINFO) << "Setting Gap Pixels Enable to " << enable;
+    LOG(logINFO) << "Setting Gap Pixels Enable to " << enable;
     try {
         det->setRxAddGapPixels(enable);
     }
@@ -331,7 +331,7 @@ void qTabPlot::SetGapPixels(bool enable) {
 }
 
 void qTabPlot::SetTitles() {
-    FILE_LOG(logDEBUG) << "Setting Plot Titles";
+    LOG(logDEBUG) << "Setting Plot Titles";
     disconnect(chkTitle, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
     disconnect(chkXAxis, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
     disconnect(chkYAxis, SIGNAL(toggled(bool)), this, SLOT(SetTitles()));
@@ -393,7 +393,7 @@ void qTabPlot::SetTitles() {
 }
 
 void qTabPlot::SetXRange() {
-    FILE_LOG(logDEBUG) << "Enable X axis range";
+    LOG(logDEBUG) << "Enable X axis range";
 
     if (chkAspectRatio->isChecked()) {
         MaintainAspectRatio(static_cast<int>(slsDetectorDefs::Y));
@@ -403,7 +403,7 @@ void qTabPlot::SetXRange() {
 }
 
 void qTabPlot::SetYRange() {
-    FILE_LOG(logDEBUG) << "Enable Y axis range";
+    LOG(logDEBUG) << "Enable Y axis range";
 
     if (chkAspectRatio->isChecked()) {
         MaintainAspectRatio(static_cast<int>(slsDetectorDefs::X));
@@ -421,7 +421,7 @@ void qTabPlot::CheckAspectRatio() {
 }
 
 void qTabPlot::SetXYRange() {
-    FILE_LOG(logDEBUG) << "Set XY Range";
+    LOG(logDEBUG) << "Set XY Range";
     bool disablezoom = false;
     bool isRange[4]{false, false, false, false};
     double xyRange[4]{0, 0, 0, 0};
@@ -434,7 +434,7 @@ void qTabPlot::SetXYRange() {
     for (int i = 0; i < 4; ++i) {
         if (chkVal[i] && !dispVal[i].isEmpty()) {
             double val = dispVal[i].toDouble();
-            FILE_LOG(logDEBUG)
+            LOG(logDEBUG)
                 << "Setting "
                 << qDefs::getRangeAsString(static_cast<qDefs::range>(i))
                 << " to " << val;
@@ -449,7 +449,7 @@ void qTabPlot::SetXYRange() {
 }
 
 void qTabPlot::MaintainAspectRatio(int dimension) {
-    FILE_LOG(logDEBUG) << "Maintaining Aspect Ratio";
+    LOG(logDEBUG) << "Maintaining Aspect Ratio";
 
     disconnect(chkXMin, SIGNAL(toggled(bool)), this, SLOT(SetXRange()));
     disconnect(chkXMax, SIGNAL(toggled(bool)), this, SLOT(SetXRange()));
@@ -482,7 +482,7 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     ranges[qDefs::YMAX] = plot->GetYMaximum();
     double idealAspectratio = (ranges[qDefs::XMAX] - ranges[qDefs::XMIN]) /
                               (ranges[qDefs::YMAX] - ranges[qDefs::YMIN]);
-    FILE_LOG(logDEBUG) << "Ideal Aspect ratio: " << idealAspectratio
+    LOG(logDEBUG) << "Ideal Aspect ratio: " << idealAspectratio
                        << " for x(" << ranges[qDefs::XMIN] << " - "
                        << ranges[qDefs::XMAX] << "), y(" << ranges[qDefs::YMIN]
                        << " - " << ranges[qDefs::YMAX] << ")";
@@ -494,7 +494,7 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     ranges[qDefs::YMAX] = dispYMax->text().toDouble();
     double currentAspectRatio = (ranges[qDefs::XMAX] - ranges[qDefs::XMIN]) /
                                 (ranges[qDefs::YMAX] - ranges[qDefs::YMIN]);
-    FILE_LOG(logDEBUG) << "Current Aspect ratio: " << currentAspectRatio
+    LOG(logDEBUG) << "Current Aspect ratio: " << currentAspectRatio
                        << " for x(" << ranges[qDefs::XMIN] << " - "
                        << ranges[qDefs::XMAX] << "), y(" << ranges[qDefs::YMIN]
                        << " - " << ranges[qDefs::YMAX] << ")";
@@ -519,14 +519,14 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
             if (newval <= plot->GetXMaximum()) {
                 ranges[qDefs::XMAX] = newval;
                 dispXMax->setText(QString::number(newval));
-                FILE_LOG(logDEBUG) << "New XMax: " << newval;
+                LOG(logDEBUG) << "New XMax: " << newval;
             } else {
                 newval = ranges[qDefs::XMAX] -
                          (idealAspectratio *
                           (ranges[qDefs::YMAX] - ranges[qDefs::YMIN]));
                 ranges[qDefs::XMIN] = newval;
                 dispXMin->setText(QString::number(newval));
-                FILE_LOG(logDEBUG) << "New XMin: " << newval;
+                LOG(logDEBUG) << "New XMin: " << newval;
             }
         }
         // adjust y
@@ -537,14 +537,14 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
             if (newval <= plot->GetYMaximum()) {
                 ranges[qDefs::YMAX] = newval;
                 dispYMax->setText(QString::number(newval));
-                FILE_LOG(logDEBUG) << "New YMax: " << newval;
+                LOG(logDEBUG) << "New YMax: " << newval;
             } else {
                 newval = ranges[qDefs::YMAX] -
                          ((ranges[qDefs::XMAX] - ranges[qDefs::XMIN]) /
                           idealAspectratio);
                 ranges[qDefs::YMIN] = newval;
                 dispYMin->setText(QString::number(newval));
-                FILE_LOG(logDEBUG) << "New YMax: " << newval;
+                LOG(logDEBUG) << "New YMax: " << newval;
             }
         }
     }
@@ -569,19 +569,19 @@ void qTabPlot::SetZRange() {
 
     if (isZRange[0] && !dispZMin->text().isEmpty()) {
         double val = dispZMin->text().toDouble();
-        FILE_LOG(logDEBUG) << "Setting zmin to " << val;
+        LOG(logDEBUG) << "Setting zmin to " << val;
         zRange[0] = val;
     }
     if (isZRange[1] && !dispZMax->text().isEmpty()) {
         double val = dispZMax->text().toDouble();
-        FILE_LOG(logDEBUG) << "Setting zmax to " << val;
+        LOG(logDEBUG) << "Setting zmax to " << val;
         zRange[1] = val;
     }
     plot->SetZRange(zRange, isZRange);
 }
 
 void qTabPlot::GetStreamingFrequency() {
-    FILE_LOG(logDEBUG) << "Getting Streaming Frequency";
+    LOG(logDEBUG) << "Getting Streaming Frequency";
     disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetStreamingFrequency()));
     disconnect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this,
@@ -639,10 +639,10 @@ void qTabPlot::SetStreamingFrequency() {
     stackedTimeInterval->setCurrentIndex(comboFrequency->currentIndex());
     try {
         if (frequency) {
-            FILE_LOG(logINFO) << "Setting Streaming Frequency to " << freqVal;
+            LOG(logINFO) << "Setting Streaming Frequency to " << freqVal;
             det->setRxZmqFrequency(freqVal);
         } else {
-            FILE_LOG(logINFO) << "Setting Streaming Timer to " << timeVal << " "
+            LOG(logINFO) << "Setting Streaming Timer to " << timeVal << " "
                               << qDefs::getUnitString(timeUnit);
             auto timeMS = qDefs::getMSTime(std::make_pair(timeVal, timeUnit));
             det->setRxZmqTimer(timeMS.count());
@@ -654,7 +654,7 @@ void qTabPlot::SetStreamingFrequency() {
 }
 
 void qTabPlot::Refresh() {
-    FILE_LOG(logDEBUG) << "**Updating Plot Tab";
+    LOG(logDEBUG) << "**Updating Plot Tab";
 
     if (!plot->GetIsRunning()) {
         boxPlotType->setEnabled(true);
@@ -687,5 +687,5 @@ void qTabPlot::Refresh() {
         chkGapPixels->setEnabled(false);
     }
 
-    FILE_LOG(logDEBUG) << "**Updated Plot Tab";
+    LOG(logDEBUG) << "**Updated Plot Tab";
 }

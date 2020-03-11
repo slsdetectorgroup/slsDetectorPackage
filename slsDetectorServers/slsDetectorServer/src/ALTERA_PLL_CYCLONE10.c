@@ -76,10 +76,10 @@ int ALTERA_PLL_C10_GetMaxPhaseShiftStepsofVCO() {
 }
 
 void ALTERA_PLL_C10_Reconfigure(int pllIndex) {
-    FILE_LOG(logINFO, ("\tReconfiguring PLL %d\n", pllIndex));
+    LOG(logINFO, ("\tReconfiguring PLL %d\n", pllIndex));
 
     // write anything to base address to start reconfiguring
-    FILE_LOG(logDEBUG1, ("\tWriting 1 to base address 0x%x to start reconfiguring\n", ALTERA_PLL_C10_BaseAddress[pllIndex]));
+    LOG(logDEBUG1, ("\tWriting 1 to base address 0x%x to start reconfiguring\n", ALTERA_PLL_C10_BaseAddress[pllIndex]));
     bus_w_csp1(ALTERA_PLL_C10_BaseAddress[pllIndex], 0x1);
     usleep(ALTERA_PLL_C10_WAIT_TIME_US);
 }
@@ -87,7 +87,7 @@ void ALTERA_PLL_C10_Reconfigure(int pllIndex) {
 void ALTERA_PLL_C10_ResetPLL (int pllIndex) {
     uint32_t resetreg = ALTERA_PLL_C10_Reset_Reg[pllIndex];
     uint32_t resetmsk = ALTERA_PLL_C10_Reset_Msk[pllIndex];
-    FILE_LOG(logINFO, ("Resetting PLL %d\n", pllIndex));
+    LOG(logINFO, ("Resetting PLL %d\n", pllIndex));
     bus_w_csp1(resetreg, bus_r_csp1(resetreg) | resetmsk);
 
     usleep(ALTERA_PLL_C10_WAIT_TIME_US); 
@@ -95,7 +95,7 @@ void ALTERA_PLL_C10_ResetPLL (int pllIndex) {
 
 
 void ALTERA_PLL_C10_SetPhaseShift(int pllIndex, int clkIndex, int phase, int pos) {
-    FILE_LOG(logINFO, ("\tC%d: Writing PLL %d Phase Shift [phase:%d, pos dir:%d]\n", clkIndex, pllIndex, phase, pos));
+    LOG(logINFO, ("\tC%d: Writing PLL %d Phase Shift [phase:%d, pos dir:%d]\n", clkIndex, pllIndex, phase, pos));
 
     uint32_t addr = ALTERA_PLL_C10_BaseAddress[pllIndex] + (ALTERA_PLL_C10_PHASE_SHIFT_BASE_REG + (int)clkIndex) * ALTERA_PLL_C10_Reg_offset;
     int maxshifts = ALTERA_PLL_C10_MAX_SHIFTS_PER_OPERATION;
@@ -105,7 +105,7 @@ void ALTERA_PLL_C10_SetPhaseShift(int pllIndex, int clkIndex, int phase, int pos
         int phaseToDo = (phase > maxshifts) ? maxshifts : phase;
         uint32_t value = (((phaseToDo << ALTERA_PLL_C10_SHIFT_NUM_SHIFTS_OFST) & ALTERA_PLL_C10_SHIFT_NUM_SHIFTS_MSK) |
             (pos ? ALTERA_PLL_C10_SHIFT_UP_DOWN_POS_VAL : ALTERA_PLL_C10_SHIFT_UP_DOWN_NEG_VAL));
-        FILE_LOG(logDEBUG1, ("\t[addr:0x%x, phaseTodo:%d phaseleft:%d phase word:0x%08x]\n", addr, phaseToDo, phase, value));
+        LOG(logDEBUG1, ("\t[addr:0x%x, phaseTodo:%d phaseleft:%d phase word:0x%08x]\n", addr, phaseToDo, phase, value));
         bus_w_csp1(addr, value);
         
         ALTERA_PLL_C10_Reconfigure(pllIndex);
@@ -116,7 +116,7 @@ void ALTERA_PLL_C10_SetPhaseShift(int pllIndex, int clkIndex, int phase, int pos
 
 void ALTERA_PLL_C10_SetOuputFrequency (int pllIndex, int clkIndex, int value) {
     int pllVCOFreqHz = ALTERA_PLL_C10_VCO_FREQ[pllIndex];
-    FILE_LOG(logDEBUG1, ("\tC%d: Setting output frequency for pll %d to %d (pllvcofreq: %dHz)\n", clkIndex, pllIndex, value, pllVCOFreqHz));
+    LOG(logDEBUG1, ("\tC%d: Setting output frequency for pll %d to %d (pllvcofreq: %dHz)\n", clkIndex, pllIndex, value, pllVCOFreqHz));
 
     // calculate output frequency
     float total_div =  (float)pllVCOFreqHz / (float)value;
@@ -131,14 +131,14 @@ void ALTERA_PLL_C10_SetOuputFrequency (int pllIndex, int clkIndex, int value) {
         ++high_count;
         odd_division = 1;
     }
-    FILE_LOG(logINFO, ("\tC%d: Low:%d, High:%d, Odd:%d\n", clkIndex, low_count, high_count, odd_division));
+    LOG(logINFO, ("\tC%d: Low:%d, High:%d, Odd:%d\n", clkIndex, low_count, high_count, odd_division));
 
     // command to set output frequency
     uint32_t addr = ALTERA_PLL_C10_BaseAddress[pllIndex] + (ALTERA_PLL_C10_C_COUNTER_BASE_REG + (int)clkIndex) * ALTERA_PLL_C10_Reg_offset;
     uint32_t val = (((low_count << ALTERA_PLL_C10_C_COUNTER_LW_CNT_OFST) & ALTERA_PLL_C10_C_COUNTER_LW_CNT_MSK) |
             ((high_count << ALTERA_PLL_C10_C_COUNTER_HGH_CNT_OFST) & ALTERA_PLL_C10_C_COUNTER_HGH_CNT_MSK) |
             ((odd_division << ALTERA_PLL_C10_C_COUNTER_ODD_DVSN_OFST) & ALTERA_PLL_C10_C_COUNTER_ODD_DVSN_MSK));
-    FILE_LOG(logDEBUG1, ("\t[addr:0x%x, word:0x%08x]\n", addr, val));
+    LOG(logDEBUG1, ("\t[addr:0x%x, word:0x%08x]\n", addr, val));
 
     // write frequency 
     bus_w_csp1(addr, val);

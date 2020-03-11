@@ -7,7 +7,8 @@
 #include <cstring>
 #include <iostream>
 #include <sys/wait.h>	//wait
-#include <syscall.h>	//tid
+#include <sys/syscall.h>
+#include <unistd.h>
 #include <semaphore.h>
 
 /** Define Colors to print data call back in different colors for different recievers */
@@ -45,7 +46,7 @@ void printHelp() {
  * \returns ignored
  */
 int StartAcq(std::string filepath, std::string filename, uint64_t fileindex, uint32_t datasize, void*p){
-	FILE_LOG(logINFOBLUE) << "#### StartAcq:  filepath:" << filepath << "  filename:" << filename << " fileindex:" << fileindex << "  datasize:" << datasize << " ####";
+	LOG(logINFOBLUE) << "#### StartAcq:  filepath:" << filepath << "  filename:" << filename << " fileindex:" << fileindex << "  datasize:" << datasize << " ####";
 	return 0;
 }
 
@@ -55,7 +56,7 @@ int StartAcq(std::string filepath, std::string filename, uint64_t fileindex, uin
  * @param p pointer to object
  */
 void AcquisitionFinished(uint64_t frames, void*p){
-	FILE_LOG(logINFOBLUE) << "#### AcquisitionFinished: frames:" << frames << " ####";
+	LOG(logINFOBLUE) << "#### AcquisitionFinished: frames:" << frames << " ####";
 }
 
 
@@ -194,7 +195,7 @@ int main(int argc, char *argv[]) {
 			try {
 				receiver = sls::make_unique<Receiver>(startTCPPort + i);
 			} catch (...) {
-				FILE_LOG(logINFOBLUE) << "Exiting Child Process [ Tid: " << syscall(SYS_gettid) << " ]";
+				LOG(logINFOBLUE) << "Exiting Child Process [ Tid: " << syscall(SYS_gettid) << " ]";
 				throw;
 			}			
 			/**	- register callbacks. remember to set file write enable to 0 (using the client)

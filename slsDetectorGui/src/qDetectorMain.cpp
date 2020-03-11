@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 
         case 'f':
             fname = optarg;
-            FILE_LOG(logDEBUG)
+            LOG(logDEBUG)
                 << long_options[option_index].name << " " << optarg;
             break;
 
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 
         case 'v':
             tempval = APIGUI;
-            FILE_LOG(logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x"
+            LOG(logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x"
                               << std::hex << tempval << ")";
             return 0;
 
@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
                 "i. Default: 0. Required \n" +
                 "\t                            only when more than one multi "
                 "detector object is needed.\n\n";
-            FILE_LOG(logERROR) << help_message;
+            LOG(logERROR) << help_message;
             return -1;
         }
     }
@@ -124,7 +124,7 @@ void qDetectorMain::SetUpWidgetWindow() {
 
     // plot setup
     plot = new qDrawPlot(dockWidgetPlot, det.get());
-    FILE_LOG(logDEBUG) << "DockPlot ready";
+    LOG(logDEBUG) << "DockPlot ready";
     dockWidgetPlot->setWidget(plot);
 
     // tabs setup
@@ -185,7 +185,7 @@ void qDetectorMain::SetUpWidgetWindow() {
 
     // mode setup - to set up the tabs initially as disabled, not in form so
     // done here
-    FILE_LOG(logINFO)
+    LOG(logINFO)
         << "Dockable Mode: 0, Debug Mode: 0, Expert Mode: 0, Developer Mode: "
         << isDeveloper;
     tabs->setTabEnabled(DEBUGGING, false);
@@ -246,7 +246,7 @@ void qDetectorMain::SetUpDetector(const std::string& config_file, int multiID) {
        << sls::ToString(det->getDetectorType().squash()) << " - "
        << det->getHostname();
     std::string title = os.str();
-    FILE_LOG(logINFO) << title;
+    LOG(logINFO) << title;
     setWindowTitle(QString(title.c_str()));
 }
 
@@ -286,7 +286,7 @@ void qDetectorMain::Initialization() {
 
 void qDetectorMain::LoadConfigFile(const std::string& config_file) {
 
-    FILE_LOG(logINFO) << "Loading config file at start up:" << config_file;
+    LOG(logINFO) << "Loading config file at start up:" << config_file;
 
     struct stat st_buf;
     QString file = QString(config_file.c_str());
@@ -299,7 +299,7 @@ void qDetectorMain::LoadConfigFile(const std::string& config_file) {
                         "following file does not exist:</nobr><br><nobr>") +
                 config_file,
             "qDetectorMain::LoadConfigFile");
-        FILE_LOG(logWARNING) << "Config file does not exist";
+        LOG(logWARNING) << "Config file does not exist";
     }
     // not a file
     else if (!S_ISREG(st_buf.st_mode)) {
@@ -310,7 +310,7 @@ void qDetectorMain::LoadConfigFile(const std::string& config_file) {
                 "file is not a recognized file format:</nobr><br><nobr>") +
                 config_file,
             "qDetectorMain::LoadConfigFile");
-        FILE_LOG(logWARNING) << "File not recognized";
+        LOG(logWARNING) << "File not recognized";
     } else {
         try {
             det->loadConfig(config_file);
@@ -327,7 +327,7 @@ void qDetectorMain::EnableModes(QAction *action) {
     if (action == actionDebug) {
         enable = actionDebug->isChecked();
         tabs->setTabEnabled(DEBUGGING, enable);
-        FILE_LOG(logINFO) << "Debug Mode: " << qDefs::stringEnable(enable);
+        LOG(logINFO) << "Debug Mode: " << qDefs::stringEnable(enable);
 
     }
 
@@ -338,7 +338,7 @@ void qDetectorMain::EnableModes(QAction *action) {
         tabs->setTabEnabled(ADVANCED, enable);
         actionLoadTrimbits->setVisible(enable &&
                                        detType == slsDetectorDefs::EIGER);
-        FILE_LOG(logINFO) << "Expert Mode: " << qDefs::stringEnable(enable);
+        LOG(logINFO) << "Expert Mode: " << qDefs::stringEnable(enable);
     }
 
     // Set DockableMode
@@ -350,7 +350,7 @@ void qDetectorMain::EnableModes(QAction *action) {
             dockWidgetPlot->setFloating(false);
             dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
         }
-        FILE_LOG(logINFO) << "Dockable Mode: " << qDefs::stringEnable(enable);
+        LOG(logINFO) << "Dockable Mode: " << qDefs::stringEnable(enable);
     }
 }
 
@@ -359,7 +359,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
     try {
 
         if (action == actionLoadConfiguration) {
-            FILE_LOG(logDEBUG) << "Loading Configuration";
+            LOG(logDEBUG) << "Loading Configuration";
             QString fName = QString(det->getFilePath().squash("/tmp/").c_str());
             fName = QFileDialog::getOpenFileName(
                 this, tr("Load Detector Configuration"), fName,
@@ -372,13 +372,13 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                                "The Configuration Parameters have been "
                                "configured successfully.",
                                "qDetectorMain::ExecuteUtilities");
-                FILE_LOG(logINFO)
+                LOG(logINFO)
                     << "Configuration Parameters loaded successfully";
             }
         }
 
         else if (action == actionLoadParameters) {
-            FILE_LOG(logDEBUG) << "Loading Parameters";
+            LOG(logDEBUG) << "Loading Parameters";
             QString fName = QString(det->getFilePath().squash("/tmp/").c_str());
             fName = QFileDialog::getOpenFileName(
                 this, tr("Load Measurement Setup"), fName,
@@ -391,14 +391,14 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                                "The Detector Parameters have been "
                                "configured successfully.",
                                "qDetectorMain::ExecuteUtilities");
-                FILE_LOG(logINFO) << "Parameters loaded successfully";
+                LOG(logINFO) << "Parameters loaded successfully";
             }
         }
 
         else if (action == actionLoadTrimbits) {
             QString fName =
                 QString((det->getSettingsPath().squash("/tmp/")).c_str());
-            FILE_LOG(logDEBUG) << "Loading Trimbits";
+            LOG(logDEBUG) << "Loading Trimbits";
             // so that even nonexisting files can be selected
             QFileDialog *fileDialog = new QFileDialog(
                 this, tr("Load Detector Trimbits"), fName,
@@ -413,7 +413,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                 qDefs::Message(qDefs::INFORMATION,
                                "The Trimbits have been loaded successfully.",
                                "qDetectorMain::ExecuteUtilities");
-                FILE_LOG(logINFO) << "Trimbits loaded successfully";
+                LOG(logINFO) << "Trimbits loaded successfully";
             }
         }
     }
@@ -437,7 +437,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
 
 void qDetectorMain::ExecuteHelp(QAction *action) {
     if (action == actionAbout) {
-        FILE_LOG(logINFO) << "About Common GUI for Jungfrau, Eiger, Mythen3, "
+        LOG(logINFO) << "About Common GUI for Jungfrau, Eiger, Mythen3, "
                              "Gotthard, Gotthard2 and Moench detectors";
 
         std::string guiVersion = std::to_string(APIGUI);
@@ -472,7 +472,7 @@ void qDetectorMain::ExecuteHelp(QAction *action) {
 }
 
 void qDetectorMain::Refresh(int index) {
-    FILE_LOG(logDEBUG) << "Refresh Main Tab";
+    LOG(logDEBUG) << "Refresh Main Tab";
 
     if (!tabs->isTabEnabled(index))
         tabs->setCurrentIndex((index++) < (tabs->count() - 1) ? index
@@ -511,14 +511,14 @@ void qDetectorMain::Refresh(int index) {
 }
 
 void qDetectorMain::ResizeMainWindow(bool b) {
-    FILE_LOG(logDEBUG1) << "Resizing Main Window: height:" << height();
+    LOG(logDEBUG1) << "Resizing Main Window: height:" << height();
 
     // undocked from the main window
     if (b) {
         // sets the main window height to a smaller maximum to get rid of space
         setMaximumHeight(height() - heightPlotWindow - 9);
         dockWidgetPlot->setMinimumHeight(0);
-        FILE_LOG(logINFO) << "Undocking from main window";
+        LOG(logINFO) << "Undocking from main window";
     } else {
         setMaximumHeight(QWIDGETSIZE_MAX);
         // the minimum for plot will be set when the widget gets resized
@@ -546,7 +546,7 @@ void qDetectorMain::resizeEvent(QResizeEvent *event) {
 }
 
 void qDetectorMain::EnableTabs(bool enable) {
-    FILE_LOG(logDEBUG) << "qDetectorMain::EnableTabs";
+    LOG(logDEBUG) << "qDetectorMain::EnableTabs";
 
     // normal tabs
     tabs->setTabEnabled(DATAOUTPUT, enable);

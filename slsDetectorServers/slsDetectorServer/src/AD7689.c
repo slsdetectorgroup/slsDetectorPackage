@@ -82,7 +82,7 @@ uint32_t AD7689_DigMask = 0x0;
 int AD7689_DigOffset = 0x0;
 
 void AD7689_SetDefines(uint32_t reg, uint32_t roreg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst) {
-	FILE_LOG(logDEBUG, ("AD7689: reg:0x%x roreg:0x%x cmsk:0x%x  clkmsk:0x%x  dmsk:0x%x  dofst:%d\n",
+	LOG(logDEBUG, ("AD7689: reg:0x%x roreg:0x%x cmsk:0x%x  clkmsk:0x%x  dmsk:0x%x  dofst:%d\n",
 			reg, roreg, cmsk, clkmsk, dmsk, dofst));
     AD7689_Reg = reg;
     AD7689_ROReg = roreg;
@@ -100,13 +100,13 @@ void AD7689_Disable() {
 }
 
 void AD7689_Set(uint32_t codata) {
-    FILE_LOG(logINFO, ("\tSetting ADC SPI Register. Writing 0x%08x to Config Reg\n", codata));
+    LOG(logINFO, ("\tSetting ADC SPI Register. Writing 0x%08x to Config Reg\n", codata));
     serializeToSPI(AD7689_Reg, codata, AD7689_CnvMask, AD7689_ADC_CFG_NUMBITS,
             AD7689_ClkMask, AD7689_DigMask, AD7689_DigOffset, 1);
 }
 
 uint16_t AD7689_Get() {
-    FILE_LOG(logINFO, ("\tGetting ADC SPI Register.\n"));
+    LOG(logINFO, ("\tGetting ADC SPI Register.\n"));
     return (uint16_t)serializeFromSPI(AD7689_Reg, AD7689_CnvMask, AD7689_ADC_DATA_NUMBITS,
             AD7689_ClkMask, AD7689_DigMask, AD7689_ROReg, 1);
 }
@@ -135,11 +135,11 @@ int AD7689_GetTemperature() {
     ConvertToDifferentRange(0, AD7689_INT_MAX_STEPS,
             AD7689_INT_REF_MIN_MV, AD7689_INT_REF_MAX_MV,
             regval, &retval);
-    FILE_LOG(logDEBUG1, ("voltage read for temp: %d mV\n", retval));
+    LOG(logDEBUG1, ("voltage read for temp: %d mV\n", retval));
 
     // value in °C
     double tempValue = AD7689_TMP_C_FOR_1_MV * (double)retval;
-    FILE_LOG(logINFO, ("\ttemp read : %f °C (%d unit)\n", tempValue, regval));
+    LOG(logINFO, ("\ttemp read : %f °C (%d unit)\n", tempValue, regval));
 
     return tempValue;
 
@@ -148,7 +148,7 @@ int AD7689_GetTemperature() {
 int AD7689_GetChannel(int ichan) {
     // filter channels val
     if (ichan < 0 || ichan >= AD7689_NUM_CHANNELS) {
-       FILE_LOG(logERROR, ("Cannot get slow adc channel. "
+       LOG(logERROR, ("Cannot get slow adc channel. "
                "%d out of bounds (0 to %d)\n", ichan, AD7689_NUM_CHANNELS - 1));
        return -1;
     }
@@ -179,15 +179,15 @@ int AD7689_GetChannel(int ichan) {
            AD7689_INT_REF_MIN_MV, AD7689_INT_REF_MAX_MV,
            regval, &retval);*/
 
-   FILE_LOG(logINFO, ("\tvoltage read for chan %d: %d uV (regVal: %d)\n", ichan, retval, regval));
+   LOG(logINFO, ("\tvoltage read for chan %d: %d uV (regVal: %d)\n", ichan, retval, regval));
    return retval;
 }
 
 void AD7689_Configure(){
-    FILE_LOG(logINFOBLUE, ("Configuring AD7689 (Slow ADCs): \n"));
+    LOG(logINFOBLUE, ("Configuring AD7689 (Slow ADCs): \n"));
 
     // from power up, 3 invalid conversions
-    FILE_LOG(logINFO, ("\tConfiguring %d x due to invalid conversions from power up\n", AD7689_NUM_INVALID_CONVERSIONS));
+    LOG(logINFO, ("\tConfiguring %d x due to invalid conversions from power up\n", AD7689_NUM_INVALID_CONVERSIONS));
     int i = 0;
     for (i = 0; i < AD7689_NUM_INVALID_CONVERSIONS; ++i) {
         AD7689_Set(

@@ -12,7 +12,7 @@
 qTabMessages::qTabMessages(QWidget *parent) : QWidget(parent) {
     setupUi(this);
     SetupWidgetWindow();
-    FILE_LOG(logDEBUG) << "Messages ready";
+    LOG(logDEBUG) << "Messages ready";
 }
 
 qTabMessages::~qTabMessages() {
@@ -74,7 +74,7 @@ void qTabMessages::ExecuteCommand() {
 
     QString command = param.at(0);
     param.removeFirst();
-    FILE_LOG(logINFO) << "Executing Command:[" << command.toAscii().constData()
+    LOG(logINFO) << "Executing Command:[" << command.toAscii().constData()
                       << "] with Arguments:["
                       << param.join(" ").toAscii().constData() << "]";
 
@@ -92,14 +92,14 @@ void qTabMessages::AppendOutput() {
     result.replace("\n", "<br>");
     dispLog->append(QString("<font color = \"DarkBlue\">") + result +
                     QString("</font>"));
-    FILE_LOG(logDEBUG) << "Command executed successfully";
+    LOG(logDEBUG) << "Command executed successfully";
     PrintNextLine();
 }
 
 void qTabMessages::AppendError() {
     dispLog->append(QString("<font color = \"Red\">") + process->errorString() +
                     QString("</font>"));
-    FILE_LOG(logERROR) << "Error executing command";
+    LOG(logERROR) << "Error executing command";
     PrintNextLine();
 }
 
@@ -118,9 +118,9 @@ void qTabMessages::SaveLog() {
                 std::string("The Log has been successfully saved to ") +
                 fName.toAscii().constData();
             qDefs::Message(qDefs::INFORMATION, mess, "TabMessages::SaveLog");
-            FILE_LOG(logINFO) << mess;
+            LOG(logINFO) << mess;
         } else {
-            FILE_LOG(logWARNING) << "Attempt to save log file failed: "
+            LOG(logWARNING) << "Attempt to save log file failed: "
                                  << fName.toAscii().constData();
             qDefs::Message(qDefs::WARNING, "Attempt to save log file failed.",
                            "qTabMessages::SaveLog");
@@ -131,7 +131,7 @@ void qTabMessages::SaveLog() {
 
 void qTabMessages::ClearLog() {
     dispLog->clear();
-    FILE_LOG(logINFO) << "Log Cleared";
+    LOG(logINFO) << "Log Cleared";
     PrintNextLine();
     dispCommand->setFocus();
 }

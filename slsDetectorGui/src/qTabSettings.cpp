@@ -7,7 +7,7 @@ qTabSettings::qTabSettings(QWidget *parent, sls::Detector *detector)
     : QWidget(parent), det(detector) {
     setupUi(this);
     SetupWidgetWindow();
-    FILE_LOG(logDEBUG) << "Settings ready";
+    LOG(logDEBUG) << "Settings ready";
 }
 
 qTabSettings::~qTabSettings() {}
@@ -93,7 +93,7 @@ void qTabSettings::SetupDetectorSettings() {
             item[(int)G4_LOWGAIN]->setEnabled(true);
             break;
         default:
-            FILE_LOG(logDEBUG) << "Unknown detector type. Exiting GUI.";
+            LOG(logDEBUG) << "Unknown detector type. Exiting GUI.";
             qDefs::Message(qDefs::CRITICAL,
                            "Unknown detector type. Exiting GUI.",
                            "qTabSettings::SetupDetectorSettings");
@@ -120,7 +120,7 @@ void qTabSettings::Initialization() {
 }
 
 void qTabSettings::GetSettings() {
-    FILE_LOG(logDEBUG) << "Getting settings";
+    LOG(logDEBUG) << "Getting settings";
     disconnect(comboSettings, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetSettings(int)));
     try {
@@ -151,7 +151,7 @@ void qTabSettings::SetSettings(int index) {
     // settings
     auto val = static_cast<slsDetectorDefs::detectorSettings>(index);
     try {
-        FILE_LOG(logINFO) << "Setting Settings to " << sls::ToString(val);
+        LOG(logINFO) << "Setting Settings to " << sls::ToString(val);
         det->setSettings(val);
     }
     CATCH_HANDLE("Could not set settings.", "qTabSettings::SetSettings", this,
@@ -163,7 +163,7 @@ void qTabSettings::SetSettings(int index) {
 }
 
 void qTabSettings::GetDynamicRange() {
-    FILE_LOG(logDEBUG) << "Getting dynamic range";
+    LOG(logDEBUG) << "Getting dynamic range";
     disconnect(comboDynamicRange, SIGNAL(activated(int)), this,
                SLOT(SetDynamicRange(int)));
     try {
@@ -195,7 +195,7 @@ void qTabSettings::GetDynamicRange() {
 }
 
 void qTabSettings::SetDynamicRange(int index) {
-    FILE_LOG(logINFO) << "Setting dynamic range to "
+    LOG(logINFO) << "Setting dynamic range to "
                       << comboDynamicRange->currentText().toAscii().data();
     try {
         switch (index) {
@@ -222,7 +222,7 @@ void qTabSettings::SetDynamicRange(int index) {
 }
 
 void qTabSettings::GetThresholdEnergy() {
-    FILE_LOG(logDEBUG) << "Getting theshold energy";
+    LOG(logDEBUG) << "Getting theshold energy";
     disconnect(spinThreshold, SIGNAL(valueChanged(int)), this,
                SLOT(SetThresholdEnergy(int)));
     try {
@@ -237,7 +237,7 @@ void qTabSettings::GetThresholdEnergy() {
 }
 
 void qTabSettings::SetThresholdEnergy(int index) {
-    FILE_LOG(logINFO) << "Setting Threshold Energy to " << index << " eV";
+    LOG(logINFO) << "Setting Threshold Energy to " << index << " eV";
     try {
         det->setThresholdEnergy(index);
     }
@@ -248,7 +248,7 @@ void qTabSettings::SetThresholdEnergy(int index) {
 }
 
 void qTabSettings::Refresh() {
-    FILE_LOG(logDEBUG) << "**Updating Settings Tab";
+    LOG(logDEBUG) << "**Updating Settings Tab";
 
     if (comboSettings->isEnabled()) {
         GetSettings();
@@ -261,5 +261,5 @@ void qTabSettings::Refresh() {
     if (spinThreshold->isEnabled())
         GetThresholdEnergy();
 
-    FILE_LOG(logDEBUG) << "**Updated Settings Tab";
+    LOG(logDEBUG) << "**Updated Settings Tab";
 }

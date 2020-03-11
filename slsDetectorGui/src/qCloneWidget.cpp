@@ -35,7 +35,7 @@ qCloneWidget::~qCloneWidget() {
 void qCloneWidget::SetupWidgetWindow(QString title) {
 
     std::string winTitle = std::string("Snapshot:") + std::to_string(id) +
-                           std::string("  -  ") + NowTime();
+                           std::string("  -  ") + sls::Logger::Timestamp();
     setWindowTitle(QString(winTitle.c_str()));
 
     boxPlot->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
@@ -97,7 +97,7 @@ void qCloneWidget::SavePlot() {
     QString fName = filePath + QString('/') + fileName + QString("_clone") +
                     QString("%1").arg(id) + QString("_acq") +
                     QString("%1").arg(acqIndex) + QString(".png");
-    FILE_LOG(logINFO) << "Saving Clone:" << fName.toAscii().constData();
+    LOG(logINFO) << "Saving Clone:" << fName.toAscii().constData();
     // save
     QImage img(centralwidget->size().width(), centralwidget->size().height(),
                QImage::Format_RGB32);
@@ -113,13 +113,13 @@ void qCloneWidget::SavePlot() {
             qDefs::Message(qDefs::INFORMATION,
                            "The SnapShot has been successfully saved",
                            "qCloneWidget::SavePlot");
-            FILE_LOG(logINFO) << "The SnapShot has been successfully saved";
+            LOG(logINFO) << "The SnapShot has been successfully saved";
         } else {
             qDefs::Message(
                 qDefs::WARNING,
                 "Attempt to save snapshot failed.\n Formats: .png, .jpg, .xpm.",
                 "qCloneWidget::SavePlot");
-            FILE_LOG(logWARNING) << "Attempt to save snapshot failed";
+            LOG(logWARNING) << "Attempt to save snapshot failed";
         }
     }
 }

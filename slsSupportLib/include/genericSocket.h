@@ -150,7 +150,7 @@ public:
 		sockfd.fd = socket(AF_INET, getProtocol(),0); //tcp
 
 		if (sockfd.fd < 0) {
-			FILE_LOG(logERROR) << "Can not create socket";
+			LOG(logERROR) << "Can not create socket";
 			sockfd.fd =-1;
 			throw SocketError("Can not create socket");
 		}
@@ -173,7 +173,7 @@ public:
 			int val=1;
 			if (setsockopt(sockfd.fd,SOL_SOCKET,SO_REUSEADDR,
 					&val,sizeof(int)) == -1) {
-			    FILE_LOG(logERROR) << "setsockopt REUSEADDR failed";
+			    LOG(logERROR) << "setsockopt REUSEADDR failed";
 				sockfd.fd =-1;
 				throw SocketError("setsockopt REUSEADDR failed");
 			}
@@ -188,33 +188,33 @@ public:
 
 			// confirm if sufficient
 			if (getsockopt(sockfd.fd, SOL_SOCKET, SO_RCVBUF, &ret_size, &optlen) == -1) {
-				FILE_LOG(logWARNING) << "[Port " << port_number << "] "
+				LOG(logWARNING) << "[Port " << port_number << "] "
 						"Could not get rx socket receive buffer size";
 			} else if (ret_size >= real_size) {
 				actual_udp_socket_buffer_size = ret_size;
-				FILE_LOG(logINFO) << "[Port " << port_number << "] "
+				LOG(logINFO) << "[Port " << port_number << "] "
 						"UDP rx socket real buffer size is sufficient (" << ret_size << ")";
 			}
 
 			// not sufficient, enhance size
 			else {
-				FILE_LOG(logINFO) << "[Port " << port_number << "] UDP rx socket real buffer size to be modified from " << ret_size << " to " << real_size;
+				LOG(logINFO) << "[Port " << port_number << "] UDP rx socket real buffer size to be modified from " << ret_size << " to " << real_size;
 				// set buffer size (could not set)
 				if (setsockopt(sockfd.fd, SOL_SOCKET, SO_RCVBUF,
 						&desired_size, optlen) == -1) {
-					FILE_LOG(logWARNING) << "[Port " << port_number << "] "
+					LOG(logWARNING) << "[Port " << port_number << "] "
 							"Could not set rx socket buffer size to "
 							<< desired_size << ". (No Root Privileges?)";
 				}
 				// confirm size
 				else if (getsockopt(sockfd.fd, SOL_SOCKET, SO_RCVBUF,
 						&ret_size, &optlen) == -1) {
-					FILE_LOG(logWARNING) << "[Port " << port_number << "] "
+					LOG(logWARNING) << "[Port " << port_number << "] "
 							"Could not get rx socket buffer size";
 				}
 				else if (ret_size >= real_size) {
 					actual_udp_socket_buffer_size = ret_size;
-					FILE_LOG(logINFO) << "[Port " << port_number << "] "
+					LOG(logINFO) << "[Port " << port_number << "] "
 							"UDP rx socket buffer size modified to " << ret_size;
 				}
 				// buffer size too large
@@ -227,14 +227,14 @@ public:
 					getsockopt(sockfd.fd, SOL_SOCKET, SO_RCVBUF,
 							&ret_size, &optlen);
 					if (ret == -1) {
-						FILE_LOG(logWARNING) << "[Port " << port_number << "] "
+						LOG(logWARNING) << "[Port " << port_number << "] "
 								"Could not force rx socket buffer size to "
 								<< desired_size << ".\n  Real size: " << ret_size <<
 								". (No Root Privileges?)\n"
 								"  To remove this warning: set rx_udpsocksize from client to <= " <<
 								(ret_size/2) << " (Real size:" << ret_size << ").";
 					} else {
-						FILE_LOG(logINFO) << "[Port " << port_number << "] "
+						LOG(logINFO) << "[Port " << port_number << "] "
 								"UDP rx socket buffer size (force) modified to " << ret_size;
 					}
 				}
@@ -243,7 +243,7 @@ public:
 
 
 		if(bind(sockfd.fd,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
-            FILE_LOG(logERROR) << "Can not bind socket. Please check if another process is running.";
+            LOG(logERROR) << "Can not bind socket. Please check if another process is running.";
 			sockfd.fd =-1;
 			throw SocketError("Can not bind socket. Please check if another process is running.");
 		}
@@ -312,7 +312,7 @@ public:
 		case UDP:
 			return SOCK_DGRAM;
 		default:
-		    FILE_LOG(logERROR) << "unknown protocol: " << p;
+		    LOG(logERROR) << "unknown protocol: " << p;
 			return -1;
 		}
 	};
@@ -364,70 +364,70 @@ public:
 		if(is_a_server && protocol==TCP){ //server tcp; the server will wait for the clients connection
 			if (sockfd.fd>0) {
 				if ((sockfd.newfd = accept(sockfd.fd,(struct sockaddr *) &clientAddress, &clientAddress_length)) < 0) {
-				    FILE_LOG(logERROR) << "with server accept, connection refused";
+				    LOG(logERROR) << "with server accept, connection refused";
 					switch(errno) {
 					case EWOULDBLOCK:
-					    FILE_LOG(logERROR) << "ewouldblock eagain";
+					    LOG(logERROR) << "ewouldblock eagain";
 						break;
 					case EBADF:
-						FILE_LOG(logERROR) << "ebadf";
+						LOG(logERROR) << "ebadf";
 						break;
 					case ECONNABORTED:
-						FILE_LOG(logERROR) << "econnaborted";
+						LOG(logERROR) << "econnaborted";
 						break;
 					case EFAULT:
-						FILE_LOG(logERROR) << "efault";
+						LOG(logERROR) << "efault";
 						break;
 					case EINTR:
-						FILE_LOG(logERROR) << "eintr";
+						LOG(logERROR) << "eintr";
 						break;
 					case EINVAL:
-						FILE_LOG(logERROR) << "einval";
+						LOG(logERROR) << "einval";
 						break;
 					case EMFILE:
-						FILE_LOG(logERROR) << "emfile";
+						LOG(logERROR) << "emfile";
 						break;
 					case ENFILE:
-						FILE_LOG(logERROR) << "enfile";
+						LOG(logERROR) << "enfile";
 						break;
 					case ENOTSOCK:
-						FILE_LOG(logERROR) << "enotsock";
+						LOG(logERROR) << "enotsock";
 						break;
 					case EOPNOTSUPP:
-						FILE_LOG(logERROR) << "eOPNOTSUPP";
+						LOG(logERROR) << "eOPNOTSUPP";
 						break;
 					case ENOBUFS:
-						FILE_LOG(logERROR) << "ENOBUFS";
+						LOG(logERROR) << "ENOBUFS";
 						break;
 					case ENOMEM:
-						FILE_LOG(logERROR) << "ENOMEM";
+						LOG(logERROR) << "ENOMEM";
 						break;
 					case ENOSR:
-						FILE_LOG(logERROR) << "ENOSR";
+						LOG(logERROR) << "ENOSR";
 						break;
 					case EPROTO:
-						FILE_LOG(logERROR) << "EPROTO";
+						LOG(logERROR) << "EPROTO";
 						break;
 					default:
-						FILE_LOG(logERROR) << "unknown error";
+						LOG(logERROR) << "unknown error";
 					}
 				}
 				else{
 					inet_ntop(AF_INET, &(clientAddress.sin_addr), dummyClientIP, INET_ADDRSTRLEN);
-					FILE_LOG(logDEBUG1) << "client connected " << sockfd.newfd;
+					LOG(logDEBUG1) << "client connected " << sockfd.newfd;
 				}
 			}
-			FILE_LOG(logDEBUG1) << "fd " << sockfd.newfd;
+			LOG(logDEBUG1) << "fd " << sockfd.newfd;
 			return sockfd.newfd;
 		} else {
 			if (sockfd.fd<=0)
 				sockfd.fd = socket(AF_INET, getProtocol(),0);
 			//    SetTimeOut(10);
 			if (sockfd.fd < 0){
-			    FILE_LOG(logERROR) << "Can not create socket";
+			    LOG(logERROR) << "Can not create socket";
 			} else {
 				if(connect(sockfd.fd,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
-				    FILE_LOG(logERROR) << "Can not connect to socket";
+				    LOG(logERROR) << "Can not connect to socket";
 					return -1;
 				}
 			}
@@ -465,13 +465,13 @@ public:
 		tout.tv_usec = 0;
 		if(::setsockopt(sockfd.fd, SOL_SOCKET, SO_RCVTIMEO,
 				&tout, sizeof(struct timeval)) <0) {
-		    FILE_LOG(logERROR) << "setsockopt SO_RCVTIMEO " << 0;
+		    LOG(logERROR) << "setsockopt SO_RCVTIMEO " << 0;
 		}
 		tout.tv_sec  = ts;
 		tout.tv_usec = 0;
 		if(::setsockopt(sockfd.fd, SOL_SOCKET, SO_SNDTIMEO,
 				&tout, sizeof(struct timeval)) < 0)	{
-		    FILE_LOG(logERROR) << "setsockopt SO_SNDTIMEO " << ts;
+		    LOG(logERROR) << "setsockopt SO_SNDTIMEO " << ts;
 		}
 		return 0;
 	};
@@ -609,17 +609,17 @@ public:
 		// get host info into res
 		int errcode = getaddrinfo (hostname, NULL, &hints, res);
 		if (errcode != 0) {
-		    FILE_LOG(logERROR) << "Could not convert hostname (" << hostname << ") to internet address (zmq):" <<
+		    LOG(logERROR) << "Could not convert hostname (" << hostname << ") to internet address (zmq):" <<
 					gai_strerror(errcode);
 		} else {
 			if (*res == NULL) {
-			    FILE_LOG(logERROR) << "Could not converthostname (" << hostname << ") to internet address (zmq):"
+			    LOG(logERROR) << "Could not converthostname (" << hostname << ") to internet address (zmq):"
 						"gettaddrinfo returned null";
 			} else{
 				return 0;
 			}
 		}
-		 FILE_LOG(logERROR) << "Could not convert hostname to internet address";
+		 LOG(logERROR) << "Could not convert hostname to internet address";
 		return 1;
 	};
 
@@ -637,7 +637,7 @@ public:
 			freeaddrinfo(res);
 			return 0;
 		}
-		 FILE_LOG(logERROR) << "Could not convert internet address to ip string";
+		 LOG(logERROR) << "Could not convert internet address to ip string";
 		return 1;
 	}
 
@@ -691,7 +691,7 @@ public:
 						continue;
 					if(nsent != nsending){
 						if(nsent && (nsent != -1)) {
-						    FILE_LOG(logERROR) << "Incomplete Packet size " << nsent;
+						    LOG(logERROR) << "Incomplete Packet size " << nsent;
 						}
 						break;
 					}
@@ -710,7 +710,7 @@ public:
 						break;
 					//incomplete packets or header packets ignored and read buffer again
 					if(nsent != packet_size && nsent != header_packet_size) {
-					    FILE_LOG(logERROR) << portno << ": Incomplete Packet size " << nsent;
+					    LOG(logERROR) << portno << ": Incomplete Packet size " << nsent;
 					}
 				}
 				//nsent = 1040;
@@ -720,7 +720,7 @@ public:
 		default:
 			;
 		}
-		FILE_LOG(logDEBUG1) << "sent " << total_sent << " Bytes";
+		LOG(logDEBUG1) << "sent " << total_sent << " Bytes";
 		return total_sent;
 	}
 
@@ -731,7 +731,7 @@ public:
 	 * @returns size of data sent
 	 */
 	int SendDataOnly(void *buf, int length) {
-	    FILE_LOG(logDEBUG1) << "want to send " << length << " Bytes";
+	    LOG(logDEBUG1) << "want to send " << length << " Bytes";
 		if (buf==NULL) return -1;
 
 		total_sent=0;
@@ -746,7 +746,7 @@ public:
 				nsending = (length>packet_size) ? packet_size:length;
 				nsent = write(tcpfd,(char*)buf+total_sent,nsending);
 				if(is_a_server && nsent < 0) {
-				    FILE_LOG(logERROR) << "Could not write to socket. Possible client socket crash";
+				    LOG(logERROR) << "Could not write to socket. Possible client socket crash";
 					break;
 				}
 				if(!nsent) break;
@@ -768,7 +768,7 @@ public:
 		default:
 			;
 		}
-		FILE_LOG(logDEBUG1) << "sent "<< total_sent << " Bytes";
+		LOG(logDEBUG1) << "sent "<< total_sent << " Bytes";
 		return total_sent;
 	}
 

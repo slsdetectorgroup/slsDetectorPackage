@@ -46,12 +46,12 @@ int setUDPDestinationDetails(int index, const char* ip, unsigned short int port)
 	sprintf(sport, "%d", udpDestinationPort[index]);
 	int err = getaddrinfo(udpDestinationIp[index], sport, &hints, &udpServerAddrInfo[index]);
 	if (err != 0) {
-		FILE_LOG(logERROR, ("Failed to resolve remote socket address %s at port %d. "
+		LOG(logERROR, ("Failed to resolve remote socket address %s at port %d. "
 				"(Error code:%d, %s)\n", udpDestinationIp[index], udpDestinationPort[index], err, gai_strerror(err)));
 		return FAIL;
 	}
 	if (udpServerAddrInfo[index] == NULL) {
-		FILE_LOG(logERROR, ("Failed to resolve remote socket address %s at port %d "
+		LOG(logERROR, ("Failed to resolve remote socket address %s at port %d "
 				"(getaddrinfo returned NULL)\n", udpDestinationIp[index], udpDestinationPort[index]));
 		udpServerAddrInfo[index] = 0;
 		return FAIL;
@@ -61,14 +61,14 @@ int setUDPDestinationDetails(int index, const char* ip, unsigned short int port)
 }
 
 int createUDPSocket(int index) {
-	FILE_LOG(logDEBUG2, ("Creating UDP Socket %d\n", index));
+	LOG(logDEBUG2, ("Creating UDP Socket %d\n", index));
 	if (!strlen(udpDestinationIp[index])) {
-		FILE_LOG(logERROR, ("No destination UDP ip specified.\n"));
+		LOG(logERROR, ("No destination UDP ip specified.\n"));
 		return FAIL;
 	}
 
 	if (udpSockfd[index] != -1) {
-		FILE_LOG(logERROR, ("Strange that Udp socket was still open. Closing it to create a new one\n"));
+		LOG(logERROR, ("Strange that Udp socket was still open. Closing it to create a new one\n"));
 		close(udpSockfd[index]);
 		udpSockfd[index] = -1;
 	}
@@ -76,20 +76,20 @@ int createUDPSocket(int index) {
 	// Creating socket file descriptor
 	udpSockfd[index] = socket(udpServerAddrInfo[index]->ai_family, udpServerAddrInfo[index]->ai_socktype, udpServerAddrInfo[index]->ai_protocol);
 	if (udpSockfd[index]  == -1 ) {
-		FILE_LOG(logERROR, ("UDP socket at port %d failed. (Error code:%d, %s)\n",
+		LOG(logERROR, ("UDP socket at port %d failed. (Error code:%d, %s)\n",
 				udpDestinationPort[index], errno, gai_strerror(errno)));
 		return FAIL;
 	}
-	FILE_LOG(logINFO, ("Udp client socket created for server (port %d, ip:%s)\n",
+	LOG(logINFO, ("Udp client socket created for server (port %d, ip:%s)\n",
 			udpDestinationPort[index], udpDestinationIp[index]));
 
 	// connecting allows to use "send/write" instead of "sendto", avoiding checking for server address for each packet
 	// using write without a connect will end in segv
 	if (connect(udpSockfd[index],udpServerAddrInfo[index]->ai_addr, udpServerAddrInfo[index]->ai_addrlen)==-1) {
-		FILE_LOG(logERROR, ("Could not connect to UDP server at ip:%s, port:%d. (Error code:%d, %s)\n",
+		LOG(logERROR, ("Could not connect to UDP server at ip:%s, port:%d. (Error code:%d, %s)\n",
 				udpDestinationIp[index], udpDestinationPort[index],  errno, gai_strerror(errno)));
 	}
-	FILE_LOG(logINFO, ("Udp client socket connected\n",
+	LOG(logINFO, ("Udp client socket connected\n",
 				udpDestinationPort[index], udpDestinationIp[index]));
 	return OK;
 }
@@ -98,17 +98,17 @@ int sendUDPPacket(int index, const char* buf, int length) {
 	int n = write(udpSockfd[index], buf, length);
 	// udp sends atomically, no need to handle partial data
 	if (n == -1) {
-		FILE_LOG(logERROR, ("Could not send udp packet for socket %d. (Error code:%d, %s)\n",
+		LOG(logERROR, ("Could not send udp packet for socket %d. (Error code:%d, %s)\n",
 				index, n, errno, gai_strerror(errno)));
 	} else {
-		FILE_LOG(logDEBUG2, ("%d bytes sent\n", n));
+		LOG(logDEBUG2, ("%d bytes sent\n", n));
 	}
 	return n;
 }
 
 void closeUDPSocket(int index) {
 	if (udpSockfd[index] != -1) {
-		FILE_LOG(logINFO, ("Udp client socket closed\n"));
+		LOG(logINFO, ("Udp client socket closed\n"));
 		close(udpSockfd[index]);
 		udpSockfd[index] = -1;
 	}

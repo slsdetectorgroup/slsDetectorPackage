@@ -139,7 +139,7 @@ public:
 	 * @param i ROI
 	 */
 	virtual void SetROI(slsDetectorDefs::ROI i) {
-		FILE_LOG(logERROR) << "SetROI is a generic function that should be overloaded by a derived class";
+		LOG(logERROR) << "SetROI is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -149,7 +149,7 @@ public:
 	 * @returns adc configured
 	 */
 	virtual int GetAdcConfigured(int index, slsDetectorDefs::ROI i)  const{
-		FILE_LOG(logERROR) << "GetAdcConfigured is a generic function that should be overloaded by a derived class";
+		LOG(logERROR) << "GetAdcConfigured is a generic function that should be overloaded by a derived class";
 		return 0;
 	};
 
@@ -159,7 +159,7 @@ public:
 	 * @param tgEnable true if 10GbE is enabled, else false
 	 */
 	virtual void SetDynamicRange(int dr, bool tgEnable) {
-		FILE_LOG(logERROR) << "SetDynamicRange is a generic function that should be overloaded by a derived class";
+		LOG(logERROR) << "SetDynamicRange is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -168,7 +168,7 @@ public:
 	 * @param dr dynamic range
 	 */
 	virtual void SetTenGigaEnable(bool tgEnable, int dr) {
-		FILE_LOG(logERROR) << "SetTenGigaEnable is a generic function that should be overloaded by a derived class";
+		LOG(logERROR) << "SetTenGigaEnable is a generic function that should be overloaded by a derived class";
 	};
 
 	/**
@@ -178,7 +178,7 @@ public:
 	 * @param q quad enable 
 	 */
 	virtual void SetGapPixelsEnable(bool b, int dr, bool q) {
-		FILE_LOG(logERROR) << "SetGapPixelsEnable is a generic function that should be overloaded by a derived class";
+		LOG(logERROR) << "SetGapPixelsEnable is a generic function that should be overloaded by a derived class";
 	};
 
     /**
@@ -188,7 +188,7 @@ public:
      * @returns true or false for odd starting packet number
      */
     virtual bool SetOddStartingPacket(int index, char* packetData) {
-        FILE_LOG(logERROR) << "SetOddStartingPacket is a generic function that should be overloaded by a derived class";
+        LOG(logERROR) << "SetOddStartingPacket is a generic function that should be overloaded by a derived class";
         return false;
     };
 
@@ -202,7 +202,7 @@ public:
 	 * @returns analog data bytes
      */
     virtual int setImageSize(uint32_t a, uint32_t as, uint32_t ds, bool t, slsDetectorDefs::readoutMode) {
-        FILE_LOG(logERROR) << "setImageSize is a generic function that should be overloaded by a derived class";
+        LOG(logERROR) << "setImageSize is a generic function that should be overloaded by a derived class";
 		return 0;
     };
 
@@ -211,7 +211,7 @@ public:
      * @param n number of interfaces
      */
     virtual void SetNumberofInterfaces(const int n) {
-        FILE_LOG(logERROR) << "SetNumberofInterfaces is a generic function that should be overloaded by a derived class";
+        LOG(logERROR) << "SetNumberofInterfaces is a generic function that should be overloaded by a derived class";
     }
 
     /**
@@ -220,36 +220,36 @@ public:
 	 * @param dr dynamic range
      */
     virtual void SetNumberofCounters(const int n, const int dr) {
-        FILE_LOG(logERROR) << "SetNumberofCounters is a generic function that should be overloaded by a derived class";
+        LOG(logERROR) << "SetNumberofCounters is a generic function that should be overloaded by a derived class";
     }	
 
 	/**
 	 * Print all variables
 	 */
 	virtual void Print(TLogLevel level = logDEBUG1) const {
-		FILE_LOG(level) << "\n\nDetector Data Variables:";
-		FILE_LOG(level) << "myDetectorType: " << sls::ToString(myDetectorType);
-		FILE_LOG(level) << "Pixels X: " << nPixelsX;
-		FILE_LOG(level) << "Pixels Y: " << nPixelsY;
-		FILE_LOG(level) << "Header Size in Packet: " << headerSizeinPacket;
-		FILE_LOG(level) << "Data Size: " << dataSize;
-		FILE_LOG(level) << "Packet Size: " << packetSize;
-		FILE_LOG(level) << "Packets per Frame: " << packetsPerFrame;
-		FILE_LOG(level) << "Image Size: " << imageSize;
-		FILE_LOG(level) << "Frame Index Mask: " << frameIndexMask;
-		FILE_LOG(level) << "Frame Index Offset: " << frameIndexOffset;
-		FILE_LOG(level) << "Packet Index Mask: " << packetIndexMask;
-		FILE_LOG(level) << "Packet Index Offset: " << packetIndexOffset;
-		FILE_LOG(level) << "Max Frames Per File: " << maxFramesPerFile;
-		FILE_LOG(level) << "Fifo Buffer Header Size: " << fifoBufferHeaderSize;
-		FILE_LOG(level) << "Default Fifo Depth: " << defaultFifoDepth;
-		FILE_LOG(level) << "Threads Per Receiver: " << threadsPerReceiver;
-		FILE_LOG(level) << "Header Packet Size: " << headerPacketSize;
-		FILE_LOG(level) << "Complete Pixels X: " << nPixelsXComplete;
-		FILE_LOG(level) << "Complete Pixels Y: " << nPixelsYComplete;
-		FILE_LOG(level) << "Complete Image Size: " << imageSizeComplete;
-		FILE_LOG(level) << "Standard Header: " << standardheader;
-		FILE_LOG(level) << "UDP Socket Buffer Size: " << defaultUdpSocketBufferSize;
+		LOG(level) << "\n\nDetector Data Variables:";
+		LOG(level) << "myDetectorType: " << sls::ToString(myDetectorType);
+		LOG(level) << "Pixels X: " << nPixelsX;
+		LOG(level) << "Pixels Y: " << nPixelsY;
+		LOG(level) << "Header Size in Packet: " << headerSizeinPacket;
+		LOG(level) << "Data Size: " << dataSize;
+		LOG(level) << "Packet Size: " << packetSize;
+		LOG(level) << "Packets per Frame: " << packetsPerFrame;
+		LOG(level) << "Image Size: " << imageSize;
+		LOG(level) << "Frame Index Mask: " << frameIndexMask;
+		LOG(level) << "Frame Index Offset: " << frameIndexOffset;
+		LOG(level) << "Packet Index Mask: " << packetIndexMask;
+		LOG(level) << "Packet Index Offset: " << packetIndexOffset;
+		LOG(level) << "Max Frames Per File: " << maxFramesPerFile;
+		LOG(level) << "Fifo Buffer Header Size: " << fifoBufferHeaderSize;
+		LOG(level) << "Default Fifo Depth: " << defaultFifoDepth;
+		LOG(level) << "Threads Per Receiver: " << threadsPerReceiver;
+		LOG(level) << "Header Packet Size: " << headerPacketSize;
+		LOG(level) << "Complete Pixels X: " << nPixelsXComplete;
+		LOG(level) << "Complete Pixels Y: " << nPixelsYComplete;
+		LOG(level) << "Complete Image Size: " << imageSizeComplete;
+		LOG(level) << "Standard Header: " << standardheader;
+		LOG(level) << "UDP Socket Buffer Size: " << defaultUdpSocketBufferSize;
 	};
 };
 
@@ -362,12 +362,12 @@ private:
 			adc = ((((i.xmax) + (i.xmin))/2)/
 					(nChan * nChipsPerAdc));
 			if((adc < 0) || (adc > 4)) {
-				FILE_LOG(logWARNING) << index << ": Deleting ROI. "
+				LOG(logWARNING) << index << ": Deleting ROI. "
 						"Adc value should be between 0 and 4";
 				adc = -1;
 			}
 		}
-		FILE_LOG(logINFO) << "Adc Configured: " << adc;
+		LOG(logINFO) << "Adc Configured: " << adc;
 		return adc;
 	};
 
@@ -571,14 +571,14 @@ public:
 		}
 		ncounters = n;
 		nPixelsX = NCHAN * ncounters;
-		FILE_LOG(logINFO) << "nPixelsX: " << nPixelsX;
+		LOG(logINFO) << "nPixelsX: " << nPixelsX;
 		imageSize = nPixelsX * nPixelsY * 	((dr > 16) ? 4 : 	// 32 bit
 											((dr > 8)  ? 2 : 	// 16 bit
 											((dr > 4)  ? 0.5 : 	// 4 bit
 											0.125)));			// 1 bit
 		dataSize = imageSize / packetsPerFrame;
 		packetSize 			= headerSizeinPacket + dataSize;
-		FILE_LOG(logINFO) << "PacketSize: " << packetSize;
+		LOG(logINFO) << "PacketSize: " << packetSize;
 	}
 
 	/**
@@ -593,7 +593,7 @@ public:
 											0.125)));			// 1 bit
 		dataSize = imageSize / packetsPerFrame;
 		packetSize 			= headerSizeinPacket + dataSize;
-		FILE_LOG(logINFO) << "PacketSize: " << packetSize;
+		LOG(logINFO) << "PacketSize: " << packetSize;
 	}	
 };
 
@@ -677,7 +677,7 @@ public:
 				}
 			}
 			adatabytes = nachans * NUM_BYTES_PER_ANALOG_CHANNEL * as;
-			FILE_LOG(logDEBUG1) << " Number of Analog Channels:" << nachans
+			LOG(logDEBUG1) << " Number of Analog Channels:" << nachans
 								<< " Databytes: " << adatabytes;
 		}
 		// digital channels
@@ -685,10 +685,10 @@ public:
 			f == slsDetectorDefs::ANALOG_AND_DIGITAL) {
 			ndchans = NCHAN_DIGITAL;
 			ddatabytes = (sizeof(uint64_t) * ds);
-			FILE_LOG(logDEBUG1) << "Number of Digital Channels:" << ndchans
+			LOG(logDEBUG1) << "Number of Digital Channels:" << ndchans
 								<< " Databytes: " << ddatabytes;
 		}
-		FILE_LOG(logDEBUG1) << "Total Number of Channels:" << nachans + ndchans
+		LOG(logDEBUG1) << "Total Number of Channels:" << nachans + ndchans
 							<< " Databytes: " << adatabytes + ddatabytes;
 
         nPixelsX = nachans + ndchans;
@@ -761,7 +761,7 @@ public:
             nrows = 2;
         }        
         nPixelsY = as / 25 * nrows;
-		FILE_LOG(logINFO) << "Number of Pixels: [" << nPixelsX << ", " << nPixelsY << "]";
+		LOG(logINFO) << "Number of Pixels: [" << nPixelsX << ", " << nPixelsY << "]";
 
 
         // 10G
@@ -777,7 +777,7 @@ public:
 		packetSize 			= headerSizeinPacket + dataSize;
 		packetsPerFrame 	= ceil((double)imageSize / (double)dataSize);
 		
-		FILE_LOG(logDEBUG) << "Databytes: " << imageSize;
+		LOG(logDEBUG) << "Databytes: " << imageSize;
 
 		return imageSize;
 	}

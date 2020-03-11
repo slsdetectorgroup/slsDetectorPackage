@@ -10,7 +10,7 @@ qTabMeasurement::qTabMeasurement(QWidget *parent, sls::Detector *detector,
     : QWidget(parent), det(detector), plot(p), progressTimer(nullptr) {
     setupUi(this);
     SetupWidgetWindow();
-    FILE_LOG(logDEBUG) << "Measurement ready";
+    LOG(logDEBUG) << "Measurement ready";
 }
 
 qTabMeasurement::~qTabMeasurement() { delete progressTimer; }
@@ -133,7 +133,7 @@ void qTabMeasurement::ShowTriggerDelay() {
     bool showTrigger = true;
     if (det->getDetectorType().squash() == slsDetectorDefs::GOTTHARD2) {
         try {
-            FILE_LOG(logDEBUG) << "Getting burst mode";
+            LOG(logDEBUG) << "Getting burst mode";
             auto retval = det->getBurstMode().tsquash(
                 "Inconsistent burst mode for all detectors.");
             // burst mode and auto timing mode
@@ -181,7 +181,7 @@ void qTabMeasurement::SetupTimingMode() {
 }
 
 void qTabMeasurement::EnableWidgetsforTimingMode() {
-    FILE_LOG(logDEBUG) << "Enabling Widgets for Timing Mode";
+    LOG(logDEBUG) << "Enabling Widgets for Timing Mode";
 
     // default
     lblNumFrames->setEnabled(false);
@@ -266,7 +266,7 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
 }
 
 void qTabMeasurement::GetTimingMode() {
-    FILE_LOG(logDEBUG) << "Getting timing mode";
+    LOG(logDEBUG) << "Getting timing mode";
     disconnect(comboTimingMode, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetTimingMode(int)));
     try {
@@ -296,7 +296,7 @@ void qTabMeasurement::GetTimingMode() {
 }
 
 void qTabMeasurement::SetTimingMode(int val) {
-    FILE_LOG(logINFO) << "Setting timing mode:"
+    LOG(logINFO) << "Setting timing mode:"
                       << comboTimingMode->currentText().toAscii().data();
     try {
         det->setTimingMode(static_cast<slsDetectorDefs::timingMode>(val));
@@ -307,12 +307,12 @@ void qTabMeasurement::SetTimingMode(int val) {
 }
 
 void qTabMeasurement::SetNumMeasurements(int val) {
-    FILE_LOG(logINFO) << "Setting Number of Measurements to " << val;
+    LOG(logINFO) << "Setting Number of Measurements to " << val;
     numMeasurements = val;
 }
 
 void qTabMeasurement::GetNumFrames() {
-    FILE_LOG(logDEBUG) << "Getting number of frames";
+    LOG(logDEBUG) << "Getting number of frames";
     disconnect(spinNumFrames, SIGNAL(valueChanged(int)), this,
                SLOT(SetNumFrames(int)));
     try {
@@ -327,7 +327,7 @@ void qTabMeasurement::GetNumFrames() {
 }
 
 void qTabMeasurement::SetNumFrames(int val) {
-    FILE_LOG(logINFO) << "Setting number of frames to " << val;
+    LOG(logINFO) << "Setting number of frames to " << val;
     try {
         det->setNumberOfFrames(val);
     }
@@ -337,7 +337,7 @@ void qTabMeasurement::SetNumFrames(int val) {
 }
 
 void qTabMeasurement::GetNumTriggers() {
-    FILE_LOG(logDEBUG) << "Getting number of triggers";
+    LOG(logDEBUG) << "Getting number of triggers";
     disconnect(spinNumTriggers, SIGNAL(valueChanged(int)), this,
                SLOT(SetNumTriggers(int)));
     try {
@@ -352,7 +352,7 @@ void qTabMeasurement::GetNumTriggers() {
 }
 
 void qTabMeasurement::SetNumTriggers(int val) {
-    FILE_LOG(logINFO) << "Setting number of triggers to " << val;
+    LOG(logINFO) << "Setting number of triggers to " << val;
     try {
         det->setNumberOfTriggers(val);
     }
@@ -362,7 +362,7 @@ void qTabMeasurement::SetNumTriggers(int val) {
 }
 
 void qTabMeasurement::GetNumBursts() {
-    FILE_LOG(logDEBUG) << "Getting number of bursts";
+    LOG(logDEBUG) << "Getting number of bursts";
     disconnect(spinNumBursts, SIGNAL(valueChanged(int)), this,
                SLOT(SetNumBursts(int)));
     try {
@@ -377,7 +377,7 @@ void qTabMeasurement::GetNumBursts() {
 }
 
 void qTabMeasurement::SetNumBursts(int val) {
-    FILE_LOG(logINFO) << "Setting number of bursts to " << val;
+    LOG(logINFO) << "Setting number of bursts to " << val;
     try {
         det->setNumberOfBursts(val);
     }
@@ -387,7 +387,7 @@ void qTabMeasurement::SetNumBursts(int val) {
 }
 
 void qTabMeasurement::GetNumSamples() {
-    FILE_LOG(logDEBUG) << "Getting number of samples";
+    LOG(logDEBUG) << "Getting number of samples";
     disconnect(spinNumSamples, SIGNAL(valueChanged(int)), this,
                SLOT(SetNumSamples(int)));
     try {
@@ -402,7 +402,7 @@ void qTabMeasurement::GetNumSamples() {
 }
 
 void qTabMeasurement::SetNumSamples(int val) {
-    FILE_LOG(logINFO) << "Setting number of samples to " << val;
+    LOG(logINFO) << "Setting number of samples to " << val;
     try {
         det->setNumberOfAnalogSamples(val);
     }
@@ -412,7 +412,7 @@ void qTabMeasurement::SetNumSamples(int val) {
 }
 
 void qTabMeasurement::GetExposureTime() {
-    FILE_LOG(logDEBUG) << "Getting exposure time";
+    LOG(logDEBUG) << "Getting exposure time";
     disconnect(spinExpTime, SIGNAL(valueChanged(double)), this,
                SLOT(SetExposureTime()));
     disconnect(comboExpUnit, SIGNAL(currentIndexChanged(int)), this,
@@ -437,7 +437,7 @@ void qTabMeasurement::GetExposureTime() {
 void qTabMeasurement::SetExposureTime() {
     auto val = spinExpTime->value();
     auto unit = static_cast<qDefs::timeUnit>(comboExpUnit->currentIndex());
-    FILE_LOG(logINFO) << "Setting exposure time to " << val << " "
+    LOG(logINFO) << "Setting exposure time to " << val << " "
                       << qDefs::getUnitString(unit);
     try {
         auto timeNS = qDefs::getNSTime(std::make_pair(val, unit));
@@ -450,7 +450,7 @@ void qTabMeasurement::SetExposureTime() {
 }
 
 void qTabMeasurement::GetAcquisitionPeriod() {
-    FILE_LOG(logDEBUG) << "Getting acquisition period";
+    LOG(logDEBUG) << "Getting acquisition period";
     disconnect(spinPeriod, SIGNAL(valueChanged(double)), this,
                SLOT(SetAcquisitionPeriod()));
     disconnect(comboPeriodUnit, SIGNAL(currentIndexChanged(int)), this,
@@ -475,7 +475,7 @@ void qTabMeasurement::GetAcquisitionPeriod() {
 void qTabMeasurement::SetAcquisitionPeriod() {
     auto val = spinPeriod->value();
     auto unit = static_cast<qDefs::timeUnit>(comboPeriodUnit->currentIndex());
-    FILE_LOG(logINFO) << "Setting acquisition period to " << val << " "
+    LOG(logINFO) << "Setting acquisition period to " << val << " "
                       << qDefs::getUnitString(unit);
     try {
         auto timeNS = qDefs::getNSTime(std::make_pair(val, unit));
@@ -488,7 +488,7 @@ void qTabMeasurement::SetAcquisitionPeriod() {
 }
 
 void qTabMeasurement::CheckAcqPeriodGreaterThanExp() {
-    FILE_LOG(logDEBUG) << "Checking period >= exptime";
+    LOG(logDEBUG) << "Checking period >= exptime";
     bool error = false;
     if (lblPeriod->isEnabled()) {
         auto exptimeNS = qDefs::getNSTime(std::make_pair(
@@ -515,7 +515,7 @@ void qTabMeasurement::CheckAcqPeriodGreaterThanExp() {
 }
 
 void qTabMeasurement::GetDelay() {
-    FILE_LOG(logDEBUG) << "Getting delay";
+    LOG(logDEBUG) << "Getting delay";
     disconnect(spinDelay, SIGNAL(valueChanged(double)), this, SLOT(SetDelay()));
     disconnect(comboDelayUnit, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetDelay()));
@@ -536,7 +536,7 @@ void qTabMeasurement::GetDelay() {
 void qTabMeasurement::SetDelay() {
     auto val = spinDelay->value();
     auto unit = static_cast<qDefs::timeUnit>(comboDelayUnit->currentIndex());
-    FILE_LOG(logINFO) << "Setting delay to " << val << " "
+    LOG(logINFO) << "Setting delay to " << val << " "
                       << qDefs::getUnitString(unit);
     try {
         auto timeNS = qDefs::getNSTime(std::make_pair(val, unit));
@@ -547,7 +547,7 @@ void qTabMeasurement::SetDelay() {
 }
 
 void qTabMeasurement::GetBurstPeriod() {
-    FILE_LOG(logDEBUG) << "Getting Burst Period";
+    LOG(logDEBUG) << "Getting Burst Period";
     disconnect(spinBurstPeriod, SIGNAL(valueChanged(double)), this,
                SLOT(SetBurstPeriod()));
     disconnect(comboBurstPeriodUnit, SIGNAL(currentIndexChanged(int)), this,
@@ -572,7 +572,7 @@ void qTabMeasurement::SetBurstPeriod() {
     auto val = spinBurstPeriod->value();
     auto unit =
         static_cast<qDefs::timeUnit>(comboBurstPeriodUnit->currentIndex());
-    FILE_LOG(logINFO) << "Setting burst period to " << val << " "
+    LOG(logINFO) << "Setting burst period to " << val << " "
                       << qDefs::getUnitString(unit);
     try {
         auto timeNS = qDefs::getNSTime(std::make_pair(val, unit));
@@ -584,7 +584,7 @@ void qTabMeasurement::SetBurstPeriod() {
 }
 
 void qTabMeasurement::GetFileWrite() {
-    FILE_LOG(logDEBUG) << "Getting File Write Enable";
+    LOG(logDEBUG) << "Getting File Write Enable";
     disconnect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
     try {
         dispFileName->setEnabled(true); // default, even when exception
@@ -603,7 +603,7 @@ void qTabMeasurement::GetFileWrite() {
 }
 
 void qTabMeasurement::SetFileWrite(bool val) {
-    FILE_LOG(logINFO) << "Set File Write to " << val;
+    LOG(logINFO) << "Set File Write to " << val;
     try {
         det->setFileWrite(val);
         dispFileName->setEnabled(val);
@@ -616,7 +616,7 @@ void qTabMeasurement::SetFileWrite(bool val) {
 }
 
 void qTabMeasurement::GetFileName() {
-    FILE_LOG(logDEBUG) << "Getting file name prefix";
+    LOG(logDEBUG) << "Getting file name prefix";
     disconnect(dispFileName, SIGNAL(editingFinished()), this,
                SLOT(SetFileName()));
     try {
@@ -631,7 +631,7 @@ void qTabMeasurement::GetFileName() {
 
 void qTabMeasurement::SetFileName() {
     std::string val = std::string(dispFileName->text().toAscii().constData());
-    FILE_LOG(logINFO) << "Setting File Name Prefix:" << val;
+    LOG(logINFO) << "Setting File Name Prefix:" << val;
     try {
         det->setFileNamePrefix(val);
     }
@@ -643,7 +643,7 @@ void qTabMeasurement::SetFileName() {
 }
 
 void qTabMeasurement::GetRunIndex() {
-    FILE_LOG(logDEBUG) << "Getting Acquisition File index";
+    LOG(logDEBUG) << "Getting Acquisition File index";
     disconnect(spinIndex, SIGNAL(valueChanged(int)), this,
                SLOT(SetRunIndex(int)));
     try {
@@ -657,7 +657,7 @@ void qTabMeasurement::GetRunIndex() {
 }
 
 void qTabMeasurement::SetRunIndex(int val) {
-    FILE_LOG(logINFO) << "Setting Acquisition File Index to " << val;
+    LOG(logINFO) << "Setting Acquisition File Index to " << val;
     try {
         det->setAcquisitionIndex(val);
     }
@@ -667,7 +667,7 @@ void qTabMeasurement::SetRunIndex(int val) {
 }
 
 void qTabMeasurement::GetStartingFrameNumber() {
-    FILE_LOG(logDEBUG) << "Getting Starting Frame Number";
+    LOG(logDEBUG) << "Getting Starting Frame Number";
     disconnect(spinStartingFrameNumber, SIGNAL(valueChanged(int)), this,
                SLOT(SetStartingFrameNumber(int)));
     try {
@@ -682,7 +682,7 @@ void qTabMeasurement::GetStartingFrameNumber() {
 }
 
 void qTabMeasurement::SetStartingFrameNumber(int val) {
-    FILE_LOG(logINFO) << "Setting Starting frame number to " << val;
+    LOG(logINFO) << "Setting Starting frame number to " << val;
     try {
         det->setStartingFrameNumber(val);
     }
@@ -692,14 +692,14 @@ void qTabMeasurement::SetStartingFrameNumber(int val) {
 }
 
 void qTabMeasurement::ResetProgress() {
-    FILE_LOG(logDEBUG) << "Resetting progress";
+    LOG(logDEBUG) << "Resetting progress";
     lblCurrentFrame->setText("0");
     lblCurrentMeasurement->setText("0");
     progressBar->setValue(0);
 }
 
 void qTabMeasurement::UpdateProgress() {
-    FILE_LOG(logDEBUG) << "Updating progress";
+    LOG(logDEBUG) << "Updating progress";
     progressBar->setValue(plot->GetProgress());
     lblCurrentFrame->setText(QString::number(plot->GetCurrentFrameIndex()));
     lblCurrentMeasurement->setText(QString::number(currentMeasurement));
@@ -741,7 +741,7 @@ void qTabMeasurement::StartAcquisition() {
         }
     }
 
-    FILE_LOG(logINFOBLUE) << "Starting Acquisition";
+    LOG(logINFOBLUE) << "Starting Acquisition";
     plot->SetRunning(true);
     isAcquisitionStopped = false;
     currentMeasurement = 0;
@@ -753,7 +753,7 @@ void qTabMeasurement::StartAcquisition() {
 }
 
 void qTabMeasurement::StopAcquisition() {
-    FILE_LOG(logINFORED) << "Stopping Acquisition";
+    LOG(logINFORED) << "Stopping Acquisition";
     try {
         isAcquisitionStopped = true;
         det->stopDetector();
@@ -765,13 +765,13 @@ void qTabMeasurement::StopAcquisition() {
 void qTabMeasurement::AcquireFinished() {
     // to catch only once (if abort acquire also calls acq finished call back)
     if (!btnStart->isEnabled()) {
-        FILE_LOG(logDEBUG) << "Acquire Finished";
+        LOG(logDEBUG) << "Acquire Finished";
         UpdateProgress();
         GetRunIndex();
         if (startingFnumImplemented) {
             GetStartingFrameNumber();
         }
-        FILE_LOG(logDEBUG) << "Measurement " << currentMeasurement
+        LOG(logDEBUG) << "Measurement " << currentMeasurement
                            << " finished";
         // next measurement if acq is not stopped
         if (!isAcquisitionStopped &&
@@ -791,7 +791,7 @@ void qTabMeasurement::AcquireFinished() {
 }
 
 void qTabMeasurement::AbortAcquire() {
-    FILE_LOG(logINFORED) << "Abort Acquire";
+    LOG(logINFORED) << "Abort Acquire";
     isAcquisitionStopped = true;
     AcquireFinished();
 }
@@ -806,7 +806,7 @@ void qTabMeasurement::Enable(bool enable) {
 }
 
 void qTabMeasurement::Refresh() {
-    FILE_LOG(logDEBUG) << "**Updating Measurement Tab";
+    LOG(logDEBUG) << "**Updating Measurement Tab";
 
     if (!plot->GetIsRunning()) {
         GetTimingMode();
@@ -835,5 +835,5 @@ void qTabMeasurement::Refresh() {
         ResetProgress();
     }
 
-    FILE_LOG(logDEBUG) << "**Updated Measurement Tab";
+    LOG(logDEBUG) << "**Updated Measurement Tab";
 }

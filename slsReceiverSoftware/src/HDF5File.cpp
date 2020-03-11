@@ -96,13 +96,13 @@ void HDF5File::PrintMembers(TLogLevel level) {
 	File::PrintMembers();
 	UpdateDataType();
 	if (datatype == PredType::STD_U8LE) {
-		FILE_LOG(level) << "Data Type: 4 or 8";
+		LOG(level) << "Data Type: 4 or 8";
 	} else if (datatype == PredType::STD_U16LE) {
-		FILE_LOG(level) << "Data Type: 16";
+		LOG(level) << "Data Type: 16";
 	} else if (datatype == PredType::STD_U32LE) {
-		FILE_LOG(level) << "Data Type: 32";
+		LOG(level) << "Data Type: 32";
 	} else {
-		FILE_LOG(logERROR) << "unknown data type";
+		LOG(logERROR) << "unknown data type";
 	}
 }
 
@@ -151,7 +151,7 @@ void HDF5File::CreateFile() {
 			parameterNames, parameterDataTypes);
 
 	if(!(*silentMode)) {
-		FILE_LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
+		LOG(logINFO) << *udpPortNumber << ": HDF5 File created: " << currentFileName;
 	}
 }
 
@@ -209,7 +209,7 @@ void HDF5File::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t
 		HDF5FileStatic::ExtendDataset(index, dataspace, dataset,
 				dataspace_para, dataset_para, *numImages);
 		if (!(*silentMode)) {
-			FILE_LOG(logINFO) << index << " Extending HDF5 dataset by " <<
+			LOG(logINFO) << index << " Extending HDF5 dataset by " <<
 					extNumImages << ", Total x Dimension: " << (extNumImages + *numImages);
 		}
 		extNumImages += *numImages;
@@ -241,7 +241,7 @@ void HDF5File::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
 		masterFileName = HDF5FileStatic::CreateMasterFileName(*filePath,
 				*fileNamePrefix, *fileIndex);
 		if(!(*silentMode)) {
-			FILE_LOG(logINFO) << "Master File: " << masterFileName;
+			LOG(logINFO) << "Master File: " << masterFileName;
 		}
 		std::lock_guard<std::mutex> lock(mutex);
 		attr.version = HDF5_WRITER_VERSION;
@@ -277,7 +277,7 @@ void HDF5File::CreateVirtualFile(uint64_t numf) {
 
 	std::string vname = HDF5FileStatic::CreateVirtualFileName(*filePath, *fileNamePrefix, *fileIndex);
 	if(!(*silentMode)) {
-		FILE_LOG(logINFO) << "Virtual File: " << vname;
+		LOG(logINFO) << "Virtual File: " << vname;
 	}
 	HDF5FileStatic::CreateVirtualDataFile(vname,
 			virtualfd, masterFileName,

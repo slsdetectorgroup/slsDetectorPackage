@@ -4,7 +4,7 @@
 
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outputMax,
         int inputValue, int* outputValue) {
-    FILE_LOG(logDEBUG1, (" Input Value: %d (Input:(%d - %d), Output:(%d - %d))\n",
+    LOG(logDEBUG1, (" Input Value: %d (Input:(%d - %d), Output:(%d - %d))\n",
             inputValue, inputMin, inputMax, outputMin, outputMax));
 
     // validate within bounds
@@ -16,7 +16,7 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outpu
         bigger = inputMin;
     }
     if ((inputValue < smaller) || (inputValue > bigger)) {
-        FILE_LOG(logERROR, ("Input Value is outside bounds (%d to %d): %d\n", smaller, bigger, inputValue));
+        LOG(logERROR, ("Input Value is outside bounds (%d to %d): %d\n", smaller, bigger, inputValue));
         *outputValue = -1;
         return FAIL;
     }
@@ -30,7 +30,7 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin, int outpu
     }
     *outputValue = value;
 
-    FILE_LOG(logDEBUG1, (" Converted Output Value: %d\n", *outputValue));
+    LOG(logDEBUG1, (" Converted Output Value: %d\n", *outputValue));
     return OK;
 }
 

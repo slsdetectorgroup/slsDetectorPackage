@@ -5,7 +5,8 @@
 #include "container_utils.h"
 
 #include <csignal>	    //SIGINT
-#include <syscall.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 #include <semaphore.h>
 
 sem_t semaphore;
@@ -19,7 +20,7 @@ int main(int argc, char *argv[]) {
 
 	sem_init(&semaphore,1,0);
 
-	FILE_LOG(logINFOBLUE) << "Created [ Tid: " << syscall(SYS_gettid) << " ]";
+	LOG(logINFOBLUE) << "Created [ Tid: " << syscall(SYS_gettid) << " ]";
 
 	// Catch signal SIGINT to close files and call destructors properly
 	struct sigaction sa;
@@ -27,7 +28,7 @@ int main(int argc, char *argv[]) {
 	sa.sa_handler=sigInterruptHandler;		// handler function
 	sigemptyset(&sa.sa_mask);				// dont block additional signals during invocation of handler
 	if (sigaction(SIGINT, &sa, nullptr) == -1) {
-		FILE_LOG(logERROR) << "Could not set handler function for SIGINT";
+		LOG(logERROR) << "Could not set handler function for SIGINT";
 	}
 
 
@@ -38,22 +39,22 @@ int main(int argc, char *argv[]) {
 	asa.sa_handler=SIG_IGN;					// handler function
 	sigemptyset(&asa.sa_mask);				// dont block additional signals during invocation of handler
 	if (sigaction(SIGPIPE, &asa, nullptr) == -1) {
-		FILE_LOG(logERROR) << "Could not set handler function for SIGPIPE";
+		LOG(logERROR) << "Could not set handler function for SIGPIPE";
 	}
 
 	std::unique_ptr<Receiver> receiver = nullptr;
 	try {
 		receiver = sls::make_unique<Receiver>(argc, argv);
 	} catch (...) {
-		FILE_LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
+		LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
 		throw;
 	}
 
-	FILE_LOG(logINFO) << "[ Press \'Ctrl+c\' to exit ]";
+	LOG(logINFO) << "[ Press \'Ctrl+c\' to exit ]";
 	sem_wait(&semaphore);
 	sem_destroy(&semaphore);
-	FILE_LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
-	FILE_LOG(logINFO) << "Exiting Receiver";
+	LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
+	LOG(logINFO) << "Exiting Receiver";
 	return 0;
 }
 

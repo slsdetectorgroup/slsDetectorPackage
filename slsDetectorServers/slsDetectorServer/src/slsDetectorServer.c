@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
 #elif MOENCHD
 		version = APIMOENCH;
 #endif
-		FILE_LOG(logINFO, ("SLS Detector Server %s (0x%x)\n", GITBRANCH, version));
+		LOG(logINFO, ("SLS Detector Server %s (0x%x)\n", GITBRANCH, version));
 	}
 
     int portno = DEFAULT_PORTNO;
@@ -62,39 +62,39 @@ int main(int argc, char *argv[]){
 		int i;
 		for (i = 1; i < argc; ++i) {
 			if(!strcasecmp(argv[i],"-stopserver")) {
-				FILE_LOG(logINFO, ("Detected stop server\n"));
+				LOG(logINFO, ("Detected stop server\n"));
 				isControlServer = 0;
 			}
             else if(!strcasecmp(argv[i],"-devel")){
-                FILE_LOG(logINFO, ("Detected developer mode\n"));
+                LOG(logINFO, ("Detected developer mode\n"));
                 debugflag = 1;
             }
             else if(!strcasecmp(argv[i],"-nomodule")){
-                FILE_LOG(logINFO, ("Detected No Module mode\n"));
+                LOG(logINFO, ("Detected No Module mode\n"));
                 checkModuleFlag = 0;
             }	
 			else if(!strcasecmp(argv[i],"-port")){
 			    if ((i + 1) >= argc) {
-			        FILE_LOG(logERROR, ("no port value given. Exiting.\n"));
+			        LOG(logERROR, ("no port value given. Exiting.\n"));
 			        return -1;
 			    }
 			    if (sscanf(argv[i + 1], "%d", &portno) == 0) {
-			        FILE_LOG(logERROR, ("cannot decode port value %s. Exiting.\n", argv[i + 1]));
+			        LOG(logERROR, ("cannot decode port value %s. Exiting.\n", argv[i + 1]));
 			        return -1;
 			    }
-				FILE_LOG(logINFO, ("Detected port: %d\n", portno));
+				LOG(logINFO, ("Detected port: %d\n", portno));
             }
 #ifdef GOTTHARDD
 			else if(!strcasecmp(argv[i],"-phaseshift")){
 			    if ((i + 1) >= argc) {
-			        FILE_LOG(logERROR, ("no phase shift value given. Exiting.\n"));
+			        LOG(logERROR, ("no phase shift value given. Exiting.\n"));
 			        return -1;
 			    }
 			    if (sscanf(argv[i + 1], "%d", &phaseShift) == 0) {
-			        FILE_LOG(logERROR, ("cannot decode phase shift value %s. Exiting.\n", argv[i + 1]));
+			        LOG(logERROR, ("cannot decode phase shift value %s. Exiting.\n", argv[i + 1]));
 			        return -1;
 			    }
-				FILE_LOG(logINFO, ("Detected phase shift of %d\n", phaseShift));
+				LOG(logINFO, ("Detected phase shift of %d\n", phaseShift));
 			}
 #endif
 		}
@@ -105,19 +105,19 @@ int main(int argc, char *argv[]){
 	memset(cmd, 0, 100);
 #endif
 	if (isControlServer) {
-		FILE_LOG(logINFO, ("Opening control server on port %d \n", portno));
+		LOG(logINFO, ("Opening control server on port %d \n", portno));
 #ifdef STOP_SERVER
 		{
 			int i;
 			for (i = 0; i < argc; ++i)
 				sprintf(cmd, "%s %s", cmd, argv[i]);
 			sprintf(cmd,"%s -stopserver -port %d &", cmd, portno + 1);
-			FILE_LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
+			LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
 			system(cmd);
 		}
 #endif
 	} else {
-		FILE_LOG(logINFO,("Opening stop server on port %d \n", portno));
+		LOG(logINFO,("Opening stop server on port %d \n", portno));
 	}
 
 	init_detector();
@@ -132,9 +132,9 @@ int main(int argc, char *argv[]){
 	function_table();
 
 	if (isControlServer) {
-		FILE_LOG(logINFOBLUE, ("Control Server Ready...\n\n"));
+		LOG(logINFOBLUE, ("Control Server Ready...\n\n"));
 	} else {
-		FILE_LOG(logINFO, ("Stop Server Ready...\n\n"));
+		LOG(logINFO, ("Stop Server Ready...\n\n"));
 	}
 
 	// waits for connection
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]){
 	exitServer(sockfd);
 
 	if (retval == REBOOT) {
-		FILE_LOG(logINFORED,("Rebooting!\n"));
+		LOG(logINFORED,("Rebooting!\n"));
 		fflush(stdout);
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 		rebootNiosControllerAndFPGA();
@@ -157,6 +157,6 @@ int main(int argc, char *argv[]){
 		system("reboot");
 #endif
 	}
-	FILE_LOG(logINFO,("Goodbye!\n"));
+	LOG(logINFO,("Goodbye!\n"));
 	return 0;
 }

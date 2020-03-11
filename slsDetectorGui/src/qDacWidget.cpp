@@ -37,7 +37,7 @@ void qDacWidget::SetDetectorIndex(int id) {
 }
 
 void qDacWidget::GetDac() {
-    FILE_LOG(logDEBUG) << "Getting Dac " << index;
+    LOG(logDEBUG) << "Getting Dac " << index;
 
     disconnect(spinDac, SIGNAL(editingFinished()), this, SLOT(SetDac()));
     try {
@@ -56,7 +56,7 @@ void qDacWidget::GetDac() {
 
 void qDacWidget::SetDac() {
     int val = (int)spinDac->value();
-    FILE_LOG(logINFO) << "Setting dac:" << lblDac->text().toAscii().data()
+    LOG(logINFO) << "Setting dac:" << lblDac->text().toAscii().data()
                       << " : " << val;
 
     try {
@@ -70,7 +70,7 @@ void qDacWidget::SetDac() {
 }
 
 void qDacWidget::GetAdc() {
-    FILE_LOG(logDEBUG) << "Getting ADC " << index;
+    LOG(logDEBUG) << "Getting ADC " << index;
 
     try {
         auto retval = det->getTemperature(index, {detectorIndex}).squash(-1);

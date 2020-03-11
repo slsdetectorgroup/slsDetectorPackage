@@ -6,7 +6,7 @@ qTabDeveloper::qTabDeveloper(QWidget *parent, sls::Detector *detector)
     : QWidget(parent), det(detector) {
     setupUi(this);
     SetupWidgetWindow();
-    FILE_LOG(logDEBUG) << "Developer ready";
+    LOG(logDEBUG) << "Developer ready";
 }
 
 qTabDeveloper::~qTabDeveloper() {}
@@ -295,7 +295,7 @@ void qTabDeveloper::Initialization() {
 }
 
 void qTabDeveloper::PopulateDetectors() {
-    FILE_LOG(logDEBUG) << "Populating detectors";
+    LOG(logDEBUG) << "Populating detectors";
 
     comboDetector->clear();
     comboDetector->addItem("All");
@@ -312,7 +312,7 @@ void qTabDeveloper::GetHighVoltage() {
     // not enabled for eiger
     if (!comboHV->isVisible() && !spinHV->isVisible())
         return;
-    FILE_LOG(logDEBUG) << "Getting High Voltage";
+    LOG(logDEBUG) << "Getting High Voltage";
     disconnect(spinHV, SIGNAL(editingFinished()), this, SLOT(SetHighVoltage()));
     disconnect(comboHV, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetHighVoltage()));
@@ -368,7 +368,7 @@ void qTabDeveloper::GetHighVoltage() {
 void qTabDeveloper::SetHighVoltage() {
     int val = (comboHV->isVisible() ? comboHV->currentText().toInt()
                                     : spinHV->value());
-    FILE_LOG(logINFO) << "Setting high voltage:" << val;
+    LOG(logINFO) << "Setting high voltage:" << val;
 
     try {
         det->setHighVoltage({comboDetector->currentIndex() - 1});
@@ -594,7 +594,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
 }
 
 void qTabDeveloper::Refresh() {
-    FILE_LOG(logDEBUG) << "**Updating Developer Tab\n";
+    LOG(logDEBUG) << "**Updating Developer Tab\n";
     for (const auto &it : dacWidgets) {
         it->SetDetectorIndex(comboDetector->currentIndex() - 1);
     }
@@ -602,5 +602,5 @@ void qTabDeveloper::Refresh() {
         it->SetDetectorIndex(comboDetector->currentIndex() - 1);
     }
     GetHighVoltage();
-    FILE_LOG(logDEBUG) << "**Updated Developer Tab";
+    LOG(logDEBUG) << "**Updated Developer Tab";
 }

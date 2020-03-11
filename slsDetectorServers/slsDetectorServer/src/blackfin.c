@@ -44,7 +44,7 @@ int64_t get64BitReg(int aLSB, int aMSB){
 	vMSB=bus_r(aMSB);
 	v64=vMSB;
 	v64=(v64<<32) | vLSB;
-	FILE_LOG(logDEBUG5, (" reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, (long long unsigned int)v64));
+	LOG(logDEBUG5, (" reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, (long long unsigned int)v64));
 	return v64;
 }
 
@@ -94,33 +94,33 @@ u_int32_t writeRegister16(u_int32_t offset, u_int32_t data) {
 int mapCSP0(void) {
 	// if not mapped
 	if (csp0base == 0) {
-	    FILE_LOG(logINFO, ("Mapping memory\n"));
+	    LOG(logINFO, ("Mapping memory\n"));
 #ifdef VIRTUAL
 		csp0base = malloc(MEM_SIZE);
 		if (csp0base == NULL) {
-		    FILE_LOG(logERROR, ("Could not allocate virtual memory.\n"));
+		    LOG(logERROR, ("Could not allocate virtual memory.\n"));
 		    return FAIL;
 		}
-		FILE_LOG(logINFO, ("memory allocated\n"));
+		LOG(logINFO, ("memory allocated\n"));
 #else
 		int fd;
 		fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
 		if (fd == -1) {
-		    FILE_LOG(logERROR, ("Can't find /dev/mem\n"));
+		    LOG(logERROR, ("Can't find /dev/mem\n"));
 			return FAIL;
 		}
-		FILE_LOG(logDEBUG1, ("/dev/mem opened\n"));
+		LOG(logDEBUG1, ("/dev/mem opened\n"));
 		csp0base = mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
 		if (csp0base == MAP_FAILED) {
-		    FILE_LOG(logERROR, ("Can't map memmory area\n"));
+		    LOG(logERROR, ("Can't map memmory area\n"));
 			return FAIL;
 		}
 #endif
-		FILE_LOG(logINFO, ("csp0base mapped from %p to %p\n",
+		LOG(logINFO, ("csp0base mapped from %p to %p\n",
 				csp0base, (csp0base + MEM_SIZE)));
-		FILE_LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
+		LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
 	}else
-	    FILE_LOG(logINFO, ("Memory already mapped before\n"));
+	    LOG(logINFO, ("Memory already mapped before\n"));
 	return OK;
 }
 

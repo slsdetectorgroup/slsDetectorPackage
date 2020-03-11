@@ -43,7 +43,7 @@ void File::resetSubFileIndex(){
 }
 
 void File::PrintMembers(TLogLevel level) {
-	FILE_LOG(level) << "\nGeneral Writer Variables:" << std::endl
+	LOG(level) << "\nGeneral Writer Variables:" << std::endl
 			<< "Index: " << index << std::endl
 			<< "Max Frames Per File: " << *maxFramesPerFile << std::endl
 			<< "Number of Detectors in x dir: " << numDetX << std::endl

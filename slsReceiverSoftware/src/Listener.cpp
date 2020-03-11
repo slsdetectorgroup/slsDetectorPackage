@@ -56,7 +56,7 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>*
 		numFramesStatistic(0),
 		oddStartingPacket(true)
 {
-	FILE_LOG(logDEBUG) << "Listener " << ind << " created";
+	LOG(logDEBUG) << "Listener " << ind << " created";
 }
 
 
@@ -137,7 +137,7 @@ void Listener::RecordFirstIndex(uint64_t fnum) {
 
 	if(!(*silentMode)) {
 		if (!index) {
-			FILE_LOG(logINFOBLUE) << index <<
+			LOG(logINFOBLUE) << index <<
 					" First Index: " << firstIndex;
 		}
 	}
@@ -160,7 +160,7 @@ void Listener::CreateUDPSockets() {
 	    (*eth) = "";
 	}
 	if (!(*eth).length()) {
-		FILE_LOG(logWARNING) << "eth is empty. Listening to all";
+		LOG(logWARNING) << "eth is empty. Listening to all";
 	}
 
 	ShutDownUDPSocket();
@@ -169,7 +169,7 @@ void Listener::CreateUDPSockets() {
 	    udpSocket = sls::make_unique<SELECTED_SOCKET>(*udpPortNumber, genericSocket::UDP,
 				generalData->packetSize, ((*eth).length() ? (*eth).c_str() : nullptr), generalData->headerPacketSize,
 				*udpSocketBufferSize);
-		FILE_LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
+		LOG(logINFO) << index << ": UDP port opened at port " << *udpPortNumber;
 	} catch (...) {
 		throw sls::RuntimeError("Could not create UDP socket on port "+ std::to_string(*udpPortNumber));
 	}
@@ -187,7 +187,7 @@ void Listener::ShutDownUDPSocket() {
 	if(udpSocket){
 		udpSocketAlive = false;
 		udpSocket->ShutDownSocket();
-		FILE_LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
+		LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
 		fflush(stdout);
 		// wait only if the threads have started as it is the threads that
 		//give a post to semaphore(at stopListening)
@@ -199,7 +199,7 @@ void Listener::ShutDownUDPSocket() {
 
 
 void Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
-    FILE_LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port " << *udpPortNumber;
+    LOG(logINFO) << "Testing UDP Socket Buffer size " << s << " with test port " << *udpPortNumber;
 
     if (!(*activated)) {
     	*actualUDPSocketBufferSize = (s*2);
@@ -243,12 +243,12 @@ void Listener::ThreadExecution() {
 	int rc = 0;
 
 	fifo->GetNewAddress(buffer);
-	FILE_LOG(logDEBUG5) << "Listener " << index << ", "
+	LOG(logDEBUG5) << "Listener " << index << ", "
 			"pop 0x" << std::hex << (void*)(buffer) << std::dec << ":" << buffer;
 
 	//udpsocket doesnt exist
 	if (*activated && !udpSocketAlive && !carryOverFlag) {
-		//FILE_LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not created or shut down earlier";
+		//LOG(logERROR) << "Listening_Thread " << index << ": UDP Socket not created or shut down earlier";
 		(*((uint32_t*)buffer)) = 0;
 		StopListening(buffer);
 		return;
@@ -272,7 +272,7 @@ void Listener::ThreadExecution() {
 
 	// discarding image
 	else if (rc < 0) {
-		FILE_LOG(logDEBUG) <<  index << " discarding fnum:" << currentFrameIndex;
+		LOG(logDEBUG) <<  index << " discarding fnum:" << currentFrameIndex;
 		fifo->FreeAddress(buffer);
 		currentFrameIndex++;
 		return;
@@ -303,8 +303,8 @@ void Listener::StopListening(char* buf) {
 	StopRunning();
 
 	 sem_post(&semaphore_socket);
-	 FILE_LOG(logDEBUG1) << index << ": Listening Packets (" << *udpPortNumber << ") : " << numPacketsCaught;
-	 FILE_LOG(logDEBUG1) << index << ": Listening Completed";
+	 LOG(logDEBUG1) << index << ": Listening Packets (" << *udpPortNumber << ") : " << numPacketsCaught;
+	 LOG(logDEBUG1) << index << ": Listening Completed";
 }
 
 
@@ -356,7 +356,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 	//look for carry over
 	if (carryOverFlag) {
-		FILE_LOG(logDEBUG3) << index << "carry flag";
+		LOG(logDEBUG3) << index << "carry flag";
 		//check if its the current image packet
 		// -------------------------- new header ----------------------------------------------------------------------
 		if (standardheader) {
@@ -371,7 +371,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 		//------------------------------------------------------------------------------------------------------------
 		if (fnum != currentFrameIndex) {
 			if (fnum < currentFrameIndex) {
-				FILE_LOG(logERROR) << "(Weird), With carry flag: Frame number " <<
+				LOG(logERROR) << "(Weird), With carry flag: Frame number " <<
 						fnum << " less than current frame number " << currentFrameIndex;
 				carryOverFlag = false;		
 				return 0;
@@ -492,7 +492,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		// Eiger Firmware in a weird state
 		if (myDetectorType == EIGER && fnum == 0) {
-			FILE_LOG(logERROR) << "[" << *udpPortNumber << "]: Got Frame Number "
+			LOG(logERROR) << "[" << *udpPortNumber << "]: Got Frame Number "
 					"Zero from Firmware. Discarding Packet";
 			numPacketsCaught--;
 			return 0;
@@ -500,14 +500,14 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 		lastCaughtFrameIndex = fnum;
 
-		FILE_LOG(logDEBUG5) << "Listening " << index << ": currentfindex:" << currentFrameIndex <<
+		LOG(logDEBUG5) << "Listening " << index << ": currentfindex:" << currentFrameIndex <<
 				", fnum:" << fnum << ", pnum:" << pnum << ", numpackets:" << numpackets;
 
 		if (!startedFlag)
 			RecordFirstIndex(fnum);
 
         if (pnum >= pperFrame ) {
-            FILE_LOG(logERROR) << "Bad packet " << pnum <<
+            LOG(logERROR) << "Bad packet " << pnum <<
                     "(fnum: " << fnum << "), throwing away. "
                     "Packets caught so far: " << numpackets;
           return 0;   // bad packet
@@ -587,7 +587,7 @@ uint32_t Listener::ListenToAnImage(char* buf) {
 
 
 void Listener::PrintFifoStatistics() {
-	FILE_LOG(logDEBUG1) << "numFramesStatistic:" << numFramesStatistic << " numPacketsStatistic:" << numPacketsStatistic;
+	LOG(logDEBUG1) << "numFramesStatistic:" << numFramesStatistic << " numPacketsStatistic:" << numPacketsStatistic;
 
 	//calculate packet loss
 	int64_t loss = (numFramesStatistic*(generalData->packetsPerFrame)) - numPacketsStatistic;
@@ -595,7 +595,7 @@ void Listener::PrintFifoStatistics() {
 	numFramesStatistic = 0;
 
 	const auto color = loss ? logINFORED : logINFOGREEN;
-	FILE_LOG(color) << "[" << *udpPortNumber << "]:  "
+	LOG(color) << "[" << *udpPortNumber << "]:  "
 			"Packet_Loss:" << loss <<
 			"  Used_Fifo_Max_Level:" << fifo->GetMaxLevelForFifoBound() <<
 			" \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree() <<

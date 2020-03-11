@@ -108,7 +108,7 @@ public:
 				fd = 0;
 			}
 		} catch(const Exception& error) {
-			FILE_LOG(logERROR) << "Could not close HDF5 handles of index " << ind;
+			LOG(logERROR) << "Could not close HDF5 handles of index " << ind;
 			error.printErrorStack();
 		}
 	}
@@ -126,7 +126,7 @@ public:
 				fd = 0;
 			}
 		} catch(const Exception& error) {
-			FILE_LOG(logERROR) << "Could not close master HDF5 handles";
+			LOG(logERROR) << "Could not close master HDF5 handles";
 			error.printErrorStack();
 		}
 	}
@@ -140,7 +140,7 @@ public:
 	{
 		if(fd) {
 			if (H5Fclose(fd) < 0 ) {
-				FILE_LOG(logERROR) << "Could not close virtual HDF5 handles";
+				LOG(logERROR) << "Could not close virtual HDF5 handles";
 			}
 			fd = 0;
 		}
@@ -173,7 +173,7 @@ public:
 			memspace.close();
 		}
 		catch(const Exception& error){
-			FILE_LOG(logERROR) << "Could not write to file in object " << ind;
+			LOG(logERROR) << "Could not write to file in object " << ind;
 			error.printErrorStack();
 			throw RuntimeError("Could not write to file in object " + std::to_string(ind));
 		}
@@ -659,7 +659,7 @@ public:
 					std::string srcFileName = HDF5FileStatic::CreateFileName(fpath, fnameprefix, findex,
 							j, dindex, numunits, i);
 
-					FILE_LOG(logERROR) << srcFileName;
+					LOG(logERROR) << srcFileName;
 					// find relative path
 					std::string relative_srcFileName = srcFileName;
 					{
@@ -774,17 +774,17 @@ public:
 			throw RuntimeError("Invalid rank. Options: 2 or 3");
 		}
 		if (datatype == PredType::STD_U16LE) {
-			FILE_LOG(logINFO) << "datatype:16";
+			LOG(logINFO) << "datatype:16";
 		} else if (datatype == PredType::STD_U32LE) {
-			FILE_LOG(logINFO) << "datatype:32";
+			LOG(logINFO) << "datatype:32";
 		} else if (datatype == PredType::STD_U64LE) {
-			FILE_LOG(logINFO) << "datatype:64";
+			LOG(logINFO) << "datatype:64";
 		} else if (datatype == PredType::STD_U8LE) {
-			FILE_LOG(logINFO) << "datatype:8";
+			LOG(logINFO) << "datatype:8";
 		} else {
 			throw RuntimeError("Unknown datatype:" + std::to_string(datatype));
 		}
-		FILE_LOG(logINFO) << "owenable:" << (owenable?1:0) << std::endl
+		LOG(logINFO) << "owenable:" << (owenable?1:0) << std::endl
 				<< "oldFileName:" << oldFileName << std::endl
 				<< "oldDatasetName:" << oldDatasetName << std::endl
 				<< "newFileName:" << newFileName << std::endl

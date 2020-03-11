@@ -1,18 +1,13 @@
 #include "logger.h"
-#include "logger2.h"
-
 #include <iostream>
 #include <chrono>
 int main() {
 
     //compare old and new
     std::cout << "Compare output between old and new:\n";
-    FILE_LOG(logINFO) << "Old message";
-    LOG(logINFO) << "New message";
-    FILE_LOG(logERROR) << "Old error";
-    LOG(logERROR) << "New error";
-    FILE_LOG(logWARNING) << "Old warning";
-    LOG(logWARNING) << "New warning";
+    LOG(logINFO) << "Some info message";
+    LOG(logERROR) << "This is an error";
+    LOG(logWARNING) << "While this is only a warning";
 
     //Logging level can be configure at runtime
     std::cout << "\n\n";

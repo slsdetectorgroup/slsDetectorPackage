@@ -26,10 +26,10 @@ int	loadDefaultPattern(char* fname) {
     if(fd == NULL) {
 		sprintf(initErrorMessage, "Could not open pattern file [%s].\n", fname);
 		initError = FAIL;		
-		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+		LOG(logERROR, ("%s\n\n", initErrorMessage));
         return FAIL;
     }
-    FILE_LOG(logINFOBLUE, ("Reading default pattern file %s\n", fname));
+    LOG(logINFOBLUE, ("Reading default pattern file %s\n", fname));
 
 
     // Initialization
@@ -43,17 +43,17 @@ int	loadDefaultPattern(char* fname) {
 
 		// ignore comments
         if (line[0] == '#') {
-			FILE_LOG(logDEBUG1, ("Ignoring Comment\n"));
+			LOG(logDEBUG1, ("Ignoring Comment\n"));
             continue;
 		}
 
 		// ignore empty lines
 		if (strlen(line) <= 1) {
-			FILE_LOG(logDEBUG1, ("Ignoring Empty line\n"));
+			LOG(logDEBUG1, ("Ignoring Empty line\n"));
 			continue;
 		}
 
-		FILE_LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", 
+		LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", 
             strlen(line), strlen(line) -1, line));
 		memset(command, 0, LZ);
 
@@ -259,9 +259,9 @@ int	loadDefaultPattern(char* fname) {
 
 	if (strlen(initErrorMessage)) {
 		initError = FAIL;		
-		FILE_LOG(logERROR, ("%s\n\n", initErrorMessage));
+		LOG(logERROR, ("%s\n\n", initErrorMessage));
 	} else {
-		FILE_LOG(logINFOBLUE, ("Successfully read default pattern file\n"));
+		LOG(logINFOBLUE, ("Successfully read default pattern file\n"));
 	}
     return initError;
 }

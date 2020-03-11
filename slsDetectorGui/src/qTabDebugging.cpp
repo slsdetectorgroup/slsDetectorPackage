@@ -11,7 +11,7 @@ qTabDebugging::qTabDebugging(QWidget *parent, sls::Detector *detector)
       lblDetectorSoftware(nullptr) {
     setupUi(this);
     SetupWidgetWindow();
-    FILE_LOG(logDEBUG) << "Debugging ready";
+    LOG(logDEBUG) << "Debugging ready";
 }
 
 qTabDebugging::~qTabDebugging() {
@@ -47,7 +47,7 @@ void qTabDebugging::Initialization() {
 }
 
 void qTabDebugging::PopulateDetectors() {
-    FILE_LOG(logDEBUG) << "Populating detectors";
+    LOG(logDEBUG) << "Populating detectors";
 
     comboDetector->clear();
     auto res = det->getHostname();
@@ -57,7 +57,7 @@ void qTabDebugging::PopulateDetectors() {
 }
 
 void qTabDebugging::GetDetectorStatus() {
-    FILE_LOG(logDEBUG) << "Getting Status";
+    LOG(logDEBUG) << "Getting Status";
 
     try {
         std::string status = sls::ToString(
@@ -69,7 +69,7 @@ void qTabDebugging::GetDetectorStatus() {
 }
 
 void qTabDebugging::GetInfo() {
-    FILE_LOG(logDEBUG) << "Getting Readout Info";
+    LOG(logDEBUG) << "Getting Readout Info";
 
     // open info in a new popup
     QFrame *popup1 = new QFrame(this, Qt::Popup | Qt::SubWindow);
@@ -190,7 +190,7 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item) {
 }
 
 void qTabDebugging::TestDetector() {
-    FILE_LOG(logINFO) << "Testing Readout";
+    LOG(logINFO) << "Testing Readout";
 
     try {
         QString moduleName = "Module";
@@ -208,7 +208,7 @@ void qTabDebugging::TestDetector() {
                 det->executeFirmwareTest({comboDetector->currentIndex()});
                 message.append(QString("<nobr>%1 Firmware: PASS</nobr><br>")
                                    .arg(moduleName));
-                FILE_LOG(logINFO) << "Detector Firmware Test: Pass";
+                LOG(logINFO) << "Detector Firmware Test: Pass";
             }
             CATCH_DISPLAY("Firmware test failed.",
                           "qTabDebugging::TestDetector")
@@ -220,7 +220,7 @@ void qTabDebugging::TestDetector() {
                 det->executeBusTest({comboDetector->currentIndex()});
                 message.append(
                     QString("<nobr>%1 Bus: PASS</nobr><br>").arg(moduleName));
-                FILE_LOG(logINFO) << "Detector Bus Test: Pass";
+                LOG(logINFO) << "Detector Bus Test: Pass";
             }
             CATCH_DISPLAY("Bus test failed.", "qTabDebugging::TestDetector")
         }
@@ -234,7 +234,7 @@ void qTabDebugging::TestDetector() {
 }
 
 void qTabDebugging::Refresh() {
-    FILE_LOG(logDEBUG) << "**Updating Debugging Tab";
+    LOG(logDEBUG) << "**Updating Debugging Tab";
     GetDetectorStatus();
-    FILE_LOG(logDEBUG) << "**Updated Debugging Tab";
+    LOG(logDEBUG) << "**Updated Debugging Tab";
 }

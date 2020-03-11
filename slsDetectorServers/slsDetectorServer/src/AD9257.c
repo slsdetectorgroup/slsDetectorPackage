@@ -163,7 +163,7 @@ int AD9257_GetVrefVoltage(int mV) {
 		case 4:
 			return 2000;
 		default:
-			FILE_LOG(logERROR, ("Could not convert Adc Vpp from mode to mV\n"));
+			LOG(logERROR, ("Could not convert Adc Vpp from mode to mV\n"));
 			return -1;
 	}
 }
@@ -190,7 +190,7 @@ int AD9257_SetVrefVoltage(int val, int mV) {
 				break;
 			// validation for mV
 			default:
-				FILE_LOG(logERROR, ("mv:%d doesnt exist\n", val));
+				LOG(logERROR, ("mv:%d doesnt exist\n", val));
 				return FAIL;
 		}
 	} 
@@ -198,19 +198,19 @@ int AD9257_SetVrefVoltage(int val, int mV) {
 	// validation for mode
 	switch(mode) {
 		case 0:
-			FILE_LOG(logINFO, ("Setting ADC Vref to 1.0 V (Mode:%d)\n", mode));
+			LOG(logINFO, ("Setting ADC Vref to 1.0 V (Mode:%d)\n", mode));
 			break;
 		case 1:
-			FILE_LOG(logINFO, ("Setting ADC Vref to 1.14 V (Mode:%d)\n", mode));
+			LOG(logINFO, ("Setting ADC Vref to 1.14 V (Mode:%d)\n", mode));
 			break;
 		case 2:
-			FILE_LOG(logINFO, ("Setting ADC Vref to 1.33 V (Mode:%d)\n", mode));
+			LOG(logINFO, ("Setting ADC Vref to 1.33 V (Mode:%d)\n", mode));
 			break;
 		case 3:
-			FILE_LOG(logINFO, ("Setting ADC Vref to 1.6 V (Mode:%d)\n", mode));
+			LOG(logINFO, ("Setting ADC Vref to 1.6 V (Mode:%d)\n", mode));
 			break;
 		case 4:
-			FILE_LOG(logINFO, ("Setting ADC Vref to 2.0 V (Mode:%d)\n", mode));
+			LOG(logINFO, ("Setting ADC Vref to 2.0 V (Mode:%d)\n", mode));
 			break;
 		default:
 			return FAIL;
@@ -225,32 +225,32 @@ void AD9257_Set(int addr, int val) {
 
 	u_int32_t codata;
 	codata = val + (addr << 8);
-	FILE_LOG(logINFO, ("\tSetting ADC SPI Register. Wrote 0x%04x at 0x%04x\n", val, addr));
+	LOG(logINFO, ("\tSetting ADC SPI Register. Wrote 0x%04x at 0x%04x\n", val, addr));
 	serializeToSPI(AD9257_Reg, codata, AD9257_CsMask, AD9257_ADC_NUMBITS,
 	        AD9257_ClkMask, AD9257_DigMask, AD9257_DigOffset, 0);
 }
 
 void AD9257_Configure(){
-    FILE_LOG(logINFOBLUE, ("Configuring ADC9257:\n"));
+    LOG(logINFOBLUE, ("Configuring ADC9257:\n"));
 
 	//power mode reset
-    FILE_LOG(logINFO, ("\tPower mode reset\n"));
+    LOG(logINFO, ("\tPower mode reset\n"));
     AD9257_Set(AD9257_POWER_MODE_REG, AD9257_INT_RESET_VAL);
 
 	//power mode chip run
-	FILE_LOG(logINFO, ("\tPower mode chip run\n"));
+	LOG(logINFO, ("\tPower mode chip run\n"));
 	AD9257_Set(AD9257_POWER_MODE_REG, AD9257_INT_CHIP_RUN_VAL);
 
 	// binary offset, lvds-iee reduced
-    FILE_LOG(logINFO, ("\tBinary offset, Lvds-ieee reduced\n"));
+    LOG(logINFO, ("\tBinary offset, Lvds-ieee reduced\n"));
     AD9257_Set(AD9257_OUT_MODE_REG, AD9257_OUT_BINARY_OFST_VAL | AD9257_OUT_LVDS_IEEE_VAL);
 
     //output clock phase
-    FILE_LOG(logINFO, ("\tOutput clock phase: 180\n"));
+    LOG(logINFO, ("\tOutput clock phase: 180\n"));
 	AD9257_Set(AD9257_OUT_PHASE_REG, AD9257_OUT_CLK_180_VAL);
 
 	// all devices on chip to receive next command
-	FILE_LOG(logINFO, ("\tAll devices on chip to receive next command\n"));
+	LOG(logINFO, ("\tAll devices on chip to receive next command\n"));
 	AD9257_Set(AD9257_DEV_IND_2_REG,
 			AD9257_CHAN_H_MSK | AD9257_CHAN_G_MSK | AD9257_CHAN_F_MSK | AD9257_CHAN_E_MSK);
 
@@ -260,21 +260,21 @@ void AD9257_Configure(){
 
 	// vref
 #ifdef GOTTHARDD
-	FILE_LOG(logINFO, ("\tVref default at 2.0\n"));
+	LOG(logINFO, ("\tVref default at 2.0\n"));
 	AD9257_SetVrefVoltage(AD9257_VREF_DEFAULT_VAL, 0);
 #else
-	FILE_LOG(logINFO, ("\tVref 1.33\n"));
+	LOG(logINFO, ("\tVref 1.33\n"));
 	AD9257_SetVrefVoltage(AD9257_VREF_1_33_VAL, 0);
 #endif
 
 	// no test mode
-	FILE_LOG(logINFO, ("\tNo test mode\n"));
+	LOG(logINFO, ("\tNo test mode\n"));
 	AD9257_Set(AD9257_TEST_MODE_REG, AD9257_TST_OFF_VAL);
 
 #ifdef TESTADC
-	FILE_LOG(logINFOBLUE, ("Putting ADC in Test Mode!\n");
+	LOG(logINFOBLUE, ("Putting ADC in Test Mode!\n");
 	// mixed bit frequency test mode
-	FILE_LOG(logINFO, ("\tMixed bit frequency test mode\n"));
+	LOG(logINFO, ("\tMixed bit frequency test mode\n"));
 	AD9257_Set(AD9257_TEST_MODE_REG, AD9257_TST_MXD_BT_FRQ_VAL);
 #endif
 }

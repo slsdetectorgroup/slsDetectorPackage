@@ -46,7 +46,7 @@ void CmdProxy::Call(const std::string &command,
 bool CmdProxy::ReplaceIfDepreciated(std::string &command) {
     auto d_it = depreciated_functions.find(command);
     if (d_it != depreciated_functions.end()) {
-        FILE_LOG(logWARNING)
+        LOG(logWARNING)
             << command
             << " is depreciated and will be removed. Please migrate to: "
             << d_it->second;

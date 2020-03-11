@@ -204,17 +204,17 @@ public:
  		 // get host info into res
  		 int errcode = getaddrinfo (hostname, NULL, &hints, res);
  		 if (errcode != 0) {
- 			 FILE_LOG(logERROR) << "Error: Could not convert hostname " << hostname << " to internet address (zmq):"
+ 			 LOG(logERROR) << "Error: Could not convert hostname " << hostname << " to internet address (zmq):"
  					 << gai_strerror(errcode);
  		 } else {
  			 if (*res == NULL) {
- 				 FILE_LOG(logERROR) << "Could not convert hostname " << hostname << " to internet address (zmq): "
+ 				 LOG(logERROR) << "Could not convert hostname " << hostname << " to internet address (zmq): "
  						 "gettaddrinfo returned null";
  			 } else{
  				 return 0;
  			 }
  		 }
- 		 FILE_LOG(logERROR) << "Could not convert hostname to internet address";
+ 		 LOG(logERROR) << "Could not convert hostname to internet address";
  		 return 1;
  	};
 
@@ -232,7 +232,7 @@ public:
     		 freeaddrinfo(res);
     		 return 0;
     	 }
-    	 FILE_LOG(logERROR) << "Could not convert internet address to ip string";
+    	 LOG(logERROR) << "Could not convert internet address to ip string";
     	 return 1;
      }
 
@@ -381,7 +381,7 @@ public:
 		int length = zmq_msg_recv (&message, sockfd.socketDescriptor, 0);
 		if (length == -1) {
 			PrintError ();
-			FILE_LOG(logERROR) << "Could not read header for socket " << index;
+			LOG(logERROR) << "Could not read header for socket " << index;
 		}
 #ifdef VERBOSE
 		else
@@ -449,7 +449,7 @@ public:
             Document& document, bool& dummy, uint32_t version)
     {
         if ( document.Parse( buff, length).HasParseError() ) {
-            FILE_LOG(logERROR) << index << " Could not parse. len:" << length << ": Message:" << buff;
+            LOG(logERROR) << index << " Could not parse. len:" << length << ": Message:" << buff;
             fflush ( stdout );
             // char* buf =  (char*) zmq_msg_data (&message);
             for ( int i= 0; i < length; ++i ) {
@@ -461,7 +461,7 @@ public:
         }
 
         if (document["jsonversion"].GetUint() != version) {
-            FILE_LOG(logERROR) << "version mismatch. required " << version << ", got " << document["jsonversion"].GetUint();
+            LOG(logERROR) << "version mismatch. required " << version << ", got " << document["jsonversion"].GetUint();
             return 0;
         }
 
@@ -504,7 +504,7 @@ public:
         }
         //incorrect size (larger)
 		else {
-			FILE_LOG(logERROR) << "Received weird packet size " << length << " for socket " << index;
+			LOG(logERROR) << "Received weird packet size " << length << " for socket " << index;
 			memset(buf,0xFF,size);
 		}
 
@@ -520,52 +520,52 @@ public:
 	void PrintError () {
 		switch (errno) {
 		case EINVAL:
-			FILE_LOG(logERROR) << "The socket type/option or value/endpoint supplied is invalid (zmq)";
+			LOG(logERROR) << "The socket type/option or value/endpoint supplied is invalid (zmq)";
 			break;
 		case EAGAIN:
-			FILE_LOG(logERROR) << "Non-blocking mode was requested and the message cannot be sent/available at the moment (zmq)";
+			LOG(logERROR) << "Non-blocking mode was requested and the message cannot be sent/available at the moment (zmq)";
 			break;
 		case ENOTSUP:
-			FILE_LOG(logERROR) << "The zmq_send()/zmq_msg_recv() operation is not supported by this socket type (zmq)";
+			LOG(logERROR) << "The zmq_send()/zmq_msg_recv() operation is not supported by this socket type (zmq)";
 			break;
 		case EFSM:
-			FILE_LOG(logERROR) << "The zmq_send()/zmq_msg_recv() unavailable now as socket in inappropriate state (eg. ZMQ_REP). Look up messaging patterns (zmq)";
+			LOG(logERROR) << "The zmq_send()/zmq_msg_recv() unavailable now as socket in inappropriate state (eg. ZMQ_REP). Look up messaging patterns (zmq)";
 			break;
 		case EFAULT:
-			FILE_LOG(logERROR) << "The provided context/message is invalid (zmq)";
+			LOG(logERROR) << "The provided context/message is invalid (zmq)";
 			break;
 		case EMFILE:
-			FILE_LOG(logERROR) << "The limit on the total number of open ØMQ sockets has been reached (zmq)";
+			LOG(logERROR) << "The limit on the total number of open ØMQ sockets has been reached (zmq)";
 			break;
 		case EPROTONOSUPPORT:
-			FILE_LOG(logERROR) << "The requested transport protocol is not supported (zmq)";
+			LOG(logERROR) << "The requested transport protocol is not supported (zmq)";
 			break;
 		case ENOCOMPATPROTO:
-			FILE_LOG(logERROR) << "The requested transport protocol is not compatible with the socket type (zmq)";
+			LOG(logERROR) << "The requested transport protocol is not compatible with the socket type (zmq)";
 			break;
 		case EADDRINUSE:
-			FILE_LOG(logERROR) << "The requested address is already in use (zmq)";
+			LOG(logERROR) << "The requested address is already in use (zmq)";
 			break;
 		case EADDRNOTAVAIL:
-			FILE_LOG(logERROR) << "The requested address was not local (zmq)";
+			LOG(logERROR) << "The requested address was not local (zmq)";
 			break;
 		case ENODEV:
-			FILE_LOG(logERROR) << "The requested address specifies a nonexistent interface (zmq)";
+			LOG(logERROR) << "The requested address specifies a nonexistent interface (zmq)";
 			break;
 		case ETERM:
-			FILE_LOG(logERROR) << "The ØMQ context associated with the specified socket was terminated (zmq)";
+			LOG(logERROR) << "The ØMQ context associated with the specified socket was terminated (zmq)";
 			break;
 		case ENOTSOCK:
-			FILE_LOG(logERROR) << "The provided socket was invalid (zmq)";
+			LOG(logERROR) << "The provided socket was invalid (zmq)";
 			break;
 		case EINTR:
-			FILE_LOG(logERROR) << "The operation was interrupted by delivery of a signal (zmq)";
+			LOG(logERROR) << "The operation was interrupted by delivery of a signal (zmq)";
 			break;
 		case EMTHREAD:
-			FILE_LOG(logERROR) << "No I/O thread is available to accomplish the task (zmq)";
+			LOG(logERROR) << "No I/O thread is available to accomplish the task (zmq)";
 			break;
 		default:
-			FILE_LOG(logERROR) << "Unknown socket error (zmq)";
+			LOG(logERROR) << "Unknown socket error (zmq)";
 			break;
 		}
 	};

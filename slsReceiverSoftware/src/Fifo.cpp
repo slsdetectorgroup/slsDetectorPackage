@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-
+#include <unistd.h>
 
 Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth):
 		index(ind),
@@ -22,20 +22,20 @@ Fifo::Fifo(int ind, uint32_t fifoItemSize, uint32_t depth):
 		fifoDepth(depth),
 		status_fifoBound(0),
 		status_fifoFree(depth){
-	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	CreateFifos(fifoItemSize);
 }
 
 
 Fifo::~Fifo() {
-	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	DestroyFifos();
 }
 
 
 
 void Fifo::CreateFifos(uint32_t fifoItemSize) {
-	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	//destroy if not already
 	DestroyFifos();
@@ -55,7 +55,7 @@ void Fifo::CreateFifos(uint32_t fifoItemSize) {
 	for (size_t i = 0; i < mem_len; i += pagesize) {
 		strcpy(memory + i, "memory");
 	}	
-	FILE_LOG(logDEBUG) << "Memory Allocated " << index << ": " << (double)mem_len/(double)(1024 * 1024) << " MB";
+	LOG(logDEBUG) << "Memory Allocated " << index << ": " << (double)mem_len/(double)(1024 * 1024) << " MB";
 
 	{ //push free addresses into fifoFree fifo
 		char* buffer = memory;
@@ -65,12 +65,12 @@ void Fifo::CreateFifos(uint32_t fifoItemSize) {
 			buffer += fifoItemSize;
 		}
 	}
-	FILE_LOG(logINFO) << "Fifo " << index << " reconstructed Depth (rx_fifodepth): " << fifoFree->getDataValue();
+	LOG(logINFO) << "Fifo " << index << " reconstructed Depth (rx_fifodepth): " << fifoFree->getDataValue();
 }
 
 
 void Fifo::DestroyFifos(){
-	FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+	LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
 	if(memory) {
 		free(memory);

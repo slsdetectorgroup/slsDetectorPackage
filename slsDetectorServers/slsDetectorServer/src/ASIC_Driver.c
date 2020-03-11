@@ -20,7 +20,7 @@ char ASIC_Driver_DriverFileName[MAX_STR_LENGTH];
 
 
 void ASIC_Driver_SetDefines(char* driverfname) {
-    FILE_LOG(logINFOBLUE, ("Configuring ASIC Driver to %s\n", driverfname));
+    LOG(logINFOBLUE, ("Configuring ASIC Driver to %s\n", driverfname));
     memset(ASIC_Driver_DriverFileName, 0, MAX_STR_LENGTH);
     strcpy(ASIC_Driver_DriverFileName, driverfname);
 }
@@ -28,14 +28,14 @@ void ASIC_Driver_SetDefines(char* driverfname) {
 int ASIC_Driver_Set (int index, int length, char* buffer) {
     char fname[MAX_STR_LENGTH];
     sprintf(fname, "%s%d", ASIC_Driver_DriverFileName, index + 1);
-    FILE_LOG(logDEBUG2, ("\t[chip index: %d, length: %d, fname: %s]\n", index, length, fname)); 
+    LOG(logDEBUG2, ("\t[chip index: %d, length: %d, fname: %s]\n", index, length, fname)); 
     {
-        FILE_LOG(logDEBUG2, ("\t[values: \n"));
+        LOG(logDEBUG2, ("\t[values: \n"));
         int i;
         for (i = 0; i < length; ++i) {
-            FILE_LOG(logDEBUG2, ("\t%d: 0x%02hhx\n", i, buffer[i]));
+            LOG(logDEBUG2, ("\t%d: 0x%02hhx\n", i, buffer[i]));
         }
-        FILE_LOG(logDEBUG2, ("\t]\n"));
+        LOG(logDEBUG2, ("\t]\n"));
     }
     
 #ifdef VIRTUAL
@@ -43,7 +43,7 @@ int ASIC_Driver_Set (int index, int length, char* buffer) {
 #endif
     int fd=open(fname, O_RDWR);
     if (fd == -1) {
-        FILE_LOG(logERROR, ("Could not open file %s for writing to control ASIC (%d)\n", fname, index));
+        LOG(logERROR, ("Could not open file %s for writing to control ASIC (%d)\n", fname, index));
         return FAIL;
     }
 
@@ -56,7 +56,7 @@ int ASIC_Driver_Set (int index, int length, char* buffer) {
     // transfer command
     int status = ioctl(fd, SPI_IOC_MESSAGE(1), &transfer);
     if (status < 0) {
-        FILE_LOG(logERROR, ("Could not send command to ASIC\n"));
+        LOG(logERROR, ("Could not send command to ASIC\n"));
         perror("SPI_IOC_MESSAGE");
         close(fd);
         return FAIL;

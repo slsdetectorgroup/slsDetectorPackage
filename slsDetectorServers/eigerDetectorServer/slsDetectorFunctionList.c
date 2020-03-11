@@ -107,7 +107,7 @@ void basictests() {
 	initCheckDone = 0;
 	memset(initErrorMessage, 0, MAX_STR_LENGTH);
 #ifdef VIRTUAL
-	FILE_LOG(logINFOBLUE, ("************ EIGER Virtual Server *****************\n\n"));
+	LOG(logINFOBLUE, ("************ EIGER Virtual Server *****************\n\n"));
 #endif
 	uint32_t ipadd	= getDetectorIP();
 	uint64_t macadd	= getDetectorMAC();
@@ -116,7 +116,7 @@ void basictests() {
 	int64_t sw_fw_apiversion = getFirmwareAPIVersion();
 	int64_t client_sw_apiversion = getClientServerAPIVersion();
 
-	FILE_LOG(logINFOBLUE, ("**************** EIGER Server *********************\n\n"
+	LOG(logINFOBLUE, ("**************** EIGER Server *********************\n\n"
 			"Detector IP Addr:\t\t 0x%x\n"
 			"Detector MAC Addr:\t\t 0x%llx\n"
 
@@ -150,7 +150,7 @@ void basictests() {
 	//cant read versions
 	if (!fwversion || !sw_fw_apiversion) {
 		strcpy(initErrorMessage, "Cant read versions from FPGA. Please update firmware.\n");
-		FILE_LOG(logERROR, (initErrorMessage));
+		LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
 		return;
 	}
@@ -161,7 +161,7 @@ void basictests() {
 				"Please update detector software (min. %lld) to be compatible with this firmware.\n",
 				(long long int)sw_fw_apiversion,
 				(long long int)REQUIRED_FIRMWARE_VERSION);
-		FILE_LOG(logERROR, (initErrorMessage));
+		LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
 		return;
 	}
@@ -172,11 +172,11 @@ void basictests() {
 				"Please update firmware (min. %lld) to be compatible with this server.\n",
 				(long long int)fwversion,
 				(long long int)REQUIRED_FIRMWARE_VERSION);
-		FILE_LOG(logERROR, (initErrorMessage));
+		LOG(logERROR, (initErrorMessage));
 		initError = FAIL;
 		return;
 	}
-	FILE_LOG(logINFO, ("Compatibility - success\n"));
+	LOG(logINFO, ("Compatibility - success\n"));
 }
 
 
@@ -250,7 +250,7 @@ u_int64_t  getDetectorMAC() {
 	//increment by 1 for 10g
 	if (send_to_ten_gig)
 		res++;
-	//FILE_LOG(logINFO, ("mac:%llx\n",res));
+	//LOG(logINFO, ("mac:%llx\n",res));
 
 	return res;
 }
@@ -281,7 +281,7 @@ u_int32_t  getDetectorIP() {
 	}
 	strcpy(output,temp);
 	sscanf(output, "%x", 	&res);
-	//FILE_LOG(logINFO, ("ip:%x\n",res));
+	//LOG(logINFO, ("ip:%x\n",res));
 
 	return res;
 }
@@ -312,10 +312,10 @@ void initControlServer() {
 			if (Feb_Control_OpenSerialCommunication())
 				;//	Feb_Control_CloseSerialCommunication();
 		}
-		FILE_LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
+		LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
 		Beb_Beb(detid);
 		Beb_SetDetectorNumber(getDetectorNumber());
-		FILE_LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
+		LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
 
 		setupDetector();
 		// activate (if it gets ip) (later FW will deactivate at startup)
@@ -340,7 +340,7 @@ void initStopServer() {
 	Feb_Interface_FebInterface();
 	Feb_Control_FebControl();
 	Feb_Control_Init(master,top,normal,getDetectorNumber());
-	FILE_LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
+	LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
 	// activate (if it gets ip) (later FW will deactivate at startup)
 	// also needed for stop server for status
 	if (getDetectorIP() != 0) {
@@ -368,7 +368,7 @@ void getModuleConfiguration() {
 #else
 	normal = 1;
 #endif
-	FILE_LOG(logINFOBLUE, ("Module: %s %s %s\n",
+	LOG(logINFOBLUE, ("Module: %s %s %s\n",
 			(top ? "TOP" : "BOTTOM"),
 			(master ? "MASTER" : "SLAVE"),
 			(normal ? "NORMAL" : "SPECIAL")));
@@ -379,7 +379,7 @@ void getModuleConfiguration() {
 	int *n=&normal;
 	Beb_GetModuleConfiguration(m,t,n);
 	if (isControlServer) {
-		FILE_LOG(logINFOBLUE, ("Module: %s %s %s\n",
+		LOG(logINFOBLUE, ("Module: %s %s %s\n",
 			(top ? "TOP" : "BOTTOM"),
 			(master ? "MASTER" : "SLAVE"),
 			(normal ? "NORMAL" : "SPECIAL")));
@@ -392,7 +392,7 @@ void getModuleConfiguration() {
 	pclose(sysFile);
 	sscanf(output,"%u",&detid);
 	if (isControlServer) {
-		FILE_LOG(logINFOBLUE, ("Detector ID: %u\n\n", detid));
+		LOG(logINFOBLUE, ("Detector ID: %u\n\n", detid));
 	}
 #endif
 }
@@ -402,15 +402,15 @@ void getModuleConfiguration() {
 /* set up detector */
 
 void allocateDetectorStructureMemory() {
-	FILE_LOG(logINFO, ("This Server is for 1 Eiger half module (250k)\n\n"));
+	LOG(logINFO, ("This Server is for 1 Eiger half module (250k)\n\n"));
 
 	//Allocation of memory
 	detectorModules = malloc(sizeof(sls_detector_module));
 	detectorChans = malloc(NCHIP*NCHAN*sizeof(int));
 	detectorDacs = malloc(NDAC*sizeof(int));
-	FILE_LOG(logDEBUG1, ("modules from 0x%x to 0x%x\n",detectorModules, detectorModules));
-	FILE_LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n",detectorChans, detectorChans));
-	FILE_LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs));
+	LOG(logDEBUG1, ("modules from 0x%x to 0x%x\n",detectorModules, detectorModules));
+	LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n",detectorChans, detectorChans));
+	LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs));
 	(detectorModules)->dacs = detectorDacs;
 	(detectorModules)->chanregs = detectorChans;
 	(detectorModules)->ndac = NDAC;
@@ -435,19 +435,19 @@ void setupDetector() {
 
 	allocateDetectorStructureMemory();
 	//set dacs
-	FILE_LOG(logINFOBLUE, ("Setting Default Dac values\n"));
+	LOG(logINFOBLUE, ("Setting Default Dac values\n"));
 	{
 		int i = 0;
 		const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
 		for(i = 0; i < NDAC; ++i) {
 			setDAC((enum DACINDEX)i,defaultvals[i],0);
 			if ((detectorModules)->dacs[i] != defaultvals[i]) {
-				FILE_LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], (detectorModules)->dacs[i]));
+				LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n",i ,defaultvals[i], (detectorModules)->dacs[i]));
 			}
 		}
 	}
 
-	FILE_LOG(logINFOBLUE, ("Setting Default Parameters\n"));
+	LOG(logINFOBLUE, ("Setting Default Parameters\n"));
 	//setting default measurement parameters
 	setNumFrames(DEFAULT_NUM_FRAMES);
 	setExpTime(DEFAULT_EXPTIME);
@@ -476,7 +476,7 @@ void setupDetector() {
 #ifndef VIRTUAL
 	Feb_Control_CheckSetup();
 #endif
-	FILE_LOG(logDEBUG1, ("Setup detector done\n\n"));
+	LOG(logDEBUG1, ("Setup detector done\n\n"));
 }
 
 
@@ -512,13 +512,13 @@ int readRegister(uint32_t offset, uint32_t* retval) {
 int setDynamicRange(int dr) {
 #ifdef VIRTUAL
 	if (dr > 0) {
-		FILE_LOG(logINFO, ("Setting dynamic range: %d\n", dr));
+		LOG(logINFO, ("Setting dynamic range: %d\n", dr));
 		eiger_dynamicrange = dr;
 	}
 	return eiger_dynamicrange;
 #else
 	if (dr > 0) {
-		FILE_LOG(logDEBUG1, ("Setting dynamic range: %d\n", dr));
+		LOG(logDEBUG1, ("Setting dynamic range: %d\n", dr));
 		if (Feb_Control_SetDynamicRange(dr)) {
 
 			//EigerSetBitMode(dr);
@@ -527,7 +527,7 @@ int setDynamicRange(int dr) {
 			for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
 			if (Beb_SetUpTransferParameters(dr))
 				eiger_dynamicrange = dr;
-			else FILE_LOG(logERROR, ("Could not set bit mode in the back end\n"));
+			else LOG(logERROR, ("Could not set bit mode in the back end\n"));
 		}
 	}
 	//make sure back end and front end have the same bit mode
@@ -574,7 +574,7 @@ int getOverFlowMode() {
 
 void setStoreInRamMode(int mode) {
 	mode = (mode == 0 ? 0 : 1);
-	FILE_LOG(logINFO, ("Setting Store in Ram mode to %d\n", mode));
+	LOG(logINFO, ("Setting Store in Ram mode to %d\n", mode));
 	eiger_storeinmem = mode;
 }
 
@@ -608,7 +608,7 @@ int getStartingFrameNumber(uint64_t* retval) {
 
 void setNumFrames(int64_t val) {
     if (val > 0) {
-		FILE_LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
+		LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
 #ifndef VIRTUAL
 		if (Feb_Control_SetNExposures((unsigned int)val * eiger_ntriggers)) {
 			eiger_nexposures = val;
@@ -631,7 +631,7 @@ int64_t getNumFrames() {
 
 void setNumTriggers(int64_t val) {
     if (val > 0) {
-		FILE_LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
+		LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
 #ifndef VIRTUAL
 		if (Feb_Control_SetNExposures((unsigned int)val * eiger_nexposures)) {
 			eiger_ntriggers = val;
@@ -652,7 +652,7 @@ int64_t getNumTriggers() {
 }
 
 int setExpTime(int64_t val) {
-	FILE_LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
+	LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
 #ifndef VIRTUAL
 	Feb_Control_SetExposureTime(val/(1E9));
 #else
@@ -670,7 +670,7 @@ int64_t getExpTime() {
 }
 
 int setPeriod(int64_t val) {
-	FILE_LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
+	LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
 #ifndef VIRTUAL
 	Feb_Control_SetExposurePeriod(val/(1E9));
 #else
@@ -688,7 +688,7 @@ int64_t getPeriod() {
 }
 
 int setSubExpTime(int64_t val) {
-	FILE_LOG(logINFO, ("Setting subexptime %lld ns\n", (long long int)val));
+	LOG(logINFO, ("Setting subexptime %lld ns\n", (long long int)val));
 #ifndef VIRTUAL
 	// calculate subdeadtime before settings subexptime
 	int64_t subdeadtime = Feb_Control_GetSubFramePeriod() - Feb_Control_GetSubFrameExposureTime();
@@ -713,14 +713,14 @@ int64_t getSubExpTime() {
 }
 
 int setDeadTime(int64_t val) {
-	FILE_LOG(logINFO, ("Setting subdeadtime %lld ns\n", (long long int)val));
+	LOG(logINFO, ("Setting subdeadtime %lld ns\n", (long long int)val));
 #ifndef VIRTUAL
 	// get subexptime
 	int64_t subexptime = Feb_Control_GetSubFrameExposureTime();
 #else
 	int64_t subexptime = eiger_virtual_subexptime * 10;
 #endif
-	FILE_LOG(logINFO, ("Setting sub period (subdeadtime(%lld)): %lldns\n",
+	LOG(logINFO, ("Setting sub period (subdeadtime(%lld)): %lldns\n",
 					(long long int)subexptime,
 					(long long int)val),
 					(long long int)(val + subexptime));
@@ -771,7 +771,7 @@ int64_t getMeasuredSubPeriod() {
 int setModule(sls_detector_module myMod, char* mess) {
 
 
-	FILE_LOG(logINFO, ("Setting module with settings %d\n",myMod.reg));
+	LOG(logINFO, ("Setting module with settings %d\n",myMod.reg));
 
 	// settings
 	setSettings( (enum detectorSettings)myMod.reg);
@@ -781,9 +781,9 @@ int setModule(sls_detector_module myMod, char* mess) {
 	if (detectorModules) {
 		if (copyModule(detectorModules,&myMod) == FAIL) {
 			sprintf(mess, "Could not copy module\n");
-			FILE_LOG(logERROR, (mess));
+			LOG(logERROR, (mess));
 			setSettings(UNDEFINED);
-			FILE_LOG(logERROR, ("Settings has been changed to undefined\n"));
+			LOG(logERROR, ("Settings has been changed to undefined\n"));
 			return FAIL;
 		}
 	}
@@ -791,9 +791,9 @@ int setModule(sls_detector_module myMod, char* mess) {
 	// iodelay
 	if (setIODelay(myMod.iodelay)!= myMod.iodelay) {
 		sprintf(mess, "Could not set module. Could not set iodelay %d\n", myMod.iodelay);
-		FILE_LOG(logERROR, (mess));
+		LOG(logERROR, (mess));
 		setSettings(UNDEFINED);
-		FILE_LOG(logERROR, ("Settings has been changed to undefined\n"));
+		LOG(logERROR, ("Settings has been changed to undefined\n"));
 		return FAIL;
 	}
 
@@ -803,7 +803,7 @@ int setModule(sls_detector_module myMod, char* mess) {
 	else {
 		// (loading a random trim file) (dont return fail)
 		setSettings(UNDEFINED);
-		FILE_LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
+		LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
 	}
 
 	// dacs
@@ -813,9 +813,9 @@ int setModule(sls_detector_module myMod, char* mess) {
 			setDAC((enum DACINDEX)i, myMod.dacs[i] , 0);
 			if (myMod.dacs[i] != (detectorModules)->dacs[i]) {
 				sprintf(mess, "Could not set module. Could not set dac %d\n", i);
-				FILE_LOG(logERROR, (mess));
+				LOG(logERROR, (mess));
 				setSettings(UNDEFINED);
-				FILE_LOG(logERROR, ("Settings has been changed to undefined\n"));
+				LOG(logERROR, ("Settings has been changed to undefined\n"));
 				return FAIL;
 			}
 		}
@@ -823,9 +823,9 @@ int setModule(sls_detector_module myMod, char* mess) {
 	// trimbits
 #ifndef VIRTUAL
 	if (myMod.nchan == 0) {
-		FILE_LOG(logINFO, ("Setting module without trimbits\n"));
+		LOG(logINFO, ("Setting module without trimbits\n"));
 	} else {
-		FILE_LOG(logINFO, ("Setting module with trimbits\n"));
+		LOG(logINFO, ("Setting module with trimbits\n"));
 		//includ gap pixels
 		unsigned int tt[263680];
 		int iy, ichip, ix, ip = 0, ich = 0;
@@ -844,9 +844,9 @@ int setModule(sls_detector_module myMod, char* mess) {
 		//set trimbits
 		if (!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(), tt)) {
 			sprintf(mess, "Could not set module. Could not set trimbits\n");
-			FILE_LOG(logERROR, (mess));
+			LOG(logERROR, (mess));
 			setSettings(UNDEFINED);
-			FILE_LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
+			LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
 			return FAIL;
 		}
 	}
@@ -859,9 +859,9 @@ int setModule(sls_detector_module myMod, char* mess) {
 			setRateCorrection(0);
 			sprintf(mess,"Cannot set module. Cannot set Rate correction. "
 					"No default tau provided. Deactivating Rate Correction\n");
-			FILE_LOG(logERROR, (mess));
+			LOG(logERROR, (mess));
 			setSettings(UNDEFINED);
-			FILE_LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
+			LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
 			return FAIL;
 		}
 	}
@@ -872,9 +872,9 @@ int setModule(sls_detector_module myMod, char* mess) {
 			int64_t retvalTau = setRateCorrection(myMod.tau);
 			if (myMod.tau != retvalTau) {
 				sprintf(mess, "Cannot set module. Could not set rate correction\n");
-				FILE_LOG(logERROR, (mess));
+				LOG(logERROR, (mess));
 				setSettings(UNDEFINED);
-				FILE_LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
+				LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
 				return FAIL;
 			}
 		}
@@ -923,7 +923,7 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
 		return thisSettings;
 	}if (sett != GET_SETTINGS)
 		thisSettings = sett;
-	FILE_LOG(logINFO, ("Settings: %d\n", thisSettings));
+	LOG(logINFO, ("Settings: %d\n", thisSettings));
 	return thisSettings;
 }
 
@@ -939,13 +939,13 @@ enum detectorSettings getSettings() {
 /* parameters - threshold */
 
 int getThresholdEnergy() {
-	FILE_LOG(logDEBUG1, ("Getting Threshold energy\n"));
+	LOG(logDEBUG1, ("Getting Threshold energy\n"));
 	return eiger_photonenergy;
 }
 
 
 int setThresholdEnergy(int ev) {
-	FILE_LOG(logINFO, ("Setting threshold energy:%d\n",ev));
+	LOG(logINFO, ("Setting threshold energy:%d\n",ev));
 	if (ev >= 0)
 		eiger_photonenergy = ev;
 	return  getThresholdEnergy();
@@ -962,7 +962,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     if (val < 0)
         return;
 
-    FILE_LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
+    LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
 
 	if (ind == E_VTHRESHOLD) {
 		setDAC(E_VCMP_LL, val, mV);
@@ -975,7 +975,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
 
     // validate index
     if (ind < 0 || ind >= NDAC) {
-        FILE_LOG(logERROR, ("\tDac index %d is out of bounds (0 to %d)\n", ind, NDAC - 1));
+        LOG(logERROR, ("\tDac index %d is out of bounds (0 to %d)\n", ind, NDAC - 1));
         return;
     }
 
@@ -1013,24 +1013,24 @@ int getDAC(enum DACINDEX ind, int mV) {
                 (ret[1]==ret[2])&&
                 (ret[2]==ret[3]) &&
                 (ret[3]==ret[4])) {
-            FILE_LOG(logINFO, ("\tvthreshold match\n"));
+            LOG(logINFO, ("\tvthreshold match\n"));
             return ret[0];
         } else {
-            FILE_LOG(logERROR, ("\tvthreshold mismatch vcmp_ll:%d vcmp_lr:%d vcmp_rl:%d vcmp_rr:%d vcp:%d\n",
+            LOG(logERROR, ("\tvthreshold mismatch vcmp_ll:%d vcmp_lr:%d vcmp_rl:%d vcmp_rr:%d vcp:%d\n",
                     ret[0],ret[1],ret[2],ret[3], ret[4]));
             return -1;
         }
     }
 
     if (!mV) {
-        FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac\n",ind, (detectorModules)->dacs[ind]));
+        LOG(logDEBUG1, ("Getting DAC %d : %d dac\n",ind, (detectorModules)->dacs[ind]));
         return (detectorModules)->dacs[ind];
     }
     int voltage = -1;
     // dac units to voltage
     ConvertToDifferentRange(LTC2620_MIN_VAL, LTC2620_MAX_VAL, DAC_MIN_MV, DAC_MAX_MV,
             (detectorModules)->dacs[ind], &voltage);
-    FILE_LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, (detectorModules)->dacs[ind], voltage));
+    LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, (detectorModules)->dacs[ind], voltage));
     return voltage;
 }
 
@@ -1072,7 +1072,7 @@ int getADC(enum ADCINDEX ind) {
 		return -1;
 	}
 
-	FILE_LOG(logINFO, ("Temperature %s: %f°C\n", tempnames[ind], (double)retval/1000.00));
+	LOG(logINFO, ("Temperature %s: %f°C\n", tempnames[ind], (double)retval/1000.00));
 
 	return retval;
 #endif
@@ -1106,13 +1106,13 @@ int setHighVoltage(int val) {
 
 		// get
 		if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
-			FILE_LOG(logERROR, ("Could not read high voltage\n"));
+			LOG(logERROR, ("Could not read high voltage\n"));
 			return -3;
 		}
 
 		// tolerance of 5
 		if (abs(eiger_theo_highvoltage-eiger_highvoltage) > HIGH_VOLTAGE_TOLERANCE) {
-			FILE_LOG(logINFO, ("High voltage still ramping: %d\n", eiger_highvoltage));
+			LOG(logINFO, ("High voltage still ramping: %d\n", eiger_highvoltage));
 			return eiger_highvoltage;
 		}
 		return eiger_theo_highvoltage;
@@ -1146,10 +1146,10 @@ void setTiming( enum timingMode arg) {
 		ret = 3;	
 		break;
 	default:
-		FILE_LOG(logERROR, ("Unknown timing mode %d\n", arg));
+		LOG(logERROR, ("Unknown timing mode %d\n", arg));
 		return;
 	}
-	FILE_LOG(logDEBUG1, ("Setting Triggering Mode: %d\n", (int)ret));
+	LOG(logDEBUG1, ("Setting Triggering Mode: %d\n", (int)ret));
 #ifndef VIRTUAL
 	if (Feb_Control_SetTriggerMode(ret,1))
 #endif
@@ -1168,7 +1168,7 @@ enum timingMode getTiming() {
 	case 3:		
 		return GATED;			
 	default:
-		FILE_LOG(logERROR, ("Unknown trigger mode found %d\n", eiger_triggermode));
+		LOG(logERROR, ("Unknown trigger mode found %d\n", eiger_triggermode));
 		return GET_TIMING_MODE;
 	}
 }
@@ -1186,7 +1186,7 @@ int configureMAC() {
 	int destport = udpDetails.dstport;		
 	int destport2 = udpDetails.dstport2;			
 
-    FILE_LOG(logINFO, ("Configuring MAC\n"));
+    LOG(logINFO, ("Configuring MAC\n"));
 	
 	char src_mac[50], src_ip[INET_ADDRSTRLEN],dst_mac[50], dst_ip[INET_ADDRSTRLEN];
 	getMacAddressinString(src_mac, 50, sourcemac);
@@ -1194,7 +1194,7 @@ int configureMAC() {
 	getIpAddressinString(src_ip, sourceip);
 	getIpAddressinString(dst_ip, destip);
 
-	FILE_LOG(logINFO, (
+	LOG(logINFO, (
 	        "\tSource IP   : %s\n"
 	        "\tSource MAC  : %s\n"
 	        "\tSource Port : %d\n"
@@ -1209,13 +1209,13 @@ int configureMAC() {
 	char cDestIp[MAX_STR_LENGTH];
 	memset(cDestIp, 0, MAX_STR_LENGTH);
 	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
-	FILE_LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d, port2:%d)\n", cDestIp, destport, destport2));
+	LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d, port2:%d)\n", cDestIp, destport, destport2));
 	if (setUDPDestinationDetails(0, cDestIp, destport) == FAIL) {
-		FILE_LOG(logERROR, ("could not set udp destination IP and port\n"));
+		LOG(logERROR, ("could not set udp destination IP and port\n"));
 		return FAIL;
 	}
 	if (setUDPDestinationDetails(1, cDestIp, destport2) == FAIL) {
-		FILE_LOG(logERROR, ("could not set udp destination IP and port2\n"));
+		LOG(logERROR, ("could not set udp destination IP and port2\n"));
 		return FAIL;
 	}
     return OK;
@@ -1227,13 +1227,13 @@ int configureMAC() {
 	if (!top)
 		dst_port = destport2;
 
-	FILE_LOG(logINFO, ("\tDest Port   : %d\n", dst_port));
+	LOG(logINFO, ("\tDest Port   : %d\n", dst_port));
 
 	int i=0;
 	/* for(i=0;i<32;i++) { modified for Aldo*/
 	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
 			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port)) {
-		FILE_LOG(logDEBUG1, ("\tset up left ok\n"));
+		LOG(logDEBUG1, ("\tset up left ok\n"));
 	} else {
 		return FAIL;
 	}
@@ -1243,12 +1243,12 @@ int configureMAC() {
 	dst_port = destport2;
 	if (!top)
 		dst_port = destport;
-	FILE_LOG(logINFO, ("\tDest Port   : %d\n",dst_port));
+	LOG(logINFO, ("\tDest Port   : %d\n",dst_port));
 
 	/*for(i=0;i<32;i++) {*//** modified for Aldo*/
 	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
 			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port)) {
-		FILE_LOG(logDEBUG1, (" set up right ok\n"));
+		LOG(logDEBUG1, (" set up right ok\n"));
 	} else {
 		return FAIL;
 	}
@@ -1344,7 +1344,7 @@ int	getReadNLines() {
 
 int enableTenGigabitEthernet(int val) {
 	if (val!=-1) {
-		FILE_LOG(logINFO, ("Setting 10Gbe: %d\n", (val > 0) ? 1 : 0));
+		LOG(logINFO, ("Setting 10Gbe: %d\n", (val > 0) ? 1 : 0));
 		if (val>0)
 			send_to_ten_gig = 1;
 		else
@@ -1359,11 +1359,11 @@ int enableTenGigabitEthernet(int val) {
 /* eiger specific - iodelay, pulse, rate, temp, activate, delay nw parameter */
 int setClockDivider(enum CLKINDEX ind, int val) {
     if (ind != RUN_CLK) {
-		FILE_LOG(logERROR, ("Unknown clock index: %d\n", ind));
+		LOG(logERROR, ("Unknown clock index: %d\n", ind));
 	    return FAIL;
 	}
 	if (val >= 0) {
-		FILE_LOG(logINFO, ("Setting Read out Speed: %d\n", val));
+		LOG(logINFO, ("Setting Read out Speed: %d\n", val));
 #ifndef VIRTUAL
 		if (Feb_Control_SetReadoutSpeed(val))
 #endif
@@ -1374,7 +1374,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 
 int getClockDivider(enum CLKINDEX ind) {
     if (ind != RUN_CLK) {
-		FILE_LOG(logERROR, ("Unknown clock index: %d\n", ind));
+		LOG(logERROR, ("Unknown clock index: %d\n", ind));
 	    return FAIL;
 	}
 	return  eiger_readoutspeed;
@@ -1382,7 +1382,7 @@ int getClockDivider(enum CLKINDEX ind) {
 
 int setIODelay(int val) {
 	if (val!=-1) {
-		FILE_LOG(logDEBUG1, ("Setting IO Delay: %d\n",val));
+		LOG(logDEBUG1, ("Setting IO Delay: %d\n",val));
 #ifndef VIRTUAL
 		if (Feb_Control_SetIDelays(Feb_Control_GetModuleNumber(),val))
 #endif
@@ -1394,7 +1394,7 @@ int setIODelay(int val) {
 
 int setCounterBit(int val) {
 	if (val!=-1) {
-		FILE_LOG(logINFO, ("Setting Counter Bit: %d\n",val));
+		LOG(logINFO, ("Setting Counter Bit: %d\n",val));
 #ifdef VIRTUAL
 		eiger_virtual_counter_bit = val;
 #else
@@ -1458,10 +1458,10 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never 
 	//same setting
 	if ((tau_in_nsec == custom_tau_in_nsec) && (ratetable_period_in_nsec == actual_period)) {
 		if (eiger_dynamicrange == 32) {
-			FILE_LOG(logINFO, ("Rate Table already created before: Same Tau %lldns, Same subexptime %lldns\n",
+			LOG(logINFO, ("Rate Table already created before: Same Tau %lldns, Same subexptime %lldns\n",
 					(long long int)tau_in_nsec,(long long int)ratetable_period_in_nsec));
 		} else {
-			FILE_LOG(logINFO, ("Rate Table already created before: Same Tau %lldns, Same exptime %lldns\n",
+			LOG(logINFO, ("Rate Table already created before: Same Tau %lldns, Same exptime %lldns\n",
 					(long long int)tau_in_nsec,(long long int)ratetable_period_in_nsec));
 		}
 	}
@@ -1475,7 +1475,7 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never 
 	}
 	//activating rate correction
 	eiger_virtual_ratecorrection_variable = 1;
-	FILE_LOG(logINFO, ("Rate Correction Value set to %lld ns\n",(long long int)eiger_virtual_ratetable_tau_in_ns));
+	LOG(logINFO, ("Rate Correction Value set to %lld ns\n",(long long int)eiger_virtual_ratetable_tau_in_ns));
 
 	return eiger_virtual_ratetable_tau_in_ns;
 #else
@@ -1504,10 +1504,10 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never 
 	//same setting
 	if ((tau_in_nsec == custom_tau_in_nsec) && (ratetable_period_in_nsec == actual_period)) {
 		if (dr == 32) {
-			FILE_LOG(logINFO, ("Rate Table already created before: Same Tau %lldns, Same subexptime %lldns\n",
+			LOG(logINFO, ("Rate Table already created before: Same Tau %lldns, Same subexptime %lldns\n",
 					tau_in_nsec,ratetable_period_in_nsec));
 		} else {
-			FILE_LOG(logINFO, ("Rate Table already created before: Same Tau %lldns, Same exptime %lldns\n",
+			LOG(logINFO, ("Rate Table already created before: Same Tau %lldns, Same exptime %lldns\n",
 					tau_in_nsec,ratetable_period_in_nsec));
 		}
 	}
@@ -1515,14 +1515,14 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never 
 	else {
 		int ret = Feb_Control_SetRateCorrectionTau(custom_tau_in_nsec);
 		if (ret<=0) {
-			FILE_LOG(logERROR, ("Rate correction failed. Deactivating rate correction\n"));
+			LOG(logERROR, ("Rate correction failed. Deactivating rate correction\n"));
 			Feb_Control_SetRateCorrectionVariable(0);
 			return ret;
 		}
 	}
 	//activating rate correction
 	Feb_Control_SetRateCorrectionVariable(1);
-	FILE_LOG(logINFO, ("Rate Correction Value set to %lld ns\n", (long long int)Feb_Control_Get_RateTable_Tau_in_nsec()));
+	LOG(logINFO, ("Rate Correction Value set to %lld ns\n", (long long int)Feb_Control_Get_RateTable_Tau_in_nsec()));
 	Feb_Control_PrintCorrectedValues();
 
 	return Feb_Control_Get_RateTable_Tau_in_nsec();
@@ -1543,7 +1543,7 @@ int getDefaultSettingsTau_in_nsec() {
 
 void setDefaultSettingsTau_in_nsec(int t) {
 	default_tau_from_file = t;
-	FILE_LOG(logINFO, ("Default tau set to %d\n", default_tau_from_file));
+	LOG(logINFO, ("Default tau set to %d\n", default_tau_from_file));
 }
 
 int64_t getCurrentTau() {
@@ -1572,7 +1572,7 @@ void setExternalGating(int enable[]) {
 int setAllTrimbits(int val) {
 #ifndef VIRTUAL
 	if (!Feb_Control_SaveAllTrimbitsTo(val)) {
-		FILE_LOG(logERROR, ("Could not set all trimbits\n"));
+		LOG(logERROR, ("Could not set all trimbits\n"));
 		return FAIL;
 	}
 #endif
@@ -1583,7 +1583,7 @@ int setAllTrimbits(int val) {
 		}
 	}
 
-	FILE_LOG(logINFO, ("All trimbits have been set to %d\n", val));
+	LOG(logINFO, ("All trimbits have been set to %d\n", val));
 	return OK;
 }
 
@@ -1599,7 +1599,7 @@ int getAllTrimbits() {
 
 		}
 	}
-	FILE_LOG(logINFO, ("Value of all Trimbits: %d\n", value));
+	LOG(logINFO, ("Value of all Trimbits: %d\n", value));
 	return value;
 }
 
@@ -1711,7 +1711,7 @@ int setTransmissionDelayRight(int value) {
 
 int prepareAcquisition() {
 #ifndef VIRTUAL
-	FILE_LOG(logINFO, ("Going to prepare for acquisition with counter_bit:%d\n",Feb_Control_Get_Counter_Bit()));
+	LOG(logINFO, ("Going to prepare for acquisition with counter_bit:%d\n",Feb_Control_Get_Counter_Bit()));
 	Feb_Control_PrepareForAcquisition();
 #endif
 	return OK;
@@ -1728,15 +1728,15 @@ int startStateMachine() {
 	if(createUDPSocket(1) != OK) {
 		return FAIL;
 	}
-	FILE_LOG(logINFOBLUE, ("starting state machine\n"));
+	LOG(logINFOBLUE, ("starting state machine\n"));
 	eiger_virtual_status = 1;
 	eiger_virtual_stop = 0;
 	if (pthread_create(&eiger_virtual_tid, NULL, &start_timer, NULL)) {
-		FILE_LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
+		LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
 		eiger_virtual_status = 0;
 		return FAIL;
 	}
-	FILE_LOG(logINFO ,("Virtual Acquisition started\n"));
+	LOG(logINFO ,("Virtual Acquisition started\n"));
 	return OK;
 #else
 
@@ -1744,21 +1744,21 @@ int startStateMachine() {
 	//get the DAQ toggle bit
 	prev_flag = Feb_Control_AcquisitionStartedBit();
 
-	FILE_LOG(logINFO, ("Going to start acquisition\n"));
+	LOG(logINFO, ("Going to start acquisition\n"));
 	Feb_Control_StartAcquisition();
 
 	if (!eiger_storeinmem) {
-		FILE_LOG(logINFO, ("requesting images right after start\n"));
+		LOG(logINFO, ("requesting images right after start\n"));
 		ret =  startReadOut();
 	}
 
 	//wait for acquisition start
 	if (ret == OK) {
 		if (!Feb_Control_WaitForStartedFlag(5000, prev_flag)) {
-			FILE_LOG(logERROR, ("Acquisition did not FILE_LOG(logERROR ouble reading register\n"));
+			LOG(logERROR, ("Acquisition did not LOG(logERROR ouble reading register\n"));
 			return FAIL;
 		}
-		FILE_LOG(logINFOGREEN, ("Acquisition started\n"));
+		LOG(logINFOGREEN, ("Acquisition started\n"));
 	}
 
 	return ret;
@@ -1779,7 +1779,7 @@ void* start_timer(void* arg) {
 	int numPacketsPerFrame =  (tgEnable ? 4 : 16) * dr;
 	int npixelsx = 256 * 2 * bytesPerPixel; 
 	int databytes = 256 * 256 * 2 * bytesPerPixel;
-	FILE_LOG(logINFO, (" dr:%f\n bytesperpixel:%d\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n",
+	LOG(logINFO, (" dr:%f\n bytesperpixel:%d\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n",
 	dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame, npixelsx, databytes));
 
 
@@ -1855,7 +1855,7 @@ void* start_timer(void* arg) {
 						sendUDPPacket(1, packetData2, packetsize);
 					}
 				}
-				FILE_LOG(logINFO, ("Sent frame: %d\n", frameNr));
+				LOG(logINFO, ("Sent frame: %d\n", frameNr));
 				clock_gettime(CLOCK_REALTIME, &end);
 				int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
 						(end.tv_nsec - begin.tv_nsec));
@@ -1873,7 +1873,7 @@ void* start_timer(void* arg) {
 	closeUDPSocket(1);
 	
 	eiger_virtual_status = 0;
-	FILE_LOG(logINFOBLUE, ("Finished Acquiring\n"));
+	LOG(logINFOBLUE, ("Finished Acquiring\n"));
 	return NULL;
 }
 #endif
@@ -1882,13 +1882,13 @@ void* start_timer(void* arg) {
 
 
 int stopStateMachine() {
-	FILE_LOG(logINFORED, ("Going to stop acquisition\n"));
+	LOG(logINFORED, ("Going to stop acquisition\n"));
 #ifdef VIRTUAL
 	eiger_virtual_stop = 0;
 	return OK;
 #else
 	if ((Feb_Control_StopAcquisition() != STATUS_IDLE) || (!Beb_StopAcquisition()) ) {
-		FILE_LOG(logERROR, ("failed to stop acquisition\n"));
+		LOG(logERROR, ("failed to stop acquisition\n"));
 		return FAIL;
 	}
 
@@ -1914,7 +1914,7 @@ int	softwareTrigger() {
 
 int startReadOut() {
 
-	FILE_LOG(logINFO, ("Requesting images...\n"));
+	LOG(logINFO, ("Requesting images...\n"));
 #ifdef VIRTUAL
 	return OK;
 #else
@@ -1945,10 +1945,10 @@ int startReadOut() {
 enum runStatus getRunStatus() {
 #ifdef VIRTUAL
 	if (eiger_virtual_status == 0) {
-		FILE_LOG(logINFO, ("Status: IDLE\n"));
+		LOG(logINFO, ("Status: IDLE\n"));
 		return IDLE;
 	} else {
-		FILE_LOG(logINFO, ("Status: RUNNING...\n"));
+		LOG(logINFO, ("Status: RUNNING...\n"));
 		return RUNNING;
 	}
 #else
@@ -1956,13 +1956,13 @@ enum runStatus getRunStatus() {
 	int i = Feb_Control_AcquisitionInProgress();
 	switch (i) {
 	case STATUS_ERROR:
-		FILE_LOG(logERROR, ("Status: ERROR reading status register\n"));
+		LOG(logERROR, ("Status: ERROR reading status register\n"));
 		return ERROR;
 	case STATUS_IDLE:
-		FILE_LOG(logINFOBLUE, ("Status: IDLE\n"));
+		LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
 	default:
-		FILE_LOG(logINFOBLUE, ("Status: RUNNING...\n"));
+		LOG(logINFOBLUE, ("Status: RUNNING...\n"));
 		return RUNNING;
 	}
 
@@ -1978,22 +1978,22 @@ void readFrame(int *ret, char *mess) {
 	while(eiger_virtual_status == 1){
 		usleep(500);
 	}
-	FILE_LOG(logINFOGREEN, ("acquisition successfully finished\n"));
+	LOG(logINFOGREEN, ("acquisition successfully finished\n"));
 	return;
 #else
 
 	if (Feb_Control_WaitForFinishedFlag(5000) == STATUS_ERROR) {
-		FILE_LOG(logERROR, ("Waiting for finished flag\n"));
+		LOG(logERROR, ("Waiting for finished flag\n"));
 		*ret = FAIL;
 		return;
 	}
-	FILE_LOG(logINFOGREEN, ("Acquisition finished\n"));
+	LOG(logINFOGREEN, ("Acquisition finished\n"));
 
 	if (eiger_storeinmem) {
-		FILE_LOG(logINFO, ("requesting images after storing in memory\n"));
+		LOG(logINFO, ("requesting images after storing in memory\n"));
 		if (startReadOut() == FAIL) {
 			strcpy(mess,"Could not execute read image requests\n");
-			FILE_LOG(logERROR, (mess));
+			LOG(logERROR, (mess));
 			*ret = (int)FAIL;
 			return;
 		}
@@ -2001,7 +2001,7 @@ void readFrame(int *ret, char *mess) {
 
 	//wait for detector to send
 	Beb_EndofDataSend(send_to_ten_gig);
-	FILE_LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+	LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 #endif
 }
 
@@ -2020,7 +2020,7 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 	int idac,  ichan;
 	int ret=OK;
 
-	FILE_LOG(logDEBUG1, ("Copying module\n"));
+	LOG(logDEBUG1, ("Copying module\n"));
 
 	if (srcMod->serialnumber>=0) {
 
@@ -2028,16 +2028,16 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 	}
 	//no trimbit feature
 	if (destMod->nchan && ((srcMod->nchan)>(destMod->nchan))) {
-		FILE_LOG(logINFO, ("Number of channels of source is larger than number of channels of destination\n"));
+		LOG(logINFO, ("Number of channels of source is larger than number of channels of destination\n"));
 		return FAIL;
 	}
 	if ((srcMod->ndac)>(destMod->ndac)) {
-		FILE_LOG(logINFO, ("Number of dacs of source is larger than number of dacs of destination\n"));
+		LOG(logINFO, ("Number of dacs of source is larger than number of dacs of destination\n"));
 		return FAIL;
 	}
 
-	FILE_LOG(logDEBUG1, ("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac));
-	FILE_LOG(logDEBUG1, ("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan));
+	LOG(logDEBUG1, ("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac));
+	LOG(logDEBUG1, ("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan));
 	destMod->ndac=srcMod->ndac;
 	destMod->nchip=srcMod->nchip;
 	destMod->nchan=srcMod->nchan;
@@ -2049,7 +2049,7 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 		destMod->tau=srcMod->tau;
 	if (srcMod->eV>=0)
 		destMod->eV=srcMod->eV;
-	FILE_LOG(logDEBUG1, ("Copying register %x (%x)\n",destMod->reg,srcMod->reg ));
+	LOG(logDEBUG1, ("Copying register %x (%x)\n",destMod->reg,srcMod->reg ));
 
 	if (destMod->nchan!=0) {
 		for (ichan=0; ichan<(srcMod->nchan); ichan++) {
@@ -2057,7 +2057,7 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 				*((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
 		}
 	}
-	else FILE_LOG(logINFO, ("Not Copying trimbits\n"));
+	else LOG(logINFO, ("Not Copying trimbits\n"));
 
 	for (idac=0; idac<(srcMod->ndac); idac++) {
 		if (*((srcMod->dacs)+idac)>=0) {

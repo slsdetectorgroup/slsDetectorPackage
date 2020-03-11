@@ -5,7 +5,10 @@
 #include "logger.h"
 #include "sls_detector_defs.h"
 
-class slsDetector;
+namespace sls{
+    class Module;
+}
+
 class ZmqSocket;
 class detectorData;
 
@@ -87,7 +90,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
-    sls::Result<RT> Parallel(RT (slsDetector::*somefunc)(CT...),
+    sls::Result<RT> Parallel(RT (sls::Module::*somefunc)(CT...),
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) {
 
@@ -115,7 +118,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename RT, typename... CT>
-    sls::Result<RT> Parallel(RT (slsDetector::*somefunc)(CT...) const,
+    sls::Result<RT> Parallel(RT (sls::Module::*somefunc)(CT...) const,
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) const {
 
@@ -143,7 +146,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename... CT>
-    void Parallel(void (slsDetector::*somefunc)(CT...),
+    void Parallel(void (sls::Module::*somefunc)(CT...),
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) {
 
@@ -168,7 +171,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename... CT>
-    void Parallel(void (slsDetector::*somefunc)(CT...) const,
+    void Parallel(void (sls::Module::*somefunc)(CT...) const,
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) const {
 
@@ -404,8 +407,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** Shared Memory object */
     sls::SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};
 
-    /** pointers to the slsDetector structures */
-    std::vector<std::unique_ptr<slsDetector>> detectors;
+    /** pointers to the Module structures */
+    std::vector<std::unique_ptr<sls::Module>> detectors;
 
     /** data streaming (down stream) enabled in client (zmq sckets created) */
     bool client_downstream{false};

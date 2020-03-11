@@ -15,6 +15,8 @@ class ServerInterface;
 #define SLS_SHMAPIVERSION 0x190726
 #define SLS_SHMVERSION 0x200309
 
+namespace sls{
+
 /**
  * @short structure allocated in shared memory to store detector settings for
  * IPC and cache
@@ -178,7 +180,7 @@ struct sharedSlsDetector {
     bool stoppedFlag;
 };
 
-class slsDetector : public virtual slsDetectorDefs {
+class Module : public virtual slsDetectorDefs {
   public:
     /**
      * Constructor called when creating new shared memory
@@ -188,7 +190,7 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param verify true to verify if shared memory version matches existing
      * one
      */
-    explicit slsDetector(detectorType type, int multi_id = 0, int det_id = 0,
+    explicit Module(detectorType type, int multi_id = 0, int det_id = 0,
                          bool verify = true);
 
     /**
@@ -198,12 +200,12 @@ class slsDetector : public virtual slsDetectorDefs {
      * @param verify true to verify if shared memory version matches existing
      * one
      */
-    explicit slsDetector(int multi_id = 0, int det_id = 0, bool verify = true);
+    explicit Module(int multi_id = 0, int det_id = 0, bool verify = true);
 
     /**
      * Destructor
      */
-    virtual ~slsDetector();
+    virtual ~Module();
 
     /**
      * Returns false if it cannot get fixed pattern from an old version of shm
@@ -235,7 +237,7 @@ class slsDetector : public virtual slsDetectorDefs {
     /**
      * Free shared memory and delete shared memory structure
      * occupied by the sharedSlsDetector structure
-     * Is only safe to call if one deletes the slsDetector object afterward
+     * Is only safe to call if one deletes the Module object afterward
      * and frees multi shared memory/updates
      * thisMultiDetector->numberOfDetectors
      */
@@ -2083,9 +2085,11 @@ class slsDetector : public virtual slsDetectorDefs {
      */
     std::vector<std::string> getSettingsFileDacNames();
 
-    /** slsDetector Id or position in the detectors list */
+    /** Module Id or position in the detectors list */
     const int detId;
 
     /** Shared Memory object */
     mutable sls::SharedMemory<sharedSlsDetector> shm{0, 0};
 };
+
+}// sls

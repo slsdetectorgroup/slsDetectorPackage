@@ -1,7 +1,7 @@
 set(SOURCES
     src/DetectorImpl.cpp 
     src/slsDetectorUsers.cpp 
-    src/slsDetector.cpp 
+    src/Module.cpp 
     src/Detector.cpp
     src/CmdProxy.cpp
     src/CmdParser.cpp

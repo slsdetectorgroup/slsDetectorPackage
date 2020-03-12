@@ -1912,6 +1912,9 @@ class Module : public virtual slsDetectorDefs {
     template <typename Ret>
     Ret sendToDetector(int fnum);
 
+    template <typename Ret, typename Arg>
+    Ret sendToDetector(int fnum, const Arg &args);
+
     /**
      * Send function parameters to detector (stop server)
      * @param fnum function enum
@@ -1980,9 +1983,17 @@ class Module : public virtual slsDetectorDefs {
     template <typename Ret>
     void sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const;
 
-    void sendToReceiver(int fnum);
+    template <typename Ret>
+    Ret sendToReceiver(int fnum);
 
-    void sendToReceiver(int fnum) const;
+    template <typename Ret>
+    Ret sendToReceiver(int fnum) const;
+
+    template <typename Ret, typename Arg>
+    Ret sendToReceiver(int fnum, const Arg &args);
+
+    template <typename Ret, typename Arg>
+    Ret sendToReceiver(int fnum, const Arg &args) const;
 
     /**
      * Get Detector Type from Shared Memory (opening shm without verifying size)

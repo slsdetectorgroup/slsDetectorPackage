@@ -1,5 +1,6 @@
 #pragma once
 #include "Result.h"
+#include "network_utils.h"
 #include "sls_detector_defs.h"
 #include <chrono>
 #include <memory>

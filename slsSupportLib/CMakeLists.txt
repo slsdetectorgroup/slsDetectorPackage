@@ -20,7 +20,6 @@ set(PUBLICHEADERS
     include/file_utils.h
     include/container_utils.h
     include/string_utils.h
-    include/genericSocket.h
     include/logger.h
     include/ClientSocket.h
     include/DataSocket.h

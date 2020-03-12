@@ -9,7 +9,6 @@ this might be deprecated in the future
 
 */
 
-// #include "genericSocket.h"
 #include "network_utils.h"
 #include "sls_detector_exceptions.h"
 #include <cstdint>

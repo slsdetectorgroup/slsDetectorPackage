@@ -470,8 +470,17 @@ Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
 
 void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
     int previouslyClientStreaming = pimpl->enableDataStreamingToClient();
-    bool previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(true);
+    bool useReceiver = getUseReceiverFlag().squash(false);
+    bool previouslyReceiverStreaming = false;
+    if (useReceiver) {
+        previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(true);
+    }
     pimpl->Parallel(&Module::setNumberofUDPInterfaces, pos, n);
+    // ensure receiver zmq socket ports are multiplied by 2 (2 interfaces)
+    if (getUseReceiverFlag().squash(false) && size()) {
+        int startingPort = getRxZmqPort({0}).squash(0);
+        setRxZmqPort(startingPort, -1);
+    }
     // redo the zmq sockets if enabled
     if (previouslyClientStreaming != 0) {
         pimpl->enableDataStreamingToClient(0);

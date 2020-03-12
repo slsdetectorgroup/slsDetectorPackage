@@ -1544,7 +1544,7 @@ class CmdProxy {
                     "[0, 1]\n\t[Eiger] Enable or disable store in ram mode.");      
 
     INTEGER_COMMAND(flippeddatax, getBottom, setBottom, std::stoi,
-                    "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 is top. Used to let Receiver and Gui know to flip the bottom image over the x axis.");      
+                    "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 is top. Used to let Receivers and Gui know to flip the bottom image over the x axis. Files are not written without the flip however.");      
 
     INTEGER_COMMAND(trimval, getAllTrimbits, setAllTrimbits, std::stoi,
                     "[n_trimval]\n\t[Eiger] All trimbits set to this value. A get returns -1 if all trimbits are different values.");      

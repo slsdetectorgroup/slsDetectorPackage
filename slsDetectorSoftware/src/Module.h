@@ -101,9 +101,6 @@ struct sharedSlsDetector {
     /** tcp port from gui/different process to receiver (only data) */
     int zmqport;
 
-    /** tcp port from receiver to gui/different process (only data) */
-    int rxZmqport;
-
     /** data streaming (up stream) enable in receiver  
      * (needed for restreaming dummy packet) */
     bool rxUpstream;

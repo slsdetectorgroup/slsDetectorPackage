@@ -353,8 +353,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->useReceiverFlag = false;
     shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
                      (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
-    shm()->rxZmqport = DEFAULT_ZMQ_RX_PORTNO +
-                       (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->rxUpstream = false;
     shm()->rxReadFreq = 1;
     shm()->zmqip = IpAddr{};
@@ -2023,20 +2021,26 @@ void Module::setClientStreamingPort(int port) { shm()->zmqport = port; }
 int Module::getClientStreamingPort() { return shm()->zmqport; }
 
 void Module::setReceiverStreamingPort(int port) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to set receiver parameters (zmq port)");
+    }    
     int fnum = F_SET_RECEIVER_STREAMING_PORT;
     int retval = -1;
     LOG(logDEBUG1) << "Sending receiver streaming port to receiver: "
                         << port;
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(fnum, port, retval);
-        LOG(logDEBUG1) << "Receiver streaming port: " << retval;
-        shm()->rxZmqport = retval;
-    } else {
-        shm()->rxZmqport = port;
-    }
+    sendToReceiver(fnum, port, retval);
 }
 
-int Module::getReceiverStreamingPort() { return shm()->rxZmqport; }
+int Module::getReceiverStreamingPort() {    
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to get receiver parameters (zmq port)");
+    }
+    int retval = -1;
+    int arg = -1;
+    sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, arg, retval);
+    LOG(logDEBUG1) << "Streaming port retval:" << retval;
+    return retval;
+}
 
 void Module::setClientStreamingIP(const sls::IpAddr ip) {
     LOG(logDEBUG1) << "Setting client zmq ip to " << ip;
@@ -3210,10 +3214,6 @@ void Module::updateCachedReceiverVariables() const {
         // receiver read frequency
         n += receiver.Receive(&i32, sizeof(i32));
         shm()->rxReadFreq = i32;
-
-        // receiver streaming port
-        n += receiver.Receive(&i32, sizeof(i32));
-        shm()->rxZmqport = i32;
 
         // streaming source ip
         n += receiver.Receive(&ip, sizeof(ip));

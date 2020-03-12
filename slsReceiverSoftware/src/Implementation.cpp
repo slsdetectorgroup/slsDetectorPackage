@@ -339,6 +339,11 @@ void Implementation::setDetectorPositionId(const int id) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     detID = id;
     LOG(logINFO) << "Detector Position Id:" << detID;
+
+    // update zmq port
+    streamingPort = DEFAULT_ZMQ_RX_PORTNO +
+                       (detID * (myDetectorType == EIGER ? 2 : 1));
+                       
     for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
         dataProcessor[i]->SetupFileWriter(
             fileWriteEnable, (int *)numDet, &framesPerFile, &fileName, &filePath,

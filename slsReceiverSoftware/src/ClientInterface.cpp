@@ -373,10 +373,6 @@ int ClientInterface::send_update(Interface &socket) {
     i32 = (int)receiver->getStreamingFrequency();
     n += socket.Send(&i32, sizeof(i32));
 
-    // streaming port
-    i32 = (int)receiver->getStreamingPort();
-    n += socket.Send(&i32, sizeof(i32));
-
     // streaming source ip
     ip = receiver->getStreamingSourceIP();
     n += socket.Send(&ip, sizeof(ip));

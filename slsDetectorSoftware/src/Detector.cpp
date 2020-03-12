@@ -7,6 +7,7 @@
 #include "DetectorImpl.h"
 #include "Module.h"
 #include "sls_detector_defs.h"
+#include "versionAPI.h"
 
 #include <fstream>
 
@@ -97,11 +98,11 @@ void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
 int Detector::getShmId() const { return pimpl->getMultiId(); }
 
 std::string Detector::getPackageVersion() const {
-    return pimpl->getPackageVersion();
+    return GITBRANCH;
 }
 
 int64_t Detector::getClientVersion() const {
-    return pimpl->getClientSoftwareVersion();
+    return APILIB;
 }
 
 Result<int64_t> Detector::getFirmwareVersion(Positions pos) const {

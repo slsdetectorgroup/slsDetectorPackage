@@ -26,7 +26,7 @@
 #include <future>
 #include <vector>
 
-using namespace sls;
+namespace sls{
 
 DetectorImpl::DetectorImpl(int multi_id, bool verify, bool update)
     : multiId(multi_id), multi_shm(multi_id, -1) {
@@ -48,10 +48,6 @@ void DetectorImpl::setAcquiringFlag(bool flag) {
 }
 
 int DetectorImpl::getMultiId() const { return multiId; }
-
-std::string DetectorImpl::getPackageVersion() const { return GITBRANCH; }
-
-int64_t DetectorImpl::getClientSoftwareVersion() const { return APILIB; }
 
 void DetectorImpl::freeSharedMemory(int multiId, int detPos) {
     // single
@@ -160,7 +156,6 @@ void DetectorImpl::initializeDetectorStructure() {
     multi_shm()->numberOfChannels.x = 0;
     multi_shm()->numberOfChannels.y = 0;
     multi_shm()->acquiringFlag = false;
-    multi_shm()->receiver_upstream = false;
     multi_shm()->initialChecks = true;
 }
 
@@ -822,46 +817,6 @@ bool DetectorImpl::enableDataStreamingToClient(int enable) {
     return client_downstream;
 }
 
-void DetectorImpl::savePattern(const std::string &fname) {
-    // std::ofstream outfile;
-    // outfile.open(fname.c_str(), std::ios_base::out);
-    // if (!outfile.is_open()) {
-    //     throw RuntimeError("Could not create file to save pattern");
-    // }
-    // // get pattern limits
-    // auto r = Parallel(&Module::setPatternLoopAddresses, {}, -1, -1, -1)
-    //              .tsquash("Inconsistent pattern limits");
-    // // pattern words
-    // for (int i = r[0]; i <= r[1]; ++i) {
-    //     std::ostringstream os;
-    //     os << "patword 0x" << std::hex << i;
-    //     std::string cmd = os.str();
-    //     multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
-    // }
-    // // rest of pattern file
-    // const std::vector<std::string> commands{
-    //     "patioctrl",
-    //     "patclkctrl",
-    //     "patlimits",
-    //     "patloop0",
-    //     "patnloop0",
-    //     "patloop1",
-    //     "patnloop1",
-    //     "patloop2",
-    //     "patnloop2",
-    //     "patwait0",
-    //     "patwaittime0",
-    //     "patwait1",
-    //     "patwaittime1",
-    //     "patwait2",
-    //     "patwaittime2",
-    //     "patmask",
-    //     "patsetbit",
-    // };
-    // for (const auto &cmd : commands)
-    //     multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
-}
-
 void DetectorImpl::registerAcquisitionFinishedCallback(void (*func)(double, int,
                                                                     void *),
                                                        void *pArg) {
@@ -1199,3 +1154,5 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     LOG(logINFO) << "Read file into memory";
     return buffer;
 }
+
+}//namespace sls

@@ -164,6 +164,17 @@ void Module::sendToDetector(int fnum) {
     sendToDetector(fnum, nullptr, 0, nullptr, 0);
 }
 
+template <typename Ret>
+Ret Module::sendToDetector(int fnum){
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", nullptr, 0, " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToDetector(fnum, nullptr, 0, &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
+}
+
 void Module::sendToDetectorStop(int fnum, const void *args,
                                      size_t args_size, void *retval,
                                      size_t retval_size) {
@@ -1276,10 +1287,7 @@ void Module::setNumberOfDigitalSamples(int value) {
 }
 
 int64_t Module::getExptime() {
-    int64_t retval = -1;
-    sendToDetector(F_GET_EXPTIME, nullptr, retval);
-    LOG(logDEBUG1) << "exptime :" << retval << "ns";
-    return retval; 
+    return sendToDetector<int64_t>(F_GET_EXPTIME);
 }
 
 void Module::setExptime(int64_t value) {
@@ -1302,10 +1310,7 @@ void Module::setExptime(int64_t value) {
 }
 
 int64_t Module::getPeriod() {
-    int64_t retval = -1;
-    sendToDetector(F_GET_PERIOD, nullptr, retval);
-    LOG(logDEBUG1) << "period :" << retval << "ns";
-    return retval; 
+    return sendToDetector<int64_t>(F_GET_PERIOD);
 }
 
 void Module::setPeriod(int64_t value) {
@@ -1318,10 +1323,7 @@ void Module::setPeriod(int64_t value) {
 }
 
 int64_t Module::getDelayAfterTrigger() {
-    int64_t retval = -1;
-    sendToDetector(F_GET_DELAY_AFTER_TRIGGER, nullptr, retval);
-    LOG(logDEBUG1) << "delay after trigger :" << retval << "ns";
-    return retval; 
+    return sendToDetector<int64_t>(F_GET_DELAY_AFTER_TRIGGER);
 }
 
 void Module::setDelayAfterTrigger(int64_t value) {
@@ -1330,10 +1332,7 @@ void Module::setDelayAfterTrigger(int64_t value) {
 }
 
 int64_t Module::getBurstPeriod() {
-    int64_t retval = -1;
-    sendToDetector(F_GET_BURST_PERIOD, nullptr, retval);
-    LOG(logDEBUG1) << "burst period :" << retval << "ns";
-    return retval; 
+    return sendToDetector<int64_t>(F_GET_BURST_PERIOD);
 }
 
 void Module::setBurstPeriod(int64_t value) {
@@ -1342,10 +1341,7 @@ void Module::setBurstPeriod(int64_t value) {
 }
 
 int64_t Module::getSubExptime() {
-    int64_t retval = -1;
-    sendToDetector(F_GET_SUB_EXPTIME, nullptr, retval);
-    LOG(logDEBUG1) << "sub exptime :" << retval << "ns";
-    return retval; 
+    return sendToDetector<int64_t>(F_GET_SUB_EXPTIME);
 }
 
 void Module::setSubExptime(int64_t value) {
@@ -1368,10 +1364,7 @@ void Module::setSubExptime(int64_t value) {
 }
     
 int64_t Module::getSubDeadTime() {
-    int64_t retval = -1;
-    sendToDetector(F_GET_SUB_DEADTIME, nullptr, retval);
-    LOG(logDEBUG1) << "sub deadtime :" << retval << "ns";
-    return retval; 
+    return sendToDetector<int64_t>(F_GET_SUB_DEADTIME);
 }
     
 void Module::setSubDeadTime(int64_t value) {

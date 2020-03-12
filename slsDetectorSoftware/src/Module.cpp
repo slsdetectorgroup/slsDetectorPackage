@@ -175,6 +175,18 @@ Ret Module::sendToDetector(int fnum){
     return retval;
 }
 
+template <typename Ret, typename Arg>
+Ret Module::sendToDetector(int fnum, const Arg &args){
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToDetector(fnum, &args, sizeof(args), &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
+}
+
+
 void Module::sendToDetectorStop(int fnum, const void *args,
                                      size_t args_size, void *retval,
                                      size_t retval_size) {
@@ -276,13 +288,57 @@ void Module::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const {
     sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
 }
 
-void Module::sendToReceiver(int fnum) {
-    sendToReceiver(fnum, nullptr, 0, nullptr, 0);
+template <typename Ret>
+Ret Module::sendToReceiver(int fnum){
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", nullptr, 0, " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
 }
 
-void Module::sendToReceiver(int fnum) const {
-    sendToReceiver(fnum, nullptr, 0, nullptr, 0);
+template <typename Ret>
+Ret Module::sendToReceiver(int fnum) const{
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", nullptr, 0, " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
 }
+
+template <typename Ret, typename Arg>
+Ret Module::sendToReceiver(int fnum, const Arg &args){
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
+}
+
+template <typename Ret, typename Arg>
+Ret Module::sendToReceiver(int fnum, const Arg &args) const{
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
+}
+
+// void Module::sendToReceiver(int fnum) {
+//     sendToReceiver(fnum, nullptr, 0, nullptr, 0);
+// }
+
+// void Module::sendToReceiver(int fnum) const {
+//     sendToReceiver(fnum, nullptr, 0, nullptr, 0);
+// }
 
 void Module::freeSharedMemory() {
     if (shm.IsExisting()) {
@@ -1616,31 +1672,17 @@ void Module::setInterruptSubframe(const bool enable) {
 }
 
 bool Module::getInterruptSubframe() {
-    int retval = -1;
-    LOG(logDEBUG1) << "Getting Interrupt subframe";
-    sendToDetector(F_GET_INTERRUPT_SUBFRAME, nullptr, retval);
-    LOG(logDEBUG1) << "Interrupt subframe: " << retval;
+    auto retval = sendToDetector<int>(F_GET_INTERRUPT_SUBFRAME);
     return static_cast<bool>(retval);
 }
 
 uint32_t Module::writeRegister(uint32_t addr, uint32_t val) {
     uint32_t args[]{addr, val};
-    uint32_t retval = -1;
-    LOG(logDEBUG1) << "Writing to reg 0x" << std::hex << addr << "data: 0x"
-                        << std::hex << val << std::dec;
-    sendToDetector(F_WRITE_REGISTER, args, retval);
-    LOG(logDEBUG1) << "Reg 0x" << std::hex << addr << ": 0x" << std::hex
-                        << retval << std::dec;
-    return retval;
+    return sendToDetector<uint32_t>(F_WRITE_REGISTER, args);
 }
 
 uint32_t Module::readRegister(uint32_t addr) {
-    uint32_t retval = -1;
-    LOG(logDEBUG1) << "Reading reg 0x" << std::hex << addr << std::dec;
-    sendToDetector(F_READ_REGISTER, addr, retval);
-    LOG(logDEBUG1) << "Reg 0x" << std::hex << addr << ": 0x" << std::hex
-                        << retval << std::dec;
-    return retval;
+    return sendToDetector<uint32_t>(F_READ_REGISTER, addr);
 }
 
 uint32_t Module::setBit(uint32_t addr, int n) {
@@ -2025,12 +2067,8 @@ void Module::setClientStreamingPort(int port) { shm()->zmqport = port; }
 int Module::getClientStreamingPort() { return shm()->zmqport; }
 
 void Module::setReceiverStreamingPort(int port) {
-    int fnum = F_SET_RECEIVER_STREAMING_PORT;
-    int retval = -1;
-    LOG(logDEBUG1) << "Sending receiver streaming port to receiver: "
-                        << port;
     if (shm()->useReceiverFlag) {
-        sendToReceiver(fnum, port, retval);
+        auto retval = sendToReceiver<int>(F_SET_RECEIVER_STREAMING_PORT, port);
         LOG(logDEBUG1) << "Receiver streaming port: " << retval;
         shm()->rxZmqport = retval;
     } else {
@@ -2271,14 +2309,7 @@ int64_t Module::getReceiverUDPSocketBufferSize() {
 }
 
 int64_t Module::getReceiverRealUDPSocketBufferSize() const {
-    int64_t retval = -1;
-    LOG(logDEBUG1) << "Getting real UDP Socket Buffer size from receiver";
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE, nullptr, retval);
-        LOG(logDEBUG1)
-            << "Real Receiver UDP Socket Buffer size: " << retval;
-    }
-    return retval;
+    return sendToReceiver<int64_t>(F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE);
 }
 
 void Module::executeFirmwareTest() {
@@ -3129,7 +3160,7 @@ sls::IpAddr Module::getReceiverLastClientIP() const {
 void Module::exitReceiver() {
     LOG(logDEBUG1) << "Sending exit command to receiver server";
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_EXIT_RECEIVER);
+        sendToReceiver(F_EXIT_RECEIVER, nullptr, nullptr);
     }
 }
 
@@ -3424,7 +3455,7 @@ int64_t Module::incrementFileIndex() {
 void Module::startReceiver() {
     LOG(logDEBUG1) << "Starting Receiver";
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_START_RECEIVER);
+        sendToReceiver(F_START_RECEIVER, nullptr, nullptr);
     }
 }
 
@@ -3628,7 +3659,7 @@ bool Module::setReceiverSilentMode(int value) {
 void Module::restreamStopFromReceiver() {
     LOG(logDEBUG1) << "Restream stop dummy from Receiver via zmq";
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER);
+        sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER, nullptr, nullptr);
     }
 }
 

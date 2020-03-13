@@ -2074,7 +2074,7 @@ int Module::getReceiverStreamingPort() {
         throw RuntimeError("Set rx_hostname first to get receiver parameters (zmq port)");
     }
     int port = -1;
-    sendToReceiver<int>(F_SET_RECEIVER_STREAMING_PORT, port);
+    auto retval = sendToReceiver<int>(F_SET_RECEIVER_STREAMING_PORT, port);
     return retval;
 }
 

@@ -202,19 +202,6 @@ void		setNumBursts(int64_t val);
 int64_t 	getNumBursts();
 int			setBurstPeriod(int64_t val);
 int64_t 	getBurstPeriod();
-
-void		setNumFramesBurst(int64_t val);
-int64_t		getNumFramesBurst();
-void		setNumFramesCont(int64_t val);
-int64_t		getNumFramesCont();
-int			setExptimeBurst(int64_t val);
-int			setExptimeCont(int64_t val);
-int			setExptimeBoth(int64_t val);
-int64_t		getExptimeBoth();
-int			setPeriodBurst(int64_t val);
-int64_t		getPeriodBurst();
-int			setPeriodCont(int64_t val);
-int64_t		getPeriodCont();
 #endif
 #ifdef EIGERD
 int			setSubExpTime(int64_t val);

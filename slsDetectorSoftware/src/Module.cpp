@@ -410,9 +410,7 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
                      (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->rxUpstream = false;
-    shm()->rxReadFreq = 1;
     shm()->zmqip = IpAddr{};
-    shm()->rxZmqip = IpAddr{};
     shm()->gappixels = 0U;
     memset(shm()->rxAdditionalJsonHeader, 0, MAX_STR_LENGTH);
     shm()->rxFrameDiscardMode = NO_DISCARD;
@@ -1802,9 +1800,7 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
         }
 
         setReceiverSilentMode(static_cast<int>(shm()->rxSilentMode));
-        // data streaming
-        setReceiverStreamingFrequency(shm()->rxReadFreq);
-        setReceiverStreamingPort(getReceiverStreamingPort());
+        // to use rx_hostname if empty and also update client zmqip
         updateReceiverStreamingIP();
         setAdditionalJsonHeader(shm()->rxAdditionalJsonHeader);
         enableDataStreamingFromReceiver(
@@ -2074,8 +2070,7 @@ int Module::getReceiverStreamingPort() {
         throw RuntimeError("Set rx_hostname first to get receiver parameters (zmq port)");
     }
     int port = -1;
-    auto retval = sendToReceiver<int>(F_SET_RECEIVER_STREAMING_PORT, port);
-    return retval;
+    return sendToReceiver<int>(F_SET_RECEIVER_STREAMING_PORT, port);
 }
 
 void Module::setClientStreamingIP(const sls::IpAddr ip) {
@@ -2089,29 +2084,26 @@ void Module::setClientStreamingIP(const sls::IpAddr ip) {
 sls::IpAddr Module::getClientStreamingIP() { return shm()->zmqip; }
 
 void Module::setReceiverStreamingIP(const sls::IpAddr ip) {
-    LOG(logDEBUG1) << "Setting rx zmq ip to " << ip;
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to set receiver parameters (streaming ip)");
+    }
     if (ip == 0) {
         throw RuntimeError("Invalid receiver zmq ip address");
     }
-    
-    // if zmqip is empty, update it
+   
+    // if client zmqip is empty, update it
     if (shm()->zmqip == 0) {
         shm()->zmqip = ip;
     }
-
-    // send to receiver
-    if (shm()->useReceiverFlag) {
-        LOG(logDEBUG1)
-            << "Sending receiver streaming IP to receiver: " << ip;
-        sendToReceiver(F_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
-        shm()->rxZmqip = ip;
-    } else {
-        shm()->rxZmqip = ip;
-    }
+    sendToReceiver<sls::IpAddr>(F_RECEIVER_STREAMING_SRC_IP, ip);
 }
 
 sls::IpAddr Module::getReceiverStreamingIP() {
-    return shm()->rxZmqip;
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to get receiver parameters (streaming ip)");
+    }
+    IpAddr ip = IpAddr{};
+    return sendToReceiver<sls::IpAddr>(F_RECEIVER_STREAMING_SRC_IP, ip);
 }
 
 void Module::updateReceiverStreamingIP() {
@@ -2126,7 +2118,6 @@ void Module::updateReceiverStreamingIP() {
     }     
     setReceiverStreamingIP(ip);   
 }
-
 
 bool Module::getTenGigaFlowControl() {
     int retval = -1;
@@ -3240,14 +3231,6 @@ void Module::updateCachedReceiverVariables() const {
         n += receiver.Receive(&i32, sizeof(i32));
         shm()->gappixels = i32;
 
-        // receiver read frequency
-        n += receiver.Receive(&i32, sizeof(i32));
-        shm()->rxReadFreq = i32;
-
-        // streaming source ip
-        n += receiver.Receive(&ip, sizeof(ip));
-        shm()->rxZmqip = ip;
-
         // additional json header
         n += receiver.Receive(cstring, sizeof(cstring));
         sls::strcpy_safe(shm()->rxAdditionalJsonHeader, cstring);
@@ -3578,19 +3561,22 @@ bool Module::setFileOverWrite(bool value) {
 
 bool Module::getFileOverWrite() const { return shm()->rxFileOverWrite; }
 
-int Module::setReceiverStreamingFrequency(int freq) {
-    if (freq >= 0) {
-        LOG(logDEBUG1) << "Sending read frequency to receiver: " << freq;
-        if (shm()->useReceiverFlag) {
-            int retval = -1;
-            sendToReceiver(F_RECEIVER_STREAMING_FREQUENCY, freq, retval);
-            LOG(logDEBUG1) << "Receiver read frequency: " << retval;
-            shm()->rxReadFreq = retval;
-        } else {
-            shm()->rxReadFreq = freq;
-        }
+int Module::getReceiverStreamingFrequency() {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to get receiver parameters (streaming/read frequency)");
     }
-    return shm()->rxReadFreq;
+    int freq = -1;
+    return sendToReceiver<int>(F_RECEIVER_STREAMING_FREQUENCY, freq);
+}
+
+void Module::setReceiverStreamingFrequency(int freq) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to set receiver parameters (streaming/read frequency)");
+    } 
+    if (freq < 0) {
+        throw RuntimeError("Invalid streaming frequency " + std::to_string(freq));
+    }
+    sendToReceiver<int>(F_RECEIVER_STREAMING_FREQUENCY, freq);
 }
 
 int Module::setReceiverStreamingTimer(int time_in_ms) {

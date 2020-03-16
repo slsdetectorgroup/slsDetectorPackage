@@ -816,8 +816,7 @@ void Detector::setRxZmqDataStream(bool value, Positions pos) {
 }
 
 Result<int> Detector::getRxZmqFrequency(Positions pos) const {
-    return pimpl->Parallel(&Module::setReceiverStreamingFrequency, pos,
-                           -1);
+    return pimpl->Parallel(&Module::getReceiverStreamingFrequency, pos);
 }
 
 void Detector::setRxZmqFrequency(int freq, Positions pos) {

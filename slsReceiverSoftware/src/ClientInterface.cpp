@@ -369,14 +369,6 @@ int ClientInterface::send_update(Interface &socket) {
     i32 = (int)receiver->getGapPixelsEnable();
     n += socket.Send(&i32, sizeof(i32));
 
-    // streaming frequency
-    i32 = (int)receiver->getStreamingFrequency();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // streaming source ip
-    ip = receiver->getStreamingSourceIP();
-    n += socket.Send(&ip, sizeof(ip));
-
     // additional json header
     sls::strcpy_safe(cstring, receiver->getAdditionalJsonHeader().c_str());
     n += socket.Send(cstring, sizeof(cstring));
@@ -922,17 +914,20 @@ int ClientInterface::set_streaming_port(Interface &socket) {
 int ClientInterface::set_streaming_source_ip(Interface &socket) {
     sls::IpAddr arg;
     socket.Receive(arg);
-    verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting streaming source ip:" << arg;
-    impl()->setStreamingSourceIP(arg);
+    if (arg != 0) { 
+        verifyIdle(socket);
+        LOG(logDEBUG1) << "Setting streaming source ip:" << arg;
+        impl()->setStreamingSourceIP(arg);
+    }
     sls::IpAddr retval = impl()->getStreamingSourceIP();
-    if (retval != arg) {
+    LOG(logDEBUG1) << "streaming IP:" << retval;
+    if (retval != arg && arg != 0) {
         std::ostringstream os;
         os << "Could not set streaming ip. Set " << arg
            << ", but read " << retval << '\n';
         throw RuntimeError(os.str());
     }
-    return socket.Send(OK);
+    return socket.sendResult(retval);
 }
 
 int ClientInterface::set_silent_mode(Interface &socket) {

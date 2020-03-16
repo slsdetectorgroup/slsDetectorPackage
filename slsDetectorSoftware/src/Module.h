@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200309
+#define SLS_SHMVERSION 0x200316
 
 namespace sls{
 
@@ -104,9 +104,6 @@ struct sharedSlsDetector {
     /** data streaming (up stream) enable in receiver  
      * (needed for restreaming dummy packet) */
     bool rxUpstream;
-
-    /* Receiver read frequency */
-    int rxReadFreq;
 
     /**  zmq tcp src ip address in client (only data) **/
     sls::IpAddr zmqip;
@@ -1693,15 +1690,16 @@ class Module : public virtual slsDetectorDefs {
      */
     bool getFileOverWrite() const;
 
+    int getReceiverStreamingFrequency();
+
     /**
      * (previously setReadReceiverFrequency)
      * Sets the receiver streaming frequency
      * @param freq nth frame streamed out, if 0, streamed out at a timer of 200
      * ms
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns receiver streaming frequency
      */
-    int setReceiverStreamingFrequency(int freq = -1);
+    void setReceiverStreamingFrequency(int freq);
 
     /**
      * (previously setReceiverReadTimer)

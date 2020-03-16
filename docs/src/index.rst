@@ -12,6 +12,7 @@ Welcome to slsDetectorPackage's documentation!
 
     installation
     dependencies
+    consuming
    
 .. toctree::
     :caption: C++ API

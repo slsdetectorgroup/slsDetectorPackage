@@ -3,7 +3,7 @@ find_package(Sphinx)
 
 
 if (DOXYGEN_FOUND AND SPHINX_FOUND)
-    message(${CMAKE_PROJECT_SORURCE_DIR}/slsDetectorSoftware/src)
+    # message(${CMAKE_PROJECT_SORURCE_DIR}/slsDetectorSoftware/src)
     # Utility to generate command line documentation
     add_executable(gendoc src/gendoc.cpp)
     # This is a bit hacky, but better than exposing stuff? 
@@ -30,6 +30,7 @@ if (DOXYGEN_FOUND AND SPHINX_FOUND)
     set(SPHINX_SOURCE_FILES
       src/commandline.rst
       src/container_utils.rst
+      src/consuming.rst
       src/dependencies.rst
       src/detector.rst
       src/index.rst

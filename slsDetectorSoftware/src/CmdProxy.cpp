@@ -1782,7 +1782,7 @@ std::string CmdProxy::MinMaxEnergyThreshold(int action) {
             os << "[n_value]\n\t[Moench] Minimum energy threshold (soft "
                   "setting) for processor."
                << '\n';
-        } else if (cmd == "emin") {
+        } else if (cmd == "emax") {
             os << "[n_value]\n\t[Moench] Maximum energy threshold (soft "
                   "setting) for processor."
                << '\n';

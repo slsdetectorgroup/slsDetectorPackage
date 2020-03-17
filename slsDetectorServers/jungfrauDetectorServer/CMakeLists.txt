@@ -14,13 +14,10 @@ add_executable(jungfrauDetectorServer_virtual
     ../slsDetectorServer/src/communication_funcs_UDP.c    
 )
 
-include_directories(
+target_include_directories(jungfrauDetectorServer_virtual
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
     ../slsDetectorServer/include
     ../../slsSupportLib/include
-)
-
-target_include_directories(jungfrauDetectorServer_virtual
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_compile_definitions(jungfrauDetectorServer_virtual
@@ -36,5 +33,6 @@ set_target_properties(jungfrauDetectorServer_virtual PROPERTIES
 )
 
 install(TARGETS jungfrauDetectorServer_virtual
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
+    EXPORT "${TARGETS_EXPORT_NAME}"
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

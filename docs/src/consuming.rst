@@ -3,16 +3,18 @@ Consuming slsDetectorPackage
 
 Depending on how you want to build your integration with 
 slsDetectorPackage there are a few different ways to 
-consume the package. 
+consume our package. The recommended way is to use one of the 
+CMake approaches. 
 
 
 
-CMake with submodule in your project
+CMake: slsDetectorPackage as submodule in your project
 ---------------------------------------
 
 If you are using CMake to build your integration and want to build everything
-in one go we support adding slsDetectorPackage as a subfolder in your cmake project. 
-a minimal example would be. 
+in one go, we support adding slsDetectorPackage as a subfolder in your cmake project. 
+
+A minimal CMakeLists.txt could look like this: 
 
 .. code-block:: cmake
 
@@ -27,15 +29,46 @@ a minimal example would be.
     #Link towards slsDetectorShared
     target_link_libraries(example slsDetectorShared)
 
-An example that also uses git submodules is available in our github repo
+A fully working example can be found at:
 
 https://github.com/slsdetectorgroup/cmake-subfolder-example
 
 
+CMake: find_package(slsDetectorPackage)
+------------------------------------------
+
+If you have compiled and installed slsDetectorPackage we also support
+find_package in CMake. If installed in a system wide location no path
+should be needed, otherwise specify cmake prefix path. 
+
+.. code-block:: cmake 
+
+    cmake_minimum_required(VERSION 3.12)
+    project(myintegration)
+
+    find_package(slsDetectorPackage 5.0 REQUIRED)
+    add_executable(example main.cpp)
+    target_link_libraries(example slsDetectorShared)
+
+
+Then assuming the slsDetectorPackage is installed in /path/to/sls/install
+you should be able to configure and build your project in this way. 
+
+.. code-block:: bash
+
+    cmake ../path/to/your/source -DCMAKE_PREFIX_PATH=/path/to/sls/install
+    make
+
+
+A minimal example is available at: https://github.com/slsdetectorgroup/minimal-cmake
+
 No tools minimal approach
 -----------------------------
 
-.. code-block:: c++
+While not recommended it is still possible to specify the include and library paths
+manually when invoking g++. This can sometimes be handy for a quick try. 
+
+.. code-block:: cpp
 
     #include "Detector.h"
     #include <iostream>
@@ -54,7 +87,8 @@ No tools minimal approach
         auto mac = det.getSourceUDPMAC()[module];
         std::cout << "Mac addr of module "<< module <<  " is " <<  mac.str() << '\n'; 
 
-    }⏎       
+    }     
+
 
 .. code-block:: bash
 

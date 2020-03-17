@@ -13,7 +13,7 @@ To use the basic building blocks, meaning sls_detector_get/put and
 the shared libraries these are needed: 
 
  * Linux, preferably recent kernel (currently no cross platform support)
- * CMake > 3.9 
+ * CMake > 3.12 
  * C++11 compatible compiler. (We test with gcc and clang)
  * ZeroMQ version 4
 
@@ -24,7 +24,7 @@ GUI
 The GUI is currently using Qt4 but watch out for an upgrade to 5. 
 
  * Qt 4.8
- * Qwt 6
+ * Qwt 6.1
 
 -----------------------
 Python bindings

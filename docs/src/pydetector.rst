@@ -1,9 +1,9 @@
 Detector
 =====================================================
 
-.. py:currentmodule:: sls_detector
+.. py:currentmodule:: slsdet
 
-.. autoclass:: ExperimentalDetector
+.. autoclass:: Detector
     :members:  
     :undoc-members:
     :show-inheritance:

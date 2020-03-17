@@ -42,6 +42,7 @@ if (DOXYGEN_FOUND AND SPHINX_FOUND)
       src/result.rst
       src/type_traits.rst
       src/ToString.rst
+      src/examples.rst
       
     )
 

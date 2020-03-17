@@ -15,17 +15,20 @@ configure_package_config_file(
 write_basic_package_version_file(
   "${PROJECT_BINARY_DIR}/${PROJECT_NAME_LOWER}-config-version.cmake"
   VERSION ${PROJECT_VERSION}
-  COMPATIBILITY SameMajorVersion)
+  COMPATIBILITY SameMajorVersion
+)
 
 install(FILES
   "${PROJECT_BINARY_DIR}/${PROJECT_NAME_LOWER}-config.cmake"
   "${PROJECT_BINARY_DIR}/${PROJECT_NAME_LOWER}-config-version.cmake"
   COMPONENT devel
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME_LOWER})
+  DESTINATION ${CMAKE_INSTALL_DIR}
+)
 
 if (PROJECT_LIBRARIES OR PROJECT_STATIC_LIBRARIES)
   install(
     EXPORT "${TARGETS_EXPORT_NAME}"
     FILE ${PROJECT_NAME_LOWER}-targets.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME_LOWER})
+    DESTINATION ${CMAKE_INSTALL_DIR}
+    )
 endif ()

@@ -806,13 +806,11 @@ void Detector::setFramesPerFile(int n, Positions pos) {
 // Zmq Streaming (Receiver<->Client)
 
 Result<bool> Detector::getRxZmqDataStream(Positions pos) const {
-    return pimpl->Parallel(&Module::enableDataStreamingFromReceiver, pos,
-                           -1);
+    return pimpl->Parallel(&Module::getReceiverStreaming, pos);
 }
 
 void Detector::setRxZmqDataStream(bool value, Positions pos) {
-    pimpl->Parallel(&Module::enableDataStreamingFromReceiver, pos,
-                    static_cast<int>(value));
+    pimpl->Parallel(&Module::setReceiverStreaming, pos, value);
 }
 
 Result<int> Detector::getRxZmqFrequency(Positions pos) const {

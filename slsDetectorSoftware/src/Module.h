@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200316
+#define SLS_SHMVERSION 0x200317
 
 namespace sls{
 
@@ -101,15 +101,8 @@ struct sharedSlsDetector {
     /** tcp port from gui/different process to receiver (only data) */
     int zmqport;
 
-    /** data streaming (up stream) enable in receiver  
-     * (needed for restreaming dummy packet) */
-    bool rxUpstream;
-
     /**  zmq tcp src ip address in client (only data) **/
     sls::IpAddr zmqip;
-
-    /**  zmq tcp src ip address in receiver (only data) **/
-    sls::IpAddr rxZmqip;
 
     /** gap pixels enable */
     int gappixels;
@@ -1711,12 +1704,9 @@ class Module : public virtual slsDetectorDefs {
      */
     int setReceiverStreamingTimer(int time_in_ms = 200);
 
-    /**
-     * Enable or disable streaming data from receiver to client
-     * @param enable 0 to disable 1 to enable -1 to only get the value
-     * @returns data streaming from receiver enable
-     */
-    bool enableDataStreamingFromReceiver(int enable = -1);
+    bool getReceiverStreaming();
+
+    void setReceiverStreaming(bool enable);
 
     /**
      * Enable/disable or 10Gbe

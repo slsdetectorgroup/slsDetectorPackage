@@ -409,7 +409,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->useReceiverFlag = false;
     shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
                      (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
-    shm()->rxUpstream = false;
     shm()->zmqip = IpAddr{};
     shm()->gappixels = 0U;
     memset(shm()->rxAdditionalJsonHeader, 0, MAX_STR_LENGTH);
@@ -1158,7 +1157,9 @@ void Module::startAcquisition() {
 void Module::stopAcquisition() {
     // get status before stopping acquisition
     runStatus s = ERROR, r = ERROR;
-    if (shm()->rxUpstream) {
+    bool zmqstreaming = false;
+    if (shm()->useReceiverFlag && getReceiverStreaming()) {
+        zmqstreaming = true;
         s = getRunStatus();
         r = getReceiverStatus();
     }
@@ -1167,7 +1168,7 @@ void Module::stopAcquisition() {
     shm()->stoppedFlag = true;
     LOG(logDEBUG1) << "Stopping Acquisition successful";
     // if rxr streaming and acquisition finished, restream dummy stop packet
-    if ((shm()->rxUpstream) && (s == IDLE) && (r == IDLE)) {
+    if (zmqstreaming && (s == IDLE) && (r == IDLE)) {
         restreamStopFromReceiver();
     }
 }
@@ -1803,8 +1804,6 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
         // to use rx_hostname if empty and also update client zmqip
         updateReceiverStreamingIP();
         setAdditionalJsonHeader(shm()->rxAdditionalJsonHeader);
-        enableDataStreamingFromReceiver(
-            static_cast<int>(enableDataStreamingFromReceiver(-1)));
     }
 
     return std::string(shm()->rxHostname);
@@ -3235,10 +3234,6 @@ void Module::updateCachedReceiverVariables() const {
         n += receiver.Receive(cstring, sizeof(cstring));
         sls::strcpy_safe(shm()->rxAdditionalJsonHeader, cstring);
 
-        // receiver streaming enable
-        n += receiver.Receive(&i32, sizeof(i32));
-        shm()->rxUpstream = static_cast<bool>(i32);
-
         // activate
         n += receiver.Receive(&i32, sizeof(i32));
         shm()->activated = static_cast<bool>(i32);
@@ -3589,19 +3584,19 @@ int Module::setReceiverStreamingTimer(int time_in_ms) {
     return retval;
 }
 
-bool Module::enableDataStreamingFromReceiver(int enable) {
-    if (enable >= 0) {
-        LOG(logDEBUG1) << "Sending Data Streaming to receiver: " << enable;
-        if (shm()->useReceiverFlag) {
-            int retval = -1;
-            sendToReceiver(F_STREAM_DATA_FROM_RECEIVER, enable, retval);
-            LOG(logDEBUG1) << "Receiver Data Streaming: " << retval;
-            shm()->rxUpstream = static_cast<bool>(retval);
-        } else {
-            shm()->rxUpstream = enable;
-        }
+bool Module::getReceiverStreaming() {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to get receiver parameters (zmq enable)");
     }
-    return shm()->rxUpstream;
+    int enable = -1;
+    return sendToReceiver<int>(F_STREAM_DATA_FROM_RECEIVER, enable);
+}
+
+void Module::setReceiverStreaming(bool enable) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to set receiver parameters (zmq enable)");
+    }  
+    sendToReceiver<int>(F_STREAM_DATA_FROM_RECEIVER, static_cast<int>(enable));
 }
 
 bool Module::enableTenGigabitEthernet(int value) {

@@ -373,10 +373,6 @@ int ClientInterface::send_update(Interface &socket) {
     sls::strcpy_safe(cstring, receiver->getAdditionalJsonHeader().c_str());
     n += socket.Send(cstring, sizeof(cstring));
 
-    // data streaming enable
-    i32 = (int)receiver->getDataStreamEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
     // activate
     i32 = (int)receiver->getActivate();
     n += socket.Send(&i32, sizeof(i32));
@@ -1227,7 +1223,7 @@ int ClientInterface::set_udp_ip(Interface &socket) {
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
     if (retval == 0) {
-        throw RuntimeError("Failed to get udp mac adddress to listen to\n");
+        throw RuntimeError("Failed to get udp mac adddress to listen to (eth:" + eth + ", ip:" + arg.str() + ")\n");
     }
     LOG(logINFO) << "Receiver MAC Address: " << retval;
     return socket.sendResult(retval);
@@ -1255,7 +1251,7 @@ int ClientInterface::set_udp_ip2(Interface &socket) {
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
     if (retval == 0) {
-        throw RuntimeError("Failed to get udp mac adddress2 to listen to\n");
+        throw RuntimeError("Failed to get udp mac adddress2 to listen to (eth:" + eth + ", ip:" + arg.str() + ")\n");
     }
     LOG(logINFO) << "Receiver MAC Address2: " << retval;
     return socket.sendResult(retval);

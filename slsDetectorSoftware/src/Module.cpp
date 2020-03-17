@@ -1903,15 +1903,9 @@ sls::IpAddr Module::getDestinationUDPIP() {
 
 void Module::updateRxDestinationUDPIP() {
     auto ip = getDestinationUDPIP();
-    if (ip == 0) {
-        // Hostname could be ip try to decode otherwise look up the hostname
-        ip = sls::IpAddr{shm()->rxHostname};
-        if (ip == 0) {
-            ip = HostnameToIp(shm()->rxHostname);
-        }  
-        LOG(logINFO) << "Setting destination default udp ip to " << ip;
+    if (ip != 0) {
+        setDestinationUDPIP(ip);    
     }     
-    setDestinationUDPIP(ip);    
 }
 
 void Module::setDestinationUDPIP2(const IpAddr ip) {
@@ -1939,15 +1933,9 @@ sls::IpAddr Module::getDestinationUDPIP2() {
 
 void Module::updateRxDestinationUDPIP2() {
     auto ip = getDestinationUDPIP2();
-    if (ip == 0) {
-        // Hostname could be ip try to decode otherwise look up the hostname
-        ip = sls::IpAddr{shm()->rxHostname};
-        if (ip == 0) {
-            ip = HostnameToIp(shm()->rxHostname);
-        }  
-        LOG(logINFO) << "Setting destination default udp ip2 to " << ip;    
+    if (ip != 0) { 
+        setDestinationUDPIP2(ip);       
     }     
-    setDestinationUDPIP2(ip);       
 }
 
 void Module::setDestinationUDPMAC(const MacAddr mac) {

@@ -1833,7 +1833,7 @@ void Module::setDestinationUDPIP(const IpAddr ip) {
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0LU);
         sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
-        LOG(logINFO) << "Setting destination udp mac to " << retval;
+        LOG(logINFO) << "Setting destination udp mac of detector " << detId << " to " << retval;
         sendToDetector(F_SET_DEST_UDP_MAC, retval, nullptr); 
     }   
 }
@@ -1863,7 +1863,7 @@ void Module::setDestinationUDPIP2(const IpAddr ip) {
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0LU);
         sendToReceiver(F_SET_RECEIVER_UDP_IP2, ip, retval);
-        LOG(logINFO) << "Setting destination udp mac2 to " << retval;
+        LOG(logINFO) << "Setting destination udp mac2 of detector " << detId << " to " << retval;
         sendToDetector(F_SET_DEST_UDP_MAC2, retval, nullptr); 
     }   
 }
@@ -2044,7 +2044,7 @@ void Module::updateReceiverStreamingIP() {
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }  
-        LOG(logINFO) << "Setting default receiver streaming zmq ip to " << ip;
+        LOG(logINFO) << "Setting default receiver " << detId << " streaming zmq ip to " << ip;
     }     
     setReceiverStreamingIP(ip);   
 }

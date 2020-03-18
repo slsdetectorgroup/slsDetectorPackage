@@ -15,7 +15,6 @@ add_library(slsDetectorShared SHARED
     ${HEADERS}
 )
 
-
 # Do we have link time optimization?
 check_ipo_supported(RESULT LTO_AVAILABLE)
 if(LTO_AVAILABLE)
@@ -28,13 +27,15 @@ target_include_directories(slsDetectorShared PUBLIC
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(slsDetectorShared PUBLIC
-    slsProjectOptions
-    slsProjectWarnings
+target_link_libraries(slsDetectorShared 
+    PUBLIC
     slsSupportLib
-    zmq
     pthread
     rt
+    PRIVATE
+    slsProjectOptions
+    slsProjectWarnings
+    ${ZeroMQ_LIBRARIES}
 )
 
 

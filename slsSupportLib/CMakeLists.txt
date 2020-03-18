@@ -61,11 +61,14 @@ set_target_properties(slsSupportLib PROPERTIES
 message(${ZeroMQ_LIBRARIES})
 
 target_link_libraries(slsSupportLib 
+    PRIVATE
+    ${ZeroMQ_LIBRARIES}
     slsProjectOptions 
     slsProjectWarnings 
-    # ${ZeroMQ_LIBRARIES}
-    zmq
-    rapidjson)
+    rapidjson
+)
+
+
 
 if (SLS_USE_TESTS)
     add_subdirectory(tests)

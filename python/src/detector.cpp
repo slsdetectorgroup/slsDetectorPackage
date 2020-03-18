@@ -92,6 +92,15 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("setADCPhaseInDegrees", &Detector::setADCPhaseInDegrees, py::arg(),
              py::arg() = Positions{})
+        .def("getDBITPhase", &Detector::getDBITPhase, py::arg() = Positions{})
+        .def("setDBITPhase", &Detector::setDBITPhase, py::arg(),
+             py::arg() = Positions{})
+        .def("getMaxDBITPhaseShift", &Detector::getMaxDBITPhaseShift,
+             py::arg() = Positions{})
+        .def("getDBITPhaseInDegrees", &Detector::getDBITPhaseInDegrees,
+             py::arg() = Positions{})
+        .def("setDBITPhaseInDegrees", &Detector::setDBITPhaseInDegrees,
+             py::arg(), py::arg() = Positions{})
         .def("getClockFrequency", &Detector::getClockFrequency, py::arg(),
              py::arg() = Positions{})
         .def("setClockFrequency", &Detector::setClockFrequency, py::arg(),
@@ -464,28 +473,8 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("setNumberOfAnalogSamples", &Detector::setNumberOfAnalogSamples,
              py::arg(), py::arg() = Positions{})
-        .def("getNumberOfDigitalSamples", &Detector::getNumberOfDigitalSamples,
-             py::arg() = Positions{})
-        .def("setNumberOfDigitalSamples", &Detector::setNumberOfDigitalSamples,
-             py::arg(), py::arg() = Positions{})
-        .def("getReadoutMode", &Detector::getReadoutMode,
-             py::arg() = Positions{})
-        .def("setReadoutMode", &Detector::setReadoutMode, py::arg(),
-             py::arg() = Positions{})
-        .def("getDBITPhase", &Detector::getDBITPhase, py::arg() = Positions{})
-        .def("setDBITPhase", &Detector::setDBITPhase, py::arg(),
-             py::arg() = Positions{})
-        .def("getMaxDBITPhaseShift", &Detector::getMaxDBITPhaseShift,
-             py::arg() = Positions{})
-        .def("getDBITPhaseInDegrees", &Detector::getDBITPhaseInDegrees,
-             py::arg() = Positions{})
-        .def("setDBITPhaseInDegrees", &Detector::setDBITPhaseInDegrees,
-             py::arg(), py::arg() = Positions{})
         .def("getADCClock", &Detector::getADCClock, py::arg() = Positions{})
         .def("setADCClock", &Detector::setADCClock, py::arg(),
-             py::arg() = Positions{})
-        .def("getDBITClock", &Detector::getDBITClock, py::arg() = Positions{})
-        .def("setDBITClock", &Detector::setDBITClock, py::arg(),
              py::arg() = Positions{})
         .def("getRUNClock", &Detector::getRUNClock, py::arg() = Positions{})
         .def("setRUNClock", &Detector::setRUNClock, py::arg(),
@@ -495,19 +484,9 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("setADCPipeline", &Detector::setADCPipeline, py::arg(),
              py::arg() = Positions{})
-        .def("getDBITPipeline", &Detector::getDBITPipeline,
-             py::arg() = Positions{})
-        .def("setDBITPipeline", &Detector::setDBITPipeline, py::arg(),
-             py::arg() = Positions{})
         .def("getVoltage", &Detector::getVoltage, py::arg(),
              py::arg() = Positions{})
         .def("setVoltage", &Detector::setVoltage, py::arg(), py::arg(),
-             py::arg() = Positions{})
-        .def("getMeasuredVoltage", &Detector::getMeasuredVoltage, py::arg(),
-             py::arg() = Positions{})
-        .def("getMeasuredCurrent", &Detector::getMeasuredCurrent, py::arg(),
-             py::arg() = Positions{})
-        .def("getSlowADC", &Detector::getSlowADC, py::arg(),
              py::arg() = Positions{})
         .def("getADCEnableMask", &Detector::getADCEnableMask,
              py::arg() = Positions{})
@@ -517,8 +496,26 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("setTenGigaADCEnableMask", &Detector::setTenGigaADCEnableMask,
              py::arg(), py::arg() = Positions{})
-        .def("getADCInvert", &Detector::getADCInvert, py::arg() = Positions{})
-        .def("setADCInvert", &Detector::setADCInvert, py::arg(),
+        .def("getNumberOfDigitalSamples", &Detector::getNumberOfDigitalSamples,
+             py::arg() = Positions{})
+        .def("setNumberOfDigitalSamples", &Detector::setNumberOfDigitalSamples,
+             py::arg(), py::arg() = Positions{})
+        .def("getReadoutMode", &Detector::getReadoutMode,
+             py::arg() = Positions{})
+        .def("setReadoutMode", &Detector::setReadoutMode, py::arg(),
+             py::arg() = Positions{})
+        .def("getDBITClock", &Detector::getDBITClock, py::arg() = Positions{})
+        .def("setDBITClock", &Detector::setDBITClock, py::arg(),
+             py::arg() = Positions{})
+        .def("getDBITPipeline", &Detector::getDBITPipeline,
+             py::arg() = Positions{})
+        .def("setDBITPipeline", &Detector::setDBITPipeline, py::arg(),
+             py::arg() = Positions{})
+        .def("getMeasuredVoltage", &Detector::getMeasuredVoltage, py::arg(),
+             py::arg() = Positions{})
+        .def("getMeasuredCurrent", &Detector::getMeasuredCurrent, py::arg(),
+             py::arg() = Positions{})
+        .def("getSlowADC", &Detector::getSlowADC, py::arg(),
              py::arg() = Positions{})
         .def("getExternalSamplingSource", &Detector::getExternalSamplingSource,
              py::arg() = Positions{})
@@ -627,6 +624,9 @@ void init_det(py::module &m) {
              py::arg(), py::arg() = Positions{})
         .def("getInitialChecks", &Detector::getInitialChecks)
         .def("setInitialChecks", &Detector::setInitialChecks, py::arg())
+        .def("getADCInvert", &Detector::getADCInvert, py::arg() = Positions{})
+        .def("setADCInvert", &Detector::setADCInvert, py::arg(),
+             py::arg() = Positions{})
         .def("getControlPort", &Detector::getControlPort,
              py::arg() = Positions{})
         .def("setControlPort", &Detector::setControlPort, py::arg(),

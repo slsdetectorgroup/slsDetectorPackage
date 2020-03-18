@@ -795,7 +795,7 @@ std::string CmdProxy::UDPDestinationIP(int action) {
             if (val == 0) {
                 val = HostnameToIp(rxHostname.c_str());
             }
-            LOG(logINFO) << "Setting rx_udpip of detector " << 
+            LOG(logINFO) << "Setting udp_dstip of detector " << 
                 det_id << " to " << val;
             det->setDestinationUDPIP(val, {det_id});
             os << val << '\n'; 
@@ -833,7 +833,7 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
             if (val == 0) {
                 val = HostnameToIp(rxHostname.c_str());
             }
-            LOG(logINFO) << "Setting rx_udpip2 of detector " << 
+            LOG(logINFO) << "Setting udp_dstip2 of detector " << 
                 det_id << " to " << val;
             det->setDestinationUDPIP2(val, {det_id});
             os << val << '\n'; 

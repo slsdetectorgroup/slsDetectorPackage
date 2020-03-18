@@ -58,7 +58,7 @@ void Implementation::InitializeMembers() {
     silentMode = false;
     fifoDepth = 0;
     frameDiscardMode = NO_DISCARD;
-    framePadding = false;
+    framePadding = true;
 
     // file parameters
     fileFormatType = BINARY;

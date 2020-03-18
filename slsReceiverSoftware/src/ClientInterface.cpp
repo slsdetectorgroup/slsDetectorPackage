@@ -176,6 +176,7 @@ int ClientInterface::functionTable(){
 	flist[F_SET_RECEIVER_NUM_INTERFACES]    =   &ClientInterface::set_num_interfaces;
 	flist[F_RECEIVER_SET_ADC_MASK_10G]		=	&ClientInterface::set_adc_mask_10g;
     flist[F_RECEIVER_SET_NUM_COUNTERS]      =   &ClientInterface::set_num_counters;
+    flist[F_INCREMENT_FILE_INDEX]           =   &ClientInterface::increment_file_index;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -345,40 +346,12 @@ int ClientInterface::send_update(Interface &socket) {
     i32 = (int)receiver->getFramesPerFile();
     n += socket.Send(&i32, sizeof(i32));
 
-    // frame discard policy
-    i32 = (int)receiver->getFrameDiscardPolicy();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // frame padding
-    i32 = (int)receiver->getFramePaddingEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // file write enable
-    i32 = (int)receiver->getFileWriteEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // master file write enable
-    i32 = (int)receiver->getMasterFileWriteEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // file overwrite enable
-    i32 = (int)receiver->getOverwriteEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
     // gap pixels
     i32 = (int)receiver->getGapPixelsEnable();
     n += socket.Send(&i32, sizeof(i32));
 
     // activate
     i32 = (int)receiver->getActivate();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // deactivated padding enable
-    i32 = (int)receiver->getDeactivatedPadding();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // silent mode
-    i32 = (int)receiver->getSilentMode();
     n += socket.Send(&i32, sizeof(i32));
 
     // dbit list
@@ -1310,5 +1283,12 @@ int ClientInterface::set_num_counters(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting counters: " << arg;
     impl()->setNumberofCounters(arg);
+    return socket.Send(OK);
+}
+
+int ClientInterface::increment_file_index(Interface &socket) {
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Incrementing file index";
+    impl()->setFileIndex(impl()->getFileIndex() + 1);
     return socket.Send(OK);
 }

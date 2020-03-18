@@ -110,20 +110,8 @@ struct sharedSlsDetector {
     /** gap pixels in each direction */
     slsDetectorDefs::xy nGappixels;
 
-    /** receiver frames discard policy */
-    slsDetectorDefs::frameDiscardPolicy rxFrameDiscardMode;
-
-    /** receiver partial frames padding enable */
-    bool rxFramePadding;
-
     /** activated receiver */
     bool activated;
-
-    /** padding enable in deactivated receiver */
-    bool rxPadDeactivatedModules;
-
-    /** silent receiver */
-    bool rxSilentMode;
 
     /** path of the output files */
     char rxFilePath[MAX_STR_LENGTH];
@@ -139,15 +127,6 @@ struct sharedSlsDetector {
 
     /** frames per file */
     int rxFramesPerFile;
-
-    /** file write enable */
-    bool rxFileWrite;
-
-    /** master file write enable */
-    bool rxMasterFileWrite;
-
-    /** overwrite enable */
-    bool rxFileOverWrite;
 
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> rxDbitList;
 
@@ -1268,14 +1247,12 @@ class Module : public virtual slsDetectorDefs {
      */
     int activate(int const enable = -1);
 
+    bool getDeactivatedRxrPaddingMode();
+
     /**
      * Set deactivated Receiver padding mode (Eiger only)
-     * @param padding padding option for deactivated receiver. Can be 1
-     * (padding), 0 (no padding), -1 (gets)
-     * @returns 1 (padding), 0 (no padding), -1 (inconsistent values) for
-     * padding option
      */
-    bool setDeactivatedRxrPaddingMode(int padding = -1);
+    void setDeactivatedRxrPaddingMode(bool padding);
 
     /**
      * Returns the enable if data will be flipped across x axis (Eiger)
@@ -1560,21 +1537,11 @@ class Module : public virtual slsDetectorDefs {
 
     int getFramesPerFile() const;
 
-    /**
-     * Sets the frames discard policy in receiver
-     * @param f frames discard policy
-     * @returns frames discard policy set in receiver
-     */
-    frameDiscardPolicy setReceiverFramesDiscardPolicy(
-        frameDiscardPolicy f = GET_FRAME_DISCARD_POLICY);
+    frameDiscardPolicy getReceiverFramesDiscardPolicy();
+    void setReceiverFramesDiscardPolicy(frameDiscardPolicy f);
 
-    /**
-     * Sets the partial frames padding enable in receiver
-     * @param f partial frames padding enable
-     * @returns partial frames padding enable in receiver
-     */
-    bool setPartialFramesPadding(bool padding);
-    bool getPartialFramesPadding() const;
+    void setPartialFramesPadding(bool padding);
+    bool getPartialFramesPadding();
 
     /**
      * Returns file format
@@ -1602,11 +1569,8 @@ class Module : public virtual slsDetectorDefs {
      */
 
     int64_t getFileIndex() const;
-    /**
-     * increments file index
-     * @returns the file index
-     */
-    int64_t incrementFileIndex();
+
+    void incrementFileIndex();
 
     /**
      * Receiver starts listening to packets
@@ -1639,44 +1603,13 @@ class Module : public virtual slsDetectorDefs {
      */
     uint64_t getReceiverCurrentFrameIndex() const;
 
-    /**
-     * Sets/Gets receiver file write enable
-     * @param enable 1 or 0 to set/reset file write enable
-     * @returns file write enable
-     */
-    bool setFileWrite(bool value);
 
-    /**
-     * Gets file write enable
-     * @returns file write enable
-     */
-    bool getFileWrite() const;
-
-    /**
-     * Sets/Gets receiver master file write enable
-     * @param value 1 or 0 to set/reset master file write enable
-     * @returns master file write enable
-     */
-    bool setMasterFileWrite(bool value);
-
-    /**
-     * Gets master file write enable
-     * @returns master file write enable
-     */
-    bool getMasterFileWrite() const;
-
-    /**
-     * Sets file overwrite in the receiver
-     * @param enable true or false to set/reset file overwrite enable
-     * @returns file overwrite enable
-     */
-    bool setFileOverWrite(bool value);
-
-    /**
-     * Gets file overwrite in the receiver
-     * @returns file overwrite enable
-     */
-    bool getFileOverWrite() const;
+    void setFileWrite(bool value);
+    bool getFileWrite();
+    void setMasterFileWrite(bool value);
+    bool getMasterFileWrite();
+    void setFileOverWrite(bool value);
+    bool getFileOverWrite();
 
     int getReceiverStreamingFrequency();
 
@@ -1717,12 +1650,8 @@ class Module : public virtual slsDetectorDefs {
      */
     int setReceiverFifoDepth(int n_frames = -1);
 
-    /**
-     * Set/get receiver silent mode
-     * @param i is -1 to get, 0 unsets silent mode, 1 sets silent mode
-     * @returns the receiver silent mode enable
-     */
-    bool setReceiverSilentMode(int value = -1);
+    bool getReceiverSilentMode();
+    void setReceiverSilentMode(bool enable);
 
     /**
      * If data streaming in receiver is enabled,

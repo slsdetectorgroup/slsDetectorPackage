@@ -120,6 +120,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_num_interfaces(sls::ServerInterface &socket);
     int set_adc_mask_10g(sls::ServerInterface &socket);  
     int set_num_counters(sls::ServerInterface &socket);  
+    int increment_file_index(sls::ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {

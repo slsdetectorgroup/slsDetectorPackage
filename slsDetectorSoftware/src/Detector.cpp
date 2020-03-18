@@ -684,18 +684,16 @@ void Detector::setRxFifoDepth(int nframes, Positions pos) {
 }
 
 Result<bool> Detector::getRxSilentMode(Positions pos) const {
-    return pimpl->Parallel(&Module::setReceiverSilentMode, pos, -1);
+    return pimpl->Parallel(&Module::getReceiverSilentMode, pos);
 }
 
 void Detector::setRxSilentMode(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverSilentMode, pos,
-                    static_cast<int>(value));
+    pimpl->Parallel(&Module::setReceiverSilentMode, pos, value);
 }
 
 Result<defs::frameDiscardPolicy>
 Detector::getRxFrameDiscardPolicy(Positions pos) const {
-    return pimpl->Parallel(&Module::setReceiverFramesDiscardPolicy, pos,
-                           defs::GET_FRAME_DISCARD_POLICY);
+    return pimpl->Parallel(&Module::getReceiverFramesDiscardPolicy, pos);
 }
 
 void Detector::setRxFrameDiscardPolicy(defs::frameDiscardPolicy f,
@@ -1039,12 +1037,11 @@ void Detector::setActive(bool active, Positions pos) {
 }
 
 Result<bool> Detector::getRxPadDeactivatedMode(Positions pos) const {
-    return pimpl->Parallel(&Module::setDeactivatedRxrPaddingMode, pos, -1);
+    return pimpl->Parallel(&Module::getDeactivatedRxrPaddingMode, pos);
 }
 
 void Detector::setRxPadDeactivatedMode(bool pad, Positions pos) {
-    pimpl->Parallel(&Module::setDeactivatedRxrPaddingMode, pos,
-                    static_cast<int>(pad));
+    pimpl->Parallel(&Module::setDeactivatedRxrPaddingMode, pos, pad);
 }
 
 Result<bool> Detector::getPartialReset(Positions pos) const {

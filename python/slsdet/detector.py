@@ -441,7 +441,7 @@ class Detector(CppDetectorApi):
 
     @udp_dstmac.setter
     def udp_dstmac(self, mac):
-        self.getDestinationUDPMAC2(mac)
+        self.setDestinationUDPMAC(MacAddr(mac))
 
     @property
     def udp_dstmac2(self):
@@ -449,7 +449,7 @@ class Detector(CppDetectorApi):
 
     @udp_dstmac2.setter
     def udp_dstmac2(self, mac):
-        self.getDestinationUDPMAC2(mac)
+        self.setDestinationUDPMAC2(MacAddr(mac))
 
 
     @property
@@ -458,7 +458,7 @@ class Detector(CppDetectorApi):
 
     @udp_srcip.setter
     def udp_srcip(self, ip):
-        self.setSourceUDPIP(ip)
+        self.setSourceUDPIP(IpAddr(ip))
 
     @property
     def udp_srcip2(self):
@@ -490,7 +490,7 @@ class Detector(CppDetectorApi):
 
     @src_udpmac.setter
     def src_udpmac(self, mac):
-        self.setSourceUDPMAC(mac)
+        self.setSourceUDPMAC(MacAddr(mac))
 
     @property
     def src_udpip2(self):
@@ -498,7 +498,7 @@ class Detector(CppDetectorApi):
 
     @src_udpip2.setter
     def src_udpip2(self, ip):
-        self.setSourceUDPIP(ip)
+        self.setSourceUDPIP(IpAddr(ip))
 
     @property
     def src_udpip(self):
@@ -506,7 +506,7 @@ class Detector(CppDetectorApi):
 
     @src_udpip.setter
     def src_udpip(self, ip):
-        self.setSourceUDPIP(ip)
+        self.setSourceUDPIP(IpAddr(ip))
 
 
     @property
@@ -515,7 +515,7 @@ class Detector(CppDetectorApi):
 
     @src_udpmac2.setter
     def src_udpmac2(self, mac):
-        self.setSourceUDPMAC2(mac)
+        self.setSourceUDPMAC2(MacAddr(mac))
 
     @property
     def vhighvoltage(self):

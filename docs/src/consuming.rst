@@ -62,6 +62,27 @@ you should be able to configure and build your project in this way.
 
 A minimal example is available at: https://github.com/slsdetectorgroup/minimal-cmake
 
+
+CMake: find_package and conda
+----------------------------------
+
+.. note::
+
+    conda can also be used for installing dependencies such as zmq, Qt4 etc. 
+
+find_package(slsDetectorPackage) also works if you have installed slsDetectorPackage using conda.
+The only difference is that you point CMake to $CONDA_PREFIX 
+
+
+.. code-block:: bash
+
+    #assuming myenv contains slsdetlib
+    conda activate myenv
+    cmake ../path/to/your/source -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
+    make
+
+Depending on your system compiler you might also have to install gxx_linux-64 to compiled.
+
 No tools minimal approach
 -----------------------------
 

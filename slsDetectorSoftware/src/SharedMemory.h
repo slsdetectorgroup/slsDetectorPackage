@@ -8,7 +8,6 @@
  *@short functions basic implemenation of shared memory
  */
 
-#include "ansi.h"
 #include "logger.h"
 #include "sls_detector_exceptions.h"
 
@@ -18,7 +17,7 @@
 #include <fcntl.h> // O_CREAT, O_TRUNC..
 #include <iostream>
 #include <sstream>
-#include <stdio.h>    // printf
+// #include <stdio.h>    // printf
 #include <sys/mman.h> // shared memory
 #include <sys/stat.h> // fstat
 #include <unistd.h>

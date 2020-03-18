@@ -7,7 +7,7 @@
  *@short functions to open/close zmq sockets
  */
 
-#include "ansi.h"
+
 #include "sls_detector_exceptions.h"
 
 #include <arpa/inet.h>			//inet_ntoa
@@ -19,9 +19,8 @@
 #include <unistd.h> 			//usleep in some machines
 #include <vector>
 #include <zmq.h>
+
 using namespace rapidjson;
-
-
 #define MAX_STR_LENGTH 1000
 
 // #define ZMQ_DETAIL

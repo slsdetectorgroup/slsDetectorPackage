@@ -43,10 +43,14 @@ if(result)
 endif()
 
 target_include_directories(slsSupportLib PUBLIC
-    ${ZeroMQ_INCLUDE_DIRS}
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
+
+target_include_directories(slsSupportLib PRIVATE
+    ${ZeroMQ_INCLUDE_DIRS}
+)
+
 
 set_target_properties(slsSupportLib PROPERTIES
     LIBRARY_OUTPUT_NAME SlsSupport
@@ -54,10 +58,13 @@ set_target_properties(slsSupportLib PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
+message(${ZeroMQ_LIBRARIES})
+
 target_link_libraries(slsSupportLib 
     slsProjectOptions 
     slsProjectWarnings 
-    ${ZeroMQ_LIBRARIES}
+    # ${ZeroMQ_LIBRARIES}
+    zmq
     rapidjson)
 
 if (SLS_USE_TESTS)

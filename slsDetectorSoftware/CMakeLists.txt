@@ -32,10 +32,11 @@ target_link_libraries(slsDetectorShared PUBLIC
     slsProjectOptions
     slsProjectWarnings
     slsSupportLib
-    ${ZeroMQ_LIBRARIES}
+    zmq
     pthread
     rt
 )
+
 
 set(PUBLICHEADERS
     include/slsDetectorUsers.h
@@ -69,7 +70,7 @@ foreach(val RANGE ${len2})
     target_link_libraries(${val1} 
         slsDetectorShared
         pthread
-        ${ZeroMQ_LIBRARIES}
+        zmq
         rt
     )
     set_target_properties(${val1} PROPERTIES 

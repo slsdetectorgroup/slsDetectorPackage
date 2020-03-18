@@ -14,8 +14,6 @@
 #define __cplusplus
 #endif
 
-#include "ansi.h"
-
 #ifdef __cplusplus
 //C++ includes
 #include "sls_detector_exceptions.h"

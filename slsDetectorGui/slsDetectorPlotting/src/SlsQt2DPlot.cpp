@@ -1,5 +1,5 @@
 #include "SlsQt2DPlot.h"
-#include "ansi.h"
+// #include "ansi.h"
 
 #include <qlist.h>
 #include <qprinter.h>

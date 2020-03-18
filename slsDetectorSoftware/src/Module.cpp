@@ -411,7 +411,6 @@ void Module::initializeDetectorStructure(detectorType type) {
                      (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->zmqip = IpAddr{};
     shm()->gappixels = 0U;
-    memset(shm()->rxAdditionalJsonHeader, 0, MAX_STR_LENGTH);
     shm()->rxFrameDiscardMode = NO_DISCARD;
     shm()->rxFramePadding = true;
     shm()->activated = true;
@@ -1803,7 +1802,6 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
         setReceiverSilentMode(static_cast<int>(shm()->rxSilentMode));
         // to use rx_hostname if empty and also update client zmqip
         updateReceiverStreamingIP();
-        setAdditionalJsonHeader(shm()->rxAdditionalJsonHeader);
     }
 
     return std::string(shm()->rxHostname);
@@ -2156,36 +2154,22 @@ void Module::setTransmissionDelayRight(int value) {
 }
 
 
-std::string
-Module::setAdditionalJsonHeader(const std::string &jsonheader) {
-    int fnum = F_ADDITIONAL_JSON_HEADER;
+void Module::setAdditionalJsonHeader(const std::string &jsonheader) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to set receiver parameters (zmq json header)");
+    } 
     char args[MAX_STR_LENGTH]{};
-    char retvals[MAX_STR_LENGTH]{};
     sls::strcpy_safe(args, jsonheader.c_str());
-    LOG(logDEBUG1) << "Sending additional json header " << args;
-
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(fnum, args, retvals);
-        LOG(logDEBUG1) << "Additional json header: " << retvals;
-        memset(shm()->rxAdditionalJsonHeader, 0, MAX_STR_LENGTH);
-        sls::strcpy_safe(shm()->rxAdditionalJsonHeader, retvals);
-    } else {
-        sls::strcpy_safe(shm()->rxAdditionalJsonHeader, jsonheader.c_str());
-    }
-    return shm()->rxAdditionalJsonHeader;
+    sendToReceiver(F_ADDITIONAL_JSON_HEADER, args, nullptr);
 }
 
 std::string Module::getAdditionalJsonHeader() {
-    int fnum = F_GET_ADDITIONAL_JSON_HEADER;
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to get receiver parameters (zmq json header)");
+    } 
     char retvals[MAX_STR_LENGTH]{};
-    LOG(logDEBUG1) << "Getting additional json header ";
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(fnum, nullptr, retvals);
-        LOG(logDEBUG1) << "Additional json header: " << retvals;
-        memset(shm()->rxAdditionalJsonHeader, 0, MAX_STR_LENGTH);
-        sls::strcpy_safe(shm()->rxAdditionalJsonHeader, retvals);
-    }
-    return std::string(shm()->rxAdditionalJsonHeader);
+    sendToReceiver(F_GET_ADDITIONAL_JSON_HEADER, nullptr, retvals);
+    return std::string(retvals);
 }
 
 std::string Module::setAdditionalJsonParameter(const std::string &key,
@@ -2217,7 +2201,7 @@ std::string Module::setAdditionalJsonParameter(const std::string &key,
         valueLiteral.append("\"");
     }
 
-    std::string header(shm()->rxAdditionalJsonHeader);
+    std::string header = getAdditionalJsonHeader();
     size_t keyPos = header.find(keyLiteral);
 
     // if key found, replace value
@@ -2245,8 +2229,9 @@ std::string Module::setAdditionalJsonParameter(const std::string &key,
 
 std::string Module::getAdditionalJsonParameter(const std::string &key) {
     // additional json header is empty
-    if (strlen(shm()->rxAdditionalJsonHeader) == 0U)
-        return std::string();
+    std::string jsonheader = getAdditionalJsonHeader();
+    if (jsonheader.empty())
+        return jsonheader;
 
     // add quotations before and after the key value
     std::string keyLiteral = key;
@@ -2255,7 +2240,7 @@ std::string Module::getAdditionalJsonParameter(const std::string &key) {
 
     // loop through the parameters
     for (const auto &parameter :
-         sls::split(shm()->rxAdditionalJsonHeader, ',')) {
+         sls::split(jsonheader, ',')) {
         // get a vector of key value pair for each parameter
         const auto &pairs = sls::split(parameter, ':');
         // match for key
@@ -3217,10 +3202,6 @@ void Module::updateCachedReceiverVariables() const {
         // gap pixels
         n += receiver.Receive(&i32, sizeof(i32));
         shm()->gappixels = i32;
-
-        // additional json header
-        n += receiver.Receive(cstring, sizeof(cstring));
-        sls::strcpy_safe(shm()->rxAdditionalJsonHeader, cstring);
 
         // activate
         n += receiver.Receive(&i32, sizeof(i32));

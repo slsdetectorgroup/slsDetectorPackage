@@ -369,10 +369,6 @@ int ClientInterface::send_update(Interface &socket) {
     i32 = (int)receiver->getGapPixelsEnable();
     n += socket.Send(&i32, sizeof(i32));
 
-    // additional json header
-    sls::strcpy_safe(cstring, receiver->getAdditionalJsonHeader().c_str());
-    n += socket.Send(cstring, sizeof(cstring));
-
     // activate
     i32 = (int)receiver->getActivate();
     n += socket.Send(&i32, sizeof(i32));
@@ -973,14 +969,11 @@ int ClientInterface::restream_stop(Interface &socket) {
 
 int ClientInterface::set_additional_json_header(Interface &socket) {
     char arg[MAX_STR_LENGTH]{};
-    char retval[MAX_STR_LENGTH]{};
     socket.Receive(arg);
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting additional json header: " << arg;
     impl()->setAdditionalJsonHeader(arg);
-    sls::strcpy_safe(retval, impl()->getAdditionalJsonHeader().c_str());
-    LOG(logDEBUG1) << "additional json header:" << retval;
-    return socket.sendResult(retval);
+    return socket.Send(OK);
 }
 
 int ClientInterface::get_additional_json_header(Interface &socket) {

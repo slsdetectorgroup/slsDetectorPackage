@@ -110,9 +110,6 @@ struct sharedSlsDetector {
     /** gap pixels in each direction */
     slsDetectorDefs::xy nGappixels;
 
-    /** additional json header */
-    char rxAdditionalJsonHeader[MAX_STR_LENGTH];
-
     /** receiver frames discard policy */
     slsDetectorDefs::frameDiscardPolicy rxFrameDiscardMode;
 
@@ -1038,10 +1035,8 @@ class Module : public virtual slsDetectorDefs {
     /**
      * Sets the additional json header\sa sharedSlsDetector
      * @param jsonheader additional json header
-     * @returns additional json header, returns "none" if default setting and no
-     * custom ip set
      */
-    std::string setAdditionalJsonHeader(const std::string &jsonheader);
+    void setAdditionalJsonHeader(const std::string &jsonheader);
 
     /**
      * Returns the additional json header \sa sharedSlsDetector

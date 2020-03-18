@@ -32,8 +32,8 @@ target_link_libraries(slsDetectorShared
     slsSupportLib
     pthread
     rt
-    PRIVATE
     slsProjectOptions
+    PRIVATE
     slsProjectWarnings
     ${ZeroMQ_LIBRARIES}
 )

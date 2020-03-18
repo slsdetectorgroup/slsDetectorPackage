@@ -61,9 +61,10 @@ set_target_properties(slsSupportLib PROPERTIES
 message(${ZeroMQ_LIBRARIES})
 
 target_link_libraries(slsSupportLib 
+    PUBLIC
+    slsProjectOptions 
     PRIVATE
     ${ZeroMQ_LIBRARIES}
-    slsProjectOptions 
     slsProjectWarnings 
     PUBLIC
     rapidjson

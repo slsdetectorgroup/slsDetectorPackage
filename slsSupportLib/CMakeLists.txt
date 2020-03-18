@@ -6,6 +6,7 @@ set(SOURCES
     src/ServerSocket.cpp
     src/ServerInterface.cpp
     src/network_utils.cpp
+    src/ZmqSocket.cpp
 )
 
 set(HEADERS

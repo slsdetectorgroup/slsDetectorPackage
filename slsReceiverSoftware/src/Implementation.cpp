@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iostream>
 #include <sys/stat.h> // stat
+#include <unistd.h>
 
 /** cosntructor & destructor */
 

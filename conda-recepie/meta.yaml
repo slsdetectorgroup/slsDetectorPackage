@@ -7,7 +7,7 @@ source:
   - path: ..
 
 build:
-  number: 2
+  number: 0
   binary_relocation: True
   rpaths:
     - lib/

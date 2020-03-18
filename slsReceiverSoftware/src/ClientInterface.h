@@ -127,6 +127,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_dbit_list(sls::ServerInterface &socket);
     int get_dbit_list(sls::ServerInterface &socket);
     int set_dbit_offset(sls::ServerInterface &socket);
+    int get_dbit_offset(sls::ServerInterface &socket);
     int set_quad_type(sls::ServerInterface &socket);
     int set_read_n_lines(sls::ServerInterface &socket);
     int set_udp_ip(sls::ServerInterface &socket);

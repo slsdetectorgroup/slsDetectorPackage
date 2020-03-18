@@ -411,8 +411,6 @@ void Module::initializeDetectorStructure(detectorType type) {
                      (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->zmqip = IpAddr{};
     shm()->gappixels = 0U;
-    shm()->activated = true;
-    shm()->rxDbitOffset = 0;
     shm()->numUDPInterfaces = 1;
     shm()->stoppedFlag = false;
 
@@ -1727,8 +1725,6 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
             setReadoutMode(getReadoutMode());
             setADCEnableMask(getADCEnableMask());
             setTenGigaADCEnableMask(getTenGigaADCEnableMask());
-            setReceiverDbitOffset(shm()->rxDbitOffset);
-            setReceiverDbitList(shm()->rxDbitList);
             break;
 
         case MOENCH:
@@ -2564,6 +2560,10 @@ int Module::setExternalSampling(int value) {
 int Module::getExternalSampling() { return setExternalSampling(-1); }
 
 void Module::setReceiverDbitList(const std::vector<int>& list) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (dbit list)");
+    } 
+
     LOG(logDEBUG1) << "Setting Receiver Dbit List";
 
     if (list.size() > 64) {
@@ -2576,39 +2576,31 @@ void Module::setReceiverDbitList(const std::vector<int>& list) {
         }
     }
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> arg = list;
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);
-        shm()->rxDbitList = list;
-    } else {
-        shm()->rxDbitList = list;
-    }
+    sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);        
 }
 
 std::vector<int> Module::getReceiverDbitList() const {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (dbit list)");
+    } 
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
-    LOG(logDEBUG1) << "Getting Receiver Dbit List";
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_GET_RECEIVER_DBIT_LIST, nullptr, retval);
-        shm()->rxDbitList = retval;
-    }
-    return shm()->rxDbitList;
+    sendToReceiver(F_GET_RECEIVER_DBIT_LIST, nullptr, retval);
+    return retval;    
 }
 
-int Module::setReceiverDbitOffset(int value) {
-    int retval = -1;
-    LOG(logDEBUG1) << "Setting digital bit offset in receiver to "
-                        << value;
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RECEIVER_DBIT_OFFSET, value, retval);
-        LOG(logDEBUG1) << "Receiver digital bit offset: " << retval;
-        shm()->rxDbitOffset = value;
-    } else {
-        shm()->rxDbitOffset = value;
-    }
-    return shm()->rxDbitOffset;
+void Module::setReceiverDbitOffset(int value) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (dbit offset)");
+    } 
+    sendToReceiver(F_SET_RECEIVER_DBIT_OFFSET, value, nullptr);        
 }
 
-int Module::getReceiverDbitOffset() { return shm()->rxDbitOffset; }
+int Module::getReceiverDbitOffset() {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (dbit offset)");
+    } 
+    return sendToReceiver<int>(F_GET_RECEIVER_DBIT_OFFSET);    
+}
 
 void Module::writeAdcRegister(uint32_t addr, uint32_t val) {
     uint32_t args[]{addr, val};
@@ -2623,16 +2615,10 @@ int Module::activate(int enable) {
     sendToDetector(F_ACTIVATE, enable, retval);
     sendToDetectorStop(F_ACTIVATE, enable, retval);
     LOG(logDEBUG1) << "Activate: " << retval;
-    shm()->activated = static_cast<bool>(retval);
     if (shm()->useReceiverFlag) {
-        int fnum = F_RECEIVER_ACTIVATE;
-        enable = static_cast<int>(shm()->activated);
-        retval = -1;
-        LOG(logDEBUG1)
-            << "Setting activate flag " << enable << " to receiver";
-        sendToReceiver(fnum, enable, retval);
+        sendToReceiver(F_RECEIVER_ACTIVATE, retval, nullptr);        
     }
-    return static_cast<int>(shm()->activated);
+    return retval;
 }
 
 bool Module::getDeactivatedRxrPaddingMode() {
@@ -3110,21 +3096,6 @@ void Module::updateCachedReceiverVariables() const {
         // gap pixels
         n += receiver.Receive(&i32, sizeof(i32));
         shm()->gappixels = i32;
-
-        // activate
-        n += receiver.Receive(&i32, sizeof(i32));
-        shm()->activated = static_cast<bool>(i32);
-
-        // dbit list
-        {
-            sls::FixedCapacityContainer<int, MAX_RX_DBIT> temp;
-            n += receiver.Receive(&temp, sizeof(temp));
-            shm()->rxDbitList = temp;
-        }
-
-        // dbit offset
-        n += receiver.Receive(&i32, sizeof(i32));
-        shm()->rxDbitOffset = i32;
 
         if (n == 0) {
             throw RuntimeError(

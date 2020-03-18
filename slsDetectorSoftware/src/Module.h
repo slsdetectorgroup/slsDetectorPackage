@@ -110,14 +110,6 @@ struct sharedSlsDetector {
     /** gap pixels in each direction */
     slsDetectorDefs::xy nGappixels;
 
-    /** activated receiver */
-    bool activated;
-
-    sls::FixedCapacityContainer<int, MAX_RX_DBIT> rxDbitList;
-
-    /** reciever dbit offset */
-    int rxDbitOffset;
-
     /** num udp interfaces */
     int numUDPInterfaces;
 
@@ -1190,31 +1182,12 @@ class Module : public virtual slsDetectorDefs {
      */
     int getExternalSampling();
 
-    /**
-     * Set external sampling enable (CTB only)
-     * @param list external sampling source (Option: 0-63)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
+    /** digital data bits enable (CTB only) */
     void setReceiverDbitList(const std::vector<int>& list);
-
-    /**
-     * Get external sampling source (CTB only)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns external sampling enable
-     */
     std::vector<int> getReceiverDbitList() const;
 
-    /**
-     * Set digital data offset in bytes (CTB only)
-     * @param value digital data offset in bytes
-     * @returns digital data offset in bytes
-     */
-    int setReceiverDbitOffset(int value);
-
-    /**
-     * Get digital data offset in bytes (CTB only)
-     * @returns digital data offset in bytes
-     */
+    /** Set digital data offset in bytes (CTB only) */
+    void setReceiverDbitOffset(int value);
     int getReceiverDbitOffset();
 
     /**

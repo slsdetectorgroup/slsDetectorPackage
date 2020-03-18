@@ -479,3 +479,67 @@ TEST_CASE("rx_zmqip", "[.cmd][.rx]") {
     }
 }
 
+TEST_CASE("rx_dbitoffset", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD) {
+        auto previous = det.getRxDbitOffset();
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitoffset", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitoffset 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitoffset", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitoffset 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitoffset", {"15"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitoffset 15\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitoffset", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "rx_dbitoffset 15\n");
+        }
+        // Reset to previous value
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxDbitOffset(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("rx_dbitoffset", {}, -1, GET));
+    }
+}
+
+
+
+TEST_CASE("rx_dbitlist", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD) {
+        auto previous = det.getRxDbitList();
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitlist", {"0", "4", "5", "8", "9", "10", "52", "63"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitlist [0, 4, 5, 8, 9, 10, 52, 63]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitlist", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "rx_dbitlist [0, 4, 5, 8, 9, 10, 52, 63]\n");
+        }
+        REQUIRE_THROWS(proxy.Call("rx_dbitlist", {"67"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("rx_dbitlist", {"-1"}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("rx_dbitlist", {"all"}, -1, PUT));
+        // Reset to previous value
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxDbitList(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("rx_dbitlist", {}, -1, GET));
+    }
+}

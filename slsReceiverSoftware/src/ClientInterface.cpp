@@ -182,7 +182,8 @@ int ClientInterface::functionTable(){
 	flist[F_RECEIVER_SET_ADC_MASK]			=	&ClientInterface::set_adc_mask;
 	flist[F_SET_RECEIVER_DBIT_LIST]			=	&ClientInterface::set_dbit_list;
 	flist[F_GET_RECEIVER_DBIT_LIST]			=	&ClientInterface::get_dbit_list;
-	flist[F_RECEIVER_DBIT_OFFSET]			= 	&ClientInterface::set_dbit_offset;
+	flist[F_SET_RECEIVER_DBIT_OFFSET]		= 	&ClientInterface::set_dbit_offset;
+	flist[F_GET_RECEIVER_DBIT_OFFSET]		= 	&ClientInterface::get_dbit_offset;
     flist[F_SET_RECEIVER_QUAD]			    = 	&ClientInterface::set_quad_type;
     flist[F_SET_RECEIVER_READ_N_LINES]      =   &ClientInterface::set_read_n_lines;
     flist[F_SET_RECEIVER_UDP_IP]            =   &ClientInterface::set_udp_ip;
@@ -342,24 +343,6 @@ int ClientInterface::send_update(Interface &socket) {
 
     // gap pixels
     i32 = (int)receiver->getGapPixelsEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // activate
-    i32 = (int)receiver->getActivate();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // dbit list
-    {
-        std::vector<int> list = receiver->getDbitList();
-        int retvalsize = list.size();
-        int retval[retvalsize];
-        std::copy(std::begin(list), std::end(list), retval);
-        socket.Send(&retvalsize, sizeof(retvalsize));
-        socket.Send(retval, sizeof(retval));
-    }
-
-    // dbit offset
-    i32 = receiver->getDbitOffset();
     n += socket.Send(&i32, sizeof(i32));
 
     return OK;
@@ -1242,6 +1225,8 @@ int ClientInterface::set_adc_mask(Interface &socket) {
 int ClientInterface::set_dbit_list(Interface &socket) {
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> args;
     socket.Receive(args);
+    if (myDetectorType != CHIPTESTBOARD)
+        functionNotImplemented();
     LOG(logDEBUG1) << "Setting DBIT list";
     for (auto &it : args) {
         LOG(logDEBUG1) << it << " ";
@@ -1253,6 +1238,8 @@ int ClientInterface::set_dbit_list(Interface &socket) {
 }
 
 int ClientInterface::get_dbit_list(Interface &socket) {
+    if (myDetectorType != CHIPTESTBOARD)
+        functionNotImplemented();
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
     retval = impl()->getDbitList();
     LOG(logDEBUG1) << "Dbit list size retval:" << retval.size();
@@ -1261,13 +1248,26 @@ int ClientInterface::get_dbit_list(Interface &socket) {
 
 int ClientInterface::set_dbit_offset(Interface &socket) {
     auto arg = socket.Receive<int>();
-    if (arg >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting Dbit offset: " << arg;
-        impl()->setDbitOffset(arg);
+    if (myDetectorType != CHIPTESTBOARD)
+        functionNotImplemented();
+    if (arg < 0) {
+        throw RuntimeError("Invalid dbit offset: "
+            + std::to_string(arg));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting Dbit offset: " << arg;
+    impl()->setDbitOffset(arg);
+    
     int retval = impl()->getDbitOffset();
     validate(arg, retval, "set dbit offset", DEC);
+    LOG(logDEBUG1) << "Dbit offset retval: " << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_dbit_offset(Interface &socket) {
+    if (myDetectorType != CHIPTESTBOARD)
+        functionNotImplemented();
+    int retval = impl()->getDbitOffset();
     LOG(logDEBUG1) << "Dbit offset retval: " << retval;
     return socket.sendResult(retval);
 }

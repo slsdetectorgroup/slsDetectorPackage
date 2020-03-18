@@ -412,35 +412,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->zmqip = IpAddr{};
     shm()->gappixels = 0U;
     shm()->activated = true;
-    sls::strcpy_safe(shm()->rxFilePath, "/");
-    sls::strcpy_safe(shm()->rxFileName, "run");
-    shm()->rxFileIndex = 0;
-    shm()->rxFileFormat = BINARY;
-    switch (shm()->myDetectorType) {
-    case GOTTHARD:
-        shm()->rxFramesPerFile = MAX_FRAMES_PER_FILE;
-        break;
-    case EIGER:
-        shm()->rxFramesPerFile = EIGER_MAX_FRAMES_PER_FILE;
-        break;
-    case JUNGFRAU:
-        shm()->rxFramesPerFile = JFRAU_MAX_FRAMES_PER_FILE;
-        break;
-    case CHIPTESTBOARD:
-        shm()->rxFramesPerFile = CTB_MAX_FRAMES_PER_FILE;
-        break;
-    case MOENCH:
-        shm()->rxFramesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
-        break;
-    case MYTHEN3:
-        shm()->rxFramesPerFile = MYTHEN3_MAX_FRAMES_PER_FILE;
-        break;
-    case GOTTHARD2:
-        shm()->rxFramesPerFile = GOTTHARD2_MAX_FRAMES_PER_FILE;
-        break;       
-    default:
-        break;
-    }
     shm()->rxDbitOffset = 0;
     shm()->numUDPInterfaces = 1;
     shm()->stoppedFlag = false;
@@ -1732,11 +1703,6 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
         LOG(logDEBUG1) << printReceiverConfiguration();
 
         setReceiverUDPSocketBufferSize(0);
-        setFilePath(shm()->rxFilePath);
-        setFileName(shm()->rxFileName);
-        setFileIndex(shm()->rxFileIndex);
-        setFileFormat(shm()->rxFileFormat);
-        setFramesPerFile(shm()->rxFramesPerFile);
         sendTotalNumFramestoReceiver();
         setExptime(getExptime());
         setPeriod(getPeriod());
@@ -2032,15 +1998,14 @@ void Module::setReceiverStreamingPort(int port) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq port)");
     }    
-    sendToReceiver<int>(F_SET_RECEIVER_STREAMING_PORT, port);
+    sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
 }
 
 int Module::getReceiverStreamingPort() {    
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to get receiver parameters (zmq port)");
     }
-    int port = -1;
-    return sendToReceiver<int>(F_SET_RECEIVER_STREAMING_PORT, port);
+    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
 }
 
 void Module::setClientStreamingIP(const sls::IpAddr ip) {
@@ -2065,15 +2030,14 @@ void Module::setReceiverStreamingIP(const sls::IpAddr ip) {
     if (shm()->zmqip == 0) {
         shm()->zmqip = ip;
     }
-    sendToReceiver<sls::IpAddr>(F_RECEIVER_STREAMING_SRC_IP, ip);
+    sendToReceiver(F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
 }
 
 sls::IpAddr Module::getReceiverStreamingIP() {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (streaming ip)");
     }
-    IpAddr ip = IpAddr{};
-    return sendToReceiver<sls::IpAddr>(F_RECEIVER_STREAMING_SRC_IP, ip);
+    return sendToReceiver<sls::IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
 }
 
 void Module::updateReceiverStreamingIP() {
@@ -2145,7 +2109,7 @@ void Module::setAdditionalJsonHeader(const std::string &jsonheader) {
     } 
     char args[MAX_STR_LENGTH]{};
     sls::strcpy_safe(args, jsonheader.c_str());
-    sendToReceiver(F_ADDITIONAL_JSON_HEADER, args, nullptr);
+    sendToReceiver(F_SET_ADDITIONAL_JSON_HEADER, args, nullptr);
 }
 
 std::string Module::getAdditionalJsonHeader() {
@@ -2675,16 +2639,15 @@ bool Module::getDeactivatedRxrPaddingMode() {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (deactivated padding)");
     }    
-    int enable = -1;
-    return sendToReceiver<int>(F_RECEIVER_DEACTIVATED_PADDING_ENABLE, enable);
+    return sendToReceiver<int>(F_GET_RECEIVER_DEACTIVATED_PADDING);
 }
 
 void Module::setDeactivatedRxrPaddingMode(bool padding) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (deactivated padding)");
     }    
-    sendToReceiver<int>(F_RECEIVER_DEACTIVATED_PADDING_ENABLE, 
-        static_cast<int>(padding));
+    int arg = static_cast<int>(padding);
+    sendToReceiver(F_SET_RECEIVER_DEACTIVATED_PADDING, arg, nullptr);
 }
 
 bool Module::getFlippedDataX() { 
@@ -3138,33 +3101,11 @@ void Module::updateCachedReceiverVariables() const {
             sls::ClientSocket("Receiver", shm()->rxHostname, shm()->rxTCPPort);
         receiver.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
         int n = 0, i32 = 0;
-        int64_t i64 = 0;
-        char cstring[MAX_STR_LENGTH]{};
         IpAddr ip;
 
         n += receiver.Receive(&ip, sizeof(ip));
         LOG(logDEBUG1)
             << "Updating receiver last modified by " << ip;
-
-        // filepath
-        n += receiver.Receive(cstring, sizeof(cstring));
-        sls::strcpy_safe(shm()->rxFilePath, cstring);
-
-        // filename
-        n += receiver.Receive(cstring, sizeof(cstring));
-        sls::strcpy_safe(shm()->rxFileName, cstring);
-
-        // index
-        n += receiver.Receive(&i64, sizeof(i64));
-        shm()->rxFileIndex = i64;
-
-        // file format
-        n += receiver.Receive(&i32, sizeof(i32));
-        shm()->rxFileFormat = static_cast<fileFormat>(i32);
-
-        // frames per file
-        n += receiver.Receive(&i32, sizeof(i32));
-        shm()->rxFramesPerFile = i32;
 
         // gap pixels
         n += receiver.Receive(&i32, sizeof(i32));
@@ -3225,136 +3166,128 @@ void Module::setDetectorHostname() {
     }
 }
 
-std::string Module::getFilePath() { return shm()->rxFilePath; }
-
-std::string Module::setFilePath(const std::string &path) {
-    if (!path.empty()) {
-        char args[MAX_STR_LENGTH]{};
-        char retvals[MAX_STR_LENGTH]{};
-        sls::strcpy_safe(args, path.c_str());
-        LOG(logDEBUG1) << "Sending file path to receiver: " << args;
-        if (shm()->useReceiverFlag) {
-            sendToReceiver(F_SET_RECEIVER_FILE_PATH, args, retvals);
-            LOG(logDEBUG1) << "Receiver file path: " << retvals;
-            sls::strcpy_safe(shm()->rxFilePath, retvals);
-        } else {
-            sls::strcpy_safe(shm()->rxFilePath, args);
-        }
-    }
-    return shm()->rxFilePath;
-}
-
-std::string Module::getFileName() { return shm()->rxFileName; }
-
-std::string Module::setFileName(const std::string &fname) {
-    if (!fname.empty()) {
-        char args[MAX_STR_LENGTH]{};
-        char retvals[MAX_STR_LENGTH]{};
-        sls::strcpy_safe(args, fname.c_str());
-        LOG(logDEBUG1) << "Sending file name to receiver: " << args;
-        if (shm()->useReceiverFlag) {
-            sendToReceiver(F_SET_RECEIVER_FILE_NAME, args, retvals);
-            LOG(logDEBUG1) << "Receiver file name: " << retvals;
-            sls::strcpy_safe(shm()->rxFileName, retvals);
-        } else {
-            sls::strcpy_safe(shm()->rxFileName, args);
-        }
-    }
-    return shm()->rxFileName;
-}
-
-int Module::setFramesPerFile(int n_frames) {
-    if (n_frames >= 0) {
-        LOG(logDEBUG1)
-            << "Setting receiver frames per file to " << n_frames;
-        if (shm()->useReceiverFlag) {
-            int retval = -1;
-            sendToReceiver(F_SET_RECEIVER_FRAMES_PER_FILE, n_frames, retval);
-            LOG(logDEBUG1) << "Receiver frames per file: " << retval;
-            shm()->rxFramesPerFile = retval;
-        } else {
-            shm()->rxFramesPerFile = n_frames;
-        }
-    }
-    return getFramesPerFile();
-}
-
-int Module::getFramesPerFile() const { return shm()->rxFramesPerFile; }
-
-slsDetectorDefs::frameDiscardPolicy Module::getReceiverFramesDiscardPolicy() {
+std::string Module::getFilePath() {
     if (!shm()->useReceiverFlag) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (frame discard policy)");
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (file path)");
     } 
-    int policy = -1;
-    return static_cast<frameDiscardPolicy>(
-        sendToReceiver<int>(F_RECEIVER_DISCARD_POLICY, policy));    
+    char retvals[MAX_STR_LENGTH]{};
+    sendToReceiver(F_GET_RECEIVER_FILE_PATH, nullptr, retvals);
+    return std::string(retvals);
 }
 
-void Module::setReceiverFramesDiscardPolicy(frameDiscardPolicy f) {
+void Module::setFilePath(const std::string &path) {
     if (!shm()->useReceiverFlag) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (frame discard policy)");
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (file path)");
     } 
-    sendToReceiver<int>(F_RECEIVER_DISCARD_POLICY, 
-        static_cast<int>(f));    
-}
-
-void Module::setPartialFramesPadding(bool padding) {
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (frame padding)");
-    } 
-    sendToReceiver<int>(F_RECEIVER_PADDING_ENABLE, static_cast<int>(padding));        
-}
-
-bool Module::getPartialFramesPadding() {
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (frame padding)");
-    } 
-    int enable = -1;
-    return sendToReceiver<int>(F_RECEIVER_PADDING_ENABLE, enable);    
-}
-
-slsDetectorDefs::fileFormat Module::setFileFormat(fileFormat f) {
-    if (f != GET_FILE_FORMAT) {
-        auto arg = static_cast<int>(f);
-        auto retval = static_cast<fileFormat>(-1);
-        LOG(logDEBUG1) << "Setting receiver file format to " << arg;
-        if (shm()->useReceiverFlag) {
-            sendToReceiver(F_SET_RECEIVER_FILE_FORMAT, arg, retval);
-            LOG(logDEBUG1) << "Receiver file format: " << retval;
-            shm()->rxFileFormat = retval;
-        } else {
-            shm()->rxFileFormat = f;
-        }
+    if (path.empty()) {
+        throw RuntimeError("Cannot set empty file path");
     }
-    return getFileFormat();
+    char args[MAX_STR_LENGTH]{};
+    sls::strcpy_safe(args, path.c_str());
+    sendToReceiver(F_SET_RECEIVER_FILE_PATH, args, nullptr);
 }
 
-slsDetectorDefs::fileFormat Module::getFileFormat() const {
-    return shm()->rxFileFormat;
+std::string Module::getFileName() {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (file name prefix)");
+    } 
+    char retvals[MAX_STR_LENGTH]{};
+    sendToReceiver(F_GET_RECEIVER_FILE_NAME, nullptr, retvals);
+    return std::string(retvals);
 }
 
-int64_t Module::setFileIndex(int64_t file_index) {
-    if (file_index >= 0) {
-        int64_t retval = -1;
-        LOG(logDEBUG1) << "Setting file index to " << file_index;
-        if (shm()->useReceiverFlag) {
-            sendToReceiver(F_SET_RECEIVER_FILE_INDEX, file_index, retval);
-            LOG(logDEBUG1) << "Receiver file index: " << retval;
-            shm()->rxFileIndex = retval;
-        } else {
-            shm()->rxFileIndex = file_index;
-        }
+void Module::setFileName(const std::string &fname) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (file name prefix)");
+    } 
+    if (fname.empty()) {
+        throw RuntimeError("Cannot set empty file name prefix");
     }
-    return getFileIndex();
+    char args[MAX_STR_LENGTH]{};
+    sls::strcpy_safe(args, fname.c_str());
+    sendToReceiver(F_SET_RECEIVER_FILE_NAME, args, nullptr);
 }
 
-int64_t Module::getFileIndex() const { return shm()->rxFileIndex; }
+int64_t Module::getFileIndex() { 
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (file index)");
+    } 
+    return sendToReceiver<int64_t>(F_GET_RECEIVER_FILE_INDEX);
+}
+
+void Module::setFileIndex(int64_t file_index) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (file index)");
+    } 
+    sendToReceiver(F_SET_RECEIVER_FILE_INDEX, file_index, nullptr);
+}
 
 void Module::incrementFileIndex() {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (increment file index)");
     }        
     sendToReceiver(F_INCREMENT_FILE_INDEX, nullptr, nullptr);
+}
+
+slsDetectorDefs::fileFormat Module::getFileFormat() {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (file format)");
+    } 
+    return static_cast<fileFormat>(
+        sendToReceiver<int>(F_GET_RECEIVER_FILE_FORMAT)); 
+}
+
+void Module::setFileFormat(fileFormat f) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (file format)");
+    } 
+    int arg = static_cast<int>(f);
+    sendToReceiver(F_SET_RECEIVER_FILE_FORMAT, arg, nullptr);
+}
+
+int Module::getFramesPerFile() {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (frames per file)");
+    } 
+    return sendToReceiver<int>(F_GET_RECEIVER_FRAMES_PER_FILE);
+}
+
+void Module::setFramesPerFile(int n_frames) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (frames per file)");
+    } 
+    sendToReceiver(F_SET_RECEIVER_FRAMES_PER_FILE, n_frames, nullptr);
+}
+
+slsDetectorDefs::frameDiscardPolicy Module::getReceiverFramesDiscardPolicy() {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (frame discard policy)");
+    } 
+    return static_cast<frameDiscardPolicy>(
+        sendToReceiver<int>(F_GET_RECEIVER_DISCARD_POLICY));    
+}
+
+void Module::setReceiverFramesDiscardPolicy(frameDiscardPolicy f) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (frame discard policy)");
+    } 
+    int arg = static_cast<int>(f);
+    sendToReceiver(F_SET_RECEIVER_DISCARD_POLICY, arg, nullptr);    
+}
+
+bool Module::getPartialFramesPadding() {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (frame padding)");
+    } 
+    return sendToReceiver<int>(F_GET_RECEIVER_PADDING);    
+}
+
+void Module::setPartialFramesPadding(bool padding) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (frame padding)");
+    } 
+    int arg = static_cast<int>(padding);
+    sendToReceiver(F_SET_RECEIVER_PADDING, arg, nullptr);        
 }
 
 void Module::startReceiver() {
@@ -3436,56 +3369,52 @@ void Module::setFileWrite(bool value) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file write enable)");
     } 
-    sendToReceiver<int>(F_ENABLE_RECEIVER_FILE_WRITE, 
-        static_cast<int>(value));    
+    int arg = static_cast<int>(value);
+    sendToReceiver(F_SET_RECEIVER_FILE_WRITE, arg, nullptr);    
 }
 
 bool Module::getFileWrite() {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file_write enable)");
     } 
-    int enable = -1;
-    return sendToReceiver<int>(F_ENABLE_RECEIVER_FILE_WRITE, enable);    
+    return sendToReceiver<int>(F_GET_RECEIVER_FILE_WRITE);    
 }
 
 void Module::setMasterFileWrite(bool value) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (master file write enable)");
     }    
-    sendToReceiver<int>(F_ENABLE_RECEIVER_MASTER_FILE_WRITE, 
-        static_cast<int>(value));
+    int arg = static_cast<int>(value);
+    sendToReceiver(F_SET_RECEIVER_MASTER_FILE_WRITE, arg, nullptr);
 }
 
 bool Module::getMasterFileWrite() {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (master file write enable)");
     }    
-    int enable = -1;
-    return sendToReceiver<int>(F_ENABLE_RECEIVER_MASTER_FILE_WRITE, enable);
+    return sendToReceiver<int>(F_GET_RECEIVER_MASTER_FILE_WRITE);
 }
 
 void Module::setFileOverWrite(bool value) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file overwrite enable)");
     }    
-    sendToReceiver<int>(F_ENABLE_RECEIVER_OVERWRITE, 
-        static_cast<int>(value));
+    int arg = static_cast<int>(value);
+    sendToReceiver(F_SET_RECEIVER_OVERWRITE, arg, nullptr);
 }
 
 bool Module::getFileOverWrite() { 
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file overwrite enable)");
     }    
-    int enable = -1;
-    return sendToReceiver<int>(F_ENABLE_RECEIVER_OVERWRITE, enable);
+    return sendToReceiver<int>(F_GET_RECEIVER_OVERWRITE);
 }
 
 int Module::getReceiverStreamingFrequency() {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (streaming/read frequency)");
     }
-    int freq = -1;
-    return sendToReceiver<int>(F_RECEIVER_STREAMING_FREQUENCY, freq);
+    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_FREQUENCY);
 }
 
 void Module::setReceiverStreamingFrequency(int freq) {
@@ -3495,7 +3424,7 @@ void Module::setReceiverStreamingFrequency(int freq) {
     if (freq < 0) {
         throw RuntimeError("Invalid streaming frequency " + std::to_string(freq));
     }
-    sendToReceiver<int>(F_RECEIVER_STREAMING_FREQUENCY, freq);
+    sendToReceiver(F_SET_RECEIVER_STREAMING_FREQUENCY, freq, nullptr);
 }
 
 int Module::setReceiverStreamingTimer(int time_in_ms) {
@@ -3512,15 +3441,15 @@ bool Module::getReceiverStreaming() {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to get receiver parameters (zmq enable)");
     }
-    int enable = -1;
-    return sendToReceiver<int>(F_STREAM_DATA_FROM_RECEIVER, enable);
+    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING);
 }
 
 void Module::setReceiverStreaming(bool enable) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq enable)");
     }  
-    sendToReceiver<int>(F_STREAM_DATA_FROM_RECEIVER, static_cast<int>(enable));
+    int arg = static_cast<int>(enable);
+    sendToReceiver(F_SET_RECEIVER_STREAMING, arg, nullptr);
 }
 
 bool Module::enableTenGigabitEthernet(int value) {
@@ -3552,15 +3481,15 @@ bool Module::getReceiverSilentMode() {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (silent mode)");
     }    
-    int enable = -1;
-    return sendToReceiver<int>(F_SET_RECEIVER_SILENT_MODE, enable);
+    return sendToReceiver<int>(F_GET_RECEIVER_SILENT_MODE);
 }
 
 void Module::setReceiverSilentMode(bool enable) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (silent mode)");
     } 
-    sendToReceiver<int>(F_SET_RECEIVER_SILENT_MODE, static_cast<int>(enable));
+    int arg = static_cast<int>(enable);
+    sendToReceiver(F_SET_RECEIVER_SILENT_MODE, arg, nullptr);
 }
 
 void Module::restreamStopFromReceiver() {

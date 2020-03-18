@@ -62,7 +62,7 @@ void Implementation::InitializeMembers() {
 
     // file parameters
     fileFormatType = BINARY;
-    filePath = "";
+    filePath = "/";
     fileName = "run";
     fileIndex = 0;
     fileWriteEnable = true;

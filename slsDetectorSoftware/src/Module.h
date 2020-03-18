@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200317
+#define SLS_SHMVERSION 0x200318
 
 namespace sls{
 
@@ -112,21 +112,6 @@ struct sharedSlsDetector {
 
     /** activated receiver */
     bool activated;
-
-    /** path of the output files */
-    char rxFilePath[MAX_STR_LENGTH];
-
-    /** file name prefix */
-    char rxFileName[MAX_STR_LENGTH];
-
-    /** file index */
-    int64_t rxFileIndex;
-
-    /** file format */
-    slsDetectorDefs::fileFormat rxFileFormat;
-
-    /** frames per file */
-    int rxFramesPerFile;
 
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> rxDbitList;
 
@@ -1502,75 +1487,24 @@ class Module : public virtual slsDetectorDefs {
      */
     void setDetectorHostname();
 
-    /**
-     * Returns output file directory
-     * @returns output file directory
-     */
+
     std::string getFilePath();
-
-    /**
-     * Sets up the file directory
-     * @param s file directory
-     * @returns file dir
-     */
-    std::string setFilePath(const std::string &path);
-
-    /**
-     * Returns file name prefix
-     * @returns file name prefix
-     */
+    void setFilePath(const std::string &path);
     std::string getFileName();
-
-    /**
-     * Sets up the file name prefix
-     * @param s file name prefix
-     * @returns file name prefix
-     */
-    std::string setFileName(const std::string &fname);
-
-    /**
-     * Sets the max frames per file in receiver
-     * @param f max frames per file
-     * @returns max frames per file in receiver
-     */
-    int setFramesPerFile(int n_frames);
-
-    int getFramesPerFile() const;
-
+    void setFileName(const std::string &fname);
+    int64_t getFileIndex();
+    void setFileIndex(int64_t file_index);
+    void incrementFileIndex();
+    fileFormat getFileFormat() ;
+    void setFileFormat(fileFormat f);
+    int getFramesPerFile();
+    /** 0 will set frames per file to unlimited */
+    void setFramesPerFile(int n_frames);
     frameDiscardPolicy getReceiverFramesDiscardPolicy();
     void setReceiverFramesDiscardPolicy(frameDiscardPolicy f);
-
-    void setPartialFramesPadding(bool padding);
     bool getPartialFramesPadding();
+    void setPartialFramesPadding(bool padding);
 
-    /**
-     * Returns file format
-     * @returns file format
-     */
-    fileFormat getFileFormat() const;
-
-    /**
-     * Sets up the file format
-     * @param f file format
-     * @returns file format
-     */
-    fileFormat setFileFormat(fileFormat f);
-
-    /**
-     * Sets up the file index
-     * @param i file index
-     * @returns file index
-     */
-    int64_t setFileIndex(int64_t file_index);
-
-    /**
-     * Gets the file index
-     * @returns file index
-     */
-
-    int64_t getFileIndex() const;
-
-    void incrementFileIndex();
 
     /**
      * Receiver starts listening to packets

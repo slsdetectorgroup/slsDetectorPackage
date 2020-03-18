@@ -64,8 +64,10 @@ message(${ZeroMQ_LIBRARIES})
 target_link_libraries(slsSupportLib 
     PUBLIC
     slsProjectOptions 
+    # ${ZeroMQ_LIBRARIES}
+    zmq
     PRIVATE
-    ${ZeroMQ_LIBRARIES}
+    
     slsProjectWarnings 
     PUBLIC
     rapidjson

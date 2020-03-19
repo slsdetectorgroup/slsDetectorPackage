@@ -4110,10 +4110,13 @@ int slsDetector::configureMAC() {
 		//converting IPaddress to hex
 		stringstream ss(arg[0]);
 		char cword[50]="";
-		bzero(cword, 50);
+		memset(cword, 0, sizeof(cword));
 		string s;
 		while (getline(ss, s, '.')) {
-			sprintf(cword,"%s%02x",cword,atoi(s.c_str()));
+			char temp[20]="";
+			memset(temp, 0, sizeof(temp));
+			sprintf(temp,"%02x",atoi(s.c_str()));
+			strcat(cword, temp);
 		}
 		bzero(arg[0], 50);
 		strcpy(arg[0],cword);
@@ -4126,12 +4129,12 @@ int slsDetector::configureMAC() {
 		//converting MACaddress to hex
 		stringstream ss(arg[1]);
 		char cword[50]="";
-		bzero(cword, 50);
+		memset(cword, 0, sizeof(cword));
 		string s;
 		while (getline(ss, s, ':')) {
-			sprintf(cword,"%s%s",cword,s.c_str());
+			strcat(cword, s.c_str());
 		}
-		bzero(arg[1], 50);
+		memset(arg[1], 0, sizeof(arg[1]));
 		strcpy(arg[1],cword);
 #ifdef VERBOSE
 		std::cout<<"receiver mac:"<<arg[1]<<"."<<std::endl;
@@ -4145,12 +4148,12 @@ int slsDetector::configureMAC() {
 	{
 		stringstream ss(arg[3]);
 		char cword[50]="";
-		bzero(cword, 50);
+		memset(cword, 0, sizeof(cword));
 		string s;
 		while (getline(ss, s, ':')) {
-			sprintf(cword,"%s%s",cword,s.c_str());
+			strcat(cword, s.c_str());
 		}
-		bzero(arg[3], 50);
+		memset(arg[3], 0, sizeof(arg[3]));
 		strcpy(arg[3],cword);
 #ifdef VERBOSE
 		std::cout<<"detecotor mac:"<<arg[3]<<"."<<std::endl;
@@ -4161,12 +4164,15 @@ int slsDetector::configureMAC() {
 		//converting IPaddress to hex
 		stringstream ss(arg[4]);
 		char cword[50]="";
-		bzero(cword, 50);
+		memset(cword, 0, sizeof(cword));
 		string s;
 		while (getline(ss, s, '.')) {
-			sprintf(cword,"%s%02x",cword,atoi(s.c_str()));
+			char temp[20]="";
+			memset(temp, 0, sizeof(temp));
+			sprintf(temp,"%02x",atoi(s.c_str()));
+			strcat(cword, temp);
 		}
-		bzero(arg[4], 50);
+		memset(arg[4], 0, sizeof(arg[4]));
 		strcpy(arg[4],cword);
 #ifdef VERBOSE
 		std::cout<<"detector ip:"<<arg[4]<<"."<<std::endl;

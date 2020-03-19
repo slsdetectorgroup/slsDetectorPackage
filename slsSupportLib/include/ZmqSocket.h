@@ -143,7 +143,7 @@ class ZmqSocket {
         int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange = 0,
         uint64_t fileIndex = 0, uint32_t ndetx = 0, uint32_t ndety = 0,
         uint32_t npixelsx = 0, uint32_t npixelsy = 0, uint32_t imageSize = 0,
-        uint64_t acqIndex = 0, uint64_t fIndex = 0, const char *fname = nullptr,
+        uint64_t acqIndex = 0, uint64_t fIndex = 0, std::string fname = "",
         uint64_t frameNumber = 0, uint32_t expLength = 0,
         uint32_t packetNumber = 0, uint64_t bunchId = 0, uint64_t timestamp = 0,
         uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0,

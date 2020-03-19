@@ -227,7 +227,7 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
 
 	return zmqSocket->SendHeaderData(index, dummy, SLS_DETECTOR_JSON_HEADER_VERSION, *dynamicRange, *fileIndex,
 			numDet[0], numDet[1], nx, ny, size,
-			acquisitionIndex, frameIndex, fileNametoStream.c_str(),
+			acquisitionIndex, frameIndex, fileNametoStream,
 			header.frameNumber, header.expLength, header.packetNumber, header.bunchId, header.timestamp,
 			header.modId, header.row, header.column, header.reserved,
 			header.debug, header.roundRNumber,

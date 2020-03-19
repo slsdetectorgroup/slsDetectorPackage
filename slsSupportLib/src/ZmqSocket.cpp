@@ -309,7 +309,7 @@ int ZmqSocket::SendHeaderData(
     int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange,
     uint64_t fileIndex, uint32_t ndetx, uint32_t ndety, uint32_t npixelsx,
     uint32_t npixelsy, uint32_t imageSize, uint64_t acqIndex, uint64_t fIndex,
-    const char *fname, uint64_t frameNumber, uint32_t expLength,
+    std::string fname, uint64_t frameNumber, uint32_t expLength,
     uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp, uint16_t modId,
     uint16_t row, uint16_t column, uint16_t reserved, uint32_t debug,
     uint16_t roundRNumber, uint8_t detType, uint8_t version,
@@ -352,7 +352,7 @@ int ZmqSocket::SendHeaderData(
     char buf[MAX_STR_LENGTH] = "";
     sprintf(buf, jsonHeaderFormat, jsonversion, dynamicrange, fileIndex, ndetx,
             ndety, npixelsx, npixelsy, imageSize, acqIndex, fIndex,
-            (fname == NULL) ? "" : fname, dummy ? 0 : 1,
+            fname.c_str(), dummy ? 0 : 1,
 
             frameNumber, expLength, packetNumber, bunchId, timestamp, modId,
             row, column, reserved, debug, roundRNumber, detType, version,

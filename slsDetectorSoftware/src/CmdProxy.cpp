@@ -1814,7 +1814,7 @@ std::string CmdProxy::PatternWaitTime(int action) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            det->setPatternWaitTime(level, std::stoul(args[0]), {det_id});
+            det->setPatternWaitTime(level, StringTo<uint64_t>(args[0]), {det_id});
             os << args.front() << '\n';
         } else {
             throw sls::RuntimeError("Unknown action");

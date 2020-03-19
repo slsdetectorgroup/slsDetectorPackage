@@ -1027,16 +1027,16 @@ class CmdProxy {
     /* acquisition parameters */
 
     INTEGER_COMMAND_NOID(frames, getNumberOfFrames, setNumberOfFrames,
-                         std::stol,
+                         StringTo<int64_t>,
                          "[n_frames]\n\tNumber of frames per aquire. In trigger mode, number of frames per trigger."
                          "\n\t[Gotthard2] Burst mode has a maximum of 2720 frames.");
 
     INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
-                         std::stol,
+                         StringTo<int64_t>,
                          "[n_triggers]\n\tNumber of triggers per aquire. Use timing command to set timing mode.");
 
     INTEGER_COMMAND_NOID(bursts, getNumberOfBursts, setNumberOfBursts,
-                         std::stol,
+                         StringTo<int64_t>,
                          "[n_bursts]\n\t[Gotthard2] Number of bursts per aquire. Only in auto timing mode and burst mode. Use timing command to set timing mode and burstmode command to set burst mode.");
 
     TIME_COMMAND(exptime, getExptime, setExptime,
@@ -1374,7 +1374,7 @@ class CmdProxy {
     GET_COMMAND(rx_missingpackets, getNumMissingPackets, 
                     "\n\tNumber of missing packets for each port in receiver."); 
 
-    INTEGER_COMMAND(startingfnum, getStartingFrameNumber, setStartingFrameNumber, std::stoull,
+    INTEGER_COMMAND(startingfnum, getStartingFrameNumber, setStartingFrameNumber, StringTo<uint64_t>,
                     "[n_value]\n\t[Eiger[Jungfrau] Starting frame number for next acquisition."); 
 
     EXECUTE_SET_COMMAND(trigger, sendSoftwareTrigger, 
@@ -1454,7 +1454,7 @@ class CmdProxy {
                     "receiver. 0 does not pad partial frames(fastest), 1 "
                     "(default) pads partial frames");
 
-    INTEGER_COMMAND(rx_udpsocksize, getRxUDPSocketBufferSize, setRxUDPSocketBufferSize, std::stol,
+    INTEGER_COMMAND(rx_udpsocksize, getRxUDPSocketBufferSize, setRxUDPSocketBufferSize, StringTo<int64_t>,
                     "[n_size]\n\tUDP socket buffer size in receiver. Tune rmem_default and rmem_max accordingly. rx_hostname sets it to defaults.");
 
     GET_COMMAND(rx_realudpsocksize, getRxRealUDPSocketBufferSize, 
@@ -1478,7 +1478,7 @@ class CmdProxy {
     STRING_COMMAND(fname, getFileNamePrefix, setFileNamePrefix, 
                 "[path]\n\tFile name prefix for output data file. Default is run. File name: [file name prefix]_d[detector index]_f[sub file index]_[acquisition/file index].raw.");
 
-    INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, std::stol,
+    INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, StringTo<int64_t>,
                     "[0, 1]\n\tFile or Acquisition index.");
 
     INTEGER_COMMAND(fwrite, getFileWrite, setFileWrite, StringTo<int>,

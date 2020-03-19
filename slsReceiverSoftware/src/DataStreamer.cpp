@@ -40,7 +40,6 @@ DataStreamer::DataStreamer(int ind, Fifo*& f, uint32_t* dr, std::vector<ROI>* r,
 
     FILE_LOG(logDEBUG) << "DataStreamer " << ind << " created";
 
-	memset(fileNametoStream, 0, MAX_STR_LENGTH);
 }
 
 
@@ -83,7 +82,7 @@ void DataStreamer::ResetParametersforNewMeasurement(char* fname){
     runningFlag = false;
 	firstMeasurementIndex = 0;
 	measurementStartedFlag = false;
-	strcpy(fileNametoStream, fname);
+	fileNametoStream.assign(fname);
 	if (completeBuffer) {
 		delete [] completeBuffer;
 		completeBuffer = 0;

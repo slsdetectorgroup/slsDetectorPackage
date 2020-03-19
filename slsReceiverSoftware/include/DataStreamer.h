@@ -206,7 +206,7 @@ class DataStreamer : private virtual slsReceiverDefs, public ThreadObject {
 	uint64_t firstMeasurementIndex;
 
 	/* File name to stream */
-	char fileNametoStream[MAX_STR_LENGTH];
+	std::string fileNametoStream;
 
 	/** Complete buffer used for roi, eg. shortGotthard */
 	char* completeBuffer;

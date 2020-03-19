@@ -922,7 +922,7 @@ int Module::getThresholdEnergy() {
         std::string result = getAdditionalJsonParameter("threshold");
         // convert to integer
         try {
-            return stoi(result);
+            return std::stoi(result);
         }
         // not found or cannot scan integer
         catch (...) {
@@ -1679,7 +1679,13 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
     updateCachedDetectorVariables();
 
     // start updating
-    sls::strcpy_safe(shm()->rxHostname, receiverIP.c_str());
+    std::string host = receiverIP;
+    auto res = sls::split(host, ':');
+    if (res.size() > 1) {
+        host = res[0];
+        shm()->rxTCPPort = std::stoi(res[1]);
+    }    
+    sls::strcpy_safe(shm()->rxHostname, host.c_str());
     shm()->useReceiverFlag = true;
     checkReceiverVersionCompatibility();
 
@@ -2139,7 +2145,7 @@ std::string Module::setAdditionalJsonParameter(const std::string &key,
     std::string valueLiteral(value);
     // add quotations to value only if it is a string
     try {
-        stoi(valueLiteral);
+        std::stoi(valueLiteral);
     } catch (...) {
         // add quotations if it failed to convert to integer, otherwise nothing
         valueLiteral.insert(0, "\"");

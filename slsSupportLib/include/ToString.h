@@ -628,6 +628,12 @@ inline int StringTo(const std::string &s) {
     return std::stoi(s, nullptr, base);
 }
 
+template <>
+inline int64_t StringTo(const std::string &s) {
+    int base = s.find("0x") != std::string::npos ? 16 : 10;
+    return std::stol(s, nullptr, base);
+}
+
 /** For types with a .str() method use this for conversion */
 template <typename T>
 typename std::enable_if<has_str<T>::value, std::string>::type

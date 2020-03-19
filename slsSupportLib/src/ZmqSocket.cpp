@@ -23,8 +23,9 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
         (ConvertInternetAddresstoIpString(result, ip, MAX_STR_LENGTH)))
         throw sls::ZmqSocketError("Could convert IP to string");
 
+    std::string sip(ip);
     // construct address
-    sprintf(sockfd.serverAddress, "tcp://%s:%d", ip, portno);
+    sprintf(sockfd.serverAddress, "tcp://%s:%d", sip.c_str(), portno);
 #ifdef VERBOSE
     cprintf(BLUE, "address:%s\n", sockfd.serverAddress);
 #endif

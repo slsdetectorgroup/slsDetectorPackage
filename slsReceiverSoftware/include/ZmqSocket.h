@@ -56,8 +56,10 @@ public:
 		 (ConvertInternetAddresstoIpString(result, ip, MAX_STR_LENGTH)))
 		    throw std::exception();
 
+		std::string sip(ip);
+
 		// construct address
-		sprintf (sockfd.serverAddress, "tcp://%s:%d", ip, portno);
+		sprintf (sockfd.serverAddress, "tcp://%s:%d", sip.c_str(), portno);
 #ifdef VERBOSE
 		cprintf(BLUE,"address:%s\n",sockfd.serverAddress);
 #endif

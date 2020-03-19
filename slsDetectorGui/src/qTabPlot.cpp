@@ -312,8 +312,7 @@ void qTabPlot::GetGapPixels() {
     disconnect(chkGapPixels, SIGNAL(toggled(bool)), this,
                SLOT(SetGapPixels(bool)));
     try {
-        auto retval = det->getRxAddGapPixels().tsquash(
-            "Inconsistent gap pixels enabled for all detectors.");
+        auto retval = det->getGapPixelsinCallback().squash(false);
         chkGapPixels->setChecked(retval);
     }
     CATCH_DISPLAY("Could not get gap pixels enable.", "qTabPlot::GetGapPixels")
@@ -324,7 +323,7 @@ void qTabPlot::GetGapPixels() {
 void qTabPlot::SetGapPixels(bool enable) {
     LOG(logINFO) << "Setting Gap Pixels Enable to " << enable;
     try {
-        det->setRxAddGapPixels(enable);
+        det->setGapPixelsinCallback(enable);
     }
     CATCH_HANDLE("Could not set gap pixels enable.", "qTabPlot::SetGapPixels",
                  this, &qTabPlot::GetGapPixels)

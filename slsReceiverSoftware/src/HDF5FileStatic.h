@@ -383,41 +383,29 @@ public:
 			attribute = dataset.createAttribute("unit",strdatatype, dataspace);
 			attribute.write(strdatatype, std::string("ns"));
 
-			//Gap Pixels Enable
-			dataset = group5.createDataSet ( "gap pixels enable", PredType::NATIVE_INT, dataspace );
-			dataset.write ( &(attr.gapPixelsEnable), PredType::NATIVE_INT);
-
-			//Quad Enable
-			dataset = group5.createDataSet ( "quad enable", PredType::NATIVE_INT, dataspace );
-			dataset.write ( &(attr.quadEnable), PredType::NATIVE_INT);
-
-			//Gap Pixels Enable
-			dataset = group5.createDataSet ( "gap pixels enable", PredType::NATIVE_INT, dataspace );
-			dataset.write ( &(attr.gapPixelsEnable), PredType::NATIVE_INT);
-
 			//Quad Enable
 			dataset = group5.createDataSet ( "quad enable", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(attr.quadEnable), PredType::NATIVE_INT);
 
 			//Analog Flag
 			dataset = group5.createDataSet ( "analog flag", PredType::NATIVE_INT, dataspace );
-			dataset.write ( &(attr.quadEnable), PredType::NATIVE_INT);
+			dataset.write ( &(attr.analogFlag), PredType::NATIVE_INT);
 
 			//Digital Flag
 			dataset = group5.createDataSet ( "digital flag", PredType::NATIVE_INT, dataspace );
-			dataset.write ( &(attr.gapPixelsEnable), PredType::NATIVE_INT);
+			dataset.write ( &(attr.digitalFlag), PredType::NATIVE_INT);
 
 			//ADC Mask
 			dataset = group5.createDataSet ( "adc mask", PredType::NATIVE_INT, dataspace );
-			dataset.write ( &(attr.quadEnable), PredType::NATIVE_INT);
+			dataset.write ( &(attr.adcmask), PredType::NATIVE_INT);
 
 			//Dbit Offset
 			dataset = group5.createDataSet ( "dbit offset", PredType::NATIVE_INT, dataspace );
-			dataset.write ( &(attr.gapPixelsEnable), PredType::NATIVE_INT);
+			dataset.write ( &(attr.dbitoffset), PredType::NATIVE_INT);
 
 			// Dbit List
 			dataset = group5.createDataSet ( "dbit bitset list", PredType::STD_U64LE, dataspace );
-			dataset.write ( &(attr.periodNs), PredType::STD_U64LE);
+			dataset.write ( &(attr.dbitlist), PredType::STD_U64LE);
 
 			// Roi xmin
 			dataset = group5.createDataSet ( "roi xmin", PredType::NATIVE_INT, dataspace );

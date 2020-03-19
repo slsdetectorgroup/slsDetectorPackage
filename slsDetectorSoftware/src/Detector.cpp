@@ -167,6 +167,14 @@ void Detector::registerDataCallback(void (*func)(detectorData *, uint64_t,
     pimpl->registerDataCallback(func, pArg);
 }
 
+Result<bool> Detector::getGapPixelsinCallback() const {
+    return pimpl->getGapPixelsinCallback();
+}
+
+void Detector::setGapPixelsinCallback(bool enable) {
+    pimpl->setGapPixelsinCallback(enable);
+}
+
 // Acquisition Parameters
 
 Result<int64_t> Detector::getNumberOfFrames(Positions pos) const {
@@ -951,14 +959,6 @@ void Detector::setSettingsPath(const std::string &value, Positions pos) {
 
 void Detector::loadTrimbits(const std::string &fname, Positions pos) {
     pimpl->Parallel(&Module::loadSettingsFile, pos, fname);
-}
-
-Result<bool> Detector::getRxAddGapPixels(Positions pos) const {
-    return pimpl->Parallel(&Module::enableGapPixels, pos, -1);
-}
-
-void Detector::setRxAddGapPixels(bool enable) {
-    pimpl->setGapPixelsinReceiver(enable);
 }
 
 Result<bool> Detector::getParallelMode(Positions pos) const {

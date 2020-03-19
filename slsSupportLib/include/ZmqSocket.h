@@ -132,8 +132,6 @@ class ZmqSocket {
      * @param roundRNumber not used yet
      * @param detType detector enum
      * @param version detector header version
-     * @param gapPixelsEnable gap pixels enable (exception: if gap pixels enable
-     * for 4 bit mode, data is not yet gap pixel enabled in receiver)
      * @param flippedDataX if it is flipped across x axis
      * @param quadEnable if quad is enabled
      * @param additionalJsonHeader additional json header
@@ -148,7 +146,7 @@ class ZmqSocket {
         uint32_t packetNumber = 0, uint64_t bunchId = 0, uint64_t timestamp = 0,
         uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0,
         uint16_t reserved = 0, uint32_t debug = 0, uint16_t roundRNumber = 0,
-        uint8_t detType = 0, uint8_t version = 0, int gapPixelsEnable = 0,
+        uint8_t detType = 0, uint8_t version = 0, 
         int flippedDataX = 0, uint32_t quadEnable = 0,
         std::string *additionalJsonHeader = 0);
 

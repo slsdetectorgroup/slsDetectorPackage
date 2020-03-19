@@ -20,6 +20,7 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern udpStruct udpDetails;
+extern const enum detectorType myDetectorType;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
@@ -1779,6 +1780,10 @@ void* start_timer(void* arg) {
 	int numPacketsPerFrame =  (tgEnable ? 4 : 16) * dr;
 	int npixelsx = 256 * 2 * bytesPerPixel; 
 	int databytes = 256 * 256 * 2 * bytesPerPixel;
+	int row = eiger_virtual_detPos[0];
+	int colLeft = top ? eiger_virtual_detPos[1] : eiger_virtual_detPos[1] + 1;
+	int colRight = top ? eiger_virtual_detPos[1] + 1 : eiger_virtual_detPos[1];
+
 	LOG(logINFO, (" dr:%f\n bytesperpixel:%d\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n",
 	dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame, npixelsx, databytes));
 
@@ -1788,8 +1793,18 @@ void* start_timer(void* arg) {
 		memset(imageData, 0, databytes * 2);
 		{
 			int i = 0;
-			for (i = 0; i < databytes * 2; i += sizeof(uint8_t)) {
-				*((uint8_t*)(imageData + i)) = i;
+			if (dr == 4 || dr == 8) {
+				for (i = 0; i < databytes * 2; i += sizeof(uint8_t)) {
+					*((uint8_t*)(imageData + i)) = 0xFF;
+				}     
+			} else if (dr == 16) {
+				for (i = 0; i < databytes * 2; i += sizeof(uint16_t)) {
+					*((uint16_t*)(imageData + i)) = 0xFFF;
+				}
+			} else {
+				for (i = 0; i < databytes * 2; i += sizeof(uint32_t)) {
+					*((uint32_t*)(imageData + i)) = 0xFFFFF;
+				}				
 			}
 		}
 		
@@ -1822,11 +1837,18 @@ void* start_timer(void* arg) {
 						int dstOffset2 = sizeof(sls_detector_header);
 						// set header
 						sls_detector_header* header = (sls_detector_header*)(packetData);
+						header->detType = (uint16_t)myDetectorType;
 						header->frameNumber = frameNr;
 						header->packetNumber = i;
+						header->row = row;
+						header->column = colLeft;
+
 						header = (sls_detector_header*)(packetData2);
+						header->detType = (uint16_t)myDetectorType;
 						header->frameNumber = frameNr;
 						header->packetNumber = i;
+						header->row = row;
+						header->column = colRight;
 
 						// fill data	
 						{		

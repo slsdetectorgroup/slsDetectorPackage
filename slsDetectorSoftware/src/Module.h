@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200318
+#define SLS_SHMVERSION 0x200319
 
 namespace sls{
 
@@ -103,9 +103,6 @@ struct sharedSlsDetector {
 
     /**  zmq tcp src ip address in client (only data) **/
     sls::IpAddr zmqip;
-
-    /** gap pixels enable */
-    int gappixels;
 
     /** gap pixels in each direction */
     slsDetectorDefs::xy nGappixels;
@@ -221,11 +218,10 @@ class Module : public virtual slsDetectorDefs {
      */
     void updateNumberOfChannels();
 
-    /**
-     * Returns the total number of channels including gap pixels
-     * @returns the total number of channels including gap pixels
-     */
+
     slsDetectorDefs::xy getNumberOfChannels() const;
+
+    slsDetectorDefs::xy getNumberOfGapPixels() const;
 
     /**
      * Get Quad Type (Only for Eiger Quad detector hardware)
@@ -1233,14 +1229,6 @@ class Module : public virtual slsDetectorDefs {
     int setAllTrimbits(int val);
 
     /**
-     * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. (Eiger)
-     * 4 bit mode gap pixels only in gui call back
-     * @param val 1 sets, 0 unsets, -1 gets
-     * @returns gap pixel enable or -1 for error
-     */
-    int enableGapPixels(int val = -1);
-
-    /**
      * Sets the number of trim energies and their value  (Eiger)
      * \sa sharedSlsDetector
      * @param nen number of energies
@@ -1435,11 +1423,6 @@ class Module : public virtual slsDetectorDefs {
      * @param cmd command to be executed
      */
     void execReceiverCommand(const std::string &cmd);
-
-    /**
-     * Updates the shared memory receiving the data from the detector
-     */
-    void updateCachedReceiverVariables() const;
 
     /**
      * Send the multi detector size to the detector

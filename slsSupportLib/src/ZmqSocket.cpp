@@ -314,7 +314,7 @@ int ZmqSocket::SendHeaderData(
     uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp, uint16_t modId,
     uint16_t row, uint16_t column, uint16_t reserved, uint32_t debug,
     uint16_t roundRNumber, uint8_t detType, uint8_t version,
-    int gapPixelsEnable, int flippedDataX, uint32_t quadEnable,
+    int flippedDataX, uint32_t quadEnable,
     std::string *additionalJsonHeader) {
 
     /** Json Header Format */
@@ -345,7 +345,6 @@ int ZmqSocket::SendHeaderData(
                                     "\"version\":%u, "
 
                                     // additional stuff
-                                    "\"gappixels\":%u, "
                                     "\"flippedDataX\":%u, "
                                     "\"quad\":%u"
 
@@ -359,7 +358,7 @@ int ZmqSocket::SendHeaderData(
             row, column, reserved, debug, roundRNumber, detType, version,
 
             // additional stuff
-            gapPixelsEnable, flippedDataX, quadEnable);
+            flippedDataX, quadEnable);
 
     if (additionalJsonHeader && !((*additionalJsonHeader).empty())) {
         strcat(buf, ", ");

@@ -157,6 +157,7 @@ void DetectorImpl::initializeDetectorStructure() {
     multi_shm()->numberOfChannels.y = 0;
     multi_shm()->acquiringFlag = false;
     multi_shm()->initialChecks = true;
+    multi_shm()->gapPixels = false;
 }
 
 void DetectorImpl::initializeMembers(bool verify) {
@@ -339,17 +340,15 @@ void DetectorImpl::setNumberOfChannels(const slsDetectorDefs::xy c) {
     multi_shm()->numberOfChannels = c;
 }
 
-void DetectorImpl::setGapPixelsinReceiver(bool enable) {
-    Parallel(&Module::enableGapPixels, {}, static_cast<int>(enable));
-    // update number of channels
-    Result<slsDetectorDefs::xy> res =
-        Parallel(&Module::getNumberOfChannels, {});
-    multi_shm()->numberOfChannels.x = 0;
-    multi_shm()->numberOfChannels.y = 0;
-    for (auto &it : res) {
-        multi_shm()->numberOfChannels.x += it.x;
-        multi_shm()->numberOfChannels.y += it.y;
+bool DetectorImpl::getGapPixelsinCallback() const {
+    return multi_shm()->gapPixels;
+}
+
+void DetectorImpl::setGapPixelsinCallback(const bool enable) {
+    if (multi_shm()->multiDetectorType != EIGER && multi_shm()->multiDetectorType != JUNGFRAU) {
+        throw RuntimeError("Gap Pixels is not implemented for " + multi_shm()->multiDetectorType);
     }
+    multi_shm()->gapPixels = enable;
 }
 
 int DetectorImpl::createReceivingDataSockets(const bool destroy) {
@@ -406,11 +405,13 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
 
 void DetectorImpl::readFrameFromReceiver() {
 
+    bool gapPixels = multi_shm()->gapPixels;
+    LOG(logDEBUG) << "Gap pixels: " << gapPixels;
+
     int nX = 0;
     int nY = 0;
     int nDetPixelsX = 0;
     int nDetPixelsY = 0;
-    bool gappixelsenable = false;
     bool quadEnable = false;
     bool eiger = false;
     bool numInterfaces =
@@ -503,12 +504,10 @@ void DetectorImpl::readFrameFromReceiver() {
                         nDetPixelsY = nY * nPixelsY;
                         // det type
                         eiger =
-                            (doc["detType"].GetUint() == static_cast<int>(3))
+                            (doc["detType"].GetUint() == static_cast<int>(EIGER))
                                 ? true
                                 : false; // to be changed to EIGER when firmware
                                          // updates its header data
-                        gappixelsenable =
-                            (doc["gappixels"].GetUint() == 0) ? false : true;
                         quadEnable =
                             (doc["quad"].GetUint() == 0) ? false : true;
                         LOG(logDEBUG1)
@@ -520,7 +519,6 @@ void DetectorImpl::readFrameFromReceiver() {
                             << "\n\tnPixelsX: " << nPixelsX
                             << "\n\tnPixelsY: " << nPixelsY << "\n\tnX: " << nX
                             << "\n\tnY: " << nY << "\n\teiger: " << eiger
-                            << "\n\tgappixelsenable: " << gappixelsenable
                             << "\n\tquadEnable: " << quadEnable;
                     }
                     // each time, parse rest of header
@@ -550,6 +548,7 @@ void DetectorImpl::readFrameFromReceiver() {
                 // DATA
                 data = true;
                 zmqSocket[isocket]->ReceiveData(isocket, image, size);
+
                 // creating multi image
                 {
                     uint32_t xoffset = coordX * nPixelsX * bytesPerPixel;
@@ -586,6 +585,7 @@ void DetectorImpl::readFrameFromReceiver() {
                 }
             }
         }
+
         LOG(logDEBUG)<< "Call Back Info:"
             << "\n\t nDetPixelsX: " << nDetPixelsX
             << "\n\t nDetPixelsY: " << nDetPixelsY
@@ -595,17 +595,9 @@ void DetectorImpl::readFrameFromReceiver() {
         // send data to callback
         if (data) {
             setCurrentProgress(currentFrameIndex + 1);
-            // 4bit gap pixels
-            if (dynamicRange == 4 && gappixelsenable) {
-                if (quadEnable) {
-                    nDetPixelsX += 2;
-                    nDetPixelsY += 2;
-                } else {
-                    nDetPixelsX = nX * (nPixelsX + 3);
-                    nDetPixelsY = nY * (nPixelsY + 1);
-                }
+            if (gapPixels) {
                 int n = processImageWithGapPixels(multiframe, multigappixels,
-                                                  quadEnable);
+                                                  quadEnable, dynamicRange, nDetPixelsX, nDetPixelsY);
                 LOG(logDEBUG) 
 		  	        << "Call Back Info Recalculated:"
                     << "\n\t nDetPixelsX: " << nDetPixelsX
@@ -668,7 +660,26 @@ void DetectorImpl::readFrameFromReceiver() {
 }
 
 int DetectorImpl::processImageWithGapPixels(char *image, char *&gpImage,
-                                            bool quadEnable) {
+                                            bool quadEnable, int dr, 
+                                            int nPixelsX, int nPixelsY) {
+
+    int imagesize = nPixelsX * nPixelsY * ((dr > 16) ? 4 : // 32 bit
+												((dr > 8)  ? 2 : // 16 bit
+												((dr > 4)  ? 1 : // 8 bit
+												0.5)));			 // 4 bit
+    memcpy(gpImage, image, imagesize);
+
+    return imagesize; 
+/*
+            // 4bit gap pixels
+                if (quadEnable) {
+                    nDetPixelsX += 2;
+                    nDetPixelsY += 2;
+                } else {
+                    nDetPixelsX = nX * (nPixelsX + 3);
+                    nDetPixelsY = nY * (nPixelsY + 1);
+                }
+*/
     // eiger 4 bit mode
     int nxb =
         multi_shm()->numberOfDetector.x * (512 + 3); //(divided by 2 already)
@@ -802,6 +813,108 @@ int DetectorImpl::processImageWithGapPixels(char *image, char *&gpImage,
     return gapdatabytes;
 }
 
+/*
+void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
+
+	memset(tempBuffer, 0xFF, generalData->imageSize);
+
+	int rightChip = ((*quadEnable) ? 0 : index);	// quad enable, then faking both to be left chips
+	const uint32_t nx = generalData->nPixelsX;
+	const uint32_t ny = generalData->nPixelsY;
+	const uint32_t npx = nx * ny;
+	bool group3 = (*quadEnable) ? false : true; // if quad enabled, no last line for left chips
+	char* srcptr = nullptr;
+	char* dstptr = nullptr;
+
+	const uint32_t b1px = generalData->imageSize / (npx); // not double as not dealing with 4 bit mode
+	const uint32_t b2px = 2 * b1px;
+	const uint32_t b1pxofst = (rightChip == 0 ? 0 : b1px); // left fpga (rightChip 0) has no extra 1px offset, but right fpga has
+	const uint32_t b1chip = 256 * b1px;
+	const uint32_t b1line = (nx * b1px);
+	const uint32_t bgroup3chip = b1chip + (group3 ? b1px : 0);
+
+	// copying line by line
+	srcptr = buf;
+	dstptr = tempBuffer + b1line + b1pxofst;		// left fpga (rightChip 0) has no extra 1px offset, but right fpga has
+	for (uint32_t i = 0; i < (ny-1); ++i) {
+		memcpy(dstptr, srcptr, b1chip);
+		srcptr += b1chip;
+		dstptr += (b1chip + b2px);
+		memcpy(dstptr, srcptr, b1chip);
+		srcptr += b1chip;
+		dstptr += bgroup3chip;
+	}
+
+	// vertical filling of values
+	{
+		char* srcgp1 = nullptr; char* srcgp2 = nullptr; char* srcgp3 = nullptr;
+		char* dstgp1 = nullptr; char* dstgp2 = nullptr; char* dstgp3 = nullptr;
+		const uint32_t b3px = 3 * b1px;
+
+		srcptr = tempBuffer + b1line;
+		dstptr = tempBuffer + b1line;
+
+		for (uint32_t i = 0; i < (ny-1); ++i) {
+			srcgp1 = srcptr + b1pxofst + b1chip - b1px;
+			dstgp1 = srcgp1 + b1px;
+			srcgp2 = srcgp1 + b3px;
+			dstgp2 = dstgp1 + b1px;
+			if (group3) {
+				if (rightChip == 0u) {
+					srcgp3 = srcptr + b1line - b2px;
+					dstgp3 = srcgp3 + b1px;
+				} else {
+					srcgp3 = srcptr + b1px;
+					dstgp3 = srcptr;
+				}
+			}
+			switch (dr) {
+			case 8:
+				(*((uint8_t*)srcgp1)) = (*((uint8_t*)srcgp1))/2;	(*((uint8_t*)dstgp1)) = (*((uint8_t*)srcgp1));
+				(*((uint8_t*)srcgp2)) = (*((uint8_t*)srcgp2))/2;	(*((uint8_t*)dstgp2)) = (*((uint8_t*)srcgp2));
+				if (group3) {
+					(*((uint8_t*)srcgp3)) = (*((uint8_t*)srcgp3))/2;	(*((uint8_t*)dstgp3)) = (*((uint8_t*)srcgp3));
+				}
+				break;
+			case 16:
+				(*((uint16_t*)srcgp1)) = (*((uint16_t*)srcgp1))/2;	(*((uint16_t*)dstgp1)) = (*((uint16_t*)srcgp1));
+				(*((uint16_t*)srcgp2)) = (*((uint16_t*)srcgp2))/2;	(*((uint16_t*)dstgp2)) = (*((uint16_t*)srcgp2));
+				if (group3) {
+					(*((uint16_t*)srcgp3)) = (*((uint16_t*)srcgp3))/2;	(*((uint16_t*)dstgp3)) = (*((uint16_t*)srcgp3));
+				}
+				break;
+			default:
+				(*((uint32_t*)srcgp1)) = (*((uint32_t*)srcgp1))/2;	(*((uint32_t*)dstgp1)) = (*((uint32_t*)srcgp1));
+				(*((uint32_t*)srcgp2)) = (*((uint32_t*)srcgp2))/2;	(*((uint32_t*)dstgp2)) = (*((uint32_t*)srcgp2));
+				if (group3) {
+					(*((uint32_t*)srcgp3)) = (*((uint32_t*)srcgp3))/2;	(*((uint32_t*)dstgp3)) = (*((uint32_t*)srcgp3));
+				}
+				break;
+			}
+			srcptr += b1line;
+			dstptr += b1line;
+		}
+
+	}
+
+	// horizontal filling of values
+	srcptr = tempBuffer + b1line;
+	dstptr = tempBuffer;
+	for (uint32_t i = 0; i < nx; ++i) {
+		switch (dr) {
+		case 8:	(*((uint8_t*)srcptr)) = (*((uint8_t*)srcptr))/2; (*((uint8_t*)dstptr)) = (*((uint8_t*)srcptr)); break;
+		case 16:(*((uint16_t*)srcptr)) = (*((uint16_t*)srcptr))/2; (*((uint16_t*)dstptr)) = (*((uint16_t*)srcptr)); break;
+		default:(*((uint32_t*)srcptr)) = (*((uint32_t*)srcptr))/2; (*((uint32_t*)dstptr)) = (*((uint32_t*)srcptr)); break;
+		}
+		srcptr += b1px;
+		dstptr += b1px;
+	}
+
+	memcpy(buf, tempBuffer, generalData->imageSize);
+	return;
+}
+
+*/
 bool DetectorImpl::enableDataStreamingToClient(int enable) {
     if (enable >= 0) {
         // destroy data threads

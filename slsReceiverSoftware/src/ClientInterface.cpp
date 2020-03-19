@@ -113,7 +113,6 @@ int ClientInterface::functionTable(){
 	flist[F_LOCK_RECEIVER]					=	&ClientInterface::lock_receiver;
 	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&ClientInterface::get_last_client_ip;
 	flist[F_SET_RECEIVER_PORT]				=	&ClientInterface::set_port;
-	flist[F_UPDATE_RECEIVER_CLIENT]			=	&ClientInterface::update_client;
 	flist[F_GET_RECEIVER_VERSION]			=	&ClientInterface::get_version;
 	flist[F_GET_RECEIVER_TYPE]				=	&ClientInterface::set_detector_type;
 	flist[F_SEND_RECEIVER_DETHOSTNAME]		= 	&ClientInterface::set_detector_hostname;
@@ -163,7 +162,6 @@ int ClientInterface::functionTable(){
 	flist[F_GET_RECEIVER_STREAMING_SRC_IP]	= 	&ClientInterface::get_streaming_source_ip;
 	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::set_silent_mode;
 	flist[F_GET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::get_silent_mode;
-	flist[F_ENABLE_GAPPIXELS_IN_RECEIVER]	=	&ClientInterface::enable_gap_pixels;
 	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&ClientInterface::restream_stop;
 	flist[F_SET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::set_additional_json_header;
 	flist[F_GET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::get_additional_json_header;
@@ -322,29 +320,6 @@ int ClientInterface::set_port(Interface &socket) {
     new_server->setLastClient(server->getThisClient());
     server = std::move(new_server);
     socket.sendResult(p_number);
-    return OK;
-}
-
-int ClientInterface::update_client(Interface &socket) {
-    if (receiver == nullptr)
-        throw sls::SocketError(
-            "Receiver not set up. Please use rx_hostname first.\n");
-    socket.Send(OK);
-    return send_update(socket);
-}
-
-int ClientInterface::send_update(Interface &socket) {
-    int n = 0;
-    int i32 = -1;
-
-    sls::IpAddr ip;
-    ip = server->getLastClient();
-    n += socket.Send(&ip, sizeof(ip));
-
-    // gap pixels
-    i32 = (int)receiver->getGapPixelsEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
     return OK;
 }
 
@@ -986,26 +961,6 @@ int ClientInterface::set_silent_mode(Interface &socket) {
 int ClientInterface::get_silent_mode(Interface &socket) {
     auto retval = static_cast<int>(impl()->getSilentMode());
     LOG(logDEBUG1) << "silent mode:" << retval;
-    return socket.sendResult(retval);
-}
-
-int ClientInterface::enable_gap_pixels(Interface &socket) {
-    auto enable = socket.Receive<int>();
-    if (myDetectorType != EIGER)
-        functionNotImplemented();
-
-    if (enable >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting gap pixels enable:" << enable;
-        try {
-            impl()->setGapPixelsEnable(static_cast<bool>(enable));
-        } catch(const RuntimeError &e) {
-            throw RuntimeError("Could not set gap pixels enable to " + std::to_string(enable));
-        }
-    }
-    auto retval = static_cast<int>(impl()->getGapPixelsEnable());
-    validate(enable, retval, "set gap pixels enable", DEC);
-    LOG(logDEBUG1) << "Gap Pixels Enable: " << retval;
     return socket.sendResult(retval);
 }
 

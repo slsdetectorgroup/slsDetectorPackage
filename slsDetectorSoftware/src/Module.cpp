@@ -410,7 +410,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
                      (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->zmqip = IpAddr{};
-    shm()->gappixels = 0U;
     shm()->numUDPInterfaces = 1;
     shm()->stoppedFlag = false;
 
@@ -582,13 +581,17 @@ void Module::updateNumberOfChannels() {
 
 slsDetectorDefs::xy Module::getNumberOfChannels() const {
     slsDetectorDefs::xy coord{};
-    coord.x = (shm()->nChan.x * shm()->nChip.x +
-               shm()->gappixels * shm()->nGappixels.x);
-    coord.y = (shm()->nChan.y * shm()->nChip.y +
-               shm()->gappixels * shm()->nGappixels.y);
+    coord.x = (shm()->nChan.x * shm()->nChip.x);
+    coord.y = (shm()->nChan.y * shm()->nChip.y);
     return coord;
 }
 
+slsDetectorDefs::xy Module::getNumberOfGapPixels() const {
+    slsDetectorDefs::xy gap{};
+    gap.x = shm()->nGappixels.x;
+    gap.y = shm()->nGappixels.y;
+    return gap;
+}
 bool Module::getQuad() {
     int retval = -1;
     LOG(logDEBUG1) << "Getting Quad Type";
@@ -1719,7 +1722,6 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
             setSubDeadTime(getSubDeadTime());
             setDynamicRange(shm()->dynamicRange);
             activate(-1);
-            enableGapPixels(shm()->gappixels);
             enableTenGigabitEthernet(-1);
             setQuad(getQuad());
             break;
@@ -2672,24 +2674,6 @@ int Module::setAllTrimbits(int val) {
     return retval;
 }
 
-int Module::enableGapPixels(int val) {
-    if (val >= 0) {
-        if (shm()->myDetectorType != EIGER) {
-          throw NotImplementedError(
-                "Function (enableGapPixels) not implemented for this detector");  
-        }
-        int fnum = F_ENABLE_GAPPIXELS_IN_RECEIVER;
-        int retval = -1;
-        LOG(logDEBUG1) << "Sending gap pixels enable to receiver: " << val;
-        if (shm()->useReceiverFlag) {
-            sendToReceiver(fnum, val, retval);
-            LOG(logDEBUG1) << "Gap pixels enable to receiver:" << retval;
-            shm()->gappixels = retval;
-        }
-    }
-    return shm()->gappixels;
-}
-
 int Module::setTrimEn(const std::vector<int>& energies) {
     if (shm()->myDetectorType != EIGER) {
          throw RuntimeError("setTrimEn not implemented for this detector.");
@@ -3084,33 +3068,6 @@ void Module::execReceiverCommand(const std::string &cmd) {
     }
 }
 
-void Module::updateCachedReceiverVariables() const {
-    int fnum = F_UPDATE_RECEIVER_CLIENT;
-    LOG(logDEBUG1) << "Sending update client to receiver server";
-
-    if (shm()->useReceiverFlag) {
-        auto receiver =
-            sls::ClientSocket("Receiver", shm()->rxHostname, shm()->rxTCPPort);
-        receiver.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
-        int n = 0, i32 = 0;
-        IpAddr ip;
-
-        n += receiver.Receive(&ip, sizeof(ip));
-        LOG(logDEBUG1)
-            << "Updating receiver last modified by " << ip;
-
-        // gap pixels
-        n += receiver.Receive(&i32, sizeof(i32));
-        shm()->gappixels = i32;
-
-        if (n == 0) {
-            throw RuntimeError(
-                "Could not update receiver: " + std::string(shm()->rxHostname) +
-                ", received 0 bytes\n");
-        }
-    }
-}
-
 void Module::sendMultiDetectorSize() {
     int args[]{shm()->multiSize.x, shm()->multiSize.y};
     int retval = -1;
@@ -3316,9 +3273,6 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
             throw RuntimeError("Receiver " + std::to_string(detId) +
                             " returned error: " + std::string(mess));
         } else {
-            if (ret == FORCE_UPDATE) {
-                updateCachedReceiverVariables();
-            }
             int nports = -1;
             client.Receive(&nports, sizeof(nports));
             uint64_t mp[nports];

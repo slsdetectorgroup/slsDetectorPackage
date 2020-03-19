@@ -31,11 +31,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param fd flipped data enable for x dimension
 	 * @param ajh additional json header
 	 * @param nd pointer to number of detectors in each dimension
-	 * @param gpEnable pointer to gap pixels enable
 	 * @param qe pointer to quad Enable
 	 */
 	DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
-			uint64_t* fi, int fd, std::string* ajh, int* nd, bool* gpEnable, bool* qe);
+			uint64_t* fi, int fd, std::string* ajh, int* nd, bool* qe);
 
 	/**
 	 * Destructor
@@ -199,9 +198,6 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
 	/** Number of Detectors in X and Y dimension */
 	int numDet[2];
-
-	/** Gap Pixels Enable */
-	bool* gapPixelsEnable;
 
 	/** Quad Enable */
 	bool* quadEnable;

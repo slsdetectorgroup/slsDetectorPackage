@@ -171,16 +171,6 @@ public:
 		LOG(logERROR) << "SetTenGigaEnable is a generic function that should be overloaded by a derived class";
 	};
 
-	/**
-	 * Enable Gap Pixels changes member variables
-	 * @param enable true if gap pixels enable, else false
-	 * @param dr dynamic range
-	 * @param q quad enable 
-	 */
-	virtual void SetGapPixelsEnable(bool b, int dr, bool q) {
-		LOG(logERROR) << "SetGapPixelsEnable is a generic function that should be overloaded by a derived class";
-	};
-
     /**
      * Set odd starting packet (gotthard)
      * @param index thread index for debugging purposes

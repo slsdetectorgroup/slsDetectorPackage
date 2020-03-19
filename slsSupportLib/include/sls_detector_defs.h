@@ -503,8 +503,8 @@ struct detParameters {
             nChipY = 2;
             nDacs = 8;
             dynamicRange = 16;
-            nGappixelsX = 0;
-            nGappixelsY = 0;
+            nGappixelsX = 6;
+            nGappixelsY = 2;
             break;
         case slsDetectorDefs::detectorType::CHIPTESTBOARD:
             nChanX = 36;

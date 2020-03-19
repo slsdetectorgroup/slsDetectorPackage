@@ -108,7 +108,6 @@ void Implementation::InitializeMembers() {
     roi.xmax = -1;
     tengigaEnable = false;
     flippedDataX = 0;
-    gapPixelsEnable = false;
     quadEnable = false;
     activated = true;
     deactivatedPaddingEnable = true;
@@ -273,7 +272,7 @@ void Implementation::setDetectorType(const detectorType d) {
                 &activated, &deactivatedPaddingEnable, &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, myDetectorType, fifo_ptr, &fileFormatType, fileWriteEnable,
-                &masterFileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
+                &masterFileWriteEnable, &dataStreamEnable, 
                 &dynamicRange, &streamingFrequency, &streamingTimerInMs,
                 &framePadding, &activated, &deactivatedPaddingEnable,
                 &silentMode, &quadEnable, &ctbDbitList, &ctbDbitOffset,
@@ -848,7 +847,6 @@ void Implementation::SetupWriter() {
 	attr.subExptimeNs = subExpTime;
 	attr.subPeriodNs = subPeriod;
 	attr.periodNs = acquisitionPeriod;
-	attr.gapPixelsEnable = gapPixelsEnable;
     attr.quadEnable = quadEnable;
     attr.analogFlag = (readoutType == ANALOG_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1 : 0;
     attr.digitalFlag = (readoutType == DIGITAL_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1 : 0;
@@ -943,7 +941,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
                     i, myDetectorType, fifo_ptr, &fileFormatType,
                     fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable,
-                    &gapPixelsEnable, &dynamicRange, &streamingFrequency,
+                    &dynamicRange, &streamingFrequency,
                     &streamingTimerInMs, &framePadding, &activated,
                     &deactivatedPaddingEnable, &silentMode, &quadEnable, &ctbDbitList,
                     &ctbDbitOffset, &ctbAnalogDataBytes));
@@ -965,7 +963,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, &additionalJsonHeader, (int*)nd, &gapPixelsEnable, &quadEnable));
+                        fd, &additionalJsonHeader, (int*)nd, &quadEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
@@ -1108,7 +1106,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, &additionalJsonHeader, (int*)nd, &gapPixelsEnable, &quadEnable));
+                        fd, &additionalJsonHeader, (int*)nd, &quadEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
@@ -1330,9 +1328,6 @@ void Implementation::setDynamicRange(const uint32_t i) {
 
         if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
             generalData->SetDynamicRange(i, tengigaEnable);
-            if (myDetectorType == EIGER) {
-                generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
-            }
             // to update npixelsx, npixelsy in file writer
             for (const auto &it : dataProcessor)
                 it->SetPixelDimension();
@@ -1377,7 +1372,6 @@ void Implementation::setTenGigaEnable(const bool b) {
         switch (myDetectorType) {
         case EIGER:
             generalData->SetTenGigaEnable(b, dynamicRange);
-            generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
             break;
         case MOENCH:
         case CHIPTESTBOARD:
@@ -1421,24 +1415,6 @@ void Implementation::setFlippedDataX(int enable) {
     LOG(logINFO) << "Flipped Data X: " << flippedDataX;
 }
 
-bool Implementation::getGapPixelsEnable() const {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return gapPixelsEnable;
-}
-
-void Implementation::setGapPixelsEnable(const bool b) {
-    if (gapPixelsEnable != b) {
-        gapPixelsEnable = b;
-
-        // side effects
-        generalData->SetGapPixelsEnable(b, dynamicRange, quadEnable);
-        for (const auto &it : dataProcessor)
-            it->SetPixelDimension();
-        SetupFifoStructure();
-    }
-    LOG(logINFO) << "Gap Pixels Enable: " << gapPixelsEnable;
-}
-
 bool Implementation::getQuad() const {
 	LOG(logDEBUG) << __AT__ << " starting";
 	return quadEnable;
@@ -1447,12 +1423,6 @@ bool Implementation::getQuad() const {
 void Implementation::setQuad(const bool b) {
 	if (quadEnable != b) {
 		quadEnable = b;
-
-		generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, b);
-		// to update npixelsx, npixelsy in file writer
-        for (const auto &it : dataProcessor)
-		    it->SetPixelDimension();
-		SetupFifoStructure();
 
 		if (!quadEnable) {
 			for (const auto &it : dataStreamer) {

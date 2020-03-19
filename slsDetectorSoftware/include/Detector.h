@@ -137,6 +137,16 @@ class Detector {
                                            void *),
                               void *pArg);
 
+    /**[Eiger][Jungfrau] */
+    Result<bool> getGapPixelsinCallback() const;
+
+    /**
+     * [Eiger][Jungfrau]
+     * Only in client data call back
+     * Fills in gap pixels in data
+     */
+    void setGapPixelsinCallback(const bool enable);
+
     /**************************************************
      *                                                *
      *    Acquisition Parameters                      *
@@ -693,16 +703,6 @@ class Detector {
 
     /** [Eiger] */
     void loadTrimbits(const std::string &fname, Positions pos = {});
-
-    /**[Eiger] */
-    Result<bool> getRxAddGapPixels(Positions pos = {}) const;
-
-    /**
-     * [Eiger]
-     * 4 bit mode not implemented in Receiver, but in client data call back
-     * Fills in gap pixels in data
-     */
-    void setRxAddGapPixels(bool enable);
 
     /** [Eiger] */
     Result<bool> getParallelMode(Positions pos = {}) const;

@@ -161,9 +161,6 @@ class Implementation : private virtual slsDetectorDefs {
     void setTenGigaEnable(const bool b);
     int getFlippedDataX() const;
     void setFlippedDataX(int enable = -1);
-    bool getGapPixelsEnable() const;
-    /* [Eiger] */
-    void setGapPixelsEnable(const bool b);
     bool getQuad() const;
     /* [Eiger] */
     void setQuad(const bool b);
@@ -278,7 +275,6 @@ class Implementation : private virtual slsDetectorDefs {
     ROI roi;
     bool tengigaEnable;
     int flippedDataX;
-    bool gapPixelsEnable;
     bool quadEnable; 
     bool activated;
     bool deactivatedPaddingEnable;

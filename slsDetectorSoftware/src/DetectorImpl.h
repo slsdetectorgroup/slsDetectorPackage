@@ -16,7 +16,7 @@ class detectorData;
 #include <vector>
 
 #define MULTI_SHMAPIVERSION 0x190809
-#define MULTI_SHMVERSION 0x200131
+#define MULTI_SHMVERSION 0x200319
 #define SHORT_STRING_LENGTH 50
 
 #include <future>
@@ -47,10 +47,7 @@ struct sharedMultiSlsDetector {
     /** last time stamp when accessing the shared memory */
     char lastDate[SHORT_STRING_LENGTH];
 
-    /** number of sls detectors in shared memory */
     int numberOfDetectors;
-
-    /** multi detector type */
     slsDetectorDefs::detectorType multiDetectorType;
 
     /** END OF FIXED PATTERN
@@ -62,11 +59,9 @@ struct sharedMultiSlsDetector {
     /**  max number of channels for complete detector*/
     slsDetectorDefs::xy numberOfChannels;
 
-    /** flag for acquiring */
     bool acquiringFlag;
-
-    /** initial checks */
     bool initialChecks;
+    bool gapPixels;
 };
 
 class DetectorImpl : public virtual slsDetectorDefs {
@@ -236,11 +231,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * Sets maximum number of channels of all sls detectors */
     void setNumberOfChannels(const slsDetectorDefs::xy c); 
 
-    /**
-     * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. (Eiger)
-     * 4 bit mode gap pixels only in gui call back
-     */
-    void setGapPixelsinReceiver(bool enable);
+    /** [Eiger][Jungfrau] */
+    bool getGapPixelsinCallback() const;
+    /** [Eiger][Jungfrau] */
+    void setGapPixelsinCallback(const bool enable);
 
     /**
      * Enable data streaming to client
@@ -355,7 +349,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * quadEnable quad enabled
      * @returns number of data bytes of image with gap pixels
      */
-    int processImageWithGapPixels(char *image, char *&gpImage, bool quadEnable);
+    int processImageWithGapPixels(char *image, char *&gpImage, bool quadEnable, int dr, 
+                                            int nPixelsX, int nPixelsY);
 
     double setTotalProgress();
 

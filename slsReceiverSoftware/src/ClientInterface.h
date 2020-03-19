@@ -55,8 +55,6 @@ class ClientInterface : private virtual slsDetectorDefs {
     int lock_receiver(sls::ServerInterface &socket);
     int get_last_client_ip(sls::ServerInterface &socket);
     int set_port(sls::ServerInterface &socket);
-    int update_client(sls::ServerInterface &socket);
-    int send_update(sls::ServerInterface &socket);
     int get_version(sls::ServerInterface &socket);
     int set_detector_type(sls::ServerInterface &socket);
     int set_detector_hostname(sls::ServerInterface &socket);
@@ -107,7 +105,6 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_streaming_source_ip(sls::ServerInterface &socket);
     int set_silent_mode(sls::ServerInterface &socket);
     int get_silent_mode(sls::ServerInterface &socket);
-    int enable_gap_pixels(sls::ServerInterface &socket);
     int restream_stop(sls::ServerInterface &socket);
     int set_additional_json_header(sls::ServerInterface &socket);
     int get_additional_json_header(sls::ServerInterface &socket);

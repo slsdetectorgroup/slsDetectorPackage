@@ -13,7 +13,7 @@ template <class dataType> class ghostSummation {
   /** constructor
       \param xt crosstalk
   */
- ghostSummation(slsDetectorData<dataType> *d, double xt) : xtalk(xt),det(d)  {
+  ghostSummation(slsDetectorData<dataType> *d, double xt) : xtalk(xt),det(d), nx(1), ny(1)  {
     if (det)
       det->getDetectorSize(nx,ny);
     ghost=new double[nx*ny];
@@ -22,6 +22,9 @@ template <class dataType> class ghostSummation {
   ghostSummation(ghostSummation *orig) {
     xtalk=orig->xtalk; 
     det=orig->det;
+    nx=1;
+    ny=1;
+    det->getDetectorSize(nx,ny);
     ghost=new double[nx*ny];
     
   }

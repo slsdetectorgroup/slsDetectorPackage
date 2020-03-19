@@ -7,7 +7,7 @@
 #include <TH2D.h>
 #include <TH2F.h>
 #endif
-
+#include <cmath> 
 #include "slsInterpolation.h"
 #include "tiffIO.h"
 
@@ -15,44 +15,51 @@ class etaInterpolationBase : public slsInterpolation {
   
  public:
  
- etaInterpolationBase(int nx=400, int ny=400, int ns=25, int nb=-1, double emin=1, double emax=0) : slsInterpolation(nx,ny,ns), hhx(NULL), hhy(NULL), heta(NULL), nbeta(nb), etamin(emin), etamax(emax) {
+ etaInterpolationBase(int nx=400, int ny=400, int ns=25, int nsy=25, int nb=-1, int nby=-1, double emin=1, double emax=0) : slsInterpolation(nx,ny,ns,nsy), hhx(NULL), hhy(NULL), heta(NULL), nbetaX(nb), nbetaY(nby), etamin(emin), etamax(emax) {
     // cout << "eb " << nb << " " << emin << " " << emax << endl;  
     // cout << nb << " " << etamin << " " << etamax << endl;
-    if (nbeta<=0) {
+    if (nbetaX<=0) {
       //cout << "aaa:" <<endl;
-      nbeta=nSubPixels*10;
+      nbetaX=nSubPixelsX*10;
+    } 
+    if (nbetaY<=0) {
+      //cout << "aaa:" <<endl;
+      nbetaY=nSubPixelsY*10;
     }
     if (etamin>=etamax) {
       etamin=-1;
       etamax=2;
     }
-    etastep=(etamax-etamin)/nbeta;
-    heta=new int[nbeta*nbeta];
-    hhx=new float[nbeta*nbeta];
-    hhy=new float[nbeta*nbeta];
+    etastepX=(etamax-etamin)/nbetaX;
+    etastepY=(etamax-etamin)/nbetaY;
+    heta=new int[nbetaX*nbetaY];
+    hhx=new float[nbetaX*nbetaY];
+    hhy=new float[nbetaX*nbetaY];
     rangeMin=etamin;
     rangeMax=etamax;
-    flat= new double[nSubPixels*nSubPixels];
-    hintcorr=new int [nSubPixels*nSubPixels*nPixelsX*nPixelsY];
+    flat= new double[nSubPixelsX*nSubPixelsY];
+    hintcorr=new int [nSubPixelsX*nSubPixelsY*nPixelsX*nPixelsY];
     
   };
   
  etaInterpolationBase(etaInterpolationBase *orig): slsInterpolation(orig){
-   nbeta=orig->nbeta;
+   nbetaX=orig->nbetaX;
+   nbetaY=orig->nbetaY;
    etamin=orig->etamin;
    etamax=orig->etamax;
    rangeMin=orig->rangeMin;
    rangeMax=orig->rangeMax;
 
 
-    etastep=(etamax-etamin)/nbeta;
-    heta=new int[nbeta*nbeta];
-    memcpy(heta,orig->heta,nbeta*nbeta*sizeof(int));
-    hhx=new float[nbeta*nbeta];
-    memcpy(hhx,orig->hhx,nbeta*nbeta*sizeof(float));
-    hhy=new float[nbeta*nbeta];
-    memcpy(hhy,orig->hhy,nbeta*nbeta*sizeof(float));
-    hintcorr=new int [nSubPixels*nSubPixels*nPixelsX*nPixelsY];
+    etastepX=(etamax-etamin)/nbetaX;
+    etastepY=(etamax-etamin)/nbetaY;
+    heta=new int[nbetaX*nbetaY];
+    memcpy(heta,orig->heta,nbetaX*nbetaY*sizeof(int));
+    hhx=new float[nbetaX*nbetaY];
+    memcpy(hhx,orig->hhx,nbetaX*nbetaY*sizeof(float));
+    hhy=new float[nbetaX*nbetaY];
+    memcpy(hhy,orig->hhy,nbetaX*nbetaY*sizeof(float));
+    hintcorr=new int [nSubPixelsX*nSubPixelsY*nPixelsX*nPixelsY];
 
  };
 
@@ -61,7 +68,7 @@ class etaInterpolationBase : public slsInterpolation {
 
 
   virtual void resetFlatField() {
-    for (int ibx=0; ibx<nbeta*nbeta; ibx++) {
+    for (int ibx=0; ibx<nbetaX*nbetaY; ibx++) {
       heta[ibx]=0;
       hhx[ibx]=0;
       hhy[ibx]=0;
@@ -70,13 +77,16 @@ class etaInterpolationBase : public slsInterpolation {
 
   };
     
-  int *setEta(int *h, int nb=-1, double emin=1, double emax=0)
+  int *setEta(int *h, int nb=-1, int nby=-1, double emin=1, double emax=0)
   {  
     if (h) {
       if (heta) delete [] heta;
       heta=h;
-      nbeta=nb;
-      if (nb<=0) nbeta=nSubPixels*10;
+      nbetaX=nb;
+      nbetaY=nby;
+      if (nbetaX<=0) nbetaX=nSubPixelsX*10;
+      if (nbetaY<=0) nbetaY=nSubPixelsY*10;
+      
       etamin=emin;
       etamax=emax;
       if (etamin>=etamax) {
@@ -85,22 +95,24 @@ class etaInterpolationBase : public slsInterpolation {
       }
       rangeMin=etamin;
       rangeMax=etamax;
-      etastep=(etamax-etamin)/nbeta;
+      etastepX=(etamax-etamin)/nbetaX;
+      etastepY=(etamax-etamin)/nbetaY;
     }
     return heta;
   };
   
-   int *setFlatField(int *h, int nb=-1, double emin=1, double emax=0)
+   int *setFlatField(int *h, int nb=-1, int nby=-1, double emin=1, double emax=0)
   {  
-    return setEta(h, nb, emin, emax);
+    return setEta(h, nb, nby, emin, emax);
   };
 
 
 
   int *getFlatField(){return setEta(NULL);};
   
-  int *getFlatField(int &nb, double &emin, double &emax){
-    nb=nbeta; 
+  int *getFlatField(int &nb, int &nby, double &emin, double &emax){
+    nb=nbetaX; 
+    nby=nbetaY; 
     emin=etamin; 
     emax=etamax; 
     return getFlatField();
@@ -109,13 +121,13 @@ class etaInterpolationBase : public slsInterpolation {
   
   void *writeFlatField(const char * imgname) {
     float *gm=NULL;
-    gm=new float[nbeta*nbeta];
-    for (int ix=0; ix<nbeta; ix++) {
-      for (int iy=0; iy<nbeta; iy++) {
-	gm[iy*nbeta+ix]=heta[iy*nbeta+ix];
+    gm=new float[nbetaX*nbetaY];
+    for (int ix=0; ix<nbetaX; ix++) {
+      for (int iy=0; iy<nbetaY; iy++) {
+	gm[iy*nbetaX+ix]=heta[iy*nbetaX+ix];
       }
     } 
-    WriteToTiff(gm, imgname, nbeta, nbeta);   
+    WriteToTiff(gm, imgname, nbetaX, nbetaY);   
     delete [] gm;
     return NULL; 
   };
@@ -129,16 +141,18 @@ class etaInterpolationBase : public slsInterpolation {
       etamax=2;
     }
     
-    etastep=(etamax-etamin)/nbeta;
+    etastepX=(etamax-etamin)/nbetaX;
+    etastepY=(etamax-etamin)/nbetaY;
     uint32 nnx;
     uint32 nny;
     float *gm=ReadFromTiff(imgname, nnx, nny);
-    if (nnx!=nny) {
-      cout << "different number of bins in x " << nnx << "  and y " << nny<< " !"<< endl;
-      cout << "Aborting read"<< endl;
-      return 0;
-    }
-    nbeta=nnx;
+    /* if (nnx!=nny) { */
+    /*   cout << "different number of bins in x " << nnx << "  and y " << nny<< " !"<< endl; */
+    /*   cout << "Aborting read"<< endl; */
+    /*   return 0; */
+    /* } */
+    nbetaX=nnx;
+    nbetaY=nny;
     if (gm) {
       if (heta) {
 	delete [] heta;
@@ -146,13 +160,13 @@ class etaInterpolationBase : public slsInterpolation {
 	delete [] hhy;
       }
       
-      heta=new int[nbeta*nbeta];
-      hhx=new float[nbeta*nbeta];
-      hhy=new float[nbeta*nbeta];
+      heta=new int[nbetaX*nbetaY];
+      hhx=new float[nbetaX*nbetaY];
+      hhy=new float[nbetaX*nbetaY];
       
-      for (int ix=0; ix<nbeta; ix++) {
-	for (int iy=0; iy<nbeta; iy++) {
-	  heta[iy*nbeta+ix]=gm[iy*nbeta+ix];
+      for (int ix=0; ix<nbetaX; ix++) {
+	for (int iy=0; iy<nbetaY; iy++) {
+	  heta[iy*nbetaX+ix]=gm[iy*nbetaX+ix];
 	}
       }
       delete [] gm;
@@ -178,10 +192,10 @@ float *gethhx()
     };
   virtual int addToFlatField(double etax, double etay){
     int ex,ey; 
-    ex=(etax-etamin)/etastep;
-    ey=(etay-etamin)/etastep;
-    if (ey<nbeta && ex<nbeta && ex>=0 && ey>=0)
-      heta[ey*nbeta+ex]++; 
+    ex=(etax-etamin)/etastepX;
+    ey=(etay-etamin)/etastepY;
+    if (ey<nbetaY && ex<nbetaX && ex>=0 && ey>=0)
+      heta[ey*nbetaX+ex]++; 
     return 0;    
   };
   
@@ -195,80 +209,80 @@ float *gethhx()
    
    float tot_eta=0;
 
-  float *etah=new float[nbeta*nbeta];
-  int etabins=nbeta;
+  float *etah=new float[nbetaX*nbetaY];
+  // int etabins=nbeta;
   int ibb=0;
 
-  for (int ii=0; ii<etabins*etabins; ii++) {
+  for (int ii=0; ii<nbetaX*nbetaY; ii++) {
    
       etah[ii]=heta[ii];
       tot_eta+=heta[ii];
   }
   sprintf(tit,"/scratch/eta_%d.tiff",ind);
-  WriteToTiff(etah, tit, etabins, etabins);
+  WriteToTiff(etah, tit, nbetaX, nbetaY);
 
 
-  for (int ii=0; ii<etabins*etabins; ii++) {
-    ibb=(hhx[ii]*nSubPixels);
+  for (int ii=0; ii<nbetaX*nbetaY; ii++) {
+    ibb=(hhx[ii]*nSubPixelsX);
     etah[ii]=ibb;
   }
   sprintf(tit,"/scratch/eta_hhx_%d.tiff",ind);
-  WriteToTiff(etah, tit, etabins, etabins);
+  WriteToTiff(etah, tit, nbetaX, nbetaY);
 	  
-  for (int ii=0; ii<etabins*etabins; ii++) {
-    ibb=hhy[ii]*nSubPixels;
+  for (int ii=0; ii<nbetaX*nbetaY; ii++) {
+    ibb=hhy[ii]*nSubPixelsY;
     etah[ii]=ibb;
   }
   sprintf(tit,"/scratch/eta_hhy_%d.tiff",ind);
-  WriteToTiff(etah, tit, etabins, etabins);
+  WriteToTiff(etah, tit, nbetaX, nbetaY);
 	  
   
-  float *ftest=new float[nSubPixels*nSubPixels];
+  float *ftest=new float[nSubPixelsX*nSubPixelsY];
 
-  for (int ib=0; ib<nSubPixels*nSubPixels; ib++) ftest[ib]=0;
+  for (int ib=0; ib<nSubPixelsX*nSubPixelsY; ib++) ftest[ib]=0;
   
 
   //int ibx=0, iby=0;
   
-  for (int ii=0; ii<nbeta*nbeta; ii++) {
+  for (int ii=0; ii<nbetaX*nbetaY; ii++) {
     
-    ibx=nSubPixels*hhx[ii];
-    iby=nSubPixels*hhy[ii];
+    ibx=nSubPixelsX*hhx[ii];
+    iby=nSubPixelsY*hhy[ii];
     if (ibx<0) ibx=0;
     if (iby<0) iby=0;
-    if (ibx>=nSubPixels) ibx=nSubPixels-1;
-    if (iby>=nSubPixels) iby=nSubPixels-1;
+    if (ibx>=nSubPixelsX) ibx=nSubPixelsX-1;
+    if (iby>=nSubPixelsY) iby=nSubPixelsY-1;
     
 
-    if (ibx>=0 && ibx<nSubPixels && iby>=0 && iby<nSubPixels) {
+    if (ibx>=0 && ibx<nSubPixelsX && iby>=0 && iby<nSubPixelsY) {
       //
       // if (ibx>0 && iby>0) cout << ibx << " " << iby << " " << ii << endl;
-      ftest[ibx+iby*nSubPixels]+=heta[ii];
+      ftest[ibx+iby*nSubPixelsX]+=heta[ii];
     } else
       cout << "Bad interpolation "<< ii << " " << ibx << " " << iby<< endl; 
-
+    
   }
 
   sprintf(tit,"/scratch/ftest_%d.tiff",ind);
-  WriteToTiff(ftest, tit, nSubPixels, nSubPixels);
+  WriteToTiff(ftest, tit, nSubPixelsX, nSubPixelsY);
 
   //int ibx=0, iby=0;
-  tot_eta/=nSubPixels*nSubPixels;
+  tot_eta/=nSubPixelsX*nSubPixelsY;
   int nbad=0;
-  for (int ii=0; ii<etabins*etabins; ii++) {
-    ibx=nSubPixels*hhx[ii];
-    iby=nSubPixels*hhy[ii];
-    if (ftest[ibx+iby*nSubPixels]<tot_eta*0.5) {
+  for (int ii=0; ii<nbetaX*nbetaY; ii++) {
+    ibx=nSubPixelsX*hhx[ii];
+    iby=nSubPixelsY*hhy[ii];
+    if (ftest[ibx+iby*nSubPixelsX]<tot_eta*0.5) {
       etah[ii]=1;
       nbad++;
-    } else if(ftest[ibx+iby*nSubPixels]>tot_eta*2.){
+    } else if(ftest[ibx+iby*nSubPixelsX]>tot_eta*2.){
       etah[ii]=2;
       nbad++;
     } else
       etah[ii]=0;
   }
   sprintf(tit,"/scratch/eta_bad_%d.tiff",ind);
-  WriteToTiff(etah, tit, etabins, etabins);
+  WriteToTiff(etah, tit, nbetaX, nbetaY);
   // cout << "Index: " << ind << "\t Bad bins: "<< nbad << endl;
   //int ibx=0, iby=0;
 
@@ -286,46 +300,44 @@ float *gethhx()
     double diff=0, d;
     //double bsize=1./nSubPixels;
     int nbad=0;
-    double p_tot_x[nSubPixels], p_tot_y[nSubPixels], p_tot[nSubPixels*nSubPixels];
-    double maxdiff=0, mindiff=avg*nSubPixels*nSubPixels;
+    double p_tot_x[nSubPixelsX], p_tot_y[nSubPixelsY], p_tot[nSubPixelsX*nSubPixelsY];
+    double maxdiff=0, mindiff=avg*nSubPixelsX*nSubPixelsY;
    
     int ipx, ipy;
-    for (ipy=0; ipy<nSubPixels; ipy++) {
-      for (ipx=0; ipx<nSubPixels; ipx++) {
-	p_tot[ipx+ipy*nSubPixels]=0;
+    for (ipy=0; ipy<nSubPixelsY; ipy++) {
+      for (ipx=0; ipx<nSubPixelsX; ipx++) {
+	p_tot[ipx+ipy*nSubPixelsX]=0;
       }
       p_tot_y[ipy]=0;
       p_tot_x[ipy]=0;
     }
    
-    for (int ibx=0; ibx<nbeta; ibx++) {
-      for (int iby=0; iby<nbeta; iby++) {
-	ipx=hx[ibx+iby*nbeta]*nSubPixels;
+    for (int ibx=0; ibx<nbetaX; ibx++) {
+      for (int iby=0; iby<nbetaY; iby++) {
+	ipx=hx[ibx+iby*nbetaX]*nSubPixelsX;
 	if (ipx<0) ipx=0;
-	if (ipx>=nSubPixels) ipx=nSubPixels-1;
+	if (ipx>=nSubPixelsX) ipx=nSubPixelsX-1;
 	
-	ipy=hy[ibx+iby*nbeta]*nSubPixels;
+	ipy=hy[ibx+iby*nbetaX]*nSubPixelsY;
 	if (ipy<0) ipy=0;
-	if (ipy>=nSubPixels) ipy=nSubPixels-1;
+	if (ipy>=nSubPixelsY) ipy=nSubPixelsY-1;
 	
-	p_tot[ipx+ipy*nSubPixels]+=heta[ibx+iby*nbeta];
-	p_tot_y[ipy]+=heta[ibx+iby*nbeta];
-	p_tot_x[ipx]+=heta[ibx+iby*nbeta];
-	
-
+	p_tot[ipx+ipy*nSubPixelsX]+=heta[ibx+iby*nbetaX];
+	p_tot_y[ipy]+=heta[ibx+iby*nbetaX];
+	p_tot_x[ipx]+=heta[ibx+iby*nbetaX];
       }
     }
     
     
     //  cout << endl << endl;
-    for (ipy=0; ipy<nSubPixels; ipy++) { 
+    for (ipy=0; ipy<nSubPixelsY; ipy++) { 
      cout.width(5);
      //flat_y[ipy]=p_tot_y[ipy];//avg/nSubPixels;
-      for (ipx=0; ipx<nSubPixels; ipx++) {
+      for (ipx=0; ipx<nSubPixelsX; ipx++) {
 
 	//	flat_x[ipx]=p_tot_x[ipx];///avg/nSubPixels;
-	flat[ipx+nSubPixels*ipy]=p_tot[ipx+nSubPixels*ipy];///avg;
-	d=p_tot[ipx+nSubPixels*ipy]-avg;
+	flat[ipx+nSubPixelsX*ipy]=p_tot[ipx+nSubPixelsX*ipy];///avg;
+	d=p_tot[ipx+nSubPixelsX*ipy]-avg;
 	if (d<0) d*=-1.;
 	if (d>5*sqrt(avg) )
 	  nbad++;
@@ -354,8 +366,8 @@ float *gethhx()
   float *hhx;
   float *hhy;
   int *heta;
-  int nbeta;
-  double etamin, etamax, etastep;
+  int nbetaX, nbetaY;
+  double etamin, etamax, etastepX, etastepY;
   double rangeMin, rangeMax;
 
 

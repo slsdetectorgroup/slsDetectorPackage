@@ -95,7 +95,7 @@ public:
   virtual int *getImage() {
     return det->getImage();
   }
-  virtual int getImageSize(int &nnx, int &nny, int &ns) {return det->getImageSize(nnx, nny, ns);};
+  virtual int getImageSize(int &nnx, int &nny, int &ns, int &nsy) {return det->getImageSize(nnx, nny, ns, nsy);};
   virtual int getDetectorSize(int &nnx, int &nny) {return det->getDetectorSize(nnx, nny);};
 
   virtual ~threadedAnalogDetector() {StopThread();  delete fifoFree; delete fifoData;}
@@ -221,10 +221,10 @@ FILE *getFilePointer(){return det->getFilePointer();};
    }
 
 
-   virtual int setNSubPixels(int ns)  { 
+  virtual int setNSubPixels(int ns, int nsy)  { 
      slsInterpolation *interp=(det)->getInterpolation();
-     if (interp)  return interp->setNSubPixels(ns);
-     else return 1;};
+     if (interp)  interp->setNSubPixels(ns, nsy);
+     return 1;};
 
 
    virtual slsInterpolation *setInterpolation(slsInterpolation *f){
@@ -314,11 +314,11 @@ public:
    
   virtual void newDataSet(){for (int i=0; i<nThreads; i++) dets[i]->newDataSet();};
   
-  virtual int *getImage(int &nnx, int &nny, int &ns) {
+  virtual int *getImage(int &nnx, int &nny, int &ns, int &nsy) {
     int *img;
     // int nnx, nny, ns; 
     // int nnx, nny, ns;
-    int nn=dets[0]->getImageSize(nnx, nny,ns);
+    int nn=dets[0]->getImageSize(nnx, nny,ns, nsy);
     if (image) {
       delete image;
       image=NULL;
@@ -363,10 +363,10 @@ public:
 /*        dets[ii]->writeImage(tit); */
 /*      } */
 /* #endif */
-     int nnx, nny, ns;
-     getImage(nnx, nny, ns);
+    int nnx, nny, ns, nsy;
+    getImage(nnx, nny, ns,nsy);
      //int nnx, nny, ns;
-     int nn=dets[0]->getImageSize(nnx, nny, ns);
+    int nn=dets[0]->getImageSize(nnx, nny, ns, nsy);
      float *gm=new float[nn];
      if (gm) {
        for (int ix=0; ix<nn; ix++) {

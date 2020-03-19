@@ -199,7 +199,7 @@ template <class dataType> class analogDetector {
      \param nns reference to number of subpixels for interpolating detector, will always be 1 in this case
      \returns number of pixels of the detector image
    */
-  virtual int getImageSize(int &nnx, int &nny, int &nns){nnx=nx; nny=ny; nns=1; return nx*ny;}; 
+  virtual int getImageSize(int &nnx, int &nny, int &nnsx, int &nnsy){nnx=nx; nny=ny; nnsx=1; nnsy=1; return nx*ny;}; 
  /**
      Returns data size of the detector image matrix
      \param nnx reference to pixel size in x
@@ -423,7 +423,7 @@ template <class dataType> class analogDetector {
 	  if (g==0) g=-1.;
 	}
       
-	return stat[iy][ix].getPedestalRMS();//divide by gain?
+	return stat[iy][ix].getPedestalRMS()/g;//divide by gain?
       }
       return -1;
     };
@@ -441,8 +441,9 @@ template <class dataType> class analogDetector {
        \returns pedestal value
     */
     virtual double* getPedestal(double *ped){
-      if (ped==NULL)
+      if (ped==NULL) {
 	ped=new double[nx*ny];
+      }
       for (int iy=0; iy<ny; iy++) {
 	for (int ix=0; ix<nx; ix++) {
 	  ped[iy*nx+ix]=stat[iy][ix].getPedestal();
@@ -459,10 +460,11 @@ template <class dataType> class analogDetector {
        \returns pedestal rms
     */
     virtual double* getPedestalRMS(double *ped=NULL){
-      if (ped==NULL)
+      if (ped==NULL) {
 	ped=new double[nx*ny];
-	for (int iy=0; iy<ny; iy++) {
-      for (int ix=0; ix<nx; ix++) {
+      }
+      for (int iy=0; iy<ny; iy++) {
+	for (int ix=0; ix<nx; ix++) {
 	  ped[iy*nx+ix]=stat[iy][ix].getPedestalRMS();
 	}
       }
@@ -675,7 +677,7 @@ template <class dataType> class analogDetector {
       delete [] gm;
       return 1;
     }
-    return NULL;
+    return 0;
   }
   
  /**
@@ -700,7 +702,7 @@ template <class dataType> class analogDetector {
       delete [] gm;
       return 1;
     }
-    return NULL;
+    return 0;
   }
   
    

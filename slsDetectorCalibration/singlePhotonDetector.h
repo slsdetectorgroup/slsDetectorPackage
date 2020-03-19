@@ -366,12 +366,12 @@ int *getClusters(char *data,  int *ph=NULL) {
 
 
   
-  if (cm)
+  if (cm) {
     addToCommonMode(data);
+  }
 
-
-    for (int iy=ymin; iy<ymax; iy++) {
-  for (int ix=xmin; ix<xmax; ix++) {
+  for (int iy=ymin; iy<ymax; iy++) {
+    for (int ix=xmin; ix<xmax; ix++) {
       if (det->isGood(ix,iy)) {
 	max=0;
 	tl=0;

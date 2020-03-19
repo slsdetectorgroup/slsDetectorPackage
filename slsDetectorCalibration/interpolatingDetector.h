@@ -107,11 +107,11 @@ class interpolatingDetector : public singlePhotonDetector {
       singlePhotonDetector::clearImage();
   };
 
-  int getImageSize(int &nnx, int &nny, int &ns) {
+  int getImageSize(int &nnx, int &nny, int &nsx, int &nsy) {
     if (interp) 
-      return interp->getImageSize(nnx, nny, ns); 
+      return interp->getImageSize(nnx, nny, nsx, nsy); 
     else 
-      return analogDetector<uint16_t>::getImageSize(nnx, nny, ns);
+      return analogDetector<uint16_t>::getImageSize(nnx, nny, nsx, nsy);
   };
 
 
@@ -251,6 +251,7 @@ int addFrame(char *data,  int *ph=NULL, int ff=0) {
     }
 
     virtual int getNSubPixels(){ if (interp) return interp->getNSubPixels(); else return 1;}
+
     virtual int setNSubPixels(int ns)  { 
       if (interp) {
 	pthread_mutex_lock(fi); 

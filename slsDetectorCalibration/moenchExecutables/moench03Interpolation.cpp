@@ -16,7 +16,8 @@
 
 //#include "etaInterpolationPosXY.h"
 #include "noInterpolation.h"
-#include "etaInterpolationCleverAdaptiveBins.h"
+#include "etaInterpolationPosXY.h"
+//#include "etaInterpolationCleverAdaptiveBins.h"
 //#include "etaInterpolationRandomBins.h"
 using namespace std;
 #define NC 400

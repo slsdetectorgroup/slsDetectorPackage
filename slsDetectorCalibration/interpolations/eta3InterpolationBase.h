@@ -13,35 +13,12 @@
 class eta3InterpolationBase : public virtual etaInterpolationBase  {
   
  public:
- eta3InterpolationBase(int nx=400, int ny=400, int ns=25, int nb=-1, double emin=1, double emax=0) : etaInterpolationBase(nx, ny, ns, nb, emin, emax) {
+ eta3InterpolationBase(int nx=400, int ny=400, int ns=25, int nsy=25, int nb=-1, int nby=-1, double emin=1, double emax=0) : etaInterpolationBase(nx, ny, ns, nsy, nb, nby, emin, emax) {
     //  cout << "e3ib " << nb << " " << emin << " " << emax << endl; 
     /* if (nbeta<=0) { */
     /*   nbeta=nSubPixels*10;    */
     /* } */
-    if (etamin>=etamax) {
-      etamin=-1;
-      etamax=1; 
-    }
-    
-    etastep=(etamax-etamin)/nbeta;
-#ifdef MYROOT1
-    delete heta;
-    delete hhx;
-    delete hhy;
-    heta=new TH2D("heta","heta",nbeta,etamin,etamax,nbeta,etamin,etamax);
-    hhx=new TH2D("hhx","hhx",nbeta,etamin,etamax,nbeta,etamin,etamax);
-    hhy=new TH2D("hhy","hhy",nbeta,etamin,etamax,nbeta,etamin,etamax);
-#endif
-#ifndef MYROOT1
-    /* delete [] heta; */
-    /* delete [] hhx; */
-    /* delete [] hhy; */
-
-    /* heta=new int[nbeta*nbeta]; */
-    /* hhx=new float[nbeta*nbeta]; */
-    /* hhy=new float[nbeta*nbeta]; */
-    
-#endif
+  
     //   cout << nbeta << " " << etamin << " " << etamax << endl;
 };
   
@@ -88,7 +65,7 @@ class eta3InterpolationBase : public virtual etaInterpolationBase  {
     
   
     double etax, etay;
-     if (nSubPixels>2) { 
+     if (nSubPixelsX>2 || nSubPixelsY>2 ) { 
        calcEta3(cl,etax,etay, totquad);
      } 
      return getInterpolatedPosition(x,y,etax, etay,quad,int_x,int_y);
@@ -101,7 +78,7 @@ class eta3InterpolationBase : public virtual etaInterpolationBase  {
     
     
      double etax, etay;
-     if (nSubPixels>2) { 
+     if (nSubPixelsX>2 || nSubPixelsY>2 ) { 
        calcEta3(cl,etax,etay, totquad);
      }
      return getInterpolatedPosition(x,y,etax, etay,quad,int_x,int_y);
@@ -117,38 +94,38 @@ class eta3InterpolationBase : public virtual etaInterpolationBase  {
     double xpos_eta=0,ypos_eta=0;
     int ex,ey;
 
-     if (nSubPixels>2) { 
+     if (nSubPixelsX>2 || nSubPixelsY>2 ) { 
 
 #ifdef MYROOT1
-    xpos_eta=(hhx->GetBinContent(hhx->GetXaxis()->FindBin(etax),hhy->GetYaxis()->FindBin(etay)))/((double)nSubPixels);
-    ypos_eta=(hhy->GetBinContent(hhx->GetXaxis()->FindBin(etax),hhy->GetYaxis()->FindBin(etay)))/((double)nSubPixels);
+    xpos_eta=(hhx->GetBinContent(hhx->GetXaxis()->FindBin(etax),hhy->GetYaxis()->FindBin(etay)))/((double)nSubPixelsX);
+    ypos_eta=(hhy->GetBinContent(hhx->GetXaxis()->FindBin(etax),hhy->GetYaxis()->FindBin(etay)))/((double)nSubPixelsY);
 #endif
 #ifndef MYROOT1
-    ex=(etax-etamin)/etastep;
-    ey=(etay-etamin)/etastep;
+    ex=(etax-etamin)/etastepX;
+    ey=(etay-etamin)/etastepY;
     if (ex<0) {
       /* cout << etax << " " << etamin << " "; */
       /*  cout << "3x*"<< ex << endl; */
       ex=0;
 	} 
-    if (ex>=nbeta) {
+    if (ex>=nbetaX) {
       /* cout << etax << " " << etamin << " "; */
       /* cout << "3x?"<< ex << endl; */
-      ex=nbeta-1;
+      ex=nbetaX-1;
     }
     if (ey<0) {
       /* cout << etay << " " << etamin << " "; */
       /* cout << "3y*"<< ey << endl; */
       ey=0;
 	} 
-    if (ey>=nbeta) {
+    if (ey>=nbetaY) {
       /* cout << etay << " " << etamin << " "; */
       /* cout << "3y?"<< ey << endl; */
-      ey=nbeta-1;
+      ey=nbetaY-1;
       
     }
-    xpos_eta=(((double)hhx[(ey*nbeta+ex)]));///((double)nSubPixels);
-    ypos_eta=(((double)hhy[(ey*nbeta+ex)]));///((double)nSubPixels);
+    xpos_eta=(((double)hhx[(ey*nbetaX+ex)]));///((double)nSubPixels);
+    ypos_eta=(((double)hhy[(ey*nbetaX+ex)]));///((double)nSubPixels);
 
 #endif
    
@@ -265,10 +242,10 @@ class eta3InterpolationBase : public virtual etaInterpolationBase  {
 #endif
 #ifndef MYROOT1
     int ex,ey; 
-    ex=(etax-etamin)/etastep;
-    ey=(etay-etamin)/etastep;
-    if (ey<nbeta && ex<nbeta && ex>=0 && ey>=0)
-      heta[ey*nbeta+ex]++; 
+    ex=(etax-etamin)/etastepX;
+    ey=(etay-etamin)/etastepY;
+    if (ey<nbetaY && ex<nbetaX && ex>=0 && ey>=0)
+      heta[ey*nbetaX+ex]++; 
 #endif
     return 0;    
   };

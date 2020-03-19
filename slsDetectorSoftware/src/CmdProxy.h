@@ -448,19 +448,19 @@ class CmdProxy {
         return ToString(value, unit);
     }
 
-    inline unsigned int stoiHex(const std::string& s) {
-        unsigned long lresult = stoul(s, nullptr, 16);
-        unsigned int result = lresult;
-        if (result != lresult) {
-            throw std::out_of_range("cannot convert to unsigned int");
-        }
-        return result;
-    }
+    // inline unsigned int stoiHex(const std::string& s) {
+    //     unsigned long lresult = stoul(s, nullptr, 16);
+    //     unsigned int result = lresult;
+    //     if (result != lresult) {
+    //         throw std::out_of_range("cannot convert to unsigned int");
+    //     }
+    //     return result;
+    // }
 
-    inline unsigned long int stoulHex(const std::string& s) {
-        unsigned long result = stoul(s, nullptr, 16);
-        return result;
-    }
+    // inline unsigned long int stoulHex(const std::string& s) {
+    //     unsigned long result = stoul(s, nullptr, 16);
+    //     return result;
+    // }
 
     using FunctionMap = std::map<std::string, std::string (CmdProxy::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
@@ -1325,22 +1325,22 @@ class CmdProxy {
 
 
     /* on chip dacs */
-    INTEGER_USER_IND_COMMAND(vchip_comp_fe, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_COMP_FE, 
+    INTEGER_USER_IND_COMMAND(vchip_comp_fe, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VB_COMP_FE, 
                     "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for comparator current of analogue front end.");
 
-    INTEGER_USER_IND_COMMAND(vchip_opa_1st, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_OPA_1ST, 
+    INTEGER_USER_IND_COMMAND(vchip_opa_1st, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VB_OPA_1ST, 
                     "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for opa current for driving the other DACs in chip.");
 
-    INTEGER_USER_IND_COMMAND(vchip_opa_fd, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_OPA_FD, 
+    INTEGER_USER_IND_COMMAND(vchip_opa_fd, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VB_OPA_FD, 
                     "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac current for CDS opa stage.");
 
-    INTEGER_USER_IND_COMMAND(vchip_comp_adc, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_COMP_ADC, 
+    INTEGER_USER_IND_COMMAND(vchip_comp_adc, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VB_COMP_ADC, 
                     "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for comparator current of ADC.");
 
-    INTEGER_USER_IND_COMMAND(vchip_ref_comp_fe, getOnChipDAC, setOnChipDAC, stoiHex, defs::VREF_COMP_FE,
+    INTEGER_USER_IND_COMMAND(vchip_ref_comp_fe, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VREF_COMP_FE,
                     "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for reference voltage of the comparator of analogue front end.");
 
-    INTEGER_USER_IND_COMMAND(vchip_cs, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_CS,
+    INTEGER_USER_IND_COMMAND(vchip_cs, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VB_CS,
                     "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for current injection into preamplifier.");                                          
 
 
@@ -1620,10 +1620,10 @@ class CmdProxy {
     INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, std::stoi, defs::V_LIMIT,
                     "[n_value]\n\t[Ctb][Moench] Soft limit for power supplies(ctb only) and DACS in mV.");      
 
-    INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask, stoiHex,
+    INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask, StringTo<uint32_t>,
                     "[bitmask]\n\t[Ctb][Moench] ADC Enable Mask for 1Gb Mode for each 32 ADC channel.");      
 
-    INTEGER_COMMAND_HEX(adcenable10g, getTenGigaADCEnableMask, setTenGigaADCEnableMask, stoiHex,
+    INTEGER_COMMAND_HEX(adcenable10g, getTenGigaADCEnableMask, setTenGigaADCEnableMask, StringTo<uint32_t>,
                     "[bitmask]\n\t[Ctb][Moench] ADC Enable Mask for 10Gb mode for each 32 ADC channel. However, if any of consecutive 4 bits are enabled, the complete 4 bits are enabled.");   
 
     /* CTB Specific */
@@ -1707,16 +1707,16 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
                 "[fname]\n\t[Ctb][Moench][Mythen3] Saves pattern to file (ascii). Also executes pattern."); 
 
-    INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl, stoulHex,
+    INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl, StringTo<uint64_t>,
                     "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask defining input (0) and output (1) signals.");
 
-    INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, stoulHex,
+    INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, StringTo<uint64_t>,
                     "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask defining output clock enable.");
 
-    INTEGER_COMMAND_HEX(patmask, getPatternMask, setPatternMask, stoulHex,
+    INTEGER_COMMAND_HEX(patmask, getPatternMask, setPatternMask, StringTo<uint64_t>,
                     "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask applied to every pattern. Only these bits for each pattern will be masked against.");
 
-    INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask, stoulHex,
+    INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask, StringTo<uint64_t>,
                     "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit values applied to the selected patmask for every pattern.");                    
 
     /* Moench */
@@ -1745,7 +1745,7 @@ class CmdProxy {
     EXECUTE_SET_COMMAND(bustest, executeBusTest, 
                 "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb][Moench] Bus test, ie. keeps writing and reading back different values in R/W register.");  
 
-    INTEGER_COMMAND_HEX(adcinvert, getADCInvert, setADCInvert, stoiHex,
+    INTEGER_COMMAND_HEX(adcinvert, getADCInvert, setADCInvert, StringTo<uint32_t>,
                     "[bitmask]\n\t[Ctb][Moench][Jungfrau][Moench] ADC Inversion Mask.\n\t[Jungfrau][Moench] Inversions on top of the default mask.");   
 
     /* Insignificant */

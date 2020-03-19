@@ -165,3 +165,17 @@ TEST_CASE("uint64 from string"){
     
 }
 
+
+TEST_CASE("int from string"){
+    REQUIRE(StringTo<int>("-1") == -1);
+    REQUIRE(StringTo<int>("-0x1") == -0x1);
+    REQUIRE(StringTo<int>("-0x1") == -1);
+    REQUIRE(StringTo<int>("0") == 0);
+    REQUIRE(StringTo<int>("5") == 5);
+    REQUIRE(StringTo<int>("16") == 16);
+    REQUIRE(StringTo<int>("20") == 20);
+    REQUIRE(StringTo<int>("0x14") == 20);
+    REQUIRE(StringTo<int>("0x15") == 21);
+    REQUIRE(StringTo<int>("0xffffff") == 0xffffff);
+    
+}

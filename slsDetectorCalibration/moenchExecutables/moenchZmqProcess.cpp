@@ -290,7 +290,7 @@ int main(int argc, char *argv[]) {
 	int iframe=0;
 	char ofname[10000];
 		    
-	char fname[10000];
+	string fname;
 	//	int length;
 	int *detimage=NULL;
 	int nnx, nny,nnsx, nnsy;
@@ -374,7 +374,7 @@ int main(int argc, char *argv[]) {
 	    } else {
 	      send_something=0;
 	      if (fMode==ePedestal) {
-		sprintf(ofname,"%s_%ld_ped.tiff",fname,fileindex);
+		sprintf(ofname,"%s_%ld_ped.tiff",fname.c_str(),fileindex);
 		mt->writePedestal(ofname);
 		cout << "Writing pedestal to " << ofname << endl;
 		send_something=1;
@@ -382,7 +382,7 @@ int main(int argc, char *argv[]) {
 #ifdef INTERP
 	      else if  (fMode==eFlat) {
 		mt->prepareInterpolation(ok);
-		sprintf(ofname,"%s_%ld_eta.tiff",fname,fileindex);
+		sprintf(ofname,"%s_%ld_eta.tiff",fname.c_str(),fileindex);
 		mt->writeFlatField(ofname);
 		cout << "Writing eta to " << ofname << endl;
 		send_something=1;
@@ -391,7 +391,7 @@ int main(int argc, char *argv[]) {
 	      else {
 		if (subframes>0 ) { 
 		  if (insubframe>0) {
-		    sprintf(ofname,"%s_sf%ld_%ld.tiff",fname,nnsubframe,fileindex);
+		    sprintf(ofname,"%s_sf%ld_%ld.tiff",fname.c_str(),nnsubframe,fileindex);
 		    //		  mt->writeImage(ofname);
 		    doutf= new float[nnx*nny];
 		    if (subframes>0 && insubframe!=subframes && insubframe>0)
@@ -416,7 +416,7 @@ int main(int argc, char *argv[]) {
 		    send_something=1;
 		  }
 		} else {
-		  sprintf(ofname,"%s_%ld.tiff",fname,fileindex);
+		  sprintf(ofname,"%s_%ld.tiff",fname.c_str(),fileindex);
 		  mt->writeImage(ofname);
 		  send_something=1;
 		}
@@ -496,16 +496,16 @@ int main(int argc, char *argv[]) {
 	    if(send_something) {
 #ifndef DEVELOPER
 #ifndef MOENCH_BRANCH
-	      zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, 0,0, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex,0 , packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, additionalJsonHeader);
+	      zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, 0,0, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname.c_str(), acqIndex,0 , packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, additionalJsonHeader);
 #endif
 #endif
 	      
 #ifdef DEVELOPER
-	      zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,additionalJsonHeader);
+	      zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname.c_str(),acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,additionalJsonHeader);
 #endif	
 #ifdef MOENCH_BRANCH
 	   
-	      zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
+	      zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname.c_str(), acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
 #endif		
 	      
 			
@@ -567,8 +567,8 @@ int main(int argc, char *argv[]) {
 
 	      //dataSize=size;
 
-	      strcpy(fname,filename.c_str());
-
+	      //strcpy(fname,filename.c_str());
+	      fname=filename;
 	      // cprintf(BLUE, "Header Info:\n"
 	      // 	      "size: %u\n"
 	      // 	      "multisize: %u\n"
@@ -841,7 +841,7 @@ int main(int argc, char *argv[]) {
 	      if (dout[ix]<0) dout[ix]=0;
 	      doutf[ix]=dout[ix];
 	    }
-	    sprintf(ofname,"%s_sf%ld_%ld.tiff",fname,nnsubframe,fileindex);
+	    sprintf(ofname,"%s_sf%ld_%ld.tiff",fname.c_str(),nnsubframe,fileindex);
 	    
 	    cout << "Writing image to " << ofname << endl;
 
@@ -853,16 +853,16 @@ int main(int argc, char *argv[]) {
 
 #ifndef DEVELOPER
 #ifndef MOENCH_BRANCH
-	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, 0,0, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex,0 , packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, additionalJsonHeader);
+	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, 0,0, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname.c_str(), acqIndex,0 , packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, additionalJsonHeader);
 #endif
 #endif
 
 #ifdef DEVELOPER
-	    zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname,acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,additionalJsonHeader);
+	    zmqsocket2->SendHeaderData (0, false,SLS_DETECTOR_JSON_HEADER_VERSION , dr, fileindex, 0,0,nnx,nny,nnx*nny*dr/8,acqIndex, frameIndex, fname.c_str(),acqIndex,0 , packetNumber,bunchId, timestamp, modId,xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, 0,0, 0,additionalJsonHeader);
 #endif	
 #ifdef MOENCH_BRANCH
 	   
-	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname, acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
+	    zmqsocket2->SendHeaderData (0, false, SLS_DETECTOR_JSON_HEADER_VERSION, dr, fileindex, nnx, nny, nnx*nny*dr/8,acqIndex, frameIndex, fname.c_str(), acqIndex, subFrameIndex, packetNumber,bunchId, timestamp, modId, xCoord, yCoord, zCoord,debug, roundRNumber, detType, version, flippedData, additionalJsonHeader);
 #endif		
 	       
 	    

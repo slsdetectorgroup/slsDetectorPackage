@@ -441,8 +441,9 @@ template <class dataType> class analogDetector {
        \returns pedestal value
     */
     virtual double* getPedestal(double *ped){
-      if (ped==NULL)
+      if (ped==NULL) {
 	ped=new double[nx*ny];
+      }
       for (int iy=0; iy<ny; iy++) {
 	for (int ix=0; ix<nx; ix++) {
 	  ped[iy*nx+ix]=stat[iy][ix].getPedestal();
@@ -459,10 +460,11 @@ template <class dataType> class analogDetector {
        \returns pedestal rms
     */
     virtual double* getPedestalRMS(double *ped=NULL){
-      if (ped==NULL)
+      if (ped==NULL) {
 	ped=new double[nx*ny];
-	for (int iy=0; iy<ny; iy++) {
-      for (int ix=0; ix<nx; ix++) {
+      }
+      for (int iy=0; iy<ny; iy++) {
+	for (int ix=0; ix<nx; ix++) {
 	  ped[iy*nx+ix]=stat[iy][ix].getPedestalRMS();
 	}
       }

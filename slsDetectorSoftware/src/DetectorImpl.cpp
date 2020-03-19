@@ -254,7 +254,7 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
     auto res = sls::split(hostname, ':');
     if (res.size() > 1) {
         host = res[0];
-        port = std::stoi(res[1]);
+        port = StringTo<int>(res[1]);
     }
 
     if (host != "localhost") {

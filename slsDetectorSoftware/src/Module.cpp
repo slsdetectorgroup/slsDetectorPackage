@@ -922,7 +922,7 @@ int Module::getThresholdEnergy() {
         std::string result = getAdditionalJsonParameter("threshold");
         // convert to integer
         try {
-            return stoi(result);
+            return std::stoi(result);
         }
         // not found or cannot scan integer
         catch (...) {
@@ -2145,7 +2145,7 @@ std::string Module::setAdditionalJsonParameter(const std::string &key,
     std::string valueLiteral(value);
     // add quotations to value only if it is a string
     try {
-        stoi(valueLiteral);
+        std::stoi(valueLiteral);
     } catch (...) {
         // add quotations if it failed to convert to integer, otherwise nothing
         valueLiteral.insert(0, "\"");

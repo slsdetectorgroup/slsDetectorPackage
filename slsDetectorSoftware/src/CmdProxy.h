@@ -225,14 +225,14 @@
             if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
-            auto t = det->GETFCN(INDEX, std::stoi(args[0]), {det_id});         \
+            auto t = det->GETFCN(INDEX, StringTo<int>(args[0]), {det_id});         \
             os << args [0] << ' ' << OutStringHex(t) << '\n';                  \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 2) {                                            \
                 WrongNumberOfParameters(2);                                    \
             }                                                                  \
             auto val = CONV(args[1]);                                          \
-            det->SETFCN(INDEX, std::stoi(args[0]), val, {det_id});             \
+            det->SETFCN(INDEX, StringTo<int>(args[0]), val, {det_id});             \
             os << args[0] << ' ' << args[1] << '\n';                           \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
@@ -270,7 +270,7 @@
             } else if (args.size() > 2 || args.size() < 1) {                   \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
-            det->SETFCN(DAC_INDEX, std::stoi(args[0]), mv, {det_id});          \
+            det->SETFCN(DAC_INDEX, StringTo<int>(args[0]), mv, {det_id});          \
             os << args.front() << (args.size() > 1 ? " mv\n" : "\n");          \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
@@ -1028,16 +1028,16 @@ class CmdProxy {
     /* acquisition parameters */
 
     INTEGER_COMMAND_NOID(frames, getNumberOfFrames, setNumberOfFrames,
-                         std::stol,
+                         StringTo<int64_t>,
                          "[n_frames]\n\tNumber of frames per aquire. In trigger mode, number of frames per trigger."
                          "\n\t[Gotthard2] Burst mode has a maximum of 2720 frames.");
 
     INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
-                         std::stol,
+                         StringTo<int64_t>,
                          "[n_triggers]\n\tNumber of triggers per aquire. Use timing command to set timing mode.");
 
     INTEGER_COMMAND_NOID(bursts, getNumberOfBursts, setNumberOfBursts,
-                         std::stol,
+                         StringTo<int64_t>,
                          "[n_bursts]\n\t[Gotthard2] Number of bursts per aquire. Only in auto timing mode and burst mode. Use timing command to set timing mode and burstmode command to set burst mode.");
 
     TIME_COMMAND(exptime, getExptime, setExptime,
@@ -1079,13 +1079,13 @@ class CmdProxy {
     GET_COMMAND(maxdbitphaseshift, getMaxDBITPhaseShift, 
                 "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits.");
 
-    INTEGER_COMMAND(vhighvoltage, getHighVoltage, setHighVoltage, std::stoi,
+    INTEGER_COMMAND(vhighvoltage, getHighVoltage, setHighVoltage, StringTo<int>,
                     "[n_value]\n\tHigh voltage to the sensor in Voltage."
                     "\n\t[Gotthard] [0|90|110|120|150|180|200]"
                     "\n\t[Eiger][Mythen3][Gotthard2] 0-200"
                     "\n\t[Jungfrau][Ctb][Moench] [0|60-200]");      
 
-    INTEGER_COMMAND(powerchip, getPowerChip, setPowerChip, std::stoi,
+    INTEGER_COMMAND(powerchip, getPowerChip, setPowerChip, StringTo<int>,
                     "[0, 1]\n\t[Jungfrau][Mythen3][Gotthard2][Moench] Power the chip. Default 0." 
                     "\n\t[Jungfrau] Get will return power status." 
                     "Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled."
@@ -1375,7 +1375,7 @@ class CmdProxy {
     GET_COMMAND(rx_missingpackets, getNumMissingPackets, 
                     "\n\tNumber of missing packets for each port in receiver."); 
 
-    INTEGER_COMMAND(startingfnum, getStartingFrameNumber, setStartingFrameNumber, std::stoull,
+    INTEGER_COMMAND(startingfnum, getStartingFrameNumber, setStartingFrameNumber, StringTo<uint64_t>,
                     "[n_value]\n\t[Eiger[Jungfrau] Starting frame number for next acquisition."); 
 
     EXECUTE_SET_COMMAND(trigger, sendSoftwareTrigger, 
@@ -1384,10 +1384,10 @@ class CmdProxy {
 
     /* Network Configuration (Detector<->Receiver) */
 
-    INTEGER_COMMAND(numinterfaces, getNumberofUDPInterfaces, setNumberofUDPInterfaces, std::stoi,
+    INTEGER_COMMAND(numinterfaces, getNumberofUDPInterfaces, setNumberofUDPInterfaces, StringTo<int>,
                     "[1, 2]\n\t[Jungfrau] Number of udp interfaces to stream data from detector. Default: 1.");  
 
-    INTEGER_COMMAND(selinterface, getSelectedUDPInterface, selectUDPInterface, std::stoi,
+    INTEGER_COMMAND(selinterface, getSelectedUDPInterface, selectUDPInterface, StringTo<int>,
                     "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. Effective only when number of interfaces is 1. Default: 0 (outer)");  
 
     INTEGER_COMMAND(udp_srcip, getSourceUDPIP, setSourceUDPIP, IpAddr,
@@ -1408,57 +1408,57 @@ class CmdProxy {
     INTEGER_COMMAND(udp_dstmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
                     "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) udp interface where the second half of detector data is sent to. Can be unused as udp_dstip2 retrieves it.");
     
-    INTEGER_COMMAND(udp_dstport, getDestinationUDPPort, setDestinationUDPPort, std::stoi,
+    INTEGER_COMMAND(udp_dstport, getDestinationUDPPort, setDestinationUDPPort, StringTo<int>,
                     "[n]\n\tPort number of the receiver (destination) udp interface. Default is 50001.");               
     
-    INTEGER_COMMAND(udp_dstport2, getDestinationUDPPort2, setDestinationUDPPort2, std::stoi,
+    INTEGER_COMMAND(udp_dstport2, getDestinationUDPPort2, setDestinationUDPPort2, StringTo<int>,
                     "[n]\n\tDefault is 50002.\n\t[Jungfrau] Port number of the receiver (destination) udp interface where the second half of detector data is sent to. \n[Eiger] Port number of the reciever (desintation) udp interface where the right half of the detector data is sent to."); 
 
     GET_COMMAND(rx_printconfig, printRxConfiguration, 
                 "\n\tPrints the receiver configuration.");   
     
-    INTEGER_COMMAND(tengiga, getTenGiga, setTenGiga, std::stoi,
+    INTEGER_COMMAND(tengiga, getTenGiga, setTenGiga, StringTo<int>,
                     "[0, 1]\n\t[Eiger][Ctb][Moench] 10GbE Enable.");          
 
-    INTEGER_COMMAND(flowcontrol10g, getTenGigaFlowControl, setTenGigaFlowControl, std::stoi,
+    INTEGER_COMMAND(flowcontrol10g, getTenGigaFlowControl, setTenGigaFlowControl, StringTo<int>,
                     "[0, 1]\n\t[Eiger][Jungfrau] 10GbE Flow Control.");          
 
-    INTEGER_COMMAND(txndelay_frame, getTransmissionDelayFrame, setTransmissionDelayFrame, std::stoi,
+    INTEGER_COMMAND(txndelay_frame, getTransmissionDelayFrame, setTransmissionDelayFrame, StringTo<int>,
                     "[n_delay]\n\t[Eiger][Jungfrau] Transmission delay of each image being streamed out of the module.\n\t[Jungfrau] [0-31] Each value represents 1 ms\n\t[Eiger] Additional delay to txndelay_left and txndelay_right. Each value represents 10ns. Typical value is 50000.");          
 
-    INTEGER_COMMAND(txndelay_left, getTransmissionDelayLeft, setTransmissionDelayLeft, std::stoi,
+    INTEGER_COMMAND(txndelay_left, getTransmissionDelayLeft, setTransmissionDelayLeft, StringTo<int>,
                     "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image being streamed out of the module's left UDP port. Each value represents 10ns. Typical value is 50000.");          
 
-    INTEGER_COMMAND(txndelay_right, getTransmissionDelayRight, setTransmissionDelayRight, std::stoi,
+    INTEGER_COMMAND(txndelay_right, getTransmissionDelayRight, setTransmissionDelayRight, StringTo<int>,
                     "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image being streamed out of the module's right UDP port. Each value represents 10ns. Typical value is 50000.");          
 
 
     /* Receiver Config */
 
-    INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, std::stoi,
+    INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, StringTo<int>,
                     "[port]\n\tTCP port for client-receiver communication. Default is 1954. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter. Multi command will automatically increment for individual modules.");  
     
-    INTEGER_COMMAND(rx_fifodepth, getRxFifoDepth, setRxFifoDepth, std::stoi,
+    INTEGER_COMMAND(rx_fifodepth, getRxFifoDepth, setRxFifoDepth, StringTo<int>,
         "[n_frames]\n\tSet the number of frames in the receiver fifo (buffer between listener and writer threads).");
 
-    INTEGER_COMMAND(rx_silent, getRxSilentMode, setRxSilentMode, std::stoi,
+    INTEGER_COMMAND(rx_silent, getRxSilentMode, setRxSilentMode, StringTo<int>,
                     "[0, 1]\n\tSwitch on or off receiver text output during acquisition.");
 
     INTEGER_COMMAND(rx_discardpolicy, getRxFrameDiscardPolicy, setRxFrameDiscardPolicy, sls::StringTo<slsDetectorDefs::frameDiscardPolicy>,
                     "[nodiscard (default)|discardempty|discardpartial(fastest)]\n\tFrame discard policy of receiver. nodiscard does not discard frames, discardempty discards empty frames, discardpartial discards partial frames.");
 
-    INTEGER_COMMAND(rx_padding, getPartialFramesPadding, setPartialFramesPadding, std::stoi,
+    INTEGER_COMMAND(rx_padding, getPartialFramesPadding, setPartialFramesPadding, StringTo<int>,
                     "[0, 1]\n\tPartial frames padding enable in the "
                     "receiver. 0 does not pad partial frames(fastest), 1 "
                     "(default) pads partial frames");
 
-    INTEGER_COMMAND(rx_udpsocksize, getRxUDPSocketBufferSize, setRxUDPSocketBufferSize, std::stol,
+    INTEGER_COMMAND(rx_udpsocksize, getRxUDPSocketBufferSize, setRxUDPSocketBufferSize, StringTo<int64_t>,
                     "[n_size]\n\tUDP socket buffer size in receiver. Tune rmem_default and rmem_max accordingly. rx_hostname sets it to defaults.");
 
     GET_COMMAND(rx_realudpsocksize, getRxRealUDPSocketBufferSize, 
                 "\n\tActual udp socket buffer size. Double the size of rx_udpsocksize due to kernel bookkeeping."); 
 
-    INTEGER_COMMAND(rx_lock, getRxLock, setRxLock, std::stoi,
+    INTEGER_COMMAND(rx_lock, getRxLock, setRxLock, StringTo<int>,
                     "[0, 1]\n\tLock receiver to one IP, 1: locks");
 
     GET_COMMAND(rx_lastclient, getRxLastClientIP, 
@@ -1476,35 +1476,35 @@ class CmdProxy {
     STRING_COMMAND(fname, getFileNamePrefix, setFileNamePrefix, 
                 "[path]\n\tFile name prefix for output data file. Default is run. File name: [file name prefix]_d[detector index]_f[sub file index]_[acquisition/file index].raw.");
 
-    INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, std::stol,
+    INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex, StringTo<int64_t>,
                     "[0, 1]\n\tFile or Acquisition index.");
 
-    INTEGER_COMMAND(fwrite, getFileWrite, setFileWrite, std::stoi,
+    INTEGER_COMMAND(fwrite, getFileWrite, setFileWrite, StringTo<int>,
                     "[0, 1]\n\tEnable or disable receiver file write. Default is 1.");
 
-    INTEGER_COMMAND_NOID(fmaster, getMasterFileWrite, setMasterFileWrite, std::stoi,
+    INTEGER_COMMAND_NOID(fmaster, getMasterFileWrite, setMasterFileWrite, StringTo<int>,
                     "[0, 1]\n\tEnable or disable receiver master file. Default is 1.");
 
-    INTEGER_COMMAND(foverwrite, getFileOverWrite, setFileOverWrite, std::stoi,
+    INTEGER_COMMAND(foverwrite, getFileOverWrite, setFileOverWrite, StringTo<int>,
                     "[0, 1]\n\tEnable or disable file overwriting. Default is 1.");
 
-    INTEGER_COMMAND(rx_framesperfile, getFramesPerFile, setFramesPerFile, std::stoi, 
+    INTEGER_COMMAND(rx_framesperfile, getFramesPerFile, setFramesPerFile, StringTo<int>, 
                     "[n_frames]\n\tNumber of frames per file in receiver. 0 is infinite or all frames in single file.");
 
 
     /* ZMQ Streaming Parameters (Receiver<->Client) */
 
-    INTEGER_COMMAND(rx_datastream, getRxZmqDataStream, setRxZmqDataStream, std::stoi,
+    INTEGER_COMMAND(rx_datastream, getRxZmqDataStream, setRxZmqDataStream, StringTo<int>,
                     "[0, 1]\n\tData streaming from receiver enable (eg. to GUI ot another process for further processing). 1 enables zmq data stream (creates zmq streamer threads), 0 disables (destroys streamer threads). Switching to Gui automatically enables data streaming in receiver. Switching back to command line acquire will require disabling data streaming in receiver for fast applications.");
 
     INTEGER_COMMAND(rx_readfreq, getRxZmqFrequency, setRxZmqFrequency,
-                    std::stoi, "[nth frame]\n\tStream out every nth frame. Default is 1. 0 means streaming every 200 ms and discarding frames in this interval.");
+                    StringTo<int>, "[nth frame]\n\tStream out every nth frame. Default is 1. 0 means streaming every 200 ms and discarding frames in this interval.");
 
     INTEGER_COMMAND(rx_zmqport, getRxZmqPort, setRxZmqPort,
-                    std::stoi, "[port]\n\tZmq port for data to be streamed out of the receiver. Also restarts receiver zmq streaming if enabled. Default is 30001. Modified only when using an intermediate process between receiver and client(gui). Must be different for every detector (and udp port). Multi command will automatically increment for individual modules.");
+                    StringTo<int>, "[port]\n\tZmq port for data to be streamed out of the receiver. Also restarts receiver zmq streaming if enabled. Default is 30001. Modified only when using an intermediate process between receiver and client(gui). Must be different for every detector (and udp port). Multi command will automatically increment for individual modules.");
 
     INTEGER_COMMAND(zmqport, getClientZmqPort, setClientZmqPort,
-                    std::stoi, "[port]\n\tZmq port in client(gui) or intermediate process for data to be streamed to from receiver. efault connects to receiver zmq streaming out port (30001). Modified only when using an intermediate process between receiver and client(gui). Also restarts client zmq streaming if enabled. Must be different for every detector (and udp port). Multi command will automatically increment for individual modules.");
+                    StringTo<int>, "[port]\n\tZmq port in client(gui) or intermediate process for data to be streamed to from receiver. efault connects to receiver zmq streaming out port (30001). Modified only when using an intermediate process between receiver and client(gui). Also restarts client zmq streaming if enabled. Must be different for every detector (and udp port). Multi command will automatically increment for individual modules.");
 
     INTEGER_COMMAND(rx_zmqip, getRxZmqIP, setRxZmqIP, IpAddr,
                     "[x.x.x.x]\n\tZmq Ip Address from which data is to be streamed out of the receiver. Also restarts receiver zmq streaming if enabled. Default is from rx_hostname. Modified only when using an intermediate process between receiver and client(gui).");               
@@ -1527,25 +1527,25 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID_1ARG(trimbits, loadTrimbits, 
                 "[fname]\n\t[Eiger] Loads the trimbit file to detector. If no extension specified, serial number of each module is attached.");
 
-    INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, std::stoi,
+    INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, StringTo<int>,
                     "[0, 1]\n\t[Eiger] Enable or disable parallel mode.");
 
-    INTEGER_COMMAND(overflow, getOverFlowMode, setOverFlowMode, std::stoi,
+    INTEGER_COMMAND(overflow, getOverFlowMode, setOverFlowMode, StringTo<int>,
                     "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in 32 bit mode.");    
 
-    INTEGER_COMMAND(storeinram, getStoreInRamMode, setStoreInRamMode, std::stoi,
+    INTEGER_COMMAND(storeinram, getStoreInRamMode, setStoreInRamMode, StringTo<int>,
                     "[0, 1]\n\t[Eiger] Enable or disable store in ram mode.");      
 
-    INTEGER_COMMAND(flippeddatax, getBottom, setBottom, std::stoi,
+    INTEGER_COMMAND(flippeddatax, getBottom, setBottom, StringTo<int>,
                     "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 is top. Used to let Receivers and Gui know to flip the bottom image over the x axis. Files are not written without the flip however.");      
 
-    INTEGER_COMMAND(trimval, getAllTrimbits, setAllTrimbits, std::stoi,
+    INTEGER_COMMAND(trimval, getAllTrimbits, setAllTrimbits, StringTo<int>,
                     "[n_trimval]\n\t[Eiger] All trimbits set to this value. A get returns -1 if all trimbits are different values.");      
 
-    INTEGER_COMMAND(readnlines, getPartialReadout, setPartialReadout, std::stoi,
+    INTEGER_COMMAND(readnlines, getPartialReadout, setPartialReadout, StringTo<int>,
                     "[1 - 256]\n\t[Eiger] Number of rows to readout per half module starting from the centre. 256 is default. The permissible values depend on dynamic range and 10Gbe enabled.");      
 
-    INTEGER_COMMAND(interruptsubframe, getInterruptSubframe, setInterruptSubframe, std::stoi,
+    INTEGER_COMMAND(interruptsubframe, getInterruptSubframe, setInterruptSubframe, StringTo<int>,
                     "[0, 1]\n\t[Eiger] 1 interrupts last subframe at required exposure time. 0 will wait for last sub frame to finish exposing. 0 is default.");      
 
     TIME_GET_COMMAND(measuredperiod, getMeasuredPeriod, 
@@ -1554,25 +1554,25 @@ class CmdProxy {
     TIME_GET_COMMAND(measuredsubperiod, getMeasuredSubFramePeriod, 
                 "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured sub frame period between last sub frame and previous one.");    
 
-    INTEGER_COMMAND(partialreset, getPartialReset, setPartialReset, std::stoi,
+    INTEGER_COMMAND(partialreset, getPartialReset, setPartialReset, StringTo<int>,
                     "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at start of acquisition. 0 complete reset, 1 partial reset.");  
 
 
     /* Jungfrau Specific */
 
-    INTEGER_COMMAND(temp_threshold, getThresholdTemperature, setThresholdTemperature, std::stoi,
+    INTEGER_COMMAND(temp_threshold, getThresholdTemperature, setThresholdTemperature, StringTo<int>,
                     "[n_temp (in degrees)]\n\t[Jungfrau] Threshold temperature in degrees. If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared.");  
 
-    INTEGER_COMMAND(temp_control, getTemperatureControl, setTemperatureControl, std::stoi,
+    INTEGER_COMMAND(temp_control, getTemperatureControl, setTemperatureControl, StringTo<int>,
                     "[0, 1]\n\t[Jungfrau] Temperature control enable. Default is 0 (disabled). If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared.");  
 
-    INTEGER_COMMAND(auto_comp_disable, getAutoCompDisable, setAutoCompDisable, std::stoi,
+    INTEGER_COMMAND(auto_comp_disable, getAutoCompDisable, setAutoCompDisable, StringTo<int>,
                     "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. Default 0 or this mode disabled(comparator enabled throughout). 1 enables mode. 0 disables mode. This mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us).");  
 
-    INTEGER_COMMAND_NOID(storagecells, getNumberOfAdditionalStorageCells, setNumberOfAdditionalStorageCells, std::stoi,
+    INTEGER_COMMAND_NOID(storagecells, getNumberOfAdditionalStorageCells, setNumberOfAdditionalStorageCells, StringTo<int>,
                     "[0-15]\n\t[Jungfrau] Number of additional storage cells. Default is 0. For advanced users only. \n\tThe #images = #frames x #triggers x (#storagecells + 1).");
 
-    INTEGER_COMMAND(storagecell_start, getStorageCellStart, setStoragecellStart, std::stoi,
+    INTEGER_COMMAND(storagecell_start, getStorageCellStart, setStoragecellStart, StringTo<int>,
                     "[0-15]\n\t[Jungfrau] Storage cell that stores the first acquisition of the series. Default is 15. For advanced users only.");  
 
     TIME_COMMAND(storagecell_delay, getStorageCellDelay, setStorageCellDelay,
@@ -1586,11 +1586,11 @@ class CmdProxy {
     INTEGER_COMMAND(extsig, getExternalSignalFlags, setExternalSignalFlags, sls::StringTo<slsDetectorDefs::externalSignalFlag>,
                     "[trigger_in_rising_edge|trigger_in_falling_edge]\n\t[Gotthard] External signal mode for trigger timing mode.");
 
-    INTEGER_COMMAND(imagetest, getImageTestMode, setImageTestMode, std::stoi,
+    INTEGER_COMMAND(imagetest, getImageTestMode, setImageTestMode, StringTo<int>,
                     "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0.");  
 
     /* Gotthard2 Specific */
-    INTEGER_COMMAND(currentsource, getCurrentSource, setCurrentSource, std::stoi,
+    INTEGER_COMMAND(currentsource, getCurrentSource, setCurrentSource, StringTo<int>,
                     "[0, 1]\n\t[Gotthard2] Enable or disable current source. Default is disabled.");
 
     INTEGER_COMMAND(timingsource, getTimingSource, setTimingSource, sls::StringTo<slsDetectorDefs::timingSourceType>,
@@ -1600,22 +1600,22 @@ class CmdProxy {
 
     /* CTB/ Moench Specific */
 
-    INTEGER_COMMAND(asamples, getNumberOfAnalogSamples, setNumberOfAnalogSamples, std::stoi,
+    INTEGER_COMMAND(asamples, getNumberOfAnalogSamples, setNumberOfAnalogSamples, StringTo<int>,
                     "[0, 1]\n\t[CTB][Moench] Number of analog samples expected.");  
 
-    INTEGER_COMMAND(adcclk, getADCClock, setADCClock, std::stoi,
+    INTEGER_COMMAND(adcclk, getADCClock, setADCClock, StringTo<int>,
                     "[n_clk in MHz]\n\t[Ctb][Moench] ADC clock frequency in MHz.");      
 
-    INTEGER_COMMAND(runclk, getRUNClock, setRUNClock, std::stoi,
+    INTEGER_COMMAND(runclk, getRUNClock, setRUNClock, StringTo<int>,
                     "[n_clk in MHz]\n\t[Ctb][Moench] Run clock in MHz.");      
 
     GET_COMMAND(syncclk, getSYNCClock,
                     "[n_clk in MHz]\n\t[Ctb][Moench] Sync clock in MHz.");      
 
-    INTEGER_COMMAND(adcpipeline, getADCPipeline, setADCPipeline, std::stoi,
+    INTEGER_COMMAND(adcpipeline, getADCPipeline, setADCPipeline, StringTo<int>,
                     "[n_value]\n\t[Ctb][Moench] Pipeline for ADC clock.");      
 
-    INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, std::stoi, defs::V_LIMIT,
+    INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, StringTo<int>, defs::V_LIMIT,
                     "[n_value]\n\t[Ctb][Moench] Soft limit for power supplies(ctb only) and DACS in mV.");      
 
     INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask, StringTo<uint32_t>,
@@ -1627,34 +1627,34 @@ class CmdProxy {
     /* CTB Specific */
 
 
-    INTEGER_COMMAND(dsamples, getNumberOfDigitalSamples, setNumberOfDigitalSamples, std::stoi,
+    INTEGER_COMMAND(dsamples, getNumberOfDigitalSamples, setNumberOfDigitalSamples, StringTo<int>,
                     "[0, 1]\n\t[CTB] Number of digital samples expected.");  
 
     INTEGER_COMMAND(romode, getReadoutMode, setReadoutMode, sls::StringTo<slsDetectorDefs::readoutMode>,
                     "[analog|digital|analog_digital]\n\t[CTB] Readout mode. Default is analog.");
 
-    INTEGER_COMMAND(dbitclk, getDBITClock, setDBITClock, std::stoi,
+    INTEGER_COMMAND(dbitclk, getDBITClock, setDBITClock, StringTo<int>,
                     "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz.");      
 
-    INTEGER_COMMAND(dbitpipeline, getDBITPipeline, setDBITPipeline, std::stoi,
+    INTEGER_COMMAND(dbitpipeline, getDBITPipeline, setDBITPipeline, StringTo<int>,
                     "[n_value]\n\t[Ctb] Pipeline of the clock for latching digital bits.");      
 
-    INTEGER_IND_COMMAND(v_a, getVoltage, setVoltage, std::stoi, defs::V_POWER_A,
+    INTEGER_IND_COMMAND(v_a, getVoltage, setVoltage, StringTo<int>, defs::V_POWER_A,
                     "[n_value]\n\t[Ctb] Voltage supply a in mV.");      
 
-    INTEGER_IND_COMMAND(v_b, getVoltage, setVoltage, std::stoi, defs::V_POWER_B,
+    INTEGER_IND_COMMAND(v_b, getVoltage, setVoltage, StringTo<int>, defs::V_POWER_B,
                     "[n_value]\n\t[Ctb] Voltage supply b in mV.");      
 
-    INTEGER_IND_COMMAND(v_c, getVoltage, setVoltage, std::stoi, defs::V_POWER_C,
+    INTEGER_IND_COMMAND(v_c, getVoltage, setVoltage, StringTo<int>, defs::V_POWER_C,
                     "[n_value]\n\t[Ctb] Voltage supply c in mV.");      
 
-    INTEGER_IND_COMMAND(v_d, getVoltage, setVoltage, std::stoi, defs::V_POWER_D,
+    INTEGER_IND_COMMAND(v_d, getVoltage, setVoltage, StringTo<int>, defs::V_POWER_D,
                     "[n_value]\n\t[Ctb] Voltage supply d in mV.");      
 
-    INTEGER_IND_COMMAND(v_io, getVoltage, setVoltage, std::stoi, defs::V_POWER_IO,
+    INTEGER_IND_COMMAND(v_io, getVoltage, setVoltage, StringTo<int>, defs::V_POWER_IO,
                     "[n_value]\n\t[Ctb] Voltage supply io in mV. Minimum 1200 mV. Must be the first power regulator to be set after fpga reset (on-board detector server start up).");      
 
-    INTEGER_IND_COMMAND(v_chip, getVoltage, setVoltage, std::stoi, defs::V_POWER_CHIP,
+    INTEGER_IND_COMMAND(v_chip, getVoltage, setVoltage, StringTo<int>, defs::V_POWER_CHIP,
                     "[n_value]\n\t[Ctb] Voltage supply chip in mV. Do not use it unless you are completely sure you will not fry the board.");      
 
     GET_IND_COMMAND(vm_a, getMeasuredVoltage, defs::V_POWER_A, "",
@@ -1687,16 +1687,16 @@ class CmdProxy {
     GET_IND_COMMAND(im_io, getMeasuredCurrent, defs::I_POWER_IO,  "",
                     "\n\t[Ctb] Measured current of power supply io in mA.");  
 
-    INTEGER_COMMAND(extsampling, getExternalSampling, setExternalSampling, std::stoi,
+    INTEGER_COMMAND(extsampling, getExternalSampling, setExternalSampling, StringTo<int>,
                     "[0, 1]\n\t[Ctb] Enable for external sampling signal to extsamplingsrc signal for digital data. For advanced users only.");
 
-    INTEGER_COMMAND(extsamplingsrc, getExternalSamplingSource, setExternalSamplingSource, std::stoi,
+    INTEGER_COMMAND(extsamplingsrc, getExternalSamplingSource, setExternalSamplingSource, StringTo<int>,
                     "[0-63]\n\t[Ctb] Sampling source signal for digital data. For advanced users only.");
 
-    INTEGER_COMMAND(rx_dbitoffset, getRxDbitOffset, setRxDbitOffset, std::stoi,
+    INTEGER_COMMAND(rx_dbitoffset, getRxDbitOffset, setRxDbitOffset, StringTo<int>,
                     "[n_bytes]\n\t[Ctb] Offset in bytes in digital data in receiver.");
 
-    INTEGER_COMMAND(led, getLEDEnable, setLEDEnable, std::stoi,
+    INTEGER_COMMAND(led, getLEDEnable, setLEDEnable, StringTo<int>,
                     "[0, 1]\n\t[Ctb] Switches on/off all LEDs.");
 
 
@@ -1748,13 +1748,13 @@ class CmdProxy {
 
     /* Insignificant */
 
-    INTEGER_COMMAND(port, getControlPort, setControlPort, std::stoi,
+    INTEGER_COMMAND(port, getControlPort, setControlPort, StringTo<int>,
                     "[n]\n\tPort number of the control server on detector for detector-client tcp interface. Default is 1952. Normally unchanged."); 
 
-    INTEGER_COMMAND(stopport, getStopPort, setStopPort, std::stoi,
+    INTEGER_COMMAND(stopport, getStopPort, setStopPort, StringTo<int>,
                     "[n]\n\tPort number of the stop server on detector for detector-client tcp interface. Default is 1953. Normally unchanged."); 
 
-    INTEGER_COMMAND(lock, getDetectorLock, setDetectorLock, std::stoi,
+    INTEGER_COMMAND(lock, getDetectorLock, setDetectorLock, StringTo<int>,
                     "[0, 1]\n\tLock detector to one IP, 1: locks");
 
     GET_COMMAND(lastclient, getLastClientIP, 

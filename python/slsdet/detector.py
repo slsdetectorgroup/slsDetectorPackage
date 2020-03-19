@@ -1,5 +1,6 @@
 from _slsdet import CppDetectorApi
 from _slsdet import slsDetectorDefs
+from _slsdet import IpAddr, MacAddr
 
 runStatus = slsDetectorDefs.runStatus
 speedLevel = slsDetectorDefs.speedLevel
@@ -12,12 +13,13 @@ import datetime as dt
 
 from functools import wraps
 from collections import namedtuple
+import socket
 
 def freeze(cls):
     cls._frozen = False
 
     def frozensetattr(self, key, value):
-        if self._frozen and not hasattr(self, key):
+        if self._frozen and not key in dir(self):
             raise AttributeError(
                 "Class {} is frozen. Cannot set {} = {}".format(
                     cls.__name__, key, value
@@ -58,7 +60,6 @@ class Detector(CppDetectorApi):
         self._adc_register = Adc_register(self)
 
 
-
     # CONFIGURATION
     def __len__(self):
         return self.size()
@@ -70,9 +71,6 @@ class Detector(CppDetectorApi):
 
     def free(self):
         self.freeSharedMemory()
-
-
-
 
     @property
     def config(self):
@@ -92,6 +90,7 @@ class Detector(CppDetectorApi):
 
     @property
     def hostname(self):
+        print('getting host!')
         return self.getHostname()
 
     @hostname.setter
@@ -422,7 +421,9 @@ class Detector(CppDetectorApi):
 
     @udp_dstip.setter
     def udp_dstip(self, ip):
-        self.getDestinationUDPIP(ip)
+        if ip == 'auto':
+            ip = socket.gethostbyname(self.rx_hostname)
+        self.setDestinationUDPIP(IpAddr(ip))
 
     @property
     def udp_dstip2(self):
@@ -430,7 +431,9 @@ class Detector(CppDetectorApi):
 
     @udp_dstip2.setter
     def udp_dstip2(self, ip):
-        self.getDestinationUDPIP2(ip)
+        if ip == 'auto':
+            ip = socket.gethostbyname(self.rx_hostname)
+        self.setDestinationUDPIP2(IpAddr(ip))
 
     @property
     def udp_dstmac(self):
@@ -438,7 +441,7 @@ class Detector(CppDetectorApi):
 
     @udp_dstmac.setter
     def udp_dstmac(self, mac):
-        self.getDestinationUDPMAC2(mac)
+        self.setDestinationUDPMAC(MacAddr(mac))
 
     @property
     def udp_dstmac2(self):
@@ -446,7 +449,7 @@ class Detector(CppDetectorApi):
 
     @udp_dstmac2.setter
     def udp_dstmac2(self, mac):
-        self.getDestinationUDPMAC2(mac)
+        self.setDestinationUDPMAC2(MacAddr(mac))
 
 
     @property
@@ -455,7 +458,7 @@ class Detector(CppDetectorApi):
 
     @udp_srcip.setter
     def udp_srcip(self, ip):
-        self.setSourceUDPIP(ip)
+        self.setSourceUDPIP(IpAddr(ip))
 
     @property
     def udp_srcip2(self):
@@ -487,7 +490,7 @@ class Detector(CppDetectorApi):
 
     @src_udpmac.setter
     def src_udpmac(self, mac):
-        self.setSourceUDPMAC(mac)
+        self.setSourceUDPMAC(MacAddr(mac))
 
     @property
     def src_udpip2(self):
@@ -495,7 +498,7 @@ class Detector(CppDetectorApi):
 
     @src_udpip2.setter
     def src_udpip2(self, ip):
-        self.setSourceUDPIP(ip)
+        self.setSourceUDPIP(IpAddr(ip))
 
     @property
     def src_udpip(self):
@@ -503,7 +506,7 @@ class Detector(CppDetectorApi):
 
     @src_udpip.setter
     def src_udpip(self, ip):
-        self.setSourceUDPIP(ip)
+        self.setSourceUDPIP(IpAddr(ip))
 
 
     @property
@@ -512,7 +515,7 @@ class Detector(CppDetectorApi):
 
     @src_udpmac2.setter
     def src_udpmac2(self, mac):
-        self.setSourceUDPMAC2(mac)
+        self.setSourceUDPMAC2(MacAddr(mac))
 
     @property
     def vhighvoltage(self):

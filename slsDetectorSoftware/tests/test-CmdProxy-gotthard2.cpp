@@ -272,7 +272,7 @@ TEST_CASE("burstperiod", "[.cmd]") {
         REQUIRE(oss_set.str() == "burstperiod 30ms\n");
         proxy.Call("burstperiod", {}, -1, GET, oss_get);
         REQUIRE(oss_get.str() == "burstperiod 30ms\n");
-        // Reset all dacs to previous value
+        // Reset to previous value
         for (int i = 0; i != det.size(); ++i) {
             det.setBurstPeriod(previous[i], {i});
         }

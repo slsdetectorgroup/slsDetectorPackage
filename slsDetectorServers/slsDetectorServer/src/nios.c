@@ -46,7 +46,7 @@ int64_t get64BitReg(int aLSB, int aMSB){
 	vMSB=bus_r(aMSB);
 	v64=vMSB;
 	v64=(v64<<32) | vLSB;
-	FILE_LOG(logDEBUG5, (" reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, (long long unsigned int)v64));
+	LOG(logDEBUG5, (" reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, (long long unsigned int)v64));
 	return v64;
 }
 
@@ -94,32 +94,32 @@ int mapCSP0(void) {
 	for (i = 0; i < 2; ++i) {
 		// if not mapped
 		if (*cspbases[i] == 0) {
-			FILE_LOG(logINFO, ("Mapping memory for %s\n", names[i]));
+			LOG(logINFO, ("Mapping memory for %s\n", names[i]));
 #ifdef VIRTUAL
 			*cspbases[i] = malloc(MEM_SIZE);
 			if (*cspbases[i] == NULL) {
-				FILE_LOG(logERROR, ("Could not allocate virtual memory for %s.\n", names[i]));
+				LOG(logERROR, ("Could not allocate virtual memory for %s.\n", names[i]));
 				return FAIL;
 			}
-			FILE_LOG(logINFO, ("memory allocated for %s\n", names[i]));
+			LOG(logINFO, ("memory allocated for %s\n", names[i]));
 #else
 			int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
 			if (fd == -1) {
-				FILE_LOG(logERROR, ("Can't find /dev/mem for %s\n", names[i]));
+				LOG(logERROR, ("Can't find /dev/mem for %s\n", names[i]));
 				return FAIL;
 			}
-			FILE_LOG(logDEBUG1, ("/dev/mem opened for %s, (CSP:0x%x)\n", names[i], csps[i]));
+			LOG(logDEBUG1, ("/dev/mem opened for %s, (CSP:0x%x)\n", names[i], csps[i]));
 			*cspbases[i] = (u_int32_t*)mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, csps[i]);
 			if (*cspbases[i] == MAP_FAILED) {
-				FILE_LOG(logERROR, ("Can't map memmory area for %s\n", names[i]));
+				LOG(logERROR, ("Can't map memmory area for %s\n", names[i]));
 				return FAIL;
 			}
 #endif
-			FILE_LOG(logINFO, ("%s mapped from %p to %p,(CSP:0x%x) \n",
+			LOG(logINFO, ("%s mapped from %p to %p,(CSP:0x%x) \n",
 					names[i], *cspbases[i], *cspbases[i]+MEM_SIZE, csps[i]));
-			//FILE_LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
+			//LOG(logINFO, ("Status Register: %08x\n", bus_r(STATUS_REG)));
 		} else
-			FILE_LOG(logINFO, ("Memory %s already mapped before\n", names[i]));
+			LOG(logINFO, ("Memory %s already mapped before\n", names[i]));
 	}
 	return OK;
 }

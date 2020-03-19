@@ -141,3 +141,41 @@ TEST_CASE("vec"){
     REQUIRE(ToString(vec) == "[error, idle]");
 }
 
+
+TEST_CASE("uint32 from string"){
+    REQUIRE(StringTo<uint32_t>("0") == 0);
+    REQUIRE(StringTo<uint32_t>("5") == 5u);
+    REQUIRE(StringTo<uint32_t>("16") == 16u);
+    REQUIRE(StringTo<uint32_t>("20") == 20u);
+    REQUIRE(StringTo<uint32_t>("0x14") == 20u);
+    REQUIRE(StringTo<uint32_t>("0x15") == 21u);
+    REQUIRE(StringTo<uint32_t>("0x15") == 0x15);
+    REQUIRE(StringTo<uint32_t>("0xffffff") == 0xffffff);
+
+}
+
+TEST_CASE("uint64 from string"){
+    REQUIRE(StringTo<uint64_t>("0") == 0);
+    REQUIRE(StringTo<uint64_t>("5") == 5u);
+    REQUIRE(StringTo<uint64_t>("16") == 16u);
+    REQUIRE(StringTo<uint64_t>("20") == 20u);
+    REQUIRE(StringTo<uint64_t>("0x14") == 20u);
+    REQUIRE(StringTo<uint64_t>("0x15") == 21u);
+    REQUIRE(StringTo<uint64_t>("0xffffff") == 0xffffff);
+    
+}
+
+
+TEST_CASE("int from string"){
+    REQUIRE(StringTo<int>("-1") == -1);
+    REQUIRE(StringTo<int>("-0x1") == -0x1);
+    REQUIRE(StringTo<int>("-0x1") == -1);
+    REQUIRE(StringTo<int>("0") == 0);
+    REQUIRE(StringTo<int>("5") == 5);
+    REQUIRE(StringTo<int>("16") == 16);
+    REQUIRE(StringTo<int>("20") == 20);
+    REQUIRE(StringTo<int>("0x14") == 20);
+    REQUIRE(StringTo<int>("0x15") == 21);
+    REQUIRE(StringTo<int>("0xffffff") == 0xffffff);
+    
+}

@@ -28,7 +28,7 @@ logDEBUG, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4, logDEBUG5
 
 #define ERROR_MSG_LENGTH 1000
 
-#define FILE_LOG(lvl, fmt, ...) 				\
+#define LOG(lvl, fmt, ...) 				\
 	if (lvl > FILELOG_MAX_LEVEL);				\
 	else {char* temp = FILELOG_BuildLog fmt; FILELOG_PrintLog(lvl, temp);free(temp);}
 

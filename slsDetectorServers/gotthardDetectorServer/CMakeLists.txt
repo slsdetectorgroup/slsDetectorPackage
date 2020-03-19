@@ -25,8 +25,8 @@ target_compile_definitions(gotthardDetectorServer_virtual
 )
 
 target_link_libraries(gotthardDetectorServer_virtual
-    PUBLIC pthread rt
-)
+    PUBLIC pthread rt slsProjectCWarnings
+) 
 
 set_target_properties(gotthardDetectorServer_virtual PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin

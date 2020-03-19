@@ -20,7 +20,7 @@ void validate64(int64_t arg, int64_t retval, char* modename, enum numberMode num
 int executeCommand(char* command, char* result, enum TLogLevel level);
 int M_nofunc(int);
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
-extern void rebootControllerAndFPGA();
+void rebootNiosControllerAndFPGA();
 #endif
 
 // functions called by client
@@ -216,3 +216,4 @@ int get_current_source(int);
 int set_current_source(int);
 int get_timing_source(int);
 int set_timing_source(int);
+int get_num_channels(int);

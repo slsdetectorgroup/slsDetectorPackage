@@ -7,7 +7,7 @@ source:
   - path: ..
 
 build:
-  number: 2
+  number: 0
   binary_relocation: True
   rpaths:
     - lib/
@@ -37,6 +37,7 @@ requirements:
   host:
     - libstdcxx-ng
     - libgcc-ng
+    - zeromq
     - xorg-libx11
     - xorg-libice
     - xorg-libxext
@@ -46,6 +47,7 @@ requirements:
     - xorg-libxfixes
 
   run:
+    - zeromq
     - libstdcxx-ng
     - libgcc-ng 
 

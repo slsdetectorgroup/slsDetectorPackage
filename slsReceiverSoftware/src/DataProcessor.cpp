@@ -62,7 +62,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		rawDataModifyReadyCallBack(nullptr),
 		pRawDataReady(nullptr)
 {
-    FILE_LOG(logDEBUG) << "DataProcessor " << ind << " created";
+    LOG(logDEBUG) << "DataProcessor " << ind << " created";
 	memset((void*)&timerBegin, 0, sizeof(timespec));
 }
 
@@ -135,7 +135,7 @@ void DataProcessor::RecordFirstIndex(uint64_t fnum) {
 	startedFlag = true;
 	firstIndex = fnum;
 
-	FILE_LOG(logDEBUG1) << index << " First Index:" << firstIndex;
+	LOG(logDEBUG1) << index << " First Index:" << firstIndex;
 }
 
 
@@ -232,12 +232,12 @@ void DataProcessor::EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
 void DataProcessor::ThreadExecution() {
 	char* buffer=nullptr;
 	fifo->PopAddress(buffer);
-	FILE_LOG(logDEBUG5) << "DataProcessor " << index << ", "
+	LOG(logDEBUG5) << "DataProcessor " << index << ", "
 			"pop 0x" << std::hex << (void*)(buffer) << std::dec << ":" << buffer;
 
 	//check dummy
 	auto numBytes = (uint32_t)(*((uint32_t*)buffer));
-	FILE_LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << numBytes;
+	LOG(logDEBUG1) << "DataProcessor " << index << ", Numbytes:" << numBytes;
 	if (numBytes == DUMMY_PACKET_VALUE) {
 		StopProcessing(buffer);
 		return;
@@ -254,7 +254,7 @@ void DataProcessor::ThreadExecution() {
 
 
 void DataProcessor::StopProcessing(char* buf) {
-	FILE_LOG(logDEBUG1) << "DataProcessing " << index << ": Dummy";
+	LOG(logDEBUG1) << "DataProcessing " << index << ": Dummy";
 
 	//stream or free
 	if (*dataStreamEnable)
@@ -265,7 +265,7 @@ void DataProcessor::StopProcessing(char* buf) {
 	if (file != nullptr)
 		file->CloseCurrentFile();
 	StopRunning();
-	FILE_LOG(logDEBUG1) << index << ": Processing Completed";
+	LOG(logDEBUG1) << index << ": Processing Completed";
 }
 
 
@@ -280,7 +280,7 @@ void DataProcessor::ProcessAnImage(char* buf) {
 		numFramesCaught++;
 	}
 
-	FILE_LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
+	LOG(logDEBUG1) << "DataProcessing " << index << ": fnum:" << fnum;
 
 	if (!startedFlag) {
 		RecordFirstIndex(fnum);
@@ -367,7 +367,7 @@ bool DataProcessor::CheckTimer() {
 	struct timespec end;
 	clock_gettime(CLOCK_REALTIME, &end);
 
-	FILE_LOG(logDEBUG1) << index << " Timer elapsed time:" <<
+	LOG(logDEBUG1) << index << " Timer elapsed time:" <<
 			(( end.tv_sec - timerBegin.tv_sec ) + ( end.tv_nsec - timerBegin.tv_nsec ) / 1000000000.0)
 			<< " seconds";
 	//still less than streaming timer, keep waiting
@@ -412,7 +412,7 @@ void DataProcessor::registerCallBackRawDataModifyReady(void (*func)(char* ,
 }
 
 void DataProcessor::PadMissingPackets(char* buf) {
-	FILE_LOG(logDEBUG) << index << ": Padding Missing Packets";
+	LOG(logDEBUG) << index << ": Padding Missing Packets";
 
 	uint32_t pperFrame = generalData->packetsPerFrame;
 	auto* header = (sls_receiver_header*) (buf + FIFO_HEADER_NUMBYTES);
@@ -422,7 +422,7 @@ void DataProcessor::PadMissingPackets(char* buf) {
 	uint32_t dsize = generalData->dataSize;
 	uint32_t fifohsize = generalData->fifoBufferHeaderSize;
 	uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - generalData->imageSize);
-	FILE_LOG(logDEBUG1) << "bitmask: " << pmask.to_string();
+	LOG(logDEBUG1) << "bitmask: " << pmask.to_string();
 
 	for (unsigned int pnum = 0; pnum < pperFrame; ++pnum) {
 
@@ -434,7 +434,7 @@ void DataProcessor::PadMissingPackets(char* buf) {
 		if (nmissing == 0u)
 			break;
 
-		FILE_LOG(logDEBUG) << "padding for " << index << " for pnum: " << pnum << std::endl;
+		LOG(logDEBUG) << "padding for " << index << " for pnum: " << pnum << std::endl;
 
 		// missing packet
 		switch(myDetectorType) {
@@ -468,7 +468,7 @@ void DataProcessor::RearrangeDbitData(char* buf) {
 
 	// no digital data      
     if (ctbDigitalDataBytes == 0) {
-        FILE_LOG(logWARNING) << "No digital data for call back, yet dbitlist is not empty.";
+        LOG(logWARNING) << "No digital data for call back, yet dbitlist is not empty.";
         return;
 	}
 

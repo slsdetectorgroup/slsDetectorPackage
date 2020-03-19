@@ -4,7 +4,7 @@
 #include "detectorData.h"
 #include "file_utils.h"
 #include "logger.h"
-#include "slsDetector.h"
+#include "Module.h"
 #include "sls_detector_exceptions.h"
 #include "versionAPI.h"
 
@@ -26,7 +26,7 @@
 #include <future>
 #include <vector>
 
-using namespace sls;
+namespace sls{
 
 DetectorImpl::DetectorImpl(int multi_id, bool verify, bool update)
     : multiId(multi_id), multi_shm(multi_id, -1) {
@@ -48,10 +48,6 @@ void DetectorImpl::setAcquiringFlag(bool flag) {
 }
 
 int DetectorImpl::getMultiId() const { return multiId; }
-
-std::string DetectorImpl::getPackageVersion() const { return GITBRANCH; }
-
-int64_t DetectorImpl::getClientSoftwareVersion() const { return APILIB; }
 
 void DetectorImpl::freeSharedMemory(int multiId, int detPos) {
     // single
@@ -140,7 +136,7 @@ void DetectorImpl::initSharedMemory(bool verify) {
     } else {
         multi_shm.OpenSharedMemory();
         if (verify && multi_shm()->shmversion != MULTI_SHMVERSION) {
-            FILE_LOG(logERROR) << "Multi shared memory (" << multiId
+            LOG(logERROR) << "Multi shared memory (" << multiId
                                << ") version mismatch "
                                   "(expected 0x"
                                << std::hex << MULTI_SHMVERSION << " but got 0x"
@@ -160,7 +156,6 @@ void DetectorImpl::initializeDetectorStructure() {
     multi_shm()->numberOfChannels.x = 0;
     multi_shm()->numberOfChannels.y = 0;
     multi_shm()->acquiringFlag = false;
-    multi_shm()->receiver_upstream = false;
     multi_shm()->initialChecks = true;
 }
 
@@ -172,7 +167,7 @@ void DetectorImpl::initializeMembers(bool verify) {
     for (int i = 0; i < multi_shm()->numberOfDetectors; i++) {
         try {
             detectors.push_back(
-                sls::make_unique<slsDetector>(multiId, i, verify));
+                sls::make_unique<Module>(multiId, i, verify));
         } catch (...) {
             detectors.clear();
             throw;
@@ -195,7 +190,7 @@ void DetectorImpl::updateUserdetails() {
 
 bool DetectorImpl::isAcquireReady() {
     if (multi_shm()->acquiringFlag) {
-        FILE_LOG(logWARNING)
+        LOG(logWARNING)
             << "Acquire has already started. "
                "If previous acquisition terminated unexpectedly, "
                "reset busy flag to restart.(sls_detector_put clearbusy)";
@@ -237,7 +232,7 @@ void DetectorImpl::setVirtualDetectorServers(const int numdet, const int port) {
 void DetectorImpl::setHostname(const std::vector<std::string> &name) {
     // this check is there only to allow the previous detsizechan command
     if (multi_shm()->numberOfDetectors != 0) {
-        FILE_LOG(logWARNING)
+        LOG(logWARNING)
             << "There are already detector(s) in shared memory."
                "Freeing Shared memory now.";
         bool initialChecks = multi_shm()->initialChecks;
@@ -252,7 +247,7 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
 }
 
 void DetectorImpl::addSlsDetector(const std::string &hostname) {
-    FILE_LOG(logINFO) << "Adding detector " << hostname;
+    LOG(logINFO) << "Adding detector " << hostname;
 
     int port = DEFAULT_PORTNO;
     std::string host = hostname;
@@ -265,7 +260,7 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
     if (host != "localhost") {
         for (auto &d : detectors) {
             if (d->getHostname() == host) {
-                FILE_LOG(logWARNING)
+                LOG(logWARNING)
                     << "Detector " << host
                     << "already part of the multiDetector!" << std::endl
                     << "Remove it before adding it back in a new position!";
@@ -275,22 +270,24 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
     }
 
     // get type by connecting
-    detectorType type = slsDetector::getTypeFromDetector(host, port);
+    detectorType type = Module::getTypeFromDetector(host, port);
     auto pos = detectors.size();
     detectors.emplace_back(
-        sls::make_unique<slsDetector>(type, multiId, pos, false));
+        sls::make_unique<Module>(type, multiId, pos, false));
     multi_shm()->numberOfDetectors = detectors.size();
     detectors[pos]->setControlPort(port);
     detectors[pos]->setStopPort(port + 1);
     detectors[pos]->setHostname(host, multi_shm()->initialChecks);
     // detector type updated by now
     multi_shm()->multiDetectorType =
-        Parallel(&slsDetector::getDetectorType, {})
+        Parallel(&Module::getDetectorType, {})
             .tsquash("Inconsistent detector types.");
+    // for moench and ctb
+    detectors[pos]->updateNumberOfChannels();     
 }
 
 void DetectorImpl::updateDetectorSize() {
-    FILE_LOG(logDEBUG) << "Updating Multi-Detector Size: " << size();
+    LOG(logDEBUG) << "Updating Multi-Detector Size: " << size();
 
     const slsDetectorDefs::xy det_size = detectors[0]->getNumberOfChannels();
 
@@ -310,7 +307,7 @@ void DetectorImpl::updateDetectorSize() {
     multi_shm()->numberOfChannels.x = det_size.x * ndetx;
     multi_shm()->numberOfChannels.y = det_size.y * ndety;
 
-    FILE_LOG(logDEBUG) << "\n\tNumber of Detectors in X direction:"
+    LOG(logDEBUG) << "\n\tNumber of Detectors in X direction:"
                        << multi_shm()->numberOfDetector.x
                        << "\n\tNumber of Detectors in Y direction:"
                        << multi_shm()->numberOfDetector.y
@@ -343,10 +340,10 @@ void DetectorImpl::setNumberOfChannels(const slsDetectorDefs::xy c) {
 }
 
 void DetectorImpl::setGapPixelsinReceiver(bool enable) {
-    Parallel(&slsDetector::enableGapPixels, {}, static_cast<int>(enable));
+    Parallel(&Module::enableGapPixels, {}, static_cast<int>(enable));
     // update number of channels
     Result<slsDetectorDefs::xy> res =
-        Parallel(&slsDetector::getNumberOfChannels, {});
+        Parallel(&Module::getNumberOfChannels, {});
     multi_shm()->numberOfChannels.x = 0;
     multi_shm()->numberOfChannels.y = 0;
     for (auto &it : res) {
@@ -357,25 +354,25 @@ void DetectorImpl::setGapPixelsinReceiver(bool enable) {
 
 int DetectorImpl::createReceivingDataSockets(const bool destroy) {
     if (destroy) {
-        FILE_LOG(logINFO) << "Going to destroy data sockets";
+        LOG(logINFO) << "Going to destroy data sockets";
         // close socket
         zmqSocket.clear();
 
         client_downstream = false;
-        FILE_LOG(logINFO) << "Destroyed Receiving Data Socket(s)";
+        LOG(logINFO) << "Destroyed Receiving Data Socket(s)";
         return OK;
     }
     if (client_downstream) {
         return OK;
     }
-    FILE_LOG(logINFO) << "Going to create data sockets";
+    LOG(logINFO) << "Going to create data sockets";
     
     size_t numSockets = detectors.size();
     size_t numSocketsPerDetector = 1;
     if (multi_shm()->multiDetectorType == EIGER) {
         numSocketsPerDetector = 2;
     }
-    if (Parallel(&slsDetector::getNumberofUDPInterfacesFromShm, {}).squash() ==
+    if (Parallel(&Module::getNumberofUDPInterfacesFromShm, {}).squash() ==
         2) {
         numSocketsPerDetector = 2;
     }
@@ -392,10 +389,10 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
                     .str()
                     .c_str(),
                 portnum));
-            FILE_LOG(logINFO) << "Zmq Client[" << iSocket << "] at "
+            LOG(logINFO) << "Zmq Client[" << iSocket << "] at "
                               << zmqSocket.back()->GetZmqServerAddress();
         } catch (...) {
-            FILE_LOG(logERROR)
+            LOG(logERROR)
                 << "Could not create Zmq socket on port " << portnum;
             createReceivingDataSockets(true);
             return FAIL;
@@ -403,7 +400,7 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
     }
 
     client_downstream = true;
-    FILE_LOG(logINFO) << "Receiving Data Socket(s) created";
+    LOG(logINFO) << "Receiving Data Socket(s) created";
     return OK;
 }
 
@@ -417,7 +414,7 @@ void DetectorImpl::readFrameFromReceiver() {
     bool quadEnable = false;
     bool eiger = false;
     bool numInterfaces =
-        Parallel(&slsDetector::getNumberofUDPInterfacesFromShm, {})
+        Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
             .squash(); // cannot pick up from zmq
 
     bool runningList[zmqSocket.size()], connectList[zmqSocket.size()];
@@ -430,7 +427,7 @@ void DetectorImpl::readFrameFromReceiver() {
         } else {
             // to remember the list it connected to, to disconnect later
             connectList[i] = false;
-            FILE_LOG(logERROR) << "Could not connect to socket  "
+            LOG(logERROR) << "Could not connect to socket  "
                                << zmqSocket[i]->GetZmqServerAddress();
             runningList[i] = false;
         }
@@ -514,7 +511,7 @@ void DetectorImpl::readFrameFromReceiver() {
                             (doc["gappixels"].GetUint() == 0) ? false : true;
                         quadEnable =
                             (doc["quad"].GetUint() == 0) ? false : true;
-                        FILE_LOG(logDEBUG1)
+                        LOG(logDEBUG1)
                             << "One Time Header Info:"
                             "\n\tsize: "
                             << size << "\n\tmultisize: " << multisize
@@ -538,7 +535,7 @@ void DetectorImpl::readFrameFromReceiver() {
                         coordY = (nY - 1) - coordY;
                     }
                     flippedDataX = doc["flippedDataX"].GetUint();
-		            FILE_LOG(logDEBUG1)
+		            LOG(logDEBUG1)
 		                << "Header Info:"
                         "\n\tcurrentFileName: "
                         << currentFileName << "\n\tcurrentAcquisitionIndex: "
@@ -562,7 +559,7 @@ void DetectorImpl::readFrameFromReceiver() {
                     if (multi_shm()->multiDetectorType == CHIPTESTBOARD) {
                         singledetrowoffset = size;
 		            }
-                    FILE_LOG(logDEBUG1)
+                    LOG(logDEBUG1)
 		            << "Multi Image Info:"
                         "\n\txoffset: "
                         << xoffset << "\n\tyoffset: " << yoffset
@@ -589,7 +586,7 @@ void DetectorImpl::readFrameFromReceiver() {
                 }
             }
         }
-        FILE_LOG(logDEBUG)<< "Call Back Info:"
+        LOG(logDEBUG)<< "Call Back Info:"
             << "\n\t nDetPixelsX: " << nDetPixelsX
             << "\n\t nDetPixelsY: " << nDetPixelsY
             << "\n\t databytes: " << multisize
@@ -609,7 +606,7 @@ void DetectorImpl::readFrameFromReceiver() {
                 }
                 int n = processImageWithGapPixels(multiframe, multigappixels,
                                                   quadEnable);
-                FILE_LOG(logDEBUG) 
+                LOG(logDEBUG) 
 		  	        << "Call Back Info Recalculated:"
                     << "\n\t nDetPixelsX: " << nDetPixelsX
                     << "\n\t nDetPixelsY: " << nDetPixelsY
@@ -820,46 +817,6 @@ bool DetectorImpl::enableDataStreamingToClient(int enable) {
     return client_downstream;
 }
 
-void DetectorImpl::savePattern(const std::string &fname) {
-    // std::ofstream outfile;
-    // outfile.open(fname.c_str(), std::ios_base::out);
-    // if (!outfile.is_open()) {
-    //     throw RuntimeError("Could not create file to save pattern");
-    // }
-    // // get pattern limits
-    // auto r = Parallel(&slsDetector::setPatternLoopAddresses, {}, -1, -1, -1)
-    //              .tsquash("Inconsistent pattern limits");
-    // // pattern words
-    // for (int i = r[0]; i <= r[1]; ++i) {
-    //     std::ostringstream os;
-    //     os << "patword 0x" << std::hex << i;
-    //     std::string cmd = os.str();
-    //     multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
-    // }
-    // // rest of pattern file
-    // const std::vector<std::string> commands{
-    //     "patioctrl",
-    //     "patclkctrl",
-    //     "patlimits",
-    //     "patloop0",
-    //     "patnloop0",
-    //     "patloop1",
-    //     "patnloop1",
-    //     "patloop2",
-    //     "patnloop2",
-    //     "patwait0",
-    //     "patwaittime0",
-    //     "patwait1",
-    //     "patwaittime1",
-    //     "patwait2",
-    //     "patwaittime2",
-    //     "patmask",
-    //     "patsetbit",
-    // };
-    // for (const auto &cmd : commands)
-    //     multiSlsDetectorClient(cmd, GET_ACTION, this, outfile);
-}
-
 void DetectorImpl::registerAcquisitionFinishedCallback(void (*func)(double, int,
                                                                     void *),
                                                        void *pArg) {
@@ -877,13 +834,13 @@ void DetectorImpl::registerDataCallback(void (*userCallback)(detectorData *,
 }
 
 double DetectorImpl::setTotalProgress() {
-    int64_t tot = Parallel(&slsDetector::getTotalNumFramesToReceive, {})
+    int64_t tot = Parallel(&Module::getTotalNumFramesToReceive, {})
                      .tsquash("Inconsistent number of total frames (#frames x #triggers(or bursts) x #storage cells)");
     if (tot == 0) {
         throw RuntimeError("Invalid Total Number of frames (0)");
     }
     totalProgress = tot;
-    FILE_LOG(logDEBUG1) << "Set total progress " << totalProgress << std::endl;
+    LOG(logDEBUG1) << "Set total progress " << totalProgress << std::endl;
     return totalProgress;
 }
 
@@ -927,15 +884,15 @@ int DetectorImpl::acquire() {
         sem_init(&sem_endRTAcquisition, 1, 0);
 
         bool receiver =
-            Parallel(&slsDetector::getUseReceiverFlag, {}).squash(false);
+            Parallel(&Module::getUseReceiverFlag, {}).squash(false);
         progressIndex = 0;
         setJoinThreadFlag(false);
 
         // verify receiver is idle
         if (receiver) {
-            if (Parallel(&slsDetector::getReceiverStatus, {}).squash(ERROR) !=
+            if (Parallel(&Module::getReceiverStatus, {}).squash(ERROR) !=
                 IDLE) {
-                Parallel(&slsDetector::stopReceiver, {});
+                Parallel(&Module::stopReceiver, {});
             }
         }
         setTotalProgress();
@@ -944,7 +901,7 @@ int DetectorImpl::acquire() {
 
         // start receiver
         if (receiver) {
-            Parallel(&slsDetector::startReceiver, {});
+            Parallel(&Module::startReceiver, {});
             // let processing thread listen to these packets
             sem_post(&sem_newRTAcquisition);
         }
@@ -952,24 +909,24 @@ int DetectorImpl::acquire() {
         // start and read all
         try {
             if (multi_shm()->multiDetectorType == EIGER) {
-                Parallel(&slsDetector::prepareAcquisition, {});
+                Parallel(&Module::prepareAcquisition, {});
             }
-            Parallel(&slsDetector::startAndReadAll, {});
+            Parallel(&Module::startAndReadAll, {});
         } catch (...) {
-            Parallel(&slsDetector::stopReceiver, {});
+            Parallel(&Module::stopReceiver, {});
             throw;
         }
 
         // stop receiver
         if (receiver) {
-            Parallel(&slsDetector::stopReceiver, {});
+            Parallel(&Module::stopReceiver, {});
             if (dataReady != nullptr) {
                 sem_wait(&sem_endRTAcquisition); // waits for receiver's
             }
             // external process to be
             // done sending data to gui
 
-            Parallel(&slsDetector::incrementFileIndex, {});
+            Parallel(&Module::incrementFileIndex, {});
         }
 
         // waiting for the data processing thread to finish!
@@ -980,7 +937,7 @@ int DetectorImpl::acquire() {
         if (acquisition_finished != nullptr) {
             // same status for all, else error
             int status = static_cast<int>(ERROR);
-            auto t = Parallel(&slsDetector::getRunStatus, {});
+            auto t = Parallel(&Module::getRunStatus, {});
             if (t.equal())
                 status = t.front();
             acquisition_finished(getCurrentProgress(), status, acqFinished_p);
@@ -990,7 +947,7 @@ int DetectorImpl::acquire() {
         sem_destroy(&sem_endRTAcquisition);
 
         clock_gettime(CLOCK_REALTIME, &end);
-        FILE_LOG(logDEBUG1) << "Elapsed time for acquisition:"
+        LOG(logDEBUG1) << "Elapsed time for acquisition:"
                             << ((end.tv_sec - begin.tv_sec) +
                                 (end.tv_nsec - begin.tv_nsec) / 1000000000.0)
                             << " seconds";
@@ -1008,7 +965,7 @@ void DetectorImpl::startProcessingThread() {
 }
 
 void DetectorImpl::processData() {
-    if (Parallel(&slsDetector::getUseReceiverFlag, {}).squash(false)) {
+    if (Parallel(&Module::getUseReceiverFlag, {}).squash(false)) {
         if (dataReady != nullptr) {
             readFrameFromReceiver();
         }
@@ -1019,13 +976,13 @@ void DetectorImpl::processData() {
                 // to exit acquire by typing q
                 if (kbhit() != 0) {
                     if (fgetc(stdin) == 'q') {
-                        FILE_LOG(logINFO)
+                        LOG(logINFO)
                             << "Caught the command to stop acquisition";
-                        Parallel(&slsDetector::stopAcquisition, {});
+                        Parallel(&Module::stopAcquisition, {});
                     }
                 }
                 // get progress
-                caught = Parallel(&slsDetector::getFramesCaughtByReceiver, {0})
+                caught = Parallel(&Module::getFramesCaughtByReceiver, {0})
                              .squash();
 
                 // updating progress
@@ -1083,12 +1040,12 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
         }
         break;
     default:
-        throw RuntimeError("Not implemented for this detector");
+        throw RuntimeError("programfpga not implemented for this detector");
     }
 
-    FILE_LOG(logINFO)
+    LOG(logINFO)
         << "Updating Firmware. This can take awhile. Please be patient...";
-    FILE_LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
+    LOG(logDEBUG1) << "Programming FPGA with file name:" << fname;
 
     size_t filesize = 0;
     // check if it exists
@@ -1117,7 +1074,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     }
 
     // convert src to dst rawbin
-    FILE_LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
+    LOG(logDEBUG1) << "Converting " << fname << " to " << destfname;
     {
         constexpr int pofNumHeaderBytes = 0x11C;
         constexpr int pofFooterOfst = 0x1000000;
@@ -1166,7 +1123,7 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     if (close(dst) != 0) {
         throw RuntimeError("Program FPGA: Could not close destination file");
     }
-    FILE_LOG(logDEBUG1) << "File has been converted to " << destfname;
+    LOG(logDEBUG1) << "File has been converted to " << destfname;
 
     // loading dst file to memory
     FILE *fp = fopen(destfname, "r");
@@ -1192,8 +1149,10 @@ std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
             "Program FPGA: Could not close destination file after converting");
     }
     unlink(destfname); // delete temporary file
-    FILE_LOG(logDEBUG1)
+    LOG(logDEBUG1)
         << "Successfully loaded the rawbin file to program memory";
-    FILE_LOG(logINFO) << "Read file into memory";
+    LOG(logINFO) << "Read file into memory";
     return buffer;
 }
+
+}//namespace sls

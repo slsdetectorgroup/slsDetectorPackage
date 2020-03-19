@@ -5,7 +5,6 @@
 #include "logger.h"
 #include "sls_detector_defs.h"
 
-class slsDetector;
 class ZmqSocket;
 class detectorData;
 
@@ -22,6 +21,11 @@ class detectorData;
 
 #include <future>
 #include <numeric>
+
+namespace sls{
+
+class Module;
+
 /**
  * @short structure allocated in shared memory to store detector settings
  * for IPC and cache
@@ -61,9 +65,6 @@ struct sharedMultiSlsDetector {
     /** flag for acquiring */
     bool acquiringFlag;
 
-    /** data streaming (up stream) enable in receiver */
-    bool receiver_upstream;
-
     /** initial checks */
     bool initialChecks;
 };
@@ -87,7 +88,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
-    sls::Result<RT> Parallel(RT (slsDetector::*somefunc)(CT...),
+    sls::Result<RT> Parallel(RT (sls::Module::*somefunc)(CT...),
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) {
 
@@ -115,7 +116,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename RT, typename... CT>
-    sls::Result<RT> Parallel(RT (slsDetector::*somefunc)(CT...) const,
+    sls::Result<RT> Parallel(RT (sls::Module::*somefunc)(CT...) const,
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) const {
 
@@ -143,7 +144,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename... CT>
-    void Parallel(void (slsDetector::*somefunc)(CT...),
+    void Parallel(void (sls::Module::*somefunc)(CT...),
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) {
 
@@ -168,7 +169,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
     template <typename... CT>
-    void Parallel(void (slsDetector::*somefunc)(CT...) const,
+    void Parallel(void (sls::Module::*somefunc)(CT...) const,
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) const {
 
@@ -198,10 +199,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     /** return multi detector shared memory ID */
     int getMultiId() const;
-
-    std::string getPackageVersion() const;
-    
-    int64_t getClientSoftwareVersion() const; 
 
     /** Free specific shared memory from the command line without creating object */
     static void freeSharedMemory(int multiId, int detPos = -1);
@@ -251,8 +248,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @returns data streaming to client enable
      */
     bool enableDataStreamingToClient(int enable = -1);
-
-    void savePattern(const std::string &fname); 
 
     /**
      * register callback for accessing acquisition final data
@@ -390,22 +385,14 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     int kbhit();
 
-    /**
-     * Convert a double holding time in seconds to an int64_t with nano seconds
-     * Used for conversion when sending time to detector
-     * @param t time in seconds
-     * @returns time in nano seconds
-     */
-    int64_t secondsToNanoSeconds(double t);
-
     /** Multi detector Id */
     const int multiId{0};
 
     /** Shared Memory object */
     sls::SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};
 
-    /** pointers to the slsDetector structures */
-    std::vector<std::unique_ptr<slsDetector>> detectors;
+    /** pointers to the Module structures */
+    std::vector<std::unique_ptr<sls::Module>> detectors;
 
     /** data streaming (down stream) enabled in client (zmq sckets created) */
     bool client_downstream{false};
@@ -445,3 +432,5 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void (*dataReady)(detectorData *, uint64_t, uint32_t, void *){nullptr};
     void *pCallbackArg{nullptr};
 };
+
+}//namespace sls

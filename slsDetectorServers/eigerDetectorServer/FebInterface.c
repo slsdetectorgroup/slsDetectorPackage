@@ -55,7 +55,7 @@ void Feb_Interface_SendCompleteList(unsigned int n,unsigned int* list) {
 int Feb_Interface_WriteTo(unsigned int ch) {
 	if (ch>0xfff) return 0;
 
-	FILE_LOG(logDEBUG1, ("FIW ch %d\n", ch));
+	LOG(logDEBUG1, ("FIW ch %d\n", ch));
 
 Feb_Interface_send_data_raw[0] = 0x8fff0000;
 if (Local_Write(ll,4,Feb_Interface_send_data_raw)!=4) return 0;
@@ -176,7 +176,7 @@ int Feb_Interface_WriteMemory(unsigned int sub_num, unsigned int mem_num, unsign
 	start_address &= 0x3fff;
 	nwrites       &= 0x3ff;
 	if (!nwrites||nwrites>Feb_Interface_send_buffer_size-2) {
-		FILE_LOG(logERROR, ("invalid nwrites:%d\n",nwrites));
+		LOG(logERROR, ("invalid nwrites:%d\n",nwrites));
 		return 0;
 	}//*d-1026
 

@@ -9,7 +9,6 @@
  */
 
 
-#include "ansi.h"
 #include "logger.h"
 
 #include <string>

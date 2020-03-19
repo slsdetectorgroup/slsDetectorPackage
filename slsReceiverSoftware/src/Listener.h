@@ -15,14 +15,10 @@
 
 class GeneralData;
 class Fifo;
-class genericSocket;
 namespace sls{
 	class UdpRxSocket;
 }
 
-
-// #define SELECTED_SOCKET genericSocket
-#define SELECTED_SOCKET sls::UdpRxSocket
 
 class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	
@@ -194,7 +190,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	std::atomic<runStatus>* status;
 
 	/** UDP Socket - Detector to Receiver */
-	std::unique_ptr<SELECTED_SOCKET> udpSocket;
+	std::unique_ptr<sls::UdpRxSocket> udpSocket;
 
 	/** UDP Port Number */
 	uint32_t* udpPortNumber;

@@ -26,7 +26,7 @@ int MAX1932_MaxVoltage = 0;
 
 void MAX1932_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst,
         int minMV, int maxMV) {
-    FILE_LOG(logINFOBLUE, ("Configuring High Voltage\n"));
+    LOG(logINFOBLUE, ("Configuring High Voltage\n"));
     MAX1932_Reg = reg;
     MAX1932_CsMask = cmsk;
     MAX1932_ClkMask = clkmsk;
@@ -44,7 +44,7 @@ void MAX1932_Disable() {
 }
 
 int MAX1932_Set (int val) {
-    FILE_LOG(logDEBUG1, ("Setting high voltage to %d\n", val));
+    LOG(logDEBUG1, ("Setting high voltage to %d\n", val));
     if (val < 0)
         return FAIL;
 
@@ -69,7 +69,7 @@ int MAX1932_Set (int val) {
         dacvalue &= MAX1932_HV_DATA_MSK;
     }
 
-    FILE_LOG(logINFO, ("\t%dV (dacval %d)\n", val, dacvalue));
+    LOG(logINFO, ("\t%dV (dacval %d)\n", val, dacvalue));
     serializeToSPI(MAX1932_Reg, dacvalue, MAX1932_CsMask, MAX1932_HV_NUMBITS,
             MAX1932_ClkMask, MAX1932_DigMask, MAX1932_DigOffset, 0);
     return OK;

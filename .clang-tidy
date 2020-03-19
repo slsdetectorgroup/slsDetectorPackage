@@ -17,7 +17,8 @@ Checks:          '*,
                     -google-runtime-references, 
                     -google-readability-todo, 
                     -google-readability-braces-around-statements,
-                    -modernize-use-trailing-return-type'
+                    -modernize-use-trailing-return-type,
+                    -readability-isolate-declaration'
 
 HeaderFilterRegex: \.h
 AnalyzeTemporaryDtors: false

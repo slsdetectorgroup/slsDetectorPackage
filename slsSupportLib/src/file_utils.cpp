@@ -46,7 +46,7 @@ int readDataFile(std::string fname, short int *data, int nch) {
 		iline=readDataFile(infile, data, nch, 0);
 		infile.close();
 	} else {
-		FILE_LOG(logERROR) << "Could not read file " << fname;
+		LOG(logERROR) << "Could not read file " << fname;
 		return -1;
 	}
 	return iline;
@@ -73,7 +73,7 @@ int writeDataFile(std::string fname,int nch, short int *data) {
 		outfile.close();
 		return slsDetectorDefs::OK;
 	} else {
-		FILE_LOG(logERROR) << "Could not open file " << fname << "for writing";
+		LOG(logERROR) << "Could not open file " << fname << "for writing";
 		return slsDetectorDefs::FAIL;
 	}
 }

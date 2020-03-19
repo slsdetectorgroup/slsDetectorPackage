@@ -5,22 +5,29 @@
 #include <QAbstractButton>
 #include <QMessageBox>
 
+#include <chrono>
 #include <iostream>
 #include <ostream>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
-#include <chrono>
+
 using std::chrono::duration;
 using std::chrono::duration_cast;
-using std::chrono::nanoseconds;
+using std::chrono::hours;
 using std::chrono::microseconds;
 using std::chrono::milliseconds;
-using std::chrono::seconds;
 using std::chrono::minutes;
-using std::chrono::hours; 
+using std::chrono::nanoseconds;
+using std::chrono::seconds;
 
-#define CATCH_DISPLAY(m, s) catch(...) { qDefs::DisplayExceptions(m, s); }
-#define CATCH_HANDLE(...) catch(...) { qDefs::HandleExceptions(__VA_ARGS__); }
+#define CATCH_DISPLAY(m, s)                                                    \
+    catch (...) {                                                              \
+        qDefs::DisplayExceptions(m, s);                                        \
+    }
+#define CATCH_HANDLE(...)                                                      \
+    catch (...) {                                                              \
+        qDefs::HandleExceptions(__VA_ARGS__);                                  \
+    }
 
 class qDefs : public QWidget {
   public:
@@ -29,9 +36,9 @@ class qDefs : public QWidget {
      */
     qDefs(){};
 
-    static const int Q_FONT_SIZE=9;
-    static const int DATA_GAIN_PLOT_RATIO=5;
-    static const int MIN_HEIGHT_GAIN_PLOT_1D=75;
+    static const int Q_FONT_SIZE = 9;
+    static const int DATA_GAIN_PLOT_RATIO = 5;
+    static const int MIN_HEIGHT_GAIN_PLOT_1D = 75;
 
     static void DisplayExceptions(std::string emsg, std::string src) {
         try {
@@ -47,8 +54,8 @@ class qDefs : public QWidget {
 
     template <class CT> struct NonDeduced { using type = CT; };
     template <class S, typename RT, typename... CT>
-    static void HandleExceptions(const std::string emsg, const std::string src, S* s,
-                                 RT (S::*somefunc)(CT...),
+    static void HandleExceptions(const std::string emsg, const std::string src,
+                                 S *s, RT (S::*somefunc)(CT...),
                                  typename NonDeduced<CT>::type... Args) {
         try {
             throw;
@@ -72,15 +79,22 @@ class qDefs : public QWidget {
         QF_NUM_FUNCTIONS
     };
 
-    static const char* getQFunctionNameFromEnum(enum qFuncNames func) {
+    static const char *getQFunctionNameFromEnum(enum qFuncNames func) {
         switch (func) {
-        case QF_GET_DETECTOR_STATUS:	return "QF_GET_DETECTOR_STATUS";
-        case QF_START_ACQUISITION:		return "QF_START_ACQUISITION";
-        case QF_STOP_ACQUISITION:		return "QF_STOP_ACQUISITION";
-        case QF_START_AND_READ_ALL:	    return "QF_START_AND_READ_ALL";
-        case QF_EXIT_SERVER:			return "QF_EXIT_SERVER";
-        case QF_NUM_FUNCTIONS:			return "QF_NUM_FUNCTIONS";
-        default:						return "Unknown Function";
+        case QF_GET_DETECTOR_STATUS:
+            return "QF_GET_DETECTOR_STATUS";
+        case QF_START_ACQUISITION:
+            return "QF_START_ACQUISITION";
+        case QF_STOP_ACQUISITION:
+            return "QF_STOP_ACQUISITION";
+        case QF_START_AND_READ_ALL:
+            return "QF_START_AND_READ_ALL";
+        case QF_EXIT_SERVER:
+            return "QF_EXIT_SERVER";
+        case QF_NUM_FUNCTIONS:
+            return "QF_NUM_FUNCTIONS";
+        default:
+            return "Unknown Function";
         }
     };
 
@@ -111,11 +125,16 @@ class qDefs : public QWidget {
 
     static std::string getRangeAsString(enum range r) {
         switch (r) {
-        case XMIN:	return "XMIN";
-        case XMAX:	return "XMAX";
-        case YMIN:	return "YMIN";
-        case YMAX:	return "YMAX";
-        default:	return "Unknown";
+        case XMIN:
+            return "XMIN";
+        case XMAX:
+            return "XMAX";
+        case YMIN:
+            return "YMIN";
+        case YMAX:
+            return "YMAX";
+        default:
+            return "Unknown";
         }
     };
 
@@ -190,7 +209,8 @@ class qDefs : public QWidget {
                 MINUTES);
         }
         return std::make_pair(
-            duration_cast<duration<double, std::ratio<3600>>>(tns).count(), HOURS);
+            duration_cast<duration<double, std::ratio<3600>>>(tns).count(),
+            HOURS);
     }
 
     /** returns the value in ns */
@@ -296,10 +316,12 @@ class qDefs : public QWidget {
     /**
      * Wrap exception message
      */
-    static int ExceptionMessage(std::string message, 
-                        std::string exceptionMessage,
-                       std::string source) {
-        return Message(qDefs::WARNING, message + std::string("\nCaught exception:\n") + exceptionMessage, source);
-    } 
-
+    static int ExceptionMessage(std::string message,
+                                std::string exceptionMessage,
+                                std::string source) {
+        return Message(qDefs::WARNING,
+                       message + std::string("\nCaught exception:\n") +
+                           exceptionMessage,
+                       source);
+    }
 };

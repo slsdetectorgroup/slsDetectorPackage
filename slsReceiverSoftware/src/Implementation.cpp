@@ -15,22 +15,23 @@
 #include <fstream>
 #include <iostream>
 #include <sys/stat.h> // stat
+#include <unistd.h>
 
 /** cosntructor & destructor */
 
 Implementation::Implementation(const detectorType d) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     InitializeMembers();
     setDetectorType(d);
 }
 
 Implementation::~Implementation() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     DeleteMembers();
 }
 
 void Implementation::DeleteMembers() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     if (generalData) {
         delete generalData;
         generalData = nullptr;
@@ -46,7 +47,7 @@ void Implementation::DeleteMembers() {
 }
 
 void Implementation::InitializeMembers() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     // config parameters
     numThreads = 1;
@@ -58,11 +59,11 @@ void Implementation::InitializeMembers() {
     silentMode = false;
     fifoDepth = 0;
     frameDiscardMode = NO_DISCARD;
-    framePadding = false;
+    framePadding = true;
 
     // file parameters
     fileFormatType = BINARY;
-    filePath = "";
+    filePath = "/";
     fileName = "run";
     fileIndex = 0;
     fileWriteEnable = true;
@@ -133,7 +134,7 @@ void Implementation::InitializeMembers() {
 }
 
 void Implementation::SetLocalNetworkParameters() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     // to increase Max length of input packet queue
     int max_back_log;
@@ -147,12 +148,12 @@ void Implementation::SetLocalNetworkParameters() {
         std::ofstream proc_file(proc_file_name);
         if (proc_file.good()) {
             proc_file << MAX_SOCKET_INPUT_PACKET_QUEUE << std::endl;
-            FILE_LOG(logINFOBLUE)
+            LOG(logINFOBLUE)
                 << "Max length of input packet queue "
                    "[/proc/sys/net/core/netdev_max_backlog] modified to "
                 << MAX_SOCKET_INPUT_PACKET_QUEUE;
         } else {
-            FILE_LOG(logWARNING)
+            LOG(logWARNING)
                 << "Could not change max length of "
                    "input packet queue [net.core.netdev_max_backlog]. (No Root "
                    "Privileges?)";
@@ -161,14 +162,14 @@ void Implementation::SetLocalNetworkParameters() {
 }
 
 void Implementation::SetThreadPriorities() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     for (const auto &it : listener) {
         it->SetThreadPriority(LISTENER_PRIORITY);
     }
 }
 
 void Implementation::SetupFifoStructure() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     fifo.clear();
     for (int i = 0; i < numThreads; ++i) {
@@ -192,12 +193,12 @@ void Implementation::SetupFifoStructure() {
             dataStreamer[i]->SetFifo(fifo[i].get());
     }
 
-    FILE_LOG(logINFO) << "Memory Allocated Per Fifo: "
+    LOG(logINFO) << "Memory Allocated Per Fifo: "
                       << (double)(((size_t)(generalData->imageSize) +
                            (size_t)(generalData->fifoBufferHeaderSize)) *
                           (size_t)fifoDepth) / (double)(1024 * 1024)
                       << " MB";
-    FILE_LOG(logINFO) << numThreads << " Fifo structure(s) reconstructed";
+    LOG(logINFO) << numThreads << " Fifo structure(s) reconstructed";
 }
 
 
@@ -209,7 +210,7 @@ void Implementation::SetupFifoStructure() {
  * ************************************************/
 
 void Implementation::setDetectorType(const detectorType d) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     myDetectorType = d;
     switch (myDetectorType) {
     case GOTTHARD:
@@ -219,7 +220,7 @@ void Implementation::setDetectorType(const detectorType d) {
     case MOENCH:
     case MYTHEN3:
     case GOTTHARD2:
-        FILE_LOG(logINFO) << " ***** " << sls::ToString(d)
+        LOG(logINFO) << " ***** " << sls::ToString(d)
                           << " Receiver *****";
         break;
     default:
@@ -292,16 +293,16 @@ void Implementation::setDetectorType(const detectorType d) {
         it->SetGeneralData(generalData);
     SetThreadPriorities();
 
-    FILE_LOG(logDEBUG) << " Detector type set to " << sls::ToString(d);
+    LOG(logDEBUG) << " Detector type set to " << sls::ToString(d);
 }
 
 int *Implementation::getMultiDetectorSize() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return (int *)numDet;
 }
 
 void Implementation::setMultiDetectorSize(const int *size) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     std::string log_message = "Detector Size (ports): (";
     for (int i = 0; i < MAX_DIMENSIONS; ++i) {
         // x dir (colums) each udp port
@@ -327,18 +328,23 @@ void Implementation::setMultiDetectorSize(const int *size) {
 		it->SetNumberofDetectors(nd);
 	}
 
-    FILE_LOG(logINFO) << log_message;
+    LOG(logINFO) << log_message;
 }
 
 int Implementation::getDetectorPositionId() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return detID;
 }
 
 void Implementation::setDetectorPositionId(const int id) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     detID = id;
-    FILE_LOG(logINFO) << "Detector Position Id:" << detID;
+    LOG(logINFO) << "Detector Position Id:" << detID;
+
+    // update zmq port
+    streamingPort = DEFAULT_ZMQ_RX_PORTNO +
+                       (detID * (myDetectorType == EIGER ? 2 : 1));
+                       
     for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
         dataProcessor[i]->SetupFileWriter(
             fileWriteEnable, (int *)numDet, &framesPerFile, &fileName, &filePath,
@@ -356,32 +362,32 @@ void Implementation::setDetectorPositionId(const int id) {
 }
 
 std::string Implementation::getDetectorHostname() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return detHostname;
 }
 
 void Implementation::setDetectorHostname(const std::string& c) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     if (!c.empty())
         detHostname = c;
-    FILE_LOG(logINFO) << "Detector Hostname: " << detHostname;
+    LOG(logINFO) << "Detector Hostname: " << detHostname;
 }
 
 bool Implementation::getSilentMode() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return silentMode;
 }
 
 void Implementation::setSilentMode(const bool i) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     silentMode = i;
-    FILE_LOG(logINFO) << "Silent Mode: " << i;
+    LOG(logINFO) << "Silent Mode: " << i;
 }
 
 uint32_t Implementation::getFifoDepth() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return fifoDepth;
 }
 
@@ -390,36 +396,36 @@ void Implementation::setFifoDepth(const uint32_t i) {
         fifoDepth = i;
         SetupFifoStructure();
     }
-    FILE_LOG(logINFO) << "Fifo Depth: " << i;
+    LOG(logINFO) << "Fifo Depth: " << i;
 }
 
 slsDetectorDefs::frameDiscardPolicy
 Implementation::getFrameDiscardPolicy() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return frameDiscardMode;
 }
 
 void Implementation::setFrameDiscardPolicy(
     const frameDiscardPolicy i) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     if (i >= 0 && i < NUM_DISCARD_POLICIES)
         frameDiscardMode = i;
 
-    FILE_LOG(logINFO) << "Frame Discard Policy: "
+    LOG(logINFO) << "Frame Discard Policy: "
                       << sls::ToString(frameDiscardMode);
 }
 
 bool Implementation::getFramePaddingEnable() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return framePadding;
 }
 
 void Implementation::setFramePaddingEnable(const bool i) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     framePadding = i;
-    FILE_LOG(logINFO) << "Frame Padding: " << framePadding;
+    LOG(logINFO) << "Frame Padding: " << framePadding;
 }
 
 
@@ -429,7 +435,7 @@ void Implementation::setFramePaddingEnable(const bool i) {
  *                                                 *
  * ************************************************/
 slsDetectorDefs::fileFormat Implementation::getFileFormat() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return fileFormatType;
 }
 
@@ -448,51 +454,51 @@ void Implementation::setFileFormat(const fileFormat f) {
     for (const auto &it : dataProcessor)
         it->SetFileFormat(f);
 
-    FILE_LOG(logINFO) << "File Format: " << sls::ToString(fileFormatType);
+    LOG(logINFO) << "File Format: " << sls::ToString(fileFormatType);
 }
 
 std::string Implementation::getFilePath() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return filePath;
 }
 
 void Implementation::setFilePath(const std::string& c) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     if (!c.empty()) {
         mkdir_p(c); //throws if it can't create
         filePath = c;
     }
-    FILE_LOG(logINFO) << "File path: " << filePath;
+    LOG(logINFO) << "File path: " << filePath;
 }
 
 std::string Implementation::getFileName() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return fileName;
 }
 
 void Implementation::setFileName(const std::string& c) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     if (!c.empty())
        fileName = c;
-    FILE_LOG(logINFO) << "File name: " << fileName;
+    LOG(logINFO) << "File name: " << fileName;
 }
 
 uint64_t Implementation::getFileIndex() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return fileIndex;
 }
 
 void Implementation::setFileIndex(const uint64_t i) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     fileIndex = i;
-    FILE_LOG(logINFO) << "File Index: " << fileIndex;
+    LOG(logINFO) << "File Index: " << fileIndex;
 }
 
 bool Implementation::getFileWriteEnable() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return fileWriteEnable;
 }
 
@@ -507,43 +513,43 @@ void Implementation::setFileWriteEnable(const bool b) {
         }
     }
 
-    FILE_LOG(logINFO) << "File Write Enable: " << (fileWriteEnable ? "enabled" : "disabled");
+    LOG(logINFO) << "File Write Enable: " << (fileWriteEnable ? "enabled" : "disabled");
 }
 
 bool Implementation::getMasterFileWriteEnable() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return masterFileWriteEnable;
 }
 
 void Implementation::setMasterFileWriteEnable(const bool b) {
     masterFileWriteEnable = b;
 
-    FILE_LOG(logINFO) << "Master File Write Enable: "
+    LOG(logINFO) << "Master File Write Enable: "
                       << (masterFileWriteEnable ? "enabled" : "disabled");
 }
 
 bool Implementation::getOverwriteEnable() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return overwriteEnable;
 }
 
 void Implementation::setOverwriteEnable(const bool b) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     overwriteEnable = b;
-    FILE_LOG(logINFO) << "Overwrite Enable: " << (overwriteEnable ? "enabled" : "disabled");
+    LOG(logINFO) << "Overwrite Enable: " << (overwriteEnable ? "enabled" : "disabled");
 }
 
 uint32_t Implementation::getFramesPerFile() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return framesPerFile;
 }
 
 void Implementation::setFramesPerFile(const uint32_t i) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     framesPerFile = i;
-    FILE_LOG(logINFO) << "Frames per file: " << framesPerFile;
+    LOG(logINFO) << "Frames per file: " << framesPerFile;
 }
 
 
@@ -553,7 +559,7 @@ void Implementation::setFramesPerFile(const uint32_t i) {
  *                                                 *
  * ************************************************/
 slsDetectorDefs::runStatus Implementation::getStatus() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return status;
 }
 
@@ -605,8 +611,8 @@ std::vector<uint64_t> Implementation::getNumMissingPackets() const {
 }
 
 void Implementation::startReceiver() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    FILE_LOG(logINFO) << "Starting Receiver";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logINFO) << "Starting Receiver";
     stoppedFlag = false;
     ResetParametersforNewAcquisition();
 
@@ -620,7 +626,7 @@ void Implementation::startReceiver() {
                                      (generalData->fifoBufferHeaderSize),
                                  pStartAcquisition);
         if (rawDataReadyCallBack != nullptr) {
-            FILE_LOG(logINFO) << "Data Write has been defined externally";
+            LOG(logINFO) << "Data Write has been defined externally";
         }
     }
 
@@ -628,9 +634,9 @@ void Implementation::startReceiver() {
     if (fileWriteEnable) {
         SetupWriter();
     } else
-        FILE_LOG(logINFO) << "File Write Disabled";
+        LOG(logINFO) << "File Write Disabled";
 
-    FILE_LOG(logINFO) << "Ready ...";
+    LOG(logINFO) << "Ready ...";
 
     // status
     status = RUNNING;
@@ -638,8 +644,8 @@ void Implementation::startReceiver() {
     // Let Threads continue to be ready for acquisition
     StartRunning();
 
-    FILE_LOG(logINFO) << "Receiver Started";
-    FILE_LOG(logINFO) << "Status: " << sls::ToString(status);
+    LOG(logINFO) << "Receiver Started";
+    LOG(logINFO) << "Status: " << sls::ToString(status);
 }
 
 void Implementation::setStoppedFlag(bool stopped) {
@@ -647,8 +653,8 @@ void Implementation::setStoppedFlag(bool stopped) {
 }
 
 void Implementation::stopReceiver() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    FILE_LOG(logINFO) << "Stopping Receiver";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logINFO) << "Stopping Receiver";
 
     // set status to transmitting
     startReadout();
@@ -693,7 +699,7 @@ void Implementation::stopReceiver() {
     }
 
     status = RUN_FINISHED;
-    FILE_LOG(logINFO) << "Status: " << sls::ToString(status);
+    LOG(logINFO) << "Status: " << sls::ToString(status);
 
     { // statistics
         std::vector<uint64_t> mp = getNumMissingPackets();
@@ -704,7 +710,7 @@ void Implementation::stopReceiver() {
 
             TLogLevel lev =
                 (((int64_t)mp[i]) > 0) ? logINFORED : logINFOGREEN;
-            FILE_LOG(lev) <<
+            LOG(lev) <<
                 // udp port number could be the second if selected interface is
                 // 2 for jungfrau
                 "Summary of Port " << udpPortNum[i]
@@ -714,7 +720,7 @@ void Implementation::stopReceiver() {
                           << listener[i]->GetLastFrameIndexCaught();
         }
         if (!activated) {
-            FILE_LOG(logINFORED) << "Deactivated Receiver";
+            LOG(logINFORED) << "Deactivated Receiver";
         }
         // callback
         if (acquisitionFinishedCallBack)
@@ -725,12 +731,12 @@ void Implementation::stopReceiver() {
     // change status
     status = IDLE;
 
-    FILE_LOG(logINFO) << "Receiver Stopped";
-    FILE_LOG(logINFO) << "Status: " << sls::ToString(status);
+    LOG(logINFO) << "Receiver Stopped";
+    LOG(logINFO) << "Status: " << sls::ToString(status);
 }
 
 void Implementation::startReadout() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     if (status == RUNNING) {
         // wait for incoming delayed packets
         int totalPacketsReceived = 0;
@@ -743,7 +749,7 @@ void Implementation::startReadout() {
             numberOfFrames * generalData->packetsPerFrame * listener.size();
         if (totalPacketsReceived != numPacketsToReceive) {
             while (totalPacketsReceived != previousValue) {
-                FILE_LOG(logDEBUG3)
+                LOG(logDEBUG3)
                     << "waiting for all packets, previousValue:"
                     << previousValue
                     << " totalPacketsReceived: " << totalPacketsReceived;
@@ -753,12 +759,12 @@ void Implementation::startReadout() {
                 for (const auto &it : listener)
                     totalPacketsReceived += it->GetPacketsCaught();
 
-                FILE_LOG(logDEBUG3) << "\tupdated:  totalPacketsReceived:"
+                LOG(logDEBUG3) << "\tupdated:  totalPacketsReceived:"
                                     << totalPacketsReceived;
             }
         }
         status = TRANSMITTING;
-        FILE_LOG(logINFO) << "Status: Transmitting";
+        LOG(logINFO) << "Status: Transmitting";
     }
     // shut down udp sockets to make listeners push dummy (end) packets for
     // processors
@@ -766,13 +772,13 @@ void Implementation::startReadout() {
 }
 
 void Implementation::shutDownUDPSockets() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     for (const auto &it : listener)
         it->ShutDownUDPSocket();
 }
 
 void Implementation::closeFiles() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     uint64_t maxIndexCaught = 0;
     bool anycaught = false;
     for (const auto &it : dataProcessor) {
@@ -788,15 +794,15 @@ void Implementation::closeFiles() {
 }
 
 void Implementation::restreamStop() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     for (const auto &it : dataStreamer) {
         it->RestreamStop();
     }
-    FILE_LOG(logINFO) << "Restreaming Dummy Header via ZMQ successful";
+    LOG(logINFO) << "Restreaming Dummy Header via ZMQ successful";
 }
 
 void Implementation::ResetParametersforNewAcquisition() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     for (const auto &it : listener)
         it->ResetParametersforNewAcquisition();
@@ -813,7 +819,7 @@ void Implementation::ResetParametersforNewAcquisition() {
 }
 
 void Implementation::CreateUDPSockets() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     try{
         for (unsigned int i = 0; i < listener.size(); ++i) {
@@ -824,11 +830,11 @@ void Implementation::CreateUDPSockets() {
         throw sls::RuntimeError("Could not create UDP Socket(s).");
     }
 
-    FILE_LOG(logDEBUG) << "UDP socket(s) created successfully.";
+    LOG(logDEBUG) << "UDP socket(s) created successfully.";
 }
 
 void Implementation::SetupWriter() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 	masterAttributes attr;
 	attr.detectorType = myDetectorType;
 	attr.dynamicRange = dynamicRange;
@@ -867,7 +873,7 @@ void Implementation::SetupWriter() {
 }
 
 void Implementation::StartRunning() {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     // set running mask and post semaphore to start the inner loop in execution
     // thread
     for (const auto &it : listener) {
@@ -891,12 +897,12 @@ void Implementation::StartRunning() {
  *                                                 *
  * ************************************************/
 int Implementation::getNumberofUDPInterfaces() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return numUDPInterfaces;
 }
 
 void Implementation::setNumberofUDPInterfaces(const int n) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     if (numUDPInterfaces != n) {
 
@@ -997,59 +1003,59 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         setUDPSocketBufferSize(0);
     }
 
-    FILE_LOG(logINFO) << "Number of Interfaces: " << numUDPInterfaces;
+    LOG(logINFO) << "Number of Interfaces: " << numUDPInterfaces;
 }
 
 std::string Implementation::getEthernetInterface() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return eth[0];
 }
 
 void Implementation::setEthernetInterface(const std::string &c) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     eth[0] = c;
-    FILE_LOG(logINFO) << "Ethernet Interface: " << eth[0];
+    LOG(logINFO) << "Ethernet Interface: " << eth[0];
 }
 
 std::string Implementation::getEthernetInterface2() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return eth[1];
 }
 
 void Implementation::setEthernetInterface2(const std::string &c) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     eth[1] = c;
-    FILE_LOG(logINFO) << "Ethernet Interface 2: " << eth[1];
+    LOG(logINFO) << "Ethernet Interface 2: " << eth[1];
 }
 
 uint32_t Implementation::getUDPPortNumber() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return udpPortNum[0];
 }
 
 void Implementation::setUDPPortNumber(const uint32_t i) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     udpPortNum[0] = i;
-    FILE_LOG(logINFO) << "UDP Port Number[0]: " << udpPortNum[0];
+    LOG(logINFO) << "UDP Port Number[0]: " << udpPortNum[0];
 }
 
 uint32_t Implementation::getUDPPortNumber2() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return udpPortNum[1];
 }
 
 void Implementation::setUDPPortNumber2(const uint32_t i) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     udpPortNum[1] = i;
-    FILE_LOG(logINFO) << "UDP Port Number[1]: " << udpPortNum[1];
+    LOG(logINFO) << "UDP Port Number[1]: " << udpPortNum[1];
 }
 
 int64_t Implementation::getUDPSocketBufferSize() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return udpSocketBufferSize;
 }
 
@@ -1067,7 +1073,7 @@ void Implementation::setUDPSocketBufferSize(const int64_t s) {
 }
 
 int64_t Implementation::getActualUDPSocketBufferSize() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return actualUDPSocketBufferSize;
 }
 
@@ -1078,7 +1084,7 @@ int64_t Implementation::getActualUDPSocketBufferSize() const {
  *                                                 *
  * ************************************************/
 bool Implementation::getDataStreamEnable() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return dataStreamEnable;
 }
 
@@ -1115,11 +1121,11 @@ void Implementation::setDataStreamEnable(const bool enable) {
             SetThreadPriorities();
         }
     }
-    FILE_LOG(logINFO) << "Data Send to Gui: " << dataStreamEnable;
+    LOG(logINFO) << "Data Send to Gui: " << dataStreamEnable;
 }
 
 uint32_t Implementation::getStreamingFrequency() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return streamingFrequency;
 }
 
@@ -1127,52 +1133,52 @@ void Implementation::setStreamingFrequency(const uint32_t freq) {
     if (streamingFrequency != freq) {
         streamingFrequency = freq;
     }
-    FILE_LOG(logINFO) << "Streaming Frequency: " << streamingFrequency;
+    LOG(logINFO) << "Streaming Frequency: " << streamingFrequency;
 }
 
 uint32_t Implementation::getStreamingTimer() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return streamingTimerInMs;
 }
 
 void Implementation::setStreamingTimer(const uint32_t time_in_ms) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     streamingTimerInMs = time_in_ms;
-    FILE_LOG(logINFO) << "Streamer Timer: " << streamingTimerInMs;
+    LOG(logINFO) << "Streamer Timer: " << streamingTimerInMs;
 }
 
 uint32_t Implementation::getStreamingPort() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return streamingPort;
 }
 
 void Implementation::setStreamingPort(const uint32_t i) {
     streamingPort = i;
 
-    FILE_LOG(logINFO) << "Streaming Port: " << streamingPort;
+    LOG(logINFO) << "Streaming Port: " << streamingPort;
 }
 
 sls::IpAddr Implementation::getStreamingSourceIP() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return streamingSrcIP;
 }
 
 void Implementation::setStreamingSourceIP(const sls::IpAddr ip) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     streamingSrcIP = ip;
-    FILE_LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
+    LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 
 std::string Implementation::getAdditionalJsonHeader() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return additionalJsonHeader;
 }
 
 void Implementation::setAdditionalJsonHeader(const std::string& c) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     additionalJsonHeader = c;
-    FILE_LOG(logINFO) << "Additional JSON Header: " << additionalJsonHeader;
+    LOG(logINFO) << "Additional JSON Header: " << additionalJsonHeader;
 }
 
 
@@ -1182,71 +1188,71 @@ void Implementation::setAdditionalJsonHeader(const std::string& c) {
  *                                                 *
  * ************************************************/
 uint64_t Implementation::getNumberOfFrames() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return numberOfFrames;
 }
 
 void Implementation::setNumberOfFrames(const uint64_t i) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     numberOfFrames = i;
-    FILE_LOG(logINFO) << "Number of Frames: " << numberOfFrames;
+    LOG(logINFO) << "Number of Frames: " << numberOfFrames;
 }
 
 uint64_t Implementation::getAcquisitionPeriod() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return acquisitionPeriod;
 }
 
 void Implementation::setAcquisitionPeriod(const uint64_t i) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     acquisitionPeriod = i;
-    FILE_LOG(logINFO) << "Acquisition Period: "
+    LOG(logINFO) << "Acquisition Period: "
                       << (double)acquisitionPeriod / (1E9) << "s";
 }
 
 uint64_t Implementation::getAcquisitionTime() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return acquisitionTime;
 }
 
 void Implementation::setAcquisitionTime(const uint64_t i) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     acquisitionTime = i;
-    FILE_LOG(logINFO) << "Acquisition Time: " << (double)acquisitionTime / (1E9)
+    LOG(logINFO) << "Acquisition Time: " << (double)acquisitionTime / (1E9)
                       << "s";
 }
 
 uint64_t Implementation::getSubExpTime() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return subExpTime;
 }
 
 void Implementation::setSubExpTime(const uint64_t i) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     subExpTime = i;
-    FILE_LOG(logINFO) << "Sub Exposure Time: " << (double)subExpTime / (1E9)
+    LOG(logINFO) << "Sub Exposure Time: " << (double)subExpTime / (1E9)
                       << "s";
 }
 
 uint64_t Implementation::getSubPeriod() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return subPeriod;
 }
 
 void Implementation::setSubPeriod(const uint64_t i) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     subPeriod = i;
-    FILE_LOG(logINFO) << "Sub Exposure Period: " << (double)subPeriod / (1E9)
+    LOG(logINFO) << "Sub Period: " << (double)subPeriod / (1E9)
                       << "s";
 }
 
 uint32_t Implementation::getNumberofAnalogSamples() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return numberOfAnalogSamples;
 }
 
@@ -1263,13 +1269,13 @@ void Implementation::setNumberofAnalogSamples(const uint32_t i) {
             it->SetPixelDimension();
         SetupFifoStructure();
     }
-    FILE_LOG(logINFO) << "Number of Analog Samples: " << numberOfAnalogSamples;
-    FILE_LOG(logINFO) << "Packets per Frame: "
+    LOG(logINFO) << "Number of Analog Samples: " << numberOfAnalogSamples;
+    LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
 }
 
 uint32_t Implementation::getNumberofDigitalSamples() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return numberOfDigitalSamples;
 }
 
@@ -1286,14 +1292,14 @@ void Implementation::setNumberofDigitalSamples(const uint32_t i) {
             it->SetPixelDimension();
         SetupFifoStructure();
     }
-    FILE_LOG(logINFO) << "Number of Digital Samples: "
+    LOG(logINFO) << "Number of Digital Samples: "
                       << numberOfDigitalSamples;
-    FILE_LOG(logINFO) << "Packets per Frame: "
+    LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
 }
 
 int Implementation::getNumberofCounters() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return numberOfCounters;
 }
 
@@ -1309,11 +1315,11 @@ void Implementation::setNumberofCounters(const int i) {
             SetupFifoStructure();
         }
     }
-    FILE_LOG(logINFO) << "Number of Counters: " << numberOfCounters;
+    LOG(logINFO) << "Number of Counters: " << numberOfCounters;
 }
 
 uint32_t Implementation::getDynamicRange() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return dynamicRange;
 }
 
@@ -1333,11 +1339,11 @@ void Implementation::setDynamicRange(const uint32_t i) {
             SetupFifoStructure();
         }
     }
-    FILE_LOG(logINFO) << "Dynamic Range: " << dynamicRange;
+    LOG(logINFO) << "Dynamic Range: " << dynamicRange;
 }
 
 slsDetectorDefs::ROI Implementation::getROI() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return roi;
 }
 
@@ -1354,13 +1360,13 @@ void Implementation::setROI(slsDetectorDefs::ROI arg) {
         SetupFifoStructure();
     }
 
-    FILE_LOG(logINFO) << "ROI: [" << roi.xmin << ", " << roi.xmax << "]";;
-    FILE_LOG(logINFO) << "Packets per Frame: "
+    LOG(logINFO) << "ROI: [" << roi.xmin << ", " << roi.xmax << "]";;
+    LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
 }
 
 bool Implementation::getTenGigaEnable() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return tengigaEnable;
 }
 
@@ -1386,18 +1392,18 @@ void Implementation::setTenGigaEnable(const bool b) {
 
         SetupFifoStructure();
     }
-    FILE_LOG(logINFO) << "Ten Giga: " << (tengigaEnable ? "enabled" : "disabled");
-    FILE_LOG(logINFO) << "Packets per Frame: "
+    LOG(logINFO) << "Ten Giga: " << (tengigaEnable ? "enabled" : "disabled");
+    LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
 }
 
 int Implementation::getFlippedDataX() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return flippedDataX;
 }
 
 void Implementation::setFlippedDataX(int enable) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     flippedDataX = (enable == 0) ? 0 : 1;
 
 	if (!quadEnable) {
@@ -1412,11 +1418,11 @@ void Implementation::setFlippedDataX(int enable) {
 		}
 	}
 
-    FILE_LOG(logINFO) << "Flipped Data X: " << flippedDataX;
+    LOG(logINFO) << "Flipped Data X: " << flippedDataX;
 }
 
 bool Implementation::getGapPixelsEnable() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return gapPixelsEnable;
 }
 
@@ -1430,11 +1436,11 @@ void Implementation::setGapPixelsEnable(const bool b) {
             it->SetPixelDimension();
         SetupFifoStructure();
     }
-    FILE_LOG(logINFO) << "Gap Pixels Enable: " << gapPixelsEnable;
+    LOG(logINFO) << "Gap Pixels Enable: " << gapPixelsEnable;
 }
 
 bool Implementation::getQuad() const {
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	LOG(logDEBUG) << __AT__ << " starting";
 	return quadEnable;
 }
 
@@ -1464,47 +1470,47 @@ void Implementation::setQuad(const bool b) {
 			}	
 		}
 	}
-	FILE_LOG(logINFO)  << "Quad Enable: " << quadEnable;
+	LOG(logINFO)  << "Quad Enable: " << quadEnable;
 }
 
 bool Implementation::getActivate() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return activated;
 }
 
 bool Implementation::setActivate(bool enable) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     activated = enable;
-    FILE_LOG(logINFO) << "Activation: " << (activated ? "enabled" : "disabled");
+    LOG(logINFO) << "Activation: " << (activated ? "enabled" : "disabled");
     return activated;
 }
 
 bool Implementation::getDeactivatedPadding() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return deactivatedPaddingEnable;
 }
 
 bool Implementation::setDeactivatedPadding(bool enable) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     deactivatedPaddingEnable = enable;
-    FILE_LOG(logINFO) << "Deactivated Padding Enable: "
+    LOG(logINFO) << "Deactivated Padding Enable: "
                       << (deactivatedPaddingEnable ? "enabled" : "disabled");
     return deactivatedPaddingEnable;
 }
 
 int Implementation::getReadNLines() const {
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	LOG(logDEBUG) << __AT__ << " starting";
 	return numLinesReadout;
 }
 
 void Implementation::setReadNLines(const int value) {
     numLinesReadout = value;
-	FILE_LOG(logINFO)  << "Number of Lines to readout: " << numLinesReadout;
+	LOG(logINFO)  << "Number of Lines to readout: " << numLinesReadout;
 }
 
 slsDetectorDefs::readoutMode
 Implementation::getReadoutMode() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return readoutType;
 }
 
@@ -1522,13 +1528,13 @@ void Implementation::setReadoutMode(const readoutMode f) {
         SetupFifoStructure();
     }
 
-    FILE_LOG(logINFO) << "Readout Mode: " << sls::ToString(f);
-    FILE_LOG(logINFO) << "Packets per Frame: "
+    LOG(logINFO) << "Readout Mode: " << sls::ToString(f);
+    LOG(logINFO) << "Packets per Frame: "
                           << (generalData->packetsPerFrame);
 }
 
 uint32_t Implementation::getADCEnableMask() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return adcEnableMaskOneGiga;
 }
 
@@ -1546,14 +1552,14 @@ void Implementation::setADCEnableMask(uint32_t mask) {
         SetupFifoStructure();
     }
 
-    FILE_LOG(logINFO) << "ADC Enable Mask for 1Gb mode: 0x" << std::hex << adcEnableMaskOneGiga
+    LOG(logINFO) << "ADC Enable Mask for 1Gb mode: 0x" << std::hex << adcEnableMaskOneGiga
                       << std::dec;
-    FILE_LOG(logINFO) << "Packets per Frame: "
+    LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
 }
 
 uint32_t Implementation::getTenGigaADCEnableMask() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return adcEnableMaskTenGiga;
 }
 
@@ -1571,29 +1577,29 @@ void Implementation::setTenGigaADCEnableMask(uint32_t mask) {
         SetupFifoStructure();
     }
 
-    FILE_LOG(logINFO) << "ADC Enable Mask for 10Gb mode: 0x" << std::hex << adcEnableMaskTenGiga
+    LOG(logINFO) << "ADC Enable Mask for 10Gb mode: 0x" << std::hex << adcEnableMaskTenGiga
                       << std::dec;
-    FILE_LOG(logINFO) << "Packets per Frame: "
+    LOG(logINFO) << "Packets per Frame: "
                       << (generalData->packetsPerFrame);
 }
 
 std::vector<int> Implementation::getDbitList() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return ctbDbitList;
 }
 
 void Implementation::setDbitList(const std::vector<int> v) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     ctbDbitList = v;
 }
 
 int Implementation::getDbitOffset() const {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return ctbDbitOffset;
 }
 
 void Implementation::setDbitOffset(const int s) {
-    FILE_LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     ctbDbitOffset = s;
 }
 

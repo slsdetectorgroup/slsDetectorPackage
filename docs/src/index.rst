@@ -6,12 +6,18 @@
 Welcome to slsDetectorPackage's documentation!
 ==============================================
 
+.. note :: 
+
+    This is the documentation for the latest development version of slsDetectorPackage
+    For documentation on current and previous releases visit the official page: https://www.psi.ch/en/detectors/documentation
+
 .. toctree::
     :maxdepth: 1
     :caption: Installation:
 
     installation
     dependencies
+    consuming
    
 .. toctree::
     :caption: C++ API
@@ -20,6 +26,7 @@ Welcome to slsDetectorPackage's documentation!
     detector
     result
     receiver
+    examples
 
 .. toctree::
     :caption: Python API

@@ -1646,10 +1646,13 @@ void ctbAcquisition::update() {
     
    }
 
-  try {
-    dBitOffset = myDet->getRxDbitOffset().tsquash("Different values");
-  } CATCH_DISPLAY ("Could not get receiver dbit offset", "ctbAcquisition::update")
-
+  if (myDet->getDetectorType().squash() == slsDetectorDefs::MOENCH) {
+    dBitOffset = 0;
+  } else {
+    try {
+      dBitOffset = myDet->getRxDbitOffset().tsquash("Different values");
+    } CATCH_DISPLAY ("Could not get receiver dbit offset", "ctbAcquisition::update")
+  }
   try {
     tenG = myDet->getTenGiga().tsquash("Different values");
   } CATCH_DISPLAY ("Could not get ten giga enable", "ctbAcquisition::update")
@@ -1735,9 +1738,13 @@ void ctbAcquisition::toggleAcquisition() {
     setDigitalSamples(retval);
   } CATCH_DISPLAY ("Could not get number of digital samples", "ctbAcquisition::toggleAcquisition")
   
+  if (myDet->getDetectorType().squash() == slsDetectorDefs::MOENCH) {
+    dBitOffset = 0;
+  } else {
   try {
-    dBitOffset = myDet->getRxDbitOffset().tsquash("Different values");
-  } CATCH_DISPLAY ("Could not get receiver dbit offset", "ctbAcquisition::toggleAcquisition")
+      dBitOffset = myDet->getRxDbitOffset().tsquash("Different values");
+    } CATCH_DISPLAY ("Could not get receiver dbit offset", "ctbAcquisition::toggleAcquisition")
+  }
 
   try {
     roMode = static_cast<int>(myDet->getReadoutMode().tsquash("Different values"));
@@ -1974,14 +1981,18 @@ void ctbAcquisition::setDbitEnable(Int_t reg){
 void ctbAcquisition::updateChans() {
 
   // dbit list
-  try { 
-    auto retval = myDet->getRxDbitList().tsquash("Different values");
+  if (myDet->getDetectorType().squash() == slsDetectorDefs::MOENCH) {
     dbitlist.clear();
-    if (!retval.empty()) {
-      for (const auto &value : retval) 
-        dbitlist.push_back(value);
-    }
-  } CATCH_DISPLAY ("Could not get receiver dbit list.", "ctbAcquisition::updateChans")
+  } else {
+    try {
+      auto retval = myDet->getRxDbitList().tsquash("Different values");
+      dbitlist.clear();
+      if (!retval.empty()) {
+        for (const auto &value : retval) 
+          dbitlist.push_back(value);
+      }
+    } CATCH_DISPLAY ("Could not get receiver dbit list.", "ctbAcquisition::updateChans")
+  }
 
   // adc mask
   try { 

@@ -184,6 +184,11 @@ void init_enums(py::module &m) {
         .value("VB_PIXBUF", slsDetectorDefs::dacIndex::VB_PIXBUF)
         .value("VIN_COM", slsDetectorDefs::dacIndex::VIN_COM)
         .value("VDD_PROT", slsDetectorDefs::dacIndex::VDD_PROT)
+        .value("VBP_COLBUF", slsDetectorDefs::dacIndex::VBP_COLBUF)
+        .value("VB_SDA", slsDetectorDefs::dacIndex::VB_SDA)
+        .value("VCASC_SFP", slsDetectorDefs::dacIndex::VCASC_SFP)
+        .value("VIPRE_CDS", slsDetectorDefs::dacIndex::VIPRE_CDS)
+        .value("IBIAS_SFP", slsDetectorDefs::dacIndex::IBIAS_SFP)
         .value("V_POWER_A", slsDetectorDefs::dacIndex::V_POWER_A)
         .value("V_POWER_B", slsDetectorDefs::dacIndex::V_POWER_B)
         .value("V_POWER_C", slsDetectorDefs::dacIndex::V_POWER_C)
@@ -224,6 +229,18 @@ void init_enums(py::module &m) {
         .value("FORCESWITCHG2",
                slsDetectorDefs::detectorSettings::FORCESWITCHG2)
         .value("VERYLOWGAIN", slsDetectorDefs::detectorSettings::VERYLOWGAIN)
+        .value("G1_HIGHGAIN", slsDetectorDefs::detectorSettings::G1_HIGHGAIN)
+        .value("G1_LOWGAIN", slsDetectorDefs::detectorSettings::G1_LOWGAIN)
+        .value("G2_HIGHCAP_HIGHGAIN",
+               slsDetectorDefs::detectorSettings::G2_HIGHCAP_HIGHGAIN)
+        .value("G2_HIGHCAP_LOWGAIN",
+               slsDetectorDefs::detectorSettings::G2_HIGHCAP_LOWGAIN)
+        .value("G2_LOWCAP_HIGHGAIN",
+               slsDetectorDefs::detectorSettings::G2_LOWCAP_HIGHGAIN)
+        .value("G2_LOWCAP_LOWGAIN",
+               slsDetectorDefs::detectorSettings::G2_LOWCAP_LOWGAIN)
+        .value("G4_HIGHGAIN", slsDetectorDefs::detectorSettings::G4_HIGHGAIN)
+        .value("G4_LOWGAIN", slsDetectorDefs::detectorSettings::G4_LOWGAIN)
         .value("UNDEFINED", slsDetectorDefs::detectorSettings::UNDEFINED)
         .value("UNINITIALIZED",
                slsDetectorDefs::detectorSettings::UNINITIALIZED)

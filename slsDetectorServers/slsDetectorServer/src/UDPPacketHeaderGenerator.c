@@ -54,7 +54,7 @@ void createUDPPacketHeader(char* buffer, uint16_t id) {
 }
 
 int fillUDPPacket(char* buffer) {
-	FILE_LOG(logDEBUG2, ("Analog (databytes:%d, offset:%d)\n Digital (databytes:%d offset:%d)\n", 
+	LOG(logDEBUG2, ("Analog (databytes:%d, offset:%d)\n Digital (databytes:%d offset:%d)\n", 
 		analogDataBytes, analogOffset, digitalDataBytes, digitalOffset));
 	// reached end of data for one frame
 	if (analogOffset >= analogDataBytes && digitalOffset >= digitalDataBytes) {
@@ -76,7 +76,7 @@ int fillUDPPacket(char* buffer) {
 	// increment  and copy udp packet number (starts at 0)
 	++udpPacketNumber;
 	header->packetNumber = udpPacketNumber;
-	FILE_LOG(logDEBUG2, ("Creating packet number %d (fnum:%lld)\n", udpPacketNumber, (long long int) udpFrameNumber));
+	LOG(logDEBUG2, ("Creating packet number %d (fnum:%lld)\n", udpPacketNumber, (long long int) udpFrameNumber));
 
 	int freeBytes = UDP_PACKET_DATA_BYTES;
 
@@ -111,7 +111,7 @@ int fillUDPPacket(char* buffer) {
 	// pad data
 	if (freeBytes) {
 		memset(buffer + sizeof(sls_detector_header) + analogBytes + digitalBytes, 0, freeBytes);
-		FILE_LOG(logDEBUG1, ("Padding %d bytes for fnum:%lld pnum:%d\n", freeBytes, (long long int)udpFrameNumber, udpPacketNumber));
+		LOG(logDEBUG1, ("Padding %d bytes for fnum:%lld pnum:%d\n", freeBytes, (long long int)udpFrameNumber, udpPacketNumber));
 	}
 
 	return UDP_PACKET_DATA_BYTES + sizeof(sls_detector_header);

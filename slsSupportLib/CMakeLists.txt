@@ -6,6 +6,7 @@ set(SOURCES
     src/ServerSocket.cpp
     src/ServerInterface.cpp
     src/network_utils.cpp
+    src/ZmqSocket.cpp
 )
 
 set(HEADERS
@@ -20,7 +21,6 @@ set(PUBLICHEADERS
     include/file_utils.h
     include/container_utils.h
     include/string_utils.h
-    include/genericSocket.h
     include/logger.h
     include/ClientSocket.h
     include/DataSocket.h
@@ -44,10 +44,14 @@ if(result)
 endif()
 
 target_include_directories(slsSupportLib PUBLIC
-    ${ZeroMQ_INCLUDE_DIRS}
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
+
+target_include_directories(slsSupportLib PRIVATE
+    ${ZeroMQ_INCLUDE_DIRS}
+)
+
 
 set_target_properties(slsSupportLib PROPERTIES
     LIBRARY_OUTPUT_NAME SlsSupport
@@ -55,11 +59,21 @@ set_target_properties(slsSupportLib PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
+message(${ZeroMQ_LIBRARIES})
+
 target_link_libraries(slsSupportLib 
+    PUBLIC
     slsProjectOptions 
+    # ${ZeroMQ_LIBRARIES}
+    zmq
+    PRIVATE
+    
     slsProjectWarnings 
-    ${ZeroMQ_LIBRARIES}
-    rapidjson)
+    PUBLIC
+    rapidjson
+)
+
+
 
 if (SLS_USE_TESTS)
     add_subdirectory(tests)

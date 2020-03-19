@@ -1,8 +1,9 @@
 #pragma once
-
 #include "ui_form_detectormain.h"
-
 #include "qDefs.h"
+#include "Detector.h"
+#include <QTabWidget>
+
 class qDrawPlot;
 class qTabMeasurement;
 class qTabDataOutput;
@@ -12,17 +13,15 @@ class qTabSettings;
 class qTabDebugging;
 class qTabDeveloper;
 class qTabMessages;
-
-#include "Detector.h"
-
-#include <QTabWidget>
+class QScrollArea;
 class QResizeEvent;
 
-/** To Over-ride the QTabWidget class to get the tabBar */
+/** To Over-ride the QTabWidget class to get the tabBar protected
+ * methodTabWidget */
 class MyTabWidget : public QTabWidget {
   public:
     MyTabWidget(QWidget *parent = 0) { setParent(parent); }
-    /** Overridden method from QTabWidget */
+    /** Overridden protected method from QTabWidget */
     QTabBar *tabBar() { return QTabWidget::tabBar(); }
 };
 
@@ -30,7 +29,7 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     Q_OBJECT
 
   public:
-    qDetectorMain(int multiId, std::string fname, bool isDevel);
+    qDetectorMain(int multiId, const std::string& fname, bool isDevel);
     ~qDetectorMain();
 
   private slots:
@@ -52,9 +51,9 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
 
   private:
     void SetUpWidgetWindow();
-    void SetUpDetector(const std::string fName, int multiID);
+    void SetUpDetector(const std::string& config_file, int multiID);
     void Initialization();
-    void LoadConfigFile(const std::string fName);
+    void LoadConfigFile(const std::string& config_file);
 
     /** enumeration of the tabs */
     enum {
@@ -70,16 +69,17 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     };
     slsDetectorDefs::detectorType detType;
     std::unique_ptr<sls::Detector> det;
-    std::unique_ptr<qDrawPlot> plot;
-    std::unique_ptr<MyTabWidget> tabs;
-    std::unique_ptr<qTabMeasurement> tabMeasurement;
-    std::unique_ptr<qTabDataOutput> tabDataOutput;
-    std::unique_ptr<qTabPlot> tabPlot;
-    std::unique_ptr<qTabSettings> tabSettings;
-    std::unique_ptr<qTabAdvanced> tabAdvanced;
-    std::unique_ptr<qTabDebugging> tabDebugging;
-    std::unique_ptr<qTabDeveloper> tabDeveloper;
-    std::unique_ptr<qTabMessages> tabMessages;
+    qDrawPlot *plot;
+    MyTabWidget* tabs;
+    std::unique_ptr<QScrollArea> scroll[NumberOfTabs];
+    qTabMeasurement *tabMeasurement;
+    qTabDataOutput *tabDataOutput;
+    qTabPlot *tabPlot;
+    qTabSettings *tabSettings;
+    qTabAdvanced *tabAdvanced;
+    qTabDebugging *tabDebugging;
+    qTabDeveloper *tabDeveloper;
+    qTabMessages *tabMessages;
     int isDeveloper;
     int heightPlotWindow;
     int heightCentralWidget;

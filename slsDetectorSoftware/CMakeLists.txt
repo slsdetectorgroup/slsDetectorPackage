@@ -1,7 +1,7 @@
 set(SOURCES
     src/DetectorImpl.cpp 
     src/slsDetectorUsers.cpp 
-    src/slsDetector.cpp 
+    src/Module.cpp 
     src/Detector.cpp
     src/CmdProxy.cpp
     src/CmdParser.cpp
@@ -15,7 +15,6 @@ add_library(slsDetectorShared SHARED
     ${HEADERS}
 )
 
-
 # Do we have link time optimization?
 check_ipo_supported(RESULT LTO_AVAILABLE)
 if(LTO_AVAILABLE)
@@ -28,14 +27,17 @@ target_include_directories(slsDetectorShared PUBLIC
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(slsDetectorShared PUBLIC
-    slsProjectOptions
-    slsProjectWarnings
+target_link_libraries(slsDetectorShared 
+    PUBLIC
     slsSupportLib
-    ${ZeroMQ_LIBRARIES}
     pthread
     rt
+    slsProjectOptions
+    PRIVATE
+    slsProjectWarnings
+    ${ZeroMQ_LIBRARIES}
 )
+
 
 set(PUBLICHEADERS
     include/slsDetectorUsers.h
@@ -69,7 +71,7 @@ foreach(val RANGE ${len2})
     target_link_libraries(${val1} 
         slsDetectorShared
         pthread
-        ${ZeroMQ_LIBRARIES}
+        zmq
         rt
     )
     set_target_properties(${val1} PROPERTIES 

@@ -448,19 +448,19 @@ class CmdProxy {
         return ToString(value, unit);
     }
 
-    inline unsigned int stoiHex(const std::string& s) {
-        unsigned long lresult = stoul(s, nullptr, 16);
-        unsigned int result = lresult;
-        if (result != lresult) {
-            throw std::out_of_range("cannot convert to unsigned int");
-        }
-        return result;
-    }
+    // inline unsigned int stoiHex(const std::string& s) {
+    //     unsigned long lresult = stoul(s, nullptr, 16);
+    //     unsigned int result = lresult;
+    //     if (result != lresult) {
+    //         throw std::out_of_range("cannot convert to unsigned int");
+    //     }
+    //     return result;
+    // }
 
-    inline unsigned long int stoulHex(const std::string& s) {
-        unsigned long result = stoul(s, nullptr, 16);
-        return result;
-    }
+    // inline unsigned long int stoulHex(const std::string& s) {
+    //     unsigned long result = stoul(s, nullptr, 16);
+    //     return result;
+    // }
 
     using FunctionMap = std::map<std::string, std::string (CmdProxy::*)(int)>;
     using StringMap = std::map<std::string, std::string>;
@@ -705,8 +705,8 @@ class CmdProxy {
                           {"selinterface", &CmdProxy::selinterface},
                           {"udp_srcip", &CmdProxy::udp_srcip},
                           {"udp_srcip2", &CmdProxy::udp_srcip2},
-                          {"udp_dstip", &CmdProxy::udp_dstip},
-                          {"udp_dstip2", &CmdProxy::udp_dstip2},
+                          {"udp_dstip", &CmdProxy::UDPDestinationIP},
+                          {"udp_dstip2", &CmdProxy::UDPDestinationIP2},
                           {"udp_srcmac", &CmdProxy::udp_srcmac},
                           {"udp_srcmac2", &CmdProxy::udp_srcmac2},
                           {"udp_dstmac", &CmdProxy::udp_dstmac},
@@ -934,9 +934,10 @@ class CmdProxy {
     std::string DacList(int action);   
     std::string DacValues(int action);   
     std::vector<std::string> DacCommands();
-    std::string OnChipDac(int action);   
     /* acquisition */
     /* Network Configuration (Detector<->Receiver) */
+    std::string UDPDestinationIP(int action);
+    std::string UDPDestinationIP2(int action);
     /* Receiver Config */
     /* File */
     /* ZMQ Streaming Parameters (Receiver<->Client) */
@@ -1324,22 +1325,22 @@ class CmdProxy {
 
 
     /* on chip dacs */
-    INTEGER_USER_IND_COMMAND(vchip_comp_fe, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_COMP_FE, 
+    INTEGER_USER_IND_COMMAND(vchip_comp_fe, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VB_COMP_FE, 
                     "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for comparator current of analogue front end.");
 
-    INTEGER_USER_IND_COMMAND(vchip_opa_1st, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_OPA_1ST, 
+    INTEGER_USER_IND_COMMAND(vchip_opa_1st, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VB_OPA_1ST, 
                     "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for opa current for driving the other DACs in chip.");
 
-    INTEGER_USER_IND_COMMAND(vchip_opa_fd, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_OPA_FD, 
+    INTEGER_USER_IND_COMMAND(vchip_opa_fd, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VB_OPA_FD, 
                     "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac current for CDS opa stage.");
 
-    INTEGER_USER_IND_COMMAND(vchip_comp_adc, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_COMP_ADC, 
+    INTEGER_USER_IND_COMMAND(vchip_comp_adc, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VB_COMP_ADC, 
                     "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for comparator current of ADC.");
 
-    INTEGER_USER_IND_COMMAND(vchip_ref_comp_fe, getOnChipDAC, setOnChipDAC, stoiHex, defs::VREF_COMP_FE,
+    INTEGER_USER_IND_COMMAND(vchip_ref_comp_fe, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VREF_COMP_FE,
                     "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for reference voltage of the comparator of analogue front end.");
 
-    INTEGER_USER_IND_COMMAND(vchip_cs, getOnChipDAC, setOnChipDAC, stoiHex, defs::VB_CS,
+    INTEGER_USER_IND_COMMAND(vchip_cs, getOnChipDAC, setOnChipDAC, StringTo<int>, defs::VB_CS,
                     "[chip index 0-10, -1 for all][10 bit hex value] \n\t[Gotthard2] On chip Dac for current injection into preamplifier.");                                          
 
 
@@ -1394,12 +1395,6 @@ class CmdProxy {
     INTEGER_COMMAND(udp_srcip2, getSourceUDPIP2, setSourceUDPIP2, IpAddr,
                     "[x.x.x.x]\n\t[Jungfrau] Ip address of the bottom half of detector (source) udp interface. Must be same subnet as destination udp ip2.");   
 
-    INTEGER_COMMAND(udp_dstip, getDestinationUDPIP, setDestinationUDPIP, IpAddr,
-                    "[x.x.x.x]\n\tIp address of the receiver (destination) udp interface.");               
-    
-    INTEGER_COMMAND(udp_dstip2, getDestinationUDPIP2, setDestinationUDPIP2, IpAddr,
-                    "[x.x.x.x]\n\t[Jungfrau] Ip address of the receiver (destination) udp interface where the second half of detector data is sent to.");     
- 
     INTEGER_COMMAND(udp_srcmac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,
                     "[x:x:x:x:x:x]\n\tMac address of the detector (source) udp interface. ");
 
@@ -1407,10 +1402,10 @@ class CmdProxy {
                     "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom half of detector (source) udp interface. ");     
 
     INTEGER_COMMAND(udp_dstmac, getDestinationUDPMAC, setDestinationUDPMAC, MacAddr,
-                    "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp interface. Can be unused as rx_hostname/udp_dstip retrieves it.");                   
+                    "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp interface. Can be unused as udp_dstip retrieves it.");                   
 
     INTEGER_COMMAND(udp_dstmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
-                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) udp interface where the second half of detector data is sent to. Can be unused as rx_hostname/udp_dstip2 retrieves it.");
+                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) udp interface where the second half of detector data is sent to. Can be unused as udp_dstip2 retrieves it.");
     
     INTEGER_COMMAND(udp_dstport, getDestinationUDPPort, setDestinationUDPPort, std::stoi,
                     "[n]\n\tPort number of the receiver (destination) udp interface. Default is 50001.");               
@@ -1440,7 +1435,7 @@ class CmdProxy {
     /* Receiver Config */
 
     STRING_COMMAND(rx_hostname, getRxHostname, setRxHostname, 
-                "[hostname or ip address]\n\tReceiver hostname or IP. Used for TCP control communication between client and receiver to configure receiver.");
+                "[hostname or ip address]\n\tReceiver hostname or IP. Used for TCP control communication between client and receiver to configure receiver. Also updates receiver with detector parameters.");
 
     INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, std::stoi,
                     "[port]\n\tTCP port for client-receiver communication. Default is 1954. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter. Multi command will automatically increment for individual modules.");  
@@ -1544,7 +1539,7 @@ class CmdProxy {
                     "[0, 1]\n\t[Eiger] Enable or disable store in ram mode.");      
 
     INTEGER_COMMAND(flippeddatax, getBottom, setBottom, std::stoi,
-                    "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 is top. Used to let Receiver and Gui know to flip the bottom image over the x axis.");      
+                    "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 is top. Used to let Receivers and Gui know to flip the bottom image over the x axis. Files are not written without the flip however.");      
 
     INTEGER_COMMAND(trimval, getAllTrimbits, setAllTrimbits, std::stoi,
                     "[n_trimval]\n\t[Eiger] All trimbits set to this value. A get returns -1 if all trimbits are different values.");      
@@ -1625,10 +1620,10 @@ class CmdProxy {
     INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, std::stoi, defs::V_LIMIT,
                     "[n_value]\n\t[Ctb][Moench] Soft limit for power supplies(ctb only) and DACS in mV.");      
 
-    INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask, stoiHex,
+    INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask, StringTo<uint32_t>,
                     "[bitmask]\n\t[Ctb][Moench] ADC Enable Mask for 1Gb Mode for each 32 ADC channel.");      
 
-    INTEGER_COMMAND_HEX(adcenable10g, getTenGigaADCEnableMask, setTenGigaADCEnableMask, stoiHex,
+    INTEGER_COMMAND_HEX(adcenable10g, getTenGigaADCEnableMask, setTenGigaADCEnableMask, StringTo<uint32_t>,
                     "[bitmask]\n\t[Ctb][Moench] ADC Enable Mask for 10Gb mode for each 32 ADC channel. However, if any of consecutive 4 bits are enabled, the complete 4 bits are enabled.");   
 
     /* CTB Specific */
@@ -1712,22 +1707,22 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID_1ARG(savepattern, savePattern, 
                 "[fname]\n\t[Ctb][Moench][Mythen3] Saves pattern to file (ascii). Also executes pattern."); 
 
-    INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl, stoulHex,
+    INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl, StringTo<uint64_t>,
                     "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask defining input (0) and output (1) signals.");
 
-    INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, stoulHex,
+    INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl, setPatternClockControl, StringTo<uint64_t>,
                     "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask defining output clock enable.");
 
-    INTEGER_COMMAND_HEX(patmask, getPatternMask, setPatternMask, stoulHex,
+    INTEGER_COMMAND_HEX(patmask, getPatternMask, setPatternMask, StringTo<uint64_t>,
                     "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask applied to every pattern. Only these bits for each pattern will be masked against.");
 
-    INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask, stoulHex,
+    INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask, StringTo<uint64_t>,
                     "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit values applied to the selected patmask for every pattern.");                    
 
     /* Moench */
     
     STRING_COMMAND(rx_jsonaddheader, getAdditionalJsonHeader, setAdditionalJsonHeader, 
-                "[\"label1\":\"value1\"], [\"label2\":\"value2\"]\n\tAdditional json header to be streamd out from receiver via zmq. Default is empty. Use only if to be processed by an intermediate user process listening to receiver zmq packets.");
+                "[\\\"label1\\\":\\\"value1\\\"], [\\\"label2\\\":\\\"value2\\\"]\n\tAdditional json header to be streamd out from receiver via zmq. Default is empty. Use only if to be processed by an intermediate user process listening to receiver zmq packets.");
 
     INTEGER_COMMAND(framemode, getFrameMode, setFrameMode, sls::StringTo<slsDetectorDefs::frameModeType>,
                     "[pedestal|newpedestal|flatfield|newflatfield]\n\t[Moench] Frame mode (soft setting) in processor.");
@@ -1750,7 +1745,7 @@ class CmdProxy {
     EXECUTE_SET_COMMAND(bustest, executeBusTest, 
                 "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb][Moench] Bus test, ie. keeps writing and reading back different values in R/W register.");  
 
-    INTEGER_COMMAND_HEX(adcinvert, getADCInvert, setADCInvert, stoiHex,
+    INTEGER_COMMAND_HEX(adcinvert, getADCInvert, setADCInvert, StringTo<uint32_t>,
                     "[bitmask]\n\t[Ctb][Moench][Jungfrau][Moench] ADC Inversion Mask.\n\t[Jungfrau][Moench] Inversions on top of the default mask.");   
 
     /* Insignificant */

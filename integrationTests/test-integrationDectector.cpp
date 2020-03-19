@@ -4,7 +4,7 @@
 #include "ClientSocket.h"
 #include "logger.h"
 #include "DetectorImpl.h"
-#include "slsDetector.h"
+#include "Module.h"
 #include "sls_detector_defs.h"
 
 #include "Timer.h"
@@ -23,10 +23,10 @@
 // extern dt type;
 
 TEST_CASE("Single detector no receiver", "[.integration][.single]") {
-    auto t = slsDetector::getTypeFromDetector(test::hostname);
+    auto t = Module::getTypeFromDetector(test::hostname);
     CHECK(t == test::type);
 
-    slsDetector d(t);
+    Module d(t);
     CHECK(d.getDetectorTypeAsEnum() == t);
     CHECK(d.getDetectorTypeAsString() == test::detector_type);
 
@@ -51,7 +51,7 @@ TEST_CASE("Set control port then create a new object with this control port",
     int new_cport = 1993;
     int new_sport = 2000;
     {
-        slsDetector d(test::type);
+        Module d(test::type);
         d.setHostname(test::hostname);
         CHECK(d.getControlPort() == old_cport);
         d.setControlPort(new_cport);
@@ -60,7 +60,7 @@ TEST_CASE("Set control port then create a new object with this control port",
         d.freeSharedMemory();
     }
     {
-        slsDetector d(test::type);
+        Module d(test::type);
         d.setHostname(test::hostname);
         d.setControlPort(new_cport);
         d.setStopPort(new_sport);
@@ -73,7 +73,7 @@ TEST_CASE("Set control port then create a new object with this control port",
         d.freeSharedMemory();
     }
 
-    slsDetector d(test::type);
+    Module d(test::type);
     d.setHostname(test::hostname);
     CHECK(d.getStopPort() == DEFAULT_PORTNO + 1);
     d.freeSharedMemory();
@@ -86,11 +86,11 @@ TEST_CASE("single EIGER detector no receiver basic set and get",
     SingleDetectorConfig c;
 
     // Read type by connecting to the detector
-    auto type = slsDetector::getTypeFromDetector(c.hostname);
+    auto type = Module::getTypeFromDetector(c.hostname);
     CHECK(type == c.type_enum);
 
-    // Create slsDetector of said type and set hostname and detector online
-    slsDetector d(type);
+    // Create Module of said type and set hostname and detector online
+    Module d(type);
     CHECK(d.getDetectorTypeAsEnum() == type);
     CHECK(d.getDetectorTypeAsString() == c.type_string);
 
@@ -133,7 +133,7 @@ TEST_CASE("single EIGER detector no receiver basic set and get",
 
 
 TEST_CASE("Locking mechanism and last ip", "[.integration][.single]") {
-    slsDetector d(test::type);
+    Module d(test::type);
     d.setHostname(test::hostname);
 
     // Check that detector server is unlocked then lock
@@ -155,7 +155,7 @@ TEST_CASE("Locking mechanism and last ip", "[.integration][.single]") {
 }
 
 TEST_CASE("Set settings", "[.integration][.single]"){
-    slsDetector d(test::type);
+    Module d(test::type);
     d.setHostname(test::hostname);
     CHECK(d.setSettings(defs::STANDARD) == defs::STANDARD);
 }
@@ -185,7 +185,7 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
     // MEASURED_SUBPERIOD,	/**< measured subperiod */
     // MAX_TIMERS
 
-    slsDetector d(test::type);
+    Module d(test::type);
     d.setHostname(test::hostname);
 
     // Number of frames
@@ -226,8 +226,8 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
 
 // TEST_CASE("Aquire", "[.integration][eiger]"){
 //     SingleDetectorConfig c;
-//     auto type = slsDetector::getTypeFromDetector(c.hostname);
-//     slsDetector d(type);
+//     auto type = Module::getTypeFromDetector(c.hostname);
+//     Module d(type);
 //     d.setHostname(c.hostname);
 
 //     auto period = 1000000000;

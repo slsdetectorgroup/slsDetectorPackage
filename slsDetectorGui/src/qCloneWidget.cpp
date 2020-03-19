@@ -1,7 +1,7 @@
 #include "qCloneWidget.h"
-#include "qDefs.h"
 #include "SlsQt1DPlot.h"
 #include "SlsQt2DPlot.h"
+#include "qDefs.h"
 
 #include <QCloseEvent>
 #include <QFileDialog>
@@ -11,35 +11,36 @@
 
 int qCloneWidget::NumClones{0};
 
-qCloneWidget::qCloneWidget(QWidget *parent, SlsQt1DPlot* p1, SlsQt2DPlot* p2, SlsQt1DPlot *gp1, SlsQt2DPlot* gp, 
-                QString title, QString fPath, QString fName, int64_t aIndex, 
-                 bool displayStats, QString min, QString max, QString sum):
-                 QMainWindow(parent), plot1d(p1), plot2d(p2), gainplot1d(gp1), gainplot2d(gp), filePath(fPath), fileName(fName), acqIndex(aIndex) {
-    setupUi(this);  
-    id = qCloneWidget::NumClones++;   
+qCloneWidget::qCloneWidget(QWidget *parent, SlsQt1DPlot *p1, SlsQt2DPlot *p2,
+                           SlsQt1DPlot *gp1, SlsQt2DPlot *gp, QString title,
+                           QString fPath, QString fName, int64_t aIndex,
+                           bool displayStats, QString min, QString max,
+                           QString sum)
+    : QMainWindow(parent), plot1d(p1), plot2d(p2), gainplot1d(gp1),
+      gainplot2d(gp), filePath(fPath), fileName(fName), acqIndex(aIndex) {
+    setupUi(this);
+    id = qCloneWidget::NumClones++;
     SetupWidgetWindow(title);
     DisplayStats(displayStats, min, max, sum);
 }
 
 qCloneWidget::~qCloneWidget() {
-    if (plot1d)
-        delete plot1d;
-    if (plot2d)
-        delete plot2d;
-    if (gainplot1d)
-        delete gainplot1d;        
-    if (gainplot2d)
-        delete gainplot2d;      
+
+    delete plot1d;
+    delete plot2d;
+    delete gainplot1d;
+    delete gainplot2d;
 }
 
 void qCloneWidget::SetupWidgetWindow(QString title) {
 
-    std::string winTitle = std::string("Snapshot:") + std::to_string(id) + std::string("  -  ") + NowTime();
+    std::string winTitle = std::string("Snapshot:") + std::to_string(id) +
+                           std::string("  -  ") + sls::Logger::Timestamp();
     setWindowTitle(QString(winTitle.c_str()));
-    
+
     boxPlot->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     boxPlot->setTitle(title);
-    
+
     // 1d
     if (plot1d != nullptr) {
         if (gainplot1d == nullptr) {
@@ -49,7 +50,7 @@ void qCloneWidget::SetupWidgetWindow(QString title) {
             plotLayout->addWidget(plot1d, 0, 0, ratio, ratio);
             plotLayout->addWidget(gainplot1d, ratio, 0, 1, ratio, Qt::AlignTop);
         }
-    } 
+    }
     // 2d
     else {
         if (gainplot2d == nullptr) {
@@ -57,7 +58,8 @@ void qCloneWidget::SetupWidgetWindow(QString title) {
         } else {
             int ratio = qDefs::DATA_GAIN_PLOT_RATIO - 1;
             plotLayout->addWidget(plot2d, 0, 0, ratio, ratio);
-            plotLayout->addWidget(gainplot2d, 0, ratio, 1, 1, Qt::AlignRight | Qt::AlignTop);
+            plotLayout->addWidget(gainplot2d, 0, ratio, 1, 1,
+                                  Qt::AlignRight | Qt::AlignTop);
         }
     }
     connect(actionSaveClone, SIGNAL(triggered()), this, SLOT(SavePlot()));
@@ -65,15 +67,19 @@ void qCloneWidget::SetupWidgetWindow(QString title) {
     if (gainplot1d != nullptr) {
         gainplot1d->setMinimumHeight(qDefs::MIN_HEIGHT_GAIN_PLOT_1D);
         gainplot1d->setFixedWidth(plot1d->width());
-       // gainplot1d->setFixedHeight(plot1d->height() / qDefs::DATA_GAIN_PLOT_RATIO - 1);
+        // gainplot1d->setFixedHeight(plot1d->height() /
+        // qDefs::DATA_GAIN_PLOT_RATIO - 1);
     }
     if (gainplot2d != nullptr) {
-        gainplot2d->setFixedWidth(plot2d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
-        gainplot2d->setFixedHeight(plot2d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
+        gainplot2d->setFixedWidth(plot2d->width() /
+                                  qDefs::DATA_GAIN_PLOT_RATIO);
+        gainplot2d->setFixedHeight(plot2d->height() /
+                                   qDefs::DATA_GAIN_PLOT_RATIO);
     }
 }
 
-void qCloneWidget::DisplayStats(bool enable, QString min, QString max, QString sum) {
+void qCloneWidget::DisplayStats(bool enable, QString min, QString max,
+                                QString sum) {
     if (enable) {
         lblMinDisp->setText(QString("%1").arg(min));
         lblMaxDisp->setText(QString("%1").arg(max));
@@ -87,22 +93,33 @@ void qCloneWidget::DisplayStats(bool enable, QString min, QString max, QString s
 void qCloneWidget::SavePlot() {
     char cID[10];
     sprintf(cID, "%d", id);
-    //title
-    QString fName = filePath + QString('/') + fileName + QString("_clone") + QString("%1").arg(id) + QString("_acq") + QString("%1").arg(acqIndex) + QString(".png");
-    FILE_LOG(logINFO) << "Saving Clone:" << fName.toAscii().constData();
-    //save
-    QImage img(centralwidget->size().width(), centralwidget->size().height(), QImage::Format_RGB32);
+    // title
+    QString fName = filePath + QString('/') + fileName + QString("_clone") +
+                    QString("%1").arg(id) + QString("_acq") +
+                    QString("%1").arg(acqIndex) + QString(".png");
+    LOG(logINFO) << "Saving Clone:" << fName.toAscii().constData();
+    // save
+    QImage img(centralwidget->size().width(), centralwidget->size().height(),
+               QImage::Format_RGB32);
     QPainter painter(&img);
     centralwidget->render(&painter);
 
-    fName = QFileDialog::getSaveFileName(this, tr("Save Snapshot "), fName, tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"), 0, QFileDialog::ShowDirsOnly);
+    fName = QFileDialog::getSaveFileName(
+        this, tr("Save Snapshot "), fName,
+        tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"), nullptr,
+        QFileDialog::ShowDirsOnly);
     if (!fName.isEmpty()) {
         if ((img.save(fName))) {
-            qDefs::Message(qDefs::INFORMATION, "The SnapShot has been successfully saved", "qCloneWidget::SavePlot");
-            FILE_LOG(logINFO) << "The SnapShot has been successfully saved";
+            qDefs::Message(qDefs::INFORMATION,
+                           "The SnapShot has been successfully saved",
+                           "qCloneWidget::SavePlot");
+            LOG(logINFO) << "The SnapShot has been successfully saved";
         } else {
-            qDefs::Message(qDefs::WARNING, "Attempt to save snapshot failed.\n Formats: .png, .jpg, .xpm.", "qCloneWidget::SavePlot");
-            FILE_LOG(logWARNING) << "Attempt to save snapshot failed";
+            qDefs::Message(
+                qDefs::WARNING,
+                "Attempt to save snapshot failed.\n Formats: .png, .jpg, .xpm.",
+                "qCloneWidget::SavePlot");
+            LOG(logWARNING) << "Attempt to save snapshot failed";
         }
     }
 }
@@ -110,11 +127,14 @@ void qCloneWidget::SavePlot() {
 void qCloneWidget::resizeEvent(QResizeEvent *event) {
     if (gainplot1d != nullptr) {
         gainplot1d->setFixedWidth(plot1d->width());
-        gainplot1d->setFixedHeight(plot1d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
+        gainplot1d->setFixedHeight(plot1d->height() /
+                                   qDefs::DATA_GAIN_PLOT_RATIO);
     }
     if (gainplot2d != nullptr) {
-        gainplot2d->setFixedWidth(plot2d->width() / qDefs::DATA_GAIN_PLOT_RATIO);
-        gainplot2d->setFixedHeight(plot2d->height() / qDefs::DATA_GAIN_PLOT_RATIO);
+        gainplot2d->setFixedWidth(plot2d->width() /
+                                  qDefs::DATA_GAIN_PLOT_RATIO);
+        gainplot2d->setFixedHeight(plot2d->height() /
+                                   qDefs::DATA_GAIN_PLOT_RATIO);
     }
     event->accept();
 }

@@ -45,7 +45,7 @@ ext_modules = [
             # get_pybind_include(),
             # get_pybind_include(user=True),
             os.path.join('../libs/pybind11/include'),
-            os.path.join(get_conda_path(), 'include/slsDetectorPackage'),
+            os.path.join(get_conda_path(), 'include'),
 
         ],
         libraries=['SlsDetector', 'SlsReceiver', 'zmq'],

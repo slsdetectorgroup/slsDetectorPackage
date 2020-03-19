@@ -8,7 +8,6 @@
  *@short functions basic implemenation of shared memory
  */
 
-#include "ansi.h"
 #include "logger.h"
 #include "sls_detector_exceptions.h"
 
@@ -18,7 +17,7 @@
 #include <fcntl.h> // O_CREAT, O_TRUNC..
 #include <iostream>
 #include <sstream>
-#include <stdio.h>    // printf
+// #include <stdio.h>    // printf
 #include <sys/mman.h> // shared memory
 #include <sys/stat.h> // fstat
 #include <unistd.h>
@@ -128,20 +127,20 @@ class SharedMemory {
         fd = shm_open(name.c_str(), O_CREAT | O_TRUNC | O_EXCL | O_RDWR, S_IRUSR | S_IWUSR);
         if (fd < 0) {
             std::string msg = "Create shared memory " + name + " failed: " + strerror(errno);
-            FILE_LOG(logERROR) << msg;
+            LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
         }
 
         if (ftruncate(fd, sizeof(T)) < 0) {
             std::string msg = "Create shared memory " + name + " failed at ftruncate: " + strerror(errno);
-            FILE_LOG(logERROR) << msg;
+            LOG(logERROR) << msg;
             close(fd);
             RemoveSharedMemory();
             throw SharedMemoryError(msg);
         }
 
         shared_struct = MapSharedMemory();
-        FILE_LOG(logINFO) << "Shared memory created " << name;
+        LOG(logINFO) << "Shared memory created " << name;
     }
 
     /**
@@ -153,7 +152,7 @@ class SharedMemory {
         fd = shm_open(name.c_str(), O_RDWR, 0);
         if (fd < 0) {
             std::string msg = "Open existing shared memory " + name + " failed: " + strerror(errno);
-            FILE_LOG(logERROR) << msg;
+            LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
         }
 
@@ -168,7 +167,7 @@ class SharedMemory {
         if (shared_struct != nullptr) {
             if (munmap(shared_struct, shmSize) < 0) {
                 std::string msg = "Unmapping shared memory " + name + " failed: " + strerror(errno);
-                FILE_LOG(logERROR) << msg;
+                LOG(logERROR) << msg;
                 close(fd);
                 throw SharedMemoryError(msg);
             }
@@ -186,10 +185,10 @@ class SharedMemory {
             if (errno == ENOENT)
                 return;
             std::string msg = "Free Shared Memory " + name + " Failed: " + strerror(errno);
-            FILE_LOG(logERROR) << msg;
+            LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
         }
-        FILE_LOG(logINFO) << "Shared memory deleted " << name;
+        LOG(logINFO) << "Shared memory deleted " << name;
     }
 
     /**
@@ -238,7 +237,7 @@ class SharedMemory {
         std::string temp = ss.str();
         if (temp.length() > NAME_MAX_LENGTH) {
             std::string msg = "Shared memory initialization failed. " + temp + " has " + std::to_string(temp.length()) + " characters. \n" + "Maximum is " + std::to_string(NAME_MAX_LENGTH) + ". Change the environment variable " + SHM_ENV_NAME;
-            FILE_LOG(logERROR) << msg;
+            LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
         }
         return temp;
@@ -254,7 +253,7 @@ class SharedMemory {
         void *addr = mmap(nullptr, sizeof(T), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         if (addr == MAP_FAILED) {
             std::string msg = "Mapping shared memory " + name + " failed: " + strerror(errno);
-            FILE_LOG(logERROR) << msg;
+            LOG(logERROR) << msg;
             close(fd);
             throw SharedMemoryError(msg);
         }
@@ -273,7 +272,7 @@ class SharedMemory {
         // could not fstat
         if (fstat(fd, &sb) < 0) {
             std::string msg = "Could not verify existing shared memory " + name + " size match " + "(could not fstat): " + strerror(errno);
-            FILE_LOG(logERROR) << msg;
+            LOG(logERROR) << msg;
             close(fd);
             throw SharedMemoryError(msg);
         }
@@ -282,7 +281,7 @@ class SharedMemory {
         auto sz = static_cast<size_t>(sb.st_size);
         if (sz != expectedSize) {
             std::string msg = "Existing shared memory " + name + " size does not match" + "Expected " + std::to_string(expectedSize) + ", found " + std::to_string(sz);
-            FILE_LOG(logERROR) << msg;
+            LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
             return 1;
         }

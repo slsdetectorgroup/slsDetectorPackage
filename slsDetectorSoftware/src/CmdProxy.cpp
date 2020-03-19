@@ -46,7 +46,7 @@ void CmdProxy::Call(const std::string &command,
 bool CmdProxy::ReplaceIfDepreciated(std::string &command) {
     auto d_it = depreciated_functions.find(command);
     if (d_it != depreciated_functions.end()) {
-        FILE_LOG(logWARNING)
+        LOG(logWARNING)
             << command
             << " is depreciated and will be removed. Please migrate to: "
             << d_it->second;
@@ -492,7 +492,7 @@ std::string CmdProxy::ClockFrequency(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw sls::RuntimeError("Not implemented for this detector.");
+            throw sls::RuntimeError("clkfreq not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
             if (args.size() != 1) {
@@ -526,7 +526,7 @@ std::string CmdProxy::ClockPhase(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw sls::RuntimeError("Not implemented for this detector.");
+            throw sls::RuntimeError("clkphase not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
             if (args.size() == 1) {
@@ -576,7 +576,7 @@ std::string CmdProxy::MaxClockPhaseShift(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw sls::RuntimeError("Not implemented for this detector.");
+            throw sls::RuntimeError("maxclkphaseshift not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
             if (args.size() != 1) {
@@ -603,7 +603,7 @@ std::string CmdProxy::ClockDivider(int action) {
     } else {
         defs::detectorType type = det->getDetectorType().squash(defs::GENERIC);
         if (type != defs::GOTTHARD2 && type != defs::MYTHEN3) {
-            throw sls::RuntimeError("Not implemented for this detector.");
+            throw sls::RuntimeError("clkdiv not implemented for this detector.");
         }
         if (action == defs::GET_ACTION) {
             if (args.size() != 1) {
@@ -771,6 +771,83 @@ std::vector<std::string> CmdProxy::DacCommands() {
 
 /* acquisition */
 /* Network Configuration (Detector<->Receiver) */
+
+std::string CmdProxy::UDPDestinationIP(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[x.x.x.x] or auto\n\tIp address of the receiver (destination) udp interface. If 'auto' used, then ip is set to ip of rx_hostname."
+               << '\n';
+    } else if (action == defs::GET_ACTION) {
+        auto t = det->getDestinationUDPIP({det_id});
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        os << OutString(t) << '\n';  
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        if (args[0] == "auto") {
+            std::string rxHostname = det->getRxHostname({det_id}).squash("none");
+            // Hostname could be ip try to decode otherwise look up the hostname
+            auto val = sls::IpAddr{rxHostname};
+            if (val == 0) {
+                val = HostnameToIp(rxHostname.c_str());
+            }
+            LOG(logINFO) << "Setting udp_dstip of detector " << 
+                det_id << " to " << val;
+            det->setDestinationUDPIP(val, {det_id});
+            os << val << '\n'; 
+        } else {
+            auto val = IpAddr(args[0]);
+            det->setDestinationUDPIP(val, {det_id});
+            os << args.front() << '\n'; 
+        }
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::UDPDestinationIP2(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[x.x.x.x] or auto\n\t[Jungfrau] Ip address of the receiver (destination) udp interface where the second half of detector data is sent to. If 'auto' used, then ip is set to ip of rx_hostname."
+               << '\n';
+    } else if (action == defs::GET_ACTION) {
+        auto t = det->getDestinationUDPIP2({det_id});
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        os << OutString(t) << '\n';  
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        if (args[0] == "auto") {
+            std::string rxHostname = det->getRxHostname({det_id}).squash("none");
+            // Hostname could be ip try to decode otherwise look up the hostname
+            auto val = sls::IpAddr{rxHostname};
+            if (val == 0) {
+                val = HostnameToIp(rxHostname.c_str());
+            }
+            LOG(logINFO) << "Setting udp_dstip2 of detector " << 
+                det_id << " to " << val;
+            det->setDestinationUDPIP2(val, {det_id});
+            os << val << '\n'; 
+        } else {
+            auto val = IpAddr(args[0]);
+            det->setDestinationUDPIP2(val, {det_id});
+            os << args.front() << '\n'; 
+        }
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Receiver Config */
 /* File */
 /* ZMQ Streaming Parameters (Receiver<->Client) */
@@ -1268,7 +1345,7 @@ std::string CmdProxy::VetoReference(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->setVetoReference(std::stoi(args[0]), stoiHex(args[1]), {det_id});
+        det->setVetoReference(StringTo<int>(args[0]), StringTo<int>(args[1]), {det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -1500,7 +1577,7 @@ std::string CmdProxy::DigitalIODelay(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->setDigitalIODelay(stoulHex(args[0]), std::stoi(args[1]), {det_id});
+        det->setDigitalIODelay(StringTo<uint64_t>(args[0]), StringTo<int>(args[1]), {det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -1542,13 +1619,13 @@ std::string CmdProxy::PatternWord(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        auto t = det->getPatternWord(stoiHex(args[0]), {det_id});
+        auto t = det->getPatternWord(StringTo<uint64_t>(args[0]), {det_id});
         os << OutStringHex(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->setPatternWord(stoiHex(args[0]), stoulHex(args[1]), {det_id});
+        det->setPatternWord(StringTo<int>(args[0]), StringTo<uint64_t>(args[1]), {det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -1601,8 +1678,8 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
             if (args.size() != 2) {
                 WrongNumberOfParameters(2);
             }
-            det->setPatternLoopAddresses(level, stoiHex(args[0]),
-                                         stoiHex(args[1]), {det_id});
+            det->setPatternLoopAddresses(level, StringTo<int>(args[0]),
+                                         StringTo<int>(args[1]), {det_id});
             os << sls::ToString(args) << '\n';
         } else {
             throw sls::RuntimeError("Unknown action");
@@ -1692,7 +1769,7 @@ std::string CmdProxy::PatternWaitAddress(int action) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            det->setPatternWaitAddr(level, stoiHex(args[0]), {det_id});
+            det->setPatternWaitAddr(level, StringTo<int>(args[0]), {det_id});
             os << args.front() << '\n';
         } else {
             throw sls::RuntimeError("Unknown action");
@@ -1782,7 +1859,7 @@ std::string CmdProxy::MinMaxEnergyThreshold(int action) {
             os << "[n_value]\n\t[Moench] Minimum energy threshold (soft "
                   "setting) for processor."
                << '\n';
-        } else if (cmd == "emin") {
+        } else if (cmd == "emax") {
             os << "[n_value]\n\t[Moench] Maximum energy threshold (soft "
                   "setting) for processor."
                << '\n';
@@ -1901,13 +1978,13 @@ std::string CmdProxy::Register(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        auto t = det->readRegister(stoiHex(args[0]), {det_id});
+        auto t = det->readRegister(StringTo<uint32_t>(args[0]), {det_id});
         os << OutStringHex(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->writeRegister(stoiHex(args[0]), stoiHex(args[1]), {det_id});
+        det->writeRegister(StringTo<uint32_t>(args[0]), StringTo<uint32_t>(args[1]), {det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -1928,7 +2005,7 @@ std::string CmdProxy::AdcRegister(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->writeAdcRegister(stoiHex(args[0]), stoiHex(args[1]), {det_id});
+        det->writeAdcRegister(StringTo<uint32_t>(args[0]), StringTo<uint32_t>(args[1]), {det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -1964,8 +2041,8 @@ std::string CmdProxy::BitOperations(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        uint32_t addr = stoiHex(args[0]);
-        int bitnr = std::stoi(args[1]);
+        auto addr = StringTo<uint32_t>(args[0]);
+        auto bitnr = StringTo<int>(args[1]);
         if (bitnr < 0 || bitnr > 31) {
             return std::string("Bit number out of range") +
                    std::to_string(bitnr);

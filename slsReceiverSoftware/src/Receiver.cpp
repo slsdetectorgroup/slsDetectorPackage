@@ -12,7 +12,8 @@
 #include <map>
 #include <sstream>
 #include <string>
-#include <syscall.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 
 Receiver::~Receiver() = default;
 
@@ -63,7 +64,7 @@ Receiver::Receiver(int argc, char *argv[]):
 
 		case 'v':
 			std::cout << "SLS Receiver Version: " << GITBRANCH << " (0x" << std::hex << APIRECEIVER << ")" << std::endl;
-			FILE_LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
+			LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
 			exit(EXIT_SUCCESS);
 
 		case 'h':
@@ -84,7 +85,7 @@ Receiver::Receiver(int argc, char *argv[]):
 	// set effective id if provided
 	if (userid != static_cast<uid_t>(-1)) {
 		if (geteuid() == userid) {
-			FILE_LOG(logINFO) << "Process already has the same Effective UID " << userid;
+			LOG(logINFO) << "Process already has the same Effective UID " << userid;
 		} else {
 			if (seteuid(userid) != 0) {
 				std::ostringstream oss;
@@ -96,7 +97,7 @@ Receiver::Receiver(int argc, char *argv[]):
 				oss << "Could not set Effective UID to " << userid << ". Got " << geteuid();
 				throw sls::RuntimeError(oss.str());
 			}
-			FILE_LOG(logINFO) << "Process Effective UID changed to " << userid;
+			LOG(logINFO) << "Process Effective UID changed to " << userid;
 		}
 	}
 

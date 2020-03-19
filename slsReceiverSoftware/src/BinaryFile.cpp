@@ -33,8 +33,8 @@ BinaryFile::~BinaryFile() {
 
 void BinaryFile::PrintMembers(TLogLevel level) {
 	File::PrintMembers(level);
-	FILE_LOG(logINFO) << "Max Frames Per File: " << *maxFramesPerFile;
-	FILE_LOG(logINFO) << "Number of Frames in File: " << numFramesInFile;
+	LOG(logINFO) << "Max Frames Per File: " << *maxFramesPerFile;
+	LOG(logINFO) << "Number of Frames in File: " << numFramesInFile;
 }
 
 slsDetectorDefs::fileFormat BinaryFile::GetFileType() {
@@ -52,7 +52,7 @@ void BinaryFile::CreateFile() {
 	BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName);
 
 	if(!(*silentMode)) {
-		FILE_LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;
+		LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;
 	}
 }
 
@@ -119,7 +119,7 @@ void BinaryFile::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
 		masterFileName = BinaryFileStatic::CreateMasterFileName(*filePath,
 				*fileNamePrefix, *fileIndex);
 		if(!(*silentMode)) {
-			FILE_LOG(logINFO) << "Master File: " << masterFileName;
+			LOG(logINFO) << "Master File: " << masterFileName;
 		}
 		attr.version = BINARY_WRITER_VERSION;
 		BinaryFileStatic::CreateMasterDataFile(masterfd, masterFileName,

@@ -1,15 +1,17 @@
 #pragma once
 #include "Result.h"
+#include "network_utils.h"
 #include "sls_detector_defs.h"
 #include <chrono>
 #include <memory>
 #include <vector>
 
-class DetectorImpl;
+
 class detectorData;
 
 namespace sls {
 using ns = std::chrono::nanoseconds;
+class DetectorImpl;
 class MacAddr;
 class IpAddr;
 

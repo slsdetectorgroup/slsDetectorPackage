@@ -76,6 +76,8 @@ enum CLKINDEX                      			{RUN_CLK, NUM_CLOCKS};
 #define DEFAULT_TEST_MODE					(0)
 #define DEFAULT_HIGH_VOLTAGE				(0)
 
+#define MAX_TRIMBITS_VALUE					(63)
+
 #define MAX_ROWS_PER_READOUT				(256)
 #define MAX_PACKETS_PER_REQUEST				(256)
 

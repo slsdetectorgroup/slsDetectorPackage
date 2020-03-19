@@ -167,7 +167,7 @@ endif (SLS_USE_RECEIVER)
 
 if (SLS_USE_GUI)   
     find_package(Qt4 REQUIRED)
-    find_package(Qwt 6 REQUIRED)
+    find_package(Qwt 6.1 REQUIRED)
     if (QT4_FOUND AND QWT_FOUND)
         add_subdirectory(slsDetectorGui)
     endif()
@@ -203,11 +203,9 @@ if(SLS_BUILD_DOCS)
     add_subdirectory(docs)
 endif(SLS_BUILD_DOCS)
 
-
-
 if(SLS_MASTER_PROJECT)
     # Set install dir CMake packages
-    set(CMAKE_INSTALL_DIR ${CMAKE_INSTALL_DATADIR}/cmake/sls)
+    set(CMAKE_INSTALL_DIR "share/cmake/${PROJECT_NAME}")
     # Set the list of exported targets
     set(PROJECT_LIBRARIES slsSupportLib slsDetectorShared slsReceiverShared)
     # Generate and install package config file and version

@@ -12,7 +12,7 @@ int ServerInterface::sendResult(int ret, void *retval, int retvalSize,
         if (mess != nullptr) {
             write(mess, MAX_STR_LENGTH);
         } else {
-            FILE_LOG(logERROR) << "No error message provided for this "
+            LOG(logERROR) << "No error message provided for this "
                                   "failure. Will mess up TCP\n";
         }
     } else {

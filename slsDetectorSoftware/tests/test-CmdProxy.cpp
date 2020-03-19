@@ -709,54 +709,6 @@ TEST_CASE("stopport", "[.cmd]") {
 //     }
 // }
 
-// TEST_CASE("rx_dbitoffset", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitoffset 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "rx_dbitoffset 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitoffset 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "rx_dbitoffset 0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitoffset 15", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "rx_dbitoffset 15\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitoffset", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "rx_dbitoffset 15\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitoffset 0", PUT));
-//     } else {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitoffset", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "rx_dbitoffset 0\n");
-//     }
-// }
-
-// TEST_CASE("rx_dbitlist", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitlist 0 4 5 8 9 10 52
-//         63", PUT));
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:rx_dbitlist", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "rx_dbitlist [0, 4, 5, 8, 9,
-//             10, 52, 63]\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitlist all", PUT));
-//     } else {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_dbitlist", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "rx_dbitlist []\n");
-//     }
-// }
-
 // TEST_CASE("extsampling", "[.cmd][.ctb]") {
 //     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
 //         {

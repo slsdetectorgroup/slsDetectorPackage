@@ -26,7 +26,7 @@ target_compile_definitions(mythen3DetectorServer_virtual
 )
 
 target_link_libraries(mythen3DetectorServer_virtual
-    PUBLIC pthread rt
+    PUBLIC pthread rt slsProjectCWarnings
 )
 
 set_target_properties(mythen3DetectorServer_virtual PROPERTIES

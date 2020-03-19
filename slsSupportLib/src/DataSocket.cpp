@@ -107,7 +107,7 @@ int DataSocket::setTimeOut(int t_seconds) {
     // Receive timeout indefinet
     if (::setsockopt(getSocketId(), SOL_SOCKET, SO_RCVTIMEO, &t,
                      sizeof(struct timeval)) < 0) {
-        FILE_LOG(logERROR) << "setsockopt SO_RCVTIMEO " << 0;
+        LOG(logERROR) << "setsockopt SO_RCVTIMEO " << 0;
     }
 
     t.tv_sec = t_seconds;
@@ -115,7 +115,7 @@ int DataSocket::setTimeOut(int t_seconds) {
     // Sending timeout in seconds
     if (::setsockopt(getSocketId(), SOL_SOCKET, SO_SNDTIMEO, &t,
                      sizeof(struct timeval)) < 0) {
-        FILE_LOG(logERROR) << "setsockopt SO_SNDTIMEO " << t_seconds;
+        LOG(logERROR) << "setsockopt SO_SNDTIMEO " << t_seconds;
     }
     return 0;
 }

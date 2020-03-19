@@ -119,7 +119,7 @@ class File : private virtual slsDetectorDefs {
 	 * @param ny number of pixels in y direction
 	 */
 	virtual void SetNumberofPixels(uint32_t nx, uint32_t ny) {
-		FILE_LOG(logERROR) << "This is a generic function SetNumberofPixels that "
+		LOG(logERROR) << "This is a generic function SetNumberofPixels that "
 				"should be overloaded by a derived class";
 	}
 	
@@ -130,7 +130,7 @@ class File : private virtual slsDetectorDefs {
 	 * @param numf number of images caught
 	 */
 	virtual void EndofAcquisition(bool anyPacketsCaught, uint64_t numf) {
-		FILE_LOG(logERROR) << "This is a generic function EndofAcquisition that "
+		LOG(logERROR) << "This is a generic function EndofAcquisition that "
 				"should be overloaded by a derived class";
 	}
 

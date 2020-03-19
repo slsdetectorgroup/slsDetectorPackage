@@ -374,33 +374,43 @@ void ctbSignals::update() {
 
   } CATCH_DISPLAY ("Could not get patternIOcontrol.", "ctbSignals::update")
 
-  try {
-
-    auto dbitlist = myDet->getRxDbitList().tsquash("Different values");
+  if (myDet->getDetectorType().squash() == slsDetectorDefs::MOENCH) {
     // enable all
-    if (dbitlist.empty()) {
-      for (int is=0; is<64; is++) {
-        signals[is]->setDbitList(1);
-      } 
-    }
-    else {
-      // disable all
-      for (int is=0; is<64; is++) {
-        signals[is]->setDbitList(0);
+    for (int is=0; is<64; is++) {
+      signals[is]->setDbitList(1);
+    } 
+    eDbitOffset->SetNumber(0);
+  } 
+  
+  // ctb
+  else {
+    try {
+
+      auto dbitlist = myDet->getRxDbitList().tsquash("Different values");
+      // enable all
+      if (dbitlist.empty()) {
+        for (int is=0; is<64; is++) {
+          signals[is]->setDbitList(1);
+        } 
       }
-      // enable selected
-      for (const auto &value : dbitlist)  {
-        signals[value]->setDbitList(1);
+      else {
+        // disable all
+        for (int is=0; is<64; is++) {
+          signals[is]->setDbitList(0);
+        }
+        // enable selected
+        for (const auto &value : dbitlist)  {
+          signals[value]->setDbitList(1);
+        }
       }
-    }
 
-  } CATCH_DISPLAY ("Could not get receiver dbit list.", "ctbSignals::update")
+    } CATCH_DISPLAY ("Could not get receiver dbit list.", "ctbSignals::update")
 
-  try {
-    auto val = myDet->getRxDbitOffset().tsquash("Different values");
-    eDbitOffset->SetNumber(val);
-  } CATCH_DISPLAY ("Could not get receiver dbit offset.", "ctbSignals::update")
-
+    try {
+      auto val = myDet->getRxDbitOffset().tsquash("Different values");
+      eDbitOffset->SetNumber(val);
+    } CATCH_DISPLAY ("Could not get receiver dbit offset.", "ctbSignals::update")
+  }
 }
 
 

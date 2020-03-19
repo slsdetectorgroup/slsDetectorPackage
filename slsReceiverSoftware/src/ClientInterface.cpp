@@ -13,8 +13,9 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include <syscall.h>
 #include <vector>
+#include <sys/syscall.h>
+#include <unistd.h>
 
 using sls::RuntimeError;
 using sls::SocketError;
@@ -24,9 +25,9 @@ ClientInterface::~ClientInterface() {
     killTcpThread = true;
     // shut down tcp sockets
     if (server.get() != nullptr) {
-        FILE_LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
+        LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
         server->shutDownSocket(); 
-        FILE_LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
+        LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
     }
     // shut down tcp thread
     tcpThread->join();
@@ -68,12 +69,12 @@ void ClientInterface::registerCallBackRawDataModifyReady(
 }
 
 void ClientInterface::startTCPServer() {
-    FILE_LOG(logINFOBLUE) << "Created [ TCP server Tid: " << syscall(SYS_gettid) << "]";
-    FILE_LOG(logINFO) << "SLS Receiver starting TCP Server on port "
+    LOG(logINFOBLUE) << "Created [ TCP server Tid: " << syscall(SYS_gettid) << "]";
+    LOG(logINFO) << "SLS Receiver starting TCP Server on port "
                       << portNumber << '\n';
     server = sls::make_unique<sls::ServerSocket>(portNumber);
     while (true) {
-        FILE_LOG(logDEBUG1) << "Start accept loop";
+        LOG(logDEBUG1) << "Start accept loop";
         try {
             auto socket = server->accept();
             try {
@@ -91,7 +92,7 @@ void ClientInterface::startTCPServer() {
                 break;
             }
         } catch (const RuntimeError &e) {
-            FILE_LOG(logERROR) << "Accept failed";
+            LOG(logERROR) << "Accept failed";
         }
         // destructor to kill this thread
         if (killTcpThread) {
@@ -102,7 +103,7 @@ void ClientInterface::startTCPServer() {
     if (receiver) {
         receiver->shutDownUDPSockets();
     }
-    FILE_LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << syscall(SYS_gettid) << "]";
+    LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << syscall(SYS_gettid) << "]";
 }
 
 // clang-format off
@@ -125,47 +126,64 @@ int ClientInterface::functionTable(){
 	flist[F_RECEIVER_SET_SUB_EXPTIME]       =   &ClientInterface::set_subexptime;    
 	flist[F_RECEIVER_SET_SUB_DEADTIME]      =   &ClientInterface::set_subdeadtime;    
 	flist[F_SET_RECEIVER_DYNAMIC_RANGE]		= 	&ClientInterface::set_dynamic_range;
-	flist[F_RECEIVER_STREAMING_FREQUENCY]	= 	&ClientInterface::set_streaming_frequency;
+	flist[F_SET_RECEIVER_STREAMING_FREQUENCY] = 	&ClientInterface::set_streaming_frequency;
+	flist[F_GET_RECEIVER_STREAMING_FREQUENCY] = 	&ClientInterface::get_streaming_frequency;
 	flist[F_GET_RECEIVER_STATUS]			=	&ClientInterface::get_status;
 	flist[F_START_RECEIVER]					=	&ClientInterface::start_receiver;
 	flist[F_STOP_RECEIVER]					=	&ClientInterface::stop_receiver;
 	flist[F_SET_RECEIVER_FILE_PATH]			=	&ClientInterface::set_file_dir;
+	flist[F_GET_RECEIVER_FILE_PATH]			=	&ClientInterface::get_file_dir;
 	flist[F_SET_RECEIVER_FILE_NAME]			=	&ClientInterface::set_file_name;
+	flist[F_GET_RECEIVER_FILE_NAME]			=	&ClientInterface::get_file_name;
 	flist[F_SET_RECEIVER_FILE_INDEX]		=	&ClientInterface::set_file_index;
+	flist[F_GET_RECEIVER_FILE_INDEX]		=	&ClientInterface::get_file_index;
 	flist[F_GET_RECEIVER_FRAME_INDEX]		=	&ClientInterface::get_frame_index;    
 	flist[F_GET_RECEIVER_FRAMES_CAUGHT]		=	&ClientInterface::get_frames_caught;
     flist[F_GET_NUM_MISSING_PACKETS]		=	&ClientInterface::get_missing_packets;
-	flist[F_ENABLE_RECEIVER_FILE_WRITE]		=	&ClientInterface::enable_file_write;
-	flist[F_ENABLE_RECEIVER_MASTER_FILE_WRITE]	=	&ClientInterface::enable_master_file_write;
-	flist[F_ENABLE_RECEIVER_OVERWRITE]		= 	&ClientInterface::enable_overwrite;
+	flist[F_SET_RECEIVER_FILE_WRITE]		=	&ClientInterface::set_file_write;
+	flist[F_GET_RECEIVER_FILE_WRITE]		=	&ClientInterface::get_file_write;
+	flist[F_SET_RECEIVER_MASTER_FILE_WRITE]	=	&ClientInterface::set_master_file_write;
+	flist[F_GET_RECEIVER_MASTER_FILE_WRITE]	=	&ClientInterface::get_master_file_write;
+	flist[F_SET_RECEIVER_OVERWRITE]		    = 	&ClientInterface::set_overwrite;
+	flist[F_GET_RECEIVER_OVERWRITE]		    = 	&ClientInterface::get_overwrite;
 	flist[F_ENABLE_RECEIVER_TEN_GIGA]		= 	&ClientInterface::enable_tengiga;
 	flist[F_SET_RECEIVER_FIFO_DEPTH]		= 	&ClientInterface::set_fifo_depth;
 	flist[F_RECEIVER_ACTIVATE]				= 	&ClientInterface::set_activate;
-	flist[F_STREAM_DATA_FROM_RECEIVER]		= 	&ClientInterface::set_data_stream_enable;
+	flist[F_SET_RECEIVER_STREAMING]		    = 	&ClientInterface::set_streaming;
+	flist[F_GET_RECEIVER_STREAMING]		    = 	&ClientInterface::get_streaming;
 	flist[F_RECEIVER_STREAMING_TIMER]		= 	&ClientInterface::set_streaming_timer;
 	flist[F_SET_FLIPPED_DATA_RECEIVER]		= 	&ClientInterface::set_flipped_data;
 	flist[F_SET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::set_file_format;
+	flist[F_GET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::get_file_format;
 	flist[F_SEND_RECEIVER_DETPOSID]			= 	&ClientInterface::set_detector_posid;
 	flist[F_SEND_RECEIVER_MULTIDETSIZE]		= 	&ClientInterface::set_multi_detector_size;
 	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::set_streaming_port;
-	flist[F_RECEIVER_STREAMING_SRC_IP]		= 	&ClientInterface::set_streaming_source_ip;
+	flist[F_GET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::get_streaming_port;
+	flist[F_SET_RECEIVER_STREAMING_SRC_IP]	= 	&ClientInterface::set_streaming_source_ip;
+	flist[F_GET_RECEIVER_STREAMING_SRC_IP]	= 	&ClientInterface::get_streaming_source_ip;
 	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::set_silent_mode;
+	flist[F_GET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::get_silent_mode;
 	flist[F_ENABLE_GAPPIXELS_IN_RECEIVER]	=	&ClientInterface::enable_gap_pixels;
 	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&ClientInterface::restream_stop;
-	flist[F_ADDITIONAL_JSON_HEADER]         =   &ClientInterface::set_additional_json_header;
+	flist[F_SET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::set_additional_json_header;
 	flist[F_GET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::get_additional_json_header;
     flist[F_RECEIVER_UDP_SOCK_BUF_SIZE]     =   &ClientInterface::set_udp_socket_buffer_size;
     flist[F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE]=   &ClientInterface::get_real_udp_socket_buffer_size;
     flist[F_SET_RECEIVER_FRAMES_PER_FILE]	=   &ClientInterface::set_frames_per_file;
+    flist[F_GET_RECEIVER_FRAMES_PER_FILE]	=   &ClientInterface::get_frames_per_file;
     flist[F_RECEIVER_CHECK_VERSION]			=   &ClientInterface::check_version_compatibility;
-    flist[F_RECEIVER_DISCARD_POLICY]		=   &ClientInterface::set_discard_policy;
-	flist[F_RECEIVER_PADDING_ENABLE]		=   &ClientInterface::set_padding_enable;
-	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &ClientInterface::set_deactivated_padding_enable;
+    flist[F_SET_RECEIVER_DISCARD_POLICY]	=   &ClientInterface::set_discard_policy;
+    flist[F_GET_RECEIVER_DISCARD_POLICY]	=   &ClientInterface::get_discard_policy;
+	flist[F_SET_RECEIVER_PADDING]		    =   &ClientInterface::set_padding_enable;
+	flist[F_GET_RECEIVER_PADDING]		    =   &ClientInterface::get_padding_enable;
+	flist[F_SET_RECEIVER_DEACTIVATED_PADDING] = &ClientInterface::set_deactivated_padding_enable;
+	flist[F_GET_RECEIVER_DEACTIVATED_PADDING] = &ClientInterface::get_deactivated_padding_enable;
 	flist[F_RECEIVER_SET_READOUT_MODE] 	    = 	&ClientInterface::set_readout_mode;
 	flist[F_RECEIVER_SET_ADC_MASK]			=	&ClientInterface::set_adc_mask;
 	flist[F_SET_RECEIVER_DBIT_LIST]			=	&ClientInterface::set_dbit_list;
 	flist[F_GET_RECEIVER_DBIT_LIST]			=	&ClientInterface::get_dbit_list;
-	flist[F_RECEIVER_DBIT_OFFSET]			= 	&ClientInterface::set_dbit_offset;
+	flist[F_SET_RECEIVER_DBIT_OFFSET]		= 	&ClientInterface::set_dbit_offset;
+	flist[F_GET_RECEIVER_DBIT_OFFSET]		= 	&ClientInterface::get_dbit_offset;
     flist[F_SET_RECEIVER_QUAD]			    = 	&ClientInterface::set_quad_type;
     flist[F_SET_RECEIVER_READ_N_LINES]      =   &ClientInterface::set_read_n_lines;
     flist[F_SET_RECEIVER_UDP_IP]            =   &ClientInterface::set_udp_ip;
@@ -175,9 +193,10 @@ int ClientInterface::functionTable(){
 	flist[F_SET_RECEIVER_NUM_INTERFACES]    =   &ClientInterface::set_num_interfaces;
 	flist[F_RECEIVER_SET_ADC_MASK_10G]		=	&ClientInterface::set_adc_mask_10g;
     flist[F_RECEIVER_SET_NUM_COUNTERS]      =   &ClientInterface::set_num_counters;
+    flist[F_INCREMENT_FILE_INDEX]           =   &ClientInterface::increment_file_index;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
-		FILE_LOG(logDEBUG1) << "function fnum: " << i << " (" <<
+		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
 				getFunctionNameFromEnum((enum detFuncs)i) << ") located at " << flist[i];
 	}
 
@@ -191,11 +210,11 @@ int ClientInterface::decodeFunction(Interface &socket) {
         throw RuntimeError("Unrecognized Function enum " +
                            std::to_string(fnum) + "\n");
     } else {
-        FILE_LOG(logDEBUG1) << "calling function fnum: " << fnum << " ("
+        LOG(logDEBUG1) << "calling function fnum: " << fnum << " ("
                             << getFunctionNameFromEnum((enum detFuncs)fnum)
                             << ")";
         ret = (this->*flist[fnum])(socket);
-        FILE_LOG(logDEBUG1)
+        LOG(logDEBUG1)
             << "Function " << getFunctionNameFromEnum((enum detFuncs)fnum)
             << " finished";
     }
@@ -248,7 +267,7 @@ int ClientInterface::exec_command(Interface &socket) {
     char cmd[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
     socket.Receive(cmd);
-    FILE_LOG(logINFO) << "Executing command (" << cmd << ")";
+    LOG(logINFO) << "Executing command (" << cmd << ")";
     const size_t tempsize = 256;
     std::array<char, tempsize> temp{};
     std::string sresult;
@@ -261,20 +280,20 @@ int ClientInterface::exec_command(Interface &socket) {
                 sresult += temp.data();
         }
         strncpy(retval, sresult.c_str(), MAX_STR_LENGTH);
-        FILE_LOG(logINFO) << "Result of cmd (" << cmd << "):\n" << retval;
+        LOG(logINFO) << "Result of cmd (" << cmd << "):\n" << retval;
     }
     return socket.sendResult(retval);
 }
 
 int ClientInterface::exit_server(Interface &socket) {
-    FILE_LOG(logINFO) << "Closing server";
+    LOG(logINFO) << "Closing server";
     socket.Send(OK);
     return GOODBYE;
 }
 
 int ClientInterface::lock_receiver(Interface &socket) {
     auto lock = socket.Receive<int>();
-    FILE_LOG(logDEBUG1) << "Locking Server to " << lock;
+    LOG(logDEBUG1) << "Locking Server to " << lock;
     if (lock >= 0) {
         if (!lockedByClient || (server->getLockedBy() == server->getThisClient())) {
             lockedByClient = lock;
@@ -297,7 +316,7 @@ int ClientInterface::set_port(Interface &socket) {
         throw RuntimeError("Port Number: " + std::to_string(p_number) +
                            " is too low (<1024)");
 
-    FILE_LOG(logINFO) << "TCP port set to " << p_number << std::endl;
+    LOG(logINFO) << "TCP port set to " << p_number << std::endl;
     auto new_server = sls::make_unique<sls::ServerSocket>(p_number);
     new_server->setLockedBy(server->getLockedBy());
     new_server->setLastClient(server->getThisClient());
@@ -317,101 +336,13 @@ int ClientInterface::update_client(Interface &socket) {
 int ClientInterface::send_update(Interface &socket) {
     int n = 0;
     int i32 = -1;
-    int64_t i64 = -1;
-    char cstring[MAX_STR_LENGTH]{};
 
     sls::IpAddr ip;
     ip = server->getLastClient();
     n += socket.Send(&ip, sizeof(ip));
 
-    // filepath
-    sls::strcpy_safe(cstring, receiver->getFilePath().c_str());
-    n += socket.Send(cstring, sizeof(cstring));
-
-    // filename
-    sls::strcpy_safe(cstring, receiver->getFileName().c_str());
-    n += socket.Send(cstring, sizeof(cstring));
-
-    // index
-    i64 = receiver->getFileIndex();
-    n += socket.Send(&i64, sizeof(i64));
-
-    // file format
-    i32 = (int)receiver->getFileFormat();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // frames per file
-    i32 = (int)receiver->getFramesPerFile();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // frame discard policy
-    i32 = (int)receiver->getFrameDiscardPolicy();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // frame padding
-    i32 = (int)receiver->getFramePaddingEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // file write enable
-    i32 = (int)receiver->getFileWriteEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // master file write enable
-    i32 = (int)receiver->getMasterFileWriteEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // file overwrite enable
-    i32 = (int)receiver->getOverwriteEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
     // gap pixels
     i32 = (int)receiver->getGapPixelsEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // streaming frequency
-    i32 = (int)receiver->getStreamingFrequency();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // streaming port
-    i32 = (int)receiver->getStreamingPort();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // streaming source ip
-    ip = receiver->getStreamingSourceIP();
-    n += socket.Send(&ip, sizeof(ip));
-
-    // additional json header
-    sls::strcpy_safe(cstring, receiver->getAdditionalJsonHeader().c_str());
-    n += socket.Send(cstring, sizeof(cstring));
-
-    // data streaming enable
-    i32 = (int)receiver->getDataStreamEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // activate
-    i32 = (int)receiver->getActivate();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // deactivated padding enable
-    i32 = (int)receiver->getDeactivatedPadding();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // silent mode
-    i32 = (int)receiver->getSilentMode();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // dbit list
-    {
-        std::vector<int> list = receiver->getDbitList();
-        int retvalsize = list.size();
-        int retval[retvalsize];
-        std::copy(std::begin(list), std::end(list), retval);
-        socket.Send(&retvalsize, sizeof(retvalsize));
-        socket.Send(retval, sizeof(retval));
-    }
-
-    // dbit offset
-    i32 = receiver->getDbitOffset();
     n += socket.Send(&i32, sizeof(i32));
 
     return OK;
@@ -490,7 +421,7 @@ int ClientInterface::set_roi(Interface &socket) {
     static_assert(sizeof(ROI) == 2 * sizeof(int), "ROI not packed");
     ROI arg;
     socket.Receive(arg);
-    FILE_LOG(logDEBUG1) << "Set ROI: [" << arg.xmin << ", " << arg.xmax << "]";
+    LOG(logDEBUG1) << "Set ROI: [" << arg.xmin << ", " << arg.xmax << "]";
 
     if (myDetectorType != GOTTHARD)
         functionNotImplemented();
@@ -506,14 +437,14 @@ int ClientInterface::set_roi(Interface &socket) {
 
 int ClientInterface::set_num_frames(Interface &socket) {
     auto value = socket.Receive<int64_t>();
-    FILE_LOG(logDEBUG1) << "Setting num frames to " << value;
+    LOG(logDEBUG1) << "Setting num frames to " << value;
     impl()->setNumberOfFrames(value);
     return socket.Send(OK);
 }
 
 int ClientInterface::set_num_analog_samples(Interface &socket) {
     auto value = socket.Receive<int>();
-    FILE_LOG(logDEBUG1) << "Setting num analog samples to " << value;
+    LOG(logDEBUG1) << "Setting num analog samples to " << value;
     if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
         functionNotImplemented();
     }    
@@ -528,7 +459,7 @@ int ClientInterface::set_num_analog_samples(Interface &socket) {
 
 int ClientInterface::set_num_digital_samples(Interface &socket) {
     auto value = socket.Receive<int>();
-    FILE_LOG(logDEBUG1) << "Setting num digital samples to " << value;
+    LOG(logDEBUG1) << "Setting num digital samples to " << value;
     if (myDetectorType != CHIPTESTBOARD) {
         functionNotImplemented();
     }    
@@ -542,21 +473,21 @@ int ClientInterface::set_num_digital_samples(Interface &socket) {
 
 int ClientInterface::set_exptime(Interface &socket) {
     auto value = socket.Receive<int64_t>();
-    FILE_LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
+    LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
     impl()->setAcquisitionTime(value);
     return socket.Send(OK);
 }
 
 int ClientInterface::set_period(Interface &socket) {
     auto value = socket.Receive<int64_t>();
-    FILE_LOG(logDEBUG1) << "Setting period to " << value << "ns";
+    LOG(logDEBUG1) << "Setting period to " << value << "ns";
     impl()->setAcquisitionPeriod(value);
     return socket.Send(OK);
 }
 
 int ClientInterface::set_subexptime(Interface &socket) {
     auto value = socket.Receive<int64_t>();
-    FILE_LOG(logDEBUG1) << "Setting period to " << value << "ns";
+    LOG(logDEBUG1) << "Setting period to " << value << "ns";
     uint64_t subdeadtime = impl()->getSubPeriod() - impl()->getSubExpTime();
     impl()->setSubExpTime(value);
     impl()->setSubPeriod(impl()->getSubExpTime() + subdeadtime);
@@ -565,9 +496,9 @@ int ClientInterface::set_subexptime(Interface &socket) {
 
 int ClientInterface::set_subdeadtime(Interface &socket) {
     auto value = socket.Receive<int64_t>();
-    FILE_LOG(logDEBUG1) << "Setting sub deadtime to " << value << "ns";
+    LOG(logDEBUG1) << "Setting sub deadtime to " << value << "ns";
     impl()->setSubPeriod(value + impl()->getSubExpTime());
-    FILE_LOG(logDEBUG1) << "Setting sub period to " << impl()->getSubPeriod() << "ns";    
+    LOG(logDEBUG1) << "Setting sub period to " << impl()->getSubPeriod() << "ns";    
     return socket.Send(OK);
 }
 
@@ -575,7 +506,7 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
     auto dr = socket.Receive<int>();
     if (dr >= 0) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting dynamic range: " << dr;
+        LOG(logDEBUG1) << "Setting dynamic range: " << dr;
         bool exists = false;
         switch(myDetectorType) {
         case EIGER:
@@ -607,31 +538,40 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
     }
     int retval = impl()->getDynamicRange();
     validate(dr, retval, "set dynamic range", DEC);
-    FILE_LOG(logDEBUG1) << "dynamic range: " << retval;
+    LOG(logDEBUG1) << "dynamic range: " << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_streaming_frequency(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting streaming frequency: " << index;
-        impl()->setStreamingFrequency(index);
+    if (index < 0) {
+        throw RuntimeError("Invalid streaming frequency: "
+            + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting streaming frequency: " << index;
+    impl()->setStreamingFrequency(index);
+    
     int retval = impl()->getStreamingFrequency();
     validate(index, retval, "set streaming frequency", DEC);
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_streaming_frequency(Interface &socket) {
+    int retval = impl()->getStreamingFrequency();
+    LOG(logDEBUG1) << "streaming freq:" << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::get_status(Interface &socket) {
     auto retval = impl()->getStatus();
-    FILE_LOG(logDEBUG1) << "Status:" << sls::ToString(retval);
+    LOG(logDEBUG1) << "Status:" << sls::ToString(retval);
     return socket.sendResult(retval);
 }
 
 int ClientInterface::start_receiver(Interface &socket) {
     if (impl()->getStatus() == IDLE) {
-        FILE_LOG(logDEBUG1) << "Starting Receiver";
+        LOG(logDEBUG1) << "Starting Receiver";
         impl()->startReceiver();
     }
     return socket.Send(OK);
@@ -640,7 +580,7 @@ int ClientInterface::start_receiver(Interface &socket) {
 int ClientInterface::stop_receiver(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (impl()->getStatus() == RUNNING) {
-        FILE_LOG(logDEBUG1) << "Stopping Receiver";
+        LOG(logDEBUG1) << "Stopping Receiver";
         impl()->setStoppedFlag(static_cast<bool>(arg));
         impl()->stopReceiver();
     }
@@ -657,19 +597,29 @@ int ClientInterface::set_file_dir(Interface &socket) {
     char retval[MAX_STR_LENGTH]{};
     socket.Receive(fPath);
 
-    if (strlen(fPath) != 0) {
-        FILE_LOG(logDEBUG1) << "Setting file path: " << fPath;
-        if(fPath[0] != '/')
-            throw RuntimeError("Receiver path needs to be absolute path");
-        impl()->setFilePath(fPath);
+    if (strlen(fPath) == 0) {
+        throw RuntimeError("Cannot set empty file path");
     }
+    if(fPath[0] != '/')
+        throw RuntimeError("Receiver path needs to be absolute path");
+    LOG(logDEBUG1) << "Setting file path: " << fPath;
+    impl()->setFilePath(fPath);
+    
     std::string s = impl()->getFilePath();
     sls::strcpy_safe(retval, s.c_str());
     if ((s.empty()) || (strlen(fPath) && strcasecmp(fPath, retval)))
         throw RuntimeError("Receiver file path does not exist");
     else
-        FILE_LOG(logDEBUG1) << "file path:" << retval;
+        LOG(logDEBUG1) << "file path:" << retval;
 
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_file_dir(Interface &socket) {
+    char retval[MAX_STR_LENGTH]{};
+    std::string s = impl()->getFilePath();
+    sls::strcpy_safe(retval, s.c_str());
+    LOG(logDEBUG1) << "file path:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -677,41 +627,57 @@ int ClientInterface::set_file_name(Interface &socket) {
     char fName[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
     socket.Receive(fName);
-    if (strlen(fName) != 0) {
-        FILE_LOG(logDEBUG1) << "Setting file name: " << fName;
-        impl()->setFileName(fName);
+    if (strlen(fName) == 0) {
+        throw RuntimeError("Cannot set empty file name");
     }
+    LOG(logDEBUG1) << "Setting file name: " << fName;
+    impl()->setFileName(fName);
+    
     std::string s = impl()->getFileName();
-    if (s.empty())
-        throw RuntimeError("file name is empty");
-
     sls::strcpy_safe(retval, s.c_str());
-    FILE_LOG(logDEBUG1) << "file name:" << retval;
+    LOG(logDEBUG1) << "file name:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_file_name(Interface &socket) {
+    char retval[MAX_STR_LENGTH]{};
+    std::string s = impl()->getFileName();
+    sls::strcpy_safe(retval, s.c_str());
+    LOG(logDEBUG1) << "file name:" << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_file_index(Interface &socket) {
     auto index = socket.Receive<int64_t>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting file index: " << index;
-        impl()->setFileIndex(index);
+    if (index < 0) {
+        throw RuntimeError("Invalid file index: " 
+            + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting file index: " << index;
+    impl()->setFileIndex(index);
+
     int64_t retval = impl()->getFileIndex();
     validate(index, retval, "set file index", DEC);
-    FILE_LOG(logDEBUG1) << "file index:" << retval;
+    LOG(logDEBUG1) << "file index:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_file_index(Interface &socket) {
+    int64_t retval = impl()->getFileIndex();
+    LOG(logDEBUG1) << "file index:" << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::get_frame_index(Interface &socket) {
     uint64_t retval = impl()->getAcquisitionIndex();
-    FILE_LOG(logDEBUG1) << "frame index:" << retval;
+    LOG(logDEBUG1) << "frame index:" << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::get_missing_packets(Interface &socket) {
     std::vector<uint64_t> m = impl()->getNumMissingPackets();
-    FILE_LOG(logDEBUG1) << "missing packets:" << sls::ToString(m);
+    LOG(logDEBUG1) << "missing packets:" << sls::ToString(m);
     int retvalsize = m.size();
     uint64_t retval[retvalsize];
     std::copy(std::begin(m), std::end(m), retval);
@@ -723,46 +689,72 @@ int ClientInterface::get_missing_packets(Interface &socket) {
 
 int ClientInterface::get_frames_caught(Interface &socket) {
     int64_t retval = impl()->getFramesCaught();
-    FILE_LOG(logDEBUG1) << "frames caught:" << retval;
+    LOG(logDEBUG1) << "frames caught:" << retval;
     return socket.sendResult(retval);
 }
 
-int ClientInterface::enable_file_write(Interface &socket) {
+int ClientInterface::set_file_write(Interface &socket) {
     auto enable = socket.Receive<int>();
-    if (enable >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting File write enable:" << enable;
-        impl()->setFileWriteEnable(enable);
+    if (enable < 0) {
+        throw RuntimeError("Invalid file write enable: " + std::to_string(enable));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting File write enable:" << enable;
+    impl()->setFileWriteEnable(enable);
+
     int retval = impl()->getFileWriteEnable();
     validate(enable, retval, "set file write enable", DEC);
-    FILE_LOG(logDEBUG1) << "file write enable:" << retval;
+    LOG(logDEBUG1) << "file write enable:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_file_write(Interface &socket) {
+    int retval = impl()->getFileWriteEnable();
+    LOG(logDEBUG1) << "file write enable:" << retval;
     return socket.sendResult(retval);
 }
 
-int ClientInterface::enable_master_file_write(Interface &socket) {
+int ClientInterface::set_master_file_write(Interface &socket) {
     auto enable = socket.Receive<int>();
-    if (enable >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting Master File write enable:" << enable;
-        impl()->setMasterFileWriteEnable(enable);
+    if (enable < 0) {
+        throw RuntimeError("Invalid master file write enable: "
+            + std::to_string(enable));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting Master File write enable:" << enable;
+    impl()->setMasterFileWriteEnable(enable);
+    
     int retval = impl()->getMasterFileWriteEnable();
     validate(enable, retval, "set master file write enable", DEC);
-    FILE_LOG(logDEBUG1) << "master file write enable:" << retval;
+    LOG(logDEBUG1) << "master file write enable:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_master_file_write(Interface &socket) {
+    int retval = impl()->getMasterFileWriteEnable();
+    LOG(logDEBUG1) << "master file write enable:" << retval;
     return socket.sendResult(retval);
 }
 
-int ClientInterface::enable_overwrite(Interface &socket) {
+int ClientInterface::set_overwrite(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting File overwrite enable:" << index;
-        impl()->setOverwriteEnable(index);
+    if (index < 0) {
+        throw RuntimeError("Invalid over write enable: "
+            + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting File overwrite enable:" << index;
+    impl()->setOverwriteEnable(index);
+    
     int retval = impl()->getOverwriteEnable();
     validate(index, retval, "set file overwrite enable", DEC);
-    FILE_LOG(logDEBUG1) << "file overwrite enable:" << retval;
+    LOG(logDEBUG1) << "file overwrite enable:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_overwrite(Interface &socket) {
+    int retval = impl()->getOverwriteEnable();
+    LOG(logDEBUG1) << "file overwrite enable:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -774,7 +766,7 @@ int ClientInterface::enable_tengiga(Interface &socket) {
 
     if (val >= 0) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting 10GbE:" << val;
+        LOG(logDEBUG1) << "Setting 10GbE:" << val;
         try {
             impl()->setTenGigaEnable(val);
         } catch(const RuntimeError &e) {
@@ -783,7 +775,7 @@ int ClientInterface::enable_tengiga(Interface &socket) {
     }
     int retval = impl()->getTenGigaEnable();
     validate(val, retval, "set 10GbE", DEC);
-    FILE_LOG(logDEBUG1) << "10Gbe:" << retval;
+    LOG(logDEBUG1) << "10Gbe:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -791,7 +783,7 @@ int ClientInterface::set_fifo_depth(Interface &socket) {
     auto value = socket.Receive<int>();
     if (value >= 0) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting fifo depth:" << value;
+        LOG(logDEBUG1) << "Setting fifo depth:" << value;
         try {
             impl()->setFifoDepth(value);
         } catch(const RuntimeError &e) {
@@ -800,7 +792,7 @@ int ClientInterface::set_fifo_depth(Interface &socket) {
     }
     int retval = impl()->getFifoDepth();
     validate(value, retval, std::string("set fifo depth"), DEC);
-    FILE_LOG(logDEBUG1) << "fifo depth:" << retval;
+    LOG(logDEBUG1) << "fifo depth:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -811,29 +803,38 @@ int ClientInterface::set_activate(Interface &socket) {
 
     if (enable >= 0) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting activate:" << enable;
+        LOG(logDEBUG1) << "Setting activate:" << enable;
         impl()->setActivate(static_cast<bool>(enable));
     }
     auto retval = static_cast<int>(impl()->getActivate());
     validate(enable, retval, "set activate", DEC);
-    FILE_LOG(logDEBUG1) << "Activate: " << retval;
+    LOG(logDEBUG1) << "Activate: " << retval;
     return socket.sendResult(retval);
 }
 
-int ClientInterface::set_data_stream_enable(Interface &socket) {
+int ClientInterface::set_streaming(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting data stream enable:" << index;
-        try {
-            impl()->setDataStreamEnable(index);
-        } catch(const RuntimeError &e) {
-            throw RuntimeError("Could not set data stream enable to " + std::to_string(index));
-        }
+    if (index < 0) {
+        throw RuntimeError("Invalid streaming enable: "
+            + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting data stream enable:" << index;
+    try {
+        impl()->setDataStreamEnable(index);
+    } catch(const RuntimeError &e) {
+        throw RuntimeError("Could not set data stream enable to " + std::to_string(index));
+    }
+    
     auto retval = static_cast<int>(impl()->getDataStreamEnable());
     validate(index, retval, "set data stream enable", DEC);
-    FILE_LOG(logDEBUG1) << "data streaming enable:" << retval;
+    LOG(logDEBUG1) << "data streaming enable:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_streaming(Interface &socket) {
+    auto retval = static_cast<int>(impl()->getDataStreamEnable());
+    LOG(logDEBUG1) << "data streaming enable:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -841,12 +842,12 @@ int ClientInterface::set_streaming_timer(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index >= 0) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting streaming timer:" << index;
+        LOG(logDEBUG1) << "Setting streaming timer:" << index;
         impl()->setStreamingTimer(index);
     }
     int retval = impl()->getStreamingTimer();
     validate(index, retval, "set data stream timer", DEC);
-    FILE_LOG(logDEBUG1) << "Streaming timer:" << retval;
+    LOG(logDEBUG1) << "Streaming timer:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -858,26 +859,35 @@ int ClientInterface::set_flipped_data(Interface &socket) {
 
     if (arg >= 0) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting flipped data:" << arg;
+        LOG(logDEBUG1) << "Setting flipped data:" << arg;
         impl()->setFlippedDataX(arg);
     }
     int retval = impl()->getFlippedDataX();
     validate(arg, retval, std::string("set flipped data"), DEC);
-    FILE_LOG(logDEBUG1) << "Flipped Data:" << retval;
+    LOG(logDEBUG1) << "Flipped Data:" << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_file_format(Interface &socket) {
     fileFormat f = GET_FILE_FORMAT;
     socket.Receive(f);
-    if (f >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting file format:" << f;
-        impl()->setFileFormat(f);
+    if (f < 0 || f > NUM_FILE_FORMATS) {
+        throw RuntimeError("Invalid file format: "
+            + std::to_string(f));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting file format:" << f;
+    impl()->setFileFormat(f);
+    
     auto retval = impl()->getFileFormat();
     validate(f, retval, "set file format", DEC);
-    FILE_LOG(logDEBUG1) << "File Format: " << retval;
+    LOG(logDEBUG1) << "File Format: " << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_file_format(Interface &socket) {
+    auto retval = impl()->getFileFormat();
+    LOG(logDEBUG1) << "File Format: " << retval;
     return socket.sendResult(retval);
 }
 
@@ -885,12 +895,12 @@ int ClientInterface::set_detector_posid(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting detector position id:" << arg;
+        LOG(logDEBUG1) << "Setting detector position id:" << arg;
         impl()->setDetectorPositionId(arg);
     }
     auto retval = impl()->getDetectorPositionId();
     validate(arg, retval, "set detector position id", DEC);
-    FILE_LOG(logDEBUG1) << "Position Id:" << retval;
+    LOG(logDEBUG1) << "Position Id:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -899,37 +909,50 @@ int ClientInterface::set_multi_detector_size(Interface &socket) {
     socket.Receive(arg);
     if ((arg[0] > 0) && (arg[1] > 0)) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1)
+        LOG(logDEBUG1)
             << "Setting multi detector size:" << arg[0] << "," << arg[1];
         impl()->setMultiDetectorSize(arg);
     }
     int *temp = impl()->getMultiDetectorSize(); // TODO! return by value!
     int retval = temp[0] * temp[1];
-    FILE_LOG(logDEBUG1) << "Multi Detector Size:" << retval;
+    LOG(logDEBUG1) << "Multi Detector Size:" << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_streaming_port(Interface &socket) {
     auto port = socket.Receive<int>();
-    if (port >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting streaming port:" << port;
-        impl()->setStreamingPort(port);
+    if (port < 0) {
+        throw RuntimeError("Invalid zmq port " + std::to_string(port));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting streaming port:" << port;
+    impl()->setStreamingPort(port);
+
     int retval = impl()->getStreamingPort();
     validate(port, retval, "set streaming port", DEC);
-    FILE_LOG(logDEBUG1) << "streaming port:" << retval;
+    LOG(logDEBUG1) << "streaming port:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_streaming_port(Interface &socket) {
+    int retval = impl()->getStreamingPort();
+    LOG(logDEBUG1) << "streaming port:" << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_streaming_source_ip(Interface &socket) {
     sls::IpAddr arg;
     socket.Receive(arg);
+    if (arg == 0) { 
+        throw RuntimeError("Invalid zmq ip " + arg.str());
+    }
     verifyIdle(socket);
-    FILE_LOG(logDEBUG1) << "Setting streaming source ip:" << arg;
+    LOG(logDEBUG1) << "Setting streaming source ip:" << arg;
     impl()->setStreamingSourceIP(arg);
+    
     sls::IpAddr retval = impl()->getStreamingSourceIP();
-    if (retval != arg) {
+    LOG(logDEBUG1) << "streaming IP:" << retval;
+    if (retval != arg && arg != 0) {
         std::ostringstream os;
         os << "Could not set streaming ip. Set " << arg
            << ", but read " << retval << '\n';
@@ -938,16 +961,31 @@ int ClientInterface::set_streaming_source_ip(Interface &socket) {
     return socket.Send(OK);
 }
 
+int ClientInterface::get_streaming_source_ip(Interface &socket) {
+    sls::IpAddr retval = impl()->getStreamingSourceIP();
+    LOG(logDEBUG1) << "streaming IP:" << retval;
+    return socket.sendResult(retval);
+}
+
 int ClientInterface::set_silent_mode(Interface &socket) {
     auto value = socket.Receive<int>();
-    if (value >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting silent mode:" << value;
-        impl()->setSilentMode(value);
+    if (value < 0) {
+        throw RuntimeError("Invalid silent mode: "
+            + std::to_string(value));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting silent mode:" << value;
+    impl()->setSilentMode(value);
+    
     auto retval = static_cast<int>(impl()->getSilentMode());
     validate(value, retval, "set silent mode", DEC);
-    FILE_LOG(logDEBUG1) << "silent mode:" << retval;
+    LOG(logDEBUG1) << "silent mode:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_silent_mode(Interface &socket) {
+    auto retval = static_cast<int>(impl()->getSilentMode());
+    LOG(logDEBUG1) << "silent mode:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -958,7 +996,7 @@ int ClientInterface::enable_gap_pixels(Interface &socket) {
 
     if (enable >= 0) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting gap pixels enable:" << enable;
+        LOG(logDEBUG1) << "Setting gap pixels enable:" << enable;
         try {
             impl()->setGapPixelsEnable(static_cast<bool>(enable));
         } catch(const RuntimeError &e) {
@@ -967,7 +1005,7 @@ int ClientInterface::enable_gap_pixels(Interface &socket) {
     }
     auto retval = static_cast<int>(impl()->getGapPixelsEnable());
     validate(enable, retval, "set gap pixels enable", DEC);
-    FILE_LOG(logDEBUG1) << "Gap Pixels Enable: " << retval;
+    LOG(logDEBUG1) << "Gap Pixels Enable: " << retval;
     return socket.sendResult(retval);
 }
 
@@ -977,7 +1015,7 @@ int ClientInterface::restream_stop(Interface &socket) {
         throw RuntimeError(
             "Could not restream stop packet as data Streaming is disabled");
     } else {
-        FILE_LOG(logDEBUG1) << "Restreaming stop";
+        LOG(logDEBUG1) << "Restreaming stop";
         impl()->restreamStop();
     }
     return socket.Send(OK);
@@ -985,20 +1023,17 @@ int ClientInterface::restream_stop(Interface &socket) {
 
 int ClientInterface::set_additional_json_header(Interface &socket) {
     char arg[MAX_STR_LENGTH]{};
-    char retval[MAX_STR_LENGTH]{};
     socket.Receive(arg);
     verifyIdle(socket);
-    FILE_LOG(logDEBUG1) << "Setting additional json header: " << arg;
+    LOG(logDEBUG1) << "Setting additional json header: " << arg;
     impl()->setAdditionalJsonHeader(arg);
-    sls::strcpy_safe(retval, impl()->getAdditionalJsonHeader().c_str());
-    FILE_LOG(logDEBUG1) << "additional json header:" << retval;
-    return socket.sendResult(retval);
+    return socket.Send(OK);
 }
 
 int ClientInterface::get_additional_json_header(Interface &socket) {
     char retval[MAX_STR_LENGTH]{};
     sls::strcpy_safe(retval, impl()->getAdditionalJsonHeader().c_str());
-    FILE_LOG(logDEBUG1) << "additional json header:" << retval;
+    LOG(logDEBUG1) << "additional json header:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -1006,7 +1041,7 @@ int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
     auto index = socket.Receive<int64_t>();
     if (index >= 0) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting UDP Socket Buffer size: " << index;
+        LOG(logDEBUG1) << "Setting UDP Socket Buffer size: " << index;
         impl()->setUDPSocketBufferSize(index);
     }
     int64_t retval = impl()->getUDPSocketBufferSize();
@@ -1014,33 +1049,42 @@ int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
         validate(index, retval,
                  "set udp socket buffer size (No CAP_NET_ADMIN privileges?)",
                  DEC);
-    FILE_LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
+    LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::get_real_udp_socket_buffer_size(
     Interface &socket) {
     auto size = impl()->getActualUDPSocketBufferSize();
-    FILE_LOG(logDEBUG1) << "Actual UDP socket size :" << size;
+    LOG(logDEBUG1) << "Actual UDP socket size :" << size;
     return socket.sendResult(size);
 }
 
 int ClientInterface::set_frames_per_file(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting frames per file: " << index;
-        impl()->setFramesPerFile(index);
+    if (index < 0) {
+        throw RuntimeError("Invalid frames per file: "
+            + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting frames per file: " << index;
+    impl()->setFramesPerFile(index);
+    
     auto retval = static_cast<int>(impl()->getFramesPerFile());
     validate(index, retval, "set frames per file", DEC);
-    FILE_LOG(logDEBUG1) << "frames per file:" << retval;
+    LOG(logDEBUG1) << "frames per file:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_frames_per_file(Interface &socket) {
+    auto retval = static_cast<int>(impl()->getFramesPerFile());
+    LOG(logDEBUG1) << "frames per file:" << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::check_version_compatibility(Interface &socket) {
     auto arg = socket.Receive<int64_t>();
-    FILE_LOG(logDEBUG1) << "Checking versioning compatibility with value "
+    LOG(logDEBUG1) << "Checking versioning compatibility with value "
                         << arg;
     int64_t client_requiredVersion = arg;
     int64_t rx_apiVersion = APIRECEIVER;
@@ -1061,51 +1105,78 @@ int ClientInterface::check_version_compatibility(Interface &socket) {
            << ").\n Please update the receiver";
         throw RuntimeError(os.str());
     } else {
-        FILE_LOG(logINFO) << "Compatibility with Client: Successful";
+        LOG(logINFO) << "Compatibility with Client: Successful";
     }
     return socket.Send(OK);
 }
 
 int ClientInterface::set_discard_policy(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting frames discard policy: " << index;
-        impl()->setFrameDiscardPolicy(static_cast<frameDiscardPolicy>(index));
+    if (index < 0 || index > NUM_DISCARD_POLICIES) {
+        throw RuntimeError("Invalid discard policy " + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting frames discard policy: " << index;
+    impl()->setFrameDiscardPolicy(static_cast<frameDiscardPolicy>(index));
     int retval = impl()->getFrameDiscardPolicy();
     validate(index, retval, "set discard policy", DEC);
-    FILE_LOG(logDEBUG1) << "frame discard policy:" << retval;
+    LOG(logDEBUG1) << "frame discard policy:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_discard_policy(Interface &socket) {
+    int retval = impl()->getFrameDiscardPolicy();
+    LOG(logDEBUG1) << "frame discard policy:" << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_padding_enable(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting frames padding enable: " << index;
-        impl()->setFramePaddingEnable(static_cast<bool>(index));
+    if (index < 0) {
+        throw RuntimeError("Invalid padding enable: " + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting frames padding enable: " << index;
+    impl()->setFramePaddingEnable(static_cast<bool>(index));
+
     auto retval = static_cast<int>(impl()->getFramePaddingEnable());
     validate(index, retval, "set frame padding enable", DEC);
-    FILE_LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
+    LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_padding_enable(Interface &socket) {
+    auto retval = static_cast<int>(impl()->getFramePaddingEnable());
+    LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_deactivated_padding_enable(
     Interface &socket) {
     auto enable = socket.Receive<int>();
-    if (myDetectorType != EIGER)
+    if (myDetectorType != EIGER) {
         functionNotImplemented();
-
-    if (enable >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting deactivated padding enable: " << enable;
-        impl()->setDeactivatedPadding(enable > 0);
     }
+    if (enable < 0) {
+        throw RuntimeError("Invalid Deactivated padding: " 
+            + std::to_string(enable));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting deactivated padding enable: " << enable;
+    impl()->setDeactivatedPadding(enable > 0);
+
     auto retval = static_cast<int>(impl()->getDeactivatedPadding());
     validate(enable, retval, "set deactivated padding enable", DEC);
-    FILE_LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
+    LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_deactivated_padding_enable(
+    Interface &socket) {
+    if (myDetectorType != EIGER)
+        functionNotImplemented();
+    auto retval = static_cast<int>(impl()->getDeactivatedPadding());
+    LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
     return socket.sendResult(retval);
 }
 
@@ -1117,7 +1188,7 @@ int ClientInterface::set_readout_mode(Interface &socket) {
 
     if (arg >= 0) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting readout mode: " << arg;
+        LOG(logDEBUG1) << "Setting readout mode: " << arg;
         try {
             impl()->setReadoutMode(arg);
         } catch(const RuntimeError &e) {
@@ -1127,14 +1198,14 @@ int ClientInterface::set_readout_mode(Interface &socket) {
     auto retval = impl()->getReadoutMode();
     validate(static_cast<int>(arg), static_cast<int>(retval),
              "set readout mode", DEC);
-    FILE_LOG(logDEBUG1) << "Readout mode: " << retval;
+    LOG(logDEBUG1) << "Readout mode: " << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_adc_mask(Interface &socket) {
     auto arg = socket.Receive<uint32_t>();
     verifyIdle(socket);
-    FILE_LOG(logDEBUG1) << "Setting 1Gb ADC enable mask: " << arg;
+    LOG(logDEBUG1) << "Setting 1Gb ADC enable mask: " << arg;
     try {
         impl()->setADCEnableMask(arg);
     } catch(const RuntimeError &e) {
@@ -1147,40 +1218,57 @@ int ClientInterface::set_adc_mask(Interface &socket) {
            << " but read 0x" << std::hex << retval;
         throw RuntimeError(os.str());
     }
-    FILE_LOG(logDEBUG1) << "1Gb ADC enable mask retval: " << retval;
+    LOG(logDEBUG1) << "1Gb ADC enable mask retval: " << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_dbit_list(Interface &socket) {
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> args;
     socket.Receive(args);
-    FILE_LOG(logDEBUG1) << "Setting DBIT list";
+    if (myDetectorType != CHIPTESTBOARD)
+        functionNotImplemented();
+    LOG(logDEBUG1) << "Setting DBIT list";
     for (auto &it : args) {
-        FILE_LOG(logDEBUG1) << it << " ";
+        LOG(logDEBUG1) << it << " ";
     }
-    FILE_LOG(logDEBUG1) << "\n";
+    LOG(logDEBUG1) << "\n";
     verifyIdle(socket);
     impl()->setDbitList(args);
     return socket.Send(OK);
 }
 
 int ClientInterface::get_dbit_list(Interface &socket) {
+    if (myDetectorType != CHIPTESTBOARD)
+        functionNotImplemented();
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
     retval = impl()->getDbitList();
-    FILE_LOG(logDEBUG1) << "Dbit list size retval:" << retval.size();
+    LOG(logDEBUG1) << "Dbit list size retval:" << retval.size();
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_dbit_offset(Interface &socket) {
     auto arg = socket.Receive<int>();
-    if (arg >= 0) {
-        verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting Dbit offset: " << arg;
-        impl()->setDbitOffset(arg);
+    if (myDetectorType != CHIPTESTBOARD)
+        functionNotImplemented();
+    if (arg < 0) {
+        throw RuntimeError("Invalid dbit offset: "
+            + std::to_string(arg));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting Dbit offset: " << arg;
+    impl()->setDbitOffset(arg);
+    
     int retval = impl()->getDbitOffset();
     validate(arg, retval, "set dbit offset", DEC);
-    FILE_LOG(logDEBUG1) << "Dbit offset retval: " << retval;
+    LOG(logDEBUG1) << "Dbit offset retval: " << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_dbit_offset(Interface &socket) {
+    if (myDetectorType != CHIPTESTBOARD)
+        functionNotImplemented();
+    int retval = impl()->getDbitOffset();
+    LOG(logDEBUG1) << "Dbit offset retval: " << retval;
     return socket.sendResult(retval);
 }
 
@@ -1188,7 +1276,7 @@ int ClientInterface::set_quad_type(Interface &socket) {
     auto quadEnable = socket.Receive<int>();
     if (quadEnable >= 0) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting quad:" << quadEnable;
+        LOG(logDEBUG1) << "Setting quad:" << quadEnable;
         try {
             impl()->setQuad(quadEnable == 0 ? false : true);
         } catch(const RuntimeError &e) {
@@ -1197,7 +1285,7 @@ int ClientInterface::set_quad_type(Interface &socket) {
     }
     int retval = impl()->getQuad() ? 1 : 0;
     validate(quadEnable, retval, "set quad", DEC);
-    FILE_LOG(logDEBUG1) << "quad retval:" << retval;
+    LOG(logDEBUG1) << "quad retval:" << retval;
     return socket.Send(OK);
 }
 
@@ -1205,12 +1293,12 @@ int ClientInterface::set_read_n_lines(Interface &socket) {
     auto arg = socket.Receive<int>();
     if (arg >= 0) {
         verifyIdle(socket);
-        FILE_LOG(logDEBUG1) << "Setting Read N Lines:" << arg;
+        LOG(logDEBUG1) << "Setting Read N Lines:" << arg;
         impl()->setReadNLines(arg);
     }
     int retval = impl()->getReadNLines();
     validate(arg, retval, "set read n lines", DEC);
-    FILE_LOG(logDEBUG1) << "read n lines retval:" << retval;
+    LOG(logDEBUG1) << "read n lines retval:" << retval;
     return socket.Send(OK);
 }
 
@@ -1218,7 +1306,7 @@ int ClientInterface::set_read_n_lines(Interface &socket) {
 int ClientInterface::set_udp_ip(Interface &socket) {
     auto arg = socket.Receive<sls::IpAddr>();
     verifyIdle(socket);
-    FILE_LOG(logINFO) << "Received UDP IP: " << arg;
+    LOG(logINFO) << "Received UDP IP: " << arg;
     // getting eth
     std::string eth = sls::IpToInterfaceName(arg.str());
     if (eth == "none") {
@@ -1226,7 +1314,7 @@ int ClientInterface::set_udp_ip(Interface &socket) {
     }   
     if (eth.find('.') != std::string::npos) {
         eth = "";
-        FILE_LOG(logERROR) << "Failed to get udp ethernet interface from IP " << arg << ". Got " << eth;
+        LOG(logERROR) << "Failed to get udp ethernet interface from IP " << arg << ". Got " << eth;
     }   
     impl()->setEthernetInterface(eth);
     if (myDetectorType == EIGER) {
@@ -1235,9 +1323,9 @@ int ClientInterface::set_udp_ip(Interface &socket) {
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
     if (retval == 0) {
-        throw RuntimeError("Failed to get udp mac adddress to listen to\n");
+        throw RuntimeError("Failed to get udp mac adddress to listen to (eth:" + eth + ", ip:" + arg.str() + ")\n");
     }
-    FILE_LOG(logINFO) << "Receiver MAC Address: " << retval;
+    LOG(logINFO) << "Receiver MAC Address: " << retval;
     return socket.sendResult(retval);
 }
 
@@ -1248,7 +1336,7 @@ int ClientInterface::set_udp_ip2(Interface &socket) {
     if (myDetectorType != JUNGFRAU) {
         throw RuntimeError("UDP Destination IP2 not implemented for this detector");
     }
-    FILE_LOG(logINFO) << "Received UDP IP2: " << arg;
+    LOG(logINFO) << "Received UDP IP2: " << arg;
     // getting eth
     std::string eth = sls::IpToInterfaceName(arg.str());
     if (eth == "none") {
@@ -1256,23 +1344,23 @@ int ClientInterface::set_udp_ip2(Interface &socket) {
     }   
     if (eth.find('.') != std::string::npos) {
         eth = "";
-        FILE_LOG(logERROR) << "Failed to get udp ethernet interface2 from IP " << arg << ". Got " << eth;
+        LOG(logERROR) << "Failed to get udp ethernet interface2 from IP " << arg << ". Got " << eth;
     }   
     impl()->setEthernetInterface2(eth);
 
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
     if (retval == 0) {
-        throw RuntimeError("Failed to get udp mac adddress2 to listen to\n");
+        throw RuntimeError("Failed to get udp mac adddress2 to listen to (eth:" + eth + ", ip:" + arg.str() + ")\n");
     }
-    FILE_LOG(logINFO) << "Receiver MAC Address2: " << retval;
+    LOG(logINFO) << "Receiver MAC Address2: " << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_udp_port(Interface &socket) {
     auto arg = socket.Receive<int>();
     verifyIdle(socket);
-    FILE_LOG(logDEBUG1) << "Setting UDP Port:" << arg;
+    LOG(logDEBUG1) << "Setting UDP Port:" << arg;
     impl()->setUDPPortNumber(arg);
     return socket.Send(OK);
 }
@@ -1283,7 +1371,7 @@ int ClientInterface::set_udp_port2(Interface &socket) {
     if (myDetectorType != JUNGFRAU && myDetectorType != EIGER) {
         throw RuntimeError("UDP Destination Port2 not implemented for this detector");
     }    
-    FILE_LOG(logDEBUG1) << "Setting UDP Port:" << arg;
+    LOG(logDEBUG1) << "Setting UDP Port:" << arg;
     impl()->setUDPPortNumber2(arg);
     return socket.Send(OK);
 }
@@ -1295,7 +1383,7 @@ int ClientInterface::set_num_interfaces(Interface &socket) {
     if (myDetectorType != JUNGFRAU) {
         throw RuntimeError("Number of interfaces not implemented for this detector");
     }    
-    FILE_LOG(logDEBUG1) << "Setting Number of UDP Interfaces:" << arg;
+    LOG(logDEBUG1) << "Setting Number of UDP Interfaces:" << arg;
     try {
         impl()->setNumberofUDPInterfaces(arg);
     } catch(const RuntimeError &e) {
@@ -1307,7 +1395,7 @@ int ClientInterface::set_num_interfaces(Interface &socket) {
 int ClientInterface::set_adc_mask_10g(Interface &socket) {
     auto arg = socket.Receive<uint32_t>();
     verifyIdle(socket);
-    FILE_LOG(logDEBUG1) << "Setting 10Gb ADC enable mask: " << arg;
+    LOG(logDEBUG1) << "Setting 10Gb ADC enable mask: " << arg;
     try {
         impl()->setTenGigaADCEnableMask(arg);
     } catch(const RuntimeError &e) {
@@ -1320,14 +1408,21 @@ int ClientInterface::set_adc_mask_10g(Interface &socket) {
            << " but read 0x" << std::hex << retval;
         throw RuntimeError(os.str());
     }
-    FILE_LOG(logDEBUG1) << "10Gb ADC enable mask retval: " << retval;
+    LOG(logDEBUG1) << "10Gb ADC enable mask retval: " << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_num_counters(Interface &socket) {
     auto arg = socket.Receive<int>();
     verifyIdle(socket);
-    FILE_LOG(logDEBUG1) << "Setting counters: " << arg;
+    LOG(logDEBUG1) << "Setting counters: " << arg;
     impl()->setNumberofCounters(arg);
+    return socket.Send(OK);
+}
+
+int ClientInterface::increment_file_index(Interface &socket) {
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Incrementing file index";
+    impl()->setFileIndex(impl()->getFileIndex() + 1);
     return socket.Send(OK);
 }

@@ -70,7 +70,19 @@ int ClientSocket::sendCommandThenRead(int fnum, const void *args,
 
 void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
 
-    Receive(&ret, sizeof(ret));
+    try {
+        Receive(&ret, sizeof(ret));
+    } 
+    // debugging
+    catch (sls::SocketError &e) {
+        if (socketType == "Receiver") {
+            throw ReceiverError("Receiver returned: " + std::string(e.what()));
+        } else if (socketType == "Detector") {
+            throw DetectorError("Detector returned: " + std::string(e.what()));
+        } else {
+            throw GuiError(e.what());
+        }
+    }
     if (ret == slsDetectorDefs::FAIL) {
         char mess[MAX_STR_LENGTH]{};
         // get error message

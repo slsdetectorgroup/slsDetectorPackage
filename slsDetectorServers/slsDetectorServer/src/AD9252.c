@@ -124,40 +124,40 @@ void AD9252_Set(int addr, int val) {
 
     u_int32_t codata;
     codata = val + (addr << 8);
-    FILE_LOG(logINFO, ("\tSetting ADC SPI Register. Wrote 0x%04x at 0x%04x\n", val, addr));
+    LOG(logINFO, ("\tSetting ADC SPI Register. Wrote 0x%04x at 0x%04x\n", val, addr));
     serializeToSPI(AD9252_Reg, codata, AD9252_CsMask, AD9252_ADC_NUMBITS,
             AD9252_ClkMask, AD9252_DigMask, AD9252_DigOffset, 0);
 }
 
 void AD9252_Configure(){
-    FILE_LOG(logINFOBLUE, ("Configuring ADC9252:\n"));
+    LOG(logINFOBLUE, ("Configuring ADC9252:\n"));
 
     //power mode reset
-    FILE_LOG(logINFO, ("\tPower mode reset\n"));
+    LOG(logINFO, ("\tPower mode reset\n"));
     AD9252_Set(AD9252_POWER_MODE_REG, AD9252_INT_RESET_VAL);
 
     //power mode chip run
-    FILE_LOG(logINFO, ("\tPower mode chip run\n"));
+    LOG(logINFO, ("\tPower mode chip run\n"));
     AD9252_Set(AD9252_POWER_MODE_REG, AD9252_INT_CHIP_RUN_VAL);
 
     // binary offset
-    FILE_LOG(logINFO, ("\tBinary offset\n"));
+    LOG(logINFO, ("\tBinary offset\n"));
     AD9252_Set(AD9252_OUT_MODE_REG, AD9252_OUT_BINARY_OFST_VAL);
 
     //output clock phase
 #ifdef GOTTHARDD
-    FILE_LOG(logINFO, ("\tOutput clock phase is at default: 180\n"));
+    LOG(logINFO, ("\tOutput clock phase is at default: 180\n"));
 #else
-    FILE_LOG(logINFO, ("\tOutput clock phase: 60\n"));
+    LOG(logINFO, ("\tOutput clock phase: 60\n"));
     AD9257_Set(AD9257_OUT_PHASE_REG, AD9257_OUT_CLK_60_VAL);
 #endif
 
     // lvds-iee reduced , binary offset
-    FILE_LOG(logINFO, ("\tLvds-iee reduced, binary offset\n"));
+    LOG(logINFO, ("\tLvds-iee reduced, binary offset\n"));
     AD9252_Set(AD9252_OUT_MODE_REG, AD9252_OUT_LVDS_IEEE_VAL);
 
     // all devices on chip to receive next command
-    FILE_LOG(logINFO, ("\tAll devices on chip to receive next command\n"));
+    LOG(logINFO, ("\tAll devices on chip to receive next command\n"));
     AD9252_Set(AD9252_DEV_IND_2_REG,
             AD9252_CHAN_H_MSK | AD9252_CHAN_G_MSK | AD9252_CHAN_F_MSK | AD9252_CHAN_E_MSK);
     AD9252_Set(AD9252_DEV_IND_1_REG,
@@ -165,13 +165,13 @@ void AD9252_Configure(){
             AD9252_CLK_CH_DCO_MSK | AD9252_CLK_CH_IFCO_MSK);
 
     // no test mode
-    FILE_LOG(logINFO, ("\tNo test mode\n"));
+    LOG(logINFO, ("\tNo test mode\n"));
     AD9252_Set(AD9252_TEST_MODE_REG, AD9252_TST_OFF_VAL);
 
 #ifdef TESTADC
-    FILE_LOG(logINFOBLUE, ("Putting ADC in Test Mode!\n");
+    LOG(logINFOBLUE, ("Putting ADC in Test Mode!\n");
     // mixed bit frequency test mode
-    FILE_LOG(logINFO, ("\tMixed bit frequency test mode\n"));
+    LOG(logINFO, ("\tMixed bit frequency test mode\n"));
     AD9252_Set(AD9252_TEST_MODE_REG, AD9252_TST_MXD_BT_FRQ_VAL);
 #endif
 }

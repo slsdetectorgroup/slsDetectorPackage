@@ -1345,7 +1345,7 @@ std::string CmdProxy::VetoReference(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->setVetoReference(std::stoi(args[0]), stoiHex(args[1]), {det_id});
+        det->setVetoReference(StringTo<int>(args[0]), StringTo<int>(args[1]), {det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -1577,7 +1577,7 @@ std::string CmdProxy::DigitalIODelay(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->setDigitalIODelay(stoulHex(args[0]), std::stoi(args[1]), {det_id});
+        det->setDigitalIODelay(StringTo<uint64_t>(args[0]), StringTo<int>(args[1]), {det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -1619,13 +1619,13 @@ std::string CmdProxy::PatternWord(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        auto t = det->getPatternWord(stoiHex(args[0]), {det_id});
+        auto t = det->getPatternWord(StringTo<uint64_t>(args[0]), {det_id});
         os << OutStringHex(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->setPatternWord(stoiHex(args[0]), stoulHex(args[1]), {det_id});
+        det->setPatternWord(StringTo<int>(args[0]), StringTo<uint64_t>(args[1]), {det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -1678,8 +1678,8 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
             if (args.size() != 2) {
                 WrongNumberOfParameters(2);
             }
-            det->setPatternLoopAddresses(level, stoiHex(args[0]),
-                                         stoiHex(args[1]), {det_id});
+            det->setPatternLoopAddresses(level, StringTo<int>(args[0]),
+                                         StringTo<int>(args[1]), {det_id});
             os << sls::ToString(args) << '\n';
         } else {
             throw sls::RuntimeError("Unknown action");
@@ -1769,7 +1769,7 @@ std::string CmdProxy::PatternWaitAddress(int action) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            det->setPatternWaitAddr(level, stoiHex(args[0]), {det_id});
+            det->setPatternWaitAddr(level, StringTo<int>(args[0]), {det_id});
             os << args.front() << '\n';
         } else {
             throw sls::RuntimeError("Unknown action");
@@ -1978,13 +1978,13 @@ std::string CmdProxy::Register(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        auto t = det->readRegister(stoiHex(args[0]), {det_id});
+        auto t = det->readRegister(StringTo<uint32_t>(args[0]), {det_id});
         os << OutStringHex(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->writeRegister(stoiHex(args[0]), stoiHex(args[1]), {det_id});
+        det->writeRegister(StringTo<uint32_t>(args[0]), StringTo<uint32_t>(args[1]), {det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -2005,7 +2005,7 @@ std::string CmdProxy::AdcRegister(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->writeAdcRegister(stoiHex(args[0]), stoiHex(args[1]), {det_id});
+        det->writeAdcRegister(StringTo<uint32_t>(args[0]), StringTo<uint32_t>(args[1]), {det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -2041,8 +2041,8 @@ std::string CmdProxy::BitOperations(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        uint32_t addr = stoiHex(args[0]);
-        int bitnr = std::stoi(args[1]);
+        auto addr = StringTo<uint32_t>(args[0]);
+        auto bitnr = StringTo<int>(args[1]);
         if (bitnr < 0 || bitnr > 31) {
             return std::string("Bit number out of range") +
                    std::to_string(bitnr);

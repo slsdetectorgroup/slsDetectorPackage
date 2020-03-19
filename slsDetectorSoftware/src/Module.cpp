@@ -1679,7 +1679,13 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
     updateCachedDetectorVariables();
 
     // start updating
-    sls::strcpy_safe(shm()->rxHostname, receiverIP.c_str());
+    std::string host = receiverIP;
+    auto res = sls::split(host, ':');
+    if (res.size() > 1) {
+        host = res[0];
+        shm()->rxTCPPort = std::stoi(res[1]);
+    }    
+    sls::strcpy_safe(shm()->rxHostname, host.c_str());
     shm()->useReceiverFlag = true;
     checkReceiverVersionCompatibility();
 

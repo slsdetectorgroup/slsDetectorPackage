@@ -89,10 +89,10 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            auto t = det->GETFCN({det_id});                                    \
             if (args.size() != 0) {                                            \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
+            auto t = det->GETFCN({det_id});                                    \
             os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \
@@ -115,10 +115,10 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            auto t = det->GETFCN({det_id});                                    \
             if (args.size() != 0) {                                            \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
+            auto t = det->GETFCN({det_id});                                    \
             os << OutStringHex(t) << '\n';                                     \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \
@@ -141,10 +141,10 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            auto t = det->GETFCN({det_id});                                    \
             if (args.size() != 0) {                                            \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
+            auto t = det->GETFCN({det_id});                                    \
             os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \
@@ -170,10 +170,10 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            auto t = det->GETFCN();                                            \
             if (args.size() != 0) {                                            \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
+            auto t = det->GETFCN();                                            \
             os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \
@@ -196,10 +196,10 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            auto t = det->GETFCN(INDEX, {det_id});                             \
             if (args.size() != 0) {                                            \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
+            auto t = det->GETFCN(INDEX, {det_id});                             \
             os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \
@@ -721,7 +721,7 @@ class CmdProxy {
                           {"txndelay_right", &CmdProxy::txndelay_right},
 
                           /* Receiver Config */ 
-                          {"rx_hostname", &CmdProxy::rx_hostname}, 
+                          {"rx_hostname", &CmdProxy::ReceiveHostname}, 
                           {"rx_tcpport", &CmdProxy::rx_tcpport},  
                           {"rx_fifodepth", &CmdProxy::rx_fifodepth},
                           {"rx_silent", &CmdProxy::rx_silent},
@@ -939,6 +939,7 @@ class CmdProxy {
     std::string UDPDestinationIP(int action);
     std::string UDPDestinationIP2(int action);
     /* Receiver Config */
+    std::string ReceiveHostname(int action);
     /* File */
     /* ZMQ Streaming Parameters (Receiver<->Client) */
     /* Eiger Specific */
@@ -1433,9 +1434,6 @@ class CmdProxy {
 
 
     /* Receiver Config */
-
-    STRING_COMMAND(rx_hostname, getRxHostname, setRxHostname, 
-                "[hostname or ip address]\n\tReceiver hostname or IP. Used for TCP control communication between client and receiver to configure receiver. Also updates receiver with detector parameters.");
 
     INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, std::stoi,
                     "[port]\n\tTCP port for client-receiver communication. Default is 1954. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter. Multi command will automatically increment for individual modules.");  

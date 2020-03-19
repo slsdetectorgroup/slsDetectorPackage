@@ -492,9 +492,12 @@ class Detector {
      * Validates and sets the receiver.
      * Updates local receiver cache parameters
      * Configures the detector to the receiver as UDP destination
-     * @param receiver receiver hostname or IP address
+     * @param receiver receiver hostname or IP address, can include tcp port eg. hostname:port
      */
     void setRxHostname(const std::string &receiver, Positions pos = {});
+
+    /** multiple rx hostnames (same as setRxHostname) */
+    void setRxHostname(const std::vector<std::string> &name); 
 
     Result<int> getRxPort(Positions pos = {}) const;
 

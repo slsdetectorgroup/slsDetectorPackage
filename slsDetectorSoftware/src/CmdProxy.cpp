@@ -147,7 +147,6 @@ std::string CmdProxy::Hostname(int action) {
             det->setHostname(args);
             os << ToString(args) << '\n';
         }
-        auto t = det->getHostname({det_id});
     } else {
         throw sls::RuntimeError("Unknown action");
     }
@@ -849,6 +848,61 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
 }
 
 /* Receiver Config */
+std::string CmdProxy::ReceiveHostname(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[hostname or ip address]\n\t"
+        "[hostname or ip address]:[tcp port]\n\t"
+        "[hostname1]:[tcp_port1]+[hostname2]:[tcp_port2]+\n\t"
+        "Receiver hostname or IP. If port included, then the receiver tcp port.\n\t"
+        "Used for TCP control communication between client and receiver "
+        "to configure receiver. Also updates receiver with detector parameters."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getRxHostname({det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() < 1) {
+            WrongNumberOfParameters(1);
+        }
+        // multiple arguments
+        if (args.size() > 1) {
+            // multiple in mulitple
+            if (args[0].find('+') != std::string::npos) {
+                throw sls::RuntimeError("Cannot add multiple receivers at module level");
+            }
+            if (det_id != -1) {
+                throw sls::RuntimeError("Cannot add multiple receivers at module level");
+            }
+            det->setRxHostname(args);
+            os << ToString(args) << '\n';
+        }
+        // single argument
+        else {
+            // multiple receivers concatenated with +
+            if (args[0].find('+') != std::string::npos) {
+                if (det_id != -1) {
+                    throw sls::RuntimeError("Cannot add multiple receivers at module level");
+                }            
+                auto t = sls::split(args[0], '+');
+                det->setRxHostname(t);
+                os << ToString(t) << '\n';
+            }
+            // single receiver
+            else {
+                det->setRxHostname(args[0], {det_id});
+                os << ToString(args) << '\n';
+            }
+        }
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 /* File */
 /* ZMQ Streaming Parameters (Receiver<->Client) */
 /* Eiger Specific */

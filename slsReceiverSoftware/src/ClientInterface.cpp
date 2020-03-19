@@ -1422,7 +1422,9 @@ int ClientInterface::set_num_counters(Interface &socket) {
 
 int ClientInterface::increment_file_index(Interface &socket) {
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Incrementing file index";
-    impl()->setFileIndex(impl()->getFileIndex() + 1);
+    if (impl()->getFileWriteEnable()) {
+        LOG(logDEBUG1) << "Incrementing file index";
+        impl()->setFileIndex(impl()->getFileIndex() + 1);
+    }
     return socket.Send(OK);
 }

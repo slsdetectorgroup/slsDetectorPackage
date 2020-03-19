@@ -126,47 +126,64 @@ int ClientInterface::functionTable(){
 	flist[F_RECEIVER_SET_SUB_EXPTIME]       =   &ClientInterface::set_subexptime;    
 	flist[F_RECEIVER_SET_SUB_DEADTIME]      =   &ClientInterface::set_subdeadtime;    
 	flist[F_SET_RECEIVER_DYNAMIC_RANGE]		= 	&ClientInterface::set_dynamic_range;
-	flist[F_RECEIVER_STREAMING_FREQUENCY]	= 	&ClientInterface::set_streaming_frequency;
+	flist[F_SET_RECEIVER_STREAMING_FREQUENCY] = 	&ClientInterface::set_streaming_frequency;
+	flist[F_GET_RECEIVER_STREAMING_FREQUENCY] = 	&ClientInterface::get_streaming_frequency;
 	flist[F_GET_RECEIVER_STATUS]			=	&ClientInterface::get_status;
 	flist[F_START_RECEIVER]					=	&ClientInterface::start_receiver;
 	flist[F_STOP_RECEIVER]					=	&ClientInterface::stop_receiver;
 	flist[F_SET_RECEIVER_FILE_PATH]			=	&ClientInterface::set_file_dir;
+	flist[F_GET_RECEIVER_FILE_PATH]			=	&ClientInterface::get_file_dir;
 	flist[F_SET_RECEIVER_FILE_NAME]			=	&ClientInterface::set_file_name;
+	flist[F_GET_RECEIVER_FILE_NAME]			=	&ClientInterface::get_file_name;
 	flist[F_SET_RECEIVER_FILE_INDEX]		=	&ClientInterface::set_file_index;
+	flist[F_GET_RECEIVER_FILE_INDEX]		=	&ClientInterface::get_file_index;
 	flist[F_GET_RECEIVER_FRAME_INDEX]		=	&ClientInterface::get_frame_index;    
 	flist[F_GET_RECEIVER_FRAMES_CAUGHT]		=	&ClientInterface::get_frames_caught;
     flist[F_GET_NUM_MISSING_PACKETS]		=	&ClientInterface::get_missing_packets;
-	flist[F_ENABLE_RECEIVER_FILE_WRITE]		=	&ClientInterface::enable_file_write;
-	flist[F_ENABLE_RECEIVER_MASTER_FILE_WRITE]	=	&ClientInterface::enable_master_file_write;
-	flist[F_ENABLE_RECEIVER_OVERWRITE]		= 	&ClientInterface::enable_overwrite;
+	flist[F_SET_RECEIVER_FILE_WRITE]		=	&ClientInterface::set_file_write;
+	flist[F_GET_RECEIVER_FILE_WRITE]		=	&ClientInterface::get_file_write;
+	flist[F_SET_RECEIVER_MASTER_FILE_WRITE]	=	&ClientInterface::set_master_file_write;
+	flist[F_GET_RECEIVER_MASTER_FILE_WRITE]	=	&ClientInterface::get_master_file_write;
+	flist[F_SET_RECEIVER_OVERWRITE]		    = 	&ClientInterface::set_overwrite;
+	flist[F_GET_RECEIVER_OVERWRITE]		    = 	&ClientInterface::get_overwrite;
 	flist[F_ENABLE_RECEIVER_TEN_GIGA]		= 	&ClientInterface::enable_tengiga;
 	flist[F_SET_RECEIVER_FIFO_DEPTH]		= 	&ClientInterface::set_fifo_depth;
 	flist[F_RECEIVER_ACTIVATE]				= 	&ClientInterface::set_activate;
-	flist[F_STREAM_DATA_FROM_RECEIVER]		= 	&ClientInterface::set_data_stream_enable;
+	flist[F_SET_RECEIVER_STREAMING]		    = 	&ClientInterface::set_streaming;
+	flist[F_GET_RECEIVER_STREAMING]		    = 	&ClientInterface::get_streaming;
 	flist[F_RECEIVER_STREAMING_TIMER]		= 	&ClientInterface::set_streaming_timer;
 	flist[F_SET_FLIPPED_DATA_RECEIVER]		= 	&ClientInterface::set_flipped_data;
 	flist[F_SET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::set_file_format;
+	flist[F_GET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::get_file_format;
 	flist[F_SEND_RECEIVER_DETPOSID]			= 	&ClientInterface::set_detector_posid;
 	flist[F_SEND_RECEIVER_MULTIDETSIZE]		= 	&ClientInterface::set_multi_detector_size;
 	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::set_streaming_port;
-	flist[F_RECEIVER_STREAMING_SRC_IP]		= 	&ClientInterface::set_streaming_source_ip;
+	flist[F_GET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::get_streaming_port;
+	flist[F_SET_RECEIVER_STREAMING_SRC_IP]	= 	&ClientInterface::set_streaming_source_ip;
+	flist[F_GET_RECEIVER_STREAMING_SRC_IP]	= 	&ClientInterface::get_streaming_source_ip;
 	flist[F_SET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::set_silent_mode;
+	flist[F_GET_RECEIVER_SILENT_MODE]		= 	&ClientInterface::get_silent_mode;
 	flist[F_ENABLE_GAPPIXELS_IN_RECEIVER]	=	&ClientInterface::enable_gap_pixels;
 	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&ClientInterface::restream_stop;
-	flist[F_ADDITIONAL_JSON_HEADER]         =   &ClientInterface::set_additional_json_header;
+	flist[F_SET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::set_additional_json_header;
 	flist[F_GET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::get_additional_json_header;
     flist[F_RECEIVER_UDP_SOCK_BUF_SIZE]     =   &ClientInterface::set_udp_socket_buffer_size;
     flist[F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE]=   &ClientInterface::get_real_udp_socket_buffer_size;
     flist[F_SET_RECEIVER_FRAMES_PER_FILE]	=   &ClientInterface::set_frames_per_file;
+    flist[F_GET_RECEIVER_FRAMES_PER_FILE]	=   &ClientInterface::get_frames_per_file;
     flist[F_RECEIVER_CHECK_VERSION]			=   &ClientInterface::check_version_compatibility;
-    flist[F_RECEIVER_DISCARD_POLICY]		=   &ClientInterface::set_discard_policy;
-	flist[F_RECEIVER_PADDING_ENABLE]		=   &ClientInterface::set_padding_enable;
-	flist[F_RECEIVER_DEACTIVATED_PADDING_ENABLE] = &ClientInterface::set_deactivated_padding_enable;
+    flist[F_SET_RECEIVER_DISCARD_POLICY]	=   &ClientInterface::set_discard_policy;
+    flist[F_GET_RECEIVER_DISCARD_POLICY]	=   &ClientInterface::get_discard_policy;
+	flist[F_SET_RECEIVER_PADDING]		    =   &ClientInterface::set_padding_enable;
+	flist[F_GET_RECEIVER_PADDING]		    =   &ClientInterface::get_padding_enable;
+	flist[F_SET_RECEIVER_DEACTIVATED_PADDING] = &ClientInterface::set_deactivated_padding_enable;
+	flist[F_GET_RECEIVER_DEACTIVATED_PADDING] = &ClientInterface::get_deactivated_padding_enable;
 	flist[F_RECEIVER_SET_READOUT_MODE] 	    = 	&ClientInterface::set_readout_mode;
 	flist[F_RECEIVER_SET_ADC_MASK]			=	&ClientInterface::set_adc_mask;
 	flist[F_SET_RECEIVER_DBIT_LIST]			=	&ClientInterface::set_dbit_list;
 	flist[F_GET_RECEIVER_DBIT_LIST]			=	&ClientInterface::get_dbit_list;
-	flist[F_RECEIVER_DBIT_OFFSET]			= 	&ClientInterface::set_dbit_offset;
+	flist[F_SET_RECEIVER_DBIT_OFFSET]		= 	&ClientInterface::set_dbit_offset;
+	flist[F_GET_RECEIVER_DBIT_OFFSET]		= 	&ClientInterface::get_dbit_offset;
     flist[F_SET_RECEIVER_QUAD]			    = 	&ClientInterface::set_quad_type;
     flist[F_SET_RECEIVER_READ_N_LINES]      =   &ClientInterface::set_read_n_lines;
     flist[F_SET_RECEIVER_UDP_IP]            =   &ClientInterface::set_udp_ip;
@@ -176,6 +193,7 @@ int ClientInterface::functionTable(){
 	flist[F_SET_RECEIVER_NUM_INTERFACES]    =   &ClientInterface::set_num_interfaces;
 	flist[F_RECEIVER_SET_ADC_MASK_10G]		=	&ClientInterface::set_adc_mask_10g;
     flist[F_RECEIVER_SET_NUM_COUNTERS]      =   &ClientInterface::set_num_counters;
+    flist[F_INCREMENT_FILE_INDEX]           =   &ClientInterface::increment_file_index;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -318,101 +336,13 @@ int ClientInterface::update_client(Interface &socket) {
 int ClientInterface::send_update(Interface &socket) {
     int n = 0;
     int i32 = -1;
-    int64_t i64 = -1;
-    char cstring[MAX_STR_LENGTH]{};
 
     sls::IpAddr ip;
     ip = server->getLastClient();
     n += socket.Send(&ip, sizeof(ip));
 
-    // filepath
-    sls::strcpy_safe(cstring, receiver->getFilePath().c_str());
-    n += socket.Send(cstring, sizeof(cstring));
-
-    // filename
-    sls::strcpy_safe(cstring, receiver->getFileName().c_str());
-    n += socket.Send(cstring, sizeof(cstring));
-
-    // index
-    i64 = receiver->getFileIndex();
-    n += socket.Send(&i64, sizeof(i64));
-
-    // file format
-    i32 = (int)receiver->getFileFormat();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // frames per file
-    i32 = (int)receiver->getFramesPerFile();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // frame discard policy
-    i32 = (int)receiver->getFrameDiscardPolicy();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // frame padding
-    i32 = (int)receiver->getFramePaddingEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // file write enable
-    i32 = (int)receiver->getFileWriteEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // master file write enable
-    i32 = (int)receiver->getMasterFileWriteEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // file overwrite enable
-    i32 = (int)receiver->getOverwriteEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
     // gap pixels
     i32 = (int)receiver->getGapPixelsEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // streaming frequency
-    i32 = (int)receiver->getStreamingFrequency();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // streaming port
-    i32 = (int)receiver->getStreamingPort();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // streaming source ip
-    ip = receiver->getStreamingSourceIP();
-    n += socket.Send(&ip, sizeof(ip));
-
-    // additional json header
-    sls::strcpy_safe(cstring, receiver->getAdditionalJsonHeader().c_str());
-    n += socket.Send(cstring, sizeof(cstring));
-
-    // data streaming enable
-    i32 = (int)receiver->getDataStreamEnable();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // activate
-    i32 = (int)receiver->getActivate();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // deactivated padding enable
-    i32 = (int)receiver->getDeactivatedPadding();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // silent mode
-    i32 = (int)receiver->getSilentMode();
-    n += socket.Send(&i32, sizeof(i32));
-
-    // dbit list
-    {
-        std::vector<int> list = receiver->getDbitList();
-        int retvalsize = list.size();
-        int retval[retvalsize];
-        std::copy(std::begin(list), std::end(list), retval);
-        socket.Send(&retvalsize, sizeof(retvalsize));
-        socket.Send(retval, sizeof(retval));
-    }
-
-    // dbit offset
-    i32 = receiver->getDbitOffset();
     n += socket.Send(&i32, sizeof(i32));
 
     return OK;
@@ -614,13 +544,22 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
 
 int ClientInterface::set_streaming_frequency(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting streaming frequency: " << index;
-        impl()->setStreamingFrequency(index);
+    if (index < 0) {
+        throw RuntimeError("Invalid streaming frequency: "
+            + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting streaming frequency: " << index;
+    impl()->setStreamingFrequency(index);
+    
     int retval = impl()->getStreamingFrequency();
     validate(index, retval, "set streaming frequency", DEC);
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_streaming_frequency(Interface &socket) {
+    int retval = impl()->getStreamingFrequency();
+    LOG(logDEBUG1) << "streaming freq:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -658,12 +597,14 @@ int ClientInterface::set_file_dir(Interface &socket) {
     char retval[MAX_STR_LENGTH]{};
     socket.Receive(fPath);
 
-    if (strlen(fPath) != 0) {
-        LOG(logDEBUG1) << "Setting file path: " << fPath;
-        if(fPath[0] != '/')
-            throw RuntimeError("Receiver path needs to be absolute path");
-        impl()->setFilePath(fPath);
+    if (strlen(fPath) == 0) {
+        throw RuntimeError("Cannot set empty file path");
     }
+    if(fPath[0] != '/')
+        throw RuntimeError("Receiver path needs to be absolute path");
+    LOG(logDEBUG1) << "Setting file path: " << fPath;
+    impl()->setFilePath(fPath);
+    
     std::string s = impl()->getFilePath();
     sls::strcpy_safe(retval, s.c_str());
     if ((s.empty()) || (strlen(fPath) && strcasecmp(fPath, retval)))
@@ -671,6 +612,14 @@ int ClientInterface::set_file_dir(Interface &socket) {
     else
         LOG(logDEBUG1) << "file path:" << retval;
 
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_file_dir(Interface &socket) {
+    char retval[MAX_STR_LENGTH]{};
+    std::string s = impl()->getFilePath();
+    sls::strcpy_safe(retval, s.c_str());
+    LOG(logDEBUG1) << "file path:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -678,14 +627,21 @@ int ClientInterface::set_file_name(Interface &socket) {
     char fName[MAX_STR_LENGTH]{};
     char retval[MAX_STR_LENGTH]{};
     socket.Receive(fName);
-    if (strlen(fName) != 0) {
-        LOG(logDEBUG1) << "Setting file name: " << fName;
-        impl()->setFileName(fName);
+    if (strlen(fName) == 0) {
+        throw RuntimeError("Cannot set empty file name");
     }
+    LOG(logDEBUG1) << "Setting file name: " << fName;
+    impl()->setFileName(fName);
+    
     std::string s = impl()->getFileName();
-    if (s.empty())
-        throw RuntimeError("file name is empty");
+    sls::strcpy_safe(retval, s.c_str());
+    LOG(logDEBUG1) << "file name:" << retval;
+    return socket.Send(OK);
+}
 
+int ClientInterface::get_file_name(Interface &socket) {
+    char retval[MAX_STR_LENGTH]{};
+    std::string s = impl()->getFileName();
     sls::strcpy_safe(retval, s.c_str());
     LOG(logDEBUG1) << "file name:" << retval;
     return socket.sendResult(retval);
@@ -693,13 +649,22 @@ int ClientInterface::set_file_name(Interface &socket) {
 
 int ClientInterface::set_file_index(Interface &socket) {
     auto index = socket.Receive<int64_t>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting file index: " << index;
-        impl()->setFileIndex(index);
+    if (index < 0) {
+        throw RuntimeError("Invalid file index: " 
+            + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting file index: " << index;
+    impl()->setFileIndex(index);
+
     int64_t retval = impl()->getFileIndex();
     validate(index, retval, "set file index", DEC);
+    LOG(logDEBUG1) << "file index:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_file_index(Interface &socket) {
+    int64_t retval = impl()->getFileIndex();
     LOG(logDEBUG1) << "file index:" << retval;
     return socket.sendResult(retval);
 }
@@ -728,41 +693,67 @@ int ClientInterface::get_frames_caught(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int ClientInterface::enable_file_write(Interface &socket) {
+int ClientInterface::set_file_write(Interface &socket) {
     auto enable = socket.Receive<int>();
-    if (enable >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting File write enable:" << enable;
-        impl()->setFileWriteEnable(enable);
+    if (enable < 0) {
+        throw RuntimeError("Invalid file write enable: " + std::to_string(enable));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting File write enable:" << enable;
+    impl()->setFileWriteEnable(enable);
+
     int retval = impl()->getFileWriteEnable();
     validate(enable, retval, "set file write enable", DEC);
+    LOG(logDEBUG1) << "file write enable:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_file_write(Interface &socket) {
+    int retval = impl()->getFileWriteEnable();
     LOG(logDEBUG1) << "file write enable:" << retval;
     return socket.sendResult(retval);
 }
 
-int ClientInterface::enable_master_file_write(Interface &socket) {
+int ClientInterface::set_master_file_write(Interface &socket) {
     auto enable = socket.Receive<int>();
-    if (enable >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting Master File write enable:" << enable;
-        impl()->setMasterFileWriteEnable(enable);
+    if (enable < 0) {
+        throw RuntimeError("Invalid master file write enable: "
+            + std::to_string(enable));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting Master File write enable:" << enable;
+    impl()->setMasterFileWriteEnable(enable);
+    
     int retval = impl()->getMasterFileWriteEnable();
     validate(enable, retval, "set master file write enable", DEC);
+    LOG(logDEBUG1) << "master file write enable:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_master_file_write(Interface &socket) {
+    int retval = impl()->getMasterFileWriteEnable();
     LOG(logDEBUG1) << "master file write enable:" << retval;
     return socket.sendResult(retval);
 }
 
-int ClientInterface::enable_overwrite(Interface &socket) {
+int ClientInterface::set_overwrite(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting File overwrite enable:" << index;
-        impl()->setOverwriteEnable(index);
+    if (index < 0) {
+        throw RuntimeError("Invalid over write enable: "
+            + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting File overwrite enable:" << index;
+    impl()->setOverwriteEnable(index);
+    
     int retval = impl()->getOverwriteEnable();
     validate(index, retval, "set file overwrite enable", DEC);
+    LOG(logDEBUG1) << "file overwrite enable:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_overwrite(Interface &socket) {
+    int retval = impl()->getOverwriteEnable();
     LOG(logDEBUG1) << "file overwrite enable:" << retval;
     return socket.sendResult(retval);
 }
@@ -821,19 +812,28 @@ int ClientInterface::set_activate(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int ClientInterface::set_data_stream_enable(Interface &socket) {
+int ClientInterface::set_streaming(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting data stream enable:" << index;
-        try {
-            impl()->setDataStreamEnable(index);
-        } catch(const RuntimeError &e) {
-            throw RuntimeError("Could not set data stream enable to " + std::to_string(index));
-        }
+    if (index < 0) {
+        throw RuntimeError("Invalid streaming enable: "
+            + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting data stream enable:" << index;
+    try {
+        impl()->setDataStreamEnable(index);
+    } catch(const RuntimeError &e) {
+        throw RuntimeError("Could not set data stream enable to " + std::to_string(index));
+    }
+    
     auto retval = static_cast<int>(impl()->getDataStreamEnable());
     validate(index, retval, "set data stream enable", DEC);
+    LOG(logDEBUG1) << "data streaming enable:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_streaming(Interface &socket) {
+    auto retval = static_cast<int>(impl()->getDataStreamEnable());
     LOG(logDEBUG1) << "data streaming enable:" << retval;
     return socket.sendResult(retval);
 }
@@ -871,13 +871,22 @@ int ClientInterface::set_flipped_data(Interface &socket) {
 int ClientInterface::set_file_format(Interface &socket) {
     fileFormat f = GET_FILE_FORMAT;
     socket.Receive(f);
-    if (f >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting file format:" << f;
-        impl()->setFileFormat(f);
+    if (f < 0 || f > NUM_FILE_FORMATS) {
+        throw RuntimeError("Invalid file format: "
+            + std::to_string(f));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting file format:" << f;
+    impl()->setFileFormat(f);
+    
     auto retval = impl()->getFileFormat();
     validate(f, retval, "set file format", DEC);
+    LOG(logDEBUG1) << "File Format: " << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_file_format(Interface &socket) {
+    auto retval = impl()->getFileFormat();
     LOG(logDEBUG1) << "File Format: " << retval;
     return socket.sendResult(retval);
 }
@@ -912,13 +921,21 @@ int ClientInterface::set_multi_detector_size(Interface &socket) {
 
 int ClientInterface::set_streaming_port(Interface &socket) {
     auto port = socket.Receive<int>();
-    if (port >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting streaming port:" << port;
-        impl()->setStreamingPort(port);
+    if (port < 0) {
+        throw RuntimeError("Invalid zmq port " + std::to_string(port));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting streaming port:" << port;
+    impl()->setStreamingPort(port);
+
     int retval = impl()->getStreamingPort();
     validate(port, retval, "set streaming port", DEC);
+    LOG(logDEBUG1) << "streaming port:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_streaming_port(Interface &socket) {
+    int retval = impl()->getStreamingPort();
     LOG(logDEBUG1) << "streaming port:" << retval;
     return socket.sendResult(retval);
 }
@@ -926,11 +943,16 @@ int ClientInterface::set_streaming_port(Interface &socket) {
 int ClientInterface::set_streaming_source_ip(Interface &socket) {
     sls::IpAddr arg;
     socket.Receive(arg);
+    if (arg == 0) { 
+        throw RuntimeError("Invalid zmq ip " + arg.str());
+    }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting streaming source ip:" << arg;
     impl()->setStreamingSourceIP(arg);
+    
     sls::IpAddr retval = impl()->getStreamingSourceIP();
-    if (retval != arg) {
+    LOG(logDEBUG1) << "streaming IP:" << retval;
+    if (retval != arg && arg != 0) {
         std::ostringstream os;
         os << "Could not set streaming ip. Set " << arg
            << ", but read " << retval << '\n';
@@ -939,15 +961,30 @@ int ClientInterface::set_streaming_source_ip(Interface &socket) {
     return socket.Send(OK);
 }
 
+int ClientInterface::get_streaming_source_ip(Interface &socket) {
+    sls::IpAddr retval = impl()->getStreamingSourceIP();
+    LOG(logDEBUG1) << "streaming IP:" << retval;
+    return socket.sendResult(retval);
+}
+
 int ClientInterface::set_silent_mode(Interface &socket) {
     auto value = socket.Receive<int>();
-    if (value >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting silent mode:" << value;
-        impl()->setSilentMode(value);
+    if (value < 0) {
+        throw RuntimeError("Invalid silent mode: "
+            + std::to_string(value));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting silent mode:" << value;
+    impl()->setSilentMode(value);
+    
     auto retval = static_cast<int>(impl()->getSilentMode());
     validate(value, retval, "set silent mode", DEC);
+    LOG(logDEBUG1) << "silent mode:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_silent_mode(Interface &socket) {
+    auto retval = static_cast<int>(impl()->getSilentMode());
     LOG(logDEBUG1) << "silent mode:" << retval;
     return socket.sendResult(retval);
 }
@@ -986,14 +1023,11 @@ int ClientInterface::restream_stop(Interface &socket) {
 
 int ClientInterface::set_additional_json_header(Interface &socket) {
     char arg[MAX_STR_LENGTH]{};
-    char retval[MAX_STR_LENGTH]{};
     socket.Receive(arg);
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting additional json header: " << arg;
     impl()->setAdditionalJsonHeader(arg);
-    sls::strcpy_safe(retval, impl()->getAdditionalJsonHeader().c_str());
-    LOG(logDEBUG1) << "additional json header:" << retval;
-    return socket.sendResult(retval);
+    return socket.Send(OK);
 }
 
 int ClientInterface::get_additional_json_header(Interface &socket) {
@@ -1028,13 +1062,22 @@ int ClientInterface::get_real_udp_socket_buffer_size(
 
 int ClientInterface::set_frames_per_file(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting frames per file: " << index;
-        impl()->setFramesPerFile(index);
+    if (index < 0) {
+        throw RuntimeError("Invalid frames per file: "
+            + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting frames per file: " << index;
+    impl()->setFramesPerFile(index);
+    
     auto retval = static_cast<int>(impl()->getFramesPerFile());
     validate(index, retval, "set frames per file", DEC);
+    LOG(logDEBUG1) << "frames per file:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_frames_per_file(Interface &socket) {
+    auto retval = static_cast<int>(impl()->getFramesPerFile());
     LOG(logDEBUG1) << "frames per file:" << retval;
     return socket.sendResult(retval);
 }
@@ -1069,26 +1112,41 @@ int ClientInterface::check_version_compatibility(Interface &socket) {
 
 int ClientInterface::set_discard_policy(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting frames discard policy: " << index;
-        impl()->setFrameDiscardPolicy(static_cast<frameDiscardPolicy>(index));
+    if (index < 0 || index > NUM_DISCARD_POLICIES) {
+        throw RuntimeError("Invalid discard policy " + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting frames discard policy: " << index;
+    impl()->setFrameDiscardPolicy(static_cast<frameDiscardPolicy>(index));
     int retval = impl()->getFrameDiscardPolicy();
     validate(index, retval, "set discard policy", DEC);
+    LOG(logDEBUG1) << "frame discard policy:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_discard_policy(Interface &socket) {
+    int retval = impl()->getFrameDiscardPolicy();
     LOG(logDEBUG1) << "frame discard policy:" << retval;
     return socket.sendResult(retval);
 }
 
 int ClientInterface::set_padding_enable(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting frames padding enable: " << index;
-        impl()->setFramePaddingEnable(static_cast<bool>(index));
+    if (index < 0) {
+        throw RuntimeError("Invalid padding enable: " + std::to_string(index));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting frames padding enable: " << index;
+    impl()->setFramePaddingEnable(static_cast<bool>(index));
+
     auto retval = static_cast<int>(impl()->getFramePaddingEnable());
     validate(index, retval, "set frame padding enable", DEC);
+    LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_padding_enable(Interface &socket) {
+    auto retval = static_cast<int>(impl()->getFramePaddingEnable());
     LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
     return socket.sendResult(retval);
 }
@@ -1096,16 +1154,28 @@ int ClientInterface::set_padding_enable(Interface &socket) {
 int ClientInterface::set_deactivated_padding_enable(
     Interface &socket) {
     auto enable = socket.Receive<int>();
-    if (myDetectorType != EIGER)
+    if (myDetectorType != EIGER) {
         functionNotImplemented();
-
-    if (enable >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting deactivated padding enable: " << enable;
-        impl()->setDeactivatedPadding(enable > 0);
     }
+    if (enable < 0) {
+        throw RuntimeError("Invalid Deactivated padding: " 
+            + std::to_string(enable));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting deactivated padding enable: " << enable;
+    impl()->setDeactivatedPadding(enable > 0);
+
     auto retval = static_cast<int>(impl()->getDeactivatedPadding());
     validate(enable, retval, "set deactivated padding enable", DEC);
+    LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_deactivated_padding_enable(
+    Interface &socket) {
+    if (myDetectorType != EIGER)
+        functionNotImplemented();
+    auto retval = static_cast<int>(impl()->getDeactivatedPadding());
     LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
     return socket.sendResult(retval);
 }
@@ -1155,6 +1225,8 @@ int ClientInterface::set_adc_mask(Interface &socket) {
 int ClientInterface::set_dbit_list(Interface &socket) {
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> args;
     socket.Receive(args);
+    if (myDetectorType != CHIPTESTBOARD)
+        functionNotImplemented();
     LOG(logDEBUG1) << "Setting DBIT list";
     for (auto &it : args) {
         LOG(logDEBUG1) << it << " ";
@@ -1166,6 +1238,8 @@ int ClientInterface::set_dbit_list(Interface &socket) {
 }
 
 int ClientInterface::get_dbit_list(Interface &socket) {
+    if (myDetectorType != CHIPTESTBOARD)
+        functionNotImplemented();
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
     retval = impl()->getDbitList();
     LOG(logDEBUG1) << "Dbit list size retval:" << retval.size();
@@ -1174,13 +1248,26 @@ int ClientInterface::get_dbit_list(Interface &socket) {
 
 int ClientInterface::set_dbit_offset(Interface &socket) {
     auto arg = socket.Receive<int>();
-    if (arg >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting Dbit offset: " << arg;
-        impl()->setDbitOffset(arg);
+    if (myDetectorType != CHIPTESTBOARD)
+        functionNotImplemented();
+    if (arg < 0) {
+        throw RuntimeError("Invalid dbit offset: "
+            + std::to_string(arg));
     }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting Dbit offset: " << arg;
+    impl()->setDbitOffset(arg);
+    
     int retval = impl()->getDbitOffset();
     validate(arg, retval, "set dbit offset", DEC);
+    LOG(logDEBUG1) << "Dbit offset retval: " << retval;
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_dbit_offset(Interface &socket) {
+    if (myDetectorType != CHIPTESTBOARD)
+        functionNotImplemented();
+    int retval = impl()->getDbitOffset();
     LOG(logDEBUG1) << "Dbit offset retval: " << retval;
     return socket.sendResult(retval);
 }
@@ -1236,7 +1323,7 @@ int ClientInterface::set_udp_ip(Interface &socket) {
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
     if (retval == 0) {
-        throw RuntimeError("Failed to get udp mac adddress to listen to\n");
+        throw RuntimeError("Failed to get udp mac adddress to listen to (eth:" + eth + ", ip:" + arg.str() + ")\n");
     }
     LOG(logINFO) << "Receiver MAC Address: " << retval;
     return socket.sendResult(retval);
@@ -1264,7 +1351,7 @@ int ClientInterface::set_udp_ip2(Interface &socket) {
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
     if (retval == 0) {
-        throw RuntimeError("Failed to get udp mac adddress2 to listen to\n");
+        throw RuntimeError("Failed to get udp mac adddress2 to listen to (eth:" + eth + ", ip:" + arg.str() + ")\n");
     }
     LOG(logINFO) << "Receiver MAC Address2: " << retval;
     return socket.sendResult(retval);
@@ -1330,5 +1417,12 @@ int ClientInterface::set_num_counters(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting counters: " << arg;
     impl()->setNumberofCounters(arg);
+    return socket.Send(OK);
+}
+
+int ClientInterface::increment_file_index(Interface &socket) {
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Incrementing file index";
+    impl()->setFileIndex(impl()->getFileIndex() + 1);
     return socket.Send(OK);
 }

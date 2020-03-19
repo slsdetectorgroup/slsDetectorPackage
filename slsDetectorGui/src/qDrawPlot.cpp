@@ -365,15 +365,18 @@ double qDrawPlot::GetYMaximum() {
 void qDrawPlot::SetDataCallBack(bool enable) {
     LOG(logINFO) << "Setting data call back to " << std::boolalpha
                       << enable << std::noboolalpha;
-    if (enable) {
-        isPlot = true;
-        det->setRxZmqDataStream(true);
-        det->registerDataCallback(&(GetDataCallBack), this);
-    } else {
-        isPlot = false;
-        det->setRxZmqDataStream(false);
-        det->registerDataCallback(nullptr, this);
-    }
+    try {
+        if (enable) {
+            isPlot = true;
+            det->registerDataCallback(&(GetDataCallBack), this);
+            det->setRxZmqDataStream(true);
+        } else {
+            isPlot = false;
+            det->registerDataCallback(nullptr, this);
+            det->setRxZmqDataStream(false);
+        }
+    } CATCH_DISPLAY("Could not get set rxr data streaming enable.",
+                  "qDrawPlot::SetDataCallBack")
 }
 
 void qDrawPlot::SetBinary(bool enable, int from, int to) {

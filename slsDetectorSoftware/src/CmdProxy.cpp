@@ -771,6 +771,83 @@ std::vector<std::string> CmdProxy::DacCommands() {
 
 /* acquisition */
 /* Network Configuration (Detector<->Receiver) */
+
+std::string CmdProxy::UDPDestinationIP(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[x.x.x.x] or auto\n\tIp address of the receiver (destination) udp interface. If 'auto' used, then ip is set to ip of rx_hostname."
+               << '\n';
+    } else if (action == defs::GET_ACTION) {
+        auto t = det->getDestinationUDPIP({det_id});
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        os << OutString(t) << '\n';  
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        if (args[0] == "auto") {
+            std::string rxHostname = det->getRxHostname({det_id}).squash("none");
+            // Hostname could be ip try to decode otherwise look up the hostname
+            auto val = sls::IpAddr{rxHostname};
+            if (val == 0) {
+                val = HostnameToIp(rxHostname.c_str());
+            }
+            LOG(logINFO) << "Setting udp_dstip of detector " << 
+                det_id << " to " << val;
+            det->setDestinationUDPIP(val, {det_id});
+            os << val << '\n'; 
+        } else {
+            auto val = IpAddr(args[0]);
+            det->setDestinationUDPIP(val, {det_id});
+            os << args.front() << '\n'; 
+        }
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::UDPDestinationIP2(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[x.x.x.x] or auto\n\t[Jungfrau] Ip address of the receiver (destination) udp interface where the second half of detector data is sent to. If 'auto' used, then ip is set to ip of rx_hostname."
+               << '\n';
+    } else if (action == defs::GET_ACTION) {
+        auto t = det->getDestinationUDPIP2({det_id});
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        os << OutString(t) << '\n';  
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        if (args[0] == "auto") {
+            std::string rxHostname = det->getRxHostname({det_id}).squash("none");
+            // Hostname could be ip try to decode otherwise look up the hostname
+            auto val = sls::IpAddr{rxHostname};
+            if (val == 0) {
+                val = HostnameToIp(rxHostname.c_str());
+            }
+            LOG(logINFO) << "Setting udp_dstip2 of detector " << 
+                det_id << " to " << val;
+            det->setDestinationUDPIP2(val, {det_id});
+            os << val << '\n'; 
+        } else {
+            auto val = IpAddr(args[0]);
+            det->setDestinationUDPIP2(val, {det_id});
+            os << args.front() << '\n'; 
+        }
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Receiver Config */
 /* File */
 /* ZMQ Streaming Parameters (Receiver<->Client) */

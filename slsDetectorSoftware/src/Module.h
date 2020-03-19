@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200309
+#define SLS_SHMVERSION 0x200318
 
 namespace sls{
 
@@ -98,80 +98,17 @@ struct sharedSlsDetector {
      * unset if socket connection is not possible  */
     bool useReceiverFlag;
 
-    /** flipped data across x or y axis */
-    bool flippedDataX;
-
     /** tcp port from gui/different process to receiver (only data) */
     int zmqport;
 
-    /** tcp port from receiver to gui/different process (only data) */
-    int rxZmqport;
-
-    /** data streaming (up stream) enable in receiver  
-     * (needed for restreaming dummy packet) */
-    bool rxUpstream;
-
-    /* Receiver read frequency */
-    int rxReadFreq;
-
     /**  zmq tcp src ip address in client (only data) **/
     sls::IpAddr zmqip;
-
-    /**  zmq tcp src ip address in receiver (only data) **/
-    sls::IpAddr rxZmqip;
 
     /** gap pixels enable */
     int gappixels;
 
     /** gap pixels in each direction */
     slsDetectorDefs::xy nGappixels;
-
-    /** additional json header */
-    char rxAdditionalJsonHeader[MAX_STR_LENGTH];
-
-    /** receiver frames discard policy */
-    slsDetectorDefs::frameDiscardPolicy rxFrameDiscardMode;
-
-    /** receiver partial frames padding enable */
-    bool rxFramePadding;
-
-    /** activated receiver */
-    bool activated;
-
-    /** padding enable in deactivated receiver */
-    bool rxPadDeactivatedModules;
-
-    /** silent receiver */
-    bool rxSilentMode;
-
-    /** path of the output files */
-    char rxFilePath[MAX_STR_LENGTH];
-
-    /** file name prefix */
-    char rxFileName[MAX_STR_LENGTH];
-
-    /** file index */
-    int64_t rxFileIndex;
-
-    /** file format */
-    slsDetectorDefs::fileFormat rxFileFormat;
-
-    /** frames per file */
-    int rxFramesPerFile;
-
-    /** file write enable */
-    bool rxFileWrite;
-
-    /** master file write enable */
-    bool rxMasterFileWrite;
-
-    /** overwrite enable */
-    bool rxFileOverWrite;
-
-    sls::FixedCapacityContainer<int, MAX_RX_DBIT> rxDbitList;
-
-    /** reciever dbit offset */
-    int rxDbitOffset;
 
     /** num udp interfaces */
     int numUDPInterfaces;
@@ -1054,10 +991,8 @@ class Module : public virtual slsDetectorDefs {
     /**
      * Sets the additional json header\sa sharedSlsDetector
      * @param jsonheader additional json header
-     * @returns additional json header, returns "none" if default setting and no
-     * custom ip set
      */
-    std::string setAdditionalJsonHeader(const std::string &jsonheader);
+    void setAdditionalJsonHeader(const std::string &jsonheader);
 
     /**
      * Returns the additional json header \sa sharedSlsDetector
@@ -1247,31 +1182,12 @@ class Module : public virtual slsDetectorDefs {
      */
     int getExternalSampling();
 
-    /**
-     * Set external sampling enable (CTB only)
-     * @param list external sampling source (Option: 0-63)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
+    /** digital data bits enable (CTB only) */
     void setReceiverDbitList(const std::vector<int>& list);
-
-    /**
-     * Get external sampling source (CTB only)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns external sampling enable
-     */
     std::vector<int> getReceiverDbitList() const;
 
-    /**
-     * Set digital data offset in bytes (CTB only)
-     * @param value digital data offset in bytes
-     * @returns digital data offset in bytes
-     */
-    int setReceiverDbitOffset(int value);
-
-    /**
-     * Get digital data offset in bytes (CTB only)
-     * @returns digital data offset in bytes
-     */
+    /** Set digital data offset in bytes (CTB only) */
+    void setReceiverDbitOffset(int value);
     int getReceiverDbitOffset();
 
     /**
@@ -1289,27 +1205,25 @@ class Module : public virtual slsDetectorDefs {
      */
     int activate(int const enable = -1);
 
+    bool getDeactivatedRxrPaddingMode();
+
     /**
      * Set deactivated Receiver padding mode (Eiger only)
-     * @param padding padding option for deactivated receiver. Can be 1
-     * (padding), 0 (no padding), -1 (gets)
-     * @returns 1 (padding), 0 (no padding), -1 (inconsistent values) for
-     * padding option
      */
-    bool setDeactivatedRxrPaddingMode(int padding = -1);
+    void setDeactivatedRxrPaddingMode(bool padding);
 
     /**
      * Returns the enable if data will be flipped across x axis (Eiger)
      * @returns if flipped across x axis
      */
-    bool getFlippedDataX() const;
+    bool getFlippedDataX();
 
     /**
      * Sets the enable which determines if
      * data will be flipped across x axis (Eiger)
-     * @param value 0 or 1 to reset/set or -1 to get value
+     * @param value 0 or 1 to reset/set 
      */
-    void setFlippedDataX(int value = -1);
+    void setFlippedDataX(bool value);
 
     /**
      * Sets all the trimbits to a particular value (Eiger)
@@ -1546,88 +1460,24 @@ class Module : public virtual slsDetectorDefs {
      */
     void setDetectorHostname();
 
-    /**
-     * Returns output file directory
-     * @returns output file directory
-     */
+
     std::string getFilePath();
-
-    /**
-     * Sets up the file directory
-     * @param s file directory
-     * @returns file dir
-     */
-    std::string setFilePath(const std::string &path);
-
-    /**
-     * Returns file name prefix
-     * @returns file name prefix
-     */
+    void setFilePath(const std::string &path);
     std::string getFileName();
+    void setFileName(const std::string &fname);
+    int64_t getFileIndex();
+    void setFileIndex(int64_t file_index);
+    void incrementFileIndex();
+    fileFormat getFileFormat() ;
+    void setFileFormat(fileFormat f);
+    int getFramesPerFile();
+    /** 0 will set frames per file to unlimited */
+    void setFramesPerFile(int n_frames);
+    frameDiscardPolicy getReceiverFramesDiscardPolicy();
+    void setReceiverFramesDiscardPolicy(frameDiscardPolicy f);
+    bool getPartialFramesPadding();
+    void setPartialFramesPadding(bool padding);
 
-    /**
-     * Sets up the file name prefix
-     * @param s file name prefix
-     * @returns file name prefix
-     */
-    std::string setFileName(const std::string &fname);
-
-    /**
-     * Sets the max frames per file in receiver
-     * @param f max frames per file
-     * @returns max frames per file in receiver
-     */
-    int setFramesPerFile(int n_frames);
-
-    int getFramesPerFile() const;
-
-    /**
-     * Sets the frames discard policy in receiver
-     * @param f frames discard policy
-     * @returns frames discard policy set in receiver
-     */
-    frameDiscardPolicy setReceiverFramesDiscardPolicy(
-        frameDiscardPolicy f = GET_FRAME_DISCARD_POLICY);
-
-    /**
-     * Sets the partial frames padding enable in receiver
-     * @param f partial frames padding enable
-     * @returns partial frames padding enable in receiver
-     */
-    bool setPartialFramesPadding(bool padding);
-    bool getPartialFramesPadding() const;
-
-    /**
-     * Returns file format
-     * @returns file format
-     */
-    fileFormat getFileFormat() const;
-
-    /**
-     * Sets up the file format
-     * @param f file format
-     * @returns file format
-     */
-    fileFormat setFileFormat(fileFormat f);
-
-    /**
-     * Sets up the file index
-     * @param i file index
-     * @returns file index
-     */
-    int64_t setFileIndex(int64_t file_index);
-
-    /**
-     * Gets the file index
-     * @returns file index
-     */
-
-    int64_t getFileIndex() const;
-    /**
-     * increments file index
-     * @returns the file index
-     */
-    int64_t incrementFileIndex();
 
     /**
      * Receiver starts listening to packets
@@ -1660,44 +1510,15 @@ class Module : public virtual slsDetectorDefs {
      */
     uint64_t getReceiverCurrentFrameIndex() const;
 
-    /**
-     * Sets/Gets receiver file write enable
-     * @param enable 1 or 0 to set/reset file write enable
-     * @returns file write enable
-     */
-    bool setFileWrite(bool value);
 
-    /**
-     * Gets file write enable
-     * @returns file write enable
-     */
-    bool getFileWrite() const;
+    void setFileWrite(bool value);
+    bool getFileWrite();
+    void setMasterFileWrite(bool value);
+    bool getMasterFileWrite();
+    void setFileOverWrite(bool value);
+    bool getFileOverWrite();
 
-    /**
-     * Sets/Gets receiver master file write enable
-     * @param value 1 or 0 to set/reset master file write enable
-     * @returns master file write enable
-     */
-    bool setMasterFileWrite(bool value);
-
-    /**
-     * Gets master file write enable
-     * @returns master file write enable
-     */
-    bool getMasterFileWrite() const;
-
-    /**
-     * Sets file overwrite in the receiver
-     * @param enable true or false to set/reset file overwrite enable
-     * @returns file overwrite enable
-     */
-    bool setFileOverWrite(bool value);
-
-    /**
-     * Gets file overwrite in the receiver
-     * @returns file overwrite enable
-     */
-    bool getFileOverWrite() const;
+    int getReceiverStreamingFrequency();
 
     /**
      * (previously setReadReceiverFrequency)
@@ -1705,9 +1526,8 @@ class Module : public virtual slsDetectorDefs {
      * @param freq nth frame streamed out, if 0, streamed out at a timer of 200
      * ms
      * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns receiver streaming frequency
      */
-    int setReceiverStreamingFrequency(int freq = -1);
+    void setReceiverStreamingFrequency(int freq);
 
     /**
      * (previously setReceiverReadTimer)
@@ -1719,12 +1539,9 @@ class Module : public virtual slsDetectorDefs {
      */
     int setReceiverStreamingTimer(int time_in_ms = 200);
 
-    /**
-     * Enable or disable streaming data from receiver to client
-     * @param enable 0 to disable 1 to enable -1 to only get the value
-     * @returns data streaming from receiver enable
-     */
-    bool enableDataStreamingFromReceiver(int enable = -1);
+    bool getReceiverStreaming();
+
+    void setReceiverStreaming(bool enable);
 
     /**
      * Enable/disable or 10Gbe
@@ -1740,12 +1557,8 @@ class Module : public virtual slsDetectorDefs {
      */
     int setReceiverFifoDepth(int n_frames = -1);
 
-    /**
-     * Set/get receiver silent mode
-     * @param i is -1 to get, 0 unsets silent mode, 1 sets silent mode
-     * @returns the receiver silent mode enable
-     */
-    bool setReceiverSilentMode(int value = -1);
+    bool getReceiverSilentMode();
+    void setReceiverSilentMode(bool enable);
 
     /**
      * If data streaming in receiver is enabled,

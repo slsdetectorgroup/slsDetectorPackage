@@ -470,8 +470,17 @@ Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
 
 void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
     int previouslyClientStreaming = pimpl->enableDataStreamingToClient();
-    bool previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(true);
+    bool useReceiver = getUseReceiverFlag().squash(false);
+    bool previouslyReceiverStreaming = false;
+    if (useReceiver) {
+        previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(true);
+    }
     pimpl->Parallel(&Module::setNumberofUDPInterfaces, pos, n);
+    // ensure receiver zmq socket ports are multiplied by 2 (2 interfaces)
+    if (getUseReceiverFlag().squash(false) && size()) {
+        int startingPort = getRxZmqPort({0}).squash(0);
+        setRxZmqPort(startingPort, -1);
+    }
     // redo the zmq sockets if enabled
     if (previouslyClientStreaming != 0) {
         pimpl->enableDataStreamingToClient(0);
@@ -675,18 +684,16 @@ void Detector::setRxFifoDepth(int nframes, Positions pos) {
 }
 
 Result<bool> Detector::getRxSilentMode(Positions pos) const {
-    return pimpl->Parallel(&Module::setReceiverSilentMode, pos, -1);
+    return pimpl->Parallel(&Module::getReceiverSilentMode, pos);
 }
 
 void Detector::setRxSilentMode(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverSilentMode, pos,
-                    static_cast<int>(value));
+    pimpl->Parallel(&Module::setReceiverSilentMode, pos, value);
 }
 
 Result<defs::frameDiscardPolicy>
 Detector::getRxFrameDiscardPolicy(Positions pos) const {
-    return pimpl->Parallel(&Module::setReceiverFramesDiscardPolicy, pos,
-                           defs::GET_FRAME_DISCARD_POLICY);
+    return pimpl->Parallel(&Module::getReceiverFramesDiscardPolicy, pos);
 }
 
 void Detector::setRxFrameDiscardPolicy(defs::frameDiscardPolicy f,
@@ -797,18 +804,15 @@ void Detector::setFramesPerFile(int n, Positions pos) {
 // Zmq Streaming (Receiver<->Client)
 
 Result<bool> Detector::getRxZmqDataStream(Positions pos) const {
-    return pimpl->Parallel(&Module::enableDataStreamingFromReceiver, pos,
-                           -1);
+    return pimpl->Parallel(&Module::getReceiverStreaming, pos);
 }
 
 void Detector::setRxZmqDataStream(bool value, Positions pos) {
-    pimpl->Parallel(&Module::enableDataStreamingFromReceiver, pos,
-                    static_cast<int>(value));
+    pimpl->Parallel(&Module::setReceiverStreaming, pos, value);
 }
 
 Result<int> Detector::getRxZmqFrequency(Positions pos) const {
-    return pimpl->Parallel(&Module::setReceiverStreamingFrequency, pos,
-                           -1);
+    return pimpl->Parallel(&Module::getReceiverStreamingFrequency, pos);
 }
 
 void Detector::setRxZmqFrequency(int freq, Positions pos) {
@@ -969,8 +973,7 @@ Result<bool> Detector::getBottom(Positions pos) const {
 }
 
 void Detector::setBottom(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setFlippedDataX, pos,
-                    static_cast<int>(value));
+    pimpl->Parallel(&Module::setFlippedDataX, pos, value);
 }
 
 Result<int> Detector::getAllTrimbits(Positions pos) const {
@@ -1034,12 +1037,11 @@ void Detector::setActive(bool active, Positions pos) {
 }
 
 Result<bool> Detector::getRxPadDeactivatedMode(Positions pos) const {
-    return pimpl->Parallel(&Module::setDeactivatedRxrPaddingMode, pos, -1);
+    return pimpl->Parallel(&Module::getDeactivatedRxrPaddingMode, pos);
 }
 
 void Detector::setRxPadDeactivatedMode(bool pad, Positions pos) {
-    pimpl->Parallel(&Module::setDeactivatedRxrPaddingMode, pos,
-                    static_cast<int>(pad));
+    pimpl->Parallel(&Module::setDeactivatedRxrPaddingMode, pos, pad);
 }
 
 Result<bool> Detector::getPartialReset(Positions pos) const {

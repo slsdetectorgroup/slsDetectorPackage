@@ -85,7 +85,7 @@ IpAddr HostnameToIp(const char *hostname) {
     hints.ai_socktype = SOCK_STREAM;
     if (getaddrinfo(hostname, nullptr, &hints, &result)) {
         freeaddrinfo(result);
-        throw RuntimeError("Could not convert hostname to ip");
+        throw RuntimeError("Could not convert hostname (" + std::string(hostname) + ") to ip");
     }
     uint32_t ip = ((sockaddr_in *)result->ai_addr)->sin_addr.s_addr;
     freeaddrinfo(result);

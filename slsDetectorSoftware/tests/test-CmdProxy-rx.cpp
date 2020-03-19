@@ -29,7 +29,7 @@ python/scripts/list_tested_cmd.py to check if all commands are covered
 //     std::cout << "end\n";
 // }
 
-TEST_CASE("rx_hostname", "[.cmd]") {
+TEST_CASE("rx_hostname", "[.cmd][.rx]") {
     // TODO! find a proper way to test, now we read out the rx_hostname
     // and then put it to see that we don't crash
     Detector det;
@@ -72,7 +72,7 @@ TEST_CASE("rx_hostname", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_framescaught", "[.cmd]") {
+TEST_CASE("rx_framescaught", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -97,7 +97,7 @@ TEST_CASE("rx_framescaught", "[.cmd]") {
     // }
 }
 
-TEST_CASE("rx_status", "[.cmd]") {
+TEST_CASE("rx_status", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     std::ostringstream oss;
@@ -105,7 +105,7 @@ TEST_CASE("rx_status", "[.cmd]") {
     REQUIRE(oss.str() == "rx_status idle\n");
 }
 
-TEST_CASE("rx_version", "[.cmd]") {
+TEST_CASE("rx_version", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     std::ostringstream oss;
@@ -115,7 +115,7 @@ TEST_CASE("rx_version", "[.cmd]") {
     REQUIRE(oss.str() == vs.str());
 }
 
-TEST_CASE("rx_start", "[.cmd]") {
+TEST_CASE("rx_start", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     // PUT only command
@@ -132,7 +132,7 @@ TEST_CASE("rx_start", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_stop", "[.cmd]") {
+TEST_CASE("rx_stop", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     // PUT only command
@@ -149,7 +149,7 @@ TEST_CASE("rx_stop", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_missingpackets", "[.cmd]") {
+TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
     // TODO! This only tests for no crash how can we test
     // for correct values?
     Detector det;
@@ -157,7 +157,7 @@ TEST_CASE("rx_missingpackets", "[.cmd]") {
     proxy.Call("rx_missingpackets", {}, -1, GET);
 }
 
-TEST_CASE("rx_frameindex", "[.cmd]") {
+TEST_CASE("rx_frameindex", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     proxy.Call("rx_frameindex", {}, -1, GET);
@@ -166,7 +166,7 @@ TEST_CASE("rx_frameindex", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("rx_frameindex", {"2"}, -1, PUT));
 }
 
-TEST_CASE("rx_lastclient", "[.cmd]") {
+TEST_CASE("rx_lastclient", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     std::ostringstream oss;
@@ -174,13 +174,13 @@ TEST_CASE("rx_lastclient", "[.cmd]") {
     REQUIRE(oss.str() == "rx_lastclient " + test::my_ip + "\n");
 }
 
-TEST_CASE("rx_printconfig", "[.cmd]") {
+TEST_CASE("rx_printconfig", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     proxy.Call("rx_printconfig", {}, -1, GET);
 }
 
-TEST_CASE("rx_fifodepth", "[.cmd]") {
+TEST_CASE("rx_fifodepth", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     int prev_val = det.getRxFifoDepth().squash();
@@ -203,7 +203,7 @@ TEST_CASE("rx_fifodepth", "[.cmd]") {
     det.setRxFifoDepth(prev_val);
 }
 
-TEST_CASE("rx_silent", "[.cmd]") {
+TEST_CASE("rx_silent", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     {
@@ -223,7 +223,7 @@ TEST_CASE("rx_silent", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_jsonaddheader", "[.cmd]") {
+TEST_CASE("rx_jsonaddheader", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -244,7 +244,7 @@ TEST_CASE("rx_jsonaddheader", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_udpsocksize", "[.cmd]") {
+TEST_CASE("rx_udpsocksize", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     {
@@ -259,7 +259,7 @@ TEST_CASE("rx_udpsocksize", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_realudpsocksize", "[.cmd]") {
+TEST_CASE("rx_realudpsocksize", "[.cmd][.rx]") {
     // TODO! Is the real socket size always twice?
     Detector det;
     CmdProxy proxy(&det);
@@ -279,7 +279,7 @@ TEST_CASE("rx_realudpsocksize", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_framesperfile", "[.cmd]") {
+TEST_CASE("rx_framesperfile", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     {
@@ -299,7 +299,7 @@ TEST_CASE("rx_framesperfile", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_discardpolicy", "[.cmd]") {
+TEST_CASE("rx_discardpolicy", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     {
@@ -324,7 +324,7 @@ TEST_CASE("rx_discardpolicy", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_padding", "[.cmd]") {
+TEST_CASE("rx_padding", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     {
@@ -344,7 +344,7 @@ TEST_CASE("rx_padding", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_readfreq", "[.cmd]") {
+TEST_CASE("rx_readfreq", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     {
@@ -364,7 +364,7 @@ TEST_CASE("rx_readfreq", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_lock", "[.cmd]") {
+TEST_CASE("rx_lock", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     {
@@ -384,7 +384,7 @@ TEST_CASE("rx_lock", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_zmqport", "[.cmd]") {
+TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     int socketsperdetector = 1;
@@ -419,7 +419,7 @@ TEST_CASE("rx_zmqport", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_datastream", "[.cmd]") {
+TEST_CASE("rx_datastream", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     {
@@ -441,7 +441,7 @@ TEST_CASE("rx_datastream", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_tcpport", "[.cmd]") {
+TEST_CASE("rx_tcpport", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -463,7 +463,7 @@ TEST_CASE("rx_tcpport", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_zmqip", "[.cmd]") {
+TEST_CASE("rx_zmqip", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
     {
@@ -479,3 +479,67 @@ TEST_CASE("rx_zmqip", "[.cmd]") {
     }
 }
 
+TEST_CASE("rx_dbitoffset", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD) {
+        auto previous = det.getRxDbitOffset();
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitoffset", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitoffset 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitoffset", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitoffset 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitoffset", {"15"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitoffset 15\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitoffset", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "rx_dbitoffset 15\n");
+        }
+        // Reset to previous value
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxDbitOffset(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("rx_dbitoffset", {}, -1, GET));
+    }
+}
+
+
+
+TEST_CASE("rx_dbitlist", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD) {
+        auto previous = det.getRxDbitList();
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitlist", {"0", "4", "5", "8", "9", "10", "52", "63"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitlist [0, 4, 5, 8, 9, 10, 52, 63]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitlist", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "rx_dbitlist [0, 4, 5, 8, 9, 10, 52, 63]\n");
+        }
+        REQUIRE_THROWS(proxy.Call("rx_dbitlist", {"67"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("rx_dbitlist", {"-1"}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("rx_dbitlist", {"all"}, -1, PUT));
+        // Reset to previous value
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxDbitList(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("rx_dbitlist", {}, -1, GET));
+    }
+}

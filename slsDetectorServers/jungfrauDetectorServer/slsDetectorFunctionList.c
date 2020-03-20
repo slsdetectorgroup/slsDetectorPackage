@@ -727,8 +727,9 @@ int getModule(sls_detector_module *myMod){
         if (dacValues[idac] >= 0)
             initialized = 1;
     }
-    if (initialized)
+    if (initialized) {
         return OK;
+	}
 	return FAIL;
 }
 

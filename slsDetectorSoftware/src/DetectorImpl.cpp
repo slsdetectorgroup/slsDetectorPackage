@@ -345,8 +345,21 @@ bool DetectorImpl::getGapPixelsinCallback() const {
 }
 
 void DetectorImpl::setGapPixelsinCallback(const bool enable) {
-    if (multi_shm()->multiDetectorType != EIGER && multi_shm()->multiDetectorType != JUNGFRAU) {
-        throw RuntimeError("Gap Pixels is not implemented for " + multi_shm()->multiDetectorType);
+    switch (multi_shm()->multiDetectorType) {
+        case JUNGFRAU:
+            break;
+        case EIGER:
+            if (size() && detectors[0]->getQuad()) {
+                break;
+            }
+            if (multi_shm()->numberOfDetector.y % 2 != 0) {
+                throw RuntimeError("Gap pixels can only be used "
+                "for full modules.");
+            }
+            break;
+        default:
+            throw RuntimeError("Gap Pixels is not implemented for " 
+            + multi_shm()->multiDetectorType);
     }
     multi_shm()->gapPixels = enable;
 }
@@ -590,31 +603,31 @@ void DetectorImpl::readFrameFromReceiver() {
             << "\n\t nDetPixelsX: " << nDetPixelsX
             << "\n\t nDetPixelsY: " << nDetPixelsY
             << "\n\t databytes: " << multisize
-		    << "\n\t dynamicRange: " << dynamicRange ;
+		    << "\n\t dynamicRange: " << dynamicRange;
 
         // send data to callback
         if (data) {
             setCurrentProgress(currentFrameIndex + 1);
+            char* image = multiframe;
+            int imagesize = multisize;
+
             if (gapPixels) {
-                int n = processImageWithGapPixels(multiframe, multigappixels,
-                                                  quadEnable, dynamicRange, nDetPixelsX, nDetPixelsY);
-                LOG(logDEBUG) 
-		  	        << "Call Back Info Recalculated:"
-                    << "\n\t nDetPixelsX: " << nDetPixelsX
-                    << "\n\t nDetPixelsY: " << nDetPixelsY
-                    << "\n\t databytes: " << n;
-                thisData =
-                    new detectorData(getCurrentProgress(), currentFileName,
-                                     nDetPixelsX, nDetPixelsY, multigappixels,
-                                     n, dynamicRange, currentFileIndex);
+                int n = InsertGapPixels(multiframe, multigappixels,
+                    quadEnable, dynamicRange, nDetPixelsX, nDetPixelsY);
+                image = multigappixels;
+                imagesize = n;
             }
-            // normal pixels
-            else {
-                thisData =
-                    new detectorData(getCurrentProgress(), currentFileName,
-                                     nDetPixelsX, nDetPixelsY, multiframe,
-                                     multisize, dynamicRange, currentFileIndex);
-            }
+            LOG(logDEBUG1)
+                << "Image Info:"
+                << "\n\tDetPixelsX: " << nDetPixelsX
+                << "\n\tnDetPixelsY: " << nDetPixelsY
+                << "\n\timagesize: " << imagesize
+                << "\n\tdynamicRange: " << dynamicRange; 
+
+            thisData = new detectorData(getCurrentProgress(), 
+                    currentFileName, nDetPixelsX, nDetPixelsY, image, 
+                    imagesize, dynamicRange, currentFileIndex);
+
             dataReady(
                 thisData, currentFrameIndex,
                 ((dynamicRange == 32 && eiger) ? currentSubFrameIndex : -1),
@@ -659,27 +672,116 @@ void DetectorImpl::readFrameFromReceiver() {
         delete[] multigappixels;
 }
 
-int DetectorImpl::processImageWithGapPixels(char *image, char *&gpImage,
-                                            bool quadEnable, int dr, 
-                                            int nPixelsX, int nPixelsY) {
+int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
+        bool quadEnable, int dr, int &nPixelsx, int &nPixelsy) {
+    
+    // inter module gap pixels
+    int modGapPixelsx = 8;      
+    int modGapPixelsy = 36;
+    // inter chip gap pixels
+    int chipGapPixelsx = 2;     
+    int chipGapPixelsy = 2;  
+    // number of pixels in a chip
+    int nChipPixelsx = 256;     
+    int nChipPixelsy = 256;     
 
-    int imagesize = nPixelsX * nPixelsY * ((dr > 16) ? 4 : // 32 bit
-												((dr > 8)  ? 2 : // 16 bit
-												((dr > 4)  ? 1 : // 8 bit
-												0.5)));			 // 4 bit
-    memcpy(gpImage, image, imagesize);
+    // 1 module
+    // number of chips in a module 
+    int nMod1Chipx = 4;              
+    int nMod1Chipy = 2;          
+    // number of pixels in a module
+    int nMod1Pixelsx = nChipPixelsx * nMod1Chipx; 
+    int nMod1Pixelsy = nChipPixelsy * nMod1Chipy; 
+    // number of gap pixels in a module
+    int nMod1GapPixelsx = (nMod1Chipx - 1) * chipGapPixelsx; 
+    int nMod1GapPixelsy = (nMod1Chipy - 1) * chipGapPixelsy;
 
-    return imagesize; 
-/*
-            // 4bit gap pixels
-                if (quadEnable) {
-                    nDetPixelsX += 2;
-                    nDetPixelsY += 2;
-                } else {
-                    nDetPixelsX = nX * (nPixelsX + 3);
-                    nDetPixelsY = nY * (nPixelsY + 1);
+    // number of modules
+    int nModx = nPixelsx / nMod1Pixelsx;    
+    int nMody = nPixelsy / nMod1Pixelsy; 
+    // number of pixels
+    int nTotx = nPixelsx + (nMod1GapPixelsx * nModx) + (modGapPixelsx * (nModx - 1));   
+    int nToty = nPixelsy + (nMod1GapPixelsy * nMody) + (modGapPixelsy * (nMody - 1));
+    // number of chips
+    int nChipx = nPixelsx / nChipPixelsx;
+    int nChipy = nPixelsy / nChipPixelsy; 
+
+    double bytesPerPixel = (double)dr / 8.00;
+    int imagesize = nTotx * nToty * bytesPerPixel;
+
+    LOG(logINFOBLUE)
+        << "Insert Gap pixels:\n\t"
+        << "nPixelsx: " << nPixelsx << "\n\t"
+        << "nPixelsy: " << nPixelsy << "\n\t"
+        << "nChipy: " << nChipy << "\n\t"
+        << "nChipx: " << nChipx << "\n\t"
+        << "nModx: " << nModx << "\n\t"
+        << "nMody: " << nMody << "\n\t"
+        << "nTotx: " << nTotx << "\n\t"
+        << "nToty: " << nToty << "\n\t"
+        << "bytesPerPixel: " << bytesPerPixel << "\n\t"
+        << "imagesize: " << imagesize << "\n\n";
+
+    gpImage = new char[imagesize];
+    memset(gpImage, 0xFF, imagesize);
+    //memcpy(gpImage, image, imagesize);
+    char *src = nullptr;
+    char *dst = nullptr;
+
+
+    int nChipBytesx = nChipPixelsx * bytesPerPixel;                 // 1 chip bytes
+    int nChipGapBytesx = chipGapPixelsx * bytesPerPixel;            // 2 pixel bytes
+    int nModGapBytesx = modGapPixelsx * bytesPerPixel;              // 8 pixel bytes
+    int nChipGapBytesy = chipGapPixelsy * nTotx * bytesPerPixel;    // 2 lines
+    int nModGapBytesy = modGapPixelsy * nTotx * bytesPerPixel;      // 36 lines
+
+    LOG(logINFOBLUE)
+        << "Copy line by line:\n\t"
+        << "nChipBytesx: " << nChipBytesx << "\n\t"
+        << "nChipGapBytesx: " << nChipGapBytesx << "\n\t"
+        << "nModGapBytesx: " << nModGapBytesx << "\n\t"
+        << "nChipGapBytesy: " << nChipGapBytesy << "\n\t"
+        << "nModGapBytesy: " << nModGapBytesy << "\n\n";
+
+    // copying line by line
+    src = image;
+    dst = gpImage;
+    for (int iChipy = 0; iChipy < nChipy; ++iChipy) { // for each chip row in y
+        for (int iy = 0; iy < nChipPixelsy; ++iy) { // for each row
+            for (int iChipx = 0; iChipx < nChipx; ++iChipx) { // in each row, for every chip
+                memcpy(dst, src, nChipBytesx); // copy 1 chip line
+                src += nChipBytesx;
+                dst += nChipBytesx;
+                if (((iChipx + 1) % nMod1Chipx) != 0) { // skip inter chip gap pixels in x
+                    if (iChipy == 0 && iy == 0) {
+                        LOG(logINFORED) << iChipx;
+                    }
+                    dst += nChipGapBytesx;
+                } else if (iChipx + 1 != nChipx){   // skip inter module gap pixels in x
+                    dst += nModGapBytesx;
+                    if (iChipy == 0 && iy == 0) {
+                        LOG(logINFOBLUE) << iChipx;
+                    }
                 }
-*/
+            }
+        }
+        if (((iChipy + 1) % nMod1Chipy) != 0) { // skip inter chip gap pixels in y
+            dst += nChipGapBytesy;
+        } else if (iChipy + 1 != nChipy){   // skip inter module gap pixels in y
+            dst += nModGapBytesy;
+        }
+    }
+
+
+    
+
+
+    nPixelsx = nTotx;
+    nPixelsy = nToty;
+    return imagesize; 
+
+
+/*
     // eiger 4 bit mode
     int nxb =
         multi_shm()->numberOfDetector.x * (512 + 3); //(divided by 2 already)
@@ -811,6 +913,7 @@ int DetectorImpl::processImageWithGapPixels(char *image, char *&gpImage,
     }
 
     return gapdatabytes;
+    */
 }
 
 /*
@@ -913,8 +1016,8 @@ void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
 	memcpy(buf, tempBuffer, generalData->imageSize);
 	return;
 }
-
 */
+
 bool DetectorImpl::enableDataStreamingToClient(int enable) {
     if (enable >= 0) {
         // destroy data threads

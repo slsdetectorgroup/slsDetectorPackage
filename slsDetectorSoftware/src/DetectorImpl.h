@@ -341,16 +341,18 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     void readFrameFromReceiver();
 
-    /**
-     * add gap pixels to the image (only for Eiger in 4 bit mode)
+    /** [Eiger][Jungfrau]
+     * add gap pixels to the imag
      * @param image pointer to image without gap pixels
      * @param gpImage poiner to image with gap pixels, if NULL, allocated
-     * inside function
-     * quadEnable quad enabled
-     * @returns number of data bytes of image with gap pixels
+     * @param quadEnable quad enabled
+     * @param dr dynamic range
+     * @param nPixelsx number of pixels in X axis (updated)
+     * @param nPixelsy number of pixels in Y axis (updated)
+     * @returns total data bytes for updated image
      */
-    int processImageWithGapPixels(char *image, char *&gpImage, bool quadEnable, int dr, 
-                                            int nPixelsX, int nPixelsY);
+    int InsertGapPixels(char *image, char *&gpImage, bool quadEnable, int dr, 
+        int &nPixelsx, int &nPixelsy);
 
     double setTotalProgress();
 

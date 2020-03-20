@@ -776,10 +776,10 @@ int set_image_test_mode(int file_des) {
 		return printSocketReadError();	
 	LOG(logDEBUG1, ("Setting image test mode to \n", arg));
 
-#ifndef GOTTHARDD
-	functionNotImplemented();
-#else
+#if defined(GOTTHARDD) || (defined(EIGERD) && defined(VIRTUAL))
 	setTestImageMode(arg);
+#else
+	functionNotImplemented();
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
@@ -790,11 +790,11 @@ int get_image_test_mode(int file_des) {
 	int retval = -1;
 	LOG(logDEBUG1, ("Getting image test mode\n"));
 
-#ifndef GOTTHARDD
-	functionNotImplemented();
-#else
+#if defined(GOTTHARDD) || (defined(EIGERD) && defined(VIRTUAL))
 	retval = getTestImageMode();
 	LOG(logDEBUG1, ("image test mode retval: %d\n", retval));
+#else
+	functionNotImplemented();
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -1844,7 +1844,8 @@ int start_acquisition(int file_des) {
 #endif
 		if (configured == FAIL) {
 			ret = FAIL;
-			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
+			strcpy(mess, "Could not start acquisition because ");
+			strcat(mess, configureMessage);
 			LOG(logERROR,(mess));					
 		} else {
 			ret = startStateMachine();
@@ -1979,7 +1980,8 @@ int start_and_read_all(int file_des) {
 #endif
 		if (configured == FAIL) {
 			ret = FAIL;
-			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
+			strcpy(mess, "Could not start acquisition because ");
+			strcat(mess, configureMessage);
 			LOG(logERROR,(mess));					
 		} else {
 			ret = startStateMachine();
@@ -4352,7 +4354,11 @@ int copy_detector_server(int file_des) {
         memset(cmd, 0, MAX_STR_LENGTH);
 
         // copy server
-        sprintf(cmd, "tftp %s -r %s -g", hostname, sname);
+		strcpy(cmd, "tftp ");
+		strcat(cmd, hostname);
+		strcat(cmd, " -r ");
+		strcat(cmd, sname);
+		strcat(cmd, " -g");
         int success = executeCommand(cmd, retvals, logDEBUG1);
         if (success == FAIL) {
         	ret = FAIL;
@@ -4364,7 +4370,8 @@ int copy_detector_server(int file_des) {
         else {
         	LOG(logINFO, ("Server copied successfully\n"));
         	// give permissions
-        	sprintf(cmd, "chmod 777 %s", sname);
+			strcpy(cmd, "chmod 777 ");
+			strcat(cmd, sname);
         	executeCommand(cmd, retvals, logDEBUG1);
 
         	// edit /etc/inittab
@@ -4384,7 +4391,9 @@ int copy_detector_server(int file_des) {
         	LOG(logINFO, ("Deleted all lines containing DetectorServer in /etc/inittab\n"));
 
         	// append line
-        	sprintf(cmd, "echo \"ttyS0::respawn:/./%s\" >> /etc/inittab", sname);
+			strcpy(cmd, "echo \"ttyS0::respawn:/./");
+			strcat(cmd, sname);
+			strcat(cmd, "\" >> /etc/inittab");
         	executeCommand(cmd, retvals, logDEBUG1);
 
         	LOG(logINFO, ("/etc/inittab modified to have %s\n", sname));

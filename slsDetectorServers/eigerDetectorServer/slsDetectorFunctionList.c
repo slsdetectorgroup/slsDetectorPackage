@@ -89,6 +89,7 @@ pthread_t eiger_virtual_tid;
 int eiger_virtual_stop = 0;
 uint64_t eiger_virtual_startingframenumber = 0;
 int eiger_virtual_detPos[2] = {0, 0};
+int eiger_virtual_test_mode = 0;
 #endif
 
 
@@ -180,8 +181,23 @@ void basictests() {
 	LOG(logINFO, ("Compatibility - success\n"));
 }
 
+#ifdef VIRTUAL
+void setTestImageMode(int ival) {
+    if (ival >= 0) {
+        if (ival == 0) {
+            LOG(logINFO, ("Switching off Image Test Mode\n"));
+            eiger_virtual_test_mode = 0;
+        } else {
+            LOG(logINFO, ("Switching on Image Test Mode\n"));
+            eiger_virtual_test_mode = 1;
+        }
+    }
+}
 
-
+int getTestImageMode() {
+    return eiger_virtual_test_mode;
+}
+#endif
 
 
 /* Ids */
@@ -362,7 +378,11 @@ void getModuleConfiguration() {
 	top = 1;
 #else
 	master = 0;
+#ifdef VIRTUAL_TOP
 	top = 1;
+#else
+	top = 0;
+#endif
 #endif
 #ifdef VIRTUAL_9M
 	normal = 0;
@@ -1793,18 +1813,25 @@ void* start_timer(void* arg) {
 		memset(imageData, 0, databytes * 2);
 		{
 			int i = 0;
-			if (dr == 4 || dr == 8) {
-				for (i = 0; i < databytes * 2; i += sizeof(uint8_t)) {
-					*((uint8_t*)(imageData + i)) = 0xFF;
-				}     
-			} else if (dr == 16) {
-				for (i = 0; i < databytes * 2; i += sizeof(uint16_t)) {
-					*((uint16_t*)(imageData + i)) = 0xFFF;
-				}
-			} else {
-				for (i = 0; i < databytes * 2; i += sizeof(uint32_t)) {
-					*((uint32_t*)(imageData + i)) = 0xFFFFF;
-				}				
+			switch (dr) {
+				case 4:
+				case 8:
+					for (i = 0; i < databytes * 2; i += sizeof(uint8_t)) {
+						*((uint8_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xFF : (uint8_t)i;
+					} 
+					break;
+				case 16:
+					for (i = 0; i < databytes * 2; i += sizeof(uint16_t)) {
+						*((uint16_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xFFF : (uint16_t)i;
+					}
+					break;
+				case 32:
+					for (i = 0; i < databytes * 2; i += sizeof(uint32_t)) {
+						*((uint32_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xFFFFF : (uint32_t)i;
+					}	
+					break;
+				default:
+					break;
 			}
 		}
 		
@@ -1872,8 +1899,9 @@ void* start_timer(void* arg) {
 								}
 							}
 						}
-
+						usleep(eiger_virtual_transmission_delay_left);
 						sendUDPPacket(0, packetData, packetsize);
+						usleep(eiger_virtual_transmission_delay_right);
 						sendUDPPacket(1, packetData2, packetsize);
 					}
 				}
@@ -1888,6 +1916,7 @@ void* start_timer(void* arg) {
 						usleep((periodns - time_ns)/ 1000);
 					}
 				}
+				usleep(eiger_virtual_transmission_delay_frame);
 			}
 		}
 	

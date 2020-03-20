@@ -26,8 +26,12 @@ void ASIC_Driver_SetDefines(char* driverfname) {
 }
 
 int ASIC_Driver_Set (int index, int length, char* buffer) {
+    char temp[20];
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%d", index + 1);
     char fname[MAX_STR_LENGTH];
-    sprintf(fname, "%s%d", ASIC_Driver_DriverFileName, index + 1);
+    strcpy(fname, ASIC_Driver_DriverFileName);
+    strcat(fname, temp);
     LOG(logDEBUG2, ("\t[chip index: %d, length: %d, fname: %s]\n", index, length, fname)); 
     {
         LOG(logDEBUG2, ("\t[values: \n"));

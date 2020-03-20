@@ -477,6 +477,7 @@ class CmdProxy {
                                     {"cycles", "triggers"},
                                     {"cyclesl", "triggersl"},
                                     {"clkdivider", "speed"}, 
+                                    {"digitest", "imagetest"},
 
                                     /** temperature */
                                     /** dacs */
@@ -527,8 +528,6 @@ class CmdProxy {
 
                                     /* Jungfrau Specific */
                                     /* Gotthard Specific */
-                                    {"digitest", "imagetest"},
-
                                     /* Gotthard2 Specific */
                                     /* Mythen3 Specific */ 
                                     /* CTB Specific */
@@ -593,6 +592,7 @@ class CmdProxy {
                           {"clkdiv", &CmdProxy::ClockDivider},                           
                           {"vhighvoltage", &CmdProxy::vhighvoltage},
                           {"powerchip", &CmdProxy::powerchip}, 
+                          {"imagetest", &CmdProxy::imagetest},
 
                           /** temperature */
                           {"temp_adc", &CmdProxy::temp_adc},
@@ -791,7 +791,6 @@ class CmdProxy {
                           {"clearroi", &CmdProxy::ClearROI},
                           {"exptimel", &CmdProxy::exptimel},
                           {"extsig", &CmdProxy::extsig},
-                          {"imagetest", &CmdProxy::imagetest},
 
                           /* Gotthard2 Specific */  
                           {"inj_ch", &CmdProxy::InjectChannel},
@@ -1091,6 +1090,10 @@ class CmdProxy {
                     "Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled."
                     "\n\t[Mythen3] If module not connected or wrong module, 1 will fail. By default, not powered on"
                     "\n\t[Gotthard2] If module not connected or wrong module, 1 will fail. By default, powered on at server start up.");  
+
+    INTEGER_COMMAND(imagetest, getImageTestMode, setImageTestMode, StringTo<int>,
+                    "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0."
+                    "\n\t[Eiger] Only for Virtual servers. If 0, each pixel intensity incremented by 1. If 1, all pixels saturated.");  
 
     /** temperature */                
 
@@ -1585,9 +1588,6 @@ class CmdProxy {
 
     INTEGER_COMMAND(extsig, getExternalSignalFlags, setExternalSignalFlags, sls::StringTo<slsDetectorDefs::externalSignalFlag>,
                     "[trigger_in_rising_edge|trigger_in_falling_edge]\n\t[Gotthard] External signal mode for trigger timing mode.");
-
-    INTEGER_COMMAND(imagetest, getImageTestMode, setImageTestMode, StringTo<int>,
-                    "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0.");  
 
     /* Gotthard2 Specific */
     INTEGER_COMMAND(currentsource, getCurrentSource, setCurrentSource, StringTo<int>,

@@ -969,8 +969,9 @@ enum detectorSettings getSettings() {
 
 
 void setDAC(enum DACINDEX ind, int val, int mV) {
-    if (val < 0 && val != LTC2620_GetPowerDownValue())
+    if (val < 0 && val != LTC2620_GetPowerDownValue()) {
         return;
+    }
 
 	char* dac_names[] = {DAC_NAMES};
     LOG(logINFO, ("Setting DAC %s\n", dac_names[ind]));

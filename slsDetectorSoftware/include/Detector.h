@@ -265,18 +265,27 @@ class Detector {
 
     Result<int> getHighVoltage(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3][Gotthard2][Moench] */
-    Result<bool> getPowerChip(Positions pos = {}) const;
-
-    /** [Jungfrau][Mythen3][Gotthard2][Moench] */
-    void setPowerChip(bool on, Positions pos = {});
-
     /**
      * [Gotthard] Options: 0, 90, 110, 120, 150, 180, 200
      * [Jungfrau][CTB][Moench] Options: 0, 60 - 200
      * [Eiger][Mythen3][Gotthard2] Options: 0 - 200
      */
     void setHighVoltage(int value, Positions pos = {});
+
+    /** [Jungfrau][Mythen3][Gotthard2][Moench] */
+    Result<bool> getPowerChip(Positions pos = {}) const;
+
+    /** [Jungfrau][Mythen3][Gotthard2][Moench] */
+    void setPowerChip(bool on, Positions pos = {});
+
+    /** [Gotthard][Eiger virtual] */
+    Result<int> getImageTestMode(Positions pos = {});
+
+    /** [Gotthard] If 1, adds channel intensity with precalculated values.
+     * Default is 0 
+     * [Eiger virtual] If 1, pixels are saturated. If 0, increasing intensity
+     * Only for virtual servers */
+    void setImageTestMode(const int value, Positions pos = {});
 
     /**
      * (Degrees)
@@ -905,12 +914,6 @@ class Detector {
     void setExternalSignalFlags(defs::externalSignalFlag value,
                                 Positions pos = {});
 
-    /** [Gotthard] */
-    Result<int> getImageTestMode(Positions pos = {});
-
-    /** [Gotthard] If 1, adds channel intensity with precalculated values.
-     * Default is 0 */
-    void setImageTestMode(const int value, Positions pos = {});
 
     /**************************************************
      *                                                *

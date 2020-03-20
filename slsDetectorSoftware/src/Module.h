@@ -1041,11 +1041,13 @@ class Module : public virtual slsDetectorDefs {
     /** [Gotthard][Jungfrau][CTB][Moench] */
     void executeBusTest();
 
-    /** [Gotthard] */
+    /** [Gotthard][Eiger virtual] */
     int getImageTestMode();
 
     /** [Gotthard] If 1, adds channel intensity with precalculated values.
-     * Default is 0 */
+     * Default is 0 
+     * [Eiger virtual] If 1, pixels are saturated. If 0, increasing intensity
+     * Only for virtual servers */
     void setImageTestMode(const int value);
 
 

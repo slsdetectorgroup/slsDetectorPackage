@@ -472,6 +472,17 @@ class EigerData : public GeneralData {
 												0.5)));			 // 4 bit
 			break;
 		}
+
+		/* after insert gap pixels to give to callback
+            // 4bit gap pixels
+                if (quadEnable) {
+                    nDetPixelsX += 2;
+                    nDetPixelsY += 2;
+                } else {
+                    nDetPixelsX = nX * (nPixelsX + 3);
+                    nDetPixelsY = nY * (nPixelsY + 1);
+                }
+*/
 	};
 
 

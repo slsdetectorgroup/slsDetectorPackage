@@ -367,6 +367,14 @@ void Detector::setPowerChip(bool on, Positions pos) {
     }
 }
 
+Result<int> Detector::getImageTestMode(Positions pos) {
+    return pimpl->Parallel(&Module::getImageTestMode, pos);
+}
+
+void Detector::setImageTestMode(int value, Positions pos) {
+    pimpl->Parallel(&Module::setImageTestMode, pos, value);
+}
+
 Result<int> Detector::getTemperature(defs::dacIndex index,
                                      Positions pos) const {
     switch (index) {
@@ -1193,14 +1201,6 @@ Detector::getExternalSignalFlags(Positions pos) const {
 void Detector::setExternalSignalFlags(defs::externalSignalFlag value,
                                       Positions pos) {
     pimpl->Parallel(&Module::setExternalSignalFlags, pos, value);
-}
-
-Result<int> Detector::getImageTestMode(Positions pos) {
-    return pimpl->Parallel(&Module::getImageTestMode, pos);
-}
-
-void Detector::setImageTestMode(int value, Positions pos) {
-    pimpl->Parallel(&Module::setImageTestMode, pos, value);
 }
 
 // Gotthard2 Specific

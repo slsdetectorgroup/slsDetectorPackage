@@ -312,7 +312,7 @@ void qTabPlot::GetGapPixels() {
     disconnect(chkGapPixels, SIGNAL(toggled(bool)), this,
                SLOT(SetGapPixels(bool)));
     try {
-        auto retval = det->getGapPixelsinCallback().squash(false);
+        auto retval = det->getGapPixelsinCallback();
         chkGapPixels->setChecked(retval);
     }
     CATCH_DISPLAY("Could not get gap pixels enable.", "qTabPlot::GetGapPixels")

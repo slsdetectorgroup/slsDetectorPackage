@@ -1012,7 +1012,7 @@ std::string CmdProxy::GapPixels(int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getGapPixelsinCallback();
-        os << OutString(t) << '\n';
+        os << t << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id != -1) {
             throw sls::RuntimeError(

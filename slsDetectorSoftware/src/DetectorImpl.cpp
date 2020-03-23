@@ -729,35 +729,48 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
     char *dst = nullptr;
 
 
-    int nChipBytesx = nChipPixelsx * bytesPerPixel;                 // 1 chip bytes
+    int nChipBytesx = nChipPixelsx * bytesPerPixel;                 // 1 chip bytes in x
     int nChipGapBytesx = chipGapPixelsx * bytesPerPixel;            // 2 pixel bytes
     int nModGapBytesx = modGapPixelsx * bytesPerPixel;              // 8 pixel bytes
+    int nChipBytesy = nChipPixelsy * nTotx * bytesPerPixel;         // 1 chip bytes in y
     int nChipGapBytesy = chipGapPixelsy * nTotx * bytesPerPixel;    // 2 lines
     int nModGapBytesy = modGapPixelsy * nTotx * bytesPerPixel;      // 36 lines
+        // 4 bit mode, its 1 byte (because for 4 bit mode, we handle 1 byte at a time)
+    int pixel1 = (int)(ceil(bytesPerPixel)); 
+    int row1Bytes = nTotx * bytesPerPixel;
 
     LOG(logINFOBLUE)
         << "Copy line by line:\n\t"
         << "nChipBytesx: " << nChipBytesx << "\n\t"
         << "nChipGapBytesx: " << nChipGapBytesx << "\n\t"
         << "nModGapBytesx: " << nModGapBytesx << "\n\t"
+        << "nChipBytesy: " << nChipBytesy << "\n\t"
         << "nChipGapBytesy: " << nChipGapBytesy << "\n\t"
-        << "nModGapBytesy: " << nModGapBytesy << "\n\n";
+        << "nModGapBytesy: " << nModGapBytesy << "\n\t"
+        << "pixel1: " << pixel1 << "\n\n";
 
     // copying line by line
     src = image;
     dst = gpImage;
-    for (int iChipy = 0; iChipy < nChipy; ++iChipy) { // for each chip row in y
-        for (int iy = 0; iy < nChipPixelsy; ++iy) { // for each row
-            for (int iChipx = 0; iChipx < nChipx; ++iChipx) { // in each row, for every chip
-                memcpy(dst, src, nChipBytesx); // copy 1 chip line
+    // for each chip row in y
+    for (int iChipy = 0; iChipy < nChipy; ++iChipy) {
+        // for each row
+        for (int iy = 0; iy < nChipPixelsy; ++iy) {
+            // in each row, for every chip
+            for (int iChipx = 0; iChipx < nChipx; ++iChipx) {
+                // copy 1 chip line
+                memcpy(dst, src, nChipBytesx);   
                 src += nChipBytesx;
                 dst += nChipBytesx;
-                if (((iChipx + 1) % nMod1Chipx) != 0) { // skip inter chip gap pixels in x
+                // skip inter chip gap pixels in x
+                if (((iChipx + 1) % nMod1Chipx) != 0) {
                     if (iChipy == 0 && iy == 0) {
                         LOG(logINFORED) << iChipx;
                     }
                     dst += nChipGapBytesx;
-                } else if (iChipx + 1 != nChipx){   // skip inter module gap pixels in x
+                } 
+                // skip inter module gap pixels in x
+                else if (iChipx + 1 != nChipx) {
                     dst += nModGapBytesx;
                     if (iChipy == 0 && iy == 0) {
                         LOG(logINFOBLUE) << iChipx;
@@ -765,16 +778,149 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
                 }
             }
         }
-        if (((iChipy + 1) % nMod1Chipy) != 0) { // skip inter chip gap pixels in y
+        // skip inter chip gap pixels in y
+        if (((iChipy + 1) % nMod1Chipy) != 0) {
             dst += nChipGapBytesy;
-        } else if (iChipy + 1 != nChipy){   // skip inter module gap pixels in y
+        } 
+        // skip inter module gap pixels in y
+        else if (iChipy + 1 != nChipy) {
             dst += nModGapBytesy;
         }
     }
 
+    // iner chip gap pixel values is half of neighboring one 
+    // (corners becomes divide by 4 automatically after horizontal filling)
 
-    
+    // vertical filling of inter chip gap pixels 
+    dst = gpImage;
+    // for each chip row in y
+    for (int iChipy = 0; iChipy < nChipy; ++iChipy) {
+        // for each row
+        for (int iy = 0; iy < nChipPixelsy; ++iy) {
+            // in each row, for every chip
+            for (int iChipx = 0; iChipx < nChipx; ++iChipx) {
+                // go to gap pixels
+                dst += nChipBytesx;
+                // fix inter chip gap pixels in x
+                if (((iChipx + 1) % nMod1Chipx) != 0) {
+                    if (iChipy == 0 && iy == 0) {
+                        LOG(logINFORED) << iChipx;
+                    }
+                    uint8_t temp8 = 0;
+                    uint8_t g1 = 0;
+                    uint8_t g2 = 0;
+                    switch (dr) {
+                    case 4:
+                        // neighbouring gap pixels to left
+                        temp8 = (*((uint8_t *)(dst - 1)));
+                        g1 = ((temp8 & 0xF) / 2);
+                        (*((uint8_t *)(dst - 1))) = (temp8 & 0xF0) + g1;
 
+                        // neighbouring gap pixels to right
+                        temp8 = (*((uint8_t *)(dst + 1)));
+                        g2 = ((temp8 >> 4) / 2);
+                        (*((uint8_t *)(dst + 1))) = (g2 << 4) + (temp8 & 0x0F);
+
+                        // gap pixels
+                        (*((uint8_t *)dst)) = (g1 << 4) + g2;    
+                        break;
+                    case 8:
+                        (*((uint8_t *)dst)) = (*((uint8_t *)(dst - pixel1))) / 2;
+                        (*((uint8_t *)(dst + pixel1))) = (*((uint8_t *)(dst + 2 * pixel1))) / 2;
+                        break;
+                    case 16:
+                        (*((uint16_t *)(dst))) = (*((uint16_t *)(dst - pixel1))) / 2;
+                        (*((uint16_t *)(dst + pixel1))) = (*((uint16_t *)(dst + 2 * pixel1))) / 2;
+                        break;
+                    default:
+                        (*((uint32_t *)(dst))) = (*((uint32_t *)(dst - pixel1))) / 2;
+                        (*((uint32_t *)(dst + pixel1))) = (*((uint32_t *)(dst + 2 * pixel1))) / 2;
+                        break;
+                }
+                    dst += nChipGapBytesx;
+                } 
+                // skip inter module gap pixels in x
+                else if (iChipx + 1 != nChipx) {
+                    dst += nModGapBytesx;
+                    if (iChipy == 0 && iy == 0) {
+                        LOG(logINFOBLUE) << iChipx;
+                    }
+                }
+            }
+        }
+        // skip inter chip gap pixels in y
+        if (((iChipy + 1) % nMod1Chipy) != 0) {
+            dst += nChipGapBytesy;
+        } 
+        // skip inter module gap pixels in y
+        else if (iChipy + 1 != nChipy) {
+            dst += nModGapBytesy;
+        }
+    } 
+
+    // horizontal filling of inter chip gap pixels
+    {
+        int nMod1TotPixelsx = nMod1Pixelsx + nMod1GapPixelsx;
+        if (dr == 4) {
+            nMod1TotPixelsx /= 2;
+        }
+
+        LOG(logINFOBLUE)
+            << "Horizontal filling:\n\t"
+            << "nMod1TotPixelsx: " << nMod1TotPixelsx << "\n\n";
+
+        // starting at bottom part (1 line below to copy from)
+        src = gpImage + (nChipBytesy - row1Bytes); 
+        dst = gpImage + nChipBytesy;
+        // for each chip row in y
+        for (int iChipy = 0; iChipy < nChipy; ++iChipy) {
+            // for each module in x
+            for (int iModx = 0; iModx < nModx; ++iModx) {
+                // in each module, for every pixel in x
+                for (int iPixel = 0; iPixel < nMod1TotPixelsx; ++iPixel) {
+                    uint8_t temp = 0, g1 = 0, g2 = 0;
+                    switch (dr) {
+                    case 4:
+                        temp = (*((uint8_t *)src));
+                        g1 = ((temp >> 4) / 2);
+                        g2 = ((temp & 0xF) / 2);
+                        (*((uint8_t *)dst)) = (g1 << 4) + g2;
+                        break;
+                    case 8:
+                        (*((uint8_t *)dst)) = (*((uint8_t *)src)) / 2;
+                        break;
+                    case 16:
+                        (*((uint16_t *)dst)) = (*((uint16_t *)src)) / 2;
+                        break;
+                    default:
+                        (*((uint32_t *)dst)) = (*((uint32_t *)src)) / 2;
+                        break;                        
+                    }
+                    // every pixel (but 4 bit mode, every byte)
+                    src += pixel1;  
+                    dst += pixel1;
+                }
+                // skip inter module gap pixels in x
+                if (iModx + 1 < nModx) {
+                    src += nModGapBytesx;
+                    dst += nModGapBytesx;
+                }
+            }
+            // bottom parts
+            if ((iChipy % nMod1Chipy) == 0) {
+                LOG(logINFOBLUE)<< "bottom";
+                // src  by 2 lines, dont move dst
+                src += nChipGapBytesy;
+            }
+            // top parts
+            else {
+                // skip inter module gap pixels in y
+                LOG(logINFORED) << "skipy " << iChipy;
+                src += (nModGapBytesy + 2 * nChipBytesy - 2 * row1Bytes);
+                dst += (nModGapBytesy + 2 * nChipBytesy);
+            }
+        }
+    }
 
     nPixelsx = nTotx;
     nPixelsy = nToty;
@@ -916,107 +1062,7 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
     */
 }
 
-/*
-void DataProcessor::InsertGapPixels(char* buf, uint32_t dr) {
 
-	memset(tempBuffer, 0xFF, generalData->imageSize);
-
-	int rightChip = ((*quadEnable) ? 0 : index);	// quad enable, then faking both to be left chips
-	const uint32_t nx = generalData->nPixelsX;
-	const uint32_t ny = generalData->nPixelsY;
-	const uint32_t npx = nx * ny;
-	bool group3 = (*quadEnable) ? false : true; // if quad enabled, no last line for left chips
-	char* srcptr = nullptr;
-	char* dstptr = nullptr;
-
-	const uint32_t b1px = generalData->imageSize / (npx); // not double as not dealing with 4 bit mode
-	const uint32_t b2px = 2 * b1px;
-	const uint32_t b1pxofst = (rightChip == 0 ? 0 : b1px); // left fpga (rightChip 0) has no extra 1px offset, but right fpga has
-	const uint32_t b1chip = 256 * b1px;
-	const uint32_t b1line = (nx * b1px);
-	const uint32_t bgroup3chip = b1chip + (group3 ? b1px : 0);
-
-	// copying line by line
-	srcptr = buf;
-	dstptr = tempBuffer + b1line + b1pxofst;		// left fpga (rightChip 0) has no extra 1px offset, but right fpga has
-	for (uint32_t i = 0; i < (ny-1); ++i) {
-		memcpy(dstptr, srcptr, b1chip);
-		srcptr += b1chip;
-		dstptr += (b1chip + b2px);
-		memcpy(dstptr, srcptr, b1chip);
-		srcptr += b1chip;
-		dstptr += bgroup3chip;
-	}
-
-	// vertical filling of values
-	{
-		char* srcgp1 = nullptr; char* srcgp2 = nullptr; char* srcgp3 = nullptr;
-		char* dstgp1 = nullptr; char* dstgp2 = nullptr; char* dstgp3 = nullptr;
-		const uint32_t b3px = 3 * b1px;
-
-		srcptr = tempBuffer + b1line;
-		dstptr = tempBuffer + b1line;
-
-		for (uint32_t i = 0; i < (ny-1); ++i) {
-			srcgp1 = srcptr + b1pxofst + b1chip - b1px;
-			dstgp1 = srcgp1 + b1px;
-			srcgp2 = srcgp1 + b3px;
-			dstgp2 = dstgp1 + b1px;
-			if (group3) {
-				if (rightChip == 0u) {
-					srcgp3 = srcptr + b1line - b2px;
-					dstgp3 = srcgp3 + b1px;
-				} else {
-					srcgp3 = srcptr + b1px;
-					dstgp3 = srcptr;
-				}
-			}
-			switch (dr) {
-			case 8:
-				(*((uint8_t*)srcgp1)) = (*((uint8_t*)srcgp1))/2;	(*((uint8_t*)dstgp1)) = (*((uint8_t*)srcgp1));
-				(*((uint8_t*)srcgp2)) = (*((uint8_t*)srcgp2))/2;	(*((uint8_t*)dstgp2)) = (*((uint8_t*)srcgp2));
-				if (group3) {
-					(*((uint8_t*)srcgp3)) = (*((uint8_t*)srcgp3))/2;	(*((uint8_t*)dstgp3)) = (*((uint8_t*)srcgp3));
-				}
-				break;
-			case 16:
-				(*((uint16_t*)srcgp1)) = (*((uint16_t*)srcgp1))/2;	(*((uint16_t*)dstgp1)) = (*((uint16_t*)srcgp1));
-				(*((uint16_t*)srcgp2)) = (*((uint16_t*)srcgp2))/2;	(*((uint16_t*)dstgp2)) = (*((uint16_t*)srcgp2));
-				if (group3) {
-					(*((uint16_t*)srcgp3)) = (*((uint16_t*)srcgp3))/2;	(*((uint16_t*)dstgp3)) = (*((uint16_t*)srcgp3));
-				}
-				break;
-			default:
-				(*((uint32_t*)srcgp1)) = (*((uint32_t*)srcgp1))/2;	(*((uint32_t*)dstgp1)) = (*((uint32_t*)srcgp1));
-				(*((uint32_t*)srcgp2)) = (*((uint32_t*)srcgp2))/2;	(*((uint32_t*)dstgp2)) = (*((uint32_t*)srcgp2));
-				if (group3) {
-					(*((uint32_t*)srcgp3)) = (*((uint32_t*)srcgp3))/2;	(*((uint32_t*)dstgp3)) = (*((uint32_t*)srcgp3));
-				}
-				break;
-			}
-			srcptr += b1line;
-			dstptr += b1line;
-		}
-
-	}
-
-	// horizontal filling of values
-	srcptr = tempBuffer + b1line;
-	dstptr = tempBuffer;
-	for (uint32_t i = 0; i < nx; ++i) {
-		switch (dr) {
-		case 8:	(*((uint8_t*)srcptr)) = (*((uint8_t*)srcptr))/2; (*((uint8_t*)dstptr)) = (*((uint8_t*)srcptr)); break;
-		case 16:(*((uint16_t*)srcptr)) = (*((uint16_t*)srcptr))/2; (*((uint16_t*)dstptr)) = (*((uint16_t*)srcptr)); break;
-		default:(*((uint32_t*)srcptr)) = (*((uint32_t*)srcptr))/2; (*((uint32_t*)dstptr)) = (*((uint32_t*)srcptr)); break;
-		}
-		srcptr += b1px;
-		dstptr += b1px;
-	}
-
-	memcpy(buf, tempBuffer, generalData->imageSize);
-	return;
-}
-*/
 
 bool DetectorImpl::enableDataStreamingToClient(int enable) {
     if (enable >= 0) {

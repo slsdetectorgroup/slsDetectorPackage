@@ -138,7 +138,7 @@ class Detector {
                               void *pArg);
 
     /**[Eiger][Jungfrau] */
-    Result<bool> getGapPixelsinCallback() const;
+    bool getGapPixelsinCallback() const;
 
     /**
      * [Eiger][Jungfrau]

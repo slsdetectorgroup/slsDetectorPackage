@@ -167,7 +167,7 @@ void Detector::registerDataCallback(void (*func)(detectorData *, uint64_t,
     pimpl->registerDataCallback(func, pArg);
 }
 
-Result<bool> Detector::getGapPixelsinCallback() const {
+bool Detector::getGapPixelsinCallback() const {
     return pimpl->getGapPixelsinCallback();
 }
 

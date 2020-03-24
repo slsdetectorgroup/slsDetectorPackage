@@ -13,12 +13,18 @@ import argparse
 
 from parse import system_include_paths
 
-default_build_path = "/home/l_frojdh/sls/build/" 
+default_build_path = "/home/l_frojdh/sls/build/"
 fpath = "../../slsDetectorSoftware/src/Detector.cpp"
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-p", "--build_path", help="Path to the build database", type = str, default=default_build_path)
+parser.add_argument(
+    "-p",
+    "--build_path",
+    help="Path to the build database",
+    type=str,
+    default=default_build_path,
+)
 cargs = parser.parse_args()
 
 db = cindex.CompilationDatabase.fromDirectory(cargs.build_path)
@@ -26,7 +32,7 @@ index = cindex.Index.create()
 args = db.getCompileCommands(fpath)
 args = list(iter(args).__next__().arguments)[0:-1]
 args = args + "-x c++ --std=c++11".split()
-syspath = system_include_paths('clang++')
+syspath = system_include_paths("clang++")
 incargs = ["-I" + inc for inc in syspath]
 args = args + incargs
 
@@ -39,6 +45,7 @@ ag = []
 
 lines = []
 
+ag2 = []
 
 def get_arguments(node):
     args = [a.type.spelling for a in node.get_arguments()]
@@ -46,9 +53,21 @@ def get_arguments(node):
         "py::arg() = Positions{}" if item == "sls::Positions" else "py::arg()"
         for item in args
     ]
-    args = ', '.join(args)
+    args = ", ".join(args)
     if args:
-        args = f', {args}'
+        args = f", {args}"
+    return args
+
+
+def get_fdec(node):
+    args = [a.type.spelling for a in node.get_arguments()]
+    if node.result_type.spelling:
+        return_type = node.result_type.spelling
+    else:
+        return_type = 'void'
+    
+    args = ", ".join(args)
+    args = f'({return_type}(Detector::*)({args}))'
     return args
 
 
@@ -62,23 +81,36 @@ def visit(node):
                 ):
                     m.append(child)
                     args = get_arguments(child)
-                    lines.append(f'.def(\"{child.spelling}\", &Detector::{child.spelling}{args})')
+                    fs = get_fdec(child)
+                    lines.append(
+                        f'.def("{child.spelling}",{fs} &Detector::{child.spelling}{args})'
+                    )
     for child in node.get_children():
         visit(child)
+
+        # .def("setRxHostname",
+        #      (void (Detector::*)(const std::string &, Positions)) &
+        #          Detector::setRxHostname,
+        #      py::arg(), py::arg() = Positions{})
+        # .def("setRxHostname",
+        #      (void (Detector::*)(const std::vector<std::string> &)) &
+        #          Detector::setRxHostname,
+        #      py::arg())
 
 
 visit(tu.cursor)
 
 
-with open('../src/detector_in.cpp') as f:
+with open("../src/detector_in.cpp") as f:
     data = f.read()
-s = ''.join(lines)
-s += ';'
-text = data.replace('[[FUNCTIONS]]', s)
-warning = '/* WARINING This file is auto generated any edits might be overwritten without warning */\n\n'
-with open('../src/detector.cpp', 'w') as f:
+s = "".join(lines)
+s += ";"
+text = data.replace("[[FUNCTIONS]]", s)
+warning = "/* WARINING This file is auto generated any edits might be overwritten without warning */\n\n"
+with open("../src/detector.cpp", "w") as f:
     f.write(warning)
     f.write(text)
 
 # run clang format on the output
-subprocess.run(['clang-format', '../src/detector.cpp', '-i'])
+subprocess.run(["clang-format", "../src/detector.cpp", "-i"])
+

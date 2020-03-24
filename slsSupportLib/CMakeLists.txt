@@ -31,6 +31,8 @@ set(PUBLICHEADERS
     include/ToString.h
     include/TimeHelper.h
     include/TypeTraits.h
+    include/Timer.h
+    include/UdpRxSocket.h
 )
 
 add_library(slsSupportLib SHARED

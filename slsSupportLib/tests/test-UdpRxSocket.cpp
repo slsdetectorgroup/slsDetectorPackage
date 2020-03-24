@@ -107,3 +107,29 @@ TEST_CASE("Receive an int to an external buffer"){
     CHECK(s.ReceivePacket(reinterpret_cast<char*>(&received)));
     CHECK(received == to_send);
 }
+
+
+TEST_CASE("PEEK data"){
+    int to_send = 5;
+    int to_send2 = 12;
+    int received = -1;
+    auto fd = open_socket(default_port);
+    sls::UdpRxSocket s(default_port, sizeof(int));
+    write(fd, &to_send, sizeof(to_send));
+    write(fd, &to_send2, sizeof(to_send));
+    CHECK(s.PeekPacket());
+    memcpy(&received, s.LastPacket(), sizeof(int));
+    CHECK(received == to_send);
+
+    CHECK(s.PeekPacket());
+    memcpy(&received, s.LastPacket(), sizeof(int));
+    CHECK(received == to_send);
+
+    CHECK(s.ReceivePacket());
+    memcpy(&received, s.LastPacket(), sizeof(int));
+    CHECK(received == to_send);
+
+    CHECK(s.ReceivePacket());
+    memcpy(&received, s.LastPacket(), sizeof(int));
+    CHECK(received == to_send2);
+}

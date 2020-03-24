@@ -74,15 +74,6 @@ class UdpRxSocket {
         buff = new char[packet_size];
     }
 
-    // // Delegating constructor to allow drop in replacement for old socket class
-    // // This one might be removed in the future
-    // UdpRxSocket(unsigned short int const port_number,
-    //             genericSocket::communicationProtocol p,
-    //             int ps = DEFAULT_PACKET_SIZE, const char *eth = NULL,
-    //             int hsize = 0, uint64_t buf_size = SOCKET_BUFFER_SIZE)
-    //     : UdpRxSocket(port_number, ps, InterfaceNameToIp(eth).str().c_str(),
-    //                   buf_size) {}
-
     ~UdpRxSocket() {
         delete[] buff;
         Shutdown();
@@ -93,10 +84,14 @@ class UdpRxSocket {
     
     bool ReceivePacket() noexcept { return ReceivePacket(buff); }
 
-    bool ReceivePacket(char *dst) noexcept {
+    bool ReceivePacket(char *dst, int flags = 0) noexcept {
         auto bytes_received =
-            recvfrom(fd, dst, packet_size, 0, nullptr, nullptr);
+            recvfrom(fd, dst, packet_size, flags, nullptr, nullptr);
         return bytes_received == packet_size;
+    }
+
+    bool PeekPacket() noexcept{
+        return ReceivePacket(buff, MSG_PEEK);
     }
 
     // Only for backwards compatibility this function will be removed during

@@ -134,6 +134,7 @@ class ZmqSocket {
      * @param version detector header version
      * @param flippedDataX if it is flipped across x axis
      * @param quadEnable if quad is enabled
+     * @param completeImage false if there are missing packets
      * @param additionalJsonHeader additional json header
      * @returns 0 if error, else 1
      */
@@ -147,7 +148,7 @@ class ZmqSocket {
         uint16_t modId = 0, uint16_t row = 0, uint16_t column = 0,
         uint16_t reserved = 0, uint32_t debug = 0, uint16_t roundRNumber = 0,
         uint8_t detType = 0, uint8_t version = 0, 
-        int flippedDataX = 0, uint32_t quadEnable = 0,
+        int flippedDataX = 0, uint32_t quadEnable = 0, bool completeImage = false,
         std::string *additionalJsonHeader = 0);
 
     /**

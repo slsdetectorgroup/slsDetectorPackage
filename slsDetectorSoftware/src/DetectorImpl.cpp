@@ -450,6 +450,7 @@ void DetectorImpl::readFrameFromReceiver() {
     }
     int numConnected = numRunning;
     bool data = false;
+    bool completeImage = false;
     char *image = nullptr;
     char *multiframe = nullptr;
     char *multigappixels = nullptr;
@@ -477,6 +478,7 @@ void DetectorImpl::readFrameFromReceiver() {
         if (multiframe != nullptr) {
             memset(multiframe, 0xFF, multisize);
         }
+        completeImage = true;
 
         // get each frame
         for (unsigned int isocket = 0; isocket < zmqSocket.size(); ++isocket) {
@@ -548,6 +550,9 @@ void DetectorImpl::readFrameFromReceiver() {
                         coordY = (nY - 1) - coordY;
                     }
                     flippedDataX = doc["flippedDataX"].GetUint();
+                    if (doc["completeImage"].GetUint() == 0) {
+                        completeImage = false;
+                    }
 		            LOG(logDEBUG1)
 		                << "Header Info:"
                         "\n\tcurrentFileName: "
@@ -557,7 +562,8 @@ void DetectorImpl::readFrameFromReceiver() {
                         << "\n\tcurrentFileIndex: " << currentFileIndex
                         << "\n\tcurrentSubFrameIndex: " << currentSubFrameIndex
                         << "\n\tcoordX: " << coordX << "\n\tcoordY: " << coordY
-                        << "\n\tflippedDataX: " << flippedDataX;
+                        << "\n\tflippedDataX: " << flippedDataX
+                        << "\n\tcompleteImage: " << completeImage;
                 }
 
                 // DATA
@@ -628,7 +634,7 @@ void DetectorImpl::readFrameFromReceiver() {
 
             thisData = new detectorData(getCurrentProgress(), 
                     currentFileName, nDetPixelsX, nDetPixelsY, image, 
-                    imagesize, dynamicRange, currentFileIndex);
+                    imagesize, dynamicRange, currentFileIndex, completeImage);
 
             dataReady(
                 thisData, currentFrameIndex,

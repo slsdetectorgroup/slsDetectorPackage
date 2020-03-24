@@ -231,7 +231,8 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
 			header.modId, header.row, header.column, header.reserved,
 			header.debug, header.roundRNumber,
 			header.detType, header.version,
-			flippedDataX, *quadEnable,
+			flippedDataX, *quadEnable, 
+			(header.packetNumber < generalData->packetsPerFrame ? false : true),
 			additionJsonHeader
 			);
 }

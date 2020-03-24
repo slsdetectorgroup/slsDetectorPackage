@@ -314,7 +314,7 @@ int ZmqSocket::SendHeaderData(
     uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp, uint16_t modId,
     uint16_t row, uint16_t column, uint16_t reserved, uint32_t debug,
     uint16_t roundRNumber, uint8_t detType, uint8_t version,
-    int flippedDataX, uint32_t quadEnable,
+    int flippedDataX, uint32_t quadEnable, bool completeImage,
     std::string *additionalJsonHeader) {
 
     /** Json Header Format */
@@ -329,6 +329,7 @@ int ZmqSocket::SendHeaderData(
                                     "\"fIndex\":%lu, "
                                     "\"fname\":\"%s\", "
                                     "\"data\": %d, "
+                                    "\"completeImage\": %d, "
 
                                     "\"frameNumber\":%lu, "
                                     "\"expLength\":%u, "
@@ -352,7 +353,7 @@ int ZmqSocket::SendHeaderData(
     char buf[MAX_STR_LENGTH] = "";
     sprintf(buf, jsonHeaderFormat, jsonversion, dynamicrange, fileIndex, ndetx,
             ndety, npixelsx, npixelsy, imageSize, acqIndex, fIndex,
-            fname.c_str(), dummy ? 0 : 1,
+            fname.c_str(), dummy ? 0 : 1, completeImage ? 1 : 0,
 
             frameNumber, expLength, packetNumber, bunchId, timestamp, modId,
             row, column, reserved, debug, roundRNumber, detType, version,

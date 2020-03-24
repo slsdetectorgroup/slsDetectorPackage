@@ -1,6 +1,6 @@
-#define WRITE_QUAD
+//#define WRITE_QUAD
 #define DEVELOPER
-
+#undef CORR
 #define C_GHOST 0.0004
 
 #define CM_ROWS 20
@@ -36,12 +36,12 @@
 #include "ansi.h"
 #include <iostream>
 
-//#include <chrono>
+#include <chrono>
 #include <ctime> // time_t
 #include <cstdio>
 
 using namespace std;
-//using namespace std::chrono;
+using namespace std::chrono;
 
 //#define SLS_DETECTOR_JSON_HEADER_VERSION 0x2
 
@@ -77,9 +77,10 @@ int main(int argc, char *argv[]) {
 
   int ok;
 
-  // high_resolution_clock::time_point t1;
-  // high_resolution_clock::time_point t2 ;
-  time_t begin,end,finished;
+  high_resolution_clock::time_point t1;
+  high_resolution_clock::time_point t2 ;
+    std::chrono::steady_clock::time_point begin,end,finished;
+      //time_t begin,end,finished;
   int rms=0;
   
 
@@ -141,8 +142,12 @@ int main(int argc, char *argv[]) {
 
   int ncol_cm=CM_ROWS;
   double xt_ghost=C_GHOST;
-  moench03CommonMode *cm=new moench03CommonMode(ncol_cm);
-  moench03GhostSummation *gs=new moench03GhostSummation(det, xt_ghost);
+  moench03CommonMode *cm=NULL;
+  moench03GhostSummation *gs=NULL;
+#ifdef CORR
+  cm=new moench03CommonMode(ncol_cm);
+  gs=new moench03GhostSummation(det, xt_ghost);
+#endif
   double *gainmap=NULL;
   float *gm;
   double *gmap=NULL;
@@ -170,7 +175,7 @@ int main(int argc, char *argv[]) {
 
   //analogDetector<uint16_t> *filter=new analogDetector<uint16_t>(det,1,NULL,1000);
 #ifndef INTERP
-  singlePhotonDetector *filter=new singlePhotonDetector(det,3, nSigma, 1, cm, 1000, 10, -1, -1, gainmap, gs);
+  singlePhotonDetector *filter=new singlePhotonDetector(det,3, nSigma, 1, cm, 1000, 100, -1, -1, gainmap, gs);
 
     multiThreadedCountingDetector *mt=new multiThreadedCountingDetector(filter,nthreads,fifosize);
 
@@ -356,10 +361,13 @@ int main(int argc, char *argv[]) {
 
 #endif
 	    //	  if (!zmqsocket->ReceiveHeader(0, acqIndex, frameIndex, subframeIndex, filename, fileindex)) {
-	      //  cprintf(RED, "Got Dummy\n");
+	       cprintf(RED, "Got Dummy\n");
 	      //   t1=high_resolution_clock::now();
-	      time(&end);
+	       //time(&end);
+	       //cout << "Measurement lasted " << difftime(end,begin) << endl;
 
+	       end = std::chrono::steady_clock::now();
+	       cout << "Measurement lasted " << (end-begin).count()*0.000001 << " ms" << endl;
 
 	    while (mt->isBusy()) {;}//wait until all data are processed from the queues
 	    
@@ -521,14 +529,16 @@ int main(int argc, char *argv[]) {
 	    mt->clearImage();
 	    
 	    newFrame=1;
-	    //t2 = high_resolution_clock::now();
 	    
-	      time(&finished);
-	      //   auto meas_duration = duration_cast<microseconds>( t2 - t0 ).count();
-	      //   auto real_duration = duration_cast<microseconds>( t2 - t1 ).count();
 	    
-	    cout << "Measurement lasted " << difftime(end,begin) << endl;
-	    cout << "Processing lasted " << difftime(finished,begin) << endl;
+	    //time(&finished);
+	    //cout << "Processing lasted " << difftime(finished,begin) << endl;
+	    
+	       finished = std::chrono::steady_clock::now();
+	       cout << "Processing lasted " << (finished-begin).count()*0.000001 << " ms" << endl;
+#ifdef OPTIMIZE
+	    return 0;
+#endif
 	    continue; //continue to not get out
 
 
@@ -536,7 +546,8 @@ int main(int argc, char *argv[]) {
 
 #ifdef NEWZMQ
 	    if (newFrame) {
-	      time(&begin);
+    begin = std::chrono::steady_clock::now();
+    //time(&begin);
 	      // t0 = high_resolution_clock::now();
 	      //cout <<"new frame" << endl;
 
@@ -808,6 +819,7 @@ int main(int argc, char *argv[]) {
 	  //  timestamp=doc["timestamp"].GetUint();
 	  packetNumber=doc["packetNumber"].GetUint();
 	  // cout << acqIndex << " " << frameIndex << " " << subFrameIndex << " "<< bunchId << " " << timestamp << " " << packetNumber << endl;
+	  //cprintf(GREEN, "frame\n");
 	  if (packetNumber>=40) {
 	    //*((int*)buff)=frameIndex;
 	    if (insubframe==0) f0=frameIndex;

@@ -10,7 +10,7 @@ class pedestalSubtraction  {
       \param nn number of samples to calculate the moving average (defaults to 1000)
   */
   pedestalSubtraction (int nn=1000) : stat(nn) {};
-    
+  /* void setPointers(double *me, double *va) {mean=me; var=va; stat.setPointers(mean, var);}; */
     /** virtual destructorr 
      */
     virtual ~pedestalSubtraction() {};

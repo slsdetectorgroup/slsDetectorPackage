@@ -14,27 +14,27 @@ class MovingStat
       /** constructor
 	  \param nn number of samples  parameter to be used
       */
-      MovingStat(int nn=1000) : n(nn), m_n(0) {}
-
+    MovingStat(int nn) : n(nn), m_n(0), m_newM(0),m_newM2(0)  {}
+      //  void setPointers(double *me, double *va) {mean=me; var=va;}
 	/**
 	   clears the moving average number of samples parameter, mean and standard deviation
 	*/
-        void Clear()
-        {
+      void Clear()
+      {
 	  m_n = 0; 
 	  m_newM=0; 
 	  m_newM2=0;
-        }
+      }
 
 	/**
 	   clears the moving average number of samples parameter, mean and standard deviation
 	*/
         void Set(double val, double rms=0, int m=-1)
         {
-	  if (m>0) m_n = m;  else m_n = n; 
+	  if (m>=0) m_n = m;  else m_n = n; 
 	  m_newM=val*m_n; 
-	  // cout << "set " << val << " " << m << " " << m_n << " " << m_newM << endl;
 	  SetRMS(rms);
+	  // cout << "set " << val << " " << m << " " << m_n << " " << m_newM << endl;
         }
 	/**
 	   clears the moving average number of samples parameter, mean and standard deviation
@@ -42,12 +42,15 @@ class MovingStat
         void SetRMS(double rms)
         {
 	  if (rms<=0) {
-	    m_newM2=m_newM*m_newM/n;
+	    if (m_n>0)
+	      m_newM2=m_newM*m_newM/m_n;
+	    else
+	      m_newM2=0;
 	    //m_n=0;
 	  } else {
-	    if (m_n>0)
+	    if (m_n>0) {
 	      m_newM2=(m_n*rms*rms+m_newM*m_newM/m_n);
-	    else {
+	    } else {
 	      m_newM2=(m_n*rms*rms+m_newM*m_newM/n);
 	      m_n=0;
 	    }
@@ -102,13 +105,14 @@ class MovingStat
 	      m_newM = x;
 	      m_newM2 = x*x;
 	      m_n++;
-            }             else             {
-                m_newM = m_newM + x - m_newM/m_n;
-		m_newM2 = m_newM2 + x*x - m_newM2/m_n;
-            }
-
+            }             
+	  else             {
+	    m_newM = m_newM + x - m_newM/m_n;
+	    m_newM2 = m_newM2 + x*x - m_newM2/m_n;
+	  }
+	  
         }
-
+	
 	/** returns the current number of elements of the moving average
 	    \returns  returns the current number of elements of the moving average
 	 */
@@ -122,7 +126,9 @@ class MovingStat
         inline double Mean() const
         {
 	  //  cout << "get " <<  m_n << " " << m_newM << " " << m_newM/m_n << endl;
-            return (m_n > 0) ? m_newM/m_n : 0.0;
+	 
+	  
+	    return (m_n > 0) ? m_newM/m_n : 0.0;
         }
 
 	/** returns the squared mean, 0 if no elements are inside
@@ -138,7 +144,7 @@ class MovingStat
 	 */
         inline double Variance() const
         {
-	  return ( (m_n > 1) ? (M2()-Mean()*Mean()) : 0.0 );
+	  return (m_n > 0) ? m_newM2/m_n-m_newM/m_n*m_newM/m_n : 0.0;
         }
 
 	/** returns the standard deviation, 0 if no elements are inside
@@ -146,7 +152,8 @@ class MovingStat
 	 */
         inline double StandardDeviation() const
         {
-	  return ( (Variance() > 0) ? sqrt( Variance() ) : -1 );
+	  
+	  return sqrt(Variance());//
         }
 
     private:

@@ -1818,8 +1818,8 @@ void* start_timer(void* arg) {
 		int i = 0;
 		switch (dr) {
 			case 4:
-				for (i = 0; i < ntotpixels; ++i) {
-					*((uint8_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xEE : (uint8_t)i;
+				for (i = 0; i < ntotpixels/2; ++i) {
+					*((uint8_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xEE : (uint8_t)(((2 * i & 0xF) << 4) | ((2 * i + 1) & 0xF));
 				}
 				break;				
 			case 8:

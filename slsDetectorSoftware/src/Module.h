@@ -13,7 +13,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200319
+#define SLS_SHMVERSION 0x200324
 
 namespace sls{
 
@@ -103,9 +103,6 @@ struct sharedSlsDetector {
 
     /**  zmq tcp src ip address in client (only data) **/
     sls::IpAddr zmqip;
-
-    /** gap pixels in each direction */
-    slsDetectorDefs::xy nGappixels;
 
     /** num udp interfaces */
     int numUDPInterfaces;
@@ -220,8 +217,6 @@ class Module : public virtual slsDetectorDefs {
 
 
     slsDetectorDefs::xy getNumberOfChannels() const;
-
-    slsDetectorDefs::xy getNumberOfGapPixels() const;
 
     /**
      * Get Quad Type (Only for Eiger Quad detector hardware)

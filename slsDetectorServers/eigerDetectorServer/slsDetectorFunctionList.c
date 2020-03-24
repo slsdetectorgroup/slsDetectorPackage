@@ -90,6 +90,7 @@ int eiger_virtual_stop = 0;
 uint64_t eiger_virtual_startingframenumber = 0;
 int eiger_virtual_detPos[2] = {0, 0};
 int eiger_virtual_test_mode = 0;
+int eiger_virtual_quad_mode = 0;
 #endif
 
 
@@ -1312,13 +1313,15 @@ int setQuad(int value) {
 	if (!Feb_Control_SetQuad(value)) {
 		return FAIL;
 	}
+#else
+	eiger_virtual_quad_mode = value;
 #endif
 	return OK;
 }
 
 int	getQuad() {
 #ifdef VIRTUAL
-	return 0;
+	return eiger_virtual_quad_mode;
 #else
 	return Beb_GetQuad();
 #endif
@@ -1881,6 +1884,10 @@ void* start_timer(void* arg) {
 						header->packetNumber = i;
 						header->row = row;
 						header->column = colRight;
+						if (eiger_virtual_quad_mode) {
+							header->row = 1; // right is next row
+							header->column = 0;	// right same first column						
+						}
 
 						// fill data	
 						{		

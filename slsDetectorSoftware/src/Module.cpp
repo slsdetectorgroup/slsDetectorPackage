@@ -421,8 +421,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->nChip.y = parameters.nChipY;
     shm()->nDacs = parameters.nDacs;
     shm()->dynamicRange = parameters.dynamicRange;
-    shm()->nGappixels.x = parameters.nGappixelsX;
-    shm()->nGappixels.y = parameters.nGappixelsY;
 }
 
 int Module::sendModule(sls_detector_module *myMod,
@@ -586,12 +584,6 @@ slsDetectorDefs::xy Module::getNumberOfChannels() const {
     return coord;
 }
 
-slsDetectorDefs::xy Module::getNumberOfGapPixels() const {
-    slsDetectorDefs::xy gap{};
-    gap.x = shm()->nGappixels.x;
-    gap.y = shm()->nGappixels.y;
-    return gap;
-}
 bool Module::getQuad() {
     int retval = -1;
     LOG(logDEBUG1) << "Getting Quad Type";

@@ -97,22 +97,6 @@ void qDrawPlot::SetupPlots() {
     slsDetectorDefs::xy res = det->getDetectorSize();
     nPixelsX = res.x;
     nPixelsY = res.y;
-    switch (detType) {
-    case slsDetectorDefs::EIGER:
-        try {
-            if (det->getQuad().tsquash("Inconsistent values for quad type")) {
-                nPixelsX /= 2;
-                nPixelsY *= 2;
-                if (nPixelsX != nPixelsY) {
-                    --nPixelsX;
-                }
-            }
-        }
-        CATCH_DISPLAY("Could not get quad.", "qDrawPlot::SetupPlots")
-        break;
-    default:
-        break;
-    }
     LOG(logINFO) << "nPixelsX:" << nPixelsX;
     LOG(logINFO) << "nPixelsY:" << nPixelsY;
 

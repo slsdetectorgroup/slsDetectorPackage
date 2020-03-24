@@ -345,21 +345,23 @@ bool DetectorImpl::getGapPixelsinCallback() const {
 }
 
 void DetectorImpl::setGapPixelsinCallback(const bool enable) {
-    switch (multi_shm()->multiDetectorType) {
-        case JUNGFRAU:
-            break;
-        case EIGER:
-            if (size() && detectors[0]->getQuad()) {
+    if (enable) {
+        switch (multi_shm()->multiDetectorType) {
+            case JUNGFRAU:
                 break;
-            }
-            if (multi_shm()->numberOfDetector.y % 2 != 0) {
-                throw RuntimeError("Gap pixels can only be used "
-                "for full modules.");
-            }
-            break;
-        default:
-            throw RuntimeError("Gap Pixels is not implemented for " 
-            + multi_shm()->multiDetectorType);
+            case EIGER:
+                if (size() && detectors[0]->getQuad()) {
+                    break;
+                }
+                if (multi_shm()->numberOfDetector.y % 2 != 0) {
+                    throw RuntimeError("Gap pixels can only be used "
+                    "for full modules.");
+                }
+                break;
+            default:
+                throw RuntimeError("Gap Pixels is not implemented for " 
+                + multi_shm()->multiDetectorType);
+        }
     }
     multi_shm()->gapPixels = enable;
 }
@@ -617,7 +619,7 @@ void DetectorImpl::readFrameFromReceiver() {
                 image = multigappixels;
                 imagesize = n;
             }
-            LOG(logDEBUG1)
+            LOG(logDEBUG)
                 << "Image Info:"
                 << "\n\tnDetPixelsX: " << nDetPixelsX
                 << "\n\tnDetPixelsY: " << nDetPixelsY
@@ -675,7 +677,7 @@ void DetectorImpl::readFrameFromReceiver() {
 int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
         bool quadEnable, int dr, int &nPixelsx, int &nPixelsy) {
     
-    LOG(logINFOBLUE)<< "Insert Gap pixels:"
+    LOG(logDEBUG)<< "Insert Gap pixels:"
         << "\n\t nPixelsx: " << nPixelsx
         << "\n\t nPixelsy: " << nPixelsy
         << "\n\t quadEnable: " << quadEnable
@@ -695,7 +697,7 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
     int nMod1Chipx = 4;              
     int nMod1Chipy = 2;          
     if (quadEnable) {
-        nMod1Chipx += 2;
+        nMod1Chipx = 2;
     }
     // number of pixels in a module
     int nMod1Pixelsx = nChipPixelsx * nMod1Chipx; 
@@ -706,6 +708,21 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
     // total number of modules
     int nModx = nPixelsx / nMod1Pixelsx;    
     int nMody = nPixelsy / nMod1Pixelsy; 
+
+    // check if not full modules 
+    // (setting gap pixels and then adding half module or disabling quad)
+    if (nPixelsy / nMod1Pixelsy == 0) {
+        LOG(logERROR) << "Gap pixels can only be enabled with full modules. "
+            "Sending dummy data without gap pixels.\n";
+        double bytesPerPixel = (double)dr / 8.00;
+        int imagesize = nPixelsy * nPixelsx * bytesPerPixel;
+        if (gpImage == NULL) {
+            gpImage = new char[imagesize];
+        }
+        memset(gpImage, 0xFF, imagesize);
+        return imagesize; 
+    }
+
     // total number of pixels
     int nTotx = nPixelsx + (nMod1GapPixelsx * nModx) + (modGapPixelsx * (nModx - 1));   
     int nToty = nPixelsy + (nMod1GapPixelsy * nMody) + (modGapPixelsy * (nMody - 1));
@@ -729,10 +746,14 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
     if (dr == 4) {
         nMod1TotPixelsx /= 2;
     }
-    LOG(logINFOBLUE)
+    LOG(logDEBUG)
         << "Insert Gap pixels Calculations:\n\t"
         << "nPixelsx: " << nPixelsx << "\n\t"
         << "nPixelsy: " << nPixelsy << "\n\t"
+        << "nMod1Pixelsx: " << nMod1Pixelsx << "\n\t"
+        << "nMod1Pixelsy: " << nMod1Pixelsy << "\n\t"
+        << "nMod1GapPixelsx: " << nMod1GapPixelsx << "\n\t"
+        << "nMod1GapPixelsy: " << nMod1GapPixelsy << "\n\t"
         << "nChipy: " << nChipy << "\n\t"
         << "nChipx: " << nChipx << "\n\t"
         << "nModx: " << nModx << "\n\t"
@@ -751,7 +772,9 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
         << "row1Bytes: " << row1Bytes << "\n\t"
         << "nMod1TotPixelsx: " << nMod1TotPixelsx << "\n\n";
 
-    gpImage = new char[imagesize];
+    if (gpImage == NULL) {
+        gpImage = new char[imagesize];
+    }
     memset(gpImage, 0xFF, imagesize);
     //memcpy(gpImage, image, imagesize);
     char *src = nullptr;
@@ -772,17 +795,11 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
                 dst += nChipBytesx;
                 // skip inter chip gap pixels in x
                 if (((iChipx + 1) % nMod1Chipx) != 0) {
-                    if (iChipy == 0 && iy == 0) {
-                        LOG(logINFORED) << iChipx;
-                    }
                     dst += nChipGapBytesx;
                 } 
                 // skip inter module gap pixels in x
                 else if (iChipx + 1 != nChipx) {
                     dst += nModGapBytesx;
-                    if (iChipy == 0 && iy == 0) {
-                        LOG(logINFOBLUE) << iChipx;
-                    }
                 }
             }
         }
@@ -811,9 +828,6 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
                 dst += nChipBytesx;
                 // fix inter chip gap pixels in x
                 if (((iChipx + 1) % nMod1Chipx) != 0) {
-                    if (iChipy == 0 && iy == 0) {
-                        LOG(logINFORED) << iChipx;
-                    }
                     uint8_t temp8 = 0;
                     uint16_t temp16 = 0;
                     uint32_t temp32 = 0;
@@ -868,9 +882,6 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
                 // skip inter module gap pixels in x
                 else if (iChipx + 1 != nChipx) {
                     dst += nModGapBytesx;
-                    if (iChipy == 0 && iy == 0) {
-                        LOG(logINFOBLUE) << iChipx;
-                    }
                 }
             }
         }
@@ -932,14 +943,12 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
                 dst += nModGapBytesx;
             }
         }
-        // bottom parts
+        // bottom parts, skip inter chip gap pixels
         if ((iChipy % nMod1Chipy) == 0) {
-            // skip inter chip gap pixels
             src += nChipGapBytesy;
         }
-        // top parts
+        // top parts, skip inter module gap pixels and two chips
         else {
-            // skip inter module gap pixels and two chips
             src += (nModGapBytesy + 2 * nChipBytesy - 2 * row1Bytes);
             dst += (nModGapBytesy + 2 * nChipBytesy);
         }

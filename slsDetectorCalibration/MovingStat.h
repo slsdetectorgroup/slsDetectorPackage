@@ -31,7 +31,7 @@ class MovingStat
 	*/
         void Set(double val, double rms=0, int m=-1)
         {
-	  if (m>0) m_n = m;  else m_n = n; 
+	  if (m>=0) m_n = m;  else m_n = n; 
 	  m_newM=val*m_n; 
 	  // cout << "set " << val << " " << m << " " << m_n << " " << m_newM << endl;
 	  SetRMS(rms);

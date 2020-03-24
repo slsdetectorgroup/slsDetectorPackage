@@ -1678,8 +1678,8 @@ void* start_timer(void* arg) {
 	{
 		int i = 0;
 		for (i = 0; i < npixels; ++i) {
-			// 0xCFFE so that gain plot is max and data is 4094 (gap pixels division shows when not 0xFFFE)
-			*((uint16_t*)(imageData + i * sizeof(uint16_t))) = virtual_image_test_mode ? 0xCFFE : (uint16_t)i;
+			// avoiding gain also being divided when gappixels enabled in call back
+			*((uint16_t*)(imageData + i * sizeof(uint16_t))) = virtual_image_test_mode ? 0x0FFE : (uint16_t)i;
 		}
 	}
 	

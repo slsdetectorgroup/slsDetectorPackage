@@ -1811,133 +1811,135 @@ void* start_timer(void* arg) {
 	LOG(logINFO, (" dr:%d\n bytesperpixel:%f\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n ntotpixels:%d\n",
 	dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame, npixelsx, databytes, ntotpixels));
 
-
-		//TODO: Generate data
-		char imageData[databytes * 2];
-		memset(imageData, 0, databytes * 2);
-		{
-			int i = 0;
-			switch (dr) {
-				case 4:
-					for (i = 0; i < ntotpixels; ++i) {
-						*((uint8_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xEE : (uint8_t)i;
-					}
-					break;				
-				case 8:
-					for (i = 0; i < ntotpixels; ++i) {
-						*((uint8_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xFE : (uint8_t)i;
-					} 
-					break;
-				case 16:
-					for (i = 0; i < ntotpixels; ++i) {
-						*((uint16_t*)(imageData + i * sizeof(uint16_t))) = eiger_virtual_test_mode ? 0xFFE : (uint16_t)i;
-					}
-					break;
-				case 32:
-					for (i = 0; i < ntotpixels; ++i) {
-						*((uint32_t*)(imageData + i * sizeof(uint32_t))) = eiger_virtual_test_mode ? 0xFFFFFE : (uint32_t)i;
-					}	
-					break;
-				default:
-					break;
-			}
-		}
-		
-		//TODO: Send data
-		{
-			int frameNr = 1;
-			for(frameNr=1; frameNr <= numFrames; ++frameNr ) {
-
-				//check if virtual_stop is high
-				if(eiger_virtual_stop == 1){
-					break;
+	//TODO: Generate data
+	char imageData[databytes * 2];
+	memset(imageData, 0, databytes * 2);
+	{
+		int i = 0;
+		switch (dr) {
+			case 4:
+				for (i = 0; i < ntotpixels; ++i) {
+					*((uint8_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xEE : (uint8_t)i;
 				}
+				break;				
+			case 8:
+				for (i = 0; i < ntotpixels; ++i) {
+					*((uint8_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xFE : (uint8_t)i;
+				} 
+				break;
+			case 16:
+				for (i = 0; i < ntotpixels; ++i) {
+					*((uint16_t*)(imageData + i * sizeof(uint16_t))) = eiger_virtual_test_mode ? 0xFFE : (uint16_t)i;
+				}
+				break;
+			case 32:
+				for (i = 0; i < ntotpixels; ++i) {
+					*((uint32_t*)(imageData + i * sizeof(uint32_t))) = eiger_virtual_test_mode ? 0xFFFFFE : (uint32_t)i;
+				}	
+				break;
+			default:
+				break;
+		}
+	}
+	
+	//TODO: Send data
+	{
+		int frameNr = 1;
+		for(frameNr=1; frameNr <= numFrames; ++frameNr ) {
 
-				int srcOffset = 0;
-				int srcOffset2 = npixelsx;
+			usleep(eiger_virtual_transmission_delay_frame);
+
+			//check if virtual_stop is high
+			if(eiger_virtual_stop == 1){
+				break;
+			}
+
+			int srcOffset = 0;
+			int srcOffset2 = npixelsx;
+		
+			struct timespec begin, end;
+			clock_gettime(CLOCK_REALTIME, &begin);
+			usleep(exp_us);
+			char packetData[packetsize];
+			memset(packetData, 0, packetsize);
+			char packetData2[packetsize];
+			memset(packetData2, 0, packetsize);
 			
-				struct timespec begin, end;
-				clock_gettime(CLOCK_REALTIME, &begin);
-				usleep(exp_us);
-				char packetData[packetsize];
-				memset(packetData, 0, packetsize);
-				char packetData2[packetsize];
-				memset(packetData2, 0, packetsize);
-				
-				// loop packet
-				{
-					int i = 0;
-					for(i = 0; i != numPacketsPerFrame; ++i) {
-						int dstOffset = sizeof(sls_detector_header);
-						int dstOffset2 = sizeof(sls_detector_header);
-						// set header
-						sls_detector_header* header = (sls_detector_header*)(packetData);
-						header->detType = (uint16_t)myDetectorType;
-						header->frameNumber = frameNr;
-						header->packetNumber = i;
-						header->row = row;
-						header->column = colLeft;
+			// loop packet
+			{
+				int i = 0;
+				for(i = 0; i != numPacketsPerFrame; ++i) {
+					int dstOffset = sizeof(sls_detector_header);
+					int dstOffset2 = sizeof(sls_detector_header);
+					// set header
+					sls_detector_header* header = (sls_detector_header*)(packetData);
+					header->detType = (uint16_t)myDetectorType;
+					header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
+					header->frameNumber = frameNr;
+					header->packetNumber = i;
+					header->row = row;
+					header->column = colLeft;
 
-						header = (sls_detector_header*)(packetData2);
-						header->detType = (uint16_t)myDetectorType;
-						header->frameNumber = frameNr;
-						header->packetNumber = i;
-						header->row = row;
-						header->column = colRight;
-						if (eiger_virtual_quad_mode) {
-							header->row = 1; // right is next row
-							header->column = 0;	// right same first column						
-						}
+					header = (sls_detector_header*)(packetData2);
+					header->detType = (uint16_t)myDetectorType;
+					header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
+					header->frameNumber = frameNr;
+					header->packetNumber = i;
+					header->row = row;
+					header->column = colRight;
+					if (eiger_virtual_quad_mode) {
+						header->row = 1; // right is next row
+						header->column = 0;	// right same first column						
+					}
 
-						// fill data	
-						{		
-							int psize = 0;	
-							for (psize = 0; psize < datasize; psize += npixelsx) {
+					// fill data	
+					{		
+						int psize = 0;	
+						for (psize = 0; psize < datasize; psize += npixelsx) {
 
-								if (dr == 32 && tgEnable == 0) {
-									memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx/2);
-									memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx/2);
-									if (srcOffset % npixelsx == 0) {
-										srcOffset += npixelsx/2;
-										srcOffset2 += npixelsx/2;
-									} 
-									// skip the other half (2 packets in 1 line for 32 bit)
-									else {
-										srcOffset += npixelsx;
-										srcOffset2 += npixelsx;										
-									}
-									dstOffset += npixelsx/2;
-									dstOffset2 += npixelsx/2;
-								} else {
-									memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx);
-									memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx);
-									srcOffset += 2 * npixelsx;
-									srcOffset2 += 2 * npixelsx;
-									dstOffset += npixelsx;
-									dstOffset2 += npixelsx;
+							if (dr == 32 && tgEnable == 0) {
+								memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx/2);
+								memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx/2);
+								if (srcOffset % npixelsx == 0) {
+									srcOffset += npixelsx/2;
+									srcOffset2 += npixelsx/2;
+								} 
+								// skip the other half (2 packets in 1 line for 32 bit)
+								else {
+									srcOffset += npixelsx;
+									srcOffset2 += npixelsx;										
 								}
+								dstOffset += npixelsx/2;
+								dstOffset2 += npixelsx/2;
+							} else {
+								memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx);
+								memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx);
+								srcOffset += 2 * npixelsx;
+								srcOffset2 += 2 * npixelsx;
+								dstOffset += npixelsx;
+								dstOffset2 += npixelsx;
 							}
 						}
-						usleep(eiger_virtual_transmission_delay_left);
-						sendUDPPacket(0, packetData, packetsize);
-						usleep(eiger_virtual_transmission_delay_right);
-						sendUDPPacket(1, packetData2, packetsize);
 					}
+					usleep(eiger_virtual_transmission_delay_left);
+					sendUDPPacket(0, packetData, packetsize);
+					usleep(eiger_virtual_transmission_delay_right);
+					sendUDPPacket(1, packetData2, packetsize);
 				}
-				LOG(logINFO, ("Sent frame: %d\n", frameNr));
-				clock_gettime(CLOCK_REALTIME, &end);
-				int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
-						(end.tv_nsec - begin.tv_nsec));
+			}
+			LOG(logINFO, ("Sent frame: %d\n", frameNr));
+			clock_gettime(CLOCK_REALTIME, &end);
+			int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
+					(end.tv_nsec - begin.tv_nsec));
 
-				// sleep for (period - exptime)
-				if (frameNr < numFrames) { // if there is a next frame
-					if (periodns > time_ns) {
-						usleep((periodns - time_ns)/ 1000);
-					}
+			// sleep for (period - exptime)
+			if (frameNr < numFrames) { // if there is a next frame
+				if (periodns > time_ns) {
+					usleep((periodns - time_ns)/ 1000);
 				}
-				usleep(eiger_virtual_transmission_delay_frame);
 			}
 		}
+	}
 	
 	
 	closeUDPSocket(0);

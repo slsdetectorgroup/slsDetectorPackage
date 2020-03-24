@@ -61,7 +61,7 @@ int 		testFpga();
 int 		testBus();
 #endif
 
-#if defined(GOTTHARDD) || (defined(EIGERD) && defined(VIRTUAL))
+#if defined(GOTTHARDD) || ((defined(EIGERD) || defined(JUNGFRAUD)) && defined(VIRTUAL))
 void 		setTestImageMode(int ival);
 int			getTestImageMode();
 #endif

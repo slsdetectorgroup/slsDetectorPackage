@@ -776,7 +776,7 @@ int set_image_test_mode(int file_des) {
 		return printSocketReadError();	
 	LOG(logDEBUG1, ("Setting image test mode to \n", arg));
 
-#if defined(GOTTHARDD) || (defined(EIGERD) && defined(VIRTUAL))
+#if defined(GOTTHARDD) || ((defined(EIGERD) || defined(JUNGFRAUD)) && defined(VIRTUAL))
 	setTestImageMode(arg);
 #else
 	functionNotImplemented();
@@ -790,7 +790,7 @@ int get_image_test_mode(int file_des) {
 	int retval = -1;
 	LOG(logDEBUG1, ("Getting image test mode\n"));
 
-#if defined(GOTTHARDD) || (defined(EIGERD) && defined(VIRTUAL))
+#if defined(GOTTHARDD) || ((defined(EIGERD) || defined(JUNGFRAUD)) && defined(VIRTUAL))
 	retval = getTestImageMode();
 	LOG(logDEBUG1, ("image test mode retval: %d\n", retval));
 #else

@@ -760,6 +760,11 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
         delete[] data2d;
         data2d = new double[nPixelsY * nPixelsX];
         std::fill(data2d, data2d + nPixelsX * nPixelsY, 0);
+        if (gainData) {
+            delete[] gainData;
+            gainData = new double[nPixelsY * nPixelsX];
+            std::fill(gainData, gainData + nPixelsX * nPixelsY, 0);
+        }
     }
 
     // convert data to double

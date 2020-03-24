@@ -1093,7 +1093,7 @@ class CmdProxy {
 
     INTEGER_COMMAND(imagetest, getImageTestMode, setImageTestMode, StringTo<int>,
                     "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0."
-                    "\n\t[Eiger] Only for Virtual servers. If 0, each pixel intensity incremented by 1. If 1, all pixels saturated.");  
+                    "\n\t[Eiger][Jungfrau] Only for Virtual servers. If 0, each pixel intensity incremented by 1. If 1, all pixels almost saturated.");  
 
     /** temperature */                
 

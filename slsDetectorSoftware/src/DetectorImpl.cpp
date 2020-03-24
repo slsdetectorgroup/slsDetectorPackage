@@ -619,7 +619,7 @@ void DetectorImpl::readFrameFromReceiver() {
             }
             LOG(logDEBUG1)
                 << "Image Info:"
-                << "\n\tDetPixelsX: " << nDetPixelsX
+                << "\n\tnDetPixelsX: " << nDetPixelsX
                 << "\n\tnDetPixelsY: " << nDetPixelsY
                 << "\n\timagesize: " << imagesize
                 << "\n\tdynamicRange: " << dynamicRange; 
@@ -675,6 +675,12 @@ void DetectorImpl::readFrameFromReceiver() {
 int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
         bool quadEnable, int dr, int &nPixelsx, int &nPixelsy) {
     
+    LOG(logINFOBLUE)<< "Insert Gap pixels:"
+        << "\n\t nPixelsx: " << nPixelsx
+        << "\n\t nPixelsy: " << nPixelsy
+        << "\n\t quadEnable: " << quadEnable
+        << "\n\t dr: " << dr;
+
     // inter module gap pixels
     int modGapPixelsx = 8;      
     int modGapPixelsy = 36;
@@ -688,6 +694,9 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
     // number of chips in a module 
     int nMod1Chipx = 4;              
     int nMod1Chipy = 2;          
+    if (quadEnable) {
+        nMod1Chipx += 2;
+    }
     // number of pixels in a module
     int nMod1Pixelsx = nChipPixelsx * nMod1Chipx; 
     int nMod1Pixelsy = nChipPixelsy * nMod1Chipy; 
@@ -721,7 +730,7 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
         nMod1TotPixelsx /= 2;
     }
     LOG(logINFOBLUE)
-        << "Insert Gap pixels:\n\t"
+        << "Insert Gap pixels Calculations:\n\t"
         << "nPixelsx: " << nPixelsx << "\n\t"
         << "nPixelsy: " << nPixelsy << "\n\t"
         << "nChipy: " << nChipy << "\n\t"
@@ -806,6 +815,8 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
                         LOG(logINFORED) << iChipx;
                     }
                     uint8_t temp8 = 0;
+                    uint16_t temp16 = 0;
+                    uint32_t temp32 = 0;
                     uint8_t g1 = 0;
                     uint8_t g2 = 0;
                     switch (dr) {
@@ -814,26 +825,42 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
                         temp8 = (*((uint8_t *)(dst - 1)));
                         g1 = ((temp8 & 0xF) / 2);
                         (*((uint8_t *)(dst - 1))) = (temp8 & 0xF0) + g1;
-
                         // neighbouring gap pixels to right
                         temp8 = (*((uint8_t *)(dst + 1)));
                         g2 = ((temp8 >> 4) / 2);
                         (*((uint8_t *)(dst + 1))) = (g2 << 4) + (temp8 & 0x0F);
-
                         // gap pixels
                         (*((uint8_t *)dst)) = (g1 << 4) + g2;    
                         break;
                     case 8:
-                        (*((uint8_t *)dst)) = (*((uint8_t *)(dst - pixel1))) / 2;
-                        (*((uint8_t *)(dst + pixel1))) = (*((uint8_t *)(dst + 2 * pixel1))) / 2;
+                        // neighbouring gap pixels to left
+                        temp8 = (*((uint8_t *)(dst - pixel1))) / 2;
+                        (*((uint8_t *)dst)) = temp8;
+                        (*((uint8_t *)(dst - pixel1))) = temp8;
+                        // neighbouring gap pixels to right
+                        temp8 = (*((uint8_t *)(dst + 2 * pixel1))) / 2;
+                        (*((uint8_t *)(dst + pixel1))) = temp8;
+                        (*((uint8_t *)(dst + 2 * pixel1))) = temp8;
                         break;
                     case 16:
-                        (*((uint16_t *)(dst))) = (*((uint16_t *)(dst - pixel1))) / 2;
-                        (*((uint16_t *)(dst + pixel1))) = (*((uint16_t *)(dst + 2 * pixel1))) / 2;
+                        // neighbouring gap pixels to left
+                        temp16 = (*((uint16_t *)(dst - pixel1))) / 2;
+                        (*((uint16_t *)dst)) = temp16;
+                        (*((uint16_t *)(dst - pixel1))) = temp16;
+                        // neighbouring gap pixels to right
+                        temp16 = (*((uint16_t *)(dst + 2 * pixel1))) / 2;
+                        (*((uint16_t *)(dst + pixel1))) = temp16;
+                        (*((uint16_t *)(dst + 2 * pixel1))) = temp16;
                         break;
                     default:
-                        (*((uint32_t *)(dst))) = (*((uint32_t *)(dst - pixel1))) / 2;
-                        (*((uint32_t *)(dst + pixel1))) = (*((uint32_t *)(dst + 2 * pixel1))) / 2;
+                        // neighbouring gap pixels to left
+                        temp32 = (*((uint32_t *)(dst - pixel1))) / 2;
+                        (*((uint32_t *)dst)) = temp32;
+                        (*((uint32_t *)(dst - pixel1))) = temp32;
+                        // neighbouring gap pixels to right
+                        temp32 = (*((uint32_t *)(dst + 2 * pixel1))) / 2;
+                        (*((uint32_t *)(dst + pixel1))) = temp32;
+                        (*((uint32_t *)(dst + 2 * pixel1))) = temp32;
                         break;
                 }
                     dst += nChipGapBytesx;
@@ -867,22 +894,32 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
         for (int iModx = 0; iModx < nModx; ++iModx) {
             // in each module, for every pixel in x
             for (int iPixel = 0; iPixel < nMod1TotPixelsx; ++iPixel) {
-                uint8_t temp = 0, g1 = 0, g2 = 0;
+                uint8_t temp8 = 0, g1 = 0, g2 = 0;
+                uint16_t temp16 = 0;
+                uint32_t temp32 = 0;
                 switch (dr) {
                 case 4:
-                    temp = (*((uint8_t *)src));
-                    g1 = ((temp >> 4) / 2);
-                    g2 = ((temp & 0xF) / 2);
-                    (*((uint8_t *)dst)) = (g1 << 4) + g2;
+                    temp8 = (*((uint8_t *)src));
+                    g1 = ((temp8 >> 4) / 2);
+                    g2 = ((temp8 & 0xF) / 2);
+                    temp8 = (g1 << 4) + g2;
+                    (*((uint8_t *)dst)) = temp8;
+                    (*((uint8_t *)src)) = temp8;
                     break;
                 case 8:
-                    (*((uint8_t *)dst)) = (*((uint8_t *)src)) / 2;
+                    temp8 = (*((uint8_t *)src)) / 2;
+                    (*((uint8_t *)dst)) = temp8;
+                    (*((uint8_t *)src)) = temp8;
                     break;
                 case 16:
-                    (*((uint16_t *)dst)) = (*((uint16_t *)src)) / 2;
+                    temp16 = (*((uint16_t *)src)) / 2;
+                    (*((uint16_t *)dst)) = temp16;
+                    (*((uint16_t *)src)) = temp16;
                     break;
                 default:
-                    (*((uint32_t *)dst)) = (*((uint32_t *)src)) / 2;
+                    temp32 = (*((uint32_t *)src)) / 2;
+                    (*((uint32_t *)dst)) = temp32;
+                    (*((uint32_t *)src)) = temp32;
                     break;                        
                 }
                 // every pixel (but 4 bit mode, every byte)

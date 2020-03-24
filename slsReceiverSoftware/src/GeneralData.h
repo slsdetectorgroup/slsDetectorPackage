@@ -442,50 +442,6 @@ class EigerData : public GeneralData {
 		imageSize 		= dataSize*packetsPerFrame;
 	};
 
-	/**
-	 * Enable Gap Pixels changes member variables
-	 * @param enable true if gap pixels enable, else false
-	 * @param dr dynamic range
-	 * @param q quad enable 
-	 */
-	void SetGapPixelsEnable(bool b, int dr, bool q) {
-		if (dr == 4)
-			b = 0;
-		switch((int)b) {
-		case 1:
-			nPixelsX	= (256 * 2) + 3;
-			if (q) {
-				nPixelsX	= (256 * 2) + 2;
-			}
-			nPixelsY 	= 256 + 1;
-			imageSize	= nPixelsX * nPixelsY * ((dr > 16) ? 4 : // 32 bit
-												((dr > 8)  ? 2 : // 16 bit
-												((dr > 4)  ? 1 : // 8 bit
-												0.5)));			 // 4 bit
-			break;
-		default:
-			nPixelsX 	= (256*2);
-			nPixelsY 	= 256;
-			imageSize	= nPixelsX * nPixelsY * ((dr > 16) ? 4 : // 32 bit
-												((dr > 8)  ? 2 : // 16 bit
-												((dr > 4)  ? 1 : // 8 bit
-												0.5)));			 // 4 bit
-			break;
-		}
-
-		/* after insert gap pixels to give to callback
-            // 4bit gap pixels
-                if (quadEnable) {
-                    nDetPixelsX += 2;
-                    nDetPixelsY += 2;
-                } else {
-                    nDetPixelsX = nX * (nPixelsX + 3);
-                    nDetPixelsY = nY * (nPixelsY + 1);
-                }
-*/
-	};
-
-
 };
 
 

@@ -1803,9 +1803,10 @@ void* start_timer(void* arg) {
 	int row = eiger_virtual_detPos[0];
 	int colLeft = top ? eiger_virtual_detPos[1] : eiger_virtual_detPos[1] + 1;
 	int colRight = top ? eiger_virtual_detPos[1] + 1 : eiger_virtual_detPos[1];
+	int ntotpixels = 256 * 256 * 4;
 
-	LOG(logINFO, (" dr:%f\n bytesperpixel:%d\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n",
-	dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame, npixelsx, databytes));
+	LOG(logINFO, (" dr:%d\n bytesperpixel:%f\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n ntotpixels:%d\n",
+	dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame, npixelsx, databytes, ntotpixels));
 
 
 		//TODO: Generate data
@@ -1815,19 +1816,23 @@ void* start_timer(void* arg) {
 			int i = 0;
 			switch (dr) {
 				case 4:
+					for (i = 0; i < ntotpixels; ++i) {
+						*((uint8_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xEE : (uint8_t)i;
+					}
+					break;				
 				case 8:
-					for (i = 0; i < databytes * 2; i += sizeof(uint8_t)) {
-						*((uint8_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xFF : (uint8_t)i;
+					for (i = 0; i < ntotpixels; ++i) {
+						*((uint8_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xFE : (uint8_t)i;
 					} 
 					break;
 				case 16:
-					for (i = 0; i < databytes * 2; i += sizeof(uint16_t)) {
-						*((uint16_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xFFF : (uint16_t)i;
+					for (i = 0; i < ntotpixels; ++i) {
+						*((uint16_t*)(imageData + i * sizeof(uint16_t))) = eiger_virtual_test_mode ? 0xFFE : (uint16_t)i;
 					}
 					break;
 				case 32:
-					for (i = 0; i < databytes * 2; i += sizeof(uint32_t)) {
-						*((uint32_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xFFFFF : (uint32_t)i;
+					for (i = 0; i < ntotpixels; ++i) {
+						*((uint32_t*)(imageData + i * sizeof(uint32_t))) = eiger_virtual_test_mode ? 0xFFFFFE : (uint32_t)i;
 					}	
 					break;
 				default:
@@ -1885,8 +1890,15 @@ void* start_timer(void* arg) {
 								if (dr == 32 && tgEnable == 0) {
 									memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx/2);
 									memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx/2);
-									srcOffset += npixelsx;
-									srcOffset2 += npixelsx;
+									if (srcOffset % npixelsx == 0) {
+										srcOffset += npixelsx/2;
+										srcOffset2 += npixelsx/2;
+									} 
+									// skip the other half (2 packets in 1 line for 32 bit)
+									else {
+										srcOffset += npixelsx;
+										srcOffset2 += npixelsx;										
+									}
 									dstOffset += npixelsx/2;
 									dstOffset2 += npixelsx/2;
 								} else {
@@ -1919,6 +1931,7 @@ void* start_timer(void* arg) {
 				usleep(eiger_virtual_transmission_delay_frame);
 			}
 		}
+	
 	
 	closeUDPSocket(0);
 	closeUDPSocket(1);

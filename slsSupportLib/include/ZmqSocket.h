@@ -213,13 +213,11 @@ class ZmqSocket {
      * @param length length of message
      * @param message message
      * @param zHeader filled out zmqHeader structure (parsed from json header)
-     * @param document for parsing externally additional json header
      * @param version version that has to match, -1 to not care
      * @returns true if successful else false
      */
     int ParseHeader(const int index, int length, char *buff, 
-      zmqHeader& zHeader, rapidjson::Document &document, 
-      uint32_t version);
+      zmqHeader& zHeader, uint32_t version);
 
     /**
      * Class to close socket descriptors automatically

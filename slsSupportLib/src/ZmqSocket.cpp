@@ -260,7 +260,6 @@ int ZmqSocket::SendData(char *buf, int length) {
 
 int ZmqSocket::ReceiveHeader(const int index, zmqHeader& zHeader,
                              uint32_t version) {
-    Document document;
     std::vector<char> buffer(MAX_STR_LENGTH);
     int len =
         zmq_recv(sockfd.socketDescriptor, buffer.data(), buffer.size(), 0);
@@ -269,7 +268,7 @@ int ZmqSocket::ReceiveHeader(const int index, zmqHeader& zHeader,
         cprintf(BLUE, "Header %d [%d] Length: %d Header:%s \n", index, portno,
                 len, buffer.data());
 #endif
-        if (ParseHeader(index, len, buffer.data(), zHeader, document, version)) {
+        if (ParseHeader(index, len, buffer.data(), zHeader, version)) {
 #ifdef ZMQ_DETAIL
             cprintf(RED, "Parsed Header %d [%d] Length: %d Header:%s \n", index,
                     portno, len, buffer.data());
@@ -291,8 +290,8 @@ int ZmqSocket::ReceiveHeader(const int index, zmqHeader& zHeader,
 };
 
 int ZmqSocket::ParseHeader(const int index, int length, char *buff,
-                           zmqHeader& zHeader, Document &document,
-                           uint32_t version) {
+                           zmqHeader& zHeader, uint32_t version) {
+    Document document;
     if (document.Parse(buff, length).HasParseError()) {
         LOG(logERROR) << index << " Could not parse. len:" << length
                       << ": Message:" << buff;

@@ -17,6 +17,7 @@
 #include <sstream>
 #include <type_traits>
 #include <vector>
+#include <map>
 
 namespace sls {
 
@@ -393,6 +394,23 @@ ToString(const T &container, const std::string &unit) {
     return os.str();
 }
 
+template <typename KeyType, typename ValueType>
+std::string ToString(std::map<KeyType, ValueType> m) {
+    std::ostringstream os;
+    os << '{';
+    if (!m.empty()) {
+        auto it = m.cbegin();
+        os << ToString(it->first) << ": " << ToString(it->second);
+        it++;
+        while (it != m.cend()) {
+            os << ", "<< ToString(it->first) << ": " << ToString(it->second);
+            it++;
+        }
+    }
+    os << '}';
+    return os.str();
+}
+
 template <typename T>
 T StringTo(const std::string &t, const std::string &unit) {
     double tval{0};
@@ -610,26 +628,22 @@ template <> inline defs::timingSourceType StringTo(const std::string &s) {
     throw sls::RuntimeError("Unknown timing source type " + s);
 }
 
-template <>
-inline uint32_t StringTo(const std::string &s) {
+template <> inline uint32_t StringTo(const std::string &s) {
     int base = s.find("0x") != std::string::npos ? 16 : 10;
     return std::stoul(s, nullptr, base);
 }
 
-template <>
-inline uint64_t StringTo(const std::string &s) {
+template <> inline uint64_t StringTo(const std::string &s) {
     int base = s.find("0x") != std::string::npos ? 16 : 10;
     return std::stoull(s, nullptr, base);
 }
 
-template <>
-inline int StringTo(const std::string &s) {
+template <> inline int StringTo(const std::string &s) {
     int base = s.find("0x") != std::string::npos ? 16 : 10;
     return std::stoi(s, nullptr, base);
 }
 
-template <>
-inline int64_t StringTo(const std::string &s) {
+template <> inline int64_t StringTo(const std::string &s) {
     int base = s.find("0x") != std::string::npos ? 16 : 10;
     return std::stol(s, nullptr, base);
 }

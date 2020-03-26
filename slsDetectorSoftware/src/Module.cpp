@@ -2107,7 +2107,7 @@ void Module::setAdditionalJsonHeader(const std::map<std::string, std::string> js
     const int size = jsonHeader.size();
     int fnum = F_SET_ADDITIONAL_JSON_HEADER;
     int ret = FAIL;
-    //LOG(logDEBUG) << "Sending to receiver additional json header " << ToString(jsonHeader);
+    LOG(logDEBUG) << "Sending to receiver additional json header " << ToString(jsonHeader);
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(&fnum, sizeof(fnum));
     client.Send(&size, sizeof(size));
@@ -2155,7 +2155,7 @@ std::map<std::string, std::string> Module::getAdditionalJsonHeader() {
                 retval.insert(std::make_pair(retvals[2 * i], retvals[2 * i + 1]));
             }
         }
-        //LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
+        LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
         return retval;
     }
 }

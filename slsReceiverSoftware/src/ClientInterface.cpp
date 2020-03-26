@@ -990,14 +990,14 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
         }    
     }
     verifyIdle(socket);
-    //LOG(logDEBUG1) << "Setting additional json header: " << sls::ToString(json);
+    LOG(logDEBUG1) << "Setting additional json header: " << sls::ToString(json);
     impl()->setAdditionalJsonHeader(json);
     return socket.Send(OK);
 }
 
 int ClientInterface::get_additional_json_header(Interface &socket) {
     std::map<std::string, std::string> json = impl()->getAdditionalJsonHeader();
-    //LOG(logDEBUG1) << "additional json header:" << sls::ToString(json);
+    LOG(logDEBUG1) << "additional json header:" << sls::ToString(json);
     int size = json.size();
     socket.sendResult(size);
     if (size > 0) {

@@ -1181,7 +1181,7 @@ void Implementation::setAdditionalJsonHeader(const std::map<std::string, std::st
 	for (const auto &it : dataStreamer) {
 		it->SetAdditionalJsonHeader(c);
 	}
-    //LOG(logINFO) << "Additional JSON Header: " << ToString(additionalJsonHeader);
+    LOG(logINFO) << "Additional JSON Header: " << sls::ToString(additionalJsonHeader);
 }
 
 std::string Implementation::getAdditionalJsonParameter(const std::string &key) const {
@@ -1217,6 +1217,7 @@ void Implementation::setAdditionalJsonParameter(const std::string &key, const st
     for (const auto &it : dataStreamer) {
         it->SetAdditionalJsonHeader(additionalJsonHeader);
     }    
+    LOG(logINFO) << "Additional JSON Header: " << sls::ToString(additionalJsonHeader);
 }
 
 /**************************************************

@@ -1896,12 +1896,12 @@ std::string CmdProxy::AdditionalJsonHeader(int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getAdditionalJsonHeader({det_id});
-        os << "[";
+        /*os << "[";
         for (auto & it: t[0]) {
             os << it.first << ":" << it.second << ",";
         }
-        os << "]\n";
-        //os << ToString(t) << '\n';
+        os << "]\n";*/
+        os << ToString(t[0]) << '\n';
     } else if (action == defs::PUT_ACTION) {
         // arguments can be empty
         std::map<std::string, std::string> json;

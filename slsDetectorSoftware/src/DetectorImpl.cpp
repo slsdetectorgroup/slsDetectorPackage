@@ -566,7 +566,7 @@ void DetectorImpl::readFrameFromReceiver() {
 
                     // test
                     for (auto &it : zHeader.addJsonHeader) {
-                        LOG(logINFORED) << it[0] << ":" << it[1];
+                        LOG(logINFORED) << it.first << ":" << it.second;
                     }
 
                 }

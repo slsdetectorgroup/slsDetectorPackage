@@ -1170,12 +1170,12 @@ void Implementation::setStreamingSourceIP(const sls::IpAddr ip) {
     LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 
-std::vector<std::vector<std::string>> Implementation::getAdditionalJsonHeader() const {
+std::map<std::string, std::string> Implementation::getAdditionalJsonHeader() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return additionalJsonHeader;
 }
 
-void Implementation::setAdditionalJsonHeader(const std::vector<std::vector<std::string>> c) {
+void Implementation::setAdditionalJsonHeader(const std::map<std::string, std::string> c) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     additionalJsonHeader = c;
 	for (const auto &it : dataStreamer) {
@@ -1185,40 +1185,38 @@ void Implementation::setAdditionalJsonHeader(const std::vector<std::vector<std::
 }
 
 std::string Implementation::getAdditionalJsonParameter(const std::string &key) const {
-    for (size_t i = 0; i < additionalJsonHeader.size(); ++i) {
-        if (additionalJsonHeader[i][0] == key) {
-            return additionalJsonHeader[i][1];
-        }
+    if (additionalJsonHeader.find(key) != additionalJsonHeader.end()) {
+        return additionalJsonHeader.at(key);
     }
     throw sls::RuntimeError("No key " + key + " found in additional json header");
 }
 
 void Implementation::setAdditionalJsonParameter(const std::string &key, const std::string &value) {
-    for (size_t i = 0; i < additionalJsonHeader.size(); ++i) {
-        if (additionalJsonHeader[i][0] == key) {
-            // if empty parameter, delete it
-            if (value.empty()) {
-                LOG(logINFO) << "Deleting additional json parameter (" << key << ")";
-                additionalJsonHeader.erase(additionalJsonHeader.begin() + i);
-            } 
-            // else set it
-            else {
-                additionalJsonHeader[i][1] = value;
-                LOG(logINFO) << "Setting additional json parameter (" << key << ") to " << value;
-            }
-            for (const auto &it : dataStreamer) {
-                it->SetAdditionalJsonHeader(additionalJsonHeader);
-            }
-            return;
+    auto pos = additionalJsonHeader.find(key);
+
+    // if value is empty, delete
+    if (value.empty()) {
+        // doesnt exist
+        if (pos == additionalJsonHeader.end()) {
+            LOG(logINFO) << "Additional json parameter (" << key << ") does not exist anyway";
+        } else {
+            LOG(logINFO) << "Deleting additional json parameter (" << key << ")";
+            additionalJsonHeader.erase(pos);
         }
     }
+    // if found, set it
+    else if (pos != additionalJsonHeader.end()) {
+        additionalJsonHeader[key] = value;
+        LOG(logINFO) << "Setting additional json parameter (" << key << ") to " << value;
+    } 
     // append if not found
-    std::vector<std::string> temp {key, value};
-    additionalJsonHeader.push_back(temp);
+    else {
+        additionalJsonHeader.insert(std::make_pair(key, value));
+        LOG(logINFO) << "Adding additional json parameter (" << key << ") to " << value;
+    }
     for (const auto &it : dataStreamer) {
         it->SetAdditionalJsonHeader(additionalJsonHeader);
     }    
-    LOG(logINFO) << "Adding additional json parameter (" << key << ") to " << value;
 }
 
 /**************************************************

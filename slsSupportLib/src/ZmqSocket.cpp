@@ -218,15 +218,15 @@ int ZmqSocket::SendHeader(
     if (header.addJsonHeader.size() > 0) {
         strcat(buf, ", ");
         strcat(buf, "\"addJsonHeader\": {");
-        for (size_t i = 0; i < header.addJsonHeader.size(); ++i) {
-            strcat(buf, "\"");
-            strcat(buf, header.addJsonHeader[i][0].c_str());
-            strcat(buf, "\":\"");
-            strcat(buf, header.addJsonHeader[i][1].c_str());
-            strcat(buf, "\"");
-            if (i < header.addJsonHeader.size() -1) {
+        for (auto it = header.addJsonHeader.begin(); it != header.addJsonHeader.end(); ++it) {
+            if (it != header.addJsonHeader.begin()) {
                 strcat(buf, ", ");
             }
+            strcat(buf, "\"");
+            strcat(buf, it->first.c_str());
+            strcat(buf, "\":\"");
+            strcat(buf, it->second.c_str());
+            strcat(buf, "\"");
         }
         strcat(buf, " } ");
     }
@@ -349,11 +349,7 @@ int ZmqSocket::ParseHeader(const int index, int length, char *buff,
         const Value& V = document["addJsonHeader"];
         zHeader.addJsonHeader.clear();
         for (Value::ConstMemberIterator iter = V.MemberBegin(); iter != V.MemberEnd(); ++iter){
-            zHeader.addJsonHeader.resize(zHeader.addJsonHeader.size() + 1);  
-            int i  = iter - V.MemberBegin();
-            zHeader.addJsonHeader[i].resize(2);
-            zHeader.addJsonHeader[i][0] = iter->name.GetString();
-            zHeader.addJsonHeader[i][1] = iter->value.GetString();
+            zHeader.addJsonHeader.insert(std::make_pair(iter->name.GetString(), iter->value.GetString()));
         }
     }
 

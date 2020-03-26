@@ -15,7 +15,7 @@ class Fifo;
 class DataStreamer;
 class ZmqSocket;
 
-#include <vector>
+#include <map>
 
 class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	
@@ -93,7 +93,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * Set additional json header
 	 * @param json additional json header
 	 */
-	void SetAdditionalJsonHeader(const std::vector<std::vector<std::string>> json); 
+	void SetAdditionalJsonHeader(const std::map<std::string, std::string> json); 
 	
 	/**
 	 * Creates Zmq Sockets
@@ -187,7 +187,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	int flippedDataX;
 
 	/** additional json header */
-	std::vector<std::vector<std::string>> additionJsonHeader;
+	std::map<std::string, std::string> additionJsonHeader;
 
 	/** Aquisition Started flag */
 	bool startedFlag;

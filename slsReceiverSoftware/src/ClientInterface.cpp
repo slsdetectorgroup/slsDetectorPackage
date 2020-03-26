@@ -16,6 +16,7 @@
 #include <vector>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <map>
 
 using sls::RuntimeError;
 using sls::SocketError;
@@ -979,15 +980,13 @@ int ClientInterface::restream_stop(Interface &socket) {
 }
 
 int ClientInterface::set_additional_json_header(Interface &socket) {
+    std::map<std::string, std::string> json;
     int size = socket.Receive<int>();
-    std::vector<std::vector<std::string>> json(size);
     if (size > 0) {
         char args[size * 2][SHORT_STR_LENGTH]{};
         socket.Receive(args, sizeof(args));
         for (int i = 0; i < size; ++i) {
-            json[i].resize(2);
-            json[i][0].assign(args[2 * i]);
-            json[i][1].assign(args[2 * i + 1]);
+            json.insert(std::make_pair(args[2 * i], args[2 * i + 1]));
         }    
     }
     verifyIdle(socket);
@@ -997,15 +996,17 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
 }
 
 int ClientInterface::get_additional_json_header(Interface &socket) {
-    std::vector<std::vector<std::string>> json = impl()->getAdditionalJsonHeader();
+    std::map<std::string, std::string> json = impl()->getAdditionalJsonHeader();
     //LOG(logDEBUG1) << "additional json header:" << sls::ToString(json);
     int size = json.size();
     socket.sendResult(size);
     if (size > 0) {
         char retvals[size * 2][SHORT_STR_LENGTH]{};
-        for (int i = 0; i < size; ++i) {
-            sls::strcpy_safe(retvals[2 * i], json[i][0].c_str());
-            sls::strcpy_safe(retvals[2 * i + 1], json[i][1].c_str());
+        int iarg = 0;
+        for (auto & it : json) {
+            sls::strcpy_safe(retvals[iarg], it.first.c_str());
+            sls::strcpy_safe(retvals[iarg + 1], it.second.c_str());
+            iarg += 2;
         }
         socket.Send(retvals, sizeof(retvals));
     }

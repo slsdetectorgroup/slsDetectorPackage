@@ -17,7 +17,7 @@
 
 
 class zmq_msg_t;
-#include <vector>
+#include <map>
 
 /** zmq header structure */
 struct zmqHeader {
@@ -63,7 +63,7 @@ struct zmqHeader {
   /** true if complete image, else missing packets */
   bool completeImage{false};
   /** additional json header */
-  std::vector<std::vector<std::string>> addJsonHeader;
+  std::map<std::string, std::string> addJsonHeader;
 };
 
 class ZmqSocket {

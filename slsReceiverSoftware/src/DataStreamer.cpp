@@ -106,7 +106,7 @@ void DataStreamer::SetFlippedDataX(int fd) {
 	flippedDataX = fd;
 }
 
-void DataStreamer::SetAdditionalJsonHeader(const std::vector<std::vector<std::string>> json) {
+void DataStreamer::SetAdditionalJsonHeader(const std::map<std::string, std::string> json) {
 	additionJsonHeader = json;
 }
 

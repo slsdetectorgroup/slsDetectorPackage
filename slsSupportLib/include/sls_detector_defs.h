@@ -37,7 +37,7 @@
 #define DEFAULT_ZMQ_RX_PORTNO 30001
 
 #define SLS_DETECTOR_HEADER_VERSION 0x2
-#define SLS_DETECTOR_JSON_HEADER_VERSION 0x3
+#define SLS_DETECTOR_JSON_HEADER_VERSION 0x4
 
 // ctb/ moench 1g udp (read from fifo)
 #define UDP_PACKET_DATA_BYTES (1344)
@@ -61,6 +61,7 @@
 
 /** default maximum string length */
 #define MAX_STR_LENGTH 1000
+#define SHORT_STR_LENGTH 20
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
 

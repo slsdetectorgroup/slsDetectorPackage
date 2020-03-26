@@ -488,9 +488,9 @@ void DetectorImpl::readFrameFromReceiver() {
 
                 // HEADER
                 {
-                    rapidjson::Document doc;
+                    zmqHeader zHeader;
                     if (zmqSocket[isocket]->ReceiveHeader(
-                            isocket, doc, SLS_DETECTOR_JSON_HEADER_VERSION) ==
+                            isocket, zHeader, SLS_DETECTOR_JSON_HEADER_VERSION) ==
                         0) {
                         // parse error, version error or end of acquisition for
                         // socket
@@ -502,31 +502,29 @@ void DetectorImpl::readFrameFromReceiver() {
                     // if first message, allocate (all one time stuff)
                     if (image == nullptr) {
                         // allocate
-                        size = doc["size"].GetUint();
+                        size = zHeader.imageSize;
                         multisize = size * zmqSocket.size();
                         image = new char[size];
                         multiframe = new char[multisize];
                         memset(multiframe, 0xFF, multisize);
                         // dynamic range
-			            dynamicRange = doc["bitmode"].GetUint();
+			            dynamicRange = zHeader.dynamicRange;
                         bytesPerPixel = (float)dynamicRange / 8;
                         // shape
-                        nPixelsX = doc["shape"][0].GetUint();
-                        nPixelsY = doc["shape"][1].GetUint();
+                        nPixelsX = zHeader.npixelsx;
+                        nPixelsY = zHeader.npixelsy;
                         // detector shape
-                        nX = doc["detshape"][0].GetUint();
-                        nY = doc["detshape"][1].GetUint();
+                        nX = zHeader.ndetx;
+                        nY = zHeader.ndety;
                         nY *= numInterfaces;
                         nDetPixelsX = nX * nPixelsX;
                         nDetPixelsY = nY * nPixelsY;
                         // det type
-                        eiger =
-                            (doc["detType"].GetUint() == static_cast<int>(EIGER))
+                        eiger = (zHeader.detType == static_cast<int>(3))
                                 ? true
                                 : false; // to be changed to EIGER when firmware
                                          // updates its header data
-                        quadEnable =
-                            (doc["quad"].GetUint() == 0) ? false : true;
+                        quadEnable = (zHeader.quad == 0) ? false : true;
                         LOG(logDEBUG1)
                             << "One Time Header Info:"
                             "\n\tsize: "
@@ -539,18 +537,18 @@ void DetectorImpl::readFrameFromReceiver() {
                             << "\n\tquadEnable: " << quadEnable;
                     }
                     // each time, parse rest of header
-                    currentFileName = doc["fname"].GetString();
-                    currentAcquisitionIndex = doc["acqIndex"].GetUint64();
-                    currentFrameIndex = doc["fIndex"].GetUint64();
-                    currentFileIndex = doc["fileIndex"].GetUint64();
-                    currentSubFrameIndex = doc["expLength"].GetUint();
-                    coordY = doc["row"].GetUint();
-                    coordX = doc["column"].GetUint();
+                    currentFileName = zHeader.fname;
+                    currentAcquisitionIndex = zHeader.acqIndex;
+                    currentFrameIndex = zHeader.frameIndex;
+                    currentFileIndex = zHeader.fileIndex;
+                    currentSubFrameIndex = zHeader.expLength;
+                    coordY = zHeader.row;
+                    coordX = zHeader.column;
                     if (eiger) {
                         coordY = (nY - 1) - coordY;
                     }
-                    flippedDataX = doc["flippedDataX"].GetUint();
-                    if (doc["completeImage"].GetUint() == 0) {
+                    flippedDataX = zHeader.flippedDataX;
+                    if (zHeader.completeImage == 0) {
                         completeImage = false;
                     }
 		            LOG(logDEBUG1)
@@ -564,6 +562,13 @@ void DetectorImpl::readFrameFromReceiver() {
                         << "\n\tcoordX: " << coordX << "\n\tcoordY: " << coordY
                         << "\n\tflippedDataX: " << flippedDataX
                         << "\n\tcompleteImage: " << completeImage;
+
+
+                    // test
+                    for (auto &it : zHeader.addJsonHeader) {
+                        LOG(logINFORED) << it[0] << ":" << it[1];
+                    }
+
                 }
 
                 // DATA
@@ -752,6 +757,13 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
     if (dr == 4) {
         nMod1TotPixelsx /= 2;
     }
+    // eiger requires inter chip gap pixels are halved 
+    // jungfrau prefers same inter chip gap pixels as the boundary pixels
+    int divisionValue = 2;
+    slsDetectorDefs::detectorType detType = multi_shm()->multiDetectorType;
+    if (detType == JUNGFRAU) {
+        divisionValue = 1;
+    }
     LOG(logDEBUG)
         << "Insert Gap pixels Calculations:\n\t"
         << "nPixelsx: " << nPixelsx << "\n\t"
@@ -776,7 +788,8 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
         << "nModGapBytesy: " << nModGapBytesy << "\n\t"
         << "pixel1: " << pixel1 << "\n\t"
         << "row1Bytes: " << row1Bytes << "\n\t"
-        << "nMod1TotPixelsx: " << nMod1TotPixelsx << "\n\n";
+        << "nMod1TotPixelsx: " << nMod1TotPixelsx << "\n\t"
+        << "divisionValue: " << divisionValue << "\n\n";
 
     if (gpImage == NULL) {
         gpImage = new char[imagesize];
@@ -864,11 +877,11 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
                         break;
                     case 16:
                         // neighbouring gap pixels to left
-                        temp16 = (*((uint16_t *)(dst - pixel1))) / 2;
+                        temp16 = (*((uint16_t *)(dst - pixel1))) / divisionValue;
                         (*((uint16_t *)dst)) = temp16;
                         (*((uint16_t *)(dst - pixel1))) = temp16;
                         // neighbouring gap pixels to right
-                        temp16 = (*((uint16_t *)(dst + 2 * pixel1))) / 2;
+                        temp16 = (*((uint16_t *)(dst + 2 * pixel1))) / divisionValue;
                         (*((uint16_t *)(dst + pixel1))) = temp16;
                         (*((uint16_t *)(dst + 2 * pixel1))) = temp16;
                         break;
@@ -924,12 +937,12 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
                     (*((uint8_t *)src)) = temp8;
                     break;
                 case 8:
-                    temp8 = (*((uint8_t *)src)) / 2;
+                    temp8 = (*((uint8_t *)src)) / divisionValue;
                     (*((uint8_t *)dst)) = temp8;
                     (*((uint8_t *)src)) = temp8;
                     break;
                 case 16:
-                    temp16 = (*((uint16_t *)src)) / 2;
+                    temp16 = (*((uint16_t *)src)) / divisionValue;
                     (*((uint16_t *)dst)) = temp16;
                     (*((uint16_t *)src)) = temp16;
                     break;

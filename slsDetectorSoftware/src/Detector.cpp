@@ -1612,11 +1612,11 @@ void Detector::setPatternBitMask(uint64_t mask, Positions pos) {
 
 // Moench
 
-Result<std::string> Detector::getAdditionalJsonHeader(Positions pos) const {
+Result<std::vector<std::vector<std::string>>> Detector::getAdditionalJsonHeader(Positions pos) const {
     return pimpl->Parallel(&Module::getAdditionalJsonHeader, pos);
 }
 
-void Detector::setAdditionalJsonHeader(const std::string &jsonheader,
+void Detector::setAdditionalJsonHeader(const std::vector<std::vector<std::string>> jsonheader,
                                        Positions pos) {
     pimpl->Parallel(&Module::setAdditionalJsonHeader, pos, jsonheader);
 }

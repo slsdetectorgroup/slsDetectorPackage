@@ -1873,7 +1873,7 @@ void* start_timer(void* arg) {
 					int dstOffset2 = sizeof(sls_detector_header);
 					// set header
 					sls_detector_header* header = (sls_detector_header*)(packetData);
-					header->detType = (uint16_t)myDetectorType;
+					header->detType = 3;//(uint16_t)myDetectorType; updated when firmware updates
 					header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
 					header->frameNumber = frameNr;
 					header->packetNumber = i;

@@ -135,6 +135,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_adc_mask_10g(sls::ServerInterface &socket);  
     int set_num_counters(sls::ServerInterface &socket);  
     int increment_file_index(sls::ServerInterface &socket);
+    int set_additional_json_parameter(sls::ServerInterface &socket);
+    int get_additional_json_parameter(sls::ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {

@@ -1882,13 +1882,50 @@ std::string CmdProxy::PatternWaitTime(int action) {
 
 /* Moench */
 
+std::string CmdProxy::AdditionalJsonHeader(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[key1] [value1] [key2] [value2]...[keyn] [valuen]"
+        "\n\tAdditional json header to be streamd out from receiver via zmq. "
+        "Default is empty. Use only if to be processed by an intermediate user process "
+        "listening to receiver zmq packets. Empty value deletes header. "
+        "Cannot set empty values for each parameter."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getAdditionalJsonHeader({det_id});
+        os << "[";
+        for (int i = 0; i < t[0].size(); ++i) {
+            os << t[0][i][0] << ":" << t[0][i][1] << ",";
+        }
+        os << "]\n";
+        //os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        // arguments can be empty
+        int size = args.size() / 2;
+        std::vector<std::vector<std::string>> json (size);
+        for (int i = 0; i < size; ++i) {
+            json[i].resize(2);
+            json[i][0] = args[2 * i];
+            json[i][1] = args[2 * i + 1];
+        }
+        det->setAdditionalJsonHeader(json, {det_id});
+        os << sls::ToString(args) << '\n';//json
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str(); 
+}
+
 std::string CmdProxy::JsonParameter(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[key1] [value1]\n\tAdditional json header parameter streamed "
-              "out from receiver. If empty in a get, then no parameter found. "
-              "This is same as calling rx_jsonaddheader \"key\":\"value1\"."
+              "out from receiver. Empty values deletes parameter."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {

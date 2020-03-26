@@ -192,6 +192,8 @@ int ClientInterface::functionTable(){
 	flist[F_RECEIVER_SET_ADC_MASK_10G]		=	&ClientInterface::set_adc_mask_10g;
     flist[F_RECEIVER_SET_NUM_COUNTERS]      =   &ClientInterface::set_num_counters;
     flist[F_INCREMENT_FILE_INDEX]           =   &ClientInterface::increment_file_index;
+    flist[F_SET_ADDITIONAL_JSON_PARAMETER]  =   &ClientInterface::set_additional_json_parameter;
+	flist[F_GET_ADDITIONAL_JSON_PARAMETER]  =   &ClientInterface::get_additional_json_parameter;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -977,19 +979,37 @@ int ClientInterface::restream_stop(Interface &socket) {
 }
 
 int ClientInterface::set_additional_json_header(Interface &socket) {
-    char arg[MAX_STR_LENGTH]{};
-    socket.Receive(arg);
+    int size = socket.Receive<int>();
+    std::vector<std::vector<std::string>> json(size);
+    if (size > 0) {
+        char args[size * 2][SHORT_STR_LENGTH]{};
+        socket.Receive(args, sizeof(args));
+        for (int i = 0; i < size; ++i) {
+            json[i].resize(2);
+            json[i][0].assign(args[2 * i]);
+            json[i][1].assign(args[2 * i + 1]);
+        }    
+    }
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting additional json header: " << arg;
-    impl()->setAdditionalJsonHeader(arg);
+    //LOG(logDEBUG1) << "Setting additional json header: " << sls::ToString(json);
+    impl()->setAdditionalJsonHeader(json);
     return socket.Send(OK);
 }
 
 int ClientInterface::get_additional_json_header(Interface &socket) {
-    char retval[MAX_STR_LENGTH]{};
-    sls::strcpy_safe(retval, impl()->getAdditionalJsonHeader().c_str());
-    LOG(logDEBUG1) << "additional json header:" << retval;
-    return socket.sendResult(retval);
+    std::vector<std::vector<std::string>> json = impl()->getAdditionalJsonHeader();
+    //LOG(logDEBUG1) << "additional json header:" << sls::ToString(json);
+    int size = json.size();
+    socket.sendResult(size);
+    if (size > 0) {
+        char retvals[size * 2][SHORT_STR_LENGTH]{};
+        for (int i = 0; i < size; ++i) {
+            sls::strcpy_safe(retvals[2 * i], json[i][0].c_str());
+            sls::strcpy_safe(retvals[2 * i + 1], json[i][1].c_str());
+        }
+        socket.Send(retvals, sizeof(retvals));
+    }
+    return OK;
 }
 
 int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
@@ -1382,4 +1402,23 @@ int ClientInterface::increment_file_index(Interface &socket) {
         impl()->setFileIndex(impl()->getFileIndex() + 1);
     }
     return socket.Send(OK);
+}
+
+
+int ClientInterface::set_additional_json_parameter(Interface &socket) {
+    char args[2][SHORT_STR_LENGTH]{};
+    socket.Receive(args);
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting additional json parameter (" << args[0] << "): " << args[1];
+    impl()->setAdditionalJsonParameter(args[0], args[1]);
+    return socket.Send(OK);
+}
+
+int ClientInterface::get_additional_json_parameter(Interface &socket) {
+    char arg[SHORT_STR_LENGTH]{};
+    socket.Receive(arg);
+    char retval[SHORT_STR_LENGTH]{};
+    sls::strcpy_safe(retval, impl()->getAdditionalJsonParameter(arg).c_str());
+    LOG(logDEBUG1) << "additional json parameter (" << arg << "):" << retval;
+    return socket.sendResult(retval);
 }

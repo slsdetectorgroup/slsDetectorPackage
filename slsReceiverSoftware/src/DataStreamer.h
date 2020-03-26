@@ -29,12 +29,11 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param r roi
 	 * @param fi pointer to file index
 	 * @param fd flipped data enable for x dimension
-	 * @param ajh additional json header
 	 * @param nd pointer to number of detectors in each dimension
 	 * @param qe pointer to quad Enable
 	 */
 	DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
-			uint64_t* fi, int fd, std::string* ajh, int* nd, bool* qe);
+			uint64_t* fi, int fd, int* nd, bool* qe);
 
 	/**
 	 * Destructor
@@ -89,6 +88,12 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param flipped data enable in x dimension
 	 */
 	void SetFlippedDataX(int fd);	
+
+	/**
+	 * Set additional json header
+	 * @param json additional json header
+	 */
+	void SetAdditionalJsonHeader(const std::vector<std::vector<std::string>> json); 
 	
 	/**
 	 * Creates Zmq Sockets
@@ -182,7 +187,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	int flippedDataX;
 
 	/** additional json header */
-	std::string* additionJsonHeader;
+	std::vector<std::vector<std::string>> additionJsonHeader;
 
 	/** Aquisition Started flag */
 	bool startedFlag;

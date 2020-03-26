@@ -37,6 +37,7 @@ void Implementation::DeleteMembers() {
         generalData = nullptr;
     }
 
+    additionalJsonHeader.clear();
     listener.clear();
     dataProcessor.clear();
     dataStreamer.clear();
@@ -92,7 +93,6 @@ void Implementation::InitializeMembers() {
     streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
     streamingPort = 0;
     streamingSrcIP = sls::IpAddr{};
-    additionalJsonHeader = "";
 
     // detector parameters
     numberOfFrames = 0;
@@ -963,10 +963,11 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, &additionalJsonHeader, (int*)nd, &quadEnable));
+                        fd, (int*)nd, &quadEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
+                    dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
 
                 } catch (...) {
                     if (dataStreamEnable) {
@@ -1106,10 +1107,11 @@ void Implementation::setDataStreamEnable(const bool enable) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, &additionalJsonHeader, (int*)nd, &quadEnable));
+                        fd, (int*)nd, &quadEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
+                    dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
                 } catch (...) {
                     dataStreamer.clear();
                     dataStreamEnable = false;
@@ -1168,17 +1170,48 @@ void Implementation::setStreamingSourceIP(const sls::IpAddr ip) {
     LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 
-std::string Implementation::getAdditionalJsonHeader() const {
+std::vector<std::vector<std::string>> Implementation::getAdditionalJsonHeader() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return additionalJsonHeader;
 }
 
-void Implementation::setAdditionalJsonHeader(const std::string& c) {
+void Implementation::setAdditionalJsonHeader(const std::vector<std::vector<std::string>> c) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     additionalJsonHeader = c;
-    LOG(logINFO) << "Additional JSON Header: " << additionalJsonHeader;
+	for (const auto &it : dataStreamer) {
+		it->SetAdditionalJsonHeader(c);
+	}
+    //LOG(logINFO) << "Additional JSON Header: " << ToString(additionalJsonHeader);
 }
 
+std::string Implementation::getAdditionalJsonParameter(const std::string &key) const {
+    for (size_t i = 0; i < additionalJsonHeader.size(); ++i) {
+        if (additionalJsonHeader[i][0] == key) {
+            return additionalJsonHeader[i][1];
+        }
+    }
+    throw sls::RuntimeError("No key " + key + " found in additional json header");
+}
+
+void Implementation::setAdditionalJsonParameter(const std::string &key, const std::string &value) {
+    for (size_t i = 0; i < additionalJsonHeader.size(); ++i) {
+        if (additionalJsonHeader[i][0] == key) {
+            additionalJsonHeader[i][1] = value;
+            for (const auto &it : dataStreamer) {
+                it->SetAdditionalJsonHeader(additionalJsonHeader);
+            }
+            //LOG(logINFO) << "Additional JSON Header: " << ToString(additionalJsonHeader);
+            return;
+        }
+    }
+    // append if not found
+    std::vector<std::string> temp {key, value};
+    additionalJsonHeader.push_back(temp);
+    for (const auto &it : dataStreamer) {
+        it->SetAdditionalJsonHeader(additionalJsonHeader);
+    }    
+   // LOG(logINFO) << "Additional JSON Header: " << ToString(additionalJsonHeader);
+}
 
 /**************************************************
  *                                                 *

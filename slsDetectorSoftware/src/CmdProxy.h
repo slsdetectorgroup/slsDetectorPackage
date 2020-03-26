@@ -866,7 +866,7 @@ class CmdProxy {
                           {"patsetbit", &CmdProxy::patsetbit}, 
 
                           /* Moench */
-                          {"rx_jsonaddheader", &CmdProxy::rx_jsonaddheader}, 
+                          {"rx_jsonaddheader", &CmdProxy::AdditionalJsonHeader}, 
                           {"rx_jsonpara", &CmdProxy::JsonParameter}, 
                           {"emin", &CmdProxy::MinMaxEnergyThreshold}, 
                           {"emax", &CmdProxy::MinMaxEnergyThreshold}, 
@@ -979,6 +979,7 @@ class CmdProxy {
     std::string PatternWaitAddress(int action);
     std::string PatternWaitTime(int action);
     /* Moench */
+    std::string AdditionalJsonHeader(int action);
     std::string JsonParameter(int action);
     std::string MinMaxEnergyThreshold(int action);
     /* Advanced */
@@ -1719,9 +1720,6 @@ class CmdProxy {
 
     /* Moench */
     
-    STRING_COMMAND(rx_jsonaddheader, getAdditionalJsonHeader, setAdditionalJsonHeader, 
-                "[\\\"label1\\\":\\\"value1\\\"], [\\\"label2\\\":\\\"value2\\\"]\n\tAdditional json header to be streamd out from receiver via zmq. Default is empty. Use only if to be processed by an intermediate user process listening to receiver zmq packets.");
-
     INTEGER_COMMAND(framemode, getFrameMode, setFrameMode, sls::StringTo<slsDetectorDefs::frameModeType>,
                     "[pedestal|newpedestal|flatfield|newflatfield]\n\t[Moench] Frame mode (soft setting) in processor.");
 

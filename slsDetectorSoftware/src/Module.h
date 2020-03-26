@@ -344,9 +344,8 @@ class Module : public virtual slsDetectorDefs {
      * @param e_eV threshold in eV
      * @param isettings ev. change settings
      * @param tb 1 to include trimbits, 0 to exclude
-     * @returns current threshold value in ev (-1 failed)
      */
-    int setThresholdEnergy(int e_eV, detectorSettings isettings = GET_SETTINGS,
+    void setThresholdEnergy(int e_eV, detectorSettings isettings = GET_SETTINGS,
                            int tb = 1);
 
     /**
@@ -979,28 +978,14 @@ class Module : public virtual slsDetectorDefs {
      */
     void setTransmissionDelayRight(int value);
 
-    /**
-     * Sets the additional json header\sa sharedSlsDetector
-     * @param jsonheader additional json header
-     */
-    void setAdditionalJsonHeader(const std::string &jsonheader);
+    /** empty vector deletes entire additional json header */
+    void setAdditionalJsonHeader(const std::vector<std::vector<std::string>> jsonheader);
+    std::vector<std::vector<std::string>> getAdditionalJsonHeader();
 
     /**
-     * Returns the additional json header \sa sharedSlsDetector
-     * @returns the additional json header, returns "none" if default setting
-     * and no custom ip set
-     */
-    std::string getAdditionalJsonHeader();
-
-    /**
-     * Sets the value for the additional json header parameter if found, else
-     * append it
-     * @param key additional json header parameter
-     * @param value additional json header parameter value (cannot be empty)
-     * @returns the additional json header parameter value,
-     * empty if no parameter found in additional json header
-     */
-    std::string setAdditionalJsonParameter(const std::string &key,
+     * Sets the value for the additional json header parameter key if found, else
+     * append it. If value empty, then deletes parameter */
+    void setAdditionalJsonParameter(const std::string &key,
                                            const std::string &value);
 
     /**

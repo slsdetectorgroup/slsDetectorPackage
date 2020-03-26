@@ -1199,10 +1199,10 @@ class Detector {
      * ************************************************/
 
     /** [Moench] */
-    Result<std::string> getAdditionalJsonHeader(Positions pos = {}) const;
+    Result<std::vector<std::vector<std::string>>> getAdditionalJsonHeader(Positions pos = {}) const;
 
-    /** [Moench] */
-    void setAdditionalJsonHeader(const std::string &jsonheader,
+    /** [Moench] max 20 characters for each key/value */
+    void setAdditionalJsonHeader(const std::vector<std::vector<std::string>> jsonheader,
                                  Positions pos = {});
 
     /** [Moench] */
@@ -1212,7 +1212,7 @@ class Detector {
      * [Moench]
      * Sets the value for additional json header parameter if found,
      * else appends the parameter key and value
-     * The value cannot be empty
+     * The value cannot be empty. Max 20 characters for each key/value
      */
     void setAdditionalJsonParameter(const std::string &key,
                                     const std::string &value,

@@ -11,6 +11,7 @@ PYTHON=0
 TESTS=0
 SIMULATOR=0
 CTBGUI=0
+MANUALS=0
 
 
 CLEAN=0
@@ -19,7 +20,7 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [-h] [-d <HDF5 directory>] [-j] <Number of threads>
+Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [-h] [-d <HDF5 directory>] [-j] <Number of threads>
  -[no option]: only make
  -c: Clean
  -b: Builds/Rebuilds CMake files normal mode
@@ -34,6 +35,7 @@ Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [-h] [-d <HDF5 directory>] 
  -j: Number of threads to compile through
  -e: Debug mode
  -i: Builds tests
+ -m: Manuals
 
 Rebuild when you switch to a new build and compile in parallel:
 ./cmk.sh -bj5
@@ -69,7 +71,7 @@ For rebuilding only certain sections
  
  " ; exit 1; }
 
-while getopts ":bpchd:j:trgeisu" opt ; do
+while getopts ":bpchd:j:trgeisum" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
@@ -124,6 +126,10 @@ while getopts ":bpchd:j:trgeisu" opt ; do
 		echo "Compiling Options: Simulator" 
 		SIMULATOR=1
 		;; 
+	m)	
+		echo "Compiling Manuals"
+		MANUALS=1
+		;;
 	u)
 		echo "Compiling Options: Chip Test Gui"
 		CTBGUI=1
@@ -198,6 +204,12 @@ if [ $SIMULATOR -eq 1 ]; then
 	echo "Simulator Option enabled"
 fi 
 
+#Manuals
+if [ $MANUALS -eq 1 ]; then
+	CMAKE_POST+=" -DSLS_BUILD_DOCS=ON "
+	echo "Manuals Option enabled"
+fi 
+
 #Chip Test Gui
 if [ $CTBGUI -eq 1 ]; then
 	CMAKE_POST+=" -DSLS_USE_CTBGUI=ON "
@@ -251,6 +263,9 @@ else
 	make
 fi
 
+if [ $MANUALS -eq 1 ]; then
+	make docs
+fi 
 
 
 

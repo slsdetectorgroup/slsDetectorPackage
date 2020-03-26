@@ -2110,7 +2110,7 @@ void Module::setAdditionalJsonHeader(const std::vector<std::vector<std::string>>
     const int size = jsonheader.size();
     int fnum = F_SET_ADDITIONAL_JSON_HEADER;
     int ret = FAIL;
-    //LOG(logDEBUG) << "Sending to receiver additional json header " << ToString(jsonheader);
+    LOG(logDEBUG) << "Sending to receiver additional json header " << ToString(jsonheader);
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(&fnum, sizeof(fnum));
     client.Send(&size, sizeof(size));

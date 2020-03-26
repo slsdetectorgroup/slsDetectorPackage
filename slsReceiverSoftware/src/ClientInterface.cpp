@@ -983,7 +983,8 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
     std::map<std::string, std::string> json;
     int size = socket.Receive<int>();
     if (size > 0) {
-        char args[size * 2][SHORT_STR_LENGTH]{};
+        char args[size * 2][SHORT_STR_LENGTH];
+        memset(args, 0, sizeof(args));
         socket.Receive(args, sizeof(args));
         for (int i = 0; i < size; ++i) {
             json.insert(std::make_pair(args[2 * i], args[2 * i + 1]));
@@ -1001,7 +1002,8 @@ int ClientInterface::get_additional_json_header(Interface &socket) {
     int size = json.size();
     socket.sendResult(size);
     if (size > 0) {
-        char retvals[size * 2][SHORT_STR_LENGTH]{};
+        char retvals[size * 2][SHORT_STR_LENGTH];
+        memset(retvals, 0, sizeof(retvals));
         int iarg = 0;
         for (auto & it : json) {
             sls::strcpy_safe(retvals[iarg], it.first.c_str());

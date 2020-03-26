@@ -13,7 +13,7 @@
 class eta2InterpolationBase : public virtual etaInterpolationBase {
   
  public:
- eta2InterpolationBase(int nx=400, int ny=400, int ns=25, int nb=-1, double emin=1, double emax=0) :  etaInterpolationBase(nx,ny, ns, nb, emin, emax) {
+ eta2InterpolationBase(int nx=400, int ny=400, int ns=25, int nsy=25, int nb=-1, int nby=-1, double emin=1, double emax=0) :  etaInterpolationBase(nx,ny, ns, nsy, nb, nby, emin, emax) {
     
     /* if (etamin>=etamax) { */
     /*   etamin=-1; */
@@ -37,7 +37,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
     
     int corner;
     corner=calcQuad(data, tot, totquad, sDum); 
-    if (nSubPixels>2) 
+    if (nSubPixelsX>2 || nSubPixelsY>2) 
       calcEta(totquad, sDum, etax, etay); 
     getInterpolatedPosition(x,y,etax,etay,corner,int_x,int_y);
 
@@ -53,7 +53,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
     
     int corner;
     corner=calcQuad(data, tot, totquad, sDum); 
-    if (nSubPixels>2) 
+    if (nSubPixelsX>2 || nSubPixelsY>2  ) 
       calcEta(totquad, sDum, etax, etay); 
     getInterpolatedPosition(x,y,etax,etay,corner,int_x,int_y);
 
@@ -93,7 +93,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
        ;
      } 
      double etax=0, etay=0;
-     if (nSubPixels>2) { 
+     if (nSubPixelsX>2 || nSubPixelsY>2) { 
        cc[0][0]=cl[xoff+3*yoff];
        cc[1][0]=cl[xoff+3*(yoff+1)];
        cc[0][1]=cl[xoff+1+3*yoff];
@@ -133,7 +133,7 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
        ;
      } 
      double etax=0, etay=0;
-     if (nSubPixels>2) { 
+     if (nSubPixelsX>2 || nSubPixelsY>2) { 
        cc[0][0]=cl[xoff+3*yoff];
        cc[1][0]=cl[xoff+3*(yoff+1)];
        cc[0][1]=cl[xoff+1+3*yoff];
@@ -182,31 +182,31 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
       }
     
 
-     if (nSubPixels>2) { 
+     if (nSubPixelsX>2 || nSubPixelsY>2 ) { 
 
-       ex=(etax-etamin)/etastep;
-       ey=(etay-etamin)/etastep;
+       ex=(etax-etamin)/etastepX;
+       ey=(etay-etamin)/etastepY;
        if (ex<0) {
 	 cout << "x*"<< ex << endl;
 	 ex=0;
        } 
-       if (ex>=nbeta) {
+       if (ex>=nbetaX) {
 	 cout << "x?"<< ex << endl;
-	 ex=nbeta-1;
+	 ex=nbetaX-1;
        }
        if (ey<0) {
-	 cout << "y*"<< ey << endl;
+	 cout << "y*"<< ey << " " << nbetaY << endl;
 	 ey=0;
        } 
-       if (ey>=nbeta) {
-	 cout << "y?"<< ey << endl;
-	 ey=nbeta-1;
+       if (ey>=nbetaY) {
+	 cout << "y?"<< ey << " " << nbetaY << endl;
+	 ey=nbetaY-1;
        }
     
     
    
-       xpos_eta=(((double)hhx[(ey*nbeta+ex)]))+dX ;///((double)nSubPixels);
-       ypos_eta=(((double)hhy[(ey*nbeta+ex)]))+dY ;///((double)nSubPixels);
+       xpos_eta=(((double)hhx[(ey*nbetaX+ex)]))+dX ;///((double)nSubPixels);
+       ypos_eta=(((double)hhy[(ey*nbetaX+ex)]))+dY ;///((double)nSubPixels);
        
      } else {
        xpos_eta=0.5*dX+0.25;
@@ -347,10 +347,10 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
 #endif
 #ifndef MYROOT1
     int ex,ey; 
-    ex=(etax-etamin)/etastep;
-    ey=(etay-etamin)/etastep;
-    if (ey<nbeta && ex<nbeta && ex>=0 && ey>=0)
-      heta[ey*nbeta+ex]++; 
+    ex=(etax-etamin)/etastepX;
+    ey=(etay-etamin)/etastepY;
+    if (ey<nbetaY && ex<nbetaX && ex>=0 && ey>=0)
+      heta[ey*nbetaX+ex]++; 
 #endif
     return 0;    
   };
@@ -360,22 +360,22 @@ class eta2InterpolationBase : public virtual etaInterpolationBase {
    // cout << "ff" << endl;
    calcDiff(1, hhx, hhy); //get flat
    double avg=0;
-   for (ipx=0; ipx<nSubPixels; ipx++)
-     for (ipy=0; ipy<nSubPixels; ipy++)
-       avg+=flat[ipx+ipy*nSubPixels];
-   avg/=nSubPixels*nSubPixels;
+   for (ipx=0; ipx<nSubPixelsX; ipx++)
+     for (ipy=0; ipy<nSubPixelsY; ipy++)
+       avg+=flat[ipx+ipy*nSubPixelsX];
+   avg/=nSubPixelsY*nSubPixelsX;
 
-   for (int ibx=0 ; ibx<nSubPixels*nPixelsX; ibx++) {
-     ipx=ibx%nSubPixels-nSubPixels/2;
-       if (ipx<0) ipx=nSubPixels+ipx;
-     for (int iby=0 ; iby<nSubPixels*nPixelsY; iby++) {
-       ipy=iby%nSubPixels-nSubPixels/2;
-     if (ipy<0) ipy=nSubPixels+ipy;
+   for (int ibx=0 ; ibx<nSubPixelsX*nPixelsX; ibx++) {
+     ipx=ibx%nSubPixelsX-nSubPixelsX/2;
+       if (ipx<0) ipx=nSubPixelsX+ipx;
+     for (int iby=0 ; iby<nSubPixelsY*nPixelsY; iby++) {
+       ipy=iby%nSubPixelsY-nSubPixelsY/2;
+     if (ipy<0) ipy=nSubPixelsY+ipy;
      // cout << ipx << " " << ipy << " " << ibx << " " << iby << endl;
-     if (flat[ipx+ipy*nSubPixels]>0)
-       hintcorr[ibx+iby*nSubPixels*nPixelsX]=hint[ibx+iby*nSubPixels*nPixelsX]*(avg/flat[ipx+ipy*nSubPixels]);
+     if (flat[ipx+ipy*nSubPixelsX]>0)
+       hintcorr[ibx+iby*nSubPixelsX*nPixelsX]=hint[ibx+iby*nSubPixelsX*nPixelsX]*(avg/flat[ipx+ipy*nSubPixelsX]);
      else
-       hintcorr[ibx+iby*nSubPixels*nPixelsX]=hint[ibx+iby*nSubPixels*nPixelsX];
+       hintcorr[ibx+iby*nSubPixelsX*nPixelsX]=hint[ibx+iby*nSubPixelsX*nPixelsX];
 
 
      }

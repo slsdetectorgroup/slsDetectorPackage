@@ -44,6 +44,28 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
 
     int adc_nr[32]={9, 8,11,10,13,12,15,14,1,0,3,2,5,4,7,6,23,22,21,20,19,18,17,16,31,30,29,28,27,26,25,24 };
 
+    /* 
+       iadc=ptr%32
+       isample=ptr/32
+
+       col=(adc_nr[iadc]%16)*25+isample%25
+       if (adc_nr[iadc]<16)
+       row=199-isample/25;
+       else
+       row=200+isample/25
+
+
+       adc0 col(9*25..10*25-1) row(199..0)
+       adc1 col(8*25..9*25-1)  row(199..0)
+       adc2 col(11*25..12*25-1) row(199..0)
+       adc3 col(10*25..11*25-1) row(199..0)
+       adc4 col(13*25..14*25-1) row(199..0)
+       adc5 col(12*25..13*25-1) row(199..0)
+       adc6 col(15*25..16*25-1) row(199..0)
+       adc7 col(14*25..15*25-1) row(199..0)
+       adc8 col(1*25..2*25-1) row(199..0)
+     */
+
     int row, col;
 
     //int isample;

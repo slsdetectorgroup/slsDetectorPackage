@@ -20,6 +20,8 @@ class slsDetectorData {
   int **dataROIMask; /**< Array of size nx*ny 1 if channel is good (or in the ROI), 0 if bad channel (or out of ROI)   */
   int *xmap;
   int *ymap;
+  dataType **orderedData; 
+  int isOrdered;
   
  public:
   
@@ -37,35 +39,29 @@ class slsDetectorData {
   \param dROI Array of size nx*ny. The elements are 1s if the channel is good or in the ROI, 0 is bad or out of the ROI. NULL (default) means all 1s. 
   
   */
- slsDetectorData(int npx, int npy, int dsize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): nx(npx), ny(npy), dataSize(dsize) {
+ slsDetectorData(int npx, int npy, int dsize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): nx(npx), ny(npy), dataSize(dsize), orderedData(NULL), isOrdered(0) {
     
-    
-    xmap=new int[dsize/sizeof(dataType)];
-    ymap=new int[dsize/sizeof(dataType)];
+   int el=dsize/sizeof(dataType);
+    xmap=new int[el];
+    ymap=new int[el];
     
 
-    //  if (dataMask==NULL) {
-    dataMask=new dataType*[ny];
-    for(int i = 0; i < ny; i++) {
-      dataMask[i] = new dataType[nx];
-    }
-    // }
     
-    // if (dataMap==NULL) {
+    orderedData=new dataType*[ny];
     dataMap=new int*[ny];
-    for(int i = 0; i < ny; i++) {
-      dataMap[i] = new int[nx];
-      }
-    // }
-    // if (dataROIMask==NULL) {
+    dataMask=new dataType*[ny];
     dataROIMask=new int*[ny];
     for(int i = 0; i < ny; i++) {
+      dataMap[i] = new int[nx];
+      orderedData[i]=new dataType[nx];
+      dataMask[i] = new dataType[nx];
       dataROIMask[i] = new int[nx];
       for (int j=0; j<nx; j++)
 	dataROIMask[i][j]=1;
-    }
-    // }
-    for (int ip=0; ip<dsize/sizeof(dataType); ip++){
+    
+    }    
+  
+    for (int ip=0; ip<el; ip++){
       xmap[ip]=-1;
       ymap[ip]=-1;
       }
@@ -74,22 +70,24 @@ class slsDetectorData {
     setDataMask(dMask);
     setDataROIMask(dROI);
     
-  };
+  }
   
   virtual ~slsDetectorData() {
     for(int i = 0; i < ny; i++) {
       delete [] dataMap[i];
       delete [] dataMask[i];
       delete [] dataROIMask[i];
+      delete [] orderedData[i];
     }
     delete [] dataMap;
     delete [] dataMask;
     delete [] dataROIMask;
+    delete [] orderedData;
     delete [] xmap;
     delete [] ymap;
   };
   
-  
+  virtual int getPointer(int ix,int iy) {return dataMap[iy][ix];};
   /**
      defines the data map (as offset) - no error checking if datasize and offsets are compatible!
      \param dMap array of size nx*ny storing the pointers to the data in the dataset (as offset). If NULL (default),the data are arranged as if read out row by row (dataMap[iy][ix]=(iy*nx+ix)*sizeof(dataType);)
@@ -202,27 +200,32 @@ class slsDetectorData {
   int setDataSize(int d) {dataSize=d; return dataSize;};
 
   
-  virtual void getPixel(int ip, int &x, int &y) {x=xmap[ip]; y=ymap[ip];};
+virtual void getPixel(int ip, int &x, int &y) {x=xmap[ip]; y=ymap[ip];};
   
-  virtual dataType **getData(char *ptr, int dsize=-1) {
-    
-    dataType **data;
+virtual dataType **getData(char *ptr, int dsize=-1) {
+    int el=dsize/sizeof(dataType);
+    //dataType **data;
     int ix,iy;
-    data=new dataType*[ny];
-    for(int i = 0; i < ny; i++) {
-      data[i]=new dataType[nx];
-    }
+    //data=new dataType*[ny];
+    //for(int i = 0; i < ny; i++) {
+    //  data[i]=new dataType[nx];
+    //}
+     isOrdered=0;
     if (dsize<=0 || dsize>dataSize) dsize=dataSize;
-    for (int ip=0; ip<(dsize/sizeof(dataType)); ip++) {
+
+    for (int ip=0; ip<(el); ip++) {
       getPixel(ip,ix,iy);
       if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
-	data[iy][ix]=getChannel(ptr,ix,iy);
+	//data[iy][ix]=getChannel(ptr,ix,iy);
+	orderedData[iy][ix]=*(ptr+ip);//getChannel(ptr,ix,iy);
       }
     }
-    return data;
-    
-  };
-  
+    isOrdered=1;
+    return orderedData;
+}
+
+ void newFrame(){isOrdered=0;};
+
   virtual double **getImage(char *ptr, int dsize=-1) {
     
     double **data;
@@ -231,15 +234,15 @@ class slsDetectorData {
     for(int i = 0; i < ny; i++) {
       data[i]=new double[nx];
     }
+    int el=dsize/sizeof(dataType);
     if (dsize<=0 || dsize>dataSize) dsize=dataSize;
-    for (int ip=0; ip<(dsize/sizeof(dataType)); ip++) {
+    for (int ip=0; ip<el; ip++) {
       getPixel(ip,ix,iy);
       if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
 	data[iy][ix]=getValue(ptr,ix,iy);
       }
     }
-    return data;
-    
+    return data;   
   };
   
   /** 
@@ -256,7 +259,10 @@ class slsDetectorData {
       // cout << ix << " " << iy << " " ;
       //cout << dataMap[ix][iy] << " " << (void*)data << " " << dataSize<< endl;
       m=dataMask[iy][ix];
-      d=*((dataType*)(data+dataMap[iy][ix]));
+        if (isOrdered==0)
+	  d=*((dataType*)(data+getPointer(ix,iy)));
+      else
+	d=orderedData[iy][ix];
     }  
     return d^m;
   };

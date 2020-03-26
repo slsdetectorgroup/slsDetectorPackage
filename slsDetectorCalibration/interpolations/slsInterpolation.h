@@ -29,19 +29,21 @@ class slsInterpolation
 {
 
  public:
- slsInterpolation(int nx=400, int ny=400, int ns=25) :nPixelsX(nx), nPixelsY(ny),  nSubPixels(ns), id(0) {
+ slsInterpolation(int nx=400, int ny=400, int ns=25, int nsy=-1) :nPixelsX(nx), nPixelsY(ny),  nSubPixelsX(ns), nSubPixelsY(nsy),id(0) {
    
- hint=new int[ns*nx*ns*ny];
+    if (nSubPixelsY<=0) nSubPixelsY=nSubPixelsX;
+    hint=new int[nSubPixelsX*nx*nSubPixelsY*ny];
 
 };
   
  slsInterpolation(slsInterpolation *orig){
    nPixelsX=orig->nPixelsX;
    nPixelsY=orig->nPixelsY;
-   nSubPixels=orig->nSubPixels;
+   nSubPixelsX=orig->nSubPixelsX;
+   nSubPixelsY=orig->nSubPixelsY;
    
-   hint=new int[nSubPixels*nPixelsX*nSubPixels*nPixelsY];
-   memcpy(hint, orig->hint,nSubPixels*nPixelsX*nSubPixels*nPixelsY*sizeof(int));
+   hint=new int[nSubPixelsX*nPixelsX*nSubPixelsY*nPixelsY];
+   memcpy(hint, orig->hint,nSubPixelsX*nPixelsX*nSubPixelsY*nPixelsY*sizeof(int));
  
  };
 
@@ -51,23 +53,37 @@ class slsInterpolation
    return new slsInterpolation(this);
    }*/
 
-  int getNSubPixels() {return nSubPixels;};
+  int getNSubPixelsX() {return nSubPixelsX;};
+  int getNSubPixelsY() {return nSubPixelsY;};
+  int getNSubPixels() {if (nSubPixelsX==nSubPixelsY) return nSubPixelsX; else return 0;};
+  void getNSubPixels(int &nsx, int &nsy) {nsx=nSubPixelsX; nsy=nsx=nSubPixelsY;}
 
-
-  int setNSubPixels(int ns)   {
-    if (ns>0 && ns!=nSubPixels) {
+  void setNSubPixels(int ns, int nsy=-1)   {
+   
       delete [] hint;
-      nSubPixels=ns;
-      hint=new int[nSubPixels*nPixelsX*nSubPixels*nPixelsY];
-    }
-    return nSubPixels;
+      nSubPixelsX=ns;
+      if (nsy>0)  nSubPixelsY=nsy;
+      else nSubPixelsY=ns;
+      
+      hint=new int[nSubPixelsX*nPixelsX*nSubPixelsY*nPixelsY];
+      
+      //return nSubPixels;
   }
 
-  int getImageSize(int &nnx, int &nny, int &ns) {
-    nnx=nSubPixels*nPixelsX;
-    nny=nSubPixels*nPixelsY;
-    ns=nSubPixels;
-    return nSubPixels*nSubPixels*nPixelsX*nPixelsY;
+  
+
+
+  int getImageSize(int &nnx, int &nny, int &nsx, int &nsy) {
+    nnx=nSubPixelsX*nPixelsX;
+    nny=nSubPixelsY*nPixelsY;
+    nsx=nSubPixelsX;
+    nsy=nSubPixelsY;
+    return nSubPixelsX*nSubPixelsY*nPixelsX*nPixelsY;
+  };
+  
+
+  int getImageSize() {
+    return nSubPixelsX*nSubPixelsY*nPixelsX*nPixelsY;
   };
   
   
@@ -92,14 +108,14 @@ class slsInterpolation
     //cout << "!" <<endl;
     float *gm=NULL;
     int *dummy=getInterpolatedImage();
-    gm=new float[ nSubPixels*  nSubPixels* nPixelsX*nPixelsY];
+    gm=new float[ nSubPixelsX*  nSubPixelsY* nPixelsX*nPixelsY];
     if (gm) {
-      for (int ix=0; ix<nPixelsX*nSubPixels; ix++) {
-	for (int iy=0; iy<nPixelsY*nSubPixels; iy++) {
-	  gm[iy*nPixelsX*nSubPixels+ix]=dummy[iy*nPixelsX*nSubPixels+ix];
+      for (int ix=0; ix<nPixelsX*nSubPixelsX; ix++) {
+	for (int iy=0; iy<nPixelsY*nSubPixelsY; iy++) {
+	  gm[iy*nPixelsX*nSubPixelsX+ix]=dummy[iy*nPixelsX*nSubPixelsX+ix];
 	}
       }
-      WriteToTiff(gm, imgname,nSubPixels* nPixelsX ,nSubPixels* nPixelsY); 
+      WriteToTiff(gm, imgname,nSubPixelsY* nPixelsX ,nSubPixelsY* nPixelsY); 
       delete [] gm;
     } else cout << "Could not allocate float image " << endl;
     return NULL;    
@@ -120,9 +136,9 @@ class slsInterpolation
   virtual void clearInterpolatedImage() {
 
 
-      for (int ix=0; ix<nPixelsX*nSubPixels; ix++) {
-	for (int iy=0; iy<nPixelsY*nSubPixels; iy++) {
-	  hint[iy*nPixelsX*nSubPixels+ix]=0;
+      for (int ix=0; ix<nPixelsX*nSubPixelsX; ix++) {
+	for (int iy=0; iy<nPixelsY*nSubPixelsY; iy++) {
+	  hint[iy*nPixelsX*nSubPixelsX+ix]=0;
 	}
       }
 
@@ -133,11 +149,11 @@ class slsInterpolation
 
 
   virtual int *addToImage(double int_x, double int_y){ 
-    int iy=((double)nSubPixels)*int_y; 
-    int ix=((double)nSubPixels)*int_x; 
-     if (ix>=0 && ix<(nPixelsX*nSubPixels) && iy<(nSubPixels*nPixelsY) && iy>=0 ){
+    int iy=((double)nSubPixelsY)*int_y; 
+    int ix=((double)nSubPixelsX)*int_x; 
+     if (ix>=0 && ix<(nPixelsX*nSubPixelsX) && iy<(nSubPixelsY*nPixelsY) && iy>=0 ){
        // cout << int_x << " " << int_y << " " << "  " << ix << " " << iy << " " << ix+iy*nPixelsX*nSubPixels << " " << hint[ix+iy*nPixelsX*nSubPixels];
-       (*(hint+ix+iy*nPixelsX*nSubPixels))+=1; 
+       (*(hint+ix+iy*nPixelsX*nSubPixelsX))+=1; 
        // cout << " " << hint[ix+iy*nPixelsX*nSubPixels] << endl;
      }// else
       // cout << "bad! "<< int_x << " " << int_y << " " << "  " << ix << " " << iy << " " << ix+iy*nPixelsX*nSubPixels << endl;
@@ -180,11 +196,12 @@ class slsInterpolation
     /* cluster[2]=cl+6; */
     
     sum=0;
+    int xoff=0, yoff=0;
+#ifndef WRITE_QUAD 
     double sumBL=0;
     double sumTL=0;
     double sumBR=0;
     double sumTR=0;
-    int xoff=0, yoff=0;
     for (int ix=0; ix<3; ix++) {
       for (int iy=0; iy<3; iy++) {
 	sum+=cl[ix+3*iy];
@@ -204,34 +221,95 @@ class slsInterpolation
 
     
     if(sumTL  >= totquad){
-      /* sDum[0][0] = cluster[1][0]; sDum[1][0] = cluster[2][0]; */
-      /* sDum[0][1] = cluster[1][1]; sDum[1][1] = cluster[2][1]; */
-      
+/* #ifdef WRITE_QUAD */
+/*       /\* sDum[0][0] = cluster[1][0]; sDum[1][0] = cluster[2][0]; *\/ */
+/*       /\* sDum[0][1] = cluster[1][1]; sDum[1][1] = cluster[2][1]; *\/ */
+/*       if (sumTL  ==sum) { */
+/* #endif */
       corner = TOP_LEFT;
       totquad=sumTL;
       xoff=0;
       yoff=1;
+/* #ifdef WRITE_QUAD */
+/*       } */
+/* #endif */
     } 
 
     if(sumBR  >= totquad){
       /* sDum[0][0] = cluster[0][1]; sDum[1][0] = cluster[1][1]; */
       /* sDum[0][1] = cluster[0][2]; sDum[1][1] = cluster[1][2]; */
       
+/* #ifdef WRITE_QUAD */
+/*       /\* sDum[0][0] = cluster[1][0]; sDum[1][0] = cluster[2][0]; *\/ */
+/*       /\* sDum[0][1] = cluster[1][1]; sDum[1][1] = cluster[2][1]; *\/ */
+/*       if (sumBR   ==sum) { */
+/* #endif */
+      corner = BOTTOM_RIGHT;
       xoff=1;
       yoff=0;
-      corner = BOTTOM_RIGHT;
       totquad=sumBR;
+/* #ifdef WRITE_QUAD */
+/*       } */
+/* #endif */
     }
     
     if(sumTR  >= totquad){
+/* #ifdef WRITE_QUAD */
+/*       /\* sDum[0][0] = cluster[1][0]; sDum[1][0] = cluster[2][0]; *\/ */
+/*       /\* sDum[0][1] = cluster[1][1]; sDum[1][1] = cluster[2][1]; *\/ */
+/*       if (sumTR ==sum) { */
+/* #endif */
       xoff=1;
       yoff=1;
       /* sDum[0][0] = cluster[1][1]; sDum[1][0] = cluster[2][1]; */
       /* sDum[0][1] = cluster[1][2]; sDum[1][1] = cluster[2][2]; */
       corner = TOP_RIGHT;
       totquad=sumTR;
+/* #ifdef WRITE_QUAD */
+/*       } */
+/* #endif */
     }
+ 
+#endif    
+#ifdef WRITE_QUAD    
+   
+    double sumB=0;
+    double sumT=0;
+    double sumR=0;
+    double sumL=0;
+
+    for (int ix=0; ix<3; ix++) {
+      for (int iy=0; iy<3; iy++) {
+	sum+=cl[ix+3*iy];
+	if (ix<1 ) sumL+=cl[ix+iy*3];
+	if (ix>1) sumR+=cl[ix+iy*3];
+	if (iy<1) sumB=cl[ix+iy*3];
+	if (iy>1) sumT+=cl[ix+iy*3];
+      }
+    } 
     
+    totquad=sum;
+    if ( sumT==0 && sumR==0) {
+        corner = BOTTOM_LEFT;
+	xoff=0;
+	yoff=0;
+    } else if ( sumB==0 && sumR==0 ) {
+        corner = TOP_LEFT;
+      xoff=0;
+      yoff=1;
+    } else if ( sumT==0 && sumL==0) {
+      corner = BOTTOM_RIGHT;
+      xoff=1;
+      yoff=0;
+    } else if ( sumB==0 && sumL==0) {
+      xoff=1;
+      yoff=1;
+      corner = TOP_RIGHT;
+    } else
+      printf("** bad 2x2 cluster!\n");
+
+#endif
+
 
     for (int ix=0; ix<2; ix++) {
       for (int iy=0; iy<2; iy++) {
@@ -495,7 +573,7 @@ class slsInterpolation
 
  protected:
   int nPixelsX, nPixelsY;
-  int nSubPixels;
+  int nSubPixelsX, nSubPixelsY;
   int id;
   int *hint;
 };

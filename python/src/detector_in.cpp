@@ -12,6 +12,8 @@ namespace py = pybind11;
 void init_det(py::module &m) {
     using sls::Detector;
     using sls::Positions;
+    using sls::Result;
+    using sls::defs;
     
     py::class_<Detector> CppDetectorApi(m, "CppDetectorApi");
     CppDetectorApi

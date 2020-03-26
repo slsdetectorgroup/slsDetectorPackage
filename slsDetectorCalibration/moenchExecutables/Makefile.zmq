@@ -1,18 +1,18 @@
 
 INCDIR=   -I. -I../dataStructures ../tiffIO.cpp -I../ -I../interpolations/ -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/ -I../../libs/rapidjson/
-LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff   -O3 -g -std=c++11 -Wall
+LDFLAG= -L/usr/lib64/ -lpthread -lm  -lstdc++  -lzmq -pthread -lrt -ltiff   -O3  -std=c++11 -Wall -L../../build/bin/ -lSlsSupport
 #-L../../bin -lhdf5  -L.
 
 #DESTDIR?=../bin
 
-all:  moenchZmqProcess moenchZmqProcessCtbGui
-
+all:  moenchZmqProcess 
+ #moenchZmqProcessCtbGui
 
 moenchZmqProcess:  moenchZmqProcess.cpp   clean
-		      g++ -o moenchZmqProcess  moenchZmqProcess.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWZMQ -DINTERP
+		      g++ -o moenchZmqProcess  moenchZmqProcess.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWZMQ -DINTERP 
 
-moenchZmqProcessCtbGui:  moenchZmqProcess.cpp   clean
-		      g++ -o moenchZmqProcessCtbGui  moenchZmqProcess.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWZMQ -DINTERP -DCTBGUI
+#moenchZmqProcessCtbGui:  moenchZmqProcess.cpp   clean
+#		      g++ -o moenchZmqProcessCtbGui  moenchZmqProcess.cpp  $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DNEWZMQ -DINTERP -DCTBGUI
 
 clean: 	
 	rm -f  moenchZmqProcess  

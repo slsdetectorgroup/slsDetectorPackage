@@ -31,6 +31,8 @@ set(PUBLICHEADERS
     include/ToString.h
     include/TimeHelper.h
     include/TypeTraits.h
+    include/Timer.h
+    include/UdpRxSocket.h
 )
 
 add_library(slsSupportLib SHARED
@@ -58,8 +60,6 @@ set_target_properties(slsSupportLib PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
-
-message(${ZeroMQ_LIBRARIES})
 
 target_link_libraries(slsSupportLib 
     PUBLIC

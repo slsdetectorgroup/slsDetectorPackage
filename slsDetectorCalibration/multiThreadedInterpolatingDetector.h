@@ -46,7 +46,7 @@ public:
   };
   
 
-   virtual int setNSubPixels(int ns)  { return (dets[0])->setNSubPixels(ns);};
+   /* virtual int setNSubPixels(int ns)  { return (dets[0])->setNSubPixels(ns);}; */
 
    virtual void resetFlatField() {(dets[0])->resetFlatField();};
    
@@ -69,13 +69,13 @@ public:
 
 
 
-  virtual int *getImage(int &nnx, int &nny, int &ns) {
-    if (getInterpolation()==NULL) return multiThreadedAnalogDetector::getImage(nnx,nny,ns);
+   virtual int *getImage(int &nnx, int &nny, int &nsx, int &nsy) {
+     if (getInterpolation()==NULL) return multiThreadedAnalogDetector::getImage(nnx,nny,nsx, nsy);
     //if one interpolates, the whole image is stored in detector 0;
     int *img;
     // int nnx, nny, ns; 
     // int nnx, nny, ns;
-    int nn=dets[0]->getImageSize(nnx, nny,ns);
+    int nn=dets[0]->getImageSize(nnx, nny,nsx, nsy);
     if (image) {
       delete image;
       image=NULL;

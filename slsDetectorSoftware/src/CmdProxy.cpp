@@ -1898,7 +1898,7 @@ std::string CmdProxy::AdditionalJsonHeader(int action) {
         }
         auto t = det->getAdditionalJsonHeader({det_id});
         os << "[";
-        for (int i = 0; i < t[0].size(); ++i) {
+        for (size_t i = 0; i < t[0].size(); ++i) {
             os << t[0][i][0] << ":" << t[0][i][1] << ",";
         }
         os << "]\n";
@@ -1934,8 +1934,8 @@ std::string CmdProxy::JsonParameter(int action) {
         auto t = det->getAdditionalJsonParameter(args[0], {det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 2) {
-            WrongNumberOfParameters(2);
+        if (args.size() < 1) {
+            WrongNumberOfParameters(1);
         }
         det->setAdditionalJsonParameter(args[0], args[1], {det_id});
         os << sls::ToString(args) << '\n';

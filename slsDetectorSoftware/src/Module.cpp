@@ -2173,7 +2173,7 @@ void Module::setAdditionalJsonParameter(const std::string &key,
         throw RuntimeError(key + " or " + value + " pair has invalid size. "
         "Key cannot be empty. Both can have max 2 characters");
     }
-    char args[2][MAX_STR_LENGTH]{};
+    char args[2][SHORT_STR_LENGTH]{};
     sls::strcpy_safe(args[0], key.c_str());
     sls::strcpy_safe(args[1], value.c_str());
     sendToReceiver(F_SET_ADDITIONAL_JSON_PARAMETER, args, nullptr);
@@ -2183,8 +2183,10 @@ std::string Module::getAdditionalJsonParameter(const std::string &key) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json parameter)");
     }
-    char retval[MAX_STR_LENGTH]{};
-    sendToReceiver(F_GET_ADDITIONAL_JSON_PARAMETER, nullptr, retval); 
+    char arg[SHORT_STR_LENGTH]{};
+    sls::strcpy_safe(arg, key.c_str());
+    char retval[SHORT_STR_LENGTH]{};
+    sendToReceiver(F_GET_ADDITIONAL_JSON_PARAMETER, arg, retval); 
     return retval;
 }
 

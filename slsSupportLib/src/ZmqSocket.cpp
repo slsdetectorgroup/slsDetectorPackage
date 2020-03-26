@@ -234,10 +234,10 @@ int ZmqSocket::SendHeader(
     strcat(buf, "}\n");
     int length = strlen(buf);
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
     // if(!index)
     cprintf(BLUE, "%d : Streamer: buf: %s\n", index, buf);
-//#endif
+#endif
 
     if (zmq_send(sockfd.socketDescriptor, buf, length,
                  header.data ? ZMQ_SNDMORE : 0) < 0) {

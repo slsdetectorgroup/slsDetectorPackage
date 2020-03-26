@@ -1196,11 +1196,19 @@ std::string Implementation::getAdditionalJsonParameter(const std::string &key) c
 void Implementation::setAdditionalJsonParameter(const std::string &key, const std::string &value) {
     for (size_t i = 0; i < additionalJsonHeader.size(); ++i) {
         if (additionalJsonHeader[i][0] == key) {
-            additionalJsonHeader[i][1] = value;
+            // if empty parameter, delete it
+            if (value.empty()) {
+                LOG(logINFO) << "Deleting additional json parameter (" << key << ")";
+                additionalJsonHeader.erase(additionalJsonHeader.begin() + i);
+            } 
+            // else set it
+            else {
+                additionalJsonHeader[i][1] = value;
+                LOG(logINFO) << "Setting additional json parameter (" << key << ") to " << value;
+            }
             for (const auto &it : dataStreamer) {
                 it->SetAdditionalJsonHeader(additionalJsonHeader);
             }
-            //LOG(logINFO) << "Additional JSON Header: " << ToString(additionalJsonHeader);
             return;
         }
     }
@@ -1210,7 +1218,7 @@ void Implementation::setAdditionalJsonParameter(const std::string &key, const st
     for (const auto &it : dataStreamer) {
         it->SetAdditionalJsonHeader(additionalJsonHeader);
     }    
-   // LOG(logINFO) << "Additional JSON Header: " << ToString(additionalJsonHeader);
+    LOG(logINFO) << "Adding additional json parameter (" << key << ") to " << value;
 }
 
 /**************************************************

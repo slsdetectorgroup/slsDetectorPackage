@@ -61,8 +61,6 @@ set_target_properties(slsSupportLib PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
-message(${ZeroMQ_LIBRARIES})
-
 target_link_libraries(slsSupportLib 
     PUBLIC
     slsProjectOptions 

@@ -226,21 +226,57 @@ TEST_CASE("rx_silent", "[.cmd][.rx]") {
 TEST_CASE("rx_jsonaddheader", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
+    auto prev = det.getAdditionalJsonHeader();
 
     {
         std::ostringstream oss;
-        proxy.Call("rx_jsonaddheader", {"\"hej\":\"5\""}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_jsonaddheader \"hej\":\"5\"\n");
+        proxy.Call("rx_jsonaddheader", {"key1", "value1", "key2", "value2"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_jsonaddheader {key1: value1, key2: value2}\n");
     }
     {
         std::ostringstream oss;
         proxy.Call("rx_jsonaddheader", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "rx_jsonaddheader \"hej\":\"5\"\n");
+        REQUIRE(oss.str() == "rx_jsonaddheader {key1: value1, key2: value2}\n");
     }
     {
         std::ostringstream oss;
-        proxy.Call("rx_jsonaddheader", {"\"\""}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_jsonaddheader \"\"\n");
+        proxy.Call("rx_jsonaddheader", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_jsonaddheader {}\n");
+    }
+    // set previous value
+    for (int i = 0; i != det.size(); ++i) {
+        det.setAdditionalJsonHeader(prev[i], {i});
+    }
+}
+
+TEST_CASE("rx_jsonpara", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev = det.getAdditionalJsonHeader();
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonpara", {"key1", "value1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_jsonpara {key1: value1}\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonpara", {"key1", "value2"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_jsonpara {key1: value2}\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonpara", {"key1"}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_jsonpara value2\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonpara", {"key1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_jsonpara key1 deleted\n");
+    }
+    REQUIRE_THROWS(proxy.Call("rx_jsonpara", {"key1"}, -1, GET));
+    // set previous value
+    for (int i = 0; i != det.size(); ++i) {
+        det.setAdditionalJsonHeader(prev[i], {i});
     }
 }
 

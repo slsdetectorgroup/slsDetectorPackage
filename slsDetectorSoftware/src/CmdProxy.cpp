@@ -1896,12 +1896,7 @@ std::string CmdProxy::AdditionalJsonHeader(int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getAdditionalJsonHeader({det_id});
-        /*os << "[";
-        for (auto & it: t[0]) {
-            os << it.first << ":" << it.second << ",";
-        }
-        os << "]\n";*/
-        os << ToString(t[0]) << '\n';
+        os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         // arguments can be empty
         std::map<std::string, std::string> json;
@@ -1914,7 +1909,7 @@ std::string CmdProxy::AdditionalJsonHeader(int action) {
             }
         }
         det->setAdditionalJsonHeader(json, {det_id});
-        os << sls::ToString(args) << '\n';//json
+        os << sls::ToString(json) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }
@@ -1948,7 +1943,11 @@ std::string CmdProxy::JsonParameter(int action) {
                 WrongNumberOfParameters(1); 
         }
         det->setAdditionalJsonParameter(para, {det_id});
-        os << sls::ToString(args) << '\n';
+        if (args.size() == 1) {
+            os << args[0] << " deleted" << '\n';
+        } else {
+            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
+        }
     } else {
         throw sls::RuntimeError("Unknown action");
     }

@@ -562,13 +562,6 @@ void DetectorImpl::readFrameFromReceiver() {
                         << "\n\tcoordX: " << coordX << "\n\tcoordY: " << coordY
                         << "\n\tflippedDataX: " << flippedDataX
                         << "\n\tcompleteImage: " << completeImage;
-
-
-                    // test
-                    for (auto &it : zHeader.addJsonHeader) {
-                        LOG(logINFORED) << it.first << ":" << it.second;
-                    }
-
                 }
 
                 // DATA

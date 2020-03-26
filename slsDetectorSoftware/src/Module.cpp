@@ -2093,32 +2093,31 @@ void Module::setTransmissionDelayRight(int value) {
 }
 
 
-void Module::setAdditionalJsonHeader(const std::vector<std::vector<std::string>> jsonheader) {
+void Module::setAdditionalJsonHeader(const std::map<std::string, std::string> jsonHeader) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
     } 
-    for (auto &it : jsonheader) {
-        if (it.size() != 2) {
-            throw RuntimeError("Json header needs to have value for every key");
-        }
-        if (it[0].empty() || it[0].length() > SHORT_STR_LENGTH ||
-            it[1].empty() || it[1].length() > SHORT_STR_LENGTH ) {
-            throw RuntimeError(it[0] + " or " + it[1] + " pair has invalid size. "
-            "Key cannot be empty. Both can have max 2 characters");
+    for (auto &it : jsonHeader) {
+        if (it.first.empty() || it.first.length() > SHORT_STR_LENGTH ||
+            it.second.length() > SHORT_STR_LENGTH ) {
+            throw RuntimeError(it.first + " or " + it.second + " pair has invalid size. "
+            "Key cannot be empty. Both can have max 20 characters");
         }
     }
-    const int size = jsonheader.size();
+    const int size = jsonHeader.size();
     int fnum = F_SET_ADDITIONAL_JSON_HEADER;
     int ret = FAIL;
-    LOG(logDEBUG) << "Sending to receiver additional json header " << ToString(jsonheader);
+    //LOG(logDEBUG) << "Sending to receiver additional json header " << ToString(jsonHeader);
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(&fnum, sizeof(fnum));
     client.Send(&size, sizeof(size));
     if (size > 0) {
         char args[size * 2][SHORT_STR_LENGTH] {};
-        for (int i = 0; i < size; ++i) {
-            sls::strcpy_safe(args[2 * i], jsonheader[i][0].c_str());
-            sls::strcpy_safe(args[2 * i + 1], jsonheader[i][1].c_str());
+        int iarg = 0;
+        for (auto &it : jsonHeader) {
+            sls::strcpy_safe(args[iarg], it.first.c_str());
+            sls::strcpy_safe(args[iarg + 1], it.second.c_str());
+            iarg += 2;
         }
         client.Send(args, sizeof(args));
     }
@@ -2131,7 +2130,7 @@ void Module::setAdditionalJsonHeader(const std::vector<std::vector<std::string>>
     }
 }
 
-std::vector<std::vector<std::string>> Module::getAdditionalJsonHeader() {
+std::map<std::string, std::string> Module::getAdditionalJsonHeader() {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
     } 
@@ -2148,14 +2147,12 @@ std::vector<std::vector<std::string>> Module::getAdditionalJsonHeader() {
                            " returned error: " + std::string(mess));
     } else {
         client.Receive(&size, sizeof(size));
-        std::vector<std::vector<std::string>> retval(size);
+        std::map<std::string, std::string> retval;
         if (size > 0) {
             char retvals[size * 2][SHORT_STR_LENGTH] {};
             client.Receive(retvals, sizeof(retvals));
             for (int i = 0; i < size; ++i) {
-                retval[i].resize(2);
-                retval[i][0].assign(retvals[2 * i]);
-                retval[i][1].assign(retvals[2 * i + 1]);
+                retval.insert(std::make_pair(retvals[2 * i], retvals[2 * i + 1]));
             }
         }
         //LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
@@ -2163,8 +2160,7 @@ std::vector<std::vector<std::string>> Module::getAdditionalJsonHeader() {
     }
 }
 
-void Module::setAdditionalJsonParameter(const std::string &key,
-                                                    const std::string &value) {
+void Module::setAdditionalJsonParameter(const std::string &key, const std::string &value) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json parameter)");
     } 

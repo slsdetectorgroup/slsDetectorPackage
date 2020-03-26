@@ -9,6 +9,7 @@
 #include <array>
 #include <cmath>
 #include <vector>
+#include <map>
 
 class ServerInterface;
 
@@ -979,21 +980,13 @@ class Module : public virtual slsDetectorDefs {
     void setTransmissionDelayRight(int value);
 
     /** empty vector deletes entire additional json header */
-    void setAdditionalJsonHeader(const std::vector<std::vector<std::string>> jsonheader);
-    std::vector<std::vector<std::string>> getAdditionalJsonHeader();
+    void setAdditionalJsonHeader(const std::map<std::string, std::string> jsonHeader);
+    std::map<std::string, std::string> getAdditionalJsonHeader();
 
     /**
      * Sets the value for the additional json header parameter key if found, else
      * append it. If value empty, then deletes parameter */
-    void setAdditionalJsonParameter(const std::string &key,
-                                           const std::string &value);
-
-    /**
-     * Returns the additional json header parameter value
-     * @param key additional json header parameter
-     * @returns the additional json header parameter value,
-     * empty if no parameter found in additional json header
-     */
+    void setAdditionalJsonParameter(const std::string &key, const std::string &value);
     std::string getAdditionalJsonParameter(const std::string &key);
 
     /**

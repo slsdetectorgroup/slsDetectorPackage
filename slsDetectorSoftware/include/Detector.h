@@ -5,6 +5,7 @@
 #include <chrono>
 #include <memory>
 #include <vector>
+#include <map>
 
 
 class detectorData;
@@ -1199,10 +1200,10 @@ class Detector {
      * ************************************************/
 
     /** [Moench] */
-    Result<std::vector<std::vector<std::string>>> getAdditionalJsonHeader(Positions pos = {}) const;
+    Result<std::map<std::string, std::string>> getAdditionalJsonHeader(Positions pos = {}) const;
 
-    /** [Moench] max 20 characters for each key/value */
-    void setAdditionalJsonHeader(const std::vector<std::vector<std::string>> jsonheader,
+    /** [Moench] If empty, reset additional json header. Max 20 characters for each key/value */
+    void setAdditionalJsonHeader(const std::map<std::string, std::string> jsonHeader,
                                  Positions pos = {});
 
     /** [Moench] */
@@ -1210,12 +1211,11 @@ class Detector {
                                                    Positions pos = {}) const;
     /**
      * [Moench]
-     * Sets the value for additional json header parameter if found,
+     * Sets the value for additional json header parameters if found,
      * else appends the parameter key and value
-     * The value cannot be empty. Max 20 characters for each key/value
+     * If empty, deletes parameter. Max 20 characters for each key/value
      */
-    void setAdditionalJsonParameter(const std::string &key,
-                                    const std::string &value,
+    void setAdditionalJsonParameter(const std::map<std::string, std::string> para,
                                     Positions pos = {});
 
     /** [Moench] TODO! How do we do this best??? Can be refactored to something

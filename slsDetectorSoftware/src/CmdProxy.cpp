@@ -1887,10 +1887,9 @@ std::string CmdProxy::AdditionalJsonHeader(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[key1] [value1] [key2] [value2]...[keyn] [valuen]"
-        "\n\tAdditional json header to be streamd out from receiver via zmq. "
+        "\n\tAdditional json header to be streamed out from receiver via zmq. "
         "Default is empty. Use only if to be processed by an intermediate user process "
         "listening to receiver zmq packets. Empty value deletes header. "
-        "Cannot set empty values for each parameter."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
@@ -1898,19 +1897,21 @@ std::string CmdProxy::AdditionalJsonHeader(int action) {
         }
         auto t = det->getAdditionalJsonHeader({det_id});
         os << "[";
-        for (size_t i = 0; i < t[0].size(); ++i) {
-            os << t[0][i][0] << ":" << t[0][i][1] << ",";
+        for (auto & it: t[0]) {
+            os << it.first << ":" << it.second << ",";
         }
         os << "]\n";
-        //os << OutString(t) << '\n';
+        //os << ToString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         // arguments can be empty
-        int size = args.size() / 2;
-        std::vector<std::vector<std::string>> json (size);
-        for (int i = 0; i < size; ++i) {
-            json[i].resize(2);
-            json[i][0] = args[2 * i];
-            json[i][1] = args[2 * i + 1];
+        std::map<std::string, std::string> json;
+        for (size_t i = 0; i < args.size(); i = i + 2) {
+            // last value is empty
+            if (i + 1 >= args.size()) {
+                json.insert(std::make_pair(args[i], ""));
+            } else {
+                json.insert(std::make_pair(args[i], args[i + 1]));
+            }
         }
         det->setAdditionalJsonHeader(json, {det_id});
         os << sls::ToString(args) << '\n';//json
@@ -1925,7 +1926,8 @@ std::string CmdProxy::JsonParameter(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[key1] [value1]\n\tAdditional json header parameter streamed "
-              "out from receiver. Empty values deletes parameter."
+              "out from receiver. If not found in header, the pair is appended. "
+              "An empty values deletes parameter."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
@@ -1934,10 +1936,18 @@ std::string CmdProxy::JsonParameter(int action) {
         auto t = det->getAdditionalJsonParameter(args[0], {det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() < 1) {
-            WrongNumberOfParameters(1);
+        std::map<std::string, std::string> para;
+        switch (args.size()) {
+            case 1:
+                para.insert(std::make_pair(args[0], ""));
+                break;
+            case 2: 
+                para.insert(std::make_pair(args[0], args[1]));
+                break;
+            default:
+                WrongNumberOfParameters(1); 
         }
-        det->setAdditionalJsonParameter(args[0], args[1], {det_id});
+        det->setAdditionalJsonParameter(para, {det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");

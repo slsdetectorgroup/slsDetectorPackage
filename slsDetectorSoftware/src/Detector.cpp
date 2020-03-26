@@ -1612,13 +1612,13 @@ void Detector::setPatternBitMask(uint64_t mask, Positions pos) {
 
 // Moench
 
-Result<std::vector<std::vector<std::string>>> Detector::getAdditionalJsonHeader(Positions pos) const {
+Result<std::map<std::string, std::string>> Detector::getAdditionalJsonHeader(Positions pos) const {
     return pimpl->Parallel(&Module::getAdditionalJsonHeader, pos);
 }
 
-void Detector::setAdditionalJsonHeader(const std::vector<std::vector<std::string>> jsonheader,
+void Detector::setAdditionalJsonHeader(const std::map<std::string, std::string> jsonHeader,
                                        Positions pos) {
-    pimpl->Parallel(&Module::setAdditionalJsonHeader, pos, jsonheader);
+    pimpl->Parallel(&Module::setAdditionalJsonHeader, pos, jsonHeader);
 }
 
 Result<std::string> Detector::getAdditionalJsonParameter(const std::string &key,
@@ -1626,10 +1626,13 @@ Result<std::string> Detector::getAdditionalJsonParameter(const std::string &key,
     return pimpl->Parallel(&Module::getAdditionalJsonParameter, pos, key);
 }
 
-void Detector::setAdditionalJsonParameter(const std::string &key,
-                                          const std::string &value,
+void Detector::setAdditionalJsonParameter(const std::map<std::string, std::string> para,
                                           Positions pos) {
-    pimpl->Parallel(&Module::setAdditionalJsonParameter, pos, key, value);
+    if (para.size() != 1) {
+        throw RuntimeError("Json parameter should have only 1 key value pair");
+    }
+    auto it = para.begin();
+    pimpl->Parallel(&Module::setAdditionalJsonParameter, pos, it->first, it->second);
 }
 
 Result<int> Detector::getDetectorMinMaxEnergyThreshold(const bool isEmax,

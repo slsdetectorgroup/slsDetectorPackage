@@ -248,6 +248,8 @@ inline std::string ToString(const defs::timingSourceType s) {
 // causes a copy but might be needed in generic code
 inline std::string ToString(const std::string &s) { return s; }
 
+// inline const std::string& ToString(const std::string &s) { return s; }
+
 /** Convert std::chrono::duration with specified output unit */
 template <typename T, typename Rep = double>
 typename std::enable_if<is_duration<T>::value, std::string>::type
@@ -333,6 +335,23 @@ ToStringHex(const T &container) {
     return os.str();
 }
 
+template <typename KeyType, typename ValueType>
+std::string ToString(const std::map<KeyType, ValueType>& m) {
+    std::ostringstream os;
+    os << '{';
+    if (!m.empty()) {
+        auto it = m.cbegin();
+        os << ToString(it->first) << ": " << ToString(it->second);
+        it++;
+        while (it != m.cend()) {
+            os << ", "<< ToString(it->first) << ": " << ToString(it->second);
+            it++;
+        }
+    }
+    os << '}';
+    return os.str();
+}
+
 /**
  * For a container loop over all elements and call ToString on the element
  * Container<std::string> is excluded
@@ -378,6 +397,8 @@ ToString(const T &vec) {
     return os.str();
 }
 
+
+
 /** Container and specified unit, call ToString(value, unit) */
 template <typename T>
 typename std::enable_if<is_container<T>::value, std::string>::type
@@ -394,22 +415,7 @@ ToString(const T &container, const std::string &unit) {
     return os.str();
 }
 
-template <typename KeyType, typename ValueType>
-std::string ToString(std::map<KeyType, ValueType> m) {
-    std::ostringstream os;
-    os << '{';
-    if (!m.empty()) {
-        auto it = m.cbegin();
-        os << ToString(it->first) << ": " << ToString(it->second);
-        it++;
-        while (it != m.cend()) {
-            os << ", "<< ToString(it->first) << ": " << ToString(it->second);
-            it++;
-        }
-    }
-    os << '}';
-    return os.str();
-}
+
 
 template <typename T>
 T StringTo(const std::string &t, const std::string &unit) {

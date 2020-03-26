@@ -4,6 +4,7 @@
 #include "sls_detector_defs.h"
 #include "catch.hpp"
 #include <array>
+#include <map>
 #include <vector>
 
 // using namespace sls;
@@ -193,4 +194,31 @@ TEST_CASE("int64_t from string"){
     REQUIRE(StringTo<int64_t>("0x15") == 21);
     REQUIRE(StringTo<int64_t>("0xffffff") == 0xffffff);
     
+}
+
+
+TEST_CASE("std::map of strings"){
+    std::map<std::string, std::string> m;
+    m["key"] = "value";
+    auto s = ToString(m);
+    REQUIRE(s == "{key: value}");
+
+    m["chrusi"] = "musi";
+    REQUIRE(ToString(m) == "{chrusi: musi, key: value}");
+
+    m["test"] = "tree";
+    REQUIRE(ToString(m) == "{chrusi: musi, key: value, test: tree}");
+
+}
+
+TEST_CASE("std::map of ints"){
+
+    std::map<int, int> m;
+    m[5] = 10;
+    REQUIRE(ToString(m) == "{5: 10}");
+    m[500] = 50;
+    REQUIRE(ToString(m) == "{5: 10, 500: 50}");
+    m[372] = 999;
+    REQUIRE(ToString(m) == "{5: 10, 372: 999, 500: 50}");
+
 }

@@ -314,7 +314,7 @@ std::string CmdProxy::DetectorSize(int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getDetectorSize();
-        os << "[" << t.x << "," << t.y << "]\n";
+        os << "[" << t.x << ", " << t.y << "]\n";
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);

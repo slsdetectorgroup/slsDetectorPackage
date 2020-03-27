@@ -27,6 +27,8 @@ TEST_CASE("rx_version", "[.cmd][.rx]") {
     std::ostringstream vs;
     vs << "rx_version 0x" << std::hex << APIRECEIVER << '\n';
     REQUIRE(oss.str() == vs.str());
+    
+    REQUIRE_THROWS(proxy.Call("rx_version", {"0"}, -1, PUT));
 }
 
 /* acquisition */

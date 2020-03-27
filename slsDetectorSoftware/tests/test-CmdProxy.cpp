@@ -21,7 +21,93 @@ TEST_CASE("Unknown command", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("vsaevrreavv", {}, -1, PUT));
 }
 
-TEST_CASE("type", "[.cmd]"){
+/* configuration */
+
+TEST_CASE("config", "[.cmd][.common]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    // put only
+    REQUIRE_THROWS(proxy.Call("config", {}, -1, GET));
+}
+
+// free: not testing
+
+TEST_CASE("parameters", "[.cmd][.common]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    // put only
+    REQUIRE_THROWS(proxy.Call("parameters", {}, -1, GET));
+/*
+    auto prev_val = det.getNumberOfFrames().tsquash("Number of frames has to be same to test");
+    {
+        system("echo 'frames 2' > /tmp/tempsetup.det ");
+        std::ostringstream oss;
+        proxy.Call("parameters", {"/tmp/tempsetup.det"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "parameters /tmp/tempsetup.det\n");
+        REQUIRE(det.getNumberOfFrames().tsquash("failed") == 2);
+    }
+    {
+        system("echo '0:frames 1' > /tmp/tempsetup.det ");
+        std::ostringstream oss;
+        proxy.Call("parameters", {"/tmp/tempsetup.det"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "parameters /tmp/tempsetup.det\n");
+        REQUIRE(det.getNumberOfFrames({0}).tsquash("failed") == 1);
+    }   
+    det.setNumberOfFrames(prev_val);
+    */
+}
+
+TEST_CASE("hostname", "[.cmd][.common]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("hostname", {}, -1, GET));
+}
+
+// virtual: not testing
+
+TEST_CASE("versions", "[.cmd][.common]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("versions", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("versions", {"0"}, -1, PUT));
+}
+
+TEST_CASE("packageversion", "[.cmd][.common]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("packageversion", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("packageversion", {"0"}, -1, PUT));
+}
+
+TEST_CASE("clientversion", "[.cmd][.common]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("clientversion", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("clientversion", {"0"}, -1, PUT));
+}
+
+TEST_CASE("firmwareversion", "[.cmd][.common]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("firmwareversion", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("firmwareversion", {"0"}, -1, PUT));
+}
+
+TEST_CASE("detectorserverversion", "[.cmd][.common]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("detectorserverversion", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("detectorserverversion", {"0"}, -1, PUT));
+}
+
+TEST_CASE("detectornumber", "[.cmd][.common]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("detectornumber", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("detectornumber", {"0"}, -1, PUT));
+}
+
+TEST_CASE("type", "[.cmd][.common]"){
     Detector det;
     CmdProxy proxy(&det);
     auto dt = det.getDetectorType().squash();
@@ -31,8 +117,141 @@ TEST_CASE("type", "[.cmd]"){
     auto ans = oss.str().erase(0, strlen("type "));
     REQUIRE(ans == sls::ToString(dt) + '\n');
     REQUIRE(dt == test::type);
-
 }
+
+TEST_CASE("detsize", "[.cmd][.common]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getDetectorSize();
+    {
+        std::ostringstream oss;
+        proxy.Call("detsize", {"1000", "2000"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "detsize [1000, 2000]\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("detsize", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "detsize [1000, 2000]\n");
+    }
+    det.setDetectorSize(prev_val);
+}
+
+TEST_CASE("settings", "[.cmd][.common]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    std::vector<std::string> sett;
+    switch (det_type) {
+        case defs::EIGER:
+            //FIXME: need to remove when settings removed
+            break;
+        case defs::JUNGFRAU:
+            sett.push_back("dynamicgain");
+            sett.push_back("dynamichg0");
+            sett.push_back("fixgain1");
+            sett.push_back("fixgain2");
+            sett.push_back("forceswitchg1");
+            sett.push_back("forceswitchg2");
+            break;
+        case defs::GOTTHARD:
+            sett.push_back("highgain");
+            sett.push_back("dynamicgain");
+            sett.push_back("lowgain");
+            sett.push_back("mediumgain");
+            sett.push_back("veryhighgain");
+            break;
+        case defs::GOTTHARD2:
+            sett.push_back("dynamicgain");
+            sett.push_back("fixgain1");
+            sett.push_back("fixgain2");
+            break;
+        case defs::MOENCH:
+            sett.push_back("g1_hg");
+            sett.push_back("g1_lg");
+            sett.push_back("g2_hc_hg");
+            sett.push_back("g2_hc_lg");
+            sett.push_back("g2_lc_hg");
+            sett.push_back("g2_lc_lg");
+            sett.push_back("g4_hg");
+            sett.push_back("g4_lg");
+            break;
+        default:
+            REQUIRE_THROWS(proxy.Call("settings", {}, -1, GET));
+            return;
+    }
+
+    auto prev_val = det.getSettings();
+    for (auto & it : sett) {
+        {
+            std::ostringstream oss;
+            proxy.Call("settings", {it}, -1, PUT, oss);
+            REQUIRE(oss.str() == "settings " + it + "\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("settings", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "settings " + it + "\n");
+        }
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        if (prev_val[i] != defs::UNDEFINED && 
+            prev_val[i] != defs::UNINITIALIZED) {
+            det.setSettings(prev_val[i], {i});
+        }
+    }
+}
+
+/* acquisition parameters */
+
+// acquire: not testing
+
+TEST_CASE("frames", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getNumberOfFrames().tsquash("#frames must be same to test");
+    {
+        std::ostringstream oss;
+        proxy.Call("frames", {"1000"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "frames 1000\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("frames", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "frames 1000\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("frames", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "frames 1\n");
+    }
+    REQUIRE_THROWS(proxy.Call("frames", {"0"}, -1, PUT));
+    det.setNumberOfFrames(prev_val);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 TEST_CASE("initialchecks", "[.cmd]") {
@@ -2318,39 +2537,6 @@ TEST_CASE("timing", "[.cmd]") {
 //     REQUIRE_NOTHROW(multiSlsDetectorClient("triggers 1", PUT));
 // }
 
-// TEST_CASE("settings", "[.cmd]") {
-//     switch(test::type) {
-//         case slsDetectorDefs::EIGER:
-//             REQUIRE_THROWS(multiSlsDetectorClient("settings mediumgain",
-//             PUT)); REQUIRE_NOTHROW(multiSlsDetectorClient("settings
-//             standard", PUT)); break;
-
-//         case slsDetectorDefs::JUNGFRAU:
-//             REQUIRE_THROWS(multiSlsDetectorClient("settings standard", PUT));
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("settings dynamicgain",
-//             PUT)); REQUIRE_NOTHROW(multiSlsDetectorClient("settings
-//             dynamichg0", PUT));
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("settings fixgain1",
-//             PUT)); REQUIRE_NOTHROW(multiSlsDetectorClient("settings
-//             fixgain2", PUT));
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("settings forceswitchg1",
-//             PUT)); REQUIRE_NOTHROW(multiSlsDetectorClient("settings
-//             forceswitchg2", PUT)); break;
-
-//         case slsDetectorDefs::GOTTHARD:
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("settings dynamicgain",
-//             PUT)); REQUIRE_NOTHROW(multiSlsDetectorClient("settings
-//             highgain", PUT));
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("settings lowgain", PUT));
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("settings mediumgain",
-//             PUT)); REQUIRE_NOTHROW(multiSlsDetectorClient("settings
-//             veryhighgain", PUT)); break;
-
-//         default:
-//             REQUIRE_THROWS(multiSlsDetectorClient("settings", GET));
-//             break;
-//     }
-// }
 
 // TEST_CASE("threshold", "[.cmd]") {
 //     if (test::type == slsDetectorDefs::EIGER) {
@@ -2380,13 +2566,7 @@ TEST_CASE("timing", "[.cmd]") {
 //     CHECK_NOTHROW(multiSlsDetectorClient("type", GET));
 // }
 
-TEST_CASE("firmwareversion", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    std::ostringstream oss;
-    proxy.Call("firmwareversion", {}, -1, GET, oss);
-    REQUIRE_THROWS(proxy.Call("firmwareversion", {"4"}, -1, PUT, oss));
-}
+
 // TEST_CASE("status", "[.cmd]") {
 //     Detector det;
 //     CmdProxy proxy(&det);
@@ -2487,26 +2667,6 @@ TEST_CASE("firmwareversion", "[.cmd]") {
 // }
 
 
-TEST_CASE("frames", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    {
-        std::ostringstream oss;
-        proxy.Call("frames", {"1000"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "frames 1000\n");
-    }
-
-    {
-        std::ostringstream oss;
-        proxy.Call("frames", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "frames 1000\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("frames", {"1"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "frames 1\n");
-    }
-}
 
 
 

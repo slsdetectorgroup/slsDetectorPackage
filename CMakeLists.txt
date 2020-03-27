@@ -46,7 +46,17 @@ option(SLS_BUILD_DOCS "docs" OFF)
 option(SLS_BUILD_EXAMPLES "examples" OFF)
 option(SLS_TUNE_LOCAL "tune to local machine" OFF)
 
-
+# Use ld.gold if it is available and isn't disabled explicitly
+option(SLS_USE_LD_GOLD "Use GNU gold linker" ON)
+if (SLS_USE_LD_GOLD)
+    execute_process(COMMAND ${CMAKE_C_COMPILER} -fuse-ld=gold -Wl,--version ERROR_QUIET OUTPUT_VARIABLE LD_VERSION)
+    if ("${LD_VERSION}" MATCHES "GNU gold")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-ld=gold")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=gold")
+    else ()
+        message(WARNING "GNU gold linker isn't available, using the default system linker.")
+    endif ()
+endif ()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)

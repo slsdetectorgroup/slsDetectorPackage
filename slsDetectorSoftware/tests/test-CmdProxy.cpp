@@ -1679,40 +1679,9 @@ TEST_CASE("zmqport", "[.cmd]") {
 }
 
 
-TEST_CASE("fpath", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto fpath = det.getFilePath().squash();
 
-    std::ostringstream oss1, oss2, oss3;
-    proxy.Call("fpath", {}, -1, GET, oss1);
-    REQUIRE(oss1.str() == "fpath " + fpath + "\n");
-    proxy.Call("fpath", {fpath}, -1, PUT, oss2);
-    REQUIRE(oss2.str() == "fpath " + fpath + "\n");
-    proxy.Call("fpath", {}, -1, GET, oss3);
-    REQUIRE(oss3.str() == "fpath " + fpath + "\n");
-}
 
-TEST_CASE("fformat", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto fformat = det.getFileFormat();
-    {
-        std::ostringstream oss;
-        proxy.Call("fformat", {"binary"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "fformat binary\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("fformat", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "fformat binary\n");
-    }
 
-    // Reset file format after test
-    for (int i = 0; i != det.size(); ++i) {
-        det.setFileFormat(fformat[i], {i});
-    }
-}
 
 // TEST_CASE("txndelay", "[.cmd][.eiger][.jungfrau]") {
 //     if (test::type == slsDetectorDefs::EIGER) {

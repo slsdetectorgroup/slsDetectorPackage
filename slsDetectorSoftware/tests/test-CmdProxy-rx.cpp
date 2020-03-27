@@ -15,95 +15,9 @@ using test::PUT;
 /*
 This file should contain receiver specific tests use
 python/scripts/list_tested_cmd.py to check if all commands are covered
-
 */
 
-// TEST_CASE("A test", "[.hey]"){
-//     std::cout << "start\n";
-//     SECTION("a section"){
-//         std::cout << "s1\n";
-//     }
-//     SECTION("another section"){
-//         std::cout << "s2\n";
-//     }
-//     std::cout << "end\n";
-// }
-
-TEST_CASE("rx_hostname", "[.cmd][.rx]") {
-    // TODO! find a proper way to test, now we read out the rx_hostname
-    // and then put it to see that we don't crash
-    Detector det;
-    CmdProxy proxy(&det);
-    std::string hostname =
-        det.getRxHostname().tsquash("hostname must be same for test");
-
-    auto det_type = det.getDetectorType().squash();
-    sls::Result<sls::ns> time;
-    if (det_type == defs::EIGER) {
-        time = det.getSubDeadTime();
-    }
-
-    {
-        // disable receiver
-        std::ostringstream oss1, oss2;
-        proxy.Call("rx_hostname", {"none"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "rx_hostname none\n");
-        proxy.Call("rx_hostname", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "rx_hostname none\n");
-        // receiver should be disabled
-        REQUIRE(det.getUseReceiverFlag().tsquash(
-                    "different values of flag in test") == false);
-    }
-    {
-        // put back the old hostname
-        std::ostringstream oss1, oss2;
-        proxy.Call("rx_hostname", {hostname}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "rx_hostname " + hostname + "\n");
-        proxy.Call("rx_hostname", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "rx_hostname " + hostname + "\n");
-    }
-
-    //Bug rx_hostname could change subdeadtime
-    if (det_type == defs::EIGER) {
-        auto time2 = det.getSubDeadTime();
-        for (int i = 0; i != det.size(); ++i) {
-            REQUIRE(time[i].count() == time2[i].count());
-        }
-    }
-}
-
-TEST_CASE("rx_framescaught", "[.cmd][.rx]") {
-    Detector det;
-    CmdProxy proxy(&det);
-
-    // This ensures 0 caught frames
-    det.startReceiver();
-    det.stopReceiver();
-
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_framescaught", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "rx_framescaught 0\n");
-    }
-
-    // Currently disabled may activate if we have a stable env
-    // Now take one frame and see that we caught it
-    // det.setNumberOfFrames(1);
-    // det.acquire();
-    // {
-    //     std::ostringstream oss;
-    //     proxy.Call("rx_framescaught", {}, -1, GET, oss);
-    //     REQUIRE(oss.str() == "rx_framescaught 1\n");
-    // }
-}
-
-TEST_CASE("rx_status", "[.cmd][.rx]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    std::ostringstream oss;
-    proxy.Call("rx_status", {}, -1, GET, oss);
-    REQUIRE(oss.str() == "rx_status idle\n");
-}
+/* configuration */
 
 TEST_CASE("rx_version", "[.cmd][.rx]") {
     Detector det;
@@ -114,6 +28,8 @@ TEST_CASE("rx_version", "[.cmd][.rx]") {
     vs << "rx_version 0x" << std::hex << APIRECEIVER << '\n';
     REQUIRE(oss.str() == vs.str());
 }
+
+/* acquisition */
 
 TEST_CASE("rx_start", "[.cmd][.rx]") {
     Detector det;
@@ -149,41 +65,143 @@ TEST_CASE("rx_stop", "[.cmd][.rx]") {
     }
 }
 
+TEST_CASE("rx_status", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    det.startReceiver();
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_status running\n");
+    }
+    det.stopReceiver();
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_status idle\n");
+    }
+}
+
+TEST_CASE("rx_framescaught", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    // This ensures 0 caught frames
+    det.startReceiver();
+    det.stopReceiver();
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_framescaught", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_framescaught 0\n");
+    }
+
+    // Currently disabled may activate if we have a stable env
+    // Now take one frame and see that we caught it
+    // det.setNumberOfFrames(1);
+    // det.acquire();
+    // {
+    //     std::ostringstream oss;
+    //     proxy.Call("rx_framescaught", {}, -1, GET, oss);
+    //     REQUIRE(oss.str() == "rx_framescaught 1\n");
+    // }
+
+}
+
 TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
-    // TODO! This only tests for no crash how can we test
-    // for correct values?
     Detector det;
     CmdProxy proxy(&det);
-    proxy.Call("rx_missingpackets", {}, -1, GET);
+    {
+        // some missing packets
+        det.startReceiver();
+        det.stopReceiver();
+        std::ostringstream oss;
+        proxy.Call("rx_missingpackets", {}, -1, GET, oss);
+        std::string s = (oss.str()).erase(0, strlen("rx_missingpackets ["));
+        REQUIRE(std::stoi(s) > 0);
+    }
+    {
+        // 0 missing packets (takes into account that acquisition is stopped)
+        det.startReceiver();
+        det.stopDetector();
+        det.stopReceiver();
+        std::ostringstream oss;
+        proxy.Call("rx_missingpackets", {}, -1, GET, oss);
+        std::string s = (oss.str()).erase(0, strlen("rx_missingpackets ["));
+        REQUIRE(std::stoi(s) == 0);
+    }
 }
 
-TEST_CASE("rx_frameindex", "[.cmd][.rx]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    proxy.Call("rx_frameindex", {}, -1, GET);
-
-    // This is a get only command
-    REQUIRE_THROWS(proxy.Call("rx_frameindex", {"2"}, -1, PUT));
-}
-
-TEST_CASE("rx_lastclient", "[.cmd][.rx]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    std::ostringstream oss;
-    proxy.Call("rx_lastclient", {}, -1, GET, oss);
-    REQUIRE(oss.str() == "rx_lastclient " + test::my_ip + "\n");
-}
+/* Network Configuration (Detector<->Receiver) */
 
 TEST_CASE("rx_printconfig", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
-    proxy.Call("rx_printconfig", {}, -1, GET);
+    REQUIRE_NOTHROW(proxy.Call("rx_printconfig", {}, -1, GET));
+}
+
+
+/* Receiver Config */ 
+
+TEST_CASE("rx_hostname", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getRxHostname();
+    
+    // Cannot set rx_hostname (will reset parameters in rxr and no shm variables to update)
+    // {
+    //     // disable receiver
+    //     std::ostringstream oss;
+    //     proxy.Call("rx_hostname", {"none"}, -1, PUT, oss);
+    //     REQUIRE(oss.str() == "rx_hostname [none]\n");
+    // }
+    // {
+    //     std::ostringstream oss;
+    //     proxy.Call("rx_hostname", {}, -1, GET, oss);
+    //     REQUIRE(oss.str() == "rx_hostname none\n");
+    //     // receiver should be disabled
+    //     REQUIRE(det.getUseReceiverFlag().tsquash(
+    //                 "different values of flag in test") == false);
+    // }
+    // put back old values (not necessary when we dont set it to none)
+    // for (int i = 0; i != det.size(); ++i) {
+    //     det.setRxHostname(prev_val[i], {i});
+    // }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_hostname", {}, 0, GET, oss);
+        REQUIRE(oss.str() == "rx_hostname " + prev_val[0] + "\n");
+    }
+}
+
+TEST_CASE("rx_tcpport", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getRxPort();
+
+    int port = 3500;
+    proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
+    for (int i = 0; i != det.size(); ++i) {
+        std::ostringstream oss;
+        proxy.Call("rx_tcpport", {}, i, GET, oss);
+        REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
+    }
+    REQUIRE_THROWS(proxy.Call("rx_tcpport", {"15"}, -1, PUT));
+    port = 5754;
+    proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
+    for (int i = 0; i != det.size(); ++i) {
+        std::ostringstream oss;
+        proxy.Call("rx_tcpport", {}, i, GET, oss);
+        REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxPort(prev_val[i], i);
+    }
 }
 
 TEST_CASE("rx_fifodepth", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
-    int prev_val = det.getRxFifoDepth().squash();
+    auto prev_val = det.getRxFifoDepth();
     {
         std::ostringstream oss;
         proxy.Call("rx_fifodepth", {"10"}, -1, PUT, oss);
@@ -194,18 +212,20 @@ TEST_CASE("rx_fifodepth", "[.cmd][.rx]") {
         proxy.Call("rx_fifodepth", {"100"}, -1, PUT, oss);
         REQUIRE(oss.str() == "rx_fifodepth 100\n");
     }
-
     {
         std::ostringstream oss;
         proxy.Call("rx_fifodepth", {}, -1, GET, oss);
         REQUIRE(oss.str() == "rx_fifodepth 100\n");
     }
-    det.setRxFifoDepth(prev_val);
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxFifoDepth(prev_val[i], {i});
+    }
 }
 
 TEST_CASE("rx_silent", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
+    auto prev_val = det.getRxSilentMode();
     {
         std::ostringstream oss;
         proxy.Call("rx_silent", {"1"}, -1, PUT, oss);
@@ -221,87 +241,15 @@ TEST_CASE("rx_silent", "[.cmd][.rx]") {
         proxy.Call("rx_silent", {"0"}, -1, PUT, oss);
         REQUIRE(oss.str() == "rx_silent 0\n");
     }
-}
-
-TEST_CASE("rx_jsonaddheader", "[.cmd][.rx]") {
-    Detector det;
-    CmdProxy proxy(&det);
-
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_jsonaddheader", {"\"hej\":\"5\""}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_jsonaddheader \"hej\":\"5\"\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_jsonaddheader", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "rx_jsonaddheader \"hej\":\"5\"\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_jsonaddheader", {"\"\""}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_jsonaddheader \"\"\n");
-    }
-}
-
-TEST_CASE("rx_udpsocksize", "[.cmd][.rx]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_udpsocksize", {"4857600"}, -1, PUT, oss);
-        REQUIRE(oss.str() >= "rx_udpsocksize 4857600\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_udpsocksize", {}, -1, GET, oss);
-        REQUIRE(oss.str() >= "rx_udpsocksize 4857600\n");
-    }
-}
-
-TEST_CASE("rx_realudpsocksize", "[.cmd][.rx]") {
-    // TODO! Is the real socket size always twice?
-    Detector det;
-    CmdProxy proxy(&det);
-    uint64_t val = 0;
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_udpsocksize", {}, -1, GET, oss);
-        std::string s = (oss.str()).erase(0, strlen("rx_udpsocksize "));
-        val = std::stol(s);
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_realudpsocksize", {}, -1, GET, oss);
-        std::string s = (oss.str()).erase(0, strlen("rx_realudpsocksize "));
-        uint64_t rval = std::stol(s);
-        REQUIRE(rval >= val * 2);
-    }
-}
-
-TEST_CASE("rx_framesperfile", "[.cmd][.rx]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_framesperfile", {"50"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_framesperfile 50\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_framesperfile", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "rx_framesperfile 50\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_framesperfile", {"10000"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_framesperfile 10000\n");
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxSilentMode(prev_val[i], {i});
     }
 }
 
 TEST_CASE("rx_discardpolicy", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
+    auto prev_val = det.getRxFrameDiscardPolicy();
     {
         std::ostringstream oss;
         proxy.Call("rx_discardpolicy", {"discardempty"}, -1, PUT, oss);
@@ -322,11 +270,15 @@ TEST_CASE("rx_discardpolicy", "[.cmd][.rx]") {
         proxy.Call("rx_discardpolicy", {"nodiscard"}, -1, PUT, oss);
         REQUIRE(oss.str() == "rx_discardpolicy nodiscard\n");
     }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxFrameDiscardPolicy(prev_val[i], {i});
+    }
 }
 
 TEST_CASE("rx_padding", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
+    auto prev_val = det.getPartialFramesPadding();
     {
         std::ostringstream oss;
         proxy.Call("rx_padding", {"0"}, -1, PUT, oss);
@@ -342,31 +294,52 @@ TEST_CASE("rx_padding", "[.cmd][.rx]") {
         proxy.Call("rx_padding", {"1"}, -1, PUT, oss);
         REQUIRE(oss.str() == "rx_padding 1\n");
     }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setPartialFramesPadding(prev_val[i], {i});
+    }
 }
 
-TEST_CASE("rx_readfreq", "[.cmd][.rx]") {
+TEST_CASE("rx_udpsocksize", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
+    int64_t prev_val = det.getRxUDPSocketBufferSize().tsquash("Need same udp socket buffer size to test");
+    std::string s_new_val = std::to_string(prev_val - 1000);
     {
         std::ostringstream oss;
-        proxy.Call("rx_readfreq", {"1"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_readfreq 1\n");
+        proxy.Call("rx_udpsocksize", {s_new_val}, -1, PUT, oss);
+        REQUIRE(oss.str() >= "rx_udpsocksize " + s_new_val + "\n");
     }
     {
         std::ostringstream oss;
-        proxy.Call("rx_readfreq", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "rx_readfreq 1\n");
+        proxy.Call("rx_udpsocksize", {}, -1, GET, oss);
+        REQUIRE(oss.str() >= "rx_udpsocksize " + s_new_val + "\n");
+    }
+    det.setRxUDPSocketBufferSize(prev_val);
+}
+
+TEST_CASE("rx_realudpsocksize", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    uint64_t val = 0;
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_udpsocksize", {}, -1, GET, oss);
+        std::string s = (oss.str()).erase(0, strlen("rx_udpsocksize "));
+        val = std::stol(s);
     }
     {
         std::ostringstream oss;
-        proxy.Call("rx_readfreq", {"0"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_readfreq 0\n");
+        proxy.Call("rx_realudpsocksize", {}, -1, GET, oss);
+        std::string s = (oss.str()).erase(0, strlen("rx_realudpsocksize "));
+        uint64_t rval = std::stol(s);
+        REQUIRE(rval >= val * 2);
     }
 }
 
 TEST_CASE("rx_lock", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
+    auto prev_val = det.getRxLock();
     {
         std::ostringstream oss;
         proxy.Call("rx_lock", {"1"}, -1, PUT, oss);
@@ -382,46 +355,216 @@ TEST_CASE("rx_lock", "[.cmd][.rx]") {
         proxy.Call("rx_lock", {"0"}, -1, PUT, oss);
         REQUIRE(oss.str() == "rx_lock 0\n");
     }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxLock(prev_val[i], {i});
+    }
 }
 
-TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
+TEST_CASE("rx_lastclient", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
-    int socketsperdetector = 1;
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        socketsperdetector *= 2;
-    } else if (det_type == defs::JUNGFRAU) {
-        proxy.Call("numinterfaces", {"2"}, -1, PUT);
-        socketsperdetector *= 2;
-    }
-    int port = 3500;
-    proxy.Call("rx_zmqport", {std::to_string(port)}, -1, PUT);
-    for (int i = 0; i != det.size(); ++i) {
-        std::ostringstream oss;
-        proxy.Call("rx_zmqport", {}, i, GET, oss);
-        std::cout << "oss: " << oss.str() << "\n";
-        REQUIRE(oss.str() == "rx_zmqport " +
-                                 std::to_string(port + i * socketsperdetector) +
-                                 '\n');
-    }
-    port = 30001;
-    proxy.Call("rx_zmqport", {std::to_string(port)}, -1, PUT);
-    for (int i = 0; i != det.size(); ++i) {
-        std::ostringstream oss;
-        proxy.Call("rx_zmqport", {}, i, GET, oss);
-        REQUIRE(oss.str() == "rx_zmqport " +
-                                 std::to_string(port + i * socketsperdetector) +
-                                 '\n');
-    }
-    if (det_type == slsDetectorDefs::JUNGFRAU) {
-        proxy.Call("numinterfaces", {"1"}, -1, PUT);
+    std::ostringstream oss;
+    REQUIRE_NOTHROW(proxy.Call("rx_lastclient", {}, -1, GET, oss));
+    if (test::my_ip != "undefined") {
+        REQUIRE(oss.str() == "rx_lastclient " + test::my_ip + "\n");
     }
 }
+
+/* File */
+
+TEST_CASE("fformat", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getFileFormat();
+    {
+        std::ostringstream oss;
+        proxy.Call("fformat", {"binary"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fformat binary\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fformat", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fformat binary\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setFileFormat(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("fpath", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getFilePath();
+    {
+        std::ostringstream oss;
+        proxy.Call("fpath", {"/tmp"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fpath /tmp\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fpath", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fpath /tmp\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setFilePath(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("fname", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getFileNamePrefix();
+    {
+        std::ostringstream oss;
+        proxy.Call("fname", {"somename"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fname somename\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fname", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fname somename\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fname", {"run"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fname run\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setFileNamePrefix(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("findex", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getAcquisitionIndex();
+    {
+        std::ostringstream oss;
+        proxy.Call("findex", {"57"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "findex 57\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("findex", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "findex 57\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("findex", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "findex 0\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setAcquisitionIndex(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("fwrite", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getFileWrite();
+    {
+        std::ostringstream oss;
+        proxy.Call("fwrite", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fwrite 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fwrite", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fwrite 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fwrite", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fwrite 0\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setFileWrite(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("fmaster", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getMasterFileWrite();
+    {
+        std::ostringstream oss;
+        proxy.Call("fmaster", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fmaster 0\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fmaster", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fmaster 0\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fmaster", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fmaster 1\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setMasterFileWrite(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("foverwrite", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getFileOverWrite();
+    {
+        std::ostringstream oss;
+        proxy.Call("foverwrite", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "foverwrite 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("foverwrite", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "foverwrite 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("foverwrite", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "foverwrite 0\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setFileOverWrite(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("rx_framesperfile", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getFramesPerFile();
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_framesperfile", {"50"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_framesperfile 50\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_framesperfile", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_framesperfile 50\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_framesperfile", {"10000"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_framesperfile 10000\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_framesperfile", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_framesperfile 0\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setFramesPerFile(prev_val[i], {i});
+    }    
+}
+
+/* ZMQ Streaming Parameters (Receiver<->Client) */
 
 TEST_CASE("rx_datastream", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
+    auto prev_val = det.getRxZmqDataStream();
     {
         std::ostringstream oss;
         proxy.Call("rx_datastream", {"1"}, -1, PUT, oss);
@@ -439,33 +582,79 @@ TEST_CASE("rx_datastream", "[.cmd][.rx]") {
         REQUIRE(oss.str() == "rx_datastream 0\n");
         REQUIRE(det.getRxZmqDataStream().squash() == false);
     }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxZmqDataStream(prev_val[i], {i});
+    }
 }
 
-TEST_CASE("rx_tcpport", "[.cmd][.rx]") {
+TEST_CASE("rx_readfreq", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
-
-    int port = 3500;
-
-    proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
-    for (int i = 0; i != det.size(); ++i) {
+    auto prev_val = det.getRxZmqFrequency();
+    {
         std::ostringstream oss;
-        proxy.Call("rx_tcpport", {}, i, GET, oss);
-        REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
+        proxy.Call("rx_readfreq", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_readfreq 1\n");
     }
-    REQUIRE_THROWS(proxy.Call("rx_tcpport", {"15"}, -1, PUT));
-    port = 1954;
-    proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_readfreq", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_readfreq 1\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_readfreq", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_readfreq 0\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxZmqFrequency(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val_zmqport = det.getRxZmqPort();
+    auto prev_val_numinterfaces = det.getNumberofUDPInterfaces();
+
+    int socketsperdetector = 1;
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        socketsperdetector *= 2;
+    } else if (det_type == defs::JUNGFRAU) {
+        proxy.Call("numinterfaces", {"2"}, -1, PUT);
+        socketsperdetector *= 2;
+    }
+    int port = 3500;
+    proxy.Call("rx_zmqport", {std::to_string(port)}, -1, PUT);
     for (int i = 0; i != det.size(); ++i) {
         std::ostringstream oss;
-        proxy.Call("rx_tcpport", {}, i, GET, oss);
-        REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
+        proxy.Call("rx_zmqport", {}, i, GET, oss);
+        REQUIRE(oss.str() == "rx_zmqport " +
+                                 std::to_string(port + i * socketsperdetector) +
+                                 '\n');
+    }
+    port = 30001;
+    proxy.Call("rx_zmqport", {std::to_string(port)}, -1, PUT);
+    for (int i = 0; i != det.size(); ++i) {
+        std::ostringstream oss;
+        proxy.Call("rx_zmqport", {}, i, GET, oss);
+        REQUIRE(oss.str() == "rx_zmqport " +
+                                 std::to_string(port + i * socketsperdetector) +
+                                 '\n');
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxZmqPort(prev_val_zmqport[i], i);
+        if (det_type == defs::JUNGFRAU) {
+        det.setNumberofUDPInterfaces(prev_val_numinterfaces[i], {i});
+        }
     }
 }
 
 TEST_CASE("rx_zmqip", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
+    auto prev_val = det.getRxZmqIP();
     {
         std::ostringstream oss;
         proxy.Call("rx_zmqip", {"127.0.0.1"}, 0, PUT, oss);
@@ -476,6 +665,39 @@ TEST_CASE("rx_zmqip", "[.cmd][.rx]") {
         std::ostringstream oss;
         proxy.Call("rx_zmqip", {}, 0, GET, oss);
         REQUIRE(oss.str() == "rx_zmqip 127.0.0.1\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxZmqIP(prev_val[i], {i});
+    }
+}
+
+/* CTB Specific */
+
+TEST_CASE("rx_dbitlist", "[.cmd][.rx]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD) {
+        auto previous = det.getRxDbitList();
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitlist", {"0", "4", "5", "8", "9", "10", "52", "63"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "rx_dbitlist [0, 4, 5, 8, 9, 10, 52, 63]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("rx_dbitlist", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "rx_dbitlist [0, 4, 5, 8, 9, 10, 52, 63]\n");
+        }
+        REQUIRE_THROWS(proxy.Call("rx_dbitlist", {"67"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("rx_dbitlist", {"-1"}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("rx_dbitlist", {"all"}, -1, PUT));
+        // Reset to previous value
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRxDbitList(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("rx_dbitlist", {}, -1, GET));
     }
 }
 
@@ -514,32 +736,21 @@ TEST_CASE("rx_dbitoffset", "[.cmd][.rx]") {
     }
 }
 
+/* Moench */
 
+//FIXME: rx_jsonaddheader, rx_jsonpara
 
-TEST_CASE("rx_dbitlist", "[.cmd][.rx]") {
+/* Insignificant */
+
+TEST_CASE("rx_frameindex", "[.cmd][.rx]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::CHIPTESTBOARD) {
-        auto previous = det.getRxDbitList();
-        {
-            std::ostringstream oss;
-            proxy.Call("rx_dbitlist", {"0", "4", "5", "8", "9", "10", "52", "63"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "rx_dbitlist [0, 4, 5, 8, 9, 10, 52, 63]\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("rx_dbitlist", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "rx_dbitlist [0, 4, 5, 8, 9, 10, 52, 63]\n");
-        }
-        REQUIRE_THROWS(proxy.Call("rx_dbitlist", {"67"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("rx_dbitlist", {"-1"}, -1, PUT));
-        REQUIRE_NOTHROW(proxy.Call("rx_dbitlist", {"all"}, -1, PUT));
-        // Reset to previous value
-        for (int i = 0; i != det.size(); ++i) {
-            det.setRxDbitList(previous[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("rx_dbitlist", {}, -1, GET));
-    }
+    proxy.Call("rx_frameindex", {}, -1, GET);
+
+    // This is a get only command
+    REQUIRE_THROWS(proxy.Call("rx_frameindex", {"2"}, -1, PUT));
+    std::ostringstream oss;
+    proxy.Call("rx_frameindex", {}, 0, GET, oss);
+    std::string s = (oss.str()).erase(0, strlen("rx_frameindex "));
+    REQUIRE(std::stoi(s) >= 0);
 }

@@ -15,6 +15,89 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
+/* acquisition parameters */
+
+TEST_CASE("bursts", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2) {
+        auto prev_burst = det.getNumberOfBursts().tsquash("#bursts should be same to test");
+        auto prev_trigger = det.getNumberOfFrames().tsquash("#frames should be same to test");
+        auto prev_frames = det.getNumberOfTriggers().tsquash("#triggers should be same to test");
+        auto prev_timingMode = det.getTimingMode();
+        auto prev_burstMode = det.getBurstMode();
+        // changing continuous mode frames and bursts
+        det.setBurstMode(defs::BURST_INTERNAL);
+        det.setTimingMode(defs::AUTO_TIMING);
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {"3"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        REQUIRE_THROWS(proxy.Call("bursts", {"0"}, -1, PUT));
+        // trigger mode: reg set to 1, but bursts must be same
+        det.setTimingMode(defs::TRIGGER_EXPOSURE);
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }        
+        det.setTimingMode(defs::AUTO_TIMING);
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        // continuous mode: reg set to #frames,
+        // but bursts should return same value
+        det.setBurstMode(defs::BURST_OFF);
+        det.setNumberOfFrames(2);
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        det.setTimingMode(defs::TRIGGER_EXPOSURE);
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        det.setBurstMode(defs::BURST_INTERNAL);
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        // set to previous values
+        det.setNumberOfBursts(prev_burst);
+        det.setNumberOfFrames(prev_frames);
+        det.setNumberOfTriggers(prev_trigger);
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTimingMode(prev_timingMode[i], {i});
+            det.setBurstMode(prev_burstMode[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("bursts", {}, -1, GET));
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs]") {
     // vref_h_adc,   vb_comp_fe, vb_comp_adc,  vcom_cds,
     // vref_restore, vb_opa_1st, vref_comp_fe, vcom_adc1,
@@ -229,35 +312,7 @@ TEST_CASE("inj_ch", "[.cmd]") {
 }
 
 
-TEST_CASE("bursts", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::GOTTHARD2) {
-        auto previous = det.getNumberOfBursts().squash(1);
-        auto previousTrigger = det.getNumberOfTriggers().squash(1);
-
-        std::ostringstream oss_set, oss_get;
-        proxy.Call("bursts", {"3"}, -1, PUT, oss_set);
-        REQUIRE(oss_set.str() == "bursts 3\n");
-
-        // change to trigger and back (bursts should still be same)
-        proxy.Call("timing", {"trigger"}, -1, PUT);
-        proxy.Call("triggers", {"2"}, -1, PUT);
-        proxy.Call("timing", {"auto"}, -1, PUT);
-
-
-        proxy.Call("bursts", {}, -1, GET, oss_get);
-        REQUIRE(oss_get.str() == "bursts 3\n");
-
-
-        det.setNumberOfBursts(previous);
-        det.setNumberOfTriggers(previousTrigger);
-    } else {
-        REQUIRE_THROWS(proxy.Call("bursts", {}, -1, GET));
-    }
-}
 
 TEST_CASE("burstperiod", "[.cmd]") {
     Detector det;

@@ -571,11 +571,9 @@ class CmdProxy {
                           {"acquire", &CmdProxy::acquire},
                           {"frames", &CmdProxy::frames},                          
                           {"triggers", &CmdProxy::triggers},
-                          {"bursts", &CmdProxy::bursts},
                           {"exptime", &CmdProxy::exptime},
                           {"period", &CmdProxy::period},
                           {"delay", &CmdProxy::delay},
-                          {"burstperiod", &CmdProxy::burstperiod},
                           {"framesl", &CmdProxy::framesl},
                           {"triggersl", &CmdProxy::triggersl},
                           {"delayl", &CmdProxy::delayl},
@@ -793,6 +791,8 @@ class CmdProxy {
                           {"extsig", &CmdProxy::extsig},
 
                           /* Gotthard2 Specific */  
+                          {"bursts", &CmdProxy::bursts},
+                          {"burstperiod", &CmdProxy::burstperiod},
                           {"inj_ch", &CmdProxy::InjectChannel},
                           {"vetophoton", &CmdProxy::VetoPhoton},
                           {"vetoref", &CmdProxy::VetoReference},
@@ -1035,10 +1035,6 @@ class CmdProxy {
     INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
                          StringTo<int64_t>,
                          "[n_triggers]\n\tNumber of triggers per aquire. Use timing command to set timing mode.");
-
-    INTEGER_COMMAND_NOID(bursts, getNumberOfBursts, setNumberOfBursts,
-                         StringTo<int64_t>,
-                         "[n_bursts]\n\t[Gotthard2] Number of bursts per aquire. Only in auto timing mode and burst mode. Use timing command to set timing mode and burstmode command to set burst mode.");
 
     TIME_COMMAND(exptime, getExptime, setExptime,
         "[duration] [(optional unit) ns|us|ms|s]\n\tExposure time"
@@ -1591,6 +1587,10 @@ class CmdProxy {
                     "[trigger_in_rising_edge|trigger_in_falling_edge]\n\t[Gotthard] External signal mode for trigger timing mode.");
 
     /* Gotthard2 Specific */
+    INTEGER_COMMAND_NOID(bursts, getNumberOfBursts, setNumberOfBursts,
+                         StringTo<int64_t>,
+                         "[n_bursts]\n\t[Gotthard2] Number of bursts per aquire. Only in auto timing mode and burst mode. Use timing command to set timing mode and burstmode command to set burst mode.");
+
     INTEGER_COMMAND(currentsource, getCurrentSource, setCurrentSource, StringTo<int>,
                     "[0, 1]\n\t[Gotthard2] Enable or disable current source. Default is disabled.");
 

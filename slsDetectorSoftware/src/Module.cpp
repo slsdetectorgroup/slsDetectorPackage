@@ -3205,6 +3205,7 @@ void Module::setPartialFramesPadding(bool padding) {
 
 void Module::startReceiver() {
     LOG(logDEBUG1) << "Starting Receiver";
+    shm()->stoppedFlag = false;
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_START_RECEIVER, nullptr, nullptr);
     }

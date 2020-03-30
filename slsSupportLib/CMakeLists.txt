@@ -5,6 +5,7 @@ set(SOURCES
     src/DataSocket.cpp
     src/ServerSocket.cpp
     src/ServerInterface.cpp
+    src/ToString.cpp
     src/network_utils.cpp
     src/ZmqSocket.cpp
 )

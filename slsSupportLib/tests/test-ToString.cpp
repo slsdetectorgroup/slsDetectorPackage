@@ -10,6 +10,7 @@
 // using namespace sls;
 using sls::StringTo;
 using sls::ToString;
+using sls::defs;
 using namespace sls::time;
 
 TEST_CASE("Integer conversions", "[support]") {
@@ -221,4 +222,10 @@ TEST_CASE("std::map of ints"){
     m[372] = 999;
     REQUIRE(ToString(m) == "{5: 10, 372: 999, 500: 50}");
 
+}
+
+TEST_CASE("Detector type"){
+    auto dt = defs::detectorType::EIGER;
+    REQUIRE(ToString(dt) == "Eiger");
+    REQUIRE(StringTo<defs::detectorType>("Eiger") == dt);
 }

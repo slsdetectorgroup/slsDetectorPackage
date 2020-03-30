@@ -980,7 +980,7 @@ class Module : public virtual slsDetectorDefs {
     void setTransmissionDelayRight(int value);
 
     /** empty vector deletes entire additional json header */
-    void setAdditionalJsonHeader(const std::map<std::string, std::string> jsonHeader);
+    void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);
     std::map<std::string, std::string> getAdditionalJsonHeader();
 
     /**

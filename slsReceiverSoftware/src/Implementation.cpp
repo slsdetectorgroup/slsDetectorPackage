@@ -1175,7 +1175,7 @@ std::map<std::string, std::string> Implementation::getAdditionalJsonHeader() con
     return additionalJsonHeader;
 }
 
-void Implementation::setAdditionalJsonHeader(const std::map<std::string, std::string> c) {
+void Implementation::setAdditionalJsonHeader(const std::map<std::string, std::string> &c) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     additionalJsonHeader = c;
 	for (const auto &it : dataStreamer) {

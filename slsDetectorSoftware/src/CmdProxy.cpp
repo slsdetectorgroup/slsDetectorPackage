@@ -1931,18 +1931,16 @@ std::string CmdProxy::JsonParameter(int action) {
         auto t = det->getAdditionalJsonParameter(args[0], {det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        std::map<std::string, std::string> para;
         switch (args.size()) {
             case 1:
-                para.insert(std::make_pair(args[0], ""));
+                det->setAdditionalJsonParameter(args[0], "", {det_id});
                 break;
             case 2: 
-                para.insert(std::make_pair(args[0], args[1]));
+                det->setAdditionalJsonParameter(args[0], args[1], {det_id});
                 break;
             default:
                 WrongNumberOfParameters(1); 
         }
-        det->setAdditionalJsonParameter(para, {det_id});
         if (args.size() == 1) {
             os << args[0] << " deleted" << '\n';
         } else {

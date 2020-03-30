@@ -125,7 +125,7 @@ class Implementation : private virtual slsDetectorDefs {
     sls::IpAddr getStreamingSourceIP() const;
     void setStreamingSourceIP(const  sls::IpAddr ip);
     std::map<std::string, std::string> getAdditionalJsonHeader() const;
-    void setAdditionalJsonHeader(const std::map<std::string, std::string> c);
+    void setAdditionalJsonHeader(const std::map<std::string, std::string> &c);
     std::string getAdditionalJsonParameter(const std::string &key) const;
     void setAdditionalJsonParameter(const std::string &key, const std::string &value);
 

@@ -93,7 +93,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * Set additional json header
 	 * @param json additional json header
 	 */
-	void SetAdditionalJsonHeader(const std::map<std::string, std::string> json); 
+	void SetAdditionalJsonHeader(const std::map<std::string, std::string> &json); 
 	
 	/**
 	 * Creates Zmq Sockets

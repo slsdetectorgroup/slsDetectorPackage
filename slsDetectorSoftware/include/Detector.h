@@ -1203,7 +1203,7 @@ class Detector {
     Result<std::map<std::string, std::string>> getAdditionalJsonHeader(Positions pos = {}) const;
 
     /** [Moench] If empty, reset additional json header. Max 20 characters for each key/value */
-    void setAdditionalJsonHeader(const std::map<std::string, std::string> jsonHeader,
+    void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader,
                                  Positions pos = {});
 
     /** [Moench] */
@@ -1215,7 +1215,7 @@ class Detector {
      * else appends the parameter key and value
      * If empty, deletes parameter. Max 20 characters for each key/value
      */
-    void setAdditionalJsonParameter(const std::map<std::string, std::string> para,
+    void setAdditionalJsonParameter(const std::string &key, const std::string &value,
                                     Positions pos = {});
 
     /** [Moench] TODO! How do we do this best??? Can be refactored to something

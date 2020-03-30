@@ -2093,7 +2093,7 @@ void Module::setTransmissionDelayRight(int value) {
 }
 
 
-void Module::setAdditionalJsonHeader(const std::map<std::string, std::string> jsonHeader) {
+void Module::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
     } 

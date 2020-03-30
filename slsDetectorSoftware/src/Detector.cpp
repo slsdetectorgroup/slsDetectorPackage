@@ -1616,7 +1616,7 @@ Result<std::map<std::string, std::string>> Detector::getAdditionalJsonHeader(Pos
     return pimpl->Parallel(&Module::getAdditionalJsonHeader, pos);
 }
 
-void Detector::setAdditionalJsonHeader(const std::map<std::string, std::string> jsonHeader,
+void Detector::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader,
                                        Positions pos) {
     pimpl->Parallel(&Module::setAdditionalJsonHeader, pos, jsonHeader);
 }
@@ -1626,13 +1626,9 @@ Result<std::string> Detector::getAdditionalJsonParameter(const std::string &key,
     return pimpl->Parallel(&Module::getAdditionalJsonParameter, pos, key);
 }
 
-void Detector::setAdditionalJsonParameter(const std::map<std::string, std::string> para,
+void Detector::setAdditionalJsonParameter(const std::string &key, const std::string &value,
                                           Positions pos) {
-    if (para.size() != 1) {
-        throw RuntimeError("Json parameter should have only 1 key value pair");
-    }
-    auto it = para.begin();
-    pimpl->Parallel(&Module::setAdditionalJsonParameter, pos, it->first, it->second);
+    pimpl->Parallel(&Module::setAdditionalJsonParameter, pos, key, value);
 }
 
 Result<int> Detector::getDetectorMinMaxEnergyThreshold(const bool isEmax,

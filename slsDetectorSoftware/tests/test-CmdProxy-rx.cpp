@@ -19,7 +19,7 @@ python/scripts/list_tested_cmd.py to check if all commands are covered
 
 /* configuration */
 
-TEST_CASE("rx_version", "[.cmd][.rx]") {
+TEST_CASE("rx_version", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     std::ostringstream oss;
@@ -33,7 +33,7 @@ TEST_CASE("rx_version", "[.cmd][.rx]") {
 
 /* acquisition */
 
-TEST_CASE("rx_start", "[.cmd][.rx]") {
+TEST_CASE("rx_start", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     // PUT only command
@@ -50,7 +50,7 @@ TEST_CASE("rx_start", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_stop", "[.cmd][.rx]") {
+TEST_CASE("rx_stop", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     // PUT only command
@@ -67,7 +67,7 @@ TEST_CASE("rx_stop", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_status", "[.cmd][.rx]") {
+TEST_CASE("rx_status", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     det.startReceiver();
@@ -84,7 +84,7 @@ TEST_CASE("rx_status", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_framescaught", "[.cmd][.rx]") {
+TEST_CASE("rx_framescaught", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -109,7 +109,7 @@ TEST_CASE("rx_framescaught", "[.cmd][.rx]") {
 
 }
 
-TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
+TEST_CASE("rx_missingpackets", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     {
@@ -135,7 +135,7 @@ TEST_CASE("rx_missingpackets", "[.cmd][.rx]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("rx_printconfig", "[.cmd][.rx]") {
+TEST_CASE("rx_printconfig", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("rx_printconfig", {}, -1, GET));
@@ -144,7 +144,7 @@ TEST_CASE("rx_printconfig", "[.cmd][.rx]") {
 
 /* Receiver Config */ 
 
-TEST_CASE("rx_hostname", "[.cmd][.rx]") {
+TEST_CASE("rx_hostname", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getRxHostname();
@@ -175,7 +175,7 @@ TEST_CASE("rx_hostname", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_tcpport", "[.cmd][.rx]") {
+TEST_CASE("rx_tcpport", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getRxPort();
@@ -200,7 +200,7 @@ TEST_CASE("rx_tcpport", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_fifodepth", "[.cmd][.rx]") {
+TEST_CASE("rx_fifodepth", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getRxFifoDepth();
@@ -224,7 +224,7 @@ TEST_CASE("rx_fifodepth", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_silent", "[.cmd][.rx]") {
+TEST_CASE("rx_silent", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getRxSilentMode();
@@ -248,7 +248,7 @@ TEST_CASE("rx_silent", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_discardpolicy", "[.cmd][.rx]") {
+TEST_CASE("rx_discardpolicy", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getRxFrameDiscardPolicy();
@@ -277,7 +277,7 @@ TEST_CASE("rx_discardpolicy", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_padding", "[.cmd][.rx]") {
+TEST_CASE("rx_padding", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getPartialFramesPadding();
@@ -301,7 +301,7 @@ TEST_CASE("rx_padding", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_udpsocksize", "[.cmd][.rx]") {
+TEST_CASE("rx_udpsocksize", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     int64_t prev_val = det.getRxUDPSocketBufferSize().tsquash("Need same udp socket buffer size to test");
@@ -319,7 +319,7 @@ TEST_CASE("rx_udpsocksize", "[.cmd][.rx]") {
     det.setRxUDPSocketBufferSize(prev_val);
 }
 
-TEST_CASE("rx_realudpsocksize", "[.cmd][.rx]") {
+TEST_CASE("rx_realudpsocksize", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     uint64_t val = 0;
@@ -338,7 +338,7 @@ TEST_CASE("rx_realudpsocksize", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_lock", "[.cmd][.rx]") {
+TEST_CASE("rx_lock", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getRxLock();
@@ -362,7 +362,7 @@ TEST_CASE("rx_lock", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_lastclient", "[.cmd][.rx]") {
+TEST_CASE("rx_lastclient", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     std::ostringstream oss;
@@ -532,7 +532,7 @@ TEST_CASE("foverwrite", "[.cmd]") {
     }
 }
 
-TEST_CASE("rx_framesperfile", "[.cmd][.rx]") {
+TEST_CASE("rx_framesperfile", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getFramesPerFile();
@@ -563,7 +563,7 @@ TEST_CASE("rx_framesperfile", "[.cmd][.rx]") {
 
 /* ZMQ Streaming Parameters (Receiver<->Client) */
 
-TEST_CASE("rx_datastream", "[.cmd][.rx]") {
+TEST_CASE("rx_datastream", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getRxZmqDataStream();
@@ -589,7 +589,7 @@ TEST_CASE("rx_datastream", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_readfreq", "[.cmd][.rx]") {
+TEST_CASE("rx_readfreq", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getRxZmqFrequency();
@@ -613,7 +613,7 @@ TEST_CASE("rx_readfreq", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
+TEST_CASE("rx_zmqport", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val_zmqport = det.getRxZmqPort();
@@ -653,7 +653,7 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_zmqip", "[.cmd][.rx]") {
+TEST_CASE("rx_zmqip", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getRxZmqIP();
@@ -675,7 +675,7 @@ TEST_CASE("rx_zmqip", "[.cmd][.rx]") {
 
 /* CTB Specific */
 
-TEST_CASE("rx_dbitlist", "[.cmd][.rx]") {
+TEST_CASE("rx_dbitlist", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -703,7 +703,7 @@ TEST_CASE("rx_dbitlist", "[.cmd][.rx]") {
     }
 }
 
-TEST_CASE("rx_dbitoffset", "[.cmd][.rx]") {
+TEST_CASE("rx_dbitoffset", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -744,7 +744,7 @@ TEST_CASE("rx_dbitoffset", "[.cmd][.rx]") {
 
 /* Insignificant */
 
-TEST_CASE("rx_frameindex", "[.cmd][.rx]") {
+TEST_CASE("rx_frameindex", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     proxy.Call("rx_frameindex", {}, -1, GET);

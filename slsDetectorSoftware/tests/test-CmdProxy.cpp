@@ -23,7 +23,7 @@ TEST_CASE("Unknown command", "[.cmd]") {
 
 /* configuration */
 
-TEST_CASE("config", "[.cmd][.common]") {
+TEST_CASE("config", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     // put only
@@ -32,7 +32,7 @@ TEST_CASE("config", "[.cmd][.common]") {
 
 // free: not testing
 
-TEST_CASE("parameters", "[.cmd][.common]") {
+TEST_CASE("parameters", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     // put only
@@ -57,7 +57,7 @@ TEST_CASE("parameters", "[.cmd][.common]") {
     */
 }
 
-TEST_CASE("hostname", "[.cmd][.common]") {
+TEST_CASE("hostname", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("hostname", {}, -1, GET));
@@ -65,49 +65,49 @@ TEST_CASE("hostname", "[.cmd][.common]") {
 
 // virtual: not testing
 
-TEST_CASE("versions", "[.cmd][.common]") {
+TEST_CASE("versions", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("versions", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("versions", {"0"}, -1, PUT));
 }
 
-TEST_CASE("packageversion", "[.cmd][.common]") {
+TEST_CASE("packageversion", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("packageversion", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("packageversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("clientversion", "[.cmd][.common]") {
+TEST_CASE("clientversion", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("clientversion", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("clientversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("firmwareversion", "[.cmd][.common]") {
+TEST_CASE("firmwareversion", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("firmwareversion", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("firmwareversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("detectorserverversion", "[.cmd][.common]") {
+TEST_CASE("detectorserverversion", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("detectorserverversion", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("detectorserverversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("detectornumber", "[.cmd][.common]") {
+TEST_CASE("detectornumber", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     REQUIRE_NOTHROW(proxy.Call("detectornumber", {}, -1, GET));
     REQUIRE_THROWS(proxy.Call("detectornumber", {"0"}, -1, PUT));
 }
 
-TEST_CASE("type", "[.cmd][.common]"){
+TEST_CASE("type", "[.cmd][.new]"){
     Detector det;
     CmdProxy proxy(&det);
     auto dt = det.getDetectorType().squash();
@@ -119,7 +119,7 @@ TEST_CASE("type", "[.cmd][.common]"){
     REQUIRE(dt == test::type);
 }
 
-TEST_CASE("detsize", "[.cmd][.common]") {
+TEST_CASE("detsize", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getDetectorSize();
@@ -136,7 +136,7 @@ TEST_CASE("detsize", "[.cmd][.common]") {
     det.setDetectorSize(prev_val);
 }
 
-TEST_CASE("settings", "[.cmd][.common]") {
+TEST_CASE("settings", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -205,7 +205,7 @@ TEST_CASE("settings", "[.cmd][.common]") {
 
 // acquire: not testing
 
-TEST_CASE("frames", "[.cmd]") {
+TEST_CASE("frames", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getNumberOfFrames().tsquash("#frames must be same to test");
@@ -227,6 +227,157 @@ TEST_CASE("frames", "[.cmd]") {
     REQUIRE_THROWS(proxy.Call("frames", {"0"}, -1, PUT));
     det.setNumberOfFrames(prev_val);
 }
+
+TEST_CASE("triggers", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getNumberOfTriggers().tsquash("#triggers must be same to test");
+    {
+        std::ostringstream oss;
+        proxy.Call("triggers", {"1000"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "triggers 1000\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("triggers", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "triggers 1000\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("triggers", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "triggers 1\n");
+    }
+    REQUIRE_THROWS(proxy.Call("triggers", {"0"}, -1, PUT));
+    det.setNumberOfTriggers(prev_val);
+}
+
+TEST_CASE("exptime", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getExptime();
+    {
+        std::ostringstream oss;
+        proxy.Call("exptime", {"0.05"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "exptime 0.05\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("exptime", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "exptime 50ms\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("exptime", {"1s"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "exptime 1s\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("exptime", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "exptime 0\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setExptime(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("period", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getPeriod();
+    {
+        std::ostringstream oss;
+        proxy.Call("period", {"1.25s"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "period 1.25s\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("period", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "period 1.25s\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("period", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "period 0\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setPeriod(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("delay", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        REQUIRE_THROWS(proxy.Call("delay", {"1"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("delay", {}, -1, GET));
+    } else {
+        auto prev_val = det.getDelayAfterTrigger();
+        {
+            std::ostringstream oss;
+            proxy.Call("delay", {"1.25s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "delay 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("delay", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "delay 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("delay", {"0s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "delay 0s\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDelayAfterTrigger(prev_val[i], {i});
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2527,16 +2678,6 @@ TEST_CASE("timing", "[.cmd]") {
 //     }
 // }
 
-// TEST_CASE("triggers", "[.cmd]") {
-//     {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("triggers 10", PUT));
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("triggers", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "triggers 10\n");
-//     }
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("triggers 1", PUT));
-// }
-
 
 // TEST_CASE("threshold", "[.cmd]") {
 //     if (test::type == slsDetectorDefs::EIGER) {
@@ -2694,69 +2835,7 @@ TEST_CASE("lock", "[.cmd]") {
 //     REQUIRE_NOTHROW(multiSlsDetectorClient("lastclient", GET));
 // }
 
-TEST_CASE("exptime", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
 
-    {
-        std::ostringstream oss;
-        proxy.Call("exptime", {"0.05"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "exptime 0.05\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("exptime", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "exptime 50ms\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("exptime", {"1s"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "exptime 1s\n");
-    }
-}
 
-TEST_CASE("period", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    {
-        std::ostringstream oss;
-        proxy.Call("period", {"1.25s"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "period 1.25s\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("period", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "period 1.25s\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("period", {"0"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "period 0\n");
-    }
-}
 
-TEST_CASE("delay", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        REQUIRE_THROWS(proxy.Call("delay", {"1"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("delay", {}, -1, GET));
-    } else {
-        {
-            std::ostringstream oss;
-            proxy.Call("delay", {"1.25s"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "delay 1.25s\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("delay", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "delay 1.25s\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("delay", {"0s"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "delay 0s\n");
-        }
-    }
-}
+

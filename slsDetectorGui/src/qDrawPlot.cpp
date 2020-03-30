@@ -97,27 +97,13 @@ void qDrawPlot::SetupPlots() {
     slsDetectorDefs::xy res = det->getDetectorSize();
     nPixelsX = res.x;
     nPixelsY = res.y;
-    switch (detType) {
-    case slsDetectorDefs::EIGER:
-        try {
-            if (det->getQuad().tsquash("Inconsistent values for quad type")) {
-                nPixelsX /= 2;
-                nPixelsY *= 2;
-                if (nPixelsX != nPixelsY) {
-                    --nPixelsX;
-                }
-            }
-        }
-        CATCH_DISPLAY("Could not get quad.", "qDrawPlot::SetupPlots")
-        break;
-    default:
-        break;
-    }
     LOG(logINFO) << "nPixelsX:" << nPixelsX;
     LOG(logINFO) << "nPixelsY:" << nPixelsY;
 
     boxPlot->setFont(QFont("Sans Serif", qDefs::Q_FONT_SIZE, QFont::Normal));
     widgetStatistics->hide();
+    lblCompleteImage->hide();
+    lblInCompleteImage->hide();
 
     // setup 1d data
 
@@ -586,7 +572,7 @@ void qDrawPlot::ClonePlot() {
                      clonegainplot2D, boxPlot->title(), fileSavePath,
                      fileSaveName, currentAcqIndex, displayStatistics,
                      lblMinDisp->text(), lblMaxDisp->text(),
-                     lblSumDisp->text());
+                     lblSumDisp->text(), completeImage);
 }
 
 void qDrawPlot::SavePlot() {
@@ -756,6 +742,7 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
                        << "  \t dynamic range: " << data->dynamicRange
                        << std::endl
                        << "  \t file index: " << data->fileIndex << std::endl
+                       << "  \t complete image: " << data->completeImage << std::endl
                        << "  ]";
 
     progress = (int)data->progressIndex;
@@ -776,6 +763,11 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
         delete[] data2d;
         data2d = new double[nPixelsY * nPixelsX];
         std::fill(data2d, data2d + nPixelsX * nPixelsY, 0);
+        if (gainData) {
+            delete[] gainData;
+            gainData = new double[nPixelsY * nPixelsX];
+            std::fill(gainData, gainData + nPixelsX * nPixelsY, 0);
+        }
     }
 
     // convert data to double
@@ -798,6 +790,7 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
     if ((int)subFrameIndex != -1) {
         indexTitle = QString("%1 %2").arg(frameIndex, subFrameIndex);
     }
+    completeImage = data->completeImage;
 
     // reset pedestal
     if (resetPedestal) {
@@ -1118,6 +1111,16 @@ void qDrawPlot::UpdatePlot() {
     LOG(logDEBUG) << "Update Plot";
 
     boxPlot->setTitle(plotTitle);
+
+    // notify of incomplete images
+    lblCompleteImage->hide();
+    lblInCompleteImage->hide();
+    if(completeImage) {
+        lblCompleteImage->show();
+    } else {
+        lblInCompleteImage->show();
+    }
+
     if (is1d) {
         Update1dPlot();
     } else {

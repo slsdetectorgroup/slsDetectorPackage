@@ -73,7 +73,11 @@ int LTC2620_D_SetDACValue (int dacnum, int val, int mV, char* dacname, int* dacv
         LOG(logINFO, ("Setting DAC %2d [%-12s] : %d dac (%d mV)\n",dacnum, dacname, *dacval, dacmV));
  
         char fname[MAX_STR_LENGTH];
-        sprintf(fname, "%s%d", LTC2620_D_DriverFileName, dacnum);
+        strcpy(fname, LTC2620_D_DriverFileName);
+        char temp[20];
+        memset(temp, 0, sizeof(temp));
+        sprintf(temp, "%d", dacnum);
+        strcat(fname, temp);
         LOG(logDEBUG1, ("fname %s\n",fname));
         
         //open file

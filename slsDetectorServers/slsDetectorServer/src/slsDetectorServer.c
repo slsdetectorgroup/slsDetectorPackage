@@ -101,17 +101,25 @@ int main(int argc, char *argv[]){
 	}
 
 #ifdef STOP_SERVER
-	char cmd[100];
-	memset(cmd, 0, 100);
+	char cmd[MAX_STR_LENGTH];
+	memset(cmd, 0, MAX_STR_LENGTH);
 #endif
 	if (isControlServer) {
 		LOG(logINFO, ("Opening control server on port %d \n", portno));
 #ifdef STOP_SERVER
 		{
 			int i;
-			for (i = 0; i < argc; ++i)
-				sprintf(cmd, "%s %s", cmd, argv[i]);
-			sprintf(cmd,"%s -stopserver -port %d &", cmd, portno + 1);
+			for (i = 0; i < argc; ++i) {
+				if (i > 0) {
+					strcat(cmd, " ");
+				}
+				strcat(cmd, argv[i]);
+			}
+			char temp[50];
+			memset(temp, 0, sizeof(temp));
+			sprintf(temp, " -stopserver -port %d &", portno + 1);
+			strcat(cmd, temp);
+			
 			LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
 			system(cmd);
 		}

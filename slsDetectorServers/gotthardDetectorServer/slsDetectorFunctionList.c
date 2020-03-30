@@ -239,10 +239,10 @@ void setTestImageMode(int ival) {
     uint32_t addr = MULTI_PURPOSE_REG;
     if (ival >= 0) {
         if (ival == 0) {
-            LOG(logINFO, ("Switching on Image Test Mode\n"));
+            LOG(logINFO, ("Switching off Image Test Mode\n"));
             bus_w (addr, bus_r(addr) & ~DGTL_TST_MSK);
         } else {
-            LOG(logINFO, ("Switching off Image Test Mode\n"));
+            LOG(logINFO, ("Switching on Image Test Mode\n"));
             bus_w (addr, bus_r(addr) | DGTL_TST_MSK);
         }
     }
@@ -915,8 +915,9 @@ int getModule(sls_detector_module *myMod){
         if (dacValues[idac] >= 0)
             initialized = 1;
     }
-    if (initialized)
+    if (initialized) {
         return OK;
+    }
 	return FAIL;
 }
 

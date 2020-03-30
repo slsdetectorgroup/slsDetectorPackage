@@ -1001,24 +1001,27 @@ std::string CmdProxy::GapPixels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[0, 1]\n\t[Eiger] Include Gap pixels in data file or data call "
-              "back. 4 bit mode gap pixels only ind ata call back."
+        os << "[0, 1]\n\t[Eiger][Jungfrau] Include Gap pixels only in data call back."
            << '\n';
     } else if (action == defs::GET_ACTION) {
+        if (det_id != -1) {
+            throw sls::RuntimeError(
+                "Cannot get gap pixels at module level");
+        }
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        auto t = det->getRxAddGapPixels({det_id});
-        os << OutString(t) << '\n';
+        auto t = det->getGapPixelsinCallback();
+        os << t << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id != -1) {
             throw sls::RuntimeError(
-                "Cannot execute dynamic range at module level");
+                "Cannot add gap pixels at module level");
         }
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        det->setRxAddGapPixels(StringTo<int>(args[0]));
+        det->setGapPixelsinCallback(StringTo<int>(args[0]));
         os << args.front() << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -1224,7 +1227,7 @@ std::string CmdProxy::Quad(int action) {
     } else if (action == defs::PUT_ACTION) {
         if (det_id != -1) {
             throw sls::RuntimeError(
-                "Cannot execute dynamic range at module level");
+                "Cannot execute quad at module level");
         }
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
@@ -1879,13 +1882,47 @@ std::string CmdProxy::PatternWaitTime(int action) {
 
 /* Moench */
 
+std::string CmdProxy::AdditionalJsonHeader(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[key1] [value1] [key2] [value2]...[keyn] [valuen]"
+        "\n\tAdditional json header to be streamed out from receiver via zmq. "
+        "Default is empty. Use only if to be processed by an intermediate user process "
+        "listening to receiver zmq packets. Empty value deletes header. "
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getAdditionalJsonHeader({det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        // arguments can be empty
+        std::map<std::string, std::string> json;
+        for (size_t i = 0; i < args.size(); i = i + 2) {
+            // last value is empty
+            if (i + 1 >= args.size()) {
+                json[args[i]] = "";
+            } else {
+                json[args[i]] = args[i + 1];
+            }
+        }
+        det->setAdditionalJsonHeader(json, {det_id});
+        os << sls::ToString(json) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str(); 
+}
+
 std::string CmdProxy::JsonParameter(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[key1] [value1]\n\tAdditional json header parameter streamed "
-              "out from receiver. If empty in a get, then no parameter found. "
-              "This is same as calling rx_jsonaddheader \"key\":\"value1\"."
+              "out from receiver. If not found in header, the pair is appended. "
+              "An empty values deletes parameter."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
@@ -1894,11 +1931,21 @@ std::string CmdProxy::JsonParameter(int action) {
         auto t = det->getAdditionalJsonParameter(args[0], {det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 2) {
-            WrongNumberOfParameters(2);
+        switch (args.size()) {
+            case 1:
+                det->setAdditionalJsonParameter(args[0], "", {det_id});
+                break;
+            case 2: 
+                det->setAdditionalJsonParameter(args[0], args[1], {det_id});
+                break;
+            default:
+                WrongNumberOfParameters(1); 
         }
-        det->setAdditionalJsonParameter(args[0], args[1], {det_id});
-        os << sls::ToString(args) << '\n';
+        if (args.size() == 1) {
+            os << args[0] << " deleted" << '\n';
+        } else {
+            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
+        }
     } else {
         throw sls::RuntimeError("Unknown action");
     }

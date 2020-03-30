@@ -37,7 +37,7 @@
 #define DEFAULT_ZMQ_RX_PORTNO 30001
 
 #define SLS_DETECTOR_HEADER_VERSION 0x2
-#define SLS_DETECTOR_JSON_HEADER_VERSION 0x3
+#define SLS_DETECTOR_JSON_HEADER_VERSION 0x4
 
 // ctb/ moench 1g udp (read from fifo)
 #define UDP_PACKET_DATA_BYTES (1344)
@@ -61,6 +61,7 @@
 
 /** default maximum string length */
 #define MAX_STR_LENGTH 1000
+#define SHORT_STR_LENGTH 20
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
 
@@ -480,8 +481,6 @@ struct detParameters {
     int nChipY{0};
     int nDacs{0};
     int dynamicRange{0};
-    int nGappixelsX{0};
-    int nGappixelsY{0};
 
     detParameters() = default;
     explicit detParameters(slsDetectorDefs::detectorType type) {
@@ -493,8 +492,6 @@ struct detParameters {
             nChipY = 1;
             nDacs = 8;
             dynamicRange = 16;
-            nGappixelsX = 0;
-            nGappixelsY = 0;
             break;
         case slsDetectorDefs::detectorType::JUNGFRAU:
             nChanX = 256;
@@ -503,8 +500,6 @@ struct detParameters {
             nChipY = 2;
             nDacs = 8;
             dynamicRange = 16;
-            nGappixelsX = 0;
-            nGappixelsY = 0;
             break;
         case slsDetectorDefs::detectorType::CHIPTESTBOARD:
             nChanX = 36;
@@ -513,8 +508,6 @@ struct detParameters {
             nChipY = 1;
             nDacs = 24;
             dynamicRange = 16;
-            nGappixelsX = 0;
-            nGappixelsY = 0;
             break;
         case slsDetectorDefs::detectorType::MOENCH:
             nChanX = 32;
@@ -523,8 +516,6 @@ struct detParameters {
             nChipY = 1;
             nDacs = 8;
             dynamicRange = 16;
-            nGappixelsX = 0;
-            nGappixelsY = 0;
             break;
         case slsDetectorDefs::detectorType::EIGER:
             nChanX = 256;
@@ -533,8 +524,6 @@ struct detParameters {
             nChipY = 1;
             nDacs = 16;
             dynamicRange = 16;
-            nGappixelsX = 6;
-            nGappixelsY = 1;
             break;
         case slsDetectorDefs::detectorType::MYTHEN3:
             nChanX = 128 * 3;
@@ -543,8 +532,6 @@ struct detParameters {
             nChipY = 1;
             nDacs = 16;
             dynamicRange = 32;
-            nGappixelsX = 0;
-            nGappixelsY = 0;
             break;
         case slsDetectorDefs::detectorType::GOTTHARD2:
             nChanX = 128;
@@ -553,8 +540,6 @@ struct detParameters {
             nChipY = 1;
             nDacs = 14;
             dynamicRange = 16;
-            nGappixelsX = 0;
-            nGappixelsY = 0;
             break;    
         default:
             throw sls::RuntimeError("Unknown detector type! " + std::to_string(type));

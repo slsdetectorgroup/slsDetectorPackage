@@ -9,11 +9,12 @@
 #include <array>
 #include <cmath>
 #include <vector>
+#include <map>
 
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200318
+#define SLS_SHMVERSION 0x200324
 
 namespace sls{
 
@@ -103,12 +104,6 @@ struct sharedSlsDetector {
 
     /**  zmq tcp src ip address in client (only data) **/
     sls::IpAddr zmqip;
-
-    /** gap pixels enable */
-    int gappixels;
-
-    /** gap pixels in each direction */
-    slsDetectorDefs::xy nGappixels;
 
     /** num udp interfaces */
     int numUDPInterfaces;
@@ -221,10 +216,7 @@ class Module : public virtual slsDetectorDefs {
      */
     void updateNumberOfChannels();
 
-    /**
-     * Returns the total number of channels including gap pixels
-     * @returns the total number of channels including gap pixels
-     */
+
     slsDetectorDefs::xy getNumberOfChannels() const;
 
     /**
@@ -353,9 +345,8 @@ class Module : public virtual slsDetectorDefs {
      * @param e_eV threshold in eV
      * @param isettings ev. change settings
      * @param tb 1 to include trimbits, 0 to exclude
-     * @returns current threshold value in ev (-1 failed)
      */
-    int setThresholdEnergy(int e_eV, detectorSettings isettings = GET_SETTINGS,
+    void setThresholdEnergy(int e_eV, detectorSettings isettings = GET_SETTINGS,
                            int tb = 1);
 
     /**
@@ -988,36 +979,14 @@ class Module : public virtual slsDetectorDefs {
      */
     void setTransmissionDelayRight(int value);
 
-    /**
-     * Sets the additional json header\sa sharedSlsDetector
-     * @param jsonheader additional json header
-     */
-    void setAdditionalJsonHeader(const std::string &jsonheader);
+    /** empty vector deletes entire additional json header */
+    void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);
+    std::map<std::string, std::string> getAdditionalJsonHeader();
 
     /**
-     * Returns the additional json header \sa sharedSlsDetector
-     * @returns the additional json header, returns "none" if default setting
-     * and no custom ip set
-     */
-    std::string getAdditionalJsonHeader();
-
-    /**
-     * Sets the value for the additional json header parameter if found, else
-     * append it
-     * @param key additional json header parameter
-     * @param value additional json header parameter value (cannot be empty)
-     * @returns the additional json header parameter value,
-     * empty if no parameter found in additional json header
-     */
-    std::string setAdditionalJsonParameter(const std::string &key,
-                                           const std::string &value);
-
-    /**
-     * Returns the additional json header parameter value
-     * @param key additional json header parameter
-     * @returns the additional json header parameter value,
-     * empty if no parameter found in additional json header
-     */
+     * Sets the value for the additional json header parameter key if found, else
+     * append it. If value empty, then deletes parameter */
+    void setAdditionalJsonParameter(const std::string &key, const std::string &value);
     std::string getAdditionalJsonParameter(const std::string &key);
 
     /**
@@ -1045,11 +1014,13 @@ class Module : public virtual slsDetectorDefs {
     /** [Gotthard][Jungfrau][CTB][Moench] */
     void executeBusTest();
 
-    /** [Gotthard] */
+    /** [Gotthard][Eiger virtual] */
     int getImageTestMode();
 
     /** [Gotthard] If 1, adds channel intensity with precalculated values.
-     * Default is 0 */
+     * Default is 0 
+     * [Eiger virtual] If 1, pixels are saturated. If 0, increasing intensity
+     * Only for virtual servers */
     void setImageTestMode(const int value);
 
 
@@ -1231,14 +1202,6 @@ class Module : public virtual slsDetectorDefs {
      * @returns OK or FAIL
      */
     int setAllTrimbits(int val);
-
-    /**
-     * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. (Eiger)
-     * 4 bit mode gap pixels only in gui call back
-     * @param val 1 sets, 0 unsets, -1 gets
-     * @returns gap pixel enable or -1 for error
-     */
-    int enableGapPixels(int val = -1);
 
     /**
      * Sets the number of trim energies and their value  (Eiger)
@@ -1435,11 +1398,6 @@ class Module : public virtual slsDetectorDefs {
      * @param cmd command to be executed
      */
     void execReceiverCommand(const std::string &cmd);
-
-    /**
-     * Updates the shared memory receiving the data from the detector
-     */
-    void updateCachedReceiverVariables() const;
 
     /**
      * Send the multi detector size to the detector

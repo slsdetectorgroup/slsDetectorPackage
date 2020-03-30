@@ -680,7 +680,7 @@ TEST_CASE("rx_dbitlist", "[.cmd][.rx][.new]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
-        auto previous = det.getRxDbitList();
+        auto prev_val = det.getRxDbitList();
         {
             std::ostringstream oss;
             proxy.Call("rx_dbitlist", {"0", "4", "5", "8", "9", "10", "52", "63"}, -1, PUT, oss);
@@ -694,9 +694,8 @@ TEST_CASE("rx_dbitlist", "[.cmd][.rx][.new]") {
         REQUIRE_THROWS(proxy.Call("rx_dbitlist", {"67"}, -1, PUT));
         REQUIRE_THROWS(proxy.Call("rx_dbitlist", {"-1"}, -1, PUT));
         REQUIRE_NOTHROW(proxy.Call("rx_dbitlist", {"all"}, -1, PUT));
-        // Reset to previous value
         for (int i = 0; i != det.size(); ++i) {
-            det.setRxDbitList(previous[i], {i});
+            det.setRxDbitList(prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("rx_dbitlist", {}, -1, GET));
@@ -708,7 +707,7 @@ TEST_CASE("rx_dbitoffset", "[.cmd][.rx][.new]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::CHIPTESTBOARD) {
-        auto previous = det.getRxDbitOffset();
+        auto prev_val = det.getRxDbitOffset();
         {
             std::ostringstream oss;
             proxy.Call("rx_dbitoffset", {"1"}, -1, PUT, oss);
@@ -729,9 +728,8 @@ TEST_CASE("rx_dbitoffset", "[.cmd][.rx][.new]") {
             proxy.Call("rx_dbitoffset", {}, -1, GET, oss);
             REQUIRE(oss.str() == "rx_dbitoffset 15\n");
         }
-        // Reset to previous value
         for (int i = 0; i != det.size(); ++i) {
-            det.setRxDbitOffset(previous[i], {i});
+            det.setRxDbitOffset(prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("rx_dbitoffset", {}, -1, GET));
@@ -740,7 +738,60 @@ TEST_CASE("rx_dbitoffset", "[.cmd][.rx][.new]") {
 
 /* Moench */
 
-//FIXME: rx_jsonaddheader, rx_jsonpara
+TEST_CASE("rx_jsonaddheader", "[.cmd][.rx][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getAdditionalJsonHeader();
+
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonaddheader", {"key1", "value1", "key2", "value2"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_jsonaddheader {key1: value1, key2: value2}\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonaddheader", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_jsonaddheader {key1: value1, key2: value2}\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonaddheader", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_jsonaddheader {}\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setAdditionalJsonHeader(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("rx_jsonpara", "[.cmd][.rx][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getAdditionalJsonHeader();
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonpara", {"key1", "value1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_jsonpara {key1: value1}\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonpara", {"key1", "value2"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_jsonpara {key1: value2}\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonpara", {"key1"}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_jsonpara value2\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_jsonpara", {"key1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_jsonpara key1 deleted\n");
+    }
+    REQUIRE_THROWS(proxy.Call("rx_jsonpara", {"key1"}, -1, GET));
+    for (int i = 0; i != det.size(); ++i) {
+        det.setAdditionalJsonHeader(prev_val[i], {i});
+    }
+}
 
 /* Insignificant */
 

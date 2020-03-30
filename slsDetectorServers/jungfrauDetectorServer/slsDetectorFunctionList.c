@@ -31,6 +31,7 @@ char initErrorMessage[MAX_STR_LENGTH];
 pthread_t pthread_virtual_tid;
 int virtual_status = 0;
 int virtual_stop = 0;
+int virtual_image_test_mode = 0;
 #endif
 
 enum detectorSettings thisSettings = UNINITIALIZED;
@@ -39,6 +40,7 @@ int dacValues[NDAC] = {};
 int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
 int numUDPInterfaces = 1;
+
 
 
 int isInitCheckDone() {
@@ -226,6 +228,23 @@ int testBus() {
 }
 
 
+#ifdef VIRTUAL
+void setTestImageMode(int ival) {
+    if (ival >= 0) {
+        if (ival == 0) {
+            LOG(logINFO, ("Switching off Image Test Mode\n"));
+            virtual_image_test_mode = 0;
+        } else {
+            LOG(logINFO, ("Switching on Image Test Mode\n"));
+            virtual_image_test_mode = 1;
+        }
+    }
+}
+
+int getTestImageMode() {
+    return virtual_image_test_mode;
+}
+#endif
 
 
 /* Ids */
@@ -727,8 +746,9 @@ int getModule(sls_detector_module *myMod){
         if (dacValues[idac] >= 0)
             initialized = 1;
     }
-    if (initialized)
+    if (initialized) {
         return OK;
+	}
 	return FAIL;
 }
 
@@ -1646,75 +1666,81 @@ void* start_timer(void* arg) {
 						getNumTriggers() *
 						(getNumAdditionalStorageCells() + 1));
 	int64_t exp_us = 	getExpTime() / 1000;
+	const int npixels = 256 * 256 * 8;
+	const int datasize = 8192;
+	const int packetsize = datasize + sizeof(sls_detector_header);
+	const int numPacketsPerFrame = 128;
+	int transmissionDelayUs = getTransmissionDelayFrame() * 1000;
 
-		//TODO: Generate data
-		char imageData[DATA_BYTES];
-		memset(imageData, 0, DATA_BYTES);
-		{
-			int i = 0;
-			for (i = 0; i < DATA_BYTES; i += sizeof(uint16_t)) {
-				*((uint16_t*)(imageData + i)) = i;
-			}
+	//TODO: Generate data
+	char imageData[DATA_BYTES];
+	memset(imageData, 0, DATA_BYTES);
+	{
+		int i = 0;
+		for (i = 0; i < npixels; ++i) {
+			// avoiding gain also being divided when gappixels enabled in call back
+			*((uint16_t*)(imageData + i * sizeof(uint16_t))) = virtual_image_test_mode ? 0x0FFE : (uint16_t)i;
 		}
-		int datasize = 8192;
-		
-		
-		//TODO: Send data
-		{
-			int frameNr = 0;
-			for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
+	}
+	
+	
+	//TODO: Send data
+	{
+		int frameNr = 0;
+		for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
 
-				//check if virtual_stop is high
-				if(virtual_stop == 1){
-					break;
-				}
+			usleep(transmissionDelayUs);
 
-				int srcOffset = 0;
+			//check if virtual_stop is high
+			if(virtual_stop == 1){
+				break;
+			}
+
+			int srcOffset = 0;
+		
+			struct timespec begin, end;
+			clock_gettime(CLOCK_REALTIME, &begin);
+
+			usleep(exp_us);
+
+			char packetData[packetsize];
+			memset(packetData, 0, packetsize);
 			
-				struct timespec begin, end;
-				clock_gettime(CLOCK_REALTIME, &begin);
+			// loop packet
+			{
+				int i = 0;
+				for(i = 0; i != numPacketsPerFrame; ++i) {
+					// set header
+					sls_detector_header* header = (sls_detector_header*)(packetData);
+					header->detType = (uint16_t)myDetectorType;
+					header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
+					header->frameNumber = frameNr;
+					header->packetNumber = i;
+					header->modId = 0;
+					header->row = detPos[X];
+					header->column = detPos[Y];
 
-				usleep(exp_us);
-
-				const int size = datasize + sizeof(sls_detector_header);
-				char packetData[size];
-				memset(packetData, 0, sizeof(sls_detector_header));
-				
-				// loop packet
-				{
-					int i = 0;
-					for(i=0; i!=128; ++i) {
-						// set header
-						sls_detector_header* header = (sls_detector_header*)(packetData);
-						header->frameNumber = frameNr;
-						header->packetNumber = i;
-						header->modId = 0;
-						header->row = detPos[X];
-						header->column = detPos[Y];
-						header->detType = (uint16_t)myDetectorType;
-						header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
-						// fill data
-						memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);
-						srcOffset += datasize;
-						
-						sendUDPPacket(0, packetData, size);
-					}
+					// fill data
+					memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);
+					srcOffset += datasize;
+					
+					sendUDPPacket(0, packetData, packetsize);
 				}
-				LOG(logINFO, ("Sent frame: %d\n", frameNr));
-				clock_gettime(CLOCK_REALTIME, &end);
-				int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
-						(end.tv_nsec - begin.tv_nsec));
-	  
-				// sleep for (period - exptime)
-				if (frameNr < numFrames) { // if there is a next frame
-					if (periodns > time_ns) {
-						usleep((periodns - time_ns)/ 1000);
-					}
+			}
+			LOG(logINFO, ("Sent frame: %d\n", frameNr));
+			clock_gettime(CLOCK_REALTIME, &end);
+			int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
+					(end.tv_nsec - begin.tv_nsec));
+	
+			// sleep for (period - exptime)
+			if (frameNr < numFrames) { // if there is a next frame
+				if (periodns > time_ns) {
+					usleep((periodns - time_ns)/ 1000);
 				}
 			}
 		}
+	}
 		
-	// }
 
 	
 	closeUDPSocket(0);

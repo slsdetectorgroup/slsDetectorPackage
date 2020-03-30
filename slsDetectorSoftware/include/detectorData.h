@@ -16,9 +16,10 @@ class detectorData {
    * @param dbytes number of bytes of image pointed to by cval pointer
    * @param dr dynamic range or bits per pixel
    * @param fIndex file index
+   * @param complete true if complete image, else missing packets
   */
-  detectorData(double progress, std::string fname, int x, int y, char *d, int dbytes, int dr, uint64_t fIndex) :
-			  progressIndex(progress), fileName(fname), fileIndex(fIndex), nx(x), ny(y), data(d), databytes(dbytes), dynamicRange(dr)  {};
+  detectorData(double progress, std::string fname, int x, int y, char *d, int dbytes, int dr, uint64_t fIndex, bool complete) :
+			  progressIndex(progress), fileName(fname), fileIndex(fIndex), nx(x), ny(y), data(d), databytes(dbytes), dynamicRange(dr), completeImage(complete)  {};
 
   /**
 	 * Destructor
@@ -55,4 +56,5 @@ class detectorData {
     char* data;
     int databytes;
     int dynamicRange; 
+	bool completeImage;
 };

@@ -37,6 +37,7 @@ void Implementation::DeleteMembers() {
         generalData = nullptr;
     }
 
+    additionalJsonHeader.clear();
     listener.clear();
     dataProcessor.clear();
     dataStreamer.clear();
@@ -92,7 +93,6 @@ void Implementation::InitializeMembers() {
     streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
     streamingPort = 0;
     streamingSrcIP = sls::IpAddr{};
-    additionalJsonHeader = "";
 
     // detector parameters
     numberOfFrames = 0;
@@ -108,7 +108,6 @@ void Implementation::InitializeMembers() {
     roi.xmax = -1;
     tengigaEnable = false;
     flippedDataX = 0;
-    gapPixelsEnable = false;
     quadEnable = false;
     activated = true;
     deactivatedPaddingEnable = true;
@@ -273,7 +272,7 @@ void Implementation::setDetectorType(const detectorType d) {
                 &activated, &deactivatedPaddingEnable, &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, myDetectorType, fifo_ptr, &fileFormatType, fileWriteEnable,
-                &masterFileWriteEnable, &dataStreamEnable, &gapPixelsEnable,
+                &masterFileWriteEnable, &dataStreamEnable, 
                 &dynamicRange, &streamingFrequency, &streamingTimerInMs,
                 &framePadding, &activated, &deactivatedPaddingEnable,
                 &silentMode, &quadEnable, &ctbDbitList, &ctbDbitOffset,
@@ -848,7 +847,6 @@ void Implementation::SetupWriter() {
 	attr.subExptimeNs = subExpTime;
 	attr.subPeriodNs = subPeriod;
 	attr.periodNs = acquisitionPeriod;
-	attr.gapPixelsEnable = gapPixelsEnable;
     attr.quadEnable = quadEnable;
     attr.analogFlag = (readoutType == ANALOG_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1 : 0;
     attr.digitalFlag = (readoutType == DIGITAL_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1 : 0;
@@ -943,7 +941,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
                     i, myDetectorType, fifo_ptr, &fileFormatType,
                     fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable,
-                    &gapPixelsEnable, &dynamicRange, &streamingFrequency,
+                    &dynamicRange, &streamingFrequency,
                     &streamingTimerInMs, &framePadding, &activated,
                     &deactivatedPaddingEnable, &silentMode, &quadEnable, &ctbDbitList,
                     &ctbDbitOffset, &ctbAnalogDataBytes));
@@ -965,10 +963,11 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, &additionalJsonHeader, (int*)nd, &gapPixelsEnable, &quadEnable));
+                        fd, (int*)nd, &quadEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
+                    dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
 
                 } catch (...) {
                     if (dataStreamEnable) {
@@ -1108,10 +1107,11 @@ void Implementation::setDataStreamEnable(const bool enable) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, &additionalJsonHeader, (int*)nd, &gapPixelsEnable, &quadEnable));
+                        fd, (int*)nd, &quadEnable));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
+                    dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
                 } catch (...) {
                     dataStreamer.clear();
                     dataStreamEnable = false;
@@ -1170,17 +1170,55 @@ void Implementation::setStreamingSourceIP(const sls::IpAddr ip) {
     LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 
-std::string Implementation::getAdditionalJsonHeader() const {
+std::map<std::string, std::string> Implementation::getAdditionalJsonHeader() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return additionalJsonHeader;
 }
 
-void Implementation::setAdditionalJsonHeader(const std::string& c) {
+void Implementation::setAdditionalJsonHeader(const std::map<std::string, std::string> &c) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     additionalJsonHeader = c;
-    LOG(logINFO) << "Additional JSON Header: " << additionalJsonHeader;
+	for (const auto &it : dataStreamer) {
+		it->SetAdditionalJsonHeader(c);
+	}
+    LOG(logINFO) << "Additional JSON Header: " << sls::ToString(additionalJsonHeader);
 }
 
+std::string Implementation::getAdditionalJsonParameter(const std::string &key) const {
+    if (additionalJsonHeader.find(key) != additionalJsonHeader.end()) {
+        return additionalJsonHeader.at(key);
+    }
+    throw sls::RuntimeError("No key " + key + " found in additional json header");
+}
+
+void Implementation::setAdditionalJsonParameter(const std::string &key, const std::string &value) {
+    auto pos = additionalJsonHeader.find(key);
+
+    // if value is empty, delete
+    if (value.empty()) {
+        // doesnt exist
+        if (pos == additionalJsonHeader.end()) {
+            LOG(logINFO) << "Additional json parameter (" << key << ") does not exist anyway";
+        } else {
+            LOG(logINFO) << "Deleting additional json parameter (" << key << ")";
+            additionalJsonHeader.erase(pos);
+        }
+    }
+    // if found, set it
+    else if (pos != additionalJsonHeader.end()) {
+        additionalJsonHeader[key] = value;
+        LOG(logINFO) << "Setting additional json parameter (" << key << ") to " << value;
+    } 
+    // append if not found
+    else {
+        additionalJsonHeader[key] = value;
+        LOG(logINFO) << "Adding additional json parameter (" << key << ") to " << value;
+    }
+    for (const auto &it : dataStreamer) {
+        it->SetAdditionalJsonHeader(additionalJsonHeader);
+    }    
+    LOG(logINFO) << "Additional JSON Header: " << sls::ToString(additionalJsonHeader);
+}
 
 /**************************************************
  *                                                 *
@@ -1330,9 +1368,6 @@ void Implementation::setDynamicRange(const uint32_t i) {
 
         if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
             generalData->SetDynamicRange(i, tengigaEnable);
-            if (myDetectorType == EIGER) {
-                generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
-            }
             // to update npixelsx, npixelsy in file writer
             for (const auto &it : dataProcessor)
                 it->SetPixelDimension();
@@ -1377,7 +1412,6 @@ void Implementation::setTenGigaEnable(const bool b) {
         switch (myDetectorType) {
         case EIGER:
             generalData->SetTenGigaEnable(b, dynamicRange);
-            generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, quadEnable);
             break;
         case MOENCH:
         case CHIPTESTBOARD:
@@ -1421,24 +1455,6 @@ void Implementation::setFlippedDataX(int enable) {
     LOG(logINFO) << "Flipped Data X: " << flippedDataX;
 }
 
-bool Implementation::getGapPixelsEnable() const {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return gapPixelsEnable;
-}
-
-void Implementation::setGapPixelsEnable(const bool b) {
-    if (gapPixelsEnable != b) {
-        gapPixelsEnable = b;
-
-        // side effects
-        generalData->SetGapPixelsEnable(b, dynamicRange, quadEnable);
-        for (const auto &it : dataProcessor)
-            it->SetPixelDimension();
-        SetupFifoStructure();
-    }
-    LOG(logINFO) << "Gap Pixels Enable: " << gapPixelsEnable;
-}
-
 bool Implementation::getQuad() const {
 	LOG(logDEBUG) << __AT__ << " starting";
 	return quadEnable;
@@ -1447,12 +1463,6 @@ bool Implementation::getQuad() const {
 void Implementation::setQuad(const bool b) {
 	if (quadEnable != b) {
 		quadEnable = b;
-
-		generalData->SetGapPixelsEnable(gapPixelsEnable, dynamicRange, b);
-		// to update npixelsx, npixelsy in file writer
-        for (const auto &it : dataProcessor)
-		    it->SetPixelDimension();
-		SetupFifoStructure();
 
 		if (!quadEnable) {
 			for (const auto &it : dataStreamer) {

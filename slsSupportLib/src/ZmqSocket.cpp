@@ -145,6 +145,244 @@ int ZmqSocket::ConvertInternetAddresstoIpString(struct addrinfo *res, char *ip,
     return 1;
 }
 
+int ZmqSocket::SendHeader(
+    int index, zmqHeader header) {
+
+    /** Json Header Format */
+    const char jsonHeaderFormat[] = "{"
+                                    "\"jsonversion\":%u, "
+                                    "\"bitmode\":%u, "
+                                    "\"fileIndex\":%lu, "
+                                    "\"detshape\":[%u, %u], "
+                                    "\"shape\":[%u, %u], "
+                                    "\"size\":%u, "
+                                    "\"acqIndex\":%lu, "
+                                    "\"frameIndex\":%lu, "
+                                    "\"fname\":\"%s\", "
+                                    "\"data\": %d, "
+                                    "\"completeImage\": %d, "
+
+                                    "\"frameNumber\":%lu, "
+                                    "\"expLength\":%u, "
+                                    "\"packetNumber\":%u, "
+                                    "\"bunchId\":%lu, "
+                                    "\"timestamp\":%lu, "
+                                    "\"modId\":%u, "
+                                    "\"row\":%u, "
+                                    "\"column\":%u, "
+                                    "\"reserved\":%u, "
+                                    "\"debug\":%u, "
+                                    "\"roundRNumber\":%u, "
+                                    "\"detType\":%u, "
+                                    "\"version\":%u, "
+
+                                    // additional stuff
+                                    "\"flippedDataX\":%u, "
+                                    "\"quad\":%u"
+
+        ; //"}\n";
+    char buf[MAX_STR_LENGTH] = "";
+    sprintf(buf, jsonHeaderFormat, 
+            header.jsonversion, 
+            header.dynamicRange, 
+            header.fileIndex, 
+            header.ndetx,
+            header.ndety, 
+            header.npixelsx, 
+            header.npixelsy, 
+            header.imageSize, 
+            header.acqIndex, 
+            header.frameIndex,
+            header.fname.c_str(), 
+            header.data ? 1 : 0, 
+            header.completeImage ? 1 : 0,
+
+            header.frameNumber, 
+            header.expLength, 
+            header.packetNumber, 
+            header.bunchId, 
+            header.timestamp, 
+            header.modId,
+            header.row, 
+            header.column, 
+            header.reserved, 
+            header.debug, 
+            header.roundRNumber, 
+            header.detType, 
+            header.version,
+
+            // additional stuff
+            header.flippedDataX, 
+            header.quad);
+
+    if (header.addJsonHeader.size() > 0) {
+        strcat(buf, ", ");
+        strcat(buf, "\"addJsonHeader\": {");
+        for (auto it = header.addJsonHeader.begin(); it != header.addJsonHeader.end(); ++it) {
+            if (it != header.addJsonHeader.begin()) {
+                strcat(buf, ", ");
+            }
+            strcat(buf, "\"");
+            strcat(buf, it->first.c_str());
+            strcat(buf, "\":\"");
+            strcat(buf, it->second.c_str());
+            strcat(buf, "\"");
+        }
+        strcat(buf, " } ");
+    }
+
+    strcat(buf, "}\n");
+    int length = strlen(buf);
+
+#ifdef VERBOSE
+    // if(!index)
+    cprintf(BLUE, "%d : Streamer: buf: %s\n", index, buf);
+#endif
+
+    if (zmq_send(sockfd.socketDescriptor, buf, length,
+                 header.data ? ZMQ_SNDMORE : 0) < 0) {
+        PrintError();
+        return 0;
+    }
+#ifdef VERBOSE
+    cprintf(GREEN, "[%u] send header data\n", portno);
+#endif
+    return 1;
+}
+
+int ZmqSocket::SendData(char *buf, int length) {
+    if (zmq_send(sockfd.socketDescriptor, buf, length, 0) < 0) {
+        PrintError();
+        return 0;
+    }
+    return 1;
+}
+
+int ZmqSocket::ReceiveHeader(const int index, zmqHeader& zHeader,
+                             uint32_t version) {
+    std::vector<char> buffer(MAX_STR_LENGTH);
+    int len =
+        zmq_recv(sockfd.socketDescriptor, buffer.data(), buffer.size(), 0);
+    if (len > 0) {
+#ifdef ZMQ_DETAIL
+        cprintf(BLUE, "Header %d [%d] Length: %d Header:%s \n", index, portno,
+                len, buffer.data());
+#endif
+        if (ParseHeader(index, len, buffer.data(), zHeader, version)) {
+#ifdef ZMQ_DETAIL
+            cprintf(RED, "Parsed Header %d [%d] Length: %d Header:%s \n", index,
+                    portno, len, buffer.data());
+#endif
+            if (!zHeader.data) {
+#ifdef ZMQ_DETAIL
+                cprintf(RED, "%d [%d] Received end of acquisition\n", index,
+                        portno);
+#endif
+                return 0;
+            }
+#ifdef ZMQ_DETAIL
+            cprintf(GREEN, "%d [%d] data\n", index, portno);
+#endif
+            return 1;
+        }
+    }
+    return 0;
+};
+
+int ZmqSocket::ParseHeader(const int index, int length, char *buff,
+                           zmqHeader& zHeader, uint32_t version) {
+    Document document;
+    if (document.Parse(buff, length).HasParseError()) {
+        LOG(logERROR) << index << " Could not parse. len:" << length
+                      << ": Message:" << buff;
+        fflush(stdout);
+        // char* buf =  (char*) zmq_msg_data (&message);
+        for (int i = 0; i < length; ++i) {
+            cprintf(RED, "%02x ", buff[i]);
+        }
+        printf("\n");
+        fflush(stdout);
+        return 0;
+    }
+
+    // version check
+    zHeader.jsonversion = document["jsonversion"].GetUint();
+    if (zHeader.jsonversion != version) {
+        LOG(logERROR) << "version mismatch. required " << version << ", got "
+                      << zHeader.jsonversion;
+        return 0;
+    }
+
+    // parse
+    zHeader.data = ((document["data"].GetUint()) == 0) ? false : true;
+    zHeader.dynamicRange = document["bitmode"].GetUint();
+    zHeader.fileIndex = document["fileIndex"].GetUint64(); 
+    zHeader.ndetx = document["detshape"][0].GetUint();
+    zHeader.ndety = document["detshape"][1].GetUint();
+    zHeader.npixelsx = document["shape"][0].GetUint();
+    zHeader.npixelsy = document["shape"][1].GetUint();
+    zHeader.imageSize = document["size"].GetUint();
+    zHeader.acqIndex = document["acqIndex"].GetUint64();
+    zHeader.frameIndex = document["frameIndex"].GetUint64();
+    zHeader.fname = document["fname"].GetString();
+
+    zHeader.frameNumber = document["frameNumber"].GetUint64();
+    zHeader.expLength = document["expLength"].GetUint();
+    zHeader.packetNumber = document["packetNumber"].GetUint();
+    zHeader.bunchId = document["bunchId"].GetUint64();
+    zHeader.timestamp = document["timestamp"].GetUint64();
+    zHeader.modId = document["modId"].GetUint();
+    zHeader.row = document["row"].GetUint();
+    zHeader.column = document["column"].GetUint();
+    zHeader.reserved = document["reserved"].GetUint();
+    zHeader.debug = document["debug"].GetUint();
+    zHeader.roundRNumber = document["roundRNumber"].GetUint();
+    zHeader.detType = document["detType"].GetUint();
+    zHeader.version = document["version"].GetUint();
+
+    zHeader.flippedDataX = document["flippedDataX"].GetUint();
+    zHeader.quad = document["quad"].GetUint();
+    zHeader.completeImage = document["completeImage"].GetUint();
+
+    if (document.HasMember("addJsonHeader")) {
+        const Value& V = document["addJsonHeader"];
+        zHeader.addJsonHeader.clear();
+        for (Value::ConstMemberIterator iter = V.MemberBegin(); iter != V.MemberEnd(); ++iter){
+            zHeader.addJsonHeader[iter->name.GetString()] = iter->value.GetString();
+        }
+    }
+
+    return 1;
+}
+
+int ZmqSocket::ReceiveData(const int index, char *buf, const int size) {
+    zmq_msg_t message;
+    zmq_msg_init(&message);
+    int length = ReceiveMessage(index, message);
+    if (length == size) {
+        memcpy(buf, (char *)zmq_msg_data(&message), size);
+    } else if (length < size) {
+        memcpy(buf, (char *)zmq_msg_data(&message), length);
+        memset(buf + length, 0xFF, size - length);
+    } else {
+        LOG(logERROR) << "Received weird packet size " << length
+                      << " for socket " << index;
+        memset(buf, 0xFF, size);
+    }
+
+    zmq_msg_close(&message);
+    return length;
+}
+
+int ZmqSocket::ReceiveMessage(const int index, zmq_msg_t &message) {
+    int length = zmq_msg_recv(&message, sockfd.socketDescriptor, 0);
+    if (length == -1) {
+        PrintError();
+        LOG(logERROR) << "Could not read header for socket " << index;
+    }
+    return length;
+}
+
 void ZmqSocket::PrintError() {
     switch (errno) {
     case EINVAL:
@@ -209,181 +447,6 @@ void ZmqSocket::PrintError() {
         break;
     }
 }
-
-int ZmqSocket::ReceiveData(const int index, char *buf, const int size) {
-    zmq_msg_t message;
-    zmq_msg_init(&message);
-    int length = ReceiveMessage(index, message);
-    if (length == size) {
-        memcpy(buf, (char *)zmq_msg_data(&message), size);
-    } else if (length < size) {
-        memcpy(buf, (char *)zmq_msg_data(&message), length);
-        memset(buf + length, 0xFF, size - length);
-    } else {
-        LOG(logERROR) << "Received weird packet size " << length
-                      << " for socket " << index;
-        memset(buf, 0xFF, size);
-    }
-
-    zmq_msg_close(&message);
-    return length;
-}
-
-int ZmqSocket::ParseHeader(const int index, int length, char *buff,
-                           Document &document, bool &dummy, uint32_t version) {
-    if (document.Parse(buff, length).HasParseError()) {
-        LOG(logERROR) << index << " Could not parse. len:" << length
-                      << ": Message:" << buff;
-        fflush(stdout);
-        // char* buf =  (char*) zmq_msg_data (&message);
-        for (int i = 0; i < length; ++i) {
-            cprintf(RED, "%02x ", buff[i]);
-        }
-        printf("\n");
-        fflush(stdout);
-        return 0;
-    }
-
-    if (document["jsonversion"].GetUint() != version) {
-        LOG(logERROR) << "version mismatch. required " << version << ", got "
-                      << document["jsonversion"].GetUint();
-        return 0;
-    }
-
-    dummy = false;
-    int temp = document["data"].GetUint();
-    dummy = temp ? false : true;
-
-    return 1;
-}
-
-int ZmqSocket::ReceiveHeader(const int index, Document &document,
-                             uint32_t version) {
-    std::vector<char> buffer(MAX_STR_LENGTH);
-    int len =
-        zmq_recv(sockfd.socketDescriptor, buffer.data(), buffer.size(), 0);
-    if (len > 0) {
-        bool dummy = false;
-#ifdef ZMQ_DETAIL
-        cprintf(BLUE, "Header %d [%d] Length: %d Header:%s \n", index, portno,
-                len, buffer.data());
-#endif
-        if (ParseHeader(index, len, buffer.data(), document, dummy, version)) {
-#ifdef ZMQ_DETAIL
-            cprintf(RED, "Parsed Header %d [%d] Length: %d Header:%s \n", index,
-                    portno, len, buffer.data());
-#endif
-            if (dummy) {
-#ifdef ZMQ_DETAIL
-                cprintf(RED, "%d [%d] Received end of acquisition\n", index,
-                        portno);
-#endif
-                return 0;
-            }
-#ifdef ZMQ_DETAIL
-            cprintf(GREEN, "%d [%d] data\n", index, portno);
-#endif
-            return 1;
-        }
-    }
-    return 0;
-};
-
-int ZmqSocket::ReceiveMessage(const int index, zmq_msg_t &message) {
-    int length = zmq_msg_recv(&message, sockfd.socketDescriptor, 0);
-    if (length == -1) {
-        PrintError();
-        LOG(logERROR) << "Could not read header for socket " << index;
-    }
-    return length;
-}
-
-int ZmqSocket::SendData(char *buf, int length) {
-    if (zmq_send(sockfd.socketDescriptor, buf, length, 0) < 0) {
-        PrintError();
-        return 0;
-    }
-    return 1;
-}
-
-int ZmqSocket::SendHeaderData(
-    int index, bool dummy, uint32_t jsonversion, uint32_t dynamicrange,
-    uint64_t fileIndex, uint32_t ndetx, uint32_t ndety, uint32_t npixelsx,
-    uint32_t npixelsy, uint32_t imageSize, uint64_t acqIndex, uint64_t fIndex,
-    std::string fname, uint64_t frameNumber, uint32_t expLength,
-    uint32_t packetNumber, uint64_t bunchId, uint64_t timestamp, uint16_t modId,
-    uint16_t row, uint16_t column, uint16_t reserved, uint32_t debug,
-    uint16_t roundRNumber, uint8_t detType, uint8_t version,
-    int gapPixelsEnable, int flippedDataX, uint32_t quadEnable,
-    std::string *additionalJsonHeader) {
-
-    /** Json Header Format */
-    const char jsonHeaderFormat[] = "{"
-                                    "\"jsonversion\":%u, "
-                                    "\"bitmode\":%u, "
-                                    "\"fileIndex\":%lu, "
-                                    "\"detshape\":[%u, %u], "
-                                    "\"shape\":[%u, %u], "
-                                    "\"size\":%u, "
-                                    "\"acqIndex\":%lu, "
-                                    "\"fIndex\":%lu, "
-                                    "\"fname\":\"%s\", "
-                                    "\"data\": %d, "
-
-                                    "\"frameNumber\":%lu, "
-                                    "\"expLength\":%u, "
-                                    "\"packetNumber\":%u, "
-                                    "\"bunchId\":%lu, "
-                                    "\"timestamp\":%lu, "
-                                    "\"modId\":%u, "
-                                    "\"row\":%u, "
-                                    "\"column\":%u, "
-                                    "\"reserved\":%u, "
-                                    "\"debug\":%u, "
-                                    "\"roundRNumber\":%u, "
-                                    "\"detType\":%u, "
-                                    "\"version\":%u, "
-
-                                    // additional stuff
-                                    "\"gappixels\":%u, "
-                                    "\"flippedDataX\":%u, "
-                                    "\"quad\":%u"
-
-        ; //"}\n";
-    char buf[MAX_STR_LENGTH] = "";
-    sprintf(buf, jsonHeaderFormat, jsonversion, dynamicrange, fileIndex, ndetx,
-            ndety, npixelsx, npixelsy, imageSize, acqIndex, fIndex,
-            fname.c_str(), dummy ? 0 : 1,
-
-            frameNumber, expLength, packetNumber, bunchId, timestamp, modId,
-            row, column, reserved, debug, roundRNumber, detType, version,
-
-            // additional stuff
-            gapPixelsEnable, flippedDataX, quadEnable);
-
-    if (additionalJsonHeader && !((*additionalJsonHeader).empty())) {
-        strcat(buf, ", ");
-        strcat(buf, (*additionalJsonHeader).c_str());
-    }
-    strcat(buf, "}\n");
-    int length = strlen(buf);
-
-#ifdef VERBOSE
-    // if(!index)
-    cprintf(BLUE, "%d : Streamer: buf: %s\n", index, buf);
-#endif
-
-    if (zmq_send(sockfd.socketDescriptor, buf, length,
-                 dummy ? 0 : ZMQ_SNDMORE) < 0) {
-        PrintError();
-        return 0;
-    }
-#ifdef VERBOSE
-    cprintf(GREEN, "[%u] send header data\n", portno);
-#endif
-    return 1;
-}
-
 
 //Nested class to do RAII handling of socket descriptors
 ZmqSocket::mySocketDescriptors::mySocketDescriptors()

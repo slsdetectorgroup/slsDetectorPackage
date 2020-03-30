@@ -167,6 +167,14 @@ void Detector::registerDataCallback(void (*func)(detectorData *, uint64_t,
     pimpl->registerDataCallback(func, pArg);
 }
 
+bool Detector::getGapPixelsinCallback() const {
+    return pimpl->getGapPixelsinCallback();
+}
+
+void Detector::setGapPixelsinCallback(bool enable) {
+    pimpl->setGapPixelsinCallback(enable);
+}
+
 // Acquisition Parameters
 
 Result<int64_t> Detector::getNumberOfFrames(Positions pos) const {
@@ -357,6 +365,14 @@ void Detector::setPowerChip(bool on, Positions pos) {
     } else {
         pimpl->Parallel(&Module::powerChip, pos, static_cast<int>(on));
     }
+}
+
+Result<int> Detector::getImageTestMode(Positions pos) {
+    return pimpl->Parallel(&Module::getImageTestMode, pos);
+}
+
+void Detector::setImageTestMode(int value, Positions pos) {
+    pimpl->Parallel(&Module::setImageTestMode, pos, value);
 }
 
 Result<int> Detector::getTemperature(defs::dacIndex index,
@@ -953,14 +969,6 @@ void Detector::loadTrimbits(const std::string &fname, Positions pos) {
     pimpl->Parallel(&Module::loadSettingsFile, pos, fname);
 }
 
-Result<bool> Detector::getRxAddGapPixels(Positions pos) const {
-    return pimpl->Parallel(&Module::enableGapPixels, pos, -1);
-}
-
-void Detector::setRxAddGapPixels(bool enable) {
-    pimpl->setGapPixelsinReceiver(enable);
-}
-
 Result<bool> Detector::getParallelMode(Positions pos) const {
     return pimpl->Parallel(&Module::getParallelMode, pos);
 }
@@ -1193,14 +1201,6 @@ Detector::getExternalSignalFlags(Positions pos) const {
 void Detector::setExternalSignalFlags(defs::externalSignalFlag value,
                                       Positions pos) {
     pimpl->Parallel(&Module::setExternalSignalFlags, pos, value);
-}
-
-Result<int> Detector::getImageTestMode(Positions pos) {
-    return pimpl->Parallel(&Module::getImageTestMode, pos);
-}
-
-void Detector::setImageTestMode(int value, Positions pos) {
-    pimpl->Parallel(&Module::setImageTestMode, pos, value);
 }
 
 // Gotthard2 Specific
@@ -1612,13 +1612,13 @@ void Detector::setPatternBitMask(uint64_t mask, Positions pos) {
 
 // Moench
 
-Result<std::string> Detector::getAdditionalJsonHeader(Positions pos) const {
+Result<std::map<std::string, std::string>> Detector::getAdditionalJsonHeader(Positions pos) const {
     return pimpl->Parallel(&Module::getAdditionalJsonHeader, pos);
 }
 
-void Detector::setAdditionalJsonHeader(const std::string &jsonheader,
+void Detector::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader,
                                        Positions pos) {
-    pimpl->Parallel(&Module::setAdditionalJsonHeader, pos, jsonheader);
+    pimpl->Parallel(&Module::setAdditionalJsonHeader, pos, jsonHeader);
 }
 
 Result<std::string> Detector::getAdditionalJsonParameter(const std::string &key,
@@ -1626,8 +1626,7 @@ Result<std::string> Detector::getAdditionalJsonParameter(const std::string &key,
     return pimpl->Parallel(&Module::getAdditionalJsonParameter, pos, key);
 }
 
-void Detector::setAdditionalJsonParameter(const std::string &key,
-                                          const std::string &value,
+void Detector::setAdditionalJsonParameter(const std::string &key, const std::string &value,
                                           Positions pos) {
     pimpl->Parallel(&Module::setAdditionalJsonParameter, pos, key, value);
 }

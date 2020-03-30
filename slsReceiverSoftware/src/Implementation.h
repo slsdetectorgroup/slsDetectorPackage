@@ -14,6 +14,7 @@ class slsDetectorDefs;
 #include <exception>
 #include <memory>
 #include <vector>
+#include <map>
 
 class Implementation : private virtual slsDetectorDefs {
   public:
@@ -123,8 +124,10 @@ class Implementation : private virtual slsDetectorDefs {
     void setStreamingPort(const uint32_t i);
     sls::IpAddr getStreamingSourceIP() const;
     void setStreamingSourceIP(const  sls::IpAddr ip);
-    std::string getAdditionalJsonHeader() const;
-    void setAdditionalJsonHeader(const std::string& c);
+    std::map<std::string, std::string> getAdditionalJsonHeader() const;
+    void setAdditionalJsonHeader(const std::map<std::string, std::string> &c);
+    std::string getAdditionalJsonParameter(const std::string &key) const;
+    void setAdditionalJsonParameter(const std::string &key, const std::string &value);
 
     /**************************************************
      *                                                 *
@@ -161,9 +164,6 @@ class Implementation : private virtual slsDetectorDefs {
     void setTenGigaEnable(const bool b);
     int getFlippedDataX() const;
     void setFlippedDataX(int enable = -1);
-    bool getGapPixelsEnable() const;
-    /* [Eiger] */
-    void setGapPixelsEnable(const bool b);
     bool getQuad() const;
     /* [Eiger] */
     void setQuad(const bool b);
@@ -263,7 +263,7 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t streamingTimerInMs;
     uint32_t streamingPort;
     sls::IpAddr streamingSrcIP;
-    std::string additionalJsonHeader;
+    std::map<std::string, std::string> additionalJsonHeader;
 
     // detector parameters
     uint64_t numberOfFrames;
@@ -278,7 +278,6 @@ class Implementation : private virtual slsDetectorDefs {
     ROI roi;
     bool tengigaEnable;
     int flippedDataX;
-    bool gapPixelsEnable;
     bool quadEnable; 
     bool activated;
     bool deactivatedPaddingEnable;

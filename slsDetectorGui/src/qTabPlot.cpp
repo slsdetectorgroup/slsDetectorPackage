@@ -64,6 +64,7 @@ void qTabPlot::SetupWidgetWindow() {
         chkGapPixels->setEnabled(true);
         break;
     case slsDetectorDefs::JUNGFRAU:
+        chkGapPixels->setEnabled(true);
         chkGainPlot->setEnabled(true);
         chkGainPlot->setChecked(true);
         plot->EnableGainPlot(true);
@@ -312,8 +313,7 @@ void qTabPlot::GetGapPixels() {
     disconnect(chkGapPixels, SIGNAL(toggled(bool)), this,
                SLOT(SetGapPixels(bool)));
     try {
-        auto retval = det->getRxAddGapPixels().tsquash(
-            "Inconsistent gap pixels enabled for all detectors.");
+        auto retval = det->getGapPixelsinCallback();
         chkGapPixels->setChecked(retval);
     }
     CATCH_DISPLAY("Could not get gap pixels enable.", "qTabPlot::GetGapPixels")
@@ -324,7 +324,7 @@ void qTabPlot::GetGapPixels() {
 void qTabPlot::SetGapPixels(bool enable) {
     LOG(logINFO) << "Setting Gap Pixels Enable to " << enable;
     try {
-        det->setRxAddGapPixels(enable);
+        det->setGapPixelsinCallback(enable);
     }
     CATCH_HANDLE("Could not set gap pixels enable.", "qTabPlot::SetGapPixels",
                  this, &qTabPlot::GetGapPixels)
@@ -672,6 +672,8 @@ void qTabPlot::Refresh() {
             break;
         case slsDetectorDefs::JUNGFRAU:
             chkGainPlot->setEnabled(true);
+            chkGapPixels->setEnabled(true);
+            GetGapPixels();
             break;
         case slsDetectorDefs::GOTTHARD2:
             chkGainPlot1D->setEnabled(true);

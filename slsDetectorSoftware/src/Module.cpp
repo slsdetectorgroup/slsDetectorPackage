@@ -410,7 +410,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
                      (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->zmqip = IpAddr{};
-    shm()->gappixels = 0U;
     shm()->numUDPInterfaces = 1;
     shm()->stoppedFlag = false;
 
@@ -422,8 +421,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->nChip.y = parameters.nChipY;
     shm()->nDacs = parameters.nDacs;
     shm()->dynamicRange = parameters.dynamicRange;
-    shm()->nGappixels.x = parameters.nGappixelsX;
-    shm()->nGappixels.y = parameters.nGappixelsY;
 }
 
 int Module::sendModule(sls_detector_module *myMod,
@@ -582,10 +579,8 @@ void Module::updateNumberOfChannels() {
 
 slsDetectorDefs::xy Module::getNumberOfChannels() const {
     slsDetectorDefs::xy coord{};
-    coord.x = (shm()->nChan.x * shm()->nChip.x +
-               shm()->gappixels * shm()->nGappixels.x);
-    coord.y = (shm()->nChan.y * shm()->nChip.y +
-               shm()->gappixels * shm()->nGappixels.y);
+    coord.x = (shm()->nChan.x * shm()->nChip.x);
+    coord.y = (shm()->nChan.y * shm()->nChip.y);
     return coord;
 }
 
@@ -937,23 +932,17 @@ int Module::getThresholdEnergy() {
     return retval;
 }
 
-int Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
+void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
                                     int tb) {
 
     // check as there is client processing
     if (shm()->myDetectorType == EIGER) {
         setThresholdEnergyAndSettings(e_eV, isettings, tb);
-        return e_eV;
     }
 
     // moench - send threshold energy to processor
     else if (shm()->myDetectorType == MOENCH) {
-        std::string result =
-            setAdditionalJsonParameter("threshold", std::to_string(e_eV));
-        if (result == std::to_string(e_eV)) {
-            return e_eV;
-        }
-        return -1;
+        setAdditionalJsonParameter("threshold", std::to_string(e_eV));
     }
     throw RuntimeError(
         "Set threshold energy not implemented for this detector");
@@ -1719,7 +1708,6 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
             setSubDeadTime(getSubDeadTime());
             setDynamicRange(shm()->dynamicRange);
             activate(-1);
-            enableGapPixels(shm()->gappixels);
             enableTenGigabitEthernet(-1);
             setQuad(getQuad());
             break;
@@ -2105,106 +2093,99 @@ void Module::setTransmissionDelayRight(int value) {
 }
 
 
-void Module::setAdditionalJsonHeader(const std::string &jsonheader) {
+void Module::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
     } 
-    char args[MAX_STR_LENGTH]{};
-    sls::strcpy_safe(args, jsonheader.c_str());
-    sendToReceiver(F_SET_ADDITIONAL_JSON_HEADER, args, nullptr);
-}
-
-std::string Module::getAdditionalJsonHeader() {
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
-    } 
-    char retvals[MAX_STR_LENGTH]{};
-    sendToReceiver(F_GET_ADDITIONAL_JSON_HEADER, nullptr, retvals);
-    return std::string(retvals);
-}
-
-std::string Module::setAdditionalJsonParameter(const std::string &key,
-                                                    const std::string &value) {
-    if (key.empty() || value.empty()) {
-        throw RuntimeError(
-            "Could not set additional json header parameter as the key or "
-            "value is empty");
-    }
-
-    // validation (ignore if key or value has , : ")
-    if (key.find_first_of(",\":") != std::string::npos ||
-        value.find_first_of(",\":") != std::string::npos) {
-        throw RuntimeError("Could not set additional json header parameter as "
-                           "the key or value has "
-                           "illegal characters (,\":)");
-    }
-
-    // create actual key to search for and actual value to put, (key has
-    // additional ':' as value could exist the same way)
-    std::string keyLiteral(std::string("\"") + key + std::string("\":"));
-    std::string valueLiteral(value);
-    // add quotations to value only if it is a string
-    try {
-        std::stoi(valueLiteral);
-    } catch (...) {
-        // add quotations if it failed to convert to integer, otherwise nothing
-        valueLiteral.insert(0, "\"");
-        valueLiteral.append("\"");
-    }
-
-    std::string header = getAdditionalJsonHeader();
-    size_t keyPos = header.find(keyLiteral);
-
-    // if key found, replace value
-    if (keyPos != std::string::npos) {
-        size_t valueStartPos = header.find(std::string(":"), keyPos) + 1;
-        size_t valueEndPos = header.find(std::string(","), valueStartPos) - 1;
-        // if valueEndPos doesnt find comma (end of string), it goes anyway to
-        // end of line
-        header.replace(valueStartPos, valueEndPos - valueStartPos + 1,
-                       valueLiteral);
-    }
-
-    // key not found, append key value pair
-    else {
-        if (header.length() != 0U) {
-            header.append(",");
+    for (auto &it : jsonHeader) {
+        if (it.first.empty() || it.first.length() > SHORT_STR_LENGTH ||
+            it.second.length() > SHORT_STR_LENGTH ) {
+            throw RuntimeError(it.first + " or " + it.second + " pair has invalid size. "
+            "Key cannot be empty. Both can have max 20 characters");
         }
-        header.append(keyLiteral + valueLiteral);
     }
+    const int size = jsonHeader.size();
+    int fnum = F_SET_ADDITIONAL_JSON_HEADER;
+    int ret = FAIL;
+    LOG(logDEBUG) << "Sending to receiver additional json header " << ToString(jsonHeader);
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(&size, sizeof(size));
+    if (size > 0) {
+        char args[size * 2][SHORT_STR_LENGTH];
+        memset(args, 0, sizeof(args));
+        int iarg = 0;
+        for (auto &it : jsonHeader) {
+            sls::strcpy_safe(args[iarg], it.first.c_str());
+            sls::strcpy_safe(args[iarg + 1], it.second.c_str());
+            iarg += 2;
+        }
+        client.Send(args, sizeof(args));
+    }
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Receiver " + std::to_string(detId) +
+                           " returned error: " + std::string(mess));
+    }
+}
 
-    // update additional json header
-    setAdditionalJsonHeader(header);
-    return getAdditionalJsonParameter(key);
+std::map<std::string, std::string> Module::getAdditionalJsonHeader() {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
+    } 
+    int fnum = F_GET_ADDITIONAL_JSON_HEADER;
+    int ret = FAIL;
+    int size = 0;
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Receiver " + std::to_string(detId) +
+                           " returned error: " + std::string(mess));
+    } else {
+        client.Receive(&size, sizeof(size));
+        std::map<std::string, std::string> retval;
+        if (size > 0) {
+            char retvals[size * 2][SHORT_STR_LENGTH];
+            memset(retvals, 0, sizeof(retvals));
+            client.Receive(retvals, sizeof(retvals));
+            for (int i = 0; i < size; ++i) {
+                retval[retvals[2 * i]] = retvals[2 * i + 1];
+            }
+        }
+        LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
+        return retval;
+    }
+}
+
+void Module::setAdditionalJsonParameter(const std::string &key, const std::string &value) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json parameter)");
+    } 
+    if (key.empty() || key.length() > SHORT_STR_LENGTH ||
+        value.length() > SHORT_STR_LENGTH ) {
+        throw RuntimeError(key + " or " + value + " pair has invalid size. "
+        "Key cannot be empty. Both can have max 2 characters");
+    }
+    char args[2][SHORT_STR_LENGTH]{};
+    sls::strcpy_safe(args[0], key.c_str());
+    sls::strcpy_safe(args[1], value.c_str());
+    sendToReceiver(F_SET_ADDITIONAL_JSON_PARAMETER, args, nullptr);
 }
 
 std::string Module::getAdditionalJsonParameter(const std::string &key) {
-    // additional json header is empty
-    std::string jsonheader = getAdditionalJsonHeader();
-    if (jsonheader.empty())
-        return jsonheader;
-
-    // add quotations before and after the key value
-    std::string keyLiteral = key;
-    keyLiteral.insert(0, "\"");
-    keyLiteral.append("\"");
-
-    // loop through the parameters
-    for (const auto &parameter :
-         sls::split(jsonheader, ',')) {
-        // get a vector of key value pair for each parameter
-        const auto &pairs = sls::split(parameter, ':');
-        // match for key
-        if (pairs[0] == keyLiteral) {
-            // return value without quotations (if it has any)
-            if (pairs[1][0] == '\"')
-                return pairs[1].substr(1, pairs[1].length() - 2);
-            else
-                return pairs[1];
-        }
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json parameter)");
     }
-    // return empty string as no match found with key
-    return std::string();
+    char arg[SHORT_STR_LENGTH]{};
+    sls::strcpy_safe(arg, key.c_str());
+    char retval[SHORT_STR_LENGTH]{};
+    sendToReceiver(F_GET_ADDITIONAL_JSON_PARAMETER, arg, retval); 
+    return retval;
 }
 
 int64_t Module::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
@@ -2672,24 +2653,6 @@ int Module::setAllTrimbits(int val) {
     return retval;
 }
 
-int Module::enableGapPixels(int val) {
-    if (val >= 0) {
-        if (shm()->myDetectorType != EIGER) {
-          throw NotImplementedError(
-                "Function (enableGapPixels) not implemented for this detector");  
-        }
-        int fnum = F_ENABLE_GAPPIXELS_IN_RECEIVER;
-        int retval = -1;
-        LOG(logDEBUG1) << "Sending gap pixels enable to receiver: " << val;
-        if (shm()->useReceiverFlag) {
-            sendToReceiver(fnum, val, retval);
-            LOG(logDEBUG1) << "Gap pixels enable to receiver:" << retval;
-            shm()->gappixels = retval;
-        }
-    }
-    return shm()->gappixels;
-}
-
 int Module::setTrimEn(const std::vector<int>& energies) {
     if (shm()->myDetectorType != EIGER) {
          throw RuntimeError("setTrimEn not implemented for this detector.");
@@ -3084,33 +3047,6 @@ void Module::execReceiverCommand(const std::string &cmd) {
     }
 }
 
-void Module::updateCachedReceiverVariables() const {
-    int fnum = F_UPDATE_RECEIVER_CLIENT;
-    LOG(logDEBUG1) << "Sending update client to receiver server";
-
-    if (shm()->useReceiverFlag) {
-        auto receiver =
-            sls::ClientSocket("Receiver", shm()->rxHostname, shm()->rxTCPPort);
-        receiver.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
-        int n = 0, i32 = 0;
-        IpAddr ip;
-
-        n += receiver.Receive(&ip, sizeof(ip));
-        LOG(logDEBUG1)
-            << "Updating receiver last modified by " << ip;
-
-        // gap pixels
-        n += receiver.Receive(&i32, sizeof(i32));
-        shm()->gappixels = i32;
-
-        if (n == 0) {
-            throw RuntimeError(
-                "Could not update receiver: " + std::string(shm()->rxHostname) +
-                ", received 0 bytes\n");
-        }
-    }
-}
-
 void Module::sendMultiDetectorSize() {
     int args[]{shm()->multiSize.x, shm()->multiSize.y};
     int retval = -1;
@@ -3317,9 +3253,6 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
             throw RuntimeError("Receiver " + std::to_string(detId) +
                             " returned error: " + std::string(mess));
         } else {
-            if (ret == FORCE_UPDATE) {
-                updateCachedReceiverVariables();
-            }
             int nports = -1;
             client.Receive(&nports, sizeof(nports));
             uint64_t mp[nports];

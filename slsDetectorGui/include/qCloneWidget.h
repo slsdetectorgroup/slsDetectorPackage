@@ -14,7 +14,7 @@ class qCloneWidget : public QMainWindow, private Ui::ClonePlotObject {
     qCloneWidget(QWidget *parent, SlsQt1DPlot *p1, SlsQt2DPlot *p2,
                  SlsQt1DPlot *gp1, SlsQt2DPlot *gp, QString title,
                  QString filePath, QString fileName, int64_t aIndex,
-                 bool displayStats, QString min, QString max, QString sum);
+                 bool displayStats, QString min, QString max, QString sum, bool completeImage);
 
     ~qCloneWidget();
 

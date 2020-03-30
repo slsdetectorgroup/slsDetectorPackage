@@ -22,6 +22,10 @@ extern int debugflag;
 extern udpStruct udpDetails;
 extern const enum detectorType myDetectorType;
 
+// Global variable from communication_funcs.c
+extern void getMacAddressinString(char* cmac, int size, uint64_t mac);
+extern void getIpAddressinString(char* cip, uint32_t ip);
+
 int initError = OK;
 int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];

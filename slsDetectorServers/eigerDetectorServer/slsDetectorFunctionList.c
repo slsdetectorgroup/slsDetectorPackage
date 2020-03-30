@@ -1200,21 +1200,20 @@ enum timingMode getTiming() {
 /* configure mac */
 
 int configureMAC() {
-    uint32_t sourceip = udpDetails.srcip;
-	uint32_t destip = udpDetails.dstip;
-	uint64_t sourcemac = udpDetails.srcmac;
-	uint64_t destmac = udpDetails.dstmac;
-	int src_port = udpDetails.srcport;
-	int destport = udpDetails.dstport;		
-	int destport2 = udpDetails.dstport2;			
+    uint32_t srcip = udpDetails.srcip;
+	uint32_t dstip = udpDetails.dstip;
+	uint64_t srcmac = udpDetails.srcmac;
+	uint64_t dstmac = udpDetails.dstmac;
+	int srcport = udpDetails.srcport;
+	int dstport = udpDetails.dstport;		
+	int dstport2 = udpDetails.dstport2;			
 
-    LOG(logINFO, ("Configuring MAC\n"));
-	
+	LOG(logINFOBLUE, ("Configuring MAC\n"));
 	char src_mac[50], src_ip[INET_ADDRSTRLEN],dst_mac[50], dst_ip[INET_ADDRSTRLEN];
-	getMacAddressinString(src_mac, 50, sourcemac);
-	getMacAddressinString(dst_mac, 50, destmac);
-	getIpAddressinString(src_ip, sourceip);
-	getIpAddressinString(dst_ip, destip);
+	getMacAddressinString(src_mac, 50, srcmac);
+	getMacAddressinString(dst_mac, 50, dstmac);
+	getIpAddressinString(src_ip, srcip);
+	getIpAddressinString(dst_ip, dstip);
 
 	LOG(logINFO, (
 	        "\tSource IP   : %s\n"
@@ -1224,19 +1223,15 @@ int configureMAC() {
 	        "\tDest MAC    : %s\n"
 			"\tDest Port   : %d\n"
 			"\tDest Port2  : %d\n",
-	        src_ip, src_mac, src_port,
-	        dst_ip, dst_mac, destport, destport2));
+	        src_ip, src_mac, srcport,
+	        dst_ip, dst_mac, dstport, dstport2));
 
 #ifdef VIRTUAL
-	char cDestIp[MAX_STR_LENGTH];
-	memset(cDestIp, 0, MAX_STR_LENGTH);
-	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
-	LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d, port2:%d)\n", cDestIp, destport, destport2));
-	if (setUDPDestinationDetails(0, cDestIp, destport) == FAIL) {
+	if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
 		LOG(logERROR, ("could not set udp destination IP and port\n"));
 		return FAIL;
 	}
-	if (setUDPDestinationDetails(1, cDestIp, destport2) == FAIL) {
+	if (setUDPDestinationDetails(1, dst_ip, dstport2) == FAIL) {
 		LOG(logERROR, ("could not set udp destination IP and port2\n"));
 		return FAIL;
 	}
@@ -1245,11 +1240,9 @@ int configureMAC() {
 
 	int beb_num =  detid;
 	int header_number = 0;
-	int dst_port = destport;
+	int dst_port = dstport;
 	if (!top)
-		dst_port = destport2;
-
-	LOG(logINFO, ("\tDest Port   : %d\n", dst_port));
+		dst_port = dstport2;
 
 	int i=0;
 	/* for(i=0;i<32;i++) { modified for Aldo*/
@@ -1262,10 +1255,9 @@ int configureMAC() {
 	/*}*/
 
 	header_number = 32;
-	dst_port = destport2;
+	dst_port = dstport2;
 	if (!top)
-		dst_port = destport;
-	LOG(logINFO, ("\tDest Port   : %d\n",dst_port));
+		dst_port = dstport;
 
 	/*for(i=0;i<32;i++) {*//** modified for Aldo*/
 	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
@@ -1752,7 +1744,7 @@ int startStateMachine() {
 	if(createUDPSocket(1) != OK) {
 		return FAIL;
 	}
-	LOG(logINFOBLUE, ("starting state machine\n"));
+	LOG(logINFOBLUE, ("Starting State Machine\n"));
 	eiger_virtual_status = 1;
 	eiger_virtual_stop = 0;
 	if (pthread_create(&eiger_virtual_tid, NULL, &start_timer, NULL)) {
@@ -1763,7 +1755,7 @@ int startStateMachine() {
 	LOG(logINFO ,("Virtual Acquisition started\n"));
 	return OK;
 #else
-
+	LOG(logINFOBLUE, ("Starting State Machine\n"));
 	int ret = OK,prev_flag;
 	//get the DAQ toggle bit
 	prev_flag = Feb_Control_AcquisitionStartedBit();
@@ -1791,9 +1783,9 @@ int startStateMachine() {
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	int64_t periodns = eiger_virtual_period;
+	int64_t periodNs = eiger_virtual_period;
 	int numFrames = nimages_per_request;
-	int64_t exp_us = eiger_virtual_exptime / 1000;
+	int64_t expUs = eiger_virtual_exptime / 1000;
 
 	int dr = eiger_dynamicrange;
 	double bytesPerPixel  = (double)dr/8.00;
@@ -1811,7 +1803,7 @@ void* start_timer(void* arg) {
 	LOG(logINFO, (" dr:%d\n bytesperpixel:%f\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n ntotpixels:%d\n",
 	dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame, npixelsx, databytes, ntotpixels));
 
-	//TODO: Generate data
+	// Generate data
 	char imageData[databytes * 2];
 	memset(imageData, 0, databytes * 2);
 	{
@@ -1842,9 +1834,10 @@ void* start_timer(void* arg) {
 		}
 	}
 	
-	//TODO: Send data
+	// Send data
 	{
 		int frameNr = 1;
+        // loop over number of frames
 		for(frameNr=1; frameNr <= numFrames; ++frameNr ) {
 
 			usleep(eiger_virtual_transmission_delay_frame);
@@ -1854,12 +1847,13 @@ void* start_timer(void* arg) {
 				break;
 			}
 
-			int srcOffset = 0;
-			int srcOffset2 = npixelsx;
-		
+            // sleep for exposure time
 			struct timespec begin, end;
 			clock_gettime(CLOCK_REALTIME, &begin);
-			usleep(exp_us);
+			usleep(expUs);
+
+			int srcOffset = 0;
+			int srcOffset2 = npixelsx;
 			char packetData[packetsize];
 			memset(packetData, 0, packetsize);
 			char packetData2[packetsize];
@@ -1929,13 +1923,13 @@ void* start_timer(void* arg) {
 			}
 			LOG(logINFO, ("Sent frame: %d\n", frameNr));
 			clock_gettime(CLOCK_REALTIME, &end);
-			int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
+			int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
 					(end.tv_nsec - begin.tv_nsec));
 
 			// sleep for (period - exptime)
 			if (frameNr < numFrames) { // if there is a next frame
-				if (periodns > time_ns) {
-					usleep((periodns - time_ns)/ 1000);
+				if (periodNs > timeNs) {
+					usleep((periodNs - timeNs)/ 1000);
 				}
 			}
 		}

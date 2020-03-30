@@ -16,7 +16,7 @@
 int udpSockfd[2] = {-1, -1};
 struct addrinfo* udpServerAddrInfo[2] = {0, 0};
 unsigned short int udpDestinationPort[2] = {0, 0};
-char udpDestinationIp[2][MAX_STR_LENGTH] = {"", ""};
+char udpDestinationIp[2][INET_ADDRSTRLEN] = {"", ""};
 
 //DEFAULT_TX_UDP_PORT;// src port
 int getUdPSocketDescriptor(int index) {
@@ -26,8 +26,8 @@ int getUdPSocketDescriptor(int index) {
 int setUDPDestinationDetails(int index, const char* ip, unsigned short int port) {
 	udpDestinationPort[index] = port;
 	size_t len = strlen(ip);
-	memset(udpDestinationIp[index], 0, MAX_STR_LENGTH);
-	strncpy(udpDestinationIp[index], ip, len > MAX_STR_LENGTH ? MAX_STR_LENGTH : len );
+	memset(udpDestinationIp[index], 0, INET_ADDRSTRLEN);
+	strncpy(udpDestinationIp[index], ip, len > INET_ADDRSTRLEN ? INET_ADDRSTRLEN : len );
 
 	if (udpServerAddrInfo[index]) {
 		freeaddrinfo(udpServerAddrInfo[index]);

@@ -25,6 +25,10 @@ extern int checkModuleFlag;
 extern udpStruct udpDetails;
 extern const enum detectorType myDetectorType;
 
+// Global variable from communication_funcs.c
+extern void getMacAddressinString(char* cmac, int size, uint64_t mac);
+extern void getIpAddressinString(char* cip, uint32_t ip);
+
 int initError = OK;
 int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
@@ -2067,7 +2071,6 @@ void* start_timer(void* arg) {
         struct timespec begin, end;
         clock_gettime(CLOCK_REALTIME, &begin);
         usleep(exp_ns / 1000);
-        clock_gettime(CLOCK_REALTIME, &end);
 
 		char packetData[packetsize];
 		memset(packetData, 0, packetsize);
@@ -2086,6 +2089,7 @@ void* start_timer(void* arg) {
 
 		// send 1 packet = 1 frame
 		sendUDPPacket(0, packetData, packetsize);
+        clock_gettime(CLOCK_REALTIME, &end);
 		LOG(logINFO, ("Sent frame: %d\n", frameNr));
 
 		// calculate time left in period

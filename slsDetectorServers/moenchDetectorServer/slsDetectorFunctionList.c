@@ -11,18 +11,25 @@
 
 #include <string.h>
 #include <unistd.h>     // usleep
+#include <netinet/in.h>
 #ifdef VIRTUAL
 #include <pthread.h>
 #include <time.h>
+#include <math.h>			//ceil
 #endif
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern udpStruct udpDetails;
+extern const enum detectorType myDetectorType;
 
 // Global variable from UDPPacketHeaderGenerator
 extern uint64_t udpFrameNumber;
 extern uint32_t udpPacketNumber;
+
+// Global variable from communication_funcs.c
+extern void getMacAddressinString(char* cmac, int size, uint64_t mac);
+extern void getIpAddressinString(char* cip, uint32_t ip);
 
 int initError = OK;
 int initCheckDone = 0;
@@ -1136,26 +1143,36 @@ void calcChecksum(udp_header* udp) {
 
 
 int configureMAC(){
-    uint32_t sourceip = udpDetails.srcip;
-	uint32_t destip = udpDetails.dstip;
-	uint64_t sourcemac = udpDetails.srcmac;
-	uint64_t destmac = udpDetails.dstmac;
-	int sourceport = udpDetails.srcport;
-	int destport = udpDetails.dstport;		
-#ifdef VIRTUAL
-	return OK;
-#endif
+    uint32_t srcip = udpDetails.srcip;
+	uint32_t dstip = udpDetails.dstip;
+	uint64_t srcmac = udpDetails.srcmac;
+	uint64_t dstmac = udpDetails.dstmac;
+	int srcport = udpDetails.srcport;
+	int dstport = udpDetails.dstport;
+
 	LOG(logINFOBLUE, ("Configuring MAC\n"));
+	char src_mac[50], src_ip[INET_ADDRSTRLEN],dst_mac[50], dst_ip[INET_ADDRSTRLEN];
+	getMacAddressinString(src_mac, 50, srcmac);
+	getMacAddressinString(dst_mac, 50, dstmac);
+	getIpAddressinString(src_ip, srcip);
+	getIpAddressinString(dst_ip, dstip);
+
+	LOG(logINFO, (
+	        "\tSource IP   : %s\n"
+	        "\tSource MAC  : %s\n"
+	        "\tSource Port : %d\n"
+	        "\tDest IP     : %s\n"
+	        "\tDest MAC    : %s\n"
+			"\tDest Port   : %d\n",
+	        src_ip, src_mac, srcport,
+	        dst_ip, dst_mac, dstport));
+
 	// 1 giga udp
 	if (!enableTenGigabitEthernet(-1)) {
-        LOG(logINFOBLUE, ("Configuring 1G MAC\n"));
+        LOG(logINFOBLUE, ("\t1G MAC\n"));
 		if (updateDatabytesandAllocateRAM() == FAIL)
 			return -1;
-		char cDestIp[MAX_STR_LENGTH];
-		memset(cDestIp, 0, MAX_STR_LENGTH);
-		sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
-		LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, destport));
-		if (setUDPDestinationDetails(0, cDestIp, destport) == FAIL) {
+		if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
 			LOG(logERROR, ("could not set udp 1G destination IP and port\n"));
 			return FAIL;
 		}
@@ -1163,31 +1180,7 @@ int configureMAC(){
 	}
 
 	// 10 G
-    LOG(logINFOBLUE, ("Configuring 10G MAC\n"));
-
-    LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
-            (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
-    LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-            (unsigned int)((sourcemac>>40)&0xFF),
-            (unsigned int)((sourcemac>>32)&0xFF),
-            (unsigned int)((sourcemac>>24)&0xFF),
-            (unsigned int)((sourcemac>>16)&0xFF),
-            (unsigned int)((sourcemac>>8)&0xFF),
-            (unsigned int)((sourcemac>>0)&0xFF),
-            (long  long unsigned int)sourcemac));
-    LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n",sourceport, sourceport));
-
-    LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
-            (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
-    LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-            (unsigned int)((destmac>>40)&0xFF),
-            (unsigned int)((destmac>>32)&0xFF),
-            (unsigned int)((destmac>>24)&0xFF),
-            (unsigned int)((destmac>>16)&0xFF),
-            (unsigned int)((destmac>>8)&0xFF),
-            (unsigned int)((destmac>>0)&0xFF),
-            (long  long unsigned int)destmac));
-    LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n",destport, destport));
+    LOG(logINFOBLUE, ("\t10G MAC\n"));
 
 	// start addr
 	uint32_t addr = RXR_ENDPOINT_START_REG;
@@ -1197,21 +1190,21 @@ int configureMAC(){
 
 	//  mac addresses	
 	// msb (32) + lsb (16)
-	udp->udp_destmac_msb	= ((destmac >> 16) & BIT32_MASK);
-	udp->udp_destmac_lsb	= ((destmac >> 0) & BIT16_MASK);
+	udp->udp_destmac_msb	= ((dstmac >> 16) & BIT32_MASK);
+	udp->udp_destmac_lsb	= ((dstmac >> 0) & BIT16_MASK);
 	// msb (16) + lsb (32)
-	udp->udp_srcmac_msb		= ((sourcemac >> 32) & BIT16_MASK);
-	udp->udp_srcmac_lsb		= ((sourcemac >> 0) & BIT32_MASK);
+	udp->udp_srcmac_msb		= ((srcmac >> 32) & BIT16_MASK);
+	udp->udp_srcmac_lsb		= ((srcmac >> 0) & BIT32_MASK);
 
 	// ip addresses
-	udp->ip_srcip_msb		= ((sourceip >> 16) & BIT16_MASK);
-	udp->ip_srcip_lsb		= ((sourceip >> 0) & BIT16_MASK);	
-	udp->ip_destip_msb		= ((destip >> 16) & BIT16_MASK);
-	udp->ip_destip_lsb		= ((destip >> 0) & BIT16_MASK);	
+	udp->ip_srcip_msb		= ((srcip >> 16) & BIT16_MASK);
+	udp->ip_srcip_lsb		= ((srcip >> 0) & BIT16_MASK);	
+	udp->ip_destip_msb		= ((dstip >> 16) & BIT16_MASK);
+	udp->ip_destip_lsb		= ((dstip >> 0) & BIT16_MASK);	
 
 	// source port
-	udp->udp_srcport 		= sourceport;
-	udp->udp_destport		= destport;
+	udp->udp_srcport 		= srcport;
+	udp->udp_destport		= dstport;
 
 	// other defines
 	udp->udp_ethertype		= 0x800;
@@ -1242,6 +1235,9 @@ int* getDetectorPosition() {
 }
 
 int enableTenGigabitEthernet(int val) {
+#ifdef VIRTUAL
+    return 0;
+#endif
 	uint32_t addr = CONFIG_REG;
 
 	// set
@@ -1819,11 +1815,16 @@ uint64_t getPatternBitMask() {
 
 int startStateMachine(){
 #ifdef VIRTUAL
-	virtual_status = 1;
+	// create udp socket
+	if(createUDPSocket(0) != OK) {
+		return FAIL;
+	}
+	LOG(logINFOBLUE, ("Starting State Machine\n"));
+    virtual_status = 1;
 	virtual_stop = 0;
 	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
-		virtual_status = 0;
 		LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
+		virtual_status = 0;
 		return FAIL;
 	}
 	LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
@@ -1857,41 +1858,83 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	int64_t periodns = getPeriod();
+	int64_t periodNs = getPeriod();
 	int numFrames = (getNumFrames() *
 						getNumTriggers() );
-	int64_t exp_ns = 	getExpTime();
+	int64_t expNs = 	getExpTime();
 
-    int frameNr = 0;
-	// loop over number of frames
-    for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
+    int imageSize = dataBytes;
+    int dataSize = UDP_PACKET_DATA_BYTES;
+    int packetSize = sizeof(sls_detector_header) + dataSize;
+    int packetsPerFrame = ceil((double)imageSize / (double)dataSize);
 
-		//check if virtual_stop is high
-		if(virtual_stop == 1){
-			break;
-		}
-
-		// sleep for exposure time
-        struct timespec begin, end;
-        clock_gettime(CLOCK_REALTIME, &begin);
-        usleep(exp_ns / 1000);
-        clock_gettime(CLOCK_REALTIME, &end);
-
-		// calculate time left in period
-        int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                (end.tv_nsec - begin.tv_nsec));
-
-		// sleep for (period - exptime)
-		if (frameNr < numFrames) { // if there is a next frame
-			if (periodns > time_ns) {
-				usleep((periodns - time_ns)/ 1000);
-			}
-		}
-
-		// set register frames left
+    // Generate Data
+    char imageData[imageSize];
+    memset(imageData, 0, imageSize);
+    {
+        int i = 0;
+        for (i = 0; i < imageSize; i += sizeof(uint16_t)) {
+            *((uint16_t*)(imageData + i)) = i;
+        }       
     }
 
-	// set status to idle
+	// Send data
+    {
+        int frameNr = 0;
+        // loop over number of frames
+        for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
+
+            //check if virtual_stop is high
+            if(virtual_stop == 1){
+                break;
+            }
+
+            // sleep for exposure time
+            struct timespec begin, end;
+            clock_gettime(CLOCK_REALTIME, &begin);
+            usleep(expNs / 1000);
+
+            int srcOffset = 0;
+            char packetData[packetSize];
+            memset(packetData, 0, packetSize);
+
+            // loop packet
+            {
+                int i = 0;
+                for(i = 0; i != packetsPerFrame; ++i) {
+                    // set header
+                    sls_detector_header* header = (sls_detector_header*)(packetData);
+                    header->detType = (uint16_t)myDetectorType;
+                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
+                    header->frameNumber = frameNr;
+                    header->packetNumber = i;
+                    header->modId = 0;
+                    header->row = detPos[X];
+                    header->column = detPos[Y];
+
+                    // fill data
+                    memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, dataSize);
+                    srcOffset += dataSize;
+                    
+                    sendUDPPacket(0, packetData, packetSize);
+                }
+            }
+            LOG(logINFO, ("Sent frame: %d\n", frameNr));
+            clock_gettime(CLOCK_REALTIME, &end);
+            int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
+                    (end.tv_nsec - begin.tv_nsec));
+
+            // sleep for (period - exptime)
+            if (frameNr < numFrames) { // if there is a next frame
+                if (periodNs > timeNs) {
+                    usleep((periodNs - timeNs)/ 1000);
+                }
+            }
+        }
+    }
+
+	closeUDPSocket(0);
+
 	virtual_status = 0;
 	LOG(logINFOBLUE, ("Finished Acquiring\n"));        
 	return NULL;

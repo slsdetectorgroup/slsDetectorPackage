@@ -1211,7 +1211,7 @@ void Implementation::setAdditionalJsonParameter(const std::string &key, const st
     } 
     // append if not found
     else {
-        additionalJsonHeader.insert(std::make_pair(key, value));
+        additionalJsonHeader[key] = value;
         LOG(logINFO) << "Adding additional json parameter (" << key << ") to " << value;
     }
     for (const auto &it : dataStreamer) {

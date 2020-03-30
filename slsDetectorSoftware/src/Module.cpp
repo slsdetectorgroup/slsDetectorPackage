@@ -2154,7 +2154,7 @@ std::map<std::string, std::string> Module::getAdditionalJsonHeader() {
             memset(retvals, 0, sizeof(retvals));
             client.Receive(retvals, sizeof(retvals));
             for (int i = 0; i < size; ++i) {
-                retval.insert(std::make_pair(retvals[2 * i], retvals[2 * i + 1]));
+                retval[retvals[2 * i]] = retvals[2 * i + 1];
             }
         }
         LOG(logDEBUG) << "Getting additional json header " << ToString(retval);

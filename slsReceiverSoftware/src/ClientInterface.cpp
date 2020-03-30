@@ -987,7 +987,7 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
         memset(args, 0, sizeof(args));
         socket.Receive(args, sizeof(args));
         for (int i = 0; i < size; ++i) {
-            json.insert(std::make_pair(args[2 * i], args[2 * i + 1]));
+            json[args[2 * i]] = args[2 * i + 1];
         }    
     }
     verifyIdle(socket);

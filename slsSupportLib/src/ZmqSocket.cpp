@@ -348,7 +348,7 @@ int ZmqSocket::ParseHeader(const int index, int length, char *buff,
         const Value& V = document["addJsonHeader"];
         zHeader.addJsonHeader.clear();
         for (Value::ConstMemberIterator iter = V.MemberBegin(); iter != V.MemberEnd(); ++iter){
-            zHeader.addJsonHeader.insert(std::make_pair(iter->name.GetString(), iter->value.GetString()));
+            zHeader.addJsonHeader[iter->name.GetString()] = iter->value.GetString();
         }
     }
 

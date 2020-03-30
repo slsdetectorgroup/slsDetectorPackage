@@ -1903,9 +1903,9 @@ std::string CmdProxy::AdditionalJsonHeader(int action) {
         for (size_t i = 0; i < args.size(); i = i + 2) {
             // last value is empty
             if (i + 1 >= args.size()) {
-                json.insert(std::make_pair(args[i], ""));
+                json[args[i]] = "";
             } else {
-                json.insert(std::make_pair(args[i], args[i + 1]));
+                json[args[i]] = args[i + 1];
             }
         }
         det->setAdditionalJsonHeader(json, {det_id});

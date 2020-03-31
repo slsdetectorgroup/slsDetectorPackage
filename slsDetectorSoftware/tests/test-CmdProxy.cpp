@@ -300,7 +300,7 @@ TEST_CASE("delay", "[.cmd][.new]") {
     if (det_type == defs::EIGER) {
         REQUIRE_THROWS(proxy.Call("delay", {"1"}, -1, PUT));
         REQUIRE_THROWS(proxy.Call("delay", {}, -1, GET));
-    } if (det_type == defs::GOTTHARD) {
+    } else if (det_type == defs::GOTTHARD) {
         // extra delays for master (can throw when setting)
         REQUIRE_NOTHROW(proxy.Call("delay", {}, -1, GET));
     } else {

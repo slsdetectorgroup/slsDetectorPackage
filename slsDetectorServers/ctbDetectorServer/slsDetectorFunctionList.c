@@ -2220,7 +2220,7 @@ void* start_timer(void* arg) {
     {
         int frameNr = 0;
         // loop over number of frames
-        for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
+        for(frameNr = 0; frameNr != numFrames; ++frameNr ) {
 
             //check if virtual_stop is high
             if(virtual_stop == 1){
@@ -2233,13 +2233,13 @@ void* start_timer(void* arg) {
             usleep(expUs);
 
             int srcOffset = 0;
-            char packetData[packetSize];
-            memset(packetData, 0, packetSize);
-
             // loop packet
             {
                 int i = 0;
                 for(i = 0; i != packetsPerFrame; ++i) {
+                    
+                    char packetData[packetSize];
+                    memset(packetData, 0, packetSize);
                     // set header
                     sls_detector_header* header = (sls_detector_header*)(packetData);
                     header->detType = (uint16_t)myDetectorType;

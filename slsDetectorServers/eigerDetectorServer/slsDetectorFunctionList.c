@@ -1838,7 +1838,7 @@ void* start_timer(void* arg) {
 	{
 		int frameNr = 1;
         // loop over number of frames
-		for(frameNr=1; frameNr <= numFrames; ++frameNr ) {
+		for(frameNr = 1; frameNr <= numFrames; ++frameNr ) {
 
 			usleep(eiger_virtual_transmission_delay_frame);
 
@@ -1854,18 +1854,14 @@ void* start_timer(void* arg) {
 
 			int srcOffset = 0;
 			int srcOffset2 = npixelsx;
-			char packetData[packetsize];
-			memset(packetData, 0, packetsize);
-			char packetData2[packetsize];
-			memset(packetData2, 0, packetsize);
 			
 			// loop packet
 			{
 				int i = 0;
 				for(i = 0; i != numPacketsPerFrame; ++i) {
-					int dstOffset = sizeof(sls_detector_header);
-					int dstOffset2 = sizeof(sls_detector_header);
 					// set header
+					char packetData[packetsize];
+					memset(packetData, 0, packetsize);
 					sls_detector_header* header = (sls_detector_header*)(packetData);
 					header->detType = 3;//(uint16_t)myDetectorType; updated when firmware updates
 					header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
@@ -1874,8 +1870,10 @@ void* start_timer(void* arg) {
 					header->row = row;
 					header->column = colLeft;
 
+					char packetData2[packetsize];
+					memset(packetData2, 0, packetsize);
 					header = (sls_detector_header*)(packetData2);
-					header->detType = (uint16_t)myDetectorType;
+					header->detType = 3;//(uint16_t)myDetectorType; updated when firmware updates
 					header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
 					header->frameNumber = frameNr;
 					header->packetNumber = i;
@@ -1887,6 +1885,8 @@ void* start_timer(void* arg) {
 					}
 
 					// fill data	
+					int dstOffset = sizeof(sls_detector_header);
+					int dstOffset2 = sizeof(sls_detector_header);
 					{		
 						int psize = 0;	
 						for (psize = 0; psize < datasize; psize += npixelsx) {

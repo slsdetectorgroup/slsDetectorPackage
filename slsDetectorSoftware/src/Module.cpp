@@ -1165,8 +1165,13 @@ int64_t Module::getTotalNumFramesToReceive() {
     int64_t repeats = shm()->nTriggers;
     // gotthard2 & auto & burst mode, use nBursts instead of nTriggers
     if (shm()->myDetectorType == GOTTHARD2) {
-        if (shm()->burstMode != BURST_OFF && shm()->timingMode == AUTO_TIMING) {
-            repeats = shm()->nBursts;
+        // auto mode (either bursts or no repeats)
+        if (shm()->timingMode == AUTO_TIMING) {
+            if (shm()->burstMode != BURST_OFF) {
+                repeats = shm()->nBursts;
+            } else {
+                repeats = 1;
+            }
         }
     }
     return (shm()->nFrames * repeats * (int64_t)(shm()->nAddStorageCells + 1));    

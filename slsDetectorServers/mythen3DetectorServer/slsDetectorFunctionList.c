@@ -12,6 +12,7 @@
 
 #include <string.h>
 #include <unistd.h>     // usleep
+#include <netinet/in.h>
 #ifdef VIRTUAL
 #include <pthread.h>
 #include <time.h>
@@ -742,41 +743,29 @@ int configureMAC() {
 	int srcport = udpDetails.srcport;
 	int dstport = udpDetails.dstport;
 
+	LOG(logINFOBLUE, ("Configuring MAC\n"));
+	char src_mac[50], src_ip[INET_ADDRSTRLEN],dst_mac[50], dst_ip[INET_ADDRSTRLEN];
+	getMacAddressinString(src_mac, 50, srcmac);
+	getMacAddressinString(dst_mac, 50, dstmac);
+	getIpAddressinString(src_ip, srcip);
+	getIpAddressinString(dst_ip, dstip);
+
+	LOG(logINFO, (
+	        "\tSource IP   : %s\n"
+	        "\tSource MAC  : %s\n"
+	        "\tSource Port : %d\n"
+	        "\tDest IP     : %s\n"
+	        "\tDest MAC    : %s\n"
+			"\tDest Port   : %d\n",
+	        src_ip, src_mac, srcport,
+	        dst_ip, dst_mac, dstport));
+
 #ifdef VIRTUAL
-	char cDestIp[MAX_STR_LENGTH];
-	memset(cDestIp, 0, MAX_STR_LENGTH);
-	sprintf(cDestIp, "%d.%d.%d.%d", (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff);
-	LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, dstport));
-	if (setUDPDestinationDetails(0, cDestIp, dstport) == FAIL) {
+	if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
 		LOG(logERROR, ("could not set udp destination IP and port\n"));
 		return FAIL;
 	}
 #endif
-	LOG(logINFOBLUE, ("Configuring MAC\n"));
-	
-	LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
-	        (srcip>>24)&0xff,(srcip>>16)&0xff,(srcip>>8)&0xff,(srcip)&0xff, srcip));
-	LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-			(unsigned int)((srcmac>>40)&0xFF),
-			(unsigned int)((srcmac>>32)&0xFF),
-			(unsigned int)((srcmac>>24)&0xFF),
-			(unsigned int)((srcmac>>16)&0xFF),
-			(unsigned int)((srcmac>>8)&0xFF),
-			(unsigned int)((srcmac>>0)&0xFF),
-			(long  long unsigned int)srcmac));
-	LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n", srcport, srcport));
-
-	LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
-	        (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff, dstip));
-	LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-			(unsigned int)((dstmac>>40)&0xFF),
-			(unsigned int)((dstmac>>32)&0xFF),
-			(unsigned int)((dstmac>>24)&0xFF),
-			(unsigned int)((dstmac>>16)&0xFF),
-			(unsigned int)((dstmac>>8)&0xFF),
-			(unsigned int)((dstmac>>0)&0xFF),
-			(long  long unsigned int)dstmac));
-	LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",dstport, dstport));
 
 	// start addr
 	uint32_t addr = BASE_UDP_RAM;
@@ -1358,7 +1347,7 @@ int startStateMachine(){
 	if(createUDPSocket(0) != OK) {
 		return FAIL;
 	}
-	LOG(logINFOBLUE, ("starting state machine\n"));
+	LOG(logINFOBLUE, ("Starting State Machine\n"));
 	// set status to running
 	virtual_status = 1;
 	virtual_stop = 0;
@@ -1385,14 +1374,15 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	int64_t periodns = getPeriod();
+	int64_t periodNs = getPeriod();
 	int numFrames = (getNumFrames() *
 						getNumTriggers() );
-	int64_t exp_ns = 	getExpTime();
+	int64_t expUs = getExpTime() / 1000;
 
+	//int dr = setDynamicRange(-1);
 	int imagesize = calculateDataBytes();
-	int datasize = imagesize / PACKETS_PER_FRAME;
-	int packetsize = datasize + sizeof(sls_detector_header);
+	int dataSize = imagesize / PACKETS_PER_FRAME;
+	int packetSize = dataSize + sizeof(sls_detector_header);
 
 	// Generate data
 	char imageData[imagesize];
@@ -1404,65 +1394,65 @@ void* start_timer(void* arg) {
 		}
 	}
 
-    int frameNr = 1;
-	// loop over number of frames
-    for (frameNr = 0; frameNr != numFrames; ++frameNr) {
+	// Send data
+	{
+    	int frameNr = 1;
+		// loop over number of frames
+    	for (frameNr = 0; frameNr != numFrames; ++frameNr) {
 
-		//check if virtual_stop is high
-		if(virtual_stop == 1){
-			break;
-		}
-
-		int srcOffset = 0;
-
-		// sleep for exposure time
-        struct timespec begin, end;
-        clock_gettime(CLOCK_REALTIME, &begin);
-        usleep(exp_ns / 1000);
-
-		// loop packet
-		{
-			int i = 0;
-			for(i = 0; i!=PACKETS_PER_FRAME; ++i) {			
-				char packetData[packetsize];
-				memset(packetData, 0, packetsize);
-
-				// set header
-				sls_detector_header* header = (sls_detector_header*)(packetData);
-				header->frameNumber = frameNr + 1;
-				header->packetNumber = i;
-				header->modId = 0;
-				header->row = detPos[X];
-				header->column = detPos[Y];
-				header->detType = (uint16_t)myDetectorType;
-				header->version = SLS_DETECTOR_HEADER_VERSION - 1; 
-
-				// fill data	
-				memcpy(packetData + sizeof(sls_detector_header), imageData + srcOffset, datasize);	
-				srcOffset += datasize;
-
-				sendUDPPacket(0, packetData, packetsize);
+			//check if virtual_stop is high
+			if(virtual_stop == 1){
+				break;
 			}
-		}
-		LOG(logINFO, ("Sent frame: %d\n", frameNr));
 
-		// calculate time left in period
-        clock_gettime(CLOCK_REALTIME, &end);
-        int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                (end.tv_nsec - begin.tv_nsec));
 
-		// sleep for (period - exptime)
-		if (frameNr < numFrames) { // if there is a next frame
-			if (periodns > time_ns) {
-				usleep((periodns - time_ns)/ 1000);
+			// sleep for exposure time
+    	    struct timespec begin, end;
+    	    clock_gettime(CLOCK_REALTIME, &begin);
+    	    usleep(expUs);
+
+			int srcOffset = 0;
+			// loop packet
+			{
+				int i = 0;
+				for(i = 0; i != PACKETS_PER_FRAME; ++i) {			
+					char packetData[packetSize];
+					memset(packetData, 0, packetSize);
+
+					// set header
+					sls_detector_header* header = (sls_detector_header*)	(packetData);
+					header->detType = (uint16_t)myDetectorType;
+					header->version = SLS_DETECTOR_HEADER_VERSION - 1; 
+					header->frameNumber = frameNr + 1;
+					header->packetNumber = i;
+					header->modId = 0;
+					header->row = detPos[X];
+					header->column = detPos[Y];
+
+					// fill data	
+					memcpy(packetData + sizeof(sls_detector_header), 
+						imageData + srcOffset, dataSize);	
+					srcOffset += dataSize;
+
+					sendUDPPacket(0, packetData, packetSize);
+				}
 			}
-		}
+			LOG(logINFO, ("Sent frame: %d\n", frameNr));
+    	    clock_gettime(CLOCK_REALTIME, &end);
+    	    int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
+    	            (end.tv_nsec - begin.tv_nsec));
 
-		// set register frames left
-    }
+			// sleep for (period - exptime)
+			if (frameNr < numFrames) { // if there is a next frame
+				if (periodNs > timeNs) {
+					usleep((periodNs - timeNs)/ 1000);
+				}
+			}
+    	}
+	}
 
 	closeUDPSocket(0);
-	// set status to idle
+
 	virtual_status = 0;
 	LOG(logINFOBLUE, ("Finished Acquiring\n"));
 	return NULL;

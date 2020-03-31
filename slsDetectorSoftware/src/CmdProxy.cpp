@@ -402,37 +402,45 @@ std::string CmdProxy::Adcphase(int action) {
               "resets adcphase and sets it to previous values.\n\t[Gotthard] "
               "Relative phase shift"
            << '\n';
-    } else if (action == defs::GET_ACTION) {
-        Result<int> t;
-        if (args.empty()) {
-            t = det->getADCPhase({det_id});
-            os << OutString(t) << '\n';
-        } else if (args.size() == 1) {
-            if (args[0] != "deg") {
-                throw sls::RuntimeError("Unknown adcphase argument " + args[0] +
-                                        ". Did you mean deg?");
+    } else { 
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        if (det_type == defs::EIGER ||
+            det_type == defs::MYTHEN3 ||
+            det_type == defs::GOTTHARD2) {
+                throw sls::RuntimeError("adcphase not implemented for this detector");
             }
-            t = det->getADCPhaseInDegrees({det_id});
-            os << OutString(t) << " deg\n";
-        } else {
-            WrongNumberOfParameters(0);
-        }
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() == 1) {
-            det->setADCPhase(StringTo<int>(args[0]), {det_id});
-            os << args.front() << '\n';
-        } else if (args.size() == 2) {
-            if (args[1] != "deg") {
-                throw sls::RuntimeError("Unknown adcphase 2nd argument " +
-                                        args[1] + ". Did you mean deg?");
+        if (action == defs::GET_ACTION) {
+            Result<int> t;
+            if (args.empty()) {
+                t = det->getADCPhase({det_id});
+                os << OutString(t) << '\n';
+            } else if (args.size() == 1) {
+                if (args[0] != "deg") {
+                    throw sls::RuntimeError("Unknown adcphase   argument " + args[0] +
+                                            ". Did you mean deg?    ");
+                }
+                t = det->getADCPhaseInDegrees({det_id});
+                os << OutString(t) << " deg\n";
+            } else {
+                WrongNumberOfParameters(0);
             }
-            det->setADCPhaseInDegrees(StringTo<int>(args[0]), {det_id});
-            os << args[0] << args[1] << '\n';
+        } else if (action == defs::PUT_ACTION) {
+            if (args.size() == 1) {
+                det->setADCPhase(StringTo<int>(args[0]), {det_id}   );
+                os << args.front() << '\n';
+            } else if (args.size() == 2) {
+                if (args[1] != "deg") {
+                    throw sls::RuntimeError("Unknown adcphase   2nd argument " +
+                                            args[1] + ". Did you    mean deg?");
+                }
+                det->setADCPhaseInDegrees(StringTo<int>(args[0])    , {det_id});
+                os << args[0] << " " << args[1] << '\n';
+            } else {
+                WrongNumberOfParameters(1);
+            }
         } else {
-            WrongNumberOfParameters(1);
+            throw sls::RuntimeError("Unknown action");
         }
-    } else {
-        throw sls::RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -446,37 +454,45 @@ std::string CmdProxy::Dbitphase(int action) {
               "shift in degrees. \n\t[Ctb]Changing dbitclk also resets dbitphase and "
               "sets to previous values."
            << '\n';
-    } else if (action == defs::GET_ACTION) {
-        Result<int> t;
-        if (args.empty()) {
-            t = det->getDBITPhase({det_id});
-            os << OutString(t) << '\n';
-        } else if (args.size() == 1) {
-            if (args[0] != "deg") {
-                throw sls::RuntimeError("Unknown dbitphase argument " +
-                                        args[0] + ". Did you mean deg?");
-            }
-            t = det->getDBITPhaseInDegrees({det_id});
-            os << OutString(t) << " deg\n";
-        } else {
-            WrongNumberOfParameters(0);
+    } else { 
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        if (det_type == defs::EIGER ||
+            det_type == defs::MYTHEN3 ||
+            det_type == defs::GOTTHARD2) {
+            throw sls::RuntimeError("dbitphase not implemented for this detector");
         }
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() == 1) {
-            det->setDBITPhase(StringTo<int>(args[0]), {det_id});
-            os << args.front() << '\n';
-        } else if (args.size() == 2) {
-            if (args[1] != "deg") {
-                throw sls::RuntimeError("Unknown dbitphase 2nd argument " +
-                                        args[1] + ". Did you mean deg?");
+        if (action == defs::GET_ACTION) {
+            Result<int> t;
+            if (args.empty()) {
+                t = det->getDBITPhase({det_id});
+                os << OutString(t) << '\n';
+            } else if (args.size() == 1) {
+                if (args[0] != "deg") {
+                    throw sls::RuntimeError("Unknown dbitphase argument " +
+                                            args[0] + ". Did you mean deg?  ");
+                }
+                t = det->getDBITPhaseInDegrees({det_id});
+                os << OutString(t) << " deg\n";
+            } else {
+                WrongNumberOfParameters(0);
             }
-            det->setDBITPhaseInDegrees(StringTo<int>(args[0]), {det_id});
-            os << args[0] << args[1] << '\n';
+        } else if (action == defs::PUT_ACTION) {
+            if (args.size() == 1) {
+                det->setDBITPhase(StringTo<int>(args[0]), {det_id});
+                os << args.front() << '\n';
+            } else if (args.size() == 2) {
+                if (args[1] != "deg") {
+                    throw sls::RuntimeError("Unknown dbitphase 2nd  argument " +
+                                            args[1] + ". Did you mean deg?  ");
+                }
+                det->setDBITPhaseInDegrees(StringTo<int>(args[0]), {det_id} );
+                os << args[0] << " " << args[1] << '\n';
+            } else {
+                WrongNumberOfParameters(1);
+            }
         } else {
-            WrongNumberOfParameters(1);
+            throw sls::RuntimeError("Unknown action");
         }
-    } else {
-        throw sls::RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -538,7 +554,7 @@ std::string CmdProxy::ClockPhase(int action) {
                 }
                 auto t =
                     det->getClockPhaseinDegrees(StringTo<int>(args[0]), {det_id});
-                os << OutString(t) << '\n';
+                os << OutString(t) << " deg\n";
             } else {
                 WrongNumberOfParameters(1);
             }
@@ -554,7 +570,7 @@ std::string CmdProxy::ClockPhase(int action) {
                 }
                 det->setClockPhaseinDegrees(StringTo<int>(args[0]),
                                             StringTo<int>(args[1]), {det_id});
-                os << args[1] << '\n';
+                os << args[1] << " " << args[2] << '\n';
             } else {
                 WrongNumberOfParameters(1);
             }

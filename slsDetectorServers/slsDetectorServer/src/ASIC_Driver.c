@@ -42,9 +42,7 @@ int ASIC_Driver_Set (int index, int length, char* buffer) {
         LOG(logDEBUG2, ("\t]\n"));
     }
     
-#ifdef VIRTUAL
-    return OK;
-#endif
+#ifndef VIRTUAL
     int fd=open(fname, O_RDWR);
     if (fd == -1) {
         LOG(logERROR, ("Could not open file %s for writing to control ASIC (%d)\n", fname, index));
@@ -66,6 +64,7 @@ int ASIC_Driver_Set (int index, int length, char* buffer) {
         return FAIL;
     }
     close(fd);
+#endif
     
     return OK;
 }

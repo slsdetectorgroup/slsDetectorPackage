@@ -3,11 +3,10 @@
 #include "catch.hpp"
 #include "sls_detector_defs.h"
 #include <sstream>
+#include <thread>
+#include <chrono>
 
 #include "tests/globals.h"
-
-// auto GET = slsDetectorDefs::GET_ACTION;
-// auto PUT = slsDetectorDefs::PUT_ACTION;
 
 using sls::CmdProxy;
 using sls::Detector;
@@ -326,22 +325,434 @@ TEST_CASE("delay", "[.cmd][.new]") {
     }
 }
 
+TEST_CASE("framesl", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        REQUIRE_THROWS(proxy.Call("framesl", {}, -1, GET));
+    } else {
+        REQUIRE_NOTHROW(proxy.Call("framesl", {}, -1, GET));
+    }
+}
+
+TEST_CASE("triggersl", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        REQUIRE_THROWS(proxy.Call("triggersl", {}, -1, GET));
+    } else {
+        REQUIRE_NOTHROW(proxy.Call("triggersl", {}, -1, GET));
+    }
+}
+
+TEST_CASE("delayl", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        REQUIRE_THROWS(proxy.Call("delayl", {}, -1, GET));
+    } else {
+        REQUIRE_NOTHROW(proxy.Call("delayl", {}, -1, GET));
+    }
+}
+
+TEST_CASE("periodl", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        REQUIRE_THROWS(proxy.Call("periodl", {}, -1, GET));
+    } else {
+        REQUIRE_NOTHROW(proxy.Call("periodl", {}, -1, GET));
+    }
+}
+
+TEST_CASE("timing", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getTimingMode();
+    det.setTimingMode(defs::AUTO_TIMING);
+    {
+        std::ostringstream oss1, oss2;
+        proxy.Call("timing", {"auto"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "timing auto\n");
+        proxy.Call("timing", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "timing auto\n");
+    }
+    {
+        std::ostringstream oss1, oss2;
+        proxy.Call("timing", {"trigger"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "timing trigger\n");
+        proxy.Call("timing", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "timing trigger\n");
+    }
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("timing", {"gating"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing gating\n");
+            proxy.Call("timing", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "timing gating\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("timing", {"burst_trigger"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing burst_trigger\n");
+            proxy.Call("timing", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "timing burst_trigger\n");
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("timing", {"gating"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("timing", {"burst_trigger"}, -1, PUT));
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setTimingMode(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("speed", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getSpeed();
+        // full speed for jungfrau only works for new boards
+        /*
+        {
+            std::ostringstream oss1, oss2, oss3, oss4;
+            proxy.Call("speed", {"0"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "speed full_speed\n");
+            proxy.Call("speed", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "speed full_speed\n");
+            proxy.Call("speed", {"full_speed"}, -1, PUT, oss3);
+            REQUIRE(oss3.str() == "speed full_speed\n");
+            proxy.Call("speed", {}, -1, GET, oss4);
+            REQUIRE(oss4.str() == "speed full_speed\n");
+        }  
+        */     
+        {
+            std::ostringstream oss1, oss2, oss3, oss4;
+            proxy.Call("speed", {"1"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "speed half_speed\n");
+            proxy.Call("speed", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "speed half_speed\n");
+            proxy.Call("speed", {"half_speed"}, -1, PUT, oss3);
+            REQUIRE(oss3.str() == "speed half_speed\n");
+            proxy.Call("speed", {}, -1, GET, oss4);
+            REQUIRE(oss4.str() == "speed half_speed\n");
+        }
+        {
+            std::ostringstream oss1, oss2, oss3, oss4;
+            proxy.Call("speed", {"2"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "speed quarter_speed\n");
+            proxy.Call("speed", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "speed quarter_speed\n");
+            proxy.Call("speed", {"quarter_speed"}, -1, PUT, oss3);
+            REQUIRE(oss3.str() == "speed quarter_speed\n");
+            proxy.Call("speed", {}, -1, GET, oss4);
+            REQUIRE(oss4.str() == "speed quarter_speed\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setSpeed(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("speed", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("speed", {}, -1, GET));
+    }
+}
+
+TEST_CASE("adcphase", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD || 
+        det_type == defs::JUNGFRAU || 
+        det_type == defs::CHIPTESTBOARD || 
+        det_type == defs::MOENCH) {
+        if (det_type == defs::GOTTHARD) {
+            std::ostringstream oss1;
+            proxy.Call("adcphase", {"20"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "adcphase 20\n");
+            // cant get, cant use deg
+            REQUIRE_THROWS(proxy.Call("adcphase", {}, -1, GET));
+            REQUIRE_THROWS(proxy.Call("adcphase", {"20", "deg"}, -1, PUT));
+        } else {
+            auto prev_val = det.getADCPhase();     
+            {
+                std::ostringstream oss1, oss2;
+                proxy.Call("adcphase", {"20"}, -1, PUT, oss1);
+                REQUIRE(oss1.str() == "adcphase 20\n");
+                proxy.Call("adcphase", {}, -1, GET, oss2);
+                REQUIRE(oss2.str() == "adcphase 20\n");
+            }       
+            {
+                std::ostringstream oss1, oss2;
+                proxy.Call("adcphase", {"20", "deg"}, -1, PUT, oss1);
+                REQUIRE(oss1.str() == "adcphase 20 deg\n");
+                proxy.Call("adcphase", {"deg"}, -1, GET, oss2);
+                REQUIRE(oss2.str() == "adcphase 20 deg\n");
+            }
+            for (int i = 0; i != det.size(); ++i) {
+                det.setADCPhase(prev_val[i], {i});
+            }
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("adcphase", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("adcphase", {}, -1, GET));
+    }
+}
+
+TEST_CASE("maxadcphaseshift", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || 
+        det_type == defs::CHIPTESTBOARD || 
+        det_type == defs::MOENCH || 
+        det_type == defs::MYTHEN3 || // only because clk index of 0 exists
+        det_type == defs::GOTTHARD2) { // only because clk index of 0 exists
+        REQUIRE_NOTHROW(proxy.Call("maxadcphaseshift", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("maxadcphaseshift", {}, -1, GET));
+    }
+}
+
+TEST_CASE("dbitphase", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || 
+        det_type == defs::CHIPTESTBOARD) {
+        auto prev_val = det.getDBITPhase();     
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("dbitphase", {"20"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "dbitphase 20\n");
+            proxy.Call("dbitphase", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "dbitphase 20\n");
+        }       
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("dbitphase", {"20", "deg"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "dbitphase 20 deg\n");
+            proxy.Call("dbitphase", {"deg"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "dbitphase 20 deg\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDBITPhase(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("dbitphase", {"0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("dbitphase", {}, -1, GET));
+    }
+}
+
+TEST_CASE("maxdbitphaseshift", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || 
+        det_type == defs::CHIPTESTBOARD || 
+        det_type == defs::MYTHEN3 || // only because clk index of 0 exists
+        det_type == defs::GOTTHARD2) { // only because clk index of 0 exists
+        REQUIRE_NOTHROW(proxy.Call("maxdbitphaseshift", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("maxdbitphaseshift", {}, -1, GET));
+    }
+}
+
+TEST_CASE("clkfreq", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+        REQUIRE_THROWS(proxy.Call("clkfreq", {"0", "2"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("clkfreq", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("clkfreq", {"7"}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("clkfreq", {"0"}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("clkfreq", {"0"}, -1, GET));
+    }
+}
+
+TEST_CASE("clkphase", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+        REQUIRE_THROWS(proxy.Call("clkphase", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("clkphase", {"7"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("clkphase", {"4"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("clkphase", {"7", "4"}, -1, PUT));
+        auto prev_val = det.getClockPhase(0);
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("clkphase", {"0", "20"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "clkphase 20\n");
+            proxy.Call("clkphase", {"0"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "clkphase 20\n");
+        }
+        std::string s_deg_val = "15";
+        if (det_type == defs::MYTHEN3) {
+            s_deg_val = "14";
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("clkphase", {"0", s_deg_val, "deg"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "clkphase " + s_deg_val + " deg\n");
+            proxy.Call("clkphase", {"0", "deg"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "clkphase " + s_deg_val + " deg\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setClockPhase(0, prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("clkphase", {"0"}, -1, GET));
+    }
+}
+
+TEST_CASE("clkdiv", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+        REQUIRE_THROWS(proxy.Call("clkdiv", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("clkdiv", {"7"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("clkdiv", {"7", "4"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("clkdiv", {"7", "4"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("clkdiv", {"0", "1"}, -1, PUT));
+        auto prev_val = det.getClockDivider(0);
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("clkdiv", {"0", "3"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "clkdiv 3\n");
+            proxy.Call("clkdiv", {"0"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "clkdiv 3\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setClockDivider(0, prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("clkdiv", {"0"}, -1, GET));
+    }
+}
+
+TEST_CASE("maxclkphaseshift", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+        REQUIRE_THROWS(proxy.Call("maxclkphaseshift", {"0", "2"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("maxclkphaseshift", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("maxclkphaseshift", {"7"}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("maxclkphaseshift", {"0"}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("maxclkphaseshift", {"0"}, -1, GET));
+    }
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+TEST_CASE("vhighvoltage", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    auto prev_val = det.getHighVoltage();
+    // selected values
+    if (det_type == defs::GOTTHARD) {
+        REQUIRE_THROWS(proxy.Call("vhighvoltage", {"50"}, -1, PUT));
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("vhighvoltage", {"90"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "vhighvoltage 90\n");
+            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "vhighvoltage 90\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("vhighvoltage", {"0"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "vhighvoltage 0\n");
+            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "vhighvoltage 0\n");
+        }
+    } 
+    // range 0, 60 - 200
+    else if (det_type == defs::JUNGFRAU ||
+            det_type == defs::CHIPTESTBOARD ||
+            det_type == defs::MOENCH) {
+        REQUIRE_THROWS(proxy.Call("vhighvoltage", {"50"}, -1, PUT));
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("vhighvoltage", {"90"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "vhighvoltage 90\n");
+            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "vhighvoltage 90\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("vhighvoltage", {"0"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "vhighvoltage 0\n");
+            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "vhighvoltage 0\n");
+        }
+    } 
+    // full range 0 - 200 (get needs to wait)
+    else if (det_type == defs::EIGER) {
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("vhighvoltage", {"50"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "vhighvoltage 50\n");
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "vhighvoltage 50\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("vhighvoltage", {"120"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "vhighvoltage 120\n");
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "vhighvoltage 120\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("vhighvoltage", {"0"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "vhighvoltage 0\n");
+            std::this_thread::sleep_for(std::chrono::seconds(2));
+            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "vhighvoltage 0\n");
+        }
+    }    
+    // full range 0 - 200
+    else {
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("vhighvoltage", {"50"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "vhighvoltage 50\n");
+            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "vhighvoltage 50\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("vhighvoltage", {"120"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "vhighvoltage 120\n");
+            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "vhighvoltage 120\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("vhighvoltage", {"0"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "vhighvoltage 0\n");
+            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "vhighvoltage 0\n");
+        }
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setHighVoltage(prev_val[i], {i});
+    }
+}
 
 
 
@@ -475,7 +886,7 @@ TEST_CASE("stopport", "[.cmd]") {
 }
 
 // TEST_CASE("reg", "[.cmd]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU) {
+//     if (test::type == defs::JUNGFRAU) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x01", GET, nullptr,
@@ -512,7 +923,7 @@ TEST_CASE("stopport", "[.cmd]") {
 //             oss)); REQUIRE(oss.str() == "frames 6\n");
 //         }
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-//     } else if (test::type == slsDetectorDefs::GOTTHARD) {
+//     } else if (test::type == defs::GOTTHARD) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x023", GET, nullptr,
@@ -549,7 +960,7 @@ TEST_CASE("stopport", "[.cmd]") {
 //             oss)); REQUIRE(oss.str() == "frames 6\n");
 //         }
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-//     } else if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     } else if (test::type == defs::CHIPTESTBOARD) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x01", GET, nullptr,
@@ -590,8 +1001,8 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("update", "[.cmd][.ctb][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU || test::type ==
-//     slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::JUNGFRAU || test::type ==
+//     defs::CHIPTESTBOARD) {
 //         REQUIRE_THROWS(multiSlsDetectorClient("update", PUT));
 //         REQUIRE_THROWS(multiSlsDetectorClient("update
 //         jungfrauDetectorServer_developer", PUT));
@@ -609,8 +1020,8 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("copydetectorserver", "[.cmd][.ctb][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU || test::type ==
-//     slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::JUNGFRAU || test::type ==
+//     defs::CHIPTESTBOARD) {
 //         REQUIRE_THROWS(multiSlsDetectorClient("copydetectorserver", PUT));
 //         REQUIRE_THROWS(multiSlsDetectorClient("copydetectorserver
 //         jungfrauDetectorServer_developer", PUT));
@@ -622,8 +1033,8 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("rebootcontroller", "[.cmd][.ctb][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU || test::type ==
-//     slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::JUNGFRAU || test::type ==
+//     defs::CHIPTESTBOARD) {
 //         ;//REQUIRE_NOTHROW(multiSlsDetectorClient("rebootcontroller", PUT));
 //     } else {
 //         REQUIRE_THROWS(multiSlsDetectorClient("rebootcontroller", GET));
@@ -631,8 +1042,8 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("programfpga", "[.cmd][.ctb][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU || test::type ==
-//     slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::JUNGFRAU || test::type ==
+//     defs::CHIPTESTBOARD) {
 //         REQUIRE_THROWS(multiSlsDetectorClient("programfpga fdgd.oki", PUT));
 //         //REQUIRE_NOTHROW(multiSlsDetectorClient("programfpga
 //         /afs/psi.ch/project/sls_det_firmware/jungfrau_firmware/cyclone_V/v0_8/Jungfrau_MCB.pof",
@@ -709,7 +1120,7 @@ TEST_CASE("stopport", "[.cmd]") {
 
 
 // TEST_CASE("patsetbit", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         uint64_t val = 0;
 //         {
 //             std::ostringstream oss;
@@ -731,7 +1142,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("patmask", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         uint64_t val = 0;
 //         {
 //             std::ostringstream oss;
@@ -754,7 +1165,7 @@ TEST_CASE("stopport", "[.cmd]") {
 
 // TEST_CASE("patwaittime", "[.cmd][.ctb]") {
 //     for (int loop = 0; loop < 3; ++loop) {
-//         if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//         if (test::type == defs::CHIPTESTBOARD) {
 //             uint64_t val = 0;
 //             {
 //                 std::ostringstream oss;
@@ -781,7 +1192,7 @@ TEST_CASE("stopport", "[.cmd]") {
 
 // TEST_CASE("patwait", "[.cmd][.ctb]") {
 //     for (int loop = 0; loop < 3; ++loop) {
-//         if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//         if (test::type == defs::CHIPTESTBOARD) {
 //             int val = 0;
 //             {
 //                 std::ostringstream oss;
@@ -808,7 +1219,7 @@ TEST_CASE("stopport", "[.cmd]") {
 
 // TEST_CASE("patnloop", "[.cmd][.ctb]") {
 //     for (int loop = 0; loop < 3; ++loop) {
-//         if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//         if (test::type == defs::CHIPTESTBOARD) {
 //             int val = 0;
 //             {
 //                 std::ostringstream oss;
@@ -835,7 +1246,7 @@ TEST_CASE("stopport", "[.cmd]") {
 
 // TEST_CASE("patloop", "[.cmd][.ctb]") {
 //     for (int loop = 0; loop < 3; ++loop) {
-//         if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//         if (test::type == defs::CHIPTESTBOARD) {
 //             uint32_t limit1 = 0, limit2 = 0;
 //             {
 //                 std::ostringstream oss;
@@ -864,7 +1275,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("patlimits", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         uint32_t patlimit1 = 0, patlimit2 = 0;
 //         {
 //             std::ostringstream oss;
@@ -888,7 +1299,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("patword", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         uint64_t prev_value = 0;
 //         {
 //             std::ostringstream oss;
@@ -920,7 +1331,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("patclkctrl", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         uint64_t prev_value = 0;
 //         {
 //             std::ostringstream oss;
@@ -952,7 +1363,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("patioctrl", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         uint64_t prev_value = 0;
 //         {
 //             std::ostringstream oss;
@@ -985,7 +1396,7 @@ TEST_CASE("stopport", "[.cmd]") {
 
 // TEST_CASE("savepattern", "[.cmd][.ctb]") {
 //     REQUIRE_THROWS(multiSlsDetectorClient("savepattern", GET));
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("savepattern
@@ -1000,13 +1411,13 @@ TEST_CASE("stopport", "[.cmd]") {
 
 // TEST_CASE("pattern", "[.cmd][.ctb]") {
 //     REQUIRE_THROWS(multiSlsDetectorClient("pattern", GET));
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         ;// todo test with real file?
 //     }
 // }
 
 // TEST_CASE("led", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("led 1", PUT, nullptr,
@@ -1028,7 +1439,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("diodelay", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("diodelay 0x01010 125", PUT));
 //         {
 //             std::ostringstream oss;
@@ -1045,7 +1456,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("extsampling", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("extsampling 1", PUT,
@@ -1067,7 +1478,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("extsamplingsrc", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("extsamplingsrc 1", PUT,
@@ -1095,8 +1506,8 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("adcinvert", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD || test::type ==
-//     slsDetectorDefs::JUNGFRAU) {
+//     if (test::type == defs::CHIPTESTBOARD || test::type ==
+//     defs::JUNGFRAU) {
 //         std::string s;
 //         {
 //             std::ostringstream oss;
@@ -1120,7 +1531,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("adcenable", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         std::string s;
 //         {
 //             std::ostringstream oss;
@@ -1144,7 +1555,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("vm_a", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("vm_a", GET));
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("vm_b", GET));
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("vm_c", GET));
@@ -1170,7 +1581,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("v_a", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         std::string s;
 //         {
 //             std::ostringstream oss;
@@ -1243,7 +1654,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("adcvpp", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         int prev_val = 0;
 //         {
 //             std::ostringstream oss;
@@ -1271,7 +1682,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("dbitpipeline", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitpipeline 1", PUT,
@@ -1299,7 +1710,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("adcpipeline", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("adcpipeline 1", PUT,
@@ -1326,53 +1737,10 @@ TEST_CASE("stopport", "[.cmd]") {
 //     }
 // }
 
-// TEST_CASE("maxdbitphaseshift", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD ) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("maxdbitphaseshift", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("maxdbitphaseshift 120", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("maxdbitphaseshift", GET));
-//     }
-// }
 
-// TEST_CASE("dbitphase", "[.cmd][.ctb]") {
-//     if (test::type != slsDetectorDefs::CHIPTESTBOARD) {
-//        REQUIRE_THROWS(multiSlsDetectorClient("dbitphase", GET));
-//     } else {
-//         int prev_val = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitphase", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("dbitphase
-//             ")); prev_val = std::stoi(s);
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitphase 20", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitphase", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "dbitphase 20\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitphase 0", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitphase", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "dbitphase 0\n");
-//         }
-//         if (test::type == slsDetectorDefs::GOTTHARD) {
-//             REQUIRE_THROWS(multiSlsDetectorClient("dbitphase deg", GET));
-//         } else {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitphase 20 deg", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitphase deg", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "dbitphase 20 deg\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("dbitphase " +
-//         std::to_string(prev_val), PUT));
-//     }
-// }
 
 // TEST_CASE("romode", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("romode digital", PUT,
@@ -1400,7 +1768,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("samples", "[.cmd][.ctb]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         uint64_t prev_value1 = 0;
 //         {
 //             std::ostringstream oss;
@@ -1459,7 +1827,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("imagetest", "[.cmd][.gotthard]") {
-//     if (test::type == slsDetectorDefs::GOTTHARD) {
+//     if (test::type == defs::GOTTHARD) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("imagetest 1", PUT,
@@ -1481,7 +1849,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("extsig", "[.cmd][.gotthard]") {
-//     if (test::type == slsDetectorDefs::GOTTHARD) {
+//     if (test::type == defs::GOTTHARD) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("extsig
@@ -1506,7 +1874,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("exptimel", "[.cmd][.gotthard]") {
-//     if (test::type == slsDetectorDefs::GOTTHARD) {
+//     if (test::type == defs::GOTTHARD) {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("exptime 5 s", PUT));
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
@@ -1526,9 +1894,9 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("periodl", "[.cmd][.gotthard]") {
-//     if (test::type == slsDetectorDefs::GOTTHARD || test::type ==
-//     slsDetectorDefs::JUNGFRAU || test::type ==
-//     slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::GOTTHARD || test::type ==
+//     defs::JUNGFRAU || test::type ==
+//     defs::CHIPTESTBOARD) {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 2", PUT));
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("period 5", PUT));
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
@@ -1549,7 +1917,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("roi", "[.cmd][.gotthard]") {
-//     if (test::type == slsDetectorDefs::GOTTHARD) {
+//     if (test::type == defs::GOTTHARD) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("roi 0 255", PUT, nullptr,
@@ -1573,7 +1941,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("storagecell_delay", "[.cmd][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU) {
+//     if (test::type == defs::JUNGFRAU) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_delay 1.62ms",
@@ -1599,7 +1967,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("storagecell_start", "[.cmd][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU) {
+//     if (test::type == defs::JUNGFRAU) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_start 1",
@@ -1630,7 +1998,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("storagecells", "[.cmd][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU) {
+//     if (test::type == defs::JUNGFRAU) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecells 1", PUT,
@@ -1658,7 +2026,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("auto_comp_disable", "[.cmd][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU) {
+//     if (test::type == defs::JUNGFRAU) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("auto_comp_disable 1",
@@ -1682,7 +2050,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("temp_", "[.cmd][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU) {
+//     if (test::type == defs::JUNGFRAU) {
 //         std::string s;
 //         {
 //             std::ostringstream oss;
@@ -1731,7 +2099,7 @@ TEST_CASE("stopport", "[.cmd]") {
 //     REQUIRE_THROWS(multiSlsDetectorClient("pulse", GET));
 //     REQUIRE_THROWS(multiSlsDetectorClient("pulsenmove", GET));
 //     REQUIRE_THROWS(multiSlsDetectorClient("pulsechip", GET));
-//     if (test::type == slsDetectorDefs::EIGER) {
+//     if (test::type == defs::EIGER) {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("pulse 1 1 5", PUT));
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("pulsenmove 1 1 5", PUT));
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("pulsechip 1", PUT));
@@ -1743,7 +2111,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("partialreset", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
+//     if (test::type == defs::EIGER) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("partialreset 1", PUT,
@@ -1767,7 +2135,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("measuredsubperiod", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
+//     if (test::type == defs::EIGER) {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("dr 32", PUT));
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
@@ -1786,7 +2154,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("measuredperiod", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
+//     if (test::type == defs::EIGER) {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 2", PUT));
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("period 1", PUT));
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
@@ -1805,7 +2173,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("readnlines", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
+//     if (test::type == defs::EIGER) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("readnlines 256", PUT,
@@ -1829,7 +2197,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("ratecorr", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
+//     if (test::type == defs::EIGER) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("ratecorr 120", PUT,
@@ -1855,7 +2223,7 @@ TEST_CASE("stopport", "[.cmd]") {
 
 
 // TEST_CASE("trimval", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
+//     if (test::type == defs::EIGER) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("trimval 63", PUT,
@@ -1878,7 +2246,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("flippeddatax", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
+//     if (test::type == defs::EIGER) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("0:flippeddatax", GET,
@@ -1900,7 +2268,7 @@ TEST_CASE("stopport", "[.cmd]") {
 
 
 // TEST_CASE("parallel", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
+//     if (test::type == defs::EIGER) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("parallel 1", PUT,
@@ -1922,7 +2290,7 @@ TEST_CASE("stopport", "[.cmd]") {
 // }
 
 // TEST_CASE("gappixels", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
+//     if (test::type == defs::EIGER) {
 //         {
 //             std::ostringstream oss;
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("gappixels 1", PUT,
@@ -1976,9 +2344,9 @@ TEST_CASE("zmqport", "[.cmd]") {
     int socketsperdetector = 1;
     auto det_type = det.getDetectorType().squash();
     int prev = 1;
-    if (det_type == slsDetectorDefs::EIGER) {
+    if (det_type == defs::EIGER) {
         socketsperdetector *= 2;
-    } else if (det_type == slsDetectorDefs::JUNGFRAU) {
+    } else if (det_type == defs::JUNGFRAU) {
         prev = det.getNumberofUDPInterfaces().squash();
         det.setNumberofUDPInterfaces(2);
         socketsperdetector *= 2;
@@ -2008,7 +2376,7 @@ TEST_CASE("zmqport", "[.cmd]") {
         proxy.Call("zmqport", {}, i, GET, oss);
         REQUIRE(oss.str() == "zmqport " + std::to_string(port + i * socketsperdetector) + '\n');
     }
-    if (det_type == slsDetectorDefs::JUNGFRAU) {
+    if (det_type == defs::JUNGFRAU) {
         det.setNumberofUDPInterfaces(prev);
     }
 }
@@ -2019,7 +2387,7 @@ TEST_CASE("zmqport", "[.cmd]") {
 
 
 // TEST_CASE("txndelay", "[.cmd][.eiger][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
+//     if (test::type == defs::EIGER) {
 //         {
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_frame 50000",
 //             PUT)); std::ostringstream oss;
@@ -2056,7 +2424,7 @@ TEST_CASE("zmqport", "[.cmd]") {
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_right", GET,
 //             nullptr, oss)); REQUIRE(oss.str() == "txndelay_right 0\n");
 //         }
-//     } else if (test::type == slsDetectorDefs::JUNGFRAU) {
+//     } else if (test::type == defs::JUNGFRAU) {
 //         {
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("txndelay_frame 5", PUT));
 //             std::ostringstream oss;
@@ -2080,8 +2448,8 @@ TEST_CASE("zmqport", "[.cmd]") {
 // }
 
 // TEST_CASE("flowcontrol_10g", "[.cmd][.eiger][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::EIGER || test::type ==
-//     slsDetectorDefs::JUNGFRAU) {
+//     if (test::type == defs::EIGER || test::type ==
+//     defs::JUNGFRAU) {
 //         {
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("flowcontrol_10g 1",
 //             PUT)); std::ostringstream oss;
@@ -2133,9 +2501,9 @@ TEST_CASE("zmqport", "[.cmd]") {
 //     {
 //         DetectorImpl d;
 //         int socketsperdetector = 1;
-//         if (test::type == slsDetectorDefs::EIGER) {
+//         if (test::type == defs::EIGER) {
 //             socketsperdetector *= 2;
-//         } else if (test::type == slsDetectorDefs::JUNGFRAU) {
+//         } else if (test::type == defs::JUNGFRAU) {
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 2", PUT));
 //             socketsperdetector *= 2;
 //         }
@@ -2157,7 +2525,7 @@ TEST_CASE("zmqport", "[.cmd]") {
 //             "udp_dstport " + std::to_string(port + i * socketsperdetector) +
 //             '\n');
 //         }
-//         if (test::type == slsDetectorDefs::JUNGFRAU) {
+//         if (test::type == defs::JUNGFRAU) {
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 1", PUT));
 //         }
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("udp_dstport 50001", PUT));
@@ -2166,7 +2534,7 @@ TEST_CASE("zmqport", "[.cmd]") {
 //     REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 124586954", PUT));
 //     REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 999.999.0.0.0.5", PUT));
 
-//     if (test::type == slsDetectorDefs::JUNGFRAU) {
+//     if (test::type == defs::JUNGFRAU) {
 //        /*  {TODO custom srcip2 in globals
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip2
 //             129.129.205.203", PUT)); std::ostringstream oss;
@@ -2199,7 +2567,7 @@ TEST_CASE("zmqport", "[.cmd]") {
 //             nullptr, oss)); REQUIRE(oss.str() == "udp_dstport2 6400\n");
 //         }
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("udp_dstport2 50002", PUT));
-//     } else if (test::type == slsDetectorDefs::EIGER) {
+//     } else if (test::type == defs::EIGER) {
 //         {
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport2 6400",
 //             PUT)); std::ostringstream oss;
@@ -2217,7 +2585,7 @@ TEST_CASE("zmqport", "[.cmd]") {
 // }
 
 // TEST_CASE("selinterface", "[.cmd][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU) {
+//     if (test::type == defs::JUNGFRAU) {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 1", PUT));
 //         {
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("selinterface 0", PUT));
@@ -2238,7 +2606,7 @@ TEST_CASE("zmqport", "[.cmd]") {
 // }
 
 // TEST_CASE("numinterfaces", "[.cmd][.jungfrau]") {
-//     if (test::type == slsDetectorDefs::JUNGFRAU) {
+//     if (test::type == defs::JUNGFRAU) {
 //         {
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 2", PUT));
 //             std::ostringstream oss;
@@ -2260,49 +2628,10 @@ TEST_CASE("zmqport", "[.cmd]") {
 //     REQUIRE_THROWS(multiSlsDetectorClient("numinterfaces 0", PUT));
 // }
 
-TEST_CASE("timing", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    det.setTimingMode(defs::AUTO_TIMING); // start in auto
-    {
-        std::ostringstream oss1, oss2;
-        proxy.Call("timing", {"auto"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "timing auto\n");
-        proxy.Call("timing", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "timing auto\n");
-    }
-    {
-        std::ostringstream oss1, oss2;
-        proxy.Call("timing", {"trigger"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "timing trigger\n");
-        proxy.Call("timing", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "timing trigger\n");
-    }
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == slsDetectorDefs::EIGER) {
-        {
-            std::ostringstream oss1, oss2;
-            proxy.Call("timing", {"gating"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "timing gating\n");
-            proxy.Call("timing", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "timing gating\n");
-        }
-        {
-            std::ostringstream oss1, oss2;
-            proxy.Call("timing", {"burst_trigger"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "timing burst_trigger\n");
-            proxy.Call("timing", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "timing burst_trigger\n");
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("timing", {"gating"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("timing", {"burst_trigger"}, -1, PUT));
-    }
-    det.setTimingMode(defs::AUTO_TIMING); // reset to auto
-}
+
 
 // TEST_CASE("adc", "[.cmd][.ctb]") {
-//     if (test::type != slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type != defs::CHIPTESTBOARD) {
 //         REQUIRE_THROWS(multiSlsDetectorClient("adc 8", GET));
 //     } else {
 //         REQUIRE_THROWS(multiSlsDetectorClient("adc", GET));
@@ -2315,7 +2644,7 @@ TEST_CASE("timing", "[.cmd]") {
 // }
 
 // TEST_CASE("temp_fpga", "[.cmd][.eiger][.jungfrau][.gotthard]") {
-//     if (test::type == slsDetectorDefs::CHIPTESTBOARD) {
+//     if (test::type == defs::CHIPTESTBOARD) {
 //         REQUIRE_THROWS(multiSlsDetectorClient("temp_fpga", GET));
 //     } else {
 //         REQUIRE_THROWS(multiSlsDetectorClient("temp_fpga 0", PUT));
@@ -2327,8 +2656,8 @@ TEST_CASE("timing", "[.cmd]") {
 // }
 
 // TEST_CASE("temp_adc", "[.cmd][.jungfrau][.gotthard]") {
-//     if (test::type != slsDetectorDefs::GOTTHARD && test::type !=
-//     slsDetectorDefs::JUNGFRAU ) {
+//     if (test::type != defs::GOTTHARD && test::type !=
+//     defs::JUNGFRAU ) {
 //         REQUIRE_THROWS(multiSlsDetectorClient("temp_adc", GET));
 //     } else {
 //         REQUIRE_THROWS(multiSlsDetectorClient("temp_adc 0", PUT));
@@ -2340,7 +2669,7 @@ TEST_CASE("timing", "[.cmd]") {
 // }
 
 // TEST_CASE("temp", "[.cmd][.eiger]") {
-//     if (test::type != slsDetectorDefs::EIGER) {
+//     if (test::type != defs::EIGER) {
 //         REQUIRE_THROWS(multiSlsDetectorClient("temp_fpgaext", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("temp_10ge", GET));
 //         REQUIRE_THROWS(multiSlsDetectorClient("temp_dcdc", GET));
@@ -2401,112 +2730,11 @@ TEST_CASE("timing", "[.cmd]") {
 //     }
 // }
 
-// TEST_CASE("vhighvoltage", "[.cmd]") {
-//     if (test::type == slsDetectorDefs::GOTTHARD) {
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 90", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "vhighvoltage 90\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 0", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "vhighvoltage 0\n");
-//         }
-//         REQUIRE_THROWS(multiSlsDetectorClient("vhighvoltage 50", PUT));
-//     } else if (test::type == slsDetectorDefs::EIGER) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 50", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 120", PUT));
-//         sleep(2);
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:vhighvoltage", GET,
-//         nullptr, oss)); REQUIRE(oss.str() == "vhighvoltage 120\n");
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 0", PUT));
-//             sleep(2);
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:vhighvoltage", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "vhighvoltage 0\n");
-//         }
-//     } else {
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 50", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "vhighvoltage 50\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 120", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "vhighvoltage 120\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage 0", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("vhighvoltage", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "vhighvoltage 0\n");
-//         }
-//     }
-// }
 
-// TEST_CASE("maxadcphaseshift", "[.cmd][.ctb][.jungfrau]") {
-//     if (test::type != slsDetectorDefs::CHIPTESTBOARD && test::type !=
-//     slsDetectorDefs::JUNGFRAU) {
-//        REQUIRE_THROWS(multiSlsDetectorClient("maxadcphaseshift", GET));
-//     } else {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("maxadcphaseshift", GET));
-//     }
-// }
 
-// TEST_CASE("adcphase", "[.cmd][.ctb][.jungfrau][.gotthard]") {
-
-//     if (test::type == slsDetectorDefs::GOTTHARD) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase 120", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase 0", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("adcphase 120 deg", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("adcphase", GET));
-//         // get is -1
-//     } else if (test::type == slsDetectorDefs::CHIPTESTBOARD || test::type ==
-//     slsDetectorDefs::JUNGFRAU) {
-//         int prev_val = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("adcphase
-//             ")); prev_val = std::stoi(s);
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase 20", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "adcphase 20\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase 0", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "adcphase 0\n");
-//         }
-//         if (test::type == slsDetectorDefs::GOTTHARD) {
-//             REQUIRE_THROWS(multiSlsDetectorClient("adcphase deg", GET));
-//         } else {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase 20 deg", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase deg", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "adcphase 20 deg\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("adcphase " +
-//         std::to_string(prev_val), PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("adcphase", GET));
-//     }
-// }
 
 // TEST_CASE("syncclk", "[.cmd][.ctb]") {
-//     if(test::type != slsDetectorDefs::CHIPTESTBOARD) {
+//     if(test::type != defs::CHIPTESTBOARD) {
 //         REQUIRE_THROWS(multiSlsDetectorClient("syncclk", GET));
 //     } else {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("syncclk", GET));
@@ -2515,7 +2743,7 @@ TEST_CASE("timing", "[.cmd]") {
 // }
 
 // TEST_CASE("adcclk", "[.cmd][.ctb]") {
-//     if(test::type != slsDetectorDefs::CHIPTESTBOARD) {
+//     if(test::type != defs::CHIPTESTBOARD) {
 //        REQUIRE_THROWS(multiSlsDetectorClient("adcclk", GET));
 //     } else {
 //         int prev_clk = 0;
@@ -2543,7 +2771,7 @@ TEST_CASE("timing", "[.cmd]") {
 // }
 
 // TEST_CASE("dbitclk", "[.cmd][.ctb]") {
-//     if(test::type != slsDetectorDefs::CHIPTESTBOARD) {
+//     if(test::type != defs::CHIPTESTBOARD) {
 //        REQUIRE_THROWS(multiSlsDetectorClient("dbitclk", GET));
 //     } else {
 //         int prev_clk = 0;
@@ -2571,7 +2799,7 @@ TEST_CASE("timing", "[.cmd]") {
 // }
 
 // TEST_CASE("runclk", "[.cmd][.ctb]") {
-//     if(test::type != slsDetectorDefs::CHIPTESTBOARD) {
+//     if(test::type != defs::CHIPTESTBOARD) {
 //        REQUIRE_THROWS(multiSlsDetectorClient("runclk", GET));
 //     } else {
 //         int prev_runclk = 0;
@@ -2598,54 +2826,10 @@ TEST_CASE("timing", "[.cmd]") {
 //     }
 // }
 
-// TEST_CASE("speed", "[.cmd][.eiger][.jungfrau]") {
-//     if(test::type != slsDetectorDefs::EIGER && test::type !=
-//     slsDetectorDefs::JUNGFRAU) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("speed", GET));
-//     } else {
-//         /*{TODO : only for new jungfrau boards
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("speed 0", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("speed", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "speed full_speed\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("speed full_speed", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("speed", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "speed full_speed\n");
-//         }*/
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("speed 1", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("speed", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "speed half_speed\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("speed half_speed", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("speed", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "speed half_speed\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("speed 2", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("speed", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "speed quarter_speed\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("speed quarter_speed",
-//             PUT)); std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("speed", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "speed quarter_speed\n");
-//         }
-//         REQUIRE_THROWS(multiSlsDetectorClient("speed 3", PUT));
-//     }
-// }
 
 
 // TEST_CASE("threshold", "[.cmd]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
+//     if (test::type == defs::EIGER) {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("threshold 6400 standard",
 //         PUT)); REQUIRE_NOTHROW(multiSlsDetectorClient("thresholdnotb 6400
 //         standard", PUT)); REQUIRE_NOTHROW(multiSlsDetectorClient("threshold
@@ -2707,70 +2891,6 @@ TEST_CASE("timing", "[.cmd]") {
 // proxy.Call("frames", {"1"}, -1, PUT);
 // }
 
-// TEST_CASE("framesl", "[.cmd][.jungfrau][gotthard][ctb]") {
-//     if(test::type == slsDetectorDefs::EIGER) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("framesl", GET));
-//     } else {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("timing auto", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 10", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("period 1", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("framesl", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("framesl "));
-//             int framesl = std::stoi(s);
-//             REQUIRE(framesl > 0);
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("stop", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-//     }
-// }
-
-// TEST_CASE("triggersl", "[.cmd][.jungfrau][gotthard][ctb]") {
-//     if(test::type == slsDetectorDefs::EIGER) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("triggersl", GET));
-//     } else {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("timing trigger", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("triggers 10", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("triggersl", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("triggersl
-//             ")); int triggersl = std::stoi(s); REQUIRE(triggersl == 8);
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("stop", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("timing auto", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("triggers 1", PUT));
-//     }
-// }
-
-// TEST_CASE("delayl", "[.cmd][.jungfrau][gotthard][ctb]") {
-//     if(test::type == slsDetectorDefs::EIGER) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("delayl", GET));
-//     } else  if(test::type == slsDetectorDefs::GOTTHARD) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("delay 0", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("delayl", GET));
-//         // delayl always gives 0 for gotthard
-//     } else {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("timing trigger", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("triggers 2", PUT));
-//          REQUIRE_NOTHROW(multiSlsDetectorClient("delay 1", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("delayl s", GET, nullptr,
-//             oss)); REQUIRE(oss.str()  == "delayl 1s\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("stop", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("timing auto", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("triggers 1", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("delay 0", PUT));
-//     }
-// }
 
 
 

@@ -72,6 +72,8 @@ int LTC2620_D_SetDACValue (int dacnum, int val, int mV, char* dacname, int* dacv
     if ( (*dacval >= 0) || (*dacval == LTC2620_D_PWR_DOWN_VAL)) {
         LOG(logINFO, ("Setting DAC %2d [%-12s] : %d dac (%d mV)\n",dacnum, dacname, *dacval, dacmV));
  
+
+#ifndef VIRTUAL
         char fname[MAX_STR_LENGTH];
         strcpy(fname, LTC2620_D_DriverFileName);
         char temp[20];
@@ -89,6 +91,8 @@ int LTC2620_D_SetDACValue (int dacnum, int val, int mV, char* dacname, int* dacv
         //convert to string, add 0 and write to file
         fprintf(fd, "%d\n", *dacval);
         fclose(fd);
+#endif
+
     }
     return OK;
 }

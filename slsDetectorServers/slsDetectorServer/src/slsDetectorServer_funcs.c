@@ -5804,9 +5804,11 @@ int set_clock_frequency(int file_des) {
 		case ADC_CLOCK:
 			c = ADC_CLK;
 			break;
+#ifdef CHIPTESTBOARDD
 		case DBIT_CLOCK:
 			c = DBIT_CLK;
 			break;
+#endif
 		case RUN_CLOCK:
 			c = RUN_CLK;
 			break;
@@ -5860,9 +5862,11 @@ int get_clock_frequency(int file_des) {
 	case ADC_CLOCK:
 		c = ADC_CLK;
 		break;
+#ifdef CHIPTESTBOARDD
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;
+#endif
 	case RUN_CLOCK:
 		c = RUN_CLK;
 		break;
@@ -5916,14 +5920,14 @@ int set_clock_phase(int file_des) {
 		c = ADC_CLK;
 		break;
 #endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;
 #endif
 		default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-			if (c < NUM_CLOCKS) {
+			if (ind < NUM_CLOCKS) {
 				c = (enum CLKINDEX)ind;
 				break;
 			}
@@ -5995,7 +5999,7 @@ int get_clock_phase(int file_des) {
 	
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
-	LOG(logDEBUG1, ("Getting clock (%d) phase %s \n", args[0], (args[1] == 0 ? "" : "in degrees")));
+	LOG(logINFOBLUE, ("Getting clock (%d) phase %s \n", args[0], (args[1] == 0 ? "" : "in degrees")));
 
 #if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
 	functionNotImplemented();
@@ -6009,14 +6013,17 @@ int get_clock_phase(int file_des) {
 	case ADC_CLOCK:
 		c = ADC_CLK;
 		break;
+#endif
+#if defined(CHIPTESTBOARDD)	|| defined(JUNGFRAUD)
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;
 #endif
 	default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-		if (c < NUM_CLOCKS) {
+		if (ind < NUM_CLOCKS) {
 			c = (enum CLKINDEX)ind;
+		LOG(logINFOBLUE, ("NUMclocks:%d c:%d\n", NUM_CLOCKS, c)); 
 			break;
 		}
 #endif
@@ -6053,13 +6060,15 @@ int get_max_clock_phase_shift(int file_des) {
 	case ADC_CLOCK:
 		c = ADC_CLK;
 		break;
+#endif
+#if defined(CHIPTESTBOARDD)  || defined(JUNGFRAUD)
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;
 #endif
 	default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-		if (c < NUM_CLOCKS) {
+		if (arg < NUM_CLOCKS) {
 			c = (enum CLKINDEX)arg;
 			break;
 		}
@@ -6104,7 +6113,7 @@ int set_clock_divider(int file_des) {
 		default:
 		// any clock index
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-			if (c < NUM_CLOCKS) {
+			if (ind < NUM_CLOCKS) {
 				c = (enum CLKINDEX)ind;
 				break;
 			}
@@ -6187,7 +6196,7 @@ int get_clock_divider(int file_des) {
 #endif
 	default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-		if (c < NUM_CLOCKS) {
+		if (arg < NUM_CLOCKS) {
 			c = (enum CLKINDEX)arg;
 			break;
 		}
@@ -6272,9 +6281,11 @@ int get_pipeline(int file_des) {
 	case ADC_CLOCK:
 		c = ADC_CLK;
 		break;
+#ifdef CHIPTESTBOARDD
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;
+#endif
 	default:
 		modeNotImplemented("clock index (pipeline get)", arg);
 		break;

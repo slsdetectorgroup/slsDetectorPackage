@@ -1386,12 +1386,6 @@ int getADC(enum ADCINDEX ind){
 
 
 int setHighVoltage(int val){
-#ifdef VIRTUAL
-    if (val >= 0)
-        highvoltage = val;
-    return highvoltage;
-#endif
-
 	// setting hv
 	if (val >= 0) {
 	    LOG(logINFO, ("Setting High voltage: %d V\n", val));
@@ -1400,7 +1394,7 @@ int setHighVoltage(int val){
 		// switch to external high voltage
 		bus_w(addr, bus_r(addr) & (~POWER_HV_INTERNAL_SLCT_MSK));
 
-		MAX1932_Set(val);
+		MAX1932_Set(&val);
 
 		// switch on internal high voltage, if set
 		if (val > 0)

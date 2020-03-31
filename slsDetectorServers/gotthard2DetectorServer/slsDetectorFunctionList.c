@@ -388,7 +388,6 @@ void setupDetector() {
 	}
 
 
-#ifndef VIRTUAL
 	// pll defines
 	ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL, PLL_RESET_REG, PLL_RESET_REG, PLL_RESET_READOUT_MSK, PLL_RESET_SYSTEM_MSK, READOUT_PLL_VCO_FREQ_HZ, SYSTEM_PLL_VCO_FREQ_HZ);
 	ALTERA_PLL_C10_ResetPLL(READOUT_PLL);
@@ -399,7 +398,6 @@ void setupDetector() {
 	LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC);
 	// on chip dacs
 	ASIC_Driver_SetDefines(ONCHIP_DAC_DRIVER_FILE_NAME);
-#endif
 	setTimingSource(DEFAULT_TIMING_SOURCE);
 
 	// Default values

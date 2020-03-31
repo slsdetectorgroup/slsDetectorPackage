@@ -921,16 +921,10 @@ int getADC(enum ADCINDEX ind){
 
 
 int setHighVoltage(int val){
-#ifdef VIRTUAL
-    if (val >= 0)
-        highvoltage = val;
-    return highvoltage;
-#endif
-
 	// setting hv
 	if (val >= 0) {
 	    LOG(logINFO, ("Setting High voltage: %d V", val));
-	    MAX1932_Set(val);
+	    MAX1932_Set(&val);
 	    highvoltage = val;
 	}
 	return highvoltage;

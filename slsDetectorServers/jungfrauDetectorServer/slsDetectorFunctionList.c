@@ -1284,7 +1284,9 @@ int powerChip (int on){
             bus_w(CHIP_POWER_REG, bus_r(CHIP_POWER_REG) & ~CHIP_POWER_ENABLE_MSK);
         }
     }
-
+#ifdef VIRTUAL
+    return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_ENABLE_MSK) >> CHIP_POWER_ENABLE_OFST);
+#endif
     return ((bus_r(CHIP_POWER_REG) & CHIP_POWER_STATUS_MSK) >> CHIP_POWER_STATUS_OFST);
 }
 

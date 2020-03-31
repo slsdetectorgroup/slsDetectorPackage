@@ -13,37 +13,7 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
-TEST_CASE("powerchip", "[.cmd][!mayfail]") {
-    // TODO! this test currently fails with the
-    // virtual detecto server
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::JUNGFRAU) {
-        auto pc = det.getPowerChip();
-        {
-            std::ostringstream oss;
-            proxy.Call("powerchip", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "powerchip 1\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("powerchip", {"0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "powerchip 0\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("powerchip", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "powerchip 0\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPowerChip(pc[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("powerchip", {}, -1, GET));
-    }
-}
 
 TEST_CASE("nframes", "[.cmd]") {
     Detector det;

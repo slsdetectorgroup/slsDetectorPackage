@@ -702,26 +702,26 @@ TEST_CASE("vhighvoltage", "[.cmd][.new]") {
     else if (det_type == defs::EIGER) {
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"50"}, -1, PUT, oss1);
+            proxy.Call("vhighvoltage", {"50"}, 0, PUT, oss1);
             REQUIRE(oss1.str() == "vhighvoltage 50\n");
             std::this_thread::sleep_for(std::chrono::seconds(2));
-            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            proxy.Call("vhighvoltage", {}, 0, GET, oss2);
             REQUIRE(oss2.str() == "vhighvoltage 50\n");
         }
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"120"}, -1, PUT, oss1);
+            proxy.Call("vhighvoltage", {"120"}, 0, PUT, oss1);
             REQUIRE(oss1.str() == "vhighvoltage 120\n");
             std::this_thread::sleep_for(std::chrono::seconds(2));
-            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            proxy.Call("vhighvoltage", {}, 0, GET, oss2);
             REQUIRE(oss2.str() == "vhighvoltage 120\n");
         }
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"0"}, -1, PUT, oss1);
+            proxy.Call("vhighvoltage", {"0"}, 0, PUT, oss1);
             REQUIRE(oss1.str() == "vhighvoltage 0\n");
             std::this_thread::sleep_for(std::chrono::seconds(2));
-            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
+            proxy.Call("vhighvoltage", {}, 0, GET, oss2);
             REQUIRE(oss2.str() == "vhighvoltage 0\n");
         }
     }    
@@ -754,9 +754,70 @@ TEST_CASE("vhighvoltage", "[.cmd][.new]") {
     }
 }
 
+TEST_CASE("powerchip", "[.cmd][.new]") {
+    // TODO! this test currently fails with the
+    // virtual detecto server
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
 
+    if (det_type == defs::JUNGFRAU || 
+        det_type == defs::MYTHEN3 || 
+        det_type == defs::GOTTHARD2 || 
+        det_type == defs::MOENCH) {
+        auto prev_val = det.getPowerChip();
+        {
+            std::ostringstream oss;
+            proxy.Call("powerchip", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "powerchip 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("powerchip", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "powerchip 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("powerchip", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "powerchip 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setPowerChip(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("powerchip", {}, -1, GET));
+    }
+}
 
-
+TEST_CASE("imagetest", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD) {
+        auto prev_val = det.getImageTestMode();
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("imagetest", {"1"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "imagetest 1\n");
+            proxy.Call("imagetest", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "imagetest 1\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("imagetest", {"0"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "imagetest 0\n");
+            proxy.Call("imagetest", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "imagetest 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setImageTestMode(prev_val[i], {i});
+        }
+    } else if (det_type != defs::JUNGFRAU &&
+        det_type != defs::EIGER) {
+        // wont fail for eiger and jungfrau virtual servers
+        REQUIRE_THROWS(proxy.Call("imagetest", {}, -1, GET));
+    }
+}
 
 
 

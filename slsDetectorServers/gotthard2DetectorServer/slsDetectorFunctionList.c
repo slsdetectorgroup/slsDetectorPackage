@@ -1331,6 +1331,9 @@ int* getDetectorPosition() {
 // Detector Specific
 
 int checkDetectorType() {
+#ifdef VIRTUAL	
+	return OK;
+#endif
 	LOG(logINFO, ("Checking type of module\n"));
 	FILE* fd = fopen(TYPE_FILE_NAME, "r");
     if (fd == NULL) {

@@ -1098,11 +1098,6 @@ int getADC(enum ADCINDEX ind){
 }
 
 int setHighVoltage(int val){
-#ifdef VIRTUAL
-    if (val >= 0)
-        highvoltage = val;
-    return highvoltage;
-#endif
     u_int32_t addr = HV_REG;
     u_int32_t sel = 0x0;
 

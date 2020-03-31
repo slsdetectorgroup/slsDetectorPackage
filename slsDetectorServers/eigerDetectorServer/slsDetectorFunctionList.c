@@ -1246,7 +1246,7 @@ int configureMAC() {
 
 	int i=0;
 	/* for(i=0;i<32;i++) { modified for Aldo*/
-	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
+	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,srcport) &&
 			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port)) {
 		LOG(logDEBUG1, ("\tset up left ok\n"));
 	} else {
@@ -1260,7 +1260,7 @@ int configureMAC() {
 		dst_port = dstport;
 
 	/*for(i=0;i<32;i++) {*//** modified for Aldo*/
-	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
+	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,srcport) &&
 			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port)) {
 		LOG(logDEBUG1, (" set up right ok\n"));
 	} else {

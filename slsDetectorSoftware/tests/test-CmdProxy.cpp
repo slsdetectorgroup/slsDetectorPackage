@@ -122,18 +122,7 @@ TEST_CASE("type", "[.cmd][.new]"){
 TEST_CASE("detsize", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto prev_val = det.getDetectorSize();
-    {
-        std::ostringstream oss;
-        proxy.Call("detsize", {"1000", "2000"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "detsize [1000, 2000]\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("detsize", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "detsize [1000, 2000]\n");
-    }
-    det.setDetectorSize(prev_val);
+    REQUIRE_NOTHROW(proxy.Call("detsize", {}, -1, GET));
 }
 
 TEST_CASE("settings", "[.cmd][.new]") {
@@ -311,6 +300,9 @@ TEST_CASE("delay", "[.cmd][.new]") {
     if (det_type == defs::EIGER) {
         REQUIRE_THROWS(proxy.Call("delay", {"1"}, -1, PUT));
         REQUIRE_THROWS(proxy.Call("delay", {}, -1, GET));
+    } if (det_type == defs::GOTTHARD) {
+        // extra delays for master (can throw when setting)
+        REQUIRE_NOTHROW(proxy.Call("delay", {}, -1, GET));
     } else {
         auto prev_val = det.getDelayAfterTrigger();
         {

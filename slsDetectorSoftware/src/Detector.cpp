@@ -923,7 +923,7 @@ void Detector::setClientZmqIp(const IpAddr ip, Positions pos) {
 // Eiger Specific
 
 Result<int> Detector::getDynamicRange(Positions pos) const {
-    return pimpl->Parallel(&Module::setDynamicRange, pos, -1);
+    return pimpl->Parallel(&Module::getDynamicRange, pos);
 }
 
 void Detector::setDynamicRange(int value) {

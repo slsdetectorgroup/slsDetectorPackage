@@ -403,7 +403,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->nAddStorageCells = 0;
     shm()->timingMode = AUTO_TIMING;
     shm()->burstMode = BURST_INTERNAL;
-    shm()->deadTime = 0;
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
     shm()->useReceiverFlag = false;
@@ -420,7 +419,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->nChip.x = parameters.nChipX;
     shm()->nChip.y = parameters.nChipY;
     shm()->nDacs = parameters.nDacs;
-    shm()->dynamicRange = parameters.dynamicRange;
 }
 
 int Module::sendModule(sls_detector_module *myMod,
@@ -724,10 +722,6 @@ void Module::updateCachedDetectorVariables() {
         n += client.Receive(&lastClientIP, sizeof(lastClientIP));
         LOG(logDEBUG1)
             << "Updating detector last modified by " << lastClientIP;
-
-        // dr
-        n += client.Receive(&i32, sizeof(i32));
-        shm()->dynamicRange = i32;
 
         // settings
         if (shm()->myDetectorType == EIGER || shm()->myDetectorType == JUNGFRAU || 
@@ -1308,15 +1302,12 @@ void Module::setExptime(int64_t value) {
     }
     LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
     sendToDetector(F_SET_EXPTIME, value, nullptr);
-    if (shm()->myDetectorType == EIGER && prevVal != value && shm()->dynamicRange == 16) {
-        int r = getRateCorrection();
-        if (r != 0) {
-            setRateCorrection(r);
-        }            
-    }
     if (shm()->useReceiverFlag) {
         LOG(logDEBUG1) << "Sending exptime to Receiver: " << value;
         sendToReceiver(F_RECEIVER_SET_EXPTIME, value, nullptr);   
+    }
+    if (prevVal != value) {
+        updateRateCorrection();            
     }
 }
 
@@ -1361,17 +1352,14 @@ void Module::setSubExptime(int64_t value) {
         prevVal = getSubExptime();
     }    
     LOG(logDEBUG1) << "Setting sub exptime to " << value << "ns";
-    sendToDetector(F_SET_SUB_EXPTIME, value, nullptr);
-    if (shm()->myDetectorType == EIGER && prevVal != value && shm()->dynamicRange == 32) {
-        int r = getRateCorrection();
-        if (r != 0) {
-            setRateCorrection(r);
-        }            
-    }    
+    sendToDetector(F_SET_SUB_EXPTIME, value, nullptr);   
     if (shm()->useReceiverFlag) {
         LOG(logDEBUG1) << "Sending sub exptime to Receiver: " << value;
         sendToReceiver(F_RECEIVER_SET_SUB_EXPTIME, value, nullptr);   
     }
+    if (prevVal != value) {
+        updateRateCorrection();            
+    }       
 }
     
 int64_t Module::getSubDeadTime() {
@@ -1480,37 +1468,50 @@ slsDetectorDefs::timingMode Module::setTimingMode(timingMode value) {
     return retval;
 }
 
-int Module::setDynamicRange(int n) {
-    // TODO! Properly handle fail
-    int prevDr = shm()->dynamicRange;
+int Module::getDynamicRange() {
+    int arg = -1;
+    int retval = -1;
+    sendToDetector(F_SET_DYNAMIC_RANGE, arg, retval);
+    LOG(logDEBUG1) << "Dynamic Range: " << retval;
+    return retval;
+}
+
+void Module::setDynamicRange(int n) {
+    int prev_val = n;
+    if (shm()->myDetectorType == EIGER) {
+        prev_val = getDynamicRange();
+    }
 
     int retval = -1;
     LOG(logDEBUG1) << "Setting dynamic range to " << n;
     sendToDetector(F_SET_DYNAMIC_RANGE, n, retval);
     LOG(logDEBUG1) << "Dynamic Range: " << retval;
-    shm()->dynamicRange = retval;
 
     if (shm()->useReceiverFlag) {
-        n = shm()->dynamicRange;
+        int arg = retval;
         retval = -1;
-        LOG(logDEBUG1) << "Sending dynamic range to receiver: " << n;
-        sendToReceiver(F_SET_RECEIVER_DYNAMIC_RANGE, n, retval);
+        LOG(logDEBUG1) << "Sending dynamic range to receiver: " << arg;
+        sendToReceiver(F_SET_RECEIVER_DYNAMIC_RANGE, arg, retval);
         LOG(logDEBUG1) << "Receiver Dynamic range: " << retval;
     }
 
     // changes in dr
-    int dr = shm()->dynamicRange;
-    if (prevDr != dr && shm()->myDetectorType == EIGER) {
-        updateRateCorrection();
+    if (n != prev_val) {
         // update speed for usability
-        if (dr == 32) {
-            LOG(logINFO) << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32";     setClockDivider(RUN_CLOCK, 2);
-        } else {
-            LOG(logINFO) << "Setting Clock to Full Speed to cope with Dynamic Range of " << dr;     setClockDivider(RUN_CLOCK, 0);
+        switch (n) {
+        case 32:
+            LOG(logINFO) << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32";     
+            setClockDivider(RUN_CLOCK, 2);
+            break;
+        case 16:
+            LOG(logINFO) << "Setting Clock to Full Speed to cope with Dynamic Range of " << n;     
+            setClockDivider(RUN_CLOCK, 0);
+            break;
+        default:
+            break;
         }
+        updateRateCorrection();
     }
-    
-    return shm()->dynamicRange;
 }
 
 int Module::setDAC(int val, dacIndex index, int mV) {
@@ -1714,7 +1715,7 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
         case EIGER:
             setSubExptime(getSubExptime());
             setSubDeadTime(getSubDeadTime());
-            setDynamicRange(shm()->dynamicRange);
+            setDynamicRange(getDynamicRange());
             activate(-1);
             enableTenGigabitEthernet(-1);
             setQuad(getQuad());
@@ -1742,7 +1743,7 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
 
         case MYTHEN3:
             sendNumberofCounterstoReceiver(getCounterMask());
-            setDynamicRange(shm()->dynamicRange);
+            setDynamicRange(getDynamicRange());
             break;
 
         default:
@@ -2953,37 +2954,23 @@ void Module::setDefaultRateCorrection() {
     LOG(logDEBUG1) << "Setting Default Rate Correction";
     int64_t arg = -1;
     sendToDetector(F_SET_RATE_CORRECT, arg, nullptr);
-    shm()->deadTime = -1;
 }
 
 void Module::setRateCorrection(int64_t t) {
     LOG(logDEBUG1) << "Setting Rate Correction to " << t;
     sendToDetector(F_SET_RATE_CORRECT, t, nullptr);
-    shm()->deadTime = t;
 }
 
 int64_t Module::getRateCorrection() {
     int64_t retval = -1;
-    LOG(logDEBUG1) << "Getting rate correction";
     sendToDetector(F_GET_RATE_CORRECT, nullptr, retval);
-    shm()->deadTime = retval;
     LOG(logDEBUG1) << "Rate correction: " << retval;
     return retval;
 }
 
 void Module::updateRateCorrection() {
-    if (shm()->deadTime != 0) {
-        switch (shm()->dynamicRange) {
-        case 16:
-        case 32:
-            setRateCorrection(shm()->deadTime);
-            break;
-        default:
-            setRateCorrection(0);
-            throw sls::RuntimeError(
-                "Rate correction Deactivated, must be in 32 or 16 bit mode");
-        }
-    }
+    LOG(logDEBUG1) << "Updating rate correction";
+    sendToDetector(F_UPDATE_RATE_CORRECTION);
 }
 
 std::string Module::printReceiverConfiguration() {

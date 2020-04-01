@@ -317,6 +317,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_TIMING_SOURCE:				return "F_GET_TIMING_SOURCE";
 	case F_SET_TIMING_SOURCE:				return "F_SET_TIMING_SOURCE";
 	case F_GET_NUM_CHANNELS:				return "F_GET_NUM_CHANNELS";
+	case F_UPDATE_RATE_CORRECTION:			return "F_UPDATE_RATE_CORRECTION";
 
 	default:								return "Unknown Function";
 	}
@@ -510,6 +511,7 @@ void function_table() {
 	flist[F_GET_TIMING_SOURCE]					= &get_timing_source;
 	flist[F_SET_TIMING_SOURCE]					= &set_timing_source;
 	flist[F_GET_NUM_CHANNELS]					= &get_num_channels;
+	flist[F_UPDATE_RATE_CORRECTION]				= &update_rate_correction;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -2851,11 +2853,6 @@ int send_update(int file_des) {
 	n = sendData(file_des, &i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
-	// dr
-	i32 = setDynamicRange(GET_FLAG);
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
 	// settings
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)  || defined(GOTTHARD2D)|| defined(MOENCHD)
 	i32 = (int)getSettings();
@@ -3498,9 +3495,12 @@ int set_rate_correct(int file_des) {
 #else
 	// only set
 	if (Server_VerifyLock() == OK) {
-		ret = validateRateCorrection(&tau_ns, mess);
-		if (ret == OK) {
-			int64_t retval = setRateCorrection(tau_ns);
+		ret = validateAndSetRateCorrection(tau_ns, mess);
+		int64_t retval = getCurrentTau(); // to update eiger_tau_ns (for update rate correction)
+		if (ret == FAIL) {
+			strcpy(mess, "Rate correction failed\n");
+			LOG(logERROR, (mess));
+		} else {
 			validate64(tau_ns, retval, "set rate correction", DEC);
 		}
 	}
@@ -6905,4 +6905,22 @@ int get_num_channels(int file_des) {
 	LOG(logDEBUG1, ("Get number of channels sretval:[%d, %d]\n", retvals[0], retvals[1]));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
+}
+
+
+
+int update_rate_correction(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	LOG(logINFO, ("Update Rate Correction\n"));
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = updateRateCorrection(mess);
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }

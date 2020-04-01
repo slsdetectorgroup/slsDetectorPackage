@@ -14,7 +14,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200324
+#define SLS_SHMVERSION 0x200401
 
 namespace sls{
 
@@ -62,9 +62,6 @@ struct sharedSlsDetector {
     /**  number of dacs per module*/
     int nDacs;
 
-    /** dynamic range of the detector data */
-    int dynamicRange;
-
     /** detector settings (standard, fast, etc.) */
     slsDetectorDefs::detectorSettings currentSettings;
 
@@ -85,9 +82,6 @@ struct sharedSlsDetector {
 
     /** burst mode */
     slsDetectorDefs::burstMode burstMode;
-
-    /** rate correction in ns (needed for default -1) */
-    int64_t deadTime;
 
     /** ip address/hostname of the receiver for client control via TCP */
     char rxHostname[MAX_STR_LENGTH];
@@ -563,15 +557,13 @@ class Module : public virtual slsDetectorDefs {
      */
     timingMode setTimingMode(timingMode value = GET_TIMING_MODE);
 
+    int getDynamicRange();
     /**
      * Set/get dynamic range
      * (Eiger: If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to
      * 1)
-     * @param i dynamic range (-1 get)
-     * @returns current dynamic range
-     * \sa sharedSlsDetector
      */
-    int setDynamicRange(int n = -1);
+    void setDynamicRange(int n);
 
     /**
      * Set/get dacs value

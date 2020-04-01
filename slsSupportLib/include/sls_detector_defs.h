@@ -480,7 +480,6 @@ struct detParameters {
     int nChipX{0};
     int nChipY{0};
     int nDacs{0};
-    int dynamicRange{0};
 
     detParameters() = default;
     explicit detParameters(slsDetectorDefs::detectorType type) {
@@ -491,7 +490,6 @@ struct detParameters {
             nChipX = 10;
             nChipY = 1;
             nDacs = 8;
-            dynamicRange = 16;
             break;
         case slsDetectorDefs::detectorType::JUNGFRAU:
             nChanX = 256;
@@ -499,7 +497,6 @@ struct detParameters {
             nChipX = 4;
             nChipY = 2;
             nDacs = 8;
-            dynamicRange = 16;
             break;
         case slsDetectorDefs::detectorType::CHIPTESTBOARD:
             nChanX = 36;
@@ -507,7 +504,6 @@ struct detParameters {
             nChipX = 1;
             nChipY = 1;
             nDacs = 24;
-            dynamicRange = 16;
             break;
         case slsDetectorDefs::detectorType::MOENCH:
             nChanX = 32;
@@ -515,7 +511,6 @@ struct detParameters {
             nChipX = 1;
             nChipY = 1;
             nDacs = 8;
-            dynamicRange = 16;
             break;
         case slsDetectorDefs::detectorType::EIGER:
             nChanX = 256;
@@ -523,7 +518,6 @@ struct detParameters {
             nChipX = 4;
             nChipY = 1;
             nDacs = 16;
-            dynamicRange = 16;
             break;
         case slsDetectorDefs::detectorType::MYTHEN3:
             nChanX = 128 * 3;
@@ -531,7 +525,6 @@ struct detParameters {
             nChipX = 10;
             nChipY = 1;
             nDacs = 16;
-            dynamicRange = 32;
             break;
         case slsDetectorDefs::detectorType::GOTTHARD2:
             nChanX = 128;
@@ -539,7 +532,6 @@ struct detParameters {
             nChipX = 10;
             nChipY = 1;
             nDacs = 14;
-            dynamicRange = 16;
             break;    
         default:
             throw sls::RuntimeError("Unknown detector type! " + std::to_string(type));

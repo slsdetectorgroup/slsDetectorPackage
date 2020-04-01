@@ -197,6 +197,7 @@ enum detFuncs{
 	F_GET_TIMING_SOURCE,
 	F_SET_TIMING_SOURCE,
 	F_GET_NUM_CHANNELS,
+	F_UPDATE_RATE_CORRECTION,
 
 	NUM_DET_FUNCTIONS,
 	RECEIVER_ENUM_START = 256, /**< detector function should not exceed this (detector server should not compile anyway) */
@@ -480,6 +481,7 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_TIMING_SOURCE:				return "F_GET_TIMING_SOURCE";
 	case F_SET_TIMING_SOURCE:				return "F_SET_TIMING_SOURCE";
 	case F_GET_NUM_CHANNELS:				return "F_GET_NUM_CHANNELS";
+	case F_UPDATE_RATE_CORRECTION:			return "F_UPDATE_RATE_CORRECTION";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

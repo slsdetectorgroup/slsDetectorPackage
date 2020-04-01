@@ -67,6 +67,7 @@ int eiger_extgating = 0;
 int eiger_extgatingpolarity = 0;
 int eiger_nexposures = 1;
 int eiger_ntriggers = 1;
+int eiger_tau_ns = 0;
 
 
 #ifdef VIRTUAL
@@ -477,6 +478,7 @@ void setupDetector() {
 	getSubExpTime(DEFAULT_SUBFRAME_DEADTIME);
 	setPeriod(DEFAULT_PERIOD);
 	setNumTriggers(DEFAULT_NUM_CYCLES);
+	eiger_dynamicrange = DEFAULT_DYNAMIC_RANGE;
 	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
 	eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
 	setParallelMode(DEFAULT_PARALLEL_MODE);
@@ -488,6 +490,7 @@ void setupDetector() {
 	setStartingFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 	setReadNLines(MAX_ROWS_PER_READOUT);
 	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
+	eiger_tau_ns = DEFAULT_RATE_CORRECTION;
 	setRateCorrection(DEFAULT_RATE_CORRECTION);
 	int enable[2] = {DEFAULT_EXT_GATING_ENABLE, DEFAULT_EXT_GATING_POLARITY};
 	setExternalGating(enable);//disable external gating
@@ -532,31 +535,27 @@ int readRegister(uint32_t offset, uint32_t* retval) {
 
 
 int setDynamicRange(int dr) {
-#ifdef VIRTUAL
-	if (dr > 0) {
-		LOG(logINFO, ("Setting dynamic range: %d\n", dr));
-		eiger_dynamicrange = dr;
-	}
-	return eiger_dynamicrange;
-#else
+	// setting dr
 	if (dr > 0) {
 		LOG(logDEBUG1, ("Setting dynamic range: %d\n", dr));
+#ifndef VIRTUAL
 		if (Feb_Control_SetDynamicRange(dr)) {
-
-			//EigerSetBitMode(dr);
 			on_dst = 0;
 			int i;
 			for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
-			if (Beb_SetUpTransferParameters(dr))
-				eiger_dynamicrange = dr;
-			else LOG(logERROR, ("Could not set bit mode in the back end\n"));
+			if (!Beb_SetUpTransferParameters(dr)) {
+				LOG(logERROR, ("Could not set bit mode in the back end\n"));
+				return eiger_dynamicrange;
+			}
 		}
-	}
-	//make sure back end and front end have the same bit mode
-	dr= Feb_Control_GetDynamicRange();
-
-	return dr;
 #endif
+		eiger_dynamicrange = dr;
+	}
+	// getting dr
+#ifndef VIRTUAL
+	eiger_dynamicrange = Feb_Control_GetDynamicRange();
+#endif
+	return eiger_dynamicrange;
 }
 
 
@@ -842,8 +841,9 @@ int setModule(sls_detector_module myMod, char* mess) {
 			}
 		}
 	}
-	// trimbits
+
 #ifndef VIRTUAL
+	// trimbits
 	if (myMod.nchan == 0) {
 		LOG(logINFO, ("Setting module without trimbits\n"));
 	} else {
@@ -872,6 +872,7 @@ int setModule(sls_detector_module myMod, char* mess) {
 			return FAIL;
 		}
 	}
+#endif
 
 
 	//rate correction
@@ -891,17 +892,24 @@ int setModule(sls_detector_module myMod, char* mess) {
 	else {
 		setDefaultSettingsTau_in_nsec(myMod.tau);
 		if (getRateCorrectionEnable()) {
-			int64_t retvalTau = setRateCorrection(myMod.tau);
-			if (myMod.tau != retvalTau) {
-				sprintf(mess, "Cannot set module. Could not set rate correction\n");
+			if (setRateCorrection(myMod.tau) == FAIL) {
+				sprintf(mess, "Cannot set module. Rate correction failed.\n");
 				LOG(logERROR, (mess));
 				setSettings(UNDEFINED);
 				LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
-				return FAIL;
+				return FAIL;				
+			} else {
+				int64_t retvalTau = getCurrentTau();
+				if (myMod.tau != retvalTau) {
+					sprintf(mess, "Cannot set module. Could not set rate correction\n");
+					LOG(logERROR, (mess));
+					setSettings(UNDEFINED);
+					LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
+					return FAIL;
+				}
 			}
 		}
 	}
-#endif
 	return OK;
 }
 
@@ -1449,37 +1457,59 @@ int pulseChip(int n) {
 	return OK;
 }
 
-int validateRateCorrection(int64_t* tau_ns, char* mess) {
+int updateRateCorrection(char* mess) {
+	int ret = OK;
+	// recalculates rate correction table, or switches off in wrong bit mode
+	if (eiger_tau_ns != 0) {
+		switch (eiger_dynamicrange) {
+			case 16:
+			case 32:
+				ret = setRateCorrection(eiger_tau_ns);
+				break;
+			default:
+				setRateCorrection(0);
+				strcpy(mess, "Rate correction Deactivated, must be in 32 or 16 bit mode");
+				ret = FAIL;
+				break;
+		}
+	}
+	getCurrentTau(); // update eiger_tau_ns
+	return ret;
+}
+
+int validateAndSetRateCorrection(int64_t tau_ns, char* mess) {
 	// switching on in wrong bit mode
-	if ((*tau_ns != 0) && 
+	if ((tau_ns != 0) && 
 		(eiger_dynamicrange != 32) && (eiger_dynamicrange != 16)) {
 		strcpy(mess,"Rate correction Deactivated, must be in 32 or 16 bit mode\n");
 		LOG(logERROR,(mess));
 		return FAIL;
 	}
 	// default tau (-1, get proper value)
-	if (*tau_ns < 0) {
-		*tau_ns = getDefaultSettingsTau_in_nsec();
-		if (*tau_ns < 0) {
+	if (tau_ns < 0) {
+		tau_ns = getDefaultSettingsTau_in_nsec();
+		if (tau_ns < 0) {
 			strcpy(mess,"Default settings file not loaded. No default tau yet\n");
 			LOG(logERROR,(mess));
 			return FAIL;
 		}
+		eiger_tau_ns = -1;
 	}
 	// user defined value (settings become undefined)
-	else if (*tau_ns > 0) {
+	else if (tau_ns > 0) {
 		setSettings(UNDEFINED);
 		LOG(logERROR, ("Settings has been changed to undefined (tau changed)\n"));
+		eiger_tau_ns = tau_ns;
 	}	
-	return OK;
+	return setRateCorrection(tau_ns);
 }
 
-int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never be -1)
+int setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never be -1)
 #ifdef VIRTUAL
 	//deactivating rate correction
 	if (custom_tau_in_nsec==0) {
 		eiger_virtual_ratecorrection_variable = 0;
-		return 0;
+		return OK;
 	}
 
 	//when dynamic range changes, use old tau
@@ -1509,22 +1539,21 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never 
 	//different setting, calculate table
 	else {
 		eiger_virtual_ratetable_tau_in_ns = custom_tau_in_nsec;
-		double period_in_sec = (double)(eiger_virtual_subexptime*10)/(double)1e9;
+		eiger_virtual_ratetable_period_in_ns = eiger_virtual_subexptime*10;
 		if (eiger_dynamicrange == 16)
-			period_in_sec = eiger_virtual_exptime;
-		eiger_virtual_ratetable_period_in_ns = period_in_sec*1e9;
+			eiger_virtual_ratetable_period_in_ns = eiger_virtual_exptime;
 	}
 	//activating rate correction
 	eiger_virtual_ratecorrection_variable = 1;
 	LOG(logINFO, ("Rate Correction Value set to %lld ns\n",(long long int)eiger_virtual_ratetable_tau_in_ns));
 
-	return eiger_virtual_ratetable_tau_in_ns;
+	return OK;
 #else
 
 	//deactivating rate correction
 	if (custom_tau_in_nsec==0) {
 		Feb_Control_SetRateCorrectionVariable(0);
-		return 0;
+		return OK;
 	}
 
 	//when dynamic range changes, use old tau
@@ -1558,7 +1587,7 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never 
 		if (ret<=0) {
 			LOG(logERROR, ("Rate correction failed. Deactivating rate correction\n"));
 			Feb_Control_SetRateCorrectionVariable(0);
-			return ret;
+			return FAIL;
 		}
 	}
 	//activating rate correction
@@ -1566,7 +1595,7 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never 
 	LOG(logINFO, ("Rate Correction Value set to %lld ns\n", (long long int)Feb_Control_Get_RateTable_Tau_in_nsec()));
 	Feb_Control_PrintCorrectedValues();
 
-	return Feb_Control_Get_RateTable_Tau_in_nsec();
+	return OK;
 #endif
 }
 
@@ -1584,18 +1613,23 @@ int getDefaultSettingsTau_in_nsec() {
 
 void setDefaultSettingsTau_in_nsec(int t) {
 	default_tau_from_file = t;
-	LOG(logINFO, ("Default tau set to %d\n", default_tau_from_file));
+	LOG(logINFOBLUE, ("Default tau set to %d\n", default_tau_from_file));
 }
 
 int64_t getCurrentTau() {
-	if (!getRateCorrectionEnable())
+	if (!getRateCorrectionEnable()) {
+		eiger_tau_ns = 0;
 		return 0;
-	else
+	}
+	else {
 #ifndef VIRTUAL
-		return Feb_Control_Get_RateTable_Tau_in_nsec();
+		eiger_tau_ns = Feb_Control_Get_RateTable_Tau_in_nsec()
+		return eiger_tau_ns;
 #else
-	return eiger_virtual_ratetable_tau_in_ns;
+		eiger_tau_ns = eiger_virtual_ratetable_tau_in_ns;
+		return eiger_tau_ns;
 #endif
+	}
 }
 
 void setExternalGating(int enable[]) {

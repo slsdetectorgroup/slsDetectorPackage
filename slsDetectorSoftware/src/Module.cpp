@@ -944,8 +944,11 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
     else if (shm()->myDetectorType == MOENCH) {
         setAdditionalJsonParameter("threshold", std::to_string(e_eV));
     }
-    throw RuntimeError(
+
+    else {
+        throw RuntimeError(
         "Set threshold energy not implemented for this detector");
+    }
 }
 
 void Module::setThresholdEnergyAndSettings(int e_eV,

@@ -1449,6 +1449,31 @@ int pulseChip(int n) {
 	return OK;
 }
 
+int validateRateCorrection(int64_t* tau_ns, char* mess) {
+	// switching on in wrong bit mode
+	if ((*tau_ns != 0) && 
+		(eiger_dynamicrange != 32) && (eiger_dynamicrange != 16)) {
+		strcpy(mess,"Rate correction Deactivated, must be in 32 or 16 bit mode\n");
+		LOG(logERROR,(mess));
+		return FAIL;
+	}
+	// default tau (-1, get proper value)
+	if (*tau_ns < 0) {
+		*tau_ns = getDefaultSettingsTau_in_nsec();
+		if (*tau_ns < 0) {
+			strcpy(mess,"Default settings file not loaded. No default tau yet\n");
+			LOG(logERROR,(mess));
+			return FAIL;
+		}
+	}
+	// user defined value (settings become undefined)
+	else if (*tau_ns > 0) {
+		setSettings(UNDEFINED);
+		LOG(logERROR, ("Settings has been changed to undefined (tau changed)\n"));
+	}	
+	return OK;
+}
+
 int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never be -1)
 #ifdef VIRTUAL
 	//deactivating rate correction

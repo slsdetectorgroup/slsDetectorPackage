@@ -3498,35 +3498,10 @@ int set_rate_correct(int file_des) {
 #else
 	// only set
 	if (Server_VerifyLock() == OK) {
-
-		int dr = setDynamicRange(-1);
-
-		// switching on in wrong bit mode
-		if ((tau_ns != 0) && (dr != 32) && (dr != 16)) {
-			ret = FAIL;
-			strcpy(mess,"Rate correction Deactivated, must be in 32 or 16 bit mode\n");
-			LOG(logERROR,(mess));
-		}
-
-		// switching on in right mode
-		else {
-			if (tau_ns < 0) {
-				tau_ns = getDefaultSettingsTau_in_nsec();
-				if (tau_ns < 0) {
-					ret = FAIL;
-					strcpy(mess,"Default settings file not loaded. No default tau yet\n");
-					LOG(logERROR,(mess));
-				}
-			}
-			else if (tau_ns > 0) {
-				//changing tau to a user defined value changes settings to undefined
-				setSettings(UNDEFINED);
-				LOG(logERROR, ("Settings has been changed to undefined (tau changed)\n"));
-			}
-			if (ret == OK) {
-				int64_t retval = setRateCorrection(tau_ns);
-				validate64(tau_ns, retval, "set rate correction", DEC);
-			}
+		ret = validateRateCorrection(&tau_ns, mess);
+		if (ret == OK) {
+			int64_t retval = setRateCorrection(tau_ns);
+			validate64(tau_ns, retval, "set rate correction", DEC);
 		}
 	}
 #endif

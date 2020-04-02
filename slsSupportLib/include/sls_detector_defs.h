@@ -245,7 +245,8 @@ class slsDetectorDefs {
         AUTO_TIMING,      /**< internal timing */
         TRIGGER_EXPOSURE, /**< trigger mode i.e. exposure is triggered */
         GATED,            /**< gated  */
-        BURST_TRIGGER     /**< trigger a burst of frames */
+        BURST_TRIGGER,     /**< trigger a burst of frames */
+        NUM_TIMING_MODES
     };
 
     /**
@@ -448,7 +449,8 @@ class slsDetectorDefs {
     enum burstMode {
         BURST_OFF,
         BURST_INTERNAL,      
-        BURST_EXTERNAL 
+        BURST_EXTERNAL,
+        NUM_BURST_MODES
     };    
 
     /**

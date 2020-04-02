@@ -397,12 +397,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->stopPort = DEFAULT_PORTNO + 1;
     sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
     shm()->currentSettings = UNINITIALIZED;
-    shm()->nFrames = 1;
-    shm()->nTriggers = 1;
-    shm()->nBursts = 1;
-    shm()->nAddStorageCells = 0;
-    shm()->timingMode = AUTO_TIMING;
-    shm()->burstMode = BURST_INTERNAL;
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
     shm()->useReceiverFlag = false;
@@ -717,7 +711,6 @@ void Module::updateCachedDetectorVariables() {
     if (client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0) ==
         FORCE_UPDATE) {
         int n = 0, i32 = 0;
-        int64_t i64 = 0;
         sls::IpAddr lastClientIP;
         n += client.Receive(&lastClientIP, sizeof(lastClientIP));
         LOG(logDEBUG1)
@@ -729,37 +722,7 @@ void Module::updateCachedDetectorVariables() {
             shm()->myDetectorType == MOENCH) {
             n += client.Receive(&i32, sizeof(i32));
             shm()->currentSettings = static_cast<detectorSettings>(i32);
-        }
-
-        // frame number
-        n += client.Receive(&i64, sizeof(i64));
-        shm()->nFrames = i64;
-
-        // storage cell
-        if (shm()->myDetectorType == JUNGFRAU) {
-            n += client.Receive(&i64, sizeof(i64));
-            shm()->nAddStorageCells = i64;
-        }
-
-        // triggers
-        n += client.Receive(&i64, sizeof(i64));
-        shm()->nTriggers = i64;
-
-        // bursts
-        if (shm()->myDetectorType == GOTTHARD2) {
-            n += client.Receive(&i64, sizeof(i64));
-            shm()->nBursts = i64;
-        }
-
-        // timing mode
-        n += client.Receive(&i32, sizeof(i32));
-        shm()->timingMode = static_cast<timingMode>(i32);        
-
-        // burst mode
-        if (shm()->myDetectorType == GOTTHARD2) {
-            n += client.Receive(&i32, sizeof(i32));
-            shm()->burstMode = static_cast<burstMode>(i32); 
-        }        
+        }   
 
         // number of channels (depends on #samples, adcmask)
         if (shm()->myDetectorType == CHIPTESTBOARD ||
@@ -1158,101 +1121,64 @@ uint64_t Module::getStartingFrameNumber() {
     return retval;
 }
 
-int64_t Module::getTotalNumFramesToReceive() {
-    int64_t repeats = shm()->nTriggers;
-    // gotthard2 & auto & burst mode, use nBursts instead of nTriggers
-    if (shm()->myDetectorType == GOTTHARD2) {
-        // auto mode (either bursts or no repeats)
-        if (shm()->timingMode == AUTO_TIMING) {
-            if (shm()->burstMode != BURST_OFF) {
-                repeats = shm()->nBursts;
-            } else {
-                repeats = 1;
-            }
-        }
-    }
-    return (shm()->nFrames * repeats * (int64_t)(shm()->nAddStorageCells + 1));    
-}
-
-void Module::sendTotalNumFramestoReceiver() {
-    if (shm()->useReceiverFlag) {
-        int64_t arg = getTotalNumFramesToReceive();
-        LOG(logDEBUG1) << "Sending total number of frames (#f x #t x #s) to Receiver: " << arg;
-        sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, arg, nullptr);   
-    }
-}
-
 int64_t Module::getNumberOfFrames() {
     int64_t retval = -1;
     sendToDetector(F_GET_NUM_FRAMES, nullptr, retval);
     LOG(logDEBUG1) << "number of frames :" << retval;
-    if (shm()->nFrames != retval) {
-        shm()->nFrames = retval;
-        sendTotalNumFramestoReceiver();
-    }    
-    return shm()->nFrames; 
+    return retval; 
 }
 
 void Module::setNumberOfFrames(int64_t value) {
     LOG(logDEBUG1) << "Setting number of frames to " << value;
     sendToDetector(F_SET_NUM_FRAMES, value, nullptr);
-    shm()->nFrames = value;
-    sendTotalNumFramestoReceiver();
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending number of frames to Receiver: " << value;
+        sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);   
+    }
 }
 
 int64_t Module::getNumberOfTriggers() {
     int64_t retval = -1;
     sendToDetector(F_GET_NUM_TRIGGERS, nullptr, retval);
     LOG(logDEBUG1) << "number of triggers :" << retval;
-    if (shm()->nTriggers != retval) {
-        shm()->nTriggers = retval;
-        sendTotalNumFramestoReceiver();
-    }    
-    return shm()->nTriggers; 
+    return retval; 
 }
 
 void Module::setNumberOfTriggers(int64_t value) {
     LOG(logDEBUG1) << "Setting number of triggers to " << value;
     sendToDetector(F_SET_NUM_TRIGGERS, value, nullptr);
-    shm()->nTriggers = value;
-    sendTotalNumFramestoReceiver();
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending number of triggers to Receiver: " << value;
+        sendToReceiver(F_SET_RECEIVER_NUM_TRIGGERS, value, nullptr);   
+    }
 }
 
 int64_t Module::getNumberOfBursts() {
     int64_t retval = -1;
     sendToDetector(F_GET_NUM_BURSTS, nullptr, retval);
     LOG(logDEBUG1) << "number of bursts :" << retval;
-    if (shm()->nBursts != retval) {
-        shm()->nBursts = retval;
-        sendTotalNumFramestoReceiver();
-    }    
-    return shm()->nBursts; 
+    return retval; 
 }
 
 void Module::setNumberOfBursts(int64_t value) {
     LOG(logDEBUG1) << "Setting number of bursts to " << value;
     sendToDetector(F_SET_NUM_BURSTS, value, nullptr);
-    shm()->nBursts = value;
-    sendTotalNumFramestoReceiver();
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending number of bursts to Receiver: " << value;
+        sendToReceiver(F_SET_RECEIVER_NUM_BURSTS, value, nullptr);   
+    }
 }
     
 int Module::getNumberOfAdditionalStorageCells() {
-    int prevVal = shm()->nAddStorageCells;
     int retval = -1;
     sendToDetector(F_GET_NUM_ADDITIONAL_STORAGE_CELLS, nullptr, retval);
     LOG(logDEBUG1) << "number of storage cells :" << retval;
-    shm()->nAddStorageCells = retval;
-    if (prevVal != retval) {
-        sendTotalNumFramestoReceiver();
-    }    
-    return shm()->nAddStorageCells; 
+    return retval; 
 }
    
 void Module::setNumberOfAdditionalStorageCells(int value) {
     LOG(logDEBUG1) << "Setting number of storage cells to " << value;
     sendToDetector(F_SET_NUM_ADDITIONAL_STORAGE_CELLS, value, nullptr);
-    shm()->nAddStorageCells = value;
-    sendTotalNumFramestoReceiver();
 }
 
 int Module::getNumberOfAnalogSamples() {
@@ -1457,15 +1383,22 @@ int64_t Module::getMeasurementTime() const {
     return retval; 
 }
 
-slsDetectorDefs::timingMode Module::setTimingMode(timingMode value) {
-    int fnum = F_SET_TIMING_MODE;
-    //auto arg = static_cast<int>(pol);
+slsDetectorDefs::timingMode Module::getTimingMode() {
+    int arg = -1;
     timingMode retval = GET_TIMING_MODE;
-    LOG(logDEBUG1) << "Setting communication to mode " << value;
-    sendToDetector(fnum, static_cast<int>(value), retval);
+    sendToDetector(F_SET_TIMING_MODE, arg, retval);
     LOG(logDEBUG1) << "Timing Mode: " << retval;
-    shm()->timingMode = retval;
     return retval;
+}
+
+void Module::setTimingMode(timingMode value) {
+    timingMode retval = GET_TIMING_MODE;
+    LOG(logDEBUG1) << "Setting timing mode to " << value;
+    sendToDetector(F_SET_TIMING_MODE, static_cast<int>(value), retval);
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending timing mode to Receiver: " << value;
+        sendToReceiver(F_SET_RECEIVER_TIMING_MODE, value, nullptr);   
+    }
 }
 
 int Module::getDynamicRange() {
@@ -1705,7 +1638,9 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
         LOG(logDEBUG1) << printReceiverConfiguration();
 
         setReceiverUDPSocketBufferSize(0);
-        sendTotalNumFramestoReceiver();
+        setNumberOfFrames(getNumberOfFrames());
+        setNumberOfTriggers(getNumberOfTriggers());
+        setTimingMode(getTimingMode());
         setExptime(getExptime());
         setPeriod(getPeriod());
 
@@ -1744,6 +1679,11 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
         case MYTHEN3:
             sendNumberofCounterstoReceiver(getCounterMask());
             setDynamicRange(getDynamicRange());
+            break;
+        
+        case GOTTHARD2:
+            setNumberOfBursts(getNumberOfBursts());
+            setBurstMode(getBurstMode());
             break;
 
         default:
@@ -2378,15 +2318,17 @@ slsDetectorDefs::burstMode Module::getBurstMode() {
     int retval = -1;
     sendToDetector(F_GET_BURST_MODE, nullptr, retval);
     LOG(logDEBUG1) << "Burst mode:" << retval;
-    shm()->burstMode = static_cast<slsDetectorDefs::burstMode>(retval);
-    return shm()->burstMode; 
+    return static_cast<slsDetectorDefs::burstMode>(retval);
 }
 
 void Module::setBurstMode(slsDetectorDefs::burstMode value) {
     int arg = static_cast<int>(value);
     LOG(logDEBUG1) << "Setting burst mode to " << arg;
     sendToDetector(F_SET_BURST_MODE, arg, nullptr);
-    shm()->burstMode = value;
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending burst mode to Receiver: " << value;
+        sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);   
+    }
 }
 
 bool Module::getCurrentSource() {
@@ -3267,6 +3209,15 @@ uint64_t Module::getReceiverCurrentFrameIndex() const {
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_GET_RECEIVER_FRAME_INDEX, nullptr, retval);
         LOG(logDEBUG1) << "Current Frame Index of Receiver: " << retval;
+    }
+    return retval;
+}
+
+int Module::getReceiverProgress() const {
+    int retval = -1;
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_GET_RECEIVER_PROGRESS, nullptr, retval);
+        LOG(logDEBUG1) << "Current Progress of Receiver: " << retval;
     }
     return retval;
 }

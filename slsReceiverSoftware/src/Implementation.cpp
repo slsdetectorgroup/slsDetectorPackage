@@ -95,7 +95,13 @@ void Implementation::InitializeMembers() {
     streamingSrcIP = sls::IpAddr{};
 
     // detector parameters
-    numberOfFrames = 0;
+    numberOfTotalFrames = 0;
+    numberOfFrames = 1;
+    numberOfTriggers = 1;
+    numberOfBursts = 1;
+    numberOfAdditionalStorageCells = 0;
+    timingMode = AUTO_TIMING;
+    burstMode = BURST_OFF;
     acquisitionPeriod = SAMPLE_TIME_IN_NS;
     acquisitionTime = 0;
     subExpTime = 0;
@@ -267,7 +273,7 @@ void Implementation::setDetectorType(const detectorType d) {
             auto fifo_ptr = fifo[i].get();
             listener.push_back(sls::make_unique<Listener>(
                 i, myDetectorType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
-                &numberOfFrames, &dynamicRange, &udpSocketBufferSize,
+                &numberOfTotalFrames, &dynamicRange, &udpSocketBufferSize,
                 &actualUDPSocketBufferSize, &framesPerFile, &frameDiscardMode,
                 &activated, &deactivatedPaddingEnable, &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
@@ -347,7 +353,7 @@ void Implementation::setDetectorPositionId(const int id) {
     for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
         dataProcessor[i]->SetupFileWriter(
             fileWriteEnable, (int *)numDet, &framesPerFile, &fileName, &filePath,
-            &fileIndex, &overwriteEnable, &detID, &numThreads, &numberOfFrames,
+            &fileIndex, &overwriteEnable, &detID, &numThreads, &numberOfTotalFrames,
             &dynamicRange, &udpPortNum[i], generalData);
     }
     assert(numDet[1] != 0);
@@ -508,7 +514,7 @@ void Implementation::setFileWriteEnable(const bool b) {
             dataProcessor[i]->SetupFileWriter(
                 fileWriteEnable, (int *)numDet, &framesPerFile, &fileName,
                 &filePath, &fileIndex, &overwriteEnable, &detID, &numThreads,
-                &numberOfFrames, &dynamicRange, &udpPortNum[i], generalData);
+                &numberOfTotalFrames, &dynamicRange, &udpPortNum[i], generalData);
         }
     }
 
@@ -594,6 +600,24 @@ uint64_t Implementation::getAcquisitionIndex() const {
     return min;
 }
 
+int Implementation::getProgress() const {
+    // get minimum of processed frame indices
+    uint64_t currentFrameIndex = -1;
+    uint32_t flagsum = 0;
+
+    for (const auto &it : dataProcessor) {
+        flagsum += it->GetStartedFlag();
+        uint64_t curr = it->GetProcessedIndex();
+        currentFrameIndex = curr < currentFrameIndex ? curr : currentFrameIndex;
+    }
+    // no data processed
+    if (flagsum != dataProcessor.size()) {
+        currentFrameIndex = -1;
+    }
+
+    return (100.00 * ((double)(currentFrameIndex + 1) / (double)numberOfTotalFrames));
+}
+
 std::vector<uint64_t> Implementation::getNumMissingPackets() const {
     std::vector<uint64_t> mp(numThreads);
     for (int i = 0; i < numThreads; i++) {
@@ -603,7 +627,7 @@ std::vector<uint64_t> Implementation::getNumMissingPackets() const {
         if (numLinesReadout != MAX_EIGER_ROWS_PER_READOUT) {
             totnp = ((numLinesReadout * np) / MAX_EIGER_ROWS_PER_READOUT);
         }     
-        totnp *= numberOfFrames;
+        totnp *= numberOfTotalFrames;
         mp[i] = listener[i]->GetNumMissingPacket(stoppedFlag, totnp);
     }
     return mp;
@@ -745,7 +769,7 @@ void Implementation::startReadout() {
 
         // wait for all packets
         const int numPacketsToReceive =
-            numberOfFrames * generalData->packetsPerFrame * listener.size();
+            numberOfTotalFrames * generalData->packetsPerFrame * listener.size();
         if (totalPacketsReceived != numPacketsToReceive) {
             while (totalPacketsReceived != previousValue) {
                 LOG(logDEBUG3)
@@ -842,7 +866,7 @@ void Implementation::SetupWriter() {
 	attr.nPixelsX = generalData->nPixelsX;
 	attr.nPixelsY = generalData->nPixelsY;
 	attr.maxFramesPerFile = framesPerFile;
-	attr.totalFrames = numberOfFrames;
+	attr.totalFrames = numberOfTotalFrames;
 	attr.exptimeNs = acquisitionTime;
 	attr.subExptimeNs = subExpTime;
 	attr.subPeriodNs = subPeriod;
@@ -932,7 +956,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 auto fifo_ptr = fifo[i].get();
                 listener.push_back(sls::make_unique<Listener>(
                     i, myDetectorType, fifo_ptr, &status, &udpPortNum[i],
-                    &eth[i], &numberOfFrames, &dynamicRange,
+                    &eth[i], &numberOfTotalFrames, &dynamicRange,
                     &udpSocketBufferSize, &actualUDPSocketBufferSize,
                     &framesPerFile, &frameDiscardMode, &activated,
                     &deactivatedPaddingEnable, &silentMode));
@@ -963,7 +987,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, (int*)nd, &quadEnable));
+                        fd, (int*)nd, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
@@ -1107,7 +1131,7 @@ void Implementation::setDataStreamEnable(const bool enable) {
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
                         i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, (int*)nd, &quadEnable));
+                        fd, (int*)nd, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
@@ -1225,6 +1249,26 @@ void Implementation::setAdditionalJsonParameter(const std::string &key, const st
  *   Detector Parameters                           *
  *                                                 *
  * ************************************************/
+void Implementation::updateTotalNumberOfFrames() {
+    int64_t repeats = numberOfTriggers;
+    // gotthard2: auto mode 
+    // burst mode: (bursts instead of triggers)
+    // non burst mode: no bursts or triggers
+    if (myDetectorType == GOTTHARD2 &&timingMode == AUTO_TIMING) {
+        if (burstMode == BURST_OFF) {
+            repeats = numberOfBursts;
+        } else {
+            repeats = 1;
+        }
+    }
+    numberOfTotalFrames = numberOfFrames * repeats * 
+        (int64_t)(numberOfAdditionalStorageCells + 1);
+    if (numberOfTotalFrames == 0) {
+        throw sls::RuntimeError("Invalid total number of frames to receive: 0");
+    }
+    LOG(logINFO) << "Total Number of Frames: " << numberOfTotalFrames;
+}
+
 uint64_t Implementation::getNumberOfFrames() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return numberOfFrames;
@@ -1232,9 +1276,69 @@ uint64_t Implementation::getNumberOfFrames() const {
 
 void Implementation::setNumberOfFrames(const uint64_t i) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
-
     numberOfFrames = i;
     LOG(logINFO) << "Number of Frames: " << numberOfFrames;
+    updateTotalNumberOfFrames();
+}
+
+uint64_t Implementation::getNumberOfTriggers() const {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    return numberOfTriggers;
+}
+
+void Implementation::setNumberOfTriggers(const uint64_t i) {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    numberOfTriggers = i;
+    LOG(logINFO) << "Number of Triggers: " << numberOfTriggers;
+    updateTotalNumberOfFrames();
+}
+
+uint64_t Implementation::getNumberOfBursts() const {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    return numberOfBursts;
+}
+
+void Implementation::setNumberOfBursts(const uint64_t i) {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    numberOfBursts = i;
+    LOG(logINFO) << "Number of Bursts: " << numberOfBursts;
+    updateTotalNumberOfFrames();
+}
+
+int Implementation::getNumberOfAdditionalStorageCells() const {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    return numberOfAdditionalStorageCells;
+}
+
+void Implementation::setNumberOfAdditionalStorageCells(const int i) {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    numberOfAdditionalStorageCells = i;
+    LOG(logINFO) << "Number of Additional Storage Cells: " << numberOfAdditionalStorageCells;
+    updateTotalNumberOfFrames();
+}
+
+slsDetectorDefs::timingMode Implementation::getTimingMode() const {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    return timingMode;
+}
+
+void Implementation::setTimingMode(const slsDetectorDefs::timingMode i) {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    timingMode = i;
+    LOG(logINFO) << "Timing Mode: " << timingMode;
+    updateTotalNumberOfFrames();
+}
+
+slsDetectorDefs::burstMode Implementation::getBurstMode() const {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    return burstMode;
+}
+
+void Implementation::setBurstMode(const slsDetectorDefs::burstMode i) {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    burstMode = i;
+    LOG(logINFO) << "Burst Mode: " << burstMode;
+    updateTotalNumberOfFrames();
 }
 
 uint64_t Implementation::getAcquisitionPeriod() const {

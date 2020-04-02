@@ -2846,7 +2846,6 @@ int send_update(int file_des) {
     ret = OK;
 	int n = 0;
 	int i32 = -1;
-	int64_t i64 = -1;
 
 	i32 = lastClientIP;
 	i32 = __builtin_bswap32(i32);
@@ -2856,42 +2855,6 @@ int send_update(int file_des) {
 	// settings
 #if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)  || defined(GOTTHARD2D)|| defined(MOENCHD)
 	i32 = (int)getSettings();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-#endif
-
-	// #frames
-	i64 = getNumFrames();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-
-	// #storage cell
-#ifdef JUNGFRAUD
-	i64 = getNumAdditionalStorageCells();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-#endif
-
-	// #triggers
-	i64 = getNumTriggers();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-
-	// #bursts
-#ifdef GOTTHARD2D
-	i64 = getNumBursts();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-#endif
-
-	// timing mode
-	i32 = (int)getTiming();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// burst mode
-#ifdef GOTTHARD2D
-	i32 = (int)getBurstMode();
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 #endif

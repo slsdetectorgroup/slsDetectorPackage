@@ -60,6 +60,11 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_detector_hostname(sls::ServerInterface &socket);
     int set_roi(sls::ServerInterface &socket);
     int set_num_frames(sls::ServerInterface &socket);
+    int set_num_triggers(sls::ServerInterface &socket);
+    int set_num_bursts(sls::ServerInterface &socket);
+    int set_num_add_storage_cells(sls::ServerInterface &socket);
+    int set_timing_mode(sls::ServerInterface &socket);
+    int set_burst_mode(sls::ServerInterface &socket);
     int set_num_analog_samples(sls::ServerInterface &socket);
     int set_num_digital_samples(sls::ServerInterface &socket);
     int set_exptime(sls::ServerInterface &socket);
@@ -137,6 +142,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int increment_file_index(sls::ServerInterface &socket);
     int set_additional_json_parameter(sls::ServerInterface &socket);
     int get_additional_json_parameter(sls::ServerInterface &socket);
+    int get_progress(sls::ServerInterface &socket);
+ 
 
     Implementation *impl() {
         if (receiver != nullptr) {

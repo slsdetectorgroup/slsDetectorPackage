@@ -14,7 +14,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200401
+#define SLS_SHMVERSION 0x200402
 
 namespace sls{
 
@@ -64,24 +64,6 @@ struct sharedSlsDetector {
 
     /** detector settings (standard, fast, etc.) */
     slsDetectorDefs::detectorSettings currentSettings;
-
-    /** number of frames */
-    int64_t nFrames;
-
-    /** number of triggers */
-    int64_t nTriggers;
-    
-    /** number of bursts */
-    int64_t nBursts;
-
-    /** number of additional storage cells */
-    int nAddStorageCells;
-    
-    /** timing mode */
-    slsDetectorDefs::timingMode timingMode;
-
-    /** burst mode */
-    slsDetectorDefs::burstMode burstMode;
 
     /** ip address/hostname of the receiver for client control via TCP */
     char rxHostname[MAX_STR_LENGTH];
@@ -439,10 +421,6 @@ class Module : public virtual slsDetectorDefs {
      */
     uint64_t getStartingFrameNumber();
 
-    int64_t getTotalNumFramesToReceive();
-
-    void sendTotalNumFramestoReceiver();
-
     int64_t getNumberOfFrames();
 
     void setNumberOfFrames(int64_t value);
@@ -550,12 +528,9 @@ class Module : public virtual slsDetectorDefs {
      * [Gotthard2] only in continuous mode */
     int64_t getMeasurementTime() const;
 
-    /**
-     * Set/get timing mode
-     * @param value timing mode (-1 gets)
-     * @returns current timing mode
-     */
-    timingMode setTimingMode(timingMode value = GET_TIMING_MODE);
+
+    timingMode getTimingMode();
+    void setTimingMode(timingMode value);
 
     int getDynamicRange();
     /**
@@ -1459,6 +1434,7 @@ class Module : public virtual slsDetectorDefs {
      * @returns current frame index of receiver
      */
     uint64_t getReceiverCurrentFrameIndex() const;
+    int getReceiverProgress() const;
 
 
     void setFileWrite(bool value);

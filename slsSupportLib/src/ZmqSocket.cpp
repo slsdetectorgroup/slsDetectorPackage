@@ -158,6 +158,7 @@ int ZmqSocket::SendHeader(
                                     "\"size\":%u, "
                                     "\"acqIndex\":%lu, "
                                     "\"frameIndex\":%lu, "
+                                    "\"progress\":%u, "
                                     "\"fname\":\"%s\", "
                                     "\"data\": %d, "
                                     "\"completeImage\": %d, "
@@ -193,6 +194,7 @@ int ZmqSocket::SendHeader(
             header.imageSize, 
             header.acqIndex, 
             header.frameIndex,
+            header.progress,
             header.fname.c_str(), 
             header.data ? 1 : 0, 
             header.completeImage ? 1 : 0,
@@ -324,6 +326,7 @@ int ZmqSocket::ParseHeader(const int index, int length, char *buff,
     zHeader.imageSize = document["size"].GetUint();
     zHeader.acqIndex = document["acqIndex"].GetUint64();
     zHeader.frameIndex = document["frameIndex"].GetUint64();
+    zHeader.progress = document["progress"].GetUint();
     zHeader.fname = document["fname"].GetString();
 
     zHeader.frameNumber = document["frameNumber"].GetUint64();

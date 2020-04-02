@@ -118,7 +118,12 @@ int ClientInterface::functionTable(){
 	flist[F_GET_RECEIVER_TYPE]				=	&ClientInterface::set_detector_type;
 	flist[F_SEND_RECEIVER_DETHOSTNAME]		= 	&ClientInterface::set_detector_hostname;
 	flist[F_RECEIVER_SET_ROI]				=	&ClientInterface::set_roi;
-	flist[F_RECEIVER_SET_NUM_FRAMES]        =   &ClientInterface::set_num_frames;    
+	flist[F_RECEIVER_SET_NUM_FRAMES]        =   &ClientInterface::set_num_frames;  
+	flist[F_SET_RECEIVER_NUM_TRIGGERS]      =   &ClientInterface::set_num_triggers;           
+	flist[F_SET_RECEIVER_NUM_BURSTS]        =   &ClientInterface::set_num_bursts;         
+	flist[F_SET_RECEIVER_NUM_ADD_STORAGE_CELLS] = &ClientInterface::set_num_add_storage_cells;                 
+	flist[F_SET_RECEIVER_TIMING_MODE]       =   &ClientInterface::set_timing_mode;          
+	flist[F_SET_RECEIVER_BURST_MODE]        =   &ClientInterface::set_burst_mode;  
 	flist[F_RECEIVER_SET_NUM_ANALOG_SAMPLES]=   &ClientInterface::set_num_analog_samples;            
 	flist[F_RECEIVER_SET_NUM_DIGITAL_SAMPLES]=  &ClientInterface::set_num_digital_samples;           
 	flist[F_RECEIVER_SET_EXPTIME]           =   &ClientInterface::set_exptime;
@@ -195,7 +200,8 @@ int ClientInterface::functionTable(){
     flist[F_INCREMENT_FILE_INDEX]           =   &ClientInterface::increment_file_index;
     flist[F_SET_ADDITIONAL_JSON_PARAMETER]  =   &ClientInterface::set_additional_json_parameter;
 	flist[F_GET_ADDITIONAL_JSON_PARAMETER]  =   &ClientInterface::get_additional_json_parameter;
-
+	flist[F_GET_RECEIVER_PROGRESS]          =   &ClientInterface::get_progress;
+      
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
 				getFunctionNameFromEnum((enum detFuncs)i) << ") located at " << flist[i];
@@ -415,8 +421,85 @@ int ClientInterface::set_roi(Interface &socket) {
 
 int ClientInterface::set_num_frames(Interface &socket) {
     auto value = socket.Receive<int64_t>();
+    if (value <= 0) {
+        throw RuntimeError("Invalid number of frames " + 
+            std::to_string(value));
+    }
+    verifyIdle(socket);
     LOG(logDEBUG1) << "Setting num frames to " << value;
     impl()->setNumberOfFrames(value);
+    int64_t retval = impl()->getNumberOfFrames();
+    validate(value, retval, "set number of frames", DEC);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_num_triggers(Interface &socket) {
+    auto value = socket.Receive<int64_t>();
+    if (value <= 0) {
+        throw RuntimeError("Invalid number of triggers " + 
+            std::to_string(value));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting num triggers to " << value;
+    impl()->setNumberOfTriggers(value);
+    int64_t retval = impl()->getNumberOfTriggers();
+    validate(value, retval, "set number of triggers", DEC);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_num_bursts(Interface &socket) {
+    auto value = socket.Receive<int64_t>();
+    if (value <= 0) {
+        throw RuntimeError("Invalid number of bursts " + 
+            std::to_string(value));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting num bursts to " << value;
+    impl()->setNumberOfBursts(value);
+    int64_t retval = impl()->getNumberOfBursts();
+    validate(value, retval, "set number of bursts", DEC);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_num_add_storage_cells(Interface &socket) {
+    auto value = socket.Receive<int>();
+    if (value < 0) {
+        throw RuntimeError("Invalid number of additional storage cells " + 
+            std::to_string(value));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting num additional storage cells to " << value;
+    impl()->setNumberOfAdditionalStorageCells(value);
+    int retval = impl()->getNumberOfAdditionalStorageCells();
+    validate(value, retval, "set number of additional storage cells", DEC);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_timing_mode(Interface &socket) {
+    auto value = socket.Receive<int>();
+    if (value < 0 || value >= NUM_TIMING_MODES) {    
+        throw RuntimeError("Invalid timing mode " + 
+            std::to_string(value));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting timing mode to " << value;
+    impl()->setTimingMode(static_cast<timingMode>(value));
+    int retval = impl()->getTimingMode();
+    validate(value, retval, "set timing mode", DEC);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_burst_mode(Interface &socket) {
+    auto value = socket.Receive<int>();
+    if (value < 0 || value >= NUM_BURST_MODES) {    
+        throw RuntimeError("Invalid burst mode " + 
+            std::to_string(value));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting burst mode to " << value;
+    impl()->setBurstMode(static_cast<burstMode>(value));
+    int retval = impl()->getBurstMode();
+    validate(value, retval, "set burst mode", DEC);
     return socket.Send(OK);
 }
 
@@ -1423,5 +1506,11 @@ int ClientInterface::get_additional_json_parameter(Interface &socket) {
     char retval[SHORT_STR_LENGTH]{};
     sls::strcpy_safe(retval, impl()->getAdditionalJsonParameter(arg).c_str());
     LOG(logDEBUG1) << "additional json parameter (" << arg << "):" << retval;
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::get_progress(Interface &socket) {
+    int retval = impl()->getProgress();
+    LOG(logDEBUG1) << "progress retval: " << retval;
     return socket.sendResult(retval);
 }

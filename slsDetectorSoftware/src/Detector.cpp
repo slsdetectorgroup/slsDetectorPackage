@@ -234,8 +234,7 @@ Result<ns> Detector::getPeriodLeft(Positions pos) const {
 }
 
 Result<defs::timingMode> Detector::getTimingMode(Positions pos) const {
-    return pimpl->Parallel(&Module::setTimingMode, pos,
-                           defs::GET_TIMING_MODE);
+    return pimpl->Parallel(&Module::getTimingMode, pos);
 }
 
 void Detector::setTimingMode(defs::timingMode value, Positions pos) {

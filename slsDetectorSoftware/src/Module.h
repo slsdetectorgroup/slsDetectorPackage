@@ -62,9 +62,6 @@ struct sharedSlsDetector {
     /**  number of dacs per module*/
     int nDacs;
 
-    /** detector settings (standard, fast, etc.) */
-    slsDetectorDefs::detectorSettings currentSettings;
-
     /** ip address/hostname of the receiver for client control via TCP */
     char rxHostname[MAX_STR_LENGTH];
 
@@ -285,10 +282,6 @@ class Module : public virtual slsDetectorDefs {
      */
     std::vector<std::string> getConfigFileCommands();
 
-    /**
-     * Get detector settings
-     * @returns current settings
-     */
     detectorSettings getSettings();
 
     /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2
@@ -296,18 +289,8 @@ class Module : public virtual slsDetectorDefs {
      * [Gotthard2] Options: DYNAMICGAIN, FIXGAIN1, FIXGAIN2
      * [Moench] Options: G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, 
      *                   G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
-     * [Eiger] Only stores them locally in shm Options: STANDARD, HIGHGAIN, LOWGAIN, VERYHIGHGAIN, VERYLOWGAIN
      */
-    detectorSettings setSettings(detectorSettings isettings);
-
-    /**
-     * Send detector settings only (set only for Jungfrau, Gotthard, Moench, get
-     * for all) Only the settings enum is sent to the detector, where it will
-     * initialize al the dacs already hard coded in the detector server
-     * @param isettings  settings
-     * @returns current settings
-     */
-    detectorSettings sendSettingsOnly(detectorSettings isettings);
+    void setSettings(detectorSettings isettings);
 
     /**
      * Get threshold energy (Mythen and Eiger)

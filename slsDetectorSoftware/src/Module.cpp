@@ -396,7 +396,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->controlPort = DEFAULT_PORTNO;
     shm()->stopPort = DEFAULT_PORTNO + 1;
     sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
-    shm()->currentSettings = UNINITIALIZED;
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
     shm()->useReceiverFlag = false;
@@ -716,14 +715,6 @@ void Module::updateCachedDetectorVariables() {
         LOG(logDEBUG1)
             << "Updating detector last modified by " << lastClientIP;
 
-        // settings
-        if (shm()->myDetectorType == EIGER || shm()->myDetectorType == JUNGFRAU || 
-            shm()->myDetectorType == GOTTHARD || shm()->myDetectorType == GOTTHARD2 ||
-            shm()->myDetectorType == MOENCH) {
-            n += client.Receive(&i32, sizeof(i32));
-            shm()->currentSettings = static_cast<detectorSettings>(i32);
-        }   
-
         // number of channels (depends on #samples, adcmask)
         if (shm()->myDetectorType == CHIPTESTBOARD ||
             shm()->myDetectorType == MOENCH) {
@@ -820,49 +811,21 @@ std::vector<std::string> Module::getConfigFileCommands() {
 }
 
 slsDetectorDefs::detectorSettings Module::getSettings() {
-    return sendSettingsOnly(GET_SETTINGS);
+    int arg = -1;
+    int retval = -1;
+    sendToDetector(F_SET_SETTINGS, arg, retval);
+    LOG(logDEBUG1) << "Settings: " << retval;
+    return static_cast<detectorSettings>(retval);
 }
 
-slsDetectorDefs::detectorSettings
-Module::setSettings(detectorSettings isettings) {
-    LOG(logDEBUG1) << "Module setSettings " << isettings;
-
-    if (isettings == -1) {
-        return getSettings();
-    }
-
-    // eiger: only set shm, setting threshold loads the module data
+void Module::setSettings(detectorSettings isettings) {
     if (shm()->myDetectorType == EIGER) {
-        switch (isettings) {
-        case STANDARD:
-        case HIGHGAIN:
-        case LOWGAIN:
-        case VERYHIGHGAIN:
-        case VERYLOWGAIN:
-            shm()->currentSettings = isettings;
-            return shm()->currentSettings;
-        default:
-            std::ostringstream ss;
-            ss << "Unknown settings " << ToString(isettings)
-               << " for this detector!";
-            throw RuntimeError(ss.str());
-        }
+        throw RuntimeError("Cannot set settings for Eiger. Use threshold energy.");
     }
-
-    // others: send only the settings, detector server will update dac values
-    // already in server
-    return sendSettingsOnly(isettings);
-}
-
-slsDetectorDefs::detectorSettings
-Module::sendSettingsOnly(detectorSettings isettings) {
     int arg = static_cast<int>(isettings);
     int retval = -1;
     LOG(logDEBUG1) << "Setting settings to " << arg;
     sendToDetector(F_SET_SETTINGS, arg, retval);
-    LOG(logDEBUG1) << "Settings: " << retval;
-    shm()->currentSettings = static_cast<detectorSettings>(retval);
-    return shm()->currentSettings;
 }
 
 int Module::getThresholdEnergy() {
@@ -914,7 +877,7 @@ void Module::setThresholdEnergyAndSettings(int e_eV,
 
     // if settings provided, use that, else use the shared memory variable
     detectorSettings is =
-        ((isettings != GET_SETTINGS) ? isettings : shm()->currentSettings);
+        ((isettings != GET_SETTINGS) ? isettings : getSettings());
 
     // verify e_eV exists in trimEneregies[]
     if (shm()->trimEnergies.empty() || (e_eV < shm()->trimEnergies.front()) ||
@@ -959,8 +922,7 @@ void Module::setThresholdEnergyAndSettings(int e_eV,
             linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
     }
 
-    shm()->currentSettings = is;
-    myMod.reg = shm()->currentSettings;
+    myMod.reg = is;
     myMod.eV = e_eV;
     setModule(myMod, tb);
     if (getSettings() != is) {

@@ -2852,13 +2852,6 @@ int send_update(int file_des) {
 	n = sendData(file_des, &i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
-	// settings
-#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)  || defined(GOTTHARD2D)|| defined(MOENCHD)
-	i32 = (int)getSettings();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-#endif
-
 	// number of channels
 #if defined(MOENCHD) || defined(CHIPTESTBOARDD)
 	{

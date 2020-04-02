@@ -1906,14 +1906,14 @@ int slsReceiverTCPIPInterface::set_fifo_depth() {
 			else {
 				ret = receiverBase->setFifoDepth(value);
 				if (ret == FAIL) {
-					strcpy(mess,"Could not set fifo depth");
+					strcpy(mess,"Could not set fifo depth\n");
 					FILE_LOG(logERROR) << mess;
 				}
 			}
 		}
 		//get
 		retval = receiverBase->getFifoDepth();
-		if(value >= 0 && retval != value) {
+		if(ret == OK && value >= 0 && retval != value) {
 			ret = FAIL;
 			strcpy(mess, "Could not set fifo depth\n");
 			FILE_LOG(logERROR) << mess;

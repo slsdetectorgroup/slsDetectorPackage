@@ -828,6 +828,7 @@ int UDPStandardImplementation::SetupFifoStructure() {
             for (std::vector<Fifo*>::const_iterator it = fifo.begin(); it != fifo.end(); ++it)
                 delete(*it);
             fifo.clear();
+			fifoDepth = 0;
             return FAIL;
 	    }
 		//set the listener & dataprocessor threads to point to the right fifo

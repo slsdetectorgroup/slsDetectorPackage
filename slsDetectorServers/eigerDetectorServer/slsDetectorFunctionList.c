@@ -1623,12 +1623,11 @@ int64_t getCurrentTau() {
 	}
 	else {
 #ifndef VIRTUAL
-		eiger_tau_ns = Feb_Control_Get_RateTable_Tau_in_nsec()
-		return eiger_tau_ns;
+		eiger_tau_ns = Feb_Control_Get_RateTable_Tau_in_nsec();
 #else
 		eiger_tau_ns = eiger_virtual_ratetable_tau_in_ns;
-		return eiger_tau_ns;
 #endif
+		return eiger_tau_ns;
 	}
 }
 

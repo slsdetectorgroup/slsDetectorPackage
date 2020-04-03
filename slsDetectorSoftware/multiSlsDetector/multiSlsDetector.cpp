@@ -2976,9 +2976,9 @@ int multiSlsDetector::setDynamicRange(int p) {
 		if (p == 32) {
 			std::cout << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32" << std::endl;
 			setSpeed(CLOCK_DIVIDER, 2);
-		} else if (p == 16) {
-			std::cout << "Setting Clock to Half Speed for Dynamic Range of 16" << std::endl;
-			setSpeed(CLOCK_DIVIDER, 1);
+		} else {
+			std::cout << "Setting Clock to Full Speed for Dynamic Range of " << p << std::endl;
+			setSpeed(CLOCK_DIVIDER, 0);
 		}
 		if (p != -1)
 			updateOffsets();

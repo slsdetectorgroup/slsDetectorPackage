@@ -46,7 +46,7 @@ struct BebInfo{
 
 
   void Beb_GetModuleConfiguration(int* master, int* top, int* normal);
-  void Beb_EndofDataSend(int tengiga);
+  int Beb_IsTransmitting(int* retval, int tengiga, int waitForDelay);
 
   int Beb_SetMasterViaSoftware();
   int Beb_SetSlaveViaSoftware();

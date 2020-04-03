@@ -17,14 +17,15 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
 1. Topics Concerning
 ====================
 
+    - (Eiger) Additional status: Transmitting
     - (Eiger) Change in default vcal dac value
     - (Eiger) Deactivate a module
     - (Eiger) Setting all trimbits argument check
     - (Eiger client) Dynamic range change effect on clock divider
-    - (Eiger Receiver) Different rx_fifodepth defaults
+    - (Eiger) Different rx_fifodepth defaults
+    - (Receiver) performance (memory allocation and alignment, file buffering)
     - (Receiver) rx_fifodepth has a higher range
     - (Receiver) subperiod in master file
-    - (Receiver) performance (memory allocation and alignment, file buffering)
     - (Package) Removed warnings including memory overlap copy
     - (Users) Added setflippeddatax to users class
     - (Zmq) Client data streaming (Client data call back)
@@ -56,6 +57,13 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
     2.  (Eiger) Changing dynamic range ro 4, 8 or 16 changes the clock divider
         to full speed, whereas dynamic range of 32 still changes the clock divider to 
         quarter speed.
+
+    Detector Server (Eiger)
+    -----------------------
+    1.  After acquiring, if the detector is still streaming out data, then the 
+        status is Trasnmitting (command line: 'data'). Only after this process, 
+        will it become idle. Previously, sls_detector_acquire waited for 
+        end of data streaming before returning. It will continue to do so.
 
 
 

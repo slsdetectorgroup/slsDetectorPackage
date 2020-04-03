@@ -1737,19 +1737,23 @@ enum runStatus getRunStatus(){
 #else
 
 	int i = Feb_Control_AcquisitionInProgress();
-	switch (i) {
-	case STATUS_ERROR:
+	if (i == STATUS_ERROR) {
 		printf("Status: ERROR reading status register\n");
 		return ERROR;
-	case STATUS_IDLE:
+	} else if (i == STATUS_IDLE) {
+		int isTransmitting = 0;
+		if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 0) == FAIL) {
+			return ERROR;
+		}
+		if (isTransmitting) {
+			printf("Status: TRANSMITTING\n");
+			return TRANSMITTING;
+		} 
 		printf("Status: IDLE\n");
 		return IDLE;
-	default:
-		printf("Status: RUNNING...\n");
-		return RUNNING;
 	}
-
-	return IDLE;
+	printf("Status: RUNNING...\n");
+	return RUNNING;
 #endif
 }
 
@@ -1783,8 +1787,18 @@ void readFrame(int *ret, char *mess){
 	}
 
 	//wait for detector to send
-	Beb_EndofDataSend(send_to_ten_gig);
-
+	int isTransmitting = 1;
+	while (isTransmitting) {
+		if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 1) == FAIL) {
+				strcpy(mess,"Could not read delay counters\n");
+				*ret = (int)FAIL;
+				return;
+		}
+		if (isTransmitting) {
+			printf("Transmitting...\n");
+		}
+	}
+	printf("Detector has sent all data\n");
 
 	printf("*****Done Waiting...\n");
 	*ret = (int)FINISHED;

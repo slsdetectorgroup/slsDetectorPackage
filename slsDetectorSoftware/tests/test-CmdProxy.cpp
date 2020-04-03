@@ -819,11 +819,38 @@ TEST_CASE("imagetest", "[.cmd][.new]") {
     }
 }
 
+/** temperature */
 
+TEST_CASE("temp_adc", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD) {
+        REQUIRE_NOTHROW(proxy.Call("temp_adc", {}, -1, GET));
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(proxy.Call("temp_adc", {}, 0, GET, oss));
+        std::string s = (oss.str()).erase (0, strlen("temp_adc "));
+        REQUIRE(std::stoi(s) != -1);
+    } else {
+        REQUIRE_THROWS(proxy.Call("temp_adc", {}, -1, GET));
+    }
+}
 
-
-
-
+TEST_CASE("temp_fpga", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD ||
+         det_type == defs::EIGER) {
+        REQUIRE_NOTHROW(proxy.Call("temp_fpga", {}, -1, GET));
+        std::ostringstream oss;
+        REQUIRE_NOTHROW(proxy.Call("temp_fpga", {}, 0, GET, oss));
+        std::string s = (oss.str()).erase (0, strlen("temp_fpga "));
+        REQUIRE(std::stoi(s) != -1);
+    } else {
+        REQUIRE_THROWS(proxy.Call("temp_fpga", {}, -1, GET));
+    }
+}
 
 
 
@@ -2700,93 +2727,6 @@ TEST_CASE("zmqport", "[.cmd]") {
 //         for(int i = 0; i <= 8; ++i) {
 //             REQUIRE_NOTHROW(multiSlsDetectorClient("adc " +
 //             std::to_string(i), GET));
-//         }
-//     }
-// }
-
-// TEST_CASE("temp_fpga", "[.cmd][.eiger][.jungfrau][.gotthard]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_fpga", GET));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_fpga 0", PUT));
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:temp_fpga", GET, nullptr,
-//         oss)); std::string s = (oss.str()).erase (0, strlen("temp_fpga "));
-//         REQUIRE(std::stoi(s) != -1);
-//     }
-// }
-
-// TEST_CASE("temp_adc", "[.cmd][.jungfrau][.gotthard]") {
-//     if (test::type != defs::GOTTHARD && test::type !=
-//     defs::JUNGFRAU ) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_adc", GET));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_adc 0", PUT));
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:temp_adc", GET, nullptr,
-//         oss)); std::string s = (oss.str()).erase (0, strlen("temp_adc "));
-//         REQUIRE(std::stoi(s) != -1);
-//     }
-// }
-
-// TEST_CASE("temp", "[.cmd][.eiger]") {
-//     if (test::type != defs::EIGER) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_fpgaext", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_10ge", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_dcdc", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_sodl", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_sodr", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_fpgafl", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_fpgafr", GET));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_fpgaext 0", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_10ge 0", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_dcdc 0", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_sodl 0", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_sodr 0", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_fpgafl 0", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_fpgafr 0", PUT));
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:temp_fpgaext", GET,
-//             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("temp_fpgaext ")); REQUIRE(std::stoi(s) != -1);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:temp_10ge", GET,
-//             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("temp_10ge ")); REQUIRE(std::stoi(s) != -1);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:temp_dcdc", GET,
-//             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("temp_dcdc ")); REQUIRE(std::stoi(s) != -1);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:temp_sodl", GET,
-//             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("temp_sodl ")); REQUIRE(std::stoi(s) != -1);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:temp_sodr", GET,
-//             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("temp_sodr ")); REQUIRE(std::stoi(s) != -1);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:temp_fpgafl", GET,
-//             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("temp_fpgafl ")); REQUIRE(std::stoi(s) != -1);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:temp_fpgafr", GET,
-//             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("temp_fpgafr ")); REQUIRE(std::stoi(s) != -1);
 //         }
 //     }
 // }

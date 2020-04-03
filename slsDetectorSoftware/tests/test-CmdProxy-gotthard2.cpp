@@ -88,17 +88,9 @@ TEST_CASE("bursts", "[.cmd][.new]") {
     }
 }
 
+/* dacs */
 
-
-
-
-
-
-
-
-
-
-TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs]") {
+TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs][.new]") {
     // vref_h_adc,   vb_comp_fe, vb_comp_adc,  vcom_cds,
     // vref_restore, vb_opa_1st, vref_comp_fe, vcom_adc1,
     // vref_prech,   vref_l_adc, vref_cds,     vb_cs,
@@ -179,44 +171,88 @@ TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs]") {
     }
 }
 
-TEST_CASE("vchip", "[.cmd][.onchipdacs]") {
+/* on chip dacs */
+
+TEST_CASE("vchip_comp_fe", "[.cmd][.onchipdacs][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::GOTTHARD2) {
-        std::vector<std::string> on_chip_dac_names = {"vchip_comp_fe", "vchip_opa_1st", "vchip_opa_fd", "vchip_comp_adc", "vchip_ref_comp_fe", "vchip_cs"};
-        std::vector<defs::dacIndex> on_chip_dac_indices = {defs::VB_COMP_FE, defs::VB_OPA_1ST, defs::VB_OPA_FD, defs::VB_COMP_ADC, defs::VREF_COMP_FE, defs::VB_CS};
-        std::vector<int> values = {0x137, 0x000, 0x134, 0x3FF, 0x100, 0x0D0};
-
-        for (size_t i = 0; i < on_chip_dac_names.size(); ++i) {
-            REQUIRE_THROWS(proxy.Call(on_chip_dac_names[i], {}, -1, GET));
-            REQUIRE_THROWS(proxy.Call(on_chip_dac_names[i], {"10", "0x0"}, -1, GET)); // chip index (-1 to 9)
-            REQUIRE_THROWS(proxy.Call(on_chip_dac_names[i], {"-1", "0x400"}, -1, GET)); // max val is 0x3ff
-        
-            auto previous = det.getOnChipDAC(on_chip_dac_indices[i], -1);
-            auto dacstr = sls::ToStringHex(values[i]);
-            int chip_index = -1;
-            auto chip_index_str = std::to_string(chip_index);
-
-            std::ostringstream oss_set, oss_get;
-            proxy.Call(on_chip_dac_names[i], {chip_index_str, dacstr}, -1, PUT, oss_set);
-            REQUIRE(oss_set.str() == on_chip_dac_names[i] + " " + chip_index_str + " " + dacstr + "\n");
-            proxy.Call(on_chip_dac_names[i], {chip_index_str}, -1, GET, oss_get);
-            REQUIRE(oss_get.str() == on_chip_dac_names[i] + " " + chip_index_str + " "  + dacstr + "\n");
-            // Reset all dacs to previous value
-            for (int i = 0; i != det.size(); ++i) {
-                det.setOnChipDAC(on_chip_dac_indices[i], chip_index, previous[i], {i});
-            }
-        }
+        SECTION("vchip_comp_fe") { test_onchip_dac(defs::VB_COMP_FE, "vchip_comp_fe", 0x137); }
     } else {
         REQUIRE_THROWS(proxy.Call("vchip_comp_fe", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vchip_opa_1st", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vchip_opa_fd", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vchip_comp_adc", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vchip_ref_comp_fe", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vchip_cs", {}, -1, GET));        
     }
 }
+
+TEST_CASE("vchip_opa_1st", "[.cmd][.onchipdacs][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2) {
+        SECTION("vchip_opa_1st") { test_onchip_dac(defs::VB_OPA_1ST, "vchip_opa_1st", 0x000); }
+    } else {
+        REQUIRE_THROWS(proxy.Call("vchip_opa_1st", {}, -1, GET));
+    }
+}
+
+TEST_CASE("vchip_opa_fd", "[.cmd][.onchipdacs][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2) {
+        SECTION("vchip_opa_fd") { test_onchip_dac(defs::VB_OPA_FD, "vchip_opa_fd", 0x134); }
+    } else {
+        REQUIRE_THROWS(proxy.Call("vchip_opa_fd", {}, -1, GET));
+    }
+}
+
+TEST_CASE("vchip_comp_adc", "[.cmd][.onchipdacs][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2) {
+        SECTION("vchip_comp_adc") { test_onchip_dac(defs::VB_COMP_ADC, "vchip_comp_adc", 0x3FF); }
+    } else {
+        REQUIRE_THROWS(proxy.Call("vchip_comp_adc", {}, -1, GET));
+    }
+}
+
+TEST_CASE("vchip_ref_comp_fe", "[.cmd][.onchipdacs][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2) {
+        SECTION("vchip_ref_comp_fe") { test_onchip_dac(defs::VREF_COMP_FE, "vchip_ref_comp_fe", 0x100); }
+    } else {
+        REQUIRE_THROWS(proxy.Call("vchip_ref_comp_fe", {}, -1, GET));
+    }
+}
+
+TEST_CASE("vchip_cs", "[.cmd][.onchipdacs][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2) {
+        SECTION("vchip_cs") { test_onchip_dac(defs::VB_CS, "vchip_cs", 0x0D0); }
+    } else {
+        REQUIRE_THROWS(proxy.Call("vchip_cs", {}, -1, GET));
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 TEST_CASE("burstmode", "[.cmd]") {

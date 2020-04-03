@@ -15,7 +15,9 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
-TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs]") {
+/* dacs */
+
+TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs][.new]") {
     // vcassh, vth2, vshaper, vshaperneg, vipre_out, vth3, vth1,
     // vicin, vcas, vpreamp, vpl, vipre, viinsh, vph, vtrim, vdcsh,
 
@@ -86,6 +88,22 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs]") {
         REQUIRE_THROWS(proxy.Call("vdd_prot", {}, -1, GET));
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 TEST_CASE("counters", "[.cmd]") {
     Detector det;

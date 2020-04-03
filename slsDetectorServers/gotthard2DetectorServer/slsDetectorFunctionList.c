@@ -434,12 +434,10 @@ void setupDetector() {
 	// power on chip
 	powerChip(1);
 
-#ifndef VIRTUAL
 	// also sets default dac and on chip dac values 
 	if (readConfigFile() == FAIL) {
 		return;
 	}
-#endif
 	setBurstMode(DEFAULT_BURST_MODE);
 	setSettings(DEFAULT_SETTINGS);
 

@@ -20,6 +20,7 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
     - (Eiger) Change in vcal dac value
     - (Eiger) Deactivate a module
     - (Eiger) Setting all trimbits argument check
+    - (Eiger client) Changing dynamic range changes to different clock divider
     - (Receiver) rx_fifodepth has a higher range
     - (Receiver) subperiod in master file
     - (Receiver) performance (memory allocation and alignment, file buffering)
@@ -47,6 +48,10 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
     Client
     ------
     1.  Added setflippeddatax to users class.
+
+    2.  (Eiger) Changing dynamic range ro 4, 8 or 16 changes the clock divider
+        to full speed, whereas dynamic range of 32 still changes the clock divider to 
+        quarter speed.
 
 
 

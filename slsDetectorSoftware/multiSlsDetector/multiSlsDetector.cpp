@@ -2972,7 +2972,7 @@ int multiSlsDetector::setDynamicRange(int p) {
 	}
 
 	//for usability for the user
-	if (getDetectorsType() == EIGER) {
+	if (getDetectorsType() == EIGER && p != -1) {
 		if (p == 32) {
 			std::cout << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32" << std::endl;
 			setSpeed(CLOCK_DIVIDER, 2);
@@ -2980,8 +2980,10 @@ int multiSlsDetector::setDynamicRange(int p) {
 			std::cout << "Setting Clock to Full Speed for Dynamic Range of " << p << std::endl;
 			setSpeed(CLOCK_DIVIDER, 0);
 		}
-		if (p != -1)
-			updateOffsets();
+		updateOffsets();
+		if (thisMultiDetector->receiverOnlineFlag == ONLINE_FLAG) {
+			std::cout << "Setting receiver fifo depth to default" << std::endl;
+		}
 	}
 	return ret;
 }

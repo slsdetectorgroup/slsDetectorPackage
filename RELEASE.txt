@@ -21,6 +21,7 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
     - (Eiger) Deactivate a module
     - (Eiger) Setting all trimbits argument check
     - (Eiger client) Changing dynamic range changes to different clock divider
+    - (Eiger Receiver) different rx_fifodepth defaults
     - (Receiver) rx_fifodepth has a higher range
     - (Receiver) subperiod in master file
     - (Receiver) performance (memory allocation and alignment, file buffering)
@@ -44,6 +45,9 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
         from start. Removed file buffering when writing to file. Replaced
         pausing on keepRunning variable with semaphore to reduce cpu
         load.
+    2.  (Eiger) rx_fifodepth default is 100 for 32 bit mode, but 1000
+        for other modes. Changing dynamic range changes bit mode to 
+        their defaults.
 
     Client
     ------

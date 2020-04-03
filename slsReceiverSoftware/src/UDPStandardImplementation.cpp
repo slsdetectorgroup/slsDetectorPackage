@@ -388,6 +388,7 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i) {
 		for (std::vector<DataProcessor*>::const_iterator it = dataProcessor.begin(); it != dataProcessor.end(); ++it)
 			(*it)->SetPixelDimension();
 
+		fifoDepth = generalData->defaultFifoDepth;
 		numberofJobs = -1; //changes to imagesize has to be noted to recreate fifo structure
 		if (SetupFifoStructure() == FAIL)
 			return FAIL;

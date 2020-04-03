@@ -5,6 +5,9 @@
 
 #define CTRL_SRVR_INIT_TIME_US      (300 * 1000)
 
+#define PIPE_WRITE 1
+#define PIPE_READ 0
+
 /* Hardware Definitions */
 #define NCOUNTERS					(3)
 #define MAX_COUNTER_MSK				(0x7)

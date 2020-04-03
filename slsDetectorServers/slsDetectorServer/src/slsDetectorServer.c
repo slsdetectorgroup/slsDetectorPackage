@@ -11,6 +11,7 @@
 #include <signal.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 // Global variables from  communication_funcs
 extern int isControlServer;
@@ -23,6 +24,9 @@ extern int checkModuleFlag;
 
 
 // Global variables from slsDetectorFunctionList
+#ifdef VIRTUAL
+//extern int pipeFDs[2];
+#endif
 #ifdef GOTTHARDD
 extern int phaseShift;
 #endif
@@ -31,7 +35,8 @@ void error(char *msg){
 	perror(msg);
 }
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
+
 	// print version
 	if (argc > 1 && !strcasecmp(argv[1], "-version")) {
         int version = 0;
@@ -61,11 +66,7 @@ int main(int argc, char *argv[]){
 	{
 		int i;
 		for (i = 1; i < argc; ++i) {
-			if(!strcasecmp(argv[i],"-stopserver")) {
-				LOG(logINFO, ("Detected stop server\n"));
-				isControlServer = 0;
-			}
-            else if(!strcasecmp(argv[i],"-devel")){
+            if(!strcasecmp(argv[i],"-devel")){
                 LOG(logINFO, ("Detected developer mode\n"));
                 debugflag = 1;
             }
@@ -82,7 +83,7 @@ int main(int argc, char *argv[]){
 			        LOG(logERROR, ("cannot decode port value %s. Exiting.\n", argv[i + 1]));
 			        return -1;
 			    }
-				LOG(logINFO, ("Detected port: %d\n", portno));
+				LOG(logINFO, ("Detected control port: %d\n", portno));
             }
 #ifdef GOTTHARDD
 			else if(!strcasecmp(argv[i],"-phaseshift")){
@@ -100,33 +101,53 @@ int main(int argc, char *argv[]){
 		}
 	}
 
+
+	// stop server
 #ifdef STOP_SERVER
-	char cmd[MAX_STR_LENGTH];
-	memset(cmd, 0, MAX_STR_LENGTH);
+
+	// create pipes to communicate with stop server
+#ifdef VIRTUAL
+	/*if (pipe(pipeFDs) < 0) {
+		LOG(logERROR, ("Could not create pipes to communicate with stop server\n"));
+		return -1;
+	}*/
 #endif
-	if (isControlServer) {
-		LOG(logINFO, ("Opening control server on port %d \n", portno));
-#ifdef STOP_SERVER
-		{
-			int i;
-			for (i = 0; i < argc; ++i) {
-				if (i > 0) {
-					strcat(cmd, " ");
-				}
-				strcat(cmd, argv[i]);
-			}
-			char temp[50];
-			memset(temp, 0, sizeof(temp));
-			sprintf(temp, " -stopserver -port %d &", portno + 1);
-			strcat(cmd, temp);
-			
-			LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
-			system(cmd);
-		}
+
+	// fork stop server
+	pid_t cpid = fork(); 
+	if (cpid < 0) {
+		LOG(logERROR, ("Could not create fork a stop server\n"));
+		return -1;
+	}
+		//fcntl(pipeFDs[PIPE_READ], F_SETFL, O_NONBLOCK);
+		//fcntl(pipeFDs[PIPE_WRITE], F_SETFL, O_NONBLOCK);
+
+	// stop server (child process)
+	if (cpid == 0) {
+		isControlServer = 0;
+		++portno;
+		LOG(logINFOBLUE, ("Stop server [%d]\n", portno));
+		// change name of stop server to distinguish
+		char stopServerSuffix[30];
+		memset(stopServerSuffix, 0, sizeof(stopServerSuffix));
+		sprintf(stopServerSuffix, " Stop_Server %d", portno);
+		//strcat(argv[0], stopServerSuffix);
+#ifdef VIRTUAL
+		//close(pipeFDs[PIPE_WRITE]);
+		//fcntl(pipeFDs[PIPE_READ], F_SETFL, O_NONBLOCK);
 #endif
 	} else {
-		LOG(logINFO,("Opening stop server on port %d \n", portno));
+		isControlServer = 1;
+		LOG(logINFOBLUE, ("Control server [%d]\n", portno));
+#ifdef VIRTUAL
+		//close(pipeFDs[PIPE_READ]);
+#endif
 	}
+#endif
+
+
+
+
 
 	init_detector();
 
@@ -142,7 +163,7 @@ int main(int argc, char *argv[]){
 	if (isControlServer) {
 		LOG(logINFOBLUE, ("Control Server Ready...\n\n"));
 	} else {
-		LOG(logINFO, ("Stop Server Ready...\n\n"));
+		LOG(logINFOBLUE, ("Stop Server Ready...\n\n"));
 	}
 
 	// waits for connection

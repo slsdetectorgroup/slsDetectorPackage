@@ -24,6 +24,7 @@ extern udpStruct udpDetails;
 extern const enum detectorType myDetectorType;
 
 // Global variable from communication_funcs.c
+extern int isControlServer;
 extern void getMacAddressinString(char* cmac, int size, uint64_t mac);
 extern void getIpAddressinString(char* cip, uint32_t ip);
 
@@ -32,6 +33,7 @@ int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
 
 #ifdef VIRTUAL
+//int pipeFDs[2];
 pthread_t pthread_virtual_tid;
 int virtual_status = 0;
 int virtual_stop = 0;
@@ -1351,10 +1353,16 @@ int startStateMachine(){
 	LOG(logINFOBLUE, ("Starting State Machine\n"));
 	// set status to running
 	virtual_status = 1;
+	/*if (isControlServer) {
+		//write(pipeFDs[PIPE_WRITE], &virtual_status, sizeof(virtual_status));
+	}*/
 	virtual_stop = 0;
 	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
 		LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
 		virtual_status = 0;
+		/*if (isControlServer) {
+			//write(pipeFDs[PIPE_WRITE], &virtual_status, sizeof(virtual_status));
+		}*/		
 		return FAIL;
 	}
 	LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
@@ -1455,6 +1463,9 @@ void* start_timer(void* arg) {
 	closeUDPSocket(0);
 
 	virtual_status = 0;
+	/*if (isControlServer) {
+		//write(pipeFDs[PIPE_WRITE], &virtual_status, sizeof(virtual_status));
+	}	*/
 	LOG(logINFOBLUE, ("Finished Acquiring\n"));
 	return NULL;
 }
@@ -1475,6 +1486,13 @@ int stopStateMachine(){
 
 enum runStatus getRunStatus(){
 #ifdef VIRTUAL
+	/*if (!isControlServer) {
+		LOG(logINFORED, ("***** reading\n"));
+		while (read(pipeFDs[PIPE_READ], &virtual_status, sizeof(virtual_status)) > 0) {
+			LOG(logINFORED, ("virtual status:%d\n", virtual_status));
+		}
+		LOG(logINFORED, ("***** final %d\n", virtual_status));
+	}*/
 	if(virtual_status == 0){
 		LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
@@ -1550,6 +1568,12 @@ void readFrame(int *ret, char *mess) {
 
 u_int32_t runBusy() {
 #ifdef VIRTUAL
+	/*if (!isControlServer) {
+		LOG(logINFORED, ("runbusy \n"));
+		while (read(pipeFDs[PIPE_READ], &virtual_status, sizeof(virtual_status)) > 0) {
+			LOG(logINFORED, ("runbusy virtual status:%d\n", virtual_status));
+		}
+	}*/
     return virtual_status;
 #endif
 	u_int32_t s = (bus_r(PAT_STATUS_REG) & PAT_STATUS_RUN_BUSY_MSK);

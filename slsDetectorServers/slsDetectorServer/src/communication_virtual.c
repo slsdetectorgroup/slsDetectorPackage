@@ -3,6 +3,7 @@
 #include "clogger.h"
 
 #include <string.h>
+#include <unistd.h>     // usleep
 
 #define FILE_STATUS "/tmp/sls_virtual_server_status_"
 #define FILE_STOP "/tmp/sls_virtual_server_stop_"
@@ -48,23 +49,35 @@ void ComVirtual_setFileNames(const int port) {
     memset(fnameStatus, 0, FILE_NAME_LENGTH);
     memset(fnameStop, 0, FILE_NAME_LENGTH);
 	sprintf(fnameStatus, "%s%d", FILE_STATUS, port);
-	sprintf(fnameStatus, "%s%d", FILE_STOP, port);
+	sprintf(fnameStop, "%s%d", FILE_STOP, port);
 }
 
-int ComVirtual_writeStatus(int value) {
-	return ComVirtual_writeToFile(value, FILE_STATUS, "Control");
+void ComVirtual_setStatus(int value) {
+	while (!ComVirtual_writeToFile(value, fnameStatus, "Control")) {
+        usleep(100);
+    }
 }
 
-int ComVirtual_readStatus(int* value) {
-	return ComVirtual_readFromFile(value, FILE_STATUS, "Control");
+int ComVirtual_getStatus() {
+    int retval = 0;
+	while (!ComVirtual_readFromFile(&retval, fnameStatus, "Stop")) {
+        usleep(100);
+    }
+    return retval;
 }
 
-int ComVirtual_writeStop(int value) {
-	return ComVirtual_writeToFile(value, FILE_STOP, "Stop");
+void ComVirtual_setStop(int value) {
+	while (!ComVirtual_writeToFile(value, fnameStop, "Stop")) {
+        usleep(100);
+    }
 }
 
-int ComVirtual_readStop(int* value) {
-	return ComVirtual_readFromFile(value, FILE_STOP, "Stop");
+int ComVirtual_getStop() {
+    int retval = 0;
+	while (!ComVirtual_readFromFile(&retval, fnameStop, "Control")) {
+        usleep(100);
+    }
+    return retval;
 }
 
 int ComVirtual_writeToFile(int value, const char* fname, const char* serverName) {

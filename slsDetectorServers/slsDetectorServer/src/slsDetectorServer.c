@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
 	else {
 		LOG(logINFOBLUE, ("Stop Server [%d]\n", portno));
 #ifdef VIRTUAL
-		ComVirtual_setFileNames(portno);
+		ComVirtual_setFileNames(portno - 1);
 #endif
 	}
 

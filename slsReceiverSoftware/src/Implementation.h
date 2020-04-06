@@ -75,6 +75,7 @@ class Implementation : private virtual slsDetectorDefs {
     runStatus getStatus() const;
     uint64_t getFramesCaught() const;
     uint64_t getAcquisitionIndex() const;
+    int getProgress() const;
     std::vector<uint64_t> getNumMissingPackets() const;
     void startReceiver();
     void setStoppedFlag(bool stopped);
@@ -134,8 +135,19 @@ class Implementation : private virtual slsDetectorDefs {
      *   Detector Parameters                           *
      *                                                 *
      * ************************************************/
+    void updateTotalNumberOfFrames();
     uint64_t getNumberOfFrames() const;
     void setNumberOfFrames(const uint64_t i);
+    uint64_t getNumberOfTriggers() const;
+    void setNumberOfTriggers(const uint64_t i);
+    uint64_t getNumberOfBursts() const;
+    void setNumberOfBursts(const uint64_t i);
+    int getNumberOfAdditionalStorageCells() const;
+    void setNumberOfAdditionalStorageCells(const int i);
+    timingMode getTimingMode() const;
+    void setTimingMode(const timingMode i);
+    burstMode getBurstMode() const;
+    void setBurstMode(const burstMode i);
     uint64_t getAcquisitionTime() const;
     void setAcquisitionTime(const uint64_t i);
     uint64_t getAcquisitionPeriod() const;
@@ -266,7 +278,13 @@ class Implementation : private virtual slsDetectorDefs {
     std::map<std::string, std::string> additionalJsonHeader;
 
     // detector parameters
+    uint64_t numberOfTotalFrames;
     uint64_t numberOfFrames;
+    uint64_t numberOfTriggers;
+    uint64_t numberOfBursts;
+    int numberOfAdditionalStorageCells;
+    timingMode timingMode;
+    burstMode burstMode;
     uint64_t acquisitionPeriod;
     uint64_t acquisitionTime;
     uint64_t subExpTime;

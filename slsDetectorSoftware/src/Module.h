@@ -14,7 +14,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200324
+#define SLS_SHMVERSION 0x200402
 
 namespace sls{
 
@@ -61,33 +61,6 @@ struct sharedSlsDetector {
 
     /**  number of dacs per module*/
     int nDacs;
-
-    /** dynamic range of the detector data */
-    int dynamicRange;
-
-    /** detector settings (standard, fast, etc.) */
-    slsDetectorDefs::detectorSettings currentSettings;
-
-    /** number of frames */
-    int64_t nFrames;
-
-    /** number of triggers */
-    int64_t nTriggers;
-    
-    /** number of bursts */
-    int64_t nBursts;
-
-    /** number of additional storage cells */
-    int nAddStorageCells;
-    
-    /** timing mode */
-    slsDetectorDefs::timingMode timingMode;
-
-    /** burst mode */
-    slsDetectorDefs::burstMode burstMode;
-
-    /** rate correction in ns (needed for default -1) */
-    int64_t deadTime;
 
     /** ip address/hostname of the receiver for client control via TCP */
     char rxHostname[MAX_STR_LENGTH];
@@ -309,10 +282,6 @@ class Module : public virtual slsDetectorDefs {
      */
     std::vector<std::string> getConfigFileCommands();
 
-    /**
-     * Get detector settings
-     * @returns current settings
-     */
     detectorSettings getSettings();
 
     /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2
@@ -320,18 +289,8 @@ class Module : public virtual slsDetectorDefs {
      * [Gotthard2] Options: DYNAMICGAIN, FIXGAIN1, FIXGAIN2
      * [Moench] Options: G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, 
      *                   G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
-     * [Eiger] Only stores them locally in shm Options: STANDARD, HIGHGAIN, LOWGAIN, VERYHIGHGAIN, VERYLOWGAIN
      */
-    detectorSettings setSettings(detectorSettings isettings);
-
-    /**
-     * Send detector settings only (set only for Jungfrau, Gotthard, Moench, get
-     * for all) Only the settings enum is sent to the detector, where it will
-     * initialize al the dacs already hard coded in the detector server
-     * @param isettings  settings
-     * @returns current settings
-     */
-    detectorSettings sendSettingsOnly(detectorSettings isettings);
+    void setSettings(detectorSettings isettings);
 
     /**
      * Get threshold energy (Mythen and Eiger)
@@ -445,10 +404,6 @@ class Module : public virtual slsDetectorDefs {
      */
     uint64_t getStartingFrameNumber();
 
-    int64_t getTotalNumFramesToReceive();
-
-    void sendTotalNumFramestoReceiver();
-
     int64_t getNumberOfFrames();
 
     void setNumberOfFrames(int64_t value);
@@ -556,22 +511,17 @@ class Module : public virtual slsDetectorDefs {
      * [Gotthard2] only in continuous mode */
     int64_t getMeasurementTime() const;
 
-    /**
-     * Set/get timing mode
-     * @param value timing mode (-1 gets)
-     * @returns current timing mode
-     */
-    timingMode setTimingMode(timingMode value = GET_TIMING_MODE);
 
+    timingMode getTimingMode();
+    void setTimingMode(timingMode value);
+
+    int getDynamicRange();
     /**
      * Set/get dynamic range
      * (Eiger: If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to
      * 1)
-     * @param i dynamic range (-1 get)
-     * @returns current dynamic range
-     * \sa sharedSlsDetector
      */
-    int setDynamicRange(int n = -1);
+    void setDynamicRange(int n);
 
     /**
      * Set/get dacs value
@@ -1467,6 +1417,7 @@ class Module : public virtual slsDetectorDefs {
      * @returns current frame index of receiver
      */
     uint64_t getReceiverCurrentFrameIndex() const;
+    int getReceiverProgress() const;
 
 
     void setFileWrite(bool value);

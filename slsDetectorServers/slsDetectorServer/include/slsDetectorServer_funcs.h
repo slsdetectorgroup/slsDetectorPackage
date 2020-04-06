@@ -217,3 +217,5 @@ int set_current_source(int);
 int get_timing_source(int);
 int set_timing_source(int);
 int get_num_channels(int);
+int update_rate_correction(int);
+

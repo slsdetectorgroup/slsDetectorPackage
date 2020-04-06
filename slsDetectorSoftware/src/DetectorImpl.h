@@ -354,13 +354,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int InsertGapPixels(char *image, char *&gpImage, bool quadEnable, int dr, 
         int &nPixelsx, int &nPixelsy);
 
-    double setTotalProgress();
-
-    double getCurrentProgress();
-
-    void incrementProgress();
-
-    void setCurrentProgress(int64_t i = 0);
+    void printProgress(double progress);
 
     void startProcessingThread();
 
@@ -404,12 +398,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** semaphore to let main thread know it got all the dummy packets (also
      * from ext. process) */
     sem_t sem_endRTAcquisition;
-
-    /** Total number of frames/images for next acquisition */
-    double totalProgress{0};
-
-    /** Current progress or frames/images processed in current acquisition */
-    double progressIndex{0};
 
     /** mutex to synchronize main and data processing threads */
     mutable std::mutex mp;

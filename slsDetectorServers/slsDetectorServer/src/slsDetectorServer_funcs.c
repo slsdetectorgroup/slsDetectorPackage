@@ -317,6 +317,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_TIMING_SOURCE:				return "F_GET_TIMING_SOURCE";
 	case F_SET_TIMING_SOURCE:				return "F_SET_TIMING_SOURCE";
 	case F_GET_NUM_CHANNELS:				return "F_GET_NUM_CHANNELS";
+	case F_UPDATE_RATE_CORRECTION:			return "F_UPDATE_RATE_CORRECTION";
 
 	default:								return "Unknown Function";
 	}
@@ -510,6 +511,7 @@ void function_table() {
 	flist[F_GET_TIMING_SOURCE]					= &get_timing_source;
 	flist[F_SET_TIMING_SOURCE]					= &set_timing_source;
 	flist[F_GET_NUM_CHANNELS]					= &get_num_channels;
+	flist[F_UPDATE_RATE_CORRECTION]				= &update_rate_correction;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -2844,60 +2846,11 @@ int send_update(int file_des) {
     ret = OK;
 	int n = 0;
 	int i32 = -1;
-	int64_t i64 = -1;
 
 	i32 = lastClientIP;
 	i32 = __builtin_bswap32(i32);
 	n = sendData(file_des, &i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
-
-	// dr
-	i32 = setDynamicRange(GET_FLAG);
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// settings
-#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)  || defined(GOTTHARD2D)|| defined(MOENCHD)
-	i32 = (int)getSettings();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-#endif
-
-	// #frames
-	i64 = getNumFrames();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-
-	// #storage cell
-#ifdef JUNGFRAUD
-	i64 = getNumAdditionalStorageCells();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-#endif
-
-	// #triggers
-	i64 = getNumTriggers();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-
-	// #bursts
-#ifdef GOTTHARD2D
-	i64 = getNumBursts();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-#endif
-
-	// timing mode
-	i32 = (int)getTiming();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// burst mode
-#ifdef GOTTHARD2D
-	i32 = (int)getBurstMode();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-#endif
 
 	// number of channels
 #if defined(MOENCHD) || defined(CHIPTESTBOARDD)
@@ -3498,35 +3451,13 @@ int set_rate_correct(int file_des) {
 #else
 	// only set
 	if (Server_VerifyLock() == OK) {
-
-		int dr = setDynamicRange(-1);
-
-		// switching on in wrong bit mode
-		if ((tau_ns != 0) && (dr != 32) && (dr != 16)) {
-			ret = FAIL;
-			strcpy(mess,"Rate correction Deactivated, must be in 32 or 16 bit mode\n");
-			LOG(logERROR,(mess));
-		}
-
-		// switching on in right mode
-		else {
-			if (tau_ns < 0) {
-				tau_ns = getDefaultSettingsTau_in_nsec();
-				if (tau_ns < 0) {
-					ret = FAIL;
-					strcpy(mess,"Default settings file not loaded. No default tau yet\n");
-					LOG(logERROR,(mess));
-				}
-			}
-			else if (tau_ns > 0) {
-				//changing tau to a user defined value changes settings to undefined
-				setSettings(UNDEFINED);
-				LOG(logERROR, ("Settings has been changed to undefined (tau changed)\n"));
-			}
-			if (ret == OK) {
-				int64_t retval = setRateCorrection(tau_ns);
-				validate64(tau_ns, retval, "set rate correction", DEC);
-			}
+		ret = validateAndSetRateCorrection(tau_ns, mess);
+		int64_t retval = getCurrentTau(); // to update eiger_tau_ns (for update rate correction)
+		if (ret == FAIL) {
+			strcpy(mess, "Rate correction failed\n");
+			LOG(logERROR, (mess));
+		} else {
+			validate64(tau_ns, retval, "set rate correction", DEC);
 		}
 	}
 #endif
@@ -6930,4 +6861,22 @@ int get_num_channels(int file_des) {
 	LOG(logDEBUG1, ("Get number of channels sretval:[%d, %d]\n", retvals[0], retvals[1]));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
+}
+
+
+
+int update_rate_correction(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	LOG(logINFO, ("Update Rate Correction\n"));
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = updateRateCorrection(mess);
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }

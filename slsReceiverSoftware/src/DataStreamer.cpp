@@ -17,7 +17,7 @@ const std::string DataStreamer::TypeName = "DataStreamer";
 
 
 DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
-		uint64_t* fi, int fd, int* nd, bool* qe) :
+		uint64_t* fi, int fd, int* nd, bool* qe, uint64_t* tot) :
 		ThreadObject(ind, TypeName),
 		runningFlag(0),
 		generalData(nullptr),
@@ -31,7 +31,8 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
 		startedFlag(false),
 		firstIndex(0),
 		completeBuffer(nullptr),
-		quadEnable(qe)
+		quadEnable(qe),
+		totalNumFrames(tot)
 {
 	numDet[0] = nd[0];
 	numDet[1] = nd[1];
@@ -241,6 +242,7 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
     zHeader.imageSize = size;
     zHeader.acqIndex = acquisitionIndex;
     zHeader.frameIndex = frameIndex;
+	zHeader.progress = 100 * ((double)(frameIndex + 1) / (double)(*totalNumFrames));
 	zHeader.fname = fileNametoStream;
     zHeader.frameNumber = header.frameNumber;
     zHeader.expLength = header.expLength;

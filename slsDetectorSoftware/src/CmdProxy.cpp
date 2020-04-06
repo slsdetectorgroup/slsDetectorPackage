@@ -785,6 +785,47 @@ std::vector<std::string> CmdProxy::DacCommands() {
 }
 
 /* acquisition */
+
+std::string CmdProxy::ReceiverStatus(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "running, idle]\n\tReceiver listener status."
+               << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getReceiverStatus({det_id});
+        os << OutString(t) << '\n';  
+    } else if (action == defs::PUT_ACTION) {
+        throw sls::RuntimeError("Cannot put. Did you mean to use command 'rx_start' or 'rx_stop'?");
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::DetectorStatus(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[running, error, transmitting, finished, waiting, idle]\n\tDetector status."
+               << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getDetectorStatus({det_id});
+        os << OutString(t) << '\n';  
+    } else if (action == defs::PUT_ACTION) {
+        throw sls::RuntimeError("Cannot put. Did you mean to use command 'start' or 'stop'?");
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Network Configuration (Detector<->Receiver) */
 
 std::string CmdProxy::UDPDestinationIP(int action) {

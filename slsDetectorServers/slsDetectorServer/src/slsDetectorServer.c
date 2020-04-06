@@ -114,6 +114,10 @@ int main(int argc, char *argv[]) {
 		{
 			int i;
 			for (i = 0; i < argc; ++i) {
+				if (!strcasecmp(argv[i], "-port")) {
+					i +=2;
+					continue;
+				}
 				if (i > 0) {
 					strcat(cmd, " ");
 				}

@@ -1526,7 +1526,7 @@ enum runStatus getRunStatus(){
 	if(virtual_status == 0){
 		LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
-	}else{
+	} else{
 		LOG(logINFOBLUE, ("Status: RUNNING\n"));
 		return RUNNING;
 	}

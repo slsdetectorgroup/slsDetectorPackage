@@ -691,8 +691,8 @@ class CmdProxy {
                           {"rx_stop", &CmdProxy::rx_stop},
                           {"start", &CmdProxy::start},
                           {"stop", &CmdProxy::stop},
-                          {"rx_status", &CmdProxy::rx_status}, 
-                          {"status", &CmdProxy::status}, 
+                          {"rx_status", &CmdProxy::ReceiverStatus}, 
+                          {"status", &CmdProxy::DetectorStatus}, 
                           {"rx_framescaught", &CmdProxy::rx_framescaught},
                           {"rx_missingpackets", &CmdProxy::rx_missingpackets},
                           {"startingfnum", &CmdProxy::startingfnum},
@@ -934,6 +934,8 @@ class CmdProxy {
     std::string DacValues(int action);   
     std::vector<std::string> DacCommands();
     /* acquisition */
+    std::string ReceiverStatus(int action);   
+    std::string DetectorStatus(int action);   
     /* Network Configuration (Detector<->Receiver) */
     std::string UDPDestinationIP(int action);
     std::string UDPDestinationIP2(int action);
@@ -1362,12 +1364,6 @@ class CmdProxy {
 
     EXECUTE_SET_COMMAND_NOID(stop, stopDetector, 
                 "\n\tStops detector state machine.");  
-
-    GET_COMMAND(rx_status, getReceiverStatus, 
-                "running, idle]\n\tReceiver listener status.");   
-
-    GET_COMMAND(status, getDetectorStatus, 
-                "[running, error, transmitting, finished, waiting, idle]\n\tDetector status.");                 
 
     GET_COMMAND(rx_framescaught, getFramesCaught, 
                     "\n\tNumber of frames caught by receiver."); 

@@ -462,6 +462,7 @@ void DetectorImpl::readFrameFromReceiver() {
     std::string currentFileName;
     uint64_t currentAcquisitionIndex = -1, currentFrameIndex = -1,
              currentFileIndex = -1;
+    int currentProgress = -1;
     uint32_t currentSubFrameIndex = -1, coordX = -1, coordY = -1,
              flippedDataX = -1;
 
@@ -540,6 +541,7 @@ void DetectorImpl::readFrameFromReceiver() {
                     currentFileName = zHeader.fname;
                     currentAcquisitionIndex = zHeader.acqIndex;
                     currentFrameIndex = zHeader.frameIndex;
+                    currentProgress = zHeader.progress;
                     currentFileIndex = zHeader.fileIndex;
                     currentSubFrameIndex = zHeader.expLength;
                     coordY = zHeader.row;
@@ -559,6 +561,7 @@ void DetectorImpl::readFrameFromReceiver() {
                         << "\n\tcurrentFrameIndex: " << currentFrameIndex
                         << "\n\tcurrentFileIndex: " << currentFileIndex
                         << "\n\tcurrentSubFrameIndex: " << currentSubFrameIndex
+                        << "\n\tcurrentProgress: " << currentProgress
                         << "\n\tcoordX: " << coordX << "\n\tcoordY: " << coordY
                         << "\n\tflippedDataX: " << flippedDataX
                         << "\n\tcompleteImage: " << completeImage;
@@ -613,7 +616,6 @@ void DetectorImpl::readFrameFromReceiver() {
 
         // send data to callback
         if (data) {
-            setCurrentProgress(currentFrameIndex + 1);
             char* image = multiframe;
             int imagesize = multisize;
 
@@ -630,7 +632,7 @@ void DetectorImpl::readFrameFromReceiver() {
                 << "\n\timagesize: " << imagesize
                 << "\n\tdynamicRange: " << dynamicRange; 
 
-            thisData = new detectorData(getCurrentProgress(), 
+            thisData = new detectorData(currentProgress, 
                     currentFileName, nDetPixelsX, nDetPixelsY, image, 
                     imagesize, dynamicRange, currentFileIndex, completeImage);
 
@@ -1004,38 +1006,6 @@ void DetectorImpl::registerDataCallback(void (*userCallback)(detectorData *,
     enableDataStreamingToClient(dataReady == nullptr ? 0 : 1);
 }
 
-double DetectorImpl::setTotalProgress() {
-    int64_t tot = Parallel(&Module::getTotalNumFramesToReceive, {})
-                     .tsquash("Inconsistent number of total frames (#frames x #triggers(or bursts) x #storage cells)");
-    if (tot == 0) {
-        throw RuntimeError("Invalid Total Number of frames (0)");
-    }
-    totalProgress = tot;
-    LOG(logDEBUG1) << "Set total progress " << totalProgress << std::endl;
-    return totalProgress;
-}
-
-double DetectorImpl::getCurrentProgress() {
-    std::lock_guard<std::mutex> lock(mp);
-    return 100. * progressIndex / totalProgress;
-}
-
-void DetectorImpl::incrementProgress() {
-    std::lock_guard<std::mutex> lock(mp);
-    progressIndex += 1;
-    std::cout << std::fixed << std::setprecision(2) << std::setw(6)
-              << 100. * progressIndex / totalProgress << " \%";
-    std::cout << '\r' << std::flush;
-}
-
-void DetectorImpl::setCurrentProgress(int64_t i) {
-    std::lock_guard<std::mutex> lock(mp);
-    progressIndex = (double)i;
-    std::cout << std::fixed << std::setprecision(2) << std::setw(6)
-              << 100. * progressIndex / totalProgress << " \%";
-    std::cout << '\r' << std::flush;
-}
-
 int DetectorImpl::acquire() {
     // ensure acquire isnt started multiple times by same client
     if (!isAcquireReady()) {
@@ -1056,7 +1026,7 @@ int DetectorImpl::acquire() {
 
         bool receiver =
             Parallel(&Module::getUseReceiverFlag, {}).squash(false);
-        progressIndex = 0;
+            
         setJoinThreadFlag(false);
 
         // verify receiver is idle
@@ -1066,7 +1036,6 @@ int DetectorImpl::acquire() {
                 Parallel(&Module::stopReceiver, {});
             }
         }
-        setTotalProgress();
 
         startProcessingThread();
 
@@ -1106,12 +1075,10 @@ int DetectorImpl::acquire() {
         dataProcessingThread.join();
 
         if (acquisition_finished != nullptr) {
-            // same status for all, else error
-            int status = static_cast<int>(ERROR);
-            auto t = Parallel(&Module::getRunStatus, {});
-            if (t.equal())
-                status = t.front();
-            acquisition_finished(getCurrentProgress(), status, acqFinished_p);
+            int status = Parallel(&Module::getRunStatus, {}).squash(ERROR);
+            auto a = Parallel(&Module::getReceiverProgress, {});
+            int progress = (*std::min_element (a.begin(), a.end()));
+            acquisition_finished((double)progress, status, acqFinished_p);
         }
 
         sem_destroy(&sem_newRTAcquisition);
@@ -1130,8 +1097,14 @@ int DetectorImpl::acquire() {
     return OK;
 }
 
+void DetectorImpl::printProgress(double progress) {
+    std::cout << std::fixed << std::setprecision(2) << std::setw(6)
+        << progress << " \%";
+    std::cout << '\r' << std::flush;
+}
+
+
 void DetectorImpl::startProcessingThread() {
-    setTotalProgress();
     dataProcessingThread = std::thread(&DetectorImpl::processData, this);
 }
 
@@ -1142,7 +1115,9 @@ void DetectorImpl::processData() {
         }
         // only update progress
         else {
-            int64_t caught = -1;
+            double progress = 0;
+            printProgress(progress);
+
             while (true) {
                 // to exit acquire by typing q
                 if (kbhit() != 0) {
@@ -1152,16 +1127,18 @@ void DetectorImpl::processData() {
                         Parallel(&Module::stopAcquisition, {});
                     }
                 }
-                // get progress
-                caught = Parallel(&Module::getFramesCaughtByReceiver, {0})
-                             .squash();
-
-                // updating progress
-                if (caught != -1) {
-                    setCurrentProgress(caught);
+                // get and print progress
+                double temp = (double)Parallel(&Module::getReceiverProgress, {0}).squash();
+                if (temp != progress) {
+                    printProgress(progress);
+                    progress = temp;
                 }
+
                 // exiting loop
                 if (getJoinThreadFlag()) {
+                    // print progress one final time before exiting
+                    progress = (double)Parallel(&Module::getReceiverProgress, {0}).squash();
+                    printProgress(progress);
                     break;
                 }
                 // otherwise error when connecting to the receiver too fast

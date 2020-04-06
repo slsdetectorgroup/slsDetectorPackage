@@ -87,7 +87,6 @@ void qDrawPlot::SetupWidgetWindow() {
 
 void qDrawPlot::Initialization() {
     connect(this, SIGNAL(UpdateSignal()), this, SLOT(UpdatePlot()));
-    connect(this, SIGNAL(StartAcquireSignal()), this, SLOT(AcquireThread()));
 }
 
 void qDrawPlot::SetupPlots() {
@@ -657,7 +656,8 @@ void qDrawPlot::StartAcquisition() {
         xyRangeChanged = true;
     }
 
-    emit StartAcquireSignal();
+    QtConcurrent::run(this, &qDrawPlot::AcquireThread);
+
     LOG(logDEBUG) << "End of Starting Acquisition in qDrawPlot";
 }
 

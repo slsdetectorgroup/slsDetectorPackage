@@ -43,7 +43,7 @@
 #include <map>
 #include <fstream>
 #include <sys/stat.h>
-
+#include <dirent.h>
 #include <ctime>
 using namespace std;
 
@@ -58,19 +58,19 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  int p=10000;
+  //int p=10000;
   int fifosize=1000;
   int nthreads=10;
-  int nsubpix=25;
-  int etabins=nsubpix*10;
-  double etamin=-1, etamax=2;
+  //int nsubpix=25;
+  //int etabins=nsubpix*10;
+  //double etamin=-1, etamax=2;
   int csize=3;
-  int save=1;
+  //int save=1;
   int nsigma=5;
   int nped=10000;
-  int ndark=100;
-  int ok;
-  int iprog=0;
+  //int ndark=100;
+  //int ok;
+  //int iprog=0;
 
   int cf=0;
 
@@ -101,13 +101,13 @@ int main(int argc, char *argv[]) {
   moench03CommonMode *cm=NULL;
   moench03GhostSummation *gs;
   double *gainmap=NULL;
-  float *gm;
+  //float *gm;
 
 
 
-  int size = 327680;////atoi(argv[3]);
+  //int size = 327680;////atoi(argv[3]);
   
-  int* image;
+  //int* image;
 	//int* image =new int[327680/sizeof(int)];
 
   int ff, np;
@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
   char fname[10000];
   char imgfname[10000];
   char cfname[10000];
-  char fn[10000];
+  //char fn[10000];
   
   std::time_t end_time;
 
@@ -185,9 +185,9 @@ int main(int argc, char *argv[]) {
     cout << "pedestal file is " << pedfile << endl;
  if (thr>0) 
     cout << "threshold is " << thr << endl;
- 
- uint32 nnx, nny;
- double *gmap;
+ uint32 unnx, unny;
+ int  nnx, nny;
+ //double *gmap;
 
   // if (gainfname) {
   //   gm=ReadFromTiff(gainfname, nny, nnx);
@@ -221,10 +221,10 @@ int main(int argc, char *argv[]) {
   } else
     thr=0.15*thr;
   filter->newDataSet();
-  int dsize=decoder->getDataSize();
+  //int dsize=decoder->getDataSize();
 
 
-  char data[dsize];
+  //char data[dsize];
 
 
 
@@ -270,12 +270,14 @@ int main(int argc, char *argv[]) {
   mt->StartThreads();
   mt->popFree(buff);
 
-
+  DIR *dir;
+  struct dirent *ent;
+ 
   //  cout << "mt " << endl;
 
   int ifr=0;
 
-  double ped[nx*ny], *ped1;
+  double ped[nx*ny];//, *ped1;
 
 
   if (pedfile) {
@@ -314,7 +316,9 @@ int main(int argc, char *argv[]) {
       } else 
 	cout << "Could not open pedestal file "<< fname << " for reading " << endl;
     } else {
-      float *pp=ReadFromTiff(pedfile, nny, nnx);
+      float *pp=ReadFromTiff(pedfile, unny, unnx);
+      nny=unny;
+      nnx=unnx;
       if (pp && nnx==nx && nny==ny) {
 	for (int i=0; i<nx*ny; i++) {
 	  ped[i]=pp[i];
@@ -341,28 +345,23 @@ int main(int argc, char *argv[]) {
 
   ifr=0;
   int ifile=0;
-  
+  char ext[100];
   mt->setFrameMode(eFrame);
-
   for (int irun=runmin; irun<=runmax; irun++) {
     cout << "DATA " ;
     // sprintf(fn,fformat,irun);
-    sprintf(ffname,"%s/%s.raw",indir,fformat);
-    sprintf(fname,ffname,irun);
-    sprintf(ffname,"%s/%s.tiff",outdir,fformat);
-    sprintf(imgfname,ffname,irun);
-    sprintf(ffname,"%s/%s.clust",outdir,fformat);
-    sprintf(cfname,ffname,irun);
-    cout << fname << " " ;
+    sprintf(ext,"_%d.raw",irun);
+
+    
+    sprintf(imgfname,"%s/%s_%d.tiff",outdir,fformat,irun);
+    // sprintf(imgfname,ffname,irun);
+    sprintf(cfname,"%s/%s_%d.clust",outdir,fformat, irun);
+    //sprintf(cfname,ffname,irun);
+    cout << cfname << " " ;
     cout << imgfname << endl;
-    std::time(&end_time);
-    cout << std::ctime(&end_time) <<    endl;
-    //  cout <<  fname << " " << outfname << " " << imgfname <<  endl;
-    filebin.open((const char *)(fname), ios::in | ios::binary);
-    //      //open file
-    ifile=0;
-    if (filebin.is_open()){
-      if (thr<=0 && cf!=0) { //cluster finder
+
+    
+    if (thr<=0 && cf!=0) { //cluster finder
 	  if (of==NULL) {
 	    of=fopen(cfname,"w");
 	    if (of) {
@@ -375,6 +374,33 @@ int main(int argc, char *argv[]) {
 	    }
 	  }
       }
+    
+  if ((dir = opendir (indir)) != NULL) {
+    /* print all the files and directories within directory */
+    while ((ent = readdir (dir)) != NULL) {
+	  printf ("----------- %s\n", ent->d_name);
+      //	printf ("************** %s", ent->d_name);
+      //	cout << string(ent->d_name).find(fformat) << endl;
+      if (string(ent->d_name).find(string(fformat)+"_d0_f0")==0) {
+	  printf ("+++++++++++++++ %s\n", ent->d_name);
+	if (string(ent->d_name).find(ext)!= string::npos) {
+	  printf ("**************8 %s\n", ent->d_name);
+
+
+
+	  sprintf(fname,"%s/%s",indir,ent->d_name);
+    //sprintf(fname,ffname,irun);
+	  cout << fname << endl;
+
+
+    std::time(&end_time);
+    cout << std::ctime(&end_time) <<    endl;
+    //  cout <<  fname << " " << outfname << " " << imgfname <<  endl;
+    filebin.open((const char *)(fname), ios::in | ios::binary);
+    //      //open file
+    ifile=0;
+    if (filebin.is_open()){
+     
       //     //while read frame 
       ff=-1;
       ifr=0;
@@ -412,18 +438,28 @@ int main(int argc, char *argv[]) {
       }
       cout << "--" << endl;
       filebin.close();	 
+    } else 
+      cout << "Could not open "<< fname << " for reading " << endl;
+
+	}
+	
+      }
       //      //close file 
       //     //join threads
-      while (mt->isBusy()) {;}
-      if (nframes>=0) {
-	if (nframes>0) {
-	    sprintf(ffname,"%s/%s_f%05d.tiff",outdir,fformat,ifile);
-	    sprintf(imgfname,ffname,irun);
-	} else {
-	  sprintf(ffname,"%s/%s.tiff",outdir,fformat);
+
+
+    }
+    
+    while (mt->isBusy()) {;}
+    if (nframes>=0) {
+      if (nframes>0) {
+	sprintf(ffname,"%s/%s_f%05d.tiff",outdir,fformat,ifile);
 	  sprintf(imgfname,ffname,irun);
-	}
-	cout << "Writing tiff to " << imgfname << " " << thr1 <<endl;
+      } else {
+	sprintf(imgfname,"%s/%s_%d.tiff",outdir,fformat,irun);
+	//sprintf(imgfname,ffname,irun);
+      }
+      cout << "Writing tiff to " << imgfname << " " << thr1 <<endl;
 	mt->writeImage(imgfname, thr1);
 	mt->clearImage();
 	if (of) {
@@ -431,21 +467,27 @@ int main(int argc, char *argv[]) {
 	  of=NULL;
 	  mt->setFilePointer(NULL);
 	}
-      }	
-      std::time(&end_time);
-      cout << std::ctime(&end_time) <<   endl;
-    } else 
-      cout << "Could not open "<< fname << " for reading " << endl;
+    }	
+    std::time(&end_time);
+    cout << std::ctime(&end_time) <<   endl;
+      
+    closedir (dir);
+  } else {
+    /* could not open directory */
+    cout << "could not open directory " << indir << endl;
   }
+
+  }
+  
   if (nframes<0){
     sprintf(ffname,"%s/%s.tiff",outdir,fformat);
     strcpy(imgfname,ffname);
     cout << "Writing tiff to " << imgfname << " " << thr1 <<endl;
     mt->writeImage(imgfname, thr1);
   }
-    
-
-
+  
+  
+  
   return 0;
 }
 

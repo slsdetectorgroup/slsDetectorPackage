@@ -50,9 +50,9 @@ int main(int argc, char *argv[]) {
 #endif
   int iarg=4;
   char infname[10000];
-  char fname[10000];
   char outfname[10000];
 #ifndef FF
+  char fname[10000];
   iarg=4;
 #endif
 
@@ -74,23 +74,46 @@ int main(int argc, char *argv[]) {
   cout << "Energy min: " << cmin << endl;
   cout << "Energy max: " << cmax << endl;
   //int etabins=500;
+#ifndef NOINTERPOLATION
   int etabins=1000;//nsubpix*2*100;
   int etabinsY=etabins;//nsubpix*2*100;
+#ifndef ETA3
   double etamin=-1, etamax=2;
   //double etamin=-0.1, etamax=1.1;
+  double etax=0, etay=0; 
+#ifndef FF
+  double int_x, int_y;
+  //  double d_x, d_y, res=5, xx, yy;
+  int ok;
+#endif
+#endif
+#ifdef ETA3
   double eta3min=-2, eta3max=2;
+  double eta3x, eta3y;
+   
+#ifndef FF
+  double int3_x, int3_y;
+#endif
+#endif
+  #endif
+#ifndef FF
   int quad;
+#endif
   double sum, totquad;
   double sDum[2][2];
-  double etax, etay, int_x, int_y;
-  double eta3x, eta3y, int3_x, int3_y, noint_x, noint_y;
-  int ok;
+
+#ifdef NOINTERPOLATION
+#ifndef FF
+  double noint_x, noint_y;
+#endif
+#endif
   int f0=-1;
   int ix, iy, isx, isy;
   int nframes=0, lastframe=-1;
-  double d_x, d_y, res=5, xx, yy;
-  int nph=0, badph=0, totph=0;
-    FILE *f=NULL;
+
+  //badph=0,
+  int nph=0,  totph=0;
+  FILE *f=NULL;
 
 #ifdef DOUBLE_SPH
     single_photon_hit_double cl(3,3);
@@ -120,6 +143,7 @@ int main(int argc, char *argv[]) {
 
  
 #ifndef FF
+    int *img;
 #ifndef NOINTERPOLATION
     cout << "read ff " << argv[2] << endl;
     sprintf(fname,"%s",argv[2]);
@@ -132,7 +156,6 @@ int main(int argc, char *argv[]) {
     cout << "Will write eta file " << argv[2] << endl;
 #endif
 
-    int *img;
     float *totimg=new float[NC*NR*nSubPixels*nSubPixelsY];
     for (ix=0; ix<NC; ix++) {
       for (iy=0; iy<NR; iy++) {
@@ -168,7 +191,13 @@ int main(int argc, char *argv[]) {
 	    if (nframes==0) f0=lastframe;
 	    nframes++;
 	  }
+#ifndef FF
 	  quad=interp->calcEta(cl.get_cluster(), etax, etay, sum, totquad, sDum);
+#endif
+#ifdef FF
+	  interp->calcEta(cl.get_cluster(), etax, etay, sum, totquad, sDum);
+#endif
+	  
 	    if (sum>cmin && totquad/sum>0.8 && totquad/sum<1.2 && sum<cmax ) {
 	      nph++;
 	    //  if (sum>200 && sum<580) {
@@ -263,9 +292,9 @@ int main(int argc, char *argv[]) {
 #ifdef RECT1
 	WriteToTiff(rectimg, outfname,NC,NR*nSubPixelsY);
 #endif
-	cout << "Read " << nframes << " frames (first frame: " << f0 << " last frame: " << lastframe << " delta:" << lastframe-f0 << ") nph="<< nph <<endl;
 	interp->clearInterpolatedImage();
 #endif
+	cout << "Read " << nframes << " frames (first frame: " << f0 << " last frame: " << lastframe << " delta:" << lastframe-f0 << ") nph="<< nph <<endl;
 	
       } else
 	cout << "could not open file " << infname << endl;

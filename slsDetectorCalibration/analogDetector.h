@@ -226,8 +226,11 @@ template <class dataType> class analogDetector {
      \returns pointer to current gain map is file reading succeeded, NULL is file reading didn't work.
   */
   double *readGainMap(const char * imgname) {
-    uint32 nnx, nny;
-    float *gm=ReadFromTiff( imgname, nny, nnx);
+    uint32 unnx, unny;
+    int nnx, nny;
+    float *gm=ReadFromTiff( imgname, unny, unnx);
+    nnx=unnx;
+    nny=unny;
     if (gm) {
       if (gmap) delete [] gmap; 
       gmap=new double[nnx*nny];

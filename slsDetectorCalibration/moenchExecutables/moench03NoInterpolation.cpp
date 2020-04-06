@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
  */
 
   if (argc<7) {
-    cout << "Wrong usage! Should be: "<< argv[0] << " infile " << " etafile outfile runmin runmax ns" << endl;
+    cout << "Wrong usage! Should be: "<< argv[0] << " infile " << " outfile runmin runmax ns" << endl;
     return 1;
   }
 
@@ -28,13 +28,14 @@ int main(int argc, char *argv[]) {
   int runmax=atoi(argv[5]);
   int nsubpix=atoi(argv[6]);
   
-  int etabins=1000;//nsubpix*2*100;
-  double etamin=-1, etamax=2;
+  //  int etabins=1000;//nsubpix*2*100;
+  // double etamin=-1, etamax=2;
   int quad;
   double sum, totquad;
   double sDum[2][2];
-  double etax, etay, int_x, int_y;
-  int ok;
+  //double etax, etay,
+  double int_x, int_y;
+  //int ok;
 
   int ix, iy, isx, isy;
 

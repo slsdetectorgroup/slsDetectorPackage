@@ -253,12 +253,13 @@ class slsDetectorData {
 
   */
   virtual dataType getChannel(char *data, int ix, int iy=0) {
-    dataType m=0, d=0;
+    dataType m=0, d=0, *p;
     if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
       // cout << ix << " " << iy << " " ;
       //cout << dataMap[ix][iy] << " " << (void*)data << " " << dataSize<< endl;
       m=dataMask[iy][ix];
-      d=*((dataType*)(data+dataMap[iy][ix]));
+      p=(dataType*)(data+dataMap[iy][ix]);
+      d=*p;
     }  
     return d^m;
   };

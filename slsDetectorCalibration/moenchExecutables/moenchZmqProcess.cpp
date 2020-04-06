@@ -1,4 +1,4 @@
-#define WRITE_QUAD
+//#define WRITE_QUAD
 #define MOENCH_BRANCH
 
 #define C_GHOST 0.0004
@@ -139,8 +139,12 @@ int main(int argc, char *argv[]) {
 
   int ncol_cm=CM_ROWS;
   double xt_ghost=C_GHOST;
-  moench03CommonMode *cm=new moench03CommonMode(ncol_cm);
-  moench03GhostSummation *gs=new moench03GhostSummation(det, xt_ghost);
+  moench03CommonMode *cm=NULL;
+  moench03GhostSummation *gs=NULL;
+#ifdef CORR
+  gs=new moench03GhostSummation(det, xt_ghost);
+  cm=new moench03CommonMode(ncol_cm);
+#endif
   double *gainmap=NULL;
   float *gm;
   double *gmap=NULL;

@@ -1,8 +1,10 @@
 #module add CBFlib/0.9.5
-INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures  -I../../slsSupportLib/include/ -I../../slsReceiverSoftware/include/
+INCDIR=-I. -I../ -I../interpolations  -I../interpolations/etaVEL  -I../dataStructures -I../../slsReceiverSoftware/include/
 
-LDFLAG= ../tiffIO.cpp -L/usr/lib64/ -lpthread -lm  -lstdc++   -pthread -lrt    -ltiff -O3  -std=c++11
-
+LDFLAG= ../tiffIO.cpp -L/usr/lib64/ -lpthread -lm  -lstdc++   -pthread -lrt    -ltiff  -std=c++11 -Wall  -O3
+#-g3 
+#-fsanitize=thread -fno-omit-frame-pointer
+#-fsanitize=address,undefined,
 MAIN=moench03ClusterFinder.cpp
 
 

@@ -4,7 +4,7 @@
 #include "analogDetector.h" 
 
 #include "single_photon_hit.h"
-
+#include <mutex> 
 
 
 //#define MYROOT1
@@ -62,8 +62,8 @@ public analogDetector<uint16_t> {
     
     
     
-    
-    fm=new pthread_mutex_t ;
+   fm=new mutex;
+   // fm=new pthread_mutex_t ;
 
     eventMask=new eventType*[ny];
     for (int i=0; i<ny; i++) {
@@ -117,6 +117,9 @@ public analogDetector<uint16_t> {
     
     setClusterSize(clusterSize);
     fm=orig->fm;
+    //setMutex(orig->fm);
+
+
     
     quad=UNDEFINED_QUADRANT;
     tot=0;
@@ -350,7 +353,7 @@ int *getClusters(char *data,  int *ph=NULL) {
   int cy=(clusterSizeY+1)/2;
   int cs=(clusterSize+1)/2;
   //int ir, ic;
-  
+  int iframe=det->getFrameNumber(data);
   double max=0, tl=0, tr=0, bl=0,br=0, *v;
   int cm=0;
   int good=1;
@@ -394,9 +397,9 @@ int *getClusters(char *data,  int *ph=NULL) {
 	for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
 	  for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
 	    
-	    if ((iy+ir)>=iy && (iy+ir)<ny && (ix+ic)>=ix && (ix+ic)<nx) {
+	    if ((iy+ir)>=0 && (iy+ir)>=iy && (iy+ir)<ny && (ix+ic)>=0 &&(ix+ic)>=ix && (ix+ic)<nx) {
 	      val[iy+ir][ix+ic]=subtractPedestal(data,ix+ic,iy+ir, cm);
-	    }
+		  (clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
 	    
 	    v=&(val[iy+ir][ix+ic]);
 	    tot+=*v;
@@ -420,6 +423,9 @@ int *getClusters(char *data,  int *ph=NULL) {
 		eventMask[iy][ix]=PHOTON;
 	    }
 	    
+	    } else
+		  (clusters+nph)->set_data(0,ic,ir);
+	      
 	  }
 	}
 	if (eventMask[iy][ix]==PHOTON && val[iy][ix]<max) 
@@ -441,25 +447,29 @@ int *getClusters(char *data,  int *ph=NULL) {
       
 	if (max>nSigma*(clusters+nph)->rms || tot>sqrt(clusterSizeY*clusterSize)*nSigma*(clusters+nph)->rms || ((clusters+nph)->quadTot)>sqrt(cy*cs)*nSigma*(clusters+nph)->rms) {
 	  if (val[iy][ix]>=max) {
-	  eventMask[iy][ix]=PHOTON_MAX;
-	  (clusters+nph)->tot=tot;
-	  (clusters+nph)->x=ix;
-	  (clusters+nph)->y=iy;
-	  //	  (clusters+nph)->iframe=det->getFrameNumber(data);
+	    eventMask[iy][ix]=PHOTON_MAX;
+	    //   (clusters+nph)->tot=tot;
+	    (clusters+nph)->x=ix;
+	    (clusters+nph)->y=iy;
+	    (clusters+nph)->iframe=iframe;
 	  // cout << det->getFrameNumber(data) << " " << (clusters+nph)->iframe << endl;
-	  (clusters+nph)->ped=getPedestal(ix,iy,0);
-	  for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
-	    for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
-	      (clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
+	    //   (clusters+nph)->ped=getPedestal(ix,iy,0);
+	    // for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
+	    //   for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
+	    // 	if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx)
+	    // 	  (clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
+	    // 	else
+	    // 	  (clusters+nph)->set_data(0,ic,ir);
+		  
+	    //   }
+	    // }
+	    good=1;
+	    if (eMin>0 && tot<eMin) good=0;
+	    if (eMax>0 && tot>eMax) good=0;
+	    if (good) {
+	      nph++;
+	      image[iy*nx+ix]++;
 	    }
-	  }
-	  good=1;
-	  if (eMin>0 && tot<eMin) good=0;
-	  if (eMax>0 && tot>eMax) good=0;
-	  if (good) {
-	    nph++;
-	    image[iy*nx+ix]++;
-	  }
 	  
 
 	  } else {
@@ -474,8 +484,9 @@ int *getClusters(char *data,  int *ph=NULL) {
   nphFrame=nph;
   nphTot+=nph;
   //cout << nphFrame << endl;
-  //  cout <<"**********************************"<< det->getFrameNumber(data) << " " << nphFrame << endl;
-  writeClusters(det->getFrameNumber(data));
+  if (iframe%10000==0)
+    cout <<"**********************************"<< iframe << " " << nphFrame << endl;
+  writeClusters(iframe);
   return  image;
   
 };
@@ -576,12 +587,15 @@ int *getClusters(char *data,  int *ph=NULL) {
  void writeClusters(int fn){
    if (myFile) {  
      //cout << "++" << endl;  
-     pthread_mutex_lock(fm);
-     //   cout <<"**********************************"<< fn << " " << nphFrame << endl;
+     //pthread_mutex_lock(fm);
+     fm->lock();
+     //  cout <<id << " **********************************"<< fn << " " << nphFrame << endl;
      writeClusters(myFile,clusters,nphFrame, fn);
      // for (int i=0; i<nphFrame; i++) 
      //  (clusters+i)->write(myFile);
-     pthread_mutex_unlock(fm); 
+     // cout << "--" << endl; 
+     fm->unlock();
+     //pthread_mutex_unlock(fm); 
      //cout << "--" << endl; 
    } 
  };
@@ -613,7 +627,8 @@ int *getClusters(char *data,  int *ph=NULL) {
     void setEnergyRange(double emi, double ema){eMin=emi; eMax=ema;};
     void getEnergyRange(double &emi, double &ema){emi=eMin; ema=eMax;};
 
-    void setMutex(pthread_mutex_t *m){fm=m;};
+  //   void setMutex(pthread_mutex_t *m){fm=m;};
+     void setMutex(mutex *m){fm=m;};
 
  protected:
 
@@ -631,8 +646,8 @@ int *getClusters(char *data,  int *ph=NULL) {
     int nphTot;
     int nphFrame;
 
-    pthread_mutex_t *fm;
-
+  // pthread_mutex_t *fm;
+  mutex *fm;
     };
 
 

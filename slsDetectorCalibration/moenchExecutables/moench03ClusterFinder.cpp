@@ -1,6 +1,7 @@
 //#include "ansi.h"
 #include <iostream>
 
+// bin/moenchClusterFinder moench03_25022020 moench_fluo_outputs flat_27keV_d0_f000000%d00000_1 0 10
 
 //#include "moench03T1ZmqData.h"
 #ifdef NEWRECEIVER
@@ -33,7 +34,9 @@
 #include "multiThreadedAnalogDetector.h"
 #include "singlePhotonDetector.h"
 //#include "interpolatingDetector.h"
-
+ 
+#include <string>
+#include <sstream>  
 #include <stdio.h>
 #include <map>
 #include <fstream>
@@ -50,20 +53,20 @@ int main(int argc, char *argv[]) {
     cout << "Usage is " << argv[0] << "indir outdir fname runmin runmax " << endl;
     return 1;
   }
-  int p=10000;
+  //int p=10000;
   int fifosize=1000;
-  int nthreads=1;
-  int nsubpix=25;
-  int etabins=nsubpix*10;
-  double etamin=-1, etamax=2;
+  int nthreads=16;
+  //int nsubpix=25;
+  //int etabins=nsubpix*10;
+  //double etamin=-1, etamax=2;
   int csize=3;
   int nx=400, ny=400;
-  int save=1;
-  int nsigma=1;
+  //int save=1;
+  int nsigma=5;
   int nped=1000;
-  int ndark=100;
-  int ok;
-  int iprog=0;
+  //int ndark=100;
+  //int ok;
+  //int iprog=0;
 
 
 
@@ -108,9 +111,9 @@ int main(int argc, char *argv[]) {
   // cout << "filter "<< endl;
   
 
-  int size = 327680;////atoi(argv[3]);
+  //int size = 327680;////atoi(argv[3]);
   
-  int* image;
+  //int* image;
 	//int* image =new int[327680/sizeof(int)];
   filter->newDataSet();
 
@@ -120,21 +123,21 @@ int main(int argc, char *argv[]) {
   cout << " data size is " << dsize;
   
 
-  char data[dsize];
+  //char data[dsize];
 
   ifstream filebin;
-  char *indir=argv[1];
-  char *outdir=argv[2];
-  char *fformat=argv[3];
+  string indir=string(argv[1]);
+  string outdir=string(argv[2]);
+  string fformat=string(argv[3]);
   int runmin=atoi(argv[4]);
   int runmax=atoi(argv[5]);
   
-  char fname[10000];
-  char outfname[10000];
-  char imgfname[10000];
-  char pedfname[10000];
+  string fname;
+  string outfname;
+  string imgfname;
+  //char pedfname[10000];
   //  strcpy(pedfname,argv[6]);
-  char fn[10000];
+  char  fn[10000];
   
   std::time_t end_time;
 
@@ -147,12 +150,6 @@ int main(int argc, char *argv[]) {
   std::time(&end_time);
   cout << std::ctime(&end_time) <<   endl;
  
-
-
-
-
-
-
 
   char* buff;
   multiThreadedAnalogDetector *mt=new multiThreadedAnalogDetector(filter,nthreads,fifosize);
@@ -170,17 +167,26 @@ int main(int argc, char *argv[]) {
  
 
   for (int irun=runmin; irun<runmax; irun++) {
-    sprintf(fn,fformat,irun);
-    sprintf(fname,"%s/%s.raw",indir,fn);
-    sprintf(outfname,"%s/%s.clust",outdir,fn);
-    sprintf(imgfname,"%s/%s.tiff",outdir,fn);
+    sprintf(fn,fformat.c_str(),irun);
+    fname=indir+"/"+string(fn)+".raw";
+    //sprintf(fname,"%s/%s.raw",indir,fn);
+#ifndef WRITE_QUAD
+    outfname=outdir+string(fn)+".clust";
+    //sprintf(outfname,"%s/%s.clust",outdir,fn);
+#endif
+#ifdef WRITE_QUAD
+    outfname=outdir+string(fn)+".clust2";
+    //    sprintf(outfname,"%s/%s.clust2",outdir,fn);
+#endif
+    imgfname=outdir+string(fn)+".tiff";
+    //sprintf(imgfname,"%s/%s.tiff",outdir,fn);
     std::time(&end_time);
     cout << std::ctime(&end_time) <<    endl;
     cout <<  fname << " " << outfname << " " << imgfname <<  endl;
-    filebin.open((const char *)(fname), ios::in | ios::binary);
+    filebin.open(fname.c_str(), ios::in | ios::binary);
     //      //open file
     if (filebin.is_open()){
-      of=fopen(outfname,"w");
+      of=fopen(outfname.c_str(),"w");
       if (of) {
   	mt->setFilePointer(of);
 	//	cout << "file pointer set " << endl;
@@ -212,7 +218,7 @@ int main(int argc, char *argv[]) {
 	}
 	ff=-1;
       }
-        cout << "--" << endl;
+      cout << "--" << endl;
       filebin.close();	 
       //      //close file 
       //     //join threads
@@ -220,7 +226,7 @@ int main(int argc, char *argv[]) {
       if (of)
   	fclose(of);
       
-      mt->writeImage(imgfname);
+      mt->writeImage(imgfname.c_str());
       mt->clearImage();
    
       std::time(&end_time);

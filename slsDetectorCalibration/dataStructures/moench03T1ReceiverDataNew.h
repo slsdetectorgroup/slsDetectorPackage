@@ -77,9 +77,9 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 
     int row, col;
 
-    int isample;
+    // int isample;
     int iadc;
-    int ix, iy;
+    // int ix, iy;
     
      int npackets=40;
     int i;
@@ -110,35 +110,35 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
       }
     }
 
-    int ipacket;
-    int ibyte;
-    int ii=0;
-    for (ibyte=0; ibyte<sizeof(sls_detector_header)/2; ibyte++){
-      xmap[ibyte]=-1;
-      ymap[ibyte]=-1;
-    }
-    int off=sizeof(sls_detector_header)/2;
-    for (ipacket=0; ipacket<npackets; ipacket++) {
-      for (ibyte=0;  ibyte< 8192/2; ibyte++) {
-	i=ipacket*8208/2+ibyte;
-	  isample=ii/nadc;
-	  if (isample<nSamples) {
-	  iadc=ii%nadc;
-	  adc4 = (int)iadc/4;
-	  ix=isample%sc_width;
-	  iy=isample/sc_width;
-	  if (adc4%2==0) {
-	    xmap[i+off]=adc_nr[iadc]+ix;
-	    ymap[i+off]=ny/2-1-iy;
-	  } else {
-	    xmap[i+off]=adc_nr[iadc]+ix;
-	    ymap[i+off]=ny/2+iy;
-	  }
-	  }
-	ii++;
-	//	}
-      }
-    }
+    // int ipacket;
+    // int ibyte;
+    // int ii=0;
+    // for (ibyte=0; ibyte<sizeof(sls_detector_header)/2; ibyte++){
+    //   xmap[ibyte]=-1;
+    //   ymap[ibyte]=-1;
+    // }
+    // int off=sizeof(sls_detector_header)/2;
+    // for (ipacket=0; ipacket<npackets; ipacket++) {
+    //   for (ibyte=0;  ibyte< 8192/2; ibyte++) {
+    // 	i=ipacket*8208/2+ibyte;
+    // 	  isample=ii/nadc;
+    // 	  if (isample<nSamples) {
+    // 	  iadc=ii%nadc;
+    // 	  adc4 = (int)iadc/4;
+    // 	  ix=isample%sc_width;
+    // 	  iy=isample/sc_width;
+    // 	  if (adc4%2==0) {
+    // 	    xmap[i+off]=adc_nr[iadc]+ix;
+    // 	    ymap[i+off]=ny/2-1-iy;
+    // 	  } else {
+    // 	    xmap[i+off]=adc_nr[iadc]+ix;
+    // 	    ymap[i+off]=ny/2+iy;
+    // 	  }
+    // 	  }
+    // 	ii++;
+    // 	//	}
+    //   }
+    // }
     
     iframe=0;
     //  cout << "data struct created" << endl;
@@ -240,15 +240,15 @@ class moench03T1ReceiverDataNew : public slsDetectorData<uint16_t> {
 
 
   virtual char *readNextFrame(ifstream &filebin, int& ff, int &np, char *data) {
-	  char *retval=0;
-	  int  nd;
-	  int fnum = -1;
-	  np=0;
-	  int  pn;
+    //char *retval=0;
+    //	  int  nd;
+    //int fnum = -1;
+    //	  np=0;
+	  //	  int  pn;
 	  
 	  //  cout << dataSize << endl;
-	  if (ff>=0)
-	    fnum=ff;
+    //	  if (ff>=0)
+    //	    fnum=ff;
 
 	  if (filebin.is_open()) {
 	    if (filebin.read(data, dataSize) ){

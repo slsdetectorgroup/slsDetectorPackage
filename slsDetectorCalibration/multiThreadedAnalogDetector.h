@@ -322,31 +322,39 @@ public:
   
   virtual int *getImage(int &nnx, int &nny, int &ns, int &nsy) {
     int *img;
+    cout << "get image "<< image << endl;
     // int nnx, nny, ns; 
     // int nnx, nny, ns;
     int nn=dets[0]->getImageSize(nnx, nny,ns, nsy);
     if (image) {
-      delete image;
+      cout << "del image "<< image << endl;
+      delete [] image;
       image=NULL;
     }
     image=new int[nn];
+    cout << "new image" << image << endl;
     //int nn=dets[0]->getImageSize(nnx, nny, ns);
     //for (i=0; i<nn; i++) image[i]=0;
-    
-    for (int ii=0; ii<nThreads; ii++) {
-      //cout << ii << " " << nn << " " << nnx << " " << nny << " " << ns << endl;
-      img=dets[ii]->getImage();
-      for (int i=0; i<nn; i++) {
-	if (ii==0)
+    if (image) {
+      for (int ii=0; ii<nThreads; ii++) {
+	cout << ii << " " << nn << " " << nnx << " " << nny << " " << nsy << endl;
+	img=dets[ii]->getImage();
+	for (int i=0; i<nn; i++) {
+	  if (ii==0)
 	  //	  if (img[i]>0)
 	    image[i]=img[i];
-	// else
-	//  image[i]=0;
-	else	//if (img[i]>0)
-	  image[i]+=img[i];
-	//if (img[i])	  cout << "det " << ii << " pix " << i << " val " <<  img[i] << " " << image[i] << endl;
+	  // else
+	  //  image[i]=0;
+	  else	//if (img[i]>0)
+	    image[i]+=img[i];
+	  /***
+	      gdb runtime error
+	      ../multiThreadedAnalogDetector.h:349:14: runtime error: signed integer overflow: -1094794611 + -1094795013 cannot be rep
+	  **/
+	  //if (img[i])	  cout << "det " << ii << " pix " << i << " val " <<  img[i] << " " << image[i] << endl;
+	}
+	
       }
-    
     }
     return image;
     
@@ -369,29 +377,32 @@ public:
 /*        dets[ii]->writeImage(tit); */
 /*      } */
 /* #endif */
+    cout << "write image" << endl;
     int nnx, nny, ns, nsy;
     getImage(nnx, nny, ns, nsy);
      //int nnx, nny, ns;
-     int nn=dets[0]->getImageSize(nnx, nny, ns, nsy);
-     float *gm=new float[nn];
-     if (gm) {
-       for (int ix=0; ix<nn; ix++) {
-	 if (t) {
-	   if (image[ix]<0) 
-	     gm[ix]=0;
-	   else
-	     gm[ix]=(image[ix])/t;
-	 } else
-	   gm[ix]=image[ix];
+    int nn=dets[0]->getImageSize(nnx, nny, ns, nsy);
+    float *gm=new float[nn];
+    if (gm) {
+      for (int ix=0; ix<nn; ix++) {
+	if (t) {
+	  if (image[ix]<0) 
+	    gm[ix]=0;
+	  else
+	    gm[ix]=(image[ix])/t;
+	} else
+	  gm[ix]=image[ix];
 
-	 //if (image[ix]>0 && ix/nnx<350) cout << ix/nnx << " " << ix%nnx << " " << image[ix]<< " " << gm[ix] << endl;
-       }
-       //cout << "image " << nnx << " " << nny << endl;
-       WriteToTiff(gm,imgname ,nnx, nny); 
-       delete [] gm;
-     } else cout << "Could not allocate float image " << endl;
-     return NULL;
-   }
+	//if (image[ix]>0 && ix/nnx<350) cout << ix/nnx << " " << ix%nnx << " " << image[ix]<< " " << gm[ix] << endl;
+      }
+      cout << "image " << nnx << " " << nny << endl;
+      WriteToTiff(gm,imgname ,nnx, nny); 
+      cout << imgname << endl;
+      delete [] gm;
+       cout << "del" << endl;
+    } else cout << "Could not allocate float image " << endl;
+    return NULL;
+  }
   
 
   virtual void StartThreads() { 
@@ -560,7 +571,7 @@ public:
   int *ff;
   double *ped;
   pthread_mutex_t fmutex;
-};
+  };
 
 #endif
 

@@ -8,6 +8,9 @@
 #include "MAX1932.h"    // hv
 #include "ALTERA_PLL.h" // pll
 #include "common.h"
+#ifdef VIRTUAL
+#include "communication_virtual.h"
+#endif
 
 #include <string.h>
 #include <unistd.h>     // usleep
@@ -28,6 +31,7 @@ extern uint64_t udpFrameNumber;
 extern uint32_t udpPacketNumber;
 
 // Global variable from communication_funcs.c
+extern int isControlServer;
 extern void getMacAddressinString(char* cmac, int size, uint64_t mac);
 extern void getIpAddressinString(char* cip, uint32_t ip);
 
@@ -422,6 +426,12 @@ void initStopServer() {
 		LOG(logERROR, ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
 		exit(EXIT_FAILURE);
 	}
+#ifdef VIRTUAL
+	virtual_stop = 0;
+	if (!isControlServer) {
+		ComVirtual_setStop(virtual_stop);
+	}
+#endif
 }
 
 
@@ -474,6 +484,12 @@ void setupDetector() {
     adcEnableMask_1g = 0;
     adcEnableMask_10g = 0;
     nSamples = 1;
+#ifdef VIRTUAL
+	virtual_status = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+	}
+#endif
 
     ALTERA_PLL_ResetPLLAndReconfiguration();
     resetCore();
@@ -1815,10 +1831,21 @@ int startStateMachine(){
 	}
 	LOG(logINFOBLUE, ("Starting State Machine\n"));
     virtual_status = 1;
-	virtual_stop = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+		virtual_stop = ComVirtual_getStop();
+		if (virtual_stop != 0) {
+			LOG(logERROR, ("Cant start acquisition. "
+			"Stop server has not updated stop status to 0\n"));
+			return FAIL;
+		}
+	}
 	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
 		LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
 		virtual_status = 0;
+		if (isControlServer) {
+			ComVirtual_setStatus(virtual_status);
+		}	
 		return FAIL;
 	}
 	LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
@@ -1852,6 +1879,10 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
+	if (!isControlServer) {
+		return NULL;
+	}
+
 	int64_t periodNs = getPeriod();
 	int numFrames = (getNumFrames() *
 						getNumTriggers() );
@@ -1878,6 +1909,8 @@ void* start_timer(void* arg) {
         // loop over number of frames
         for(frameNr = 0; frameNr != numFrames; ++frameNr ) {
 
+			// update the virtual stop from stop server
+			virtual_stop = ComVirtual_getStop();
             //check if virtual_stop is high
             if(virtual_stop == 1){
                 break;
@@ -1929,6 +1962,9 @@ void* start_timer(void* arg) {
 	closeUDPSocket(0);
 
 	virtual_status = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+	}
 	LOG(logINFOBLUE, ("Finished Acquiring\n"));        
 	return NULL;
 }
@@ -1937,7 +1973,18 @@ void* start_timer(void* arg) {
 int stopStateMachine(){
 	LOG(logINFORED, ("Stopping State Machine\n"));
 #ifdef VIRTUAL
-	virtual_stop = 0;
+	if (!isControlServer) {
+		virtual_stop = 1;
+		ComVirtual_setStop(virtual_stop);
+		// read till status is idle
+		int tempStatus = 1;
+		while(tempStatus == 1) {
+			tempStatus = ComVirtual_getStatus();
+		}
+		virtual_stop = 0;
+		ComVirtual_setStop(virtual_stop);
+		LOG(logINFO, ("Stopped State Machine\n"));
+	}	
 	return OK;
 #endif
 	//stop state machine
@@ -1956,7 +2003,10 @@ int stopStateMachine(){
 
 enum runStatus getRunStatus(){
 #ifdef VIRTUAL
-	if(virtual_status == 0){
+	if (!isControlServer) {
+		virtual_status = ComVirtual_getStatus();
+	}
+	if(virtual_status == 0) {
 		LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
 	}else{
@@ -2191,6 +2241,9 @@ int readFrameFromFifo() {
 
 uint32_t runBusy() {
 #ifdef VIRTUAL
+	if (!isControlServer) {
+		virtual_status = ComVirtual_getStatus();
+	}
     return virtual_status;
 #endif
 	uint32_t s = (bus_r(STATUS_REG) & STATUS_RN_BSY_MSK);

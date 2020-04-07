@@ -1523,7 +1523,7 @@ enum runStatus getRunStatus(){
 	if (!isControlServer) {
 		virtual_status = ComVirtual_getStatus();
 	}
-	if(virtual_status == 0){
+	if(virtual_status == 0) {
 		LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
 	} else{

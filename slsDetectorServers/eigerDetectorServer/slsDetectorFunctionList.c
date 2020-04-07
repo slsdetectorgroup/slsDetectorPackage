@@ -6,6 +6,8 @@
 #ifndef VIRTUAL
 #include "FebControl.h"
 #include "Beb.h"
+#else
+#include "communication_virtual.h"
 #endif
 
 #include <unistd.h> //to gethostname
@@ -71,6 +73,9 @@ int eiger_tau_ns = 0;
 
 
 #ifdef VIRTUAL
+pthread_t virtual_tid;
+int virtual_status=0;
+int virtual_stop = 0;
 //values for virtual server
 int64_t eiger_virtual_exptime = 0;
 int64_t eiger_virtual_subexptime = 0;
@@ -84,10 +89,7 @@ int eiger_virtual_transmission_delay_left=0;
 int eiger_virtual_transmission_delay_right=0;
 int eiger_virtual_transmission_delay_frame=0;
 int eiger_virtual_transmission_flowcontrol_10g=0;
-int eiger_virtual_status=0;
 int eiger_virtual_activate=1;
-pthread_t eiger_virtual_tid;
-int eiger_virtual_stop = 0;
 uint64_t eiger_virtual_startingframenumber = 0;
 int eiger_virtual_detPos[2] = {0, 0};
 int eiger_virtual_test_mode = 0;
@@ -353,6 +355,10 @@ void initControlServer() {
 void initStopServer() {
 #ifdef VIRTUAL
 	getModuleConfiguration();
+	virtual_stop = 0;
+	if (!isControlServer) {
+		ComVirtual_setStop(virtual_stop);
+	}
 	return;
 #else
 	getModuleConfiguration();
@@ -469,6 +475,12 @@ void setupDetector() {
 			}
 		}
 	}
+#ifdef VIRTUAL
+	virtual_status = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+	}
+#endif
 
 	LOG(logINFOBLUE, ("Setting Default Parameters\n"));
 	//setting default measurement parameters
@@ -1803,11 +1815,22 @@ int startStateMachine() {
 		return FAIL;
 	}
 	LOG(logINFOBLUE, ("Starting State Machine\n"));
-	eiger_virtual_status = 1;
-	eiger_virtual_stop = 0;
-	if (pthread_create(&eiger_virtual_tid, NULL, &start_timer, NULL)) {
+	virtual_status = 1;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+		virtual_stop = ComVirtual_getStop();
+		if (virtual_stop != 0) {
+			LOG(logERROR, ("Cant start acquisition. "
+			"Stop server has not updated stop status to 0\n"));
+			return FAIL;
+		}
+	}
+	if (pthread_create(&virtual_tid, NULL, &start_timer, NULL)) {
 		LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
-		eiger_virtual_status = 0;
+		virtual_status = 0;
+		if (isControlServer) {
+			ComVirtual_setStatus(virtual_status);
+		}	
 		return FAIL;
 	}
 	LOG(logINFO ,("Virtual Acquisition started\n"));
@@ -1841,6 +1864,10 @@ int startStateMachine() {
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
+	if (!isControlServer) {
+		return NULL;
+	}
+
 	int64_t periodNs = eiger_virtual_period;
 	int numFrames = nimages_per_request;
 	int64_t expUs = eiger_virtual_exptime / 1000;
@@ -1900,8 +1927,10 @@ void* start_timer(void* arg) {
 
 			usleep(eiger_virtual_transmission_delay_frame);
 
+			// update the virtual stop from stop server
+			virtual_stop = ComVirtual_getStop();
 			//check if virtual_stop is high
-			if(eiger_virtual_stop == 1){
+			if(virtual_stop == 1){
 				break;
 			}
 
@@ -1997,7 +2026,10 @@ void* start_timer(void* arg) {
 	closeUDPSocket(0);
 	closeUDPSocket(1);
 	
-	eiger_virtual_status = 0;
+	virtual_status = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+	}
 	LOG(logINFOBLUE, ("Finished Acquiring\n"));
 	return NULL;
 }
@@ -2009,7 +2041,18 @@ void* start_timer(void* arg) {
 int stopStateMachine() {
 	LOG(logINFORED, ("Going to stop acquisition\n"));
 #ifdef VIRTUAL
-	eiger_virtual_stop = 0;
+	if (!isControlServer) {
+		virtual_stop = 1;
+		ComVirtual_setStop(virtual_stop);
+		// read till status is idle
+		int tempStatus = 1;
+		while(tempStatus == 1) {
+			tempStatus = ComVirtual_getStatus();
+		}
+		virtual_stop = 0;
+		ComVirtual_setStop(virtual_stop);
+		LOG(logINFO, ("Stopped State Machine\n"));
+	}	
 	return OK;
 #else
 	if ((Feb_Control_StopAcquisition() != STATUS_IDLE) || (!Beb_StopAcquisition()) ) {
@@ -2069,7 +2112,10 @@ int startReadOut() {
 
 enum runStatus getRunStatus() {
 #ifdef VIRTUAL
-	if (eiger_virtual_status == 0) {
+	if (!isControlServer) {
+		virtual_status = ComVirtual_getStatus();
+	}
+	if (virtual_status == 0) {
 		LOG(logINFO, ("Status: IDLE\n"));
 		return IDLE;
 	} else {
@@ -2100,7 +2146,7 @@ enum runStatus getRunStatus() {
 void readFrame(int *ret, char *mess) {
 #ifdef VIRTUAL
 	// wait for status to be done
-	while(eiger_virtual_status == 1){
+	while(virtual_status == 1){
 		usleep(500);
 	}
 	LOG(logINFOGREEN, ("acquisition successfully finished\n"));

@@ -868,7 +868,7 @@ TEST_CASE("start", "[.cmd][.rx][.new]") {
     // PUT only command
     REQUIRE_THROWS(proxy.Call("start", {}, -1, GET));
     auto prev_val = det.getExptime();
-    det.setExptime(std::chrono::seconds(10));
+    det.setExptime(std::chrono::seconds(2));
     {
         std::ostringstream oss;
         proxy.Call("start", {}, -1, PUT, oss);
@@ -891,7 +891,7 @@ TEST_CASE("stop", "[.cmd][.rx][.new]") {
     // PUT only command
     REQUIRE_THROWS(proxy.Call("stop", {}, -1, GET));
     auto prev_val = det.getExptime();
-    det.setExptime(std::chrono::seconds(10));
+    det.setExptime(std::chrono::seconds(2));
     det.startDetector();
     {
         std::ostringstream oss;
@@ -917,14 +917,14 @@ TEST_CASE("status", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getExptime();
-    det.setExptime(std::chrono::seconds(10));
-    det.startReceiver();
+    det.setExptime(std::chrono::seconds(2));
+    det.startDetector();
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status running\n");
     }
-    det.stopReceiver();
+    det.stopDetector();
     {
         std::ostringstream oss;
         proxy.Call("status", {}, -1, GET, oss);

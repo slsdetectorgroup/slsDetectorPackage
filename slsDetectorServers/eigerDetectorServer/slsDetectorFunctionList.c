@@ -371,7 +371,14 @@ void initStopServer() {
 	getModuleConfiguration();
 	Feb_Interface_FebInterface();
 	Feb_Control_FebControl();
-	Feb_Control_Init(master,top,normal,getDetectorNumber());
+	// different addresses for top and bottom
+	if (getFirmwareVersion() < FIRMWARE_VERSION_SAME_TOP_BOT_ADDR) {
+		Feb_Control_Init(master,top,normal, getDetectorNumber());
+	} 
+	// same addresses for top and bottom
+	else {
+		Feb_Control_Init(master,1, normal, getDetectorNumber());
+	}
 	LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
 	// activate (if it gets ip) (later FW will deactivate at startup)
 	// also needed for stop server for status

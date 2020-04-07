@@ -90,7 +90,7 @@ int eiger_virtual_transmission_delay_right=0;
 int eiger_virtual_transmission_delay_frame=0;
 int eiger_virtual_transmission_flowcontrol_10g=0;
 int eiger_virtual_activate=1;
-uint64_t eiger_virtual_startingframenumber = 0;
+uint64_t eiger_virtual_startingframenumber = 1;
 int eiger_virtual_detPos[2] = {0, 0};
 int eiger_virtual_test_mode = 0;
 int eiger_virtual_quad_mode = 0;
@@ -1921,9 +1921,11 @@ void* start_timer(void* arg) {
 	
 	// Send data
 	{
-		int frameNr = 1;
+		uint64_t frameNr = 0;
+		getStartingFrameNumber(&frameNr);
         // loop over number of frames
-		for(frameNr = 1; frameNr <= numFrames; ++frameNr ) {
+		int iframes = 0;
+		for(iframes = 0; iframes != numFrames; ++iframes ) {
 
 			usleep(eiger_virtual_transmission_delay_frame);
 
@@ -1931,6 +1933,7 @@ void* start_timer(void* arg) {
 			virtual_stop = ComVirtual_getStop();
 			//check if virtual_stop is high
 			if(virtual_stop == 1){
+				setStartingFrameNumber(frameNr + iframes + 1);
 				break;
 			}
 
@@ -1952,7 +1955,7 @@ void* start_timer(void* arg) {
 					sls_detector_header* header = (sls_detector_header*)(packetData);
 					header->detType = 3;//(uint16_t)myDetectorType; updated when firmware updates
 					header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
-					header->frameNumber = frameNr;
+					header->frameNumber = frameNr + iframes;
 					header->packetNumber = i;
 					header->row = row;
 					header->column = colLeft;
@@ -1962,7 +1965,7 @@ void* start_timer(void* arg) {
 					header = (sls_detector_header*)(packetData2);
 					header->detType = 3;//(uint16_t)myDetectorType; updated when firmware updates
 					header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
-					header->frameNumber = frameNr;
+					header->frameNumber = frameNr + iframes;
 					header->packetNumber = i;
 					header->row = row;
 					header->column = colRight;
@@ -2008,18 +2011,19 @@ void* start_timer(void* arg) {
 					sendUDPPacket(1, packetData2, packetsize);
 				}
 			}
-			LOG(logINFO, ("Sent frame: %d\n", frameNr));
+			LOG(logINFO, ("Sent frame: %d\n", iframes));
 			clock_gettime(CLOCK_REALTIME, &end);
 			int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
 					(end.tv_nsec - begin.tv_nsec));
 
 			// sleep for (period - exptime)
-			if (frameNr < numFrames) { // if there is a next frame
+			if (iframes < numFrames) { // if there is a next frame
 				if (periodNs > timeNs) {
 					usleep((periodNs - timeNs)/ 1000);
 				}
 			}
 		}
+		setStartingFrameNumber(frameNr + numFrames);
 	}
 	
 	

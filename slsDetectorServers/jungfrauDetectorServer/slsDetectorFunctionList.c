@@ -560,16 +560,24 @@ int selectStoragecellStart(int pos) {
 
 int setStartingFrameNumber(uint64_t value) {
 	LOG(logINFO, ("Setting starting frame number: %llu\n",(long long unsigned int)value));
+#ifdef VIRTUAL
+	setU64BitReg(value, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+#else
 	// decrement is for firmware
 	setU64BitReg(value - 1, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
 	// need to set it twice for the firmware to catch
 	setU64BitReg(value - 1, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+#endif
 	return OK;
 }
 
 int getStartingFrameNumber(uint64_t* retval) {
+#ifdef VIRTUAL
+	*retval = getU64BitReg(FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+#else
 	// increment is for firmware
 	*retval = (getU64BitReg(GET_FRAME_NUMBER_LSB_REG, GET_FRAME_NUMBER_MSB_REG) + 1);
+#endif
 	return OK;
 }
 
@@ -1705,8 +1713,10 @@ void* start_timer(void* arg) {
 	
 	// Send data
 	{
-		int frameNr = 0;
-		for(frameNr = 0; frameNr != numFrames; ++frameNr ) {
+		uint64_t frameNr = 0;
+		getStartingFrameNumber(&frameNr);
+		int iframes = 0;
+		for(iframes = 0; iframes != numFrames; ++iframes ) {
 
 			usleep(transmissionDelayUs);
 
@@ -1714,6 +1724,7 @@ void* start_timer(void* arg) {
 			virtual_stop = ComVirtual_getStop();
 			//check if virtual_stop is high
 			if(virtual_stop == 1){
+				setStartingFrameNumber(frameNr + iframes + 1);
 				break;
 			}
 
@@ -1734,7 +1745,7 @@ void* start_timer(void* arg) {
 					sls_detector_header* header = (sls_detector_header*)(packetData);
 					header->detType = (uint16_t)myDetectorType;
 					header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
-					header->frameNumber = frameNr;
+					header->frameNumber = frameNr + iframes;
 					header->packetNumber = i;
 					header->modId = 0;
 					header->row = detPos[2];
@@ -1769,18 +1780,19 @@ void* start_timer(void* arg) {
 					}
 				}
 			}
-			LOG(logINFO, ("Sent frame: %d\n", frameNr));
+			LOG(logINFO, ("Sent frame: %d\n", iframes));
 			clock_gettime(CLOCK_REALTIME, &end);
 			int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
 					(end.tv_nsec - begin.tv_nsec));
 	
 			// sleep for (period - exptime)
-			if (frameNr < numFrames) { // if there is a next frame
+			if (iframes < numFrames) { // if there is a next frame
 				if (periodNs > timeNs) {
 					usleep((periodNs - timeNs)/ 1000);
 				}
 			}
 		}
+		setStartingFrameNumber(frameNr + numFrames);
 	}
 		
 	closeUDPSocket(0);

@@ -1,4 +1,4 @@
-SLS Detector Package 4.2.0 released on 04.04.2020 (Minor Release)
+SLS Detector Package 4.2.0 released on 09.04.2020 (Minor Release)
 ===================================================================
 
 
@@ -18,7 +18,8 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
 ====================
 
     - (Eiger) Additional status: Transmitting
-    - (Eiger) Change in default vcal dac value
+    - (Eiger) Default vcal dac value
+    - (Eiger) Default readout mode
     - (Eiger) Deactivate a module
     - (Eiger) Setting all trimbits argument check
     - (Eiger client) Dynamic range change effect on clock divider
@@ -46,24 +47,24 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
         from start. Removed file buffering when writing to file. Replaced
         pausing on keepRunning variable with semaphore to reduce cpu
         load.
-    2.  (Eiger) rx_fifodepth default is 100 for 32 bit mode, but 1000
-        for other modes. Changing dynamic range changes bit mode to 
+
+    2.  (Eiger) Default rx_fifodepth for 32 bit mode is 100, but 1000
+        for other modes. Changing dynamic range will now change bit mode to 
         their defaults.
+
 
     Client
     ------
     1.  Added setflippeddatax to users class.
 
-    2.  (Eiger) Changing dynamic range ro 4, 8 or 16 changes the clock divider
-        to full speed, whereas dynamic range of 32 still changes the clock divider to 
-        quarter speed.
 
     Detector Server (Eiger)
     -----------------------
-    1.  After acquiring, if the detector is still streaming out data, then the 
-        status is Trasnmitting (command line: 'data'). Only after this process, 
-        will it become idle. Previously, sls_detector_acquire waited for 
-        end of data streaming before returning. It will continue to do so.
+    1.  Transmitting Status: After acquiring, if the detector is still 
+        streaming out data, then the status is Trasnmitting 
+        (command line: 'data'). Only after this process, will it become idle. 
+        Previously, sls_detector_acquire waited for end of data streaming 
+        before returning. It will continue to do so.
 
 
 
@@ -75,11 +76,19 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
     1.  Vcal dac set to 0 at on-board detector server start up to
         reduce noise.
 
-    2.  Setting activate to 0 sent to both control and stop server.
+    2.  Default Readout mode set to Parallel instead of Non parallel.
+
+    3.  Dynamic range  4, 8 or 16 changes the clock divider to full speed, 
+        whereas dynamic range of 32 still changes the clock divider to 
+        quarter speed.
+
+    4.  Setting activate to 0 sent to both control and stop server.
         So, deactivate a module can be done even if FEB communication fails.
         Restarting the server will activate the module again.
 
-    3.  Setting all trimbits values checked for values 0 - 63.
+    5.  Verification included for input of setting all trimbits values.
+        Valid input is 0 - 63.
+
 
     Receiver
     --------
@@ -90,10 +99,12 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
     2.  Modifying subexptime now also updates subperiod in master file.
         Also, the print for subperiod name to console is corrected.
 
+
     Package
     -------
     1.  Many warnings have been fixed, including those with overlapping 
         memory copies for source and destination. 
+
 
     Client
     ------

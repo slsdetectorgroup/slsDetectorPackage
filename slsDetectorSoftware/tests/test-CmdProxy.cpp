@@ -852,11 +852,118 @@ TEST_CASE("temp_fpga", "[.cmd][.new]") {
     }
 }
 
+/* acquisition */
 
+TEST_CASE("clearbusy", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("clearbusy", {}, -1, PUT));
+    REQUIRE_THROWS(proxy.Call("clearbusy", {"0"}, -1, PUT));
+    REQUIRE_THROWS(proxy.Call("clearbusy", {}, -1, GET));
+}
 
+TEST_CASE("start", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    // PUT only command
+    REQUIRE_THROWS(proxy.Call("start", {}, -1, GET));
+    auto prev_val = det.getExptime();
+    det.setExptime(std::chrono::seconds(2));
+    {
+        std::ostringstream oss;
+        proxy.Call("start", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "start successful\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "status running\n");
+    }
+    det.stopDetector();
+    for (int i = 0; i != det.size(); ++i) {
+        det.setExptime(prev_val[i], {i});
+    }
+}
 
+TEST_CASE("stop", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    // PUT only command
+    REQUIRE_THROWS(proxy.Call("stop", {}, -1, GET));
+    auto prev_val = det.getExptime();
+    det.setExptime(std::chrono::seconds(2));
+    det.startDetector();
+    {
+        std::ostringstream oss;
+        proxy.Call("status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "status running\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("stop", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "stop successful\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "status idle\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setExptime(prev_val[i], {i});
+    }
+}
 
+TEST_CASE("status", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getExptime();
+    det.setExptime(std::chrono::seconds(2));
+    det.startDetector();
+    {
+        std::ostringstream oss;
+        proxy.Call("status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "status running\n");
+    }
+    det.stopDetector();
+    {
+        std::ostringstream oss;
+        proxy.Call("status", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "status idle\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setExptime(prev_val[i], {i});
+    } 
+}
 
+TEST_CASE("startingfnum", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
+        auto prev_sfnum = det.getStartingFrameNumber();
+        REQUIRE_THROWS(proxy.Call("startingfnum", {"0"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            proxy.Call("startingfnum", {"3"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "startingfnum 3\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("startingfnum", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "startingfnum 3\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("startingfnum", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "startingfnum 1\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setStartingFrameNumber(prev_sfnum[i], {i});
+        } 
+    } else {
+        REQUIRE_THROWS(proxy.Call("startingfnum", {}, -1, GET));
+    }
+}
 
 
 

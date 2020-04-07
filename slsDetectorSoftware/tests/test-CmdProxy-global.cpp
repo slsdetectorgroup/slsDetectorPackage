@@ -49,7 +49,6 @@ void test_onchip_dac(defs::dacIndex index, const std::string &dacname, int dacva
     auto dacValueStr = sls::ToStringHex(dacvalue);
     auto chipIndexStr = std::to_string(chipIndex);
     std::ostringstream oss_set, oss_get;
-    std::cout << "chipindexstr:"<<chipIndexStr<<" dacvaluestr:"<<dacValueStr<<std::endl;
     proxy.Call(dacname, {chipIndexStr, dacValueStr}, -1, PUT, oss_set);
     REQUIRE(oss_set.str() == dacname + " " + chipIndexStr + " " + dacValueStr + "\n");
     proxy.Call(dacname, {chipIndexStr}, -1, GET, oss_get);

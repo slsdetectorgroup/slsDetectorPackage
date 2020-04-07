@@ -7,6 +7,9 @@
 #include "slsDetectorServer_funcs.h"
 #include "slsDetectorServer_defs.h"
 #include "versionAPI.h"
+#ifdef VIRTUAL
+#include "communication_virtual.h"
+#endif
 
 #include <signal.h>
 #include <string.h>
@@ -31,7 +34,8 @@ void error(char *msg){
 	perror(msg);
 }
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
+
 	// print version
 	if (argc > 1 && !strcasecmp(argv[1], "-version")) {
         int version = 0;
@@ -50,8 +54,9 @@ int main(int argc, char *argv[]){
 	}
 
     int portno = DEFAULT_PORTNO;
-	int retval = OK;
-	int fd = 0;
+	isControlServer = 1;
+	debugflag = 0;
+	checkModuleFlag = 1;
 
 	// if socket crash, ignores SISPIPE, prevents global signal handler
 	// subsequent read/write to socket gives error - must handle locally
@@ -100,16 +105,19 @@ int main(int argc, char *argv[]){
 		}
 	}
 
-#ifdef STOP_SERVER
-	char cmd[MAX_STR_LENGTH];
-	memset(cmd, 0, MAX_STR_LENGTH);
-#endif
+	// control server
 	if (isControlServer) {
-		LOG(logINFO, ("Opening control server on port %d \n", portno));
 #ifdef STOP_SERVER
+		// start stop server process
+		char cmd[MAX_STR_LENGTH];
+		memset(cmd, 0, MAX_STR_LENGTH);
 		{
 			int i;
 			for (i = 0; i < argc; ++i) {
+				if (!strcasecmp(argv[i], "-port")) {
+					i +=2;
+					continue;
+				}
 				if (i > 0) {
 					strcat(cmd, " ");
 				}
@@ -123,31 +131,42 @@ int main(int argc, char *argv[]){
 			LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
 			system(cmd);
 		}
+		LOG(logINFOBLUE, ("Control Server [%d]\n", portno));
+#ifdef VIRTUAL
+		// creating files for virtual servers to communicate with each other
+		if (!ComVirtual_createFiles(portno)) { 
+			return -1;
+		}
 #endif
-	} else {
-		LOG(logINFO,("Opening stop server on port %d \n", portno));
+#endif
+	} 
+	// stop server
+	else {
+		LOG(logINFOBLUE, ("Stop Server [%d]\n", portno));
+#ifdef VIRTUAL
+		ComVirtual_setFileNames(portno - 1);
+#endif
 	}
+
 
 	init_detector();
-
-	{	// bind socket
-		sockfd = bindSocket(portno);
-		if (ret == FAIL)
-			return -1;
-	}
-
+	// bind socket
+	sockfd = bindSocket(portno);
+	if (ret == FAIL)
+		return -1;
 	// assign function table
 	function_table();
 
 	if (isControlServer) {
 		LOG(logINFOBLUE, ("Control Server Ready...\n\n"));
 	} else {
-		LOG(logINFO, ("Stop Server Ready...\n\n"));
+		LOG(logINFOBLUE, ("Stop Server Ready...\n\n"));
 	}
 
 	// waits for connection
+	int retval = OK;
 	while(retval != GOODBYE && retval != REBOOT) {
-		fd = acceptConnection(sockfd);
+		int fd = acceptConnection(sockfd);
 		if (fd > 0) {
 			retval = decode_function(fd);
 			closeConnection(fd);

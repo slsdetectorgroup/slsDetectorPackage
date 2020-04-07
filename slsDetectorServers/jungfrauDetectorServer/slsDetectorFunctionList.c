@@ -8,6 +8,7 @@
 #include "common.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
+#include "communication_virtual.h"
 #endif
 
 #include <string.h>
@@ -25,6 +26,7 @@ extern udpStruct udpDetails;
 extern const enum detectorType myDetectorType;
 
 // Global variable from communication_funcs.c
+extern int isControlServer;
 extern void getMacAddressinString(char* cmac, int size, uint64_t mac);
 extern void getIpAddressinString(char* cip, uint32_t ip);
 
@@ -373,6 +375,12 @@ void initStopServer() {
 		LOG(logERROR, ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
 		exit(EXIT_FAILURE);
 	}
+#ifdef VIRTUAL
+	virtual_stop = 0;
+	if (!isControlServer) {
+		ComVirtual_setStop(virtual_stop);
+	}
+#endif
 }
 
 
@@ -394,6 +402,13 @@ void setupDetector() {
             clkPhase[i] = 0;
         }
 	}
+#ifdef VIRTUAL
+	virtual_status = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+	}
+#endif
+
     ALTERA_PLL_ResetPLL();
 	resetCore();
 	resetPeripheral();
@@ -545,16 +560,24 @@ int selectStoragecellStart(int pos) {
 
 int setStartingFrameNumber(uint64_t value) {
 	LOG(logINFO, ("Setting starting frame number: %llu\n",(long long unsigned int)value));
+#ifdef VIRTUAL
+	setU64BitReg(value, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+#else
 	// decrement is for firmware
 	setU64BitReg(value - 1, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
 	// need to set it twice for the firmware to catch
 	setU64BitReg(value - 1, FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+#endif
 	return OK;
 }
 
 int getStartingFrameNumber(uint64_t* retval) {
+#ifdef VIRTUAL
+	*retval = getU64BitReg(FRAME_NUMBER_LSB_REG, FRAME_NUMBER_MSB_REG);
+#else
 	// increment is for firmware
 	*retval = (getU64BitReg(GET_FRAME_NUMBER_LSB_REG, GET_FRAME_NUMBER_MSB_REG) + 1);
+#endif
 	return OK;
 }
 
@@ -1625,10 +1648,21 @@ int startStateMachine(){
 	}
 	LOG(logINFOBLUE, ("starting state machine\n"));
 	virtual_status = 1;
-	virtual_stop = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+		virtual_stop = ComVirtual_getStop();
+		if (virtual_stop != 0) {
+			LOG(logERROR, ("Cant start acquisition. "
+			"Stop server has not updated stop status to 0\n"));
+			return FAIL;
+		}
+	}
 	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
 		LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
 		virtual_status = 0;
+		if (isControlServer) {
+			ComVirtual_setStatus(virtual_status);
+		}	
 		return FAIL;
 	}
 	LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
@@ -1649,6 +1683,10 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
+	if (!isControlServer) {
+		return NULL;
+	}
+
 	int numInterfaces = getNumberofUDPInterfaces();
 	int64_t periodNs = getPeriod();
 	int numFrames = (getNumFrames() *
@@ -1675,13 +1713,18 @@ void* start_timer(void* arg) {
 	
 	// Send data
 	{
-		int frameNr = 0;
-		for(frameNr = 0; frameNr != numFrames; ++frameNr ) {
+		uint64_t frameNr = 0;
+		getStartingFrameNumber(&frameNr);
+		int iframes = 0;
+		for(iframes = 0; iframes != numFrames; ++iframes ) {
 
 			usleep(transmissionDelayUs);
 
+			// update the virtual stop from stop server
+			virtual_stop = ComVirtual_getStop();
 			//check if virtual_stop is high
 			if(virtual_stop == 1){
+				setStartingFrameNumber(frameNr + iframes + 1);
 				break;
 			}
 
@@ -1702,7 +1745,7 @@ void* start_timer(void* arg) {
 					sls_detector_header* header = (sls_detector_header*)(packetData);
 					header->detType = (uint16_t)myDetectorType;
 					header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
-					header->frameNumber = frameNr;
+					header->frameNumber = frameNr + iframes;
 					header->packetNumber = i;
 					header->modId = 0;
 					header->row = detPos[2];
@@ -1737,18 +1780,19 @@ void* start_timer(void* arg) {
 					}
 				}
 			}
-			LOG(logINFO, ("Sent frame: %d\n", frameNr));
+			LOG(logINFO, ("Sent frame: %d\n", iframes));
 			clock_gettime(CLOCK_REALTIME, &end);
 			int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
 					(end.tv_nsec - begin.tv_nsec));
 	
 			// sleep for (period - exptime)
-			if (frameNr < numFrames) { // if there is a next frame
+			if (iframes < numFrames) { // if there is a next frame
 				if (periodNs > timeNs) {
 					usleep((periodNs - timeNs)/ 1000);
 				}
 			}
 		}
+		setStartingFrameNumber(frameNr + numFrames);
 	}
 		
 	closeUDPSocket(0);
@@ -1757,6 +1801,9 @@ void* start_timer(void* arg) {
 	}
 
 	virtual_status = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+	}
 	LOG(logINFOBLUE, ("Finished Acquiring\n"));
 	return NULL;
 }
@@ -1765,7 +1812,18 @@ void* start_timer(void* arg) {
 int stopStateMachine(){
 	LOG(logINFORED, ("Stopping State Machine\n"));
 #ifdef VIRTUAL
-	virtual_stop = 0;
+	if (!isControlServer) {
+		virtual_stop = 1;
+		ComVirtual_setStop(virtual_stop);
+		// read till status is idle
+		int tempStatus = 1;
+		while(tempStatus == 1) {
+			tempStatus = ComVirtual_getStatus();
+		}
+		virtual_stop = 0;
+		ComVirtual_setStop(virtual_stop);
+		LOG(logINFO, ("Stopped State Machine\n"));
+	}	
 	return OK;
 #endif
 	//stop state machine
@@ -1783,7 +1841,10 @@ int stopStateMachine(){
 
 enum runStatus getRunStatus(){
 #ifdef VIRTUAL
-	if(virtual_status == 0){
+	if (!isControlServer) {
+		virtual_status = ComVirtual_getStatus();
+	}
+	if(virtual_status == 0) {
 		LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
 	}else{
@@ -1857,6 +1918,9 @@ void readFrame(int *ret, char *mess){
 
 u_int32_t runBusy() {
 #ifdef VIRTUAL
+	if (!isControlServer) {
+		virtual_status = ComVirtual_getStatus();
+	}
     return virtual_status;
 #endif
 	u_int32_t s = (bus_r(STATUS_REG) & RUN_BUSY_MSK);

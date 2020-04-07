@@ -37,7 +37,7 @@ int setUDPDestinationDetails(int index, const char* ip, unsigned short int port)
 	// convert ip to internet address
 	struct addrinfo hints;
 	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
+	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_flags = 0;
 	hints.ai_protocol = 0;
@@ -83,19 +83,16 @@ int createUDPSocket(int index) {
 	LOG(logINFO, ("Udp client socket created for server (port %d, ip:%s)\n",
 			udpDestinationPort[index], udpDestinationIp[index]));
 
+	// Using connect expects that the receiver (udp server) exists to listen to these packets
 	// connecting allows to use "send/write" instead of "sendto", avoiding checking for server address for each packet
-	// using write without a connect will end in segv
-	if (connect(udpSockfd[index],udpServerAddrInfo[index]->ai_addr, udpServerAddrInfo[index]->ai_addrlen)==-1) {
-		LOG(logERROR, ("Could not connect to UDP server at ip:%s, port:%d. (Error code:%d, %s)\n",
-				udpDestinationIp[index], udpDestinationPort[index],  errno, gai_strerror(errno)));
-	}
+	// using write without a connect will end in segv 
 	LOG(logINFO, ("Udp client socket connected\n",
 				udpDestinationPort[index], udpDestinationIp[index]));
 	return OK;
 }
 
 int sendUDPPacket(int index, const char* buf, int length) {
-	int n = write(udpSockfd[index], buf, length);
+	int n = sendto(udpSockfd[index], buf, length, 0, udpServerAddrInfo[index]->ai_addr, udpServerAddrInfo[index]->ai_addrlen);
 	// udp sends atomically, no need to handle partial data
 	if (n == -1) {
 		LOG(logERROR, ("Could not send udp packet for socket %d. (Error code:%d, %s)\n",

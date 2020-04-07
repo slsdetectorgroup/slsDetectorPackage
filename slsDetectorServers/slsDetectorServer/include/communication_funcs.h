@@ -11,6 +11,13 @@ typedef enum{
 	OTHER
 }intType;
 
+// communciate with stop server
+#ifdef VIRTUAL
+#define FILE_STATUS "/tmp/Sls_virtual_server_status_"
+#define FILE_STOP "/tmp/Sls_virtual_server_stop_"
+#define FD_STATUS 0
+#define FD_STOP 1
+#endif
 
 int bindSocket(unsigned short int port_number);
 int acceptConnection(int socketDescriptor);

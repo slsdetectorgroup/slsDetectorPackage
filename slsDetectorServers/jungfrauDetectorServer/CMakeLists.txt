@@ -12,6 +12,7 @@ add_executable(jungfrauDetectorServer_virtual
     ../slsDetectorServer/src/MAX1932.c
     ../slsDetectorServer/src/programFpgaBlackfin.c
     ../slsDetectorServer/src/communication_funcs_UDP.c    
+    ../slsDetectorServer/src/communication_virtual.c
 )
 
 target_include_directories(jungfrauDetectorServer_virtual

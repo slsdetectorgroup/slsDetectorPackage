@@ -74,7 +74,6 @@ enum detFuncs{
 	F_LOCK_SERVER,
 	F_GET_LAST_CLIENT_IP,
 	F_SET_PORT,
-	F_UPDATE_CLIENT,
 	F_ENABLE_TEN_GIGA,
 	F_SET_ALL_TRIMBITS,
 	F_SET_PATTERN_IO_CONTROL,
@@ -365,7 +364,6 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_LOCK_SERVER:						return "F_LOCK_SERVER";
 	case F_GET_LAST_CLIENT_IP:				return "F_GET_LAST_CLIENT_IP";
 	case F_SET_PORT:						return "F_SET_PORT";
-	case F_UPDATE_CLIENT:					return "F_UPDATE_CLIENT";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";

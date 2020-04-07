@@ -137,12 +137,8 @@ int64_t Module::getReceiverSoftwareVersion() const {
 void Module::sendToDetector(int fnum, const void *args, size_t args_size,
                                  void *retval, size_t retval_size) {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    auto ret =
-        client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
+    client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     client.close();
-    if (ret == FORCE_UPDATE) {
-        updateCachedDetectorVariables();
-    }
 }
 
 template <typename Arg, typename Ret>
@@ -363,7 +359,6 @@ void Module::setHostname(const std::string &hostname, const bool initialChecks) 
     }
 
     LOG(logINFO) << "Detector connecting - updating!";
-    updateCachedDetectorVariables();
 }
 
 std::string Module::getHostname() const { return shm()->hostname; }
@@ -700,39 +695,6 @@ void Module::execCommand(const std::string &cmd) {
     sendToDetector(F_EXEC_COMMAND, arg, retval);
     if (strlen(retval) != 0U) {
         LOG(logINFO) << "Detector " << detId << " returned:\n" << retval;
-    }
-}
-
-void Module::updateCachedDetectorVariables() {
-    int fnum = F_UPDATE_CLIENT;
-    LOG(logDEBUG1) << "Sending update client to detector server";
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    if (client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0) ==
-        FORCE_UPDATE) {
-        int n = 0, i32 = 0;
-        sls::IpAddr lastClientIP;
-        n += client.Receive(&lastClientIP, sizeof(lastClientIP));
-        LOG(logDEBUG1)
-            << "Updating detector last modified by " << lastClientIP;
-
-        // number of channels (depends on #samples, adcmask)
-        if (shm()->myDetectorType == CHIPTESTBOARD ||
-            shm()->myDetectorType == MOENCH) {
-            n += client.Receive(&i32, sizeof(i32));
-            shm()->nChan.x = i32; 
-            n += client.Receive(&i32, sizeof(i32));
-            shm()->nChan.y = i32;                         
-        }
-
-        // num udp interfaces
-        if (shm()->myDetectorType == JUNGFRAU) {
-            n += client.Receive(&i32, sizeof(i32));
-            shm()->numUDPInterfaces = i32;
-        }
-
-        if (n == 0) {
-            LOG(logERROR) << "Could not update detector, received 0 bytes";
-        }
     }
 }
 
@@ -1563,8 +1525,6 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
         LOG(logWARNING) << "Acquisition already running, Stopping it.";
         stopAcquisition();
     }
-    // update detector before receiver
-    updateCachedDetectorVariables();
 
     // start updating
     std::string host = receiverIP;
@@ -2169,9 +2129,6 @@ std::vector<int> Module::getVetoPhoton(const int chipIndex) {
         client.Receive(adus, sizeof(adus));
         std::vector<int> retvals(adus, adus + nch);
         LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]: " << nch << " channels\n";
-        if (ret == FORCE_UPDATE) {
-            updateCachedDetectorVariables();
-        }
         return retvals;
     } 
 }
@@ -2258,11 +2215,7 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons, const int 
         client.Receive(mess, MAX_STR_LENGTH);
         throw RuntimeError("Detector " + std::to_string(detId) +
                            " returned error: " + std::string(mess));
-    } else {
-        if (ret == FORCE_UPDATE) {
-            updateCachedDetectorVariables();
-        }
-    } 
+    }
 } 
 
 void Module::setVetoReference(const int gainIndex, const int value) {
@@ -2830,22 +2783,15 @@ void Module::setModule(sls_detector_module &module, int tb) {
     }
     client.Receive(&retval, sizeof(retval));
     LOG(logDEBUG1) << "Set Module returned: " << retval;
-    if (ret == FORCE_UPDATE) {
-        updateCachedDetectorVariables();
-    }
 }
 
 sls_detector_module Module::getModule() {
     int fnum = F_GET_MODULE;
-    int ret = FAIL;
     LOG(logDEBUG1) << "Getting module";
     sls_detector_module myMod{shm()->myDetectorType};
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    ret = client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
+    client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
     receiveModule(&myMod, client);
-    if (ret == FORCE_UPDATE) {
-        updateCachedDetectorVariables();
-    }
     return myMod;
 }
 

@@ -108,7 +108,6 @@ const char* getRetName() {
 	switch(ret) {
 	case OK:			return "OK";
 	case FAIL:			return "FAIL";
-	case FORCE_UPDATE: 	return "FORCE_UPDATE";
 	case GOODBYE:		return "GOODBYE";
 	case REBOOT:		return "REBOOT";
 	default:			return "unknown";
@@ -194,7 +193,6 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_LOCK_SERVER:						return "F_LOCK_SERVER";
 	case F_GET_LAST_CLIENT_IP:				return "F_GET_LAST_CLIENT_IP";
 	case F_SET_PORT:						return "F_SET_PORT";
-	case F_UPDATE_CLIENT:					return "F_UPDATE_CLIENT";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
@@ -388,7 +386,6 @@ void function_table() {
 	flist[F_LOCK_SERVER]						= &lock_server;
 	flist[F_GET_LAST_CLIENT_IP]					= &get_last_client_ip;
 	flist[F_SET_PORT]							= &set_port;
-	flist[F_UPDATE_CLIENT]						= &update_client;
 	flist[F_ENABLE_TEN_GIGA]					= &enable_ten_giga;
 	flist[F_SET_ALL_TRIMBITS]					= &set_all_trimbits;
 	flist[F_SET_PATTERN_IO_CONTROL]				= &set_pattern_io_control;
@@ -2830,58 +2827,6 @@ int set_port(int file_des) {
 }
 
 
-
-
-int update_client(int file_des) {
-	ret = FORCE_UPDATE;
-	memset(mess, 0, sizeof(mess));
-	Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
-	return send_update(file_des);
-}
-
-
-
-
-int send_update(int file_des) {
-    ret = OK;
-	int n = 0;
-	int i32 = -1;
-
-	i32 = lastClientIP;
-	i32 = __builtin_bswap32(i32);
-	n = sendData(file_des, &i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// number of channels
-#if defined(MOENCHD) || defined(CHIPTESTBOARDD)
-	{
-		int nx = 0, ny = 0;
-		getNumberOfChannels(&nx, &ny);
-		i32 = nx;
-		n = sendData(file_des,&i32,sizeof(i32),INT32);
-		if (n < 0) return printSocketReadError();
-		i32 = ny;
-		n = sendData(file_des,&i32,sizeof(i32),INT32);
-		if (n < 0) return printSocketReadError();				
-	}
-#endif
-
-	// num udp interfaces
-#ifdef JUNGFRAUD
-	    i32 = getNumberofUDPInterfaces();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-    if (n < 0) return printSocketReadError();
-#endif
-
-    if (lockStatus == 0) {
-        lastClientIP = thisClientIP;
-    }
-
-    return ret;
-}
-
-
-
 int enable_ten_giga(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
@@ -3853,7 +3798,6 @@ int reset_fpga(int file_des) {
 			initControlServer();
 		}
 		else initStopServer(); //remapping of stop server
-		ret = FORCE_UPDATE;
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);

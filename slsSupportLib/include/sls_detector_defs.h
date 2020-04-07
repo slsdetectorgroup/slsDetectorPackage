@@ -87,8 +87,7 @@ class slsDetectorDefs {
     /**  return values */
     enum {
         OK,   /**< function succeeded */
-        FAIL, /**< function failed */
-        FORCE_UPDATE
+        FAIL /**< function failed */
     };
 
     /** staus mask */

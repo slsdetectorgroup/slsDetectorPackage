@@ -3,6 +3,7 @@
 
 #define REQUIRED_FIRMWARE_VERSION 	 		(24)
 #define IDFILECOMMAND						"more /home/root/executables/detid.txt"
+#define FIRMWARE_VERSION_SAME_TOP_BOT_ADDR	(26)
 
 #define STATUS_IDLE		0
 #define STATUS_RUNNING	1

@@ -272,11 +272,6 @@ class Module : public virtual slsDetectorDefs {
     void execCommand(const std::string &cmd);
 
     /**
-     * Updates some of the shared memory receiving the data from the detector
-     */
-    void updateCachedDetectorVariables();
-
-    /**
      * Get detector specific commands to write into config file
      * @returns vector of strings with commands
      */

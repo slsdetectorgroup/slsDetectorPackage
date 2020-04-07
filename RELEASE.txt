@@ -80,7 +80,8 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
 
     3.  Dynamic range  4, 8 or 16 changes the clock divider to full speed, 
         whereas dynamic range of 32 still changes the clock divider to 
-        quarter speed.
+        quarter speed. So, default is dynamic range of 16 and full speed 
+	at detector server start up.
 
     4.  Setting activate to 0 sent to both control and stop server.
         So, deactivate a module can be done even if FEB communication fails.

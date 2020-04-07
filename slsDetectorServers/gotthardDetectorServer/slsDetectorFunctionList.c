@@ -1567,15 +1567,15 @@ void* start_timer(void* arg) {
         if (adcConfigured == -1) {
             *((uint32_t*)(imageData)) = 0xCACACACA;
         }
-        for (i = 4; i < imageSize; i += sizeof(uint16_t)) {
-            *((uint16_t*)(imageData + i)) = i;
+        for (i = sizeof(uint32_t); i < imageSize; i += sizeof(uint16_t)) {
+            *((uint16_t*)(imageData + i)) = (uint16_t)i;
         }       
     }
 
 	// Send data
     {
         int frameNr = 0;
-        int frameHeaderNr = 2;
+        uint16_t frameHeaderNr = 2;
         // loop over number of frames
         for(frameNr = 0; frameNr != numFrames; ++frameNr ) {
 

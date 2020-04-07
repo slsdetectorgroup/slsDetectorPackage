@@ -11,7 +11,7 @@ std::string ToString(const defs::runStatus s) {
     case defs::RUNNING:
         return std::string("running");
     case defs::TRANSMITTING:
-        return std::string("data");
+        return std::string("transmitting");
     case defs::RUN_FINISHED:
         return std::string("finished");
     case defs::STOPPED:

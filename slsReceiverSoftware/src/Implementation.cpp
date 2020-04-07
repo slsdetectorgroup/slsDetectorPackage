@@ -187,7 +187,9 @@ void Implementation::SetupFifoStructure() {
                 fifoDepth));
         } catch (...) {
             fifo.clear();
-            throw sls::RuntimeError("Could not allocate memory for fifo structure " + std::to_string(i));
+            fifoDepth = 0;
+            throw sls::RuntimeError("Could not allocate memory for fifo structure " + 
+                std::to_string(i) + ". FifoDepth is now 0.");
         }
         // set the listener & dataprocessor threads to point to the right fifo
         if (listener.size())
@@ -1475,6 +1477,7 @@ void Implementation::setDynamicRange(const uint32_t i) {
             // to update npixelsx, npixelsy in file writer
             for (const auto &it : dataProcessor)
                 it->SetPixelDimension();
+            fifoDepth = generalData->defaultFifoDepth;
             SetupFifoStructure();
         }
     }

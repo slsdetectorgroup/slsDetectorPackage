@@ -1393,17 +1393,12 @@ void Module::setDynamicRange(int n) {
     // changes in dr
     if (n != prev_val) {
         // update speed for usability
-        switch (n) {
-        case 32:
+        if (n == 32) {
             LOG(logINFO) << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32";     
             setClockDivider(RUN_CLOCK, 2);
-            break;
-        case 16:
-            LOG(logINFO) << "Setting Clock to Full Speed to cope with Dynamic Range of " << n;     
+        } else if (prev_val == 32) {
+            LOG(logINFO) << "Setting Clock to Full Speed for Dynamic Range of " << n;     
             setClockDivider(RUN_CLOCK, 0);
-            break;
-        default:
-            break;
         }
         updateRateCorrection();
     }

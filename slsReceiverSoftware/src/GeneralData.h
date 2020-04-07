@@ -414,7 +414,7 @@ class EigerData : public GeneralData {
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-		defaultFifoDepth 	= 100;
+		defaultFifoDepth 	= 1000;
 		threadsPerReceiver	= 2;
 		headerPacketSize	= 40;
 		standardheader		= true;
@@ -428,6 +428,7 @@ class EigerData : public GeneralData {
 	void SetDynamicRange(int dr, bool tgEnable) {
 		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
 		imageSize 		= dataSize*packetsPerFrame;
+		defaultFifoDepth = (dr == 32 ?  100 : 1000);
 	}
 
 	/**

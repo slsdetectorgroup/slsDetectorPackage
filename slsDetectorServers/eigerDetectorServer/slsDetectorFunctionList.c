@@ -2129,19 +2129,23 @@ enum runStatus getRunStatus() {
 #else
 
 	int i = Feb_Control_AcquisitionInProgress();
-	switch (i) {
-	case STATUS_ERROR:
+	if (i == STATUS_ERROR) {
 		LOG(logERROR, ("Status: ERROR reading status register\n"));
 		return ERROR;
-	case STATUS_IDLE:
+	} else if (i == STATUS_IDLE) {
+		int isTransmitting = 0;
+		if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 0) == FAIL) {
+			return ERROR;
+		}
+		if (isTransmitting) {
+			printf("Status: TRANSMITTING\n");
+			return TRANSMITTING;
+		} 
 		LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
-	default:
-		LOG(logINFOBLUE, ("Status: RUNNING...\n"));
-		return RUNNING;
 	}
-
-	return IDLE;
+	LOG(logINFOBLUE, ("Status: RUNNING...\n"));
+	return RUNNING;
 #endif
 }
 
@@ -2175,7 +2179,18 @@ void readFrame(int *ret, char *mess) {
 	}
 
 	//wait for detector to send
-	Beb_EndofDataSend(send_to_ten_gig);
+	int isTransmitting = 1;
+	while (isTransmitting) {
+		if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 1) == FAIL) {
+				strcpy(mess,"Could not read delay counters\n");
+				*ret = (int)FAIL;
+				return;
+		}
+		if (isTransmitting) {
+			printf("Transmitting...\n");
+		}
+	}
+	printf("Detector has sent all data\n");
 	LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 #endif
 }

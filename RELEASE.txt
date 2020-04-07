@@ -20,16 +20,16 @@ This document describes the differences between 4.2.0 and 4.1.1 releases.
     - (Eiger) Additional status: Transmitting
     - (Eiger) Default vcal dac value
     - (Eiger) Default readout mode
+    - (Eiger) Dynamic range change effect on clock divider
     - (Eiger) Deactivate a module
     - (Eiger) Setting all trimbits argument check
-    - (Eiger client) Dynamic range change effect on clock divider
-    - (Eiger) Different rx_fifodepth defaults
     - (Receiver) performance (memory allocation and alignment, file buffering)
+    - (Receiver) Eiger: Different rx_fifodepth defaults
     - (Receiver) rx_fifodepth has a higher range
     - (Receiver) subperiod in master file
     - (Package) Removed warnings including memory overlap copy
     - (Users) Added setflippeddatax to users class
-    - (Zmq) Client data streaming (Client data call back)
+    - (Zmq) Client data streaming fix (Client data call back)
 
     Compared to 4.1.1, 
         - no firmware update required for this release

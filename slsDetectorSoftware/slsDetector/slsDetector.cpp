@@ -9342,6 +9342,18 @@ int slsDetector::enableTenGigabitEthernet(int i) {
 			if (ret==FORCE_UPDATE)
 				updateDetector();
 		}
+		if (connectStop() == OK){
+			stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+			stopSocket->SendDataOnly(&i,sizeof(i));
+			stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL) {
+				stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector (Stop server) returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(DETECTOR_TEN_GIGA));
+			} 
+			stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+			disconnectStop();
+		}
 	}
 
 

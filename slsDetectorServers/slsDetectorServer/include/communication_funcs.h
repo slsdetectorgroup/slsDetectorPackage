@@ -52,12 +52,11 @@ int Server_VerifyLock();
  * Server sends result to client (also set ret to force_update if different clients)
  * @param fileDes file descriptor for the socket
  * @param itype 32 or 64 or others to determine to swap data from big endian to little endian
- * @param update 1 if one must update if different clients, else 0
  * @param retval pointer to result
  * @param retvalSize size of result
  * @returns result of operation
  */
-int Server_SendResult(int fileDes, intType itype, int update, void* retval, int retvalSize);
+int Server_SendResult(int fileDes, intType itype, void* retval, int retvalSize);
 
 /**
  * Convert mac address from integer to char array

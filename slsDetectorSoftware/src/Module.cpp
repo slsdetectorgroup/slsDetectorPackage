@@ -541,7 +541,7 @@ int Module::setDetectorType(detectorType const type) {
         auto arg = static_cast<int>(shm()->myDetectorType);
         retval = GENERIC;
         LOG(logDEBUG1) << "Sending detector type to Receiver: " << arg;
-        sendToReceiver(F_GET_RECEIVER_TYPE, arg, retval);
+        sendToReceiver(F_SET_RECEIVER_TYPE, arg, retval);
         LOG(logDEBUG1) << "Receiver Type: " << retval;
     }
     return retval;
@@ -1609,9 +1609,45 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
 
         // to use rx_hostname if empty and also update client zmqip
         updateReceiverStreamingIP();
+
+        test();
     }
 
     return std::string(shm()->rxHostname);
+}
+
+void Module::test() {
+    int n = 0;
+    rxParameters retval;
+    
+    retval.detType = shm()->myDetectorType;
+    n += sizeof(retval.detType);
+
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.sendCommandThenRead(F_GET_RECEIVER_PARAMETERS, nullptr, 0, nullptr, 0);
+
+	// frames
+    n += client.Receive(&retval.nFrames, sizeof(retval.nFrames));
+    // triggers
+    n += client.Receive(&retval.nTriggers, sizeof(retval.nTriggers));
+    // timing mode
+    n += client.Receive(&retval.timMode, sizeof(retval.timMode));
+    // exptime
+    n += client.Receive(&retval.expTimeNs, sizeof(retval.expTimeNs));
+    // period
+    n += client.Receive(&retval.periodNs, sizeof(retval.periodNs));
+
+    LOG(logINFO) << "n:" << n << " retvalsize:" << sizeof(retval);
+    if (n != sizeof(retval)) {
+        throw RuntimeError("Could not get parameters from detector to configure receiver");
+    }
+
+    LOG(logINFO) << "detType:" << retval.detType;
+    LOG(logINFO) << "nFrames:" << retval.nFrames;
+    LOG(logINFO) << "nTriggers:" << retval.nTriggers;
+    LOG(logINFO) << "timMode:" << retval.timMode;
+    LOG(logINFO) << "expTimeNs:" << retval.expTimeNs;
+    LOG(logINFO) << "periodNs:" << retval.periodNs;
 }
 
 std::string Module::getReceiverHostname() const {

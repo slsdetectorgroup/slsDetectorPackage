@@ -460,6 +460,19 @@ class slsDetectorDefs {
         TIMING_EXTERNAL 
     };       
 
+#ifdef __cplusplus
+    /**
+     * structure to udpate receiver
+     */ 
+    struct rxParameters {
+        enum detectorType detType{GENERIC};
+        uint64_t nFrames{0};
+        uint64_t nTriggers{0};
+        enum timingMode timMode{AUTO_TIMING};
+        uint64_t expTimeNs{0};
+        uint64_t periodNs{0};
+    }__attribute__((packed));
+#endif
 
 #ifdef __cplusplus
   protected:

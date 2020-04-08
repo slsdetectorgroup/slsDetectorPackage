@@ -216,4 +216,5 @@ int get_timing_source(int);
 int set_timing_source(int);
 int get_num_channels(int);
 int update_rate_correction(int);
+int get_receiver_parameters(int);
 

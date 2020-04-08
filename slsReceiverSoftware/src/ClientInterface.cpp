@@ -115,7 +115,7 @@ int ClientInterface::functionTable(){
 	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&ClientInterface::get_last_client_ip;
 	flist[F_SET_RECEIVER_PORT]				=	&ClientInterface::set_port;
 	flist[F_GET_RECEIVER_VERSION]			=	&ClientInterface::get_version;
-	flist[F_GET_RECEIVER_TYPE]				=	&ClientInterface::set_detector_type;
+	flist[F_SET_RECEIVER_TYPE]				=	&ClientInterface::set_detector_type;
 	flist[F_SEND_RECEIVER_DETHOSTNAME]		= 	&ClientInterface::set_detector_hostname;
 	flist[F_RECEIVER_SET_ROI]				=	&ClientInterface::set_roi;
 	flist[F_RECEIVER_SET_NUM_FRAMES]        =   &ClientInterface::set_num_frames;  

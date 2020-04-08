@@ -651,6 +651,7 @@ class Module : public virtual slsDetectorDefs {
      */
     std::string setReceiverHostname(const std::string &receiver);
 
+    void test();
     /**
      * Returns the receiver IP address\sa sharedSlsDetector
      * @returns the receiver IP address

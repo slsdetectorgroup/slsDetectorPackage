@@ -577,7 +577,7 @@ int Server_VerifyLock() {
 }
 
 
-int Server_SendResult(int fileDes, intType itype, int update, void* retval, int retvalSize) {
+int Server_SendResult(int fileDes, intType itype, void* retval, int retvalSize) {
 
 	// send success of operation
 	int ret1 = ret;

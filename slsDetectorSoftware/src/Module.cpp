@@ -3252,6 +3252,10 @@ bool Module::enableTenGigabitEthernet(int value) {
     int retval = -1;
     LOG(logDEBUG1) << "Enabling / Disabling 10Gbe: " << value;
     sendToDetector(F_ENABLE_TEN_GIGA, value, retval);
+    if (value != -1) {
+        int stopRetval = -1;
+        sendToDetectorStop(F_ENABLE_TEN_GIGA, value, stopRetval);
+    }
     LOG(logDEBUG1) << "10Gbe: " << retval;
     value = retval;
     if (shm()->useReceiverFlag && value != -1) {

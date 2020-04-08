@@ -526,27 +526,6 @@ Module::getTypeFromDetector(const std::string &hostname, int cport) {
     return retval;
 }
 
-int Module::setDetectorType(detectorType const type) {
-    int fnum = F_GET_DETECTOR_TYPE;
-    detectorType retval = GENERIC;
-    LOG(logDEBUG1) << "Setting detector type to " << type;
-
-    // if unspecified, then get from detector
-    if (type == GET_DETECTOR_TYPE) {
-        sendToDetector(fnum, nullptr, retval);
-        shm()->myDetectorType = static_cast<detectorType>(retval);
-        LOG(logDEBUG1) << "Detector Type: " << retval;
-    }
-    if (shm()->useReceiverFlag) {
-        auto arg = static_cast<int>(shm()->myDetectorType);
-        retval = GENERIC;
-        LOG(logDEBUG1) << "Sending detector type to Receiver: " << arg;
-        sendToReceiver(F_SET_RECEIVER_TYPE, arg, retval);
-        LOG(logDEBUG1) << "Receiver Type: " << retval;
-    }
-    return retval;
-}
-
 slsDetectorDefs::detectorType Module::getDetectorType() const {
     return shm()->myDetectorType;
 }
@@ -1510,14 +1489,13 @@ uint32_t Module::clearBit(uint32_t addr, int n) {
     }
 }
 
-std::string Module::setReceiverHostname(const std::string &receiverIP) {
+void Module::setReceiverHostname(const std::string &receiverIP) {
     LOG(logDEBUG1) << "Setting up Receiver with " << receiverIP;
     // recieverIP is none
     if (receiverIP == "none") {
         memset(shm()->rxHostname, 0, MAX_STR_LENGTH);
         sls::strcpy_safe(shm()->rxHostname, "none");
         shm()->useReceiverFlag = false;
-        return std::string(shm()->rxHostname);
     }
 
     // stop acquisition if running
@@ -1537,96 +1515,31 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
     shm()->useReceiverFlag = true;
     checkReceiverVersionCompatibility();
 
-    if (setDetectorType(shm()->myDetectorType) != GENERIC) {
-        sendMultiDetectorSize();
-        setDetectorId();
-        setDetectorHostname();
-        
-        // setup udp
-        updateRxDestinationUDPIP();
-        setDestinationUDPPort(getDestinationUDPPort());
-        if (shm()->myDetectorType == JUNGFRAU || shm()->myDetectorType == EIGER ) {        
-            setDestinationUDPPort2(getDestinationUDPPort2());
-        }
-        if (shm()->myDetectorType == JUNGFRAU) {
-            updateRxDestinationUDPIP2();   
-            setNumberofUDPInterfaces(getNumberofUDPInterfaces());
-        }
-        LOG(logDEBUG1) << printReceiverConfiguration();
-
-        setReceiverUDPSocketBufferSize(0);
-        setNumberOfFrames(getNumberOfFrames());
-        setNumberOfTriggers(getNumberOfTriggers());
-        setTimingMode(getTimingMode());
-        setExptime(getExptime());
-        setPeriod(getPeriod());
-
-        // detector specific
-        switch (shm()->myDetectorType) {
-
-        case EIGER:
-            setSubExptime(getSubExptime());
-            setSubDeadTime(getSubDeadTime());
-            setDynamicRange(getDynamicRange());
-            activate(-1);
-            enableTenGigabitEthernet(-1);
-            setQuad(getQuad());
-            break;
-
-        case CHIPTESTBOARD:
-            setNumberOfAnalogSamples(getNumberOfAnalogSamples());
-            setNumberOfDigitalSamples(getNumberOfDigitalSamples());
-            enableTenGigabitEthernet(-1);
-            setReadoutMode(getReadoutMode());
-            setADCEnableMask(getADCEnableMask());
-            setTenGigaADCEnableMask(getTenGigaADCEnableMask());
-            break;
-
-        case MOENCH:
-            setNumberOfAnalogSamples(getNumberOfAnalogSamples());
-            enableTenGigabitEthernet(-1);
-            setADCEnableMask(getADCEnableMask());
-            setTenGigaADCEnableMask(getTenGigaADCEnableMask());
-            break;
-
-        case GOTTHARD:
-            setROI(getROI());
-            break;
-
-        case MYTHEN3:
-            sendNumberofCounterstoReceiver(getCounterMask());
-            setDynamicRange(getDynamicRange());
-            break;
-        
-        case GOTTHARD2:
-            setNumberOfBursts(getNumberOfBursts());
-            setBurstMode(getBurstMode());
-            break;
-
-        default:
-            break;
-        }
-
-        // to use rx_hostname if empty and also update client zmqip
-        updateReceiverStreamingIP();
-
-        test();
-    }
-
-    return std::string(shm()->rxHostname);
-}
-
-void Module::test() {
+    // populate parameters for receiver
     int n = 0;
-    rxParameters retval;
-    
+    rxParameters retval;   
     // populate from shared memory
     retval.detType = shm()->myDetectorType;
     n += sizeof(retval.detType);
+    retval.multiSize.x = shm()->multiSize.x;
+    retval.multiSize.y = shm()->multiSize.y;
+    n += sizeof(retval.multiSize);
+    retval.detId = detId;
+    n += sizeof(retval.detId);
+    memset(retval.hostname, 0, sizeof(retval.hostname));
+    strcpy_safe(retval.hostname, shm()->hostname);
+    n += sizeof(retval.hostname);
 
     // populate from detector
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.sendCommandThenRead(F_GET_RECEIVER_PARAMETERS, nullptr, 0, nullptr, 0);
+    n += client.Receive(&retval.udpInterfaces, sizeof(retval.udpInterfaces));
+    n += client.Receive(&retval.udp_dstport, sizeof(retval.udp_dstport));
+    n += client.Receive(&retval.udp_dstip, sizeof(retval.udp_dstip));
+    n += client.Receive(&retval.udp_dstmac, sizeof(retval.udp_dstmac));
+    n += client.Receive(&retval.udp_dstport2, sizeof(retval.udp_dstport2));
+    n += client.Receive(&retval.udp_dstip2, sizeof(retval.udp_dstip2));
+    n += client.Receive(&retval.udp_dstmac2, sizeof(retval.udp_dstmac2));
     n += client.Receive(&retval.frames, sizeof(retval.frames));
     n += client.Receive(&retval.triggers, sizeof(retval.triggers));
     n += client.Receive(&retval.bursts, sizeof(retval.bursts));
@@ -1636,12 +1549,11 @@ void Module::test() {
     n += client.Receive(&retval.periodNs, sizeof(retval.periodNs));
     n += client.Receive(&retval.subExpTimeNs, sizeof(retval.subExpTimeNs));
     n += client.Receive(&retval.subDeadTimeNs, sizeof(retval.subDeadTimeNs));
-
+    n += client.Receive(&retval.activate, sizeof(retval.activate));
+    n += client.Receive(&retval.quad, sizeof(retval.quad));
     n += client.Receive(&retval.dynamicRange, sizeof(retval.dynamicRange));
     n += client.Receive(&retval.timMode, sizeof(retval.timMode));
-    n += client.Receive(&retval.activate, sizeof(retval.activate));
     n += client.Receive(&retval.tenGiga, sizeof(retval.tenGiga));
-    n += client.Receive(&retval.quad, sizeof(retval.quad));
     n += client.Receive(&retval.roMode, sizeof(retval.roMode));
     n += client.Receive(&retval.adcMask, sizeof(retval.adcMask));
     n += client.Receive(&retval.adc10gMask, sizeof(retval.adc10gMask));
@@ -1650,51 +1562,70 @@ void Module::test() {
     n += client.Receive(&retval.countermask, sizeof(retval.countermask));
     n += client.Receive(&retval.burstType, sizeof(retval.burstType));
 
-    n += client.Receive(&retval.udpInterfaces, sizeof(retval.udpInterfaces));
-    n += client.Receive(&retval.udp_dstport, sizeof(retval.udp_dstport));
-    n += client.Receive(&retval.udp_dstip, sizeof(retval.udp_dstip));
-    n += client.Receive(&retval.udp_dstmac, sizeof(retval.udp_dstmac));
-    n += client.Receive(&retval.udp_dstport2, sizeof(retval.udp_dstport2));
-    n += client.Receive(&retval.udp_dstip2, sizeof(retval.udp_dstip2));
-    n += client.Receive(&retval.udp_dstmac2, sizeof(retval.udp_dstmac2));
-
     LOG(logINFO) << "n:" << n << " retvalsize:" << sizeof(retval);
     if (n != sizeof(retval)) {
         throw RuntimeError("Could not get parameters from detector to configure receiver");
     }
+    LOG(logINFO) 
+        << "detType:" << retval.detType << std::endl
+        << "multiSize.x:" << retval.multiSize.x << std::endl
+        << "multiSize.y:" << retval.multiSize.y << std::endl
+        << "detId:" << retval.detId << std::endl
+        << "hostname:" << retval.hostname << std::endl
+        << "udpInterfaces:" << retval.udpInterfaces << std::endl
+        << "udp_dstport:" << retval.udp_dstport << std::endl
+        << "udp_dstip:" << sls::IpAddr(retval.udp_dstip) << std::endl
+        << "udp_dstmac:" << sls::MacAddr(retval.udp_dstmac) << std::endl
+        << "udp_dstport2:" << retval.udp_dstport2 << std::endl
+        << "udp_dstip2:" << sls::IpAddr(retval.udp_dstip2) << std::endl
+        << "udp_dstmac2:" << sls::MacAddr(retval.udp_dstmac2) << std::endl
+        << "frames:" << retval.frames << std::endl
+        << "triggers:" << retval.triggers << std::endl
+        << "bursts:" << retval.bursts << std::endl
+        << "analogSamples:" << retval.analogSamples << std::endl
+        << "digitalSamples:" << retval.digitalSamples << std::endl
+        << "expTimeNs:" << retval.expTimeNs << std::endl
+        << "periodNs:" << retval.periodNs << std::endl
+        << "subExpTimeNs:" << retval.subExpTimeNs << std::endl
+        << "subDeadTimeNs:" << retval.subDeadTimeNs << std::endl
+        << "activate:" << retval.activate << std::endl
+        << "quad:" << retval.quad << std::endl
+        << "dynamicRange:" << retval.dynamicRange << std::endl
+        << "timMode:" << retval.timMode << std::endl
+        << "tenGiga:" << retval.tenGiga << std::endl
+        << "roMode:" << retval.roMode << std::endl
+        << "adcMask:" << retval.adcMask << std::endl
+        << "adc10gMask:" << retval.adc10gMask << std::endl
+        << "roi.xmin:" << retval.roi.xmin << std::endl
+        << "roi.xmax:" << retval.roi.xmax << std::endl
+        << "countermask:" << retval.countermask << std::endl
+        << "burstType:" << retval.burstType << std::endl;
 
-    LOG(logINFO) << "detType:" << retval.detType;
 
-    LOG(logINFO) << "frames:" << retval.frames;
-    LOG(logINFO) << "triggers:" << retval.triggers;
-    LOG(logINFO) << "bursts:" << retval.bursts;
-    LOG(logINFO) << "analogSamples:" << retval.analogSamples;
-    LOG(logINFO) << "digitalSamples:" << retval.digitalSamples;
-    LOG(logINFO) << "expTimeNs:" << retval.expTimeNs;
-    LOG(logINFO) << "periodNs:" << retval.periodNs;
-    LOG(logINFO) << "subExpTimeNs:" << retval.subExpTimeNs;
-    LOG(logINFO) << "subDeadTimeNs:" << retval.subDeadTimeNs;
+    sls::MacAddr retvals[2];
+    sendToReceiver(F_SETUP_RECEIVER, retval, retvals);
+    // update detectors with dest mac
+    if (retval.udp_dstmac == 0 && retvals[0] != 0) {
+        LOG(logINFO) << "Setting destination udp mac of "
+        "detector " << detId << " to " << retvals[0];
+        sendToDetector(F_SET_DEST_UDP_MAC, retvals[0], nullptr);   
+    }
+    if (retval.udp_dstmac2 == 0 && retvals[1] != 0) {
+        LOG(logINFO) << "Setting destination udp mac2 of "
+        "detector " << detId << " to " << retvals[1];
+        sendToDetector(F_SET_DEST_UDP_MAC2, retvals[1], nullptr);   
+    }
 
-    LOG(logINFO) << "dynamicRange:" << retval.dynamicRange;
-    LOG(logINFO) << "timMode:" << retval.timMode;
-    LOG(logINFO) << "activate:" << retval.activate;
-    LOG(logINFO) << "tenGiga:" << retval.tenGiga;
-    LOG(logINFO) << "quad:" << retval.quad;
-    LOG(logINFO) << "roMode:" << retval.roMode;
-    LOG(logINFO) << "adcMask:" << retval.adcMask;
-    LOG(logINFO) << "adc10gMask:" << retval.adc10gMask;
-    LOG(logINFO) << "roi.xmin:" << retval.roi.xmin;
-    LOG(logINFO) << "roi.xmax:" << retval.roi.xmax;
-    LOG(logINFO) << "countermask:" << retval.countermask;
-    LOG(logINFO) << "burstType:" << retval.burstType;
+    // update numinterfaces if different
+    shm()->numUDPInterfaces = retval.udpInterfaces;
 
-    LOG(logINFO) << "udpInterfaces:" << retval.udpInterfaces;
-    LOG(logINFO) << "udp_dstport:" << retval.udp_dstport;
-    LOG(logINFO) << "udp_dstip:" << sls::IpAddr(retval.udp_dstip);
-    LOG(logINFO) << "udp_dstmac:" << sls::MacAddr(retval.udp_dstmac);
-    LOG(logINFO) << "udp_dstport2:" << retval.udp_dstport2;
-    LOG(logINFO) << "udp_dstip2:" << sls::IpAddr(retval.udp_dstip2);
-    LOG(logINFO) << "udp_dstmac2:" << sls::MacAddr(retval.udp_dstmac2);
+    if (shm()->myDetectorType == MOENCH) {
+        setAdditionalJsonParameter("adcmask_1g", std::to_string(retval.adcMask));
+        setAdditionalJsonParameter("adcmask_10g", std::to_string(retval.adc10gMask));
+    }
+
+    // to use rx_hostname if empty and also update client zmqip
+    updateReceiverStreamingIP();
 }
 
 std::string Module::getReceiverHostname() const {
@@ -1789,13 +1720,6 @@ sls::IpAddr Module::getDestinationUDPIP() {
     return retval;
 }
 
-void Module::updateRxDestinationUDPIP() {
-    auto ip = getDestinationUDPIP();
-    if (ip != 0) {
-        setDestinationUDPIP(ip);    
-    }     
-}
-
 void Module::setDestinationUDPIP2(const IpAddr ip) {
     LOG(logDEBUG1) << "Setting destination udp ip2 to " << ip;
     if (ip == 0) {
@@ -1817,13 +1741,6 @@ sls::IpAddr Module::getDestinationUDPIP2() {
     sendToDetector(F_GET_DEST_UDP_IP2, nullptr, retval);
     LOG(logDEBUG1) << "Destination udp ip2: " << retval;
     return retval;
-}
-
-void Module::updateRxDestinationUDPIP2() {
-    auto ip = getDestinationUDPIP2();
-    if (ip != 0) { 
-        setDestinationUDPIP2(ip);       
-    }     
 }
 
 void Module::setDestinationUDPMAC(const MacAddr mac) {
@@ -2970,38 +2887,6 @@ void Module::execReceiverCommand(const std::string &cmd) {
     }
 }
 
-void Module::sendMultiDetectorSize() {
-    int args[]{shm()->multiSize.x, shm()->multiSize.y};
-    int retval = -1;
-    LOG(logDEBUG1) << "Sending multi detector size to receiver: ("
-                        << shm()->multiSize.x << "," << shm()->multiSize.y
-                        << ")";
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_SEND_RECEIVER_MULTIDETSIZE, args, retval);
-        LOG(logDEBUG1) << "Receiver multi size returned: " << retval;
-    }
-}
-
-void Module::setDetectorId() {
-    LOG(logDEBUG1) << "Sending detector pos id to receiver: " << detId;
-    if (shm()->useReceiverFlag) {
-        int retval = -1;
-        sendToReceiver(F_SEND_RECEIVER_DETPOSID, detId, retval);
-        LOG(logDEBUG1) << "Receiver Position Id returned: " << retval;
-    }
-}
-
-void Module::setDetectorHostname() {
-    char args[MAX_STR_LENGTH]{};
-    char retvals[MAX_STR_LENGTH]{};
-    sls::strcpy_safe(args, shm()->hostname);
-    LOG(logDEBUG1) << "Sending detector hostname to receiver: " << args;
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_SEND_RECEIVER_DETHOSTNAME, args, retvals);
-        LOG(logDEBUG1) << "Receiver set detector hostname: " << retvals;
-    }
-}
-
 std::string Module::getFilePath() {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file path)");
@@ -3546,10 +3431,6 @@ void Module::setPipeline(int clkIndex, int value) {
 void Module::setCounterMask(uint32_t countermask) {
     LOG(logDEBUG1) << "Setting Counter mask to " << countermask;
     sendToDetector(F_SET_COUNTER_MASK, countermask, nullptr);
-    sendNumberofCounterstoReceiver(countermask);
-}
-
-void Module::sendNumberofCounterstoReceiver(uint32_t countermask) {
     if (shm()->useReceiverFlag) {
         int ncounters = __builtin_popcount(countermask);
         LOG(logDEBUG1) << "Sending Reciver #counters: " << ncounters;

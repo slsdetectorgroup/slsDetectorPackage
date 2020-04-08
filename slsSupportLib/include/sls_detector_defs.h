@@ -175,7 +175,7 @@ class slsDetectorDefs {
     struct ROI {
         int xmin{-1}; /**< is the roi xmin (in channel number) */
         int xmax{-1}; /**< is the roi xmax  (in channel number)*/
-    };
+    }__attribute__((packed));
     #else
     typedef struct {
         int xmin; /**< is the roi xmin (in channel number) */
@@ -203,7 +203,7 @@ class slsDetectorDefs {
         int y{0};
         xy() = default;
         xy(int x, int y):x(x),y(y){};
-    };
+    }__attribute__((packed));
 #endif
 
 
@@ -466,7 +466,16 @@ class slsDetectorDefs {
      */ 
     struct rxParameters {
         detectorType detType{GENERIC};
-        
+        xy multiSize;
+        int detId{0};
+        char hostname[MAX_STR_LENGTH];
+        int udpInterfaces{1};
+        int udp_dstport{0};
+        uint32_t udp_dstip{0U};
+        uint64_t udp_dstmac{0LU};
+        int udp_dstport2{0};
+        uint32_t udp_dstip2{0U};
+        uint64_t udp_dstmac2{0LU};
         int64_t frames{0};
         int64_t triggers{0};
         int64_t bursts{0};
@@ -476,28 +485,17 @@ class slsDetectorDefs {
         int64_t periodNs{0};
         int64_t subExpTimeNs{0};
         int64_t subDeadTimeNs{0};
-
+        int activate{0};
+        int quad{0};
         int dynamicRange{16};
         timingMode timMode{AUTO_TIMING};
-        int activate{0};
         int tenGiga{0};
-        int quad{0};
         readoutMode roMode{ANALOG_ONLY};
         uint32_t adcMask{0};
         uint32_t adc10gMask{0};
         ROI roi;
         uint32_t countermask{0};
         burstMode burstType{BURST_OFF};
-
-
-        int udpInterfaces{1};
-        int udp_dstport{0};
-        uint32_t udp_dstip{0U};
-        uint64_t udp_dstmac{0LU};
-        int udp_dstport2{0};
-        uint32_t udp_dstip2{0U};
-        uint64_t udp_dstmac2{0LU};
-
     }__attribute__((packed));
 #endif
 

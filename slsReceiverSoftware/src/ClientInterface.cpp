@@ -115,8 +115,7 @@ int ClientInterface::functionTable(){
 	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&ClientInterface::get_last_client_ip;
 	flist[F_SET_RECEIVER_PORT]				=	&ClientInterface::set_port;
 	flist[F_GET_RECEIVER_VERSION]			=	&ClientInterface::get_version;
-	flist[F_SET_RECEIVER_TYPE]				=	&ClientInterface::set_detector_type;
-	flist[F_SEND_RECEIVER_DETHOSTNAME]		= 	&ClientInterface::set_detector_hostname;
+	flist[F_SETUP_RECEIVER]				    =	&ClientInterface::setup_receiver;
 	flist[F_RECEIVER_SET_ROI]				=	&ClientInterface::set_roi;
 	flist[F_RECEIVER_SET_NUM_FRAMES]        =   &ClientInterface::set_num_frames;  
 	flist[F_SET_RECEIVER_NUM_TRIGGERS]      =   &ClientInterface::set_num_triggers;           
@@ -160,8 +159,6 @@ int ClientInterface::functionTable(){
 	flist[F_SET_FLIPPED_DATA_RECEIVER]		= 	&ClientInterface::set_flipped_data;
 	flist[F_SET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::set_file_format;
 	flist[F_GET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::get_file_format;
-	flist[F_SEND_RECEIVER_DETPOSID]			= 	&ClientInterface::set_detector_posid;
-	flist[F_SEND_RECEIVER_MULTIDETSIZE]		= 	&ClientInterface::set_multi_detector_size;
 	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::set_streaming_port;
 	flist[F_GET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::get_streaming_port;
 	flist[F_SET_RECEIVER_STREAMING_SRC_IP]	= 	&ClientInterface::set_streaming_source_ip;
@@ -336,69 +333,210 @@ int ClientInterface::get_version(Interface &socket) {
     return socket.sendResult(getReceiverVersion());
 }
 
-int ClientInterface::set_detector_type(Interface &socket) {
-    auto arg = socket.Receive<detectorType>();
-    // set
-    if (arg >= 0) {
-        // if object exists, verify unlocked and idle, else only verify lock
-        // (connecting first time)
-        if (receiver != nullptr) {
-            verifyIdle(socket);
-        }
-        switch (arg) {
-        case GOTTHARD:
-        case EIGER:
-        case CHIPTESTBOARD:
-        case MOENCH:
-        case JUNGFRAU:
-        case MYTHEN3:
-        case GOTTHARD2:
-            break;
-        default:
-            throw RuntimeError("Unknown detector type: " + std::to_string(arg));
-            break;
-        }
+int ClientInterface::setup_receiver(Interface &socket) {
+    auto arg = socket.Receive<rxParameters>();
+    LOG(logINFO) 
+        << "detType:" << arg.detType << std::endl
+        << "multiSize.x:" << arg.multiSize.x << std::endl
+        << "multiSize.y:" << arg.multiSize.y << std::endl
+        << "detId:" << arg.detId << std::endl
+        << "hostname:" << arg.hostname << std::endl
+        << "udpInterfaces:" << arg.udpInterfaces << std::endl
+        << "udp_dstport:" << arg.udp_dstport << std::endl
+        << "udp_dstip:" << sls::IpAddr(arg.udp_dstip) << std::endl
+        << "udp_dstmac:" << sls::MacAddr(arg.udp_dstmac) << std::endl
+        << "udp_dstport2:" << arg.udp_dstport2 << std::endl
+        << "udp_dstip2:" << sls::IpAddr(arg.udp_dstip2) << std::endl
+        << "udp_dstmac2:" << sls::MacAddr(arg.udp_dstmac2) << std::endl
+        << "frames:" << arg.frames << std::endl
+        << "triggers:" << arg.triggers << std::endl
+        << "bursts:" << arg.bursts << std::endl
+        << "analogSamples:" << arg.analogSamples << std::endl
+        << "digitalSamples:" << arg.digitalSamples << std::endl
+        << "expTimeNs:" << arg.expTimeNs << std::endl
+        << "periodNs:" << arg.periodNs << std::endl
+        << "subExpTimeNs:" << arg.subExpTimeNs << std::endl
+        << "subDeadTimeNs:" << arg.subDeadTimeNs << std::endl
+        << "activate:" << arg.activate << std::endl
+        << "quad:" << arg.quad << std::endl
+        << "dynamicRange:" << arg.dynamicRange << std::endl
+        << "timMode:" << arg.timMode << std::endl
+        << "tenGiga:" << arg.tenGiga << std::endl
+        << "roMode:" << arg.roMode << std::endl
+        << "adcMask:" << arg.adcMask << std::endl
+        << "adc10gMask:" << arg.adc10gMask << std::endl
+        << "roi.xmin:" << arg.roi.xmin << std::endl
+        << "roi.xmax:" << arg.roi.xmax << std::endl
+        << "countermask:" << arg.countermask << std::endl
+        << "burstType:" << arg.burstType << std::endl;
 
-        try {
-            myDetectorType = GENERIC;
-            receiver = sls::make_unique<Implementation>(arg);
-            myDetectorType = arg;
-        } catch (...) {
-            throw RuntimeError("Could not set detector type");
-        }
 
-        // callbacks after (in setdetectortype, the object is reinitialized)
-        if (startAcquisitionCallBack != nullptr)
-            impl()->registerCallBackStartAcquisition(startAcquisitionCallBack,
-                                                     pStartAcquisition);
-        if (acquisitionFinishedCallBack != nullptr)
-            impl()->registerCallBackAcquisitionFinished(
-                acquisitionFinishedCallBack, pAcquisitionFinished);
-        if (rawDataReadyCallBack != nullptr)
-            impl()->registerCallBackRawDataReady(rawDataReadyCallBack,
-                                                 pRawDataReady);
-        if (rawDataModifyReadyCallBack != nullptr)
-            impl()->registerCallBackRawDataModifyReady(
-                rawDataModifyReadyCallBack, pRawDataReady);
+    // if object exists, verify unlocked and idle, else only verify lock
+    // (connecting first time)
+    if (receiver != nullptr) {
+        verifyIdle(socket);
     }
-    return socket.sendResult(myDetectorType);
+
+    // basic setup
+    setDetectorType(arg.detType);
+    {
+        int msize[2] = {arg.multiSize.x, arg.multiSize.y};
+        impl()->setMultiDetectorSize(msize);
+    }
+    impl()->setDetectorPositionId(arg.detId);
+    impl()->setDetectorHostname(arg.hostname);
+    
+    // udp setup
+    sls::MacAddr retvals[2];
+    if (arg.udp_dstmac == 0 && arg.udp_dstip != 0) {
+        retvals[0] = setUdpIp(sls::IpAddr(arg.udp_dstip));
+    }
+    if (arg.udp_dstmac2 == 0 && arg.udp_dstip2 != 0) {
+        retvals[1] = setUdpIp2(sls::IpAddr(arg.udp_dstip2));
+    }
+    impl()->setUDPPortNumber(arg.udp_dstport);
+    impl()->setUDPPortNumber2(arg.udp_dstport2);
+    if (myDetectorType == JUNGFRAU) {
+        try {
+            impl()->setNumberofUDPInterfaces(arg.udpInterfaces);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Failed to set number of interfaces to " + 
+            std::to_string(arg.udpInterfaces));
+        }
+    }
+    impl()->setUDPSocketBufferSize(0);
+
+    // acquisition parameters
+    impl()->setNumberOfFrames(arg.frames);
+    impl()->setNumberOfTriggers(arg.triggers);
+    if (myDetectorType == GOTTHARD) {
+        impl()->setNumberOfBursts(arg.bursts);
+    }
+    if (myDetectorType == MOENCH || myDetectorType == CHIPTESTBOARD) {
+        try {
+            impl()->setNumberofAnalogSamples(arg.analogSamples);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set num analog samples to " + 
+            std::to_string(arg.analogSamples) + 
+            " due to fifo structure memory allocation.");
+        }
+    }
+    if (myDetectorType == CHIPTESTBOARD) {
+        try {
+            impl()->setNumberofDigitalSamples(arg.digitalSamples);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set num digital samples to " 
+            + std::to_string(arg.analogSamples) + 
+            " due to fifo structure memory allocation.");
+        }
+    }
+    impl()->setAcquisitionTime(arg.expTimeNs);
+    impl()->setAcquisitionPeriod(arg.periodNs);
+    if (myDetectorType == EIGER) {
+        impl()->setSubExpTime(arg.subExpTimeNs);
+        impl()->setSubPeriod(arg.subExpTimeNs + arg.subDeadTimeNs);
+        impl()->setActivate(static_cast<bool>(arg.activate));
+        try {
+            impl()->setQuad(arg.quad == 0 ? false : true);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set quad to " + 
+            std::to_string(arg.quad) + 
+            " due to fifo strucutre memory allocation");
+        }
+    }
+    if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
+        try {
+            impl()->setDynamicRange(arg.dynamicRange);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set dynamic range. Could not allocate "
+            "memory for fifo or could not start listening/writing threads");
+        }
+    }
+    impl()->setTimingMode(arg.timMode);
+    if (myDetectorType == EIGER || myDetectorType == MOENCH || 
+        myDetectorType == CHIPTESTBOARD) {
+        try {
+            impl()->setTenGigaEnable(arg.tenGiga);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set 10GbE.");
+        } 
+    }
+    if (myDetectorType == CHIPTESTBOARD) {
+        try {
+            impl()->setReadoutMode(arg.roMode);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set read out mode "
+            "due to fifo memory allocation.");
+        }
+    }
+    if (myDetectorType == CHIPTESTBOARD || myDetectorType == MOENCH) {
+        try {
+            impl()->setADCEnableMask(arg.adcMask);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set adc enable mask "
+            "due to fifo memory allcoation");
+        }
+        try {
+            impl()->setTenGigaADCEnableMask(arg.adc10gMask);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set 10Gb adc enable mask "
+            "due to fifo memory allcoation");
+        }
+    }
+    if (myDetectorType == GOTTHARD) {
+        try {
+            impl()->setROI(arg.roi);
+        } catch(const RuntimeError &e) {
+            throw RuntimeError("Could not set ROI");
+        }
+    }
+    if (myDetectorType == MYTHEN3) {
+        int ncounters = __builtin_popcount(arg.countermask);
+        impl()->setNumberofCounters(ncounters);
+    }
+    if (myDetectorType == GOTTHARD) {
+        impl()->setBurstMode(arg.burstType);
+    }
+
+    return socket.sendResult(retvals);
 }
 
-int ClientInterface::set_detector_hostname(Interface &socket) {
-    char hostname[MAX_STR_LENGTH]{};
-    char retval[MAX_STR_LENGTH]{};
-    socket.Receive(hostname);
+void ClientInterface::setDetectorType(detectorType arg) {
+    switch (arg) {
+    case GOTTHARD:
+    case EIGER:
+    case CHIPTESTBOARD:
+    case MOENCH:
+    case JUNGFRAU:
+    case MYTHEN3:
+    case GOTTHARD2:
+        break;
+    default:
+        throw RuntimeError("Unknown detector type: " + std::to_string(arg));
+        break;
+    }
 
-    if (strlen(hostname) != 0) {
-        verifyIdle(socket);
-        impl()->setDetectorHostname(hostname);
+    try {
+        myDetectorType = GENERIC;
+        receiver = sls::make_unique<Implementation>(arg);
+        myDetectorType = arg;
+    } catch (...) {
+        throw RuntimeError("Could not set detector type");
     }
-    auto s = impl()->getDetectorHostname();
-    sls::strcpy_safe(retval, s.c_str());
-    if (s.empty()) {
-        throw RuntimeError("Hostname not set");
-    }
-    return socket.sendResult(retval);
+
+    // callbacks after (in setdetectortype, the object is reinitialized)
+    if (startAcquisitionCallBack != nullptr)
+        impl()->registerCallBackStartAcquisition(startAcquisitionCallBack,
+                                                    pStartAcquisition);
+    if (acquisitionFinishedCallBack != nullptr)
+        impl()->registerCallBackAcquisitionFinished(
+            acquisitionFinishedCallBack, pAcquisitionFinished);
+    if (rawDataReadyCallBack != nullptr)
+        impl()->registerCallBackRawDataReady(rawDataReadyCallBack,
+                                                pRawDataReady);
+    if (rawDataModifyReadyCallBack != nullptr)
+        impl()->registerCallBackRawDataModifyReady(
+            rawDataModifyReadyCallBack, pRawDataReady);
 }
 
 int ClientInterface::set_roi(Interface &socket) {
@@ -514,7 +652,6 @@ int ClientInterface::set_num_analog_samples(Interface &socket) {
     } catch(const RuntimeError &e) {
         throw RuntimeError("Could not set num analog samples to " + std::to_string(value) + " due to fifo structure memory allocation.");
     }
-
     return socket.Send(OK);
 }
 
@@ -831,7 +968,7 @@ int ClientInterface::enable_tengiga(Interface &socket) {
         try {
             impl()->setTenGigaEnable(val);
         } catch(const RuntimeError &e) {
-            throw RuntimeError("Could not set 10GbE.");
+            throw RuntimeError("Could not set 10GbE." );
         }
     }
     int retval = impl()->getTenGigaEnable();
@@ -949,34 +1086,6 @@ int ClientInterface::set_file_format(Interface &socket) {
 int ClientInterface::get_file_format(Interface &socket) {
     auto retval = impl()->getFileFormat();
     LOG(logDEBUG1) << "File Format: " << retval;
-    return socket.sendResult(retval);
-}
-
-int ClientInterface::set_detector_posid(Interface &socket) {
-    auto arg = socket.Receive<int>();
-    if (arg >= 0) {
-        verifyIdle(socket);
-        LOG(logDEBUG1) << "Setting detector position id:" << arg;
-        impl()->setDetectorPositionId(arg);
-    }
-    auto retval = impl()->getDetectorPositionId();
-    validate(arg, retval, "set detector position id", DEC);
-    LOG(logDEBUG1) << "Position Id:" << retval;
-    return socket.sendResult(retval);
-}
-
-int ClientInterface::set_multi_detector_size(Interface &socket) {
-    int arg[]{-1, -1};
-    socket.Receive(arg);
-    if ((arg[0] > 0) && (arg[1] > 0)) {
-        verifyIdle(socket);
-        LOG(logDEBUG1)
-            << "Setting multi detector size:" << arg[0] << "," << arg[1];
-        impl()->setMultiDetectorSize(arg);
-    }
-    int *temp = impl()->getMultiDetectorSize(); // TODO! return by value!
-    int retval = temp[0] * temp[1];
-    LOG(logDEBUG1) << "Multi Detector Size:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -1363,11 +1472,7 @@ int ClientInterface::set_read_n_lines(Interface &socket) {
     return socket.Send(OK);
 }
 
-
-int ClientInterface::set_udp_ip(Interface &socket) {
-    auto arg = socket.Receive<sls::IpAddr>();
-    verifyIdle(socket);
-    LOG(logINFO) << "Received UDP IP: " << arg;
+sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
     // getting eth
     std::string eth = sls::IpToInterfaceName(arg.str());
     if (eth == "none") {
@@ -1386,18 +1491,19 @@ int ClientInterface::set_udp_ip(Interface &socket) {
     if (retval == 0) {
         throw RuntimeError("Failed to get udp mac adddress to listen to (eth:" + eth + ", ip:" + arg.str() + ")\n");
     }
+    return retval;
+}
+
+int ClientInterface::set_udp_ip(Interface &socket) {
+    auto arg = socket.Receive<sls::IpAddr>();
+    verifyIdle(socket);
+    LOG(logINFO) << "Received UDP IP: " << arg;
+    auto retval = setUdpIp(arg);
     LOG(logINFO) << "Receiver MAC Address: " << retval;
     return socket.sendResult(retval);
 }
 
-
-int ClientInterface::set_udp_ip2(Interface &socket) {
-    auto arg = socket.Receive<sls::IpAddr>();
-    verifyIdle(socket);
-    if (myDetectorType != JUNGFRAU) {
-        throw RuntimeError("UDP Destination IP2 not implemented for this detector");
-    }
-    LOG(logINFO) << "Received UDP IP2: " << arg;
+sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
     // getting eth
     std::string eth = sls::IpToInterfaceName(arg.str());
     if (eth == "none") {
@@ -1414,6 +1520,17 @@ int ClientInterface::set_udp_ip2(Interface &socket) {
     if (retval == 0) {
         throw RuntimeError("Failed to get udp mac adddress2 to listen to (eth:" + eth + ", ip:" + arg.str() + ")\n");
     }
+    return retval;
+}
+
+int ClientInterface::set_udp_ip2(Interface &socket) {
+    auto arg = socket.Receive<sls::IpAddr>();
+    verifyIdle(socket);
+    if (myDetectorType != JUNGFRAU) {
+        throw RuntimeError("UDP Destination IP2 not implemented for this detector");
+    }
+    LOG(logINFO) << "Received UDP IP2: " << arg;
+    auto retval = setUdpIp2(arg);
     LOG(logINFO) << "Receiver MAC Address2: " << retval;
     return socket.sendResult(retval);
 }

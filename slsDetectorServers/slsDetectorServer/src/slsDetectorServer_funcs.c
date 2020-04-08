@@ -6839,6 +6839,47 @@ int get_receiver_parameters(int file_des) {
 	uint32_t u32 = 0;
 	uint64_t u64 = 0;
 
+	// udp interfaces
+#ifdef JUNGFRAUD
+	i32 = getNumberofUDPInterfaces();
+#else
+	i32 = 1;
+#endif
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst port
+	i32 = udpDetails.dstport;
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst ip
+	u32 = udpDetails.dstip;
+	u32 = __builtin_bswap32(u32);
+	n = sendData(file_des,&u32,sizeof(u32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst mac
+	u64 = udpDetails.dstmac;
+	n = sendData(file_des,&u64,sizeof(u64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst port2
+	i32 = udpDetails.dstport2;
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst ip2
+	u32 = udpDetails.dstip2;
+	u32 = __builtin_bswap32(u32);
+	n = sendData(file_des,&u32,sizeof(u32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst mac2
+	u64 = udpDetails.dstmac2;
+	n = sendData(file_des,&u64,sizeof(u64),INT64);
+	if (n < 0) return printSocketReadError();
+
 	// frames
 	i64 = getNumFrames();
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
@@ -6904,9 +6945,23 @@ int get_receiver_parameters(int file_des) {
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
+	// activate
+#ifdef EIGERD
+	i32 = activate(-1);
+#else
+	i32 = 0;
+#endif
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
 
-
-
+	// quad
+#ifdef EIGERD
+	i32 = getQuad();
+#else
+	i32 = 0;
+#endif
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
 
 	// dynamic range
 	i32 = setDynamicRange(-1);
@@ -6918,27 +6973,9 @@ int get_receiver_parameters(int file_des) {
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
-	// activate
-#ifdef EIGERD
-	i32 = activate(-1);
-#else
-	i32 = 0;
-#endif
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
 	// 10 gbe
 #if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
 	i32 = enableTenGigabitEthernet(-1);
-#else
-	i32 = 0;
-#endif
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// quad
-#ifdef EIGERD
-	i32 = getQuad();
 #else
 	i32 = 0;
 #endif
@@ -7004,50 +7041,6 @@ int get_receiver_parameters(int file_des) {
 #endif
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
-
-
-
-	// udp interfaces
-#ifdef JUNGFRAUD
-	i32 = getNumberofUDPInterfaces();
-#else
-	i32 = 1;
-#endif
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// udp dst port
-	i32 = udpDetails.dstport;
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// udp dst ip
-	u32 = udpDetails.dstip;
-	u32 = __builtin_bswap32(u32);
-	n = sendData(file_des,&u32,sizeof(u32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// udp dst mac
-	u64 = udpDetails.dstmac;
-	n = sendData(file_des,&u64,sizeof(u64),INT64);
-	if (n < 0) return printSocketReadError();
-
-	// udp dst port2
-	i32 = udpDetails.dstport2;
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// udp dst ip2
-	u32 = udpDetails.dstip2;
-	u32 = __builtin_bswap32(u32);
-	n = sendData(file_des,&u32,sizeof(u32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// udp dst mac2
-	u64 = udpDetails.dstmac2;
-	n = sendData(file_des,&u64,sizeof(u64),INT64);
-	if (n < 0) return printSocketReadError();
-
 
 	return OK;
 }

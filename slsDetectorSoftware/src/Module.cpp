@@ -1620,22 +1620,43 @@ void Module::test() {
     int n = 0;
     rxParameters retval;
     
+    // populate from shared memory
     retval.detType = shm()->myDetectorType;
     n += sizeof(retval.detType);
 
+    // populate from detector
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.sendCommandThenRead(F_GET_RECEIVER_PARAMETERS, nullptr, 0, nullptr, 0);
-
-	// frames
-    n += client.Receive(&retval.nFrames, sizeof(retval.nFrames));
-    // triggers
-    n += client.Receive(&retval.nTriggers, sizeof(retval.nTriggers));
-    // timing mode
-    n += client.Receive(&retval.timMode, sizeof(retval.timMode));
-    // exptime
+    n += client.Receive(&retval.frames, sizeof(retval.frames));
+    n += client.Receive(&retval.triggers, sizeof(retval.triggers));
+    n += client.Receive(&retval.bursts, sizeof(retval.bursts));
+    n += client.Receive(&retval.analogSamples, sizeof(retval.analogSamples));
+    n += client.Receive(&retval.digitalSamples, sizeof(retval.digitalSamples));
     n += client.Receive(&retval.expTimeNs, sizeof(retval.expTimeNs));
-    // period
     n += client.Receive(&retval.periodNs, sizeof(retval.periodNs));
+    n += client.Receive(&retval.subExpTimeNs, sizeof(retval.subExpTimeNs));
+    n += client.Receive(&retval.subDeadTimeNs, sizeof(retval.subDeadTimeNs));
+
+    n += client.Receive(&retval.dynamicRange, sizeof(retval.dynamicRange));
+    n += client.Receive(&retval.timMode, sizeof(retval.timMode));
+    n += client.Receive(&retval.activate, sizeof(retval.activate));
+    n += client.Receive(&retval.tenGiga, sizeof(retval.tenGiga));
+    n += client.Receive(&retval.quad, sizeof(retval.quad));
+    n += client.Receive(&retval.roMode, sizeof(retval.roMode));
+    n += client.Receive(&retval.adcMask, sizeof(retval.adcMask));
+    n += client.Receive(&retval.adc10gMask, sizeof(retval.adc10gMask));
+    n += client.Receive(&retval.roi.xmin, sizeof(retval.roi.xmin));
+    n += client.Receive(&retval.roi.xmax, sizeof(retval.roi.xmax));
+    n += client.Receive(&retval.countermask, sizeof(retval.countermask));
+    n += client.Receive(&retval.burstType, sizeof(retval.burstType));
+
+    n += client.Receive(&retval.udpInterfaces, sizeof(retval.udpInterfaces));
+    n += client.Receive(&retval.udp_dstport, sizeof(retval.udp_dstport));
+    n += client.Receive(&retval.udp_dstip, sizeof(retval.udp_dstip));
+    n += client.Receive(&retval.udp_dstmac, sizeof(retval.udp_dstmac));
+    n += client.Receive(&retval.udp_dstport2, sizeof(retval.udp_dstport2));
+    n += client.Receive(&retval.udp_dstip2, sizeof(retval.udp_dstip2));
+    n += client.Receive(&retval.udp_dstmac2, sizeof(retval.udp_dstmac2));
 
     LOG(logINFO) << "n:" << n << " retvalsize:" << sizeof(retval);
     if (n != sizeof(retval)) {
@@ -1643,11 +1664,37 @@ void Module::test() {
     }
 
     LOG(logINFO) << "detType:" << retval.detType;
-    LOG(logINFO) << "nFrames:" << retval.nFrames;
-    LOG(logINFO) << "nTriggers:" << retval.nTriggers;
-    LOG(logINFO) << "timMode:" << retval.timMode;
+
+    LOG(logINFO) << "frames:" << retval.frames;
+    LOG(logINFO) << "triggers:" << retval.triggers;
+    LOG(logINFO) << "bursts:" << retval.bursts;
+    LOG(logINFO) << "analogSamples:" << retval.analogSamples;
+    LOG(logINFO) << "digitalSamples:" << retval.digitalSamples;
     LOG(logINFO) << "expTimeNs:" << retval.expTimeNs;
     LOG(logINFO) << "periodNs:" << retval.periodNs;
+    LOG(logINFO) << "subExpTimeNs:" << retval.subExpTimeNs;
+    LOG(logINFO) << "subDeadTimeNs:" << retval.subDeadTimeNs;
+
+    LOG(logINFO) << "dynamicRange:" << retval.dynamicRange;
+    LOG(logINFO) << "timMode:" << retval.timMode;
+    LOG(logINFO) << "activate:" << retval.activate;
+    LOG(logINFO) << "tenGiga:" << retval.tenGiga;
+    LOG(logINFO) << "quad:" << retval.quad;
+    LOG(logINFO) << "roMode:" << retval.roMode;
+    LOG(logINFO) << "adcMask:" << retval.adcMask;
+    LOG(logINFO) << "adc10gMask:" << retval.adc10gMask;
+    LOG(logINFO) << "roi.xmin:" << retval.roi.xmin;
+    LOG(logINFO) << "roi.xmax:" << retval.roi.xmax;
+    LOG(logINFO) << "countermask:" << retval.countermask;
+    LOG(logINFO) << "burstType:" << retval.burstType;
+
+    LOG(logINFO) << "udpInterfaces:" << retval.udpInterfaces;
+    LOG(logINFO) << "udp_dstport:" << retval.udp_dstport;
+    LOG(logINFO) << "udp_dstip:" << sls::IpAddr(retval.udp_dstip);
+    LOG(logINFO) << "udp_dstmac:" << sls::MacAddr(retval.udp_dstmac);
+    LOG(logINFO) << "udp_dstport2:" << retval.udp_dstport2;
+    LOG(logINFO) << "udp_dstip2:" << sls::IpAddr(retval.udp_dstip2);
+    LOG(logINFO) << "udp_dstmac2:" << sls::MacAddr(retval.udp_dstmac2);
 }
 
 std::string Module::getReceiverHostname() const {

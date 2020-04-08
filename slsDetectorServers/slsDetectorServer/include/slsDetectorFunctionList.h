@@ -206,8 +206,8 @@ int64_t 	getBurstPeriod();
 #ifdef EIGERD
 int			setSubExpTime(int64_t val);
 int64_t 	getSubExpTime();
-int			setDeadTime(int64_t val);
-int64_t 	getDeadTime();
+int			setSubDeadTime(int64_t val);
+int64_t 	getSubDeadTime();
 int64_t		getMeasuredPeriod();
 int64_t		getMeasuredSubPeriod();
 #endif

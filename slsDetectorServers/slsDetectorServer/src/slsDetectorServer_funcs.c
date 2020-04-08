@@ -2393,7 +2393,7 @@ int get_sub_deadtime(int file_des) {
 	functionNotImplemented();
 #else	
 	// get only
-	retval = getDeadTime();
+	retval = getSubDeadTime();
 	LOG(logDEBUG1, ("retval subdeadtime %lld ns\n", (long long int)retval));
 #endif	
 	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
@@ -2424,8 +2424,8 @@ int set_sub_deadtime(int file_des) {
 					((double)subexptime/(double)1E9));
 			LOG(logERROR,(mess));
 		} else {			
-			ret = setDeadTime(arg); 
-			int64_t retval = getDeadTime();
+			ret = setSubDeadTime(arg); 
+			int64_t retval = getSubDeadTime();
 			LOG(logDEBUG1, ("retval subdeadtime %lld ns\n", (long long int)retval));
 			if (ret == FAIL) {
 				sprintf(mess, "Could not set subframe dead time. Set %lld ns, read %lld ns.\n", (long long int)arg, (long long int)retval);
@@ -6836,6 +6836,8 @@ int get_receiver_parameters(int file_des) {
 	int n = 0;
 	int i32 = 0;
 	int64_t i64 = 0;
+	uint32_t u32 = 0;
+	uint64_t u64 = 0;
 
 	// frames
 	i64 = getNumFrames();
@@ -6847,8 +6849,30 @@ int get_receiver_parameters(int file_des) {
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
-	// timing mode
-	i32 = (int)getTiming();
+	// bursts
+#ifdef GOTTHARD2D
+	i64 = getNumBursts();
+#else
+	i64 = 0;
+#endif
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// analog samples
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	i32 = getNumAnalogSamples();
+#else
+	i32 = 0;
+#endif
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// digital samples
+#ifdef CHIPTESTBOARDD
+	i32 = getNumDigitalSamples();
+#else
+	i32 = 0;
+#endif
 	n = sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
@@ -6861,6 +6885,169 @@ int get_receiver_parameters(int file_des) {
 	i64 = getPeriod();
 	n = sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
+
+	// sub exptime
+#ifdef EIGERD
+	i64 = getSubExpTime();
+#else
+	i64 = 0;
+#endif
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// sub deadtime
+#ifdef EIGERD
+	i64 = getSubDeadTime();
+#else
+	i64 = 0;
+#endif
+	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+
+
+
+
+
+	// dynamic range
+	i32 = setDynamicRange(-1);
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// timing mode
+	i32 = (int)getTiming();
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// activate
+#ifdef EIGERD
+	i32 = activate(-1);
+#else
+	i32 = 0;
+#endif
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// 10 gbe
+#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	i32 = enableTenGigabitEthernet(-1);
+#else
+	i32 = 0;
+#endif
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// quad
+#ifdef EIGERD
+	i32 = getQuad();
+#else
+	i32 = 0;
+#endif
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// readout mode
+#ifdef CHIPTESTBOARD
+	i32 = getReadoutMode();
+#else
+	i32 = 0;
+#endif
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// adc mask
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	u32 = getADCEnableMask();
+#else
+	u32 = 0;
+#endif
+	n = sendData(file_des,&u32,sizeof(u32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// 10g adc mask
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	u32 = getADCEnableMask_10G();
+#else
+	u32 = 0;
+#endif
+	n = sendData(file_des,&u32,sizeof(u32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// roi
+	{
+		ROI roi;
+#ifdef GOTTHARDD
+		roi = getROI();
+#else	
+		roi.xmin = -1;
+		roi.xmax = -1;
+#endif
+		n = sendData(file_des,&roi.xmin,sizeof(int),INT32);
+		if (n < 0) return printSocketReadError();
+		n = sendData(file_des,&roi.xmax,sizeof(int),INT32);
+		if (n < 0) return printSocketReadError();
+	}
+
+	// counter mask
+#ifdef MYTHEN3D
+	u32 = getCounterMask();
+#else
+	u32 = 0;
+#endif
+	n = sendData(file_des,&u32,sizeof(u32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// burst mode
+#ifdef GOTTHARD2D
+	i32 = (int)getBurstMode();
+#else
+	i32 = 0;
+#endif
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+
+
+	// udp interfaces
+#ifdef JUNGFRAUD
+	i32 = getNumberofUDPInterfaces();
+#else
+	i32 = 1;
+#endif
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst port
+	i32 = udpDetails.dstport;
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst ip
+	u32 = udpDetails.dstip;
+	u32 = __builtin_bswap32(u32);
+	n = sendData(file_des,&u32,sizeof(u32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst mac
+	u64 = udpDetails.dstmac;
+	n = sendData(file_des,&u64,sizeof(u64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst port2
+	i32 = udpDetails.dstport2;
+	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst ip2
+	u32 = udpDetails.dstip2;
+	u32 = __builtin_bswap32(u32);
+	n = sendData(file_des,&u32,sizeof(u32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst mac2
+	u64 = udpDetails.dstmac2;
+	n = sendData(file_des,&u64,sizeof(u64),INT64);
+	if (n < 0) return printSocketReadError();
+
 
 	return OK;
 }

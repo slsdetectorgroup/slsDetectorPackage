@@ -465,12 +465,39 @@ class slsDetectorDefs {
      * structure to udpate receiver
      */ 
     struct rxParameters {
-        enum detectorType detType{GENERIC};
-        uint64_t nFrames{0};
-        uint64_t nTriggers{0};
-        enum timingMode timMode{AUTO_TIMING};
-        uint64_t expTimeNs{0};
-        uint64_t periodNs{0};
+        detectorType detType{GENERIC};
+        
+        int64_t frames{0};
+        int64_t triggers{0};
+        int64_t bursts{0};
+        int analogSamples{0};
+        int digitalSamples{0};
+        int64_t expTimeNs{0};
+        int64_t periodNs{0};
+        int64_t subExpTimeNs{0};
+        int64_t subDeadTimeNs{0};
+
+        int dynamicRange{16};
+        timingMode timMode{AUTO_TIMING};
+        int activate{0};
+        int tenGiga{0};
+        int quad{0};
+        readoutMode roMode{ANALOG_ONLY};
+        uint32_t adcMask{0};
+        uint32_t adc10gMask{0};
+        ROI roi;
+        uint32_t countermask{0};
+        burstMode burstType{BURST_OFF};
+
+
+        int udpInterfaces{1};
+        int udp_dstport{0};
+        uint32_t udp_dstip{0U};
+        uint64_t udp_dstmac{0LU};
+        int udp_dstport2{0};
+        uint32_t udp_dstip2{0U};
+        uint64_t udp_dstmac2{0LU};
+
     }__attribute__((packed));
 #endif
 

@@ -1562,7 +1562,7 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
     n += client.Receive(&retval.countermask, sizeof(retval.countermask));
     n += client.Receive(&retval.burstType, sizeof(retval.burstType));
 
-    LOG(logINFO) << "n:" << n << " retvalsize:" << sizeof(retval);
+    LOG(logDEBUG1) << "n:" << n << " retvalsize:" << sizeof(retval);
     if (n != sizeof(retval)) {
         throw RuntimeError("Could not get parameters from detector to configure receiver");
     }

@@ -4,18 +4,29 @@
 #include "RegisterDefs.h"
 
 #include "LTC2620.h"    // dacs
+#ifdef VIRTUAL
+#include "communication_funcs_UDP.h"
+#include "communication_virtual.h"
+#endif
 
 #include "string.h"
 #include <unistd.h>     // usleep
+#include <netinet/in.h>
 #ifdef VIRTUAL
 #include <pthread.h>
 #include <time.h>
 #endif
 
 extern udpStruct udpDetails;
+extern const enum detectorType myDetectorType;
 
 // Variables that will be exported
 int phaseShift = DEFAULT_PHASE_SHIFT;
+
+// Global variable from communication_funcs.c
+extern int isControlServer;
+extern void getMacAddressinString(char* cmac, int size, uint64_t mac);
+extern void getIpAddressinString(char* cip, uint32_t ip);
 
 int initError = OK;
 int initCheckDone = 0;
@@ -239,10 +250,10 @@ void setTestImageMode(int ival) {
     uint32_t addr = MULTI_PURPOSE_REG;
     if (ival >= 0) {
         if (ival == 0) {
-            LOG(logINFO, ("Switching on Image Test Mode\n"));
+            LOG(logINFO, ("Switching off Image Test Mode\n"));
             bus_w (addr, bus_r(addr) & ~DGTL_TST_MSK);
         } else {
-            LOG(logINFO, ("Switching off Image Test Mode\n"));
+            LOG(logINFO, ("Switching on Image Test Mode\n"));
             bus_w (addr, bus_r(addr) | DGTL_TST_MSK);
         }
     }
@@ -345,6 +356,12 @@ void initStopServer() {
 		LOG(logERROR, ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
 		exit(EXIT_FAILURE);
 	}
+#ifdef VIRTUAL
+	virtual_stop = 0;
+	if (!isControlServer) {
+		ComVirtual_setStop(virtual_stop);
+	}
+#endif
 }
 
 
@@ -352,6 +369,13 @@ void initStopServer() {
 
 void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Gotthard module (1280 channels)\n"));
+
+#ifdef VIRTUAL
+	virtual_status = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+	}
+#endif
 
     // Initialization
     setPhaseShiftOnce();
@@ -915,8 +939,9 @@ int getModule(sls_detector_module *myMod){
         if (dacValues[idac] >= 0)
             initialized = 1;
     }
-    if (initialized)
+    if (initialized) {
         return OK;
+    }
 	return FAIL;
 }
 
@@ -1088,11 +1113,6 @@ int getADC(enum ADCINDEX ind){
 }
 
 int setHighVoltage(int val){
-#ifdef VIRTUAL
-    if (val >= 0)
-        highvoltage = val;
-    return highvoltage;
-#endif
     u_int32_t addr = HV_REG;
     u_int32_t sel = 0x0;
 
@@ -1262,43 +1282,41 @@ void calcChecksum(mac_conf* mac, int sourceip, int destip) {
 }
 
 int configureMAC() {
-    uint32_t sourceip = udpDetails.srcip;
-	uint32_t destip = udpDetails.dstip;
-	uint64_t sourcemac = udpDetails.srcmac;
-	uint64_t destmac = udpDetails.dstmac;
-	int sourceport = udpDetails.srcport;
-	int destport = udpDetails.dstport;	
+    uint32_t srcip = udpDetails.srcip;
+	uint32_t dstip = udpDetails.dstip;
+	uint64_t srcmac = udpDetails.srcmac;
+	uint64_t dstmac = udpDetails.dstmac;
+	int srcport = udpDetails.srcport;
+	int dstport = udpDetails.dstport;	
+
+	LOG(logINFOBLUE, ("Configuring MAC\n"));
+	char src_mac[50], src_ip[INET_ADDRSTRLEN],dst_mac[50], dst_ip[INET_ADDRSTRLEN];
+	getMacAddressinString(src_mac, 50, srcmac);
+	getMacAddressinString(dst_mac, 50, dstmac);
+	getIpAddressinString(src_ip, srcip);
+	getIpAddressinString(dst_ip, dstip);
+
+	LOG(logINFO, (
+	        "\tSource IP   : %s\n"
+	        "\tSource MAC  : %s\n"
+	        "\tSource Port : %d\n"
+	        "\tDest IP     : %s\n"
+	        "\tDest MAC    : %s\n"
+			"\tDest Port   : %d\n",
+	        src_ip, src_mac, srcport,
+	        dst_ip, dst_mac, dstport));
+
 #ifdef VIRTUAL
+    if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
+        LOG(logERROR, ("could not set udp 1G destination IP and port\n"));
+        return FAIL;
+    }
     return OK;
 #endif
-	LOG(logINFOBLUE, ("Configuring MAC\n"));
     u_int32_t addr = MULTI_PURPOSE_REG;
 
 	LOG(logDEBUG1, ("\tRoi: %d, Ip Packet size: %d UDP Packet size: %d\n",
 	        adcConfigured, ipPacketSize, udpPacketSize));
-
-	LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d (0x%08x)\n",
-	        (sourceip>>24)&0xff,(sourceip>>16)&0xff,(sourceip>>8)&0xff,(sourceip)&0xff, sourceip));
-	LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x (0x%010llx)\n",
-			(unsigned int)((sourcemac>>40)&0xFF),
-			(unsigned int)((sourcemac>>32)&0xFF),
-			(unsigned int)((sourcemac>>24)&0xFF),
-			(unsigned int)((sourcemac>>16)&0xFF),
-			(unsigned int)((sourcemac>>8)&0xFF),
-			(unsigned int)((sourcemac>>0)&0xFF),
-			(long  long unsigned int)sourcemac));
-	LOG(logINFO, ("\tSource Port : %d (0x%08x)\n",sourceport, sourceport));
-	LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d (0x%08x)\n",
-	        (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff, destip));
-	LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x (0x%010llx)\n",
-			(unsigned int)((destmac>>40)&0xFF),
-			(unsigned int)((destmac>>32)&0xFF),
-			(unsigned int)((destmac>>24)&0xFF),
-			(unsigned int)((destmac>>16)&0xFF),
-			(unsigned int)((destmac>>8)&0xFF),
-			(unsigned int)((destmac>>0)&0xFF),
-			(long  long unsigned int)destmac));
-	LOG(logINFO, ("\tDest. Port  : %d (0x%08x)\n",destport, destport));
 
 	//reset mac
 	bus_w (addr, bus_r(addr) | RST_MSK);
@@ -1320,28 +1338,28 @@ int configureMAC() {
 
     LOG(logDEBUG1, ("\tConfiguring MAC CONF\n"));
     mac_conf *mac_conf_regs = (mac_conf*)(Blackfin_getBaseAddress() + ENET_CONF_REG / 2);    // direct write
-    mac_conf_regs->mac.mac_dest_mac1  = ((destmac >> (8 * 5)) & 0xFF);
-    mac_conf_regs->mac.mac_dest_mac2  = ((destmac >> (8 * 4)) & 0xFF);
-    mac_conf_regs->mac.mac_dest_mac3  = ((destmac >> (8 * 3)) & 0xFF);
-    mac_conf_regs->mac.mac_dest_mac4  = ((destmac >> (8 * 2)) & 0xFF);
-    mac_conf_regs->mac.mac_dest_mac5  = ((destmac >> (8 * 1)) & 0xFF);
-    mac_conf_regs->mac.mac_dest_mac6  = ((destmac >> (8 * 0)) & 0xFF);
+    mac_conf_regs->mac.mac_dest_mac1  = ((dstmac >> (8 * 5)) & 0xFF);
+    mac_conf_regs->mac.mac_dest_mac2  = ((dstmac >> (8 * 4)) & 0xFF);
+    mac_conf_regs->mac.mac_dest_mac3  = ((dstmac >> (8 * 3)) & 0xFF);
+    mac_conf_regs->mac.mac_dest_mac4  = ((dstmac >> (8 * 2)) & 0xFF);
+    mac_conf_regs->mac.mac_dest_mac5  = ((dstmac >> (8 * 1)) & 0xFF);
+    mac_conf_regs->mac.mac_dest_mac6  = ((dstmac >> (8 * 0)) & 0xFF);
     LOG(logDEBUG1, ("\tDestination Mac: %llx %x:%x:%x:%x:%x:%x\n",
-            destmac,
+            dstmac,
             mac_conf_regs->mac.mac_dest_mac1,
             mac_conf_regs->mac.mac_dest_mac2,
             mac_conf_regs->mac.mac_dest_mac3,
             mac_conf_regs->mac.mac_dest_mac4,
             mac_conf_regs->mac.mac_dest_mac5,
             mac_conf_regs->mac.mac_dest_mac6));
-    mac_conf_regs->mac.mac_src_mac1  = ((sourcemac >> (8 * 5)) & 0xFF);
-    mac_conf_regs->mac.mac_src_mac2  = ((sourcemac >> (8 * 4)) & 0xFF);
-    mac_conf_regs->mac.mac_src_mac3  = ((sourcemac >> (8 * 3)) & 0xFF);
-    mac_conf_regs->mac.mac_src_mac4  = ((sourcemac >> (8 * 2)) & 0xFF);
-    mac_conf_regs->mac.mac_src_mac5  = ((sourcemac >> (8 * 1)) & 0xFF);
-    mac_conf_regs->mac.mac_src_mac6  = ((sourcemac >> (8 * 0)) & 0xFF);
+    mac_conf_regs->mac.mac_src_mac1  = ((srcmac >> (8 * 5)) & 0xFF);
+    mac_conf_regs->mac.mac_src_mac2  = ((srcmac >> (8 * 4)) & 0xFF);
+    mac_conf_regs->mac.mac_src_mac3  = ((srcmac >> (8 * 3)) & 0xFF);
+    mac_conf_regs->mac.mac_src_mac4  = ((srcmac >> (8 * 2)) & 0xFF);
+    mac_conf_regs->mac.mac_src_mac5  = ((srcmac >> (8 * 1)) & 0xFF);
+    mac_conf_regs->mac.mac_src_mac6  = ((srcmac >> (8 * 0)) & 0xFF);
     LOG(logDEBUG1, ("\tSource Mac: %llx %x:%x:%x:%x:%x:%x\n",
-            sourcemac,
+            srcmac,
             mac_conf_regs->mac.mac_src_mac1,
             mac_conf_regs->mac.mac_src_mac2,
             mac_conf_regs->mac.mac_src_mac3,
@@ -1350,9 +1368,9 @@ int configureMAC() {
             mac_conf_regs->mac.mac_src_mac6));
     mac_conf_regs->mac.mac_ether_type   = 0x0800;   //ipv4
 
-    calcChecksum(mac_conf_regs, sourceip, destip);
-    mac_conf_regs->udp.udp_srcport      = sourceport;
-    mac_conf_regs->udp.udp_destport     = destport;
+    calcChecksum(mac_conf_regs, srcip, dstip);
+    mac_conf_regs->udp.udp_srcport      = srcport;
+    mac_conf_regs->udp.udp_destport     = dstport;
     mac_conf_regs->udp.udp_len          = udpPacketSize;
     mac_conf_regs->udp.udp_chksum       = 0x0000;
 
@@ -1487,11 +1505,27 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
 
 int startStateMachine(){
 #ifdef VIRTUAL
-	virtual_status = 1;
-	virtual_stop = 0;
+	// create udp socket
+	if(createUDPSocket(0) != OK) {
+		return FAIL;
+	}
+	LOG(logINFOBLUE, ("Starting State Machine\n"));
+    virtual_status = 1;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+		virtual_stop = ComVirtual_getStop();
+		if (virtual_stop != 0) {
+			LOG(logERROR, ("Cant start acquisition. "
+			"Stop server has not updated stop status to 0\n"));
+			return FAIL;
+		}
+	}
 	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
-		virtual_status = 0;
 		LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
+		virtual_status = 0;
+		if (isControlServer) {
+			ComVirtual_setStatus(virtual_status);
+		}	
 		return FAIL;
 	}
 	LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
@@ -1511,17 +1545,92 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	int wait_in_s = 	(getNumFrames() *
-						getNumTriggers() *
-						(getPeriod()/(1E9)));
-	LOG(logDEBUG1, ("going to wait for %d s\n", wait_in_s));
-	while(!virtual_stop && (wait_in_s >= 0)) {
-		usleep(1000 * 1000);
-		wait_in_s--;
+	if (!isControlServer) {
+		return NULL;
 	}
-	LOG(logINFOGREEN, ("Virtual Timer Done\n"));
+
+	int64_t periodNs = getPeriod();
+	int numFrames = (getNumFrames() *
+						getNumTriggers() );
+	int64_t expUs = 	getExpTime() / 1000;
+
+    int imageSize = adcConfigured == -1 ? DATA_BYTES : NCHAN_PER_ADC * NUM_BITS_PER_PIXEL;
+    int dataSize = adcConfigured == -1 ? 1280 : 512;
+    int packetSize = adcConfigured == -1 ? 1286 : 518;
+    int packetsPerFrame = adcConfigured == -1 ? 2 : 1;
+
+    // Generate Data
+    char imageData[imageSize];
+    memset(imageData, 0, imageSize);
+    {
+        int i = 0;
+        if (adcConfigured == -1) {
+            *((uint32_t*)(imageData)) = 0xCACACACA;
+        }
+        for (i = sizeof(uint32_t); i < imageSize; i += sizeof(uint16_t)) {
+            *((uint16_t*)(imageData + i)) = (uint16_t)i;
+        }       
+    }
+
+	// Send data
+    {
+        int frameNr = 0;
+        uint16_t frameHeaderNr = 2;
+        // loop over number of frames
+        for(frameNr = 0; frameNr != numFrames; ++frameNr ) {
+
+			// update the virtual stop from stop server
+			virtual_stop = ComVirtual_getStop();
+            //check if virtual_stop is high
+            if(virtual_stop == 1){
+                break;
+            }
+
+            // sleep for exposure time
+            struct timespec begin, end;
+            clock_gettime(CLOCK_REALTIME, &begin);
+            usleep(expUs);
+
+            int srcOffset = 0;
+            // loop packet
+            {
+                int i = 0;
+                for(i = 0; i != packetsPerFrame; ++i) {
+                    
+                    char packetData[packetSize];
+                    memset(packetData, 0, packetSize);
+                    // set header
+                    *((uint16_t*)(packetData)) = frameHeaderNr;
+                    ++frameHeaderNr;
+
+                    // fill data
+                    memcpy(packetData + 4, imageData + srcOffset, dataSize);
+                    srcOffset += dataSize;
+                    
+                    sendUDPPacket(0, packetData, packetSize);
+                }
+            }
+            LOG(logINFO, ("Sent frame: %d\n", frameNr));
+            clock_gettime(CLOCK_REALTIME, &end);
+            int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
+                    (end.tv_nsec - begin.tv_nsec));
+
+            // sleep for (period - exptime)
+            if (frameNr < numFrames) { // if there is a next frame
+                if (periodNs > timeNs) {
+                    usleep((periodNs - timeNs)/ 1000);
+                }
+            }
+        }
+    }
+
+	closeUDPSocket(0);
 
 	virtual_status = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+	}
+	LOG(logINFOBLUE, ("Finished Acquiring\n"));        
 	return NULL;
 }
 #endif
@@ -1529,7 +1638,18 @@ void* start_timer(void* arg) {
 int stopStateMachine(){
 	LOG(logINFORED, ("Stopping State Machine\n"));
 #ifdef VIRTUAL
-	virtual_stop = 0;
+	if (!isControlServer) {
+		virtual_stop = 1;
+		ComVirtual_setStop(virtual_stop);
+		// read till status is idle
+		int tempStatus = 1;
+		while(tempStatus == 1) {
+			tempStatus = ComVirtual_getStatus();
+		}
+		virtual_stop = 0;
+		ComVirtual_setStop(virtual_stop);
+		LOG(logINFO, ("Stopped State Machine\n"));
+	}	
 	return OK;
 #endif
 	//stop state machine
@@ -1551,7 +1671,10 @@ int stopStateMachine(){
 
 enum runStatus getRunStatus(){
 #ifdef VIRTUAL
-	if(virtual_status == 0){
+	if (!isControlServer) {
+		virtual_status = ComVirtual_getStatus();
+	}
+	if(virtual_status == 0) {
 		LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
 	}else{
@@ -1653,6 +1776,9 @@ void readFrame(int *ret, char *mess){
 
 u_int32_t runBusy() {
 #ifdef VIRTUAL
+	if (!isControlServer) {
+		virtual_status = ComVirtual_getStatus();
+	}
     return virtual_status;
 #endif
 	return runState(logDEBUG1) & STATUS_RN_BSY_MSK;

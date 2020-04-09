@@ -36,6 +36,7 @@ int DAC6571_Set (int val) {
 
     LOG(logINFO, ("\t%dV (dacval %d)\n", val, dacvalue));
 
+#ifndef VIRTUAL
     //open file
     FILE* fd=fopen(DAC6571_DriverFileName,"w");
     if (fd==NULL) {
@@ -45,6 +46,7 @@ int DAC6571_Set (int val) {
     //convert to string, add 0 and write to file
     fprintf(fd, "%d\n", dacvalue);
     fclose(fd);
+#endif
 
     return OK;
 }

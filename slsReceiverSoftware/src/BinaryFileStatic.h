@@ -128,7 +128,6 @@ class BinaryFileStatic {
 				"SubExptime (ns)            : %lld\n"
 				"SubPeriod(ns)              : %lld\n"
 				"Period (ns)                : %lld\n"
-				"Gap Pixels Enable          : %d\n"
 				"Quad Enable                : %d\n"
 				"Analog Flag                : %d\n"
 				"Digital Flag               : %d\n"
@@ -167,7 +166,6 @@ class BinaryFileStatic {
 				(long long int)attr.subExptimeNs,
 				(long long int)attr.subPeriodNs,
 				(long long int)attr.periodNs,
-				attr.gapPixelsEnable,
 				attr.quadEnable,
     			attr.analogFlag,
    	 			attr.digitalFlag,

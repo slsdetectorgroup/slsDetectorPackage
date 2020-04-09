@@ -6,6 +6,8 @@
 #ifndef VIRTUAL
 #include "FebControl.h"
 #include "Beb.h"
+#else
+#include "communication_virtual.h"
 #endif
 
 #include <unistd.h> //to gethostname
@@ -20,6 +22,7 @@
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
 extern udpStruct udpDetails;
+extern const enum detectorType myDetectorType;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
@@ -66,9 +69,13 @@ int eiger_extgating = 0;
 int eiger_extgatingpolarity = 0;
 int eiger_nexposures = 1;
 int eiger_ntriggers = 1;
+int eiger_tau_ns = 0;
 
 
 #ifdef VIRTUAL
+pthread_t virtual_tid;
+int virtual_status=0;
+int virtual_stop = 0;
 //values for virtual server
 int64_t eiger_virtual_exptime = 0;
 int64_t eiger_virtual_subexptime = 0;
@@ -82,12 +89,11 @@ int eiger_virtual_transmission_delay_left=0;
 int eiger_virtual_transmission_delay_right=0;
 int eiger_virtual_transmission_delay_frame=0;
 int eiger_virtual_transmission_flowcontrol_10g=0;
-int eiger_virtual_status=0;
 int eiger_virtual_activate=1;
-pthread_t eiger_virtual_tid;
-int eiger_virtual_stop = 0;
-uint64_t eiger_virtual_startingframenumber = 0;
+uint64_t eiger_virtual_startingframenumber = 1;
 int eiger_virtual_detPos[2] = {0, 0};
+int eiger_virtual_test_mode = 0;
+int eiger_virtual_quad_mode = 0;
 #endif
 
 
@@ -179,8 +185,23 @@ void basictests() {
 	LOG(logINFO, ("Compatibility - success\n"));
 }
 
+#ifdef VIRTUAL
+void setTestImageMode(int ival) {
+    if (ival >= 0) {
+        if (ival == 0) {
+            LOG(logINFO, ("Switching off Image Test Mode\n"));
+            eiger_virtual_test_mode = 0;
+        } else {
+            LOG(logINFO, ("Switching on Image Test Mode\n"));
+            eiger_virtual_test_mode = 1;
+        }
+    }
+}
 
-
+int getTestImageMode() {
+    return eiger_virtual_test_mode;
+}
+#endif
 
 
 /* Ids */
@@ -306,7 +327,14 @@ void initControlServer() {
 		getModuleConfiguration();
 		Feb_Interface_FebInterface();
 		Feb_Control_FebControl();
-		Feb_Control_Init(master,top,normal, getDetectorNumber());
+		// different addresses for top and bottom
+		if (getFirmwareVersion() < FIRMWARE_VERSION_SAME_TOP_BOT_ADDR) {
+			Feb_Control_Init(master,top,normal, getDetectorNumber());
+		} 
+		// same addresses for top and bottom
+		else {
+			Feb_Control_Init(master,1, normal, getDetectorNumber());
+		}
 		//master of 9M, check high voltage serial communication to blackfin
 		if (master && !normal) {
 			if (Feb_Control_OpenSerialCommunication())
@@ -334,12 +362,23 @@ void initControlServer() {
 void initStopServer() {
 #ifdef VIRTUAL
 	getModuleConfiguration();
+	virtual_stop = 0;
+	if (!isControlServer) {
+		ComVirtual_setStop(virtual_stop);
+	}
 	return;
 #else
 	getModuleConfiguration();
 	Feb_Interface_FebInterface();
 	Feb_Control_FebControl();
-	Feb_Control_Init(master,top,normal,getDetectorNumber());
+	// different addresses for top and bottom
+	if (getFirmwareVersion() < FIRMWARE_VERSION_SAME_TOP_BOT_ADDR) {
+		Feb_Control_Init(master,top,normal, getDetectorNumber());
+	} 
+	// same addresses for top and bottom
+	else {
+		Feb_Control_Init(master,1, normal, getDetectorNumber());
+	}
 	LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
 	// activate (if it gets ip) (later FW will deactivate at startup)
 	// also needed for stop server for status
@@ -361,7 +400,11 @@ void getModuleConfiguration() {
 	top = 1;
 #else
 	master = 0;
+#ifdef VIRTUAL_TOP
 	top = 1;
+#else
+	top = 0;
+#endif
 #endif
 #ifdef VIRTUAL_9M
 	normal = 0;
@@ -446,6 +489,12 @@ void setupDetector() {
 			}
 		}
 	}
+#ifdef VIRTUAL
+	virtual_status = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+	}
+#endif
 
 	LOG(logINFOBLUE, ("Setting Default Parameters\n"));
 	//setting default measurement parameters
@@ -455,6 +504,7 @@ void setupDetector() {
 	getSubExpTime(DEFAULT_SUBFRAME_DEADTIME);
 	setPeriod(DEFAULT_PERIOD);
 	setNumTriggers(DEFAULT_NUM_CYCLES);
+	eiger_dynamicrange = DEFAULT_DYNAMIC_RANGE;
 	setDynamicRange(DEFAULT_DYNAMIC_RANGE);
 	eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
 	setParallelMode(DEFAULT_PARALLEL_MODE);
@@ -466,6 +516,7 @@ void setupDetector() {
 	setStartingFrameNumber(DEFAULT_STARTING_FRAME_NUMBER);
 	setReadNLines(MAX_ROWS_PER_READOUT);
 	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
+	eiger_tau_ns = DEFAULT_RATE_CORRECTION;
 	setRateCorrection(DEFAULT_RATE_CORRECTION);
 	int enable[2] = {DEFAULT_EXT_GATING_ENABLE, DEFAULT_EXT_GATING_POLARITY};
 	setExternalGating(enable);//disable external gating
@@ -510,31 +561,27 @@ int readRegister(uint32_t offset, uint32_t* retval) {
 
 
 int setDynamicRange(int dr) {
-#ifdef VIRTUAL
-	if (dr > 0) {
-		LOG(logINFO, ("Setting dynamic range: %d\n", dr));
-		eiger_dynamicrange = dr;
-	}
-	return eiger_dynamicrange;
-#else
+	// setting dr
 	if (dr > 0) {
 		LOG(logDEBUG1, ("Setting dynamic range: %d\n", dr));
+#ifndef VIRTUAL
 		if (Feb_Control_SetDynamicRange(dr)) {
-
-			//EigerSetBitMode(dr);
 			on_dst = 0;
 			int i;
 			for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
-			if (Beb_SetUpTransferParameters(dr))
-				eiger_dynamicrange = dr;
-			else LOG(logERROR, ("Could not set bit mode in the back end\n"));
+			if (!Beb_SetUpTransferParameters(dr)) {
+				LOG(logERROR, ("Could not set bit mode in the back end\n"));
+				return eiger_dynamicrange;
+			}
 		}
-	}
-	//make sure back end and front end have the same bit mode
-	dr= Feb_Control_GetDynamicRange();
-
-	return dr;
 #endif
+		eiger_dynamicrange = dr;
+	}
+	// getting dr
+#ifndef VIRTUAL
+	eiger_dynamicrange = Feb_Control_GetDynamicRange();
+#endif
+	return eiger_dynamicrange;
 }
 
 
@@ -820,8 +867,9 @@ int setModule(sls_detector_module myMod, char* mess) {
 			}
 		}
 	}
-	// trimbits
+
 #ifndef VIRTUAL
+	// trimbits
 	if (myMod.nchan == 0) {
 		LOG(logINFO, ("Setting module without trimbits\n"));
 	} else {
@@ -850,6 +898,7 @@ int setModule(sls_detector_module myMod, char* mess) {
 			return FAIL;
 		}
 	}
+#endif
 
 
 	//rate correction
@@ -869,17 +918,24 @@ int setModule(sls_detector_module myMod, char* mess) {
 	else {
 		setDefaultSettingsTau_in_nsec(myMod.tau);
 		if (getRateCorrectionEnable()) {
-			int64_t retvalTau = setRateCorrection(myMod.tau);
-			if (myMod.tau != retvalTau) {
-				sprintf(mess, "Cannot set module. Could not set rate correction\n");
+			if (setRateCorrection(myMod.tau) == FAIL) {
+				sprintf(mess, "Cannot set module. Rate correction failed.\n");
 				LOG(logERROR, (mess));
 				setSettings(UNDEFINED);
 				LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
-				return FAIL;
+				return FAIL;				
+			} else {
+				int64_t retvalTau = getCurrentTau();
+				if (myMod.tau != retvalTau) {
+					sprintf(mess, "Cannot set module. Could not set rate correction\n");
+					LOG(logERROR, (mess));
+					setSettings(UNDEFINED);
+					LOG(logERROR, ("Settings has been changed to undefined (random trim file)\n"));
+					return FAIL;
+				}
 			}
 		}
 	}
-#endif
 	return OK;
 }
 
@@ -1178,21 +1234,20 @@ enum timingMode getTiming() {
 /* configure mac */
 
 int configureMAC() {
-    uint32_t sourceip = udpDetails.srcip;
-	uint32_t destip = udpDetails.dstip;
-	uint64_t sourcemac = udpDetails.srcmac;
-	uint64_t destmac = udpDetails.dstmac;
-	int src_port = udpDetails.srcport;
-	int destport = udpDetails.dstport;		
-	int destport2 = udpDetails.dstport2;			
+    uint32_t srcip = udpDetails.srcip;
+	uint32_t dstip = udpDetails.dstip;
+	uint64_t srcmac = udpDetails.srcmac;
+	uint64_t dstmac = udpDetails.dstmac;
+	int srcport = udpDetails.srcport;
+	int dstport = udpDetails.dstport;		
+	int dstport2 = udpDetails.dstport2;			
 
-    LOG(logINFO, ("Configuring MAC\n"));
-	
+	LOG(logINFOBLUE, ("Configuring MAC\n"));
 	char src_mac[50], src_ip[INET_ADDRSTRLEN],dst_mac[50], dst_ip[INET_ADDRSTRLEN];
-	getMacAddressinString(src_mac, 50, sourcemac);
-	getMacAddressinString(dst_mac, 50, destmac);
-	getIpAddressinString(src_ip, sourceip);
-	getIpAddressinString(dst_ip, destip);
+	getMacAddressinString(src_mac, 50, srcmac);
+	getMacAddressinString(dst_mac, 50, dstmac);
+	getIpAddressinString(src_ip, srcip);
+	getIpAddressinString(dst_ip, dstip);
 
 	LOG(logINFO, (
 	        "\tSource IP   : %s\n"
@@ -1202,19 +1257,15 @@ int configureMAC() {
 	        "\tDest MAC    : %s\n"
 			"\tDest Port   : %d\n"
 			"\tDest Port2  : %d\n",
-	        src_ip, src_mac, src_port,
-	        dst_ip, dst_mac, destport, destport2));
+	        src_ip, src_mac, srcport,
+	        dst_ip, dst_mac, dstport, dstport2));
 
 #ifdef VIRTUAL
-	char cDestIp[MAX_STR_LENGTH];
-	memset(cDestIp, 0, MAX_STR_LENGTH);
-	sprintf(cDestIp, "%d.%d.%d.%d", (destip>>24)&0xff,(destip>>16)&0xff,(destip>>8)&0xff,(destip)&0xff);
-	LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d, port2:%d)\n", cDestIp, destport, destport2));
-	if (setUDPDestinationDetails(0, cDestIp, destport) == FAIL) {
+	if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
 		LOG(logERROR, ("could not set udp destination IP and port\n"));
 		return FAIL;
 	}
-	if (setUDPDestinationDetails(1, cDestIp, destport2) == FAIL) {
+	if (setUDPDestinationDetails(1, dst_ip, dstport2) == FAIL) {
 		LOG(logERROR, ("could not set udp destination IP and port2\n"));
 		return FAIL;
 	}
@@ -1223,15 +1274,13 @@ int configureMAC() {
 
 	int beb_num =  detid;
 	int header_number = 0;
-	int dst_port = destport;
+	int dst_port = dstport;
 	if (!top)
-		dst_port = destport2;
-
-	LOG(logINFO, ("\tDest Port   : %d\n", dst_port));
+		dst_port = dstport2;
 
 	int i=0;
 	/* for(i=0;i<32;i++) { modified for Aldo*/
-	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
+	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,srcport) &&
 			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port)) {
 		LOG(logDEBUG1, ("\tset up left ok\n"));
 	} else {
@@ -1240,13 +1289,12 @@ int configureMAC() {
 	/*}*/
 
 	header_number = 32;
-	dst_port = destport2;
+	dst_port = dstport2;
 	if (!top)
-		dst_port = destport;
-	LOG(logINFO, ("\tDest Port   : %d\n",dst_port));
+		dst_port = dstport;
 
 	/*for(i=0;i<32;i++) {*//** modified for Aldo*/
-	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
+	if (Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,srcport) &&
 			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port)) {
 		LOG(logDEBUG1, (" set up right ok\n"));
 	} else {
@@ -1291,13 +1339,15 @@ int setQuad(int value) {
 	if (!Feb_Control_SetQuad(value)) {
 		return FAIL;
 	}
+#else
+	eiger_virtual_quad_mode = value;
 #endif
 	return OK;
 }
 
 int	getQuad() {
 #ifdef VIRTUAL
-	return 0;
+	return eiger_virtual_quad_mode;
 #else
 	return Beb_GetQuad();
 #endif
@@ -1433,12 +1483,59 @@ int pulseChip(int n) {
 	return OK;
 }
 
-int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never be -1)
+int updateRateCorrection(char* mess) {
+	int ret = OK;
+	// recalculates rate correction table, or switches off in wrong bit mode
+	if (eiger_tau_ns != 0) {
+		switch (eiger_dynamicrange) {
+			case 16:
+			case 32:
+				ret = setRateCorrection(eiger_tau_ns);
+				break;
+			default:
+				setRateCorrection(0);
+				strcpy(mess, "Rate correction Deactivated, must be in 32 or 16 bit mode");
+				ret = FAIL;
+				break;
+		}
+	}
+	getCurrentTau(); // update eiger_tau_ns
+	return ret;
+}
+
+int validateAndSetRateCorrection(int64_t tau_ns, char* mess) {
+	// switching on in wrong bit mode
+	if ((tau_ns != 0) && 
+		(eiger_dynamicrange != 32) && (eiger_dynamicrange != 16)) {
+		strcpy(mess,"Rate correction Deactivated, must be in 32 or 16 bit mode\n");
+		LOG(logERROR,(mess));
+		return FAIL;
+	}
+	// default tau (-1, get proper value)
+	if (tau_ns < 0) {
+		tau_ns = getDefaultSettingsTau_in_nsec();
+		if (tau_ns < 0) {
+			strcpy(mess,"Default settings file not loaded. No default tau yet\n");
+			LOG(logERROR,(mess));
+			return FAIL;
+		}
+		eiger_tau_ns = -1;
+	}
+	// user defined value (settings become undefined)
+	else if (tau_ns > 0) {
+		setSettings(UNDEFINED);
+		LOG(logERROR, ("Settings has been changed to undefined (tau changed)\n"));
+		eiger_tau_ns = tau_ns;
+	}	
+	return setRateCorrection(tau_ns);
+}
+
+int setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never be -1)
 #ifdef VIRTUAL
 	//deactivating rate correction
 	if (custom_tau_in_nsec==0) {
 		eiger_virtual_ratecorrection_variable = 0;
-		return 0;
+		return OK;
 	}
 
 	//when dynamic range changes, use old tau
@@ -1468,22 +1565,21 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never 
 	//different setting, calculate table
 	else {
 		eiger_virtual_ratetable_tau_in_ns = custom_tau_in_nsec;
-		double period_in_sec = (double)(eiger_virtual_subexptime*10)/(double)1e9;
+		eiger_virtual_ratetable_period_in_ns = eiger_virtual_subexptime*10;
 		if (eiger_dynamicrange == 16)
-			period_in_sec = eiger_virtual_exptime;
-		eiger_virtual_ratetable_period_in_ns = period_in_sec*1e9;
+			eiger_virtual_ratetable_period_in_ns = eiger_virtual_exptime;
 	}
 	//activating rate correction
 	eiger_virtual_ratecorrection_variable = 1;
 	LOG(logINFO, ("Rate Correction Value set to %lld ns\n",(long long int)eiger_virtual_ratetable_tau_in_ns));
 
-	return eiger_virtual_ratetable_tau_in_ns;
+	return OK;
 #else
 
 	//deactivating rate correction
 	if (custom_tau_in_nsec==0) {
 		Feb_Control_SetRateCorrectionVariable(0);
-		return 0;
+		return OK;
 	}
 
 	//when dynamic range changes, use old tau
@@ -1517,7 +1613,7 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never 
 		if (ret<=0) {
 			LOG(logERROR, ("Rate correction failed. Deactivating rate correction\n"));
 			Feb_Control_SetRateCorrectionVariable(0);
-			return ret;
+			return FAIL;
 		}
 	}
 	//activating rate correction
@@ -1525,7 +1621,7 @@ int64_t setRateCorrection(int64_t custom_tau_in_nsec) {//in nanosec (will never 
 	LOG(logINFO, ("Rate Correction Value set to %lld ns\n", (long long int)Feb_Control_Get_RateTable_Tau_in_nsec()));
 	Feb_Control_PrintCorrectedValues();
 
-	return Feb_Control_Get_RateTable_Tau_in_nsec();
+	return OK;
 #endif
 }
 
@@ -1543,18 +1639,22 @@ int getDefaultSettingsTau_in_nsec() {
 
 void setDefaultSettingsTau_in_nsec(int t) {
 	default_tau_from_file = t;
-	LOG(logINFO, ("Default tau set to %d\n", default_tau_from_file));
+	LOG(logINFOBLUE, ("Default tau set to %d\n", default_tau_from_file));
 }
 
 int64_t getCurrentTau() {
-	if (!getRateCorrectionEnable())
+	if (!getRateCorrectionEnable()) {
+		eiger_tau_ns = 0;
 		return 0;
-	else
+	}
+	else {
 #ifndef VIRTUAL
-		return Feb_Control_Get_RateTable_Tau_in_nsec();
+		eiger_tau_ns = Feb_Control_Get_RateTable_Tau_in_nsec();
 #else
-	return eiger_virtual_ratetable_tau_in_ns;
+		eiger_tau_ns = eiger_virtual_ratetable_tau_in_ns;
 #endif
+		return eiger_tau_ns;
+	}
 }
 
 void setExternalGating(int enable[]) {
@@ -1728,18 +1828,29 @@ int startStateMachine() {
 	if(createUDPSocket(1) != OK) {
 		return FAIL;
 	}
-	LOG(logINFOBLUE, ("starting state machine\n"));
-	eiger_virtual_status = 1;
-	eiger_virtual_stop = 0;
-	if (pthread_create(&eiger_virtual_tid, NULL, &start_timer, NULL)) {
+	LOG(logINFOBLUE, ("Starting State Machine\n"));
+	virtual_status = 1;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+		virtual_stop = ComVirtual_getStop();
+		if (virtual_stop != 0) {
+			LOG(logERROR, ("Cant start acquisition. "
+			"Stop server has not updated stop status to 0\n"));
+			return FAIL;
+		}
+	}
+	if (pthread_create(&virtual_tid, NULL, &start_timer, NULL)) {
 		LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
-		eiger_virtual_status = 0;
+		virtual_status = 0;
+		if (isControlServer) {
+			ComVirtual_setStatus(virtual_status);
+		}	
 		return FAIL;
 	}
 	LOG(logINFO ,("Virtual Acquisition started\n"));
 	return OK;
 #else
-
+	LOG(logINFOBLUE, ("Starting State Machine\n"));
 	int ret = OK,prev_flag;
 	//get the DAQ toggle bit
 	prev_flag = Feb_Control_AcquisitionStartedBit();
@@ -1767,9 +1878,13 @@ int startStateMachine() {
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	int64_t periodns = eiger_virtual_period;
+	if (!isControlServer) {
+		return NULL;
+	}
+
+	int64_t periodNs = eiger_virtual_period;
 	int numFrames = nimages_per_request;
-	int64_t exp_us = eiger_virtual_exptime / 1000;
+	int64_t expUs = eiger_virtual_exptime / 1000;
 
 	int dr = eiger_dynamicrange;
 	double bytesPerPixel  = (double)dr/8.00;
@@ -1779,100 +1894,160 @@ void* start_timer(void* arg) {
 	int numPacketsPerFrame =  (tgEnable ? 4 : 16) * dr;
 	int npixelsx = 256 * 2 * bytesPerPixel; 
 	int databytes = 256 * 256 * 2 * bytesPerPixel;
-	LOG(logINFO, (" dr:%f\n bytesperpixel:%d\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n",
-	dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame, npixelsx, databytes));
+	int row = eiger_virtual_detPos[0];
+	int colLeft = top ? eiger_virtual_detPos[1] : eiger_virtual_detPos[1] + 1;
+	int colRight = top ? eiger_virtual_detPos[1] + 1 : eiger_virtual_detPos[1];
+	int ntotpixels = 256 * 256 * 4;
 
+	LOG(logINFO, (" dr:%d\n bytesperpixel:%f\n tgenable:%d\n datasize:%d\n packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n ntotpixels:%d\n",
+	dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame, npixelsx, databytes, ntotpixels));
 
-		//TODO: Generate data
-		char imageData[databytes * 2];
-		memset(imageData, 0, databytes * 2);
-		{
-			int i = 0;
-			for (i = 0; i < databytes * 2; i += sizeof(uint8_t)) {
-				*((uint8_t*)(imageData + i)) = i;
-			}
-		}
-		
-		//TODO: Send data
-		{
-			int frameNr = 1;
-			for(frameNr=1; frameNr <= numFrames; ++frameNr ) {
-
-				//check if virtual_stop is high
-				if(eiger_virtual_stop == 1){
-					break;
+	// Generate data
+	char imageData[databytes * 2];
+	memset(imageData, 0, databytes * 2);
+	{
+		int i = 0;
+		switch (dr) {
+			case 4:
+				for (i = 0; i < ntotpixels/2; ++i) {
+					*((uint8_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xEE : (uint8_t)(((2 * i & 0xF) << 4) | ((2 * i + 1) & 0xF));
 				}
+				break;				
+			case 8:
+				for (i = 0; i < ntotpixels; ++i) {
+					*((uint8_t*)(imageData + i)) = eiger_virtual_test_mode ? 0xFE : (uint8_t)i;
+				} 
+				break;
+			case 16:
+				for (i = 0; i < ntotpixels; ++i) {
+					*((uint16_t*)(imageData + i * sizeof(uint16_t))) = eiger_virtual_test_mode ? 0xFFE : (uint16_t)i;
+				}
+				break;
+			case 32:
+				for (i = 0; i < ntotpixels; ++i) {
+					*((uint32_t*)(imageData + i * sizeof(uint32_t))) = eiger_virtual_test_mode ? 0xFFFFFE : (uint32_t)i;
+				}	
+				break;
+			default:
+				break;
+		}
+	}
+	
+	// Send data
+	{
+		uint64_t frameNr = 0;
+		getStartingFrameNumber(&frameNr);
+        // loop over number of frames
+		int iframes = 0;
+		for(iframes = 0; iframes != numFrames; ++iframes ) {
 
-				int srcOffset = 0;
-				int srcOffset2 = npixelsx;
+			usleep(eiger_virtual_transmission_delay_frame);
+
+			// update the virtual stop from stop server
+			virtual_stop = ComVirtual_getStop();
+			//check if virtual_stop is high
+			if(virtual_stop == 1){
+				setStartingFrameNumber(frameNr + iframes + 1);
+				break;
+			}
+
+            // sleep for exposure time
+			struct timespec begin, end;
+			clock_gettime(CLOCK_REALTIME, &begin);
+			usleep(expUs);
+
+			int srcOffset = 0;
+			int srcOffset2 = npixelsx;
 			
-				struct timespec begin, end;
-				clock_gettime(CLOCK_REALTIME, &begin);
-				usleep(exp_us);
-				char packetData[packetsize];
-				memset(packetData, 0, packetsize);
-				char packetData2[packetsize];
-				memset(packetData2, 0, packetsize);
-				
-				// loop packet
-				{
-					int i = 0;
-					for(i = 0; i != numPacketsPerFrame; ++i) {
-						int dstOffset = sizeof(sls_detector_header);
-						int dstOffset2 = sizeof(sls_detector_header);
-						// set header
-						sls_detector_header* header = (sls_detector_header*)(packetData);
-						header->frameNumber = frameNr;
-						header->packetNumber = i;
-						header = (sls_detector_header*)(packetData2);
-						header->frameNumber = frameNr;
-						header->packetNumber = i;
+			// loop packet
+			{
+				int i = 0;
+				for(i = 0; i != numPacketsPerFrame; ++i) {
+					// set header
+					char packetData[packetsize];
+					memset(packetData, 0, packetsize);
+					sls_detector_header* header = (sls_detector_header*)(packetData);
+					header->detType = 3;//(uint16_t)myDetectorType; updated when firmware updates
+					header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
+					header->frameNumber = frameNr + iframes;
+					header->packetNumber = i;
+					header->row = row;
+					header->column = colLeft;
 
-						// fill data	
-						{		
-							int psize = 0;	
-							for (psize = 0; psize < datasize; psize += npixelsx) {
+					char packetData2[packetsize];
+					memset(packetData2, 0, packetsize);
+					header = (sls_detector_header*)(packetData2);
+					header->detType = 3;//(uint16_t)myDetectorType; updated when firmware updates
+					header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
+					header->frameNumber = frameNr + iframes;
+					header->packetNumber = i;
+					header->row = row;
+					header->column = colRight;
+					if (eiger_virtual_quad_mode) {
+						header->row = 1; // right is next row
+						header->column = 0;	// right same first column						
+					}
 
-								if (dr == 32 && tgEnable == 0) {
-									memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx/2);
-									memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx/2);
+					// fill data	
+					int dstOffset = sizeof(sls_detector_header);
+					int dstOffset2 = sizeof(sls_detector_header);
+					{		
+						int psize = 0;	
+						for (psize = 0; psize < datasize; psize += npixelsx) {
+
+							if (dr == 32 && tgEnable == 0) {
+								memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx/2);
+								memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx/2);
+								if (srcOffset % npixelsx == 0) {
+									srcOffset += npixelsx/2;
+									srcOffset2 += npixelsx/2;
+								} 
+								// skip the other half (2 packets in 1 line for 32 bit)
+								else {
 									srcOffset += npixelsx;
-									srcOffset2 += npixelsx;
-									dstOffset += npixelsx/2;
-									dstOffset2 += npixelsx/2;
-								} else {
-									memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx);
-									memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx);
-									srcOffset += 2 * npixelsx;
-									srcOffset2 += 2 * npixelsx;
-									dstOffset += npixelsx;
-									dstOffset2 += npixelsx;
+									srcOffset2 += npixelsx;										
 								}
+								dstOffset += npixelsx/2;
+								dstOffset2 += npixelsx/2;
+							} else {
+								memcpy(packetData + dstOffset, imageData + srcOffset, npixelsx);
+								memcpy(packetData2 + dstOffset2, imageData + srcOffset2, npixelsx);
+								srcOffset += 2 * npixelsx;
+								srcOffset2 += 2 * npixelsx;
+								dstOffset += npixelsx;
+								dstOffset2 += npixelsx;
 							}
 						}
-
-						sendUDPPacket(0, packetData, packetsize);
-						sendUDPPacket(1, packetData2, packetsize);
 					}
+					usleep(eiger_virtual_transmission_delay_left);
+					sendUDPPacket(0, packetData, packetsize);
+					usleep(eiger_virtual_transmission_delay_right);
+					sendUDPPacket(1, packetData2, packetsize);
 				}
-				LOG(logINFO, ("Sent frame: %d\n", frameNr));
-				clock_gettime(CLOCK_REALTIME, &end);
-				int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
-						(end.tv_nsec - begin.tv_nsec));
+			}
+			LOG(logINFO, ("Sent frame: %d\n", iframes));
+			clock_gettime(CLOCK_REALTIME, &end);
+			int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
+					(end.tv_nsec - begin.tv_nsec));
 
-				// sleep for (period - exptime)
-				if (frameNr < numFrames) { // if there is a next frame
-					if (periodns > time_ns) {
-						usleep((periodns - time_ns)/ 1000);
-					}
+			// sleep for (period - exptime)
+			if (iframes < numFrames) { // if there is a next frame
+				if (periodNs > timeNs) {
+					usleep((periodNs - timeNs)/ 1000);
 				}
 			}
 		}
+		setStartingFrameNumber(frameNr + numFrames);
+	}
+	
 	
 	closeUDPSocket(0);
 	closeUDPSocket(1);
 	
-	eiger_virtual_status = 0;
+	virtual_status = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+	}
 	LOG(logINFOBLUE, ("Finished Acquiring\n"));
 	return NULL;
 }
@@ -1884,7 +2059,18 @@ void* start_timer(void* arg) {
 int stopStateMachine() {
 	LOG(logINFORED, ("Going to stop acquisition\n"));
 #ifdef VIRTUAL
-	eiger_virtual_stop = 0;
+	if (!isControlServer) {
+		virtual_stop = 1;
+		ComVirtual_setStop(virtual_stop);
+		// read till status is idle
+		int tempStatus = 1;
+		while(tempStatus == 1) {
+			tempStatus = ComVirtual_getStatus();
+		}
+		virtual_stop = 0;
+		ComVirtual_setStop(virtual_stop);
+		LOG(logINFO, ("Stopped State Machine\n"));
+	}	
 	return OK;
 #else
 	if ((Feb_Control_StopAcquisition() != STATUS_IDLE) || (!Beb_StopAcquisition()) ) {
@@ -1944,7 +2130,10 @@ int startReadOut() {
 
 enum runStatus getRunStatus() {
 #ifdef VIRTUAL
-	if (eiger_virtual_status == 0) {
+	if (!isControlServer) {
+		virtual_status = ComVirtual_getStatus();
+	}
+	if (virtual_status == 0) {
 		LOG(logINFO, ("Status: IDLE\n"));
 		return IDLE;
 	} else {
@@ -1954,19 +2143,23 @@ enum runStatus getRunStatus() {
 #else
 
 	int i = Feb_Control_AcquisitionInProgress();
-	switch (i) {
-	case STATUS_ERROR:
+	if (i == STATUS_ERROR) {
 		LOG(logERROR, ("Status: ERROR reading status register\n"));
 		return ERROR;
-	case STATUS_IDLE:
+	} else if (i == STATUS_IDLE) {
+		int isTransmitting = 0;
+		if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 0) == FAIL) {
+			return ERROR;
+		}
+		if (isTransmitting) {
+			printf("Status: TRANSMITTING\n");
+			return TRANSMITTING;
+		} 
 		LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
-	default:
-		LOG(logINFOBLUE, ("Status: RUNNING...\n"));
-		return RUNNING;
 	}
-
-	return IDLE;
+	LOG(logINFOBLUE, ("Status: RUNNING...\n"));
+	return RUNNING;
 #endif
 }
 
@@ -1975,7 +2168,7 @@ enum runStatus getRunStatus() {
 void readFrame(int *ret, char *mess) {
 #ifdef VIRTUAL
 	// wait for status to be done
-	while(eiger_virtual_status == 1){
+	while(virtual_status == 1){
 		usleep(500);
 	}
 	LOG(logINFOGREEN, ("acquisition successfully finished\n"));
@@ -2000,7 +2193,18 @@ void readFrame(int *ret, char *mess) {
 	}
 
 	//wait for detector to send
-	Beb_EndofDataSend(send_to_ten_gig);
+	int isTransmitting = 1;
+	while (isTransmitting) {
+		if (Beb_IsTransmitting(&isTransmitting, send_to_ten_gig, 1) == FAIL) {
+				strcpy(mess,"Could not read delay counters\n");
+				*ret = (int)FAIL;
+				return;
+		}
+		if (isTransmitting) {
+			printf("Transmitting...\n");
+		}
+	}
+	printf("Detector has sent all data\n");
 	LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
 #endif
 }

@@ -88,8 +88,6 @@ int exit_server(int);
 int lock_server(int);
 int get_last_client_ip(int);
 int set_port(int);
-int update_client(int);
-int send_update(int);
 int calibrate_pedestal(int);
 int enable_ten_giga(int);
 int set_all_trimbits(int);
@@ -217,3 +215,5 @@ int set_current_source(int);
 int get_timing_source(int);
 int set_timing_source(int);
 int get_num_channels(int);
+int update_rate_correction(int);
+

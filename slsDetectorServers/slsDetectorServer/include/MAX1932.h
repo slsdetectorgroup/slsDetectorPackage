@@ -21,11 +21,11 @@ void MAX1932_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t d
 void MAX1932_Disable();
 
 /**
- * Set value
- * @param val value to set
+ * Set value (value is updated to correct range)
+ * @param val pointer to value to set
  * @return OK or FAIL
  */
-int MAX1932_Set (int val) ;
+int MAX1932_Set (int* val) ;
 
 
 

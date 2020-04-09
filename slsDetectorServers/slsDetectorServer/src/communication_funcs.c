@@ -579,10 +579,6 @@ int Server_VerifyLock() {
 
 int Server_SendResult(int fileDes, intType itype, int update, void* retval, int retvalSize) {
 
-	// update if different clients (ret can be ok or acquisition finished), not fail to not overwrite e message
-	if (update && isControlServer && ret != FAIL && differentClients)
-		ret = FORCE_UPDATE;
-
 	// send success of operation
 	int ret1 = ret;
 	sendData(fileDes, &ret1,sizeof(ret1), INT32);
@@ -616,7 +612,12 @@ void getMacAddressinString(char* cmac, int size, uint64_t mac) {
 
 void getIpAddressinString(char* cip, uint32_t ip) {
 	memset(cip, 0, INET_ADDRSTRLEN);
+#if defined(EIGERD) && !defined(VIRTUAL)
 	inet_ntop(AF_INET, &ip, cip, INET_ADDRSTRLEN);
+#else
+	sprintf(cip, "%d.%d.%d.%d", 
+	(ip>>24)&0xff,(ip>>16)&0xff,(ip>>8)&0xff,(ip)&0xff);
+#endif
 }
 
 

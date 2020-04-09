@@ -5,6 +5,7 @@ set(SOURCES
     src/DataSocket.cpp
     src/ServerSocket.cpp
     src/ServerInterface.cpp
+    src/ToString.cpp
     src/network_utils.cpp
     src/ZmqSocket.cpp
 )
@@ -60,8 +61,6 @@ set_target_properties(slsSupportLib PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
-
-message(${ZeroMQ_LIBRARIES})
 
 target_link_libraries(slsSupportLib 
     PUBLIC

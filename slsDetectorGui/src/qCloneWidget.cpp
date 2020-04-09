@@ -15,13 +15,20 @@ qCloneWidget::qCloneWidget(QWidget *parent, SlsQt1DPlot *p1, SlsQt2DPlot *p2,
                            SlsQt1DPlot *gp1, SlsQt2DPlot *gp, QString title,
                            QString fPath, QString fName, int64_t aIndex,
                            bool displayStats, QString min, QString max,
-                           QString sum)
+                           QString sum, bool completeImage)
     : QMainWindow(parent), plot1d(p1), plot2d(p2), gainplot1d(gp1),
       gainplot2d(gp), filePath(fPath), fileName(fName), acqIndex(aIndex) {
     setupUi(this);
     id = qCloneWidget::NumClones++;
     SetupWidgetWindow(title);
     DisplayStats(displayStats, min, max, sum);
+    lblCompleteImage->hide();
+    lblInCompleteImage->hide();
+    if (completeImage) {
+        lblCompleteImage->show();
+    } else {
+        lblInCompleteImage->show();
+    }
 }
 
 qCloneWidget::~qCloneWidget() {

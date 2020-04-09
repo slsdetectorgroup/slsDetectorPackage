@@ -16,6 +16,7 @@ add_executable(ctbDetectorServer_virtual
     ../slsDetectorServer/src/LTC2620.c
     ../slsDetectorServer/src/MAX1932.c
     ../slsDetectorServer/src/programFpgaBlackfin.c
+    ../slsDetectorServer/src/communication_virtual.c
 )
 
 include_directories(
@@ -33,6 +34,7 @@ target_compile_definitions(ctbDetectorServer_virtual
 
 target_link_libraries(ctbDetectorServer_virtual
     PUBLIC pthread rt slsProjectCWarnings
+    m
 )
 
 set_target_properties(ctbDetectorServer_virtual PROPERTIES

@@ -14,6 +14,7 @@ add_executable(moenchDetectorServer_virtual
     ../slsDetectorServer/src/MAX1932.c
     ../slsDetectorServer/src/programFpgaBlackfin.c   
     ../slsDetectorServer/src/readDefaultPattern.c         
+    ../slsDetectorServer/src/communication_virtual.c
 )
 
 include_directories(
@@ -31,6 +32,7 @@ target_compile_definitions(moenchDetectorServer_virtual
 
 target_link_libraries(moenchDetectorServer_virtual
     PUBLIC pthread rt slsProjectCWarnings
+    m
 )
 
 set_target_properties(moenchDetectorServer_virtual PROPERTIES

@@ -9,10 +9,12 @@
 #include "ASIC_Driver.h"
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
+#include "communication_virtual.h"
 #endif
 
 #include <string.h>
 #include <unistd.h>     // usleep
+#include <netinet/in.h>
 #ifdef VIRTUAL
 #include <pthread.h>
 #include <time.h>
@@ -24,6 +26,11 @@ extern int debugflag;
 extern int checkModuleFlag;
 extern udpStruct udpDetails;
 extern const enum detectorType myDetectorType;
+
+// Global variable from communication_funcs.c
+extern int isControlServer;
+extern void getMacAddressinString(char* cmac, int size, uint64_t mac);
+extern void getIpAddressinString(char* cip, uint32_t ip);
 
 int initError = OK;
 int initCheckDone = 0;
@@ -332,6 +339,12 @@ void initStopServer() {
 		LOG(logERROR, ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
 		exit(EXIT_FAILURE);
 	}
+#ifdef VIRTUAL
+	virtual_stop = 0;
+	if (!isControlServer) {
+		ComVirtual_setStop(virtual_stop);
+	}
+#endif
 }
 
 
@@ -381,9 +394,13 @@ void setupDetector() {
 			}
 		}	
 	}
+#ifdef VIRTUAL
+	virtual_status = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+	}
+#endif
 
-
-#ifndef VIRTUAL
 	// pll defines
 	ALTERA_PLL_C10_SetDefines(REG_OFFSET, BASE_READOUT_PLL, BASE_SYSTEM_PLL, PLL_RESET_REG, PLL_RESET_REG, PLL_RESET_READOUT_MSK, PLL_RESET_SYSTEM_MSK, READOUT_PLL_VCO_FREQ_HZ, SYSTEM_PLL_VCO_FREQ_HZ);
 	ALTERA_PLL_C10_ResetPLL(READOUT_PLL);
@@ -394,7 +411,6 @@ void setupDetector() {
 	LTC2620_D_SetDefines(DAC_MAX_MV, DAC_DRIVER_FILE_NAME, NDAC);
 	// on chip dacs
 	ASIC_Driver_SetDefines(ONCHIP_DAC_DRIVER_FILE_NAME);
-#endif
 	setTimingSource(DEFAULT_TIMING_SOURCE);
 
 	// Default values
@@ -431,12 +447,10 @@ void setupDetector() {
 	// power on chip
 	powerChip(1);
 
-#ifndef VIRTUAL
 	// also sets default dac and on chip dac values 
 	if (readConfigFile() == FAIL) {
 		return;
 	}
-#endif
 	setBurstMode(DEFAULT_BURST_MODE);
 	setSettings(DEFAULT_SETTINGS);
 
@@ -1187,42 +1201,30 @@ int configureMAC() {
 	int srcport = udpDetails.srcport;
 	int dstport = udpDetails.dstport;		
 
+	LOG(logINFOBLUE, ("Configuring MAC\n"));
+	char src_mac[50], src_ip[INET_ADDRSTRLEN],dst_mac[50], dst_ip[INET_ADDRSTRLEN];
+	getMacAddressinString(src_mac, 50, srcmac);
+	getMacAddressinString(dst_mac, 50, dstmac);
+	getIpAddressinString(src_ip, srcip);
+	getIpAddressinString(dst_ip, dstip);
+
+	LOG(logINFO, (
+	        "\tSource IP   : %s\n"
+	        "\tSource MAC  : %s\n"
+	        "\tSource Port : %d\n"
+	        "\tDest IP     : %s\n"
+	        "\tDest MAC    : %s\n"
+			"\tDest Port   : %d\n",
+	        src_ip, src_mac, srcport,
+	        dst_ip, dst_mac, dstport));
+
 #ifdef VIRTUAL
-	char cDestIp[MAX_STR_LENGTH];
-	memset(cDestIp, 0, MAX_STR_LENGTH);
-	sprintf(cDestIp, "%d.%d.%d.%d", (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff);
-	LOG(logINFO, ("1G UDP: Destination (IP: %s, port:%d)\n", cDestIp, dstport));
-	if (setUDPDestinationDetails(0, cDestIp, dstport) == FAIL) {
+	if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
 		LOG(logERROR, ("could not set udp destination IP and port\n"));
 		return FAIL;
 	}
     return OK;
 #endif
-	LOG(logINFOBLUE, ("Configuring MAC\n"));
-
-	LOG(logINFO, ("\tSource IP   : %d.%d.%d.%d \t\t(0x%08x)\n",
-	        (srcip>>24)&0xff,(srcip>>16)&0xff,(srcip>>8)&0xff,(srcip)&0xff, srcip));
-	LOG(logINFO, ("\tSource MAC  : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-			(unsigned int)((srcmac>>40)&0xFF),
-			(unsigned int)((srcmac>>32)&0xFF),
-			(unsigned int)((srcmac>>24)&0xFF),
-			(unsigned int)((srcmac>>16)&0xFF),
-			(unsigned int)((srcmac>>8)&0xFF),
-			(unsigned int)((srcmac>>0)&0xFF),
-			(long  long unsigned int)srcmac));
-	LOG(logINFO, ("\tSource Port : %d \t\t\t(0x%08x)\n", srcport, srcport));
-
-	LOG(logINFO, ("\tDest. IP    : %d.%d.%d.%d \t\t(0x%08x)\n",
-	        (dstip>>24)&0xff,(dstip>>16)&0xff,(dstip>>8)&0xff,(dstip)&0xff, dstip));
-	LOG(logINFO, ("\tDest. MAC   : %02x:%02x:%02x:%02x:%02x:%02x \t(0x%010llx)\n",
-			(unsigned int)((dstmac>>40)&0xFF),
-			(unsigned int)((dstmac>>32)&0xFF),
-			(unsigned int)((dstmac>>24)&0xFF),
-			(unsigned int)((dstmac>>16)&0xFF),
-			(unsigned int)((dstmac>>8)&0xFF),
-			(unsigned int)((dstmac>>0)&0xFF),
-			(long  long unsigned int)dstmac));
-	LOG(logINFO, ("\tDest. Port  : %d \t\t\t(0x%08x)\n\n",dstport, dstport));
 
 	// start addr
 	uint32_t addr = BASE_UDP_RAM;
@@ -1340,6 +1342,9 @@ int* getDetectorPosition() {
 // Detector Specific
 
 int checkDetectorType() {
+#ifdef VIRTUAL	
+	return OK;
+#endif
 	LOG(logINFO, ("Checking type of module\n"));
 	FILE* fd = fopen(TYPE_FILE_NAME, "r");
     if (fd == NULL) {
@@ -2011,13 +2016,24 @@ int startStateMachine(){
 	if(createUDPSocket(0) != OK) {
 		return FAIL;
 	}
-	LOG(logINFOBLUE, ("starting state machine\n"));
+	LOG(logINFOBLUE, ("Starting State Machine\n"));
 	// set status to running
 	virtual_status = 1;
-	virtual_stop = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+		virtual_stop = ComVirtual_getStop();
+		if (virtual_stop != 0) {
+			LOG(logERROR, ("Cant start acquisition. "
+			"Stop server has not updated stop status to 0\n"));
+			return FAIL;
+		}
+	}
 	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
 		LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
 		virtual_status = 0;
+		if (isControlServer) {
+			ComVirtual_setStatus(virtual_status);
+		}	
 		return FAIL;
 	}
 	LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
@@ -2036,10 +2052,22 @@ int startStateMachine(){
 
 #ifdef VIRTUAL
 void* start_timer(void* arg) {
-	int64_t periodns = getPeriod();
-	int numFrames = (getNumFrames() *
-						getNumTriggers() );
-	int64_t exp_ns = 	getExpTime();
+	if (!isControlServer) {
+		return NULL;
+	}
+
+	int numRepeats = getNumTriggers();
+	if (getTiming() == AUTO_TIMING) {
+		if (burstMode == BURST_OFF) {
+			numRepeats = 1;
+		} else {
+			numRepeats = getNumBursts();
+		}
+	}
+	int repeatPeriodNs = getBurstPeriod();
+	int numFrames = getNumFrames();
+	int64_t periodNs = getPeriod();
+	int64_t expUs = getExpTime() / 1000;
 	int imagesize = NCHAN * NCHIP * 2;
 	int datasize = imagesize;
 	int packetsize = datasize + sizeof(sls_detector_header);
@@ -2049,62 +2077,87 @@ void* start_timer(void* arg) {
 	memset(imageData, 0, imagesize);
 	{
 		int i = 0;
-		for (i = 0; i < imagesize; i += sizeof(uint8_t)) {
-			*((uint8_t*)(imageData + i)) = i;
+		for (i = 0; i < imagesize; i += sizeof(uint16_t)) {
+			*((uint16_t*)(imageData + i)) = i;
 		}
 	}
 
-    int frameNr = 0;
-	// loop over number of frames
-    for(frameNr=0; frameNr!= numFrames; ++frameNr ) {
+	{
+		int repeatNr = 0;
+		int frameHeaderNr = 0;
+		// loop over number of repeats
+    	for(repeatNr=0; repeatNr!= numRepeats; ++repeatNr ) {
 
-		//check if virtual_stop is high
-		if(virtual_stop == 1){
-			break;
-		}
+			struct timespec rbegin, rend;
+    		clock_gettime(CLOCK_REALTIME, &rbegin);
 
-		// sleep for exposure time
-        struct timespec begin, end;
-        clock_gettime(CLOCK_REALTIME, &begin);
-        usleep(exp_ns / 1000);
-        clock_gettime(CLOCK_REALTIME, &end);
+    		int frameNr = 0;
+			// loop over number of frames
+    		for(frameNr = 0; frameNr != numFrames; ++frameNr ) {
+			
+				// update the virtual stop from stop server
+				virtual_stop = ComVirtual_getStop();
+				//check if virtual_stop is high
+				if(virtual_stop == 1){
+					break;
+				}
 
-		char packetData[packetsize];
-		memset(packetData, 0, packetsize);
-		// set header
-		sls_detector_header* header = (sls_detector_header*)(packetData);
-		header->frameNumber = frameNr;
-		header->packetNumber = 0;
-		header->modId = 0;
-		header->row = detPos[X];
-		header->column = detPos[Y];
-		header->detType = (uint16_t)myDetectorType;
-		header->version = SLS_DETECTOR_HEADER_VERSION - 1;	
+				// sleep for exposure time
+    		    struct timespec begin, end;
+    		    clock_gettime(CLOCK_REALTIME, &begin);
+    		    usleep(expUs);
 
-		// fill data	
-		memcpy(packetData + sizeof(sls_detector_header), imageData, datasize);	
+				char packetData[packetsize];
+				memset(packetData, 0, packetsize);
+				// set header
+				sls_detector_header* header = (sls_detector_header*)(packetData);
+    		    header->detType = (uint16_t)myDetectorType;
+    		    header->version = SLS_DETECTOR_HEADER_VERSION - 1;										
+				header->frameNumber = frameHeaderNr;
+				++frameHeaderNr;
+				header->packetNumber = 0;
+				header->modId = 0;
+				header->row = detPos[X];
+				header->column = detPos[Y];
 
-		// send 1 packet = 1 frame
-		sendUDPPacket(0, packetData, packetsize);
-		LOG(logINFO, ("Sent frame: %d\n", frameNr));
+				// fill data	
+				memcpy(packetData + sizeof(sls_detector_header), imageData, datasize)		;	
 
-		// calculate time left in period
-        int64_t time_ns = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                (end.tv_nsec - begin.tv_nsec));
+				// send 1 packet = 1 frame
+				sendUDPPacket(0, packetData, packetsize);
 
-		// sleep for (period - exptime)
-		if (frameNr < numFrames) { // if there is a next frame
-			if (periodns > time_ns) {
-				usleep((periodns - time_ns)/ 1000);
+    		    clock_gettime(CLOCK_REALTIME, &end);
+				LOG(logINFO, ("Sent frame: %d (bursts: %d)\n", frameNr, repeatNr));
+    		    int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
+    		            (end.tv_nsec - begin.tv_nsec));
+
+				// sleep for (period - exptime)
+				if (frameNr < numFrames) { // if there is a next frame
+					if (periodNs > timeNs) {
+						usleep((periodNs - timeNs)/ 1000);
+					}
+				}
+    		}
+			clock_gettime(CLOCK_REALTIME, &rend);
+			int64_t timeNs = ((rend.tv_sec - rbegin.tv_sec) * 1E9 +
+					(rend.tv_nsec - rbegin.tv_nsec));
+
+			// sleep for (repeatPeriodNs - time remaining)
+			if (repeatNr < numRepeats) { // if there is a next repeat
+				if (repeatPeriodNs > timeNs) {
+					usleep((repeatPeriodNs - timeNs)/ 1000);
+				}
 			}
-		}
 
-		// set register frames left
-    }
+		}
+	}
 
 	closeUDPSocket(0);
-	// set status to idle
+
 	virtual_status = 0;
+	if (isControlServer) {
+		ComVirtual_setStatus(virtual_status);
+	}
 	LOG(logINFOBLUE, ("Finished Acquiring\n"));
 	return NULL;
 }
@@ -2114,7 +2167,18 @@ void* start_timer(void* arg) {
 int stopStateMachine(){
 	LOG(logINFORED, ("Stopping State Machine\n"));
 #ifdef VIRTUAL
-	virtual_stop = 0;
+	if (!isControlServer) {
+		virtual_stop = 1;
+		ComVirtual_setStop(virtual_stop);
+		// read till status is idle
+		int tempStatus = 1;
+		while(tempStatus == 1) {
+			tempStatus = ComVirtual_getStatus();
+		}
+		virtual_stop = 0;
+		ComVirtual_setStop(virtual_stop);
+		LOG(logINFO, ("Stopped State Machine\n"));
+	}	
 	return OK;
 #endif
     //stop state machine
@@ -2125,7 +2189,10 @@ int stopStateMachine(){
 
 enum runStatus getRunStatus(){
 #ifdef VIRTUAL
-	if(virtual_status == 0){
+	if (!isControlServer) {
+		virtual_status = ComVirtual_getStatus();
+	}
+	if(virtual_status == 0) {
 		LOG(logINFOBLUE, ("Status: IDLE\n"));
 		return IDLE;
 	}else{
@@ -2199,6 +2266,9 @@ void readFrame(int *ret, char *mess) {
 
 u_int32_t runBusy() {
 #ifdef VIRTUAL
+	if (!isControlServer) {
+		virtual_status = ComVirtual_getStatus();
+	}
     return virtual_status;
 #endif
 	u_int32_t s = (bus_r(FLOW_STATUS_REG) & FLOW_STATUS_RUN_BUSY_MSK);

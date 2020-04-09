@@ -137,12 +137,8 @@ int64_t Module::getReceiverSoftwareVersion() const {
 void Module::sendToDetector(int fnum, const void *args, size_t args_size,
                                  void *retval, size_t retval_size) {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    auto ret =
-        client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
+    client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     client.close();
-    if (ret == FORCE_UPDATE) {
-        updateCachedDetectorVariables();
-    }
 }
 
 template <typename Arg, typename Ret>
@@ -363,7 +359,6 @@ void Module::setHostname(const std::string &hostname, const bool initialChecks) 
     }
 
     LOG(logINFO) << "Detector connecting - updating!";
-    updateCachedDetectorVariables();
 }
 
 std::string Module::getHostname() const { return shm()->hostname; }
@@ -396,21 +391,12 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->controlPort = DEFAULT_PORTNO;
     shm()->stopPort = DEFAULT_PORTNO + 1;
     sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
-    shm()->currentSettings = UNINITIALIZED;
-    shm()->nFrames = 1;
-    shm()->nTriggers = 1;
-    shm()->nBursts = 1;
-    shm()->nAddStorageCells = 0;
-    shm()->timingMode = AUTO_TIMING;
-    shm()->burstMode = BURST_INTERNAL;
-    shm()->deadTime = 0;
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
     shm()->useReceiverFlag = false;
     shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
                      (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->zmqip = IpAddr{};
-    shm()->gappixels = 0U;
     shm()->numUDPInterfaces = 1;
     shm()->stoppedFlag = false;
 
@@ -421,9 +407,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->nChip.x = parameters.nChipX;
     shm()->nChip.y = parameters.nChipY;
     shm()->nDacs = parameters.nDacs;
-    shm()->dynamicRange = parameters.dynamicRange;
-    shm()->nGappixels.x = parameters.nGappixelsX;
-    shm()->nGappixels.y = parameters.nGappixelsY;
 }
 
 int Module::sendModule(sls_detector_module *myMod,
@@ -582,10 +565,8 @@ void Module::updateNumberOfChannels() {
 
 slsDetectorDefs::xy Module::getNumberOfChannels() const {
     slsDetectorDefs::xy coord{};
-    coord.x = (shm()->nChan.x * shm()->nChip.x +
-               shm()->gappixels * shm()->nGappixels.x);
-    coord.y = (shm()->nChan.y * shm()->nChip.y +
-               shm()->gappixels * shm()->nGappixels.y);
+    coord.x = (shm()->nChan.x * shm()->nChip.x);
+    coord.y = (shm()->nChan.y * shm()->nChip.y);
     return coord;
 }
 
@@ -717,82 +698,6 @@ void Module::execCommand(const std::string &cmd) {
     }
 }
 
-void Module::updateCachedDetectorVariables() {
-    int fnum = F_UPDATE_CLIENT;
-    LOG(logDEBUG1) << "Sending update client to detector server";
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    if (client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0) ==
-        FORCE_UPDATE) {
-        int n = 0, i32 = 0;
-        int64_t i64 = 0;
-        sls::IpAddr lastClientIP;
-        n += client.Receive(&lastClientIP, sizeof(lastClientIP));
-        LOG(logDEBUG1)
-            << "Updating detector last modified by " << lastClientIP;
-
-        // dr
-        n += client.Receive(&i32, sizeof(i32));
-        shm()->dynamicRange = i32;
-
-        // settings
-        if (shm()->myDetectorType == EIGER || shm()->myDetectorType == JUNGFRAU || 
-            shm()->myDetectorType == GOTTHARD || shm()->myDetectorType == GOTTHARD2 ||
-            shm()->myDetectorType == MOENCH) {
-            n += client.Receive(&i32, sizeof(i32));
-            shm()->currentSettings = static_cast<detectorSettings>(i32);
-        }
-
-        // frame number
-        n += client.Receive(&i64, sizeof(i64));
-        shm()->nFrames = i64;
-
-        // storage cell
-        if (shm()->myDetectorType == JUNGFRAU) {
-            n += client.Receive(&i64, sizeof(i64));
-            shm()->nAddStorageCells = i64;
-        }
-
-        // triggers
-        n += client.Receive(&i64, sizeof(i64));
-        shm()->nTriggers = i64;
-
-        // bursts
-        if (shm()->myDetectorType == GOTTHARD2) {
-            n += client.Receive(&i64, sizeof(i64));
-            shm()->nBursts = i64;
-        }
-
-        // timing mode
-        n += client.Receive(&i32, sizeof(i32));
-        shm()->timingMode = static_cast<timingMode>(i32);        
-
-        // burst mode
-        if (shm()->myDetectorType == GOTTHARD2) {
-            n += client.Receive(&i32, sizeof(i32));
-            shm()->burstMode = static_cast<burstMode>(i32); 
-        }        
-
-        // number of channels (depends on #samples, adcmask)
-        if (shm()->myDetectorType == CHIPTESTBOARD ||
-            shm()->myDetectorType == MOENCH) {
-            n += client.Receive(&i32, sizeof(i32));
-            shm()->nChan.x = i32; 
-            n += client.Receive(&i32, sizeof(i32));
-            shm()->nChan.y = i32;                         
-        }
-
-        // num udp interfaces
-        if (shm()->myDetectorType == JUNGFRAU) {
-            n += client.Receive(&i32, sizeof(i32));
-            shm()->numUDPInterfaces = i32;
-        }
-
-        if (n == 0) {
-            LOG(logERROR) << "Could not update detector, received 0 bytes";
-        }
-    }
-}
-
 std::vector<std::string> Module::getConfigFileCommands() {
     std::vector<std::string> base{"hostname",    "port",       "stopport",
                                   "settingsdir", "fpath",      "lock",
@@ -868,49 +773,21 @@ std::vector<std::string> Module::getConfigFileCommands() {
 }
 
 slsDetectorDefs::detectorSettings Module::getSettings() {
-    return sendSettingsOnly(GET_SETTINGS);
+    int arg = -1;
+    int retval = -1;
+    sendToDetector(F_SET_SETTINGS, arg, retval);
+    LOG(logDEBUG1) << "Settings: " << retval;
+    return static_cast<detectorSettings>(retval);
 }
 
-slsDetectorDefs::detectorSettings
-Module::setSettings(detectorSettings isettings) {
-    LOG(logDEBUG1) << "Module setSettings " << isettings;
-
-    if (isettings == -1) {
-        return getSettings();
-    }
-
-    // eiger: only set shm, setting threshold loads the module data
+void Module::setSettings(detectorSettings isettings) {
     if (shm()->myDetectorType == EIGER) {
-        switch (isettings) {
-        case STANDARD:
-        case HIGHGAIN:
-        case LOWGAIN:
-        case VERYHIGHGAIN:
-        case VERYLOWGAIN:
-            shm()->currentSettings = isettings;
-            return shm()->currentSettings;
-        default:
-            std::ostringstream ss;
-            ss << "Unknown settings " << ToString(isettings)
-               << " for this detector!";
-            throw RuntimeError(ss.str());
-        }
+        throw RuntimeError("Cannot set settings for Eiger. Use threshold energy.");
     }
-
-    // others: send only the settings, detector server will update dac values
-    // already in server
-    return sendSettingsOnly(isettings);
-}
-
-slsDetectorDefs::detectorSettings
-Module::sendSettingsOnly(detectorSettings isettings) {
     int arg = static_cast<int>(isettings);
     int retval = -1;
     LOG(logDEBUG1) << "Setting settings to " << arg;
     sendToDetector(F_SET_SETTINGS, arg, retval);
-    LOG(logDEBUG1) << "Settings: " << retval;
-    shm()->currentSettings = static_cast<detectorSettings>(retval);
-    return shm()->currentSettings;
 }
 
 int Module::getThresholdEnergy() {
@@ -937,26 +814,23 @@ int Module::getThresholdEnergy() {
     return retval;
 }
 
-int Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
+void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
                                     int tb) {
 
     // check as there is client processing
     if (shm()->myDetectorType == EIGER) {
         setThresholdEnergyAndSettings(e_eV, isettings, tb);
-        return e_eV;
     }
 
     // moench - send threshold energy to processor
     else if (shm()->myDetectorType == MOENCH) {
-        std::string result =
-            setAdditionalJsonParameter("threshold", std::to_string(e_eV));
-        if (result == std::to_string(e_eV)) {
-            return e_eV;
-        }
-        return -1;
+        setAdditionalJsonParameter("threshold", std::to_string(e_eV));
     }
-    throw RuntimeError(
+
+    else {
+        throw RuntimeError(
         "Set threshold energy not implemented for this detector");
+    }
 }
 
 void Module::setThresholdEnergyAndSettings(int e_eV,
@@ -965,7 +839,7 @@ void Module::setThresholdEnergyAndSettings(int e_eV,
 
     // if settings provided, use that, else use the shared memory variable
     detectorSettings is =
-        ((isettings != GET_SETTINGS) ? isettings : shm()->currentSettings);
+        ((isettings != GET_SETTINGS) ? isettings : getSettings());
 
     // verify e_eV exists in trimEneregies[]
     if (shm()->trimEnergies.empty() || (e_eV < shm()->trimEnergies.front()) ||
@@ -1010,8 +884,7 @@ void Module::setThresholdEnergyAndSettings(int e_eV,
             linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
     }
 
-    shm()->currentSettings = is;
-    myMod.reg = shm()->currentSettings;
+    myMod.reg = is;
     myMod.eV = e_eV;
     setModule(myMod, tb);
     if (getSettings() != is) {
@@ -1172,96 +1045,64 @@ uint64_t Module::getStartingFrameNumber() {
     return retval;
 }
 
-int64_t Module::getTotalNumFramesToReceive() {
-    int64_t repeats = shm()->nTriggers;
-    // gotthard2 & auto & burst mode, use nBursts instead of nTriggers
-    if (shm()->myDetectorType == GOTTHARD2) {
-        if (shm()->burstMode != BURST_OFF && shm()->timingMode == AUTO_TIMING) {
-            repeats = shm()->nBursts;
-        }
-    }
-    return (shm()->nFrames * repeats * (int64_t)(shm()->nAddStorageCells + 1));    
-}
-
-void Module::sendTotalNumFramestoReceiver() {
-    if (shm()->useReceiverFlag) {
-        int64_t arg = getTotalNumFramesToReceive();
-        LOG(logDEBUG1) << "Sending total number of frames (#f x #t x #s) to Receiver: " << arg;
-        sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, arg, nullptr);   
-    }
-}
-
 int64_t Module::getNumberOfFrames() {
     int64_t retval = -1;
     sendToDetector(F_GET_NUM_FRAMES, nullptr, retval);
     LOG(logDEBUG1) << "number of frames :" << retval;
-    if (shm()->nFrames != retval) {
-        shm()->nFrames = retval;
-        sendTotalNumFramestoReceiver();
-    }    
-    return shm()->nFrames; 
+    return retval; 
 }
 
 void Module::setNumberOfFrames(int64_t value) {
     LOG(logDEBUG1) << "Setting number of frames to " << value;
     sendToDetector(F_SET_NUM_FRAMES, value, nullptr);
-    shm()->nFrames = value;
-    sendTotalNumFramestoReceiver();
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending number of frames to Receiver: " << value;
+        sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);   
+    }
 }
 
 int64_t Module::getNumberOfTriggers() {
     int64_t retval = -1;
     sendToDetector(F_GET_NUM_TRIGGERS, nullptr, retval);
     LOG(logDEBUG1) << "number of triggers :" << retval;
-    if (shm()->nTriggers != retval) {
-        shm()->nTriggers = retval;
-        sendTotalNumFramestoReceiver();
-    }    
-    return shm()->nTriggers; 
+    return retval; 
 }
 
 void Module::setNumberOfTriggers(int64_t value) {
     LOG(logDEBUG1) << "Setting number of triggers to " << value;
     sendToDetector(F_SET_NUM_TRIGGERS, value, nullptr);
-    shm()->nTriggers = value;
-    sendTotalNumFramestoReceiver();
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending number of triggers to Receiver: " << value;
+        sendToReceiver(F_SET_RECEIVER_NUM_TRIGGERS, value, nullptr);   
+    }
 }
 
 int64_t Module::getNumberOfBursts() {
     int64_t retval = -1;
     sendToDetector(F_GET_NUM_BURSTS, nullptr, retval);
     LOG(logDEBUG1) << "number of bursts :" << retval;
-    if (shm()->nBursts != retval) {
-        shm()->nBursts = retval;
-        sendTotalNumFramestoReceiver();
-    }    
-    return shm()->nBursts; 
+    return retval; 
 }
 
 void Module::setNumberOfBursts(int64_t value) {
     LOG(logDEBUG1) << "Setting number of bursts to " << value;
     sendToDetector(F_SET_NUM_BURSTS, value, nullptr);
-    shm()->nBursts = value;
-    sendTotalNumFramestoReceiver();
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending number of bursts to Receiver: " << value;
+        sendToReceiver(F_SET_RECEIVER_NUM_BURSTS, value, nullptr);   
+    }
 }
     
 int Module::getNumberOfAdditionalStorageCells() {
-    int prevVal = shm()->nAddStorageCells;
     int retval = -1;
     sendToDetector(F_GET_NUM_ADDITIONAL_STORAGE_CELLS, nullptr, retval);
     LOG(logDEBUG1) << "number of storage cells :" << retval;
-    shm()->nAddStorageCells = retval;
-    if (prevVal != retval) {
-        sendTotalNumFramestoReceiver();
-    }    
-    return shm()->nAddStorageCells; 
+    return retval; 
 }
    
 void Module::setNumberOfAdditionalStorageCells(int value) {
     LOG(logDEBUG1) << "Setting number of storage cells to " << value;
     sendToDetector(F_SET_NUM_ADDITIONAL_STORAGE_CELLS, value, nullptr);
-    shm()->nAddStorageCells = value;
-    sendTotalNumFramestoReceiver();
 }
 
 int Module::getNumberOfAnalogSamples() {
@@ -1311,15 +1152,12 @@ void Module::setExptime(int64_t value) {
     }
     LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
     sendToDetector(F_SET_EXPTIME, value, nullptr);
-    if (shm()->myDetectorType == EIGER && prevVal != value && shm()->dynamicRange == 16) {
-        int r = getRateCorrection();
-        if (r != 0) {
-            setRateCorrection(r);
-        }            
-    }
     if (shm()->useReceiverFlag) {
         LOG(logDEBUG1) << "Sending exptime to Receiver: " << value;
         sendToReceiver(F_RECEIVER_SET_EXPTIME, value, nullptr);   
+    }
+    if (prevVal != value) {
+        updateRateCorrection();            
     }
 }
 
@@ -1364,17 +1202,14 @@ void Module::setSubExptime(int64_t value) {
         prevVal = getSubExptime();
     }    
     LOG(logDEBUG1) << "Setting sub exptime to " << value << "ns";
-    sendToDetector(F_SET_SUB_EXPTIME, value, nullptr);
-    if (shm()->myDetectorType == EIGER && prevVal != value && shm()->dynamicRange == 32) {
-        int r = getRateCorrection();
-        if (r != 0) {
-            setRateCorrection(r);
-        }            
-    }    
+    sendToDetector(F_SET_SUB_EXPTIME, value, nullptr);   
     if (shm()->useReceiverFlag) {
         LOG(logDEBUG1) << "Sending sub exptime to Receiver: " << value;
         sendToReceiver(F_RECEIVER_SET_SUB_EXPTIME, value, nullptr);   
     }
+    if (prevVal != value) {
+        updateRateCorrection();            
+    }       
 }
     
 int64_t Module::getSubDeadTime() {
@@ -1472,48 +1307,63 @@ int64_t Module::getMeasurementTime() const {
     return retval; 
 }
 
-slsDetectorDefs::timingMode Module::setTimingMode(timingMode value) {
-    int fnum = F_SET_TIMING_MODE;
-    //auto arg = static_cast<int>(pol);
+slsDetectorDefs::timingMode Module::getTimingMode() {
+    int arg = -1;
     timingMode retval = GET_TIMING_MODE;
-    LOG(logDEBUG1) << "Setting communication to mode " << value;
-    sendToDetector(fnum, static_cast<int>(value), retval);
+    sendToDetector(F_SET_TIMING_MODE, arg, retval);
     LOG(logDEBUG1) << "Timing Mode: " << retval;
-    shm()->timingMode = retval;
     return retval;
 }
 
-int Module::setDynamicRange(int n) {
-    // TODO! Properly handle fail
-    int prevDr = shm()->dynamicRange;
+void Module::setTimingMode(timingMode value) {
+    timingMode retval = GET_TIMING_MODE;
+    LOG(logDEBUG1) << "Setting timing mode to " << value;
+    sendToDetector(F_SET_TIMING_MODE, static_cast<int>(value), retval);
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending timing mode to Receiver: " << value;
+        sendToReceiver(F_SET_RECEIVER_TIMING_MODE, value, nullptr);   
+    }
+}
+
+int Module::getDynamicRange() {
+    int arg = -1;
+    int retval = -1;
+    sendToDetector(F_SET_DYNAMIC_RANGE, arg, retval);
+    LOG(logDEBUG1) << "Dynamic Range: " << retval;
+    return retval;
+}
+
+void Module::setDynamicRange(int n) {
+    int prev_val = n;
+    if (shm()->myDetectorType == EIGER) {
+        prev_val = getDynamicRange();
+    }
 
     int retval = -1;
     LOG(logDEBUG1) << "Setting dynamic range to " << n;
     sendToDetector(F_SET_DYNAMIC_RANGE, n, retval);
     LOG(logDEBUG1) << "Dynamic Range: " << retval;
-    shm()->dynamicRange = retval;
 
     if (shm()->useReceiverFlag) {
-        n = shm()->dynamicRange;
+        int arg = retval;
         retval = -1;
-        LOG(logDEBUG1) << "Sending dynamic range to receiver: " << n;
-        sendToReceiver(F_SET_RECEIVER_DYNAMIC_RANGE, n, retval);
+        LOG(logDEBUG1) << "Sending dynamic range to receiver: " << arg;
+        sendToReceiver(F_SET_RECEIVER_DYNAMIC_RANGE, arg, retval);
         LOG(logDEBUG1) << "Receiver Dynamic range: " << retval;
     }
 
     // changes in dr
-    int dr = shm()->dynamicRange;
-    if (prevDr != dr && shm()->myDetectorType == EIGER) {
-        updateRateCorrection();
+    if (n != prev_val) {
         // update speed for usability
-        if (dr == 32) {
-            LOG(logINFO) << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32";     setClockDivider(RUN_CLOCK, 2);
-        } else {
-            LOG(logINFO) << "Setting Clock to Full Speed to cope with Dynamic Range of " << dr;     setClockDivider(RUN_CLOCK, 0);
+        if (n == 32) {
+            LOG(logINFO) << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32";     
+            setClockDivider(RUN_CLOCK, 2);
+        } else if (prev_val == 32) {
+            LOG(logINFO) << "Setting Clock to Full Speed for Dynamic Range of " << n;     
+            setClockDivider(RUN_CLOCK, 0);
         }
+        updateRateCorrection();
     }
-    
-    return shm()->dynamicRange;
 }
 
 int Module::setDAC(int val, dacIndex index, int mV) {
@@ -1675,8 +1525,6 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
         LOG(logWARNING) << "Acquisition already running, Stopping it.";
         stopAcquisition();
     }
-    // update detector before receiver
-    updateCachedDetectorVariables();
 
     // start updating
     std::string host = receiverIP;
@@ -1707,7 +1555,9 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
         LOG(logDEBUG1) << printReceiverConfiguration();
 
         setReceiverUDPSocketBufferSize(0);
-        sendTotalNumFramestoReceiver();
+        setNumberOfFrames(getNumberOfFrames());
+        setNumberOfTriggers(getNumberOfTriggers());
+        setTimingMode(getTimingMode());
         setExptime(getExptime());
         setPeriod(getPeriod());
 
@@ -1717,9 +1567,8 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
         case EIGER:
             setSubExptime(getSubExptime());
             setSubDeadTime(getSubDeadTime());
-            setDynamicRange(shm()->dynamicRange);
+            setDynamicRange(getDynamicRange());
             activate(-1);
-            enableGapPixels(shm()->gappixels);
             enableTenGigabitEthernet(-1);
             setQuad(getQuad());
             break;
@@ -1746,7 +1595,12 @@ std::string Module::setReceiverHostname(const std::string &receiverIP) {
 
         case MYTHEN3:
             sendNumberofCounterstoReceiver(getCounterMask());
-            setDynamicRange(shm()->dynamicRange);
+            setDynamicRange(getDynamicRange());
+            break;
+        
+        case GOTTHARD2:
+            setNumberOfBursts(getNumberOfBursts());
+            setBurstMode(getBurstMode());
             break;
 
         default:
@@ -2105,106 +1959,99 @@ void Module::setTransmissionDelayRight(int value) {
 }
 
 
-void Module::setAdditionalJsonHeader(const std::string &jsonheader) {
+void Module::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader) {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
     } 
-    char args[MAX_STR_LENGTH]{};
-    sls::strcpy_safe(args, jsonheader.c_str());
-    sendToReceiver(F_SET_ADDITIONAL_JSON_HEADER, args, nullptr);
-}
-
-std::string Module::getAdditionalJsonHeader() {
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
-    } 
-    char retvals[MAX_STR_LENGTH]{};
-    sendToReceiver(F_GET_ADDITIONAL_JSON_HEADER, nullptr, retvals);
-    return std::string(retvals);
-}
-
-std::string Module::setAdditionalJsonParameter(const std::string &key,
-                                                    const std::string &value) {
-    if (key.empty() || value.empty()) {
-        throw RuntimeError(
-            "Could not set additional json header parameter as the key or "
-            "value is empty");
-    }
-
-    // validation (ignore if key or value has , : ")
-    if (key.find_first_of(",\":") != std::string::npos ||
-        value.find_first_of(",\":") != std::string::npos) {
-        throw RuntimeError("Could not set additional json header parameter as "
-                           "the key or value has "
-                           "illegal characters (,\":)");
-    }
-
-    // create actual key to search for and actual value to put, (key has
-    // additional ':' as value could exist the same way)
-    std::string keyLiteral(std::string("\"") + key + std::string("\":"));
-    std::string valueLiteral(value);
-    // add quotations to value only if it is a string
-    try {
-        std::stoi(valueLiteral);
-    } catch (...) {
-        // add quotations if it failed to convert to integer, otherwise nothing
-        valueLiteral.insert(0, "\"");
-        valueLiteral.append("\"");
-    }
-
-    std::string header = getAdditionalJsonHeader();
-    size_t keyPos = header.find(keyLiteral);
-
-    // if key found, replace value
-    if (keyPos != std::string::npos) {
-        size_t valueStartPos = header.find(std::string(":"), keyPos) + 1;
-        size_t valueEndPos = header.find(std::string(","), valueStartPos) - 1;
-        // if valueEndPos doesnt find comma (end of string), it goes anyway to
-        // end of line
-        header.replace(valueStartPos, valueEndPos - valueStartPos + 1,
-                       valueLiteral);
-    }
-
-    // key not found, append key value pair
-    else {
-        if (header.length() != 0U) {
-            header.append(",");
+    for (auto &it : jsonHeader) {
+        if (it.first.empty() || it.first.length() > SHORT_STR_LENGTH ||
+            it.second.length() > SHORT_STR_LENGTH ) {
+            throw RuntimeError(it.first + " or " + it.second + " pair has invalid size. "
+            "Key cannot be empty. Both can have max 20 characters");
         }
-        header.append(keyLiteral + valueLiteral);
     }
+    const int size = jsonHeader.size();
+    int fnum = F_SET_ADDITIONAL_JSON_HEADER;
+    int ret = FAIL;
+    LOG(logDEBUG) << "Sending to receiver additional json header " << ToString(jsonHeader);
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(&size, sizeof(size));
+    if (size > 0) {
+        char args[size * 2][SHORT_STR_LENGTH];
+        memset(args, 0, sizeof(args));
+        int iarg = 0;
+        for (auto &it : jsonHeader) {
+            sls::strcpy_safe(args[iarg], it.first.c_str());
+            sls::strcpy_safe(args[iarg + 1], it.second.c_str());
+            iarg += 2;
+        }
+        client.Send(args, sizeof(args));
+    }
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Receiver " + std::to_string(detId) +
+                           " returned error: " + std::string(mess));
+    }
+}
 
-    // update additional json header
-    setAdditionalJsonHeader(header);
-    return getAdditionalJsonParameter(key);
+std::map<std::string, std::string> Module::getAdditionalJsonHeader() {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
+    } 
+    int fnum = F_GET_ADDITIONAL_JSON_HEADER;
+    int ret = FAIL;
+    int size = 0;
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Receiver " + std::to_string(detId) +
+                           " returned error: " + std::string(mess));
+    } else {
+        client.Receive(&size, sizeof(size));
+        std::map<std::string, std::string> retval;
+        if (size > 0) {
+            char retvals[size * 2][SHORT_STR_LENGTH];
+            memset(retvals, 0, sizeof(retvals));
+            client.Receive(retvals, sizeof(retvals));
+            for (int i = 0; i < size; ++i) {
+                retval[retvals[2 * i]] = retvals[2 * i + 1];
+            }
+        }
+        LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
+        return retval;
+    }
+}
+
+void Module::setAdditionalJsonParameter(const std::string &key, const std::string &value) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json parameter)");
+    } 
+    if (key.empty() || key.length() > SHORT_STR_LENGTH ||
+        value.length() > SHORT_STR_LENGTH ) {
+        throw RuntimeError(key + " or " + value + " pair has invalid size. "
+        "Key cannot be empty. Both can have max 2 characters");
+    }
+    char args[2][SHORT_STR_LENGTH]{};
+    sls::strcpy_safe(args[0], key.c_str());
+    sls::strcpy_safe(args[1], value.c_str());
+    sendToReceiver(F_SET_ADDITIONAL_JSON_PARAMETER, args, nullptr);
 }
 
 std::string Module::getAdditionalJsonParameter(const std::string &key) {
-    // additional json header is empty
-    std::string jsonheader = getAdditionalJsonHeader();
-    if (jsonheader.empty())
-        return jsonheader;
-
-    // add quotations before and after the key value
-    std::string keyLiteral = key;
-    keyLiteral.insert(0, "\"");
-    keyLiteral.append("\"");
-
-    // loop through the parameters
-    for (const auto &parameter :
-         sls::split(jsonheader, ',')) {
-        // get a vector of key value pair for each parameter
-        const auto &pairs = sls::split(parameter, ':');
-        // match for key
-        if (pairs[0] == keyLiteral) {
-            // return value without quotations (if it has any)
-            if (pairs[1][0] == '\"')
-                return pairs[1].substr(1, pairs[1].length() - 2);
-            else
-                return pairs[1];
-        }
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json parameter)");
     }
-    // return empty string as no match found with key
-    return std::string();
+    char arg[SHORT_STR_LENGTH]{};
+    sls::strcpy_safe(arg, key.c_str());
+    char retval[SHORT_STR_LENGTH]{};
+    sendToReceiver(F_GET_ADDITIONAL_JSON_PARAMETER, arg, retval); 
+    return retval;
 }
 
 int64_t Module::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
@@ -2282,9 +2129,6 @@ std::vector<int> Module::getVetoPhoton(const int chipIndex) {
         client.Receive(adus, sizeof(adus));
         std::vector<int> retvals(adus, adus + nch);
         LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]: " << nch << " channels\n";
-        if (ret == FORCE_UPDATE) {
-            updateCachedDetectorVariables();
-        }
         return retvals;
     } 
 }
@@ -2371,11 +2215,7 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons, const int 
         client.Receive(mess, MAX_STR_LENGTH);
         throw RuntimeError("Detector " + std::to_string(detId) +
                            " returned error: " + std::string(mess));
-    } else {
-        if (ret == FORCE_UPDATE) {
-            updateCachedDetectorVariables();
-        }
-    } 
+    }
 } 
 
 void Module::setVetoReference(const int gainIndex, const int value) {
@@ -2388,15 +2228,17 @@ slsDetectorDefs::burstMode Module::getBurstMode() {
     int retval = -1;
     sendToDetector(F_GET_BURST_MODE, nullptr, retval);
     LOG(logDEBUG1) << "Burst mode:" << retval;
-    shm()->burstMode = static_cast<slsDetectorDefs::burstMode>(retval);
-    return shm()->burstMode; 
+    return static_cast<slsDetectorDefs::burstMode>(retval);
 }
 
 void Module::setBurstMode(slsDetectorDefs::burstMode value) {
     int arg = static_cast<int>(value);
     LOG(logDEBUG1) << "Setting burst mode to " << arg;
     sendToDetector(F_SET_BURST_MODE, arg, nullptr);
-    shm()->burstMode = value;
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending burst mode to Receiver: " << value;
+        sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);   
+    }
 }
 
 bool Module::getCurrentSource() {
@@ -2672,24 +2514,6 @@ int Module::setAllTrimbits(int val) {
     return retval;
 }
 
-int Module::enableGapPixels(int val) {
-    if (val >= 0) {
-        if (shm()->myDetectorType != EIGER) {
-          throw NotImplementedError(
-                "Function (enableGapPixels) not implemented for this detector");  
-        }
-        int fnum = F_ENABLE_GAPPIXELS_IN_RECEIVER;
-        int retval = -1;
-        LOG(logDEBUG1) << "Sending gap pixels enable to receiver: " << val;
-        if (shm()->useReceiverFlag) {
-            sendToReceiver(fnum, val, retval);
-            LOG(logDEBUG1) << "Gap pixels enable to receiver:" << retval;
-            shm()->gappixels = retval;
-        }
-    }
-    return shm()->gappixels;
-}
-
 int Module::setTrimEn(const std::vector<int>& energies) {
     if (shm()->myDetectorType != EIGER) {
          throw RuntimeError("setTrimEn not implemented for this detector.");
@@ -2959,22 +2783,15 @@ void Module::setModule(sls_detector_module &module, int tb) {
     }
     client.Receive(&retval, sizeof(retval));
     LOG(logDEBUG1) << "Set Module returned: " << retval;
-    if (ret == FORCE_UPDATE) {
-        updateCachedDetectorVariables();
-    }
 }
 
 sls_detector_module Module::getModule() {
     int fnum = F_GET_MODULE;
-    int ret = FAIL;
     LOG(logDEBUG1) << "Getting module";
     sls_detector_module myMod{shm()->myDetectorType};
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    ret = client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
+    client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
     receiveModule(&myMod, client);
-    if (ret == FORCE_UPDATE) {
-        updateCachedDetectorVariables();
-    }
     return myMod;
 }
 
@@ -2982,37 +2799,23 @@ void Module::setDefaultRateCorrection() {
     LOG(logDEBUG1) << "Setting Default Rate Correction";
     int64_t arg = -1;
     sendToDetector(F_SET_RATE_CORRECT, arg, nullptr);
-    shm()->deadTime = -1;
 }
 
 void Module::setRateCorrection(int64_t t) {
     LOG(logDEBUG1) << "Setting Rate Correction to " << t;
     sendToDetector(F_SET_RATE_CORRECT, t, nullptr);
-    shm()->deadTime = t;
 }
 
 int64_t Module::getRateCorrection() {
     int64_t retval = -1;
-    LOG(logDEBUG1) << "Getting rate correction";
     sendToDetector(F_GET_RATE_CORRECT, nullptr, retval);
-    shm()->deadTime = retval;
     LOG(logDEBUG1) << "Rate correction: " << retval;
     return retval;
 }
 
 void Module::updateRateCorrection() {
-    if (shm()->deadTime != 0) {
-        switch (shm()->dynamicRange) {
-        case 16:
-        case 32:
-            setRateCorrection(shm()->deadTime);
-            break;
-        default:
-            setRateCorrection(0);
-            throw sls::RuntimeError(
-                "Rate correction Deactivated, must be in 32 or 16 bit mode");
-        }
-    }
+    LOG(logDEBUG1) << "Updating rate correction";
+    sendToDetector(F_UPDATE_RATE_CORRECTION);
 }
 
 std::string Module::printReceiverConfiguration() {
@@ -3081,33 +2884,6 @@ void Module::execReceiverCommand(const std::string &cmd) {
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_EXEC_RECEIVER_COMMAND, arg, retval);
         LOG(logINFO) << "Receiver " << detId << " returned:\n" << retval;
-    }
-}
-
-void Module::updateCachedReceiverVariables() const {
-    int fnum = F_UPDATE_RECEIVER_CLIENT;
-    LOG(logDEBUG1) << "Sending update client to receiver server";
-
-    if (shm()->useReceiverFlag) {
-        auto receiver =
-            sls::ClientSocket("Receiver", shm()->rxHostname, shm()->rxTCPPort);
-        receiver.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
-        int n = 0, i32 = 0;
-        IpAddr ip;
-
-        n += receiver.Receive(&ip, sizeof(ip));
-        LOG(logDEBUG1)
-            << "Updating receiver last modified by " << ip;
-
-        // gap pixels
-        n += receiver.Receive(&i32, sizeof(i32));
-        shm()->gappixels = i32;
-
-        if (n == 0) {
-            throw RuntimeError(
-                "Could not update receiver: " + std::string(shm()->rxHostname) +
-                ", received 0 bytes\n");
-        }
     }
 }
 
@@ -3269,6 +3045,7 @@ void Module::setPartialFramesPadding(bool padding) {
 
 void Module::startReceiver() {
     LOG(logDEBUG1) << "Starting Receiver";
+    shm()->stoppedFlag = false;
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_START_RECEIVER, nullptr, nullptr);
     }
@@ -3316,9 +3093,6 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
             throw RuntimeError("Receiver " + std::to_string(detId) +
                             " returned error: " + std::string(mess));
         } else {
-            if (ret == FORCE_UPDATE) {
-                updateCachedReceiverVariables();
-            }
             int nports = -1;
             client.Receive(&nports, sizeof(nports));
             uint64_t mp[nports];
@@ -3338,6 +3112,15 @@ uint64_t Module::getReceiverCurrentFrameIndex() const {
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_GET_RECEIVER_FRAME_INDEX, nullptr, retval);
         LOG(logDEBUG1) << "Current Frame Index of Receiver: " << retval;
+    }
+    return retval;
+}
+
+int Module::getReceiverProgress() const {
+    int retval = -1;
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_GET_RECEIVER_PROGRESS, nullptr, retval);
+        LOG(logDEBUG1) << "Current Progress of Receiver: " << retval;
     }
     return retval;
 }
@@ -3433,6 +3216,10 @@ bool Module::enableTenGigabitEthernet(int value) {
     int retval = -1;
     LOG(logDEBUG1) << "Enabling / Disabling 10Gbe: " << value;
     sendToDetector(F_ENABLE_TEN_GIGA, value, retval);
+    if (value != -1) {
+        int stopRetval = -1;
+        sendToDetectorStop(F_ENABLE_TEN_GIGA, value, stopRetval);
+    }
     LOG(logDEBUG1) << "10Gbe: " << retval;
     value = retval;
     if (shm()->useReceiverFlag && value != -1) {

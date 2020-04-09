@@ -61,7 +61,7 @@ int 		testFpga();
 int 		testBus();
 #endif
 
-#ifdef GOTTHARDD
+#if defined(GOTTHARDD) || ((defined(EIGERD) || defined(JUNGFRAUD)) && defined(VIRTUAL))
 void 		setTestImageMode(int ival);
 int			getTestImageMode();
 #endif
@@ -413,7 +413,9 @@ int 		setCounterBit(int val);
 int 		pulsePixel(int n, int x, int y);
 int 		pulsePixelNMove(int n, int x, int y);
 int 		pulseChip(int n);
-int64_t 	setRateCorrection(int64_t custom_tau_in_nsec);
+int			updateRateCorrection(char* mess);
+int 		validateAndSetRateCorrection(int64_t tau_ns, char* mess);
+int 		setRateCorrection(int64_t custom_tau_in_nsec);
 int 		getRateCorrectionEnable();
 int 		getDefaultSettingsTau_in_nsec();
 void 		setDefaultSettingsTau_in_nsec(int t);

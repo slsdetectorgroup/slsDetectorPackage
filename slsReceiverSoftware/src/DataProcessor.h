@@ -33,7 +33,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param fwenable file writer enable
 	 * @apram mfwenable pointer to master file write enable
 	 * @param dsEnable pointer to data stream enable
-	 * @param gpEnable pointer to gap pixels enable
 	 * @param dr pointer to dynamic range
 	 * @param freq pointer to streaming frequency
 	 * @param timer pointer to timer if streaming frequency is random
@@ -47,7 +46,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param cad pointer to ctb analog databytes
 	 */
 	DataProcessor(int ind, detectorType dtype, Fifo* f, fileFormat* ftype,
-			bool fwenable, bool* mfwenable, bool* dsEnable, bool* gpEnable, uint32_t* dr,
+			bool fwenable, bool* mfwenable, bool* dsEnable, uint32_t* dr,
 						uint32_t* freq, uint32_t* timer,
 						bool* fp, bool* act, bool* depaden, bool* sm, bool* qe,
 						std::vector <int> * cdl, int* cdo, int* cad);
@@ -252,13 +251,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 */
 	void RearrangeDbitData(char* buf);
 
-	/**
-	 * Processing Function (inserting gap pixels) eiger specific
-	 * @param buf pointer to image
-	 * @param dr dynamic range
-	 */
-	void InsertGapPixels(char* buf, uint32_t dr);
-
 	/** type of thread */
 	static const std::string TypeName;
 
@@ -291,10 +283,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	/** Master File Write Enable */
 	bool* masterFileWriteEnable;
 
-	/** Gap Pixels Enable */
-	bool* gapPixelsEnable;
-
-
 	/** Dynamic Range */
 	uint32_t* dynamicRange;
 
@@ -309,9 +297,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
 	/** timer beginning stamp for random streaming */
 	struct timespec timerBegin;
-
-	/** temporary buffer for processing */
-	char* tempBuffer;
 
 	/** Activated/Deactivated */
 	bool* activated;

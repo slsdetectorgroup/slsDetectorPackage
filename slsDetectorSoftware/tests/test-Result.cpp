@@ -2,6 +2,7 @@
 #include "TypeTraits.h"
 #include "catch.hpp"
 #include <string>
+#include "ToString.h"
 
 using sls::Result;
 
@@ -171,4 +172,27 @@ TEST_CASE("Printing Result<int>"){
     os << res;
     REQUIRE(os.str() == "[1, 2, 3]");
 
+}
+
+TEST_CASE("String conversions"){
+    Result<int> res{1,2,3};
+    REQUIRE(ToString(res) == "[1, 2, 3]");
+
+    Result<std::string> res2{"one", "two", "three"};
+    REQUIRE(ToString(res2) == "[one, two, three]");
+
+    using Smap = std::map<std::string, std::string>;
+    Smap m;
+    m["one"] = "1";
+    Result<Smap> res3{m, m, m};
+    REQUIRE(res3.size()== 3);
+    REQUIRE(ToString(res3) == "[{one: 1}, {one: 1}, {one: 1}]");
+
+    Smap m2;
+    m2["one"] = "1";
+    m2["two"] = "2";
+    m2["three"] = "3";
+
+    Result<Smap> res4{m, m2, m};
+    REQUIRE(ToString(res4) == "[{one: 1}, {one: 1, three: 3, two: 2}, {one: 1}]");
 }

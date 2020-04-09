@@ -3,6 +3,7 @@
 
 #define REQUIRED_FIRMWARE_VERSION 	 		(24)
 #define IDFILECOMMAND						"more /home/root/executables/detid.txt"
+#define FIRMWARE_VERSION_SAME_TOP_BOT_ADDR	(26)
 
 #define STATUS_IDLE		0
 #define STATUS_RUNNING	1
@@ -63,10 +64,10 @@ enum CLKINDEX                      			{RUN_CLK, NUM_CLOCKS};
 #define DEFAULT_SUBFRAME_DEADTIME			(0)
 #define DEFAULT_DYNAMIC_RANGE				(16)
 
-#define DEFAULT_PARALLEL_MODE				(0)
+#define DEFAULT_PARALLEL_MODE				(1)
 #define DEFAULT_READOUT_STOREINRAM_MODE		(0)
 #define DEFAULT_READOUT_OVERFLOW32_MODE		(0)
-#define DEFAULT_CLK_SPEED					(HALF_SPEED)
+#define DEFAULT_CLK_SPEED					(FULL_SPEED)
 #define DEFAULT_IO_DELAY					(650)
 #define DEFAULT_TIMING_MODE					(AUTO_TIMING)
 #define DEFAULT_PHOTON_ENERGY				(-1)

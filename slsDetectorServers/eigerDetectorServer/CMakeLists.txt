@@ -5,6 +5,7 @@ set(src
     ../slsDetectorServer/src/communication_funcs.c
     ../slsDetectorServer/src/communication_funcs_UDP.c
     ../slsDetectorServer/src/common.c
+    ../slsDetectorServer/src/communication_virtual.c
 )
 
 include_directories(
@@ -22,7 +23,7 @@ target_include_directories(eigerDetectorServerMaster_virtual
 
 target_compile_definitions(eigerDetectorServerMaster_virtual
     PUBLIC EIGERD PCCOMPILE STOP_SERVER
-    PUBLIC VIRTUAL DVIRTUAL_9M
+    PUBLIC VIRTUAL #VIRTUAL_9M
     PUBLIC VIRTUAL_MASTER
 )
 
@@ -38,27 +39,60 @@ install(TARGETS eigerDetectorServerMaster_virtual
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-add_executable(eigerDetectorServerSlave_virtual 
+
+
+
+
+add_executable(eigerDetectorServerSlaveTop_virtual 
     ${src}
 )
 
-target_include_directories(eigerDetectorServerSlave_virtual
+target_include_directories(eigerDetectorServerSlaveTop_virtual
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_compile_definitions(eigerDetectorServerSlave_virtual
+target_compile_definitions(eigerDetectorServerSlaveTop_virtual
     PUBLIC EIGERD PCCOMPILE STOP_SERVER
-    PUBLIC VIRTUAL DVIRTUAL_9M
+    PUBLIC VIRTUAL #VIRTUAL_9M
+    PUBLIC VIRTUAL_TOP
 )
 
-target_link_libraries(eigerDetectorServerSlave_virtual
+target_link_libraries(eigerDetectorServerSlaveTop_virtual
     PUBLIC pthread rt
 )
 
-set_target_properties(eigerDetectorServerSlave_virtual PROPERTIES
+set_target_properties(eigerDetectorServerSlaveTop_virtual PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-install(TARGETS eigerDetectorServerSlave_virtual
+install(TARGETS eigerDetectorServerSlaveTop_virtual
+    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+
+
+
+add_executable(eigerDetectorServerSlaveBottom_virtual 
+    ${src}
+)
+
+target_include_directories(eigerDetectorServerSlaveBottom_virtual
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_compile_definitions(eigerDetectorServerSlaveBottom_virtual
+    PUBLIC EIGERD PCCOMPILE STOP_SERVER
+    PUBLIC VIRTUAL #VIRTUAL_9M
+)
+
+target_link_libraries(eigerDetectorServerSlaveBottom_virtual
+    PUBLIC pthread rt
+)
+
+set_target_properties(eigerDetectorServerSlaveBottom_virtual PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+install(TARGETS eigerDetectorServerSlaveBottom_virtual
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

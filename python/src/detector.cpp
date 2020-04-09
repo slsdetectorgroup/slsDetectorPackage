@@ -99,6 +99,12 @@ void init_det(py::module &m) {
                 void (*)(detectorData *, uint64_t, uint32_t, void *), void *)) &
                 Detector::registerDataCallback,
             py::arg(), py::arg())
+        .def("getGapPixelsinCallback",
+             (bool (Detector::*)()) & Detector::getGapPixelsinCallback)
+        .def("setGapPixelsinCallback",
+             (void (Detector::*)(const bool)) &
+                 Detector::setGapPixelsinCallback,
+             py::arg())
         .def("getNumberOfFrames",
              (Result<int64_t>(Detector::*)(sls::Positions)) &
                  Detector::getNumberOfFrames,
@@ -246,6 +252,10 @@ void init_det(py::module &m) {
              (Result<int>(Detector::*)(sls::Positions)) &
                  Detector::getHighVoltage,
              py::arg() = Positions{})
+        .def("setHighVoltage",
+             (void (Detector::*)(int, sls::Positions)) &
+                 Detector::setHighVoltage,
+             py::arg(), py::arg() = Positions{})
         .def("getPowerChip",
              (Result<bool>(Detector::*)(sls::Positions)) &
                  Detector::getPowerChip,
@@ -254,9 +264,13 @@ void init_det(py::module &m) {
              (void (Detector::*)(bool, sls::Positions)) &
                  Detector::setPowerChip,
              py::arg(), py::arg() = Positions{})
-        .def("setHighVoltage",
-             (void (Detector::*)(int, sls::Positions)) &
-                 Detector::setHighVoltage,
+        .def("getImageTestMode",
+             (Result<int>(Detector::*)(sls::Positions)) &
+                 Detector::getImageTestMode,
+             py::arg() = Positions{})
+        .def("setImageTestMode",
+             (void (Detector::*)(const int, sls::Positions)) &
+                 Detector::setImageTestMode,
              py::arg(), py::arg() = Positions{})
         .def("getTemperature",
              (Result<int>(Detector::*)(defs::dacIndex, sls::Positions)) &
@@ -685,13 +699,6 @@ void init_det(py::module &m) {
              (void (Detector::*)(const std::string &, sls::Positions)) &
                  Detector::loadTrimbits,
              py::arg(), py::arg() = Positions{})
-        .def("getRxAddGapPixels",
-             (Result<bool>(Detector::*)(sls::Positions)) &
-                 Detector::getRxAddGapPixels,
-             py::arg() = Positions{})
-        .def("setRxAddGapPixels",
-             (void (Detector::*)(bool)) & Detector::setRxAddGapPixels,
-             py::arg())
         .def("getParallelMode",
              (Result<bool>(Detector::*)(sls::Positions)) &
                  Detector::getParallelMode,
@@ -888,14 +895,6 @@ void init_det(py::module &m) {
         .def("setExternalSignalFlags",
              (void (Detector::*)(defs::externalSignalFlag, sls::Positions)) &
                  Detector::setExternalSignalFlags,
-             py::arg(), py::arg() = Positions{})
-        .def("getImageTestMode",
-             (Result<int>(Detector::*)(sls::Positions)) &
-                 Detector::getImageTestMode,
-             py::arg() = Positions{})
-        .def("setImageTestMode",
-             (void (Detector::*)(const int, sls::Positions)) &
-                 Detector::setImageTestMode,
              py::arg(), py::arg() = Positions{})
         .def("getNumberOfBursts",
              (Result<int64_t>(Detector::*)(sls::Positions)) &
@@ -1190,11 +1189,13 @@ void init_det(py::module &m) {
                  Detector::setPatternBitMask,
              py::arg(), py::arg() = Positions{})
         .def("getAdditionalJsonHeader",
-             (Result<std::string>(Detector::*)(sls::Positions)) &
+             (Result<std::map<std::string, std::string>>(Detector::*)(
+                 sls::Positions)) &
                  Detector::getAdditionalJsonHeader,
              py::arg() = Positions{})
         .def("setAdditionalJsonHeader",
-             (void (Detector::*)(const std::string &, sls::Positions)) &
+             (void (Detector::*)(const std::map<std::string, std::string> &,
+                                 sls::Positions)) &
                  Detector::setAdditionalJsonHeader,
              py::arg(), py::arg() = Positions{})
         .def("getAdditionalJsonParameter",

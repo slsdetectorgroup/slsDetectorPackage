@@ -108,7 +108,6 @@ const char* getRetName() {
 	switch(ret) {
 	case OK:			return "OK";
 	case FAIL:			return "FAIL";
-	case FORCE_UPDATE: 	return "FORCE_UPDATE";
 	case GOODBYE:		return "GOODBYE";
 	case REBOOT:		return "REBOOT";
 	default:			return "unknown";
@@ -194,7 +193,6 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_LOCK_SERVER:						return "F_LOCK_SERVER";
 	case F_GET_LAST_CLIENT_IP:				return "F_GET_LAST_CLIENT_IP";
 	case F_SET_PORT:						return "F_SET_PORT";
-	case F_UPDATE_CLIENT:					return "F_UPDATE_CLIENT";
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
@@ -317,6 +315,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_GET_TIMING_SOURCE:				return "F_GET_TIMING_SOURCE";
 	case F_SET_TIMING_SOURCE:				return "F_SET_TIMING_SOURCE";
 	case F_GET_NUM_CHANNELS:				return "F_GET_NUM_CHANNELS";
+	case F_UPDATE_RATE_CORRECTION:			return "F_UPDATE_RATE_CORRECTION";
 
 	default:								return "Unknown Function";
 	}
@@ -387,7 +386,6 @@ void function_table() {
 	flist[F_LOCK_SERVER]						= &lock_server;
 	flist[F_GET_LAST_CLIENT_IP]					= &get_last_client_ip;
 	flist[F_SET_PORT]							= &set_port;
-	flist[F_UPDATE_CLIENT]						= &update_client;
 	flist[F_ENABLE_TEN_GIGA]					= &enable_ten_giga;
 	flist[F_SET_ALL_TRIMBITS]					= &set_all_trimbits;
 	flist[F_SET_PATTERN_IO_CONTROL]				= &set_pattern_io_control;
@@ -510,6 +508,7 @@ void function_table() {
 	flist[F_GET_TIMING_SOURCE]					= &get_timing_source;
 	flist[F_SET_TIMING_SOURCE]					= &set_timing_source;
 	flist[F_GET_NUM_CHANNELS]					= &get_num_channels;
+	flist[F_UPDATE_RATE_CORRECTION]				= &update_rate_correction;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -776,10 +775,10 @@ int set_image_test_mode(int file_des) {
 		return printSocketReadError();	
 	LOG(logDEBUG1, ("Setting image test mode to \n", arg));
 
-#ifndef GOTTHARDD
-	functionNotImplemented();
-#else
+#if defined(GOTTHARDD) || ((defined(EIGERD) || defined(JUNGFRAUD)) && defined(VIRTUAL))
 	setTestImageMode(arg);
+#else
+	functionNotImplemented();
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }
@@ -790,11 +789,11 @@ int get_image_test_mode(int file_des) {
 	int retval = -1;
 	LOG(logDEBUG1, ("Getting image test mode\n"));
 
-#ifndef GOTTHARDD
-	functionNotImplemented();
-#else
+#if defined(GOTTHARDD) || ((defined(EIGERD) || defined(JUNGFRAUD)) && defined(VIRTUAL))
 	retval = getTestImageMode();
 	LOG(logDEBUG1, ("image test mode retval: %d\n", retval));
+#else
+	functionNotImplemented();
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
 }
@@ -1844,7 +1843,8 @@ int start_acquisition(int file_des) {
 #endif
 		if (configured == FAIL) {
 			ret = FAIL;
-			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
+			strcpy(mess, "Could not start acquisition because ");
+			strcat(mess, configureMessage);
 			LOG(logERROR,(mess));					
 		} else {
 			ret = startStateMachine();
@@ -1979,7 +1979,8 @@ int start_and_read_all(int file_des) {
 #endif
 		if (configured == FAIL) {
 			ret = FAIL;
-			sprintf(mess, "Could not start acquisition because %s\n", configureMessage);
+			strcpy(mess, "Could not start acquisition because ");
+			strcat(mess, configureMessage);
 			LOG(logERROR,(mess));					
 		} else {
 			ret = startStateMachine();
@@ -2826,107 +2827,6 @@ int set_port(int file_des) {
 }
 
 
-
-
-int update_client(int file_des) {
-	ret = FORCE_UPDATE;
-	memset(mess, 0, sizeof(mess));
-	Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
-	return send_update(file_des);
-}
-
-
-
-
-int send_update(int file_des) {
-    ret = OK;
-	int n = 0;
-	int i32 = -1;
-	int64_t i64 = -1;
-
-	i32 = lastClientIP;
-	i32 = __builtin_bswap32(i32);
-	n = sendData(file_des, &i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// dr
-	i32 = setDynamicRange(GET_FLAG);
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// settings
-#if defined(EIGERD) || defined(JUNGFRAUD) || defined(GOTTHARDD)  || defined(GOTTHARD2D)|| defined(MOENCHD)
-	i32 = (int)getSettings();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-#endif
-
-	// #frames
-	i64 = getNumFrames();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-
-	// #storage cell
-#ifdef JUNGFRAUD
-	i64 = getNumAdditionalStorageCells();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-#endif
-
-	// #triggers
-	i64 = getNumTriggers();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-
-	// #bursts
-#ifdef GOTTHARD2D
-	i64 = getNumBursts();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
-	if (n < 0) return printSocketReadError();
-#endif
-
-	// timing mode
-	i32 = (int)getTiming();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-
-	// burst mode
-#ifdef GOTTHARD2D
-	i32 = (int)getBurstMode();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-	if (n < 0) return printSocketReadError();
-#endif
-
-	// number of channels
-#if defined(MOENCHD) || defined(CHIPTESTBOARDD)
-	{
-		int nx = 0, ny = 0;
-		getNumberOfChannels(&nx, &ny);
-		i32 = nx;
-		n = sendData(file_des,&i32,sizeof(i32),INT32);
-		if (n < 0) return printSocketReadError();
-		i32 = ny;
-		n = sendData(file_des,&i32,sizeof(i32),INT32);
-		if (n < 0) return printSocketReadError();				
-	}
-#endif
-
-	// num udp interfaces
-#ifdef JUNGFRAUD
-	    i32 = getNumberofUDPInterfaces();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
-    if (n < 0) return printSocketReadError();
-#endif
-
-    if (lockStatus == 0) {
-        lastClientIP = thisClientIP;
-    }
-
-    return ret;
-}
-
-
-
 int enable_ten_giga(int file_des) {
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
@@ -3496,35 +3396,13 @@ int set_rate_correct(int file_des) {
 #else
 	// only set
 	if (Server_VerifyLock() == OK) {
-
-		int dr = setDynamicRange(-1);
-
-		// switching on in wrong bit mode
-		if ((tau_ns != 0) && (dr != 32) && (dr != 16)) {
-			ret = FAIL;
-			strcpy(mess,"Rate correction Deactivated, must be in 32 or 16 bit mode\n");
-			LOG(logERROR,(mess));
-		}
-
-		// switching on in right mode
-		else {
-			if (tau_ns < 0) {
-				tau_ns = getDefaultSettingsTau_in_nsec();
-				if (tau_ns < 0) {
-					ret = FAIL;
-					strcpy(mess,"Default settings file not loaded. No default tau yet\n");
-					LOG(logERROR,(mess));
-				}
-			}
-			else if (tau_ns > 0) {
-				//changing tau to a user defined value changes settings to undefined
-				setSettings(UNDEFINED);
-				LOG(logERROR, ("Settings has been changed to undefined (tau changed)\n"));
-			}
-			if (ret == OK) {
-				int64_t retval = setRateCorrection(tau_ns);
-				validate64(tau_ns, retval, "set rate correction", DEC);
-			}
+		ret = validateAndSetRateCorrection(tau_ns, mess);
+		int64_t retval = getCurrentTau(); // to update eiger_tau_ns (for update rate correction)
+		if (ret == FAIL) {
+			strcpy(mess, "Rate correction failed\n");
+			LOG(logERROR, (mess));
+		} else {
+			validate64(tau_ns, retval, "set rate correction", DEC);
 		}
 	}
 #endif
@@ -3920,7 +3798,6 @@ int reset_fpga(int file_des) {
 			initControlServer();
 		}
 		else initStopServer(); //remapping of stop server
-		ret = FORCE_UPDATE;
 	}
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
@@ -4352,7 +4229,11 @@ int copy_detector_server(int file_des) {
         memset(cmd, 0, MAX_STR_LENGTH);
 
         // copy server
-        sprintf(cmd, "tftp %s -r %s -g", hostname, sname);
+		strcpy(cmd, "tftp ");
+		strcat(cmd, hostname);
+		strcat(cmd, " -r ");
+		strcat(cmd, sname);
+		strcat(cmd, " -g");
         int success = executeCommand(cmd, retvals, logDEBUG1);
         if (success == FAIL) {
         	ret = FAIL;
@@ -4364,7 +4245,8 @@ int copy_detector_server(int file_des) {
         else {
         	LOG(logINFO, ("Server copied successfully\n"));
         	// give permissions
-        	sprintf(cmd, "chmod 777 %s", sname);
+			strcpy(cmd, "chmod 777 ");
+			strcat(cmd, sname);
         	executeCommand(cmd, retvals, logDEBUG1);
 
         	// edit /etc/inittab
@@ -4384,7 +4266,9 @@ int copy_detector_server(int file_des) {
         	LOG(logINFO, ("Deleted all lines containing DetectorServer in /etc/inittab\n"));
 
         	// append line
-        	sprintf(cmd, "echo \"ttyS0::respawn:/./%s\" >> /etc/inittab", sname);
+			strcpy(cmd, "echo \"ttyS0::respawn:/./");
+			strcat(cmd, sname);
+			strcat(cmd, "\" >> /etc/inittab");
         	executeCommand(cmd, retvals, logDEBUG1);
 
         	LOG(logINFO, ("/etc/inittab modified to have %s\n", sname));
@@ -5795,9 +5679,11 @@ int set_clock_frequency(int file_des) {
 		case ADC_CLOCK:
 			c = ADC_CLK;
 			break;
+#ifdef CHIPTESTBOARDD
 		case DBIT_CLOCK:
 			c = DBIT_CLK;
 			break;
+#endif
 		case RUN_CLOCK:
 			c = RUN_CLK;
 			break;
@@ -5851,9 +5737,11 @@ int get_clock_frequency(int file_des) {
 	case ADC_CLOCK:
 		c = ADC_CLK;
 		break;
+#ifdef CHIPTESTBOARDD
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;
+#endif
 	case RUN_CLOCK:
 		c = RUN_CLK;
 		break;
@@ -5907,14 +5795,14 @@ int set_clock_phase(int file_des) {
 		c = ADC_CLK;
 		break;
 #endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(JUNGFRAUD)
+#if defined(CHIPTESTBOARDD) || defined(JUNGFRAUD)
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;
 #endif
 		default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-			if (c < NUM_CLOCKS) {
+			if (ind < NUM_CLOCKS) {
 				c = (enum CLKINDEX)ind;
 				break;
 			}
@@ -5986,7 +5874,7 @@ int get_clock_phase(int file_des) {
 	
 	if (receiveData(file_des, args, sizeof(args), INT32) < 0)
 		return printSocketReadError();
-	LOG(logDEBUG1, ("Getting clock (%d) phase %s \n", args[0], (args[1] == 0 ? "" : "in degrees")));
+	LOG(logINFOBLUE, ("Getting clock (%d) phase %s \n", args[0], (args[1] == 0 ? "" : "in degrees")));
 
 #if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(JUNGFRAUD) && !defined(GOTTHARD2D) && !defined(MYTHEN3D)
 	functionNotImplemented();
@@ -6000,14 +5888,17 @@ int get_clock_phase(int file_des) {
 	case ADC_CLOCK:
 		c = ADC_CLK;
 		break;
+#endif
+#if defined(CHIPTESTBOARDD)	|| defined(JUNGFRAUD)
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;
 #endif
 	default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-		if (c < NUM_CLOCKS) {
+		if (ind < NUM_CLOCKS) {
 			c = (enum CLKINDEX)ind;
+		LOG(logINFOBLUE, ("NUMclocks:%d c:%d\n", NUM_CLOCKS, c)); 
 			break;
 		}
 #endif
@@ -6044,13 +5935,15 @@ int get_max_clock_phase_shift(int file_des) {
 	case ADC_CLOCK:
 		c = ADC_CLK;
 		break;
+#endif
+#if defined(CHIPTESTBOARDD)  || defined(JUNGFRAUD)
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;
 #endif
 	default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-		if (c < NUM_CLOCKS) {
+		if (arg < NUM_CLOCKS) {
 			c = (enum CLKINDEX)arg;
 			break;
 		}
@@ -6095,7 +5988,7 @@ int set_clock_divider(int file_des) {
 		default:
 		// any clock index
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-			if (c < NUM_CLOCKS) {
+			if (ind < NUM_CLOCKS) {
 				c = (enum CLKINDEX)ind;
 				break;
 			}
@@ -6178,7 +6071,7 @@ int get_clock_divider(int file_des) {
 #endif
 	default:
 #if defined(GOTTHARD2D) || defined(MYTHEN3D)
-		if (c < NUM_CLOCKS) {
+		if (arg < NUM_CLOCKS) {
 			c = (enum CLKINDEX)arg;
 			break;
 		}
@@ -6263,9 +6156,11 @@ int get_pipeline(int file_des) {
 	case ADC_CLOCK:
 		c = ADC_CLK;
 		break;
+#ifdef CHIPTESTBOARDD
 	case DBIT_CLOCK:
 		c = DBIT_CLK;
 		break;
+#endif
 	default:
 		modeNotImplemented("clock index (pipeline get)", arg);
 		break;
@@ -6910,4 +6805,22 @@ int get_num_channels(int file_des) {
 	LOG(logDEBUG1, ("Get number of channels sretval:[%d, %d]\n", retvals[0], retvals[1]));
 #endif
 	return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
+}
+
+
+
+int update_rate_correction(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+
+#ifndef EIGERD
+	functionNotImplemented();
+#else	
+	LOG(logINFO, ("Update Rate Correction\n"));
+	// only set
+	if (Server_VerifyLock() == OK) {
+		ret = updateRateCorrection(mess);
+	}
+#endif
+	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
 }

@@ -9,11 +9,12 @@
 #include <array>
 #include <cmath>
 #include <vector>
+#include <map>
 
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200318
+#define SLS_SHMVERSION 0x200402
 
 namespace sls{
 
@@ -61,33 +62,6 @@ struct sharedSlsDetector {
     /**  number of dacs per module*/
     int nDacs;
 
-    /** dynamic range of the detector data */
-    int dynamicRange;
-
-    /** detector settings (standard, fast, etc.) */
-    slsDetectorDefs::detectorSettings currentSettings;
-
-    /** number of frames */
-    int64_t nFrames;
-
-    /** number of triggers */
-    int64_t nTriggers;
-    
-    /** number of bursts */
-    int64_t nBursts;
-
-    /** number of additional storage cells */
-    int nAddStorageCells;
-    
-    /** timing mode */
-    slsDetectorDefs::timingMode timingMode;
-
-    /** burst mode */
-    slsDetectorDefs::burstMode burstMode;
-
-    /** rate correction in ns (needed for default -1) */
-    int64_t deadTime;
-
     /** ip address/hostname of the receiver for client control via TCP */
     char rxHostname[MAX_STR_LENGTH];
 
@@ -103,12 +77,6 @@ struct sharedSlsDetector {
 
     /**  zmq tcp src ip address in client (only data) **/
     sls::IpAddr zmqip;
-
-    /** gap pixels enable */
-    int gappixels;
-
-    /** gap pixels in each direction */
-    slsDetectorDefs::xy nGappixels;
 
     /** num udp interfaces */
     int numUDPInterfaces;
@@ -221,10 +189,7 @@ class Module : public virtual slsDetectorDefs {
      */
     void updateNumberOfChannels();
 
-    /**
-     * Returns the total number of channels including gap pixels
-     * @returns the total number of channels including gap pixels
-     */
+
     slsDetectorDefs::xy getNumberOfChannels() const;
 
     /**
@@ -307,20 +272,11 @@ class Module : public virtual slsDetectorDefs {
     void execCommand(const std::string &cmd);
 
     /**
-     * Updates some of the shared memory receiving the data from the detector
-     */
-    void updateCachedDetectorVariables();
-
-    /**
      * Get detector specific commands to write into config file
      * @returns vector of strings with commands
      */
     std::vector<std::string> getConfigFileCommands();
 
-    /**
-     * Get detector settings
-     * @returns current settings
-     */
     detectorSettings getSettings();
 
     /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2
@@ -328,18 +284,8 @@ class Module : public virtual slsDetectorDefs {
      * [Gotthard2] Options: DYNAMICGAIN, FIXGAIN1, FIXGAIN2
      * [Moench] Options: G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, 
      *                   G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
-     * [Eiger] Only stores them locally in shm Options: STANDARD, HIGHGAIN, LOWGAIN, VERYHIGHGAIN, VERYLOWGAIN
      */
-    detectorSettings setSettings(detectorSettings isettings);
-
-    /**
-     * Send detector settings only (set only for Jungfrau, Gotthard, Moench, get
-     * for all) Only the settings enum is sent to the detector, where it will
-     * initialize al the dacs already hard coded in the detector server
-     * @param isettings  settings
-     * @returns current settings
-     */
-    detectorSettings sendSettingsOnly(detectorSettings isettings);
+    void setSettings(detectorSettings isettings);
 
     /**
      * Get threshold energy (Mythen and Eiger)
@@ -353,9 +299,8 @@ class Module : public virtual slsDetectorDefs {
      * @param e_eV threshold in eV
      * @param isettings ev. change settings
      * @param tb 1 to include trimbits, 0 to exclude
-     * @returns current threshold value in ev (-1 failed)
      */
-    int setThresholdEnergy(int e_eV, detectorSettings isettings = GET_SETTINGS,
+    void setThresholdEnergy(int e_eV, detectorSettings isettings = GET_SETTINGS,
                            int tb = 1);
 
     /**
@@ -453,10 +398,6 @@ class Module : public virtual slsDetectorDefs {
      * @returns starting frame number
      */
     uint64_t getStartingFrameNumber();
-
-    int64_t getTotalNumFramesToReceive();
-
-    void sendTotalNumFramestoReceiver();
 
     int64_t getNumberOfFrames();
 
@@ -565,22 +506,17 @@ class Module : public virtual slsDetectorDefs {
      * [Gotthard2] only in continuous mode */
     int64_t getMeasurementTime() const;
 
-    /**
-     * Set/get timing mode
-     * @param value timing mode (-1 gets)
-     * @returns current timing mode
-     */
-    timingMode setTimingMode(timingMode value = GET_TIMING_MODE);
 
+    timingMode getTimingMode();
+    void setTimingMode(timingMode value);
+
+    int getDynamicRange();
     /**
      * Set/get dynamic range
      * (Eiger: If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to
      * 1)
-     * @param i dynamic range (-1 get)
-     * @returns current dynamic range
-     * \sa sharedSlsDetector
      */
-    int setDynamicRange(int n = -1);
+    void setDynamicRange(int n);
 
     /**
      * Set/get dacs value
@@ -988,36 +924,14 @@ class Module : public virtual slsDetectorDefs {
      */
     void setTransmissionDelayRight(int value);
 
-    /**
-     * Sets the additional json header\sa sharedSlsDetector
-     * @param jsonheader additional json header
-     */
-    void setAdditionalJsonHeader(const std::string &jsonheader);
+    /** empty vector deletes entire additional json header */
+    void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);
+    std::map<std::string, std::string> getAdditionalJsonHeader();
 
     /**
-     * Returns the additional json header \sa sharedSlsDetector
-     * @returns the additional json header, returns "none" if default setting
-     * and no custom ip set
-     */
-    std::string getAdditionalJsonHeader();
-
-    /**
-     * Sets the value for the additional json header parameter if found, else
-     * append it
-     * @param key additional json header parameter
-     * @param value additional json header parameter value (cannot be empty)
-     * @returns the additional json header parameter value,
-     * empty if no parameter found in additional json header
-     */
-    std::string setAdditionalJsonParameter(const std::string &key,
-                                           const std::string &value);
-
-    /**
-     * Returns the additional json header parameter value
-     * @param key additional json header parameter
-     * @returns the additional json header parameter value,
-     * empty if no parameter found in additional json header
-     */
+     * Sets the value for the additional json header parameter key if found, else
+     * append it. If value empty, then deletes parameter */
+    void setAdditionalJsonParameter(const std::string &key, const std::string &value);
     std::string getAdditionalJsonParameter(const std::string &key);
 
     /**
@@ -1045,11 +959,13 @@ class Module : public virtual slsDetectorDefs {
     /** [Gotthard][Jungfrau][CTB][Moench] */
     void executeBusTest();
 
-    /** [Gotthard] */
+    /** [Gotthard][Eiger virtual] */
     int getImageTestMode();
 
     /** [Gotthard] If 1, adds channel intensity with precalculated values.
-     * Default is 0 */
+     * Default is 0 
+     * [Eiger virtual] If 1, pixels are saturated. If 0, increasing intensity
+     * Only for virtual servers */
     void setImageTestMode(const int value);
 
 
@@ -1231,14 +1147,6 @@ class Module : public virtual slsDetectorDefs {
      * @returns OK or FAIL
      */
     int setAllTrimbits(int val);
-
-    /**
-     * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. (Eiger)
-     * 4 bit mode gap pixels only in gui call back
-     * @param val 1 sets, 0 unsets, -1 gets
-     * @returns gap pixel enable or -1 for error
-     */
-    int enableGapPixels(int val = -1);
 
     /**
      * Sets the number of trim energies and their value  (Eiger)
@@ -1437,11 +1345,6 @@ class Module : public virtual slsDetectorDefs {
     void execReceiverCommand(const std::string &cmd);
 
     /**
-     * Updates the shared memory receiving the data from the detector
-     */
-    void updateCachedReceiverVariables() const;
-
-    /**
      * Send the multi detector size to the detector
      * @param detx number of detectors in x dir
      * @param dety number of detectors in y dir
@@ -1509,6 +1412,7 @@ class Module : public virtual slsDetectorDefs {
      * @returns current frame index of receiver
      */
     uint64_t getReceiverCurrentFrameIndex() const;
+    int getReceiverProgress() const;
 
 
     void setFileWrite(bool value);

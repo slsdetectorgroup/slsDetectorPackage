@@ -5,6 +5,7 @@
 #include <chrono>
 #include <memory>
 #include <vector>
+#include <map>
 
 
 class detectorData;
@@ -137,6 +138,16 @@ class Detector {
                                            void *),
                               void *pArg);
 
+    /**[Eiger][Jungfrau] */
+    bool getGapPixelsinCallback() const;
+
+    /**
+     * [Eiger][Jungfrau]
+     * Only in client data call back
+     * Fills in gap pixels in data
+     */
+    void setGapPixelsinCallback(const bool enable);
+
     /**************************************************
      *                                                *
      *    Acquisition Parameters                      *
@@ -255,18 +266,27 @@ class Detector {
 
     Result<int> getHighVoltage(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3][Gotthard2][Moench] */
-    Result<bool> getPowerChip(Positions pos = {}) const;
-
-    /** [Jungfrau][Mythen3][Gotthard2][Moench] */
-    void setPowerChip(bool on, Positions pos = {});
-
     /**
      * [Gotthard] Options: 0, 90, 110, 120, 150, 180, 200
      * [Jungfrau][CTB][Moench] Options: 0, 60 - 200
      * [Eiger][Mythen3][Gotthard2] Options: 0 - 200
      */
     void setHighVoltage(int value, Positions pos = {});
+
+    /** [Jungfrau][Mythen3][Gotthard2][Moench] */
+    Result<bool> getPowerChip(Positions pos = {}) const;
+
+    /** [Jungfrau][Mythen3][Gotthard2][Moench] */
+    void setPowerChip(bool on, Positions pos = {});
+
+    /** [Gotthard][Eiger virtual] */
+    Result<int> getImageTestMode(Positions pos = {});
+
+    /** [Gotthard] If 1, adds channel intensity with precalculated values.
+     * Default is 0 
+     * [Eiger virtual] If 1, pixels are saturated. If 0, increasing intensity
+     * Only for virtual servers */
+    void setImageTestMode(const int value, Positions pos = {});
 
     /**
      * (Degrees)
@@ -694,16 +714,6 @@ class Detector {
     /** [Eiger] */
     void loadTrimbits(const std::string &fname, Positions pos = {});
 
-    /**[Eiger] */
-    Result<bool> getRxAddGapPixels(Positions pos = {}) const;
-
-    /**
-     * [Eiger]
-     * 4 bit mode not implemented in Receiver, but in client data call back
-     * Fills in gap pixels in data
-     */
-    void setRxAddGapPixels(bool enable);
-
     /** [Eiger] */
     Result<bool> getParallelMode(Positions pos = {}) const;
 
@@ -905,12 +915,6 @@ class Detector {
     void setExternalSignalFlags(defs::externalSignalFlag value,
                                 Positions pos = {});
 
-    /** [Gotthard] */
-    Result<int> getImageTestMode(Positions pos = {});
-
-    /** [Gotthard] If 1, adds channel intensity with precalculated values.
-     * Default is 0 */
-    void setImageTestMode(const int value, Positions pos = {});
 
     /**************************************************
      *                                                *
@@ -1196,10 +1200,10 @@ class Detector {
      * ************************************************/
 
     /** [Moench] */
-    Result<std::string> getAdditionalJsonHeader(Positions pos = {}) const;
+    Result<std::map<std::string, std::string>> getAdditionalJsonHeader(Positions pos = {}) const;
 
-    /** [Moench] */
-    void setAdditionalJsonHeader(const std::string &jsonheader,
+    /** [Moench] If empty, reset additional json header. Max 20 characters for each key/value */
+    void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader,
                                  Positions pos = {});
 
     /** [Moench] */
@@ -1207,12 +1211,11 @@ class Detector {
                                                    Positions pos = {}) const;
     /**
      * [Moench]
-     * Sets the value for additional json header parameter if found,
+     * Sets the value for additional json header parameters if found,
      * else appends the parameter key and value
-     * The value cannot be empty
+     * If empty, deletes parameter. Max 20 characters for each key/value
      */
-    void setAdditionalJsonParameter(const std::string &key,
-                                    const std::string &value,
+    void setAdditionalJsonParameter(const std::string &key, const std::string &value,
                                     Positions pos = {});
 
     /** [Moench] TODO! How do we do this best??? Can be refactored to something

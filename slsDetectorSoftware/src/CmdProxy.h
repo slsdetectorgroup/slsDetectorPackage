@@ -477,6 +477,7 @@ class CmdProxy {
                                     {"cycles", "triggers"},
                                     {"cyclesl", "triggersl"},
                                     {"clkdivider", "speed"}, 
+                                    {"digitest", "imagetest"},
 
                                     /** temperature */
                                     /** dacs */
@@ -527,8 +528,6 @@ class CmdProxy {
 
                                     /* Jungfrau Specific */
                                     /* Gotthard Specific */
-                                    {"digitest", "imagetest"},
-
                                     /* Gotthard2 Specific */
                                     /* Mythen3 Specific */ 
                                     /* CTB Specific */
@@ -572,11 +571,9 @@ class CmdProxy {
                           {"acquire", &CmdProxy::acquire},
                           {"frames", &CmdProxy::frames},                          
                           {"triggers", &CmdProxy::triggers},
-                          {"bursts", &CmdProxy::bursts},
                           {"exptime", &CmdProxy::exptime},
                           {"period", &CmdProxy::period},
                           {"delay", &CmdProxy::delay},
-                          {"burstperiod", &CmdProxy::burstperiod},
                           {"framesl", &CmdProxy::framesl},
                           {"triggersl", &CmdProxy::triggersl},
                           {"delayl", &CmdProxy::delayl},
@@ -593,6 +590,7 @@ class CmdProxy {
                           {"clkdiv", &CmdProxy::ClockDivider},                           
                           {"vhighvoltage", &CmdProxy::vhighvoltage},
                           {"powerchip", &CmdProxy::powerchip}, 
+                          {"imagetest", &CmdProxy::imagetest},
 
                           /** temperature */
                           {"temp_adc", &CmdProxy::temp_adc},
@@ -693,8 +691,8 @@ class CmdProxy {
                           {"rx_stop", &CmdProxy::rx_stop},
                           {"start", &CmdProxy::start},
                           {"stop", &CmdProxy::stop},
-                          {"rx_status", &CmdProxy::rx_status}, 
-                          {"status", &CmdProxy::status}, 
+                          {"rx_status", &CmdProxy::ReceiverStatus}, 
+                          {"status", &CmdProxy::DetectorStatus}, 
                           {"rx_framescaught", &CmdProxy::rx_framescaught},
                           {"rx_missingpackets", &CmdProxy::rx_missingpackets},
                           {"startingfnum", &CmdProxy::startingfnum},
@@ -791,9 +789,10 @@ class CmdProxy {
                           {"clearroi", &CmdProxy::ClearROI},
                           {"exptimel", &CmdProxy::exptimel},
                           {"extsig", &CmdProxy::extsig},
-                          {"imagetest", &CmdProxy::imagetest},
 
                           /* Gotthard2 Specific */  
+                          {"bursts", &CmdProxy::bursts},
+                          {"burstperiod", &CmdProxy::burstperiod},
                           {"inj_ch", &CmdProxy::InjectChannel},
                           {"vetophoton", &CmdProxy::VetoPhoton},
                           {"vetoref", &CmdProxy::VetoReference},
@@ -867,7 +866,7 @@ class CmdProxy {
                           {"patsetbit", &CmdProxy::patsetbit}, 
 
                           /* Moench */
-                          {"rx_jsonaddheader", &CmdProxy::rx_jsonaddheader}, 
+                          {"rx_jsonaddheader", &CmdProxy::AdditionalJsonHeader}, 
                           {"rx_jsonpara", &CmdProxy::JsonParameter}, 
                           {"emin", &CmdProxy::MinMaxEnergyThreshold}, 
                           {"emax", &CmdProxy::MinMaxEnergyThreshold}, 
@@ -935,6 +934,8 @@ class CmdProxy {
     std::string DacValues(int action);   
     std::vector<std::string> DacCommands();
     /* acquisition */
+    std::string ReceiverStatus(int action);   
+    std::string DetectorStatus(int action);   
     /* Network Configuration (Detector<->Receiver) */
     std::string UDPDestinationIP(int action);
     std::string UDPDestinationIP2(int action);
@@ -980,6 +981,7 @@ class CmdProxy {
     std::string PatternWaitAddress(int action);
     std::string PatternWaitTime(int action);
     /* Moench */
+    std::string AdditionalJsonHeader(int action);
     std::string JsonParameter(int action);
     std::string MinMaxEnergyThreshold(int action);
     /* Advanced */
@@ -1036,10 +1038,6 @@ class CmdProxy {
                          StringTo<int64_t>,
                          "[n_triggers]\n\tNumber of triggers per aquire. Use timing command to set timing mode.");
 
-    INTEGER_COMMAND_NOID(bursts, getNumberOfBursts, setNumberOfBursts,
-                         StringTo<int64_t>,
-                         "[n_bursts]\n\t[Gotthard2] Number of bursts per aquire. Only in auto timing mode and burst mode. Use timing command to set timing mode and burstmode command to set burst mode.");
-
     TIME_COMMAND(exptime, getExptime, setExptime,
         "[duration] [(optional unit) ns|us|ms|s]\n\tExposure time"
         "\n\t[Gotthard2] Uploaded to detector just before acquisition starts");
@@ -1091,6 +1089,10 @@ class CmdProxy {
                     "Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled."
                     "\n\t[Mythen3] If module not connected or wrong module, 1 will fail. By default, not powered on"
                     "\n\t[Gotthard2] If module not connected or wrong module, 1 will fail. By default, powered on at server start up.");  
+
+    INTEGER_COMMAND(imagetest, getImageTestMode, setImageTestMode, StringTo<int>,
+                    "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0."
+                    "\n\t[Eiger][Jungfrau] Only for Virtual servers. If 0, each pixel intensity incremented by 1. If 1, all pixels almost saturated.");  
 
     /** temperature */                
 
@@ -1363,12 +1365,6 @@ class CmdProxy {
     EXECUTE_SET_COMMAND_NOID(stop, stopDetector, 
                 "\n\tStops detector state machine.");  
 
-    GET_COMMAND(rx_status, getReceiverStatus, 
-                "running, idle]\n\tReceiver listener status.");   
-
-    GET_COMMAND(status, getDetectorStatus, 
-                "[running, error, transmitting, finished, waiting, idle]\n\tDetector status.");                 
-
     GET_COMMAND(rx_framescaught, getFramesCaught, 
                     "\n\tNumber of frames caught by receiver."); 
 
@@ -1586,10 +1582,11 @@ class CmdProxy {
     INTEGER_COMMAND(extsig, getExternalSignalFlags, setExternalSignalFlags, sls::StringTo<slsDetectorDefs::externalSignalFlag>,
                     "[trigger_in_rising_edge|trigger_in_falling_edge]\n\t[Gotthard] External signal mode for trigger timing mode.");
 
-    INTEGER_COMMAND(imagetest, getImageTestMode, setImageTestMode, StringTo<int>,
-                    "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated values when taking an acquisition. Default is 0.");  
-
     /* Gotthard2 Specific */
+    INTEGER_COMMAND_NOID(bursts, getNumberOfBursts, setNumberOfBursts,
+                         StringTo<int64_t>,
+                         "[n_bursts]\n\t[Gotthard2] Number of bursts per aquire. Only in auto timing mode and burst mode. Use timing command to set timing mode and burstmode command to set burst mode.");
+
     INTEGER_COMMAND(currentsource, getCurrentSource, setCurrentSource, StringTo<int>,
                     "[0, 1]\n\t[Gotthard2] Enable or disable current source. Default is disabled.");
 
@@ -1719,9 +1716,6 @@ class CmdProxy {
 
     /* Moench */
     
-    STRING_COMMAND(rx_jsonaddheader, getAdditionalJsonHeader, setAdditionalJsonHeader, 
-                "[\\\"label1\\\":\\\"value1\\\"], [\\\"label2\\\":\\\"value2\\\"]\n\tAdditional json header to be streamd out from receiver via zmq. Default is empty. Use only if to be processed by an intermediate user process listening to receiver zmq packets.");
-
     INTEGER_COMMAND(framemode, getFrameMode, setFrameMode, sls::StringTo<slsDetectorDefs::frameModeType>,
                     "[pedestal|newpedestal|flatfield|newflatfield]\n\t[Moench] Frame mode (soft setting) in processor.");
 

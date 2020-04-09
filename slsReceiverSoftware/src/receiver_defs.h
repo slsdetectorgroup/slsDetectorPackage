@@ -74,7 +74,6 @@ struct masterAttributes {
     uint64_t subExptimeNs;
     uint64_t subPeriodNs;
     uint64_t periodNs;
-    uint32_t gapPixelsEnable;
     uint32_t quadEnable;
     uint32_t analogFlag;
     uint32_t digitalFlag;

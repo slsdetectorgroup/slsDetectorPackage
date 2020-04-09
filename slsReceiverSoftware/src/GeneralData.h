@@ -171,16 +171,6 @@ public:
 		LOG(logERROR) << "SetTenGigaEnable is a generic function that should be overloaded by a derived class";
 	};
 
-	/**
-	 * Enable Gap Pixels changes member variables
-	 * @param enable true if gap pixels enable, else false
-	 * @param dr dynamic range
-	 * @param q quad enable 
-	 */
-	virtual void SetGapPixelsEnable(bool b, int dr, bool q) {
-		LOG(logERROR) << "SetGapPixelsEnable is a generic function that should be overloaded by a derived class";
-	};
-
     /**
      * Set odd starting packet (gotthard)
      * @param index thread index for debugging purposes
@@ -424,7 +414,7 @@ class EigerData : public GeneralData {
 		imageSize 			= dataSize*packetsPerFrame;
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
-		defaultFifoDepth 	= 100;
+		defaultFifoDepth 	= 1000;
 		threadsPerReceiver	= 2;
 		headerPacketSize	= 40;
 		standardheader		= true;
@@ -438,6 +428,7 @@ class EigerData : public GeneralData {
 	void SetDynamicRange(int dr, bool tgEnable) {
 		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
 		imageSize 		= dataSize*packetsPerFrame;
+		defaultFifoDepth = (dr == 32 ?  100 : 1000);
 	}
 
 	/**
@@ -451,39 +442,6 @@ class EigerData : public GeneralData {
 		packetsPerFrame = (tgEnable ? 4 : 16) * dr;
 		imageSize 		= dataSize*packetsPerFrame;
 	};
-
-	/**
-	 * Enable Gap Pixels changes member variables
-	 * @param enable true if gap pixels enable, else false
-	 * @param dr dynamic range
-	 * @param q quad enable 
-	 */
-	void SetGapPixelsEnable(bool b, int dr, bool q) {
-		if (dr == 4)
-			b = 0;
-		switch((int)b) {
-		case 1:
-			nPixelsX	= (256 * 2) + 3;
-			if (q) {
-				nPixelsX	= (256 * 2) + 2;
-			}
-			nPixelsY 	= 256 + 1;
-			imageSize	= nPixelsX * nPixelsY * ((dr > 16) ? 4 : // 32 bit
-												((dr > 8)  ? 2 : // 16 bit
-												((dr > 4)  ? 1 : // 8 bit
-												0.5)));			 // 4 bit
-			break;
-		default:
-			nPixelsX 	= (256*2);
-			nPixelsY 	= 256;
-			imageSize	= nPixelsX * nPixelsY * ((dr > 16) ? 4 : // 32 bit
-												((dr > 8)  ? 2 : // 16 bit
-												((dr > 4)  ? 1 : // 8 bit
-												0.5)));			 // 4 bit
-			break;
-		}
-	};
-
 
 };
 

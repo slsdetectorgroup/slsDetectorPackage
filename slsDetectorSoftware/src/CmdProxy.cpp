@@ -314,7 +314,7 @@ std::string CmdProxy::DetectorSize(int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getDetectorSize();
-        os << "[" << t.x << "," << t.y << "]\n";
+        os << "[" << t.x << ", " << t.y << "]\n";
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
@@ -402,37 +402,45 @@ std::string CmdProxy::Adcphase(int action) {
               "resets adcphase and sets it to previous values.\n\t[Gotthard] "
               "Relative phase shift"
            << '\n';
-    } else if (action == defs::GET_ACTION) {
-        Result<int> t;
-        if (args.empty()) {
-            t = det->getADCPhase({det_id});
-            os << OutString(t) << '\n';
-        } else if (args.size() == 1) {
-            if (args[0] != "deg") {
-                throw sls::RuntimeError("Unknown adcphase argument " + args[0] +
-                                        ". Did you mean deg?");
+    } else { 
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        if (det_type == defs::EIGER ||
+            det_type == defs::MYTHEN3 ||
+            det_type == defs::GOTTHARD2) {
+                throw sls::RuntimeError("adcphase not implemented for this detector");
             }
-            t = det->getADCPhaseInDegrees({det_id});
-            os << OutString(t) << " deg\n";
-        } else {
-            WrongNumberOfParameters(0);
-        }
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() == 1) {
-            det->setADCPhase(StringTo<int>(args[0]), {det_id});
-            os << args.front() << '\n';
-        } else if (args.size() == 2) {
-            if (args[1] != "deg") {
-                throw sls::RuntimeError("Unknown adcphase 2nd argument " +
-                                        args[1] + ". Did you mean deg?");
+        if (action == defs::GET_ACTION) {
+            Result<int> t;
+            if (args.empty()) {
+                t = det->getADCPhase({det_id});
+                os << OutString(t) << '\n';
+            } else if (args.size() == 1) {
+                if (args[0] != "deg") {
+                    throw sls::RuntimeError("Unknown adcphase   argument " + args[0] +
+                                            ". Did you mean deg?    ");
+                }
+                t = det->getADCPhaseInDegrees({det_id});
+                os << OutString(t) << " deg\n";
+            } else {
+                WrongNumberOfParameters(0);
             }
-            det->setADCPhaseInDegrees(StringTo<int>(args[0]), {det_id});
-            os << args[0] << args[1] << '\n';
+        } else if (action == defs::PUT_ACTION) {
+            if (args.size() == 1) {
+                det->setADCPhase(StringTo<int>(args[0]), {det_id}   );
+                os << args.front() << '\n';
+            } else if (args.size() == 2) {
+                if (args[1] != "deg") {
+                    throw sls::RuntimeError("Unknown adcphase   2nd argument " +
+                                            args[1] + ". Did you    mean deg?");
+                }
+                det->setADCPhaseInDegrees(StringTo<int>(args[0])    , {det_id});
+                os << args[0] << " " << args[1] << '\n';
+            } else {
+                WrongNumberOfParameters(1);
+            }
         } else {
-            WrongNumberOfParameters(1);
+            throw sls::RuntimeError("Unknown action");
         }
-    } else {
-        throw sls::RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -446,37 +454,45 @@ std::string CmdProxy::Dbitphase(int action) {
               "shift in degrees. \n\t[Ctb]Changing dbitclk also resets dbitphase and "
               "sets to previous values."
            << '\n';
-    } else if (action == defs::GET_ACTION) {
-        Result<int> t;
-        if (args.empty()) {
-            t = det->getDBITPhase({det_id});
-            os << OutString(t) << '\n';
-        } else if (args.size() == 1) {
-            if (args[0] != "deg") {
-                throw sls::RuntimeError("Unknown dbitphase argument " +
-                                        args[0] + ". Did you mean deg?");
-            }
-            t = det->getDBITPhaseInDegrees({det_id});
-            os << OutString(t) << " deg\n";
-        } else {
-            WrongNumberOfParameters(0);
+    } else { 
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        if (det_type == defs::EIGER ||
+            det_type == defs::MYTHEN3 ||
+            det_type == defs::GOTTHARD2) {
+            throw sls::RuntimeError("dbitphase not implemented for this detector");
         }
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() == 1) {
-            det->setDBITPhase(StringTo<int>(args[0]), {det_id});
-            os << args.front() << '\n';
-        } else if (args.size() == 2) {
-            if (args[1] != "deg") {
-                throw sls::RuntimeError("Unknown dbitphase 2nd argument " +
-                                        args[1] + ". Did you mean deg?");
+        if (action == defs::GET_ACTION) {
+            Result<int> t;
+            if (args.empty()) {
+                t = det->getDBITPhase({det_id});
+                os << OutString(t) << '\n';
+            } else if (args.size() == 1) {
+                if (args[0] != "deg") {
+                    throw sls::RuntimeError("Unknown dbitphase argument " +
+                                            args[0] + ". Did you mean deg?  ");
+                }
+                t = det->getDBITPhaseInDegrees({det_id});
+                os << OutString(t) << " deg\n";
+            } else {
+                WrongNumberOfParameters(0);
             }
-            det->setDBITPhaseInDegrees(StringTo<int>(args[0]), {det_id});
-            os << args[0] << args[1] << '\n';
+        } else if (action == defs::PUT_ACTION) {
+            if (args.size() == 1) {
+                det->setDBITPhase(StringTo<int>(args[0]), {det_id});
+                os << args.front() << '\n';
+            } else if (args.size() == 2) {
+                if (args[1] != "deg") {
+                    throw sls::RuntimeError("Unknown dbitphase 2nd  argument " +
+                                            args[1] + ". Did you mean deg?  ");
+                }
+                det->setDBITPhaseInDegrees(StringTo<int>(args[0]), {det_id} );
+                os << args[0] << " " << args[1] << '\n';
+            } else {
+                WrongNumberOfParameters(1);
+            }
         } else {
-            WrongNumberOfParameters(1);
+            throw sls::RuntimeError("Unknown action");
         }
-    } else {
-        throw sls::RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -538,7 +554,7 @@ std::string CmdProxy::ClockPhase(int action) {
                 }
                 auto t =
                     det->getClockPhaseinDegrees(StringTo<int>(args[0]), {det_id});
-                os << OutString(t) << '\n';
+                os << OutString(t) << " deg\n";
             } else {
                 WrongNumberOfParameters(1);
             }
@@ -554,7 +570,7 @@ std::string CmdProxy::ClockPhase(int action) {
                 }
                 det->setClockPhaseinDegrees(StringTo<int>(args[0]),
                                             StringTo<int>(args[1]), {det_id});
-                os << args[1] << '\n';
+                os << args[1] << " " << args[2] << '\n';
             } else {
                 WrongNumberOfParameters(1);
             }
@@ -769,6 +785,47 @@ std::vector<std::string> CmdProxy::DacCommands() {
 }
 
 /* acquisition */
+
+std::string CmdProxy::ReceiverStatus(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "running, idle]\n\tReceiver listener status."
+               << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getReceiverStatus({det_id});
+        os << OutString(t) << '\n';  
+    } else if (action == defs::PUT_ACTION) {
+        throw sls::RuntimeError("Cannot put. Did you mean to use command 'rx_start' or 'rx_stop'?");
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::DetectorStatus(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[running, error, transmitting, finished, waiting, idle]\n\tDetector status."
+               << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getDetectorStatus({det_id});
+        os << OutString(t) << '\n';  
+    } else if (action == defs::PUT_ACTION) {
+        throw sls::RuntimeError("Cannot put. Did you mean to use command 'start' or 'stop'?");
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Network Configuration (Detector<->Receiver) */
 
 std::string CmdProxy::UDPDestinationIP(int action) {
@@ -1001,24 +1058,27 @@ std::string CmdProxy::GapPixels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[0, 1]\n\t[Eiger] Include Gap pixels in data file or data call "
-              "back. 4 bit mode gap pixels only ind ata call back."
+        os << "[0, 1]\n\t[Eiger][Jungfrau] Include Gap pixels only in data call back."
            << '\n';
     } else if (action == defs::GET_ACTION) {
+        if (det_id != -1) {
+            throw sls::RuntimeError(
+                "Cannot get gap pixels at module level");
+        }
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        auto t = det->getRxAddGapPixels({det_id});
-        os << OutString(t) << '\n';
+        auto t = det->getGapPixelsinCallback();
+        os << t << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id != -1) {
             throw sls::RuntimeError(
-                "Cannot execute dynamic range at module level");
+                "Cannot add gap pixels at module level");
         }
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        det->setRxAddGapPixels(StringTo<int>(args[0]));
+        det->setGapPixelsinCallback(StringTo<int>(args[0]));
         os << args.front() << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -1224,7 +1284,7 @@ std::string CmdProxy::Quad(int action) {
     } else if (action == defs::PUT_ACTION) {
         if (det_id != -1) {
             throw sls::RuntimeError(
-                "Cannot execute dynamic range at module level");
+                "Cannot execute quad at module level");
         }
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
@@ -1879,13 +1939,47 @@ std::string CmdProxy::PatternWaitTime(int action) {
 
 /* Moench */
 
+std::string CmdProxy::AdditionalJsonHeader(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[key1] [value1] [key2] [value2]...[keyn] [valuen]"
+        "\n\tAdditional json header to be streamed out from receiver via zmq. "
+        "Default is empty. Use only if to be processed by an intermediate user process "
+        "listening to receiver zmq packets. Empty value deletes header. "
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getAdditionalJsonHeader({det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        // arguments can be empty
+        std::map<std::string, std::string> json;
+        for (size_t i = 0; i < args.size(); i = i + 2) {
+            // last value is empty
+            if (i + 1 >= args.size()) {
+                json[args[i]] = "";
+            } else {
+                json[args[i]] = args[i + 1];
+            }
+        }
+        det->setAdditionalJsonHeader(json, {det_id});
+        os << sls::ToString(json) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str(); 
+}
+
 std::string CmdProxy::JsonParameter(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[key1] [value1]\n\tAdditional json header parameter streamed "
-              "out from receiver. If empty in a get, then no parameter found. "
-              "This is same as calling rx_jsonaddheader \"key\":\"value1\"."
+              "out from receiver. If not found in header, the pair is appended. "
+              "An empty values deletes parameter."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
@@ -1894,11 +1988,21 @@ std::string CmdProxy::JsonParameter(int action) {
         auto t = det->getAdditionalJsonParameter(args[0], {det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 2) {
-            WrongNumberOfParameters(2);
+        switch (args.size()) {
+            case 1:
+                det->setAdditionalJsonParameter(args[0], "", {det_id});
+                break;
+            case 2: 
+                det->setAdditionalJsonParameter(args[0], args[1], {det_id});
+                break;
+            default:
+                WrongNumberOfParameters(1); 
         }
-        det->setAdditionalJsonParameter(args[0], args[1], {det_id});
-        os << sls::ToString(args) << '\n';
+        if (args.size() == 1) {
+            os << args[0] << " deleted" << '\n';
+        } else {
+            os << "{" << args[0] << ": " << args[1] << "}" << '\n';
+        }
     } else {
         throw sls::RuntimeError("Unknown action");
     }

@@ -14,6 +14,7 @@ class slsDetectorDefs;
 #include <exception>
 #include <memory>
 #include <vector>
+#include <map>
 
 class Implementation : private virtual slsDetectorDefs {
   public:
@@ -74,6 +75,7 @@ class Implementation : private virtual slsDetectorDefs {
     runStatus getStatus() const;
     uint64_t getFramesCaught() const;
     uint64_t getAcquisitionIndex() const;
+    int getProgress() const;
     std::vector<uint64_t> getNumMissingPackets() const;
     void startReceiver();
     void setStoppedFlag(bool stopped);
@@ -123,16 +125,29 @@ class Implementation : private virtual slsDetectorDefs {
     void setStreamingPort(const uint32_t i);
     sls::IpAddr getStreamingSourceIP() const;
     void setStreamingSourceIP(const  sls::IpAddr ip);
-    std::string getAdditionalJsonHeader() const;
-    void setAdditionalJsonHeader(const std::string& c);
+    std::map<std::string, std::string> getAdditionalJsonHeader() const;
+    void setAdditionalJsonHeader(const std::map<std::string, std::string> &c);
+    std::string getAdditionalJsonParameter(const std::string &key) const;
+    void setAdditionalJsonParameter(const std::string &key, const std::string &value);
 
     /**************************************************
      *                                                 *
      *   Detector Parameters                           *
      *                                                 *
      * ************************************************/
+    void updateTotalNumberOfFrames();
     uint64_t getNumberOfFrames() const;
     void setNumberOfFrames(const uint64_t i);
+    uint64_t getNumberOfTriggers() const;
+    void setNumberOfTriggers(const uint64_t i);
+    uint64_t getNumberOfBursts() const;
+    void setNumberOfBursts(const uint64_t i);
+    int getNumberOfAdditionalStorageCells() const;
+    void setNumberOfAdditionalStorageCells(const int i);
+    timingMode getTimingMode() const;
+    void setTimingMode(const timingMode i);
+    burstMode getBurstMode() const;
+    void setBurstMode(const burstMode i);
     uint64_t getAcquisitionTime() const;
     void setAcquisitionTime(const uint64_t i);
     uint64_t getAcquisitionPeriod() const;
@@ -161,9 +176,6 @@ class Implementation : private virtual slsDetectorDefs {
     void setTenGigaEnable(const bool b);
     int getFlippedDataX() const;
     void setFlippedDataX(int enable = -1);
-    bool getGapPixelsEnable() const;
-    /* [Eiger] */
-    void setGapPixelsEnable(const bool b);
     bool getQuad() const;
     /* [Eiger] */
     void setQuad(const bool b);
@@ -263,10 +275,16 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t streamingTimerInMs;
     uint32_t streamingPort;
     sls::IpAddr streamingSrcIP;
-    std::string additionalJsonHeader;
+    std::map<std::string, std::string> additionalJsonHeader;
 
     // detector parameters
+    uint64_t numberOfTotalFrames;
     uint64_t numberOfFrames;
+    uint64_t numberOfTriggers;
+    uint64_t numberOfBursts;
+    int numberOfAdditionalStorageCells;
+    timingMode timingMode;
+    burstMode burstMode;
     uint64_t acquisitionPeriod;
     uint64_t acquisitionTime;
     uint64_t subExpTime;
@@ -278,7 +296,6 @@ class Implementation : private virtual slsDetectorDefs {
     ROI roi;
     bool tengigaEnable;
     int flippedDataX;
-    bool gapPixelsEnable;
     bool quadEnable; 
     bool activated;
     bool deactivatedPaddingEnable;

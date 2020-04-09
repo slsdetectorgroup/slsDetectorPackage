@@ -16,7 +16,7 @@ class detectorData;
 #include <vector>
 
 #define MULTI_SHMAPIVERSION 0x190809
-#define MULTI_SHMVERSION 0x200131
+#define MULTI_SHMVERSION 0x200319
 #define SHORT_STRING_LENGTH 50
 
 #include <future>
@@ -47,10 +47,7 @@ struct sharedMultiSlsDetector {
     /** last time stamp when accessing the shared memory */
     char lastDate[SHORT_STRING_LENGTH];
 
-    /** number of sls detectors in shared memory */
     int numberOfDetectors;
-
-    /** multi detector type */
     slsDetectorDefs::detectorType multiDetectorType;
 
     /** END OF FIXED PATTERN
@@ -62,11 +59,9 @@ struct sharedMultiSlsDetector {
     /**  max number of channels for complete detector*/
     slsDetectorDefs::xy numberOfChannels;
 
-    /** flag for acquiring */
     bool acquiringFlag;
-
-    /** initial checks */
     bool initialChecks;
+    bool gapPixels;
 };
 
 class DetectorImpl : public virtual slsDetectorDefs {
@@ -236,11 +231,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * Sets maximum number of channels of all sls detectors */
     void setNumberOfChannels(const slsDetectorDefs::xy c); 
 
-    /**
-     * Enable gap pixels, only for Eiger and for 8,16 and 32 bit mode. (Eiger)
-     * 4 bit mode gap pixels only in gui call back
-     */
-    void setGapPixelsinReceiver(bool enable);
+    /** [Eiger][Jungfrau] */
+    bool getGapPixelsinCallback() const;
+    /** [Eiger][Jungfrau] */
+    void setGapPixelsinCallback(const bool enable);
 
     /**
      * Enable data streaming to client
@@ -347,23 +341,20 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     void readFrameFromReceiver();
 
-    /**
-     * add gap pixels to the image (only for Eiger in 4 bit mode)
+    /** [Eiger][Jungfrau]
+     * add gap pixels to the imag
      * @param image pointer to image without gap pixels
      * @param gpImage poiner to image with gap pixels, if NULL, allocated
-     * inside function
-     * quadEnable quad enabled
-     * @returns number of data bytes of image with gap pixels
+     * @param quadEnable quad enabled
+     * @param dr dynamic range
+     * @param nPixelsx number of pixels in X axis (updated)
+     * @param nPixelsy number of pixels in Y axis (updated)
+     * @returns total data bytes for updated image
      */
-    int processImageWithGapPixels(char *image, char *&gpImage, bool quadEnable);
+    int InsertGapPixels(char *image, char *&gpImage, bool quadEnable, int dr, 
+        int &nPixelsx, int &nPixelsy);
 
-    double setTotalProgress();
-
-    double getCurrentProgress();
-
-    void incrementProgress();
-
-    void setCurrentProgress(int64_t i = 0);
+    void printProgress(double progress);
 
     void startProcessingThread();
 
@@ -407,12 +398,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** semaphore to let main thread know it got all the dummy packets (also
      * from ext. process) */
     sem_t sem_endRTAcquisition;
-
-    /** Total number of frames/images for next acquisition */
-    double totalProgress{0};
-
-    /** Current progress or frames/images processed in current acquisition */
-    double progressIndex{0};
 
     /** mutex to synchronize main and data processing threads */
     mutable std::mutex mp;

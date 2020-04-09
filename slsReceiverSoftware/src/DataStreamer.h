@@ -15,7 +15,7 @@ class Fifo;
 class DataStreamer;
 class ZmqSocket;
 
-#include <vector>
+#include <map>
 
 class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	
@@ -29,13 +29,12 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param r roi
 	 * @param fi pointer to file index
 	 * @param fd flipped data enable for x dimension
-	 * @param ajh additional json header
 	 * @param nd pointer to number of detectors in each dimension
-	 * @param gpEnable pointer to gap pixels enable
 	 * @param qe pointer to quad Enable
+	 * @param tot pointer to total number of frames
 	 */
 	DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
-			uint64_t* fi, int fd, std::string* ajh, int* nd, bool* gpEnable, bool* qe);
+			uint64_t* fi, int fd, int* nd, bool* qe, uint64_t* tot);
 
 	/**
 	 * Destructor
@@ -90,6 +89,12 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param flipped data enable in x dimension
 	 */
 	void SetFlippedDataX(int fd);	
+
+	/**
+	 * Set additional json header
+	 * @param json additional json header
+	 */
+	void SetAdditionalJsonHeader(const std::map<std::string, std::string> &json); 
 	
 	/**
 	 * Creates Zmq Sockets
@@ -183,7 +188,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	int flippedDataX;
 
 	/** additional json header */
-	std::string* additionJsonHeader;
+	std::map<std::string, std::string> additionJsonHeader;
 
 	/** Aquisition Started flag */
 	bool startedFlag;
@@ -200,11 +205,11 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	/** Number of Detectors in X and Y dimension */
 	int numDet[2];
 
-	/** Gap Pixels Enable */
-	bool* gapPixelsEnable;
-
 	/** Quad Enable */
 	bool* quadEnable;
+
+	/** Total number of frames */
+	uint64_t* totalNumFrames;
 
 };
 

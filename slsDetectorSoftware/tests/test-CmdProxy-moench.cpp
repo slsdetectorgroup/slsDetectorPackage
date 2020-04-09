@@ -15,7 +15,9 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
-TEST_CASE("Setting and reading back MOENCH dacs", "[.cmd][.dacs]") {
+/* dacs */
+
+TEST_CASE("Setting and reading back MOENCH dacs", "[.cmd][.dacs][.new]") {
     // vbp_colbuf, vipre, vin_cm", vb_sda, vcasc_sfp, vout_cm, vipre_cds, ibias_sfp
 
     Detector det;

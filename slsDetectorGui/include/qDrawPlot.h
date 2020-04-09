@@ -59,11 +59,9 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
 
   private slots:
     void SetSaveFileName(QString val);
-    void AcquireThread();
     void UpdatePlot();
 
   signals:
-    void StartAcquireSignal();
     void AcquireFinishedSignal();
     void AbortSignal();
     void UpdateSignal();
@@ -74,6 +72,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     void SetupPlots();
     void GetStatistics(double &min, double &max, double &sum);
     void DetachHists();
+    void AcquireThread();
     static void GetAcquisitionFinishedCallBack(double currentProgress,
                                                int detectorStatus,
                                                void *this_pointer);
@@ -114,6 +113,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     QString zTitle2d{"Intensity"};
     QString plotTitle{""};
     QString indexTitle{""};
+    bool completeImage{false};
     bool xyRangeChanged{false};
     double xyRange[4]{0, 0, 0, 0};
     bool isXYRange[4]{false, false, false, false};

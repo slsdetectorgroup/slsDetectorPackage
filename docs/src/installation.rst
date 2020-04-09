@@ -55,3 +55,15 @@ using this compiler
     conda activate myenv
     cmake ../slsDetectorPackage -DCMAKE_PREFIX_PATH=$CONDA_PREFIX
     make -j12
+
+
+Build this documentation
+-------------------------------
+
+The documentation for the slsDetectorPackage is build using a combination 
+of Doxygen, Sphinx and Breathe. The easiest way to install the dependencies
+is to use conda 
+
+.. code-block:: bash
+
+    conda create -n myenv python sphinx sphinx_rtd_theme

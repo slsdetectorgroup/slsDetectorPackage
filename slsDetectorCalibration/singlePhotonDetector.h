@@ -429,7 +429,7 @@ int *getClusters(char *data,  int *ph=NULL) {
 		max=*v;
 	      }
 	   
-	    } 
+	    }
 	    
 	    
 	  }

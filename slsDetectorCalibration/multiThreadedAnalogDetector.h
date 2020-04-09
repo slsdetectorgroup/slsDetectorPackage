@@ -320,7 +320,7 @@ public:
     // int nnx, nny, ns;
     int nn=dets[0]->getImageSize(nnx, nny,ns, nsy);
     if (image) {
-      delete image;
+      delete [] image;
       image=NULL;
     }
     image=new int[nn];

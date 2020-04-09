@@ -759,7 +759,7 @@ int64_t getSubExpTime() {
 #endif
 }
 
-int setDeadTime(int64_t val) {
+int setSubDeadTime(int64_t val) {
 	LOG(logINFO, ("Setting subdeadtime %lld ns\n", (long long int)val));
 #ifndef VIRTUAL
 	// get subexptime
@@ -781,7 +781,7 @@ int setDeadTime(int64_t val) {
 	return OK;
 }
 
-int64_t getDeadTime() {
+int64_t getSubDeadTime() {
 #ifndef VIRTUAL
 	// get subexptime
 	int64_t subexptime = Feb_Control_GetSubFrameExposureTime();

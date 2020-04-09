@@ -177,13 +177,6 @@ class Module : public virtual slsDetectorDefs {
     detectorType getDetectorType() const;
 
     /**
-     * Gets detector type from detector and set it in receiver
-     * @param type the detector type
-     * @returns detector type in receiver
-     */
-    int setDetectorType(detectorType type = GET_DETECTOR_TYPE);
-
-    /**
      * Update total number of channels (chiptestboard or moench)
      * from the detector server
      */
@@ -647,10 +640,10 @@ class Module : public virtual slsDetectorDefs {
      * significant for the receiver Also configures the detector to the receiver
      * as UDP destination
      * @param receiver receiver hostname or IP address
-     * @returns the receiver IP address from shared memory
      */
-    std::string setReceiverHostname(const std::string &receiver);
+    void setReceiverHostname(const std::string &receiver);
 
+    void test();
     /**
      * Returns the receiver IP address\sa sharedSlsDetector
      * @returns the receiver IP address
@@ -722,13 +715,6 @@ class Module : public virtual slsDetectorDefs {
     sls::IpAddr getDestinationUDPIP();
 
     /**
-     * Gets destination udp ip from detector,
-     * if 0, it converts rx_hostname to ip and 
-     * updates both detector and receiver
-     */
-    void updateRxDestinationUDPIP();
-
-    /**
      * Validates the format of the receiver UDP IP address (bottom half) and
      * sets it(Jungfrau only)
      * If slsReceiver used, Gets receiver udp mac address2 and sends it to the detector
@@ -743,13 +729,6 @@ class Module : public virtual slsDetectorDefs {
      */
     sls::IpAddr getDestinationUDPIP2();
   
-    /**
-     * Gets destination udp ip2 from detector,
-     * if 0, it converts rx_hostname to ip and 
-     * updates both detector and receiver
-     */
-    void updateRxDestinationUDPIP2();
-    
     /**
      * Validates the format of the receiver UDP MAC address and sets it 
      * @param mac receiver UDP MAC address
@@ -1344,26 +1323,6 @@ class Module : public virtual slsDetectorDefs {
      */
     void execReceiverCommand(const std::string &cmd);
 
-    /**
-     * Send the multi detector size to the detector
-     * @param detx number of detectors in x dir
-     * @param dety number of detectors in y dir
-     */
-    void sendMultiDetectorSize();
-
-    /**
-     * Send the detector pos id to the receiver
-     * for various file naming conventions for multi detectors in receiver
-     */
-    void setDetectorId();
-
-    /**
-     * Send the detector host name to the  receiver
-     * for various handshaking required with the detector
-     */
-    void setDetectorHostname();
-
-
     std::string getFilePath();
     void setFilePath(const std::string &path);
     std::string getFileName();
@@ -1605,9 +1564,6 @@ class Module : public virtual slsDetectorDefs {
 
     /** [Mythen3] */
     void setCounterMask(uint32_t countermask);
-
-    /** [Mythen3] */
-    void sendNumberofCounterstoReceiver(uint32_t countermask);
 
     /** [Mythen3] */
     uint32_t getCounterMask();

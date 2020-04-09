@@ -52,8 +52,6 @@ int detectorId = -1;
 int (*flist[NUM_DET_FUNCTIONS])(int);
 
 
-enum updateRet {NO_UPDATE, UPDATE};
-
 /* initialization functions */
 
 int printSocketReadError() {
@@ -316,6 +314,7 @@ const char* getFunctionName(enum detFuncs func) {
 	case F_SET_TIMING_SOURCE:				return "F_SET_TIMING_SOURCE";
 	case F_GET_NUM_CHANNELS:				return "F_GET_NUM_CHANNELS";
 	case F_UPDATE_RATE_CORRECTION:			return "F_UPDATE_RATE_CORRECTION";
+	case F_GET_RECEIVER_PARAMETERS:			return "F_GET_RECEIVER_PARAMETERS";
 
 	default:								return "Unknown Function";
 	}
@@ -509,6 +508,7 @@ void function_table() {
 	flist[F_SET_TIMING_SOURCE]					= &set_timing_source;
 	flist[F_GET_NUM_CHANNELS]					= &get_num_channels;
 	flist[F_UPDATE_RATE_CORRECTION]				= &update_rate_correction;
+	flist[F_GET_RECEIVER_PARAMETERS]			= &get_receiver_parameters;
 
 	// check
 	if (NUM_DET_FUNCTIONS  >= RECEIVER_ENUM_START) {
@@ -607,7 +607,7 @@ int  M_nofunc(int file_des) {
 
 	sprintf(mess,"Unrecognized Function enum %d. Please do not proceed.\n", fnum);
 	LOG(logERROR, (mess));
-	return Server_SendResult(file_des, OTHER, NO_UPDATE, NULL, 0);
+	return Server_SendResult(file_des, OTHER, NULL, 0);
 }
 
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
@@ -629,7 +629,7 @@ int exec_command(int file_des) {
 	if (Server_VerifyLock() == OK) {
 		ret = executeCommand(cmd, retval, logINFO);
 	}
-	return Server_SendResult(file_des, OTHER, NO_UPDATE, retval, sizeof(retval));
+	return Server_SendResult(file_des, OTHER, retval, sizeof(retval));
 }
 
 
@@ -640,7 +640,7 @@ int get_detector_type(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	enum detectorType retval = myDetectorType;
 	LOG(logDEBUG1,("Returning detector type %d\n", retval));
-	return Server_SendResult(file_des, INT32, NO_UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -671,7 +671,7 @@ int set_external_signal_flag(int file_des) {
 	validate((int)flag, (int)retval, "set external signal flag", DEC);
 	LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -708,7 +708,7 @@ int set_timing_mode(int file_des) {
 	validate((int)arg, (int)retval, "set timing mode", DEC);
 	LOG(logDEBUG1, ("Timing Mode: %d\n",retval));
 
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -719,7 +719,7 @@ int get_firmware_version(int file_des) {
 	int64_t retval = -1;
 	retval = getFirmwareVersion();
 	LOG(logDEBUG1, ("firmware version retval: 0x%llx\n", (long long int)retval));
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int get_server_version(int file_des) {
@@ -728,7 +728,7 @@ int get_server_version(int file_des) {
 	int64_t retval = -1;
 	retval = getServerVersion();
 	LOG(logDEBUG1, ("firmware version retval: 0x%llx\n", (long long int)retval));
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int get_serial_number(int file_des) {
@@ -737,7 +737,7 @@ int get_serial_number(int file_des) {
 	int64_t retval = -1;
 	retval = getDetectorNumber();
 	LOG(logDEBUG1, ("firmware version retval: 0x%llx\n", (long long int)retval));
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_firmware_test(int file_des) {
@@ -750,7 +750,7 @@ int set_firmware_test(int file_des) {
 #else
 	ret = testFpga();
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int set_bus_test(int file_des) {
@@ -763,7 +763,7 @@ int set_bus_test(int file_des) {
 #else
 	ret = testBus();
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int set_image_test_mode(int file_des) {
@@ -780,7 +780,7 @@ int set_image_test_mode(int file_des) {
 #else
 	functionNotImplemented();
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_image_test_mode(int file_des) {
@@ -795,7 +795,7 @@ int get_image_test_mode(int file_des) {
 #else
 	functionNotImplemented();
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -1294,7 +1294,7 @@ int set_dac(int file_des) {
     		}
     	}
     }
-    return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -1422,7 +1422,7 @@ int get_adc(int file_des) {
 	}
 #endif
 
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -1468,7 +1468,7 @@ int write_register(int file_des) {
         }
         LOG(logDEBUG1, ("Write register (0x%x): 0x%x\n", retval));
     }
-    return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -1500,7 +1500,7 @@ int read_register(int file_des) {
 #endif
 	LOG(logINFO, ("Read register (0x%x): 0x%x\n", addr, retval));
 
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -1615,7 +1615,7 @@ int set_module(int file_des) {
 	if (myDac != NULL) 	free(myDac);
 #endif
 
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -1672,7 +1672,7 @@ int get_module(int file_des) {
 		LOG(logDEBUG1, ("Getting module. Settings:%d\n", module.reg));
 	}
 
-	Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	Server_SendResult(file_des, INT32, NULL, 0);
 
 	// send module, 0 is to receive partially (without trimbits etc)
 	if (ret != FAIL) {
@@ -1765,7 +1765,7 @@ int set_settings(int file_des) {
 	}
 #endif
 
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -1785,7 +1785,7 @@ int get_threshold_energy(int file_des) {
 	retval = getThresholdEnergy();
 	LOG(logDEBUG1, ("Threshold energy: %d eV\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -1859,7 +1859,7 @@ int start_acquisition(int file_des) {
 		}
 		LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
 	}
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -1878,7 +1878,7 @@ int stop_acquisition(int file_des) {
 		}
 		LOG(logDEBUG1, ("Stopping Acquisition ret: %d\n", ret));
 	}
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -1903,7 +1903,7 @@ int start_readout(int file_des) {
 		LOG(logDEBUG1, ("Starting readout ret: %d\n", ret));
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -1920,7 +1920,7 @@ int get_run_status(int file_des) {
 	// only get
 	retval = getRunStatus();
 	LOG(logDEBUG1, ("Status: %d\n", retval));
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -1998,7 +1998,7 @@ int start_and_read_all(int file_des) {
 
 	// lock or acquisition start error
 	if (ret == FAIL)
-		return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+		return Server_SendResult(file_des, INT32, NULL, 0);
 
 	// read all (again validate lock, but should pass and not fail)
 	return read_all(file_des);
@@ -2016,7 +2016,7 @@ int read_all(int file_des) {
 	if (Server_VerifyLock() == OK) {
 		readFrame(&ret, mess);
 	}
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -2029,7 +2029,7 @@ int get_num_frames(int file_des) {
 	// get only
 	retval = getNumFrames();
 	LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_num_frames(int file_des) {
@@ -2058,7 +2058,7 @@ int set_num_frames(int file_des) {
 			validate64(arg, retval, "set number of frames", DEC);
 		}
 	}
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_num_triggers(int file_des) {
@@ -2069,7 +2069,7 @@ int get_num_triggers(int file_des) {
 	// get only
 	retval = getNumTriggers();
 	LOG(logDEBUG1, ("retval num triggers %lld\n", (long long int)retval));
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_num_triggers(int file_des) {
@@ -2088,7 +2088,7 @@ int set_num_triggers(int file_des) {
 		LOG(logDEBUG1, ("retval num triggers %lld\n", (long long int)retval));
 		validate64(arg, retval, "set number of triggers", DEC);
 	}
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_num_additional_storage_cells(int file_des) {
@@ -2103,7 +2103,7 @@ int get_num_additional_storage_cells(int file_des) {
 	retval = getNumAdditionalStorageCells();
 	LOG(logDEBUG1, ("retval num addl. storage cells %d\n", retval));
 #endif	
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 int set_num_additional_storage_cells(int file_des) {
@@ -2132,7 +2132,7 @@ int set_num_additional_storage_cells(int file_des) {
 			}
 	}
 #endif	
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_num_analog_samples(int file_des) {
@@ -2147,7 +2147,7 @@ int get_num_analog_samples(int file_des) {
 	retval = getNumAnalogSamples();
 	LOG(logDEBUG1, ("retval num analog samples %d\n", retval));
 #endif	
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 int set_num_analog_samples(int file_des) {
@@ -2184,7 +2184,7 @@ int set_num_analog_samples(int file_des) {
 		}
 	}
 #endif	
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_num_digital_samples(int file_des) {
@@ -2199,7 +2199,7 @@ int get_num_digital_samples(int file_des) {
 	retval = getNumDigitalSamples();
 	LOG(logDEBUG1, ("retval num digital samples %d\n", retval));
 #endif	
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 int set_num_digital_samples(int file_des) {
@@ -2227,7 +2227,7 @@ int set_num_digital_samples(int file_des) {
 		}
 	}
 #endif	
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_exptime(int file_des) {
@@ -2238,7 +2238,7 @@ int get_exptime(int file_des) {
 	// get only
 	retval = getExpTime();
 	LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_exptime(int file_des) {
@@ -2260,7 +2260,7 @@ int set_exptime(int file_des) {
 	        LOG(logERROR,(mess));			
 		}
 	}
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_period(int file_des) {
@@ -2271,7 +2271,7 @@ int get_period(int file_des) {
 	// get only
 	retval = getPeriod();
 	LOG(logDEBUG1, ("retval period %lld ns\n", (long long int)retval));
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_period(int file_des) {
@@ -2293,7 +2293,7 @@ int set_period(int file_des) {
 	        LOG(logERROR,(mess));			
 		}
 	}
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_delay_after_trigger(int file_des) {
@@ -2308,7 +2308,7 @@ int get_delay_after_trigger(int file_des) {
 	retval = getDelayAfterTrigger();
 	LOG(logDEBUG1, ("retval delay after trigger %lld ns\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_delay_after_trigger(int file_des) {
@@ -2334,7 +2334,7 @@ int set_delay_after_trigger(int file_des) {
 		}
 	}
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_sub_exptime(int file_des) {
@@ -2349,7 +2349,7 @@ int get_sub_exptime(int file_des) {
 	retval = getSubExpTime();
 	LOG(logDEBUG1, ("retval subexptime %lld ns\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_sub_exptime(int file_des) {
@@ -2381,7 +2381,7 @@ int set_sub_exptime(int file_des) {
 		}
 	}
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_sub_deadtime(int file_des) {
@@ -2393,10 +2393,10 @@ int get_sub_deadtime(int file_des) {
 	functionNotImplemented();
 #else	
 	// get only
-	retval = getDeadTime();
+	retval = getSubDeadTime();
 	LOG(logDEBUG1, ("retval subdeadtime %lld ns\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_sub_deadtime(int file_des) {
@@ -2424,8 +2424,8 @@ int set_sub_deadtime(int file_des) {
 					((double)subexptime/(double)1E9));
 			LOG(logERROR,(mess));
 		} else {			
-			ret = setDeadTime(arg); 
-			int64_t retval = getDeadTime();
+			ret = setSubDeadTime(arg); 
+			int64_t retval = getSubDeadTime();
 			LOG(logDEBUG1, ("retval subdeadtime %lld ns\n", (long long int)retval));
 			if (ret == FAIL) {
 				sprintf(mess, "Could not set subframe dead time. Set %lld ns, read %lld ns.\n", (long long int)arg, (long long int)retval);
@@ -2434,7 +2434,7 @@ int set_sub_deadtime(int file_des) {
 		}
 	}
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_storage_cell_delay(int file_des) {
@@ -2449,7 +2449,7 @@ int get_storage_cell_delay(int file_des) {
 	retval = getStorageCellDelay();
 	LOG(logDEBUG1, ("retval storage cell delay %lld ns\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_storage_cell_delay(int file_des) {
@@ -2481,7 +2481,7 @@ int set_storage_cell_delay(int file_des) {
 		}
 	}
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_frames_left(int file_des) {
@@ -2496,7 +2496,7 @@ int get_frames_left(int file_des) {
 	retval = getNumFramesLeft();
 	LOG(logDEBUG1, ("retval num frames left %lld\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int get_triggers_left(int file_des) {
@@ -2511,7 +2511,7 @@ int get_triggers_left(int file_des) {
 	retval = getNumTriggersLeft();
 	LOG(logDEBUG1, ("retval num triggers left %lld\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int get_exptime_left(int file_des) {
@@ -2526,7 +2526,7 @@ int get_exptime_left(int file_des) {
 	retval = getExpTimeLeft();
 	LOG(logDEBUG1, ("retval exptime left %lld ns\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int get_period_left(int file_des) {
@@ -2541,7 +2541,7 @@ int get_period_left(int file_des) {
 	retval = getPeriodLeft();
 	LOG(logDEBUG1, ("retval period left %lld ns\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int get_delay_after_trigger_left(int file_des) {
@@ -2556,7 +2556,7 @@ int get_delay_after_trigger_left(int file_des) {
 	retval = getDelayAfterTriggerLeft();
 	LOG(logDEBUG1, ("retval delay after trigger left %lld ns\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int get_measured_period(int file_des) {
@@ -2571,7 +2571,7 @@ int get_measured_period(int file_des) {
 	retval = getMeasuredPeriod();
 	LOG(logDEBUG1, ("retval measured period %lld ns\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int get_measured_subperiod(int file_des) {
@@ -2586,7 +2586,7 @@ int get_measured_subperiod(int file_des) {
 	retval = getMeasuredSubPeriod();
 	LOG(logDEBUG1, ("retval measured sub period %lld ns\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int get_frames_from_start(int file_des) {
@@ -2601,7 +2601,7 @@ int get_frames_from_start(int file_des) {
 	retval = getFramesFromStart();
 	LOG(logDEBUG1, ("retval frames from start %lld\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int get_actual_time(int file_des) {
@@ -2616,7 +2616,7 @@ int get_actual_time(int file_des) {
 	retval = getActualTime();
 	LOG(logDEBUG1, ("retval actual time %lld ns\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int get_measurement_time(int file_des) {
@@ -2631,7 +2631,7 @@ int get_measurement_time(int file_des) {
 	retval = getMeasurementTime();
 	LOG(logDEBUG1, ("retval measurement time %lld ns\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 
@@ -2670,7 +2670,7 @@ int set_dynamic_range(int file_des) {
 			break;
 		}
 	}
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -2708,7 +2708,7 @@ int set_roi(int file_des) {
 	}
 #endif
 
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -2725,7 +2725,7 @@ int get_roi(int file_des) {
 	LOG(logDEBUG1, ("nRois: (%d, %d)\n", retval.xmin, retval.xmax));
 #endif
 
-	Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	Server_SendResult(file_des, INT32, NULL, 0);
 	if (ret != FAIL) {
 		sendData(file_des, &retval.xmin, sizeof(int), INT32);
 		sendData(file_des, &retval.xmax, sizeof(int), INT32);
@@ -2737,7 +2737,7 @@ int exit_server(int file_des) {
 	LOG(logINFORED, ("Closing Server\n"));
 	ret = OK;
 	memset(mess, 0, sizeof(mess));
-	Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+	Server_SendResult(file_des, INT32, NULL, 0);
 	return GOODBYE;
 }
 
@@ -2772,7 +2772,7 @@ int lock_server(int file_des) {
 		}
 	}
 	int retval = lockStatus;
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -2783,7 +2783,7 @@ int get_last_client_ip(int file_des) {
 	memset(mess, 0, sizeof(mess));
 	uint32_t retval = lastClientIP;
 	retval = __builtin_bswap32(retval);
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -2815,7 +2815,7 @@ int set_port(int file_des) {
 		}
 	}
 
-	Server_SendResult(file_des, INT32, UPDATE, &p_number, sizeof(p_number));
+	Server_SendResult(file_des, INT32, &p_number, sizeof(p_number));
 	// delete old socket
 	if (ret != FAIL) {
 		closeConnection(file_des);
@@ -2861,7 +2861,7 @@ int enable_ten_giga(int file_des) {
 		validate(arg, retval, "enable/disable 10GbE", DEC);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -2899,7 +2899,7 @@ int set_all_trimbits(int file_des) {
 	LOG(logDEBUG1, ("All trimbits: %d\n", retval));
 	validate(arg, retval, "set all trimbits", DEC);
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -2924,7 +2924,7 @@ int set_pattern_io_control(int file_des) {
 		validate64(arg, retval, "Pattern IO Control", HEX);
 	}
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 } 
 
 
@@ -2950,7 +2950,7 @@ int set_pattern_clock_control(int file_des) {
 		validate64(arg, retval, "Pattern Clock Control", HEX);
 	}
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 
@@ -2986,7 +2986,7 @@ int set_pattern_word(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 
@@ -3031,7 +3031,7 @@ int set_pattern_loop_addresses(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
+	return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
 }
 
 
@@ -3066,7 +3066,7 @@ int set_pattern_loop_cycles(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -3108,7 +3108,7 @@ int set_pattern_wait_addr(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -3144,7 +3144,7 @@ int set_pattern_wait_time(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 
@@ -3170,7 +3170,7 @@ int set_pattern_mask(int file_des) {
 		validate64(arg, retval64, "Set Pattern Mask", HEX);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_pattern_mask(int file_des) {
@@ -3188,7 +3188,7 @@ int get_pattern_mask(int file_des) {
 	LOG(logDEBUG1, ("Get Pattern mask: 0x%llx\n", (long long unsigned int) retval64));
 
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval64, sizeof(retval64));
+	return Server_SendResult(file_des, INT64, &retval64, sizeof(retval64));
 }
 
 int set_pattern_bit_mask(int file_des) {
@@ -3211,7 +3211,7 @@ int set_pattern_bit_mask(int file_des) {
 		validate64(arg, retval64, "Set Pattern Bit Mask", HEX);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_pattern_bit_mask(int file_des){
@@ -3229,7 +3229,7 @@ int get_pattern_bit_mask(int file_des){
 	LOG(logDEBUG1, ("Get Pattern Bitmask: 0x%llx\n", (long long unsigned int) retval64));
 
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval64, sizeof(retval64));
+	return Server_SendResult(file_des, INT64, &retval64, sizeof(retval64));
 }
 
 int write_adc_register(int file_des) {
@@ -3261,7 +3261,7 @@ int write_adc_register(int file_des) {
 	}
 #endif
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -3290,7 +3290,7 @@ int set_counter_bit(int file_des) {
 	LOG(logDEBUG1, ("Set counter bit retval: %d\n", retval));
 	validate(arg, retval, "set counter bit", DEC);
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -3318,7 +3318,7 @@ int pulse_pixel(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -3346,7 +3346,7 @@ int pulse_pixel_and_move(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -3375,7 +3375,7 @@ int pulse_chip(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -3406,7 +3406,7 @@ int set_rate_correct(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -3425,7 +3425,7 @@ int get_rate_correct(int file_des) {
 	retval = getCurrentTau();
 	LOG(logDEBUG1, ("Tau: %lld\n", (long long int)retval));
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 
@@ -3455,7 +3455,7 @@ int set_ten_giga_flow_control(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_ten_giga_flow_control(int file_des) {
@@ -3476,7 +3476,7 @@ int get_ten_giga_flow_control(int file_des) {
 		LOG(logERROR,(mess));			
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -3516,7 +3516,7 @@ int set_transmission_delay_frame(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_transmission_delay_frame(int file_des) {
@@ -3537,7 +3537,7 @@ int get_transmission_delay_frame(int file_des) {
 		LOG(logERROR,(mess));			
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -3568,7 +3568,7 @@ int set_transmission_delay_left(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_transmission_delay_left(int file_des) {
@@ -3589,7 +3589,7 @@ int get_transmission_delay_left(int file_des) {
 		LOG(logERROR,(mess));			
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -3620,7 +3620,7 @@ int set_transmission_delay_right(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_transmission_delay_right(int file_des) {
@@ -3641,7 +3641,7 @@ int get_transmission_delay_right(int file_des) {
 		LOG(logERROR,(mess));			
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -3676,7 +3676,7 @@ int program_fpga(int file_des) {
 			sprintf(mess,"Could not start programming FPGA. File size 0x%llx exceeds max size 0x%llx. Forgot Compression?\n", (long long unsigned int) filesize, (long long unsigned int)NIOS_MAX_APP_IMAGE_SIZE);
 			LOG(logERROR,(mess));			
 		} 
-		Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+		Server_SendResult(file_des, INT32, NULL, 0);
 		
 		// receive program
 		if (ret == OK) {
@@ -3685,7 +3685,7 @@ int program_fpga(int file_des) {
 				return printSocketReadError();
 
 			ret = eraseAndWriteToFlash(mess, fpgasrc, filesize);
-			Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+			Server_SendResult(file_des, INT32, NULL, 0);
 
 			//free resources
 			if (fpgasrc != NULL)
@@ -3713,7 +3713,7 @@ int program_fpga(int file_des) {
 			sprintf(mess,"Could not write to flash. Error at startup.\n");
 			LOG(logERROR,(mess));
 		}
-		Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+		Server_SendResult(file_des, INT32, NULL, 0);
 
 
 		//erasing flash
@@ -3744,7 +3744,7 @@ int program_fpga(int file_des) {
 
 			// write part to flash
 			ret = writeFPGAProgram(fpgasrc, unitprogramsize, fp);
-			Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+			Server_SendResult(file_des, INT32, NULL, 0);
 			if (ret == FAIL) {
 				LOG(logERROR, ("Failure: Breaking out of program receiving\n"));
 			} else {
@@ -3800,7 +3800,7 @@ int reset_fpga(int file_des) {
 		else initStopServer(); //remapping of stop server
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -3859,7 +3859,7 @@ int power_chip(int file_des) {
 #endif
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -3885,7 +3885,7 @@ int set_activate(int file_des) {
 		validate(arg, retval, "set activate", DEC);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -3908,7 +3908,7 @@ int prepare_acquisition(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -3944,7 +3944,7 @@ int threshold_temp(int file_des) {
 	    }
 	}
 #endif
-    return Server_SendResult(file_des, INT32, NO_UPDATE, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -3969,7 +3969,7 @@ int temp_control(int file_des) {
 		validate(arg, retval, "set temperature control", DEC);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, NO_UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -3995,7 +3995,7 @@ int temp_event(int file_des) {
 		validate(arg, retval, "set temperature event", DEC);
 	}
 #endif
-    return Server_SendResult(file_des, INT32, NO_UPDATE, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -4022,7 +4022,7 @@ int auto_comp_disable(int file_des) {
 		validate(arg, retval, "set auto comp disable", DEC);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -4055,7 +4055,7 @@ int storage_cell_start(int file_des) {
         }
     }
 #endif
-    return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -4121,7 +4121,7 @@ int check_version(int file_des) {
 			LOG(logERROR,(mess));
 		}
 	}
-	return Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -4145,7 +4145,7 @@ int software_trigger(int file_des) {
 		LOG(logDEBUG1, ("Software trigger successful\n"));
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -4169,7 +4169,7 @@ int led(int file_des) {
     	validate(arg, retval, "LED Enable", DEC);
     }
 #endif
-    return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -4200,7 +4200,7 @@ int digital_io_delay(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int copy_detector_server(int file_des) {
@@ -4275,7 +4275,7 @@ int copy_detector_server(int file_des) {
         }
     }
 #endif
-    return Server_SendResult(file_des, OTHER, NO_UPDATE, retvals, sizeof(retvals));
+    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }
 
 
@@ -4287,7 +4287,7 @@ int reboot_controller(int file_des) {
 		ret = FAIL;
 		strcpy(mess, "Old board version, reboot by yourself please!\n");
 		LOG(logINFORED, (mess)); 
-		Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+		Server_SendResult(file_des, INT32, NULL, 0);
 		return GOODBYE;
 	} 
 	ret = REBOOT;
@@ -4296,7 +4296,7 @@ int reboot_controller(int file_des) {
 #else
 	ret = REBOOT;
 #endif
-	Server_SendResult(file_des, INT32, NO_UPDATE, NULL, 0);
+	Server_SendResult(file_des, INT32, NULL, 0);
 	return ret;
 }
 
@@ -4329,7 +4329,7 @@ int set_adc_enable_mask(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -4347,7 +4347,7 @@ int get_adc_enable_mask(int file_des) {
 	retval = getADCEnableMask();
 	LOG(logDEBUG1, ("1Gb ADC Enable Mask retval: %u\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 int set_adc_enable_mask_10g(int file_des) {
@@ -4373,7 +4373,7 @@ int set_adc_enable_mask_10g(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -4391,7 +4391,7 @@ int get_adc_enable_mask_10g(int file_des) {
 	retval = getADCEnableMask_10G();
 	LOG(logDEBUG1, ("10Gb ADC Enable Mask retval: %u\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -4418,7 +4418,7 @@ int set_adc_invert(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -4436,7 +4436,7 @@ int get_adc_invert(int file_des) {
 	retval = getADCInvertRegister();
 	LOG(logDEBUG1, ("ADC Invert register retval: %u\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -4467,7 +4467,7 @@ int set_external_sampling_source(int file_des) {
 		}
     }
 #endif
-    return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 int set_external_sampling(int file_des) {
@@ -4491,7 +4491,7 @@ int set_external_sampling(int file_des) {
     	validate(arg, retval, "External sampling enable", DEC);
     }
 #endif
-    return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -4556,7 +4556,7 @@ int set_starting_frame_number(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_starting_frame_number(int file_des) {
@@ -4581,7 +4581,7 @@ int get_starting_frame_number(int file_des) {
 		LOG(logDEBUG1, ("Start frame number retval: %u\n", retval));
 	}
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 
@@ -4615,7 +4615,7 @@ int set_quad(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_quad(int file_des) {
@@ -4632,7 +4632,7 @@ int get_quad(int file_des) {
 	retval = getQuad();
 	LOG(logDEBUG1, ("Quad retval: %u\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 int set_interrupt_subframe(int file_des) {
@@ -4663,7 +4663,7 @@ int set_interrupt_subframe(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_interrupt_subframe(int file_des) {
@@ -4686,7 +4686,7 @@ int get_interrupt_subframe(int file_des) {
 		LOG(logDEBUG1, ("Interrupt subframe retval: %u\n", retval));
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -4738,7 +4738,7 @@ int set_read_n_lines(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_read_n_lines(int file_des) {
@@ -4761,7 +4761,7 @@ int get_read_n_lines(int file_des) {
 		LOG(logDEBUG1, ("Read N Lines retval: %u\n", retval));
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 } 
 
 
@@ -4848,7 +4848,7 @@ int set_detector_position(int file_des) {
 			calculate_and_set_position();
 		}
 	}
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int check_detector_idle() {
@@ -4956,7 +4956,7 @@ int set_source_udp_ip(int file_des) {
 			}
 		}
 	}
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_source_udp_ip(int file_des) {
@@ -4970,7 +4970,7 @@ int get_source_udp_ip(int file_des) {
 	retval = __builtin_bswap32(retval);
 	LOG(logDEBUG1, ("udp soure ip retval: 0x%x\n", retval));
 
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -4999,7 +4999,7 @@ int set_source_udp_ip2(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_source_udp_ip2(int file_des) {
@@ -5016,7 +5016,7 @@ int get_source_udp_ip2(int file_des) {
 	retval = __builtin_bswap32(retval);
 	LOG(logDEBUG1, ("udp soure ip2 retval: 0x%x\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5039,7 +5039,7 @@ int set_dest_udp_ip(int file_des) {
 			}
 		}
 	}
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_dest_udp_ip(int file_des) {
@@ -5053,7 +5053,7 @@ int get_dest_udp_ip(int file_des) {
 	retval = __builtin_bswap32(retval);
 	LOG(logDEBUG1, ("udp destination ip retval: 0x%x\n", retval));
 
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5082,7 +5082,7 @@ int set_dest_udp_ip2(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_dest_udp_ip2(int file_des) {
@@ -5099,7 +5099,7 @@ int get_dest_udp_ip2(int file_des) {
 	retval = __builtin_bswap32(retval);
 	LOG(logDEBUG1, ("udp destination ip2 retval: 0x%x\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5123,7 +5123,7 @@ int set_source_udp_mac(int file_des) {
 			}
 		}
 	}
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 
@@ -5137,7 +5137,7 @@ int get_source_udp_mac(int file_des) {
 	retval = udpDetails.srcmac;
 	LOG(logDEBUG1, ("udp soure mac retval: 0x%lx\n", retval));
 
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 
@@ -5164,7 +5164,7 @@ int set_source_udp_mac2(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_source_udp_mac2(int file_des) {
@@ -5180,7 +5180,7 @@ int get_source_udp_mac2(int file_des) {
 	retval = udpDetails.srcmac2;
 	LOG(logDEBUG1, ("udp soure mac2 retval: 0x%lx\n", retval));
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 
@@ -5203,7 +5203,7 @@ int set_dest_udp_mac(int file_des) {
 			}
 		}
 	}
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_dest_udp_mac(int file_des) {
@@ -5216,7 +5216,7 @@ int get_dest_udp_mac(int file_des) {
 	retval = udpDetails.dstmac;
 	LOG(logDEBUG1, ("udp destination mac retval: 0x%lx\n", retval));
 
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 
@@ -5244,7 +5244,7 @@ int set_dest_udp_mac2(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_dest_udp_mac2(int file_des) {
@@ -5260,7 +5260,7 @@ int get_dest_udp_mac2(int file_des) {
 	retval = udpDetails.dstmac2;
 	LOG(logDEBUG1, ("udp destination mac2 retval: 0x%lx\n", retval));
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 
@@ -5284,7 +5284,7 @@ int set_dest_udp_port(int file_des) {
 			}
 		}
 	}
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_dest_udp_port(int file_des) {
@@ -5297,7 +5297,7 @@ int get_dest_udp_port(int file_des) {
 	retval = udpDetails.dstport;
 	LOG(logDEBUG, ("udp destination port retstore in ram model: %u\n", retval));
 
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5325,7 +5325,7 @@ int set_dest_udp_port2(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_dest_udp_port2(int file_des) {
@@ -5341,7 +5341,7 @@ int get_dest_udp_port2(int file_des) {
 	retval = udpDetails.dstport2;
 	LOG(logDEBUG1, ("udp destination port2 retval: %u\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5375,7 +5375,7 @@ int set_num_interfaces(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -5392,7 +5392,7 @@ int get_num_interfaces(int file_des) {
 	retval = getNumberofUDPInterfaces();
 #endif
 	LOG(logDEBUG1, ("Number of udp interfaces retval: %u\n", retval));
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5424,7 +5424,7 @@ int set_interface_sel(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_interface_sel(int file_des) {
@@ -5440,7 +5440,7 @@ int get_interface_sel(int file_des) {
 	retval = getPrimaryInterface();
 	LOG(logDEBUG1, ("Selected interface retval: %u\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5473,7 +5473,7 @@ int set_parallel_mode(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -5491,7 +5491,7 @@ int get_parallel_mode(int file_des) {
 	retval = getParallelMode();
 	LOG(logDEBUG1, ("parallel mode retval: %u\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5523,7 +5523,7 @@ int set_overflow_mode(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -5541,7 +5541,7 @@ int get_overflow_mode(int file_des) {
 	retval = getOverFlowMode();
 	LOG(logDEBUG1, ("overflow mode retval: %u\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5562,7 +5562,7 @@ int set_storeinram(int file_des) {
 		setStoreInRamMode(arg); 
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -5580,7 +5580,7 @@ int get_storeinram(int file_des) {
 	retval = getStoreInRamMode();
 	LOG(logDEBUG1, ("store in ram mode retval: %u\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5626,7 +5626,7 @@ int set_readout_mode(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -5650,7 +5650,7 @@ int get_readout_mode(int file_des) {
 		LOG(logDEBUG1, ("readout mode retval: %u\n", retval));
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5713,7 +5713,7 @@ int set_clock_frequency(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -5765,7 +5765,7 @@ int get_clock_frequency(int file_des) {
 		LOG(logDEBUG1, ("retval %s clock (%d) frequency: %d %s\n", clock_names[c], (int)c, retval, myDetectorType == GOTTHARD2 || myDetectorType == MYTHEN3 ? "Hz" : "MHz"));
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5862,7 +5862,7 @@ int set_clock_phase(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -5911,7 +5911,7 @@ int get_clock_phase(int file_des) {
 		LOG(logDEBUG1, ("retval %s clock (%d) phase: %d %s\n", clock_names[c], (int)c, retval, (inDegrees == 0 ? "" : "degrees")));
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -5957,7 +5957,7 @@ int get_max_clock_phase_shift(int file_des) {
 		LOG(logDEBUG1, ("retval %s clock (%d) max phase shift: %d\n", clock_names[c], (int)c, retval));
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -6044,7 +6044,7 @@ int set_clock_divider(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -6085,7 +6085,7 @@ int get_clock_divider(int file_des) {
 		LOG(logDEBUG1, ("retval %s clock (%d) divider: %d\n", clock_names[c], (int)c, retval));
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -6133,7 +6133,7 @@ int set_pipeline(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -6171,7 +6171,7 @@ int get_pipeline(int file_des) {
 		LOG(logDEBUG1, ("retval %s clock (%d) pipeline: %d\n", clock_names[c], (int)c, retval));
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -6246,7 +6246,7 @@ int set_on_chip_dac(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -6304,7 +6304,7 @@ int get_on_chip_dac(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -6338,7 +6338,7 @@ int set_inject_channel(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -6359,7 +6359,7 @@ int get_inject_channel(int file_des) {
 	retvals[0] = offset;
 	retvals[1] = increment;
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
+	return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
 }
 
 
@@ -6415,7 +6415,7 @@ int set_veto_photon(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -6452,7 +6452,7 @@ int get_veto_photon(int file_des) {
 		}
 	}
 #endif
-	Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	Server_SendResult(file_des, INT32, NULL, 0);
 	if (ret != FAIL) {
 		int nch = NCHAN;
 		sendData(file_des, &nch, sizeof(nch), INT32);
@@ -6495,7 +6495,7 @@ int set_veto_reference(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -6534,7 +6534,7 @@ int set_burst_mode(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -6552,7 +6552,7 @@ int get_burst_mode(int file_des) {
 	retval = getBurstMode();
 	LOG(logDEBUG1, ("Get burst mode retval:%d\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -6591,7 +6591,7 @@ int set_counter_mask(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -6608,7 +6608,7 @@ int get_counter_mask(int file_des) {
 	retval = getCounterMask();
 	LOG(logDEBUG, ("counter mask retval: 0x%x\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -6624,7 +6624,7 @@ int get_num_bursts(int file_des) {
 	retval = getNumBursts();
 	LOG(logDEBUG1, ("retval num bursts %lld\n", (long long int)retval));
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_num_bursts(int file_des) {
@@ -6647,7 +6647,7 @@ int set_num_bursts(int file_des) {
 		validate64(arg, retval, "set number of bursts", DEC);
 	}
 #endif
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 int get_burst_period(int file_des) {
@@ -6662,7 +6662,7 @@ int get_burst_period(int file_des) {
 	retval = getBurstPeriod();
 	LOG(logDEBUG1, ("retval burst period %lld ns\n", (long long int)retval));
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_burst_period(int file_des) {
@@ -6688,7 +6688,7 @@ int set_burst_period(int file_des) {
 		}
 	}
 #endif	
-	return Server_SendResult(file_des, INT64, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT64, NULL, 0);
 }
 
 
@@ -6712,7 +6712,7 @@ int set_current_source(int file_des) {
 		validate(arg, retval, "current source enable", DEC);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -6730,7 +6730,7 @@ int get_current_source(int file_des) {
 	retval = getCurrentSource();
 	LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -6768,7 +6768,7 @@ int set_timing_source(int file_des) {
 		}
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 
@@ -6786,7 +6786,7 @@ int get_timing_source(int file_des) {
 	retval = getTimingSource();
 	LOG(logDEBUG1, ("Get timing source retval:%d\n", retval));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, &retval, sizeof(retval));
+	return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
 
@@ -6804,7 +6804,7 @@ int get_num_channels(int file_des) {
 	getNumberOfChannels(&retvals[0], &retvals[1]);
 	LOG(logDEBUG1, ("Get number of channels sretval:[%d, %d]\n", retvals[0], retvals[1]));
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, retvals, sizeof(retvals));
+	return Server_SendResult(file_des, INT32, retvals, sizeof(retvals));
 }
 
 
@@ -6822,5 +6822,255 @@ int update_rate_correction(int file_des) {
 		ret = updateRateCorrection(mess);
 	}
 #endif
-	return Server_SendResult(file_des, INT32, UPDATE, NULL, 0);
+	return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_receiver_parameters(int file_des) {
+	ret = OK;
+	memset(mess, 0, sizeof(mess));
+
+	LOG(logDEBUG1, ("Getting receiver parameters\n"));
+	// get only
+	Server_SendResult(file_des, INT32, NULL, 0);
+
+	int n = 0;
+	int i32 = 0;
+	int64_t i64 = 0;
+	uint32_t u32 = 0;
+	uint64_t u64 = 0;
+
+	// send fake parameters needed for shared memory 
+	// (so that client can receive a struct)
+	// detector type
+	i32 = 0;
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+	// multisize
+	i32 = 0;
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+	i32 = 0;
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+	// detId
+	i32 = 0;
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+	// hostname
+	{
+		char hostname[MAX_STR_LENGTH];
+		memset(hostname, 0, MAX_STR_LENGTH);
+		n += sendData(file_des, hostname, MAX_STR_LENGTH, OTHER);
+		if (n < 0) return printSocketReadError();		
+	}	
+	// end of shared memory variables in struct
+
+
+	// sending real detector parameters
+	// udp interfaces
+#ifdef JUNGFRAUD
+	i32 = getNumberofUDPInterfaces();
+#else
+	i32 = 1;
+#endif
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst port
+	i32 = udpDetails.dstport;
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst ip
+	u32 = udpDetails.dstip;
+	u32 = __builtin_bswap32(u32);
+	n += sendData(file_des,&u32,sizeof(u32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst mac
+	u64 = udpDetails.dstmac;
+	n += sendData(file_des,&u64,sizeof(u64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst port2
+	i32 = udpDetails.dstport2;
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst ip2
+	u32 = udpDetails.dstip2;
+	u32 = __builtin_bswap32(u32);
+	n += sendData(file_des,&u32,sizeof(u32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// udp dst mac2
+	u64 = udpDetails.dstmac2;
+	n += sendData(file_des,&u64,sizeof(u64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// frames
+	i64 = getNumFrames();
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// triggers
+	i64 = getNumTriggers();
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// bursts
+#ifdef GOTTHARD2D
+	i64 = getNumBursts();
+#else
+	i64 = 0;
+#endif
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// analog samples
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	i32 = getNumAnalogSamples();
+#else
+	i32 = 0;
+#endif
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// digital samples
+#ifdef CHIPTESTBOARDD
+	i32 = getNumDigitalSamples();
+#else
+	i32 = 0;
+#endif
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// exptime
+	i64 = getExpTime();
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// period
+	i64 = getPeriod();
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// sub exptime
+#ifdef EIGERD
+	i64 = getSubExpTime();
+#else
+	i64 = 0;
+#endif
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// sub deadtime
+#ifdef EIGERD
+	i64 = getSubDeadTime();
+#else
+	i64 = 0;
+#endif
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
+	if (n < 0) return printSocketReadError();
+
+	// activate
+#ifdef EIGERD
+	i32 = activate(-1);
+#else
+	i32 = 0;
+#endif
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// quad
+#ifdef EIGERD
+	i32 = getQuad();
+#else
+	i32 = 0;
+#endif
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// dynamic range
+	i32 = setDynamicRange(-1);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// timing mode
+	i32 = (int)getTiming();
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// 10 gbe
+#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	i32 = enableTenGigabitEthernet(-1);
+#else
+	i32 = 0;
+#endif
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// readout mode
+#ifdef CHIPTESTBOARD
+	i32 = getReadoutMode();
+#else
+	i32 = 0;
+#endif
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// adc mask
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	u32 = getADCEnableMask();
+#else
+	u32 = 0;
+#endif
+	n += sendData(file_des,&u32,sizeof(u32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// 10g adc mask
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+	u32 = getADCEnableMask_10G();
+#else
+	u32 = 0;
+#endif
+	n += sendData(file_des,&u32,sizeof(u32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// roi
+	{
+		ROI roi;
+#ifdef GOTTHARDD
+		roi = getROI();
+#else	
+		roi.xmin = -1;
+		roi.xmax = -1;
+#endif
+		n += sendData(file_des,&roi.xmin,sizeof(int),INT32);
+		if (n < 0) return printSocketReadError();
+		n += sendData(file_des,&roi.xmax,sizeof(int),INT32);
+		if (n < 0) return printSocketReadError();
+	}
+
+	// counter mask
+#ifdef MYTHEN3D
+	u32 = getCounterMask();
+#else
+	u32 = 0;
+#endif
+	n += sendData(file_des,&u32,sizeof(u32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	// burst mode
+#ifdef GOTTHARD2D
+	i32 = (int)getBurstMode();
+#else
+	i32 = 0;
+#endif
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+
+	LOG(logINFO, ("Sent %d bytes for receiver parameters\n", n));
+
+	return OK;
 }

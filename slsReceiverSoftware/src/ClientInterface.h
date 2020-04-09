@@ -56,8 +56,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_last_client_ip(sls::ServerInterface &socket);
     int set_port(sls::ServerInterface &socket);
     int get_version(sls::ServerInterface &socket);
-    int set_detector_type(sls::ServerInterface &socket);
-    int set_detector_hostname(sls::ServerInterface &socket);
+    int setup_receiver(sls::ServerInterface &socket);
+    void setDetectorType(detectorType arg);
     int set_roi(sls::ServerInterface &socket);
     int set_num_frames(sls::ServerInterface &socket);
     int set_num_triggers(sls::ServerInterface &socket);
@@ -102,8 +102,6 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_flipped_data(sls::ServerInterface &socket);
     int set_file_format(sls::ServerInterface &socket);
     int get_file_format(sls::ServerInterface &socket);
-    int set_detector_posid(sls::ServerInterface &socket);
-    int set_multi_detector_size(sls::ServerInterface &socket);
     int set_streaming_port(sls::ServerInterface &socket);
     int get_streaming_port(sls::ServerInterface &socket);
     int set_streaming_source_ip(sls::ServerInterface &socket);
@@ -132,7 +130,9 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_dbit_offset(sls::ServerInterface &socket);
     int set_quad_type(sls::ServerInterface &socket);
     int set_read_n_lines(sls::ServerInterface &socket);
+    sls::MacAddr setUdpIp(sls::IpAddr arg);
     int set_udp_ip(sls::ServerInterface &socket);
+    sls::MacAddr setUdpIp2(sls::IpAddr arg);
     int set_udp_ip2(sls::ServerInterface &socket);
     int set_udp_port(sls::ServerInterface &socket);
     int set_udp_port2(sls::ServerInterface &socket);

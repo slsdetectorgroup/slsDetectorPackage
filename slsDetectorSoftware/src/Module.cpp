@@ -1566,7 +1566,7 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
     if (n != sizeof(retval)) {
         throw RuntimeError("Could not get parameters from detector to configure receiver");
     }
-    LOG(logINFO) 
+    LOG(logDEBUG1) 
         << "detType:" << retval.detType << std::endl
         << "multiSize.x:" << retval.multiSize.x << std::endl
         << "multiSize.y:" << retval.multiSize.y << std::endl

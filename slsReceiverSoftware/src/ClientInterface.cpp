@@ -335,7 +335,7 @@ int ClientInterface::get_version(Interface &socket) {
 
 int ClientInterface::setup_receiver(Interface &socket) {
     auto arg = socket.Receive<rxParameters>();
-    LOG(logINFO) 
+    LOG(logDEBUG1) 
         << "detType:" << arg.detType << std::endl
         << "multiSize.x:" << arg.multiSize.x << std::endl
         << "multiSize.y:" << arg.multiSize.y << std::endl

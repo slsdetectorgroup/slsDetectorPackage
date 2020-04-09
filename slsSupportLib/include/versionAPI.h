@@ -1,8 +1,5 @@
 /** API versions */
-#define GITBRANCH "removeshm"
-#define APILIB 0x200402
-#define APIRECEIVER 0x200402
-#define APIGUI 0x200331
+#define GITBRANCH "setrxhostname"
 #define APIEIGER 0x200409
 #define APICTB 0x200409
 #define APIGOTTHARD 0x200409
@@ -10,3 +7,6 @@
 #define APIJUNGFRAU 0x200409
 #define APIMYTHEN3 0x200409
 #define APIMOENCH 0x200409
+#define APILIB 0x200409
+#define APIRECEIVER 0x200409
+#define APIGUI 0x200409

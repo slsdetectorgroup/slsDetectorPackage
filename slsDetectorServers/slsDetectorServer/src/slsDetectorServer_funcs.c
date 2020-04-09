@@ -6839,55 +6839,83 @@ int get_receiver_parameters(int file_des) {
 	uint32_t u32 = 0;
 	uint64_t u64 = 0;
 
+	// send fake parameters needed for shared memory 
+	// (so that client can receive a struct)
+	// detector type
+	i32 = 0;
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+	// multisize
+	i32 = 0;
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+	i32 = 0;
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+	// detId
+	i32 = 0;
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
+	// hostname
+	{
+		char hostname[MAX_STR_LENGTH];
+		memset(hostname, 0, MAX_STR_LENGTH);
+		n += sendData(file_des, hostname, MAX_STR_LENGTH, OTHER);
+		if (n < 0) return printSocketReadError();		
+	}	
+	// end of shared memory variables in struct
+
+
+	// sending real detector parameters
 	// udp interfaces
 #ifdef JUNGFRAUD
 	i32 = getNumberofUDPInterfaces();
 #else
 	i32 = 1;
 #endif
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// udp dst port
 	i32 = udpDetails.dstport;
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// udp dst ip
 	u32 = udpDetails.dstip;
 	u32 = __builtin_bswap32(u32);
-	n = sendData(file_des,&u32,sizeof(u32),INT32);
+	n += sendData(file_des,&u32,sizeof(u32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// udp dst mac
 	u64 = udpDetails.dstmac;
-	n = sendData(file_des,&u64,sizeof(u64),INT64);
+	n += sendData(file_des,&u64,sizeof(u64),INT64);
 	if (n < 0) return printSocketReadError();
 
 	// udp dst port2
 	i32 = udpDetails.dstport2;
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// udp dst ip2
 	u32 = udpDetails.dstip2;
 	u32 = __builtin_bswap32(u32);
-	n = sendData(file_des,&u32,sizeof(u32),INT32);
+	n += sendData(file_des,&u32,sizeof(u32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// udp dst mac2
 	u64 = udpDetails.dstmac2;
-	n = sendData(file_des,&u64,sizeof(u64),INT64);
+	n += sendData(file_des,&u64,sizeof(u64),INT64);
 	if (n < 0) return printSocketReadError();
 
 	// frames
 	i64 = getNumFrames();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
 	// triggers
 	i64 = getNumTriggers();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
 	// bursts
@@ -6896,7 +6924,7 @@ int get_receiver_parameters(int file_des) {
 #else
 	i64 = 0;
 #endif
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
 	// analog samples
@@ -6905,7 +6933,7 @@ int get_receiver_parameters(int file_des) {
 #else
 	i32 = 0;
 #endif
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// digital samples
@@ -6914,17 +6942,17 @@ int get_receiver_parameters(int file_des) {
 #else
 	i32 = 0;
 #endif
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// exptime
 	i64 = getExpTime();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
 	// period
 	i64 = getPeriod();
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
 	// sub exptime
@@ -6933,7 +6961,7 @@ int get_receiver_parameters(int file_des) {
 #else
 	i64 = 0;
 #endif
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
 	// sub deadtime
@@ -6942,7 +6970,7 @@ int get_receiver_parameters(int file_des) {
 #else
 	i64 = 0;
 #endif
-	n = sendData(file_des,&i64,sizeof(i64),INT64);
+	n += sendData(file_des,&i64,sizeof(i64),INT64);
 	if (n < 0) return printSocketReadError();
 
 	// activate
@@ -6951,7 +6979,7 @@ int get_receiver_parameters(int file_des) {
 #else
 	i32 = 0;
 #endif
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// quad
@@ -6960,17 +6988,17 @@ int get_receiver_parameters(int file_des) {
 #else
 	i32 = 0;
 #endif
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// dynamic range
 	i32 = setDynamicRange(-1);
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// timing mode
 	i32 = (int)getTiming();
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// 10 gbe
@@ -6979,7 +7007,7 @@ int get_receiver_parameters(int file_des) {
 #else
 	i32 = 0;
 #endif
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// readout mode
@@ -6988,7 +7016,7 @@ int get_receiver_parameters(int file_des) {
 #else
 	i32 = 0;
 #endif
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// adc mask
@@ -6997,7 +7025,7 @@ int get_receiver_parameters(int file_des) {
 #else
 	u32 = 0;
 #endif
-	n = sendData(file_des,&u32,sizeof(u32),INT32);
+	n += sendData(file_des,&u32,sizeof(u32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// 10g adc mask
@@ -7006,7 +7034,7 @@ int get_receiver_parameters(int file_des) {
 #else
 	u32 = 0;
 #endif
-	n = sendData(file_des,&u32,sizeof(u32),INT32);
+	n += sendData(file_des,&u32,sizeof(u32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// roi
@@ -7018,9 +7046,9 @@ int get_receiver_parameters(int file_des) {
 		roi.xmin = -1;
 		roi.xmax = -1;
 #endif
-		n = sendData(file_des,&roi.xmin,sizeof(int),INT32);
+		n += sendData(file_des,&roi.xmin,sizeof(int),INT32);
 		if (n < 0) return printSocketReadError();
-		n = sendData(file_des,&roi.xmax,sizeof(int),INT32);
+		n += sendData(file_des,&roi.xmax,sizeof(int),INT32);
 		if (n < 0) return printSocketReadError();
 	}
 
@@ -7030,7 +7058,7 @@ int get_receiver_parameters(int file_des) {
 #else
 	u32 = 0;
 #endif
-	n = sendData(file_des,&u32,sizeof(u32),INT32);
+	n += sendData(file_des,&u32,sizeof(u32),INT32);
 	if (n < 0) return printSocketReadError();
 
 	// burst mode
@@ -7039,8 +7067,10 @@ int get_receiver_parameters(int file_des) {
 #else
 	i32 = 0;
 #endif
-	n = sendData(file_des,&i32,sizeof(i32),INT32);
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
 	if (n < 0) return printSocketReadError();
+
+	LOG(logINFO, ("Sent %d bytes for receiver parameters\n", n));
 
 	return OK;
 }

@@ -1515,57 +1515,18 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
     shm()->useReceiverFlag = true;
     checkReceiverVersionCompatibility();
 
-    // populate parameters for receiver
-    int n = 0;
+    // populate parameters from detector
     rxParameters retval;   
+    sendToDetector(F_GET_RECEIVER_PARAMETERS, nullptr, retval);
+
     // populate from shared memory
     retval.detType = shm()->myDetectorType;
-    n += sizeof(retval.detType);
     retval.multiSize.x = shm()->multiSize.x;
     retval.multiSize.y = shm()->multiSize.y;
-    n += sizeof(retval.multiSize);
     retval.detId = detId;
-    n += sizeof(retval.detId);
     memset(retval.hostname, 0, sizeof(retval.hostname));
     strcpy_safe(retval.hostname, shm()->hostname);
-    n += sizeof(retval.hostname);
 
-    // populate from detector
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.sendCommandThenRead(F_GET_RECEIVER_PARAMETERS, nullptr, 0, nullptr, 0);
-    n += client.Receive(&retval.udpInterfaces, sizeof(retval.udpInterfaces));
-    n += client.Receive(&retval.udp_dstport, sizeof(retval.udp_dstport));
-    n += client.Receive(&retval.udp_dstip, sizeof(retval.udp_dstip));
-    n += client.Receive(&retval.udp_dstmac, sizeof(retval.udp_dstmac));
-    n += client.Receive(&retval.udp_dstport2, sizeof(retval.udp_dstport2));
-    n += client.Receive(&retval.udp_dstip2, sizeof(retval.udp_dstip2));
-    n += client.Receive(&retval.udp_dstmac2, sizeof(retval.udp_dstmac2));
-    n += client.Receive(&retval.frames, sizeof(retval.frames));
-    n += client.Receive(&retval.triggers, sizeof(retval.triggers));
-    n += client.Receive(&retval.bursts, sizeof(retval.bursts));
-    n += client.Receive(&retval.analogSamples, sizeof(retval.analogSamples));
-    n += client.Receive(&retval.digitalSamples, sizeof(retval.digitalSamples));
-    n += client.Receive(&retval.expTimeNs, sizeof(retval.expTimeNs));
-    n += client.Receive(&retval.periodNs, sizeof(retval.periodNs));
-    n += client.Receive(&retval.subExpTimeNs, sizeof(retval.subExpTimeNs));
-    n += client.Receive(&retval.subDeadTimeNs, sizeof(retval.subDeadTimeNs));
-    n += client.Receive(&retval.activate, sizeof(retval.activate));
-    n += client.Receive(&retval.quad, sizeof(retval.quad));
-    n += client.Receive(&retval.dynamicRange, sizeof(retval.dynamicRange));
-    n += client.Receive(&retval.timMode, sizeof(retval.timMode));
-    n += client.Receive(&retval.tenGiga, sizeof(retval.tenGiga));
-    n += client.Receive(&retval.roMode, sizeof(retval.roMode));
-    n += client.Receive(&retval.adcMask, sizeof(retval.adcMask));
-    n += client.Receive(&retval.adc10gMask, sizeof(retval.adc10gMask));
-    n += client.Receive(&retval.roi.xmin, sizeof(retval.roi.xmin));
-    n += client.Receive(&retval.roi.xmax, sizeof(retval.roi.xmax));
-    n += client.Receive(&retval.countermask, sizeof(retval.countermask));
-    n += client.Receive(&retval.burstType, sizeof(retval.burstType));
-
-    LOG(logDEBUG1) << "n:" << n << " retvalsize:" << sizeof(retval);
-    if (n != sizeof(retval)) {
-        throw RuntimeError("Could not get parameters from detector to configure receiver");
-    }
     LOG(logDEBUG1) 
         << "detType:" << retval.detType << std::endl
         << "multiSize.x:" << retval.multiSize.x << std::endl

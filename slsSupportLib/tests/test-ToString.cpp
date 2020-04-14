@@ -109,7 +109,7 @@ TEST_CASE("run status"){
     using defs = slsDetectorDefs;
     REQUIRE(ToString(defs::runStatus::ERROR) == "error");
     REQUIRE(ToString(defs::runStatus::WAITING) == "waiting");
-    REQUIRE(ToString(defs::runStatus::TRANSMITTING) == "data"); //??
+    REQUIRE(ToString(defs::runStatus::TRANSMITTING) == "transmitting");
     REQUIRE(ToString(defs::runStatus::RUN_FINISHED) == "finished");
     REQUIRE(ToString(defs::runStatus::STOPPED) == "stopped");
     REQUIRE(ToString(defs::runStatus::IDLE) == "idle");

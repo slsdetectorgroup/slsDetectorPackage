@@ -3,6 +3,7 @@ set(SOURCES
     src/slsDetectorUsers.cpp 
     src/Module.cpp 
     src/Detector.cpp
+    src/Receiver.cpp
     src/CmdProxy.cpp
     src/CmdParser.cpp
 )

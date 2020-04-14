@@ -15,8 +15,8 @@ class detectorData;
 #include <thread>
 #include <vector>
 
-#define MULTI_SHMAPIVERSION 0x190809
-#define MULTI_SHMVERSION 0x200319
+#define DETECTOR_SHMAPIVERSION 0x190809
+#define DETECTOR_SHMVERSION 0x200319
 #define SHORT_STRING_LENGTH 50
 
 #include <future>
@@ -30,7 +30,7 @@ class Module;
  * @short structure allocated in shared memory to store detector settings
  * for IPC and cache
  */
-struct sharedMultiSlsDetector {
+struct sharedDetector {
 
     /* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND
      * ------*/
@@ -68,12 +68,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
   public:
     /**
      * Constructor
-     * @param id multi detector id
+     * @param detector_id multi detector id
      * @param verify true to verify if shared memory version matches existing
      * one
      * @param update true to update last user pid, date etc
      */
-    explicit DetectorImpl(int multi_id = 0, bool verify = true,
+    explicit DetectorImpl(int detector_id = 0, bool verify = true,
                               bool update = true);
 
     /**
@@ -192,11 +192,11 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag); 
 
-    /** return multi detector shared memory ID */
-    int getMultiId() const;
+    /** return detector shared memory ID */
+    int getDetectorId() const;
 
     /** Free specific shared memory from the command line without creating object */
-    static void freeSharedMemory(int multiId, int detPos = -1);
+    static void freeSharedMemory(int detectorId, int detPos = -1);
 
     /** Free all modules from current multi Id shared memory and delete members */
     void freeSharedMemory(); 
@@ -298,7 +298,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * one
      * @param update true to update last user pid, date etc
      */
-    void setupMultiDetector(bool verify = true, bool update = true);
+    void setupDetector(bool verify = true, bool update = true);
 
     /**
      * Creates shm and initializes shm structure OR
@@ -377,10 +377,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int kbhit();
 
     /** Multi detector Id */
-    const int multiId{0};
+    const int detectorId{0};
 
     /** Shared Memory object */
-    sls::SharedMemory<sharedMultiSlsDetector> multi_shm{0, -1};
+    sls::SharedMemory<sharedDetector> detector_shm{0, -1};
 
     /** pointers to the Module structures */
     std::vector<std::unique_ptr<sls::Module>> detectors;

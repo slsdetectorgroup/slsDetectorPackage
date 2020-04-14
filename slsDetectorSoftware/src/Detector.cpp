@@ -13,29 +13,29 @@
 
 namespace sls {
 
-void freeSharedMemory(int multiId, int detPos) {
+void freeSharedMemory(int detectorId, int detPos) {
     // single
     if (detPos >= 0) {
-        SharedMemory<sharedSlsDetector> temp_shm(multiId, detPos);
-        if (temp_shm.IsExisting()) {
-            temp_shm.RemoveSharedMemory();
+        SharedMemory<sharedModule> moduleShm(detectorId, detPos);
+        if (moduleShm.IsExisting()) {
+            moduleShm.RemoveSharedMemory();
         }
         return;
     }
 
     // multi - get number of detectors from shm
-    SharedMemory<sharedMultiSlsDetector> multiShm(multiId, -1);
+    SharedMemory<sharedDetector> detectorShm(detectorId, -1);
     int numDetectors = 0;
 
-    if (multiShm.IsExisting()) {
-        multiShm.OpenSharedMemory();
-        numDetectors = multiShm()->numberOfDetectors;
-        multiShm.RemoveSharedMemory();
+    if (detectorShm.IsExisting()) {
+        detectorShm.OpenSharedMemory();
+        numDetectors = detectorShm()->numberOfDetectors;
+        detectorShm.RemoveSharedMemory();
     }
 
     for (int i = 0; i < numDetectors; ++i) {
-        SharedMemory<sharedSlsDetector> shm(multiId, i);
-        shm.RemoveSharedMemory();
+        SharedMemory<sharedModule> moduleShm(detectorId, i);
+        moduleShm.RemoveSharedMemory();
     }
 }
 
@@ -95,7 +95,7 @@ void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
     pimpl->setVirtualDetectorServers(numServers, startingPort);
 }
 
-int Detector::getShmId() const { return pimpl->getMultiId(); }
+int Detector::getShmId() const { return pimpl->getDetectorId(); }
 
 std::string Detector::getPackageVersion() const {
     return GITBRANCH;

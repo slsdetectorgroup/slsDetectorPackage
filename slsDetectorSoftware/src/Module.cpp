@@ -25,9 +25,9 @@
 namespace sls{
 
 // create shm
-Module::Module(detectorType type, int multi_id, int det_id,
+Module::Module(detectorType type, int detector_id, int module_id,
                          bool verify)
-    : detId(det_id), shm(multi_id, det_id) {
+    : moduleId(module_id), shm(detector_id, module_id) {
 
     // ensure shared memory was not created before
     if (shm.IsExisting()) {
@@ -37,22 +37,22 @@ Module::Module(detectorType type, int multi_id, int det_id,
         shm.RemoveSharedMemory();
     }
 
-    initSharedMemory(type, multi_id, verify);
+    initSharedMemory(type, detector_id, verify);
 }
 
 // pick up from shm
-Module::Module(int multi_id, int det_id, bool verify)
-    : detId(det_id), shm(multi_id, det_id) {
+Module::Module(int detector_id, int module_id, bool verify)
+    : moduleId(module_id), shm(detector_id, module_id) {
 
     // getDetectorType From shm will check if it was already existing
-    detectorType type = getDetectorTypeFromShm(multi_id, verify);
-    initSharedMemory(type, multi_id, verify);
+    detectorType type = getDetectorTypeFromShm(detector_id, verify);
+    initSharedMemory(type, detector_id, verify);
 }
 
 Module::~Module() = default;
 
 bool Module::isFixedPatternSharedMemoryCompatible() {
-    return (shm()->shmversion >= SLS_SHMAPIVERSION);
+    return (shm()->shmversion >= MODULE_SHMAPIVERSION);
 }
 
 void Module::checkDetectorVersionCompatibility() {
@@ -363,19 +363,19 @@ void Module::setHostname(const std::string &hostname, const bool initialChecks) 
 
 std::string Module::getHostname() const { return shm()->hostname; }
 
-void Module::initSharedMemory(detectorType type, int multi_id,
+void Module::initSharedMemory(detectorType type, int detector_id,
                                    bool verify) {
-    shm = SharedMemory<sharedSlsDetector>(multi_id, detId);
+    shm = SharedMemory<sharedModule>(detector_id, moduleId);
     if (!shm.IsExisting()) {
         shm.CreateSharedMemory();
         initializeDetectorStructure(type);
     } else {
         shm.OpenSharedMemory();
-        if (verify && shm()->shmversion != SLS_SHMVERSION) {
+        if (verify && shm()->shmversion != MODULE_SHMVERSION) {
             std::ostringstream ss;
-            ss << "Single shared memory (" << multi_id << "-" << detId
+            ss << "Module shared memory (" << detector_id << "-" << moduleId
                << ":) version mismatch (expected 0x" << std::hex
-               << SLS_SHMVERSION << " but got 0x" << shm()->shmversion << ")"
+               << MODULE_SHMVERSION << " but got 0x" << shm()->shmversion << ")"
                << std::dec << ". Clear Shared memory to continue.";
             throw SharedMemoryError(ss.str());
         }
@@ -383,11 +383,11 @@ void Module::initSharedMemory(detectorType type, int multi_id,
 }
 
 void Module::initializeDetectorStructure(detectorType type) {
-    shm()->shmversion = SLS_SHMVERSION;
+    shm()->shmversion = MODULE_SHMVERSION;
     memset(shm()->hostname, 0, MAX_STR_LENGTH);
     shm()->myDetectorType = type;
-    shm()->multiSize.x = 0;
-    shm()->multiSize.y = 0;
+    shm()->detectorSize.x = 0;
+    shm()->detectorSize.y = 0;
     shm()->controlPort = DEFAULT_PORTNO;
     shm()->stopPort = DEFAULT_PORTNO + 1;
     sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
@@ -395,7 +395,7 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
     shm()->useReceiverFlag = false;
     shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
-                     (detId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
+                     (moduleId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->zmqip = IpAddr{};
     shm()->numUDPInterfaces = 1;
     shm()->stoppedFlag = false;
@@ -489,19 +489,19 @@ int Module::receiveModule(sls_detector_module *myMod,
     return ts;
 }
 
-slsDetectorDefs::detectorType Module::getDetectorTypeFromShm(int multi_id,
+slsDetectorDefs::detectorType Module::getDetectorTypeFromShm(int detector_id,
                                                                   bool verify) {
     if (!shm.IsExisting()) {
         throw SharedMemoryError("Shared memory " + shm.GetName() +
-                                "does not exist.\n Corrupted Multi Shared "
+                                "does not exist.\n Corrupted Detector Shared "
                                 "memory. Please free shared memory.");
     }
 
     shm.OpenSharedMemory();
-    if (verify && shm()->shmversion != SLS_SHMVERSION) {
+    if (verify && shm()->shmversion != MODULE_SHMVERSION) {
         std::ostringstream ss;
-        ss << "Single shared memory (" << multi_id << "-" << detId
-           << ":)version mismatch (expected 0x" << std::hex << SLS_SHMVERSION
+        ss << "Module shared memory (" << detector_id << "-" << moduleId
+           << ":)version mismatch (expected 0x" << std::hex << MODULE_SHMVERSION
            << " but got 0x" << shm()->shmversion << ")" << std::dec
            << ". Clear Shared memory to continue.";
         shm.UnmapSharedMemory();
@@ -585,9 +585,9 @@ int Module::getReadNLines() {
     return retval;
 }
 
-void Module::updateMultiSize(slsDetectorDefs::xy det) {
-    shm()->multiSize = det;
-    int args[2] = {shm()->multiSize.y, detId};
+void Module::updateDetectorSize(slsDetectorDefs::xy det) {
+    shm()->detectorSize = det;
+    int args[2] = {shm()->detectorSize.y, moduleId};
     sendToDetector(F_SET_POSITION, args, nullptr);
 }
 
@@ -673,7 +673,7 @@ void Module::execCommand(const std::string &cmd) {
     LOG(logDEBUG1) << "Sending command to detector " << arg;
     sendToDetector(F_EXEC_COMMAND, arg, retval);
     if (strlen(retval) != 0U) {
-        LOG(logINFO) << "Detector " << detId << " returned:\n" << retval;
+        LOG(logINFO) << "Detector " << moduleId << " returned:\n" << retval;
     }
 }
 
@@ -745,7 +745,7 @@ std::vector<std::string> Module::getConfigFileCommands() {
     std::vector<std::string> commands;
     for (const auto &cmd : base) {
         std::ostringstream os;
-        os << detId << ':' << cmd;
+        os << moduleId << ':' << cmd;
         commands.emplace_back(os.str());
     }
     return commands;
@@ -917,7 +917,7 @@ void Module::loadSettingsFile(const std::string &fname) {
     std::ostringstream ostfn;
     ostfn << fname;
 
-    // find specific file if it has detid in file name (.snxxx)
+    // find specific file if it has moduleId in file name (.snxxx)
     if (shm()->myDetectorType == EIGER) {
         if (fname.find(".sn") == std::string::npos &&
             fname.find(".trim") == std::string::npos &&
@@ -936,7 +936,7 @@ void Module::saveSettingsFile(const std::string &fname) {
     std::ostringstream ostfn;
     ostfn << fname;
 
-    // find specific file if it has detid in file name (.snxxx)
+    // find specific file if it has moduleId in file name (.snxxx)
     if (shm()->myDetectorType == EIGER) {
         ostfn << ".sn" << std::setfill('0') << std::setw(3) << std::dec
               << getSerialNumber();
@@ -1521,17 +1521,17 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
 
     // populate from shared memory
     retval.detType = shm()->myDetectorType;
-    retval.multiSize.x = shm()->multiSize.x;
-    retval.multiSize.y = shm()->multiSize.y;
-    retval.detId = detId;
+    retval.detectorSize.x = shm()->detectorSize.x;
+    retval.detectorSize.y = shm()->detectorSize.y;
+    retval.moduleId = moduleId;
     memset(retval.hostname, 0, sizeof(retval.hostname));
     strcpy_safe(retval.hostname, shm()->hostname);
 
     LOG(logDEBUG1) 
         << "detType:" << retval.detType << std::endl
-        << "multiSize.x:" << retval.multiSize.x << std::endl
-        << "multiSize.y:" << retval.multiSize.y << std::endl
-        << "detId:" << retval.detId << std::endl
+        << "detectorSize.x:" << retval.detectorSize.x << std::endl
+        << "detectorSize.y:" << retval.detectorSize.y << std::endl
+        << "moduleId:" << retval.moduleId << std::endl
         << "hostname:" << retval.hostname << std::endl
         << "udpInterfaces:" << retval.udpInterfaces << std::endl
         << "udp_dstport:" << retval.udp_dstport << std::endl
@@ -1568,12 +1568,12 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
     // update detectors with dest mac
     if (retval.udp_dstmac == 0 && retvals[0] != 0) {
         LOG(logINFO) << "Setting destination udp mac of "
-        "detector " << detId << " to " << retvals[0];
+        "detector " << moduleId << " to " << retvals[0];
         sendToDetector(F_SET_DEST_UDP_MAC, retvals[0], nullptr);   
     }
     if (retval.udp_dstmac2 == 0 && retvals[1] != 0) {
         LOG(logINFO) << "Setting destination udp mac2 of "
-        "detector " << detId << " to " << retvals[1];
+        "detector " << moduleId << " to " << retvals[1];
         sendToDetector(F_SET_DEST_UDP_MAC2, retvals[1], nullptr);   
     }
 
@@ -1668,7 +1668,7 @@ void Module::setDestinationUDPIP(const IpAddr ip) {
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0LU);
         sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
-        LOG(logINFO) << "Setting destination udp mac of detector " << detId << " to " << retval;
+        LOG(logINFO) << "Setting destination udp mac of detector " << moduleId << " to " << retval;
         sendToDetector(F_SET_DEST_UDP_MAC, retval, nullptr); 
     }   
 }
@@ -1691,7 +1691,7 @@ void Module::setDestinationUDPIP2(const IpAddr ip) {
     if (shm()->useReceiverFlag) {
         sls::MacAddr retval(0LU);
         sendToReceiver(F_SET_RECEIVER_UDP_IP2, ip, retval);
-        LOG(logINFO) << "Setting destination udp mac2 of detector " << detId << " to " << retval;
+        LOG(logINFO) << "Setting destination udp mac2 of detector " << moduleId << " to " << retval;
         sendToDetector(F_SET_DEST_UDP_MAC2, retval, nullptr); 
     }   
 }
@@ -1865,7 +1865,7 @@ void Module::updateReceiverStreamingIP() {
         if (ip == 0) {
             ip = HostnameToIp(shm()->rxHostname);
         }  
-        LOG(logINFO) << "Setting default receiver " << detId << " streaming zmq ip to " << ip;
+        LOG(logINFO) << "Setting default receiver " << moduleId << " streaming zmq ip to " << ip;
     }     
     setReceiverStreamingIP(ip);   
 }
@@ -1953,7 +1953,7 @@ void Module::setAdditionalJsonHeader(const std::map<std::string, std::string> &j
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH]{};
         client.Receive(mess, MAX_STR_LENGTH);
-        throw RuntimeError("Receiver " + std::to_string(detId) +
+        throw RuntimeError("Receiver " + std::to_string(moduleId) +
                            " returned error: " + std::string(mess));
     }
 }
@@ -1971,7 +1971,7 @@ std::map<std::string, std::string> Module::getAdditionalJsonHeader() {
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH]{};
         client.Receive(mess, MAX_STR_LENGTH);
-        throw RuntimeError("Receiver " + std::to_string(detId) +
+        throw RuntimeError("Receiver " + std::to_string(moduleId) +
                            " returned error: " + std::string(mess));
     } else {
         client.Receive(&size, sizeof(size));
@@ -2079,7 +2079,7 @@ std::vector<int> Module::getVetoPhoton(const int chipIndex) {
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH]{};
         client.Receive(mess, MAX_STR_LENGTH);
-        throw RuntimeError("Detector " + std::to_string(detId) +
+        throw RuntimeError("Detector " + std::to_string(moduleId) +
                            " returned error: " + std::string(mess));
     } else {
         int nch = -1;
@@ -2174,7 +2174,7 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons, const int 
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH]{};
         client.Receive(mess, MAX_STR_LENGTH);
-        throw RuntimeError("Detector " + std::to_string(detId) +
+        throw RuntimeError("Detector " + std::to_string(moduleId) +
                            " returned error: " + std::string(mess));
     }
 } 
@@ -2573,7 +2573,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     int fnum = F_PROGRAM_FPGA;
     int ret = FAIL;
     char mess[MAX_STR_LENGTH] = {0};
-    LOG(logINFO) << "Sending programming binary (from pof) to detector " << detId
+    LOG(logINFO) << "Sending programming binary (from pof) to detector " << moduleId
                       << " (" << shm()->hostname << ")";
 
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
@@ -2584,13 +2584,13 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     if (ret == FAIL) {
         client.Receive(mess, sizeof(mess));
         std::ostringstream os;
-        os << "Detector " << detId << " (" << shm()->hostname << ")"
+        os << "Detector " << moduleId << " (" << shm()->hostname << ")"
            << " returned error: " << mess;
         throw RuntimeError(os.str());
     }
 
     // erasing flash
-    LOG(logINFO) << "Erasing Flash for detector " << detId << " ("
+    LOG(logINFO) << "Erasing Flash for detector " << moduleId << " ("
                         << shm()->hostname << ")";
     printf("%d%%\r", 0);
     std::cout << std::flush;
@@ -2608,7 +2608,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
         std::cout << std::flush;
     }
     printf("\n");
-    LOG(logINFO) << "Writing to Flash to detector " << detId << " ("
+    LOG(logINFO) << "Writing to Flash to detector " << moduleId << " ("
                         << shm()->hostname << ")";
     printf("%d%%\r", 0);
     std::cout << std::flush;
@@ -2632,7 +2632,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
             printf("\n");
             client.Receive(mess, sizeof(mess));
             std::ostringstream os;
-            os << "Detector " << detId << " (" << shm()->hostname << ")"
+            os << "Detector " << moduleId << " (" << shm()->hostname << ")"
                << " returned error: " << mess;
             throw RuntimeError(os.str());
         }
@@ -2656,7 +2656,7 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
     int fnum = F_PROGRAM_FPGA;
     int ret = FAIL;
     char mess[MAX_STR_LENGTH] = {0};
-    LOG(logINFO) << "Sending programming binary (from rbf) to detector " << detId
+    LOG(logINFO) << "Sending programming binary (from rbf) to detector " << moduleId
                       << " (" << shm()->hostname << ")";
 
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
@@ -2667,7 +2667,7 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
     if (ret == FAIL) {
         client.Receive(mess, sizeof(mess));
         std::ostringstream os;
-        os << "Detector " << detId << " (" << shm()->hostname << ")"
+        os << "Detector " << moduleId << " (" << shm()->hostname << ")"
             << " returned error: " << mess;
         throw RuntimeError(os.str());
     }    
@@ -2677,7 +2677,7 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
     if (ret == FAIL) {
         client.Receive(mess, sizeof(mess));
         std::ostringstream os;
-        os << "Detector " << detId << " (" << shm()->hostname << ")"
+        os << "Detector " << moduleId << " (" << shm()->hostname << ")"
             << " returned error: " << mess;
         throw RuntimeError(os.str());
     }
@@ -2739,7 +2739,7 @@ void Module::setModule(sls_detector_module &module, int tb) {
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH] = {0};
         client.Receive(mess, sizeof(mess));
-        throw RuntimeError("Detector " + std::to_string(detId) +
+        throw RuntimeError("Detector " + std::to_string(moduleId) +
                            " returned error: " + mess);
     }
     client.Receive(&retval, sizeof(retval));
@@ -2781,7 +2781,7 @@ void Module::updateRateCorrection() {
 
 std::string Module::printReceiverConfiguration() {
     std::ostringstream os;
-    os << "\n\nDetector " << detId << "\nReceiver Hostname:\t"
+    os << "\n\nDetector " << moduleId << "\nReceiver Hostname:\t"
        << getReceiverHostname();
     
     if (shm()->myDetectorType == JUNGFRAU) {  
@@ -2844,7 +2844,7 @@ void Module::execReceiverCommand(const std::string &cmd) {
     LOG(logDEBUG1) << "Sending command to receiver: " << arg;
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_EXEC_RECEIVER_COMMAND, arg, retval);
-        LOG(logINFO) << "Receiver " << detId << " returned:\n" << retval;
+        LOG(logINFO) << "Receiver " << moduleId << " returned:\n" << retval;
     }
 }
 
@@ -3019,7 +3019,7 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
         if (ret == FAIL) {
             char mess[MAX_STR_LENGTH]{};
             client.Receive(mess, MAX_STR_LENGTH);
-            throw RuntimeError("Receiver " + std::to_string(detId) +
+            throw RuntimeError("Receiver " + std::to_string(moduleId) +
                             " returned error: " + std::string(mess));
         } else {
             int nports = -1;
@@ -3028,7 +3028,7 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
             memset(mp, 0, sizeof(mp));
             client.Receive(mp, sizeof(mp));
             std::vector<uint64_t> retval(mp, mp + nports);
-            LOG(logDEBUG1) << "Missing packets of Receiver" << detId << ": " << sls::ToString(retval);
+            LOG(logDEBUG1) << "Missing packets of Receiver" << moduleId << ": " << sls::ToString(retval);
             return retval;
         }
     }

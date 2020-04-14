@@ -23,7 +23,8 @@
 #include <unistd.h>
 
 #define SHM_MULTI_PREFIX "/slsDetectorPackage_multi_"
-#define SHM_SLS_PREFIX "_sls_"
+#define SHM_MODULE_PREFIX "_module_"
+#define SHM_RECEIVER_PREFIX "_receiver_"
 #define SHM_ENV_NAME "SLSDETNAME"
 
 #include <iostream>
@@ -39,10 +40,11 @@ class SharedMemory {
 	 * Constructor
 	 * creates the single/multi detector shared memory name
 	 * @param multiId multi detector id
-     * @param slsId sls detector id, -1 if a multi detector shared memory
+     * @param moduleId module detector id, -1 if a multi detector shared memory
+     * @param receiverId receiver id, -1 if a multi detector or module shared memory
  	 */
-    SharedMemory(int multiId, int slsId) {
-        name = ConstructSharedMemoryName(multiId, slsId);
+    SharedMemory(int multiId, int moduleId, int receiverId = -1) {
+        name = ConstructSharedMemoryName(multiId, moduleId, receiverId);
     }
 
     /** 
@@ -215,10 +217,11 @@ class SharedMemory {
      * Create Shared memory name
      * throws exception if name created is longer than required 255(manpages)
      * @param multiId multi detector id
-     * @param slsId sls detector id, -1 if a multi detector shared memory
+     * @param moduleId module detector id, -1 if a multi detector shared memory
+     * @param receiverId receiver id, -1 if a multi detector or module shared memory
      * @returns shared memory name
      */
-    std::string ConstructSharedMemoryName(int multiId, int slsId) {
+    std::string ConstructSharedMemoryName(int multiId, int moduleId, int receiverId) {
 
         // using environment path
         std::string sEnvPath = "";
@@ -229,14 +232,20 @@ class SharedMemory {
         }
 
         std::stringstream ss;
-        if (slsId < 0)
+        if (moduleId < 0)
             ss << SHM_MULTI_PREFIX << multiId << sEnvPath;
+        else if (receiverId < 0)
+            ss << SHM_MULTI_PREFIX << multiId << SHM_MODULE_PREFIX << moduleId << sEnvPath;
         else
-            ss << SHM_MULTI_PREFIX << multiId << SHM_SLS_PREFIX << slsId << sEnvPath;
+            ss << SHM_MULTI_PREFIX << multiId << SHM_MODULE_PREFIX << moduleId << 
+                SHM_RECEIVER_PREFIX << receiverId << sEnvPath;
 
         std::string temp = ss.str();
         if (temp.length() > NAME_MAX_LENGTH) {
-            std::string msg = "Shared memory initialization failed. " + temp + " has " + std::to_string(temp.length()) + " characters. \n" + "Maximum is " + std::to_string(NAME_MAX_LENGTH) + ". Change the environment variable " + SHM_ENV_NAME;
+            std::string msg = "Shared memory initialization failed. " + 
+            temp + " has " + std::to_string(temp.length()) + " characters. \n" + 
+            "Maximum is " + std::to_string(NAME_MAX_LENGTH) + 
+            ". Change the environment variable " + SHM_ENV_NAME;
             LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
         }

@@ -28,14 +28,14 @@
 
 namespace sls{
 
-DetectorImpl::DetectorImpl(int multi_id, bool verify, bool update)
-    : multiId(multi_id), multi_shm(multi_id, -1) {
-    setupMultiDetector(verify, update);
+DetectorImpl::DetectorImpl(int detector_id, bool verify, bool update)
+    : detectorId(detector_id), detector_shm(detector_id, -1) {
+    setupDetector(verify, update);
 }
 
 DetectorImpl::~DetectorImpl() = default;
 
-void DetectorImpl::setupMultiDetector(bool verify, bool update) {
+void DetectorImpl::setupDetector(bool verify, bool update) {
     initSharedMemory(verify);
     initializeMembers(verify);
     if (update) {
@@ -44,34 +44,34 @@ void DetectorImpl::setupMultiDetector(bool verify, bool update) {
 }
 
 void DetectorImpl::setAcquiringFlag(bool flag) {
-    multi_shm()->acquiringFlag = flag;
+    detector_shm()->acquiringFlag = flag;
 }
 
-int DetectorImpl::getMultiId() const { return multiId; }
+int DetectorImpl::getDetectorId() const { return detectorId; }
 
-void DetectorImpl::freeSharedMemory(int multiId, int detPos) {
+void DetectorImpl::freeSharedMemory(int detectorId, int detPos) {
     // single
     if (detPos >= 0) {
-        SharedMemory<sharedSlsDetector> temp_shm(multiId, detPos);
-        if (temp_shm.IsExisting()) {
-            temp_shm.RemoveSharedMemory();
+        SharedMemory<sharedModule> module_shm(detectorId, detPos);
+        if (module_shm.IsExisting()) {
+            module_shm.RemoveSharedMemory();
         }
         return;
     }
 
     // multi - get number of detectors from shm
-    SharedMemory<sharedMultiSlsDetector> multiShm(multiId, -1);
+    SharedMemory<sharedDetector> detectorShm(detectorId, -1);
     int numDetectors = 0;
 
-    if (multiShm.IsExisting()) {
-        multiShm.OpenSharedMemory();
-        numDetectors = multiShm()->numberOfDetectors;
-        multiShm.RemoveSharedMemory();
+    if (detectorShm.IsExisting()) {
+        detectorShm.OpenSharedMemory();
+        numDetectors = detectorShm()->numberOfDetectors;
+        detectorShm.RemoveSharedMemory();
     }
 
     for (int i = 0; i < numDetectors; ++i) {
-        SharedMemory<sharedSlsDetector> shm(multiId, i);
-        shm.RemoveSharedMemory();
+        SharedMemory<sharedModule> module_shm(detectorId, i);
+        module_shm.RemoveSharedMemory();
     }
 }
 
@@ -83,7 +83,7 @@ void DetectorImpl::freeSharedMemory() {
     detectors.clear();
 
     // clear multi detector shm
-    multi_shm.RemoveSharedMemory();
+    detector_shm.RemoveSharedMemory();
     client_downstream = false;
 }
 
@@ -101,8 +101,8 @@ std::string DetectorImpl::getUserDetails() {
     }
     sstream << "\nType: ";
     // get type from multi shm
-    if (multi_shm()->shmversion >= MULTI_SHMAPIVERSION) {
-        sstream << ToString(multi_shm()->multiDetectorType);
+    if (detector_shm()->shmversion >= DETECTOR_SHMAPIVERSION) {
+        sstream << ToString(detector_shm()->multiDetectorType);
     }
     // get type from slsdet shm
     else {
@@ -114,33 +114,33 @@ std::string DetectorImpl::getUserDetails() {
         }
     }
 
-    sstream << "\nPID: " << multi_shm()->lastPID
-            << "\nUser: " << multi_shm()->lastUser
-            << "\nDate: " << multi_shm()->lastDate << std::endl;
+    sstream << "\nPID: " << detector_shm()->lastPID
+            << "\nUser: " << detector_shm()->lastUser
+            << "\nDate: " << detector_shm()->lastDate << std::endl;
 
     return sstream.str();
 }
 
 bool DetectorImpl::getInitialChecks() const {
-    return multi_shm()->initialChecks;
+    return detector_shm()->initialChecks;
 }
 
 void DetectorImpl::setInitialChecks(const bool value) {
-    multi_shm()->initialChecks = value;
+    detector_shm()->initialChecks = value;
 }
 
 void DetectorImpl::initSharedMemory(bool verify) {
-    if (!multi_shm.IsExisting()) {
-        multi_shm.CreateSharedMemory();
+    if (!detector_shm.IsExisting()) {
+        detector_shm.CreateSharedMemory();
         initializeDetectorStructure();
     } else {
-        multi_shm.OpenSharedMemory();
-        if (verify && multi_shm()->shmversion != MULTI_SHMVERSION) {
-            LOG(logERROR) << "Multi shared memory (" << multiId
+        detector_shm.OpenSharedMemory();
+        if (verify && detector_shm()->shmversion != DETECTOR_SHMVERSION) {
+            LOG(logERROR) << "Detector shared memory (" << detectorId
                                << ") version mismatch "
                                   "(expected 0x"
-                               << std::hex << MULTI_SHMVERSION << " but got 0x"
-                               << multi_shm()->shmversion << std::dec
+                               << std::hex << DETECTOR_SHMVERSION << " but got 0x"
+                               << detector_shm()->shmversion << std::dec
                                << ". Clear Shared memory to continue.";
             throw SharedMemoryError("Shared memory version mismatch!");
         }
@@ -148,16 +148,16 @@ void DetectorImpl::initSharedMemory(bool verify) {
 }
 
 void DetectorImpl::initializeDetectorStructure() {
-    multi_shm()->shmversion = MULTI_SHMVERSION;
-    multi_shm()->numberOfDetectors = 0;
-    multi_shm()->multiDetectorType = GENERIC;
-    multi_shm()->numberOfDetector.x = 0;
-    multi_shm()->numberOfDetector.y = 0;
-    multi_shm()->numberOfChannels.x = 0;
-    multi_shm()->numberOfChannels.y = 0;
-    multi_shm()->acquiringFlag = false;
-    multi_shm()->initialChecks = true;
-    multi_shm()->gapPixels = false;
+    detector_shm()->shmversion = DETECTOR_SHMVERSION;
+    detector_shm()->numberOfDetectors = 0;
+    detector_shm()->multiDetectorType = GENERIC;
+    detector_shm()->numberOfDetector.x = 0;
+    detector_shm()->numberOfDetector.y = 0;
+    detector_shm()->numberOfChannels.x = 0;
+    detector_shm()->numberOfChannels.y = 0;
+    detector_shm()->acquiringFlag = false;
+    detector_shm()->initialChecks = true;
+    detector_shm()->gapPixels = false;
 }
 
 void DetectorImpl::initializeMembers(bool verify) {
@@ -165,10 +165,10 @@ void DetectorImpl::initializeMembers(bool verify) {
     zmqSocket.clear();
 
     // get objects from single det shared memory (open)
-    for (int i = 0; i < multi_shm()->numberOfDetectors; i++) {
+    for (int i = 0; i < detector_shm()->numberOfDetectors; i++) {
         try {
             detectors.push_back(
-                sls::make_unique<Module>(multiId, i, verify));
+                sls::make_unique<Module>(detectorId, i, verify));
         } catch (...) {
             detectors.clear();
             throw;
@@ -177,27 +177,27 @@ void DetectorImpl::initializeMembers(bool verify) {
 }
 
 void DetectorImpl::updateUserdetails() {
-    multi_shm()->lastPID = getpid();
-    memset(multi_shm()->lastUser, 0, sizeof(multi_shm()->lastUser));
-    memset(multi_shm()->lastDate, 0, sizeof(multi_shm()->lastDate));
+    detector_shm()->lastPID = getpid();
+    memset(detector_shm()->lastUser, 0, sizeof(detector_shm()->lastUser));
+    memset(detector_shm()->lastDate, 0, sizeof(detector_shm()->lastDate));
     try {
-        sls::strcpy_safe(multi_shm()->lastUser, exec("whoami").c_str());
-        sls::strcpy_safe(multi_shm()->lastDate, exec("date").c_str());
+        sls::strcpy_safe(detector_shm()->lastUser, exec("whoami").c_str());
+        sls::strcpy_safe(detector_shm()->lastDate, exec("date").c_str());
     } catch (...) {
-        sls::strcpy_safe(multi_shm()->lastUser, "errorreading");
-        sls::strcpy_safe(multi_shm()->lastDate, "errorreading");
+        sls::strcpy_safe(detector_shm()->lastUser, "errorreading");
+        sls::strcpy_safe(detector_shm()->lastDate, "errorreading");
     }
 }
 
 bool DetectorImpl::isAcquireReady() {
-    if (multi_shm()->acquiringFlag) {
+    if (detector_shm()->acquiringFlag) {
         LOG(logWARNING)
             << "Acquire has already started. "
                "If previous acquisition terminated unexpectedly, "
                "reset busy flag to restart.(sls_detector_put clearbusy)";
         return false;
     }
-    multi_shm()->acquiringFlag = true;
+    detector_shm()->acquiringFlag = true;
     return true;
 }
 
@@ -232,14 +232,14 @@ void DetectorImpl::setVirtualDetectorServers(const int numdet, const int port) {
 
 void DetectorImpl::setHostname(const std::vector<std::string> &name) {
     // this check is there only to allow the previous detsizechan command
-    if (multi_shm()->numberOfDetectors != 0) {
+    if (detector_shm()->numberOfDetectors != 0) {
         LOG(logWARNING)
             << "There are already detector(s) in shared memory."
                "Freeing Shared memory now.";
-        bool initialChecks = multi_shm()->initialChecks;
+        bool initialChecks = detector_shm()->initialChecks;
         freeSharedMemory();
-        setupMultiDetector();
-        multi_shm()->initialChecks = initialChecks;
+        setupDetector();
+        detector_shm()->initialChecks = initialChecks;
     }
     for (const auto &hostname : name) {
         addSlsDetector(hostname);
@@ -263,7 +263,7 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
             if (d->getHostname() == host) {
                 LOG(logWARNING)
                     << "Detector " << host
-                    << "already part of the multiDetector!" << std::endl
+                    << "already part of the Detector!" << std::endl
                     << "Remove it before adding it back in a new position!";
                 return;
             }
@@ -274,13 +274,13 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
     detectorType type = Module::getTypeFromDetector(host, port);
     auto pos = detectors.size();
     detectors.emplace_back(
-        sls::make_unique<Module>(type, multiId, pos, false));
-    multi_shm()->numberOfDetectors = detectors.size();
+        sls::make_unique<Module>(type, detectorId, pos, false));
+    detector_shm()->numberOfDetectors = detectors.size();
     detectors[pos]->setControlPort(port);
     detectors[pos]->setStopPort(port + 1);
-    detectors[pos]->setHostname(host, multi_shm()->initialChecks);
+    detectors[pos]->setHostname(host, detector_shm()->initialChecks);
     // detector type updated by now
-    multi_shm()->multiDetectorType =
+    detector_shm()->multiDetectorType =
         Parallel(&Module::getDetectorType, {})
             .tsquash("Inconsistent detector types.");
     // for moench and ctb
@@ -288,11 +288,11 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
 }
 
 void DetectorImpl::updateDetectorSize() {
-    LOG(logDEBUG) << "Updating Multi-Detector Size: " << size();
+    LOG(logDEBUG) << "Updating Detector Size: " << size();
 
     const slsDetectorDefs::xy det_size = detectors[0]->getNumberOfChannels();
 
-    int maxy = multi_shm()->numberOfChannels.y;
+    int maxy = detector_shm()->numberOfChannels.y;
     if (maxy == 0) {
         maxy = det_size.y * size();
     }
@@ -303,33 +303,33 @@ void DetectorImpl::updateDetectorSize() {
         ++ndetx;
     }
 
-    multi_shm()->numberOfDetector.x = ndetx;
-    multi_shm()->numberOfDetector.y = ndety;
-    multi_shm()->numberOfChannels.x = det_size.x * ndetx;
-    multi_shm()->numberOfChannels.y = det_size.y * ndety;
+    detector_shm()->numberOfDetector.x = ndetx;
+    detector_shm()->numberOfDetector.y = ndety;
+    detector_shm()->numberOfChannels.x = det_size.x * ndetx;
+    detector_shm()->numberOfChannels.y = det_size.y * ndety;
 
     LOG(logDEBUG) << "\n\tNumber of Detectors in X direction:"
-                       << multi_shm()->numberOfDetector.x
+                       << detector_shm()->numberOfDetector.x
                        << "\n\tNumber of Detectors in Y direction:"
-                       << multi_shm()->numberOfDetector.y
+                       << detector_shm()->numberOfDetector.y
                        << "\n\tNumber of Channels in X direction:"
-                       << multi_shm()->numberOfChannels.x
+                       << detector_shm()->numberOfChannels.x
                        << "\n\tNumber of Channels in Y direction:"
-                       << multi_shm()->numberOfChannels.y;
+                       << detector_shm()->numberOfChannels.y;
 
     for (auto &d : detectors) {
-        d->updateMultiSize(multi_shm()->numberOfDetector);
+        d->updateDetectorSize(detector_shm()->numberOfDetector);
     }
 }
 
 int DetectorImpl::size() const { return detectors.size(); }
 
 slsDetectorDefs::xy DetectorImpl::getNumberOfDetectors() const {
-    return multi_shm()->numberOfDetector;
+    return detector_shm()->numberOfDetector;
 }
 
 slsDetectorDefs::xy DetectorImpl::getNumberOfChannels() const {
-    return multi_shm()->numberOfChannels;
+    return detector_shm()->numberOfChannels;
 }
 
 void DetectorImpl::setNumberOfChannels(const slsDetectorDefs::xy c) {
@@ -337,33 +337,33 @@ void DetectorImpl::setNumberOfChannels(const slsDetectorDefs::xy c) {
         throw RuntimeError(
             "Set the number of channels before setting hostname.");
     }
-    multi_shm()->numberOfChannels = c;
+    detector_shm()->numberOfChannels = c;
 }
 
 bool DetectorImpl::getGapPixelsinCallback() const {
-    return multi_shm()->gapPixels;
+    return detector_shm()->gapPixels;
 }
 
 void DetectorImpl::setGapPixelsinCallback(const bool enable) {
     if (enable) {
-        switch (multi_shm()->multiDetectorType) {
+        switch (detector_shm()->multiDetectorType) {
             case JUNGFRAU:
                 break;
             case EIGER:
                 if (size() && detectors[0]->getQuad()) {
                     break;
                 }
-                if (multi_shm()->numberOfDetector.y % 2 != 0) {
+                if (detector_shm()->numberOfDetector.y % 2 != 0) {
                     throw RuntimeError("Gap pixels can only be used "
                     "for full modules.");
                 }
                 break;
             default:
                 throw RuntimeError("Gap Pixels is not implemented for " 
-                + multi_shm()->multiDetectorType);
+                + detector_shm()->multiDetectorType);
         }
     }
-    multi_shm()->gapPixels = enable;
+    detector_shm()->gapPixels = enable;
 }
 
 int DetectorImpl::createReceivingDataSockets(const bool destroy) {
@@ -383,7 +383,7 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
     
     size_t numSockets = detectors.size();
     size_t numSocketsPerDetector = 1;
-    if (multi_shm()->multiDetectorType == EIGER) {
+    if (detector_shm()->multiDetectorType == EIGER) {
         numSocketsPerDetector = 2;
     }
     if (Parallel(&Module::getNumberofUDPInterfacesFromShm, {}).squash() ==
@@ -420,7 +420,7 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
 
 void DetectorImpl::readFrameFromReceiver() {
 
-    bool gapPixels = multi_shm()->gapPixels;
+    bool gapPixels = detector_shm()->gapPixels;
     LOG(logDEBUG) << "Gap pixels: " << gapPixels;
 
     int nX = 0;
@@ -577,7 +577,7 @@ void DetectorImpl::readFrameFromReceiver() {
                     uint32_t yoffset = coordY * nPixelsY;
                     uint32_t singledetrowoffset = nPixelsX * bytesPerPixel;
                     uint32_t rowoffset = nX * singledetrowoffset;
-                    if (multi_shm()->multiDetectorType == CHIPTESTBOARD) {
+                    if (detector_shm()->multiDetectorType == CHIPTESTBOARD) {
                         singledetrowoffset = size;
 		            }
                     LOG(logDEBUG1)
@@ -755,7 +755,7 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
     // eiger requires inter chip gap pixels are halved 
     // jungfrau prefers same inter chip gap pixels as the boundary pixels
     int divisionValue = 2;
-    slsDetectorDefs::detectorType detType = multi_shm()->multiDetectorType;
+    slsDetectorDefs::detectorType detType = detector_shm()->multiDetectorType;
     if (detType == JUNGFRAU) {
         divisionValue = 1;
     }
@@ -1048,7 +1048,7 @@ int DetectorImpl::acquire() {
 
         // start and read all
         try {
-            if (multi_shm()->multiDetectorType == EIGER) {
+            if (detector_shm()->multiDetectorType == EIGER) {
                 Parallel(&Module::prepareAcquisition, {});
             }
             Parallel(&Module::startAndReadAll, {});
@@ -1172,7 +1172,7 @@ int DetectorImpl::kbhit() {
 std::vector<char> DetectorImpl::readProgrammingFile(const std::string &fname) {
     // validate type of file
     bool isPof = false;
-    switch (multi_shm()->multiDetectorType) {
+    switch (detector_shm()->multiDetectorType) {
     case JUNGFRAU:
     case CHIPTESTBOARD:
     case MOENCH:

@@ -32,6 +32,7 @@
 
 /** default ports */
 #define DEFAULT_PORTNO 1952
+#define DEFAULT_RX_PORTNO 1954
 #define DEFAULT_UDP_PORTNO 50001
 #define DEFAULT_ZMQ_CL_PORTNO 30001
 #define DEFAULT_ZMQ_RX_PORTNO 30001
@@ -466,8 +467,8 @@ class slsDetectorDefs {
      */ 
     struct rxParameters {
         detectorType detType{GENERIC};
-        xy multiSize;
-        int detId{0};
+        xy detectorSize;
+        int moduleId{0};
         char hostname[MAX_STR_LENGTH];
         int udpInterfaces{1};
         int udp_dstport{0};

@@ -13,8 +13,8 @@
 
 class ServerInterface;
 
-#define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200402
+#define MODULE_SHMAPIVERSION 0x190726
+#define MODULE_SHMVERSION 0x200402
 
 namespace sls{
 
@@ -22,7 +22,7 @@ namespace sls{
  * @short structure allocated in shared memory to store detector settings for
  * IPC and cache
  */
-struct sharedSlsDetector {
+struct sharedModule {
 
     /* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND ------*/
 
@@ -39,7 +39,7 @@ struct sharedSlsDetector {
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
     /** Number of detectors in multi list in x dir and y dir */
-    slsDetectorDefs::xy multiSize;
+    slsDetectorDefs::xy detectorSize;
 
     /** is the port used for control functions */
     int controlPort;
@@ -90,22 +90,22 @@ class Module : public virtual slsDetectorDefs {
     /**
      * Constructor called when creating new shared memory
      * @param type detector type
-     * @param multi_id multi detector shared memory id
-     * @param id sls detector id (position in detectors list)
+     * @param detector_id multi detector shared memory id
+     * @param module_id module id (position in detectors list)
      * @param verify true to verify if shared memory version matches existing
      * one
      */
-    explicit Module(detectorType type, int multi_id = 0, int det_id = 0,
+    explicit Module(detectorType type, int detector_id = 0, int module_id = 0,
                          bool verify = true);
 
     /**
      * Constructor called when opening existing shared memory
-     * @param multi_id multi detector shared memory id
-     * @param id sls detector id (position in detectors list)
+     * @param detector_id multi detector shared memory id
+     * @param module_id module id (position in detectors list)
      * @param verify true to verify if shared memory version matches existing
      * one
      */
-    explicit Module(int multi_id = 0, int det_id = 0, bool verify = true);
+    explicit Module(int detector_id = 0, int module_id = 0, bool verify = true);
 
     /**
      * Destructor
@@ -141,7 +141,7 @@ class Module : public virtual slsDetectorDefs {
 
     /**
      * Free shared memory and delete shared memory structure
-     * occupied by the sharedSlsDetector structure
+     * occupied by the sharedModule structure
      * Is only safe to call if one deletes the Module object afterward
      * and frees multi shared memory/updates
      * thisMultiDetector->numberOfDetectors
@@ -213,12 +213,12 @@ class Module : public virtual slsDetectorDefs {
      * Set Detector offset in shared memory in dimension d
      * @param det detector size
      */
-    void updateMultiSize(slsDetectorDefs::xy det);
+    void updateDetectorSize(slsDetectorDefs::xy det);
 
     int setControlPort(int port_number);
 
     /**
-     * Returns the detector TCP control port  \sa sharedSlsDetector
+     * Returns the detector TCP control port  
      * @returns the detector TCP control port
      */
     int getControlPort() const;
@@ -226,7 +226,7 @@ class Module : public virtual slsDetectorDefs {
     int setStopPort(int port_number);
 
     /**
-     * Returns the detector TCP stop port  \sa sharedSlsDetector
+     * Returns the detector TCP stop port  
      * @returns the detector TCP stop port
      */
     int getStopPort() const;
@@ -234,7 +234,7 @@ class Module : public virtual slsDetectorDefs {
     int setReceiverPort(int port_number);
 
     /**
-     * Returns the receiver TCP 	port  \sa sharedSlsDetector
+     * Returns the receiver TCP 	port  
      * @returns the receiver TCP port
      */
     int getReceiverPort() const;
@@ -306,13 +306,13 @@ class Module : public virtual slsDetectorDefs {
                                        int tb = 1);
 
     /**
-     * Returns the detector trimbit/settings directory  \sa sharedSlsDetector
+     * Returns the detector trimbit/settings directory  
      * @returns the trimbit/settings directory
      */
     std::string getSettingsDir();
 
     /**
-     * Sets the detector trimbit/settings directory  \sa sharedSlsDetector
+     * Sets the detector trimbit/settings directory  
      * @param s trimbits/settings directory
      * @returns the trimbit/settings directory
      */
@@ -645,7 +645,7 @@ class Module : public virtual slsDetectorDefs {
 
     void test();
     /**
-     * Returns the receiver IP address\sa sharedSlsDetector
+     * Returns the receiver IP address
      * @returns the receiver IP address
      */
     std::string getReceiverHostname() const;
@@ -755,26 +755,26 @@ class Module : public virtual slsDetectorDefs {
     sls::MacAddr getDestinationUDPMAC2();
 
     /**
-     * Sets the receiver UDP port\sa sharedSlsDetector
+     * Sets the receiver UDP port
      * @param udpport receiver UDP port
      */
     void setDestinationUDPPort(int udpport);
 
     /**
-     * Returns the receiver UDP port\sa sharedSlsDetector
+     * Returns the receiver UDP port
      * @returns the receiver UDP port
      */
     int getDestinationUDPPort();
 
     /**
-     * Sets the receiver UDP port 2\sa sharedSlsDetector (Eiger and Jungfrau
+     * Sets the receiver UDP port 2 (Eiger and Jungfrau
      * only)
      * @param udpport receiver UDP port 2
      */
     void setDestinationUDPPort2(int udpport);
 
     /**
-     * Returns the receiver UDP port 2 of same interface\sa sharedSlsDetector
+     * Returns the receiver UDP port 2 of same interface
      * (Eiger and Jungfrau only)
      * @returns the receiver UDP port 2 of same interface
      */
@@ -814,49 +814,49 @@ class Module : public virtual slsDetectorDefs {
     int getSelectedUDPInterface();
 
     /**
-     * Sets the client zmq port\sa sharedSlsDetector
+     * Sets the client zmq port
      * @param port client zmq port
      */
     void setClientStreamingPort(int port);
 
     /**
-     * Returns the client zmq port \sa sharedSlsDetector
+     * Returns the client zmq port 
      * @returns the client zmq port
      */
     int getClientStreamingPort();
 
     /**
-     * Sets the receiver zmq port\sa sharedSlsDetector
+     * Sets the receiver zmq port
      * @param port receiver zmq port
      */
     void setReceiverStreamingPort(int port);
 
     /**
-     * Returns the receiver zmq port \sa sharedSlsDetector
+     * Returns the receiver zmq port 
      * @returns the receiver zmq port
      */
     int getReceiverStreamingPort();
 
     /**
-     * Sets the client zmq ip\sa sharedSlsDetector
+     * Sets the client zmq ip
      * @param ip client zmq ip
      */
     void setClientStreamingIP(const sls::IpAddr ip);
 
     /**
-     * Returns the client zmq ip \sa sharedSlsDetector
+     * Returns the client zmq ip 
      * @returns the client zmq ip
      */
     sls::IpAddr getClientStreamingIP();
 
     /**
-     * Sets the receiver zmq ip\sa sharedSlsDetector
+     * Sets the receiver zmq ip
      * @param ip receiver zmq ip
      */
     void setReceiverStreamingIP(const sls::IpAddr ip);
 
     /**
-     * Returns the receiver zmq ip \sa sharedSlsDetector
+     * Returns the receiver zmq ip 
      * @returns the receiver zmq ip
      */
     sls::IpAddr getReceiverStreamingIP();
@@ -921,13 +921,13 @@ class Module : public virtual slsDetectorDefs {
     int64_t setReceiverUDPSocketBufferSize(int64_t udpsockbufsize = -1);
 
     /**
-     * Returns the receiver UDP socket buffer size\sa sharedSlsDetector
+     * Returns the receiver UDP socket buffer size
      * @returns the receiver UDP socket buffer size
      */
     int64_t getReceiverUDPSocketBufferSize();
 
     /**
-     * Returns the receiver real UDP socket buffer size\sa sharedSlsDetector
+     * Returns the receiver real UDP socket buffer size
      * @returns the receiver real UDP socket buffer size
      */
     int64_t getReceiverRealUDPSocketBufferSize() const;
@@ -1129,7 +1129,6 @@ class Module : public virtual slsDetectorDefs {
 
     /**
      * Sets the number of trim energies and their value  (Eiger)
-     * \sa sharedSlsDetector
      * @param nen number of energies
      * @param vector os trimmed energies
      * @returns number of trim energies
@@ -1138,7 +1137,6 @@ class Module : public virtual slsDetectorDefs {
 
     /**
      * Returns a vector with the trimmed energies  (Eiger)
-     * \sa sharedSlsDetector
      * @returns vector with the trimmed energies
      */
     std::vector<int> getTrimEn();
@@ -1676,21 +1674,21 @@ class Module : public virtual slsDetectorDefs {
 
     /**
      * Get Detector Type from Shared Memory (opening shm without verifying size)
-     * @param multi_id multi detector Id
+     * @param detector_id multi detector Id
      * @param verify true to verify if shm size matches existing one
      * @returns detector type
      */
-    detectorType getDetectorTypeFromShm(int multi_id, bool verify = true);
+    detectorType getDetectorTypeFromShm(int detector_id, bool verify = true);
 
     /**
      * Initialize shared memory
      * @param created true if shared memory must be created, else false to open
      * @param type type of detector
-     * @param multi_id multi detector Id
+     * @param detector_id multi detector Id
      * @param verify true to verify if shm size matches existing one
      * @returns true if the shared memory was created now
      */
-    void initSharedMemory(detectorType type, int multi_id, bool verify = true);
+    void initSharedMemory(detectorType type, int detector_id, bool verify = true);
 
     /**
      * Initialize detector structure to defaults
@@ -1773,10 +1771,10 @@ class Module : public virtual slsDetectorDefs {
     std::vector<std::string> getSettingsFileDacNames();
 
     /** Module Id or position in the detectors list */
-    const int detId;
+    const int moduleId;
 
     /** Shared Memory object */
-    mutable sls::SharedMemory<sharedSlsDetector> shm{0, 0};
+    mutable sls::SharedMemory<sharedModule> shm{0, 0};
 };
 
 }// sls

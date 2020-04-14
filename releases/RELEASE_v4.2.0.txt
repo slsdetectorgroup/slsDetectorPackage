@@ -1,0 +1,215 @@
+SLS Detector Package 4.2.0 released on 09.04.2020 (Minor Release)
+===================================================================
+
+
+This document describes the differences between 4.2.0 and 4.1.1 releases.   
+    
+    CONTENTS
+    --------
+    1.  Topics Concerning
+    2.  New Features
+    3.  Resolved Issues
+    4.  Firmware Requirements
+    5.  Download, Documentation & Support
+    
+
+
+1. Topics Concerning
+====================
+
+    - (Eiger) Additional status: Transmitting
+    - (Eiger) Default vcal dac value
+    - (Eiger) Default readout mode
+    - (Eiger) Dynamic range change effect on clock divider
+    - (Eiger) Deactivate a module
+    - (Eiger) Setting all trimbits argument check
+    - (Receiver) performance (memory allocation and alignment, file buffering)
+    - (Receiver) Eiger: Different rx_fifodepth defaults
+    - (Receiver) rx_fifodepth has a higher range
+    - (Receiver) subperiod in master file
+    - (Package) Removed warnings including memory overlap copy
+    - (Users) Added setflippeddatax to users class
+    - (Zmq) Client data streaming fix (Client data call back)
+
+    Compared to 4.1.1, 
+        - no firmware update required for this release
+        - eiger on-board detector server update required for this release
+
+
+
+2. New Features
+===============
+
+    Receiver
+    --------
+    1.  Memory in receiver is now byte aligned and write to every page
+        at memory allocation to ensure complete memory allocated right
+        from start. Removed file buffering when writing to file. Replaced
+        pausing on keepRunning variable with semaphore to reduce cpu
+        load.
+
+    2.  (Eiger) Default rx_fifodepth for 32 bit mode is 100, but 1000
+        for other modes. Changing dynamic range will now change bit mode to 
+        their defaults.
+
+
+    Client
+    ------
+    1.  Added setflippeddatax to users class.
+
+
+    Detector Server (Eiger)
+    -----------------------
+    1.  Transmitting Status: After acquiring, if the detector is still 
+        streaming out data, then the status is Trasnmitting 
+        (command line: 'data'). Only after this process, will it become idle. 
+        Previously, sls_detector_acquire waited for end of data streaming 
+        before returning. It will continue to do so.
+
+
+
+3. Resolved Issues
+==================          
+
+    Detector Server (Eiger)
+    -----------------------
+    1.  Vcal dac set to 0 at on-board detector server start up to
+        reduce noise.
+
+    2.  Default Readout mode set to Parallel instead of Non parallel.
+
+    3.  Dynamic range  4, 8 or 16 changes the clock divider to full speed, 
+        whereas dynamic range of 32 still changes the clock divider to 
+        quarter speed. So, default is dynamic range of 16 and full speed 
+	at detector server start up.
+
+    4.  Setting activate to 0 sent to both control and stop server.
+        So, deactivate a module can be done even if FEB communication fails.
+        Restarting the server will activate the module again.
+
+    5.  Verification included for input of setting all trimbits values.
+        Valid input is 0 - 63.
+
+
+    Receiver
+    --------
+    1.  Earlier, setting rx_fifodepth to a high value would set to 
+        a lower value, printing this low value to console, 
+        but not giving an error. Memory allocated can now take in 64 bits.
+    
+    2.  Modifying subexptime now also updates subperiod in master file.
+        Also, the print for subperiod name to console is corrected.
+
+
+    Package
+    -------
+    1.  Many warnings have been fixed, including those with overlapping 
+        memory copies for source and destination. 
+
+
+    Client
+    ------
+    1.  Each time client data streaming was enabled to receive, it
+        creates zmq sockets without checking if they were already created.
+        This is fixed now.
+    
+    
+    
+4. Firmware Requirements
+========================
+        
+        Gotthard
+        ========   
+        Minimum compatible version  : 11.01.2013
+        Latest compatible version   : 08.02.2018 (50um and 25um Master)
+                                      09.02.2018 (25 um Slave) 
+        Eiger
+        =====  
+        Minimum compatible version  : 24
+        Latest compatible version   : 24
+        
+        Jungfrau
+        ========       
+        Minimum compatible version  : 26.02.2018
+        Latest compatible version   : 06.12.2018
+
+        
+        Detector Upgrade
+        ================
+        Gotthard    Cannot be upgraded remotely. Requires programming via USB blaster
+        Eiger       Can be upgraded remotely via bit files
+        Jungfrau    Can be upgraded remotely using sls_detector_put programfpga <pof>
+        
+        Instructions available at
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/html/slsDetectorInstall/GOTTHARD_Firmware.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/html/slsDetectorInstall/EIGER_Firmware.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/html/slsDetectorInstall/JUNGFRAU_Firmware.html
+
+         
+    Please refer to the link below for more details on the firmware versions.
+    https://www.psi.ch/en/detectors/firmware
+    
+    
+        
+5. Download, Documentation & Support
+====================================
+
+    Download
+    --------
+    
+    The Source Code (Default C++ API):
+         https://github.com/slsdetectorgroup/slsDetectorPackage
+         
+    The Conda Lib Package:
+        https://github.com/slsdetectorgroup/sls_detector_lib
+        
+    The Conda GUI Package:
+        https://github.com/slsdetectorgroup/sls_detector_gui    
+        
+    The Python Interface (including the package):
+        https://github.com/slsdetectorgroup/sls_detector
+    
+    
+    Documentation
+    -------------
+    
+    Manual (HTML & PDF):
+        https://www.psi.ch/en/detectors/documentation
+        slsDetectorPackage/manual/docs/
+        
+    Command Line Documentation:
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/html/slsDetectorClientDocs/index.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/pdf/slsDetectorClientDocs.pdf
+
+        manual/docs/html/slsDetectorClientDocs/index.html
+        manual/docs/pdf/slsDetectorClientDocs.pdf
+        
+    C++ API Documentation:
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/html/slsDetectorUsersDocs/index.html
+        https://slsdetectorgroup.github.io/slsDetectorPackage/docs/pdf/slsDetectorUsersDocs.pdf
+
+        manual/docs/html/slsDetectorUsersDocs/index.html
+        manual/docs/pdf/slsDetectorUsersDocs.pdf
+        
+    C++ API Example:
+        https://slsdetectorgroup.github.io/slsDetectorPackage/exampleCode/slsDetectorUsersExample/index.html
+
+        manual/manual-api/mainClient.cpp
+        manual/manual-api/mainReceiver.cpp
+        
+    Python API Documentation:
+        https://slsdetectorgroup.github.io/sls_detector/
+
+    TroubleShotting:
+        https://www.psi.ch/en/detectors/troubleshooting
+        
+    Further Documentation:
+        https://www.psi.ch/en/detectors/users-support
+        
+    
+    Support
+    -------
+
+        dhanya.thattil@psi.ch
+        erik.frojdh@psi.ch
+        anna.bergamaschi@psi.ch

@@ -397,10 +397,12 @@ int *getClusters(char *data,  int *ph=NULL) {
 	for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
 	  for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
 	    
-	    if ((iy+ir)>=0 && (iy+ir)>=iy && (iy+ir)<ny && (ix+ic)>=0 &&(ix+ic)>=ix && (ix+ic)<nx) {
-	      val[iy+ir][ix+ic]=subtractPedestal(data,ix+ic,iy+ir, cm);
-		  (clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
-	    
+	    if ((iy+ir)>=0 &&  (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
+	      if ((iy+ir)>=iy &&(ix+ic)>=ix)
+		val[iy+ir][ix+ic]=subtractPedestal(data,ix+ic,iy+ir, cm);
+
+	      (clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
+	  
 	    v=&(val[iy+ir][ix+ic]);
 	    tot+=*v;
 	    if (ir<=0 && ic<=0)

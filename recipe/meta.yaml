@@ -1,12 +1,12 @@
 package:
   name: sls_detector_software
-  version: 4.1.1
+  version: 4.2.0
 
 source:
   - path: ..
 
 build:
-  number: 1
+  number: 0
   rpaths:
     - lib/
 
@@ -50,14 +50,14 @@ requirements:
 
 outputs:
   - name: sls_detector_lib
-    version: 4.1.1
+    version: 4.2.0
     script: copy_lib.sh
     requirements:
       build:
         - {{ compiler('c') }}
         - {{compiler('cxx')}}
   - name: sls_detector_gui
-    version: 4.1.1
+    version: 4.2.0
     script: copy_gui.sh
     requirements:
       build:
@@ -81,5 +81,5 @@ outputs:
       - {{ cdt('libxdamage') }}            # [linux]
       - {{ cdt('libxxf86vm') }}            # [linux]
       run:
-        - sls_detector_lib=4.1.1
+        - sls_detector_lib=4.2.0
         - qwt 6.1.4=hf484d3e_1001

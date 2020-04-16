@@ -12,13 +12,10 @@
 #include <memory>
 #include <atomic>
 #include "ThreadObject.h"
+#include "UdpRxSocket.h"
 
 class GeneralData;
 class Fifo;
-namespace sls{
-	class UdpRxSocket;
-}
-
 
 class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	

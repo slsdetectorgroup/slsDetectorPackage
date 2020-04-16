@@ -209,25 +209,24 @@ class DetectorImpl : public virtual slsDetectorDefs {
             dPositions.resize(receivers.size());
             std::iota(begin(dPositions), end(dPositions), 0);
         }
+        if (rxPositions.empty() ||
+            (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+            rxPositions.resize(receivers[0].size());
+            std::iota(begin(rxPositions), end(rxPositions), 0);
+        }
         std::vector<std::future<RT>> futures;
-        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        futures.reserve(dPositions.size() * rxPositions.size());
         for (size_t i : dPositions) {
             if (i >= receivers.size())
                 throw sls::RuntimeError("Detector out of range");
             // each entry
-            std::vector<int> rxPos(rxPositions);
-            if (rxPositions.empty() ||
-                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
-                rxPos.resize(receivers[i].size());
-                std::iota(begin(rxPos), end(rxPos), 0);
-            }
-            for (size_t j : rxPos) {
+            for (size_t j : rxPositions) {
                 futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers[i][j].get(), Args...));
             }
         }
         sls::Result<RT> result;
-        result.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        result.reserve(dPositions.size() * rxPositions.size());
         for (auto &i : futures) {
             result.push_back(i.get());
         }
@@ -247,25 +246,24 @@ class DetectorImpl : public virtual slsDetectorDefs {
             dPositions.resize(receivers.size());
             std::iota(begin(dPositions), end(dPositions), 0);
         }
+        if (rxPositions.empty() ||
+            (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+            rxPositions.resize(receivers[0].size());
+            std::iota(begin(rxPositions), end(rxPositions), 0);
+        }
         std::vector<std::future<RT>> futures;
-        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        futures.reserve(dPositions.size() * rxPositions.size());
         for (size_t i : dPositions) {
             if (i >= receivers.size())
                 throw sls::RuntimeError("Detector out of range");
             // each entry
-            std::vector<int> rxPos(rxPositions);
-            if (rxPositions.empty() ||
-                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
-                rxPos.resize(receivers[i].size());
-                std::iota(begin(rxPos), end(rxPos), 0);
-            }
-            for (size_t j : rxPos) {
+            for (size_t j : rxPositions) {
                 futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers[i][j].get(), Args...));
             }
         }
         sls::Result<RT> result;
-        result.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        result.reserve(dPositions.size() * rxPositions.size());
         for (auto &i : futures) {
             result.push_back(i.get());
         }
@@ -285,19 +283,18 @@ class DetectorImpl : public virtual slsDetectorDefs {
             dPositions.resize(receivers.size());
             std::iota(begin(dPositions), end(dPositions), 0);
         }
+        if (rxPositions.empty() ||
+            (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+            rxPositions.resize(receivers[0].size());
+            std::iota(begin(rxPositions), end(rxPositions), 0);
+        }
         std::vector<std::future<void>> futures;
-        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        futures.reserve(dPositions.size() * rxPositions.size());
         for (size_t i : dPositions) {
             if (i >= receivers.size())
                 throw sls::RuntimeError("Detector out of range");
             // each entry
-            std::vector<int> rxPos(rxPositions);
-            if (rxPositions.empty() ||
-                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
-                rxPos.resize(receivers[i].size());
-                std::iota(begin(rxPos), end(rxPos), 0);
-            }
-            for (size_t j : rxPos) {
+            for (size_t j : rxPositions) {
                 futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers[i][j].get(), Args...));
             }
@@ -320,19 +317,18 @@ class DetectorImpl : public virtual slsDetectorDefs {
             dPositions.resize(receivers.size());
             std::iota(begin(dPositions), end(dPositions), 0);
         }
+        if (rxPositions.empty() ||
+            (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+            rxPositions.resize(receivers[0].size());
+            std::iota(begin(rxPositions), end(rxPositions), 0);
+        }
         std::vector<std::future<void>> futures;
-        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        futures.reserve(dPositions.size() * rxPositions.size());
         for (size_t i : dPositions) {
             if (i >= receivers.size())
                 throw sls::RuntimeError("Detector out of range");
             // each entry
-            std::vector<int> rxPos(rxPositions);
-            if (rxPositions.empty() ||
-                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
-                rxPos.resize(receivers[i].size());
-                std::iota(begin(rxPos), end(rxPos), 0);
-            }
-            for (size_t j : rxPos) {
+            for (size_t j : rxPositions) {
                 futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers[i][j].get(), Args...));
             }
@@ -367,25 +363,24 @@ class DetectorImpl : public virtual slsDetectorDefs {
             dPositions.resize(receivers2.size());
             std::iota(begin(dPositions), end(dPositions), 0);
         }
+        if (rxPositions.empty() ||
+            (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+            rxPositions.resize(receivers2[0].size());
+            std::iota(begin(rxPositions), end(rxPositions), 0);
+        }
         std::vector<std::future<RT>> futures;
-        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        futures.reserve(dPositions.size() * rxPositions.size());
         for (size_t i : dPositions) {
             if (i >= receivers2.size())
                 throw sls::RuntimeError("Detector out of range");
             // each entry
-            std::vector<int> rxPos(rxPositions);
-            if (rxPositions.empty() ||
-                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
-                rxPos.resize(receivers2[i].size());
-                std::iota(begin(rxPos), end(rxPos), 0);
-            }
-            for (size_t j : rxPos) {
+            for (size_t j : rxPositions) {
                 futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers2[i][j].get(), Args...));
             }
         }
         sls::Result<RT> result;
-        result.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        result.reserve(dPositions.size() * rxPositions.size());
         for (auto &i : futures) {
             result.push_back(i.get());
         }
@@ -405,25 +400,24 @@ class DetectorImpl : public virtual slsDetectorDefs {
             dPositions.resize(receivers2.size());
             std::iota(begin(dPositions), end(dPositions), 0);
         }
+        if (rxPositions.empty() ||
+            (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+            rxPositions.resize(receivers2[0].size());
+            std::iota(begin(rxPositions), end(rxPositions), 0);
+        }
         std::vector<std::future<RT>> futures;
-        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        futures.reserve(dPositions.size() * rxPositions.size());
         for (size_t i : dPositions) {
             if (i >= receivers2.size())
                 throw sls::RuntimeError("Detector out of range");
             // each entry
-            std::vector<int> rxPos(rxPositions);
-            if (rxPositions.empty() ||
-                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
-                rxPos.resize(receivers2[i].size());
-                std::iota(begin(rxPos), end(rxPos), 0);
-            }
-            for (size_t j : rxPos) {
+            for (size_t j : rxPositions) {
                 futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers2[i][j].get(), Args...));
             }
         }
         sls::Result<RT> result;
-        result.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        result.reserve(dPositions.size() * rxPositions.size());
         for (auto &i : futures) {
             result.push_back(i.get());
         }
@@ -443,19 +437,18 @@ class DetectorImpl : public virtual slsDetectorDefs {
             dPositions.resize(receivers2.size());
             std::iota(begin(dPositions), end(dPositions), 0);
         }
+        if (rxPositions.empty() ||
+            (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+            rxPositions.resize(receivers2[0].size());
+            std::iota(begin(rxPositions), end(rxPositions), 0);
+        }
         std::vector<std::future<void>> futures;
-        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        futures.reserve(dPositions.size() * rxPositions.size());
         for (size_t i : dPositions) {
             if (i >= receivers2.size())
                 throw sls::RuntimeError("Detector out of range");
             // each entry
-            std::vector<int> rxPos(rxPositions);
-            if (rxPositions.empty() ||
-                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
-                rxPos.resize(receivers2[i].size());
-                std::iota(begin(rxPos), end(rxPos), 0);
-            }
-            for (size_t j : rxPos) {
+            for (size_t j : rxPositions) {
                 futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers2[i][j].get(), Args...));
             }
@@ -478,19 +471,18 @@ class DetectorImpl : public virtual slsDetectorDefs {
             dPositions.resize(receivers2.size());
             std::iota(begin(dPositions), end(dPositions), 0);
         }
+        if (rxPositions.empty() ||
+            (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+            rxPositions.resize(receivers2[0].size());
+            std::iota(begin(rxPositions), end(rxPositions), 0);
+        }
         std::vector<std::future<void>> futures;
-        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        futures.reserve(dPositions.size() * rxPositions.size());
         for (size_t i : dPositions) {
             if (i >= receivers2.size())
                 throw sls::RuntimeError("Detector out of range");
             // each entry
-            std::vector<int> rxPos(rxPositions);
-            if (rxPositions.empty() ||
-                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
-                rxPos.resize(receivers2[i].size());
-                std::iota(begin(rxPos), end(rxPos), 0);
-            }
-            for (size_t j : rxPos) {
+            for (size_t j : rxPositions) {
                 futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers2[i][j].get(), Args...));
             }

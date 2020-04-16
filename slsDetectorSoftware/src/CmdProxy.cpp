@@ -124,8 +124,10 @@ std::pair<std::string, int>
     if (res.size() > 1) {
         hostname = res[0];
         port = StringTo<int>(res[1]);
+    } else {
+        hostname = host;
     }
-    return std::make_pair(host, port);
+    return std::make_pair(hostname, port);
 }
 
 
@@ -938,24 +940,41 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
 
 /* Receiver Config */
 std::string CmdProxy::ReceiverHostname(int action) {
+    int udpInterface = 1;
+    if (cmd == "rx_hostname") {
+        udpInterface = 1;
+    } else if (cmd == "rx_hostname2") {
+        udpInterface = 2;
+    } else {
+        throw sls::RuntimeError("Unknown command, use list to list all commands");
+    }
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[hostname or ip address]\n\t"
-        "[hostname or ip address]:[tcp port]\n\t"
-        "Receiver hostname or IP. Port is the receiver tcp port (optional).\n\t"
-        "Used for TCP control communication between client and receiver "
-        "to configure receiver. Also updates receiver with detector parameters.\n\t"
-        "TCP port must be unique, if included.\n\t"
-        "If port not included and not set earlier, then it takes default port 1954"
-        " and calculates from there. \n\t"
-        "[Eiger][Jungfrau] For the 2nd udp interface, use rx_hostname2."
-           << '\n';
+        if (cmd == "rx_hostname") {
+            os << "[hostname or ip address]\n\t"
+            "[hostname or ip address]:[tcp port]\n\t"
+            "Receiver hostname or IP. Port is the receiver tcp port (optional).\n\t"
+            "Used for TCP control communication between client and receiver "
+            "to configure receiver. Also updates receiver with detector parameters.\n\t"
+            "TCP port must be unique, if included.\n\t"
+            "If port not included and not set earlier, then it takes default port 1954"
+            " and calculates from there. \n\t"
+            "[Eiger][Jungfrau] For the 2nd udp interface, use rx_hostname2."
+            << '\n';
+        } else {
+            os << "[hostname or ip address]\n\t"
+            "[hostname or ip address]:[tcp port]\n\t"
+            "[Eiger][Jungfrau] Receiver hostname or IP for the second udp port. "
+            "Port is the receiver tcp port (optional).\n\t"
+            "Refer rx_hostname help for details"
+            << '\n';
+        }
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        auto t = det->getRxHostname({det_id});
+        auto t = det->getRxHostname(udpInterface, {det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 1) {
@@ -968,15 +987,15 @@ std::string CmdProxy::ReceiverHostname(int action) {
         std::string hostname = res.first;
         int port = res.second;
         if (port == 0) {
-            det->setRxHostname(hostname, {det_id});
+            det->setRxHostname(udpInterface, hostname, {det_id});
         } else {
-            if (det_id == -1) {
+            if (det_id == -1 && det->size() > 1) {
                 throw sls::RuntimeError("Cannot set same tcp port "
                     "for all receiver hostnames");
             }
-            det->setRxHostname(hostname, port, det_id);
+            det->setRxHostname(udpInterface, hostname, port, det_id);
         }
-        auto t = det->getRxHostname({det_id});
+        auto t = det->getRxHostname(udpInterface, {det_id});
         os << OutString(t) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -984,48 +1003,6 @@ std::string CmdProxy::ReceiverHostname(int action) {
     return os.str();
 }
 
-std::string CmdProxy::ReceiverHostname2(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "[hostname or ip address]\n\t"
-        "[hostname or ip address]:[tcp port]\n\t"
-        "[Eiger][Jungfrau] Receiver hostname or IP for the second udp port. "
-        "Port is the receiver tcp port (optional).\n\t"
-        "Refer rx_hostname help for details"
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getRxHostname2({det_id});
-        os << OutString(t) << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
-        }
-        if (args[0].find('+') != std::string::npos) {
-            throw sls::RuntimeError("Cannot concatenate receiver hostnames");
-        }  
-        std::pair<std::string, int> res = parseHostnameAndPort(args[0]);
-        std::string hostname = res.first;
-        int port = res.second;
-        if (port == 0) {
-            det->setRxHostname2(hostname, {det_id});
-        } else {
-            if (det_id == -1) {
-                throw sls::RuntimeError("Cannot set same tcp port "
-                    "for all receiver hostnames");
-            }
-            det->setRxHostname2(hostname, port, det_id);
-        }
-        auto t = det->getRxHostname2({det_id});
-        os << OutString(t) << '\n';
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
 /* File */
 /* ZMQ Streaming Parameters (Receiver<->Client) */
 /* Eiger Specific */

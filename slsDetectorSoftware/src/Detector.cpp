@@ -695,81 +695,98 @@ Result<bool> Detector::getUseReceiverFlag(Positions pos) const {
     return pimpl->Parallel(&Module::getUseReceiverFlag, pos);
 }
 
-Result<std::string> Detector::getRxHostname(Positions pos) const {
-    return pimpl->Parallel1(&Receiver::getHostname, pos, {0});
+Result<std::string> Detector::getRxHostname(const int udpInterface, Positions pos) const {
+    switch (udpInterface) {
+        case 1:
+            return pimpl->Parallel1(&Receiver::getHostname, pos, {0});
+        case 2:
+            return pimpl->Parallel2(&Receiver::getHostname, pos, {0});
+        default:
+            throw RuntimeError("Invalid udp interface number");
+    } 
 }
 
-Result<std::string> Detector::getRxHostname2(Positions pos) const {
-    return pimpl->Parallel2(&Receiver::getHostname, pos, {0});
-}
-
-void Detector::setRxHostname(const std::string &hostname, Positions pos) {
-    if (!pimpl->isReceiverInitialized()) {
-        pimpl->initReceiver();
+void Detector::setRxHostname(const int udpInterface, const std::string &hostname, Positions pos) {
+    switch (udpInterface) {
+        case 1:
+            if (!pimpl->isReceiverInitialized()) {
+                pimpl->initReceiver();
+            }
+            pimpl->Parallel1(&Receiver::setHostname, pos, {0}, hostname);
+            break;
+        case 2:
+            if (!pimpl->isReceiver2Initialized()) {
+                pimpl->initReceiver2();
+            }
+            pimpl->Parallel2(&Receiver::setHostname, pos, {0}, hostname);
+            break;
+        default:
+            throw RuntimeError("Invalid udp interface number");
     }
-    pimpl->Parallel1(&Receiver::setHostname, pos, {0}, hostname);
 }
 
-void Detector::setRxHostname2(const std::string &hostname, Positions pos) {
-    if (!pimpl->isReceiver2Initialized()) {
-        pimpl->initReceiver2();
-    }
-    pimpl->Parallel2(&Receiver::setHostname, pos, {0}, hostname);
-}
-
-void Detector::setRxHostname(const std::string &hostname, const int port, 
+void Detector::setRxHostname(const int udpInterface, const std::string &hostname, const int port, 
       int module_id) {
-    if (!pimpl->isReceiverInitialized()) {
-        pimpl->initReceiver();
+    switch (udpInterface) {
+        case 1:
+            if (!pimpl->isReceiverInitialized()) {
+                pimpl->initReceiver();
+            }
+            pimpl->Parallel1(&Receiver::setTCPPort, {module_id}, {0}, port);
+            pimpl->Parallel1(&Receiver::setHostname, {module_id}, {0}, hostname);
+            break;
+        case 2:
+            if (!pimpl->isReceiver2Initialized()) {
+                pimpl->initReceiver2();
+            }
+            pimpl->Parallel2(&Receiver::setTCPPort, {module_id}, {0}, port);
+            pimpl->Parallel2(&Receiver::setHostname, {module_id}, {0}, hostname);
+            break;
+        default:
+            throw RuntimeError("Invalid udp interface number");
     }
-    pimpl->Parallel1(&Receiver::setTCPPort, {module_id}, {0}, port);
-    pimpl->Parallel1(&Receiver::setHostname, {module_id}, {0}, hostname);
 }
 
-void Detector::setRxHostname2(const std::string &hostname, const int port, 
-      int module_id) {
-    if (!pimpl->isReceiver2Initialized()) {
-        pimpl->initReceiver2();
+Result<int> Detector::getRxPort(const int udpInterface, Positions pos) const {
+    switch (udpInterface) {
+        case 1:
+            return pimpl->Parallel1(&Receiver::getTCPPort, pos, {0});
+        case 2:
+            return pimpl->Parallel2(&Receiver::getTCPPort, pos, {0});
+        default:
+            throw RuntimeError("Invalid udp interface number");
     }
-    pimpl->Parallel2(&Receiver::setTCPPort, {module_id}, {0}, port);
-    pimpl->Parallel2(&Receiver::setHostname, {module_id}, {0}, hostname);
 }
 
-Result<int> Detector::getRxPort(Positions pos) const {
-    return pimpl->Parallel1(&Receiver::getTCPPort, pos, {0});
-}
-
-Result<int> Detector::getRxPort2(Positions pos) const {
-    return pimpl->Parallel2(&Receiver::getTCPPort, pos, {0});
-}
-
-void Detector::setRxPort(int port, int module_id) {
-    if (!pimpl->isReceiverInitialized()) {
-        pimpl->initReceiver();
-    }
-    if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
-        for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel1(&Receiver::setTCPPort, {idet}, {0},
-                            port_list[idet]);
+void Detector::setRxPort(const int udpInterface, int port, int module_id) {
+    if (udpInterface == 1) {
+        if (!pimpl->isReceiverInitialized()) {
+            pimpl->initReceiver();
+        }
+        if (module_id == -1) {
+            std::vector<int> port_list = getPortNumbers(port);
+            for (int idet = 0; idet < size(); ++idet) {
+                pimpl->Parallel1(&Receiver::setTCPPort, {idet}, {0},
+                                port_list[idet]);
+            }
+        } else {
+            pimpl->Parallel1(&Receiver::setTCPPort, {module_id}, {0}, port);
+        }
+    } else if (udpInterface == 2) {
+        if (!pimpl->isReceiver2Initialized()) {
+            pimpl->initReceiver2();
+        }
+        if (module_id == -1) {
+            std::vector<int> port_list = getPortNumbers(port);
+            for (int idet = 0; idet < size(); ++idet) {
+                pimpl->Parallel2(&Receiver::setTCPPort, {idet}, {0},
+                                port_list[idet]);
+            }
+        } else {
+            pimpl->Parallel2(&Receiver::setTCPPort, {module_id}, {0}, port);
         }
     } else {
-        pimpl->Parallel1(&Receiver::setTCPPort, {module_id}, {0}, port);
-    }
-}
-
-void Detector::setRxPort2(int port, int module_id) {
-    if (!pimpl->isReceiver2Initialized()) {
-        pimpl->initReceiver2();
-    }
-    if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
-        for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel2(&Receiver::setTCPPort, {idet}, {0},
-                            port_list[idet]);
-        }
-    } else {
-        pimpl->Parallel2(&Receiver::setTCPPort, {module_id}, {0}, port);
+        throw RuntimeError("Invalid udp interface number");
     }
 }
 

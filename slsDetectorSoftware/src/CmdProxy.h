@@ -720,7 +720,7 @@ class CmdProxy {
 
                           /* Receiver Config */ 
                           {"rx_hostname", &CmdProxy::ReceiverHostname}, 
-                          {"rx_hostname2", &CmdProxy::ReceiverHostname2}, 
+                          {"rx_hostname2", &CmdProxy::ReceiverHostname}, 
                           {"rx_tcpport", &CmdProxy::rx_tcpport},  
                           {"rx_tcpport2", &CmdProxy::rx_tcpport2},  
                           {"rx_fifodepth", &CmdProxy::rx_fifodepth},
@@ -944,7 +944,6 @@ class CmdProxy {
     std::string UDPDestinationIP2(int action);
     /* Receiver Config */
     std::string ReceiverHostname(int action);
-    std::string ReceiverHostname2(int action);
     /* File */
     /* ZMQ Streaming Parameters (Receiver<->Client) */
     /* Eiger Specific */
@@ -1435,10 +1434,10 @@ class CmdProxy {
 
     /* Receiver Config */
 
-    INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, StringTo<int>,
+    INTEGER_IND_COMMAND(rx_tcpport, getRxPort, setRxPort, StringTo<int>, 1,
                     "[port]\n\tTCP port for client-receiver communication. Default is 1954. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter. Multi command will automatically increment for individual modules.");  
 
-    INTEGER_COMMAND(rx_tcpport2, getRxPort2, setRxPort2, StringTo<int>,
+    INTEGER_IND_COMMAND(rx_tcpport2, getRxPort, setRxPort, StringTo<int>, 2,
                     "[port]\n\t[Eiger][Jungfrau] TCP port for client-receiver communication for 2nd udp port. For details, refer rx_tcpport.");  
     
     INTEGER_COMMAND(rx_fifodepth, getRxFifoDepth, setRxFifoDepth, StringTo<int>,

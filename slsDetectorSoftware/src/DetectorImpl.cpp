@@ -330,7 +330,7 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name,
 
 void DetectorImpl::addModule(const std::string &hostname,
     const int port) {
-    LOG(logINFO) << "Adding detector " << hostname;
+    LOG(logINFO) << "Adding detector " << hostname << " on port " << port;
 
     if (hostname != "localhost") {
         for (auto &d : detectors) {

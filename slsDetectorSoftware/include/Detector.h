@@ -508,31 +508,33 @@ class Detector {
     /** true when slsReceiver is used */
     Result<bool> getUseReceiverFlag(Positions pos = {}) const;
 
-    Result<std::string> getRxHostname(Positions pos = {}) const;
-    Result<std::string> getRxHostname2(Positions pos = {}) const;
-
+    /** interface is by 1 (primary udp interface), 
+     * 2 for second udp interface [Eiger][Jungfrau]
+     */
+    Result<std::string> getRxHostname(const int udpInterface, Positions pos = {}) const;
     /**
      * Validates and sets the receiver.
      * Configures the detector to the receiver as UDP destination
+     * interface is by 1 (primary udp interface), 
+     * 2 for second udp interface [Eiger][Jungfrau]
      */
-    void setRxHostname(const std::string &hostname, Positions pos = {});
-    /** receiver hostname for udp port 2 */
-    void setRxHostname2(const std::string &hostname, Positions pos = {});
-    /** cannot be for multiple detectors as port is unique*/
-    void setRxHostname(const std::string &hostname, const int port, 
-      int module_id);
-    void setRxHostname2(const std::string &hostname, const int port, 
-      int module_id);
+    void setRxHostname(const int udpInterface, const std::string &hostname, 
+      Positions pos = {});
+      
+    /** cannot be for multiple detectors as port is unique */
+    void setRxHostname(const int udpInterface, const std::string &hostname, 
+      const int port, int module_id);
 
-    Result<int> getRxPort(Positions pos = {}) const;
-    /** for 2nd udp port receiver */
-    Result<int> getRxPort2(Positions pos = {}) const;
+   /** interface is by 1 (primary udp interface), 
+     * 2 for second udp interface [Eiger][Jungfrau] */
+    Result<int> getRxPort(const int udpInterface, Positions pos = {}) const;
 
     /** Receiver TCP port (for client communication with Receiver)  
      *  module_id is -1 for all detectors, ports for each module is calculated
-     * (increments) */
-    void setRxPort(const int port, int module_id = -1);
-    void setRxPort2(const int port, int module_id = -1);
+     * (increments) 
+     *  interface is by 1 (primary udp interface), 
+     * 2 for second udp interface [Eiger][Jungfrau] */
+    void setRxPort(const int udpInterface, const int port, int module_id = -1);
 
     Result<int> getRxFifoDepth(Positions pos = {}) const;
 

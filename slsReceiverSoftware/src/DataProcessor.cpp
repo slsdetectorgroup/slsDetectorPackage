@@ -29,13 +29,9 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		uint32_t* freq, uint32_t* timer,
 		bool* fp, bool* act, bool* depaden, bool* sm, bool* qe,
 		std::vector <int> * cdl, int* cdo, int* cad) :
-
 		ThreadObject(ind, TypeName),
-		runningFlag(false),
-		generalData(nullptr),
 		fifo(f),
 		myDetectorType(dtype),
-		file(nullptr),
 		dataStreamEnable(dsEnable),
 		fileFormatType(ftype),
 		fileWriteEnable(fwenable),
@@ -43,7 +39,6 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		dynamicRange(dr),
 		streamingFrequency(freq),
 		streamingTimerInMs(timer),
-		currentFreqCount(0),
 		activated(act),
 		deactivatedPaddingEnable(depaden),
         silentMode(sm),
@@ -51,14 +46,7 @@ DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo* f,
 		framePadding(fp),
 		ctbDbitList(cdl),
 		ctbDbitOffset(cdo),
-		ctbAnalogDataBytes(cad),
-		startedFlag(false),
-		firstIndex(0),
-		numFramesCaught(0),
-		currentFrameIndex(0),
-		rawDataReadyCallBack(nullptr),
-		rawDataModifyReadyCallBack(nullptr),
-		pRawDataReady(nullptr)
+		ctbAnalogDataBytes(cad)
 {
     LOG(logDEBUG) << "DataProcessor " << ind << " created";
 	memset((void*)&timerBegin, 0, sizeof(timespec));
@@ -70,10 +58,6 @@ DataProcessor::~DataProcessor() {
 }
 
 /** getters */
-
-bool DataProcessor::IsRunning() {
-	return runningFlag;
-}
 
 bool DataProcessor::GetStartedFlag(){
 	return startedFlag;
@@ -89,18 +73,6 @@ uint64_t DataProcessor::GetCurrentFrameIndex() {
 
 uint64_t DataProcessor::GetProcessedIndex() {
 	return currentFrameIndex - firstIndex;
-}
-
-
-
-/** setters */
-void DataProcessor::StartRunning() {
-    runningFlag = true;
-}
-
-
-void DataProcessor::StopRunning() {
-    runningFlag = false;
 }
 
 void DataProcessor::SetFifo(Fifo* f) {

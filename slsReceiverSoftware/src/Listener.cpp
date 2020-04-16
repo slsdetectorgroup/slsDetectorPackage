@@ -26,12 +26,9 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>*
         int64_t* us, int64_t* as, uint32_t* fpf,
 		frameDiscardPolicy* fdp, bool* act, bool* depaden, bool* sm) :
 		ThreadObject(ind, TypeName),
-		runningFlag(0),
-		generalData(nullptr),
 		fifo(f),
 		myDetectorType(dtype),
 		status(s),
-		udpSocket(nullptr),
 		udpPortNumber(portno),
 		eth(e),
 		numImages(nf),
@@ -42,19 +39,7 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>*
 		frameDiscardMode(fdp),
 		activated(act),
 		deactivatedPaddingEnable(depaden),
-		silentMode(sm),
-		row(0),
-		column(0),
-		startedFlag(false),
-		firstIndex(0),
-		numPacketsCaught(0),
-		lastCaughtFrameIndex(0),
-		currentFrameIndex(0),
-		carryOverFlag(0),
-		udpSocketAlive(0),
-		numPacketsStatistic(0),
-		numFramesStatistic(0),
-		oddStartingPacket(true)
+		silentMode(sm)
 {
 	LOG(logDEBUG) << "Listener " << ind << " created";
 }
@@ -67,20 +52,15 @@ Listener::~Listener() {
 	} 
 }
 
-/** getters */
-bool Listener::IsRunning() {
-	return runningFlag;
-}
-
-uint64_t Listener::GetPacketsCaught() {
+uint64_t Listener::GetPacketsCaught() const {
 	return numPacketsCaught;
 }
 
-uint64_t Listener::GetLastFrameIndexCaught() {
+uint64_t Listener::GetLastFrameIndexCaught() const {
 	return lastCaughtFrameIndex;
 }
 
-uint64_t Listener::GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) {
+uint64_t Listener::GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) const {
 	if (!stoppedFlag) {
 		return (numPackets - numPacketsCaught);
 	}
@@ -90,21 +70,9 @@ uint64_t Listener::GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) {
 	return (lastCaughtFrameIndex - firstIndex + 1) * generalData->packetsPerFrame - numPacketsCaught;
 }
 
-/** setters */
-void Listener::StartRunning() {
-    runningFlag = true;
-}
-
-
-void Listener::StopRunning() {
-    runningFlag = false;
-}
-
-
 void Listener::SetFifo(Fifo* f) {
 	fifo = f;
 }
-
 
 void Listener::ResetParametersforNewAcquisition() {
     runningFlag = false;

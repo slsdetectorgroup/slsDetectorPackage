@@ -21,7 +21,9 @@ class ThreadObject : private virtual slsDetectorDefs {
  public:
 	ThreadObject(int threadIndex, std::string threadType);
 	virtual ~ThreadObject();
-	virtual bool IsRunning() = 0;
+	bool IsRunning() const;
+	void StartRunning();
+	void StopRunning();
 	void Continue();
 	void SetThreadPriority(int priority);
 
@@ -41,6 +43,7 @@ class ThreadObject : private virtual slsDetectorDefs {
 	int index{0};
 	std::string type;
 	std::atomic<bool> killThread{false};
+	std::atomic<bool> runningFlag{false};
 	std::unique_ptr<std::thread> threadObject;
 	sem_t semaphore;
 };

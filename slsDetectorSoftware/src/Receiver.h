@@ -14,6 +14,7 @@ namespace sls {
     int shmversion;
     char hostname[MAX_STR_LENGTH];
     int tcpPort;
+    bool valid;
 
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
@@ -27,20 +28,33 @@ namespace sls {
         static size_t getNumReceivers();
         // create shm
         explicit Receiver(int detector_id, int module_id, int receiver_id, 
-            int tcp_port = 0, std::string hostname = "");
+            bool primaryInterface, int tcp_port = 0, std::string hostname = "",
+            int zmq_port = 0);
         // open shm
         explicit Receiver(int detector_id, int module_id, int receiver_id, 
-            bool verify);
+            bool primaryInterface, bool verify);
 
         virtual ~Receiver();
 
-        void setHostname(const std::string &ip_port);
-        void updateReceiver();
+
+        /**
+        * Free shared memory and delete shared memory structure
+        * occupied by the sharedReceiver structure
+        * Is only safe to call if one deletes the Receiver object afterward
+        * and frees multi shared memory/updates
+        * thisMultiDetector->numberOfReceivers
+        */
+        void freeSharedMemory();
+        std::string getHostname() const;
+        void setHostname(const std::string &hostname);
+        void configure();
+        int getTCPPort() const;
+        void setTCPPort(const int port);
 
         private:
-        static size_t NUM_RECEIVERS;
         const int receiverId{0};
-        mutable sls::SharedMemory<sharedReceiver> shm{0, 0, 0};
+        const int moduleId{0};
+        mutable sls::SharedMemory<sharedReceiver> shm{0, 0, 0, true};
     };
 
 }   // sls

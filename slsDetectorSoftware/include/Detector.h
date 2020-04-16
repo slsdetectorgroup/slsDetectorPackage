@@ -19,7 +19,7 @@ class IpAddr;
 //Free function to avoid dependence on class
 //and avoid the option to free another objects
 //shm by mistake
-void freeSharedMemory(int detectorId, int detPos = -1);
+void freeSharedMemory(int detectorId, int moduleId = -1);
 
 
 /**
@@ -57,6 +57,8 @@ class Detector {
     /* Frees shared memory, adds detectors to the list
      * and updates local detector cache */
     void setHostname(const std::vector<std::string> &hostname);
+    void setHostname(const std::vector<std::string> &hostname,
+      const std::vector<int> &port);
 
     /** connects to n servers at local host starting at specific control port */
     void setVirtualDetectorServers(int numServers, int startingPort);
@@ -507,24 +509,30 @@ class Detector {
     Result<bool> getUseReceiverFlag(Positions pos = {}) const;
 
     Result<std::string> getRxHostname(Positions pos = {}) const;
+    Result<std::string> getRxHostname2(Positions pos = {}) const;
 
     /**
      * Validates and sets the receiver.
-     * Updates local receiver cache parameters
      * Configures the detector to the receiver as UDP destination
-     * @param receiver receiver hostname or IP address, can include tcp port eg. hostname:port
      */
-    void setRxHostname(const std::string &receiver, Positions pos = {});
-
-    /** multiple rx hostnames (same as setRxHostname) */
-    void setRxHostname(const std::vector<std::string> &name); 
+    void setRxHostname(const std::string &hostname, Positions pos = {});
+    /** receiver hostname for udp port 2 */
+    void setRxHostname2(const std::string &hostname, Positions pos = {});
+    /** cannot be for multiple detectors as port is unique*/
+    void setRxHostname(const std::string &hostname, const int port, 
+      int module_id);
+    void setRxHostname2(const std::string &hostname, const int port, 
+      int module_id);
 
     Result<int> getRxPort(Positions pos = {}) const;
+    /** for 2nd udp port receiver */
+    Result<int> getRxPort2(Positions pos = {}) const;
 
     /** Receiver TCP port (for client communication with Receiver)  
      *  module_id is -1 for all detectors, ports for each module is calculated
      * (increments) */
-    void setRxPort(int port, int module_id = -1);
+    void setRxPort(const int port, int module_id = -1);
+    void setRxPort2(const int port, int module_id = -1);
 
     Result<int> getRxFifoDepth(Positions pos = {}) const;
 

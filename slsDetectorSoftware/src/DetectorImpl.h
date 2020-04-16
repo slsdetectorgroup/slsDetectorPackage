@@ -25,6 +25,7 @@ class detectorData;
 namespace sls{
 
 class Module;
+class Receiver;
 
 /**
  * @short structure allocated in shared memory to store detector settings
@@ -47,7 +48,7 @@ struct sharedDetector {
     /** last time stamp when accessing the shared memory */
     char lastDate[SHORT_STRING_LENGTH];
 
-    int numberOfDetectors;
+    int numberOfModules;
     slsDetectorDefs::detectorType multiDetectorType;
 
     /** END OF FIXED PATTERN
@@ -189,6 +190,320 @@ class DetectorImpl : public virtual slsDetectorDefs {
     }
 
 
+
+
+
+
+
+
+    template <typename RT, typename... CT>
+    sls::Result<RT> Parallel1(RT (sls::Receiver::*somefunc)(CT...),
+                             std::vector<int> dPositions,
+                             std::vector<int> rxPositions,
+                             typename NonDeduced<CT>::type... Args) {
+
+        if (receivers.size() == 0) 
+            throw sls::RuntimeError("No receivers added");                      
+        if (dPositions.empty() ||
+            (dPositions.size() == 1 && dPositions[0] == -1)) {
+            dPositions.resize(receivers.size());
+            std::iota(begin(dPositions), end(dPositions), 0);
+        }
+        std::vector<std::future<RT>> futures;
+        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        for (size_t i : dPositions) {
+            if (i >= receivers.size())
+                throw sls::RuntimeError("Detector out of range");
+            // each entry
+            std::vector<int> rxPos(rxPositions);
+            if (rxPositions.empty() ||
+                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+                rxPos.resize(receivers[i].size());
+                std::iota(begin(rxPos), end(rxPos), 0);
+            }
+            for (size_t j : rxPos) {
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers[i][j].get(), Args...));
+            }
+        }
+        sls::Result<RT> result;
+        result.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        for (auto &i : futures) {
+            result.push_back(i.get());
+        }
+        return result;
+    }
+
+    template <typename RT, typename... CT>
+    sls::Result<RT> Parallel1(RT (sls::Receiver::*somefunc)(CT...) const,
+                             std::vector<int> dPositions,
+                             std::vector<int> rxPositions,
+                             typename NonDeduced<CT>::type... Args) const {
+
+        if (receivers.size() == 0) 
+            throw sls::RuntimeError("No receivers added");                      
+        if (dPositions.empty() ||
+            (dPositions.size() == 1 && dPositions[0] == -1)) {
+            dPositions.resize(receivers.size());
+            std::iota(begin(dPositions), end(dPositions), 0);
+        }
+        std::vector<std::future<RT>> futures;
+        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        for (size_t i : dPositions) {
+            if (i >= receivers.size())
+                throw sls::RuntimeError("Detector out of range");
+            // each entry
+            std::vector<int> rxPos(rxPositions);
+            if (rxPositions.empty() ||
+                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+                rxPos.resize(receivers[i].size());
+                std::iota(begin(rxPos), end(rxPos), 0);
+            }
+            for (size_t j : rxPos) {
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers[i][j].get(), Args...));
+            }
+        }
+        sls::Result<RT> result;
+        result.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        for (auto &i : futures) {
+            result.push_back(i.get());
+        }
+        return result;
+    }
+
+    template <typename... CT>
+    void Parallel1(void (sls::Receiver::*somefunc)(CT...),
+                std::vector<int> dPositions,
+                std::vector<int> rxPositions,
+                typename NonDeduced<CT>::type... Args) {
+
+        if (receivers.size() == 0) 
+            throw sls::RuntimeError("No receivers added");                      
+        if (dPositions.empty() ||
+            (dPositions.size() == 1 && dPositions[0] == -1)) {
+            dPositions.resize(receivers.size());
+            std::iota(begin(dPositions), end(dPositions), 0);
+        }
+        std::vector<std::future<void>> futures;
+        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        for (size_t i : dPositions) {
+            if (i >= receivers.size())
+                throw sls::RuntimeError("Detector out of range");
+            // each entry
+            std::vector<int> rxPos(rxPositions);
+            if (rxPositions.empty() ||
+                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+                rxPos.resize(receivers[i].size());
+                std::iota(begin(rxPos), end(rxPos), 0);
+            }
+            for (size_t j : rxPos) {
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers[i][j].get(), Args...));
+            }
+        }
+        for (auto &i : futures) {
+            i.get();
+        }
+    }
+
+    template <typename... CT>
+    void Parallel1(void (sls::Receiver::*somefunc)(CT...) const,
+                std::vector<int> dPositions,
+                std::vector<int> rxPositions,
+                typename NonDeduced<CT>::type... Args) const {
+
+        if (receivers.size() == 0) 
+            throw sls::RuntimeError("No receivers added");                      
+        if (dPositions.empty() ||
+            (dPositions.size() == 1 && dPositions[0] == -1)) {
+            dPositions.resize(receivers.size());
+            std::iota(begin(dPositions), end(dPositions), 0);
+        }
+        std::vector<std::future<void>> futures;
+        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        for (size_t i : dPositions) {
+            if (i >= receivers.size())
+                throw sls::RuntimeError("Detector out of range");
+            // each entry
+            std::vector<int> rxPos(rxPositions);
+            if (rxPositions.empty() ||
+                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+                rxPos.resize(receivers[i].size());
+                std::iota(begin(rxPos), end(rxPos), 0);
+            }
+            for (size_t j : rxPos) {
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers[i][j].get(), Args...));
+            }
+        }
+        for (auto &i : futures) {
+            i.get();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    template <typename RT, typename... CT>
+    sls::Result<RT> Parallel2(RT (sls::Receiver::*somefunc)(CT...),
+                             std::vector<int> dPositions,
+                             std::vector<int> rxPositions,
+                             typename NonDeduced<CT>::type... Args) {
+
+        if (receivers2.size() == 0) 
+            throw sls::RuntimeError("No receivers2 added");                      
+        if (dPositions.empty() ||
+            (dPositions.size() == 1 && dPositions[0] == -1)) {
+            dPositions.resize(receivers2.size());
+            std::iota(begin(dPositions), end(dPositions), 0);
+        }
+        std::vector<std::future<RT>> futures;
+        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        for (size_t i : dPositions) {
+            if (i >= receivers2.size())
+                throw sls::RuntimeError("Detector out of range");
+            // each entry
+            std::vector<int> rxPos(rxPositions);
+            if (rxPositions.empty() ||
+                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+                rxPos.resize(receivers2[i].size());
+                std::iota(begin(rxPos), end(rxPos), 0);
+            }
+            for (size_t j : rxPos) {
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers2[i][j].get(), Args...));
+            }
+        }
+        sls::Result<RT> result;
+        result.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        for (auto &i : futures) {
+            result.push_back(i.get());
+        }
+        return result;
+    }
+
+    template <typename RT, typename... CT>
+    sls::Result<RT> Parallel2(RT (sls::Receiver::*somefunc)(CT...) const,
+                             std::vector<int> dPositions,
+                             std::vector<int> rxPositions,
+                             typename NonDeduced<CT>::type... Args) const {
+
+        if (receivers2.size() == 0) 
+            throw sls::RuntimeError("No receivers2 added");                      
+        if (dPositions.empty() ||
+            (dPositions.size() == 1 && dPositions[0] == -1)) {
+            dPositions.resize(receivers2.size());
+            std::iota(begin(dPositions), end(dPositions), 0);
+        }
+        std::vector<std::future<RT>> futures;
+        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        for (size_t i : dPositions) {
+            if (i >= receivers2.size())
+                throw sls::RuntimeError("Detector out of range");
+            // each entry
+            std::vector<int> rxPos(rxPositions);
+            if (rxPositions.empty() ||
+                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+                rxPos.resize(receivers2[i].size());
+                std::iota(begin(rxPos), end(rxPos), 0);
+            }
+            for (size_t j : rxPos) {
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers2[i][j].get(), Args...));
+            }
+        }
+        sls::Result<RT> result;
+        result.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        for (auto &i : futures) {
+            result.push_back(i.get());
+        }
+        return result;
+    }
+
+    template <typename... CT>
+    void Parallel2(void (sls::Receiver::*somefunc)(CT...),
+                std::vector<int> dPositions,
+                std::vector<int> rxPositions,
+                typename NonDeduced<CT>::type... Args) {
+
+        if (receivers2.size() == 0) 
+            throw sls::RuntimeError("No receivers2 added");                      
+        if (dPositions.empty() ||
+            (dPositions.size() == 1 && dPositions[0] == -1)) {
+            dPositions.resize(receivers2.size());
+            std::iota(begin(dPositions), end(dPositions), 0);
+        }
+        std::vector<std::future<void>> futures;
+        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        for (size_t i : dPositions) {
+            if (i >= receivers2.size())
+                throw sls::RuntimeError("Detector out of range");
+            // each entry
+            std::vector<int> rxPos(rxPositions);
+            if (rxPositions.empty() ||
+                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+                rxPos.resize(receivers2[i].size());
+                std::iota(begin(rxPos), end(rxPos), 0);
+            }
+            for (size_t j : rxPos) {
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers2[i][j].get(), Args...));
+            }
+        }
+        for (auto &i : futures) {
+            i.get();
+        }
+    }
+
+    template <typename... CT>
+    void Parallel2(void (sls::Receiver::*somefunc)(CT...) const,
+                std::vector<int> dPositions,
+                std::vector<int> rxPositions,
+                typename NonDeduced<CT>::type... Args) const {
+
+        if (receivers2.size() == 0) 
+            throw sls::RuntimeError("No receivers2 added");                      
+        if (dPositions.empty() ||
+            (dPositions.size() == 1 && dPositions[0] == -1)) {
+            dPositions.resize(receivers2.size());
+            std::iota(begin(dPositions), end(dPositions), 0);
+        }
+        std::vector<std::future<void>> futures;
+        futures.reserve(dPositions.size());// cannot know rxPositions.size() without looping
+        for (size_t i : dPositions) {
+            if (i >= receivers2.size())
+                throw sls::RuntimeError("Detector out of range");
+            // each entry
+            std::vector<int> rxPos(rxPositions);
+            if (rxPositions.empty() ||
+                (rxPositions.size() == 1 && rxPositions[0] == -1)) {
+                rxPos.resize(receivers2[i].size());
+                std::iota(begin(rxPos), end(rxPos), 0);
+            }
+            for (size_t j : rxPos) {
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers2[i][j].get(), Args...));
+            }
+        }
+        for (auto &i : futures) {
+            i.get();
+        }
+    }
+
+
+
+
+
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag); 
 
@@ -196,7 +511,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     int getDetectorId() const;
 
     /** Free specific shared memory from the command line without creating object */
-    static void freeSharedMemory(int detectorId, int detPos = -1);
+    static void freeSharedMemory(int detectorId, int moduleId = -1);
 
     /** Free all modules from current multi Id shared memory and delete members */
     void freeSharedMemory(); 
@@ -217,8 +532,14 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     void setVirtualDetectorServers(const int numdet, const int port);
 
-    /** Sets the hostname of all sls detectors in shared memory and updates local cache */
     void setHostname(const std::vector<std::string> &name); 
+    void setHostname(const std::vector<std::string> &name,
+        const std::vector<int> &port); 
+
+    void initReceiver();
+    bool isReceiverInitialized();
+    void initReceiver2();
+    bool isReceiver2Initialized();
 
     /** Gets the total number of detectors */
     int size() const;
@@ -324,7 +645,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** Execute command in terminal and return result */
     std::string exec(const char *cmd);
 
-    void addSlsDetector(const std::string &hostname);
+    void addModule(const std::string &hostname, const int port);
 
     void updateDetectorSize();
 
@@ -384,6 +705,12 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     /** pointers to the Module structures */
     std::vector<std::unique_ptr<sls::Module>> detectors;
+
+    /** pointers to the Receiver structures, each row for a module */
+    std::vector<std::vector<std::unique_ptr<sls::Receiver>>> receivers;
+    /** for the second udp port [Eiger][Jungfrau] */
+    std::vector<std::vector<std::unique_ptr<sls::Receiver>>> receivers2;
+
 
     /** data streaming (down stream) enabled in client (zmq sckets created) */
     bool client_downstream{false};

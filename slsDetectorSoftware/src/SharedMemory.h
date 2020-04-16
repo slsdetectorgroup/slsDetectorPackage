@@ -25,6 +25,7 @@
 #define SHM_MULTI_PREFIX "/slsDetectorPackage_multi_"
 #define SHM_MODULE_PREFIX "_module_"
 #define SHM_RECEIVER_PREFIX "_receiver_"
+#define SHM_RECEIVER2_PREFIX "_receiver2_"
 #define SHM_ENV_NAME "SLSDETNAME"
 
 #include <iostream>
@@ -42,9 +43,10 @@ class SharedMemory {
 	 * @param multiId multi detector id
      * @param moduleId module detector id, -1 if a multi detector shared memory
      * @param receiverId receiver id, -1 if a multi detector or module shared memory
+     * @param primaryInterface is false, for the second udp port receiver
  	 */
-    SharedMemory(int multiId, int moduleId, int receiverId = -1) {
-        name = ConstructSharedMemoryName(multiId, moduleId, receiverId);
+    SharedMemory(int multiId, int moduleId, int receiverId = -1, bool primaryInterface = true) {
+        name = ConstructSharedMemoryName(multiId, moduleId, receiverId, primaryInterface);
     }
 
     /** 
@@ -186,7 +188,8 @@ class SharedMemory {
             // silent exit if shm did not exist anyway
             if (errno == ENOENT)
                 return;
-            std::string msg = "Free Shared Memory " + name + " Failed: " + strerror(errno);
+            std::string msg = "Free Shared Memory " + name + " Failed: " + 
+            strerror(errno);
             LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
         }
@@ -219,9 +222,11 @@ class SharedMemory {
      * @param multiId multi detector id
      * @param moduleId module detector id, -1 if a multi detector shared memory
      * @param receiverId receiver id, -1 if a multi detector or module shared memory
+     * @param primaryInterface false, if second udp port receiver
      * @returns shared memory name
      */
-    std::string ConstructSharedMemoryName(int multiId, int moduleId, int receiverId) {
+    std::string ConstructSharedMemoryName(int multiId, int moduleId, 
+        int receiverId, bool primaryInterface) {
 
         // using environment path
         std::string sEnvPath = "";
@@ -232,13 +237,20 @@ class SharedMemory {
         }
 
         std::stringstream ss;
-        if (moduleId < 0)
+        if (moduleId < 0 && receiverId < 0)
             ss << SHM_MULTI_PREFIX << multiId << sEnvPath;
         else if (receiverId < 0)
-            ss << SHM_MULTI_PREFIX << multiId << SHM_MODULE_PREFIX << moduleId << sEnvPath;
-        else
-            ss << SHM_MULTI_PREFIX << multiId << SHM_MODULE_PREFIX << moduleId << 
+            ss << SHM_MULTI_PREFIX << multiId << 
+                SHM_MODULE_PREFIX << moduleId << sEnvPath;
+        else if (primaryInterface)
+            ss << SHM_MULTI_PREFIX << multiId << 
+                SHM_MODULE_PREFIX << moduleId << 
                 SHM_RECEIVER_PREFIX << receiverId << sEnvPath;
+        else
+            ss << SHM_MULTI_PREFIX << multiId << 
+                SHM_MODULE_PREFIX << moduleId << 
+                SHM_RECEIVER2_PREFIX << receiverId << sEnvPath;
+
 
         std::string temp = ss.str();
         if (temp.length() > NAME_MAX_LENGTH) {
@@ -259,9 +271,11 @@ class SharedMemory {
      */
 
     T *MapSharedMemory() {
-        void *addr = mmap(nullptr, sizeof(T), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        void *addr = mmap(nullptr, sizeof(T), PROT_READ | PROT_WRITE, 
+            MAP_SHARED, fd, 0);
         if (addr == MAP_FAILED) {
-            std::string msg = "Mapping shared memory " + name + " failed: " + strerror(errno);
+            std::string msg = "Mapping shared memory " + name + " failed: " +
+                strerror(errno);
             LOG(logERROR) << msg;
             close(fd);
             throw SharedMemoryError(msg);
@@ -280,7 +294,8 @@ class SharedMemory {
         struct stat sb;
         // could not fstat
         if (fstat(fd, &sb) < 0) {
-            std::string msg = "Could not verify existing shared memory " + name + " size match " + "(could not fstat): " + strerror(errno);
+            std::string msg = "Could not verify existing shared memory " + 
+                name + " size match " + "(could not fstat): " + strerror(errno);
             LOG(logERROR) << msg;
             close(fd);
             throw SharedMemoryError(msg);
@@ -289,7 +304,9 @@ class SharedMemory {
         //size does not match
         auto sz = static_cast<size_t>(sb.st_size);
         if (sz != expectedSize) {
-            std::string msg = "Existing shared memory " + name + " size does not match" + "Expected " + std::to_string(expectedSize) + ", found " + std::to_string(sz);
+            std::string msg = "Existing shared memory " + name + 
+                " size does not match" + "Expected " + 
+                std::to_string(expectedSize) + ", found " + std::to_string(sz);
             LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
             return 1;

@@ -719,8 +719,10 @@ class CmdProxy {
                           {"txndelay_right", &CmdProxy::txndelay_right},
 
                           /* Receiver Config */ 
-                          {"rx_hostname", &CmdProxy::ReceiveHostname}, 
+                          {"rx_hostname", &CmdProxy::ReceiverHostname}, 
+                          {"rx_hostname2", &CmdProxy::ReceiverHostname2}, 
                           {"rx_tcpport", &CmdProxy::rx_tcpport},  
+                          {"rx_tcpport2", &CmdProxy::rx_tcpport2},  
                           {"rx_fifodepth", &CmdProxy::rx_fifodepth},
                           {"rx_silent", &CmdProxy::rx_silent},
                           {"rx_discardpolicy", &CmdProxy::rx_discardpolicy},
@@ -911,6 +913,7 @@ class CmdProxy {
     /* configuration */
     std::string free(int action); 
     // std::string config2(int action);
+    std::pair<std::string, int> parseHostnameAndPort(std::string name);
     std::string Hostname(int action); 
     std::string VirtualServer(int action); 
     std::string FirmwareVersion(int action);     
@@ -940,7 +943,8 @@ class CmdProxy {
     std::string UDPDestinationIP(int action);
     std::string UDPDestinationIP2(int action);
     /* Receiver Config */
-    std::string ReceiveHostname(int action);
+    std::string ReceiverHostname(int action);
+    std::string ReceiverHostname2(int action);
     /* File */
     /* ZMQ Streaming Parameters (Receiver<->Client) */
     /* Eiger Specific */
@@ -1433,6 +1437,9 @@ class CmdProxy {
 
     INTEGER_COMMAND(rx_tcpport, getRxPort, setRxPort, StringTo<int>,
                     "[port]\n\tTCP port for client-receiver communication. Default is 1954. Must be different if multiple receivers on same pc. Must be first command to set a receiver parameter. Multi command will automatically increment for individual modules.");  
+
+    INTEGER_COMMAND(rx_tcpport2, getRxPort2, setRxPort2, StringTo<int>,
+                    "[port]\n\t[Eiger][Jungfrau] TCP port for client-receiver communication for 2nd udp port. For details, refer rx_tcpport.");  
     
     INTEGER_COMMAND(rx_fifodepth, getRxFifoDepth, setRxFifoDepth, StringTo<int>,
         "[n_frames]\n\tSet the number of frames in the receiver fifo (buffer between listener and writer threads).");

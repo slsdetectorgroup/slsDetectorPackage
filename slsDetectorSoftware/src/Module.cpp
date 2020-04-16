@@ -55,6 +55,27 @@ bool Module::isFixedPatternSharedMemoryCompatible() {
     return (shm()->shmversion >= MODULE_SHMAPIVERSION);
 }
 
+bool Module::hasSharedMemoryReceiverList(int version) {
+    return (version >= MODULE_SHMRXVERSION);
+}
+
+
+int Module::getNumberOfReceivers() const {
+    return shm()->numberOfReceivers;
+}
+
+void Module::setNumberOfReceivers(const int num) {
+    shm()->numberOfReceivers = num;
+}
+
+int Module::getNumberOfReceivers2() const {
+    return shm()->numberOfReceivers2;
+}
+
+void Module::setNumberOfReceivers2(const int num) {
+    shm()->numberOfReceivers2 = num;
+}
+
 void Module::checkDetectorVersionCompatibility() {
     int fnum = F_CHECK_VERSION;
     int64_t arg = 0;
@@ -128,7 +149,7 @@ int64_t Module::getSerialNumber() {
 int64_t Module::getReceiverSoftwareVersion() const {
     LOG(logDEBUG1) << "Getting receiver software version";
     int64_t retval = -1;
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_GET_RECEIVER_VERSION, nullptr, retval);
     }
     return retval;
@@ -386,6 +407,8 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->shmversion = MODULE_SHMVERSION;
     memset(shm()->hostname, 0, MAX_STR_LENGTH);
     shm()->myDetectorType = type;
+    shm()->numberOfReceivers = 0;
+    shm()->numberOfReceivers2 = 0;
     shm()->detectorSize.x = 0;
     shm()->detectorSize.y = 0;
     shm()->controlPort = DEFAULT_PORTNO;
@@ -393,7 +416,7 @@ void Module::initializeDetectorStructure(detectorType type) {
     sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
     sls::strcpy_safe(shm()->rxHostname, "none");
     shm()->rxTCPPort = DEFAULT_PORTNO + 2;
-    shm()->useReceiverFlag = false;
+    shm()->useReceiver = false;
     shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
                      (moduleId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->zmqip = IpAddr{};
@@ -562,7 +585,7 @@ void Module::setQuad(const bool enable) {
     LOG(logDEBUG1) << "Setting Quad type to " << value;
     sendToDetector(F_SET_QUAD, value, nullptr);
     LOG(logDEBUG1) << "Setting Quad type to " << value << " in Receiver";
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_SET_RECEIVER_QUAD, value, nullptr);
     }
 }
@@ -572,7 +595,7 @@ void Module::setReadNLines(const int value) {
     sendToDetector(F_SET_READ_N_LINES, value, nullptr);
     LOG(logDEBUG1) << "Setting read n lines to " << value
                         << " in Receiver";
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_SET_RECEIVER_READ_N_LINES, value, nullptr);
     }
 }
@@ -625,7 +648,7 @@ int Module::setStopPort(int port_number) {
 int Module::setReceiverPort(int port_number) {
     LOG(logDEBUG1) << "Setting reciever port to " << port_number;
     if (port_number >= 0 && port_number != shm()->rxTCPPort) {
-        if (shm()->useReceiverFlag) {
+        if (shm()->useReceiver) {
             int retval = -1;
             sendToReceiver(F_SET_RECEIVER_PORT, port_number, retval);
             shm()->rxTCPPort = retval;
@@ -971,7 +994,7 @@ void Module::stopAcquisition() {
     // get status before stopping acquisition
     runStatus s = ERROR, r = ERROR;
     bool zmqstreaming = false;
-    if (shm()->useReceiverFlag && getReceiverStreaming()) {
+    if (shm()->useReceiver && getReceiverStreaming()) {
         zmqstreaming = true;
         s = getRunStatus();
         r = getReceiverStatus();
@@ -1034,7 +1057,7 @@ int64_t Module::getNumberOfFrames() {
 void Module::setNumberOfFrames(int64_t value) {
     LOG(logDEBUG1) << "Setting number of frames to " << value;
     sendToDetector(F_SET_NUM_FRAMES, value, nullptr);
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         LOG(logDEBUG1) << "Sending number of frames to Receiver: " << value;
         sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);   
     }
@@ -1050,7 +1073,7 @@ int64_t Module::getNumberOfTriggers() {
 void Module::setNumberOfTriggers(int64_t value) {
     LOG(logDEBUG1) << "Setting number of triggers to " << value;
     sendToDetector(F_SET_NUM_TRIGGERS, value, nullptr);
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         LOG(logDEBUG1) << "Sending number of triggers to Receiver: " << value;
         sendToReceiver(F_SET_RECEIVER_NUM_TRIGGERS, value, nullptr);   
     }
@@ -1066,7 +1089,7 @@ int64_t Module::getNumberOfBursts() {
 void Module::setNumberOfBursts(int64_t value) {
     LOG(logDEBUG1) << "Setting number of bursts to " << value;
     sendToDetector(F_SET_NUM_BURSTS, value, nullptr);
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         LOG(logDEBUG1) << "Sending number of bursts to Receiver: " << value;
         sendToReceiver(F_SET_RECEIVER_NUM_BURSTS, value, nullptr);   
     }
@@ -1096,7 +1119,7 @@ void Module::setNumberOfAnalogSamples(int value) {
     sendToDetector(F_SET_NUM_ANALOG_SAMPLES, value, nullptr);
     // update #nchan, as it depends on #samples, adcmask
     updateNumberOfChannels();
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         LOG(logDEBUG1) << "Sending number of analog samples to Receiver: " << value;
         sendToReceiver(F_RECEIVER_SET_NUM_ANALOG_SAMPLES, value, nullptr);   
     }
@@ -1114,7 +1137,7 @@ void Module::setNumberOfDigitalSamples(int value) {
     sendToDetector(F_SET_NUM_DIGITAL_SAMPLES, value, nullptr);
     // update #nchan, as it depends on #samples, adcmask
     updateNumberOfChannels();   
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         LOG(logDEBUG1) << "Sending number of digital samples to Receiver: " << value;
         sendToReceiver(F_RECEIVER_SET_NUM_DIGITAL_SAMPLES, value, nullptr);   
     }
@@ -1131,7 +1154,7 @@ void Module::setExptime(int64_t value) {
     }
     LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
     sendToDetector(F_SET_EXPTIME, value, nullptr);
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         LOG(logDEBUG1) << "Sending exptime to Receiver: " << value;
         sendToReceiver(F_RECEIVER_SET_EXPTIME, value, nullptr);   
     }
@@ -1147,7 +1170,7 @@ int64_t Module::getPeriod() {
 void Module::setPeriod(int64_t value) {
     LOG(logDEBUG1) << "Setting period to " << value << "ns";
     sendToDetector(F_SET_PERIOD, value, nullptr);
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         LOG(logDEBUG1) << "Sending period to Receiver: " << value;
         sendToReceiver(F_RECEIVER_SET_PERIOD, value, nullptr);   
     }
@@ -1182,7 +1205,7 @@ void Module::setSubExptime(int64_t value) {
     }    
     LOG(logDEBUG1) << "Setting sub exptime to " << value << "ns";
     sendToDetector(F_SET_SUB_EXPTIME, value, nullptr);   
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         LOG(logDEBUG1) << "Sending sub exptime to Receiver: " << value;
         sendToReceiver(F_RECEIVER_SET_SUB_EXPTIME, value, nullptr);   
     }
@@ -1198,7 +1221,7 @@ int64_t Module::getSubDeadTime() {
 void Module::setSubDeadTime(int64_t value) {
     LOG(logDEBUG1) << "Setting sub deadtime to " << value << "ns";
     sendToDetector(F_SET_SUB_DEADTIME, value, nullptr);
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         LOG(logDEBUG1) << "Sending sub deadtime to Receiver: " << value;
         sendToReceiver(F_RECEIVER_SET_SUB_DEADTIME, value, nullptr);   
     }
@@ -1298,7 +1321,7 @@ void Module::setTimingMode(timingMode value) {
     timingMode retval = GET_TIMING_MODE;
     LOG(logDEBUG1) << "Setting timing mode to " << value;
     sendToDetector(F_SET_TIMING_MODE, static_cast<int>(value), retval);
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         LOG(logDEBUG1) << "Sending timing mode to Receiver: " << value;
         sendToReceiver(F_SET_RECEIVER_TIMING_MODE, value, nullptr);   
     }
@@ -1323,7 +1346,7 @@ void Module::setDynamicRange(int n) {
     sendToDetector(F_SET_DYNAMIC_RANGE, n, retval);
     LOG(logDEBUG1) << "Dynamic Range: " << retval;
 
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         int arg = retval;
         retval = -1;
         LOG(logDEBUG1) << "Sending dynamic range to receiver: " << arg;
@@ -1438,7 +1461,7 @@ void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
     if (shm()->myDetectorType == CHIPTESTBOARD) {
         updateNumberOfChannels();
     }
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_RECEIVER_SET_READOUT_MODE, mode, nullptr);
     }
 }
@@ -1495,7 +1518,7 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
     if (receiverIP == "none") {
         memset(shm()->rxHostname, 0, MAX_STR_LENGTH);
         sls::strcpy_safe(shm()->rxHostname, "none");
-        shm()->useReceiverFlag = false;
+        shm()->useReceiver = false;
     }
 
     // stop acquisition if running
@@ -1512,7 +1535,7 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
         shm()->rxTCPPort = std::stoi(res[1]);
     }    
     sls::strcpy_safe(shm()->rxHostname, host.c_str());
-    shm()->useReceiverFlag = true;
+    shm()->useReceiver = true;
     checkReceiverVersionCompatibility();
 
     // populate parameters from detector
@@ -1665,7 +1688,7 @@ void Module::setDestinationUDPIP(const IpAddr ip) {
         throw RuntimeError("Invalid destination udp ip address");
     }
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr); 
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sls::MacAddr retval(0LU);
         sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
         LOG(logINFO) << "Setting destination udp mac of detector " << moduleId << " to " << retval;
@@ -1688,7 +1711,7 @@ void Module::setDestinationUDPIP2(const IpAddr ip) {
     }
 
     sendToDetector(F_SET_DEST_UDP_IP2, ip, nullptr); 
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sls::MacAddr retval(0LU);
         sendToReceiver(F_SET_RECEIVER_UDP_IP2, ip, retval);
         LOG(logINFO) << "Setting destination udp mac2 of detector " << moduleId << " to " << retval;
@@ -1741,7 +1764,7 @@ sls::MacAddr Module::getDestinationUDPMAC2() {
 void Module::setDestinationUDPPort(const int port) {
     LOG(logDEBUG1) << "Setting destination udp port to " << port;
     sendToDetector(F_SET_DEST_UDP_PORT, port, nullptr); 
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_SET_RECEIVER_UDP_PORT, port, nullptr); 
     }   
 }
@@ -1758,7 +1781,7 @@ int Module::getDestinationUDPPort() {
 void Module::setDestinationUDPPort2(const int port) {
     LOG(logDEBUG1) << "Setting destination udp port2 to " << port;
     sendToDetector(F_SET_DEST_UDP_PORT2, port, nullptr); 
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_SET_RECEIVER_UDP_PORT2, port, nullptr); 
     }   
 }
@@ -1775,7 +1798,7 @@ void Module::setNumberofUDPInterfaces(int n) {
     LOG(logDEBUG1) << "Setting number of udp interfaces to " << n;
     sendToDetector(F_SET_NUM_INTERFACES, n, nullptr);
     shm()->numUDPInterfaces = n;
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_SET_RECEIVER_NUM_INTERFACES, n, nullptr); 
     }  
 }
@@ -1812,14 +1835,14 @@ void Module::setClientStreamingPort(int port) { shm()->zmqport = port; }
 int Module::getClientStreamingPort() { return shm()->zmqport; }
 
 void Module::setReceiverStreamingPort(int port) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq port)");
     }    
     sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
 }
 
 int Module::getReceiverStreamingPort() {    
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to get receiver parameters (zmq port)");
     }
     return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
@@ -1836,7 +1859,7 @@ void Module::setClientStreamingIP(const sls::IpAddr ip) {
 sls::IpAddr Module::getClientStreamingIP() { return shm()->zmqip; }
 
 void Module::setReceiverStreamingIP(const sls::IpAddr ip) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (streaming ip)");
     }
     if (ip == 0) {
@@ -1851,7 +1874,7 @@ void Module::setReceiverStreamingIP(const sls::IpAddr ip) {
 }
 
 sls::IpAddr Module::getReceiverStreamingIP() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (streaming ip)");
     }
     return sendToReceiver<sls::IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
@@ -1921,7 +1944,7 @@ void Module::setTransmissionDelayRight(int value) {
 
 
 void Module::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
     } 
     for (auto &it : jsonHeader) {
@@ -1959,7 +1982,7 @@ void Module::setAdditionalJsonHeader(const std::map<std::string, std::string> &j
 }
 
 std::map<std::string, std::string> Module::getAdditionalJsonHeader() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
     } 
     int fnum = F_GET_ADDITIONAL_JSON_HEADER;
@@ -1990,7 +2013,7 @@ std::map<std::string, std::string> Module::getAdditionalJsonHeader() {
 }
 
 void Module::setAdditionalJsonParameter(const std::string &key, const std::string &value) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json parameter)");
     } 
     if (key.empty() || key.length() > SHORT_STR_LENGTH ||
@@ -2005,7 +2028,7 @@ void Module::setAdditionalJsonParameter(const std::string &key, const std::strin
 }
 
 std::string Module::getAdditionalJsonParameter(const std::string &key) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json parameter)");
     }
     char arg[SHORT_STR_LENGTH]{};
@@ -2019,7 +2042,7 @@ int64_t Module::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
     LOG(logDEBUG1) << "Sending UDP Socket Buffer size to receiver: "
                         << udpsockbufsize;
     int64_t retval = -1;
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_RECEIVER_UDP_SOCK_BUF_SIZE, udpsockbufsize, retval);
         LOG(logDEBUG1) << "Receiver UDP Socket Buffer size: " << retval;
     }
@@ -2196,7 +2219,7 @@ void Module::setBurstMode(slsDetectorDefs::burstMode value) {
     int arg = static_cast<int>(value);
     LOG(logDEBUG1) << "Setting burst mode to " << arg;
     sendToDetector(F_SET_BURST_MODE, arg, nullptr);
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         LOG(logDEBUG1) << "Sending burst mode to Receiver: " << value;
         sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);   
     }
@@ -2253,7 +2276,7 @@ void Module::setROI(slsDetectorDefs::ROI arg) {
     LOG(logDEBUG) << "Sending ROI to detector [" << arg.xmin << ", "
                        << arg.xmax << "]";                     
     sendToDetector(F_SET_ROI, args, nullptr);
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         LOG(logDEBUG1) << "Sending ROI to receiver";
         sendToReceiver(F_RECEIVER_SET_ROI, arg, nullptr);
     }
@@ -2283,7 +2306,7 @@ void Module::setADCEnableMask(uint32_t mask) {
     if (shm()->myDetectorType == MOENCH)
         setAdditionalJsonParameter("adcmask_1g", std::to_string(mask));
 
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         int fnum = F_RECEIVER_SET_ADC_MASK;
         int retval = -1;
         LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex
@@ -2313,7 +2336,7 @@ void Module::setTenGigaADCEnableMask(uint32_t mask) {
     if (shm()->myDetectorType == MOENCH)
         setAdditionalJsonParameter("adcmask_10g", std::to_string(mask));
 
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         int fnum = F_RECEIVER_SET_ADC_MASK_10G;
         int retval = -1;
         LOG(logDEBUG1) << "Setting 10Gb ADC Enable mask to 0x" << std::hex
@@ -2369,7 +2392,7 @@ int Module::setExternalSampling(int value) {
 int Module::getExternalSampling() { return setExternalSampling(-1); }
 
 void Module::setReceiverDbitList(const std::vector<int>& list) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (dbit list)");
     } 
 
@@ -2389,7 +2412,7 @@ void Module::setReceiverDbitList(const std::vector<int>& list) {
 }
 
 std::vector<int> Module::getReceiverDbitList() const {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (dbit list)");
     } 
     sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
@@ -2398,14 +2421,14 @@ std::vector<int> Module::getReceiverDbitList() const {
 }
 
 void Module::setReceiverDbitOffset(int value) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (dbit offset)");
     } 
     sendToReceiver(F_SET_RECEIVER_DBIT_OFFSET, value, nullptr);        
 }
 
 int Module::getReceiverDbitOffset() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (dbit offset)");
     } 
     return sendToReceiver<int>(F_GET_RECEIVER_DBIT_OFFSET);    
@@ -2424,21 +2447,21 @@ int Module::activate(int enable) {
     sendToDetector(F_ACTIVATE, enable, retval);
     sendToDetectorStop(F_ACTIVATE, enable, retval);
     LOG(logDEBUG1) << "Activate: " << retval;
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_RECEIVER_ACTIVATE, retval, nullptr);        
     }
     return retval;
 }
 
 bool Module::getDeactivatedRxrPaddingMode() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (deactivated padding)");
     }    
     return sendToReceiver<int>(F_GET_RECEIVER_DEACTIVATED_PADDING);
 }
 
 void Module::setDeactivatedRxrPaddingMode(bool padding) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (deactivated padding)");
     }    
     int arg = static_cast<int>(padding);
@@ -2446,7 +2469,7 @@ void Module::setDeactivatedRxrPaddingMode(bool padding) {
 }
 
 bool Module::getFlippedDataX() { 
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (flipped data x)");
     }
     int retval = -1;
@@ -2457,7 +2480,7 @@ bool Module::getFlippedDataX() {
 }
 
 void Module::setFlippedDataX(bool value) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (flipped data x)");
     }
     int retval = -1;
@@ -2808,12 +2831,12 @@ std::string Module::printReceiverConfiguration() {
     return os.str();
 }
 
-bool Module::getUseReceiverFlag() const { return shm()->useReceiverFlag; }
+bool Module::getUseReceiverFlag() const { return shm()->useReceiver; }
 
 int Module::lockReceiver(int lock) {
     LOG(logDEBUG1) << "Setting receiver server lock to " << lock;
     int retval = -1;
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_LOCK_RECEIVER, lock, retval);
         LOG(logDEBUG1) << "Receiver Lock: " << retval;
     }
@@ -2823,7 +2846,7 @@ int Module::lockReceiver(int lock) {
 sls::IpAddr Module::getReceiverLastClientIP() const {
     sls::IpAddr retval;
     LOG(logDEBUG1) << "Getting last client ip to receiver server";
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_GET_LAST_RECEIVER_CLIENT_IP, nullptr, retval);
         LOG(logDEBUG1) << "Last client IP from receiver: " << retval;
     }
@@ -2832,7 +2855,7 @@ sls::IpAddr Module::getReceiverLastClientIP() const {
 
 void Module::exitReceiver() {
     LOG(logDEBUG1) << "Sending exit command to receiver server";
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_EXIT_RECEIVER, nullptr, nullptr);
     }
 }
@@ -2842,14 +2865,14 @@ void Module::execReceiverCommand(const std::string &cmd) {
     char retval[MAX_STR_LENGTH]{};
     sls::strcpy_safe(arg, cmd.c_str());
     LOG(logDEBUG1) << "Sending command to receiver: " << arg;
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_EXEC_RECEIVER_COMMAND, arg, retval);
         LOG(logINFO) << "Receiver " << moduleId << " returned:\n" << retval;
     }
 }
 
 std::string Module::getFilePath() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file path)");
     } 
     char retvals[MAX_STR_LENGTH]{};
@@ -2858,7 +2881,7 @@ std::string Module::getFilePath() {
 }
 
 void Module::setFilePath(const std::string &path) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file path)");
     } 
     if (path.empty()) {
@@ -2870,7 +2893,7 @@ void Module::setFilePath(const std::string &path) {
 }
 
 std::string Module::getFileName() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file name prefix)");
     } 
     char retvals[MAX_STR_LENGTH]{};
@@ -2879,7 +2902,7 @@ std::string Module::getFileName() {
 }
 
 void Module::setFileName(const std::string &fname) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file name prefix)");
     } 
     if (fname.empty()) {
@@ -2891,28 +2914,28 @@ void Module::setFileName(const std::string &fname) {
 }
 
 int64_t Module::getFileIndex() { 
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file index)");
     } 
     return sendToReceiver<int64_t>(F_GET_RECEIVER_FILE_INDEX);
 }
 
 void Module::setFileIndex(int64_t file_index) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file index)");
     } 
     sendToReceiver(F_SET_RECEIVER_FILE_INDEX, file_index, nullptr);
 }
 
 void Module::incrementFileIndex() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (increment file index)");
     }        
     sendToReceiver(F_INCREMENT_FILE_INDEX, nullptr, nullptr);
 }
 
 slsDetectorDefs::fileFormat Module::getFileFormat() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file format)");
     } 
     return static_cast<fileFormat>(
@@ -2920,7 +2943,7 @@ slsDetectorDefs::fileFormat Module::getFileFormat() {
 }
 
 void Module::setFileFormat(fileFormat f) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file format)");
     } 
     int arg = static_cast<int>(f);
@@ -2928,21 +2951,21 @@ void Module::setFileFormat(fileFormat f) {
 }
 
 int Module::getFramesPerFile() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (frames per file)");
     } 
     return sendToReceiver<int>(F_GET_RECEIVER_FRAMES_PER_FILE);
 }
 
 void Module::setFramesPerFile(int n_frames) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (frames per file)");
     } 
     sendToReceiver(F_SET_RECEIVER_FRAMES_PER_FILE, n_frames, nullptr);
 }
 
 slsDetectorDefs::frameDiscardPolicy Module::getReceiverFramesDiscardPolicy() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (frame discard policy)");
     } 
     return static_cast<frameDiscardPolicy>(
@@ -2950,7 +2973,7 @@ slsDetectorDefs::frameDiscardPolicy Module::getReceiverFramesDiscardPolicy() {
 }
 
 void Module::setReceiverFramesDiscardPolicy(frameDiscardPolicy f) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (frame discard policy)");
     } 
     int arg = static_cast<int>(f);
@@ -2958,14 +2981,14 @@ void Module::setReceiverFramesDiscardPolicy(frameDiscardPolicy f) {
 }
 
 bool Module::getPartialFramesPadding() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (frame padding)");
     } 
     return sendToReceiver<int>(F_GET_RECEIVER_PADDING);    
 }
 
 void Module::setPartialFramesPadding(bool padding) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (frame padding)");
     } 
     int arg = static_cast<int>(padding);
@@ -2975,14 +2998,14 @@ void Module::setPartialFramesPadding(bool padding) {
 void Module::startReceiver() {
     LOG(logDEBUG1) << "Starting Receiver";
     shm()->stoppedFlag = false;
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_START_RECEIVER, nullptr, nullptr);
     }
 }
 
 void Module::stopReceiver() {
     LOG(logDEBUG1) << "Stopping Receiver";
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         int arg = static_cast<int>(shm()->stoppedFlag);
         sendToReceiver(F_STOP_RECEIVER, arg, nullptr);
     }
@@ -2991,7 +3014,7 @@ void Module::stopReceiver() {
 slsDetectorDefs::runStatus Module::getReceiverStatus() const {
     runStatus retval = ERROR;
     LOG(logDEBUG1) << "Getting Receiver Status";
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_GET_RECEIVER_STATUS, nullptr, retval);
         LOG(logDEBUG1) << "Receiver Status: " << ToString(retval);
     }
@@ -3001,7 +3024,7 @@ slsDetectorDefs::runStatus Module::getReceiverStatus() const {
 int64_t Module::getFramesCaughtByReceiver() const {
     int64_t retval = -1;
     LOG(logDEBUG1) << "Getting Frames Caught by Receiver";
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_GET_RECEIVER_FRAMES_CAUGHT, nullptr, retval);
         LOG(logDEBUG1) << "Frames Caught by Receiver: " << retval;
     }
@@ -3010,7 +3033,7 @@ int64_t Module::getFramesCaughtByReceiver() const {
 
 std::vector<uint64_t> Module::getNumMissingPackets() const {
     LOG(logDEBUG1) << "Getting num missing packets";
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         int fnum = F_GET_NUM_MISSING_PACKETS;
         int ret = FAIL;
         auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
@@ -3038,7 +3061,7 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
 uint64_t Module::getReceiverCurrentFrameIndex() const {
     uint64_t retval = -1;
     LOG(logDEBUG1) << "Getting Current Frame Index of Receiver";
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_GET_RECEIVER_FRAME_INDEX, nullptr, retval);
         LOG(logDEBUG1) << "Current Frame Index of Receiver: " << retval;
     }
@@ -3047,7 +3070,7 @@ uint64_t Module::getReceiverCurrentFrameIndex() const {
 
 int Module::getReceiverProgress() const {
     int retval = -1;
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_GET_RECEIVER_PROGRESS, nullptr, retval);
         LOG(logDEBUG1) << "Current Progress of Receiver: " << retval;
     }
@@ -3055,7 +3078,7 @@ int Module::getReceiverProgress() const {
 }
 
 void Module::setFileWrite(bool value) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file write enable)");
     } 
     int arg = static_cast<int>(value);
@@ -3063,14 +3086,14 @@ void Module::setFileWrite(bool value) {
 }
 
 bool Module::getFileWrite() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file_write enable)");
     } 
     return sendToReceiver<int>(F_GET_RECEIVER_FILE_WRITE);    
 }
 
 void Module::setMasterFileWrite(bool value) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (master file write enable)");
     }    
     int arg = static_cast<int>(value);
@@ -3078,14 +3101,14 @@ void Module::setMasterFileWrite(bool value) {
 }
 
 bool Module::getMasterFileWrite() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (master file write enable)");
     }    
     return sendToReceiver<int>(F_GET_RECEIVER_MASTER_FILE_WRITE);
 }
 
 void Module::setFileOverWrite(bool value) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file overwrite enable)");
     }    
     int arg = static_cast<int>(value);
@@ -3093,21 +3116,21 @@ void Module::setFileOverWrite(bool value) {
 }
 
 bool Module::getFileOverWrite() { 
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (file overwrite enable)");
     }    
     return sendToReceiver<int>(F_GET_RECEIVER_OVERWRITE);
 }
 
 int Module::getReceiverStreamingFrequency() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (streaming/read frequency)");
     }
     return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_FREQUENCY);
 }
 
 void Module::setReceiverStreamingFrequency(int freq) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (streaming/read frequency)");
     } 
     if (freq < 0) {
@@ -3119,7 +3142,7 @@ void Module::setReceiverStreamingFrequency(int freq) {
 int Module::setReceiverStreamingTimer(int time_in_ms) {
     int retval = -1;
     LOG(logDEBUG1) << "Sending read timer to receiver: " << time_in_ms;
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_RECEIVER_STREAMING_TIMER, time_in_ms, retval);
         LOG(logDEBUG1) << "Receiver read timer: " << retval;
     }
@@ -3127,14 +3150,14 @@ int Module::setReceiverStreamingTimer(int time_in_ms) {
 }
 
 bool Module::getReceiverStreaming() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to get receiver parameters (zmq enable)");
     }
     return sendToReceiver<int>(F_GET_RECEIVER_STREAMING);
 }
 
 void Module::setReceiverStreaming(bool enable) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq enable)");
     }  
     int arg = static_cast<int>(enable);
@@ -3151,7 +3174,7 @@ bool Module::enableTenGigabitEthernet(int value) {
     }
     LOG(logDEBUG1) << "10Gbe: " << retval;
     value = retval;
-    if (shm()->useReceiverFlag && value != -1) {
+    if (shm()->useReceiver && value != -1) {
         int retval = -1;
         LOG(logDEBUG1) << "Sending 10Gbe enable to receiver: " << value;
         sendToReceiver(F_ENABLE_RECEIVER_TEN_GIGA, value, retval);
@@ -3163,7 +3186,7 @@ bool Module::enableTenGigabitEthernet(int value) {
 int Module::setReceiverFifoDepth(int n_frames) {
     int retval = -1;
     LOG(logDEBUG1) << "Sending Receiver Fifo Depth: " << n_frames;
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_SET_RECEIVER_FIFO_DEPTH, n_frames, retval);
         LOG(logDEBUG1) << "Receiver Fifo Depth: " << retval;
     }
@@ -3171,14 +3194,14 @@ int Module::setReceiverFifoDepth(int n_frames) {
 }
 
 bool Module::getReceiverSilentMode() {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (silent mode)");
     }    
     return sendToReceiver<int>(F_GET_RECEIVER_SILENT_MODE);
 }
 
 void Module::setReceiverSilentMode(bool enable) {
-    if (!shm()->useReceiverFlag) {
+    if (!shm()->useReceiver) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters (silent mode)");
     } 
     int arg = static_cast<int>(enable);
@@ -3187,7 +3210,7 @@ void Module::setReceiverSilentMode(bool enable) {
 
 void Module::restreamStopFromReceiver() {
     LOG(logDEBUG1) << "Restream stop dummy from Receiver via zmq";
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER, nullptr, nullptr);
     }
 }
@@ -3392,7 +3415,7 @@ void Module::setPipeline(int clkIndex, int value) {
 void Module::setCounterMask(uint32_t countermask) {
     LOG(logDEBUG1) << "Setting Counter mask to " << countermask;
     sendToDetector(F_SET_COUNTER_MASK, countermask, nullptr);
-    if (shm()->useReceiverFlag) {
+    if (shm()->useReceiver) {
         int ncounters = __builtin_popcount(countermask);
         LOG(logDEBUG1) << "Sending Reciver #counters: " << ncounters;
         sendToReceiver(F_RECEIVER_SET_NUM_COUNTERS, ncounters, nullptr);

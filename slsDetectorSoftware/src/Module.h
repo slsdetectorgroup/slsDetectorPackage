@@ -13,8 +13,9 @@
 
 class ServerInterface;
 
+#define MODULE_SHMRXVERSION 0x200415
 #define MODULE_SHMAPIVERSION 0x190726
-#define MODULE_SHMVERSION 0x200402
+#define MODULE_SHMVERSION 0x200415
 
 namespace sls{
 
@@ -35,6 +36,9 @@ struct sharedModule {
 
     /** detector type  \ see :: detectorType*/
     slsDetectorDefs::detectorType myDetectorType;
+
+    int numberOfReceivers;
+    int numberOfReceivers2;
 
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
@@ -70,7 +74,7 @@ struct sharedModule {
 
     /** is set if the receiver hostname given and is connected,
      * unset if socket connection is not possible  */
-    bool useReceiverFlag;
+    bool useReceiver;
 
     /** tcp port from gui/different process to receiver (only data) */
     int zmqport;
@@ -118,6 +122,12 @@ class Module : public virtual slsDetectorDefs {
      */
     bool isFixedPatternSharedMemoryCompatible();
 
+    static bool hasSharedMemoryReceiverList(int version);
+
+    int getNumberOfReceivers() const;
+    void setNumberOfReceivers(const int num);
+    int getNumberOfReceivers2() const;
+    void setNumberOfReceivers2(const int num);
     /**
      * Check version compatibility with receiver software
      */

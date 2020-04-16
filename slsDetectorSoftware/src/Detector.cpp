@@ -6,6 +6,7 @@
 #include "logger.h"
 #include "DetectorImpl.h"
 #include "Module.h"
+#include "Receiver.h"
 #include "sls_detector_defs.h"
 #include "versionAPI.h"
 
@@ -13,12 +14,24 @@
 
 namespace sls {
 
-void freeSharedMemory(int detectorId, int detPos) {
+void freeSharedMemory(int detectorId, int moduleId) {
     // single
-    if (detPos >= 0) {
-        SharedMemory<sharedModule> moduleShm(detectorId, detPos);
+    if (moduleId >= 0) {
+        SharedMemory<sharedModule> moduleShm(detectorId, moduleId);
+        int numReceivers = 0, numReceivers2 = 0;
         if (moduleShm.IsExisting()) {
+            moduleShm.OpenSharedMemory();
+            if (Module::hasSharedMemoryReceiverList(moduleShm()->shmversion)) {
+                numReceivers = moduleShm()->numberOfReceivers;
+                numReceivers2 = moduleShm()->numberOfReceivers2;
+            }
             moduleShm.RemoveSharedMemory();
+        }
+        for (int iReceiver = 0; iReceiver < numReceivers + numReceivers2; ++iReceiver) {
+            SharedMemory<sharedModule> receiverShm(detectorId, moduleId, iReceiver);
+            if (receiverShm.IsExisting()) {
+                receiverShm.RemoveSharedMemory();
+            }
         }
         return;
     }
@@ -29,13 +42,27 @@ void freeSharedMemory(int detectorId, int detPos) {
 
     if (detectorShm.IsExisting()) {
         detectorShm.OpenSharedMemory();
-        numDetectors = detectorShm()->numberOfDetectors;
+        numDetectors = detectorShm()->numberOfModules;
         detectorShm.RemoveSharedMemory();
     }
 
-    for (int i = 0; i < numDetectors; ++i) {
-        SharedMemory<sharedModule> moduleShm(detectorId, i);
-        moduleShm.RemoveSharedMemory();
+    for (int iModule = 0; iModule < numDetectors; ++iModule) {
+        SharedMemory<sharedModule> moduleShm(detectorId, iModule);
+        int numReceivers = 0, numReceivers2 = 0;
+        if (moduleShm.IsExisting()) {
+            moduleShm.OpenSharedMemory();
+            if (Module::hasSharedMemoryReceiverList(moduleShm()->shmversion)) {
+                numReceivers = moduleShm()->numberOfReceivers;
+                numReceivers2 = moduleShm()->numberOfReceivers2;
+            }
+            moduleShm.RemoveSharedMemory();
+        }
+        for (int iReceiver = 0; iReceiver < numReceivers + numReceivers2; ++iReceiver) {
+            SharedMemory<sharedModule> receiverShm(detectorId, iModule, iReceiver);
+            if (receiverShm.IsExisting()) {
+                receiverShm.RemoveSharedMemory();
+            }
+        }
     }
 }
 
@@ -89,6 +116,11 @@ Result<std::string> Detector::getHostname(Positions pos) const {
 
 void Detector::setHostname(const std::vector<std::string> &hostname) {
     pimpl->setHostname(hostname);
+}
+
+void Detector::setHostname(const std::vector<std::string> &hostname,
+    const std::vector<int> &port) {
+    pimpl->setHostname(hostname, port);
 }
 
 void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
@@ -664,46 +696,80 @@ Result<bool> Detector::getUseReceiverFlag(Positions pos) const {
 }
 
 Result<std::string> Detector::getRxHostname(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverHostname, pos);
+    return pimpl->Parallel1(&Receiver::getHostname, pos, {0});
 }
 
-void Detector::setRxHostname(const std::string &receiver, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverHostname, pos, receiver);
+Result<std::string> Detector::getRxHostname2(Positions pos) const {
+    return pimpl->Parallel2(&Receiver::getHostname, pos, {0});
 }
 
-void Detector::setRxHostname(const std::vector<std::string> &name) {
-    // set all to same rx_hostname
-    if (name.size() == 1) {
-        pimpl->Parallel(&Module::setReceiverHostname, {}, name[0]);
-    } else {
-        if ((int)name.size() != size()) {
-            throw RuntimeError("Receiver hostnames size " + 
-                std::to_string(name.size()) + " does not match detector size " + 
-                std::to_string(size()));
-        }
-        // set each rx_hostname
-        for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet]);
-        }
+void Detector::setRxHostname(const std::string &hostname, Positions pos) {
+    if (!pimpl->isReceiverInitialized()) {
+        pimpl->initReceiver();
     }
+    pimpl->Parallel1(&Receiver::setHostname, pos, {0}, hostname);
+}
+
+void Detector::setRxHostname2(const std::string &hostname, Positions pos) {
+    if (!pimpl->isReceiver2Initialized()) {
+        pimpl->initReceiver2();
+    }
+    pimpl->Parallel2(&Receiver::setHostname, pos, {0}, hostname);
+}
+
+void Detector::setRxHostname(const std::string &hostname, const int port, 
+      int module_id) {
+    if (!pimpl->isReceiverInitialized()) {
+        pimpl->initReceiver();
+    }
+    pimpl->Parallel1(&Receiver::setTCPPort, {module_id}, {0}, port);
+    pimpl->Parallel1(&Receiver::setHostname, {module_id}, {0}, hostname);
+}
+
+void Detector::setRxHostname2(const std::string &hostname, const int port, 
+      int module_id) {
+    if (!pimpl->isReceiver2Initialized()) {
+        pimpl->initReceiver2();
+    }
+    pimpl->Parallel2(&Receiver::setTCPPort, {module_id}, {0}, port);
+    pimpl->Parallel2(&Receiver::setHostname, {module_id}, {0}, hostname);
 }
 
 Result<int> Detector::getRxPort(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverPort, pos);
+    return pimpl->Parallel1(&Receiver::getTCPPort, pos, {0});
+}
+
+Result<int> Detector::getRxPort2(Positions pos) const {
+    return pimpl->Parallel2(&Receiver::getTCPPort, pos, {0});
 }
 
 void Detector::setRxPort(int port, int module_id) {
+    if (!pimpl->isReceiverInitialized()) {
+        pimpl->initReceiver();
+    }
     if (module_id == -1) {
-        std::vector<int> port_list(size());
-        for (auto &it : port_list) {
-            it = port++;
-        }
+        std::vector<int> port_list = getPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setReceiverPort, {idet},
+            pimpl->Parallel1(&Receiver::setTCPPort, {idet}, {0},
                             port_list[idet]);
         }
     } else {
-        pimpl->Parallel(&Module::setReceiverPort, {module_id}, port);
+        pimpl->Parallel1(&Receiver::setTCPPort, {module_id}, {0}, port);
+    }
+}
+
+void Detector::setRxPort2(int port, int module_id) {
+    if (!pimpl->isReceiver2Initialized()) {
+        pimpl->initReceiver2();
+    }
+    if (module_id == -1) {
+        std::vector<int> port_list = getPortNumbers(port);
+        for (int idet = 0; idet < size(); ++idet) {
+            pimpl->Parallel2(&Receiver::setTCPPort, {idet}, {0},
+                            port_list[idet]);
+        }
+    } else {
+        pimpl->Parallel2(&Receiver::setTCPPort, {module_id}, {0}, port);
     }
 }
 
@@ -1822,23 +1888,10 @@ Result<uint64_t> Detector::getRxCurrentFrameIndex(Positions pos) const {
 }
 
 std::vector<int> Detector::getPortNumbers(int start_port) {
-    int num_sockets_per_detector = 1;
-    switch (getDetectorType().squash()) {
-    case defs::EIGER:
-        num_sockets_per_detector *= 2;
-        break;
-    case defs::JUNGFRAU:
-        if (getNumberofUDPInterfaces().squash() == 2) {
-            num_sockets_per_detector *= 2;
-        }
-        break;
-    default:
-        break;
-    }
     std::vector<int> res;
     res.reserve(size());
     for (int idet = 0; idet < size(); ++idet) {
-        res.push_back(start_port + (idet * num_sockets_per_detector));
+        res.push_back(start_port + idet);
     }
     return res;
 }

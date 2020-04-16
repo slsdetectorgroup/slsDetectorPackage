@@ -115,13 +115,27 @@ std::string CmdProxy::ListCommands(int action) {
 }
 
 /* configuration */
+std::pair<std::string, int> 
+    CmdProxy::parseHostnameAndPort(std::string name) {
+    std::string host = name;
+    std::string hostname;
+    int port = 0;
+    auto res = sls::split(host, ':');
+    if (res.size() > 1) {
+        hostname = res[0];
+        port = StringTo<int>(res[1]);
+    }
+    return std::make_pair(host, port);
+}
+
 
 std::string CmdProxy::Hostname(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "\n\tFrees shared memory and sets hostname (or IP address) of "
-              "all modules concatenated by +."
+        "all modules concatenated by +.\n\t"
+        "[hostname or ip address]:[tcp port] Use this for virtual servers\n\t"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -136,17 +150,35 @@ std::string CmdProxy::Hostname(int action) {
         if (det_id != -1) {
             throw sls::RuntimeError("Cannot execute this at module level");
         }
+        std::vector<std::string> arguments;
         // only args[0], but many hostames concatenated with +
         if (args[0].find('+') != std::string::npos) {
-            auto t = sls::split(args[0], '+');
-            det->setHostname(t);
-            os << ToString(t) << '\n';
+            if (args.size() > 1) {
+                throw sls::RuntimeError("Cannot have concatenated hostnames and"
+                    "multiple arguments");
+            }
+            arguments = sls::split(args[0], '+');
         }
         // either hostnames separated by space, or single hostname
         else {
-            det->setHostname(args);
-            os << ToString(args) << '\n';
+            arguments.assign(args.begin(), args.end());
         }
+        // separate hostname and port
+        std::vector<std::string> hostnames;
+        std::vector<int> ports;
+        for (size_t i = 0; i < arguments.size(); ++i) {
+            std::pair<std::string, int> res = parseHostnameAndPort(arguments[i]);
+            hostnames.push_back(res.first);
+            if (res.second == 0) {
+                ports.push_back(DEFAULT_PORTNO);
+            } else {
+                ports.push_back(res.second);
+            }
+        }      
+        det->setHostname(hostnames, ports);
+        auto t = det->getHostname({det_id});
+        os << OutString(t) << '\n';
+
     } else {
         throw sls::RuntimeError("Unknown action");
     }
@@ -905,16 +937,19 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
 }
 
 /* Receiver Config */
-std::string CmdProxy::ReceiveHostname(int action) {
+std::string CmdProxy::ReceiverHostname(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[hostname or ip address]\n\t"
         "[hostname or ip address]:[tcp port]\n\t"
-        "[hostname1]:[tcp_port1]+[hostname2]:[tcp_port2]+\n\t"
-        "Receiver hostname or IP. If port included, then the receiver tcp port.\n\t"
+        "Receiver hostname or IP. Port is the receiver tcp port (optional).\n\t"
         "Used for TCP control communication between client and receiver "
-        "to configure receiver. Also updates receiver with detector parameters."
+        "to configure receiver. Also updates receiver with detector parameters.\n\t"
+        "TCP port must be unique, if included.\n\t"
+        "If port not included and not set earlier, then it takes default port 1954"
+        " and calculates from there. \n\t"
+        "[Eiger][Jungfrau] For the 2nd udp interface, use rx_hostname2."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -923,38 +958,69 @@ std::string CmdProxy::ReceiveHostname(int action) {
         auto t = det->getRxHostname({det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.size() < 1) {
+        if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        // multiple arguments
-        if (args.size() > 1) {
-            // multiple in mulitple
-            if (args[0].find('+') != std::string::npos) {
-                throw sls::RuntimeError("Cannot add multiple receivers at module level");
+        if (args[0].find('+') != std::string::npos) {
+            throw sls::RuntimeError("Cannot concatenate receiver hostnames");
+        }  
+        std::pair<std::string, int> res = parseHostnameAndPort(args[0]);
+        std::string hostname = res.first;
+        int port = res.second;
+        if (port == 0) {
+            det->setRxHostname(hostname, {det_id});
+        } else {
+            if (det_id == -1) {
+                throw sls::RuntimeError("Cannot set same tcp port "
+                    "for all receiver hostnames");
             }
-            if (det_id != -1) {
-                throw sls::RuntimeError("Cannot add multiple receivers at module level");
-            }
-            det->setRxHostname(args);
-            os << ToString(args) << '\n';
+            det->setRxHostname(hostname, port, det_id);
         }
-        // single argument
-        else {
-            // multiple receivers concatenated with +
-            if (args[0].find('+') != std::string::npos) {
-                if (det_id != -1) {
-                    throw sls::RuntimeError("Cannot add multiple receivers at module level");
-                }            
-                auto t = sls::split(args[0], '+');
-                det->setRxHostname(t);
-                os << ToString(t) << '\n';
-            }
-            // single receiver
-            else {
-                det->setRxHostname(args[0], {det_id});
-                os << ToString(args) << '\n';
-            }
+        auto t = det->getRxHostname({det_id});
+        os << OutString(t) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::ReceiverHostname2(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[hostname or ip address]\n\t"
+        "[hostname or ip address]:[tcp port]\n\t"
+        "[Eiger][Jungfrau] Receiver hostname or IP for the second udp port. "
+        "Port is the receiver tcp port (optional).\n\t"
+        "Refer rx_hostname help for details"
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
         }
+        auto t = det->getRxHostname2({det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        if (args[0].find('+') != std::string::npos) {
+            throw sls::RuntimeError("Cannot concatenate receiver hostnames");
+        }  
+        std::pair<std::string, int> res = parseHostnameAndPort(args[0]);
+        std::string hostname = res.first;
+        int port = res.second;
+        if (port == 0) {
+            det->setRxHostname2(hostname, {det_id});
+        } else {
+            if (det_id == -1) {
+                throw sls::RuntimeError("Cannot set same tcp port "
+                    "for all receiver hostnames");
+            }
+            det->setRxHostname2(hostname, port, det_id);
+        }
+        auto t = det->getRxHostname2({det_id});
+        os << OutString(t) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }

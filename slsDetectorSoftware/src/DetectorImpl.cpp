@@ -5,6 +5,7 @@
 #include "file_utils.h"
 #include "logger.h"
 #include "Module.h"
+#include "Receiver.h"
 #include "sls_detector_exceptions.h"
 #include "versionAPI.h"
 
@@ -49,12 +50,24 @@ void DetectorImpl::setAcquiringFlag(bool flag) {
 
 int DetectorImpl::getDetectorId() const { return detectorId; }
 
-void DetectorImpl::freeSharedMemory(int detectorId, int detPos) {
+void DetectorImpl::freeSharedMemory(int detectorId, int moduleId) {
     // single
-    if (detPos >= 0) {
-        SharedMemory<sharedModule> module_shm(detectorId, detPos);
-        if (module_shm.IsExisting()) {
-            module_shm.RemoveSharedMemory();
+    if (moduleId >= 0) {
+        SharedMemory<sharedModule> moduleShm(detectorId, moduleId);
+        int numReceivers = 0, numReceivers2 = 0;
+        if (moduleShm.IsExisting()) {
+            moduleShm.OpenSharedMemory();
+            if (Module::hasSharedMemoryReceiverList(moduleShm()->shmversion)) {
+                numReceivers = moduleShm()->numberOfReceivers;
+                numReceivers2 = moduleShm()->numberOfReceivers2;
+            }
+            moduleShm.RemoveSharedMemory();
+        }
+        for (int iReceiver = 0; iReceiver < numReceivers + numReceivers2; ++iReceiver) {
+            SharedMemory<sharedModule> receiverShm(detectorId, moduleId, iReceiver);
+            if (receiverShm.IsExisting()) {
+                receiverShm.RemoveSharedMemory();
+            }
         }
         return;
     }
@@ -65,13 +78,27 @@ void DetectorImpl::freeSharedMemory(int detectorId, int detPos) {
 
     if (detectorShm.IsExisting()) {
         detectorShm.OpenSharedMemory();
-        numDetectors = detectorShm()->numberOfDetectors;
+        numDetectors = detectorShm()->numberOfModules;
         detectorShm.RemoveSharedMemory();
     }
 
-    for (int i = 0; i < numDetectors; ++i) {
-        SharedMemory<sharedModule> module_shm(detectorId, i);
-        module_shm.RemoveSharedMemory();
+    for (int iModule = 0; iModule < numDetectors; ++iModule) {
+        SharedMemory<sharedModule> moduleShm(detectorId, iModule);
+        int numReceivers = 0, numReceivers2 = 0;
+        if (moduleShm.IsExisting()) {
+            moduleShm.OpenSharedMemory();
+            if (Module::hasSharedMemoryReceiverList(moduleShm()->shmversion)) {
+                numReceivers = moduleShm()->numberOfReceivers;
+                numReceivers2 = moduleShm()->numberOfReceivers2;
+            }
+            moduleShm.RemoveSharedMemory();
+        }
+        for (int iReceiver = 0; iReceiver < numReceivers + numReceivers2; ++iReceiver) {
+            SharedMemory<sharedModule> receiverShm(detectorId, iModule, iReceiver);
+            if (receiverShm.IsExisting()) {
+                receiverShm.RemoveSharedMemory();
+            }
+        }
     }
 }
 
@@ -81,7 +108,18 @@ void DetectorImpl::freeSharedMemory() {
         d->freeSharedMemory();
     }
     detectors.clear();
-
+    for (auto &dr : receivers) {
+        for (auto &r : dr) {
+            r->freeSharedMemory();
+        }
+    }
+    receivers.clear();    
+    for (auto &dr : receivers2) {
+        for (auto &r : dr) {
+            r->freeSharedMemory();
+        }
+    }
+    receivers2.clear(); 
     // clear multi detector shm
     detector_shm.RemoveSharedMemory();
     client_downstream = false;
@@ -149,7 +187,7 @@ void DetectorImpl::initSharedMemory(bool verify) {
 
 void DetectorImpl::initializeDetectorStructure() {
     detector_shm()->shmversion = DETECTOR_SHMVERSION;
-    detector_shm()->numberOfDetectors = 0;
+    detector_shm()->numberOfModules = 0;
     detector_shm()->multiDetectorType = GENERIC;
     detector_shm()->numberOfDetector.x = 0;
     detector_shm()->numberOfDetector.y = 0;
@@ -163,16 +201,37 @@ void DetectorImpl::initializeDetectorStructure() {
 void DetectorImpl::initializeMembers(bool verify) {
     // DetectorImpl
     zmqSocket.clear();
+    int numModules = detector_shm()->numberOfModules;
 
     // get objects from single det shared memory (open)
-    for (int i = 0; i < detector_shm()->numberOfDetectors; i++) {
-        try {
+    try {
+        for (int iModule = 0; iModule < numModules; ++iModule) {
             detectors.push_back(
-                sls::make_unique<Module>(detectorId, i, verify));
-        } catch (...) {
-            detectors.clear();
-            throw;
+                    sls::make_unique<Module>(detectorId, iModule, verify));
+            int numReceivers = detectors[iModule]->getNumberOfReceivers();
+            if (numReceivers != 0) {
+                receivers.resize(numModules);
+                for (int iReceiver = 0; iReceiver < numReceivers; ++iReceiver) {
+                        receivers[iModule].push_back(
+                            sls::make_unique<Receiver>(detectorId, iModule, iReceiver, 
+                            true, verify));
+                }
+            }
+            int numReceivers2 = detectors[iModule]->getNumberOfReceivers2();
+            if (numReceivers2 != 0) {
+                receivers2.resize(numModules);
+                for (int iReceiver = 0; iReceiver < numReceivers2; ++iReceiver) {
+                        receivers2[iModule].push_back(
+                            sls::make_unique<Receiver>(detectorId, iModule, iReceiver, 
+                            false, verify));
+                }
+            }
         }
+    } catch (...) {
+        detectors.clear();
+        receivers.clear();
+        receivers2.clear();
+        throw;
     }
 }
 
@@ -222,17 +281,18 @@ std::string DetectorImpl::exec(const char *cmd) {
 
 void DetectorImpl::setVirtualDetectorServers(const int numdet, const int port) {
     std::vector<std::string> hostnames;
+    std::vector<int> ports;
     for (int i = 0; i < numdet; ++i) {
+        hostnames.push_back(std::string("localhost"));
         // * 2 is for control and stop port
-        hostnames.push_back(std::string("localhost:") +
-                            std::to_string(port + i * 2));
+        ports.push_back(port + i * 2);
     }
-    setHostname(hostnames);
+    setHostname(hostnames, ports);
 }
 
 void DetectorImpl::setHostname(const std::vector<std::string> &name) {
     // this check is there only to allow the previous detsizechan command
-    if (detector_shm()->numberOfDetectors != 0) {
+    if (detector_shm()->numberOfModules != 0) {
         LOG(logWARNING)
             << "There are already detector(s) in shared memory."
                "Freeing Shared memory now.";
@@ -242,27 +302,41 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
         detector_shm()->initialChecks = initialChecks;
     }
     for (const auto &hostname : name) {
-        addSlsDetector(hostname);
+        addModule(hostname, DEFAULT_PORTNO);
     }
     updateDetectorSize();
 }
 
-void DetectorImpl::addSlsDetector(const std::string &hostname) {
+void DetectorImpl::setHostname(const std::vector<std::string> &name,
+        const std::vector<int> &port) {
+    if (name.size() != port.size()) {
+        throw RuntimeError("hostname vector size and port vector size do not match");
+    }
+    // this check is there only to allow the previous detsizechan command
+    if (detector_shm()->numberOfModules != 0) {
+        LOG(logWARNING)
+            << "There are already detector(s) in shared memory."
+               "Freeing Shared memory now.";
+        bool initialChecks = detector_shm()->initialChecks;
+        freeSharedMemory();
+        setupDetector();
+        detector_shm()->initialChecks = initialChecks;
+    }
+    for (size_t i = 0; i < name.size(); ++i) {
+        addModule(name[i], port[i]);
+    }
+    updateDetectorSize();    
+}
+
+void DetectorImpl::addModule(const std::string &hostname,
+    const int port) {
     LOG(logINFO) << "Adding detector " << hostname;
 
-    int port = DEFAULT_PORTNO;
-    std::string host = hostname;
-    auto res = sls::split(hostname, ':');
-    if (res.size() > 1) {
-        host = res[0];
-        port = StringTo<int>(res[1]);
-    }
-
-    if (host != "localhost") {
+    if (hostname != "localhost") {
         for (auto &d : detectors) {
-            if (d->getHostname() == host) {
+            if (d->getHostname() == hostname) {
                 LOG(logWARNING)
-                    << "Detector " << host
+                    << "Detector " << hostname
                     << "already part of the Detector!" << std::endl
                     << "Remove it before adding it back in a new position!";
                 return;
@@ -271,20 +345,68 @@ void DetectorImpl::addSlsDetector(const std::string &hostname) {
     }
 
     // get type by connecting
-    detectorType type = Module::getTypeFromDetector(host, port);
+    detectorType type = Module::getTypeFromDetector(hostname, port);
     auto pos = detectors.size();
     detectors.emplace_back(
         sls::make_unique<Module>(type, detectorId, pos, false));
-    detector_shm()->numberOfDetectors = detectors.size();
+    detector_shm()->numberOfModules = detectors.size();
     detectors[pos]->setControlPort(port);
     detectors[pos]->setStopPort(port + 1);
-    detectors[pos]->setHostname(host, detector_shm()->initialChecks);
+    detectors[pos]->setHostname(hostname, detector_shm()->initialChecks);
     // detector type updated by now
     detector_shm()->multiDetectorType =
         Parallel(&Module::getDetectorType, {})
             .tsquash("Inconsistent detector types.");
     // for moench and ctb
     detectors[pos]->updateNumberOfChannels();     
+}
+
+void DetectorImpl::initReceiver() {
+    if (receivers.size() != 0) {
+        throw RuntimeError("receiver vector already initialized");
+    }
+    int tcpPort = DEFAULT_RX_PORTNO;
+    int zmqPort = DEFAULT_ZMQ_CL_PORTNO;
+    try {
+        for (int iModule = 0; iModule < size(); ++iModule) {
+            receivers.resize(detectors.size());
+            receivers[iModule].push_back(
+                sls::make_unique<Receiver>(detectorId, iModule, 0, 
+                    true, tcpPort++, "", zmqPort++));    
+            detectors[iModule]->setNumberOfReceivers(1);
+        }
+    } catch (...) {
+        receivers.clear();
+        throw;
+    }
+}
+
+bool DetectorImpl::isReceiverInitialized() {
+    return (receivers.size() > 0);
+}
+
+void DetectorImpl::initReceiver2() {
+    if (receivers2.size() != 0) {
+        throw RuntimeError("receiver2 vector already initialized");
+    }
+    int tcpPort = DEFAULT_RX_PORTNO + size();
+    int zmqPort = DEFAULT_ZMQ_CL_PORTNO + size();
+    try {
+        for (int iModule = 0; iModule < size(); ++iModule) {
+            receivers2.resize(detectors.size());
+            receivers2[iModule].push_back(
+                sls::make_unique<Receiver>(detectorId, iModule, 0, 
+                    false, tcpPort++, "", zmqPort++));    
+            detectors[iModule]->setNumberOfReceivers2(1);
+        }
+    } catch (...) {
+        receivers.clear();
+        throw;
+    }
+}
+
+bool DetectorImpl::isReceiver2Initialized() {
+    return (receivers2.size() > 0);
 }
 
 void DetectorImpl::updateDetectorSize() {
@@ -429,7 +551,7 @@ void DetectorImpl::readFrameFromReceiver() {
     int nDetPixelsY = 0;
     bool quadEnable = false;
     bool eiger = false;
-    bool numInterfaces =
+    int numInterfaces =
         Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
             .squash(); // cannot pick up from zmq
 

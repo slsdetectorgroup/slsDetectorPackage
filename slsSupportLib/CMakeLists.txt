@@ -8,6 +8,7 @@ set(SOURCES
     src/ToString.cpp
     src/network_utils.cpp
     src/ZmqSocket.cpp
+    src/UdpRxSocket.cpp
 )
 
 set(HEADERS

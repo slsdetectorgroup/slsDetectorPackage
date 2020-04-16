@@ -12,6 +12,7 @@
 #include "container_utils.h" // For sls::make_unique<>
 #include "sls_detector_exceptions.h"
 #include "UdpRxSocket.h"
+#include "network_utils.h"
 
 #include <cerrno>
 #include <cstring>
@@ -177,7 +178,7 @@ void Listener::CreateUDPSockets() {
     sem_init(&semaphore_socket,1,0);
 
     // doubled due to kernel bookkeeping (could also be less due to permissions)
-    *actualUDPSocketBufferSize = udpSocket->getActualUDPSocketBufferSize();
+    *actualUDPSocketBufferSize = udpSocket->getBufferSize();
 }
 
 
@@ -185,7 +186,7 @@ void Listener::CreateUDPSockets() {
 void Listener::ShutDownUDPSocket() {
 	if(udpSocket){
 		udpSocketAlive = false;
-		udpSocket->ShutDownSocket();
+		udpSocket->Shutdown();
 		LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
 		fflush(stdout);
 		// wait only if the threads have started as it is the threads that
@@ -220,7 +221,7 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
             *udpSocketBufferSize);
 
         // doubled due to kernel bookkeeping (could also be less due to permissions)
-        *actualUDPSocketBufferSize = g.getActualUDPSocketBufferSize();
+        *actualUDPSocketBufferSize = g.getBufferSize();
 		if (*actualUDPSocketBufferSize == -1) {
 			*udpSocketBufferSize = temp;
 		} else {

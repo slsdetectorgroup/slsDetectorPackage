@@ -1,7 +1,97 @@
 #include "Receiver.h"
+#include "ClientSocket.h"
 #include "string_utils.h"
+#include "versionAPI.h"
 
 namespace sls {
+
+void Receiver::sendToReceiver(int fnum, const void *args, size_t args_size,
+                                 void *retval, size_t retval_size) {
+    static_cast<const Receiver &>(*this).sendToReceiver(
+        fnum, args, args_size, retval, retval_size);
+}
+
+void Receiver::sendToReceiver(int fnum, const void *args, size_t args_size,
+                                 void *retval, size_t retval_size) const {
+    auto receiver = ReceiverSocket(shm()->hostname, shm()->tcpPort);
+    receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
+    receiver.close();
+}
+
+template <typename Arg, typename Ret>
+void Receiver::sendToReceiver(int fnum, const Arg &args, Ret &retval) {
+    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
+}
+
+template <typename Arg, typename Ret>
+void Receiver::sendToReceiver(int fnum, const Arg &args, Ret &retval) const {
+    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
+}
+
+template <typename Arg>
+void Receiver::sendToReceiver(int fnum, const Arg &args, std::nullptr_t) {
+    sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
+}
+
+template <typename Arg>
+void Receiver::sendToReceiver(int fnum, const Arg &args,
+                                 std::nullptr_t) const {
+    sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
+}
+
+template <typename Ret>
+void Receiver::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) {
+    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
+}
+
+template <typename Ret>
+void Receiver::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const {
+    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
+}
+
+template <typename Ret>
+Ret Receiver::sendToReceiver(int fnum){
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", nullptr, 0, " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
+}
+
+template <typename Ret>
+Ret Receiver::sendToReceiver(int fnum) const{
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", nullptr, 0, " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
+}
+
+template <typename Ret, typename Arg>
+Ret Receiver::sendToReceiver(int fnum, const Arg &args){
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
+}
+
+template <typename Ret, typename Arg>
+Ret Receiver::sendToReceiver(int fnum, const Arg &args) const{
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
+}
 
 
 // create shm
@@ -78,13 +168,6 @@ void Receiver::setHostname(const std::string &hostname) {
     configure();
 }
 
-void Receiver::configure() {
-    shm()->valid = false;
-    LOG(logINFOBLUE) << receiverId  << " configured!";
-    //checkReceiverVersionCompatibility();
-    shm()->valid = true;
-}
-
 int Receiver::getTCPPort() const {
     return shm()->tcpPort;
 }
@@ -98,6 +181,21 @@ void Receiver::setTCPPort(const int port) {
             shm()->tcpPort = port;
         }
     }
+}
+
+void Receiver::configure() {
+    shm()->valid = false;
+    LOG(logINFOBLUE) << receiverId  << " configured!";
+    checkVersionCompatibility();
+    shm()->valid = true;
+}
+
+void Receiver::checkVersionCompatibility() {
+    int64_t arg = APIRECEIVER;
+    LOG(logDEBUG1)
+        << "Checking version compatibility with receiver with value "
+        << std::hex << arg << std::dec;
+    sendToReceiver(F_RECEIVER_CHECK_VERSION, arg, nullptr);
 }
 
 } // namespace sls

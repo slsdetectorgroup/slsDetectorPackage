@@ -47,11 +47,57 @@ namespace sls {
         void freeSharedMemory();
         std::string getHostname() const;
         void setHostname(const std::string &hostname);
-        void configure();
         int getTCPPort() const;
         void setTCPPort(const int port);
+        void configure();
+        void checkVersionCompatibility();
 
         private:
+            /**
+     * Send function parameters to receiver
+     * @param fnum function enum
+     * @param args argument pointer
+     * @param args_size size of argument
+     * @param retval return pointers
+     * @param retval_size size of return value
+     */
+    void sendToReceiver(int fnum, const void *args, size_t args_size,
+                        void *retval, size_t retval_size);
+
+    void sendToReceiver(int fnum, const void *args, size_t args_size,
+                        void *retval, size_t retval_size) const;
+
+    template <typename Arg, typename Ret>
+    void sendToReceiver(int fnum, const Arg &args, Ret &retval);
+
+    template <typename Arg, typename Ret>
+    void sendToReceiver(int fnum, const Arg &args, Ret &retval) const;
+
+    template <typename Arg>
+    void sendToReceiver(int fnum, const Arg &args, std::nullptr_t);
+
+    template <typename Arg>
+    void sendToReceiver(int fnum, const Arg &args, std::nullptr_t) const;
+
+    template <typename Ret>
+    void sendToReceiver(int fnum, std::nullptr_t, Ret &retval);
+
+    template <typename Ret>
+    void sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const;
+
+    template <typename Ret>
+    Ret sendToReceiver(int fnum);
+
+    template <typename Ret>
+    Ret sendToReceiver(int fnum) const;
+
+    template <typename Ret, typename Arg>
+    Ret sendToReceiver(int fnum, const Arg &args);
+
+    template <typename Ret, typename Arg>
+    Ret sendToReceiver(int fnum, const Arg &args) const;
+
+
         const int receiverId{0};
         const int moduleId{0};
         mutable sls::SharedMemory<sharedReceiver> shm{0, 0, 0, true};

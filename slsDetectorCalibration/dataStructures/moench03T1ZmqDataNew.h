@@ -74,8 +74,8 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
     
     int ii=0;
     
-    for (i=0; i<  dataSize; i++) {
-      if (i<offset) {
+    for (i=0; i<  dataSize/2; i++) {
+      if (i<offset/2) {
     	//header! */
     	xmap[i]=-1;
     	ymap[i]=-1;

@@ -304,7 +304,7 @@ int main(int argc, char *argv[]) {
 	    mt->nextThread();
 	    mt->popFree(buff);
 	    ifr++;
-	    if (ifr%100==0) 
+	    if (ifr%10000==0) 
 	      cout << ifr << " " << ff << " " << np << endl;
 	  } else
 	    cout << ifr << " " << ff << " " << np << endl;
@@ -378,13 +378,13 @@ int main(int argc, char *argv[]) {
   if ((dir = opendir (indir)) != NULL) {
     /* print all the files and directories within directory */
     while ((ent = readdir (dir)) != NULL) {
-	  printf ("----------- %s\n", ent->d_name);
+      // printf ("----------- %s\n", ent->d_name);
       //	printf ("************** %s", ent->d_name);
       //	cout << string(ent->d_name).find(fformat) << endl;
       if (string(ent->d_name).find(string(fformat)+"_d0_f0")==0) {
-	  printf ("+++++++++++++++ %s\n", ent->d_name);
+	//  printf ("+++++++++++++++ %s\n", ent->d_name);
 	if (string(ent->d_name).find(ext)!= string::npos) {
-	  printf ("**************8 %s\n", ent->d_name);
+	  //printf ("**************8 %s\n", ent->d_name);
 
 
 
@@ -419,7 +419,7 @@ int main(int argc, char *argv[]) {
 
 
 	  ifr++;
-	  if (ifr%100==0) cout << ifr << " " << ff << endl;
+	  if (ifr%10000==0) cout << ifr << " " << ff << endl;
 	  if (nframes>0) {
 	    if (ifr%nframes==0) {
 	      //The name has an additional "_fXXXXX" at the end, where "XXXXX" is the initial frame number of the image (0,1000,2000...)
@@ -432,11 +432,11 @@ int main(int argc, char *argv[]) {
 	      ifile++;
 	    }
 	  }
-	} else
-	  cout << ifr << " " << ff << " " << np << endl;
+	}// else
+	 // cout << ifr << " " << ff << " " << np << endl;
 	ff=-1;
       }
-      cout << "--" << endl;
+      //cout << "--" << endl;
       filebin.close();	 
     } else 
       cout << "Could not open "<< fname << " for reading " << endl;

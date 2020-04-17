@@ -84,9 +84,6 @@ struct sharedModule {
 
     /** num udp interfaces */
     int numUDPInterfaces;
-
-    /** stopped flag to inform rxr */
-    bool stoppedFlag;
 };
 
 class Module : public virtual slsDetectorDefs {
@@ -1350,22 +1347,6 @@ class Module : public virtual slsDetectorDefs {
 
 
     /**
-     * Receiver starts listening to packets
-     */
-    void startReceiver();
-
-    /**
-     * Stops the listening mode of receiver
-     */
-    void stopReceiver();
-
-    /**
-     * Gets the status of the listening mode of receiver
-     * @returns status
-     */
-    runStatus getReceiverStatus() const;
-
-    /**
      * Gets the number of frames caught by receiver
      * @returns number of frames caught by receiver
      */
@@ -1379,8 +1360,6 @@ class Module : public virtual slsDetectorDefs {
      * @returns current frame index of receiver
      */
     uint64_t getReceiverCurrentFrameIndex() const;
-    int getReceiverProgress() const;
-
 
     void setFileWrite(bool value);
     bool getFileWrite();
@@ -1430,14 +1409,6 @@ class Module : public virtual slsDetectorDefs {
 
     bool getReceiverSilentMode();
     void setReceiverSilentMode(bool enable);
-
-    /**
-     * If data streaming in receiver is enabled,
-     * restream the stop dummy packet from receiver
-     * Used usually for Moench,
-     * in case it is lost in network due to high data rate
-     */
-    void restreamStopFromReceiver();
 
     /**
      * Opens pattern file and sends pattern to CTB

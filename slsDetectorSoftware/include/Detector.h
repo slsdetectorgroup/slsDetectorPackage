@@ -346,7 +346,11 @@ class Detector {
 
     Result<defs::runStatus> getDetectorStatus(Positions pos = {}) const;
 
-    Result<defs::runStatus> getReceiverStatus(Positions pos = {}) const;
+    Result<defs::runStatus> getReceiverStatus() const;
+    /** interface is by 1 (primary udp interface), 
+     * 2 for second udp interface [Eiger][Jungfrau] */
+    Result<defs::runStatus> getReceiverStatus(const int udpInterface, 
+      Positions pos = {}) const;
 
     Result<int64_t> getFramesCaught(Positions pos = {}) const;
 

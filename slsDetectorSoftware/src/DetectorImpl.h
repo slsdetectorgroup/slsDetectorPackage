@@ -496,6 +496,138 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
 
 
+    // for all , but dont complain if receiver2 doesnt exist
+    template <typename RT, typename... CT>
+    sls::Result<RT> Parallel3(RT (sls::Receiver::*somefunc)(CT...),
+                             typename NonDeduced<CT>::type... Args) {
+
+        if (receivers.size() == 0) 
+            throw sls::RuntimeError("No receivers added");  
+        std::vector<int> dPositions;
+        dPositions.resize(receivers.size()); 
+        std::iota(begin(dPositions), end(dPositions), 0);
+        std::vector<int> rxPositions;
+        rxPositions.resize(receivers[0].size());
+        std::iota(begin(rxPositions), end(rxPositions), 0);
+        // multiply by 2 if receivers2 exists
+        size_t futureSize = dPositions.size() * rxPositions.size() * 
+            (receivers2.size() > 0 ? 2 : 1);
+        std::vector<std::future<RT>> futures;
+        futures.reserve(futureSize);
+        for (size_t i : dPositions) {
+            // each entry
+            for (size_t j : rxPositions) {
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers[i][j].get(), Args...));
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers2[i][j].get(), Args...));                                        
+            }
+        }
+        sls::Result<RT> result;
+        result.reserve(futureSize);
+        for (auto &i : futures) {
+            result.push_back(i.get());
+        }
+        return result;
+    }
+
+    template <typename RT, typename... CT>
+    sls::Result<RT> Parallel3(RT (sls::Receiver::*somefunc)(CT...) const,
+                             typename NonDeduced<CT>::type... Args) const {
+
+        if (receivers.size() == 0) 
+            throw sls::RuntimeError("No receivers added");  
+        std::vector<int> dPositions;
+        dPositions.resize(receivers.size()); 
+        std::iota(begin(dPositions), end(dPositions), 0);
+        std::vector<int> rxPositions;
+        rxPositions.resize(receivers[0].size());
+        std::iota(begin(rxPositions), end(rxPositions), 0);
+        // multiply by 2 if receivers2 exists
+        size_t futureSize = dPositions.size() * rxPositions.size() * 
+            (receivers2.size() > 0 ? 2 : 1);
+        std::vector<std::future<RT>> futures;
+        futures.reserve(futureSize);
+        for (size_t i : dPositions) {
+            // each entry
+            for (size_t j : rxPositions) {
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers[i][j].get(), Args...));
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers2[i][j].get(), Args...));                                        
+            }
+        }
+        sls::Result<RT> result;
+        result.reserve(futureSize);
+        for (auto &i : futures) {
+            result.push_back(i.get());
+        }
+        return result;
+    }
+
+    template <typename... CT>
+    void Parallel3(void (sls::Receiver::*somefunc)(CT...),
+                typename NonDeduced<CT>::type... Args) {
+
+        if (receivers.size() == 0) 
+            throw sls::RuntimeError("No receivers added");  
+        std::vector<int> dPositions;
+        dPositions.resize(receivers.size()); 
+        std::iota(begin(dPositions), end(dPositions), 0);
+        std::vector<int> rxPositions;
+        rxPositions.resize(receivers[0].size());
+        std::iota(begin(rxPositions), end(rxPositions), 0);
+        // multiply by 2 if receivers2 exists
+        size_t futureSize = dPositions.size() * rxPositions.size() * 
+            (receivers2.size() > 0 ? 2 : 1);
+        std::vector<std::future<void>> futures;
+        futures.reserve(futureSize);
+        for (size_t i : dPositions) {
+            // each entry
+            for (size_t j : rxPositions) {
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers[i][j].get(), Args...));
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers2[i][j].get(), Args...));                                        
+            }
+        }
+        for (auto &i : futures) {
+            i.get();
+        }
+    }
+
+    template <typename... CT>
+    void Parallel3(void (sls::Receiver::*somefunc)(CT...) const,
+                typename NonDeduced<CT>::type... Args) const {
+        
+        if (receivers.size() == 0) 
+            throw sls::RuntimeError("No receivers added");  
+        std::vector<int> dPositions;
+        dPositions.resize(receivers.size()); 
+        std::iota(begin(dPositions), end(dPositions), 0);
+        std::vector<int> rxPositions;
+        rxPositions.resize(receivers[0].size());
+        std::iota(begin(rxPositions), end(rxPositions), 0);
+        // multiply by 2 if receivers2 exists
+        size_t futureSize = dPositions.size() * rxPositions.size() * 
+            (receivers2.size() > 0 ? 2 : 1);
+        std::vector<std::future<void>> futures;
+        futures.reserve(futureSize);
+        for (size_t i : dPositions) {
+            // each entry
+            for (size_t j : rxPositions) {
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers[i][j].get(), Args...));
+                futures.push_back(std::async(std::launch::async, somefunc,
+                                         receivers2[i][j].get(), Args...));                                        
+            }
+        }
+        for (auto &i : futures) {
+            i.get();
+        }
+    }
+
+
     /** set acquiring flag in shared memory */
     void setAcquiringFlag(bool flag); 
 

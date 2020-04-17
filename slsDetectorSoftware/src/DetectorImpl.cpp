@@ -1174,16 +1174,16 @@ int DetectorImpl::acquire() {
         // receiver/ext process)
         sem_init(&sem_endRTAcquisition, 1, 0);
 
-        bool receiver =
-            Parallel(&Module::getUseReceiverFlag, {}).squash(false);
+        bool receiver1 = isReceiverInitialized(1);
+        bool receiver2 = isReceiverInitialized(2);
+        bool receiver = receiver1 || receiver2;
             
         setJoinThreadFlag(false);
 
         // verify receiver is idle
         if (receiver) {
-            if (Parallel(&Module::getReceiverStatus, {}).squash(ERROR) !=
-                IDLE) {
-                Parallel(&Module::stopReceiver, {});
+            if (Parallel3(&Receiver::getStatus).squash(ERROR) != IDLE) {
+                Parallel3(&Receiver::stop);
             }
         }
 
@@ -1191,7 +1191,7 @@ int DetectorImpl::acquire() {
 
         // start receiver
         if (receiver) {
-            Parallel(&Module::startReceiver, {});
+            Parallel3(&Receiver::start);
             // let processing thread listen to these packets
             sem_post(&sem_newRTAcquisition);
         }
@@ -1203,13 +1203,13 @@ int DetectorImpl::acquire() {
             }
             Parallel(&Module::startAndReadAll, {});
         } catch (...) {
-            Parallel(&Module::stopReceiver, {});
+            Parallel3(&Receiver::stop);
             throw;
         }
 
         // stop receiver
         if (receiver) {
-            Parallel(&Module::stopReceiver, {});
+            Parallel3(&Receiver::stop);
             if (dataReady != nullptr) {
                 sem_wait(&sem_endRTAcquisition); // waits for receiver's
             }
@@ -1226,7 +1226,7 @@ int DetectorImpl::acquire() {
 
         if (acquisition_finished != nullptr) {
             int status = Parallel(&Module::getRunStatus, {}).squash(ERROR);
-            auto a = Parallel(&Module::getReceiverProgress, {});
+            auto a = Parallel3(&Receiver::getProgress);
             int progress = (*std::min_element (a.begin(), a.end()));
             acquisition_finished((double)progress, status, acqFinished_p);
         }
@@ -1278,7 +1278,7 @@ void DetectorImpl::processData() {
                     }
                 }
                 // get and print progress
-                double temp = (double)Parallel(&Module::getReceiverProgress, {0}).squash();
+                double temp = (double)Parallel1(&Receiver::getProgress, {0}, {0}).squash();
                 if (temp != progress) {
                     printProgress(progress);
                     progress = temp;
@@ -1287,7 +1287,7 @@ void DetectorImpl::processData() {
                 // exiting loop
                 if (getJoinThreadFlag()) {
                     // print progress one final time before exiting
-                    progress = (double)Parallel(&Module::getReceiverProgress, {0}).squash();
+                    progress = (double)Parallel1(&Receiver::getProgress, {0}, {0}).squash();
                     printProgress(progress);
                     break;
                 }

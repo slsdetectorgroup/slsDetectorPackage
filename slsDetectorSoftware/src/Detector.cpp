@@ -463,11 +463,11 @@ void Detector::acquire() { pimpl->acquire(); }
 void Detector::clearAcquiringFlag() { pimpl->setAcquiringFlag(0); }
 
 void Detector::startReceiver() {
-    pimpl->Parallel(&Module::startReceiver, {});
+    pimpl->Parallel3(&Receiver::start);
 }
 
 void Detector::stopReceiver() {
-    pimpl->Parallel(&Module::stopReceiver, {});
+    pimpl->Parallel3(&Receiver::stop);
 }
 
 void Detector::startDetector() {
@@ -478,15 +478,49 @@ void Detector::startDetector() {
 }
 
 void Detector::stopDetector() {
+    // get status before stopping acquisition
+    defs::runStatus s = defs::ERROR, r = defs::ERROR;    
+    bool restreamStop = false;
+    if (pimpl->isReceiverInitialized(1) && getRxZmqDataStream().squash(true)) {
+        s = getDetectorStatus().squash(defs::ERROR);
+        r = getReceiverStatus().squash(defs::ERROR);
+        // if rxr streaming and acquisition finished, restream dummy stop packet
+        if (s == defs::IDLE && r == defs::IDLE) {
+            restreamStop = true;
+        }
+    }
     pimpl->Parallel(&Module::stopAcquisition, {});
+    if (pimpl->isReceiverInitialized(1)) {
+        pimpl->Parallel1(&Receiver::setStoppedFlag, {}, {});
+        if (restreamStop) {
+            pimpl->Parallel1(&Receiver::restreamStop, {}, {});
+        }
+    } else if (pimpl->isReceiverInitialized(2)) {
+        pimpl->Parallel2(&Receiver::setStoppedFlag, {}, {});
+        if (restreamStop) {
+            pimpl->Parallel2(&Receiver::restreamStop, {}, {});
+        }
+    }  
 }
 
 Result<defs::runStatus> Detector::getDetectorStatus(Positions pos) const {
     return pimpl->Parallel(&Module::getRunStatus, pos);
 }
 
-Result<defs::runStatus> Detector::getReceiverStatus(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverStatus, pos);
+Result<defs::runStatus> Detector::getReceiverStatus() const {
+    return pimpl->Parallel3(&Receiver::getStatus);
+}
+
+Result<defs::runStatus> Detector::getReceiverStatus(const int udpInterface, Positions pos) const {
+    switch (udpInterface) {
+        case 1:
+            return pimpl->Parallel1(&Receiver::getStatus, pos, {});
+        case 2:
+            return pimpl->Parallel2(&Receiver::getStatus, pos, {});
+        default:
+            throw RuntimeError("Invalid udp interface number " + 
+            std::to_string(udpInterface));
+    } 
 }
 
 Result<int64_t> Detector::getFramesCaught(Positions pos) const {
@@ -703,9 +737,9 @@ Result<bool> Detector::getUseReceiverFlag(Positions pos) const {
 Result<std::string> Detector::getRxHostname(const int udpInterface, Positions pos) const {
     switch (udpInterface) {
         case 1:
-            return pimpl->Parallel1(&Receiver::getHostname, pos, {0});
+            return pimpl->Parallel1(&Receiver::getHostname, pos, {});
         case 2:
-            return pimpl->Parallel2(&Receiver::getHostname, pos, {0});
+            return pimpl->Parallel2(&Receiver::getHostname, pos, {});
         default:
             throw RuntimeError("Invalid udp interface number " + 
             std::to_string(udpInterface));
@@ -713,13 +747,17 @@ Result<std::string> Detector::getRxHostname(const int udpInterface, Positions po
 }
 
 void Detector::setRxHostname(const int udpInterface, const std::string &hostname, Positions pos) {
+    if (getDetectorStatus(pos).squash(defs::ERROR) == defs::RUNNING) {
+        LOG(logWARNING) << "Acquisition already running, Stopping it.";
+        stopDetector();
+    }
     if (!pimpl->isReceiverInitialized(udpInterface)) {
         pimpl->initReceiver(udpInterface);
     }
     if (udpInterface == 1) {
-        pimpl->Parallel1(&Receiver::setHostname, pos, {0}, hostname);
+        pimpl->Parallel1(&Receiver::setHostname, pos, {}, hostname);
     } else {
-        pimpl->Parallel2(&Receiver::setHostname, pos, {0}, hostname);
+        pimpl->Parallel2(&Receiver::setHostname, pos, {}, hostname);
     }
 }
 
@@ -729,20 +767,20 @@ void Detector::setRxHostname(const int udpInterface, const std::string &hostname
         pimpl->initReceiver(udpInterface);
     }
     if (udpInterface == 1) {
-        pimpl->Parallel1(&Receiver::setTCPPort, {module_id}, {0}, port);
-        pimpl->Parallel1(&Receiver::setHostname, {module_id}, {0}, hostname);
+        pimpl->Parallel1(&Receiver::setTCPPort, {module_id}, {}, port);
+        pimpl->Parallel1(&Receiver::setHostname, {module_id}, {}, hostname);
     } else {
-        pimpl->Parallel2(&Receiver::setTCPPort, {module_id}, {0}, port);
-        pimpl->Parallel2(&Receiver::setHostname, {module_id}, {0}, hostname);
+        pimpl->Parallel2(&Receiver::setTCPPort, {module_id}, {}, port);
+        pimpl->Parallel2(&Receiver::setHostname, {module_id}, {}, hostname);
     }
 }
 
 Result<int> Detector::getRxPort(const int udpInterface, Positions pos) const {
     switch (udpInterface) {
         case 1:
-            return pimpl->Parallel1(&Receiver::getTCPPort, pos, {0});
+            return pimpl->Parallel1(&Receiver::getTCPPort, pos, {});
         case 2:
-            return pimpl->Parallel2(&Receiver::getTCPPort, pos, {0});
+            return pimpl->Parallel2(&Receiver::getTCPPort, pos, {});
         default:
             throw RuntimeError("Invalid udp interface number " + 
             std::to_string(udpInterface));
@@ -757,21 +795,21 @@ void Detector::setRxPort(const int udpInterface, int port, int module_id) {
         if (module_id == -1) {
             std::vector<int> port_list = getPortNumbers(port);
             for (int idet = 0; idet < size(); ++idet) {
-                pimpl->Parallel1(&Receiver::setTCPPort, {idet}, {0},
+                pimpl->Parallel1(&Receiver::setTCPPort, {idet}, {},
                                 port_list[idet]);
             }
         } else {
-            pimpl->Parallel1(&Receiver::setTCPPort, {module_id}, {0}, port);
+            pimpl->Parallel1(&Receiver::setTCPPort, {module_id}, {}, port);
         }
     } else {
         if (module_id == -1) {
             std::vector<int> port_list = getPortNumbers(port);
             for (int idet = 0; idet < size(); ++idet) {
-                pimpl->Parallel2(&Receiver::setTCPPort, {idet}, {0},
+                pimpl->Parallel2(&Receiver::setTCPPort, {idet}, {},
                                 port_list[idet]);
             }
         } else {
-            pimpl->Parallel2(&Receiver::setTCPPort, {module_id}, {0}, port);
+            pimpl->Parallel2(&Receiver::setTCPPort, {module_id}, {}, port);
         }
     }
 }

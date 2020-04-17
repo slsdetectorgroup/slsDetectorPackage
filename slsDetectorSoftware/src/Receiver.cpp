@@ -2,6 +2,7 @@
 #include "ClientSocket.h"
 #include "string_utils.h"
 #include "versionAPI.h"
+#include "ToString.h"
 
 namespace sls {
 
@@ -116,7 +117,7 @@ Receiver::Receiver(int detector_id, int module_id, int receiver_id,
     shm()->shmversion = RECEIVER_SHMVERSION;
     memset(shm()->hostname, 0, MAX_STR_LENGTH);
     shm()->tcpPort = DEFAULT_RX_PORTNO + receiver_id;
-    shm()->valid = false;
+    shm()-> stoppedFlag = false;
     shm()->zmqPort = DEFAULT_ZMQ_RX_PORTNO + receiver_id;
     shm()->zmqIp = IpAddr{};
 
@@ -174,7 +175,7 @@ int Receiver::getTCPPort() const {
 
 void Receiver::setTCPPort(const int port) {
     if (port >= 0 && port != shm()->tcpPort) {
-        if (shm()->valid) {
+        if (strlen(shm()->hostname) != 0) {
             // send to receiver to change tcpp port
             shm()->tcpPort = port; // for now
         } else {
@@ -184,10 +185,8 @@ void Receiver::setTCPPort(const int port) {
 }
 
 void Receiver::configure() {
-    shm()->valid = false;
     LOG(logINFOBLUE) << receiverId  << " configured!";
     checkVersionCompatibility();
-    shm()->valid = true;
 }
 
 void Receiver::checkVersionCompatibility() {
@@ -197,5 +196,43 @@ void Receiver::checkVersionCompatibility() {
         << std::hex << arg << std::dec;
     sendToReceiver(F_RECEIVER_CHECK_VERSION, arg, nullptr);
 }
+
+void Receiver::start() {
+    LOG(logDEBUG1) << "Starting Receiver";
+    shm()->stoppedFlag = false;
+    sendToReceiver(F_START_RECEIVER, nullptr, nullptr);
+}
+
+void Receiver::stop() {
+    LOG(logDEBUG1) << "Stopping Receiver";
+    int arg = static_cast<int>(shm()->stoppedFlag);
+    sendToReceiver(F_STOP_RECEIVER, arg, nullptr);
+}
+
+slsDetectorDefs::runStatus Receiver::getStatus() const {
+    runStatus retval = ERROR;
+    LOG(logDEBUG1) << "Getting Receiver Status";
+    sendToReceiver(F_GET_RECEIVER_STATUS, nullptr, retval);
+    LOG(logDEBUG1) << "Receiver Status: " << ToString(retval);
+    return retval;
+}
+
+
+int Receiver::getProgress() const {
+    int retval = -1;
+    sendToReceiver(F_GET_RECEIVER_PROGRESS, nullptr, retval);
+    LOG(logDEBUG1) << "Current Progress of Receiver: " << retval;
+    return retval;
+}
+
+void Receiver::setStoppedFlag() {
+    shm()->stoppedFlag = true;
+}
+
+void Receiver::restreamStop() {
+    LOG(logDEBUG1) << "Restream stop dummy from Receiver via zmq";
+    sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER, nullptr, nullptr);
+}
+
 
 } // namespace sls

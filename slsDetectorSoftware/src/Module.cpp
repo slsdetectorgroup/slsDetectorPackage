@@ -421,7 +421,6 @@ void Module::initializeDetectorStructure(detectorType type) {
                      (moduleId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
     shm()->zmqip = IpAddr{};
     shm()->numUDPInterfaces = 1;
-    shm()->stoppedFlag = false;
 
     // get the detector parameters based on type
     detParameters parameters{type};
@@ -985,28 +984,14 @@ void Module::prepareAcquisition() {
 
 void Module::startAcquisition() {
     LOG(logDEBUG1) << "Starting Acquisition";
-    shm()->stoppedFlag = false;
     sendToDetector(F_START_ACQUISITION);
     LOG(logDEBUG1) << "Starting Acquisition successful";
 }
 
 void Module::stopAcquisition() {
-    // get status before stopping acquisition
-    runStatus s = ERROR, r = ERROR;
-    bool zmqstreaming = false;
-    if (shm()->useReceiver && getReceiverStreaming()) {
-        zmqstreaming = true;
-        s = getRunStatus();
-        r = getReceiverStatus();
-    }
     LOG(logDEBUG1) << "Stopping Acquisition";
     sendToDetectorStop(F_STOP_ACQUISITION);
-    shm()->stoppedFlag = true;
     LOG(logDEBUG1) << "Stopping Acquisition successful";
-    // if rxr streaming and acquisition finished, restream dummy stop packet
-    if (zmqstreaming && (s == IDLE) && (r == IDLE)) {
-        restreamStopFromReceiver();
-    }
 }
 
 void Module::sendSoftwareTrigger() {
@@ -1017,7 +1002,6 @@ void Module::sendSoftwareTrigger() {
 
 void Module::startAndReadAll() {
     LOG(logDEBUG1) << "Starting and reading all frames";
-    shm()->stoppedFlag = false;
     sendToDetector(F_START_AND_READ_ALL);
     LOG(logDEBUG1) << "Detector successfully finished acquisition";
 }
@@ -2995,32 +2979,6 @@ void Module::setPartialFramesPadding(bool padding) {
     sendToReceiver(F_SET_RECEIVER_PADDING, arg, nullptr);        
 }
 
-void Module::startReceiver() {
-    LOG(logDEBUG1) << "Starting Receiver";
-    shm()->stoppedFlag = false;
-    if (shm()->useReceiver) {
-        sendToReceiver(F_START_RECEIVER, nullptr, nullptr);
-    }
-}
-
-void Module::stopReceiver() {
-    LOG(logDEBUG1) << "Stopping Receiver";
-    if (shm()->useReceiver) {
-        int arg = static_cast<int>(shm()->stoppedFlag);
-        sendToReceiver(F_STOP_RECEIVER, arg, nullptr);
-    }
-}
-
-slsDetectorDefs::runStatus Module::getReceiverStatus() const {
-    runStatus retval = ERROR;
-    LOG(logDEBUG1) << "Getting Receiver Status";
-    if (shm()->useReceiver) {
-        sendToReceiver(F_GET_RECEIVER_STATUS, nullptr, retval);
-        LOG(logDEBUG1) << "Receiver Status: " << ToString(retval);
-    }
-    return retval;
-}
-
 int64_t Module::getFramesCaughtByReceiver() const {
     int64_t retval = -1;
     LOG(logDEBUG1) << "Getting Frames Caught by Receiver";
@@ -3064,15 +3022,6 @@ uint64_t Module::getReceiverCurrentFrameIndex() const {
     if (shm()->useReceiver) {
         sendToReceiver(F_GET_RECEIVER_FRAME_INDEX, nullptr, retval);
         LOG(logDEBUG1) << "Current Frame Index of Receiver: " << retval;
-    }
-    return retval;
-}
-
-int Module::getReceiverProgress() const {
-    int retval = -1;
-    if (shm()->useReceiver) {
-        sendToReceiver(F_GET_RECEIVER_PROGRESS, nullptr, retval);
-        LOG(logDEBUG1) << "Current Progress of Receiver: " << retval;
     }
     return retval;
 }
@@ -3206,13 +3155,6 @@ void Module::setReceiverSilentMode(bool enable) {
     } 
     int arg = static_cast<int>(enable);
     sendToReceiver(F_SET_RECEIVER_SILENT_MODE, arg, nullptr);
-}
-
-void Module::restreamStopFromReceiver() {
-    LOG(logDEBUG1) << "Restream stop dummy from Receiver via zmq";
-    if (shm()->useReceiver) {
-        sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER, nullptr, nullptr);
-    }
 }
 
 void Module::setPattern(const std::string &fname) {

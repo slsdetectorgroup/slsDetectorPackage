@@ -821,16 +821,29 @@ std::vector<std::string> CmdProxy::DacCommands() {
 /* acquisition */
 
 std::string CmdProxy::ReceiverStatus(int action) {
+    int udpInterface = 1;
+    if (cmd == "rx_status") {
+        udpInterface = 1;
+    } else if (cmd == "rx_status2") {
+        udpInterface = 2;
+    } else {
+        throw sls::RuntimeError("Unknown command, use list to list all commands");
+    }
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "running, idle]\n\tReceiver listener status."
+        if (cmd == "rx_status") {
+            os << "running, idle]\n\tReceiver listener status."
                << '\n';
+        } else {
+            os << "running, idle]\n\tReceiver listener status for second udp port."
+               << '\n';
+        }
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
             WrongNumberOfParameters(0);
         }
-        auto t = det->getReceiverStatus({det_id});
+        auto t = det->getReceiverStatus(udpInterface, {det_id});
         os << OutString(t) << '\n';  
     } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("Cannot put. Did you mean to use command 'rx_start' or 'rx_stop'?");

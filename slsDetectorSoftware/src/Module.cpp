@@ -644,24 +644,6 @@ int Module::setStopPort(int port_number) {
     return shm()->stopPort;
 }
 
-int Module::setReceiverPort(int port_number) {
-    LOG(logDEBUG1) << "Setting reciever port to " << port_number;
-    if (port_number >= 0 && port_number != shm()->rxTCPPort) {
-        if (shm()->useReceiver) {
-            int retval = -1;
-            sendToReceiver(F_SET_RECEIVER_PORT, port_number, retval);
-            shm()->rxTCPPort = retval;
-            LOG(logDEBUG1) << "Receiver port: " << retval;
-
-        } else {
-            shm()->rxTCPPort = port_number;
-        }
-    }
-    return shm()->rxTCPPort;
-}
-
-int Module::getReceiverPort() const { return shm()->rxTCPPort; }
-
 int Module::getControlPort() const { return shm()->controlPort; }
 
 int Module::getStopPort() const { return shm()->stopPort; }
@@ -1498,29 +1480,11 @@ uint32_t Module::clearBit(uint32_t addr, int n) {
 
 void Module::setReceiverHostname(const std::string &receiverIP) {
     LOG(logDEBUG1) << "Setting up Receiver with " << receiverIP;
-    // recieverIP is none
-    if (receiverIP == "none") {
-        memset(shm()->rxHostname, 0, MAX_STR_LENGTH);
-        sls::strcpy_safe(shm()->rxHostname, "none");
-        shm()->useReceiver = false;
-    }
 
-    // stop acquisition if running
-    if (getRunStatus() == RUNNING) {
-        LOG(logWARNING) << "Acquisition already running, Stopping it.";
-        stopAcquisition();
-    }
 
-    // start updating
-    std::string host = receiverIP;
-    auto res = sls::split(host, ':');
-    if (res.size() > 1) {
-        host = res[0];
-        shm()->rxTCPPort = std::stoi(res[1]);
-    }    
+
     sls::strcpy_safe(shm()->rxHostname, host.c_str());
     shm()->useReceiver = true;
-    checkReceiverVersionCompatibility();
 
     // populate parameters from detector
     rxParameters retval;   

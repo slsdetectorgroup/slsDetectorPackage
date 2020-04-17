@@ -238,14 +238,6 @@ class Module : public virtual slsDetectorDefs {
      */
     int getStopPort() const;
 
-    int setReceiverPort(int port_number);
-
-    /**
-     * Returns the receiver TCP 	port  
-     * @returns the receiver TCP port
-     */
-    int getReceiverPort() const;
-
     /**
      * Lock server for this client IP
      * @param p 0 to unlock, 1 to lock (-1 gets)

@@ -174,14 +174,18 @@ int Receiver::getTCPPort() const {
 }
 
 void Receiver::setTCPPort(const int port) {
+    LOG(logDEBUG1) << "Setting reciever port to " << port;
     if (port >= 0 && port != shm()->tcpPort) {
         if (strlen(shm()->hostname) != 0) {
-            // send to receiver to change tcpp port
-            shm()->tcpPort = port; // for now
+            int retval = -1;
+            sendToReceiver(F_SET_RECEIVER_PORT, port, retval);
+            shm()->tcpPort = retval;
+            LOG(logDEBUG1) << "Receiver port: " << retval;
         } else {
             shm()->tcpPort = port;
         }
     }
+    return shm()->tcpPort;
 }
 
 void Receiver::configure() {

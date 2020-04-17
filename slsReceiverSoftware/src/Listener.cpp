@@ -64,9 +64,11 @@ Listener::Listener(int ind, detectorType dtype, Fifo*& f, runStatus* s,
 
 
 Listener::~Listener() {
-	if (udpSocket) delete udpSocket;
-	sem_post(&semaphore_socket);
-    sem_destroy(&semaphore_socket);
+	if (udpSocket)   {
+		delete udpSocket;
+		sem_post(&semaphore_socket);
+    	sem_destroy(&semaphore_socket);
+	}
 	if (carryOverPacket) delete [] carryOverPacket;
 	if (listeningPacket) delete [] listeningPacket;
 	ThreadObject::DestroyThread();
@@ -228,7 +230,9 @@ void Listener::ShutDownUDPSocket() {
 		FILE_LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
 		fflush(stdout);
 		//delete socket at stoplistening
-	    sem_wait(&semaphore_socket);
+		if (runningFlag) {
+			sem_wait(&semaphore_socket);
+		}
         delete udpSocket;
         udpSocket = 0;
 	    sem_destroy(&semaphore_socket);

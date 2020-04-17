@@ -305,10 +305,10 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
 	//acquisition start
 	/** Aquisition Started flag */
-	bool startedFlag{false};
+	std::atomic<bool> startedFlag{false};
 
 	/** Frame Number of First Frame */
-	uint64_t firstIndex{0};
+	std::atomic<uint64_t> firstIndex{0};
 
 
 	//for statistics
@@ -316,7 +316,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	uint64_t numFramesCaught{0};
 
 	/** Frame Number of latest processed frame number */
-	uint64_t currentFrameIndex{0};
+	std::atomic<uint64_t> currentFrameIndex{0};
 
 	//call back
     /**

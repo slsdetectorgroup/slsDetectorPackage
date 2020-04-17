@@ -528,10 +528,9 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setHostname(const std::vector<std::string> &name,
         const std::vector<int> &port); 
 
-    void initReceiver();
-    bool isReceiverInitialized();
-    void initReceiver2();
-    bool isReceiver2Initialized();
+    void initReceiver(const int udpInterface);
+    bool isReceiverInitialized(const int udpInterface);
+    void removeReceivers(const int udpInterface);
 
     /** Gets the total number of detectors */
     int size() const;

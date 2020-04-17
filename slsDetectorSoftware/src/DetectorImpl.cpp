@@ -361,52 +361,80 @@ void DetectorImpl::addModule(const std::string &hostname,
     detectors[pos]->updateNumberOfChannels();     
 }
 
-void DetectorImpl::initReceiver() {
-    if (receivers.size() != 0) {
-        throw RuntimeError("receiver vector already initialized");
-    }
-    int tcpPort = DEFAULT_RX_PORTNO;
-    int zmqPort = DEFAULT_ZMQ_CL_PORTNO;
-    try {
-        for (int iModule = 0; iModule < size(); ++iModule) {
-            receivers.resize(detectors.size());
-            receivers[iModule].push_back(
-                sls::make_unique<Receiver>(detectorId, iModule, 0, 
-                    true, tcpPort++, "", zmqPort++));    
-            detectors[iModule]->setNumberOfReceivers(1);
+void DetectorImpl::initReceiver(const int udpInterface) {
+    if (udpInterface == 1) {
+        if (receivers.size() != 0) {
+            throw RuntimeError("receiver vector already initialized");
         }
-    } catch (...) {
-        receivers.clear();
-        throw;
-    }
-}
-
-bool DetectorImpl::isReceiverInitialized() {
-    return (receivers.size() > 0);
-}
-
-void DetectorImpl::initReceiver2() {
-    if (receivers2.size() != 0) {
-        throw RuntimeError("receiver2 vector already initialized");
-    }
-    int tcpPort = DEFAULT_RX_PORTNO + size();
-    int zmqPort = DEFAULT_ZMQ_CL_PORTNO + size();
-    try {
-        for (int iModule = 0; iModule < size(); ++iModule) {
-            receivers2.resize(detectors.size());
-            receivers2[iModule].push_back(
-                sls::make_unique<Receiver>(detectorId, iModule, 0, 
-                    false, tcpPort++, "", zmqPort++));    
-            detectors[iModule]->setNumberOfReceivers2(1);
+        int tcpPort = DEFAULT_RX_PORTNO;
+        int zmqPort = DEFAULT_ZMQ_CL_PORTNO;
+        try {
+            for (int iModule = 0; iModule < size(); ++iModule) {
+                receivers.resize(detectors.size());
+                receivers[iModule].push_back(
+                    sls::make_unique<Receiver>(detectorId, iModule, 0, 
+                        true, tcpPort++, "", zmqPort++));    
+                detectors[iModule]->setNumberOfReceivers(1);
+            }
+        } catch (...) {
+            receivers.clear();
+            throw;
         }
-    } catch (...) {
-        receivers.clear();
-        throw;
+    } else if (udpInterface == 2) {
+        if (receivers2.size() != 0) {
+            throw RuntimeError("receiver2 vector already initialized");
+        }
+        int tcpPort = DEFAULT_RX_PORTNO + size();
+        int zmqPort = DEFAULT_ZMQ_CL_PORTNO + size();
+        try {
+            for (int iModule = 0; iModule < size(); ++iModule) {
+                receivers2.resize(detectors.size());
+                receivers2[iModule].push_back(
+                    sls::make_unique<Receiver>(detectorId, iModule, 0, 
+                        false, tcpPort++, "", zmqPort++));    
+                detectors[iModule]->setNumberOfReceivers2(1);
+            }
+        } catch (...) {
+            receivers2.clear();
+            throw;
+        }
+    } else {
+        throw RuntimeError("Invalid udp interface number " + 
+            std::to_string(udpInterface));
     }
 }
 
-bool DetectorImpl::isReceiver2Initialized() {
-    return (receivers2.size() > 0);
+bool DetectorImpl::isReceiverInitialized(const int udpInterface) {
+    switch (udpInterface) {
+        case 1:
+            return (receivers.size() > 0);
+        case 2:
+            return (receivers2.size() > 0);
+        default:
+            throw RuntimeError("Invalid udp interface number " + 
+                std::to_string(udpInterface));            
+    }
+}
+
+void DetectorImpl::removeReceivers(const int udpInterface) {
+    if (udpInterface == 1) {
+        for (auto & dr: receivers) {
+            for (auto & r : dr) {
+                r->freeSharedMemory();
+            }
+        }
+        receivers.clear();
+    } else if (udpInterface == 2) {
+        for (auto & dr: receivers2) {
+            for (auto & r : dr) {
+                r->freeSharedMemory();
+            }
+        }      
+        receivers2.clear();  
+    } else {
+        throw RuntimeError("Invalid udp interface number " + 
+            std::to_string(udpInterface));
+    }
 }
 
 void DetectorImpl::updateDetectorSize() {

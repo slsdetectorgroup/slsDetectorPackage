@@ -955,6 +955,7 @@ std::string CmdProxy::ReceiverHostname(int action) {
             os << "[hostname or ip address]\n\t"
             "[hostname or ip address]:[tcp port]\n\t"
             "Receiver hostname or IP. Port is the receiver tcp port (optional).\n\t"
+            "Use 'none' to remove receivers\n\t"
             "Used for TCP control communication between client and receiver "
             "to configure receiver. Also updates receiver with detector parameters.\n\t"
             "TCP port must be unique, if included.\n\t"
@@ -967,6 +968,7 @@ std::string CmdProxy::ReceiverHostname(int action) {
             "[hostname or ip address]:[tcp port]\n\t"
             "[Eiger][Jungfrau] Receiver hostname or IP for the second udp port. "
             "Port is the receiver tcp port (optional).\n\t"
+            "Use 'none' to remove receivers\n\t"
             "Refer rx_hostname help for details"
             << '\n';
         }
@@ -984,19 +986,27 @@ std::string CmdProxy::ReceiverHostname(int action) {
             throw sls::RuntimeError("Cannot concatenate receiver hostnames");
         }  
         std::pair<std::string, int> res = parseHostnameAndPort(args[0]);
-        std::string hostname = res.first;
-        int port = res.second;
-        if (port == 0) {
-            det->setRxHostname(udpInterface, hostname, {det_id});
-        } else {
-            if (det_id == -1 && det->size() > 1) {
-                throw sls::RuntimeError("Cannot set same tcp port "
-                    "for all receiver hostnames");
-            }
-            det->setRxHostname(udpInterface, hostname, port, det_id);
+        // removing receivers
+        if (res.first == "none") {
+            det->removeReceivers(udpInterface);
+            os << "removed" << '\n';
         }
-        auto t = det->getRxHostname(udpInterface, {det_id});
-        os << OutString(t) << '\n';
+        // adding receivers
+        else {
+            std::string hostname = res.first;
+            int port = res.second;
+            if (port == 0) {
+                det->setRxHostname(udpInterface, hostname, {det_id});
+            } else {
+                if (det_id == -1 && det->size() > 1) {
+                    throw sls::RuntimeError("Cannot set same tcp port "
+                        "for all receiver hostnames");
+                }
+                det->setRxHostname(udpInterface, hostname, port, det_id);
+            }
+            auto t = det->getRxHostname(udpInterface, {det_id});
+            os << OutString(t) << '\n';
+        }
     } else {
         throw sls::RuntimeError("Unknown action");
     }

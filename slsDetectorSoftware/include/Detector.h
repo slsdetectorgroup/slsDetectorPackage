@@ -505,6 +505,10 @@ class Detector {
      *                                                *
      * ************************************************/
 
+    /** interface is by 1 (primary udp interface), 
+     * 2 for second udp interface [Eiger][Jungfrau] */
+    void removeReceivers(const int udpInterface);
+
     /** true when slsReceiver is used */
     Result<bool> getUseReceiverFlag(Positions pos = {}) const;
 

@@ -470,6 +470,8 @@ class slsDetectorDefs {
         xy detectorSize;
         int moduleId{0};
         char hostname[MAX_STR_LENGTH];
+        bool primaryInterface{true};
+        uint32_t zmq_ip{0U};
         int udpInterfaces{1};
         int udp_dstport{0};
         uint32_t udp_dstip{0U};

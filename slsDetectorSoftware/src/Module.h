@@ -633,22 +633,9 @@ class Module : public virtual slsDetectorDefs {
      */
     uint32_t clearBit(uint32_t addr, int n);
 
-     /**
-     * Validates and sets the receiver.
-     * Also updates the receiver with all the shared memory parameters
-     * significant for the receiver Also configures the detector to the receiver
-     * as UDP destination
-     * @param receiver receiver hostname or IP address
-     */
-    void setReceiverHostname(const std::string &receiver);
-
-    void test();
-    /**
-     * Returns the receiver IP address
-     * @returns the receiver IP address
-     */
-    std::string getReceiverHostname() const;
-
+    /** gets receiver parameters from detector and shared memory */
+    rxParameters getReceiverParameters();
+    
    /**
      * Validates the format of the detector MAC address and sets it 
      * @param mac detector MAC address
@@ -1283,12 +1270,6 @@ class Module : public virtual slsDetectorDefs {
      * Otherwise update ratecorrection if enabled
      */
     void updateRateCorrection();
-
-    /**
-     * Prints receiver configuration
-     * @returns receiver configuration
-     */
-    std::string printReceiverConfiguration();
 
     /**
      * Gets the use receiver flag from shared memory

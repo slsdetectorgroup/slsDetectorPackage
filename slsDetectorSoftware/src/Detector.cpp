@@ -679,7 +679,7 @@ void Detector::setDestinationUDPPort2(int port, int module_id) {
 }
 
 Result<std::string> Detector::printRxConfiguration(Positions pos) const {
-    return pimpl->Parallel(&Module::printReceiverConfiguration, pos);
+    return pimpl->Parallel3(&Receiver::printConfiguration); // ignoring pos FIXME
 }
 
 Result<bool> Detector::getTenGiga(Positions pos) const {
@@ -747,32 +747,16 @@ Result<std::string> Detector::getRxHostname(const int udpInterface, Positions po
 }
 
 void Detector::setRxHostname(const int udpInterface, const std::string &hostname, Positions pos) {
-    if (getDetectorStatus(pos).squash(defs::ERROR) == defs::RUNNING) {
-        LOG(logWARNING) << "Acquisition already running, Stopping it.";
-        stopDetector();
-    }
-    if (!pimpl->isReceiverInitialized(udpInterface)) {
-        pimpl->initReceiver(udpInterface);
-    }
-    if (udpInterface == 1) {
-        pimpl->Parallel1(&Receiver::setHostname, pos, {}, hostname);
-    } else {
-        pimpl->Parallel2(&Receiver::setHostname, pos, {}, hostname);
-    }
+    int port = 0;
+    pimpl->configureReceiver(udpInterface, pos, hostname, port);
 }
 
 void Detector::setRxHostname(const int udpInterface, const std::string &hostname, const int port, 
       int module_id) {
-    if (!pimpl->isReceiverInitialized(udpInterface)) {
-        pimpl->initReceiver(udpInterface);
+    if (module_id == -1 && size() > 1) {
+        throw sls::RuntimeError("Cannot set same rx_tcpport and rx_hostname for multiple receivers");
     }
-    if (udpInterface == 1) {
-        pimpl->Parallel1(&Receiver::setTCPPort, {module_id}, {}, port);
-        pimpl->Parallel1(&Receiver::setHostname, {module_id}, {}, hostname);
-    } else {
-        pimpl->Parallel2(&Receiver::setTCPPort, {module_id}, {}, port);
-        pimpl->Parallel2(&Receiver::setHostname, {module_id}, {}, hostname);
-    }
+    pimpl->configureReceiver(udpInterface, {module_id}, hostname, port);
 }
 
 Result<int> Detector::getRxPort(const int udpInterface, Positions pos) const {

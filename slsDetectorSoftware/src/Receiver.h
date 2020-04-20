@@ -13,6 +13,7 @@ namespace sls {
     int shmversion;
     char hostname[MAX_STR_LENGTH];
     int tcpPort;
+    bool primaryInterface;
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
     int stoppedFlag;
@@ -34,7 +35,11 @@ namespace sls {
 
         virtual ~Receiver();
 
-
+        /**************************************************
+        *                                                *
+        *    Configuration                               *
+        *                                                *
+        * ************************************************/
         /**
         * Free shared memory and delete shared memory structure
         * occupied by the sharedReceiver structure
@@ -45,15 +50,52 @@ namespace sls {
         void freeSharedMemory();
         std::string getHostname() const;
         void setHostname(const std::string &hostname);
+        sls::MacAddr configure(slsDetectorDefs::rxParameters arg);
         int getTCPPort() const;
         void setTCPPort(const int port);
+        std::string printConfiguration();
 
+        /**************************************************
+        *                                                *
+        *    Acquisition Parameters                      *
+        *                                                *
+        * ************************************************/
+
+
+        /**************************************************
+        *                                                *
+        *    Acquisition                                 *
+        *                                                *
+        * ************************************************/
         void start();
         void stop();
         slsDetectorDefs::runStatus getStatus() const;
         int getProgress() const;
         void setStoppedFlag();
         void restreamStop();
+
+        /**************************************************
+        *                                                 *
+        *    Network Configuration (Detector<->Receiver)  *
+        *                                                 *
+        * ************************************************/
+
+        /**************************************************
+        *                                                *
+        *    File                                        *
+        *                                                *
+        * ************************************************/
+        /**************************************************
+        *                                                *
+        *    ZMQ Streaming Parameters (Receiver<->Client)*
+        *                                                *
+        * ************************************************/
+
+        /**************************************************
+        *                                                *
+        *    Detector Specific                           *
+        *                                                *
+        * ************************************************/
 
         private:
         /**
@@ -100,7 +142,6 @@ namespace sls {
         template <typename Ret, typename Arg>
         Ret sendToReceiver(int fnum, const Arg &args) const;
 
-        void configure();
         void checkVersionCompatibility();
         const int receiverId{0};
         const int moduleId{0};

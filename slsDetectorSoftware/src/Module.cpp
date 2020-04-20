@@ -1478,16 +1478,10 @@ uint32_t Module::clearBit(uint32_t addr, int n) {
     }
 }
 
-void Module::setReceiverHostname(const std::string &receiverIP) {
-    LOG(logDEBUG1) << "Setting up Receiver with " << receiverIP;
-
-
-
-    sls::strcpy_safe(shm()->rxHostname, host.c_str());
-    shm()->useReceiver = true;
-
+slsDetectorDefs::rxParameters Module::getReceiverParameters() {
     // populate parameters from detector
     rxParameters retval;   
+
     sendToDetector(F_GET_RECEIVER_PARAMETERS, nullptr, retval);
 
     // populate from shared memory
@@ -1495,74 +1489,13 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
     retval.detectorSize.x = shm()->detectorSize.x;
     retval.detectorSize.y = shm()->detectorSize.y;
     retval.moduleId = moduleId;
-    memset(retval.hostname, 0, sizeof(retval.hostname));
-    strcpy_safe(retval.hostname, shm()->hostname);
-
-    LOG(logDEBUG1) 
-        << "detType:" << retval.detType << std::endl
-        << "detectorSize.x:" << retval.detectorSize.x << std::endl
-        << "detectorSize.y:" << retval.detectorSize.y << std::endl
-        << "moduleId:" << retval.moduleId << std::endl
-        << "hostname:" << retval.hostname << std::endl
-        << "udpInterfaces:" << retval.udpInterfaces << std::endl
-        << "udp_dstport:" << retval.udp_dstport << std::endl
-        << "udp_dstip:" << sls::IpAddr(retval.udp_dstip) << std::endl
-        << "udp_dstmac:" << sls::MacAddr(retval.udp_dstmac) << std::endl
-        << "udp_dstport2:" << retval.udp_dstport2 << std::endl
-        << "udp_dstip2:" << sls::IpAddr(retval.udp_dstip2) << std::endl
-        << "udp_dstmac2:" << sls::MacAddr(retval.udp_dstmac2) << std::endl
-        << "frames:" << retval.frames << std::endl
-        << "triggers:" << retval.triggers << std::endl
-        << "bursts:" << retval.bursts << std::endl
-        << "analogSamples:" << retval.analogSamples << std::endl
-        << "digitalSamples:" << retval.digitalSamples << std::endl
-        << "expTimeNs:" << retval.expTimeNs << std::endl
-        << "periodNs:" << retval.periodNs << std::endl
-        << "subExpTimeNs:" << retval.subExpTimeNs << std::endl
-        << "subDeadTimeNs:" << retval.subDeadTimeNs << std::endl
-        << "activate:" << retval.activate << std::endl
-        << "quad:" << retval.quad << std::endl
-        << "dynamicRange:" << retval.dynamicRange << std::endl
-        << "timMode:" << retval.timMode << std::endl
-        << "tenGiga:" << retval.tenGiga << std::endl
-        << "roMode:" << retval.roMode << std::endl
-        << "adcMask:" << retval.adcMask << std::endl
-        << "adc10gMask:" << retval.adc10gMask << std::endl
-        << "roi.xmin:" << retval.roi.xmin << std::endl
-        << "roi.xmax:" << retval.roi.xmax << std::endl
-        << "countermask:" << retval.countermask << std::endl
-        << "burstType:" << retval.burstType << std::endl;
-
-
-    sls::MacAddr retvals[2];
-    sendToReceiver(F_SETUP_RECEIVER, retval, retvals);
-    // update detectors with dest mac
-    if (retval.udp_dstmac == 0 && retvals[0] != 0) {
-        LOG(logINFO) << "Setting destination udp mac of "
-        "detector " << moduleId << " to " << retvals[0];
-        sendToDetector(F_SET_DEST_UDP_MAC, retvals[0], nullptr);   
-    }
-    if (retval.udp_dstmac2 == 0 && retvals[1] != 0) {
-        LOG(logINFO) << "Setting destination udp mac2 of "
-        "detector " << moduleId << " to " << retvals[1];
-        sendToDetector(F_SET_DEST_UDP_MAC2, retvals[1], nullptr);   
-    }
 
     // update numinterfaces if different
     shm()->numUDPInterfaces = retval.udpInterfaces;
-
-    if (shm()->myDetectorType == MOENCH) {
-        setAdditionalJsonParameter("adcmask_1g", std::to_string(retval.adcMask));
-        setAdditionalJsonParameter("adcmask_10g", std::to_string(retval.adc10gMask));
-    }
-
-    // to use rx_hostname if empty and also update client zmqip
-    updateReceiverStreamingIP();
+    return retval;
 }
 
-std::string Module::getReceiverHostname() const {
-    return std::string(shm()->rxHostname);
-}
+
 
 void Module::setSourceUDPMAC(const sls::MacAddr mac) {
     LOG(logDEBUG1) << "Setting source udp mac to " << mac;
@@ -1676,11 +1609,11 @@ sls::IpAddr Module::getDestinationUDPIP2() {
 }
 
 void Module::setDestinationUDPMAC(const MacAddr mac) {
-    LOG(logDEBUG1) << "Setting destination udp mac to " << mac;
     if (mac == 0) {
         throw RuntimeError("Invalid destination udp mac address");
     }
-
+    LOG(logINFO) << "Setting destination udp mac of "
+        "detector " << moduleId << " to " << mac;
     sendToDetector(F_SET_DEST_UDP_MAC, mac, nullptr); 
 }
 
@@ -1693,11 +1626,11 @@ sls::MacAddr Module::getDestinationUDPMAC() {
 }
 
 void Module::setDestinationUDPMAC2(const MacAddr mac) {
-    LOG(logDEBUG1) << "Setting destination udp mac2 to " << mac;
     if (mac == 0) {
         throw RuntimeError("Invalid desinaion udp mac address2");
     }
-
+    LOG(logINFO) << "Setting destination udp mac2 of "
+        "detector " << moduleId << " to " << mac;
     sendToDetector(F_SET_DEST_UDP_MAC2, mac, nullptr); 
 }
 
@@ -2748,35 +2681,6 @@ int64_t Module::getRateCorrection() {
 void Module::updateRateCorrection() {
     LOG(logDEBUG1) << "Updating rate correction";
     sendToDetector(F_UPDATE_RATE_CORRECTION);
-}
-
-std::string Module::printReceiverConfiguration() {
-    std::ostringstream os;
-    os << "\n\nDetector " << moduleId << "\nReceiver Hostname:\t"
-       << getReceiverHostname();
-    
-    if (shm()->myDetectorType == JUNGFRAU) {  
-        os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfaces() 
-        << "\nSelected Interface:\t" << getSelectedUDPInterface();
-    }
-        
-    os << "\nDetector UDP IP:\t"
-       << getSourceUDPIP() << "\nDetector UDP MAC:\t" 
-       << getSourceUDPMAC() << "\nReceiver UDP IP:\t" 
-       << getDestinationUDPIP() << "\nReceiver UDP MAC:\t" << getDestinationUDPMAC();
-
-    if (shm()->myDetectorType == JUNGFRAU) {
-        os << "\nDetector UDP IP2:\t" << getSourceUDPIP2() 
-       << "\nDetector UDP MAC2:\t" << getSourceUDPMAC2()
-       << "\nReceiver UDP IP2:\t" << getDestinationUDPIP2()      
-       << "\nReceiver UDP MAC2:\t" << getDestinationUDPMAC2();
-    }
-    os << "\nReceiver UDP Port:\t" << getDestinationUDPPort();
-    if (shm()->myDetectorType == JUNGFRAU || shm()->myDetectorType == EIGER) {
-       os << "\nReceiver UDP Port2:\t" << getDestinationUDPPort2();
-    }
-    os << "\n";
-    return os.str();
 }
 
 bool Module::getUseReceiverFlag() const { return shm()->useReceiver; }

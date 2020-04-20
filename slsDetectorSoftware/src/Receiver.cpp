@@ -117,6 +117,7 @@ Receiver::Receiver(int detector_id, int module_id, int receiver_id,
     shm()->shmversion = RECEIVER_SHMVERSION;
     memset(shm()->hostname, 0, MAX_STR_LENGTH);
     shm()->tcpPort = DEFAULT_RX_PORTNO + receiver_id;
+    shm()->primaryInterface = primaryInterface;
     shm()-> stoppedFlag = false;
     shm()->zmqPort = DEFAULT_ZMQ_RX_PORTNO + receiver_id;
     shm()->zmqIp = IpAddr{};
@@ -151,6 +152,8 @@ Receiver::Receiver(int detector_id, int module_id, int receiver_id,
 
 Receiver::~Receiver() = default;
 
+/** Configuration */
+
 void Receiver::freeSharedMemory() {
     if (shm.IsExisting()) {
         shm.RemoveSharedMemory();
@@ -166,7 +169,7 @@ void Receiver::setHostname(const std::string &hostname) {
         throw RuntimeError("Invalid receiver hostname. Cannot be empty.");
     }
     sls::strcpy_safe(shm()->hostname, hostname.c_str());
-    configure();
+    checkVersionCompatibility();
 }
 
 int Receiver::getTCPPort() const {
@@ -185,12 +188,6 @@ void Receiver::setTCPPort(const int port) {
             shm()->tcpPort = port;
         }
     }
-    return shm()->tcpPort;
-}
-
-void Receiver::configure() {
-    LOG(logINFOBLUE) << receiverId  << " configured!";
-    checkVersionCompatibility();
 }
 
 void Receiver::checkVersionCompatibility() {
@@ -200,6 +197,117 @@ void Receiver::checkVersionCompatibility() {
         << std::hex << arg << std::dec;
     sendToReceiver(F_RECEIVER_CHECK_VERSION, arg, nullptr);
 }
+
+sls::MacAddr Receiver::configure(slsDetectorDefs::rxParameters arg) {
+    // hostname
+    memset(arg.hostname, 0, sizeof(arg.hostname));
+    strcpy_safe(arg.hostname, shm()->hostname);
+    // primary interface
+    arg.primaryInterface = shm()->primaryInterface;
+    // zmqip
+    {
+        sls::IpAddr ip;
+        // Hostname could be ip try to decode otherwise look up the hostname
+        ip = sls::IpAddr{shm()->hostname};
+        if (ip == 0) {
+            ip = HostnameToIp(shm()->hostname);
+        }  
+        LOG(logINFO) << "Setting default receiver " << moduleId 
+            << " streaming zmq ip to " << ip;  
+        // if client zmqip is empty, update it
+        if (shm()->zmqIp == 0) {
+            shm()->zmqIp = ip;
+        }   
+        memcpy(&arg.zmq_ip, &ip, sizeof(ip));
+    } 
+
+    LOG(logDEBUG1) 
+        << "detType:" << arg.detType << std::endl
+        << "detectorSize.x:" << arg.detectorSize.x << std::endl
+        << "detectorSize.y:" << arg.detectorSize.y << std::endl
+        << "moduleId:" << arg.moduleId << std::endl
+        << "hostname:" << arg.hostname << std::endl
+        << "primary Interace: " << arg.primaryInterface << std::endl
+        << "zmq ip:" << arg.zmq_ip << std::endl
+        << "udpInterfaces:" << arg.udpInterfaces << std::endl
+        << "udp_dstport:" << arg.udp_dstport << std::endl
+        << "udp_dstip:" << sls::IpAddr(arg.udp_dstip) << std::endl
+        << "udp_dstmac:" << sls::MacAddr(arg.udp_dstmac) << std::endl
+        << "udp_dstport2:" << arg.udp_dstport2 << std::endl
+        << "udp_dstip2:" << sls::IpAddr(arg.udp_dstip2) << std::endl
+        << "udp_dstmac2:" << sls::MacAddr(arg.udp_dstmac2) << std::endl
+        << "frames:" << arg.frames << std::endl
+        << "triggers:" << arg.triggers << std::endl
+        << "bursts:" << arg.bursts << std::endl
+        << "analogSamples:" << arg.analogSamples << std::endl
+        << "digitalSamples:" << arg.digitalSamples << std::endl
+        << "expTimeNs:" << arg.expTimeNs << std::endl
+        << "periodNs:" << arg.periodNs << std::endl
+        << "subExpTimeNs:" << arg.subExpTimeNs << std::endl
+        << "subDeadTimeNs:" << arg.subDeadTimeNs << std::endl
+        << "activate:" << arg.activate << std::endl
+        << "quad:" << arg.quad << std::endl
+        << "dynamicRange:" << arg.dynamicRange << std::endl
+        << "timMode:" << arg.timMode << std::endl
+        << "tenGiga:" << arg.tenGiga << std::endl
+        << "roMode:" << arg.roMode << std::endl
+        << "adcMask:" << arg.adcMask << std::endl
+        << "adc10gMask:" << arg.adc10gMask << std::endl
+        << "roi.xmin:" << arg.roi.xmin << std::endl
+        << "roi.xmax:" << arg.roi.xmax << std::endl
+        << "countermask:" << arg.countermask << std::endl
+        << "burstType:" << arg.burstType << std::endl;
+
+    sls::MacAddr mac;
+    {
+        sls::MacAddr retval;
+        sendToReceiver(F_SETUP_RECEIVER, arg, retval);
+        // detector does not have customized udp mac
+        if (arg.udp_dstmac == 0) {
+            mac = retval;
+        }
+    } 
+    if (arg.detType == MOENCH) {
+        //setAdditionalJsonParameter("adcmask_1g", std::to_string(arg.adcMask));
+        //setAdditionalJsonParameter("adcmask_10g", std::to_string(arg.adc10gMask));
+    }
+
+    LOG(logINFOBLUE) << receiverId  << " configured!";
+    return mac;
+}
+
+std::string Receiver::printConfiguration() {
+    std::ostringstream os;
+    /*
+    os << "\n\nModuler " << moduleId 
+        << "\nReceiver Hostname:\t"<< getReceiverHostname();
+    
+    if (shm()->myDetectorType == JUNGFRAU) {  
+        os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfaces() 
+        << "\nSelected Interface:\t" << getSelectedUDPInterface();
+    }
+        
+    os << "\nDetector UDP IP:\t"
+       << getSourceUDPIP() << "\nDetector UDP MAC:\t" 
+       << getSourceUDPMAC() << "\nReceiver UDP IP:\t" 
+       << getDestinationUDPIP() << "\nReceiver UDP MAC:\t" << getDestinationUDPMAC();
+
+    if (shm()->myDetectorType == JUNGFRAU) {
+        os << "\nDetector UDP IP2:\t" << getSourceUDPIP2() 
+       << "\nDetector UDP MAC2:\t" << getSourceUDPMAC2()
+       << "\nReceiver UDP IP2:\t" << getDestinationUDPIP2()      
+       << "\nReceiver UDP MAC2:\t" << getDestinationUDPMAC2();
+    }
+    os << "\nReceiver UDP Port:\t" << getDestinationUDPPort();
+    if (shm()->myDetectorType == JUNGFRAU || shm()->myDetectorType == EIGER) {
+       os << "\nReceiver UDP Port2:\t" << getDestinationUDPPort2();
+    }
+    */
+    os << "\n";
+    return os.str();
+}
+
+/** Acquisition */
 
 void Receiver::start() {
     LOG(logDEBUG1) << "Starting Receiver";

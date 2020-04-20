@@ -341,6 +341,8 @@ int ClientInterface::setup_receiver(Interface &socket) {
         << "detectorSize.y:" << arg.detectorSize.y << std::endl
         << "moduleId:" << arg.moduleId << std::endl
         << "hostname:" << arg.hostname << std::endl
+        << "primary Interace: " << arg.primaryInterface << std::endl
+        << "zmq ip:" << arg.zmq_ip << std::endl
         << "udpInterfaces:" << arg.udpInterfaces << std::endl
         << "udp_dstport:" << arg.udp_dstport << std::endl
         << "udp_dstip:" << sls::IpAddr(arg.udp_dstip) << std::endl
@@ -387,7 +389,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
     impl()->setDetectorHostname(arg.hostname);
     
     // udp setup
-    sls::MacAddr retvals[2];
+    sls::MacAddr retvals[2]; // primary interface.. only udpip, else udpip2
     if (arg.udp_dstmac == 0 && arg.udp_dstip != 0) {
         retvals[0] = setUdpIp(sls::IpAddr(arg.udp_dstip));
     }
@@ -497,7 +499,13 @@ int ClientInterface::setup_receiver(Interface &socket) {
     if (myDetectorType == GOTTHARD) {
         impl()->setBurstMode(arg.burstType);
     }
-
+    {
+        sls::IpAddr ip(arg.zmq_ip);
+        if (ip == 0) { 
+            throw RuntimeError("Invalid zmq ip: " + ip.str());
+        }
+        impl()->setStreamingSourceIP(ip);
+    }
     return socket.sendResult(retvals);
 }
 

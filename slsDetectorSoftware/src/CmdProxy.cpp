@@ -1011,10 +1011,6 @@ std::string CmdProxy::ReceiverHostname(int action) {
             if (port == 0) {
                 det->setRxHostname(udpInterface, hostname, {det_id});
             } else {
-                if (det_id == -1 && det->size() > 1) {
-                    throw sls::RuntimeError("Cannot set same tcp port "
-                        "for all receiver hostnames");
-                }
                 det->setRxHostname(udpInterface, hostname, port, det_id);
             }
             auto t = det->getRxHostname(udpInterface, {det_id});

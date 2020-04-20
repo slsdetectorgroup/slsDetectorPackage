@@ -6863,6 +6863,16 @@ int get_receiver_parameters(int file_des) {
 		n += sendData(file_des, hostname, MAX_STR_LENGTH, OTHER);
 		if (n < 0) return printSocketReadError();		
 	}	
+	// primary interface
+	{
+		char c = '0';
+		n += sendData(file_des, &c, 1, OTHER);
+		if (n < 0) return printSocketReadError();		
+	}
+	// zmq ip
+	i32 = 0;
+	n += sendData(file_des,&i32,sizeof(i32),INT32);
+	if (n < 0) return printSocketReadError();
 	// end of shared memory variables in struct
 
 

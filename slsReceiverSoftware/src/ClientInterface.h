@@ -10,8 +10,17 @@ class ServerInterface;
 #include <future>
 
 class ClientInterface : private virtual slsDetectorDefs {
-  private:
     enum numberMode { DEC, HEX };
+    detectorType myDetectorType;
+    std::unique_ptr<sls::ServerSocket> server;
+    std::unique_ptr<Implementation> receiver;
+    std::unique_ptr<std::thread> tcpThread;
+    int ret{OK};
+    int fnum{-1};
+    int lockedByClient{0};
+    int portNumber{0};
+    std::atomic<bool> killTcpThread{false};
+    
 
   public:
     virtual ~ClientInterface();
@@ -48,7 +57,6 @@ class ClientInterface : private virtual slsDetectorDefs {
     void validate(T arg, T retval, const std::string& modename, numberMode hex);
     void verifyLock();
     void verifyIdle(sls::ServerInterface &socket);
-
 
     int exec_command(sls::ServerInterface &socket);
     int exit_server(sls::ServerInterface &socket);
@@ -144,7 +152,6 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_additional_json_parameter(sls::ServerInterface &socket);
     int get_progress(sls::ServerInterface &socket);
  
-
     Implementation *impl() {
         if (receiver != nullptr) {
             return receiver.get();
@@ -154,19 +161,9 @@ class ClientInterface : private virtual slsDetectorDefs {
         }
     }
 
-    detectorType myDetectorType;
-    std::unique_ptr<Implementation> receiver{nullptr};
     int (ClientInterface::*flist[NUM_REC_FUNCTIONS])(
         sls::ServerInterface &socket);
-    int ret{OK};
-    int fnum{-1};
-    int lockedByClient{0};
-    int portNumber{0};
-    std::atomic<bool> killTcpThread{false};
-    std::unique_ptr<std::thread> tcpThread;
-
-
-
+    
     //***callback parameters***
    
     int (*startAcquisitionCallBack)(std::string, std::string, uint64_t, uint32_t,
@@ -179,6 +176,6 @@ class ClientInterface : private virtual slsDetectorDefs {
                                        void *) = nullptr;
     void *pRawDataReady{nullptr};
 
-  protected:
-    std::unique_ptr<sls::ServerSocket> server{nullptr};
+
+    
 };

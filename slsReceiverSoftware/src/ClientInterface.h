@@ -12,13 +12,14 @@ class ServerInterface;
 class ClientInterface : private virtual slsDetectorDefs {
     enum numberMode { DEC, HEX };
     detectorType myDetectorType;
-    std::unique_ptr<sls::ServerSocket> server;
+    int portNumber{0};
+    sls::ServerSocket server;
     std::unique_ptr<Implementation> receiver;
     std::unique_ptr<std::thread> tcpThread;
     int ret{OK};
     int fnum{-1};
     int lockedByClient{0};
-    int portNumber{0};
+    
     std::atomic<bool> killTcpThread{false};
     
 

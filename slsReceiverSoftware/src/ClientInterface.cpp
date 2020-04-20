@@ -24,19 +24,16 @@ using Interface = sls::ServerInterface;
 
 ClientInterface::~ClientInterface() { 
     killTcpThread = true;
-    // shut down tcp sockets
-    if (server.get() != nullptr) {
-        LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
-        server->shutDownSocket(); 
-        LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
-    }
-    // shut down tcp thread
+    LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
+    server.shutdown();
+    LOG(logDEBUG) << "TCP Socket closed on port " << portNumber;
     tcpThread->join();
 }
 
 ClientInterface::ClientInterface(int portNumber)
     : myDetectorType(GOTTHARD), 
-    portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2) {
+    portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2),
+    server(portNumber) {
     functionTable();
     // start up tcp thread
     tcpThread = sls::make_unique<std::thread>(&ClientInterface::startTCPServer, this);
@@ -73,11 +70,11 @@ void ClientInterface::startTCPServer() {
     LOG(logINFOBLUE) << "Created [ TCP server Tid: " << syscall(SYS_gettid) << "]";
     LOG(logINFO) << "SLS Receiver starting TCP Server on port "
                       << portNumber << '\n';
-    server = sls::make_unique<sls::ServerSocket>(portNumber);
-    while (true) {
+    // server = sls::make_unique<sls::ServerSocket>(portNumber);
+    while (!killTcpThread) {
         LOG(logDEBUG1) << "Start accept loop";
         try {
-            auto socket = server->accept();
+            auto socket = server.accept();
             try {
                 verifyLock();
                 ret = decodeFunction(socket);
@@ -94,10 +91,6 @@ void ClientInterface::startTCPServer() {
             }
         } catch (const RuntimeError &e) {
             LOG(logERROR) << "Accept failed";
-        }
-        // destructor to kill this thread
-        if (killTcpThread) {
-            break;
         }
     }
 
@@ -253,7 +246,7 @@ void ClientInterface::validate(T arg, T retval, const std::string& modename,
 }
 
 void ClientInterface::verifyLock() {
-    if (lockedByClient && server->getThisClient() != server->getLockedBy()) {
+    if (lockedByClient && server.getThisClient() != server.getLockedBy()) {
         throw sls::SocketError("Receiver locked\n");
     }
 }
@@ -299,10 +292,10 @@ int ClientInterface::lock_receiver(Interface &socket) {
     auto lock = socket.Receive<int>();
     LOG(logDEBUG1) << "Locking Server to " << lock;
     if (lock >= 0) {
-        if (!lockedByClient || (server->getLockedBy() == server->getThisClient())) {
+        if (!lockedByClient || (server.getLockedBy() == server.getThisClient())) {
             lockedByClient = lock;
-            lock ? server->setLockedBy(server->getThisClient())
-                 : server->setLockedBy(sls::IpAddr{});
+            lock ? server.setLockedBy(server.getThisClient())
+                 : server.setLockedBy(sls::IpAddr{});
         } else {
             throw RuntimeError("Receiver locked\n");
         }
@@ -311,7 +304,7 @@ int ClientInterface::lock_receiver(Interface &socket) {
 }
 
 int ClientInterface::get_last_client_ip(Interface &socket) {
-    return socket.sendResult(server->getLastClient());
+    return socket.sendResult(server.getLastClient());
 }
 
 int ClientInterface::set_port(Interface &socket) {
@@ -321,9 +314,11 @@ int ClientInterface::set_port(Interface &socket) {
                            " is too low (<1024)");
 
     LOG(logINFO) << "TCP port set to " << p_number << std::endl;
-    auto new_server = sls::make_unique<sls::ServerSocket>(p_number);
-    new_server->setLockedBy(server->getLockedBy());
-    new_server->setLastClient(server->getThisClient());
+    sls::ServerSocket new_server(p_number);
+    // auto new_server = sls::make_unique<sls::ServerSocket>(p_number);
+    new_server.setLockedBy(server.getLockedBy());
+    new_server.setLastClient(server.getThisClient());
+    // server = std::move(new_server);
     server = std::move(new_server);
     socket.sendResult(p_number);
     return OK;

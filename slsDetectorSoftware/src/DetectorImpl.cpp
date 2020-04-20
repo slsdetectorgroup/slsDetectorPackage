@@ -452,21 +452,21 @@ void DetectorImpl::configureReceiver(const int udpInterface, Positions pos,
             Parallel1(&Receiver::setTCPPort, pos, {}, port);
         }
         Parallel1(&Receiver::setHostname, pos, {}, hostname);
-        /*auto t = Parallel(&Module::getReceiverParameters, pos).squash();
+        auto t = Parallel(&Module::getReceiverParameters, pos).squash();
         auto m = Parallel1(&Receiver::configure, pos, {}, t).squash();
         if (m != 0) {
             Parallel(&Module::setDestinationUDPMAC, pos, m);
-        }*/
+        }
     } else {
         if (port != 0) {
             Parallel2(&Receiver::setTCPPort, pos, {}, port);
         }
         Parallel2(&Receiver::setHostname, pos, {}, hostname);
-        /*auto t = Parallel(&Module::getReceiverParameters, pos).squash();
+        auto t = Parallel(&Module::getReceiverParameters, pos).squash();
         auto m = Parallel2(&Receiver::configure, pos, {}, t).squash();
         if (m != 0) {
             Parallel(&Module::setDestinationUDPMAC2, pos, m);
-        }*/
+        }
     }
 }
 

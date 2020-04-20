@@ -15,13 +15,13 @@
 
 namespace sls {
 
-DataSocket::DataSocket(int socketId) : socketId_(socketId) {
+DataSocket::DataSocket(int socketId) : sockfd_(socketId) {
     int value = 1;
-    setsockopt(socketId_, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value));
+    setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value));
 }
 
 DataSocket::~DataSocket() {
-    if (socketId_ <= 0) {
+    if (sockfd_ <= 0) {
         return;
     } else {
         try {
@@ -32,7 +32,7 @@ DataSocket::~DataSocket() {
 }
 
 void DataSocket::swap(DataSocket &other) noexcept {
-    std::swap(socketId_, other.socketId_);
+    std::swap(sockfd_, other.sockfd_);
 }
 
 DataSocket::DataSocket(DataSocket &&move) noexcept { move.swap(*this); }
@@ -121,19 +121,23 @@ int DataSocket::setTimeOut(int t_seconds) {
 }
 
 void DataSocket::close() {
-    if (socketId_ > 0) {
-        if (::close(socketId_)) {
+    if (sockfd_ > 0) {
+        if (::close(sockfd_)) {
             throw SocketError("could not close socket");
         }
-        socketId_ = -1;
+        sockfd_ = -1;
     } else {
         throw std::runtime_error("Socket ERROR: close called on bad socket\n");
     }
 }
 
 void DataSocket::shutDownSocket() {
-    shutdown(getSocketId(), SHUT_RDWR);
+    ::shutdown(getSocketId(), SHUT_RDWR);
     close();
+}
+
+void DataSocket::shutdown(){
+    ::shutdown(sockfd_, SHUT_RDWR);
 }
 
 } // namespace sls

@@ -21,7 +21,7 @@ class DataSocket {
     //No copy since the class manage the underlying socket
     DataSocket(const DataSocket &) = delete;
     DataSocket &operator=(DataSocket const &) = delete;
-    int getSocketId() const { return socketId_; }
+    int getSocketId() const { return sockfd_; }
 
     
     int Send(const void *buffer, size_t size);
@@ -51,9 +51,10 @@ class DataSocket {
     int setReceiveTimeout(int us);
     void close();
     void shutDownSocket();
+    void shutdown();
 
   private:
-    int socketId_ = -1;
+    int sockfd_ = -1;
 };
 
 }; // namespace sls

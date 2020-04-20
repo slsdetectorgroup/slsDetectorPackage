@@ -151,6 +151,7 @@ void* ThreadPool::execute_thread(){
 int ThreadPool::add_task(Task* task){
 	if(m_pool_size == 1){
 		(*task)();
+		delete task;
 		return 0;
 	}
 	m_task_mutex.lock();

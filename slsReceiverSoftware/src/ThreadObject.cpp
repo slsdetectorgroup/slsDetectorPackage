@@ -36,6 +36,17 @@ ThreadObject::~ThreadObject() {
 	sem_destroy(&semaphore);
 }
 
+bool ThreadObject::IsRunning() const{
+    return runningFlag;
+}
+
+void ThreadObject::StartRunning() {
+    runningFlag = true;
+}
+
+void ThreadObject::StopRunning() {
+    runningFlag = false;
+}
 
 void ThreadObject::RunningThread() {
 	LOG(logINFOBLUE) << "Created [ " << type << "Thread " << index << ", Tid: " << syscall(SYS_gettid) << "]";

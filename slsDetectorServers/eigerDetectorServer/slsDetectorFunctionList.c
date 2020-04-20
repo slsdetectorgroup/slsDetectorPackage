@@ -890,7 +890,7 @@ int setModule(sls_detector_module myMod, char* mess) {
 		}
 
 		//set trimbits
-		if (!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(), tt)) {
+		if (!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(), tt,top)) {
 			sprintf(mess, "Could not set module. Could not set trimbits\n");
 			LOG(logERROR, (mess));
 			setSettings(UNDEFINED);
@@ -1671,7 +1671,7 @@ void setExternalGating(int enable[]) {
 
 int setAllTrimbits(int val) {
 #ifndef VIRTUAL
-	if (!Feb_Control_SaveAllTrimbitsTo(val)) {
+	if (!Feb_Control_SaveAllTrimbitsTo(val,top)) {
 		LOG(logERROR, ("Could not set all trimbits\n"));
 		return FAIL;
 	}

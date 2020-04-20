@@ -42,25 +42,6 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 */
 	~DataStreamer();
 
-	//*** getters ***
-    /**
-     * Returns if the thread is currently running
-     * @returns true if thread is running, else false
-     */
-    bool IsRunning();
-
-
-	//*** setters ***
-	/**
-	 * Set bit in RunningMask to allow thread to run
-	 */
-	void StartRunning();
-
-	/**
-	 * Reset bit in RunningMask to prevent thread from running
-	 */
-	void StopRunning();
-
 	/**
 	 * Set Fifo pointer to the one given
 	 * @param f address of Fifo pointer
@@ -158,19 +139,14 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	/** type of thread */
 	static const std::string TypeName;
 
-    /** Object running status */
-    bool runningFlag;
-
 	/** GeneralData (Detector Data) object */
-	const GeneralData* generalData;
+	const GeneralData* generalData{nullptr};
 
 	/** Fifo structure */
 	Fifo* fifo;
 
-
-
 	/** ZMQ Socket - Receiver to Client */
-	ZmqSocket* zmqSocket;
+	ZmqSocket* zmqSocket{nullptr};
 
 	/** Pointer to dynamic range */
 	uint32_t* dynamicRange;
@@ -179,7 +155,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	ROI* roi;
 
 	/** adc Configured */
-	int adcConfigured;
+	int adcConfigured{-1};
 
 	/** Pointer to file index */
 	uint64_t* fileIndex;
@@ -191,16 +167,16 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	std::map<std::string, std::string> additionJsonHeader;
 
 	/** Aquisition Started flag */
-	bool startedFlag;
+	bool startedFlag{nullptr};
 
 	/** Frame Number of First Frame */
-	uint64_t firstIndex;
+	uint64_t firstIndex{0};
 
 	/* File name to stream */
 	std::string fileNametoStream;
 
 	/** Complete buffer used for roi, eg. shortGotthard */
-	char* completeBuffer;
+	char* completeBuffer{nullptr};
 
 	/** Number of Detectors in X and Y dimension */
 	int numDet[2];

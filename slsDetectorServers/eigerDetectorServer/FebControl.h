@@ -93,9 +93,9 @@ int Feb_Control_SetDAC(char* s, int value, int is_a_voltage_mv);
 int Feb_Control_GetDAC(char* s, int* ret_value, int voltage_mv);
 int Feb_Control_GetDACName(unsigned int dac_num,char* s);
 
-int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int* trimbits);
+int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int* trimbits, int top);
 unsigned int* Feb_Control_GetTrimbits();
-int Feb_Control_SaveAllTrimbitsTo(int value);
+int Feb_Control_SaveAllTrimbitsTo(int value, int top);
 int Feb_Control_Reset();
 int Feb_Control_PrepareForAcquisition();
 

@@ -59,11 +59,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
 
 	//*** getters ***
-    /**
-     * Returns if the thread is currently running
-     * @returns true if thread is running, else false
-     */
-    bool IsRunning() override;
 
 	/**
 	 * Get acquisition started flag
@@ -88,17 +83,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	 * @return -1 if no frames have been caught, else current frame index
 	 */
 	uint64_t GetProcessedIndex();
-
-	//*** setters ***
-	/**
-	 * Set bit in RunningMask to allow thread to run
-	 */
-	void StartRunning();
-
-	/**
-	 * Reset bit in RunningMask to prevent thread from running
-	 */
-	void StopRunning();
 
 	/**
 	 * Set Fifo pointer to the one given
@@ -254,11 +238,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	/** type of thread */
 	static const std::string TypeName;
 
-    /** Object running status */
-    std::atomic<bool> runningFlag;
-
 	/** GeneralData (Detector Data) object */
-	const GeneralData* generalData;
+	const GeneralData* generalData{nullptr};
 
 	/** Fifo structure */
 	Fifo* fifo;
@@ -269,7 +250,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	detectorType myDetectorType;
 
 	/** File writer implemented as binary or hdf5 File */
-	File* file;
+	File* file{nullptr};
 
 	/** Data Stream Enable */
 	bool* dataStreamEnable;
@@ -293,7 +274,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 	uint32_t* streamingTimerInMs;
 
 	/** Current frequency count */
-	uint32_t currentFreqCount;
+	uint32_t currentFreqCount{0};
 
 	/** timer beginning stamp for random streaming */
 	struct timespec timerBegin;
@@ -324,21 +305,18 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
 	//acquisition start
 	/** Aquisition Started flag */
-	bool startedFlag;
+	std::atomic<bool> startedFlag{false};
 
 	/** Frame Number of First Frame */
-	uint64_t firstIndex;
+	std::atomic<uint64_t> firstIndex{0};
 
 
 	//for statistics
 	/** Number of complete frames caught */
-	uint64_t numFramesCaught;
+	uint64_t numFramesCaught{0};
 
 	/** Frame Number of latest processed frame number */
-	uint64_t currentFrameIndex;
-
-
-
+	std::atomic<uint64_t> currentFrameIndex{0};
 
 	//call back
     /**
@@ -349,7 +327,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * dataSize in bytes is the size of the data in bytes.
      */
     void (*rawDataReadyCallBack)(char*,
-            char*, uint32_t, void*);
+            char*, uint32_t, void*) = nullptr;
 
     /**
      * Call back for raw data (modified)
@@ -359,9 +337,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * revDatasize is the reference of data size in bytes. Can be modified to the new size to be written/streamed. (only smaller value).
      */
     void (*rawDataModifyReadyCallBack)(char*,
-            char*, uint32_t &, void*);
+            char*, uint32_t &, void*) = nullptr;
 		
-	void *pRawDataReady;
+	void *pRawDataReady{nullptr};
 
 
 

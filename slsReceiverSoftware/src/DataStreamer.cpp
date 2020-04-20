@@ -19,18 +19,11 @@ const std::string DataStreamer::TypeName = "DataStreamer";
 DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
 		uint64_t* fi, int fd, int* nd, bool* qe, uint64_t* tot) :
 		ThreadObject(ind, TypeName),
-		runningFlag(0),
-		generalData(nullptr),
 		fifo(f),
-		zmqSocket(nullptr),
 		dynamicRange(dr),
 		roi(r),
-		adcConfigured(-1),
 		fileIndex(fi),
 		flippedDataX(fd),
-		startedFlag(false),
-		firstIndex(0),
-		completeBuffer(nullptr),
 		quadEnable(qe),
 		totalNumFrames(tot)
 {
@@ -44,23 +37,6 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
 DataStreamer::~DataStreamer() {
 	CloseZmqSocket();
 	delete [] completeBuffer;
-}
-
-/** getters */
-
-bool DataStreamer::IsRunning() {
-	return runningFlag;
-}
-
-
-/** setters */
-void DataStreamer::StartRunning() {
-    runningFlag = true;
-}
-
-
-void DataStreamer::StopRunning() {
-    runningFlag = false;
 }
 
 void DataStreamer::SetFifo(Fifo* f) {

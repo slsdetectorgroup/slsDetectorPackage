@@ -898,7 +898,7 @@ int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch, unsigned int
 
 
 
-int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits) {
+int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits, int top) {
 	LOG(logINFO, ("Setting Trimbits\n"));
 
 	//for (int iy=10000;iy<20020;++iy)//263681
@@ -963,7 +963,7 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits) {
 					int i;
 					for(i=0;i<8;i++) { // column loop i
 
-						if (Module_TopAddressIsValid(&modules[1])) {
+						if (top==1) {
 							trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_l+i])<<((7-i)*4);//low
 							trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[row_set*16480+super_column_start_position_l+i])>>3)<<((7-i)*4);//upper
 							trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_r+i])<<((7-i)*4);//low
@@ -1572,12 +1572,12 @@ int Feb_Control_StopAcquisition() {
 
 
 
-int Feb_Control_SaveAllTrimbitsTo(int value) {
+int Feb_Control_SaveAllTrimbitsTo(int value, int top) {
 	unsigned int chanregs[Feb_Control_trimbit_size];
 	int i;
 	for(i=0;i<Feb_Control_trimbit_size;i++)
 		chanregs[i] = value;
-	return Feb_Control_SetTrimbits(0,chanregs);
+	return Feb_Control_SetTrimbits(0,chanregs, top);
 }
 
 

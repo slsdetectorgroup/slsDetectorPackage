@@ -12,13 +12,10 @@
 #include <memory>
 #include <atomic>
 #include "ThreadObject.h"
+#include "UdpRxSocket.h"
 
 class GeneralData;
 class Fifo;
-namespace sls{
-	class UdpRxSocket;
-}
-
 
 class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	
@@ -53,40 +50,20 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	 */
 	~Listener();
 
-
-	//*** getters ***
-    /**
-     * Returns if the thread is currently running
-     * @returns true if thread is running, else false
-     */
-    bool IsRunning() override;
-
 	/**
 	 * Get Packets caught 
 	 * @return Packets caught 
 	 */
-	uint64_t GetPacketsCaught();
+	uint64_t GetPacketsCaught() const;
 
 	/**
 	 * Get Last Frame index caught
 	 * @return last frame index caught
 	 */
-	uint64_t GetLastFrameIndexCaught();
+	uint64_t GetLastFrameIndexCaught() const;
 
 	/** Get  number of missing packets */
-	uint64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets);
-
-
-	//*** setters ***
-	/**
-	 * Set bit in RunningMask to allow thread to run
-	 */
-	void StartRunning();
-
-	/**
-	 * Reset bit in RunningMask to prevent thread from running
-	 */
-	void StopRunning();
+	uint64_t GetNumMissingPacket(bool stoppedFlag, uint64_t numPackets) const;
 
 	/**
 	 * Set Fifo pointer to the one given
@@ -140,7 +117,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	void RecordFirstIndex(uint64_t fnum);
 
 	/**
-	 * Thread Exeution for Listener Class
+	 * Thread Execution for Listener Class
 	 * Pop free addresses, listen to udp socket,
 	 * write to memory & push the address into fifo
 	 */
@@ -168,16 +145,11 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	 */
 	void PrintFifoStatistics();
 
-
-
 	/** type of thread */
 	static const std::string TypeName;
 
-	/** Object running status */
-	std::atomic<bool> runningFlag;
-
 	/** GeneralData (Detector Data) object */
-	GeneralData* generalData;
+	GeneralData* generalData{nullptr};
 
 	/** Fifo structure */
 	Fifo* fifo;
@@ -190,7 +162,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	std::atomic<runStatus>* status;
 
 	/** UDP Socket - Detector to Receiver */
-	std::unique_ptr<sls::UdpRxSocket> udpSocket;
+	std::unique_ptr<sls::UdpRxSocket> udpSocket{nullptr};
 
 	/** UDP Port Number */
 	uint32_t* udpPortNumber;
@@ -228,36 +200,34 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	/** row hardcoded as 1D or 2d,
 	 * if detector does not send them yet or
 	 * missing packets/deactivated (eiger/jungfrau sends 2d pos) **/
-	uint16_t row;
+	uint16_t row{0};
 
 	/** column hardcoded as 2D,
 	 * deactivated eiger/missing packets (eiger/jungfrau sends 2d pos) **/
-	uint16_t column;
-
+	uint16_t column{0};
 
 	// acquisition start
 	/** Aquisition Started flag */
-	std::atomic<bool> startedFlag;
+	std::atomic<bool> startedFlag{false};
 
 	/** Frame Number of First Frame  */
-	uint64_t firstIndex;
+	uint64_t firstIndex{0};
 
 	// for acquisition summary
 	/** Number of complete Packets caught */
-	std::atomic<uint64_t> numPacketsCaught;
+	std::atomic<uint64_t> numPacketsCaught{0};
 
 	/** Last Frame Index caught  from udp network */
-	std::atomic<uint64_t> lastCaughtFrameIndex;
-
+	std::atomic<uint64_t> lastCaughtFrameIndex{0};
 
 	// parameters to acquire image
 	/** Current Frame Index, default value is 0
 	 * ( always check startedFlag for validity first)
 	 */
-	uint64_t currentFrameIndex;
+	uint64_t currentFrameIndex{0};
 
 	/** True if there is a packet carry over from previous Image */
-	bool carryOverFlag;
+	bool carryOverFlag{false};
 
 	/** Carry over packet buffer */
 	std::unique_ptr<char []> carryOverPacket;
@@ -266,22 +236,22 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	std::unique_ptr<char []> listeningPacket;
 
 	/** if the udp socket is connected */
-	std::atomic<bool> udpSocketAlive;
+	std::atomic<bool> udpSocketAlive{false};
 
-    /** Semaphore to synchonize deleting udp socket */
+    /** Semaphore to synchronize deleting udp socket */
     sem_t semaphore_socket;
 
-	// for print progress during acqusition
+	// for print progress during acquisition
 	/** number of packets for statistic */
-	uint32_t numPacketsStatistic;
+	uint32_t numPacketsStatistic{0};
 
 	/** number of images for statistic */
-	uint32_t numFramesStatistic;
+	uint32_t numFramesStatistic{0};
 
     /**
-     * starting packet number is odd or evern, accordingly increment frame number
+     * starting packet number is odd or even, accordingly increment frame number
      * to get first packet number as 0
      * (pecific to gotthard, can vary between modules, hence defined here) */
-    bool oddStartingPacket;
+    bool oddStartingPacket{true};
 };
 

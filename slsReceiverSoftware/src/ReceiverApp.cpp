@@ -42,17 +42,14 @@ int main(int argc, char *argv[]) {
 		LOG(logERROR) << "Could not set handler function for SIGPIPE";
 	}
 
-	std::unique_ptr<Receiver> receiver = nullptr;
 	try {
-		receiver = sls::make_unique<Receiver>(argc, argv);
+		Receiver r(argc, argv);
+		LOG(logINFO) << "[ Press \'Ctrl+c\' to exit ]";
+		sem_wait(&semaphore);
+		sem_destroy(&semaphore);
 	} catch (...) {
-		LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
-		throw;
+		//pass
 	}
-
-	LOG(logINFO) << "[ Press \'Ctrl+c\' to exit ]";
-	sem_wait(&semaphore);
-	sem_destroy(&semaphore);
 	LOG(logINFOBLUE) << "Exiting [ Tid: " << syscall(SYS_gettid) << " ]";
 	LOG(logINFO) << "Exiting Receiver";
 	return 0;

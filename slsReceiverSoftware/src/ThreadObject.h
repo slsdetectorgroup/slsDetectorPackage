@@ -7,44 +7,41 @@
  *@short creates/destroys a thread
  */
 
-#include "sls_detector_defs.h"
 #include "logger.h"
+#include "sls_detector_defs.h"
 
-
-#include <semaphore.h>
-#include <string>
 #include <atomic>
 #include <future>
+#include <semaphore.h>
+#include <string>
 
 class ThreadObject : private virtual slsDetectorDefs {
-	
- public:
-	ThreadObject(int threadIndex, std::string threadType);
-	virtual ~ThreadObject();
-	bool IsRunning() const;
-	void StartRunning();
-	void StopRunning();
-	void Continue();
-	void SetThreadPriority(int priority);
+  protected:
+    int index{0};
 
- protected:
- 	virtual void ThreadExecution() = 0;
+  private:
+    std::atomic<bool> killThread{false};
+    std::atomic<bool> runningFlag{false};
+    // std::unique_ptr<std::thread> threadObject;
+	std::thread threadObject;
+    sem_t semaphore;
+    std::string type;
 
- private:
-	/**
-	 * Thread called:  An infinite while loop in which,
-	 * semaphore starts executing its contents as long RunningMask is satisfied
-	 * Then it exits the thread on its own if killThread is true
-	 */
-	void RunningThread();
+  public:
+    ThreadObject(int threadIndex, std::string threadType);
+    virtual ~ThreadObject();
+    bool IsRunning() const;
+    void StartRunning();
+    void StopRunning();
+    void Continue();
+    void SetThreadPriority(int priority);
 
-
- protected:
-	int index{0};
-	std::string type;
-	std::atomic<bool> killThread{false};
-	std::atomic<bool> runningFlag{false};
-	std::unique_ptr<std::thread> threadObject;
-	sem_t semaphore;
+  private:
+    virtual void ThreadExecution() = 0;
+    /**
+     * Thread called:  An infinite while loop in which,
+     * semaphore starts executing its contents as long RunningMask is satisfied
+     * Then it exits the thread on its own if killThread is true
+     */
+    void RunningThread();
 };
-

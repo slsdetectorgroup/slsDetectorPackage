@@ -747,8 +747,7 @@ Result<std::string> Detector::getRxHostname(const int udpInterface, Positions po
 }
 
 void Detector::setRxHostname(const int udpInterface, const std::string &hostname, Positions pos) {
-    int port = 0;
-    pimpl->configureReceiver(udpInterface, pos, hostname, port);
+    pimpl->configureReceiver(udpInterface, pos, hostname);
 }
 
 void Detector::setRxHostname(const int udpInterface, const std::string &hostname, const int port, 
@@ -756,7 +755,7 @@ void Detector::setRxHostname(const int udpInterface, const std::string &hostname
     if (module_id == -1 && size() > 1) {
         throw sls::RuntimeError("Cannot set same rx_tcpport and rx_hostname for multiple receivers");
     }
-    pimpl->configureReceiver(udpInterface, {module_id}, hostname, port);
+    pimpl->configureReceiver(udpInterface, module_id, hostname, port);
 }
 
 Result<int> Detector::getRxPort(const int udpInterface, Positions pos) const {

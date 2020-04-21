@@ -438,7 +438,7 @@ void DetectorImpl::removeReceivers(const int udpInterface) {
 }
 
 void DetectorImpl::configureReceiver(const int udpInterface, Positions pos, 
-    const std::string &hostname, const int port) {
+    const std::string &hostname) {
 
     if (Parallel(&Module::getRunStatus, pos).squash(defs::ERROR) == defs::RUNNING) {
         LOG(logWARNING) << "Acquisition already running, Stopping it.";
@@ -447,25 +447,50 @@ void DetectorImpl::configureReceiver(const int udpInterface, Positions pos,
     if (!isReceiverInitialized(udpInterface)) {
         initReceiver(udpInterface);
     }
+    auto t = Parallel(&Module::getReceiverParameters, pos);
     if (udpInterface == 1) {
-        if (port != 0) {
-            Parallel1(&Receiver::setTCPPort, pos, {}, port);
-        }
         Parallel1(&Receiver::setHostname, pos, {}, hostname);
-        auto t = Parallel(&Module::getReceiverParameters, pos).squash();
-        auto m = Parallel1(&Receiver::configure, pos, {}, t).squash();
-        if (m != 0) {
-            Parallel(&Module::setDestinationUDPMAC, pos, m);
+        for (int iMod = 0; iMod < size(); ++iMod) {
+            auto m = receivers[iMod][0]->configure(t[iMod]);
+            if (m != 0) {
+                detectors[iMod]->setDestinationUDPMAC(m);
+            }
         }
     } else {
-        if (port != 0) {
-            Parallel2(&Receiver::setTCPPort, pos, {}, port);
-        }
         Parallel2(&Receiver::setHostname, pos, {}, hostname);
-        auto t = Parallel(&Module::getReceiverParameters, pos).squash();
-        auto m = Parallel2(&Receiver::configure, pos, {}, t).squash();
+        for (int iMod = 0; iMod < size(); ++iMod) {
+            auto m = receivers2[iMod][0]->configure(t[iMod]);
+            if (m != 0) {
+                detectors[iMod]->setDestinationUDPMAC2(m);
+            }
+        }
+    }
+}
+
+void DetectorImpl::configureReceiver(const int udpInterface, int module_id, 
+    const std::string &hostname, const int port) {
+
+    if (Parallel(&Module::getRunStatus, {}).squash(defs::ERROR) == defs::RUNNING) {
+        LOG(logWARNING) << "Acquisition already running, Stopping it.";
+        Parallel(&Module::stopAcquisition, {});
+    }
+    if (!isReceiverInitialized(udpInterface)) {
+        initReceiver(udpInterface);
+    }
+    auto t = detectors[module_id]->getReceiverParameters();
+    if (udpInterface == 1) {
+        receivers[module_id][0]->setTCPPort(port);
+        receivers[module_id][0]->setHostname(hostname);
+        auto m = receivers[module_id][0]->configure(t);
         if (m != 0) {
-            Parallel(&Module::setDestinationUDPMAC2, pos, m);
+            detectors[module_id]->setDestinationUDPMAC(m);
+        }
+    } else {
+        receivers2[module_id][0]->setTCPPort(port);
+        receivers2[module_id][0]->setHostname(hostname);
+        auto m = receivers2[module_id][0]->configure(t);
+        if (m != 0) {
+            detectors[module_id]->setDestinationUDPMAC2(m);
         }
     }
 }

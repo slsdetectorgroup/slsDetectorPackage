@@ -11,7 +11,7 @@
 #include "sls_detector_defs.h"
 
 #include <atomic>
-#include <future>
+#include <thread>
 #include <semaphore.h>
 #include <string>
 

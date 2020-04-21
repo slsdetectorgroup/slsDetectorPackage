@@ -322,6 +322,12 @@ int64_t Receiver::getSoftwareVersion() const {
     return sendToReceiver<int64_t>(F_GET_RECEIVER_VERSION);
 }
 
+/** Acquisition Parameters */
+void Receiver::setNumberOfFrames(int64_t value) {
+    LOG(logDEBUG1) << "Sending number of frames to Receiver: " << value;
+    sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);   
+}
+
 /** Acquisition */
 
 void Receiver::start() {
@@ -362,6 +368,19 @@ void Receiver::restreamStop() {
 }
 
 /** Detector Specific */
+// Eiger
+void Receiver::setQuad(const bool enable) {
+    int value = enable ? 1 : 0;
+    LOG(logDEBUG1) << "Setting Quad type to " << value << " in Receiver";
+    sendToReceiver(F_SET_RECEIVER_QUAD, value, nullptr);
+}
+
+void Receiver::setReadNLines(const int value) {
+    LOG(logDEBUG1) << "Setting read n lines to " << value
+                        << " in Receiver";
+    sendToReceiver(F_SET_RECEIVER_READ_N_LINES, value, nullptr);
+}
+
 // Moench
 
 void Receiver::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader) {

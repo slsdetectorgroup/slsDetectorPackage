@@ -215,6 +215,7 @@ Result<int64_t> Detector::getNumberOfFrames(Positions pos) const {
 
 void Detector::setNumberOfFrames(int64_t value) {
     pimpl->Parallel(&Module::setNumberOfFrames, {}, value);
+    pimpl->Parallel3(&Receiver::setNumberOfFrames, value); //FIXME
 }
 
 Result<int64_t> Detector::getNumberOfTriggers(Positions pos) const {
@@ -1124,6 +1125,7 @@ Result<int> Detector::getPartialReadout(Positions pos) const {
 
 void Detector::setPartialReadout(const int lines, Positions pos) {
     pimpl->Parallel(&Module::setReadNLines, pos, lines);
+    pimpl->Parallel3(&Receiver::setReadNLines, lines);
 }
 
 Result<bool> Detector::getInterruptSubframe(Positions pos) const {
@@ -1193,6 +1195,7 @@ void Detector::setQuad(const bool enable) {
                            "Eiger Quad Half module.");
     }
     pimpl->Parallel(&Module::setQuad, {}, enable);
+    pimpl->Parallel3(&Receiver::setQuad, enable); //FIXME
 }
 
 // Jungfrau Specific

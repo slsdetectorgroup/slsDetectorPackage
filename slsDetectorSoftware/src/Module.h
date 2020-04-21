@@ -125,11 +125,7 @@ class Module : public virtual slsDetectorDefs {
     void setNumberOfReceivers(const int num);
     int getNumberOfReceivers2() const;
     void setNumberOfReceivers2(const int num);
-    /**
-     * Check version compatibility with receiver software
-     */
-    void checkReceiverVersionCompatibility();
-
+ 
     /**
      * Check version compatibility with detector software
      */
@@ -140,11 +136,6 @@ class Module : public virtual slsDetectorDefs {
     int64_t getDetectorServerVersion();
 
     int64_t getSerialNumber();
-
-    /**
-     * Get Receiver Software version
-     */
-    int64_t getReceiverSoftwareVersion() const;
 
     /**
      * Free shared memory and delete shared memory structure

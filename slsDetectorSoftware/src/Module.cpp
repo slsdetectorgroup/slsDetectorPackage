@@ -115,15 +115,6 @@ void Module::checkDetectorVersionCompatibility() {
     sendToDetectorStop(fnum, arg, nullptr);
 }
 
-void Module::checkReceiverVersionCompatibility() {
-    // TODO! Verify that this works as intended when version don't match
-    int64_t arg = APIRECEIVER;
-    LOG(logDEBUG1)
-        << "Checking version compatibility with receiver with value "
-        << std::hex << arg << std::dec;
-    sendToReceiver(F_RECEIVER_CHECK_VERSION, arg, nullptr);
-}
-
 int64_t Module::getFirmwareVersion() {
     int64_t retval = -1;
     sendToDetector(F_GET_FIRMWARE_VERSION, nullptr, retval);
@@ -142,16 +133,6 @@ int64_t Module::getSerialNumber() {
     int64_t retval = -1;
     sendToDetector(F_GET_SERIAL_NUMBER, nullptr, retval);
     LOG(logDEBUG1) << "firmware version: 0x" << std::hex << retval << std::dec;
-    return retval;
-}
-
-
-int64_t Module::getReceiverSoftwareVersion() const {
-    LOG(logDEBUG1) << "Getting receiver software version";
-    int64_t retval = -1;
-    if (shm()->useReceiver) {
-        sendToReceiver(F_GET_RECEIVER_VERSION, nullptr, retval);
-    }
     return retval;
 }
 
@@ -583,20 +564,11 @@ void Module::setQuad(const bool enable) {
     int value = enable ? 1 : 0;
     LOG(logDEBUG1) << "Setting Quad type to " << value;
     sendToDetector(F_SET_QUAD, value, nullptr);
-    LOG(logDEBUG1) << "Setting Quad type to " << value << " in Receiver";
-    if (shm()->useReceiver) {
-        sendToReceiver(F_SET_RECEIVER_QUAD, value, nullptr);
-    }
 }
 
 void Module::setReadNLines(const int value) {
     LOG(logDEBUG1) << "Setting read n lines to " << value;
     sendToDetector(F_SET_READ_N_LINES, value, nullptr);
-    LOG(logDEBUG1) << "Setting read n lines to " << value
-                        << " in Receiver";
-    if (shm()->useReceiver) {
-        sendToReceiver(F_SET_RECEIVER_READ_N_LINES, value, nullptr);
-    }
 }
 
 int Module::getReadNLines() {
@@ -1023,10 +995,6 @@ int64_t Module::getNumberOfFrames() {
 void Module::setNumberOfFrames(int64_t value) {
     LOG(logDEBUG1) << "Setting number of frames to " << value;
     sendToDetector(F_SET_NUM_FRAMES, value, nullptr);
-    if (shm()->useReceiver) {
-        LOG(logDEBUG1) << "Sending number of frames to Receiver: " << value;
-        sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);   
-    }
 }
 
 int64_t Module::getNumberOfTriggers() {

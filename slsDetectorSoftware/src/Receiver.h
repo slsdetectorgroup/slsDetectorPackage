@@ -65,6 +65,7 @@ namespace sls {
         *    Acquisition Parameters                      *
         *                                                *
         * ************************************************/
+        void setNumberOfFrames(int64_t value);
 
 
         /**************************************************
@@ -101,6 +102,10 @@ namespace sls {
         *    Detector Specific                           *
         *                                                *
         * ************************************************/
+        // Eiger 
+        void setQuad(const bool enable);
+        void setReadNLines(const int value);
+
         // Moench
         /** empty vector deletes entire additional json header */
         void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);

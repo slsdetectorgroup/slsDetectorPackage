@@ -80,7 +80,7 @@ void DataProcessor::SetFifo(Fifo* f) {
 }
 
 void DataProcessor::ResetParametersforNewAcquisition(){
-    runningFlag = false;
+	StopRunning();
 	startedFlag = false;
 	numFramesCaught = 0;
 	firstIndex = 0;

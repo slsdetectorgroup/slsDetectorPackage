@@ -44,7 +44,7 @@ void DataStreamer::SetFifo(Fifo* f) {
 }
 
 void DataStreamer::ResetParametersforNewAcquisition(const std::string& fname){
-    runningFlag = false;
+    StopRunning();
 	startedFlag = false;
 	firstIndex = 0;
 

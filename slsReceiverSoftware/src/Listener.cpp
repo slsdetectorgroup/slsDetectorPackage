@@ -44,13 +44,7 @@ Listener::Listener(int ind, detectorType dtype, Fifo* f, std::atomic<runStatus>*
 	LOG(logDEBUG) << "Listener " << ind << " created";
 }
 
-
-Listener::~Listener() {
-	if (udpSocket){
-		sem_post(&semaphore_socket);
-    	sem_destroy(&semaphore_socket);
-	} 
-}
+Listener::~Listener() = default;
 
 uint64_t Listener::GetPacketsCaught() const {
 	return numPacketsCaught;
@@ -75,7 +69,7 @@ void Listener::SetFifo(Fifo* f) {
 }
 
 void Listener::ResetParametersforNewAcquisition() {
-    runningFlag = false;
+    StopRunning();
 	startedFlag = false;
 	numPacketsCaught = 0;
 	firstIndex = 0;
@@ -143,7 +137,6 @@ void Listener::CreateUDPSockets() {
 	}
 
 	udpSocketAlive = true;
-    sem_init(&semaphore_socket,1,0);
 
     // doubled due to kernel bookkeeping (could also be less due to permissions)
     *actualUDPSocketBufferSize = udpSocket->getBufferSize();
@@ -156,12 +149,6 @@ void Listener::ShutDownUDPSocket() {
 		udpSocketAlive = false;
 		udpSocket->Shutdown();
 		LOG(logINFO) << "Shut down of UDP port " << *udpPortNumber;
-		fflush(stdout);
-		// wait only if the threads have started as it is the threads that
-		//give a post to semaphore(at stopListening)
-		if (runningFlag)
-			sem_wait(&semaphore_socket);
-	    sem_destroy(&semaphore_socket);
 	}
 }
 
@@ -269,10 +256,8 @@ void Listener::StopListening(char* buf) {
 	(*((uint32_t*)buf)) = DUMMY_PACKET_VALUE;
 	fifo->PushAddress(buf);
 	StopRunning();
-
-	 sem_post(&semaphore_socket);
-	 LOG(logDEBUG1) << index << ": Listening Packets (" << *udpPortNumber << ") : " << numPacketsCaught;
-	 LOG(logDEBUG1) << index << ": Listening Completed";
+	LOG(logDEBUG1) << index << ": Listening Packets (" << *udpPortNumber << ") : " << numPacketsCaught;
+	LOG(logDEBUG1) << index << ": Listening Completed";
 }
 
 

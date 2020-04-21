@@ -24,8 +24,7 @@
 
 #define SHM_MULTI_PREFIX "/slsDetectorPackage_multi_"
 #define SHM_MODULE_PREFIX "_module_"
-#define SHM_RECEIVER_PREFIX "_receiver_"
-#define SHM_RECEIVER2_PREFIX "_receiver2_"
+#define SHM_RECEIVER_PREFIX "_receiver" //interface_id + '_'
 #define SHM_ENV_NAME "SLSDETNAME"
 
 #include <iostream>
@@ -41,12 +40,12 @@ class SharedMemory {
 	 * Constructor
 	 * creates the single/multi detector shared memory name
 	 * @param multiId multi detector id
-     * @param moduleId module detector id, -1 if a multi detector shared memory
-     * @param receiverId receiver id, -1 if a multi detector or module shared memory
-     * @param primaryInterface is false, for the second udp port receiver
+     * @param moduleId module detectr id, -1 if a multi detector shared memory
+     * @param interfaceId 0 for primary interface, 1 for secondary
+     * @param receiverId receiver id, -1 if not a rxr shm, else round robin entry
  	 */
-    SharedMemory(int multiId, int moduleId, int receiverId = -1, bool primaryInterface = true) {
-        name = ConstructSharedMemoryName(multiId, moduleId, receiverId, primaryInterface);
+    SharedMemory(int multiId, int moduleId, int interfaceId = 0, int receiverId = -1) {
+        name = ConstructSharedMemoryName(multiId, moduleId, interfaceId, receiverId);
     }
 
     /** 
@@ -221,12 +220,12 @@ class SharedMemory {
      * throws exception if name created is longer than required 255(manpages)
      * @param multiId multi detector id
      * @param moduleId module detector id, -1 if a multi detector shared memory
-     * @param receiverId receiver id, -1 if a multi detector or module shared memory
-     * @param primaryInterface false, if second udp port receiver
+     * @param interfaceId 0 for primary interface, 1 for secondary
+     * @param receiverId receiver id, -1 if not a rxr shm, else round robin entry
      * @returns shared memory name
      */
     std::string ConstructSharedMemoryName(int multiId, int moduleId, 
-        int receiverId, bool primaryInterface) {
+        int interfaceId = 0, int receiverId = -1) {
 
         // using environment path
         std::string sEnvPath = "";
@@ -242,15 +241,10 @@ class SharedMemory {
         else if (receiverId < 0)
             ss << SHM_MULTI_PREFIX << multiId << 
                 SHM_MODULE_PREFIX << moduleId << sEnvPath;
-        else if (primaryInterface)
-            ss << SHM_MULTI_PREFIX << multiId << 
-                SHM_MODULE_PREFIX << moduleId << 
-                SHM_RECEIVER_PREFIX << receiverId << sEnvPath;
         else
             ss << SHM_MULTI_PREFIX << multiId << 
                 SHM_MODULE_PREFIX << moduleId << 
-                SHM_RECEIVER2_PREFIX << receiverId << sEnvPath;
-
+                SHM_RECEIVER_PREFIX << interfaceId << '_' << receiverId << sEnvPath;
 
         std::string temp = ss.str();
         if (temp.length() > NAME_MAX_LENGTH) {

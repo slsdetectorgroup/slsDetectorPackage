@@ -99,11 +99,11 @@ Ret Receiver::sendToReceiver(int fnum, const Arg &args) const{
 
 
 // create shm
-Receiver::Receiver(int detector_id, int module_id, int receiver_id, 
-    bool primaryInterface, int tcp_port, std::string hostname,
+Receiver::Receiver(int detector_id, int module_id,  int interface_id, 
+    int receiver_id, int tcp_port, std::string hostname,
     int zmq_port) :
-    receiverId(receiver_id), moduleId(module_id), 
-    shm(detector_id, module_id, receiver_id, primaryInterface) {
+    receiverId(receiver_id), interfaceId(interface_id), moduleId(module_id), 
+    shm(detector_id, module_id, interface_id, receiver_id) {
 
     // ensure shared memory was not created before
     if (shm.IsExisting()) {
@@ -112,15 +112,14 @@ Receiver::Receiver(int detector_id, int module_id, int receiver_id,
                              << shm.GetName() << ". Freeing it again";
         shm.RemoveSharedMemory();
     }
-    shm = SharedMemory<sharedReceiver>(detector_id, module_id, receiver_id, 
-        primaryInterface);
+    shm = SharedMemory<sharedReceiver>(detector_id, module_id, interface_id,
+        receiver_id);
     shm.CreateSharedMemory();
 
     // initalize receiver structure
     shm()->shmversion = RECEIVER_SHMVERSION;
     memset(shm()->hostname, 0, MAX_STR_LENGTH);
     shm()->tcpPort = DEFAULT_RX_PORTNO + receiver_id;
-    shm()->primaryInterface = primaryInterface;
     shm()-> stoppedFlag = false;
     shm()->zmqPort = DEFAULT_ZMQ_RX_PORTNO + receiver_id;
     shm()->zmqIp = IpAddr{};
@@ -138,10 +137,10 @@ Receiver::Receiver(int detector_id, int module_id, int receiver_id,
 }
 
 // open shm
-Receiver::Receiver(int detector_id, int module_id, int receiver_id, 
-    bool primaryInterface, bool verify) :
-    receiverId(receiver_id), moduleId(module_id),
-    shm(detector_id, module_id, receiver_id, primaryInterface) {
+Receiver::Receiver(int detector_id, int module_id,  int interface_id, 
+    int receiver_id, bool verify) :
+    receiverId(receiver_id), interfaceId(interface_id), moduleId(module_id),
+    shm(detector_id, module_id, interface_id, receiver_id) {
     shm.OpenSharedMemory();
     if (verify && shm()->shmversion != RECEIVER_SHMVERSION) {
         std::ostringstream ss;
@@ -205,8 +204,8 @@ sls::MacAddr Receiver::configure(slsDetectorDefs::rxParameters arg) {
     // hostname
     memset(arg.hostname, 0, sizeof(arg.hostname));
     strcpy_safe(arg.hostname, shm()->hostname);
-    // primary interface
-    arg.primaryInterface = shm()->primaryInterface;
+    // interface id
+    arg.interfaceId = interfaceId;
     // zmqip
     {
         sls::IpAddr ip;
@@ -230,7 +229,7 @@ sls::MacAddr Receiver::configure(slsDetectorDefs::rxParameters arg) {
         << "detectorSize.y:" << arg.detectorSize.y << std::endl
         << "moduleId:" << arg.moduleId << std::endl
         << "hostname:" << arg.hostname << std::endl
-        << "primary Interace: " << arg.primaryInterface << std::endl
+        << "interfaceId: " << arg.interfaceId << std::endl
         << "zmq ip:" << arg.zmq_ip << std::endl
         << "udpInterfaces:" << arg.udpInterfaces << std::endl
         << "udp_dstport:" << arg.udp_dstport << std::endl

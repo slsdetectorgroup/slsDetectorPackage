@@ -6,7 +6,7 @@
 
 #include <map>
 
-#define RECEIVER_SHMVERSION 0x200417
+#define RECEIVER_SHMVERSION 0x200421
 
 namespace sls {
     struct sharedReceiver {
@@ -15,7 +15,6 @@ namespace sls {
     int shmversion;
     char hostname[MAX_STR_LENGTH];
     int tcpPort;
-    bool primaryInterface;
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
     int stoppedFlag;
@@ -28,12 +27,12 @@ namespace sls {
         public:
         static size_t getNumReceivers();
         // create shm
-        explicit Receiver(int detector_id, int module_id, int receiver_id, 
-            bool primaryInterface, int tcp_port = 0, std::string hostname = "",
+        explicit Receiver(int detector_id, int module_id, int interface_id,
+            int receiver_id, int tcp_port = 0, std::string hostname = "",
             int zmq_port = 0);
         // open shm
-        explicit Receiver(int detector_id, int module_id, int receiver_id, 
-            bool primaryInterface, bool verify);
+        explicit Receiver(int detector_id, int module_id, int interface_id,
+            int receiver_id, bool verify);
 
         virtual ~Receiver();
 
@@ -148,8 +147,9 @@ namespace sls {
 
         void checkVersionCompatibility();
         const int receiverId{0};
+        const int interfaceId{0};
         const int moduleId{0};
-        mutable sls::SharedMemory<sharedReceiver> shm{0, 0, 0, true};
+        mutable sls::SharedMemory<sharedReceiver> shm{0, 0, 0, 0};
     };
 
 }   // sls

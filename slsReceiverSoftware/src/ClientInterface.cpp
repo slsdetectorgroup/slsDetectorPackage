@@ -334,7 +334,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
         << "detectorSize.y:" << arg.detectorSize.y << std::endl
         << "moduleId:" << arg.moduleId << std::endl
         << "hostname:" << arg.hostname << std::endl
-        << "primary Interace: " << arg.primaryInterface << std::endl
+        << "interfaceId: " << arg.interfaceId << std::endl
         << "zmq ip:" << arg.zmq_ip << std::endl
         << "udpInterfaces:" << arg.udpInterfaces << std::endl
         << "udp_dstport:" << arg.udp_dstport << std::endl

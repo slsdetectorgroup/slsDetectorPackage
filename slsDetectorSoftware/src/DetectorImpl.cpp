@@ -213,8 +213,8 @@ void DetectorImpl::initializeMembers(bool verify) {
                 receivers.resize(numModules);
                 for (int iReceiver = 0; iReceiver < numReceivers; ++iReceiver) {
                         receivers[iModule].push_back(
-                            sls::make_unique<Receiver>(detectorId, iModule, iReceiver, 
-                            true, verify));
+                            sls::make_unique<Receiver>(detectorId, iModule, 0, 
+                            iReceiver, verify));
                 }
             }
             int numReceivers2 = detectors[iModule]->getNumberOfReceivers2();
@@ -222,8 +222,8 @@ void DetectorImpl::initializeMembers(bool verify) {
                 receivers2.resize(numModules);
                 for (int iReceiver = 0; iReceiver < numReceivers2; ++iReceiver) {
                         receivers2[iModule].push_back(
-                            sls::make_unique<Receiver>(detectorId, iModule, iReceiver, 
-                            false, verify));
+                            sls::make_unique<Receiver>(detectorId, iModule, 1,
+                            iReceiver, verify));
                 }
             }
         }
@@ -373,7 +373,7 @@ void DetectorImpl::initReceiver(const int udpInterface) {
                 receivers.resize(detectors.size());
                 receivers[iModule].push_back(
                     sls::make_unique<Receiver>(detectorId, iModule, 0, 
-                        true, tcpPort++, "", zmqPort++));    
+                        0, tcpPort++, "", zmqPort++));    
                 detectors[iModule]->setNumberOfReceivers(1);
             }
         } catch (...) {
@@ -390,8 +390,8 @@ void DetectorImpl::initReceiver(const int udpInterface) {
             for (int iModule = 0; iModule < size(); ++iModule) {
                 receivers2.resize(detectors.size());
                 receivers2[iModule].push_back(
-                    sls::make_unique<Receiver>(detectorId, iModule, 0, 
-                        false, tcpPort++, "", zmqPort++));    
+                    sls::make_unique<Receiver>(detectorId, iModule, 1, 
+                        0, tcpPort++, "", zmqPort++));    
                 detectors[iModule]->setNumberOfReceivers2(1);
             }
         } catch (...) {

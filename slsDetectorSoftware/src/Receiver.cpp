@@ -14,6 +14,9 @@ void Receiver::sendToReceiver(int fnum, const void *args, size_t args_size,
 
 void Receiver::sendToReceiver(int fnum, const void *args, size_t args_size,
                                  void *retval, size_t retval_size) const {
+    if (strlen(shm()->hostname) == 0) {
+        throw RuntimeError("Reciver not added");
+    }
     auto receiver = ReceiverSocket(shm()->hostname, shm()->tcpPort);
     receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     receiver.close();
@@ -268,8 +271,8 @@ sls::MacAddr Receiver::configure(slsDetectorDefs::rxParameters arg) {
         }
     } 
     if (arg.detType == MOENCH) {
-        //setAdditionalJsonParameter("adcmask_1g", std::to_string(arg.adcMask));
-        //setAdditionalJsonParameter("adcmask_10g", std::to_string(arg.adc10gMask));
+        setAdditionalJsonParameter("adcmask_1g", std::to_string(arg.adcMask));
+        setAdditionalJsonParameter("adcmask_10g", std::to_string(arg.adc10gMask));
     }
 
     LOG(logINFOBLUE) << receiverId  << " configured!";
@@ -346,5 +349,90 @@ void Receiver::restreamStop() {
     sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER, nullptr, nullptr);
 }
 
+/** Detector Specific */
+// Moench
+
+void Receiver::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader) {
+    for (auto &it : jsonHeader) {
+        if (it.first.empty() || it.first.length() > SHORT_STR_LENGTH ||
+            it.second.length() > SHORT_STR_LENGTH ) {
+            throw RuntimeError(it.first + " or " + it.second + " pair has invalid size. "
+            "Key cannot be empty. Both can have max 20 characters");
+        }
+    }
+    const int size = jsonHeader.size();
+    int fnum = F_SET_ADDITIONAL_JSON_HEADER;
+    int ret = FAIL;
+    LOG(logDEBUG) << "Sending to receiver additional json header " << ToString(jsonHeader);
+    auto client = ReceiverSocket(shm()->hostname, shm()->tcpPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(&size, sizeof(size));
+    if (size > 0) {
+        char args[size * 2][SHORT_STR_LENGTH];
+        memset(args, 0, sizeof(args));
+        int iarg = 0;
+        for (auto &it : jsonHeader) {
+            sls::strcpy_safe(args[iarg], it.first.c_str());
+            sls::strcpy_safe(args[iarg + 1], it.second.c_str());
+            iarg += 2;
+        }
+        client.Send(args, sizeof(args));
+    }
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Receiver " + std::to_string(moduleId) +
+                           " returned error: " + std::string(mess));
+    }
+}
+
+std::map<std::string, std::string> Receiver::getAdditionalJsonHeader() {
+    int fnum = F_GET_ADDITIONAL_JSON_HEADER;
+    int ret = FAIL;
+    int size = 0;
+    auto client = ReceiverSocket(shm()->hostname, shm()->tcpPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Receiver " + std::to_string(moduleId) +
+                           " returned error: " + std::string(mess));
+    } else {
+        client.Receive(&size, sizeof(size));
+        std::map<std::string, std::string> retval;
+        if (size > 0) {
+            char retvals[size * 2][SHORT_STR_LENGTH];
+            memset(retvals, 0, sizeof(retvals));
+            client.Receive(retvals, sizeof(retvals));
+            for (int i = 0; i < size; ++i) {
+                retval[retvals[2 * i]] = retvals[2 * i + 1];
+            }
+        }
+        LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
+        return retval;
+    }
+}
+
+void Receiver::setAdditionalJsonParameter(const std::string &key, const std::string &value) {
+    if (key.empty() || key.length() > SHORT_STR_LENGTH ||
+        value.length() > SHORT_STR_LENGTH ) {
+        throw RuntimeError(key + " or " + value + " pair has invalid size. "
+        "Key cannot be empty. Both can have max 2 characters");
+    }
+    char args[2][SHORT_STR_LENGTH]{};
+    sls::strcpy_safe(args[0], key.c_str());
+    sls::strcpy_safe(args[1], value.c_str());
+    sendToReceiver(F_SET_ADDITIONAL_JSON_PARAMETER, args, nullptr);
+}
+
+std::string Receiver::getAdditionalJsonParameter(const std::string &key) {
+    char arg[SHORT_STR_LENGTH]{};
+    sls::strcpy_safe(arg, key.c_str());
+    char retval[SHORT_STR_LENGTH]{};
+    sendToReceiver(F_GET_ADDITIONAL_JSON_PARAMETER, arg, retval); 
+    return retval;
+}
 
 } // namespace sls

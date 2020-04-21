@@ -4,6 +4,8 @@
 #include "sls_detector_defs.h"
 #include "network_utils.h"
 
+#include <map>
+
 #define RECEIVER_SHMVERSION 0x200417
 
 namespace sls {
@@ -90,22 +92,24 @@ namespace sls {
         *    ZMQ Streaming Parameters (Receiver<->Client)*
         *                                                *
         * ************************************************/
-
+        
         /**************************************************
         *                                                *
         *    Detector Specific                           *
         *                                                *
         * ************************************************/
+        // Moench
+        /** empty vector deletes entire additional json header */
+        void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);
+        std::map<std::string, std::string> getAdditionalJsonHeader();
+
+        /** Sets the value for the additional json header parameter key if found, 
+        else append it. If value empty, then deletes parameter */
+        void setAdditionalJsonParameter(const std::string &key, const std::string &value);
+        std::string getAdditionalJsonParameter(const std::string &key);
+
 
         private:
-        /**
-        * Send function parameters to receiver
-        * @param fnum function enum
-        * @param args argument pointer
-        * @param args_size size of argument
-        * @param retval return pointers
-        * @param retval_size size of return value
-        */
         void sendToReceiver(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size);
 

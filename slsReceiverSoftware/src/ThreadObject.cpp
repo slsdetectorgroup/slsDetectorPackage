@@ -41,8 +41,6 @@ void ThreadObject::StopRunning() {
 
 void ThreadObject::RunningThread() {
 	LOG(logINFOBLUE) << "Created [ " << type << "Thread " << index << ", Tid: " << syscall(SYS_gettid) << "]";
-	LOG(logDEBUG) << type << " thread " << index << " created successfully.";
-
 	while(!killThread)	{
 		while(IsRunning()) {
 			ThreadExecution();
@@ -50,8 +48,6 @@ void ThreadObject::RunningThread() {
 		//wait till the next acquisition
 		sem_wait(&semaphore);
 	}
-	
-	LOG(logDEBUG) << type << " thread with index " << index << " destroyed successfully.";
 	LOG(logINFOBLUE) << "Exiting [ " << type << " Thread " << index << ", Tid: " << syscall(SYS_gettid) << "]";
 }
 

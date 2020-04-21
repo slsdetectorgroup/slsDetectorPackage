@@ -57,6 +57,8 @@ namespace sls {
         int getTCPPort() const;
         void setTCPPort(const int port);
         std::string printConfiguration();
+        int64_t getSoftwareVersion() const;
+
 
         /**************************************************
         *                                                *

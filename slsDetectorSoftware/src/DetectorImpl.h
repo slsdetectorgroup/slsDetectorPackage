@@ -519,8 +519,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
             for (size_t j : rxPositions) {
                 futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers[i][j].get(), Args...));
-                futures.push_back(std::async(std::launch::async, somefunc,
+                 if (receivers2.size()) {
+                    futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers2[i][j].get(), Args...));                                        
+                }                                       
             }
         }
         sls::Result<RT> result;
@@ -553,8 +555,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
             for (size_t j : rxPositions) {
                 futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers[i][j].get(), Args...));
-                futures.push_back(std::async(std::launch::async, somefunc,
+                if (receivers2.size()) {
+                    futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers2[i][j].get(), Args...));                                        
+                }
             }
         }
         sls::Result<RT> result;
@@ -587,8 +591,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
             for (size_t j : rxPositions) {
                 futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers[i][j].get(), Args...));
-                futures.push_back(std::async(std::launch::async, somefunc,
+                if (receivers2.size()) {
+                    futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers2[i][j].get(), Args...));                                        
+                }                                      
             }
         }
         for (auto &i : futures) {
@@ -618,8 +624,10 @@ class DetectorImpl : public virtual slsDetectorDefs {
             for (size_t j : rxPositions) {
                 futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers[i][j].get(), Args...));
-                futures.push_back(std::async(std::launch::async, somefunc,
+                if (receivers2.size()) {
+                    futures.push_back(std::async(std::launch::async, somefunc,
                                          receivers2[i][j].get(), Args...));                                        
+                }                                       
             }
         }
         for (auto &i : futures) {

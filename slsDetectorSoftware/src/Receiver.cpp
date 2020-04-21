@@ -317,6 +317,11 @@ std::string Receiver::printConfiguration() {
     return oss.str();
 }
 
+int64_t Receiver::getSoftwareVersion() const {
+    LOG(logDEBUG1) << "Getting receiver software version";
+    return sendToReceiver<int64_t>(F_GET_RECEIVER_VERSION);
+}
+
 /** Acquisition */
 
 void Receiver::start() {

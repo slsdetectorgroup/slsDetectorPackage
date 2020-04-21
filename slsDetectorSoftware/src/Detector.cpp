@@ -150,7 +150,7 @@ Result<int64_t> Detector::getSerialNumber(Positions pos) const {
 }
 
 Result<int64_t> Detector::getReceiverVersion(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverSoftwareVersion, pos);
+    return pimpl->Parallel3(&Receiver::getSoftwareVersion); //FIXME
 }
 
 Result<defs::detectorType> Detector::getDetectorType(Positions pos) const {

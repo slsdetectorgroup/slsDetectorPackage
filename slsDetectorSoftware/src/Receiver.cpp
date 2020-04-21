@@ -79,7 +79,8 @@ template <typename Ret, typename Arg>
 Ret Receiver::sendToReceiver(int fnum, const Arg &args){
     LOG(logDEBUG1) << "Sending: [" 
     << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
-    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() 
+    << ", " << sizeof(Ret) << "]";
     Ret retval{};
     sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << retval;
@@ -90,7 +91,8 @@ template <typename Ret, typename Arg>
 Ret Receiver::sendToReceiver(int fnum, const Arg &args) const{
     LOG(logDEBUG1) << "Sending: [" 
     << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
-    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() 
+    << ", " << sizeof(Ret) << "]";
     Ret retval{};
     sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << retval;
@@ -104,12 +106,12 @@ Receiver::Receiver(int detector_id, int module_id,  int interface_id,
     int zmq_port) :
     receiverId(receiver_id), interfaceId(interface_id), moduleId(module_id), 
     shm(detector_id, module_id, interface_id, receiver_id) {
+    createIndexString();   
 
     // ensure shared memory was not created before
     if (shm.IsExisting()) {
-        LOG(logWARNING) << "This shared memory should have been "
-                                "deleted before! "
-                             << shm.GetName() << ". Freeing it again";
+        LOG(logWARNING) << "This shared memory should have been deleted "
+        "before! " << shm.GetName() << ". Freeing it again";
         shm.RemoveSharedMemory();
     }
     shm = SharedMemory<sharedReceiver>(detector_id, module_id, interface_id,
@@ -141,10 +143,12 @@ Receiver::Receiver(int detector_id, int module_id,  int interface_id,
     int receiver_id, bool verify) :
     receiverId(receiver_id), interfaceId(interface_id), moduleId(module_id),
     shm(detector_id, module_id, interface_id, receiver_id) {
+    createIndexString();   
+
     shm.OpenSharedMemory();
     if (verify && shm()->shmversion != RECEIVER_SHMVERSION) {
         std::ostringstream ss;
-        ss << "Receiver shared memory (" << detector_id << "-" << moduleId
+        ss << "Receiver shared memory (" << detector_id << "-" << indexString
             << ":" << receiverId << ") version mismatch (expected 0x" << std::hex
             << RECEIVER_SHMVERSION << " but got 0x" << shm()->shmversion << ")"
             << std::dec << ". Clear Shared memory to continue.";
@@ -153,6 +157,12 @@ Receiver::Receiver(int detector_id, int module_id,  int interface_id,
 }
 
 Receiver::~Receiver() = default;
+
+void Receiver::createIndexString() {
+    std::ostringstream oss;
+    oss << '(' << moduleId << (char)(interfaceId + 97) << "." << receiverId << ')';
+    indexString = oss.str();
+}
 
 /** Configuration */
 
@@ -214,7 +224,7 @@ sls::MacAddr Receiver::configure(slsDetectorDefs::rxParameters arg) {
         if (ip == 0) {
             ip = HostnameToIp(shm()->hostname);
         }  
-        LOG(logINFO) << "Setting default receiver " << moduleId 
+        LOG(logINFO) << "Setting default receiver " << indexString 
             << " streaming zmq ip to " << ip;  
         // if client zmqip is empty, update it
         if (shm()->zmqIp == 0) {
@@ -280,10 +290,10 @@ sls::MacAddr Receiver::configure(slsDetectorDefs::rxParameters arg) {
 
 std::string Receiver::printConfiguration() {
     std::ostringstream os;
-    /*
-    os << "\n\nModuler " << moduleId 
-        << "\nReceiver Hostname:\t"<< getReceiverHostname();
     
+    os << "\n\nModuler " << indexString 
+        << "\nReceiver Hostname:\t"<< shm()->hostname;
+    /*
     if (shm()->myDetectorType == JUNGFRAU) {  
         os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfaces() 
         << "\nSelected Interface:\t" << getSelectedUDPInterface();

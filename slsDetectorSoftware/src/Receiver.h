@@ -36,6 +36,8 @@ namespace sls {
 
         virtual ~Receiver();
 
+        void createIndexString();
+
         /**************************************************
         *                                                *
         *    Configuration                               *
@@ -149,6 +151,7 @@ namespace sls {
         const int receiverId{0};
         const int interfaceId{0};
         const int moduleId{0};
+        std::string indexString;
         mutable sls::SharedMemory<sharedReceiver> shm{0, 0, 0, 0};
     };
 

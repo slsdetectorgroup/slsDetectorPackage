@@ -284,24 +284,22 @@ sls::MacAddr Receiver::configure(slsDetectorDefs::rxParameters arg) {
         setAdditionalJsonParameter("adcmask_10g", std::to_string(arg.adc10gMask));
     }
 
-    LOG(logINFOBLUE) << receiverId  << " configured!";
+    LOG(logINFOBLUE) <<  "reciever " << indexString << " configured!";
     return mac;
 }
 
 std::string Receiver::printConfiguration() {
-    std::ostringstream os;
+    std::ostringstream oss;
     
-    os << "\n\nModuler " << indexString 
-        << "\nReceiver Hostname:\t"<< shm()->hostname;
-    /*
-    if (shm()->myDetectorType == JUNGFRAU) {  
-        os << "\nNumber of Interfaces:\t" << getNumberofUDPInterfaces() 
-        << "\nSelected Interface:\t" << getSelectedUDPInterface();
-    }
+    oss << std::endl << std::endl
+        << "Receiver " << indexString << std::endl
+        << "Hostname : " << shm()->hostname << std::endl
+        << "Tcp port : " << shm()->tcpPort << std::endl;
+
         
-    os << "\nDetector UDP IP:\t"
-       << getSourceUDPIP() << "\nDetector UDP MAC:\t" 
-       << getSourceUDPMAC() << "\nReceiver UDP IP:\t" 
+    /*
+        
+    os << "\nReceiver UDP IP:\t" 
        << getDestinationUDPIP() << "\nReceiver UDP MAC:\t" << getDestinationUDPMAC();
 
     if (shm()->myDetectorType == JUNGFRAU) {
@@ -315,8 +313,8 @@ std::string Receiver::printConfiguration() {
        os << "\nReceiver UDP Port2:\t" << getDestinationUDPPort2();
     }
     */
-    os << "\n";
-    return os.str();
+    oss << "\n";
+    return oss.str();
 }
 
 /** Acquisition */

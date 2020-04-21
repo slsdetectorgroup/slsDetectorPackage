@@ -1711,6 +1711,34 @@ int Module::getSelectedUDPInterface() {
     return retval;
 }
 
+std::string Module::printUDPConfiguration() {
+    std::ostringstream oss;
+    oss << std::endl << std::endl
+        << "Module " << moduleId << std::endl
+        << "Hostname             : " << shm()->hostname << std::endl;
+    if (shm()->myDetectorType == JUNGFRAU) {  
+        oss << "Number of Interfaces : " << getNumberofUDPInterfaces() << std::endl
+            << "Selected Interface  : " << getSelectedUDPInterface() << std::endl;
+    }
+    oss << "UDP Source IP        : " << getSourceUDPIP() << std::endl
+        << "UDP Source MAC       : " << getSourceUDPMAC() << std::endl
+        << "UDP Destination IP   : " << getDestinationUDPIP() << std::endl
+        << "UDP Destination MAC  : " << getDestinationUDPMAC() << std::endl;
+    if (shm()->myDetectorType == JUNGFRAU) {  
+        oss << "UDP Source IP        : " << getSourceUDPIP() << std::endl
+            << "UDP Source IP2       : " << getSourceUDPIP2() << std::endl
+            << "UDP Source MAC2      : " << getSourceUDPMAC2() << std::endl
+            << "UDP Destination IP2  : " << getDestinationUDPIP2() << std::endl
+            << "UDP Destination MAC2 : " << getDestinationUDPMAC2() << std::endl;
+    }
+    oss << "UDP Destination Port : " << getDestinationUDPPort() << std::endl;
+    if (shm()->myDetectorType == JUNGFRAU || shm()->myDetectorType == EIGER) {
+        oss << "UDP Destination Port2: " << getDestinationUDPPort() << std::endl;
+    }
+    oss << "\n";
+    return oss.str();
+}
+
 void Module::setClientStreamingPort(int port) { shm()->zmqport = port; }
 
 int Module::getClientStreamingPort() { return shm()->zmqport; }

@@ -799,6 +799,8 @@ class Module : public virtual slsDetectorDefs {
      */
     int getSelectedUDPInterface();
 
+    std::string printUDPConfiguration();
+
     /**
      * Sets the client zmq port
      * @param port client zmq port

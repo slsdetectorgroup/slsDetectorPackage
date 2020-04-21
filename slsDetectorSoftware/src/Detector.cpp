@@ -679,7 +679,7 @@ void Detector::setDestinationUDPPort2(int port, int module_id) {
 }
 
 Result<std::string> Detector::printRxConfiguration(Positions pos) const {
-    return pimpl->Parallel3(&Receiver::printConfiguration); // ignoring pos FIXME
+    return pimpl->Parallel(&Module::printUDPConfiguration, pos); 
 }
 
 Result<bool> Detector::getTenGiga(Positions pos) const {

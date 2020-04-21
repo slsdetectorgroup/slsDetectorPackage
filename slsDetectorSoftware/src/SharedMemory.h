@@ -24,7 +24,7 @@
 
 #define SHM_MULTI_PREFIX "/slsDetectorPackage_multi_"
 #define SHM_MODULE_PREFIX "_module_"
-#define SHM_RECEIVER_PREFIX "_receiver" //interface_id + '_'
+#define SHM_RECEIVER_PREFIX "_receiver_"
 #define SHM_ENV_NAME "SLSDETNAME"
 
 #include <iostream>
@@ -244,7 +244,7 @@ class SharedMemory {
         else
             ss << SHM_MULTI_PREFIX << multiId << 
                 SHM_MODULE_PREFIX << moduleId << 
-                SHM_RECEIVER_PREFIX << interfaceId << '_' << receiverId << sEnvPath;
+                SHM_RECEIVER_PREFIX << (char)(interfaceId + 97) << '_' << receiverId << sEnvPath;
 
         std::string temp = ss.str();
         if (temp.length() > NAME_MAX_LENGTH) {

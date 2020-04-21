@@ -315,10 +315,8 @@ int ClientInterface::set_port(Interface &socket) {
 
     LOG(logINFO) << "TCP port set to " << p_number << std::endl;
     sls::ServerSocket new_server(p_number);
-    // auto new_server = sls::make_unique<sls::ServerSocket>(p_number);
     new_server.setLockedBy(server.getLockedBy());
     new_server.setLastClient(server.getThisClient());
-    // server = std::move(new_server);
     server = std::move(new_server);
     socket.sendResult(p_number);
     return OK;

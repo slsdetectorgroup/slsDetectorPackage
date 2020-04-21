@@ -239,7 +239,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	std::atomic<bool> udpSocketAlive{false};
 
     /** Semaphore to synchronize deleting udp socket */
-    sem_t semaphore_socket;
+    // sem_t semaphore_socket;
 
 	// for print progress during acquisition
 	/** number of packets for statistic */

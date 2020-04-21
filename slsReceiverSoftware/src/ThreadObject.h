@@ -17,14 +17,14 @@
 
 class ThreadObject : private virtual slsDetectorDefs {
   protected:
-    int index{0};
+    const int index{0};
 
   private:
     std::atomic<bool> killThread{false};
     std::atomic<bool> runningFlag{false};
 	std::thread threadObject;
     sem_t semaphore;
-    std::string type;
+    const std::string type;
 
   public:
     ThreadObject(int threadIndex, std::string threadType);

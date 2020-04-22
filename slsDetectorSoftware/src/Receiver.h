@@ -76,7 +76,19 @@ class Receiver : public virtual slsDetectorDefs {
     *    Network Configuration (Detector<->Receiver)  *
     *                                                 *
     * ************************************************/
-    sls::MacAddr setDestinationUDPIP(const sls::IpAddr ip);
+    sls::MacAddr setUDPIP(const sls::IpAddr ip);
+    void setUDPPort(int udpport);
+
+    /**************************************************
+    *                                                *
+    *    ZMQ Streaming Parameters (Receiver<->Client)*
+    *                                                *
+    * ************************************************/
+    int getClientZmqPort() const;
+    void setClientZmqPort(const int port);
+    int getReceiverZmqPort() const; 
+    void setReceiverZmqPort(int port);
+
 
     /**************************************************
     *                                                *
@@ -114,11 +126,6 @@ class Receiver : public virtual slsDetectorDefs {
     /**************************************************
     *                                                *
     *    File                                        *
-    *                                                *
-    * ************************************************/
-    /**************************************************
-    *                                                *
-    *    ZMQ Streaming Parameters (Receiver<->Client)*
     *                                                *
     * ************************************************/
 

@@ -793,30 +793,6 @@ class Module : public virtual slsDetectorDefs {
     std::string printUDPConfiguration();
 
     /**
-     * Sets the client zmq port
-     * @param port client zmq port
-     */
-    void setClientStreamingPort(int port);
-
-    /**
-     * Returns the client zmq port 
-     * @returns the client zmq port
-     */
-    int getClientStreamingPort();
-
-    /**
-     * Sets the receiver zmq port
-     * @param port receiver zmq port
-     */
-    void setReceiverStreamingPort(int port);
-
-    /**
-     * Returns the receiver zmq port 
-     * @returns the receiver zmq port
-     */
-    int getReceiverStreamingPort();
-
-    /**
      * Sets the client zmq ip
      * @param ip client zmq ip
      */

@@ -633,7 +633,7 @@ Result<IpAddr> Detector::getDestinationUDPIP(Positions pos) const {
 
 void Detector::setDestinationUDPIP(const IpAddr ip, Positions pos) {
     pimpl->Parallel(&Module::setDestinationUDPIP, pos, ip);
-    auto mac = pimpl->Parallel1(&Receiver::setDestinationUDPIP, pos, {}, ip).squash();
+    auto mac = pimpl->Parallel1(&Receiver::setUDPIP, pos, {}, ip).squash();
     setDestinationUDPMAC(mac, pos);
 }
 
@@ -643,6 +643,8 @@ Result<IpAddr> Detector::getDestinationUDPIP2(Positions pos) const {
 
 void Detector::setDestinationUDPIP2(const IpAddr ip, Positions pos) {
     pimpl->Parallel(&Module::setDestinationUDPIP2, pos, ip);
+    auto mac = pimpl->Parallel2(&Receiver::setUDPIP, pos, {}, ip).squash();
+    setDestinationUDPMAC2(mac, pos);
 }
 
 Result<MacAddr> Detector::getDestinationUDPMAC(Positions pos) const {
@@ -667,13 +669,14 @@ Result<int> Detector::getDestinationUDPPort(Positions pos) const {
 
 void Detector::setDestinationUDPPort(int port, int module_id) {
     if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
-        for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setDestinationUDPPort, {idet},
-                            port_list[idet]);
+        for (int iModule = 0; iModule < size(); ++iModule) {
+            pimpl->Parallel(&Module::setDestinationUDPPort, {iModule}, port);
+            pimpl->Parallel1(&Receiver::setUDPPort, {iModule}, {}, port);
+            ++port;
         }
     } else {
         pimpl->Parallel(&Module::setDestinationUDPPort, {module_id}, port);
+        pimpl->Parallel1(&Receiver::setUDPPort, {module_id}, {}, port);
     }
 }
 
@@ -683,14 +686,14 @@ Result<int> Detector::getDestinationUDPPort2(Positions pos) const {
 
 void Detector::setDestinationUDPPort2(int port, int module_id) {
     if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
-        for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setDestinationUDPPort2, {idet},
-                            port_list[idet]);
+        for (int iModule = 0; iModule < size(); ++iModule) {
+            pimpl->Parallel(&Module::setDestinationUDPPort2, {iModule}, port++);
+            pimpl->Parallel2(&Receiver::setUDPPort, {iModule}, {}, port);
+            ++port;
         }
     } else {
-        pimpl->Parallel(&Module::setDestinationUDPPort2, {module_id},
-                        port);
+        pimpl->Parallel(&Module::setDestinationUDPPort2, {module_id}, port);
+        pimpl->Parallel2(&Receiver::setUDPPort, {module_id}, {}, port);
     }
 }
 
@@ -792,20 +795,18 @@ void Detector::setRxPort(const int udpInterface, int port, int module_id) {
     }
     if (udpInterface == 1) {
         if (module_id == -1) {
-            std::vector<int> port_list = getPortNumbers(port);
             for (int idet = 0; idet < size(); ++idet) {
                 pimpl->Parallel1(&Receiver::setTCPPort, {idet}, {},
-                                port_list[idet]);
+                                port++);
             }
         } else {
             pimpl->Parallel1(&Receiver::setTCPPort, {module_id}, {}, port);
         }
     } else {
         if (module_id == -1) {
-            std::vector<int> port_list = getPortNumbers(port);
             for (int idet = 0; idet < size(); ++idet) {
                 pimpl->Parallel2(&Receiver::setTCPPort, {idet}, {},
-                                port_list[idet]);
+                                port++);
             }
         } else {
             pimpl->Parallel2(&Receiver::setTCPPort, {module_id}, {}, port);
@@ -966,19 +967,18 @@ void Detector::setRxZmqTimer(int time_in_ms, Positions pos) {
 }
 
 Result<int> Detector::getRxZmqPort(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverStreamingPort, pos);
+    return pimpl->Parallel1(&Receiver::getReceiverZmqPort, pos, {});
 }
 
 void Detector::setRxZmqPort(int port, int module_id) {
     if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setReceiverStreamingPort, {idet},
-                            port_list[idet]);
+            pimpl->Parallel1(&Receiver::setReceiverZmqPort, {idet},
+                            {}, port++);
         }
     } else {
-        pimpl->Parallel(&Module::setReceiverStreamingPort, {module_id},
-                        port);
+        pimpl->Parallel1(&Receiver::setReceiverZmqPort, {module_id},
+                        {}, port++);
     }
 }
 
@@ -996,19 +996,18 @@ void Detector::setRxZmqIP(const IpAddr ip, Positions pos) {
 }
 
 Result<int> Detector::getClientZmqPort(Positions pos) const {
-    return pimpl->Parallel(&Module::getClientStreamingPort, pos);
+    return pimpl->Parallel1(&Receiver::getClientZmqPort, pos, {});
 }
 
 void Detector::setClientZmqPort(int port, int module_id) {
     if (module_id == -1) {
-        std::vector<int> port_list = getPortNumbers(port);
         for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setClientStreamingPort, {idet},
-                            port_list[idet]);
+            pimpl->Parallel1(&Receiver::setClientZmqPort, {idet},
+                            {}, port++);
         }
     } else {
-        pimpl->Parallel(&Module::setClientStreamingPort, {module_id},
-                        port);
+        pimpl->Parallel1(&Receiver::setClientZmqPort, {module_id},
+                        {}, port);// FIXME: Needs a clientzmqport2
     }
 }
 
@@ -1965,15 +1964,6 @@ std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
 Result<uint64_t> Detector::getRxCurrentFrameIndex(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverCurrentFrameIndex, pos);
-}
-
-std::vector<int> Detector::getPortNumbers(int start_port) {
-    std::vector<int> res;
-    res.reserve(size());
-    for (int idet = 0; idet < size(); ++idet) {
-        res.push_back(start_port + idet);
-    }
-    return res;
 }
 
 } // namespace sls

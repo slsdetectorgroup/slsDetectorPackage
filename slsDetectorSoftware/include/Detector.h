@@ -1370,8 +1370,6 @@ class Detector {
 
     Result<uint64_t> getRxCurrentFrameIndex(Positions pos = {}) const;
 
-  private:
-    std::vector<int> getPortNumbers(int start_port);
 };
 
 } // namespace sls

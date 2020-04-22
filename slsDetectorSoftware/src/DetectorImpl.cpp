@@ -361,6 +361,19 @@ void DetectorImpl::addModule(const std::string &hostname,
     detectors[pos]->updateNumberOfChannels();     
 }
 
+int DetectorImpl::getNumberofReceiversPerModule() const {
+    int retval = receivers.size();
+    if (receivers2.size()) {
+        retval *= 2;
+    }
+    // for round robin
+    if (retval) {
+        retval *= receivers[0].size();
+    }
+    return retval;
+}
+
+
 void DetectorImpl::initReceiver(const int udpInterface) {
     if (udpInterface == 1) {
         if (receivers.size() != 0) {
@@ -601,8 +614,8 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
     numSockets *= numSocketsPerDetector;
 
     for (size_t iSocket = 0; iSocket < numSockets; ++iSocket) {
-        uint32_t portnum = (detectors[iSocket / numSocketsPerDetector]
-                                ->getClientStreamingPort());
+        uint32_t portnum = (receivers[iSocket / numSocketsPerDetector][0]
+            ->getClientZmqPort());//FIXME 2 receivers
         portnum += (iSocket % numSocketsPerDetector);
         try {
             zmqSocket.push_back(sls::make_unique<ZmqSocket>(

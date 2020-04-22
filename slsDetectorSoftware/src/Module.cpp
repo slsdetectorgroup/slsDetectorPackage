@@ -1462,12 +1462,6 @@ void Module::setDestinationUDPIP(const IpAddr ip) {
         throw RuntimeError("Invalid destination udp ip address");
     }
     sendToDetector(F_SET_DEST_UDP_IP, ip, nullptr); 
-    if (shm()->useReceiver) {
-        sls::MacAddr retval(0LU);
-        sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
-        LOG(logINFO) << "Setting destination udp mac of detector " << moduleId << " to " << retval;
-        sendToDetector(F_SET_DEST_UDP_MAC, retval, nullptr); 
-    }   
 }
 
 sls::IpAddr Module::getDestinationUDPIP() {
@@ -1483,14 +1477,7 @@ void Module::setDestinationUDPIP2(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address2");
     }
-
     sendToDetector(F_SET_DEST_UDP_IP2, ip, nullptr); 
-    if (shm()->useReceiver) {
-        sls::MacAddr retval(0LU);
-        sendToReceiver(F_SET_RECEIVER_UDP_IP2, ip, retval);
-        LOG(logINFO) << "Setting destination udp mac2 of detector " << moduleId << " to " << retval;
-        sendToDetector(F_SET_DEST_UDP_MAC2, retval, nullptr); 
-    }   
 }
 
 sls::IpAddr Module::getDestinationUDPIP2() {
@@ -1538,9 +1525,6 @@ sls::MacAddr Module::getDestinationUDPMAC2() {
 void Module::setDestinationUDPPort(const int port) {
     LOG(logDEBUG1) << "Setting destination udp port to " << port;
     sendToDetector(F_SET_DEST_UDP_PORT, port, nullptr); 
-    if (shm()->useReceiver) {
-        sendToReceiver(F_SET_RECEIVER_UDP_PORT, port, nullptr); 
-    }   
 }
 
 int Module::getDestinationUDPPort() {
@@ -1555,9 +1539,6 @@ int Module::getDestinationUDPPort() {
 void Module::setDestinationUDPPort2(const int port) {
     LOG(logDEBUG1) << "Setting destination udp port2 to " << port;
     sendToDetector(F_SET_DEST_UDP_PORT2, port, nullptr); 
-    if (shm()->useReceiver) {
-        sendToReceiver(F_SET_RECEIVER_UDP_PORT2, port, nullptr); 
-    }   
 }
 
 int Module::getDestinationUDPPort2() {
@@ -1630,24 +1611,6 @@ std::string Module::printUDPConfiguration() {
     }
     oss << "\n";
     return oss.str();
-}
-
-void Module::setClientStreamingPort(int port) { shm()->zmqport = port; }
-
-int Module::getClientStreamingPort() { return shm()->zmqport; }
-
-void Module::setReceiverStreamingPort(int port) {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq port)");
-    }    
-    sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
-}
-
-int Module::getReceiverStreamingPort() {    
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to get receiver parameters (zmq port)");
-    }
-    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
 }
 
 void Module::setClientStreamingIP(const sls::IpAddr ip) {

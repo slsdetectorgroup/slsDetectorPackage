@@ -361,8 +361,8 @@ void Receiver::restreamStop() {
 }
 
 /** Network Configuration (Detector<->Receiver) */
-sls::MacAddr Receiver::setDestinationUDPIP(const IpAddr ip) {
-    LOG(logDEBUG1) << "Setting destination udp ip to " << ip;
+sls::MacAddr Receiver::setUDPIP(const IpAddr ip) {
+    LOG(logDEBUG1) << "Setting udp ip to receier: " << ip;
     if (ip == 0) {
         throw RuntimeError("Invalid destination udp ip address");
     }
@@ -370,6 +370,30 @@ sls::MacAddr Receiver::setDestinationUDPIP(const IpAddr ip) {
     sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
     return retval;
 }
+
+void Receiver::setUDPPort(const int port) {
+    LOG(logDEBUG1) << "Setting udp port to  receiver: " << port;
+    sendToReceiver(F_SET_RECEIVER_UDP_PORT, port, nullptr); 
+}
+
+/** ZMQ Streaming Parameters (Receiver<->Client) */
+void Receiver::setClientZmqPort(const int port) { 
+    shm()->zmqPort = port;
+}
+
+int Receiver::getClientZmqPort() const { 
+    return shm()->zmqPort; 
+}
+
+void Receiver::setReceiverZmqPort(int port) {
+    sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
+}
+
+int Receiver::getReceiverZmqPort() const {    
+    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
+}
+
+
 
 /** Detector Parameters */
 void Receiver::setNumberOfFrames(int64_t value) {

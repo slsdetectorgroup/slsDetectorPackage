@@ -160,6 +160,13 @@ class Detector(CppDetectorApi):
     def frames(self, n_frames):
         self.setNumberOfFrames(n_frames)
 
+    @property
+    def triggers(self):
+        return element_if_equal(self.getNumberOfTriggers())
+
+    @triggers.setter
+    def triggers(self, n_triggers):
+        self.setNumberOfTriggers(n_triggers)
 
     @property
     def exptime(self):

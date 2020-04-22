@@ -1106,19 +1106,8 @@ int64_t Module::getSubExptime() {
 }
 
 void Module::setSubExptime(int64_t value) {
-    int64_t prevVal = value;
-    if (shm()->myDetectorType == EIGER) {
-        prevVal = getSubExptime();
-    }    
     LOG(logDEBUG1) << "Setting sub exptime to " << value << "ns";
     sendToDetector(F_SET_SUB_EXPTIME, value, nullptr);   
-    if (shm()->useReceiver) {
-        LOG(logDEBUG1) << "Sending sub exptime to Receiver: " << value;
-        sendToReceiver(F_RECEIVER_SET_SUB_EXPTIME, value, nullptr);   
-    }
-    if (prevVal != value) {
-        updateRateCorrection();            
-    }       
 }
     
 int64_t Module::getSubDeadTime() {
@@ -1128,10 +1117,6 @@ int64_t Module::getSubDeadTime() {
 void Module::setSubDeadTime(int64_t value) {
     LOG(logDEBUG1) << "Setting sub deadtime to " << value << "ns";
     sendToDetector(F_SET_SUB_DEADTIME, value, nullptr);
-    if (shm()->useReceiver) {
-        LOG(logDEBUG1) << "Sending sub deadtime to Receiver: " << value;
-        sendToReceiver(F_RECEIVER_SET_SUB_DEADTIME, value, nullptr);   
-    }
 }
     
 int64_t Module::getStorageCellDelay() {
@@ -1228,10 +1213,6 @@ void Module::setTimingMode(timingMode value) {
     timingMode retval = GET_TIMING_MODE;
     LOG(logDEBUG1) << "Setting timing mode to " << value;
     sendToDetector(F_SET_TIMING_MODE, static_cast<int>(value), retval);
-    if (shm()->useReceiver) {
-        LOG(logDEBUG1) << "Sending timing mode to Receiver: " << value;
-        sendToReceiver(F_SET_RECEIVER_TIMING_MODE, value, nullptr);   
-    }
 }
 
 int Module::getDynamicRange() {
@@ -1243,36 +1224,10 @@ int Module::getDynamicRange() {
 }
 
 void Module::setDynamicRange(int n) {
-    int prev_val = n;
-    if (shm()->myDetectorType == EIGER) {
-        prev_val = getDynamicRange();
-    }
-
     int retval = -1;
     LOG(logDEBUG1) << "Setting dynamic range to " << n;
     sendToDetector(F_SET_DYNAMIC_RANGE, n, retval);
     LOG(logDEBUG1) << "Dynamic Range: " << retval;
-
-    if (shm()->useReceiver) {
-        int arg = retval;
-        retval = -1;
-        LOG(logDEBUG1) << "Sending dynamic range to receiver: " << arg;
-        sendToReceiver(F_SET_RECEIVER_DYNAMIC_RANGE, arg, retval);
-        LOG(logDEBUG1) << "Receiver Dynamic range: " << retval;
-    }
-
-    // changes in dr
-    if (n != prev_val) {
-        // update speed for usability
-        if (n == 32) {
-            LOG(logINFO) << "Setting Clock to Quarter Speed to cope with Dynamic Range of 32";     
-            setClockDivider(RUN_CLOCK, 2);
-        } else if (prev_val == 32) {
-            LOG(logINFO) << "Setting Clock to Full Speed for Dynamic Range of " << n;     
-            setClockDivider(RUN_CLOCK, 0);
-        }
-        updateRateCorrection();
-    }
 }
 
 int Module::setDAC(int val, dacIndex index, int mV) {
@@ -1367,9 +1322,6 @@ void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
     // update #nchan, as it depends on #samples, adcmask,
     if (shm()->myDetectorType == CHIPTESTBOARD) {
         updateNumberOfChannels();
-    }
-    if (shm()->useReceiver) {
-        sendToReceiver(F_RECEIVER_SET_READOUT_MODE, mode, nullptr);
     }
 }
 

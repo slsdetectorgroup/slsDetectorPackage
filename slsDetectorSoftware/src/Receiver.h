@@ -9,162 +9,161 @@
 #define RECEIVER_SHMVERSION 0x200421
 
 namespace sls {
-    struct sharedReceiver {
+struct sharedReceiver {
 
-    /* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND ------*/
-    int shmversion;
-    char hostname[MAX_STR_LENGTH];
-    int tcpPort;
-    /** END OF FIXED PATTERN -----------------------------------------------*/
+/* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND ------*/
+int shmversion;
+char hostname[MAX_STR_LENGTH];
+int tcpPort;
+/** END OF FIXED PATTERN -----------------------------------------------*/
 
-    int stoppedFlag;
-    int zmqPort;
-    sls::IpAddr zmqIp;
+int stoppedFlag;
+int zmqPort;
+sls::IpAddr zmqIp;
 
-    };
+};
 
-    class Receiver : public virtual slsDetectorDefs {
-        public:
-        static size_t getNumReceivers();
-        // create shm
-        explicit Receiver(int detector_id, int module_id, int interface_id,
-            int receiver_id, int tcp_port = 0, std::string hostname = "",
-            int zmq_port = 0);
-        // open shm
-        explicit Receiver(int detector_id, int module_id, int interface_id,
-            int receiver_id, bool verify);
+class Receiver : public virtual slsDetectorDefs {
+    public:
+    static size_t getNumReceivers();
+    // create shm
+    explicit Receiver(int detector_id, int module_id, int interface_id,
+        int receiver_id, int tcp_port = 0, std::string hostname = "",
+        int zmq_port = 0);
+    // open shm
+    explicit Receiver(int detector_id, int module_id, int interface_id,
+        int receiver_id, bool verify);
 
-        virtual ~Receiver();
+    virtual ~Receiver();
 
-        void createIndexString();
+    void createIndexString();
 
-        /**************************************************
-        *                                                *
-        *    Configuration                               *
-        *                                                *
-        * ************************************************/
-        /**
-        * Free shared memory and delete shared memory structure
-        * occupied by the sharedReceiver structure
-        * Is only safe to call if one deletes the Receiver object afterward
-        * and frees multi shared memory/updates
-        * thisMultiDetector->numberOfReceivers
-        */
-        void freeSharedMemory();
-        std::string getHostname() const;
-        void setHostname(const std::string &hostname);
-        sls::MacAddr configure(slsDetectorDefs::rxParameters arg);
-        int getTCPPort() const;
-        void setTCPPort(const int port);
-        std::string printConfiguration();
-        int64_t getSoftwareVersion() const;
+    /**************************************************
+    *                                                *
+    *    Configuration                               *
+    *                                                *
+    * ************************************************/
+    /**
+    * Free shared memory and delete shared memory structure
+    * occupied by the sharedReceiver structure
+    * Is only safe to call if one deletes the Receiver object afterward
+    * and frees multi shared memory/updates
+    * thisMultiDetector->numberOfReceivers
+    */
+    void freeSharedMemory();
+    std::string getHostname() const;
+    void setHostname(const std::string &hostname);
+    sls::MacAddr configure(slsDetectorDefs::rxParameters arg);
+    int getTCPPort() const;
+    void setTCPPort(const int port);
+    std::string printConfiguration();
+    int64_t getSoftwareVersion() const;
 
+    /**************************************************
+    *                                                *
+    *    Acquisition                                 *
+    *                                                *
+    * ************************************************/
+    void start();
+    void stop();
+    slsDetectorDefs::runStatus getStatus() const;
+    int getProgress() const;
+    void setStoppedFlag();
+    void restreamStop();
 
-        /**************************************************
-        *                                                *
-        *    Acquisition Parameters                      *
-        *                                                *
-        * ************************************************/
-        void setNumberOfFrames(int64_t value);
-        void setNumberOfTriggers(int64_t value);
-        void setNumberOfBursts(int64_t value);
-        void setNumberOfAnalogSamples(int value);
-        void setNumberOfDigitalSamples(int value);
-        void setExptime(int64_t value);
+    /**************************************************
+    *                                                 *
+    *    Network Configuration (Detector<->Receiver)  *
+    *                                                 *
+    * ************************************************/
 
-
-        /**************************************************
-        *                                                *
-        *    Acquisition                                 *
-        *                                                *
-        * ************************************************/
-        void start();
-        void stop();
-        slsDetectorDefs::runStatus getStatus() const;
-        int getProgress() const;
-        void setStoppedFlag();
-        void restreamStop();
-
-        /**************************************************
-        *                                                 *
-        *    Network Configuration (Detector<->Receiver)  *
-        *                                                 *
-        * ************************************************/
-
-        /**************************************************
-        *                                                *
-        *    File                                        *
-        *                                                *
-        * ************************************************/
-        /**************************************************
-        *                                                *
-        *    ZMQ Streaming Parameters (Receiver<->Client)*
-        *                                                *
-        * ************************************************/
-        
-        /**************************************************
-        *                                                *
-        *    Detector Specific                           *
-        *                                                *
-        * ************************************************/
-        // Eiger 
-        void setQuad(const bool enable);
-        void setReadNLines(const int value);
-
-        // Moench
-        /** empty vector deletes entire additional json header */
-        void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);
-        std::map<std::string, std::string> getAdditionalJsonHeader();
-
-        /** Sets the value for the additional json header parameter key if found, 
-        else append it. If value empty, then deletes parameter */
-        void setAdditionalJsonParameter(const std::string &key, const std::string &value);
-        std::string getAdditionalJsonParameter(const std::string &key);
+    /**************************************************
+    *                                                *
+    *    Detector Parameters                         *
+    *                                                *
+    * ************************************************/
+    void setNumberOfFrames(int64_t value);
+    void setNumberOfTriggers(int64_t value);
+    void setNumberOfBursts(int64_t value);
+    void setNumberOfAnalogSamples(int value);
+    void setNumberOfDigitalSamples(int value);
+    void setExptime(int64_t value);
+    void setSubExptime(int64_t value);
+    void setSubDeadTime(int64_t value);
+    void setTimingMode(timingMode value);
+    void setDynamicRange(int n);
+    void setReadoutMode(const readoutMode mode);
+    void setQuad(const bool enable);
+    void setReadNLines(const int value);
+    /** empty vector deletes entire additional json header */
+    void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);
+    std::map<std::string, std::string> getAdditionalJsonHeader();
+    /** Sets the value for the additional json header parameter key if found, 
+    else append it. If value empty, then deletes parameter */
+    void setAdditionalJsonParameter(const std::string &key, const std::string &value);
+    std::string getAdditionalJsonParameter(const std::string &key);
 
 
-        private:
-        void sendToReceiver(int fnum, const void *args, size_t args_size,
-                            void *retval, size_t retval_size);
+    /**************************************************
+    *                                                *
+    *    Receiver Parameters                         *
+    *                                                *
+    * ************************************************/
 
-        void sendToReceiver(int fnum, const void *args, size_t args_size,
-                            void *retval, size_t retval_size) const;
+    /**************************************************
+    *                                                *
+    *    File                                        *
+    *                                                *
+    * ************************************************/
+    /**************************************************
+    *                                                *
+    *    ZMQ Streaming Parameters (Receiver<->Client)*
+    *                                                *
+    * ************************************************/
 
-        template <typename Arg, typename Ret>
-        void sendToReceiver(int fnum, const Arg &args, Ret &retval);
+    private:
+    void sendToReceiver(int fnum, const void *args, size_t args_size,
+                        void *retval, size_t retval_size);
 
-        template <typename Arg, typename Ret>
-        void sendToReceiver(int fnum, const Arg &args, Ret &retval) const;
+    void sendToReceiver(int fnum, const void *args, size_t args_size,
+                        void *retval, size_t retval_size) const;
 
-        template <typename Arg>
-        void sendToReceiver(int fnum, const Arg &args, std::nullptr_t);
+    template <typename Arg, typename Ret>
+    void sendToReceiver(int fnum, const Arg &args, Ret &retval);
 
-        template <typename Arg>
-        void sendToReceiver(int fnum, const Arg &args, std::nullptr_t) const;
+    template <typename Arg, typename Ret>
+    void sendToReceiver(int fnum, const Arg &args, Ret &retval) const;
 
-        template <typename Ret>
-        void sendToReceiver(int fnum, std::nullptr_t, Ret &retval);
+    template <typename Arg>
+    void sendToReceiver(int fnum, const Arg &args, std::nullptr_t);
 
-        template <typename Ret>
-        void sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const;
+    template <typename Arg>
+    void sendToReceiver(int fnum, const Arg &args, std::nullptr_t) const;
 
-        template <typename Ret>
-        Ret sendToReceiver(int fnum);
+    template <typename Ret>
+    void sendToReceiver(int fnum, std::nullptr_t, Ret &retval);
 
-        template <typename Ret>
-        Ret sendToReceiver(int fnum) const;
+    template <typename Ret>
+    void sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const;
 
-        template <typename Ret, typename Arg>
-        Ret sendToReceiver(int fnum, const Arg &args);
+    template <typename Ret>
+    Ret sendToReceiver(int fnum);
 
-        template <typename Ret, typename Arg>
-        Ret sendToReceiver(int fnum, const Arg &args) const;
+    template <typename Ret>
+    Ret sendToReceiver(int fnum) const;
 
-        void checkVersionCompatibility();
-        const int receiverId{0};
-        const int interfaceId{0};
-        const int moduleId{0};
-        std::string indexString;
-        mutable sls::SharedMemory<sharedReceiver> shm{0, 0, 0, 0};
-    };
+    template <typename Ret, typename Arg>
+    Ret sendToReceiver(int fnum, const Arg &args);
+
+    template <typename Ret, typename Arg>
+    Ret sendToReceiver(int fnum, const Arg &args) const;
+
+    void checkVersionCompatibility();
+    const int receiverId{0};
+    const int interfaceId{0};
+    const int moduleId{0};
+    std::string indexString;
+    mutable sls::SharedMemory<sharedReceiver> shm{0, 0, 0, 0};
+};
 
 }   // sls

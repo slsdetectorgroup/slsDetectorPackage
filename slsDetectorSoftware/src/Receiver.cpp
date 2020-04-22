@@ -322,7 +322,48 @@ int64_t Receiver::getSoftwareVersion() const {
     return sendToReceiver<int64_t>(F_GET_RECEIVER_VERSION);
 }
 
-/** Acquisition Parameters */
+/** Acquisition */
+
+void Receiver::start() {
+    LOG(logDEBUG1) << "Starting Receiver";
+    shm()->stoppedFlag = false;
+    sendToReceiver(F_START_RECEIVER, nullptr, nullptr);
+}
+
+void Receiver::stop() {
+    LOG(logDEBUG1) << "Stopping Receiver";
+    int arg = static_cast<int>(shm()->stoppedFlag);
+    sendToReceiver(F_STOP_RECEIVER, arg, nullptr);
+}
+
+slsDetectorDefs::runStatus Receiver::getStatus() const {
+    runStatus retval = ERROR;
+    LOG(logDEBUG1) << "Getting Receiver Status";
+    sendToReceiver(F_GET_RECEIVER_STATUS, nullptr, retval);
+    LOG(logDEBUG1) << "Receiver Status: " << ToString(retval);
+    return retval;
+}
+
+int Receiver::getProgress() const {
+    int retval = -1;
+    sendToReceiver(F_GET_RECEIVER_PROGRESS, nullptr, retval);
+    LOG(logDEBUG1) << "Current Progress of Receiver: " << retval;
+    return retval;
+}
+
+void Receiver::setStoppedFlag() {
+    shm()->stoppedFlag = true;
+}
+
+void Receiver::restreamStop() {
+    LOG(logDEBUG1) << "Restream stop dummy from Receiver via zmq";
+    sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER, nullptr, nullptr);
+}
+
+/** Network Configuration (Detector<->Receiver) */
+
+
+/** Detector Parameters */
 void Receiver::setNumberOfFrames(int64_t value) {
     LOG(logDEBUG1) << "Sending number of frames to Receiver: " << value;
     sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);   
@@ -353,47 +394,31 @@ void Receiver::setExptime(int64_t value) {
     sendToReceiver(F_RECEIVER_SET_EXPTIME, value, nullptr);   
 }
 
-/** Acquisition */
-
-void Receiver::start() {
-    LOG(logDEBUG1) << "Starting Receiver";
-    shm()->stoppedFlag = false;
-    sendToReceiver(F_START_RECEIVER, nullptr, nullptr);
+void Receiver::setSubExptime(int64_t value) {
+    LOG(logDEBUG1) << "Sending sub exptime to Receiver: " << value;
+    sendToReceiver(F_RECEIVER_SET_SUB_EXPTIME, value, nullptr);   
 }
 
-void Receiver::stop() {
-    LOG(logDEBUG1) << "Stopping Receiver";
-    int arg = static_cast<int>(shm()->stoppedFlag);
-    sendToReceiver(F_STOP_RECEIVER, arg, nullptr);
+void Receiver::setSubDeadTime(int64_t value) {
+    LOG(logDEBUG1) << "Sending sub deadtime to Receiver: " << value;
+    sendToReceiver(F_RECEIVER_SET_SUB_DEADTIME, value, nullptr);   
 }
 
-slsDetectorDefs::runStatus Receiver::getStatus() const {
-    runStatus retval = ERROR;
-    LOG(logDEBUG1) << "Getting Receiver Status";
-    sendToReceiver(F_GET_RECEIVER_STATUS, nullptr, retval);
-    LOG(logDEBUG1) << "Receiver Status: " << ToString(retval);
-    return retval;
+void Receiver::setTimingMode(timingMode value) {
+    LOG(logDEBUG1) << "Sending timing mode to Receiver: " << value;
+    sendToReceiver(F_SET_RECEIVER_TIMING_MODE, value, nullptr);   
 }
 
-
-int Receiver::getProgress() const {
+void Receiver::setDynamicRange(int n) {
     int retval = -1;
-    sendToReceiver(F_GET_RECEIVER_PROGRESS, nullptr, retval);
-    LOG(logDEBUG1) << "Current Progress of Receiver: " << retval;
-    return retval;
+    LOG(logDEBUG1) << "Sending dynamic range to receiver: " << n;
+    sendToReceiver(F_SET_RECEIVER_DYNAMIC_RANGE, n, retval);
 }
 
-void Receiver::setStoppedFlag() {
-    shm()->stoppedFlag = true;
+void Receiver::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
+    sendToReceiver(F_RECEIVER_SET_READOUT_MODE, mode, nullptr);
 }
 
-void Receiver::restreamStop() {
-    LOG(logDEBUG1) << "Restream stop dummy from Receiver via zmq";
-    sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER, nullptr, nullptr);
-}
-
-/** Detector Specific */
-// Eiger
 void Receiver::setQuad(const bool enable) {
     int value = enable ? 1 : 0;
     LOG(logDEBUG1) << "Setting Quad type to " << value << " in Receiver";
@@ -405,8 +430,6 @@ void Receiver::setReadNLines(const int value) {
                         << " in Receiver";
     sendToReceiver(F_SET_RECEIVER_READ_N_LINES, value, nullptr);
 }
-
-// Moench
 
 void Receiver::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader) {
     for (auto &it : jsonHeader) {

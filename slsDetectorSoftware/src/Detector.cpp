@@ -234,12 +234,13 @@ Result<ns> Detector::getExptime(Positions pos) const {
 void Detector::setExptime(ns t, Positions pos) {
     bool change = false;
     if (getDetectorType().squash() == defs::EIGER) {
-        ns prevVal = getPeriod(pos).squash();
-        if (prevVal != t) {
+        ns prevVal = getExptime(pos).squash();
+        if (getExptime(pos).squash() != t) {
             change = true;
         }
     }
     pimpl->Parallel(&Module::setExptime, pos, t.count());
+    pimpl->Parallel3(&Receiver::setExptime, t.count());
     if (change) {
         pimpl->Parallel(&Module::updateRateCorrection, pos);
     }
@@ -283,6 +284,7 @@ Result<defs::timingMode> Detector::getTimingMode(Positions pos) const {
 
 void Detector::setTimingMode(defs::timingMode value, Positions pos) {
     pimpl->Parallel(&Module::setTimingMode, pos, value);
+    pimpl->Parallel3(&Receiver::setTimingMode, value);
 }
 
 Result<defs::speedLevel> Detector::getSpeed(Positions pos) const {
@@ -1028,7 +1030,29 @@ Result<int> Detector::getDynamicRange(Positions pos) const {
 }
 
 void Detector::setDynamicRange(int value) {
+    bool change = false;
+    int prevVal = value;
+    if (getDetectorType().squash() == defs::EIGER) {
+        prevVal = getDynamicRange().squash();
+        if (prevVal != value) {
+            change = true;
+        }
+    }
     pimpl->Parallel(&Module::setDynamicRange, {}, value);
+    pimpl->Parallel3(&Receiver::setDynamicRange, value);
+    if (change) {
+        // update speed for usability
+        if (value == 32) {
+            LOG(logINFO) << "Setting Clock to Quarter Speed to cope with "
+            "Dynamic Range of 32";     
+            setSpeed(defs::QUARTER_SPEED);
+        } else if (prevVal == 32) {
+            LOG(logINFO) << "Setting Clock to Full Speed for Dynamic Range "
+            "of " << value;     
+            setSpeed(defs::FULL_SPEED);
+        }
+        pimpl->Parallel(&Module::updateRateCorrection, {});
+    }
 }
 
 Result<ns> Detector::getSubExptime(Positions pos) const {
@@ -1036,7 +1060,18 @@ Result<ns> Detector::getSubExptime(Positions pos) const {
 }
 
 void Detector::setSubExptime(ns t, Positions pos) {
+    bool change = false;
+    if (getDetectorType().squash() == defs::EIGER) {
+        ns prevVal = getSubExptime(pos).squash();
+        if (prevVal != t) {
+            change = true;
+        }
+    }
     pimpl->Parallel(&Module::setSubExptime, pos, t.count());
+    pimpl->Parallel3(&Receiver::setSubExptime, t.count());
+    if (change) {
+        pimpl->Parallel(&Module::updateRateCorrection, pos);
+    }
 }
 
 Result<ns> Detector::getSubDeadTime(Positions pos) const {
@@ -1045,6 +1080,7 @@ Result<ns> Detector::getSubDeadTime(Positions pos) const {
 
 void Detector::setSubDeadTime(ns value, Positions pos) {
     pimpl->Parallel(&Module::setSubDeadTime, pos, value.count());
+    pimpl->Parallel3(&Receiver::setSubDeadTime, value.count());
 }
 
 Result<int> Detector::getThresholdEnergy(Positions pos) const {
@@ -1494,6 +1530,7 @@ Result<defs::readoutMode> Detector::getReadoutMode(Positions pos) const {
 
 void Detector::setReadoutMode(defs::readoutMode value, Positions pos) {
     pimpl->Parallel(&Module::setReadoutMode, pos, value);
+    pimpl->Parallel3(&Receiver::setReadoutMode, value);
 }
 
 Result<int> Detector::getDBITClock(Positions pos) const {

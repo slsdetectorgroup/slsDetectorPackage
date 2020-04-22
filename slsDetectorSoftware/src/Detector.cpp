@@ -224,6 +224,7 @@ Result<int64_t> Detector::getNumberOfTriggers(Positions pos) const {
 
 void Detector::setNumberOfTriggers(int64_t value) {
     pimpl->Parallel(&Module::setNumberOfTriggers, {}, value);
+    pimpl->Parallel3(&Receiver::setNumberOfTriggers, value);
 }
 
 Result<ns> Detector::getExptime(Positions pos) const {
@@ -231,7 +232,17 @@ Result<ns> Detector::getExptime(Positions pos) const {
 }
 
 void Detector::setExptime(ns t, Positions pos) {
+    bool change = false;
+    if (getDetectorType().squash() == defs::EIGER) {
+        ns prevVal = getPeriod(pos).squash();
+        if (prevVal != t) {
+            change = true;
+        }
+    }
     pimpl->Parallel(&Module::setExptime, pos, t.count());
+    if (change) {
+        pimpl->Parallel(&Module::updateRateCorrection, pos);
+    }
 }
 
 Result<ns> Detector::getPeriod(Positions pos) const {
@@ -1303,6 +1314,7 @@ Result<int64_t> Detector::getNumberOfBursts(Positions pos) const {
 
 void Detector::setNumberOfBursts(int64_t value) {
     pimpl->Parallel(&Module::setNumberOfBursts, {}, value);
+    pimpl->Parallel3(&Receiver::setNumberOfBursts, value);
 }
 
 Result<ns> Detector::getBurstPeriod(Positions pos) const {
@@ -1375,6 +1387,7 @@ Result<int> Detector::getNumberOfAnalogSamples(Positions pos) const {
 
 void Detector::setNumberOfAnalogSamples(int value, Positions pos) {
     pimpl->Parallel(&Module::setNumberOfAnalogSamples, pos, value);
+    pimpl->Parallel3(&Receiver::setNumberOfAnalogSamples, value);
 }
 
 
@@ -1472,6 +1485,7 @@ Result<int> Detector::getNumberOfDigitalSamples(Positions pos) const {
 
 void Detector::setNumberOfDigitalSamples(int value, Positions pos) {
     pimpl->Parallel(&Module::setNumberOfDigitalSamples, pos, value);
+    pimpl->Parallel3(&Receiver::setNumberOfDigitalSamples, value);
 }
 
 Result<defs::readoutMode> Detector::getReadoutMode(Positions pos) const {

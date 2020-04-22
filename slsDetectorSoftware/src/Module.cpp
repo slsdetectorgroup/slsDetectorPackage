@@ -1007,10 +1007,6 @@ int64_t Module::getNumberOfTriggers() {
 void Module::setNumberOfTriggers(int64_t value) {
     LOG(logDEBUG1) << "Setting number of triggers to " << value;
     sendToDetector(F_SET_NUM_TRIGGERS, value, nullptr);
-    if (shm()->useReceiver) {
-        LOG(logDEBUG1) << "Sending number of triggers to Receiver: " << value;
-        sendToReceiver(F_SET_RECEIVER_NUM_TRIGGERS, value, nullptr);   
-    }
 }
 
 int64_t Module::getNumberOfBursts() {
@@ -1023,10 +1019,6 @@ int64_t Module::getNumberOfBursts() {
 void Module::setNumberOfBursts(int64_t value) {
     LOG(logDEBUG1) << "Setting number of bursts to " << value;
     sendToDetector(F_SET_NUM_BURSTS, value, nullptr);
-    if (shm()->useReceiver) {
-        LOG(logDEBUG1) << "Sending number of bursts to Receiver: " << value;
-        sendToReceiver(F_SET_RECEIVER_NUM_BURSTS, value, nullptr);   
-    }
 }
     
 int Module::getNumberOfAdditionalStorageCells() {
@@ -1053,10 +1045,6 @@ void Module::setNumberOfAnalogSamples(int value) {
     sendToDetector(F_SET_NUM_ANALOG_SAMPLES, value, nullptr);
     // update #nchan, as it depends on #samples, adcmask
     updateNumberOfChannels();
-    if (shm()->useReceiver) {
-        LOG(logDEBUG1) << "Sending number of analog samples to Receiver: " << value;
-        sendToReceiver(F_RECEIVER_SET_NUM_ANALOG_SAMPLES, value, nullptr);   
-    }
 }
    
 int Module::getNumberOfDigitalSamples() {
@@ -1071,10 +1059,6 @@ void Module::setNumberOfDigitalSamples(int value) {
     sendToDetector(F_SET_NUM_DIGITAL_SAMPLES, value, nullptr);
     // update #nchan, as it depends on #samples, adcmask
     updateNumberOfChannels();   
-    if (shm()->useReceiver) {
-        LOG(logDEBUG1) << "Sending number of digital samples to Receiver: " << value;
-        sendToReceiver(F_RECEIVER_SET_NUM_DIGITAL_SAMPLES, value, nullptr);   
-    }
 }
 
 int64_t Module::getExptime() {
@@ -1082,19 +1066,8 @@ int64_t Module::getExptime() {
 }
 
 void Module::setExptime(int64_t value) {
-    int64_t prevVal = value;
-    if (shm()->myDetectorType == EIGER) {
-        prevVal = getExptime();
-    }
     LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
     sendToDetector(F_SET_EXPTIME, value, nullptr);
-    if (shm()->useReceiver) {
-        LOG(logDEBUG1) << "Sending exptime to Receiver: " << value;
-        sendToReceiver(F_RECEIVER_SET_EXPTIME, value, nullptr);   
-    }
-    if (prevVal != value) {
-        updateRateCorrection();            
-    }
 }
 
 int64_t Module::getPeriod() {

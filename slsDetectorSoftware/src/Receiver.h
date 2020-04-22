@@ -66,6 +66,11 @@ namespace sls {
         *                                                *
         * ************************************************/
         void setNumberOfFrames(int64_t value);
+        void setNumberOfTriggers(int64_t value);
+        void setNumberOfBursts(int64_t value);
+        void setNumberOfAnalogSamples(int value);
+        void setNumberOfDigitalSamples(int value);
+        void setExptime(int64_t value);
 
 
         /**************************************************

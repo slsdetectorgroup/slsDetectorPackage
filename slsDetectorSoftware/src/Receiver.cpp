@@ -328,6 +328,31 @@ void Receiver::setNumberOfFrames(int64_t value) {
     sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);   
 }
 
+void Receiver::setNumberOfTriggers(int64_t value) {
+    LOG(logDEBUG1) << "Sending number of triggers to Receiver: " << value;
+    sendToReceiver(F_SET_RECEIVER_NUM_TRIGGERS, value, nullptr);   
+}
+
+void Receiver::setNumberOfBursts(int64_t value) {
+    LOG(logDEBUG1) << "Sending number of bursts to Receiver: " << value;
+    sendToReceiver(F_SET_RECEIVER_NUM_BURSTS, value, nullptr);   
+}
+
+void Receiver::setNumberOfAnalogSamples(int value) {
+    LOG(logDEBUG1) << "Sending number of analog samples to Receiver: " << value;
+    sendToReceiver(F_RECEIVER_SET_NUM_ANALOG_SAMPLES, value, nullptr);   
+}
+
+void Receiver::setNumberOfDigitalSamples(int value) {
+    LOG(logDEBUG1) << "Sending number of digital samples to Receiver: " << value;
+    sendToReceiver(F_RECEIVER_SET_NUM_DIGITAL_SAMPLES, value, nullptr);   
+}
+
+void Receiver::setExptime(int64_t value) {
+    LOG(logDEBUG1) << "Sending exptime to Receiver: " << value;
+    sendToReceiver(F_RECEIVER_SET_EXPTIME, value, nullptr);   
+}
+
 /** Acquisition */
 
 void Receiver::start() {

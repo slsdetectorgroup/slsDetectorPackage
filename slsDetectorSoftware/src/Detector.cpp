@@ -633,6 +633,8 @@ Result<IpAddr> Detector::getDestinationUDPIP(Positions pos) const {
 
 void Detector::setDestinationUDPIP(const IpAddr ip, Positions pos) {
     pimpl->Parallel(&Module::setDestinationUDPIP, pos, ip);
+    auto mac = pimpl->Parallel1(&Receiver::setDestinationUDPIP, pos, {}, ip).squash();
+    setDestinationUDPMAC(mac, pos);
 }
 
 Result<IpAddr> Detector::getDestinationUDPIP2(Positions pos) const {

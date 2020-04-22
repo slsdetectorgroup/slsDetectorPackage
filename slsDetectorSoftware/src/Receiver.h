@@ -76,6 +76,7 @@ class Receiver : public virtual slsDetectorDefs {
     *    Network Configuration (Detector<->Receiver)  *
     *                                                 *
     * ************************************************/
+    sls::MacAddr setDestinationUDPIP(const sls::IpAddr ip);
 
     /**************************************************
     *                                                *

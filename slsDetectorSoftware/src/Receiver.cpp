@@ -361,7 +361,15 @@ void Receiver::restreamStop() {
 }
 
 /** Network Configuration (Detector<->Receiver) */
-
+sls::MacAddr Receiver::setDestinationUDPIP(const IpAddr ip) {
+    LOG(logDEBUG1) << "Setting destination udp ip to " << ip;
+    if (ip == 0) {
+        throw RuntimeError("Invalid destination udp ip address");
+    }
+    sls::MacAddr retval(0LU);
+    sendToReceiver(F_SET_RECEIVER_UDP_IP, ip, retval);
+    return retval;
+}
 
 /** Detector Parameters */
 void Receiver::setNumberOfFrames(int64_t value) {

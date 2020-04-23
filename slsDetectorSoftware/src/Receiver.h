@@ -81,6 +81,9 @@ class Receiver : public virtual slsDetectorDefs {
     * ************************************************/
     sls::MacAddr setUDPIP(const sls::IpAddr ip);
     void setUDPPort(const int udpport);
+    int64_t getUDPSocketBufferSize() const;
+    void setUDPSocketBufferSize(int64_t value);
+    int64_t getRealUDPSocketBufferSize() const;
 
     /**************************************************
     *                                                *
@@ -89,19 +92,21 @@ class Receiver : public virtual slsDetectorDefs {
     * ************************************************/
     bool getZmq() const;
     void setZmq(const bool enable);
-    int getClientZmqPort() const;
-    void setClientZmqPort(const int port);
-    int getZmqPort() const; 
-    void setZmqPort(int port);
-    sls::IpAddr getClientZmqIP() const;
-    void setClientZmqIP(const sls::IpAddr ip);
-    sls::IpAddr getZmqIP() const;
-    void setZmqIP(const sls::IpAddr ip);
     int getZmqFrequency() const;
     /** Freq = 0 for a timer, else frequency */
     void setZmqFrequency(const int freq);
     int getZmqTimer() const;
     void setZmqTimer(const int time_in_ms = 200);
+    int getZmqPort() const; 
+    void setZmqPort(int port);
+    sls::IpAddr getZmqIP() const;
+    void setZmqIP(const sls::IpAddr ip);
+    int getClientZmqPort() const;
+    void setClientZmqPort(const int port);
+    sls::IpAddr getClientZmqIP() const;
+    void setClientZmqIP(const sls::IpAddr ip);
+
+
 
     /**************************************************
     *                                                *
@@ -111,11 +116,7 @@ class Receiver : public virtual slsDetectorDefs {
     bool getLock() const;
     void setLock(const bool lock);
     sls::IpAddr getLastClientIP() const;
-    void exitServer();
-    
-    int64_t getUDPSocketBufferSize() const;
-    void setUDPSocketBufferSize(int64_t value);
-    int64_t getRealUDPSocketBufferSize() const;
+    void exitServer();  
 
     bool getDeactivatedPaddingMode() const;
     void setDeactivatedPaddingMode(const bool padding);
@@ -125,6 +126,10 @@ class Receiver : public virtual slsDetectorDefs {
     void setFramesDiscardPolicy(const frameDiscardPolicy f);
     bool getPartialFramesPadding() const;
     void setPartialFramesPadding(const bool padding);
+    int getFifoDepth() const;
+    void setFifoDepth(const int value);
+    bool getSilentMode() const;
+    void setSilentMode(const bool value);
 
     /**************************************************
     *                                                *
@@ -181,6 +186,8 @@ class Receiver : public virtual slsDetectorDefs {
     /** Set digital data offset in bytes (CTB only) */
     void setDbitOffset(const int value);
     void setActivate(const bool enable);
+    void setTenGiga(const bool enable);
+    void setCounterMask(const uint32_t mask);
 
     /**************************************************
     *                                                *

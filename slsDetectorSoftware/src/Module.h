@@ -15,7 +15,7 @@ class ServerInterface;
 
 #define MODULE_SHMRXVERSION 0x200415
 #define MODULE_SHMAPIVERSION 0x190726
-#define MODULE_SHMVERSION 0x200415
+#define MODULE_SHMVERSION 0x200423
 
 namespace sls{
 
@@ -65,22 +65,6 @@ struct sharedModule {
 
     /**  number of dacs per module*/
     int nDacs;
-
-    /** ip address/hostname of the receiver for client control via TCP */
-    char rxHostname[MAX_STR_LENGTH];
-
-    /** is the TCP port used to communicate between client and the receiver */
-    int rxTCPPort;
-
-    /** is set if the receiver hostname given and is connected,
-     * unset if socket connection is not possible  */
-    bool useReceiver;
-
-    /** tcp port from gui/different process to receiver (only data) */
-    int zmqport;
-
-    /**  zmq tcp src ip address in client (only data) **/
-    sls::IpAddr zmqip;
 
     /** num udp interfaces */
     int numUDPInterfaces;
@@ -1139,27 +1123,8 @@ class Module : public virtual slsDetectorDefs {
      */
     void updateRateCorrection();
 
-    /**
-     * Gets the use receiver flag from shared memory
-     */
-    bool getUseReceiverFlag() const;
-
-    /**
-     * Enable/disable or 10Gbe
-     * @param i is -1 to get, 0 to disable and 1 to enable
-     * @returns if 10Gbe is enabled
-     */
-    bool enableTenGigabitEthernet(int value = -1);
-
-    /**
-     * Set/get receiver fifo depth
-     * @param i is -1 to get, any other value to set the fifo deph
-     * @returns the receiver fifo depth
-     */
-    int setReceiverFifoDepth(int n_frames = -1);
-
-    bool getReceiverSilentMode();
-    void setReceiverSilentMode(bool enable);
+    bool getTenGiga();
+    void setTenGiga(bool value);
 
     /**
      * Opens pattern file and sends pattern to CTB
@@ -1359,50 +1324,6 @@ class Module : public virtual slsDetectorDefs {
     void sendToDetectorStop(int fnum);
 
     void sendToDetectorStop(int fnum) const;
-
-    /**
-     * Send function parameters to receiver
-     * @param fnum function enum
-     * @param args argument pointer
-     * @param args_size size of argument
-     * @param retval return pointers
-     * @param retval_size size of return value
-     */
-    void sendToReceiver(int fnum, const void *args, size_t args_size,
-                        void *retval, size_t retval_size);
-
-    void sendToReceiver(int fnum, const void *args, size_t args_size,
-                        void *retval, size_t retval_size) const;
-
-    template <typename Arg, typename Ret>
-    void sendToReceiver(int fnum, const Arg &args, Ret &retval);
-
-    template <typename Arg, typename Ret>
-    void sendToReceiver(int fnum, const Arg &args, Ret &retval) const;
-
-    template <typename Arg>
-    void sendToReceiver(int fnum, const Arg &args, std::nullptr_t);
-
-    template <typename Arg>
-    void sendToReceiver(int fnum, const Arg &args, std::nullptr_t) const;
-
-    template <typename Ret>
-    void sendToReceiver(int fnum, std::nullptr_t, Ret &retval);
-
-    template <typename Ret>
-    void sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const;
-
-    template <typename Ret>
-    Ret sendToReceiver(int fnum);
-
-    template <typename Ret>
-    Ret sendToReceiver(int fnum) const;
-
-    template <typename Ret, typename Arg>
-    Ret sendToReceiver(int fnum, const Arg &args);
-
-    template <typename Ret, typename Arg>
-    Ret sendToReceiver(int fnum, const Arg &args) const;
 
     /**
      * Get Detector Type from Shared Memory (opening shm without verifying size)

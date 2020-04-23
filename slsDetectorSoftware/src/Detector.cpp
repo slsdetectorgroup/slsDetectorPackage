@@ -703,12 +703,12 @@ Result<std::string> Detector::printRxConfiguration(Positions pos) const {
 }
 
 Result<bool> Detector::getTenGiga(Positions pos) const {
-    return pimpl->Parallel(&Module::enableTenGigabitEthernet, pos, -1);
+    return pimpl->Parallel(&Module::getTenGiga, pos);
 }
 
 void Detector::setTenGiga(bool value, Positions pos) {
-    pimpl->Parallel(&Module::enableTenGigabitEthernet, pos,
-                    static_cast<int>(value));
+    pimpl->Parallel(&Module::setTenGiga, pos, value);
+    pimpl->Parallel3(&Receiver::setTenGiga, value);
 }
 
 Result<bool> Detector::getTenGigaFlowControl(Positions pos) const {
@@ -751,7 +751,7 @@ void Detector::removeReceivers(const int udpInterface) {
 
 
 Result<bool> Detector::getUseReceiverFlag(Positions pos) const {
-    return pimpl->Parallel(&Module::getUseReceiverFlag, pos);
+    return (pimpl->isReceiverInitialized(1) || pimpl->isReceiverInitialized(2));
 }
 
 Result<std::string> Detector::getRxHostname(const int udpInterface, Positions pos) const {
@@ -816,19 +816,19 @@ void Detector::setRxPort(const int udpInterface, int port, int module_id) {
 }
 
 Result<int> Detector::getRxFifoDepth(Positions pos) const {
-    return pimpl->Parallel(&Module::setReceiverFifoDepth, pos, -1);
+    return pimpl->Parallel3(&Receiver::getFifoDepth);
 }
 
 void Detector::setRxFifoDepth(int nframes, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverFifoDepth, pos, nframes);
+    pimpl->Parallel3(&Receiver::setFifoDepth, nframes);
 }
 
 Result<bool> Detector::getRxSilentMode(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverSilentMode, pos);
+    return pimpl->Parallel3(&Receiver::getSilentMode);
 }
 
 void Detector::setRxSilentMode(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverSilentMode, pos, value);
+    pimpl->Parallel3(&Receiver::setSilentMode, value);
 }
 
 Result<defs::frameDiscardPolicy>
@@ -1439,6 +1439,7 @@ Result<uint32_t> Detector::getCounterMask(Positions pos) const {
 
 void Detector::setCounterMask(uint32_t countermask, Positions pos) {
     pimpl->Parallel(&Module::setCounterMask, pos, countermask);
+    pimpl->Parallel3(&Receiver::setCounterMask, countermask);
 }
 
 // CTB/ Moench Specific

@@ -297,6 +297,20 @@ void Receiver::setUDPPort(const int port) {
     sendToReceiver(F_SET_RECEIVER_UDP_PORT, port, nullptr); 
 }
 
+int64_t Receiver::getUDPSocketBufferSize() const {
+    return sendToReceiver<int64_t>(F_GET_RECEIVER_UDP_SOCK_BUF_SIZE);
+}
+
+void Receiver::setUDPSocketBufferSize(int64_t value) {
+    LOG(logDEBUG1) << "Sending UDP Socket Buffer size to receiver: "
+                        << value;
+    sendToReceiver(F_SET_RECEIVER_UDP_SOCK_BUF_SIZE, value, nullptr);
+}
+
+int64_t Receiver::getRealUDPSocketBufferSize() const {
+    return sendToReceiver<int64_t>(F_GET_RECEIVER_REAL_UDP_SOCK_BUF_SIZE);
+}
+
 /** ZMQ Streaming Parameters (Receiver<->Client) */
 
 bool Receiver::getZmq() const {
@@ -306,50 +320,6 @@ bool Receiver::getZmq() const {
 void Receiver::setZmq(const bool enable) {
     int arg = static_cast<int>(enable);
     sendToReceiver(F_SET_RECEIVER_STREAMING, arg, nullptr);
-}
-
-int Receiver::getClientZmqPort() const { 
-    return shm()->zmqPort; 
-}
-
-void Receiver::setClientZmqPort(const int port) { 
-    shm()->zmqPort = port;
-}
-
-int Receiver::getZmqPort() const {    
-    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
-}
-
-void Receiver::setZmqPort(int port) {
-    sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
-}
-
-sls::IpAddr Receiver::getClientZmqIP() const { 
-    return shm()->zmqIp; 
-}
-
-void Receiver::setClientZmqIP(const sls::IpAddr ip) {
-    LOG(logDEBUG1) << "Setting client zmq ip to " << ip;
-    if (ip == 0) {
-        throw RuntimeError("Invalid client zmq ip address");
-    } 
-    shm()->zmqIp = ip;  
-}
-
-sls::IpAddr Receiver::getZmqIP() const {
-    return sendToReceiver<sls::IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
-}
-
-void Receiver::setZmqIP(const sls::IpAddr ip) {
-    if (ip == 0) {
-        throw RuntimeError("Invalid receiver zmq ip address");
-    }
-   
-    // if client zmqip is empty, update it
-    if (shm()->zmqIp == 0) {
-        shm()->zmqIp = ip;
-    }
-    sendToReceiver(F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
 }
 
 int Receiver::getZmqFrequency() const {
@@ -371,6 +341,50 @@ void Receiver::setZmqTimer(const int time_in_ms) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_TIMER, time_in_ms, nullptr);
 }
 
+int Receiver::getZmqPort() const {    
+    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
+}
+
+void Receiver::setZmqPort(int port) {
+    sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
+}
+
+sls::IpAddr Receiver::getZmqIP() const {
+    return sendToReceiver<sls::IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
+}
+
+void Receiver::setZmqIP(const sls::IpAddr ip) {
+    if (ip == 0) {
+        throw RuntimeError("Invalid receiver zmq ip address");
+    }
+   
+    // if client zmqip is empty, update it
+    if (shm()->zmqIp == 0) {
+        shm()->zmqIp = ip;
+    }
+    sendToReceiver(F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
+}
+
+int Receiver::getClientZmqPort() const { 
+    return shm()->zmqPort; 
+}
+
+void Receiver::setClientZmqPort(const int port) { 
+    shm()->zmqPort = port;
+}
+
+sls::IpAddr Receiver::getClientZmqIP() const { 
+    return shm()->zmqIp; 
+}
+
+void Receiver::setClientZmqIP(const sls::IpAddr ip) {
+    LOG(logDEBUG1) << "Setting client zmq ip to " << ip;
+    if (ip == 0) {
+        throw RuntimeError("Invalid client zmq ip address");
+    } 
+    shm()->zmqIp = ip;  
+}
+
 /** Receiver Parameters */
 
 bool Receiver::getLock() const {
@@ -389,20 +403,6 @@ sls::IpAddr Receiver::getLastClientIP() const {
 void Receiver::exitServer() {
     LOG(logDEBUG1) << "Sending exit command to receiver server";
     sendToReceiver(F_EXIT_RECEIVER, nullptr, nullptr);
-}
-
-int64_t Receiver::getUDPSocketBufferSize() const {
-    return sendToReceiver<int64_t>(F_GET_RECEIVER_UDP_SOCK_BUF_SIZE);
-}
-
-void Receiver::setUDPSocketBufferSize(int64_t value) {
-    LOG(logDEBUG1) << "Sending UDP Socket Buffer size to receiver: "
-                        << value;
-    sendToReceiver(F_SET_RECEIVER_UDP_SOCK_BUF_SIZE, value, nullptr);
-}
-
-int64_t Receiver::getRealUDPSocketBufferSize() const {
-    return sendToReceiver<int64_t>(F_GET_RECEIVER_REAL_UDP_SOCK_BUF_SIZE);
 }
 
 bool Receiver::getDeactivatedPaddingMode() const {
@@ -443,6 +443,23 @@ bool Receiver::getPartialFramesPadding() const {
 void Receiver::setPartialFramesPadding(const bool padding) {
     int arg = static_cast<int>(padding);
     sendToReceiver(F_SET_RECEIVER_PADDING, arg, nullptr);        
+}
+
+int Receiver::getFifoDepth() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_FIFO_DEPTH);    
+}
+
+void Receiver::setFifoDepth(const int value) {
+    sendToReceiver(F_SET_RECEIVER_FIFO_DEPTH, value, nullptr);
+}
+
+bool Receiver::getSilentMode() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_SILENT_MODE);
+}
+
+void Receiver::setSilentMode(const bool enable) {
+    int arg = static_cast<int>(enable);
+    sendToReceiver(F_SET_RECEIVER_SILENT_MODE, arg, nullptr);
 }
 
 /** File */
@@ -667,6 +684,17 @@ void Receiver::setDbitOffset(const int value) {
 void Receiver::setActivate(const bool enable) {
     int arg = static_cast<int>(enable);
     sendToReceiver(F_RECEIVER_ACTIVATE, arg, nullptr);        
+}
+
+void Receiver::setTenGiga(const bool enable) {
+    int arg = static_cast<int>(enable);
+    sendToReceiver(F_ENABLE_RECEIVER_TEN_GIGA, arg, nullptr);        
+}
+
+void Receiver::setCounterMask(const uint32_t mask) {
+    int ncounters = __builtin_popcount(mask);
+    LOG(logDEBUG1) << "Sending Reciver #counters: " << ncounters;
+    sendToReceiver(F_RECEIVER_SET_NUM_COUNTERS, ncounters, nullptr);
 }
 
 /** Json */

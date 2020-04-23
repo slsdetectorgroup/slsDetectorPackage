@@ -105,6 +105,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_overwrite(sls::ServerInterface &socket);
     int enable_tengiga(sls::ServerInterface &socket);
     int set_fifo_depth(sls::ServerInterface &socket);
+    int get_fifo_depth(sls::ServerInterface &socket);
     int set_activate(sls::ServerInterface &socket);
     int set_streaming(sls::ServerInterface &socket);
     int get_streaming(sls::ServerInterface &socket);

@@ -242,102 +242,6 @@ void Module::sendToDetectorStop(int fnum) const {
     sendToDetectorStop(fnum, nullptr, 0, nullptr, 0);
 }
 
-void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
-                                 void *retval, size_t retval_size) {
-    static_cast<const Module &>(*this).sendToReceiver(
-        fnum, args, args_size, retval, retval_size);
-}
-
-void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
-                                 void *retval, size_t retval_size) const {
-    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
-    receiver.close();
-}
-
-template <typename Arg, typename Ret>
-void Module::sendToReceiver(int fnum, const Arg &args, Ret &retval) {
-    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
-}
-
-template <typename Arg, typename Ret>
-void Module::sendToReceiver(int fnum, const Arg &args, Ret &retval) const {
-    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
-}
-
-template <typename Arg>
-void Module::sendToReceiver(int fnum, const Arg &args, std::nullptr_t) {
-    sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
-}
-
-template <typename Arg>
-void Module::sendToReceiver(int fnum, const Arg &args,
-                                 std::nullptr_t) const {
-    sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
-}
-
-template <typename Ret>
-void Module::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) {
-    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
-}
-
-template <typename Ret>
-void Module::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const {
-    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
-}
-
-template <typename Ret>
-Ret Module::sendToReceiver(int fnum){
-    LOG(logDEBUG1) << "Sending: [" 
-    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
-    << ", nullptr, 0, " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
-    Ret retval{};
-    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
-    return retval;
-}
-
-template <typename Ret>
-Ret Module::sendToReceiver(int fnum) const{
-    LOG(logDEBUG1) << "Sending: [" 
-    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
-    << ", nullptr, 0, " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
-    Ret retval{};
-    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
-    return retval;
-}
-
-template <typename Ret, typename Arg>
-Ret Module::sendToReceiver(int fnum, const Arg &args){
-    LOG(logDEBUG1) << "Sending: [" 
-    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
-    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
-    Ret retval{};
-    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
-    return retval;
-}
-
-template <typename Ret, typename Arg>
-Ret Module::sendToReceiver(int fnum, const Arg &args) const{
-    LOG(logDEBUG1) << "Sending: [" 
-    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
-    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
-    Ret retval{};
-    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
-    return retval;
-}
-
-// void Module::sendToReceiver(int fnum) {
-//     sendToReceiver(fnum, nullptr, 0, nullptr, 0);
-// }
-
-// void Module::sendToReceiver(int fnum) const {
-//     sendToReceiver(fnum, nullptr, 0, nullptr, 0);
-// }
-
 void Module::freeSharedMemory() {
     if (shm.IsExisting()) {
         shm.RemoveSharedMemory();
@@ -395,12 +299,6 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->controlPort = DEFAULT_PORTNO;
     shm()->stopPort = DEFAULT_PORTNO + 1;
     sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
-    sls::strcpy_safe(shm()->rxHostname, "none");
-    shm()->rxTCPPort = DEFAULT_PORTNO + 2;
-    shm()->useReceiver = false;
-    shm()->zmqport = DEFAULT_ZMQ_CL_PORTNO +
-                     (moduleId * ((shm()->myDetectorType == EIGER) ? 2 : 1));
-    shm()->zmqip = IpAddr{};
     shm()->numUDPInterfaces = 1;
 
     // get the detector parameters based on type
@@ -2264,50 +2162,20 @@ void Module::updateRateCorrection() {
     sendToDetector(F_UPDATE_RATE_CORRECTION);
 }
 
-bool Module::getUseReceiverFlag() const { return shm()->useReceiver; }
-
-bool Module::enableTenGigabitEthernet(int value) {
-    int retval = -1;
-    LOG(logDEBUG1) << "Enabling / Disabling 10Gbe: " << value;
-    sendToDetector(F_ENABLE_TEN_GIGA, value, retval);
-    if (value != -1) {
-        int stopRetval = -1;
-        sendToDetectorStop(F_ENABLE_TEN_GIGA, value, stopRetval);
-    }
+bool Module::getTenGiga() {
+    int retval = -1, arg = -1;
+    LOG(logDEBUG1) << "Getting 10Gbe";
+    sendToDetector(F_ENABLE_TEN_GIGA, arg, retval);
     LOG(logDEBUG1) << "10Gbe: " << retval;
-    value = retval;
-    if (shm()->useReceiver && value != -1) {
-        int retval = -1;
-        LOG(logDEBUG1) << "Sending 10Gbe enable to receiver: " << value;
-        sendToReceiver(F_ENABLE_RECEIVER_TEN_GIGA, value, retval);
-        LOG(logDEBUG1) << "Receiver 10Gbe enable: " << retval;
-    }
-    return static_cast<bool>(retval);
-}
-
-int Module::setReceiverFifoDepth(int n_frames) {
-    int retval = -1;
-    LOG(logDEBUG1) << "Sending Receiver Fifo Depth: " << n_frames;
-    if (shm()->useReceiver) {
-        sendToReceiver(F_SET_RECEIVER_FIFO_DEPTH, n_frames, retval);
-        LOG(logDEBUG1) << "Receiver Fifo Depth: " << retval;
-    }
     return retval;
 }
 
-bool Module::getReceiverSilentMode() {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (silent mode)");
-    }    
-    return sendToReceiver<int>(F_GET_RECEIVER_SILENT_MODE);
-}
-
-void Module::setReceiverSilentMode(bool enable) {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (silent mode)");
-    } 
+void Module::setTenGiga(bool enable) {
+    int retval = -1;
     int arg = static_cast<int>(enable);
-    sendToReceiver(F_SET_RECEIVER_SILENT_MODE, arg, nullptr);
+    LOG(logDEBUG1) << "Enabling / Disabling 10Gbe: " << arg;
+    sendToDetector(F_ENABLE_TEN_GIGA, arg, retval);
+    sendToDetectorStop(F_ENABLE_TEN_GIGA, arg, retval);
 }
 
 void Module::setPattern(const std::string &fname) {
@@ -2510,11 +2378,6 @@ void Module::setPipeline(int clkIndex, int value) {
 void Module::setCounterMask(uint32_t countermask) {
     LOG(logDEBUG1) << "Setting Counter mask to " << countermask;
     sendToDetector(F_SET_COUNTER_MASK, countermask, nullptr);
-    if (shm()->useReceiver) {
-        int ncounters = __builtin_popcount(countermask);
-        LOG(logDEBUG1) << "Sending Reciver #counters: " << ncounters;
-        sendToReceiver(F_RECEIVER_SET_NUM_COUNTERS, ncounters, nullptr);
-    }
 }
 
 uint32_t Module::getCounterMask() {

@@ -146,6 +146,7 @@ int ClientInterface::functionTable(){
 	flist[F_GET_RECEIVER_OVERWRITE]		    = 	&ClientInterface::get_overwrite;
 	flist[F_ENABLE_RECEIVER_TEN_GIGA]		= 	&ClientInterface::enable_tengiga;
 	flist[F_SET_RECEIVER_FIFO_DEPTH]		= 	&ClientInterface::set_fifo_depth;
+	flist[F_GET_RECEIVER_FIFO_DEPTH]		= 	&ClientInterface::get_fifo_depth;
 	flist[F_RECEIVER_ACTIVATE]				= 	&ClientInterface::set_activate;
 	flist[F_SET_RECEIVER_STREAMING]		    = 	&ClientInterface::set_streaming;
 	flist[F_GET_RECEIVER_STREAMING]		    = 	&ClientInterface::get_streaming;
@@ -1006,7 +1007,8 @@ int ClientInterface::enable_tengiga(Interface &socket) {
     int retval = impl()->getTenGigaEnable();
     validate(val, retval, "set 10GbE", DEC);
     LOG(logDEBUG1) << "10Gbe:" << retval;
-    return socket.sendResult(retval);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_fifo_depth(Interface &socket) {
@@ -1022,6 +1024,14 @@ int ClientInterface::set_fifo_depth(Interface &socket) {
     }
     int retval = impl()->getFifoDepth();
     validate(value, retval, std::string("set fifo depth"), DEC);
+    LOG(logDEBUG1) << "fifo depth:" << retval;
+    socket.Send(OK);
+    return OK;
+}
+
+
+int ClientInterface::get_fifo_depth(Interface &socket) {
+    int retval = impl()->getFifoDepth();
     LOG(logDEBUG1) << "fifo depth:" << retval;
     return socket.sendResult(retval);
 }

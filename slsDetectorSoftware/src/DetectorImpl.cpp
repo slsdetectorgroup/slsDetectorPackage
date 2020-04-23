@@ -1330,7 +1330,7 @@ void DetectorImpl::startProcessingThread() {
 }
 
 void DetectorImpl::processData() {
-    if (Parallel(&Module::getUseReceiverFlag, {}).squash(false)) {
+    if (isReceiverInitialized(1) || isReceiverInitialized(2)) {
         if (dataReady != nullptr) {
             readFrameFromReceiver();
         }

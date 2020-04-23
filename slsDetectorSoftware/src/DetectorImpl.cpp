@@ -619,8 +619,8 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
         portnum += (iSocket % numSocketsPerDetector);
         try {
             zmqSocket.push_back(sls::make_unique<ZmqSocket>(
-                detectors[iSocket / numSocketsPerDetector]
-                    ->getClientStreamingIP()
+                receivers[iSocket / numSocketsPerDetector][0]
+                    ->getClientZmqIP()
                     .str()
                     .c_str(),
                 portnum));

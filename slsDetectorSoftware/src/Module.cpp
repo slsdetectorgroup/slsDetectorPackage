@@ -746,22 +746,6 @@ void Module::setSettings(detectorSettings isettings) {
 }
 
 int Module::getThresholdEnergy() {
-    // moench - get threshold energy from processor (due to different clients,
-    // diff shm)
-    if (shm()->myDetectorType == MOENCH) {
-        // get json from rxr, parse for threshold and update shm
-        getAdditionalJsonHeader();
-        std::string result = getAdditionalJsonParameter("threshold");
-        // convert to integer
-        try {
-            return std::stoi(result);
-        }
-        // not found or cannot scan integer
-        catch (...) {
-            return -1;
-        }
-    }
-
     LOG(logDEBUG1) << "Getting threshold energy";
     int retval = -1;
     sendToDetector(F_GET_THRESHOLD_ENERGY, nullptr, retval);
@@ -771,18 +755,10 @@ int Module::getThresholdEnergy() {
 
 void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
                                     int tb) {
-
     // check as there is client processing
     if (shm()->myDetectorType == EIGER) {
         setThresholdEnergyAndSettings(e_eV, isettings, tb);
-    }
-
-    // moench - send threshold energy to processor
-    else if (shm()->myDetectorType == MOENCH) {
-        setAdditionalJsonParameter("threshold", std::to_string(e_eV));
-    }
-
-    else {
+    } else {
         throw RuntimeError(
         "Set threshold energy not implemented for this detector");
     }
@@ -1077,10 +1053,6 @@ int64_t Module::getPeriod() {
 void Module::setPeriod(int64_t value) {
     LOG(logDEBUG1) << "Setting period to " << value << "ns";
     sendToDetector(F_SET_PERIOD, value, nullptr);
-    if (shm()->useReceiver) {
-        LOG(logDEBUG1) << "Sending period to Receiver: " << value;
-        sendToReceiver(F_RECEIVER_SET_PERIOD, value, nullptr);   
-    }
 }
 
 int64_t Module::getDelayAfterTrigger() {
@@ -1553,9 +1525,6 @@ void Module::setNumberofUDPInterfaces(int n) {
     LOG(logDEBUG1) << "Setting number of udp interfaces to " << n;
     sendToDetector(F_SET_NUM_INTERFACES, n, nullptr);
     shm()->numUDPInterfaces = n;
-    if (shm()->useReceiver) {
-        sendToReceiver(F_SET_RECEIVER_NUM_INTERFACES, n, nullptr); 
-    }  
 }
 
 int Module::getNumberofUDPInterfacesFromShm() {
@@ -1613,51 +1582,6 @@ std::string Module::printUDPConfiguration() {
     return oss.str();
 }
 
-void Module::setClientStreamingIP(const sls::IpAddr ip) {
-    LOG(logDEBUG1) << "Setting client zmq ip to " << ip;
-    if (ip == 0) {
-        throw RuntimeError("Invalid client zmq ip address");
-    } 
-    shm()->zmqip = ip;  
-}
-
-sls::IpAddr Module::getClientStreamingIP() { return shm()->zmqip; }
-
-void Module::setReceiverStreamingIP(const sls::IpAddr ip) {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (streaming ip)");
-    }
-    if (ip == 0) {
-        throw RuntimeError("Invalid receiver zmq ip address");
-    }
-   
-    // if client zmqip is empty, update it
-    if (shm()->zmqip == 0) {
-        shm()->zmqip = ip;
-    }
-    sendToReceiver(F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
-}
-
-sls::IpAddr Module::getReceiverStreamingIP() {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (streaming ip)");
-    }
-    return sendToReceiver<sls::IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
-}
-
-void Module::updateReceiverStreamingIP() {
-    auto ip = getReceiverStreamingIP();
-    if (ip == 0) {
-        // Hostname could be ip try to decode otherwise look up the hostname
-        ip = sls::IpAddr{shm()->rxHostname};
-        if (ip == 0) {
-            ip = HostnameToIp(shm()->rxHostname);
-        }  
-        LOG(logINFO) << "Setting default receiver " << moduleId << " streaming zmq ip to " << ip;
-    }     
-    setReceiverStreamingIP(ip);   
-}
-
 bool Module::getTenGigaFlowControl() {
     int retval = -1;
     sendToDetector(F_GET_TEN_GIGA_FLOW_CONTROL, nullptr, retval);
@@ -1705,121 +1629,6 @@ int Module::getTransmissionDelayRight() {
 void Module::setTransmissionDelayRight(int value) {
     LOG(logDEBUG1) << "Setting transmission delay right to " << value;
     sendToDetector(F_SET_TRANSMISSION_DELAY_RIGHT, value, nullptr);
-}
-
-
-void Module::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader) {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
-    } 
-    for (auto &it : jsonHeader) {
-        if (it.first.empty() || it.first.length() > SHORT_STR_LENGTH ||
-            it.second.length() > SHORT_STR_LENGTH ) {
-            throw RuntimeError(it.first + " or " + it.second + " pair has invalid size. "
-            "Key cannot be empty. Both can have max 20 characters");
-        }
-    }
-    const int size = jsonHeader.size();
-    int fnum = F_SET_ADDITIONAL_JSON_HEADER;
-    int ret = FAIL;
-    LOG(logDEBUG) << "Sending to receiver additional json header " << ToString(jsonHeader);
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Send(&size, sizeof(size));
-    if (size > 0) {
-        char args[size * 2][SHORT_STR_LENGTH];
-        memset(args, 0, sizeof(args));
-        int iarg = 0;
-        for (auto &it : jsonHeader) {
-            sls::strcpy_safe(args[iarg], it.first.c_str());
-            sls::strcpy_safe(args[iarg + 1], it.second.c_str());
-            iarg += 2;
-        }
-        client.Send(args, sizeof(args));
-    }
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
-        throw RuntimeError("Receiver " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
-    }
-}
-
-std::map<std::string, std::string> Module::getAdditionalJsonHeader() {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json header)");
-    } 
-    int fnum = F_GET_ADDITIONAL_JSON_HEADER;
-    int ret = FAIL;
-    int size = 0;
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
-        throw RuntimeError("Receiver " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
-    } else {
-        client.Receive(&size, sizeof(size));
-        std::map<std::string, std::string> retval;
-        if (size > 0) {
-            char retvals[size * 2][SHORT_STR_LENGTH];
-            memset(retvals, 0, sizeof(retvals));
-            client.Receive(retvals, sizeof(retvals));
-            for (int i = 0; i < size; ++i) {
-                retval[retvals[2 * i]] = retvals[2 * i + 1];
-            }
-        }
-        LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
-        return retval;
-    }
-}
-
-void Module::setAdditionalJsonParameter(const std::string &key, const std::string &value) {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json parameter)");
-    } 
-    if (key.empty() || key.length() > SHORT_STR_LENGTH ||
-        value.length() > SHORT_STR_LENGTH ) {
-        throw RuntimeError(key + " or " + value + " pair has invalid size. "
-        "Key cannot be empty. Both can have max 2 characters");
-    }
-    char args[2][SHORT_STR_LENGTH]{};
-    sls::strcpy_safe(args[0], key.c_str());
-    sls::strcpy_safe(args[1], value.c_str());
-    sendToReceiver(F_SET_ADDITIONAL_JSON_PARAMETER, args, nullptr);
-}
-
-std::string Module::getAdditionalJsonParameter(const std::string &key) {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (zmq json parameter)");
-    }
-    char arg[SHORT_STR_LENGTH]{};
-    sls::strcpy_safe(arg, key.c_str());
-    char retval[SHORT_STR_LENGTH]{};
-    sendToReceiver(F_GET_ADDITIONAL_JSON_PARAMETER, arg, retval); 
-    return retval;
-}
-
-int64_t Module::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
-    LOG(logDEBUG1) << "Sending UDP Socket Buffer size to receiver: "
-                        << udpsockbufsize;
-    int64_t retval = -1;
-    if (shm()->useReceiver) {
-        sendToReceiver(F_RECEIVER_UDP_SOCK_BUF_SIZE, udpsockbufsize, retval);
-        LOG(logDEBUG1) << "Receiver UDP Socket Buffer size: " << retval;
-    }
-    return retval;
-}
-
-int64_t Module::getReceiverUDPSocketBufferSize() {
-    return setReceiverUDPSocketBufferSize();
-}
-
-int64_t Module::getReceiverRealUDPSocketBufferSize() const {
-    return sendToReceiver<int64_t>(F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE);
 }
 
 void Module::executeFirmwareTest() {
@@ -1984,10 +1793,6 @@ void Module::setBurstMode(slsDetectorDefs::burstMode value) {
     int arg = static_cast<int>(value);
     LOG(logDEBUG1) << "Setting burst mode to " << arg;
     sendToDetector(F_SET_BURST_MODE, arg, nullptr);
-    if (shm()->useReceiver) {
-        LOG(logDEBUG1) << "Sending burst mode to Receiver: " << value;
-        sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);   
-    }
 }
 
 bool Module::getCurrentSource() {
@@ -2033,18 +1838,10 @@ void Module::clearROI() {
 }
 
 void Module::setROI(slsDetectorDefs::ROI arg) {
-    if (arg.xmin < 0 || arg.xmax >= getNumberOfChannels().x) {
-        arg.xmin = -1;
-        arg.xmax = -1;
-    }
     std::array<int, 2> args{arg.xmin, arg.xmax};
     LOG(logDEBUG) << "Sending ROI to detector [" << arg.xmin << ", "
                        << arg.xmax << "]";                     
     sendToDetector(F_SET_ROI, args, nullptr);
-    if (shm()->useReceiver) {
-        LOG(logDEBUG1) << "Sending ROI to receiver";
-        sendToReceiver(F_RECEIVER_SET_ROI, arg, nullptr);
-    }
 }
 
 slsDetectorDefs::ROI Module::getROI() {
@@ -2066,18 +1863,6 @@ void Module::setADCEnableMask(uint32_t mask) {
 
     // update #nchan, as it depends on #samples, adcmask,
     updateNumberOfChannels();
-
-    // send to processor
-    if (shm()->myDetectorType == MOENCH)
-        setAdditionalJsonParameter("adcmask_1g", std::to_string(mask));
-
-    if (shm()->useReceiver) {
-        int fnum = F_RECEIVER_SET_ADC_MASK;
-        int retval = -1;
-        LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex
-                            << mask << std::dec << " in receiver";
-        sendToReceiver(fnum, mask, retval);
-    }
 }
 
 uint32_t Module::getADCEnableMask() {
@@ -2096,18 +1881,6 @@ void Module::setTenGigaADCEnableMask(uint32_t mask) {
 
     // update #nchan, as it depends on #samples, adcmask,
     updateNumberOfChannels();
-
-    // send to processor
-    if (shm()->myDetectorType == MOENCH)
-        setAdditionalJsonParameter("adcmask_10g", std::to_string(mask));
-
-    if (shm()->useReceiver) {
-        int fnum = F_RECEIVER_SET_ADC_MASK_10G;
-        int retval = -1;
-        LOG(logDEBUG1) << "Setting 10Gb ADC Enable mask to 0x" << std::hex
-                            << mask << std::dec << " in receiver";
-        sendToReceiver(fnum, mask, retval);
-    }
 }
 
 uint32_t Module::getTenGigaADCEnableMask() {
@@ -2156,49 +1929,6 @@ int Module::setExternalSampling(int value) {
 
 int Module::getExternalSampling() { return setExternalSampling(-1); }
 
-void Module::setReceiverDbitList(const std::vector<int>& list) {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (dbit list)");
-    } 
-
-    LOG(logDEBUG1) << "Setting Receiver Dbit List";
-
-    if (list.size() > 64) {
-        throw sls::RuntimeError("Dbit list size cannot be greater than 64\n");
-    }
-    for (auto &it : list) {
-        if (it < 0 || it > 63) {
-            throw sls::RuntimeError(
-                "Dbit list value must be between 0 and 63\n");
-        }
-    }
-    sls::FixedCapacityContainer<int, MAX_RX_DBIT> arg = list;
-    sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);        
-}
-
-std::vector<int> Module::getReceiverDbitList() const {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (dbit list)");
-    } 
-    sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
-    sendToReceiver(F_GET_RECEIVER_DBIT_LIST, nullptr, retval);
-    return retval;    
-}
-
-void Module::setReceiverDbitOffset(int value) {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (dbit offset)");
-    } 
-    sendToReceiver(F_SET_RECEIVER_DBIT_OFFSET, value, nullptr);        
-}
-
-int Module::getReceiverDbitOffset() {
-    if (!shm()->useReceiver) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters (dbit offset)");
-    } 
-    return sendToReceiver<int>(F_GET_RECEIVER_DBIT_OFFSET);    
-}
-
 void Module::writeAdcRegister(uint32_t addr, uint32_t val) {
     uint32_t args[]{addr, val};
     LOG(logDEBUG1) << "Writing to ADC register 0x" << std::hex << addr
@@ -2206,16 +1936,20 @@ void Module::writeAdcRegister(uint32_t addr, uint32_t val) {
     sendToDetector(F_WRITE_ADC_REG, args, nullptr);
 }
 
-int Module::activate(int enable) {
-    int retval = -1;
-    LOG(logDEBUG1) << "Setting activate flag to " << enable;
-    sendToDetector(F_ACTIVATE, enable, retval);
-    sendToDetectorStop(F_ACTIVATE, enable, retval);
+bool Module::getActivate() {
+    int retval = -1, arg = -1;
+    LOG(logDEBUG1) << "Getting activate flag";
+    sendToDetector(F_ACTIVATE, arg, retval);
     LOG(logDEBUG1) << "Activate: " << retval;
-    if (shm()->useReceiver) {
-        sendToReceiver(F_RECEIVER_ACTIVATE, retval, nullptr);        
-    }
     return retval;
+}
+
+void Module::setActivate(const bool enable) {
+    int retval = -1;
+    int arg = static_cast<int>(enable);
+    LOG(logDEBUG1) << "Setting activate flag to " << arg;
+    sendToDetector(F_ACTIVATE, arg, retval);
+    sendToDetectorStop(F_ACTIVATE, arg, retval);
 }
 
 bool Module::getDeactivatedRxrPaddingMode() {

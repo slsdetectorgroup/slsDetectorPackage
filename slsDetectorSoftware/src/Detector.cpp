@@ -252,6 +252,7 @@ Result<ns> Detector::getPeriod(Positions pos) const {
 
 void Detector::setPeriod(ns t, Positions pos) {
     pimpl->Parallel(&Module::setPeriod, pos, t.count());
+    pimpl->Parallel3(&Receiver::setPeriod, t.count());
 }
 
 Result<ns> Detector::getDelayAfterTrigger(Positions pos) const {
@@ -849,17 +850,16 @@ void Detector::setPartialFramesPadding(bool value, Positions pos) {
 }
 
 Result<int64_t> Detector::getRxUDPSocketBufferSize(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverUDPSocketBufferSize, pos);
+    return pimpl->Parallel3(&Receiver::getUDPSocketBufferSize);
 }
 
 void Detector::setRxUDPSocketBufferSize(int64_t udpsockbufsize, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverUDPSocketBufferSize, pos,
+    pimpl->Parallel3(&Receiver::setUDPSocketBufferSize,
                     udpsockbufsize);
 }
 
 Result<int64_t> Detector::getRxRealUDPSocketBufferSize(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverRealUDPSocketBufferSize,
-                           pos);
+    return pimpl->Parallel3(&Receiver::getRealUDPSocketBufferSize);
 }
 
 Result<bool> Detector::getRxLock(Positions pos) {
@@ -967,28 +967,28 @@ void Detector::setRxZmqTimer(int time_in_ms, Positions pos) {
 }
 
 Result<int> Detector::getRxZmqPort(Positions pos) const {
-    return pimpl->Parallel1(&Receiver::getReceiverZmqPort, pos, {});
+    return pimpl->Parallel1(&Receiver::getZmqPort, pos, {});
 }
 
 void Detector::setRxZmqPort(int port, int module_id) {
     if (module_id == -1) {
         for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel1(&Receiver::setReceiverZmqPort, {idet},
+            pimpl->Parallel1(&Receiver::setZmqPort, {idet},
                             {}, port++);
         }
     } else {
-        pimpl->Parallel1(&Receiver::setReceiverZmqPort, {module_id},
+        pimpl->Parallel1(&Receiver::setZmqPort, {module_id},
                         {}, port++);
     }
 }
 
 Result<IpAddr> Detector::getRxZmqIP(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverStreamingIP, pos);
+    return pimpl->Parallel3(&Receiver::getZmqIP);
 }
 
 void Detector::setRxZmqIP(const IpAddr ip, Positions pos) {
     bool previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(false);
-    pimpl->Parallel(&Module::setReceiverStreamingIP, pos, ip);
+    pimpl->Parallel3(&Receiver::setZmqIP, ip);
     if (previouslyReceiverStreaming) {
         setRxZmqDataStream(false, pos);
         setRxZmqDataStream(true, pos);
@@ -1012,12 +1012,12 @@ void Detector::setClientZmqPort(int port, int module_id) {
 }
 
 Result<IpAddr> Detector::getClientZmqIp(Positions pos) const {
-    return pimpl->Parallel(&Module::getClientStreamingIP, pos);
+    return pimpl->Parallel3(&Receiver::getClientZmqIP);
 }
 
 void Detector::setClientZmqIp(const IpAddr ip, Positions pos) {
     int previouslyClientStreaming = pimpl->enableDataStreamingToClient(-1);
-    pimpl->Parallel(&Module::setClientStreamingIP, pos, ip);
+    pimpl->Parallel3(&Receiver::setClientZmqIP, ip);
     if (previouslyClientStreaming != 0) {
         pimpl->enableDataStreamingToClient(0);
         pimpl->enableDataStreamingToClient(1);
@@ -1085,12 +1085,30 @@ void Detector::setSubDeadTime(ns value, Positions pos) {
 }
 
 Result<int> Detector::getThresholdEnergy(Positions pos) const {
+    if (getDetectorType().squash() == defs::MOENCH) {
+        auto res = getAdditionalJsonParameter("threshold", pos);
+        Result<int> intResult(res.size());
+        try {
+            for (unsigned int i = 0; i < res.size(); ++i) {
+                intResult[i] = stoi(res[i]);
+            }
+        } catch (...) {
+            throw RuntimeError(
+                "Cannot find or convert threshold string to integer");
+        }
+        return intResult;
+    }
+
     return pimpl->Parallel(&Module::getThresholdEnergy, pos);
 }
 
 void Detector::setThresholdEnergy(int threshold_ev,
                                   defs::detectorSettings settings,
                                   bool trimbits, Positions pos) {
+    if (getDetectorType().squash() == defs::MOENCH) {
+        setAdditionalJsonParameter("threshold", 
+            std::to_string(threshold_ev), pos);
+    }
     pimpl->Parallel(&Module::setThresholdEnergy, pos, threshold_ev,
                     settings, static_cast<int>(trimbits));
 }
@@ -1193,11 +1211,12 @@ Result<ns> Detector::getMeasuredSubFramePeriod(Positions pos) const {
 }
 
 Result<bool> Detector::getActive(Positions pos) const {
-    return pimpl->Parallel(&Module::activate, pos, -1);
+    return pimpl->Parallel(&Module::getActivate, pos);
 }
 
 void Detector::setActive(bool active, Positions pos) {
-    pimpl->Parallel(&Module::activate, pos, static_cast<int>(active));
+    pimpl->Parallel(&Module::setActivate, pos, active);
+    pimpl->Parallel3(&Receiver::setActivate, active);
 }
 
 Result<bool> Detector::getRxPadDeactivatedMode(Positions pos) const {
@@ -1321,11 +1340,16 @@ void Detector::setROI(defs::ROI value, int module_id) {
     if (module_id < 0 && size() > 1) {
         throw RuntimeError("Cannot set ROI for all modules simultaneously");
     }
+    if (value.xmin < 0 || value.xmax >= getModuleSize({module_id})[0].x) {
+        throw RuntimeError("roi arguments out of range");
+    }
     pimpl->Parallel(&Module::setROI, {module_id}, value);
+    pimpl->Parallel3(&Receiver::setROI, value);
 }
 
 void Detector::clearROI(Positions pos) {
     pimpl->Parallel(&Module::clearROI, pos);
+    pimpl->Parallel3(&Receiver::clearROI);
 }
 
 Result<ns> Detector::getExptimeLeft(Positions pos) const {
@@ -1388,6 +1412,7 @@ Result<defs::burstMode> Detector::getBurstMode(Positions pos) {
 
 void Detector::setBurstMode(defs::burstMode value, Positions pos) {
     pimpl->Parallel(&Module::setBurstMode, pos, value);
+    pimpl->Parallel3(&Receiver::setBurstMode, value);
 }
 
 Result<bool> Detector::getCurrentSource(Positions pos) const {
@@ -1502,7 +1527,11 @@ Result<uint32_t> Detector::getADCEnableMask(Positions pos) const {
 }
 
 void Detector::setADCEnableMask(uint32_t mask, Positions pos) {
+    if (getDetectorType().squash() == defs::MOENCH) {
+        setAdditionalJsonParameter("adcmask_1g", std::to_string(mask), pos);
+    }
     pimpl->Parallel(&Module::setADCEnableMask, pos, mask);
+    pimpl->Parallel3(&Receiver::setADCEnableMask, mask);
 }
 
 Result<uint32_t> Detector::getTenGigaADCEnableMask(Positions pos) const {
@@ -1510,7 +1539,11 @@ Result<uint32_t> Detector::getTenGigaADCEnableMask(Positions pos) const {
 }
 
 void Detector::setTenGigaADCEnableMask(uint32_t mask, Positions pos) {
+    if (getDetectorType().squash() == defs::MOENCH) {
+        setAdditionalJsonParameter("adcmask_10g", std::to_string(mask), pos);
+    }
     pimpl->Parallel(&Module::setTenGigaADCEnableMask, pos, mask);
+    pimpl->Parallel3(&Receiver::setTenGigaADCEnableMask, mask);
 }
 
 // CTB Specific
@@ -1603,19 +1636,19 @@ void Detector::setExternalSampling(bool value, Positions pos) {
 }
 
 Result<std::vector<int>> Detector::getRxDbitList(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverDbitList, pos);
+    return pimpl->Parallel3(&Receiver::getDbitList);
 }
 
 void Detector::setRxDbitList(const std::vector<int>& list, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverDbitList, pos, list);
+    pimpl->Parallel3(&Receiver::setDbitList, list);
 }
 
 Result<int> Detector::getRxDbitOffset(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverDbitOffset, pos);
+    return pimpl->Parallel3(&Receiver::getDbitOffset);
 }
 
 void Detector::setRxDbitOffset(int value, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverDbitOffset, pos, value);
+    pimpl->Parallel3(&Receiver::setDbitOffset, value);
 }
 
 void Detector::setDigitalIODelay(uint64_t pinMask, int delay, Positions pos) {
@@ -1757,28 +1790,27 @@ void Detector::setPatternBitMask(uint64_t mask, Positions pos) {
 // Moench
 
 Result<std::map<std::string, std::string>> Detector::getAdditionalJsonHeader(Positions pos) const {
-    return pimpl->Parallel(&Module::getAdditionalJsonHeader, pos);
+    return pimpl->Parallel3(&Receiver::getAdditionalJsonHeader);
 }
 
 void Detector::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader,
                                        Positions pos) {
-    pimpl->Parallel(&Module::setAdditionalJsonHeader, pos, jsonHeader);
+    pimpl->Parallel3(&Receiver::setAdditionalJsonHeader, jsonHeader);
 }
 
 Result<std::string> Detector::getAdditionalJsonParameter(const std::string &key,
                                                          Positions pos) const {
-    return pimpl->Parallel(&Module::getAdditionalJsonParameter, pos, key);
+    return pimpl->Parallel3(&Receiver::getAdditionalJsonParameter, key);
 }
 
 void Detector::setAdditionalJsonParameter(const std::string &key, const std::string &value,
                                           Positions pos) {
-    pimpl->Parallel(&Module::setAdditionalJsonParameter, pos, key, value);
+    pimpl->Parallel3(&Receiver::setAdditionalJsonParameter, key, value);
 }
 
 Result<int> Detector::getDetectorMinMaxEnergyThreshold(const bool isEmax,
                                                        Positions pos) const {
-    auto res = pimpl->Parallel(&Module::getAdditionalJsonParameter, pos,
-                               isEmax ? "emax" : "emin");
+    auto res = getAdditionalJsonParameter(isEmax ? "emax" : "emin", pos);
     Result<int> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
@@ -1794,13 +1826,12 @@ Result<int> Detector::getDetectorMinMaxEnergyThreshold(const bool isEmax,
 void Detector::setDetectorMinMaxEnergyThreshold(const bool isEmax,
                                                 const int value,
                                                 Positions pos) {
-    pimpl->Parallel(&Module::setAdditionalJsonParameter, pos,
-                    isEmax ? "emax" : "emin", std::to_string(value));
+    setAdditionalJsonParameter(isEmax ? "emax" : "emin", 
+        std::to_string(value), pos);
 }
 
 Result<defs::frameModeType> Detector::getFrameMode(Positions pos) const {
-    auto res = pimpl->Parallel(&Module::getAdditionalJsonParameter, pos,
-                               "frameMode");
+    auto res = getAdditionalJsonParameter("frameMode", pos);
     Result<defs::frameModeType> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
@@ -1815,13 +1846,11 @@ Result<defs::frameModeType> Detector::getFrameMode(Positions pos) const {
 }
 
 void Detector::setFrameMode(defs::frameModeType value, Positions pos) {
-    pimpl->Parallel(&Module::setAdditionalJsonParameter, pos, "frameMode",
-                    sls::ToString(value));
+    setAdditionalJsonParameter("frameMode", sls::ToString(value), pos);
 }
 
 Result<defs::detectorModeType> Detector::getDetectorMode(Positions pos) const {
-    auto res = pimpl->Parallel(&Module::getAdditionalJsonParameter, pos,
-                               "detectorMode");
+    auto res = getAdditionalJsonParameter("detectorMode", pos);
     Result<defs::detectorModeType> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
@@ -1836,8 +1865,7 @@ Result<defs::detectorModeType> Detector::getDetectorMode(Positions pos) const {
 }
 
 void Detector::setDetectorMode(defs::detectorModeType value, Positions pos) {
-    pimpl->Parallel(&Module::setAdditionalJsonParameter, pos,
-                    "detectorMode", sls::ToString(value));
+    setAdditionalJsonParameter("detectorMode", sls::ToString(value), pos);
 }
 
 // Advanced

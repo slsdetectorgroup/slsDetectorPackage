@@ -121,6 +121,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_additional_json_header(sls::ServerInterface &socket);
     int get_additional_json_header(sls::ServerInterface &socket);
     int set_udp_socket_buffer_size(sls::ServerInterface &socket);
+    int get_udp_socket_buffer_size(sls::ServerInterface &socket);
     int get_real_udp_socket_buffer_size(sls::ServerInterface &socket);
     int set_frames_per_file(sls::ServerInterface &socket);
     int get_frames_per_file(sls::ServerInterface &socket);

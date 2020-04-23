@@ -1,104 +1,11 @@
 #include "Receiver.h"
 #include "ClientSocket.h"
+#include "FixedCapacityContainer.h"
 #include "string_utils.h"
 #include "versionAPI.h"
 #include "ToString.h"
 
 namespace sls {
-
-void Receiver::sendToReceiver(int fnum, const void *args, size_t args_size,
-                                 void *retval, size_t retval_size) {
-    static_cast<const Receiver &>(*this).sendToReceiver(
-        fnum, args, args_size, retval, retval_size);
-}
-
-void Receiver::sendToReceiver(int fnum, const void *args, size_t args_size,
-                                 void *retval, size_t retval_size) const {
-    if (strlen(shm()->hostname) == 0) {
-        throw RuntimeError("Reciver not added");
-    }
-    auto receiver = ReceiverSocket(shm()->hostname, shm()->tcpPort);
-    receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
-    receiver.close();
-}
-
-template <typename Arg, typename Ret>
-void Receiver::sendToReceiver(int fnum, const Arg &args, Ret &retval) {
-    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
-}
-
-template <typename Arg, typename Ret>
-void Receiver::sendToReceiver(int fnum, const Arg &args, Ret &retval) const {
-    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
-}
-
-template <typename Arg>
-void Receiver::sendToReceiver(int fnum, const Arg &args, std::nullptr_t) {
-    sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
-}
-
-template <typename Arg>
-void Receiver::sendToReceiver(int fnum, const Arg &args,
-                                 std::nullptr_t) const {
-    sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
-}
-
-template <typename Ret>
-void Receiver::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) {
-    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
-}
-
-template <typename Ret>
-void Receiver::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const {
-    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
-}
-
-template <typename Ret>
-Ret Receiver::sendToReceiver(int fnum){
-    LOG(logDEBUG1) << "Sending: [" 
-    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
-    << ", nullptr, 0, " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
-    Ret retval{};
-    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
-    return retval;
-}
-
-template <typename Ret>
-Ret Receiver::sendToReceiver(int fnum) const{
-    LOG(logDEBUG1) << "Sending: [" 
-    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
-    << ", nullptr, 0, " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
-    Ret retval{};
-    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
-    return retval;
-}
-
-template <typename Ret, typename Arg>
-Ret Receiver::sendToReceiver(int fnum, const Arg &args){
-    LOG(logDEBUG1) << "Sending: [" 
-    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
-    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() 
-    << ", " << sizeof(Ret) << "]";
-    Ret retval{};
-    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
-    return retval;
-}
-
-template <typename Ret, typename Arg>
-Ret Receiver::sendToReceiver(int fnum, const Arg &args) const{
-    LOG(logDEBUG1) << "Sending: [" 
-    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
-    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() 
-    << ", " << sizeof(Ret) << "]";
-    Ret retval{};
-    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
-    return retval;
-}
-
 
 // create shm
 Receiver::Receiver(int detector_id, int module_id,  int interface_id, 
@@ -377,25 +284,70 @@ void Receiver::setUDPPort(const int port) {
 }
 
 /** ZMQ Streaming Parameters (Receiver<->Client) */
-void Receiver::setClientZmqPort(const int port) { 
-    shm()->zmqPort = port;
-}
-
 int Receiver::getClientZmqPort() const { 
     return shm()->zmqPort; 
 }
 
-void Receiver::setReceiverZmqPort(int port) {
-    sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
+void Receiver::setClientZmqPort(const int port) { 
+    shm()->zmqPort = port;
 }
 
-int Receiver::getReceiverZmqPort() const {    
+int Receiver::getZmqPort() const {    
     return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
 }
 
+void Receiver::setZmqPort(int port) {
+    sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
+}
+
+
+sls::IpAddr Receiver::getClientZmqIP() { 
+    return shm()->zmqIp; 
+}
+
+void Receiver::setClientZmqIP(const sls::IpAddr ip) {
+    LOG(logDEBUG1) << "Setting client zmq ip to " << ip;
+    if (ip == 0) {
+        throw RuntimeError("Invalid client zmq ip address");
+    } 
+    shm()->zmqIp = ip;  
+}
+
+sls::IpAddr Receiver::getZmqIP() {
+    return sendToReceiver<sls::IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
+}
+
+void Receiver::setZmqIP(const sls::IpAddr ip) {
+    if (ip == 0) {
+        throw RuntimeError("Invalid receiver zmq ip address");
+    }
+   
+    // if client zmqip is empty, update it
+    if (shm()->zmqIp == 0) {
+        shm()->zmqIp = ip;
+    }
+    sendToReceiver(F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
+}
+
+/** Receiver Parameters */
+
+int64_t Receiver::getUDPSocketBufferSize() const {
+    return sendToReceiver<int64_t>(F_GET_RECEIVER_UDP_SOCK_BUF_SIZE);
+}
+
+void Receiver::setUDPSocketBufferSize(int64_t value) {
+    LOG(logDEBUG1) << "Sending UDP Socket Buffer size to receiver: "
+                        << value;
+    sendToReceiver(F_SET_RECEIVER_UDP_SOCK_BUF_SIZE, value, nullptr);
+}
+
+int64_t Receiver::getRealUDPSocketBufferSize() const {
+    return sendToReceiver<int64_t>(F_GET_RECEIVER_REAL_UDP_SOCK_BUF_SIZE);
+}
 
 
 /** Detector Parameters */
+
 void Receiver::setNumberOfFrames(int64_t value) {
     LOG(logDEBUG1) << "Sending number of frames to Receiver: " << value;
     sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);   
@@ -424,6 +376,11 @@ void Receiver::setNumberOfDigitalSamples(int value) {
 void Receiver::setExptime(int64_t value) {
     LOG(logDEBUG1) << "Sending exptime to Receiver: " << value;
     sendToReceiver(F_RECEIVER_SET_EXPTIME, value, nullptr);   
+}
+
+void Receiver::setPeriod(int64_t value) {
+    LOG(logDEBUG1) << "Sending period to Receiver: " << value;
+    sendToReceiver(F_RECEIVER_SET_PERIOD, value, nullptr);   
 }
 
 void Receiver::setSubExptime(int64_t value) {
@@ -463,6 +420,95 @@ void Receiver::setReadNLines(const int value) {
     sendToReceiver(F_SET_RECEIVER_READ_N_LINES, value, nullptr);
 }
 
+void Receiver::setADCEnableMask(uint32_t mask) {
+    sendToReceiver(F_RECEIVER_SET_ADC_MASK, mask, nullptr);
+}
+
+void Receiver::setTenGigaADCEnableMask(uint32_t mask) {
+    sendToReceiver(F_RECEIVER_SET_ADC_MASK_10G, mask, nullptr);
+}
+
+void Receiver::setBurstMode(slsDetectorDefs::burstMode value) {
+    LOG(logDEBUG1) << "Sending burst mode to Receiver: " << value;
+    sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);   
+}
+
+void Receiver::setROI(slsDetectorDefs::ROI arg) {
+    std::array<int, 2> args{arg.xmin, arg.xmax};
+    LOG(logDEBUG1) << "Sending ROI to receiver";
+    sendToReceiver(F_RECEIVER_SET_ROI, args, nullptr);
+}
+
+void Receiver::clearROI() {
+    LOG(logDEBUG1) << "Clearing ROI";
+    slsDetectorDefs::ROI arg;
+    arg.xmin = -1;
+    arg.xmax = -1;
+    setROI(arg);
+}
+
+std::vector<int> Receiver::getDbitList() const {
+    sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
+    sendToReceiver(F_GET_RECEIVER_DBIT_LIST, nullptr, retval);
+    return retval;    
+}
+
+void Receiver::setDbitList(const std::vector<int>& list) {
+    LOG(logDEBUG1) << "Setting Receiver Dbit List";
+    if (list.size() > 64) {
+        throw sls::RuntimeError("Dbit list size cannot be greater than 64\n");
+    }
+    for (auto &it : list) {
+        if (it < 0 || it > 63) {
+            throw sls::RuntimeError(
+                "Dbit list value must be between 0 and 63\n");
+        }
+    }
+    sls::FixedCapacityContainer<int, MAX_RX_DBIT> arg = list;
+    sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);        
+}
+
+int Receiver::getDbitOffset() {
+    return sendToReceiver<int>(F_GET_RECEIVER_DBIT_OFFSET);    
+}
+
+void Receiver::setDbitOffset(int value) {
+    sendToReceiver(F_SET_RECEIVER_DBIT_OFFSET, value, nullptr);        
+}
+
+void Receiver::setActivate(const bool enable) {
+    int arg = static_cast<int>(enable);
+    sendToReceiver(F_RECEIVER_ACTIVATE, arg, nullptr);        
+}
+
+std::map<std::string, std::string> Receiver::getAdditionalJsonHeader() {
+    int fnum = F_GET_ADDITIONAL_JSON_HEADER;
+    int ret = FAIL;
+    int size = 0;
+    auto client = ReceiverSocket(shm()->hostname, shm()->tcpPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Receiver " + std::to_string(moduleId) +
+                           " returned error: " + std::string(mess));
+    } else {
+        client.Receive(&size, sizeof(size));
+        std::map<std::string, std::string> retval;
+        if (size > 0) {
+            char retvals[size * 2][SHORT_STR_LENGTH];
+            memset(retvals, 0, sizeof(retvals));
+            client.Receive(retvals, sizeof(retvals));
+            for (int i = 0; i < size; ++i) {
+                retval[retvals[2 * i]] = retvals[2 * i + 1];
+            }
+        }
+        LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
+        return retval;
+    }
+}
+
 void Receiver::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader) {
     for (auto &it : jsonHeader) {
         if (it.first.empty() || it.first.length() > SHORT_STR_LENGTH ||
@@ -498,32 +544,12 @@ void Receiver::setAdditionalJsonHeader(const std::map<std::string, std::string> 
     }
 }
 
-std::map<std::string, std::string> Receiver::getAdditionalJsonHeader() {
-    int fnum = F_GET_ADDITIONAL_JSON_HEADER;
-    int ret = FAIL;
-    int size = 0;
-    auto client = ReceiverSocket(shm()->hostname, shm()->tcpPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
-        throw RuntimeError("Receiver " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
-    } else {
-        client.Receive(&size, sizeof(size));
-        std::map<std::string, std::string> retval;
-        if (size > 0) {
-            char retvals[size * 2][SHORT_STR_LENGTH];
-            memset(retvals, 0, sizeof(retvals));
-            client.Receive(retvals, sizeof(retvals));
-            for (int i = 0; i < size; ++i) {
-                retval[retvals[2 * i]] = retvals[2 * i + 1];
-            }
-        }
-        LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
-        return retval;
-    }
+std::string Receiver::getAdditionalJsonParameter(const std::string &key) {
+    char arg[SHORT_STR_LENGTH]{};
+    sls::strcpy_safe(arg, key.c_str());
+    char retval[SHORT_STR_LENGTH]{};
+    sendToReceiver(F_GET_ADDITIONAL_JSON_PARAMETER, arg, retval); 
+    return retval;
 }
 
 void Receiver::setAdditionalJsonParameter(const std::string &key, const std::string &value) {
@@ -538,11 +564,97 @@ void Receiver::setAdditionalJsonParameter(const std::string &key, const std::str
     sendToReceiver(F_SET_ADDITIONAL_JSON_PARAMETER, args, nullptr);
 }
 
-std::string Receiver::getAdditionalJsonParameter(const std::string &key) {
-    char arg[SHORT_STR_LENGTH]{};
-    sls::strcpy_safe(arg, key.c_str());
-    char retval[SHORT_STR_LENGTH]{};
-    sendToReceiver(F_GET_ADDITIONAL_JSON_PARAMETER, arg, retval); 
+
+void Receiver::sendToReceiver(int fnum, const void *args, size_t args_size,
+                                 void *retval, size_t retval_size) {
+    static_cast<const Receiver &>(*this).sendToReceiver(
+        fnum, args, args_size, retval, retval_size);
+}
+
+void Receiver::sendToReceiver(int fnum, const void *args, size_t args_size,
+                                 void *retval, size_t retval_size) const {
+    if (strlen(shm()->hostname) == 0) {
+        throw RuntimeError("Reciver not added");
+    }
+    auto receiver = ReceiverSocket(shm()->hostname, shm()->tcpPort);
+    receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
+    receiver.close();
+}
+
+template <typename Arg, typename Ret>
+void Receiver::sendToReceiver(int fnum, const Arg &args, Ret &retval) {
+    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
+}
+
+template <typename Arg, typename Ret>
+void Receiver::sendToReceiver(int fnum, const Arg &args, Ret &retval) const {
+    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
+}
+
+template <typename Arg>
+void Receiver::sendToReceiver(int fnum, const Arg &args, std::nullptr_t) {
+    sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
+}
+
+template <typename Arg>
+void Receiver::sendToReceiver(int fnum, const Arg &args,
+                                 std::nullptr_t) const {
+    sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
+}
+
+template <typename Ret>
+void Receiver::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) {
+    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
+}
+
+template <typename Ret>
+void Receiver::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const {
+    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
+}
+
+template <typename Ret>
+Ret Receiver::sendToReceiver(int fnum){
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", nullptr, 0, " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
+}
+
+template <typename Ret>
+Ret Receiver::sendToReceiver(int fnum) const{
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", nullptr, 0, " << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
+}
+
+template <typename Ret, typename Arg>
+Ret Receiver::sendToReceiver(int fnum, const Arg &args){
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() 
+    << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
+    return retval;
+}
+
+template <typename Ret, typename Arg>
+Ret Receiver::sendToReceiver(int fnum, const Arg &args) const{
+    LOG(logDEBUG1) << "Sending: [" 
+    << getFunctionNameFromEnum(static_cast<slsDetectorDefs::detFuncs>(fnum))
+    << ", " << args << ", " << sizeof(args) << ", " << typeid(Ret).name() 
+    << ", " << sizeof(Ret) << "]";
+    Ret retval{};
+    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
+    LOG(logDEBUG1) << "Got back: " << retval;
     return retval;
 }
 

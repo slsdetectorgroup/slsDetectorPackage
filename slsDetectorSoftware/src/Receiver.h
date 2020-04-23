@@ -86,9 +86,21 @@ class Receiver : public virtual slsDetectorDefs {
     * ************************************************/
     int getClientZmqPort() const;
     void setClientZmqPort(const int port);
-    int getReceiverZmqPort() const; 
-    void setReceiverZmqPort(int port);
+    int getZmqPort() const; 
+    void setZmqPort(int port);
+    sls::IpAddr getClientZmqIP();
+    void setClientZmqIP(const sls::IpAddr ip);
+    sls::IpAddr getZmqIP();
+    void setZmqIP(const sls::IpAddr ip);
 
+    /**************************************************
+    *                                                *
+    *    Receiver Parameters                         *
+    *                                                *
+    * ************************************************/
+    int64_t getUDPSocketBufferSize() const;
+    void setUDPSocketBufferSize(int64_t value);
+    int64_t getRealUDPSocketBufferSize() const;
 
     /**************************************************
     *                                                *
@@ -101,6 +113,7 @@ class Receiver : public virtual slsDetectorDefs {
     void setNumberOfAnalogSamples(int value);
     void setNumberOfDigitalSamples(int value);
     void setExptime(int64_t value);
+    void setPeriod(int64_t value);
     void setSubExptime(int64_t value);
     void setSubDeadTime(int64_t value);
     void setTimingMode(timingMode value);
@@ -108,20 +121,27 @@ class Receiver : public virtual slsDetectorDefs {
     void setReadoutMode(const readoutMode mode);
     void setQuad(const bool enable);
     void setReadNLines(const int value);
+    void setADCEnableMask(uint32_t mask);
+    void setTenGigaADCEnableMask(uint32_t mask);
+    void setBurstMode(burstMode value);
+    void setROI(slsDetectorDefs::ROI arg);
+    void clearROI();
+    std::vector<int> getDbitList() const;
+    /** digital data bits enable (CTB only) */
+    void setDbitList(const std::vector<int>& list);
+    int getDbitOffset();
+    /** Set digital data offset in bytes (CTB only) */
+    void setDbitOffset(int value);
+    void setActivate(const bool enable);
+
+    std::map<std::string, std::string> getAdditionalJsonHeader();
     /** empty vector deletes entire additional json header */
     void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);
-    std::map<std::string, std::string> getAdditionalJsonHeader();
+    std::string getAdditionalJsonParameter(const std::string &key);
     /** Sets the value for the additional json header parameter key if found, 
     else append it. If value empty, then deletes parameter */
     void setAdditionalJsonParameter(const std::string &key, const std::string &value);
-    std::string getAdditionalJsonParameter(const std::string &key);
 
-
-    /**************************************************
-    *                                                *
-    *    Receiver Parameters                         *
-    *                                                *
-    * ************************************************/
 
     /**************************************************
     *                                                *

@@ -792,30 +792,6 @@ class Module : public virtual slsDetectorDefs {
 
     std::string printUDPConfiguration();
 
-    /**
-     * Sets the client zmq ip
-     * @param ip client zmq ip
-     */
-    void setClientStreamingIP(const sls::IpAddr ip);
-
-    /**
-     * Returns the client zmq ip 
-     * @returns the client zmq ip
-     */
-    sls::IpAddr getClientStreamingIP();
-
-    /**
-     * Sets the receiver zmq ip
-     * @param ip receiver zmq ip
-     */
-    void setReceiverStreamingIP(const sls::IpAddr ip);
-
-    /**
-     * Returns the receiver zmq ip 
-     * @returns the receiver zmq ip
-     */
-    sls::IpAddr getReceiverStreamingIP();
-
     /** update receiver stremaing ip from shm to receiver
      * if empty, use rx_hostname ip
      */
@@ -857,35 +833,6 @@ class Module : public virtual slsDetectorDefs {
      * port
      */
     void setTransmissionDelayRight(int value);
-
-    /** empty vector deletes entire additional json header */
-    void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);
-    std::map<std::string, std::string> getAdditionalJsonHeader();
-
-    /**
-     * Sets the value for the additional json header parameter key if found, else
-     * append it. If value empty, then deletes parameter */
-    void setAdditionalJsonParameter(const std::string &key, const std::string &value);
-    std::string getAdditionalJsonParameter(const std::string &key);
-
-    /**
-     * Sets the receiver UDP socket buffer size
-     * @param udpsockbufsize additional json header
-     * @returns receiver udp socket buffer size
-     */
-    int64_t setReceiverUDPSocketBufferSize(int64_t udpsockbufsize = -1);
-
-    /**
-     * Returns the receiver UDP socket buffer size
-     * @returns the receiver UDP socket buffer size
-     */
-    int64_t getReceiverUDPSocketBufferSize();
-
-    /**
-     * Returns the receiver real UDP socket buffer size
-     * @returns the receiver real UDP socket buffer size
-     */
-    int64_t getReceiverRealUDPSocketBufferSize() const;
 
     /** [Gotthard][Jungfrau][CTB][Moench] */
     void executeFirmwareTest();
@@ -964,28 +911,10 @@ class Module : public virtual slsDetectorDefs {
      */
     slsDetectorDefs::ROI getROI();
 
-    /**
-     * Set ADC Enable Mask (CTB, Moench)
-     * @param mask ADC Enable mask
-     */
+
     void setADCEnableMask(uint32_t mask);
-
-    /**
-     * Get ADC Enable Mask (CTB, Moench)
-     * @returns ADC Enable mask
-     */
     uint32_t getADCEnableMask();
-
-     /**
-     * Set 10Gb  ADC Enable Mask (CTB, Moench)
-     * @param mask ADC Enable mask
-     */
     void setTenGigaADCEnableMask(uint32_t mask);
-
-    /**
-     * Get 10Gb ADC Enable Mask (CTB, Moench)
-     * @returns ADC Enable mask
-     */
     uint32_t getTenGigaADCEnableMask();   
 
     /**
@@ -1032,14 +961,6 @@ class Module : public virtual slsDetectorDefs {
      */
     int getExternalSampling();
 
-    /** digital data bits enable (CTB only) */
-    void setReceiverDbitList(const std::vector<int>& list);
-    std::vector<int> getReceiverDbitList() const;
-
-    /** Set digital data offset in bytes (CTB only) */
-    void setReceiverDbitOffset(int value);
-    int getReceiverDbitOffset();
-
     /**
      * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert
      * users
@@ -1048,12 +969,10 @@ class Module : public virtual slsDetectorDefs {
      */
     void writeAdcRegister(uint32_t addr, uint32_t val);
 
-    /**
-     * Activates/Deactivates the detector (Eiger only)
-     * @param enable active (1) or inactive (0), -1 gets
-     * @returns 0 (inactive) or 1 (active)for activate mode
-     */
-    int activate(int const enable = -1);
+    /** [Eiger] */
+    bool getActivate();
+    /** [Eiger] */
+    void setActivate(const bool enable);
 
     bool getDeactivatedRxrPaddingMode();
 

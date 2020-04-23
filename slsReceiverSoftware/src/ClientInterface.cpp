@@ -161,8 +161,9 @@ int ClientInterface::functionTable(){
 	flist[F_RESTREAM_STOP_FROM_RECEIVER]	= 	&ClientInterface::restream_stop;
 	flist[F_SET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::set_additional_json_header;
 	flist[F_GET_ADDITIONAL_JSON_HEADER]     =   &ClientInterface::get_additional_json_header;
-    flist[F_RECEIVER_UDP_SOCK_BUF_SIZE]     =   &ClientInterface::set_udp_socket_buffer_size;
-    flist[F_RECEIVER_REAL_UDP_SOCK_BUF_SIZE]=   &ClientInterface::get_real_udp_socket_buffer_size;
+    flist[F_SET_RECEIVER_UDP_SOCK_BUF_SIZE] =   &ClientInterface::set_udp_socket_buffer_size;
+    flist[F_GET_RECEIVER_UDP_SOCK_BUF_SIZE] =   &ClientInterface::get_udp_socket_buffer_size;
+    flist[F_GET_RECEIVER_REAL_UDP_SOCK_BUF_SIZE]=   &ClientInterface::get_real_udp_socket_buffer_size;
     flist[F_SET_RECEIVER_FRAMES_PER_FILE]	=   &ClientInterface::set_frames_per_file;
     flist[F_GET_RECEIVER_FRAMES_PER_FILE]	=   &ClientInterface::get_frames_per_file;
     flist[F_RECEIVER_CHECK_VERSION]			=   &ClientInterface::check_version_compatibility;
@@ -555,7 +556,8 @@ int ClientInterface::set_roi(Interface &socket) {
     } catch(const RuntimeError &e) {
         throw RuntimeError("Could not set ROI");
     }
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_num_frames(Interface &socket) {
@@ -569,7 +571,8 @@ int ClientInterface::set_num_frames(Interface &socket) {
     impl()->setNumberOfFrames(value);
     int64_t retval = impl()->getNumberOfFrames();
     validate(value, retval, "set number of frames", DEC);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_num_triggers(Interface &socket) {
@@ -583,7 +586,8 @@ int ClientInterface::set_num_triggers(Interface &socket) {
     impl()->setNumberOfTriggers(value);
     int64_t retval = impl()->getNumberOfTriggers();
     validate(value, retval, "set number of triggers", DEC);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_num_bursts(Interface &socket) {
@@ -597,7 +601,8 @@ int ClientInterface::set_num_bursts(Interface &socket) {
     impl()->setNumberOfBursts(value);
     int64_t retval = impl()->getNumberOfBursts();
     validate(value, retval, "set number of bursts", DEC);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_num_add_storage_cells(Interface &socket) {
@@ -611,7 +616,8 @@ int ClientInterface::set_num_add_storage_cells(Interface &socket) {
     impl()->setNumberOfAdditionalStorageCells(value);
     int retval = impl()->getNumberOfAdditionalStorageCells();
     validate(value, retval, "set number of additional storage cells", DEC);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_timing_mode(Interface &socket) {
@@ -625,7 +631,8 @@ int ClientInterface::set_timing_mode(Interface &socket) {
     impl()->setTimingMode(static_cast<timingMode>(value));
     int retval = impl()->getTimingMode();
     validate(value, retval, "set timing mode", DEC);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_burst_mode(Interface &socket) {
@@ -639,7 +646,8 @@ int ClientInterface::set_burst_mode(Interface &socket) {
     impl()->setBurstMode(static_cast<burstMode>(value));
     int retval = impl()->getBurstMode();
     validate(value, retval, "set burst mode", DEC);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_num_analog_samples(Interface &socket) {
@@ -653,7 +661,8 @@ int ClientInterface::set_num_analog_samples(Interface &socket) {
     } catch(const RuntimeError &e) {
         throw RuntimeError("Could not set num analog samples to " + std::to_string(value) + " due to fifo structure memory allocation.");
     }
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_num_digital_samples(Interface &socket) {
@@ -667,21 +676,24 @@ int ClientInterface::set_num_digital_samples(Interface &socket) {
     } catch(const RuntimeError &e) {
         throw RuntimeError("Could not set num digital samples to " + std::to_string(value) + " due to fifo structure memory allocation.");
     }
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_exptime(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
     impl()->setAcquisitionTime(value);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_period(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     LOG(logDEBUG1) << "Setting period to " << value << "ns";
     impl()->setAcquisitionPeriod(value);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_subexptime(Interface &socket) {
@@ -690,7 +702,8 @@ int ClientInterface::set_subexptime(Interface &socket) {
     uint64_t subdeadtime = impl()->getSubPeriod() - impl()->getSubExpTime();
     impl()->setSubExpTime(value);
     impl()->setSubPeriod(impl()->getSubExpTime() + subdeadtime);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_subdeadtime(Interface &socket) {
@@ -698,7 +711,8 @@ int ClientInterface::set_subdeadtime(Interface &socket) {
     LOG(logDEBUG1) << "Setting sub deadtime to " << value << "ns";
     impl()->setSubPeriod(value + impl()->getSubExpTime());
     LOG(logDEBUG1) << "Setting sub period to " << impl()->getSubPeriod() << "ns";    
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_dynamic_range(Interface &socket) {
@@ -753,7 +767,8 @@ int ClientInterface::set_streaming_frequency(Interface &socket) {
     
     int retval = impl()->getStreamingFrequency();
     validate(index, retval, "set streaming frequency", DEC);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_streaming_frequency(Interface &socket) {
@@ -773,7 +788,8 @@ int ClientInterface::start_receiver(Interface &socket) {
         LOG(logDEBUG1) << "Starting Receiver";
         impl()->startReceiver();
     }
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::stop_receiver(Interface &socket) {
@@ -788,7 +804,8 @@ int ClientInterface::stop_receiver(Interface &socket) {
         throw RuntimeError("Could not stop receiver. It as it is: " +
                            sls::ToString(s));
 
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_file_dir(Interface &socket) {
@@ -811,7 +828,8 @@ int ClientInterface::set_file_dir(Interface &socket) {
     else
         LOG(logDEBUG1) << "file path:" << retval;
 
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_file_dir(Interface &socket) {
@@ -835,7 +853,8 @@ int ClientInterface::set_file_name(Interface &socket) {
     std::string s = impl()->getFileName();
     sls::strcpy_safe(retval, s.c_str());
     LOG(logDEBUG1) << "file name:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_file_name(Interface &socket) {
@@ -859,7 +878,8 @@ int ClientInterface::set_file_index(Interface &socket) {
     int64_t retval = impl()->getFileIndex();
     validate(index, retval, "set file index", DEC);
     LOG(logDEBUG1) << "file index:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_file_index(Interface &socket) {
@@ -904,7 +924,8 @@ int ClientInterface::set_file_write(Interface &socket) {
     int retval = impl()->getFileWriteEnable();
     validate(enable, retval, "set file write enable", DEC);
     LOG(logDEBUG1) << "file write enable:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_file_write(Interface &socket) {
@@ -926,7 +947,8 @@ int ClientInterface::set_master_file_write(Interface &socket) {
     int retval = impl()->getMasterFileWriteEnable();
     validate(enable, retval, "set master file write enable", DEC);
     LOG(logDEBUG1) << "master file write enable:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_master_file_write(Interface &socket) {
@@ -948,7 +970,8 @@ int ClientInterface::set_overwrite(Interface &socket) {
     int retval = impl()->getOverwriteEnable();
     validate(index, retval, "set file overwrite enable", DEC);
     LOG(logDEBUG1) << "file overwrite enable:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_overwrite(Interface &socket) {
@@ -1028,7 +1051,8 @@ int ClientInterface::set_streaming(Interface &socket) {
     auto retval = static_cast<int>(impl()->getDataStreamEnable());
     validate(index, retval, "set data stream enable", DEC);
     LOG(logDEBUG1) << "data streaming enable:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_streaming(Interface &socket) {
@@ -1081,7 +1105,8 @@ int ClientInterface::set_file_format(Interface &socket) {
     auto retval = impl()->getFileFormat();
     validate(f, retval, "set file format", DEC);
     LOG(logDEBUG1) << "File Format: " << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_file_format(Interface &socket) {
@@ -1102,7 +1127,8 @@ int ClientInterface::set_streaming_port(Interface &socket) {
     int retval = impl()->getStreamingPort();
     validate(port, retval, "set streaming port", DEC);
     LOG(logDEBUG1) << "streaming port:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_streaming_port(Interface &socket) {
@@ -1129,7 +1155,8 @@ int ClientInterface::set_streaming_source_ip(Interface &socket) {
            << ", but read " << retval << '\n';
         throw RuntimeError(os.str());
     }
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_streaming_source_ip(Interface &socket) {
@@ -1151,7 +1178,8 @@ int ClientInterface::set_silent_mode(Interface &socket) {
     auto retval = static_cast<int>(impl()->getSilentMode());
     validate(value, retval, "set silent mode", DEC);
     LOG(logDEBUG1) << "silent mode:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_silent_mode(Interface &socket) {
@@ -1169,7 +1197,8 @@ int ClientInterface::restream_stop(Interface &socket) {
         LOG(logDEBUG1) << "Restreaming stop";
         impl()->restreamStop();
     }
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_additional_json_header(Interface &socket) {
@@ -1186,7 +1215,8 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting additional json header: " << sls::ToString(json);
     impl()->setAdditionalJsonHeader(json);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_additional_json_header(Interface &socket) {
@@ -1221,6 +1251,13 @@ int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
                  "set udp socket buffer size (No CAP_NET_ADMIN privileges?)",
                  DEC);
     LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
+    socket.Send(OK);
+    return OK;
+}
+
+int ClientInterface::get_udp_socket_buffer_size(Interface &socket) {
+    int64_t retval = impl()->getUDPSocketBufferSize();
+    LOG(logDEBUG1) << "UDP Socket Buffer Size:" << retval;
     return socket.sendResult(retval);
 }
 
@@ -1244,7 +1281,8 @@ int ClientInterface::set_frames_per_file(Interface &socket) {
     auto retval = static_cast<int>(impl()->getFramesPerFile());
     validate(index, retval, "set frames per file", DEC);
     LOG(logDEBUG1) << "frames per file:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_frames_per_file(Interface &socket) {
@@ -1278,7 +1316,8 @@ int ClientInterface::check_version_compatibility(Interface &socket) {
     } else {
         LOG(logINFO) << "Compatibility with Client: Successful";
     }
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_discard_policy(Interface &socket) {
@@ -1292,7 +1331,8 @@ int ClientInterface::set_discard_policy(Interface &socket) {
     int retval = impl()->getFrameDiscardPolicy();
     validate(index, retval, "set discard policy", DEC);
     LOG(logDEBUG1) << "frame discard policy:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_discard_policy(Interface &socket) {
@@ -1313,7 +1353,8 @@ int ClientInterface::set_padding_enable(Interface &socket) {
     auto retval = static_cast<int>(impl()->getFramePaddingEnable());
     validate(index, retval, "set frame padding enable", DEC);
     LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_padding_enable(Interface &socket) {
@@ -1339,7 +1380,8 @@ int ClientInterface::set_deactivated_padding_enable(
     auto retval = static_cast<int>(impl()->getDeactivatedPadding());
     validate(enable, retval, "set deactivated padding enable", DEC);
     LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_deactivated_padding_enable(
@@ -1390,7 +1432,8 @@ int ClientInterface::set_adc_mask(Interface &socket) {
         throw RuntimeError(os.str());
     }
     LOG(logDEBUG1) << "1Gb ADC enable mask retval: " << retval;
-    return socket.sendResult(retval);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_dbit_list(Interface &socket) {
@@ -1405,7 +1448,8 @@ int ClientInterface::set_dbit_list(Interface &socket) {
     LOG(logDEBUG1) << "\n";
     verifyIdle(socket);
     impl()->setDbitList(args);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_dbit_list(Interface &socket) {
@@ -1432,7 +1476,8 @@ int ClientInterface::set_dbit_offset(Interface &socket) {
     int retval = impl()->getDbitOffset();
     validate(arg, retval, "set dbit offset", DEC);
     LOG(logDEBUG1) << "Dbit offset retval: " << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_dbit_offset(Interface &socket) {
@@ -1457,7 +1502,8 @@ int ClientInterface::set_quad_type(Interface &socket) {
     int retval = impl()->getQuad() ? 1 : 0;
     validate(quadEnable, retval, "set quad", DEC);
     LOG(logDEBUG1) << "quad retval:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_read_n_lines(Interface &socket) {
@@ -1470,7 +1516,8 @@ int ClientInterface::set_read_n_lines(Interface &socket) {
     int retval = impl()->getReadNLines();
     validate(arg, retval, "set read n lines", DEC);
     LOG(logDEBUG1) << "read n lines retval:" << retval;
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
@@ -1541,7 +1588,8 @@ int ClientInterface::set_udp_port(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting UDP Port:" << arg;
     impl()->setUDPPortNumber(arg);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_udp_port2(Interface &socket) {
@@ -1552,7 +1600,8 @@ int ClientInterface::set_udp_port2(Interface &socket) {
     }    
     LOG(logDEBUG1) << "Setting UDP Port:" << arg;
     impl()->setUDPPortNumber2(arg);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_num_interfaces(Interface &socket) {
@@ -1568,7 +1617,8 @@ int ClientInterface::set_num_interfaces(Interface &socket) {
     } catch(const RuntimeError &e) {
         throw RuntimeError("Failed to set number of interfaces to " + std::to_string(arg));
     }
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_adc_mask_10g(Interface &socket) {
@@ -1588,7 +1638,8 @@ int ClientInterface::set_adc_mask_10g(Interface &socket) {
         throw RuntimeError(os.str());
     }
     LOG(logDEBUG1) << "10Gb ADC enable mask retval: " << retval;
-    return socket.sendResult(retval);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::set_num_counters(Interface &socket) {
@@ -1596,7 +1647,8 @@ int ClientInterface::set_num_counters(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting counters: " << arg;
     impl()->setNumberofCounters(arg);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::increment_file_index(Interface &socket) {
@@ -1605,7 +1657,8 @@ int ClientInterface::increment_file_index(Interface &socket) {
         LOG(logDEBUG1) << "Incrementing file index";
         impl()->setFileIndex(impl()->getFileIndex() + 1);
     }
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 
@@ -1615,7 +1668,8 @@ int ClientInterface::set_additional_json_parameter(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting additional json parameter (" << args[0] << "): " << args[1];
     impl()->setAdditionalJsonParameter(args[0], args[1]);
-    return socket.Send(OK);
+    socket.Send(OK);
+    return OK;
 }
 
 int ClientInterface::get_additional_json_parameter(Interface &socket) {

@@ -267,7 +267,21 @@ void Receiver::restreamStop() {
     sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER, nullptr, nullptr);
 }
 
+
+uint64_t Receiver::getFramesCaught() const {
+    return sendToReceiver<uint64_t>(F_GET_RECEIVER_FRAMES_CAUGHT);
+}
+
+uint64_t Receiver::getNumMissingPackets() const {
+    return sendToReceiver<uint64_t>(F_GET_NUM_MISSING_PACKETS);    
+}
+
+uint64_t Receiver::getCurrentFrameIndex() const {
+    return sendToReceiver<uint64_t>(F_GET_RECEIVER_FRAME_INDEX);
+}
+
 /** Network Configuration (Detector<->Receiver) */
+
 sls::MacAddr Receiver::setUDPIP(const IpAddr ip) {
     LOG(logDEBUG1) << "Setting udp ip to receier: " << ip;
     if (ip == 0) {
@@ -284,6 +298,16 @@ void Receiver::setUDPPort(const int port) {
 }
 
 /** ZMQ Streaming Parameters (Receiver<->Client) */
+
+bool Receiver::getZmq() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING);
+}
+
+void Receiver::setZmq(const bool enable) {
+    int arg = static_cast<int>(enable);
+    sendToReceiver(F_SET_RECEIVER_STREAMING, arg, nullptr);
+}
+
 int Receiver::getClientZmqPort() const { 
     return shm()->zmqPort; 
 }
@@ -300,8 +324,7 @@ void Receiver::setZmqPort(int port) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
 }
 
-
-sls::IpAddr Receiver::getClientZmqIP() { 
+sls::IpAddr Receiver::getClientZmqIP() const { 
     return shm()->zmqIp; 
 }
 
@@ -313,7 +336,7 @@ void Receiver::setClientZmqIP(const sls::IpAddr ip) {
     shm()->zmqIp = ip;  
 }
 
-sls::IpAddr Receiver::getZmqIP() {
+sls::IpAddr Receiver::getZmqIP() const {
     return sendToReceiver<sls::IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
 }
 
@@ -329,7 +352,44 @@ void Receiver::setZmqIP(const sls::IpAddr ip) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
 }
 
+int Receiver::getZmqFrequency() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_FREQUENCY);
+}
+
+void Receiver::setZmqFrequency(const int freq) {
+    if (freq < 0) {
+        throw RuntimeError("Invalid streaming frequency " + std::to_string(freq));
+    }
+    sendToReceiver(F_SET_RECEIVER_STREAMING_FREQUENCY, freq, nullptr);
+}
+
+int Receiver::getZmqTimer() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_TIMER);
+}
+
+void Receiver::setZmqTimer(const int time_in_ms) {
+    sendToReceiver(F_SET_RECEIVER_STREAMING_TIMER, time_in_ms, nullptr);
+}
+
 /** Receiver Parameters */
+
+bool Receiver::getLock() const {
+    return sendToReceiver<int>(F_GET_LOCK_RECEIVER);
+}
+
+void Receiver::setLock(const bool lock) {
+    LOG(logDEBUG1) << "Setting receiver server lock to " << lock;
+    sendToReceiver(F_SET_LOCK_RECEIVER, lock, nullptr);
+}
+
+sls::IpAddr Receiver::getLastClientIP() const {
+    return sendToReceiver<sls::IpAddr>(F_GET_LAST_RECEIVER_CLIENT_IP);
+}
+
+void Receiver::exitServer() {
+    LOG(logDEBUG1) << "Sending exit command to receiver server";
+    sendToReceiver(F_EXIT_RECEIVER, nullptr, nullptr);
+}
 
 int64_t Receiver::getUDPSocketBufferSize() const {
     return sendToReceiver<int64_t>(F_GET_RECEIVER_UDP_SOCK_BUF_SIZE);
@@ -345,60 +405,188 @@ int64_t Receiver::getRealUDPSocketBufferSize() const {
     return sendToReceiver<int64_t>(F_GET_RECEIVER_REAL_UDP_SOCK_BUF_SIZE);
 }
 
+bool Receiver::getDeactivatedPaddingMode() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_DEACTIVATED_PADDING);
+}
+
+void Receiver::setDeactivatedPaddingMode(const bool padding) {
+    int arg = static_cast<int>(padding);
+    sendToReceiver(F_SET_RECEIVER_DEACTIVATED_PADDING, arg, nullptr);
+}
+
+bool Receiver::getFlippedDataX() const { 
+    int arg = -1;
+    return sendToReceiver<int>(F_GET_FLIPPED_DATA_RECEIVER, arg);
+}
+
+void Receiver::setFlippedDataX(const bool value) {
+    int arg = static_cast<int>(value);
+    LOG(logDEBUG1) << "Setting flipped data across x axis with value: "
+                        << value;
+    sendToReceiver(F_SET_FLIPPED_DATA_RECEIVER, arg, nullptr);
+}
+
+slsDetectorDefs::frameDiscardPolicy Receiver::getFramesDiscardPolicy() const {
+    return static_cast<frameDiscardPolicy>(
+        sendToReceiver<int>(F_GET_RECEIVER_DISCARD_POLICY));    
+}
+
+void Receiver::setFramesDiscardPolicy(const frameDiscardPolicy f) {
+    int arg = static_cast<int>(f);
+    sendToReceiver(F_SET_RECEIVER_DISCARD_POLICY, arg, nullptr);    
+}
+
+bool Receiver::getPartialFramesPadding() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_PADDING);    
+}
+
+void Receiver::setPartialFramesPadding(const bool padding) {
+    int arg = static_cast<int>(padding);
+    sendToReceiver(F_SET_RECEIVER_PADDING, arg, nullptr);        
+}
+
+/** File */
+
+std::string Receiver::getFilePath() const {
+    char retvals[MAX_STR_LENGTH]{};
+    sendToReceiver(F_GET_RECEIVER_FILE_PATH, nullptr, retvals);
+    return std::string(retvals);
+}
+
+void Receiver::setFilePath(const std::string &path) {
+    if (path.empty()) {
+        throw RuntimeError("Cannot set empty file path");
+    }
+    char args[MAX_STR_LENGTH]{};
+    sls::strcpy_safe(args, path.c_str());
+    sendToReceiver(F_SET_RECEIVER_FILE_PATH, args, nullptr);
+}
+
+std::string Receiver::getFileName() const {
+    char retvals[MAX_STR_LENGTH]{};
+    sendToReceiver(F_GET_RECEIVER_FILE_NAME, nullptr, retvals);
+    return std::string(retvals);
+}
+
+void Receiver::setFileName(const std::string &fname) {
+    if (fname.empty()) {
+        throw RuntimeError("Cannot set empty file name prefix");
+    }
+    char args[MAX_STR_LENGTH]{};
+    sls::strcpy_safe(args, fname.c_str());
+    sendToReceiver(F_SET_RECEIVER_FILE_NAME, args, nullptr);
+}
+
+int64_t Receiver::getFileIndex() const { 
+    return sendToReceiver<int64_t>(F_GET_RECEIVER_FILE_INDEX);
+}
+
+void Receiver::setFileIndex(const int64_t file_index) {
+    sendToReceiver(F_SET_RECEIVER_FILE_INDEX, file_index, nullptr);
+}
+
+void Receiver::incrementFileIndex() {
+    sendToReceiver(F_INCREMENT_FILE_INDEX, nullptr, nullptr);
+}
+
+slsDetectorDefs::fileFormat Receiver::getFileFormat() const {
+    return static_cast<fileFormat>(
+        sendToReceiver<int>(F_GET_RECEIVER_FILE_FORMAT)); 
+}
+
+void Receiver::setFileFormat(const fileFormat f) {
+    int arg = static_cast<int>(f);
+    sendToReceiver(F_SET_RECEIVER_FILE_FORMAT, arg, nullptr);
+}
+
+int Receiver::getFramesPerFile() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_FRAMES_PER_FILE);
+}
+
+void Receiver::setFramesPerFile(const int n_frames) {
+    sendToReceiver(F_SET_RECEIVER_FRAMES_PER_FILE, n_frames, nullptr);
+}
+
+bool Receiver::getFileWrite() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_FILE_WRITE);    
+}
+
+void Receiver::setFileWrite(const bool value) {
+    int arg = static_cast<int>(value);
+    sendToReceiver(F_SET_RECEIVER_FILE_WRITE, arg, nullptr);    
+}
+
+bool Receiver::getMasterFileWrite() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_MASTER_FILE_WRITE);
+}
+
+void Receiver::setMasterFileWrite(const bool value) {
+    int arg = static_cast<int>(value);
+    sendToReceiver(F_SET_RECEIVER_MASTER_FILE_WRITE, arg, nullptr);
+}
+
+bool Receiver::getFileOverWrite() const { 
+    return sendToReceiver<int>(F_GET_RECEIVER_OVERWRITE);
+}
+
+void Receiver::setFileOverWrite(const bool value) {
+    int arg = static_cast<int>(value);
+    sendToReceiver(F_SET_RECEIVER_OVERWRITE, arg, nullptr);
+}
 
 /** Detector Parameters */
 
-void Receiver::setNumberOfFrames(int64_t value) {
+void Receiver::setNumberOfFrames(const int64_t value) {
     LOG(logDEBUG1) << "Sending number of frames to Receiver: " << value;
     sendToReceiver(F_RECEIVER_SET_NUM_FRAMES, value, nullptr);   
 }
 
-void Receiver::setNumberOfTriggers(int64_t value) {
+void Receiver::setNumberOfTriggers(const int64_t value) {
     LOG(logDEBUG1) << "Sending number of triggers to Receiver: " << value;
     sendToReceiver(F_SET_RECEIVER_NUM_TRIGGERS, value, nullptr);   
 }
 
-void Receiver::setNumberOfBursts(int64_t value) {
+void Receiver::setNumberOfBursts(const int64_t value) {
     LOG(logDEBUG1) << "Sending number of bursts to Receiver: " << value;
     sendToReceiver(F_SET_RECEIVER_NUM_BURSTS, value, nullptr);   
 }
 
-void Receiver::setNumberOfAnalogSamples(int value) {
+void Receiver::setNumberOfAnalogSamples(const int value) {
     LOG(logDEBUG1) << "Sending number of analog samples to Receiver: " << value;
     sendToReceiver(F_RECEIVER_SET_NUM_ANALOG_SAMPLES, value, nullptr);   
 }
 
-void Receiver::setNumberOfDigitalSamples(int value) {
+void Receiver::setNumberOfDigitalSamples(const int value) {
     LOG(logDEBUG1) << "Sending number of digital samples to Receiver: " << value;
     sendToReceiver(F_RECEIVER_SET_NUM_DIGITAL_SAMPLES, value, nullptr);   
 }
 
-void Receiver::setExptime(int64_t value) {
+void Receiver::setExptime(const int64_t value) {
     LOG(logDEBUG1) << "Sending exptime to Receiver: " << value;
     sendToReceiver(F_RECEIVER_SET_EXPTIME, value, nullptr);   
 }
 
-void Receiver::setPeriod(int64_t value) {
+void Receiver::setPeriod(const int64_t value) {
     LOG(logDEBUG1) << "Sending period to Receiver: " << value;
     sendToReceiver(F_RECEIVER_SET_PERIOD, value, nullptr);   
 }
 
-void Receiver::setSubExptime(int64_t value) {
+void Receiver::setSubExptime(const int64_t value) {
     LOG(logDEBUG1) << "Sending sub exptime to Receiver: " << value;
     sendToReceiver(F_RECEIVER_SET_SUB_EXPTIME, value, nullptr);   
 }
 
-void Receiver::setSubDeadTime(int64_t value) {
+void Receiver::setSubDeadTime(const int64_t value) {
     LOG(logDEBUG1) << "Sending sub deadtime to Receiver: " << value;
     sendToReceiver(F_RECEIVER_SET_SUB_DEADTIME, value, nullptr);   
 }
 
-void Receiver::setTimingMode(timingMode value) {
+void Receiver::setTimingMode(const timingMode value) {
     LOG(logDEBUG1) << "Sending timing mode to Receiver: " << value;
     sendToReceiver(F_SET_RECEIVER_TIMING_MODE, value, nullptr);   
 }
 
-void Receiver::setDynamicRange(int n) {
+void Receiver::setDynamicRange(const int n) {
     int retval = -1;
     LOG(logDEBUG1) << "Sending dynamic range to receiver: " << n;
     sendToReceiver(F_SET_RECEIVER_DYNAMIC_RANGE, n, retval);
@@ -420,20 +608,20 @@ void Receiver::setReadNLines(const int value) {
     sendToReceiver(F_SET_RECEIVER_READ_N_LINES, value, nullptr);
 }
 
-void Receiver::setADCEnableMask(uint32_t mask) {
+void Receiver::setADCEnableMask(const uint32_t mask) {
     sendToReceiver(F_RECEIVER_SET_ADC_MASK, mask, nullptr);
 }
 
-void Receiver::setTenGigaADCEnableMask(uint32_t mask) {
+void Receiver::setTenGigaADCEnableMask(const uint32_t mask) {
     sendToReceiver(F_RECEIVER_SET_ADC_MASK_10G, mask, nullptr);
 }
 
-void Receiver::setBurstMode(slsDetectorDefs::burstMode value) {
+void Receiver::setBurstMode(const slsDetectorDefs::burstMode value) {
     LOG(logDEBUG1) << "Sending burst mode to Receiver: " << value;
     sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);   
 }
 
-void Receiver::setROI(slsDetectorDefs::ROI arg) {
+void Receiver::setROI(const slsDetectorDefs::ROI arg) {
     std::array<int, 2> args{arg.xmin, arg.xmax};
     LOG(logDEBUG1) << "Sending ROI to receiver";
     sendToReceiver(F_RECEIVER_SET_ROI, args, nullptr);
@@ -468,11 +656,11 @@ void Receiver::setDbitList(const std::vector<int>& list) {
     sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);        
 }
 
-int Receiver::getDbitOffset() {
+int Receiver::getDbitOffset() const {
     return sendToReceiver<int>(F_GET_RECEIVER_DBIT_OFFSET);    
 }
 
-void Receiver::setDbitOffset(int value) {
+void Receiver::setDbitOffset(const int value) {
     sendToReceiver(F_SET_RECEIVER_DBIT_OFFSET, value, nullptr);        
 }
 
@@ -481,7 +669,9 @@ void Receiver::setActivate(const bool enable) {
     sendToReceiver(F_RECEIVER_ACTIVATE, arg, nullptr);        
 }
 
-std::map<std::string, std::string> Receiver::getAdditionalJsonHeader() {
+/** Json */
+
+std::map<std::string, std::string> Receiver::getAdditionalJsonHeader() const {
     int fnum = F_GET_ADDITIONAL_JSON_HEADER;
     int ret = FAIL;
     int size = 0;
@@ -544,7 +734,7 @@ void Receiver::setAdditionalJsonHeader(const std::map<std::string, std::string> 
     }
 }
 
-std::string Receiver::getAdditionalJsonParameter(const std::string &key) {
+std::string Receiver::getAdditionalJsonParameter(const std::string &key) const {
     char arg[SHORT_STR_LENGTH]{};
     sls::strcpy_safe(arg, key.c_str());
     char retval[SHORT_STR_LENGTH]{};

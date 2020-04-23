@@ -974,26 +974,6 @@ class Module : public virtual slsDetectorDefs {
     /** [Eiger] */
     void setActivate(const bool enable);
 
-    bool getDeactivatedRxrPaddingMode();
-
-    /**
-     * Set deactivated Receiver padding mode (Eiger only)
-     */
-    void setDeactivatedRxrPaddingMode(bool padding);
-
-    /**
-     * Returns the enable if data will be flipped across x axis (Eiger)
-     * @returns if flipped across x axis
-     */
-    bool getFlippedDataX();
-
-    /**
-     * Sets the enable which determines if
-     * data will be flipped across x axis (Eiger)
-     * @param value 0 or 1 to reset/set 
-     */
-    void setFlippedDataX(bool value);
-
     /**
      * Sets all the trimbits to a particular value (Eiger)
      * @param val trimbit value
@@ -1163,96 +1143,6 @@ class Module : public virtual slsDetectorDefs {
      * Gets the use receiver flag from shared memory
      */
     bool getUseReceiverFlag() const;
-
-    /**
-     * Locks/Unlocks the connection to the receiver
-     * @param lock sets (1), usets (0), gets (-1) the lock
-     * @returns lock status of the receiver
-     */
-    int lockReceiver(int lock = -1);
-
-    /**
-     * Returns the IP of the last client connecting to the receiver
-     * @returns the IP of the last client connecting to the receiver
-     */
-    sls::IpAddr getReceiverLastClientIP() const;
-
-    /**
-     * Exits the receiver TCP server
-     */
-    void exitReceiver();
-
-    /**
-     * Executes a system command on the receiver server
-     * e.g. mount an nfs disk, reboot and returns answer etc.
-     * @param cmd command to be executed
-     */
-    void execReceiverCommand(const std::string &cmd);
-
-    std::string getFilePath();
-    void setFilePath(const std::string &path);
-    std::string getFileName();
-    void setFileName(const std::string &fname);
-    int64_t getFileIndex();
-    void setFileIndex(int64_t file_index);
-    void incrementFileIndex();
-    fileFormat getFileFormat() ;
-    void setFileFormat(fileFormat f);
-    int getFramesPerFile();
-    /** 0 will set frames per file to unlimited */
-    void setFramesPerFile(int n_frames);
-    frameDiscardPolicy getReceiverFramesDiscardPolicy();
-    void setReceiverFramesDiscardPolicy(frameDiscardPolicy f);
-    bool getPartialFramesPadding();
-    void setPartialFramesPadding(bool padding);
-
-
-    /**
-     * Gets the number of frames caught by receiver
-     * @returns number of frames caught by receiver
-     */
-    int64_t getFramesCaughtByReceiver() const;
-
-    /** Gets number of missing packets */
-    std::vector<uint64_t> getNumMissingPackets() const;
-
-    /**
-     * Gets the current frame index of receiver
-     * @returns current frame index of receiver
-     */
-    uint64_t getReceiverCurrentFrameIndex() const;
-
-    void setFileWrite(bool value);
-    bool getFileWrite();
-    void setMasterFileWrite(bool value);
-    bool getMasterFileWrite();
-    void setFileOverWrite(bool value);
-    bool getFileOverWrite();
-
-    int getReceiverStreamingFrequency();
-
-    /**
-     * (previously setReadReceiverFrequency)
-     * Sets the receiver streaming frequency
-     * @param freq nth frame streamed out, if 0, streamed out at a timer of 200
-     * ms
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void setReceiverStreamingFrequency(int freq);
-
-    /**
-     * (previously setReceiverReadTimer)
-     * Sets the receiver streaming timer
-     * If receiver streaming frequency is 0, then this timer between each
-     * data stream is set. Default is 200 ms.
-     * @param time_in_ms timer between frames
-     * @returns receiver streaming timer in ms
-     */
-    int setReceiverStreamingTimer(int time_in_ms = 200);
-
-    bool getReceiverStreaming();
-
-    void setReceiverStreaming(bool enable);
 
     /**
      * Enable/disable or 10Gbe

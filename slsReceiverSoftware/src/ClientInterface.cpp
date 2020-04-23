@@ -104,7 +104,8 @@ void ClientInterface::startTCPServer() {
 int ClientInterface::functionTable(){
 	flist[F_EXEC_RECEIVER_COMMAND]			=	&ClientInterface::exec_command;
 	flist[F_EXIT_RECEIVER]					=	&ClientInterface::exit_server;
-	flist[F_LOCK_RECEIVER]					=	&ClientInterface::lock_receiver;
+	flist[F_SET_LOCK_RECEIVER]				=	&ClientInterface::set_lock_server;
+	flist[F_GET_LOCK_RECEIVER]				=	&ClientInterface::get_lock_server;
 	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&ClientInterface::get_last_client_ip;
 	flist[F_SET_RECEIVER_PORT]				=	&ClientInterface::set_port;
 	flist[F_GET_RECEIVER_VERSION]			=	&ClientInterface::get_version;
@@ -148,8 +149,10 @@ int ClientInterface::functionTable(){
 	flist[F_RECEIVER_ACTIVATE]				= 	&ClientInterface::set_activate;
 	flist[F_SET_RECEIVER_STREAMING]		    = 	&ClientInterface::set_streaming;
 	flist[F_GET_RECEIVER_STREAMING]		    = 	&ClientInterface::get_streaming;
-	flist[F_RECEIVER_STREAMING_TIMER]		= 	&ClientInterface::set_streaming_timer;
+	flist[F_SET_RECEIVER_STREAMING_TIMER]	= 	&ClientInterface::set_streaming_timer;
+	flist[F_GET_RECEIVER_STREAMING_TIMER]	= 	&ClientInterface::get_streaming_timer;
 	flist[F_SET_FLIPPED_DATA_RECEIVER]		= 	&ClientInterface::set_flipped_data;
+	flist[F_GET_FLIPPED_DATA_RECEIVER]		= 	&ClientInterface::get_flipped_data;
 	flist[F_SET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::set_file_format;
 	flist[F_GET_RECEIVER_FILE_FORMAT]		= 	&ClientInterface::get_file_format;
 	flist[F_SET_RECEIVER_STREAMING_PORT]	= 	&ClientInterface::set_streaming_port;
@@ -289,7 +292,7 @@ int ClientInterface::exit_server(Interface &socket) {
     return GOODBYE;
 }
 
-int ClientInterface::lock_receiver(Interface &socket) {
+int ClientInterface::set_lock_server(Interface &socket) {
     auto lock = socket.Receive<int>();
     LOG(logDEBUG1) << "Locking Server to " << lock;
     if (lock >= 0) {
@@ -301,6 +304,11 @@ int ClientInterface::lock_receiver(Interface &socket) {
             throw RuntimeError("Receiver locked\n");
         }
     }
+    socket.Send(OK);
+    return OK;
+}
+
+int ClientInterface::get_lock_server(Interface &socket) {
     return socket.sendResult(lockedByClient);
 }
 
@@ -907,7 +915,7 @@ int ClientInterface::get_missing_packets(Interface &socket) {
 }
 
 int ClientInterface::get_frames_caught(Interface &socket) {
-    int64_t retval = impl()->getFramesCaught();
+    uint64_t retval = impl()->getFramesCaught();
     LOG(logDEBUG1) << "frames caught:" << retval;
     return socket.sendResult(retval);
 }
@@ -1071,8 +1079,16 @@ int ClientInterface::set_streaming_timer(Interface &socket) {
     int retval = impl()->getStreamingTimer();
     validate(index, retval, "set data stream timer", DEC);
     LOG(logDEBUG1) << "Streaming timer:" << retval;
+    socket.Send(OK);
+    return OK;
+}
+
+int ClientInterface::get_streaming_timer(Interface &socket) {
+    int retval = impl()->getStreamingTimer();
+    LOG(logDEBUG1) << "Streaming timer:" << retval;
     return socket.sendResult(retval);
 }
+
 
 int ClientInterface::set_flipped_data(Interface &socket) {
     auto arg = socket.Receive<int>();
@@ -1087,6 +1103,13 @@ int ClientInterface::set_flipped_data(Interface &socket) {
     }
     int retval = impl()->getFlippedDataX();
     validate(arg, retval, std::string("set flipped data"), DEC);
+    LOG(logDEBUG1) << "Flipped Data:" << retval;
+    socket.Send(OK);
+    return OK;
+}
+
+int ClientInterface::get_flipped_data(Interface &socket) {
+    int retval = impl()->getFlippedDataX();
     LOG(logDEBUG1) << "Flipped Data:" << retval;
     return socket.sendResult(retval);
 }

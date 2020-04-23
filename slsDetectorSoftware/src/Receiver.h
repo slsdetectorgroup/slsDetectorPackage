@@ -70,6 +70,9 @@ class Receiver : public virtual slsDetectorDefs {
     int getProgress() const;
     void setStoppedFlag();
     void restreamStop();
+    uint64_t getFramesCaught() const;
+    uint64_t getNumMissingPackets() const;
+    uint64_t getCurrentFrameIndex() const;
 
     /**************************************************
     *                                                 *
@@ -77,77 +80,123 @@ class Receiver : public virtual slsDetectorDefs {
     *                                                 *
     * ************************************************/
     sls::MacAddr setUDPIP(const sls::IpAddr ip);
-    void setUDPPort(int udpport);
+    void setUDPPort(const int udpport);
 
     /**************************************************
     *                                                *
     *    ZMQ Streaming Parameters (Receiver<->Client)*
     *                                                *
     * ************************************************/
+    bool getZmq() const;
+    void setZmq(const bool enable);
     int getClientZmqPort() const;
     void setClientZmqPort(const int port);
     int getZmqPort() const; 
     void setZmqPort(int port);
-    sls::IpAddr getClientZmqIP();
+    sls::IpAddr getClientZmqIP() const;
     void setClientZmqIP(const sls::IpAddr ip);
-    sls::IpAddr getZmqIP();
+    sls::IpAddr getZmqIP() const;
     void setZmqIP(const sls::IpAddr ip);
+    int getZmqFrequency() const;
+    /** Freq = 0 for a timer, else frequency */
+    void setZmqFrequency(const int freq);
+    int getZmqTimer() const;
+    void setZmqTimer(const int time_in_ms = 200);
 
     /**************************************************
     *                                                *
     *    Receiver Parameters                         *
     *                                                *
     * ************************************************/
+    bool getLock() const;
+    void setLock(const bool lock);
+    sls::IpAddr getLastClientIP() const;
+    void exitServer();
+    
     int64_t getUDPSocketBufferSize() const;
     void setUDPSocketBufferSize(int64_t value);
     int64_t getRealUDPSocketBufferSize() const;
 
-    /**************************************************
-    *                                                *
-    *    Detector Parameters                         *
-    *                                                *
-    * ************************************************/
-    void setNumberOfFrames(int64_t value);
-    void setNumberOfTriggers(int64_t value);
-    void setNumberOfBursts(int64_t value);
-    void setNumberOfAnalogSamples(int value);
-    void setNumberOfDigitalSamples(int value);
-    void setExptime(int64_t value);
-    void setPeriod(int64_t value);
-    void setSubExptime(int64_t value);
-    void setSubDeadTime(int64_t value);
-    void setTimingMode(timingMode value);
-    void setDynamicRange(int n);
-    void setReadoutMode(const readoutMode mode);
-    void setQuad(const bool enable);
-    void setReadNLines(const int value);
-    void setADCEnableMask(uint32_t mask);
-    void setTenGigaADCEnableMask(uint32_t mask);
-    void setBurstMode(burstMode value);
-    void setROI(slsDetectorDefs::ROI arg);
-    void clearROI();
-    std::vector<int> getDbitList() const;
-    /** digital data bits enable (CTB only) */
-    void setDbitList(const std::vector<int>& list);
-    int getDbitOffset();
-    /** Set digital data offset in bytes (CTB only) */
-    void setDbitOffset(int value);
-    void setActivate(const bool enable);
-
-    std::map<std::string, std::string> getAdditionalJsonHeader();
-    /** empty vector deletes entire additional json header */
-    void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);
-    std::string getAdditionalJsonParameter(const std::string &key);
-    /** Sets the value for the additional json header parameter key if found, 
-    else append it. If value empty, then deletes parameter */
-    void setAdditionalJsonParameter(const std::string &key, const std::string &value);
-
+    bool getDeactivatedPaddingMode() const;
+    void setDeactivatedPaddingMode(const bool padding);
+    bool getFlippedDataX() const;
+    void setFlippedDataX(const bool value);
+    frameDiscardPolicy getFramesDiscardPolicy() const;
+    void setFramesDiscardPolicy(const frameDiscardPolicy f);
+    bool getPartialFramesPadding() const;
+    void setPartialFramesPadding(const bool padding);
 
     /**************************************************
     *                                                *
     *    File                                        *
     *                                                *
     * ************************************************/
+    std::string getFilePath() const;
+    void setFilePath(const std::string &path);
+    std::string getFileName() const;
+    void setFileName(const std::string &fname);
+    int64_t getFileIndex() const;
+    void setFileIndex(const int64_t file_index);
+    void incrementFileIndex();
+    fileFormat getFileFormat() const;
+    void setFileFormat(const fileFormat f);
+    int getFramesPerFile() const;
+    /** 0 will set frames per file to unlimited */
+    void setFramesPerFile(const int n_frames);
+    bool getFileWrite() const;
+    void setFileWrite(const bool value);
+    bool getMasterFileWrite() const;
+    void setMasterFileWrite(const bool value);
+    bool getFileOverWrite() const;
+    void setFileOverWrite(const bool value);
+
+    /**************************************************
+    *                                                *
+    *    Detector Parameters                         *
+    *                                                *
+    * ************************************************/
+    void setNumberOfFrames(const int64_t value);
+    void setNumberOfTriggers(const int64_t value);
+    void setNumberOfBursts(const int64_t value);
+    void setNumberOfAnalogSamples(const int value);
+    void setNumberOfDigitalSamples(const int value);
+    void setExptime(const int64_t value);
+    void setPeriod(const int64_t value);
+    void setSubExptime(const int64_t value);
+    void setSubDeadTime(const int64_t value);
+    void setTimingMode(const timingMode value);
+    void setDynamicRange(const int n);
+    void setReadoutMode(const readoutMode mode);
+    void setQuad(const bool enable);
+    void setReadNLines(const int value);
+    void setADCEnableMask(const uint32_t mask);
+    void setTenGigaADCEnableMask(const uint32_t mask);
+    void setBurstMode(const burstMode value);
+    void setROI(const slsDetectorDefs::ROI arg);
+    void clearROI();
+    std::vector<int> getDbitList() const;
+    /** digital data bits enable (CTB only) */
+    void setDbitList(const std::vector<int>& list);
+    int getDbitOffset() const;
+    /** Set digital data offset in bytes (CTB only) */
+    void setDbitOffset(const int value);
+    void setActivate(const bool enable);
+
+    /**************************************************
+    *                                                *
+    *    Json                                        *
+    *                                                *
+    * ************************************************/
+
+    std::map<std::string, std::string> getAdditionalJsonHeader() const;
+    /** empty vector deletes entire additional json header */
+    void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);
+    std::string getAdditionalJsonParameter(const std::string &key) const;
+    /** Sets the value for the additional json header parameter key if found, 
+    else append it. If value empty, then deletes parameter */
+    void setAdditionalJsonParameter(const std::string &key, const std::string &value);
+
+
 
     private:
     void sendToReceiver(int fnum, const void *args, size_t args_size,

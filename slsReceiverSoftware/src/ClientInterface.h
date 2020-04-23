@@ -61,7 +61,8 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     int exec_command(sls::ServerInterface &socket);
     int exit_server(sls::ServerInterface &socket);
-    int lock_receiver(sls::ServerInterface &socket);
+    int set_lock_server(sls::ServerInterface &socket);
+    int get_lock_server(sls::ServerInterface &socket);
     int get_last_client_ip(sls::ServerInterface &socket);
     int set_port(sls::ServerInterface &socket);
     int get_version(sls::ServerInterface &socket);
@@ -108,7 +109,9 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_streaming(sls::ServerInterface &socket);
     int get_streaming(sls::ServerInterface &socket);
     int set_streaming_timer(sls::ServerInterface &socket);
+    int get_streaming_timer(sls::ServerInterface &socket);
     int set_flipped_data(sls::ServerInterface &socket);
+    int get_flipped_data(sls::ServerInterface &socket);
     int set_file_format(sls::ServerInterface &socket);
     int get_file_format(sls::ServerInterface &socket);
     int set_streaming_port(sls::ServerInterface &socket);

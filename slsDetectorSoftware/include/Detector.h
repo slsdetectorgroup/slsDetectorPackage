@@ -352,9 +352,9 @@ class Detector {
     Result<defs::runStatus> getReceiverStatus(const int udpInterface, 
       Positions pos = {}) const;
 
-    Result<int64_t> getFramesCaught(Positions pos = {}) const;
+    Result<uint64_t> getFramesCaught(Positions pos = {}) const;
 
-    Result<std::vector<uint64_t>> getNumMissingPackets(Positions pos = {}) const;
+    Result<uint64_t> getNumMissingPackets(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau] */
     Result<uint64_t> getStartingFrameNumber(Positions pos = {}) const;

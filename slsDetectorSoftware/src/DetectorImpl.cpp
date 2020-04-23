@@ -1287,7 +1287,7 @@ int DetectorImpl::acquire() {
             // external process to be
             // done sending data to gui
 
-            Parallel(&Module::incrementFileIndex, {});
+            Parallel3(&Receiver::incrementFileIndex);
         }
 
         // waiting for the data processing thread to finish!

@@ -538,12 +538,12 @@ Result<defs::runStatus> Detector::getReceiverStatus(const int udpInterface, Posi
     } 
 }
 
-Result<int64_t> Detector::getFramesCaught(Positions pos) const {
-    return pimpl->Parallel(&Module::getFramesCaughtByReceiver, pos);
+Result<uint64_t> Detector::getFramesCaught(Positions pos) const {
+    return pimpl->Parallel3(&Receiver::getFramesCaught);
 }
 
-Result<std::vector<uint64_t>> Detector::getNumMissingPackets(Positions pos) const {
-    return pimpl->Parallel(&Module::getNumMissingPackets, pos);
+Result<uint64_t> Detector::getNumMissingPackets(Positions pos) const {
+    return pimpl->Parallel3(&Receiver::getNumMissingPackets);
 }
 
 Result<uint64_t> Detector::getStartingFrameNumber(Positions pos) const {
@@ -833,20 +833,20 @@ void Detector::setRxSilentMode(bool value, Positions pos) {
 
 Result<defs::frameDiscardPolicy>
 Detector::getRxFrameDiscardPolicy(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverFramesDiscardPolicy, pos);
+    return pimpl->Parallel3(&Receiver::getFramesDiscardPolicy);
 }
 
 void Detector::setRxFrameDiscardPolicy(defs::frameDiscardPolicy f,
                                        Positions pos) {
-    pimpl->Parallel(&Module::setReceiverFramesDiscardPolicy, pos, f);
+    pimpl->Parallel3(&Receiver::setFramesDiscardPolicy, f);
 }
 
 Result<bool> Detector::getPartialFramesPadding(Positions pos) const {
-    return pimpl->Parallel(&Module::getPartialFramesPadding, pos);
+    return pimpl->Parallel3(&Receiver::getPartialFramesPadding);
 }
 
 void Detector::setPartialFramesPadding(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setPartialFramesPadding, pos, value);
+    pimpl->Parallel3(&Receiver::setPartialFramesPadding, value);
 }
 
 Result<int64_t> Detector::getRxUDPSocketBufferSize(Positions pos) const {
@@ -863,107 +863,107 @@ Result<int64_t> Detector::getRxRealUDPSocketBufferSize(Positions pos) const {
 }
 
 Result<bool> Detector::getRxLock(Positions pos) {
-    return pimpl->Parallel(&Module::lockReceiver, pos, -1);
+    return pimpl->Parallel3(&Receiver::getLock);
 }
 
 void Detector::setRxLock(bool value, Positions pos) {
-    pimpl->Parallel(&Module::lockReceiver, pos, static_cast<int>(value));
+    pimpl->Parallel3(&Receiver::setLock, value);
 }
 
 Result<sls::IpAddr> Detector::getRxLastClientIP(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverLastClientIP, pos);
+    return pimpl->Parallel3(&Receiver::getLastClientIP);
 }
 
 // File
 
 Result<defs::fileFormat> Detector::getFileFormat(Positions pos) const {
-    return pimpl->Parallel(&Module::getFileFormat, pos);
+    return pimpl->Parallel3(&Receiver::getFileFormat);
 }
 
 void Detector::setFileFormat(defs::fileFormat f, Positions pos) {
-    pimpl->Parallel(&Module::setFileFormat, pos, f);
+    pimpl->Parallel3(&Receiver::setFileFormat, f);
 }
 
 Result<std::string> Detector::getFilePath(Positions pos) const {
-    return pimpl->Parallel(&Module::getFilePath, pos);
+    return pimpl->Parallel3(&Receiver::getFilePath);
 }
 
 void Detector::setFilePath(const std::string &fpath, Positions pos) {
-    pimpl->Parallel(&Module::setFilePath, pos, fpath);
+    pimpl->Parallel3(&Receiver::setFilePath, fpath);
 }
 
 Result<std::string> Detector::getFileNamePrefix(Positions pos) const {
-    return pimpl->Parallel(&Module::getFileName, pos);
+    return pimpl->Parallel3(&Receiver::getFileName);
 }
 
 void Detector::setFileNamePrefix(const std::string &fname, Positions pos) {
-    pimpl->Parallel(&Module::setFileName, pos, fname);
+    pimpl->Parallel3(&Receiver::setFileName, fname);
 }
 
 Result<int64_t> Detector::getAcquisitionIndex(Positions pos) const {
-    return pimpl->Parallel(&Module::getFileIndex, pos);
+    return pimpl->Parallel3(&Receiver::getFileIndex);
 }
 
 void Detector::setAcquisitionIndex(int64_t i, Positions pos) {
-    pimpl->Parallel(&Module::setFileIndex, pos, i);
+    pimpl->Parallel3(&Receiver::setFileIndex, i);
 }
 
 Result<bool> Detector::getFileWrite(Positions pos) const {
-    return pimpl->Parallel(&Module::getFileWrite, pos);
+    return pimpl->Parallel3(&Receiver::getFileWrite);
 }
 
 void Detector::setFileWrite(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setFileWrite, pos, value);
+    pimpl->Parallel3(&Receiver::setFileWrite, value);
 }
 
 void Detector::setMasterFileWrite(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setMasterFileWrite, pos, value);
+    pimpl->Parallel3(&Receiver::setMasterFileWrite, value);
 }
 
 Result<bool> Detector::getMasterFileWrite(Positions pos) const {
-    return pimpl->Parallel(&Module::getMasterFileWrite, pos);
+    return pimpl->Parallel3(&Receiver::getMasterFileWrite);
 }
 
 Result<bool> Detector::getFileOverWrite(Positions pos) const {
-    return pimpl->Parallel(&Module::getFileOverWrite, pos);
+    return pimpl->Parallel3(&Receiver::getFileOverWrite);
 }
 
 void Detector::setFileOverWrite(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setFileOverWrite, pos, value);
+    pimpl->Parallel3(&Receiver::setFileOverWrite, value);
 }
 
 Result<int> Detector::getFramesPerFile(Positions pos) const {
-    return pimpl->Parallel(&Module::getFramesPerFile, pos);
+    return pimpl->Parallel3(&Receiver::getFramesPerFile);
 }
 
 void Detector::setFramesPerFile(int n, Positions pos) {
-    pimpl->Parallel(&Module::setFramesPerFile, pos, n);
+    pimpl->Parallel3(&Receiver::setFramesPerFile, n);
 }
 
 // Zmq Streaming (Receiver<->Client)
 
 Result<bool> Detector::getRxZmqDataStream(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverStreaming, pos);
+    return pimpl->Parallel3(&Receiver::getZmq);
 }
 
 void Detector::setRxZmqDataStream(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverStreaming, pos, value);
+    pimpl->Parallel3(&Receiver::setZmq, value);
 }
 
 Result<int> Detector::getRxZmqFrequency(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverStreamingFrequency, pos);
+    return pimpl->Parallel3(&Receiver::getZmqFrequency);
 }
 
 void Detector::setRxZmqFrequency(int freq, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverStreamingFrequency, pos, freq);
+    pimpl->Parallel3(&Receiver::setZmqFrequency, freq);
 }
 
 Result<int> Detector::getRxZmqTimer(Positions pos) const {
-    return pimpl->Parallel(&Module::setReceiverStreamingTimer, pos, -1);
+    return pimpl->Parallel3(&Receiver::getZmqTimer);
 }
 
 void Detector::setRxZmqTimer(int time_in_ms, Positions pos) {
-    pimpl->Parallel(&Module::setReceiverStreamingTimer, pos, time_in_ms);
+    pimpl->Parallel3(&Receiver::setZmqTimer, time_in_ms);
 }
 
 Result<int> Detector::getRxZmqPort(Positions pos) const {
@@ -1150,11 +1150,11 @@ void Detector::setStoreInRamMode(bool value, Positions pos) {
 }
 
 Result<bool> Detector::getBottom(Positions pos) const {
-    return pimpl->Parallel(&Module::getFlippedDataX, pos);
+    return pimpl->Parallel3(&Receiver::getFlippedDataX);
 }
 
 void Detector::setBottom(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setFlippedDataX, pos, value);
+    pimpl->Parallel3(&Receiver::setFlippedDataX, value);
 }
 
 Result<int> Detector::getAllTrimbits(Positions pos) const {
@@ -1220,11 +1220,11 @@ void Detector::setActive(bool active, Positions pos) {
 }
 
 Result<bool> Detector::getRxPadDeactivatedMode(Positions pos) const {
-    return pimpl->Parallel(&Module::getDeactivatedRxrPaddingMode, pos);
+    return pimpl->Parallel3(&Receiver::getDeactivatedPaddingMode);
 }
 
 void Detector::setRxPadDeactivatedMode(bool pad, Positions pos) {
-    pimpl->Parallel(&Module::setDeactivatedRxrPaddingMode, pos, pad);
+    pimpl->Parallel3(&Receiver::setDeactivatedPaddingMode, pad);
 }
 
 Result<bool> Detector::getPartialReset(Positions pos) const {
@@ -1991,7 +1991,7 @@ Result<ns> Detector::getMeasurementTime(Positions pos) const {
 std::string Detector::getUserDetails() const { return pimpl->getUserDetails(); }
 
 Result<uint64_t> Detector::getRxCurrentFrameIndex(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverCurrentFrameIndex, pos);
+    return pimpl->Parallel3(&Receiver::getCurrentFrameIndex);
 }
 
 } // namespace sls

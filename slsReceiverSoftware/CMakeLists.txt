@@ -29,8 +29,8 @@ add_library(slsReceiverShared SHARED
     ${HEADERS}
 )
 
-check_ipo_supported(RESULT result)
-if(result)
+
+if(SLS_LTO_AVAILABLE)
     set_property(TARGET slsReceiverShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 

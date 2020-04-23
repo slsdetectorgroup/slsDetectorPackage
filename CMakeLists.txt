@@ -46,6 +46,11 @@ option(SLS_BUILD_DOCS "docs" OFF)
 option(SLS_BUILD_EXAMPLES "examples" OFF)
 option(SLS_TUNE_LOCAL "tune to local machine" OFF)
 
+
+#Enable LTO if available
+check_ipo_supported(RESULT SLS_LTO_AVAILABLE)
+
+
 # Use ld.gold if it is available and isn't disabled explicitly
 option(SLS_USE_LD_GOLD "Use GNU gold linker" ON)
 if (SLS_USE_LD_GOLD)

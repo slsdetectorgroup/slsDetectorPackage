@@ -15,9 +15,8 @@ add_library(slsDetectorShared SHARED
     ${HEADERS}
 )
 
-# Do we have link time optimization?
-check_ipo_supported(RESULT LTO_AVAILABLE)
-if(LTO_AVAILABLE)
+
+if(SLS_LTO_AVAILABLE)
     set_property(TARGET slsDetectorShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 

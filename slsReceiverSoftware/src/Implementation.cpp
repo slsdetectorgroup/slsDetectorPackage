@@ -181,8 +181,10 @@ void Implementation::SetupFifoStructure() {
             ". FifoDepth is now 0.");
     }
     // set the listener & dataprocessor threads to point to the right fifo
-    listener->SetFifo(fifo.get());
-    dataProcessor->SetFifo(fifo.get());
+    if (listener)
+        listener->SetFifo(fifo.get());
+    if (dataProcessor)
+        dataProcessor->SetFifo(fifo.get());
     if (dataStreamEnable)
         dataStreamer->SetFifo(fifo.get());
 

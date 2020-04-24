@@ -112,7 +112,7 @@ void Listener::SetGeneralData(GeneralData* g) {
 }
 
 
-void Listener::CreateUDPSockets() {
+void Listener::CreateUDPSocket() {
     if (!(*activated)) {
     	return;
     }

@@ -17,7 +17,7 @@ const std::string DataStreamer::TypeName = "DataStreamer";
 
 
 DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
-		uint64_t* fi, int fd, int* nd, bool* qe, uint64_t* tot) :
+		uint64_t* fi, int fd, int* nr, bool* qe, uint64_t* tot) :
 		ThreadObject(ind, TypeName),
 		fifo(f),
 		dynamicRange(dr),
@@ -27,8 +27,8 @@ DataStreamer::DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
 		quadEnable(qe),
 		totalNumFrames(tot)
 {
-	numDet[0] = nd[0];
-	numDet[1] = nd[1];
+	numRx[0] = nr[0];
+	numRx[1] = nr[1];
 	
     LOG(logDEBUG) << "DataStreamer " << ind << " created";
 }
@@ -74,9 +74,9 @@ void DataStreamer::SetGeneralData(GeneralData* g) {
 	generalData->Print();
 }
 
-void DataStreamer::SetNumberofDetectors(int* nd) {
-	numDet[0] = nd[0];
-	numDet[1] = nd[1];
+void DataStreamer::SetReceiverShape(int* nr) {
+	numRx[0] = nr[0];
+	numRx[1] = nr[1];
 }
 
 void DataStreamer::SetFlippedDataX(int fd) {
@@ -211,8 +211,8 @@ int DataStreamer::SendHeader(sls_receiver_header* rheader, uint32_t size, uint32
 
 	zHeader.dynamicRange = *dynamicRange;
 	zHeader.fileIndex = *fileIndex;
-	zHeader.ndetx = numDet[0];    
-	zHeader.ndety = numDet[1];
+	zHeader.nSocketX = numRx[0];    
+	zHeader.nSocketY = numRx[1];
     zHeader.npixelsx = nx;
     zHeader.npixelsy = ny;
     zHeader.imageSize = size;

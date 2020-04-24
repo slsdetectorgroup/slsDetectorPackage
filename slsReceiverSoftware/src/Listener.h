@@ -83,9 +83,9 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
 	void SetGeneralData(GeneralData* g);
 
 	/**
-	 * Creates UDP Sockets
+	 * Creates UDP Socket
 	 */
-	void CreateUDPSockets();
+	void CreateUDPSocket();
 
 	/**
 	 * Shuts down and deletes UDP Sockets

@@ -187,8 +187,8 @@ int ZmqSocket::SendHeader(
             header.jsonversion, 
             header.dynamicRange, 
             header.fileIndex, 
-            header.ndetx,
-            header.ndety, 
+            header.nSocketX,
+            header.nSocketY, 
             header.npixelsx, 
             header.npixelsy, 
             header.imageSize, 
@@ -319,8 +319,8 @@ int ZmqSocket::ParseHeader(const int index, int length, char *buff,
     zHeader.data = ((document["data"].GetUint()) == 0) ? false : true;
     zHeader.dynamicRange = document["bitmode"].GetUint();
     zHeader.fileIndex = document["fileIndex"].GetUint64(); 
-    zHeader.ndetx = document["detshape"][0].GetUint();
-    zHeader.ndety = document["detshape"][1].GetUint();
+    zHeader.nSocketX = document["detshape"][0].GetUint();
+    zHeader.nSocketY = document["detshape"][1].GetUint();
     zHeader.npixelsx = document["shape"][0].GetUint();
     zHeader.npixelsy = document["shape"][1].GetUint();
     zHeader.imageSize = document["size"].GetUint();

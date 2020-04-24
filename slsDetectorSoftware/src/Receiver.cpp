@@ -140,6 +140,10 @@ sls::MacAddr Receiver::configure(slsDetectorDefs::rxParameters arg) {
         memcpy(&arg.zmq_ip, &ip, sizeof(ip));
     } 
 
+    if (arg.detType == EIGER) {
+        arg.udpInterfaces = 2;        
+    }
+
     LOG(logDEBUG1) 
         << "detType:" << arg.detType << std::endl
         << "detectorSize.x:" << arg.detectorSize.x << std::endl

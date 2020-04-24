@@ -64,9 +64,6 @@ public:
 	/** Default Fifo depth */
 	uint32_t defaultFifoDepth;
 
-	/** Threads per receiver */
-	uint32_t threadsPerReceiver;
-
 	/** Size of a header packet */
 	uint32_t headerPacketSize;
 
@@ -105,7 +102,6 @@ public:
 		maxFramesPerFile(0),
 		fifoBufferHeaderSize(0),
 		defaultFifoDepth(0),
-		threadsPerReceiver(1),
 		headerPacketSize(0),
 		nPixelsXComplete(0),
 		nPixelsYComplete(0),
@@ -233,7 +229,6 @@ public:
 		LOG(level) << "Max Frames Per File: " << maxFramesPerFile;
 		LOG(level) << "Fifo Buffer Header Size: " << fifoBufferHeaderSize;
 		LOG(level) << "Default Fifo Depth: " << defaultFifoDepth;
-		LOG(level) << "Threads Per Receiver: " << threadsPerReceiver;
 		LOG(level) << "Header Packet Size: " << headerPacketSize;
 		LOG(level) << "Complete Pixels X: " << nPixelsXComplete;
 		LOG(level) << "Complete Pixels Y: " << nPixelsYComplete;
@@ -415,7 +410,6 @@ class EigerData : public GeneralData {
 		maxFramesPerFile 	= EIGER_MAX_FRAMES_PER_FILE;
 		fifoBufferHeaderSize= FIFO_HEADER_NUMBYTES + sizeof(slsDetectorDefs::sls_receiver_header);
 		defaultFifoDepth 	= 1000;
-		threadsPerReceiver	= 2;
 		headerPacketSize	= 40;
 		standardheader		= true;
 	};
@@ -479,7 +473,6 @@ class JungfrauData : public GeneralData {
     		nPixelsY 					= 256;
     		packetsPerFrame 			= 64;
     		imageSize 					= dataSize * packetsPerFrame;
-    		threadsPerReceiver			= 2;
     		defaultUdpSocketBufferSize 	= (500 * 1024 * 1024);
 
     	}
@@ -488,7 +481,6 @@ class JungfrauData : public GeneralData {
     		nPixelsY 					= 512;
     		packetsPerFrame 			= 128;
     		imageSize 					= dataSize * packetsPerFrame;
-    		threadsPerReceiver			= 1;
     		defaultUdpSocketBufferSize 	= (1000 * 1024 * 1024);
     	}
     }

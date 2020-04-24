@@ -26,10 +26,10 @@ struct zmqHeader {
   uint32_t jsonversion{0};
   uint32_t dynamicRange{0};
   uint64_t fileIndex{0};
-  /** number of detectors in x axis */
-  uint32_t ndetx{0}; 
-  /** number of detectors in y axis */
-  uint32_t ndety{0}; 
+  /** number of sockets in x axis */
+  uint32_t nSocketX{0}; 
+  /** number of sockets in y axis */
+  uint32_t nSocketY{0}; 
   /** number of pixels/channels in x axis for this zmq socket */
   uint32_t npixelsx{0};
   /** number of pixels/channels in y axis for this zmq socket */

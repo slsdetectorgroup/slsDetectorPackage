@@ -76,12 +76,12 @@ class Implementation : private virtual slsDetectorDefs {
     uint64_t getFramesCaught() const;
     uint64_t getAcquisitionIndex() const;
     int getProgress() const;
-    std::vector<uint64_t> getNumMissingPackets() const;
+    uint64_t getNumMissingPackets() const;
     void startReceiver();
     void setStoppedFlag(bool stopped);
     void stopReceiver();
     void startReadout();
-    void shutDownUDPSockets();
+    void shutDownUDPSocket();
     void closeFiles();
     void restreamStop();
 
@@ -91,19 +91,15 @@ class Implementation : private virtual slsDetectorDefs {
      *   Network Configuration (UDP)                   *
      *                                                 *
      * ************************************************/
+    int getInterfaceId() const;
+    void setInterfaceId(const int value);
     int getNumberofUDPInterfaces() const;
     /* [Jungfrau] */
     void setNumberofUDPInterfaces(const int n);
     std::string getEthernetInterface() const;
     void setEthernetInterface(const std::string &c);
-    std::string getEthernetInterface2() const;
-    /* [Jungfrau] */
-    void setEthernetInterface2(const std::string &c);
     uint32_t getUDPPortNumber() const;
     void setUDPPortNumber(const uint32_t i);
-    uint32_t getUDPPortNumber2() const;
-    /* [Eiger][Jungfrau] */
-    void setUDPPortNumber2(const uint32_t i);
     int64_t getUDPSocketBufferSize() const;
     void setUDPSocketBufferSize(const int64_t s);
     int64_t getActualUDPSocketBufferSize() const;    
@@ -226,7 +222,7 @@ class Implementation : private virtual slsDetectorDefs {
     void SetupFifoStructure();
     
     void ResetParametersforNewAcquisition();
-    void CreateUDPSockets();
+    void CreateUDPSocket();
     void SetupWriter();
     void StartRunning();
 
@@ -238,9 +234,9 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
  
     // config parameters
-    int numThreads;
     detectorType myDetectorType;
     int numDet[MAX_DIMENSIONS];
+    int numRx[MAX_DIMENSIONS];
     int detID;
     std::string detHostname;
     bool silentMode;
@@ -263,9 +259,10 @@ class Implementation : private virtual slsDetectorDefs {
     bool stoppedFlag;
 
     // network configuration (UDP)
+    int interfaceId;
     int numUDPInterfaces;
-    std::vector <std::string> eth;
-    std::vector <uint32_t> udpPortNum;
+    std::string eth;
+    uint32_t udpPortNum;
     int64_t udpSocketBufferSize;
     int64_t actualUDPSocketBufferSize;
 
@@ -318,8 +315,8 @@ class Implementation : private virtual slsDetectorDefs {
 
     // class objects
     GeneralData *generalData;
-    std::vector<std::unique_ptr<Listener>> listener;
-    std::vector<std::unique_ptr<DataProcessor>> dataProcessor;
-    std::vector<std::unique_ptr<DataStreamer>> dataStreamer;
-    std::vector<std::unique_ptr<Fifo>> fifo;
+    std::unique_ptr<Listener> listener;
+    std::unique_ptr<DataProcessor> dataProcessor;
+    std::unique_ptr<DataStreamer> dataStreamer;
+    std::unique_ptr<Fifo> fifo;
 };

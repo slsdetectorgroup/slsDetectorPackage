@@ -146,10 +146,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_read_n_lines(sls::ServerInterface &socket);
     sls::MacAddr setUdpIp(sls::IpAddr arg);
     int set_udp_ip(sls::ServerInterface &socket);
-    sls::MacAddr setUdpIp2(sls::IpAddr arg);
-    int set_udp_ip2(sls::ServerInterface &socket);
     int set_udp_port(sls::ServerInterface &socket);
-    int set_udp_port2(sls::ServerInterface &socket);
     int set_num_interfaces(sls::ServerInterface &socket);
     int set_adc_mask_10g(sls::ServerInterface &socket);  
     int set_num_counters(sls::ServerInterface &socket);  

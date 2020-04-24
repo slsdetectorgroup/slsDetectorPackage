@@ -29,12 +29,12 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	 * @param r roi
 	 * @param fi pointer to file index
 	 * @param fd flipped data enable for x dimension
-	 * @param nd pointer to number of detectors in each dimension
+	 * @param nd pointer to number of receivers in each dimension
 	 * @param qe pointer to quad Enable
 	 * @param tot pointer to total number of frames
 	 */
 	DataStreamer(int ind, Fifo* f, uint32_t* dr, ROI* r,
-			uint64_t* fi, int fd, int* nd, bool* qe, uint64_t* tot);
+			uint64_t* fi, int fd, int* nr, bool* qe, uint64_t* tot);
 
 	/**
 	 * Destructor
@@ -60,10 +60,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	void SetGeneralData(GeneralData* g);
 
 	/** 
-	 * Set number of detectors
-	 * @param number of detectors in both dimensions
+	 * Set receiver shape
+	 * @param number of receivers in both dimensions
 	 */
-	void SetNumberofDetectors(int* nd);
+	void SetReceiverShape(int* nr);
 
 	/** 
 	 * Set Flipped data enable across x dimension
@@ -178,8 +178,8 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 	/** Complete buffer used for roi, eg. shortGotthard */
 	char* completeBuffer{nullptr};
 
-	/** Number of Detectors in X and Y dimension */
-	int numDet[2];
+	/** Number of Recievers in X and Y dimension */
+	int numRx[2];
 
 	/** Quad Enable */
 	bool* quadEnable;

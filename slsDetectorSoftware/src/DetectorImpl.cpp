@@ -736,8 +736,8 @@ void DetectorImpl::readFrameFromReceiver() {
                         nPixelsX = zHeader.npixelsx;
                         nPixelsY = zHeader.npixelsy;
                         // detector shape
-                        nX = zHeader.ndetx;
-                        nY = zHeader.ndety;
+                        nX = zHeader.nSocketX;
+                        nY = zHeader.nSocketY;
                         nY *= numInterfaces;
                         nDetPixelsX = nX * nPixelsX;
                         nDetPixelsY = nY * nPixelsY;

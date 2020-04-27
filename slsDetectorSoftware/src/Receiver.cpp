@@ -1,9 +1,12 @@
 #include "Receiver.h"
 #include "ClientSocket.h"
+#include "ZmqSocket.h"
 #include "FixedCapacityContainer.h"
 #include "string_utils.h"
 #include "versionAPI.h"
 #include "ToString.h"
+
+#include "container_utils.h"
 
 namespace sls {
 
@@ -144,7 +147,7 @@ sls::MacAddr Receiver::configure(slsDetectorDefs::rxParameters arg) {
         arg.udpInterfaces = 2;        
     }
 
-    LOG(logINFO) 
+    LOG(logDEBUG) 
         << "detType:" << arg.detType << std::endl
         << "detectorSize.x:" << arg.detectorSize.x << std::endl
         << "detectorSize.y:" << arg.detectorSize.y << std::endl
@@ -387,6 +390,38 @@ void Receiver::setClientZmqIP(const sls::IpAddr ip) {
         throw RuntimeError("Invalid client zmq ip address");
     } 
     shm()->zmqIp = ip;  
+}
+
+bool Receiver::getClientZmq() const {
+    return (zmqSocket != nullptr);
+}
+
+void Receiver::setClientZmq(const bool enable) {
+    // destroy
+    if (!enable) {
+        if (zmqSocket != nullptr) {
+            zmqSocket.reset();
+        }
+    }
+    // create
+    else {
+        if (zmqSocket == nullptr) {
+            try {
+                zmqSocket = sls::make_unique<ZmqSocket>(
+                    shm()->zmqIp.str().c_str(), shm()->zmqPort);
+                LOG(logINFO) << "Zmq Client[" << indexString << "] at "
+                    << zmqSocket->GetZmqServerAddress();
+            } catch(...) {
+            throw RuntimeError(
+                "Could not create Zmq socket [" + indexString 
+                + " on port " + std::to_string(shm()->zmqPort));
+            }
+        }
+    }
+}
+
+ZmqSocket* Receiver::getZmqSocket() {
+    return zmqSocket.get();
 }
 
 /** Receiver Parameters */

@@ -5,7 +5,6 @@
 #include "logger.h"
 #include "sls_detector_defs.h"
 
-class ZmqSocket;
 class detectorData;
 
 #include <memory>
@@ -694,13 +693,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setGapPixelsinCallback(const bool enable);
 
     /**
-     * Enable data streaming to client
-     * @param enable 0 to disable, 1 to enable, -1 to get the value
-     * @returns data streaming to client enable
-     */
-    bool enableDataStreamingToClient(int enable = -1);
-
-    /**
      * register callback for accessing acquisition final data
      * @param func function to be called at the end of the acquisition.
      * gets detector status and progress index as arguments
@@ -786,13 +778,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void updateDetectorSize();
 
     /**
-     * Create Receiving Data Sockets
-     * @param destroy is true to destroy all the sockets
-     * @returns OK or FAIL
-     */
-    int createReceivingDataSockets(const bool destroy = false);
-
-    /**
      * Reads frames from receiver through a constant socket
      * Called during acquire() when call back registered or when using gui
      */
@@ -846,13 +831,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
     std::vector<std::vector<std::unique_ptr<sls::Receiver>>> receivers;
     /** for the second udp port [Eiger][Jungfrau] */
     std::vector<std::vector<std::unique_ptr<sls::Receiver>>> receivers2;
-
-
-    /** data streaming (down stream) enabled in client (zmq sckets created) */
-    bool client_downstream{false};
-
-    /** ZMQ Socket - Receiver to Client */
-    std::vector<std::unique_ptr<ZmqSocket>> zmqSocket;
 
     /** semaphore to let postprocessing thread continue for next
      * scan/measurement */

@@ -115,7 +115,6 @@ void DetectorImpl::freeSharedMemory(int detectorId, int moduleId) {
 }
 
 void DetectorImpl::freeSharedMemory() {
-    zmqSocket.clear();
     for (auto &d : detectors) {
         d->freeSharedMemory();
     }
@@ -134,7 +133,6 @@ void DetectorImpl::freeSharedMemory() {
     receivers2.clear(); 
     // clear multi detector shm
     detector_shm.RemoveSharedMemory();
-    client_downstream = false;
 }
 
 std::string DetectorImpl::getUserDetails() {
@@ -212,7 +210,6 @@ void DetectorImpl::initializeDetectorStructure() {
 
 void DetectorImpl::initializeMembers(bool verify) {
     // DetectorImpl
-    zmqSocket.clear();
     int numModules = detector_shm()->numberOfModules;
 
     // get objects from single det shared memory (open)
@@ -600,58 +597,6 @@ void DetectorImpl::setGapPixelsinCallback(const bool enable) {
     detector_shm()->gapPixels = enable;
 }
 
-int DetectorImpl::createReceivingDataSockets(const bool destroy) {
-    if (destroy) {
-        LOG(logINFO) << "Going to destroy data sockets";
-        // close socket
-        zmqSocket.clear();
-
-        client_downstream = false;
-        LOG(logINFO) << "Destroyed Receiving Data Socket(s)";
-        return OK;
-    }
-    if (client_downstream) {
-        return OK;
-    }
-    LOG(logINFO) << "Going to create data sockets";
-    
-    size_t numSockets = detectors.size();
-    size_t numSocketsPerDetector = 1;
-    if (detector_shm()->multiDetectorType == EIGER) {
-        numSocketsPerDetector = 2;
-    }
-    if (Parallel(&Module::getNumberofUDPInterfacesFromShm, {}).squash() ==
-        2) {
-        numSocketsPerDetector = 2;
-    }
-    numSockets *= numSocketsPerDetector;
-
-    for (size_t iSocket = 0; iSocket < numSockets; ++iSocket) {
-        uint32_t portnum = (receivers[iSocket / numSocketsPerDetector][0]
-            ->getClientZmqPort());//FIXME 2 receivers
-        portnum += (iSocket % numSocketsPerDetector);
-        try {
-            zmqSocket.push_back(sls::make_unique<ZmqSocket>(
-                receivers[iSocket / numSocketsPerDetector][0]
-                    ->getClientZmqIP()
-                    .str()
-                    .c_str(),
-                portnum));
-            LOG(logINFO) << "Zmq Client[" << iSocket << "] at "
-                              << zmqSocket.back()->GetZmqServerAddress();
-        } catch (...) {
-            LOG(logERROR)
-                << "Could not create Zmq socket on port " << portnum;
-            createReceivingDataSockets(true);
-            return FAIL;
-        }
-    }
-
-    client_downstream = true;
-    LOG(logINFO) << "Receiving Data Socket(s) created";
-    return OK;
-}
-
 void DetectorImpl::readFrameFromReceiver() {
 
     bool gapPixels = detector_shm()->gapPixels;
@@ -667,19 +612,28 @@ void DetectorImpl::readFrameFromReceiver() {
         Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
             .squash(); // cannot pick up from zmq
 
-    bool runningList[zmqSocket.size()], connectList[zmqSocket.size()];
+    size_t nZmq = receivers.size() + receivers2.size();
+    std::vector<ZmqSocket*> zmqSockets;
+    for (size_t i = 0; i < receivers.size(); ++i) {
+        zmqSockets.push_back(receivers[i][0]->getZmqSocket());
+        if (receivers2.size()) {
+            zmqSockets.push_back(receivers2[i][0]->getZmqSocket());
+        }
+    }
+    bool runningList[nZmq], connectList[nZmq];
     int numRunning = 0;
-    for (size_t i = 0; i < zmqSocket.size(); ++i) {
-        if (zmqSocket[i]->Connect() == 0) {
+    for (size_t i = 0; i < nZmq; ++i) {
+        if (zmqSockets[i]->Connect() == 0) {
             connectList[i] = true;
             runningList[i] = true;
             ++numRunning;
         } else {
             // to remember the list it connected to, to disconnect later
             connectList[i] = false;
-            LOG(logERROR) << "Could not connect to socket  "
-                               << zmqSocket[i]->GetZmqServerAddress();
             runningList[i] = false;
+            LOG(logERROR) << "Could not connect to socket "
+                <<  zmqSockets[i]->GetZmqServerAddress();
+
         }
     }
     int numConnected = numRunning;
@@ -716,7 +670,7 @@ void DetectorImpl::readFrameFromReceiver() {
         completeImage = true;
 
         // get each frame
-        for (unsigned int isocket = 0; isocket < zmqSocket.size(); ++isocket) {
+        for (unsigned int isocket = 0; isocket < nZmq; ++isocket) {
 
             // if running
             if (runningList[isocket]) {
@@ -724,7 +678,7 @@ void DetectorImpl::readFrameFromReceiver() {
                 // HEADER
                 {
                     zmqHeader zHeader;
-                    if (zmqSocket[isocket]->ReceiveHeader(
+                    if (zmqSockets[isocket]->ReceiveHeader(
                             isocket, zHeader, SLS_DETECTOR_JSON_HEADER_VERSION) ==
                         0) {
                         // parse error, version error or end of acquisition for
@@ -738,7 +692,7 @@ void DetectorImpl::readFrameFromReceiver() {
                     if (image == nullptr) {
                         // allocate
                         size = zHeader.imageSize;
-                        multisize = size * zmqSocket.size();
+                        multisize = size * nZmq;
                         image = new char[size];
                         multiframe = new char[multisize];
                         memset(multiframe, 0xFF, multisize);
@@ -803,7 +757,7 @@ void DetectorImpl::readFrameFromReceiver() {
 
                 // DATA
                 data = true;
-                zmqSocket[isocket]->ReceiveData(isocket, image, size);
+                zmqSockets[isocket]->ReceiveData(isocket, image, size);
 
                 // creating multi image
                 {
@@ -890,7 +844,7 @@ void DetectorImpl::readFrameFromReceiver() {
                 running = false;
             } else {
                 // starting a new scan/measurement (got dummy data)
-                for (size_t i = 0; i < zmqSocket.size(); ++i) {
+                for (size_t i = 0; i < zmqSockets.size(); ++i) {
                     runningList[i] = connectList[i];
                 }
                 numRunning = numConnected;
@@ -899,9 +853,9 @@ void DetectorImpl::readFrameFromReceiver() {
     }
 
     // Disconnect resources
-    for (size_t i = 0; i < zmqSocket.size(); ++i) {
+    for (size_t i = 0; i < zmqSockets.size(); ++i) {
         if (connectList[i]) {
-            zmqSocket[i]->Disconnect();
+            zmqSockets[i]->Disconnect();
         }
     }
 
@@ -1207,23 +1161,6 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage,
     return imagesize; 
 }
 
-
-
-bool DetectorImpl::enableDataStreamingToClient(int enable) {
-    if (enable >= 0) {
-        // destroy data threads
-        if (enable == 0) {
-            createReceivingDataSockets(true);
-            // create data threads
-        } else {
-            if (createReceivingDataSockets() == FAIL) {
-                throw RuntimeError("Could not create data threads in client.");
-            }
-        }
-    }
-    return client_downstream;
-}
-
 void DetectorImpl::registerAcquisitionFinishedCallback(void (*func)(double, int,
                                                                     void *),
                                                        void *pArg) {
@@ -1237,7 +1174,6 @@ void DetectorImpl::registerDataCallback(void (*userCallback)(detectorData *,
                                         void *pArg) {
     dataReady = userCallback;
     pCallbackArg = pArg;
-    enableDataStreamingToClient(dataReady == nullptr ? 0 : 1);
 }
 
 int DetectorImpl::acquire() {

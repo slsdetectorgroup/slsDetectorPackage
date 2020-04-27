@@ -674,6 +674,9 @@ class Detector {
 
     void setRxZmqIP(const IpAddr ip, Positions pos = {});
 
+    Result<bool> getClientZmq(Positions pos = {}) const;
+    void setClientZmq(const bool enable, Positions pos = {});
+
     Result<int> getClientZmqPort(Positions pos = {}) const;
 
     /**

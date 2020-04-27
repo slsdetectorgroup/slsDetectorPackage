@@ -5,8 +5,11 @@
 #include "network_utils.h"
 
 #include <map>
+#include <memory>
 
 #define RECEIVER_SHMVERSION 0x200421
+
+class ZmqSocket;
 
 namespace sls {
 struct sharedReceiver {
@@ -105,8 +108,9 @@ class Receiver : public virtual slsDetectorDefs {
     void setClientZmqPort(const int port);
     sls::IpAddr getClientZmqIP() const;
     void setClientZmqIP(const sls::IpAddr ip);
-
-
+    bool getClientZmq() const;
+    void setClientZmq(const bool enable);
+    ZmqSocket* getZmqSocket();
 
     /**************************************************
     *                                                *
@@ -248,6 +252,7 @@ class Receiver : public virtual slsDetectorDefs {
     const int moduleId{0};
     std::string indexString;
     mutable sls::SharedMemory<sharedReceiver> shm{0, 0, 0, 0};
+    std::unique_ptr<ZmqSocket> zmqSocket;
 };
 
 }   // sls

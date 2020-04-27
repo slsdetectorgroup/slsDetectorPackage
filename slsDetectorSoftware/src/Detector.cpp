@@ -209,6 +209,7 @@ void Detector::registerDataCallback(void (*func)(detectorData *, uint64_t,
                                                  uint32_t, void *),
                                     void *pArg) {
     pimpl->registerDataCallback(func, pArg);
+    setClientZmq(true);
 }
 
 bool Detector::getGapPixelsinCallback() const {
@@ -577,11 +578,12 @@ Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
 }
 
 void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
-    int previouslyClientStreaming = pimpl->enableDataStreamingToClient();
+    bool prevClientZmq = getClientZmq().tsquash(
+        "Inconsistent number client zmq sockets");
     bool useReceiver = getUseReceiverFlag().squash(false);
-    bool previouslyReceiverStreaming = false;
+    bool prevRxZmq = false;
     if (useReceiver) {
-        previouslyReceiverStreaming = getRxZmqDataStream(pos).squash(true);
+        prevRxZmq = getRxZmqDataStream(pos).squash(true);
     }
     pimpl->Parallel(&Module::setNumberofUDPInterfaces, pos, n);
     // ensure receiver zmq socket ports are multiplied by 2 (2 interfaces)
@@ -590,11 +592,11 @@ void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
         setRxZmqPort(startingPort, -1);
     }
     // redo the zmq sockets if enabled
-    if (previouslyClientStreaming != 0) {
-        pimpl->enableDataStreamingToClient(0);
-        pimpl->enableDataStreamingToClient(1);
+    if (prevClientZmq) {
+        setClientZmq(false);
+        setClientZmq(true);
     }
-    if (previouslyReceiverStreaming) {
+    if (prevRxZmq) {
         setRxZmqDataStream(false, pos);
         setRxZmqDataStream(true, pos);
     }
@@ -987,6 +989,8 @@ Result<int> Detector::getRxZmqPort(Positions pos) const {
 }
 
 void Detector::setRxZmqPort(int port, int module_id) {
+    bool previouslyReceiverStreaming = 
+        getRxZmqDataStream({module_id}).squash(false);
     if (module_id == -1) {
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel1(&Receiver::setZmqPort, {idet},
@@ -995,6 +999,10 @@ void Detector::setRxZmqPort(int port, int module_id) {
     } else {
         pimpl->Parallel1(&Receiver::setZmqPort, {module_id},
                         {}, port++);
+    }
+    if (previouslyReceiverStreaming) {
+        setRxZmqDataStream(false, {module_id});
+        setRxZmqDataStream(true, {module_id});
     }
 }
 
@@ -1011,11 +1019,25 @@ void Detector::setRxZmqIP(const IpAddr ip, Positions pos) {
     }
 }
 
+Result<bool> Detector::getClientZmq(Positions pos) const {
+    return pimpl->Parallel3(&Receiver::getClientZmq);
+}
+
+void Detector::setClientZmq(const bool enable, Positions pos) {
+    try {
+        pimpl->Parallel3(&Receiver::setClientZmq, enable);
+    } catch (...) {
+        throw;
+    }
+}
+
 Result<int> Detector::getClientZmqPort(Positions pos) const {
     return pimpl->Parallel1(&Receiver::getClientZmqPort, pos, {});
 }
 
 void Detector::setClientZmqPort(int port, int module_id) {
+    bool prevClientZmq = getClientZmq().tsquash(
+        "Inconsistent number of client zmq sockets");
     if (module_id == -1) {
         for (int idet = 0; idet < size(); ++idet) {
             pimpl->Parallel1(&Receiver::setClientZmqPort, {idet},
@@ -1025,6 +1047,10 @@ void Detector::setClientZmqPort(int port, int module_id) {
         pimpl->Parallel1(&Receiver::setClientZmqPort, {module_id},
                         {}, port);// FIXME: Needs a clientzmqport2
     }
+    if (prevClientZmq) {
+        setClientZmq(false);
+        setClientZmq(true);
+    }    
 }
 
 Result<IpAddr> Detector::getClientZmqIp(Positions pos) const {
@@ -1032,11 +1058,12 @@ Result<IpAddr> Detector::getClientZmqIp(Positions pos) const {
 }
 
 void Detector::setClientZmqIp(const IpAddr ip, Positions pos) {
-    int previouslyClientStreaming = pimpl->enableDataStreamingToClient(-1);
+    bool prevClientZmq = getClientZmq().tsquash(
+        "Inconsistent number of client zmq sockets");
     pimpl->Parallel3(&Receiver::setClientZmqIP, ip);
-    if (previouslyClientStreaming != 0) {
-        pimpl->enableDataStreamingToClient(0);
-        pimpl->enableDataStreamingToClient(1);
+    if (prevClientZmq) {
+        setClientZmq(false);
+        setClientZmq(true);
     }
 }
 

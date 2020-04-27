@@ -1,8 +1,8 @@
 #pragma once
 #include "SharedMemory.h"
 #include "logger.h"
-#include "sls_detector_defs.h"
 #include "network_utils.h"
+#include "sls_detector_defs.h"
 
 #include <map>
 
@@ -11,45 +11,52 @@
 namespace sls {
 struct sharedReceiver {
 
-/* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND ------*/
-int shmversion;
-char hostname[MAX_STR_LENGTH];
-int tcpPort;
-/** END OF FIXED PATTERN -----------------------------------------------*/
+    /* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND ------*/
+    int shmversion;
+    char hostname[MAX_STR_LENGTH];
+    int tcpPort;
+    /** END OF FIXED PATTERN -----------------------------------------------*/
 
-int stoppedFlag;
-int zmqPort;
-sls::IpAddr zmqIp;
-
+    int stoppedFlag;
+    int zmqPort;
+    sls::IpAddr zmqIp;
 };
 
 class Receiver : public virtual slsDetectorDefs {
-    public:
+    const int receiverId{0};
+    const int interfaceId{0};
+    const int moduleId{0};
+    std::string indexString;
+    mutable sls::SharedMemory<sharedReceiver> shm{0, 0, 0, 0};
+
+  public:
     static size_t getNumReceivers();
+
+
     // create shm
     explicit Receiver(int detector_id, int module_id, int interface_id,
-        int receiver_id, int tcp_port = 0, std::string hostname = "",
-        int zmq_port = 0);
+                      int receiver_id, int tcp_port = 0,
+                      std::string hostname = "", int zmq_port = 0);
     // open shm
     explicit Receiver(int detector_id, int module_id, int interface_id,
-        int receiver_id, bool verify);
+                      int receiver_id, bool verify);
 
     virtual ~Receiver();
 
     void createIndexString();
 
     /**************************************************
-    *                                                *
-    *    Configuration                               *
-    *                                                *
-    * ************************************************/
+     *                                                *
+     *    Configuration                               *
+     *                                                *
+     * ************************************************/
     /**
-    * Free shared memory and delete shared memory structure
-    * occupied by the sharedReceiver structure
-    * Is only safe to call if one deletes the Receiver object afterward
-    * and frees multi shared memory/updates
-    * thisMultiDetector->numberOfReceivers
-    */
+     * Free shared memory and delete shared memory structure
+     * occupied by the sharedReceiver structure
+     * Is only safe to call if one deletes the Receiver object afterward
+     * and frees multi shared memory/updates
+     * thisMultiDetector->numberOfReceivers
+     */
     void freeSharedMemory();
     std::string getHostname() const;
     void setHostname(const std::string &hostname);
@@ -60,10 +67,10 @@ class Receiver : public virtual slsDetectorDefs {
     int64_t getSoftwareVersion() const;
 
     /**************************************************
-    *                                                *
-    *    Acquisition                                 *
-    *                                                *
-    * ************************************************/
+     *                                                *
+     *    Acquisition                                 *
+     *                                                *
+     * ************************************************/
     void start();
     void stop();
     slsDetectorDefs::runStatus getStatus() const;
@@ -75,10 +82,10 @@ class Receiver : public virtual slsDetectorDefs {
     uint64_t getCurrentFrameIndex() const;
 
     /**************************************************
-    *                                                 *
-    *    Network Configuration (Detector<->Receiver)  *
-    *                                                 *
-    * ************************************************/
+     *                                                 *
+     *    Network Configuration (Detector<->Receiver)  *
+     *                                                 *
+     * ************************************************/
     sls::MacAddr setUDPIP(const sls::IpAddr ip);
     void setUDPPort(const int udpport);
     int64_t getUDPSocketBufferSize() const;
@@ -86,10 +93,10 @@ class Receiver : public virtual slsDetectorDefs {
     int64_t getRealUDPSocketBufferSize() const;
 
     /**************************************************
-    *                                                *
-    *    ZMQ Streaming Parameters (Receiver<->Client)*
-    *                                                *
-    * ************************************************/
+     *                                                *
+     *    ZMQ Streaming Parameters (Receiver<->Client)*
+     *                                                *
+     * ************************************************/
     bool getZmq() const;
     void setZmq(const bool enable);
     int getZmqFrequency() const;
@@ -97,7 +104,7 @@ class Receiver : public virtual slsDetectorDefs {
     void setZmqFrequency(const int freq);
     int getZmqTimer() const;
     void setZmqTimer(const int time_in_ms = 200);
-    int getZmqPort() const; 
+    int getZmqPort() const;
     void setZmqPort(int port);
     sls::IpAddr getZmqIP() const;
     void setZmqIP(const sls::IpAddr ip);
@@ -106,17 +113,15 @@ class Receiver : public virtual slsDetectorDefs {
     sls::IpAddr getClientZmqIP() const;
     void setClientZmqIP(const sls::IpAddr ip);
 
-
-
     /**************************************************
-    *                                                *
-    *    Receiver Parameters                         *
-    *                                                *
-    * ************************************************/
+     *                                                *
+     *    Receiver Parameters                         *
+     *                                                *
+     * ************************************************/
     bool getLock() const;
     void setLock(const bool lock);
     sls::IpAddr getLastClientIP() const;
-    void exitServer();  
+    void exitServer();
 
     bool getDeactivatedPaddingMode() const;
     void setDeactivatedPaddingMode(const bool padding);
@@ -132,10 +137,10 @@ class Receiver : public virtual slsDetectorDefs {
     void setSilentMode(const bool value);
 
     /**************************************************
-    *                                                *
-    *    File                                        *
-    *                                                *
-    * ************************************************/
+     *                                                *
+     *    File                                        *
+     *                                                *
+     * ************************************************/
     std::string getFilePath() const;
     void setFilePath(const std::string &path);
     std::string getFileName() const;
@@ -156,10 +161,10 @@ class Receiver : public virtual slsDetectorDefs {
     void setFileOverWrite(const bool value);
 
     /**************************************************
-    *                                                *
-    *    Detector Parameters                         *
-    *                                                *
-    * ************************************************/
+     *                                                *
+     *    Detector Parameters                         *
+     *                                                *
+     * ************************************************/
     void setNumberOfFrames(const int64_t value);
     void setNumberOfTriggers(const int64_t value);
     void setNumberOfBursts(const int64_t value);
@@ -181,7 +186,7 @@ class Receiver : public virtual slsDetectorDefs {
     void clearROI();
     std::vector<int> getDbitList() const;
     /** digital data bits enable (CTB only) */
-    void setDbitList(const std::vector<int>& list);
+    void setDbitList(const std::vector<int> &list);
     int getDbitOffset() const;
     /** Set digital data offset in bytes (CTB only) */
     void setDbitOffset(const int value);
@@ -190,22 +195,22 @@ class Receiver : public virtual slsDetectorDefs {
     void setCounterMask(const uint32_t mask);
 
     /**************************************************
-    *                                                *
-    *    Json                                        *
-    *                                                *
-    * ************************************************/
+     *                                                *
+     *    Json                                        *
+     *                                                *
+     * ************************************************/
 
     std::map<std::string, std::string> getAdditionalJsonHeader() const;
     /** empty vector deletes entire additional json header */
-    void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);
+    void setAdditionalJsonHeader(
+        const std::map<std::string, std::string> &jsonHeader);
     std::string getAdditionalJsonParameter(const std::string &key) const;
-    /** Sets the value for the additional json header parameter key if found, 
+    /** Sets the value for the additional json header parameter key if found,
     else append it. If value empty, then deletes parameter */
-    void setAdditionalJsonParameter(const std::string &key, const std::string &value);
+    void setAdditionalJsonParameter(const std::string &key,
+                                    const std::string &value);
 
-
-
-    private:
+  private:
     void sendToReceiver(int fnum, const void *args, size_t args_size,
                         void *retval, size_t retval_size);
 
@@ -230,11 +235,9 @@ class Receiver : public virtual slsDetectorDefs {
     template <typename Ret>
     void sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const;
 
-    template <typename Ret>
-    Ret sendToReceiver(int fnum);
+    template <typename Ret> Ret sendToReceiver(int fnum);
 
-    template <typename Ret>
-    Ret sendToReceiver(int fnum) const;
+    template <typename Ret> Ret sendToReceiver(int fnum) const;
 
     template <typename Ret, typename Arg>
     Ret sendToReceiver(int fnum, const Arg &args);
@@ -243,11 +246,6 @@ class Receiver : public virtual slsDetectorDefs {
     Ret sendToReceiver(int fnum, const Arg &args) const;
 
     void checkVersionCompatibility();
-    const int receiverId{0};
-    const int interfaceId{0};
-    const int moduleId{0};
-    std::string indexString;
-    mutable sls::SharedMemory<sharedReceiver> shm{0, 0, 0, 0};
 };
 
-}   // sls
+} // namespace sls

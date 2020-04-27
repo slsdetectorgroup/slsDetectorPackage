@@ -13,6 +13,9 @@ target_sources(tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdProxy-global.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test-Result.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test-CmdParser.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-Container3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-MaskGenerator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test-Receiver.cpp
 )
 
 target_include_directories(tests PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../src>")

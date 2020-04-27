@@ -144,10 +144,10 @@ TEST_CASE("rx_printconfig", "[.cmd][.rx][.new]") {
 
 /* Receiver Config */ 
 
-TEST_CASE("rx_hostname", "[.cmd][.rx][.new]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto prev_val = det.getRxHostname();
+// TEST_CASE("rx_hostname", "[.cmd][.rx][.new]") {
+//     Detector det;
+//     CmdProxy proxy(&det);
+//     auto prev_val = det.getRxHostname();
     
     // Cannot set rx_hostname (will reset parameters in rxr and no shm variables to update)
     // {
@@ -168,37 +168,37 @@ TEST_CASE("rx_hostname", "[.cmd][.rx][.new]") {
     // for (int i = 0; i != det.size(); ++i) {
     //     det.setRxHostname(prev_val[i], {i});
     // }
-    {
-        std::ostringstream oss;
-        proxy.Call("rx_hostname", {}, 0, GET, oss);
-        REQUIRE(oss.str() == "rx_hostname " + prev_val[0] + "\n");
-    }
-}
+//     {
+//         std::ostringstream oss;
+//         proxy.Call("rx_hostname", {}, 0, GET, oss);
+//         REQUIRE(oss.str() == "rx_hostname " + prev_val[0] + "\n");
+//     }
+// }
 
-TEST_CASE("rx_tcpport", "[.cmd][.rx][.new]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto prev_val = det.getRxPort();
+// TEST_CASE("rx_tcpport", "[.cmd][.rx][.new]") {
+//     Detector det;
+//     CmdProxy proxy(&det);
+//     auto prev_val = det.getRxPort();
 
-    int port = 3500;
-    proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
-    for (int i = 0; i != det.size(); ++i) {
-        std::ostringstream oss;
-        proxy.Call("rx_tcpport", {}, i, GET, oss);
-        REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
-    }
-    REQUIRE_THROWS(proxy.Call("rx_tcpport", {"15"}, -1, PUT));
-    port = 5754;
-    proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
-    for (int i = 0; i != det.size(); ++i) {
-        std::ostringstream oss;
-        proxy.Call("rx_tcpport", {}, i, GET, oss);
-        REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
-    }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setRxPort(prev_val[i], i);
-    }
-}
+//     int port = 3500;
+//     proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
+//     for (int i = 0; i != det.size(); ++i) {
+//         std::ostringstream oss;
+//         proxy.Call("rx_tcpport", {}, i, GET, oss);
+//         REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
+//     }
+//     REQUIRE_THROWS(proxy.Call("rx_tcpport", {"15"}, -1, PUT));
+//     port = 5754;
+//     proxy.Call("rx_tcpport", {std::to_string(port)}, -1, PUT);
+//     for (int i = 0; i != det.size(); ++i) {
+//         std::ostringstream oss;
+//         proxy.Call("rx_tcpport", {}, i, GET, oss);
+//         REQUIRE(oss.str() == "rx_tcpport " + std::to_string(port + i) + '\n');
+//     }
+//     for (int i = 0; i != det.size(); ++i) {
+//         det.setRxPort(prev_val[i], i);
+//     }
+// }
 
 TEST_CASE("rx_fifodepth", "[.cmd][.rx][.new]") {
     Detector det;

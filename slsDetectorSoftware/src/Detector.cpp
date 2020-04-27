@@ -9,6 +9,8 @@
 #include "Receiver.h"
 #include "sls_detector_defs.h"
 #include "versionAPI.h"
+#include "Parallel.h"
+#include "MaskGenerator.h"
 
 #include <fstream>
 
@@ -755,15 +757,17 @@ Result<bool> Detector::getUseReceiverFlag(Positions pos) const {
 }
 
 Result<std::string> Detector::getRxHostname(const int udpInterface, Positions pos) const {
-    switch (udpInterface) {
-        case 1:
-            return pimpl->Parallel1(&Receiver::getHostname, pos, {});
-        case 2:
-            return pimpl->Parallel2(&Receiver::getHostname, pos, {});
-        default:
-            throw RuntimeError("Invalid udp interface number " + 
-            std::to_string(udpInterface));
-    } 
+    // switch (udpInterface) {
+    //     case 1:
+    //         return pimpl->Parallel1(&Receiver::getHostname, pos, {});
+    //     case 2:
+    //         return pimpl->Parallel2(&Receiver::getHostname, pos, {});
+    //     default:
+    //         throw RuntimeError("Invalid udp interface number " + 
+    //         std::to_string(udpInterface));
+    // } 
+    return pimpl->getHostname(pos, udpInterface);
+    // return experimental::Parallel(&Receiver::getHostname, receivers, MaskGenerator(){receivers});
 }
 
 void Detector::setRxHostname(const int udpInterface, const std::string &hostname, Positions pos) {

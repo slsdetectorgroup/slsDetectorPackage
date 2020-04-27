@@ -1,5 +1,7 @@
 #include "DetectorImpl.h"
 #include "Module.h"
+#include "Parallel.h"
+#include "MaskGenerator.h"
 #include "Receiver.h"
 #include "SharedMemory.h"
 #include "ZmqSocket.h"
@@ -313,6 +315,11 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
     updateDetectorSize();
 }
 
+Result<std::string> DetectorImpl::getHostname(Positions pos, int udp_interface){
+    LOG(logWARNING) << ToString(pos) << ": " << udp_interface;
+    return experimental::Parallel(&Receiver::getHostname, receivers, MaskGenerator(pos, udp_interface).mask(receivers));
+}
+
 void DetectorImpl::setHostname(const std::vector<std::string> &name,
                                const std::vector<int> &port) {
     if (name.size() != port.size()) {
@@ -371,46 +378,46 @@ int DetectorImpl::getNumberofReceiversPerModule() const {
 }
 
 void DetectorImpl::initReceiver(const int udpInterface) {
-    // if (udpInterface == 1) {
-    //     if (receivers.size() != 0) {
-    //         throw RuntimeError("receiver vector already initialized");
-    //     }
-    //     int tcpPort = DEFAULT_RX_PORTNO;
-    //     int zmqPort = DEFAULT_ZMQ_CL_PORTNO;
-    //     try {
-    //         for (int iModule = 0; iModule < size(); ++iModule) {
-    //             receivers.resize(detectors.size());
-    //             receivers[iModule].push_back(
-    //                 sls::make_unique<Receiver>(detectorId, iModule, 0,
-    //                     0, tcpPort++, "", zmqPort++));
-    //             detectors[iModule]->setNumberOfReceivers(1);
-    //         }
-    //     } catch (...) {
-    //         receivers.clear();
-    //         throw;
-    //     }
-    // } else if (udpInterface == 2) {
-    //     if (receivers2.size() != 0) {
-    //         throw RuntimeError("receiver2 vector already initialized");
-    //     }
-    //     int tcpPort = DEFAULT_RX_PORTNO + size();
-    //     int zmqPort = DEFAULT_ZMQ_CL_PORTNO + size();
-    //     try {
-    //         for (int iModule = 0; iModule < size(); ++iModule) {
-    //             receivers2.resize(detectors.size());
-    //             receivers2[iModule].push_back(
-    //                 sls::make_unique<Receiver>(detectorId, iModule, 1,
-    //                     0, tcpPort++, "", zmqPort++));
-    //             detectors[iModule]->setNumberOfReceivers2(1);
-    //         }
-    //     } catch (...) {
-    //         receivers2.clear();
-    //         throw;
-    //     }
-    // } else {
-    //     throw RuntimeError("Invalid udp interface number " +
-    //         std::to_string(udpInterface));
-    // }
+    LOG(logWARNING) << "interface" << udpInterface;
+    if (udpInterface == 1) {
+        if (receivers.size() != 0) {
+            throw RuntimeError("receiver vector already initialized");
+        }
+        int tcpPort = DEFAULT_RX_PORTNO;
+        int zmqPort = DEFAULT_ZMQ_CL_PORTNO;
+        try {
+            for (int iModule = 0; iModule < size(); ++iModule) {
+                receivers.resize(detectors.size(), 1, 1);
+                receivers(iModule, 0, 0) = sls::make_unique<Receiver>(
+                    detectorId, iModule, 0, 0, tcpPort++, "", zmqPort++);
+                detectors[iModule]->setNumberOfReceivers(1);
+            }
+        } catch (...) {
+            receivers.clear();
+            throw;
+        }
+    } else if (udpInterface == 2) {
+            if (receivers.size(1) == 2) {
+                throw RuntimeError("receiver2 vector already initialized");
+            }
+            int tcpPort = DEFAULT_RX_PORTNO + size();
+            int zmqPort = DEFAULT_ZMQ_CL_PORTNO + size();
+            try {
+                for (int iModule = 0; iModule < size(); ++iModule) {
+                    receivers.resize(detectors.size(), 2, 1);
+                    receivers(iModule, 1, 0) = 
+                        sls::make_unique<Receiver>(detectorId, iModule, 1,
+                            0, tcpPort++, "", zmqPort++);
+                    detectors[iModule]->setNumberOfReceivers2(1);
+                }
+            } catch (...) {
+                receivers.clear();
+                throw;
+            }
+    } else {
+            throw RuntimeError("Invalid udp interface number " +
+                std::to_string(udpInterface));
+    }
 }
 
 bool DetectorImpl::isReceiverInitialized(const int udpInterface) {
@@ -478,45 +485,50 @@ void DetectorImpl::configureReceiver(const int udpInterface, Positions pos,
 void DetectorImpl::configureReceiver(const int udpInterface, int module_id,
                                      const std::string &hostname,
                                      const int port) {
-
+    LOG(logWARNING) << "HEY";
     if (Parallel(&Module::getRunStatus, {}).squash(defs::ERROR) ==
         defs::RUNNING) {
         LOG(logWARNING) << "Acquisition already running, Stopping it.";
         Parallel(&Module::stopAcquisition, {});
     }
+    LOG(logWARNING) << "HEY2";
     if (!isReceiverInitialized(udpInterface)) {
         initReceiver(udpInterface);
-    }
+    } 
+    LOG(logWARNING) << "ds " << detectors.size() << "\nmodule id: " << module_id;
     auto t = detectors[module_id]->getReceiverParameters();
-
-    receivers(module_id, udpInterface, 0)->setTCPPort(port);
-    receivers(module_id, udpInterface, 0)->setHostname(hostname);
-    auto m = receivers(module_id, udpInterface, 0)->configure(t);
+    LOG(logWARNING) << "Shape: " << ToString(receivers.shape());
+    //TODO! FIX!!!
+    receivers(module_id, udpInterface-1, 0)->setTCPPort(port);
+    receivers(module_id, udpInterface-1, 0)->setHostname(hostname);
+    LOG(logWARNING) << "HEY3";
+    auto m = receivers(module_id, udpInterface-1, 0)->configure(t);
+    LOG(logWARNING) << "HEY4";
     if (m != 0) {
-        if (udpInterface == 0) {
+        if (udpInterface == 1) {
             detectors[module_id]->setDestinationUDPMAC(m);
-        } else if (udpInterface == 1) {
+        } else if (udpInterface == 2) {
             detectors[module_id]->setDestinationUDPMAC2(m);
         } else {
             throw sls::RuntimeError("Incorrect udp interface id");
         }
     }
 
-    // if (udpInterface == 1) {
-    //     receivers[module_id][0]->setTCPPort(port);
-    //     receivers[module_id][0]->setHostname(hostname);
-    //     auto m = receivers[module_id][0]->configure(t);
-    //     if (m != 0) {
-    //         detectors[module_id]->setDestinationUDPMAC(m);
-    //     }
-    // } else {
-    //     receivers2[module_id][0]->setTCPPort(port);
-    //     receivers2[module_id][0]->setHostname(hostname);
-    //     auto m = receivers2[module_id][0]->configure(t);
-    //     if (m != 0) {
-    //         detectors[module_id]->setDestinationUDPMAC2(m);
-    //     }
-    // }
+    if (udpInterface == 1) {
+        receivers(module_id, 0, 0)->setTCPPort(port);
+        receivers(module_id, 0, 0)->setHostname(hostname);
+        auto m = receivers(module_id,0,0)->configure(t);
+        if (m != 0) {
+            detectors[module_id]->setDestinationUDPMAC(m);
+        }
+    } else {
+        receivers(module_id, 1, 0)->setTCPPort(port);
+        receivers(module_id, 1, 0)->setHostname(hostname);
+        auto m = receivers(module_id, 1, 0)->configure(t);
+        if (m != 0) {
+            detectors[module_id]->setDestinationUDPMAC2(m);
+        }
+    }
 }
 
 void DetectorImpl::updateDetectorSize() {

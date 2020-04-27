@@ -82,6 +82,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     virtual ~DetectorImpl();
 
+    
+
     template <class CT> struct NonDeduced { using type = CT; };
     template <typename RT, typename... CT>
     sls::Result<RT> Parallel(RT (sls::Module::*somefunc)(CT...),
@@ -301,6 +303,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void setHostname(const std::vector<std::string> &name);
     void setHostname(const std::vector<std::string> &name,
                      const std::vector<int> &port);
+
+    Result<std::string> getHostname(Positions pos, int udp_interface);
 
     int getNumberofReceiversPerModule() const;
     void initReceiver(const int udpInterface);

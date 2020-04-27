@@ -23,14 +23,14 @@ TEST_CASE("With std::vector we give back the first index and 0, 0") {
 
     Container3<int> rec{14, 1, 3};
 
-    auto m = MaskGenerator(std::vector<size_t>{0, 3, 5}).mask(rec.shape());
+    auto m = MaskGenerator(std::vector<int>{0, 3, 5}).mask(rec.shape());
     CHECK(m.shape() == std::array<size_t, 3>{14, 1, 3});
 
     CHECK(m(0, 0, 0) == true);
     CHECK(m(3, 0, 0) == true);
     CHECK(m(5, 0, 0) == true);
 
-    std::vector<size_t> positions(rec.size(0));
+    std::vector<int> positions(rec.size(0));
     std::iota(begin(positions), end(positions), 0);
     positions.erase(std::remove(positions.begin(), positions.end(), 0),
                     positions.end());
@@ -81,4 +81,19 @@ TEST_CASE("With three numbers we get x,y,z") {
             }
         }
     }
+}
+
+TEST_CASE("Passing in -1 as the only element in the vector gives all rows"){
+    Container3<int> r{3,3,3};
+    std::vector<int> vec{-1};
+    auto m = MaskGenerator(vec, 0).mask(r);
+    REQUIRE(m.shape() == std::array<size_t, 3>{3,3,3});
+    CHECK(m(0,0,0) == true);
+    CHECK(m(1,0,0) == true);
+    CHECK(m(2,0,0) == true);
+
+    CHECK(m(0,1,0) == false);
+    CHECK(m(0,2,0) == false);
+    CHECK(m(0,0,1) == false);
+
 }

@@ -10,19 +10,20 @@ end up moving temporary objects into the first called function
 leaving the other ones with moved from args.
 */
 
-namespace experimental{
-
+namespace experimental {
+using sls::Container3;
 template <class CT> struct NonDeduced { using type = CT; };
 
 template <typename RT, typename Class, typename... CT>
-sls::Result<RT>
-Parallel(RT (Class::*func)(CT...) const, const Container3<Class> &objects,
-         const Container3<bool> &mask, typename NonDeduced<CT>::type... Args) {
+sls::Result<RT> Parallel(RT (Class::*func)(CT...) const,
+                         const Container3<std::unique_ptr<Class>> &objects,
+                         const Container3<bool> &mask,
+                         typename NonDeduced<CT>::type... Args) {
     std::vector<std::future<RT>> futures;
     for (size_t i = 0; i < objects.size(); ++i) {
         if (mask[i])
             futures.push_back(
-                std::async(std::launch::async, func, &objects[i], Args...));
+                std::async(std::launch::async, func, objects[i].get(), Args...));
     }
     sls::Result<RT> result;
     for (auto &f : futures) {
@@ -32,9 +33,10 @@ Parallel(RT (Class::*func)(CT...) const, const Container3<Class> &objects,
 }
 
 template <typename RT, typename Class, typename... CT>
-sls::Result<RT>
-Parallel(RT (Class::*func)(CT...), const Container3<Class> &objects,
-         const Container3<bool> &mask, typename NonDeduced<CT>::type... Args) {
+sls::Result<RT> Parallel(RT (Class::*func)(CT...),
+                         const Container3<std::unique_ptr<Class>> &objects,
+                         const Container3<bool> &mask,
+                         typename NonDeduced<CT>::type... Args) {
     std::vector<std::future<RT>> futures;
     for (size_t i = 0; i < objects.size(); ++i) {
         if (mask[i])
@@ -50,7 +52,8 @@ Parallel(RT (Class::*func)(CT...), const Container3<Class> &objects,
 
 template <typename Class, typename... CT>
 void Parallel(void (Class::*func)(CT...) const,
-              const Container3<Class> &objects, const Container3<bool> &mask,
+              const Container3<std::unique_ptr<Class>> &objects,
+              const Container3<bool> &mask,
               typename NonDeduced<CT>::type... Args) {
     std::vector<std::future<void>> futures;
     for (size_t i = 0; i < objects.size(); ++i) {
@@ -64,7 +67,8 @@ void Parallel(void (Class::*func)(CT...) const,
 }
 
 template <typename Class, typename... CT>
-void Parallel(void (Class::*func)(CT...), const Container3<Class> &objects,
+void Parallel(void (Class::*func)(CT...),
+              const Container3<std::unique_ptr<Class>> &objects,
               const Container3<bool> &mask,
               typename NonDeduced<CT>::type... Args) {
 
@@ -78,4 +82,4 @@ void Parallel(void (Class::*func)(CT...), const Container3<Class> &objects,
         f.get();
 }
 
-}
+} // namespace experimental

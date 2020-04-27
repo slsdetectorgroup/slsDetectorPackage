@@ -144,7 +144,7 @@ sls::MacAddr Receiver::configure(slsDetectorDefs::rxParameters arg) {
         arg.udpInterfaces = 2;        
     }
 
-    LOG(logDEBUG1) 
+    LOG(logINFO) 
         << "detType:" << arg.detType << std::endl
         << "detectorSize.x:" << arg.detectorSize.x << std::endl
         << "detectorSize.y:" << arg.detectorSize.y << std::endl

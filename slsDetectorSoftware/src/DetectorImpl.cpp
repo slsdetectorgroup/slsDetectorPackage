@@ -54,19 +54,25 @@ void DetectorImpl::freeSharedMemory(int detectorId, int moduleId) {
     // single
     if (moduleId >= 0) {
         SharedMemory<sharedModule> moduleShm(detectorId, moduleId);
-        int numReceivers = 0, numReceivers2 = 0;
         if (moduleShm.IsExisting()) {
             moduleShm.OpenSharedMemory();
+            int numReceivers = 0, numReceivers2 = 0;
             if (Module::hasSharedMemoryReceiverList(moduleShm()->shmversion)) {
                 numReceivers = moduleShm()->numberOfReceivers;
                 numReceivers2 = moduleShm()->numberOfReceivers2;
             }
             moduleShm.RemoveSharedMemory();
-        }
-        for (int iReceiver = 0; iReceiver < numReceivers + numReceivers2; ++iReceiver) {
-            SharedMemory<sharedModule> receiverShm(detectorId, moduleId, iReceiver);
-            if (receiverShm.IsExisting()) {
-                receiverShm.RemoveSharedMemory();
+            for (int iReceiver = 0; iReceiver < numReceivers; ++iReceiver) {
+                SharedMemory<sharedModule> receiverShm(detectorId, moduleId, 0, iReceiver);
+                if (receiverShm.IsExisting()) {
+                    receiverShm.RemoveSharedMemory();
+                }
+            }
+            for (int iReceiver = 0; iReceiver < numReceivers2; ++iReceiver) {
+                SharedMemory<sharedModule> receiverShm(detectorId, moduleId, 1, iReceiver);
+                if (receiverShm.IsExisting()) {
+                    receiverShm.RemoveSharedMemory();
+                }
             }
         }
         return;
@@ -84,19 +90,25 @@ void DetectorImpl::freeSharedMemory(int detectorId, int moduleId) {
 
     for (int iModule = 0; iModule < numDetectors; ++iModule) {
         SharedMemory<sharedModule> moduleShm(detectorId, iModule);
-        int numReceivers = 0, numReceivers2 = 0;
         if (moduleShm.IsExisting()) {
             moduleShm.OpenSharedMemory();
+            int numReceivers = 0, numReceivers2 = 0;
             if (Module::hasSharedMemoryReceiverList(moduleShm()->shmversion)) {
                 numReceivers = moduleShm()->numberOfReceivers;
                 numReceivers2 = moduleShm()->numberOfReceivers2;
             }
             moduleShm.RemoveSharedMemory();
-        }
-        for (int iReceiver = 0; iReceiver < numReceivers + numReceivers2; ++iReceiver) {
-            SharedMemory<sharedModule> receiverShm(detectorId, iModule, iReceiver);
-            if (receiverShm.IsExisting()) {
-                receiverShm.RemoveSharedMemory();
+            for (int iReceiver = 0; iReceiver < numReceivers; ++iReceiver) {
+                SharedMemory<sharedModule> receiverShm(detectorId, iModule, 0, iReceiver);
+                if (receiverShm.IsExisting()) {
+                    receiverShm.RemoveSharedMemory();
+                }
+            }
+            for (int iReceiver = 0; iReceiver < numReceivers2; ++iReceiver) {
+                SharedMemory<sharedModule> receiverShm(detectorId, iModule, 1, iReceiver);
+                if (receiverShm.IsExisting()) {
+                    receiverShm.RemoveSharedMemory();
+                }
             }
         }
     }

@@ -315,9 +315,12 @@ void DetectorImpl::setHostname(const std::vector<std::string> &name) {
     updateDetectorSize();
 }
 
-Result<std::string> DetectorImpl::getHostname(Positions pos, int udp_interface){
-    LOG(logWARNING) << ToString(pos) << ": " << udp_interface;
-    return experimental::Parallel(&Receiver::getHostname, receivers, MaskGenerator(pos, udp_interface).mask(receivers));
+Result<std::string> DetectorImpl::getRxHostname(Positions pos, int udpInterface){
+    return experimental::Parallel(&Receiver::getHostname, receivers, MaskGenerator(pos, udpInterface).mask(receivers));
+}
+
+Result<int> DetectorImpl::getRxPort(Positions pos, int udpInterface){
+    return experimental::Parallel(&Receiver::getTCPPort, receivers, MaskGenerator(pos, udpInterface).mask(receivers));
 }
 
 void DetectorImpl::setHostname(const std::vector<std::string> &name,

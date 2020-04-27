@@ -502,6 +502,7 @@ void DetectorImpl::configureReceiver(const int udpInterface, int module_id,
     if (!isReceiverInitialized(udpInterface)) {
         initReceiver(udpInterface);
     }
+    std::cout << "module_id:"<<module_id << std::endl;
     auto t = detectors[module_id]->getReceiverParameters();
     if (udpInterface == 1) {
         receivers[module_id][0]->setTCPPort(port);

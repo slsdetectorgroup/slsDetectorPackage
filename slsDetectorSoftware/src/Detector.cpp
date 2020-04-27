@@ -784,8 +784,12 @@ void Detector::setRxHostname(const int udpInterface, const std::string &hostname
 
 void Detector::setRxHostname(const int udpInterface, const std::string &hostname, const int port, 
       int module_id) {
-    if (module_id == -1 && size() > 1) {
-        throw sls::RuntimeError("Cannot set same rx_tcpport and rx_hostname for multiple receivers");
+    if (module_id == -1) {
+        if (size() > 1) {
+            throw sls::RuntimeError("Cannot set same rx_tcpport and rx_hostname for multiple receivers");
+        } else {
+            module_id = 0;
+        }
     }
     pimpl->configureReceiver(udpInterface, module_id, hostname, port);
 }

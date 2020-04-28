@@ -113,21 +113,16 @@ void ALTERA_PLL_C10_SetPhaseShift(int pllIndex, int clkIndex, int phase, int pos
     }
 }
 
-
-void ALTERA_PLL_C10_SetOuputFrequency (int pllIndex, int clkIndex, int value) {
-    int pllVCOFreqHz = ALTERA_PLL_C10_VCO_FREQ[pllIndex];
-    LOG(logDEBUG1, ("\tC%d: Setting output frequency for pll %d to %d (pllvcofreq: %dHz)\n", clkIndex, pllIndex, value, pllVCOFreqHz));
-
-    // calculate output frequency
-    float total_div =  (float)pllVCOFreqHz / (float)value;
+void ALTERA_PLL_C10_SetOuputClockDivider (int pllIndex, int clkIndex, int value) {
+    LOG(logDEBUG1, ("\tC%d: Setting output clock divider for pll%d to %d\n", clkIndex, pllIndex, value));
 
     // assume 50% duty cycle
-    uint32_t low_count = total_div / 2;
+    uint32_t low_count = value / 2;
     uint32_t high_count = low_count;
     uint32_t odd_division = 0;
 
     // odd division
-    if (total_div > (float)(2 * low_count)) {
+    if (value > (int)(2 * low_count)) {
         ++high_count;
         odd_division = 1;
     }
@@ -146,7 +141,5 @@ void ALTERA_PLL_C10_SetOuputFrequency (int pllIndex, int clkIndex, int value) {
     ALTERA_PLL_C10_Reconfigure(pllIndex);
 
     // reset required to keep the phase relationships 
-    ALTERA_PLL_C10_ResetPLL (pllIndex);
+    ALTERA_PLL_C10_ResetPLL (pllIndex);   
 }
-
-

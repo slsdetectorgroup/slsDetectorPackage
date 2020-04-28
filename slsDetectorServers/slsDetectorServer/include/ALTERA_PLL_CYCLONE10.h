@@ -59,7 +59,7 @@ void ALTERA_PLL_C10_SetPhaseShift(int pllIndex, int clkIndex, int phase, int pos
  * Calculate and write output frequency
  * @param pllIndex pll index
  * @param clkIndex clock index
- * @param value frequency in Hz to set to
+ * @param value clock divider to set to
  */
-void ALTERA_PLL_C10_SetOuputFrequency (int pllIndex, int clkIndex, int value);
+void ALTERA_PLL_C10_SetOuputClockDivider (int pllIndex, int clkIndex, int value);
 

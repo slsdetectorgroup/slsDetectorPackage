@@ -15,80 +15,12 @@
 #include <iomanip>
 #include <string.h>
 
-#define MAX_MASTER_FILE_LENGTH 2000
 
 
 class BinaryFileStatic {
 	
  public:
 
-	/** Constructor */
-	BinaryFileStatic(){};
-	/** Destructor */
-	virtual ~BinaryFileStatic(){};
-
-	/**
-	 * Create File Name in format fpath/fnameprefix_fx_dy_z.raw,
-	 * where x is fnum, y is (dindex * numunits + unitindex) and z is findex
-	 * @param fpath file path
-	 * @param fnameprefix file name prefix 
-	 * @param findex file index
-	 * @param subfindex sub file index
-	 * @param dindex readout index
-	 * @param numunits number of units per readout. eg. eiger has 2 udp units per readout
-	 * @param unitindex unit index
-	 * @returns complete file name created
-	 */
-	static std::string CreateFileName(std::string fpath, std::string fprefix,
-										uint64_t findex, uint64_t subfindex,
-										int dindex, int numunits = 1,
-										int unitindex = 0) {
-		std::ostringstream os;
-		os << fpath << "/" << fprefix << "_d"
-			<< (dindex * numunits + unitindex) << "_f" << subfindex << '_'
-			<< findex << ".raw";
-		return os.str();
-	}
-
-        /**
-	 * Create file names for master file
-	 * @param fpath file path
-	 * @param fnameprefix file name prefix 
-	 * @param findex file index
-	 * @returns master file name
-	 */
-	static std::string CreateMasterFileName(std::string fpath, std::string fnameprefix,
-											uint64_t findex) {
-		std::ostringstream os;
-		os << fpath << "/" << fnameprefix << "_master"
-			<< "_" << findex << ".raw";
-		return os.str();
-	}
-
-        /**
-	 * Close File
-	 * @param fd file pointer
-	 */
-	static void CloseDataFile(FILE*& fd)
-	{
-		if (fd)
-			fclose(fd);
-		fd = 0;
-	}
-
-	/**
-	 * Write data to file
-	 * @param fd file pointer
-	 * @param buf buffer to write from
-	 * @param bsize size of buffer
-	 * @returns number of elements written
-	 */
-	static int WriteDataFile(FILE* fd, char* buf, int bsize)
-	{
-		if (!fd)
-			return 0;
-		return fwrite(buf, 1, bsize, fd);
-	}
 
 
 	/**
@@ -187,28 +119,4 @@ class BinaryFileStatic {
 		BinaryFileStatic::CloseDataFile(fd);
 	}
 
-
-	/**
-	 * Create File
-	 * @param fd file pointer
-	 * @param owenable overwrite enable
-	 * @param fname complete file name
-	 * @returns 0 for success and 1 for fail
-	 */
-	static void CreateDataFile(FILE*& fd, bool owenable, std::string fname)
-	 {
-		if(!owenable){
-			if (NULL == (fd = fopen((const char *) fname.c_str(), "wx"))){
-				fd = 0;
-				throw sls::RuntimeError("Could not create/overwrite file " + fname);
-			}
-		} else if (NULL == (fd = fopen((const char *) fname.c_str(), "w"))){
-			fd = 0;
-			throw sls::RuntimeError("Could not create file " + fname);
-		}
-		//setting to no file buffering
-		setvbuf(fd, NULL, _IONBF, 0);
-	}
-
-};
 

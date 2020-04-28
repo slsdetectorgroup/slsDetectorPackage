@@ -9,7 +9,7 @@
 #include "receiver_defs.h"
 
 #include <iostream>
-
+#include <iomanip>
 
 FILE* BinaryFile::masterfd = nullptr;
 
@@ -20,7 +20,8 @@ BinaryFile::BinaryFile(int ind, uint32_t* maxf,
 		File(ind, maxf, nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, portno, smode),
 		filefd(nullptr),
 		numFramesInFile(0),
-		numActualPacketsInFile(0)
+		numActualPacketsInFile(0),
+		maxMasterFileSize(2000)
 {
 #ifdef VERBOSE
 	PrintMembers();
@@ -41,15 +42,27 @@ slsDetectorDefs::fileFormat BinaryFile::GetFileType() {
 	return BINARY;
 }
 
-
 void BinaryFile::CreateFile() {
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 
-	currentFileName = BinaryFileStatic::CreateFileName(*filePath, *fileNamePrefix, *fileIndex,
-			 subFileIndex, *detIndex, *numUnitsPerDetector, index);
+	std::ostringstream os;
+	os << *filePath << "/" << *fileNamePrefix << "_d"
+		<< (*detIndex * (*numUnitsPerDetector) + index) << "_f" << subFileIndex << '_'
+		<< *fileIndex << ".raw";
+	currentFileName = os.str();
 
-	BinaryFileStatic::CreateDataFile(filefd, *overWriteEnable, currentFileName);
+	if (!(*overWriteEnable)){
+		if (NULL == (filefd = fopen((const char *) currentFileName.c_str(), "wx"))){
+			filefd = 0;
+			throw sls::RuntimeError("Could not create/overwrite file " + currentFileName);
+		}
+	} else if (NULL == (filefd = fopen((const char *) currentFileName.c_str(), "w"))){
+		filefd = 0;
+		throw sls::RuntimeError("Could not create file " + currentFileName);
+	}
+	//setting to no file buffering
+	setvbuf(filefd, NULL, _IONBF, 0);
 
 	if(!(*silentMode)) {
 		LOG(logINFO) << "[" << *udpPortNumber << "]: Binary File created: " << currentFileName;
@@ -57,14 +70,26 @@ void BinaryFile::CreateFile() {
 }
 
 void BinaryFile::CloseCurrentFile() {
-	BinaryFileStatic::CloseDataFile(filefd);
+	if (filefd)
+		fclose(filefd);
+	filefd = 0;	
 }
 
 void BinaryFile::CloseAllFiles() {
-	BinaryFileStatic::CloseDataFile(filefd);
-	if (master && (*detIndex==0))
-		BinaryFileStatic::CloseDataFile(masterfd);
+	CloseCurrentFile();
+	if (master && (*detIndex==0)) {
+		if (masterfd)
+			fclose(masterfd);
+		masterfd = 0;
+	}
 }
+
+int BinaryFile::WriteData(char* buf, int bsize) {
+	if (!filefd)
+		return 0;
+	return fwrite(buf, 1, bsize, filefd);
+}
+
 
 void BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
 	// check if maxframesperfile = 0 for infinite
@@ -81,13 +106,13 @@ void BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32
 
 	// contiguous bitset
 	if (sizeof(sls_bitset) == sizeof(bitset_storage)) {
-		ret = BinaryFileStatic::WriteDataFile(filefd, buffer, buffersize);
+		ret = BinaryFileStatic::WriteData(buffer, buffersize);
 	}
 
 	// not contiguous bitset
 	else {
 		// write detector header
-		ret = BinaryFileStatic::WriteDataFile(filefd, buffer, sizeof(sls_detector_header));
+		ret = BinaryFileStatic::WriteData(buffer, sizeof(sls_detector_header));
 
 		// get contiguous representation of bit mask
 		bitset_storage storage;
@@ -96,11 +121,11 @@ void BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32
 		for (int i = 0; i < MAX_NUM_PACKETS; ++i)
 			storage[i >> 3] |= (bits[i] << (i & 7));
 		// write bitmask
-		ret += BinaryFileStatic::WriteDataFile(filefd, (char*)storage, sizeof(bitset_storage));
+		ret += BinaryFileStatic::WriteData((char*)storage, sizeof(bitset_storage));
 
 		// write data
-		ret += BinaryFileStatic::WriteDataFile(filefd,
-		buffer + sizeof(sls_detector_header), buffersize - sizeof(sls_receiver_header));
+		ret += BinaryFileStatic::WriteData(buffer + sizeof(sls_detector_header), 
+			buffersize - sizeof(sls_receiver_header));
 }
 
 	// if write error
@@ -116,8 +141,11 @@ void BinaryFile::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
 	numActualPacketsInFile = 0;
 
 	if (mfwenable && master && (*detIndex==0)) {
-		masterFileName = BinaryFileStatic::CreateMasterFileName(*filePath,
-				*fileNamePrefix, *fileIndex);
+
+		std::ostringstream os;
+		os << *filePath << "/" << *fileNamePrefix << "_master"
+			<< "_" << *fileIndex << ".raw";
+		masterFileName = os.str();
 		if(!(*silentMode)) {
 			LOG(logINFO) << "Master File: " << masterFileName;
 		}

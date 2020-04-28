@@ -44,8 +44,8 @@ int virtual_stop = 0;
 
 enum detectorSettings thisSettings = UNINITIALIZED;
 int32_t clkPhase[NUM_CLOCKS] = {};
-uint32_t clkFrequency[NUM_CLOCKS] = {};
-uint32_t systemFrequency = 0;
+uint32_t clkDivider[NUM_CLOCKS] = {};
+double systemFrequency = 0;
 int highvoltage = 0;
 int dacValues[NDAC] = {};
 int onChipdacValues[ONCHIP_NDAC][NCHIP] = {};
@@ -353,12 +353,12 @@ void initStopServer() {
 void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Gotthard2 module \n")); 
 
-	clkFrequency[READOUT_C0] = DEFAULT_READOUT_C0;
-	clkFrequency[READOUT_C1] = DEFAULT_READOUT_C1;
-	clkFrequency[SYSTEM_C0] = DEFAULT_SYSTEM_C0;
-	clkFrequency[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
-	clkFrequency[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
-	clkFrequency[SYSTEM_C3] = DEFAULT_SYSTEM_C3;
+	clkDivider[READOUT_C0] = DEFAULT_READOUT_C0;
+	clkDivider[READOUT_C1] = DEFAULT_READOUT_C1;
+	clkDivider[SYSTEM_C0] = DEFAULT_SYSTEM_C0;
+	clkDivider[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
+	clkDivider[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
+	clkDivider[SYSTEM_C3] = DEFAULT_SYSTEM_C3;
 	systemFrequency = INT_SYSTEM_C0_FREQUENCY;
 	detPos[0] = 0;
 	detPos[1] = 0;
@@ -1450,13 +1450,12 @@ int getMaxPhase(enum CLKINDEX ind) {
 		LOG(logERROR, ("Unknown clock index %d to get max phase\n", ind));
 	    return -1;
 	}
-	int vcofreq = getVCOFrequency(ind);
 	int maxshiftstep = ALTERA_PLL_C10_GetMaxPhaseShiftStepsofVCO();
-	int ret = ((double)vcofreq / (double)clkFrequency[ind]) * maxshiftstep;
+	int ret = clkDivider[ind] * maxshiftstep;
 
 	char* clock_names[] = {CLK_NAMES};
-	LOG(logDEBUG1, ("\tMax Phase Shift (%s): %d (Clock: %d Hz, VCO:%d Hz)\n",
-			clock_names[ind], ret, clkFrequency[ind], vcofreq));
+	LOG(logDEBUG1, ("\tMax Phase Shift (%s): %d (Clock Div: %d)\n",
+			clock_names[ind], ret, clkDivider[ind]));
 
 	return ret;
 }
@@ -1489,7 +1488,7 @@ int getFrequency(enum CLKINDEX ind) {
 		LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
 	    return -1;
 	}
-    return clkFrequency[ind];
+    return (((double)getVCOFrequency(ind) / (double)clkDivider[ind]) + 0.5);
 }
 
 int getVCOFrequency(enum CLKINDEX ind) {
@@ -1514,28 +1513,28 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 		return FAIL;
 	}
 	char* clock_names[] = {CLK_NAMES};
-	int vcofreq = getVCOFrequency(ind);
-	int currentdiv = vcofreq / (int)clkFrequency[ind];
-	int newfreq = vcofreq / val;
 
-    LOG(logINFO, ("\tSetting %s clock (%d) divider from %d (%d Hz) to %d (%d Hz). \n\t(Vcofreq: %d Hz)\n", clock_names[ind], ind, currentdiv, clkFrequency[ind], val, newfreq, vcofreq));
+    LOG(logINFO, ("\tSetting %s clock (%d) divider from %d to %d\n", 
+		clock_names[ind], ind, clkDivider[ind], val));
 
     // Remembering old phases in degrees
     int oldPhases[NUM_CLOCKS];
 	{ 
 		int i = 0;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
-			oldPhases	[i] = getPhase(i, 1);
-			LOG(logDEBUG1, ("\tRemembering %s clock (%d) phase: %d degrees\n", clock_names[ind], ind, oldPhases[i]));
+			oldPhases[i] = getPhase(i, 1);
+			LOG(logDEBUG1, ("\tRemembering %s clock (%d) phase: %d degrees\n", 
+				clock_names[ind], ind, oldPhases[i]));
 		}
 	}
 
     // Calculate and set output frequency
 	int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
 	int clkIndex = (int)(ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind);
-    ALTERA_PLL_C10_SetOuputFrequency (pllIndex, clkIndex, newfreq);
-	clkFrequency[ind] = newfreq;
-    LOG(logINFO, ("\t%s clock (%d) divider set to %d (%d Hz)\n", clock_names[ind], ind, val, clkFrequency[ind]));
+    ALTERA_PLL_C10_SetOuputClockDivider (pllIndex, clkIndex, val);
+	clkDivider[ind] = val;
+    LOG(logINFO, ("\t%s clock (%d) divider set to %d\n", 
+		clock_names[ind], ind, clkDivider[ind]));
 	// update system frequency
 	if (ind == SYSTEM_C0) {
 		setTimingSource(getTimingSource());
@@ -1558,7 +1557,8 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 		for (i = 0; i < NUM_CLOCKS; ++i) {
 			int currPhaseDeg = getPhase(i, 1);
 			if (oldPhases[i] != currPhaseDeg) {
-				LOG(logINFO, ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n", clock_names[i], i, currPhaseDeg, oldPhases[i]));
+				LOG(logINFO, ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n", 
+					clock_names[i], i, currPhaseDeg, oldPhases[i]));
 				setPhase(i, oldPhases[i], 1);
 			}
 		}
@@ -1571,7 +1571,7 @@ int getClockDivider(enum CLKINDEX ind) {
 		LOG(logERROR, ("Unknown clock index %d to get clock divider\n", ind));
 	    return -1;
 	}
-	return (getVCOFrequency(ind) / (int)clkFrequency[ind]);
+	return clkDivider[ind];
 }
 
 int setInjectChannel(int offset, int increment) {
@@ -1991,7 +1991,7 @@ void setTimingSource(enum timingSourceType value) {
 		case TIMING_EXTERNAL:
 			LOG(logINFO, ("Setting timing source to exernal\n"));
 			bus_w(addr, (bus_r(addr) | CONTROL_TIMING_SOURCE_EXT_MSK));
-			systemFrequency = clkFrequency[SYSTEM_C0];
+			systemFrequency = ((double)getVCOFrequency(SYSTEM_C0) / (double)clkDivider[SYSTEM_C0]);
 			break;		
 		default:
 			LOG(logERROR, ("Unknown timing source %d\n", value));

@@ -40,7 +40,7 @@ int virtual_stop = 0;
 #endif
 
 int32_t clkPhase[NUM_CLOCKS] = {};
-uint32_t clkFrequency[NUM_CLOCKS] = {};
+uint32_t clkDivider[NUM_CLOCKS] = {};
 
 int highvoltage = 0;
 int dacValues[NDAC] = {};
@@ -340,11 +340,11 @@ void initStopServer() {
 void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Mythen3 module \n")); 
 
-	clkFrequency[READOUT_C0] = DEFAULT_READOUT_C0;
-	clkFrequency[READOUT_C1] = DEFAULT_READOUT_C1;
-	clkFrequency[SYSTEM_C0] = DEFAULT_SYSTEM_C0;
-	clkFrequency[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
-	clkFrequency[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
+	clkDivider[READOUT_C0] = DEFAULT_READOUT_C0;
+	clkDivider[READOUT_C1] = DEFAULT_READOUT_C1;
+	clkDivider[SYSTEM_C0] = DEFAULT_SYSTEM_C0;
+	clkDivider[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
+	clkDivider[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
 
 	highvoltage = 0;
 	{
@@ -509,12 +509,12 @@ int setExpTime(int64_t val) {
         return FAIL;
     }
 	LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
-    val *= (1E-9 * clkFrequency[SYSTEM_C0]);
+    val *= (1E-9 * getFrequency(SYSTEM_C0));
     setPatternWaitTime(0, val);
 
     // validate for tolerance
     int64_t retval = getExpTime();
-    val /= (1E-9 * clkFrequency[SYSTEM_C0]);
+    val /= (1E-9 * getFrequency(SYSTEM_C0));
     if (val != retval) {
         return FAIL;
     }
@@ -522,7 +522,7 @@ int setExpTime(int64_t val) {
 }
 
 int64_t getExpTime() {
-    return setPatternWaitTime(0, -1) / (1E-9 * clkFrequency[SYSTEM_C0]);
+    return setPatternWaitTime(0, -1) / (1E-9 * getFrequency(SYSTEM_C0));
 }
 
 int setPeriod(int64_t val) {
@@ -1236,13 +1236,12 @@ int getMaxPhase(enum CLKINDEX ind) {
 		LOG(logERROR, ("Unknown clock index %d to get max phase\n", ind));
 	    return -1;
 	}
-	int vcofreq = getVCOFrequency(ind);
 	int maxshiftstep = ALTERA_PLL_C10_GetMaxPhaseShiftStepsofVCO();
-	int ret = ((double)vcofreq / (double)clkFrequency[ind]) * maxshiftstep;
+	int ret = clkDivider[ind] * maxshiftstep;
 
 	char* clock_names[] = {CLK_NAMES};
-	LOG(logDEBUG1, ("\tMax Phase Shift (%s): %d (Clock: %d Hz, VCO:%d Hz)\n",
-			clock_names[ind], ret, clkFrequency[ind], vcofreq));
+	LOG(logDEBUG1, ("\tMax Phase Shift (%s): %d (Clock Div: %d)\n",
+			clock_names[ind], ret, clkDivider[ind]));
 
 	return ret;
 }
@@ -1275,7 +1274,7 @@ int getFrequency(enum CLKINDEX ind) {
 		LOG(logERROR, ("Unknown clock index %d to get frequency\n", ind));
 	    return -1;
 	}
-    return clkFrequency[ind];
+    return (getVCOFrequency(ind) / clkDivider[ind]);
 }
 
 int getVCOFrequency(enum CLKINDEX ind) {
@@ -1300,27 +1299,28 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 		return FAIL;
 	}
 	char* clock_names[] = {CLK_NAMES};
-	int vcofreq = getVCOFrequency(ind);
-	int currentdiv = vcofreq / (int)clkFrequency[ind];
-	int newfreq = vcofreq / val;
 
-    LOG(logINFO, ("\tSetting %s clock (%d) divider from %d (%d Hz) to %d (%d Hz). \n\t(Vcofreq: %d Hz)\n", clock_names[ind], ind, currentdiv, clkFrequency[ind], val, newfreq, vcofreq));
+    LOG(logINFO, ("\tSetting %s clock (%d) divider from %d to %d\n", 
+		clock_names[ind], ind, clkDivider[ind], val));
 
     // Remembering old phases in degrees
     int oldPhases[NUM_CLOCKS];
 	{ 
 		int i = 0;
 		for (i = 0; i < NUM_CLOCKS; ++i) {
-			oldPhases	[i] = getPhase(i, 1);
+			oldPhases[i] = getPhase(i, 1);
+			LOG(logDEBUG1, ("\tRemembering %s clock (%d) phase: %d degrees\n", 
+				clock_names[ind], ind, oldPhases[i]));
 		}
 	}
 
     // Calculate and set output frequency
 	int pllIndex = (int)(ind >= SYSTEM_C0 ? SYSTEM_PLL : READOUT_PLL);
 	int clkIndex = (int)(ind >= SYSTEM_C0 ? ind - SYSTEM_C0 : ind);
-    ALTERA_PLL_C10_SetOuputFrequency (pllIndex, clkIndex, newfreq);
-	clkFrequency[ind] = newfreq;
-    LOG(logINFO, ("\t%s clock (%d) divider set to %d (%d Hz)\n", clock_names[ind], ind, val, clkFrequency[ind]));
+    ALTERA_PLL_C10_SetOuputClockDivider (pllIndex, clkIndex, val);
+	clkDivider[ind] = val;
+    LOG(logINFO, ("\t%s clock (%d) divider set to %d\n", 
+		clock_names[ind], ind, clkDivider[ind]));
    
     // phase is reset by pll (when setting output frequency)
 	if (ind >= READOUT_C0) {
@@ -1338,7 +1338,8 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 		for (i = 0; i < NUM_CLOCKS; ++i) {
 			int currPhaseDeg = getPhase(i, 1);
 			if (oldPhases[i] != currPhaseDeg) {
-				LOG(logINFO, ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n", clock_names[i], i, currPhaseDeg, oldPhases[i]));
+				LOG(logINFO, ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n", 
+					clock_names[i], i, currPhaseDeg, oldPhases[i]));
 				setPhase(i, oldPhases[i], 1);
 			}
 		}
@@ -1351,7 +1352,7 @@ int getClockDivider(enum CLKINDEX ind) {
 		LOG(logERROR, ("Unknown clock index %d to get clock divider\n", ind));
 	    return -1;
 	}
-	return (getVCOFrequency(ind) / (int)clkFrequency[ind]);
+	return clkDivider[ind];
 }
 
 /* aquisition */

@@ -1765,7 +1765,7 @@ void* start_timer(void* arg) {
 						header = (sls_detector_header*)(packetData2);
 						header->detType = (uint16_t)myDetectorType;
 						header->version = SLS_DETECTOR_HEADER_VERSION - 1;								
-						header->frameNumber = frameNr;
+						header->frameNumber = frameNr + iframes;
 						header->packetNumber = i;
 						header->modId = 0;
 						header->row = detPos[0];

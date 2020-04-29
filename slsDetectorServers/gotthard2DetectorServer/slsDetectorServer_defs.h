@@ -44,11 +44,11 @@
 #define DEFAULT_CURRENT_SOURCE		(0)
 #define DEFAULT_TIMING_SOURCE		(TIMING_INTERNAL)
 
-#define DEFAULT_READOUT_C0          (6)//(144444448) // rdo_clk, 144 MHz  
-#define DEFAULT_READOUT_C1          (6)//(144444448) // rdo_x2_clk, 144 MHz  
+#define DEFAULT_READOUT_C0          (8)//(108333336) // rdo_clk, 108 MHz  
+#define DEFAULT_READOUT_C1          (8)//(108333336) // rdo_x2_clk, 108 MHz  
 #define DEFAULT_SYSTEM_C0			(5)//(144444448) // run_clk, 144 MHz 
 #define DEFAULT_SYSTEM_C1			(10)//(72222224) // chip_clk, 72 MHz 
-#define DEFAULT_SYSTEM_C2			(40)//(18055556) // sync_clk, 18 MHz 
+#define DEFAULT_SYSTEM_C2			(5)//(144444448) // sync_clk, 144 MHz 
 #define DEFAULT_SYSTEM_C3			(5)//(144444448) // str_clk, 144 MHz
 
 /* Firmware Definitions */

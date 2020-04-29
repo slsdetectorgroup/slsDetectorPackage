@@ -13,7 +13,7 @@
 #include <string>
 
 
-class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFileStatic {
+class BinaryFile : private virtual slsDetectorDefs, public File {
 	
  public:
 	/**
@@ -67,7 +67,7 @@ class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFi
 	static FILE* masterfd;
 	uint32_t numFramesInFile;
 	uint64_t numActualPacketsInFile;
-	const int maxMasterFileSize;
+	const size_t maxMasterFileSize;
 
 };
 

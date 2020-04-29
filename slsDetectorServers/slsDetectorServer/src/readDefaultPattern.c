@@ -53,6 +53,30 @@ int	loadDefaultPattern(char* fname) {
 			continue;
 		}
 
+		// removing leading spaces
+		if (line[0] == ' ' || line[0] == '\t') {
+			int len = strlen(line);
+			// find first valid character
+			int i = 0;
+			for (i = 0; i < len; ++i) {
+				if (line[i] != ' ' && line[i] != '\t') {
+					break;
+				}
+			}
+			// ignore the line full of spaces (last char \n)
+			if (i >= len - 1) {
+				LOG(logDEBUG1, ("Ignoring line full of spaces\n"));
+				continue;
+			}
+			// copying only valid char
+			char temp[LZ];
+			memset(temp, 0, LZ);
+			memcpy(temp, line + i, strlen(line) - i);
+			memset(line, 0, LZ);
+			memcpy(line, temp, strlen(temp));
+			LOG(logDEBUG1, ("Removing leading spaces.\n"));
+		}
+        
 		LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", 
             strlen(line), strlen(line) -1, line));
 		memset(command, 0, LZ);

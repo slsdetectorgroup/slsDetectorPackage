@@ -45,18 +45,10 @@ class BinaryFile : private virtual slsDetectorDefs, public File {
 	  	masterAttributes& masterFileAttributes) override;
 	void CloseCurrentFile() override;
 	void CloseAllFiles() override;
-	/**
-	 * Write data to file
-	 * @param buffer buffer to write from
-	 * @param buffersize size of buffer
-	 * @param currentFrameNumber current image number
-	 * @param numPacketsCaught number of packets caught
-	 */
-	 void WriteToFile(char* buffer, int buffersize, uint64_t currentFrameNumber, 
+ 	void WriteToFile(char* buffer, int buffersize, uint64_t currentFrameNumber, 
 	 	uint32_t numPacketsCaught) override;
 
  private:
-
 	int WriteData(char* buf, int bsize);
 
 	FILE* filefd;

@@ -118,7 +118,7 @@ void HDF5File::CreateFile() {
 }
 
 void HDF5File::CloseCurrentFile() {
-	CloseFile(filefd, false, false);
+	CloseFile(filefd, false);
 	for (unsigned int i = 0; i < dataset_para.size(); ++i)
 		delete dataset_para[i];
 	dataset_para.clear();
@@ -139,10 +139,17 @@ void HDF5File::CloseCurrentFile() {
 void HDF5File::CloseAllFiles() {
 	numFilesinAcquisition = 0;
 	{
-		CloseFile(filefd, false, false);
+		CloseFile(filefd, false);
 		if (master) {
-			CloseFile(masterfd, false, true);
-			CloseFile(nullptr, true, false);
+			CloseFile(masterfd, true);
+			// close virtual file
+			// c code due to only c implementation of H5Pset_virtual available
+			if (virtualfd != 0) {
+				if (H5Fclose(virtualfd) < 0 ) {
+					LOG(logERROR) << "Could not close virtual HDF5 handles";
+				}
+				virtualfd = 0;
+			}
 		}
 	}
 	for (unsigned int i = 0; i < dataset_para.size(); ++i)
@@ -151,7 +158,6 @@ void HDF5File::CloseAllFiles() {
 	if(dataspace_para) delete dataspace_para;
 	if(dataset) delete dataset;
 	if(dataspace) delete dataspace;
-	if(filefd) delete filefd;
 }
 
 void HDF5File::WriteToFile(char* buffer, int bufferSize, uint64_t currentFrameNumber, uint32_t numPacketsCaught) {
@@ -217,30 +223,20 @@ void HDF5File::EndofAcquisition(bool anyPacketsCaught, uint64_t numImagesCaught)
 	numFilesinAcquisition = 0;
 }
 
-void HDF5File::CloseFile(H5File* fd, bool virtualFile, bool masterFile) {
+void HDF5File::CloseFile(H5File*& fd, bool masterFile) {
 	std::lock_guard<std::mutex> lock(HDF5File::hdf5Lib);
-
-	// c code due to only c implementation of H5Pset_virtual available
-	if (virtualFile) {
-		if (virtualfd != 0) {
-			if (H5Fclose(virtualfd) < 0 ) {
-				LOG(logERROR) << "Could not close virtual HDF5 handles";
-			}
-			virtualfd = 0;
+	try {
+		Exception::dontPrint(); // to handle errors
+		if (fd) {
+			fd->close();
+			delete fd;
+			fd = 0;
 		}
-	} else {
-		try {
-			Exception::dontPrint(); // to handle errors
-			if (fd) {
-				delete fd;
-				fd = 0;
-			}
-		} catch(const Exception& error) {
-			LOG(logERROR) << "Could not close " 
-			<< (masterFile ? "master" : "data") 
-			<< " HDF5 handles of index " << index;
-			error.printErrorStack();
-		}
+	} catch(const Exception& error) {
+		LOG(logERROR) << "Could not close " 
+		<< (masterFile ? "master" : "data") 
+		<< " HDF5 handles of index " << index;
+		error.printErrorStack();
 	}
 }
 
@@ -462,7 +458,9 @@ void HDF5File::CreateDataFile() {
 	}
 	catch(const Exception& error){
 		error.printErrorStack();
-		if (filefd) filefd->close();
+		if (filefd) {
+			filefd->close();
+		}
 		throw sls::RuntimeError("Could not create HDF5 handles in object " + index);
 	}
 	if(!(*silentMode)) {
@@ -686,7 +684,9 @@ void HDF5File::CreateMasterDataFile(masterAttributes& masterFileAttributes) {
 
 	} catch(const Exception& error) {
 		error.printErrorStack();
-		if (masterfd) masterfd->close();
+		if (masterfd) {
+			masterfd->close();
+		}
 		throw sls::RuntimeError("Could not create master HDF5 handles");
 	}
 }

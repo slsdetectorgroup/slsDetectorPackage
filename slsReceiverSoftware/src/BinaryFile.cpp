@@ -74,7 +74,7 @@ void BinaryFile::CloseCurrentFile() {
 
 void BinaryFile::CloseAllFiles() {
 	CloseCurrentFile();
-	if (master && (*detIndex==0)) {
+	if (master) {
 		if (masterfd)
 			fclose(masterfd);
 		masterfd = 0;
@@ -137,7 +137,7 @@ void BinaryFile::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 
-	if (mfwenable && master && (*detIndex==0)) {
+	if (mfwenable && master) {
 
 		std::ostringstream os;
 		os << *filePath << "/" << *fileNamePrefix << "_master"

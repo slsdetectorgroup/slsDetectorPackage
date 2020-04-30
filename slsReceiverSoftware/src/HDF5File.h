@@ -57,7 +57,7 @@ class HDF5File : private virtual slsDetectorDefs, public File {
 
  private:
 
-	void CloseFile(H5File* fd, bool virtualFile, bool masterFile);
+	void CloseFile(H5File*& fd, bool masterFile);
 	void WriteDataFile(uint64_t currentFrameNumber, char* buffer);
 	void WriteParameterDatasets(uint64_t currentFrameNumber, sls_receiver_header* rheader);
 	void ExtendDataset();

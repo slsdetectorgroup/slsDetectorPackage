@@ -140,7 +140,8 @@ void DataProcessor::SetupFileWriter(bool fwe, int* nd, uint32_t* maxf,
 
 
 	if (file != nullptr) {
-		delete file; file = nullptr;
+		delete file; 
+		file = nullptr;
 	}
 
 	if (fileWriteEnable) {

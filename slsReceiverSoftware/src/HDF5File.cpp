@@ -499,14 +499,11 @@ void HDF5File::CreateMasterDataFile(masterAttributes& masterFileAttributes) {
 					FileCreatPropList::DEFAULT,
 					flist );
 
-		//variables
-		DataSpace dataspace = DataSpace (H5S_SCALAR);
-		StrType strdatatype(PredType::C_S1,256);
-
 		//create attributes
 		//version
 		{
 			double dValue = masterFileAttributes.version;
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			Attribute attribute = masterfd->createAttribute("version",PredType::NATIVE_DOUBLE, dataspace);
 			attribute.write(PredType::NATIVE_DOUBLE, &dValue);
 		}
@@ -520,14 +517,18 @@ void HDF5File::CreateMasterDataFile(masterAttributes& masterFileAttributes) {
 
 		//Dynamic Range
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "dynamic range", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(masterFileAttributes.dynamicRange), PredType::NATIVE_INT);
-			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspace);
-			attribute.write(strdatatype, std::string("bits").c_str());
+			DataSpace dataspaceAttr = DataSpace (H5S_SCALAR);
+			StrType strdatatype(PredType::C_S1,256);
+			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspaceAttr);
+			attribute.write(strdatatype, std::string("bits"));
 		}
 
 		//Ten Giga
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			int iValue = masterFileAttributes.tenGiga;
 			DataSet dataset = group5.createDataSet ( "ten giga enable", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &iValue, PredType::NATIVE_INT);
@@ -535,112 +536,139 @@ void HDF5File::CreateMasterDataFile(masterAttributes& masterFileAttributes) {
 
 		//Image Size
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "image size", PredType::NATIVE_INT, dataspace );
 			dataset.write (  &(masterFileAttributes.imageSize), PredType::NATIVE_INT);
-			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			DataSpace dataspaceAttr = DataSpace (H5S_SCALAR);
+			StrType strdatatype(PredType::C_S1,256);
+			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspaceAttr);
 			attribute.write(strdatatype, std::string("bytes"));
 		}
 
 		//x
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "number of pixels in x axis", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(masterFileAttributes.nPixelsX), PredType::NATIVE_INT);
 		}
 
 		//y
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "number of pixels in y axis", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(masterFileAttributes.nPixelsY), PredType::NATIVE_INT);
 		}
 
 		//Maximum frames per file
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "maximum frames per file", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(masterFileAttributes.maxFramesPerFile), PredType::NATIVE_INT);
 		}
 
 		//Total Frames
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "total frames", PredType::STD_U64LE, dataspace );
 			dataset.write ( &(masterFileAttributes.totalFrames), PredType::STD_U64LE);
 		}
 
 		//Exptime
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "exposure time", PredType::STD_U64LE, dataspace );
 			dataset.write ( &(masterFileAttributes.exptimeNs), PredType::STD_U64LE);
-			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			DataSpace dataspaceAttr = DataSpace (H5S_SCALAR);
+			StrType strdatatype(PredType::C_S1,256);
+			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspaceAttr);
 			attribute.write(strdatatype, std::string("ns"));
 		}
 
 		//SubExptime
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "sub exposure time", PredType::STD_U64LE, dataspace );
 			dataset.write ( &(masterFileAttributes.subExptimeNs), PredType::STD_U64LE);
-			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			DataSpace dataspaceAttr = DataSpace (H5S_SCALAR);
+			StrType strdatatype(PredType::C_S1,256);
+			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspaceAttr);
 			attribute.write(strdatatype, std::string("ns"));
 		}
 
 		//SubPeriod
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "sub period", PredType::STD_U64LE, dataspace );
 			dataset.write ( &(masterFileAttributes.subPeriodNs), PredType::STD_U64LE);
-			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			DataSpace dataspaceAttr = DataSpace (H5S_SCALAR);
+			StrType strdatatype(PredType::C_S1,256);
+			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspaceAttr);
 			attribute.write(strdatatype, std::string("ns"));
 		}
 
 		//Period
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "acquisition period", PredType::STD_U64LE, dataspace );
 			dataset.write ( &(masterFileAttributes.periodNs), PredType::STD_U64LE);
-			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			DataSpace dataspaceAttr = DataSpace (H5S_SCALAR);
+			StrType strdatatype(PredType::C_S1,256);
+			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspaceAttr);
 			attribute.write(strdatatype, std::string("ns"));
 		}
 
 		//Quad Enable
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "quad enable", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(masterFileAttributes.quadEnable), PredType::NATIVE_INT);
 		}
 
 		//Analog Flag
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "analog flag", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(masterFileAttributes.analogFlag), PredType::NATIVE_INT);
 		}
 
 		//Digital Flag
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "digital flag", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(masterFileAttributes.digitalFlag), PredType::NATIVE_INT);
 		}
 
 		//ADC Mask
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "adc mask", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(masterFileAttributes.adcmask), PredType::NATIVE_INT);
 		}
 
 		//Dbit Offset
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "dbit offset", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(masterFileAttributes.dbitoffset), PredType::NATIVE_INT);
 		}
 
 		// Dbit List
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "dbit bitset list", PredType::STD_U64LE, dataspace );
 			dataset.write ( &(masterFileAttributes.dbitlist), PredType::STD_U64LE);
 		}
 
 		// Roi xmin
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "roi xmin", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(masterFileAttributes.roiXmin), PredType::NATIVE_INT);
 		}
 
 		// Roi xmax
 		{
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "roi xmax", PredType::NATIVE_INT, dataspace );
 			dataset.write ( &(masterFileAttributes.roiXmax), PredType::NATIVE_INT);
 		}
@@ -648,6 +676,8 @@ void HDF5File::CreateMasterDataFile(masterAttributes& masterFileAttributes) {
 		//Timestamp
 		{
 			time_t t = time(0);
+			StrType strdatatype(PredType::C_S1,256);
+			DataSpace dataspace = DataSpace (H5S_SCALAR);
 			DataSet dataset = group5.createDataSet ( "timestamp", strdatatype, dataspace );
 			dataset.write ( std::string(ctime(&t)), strdatatype );
 		}
@@ -763,7 +793,7 @@ void HDF5File::CreateVirtualDataFile(uint32_t maxFramesPerFile, uint64_t numf) {
 					<< *fileIndex << ".h5";
 				std::string srcFileName =  os.str();
 
-				LOG(logERROR) << srcFileName;
+				LOG(logDEBUG1) << srcFileName;
 				// find relative path
 				std::string relative_srcFileName = srcFileName;
 				{
@@ -837,7 +867,7 @@ void HDF5File::CreateVirtualDataFile(uint32_t maxFramesPerFile, uint64_t numf) {
 		//close
 		H5Fclose(virtualfd); 
 		virtualfd = 0;
-
+	
 		//link
 		LinkVirtualInMaster(vname, virtualDatasetName);
 	} catch (const sls::RuntimeError &e) {
@@ -848,7 +878,10 @@ void HDF5File::CreateVirtualDataFile(uint32_t maxFramesPerFile, uint64_t numf) {
 }
 
 void HDF5File::LinkVirtualInMaster(std::string fname, std::string dsetname) {
-	std::lock_guard<std::mutex> lock(HDF5File::hdf5Lib);
+
+	if (fname == currentFileName) {
+		std::lock_guard<std::mutex> lock(HDF5File::hdf5Lib);
+	}
 
 	char linkname[100];
 	hid_t vfd = 0;

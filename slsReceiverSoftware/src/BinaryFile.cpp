@@ -18,7 +18,7 @@ BinaryFile::BinaryFile(int ind, uint32_t* maxf,
 		int* nd, std::string* fname, std::string* fpath, uint64_t* findex, bool* owenable,
 		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 		bool* smode):
-		File(ind, maxf, nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, portno, smode),
+		File(ind, BINARY, maxf, nd, fname, fpath, findex, owenable, dindex, nunits, nf, dr, portno, smode),
 		filefd(nullptr),
 		numFramesInFile(0),
 		numActualPacketsInFile(0),
@@ -37,10 +37,6 @@ void BinaryFile::PrintMembers(TLogLevel level) {
 	File::PrintMembers(level);
 	LOG(logINFO) << "Max Frames Per File: " << *maxFramesPerFile;
 	LOG(logINFO) << "Number of Frames in File: " << numFramesInFile;
-}
-
-slsDetectorDefs::fileFormat BinaryFile::GetFileType() {
-	return BINARY;
 }
 
 void BinaryFile::CreateFile() {

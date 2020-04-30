@@ -60,7 +60,6 @@ class BinaryFile : private virtual slsDetectorDefs, public File {
 
  private:
 
-	fileFormat GetFileType() override;
 	int WriteData(char* buf, int bsize);
 
 	FILE* filefd;

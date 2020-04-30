@@ -47,7 +47,6 @@ class HDF5File : private virtual slsDetectorDefs, public File {
 			uint32_t nx, uint32_t ny,
 			bool* smode);
 	~HDF5File();
-	void PrintMembers(TLogLevel level = logDEBUG1);
 	void SetNumberofPixels(uint32_t nx, uint32_t ny);
 	void CreateFile();
 	void CloseCurrentFile();
@@ -56,29 +55,24 @@ class HDF5File : private virtual slsDetectorDefs, public File {
 	void CreateMasterFile(bool masterFileWriteEnable, masterAttributes& masterFileAttributes);
 	void EndofAcquisition(bool anyPacketsCaught, uint64_t numImagesCaught);
 
-
  private:
 
-	void CreateVirtualFile(uint64_t numImagesCaught);
-	fileFormat GetFileType();
-	void UpdateDataTypeFromDr();
-	void CloseFile(H5File* fd, hid_t* cfd, bool master);
+	void CloseFile(H5File* fd, bool virtualFile, bool masterFile);
 	void WriteDataFile(uint64_t currentFrameNumber, char* buffer);
 	void WriteParameterDatasets(uint64_t currentFrameNumber, sls_receiver_header* rheader);
 	void ExtendDataset();
-	void CreateMasterDataFile();
 	void CreateDataFile();
+	void CreateMasterDataFile(masterAttributes& masterFileAttributes);
 	void CreateVirtualDataFile(uint32_t maxFramesPerFile, uint64_t numf);
-	void LinkVirtualInMaster();
+	void LinkVirtualInMaster(std::string fname, std::string dsetname);
 	hid_t GetDataTypeinC(DataType dtype);
 
+	static std::mutex hdf5Lib;
 
-	static mutable std::mutex mutex;
-
-	static H5File* masterfd;
+	H5File* masterfd;
 	/** Virtual File handle ( only file name because 
 	code in C as H5Pset_virtual doesnt exist yet in C++) */
-	static hid_t virtualfd;
+	hid_t virtualfd;
 	H5File* filefd;
 	DataSpace* dataspace;
 	DataSet* dataset;

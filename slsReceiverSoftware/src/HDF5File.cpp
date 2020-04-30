@@ -501,18 +501,15 @@ void HDF5File::CreateMasterDataFile(masterAttributes& masterFileAttributes) {
 
 		//variables
 		DataSpace dataspace = DataSpace (H5S_SCALAR);
-		Attribute attribute;
-		DataSet dataset;
-		int iValue=0;
-		double dValue=0;
 		StrType strdatatype(PredType::C_S1,256);
 
 		//create attributes
 		//version
-		dValue = masterFileAttributes.version;
-		attribute = masterfd->createAttribute("version",PredType::NATIVE_DOUBLE, dataspace);
-		attribute.write(PredType::NATIVE_DOUBLE, &dValue);
-
+		{
+			double dValue = masterFileAttributes.version;
+			Attribute attribute = masterfd->createAttribute("version",PredType::NATIVE_DOUBLE, dataspace);
+			attribute.write(PredType::NATIVE_DOUBLE, &dValue);
+		}
 		//Create a group in the file
 		Group group1( masterfd->createGroup( "entry" ) );
 			Group group2( group1.createGroup("data") );
@@ -522,98 +519,138 @@ void HDF5File::CreateMasterDataFile(masterAttributes& masterFileAttributes) {
 			Group group6( group1.createGroup("sample") );
 
 		//Dynamic Range
-		dataset = group5.createDataSet ( "dynamic range", PredType::NATIVE_INT, dataspace );
-		dataset.write ( &(masterFileAttributes.dynamicRange), PredType::NATIVE_INT);
-		attribute = dataset.createAttribute("unit",strdatatype, dataspace);
-		attribute.write(strdatatype, std::string("bits").c_str());
+		{
+			DataSet dataset = group5.createDataSet ( "dynamic range", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(masterFileAttributes.dynamicRange), PredType::NATIVE_INT);
+			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			attribute.write(strdatatype, std::string("bits").c_str());
+		}
 
 		//Ten Giga
-		iValue = masterFileAttributes.tenGiga;
-		dataset = group5.createDataSet ( "ten giga enable", PredType::NATIVE_INT, dataspace );
-		dataset.write ( &iValue, PredType::NATIVE_INT);
+		{
+			int iValue = masterFileAttributes.tenGiga;
+			DataSet dataset = group5.createDataSet ( "ten giga enable", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &iValue, PredType::NATIVE_INT);
+		}
 
 		//Image Size
-		dataset = group5.createDataSet ( "image size", PredType::NATIVE_INT, dataspace );
-		dataset.write (  &(masterFileAttributes.imageSize), PredType::NATIVE_INT);
-		attribute = dataset.createAttribute("unit",strdatatype, dataspace);
-		attribute.write(strdatatype, std::string("bytes"));
+		{
+			DataSet dataset = group5.createDataSet ( "image size", PredType::NATIVE_INT, dataspace );
+			dataset.write (  &(masterFileAttributes.imageSize), PredType::NATIVE_INT);
+			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			attribute.write(strdatatype, std::string("bytes"));
+		}
 
 		//x
-		dataset = group5.createDataSet ( "number of pixels in x axis", PredType::NATIVE_INT, dataspace );
-		dataset.write ( &(masterFileAttributes.nPixelsX), PredType::NATIVE_INT);
+		{
+			DataSet dataset = group5.createDataSet ( "number of pixels in x axis", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(masterFileAttributes.nPixelsX), PredType::NATIVE_INT);
+		}
 
 		//y
-		dataset = group5.createDataSet ( "number of pixels in y axis", PredType::NATIVE_INT, dataspace );
-		dataset.write ( &(masterFileAttributes.nPixelsY), PredType::NATIVE_INT);
+		{
+			DataSet dataset = group5.createDataSet ( "number of pixels in y axis", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(masterFileAttributes.nPixelsY), PredType::NATIVE_INT);
+		}
 
 		//Maximum frames per file
-		dataset = group5.createDataSet ( "maximum frames per file", PredType::NATIVE_INT, dataspace );
-		dataset.write ( &(masterFileAttributes.maxFramesPerFile), PredType::NATIVE_INT);
+		{
+			DataSet dataset = group5.createDataSet ( "maximum frames per file", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(masterFileAttributes.maxFramesPerFile), PredType::NATIVE_INT);
+		}
 
 		//Total Frames
-		dataset = group5.createDataSet ( "total frames", PredType::STD_U64LE, dataspace );
-		dataset.write ( &(masterFileAttributes.totalFrames), PredType::STD_U64LE);
+		{
+			DataSet dataset = group5.createDataSet ( "total frames", PredType::STD_U64LE, dataspace );
+			dataset.write ( &(masterFileAttributes.totalFrames), PredType::STD_U64LE);
+		}
 
 		//Exptime
-		dataset = group5.createDataSet ( "exposure time", PredType::STD_U64LE, dataspace );
-		dataset.write ( &(masterFileAttributes.exptimeNs), PredType::STD_U64LE);
-		attribute = dataset.createAttribute("unit",strdatatype, dataspace);
-		attribute.write(strdatatype, std::string("ns"));
+		{
+			DataSet dataset = group5.createDataSet ( "exposure time", PredType::STD_U64LE, dataspace );
+			dataset.write ( &(masterFileAttributes.exptimeNs), PredType::STD_U64LE);
+			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			attribute.write(strdatatype, std::string("ns"));
+		}
 
 		//SubExptime
-		dataset = group5.createDataSet ( "sub exposure time", PredType::STD_U64LE, dataspace );
-		dataset.write ( &(masterFileAttributes.subExptimeNs), PredType::STD_U64LE);
-		attribute = dataset.createAttribute("unit",strdatatype, dataspace);
-		attribute.write(strdatatype, std::string("ns"));
+		{
+			DataSet dataset = group5.createDataSet ( "sub exposure time", PredType::STD_U64LE, dataspace );
+			dataset.write ( &(masterFileAttributes.subExptimeNs), PredType::STD_U64LE);
+			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			attribute.write(strdatatype, std::string("ns"));
+		}
 
 		//SubPeriod
-		dataset = group5.createDataSet ( "sub period", PredType::STD_U64LE, dataspace );
-		dataset.write ( &(masterFileAttributes.subPeriodNs), PredType::STD_U64LE);
-		attribute = dataset.createAttribute("unit",strdatatype, dataspace);
-		attribute.write(strdatatype, std::string("ns"));
+		{
+			DataSet dataset = group5.createDataSet ( "sub period", PredType::STD_U64LE, dataspace );
+			dataset.write ( &(masterFileAttributes.subPeriodNs), PredType::STD_U64LE);
+			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			attribute.write(strdatatype, std::string("ns"));
+		}
 
 		//Period
-		dataset = group5.createDataSet ( "acquisition period", PredType::STD_U64LE, dataspace );
-		dataset.write ( &(masterFileAttributes.periodNs), PredType::STD_U64LE);
-		attribute = dataset.createAttribute("unit",strdatatype, dataspace);
-		attribute.write(strdatatype, std::string("ns"));
+		{
+			DataSet dataset = group5.createDataSet ( "acquisition period", PredType::STD_U64LE, dataspace );
+			dataset.write ( &(masterFileAttributes.periodNs), PredType::STD_U64LE);
+			Attribute attribute = dataset.createAttribute("unit",strdatatype, dataspace);
+			attribute.write(strdatatype, std::string("ns"));
+		}
 
 		//Quad Enable
-		dataset = group5.createDataSet ( "quad enable", PredType::NATIVE_INT, dataspace );
-		dataset.write ( &(masterFileAttributes.quadEnable), PredType::NATIVE_INT);
+		{
+			DataSet dataset = group5.createDataSet ( "quad enable", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(masterFileAttributes.quadEnable), PredType::NATIVE_INT);
+		}
 
 		//Analog Flag
-		dataset = group5.createDataSet ( "analog flag", PredType::NATIVE_INT, dataspace );
-		dataset.write ( &(masterFileAttributes.analogFlag), PredType::NATIVE_INT);
+		{
+			DataSet dataset = group5.createDataSet ( "analog flag", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(masterFileAttributes.analogFlag), PredType::NATIVE_INT);
+		}
 
 		//Digital Flag
-		dataset = group5.createDataSet ( "digital flag", PredType::NATIVE_INT, dataspace );
-		dataset.write ( &(masterFileAttributes.digitalFlag), PredType::NATIVE_INT);
+		{
+			DataSet dataset = group5.createDataSet ( "digital flag", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(masterFileAttributes.digitalFlag), PredType::NATIVE_INT);
+		}
 
 		//ADC Mask
-		dataset = group5.createDataSet ( "adc mask", PredType::NATIVE_INT, dataspace );
-		dataset.write ( &(masterFileAttributes.adcmask), PredType::NATIVE_INT);
+		{
+			DataSet dataset = group5.createDataSet ( "adc mask", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(masterFileAttributes.adcmask), PredType::NATIVE_INT);
+		}
 
 		//Dbit Offset
-		dataset = group5.createDataSet ( "dbit offset", PredType::NATIVE_INT, dataspace );
-		dataset.write ( &(masterFileAttributes.dbitoffset), PredType::NATIVE_INT);
+		{
+			DataSet dataset = group5.createDataSet ( "dbit offset", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(masterFileAttributes.dbitoffset), PredType::NATIVE_INT);
+		}
 
 		// Dbit List
-		dataset = group5.createDataSet ( "dbit bitset list", PredType::STD_U64LE, dataspace );
-		dataset.write ( &(masterFileAttributes.dbitlist), PredType::STD_U64LE);
+		{
+			DataSet dataset = group5.createDataSet ( "dbit bitset list", PredType::STD_U64LE, dataspace );
+			dataset.write ( &(masterFileAttributes.dbitlist), PredType::STD_U64LE);
+		}
 
 		// Roi xmin
-		dataset = group5.createDataSet ( "roi xmin", PredType::NATIVE_INT, dataspace );
-		dataset.write ( &(masterFileAttributes.roiXmin), PredType::NATIVE_INT);
+		{
+			DataSet dataset = group5.createDataSet ( "roi xmin", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(masterFileAttributes.roiXmin), PredType::NATIVE_INT);
+		}
 
 		// Roi xmax
-		dataset = group5.createDataSet ( "roi xmax", PredType::NATIVE_INT, dataspace );
-		dataset.write ( &(masterFileAttributes.roiXmax), PredType::NATIVE_INT);
+		{
+			DataSet dataset = group5.createDataSet ( "roi xmax", PredType::NATIVE_INT, dataspace );
+			dataset.write ( &(masterFileAttributes.roiXmax), PredType::NATIVE_INT);
+		}
 
 		//Timestamp
-		time_t t = time(0);
-		dataset = group5.createDataSet ( "timestamp", strdatatype, dataspace );
-		dataset.write ( std::string(ctime(&t)), strdatatype );
+		{
+			time_t t = time(0);
+			DataSet dataset = group5.createDataSet ( "timestamp", strdatatype, dataspace );
+			dataset.write ( std::string(ctime(&t)), strdatatype );
+		}
 
 		masterfd->close();
 

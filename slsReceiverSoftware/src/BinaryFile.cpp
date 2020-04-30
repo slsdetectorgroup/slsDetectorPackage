@@ -88,7 +88,8 @@ int BinaryFile::WriteData(char* buf, int bsize) {
 }
 
 
-void BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) {
+void BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t currentFrameNumber, 
+	uint32_t numPacketsCaught) {
 	// check if maxframesperfile = 0 for infinite
 	if ((*maxFramesPerFile) && (numFramesInFile >= (*maxFramesPerFile))) {
 		CloseCurrentFile();
@@ -96,7 +97,7 @@ void BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32
 		CreateFile();
 	}
 	numFramesInFile++;
-	numActualPacketsInFile += nump;
+	numActualPacketsInFile += numPacketsCaught;
 
 	// write to file
 	int ret = 0;
@@ -127,17 +128,18 @@ void BinaryFile::WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32
 
 	// if write error
     if (ret != buffersize) {
-    	throw sls::RuntimeError(std::to_string(index) + " : Write to file failed for image number " + std::to_string(fnum));
+    	throw sls::RuntimeError(std::to_string(index) + " : Write to file failed for image number " + 
+		std::to_string(currentFrameNumber));
     }
 }
 
 
-void BinaryFile::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
+void BinaryFile::CreateMasterFile(bool masterFileWriteEnable, masterAttributes& masterFileAttributes) {
 	//beginning of every acquisition
 	numFramesInFile = 0;
 	numActualPacketsInFile = 0;
 
-	if (mfwenable && master) {
+	if (masterFileWriteEnable && master) {
 
 		std::ostringstream os;
 		os << *filePath << "/" << *fileNamePrefix << "_master"
@@ -146,7 +148,7 @@ void BinaryFile::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
 		if(!(*silentMode)) {
 			LOG(logINFO) << "Master File: " << masterFileName;
 		}
-		attr.version = BINARY_WRITER_VERSION;
+		masterFileAttributes.version = BINARY_WRITER_VERSION;
 
 		// create master file
 		if (!(*overWriteEnable)){
@@ -202,27 +204,27 @@ void BinaryFile::CreateMasterFile(bool mfwenable, masterAttributes& attr) {
 				"Header Version             : 1 byte\n"
 				"Packets Caught Mask        : 64 bytes\n"
 				,
-				attr.version,
-				attr.detectorType,
-				attr.dynamicRange,
-				attr.tenGiga,
-				attr.imageSize,
-				attr.nPixelsX,
-				attr.nPixelsY,
-				attr.maxFramesPerFile,
-				(long long int)attr.totalFrames,
-				(long long int)attr.exptimeNs,
-				(long long int)attr.subExptimeNs,
-				(long long int)attr.subPeriodNs,
-				(long long int)attr.periodNs,
-				attr.quadEnable,
-    			attr.analogFlag,
-   	 			attr.digitalFlag,
-    			attr.adcmask,
-    			attr.dbitoffset,
-    			(long long int)attr.dbitlist,
-				attr.roiXmin,
-				attr.roiXmax,
+				masterFileAttributes.version,
+				masterFileAttributes.detectorType,
+				masterFileAttributes.dynamicRange,
+				masterFileAttributes.tenGiga,
+				masterFileAttributes.imageSize,
+				masterFileAttributes.nPixelsX,
+				masterFileAttributes.nPixelsY,
+				masterFileAttributes.maxFramesPerFile,
+				(long long int)masterFileAttributes.totalFrames,
+				(long long int)masterFileAttributes.exptimeNs,
+				(long long int)masterFileAttributes.subExptimeNs,
+				(long long int)masterFileAttributes.subPeriodNs,
+				(long long int)masterFileAttributes.periodNs,
+				masterFileAttributes.quadEnable,
+    			masterFileAttributes.analogFlag,
+   	 			masterFileAttributes.digitalFlag,
+    			masterFileAttributes.adcmask,
+    			masterFileAttributes.dbitoffset,
+    			(long long int)masterFileAttributes.dbitlist,
+				masterFileAttributes.roiXmin,
+				masterFileAttributes.roiXmax,
 				ctime(&t));
 		if (strlen(message) > maxMasterFileSize) {
 			throw sls::RuntimeError("Master File Size " + std::to_string(strlen(message)) +

@@ -22,6 +22,7 @@ class File : private virtual slsDetectorDefs {
 	 * Constructor
 	 * creates the File Writer
 	 * @param ind self index
+	 * @param type file format type
 	 * @param maxf pointer to max frames per file
 	 * @param nd pointer to number of detectors in each dimension
 	 * @param fname pointer to file name prefix
@@ -35,34 +36,16 @@ class File : private virtual slsDetectorDefs {
 	 * @param portno pointer to udp port number for logging
 	 * @param smode pointer to silent mode
 	 */
-	File(int ind, uint32_t* maxf,
-			int* nd, std::string* fname, std::string* fpath, uint64_t* findex, bool* owenable,
-			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
-			bool* smode);
+	File(int ind, slsDetectorDefs::fileFormat type, uint32_t* maxf,
+			int* nd, std::string* fname, std::string* fpath, uint64_t* findex, 
+			bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, 
+			uint32_t* portno, bool* smode);
 
-	/**
-	 * Destructor
-	 */
 	virtual ~File();
-
-	/**
-	 * Get Current File Name
-	 * @returns current file name
-	 */
+	fileFormat GetFileType();
 	std::string GetCurrentFileName();
-
-
 	void resetSubFileIndex();
-	/**
-	 * Print all member values
-	 */
 	virtual void PrintMembers(TLogLevel level = logDEBUG1);
-
-	/**
-	 * Get Type
-	 * @return type
-	 */
-	virtual fileFormat GetFileType() = 0;
 
 	/**
 	 * Get Member Pointer Values before the object is destroyed
@@ -78,23 +61,12 @@ class File : private virtual slsDetectorDefs {
 	 * @param dr pointer to dynamic range
 	 * @param portno pointer to dynamic range
 	 */
-	void GetMemberPointerValues(int* nd, uint32_t*& maxf, std::string*& fname, std::string*& fpath,
-			uint64_t*& findex, bool*& owenable,
-			int*& dindex, int*& nunits, uint64_t*& nf, uint32_t*& dr, uint32_t*& portno);
+	void GetMemberPointerValues(int* nd, uint32_t*& maxf, std::string*& fname, 
+		std::string*& fpath, uint64_t*& findex, bool*& owenable, int*& dindex,
+		int*& nunits, uint64_t*& nf, uint32_t*& dr, uint32_t*& portno);
 
-	/**
-	 * Create file
-	 */
 	virtual void CreateFile() = 0;
-
-	/**
-	 * Close Current File
-	 */
 	virtual void CloseCurrentFile() = 0;
-
-	/**
-	 * Close Files
-	 */
 	virtual void CloseAllFiles() = 0;
 
 	/**
@@ -123,7 +95,6 @@ class File : private virtual slsDetectorDefs {
 				"should be overloaded by a derived class";
 	}
 	
-
 	/**
 	 * End of Acquisition
 	 * @param anyPacketsCaught true if any packets are caught, else false
@@ -135,60 +106,24 @@ class File : private virtual slsDetectorDefs {
 	}
 
  protected:
-
-	/** master file writer/reader */
 	bool master;
-
-	/** Self Index */
 	int index;
-
-	/** Maximum frames per file */
+	slsDetectorDefs::fileFormat formatType;
 	uint32_t* maxFramesPerFile;
-
-	/** Master File Name */
 	std::string masterFileName;
-
-	/** Current File Name */
 	std::string currentFileName;
-
-	/** Number of Detectors in X dimension */
 	int numDetX;
-
-	/** Number of Detectors in Y dimension */
 	int numDetY;
-
-	/** File Name Prefix */
 	std::string* fileNamePrefix;
-
-	/** File Path */
 	std::string* filePath;
-
-	/** File Index */
 	uint64_t* fileIndex;
-
-	/** Sub file index */
 	uint64_t subFileIndex{0};
-
-	/** Over write enable */
 	bool* overWriteEnable;
-
-	/** Detector Index */
 	int* detIndex;
-
-	/** Number of units per detector. Eg. Eiger has 2, others 1 */
 	int* numUnitsPerDetector;
-
-	/** Number of images in acquisition */
 	uint64_t* numImages;
-
-	/** Dynamic Range */
 	uint32_t* dynamicRange;
-
-	/** UDP Port Number for logging */
 	uint32_t* udpPortNumber;
-
-	/** Silent Mode */
 	bool* silentMode;
-
 };
 

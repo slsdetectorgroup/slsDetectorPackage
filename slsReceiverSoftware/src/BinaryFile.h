@@ -9,12 +9,11 @@
  */
 
 #include "File.h"
-#include "BinaryFileStatic.h"
 
 #include <string>
 
 
-class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFileStatic {
+class BinaryFile : private virtual slsDetectorDefs, public File {
 	
  public:
 	/**
@@ -38,71 +37,25 @@ class BinaryFile : private virtual slsDetectorDefs, public File, public BinaryFi
 			int* nd, std::string* fname, std::string* fpath, uint64_t* findex, bool* owenable,
 			int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
 			bool* smode);
-
-	/**
-	 * Destructor
-	 */
 	~BinaryFile();
 
-	/**
-	 * Print all member values
-	 */
 	void PrintMembers(TLogLevel level = logDEBUG1) override;
-
-	/**
-	 * Create file
-	 */
 	void CreateFile() override;
-
-	 /**
-	  * Create master file
-	 * @param mfwenable master file write enable
-	 * @param attr master file attributes
-	  */
-	 void CreateMasterFile(bool mfwenable, masterAttributes& attr) override;
-
-	/**
-	 * Close Current File
-	 */
+  	void CreateMasterFile(bool masterFileWriteEnable, 
+	  	masterAttributes& masterFileAttributes) override;
 	void CloseCurrentFile() override;
-
-	/**
-	 * Close all Files
-	 */
 	void CloseAllFiles() override;
-
-	/**
-	 * Write data to file
-	 * @param buffer buffer to write from
-	 * @param buffersize size of buffer
-	 * @param fnum current image number
-	 * @param nump number of packets caught
-	 */
-	 void WriteToFile(char* buffer, int buffersize, uint64_t fnum, uint32_t nump) override;
-
-
+ 	void WriteToFile(char* buffer, int buffersize, uint64_t currentFrameNumber, 
+	 	uint32_t numPacketsCaught) override;
 
  private:
+	int WriteData(char* buf, int bsize);
 
-	/**
-	 * Get Type
-	 * @return type
-	 */
-	 fileFormat GetFileType() override;
-
-
-
-	/** File Descriptor */
 	FILE* filefd;
-
-	/** Master File Descriptor */
 	static FILE* masterfd;
-
-	/** Number of frames in file */
 	uint32_t numFramesInFile;
-
-	/** Number of actual packets caught in file */
 	uint64_t numActualPacketsInFile;
+	const size_t maxMasterFileSize;
 
 };
 

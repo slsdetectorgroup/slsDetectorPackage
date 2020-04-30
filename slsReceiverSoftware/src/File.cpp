@@ -9,11 +9,12 @@
 #include <iostream>
 
 
-File::File(int ind, uint32_t* maxf,
-		int* nd, std::string* fname, std::string* fpath, uint64_t* findex, bool* owenable,
-		int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, uint32_t* portno,
-		bool* smode):
+File::File(int ind, slsDetectorDefs::fileFormat type, uint32_t* maxf,
+		int* nd, std::string* fname, std::string* fpath, uint64_t* findex, 
+		bool* owenable, int* dindex, int* nunits, uint64_t* nf, uint32_t* dr, 
+		uint32_t* portno, bool* smode):
 			index(ind),
+			formatType(type),
 			maxFramesPerFile(maxf),
 			numDetX(nd[0]),
 			numDetY(nd[1]),
@@ -29,10 +30,14 @@ File::File(int ind, uint32_t* maxf,
 			silentMode(smode)
 
 {
-	master = index?false:true;
+	master = ((index == 0) && (*detIndex == 0)) ? true : false;
 }
 
 File::~File() {}
+
+slsDetectorDefs::fileFormat File::GetFileType() {
+	return formatType;
+}
 
 std::string File::GetCurrentFileName() {
 	return currentFileName;

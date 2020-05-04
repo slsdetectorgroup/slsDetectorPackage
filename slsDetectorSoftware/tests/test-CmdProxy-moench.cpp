@@ -18,13 +18,16 @@ using test::PUT;
 /* dacs */
 
 TEST_CASE("Setting and reading back MOENCH dacs", "[.cmd][.dacs][.new]") {
-    // vbp_colbuf, vipre, vin_cm", vb_sda, vcasc_sfp, vout_cm, vipre_cds, ibias_sfp
+    // vbp_colbuf, vipre, vin_cm", vb_sda, vcasc_sfp, vout_cm, vipre_cds,
+    // ibias_sfp
 
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::MOENCH) {
-        SECTION("vbp_colbuf") { test_dac(defs::VBP_COLBUF, "vbp_colbuf", 1300); }
+        SECTION("vbp_colbuf") {
+            test_dac(defs::VBP_COLBUF, "vbp_colbuf", 1300);
+        }
         SECTION("vipre") { test_dac(defs::VIPRE, "vipre", 1000); }
         SECTION("vin_cm") { test_dac(defs::VIN_CM, "vin_cm", 1400); }
         SECTION("vb_sda") { test_dac(defs::VB_SDA, "vb_sda", 680); }
@@ -65,16 +68,16 @@ TEST_CASE("Setting and reading back MOENCH dacs", "[.cmd][.dacs][.new]") {
         REQUIRE_THROWS(proxy.Call("vref_ds", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcascn_pb", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcascp_pb", {}, -1, GET));
-        //REQUIRE_THROWS(proxy.Call("vout_cm", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vout_cm", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcasc_out", {}, -1, GET));
-        //REQUIRE_THROWS(proxy.Call("vin_cm", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vin_cm", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("ib_test_c", {}, -1, GET));
         // mythen3
         REQUIRE_THROWS(proxy.Call("vpreamp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vshaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vshaperneg", {}, -1, GET));
-        //REQUIRE_THROWS(proxy.Call("vipre", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vipre", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("viinsh", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vdcsh", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vth1", {}, -1, GET));

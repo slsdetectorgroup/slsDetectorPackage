@@ -89,22 +89,6 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs][.new]") {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 TEST_CASE("counters", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -126,7 +110,7 @@ TEST_CASE("counters", "[.cmd]") {
         proxy.Call("counters", {"0", "2", "1"}, -1, PUT, oss_set);
         REQUIRE(oss_set.str() == "counters [0, 2, 1]\n");
         proxy.Call("counters", {"0", "2"}, -1, PUT, oss_set2);
-        REQUIRE(oss_set2.str() == "counters [0, 2]\n");        
+        REQUIRE(oss_set2.str() == "counters [0, 2]\n");
         // put back old value
         proxy.Call("counters", list_str, -1, PUT, oss_set3);
         REQUIRE(oss_set3.str() == "counters " + sls::ToString(list_str) + "\n");

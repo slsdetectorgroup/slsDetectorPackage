@@ -1,8 +1,8 @@
 #include "Result.h"
+#include "ToString.h"
 #include "TypeTraits.h"
 #include "catch.hpp"
 #include <string>
-#include "ToString.h"
 
 using sls::Result;
 
@@ -35,13 +35,12 @@ TEST_CASE("Like vector it can be constructed from size and value") {
     REQUIRE(res[4] == 7);
 }
 
-TEST_CASE("Result can be iterated using modern syntax"){
-    Result<int> res{0,1,2,3,4,5};
+TEST_CASE("Result can be iterated using modern syntax") {
+    Result<int> res{0, 1, 2, 3, 4, 5};
 
     int i = 0;
-    for (const auto& r:res)
+    for (const auto &r : res)
         REQUIRE(r == i++);
-
 }
 
 TEST_CASE("Calling squash on an empty Result produces default value") {
@@ -136,21 +135,20 @@ TEST_CASE("Convert from Result<int> to Result<ns>") {
     REQUIRE(res2[2] == ns(236));
 }
 
-
-TEST_CASE("Result of vectors"){
+TEST_CASE("Result of vectors") {
     using VecVec = std::vector<std::vector<int>>;
-    VecVec vecvec{{1,2,3}, {4,5,6}};
+    VecVec vecvec{{1, 2, 3}, {4, 5, 6}};
     Result<VecVec> res{vecvec};
 }
 
-TEST_CASE("Free function begin end"){
+TEST_CASE("Free function begin end") {
     Result<std::string> res{"ett", "nio", "sjutton"};
     REQUIRE(begin(res) == res.begin());
     REQUIRE(end(res) == res.end());
 }
 
-TEST_CASE("Sorting a Result"){
-    Result<int> res{4,5,1,3};
+TEST_CASE("Sorting a Result") {
+    Result<int> res{4, 5, 1, 3};
     std::sort(res.begin(), res.end());
     REQUIRE(res[0] == 1);
     REQUIRE(res[1] == 3);
@@ -158,24 +156,22 @@ TEST_CASE("Sorting a Result"){
     REQUIRE(res[3] == 5);
 }
 
-TEST_CASE("Printing Result<std::string>"){
+TEST_CASE("Printing Result<std::string>") {
     Result<std::string> res{"ein", "zwei", "drei"};
     std::ostringstream os;
     os << res;
     REQUIRE(os.str() == "[ein, zwei, drei]");
-
 }
 
-TEST_CASE("Printing Result<int>"){
+TEST_CASE("Printing Result<int>") {
     Result<int> res{1, 2, 3};
     std::ostringstream os;
     os << res;
     REQUIRE(os.str() == "[1, 2, 3]");
-
 }
 
-TEST_CASE("String conversions"){
-    Result<int> res{1,2,3};
+TEST_CASE("String conversions") {
+    Result<int> res{1, 2, 3};
     REQUIRE(ToString(res) == "[1, 2, 3]");
 
     Result<std::string> res2{"one", "two", "three"};
@@ -185,7 +181,7 @@ TEST_CASE("String conversions"){
     Smap m;
     m["one"] = "1";
     Result<Smap> res3{m, m, m};
-    REQUIRE(res3.size()== 3);
+    REQUIRE(res3.size() == 3);
     REQUIRE(ToString(res3) == "[{one: 1}, {one: 1}, {one: 1}]");
 
     Smap m2;
@@ -194,5 +190,6 @@ TEST_CASE("String conversions"){
     m2["three"] = "3";
 
     Result<Smap> res4{m, m2, m};
-    REQUIRE(ToString(res4) == "[{one: 1}, {one: 1, three: 3, two: 2}, {one: 1}]");
+    REQUIRE(ToString(res4) ==
+            "[{one: 1}, {one: 1, three: 3, two: 2}, {one: 1}]");
 }

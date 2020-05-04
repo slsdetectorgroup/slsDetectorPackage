@@ -31,39 +31,37 @@
 
 namespace sls {
 
-template <typename T>
-class SharedMemory {
+template <typename T> class SharedMemory {
 
   public:
     /**
-	 * Constructor
-	 * creates the single/multi detector shared memory name
-	 * @param multiId multi detector id
+     * Constructor
+     * creates the single/multi detector shared memory name
+     * @param multiId multi detector id
      * @param slsId sls detector id, -1 if a multi detector shared memory
- 	 */
+     */
     SharedMemory(int multiId, int slsId) {
         name = ConstructSharedMemoryName(multiId, slsId);
     }
 
-    /** 
-     * Delete the copy constructor and copy assignment since we don't want two 
+    /**
+     * Delete the copy constructor and copy assignment since we don't want two
      * objects managing the same resource
      */
     SharedMemory(const SharedMemory &) = delete;
     SharedMemory &operator=(const SharedMemory &other) = delete;
 
-    //Move constructor
-    SharedMemory(SharedMemory &&other) : name(other.name),
-                                         fd(other.fd),
-                                         shmSize(other.shmSize),
-                                         shared_struct(other.shared_struct) {
+    // Move constructor
+    SharedMemory(SharedMemory &&other)
+        : name(other.name), fd(other.fd), shmSize(other.shmSize),
+          shared_struct(other.shared_struct) {
 
         other.fd = -1;
         other.shared_struct = nullptr;
         other.shmSize = 0;
     }
 
-    //Move assignment
+    // Move assignment
     SharedMemory &operator=(SharedMemory &&other) {
         name = other.name;
         if (fd) {
@@ -108,31 +106,31 @@ class SharedMemory {
     }
 
     /**
-	 * Get shared memory name
-	 */
-    std::string GetName() const {
-        return name;
-    }
+     * Get shared memory name
+     */
+    std::string GetName() const { return name; }
 
-    size_t size() const {
-        return shmSize;
-    }
+    size_t size() const { return shmSize; }
 
     /**
      * Create Shared memory and call MapSharedMemory to map it to an address
-     * throws a SharedMemoryError exception on failure to create, ftruncate or map
+     * throws a SharedMemoryError exception on failure to create, ftruncate or
+     * map
      * @param sz of shared memory
      */
     void CreateSharedMemory() {
-        fd = shm_open(name.c_str(), O_CREAT | O_TRUNC | O_EXCL | O_RDWR, S_IRUSR | S_IWUSR);
+        fd = shm_open(name.c_str(), O_CREAT | O_TRUNC | O_EXCL | O_RDWR,
+                      S_IRUSR | S_IWUSR);
         if (fd < 0) {
-            std::string msg = "Create shared memory " + name + " failed: " + strerror(errno);
+            std::string msg =
+                "Create shared memory " + name + " failed: " + strerror(errno);
             LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
         }
 
         if (ftruncate(fd, sizeof(T)) < 0) {
-            std::string msg = "Create shared memory " + name + " failed at ftruncate: " + strerror(errno);
+            std::string msg = "Create shared memory " + name +
+                              " failed at ftruncate: " + strerror(errno);
             LOG(logERROR) << msg;
             close(fd);
             RemoveSharedMemory();
@@ -144,14 +142,15 @@ class SharedMemory {
     }
 
     /**
-     * Open existing Shared memory and call MapSharedMemory to map it to an address
-     * throws a SharedMemoryError exception on failure to open or map
+     * Open existing Shared memory and call MapSharedMemory to map it to an
+     * address throws a SharedMemoryError exception on failure to open or map
      * @param sz of shared memory
      */
     void OpenSharedMemory() {
         fd = shm_open(name.c_str(), O_RDWR, 0);
         if (fd < 0) {
-            std::string msg = "Open existing shared memory " + name + " failed: " + strerror(errno);
+            std::string msg = "Open existing shared memory " + name +
+                              " failed: " + strerror(errno);
             LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
         }
@@ -166,7 +165,8 @@ class SharedMemory {
     void UnmapSharedMemory() {
         if (shared_struct != nullptr) {
             if (munmap(shared_struct, shmSize) < 0) {
-                std::string msg = "Unmapping shared memory " + name + " failed: " + strerror(errno);
+                std::string msg = "Unmapping shared memory " + name +
+                                  " failed: " + strerror(errno);
                 LOG(logERROR) << msg;
                 close(fd);
                 throw SharedMemoryError(msg);
@@ -176,15 +176,16 @@ class SharedMemory {
     }
 
     /**
-	 * Remove existing Shared memory
-	 */
+     * Remove existing Shared memory
+     */
     void RemoveSharedMemory() {
         UnmapSharedMemory();
         if (shm_unlink(name.c_str()) < 0) {
             // silent exit if shm did not exist anyway
             if (errno == ENOENT)
                 return;
-            std::string msg = "Free Shared Memory " + name + " Failed: " + strerror(errno);
+            std::string msg =
+                "Free Shared Memory " + name + " Failed: " + strerror(errno);
             LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
         }
@@ -197,18 +198,14 @@ class SharedMemory {
     static const int NAME_MAX_LENGTH = 255;
 
     /**
-    *Using the call operator to access the pointer
-    */
-    T *operator()() {
-        return shared_struct;
-    }
+     *Using the call operator to access the pointer
+     */
+    T *operator()() { return shared_struct; }
 
     /**
-    *Using the call operator to access the pointer, const overload
-    */
-    const T *operator()() const {
-        return shared_struct;
-    }
+     *Using the call operator to access the pointer, const overload
+     */
+    const T *operator()() const { return shared_struct; }
 
   private:
     /**
@@ -232,11 +229,16 @@ class SharedMemory {
         if (slsId < 0)
             ss << SHM_MULTI_PREFIX << multiId << sEnvPath;
         else
-            ss << SHM_MULTI_PREFIX << multiId << SHM_SLS_PREFIX << slsId << sEnvPath;
+            ss << SHM_MULTI_PREFIX << multiId << SHM_SLS_PREFIX << slsId
+               << sEnvPath;
 
         std::string temp = ss.str();
         if (temp.length() > NAME_MAX_LENGTH) {
-            std::string msg = "Shared memory initialization failed. " + temp + " has " + std::to_string(temp.length()) + " characters. \n" + "Maximum is " + std::to_string(NAME_MAX_LENGTH) + ". Change the environment variable " + SHM_ENV_NAME;
+            std::string msg =
+                "Shared memory initialization failed. " + temp + " has " +
+                std::to_string(temp.length()) + " characters. \n" +
+                "Maximum is " + std::to_string(NAME_MAX_LENGTH) +
+                ". Change the environment variable " + SHM_ENV_NAME;
             LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
         }
@@ -250,9 +252,11 @@ class SharedMemory {
      */
 
     T *MapSharedMemory() {
-        void *addr = mmap(nullptr, sizeof(T), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        void *addr =
+            mmap(nullptr, sizeof(T), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         if (addr == MAP_FAILED) {
-            std::string msg = "Mapping shared memory " + name + " failed: " + strerror(errno);
+            std::string msg =
+                "Mapping shared memory " + name + " failed: " + strerror(errno);
             LOG(logERROR) << msg;
             close(fd);
             throw SharedMemoryError(msg);
@@ -264,23 +268,29 @@ class SharedMemory {
 
     /**
      * Verify if existing shared memory size matches expected size
-     * @param expectedSize expected size of shared memory, replaced with smaller size if size does not match
+     * @param expectedSize expected size of shared memory, replaced with smaller
+     * size if size does not match
      * @return 0 for success, 1 for fail
      */
     int VerifySizeMatch(size_t expectedSize) {
         struct stat sb;
         // could not fstat
         if (fstat(fd, &sb) < 0) {
-            std::string msg = "Could not verify existing shared memory " + name + " size match " + "(could not fstat): " + strerror(errno);
+            std::string msg = "Could not verify existing shared memory " +
+                              name + " size match " +
+                              "(could not fstat): " + strerror(errno);
             LOG(logERROR) << msg;
             close(fd);
             throw SharedMemoryError(msg);
         }
 
-        //size does not match
+        // size does not match
         auto sz = static_cast<size_t>(sb.st_size);
         if (sz != expectedSize) {
-            std::string msg = "Existing shared memory " + name + " size does not match" + "Expected " + std::to_string(expectedSize) + ", found " + std::to_string(sz);
+            std::string msg = "Existing shared memory " + name +
+                              " size does not match" + "Expected " +
+                              std::to_string(expectedSize) + ", found " +
+                              std::to_string(sz);
             LOG(logERROR) << msg;
             throw SharedMemoryError(msg);
             return 1;

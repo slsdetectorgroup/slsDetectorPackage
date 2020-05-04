@@ -18,7 +18,8 @@ using test::PUT;
 /* dacs */
 
 TEST_CASE("Setting and reading back GOTTHARD dacs", "[.cmd][.dacs][.new]") {
-    // vref_ds, vcascn_pb, vcascp_pb, vout_cm, vcasc_out, vin_cm, vref_comp, ib_test_c
+    // vref_ds, vcascn_pb, vcascp_pb, vout_cm, vcasc_out, vin_cm, vref_comp,
+    // ib_test_c
 
     Detector det;
     CmdProxy proxy(&det);
@@ -90,6 +91,6 @@ TEST_CASE("Setting and reading back GOTTHARD dacs", "[.cmd][.dacs][.new]") {
         REQUIRE_THROWS(proxy.Call("vref_cds", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_cs", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_opa_fd", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcom_adc2", {}, -1, GET));  
+        REQUIRE_THROWS(proxy.Call("vcom_adc2", {}, -1, GET));
     }
 }

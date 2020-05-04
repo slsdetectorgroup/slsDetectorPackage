@@ -1,11 +1,11 @@
 #include "Detector.h"
 #include "CmdParser.h"
 #include "CmdProxy.h"
+#include "DetectorImpl.h"
+#include "Module.h"
 #include "container_utils.h"
 #include "detectorData.h"
 #include "logger.h"
-#include "DetectorImpl.h"
-#include "Module.h"
 #include "sls_detector_defs.h"
 #include "versionAPI.h"
 
@@ -72,8 +72,8 @@ void Detector::loadParameters(const std::string &fname) {
         if (current_line.find('#') != std::string::npos) {
             current_line.erase(current_line.find('#'));
         }
-        LOG(logDEBUG1)
-            << "current_line after removing comments:\n\t" << current_line;
+        LOG(logDEBUG1) << "current_line after removing comments:\n\t"
+                       << current_line;
         if (current_line.length() > 1) {
             parser.Parse(current_line);
             proxy.Call(parser.command(), parser.arguments(),
@@ -97,13 +97,9 @@ void Detector::setVirtualDetectorServers(int numServers, int startingPort) {
 
 int Detector::getShmId() const { return pimpl->getMultiId(); }
 
-std::string Detector::getPackageVersion() const {
-    return GITBRANCH;
-}
+std::string Detector::getPackageVersion() const { return GITBRANCH; }
 
-int64_t Detector::getClientVersion() const {
-    return APILIB;
-}
+int64_t Detector::getClientVersion() const { return APILIB; }
 
 Result<int64_t> Detector::getFirmwareVersion(Positions pos) const {
     return pimpl->Parallel(&Module::getFirmwareVersion, pos);
@@ -242,8 +238,7 @@ void Detector::setTimingMode(defs::timingMode value, Positions pos) {
 }
 
 Result<defs::speedLevel> Detector::getSpeed(Positions pos) const {
-    auto res =
-        pimpl->Parallel(&Module::getClockDivider, pos, defs::RUN_CLOCK);
+    auto res = pimpl->Parallel(&Module::getClockDivider, pos, defs::RUN_CLOCK);
     Result<defs::speedLevel> speedResult(res.size());
     for (unsigned int i = 0; i < res.size(); ++i) {
         speedResult[i] = static_cast<defs::speedLevel>(res[i]);
@@ -257,13 +252,11 @@ void Detector::setSpeed(defs::speedLevel value, Positions pos) {
 }
 
 Result<int> Detector::getADCPhase(Positions pos) const {
-    return pimpl->Parallel(&Module::getClockPhase, pos, defs::ADC_CLOCK,
-                           false);
+    return pimpl->Parallel(&Module::getClockPhase, pos, defs::ADC_CLOCK, false);
 }
 
 void Detector::setADCPhase(int value, Positions pos) {
-    pimpl->Parallel(&Module::setClockPhase, pos, defs::ADC_CLOCK, value,
-                    false);
+    pimpl->Parallel(&Module::setClockPhase, pos, defs::ADC_CLOCK, value, false);
 }
 
 Result<int> Detector::getMaxADCPhaseShift(Positions pos) const {
@@ -272,13 +265,11 @@ Result<int> Detector::getMaxADCPhaseShift(Positions pos) const {
 }
 
 Result<int> Detector::getADCPhaseInDegrees(Positions pos) const {
-    return pimpl->Parallel(&Module::getClockPhase, pos, defs::ADC_CLOCK,
-                           true);
+    return pimpl->Parallel(&Module::getClockPhase, pos, defs::ADC_CLOCK, true);
 }
 
 void Detector::setADCPhaseInDegrees(int value, Positions pos) {
-    pimpl->Parallel(&Module::setClockPhase, pos, defs::ADC_CLOCK, value,
-                    true);
+    pimpl->Parallel(&Module::setClockPhase, pos, defs::ADC_CLOCK, value, true);
 }
 
 Result<int> Detector::getDBITPhase(Positions pos) const {
@@ -297,13 +288,11 @@ Result<int> Detector::getMaxDBITPhaseShift(Positions pos) const {
 }
 
 Result<int> Detector::getDBITPhaseInDegrees(Positions pos) const {
-    return pimpl->Parallel(&Module::getClockPhase, pos, defs::DBIT_CLOCK,
-                           true);
+    return pimpl->Parallel(&Module::getClockPhase, pos, defs::DBIT_CLOCK, true);
 }
 
 void Detector::setDBITPhaseInDegrees(int value, Positions pos) {
-    pimpl->Parallel(&Module::setClockPhase, pos, defs::DBIT_CLOCK, value,
-                    true);
+    pimpl->Parallel(&Module::setClockPhase, pos, defs::DBIT_CLOCK, value, true);
 }
 
 Result<int> Detector::getClockFrequency(int clkIndex, Positions pos) {
@@ -343,8 +332,7 @@ void Detector::setClockDivider(int clkIndex, int value, Positions pos) {
 }
 
 Result<int> Detector::getHighVoltage(Positions pos) const {
-    return pimpl->Parallel(&Module::setDAC, pos, -1, defs::HIGH_VOLTAGE,
-                           0);
+    return pimpl->Parallel(&Module::setDAC, pos, -1, defs::HIGH_VOLTAGE, 0);
 }
 
 void Detector::setHighVoltage(int value, Positions pos) {
@@ -430,13 +418,9 @@ void Detector::acquire() { pimpl->acquire(); }
 
 void Detector::clearAcquiringFlag() { pimpl->setAcquiringFlag(0); }
 
-void Detector::startReceiver() {
-    pimpl->Parallel(&Module::startReceiver, {});
-}
+void Detector::startReceiver() { pimpl->Parallel(&Module::startReceiver, {}); }
 
-void Detector::stopReceiver() {
-    pimpl->Parallel(&Module::stopReceiver, {});
-}
+void Detector::stopReceiver() { pimpl->Parallel(&Module::stopReceiver, {}); }
 
 void Detector::startDetector() {
     if (getDetectorType().squash() == defs::EIGER) {
@@ -445,9 +429,7 @@ void Detector::startDetector() {
     pimpl->Parallel(&Module::startAcquisition, {});
 }
 
-void Detector::stopDetector() {
-    pimpl->Parallel(&Module::stopAcquisition, {});
-}
+void Detector::stopDetector() { pimpl->Parallel(&Module::stopAcquisition, {}); }
 
 Result<defs::runStatus> Detector::getDetectorStatus(Positions pos) const {
     return pimpl->Parallel(&Module::getRunStatus, pos);
@@ -461,7 +443,8 @@ Result<int64_t> Detector::getFramesCaught(Positions pos) const {
     return pimpl->Parallel(&Module::getFramesCaughtByReceiver, pos);
 }
 
-Result<std::vector<uint64_t>> Detector::getNumMissingPackets(Positions pos) const {
+Result<std::vector<uint64_t>>
+Detector::getNumMissingPackets(Positions pos) const {
     return pimpl->Parallel(&Module::getNumMissingPackets, pos);
 }
 
@@ -607,8 +590,7 @@ void Detector::setDestinationUDPPort2(int port, int module_id) {
                             port_list[idet]);
         }
     } else {
-        pimpl->Parallel(&Module::setDestinationUDPPort2, {module_id},
-                        port);
+        pimpl->Parallel(&Module::setDestinationUDPPort2, {module_id}, port);
     }
 }
 
@@ -677,9 +659,9 @@ void Detector::setRxHostname(const std::vector<std::string> &name) {
         pimpl->Parallel(&Module::setReceiverHostname, {}, name[0]);
     } else {
         if ((int)name.size() != size()) {
-            throw RuntimeError("Receiver hostnames size " + 
-                std::to_string(name.size()) + " does not match detector size " + 
-                std::to_string(size()));
+            throw RuntimeError(
+                "Receiver hostnames size " + std::to_string(name.size()) +
+                " does not match detector size " + std::to_string(size()));
         }
         // set each rx_hostname
         for (int idet = 0; idet < size(); ++idet) {
@@ -699,8 +681,7 @@ void Detector::setRxPort(int port, int module_id) {
             it = port++;
         }
         for (int idet = 0; idet < size(); ++idet) {
-            pimpl->Parallel(&Module::setReceiverPort, {idet},
-                            port_list[idet]);
+            pimpl->Parallel(&Module::setReceiverPort, {idet}, port_list[idet]);
         }
     } else {
         pimpl->Parallel(&Module::setReceiverPort, {module_id}, port);
@@ -751,8 +732,7 @@ void Detector::setRxUDPSocketBufferSize(int64_t udpsockbufsize, Positions pos) {
 }
 
 Result<int64_t> Detector::getRxRealUDPSocketBufferSize(Positions pos) const {
-    return pimpl->Parallel(&Module::getReceiverRealUDPSocketBufferSize,
-                           pos);
+    return pimpl->Parallel(&Module::getReceiverRealUDPSocketBufferSize, pos);
 }
 
 Result<bool> Detector::getRxLock(Positions pos) {
@@ -871,8 +851,7 @@ void Detector::setRxZmqPort(int port, int module_id) {
                             port_list[idet]);
         }
     } else {
-        pimpl->Parallel(&Module::setReceiverStreamingPort, {module_id},
-                        port);
+        pimpl->Parallel(&Module::setReceiverStreamingPort, {module_id}, port);
     }
 }
 
@@ -901,8 +880,7 @@ void Detector::setClientZmqPort(int port, int module_id) {
                             port_list[idet]);
         }
     } else {
-        pimpl->Parallel(&Module::setClientStreamingPort, {module_id},
-                        port);
+        pimpl->Parallel(&Module::setClientStreamingPort, {module_id}, port);
     }
 }
 
@@ -952,8 +930,8 @@ Result<int> Detector::getThresholdEnergy(Positions pos) const {
 void Detector::setThresholdEnergy(int threshold_ev,
                                   defs::detectorSettings settings,
                                   bool trimbits, Positions pos) {
-    pimpl->Parallel(&Module::setThresholdEnergy, pos, threshold_ev,
-                    settings, static_cast<int>(trimbits));
+    pimpl->Parallel(&Module::setThresholdEnergy, pos, threshold_ev, settings,
+                    static_cast<int>(trimbits));
 }
 
 Result<std::string> Detector::getSettingsPath(Positions pos) const {
@@ -1146,8 +1124,7 @@ void Detector::setAutoCompDisable(bool value, Positions pos) {
 }
 
 Result<int> Detector::getNumberOfAdditionalStorageCells(Positions pos) const {
-    return pimpl->Parallel(&Module::getNumberOfAdditionalStorageCells,
-                           pos);
+    return pimpl->Parallel(&Module::getNumberOfAdditionalStorageCells, pos);
 }
 
 void Detector::setNumberOfAdditionalStorageCells(int value) {
@@ -1224,21 +1201,28 @@ Result<std::array<int, 2>> Detector::getInjectChannel(Positions pos) {
     return pimpl->Parallel(&Module::getInjectChannel, pos);
 }
 
-void Detector::setInjectChannel(const int offsetChannel, const int incrementChannel, Positions pos) {
-    pimpl->Parallel(&Module::setInjectChannel, pos, offsetChannel, incrementChannel);
+void Detector::setInjectChannel(const int offsetChannel,
+                                const int incrementChannel, Positions pos) {
+    pimpl->Parallel(&Module::setInjectChannel, pos, offsetChannel,
+                    incrementChannel);
 }
 
-Result<std::vector<int>> Detector::getVetoPhoton(const int chipIndex, Positions pos) {
+Result<std::vector<int>> Detector::getVetoPhoton(const int chipIndex,
+                                                 Positions pos) {
     return pimpl->Parallel(&Module::getVetoPhoton, pos, chipIndex);
 }
 
-void Detector::setVetoPhoton(const int chipIndex, const int numPhotons, const int energy, const std::string& fname,  Positions pos) {
-    pimpl->Parallel(&Module::setVetoPhoton, pos, chipIndex, numPhotons, energy, fname);
-}    
+void Detector::setVetoPhoton(const int chipIndex, const int numPhotons,
+                             const int energy, const std::string &fname,
+                             Positions pos) {
+    pimpl->Parallel(&Module::setVetoPhoton, pos, chipIndex, numPhotons, energy,
+                    fname);
+}
 
-void Detector::setVetoReference(const int gainIndex, const int value, Positions pos) {
+void Detector::setVetoReference(const int gainIndex, const int value,
+                                Positions pos) {
     pimpl->Parallel(&Module::setVetoReference, pos, gainIndex, value);
-} 
+}
 
 Result<defs::burstMode> Detector::getBurstMode(Positions pos) {
     return pimpl->Parallel(&Module::getBurstMode, pos);
@@ -1284,10 +1268,8 @@ void Detector::setNumberOfAnalogSamples(int value, Positions pos) {
     pimpl->Parallel(&Module::setNumberOfAnalogSamples, pos, value);
 }
 
-
 Result<int> Detector::getADCClock(Positions pos) const {
-    return pimpl->Parallel(&Module::getClockFrequency, pos,
-                           defs::ADC_CLOCK);
+    return pimpl->Parallel(&Module::getClockFrequency, pos, defs::ADC_CLOCK);
 }
 
 void Detector::setADCClock(int value_in_MHz, Positions pos) {
@@ -1296,8 +1278,7 @@ void Detector::setADCClock(int value_in_MHz, Positions pos) {
 }
 
 Result<int> Detector::getRUNClock(Positions pos) const {
-    return pimpl->Parallel(&Module::getClockFrequency, pos,
-                           defs::RUN_CLOCK);
+    return pimpl->Parallel(&Module::getClockFrequency, pos, defs::RUN_CLOCK);
 }
 
 void Detector::setRUNClock(int value_in_MHz, Positions pos) {
@@ -1306,8 +1287,7 @@ void Detector::setRUNClock(int value_in_MHz, Positions pos) {
 }
 
 Result<int> Detector::getSYNCClock(Positions pos) const {
-    return pimpl->Parallel(&Module::getClockFrequency, pos,
-                           defs::SYNC_CLOCK);
+    return pimpl->Parallel(&Module::getClockFrequency, pos, defs::SYNC_CLOCK);
 }
 
 Result<int> Detector::getADCPipeline(Positions pos) const {
@@ -1372,7 +1352,6 @@ void Detector::setTenGigaADCEnableMask(uint32_t mask, Positions pos) {
 
 // CTB Specific
 
-
 Result<int> Detector::getNumberOfDigitalSamples(Positions pos) const {
     return pimpl->Parallel(&Module::getNumberOfDigitalSamples, pos);
 }
@@ -1390,8 +1369,7 @@ void Detector::setReadoutMode(defs::readoutMode value, Positions pos) {
 }
 
 Result<int> Detector::getDBITClock(Positions pos) const {
-    return pimpl->Parallel(&Module::getClockFrequency, pos,
-                           defs::DBIT_CLOCK);
+    return pimpl->Parallel(&Module::getClockFrequency, pos, defs::DBIT_CLOCK);
 }
 
 void Detector::setDBITClock(int value_in_MHz, Positions pos) {
@@ -1461,7 +1439,7 @@ Result<std::vector<int>> Detector::getRxDbitList(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverDbitList, pos);
 }
 
-void Detector::setRxDbitList(const std::vector<int>& list, Positions pos) {
+void Detector::setRxDbitList(const std::vector<int> &list, Positions pos) {
     pimpl->Parallel(&Module::setReceiverDbitList, pos, list);
 }
 
@@ -1507,22 +1485,10 @@ void Detector::savePattern(const std::string &fname) {
     }
     // rest of pattern file
     const std::vector<std::string> commands{
-        "patioctrl", 
-        "patclkctrl",
-        "patlimits",
-        "patloop0",
-        "patnloop0",
-        "patloop1",
-        "patnloop1",
-        "patloop2",
-        "patnloop2",
-        "patwait0",
-        "patwaittime0",
-        "patwait1",
-        "patwaittime1",
-        "patwait2",
-        "patwaittime2",
-        "patmask",
+        "patioctrl",    "patclkctrl", "patlimits",    "patloop0",
+        "patnloop0",    "patloop1",   "patnloop1",    "patloop2",
+        "patnloop2",    "patwait0",   "patwaittime0", "patwait1",
+        "patwaittime1", "patwait2",   "patwaittime2", "patmask",
         "patsetbit",
     };
     for (const auto &cmd : commands)
@@ -1559,14 +1525,13 @@ void Detector::setPatternWord(int addr, uint64_t word, Positions pos) {
 
 Result<std::array<int, 2>>
 Detector::getPatternLoopAddresses(int level, Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternLoopAddresses, pos, level,
-                           -1, -1);
+    return pimpl->Parallel(&Module::setPatternLoopAddresses, pos, level, -1,
+                           -1);
 }
 
 void Detector::setPatternLoopAddresses(int level, int start, int stop,
                                        Positions pos) {
-    pimpl->Parallel(&Module::setPatternLoopAddresses, pos, level, start,
-                    stop);
+    pimpl->Parallel(&Module::setPatternLoopAddresses, pos, level, start, stop);
 }
 
 Result<int> Detector::getPatternLoopCycles(int level, Positions pos) const {
@@ -1611,12 +1576,13 @@ void Detector::setPatternBitMask(uint64_t mask, Positions pos) {
 
 // Moench
 
-Result<std::map<std::string, std::string>> Detector::getAdditionalJsonHeader(Positions pos) const {
+Result<std::map<std::string, std::string>>
+Detector::getAdditionalJsonHeader(Positions pos) const {
     return pimpl->Parallel(&Module::getAdditionalJsonHeader, pos);
 }
 
-void Detector::setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader,
-                                       Positions pos) {
+void Detector::setAdditionalJsonHeader(
+    const std::map<std::string, std::string> &jsonHeader, Positions pos) {
     pimpl->Parallel(&Module::setAdditionalJsonHeader, pos, jsonHeader);
 }
 
@@ -1625,7 +1591,8 @@ Result<std::string> Detector::getAdditionalJsonParameter(const std::string &key,
     return pimpl->Parallel(&Module::getAdditionalJsonParameter, pos, key);
 }
 
-void Detector::setAdditionalJsonParameter(const std::string &key, const std::string &value,
+void Detector::setAdditionalJsonParameter(const std::string &key,
+                                          const std::string &value,
                                           Positions pos) {
     pimpl->Parallel(&Module::setAdditionalJsonParameter, pos, key, value);
 }
@@ -1654,8 +1621,8 @@ void Detector::setDetectorMinMaxEnergyThreshold(const bool isEmax,
 }
 
 Result<defs::frameModeType> Detector::getFrameMode(Positions pos) const {
-    auto res = pimpl->Parallel(&Module::getAdditionalJsonParameter, pos,
-                               "frameMode");
+    auto res =
+        pimpl->Parallel(&Module::getAdditionalJsonParameter, pos, "frameMode");
     Result<defs::frameModeType> intResult(res.size());
     try {
         for (unsigned int i = 0; i < res.size(); ++i) {
@@ -1691,8 +1658,8 @@ Result<defs::detectorModeType> Detector::getDetectorMode(Positions pos) const {
 }
 
 void Detector::setDetectorMode(defs::detectorModeType value, Positions pos) {
-    pimpl->Parallel(&Module::setAdditionalJsonParameter, pos,
-                    "detectorMode", sls::ToString(value));
+    pimpl->Parallel(&Module::setAdditionalJsonParameter, pos, "detectorMode",
+                    sls::ToString(value));
 }
 
 // Advanced
@@ -1753,9 +1720,7 @@ void Detector::writeAdcRegister(uint32_t addr, uint32_t value, Positions pos) {
     pimpl->Parallel(&Module::writeAdcRegister, pos, addr, value);
 }
 
-bool Detector::getInitialChecks() const {
-    return pimpl->getInitialChecks();
-}
+bool Detector::getInitialChecks() const { return pimpl->getInitialChecks(); }
 
 void Detector::setInitialChecks(const bool value) {
     pimpl->setInitialChecks(value);

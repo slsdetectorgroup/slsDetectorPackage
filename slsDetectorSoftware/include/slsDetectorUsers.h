@@ -1,26 +1,22 @@
 #pragma once
 
-//class detectorData;
-namespace sls
-{
-	class Detector;
-} 
+// class detectorData;
+namespace sls {
+class Detector;
+}
 #include <memory>
-
-
 
 class slsDetectorUsers {
 
-public:
-
-	/**
+  public:
+    /**
      * @param shm_id detector shared memory id
      * Default value is 0. Can be set to more values for
      * multiple detectors.It is important only if you
      * are controlling multiple detectors from the same pc.
      */
-	slsDetectorUsers(int shm_id = 0);
-	~slsDetectorUsers();
+    slsDetectorUsers(int shm_id = 0);
+    ~slsDetectorUsers();
 
     /**************************************************
      *                                                *
@@ -28,384 +24,437 @@ public:
      *                                                *
      * ************************************************/
 
-	void readConfigurationFile(const std::string& fname);
+    void readConfigurationFile(const std::string &fname);
 
     /** Gets the total number of detectors */
-    int size() const;	
+    int size() const;
 
+    // /**
+    //  * Returns the size  of detector/multi detector
+    //  * @param nx number of channels in horiziontal
+    //  * @param ny number of channels in vertical
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns the total number of channels of all sls detectors
+    //  */
+    // int getDetectorSize(int &nx, int &ny, int detPos);
 
-	// /**
-	//  * Returns the size  of detector/multi detector
-	//  * @param nx number of channels in horiziontal
-	//  * @param ny number of channels in vertical
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns the total number of channels of all sls detectors
-	//  */
-	// int getDetectorSize(int &nx, int &ny, int detPos);
+    // /**
+    //  * Gets detector type
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns detector type (EIGER, JUNGFRAU, GOTTHARD) slsDetectorDefs
+    //  */
+    // std::string getDetectorType(int detPos = -1);
 
-	// /**
-	//  * Gets detector type
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns detector type (EIGER, JUNGFRAU, GOTTHARD) slsDetectorDefs
-	//  */
-	// std::string getDetectorType(int detPos = -1);
+    // /**
+    //  * Write current configuration to a file (for one time detector setup)
+    //  * @param fname configuration file name
+    //  */
+    // void writeConfigurationFile(const std::string& fname);
 
-	// /**
-	//  * Write current configuration to a file (for one time detector setup)
-	//  * @param fname configuration file name
-	//  */
-	// void writeConfigurationFile(const std::string& fname);
+    // /**
+    //  * Loads the detector setup from file (current measurement setup)
+    //  * @param fname file to read from
+    //  * @returns OK or FAIL
+    //  */
+    // int retrieveDetectorSetup(const std::string& fname);
 
-	// /**
-	//  * Loads the detector setup from file (current measurement setup)
-	//  * @param fname file to read from
-	//  * @returns OK or FAIL
-	//  */
-	// int retrieveDetectorSetup(const std::string& fname);
+    // /**
+    //  * Saves the detector setup to file (currentmeasurement setup)
+    //  * @param fname file to write to
+    //  * @returns OK or FAIL
+    //  */
+    // int dumpDetectorSetup(const std::string& fname);
 
-	// /**
-	//  * Saves the detector setup to file (currentmeasurement setup)
-	//  * @param fname file to write to
-	//  * @returns OK or FAIL
-	//  */
-	// int dumpDetectorSetup(const std::string& fname);
+    // /**
+    //  * Get detector firmware version
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns detector firmware version
+    //  */
+    // int64_t getDetectorFirmwareVersion(int detPos = -1);
 
-	// /**
-	//  * Get detector firmware version
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns detector firmware version
-	//  */
-	// int64_t getDetectorFirmwareVersion(int detPos = -1);
+    // /**
+    //  * Get detector serial number or MAC
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns detector serial number or MAC
+    //  */
+    // int64_t getDetectorSerialNumber(int detPos = -1);
 
-	// /**
-	//  * Get detector serial number or MAC
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns detector serial number or MAC
-	//  */
-	// int64_t getDetectorSerialNumber(int detPos = -1);
+    // /**
+    //  * Get on-board detector server software version
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns  on-board detector server software version
+    //  */
+    // int64_t getDetectorSoftwareVersion(int detPos = -1);
 
-	// /**
-	//  * Get on-board detector server software version
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns  on-board detector server software version
-	//  */
-	// int64_t getDetectorSoftwareVersion(int detPos = -1);
+    // /**
+    //  * (previously getThisSoftwareVersion)
+    //  * Get client software version
+    //  * @returns client software version
+    //  */
+    // int64_t getClientSoftwareVersion();
 
-	// /**
-	//  * (previously getThisSoftwareVersion)
-	//  * Get client software version
-	//  * @returns client software version
-	//  */
-	// int64_t getClientSoftwareVersion();
+    // /**
+    //  * Get receiver software version
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns receiver software version
+    //  */
+    // int64_t getReceiverSoftwareVersion(int detPos = -1);
 
-	// /**
-	//  * Get receiver software version
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns receiver software version
-	//  */
-	// int64_t getReceiverSoftwareVersion(int detPos = -1);
+    // /**
+    //  * Check Detector Version Compatibility
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  */
+    // void isDetectorVersionCompatible(int detPos = -1);
 
-	// /**
-	//  * Check Detector Version Compatibility
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  */
-	// void isDetectorVersionCompatible(int detPos = -1);
+    // /**
+    //  * Check Receiver Version Compatibility
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  */
+    // void isReceiverVersionCompatible(int detPos = -1);
 
-	// /**
-	//  * Check Receiver Version Compatibility
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  */
-	// void isReceiverVersionCompatible(int detPos = -1);
+    // /**
+    //  * Performs a complete acquisition
+    //  * resets frames caught in receiver, starts receiver, starts detector,
+    //  * blocks till detector finished acquisition, stop receiver, increments
+    //  file index,
+    //  * loops for measurements, calls required call backs.
+    //  * @returns OK or FAIL depending on if it already started
+    //  */
+    // int startMeasurement();
 
-	// /**
-	//  * Performs a complete acquisition
-	//  * resets frames caught in receiver, starts receiver, starts detector,
-	//  * blocks till detector finished acquisition, stop receiver, increments file index,
-	//  * loops for measurements, calls required call backs.
-	//  * @returns OK or FAIL depending on if it already started
-	//  */
-	// int startMeasurement();
+    // /**
+    //  * Stop detector acquisition
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  */
+    // void stopMeasurement(int detPos = -1);
 
-	// /**
-	//  * Stop detector acquisition
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  */
-	// void stopMeasurement(int detPos = -1);
+    // /**
+    //  * Get Detector run status
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns status
+    //  */
+    // int getDetectorStatus(int detPos = -1);
 
-	// /**
-	//  * Get Detector run status
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns status
-	//  */
-	// int getDetectorStatus(int detPos = -1);
+    // /**
+    //  * (Advanced user, included in startMeasurement)
+    //  * Start detector acquisition (Non blocking)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  */
+    // void startAcquisition(int detPos = -1);
 
-	// /**
-	//  * (Advanced user, included in startMeasurement)
-	//  * Start detector acquisition (Non blocking)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  */
-	// void startAcquisition(int detPos = -1);
+    // /**
+    //  * Stop detector acquisition (Same as stopMeasurement)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  */
+    // void stopAcquisition(int detPos = -1);
 
-	// /**
-	//  * Stop detector acquisition (Same as stopMeasurement)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  */
-	// void stopAcquisition(int detPos = -1);
+    // /**
+    //  * (Only in non blocking acquire mode)
+    //  * Give an internal software trigger to the detector (Eiger)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  */
+    // void sendSoftwareTrigger(int detPos = -1);
 
-	// /**
-	//  * (Only in non blocking acquire mode)
-	//  * Give an internal software trigger to the detector (Eiger)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  */
-	// void sendSoftwareTrigger(int detPos = -1);
+    // /**
+    //  * Set Rate correction ( Eiger)
+    //  * @param t (1) enable rate correction to default dead time,
+    //  * (0) disable rate correction, (-1) gets
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns rate correction tau
+    //  */
+    // int enableCountRateCorrection(int i = -1, int detPos = -1);
 
-	// /**
-	//  * Set Rate correction ( Eiger)
-	//  * @param t (1) enable rate correction to default dead time,
-	//  * (0) disable rate correction, (-1) gets
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns rate correction tau
-	//  */
-	// int enableCountRateCorrection(int i = -1, int detPos = -1);
+    // /**
+    //  * Set/get dynamic range
+    //  * @param i dynamic range (-1 get)
+    //  * Options: Eiger(4, 8, 16, 32), Jungfrau(16), Gotthard(16)
+    //  * Background operation:
+    //  * (Eiger: If i is 32, also sets clkdivider to 2, if 16, sets clkdivider
+    //  to 1)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns current dynamic range
+    //  */
+    // int setBitDepth(int i = -1, int detPos = -1);
 
-	// /**
-	//  * Set/get dynamic range
-	//  * @param i dynamic range (-1 get)
-	//  * Options: Eiger(4, 8, 16, 32), Jungfrau(16), Gotthard(16)
-	//  * Background operation:
-	//  * (Eiger: If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to 1)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns current dynamic range
-	//  */
-	// int setBitDepth(int i = -1, int detPos = -1);
+    // /**
+    //  * Set detector settings
+    //  * (Eiger only stores in shared memory. A get will overwrite this. One
+    //  must use set threshold energy)
+    //  * @param isettings settings (-1 gets)
+    //  * Options: (slsDetectorDefs::detectorSettings)
+    //  * Eiger (STANDARD, HIGHGAIN, LOWGAIN, VERYHIGHGAIN, VERYLOWGAIN)
+    //  * Jungfrau (DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1,
+    //  FORCESWITCHG2)
+    //  * Gotthard (DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns current settings (can also return UNDEFINED, UNINITIALIZED)
+    //  */
+    // int setSettings(int isettings = -1, int detPos = -1);
 
-	// /**
-	//  * Set detector settings
-	//  * (Eiger only stores in shared memory. A get will overwrite this. One must use set threshold energy)
-	//  * @param isettings settings (-1 gets)
-	//  * Options: (slsDetectorDefs::detectorSettings)
-	//  * Eiger (STANDARD, HIGHGAIN, LOWGAIN, VERYHIGHGAIN, VERYLOWGAIN)
-	//  * Jungfrau (DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2)
-	//  * Gotthard (DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns current settings (can also return UNDEFINED, UNINITIALIZED)
-	//  */
-	// int setSettings(int isettings = -1, int detPos = -1);
+    // /**
+    //  * Get threshold energy (Eiger)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns current threshold value
+    //  */
+    // int getThresholdEnergy(int detPos = -1);
 
-	// /**
-	//  * Get threshold energy (Eiger)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns current threshold value
-	//  */
-	// int getThresholdEnergy(int detPos = -1);
+    // /**
+    //  * Set threshold energy (Eiger)
+    //  * @param e_eV threshold in eV
+    //  * @param tb 1 to load trimbits, 0 to exclude trimbits
+    //  * @param isettings settings (-1 current settings)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns current threshold value
+    //  */
+    // int setThresholdEnergy(int e_ev, int tb = 1, int isettings = -1, int
+    // detPos = -1);
 
-	// /**
-	//  * Set threshold energy (Eiger)
-	//  * @param e_eV threshold in eV
-	//  * @param tb 1 to load trimbits, 0 to exclude trimbits
-	//  * @param isettings settings (-1 current settings)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns current threshold value
-	//  */
-	// int setThresholdEnergy(int e_ev, int tb = 1, int isettings = -1, int detPos = -1);
+    // /**
+    //  * Set/get exposure time
+    //  * @param t time (-1 gets)
+    //  * @param inseconds true if the value is in s, else ns
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns exposure time in ns, or s if specified
+    //  */
+    // double setExposureTime(double t = -1, bool inseconds = false, int detPos
+    // = -1);
 
-	// /**
-	//  * Set/get exposure time
-	//  * @param t time (-1 gets)
-	//  * @param inseconds true if the value is in s, else ns
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns exposure time in ns, or s if specified
-	//  */
-	// double setExposureTime(double t = -1, bool inseconds = false, int detPos = -1);
+    // /**
+    //  * Set/get exposure period
+    //  * @param t time (-1 gets)
+    //  * @param inseconds true if the value is in s, else ns
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns exposure period in ns, or s if specified
+    //  */
+    // double setExposurePeriod(double t = -1, bool inseconds = false, int
+    // detPos = -1);
 
-	// /**
-	//  * Set/get exposure period
-	//  * @param t time (-1 gets)
-	//  * @param inseconds true if the value is in s, else ns
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns exposure period in ns, or s if specified
-	//  */
-	// double setExposurePeriod(double t = -1, bool inseconds = false, int detPos = -1);
+    // /**
+    //  * Set/get delay after trigger (Gotthard, Jungfrau(not for this release))
+    //  * @param t time (-1 gets)
+    //  * @param inseconds true if the value is in s, else ns
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns delay after trigger in ns, or s if specified
+    //  */
+    // double setDelayAfterTrigger(double t = -1, bool inseconds = false, int
+    // detPos = -1);
 
-	// /**
-	//  * Set/get delay after trigger (Gotthard, Jungfrau(not for this release))
-	//  * @param t time (-1 gets)
-	//  * @param inseconds true if the value is in s, else ns
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns delay after trigger in ns, or s if specified
-	//  */
-	// double setDelayAfterTrigger(double t = -1, bool inseconds = false, int detPos = -1);
+    // /**
+    //  * (Advanced users)
+    //  * Set/get sub frame exposure time (Eiger in 32 bit mode)
+    //  * @param t time (-1 gets)
+    //  * @param inseconds true if the value is in s, else ns
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns sub frame exposure time in ns, or s if specified
+    //  */
+    // double setSubFrameExposureTime(double t = -1, bool inseconds = false, int
+    // detPos = -1);
 
-	// /**
-	//  * (Advanced users)
-	//  * Set/get sub frame exposure time (Eiger in 32 bit mode)
-	//  * @param t time (-1 gets)
-	//  * @param inseconds true if the value is in s, else ns
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns sub frame exposure time in ns, or s if specified
-	//  */
-	// double setSubFrameExposureTime(double t = -1, bool inseconds = false, int detPos = -1);
+    // /**
+    //  *  (Advanced users)
+    //  * Set/get sub frame dead time (Eiger in 32 bit mode)
+    //  * @param t time (-1 gets)
+    //  * @param inseconds true if the value is in s, else ns
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns sub frame dead time in ns, or s if specified
+    //  */
+    // double setSubFrameExposureDeadTime(double t = -1, bool inseconds = false,
+    // int detPos = -1);
 
-	// /**
-	//  *  (Advanced users)
-	//  * Set/get sub frame dead time (Eiger in 32 bit mode)
-	//  * @param t time (-1 gets)
-	//  * @param inseconds true if the value is in s, else ns
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns sub frame dead time in ns, or s if specified
-	//  */
-	// double setSubFrameExposureDeadTime(double t = -1, bool inseconds = false, int detPos = -1);
+    // /**
+    //  * Set/get number of frames
+    //  * @param t number of frames (-1 gets)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns number of frames
+    //  */
+    // int64_t setNumberOfFrames(int64_t t = -1, int detPos = -1);
 
-	// /**
-	//  * Set/get number of frames
-	//  * @param t number of frames (-1 gets)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns number of frames
-	//  */
-	// int64_t setNumberOfFrames(int64_t t = -1, int detPos = -1);
+    // /**
+    //  * Set/get number of triggers
+    //  * @param t number of triggers (-1 gets)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns number of triggers
+    //  */
+    // int64_t setNumberOfTriggers(int64_t t = -1, int detPos = -1);
 
-	// /**
-	//  * Set/get number of triggers
-	//  * @param t number of triggers (-1 gets)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns number of triggers
-	//  */
-	// int64_t setNumberOfTriggers(int64_t t = -1, int detPos = -1);
+    // /**
+    //  * Set/get number of additional storage cells  (Jungfrau)
+    //  * @param t number of additional storage cells. Default is 0.  (-1 gets)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns number of additional storage cells
+    //  */
+    // int64_t setNumberOfStorageCells(int64_t t = -1, int detPos = -1);
 
-	// /**
-	//  * Set/get number of additional storage cells  (Jungfrau)
-	//  * @param t number of additional storage cells. Default is 0.  (-1 gets)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns number of additional storage cells
-	//  */
-	// int64_t setNumberOfStorageCells(int64_t t = -1, int detPos = -1);
+    // /**
+    //  * Get measured period between previous two frames (EIGER)
+    //  * @param t time (-1 gets)
+    //  * @param inseconds true if the value is in s, else ns
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns sub frame dead time in ns, or s if specified
+    //  */
+    // double getMeasuredPeriod(bool inseconds = false, int detPos = -1);
 
-	// /**
-	//  * Get measured period between previous two frames (EIGER)
-	//  * @param t time (-1 gets)
-	//  * @param inseconds true if the value is in s, else ns
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns sub frame dead time in ns, or s if specified
-	//  */
-	// double getMeasuredPeriod(bool inseconds = false, int detPos = -1);
+    // /**
+    //  * Get sub period between previous two sub frames in 32 bit mode (EIGER)
+    //  * @param t time (-1 gets)
+    //  * @param inseconds true if the value is in s, else ns
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns sub frame dead time in ns, or s if specified
+    //  */
+    // double getMeasuredSubFramePeriod(bool inseconds = false, int detPos =
+    // -1);
 
-	// /**
-	//  * Get sub period between previous two sub frames in 32 bit mode (EIGER)
-	//  * @param t time (-1 gets)
-	//  * @param inseconds true if the value is in s, else ns
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns sub frame dead time in ns, or s if specified
-	//  */
-	// double getMeasuredSubFramePeriod(bool inseconds = false, int detPos = -1);
+    // /**
+    //  * Set/get timing mode
+    //  * @param pol timing mode (-1 gets)
+    //  * Options (slsDetectorDefs::timingMode)
+    //  * (Eiger: AUTO_TIMING, TRIGGER_EXPOSURE, BURST_TRIGGER, GATED)
+    //  * (Jungfrau: AUTO_TIMING, TRIGGER_EXPOSURE)
+    //  * (Gotthard: AUTO_TIMING, TRIGGER_EXPOSURE)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns current timing mode
+    //  */
+    // int setTimingMode(int pol = -1, int detPos = -1);
 
-	// /**
-	//  * Set/get timing mode
-	//  * @param pol timing mode (-1 gets)
-	//  * Options (slsDetectorDefs::timingMode)
-	//  * (Eiger: AUTO_TIMING, TRIGGER_EXPOSURE, BURST_TRIGGER, GATED)
-	//  * (Jungfrau: AUTO_TIMING, TRIGGER_EXPOSURE)
-	//  * (Gotthard: AUTO_TIMING, TRIGGER_EXPOSURE)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns current timing mode
-	//  */
-	// int setTimingMode(int pol = -1, int detPos = -1);
+    // /**
+    //  * Sets clock speed of the detector (Eiger, Jungfrau)
+    //  * (Jungfrau also writes adcphase to recommended default)
+    //  * (Eiger: 0(full speed not for 32 bit mode), 1 (half speed), 2(quarter
+    //  speed))
+    //  * (Jungfrau: 0(full speed not implemented), 1(half speed), 2(quarter
+    //  speed))
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns clock speed
+    //  */
+    // int setClockDivider(int value, int detPos = -1);
 
-	// /**
-	//  * Sets clock speed of the detector (Eiger, Jungfrau)
-	//  * (Jungfrau also writes adcphase to recommended default)
-	//  * (Eiger: 0(full speed not for 32 bit mode), 1 (half speed), 2(quarter speed))
-	//  * (Jungfrau: 0(full speed not implemented), 1(half speed), 2(quarter speed))
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns clock speed
-	//  */
-	// int setClockDivider(int value, int detPos = -1);
+    // /**
+    //  * Set parallel readout mode (Eiger)
+    //  * @param value readout mode (-1 gets)
+    //  * false for NonParallel (Default), true for Parallel
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns 1 for parallel, 0 for non parallel, -1 if different
+    //  */
+    // int setParallelMode(bool value, int detPos = -1);
 
-	// /**
-	//  * Set parallel readout mode (Eiger)
-	//  * @param value readout mode (-1 gets)
-	//  * false for NonParallel (Default), true for Parallel
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns 1 for parallel, 0 for non parallel, -1 if different
-	//  */
-	// int setParallelMode(bool value, int detPos = -1);
+    // /**
+    //  * Set overflow readout mode (Eiger in 32 bit)
+    //  * @param value readout mode (-1 gets)
+    //  * Options: true to Show overflow, false to not show overflow
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns 1 for overflow, 0 for no overflow, -1 if different
+    //  */
+    // int setOverflowMode(bool value, int detPos = -1);
 
-	// /**
-	//  * Set overflow readout mode (Eiger in 32 bit)
-	//  * @param value readout mode (-1 gets)
-	//  * Options: true to Show overflow, false to not show overflow
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns 1 for overflow, 0 for no overflow, -1 if different
-	//  */
-	// int setOverflowMode(bool value, int detPos = -1);
+    // /**
+    //  * (Advanced user)
+    //  * Sets all the trimbits to a particular value (Eiger)
+    //  * @param val trimbit value
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns OK or FAIL
+    //  */
+    // int setAllTrimbits(int val, int detPos = -1);
 
-	// /**
-	//  * (Advanced user)
-	//  * Sets all the trimbits to a particular value (Eiger)
-	//  * @param val trimbit value
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns OK or FAIL
-	//  */
-	// int setAllTrimbits(int val, int detPos = -1);
+    // /**
+    //  * (Advanced user)
+    //  * Set/get dacs value
+    //  * @param val value (in V) (-1 gets)
+    //  * @param index DAC index
+    //  * Options: slsDetectorDefs::dacIndex
+    //  * (Eiger: SVP up to IO_DELAY, THRESHOLD, HIGH_VOLTAGE)
+    //  * (Jungfrau: 0-7)
+    //  * (Gotthard: VREF_DS up to IB_TESTC, HIGH_VOLTAGE)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns current DAC value
+    //  */
+    // int setDAC(int val, int index , int detPos = -1);
 
-	// /**
-	//  * (Advanced user)
-	//  * Set/get dacs value
-	//  * @param val value (in V) (-1 gets)
-	//  * @param index DAC index
-	//  * Options: slsDetectorDefs::dacIndex
-	//  * (Eiger: SVP up to IO_DELAY, THRESHOLD, HIGH_VOLTAGE)
-	//  * (Jungfrau: 0-7)
-	//  * (Gotthard: VREF_DS up to IB_TESTC, HIGH_VOLTAGE)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns current DAC value
-	//  */
-	// int setDAC(int val, int index , int detPos = -1);
+    // /**
+    //  * Get adc value
+    //  * @param index adc(DAC) index
+    //  * Options: slsDetectorDefs::dacIndex
+    //  * (Eiger: TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT upto TEMPERATURE_FPGA3)
+    //  * (Jungfrau: TEMPERATURE_FPGA)
+    //  * (Gotthard: TEMPERATURE_ADC, TEMPERATURE_FPGA)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns current adc value (temperature for eiger and jungfrau in
+    //  millidegrees)
+    //  */
+    // int getADC(int index, int detPos = -1);
 
-	// /**
-	//  * Get adc value
-	//  * @param index adc(DAC) index
-	//  * Options: slsDetectorDefs::dacIndex
-	//  * (Eiger: TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT upto TEMPERATURE_FPGA3)
-	//  * (Jungfrau: TEMPERATURE_FPGA)
-	//  * (Gotthard: TEMPERATURE_ADC, TEMPERATURE_FPGA)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns current adc value (temperature for eiger and jungfrau in millidegrees)
-	//  */
-	// int getADC(int index, int detPos = -1);
+    // /**
+    //  * Enable/disable or 10Gbe (Eiger)
+    //  * @param i is -1 to get, 0 to disable and 1 to enable
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns if 10Gbe is enabled
+    //  */
+    // int setTenGigabitEthernet(int i = -1, int detPos = -1);
 
-	// /**
-	//  * Enable/disable or 10Gbe (Eiger)
-	//  * @param i is -1 to get, 0 to disable and 1 to enable
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns if 10Gbe is enabled
-	//  */
-	// int setTenGigabitEthernet(int i = -1, int detPos = -1);
+    // /**
+    //  * Set storage cell that stores first acquisition of the series
+    //  (Jungfrau)
+    //  * @param value storage cell index. Value can be 0 to 15. (-1 gets)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns the storage cell that stores the first acquisition of the
+    //  series
+    //  */
+    // int setStoragecellStart(int pos=-1, int detPos = -1);
 
-	// /**
-	//  * Set storage cell that stores first acquisition of the series (Jungfrau)
-	//  * @param value storage cell index. Value can be 0 to 15. (-1 gets)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns the storage cell that stores the first acquisition of the series
-	//  */
-	// int setStoragecellStart(int pos=-1, int detPos = -1);
+    // /**
+    //  * set high voltage (Gotthard, Jungfrau, Eiger)
+    //  * @param i > 0 sets, 0 unsets, (-1 gets)
+    //  * (Eiger: )
+    //  * (Jungfrau: )
+    //  * (Gotthard: )
+    //  * @returns high voltage
+    //  */
+    // int setHighVoltage(int i = -1, int detPos = -1);
 
-	// /**
-	//  * set high voltage (Gotthard, Jungfrau, Eiger)
-	//  * @param i > 0 sets, 0 unsets, (-1 gets)
-	//  * (Eiger: )
-	//  * (Jungfrau: )
-	//  * (Gotthard: )
-	//  * @returns high voltage
-	//  */
-	// int setHighVoltage(int i = -1, int detPos = -1);
-
-	// /**
-	//  * Set 10GbE Flow Control (Eiger and Jungfrau)
-	//  * @param enable 1 to set, 0 to unset, -1 gets
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns 10GbE flow Control
-	//  */
-	// int setFlowControl10G(int enable = -1, int detPos = -1);
+    // /**
+    //  * Set 10GbE Flow Control (Eiger and Jungfrau)
+    //  * @param enable 1 to set, 0 to unset, -1 gets
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns 10GbE flow Control
+    //  */
+    // int setFlowControl10G(int enable = -1, int detPos = -1);
 
     // /**
     //  * Set ROI (Gotthard)
@@ -416,7 +465,6 @@ public:
     //  */
     // void setROI(slsDetectorDefs::ROI arg, int detPos = -1);
 
-
     // /**
     //  * Get ROI  (Gotthard)
     //  * Only allowed to set one ROI per module
@@ -425,380 +473,438 @@ public:
     //  */
     // slsDetectorDefs::ROI getROI(int detPos = -1);
 
-
-
-	// /************************************************************************
+    // /************************************************************************
 
     //                         RECEIVER FUNCTIONS
 
-	//  *********************************************************************/
+    //  *********************************************************************/
 
-	// /**
-	//  * (Advanced user, included in startMeasurement)
-	//  * Receiver starts listening to packets
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  */
-	// void startReceiver(int detPos = -1);
+    // /**
+    //  * (Advanced user, included in startMeasurement)
+    //  * Receiver starts listening to packets
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  */
+    // void startReceiver(int detPos = -1);
 
-	// /**
-	//  * (Advanced user, included in startMeasurement)
-	//  * Stops the listening mode of receiver
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  */
-	// void stopReceiver(int detPos = -1);
+    // /**
+    //  * (Advanced user, included in startMeasurement)
+    //  * Stops the listening mode of receiver
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  */
+    // void stopReceiver(int detPos = -1);
 
-	// /**
-	//  * Set/get receiver silent mode
-	//  * @param i is -1 to get, 0 unsets silent mode, 1 sets silent mode
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns the receiver silent mode enable
-	//  */
-	// int setReceiverSilentMode(int i = -1, int detPos = -1);
+    // /**
+    //  * Set/get receiver silent mode
+    //  * @param i is -1 to get, 0 unsets silent mode, 1 sets silent mode
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns the receiver silent mode enable
+    //  */
+    // int setReceiverSilentMode(int i = -1, int detPos = -1);
 
-	// /**
-	//  * (Advanced user, included in startMeasurement)
-	//  * Resets framescaught in receiver
-	//  * Use this when using startAcquisition instead of acquire
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  */
-	// void resetFramesCaughtInReceiver(int detPos = -1);
+    // /**
+    //  * (Advanced user, included in startMeasurement)
+    //  * Resets framescaught in receiver
+    //  * Use this when using startAcquisition instead of acquire
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  */
+    // void resetFramesCaughtInReceiver(int detPos = -1);
 
-	// /**
-	//  * (Advanced user)
-	//  * Set/get receiver fifo depth
-	//  * @param i is -1 to get, any other value to set the fifo deph
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns the receiver fifo depth
-	//  */
-	// int setReceiverFifoDepth(int i = -1, int detPos = -1);
+    // /**
+    //  * (Advanced user)
+    //  * Set/get receiver fifo depth
+    //  * @param i is -1 to get, any other value to set the fifo deph
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns the receiver fifo depth
+    //  */
+    // int setReceiverFifoDepth(int i = -1, int detPos = -1);
 
-	// /**
-	//  * Returns output file directory
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns output file directory
-	//  */
-	// std::string getFilePath(int detPos = -1);
+    // /**
+    //  * Returns output file directory
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns output file directory
+    //  */
+    // std::string getFilePath(int detPos = -1);
 
-	// /**
-	//  * Sets up the file directory
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @param s file directory
-	//  * @returns file dir
-	//  */
-	// std::string setFilePath(const std::string& s, int detPos = -1);
+    // /**
+    //  * Sets up the file directory
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @param s file directory
+    //  * @returns file dir
+    //  */
+    // std::string setFilePath(const std::string& s, int detPos = -1);
 
-	// /**
-	//  * Returns file name prefix
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns file name prefix
-	//  */
-	// std::string getFileName(int detPos = -1);
+    // /**
+    //  * Returns file name prefix
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns file name prefix
+    //  */
+    // std::string getFileName(int detPos = -1);
 
-	// /**
-	//  * Sets up the file name prefix
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @param s file name prefix
-	//  * @returns file name prefix
-	//  */
-	// std::string setFileName(const std::string& s, int detPos = -1);
+    // /**
+    //  * Sets up the file name prefix
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @param s file name prefix
+    //  * @returns file name prefix
+    //  */
+    // std::string setFileName(const std::string& s, int detPos = -1);
 
-	// /**
-	//  * Returns file index
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns file index
-	//  */
-	// int getFileIndex(int detPos = -1);
+    // /**
+    //  * Returns file index
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns file index
+    //  */
+    // int getFileIndex(int detPos = -1);
 
-	// /**
-	//  * Sets up the file index
-	//  * @param i file index
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns file index
-	//  */
-	// int setFileIndex(int i, int detPos = -1);
+    // /**
+    //  * Sets up the file index
+    //  * @param i file index
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns file index
+    //  */
+    // int setFileIndex(int i, int detPos = -1);
 
-	// /**
-	//  * Sets/Gets receiver file write enable
-	//  * @param enable 1 or 0 to set/reset file write enable
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns file write enable
-	//  */
-	// int enableWriteToFile(int enable = -1, int detPos = -1);
+    // /**
+    //  * Sets/Gets receiver file write enable
+    //  * @param enable 1 or 0 to set/reset file write enable
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns file write enable
+    //  */
+    // int enableWriteToFile(int enable = -1, int detPos = -1);
 
-	// /**
-	//  * Sets/Gets file overwrite enable
-	//  * @param enable 1 or 0 to set/reset file overwrite enable
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns file overwrite enable
-	//  */
-	// int enableOverwriteFile(int enable = -1, int detPos = -1);
+    // /**
+    //  * Sets/Gets file overwrite enable
+    //  * @param enable 1 or 0 to set/reset file overwrite enable
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns file overwrite enable
+    //  */
+    // int enableOverwriteFile(int enable = -1, int detPos = -1);
 
-	// /**
-	//  * (previously setReceiverMode)
-	//  * Sets the receiver streaming frequency
-	//  * @param freq nth frame streamed out, if 0, streamed out at a timer of 200 ms
-	//  * frames in between are not streamed
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns receiver streaming frequency
-	//  */
-	// int setReceiverStreamingFrequency(int freq = -1, int detPos = -1);
+    // /**
+    //  * (previously setReceiverMode)
+    //  * Sets the receiver streaming frequency
+    //  * @param freq nth frame streamed out, if 0, streamed out at a timer of
+    //  200 ms
+    //  * frames in between are not streamed
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns receiver streaming frequency
+    //  */
+    // int setReceiverStreamingFrequency(int freq = -1, int detPos = -1);
 
-	// /**
-	//  * Sets the receiver streaming timer
-	//  * If receiver streaming frequency is 0, then this timer between each
-	//  * data stream is set. Default is 200 ms.
-	//  * @param time_in_ms timer between frames
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns receiver streaming timer in ms
-	//  */
-	// int setReceiverStreamingTimer(int time_in_ms=500, int detPos = -1);
+    // /**
+    //  * Sets the receiver streaming timer
+    //  * If receiver streaming frequency is 0, then this timer between each
+    //  * data stream is set. Default is 200 ms.
+    //  * @param time_in_ms timer between frames
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns receiver streaming timer in ms
+    //  */
+    // int setReceiverStreamingTimer(int time_in_ms=500, int detPos = -1);
 
-	// /**
-	//  * Enable data streaming to client (data call back in client processing thread)
-	//  * @param enable 0 to disable, 1 to enable, -1 to get the value
-	//  * @returns data streaming to client enable
-	//  */
-	// int enableDataStreamingToClient(int enable=-1);
+    // /**
+    //  * Enable data streaming to client (data call back in client processing
+    //  thread)
+    //  * @param enable 0 to disable, 1 to enable, -1 to get the value
+    //  * @returns data streaming to client enable
+    //  */
+    // int enableDataStreamingToClient(int enable=-1);
 
-	// /**
-	//  * Enable or disable streaming data from receiver (starts streaming threads)
-	//  * @param enable 0 to disable 1 to enable -1 to only get the value
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns data streaming from receiver enable
-	//  */
-	// int enableDataStreamingFromReceiver(int enable=-1, int detPos = -1);
+    // /**
+    //  * Enable or disable streaming data from receiver (starts streaming
+    //  threads)
+    //  * @param enable 0 to disable 1 to enable -1 to only get the value
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns data streaming from receiver enable
+    //  */
+    // int enableDataStreamingFromReceiver(int enable=-1, int detPos = -1);
 
-	// /**
-	//  * (advanced users)
-	//  * Set/Get receiver streaming out ZMQ port and restarts receiver sockets
-	//  * @param i sets, -1 gets
-	//  * If detPos is -1(multi module), port calculated (increments) for all the individual detectors using i
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns receiver streaming out ZMQ port (if multiple, of first receiver socket)
-	//  */
-	// int setReceiverDataStreamingOutPort(int i = -1, int detPos = -1);
+    // /**
+    //  * (advanced users)
+    //  * Set/Get receiver streaming out ZMQ port and restarts receiver sockets
+    //  * @param i sets, -1 gets
+    //  * If detPos is -1(multi module), port calculated (increments) for all
+    //  the individual detectors using i
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns receiver streaming out ZMQ port (if multiple, of first
+    //  receiver socket)
+    //  */
+    // int setReceiverDataStreamingOutPort(int i = -1, int detPos = -1);
 
-	// /**
-	//  * (advanced users)
-	//  * Set/Get client streaming in  ZMQ port and restarts client sockets
-	//  * @param i sets, -1 gets
-	//  * If detPos is -1(multi module), port calculated (increments) for all the individual detectors using i
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns receiver streaming out ZMQ port (if multiple, of first receiver socket)
-	//  */
-	// int setClientDataStreamingInPort(int i = -1, int detPos = -1);
+    // /**
+    //  * (advanced users)
+    //  * Set/Get client streaming in  ZMQ port and restarts client sockets
+    //  * @param i sets, -1 gets
+    //  * If detPos is -1(multi module), port calculated (increments) for all
+    //  the individual detectors using i
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns receiver streaming out ZMQ port (if multiple, of first
+    //  receiver socket)
+    //  */
+    // int setClientDataStreamingInPort(int i = -1, int detPos = -1);
 
-	// /**
-	//  * (advanced users)
-	//  * Set/Get receiver streaming out ZMQ IP and restarts receiver sockets
-	//  * @param i sets, empty string gets
-	//  * By default, it is the IP of receiver hostname
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns receiver streaming out ZMQ IP
-	//  */
-	// std::string setReceiverDataStreamingOutIP(const std::string& ip="", int detPos = -1);
+    // /**
+    //  * (advanced users)
+    //  * Set/Get receiver streaming out ZMQ IP and restarts receiver sockets
+    //  * @param i sets, empty string gets
+    //  * By default, it is the IP of receiver hostname
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns receiver streaming out ZMQ IP
+    //  */
+    // std::string setReceiverDataStreamingOutIP(const std::string& ip="", int
+    // detPos = -1);
 
-	// /**
-	//  * (advanced users)
-	//  * Set/Get client streaming in ZMQ IP and restarts client sockets
-	//  * @param i sets, empty string gets
-	//  * By default, it is the IP of receiver hostname
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns client streaming in ZMQ IP
-	//  */
-	// std::string setClientDataStreamingInIP(const std::string& ip = "", int detPos = -1);
+    // /**
+    //  * (advanced users)
+    //  * Set/Get client streaming in ZMQ IP and restarts client sockets
+    //  * @param i sets, empty string gets
+    //  * By default, it is the IP of receiver hostname
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns client streaming in ZMQ IP
+    //  */
+    // std::string setClientDataStreamingInIP(const std::string& ip = "", int
+    // detPos = -1);
 
-	// /**
-	//  * Enable gap pixels in receiver (Eiger for 8,16 and 32 bit mode)
-	//  * 4 bit mode gap pixels only in data call back in client
-	//  * @param val 1 sets, 0 unsets, -1 gets
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns gap pixel enable
-	//  */
-	// int enableGapPixels(int val=-1, int detPos = -1);
+    // /**
+    //  * Enable gap pixels in receiver (Eiger for 8,16 and 32 bit mode)
+    //  * 4 bit mode gap pixels only in data call back in client
+    //  * @param val 1 sets, 0 unsets, -1 gets
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns gap pixel enable
+    //  */
+    // int enableGapPixels(int val=-1, int detPos = -1);
 
-	// /**
-	//  * Sets the frame discard policy in receiver
-	//  * @param f frame discard policy (-1 gets)
-	//  * Options: (slsDetectorDefs::frameDiscardPolicy)
-	//  * (NO_DISCARD (default), DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES (fastest))
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns current frame discard policy
-	//  */
-	// int setReceiverFramesDiscardPolicy(int f = -1, int detPos = -1);
+    // /**
+    //  * Sets the frame discard policy in receiver
+    //  * @param f frame discard policy (-1 gets)
+    //  * Options: (slsDetectorDefs::frameDiscardPolicy)
+    //  * (NO_DISCARD (default), DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES
+    //  (fastest))
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns current frame discard policy
+    //  */
+    // int setReceiverFramesDiscardPolicy(int f = -1, int detPos = -1);
 
-	// /**
-	//  * Sets the frame padding in receiver
-	//  * @param f 0 does not partial frames, 1 pads partial frames (-1 gets)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns partial frames padding enable
-	//  */
-	// int setReceiverPartialFramesPadding(int f = -1, int detPos = -1);
+    // /**
+    //  * Sets the frame padding in receiver
+    //  * @param f 0 does not partial frames, 1 pads partial frames (-1 gets)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns partial frames padding enable
+    //  */
+    // int setReceiverPartialFramesPadding(int f = -1, int detPos = -1);
 
-	// /**
-	//  * Sets the frames per file in receiver
-	//  * @param f frames per file, 0 is infinite ie. every frame in same file (-1 gets)
-	//  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns frames per file
-	//  */
-	// int setReceiverFramesPerFile(int f = -1, int detPos = -1);
+    // /**
+    //  * Sets the frames per file in receiver
+    //  * @param f frames per file, 0 is infinite ie. every frame in same file
+    //  (-1 gets)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns frames per file
+    //  */
+    // int setReceiverFramesPerFile(int f = -1, int detPos = -1);
 
-	// /**
-	//  * Sets the detector minimum/maximum energy threshold in processor (for Moench only)
-	//  * @param index 0 for emin, antyhing else for emax
-	//  * @param v value to set (-1 gets)
-    //  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns detector minimum/maximum energy threshold
-	//  */
-	// int setDetectorMinMaxEnergyThreshold(const int index, int v, int detPos = -1);
+    // /**
+    //  * Sets the detector minimum/maximum energy threshold in processor (for
+    //  Moench only)
+    //  * @param index 0 for emin, antyhing else for emax
+    //  * @param v value to set (-1 gets)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns detector minimum/maximum energy threshold
+    //  */
+    // int setDetectorMinMaxEnergyThreshold(const int index, int v, int detPos =
+    // -1);
 
-	// /**
-	//  * Sets the frame mode in processor (Moench only)
-	//  * @param value frame mode value (-1 gets)
-	//  * Options (slsDetectorDefs::frameModeType)
-	//  * PEDESTAL, NEW_PEDESTAL, FLATFIELD, NEW_FLATFIELD
-    //  * @param detPos -1 for all detectors in  list or specific detector position
-	//  * @returns frame mode (-1 for not found or error in computing json parameter value)
-	//  */
-	// int setFrameMode(int value, int detPos = -1);
+    // /**
+    //  * Sets the frame mode in processor (Moench only)
+    //  * @param value frame mode value (-1 gets)
+    //  * Options (slsDetectorDefs::frameModeType)
+    //  * PEDESTAL, NEW_PEDESTAL, FLATFIELD, NEW_FLATFIELD
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns frame mode (-1 for not found or error in computing json
+    //  parameter value)
+    //  */
+    // int setFrameMode(int value, int detPos = -1);
 
     // /**
     //  * Sets the detector mode in processor (Moench only)
     //  * @param value detector mode value (-1 gets)
     //  * Options (slsDetectorDefs::detectorModeType)
     //  * COUNTING, INTERPOLATING, ANALOG
-    //  * @param detPos -1 for all detectors in  list or specific detector position
-    //  * @returns detector mode (-1 for not found or error in computing json parameter value)
+    //  * @param detPos -1 for all detectors in  list or specific detector
+    //  position
+    //  * @returns detector mode (-1 for not found or error in computing json
+    //  parameter value)
     //  */
     // int setDetectorMode(int value, int detPos = -1);
 
-	// /************************************************************************
+    // /************************************************************************
 
-	//                        CALLBACKS & COMMAND LINE PARSING
+    //                        CALLBACKS & COMMAND LINE PARSING
 
-	//  *********************************************************************/
+    //  *********************************************************************/
 
-	// /**
-	//  * register callback for accessing detector final data in client,
-	//  * also enables data streaming in client and receiver
-	//  * @param userCallback function for plotting/analyzing the data.
-	//  * Its arguments are
-	//  * the data structure d and the frame number f,
-	//  * s is for subframe number for eiger for 32 bit mode
-	//  * @param pArg argument
-	//  */
+    // /**
+    //  * register callback for accessing detector final data in client,
+    //  * also enables data streaming in client and receiver
+    //  * @param userCallback function for plotting/analyzing the data.
+    //  * Its arguments are
+    //  * the data structure d and the frame number f,
+    //  * s is for subframe number for eiger for 32 bit mode
+    //  * @param pArg argument
+    //  */
 
-	// void registerDataCallback(void( *userCallback)(detectorData* d, uint64_t f, uint32_t s, void*), void *pArg);
+    // void registerDataCallback(void( *userCallback)(detectorData* d, uint64_t
+    // f, uint32_t s, void*), void *pArg);
 
-	// /**
-	//  * register callback for accessing acquisition final data in client,
-	//  * @param func function to be called at the end of the acquisition.
-	//  * gets detector status and progress index as arguments
-	//  * @param pArg argument
-	//  */
-	// void registerAcquisitionFinishedCallback(void( *func)(double,int, void*), void *pArg);
+    // /**
+    //  * register callback for accessing acquisition final data in client,
+    //  * @param func function to be called at the end of the acquisition.
+    //  * gets detector status and progress index as arguments
+    //  * @param pArg argument
+    //  */
+    // void registerAcquisitionFinishedCallback(void( *func)(double,int, void*),
+    // void *pArg);
 
-	// /**
-    //  @short [usage strongly discouraged] sets parameters trough command line interface http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf
+    // /**
+    //  @short [usage strongly discouraged] sets parameters trough command line
+    //  interface
+    //  http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf
     //  \param command string as it would be written on the command line
     //  \returns void
-	//  */
-	// void putCommand(const std::string& command);
+    //  */
+    // void putCommand(const std::string& command);
 
-
-
-
-
-	// /************************************************************************
+    // /************************************************************************
 
     //                        STATIC FUNCTIONS
 
-	//  *********************************************************************/
+    //  *********************************************************************/
 
-	/** @short returns std::string from run status index
-      \param s run status index
-      \returns std::string error, waiting, running, data, finished or unknown when wrong index
-	 */
-/* 	static std::string runStatusType(int s){					\
-		switch (s) {							\
-		case 0:     return std::string("idle");					\
-		case 1:       return std::string("error");				\
-		case 2:      return  std::string("waiting");				\
-		case 3:      return std::string("finished");				\
-		case 4:      return std::string("data");					\
-		case 5:      return std::string("running");				\
-        case 6:      return std::string("stopped");             \
-		default:       return std::string("unknown");				\
-		}};
- */
+    /** @short returns std::string from run status index
+  \param s run status index
+  \returns std::string error, waiting, running, data, finished or unknown when
+  wrong index
+     */
+    /* 	static std::string runStatusType(int s){
+       \
+                    switch (s) {
+       \
+                    case 0:     return std::string("idle");
+       \
+                    case 1:       return std::string("error");
+       \
+                    case 2:      return  std::string("waiting");
+       \
+                    case 3:      return std::string("finished");
+       \
+                    case 4:      return std::string("data");
+       \
+                    case 5:      return std::string("running");
+       \
+            case 6:      return std::string("stopped");             \
+                    default:       return std::string("unknown");
+       \
+                    }};
+     */
 
+    /** @short returns detector settings std::string from index
+  \param s can be standard, fast, highgain, dynamicgain, lowgain, mediumgain,
+  veryhighgain \returns   setting index (-1 unknown std::string)
+     */
+    /*
+            static int getDetectorSettings(std::string s){		\
+                    if (s=="standard") return 0;			\
+                    if (s=="fast") return 1;				\
+                    if (s=="highgain") return 2;			\
+                    if (s=="dynamicgain") return 3;			\
+                    if (s=="lowgain") return 4;				\
+                    if (s=="mediumgain") return 5;			\
+                    if (s=="veryhighgain") return 6;			\
+                    return -1;				         }; */
 
-	/** @short returns detector settings std::string from index
-      \param s can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain
-      \returns   setting index (-1 unknown std::string)
-	 */
-/* 
-	static int getDetectorSettings(std::string s){		\
-		if (s=="standard") return 0;			\
-		if (s=="fast") return 1;				\
-		if (s=="highgain") return 2;			\
-		if (s=="dynamicgain") return 3;			\
-		if (s=="lowgain") return 4;				\
-		if (s=="mediumgain") return 5;			\
-		if (s=="veryhighgain") return 6;			\
-		return -1;				         }; */
+    /** @short returns detector settings std::string from index
+  \param s settings index
+  \returns standard, fast, highgain, dynamicgain, lowgain, mediumgain,
+  veryhighgain, undefined when wrong index
+     */
+    /* 	static std::string getDetectorSettings(int s){\
+                    switch(s) {						\
+                    case 0:      return std::string("standard");\
+                    case 1:      return std::string("fast");\
+                    case 2:      return std::string("highgain");\
+                    case 3:    return std::string("dynamicgain");	\
+                    case 4:    return std::string("lowgain");		\
+                    case 5:    return std::string("mediumgain");	\
+                    case 6:    return std::string("veryhighgain");
+       \
+                    default:    return std::string("undefined");
+       \
+                    }};
+     */
 
-	/** @short returns detector settings std::string from index
-      \param s settings index
-      \returns standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined when wrong index
-	 */
-/* 	static std::string getDetectorSettings(int s){\
-		switch(s) {						\
-		case 0:      return std::string("standard");\
-		case 1:      return std::string("fast");\
-		case 2:      return std::string("highgain");\
-		case 3:    return std::string("dynamicgain");	\
-		case 4:    return std::string("lowgain");		\
-		case 5:    return std::string("mediumgain");	\
-		case 6:    return std::string("veryhighgain");			\
-		default:    return std::string("undefined");			\
-		}};
- */
+    /**
+ @short returns external communication mode std::string from index
+ \param f index for communication mode
+ \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown when
+ wrong mode
+     */
 
+    /* 	static std::string getTimingMode(int f){	\
+                    switch(f) {						 \
+                    case 0:      return std::string( "auto"); \
+                    case 1: return std::string("trigger"); \
+                    case 2: return std::string("ro_trigger");
+       \
+                    case 3: return std::string("gating"); \
+                    case 4: return std::string("triggered_gating");	\
+                    case 5: return std::string("burst_trigger");	\
+                    default:    return std::string( "unknown");
+       \ }      };
+     */
+    /**
+ @short returns external communication mode std::string from index
+ \param s index for communication mode
+ \returns  auto, trigger, ro_trigger, gating, triggered_gating, burst_trigger,
+ unknown when wrong mode
+     */
 
-	/**
-     @short returns external communication mode std::string from index
-     \param f index for communication mode
-     \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown when wrong mode
-	 */
+    /* 	static int getTimingMode(std::string s){			\
+                    if (s== "auto") return 0;
+       \
+                    if (s== "trigger") return 1;
+       \
+                    if (s== "ro_trigger") return 2;
+       \
+                    if (s== "gating") return 3;
+       \
+                    if (s== "triggered_gating") return 4; \
+                    if (s== "burst_trigger") return 5; \ return -1;
+       };
 
-/* 	static std::string getTimingMode(int f){	\
-		switch(f) {						 \
-		case 0:      return std::string( "auto");			\
-		case 1: return std::string("trigger");			\
-		case 2: return std::string("ro_trigger");				\
-		case 3: return std::string("gating");			\
-		case 4: return std::string("triggered_gating");	\
-		case 5: return std::string("burst_trigger");	\
-		default:    return std::string( "unknown");				\
-		}      };
- */
-	/**
-     @short returns external communication mode std::string from index
-     \param s index for communication mode
-     \returns  auto, trigger, ro_trigger, gating, triggered_gating, burst_trigger, unknown when wrong mode
-	 */
-
-/* 	static int getTimingMode(std::string s){			\
-		if (s== "auto") return 0;						\
-		if (s== "trigger") return 1;					\
-		if (s== "ro_trigger") return 2;					\
-		if (s== "gating") return 3;						\
-		if (s== "triggered_gating") return 4;			\
-		if (s== "burst_trigger") return 5;				\
-		return -1;							};
-
- */
-private:
- 	std::unique_ptr<sls::Detector> detector;
+     */
+  private:
+    std::unique_ptr<sls::Detector> detector;
 };

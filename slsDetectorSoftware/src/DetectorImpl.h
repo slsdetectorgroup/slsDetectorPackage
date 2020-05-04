@@ -22,7 +22,7 @@ class detectorData;
 #include <future>
 #include <numeric>
 
-namespace sls{
+namespace sls {
 
 class Module;
 
@@ -74,7 +74,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @param update true to update last user pid, date etc
      */
     explicit DetectorImpl(int multi_id = 0, bool verify = true,
-                              bool update = true);
+                          bool update = true);
 
     /**
      * Destructor
@@ -87,8 +87,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) {
 
-        if (detectors.size() == 0) 
-            throw sls::RuntimeError("No detectors added");                      
+        if (detectors.size() == 0)
+            throw sls::RuntimeError("No detectors added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(detectors.size());
@@ -115,8 +115,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
                              std::vector<int> positions,
                              typename NonDeduced<CT>::type... Args) const {
 
-        if (detectors.size() == 0) 
-            throw sls::RuntimeError("No detectors added");  
+        if (detectors.size() == 0)
+            throw sls::RuntimeError("No detectors added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(detectors.size());
@@ -143,8 +143,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) {
 
-        if (detectors.size() == 0) 
-            throw sls::RuntimeError("No detectors added");  
+        if (detectors.size() == 0)
+            throw sls::RuntimeError("No detectors added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(detectors.size());
@@ -168,8 +168,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
                   std::vector<int> positions,
                   typename NonDeduced<CT>::type... Args) const {
 
-        if (detectors.size() == 0) 
-            throw sls::RuntimeError("No detectors added");  
+        if (detectors.size() == 0)
+            throw sls::RuntimeError("No detectors added");
         if (positions.empty() ||
             (positions.size() == 1 && positions[0] == -1)) {
             positions.resize(detectors.size());
@@ -188,21 +188,22 @@ class DetectorImpl : public virtual slsDetectorDefs {
         }
     }
 
-
     /** set acquiring flag in shared memory */
-    void setAcquiringFlag(bool flag); 
+    void setAcquiringFlag(bool flag);
 
     /** return multi detector shared memory ID */
     int getMultiId() const;
 
-    /** Free specific shared memory from the command line without creating object */
+    /** Free specific shared memory from the command line without creating
+     * object */
     static void freeSharedMemory(int multiId, int detPos = -1);
 
-    /** Free all modules from current multi Id shared memory and delete members */
-    void freeSharedMemory(); 
+    /** Free all modules from current multi Id shared memory and delete members
+     */
+    void freeSharedMemory();
 
     /** Get user details of shared memory */
-    std::string getUserDetails(); 
+    std::string getUserDetails();
 
     bool getInitialChecks() const;
 
@@ -217,19 +218,20 @@ class DetectorImpl : public virtual slsDetectorDefs {
      */
     void setVirtualDetectorServers(const int numdet, const int port);
 
-    /** Sets the hostname of all sls detectors in shared memory and updates local cache */
-    void setHostname(const std::vector<std::string> &name); 
+    /** Sets the hostname of all sls detectors in shared memory and updates
+     * local cache */
+    void setHostname(const std::vector<std::string> &name);
 
     /** Gets the total number of detectors */
     int size() const;
 
-    slsDetectorDefs::xy getNumberOfDetectors() const; 
+    slsDetectorDefs::xy getNumberOfDetectors() const;
 
-    slsDetectorDefs::xy getNumberOfChannels() const; 
+    slsDetectorDefs::xy getNumberOfChannels() const;
 
     /** Must be set before setting hostname
      * Sets maximum number of channels of all sls detectors */
-    void setNumberOfChannels(const slsDetectorDefs::xy c); 
+    void setNumberOfChannels(const slsDetectorDefs::xy c);
 
     /** [Eiger][Jungfrau] */
     bool getGapPixelsinCallback() const;
@@ -272,7 +274,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * index, loops for measurements, calls required call backs.
      * @returns OK or FAIL depending on if it already started
      */
-    int acquire(); 
+    int acquire();
 
     /**
      * Combines data from all readouts and gives it to the gui
@@ -284,7 +286,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * Convert raw file
      * [Jungfrau][Ctb] from pof file
      * [Mythen3][Gotthard2] from rbf file
-     * @param fname name of pof/rbf file 
+     * @param fname name of pof/rbf file
      * @param fpgasrc pointer in memory to read programming file to
      * @returns file size
      */
@@ -351,8 +353,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * @param nPixelsy number of pixels in Y axis (updated)
      * @returns total data bytes for updated image
      */
-    int InsertGapPixels(char *image, char *&gpImage, bool quadEnable, int dr, 
-        int &nPixelsx, int &nPixelsy);
+    int InsertGapPixels(char *image, char *&gpImage, bool quadEnable, int dr,
+                        int &nPixelsx, int &nPixelsy);
 
     void printProgress(double progress);
 
@@ -418,4 +420,4 @@ class DetectorImpl : public virtual slsDetectorDefs {
     void *pCallbackArg{nullptr};
 };
 
-}//namespace sls
+} // namespace sls

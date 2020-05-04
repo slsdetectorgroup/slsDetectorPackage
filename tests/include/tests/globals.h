@@ -12,5 +12,4 @@ extern std::string my_ip;
 extern decltype(defs::GET_ACTION) GET;
 extern decltype(defs::PUT_ACTION) PUT;
 
-
 } // namespace test

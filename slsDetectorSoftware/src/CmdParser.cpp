@@ -45,7 +45,8 @@ void CmdParser::Parse(const std::string &s) {
     auto old_size = arguments_.size();
     arguments_.erase(std::remove_if(begin(arguments_), end(arguments_),
                                     [](const std::string &item) {
-                                        return (item == "-h" || item == "--help");
+                                        return (item == "-h" ||
+                                                item == "--help");
                                     }),
                      end(arguments_));
     if (old_size - arguments_.size() > 0)
@@ -100,16 +101,15 @@ std::vector<const char *> CmdParser::argv() const {
     return vec;
 }
 
-
-std::string CmdParser::cli_line() const{
+std::string CmdParser::cli_line() const {
     std::ostringstream os;
     os << command_;
-    for (const auto & arg : arguments_)
+    for (const auto &arg : arguments_)
         os << " " << arg;
     return os.str();
 }
 
-void CmdParser::Reset(){
+void CmdParser::Reset() {
     multi_id_ = 0;
     detector_id_ = -1;
     help_ = false;

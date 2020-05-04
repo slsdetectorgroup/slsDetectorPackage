@@ -3,10 +3,9 @@
 #include "network_utils.h"
 #include "sls_detector_defs.h"
 #include <chrono>
+#include <map>
 #include <memory>
 #include <vector>
-#include <map>
-
 
 class detectorData;
 
@@ -16,11 +15,10 @@ class DetectorImpl;
 class MacAddr;
 class IpAddr;
 
-//Free function to avoid dependence on class
-//and avoid the option to free another objects
-//shm by mistake
+// Free function to avoid dependence on class
+// and avoid the option to free another objects
+// shm by mistake
 void freeSharedMemory(int multiId, int detPos = -1);
-
 
 /**
  * \class Detector
@@ -78,7 +76,7 @@ class Detector {
     Result<int64_t> getReceiverVersion(Positions pos = {}) const;
 
     Result<defs::detectorType> getDetectorType(Positions pos = {}) const;
-    
+
     /** Gets the total number of detectors */
     int size() const;
 
@@ -101,11 +99,12 @@ class Detector {
     /** [Jungfrau][Gotthard][Gotthard2] */
     Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
 
-    /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2
-     * [Gotthard] Options: DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN
-     * [Gotthard2] Options: DYNAMICGAIN, FIXGAIN1, FIXGAIN2
-     * [Moench] Options: G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, 
-     *                   G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
+    /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2,
+     * FORCESWITCHG1, FORCESWITCHG2 [Gotthard] Options: DYNAMICGAIN, HIGHGAIN,
+     * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN [Gotthard2] Options: DYNAMICGAIN,
+     * FIXGAIN1, FIXGAIN2 [Moench] Options: G1_HIGHGAIN, G1_LOWGAIN,
+     * G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN,
+     * G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
      */
     void setSettings(defs::detectorSettings value, Positions pos = {});
 
@@ -176,19 +175,19 @@ class Detector {
     /** [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] */
     void setDelayAfterTrigger(ns value, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3] 
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3]
      * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfFramesLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3] 
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3]
      * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfTriggersLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3] 
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3]
      * [Gotthard2] only in continuous mode */
     Result<ns> getPeriodLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3] 
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3]
      * [Gotthard2] only in continuous mode */
     Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
 
@@ -283,7 +282,7 @@ class Detector {
     Result<int> getImageTestMode(Positions pos = {});
 
     /** [Gotthard] If 1, adds channel intensity with precalculated values.
-     * Default is 0 
+     * Default is 0
      * [Eiger virtual] If 1, pixels are saturated. If 0, increasing intensity
      * Only for virtual servers */
     void setImageTestMode(const int value, Positions pos = {});
@@ -304,10 +303,12 @@ class Detector {
     void setDAC(defs::dacIndex index, int value, bool mV, Positions pos = {});
 
     /* [Gotthard2] */
-    Result<int> getOnChipDAC(defs::dacIndex index, int chipIndex, Positions pos = {}) const;
-    
+    Result<int> getOnChipDAC(defs::dacIndex index, int chipIndex,
+                             Positions pos = {}) const;
+
     /* [Gotthard2] */
-    void setOnChipDAC(defs::dacIndex index, int chipIndex, int value, Positions pos = {});    
+    void setOnChipDAC(defs::dacIndex index, int chipIndex, int value,
+                      Positions pos = {});
 
     /**************************************************
      *                                                *
@@ -325,17 +326,18 @@ class Detector {
      * - resets acquiring flag
      */
     void acquire();
-        
-    /** If acquisition aborted, use this to clear before starting next acquisition */
+
+    /** If acquisition aborted, use this to clear before starting next
+     * acquisition */
     void clearAcquiringFlag();
 
     /** Non Blocking: Start receiver listener*/
     void startReceiver();
 
     /** Non Blocking: Stop receiver listener */
-    void stopReceiver();   
+    void stopReceiver();
 
-    /** Non blocking: start detector acquisition 
+    /** Non blocking: start detector acquisition
      * detector status changes from RUNNING to IDLE when finished */
     void startDetector();
 
@@ -348,7 +350,8 @@ class Detector {
 
     Result<int64_t> getFramesCaught(Positions pos = {}) const;
 
-    Result<std::vector<uint64_t>> getNumMissingPackets(Positions pos = {}) const;
+    Result<std::vector<uint64_t>>
+    getNumMissingPackets(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau] */
     Result<uint64_t> getStartingFrameNumber(Positions pos = {}) const;
@@ -512,16 +515,17 @@ class Detector {
      * Validates and sets the receiver.
      * Updates local receiver cache parameters
      * Configures the detector to the receiver as UDP destination
-     * @param receiver receiver hostname or IP address, can include tcp port eg. hostname:port
+     * @param receiver receiver hostname or IP address, can include tcp port eg.
+     * hostname:port
      */
     void setRxHostname(const std::string &receiver, Positions pos = {});
 
     /** multiple rx hostnames (same as setRxHostname) */
-    void setRxHostname(const std::vector<std::string> &name); 
+    void setRxHostname(const std::vector<std::string> &name);
 
     Result<int> getRxPort(Positions pos = {}) const;
 
-    /** Receiver TCP port (for client communication with Receiver)  
+    /** Receiver TCP port (for client communication with Receiver)
      *  module_id is -1 for all detectors, ports for each module is calculated
      * (increments) */
     void setRxPort(int port, int module_id = -1);
@@ -659,10 +663,10 @@ class Detector {
     Result<int> getClientZmqPort(Positions pos = {}) const;
 
     /**
-     * Modified only when using an intermediate process between receiver and gui/client.
-     * Module_id is -1 for all detectors, ports for each
-     * module is calculated (increments) Restarts client zmq sockets only if it
-     * was already enabled
+     * Modified only when using an intermediate process between receiver and
+     * gui/client. Module_id is -1 for all detectors, ports for each module is
+     * calculated (increments) Restarts client zmq sockets only if it was
+     * already enabled
      */
     void setClientZmqPort(int port, int module_id = -1);
 
@@ -915,13 +919,12 @@ class Detector {
     void setExternalSignalFlags(defs::externalSignalFlag value,
                                 Positions pos = {});
 
-
     /**************************************************
      *                                                *
      *    Gotthard2 Specific                          *
      *                                                *
      * ************************************************/
-    
+
     /** [Gotthard2] only in burst mode and auto timing mode */
     Result<int64_t> getNumberOfBursts(Positions pos = {}) const;
 
@@ -937,22 +940,27 @@ class Detector {
     /** [Gotthard2] offset channel, increment channel */
     Result<std::array<int, 2>> getInjectChannel(Positions pos = {});
 
-    /** [Gotthard2] 
+    /** [Gotthard2]
      * @param offsetChannel starting channel to be injected
      * @param incrementChannel determines succeeding channels to be injected */
-    void setInjectChannel(const int offsetChannel, const int incrementChannel, Positions pos = {});
+    void setInjectChannel(const int offsetChannel, const int incrementChannel,
+                          Positions pos = {});
 
     /** [Gotthard2] adu values for each channel */
-    Result<std::vector<int>> getVetoPhoton(const int chipIndex, Positions pos = {});
+    Result<std::vector<int>> getVetoPhoton(const int chipIndex,
+                                           Positions pos = {});
 
     /** [Gotthard2] energy in keV */
-    void setVetoPhoton(const int chipIndex, const int numPhotons, const int energy, const std::string& fname, Positions pos = {});  
+    void setVetoPhoton(const int chipIndex, const int numPhotons,
+                       const int energy, const std::string &fname,
+                       Positions pos = {});
 
     /** [Gotthard2]  */
-    void setVetoReference(const int gainIndex, const int value, Positions pos = {}); 
+    void setVetoReference(const int gainIndex, const int value,
+                          Positions pos = {});
 
     /** [Gotthard2]  */
-    Result<defs::burstMode> getBurstMode(Positions pos = {});   
+    Result<defs::burstMode> getBurstMode(Positions pos = {});
 
     /** [Gotthard2]  BURST_OFF, BURST_INTERNAL (default), BURST_EXTERNAL */
     void setBurstMode(defs::burstMode value, Positions pos = {});
@@ -1096,7 +1104,7 @@ class Detector {
     Result<std::vector<int>> getRxDbitList(Positions pos = {}) const;
 
     /** [CTB] list contains the set of bits (0-63) to save */
-    void setRxDbitList(const std::vector<int>& list, Positions pos = {});
+    void setRxDbitList(const std::vector<int> &list, Positions pos = {});
 
     /** [CTB] */
     Result<int> getRxDbitOffset(Positions pos = {}) const;
@@ -1128,7 +1136,7 @@ class Detector {
     void setPattern(const std::string &fname, Positions pos = {});
 
     /** [CTB][Moench][Mythen3] */
-    void savePattern(const std::string &fname); 
+    void savePattern(const std::string &fname);
 
     /** [CTB][Moench][Mythen3] */
     Result<uint64_t> getPatternIOControl(Positions pos = {}) const;
@@ -1150,22 +1158,27 @@ class Detector {
      * [Mythen3][Moench] */
     void setPatternWord(int addr, uint64_t word, Positions pos = {});
 
-    /**[CTB][Moench][Mythen3] Options: level: -1 (complete pattern) and 0-2 levels
+    /**[CTB][Moench][Mythen3] Options: level: -1 (complete pattern) and 0-2
+     * levels
      * @returns array of start address and stop address
      */
-    Result<std::array<int, 2>> getPatternLoopAddresses(int level,
-                                               Positions pos = {}) const;
+    Result<std::array<int, 2>>
+    getPatternLoopAddresses(int level, Positions pos = {}) const;
 
-    /** [CTB][Moench][Mythen3] Options: level: -1 (complete pattern) and 0-2 levels */
-    void setPatternLoopAddresses(int level, int start, int stop, Positions pos = {});
+    /** [CTB][Moench][Mythen3] Options: level: -1 (complete pattern) and 0-2
+     * levels */
+    void setPatternLoopAddresses(int level, int start, int stop,
+                                 Positions pos = {});
 
-    /**[CTB][Moench][Mythen3] Options: level: -1 (complete pattern) and 0-2 levels
+    /**[CTB][Moench][Mythen3] Options: level: -1 (complete pattern) and 0-2
+     * levels
      * @returns number of loops
      */
     Result<int> getPatternLoopCycles(int level, Positions pos = {}) const;
 
-    /** [CTB][Moench][Mythen3] n: 0-2, level: -1 (complete pattern) and 0-2 levels */
-    void setPatternLoopCycles(int level, int n, Positions pos = {});                         
+    /** [CTB][Moench][Mythen3] n: 0-2, level: -1 (complete pattern) and 0-2
+     * levels */
+    void setPatternLoopCycles(int level, int n, Positions pos = {});
 
     /* [CTB][Moench][Mythen3] */
     Result<int> getPatternWaitAddr(int level, Positions pos = {}) const;
@@ -1182,14 +1195,15 @@ class Detector {
     /** [CTB][Moench][Mythen3] */
     Result<uint64_t> getPatternMask(Positions pos = {});
 
-    /** [CTB][Moench][Mythen3] Sets the mask applied to every pattern to the selected bit mask */
+    /** [CTB][Moench][Mythen3] Sets the mask applied to every pattern to the
+     * selected bit mask */
     void setPatternMask(uint64_t mask, Positions pos = {});
 
     /** [CTB][Moench][Mythen3]  */
     Result<uint64_t> getPatternBitMask(Positions pos = {}) const;
 
-    /** [CTB][Moench][Mythen3] Sets the bitmask that the mask will be applied to for every
-     * pattern
+    /** [CTB][Moench][Mythen3] Sets the bitmask that the mask will be applied to
+     * for every pattern
      */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
 
@@ -1200,11 +1214,14 @@ class Detector {
      * ************************************************/
 
     /** [Moench] */
-    Result<std::map<std::string, std::string>> getAdditionalJsonHeader(Positions pos = {}) const;
+    Result<std::map<std::string, std::string>>
+    getAdditionalJsonHeader(Positions pos = {}) const;
 
-    /** [Moench] If empty, reset additional json header. Max 20 characters for each key/value */
-    void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader,
-                                 Positions pos = {});
+    /** [Moench] If empty, reset additional json header. Max 20 characters for
+     * each key/value */
+    void setAdditionalJsonHeader(
+        const std::map<std::string, std::string> &jsonHeader,
+        Positions pos = {});
 
     /** [Moench] */
     Result<std::string> getAdditionalJsonParameter(const std::string &key,
@@ -1215,7 +1232,8 @@ class Detector {
      * else appends the parameter key and value
      * If empty, deletes parameter. Max 20 characters for each key/value
      */
-    void setAdditionalJsonParameter(const std::string &key, const std::string &value,
+    void setAdditionalJsonParameter(const std::string &key,
+                                    const std::string &value,
                                     Positions pos = {});
 
     /** [Moench] TODO! How do we do this best??? Can be refactored to something
@@ -1336,15 +1354,15 @@ class Detector {
     /** Execute a command on the detector server console */
     void executeCommand(const std::string &value, Positions pos = {});
 
-    /** [Jungfrau][Mythen3][CTB][Moench] 
+    /** [Jungfrau][Mythen3][CTB][Moench]
      * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfFramesFromStart(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3][CTB][Moench] Get time from detector start 
+    /** [Jungfrau][Mythen3][CTB][Moench] Get time from detector start
      * [Gotthard2] only in continuous mode */
     Result<ns> getActualTime(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3][CTB][Moench] Get timestamp at a frame start 
+    /** [Jungfrau][Mythen3][CTB][Moench] Get timestamp at a frame start
      * [Gotthard2] only in continuous mode */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
 

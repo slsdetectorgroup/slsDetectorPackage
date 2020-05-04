@@ -1,8 +1,8 @@
 
 /*
 This file is used to generate the command line binaries
-(sls_detector_get/put/acquire/help). By defines in CMake 
-we get the different files. 
+(sls_detector_get/put/acquire/help). By defines in CMake
+we get the different files.
 
 */
 #include "CmdParser.h"

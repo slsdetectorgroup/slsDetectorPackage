@@ -2,9 +2,9 @@
 #include "Detector.h"
 #include "catch.hpp"
 #include "sls_detector_defs.h"
+#include <chrono>
 #include <sstream>
 #include <thread>
-#include <chrono>
 
 #include "tests/globals.h"
 
@@ -36,24 +36,25 @@ TEST_CASE("parameters", "[.cmd][.new]") {
     CmdProxy proxy(&det);
     // put only
     REQUIRE_THROWS(proxy.Call("parameters", {}, -1, GET));
-/*
-    auto prev_val = det.getNumberOfFrames().tsquash("Number of frames has to be same to test");
-    {
-        system("echo 'frames 2' > /tmp/tempsetup.det ");
-        std::ostringstream oss;
-        proxy.Call("parameters", {"/tmp/tempsetup.det"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "parameters /tmp/tempsetup.det\n");
-        REQUIRE(det.getNumberOfFrames().tsquash("failed") == 2);
-    }
-    {
-        system("echo '0:frames 1' > /tmp/tempsetup.det ");
-        std::ostringstream oss;
-        proxy.Call("parameters", {"/tmp/tempsetup.det"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "parameters /tmp/tempsetup.det\n");
-        REQUIRE(det.getNumberOfFrames({0}).tsquash("failed") == 1);
-    }   
-    det.setNumberOfFrames(prev_val);
-    */
+    /*
+        auto prev_val = det.getNumberOfFrames().tsquash("Number of frames has to
+       be same to test");
+        {
+            system("echo 'frames 2' > /tmp/tempsetup.det ");
+            std::ostringstream oss;
+            proxy.Call("parameters", {"/tmp/tempsetup.det"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "parameters /tmp/tempsetup.det\n");
+            REQUIRE(det.getNumberOfFrames().tsquash("failed") == 2);
+        }
+        {
+            system("echo '0:frames 1' > /tmp/tempsetup.det ");
+            std::ostringstream oss;
+            proxy.Call("parameters", {"/tmp/tempsetup.det"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "parameters /tmp/tempsetup.det\n");
+            REQUIRE(det.getNumberOfFrames({0}).tsquash("failed") == 1);
+        }
+        det.setNumberOfFrames(prev_val);
+        */
 }
 
 TEST_CASE("hostname", "[.cmd][.new]") {
@@ -106,7 +107,7 @@ TEST_CASE("detectornumber", "[.cmd][.new]") {
     REQUIRE_THROWS(proxy.Call("detectornumber", {"0"}, -1, PUT));
 }
 
-TEST_CASE("type", "[.cmd][.new]"){
+TEST_CASE("type", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto dt = det.getDetectorType().squash();
@@ -130,46 +131,46 @@ TEST_CASE("settings", "[.cmd][.new]") {
     auto det_type = det.getDetectorType().squash();
     std::vector<std::string> sett;
     switch (det_type) {
-        case defs::EIGER:
-            //FIXME: need to remove when settings removed
-            break;
-        case defs::JUNGFRAU:
-            sett.push_back("dynamicgain");
-            sett.push_back("dynamichg0");
-            sett.push_back("fixgain1");
-            sett.push_back("fixgain2");
-            sett.push_back("forceswitchg1");
-            sett.push_back("forceswitchg2");
-            break;
-        case defs::GOTTHARD:
-            sett.push_back("highgain");
-            sett.push_back("dynamicgain");
-            sett.push_back("lowgain");
-            sett.push_back("mediumgain");
-            sett.push_back("veryhighgain");
-            break;
-        case defs::GOTTHARD2:
-            sett.push_back("dynamicgain");
-            sett.push_back("fixgain1");
-            sett.push_back("fixgain2");
-            break;
-        case defs::MOENCH:
-            sett.push_back("g1_hg");
-            sett.push_back("g1_lg");
-            sett.push_back("g2_hc_hg");
-            sett.push_back("g2_hc_lg");
-            sett.push_back("g2_lc_hg");
-            sett.push_back("g2_lc_lg");
-            sett.push_back("g4_hg");
-            sett.push_back("g4_lg");
-            break;
-        default:
-            REQUIRE_THROWS(proxy.Call("settings", {}, -1, GET));
-            return;
+    case defs::EIGER:
+        // FIXME: need to remove when settings removed
+        break;
+    case defs::JUNGFRAU:
+        sett.push_back("dynamicgain");
+        sett.push_back("dynamichg0");
+        sett.push_back("fixgain1");
+        sett.push_back("fixgain2");
+        sett.push_back("forceswitchg1");
+        sett.push_back("forceswitchg2");
+        break;
+    case defs::GOTTHARD:
+        sett.push_back("highgain");
+        sett.push_back("dynamicgain");
+        sett.push_back("lowgain");
+        sett.push_back("mediumgain");
+        sett.push_back("veryhighgain");
+        break;
+    case defs::GOTTHARD2:
+        sett.push_back("dynamicgain");
+        sett.push_back("fixgain1");
+        sett.push_back("fixgain2");
+        break;
+    case defs::MOENCH:
+        sett.push_back("g1_hg");
+        sett.push_back("g1_lg");
+        sett.push_back("g2_hc_hg");
+        sett.push_back("g2_hc_lg");
+        sett.push_back("g2_lc_hg");
+        sett.push_back("g2_lc_lg");
+        sett.push_back("g4_hg");
+        sett.push_back("g4_lg");
+        break;
+    default:
+        REQUIRE_THROWS(proxy.Call("settings", {}, -1, GET));
+        return;
     }
 
     auto prev_val = det.getSettings();
-    for (auto & it : sett) {
+    for (auto &it : sett) {
         {
             std::ostringstream oss;
             proxy.Call("settings", {it}, -1, PUT, oss);
@@ -182,7 +183,7 @@ TEST_CASE("settings", "[.cmd][.new]") {
         }
     }
     for (int i = 0; i != det.size(); ++i) {
-        if (prev_val[i] != defs::UNDEFINED && 
+        if (prev_val[i] != defs::UNDEFINED &&
             prev_val[i] != defs::UNINITIALIZED) {
             det.setSettings(prev_val[i], {i});
         }
@@ -196,7 +197,8 @@ TEST_CASE("settings", "[.cmd][.new]") {
 TEST_CASE("frames", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto prev_val = det.getNumberOfFrames().tsquash("#frames must be same to test");
+    auto prev_val =
+        det.getNumberOfFrames().tsquash("#frames must be same to test");
     {
         std::ostringstream oss;
         proxy.Call("frames", {"1000"}, -1, PUT, oss);
@@ -219,7 +221,8 @@ TEST_CASE("frames", "[.cmd][.new]") {
 TEST_CASE("triggers", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto prev_val = det.getNumberOfTriggers().tsquash("#triggers must be same to test");
+    auto prev_val =
+        det.getNumberOfTriggers().tsquash("#triggers must be same to test");
     {
         std::ostringstream oss;
         proxy.Call("triggers", {"1000"}, -1, PUT, oss);
@@ -431,8 +434,8 @@ TEST_CASE("speed", "[.cmd][.new]") {
             REQUIRE(oss3.str() == "speed full_speed\n");
             proxy.Call("speed", {}, -1, GET, oss4);
             REQUIRE(oss4.str() == "speed full_speed\n");
-        }  
-        */     
+        }
+        */
         {
             std::ostringstream oss1, oss2, oss3, oss4;
             proxy.Call("speed", {"1"}, -1, PUT, oss1);
@@ -468,10 +471,8 @@ TEST_CASE("adcphase", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::GOTTHARD || 
-        det_type == defs::JUNGFRAU || 
-        det_type == defs::CHIPTESTBOARD || 
-        det_type == defs::MOENCH) {
+    if (det_type == defs::GOTTHARD || det_type == defs::JUNGFRAU ||
+        det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
         if (det_type == defs::GOTTHARD) {
             std::ostringstream oss1;
             proxy.Call("adcphase", {"20"}, -1, PUT, oss1);
@@ -480,14 +481,14 @@ TEST_CASE("adcphase", "[.cmd][.new]") {
             REQUIRE_THROWS(proxy.Call("adcphase", {}, -1, GET));
             REQUIRE_THROWS(proxy.Call("adcphase", {"20", "deg"}, -1, PUT));
         } else {
-            auto prev_val = det.getADCPhase();     
+            auto prev_val = det.getADCPhase();
             {
                 std::ostringstream oss1, oss2;
                 proxy.Call("adcphase", {"20"}, -1, PUT, oss1);
                 REQUIRE(oss1.str() == "adcphase 20\n");
                 proxy.Call("adcphase", {}, -1, GET, oss2);
                 REQUIRE(oss2.str() == "adcphase 20\n");
-            }       
+            }
             {
                 std::ostringstream oss1, oss2;
                 proxy.Call("adcphase", {"20", "deg"}, -1, PUT, oss1);
@@ -509,10 +510,9 @@ TEST_CASE("maxadcphaseshift", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || 
-        det_type == defs::CHIPTESTBOARD || 
-        det_type == defs::MOENCH || 
-        det_type == defs::MYTHEN3 || // only because clk index of 0 exists
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH ||
+        det_type == defs::MYTHEN3 ||   // only because clk index of 0 exists
         det_type == defs::GOTTHARD2) { // only because clk index of 0 exists
         REQUIRE_NOTHROW(proxy.Call("maxadcphaseshift", {}, -1, GET));
     } else {
@@ -524,16 +524,15 @@ TEST_CASE("dbitphase", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || 
-        det_type == defs::CHIPTESTBOARD) {
-        auto prev_val = det.getDBITPhase();     
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD) {
+        auto prev_val = det.getDBITPhase();
         {
             std::ostringstream oss1, oss2;
             proxy.Call("dbitphase", {"20"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "dbitphase 20\n");
             proxy.Call("dbitphase", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "dbitphase 20\n");
-        }       
+        }
         {
             std::ostringstream oss1, oss2;
             proxy.Call("dbitphase", {"20", "deg"}, -1, PUT, oss1);
@@ -554,9 +553,8 @@ TEST_CASE("maxdbitphaseshift", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || 
-        det_type == defs::CHIPTESTBOARD || 
-        det_type == defs::MYTHEN3 || // only because clk index of 0 exists
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MYTHEN3 ||   // only because clk index of 0 exists
         det_type == defs::GOTTHARD2) { // only because clk index of 0 exists
         REQUIRE_NOTHROW(proxy.Call("maxdbitphaseshift", {}, -1, GET));
     } else {
@@ -654,7 +652,6 @@ TEST_CASE("maxclkphaseshift", "[.cmd][.new]") {
     }
 }
 
-
 TEST_CASE("vhighvoltage", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -677,11 +674,10 @@ TEST_CASE("vhighvoltage", "[.cmd][.new]") {
             proxy.Call("vhighvoltage", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "vhighvoltage 0\n");
         }
-    } 
+    }
     // range 0, 60 - 200
-    else if (det_type == defs::JUNGFRAU ||
-            det_type == defs::CHIPTESTBOARD ||
-            det_type == defs::MOENCH) {
+    else if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+             det_type == defs::MOENCH) {
         REQUIRE_THROWS(proxy.Call("vhighvoltage", {"50"}, -1, PUT));
         {
             std::ostringstream oss1, oss2;
@@ -697,7 +693,7 @@ TEST_CASE("vhighvoltage", "[.cmd][.new]") {
             proxy.Call("vhighvoltage", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "vhighvoltage 0\n");
         }
-    } 
+    }
     // full range 0 - 200 (get needs to wait)
     else if (det_type == defs::EIGER) {
         {
@@ -724,7 +720,7 @@ TEST_CASE("vhighvoltage", "[.cmd][.new]") {
             proxy.Call("vhighvoltage", {}, 0, GET, oss2);
             REQUIRE(oss2.str() == "vhighvoltage 0\n");
         }
-    }    
+    }
     // full range 0 - 200
     else {
         {
@@ -761,10 +757,8 @@ TEST_CASE("powerchip", "[.cmd][.new]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
 
-    if (det_type == defs::JUNGFRAU || 
-        det_type == defs::MYTHEN3 || 
-        det_type == defs::GOTTHARD2 || 
-        det_type == defs::MOENCH) {
+    if (det_type == defs::JUNGFRAU || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2 || det_type == defs::MOENCH) {
         auto prev_val = det.getPowerChip();
         {
             std::ostringstream oss;
@@ -812,8 +806,7 @@ TEST_CASE("imagetest", "[.cmd][.new]") {
         for (int i = 0; i != det.size(); ++i) {
             det.setImageTestMode(prev_val[i], {i});
         }
-    } else if (det_type != defs::JUNGFRAU &&
-        det_type != defs::EIGER) {
+    } else if (det_type != defs::JUNGFRAU && det_type != defs::EIGER) {
         // wont fail for eiger and jungfrau virtual servers
         REQUIRE_THROWS(proxy.Call("imagetest", {}, -1, GET));
     }
@@ -829,7 +822,7 @@ TEST_CASE("temp_adc", "[.cmd][.new]") {
         REQUIRE_NOTHROW(proxy.Call("temp_adc", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_adc", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase (0, strlen("temp_adc "));
+        std::string s = (oss.str()).erase(0, strlen("temp_adc "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(proxy.Call("temp_adc", {}, -1, GET));
@@ -841,11 +834,11 @@ TEST_CASE("temp_fpga", "[.cmd][.new]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD ||
-         det_type == defs::EIGER) {
+        det_type == defs::EIGER) {
         REQUIRE_NOTHROW(proxy.Call("temp_fpga", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_fpga", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase (0, strlen("temp_fpga "));
+        std::string s = (oss.str()).erase(0, strlen("temp_fpga "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(proxy.Call("temp_fpga", {}, -1, GET));
@@ -932,7 +925,7 @@ TEST_CASE("status", "[.cmd][.new]") {
     }
     for (int i = 0; i != det.size(); ++i) {
         det.setExptime(prev_val[i], {i});
-    } 
+    }
 }
 
 TEST_CASE("startingfnum", "[.cmd][.new]") {
@@ -959,49 +952,11 @@ TEST_CASE("startingfnum", "[.cmd][.new]") {
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setStartingFrameNumber(prev_sfnum[i], {i});
-        } 
+        }
     } else {
         REQUIRE_THROWS(proxy.Call("startingfnum", {}, -1, GET));
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 TEST_CASE("initialchecks", "[.cmd]") {
     Detector det;
@@ -1021,17 +976,16 @@ TEST_CASE("initialchecks", "[.cmd]") {
     {
         std::ostringstream oss;
         proxy.Call("initialchecks", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "initialchecks 0\n");        
+        REQUIRE(oss.str() == "initialchecks 0\n");
     }
     {
         det.setHostname(hostname);
         std::ostringstream oss;
         proxy.Call("initialchecks", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "initialchecks 0\n");        
-    }   
+        REQUIRE(oss.str() == "initialchecks 0\n");
+    }
     det.setInitialChecks(check);
 }
-
 
 TEST_CASE("user", "[.cmd]") {
     Detector det;
@@ -1312,7 +1266,6 @@ TEST_CASE("stopport", "[.cmd]") {
 //     }
 //     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader \"\"", PUT));
 // }
-
 
 // TEST_CASE("patsetbit", "[.cmd][.ctb]") {
 //     if (test::type == defs::CHIPTESTBOARD) {
@@ -1932,8 +1885,6 @@ TEST_CASE("stopport", "[.cmd]") {
 //     }
 // }
 
-
-
 // TEST_CASE("romode", "[.cmd][.ctb]") {
 //     if (test::type == defs::CHIPTESTBOARD) {
 //         {
@@ -2415,8 +2366,6 @@ TEST_CASE("stopport", "[.cmd]") {
 //     }
 // }
 
-
-
 // TEST_CASE("trimval", "[.cmd][.eiger]") {
 //     if (test::type == defs::EIGER) {
 //         {
@@ -2459,8 +2408,6 @@ TEST_CASE("stopport", "[.cmd]") {
 //         oss)); REQUIRE(oss.str() == "flippeddatax 0\n");
 //     }
 // }
-
-
 
 // TEST_CASE("parallel", "[.cmd][.eiger]") {
 //     if (test::type == defs::EIGER) {
@@ -2556,7 +2503,9 @@ TEST_CASE("zmqport", "[.cmd]") {
     for (int i = 0; i != det.size(); ++i) {
         std::ostringstream oss;
         proxy.Call("zmqport", {}, i, GET, oss);
-        REQUIRE(oss.str() == "zmqport " + std::to_string(port + i * socketsperdetector) + '\n');
+        REQUIRE(oss.str() == "zmqport " +
+                                 std::to_string(port + i * socketsperdetector) +
+                                 '\n');
     }
 
     port = 1954;
@@ -2569,17 +2518,14 @@ TEST_CASE("zmqport", "[.cmd]") {
     for (int i = 0; i != det.size(); ++i) {
         std::ostringstream oss;
         proxy.Call("zmqport", {}, i, GET, oss);
-        REQUIRE(oss.str() == "zmqport " + std::to_string(port + i * socketsperdetector) + '\n');
+        REQUIRE(oss.str() == "zmqport " +
+                                 std::to_string(port + i * socketsperdetector) +
+                                 '\n');
     }
     if (det_type == defs::JUNGFRAU) {
         det.setNumberofUDPInterfaces(prev);
     }
 }
-
-
-
-
-
 
 // TEST_CASE("txndelay", "[.cmd][.eiger][.jungfrau]") {
 //     if (test::type == defs::EIGER) {
@@ -2823,8 +2769,6 @@ TEST_CASE("zmqport", "[.cmd]") {
 //     REQUIRE_THROWS(multiSlsDetectorClient("numinterfaces 0", PUT));
 // }
 
-
-
 // TEST_CASE("adc", "[.cmd][.ctb]") {
 //     if (test::type != defs::CHIPTESTBOARD) {
 //         REQUIRE_THROWS(multiSlsDetectorClient("adc 8", GET));
@@ -2837,9 +2781,6 @@ TEST_CASE("zmqport", "[.cmd]") {
 //         }
 //     }
 // }
-
-
-
 
 // TEST_CASE("syncclk", "[.cmd][.ctb]") {
 //     if(test::type != defs::CHIPTESTBOARD) {
@@ -2934,8 +2875,6 @@ TEST_CASE("zmqport", "[.cmd]") {
 //     }
 // }
 
-
-
 // TEST_CASE("threshold", "[.cmd]") {
 //     if (test::type == defs::EIGER) {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("threshold 6400 standard",
@@ -2963,7 +2902,6 @@ TEST_CASE("zmqport", "[.cmd]") {
 // TEST_CASE("type", "[.cmd]") {
 //     CHECK_NOTHROW(multiSlsDetectorClient("type", GET));
 // }
-
 
 // TEST_CASE("status", "[.cmd]") {
 //     Detector det;
@@ -2999,11 +2937,6 @@ TEST_CASE("zmqport", "[.cmd]") {
 // proxy.Call("frames", {"1"}, -1, PUT);
 // }
 
-
-
-
-
-
 TEST_CASE("lock", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -3027,8 +2960,3 @@ TEST_CASE("lock", "[.cmd]") {
 // TEST_CASE("lastclient", "[.cmd]") {
 //     REQUIRE_NOTHROW(multiSlsDetectorClient("lastclient", GET));
 // }
-
-
-
-
-

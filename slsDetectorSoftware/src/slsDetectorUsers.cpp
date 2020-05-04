@@ -1,18 +1,18 @@
 #include "slsDetectorUsers.h"
 //#include "detectorData.h"
-//#include "multiSlsDetectorClient.h" TODO: do we need this put and get in users api
+//#include "multiSlsDetectorClient.h" TODO: do we need this put and get in users
+// api
 #include "Detector.h"
 
-slsDetectorUsers::slsDetectorUsers(int shm_id) : detector(sls::make_unique<sls::Detector>(shm_id)){}
+slsDetectorUsers::slsDetectorUsers(int shm_id)
+    : detector(sls::make_unique<sls::Detector>(shm_id)) {}
 slsDetectorUsers::~slsDetectorUsers() = default;
 
-void slsDetectorUsers::readConfigurationFile(const std::string& fname){
-	detector->loadConfig(fname);
+void slsDetectorUsers::readConfigurationFile(const std::string &fname) {
+    detector->loadConfig(fname);
 }
 
-int slsDetectorUsers::size() const {
-	return detector->size();
-}
+int slsDetectorUsers::size() const { return detector->size(); }
 
 // int slsDetectorUsers::getDetectorSize(int &nx, int &ny, int detPos){
 // 	slsDetectorDefs::xy res = detector.getNumberOfChannels();
@@ -38,7 +38,8 @@ int slsDetectorUsers::size() const {
 // }
 
 // int64_t slsDetectorUsers::getDetectorFirmwareVersion(int detPos){
-// 	return detector.getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION, detPos);
+// 	return detector.getId(slsDetectorDefs::DETECTOR_FIRMWARE_VERSION,
+// detPos);
 // }
 
 // int64_t slsDetectorUsers::getDetectorSerialNumber(int detPos){
@@ -46,7 +47,8 @@ int slsDetectorUsers::size() const {
 // }
 
 // int64_t slsDetectorUsers::getDetectorSoftwareVersion(int detPos){
-// 	return detector.getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION, detPos);
+// 	return detector.getId(slsDetectorDefs::DETECTOR_SOFTWARE_VERSION,
+// detPos);
 // }
 
 // int64_t slsDetectorUsers::getClientSoftwareVersion(){
@@ -103,37 +105,40 @@ int slsDetectorUsers::size() const {
 // }
 
 // int slsDetectorUsers::setSettings(int isettings, int detPos){
-// 	return detector.setSettings((slsDetectorDefs::detectorSettings)isettings, detPos);
+// 	return
+// detector.setSettings((slsDetectorDefs::detectorSettings)isettings, detPos);
 // }
 
 // int slsDetectorUsers::getThresholdEnergy(int detPos){
 // 	return detector.getThresholdEnergy(detPos);
-// }  
-
-// int slsDetectorUsers::setThresholdEnergy(int e_ev, int tb, int isettings, int detPos) {
-// 	return detector.setThresholdEnergy(e_ev,
-// 			(isettings == -1) ?  slsDetectorDefs::GET_SETTINGS : (slsDetectorDefs::detectorSettings)isettings,
-// 					tb, detPos);
 // }
 
-// double slsDetectorUsers::setExposureTime(double t, bool inseconds, int detPos){
-// 	return detector.setExposureTime(t, inseconds, detPos);
+// int slsDetectorUsers::setThresholdEnergy(int e_ev, int tb, int isettings, int
+// detPos) { 	return detector.setThresholdEnergy(e_ev,
+// (isettings == -1) ? slsDetectorDefs::GET_SETTINGS :
+// (slsDetectorDefs::detectorSettings)isettings, 					tb, detPos);
 // }
 
-// double slsDetectorUsers::setExposurePeriod(double t, bool inseconds, int detPos){
-// 	return detector.setExposurePeriod(t, inseconds, detPos);
+// double slsDetectorUsers::setExposureTime(double t, bool inseconds, int
+// detPos){ 	return detector.setExposureTime(t, inseconds, detPos);
 // }
 
-// double slsDetectorUsers::setDelayAfterTrigger(double t, bool inseconds, int detPos){
-// 	return detector.setDelayAfterTrigger(t, inseconds, detPos);
+// double slsDetectorUsers::setExposurePeriod(double t, bool inseconds, int
+// detPos){ 	return detector.setExposurePeriod(t, inseconds, detPos);
 // }
 
-// double slsDetectorUsers::setSubFrameExposureTime(double t, bool inseconds, int detPos){
-// 	return detector.setSubFrameExposureTime(t, inseconds, detPos);
+// double slsDetectorUsers::setDelayAfterTrigger(double t, bool inseconds, int
+// detPos){ 	return detector.setDelayAfterTrigger(t, inseconds, detPos);
 // }
 
-// double slsDetectorUsers::setSubFrameExposureDeadTime(double t, bool inseconds, int detPos){
-// 	return detector.setSubFrameExposureDeadTime(t, inseconds, detPos);
+// double slsDetectorUsers::setSubFrameExposureTime(double t, bool inseconds,
+// int detPos){ 	return detector.setSubFrameExposureTime(t, inseconds,
+// detPos);
+// }
+
+// double slsDetectorUsers::setSubFrameExposureDeadTime(double t, bool
+// inseconds, int detPos){ 	return detector.setSubFrameExposureDeadTime(t,
+// inseconds, detPos);
 // }
 
 // int64_t slsDetectorUsers::setNumberOfFrames(int64_t t, int detPos){
@@ -152,8 +157,8 @@ int slsDetectorUsers::size() const {
 // 	return detector.getMeasuredPeriod(inseconds, detPos);
 // }
 
-// double slsDetectorUsers::getMeasuredSubFramePeriod(bool inseconds, int detPos) {
-// 	return detector.getMeasuredSubFramePeriod(inseconds, detPos);
+// double slsDetectorUsers::getMeasuredSubFramePeriod(bool inseconds, int
+// detPos) { 	return detector.getMeasuredSubFramePeriod(inseconds, detPos);
 // }
 
 // int slsDetectorUsers::setTimingMode(int pol, int detPos){
@@ -179,7 +184,7 @@ int slsDetectorUsers::size() const {
 // 	auto res = detector.getOverFlowMode({detPos});
 // 	if (res.equal())
 // 		return res.front();*/
-// 	return -1;	
+// 	return -1;
 // }
 
 // int slsDetectorUsers::setAllTrimbits(int val, int detPos) {
@@ -187,7 +192,8 @@ int slsDetectorUsers::size() const {
 // }
 
 // int slsDetectorUsers::setDAC(int val, int index , int detPos) {
-// 	return detector.setDAC(val, slsDetectorDefs::dacIndex(index), 0, detPos);
+// 	return detector.setDAC(val, slsDetectorDefs::dacIndex(index), 0,
+// detPos);
 // }
 
 // int slsDetectorUsers::getADC(int index, int detPos) {
@@ -223,7 +229,6 @@ int slsDetectorUsers::size() const {
 //                         RECEIVER FUNCTIONS
 
 //  *********************************************************************/
-
 
 // void slsDetectorUsers::startReceiver(int detPos) {
 // 	detector.startReceiver(detPos);
@@ -274,7 +279,7 @@ int slsDetectorUsers::size() const {
 // 		return detector.setFileWrite(enable, detPos);
 // 	else
 // 		return detector.getFileWrite(detPos);
-	
+
 // }
 
 // int slsDetectorUsers::enableOverwriteFile(int enable, int detPos) {
@@ -314,16 +319,16 @@ int slsDetectorUsers::size() const {
 // 	return detector.getClientStreamingPort(detPos);
 // }
 
-// std::string slsDetectorUsers::setReceiverDataStreamingOutIP(const std::string& ip, int detPos){
-// 	  if (ip.length()) {
+// std::string slsDetectorUsers::setReceiverDataStreamingOutIP(const
+// std::string& ip, int detPos){ 	  if (ip.length()) {
 // 		  detector.setReceiverDataStreamingOutIP(ip, detPos);
 // 	  }
 // 	return detector.getReceiverStreamingIP(detPos);
 // }
 
-// std::string slsDetectorUsers::setClientDataStreamingInIP(const std::string& ip, int detPos){
-// 	  if (ip.length()) {
-// 		  detector.setClientDataStreamingInIP(ip, detPos);
+// std::string slsDetectorUsers::setClientDataStreamingInIP(const std::string&
+// ip, int detPos){ 	  if (ip.length()) {
+// detector.setClientDataStreamingInIP(ip, detPos);
 // 	  }
 // 	return detector.getClientStreamingIP(detPos);
 // }
@@ -333,7 +338,9 @@ int slsDetectorUsers::size() const {
 // }
 
 // int slsDetectorUsers::setReceiverFramesDiscardPolicy(int f, int detPos) {
-// 	return detector.setReceiverFramesDiscardPolicy(slsDetectorDefs::frameDiscardPolicy(f), detPos);
+// 	return
+// detector.setReceiverFramesDiscardPolicy(slsDetectorDefs::frameDiscardPolicy(f),
+// detPos);
 // }
 
 // int slsDetectorUsers::setReceiverPartialFramesPadding(int f, int detPos) {
@@ -352,18 +359,20 @@ int slsDetectorUsers::size() const {
 //     }
 // }
 
-// int slsDetectorUsers::setDetectorMinMaxEnergyThreshold(const int index, int v, int detPos) {
+// int slsDetectorUsers::setDetectorMinMaxEnergyThreshold(const int index, int
+// v, int detPos) {
 //     return detector.setDetectorMinMaxEnergyThreshold(index, v, detPos);
 // }
 
 // int slsDetectorUsers::setFrameMode(int value, int detPos) {
-//     return detector.setFrameMode(slsDetectorDefs::frameModeType(value), detPos);
+//     return detector.setFrameMode(slsDetectorDefs::frameModeType(value),
+//     detPos);
 // }
 
 // int slsDetectorUsers::setDetectorMode(int value, int detPos) {
-//     return detector.setDetectorMode(slsDetectorDefs::detectorModeType(value), detPos);
+//     return detector.setDetectorMode(slsDetectorDefs::detectorModeType(value),
+//     detPos);
 // }
-
 
 // /************************************************************************
 
@@ -371,26 +380,16 @@ int slsDetectorUsers::size() const {
 
 //  *********************************************************************/
 
-// void slsDetectorUsers::registerDataCallback(void( *userCallback)(detectorData*, uint64_t, uint32_t, void*), void *pArg) {
+// void slsDetectorUsers::registerDataCallback(void(
+// *userCallback)(detectorData*, uint64_t, uint32_t, void*), void *pArg) {
 // 	detector.registerDataCallback(userCallback,pArg);
 // }
 
-// void slsDetectorUsers::registerAcquisitionFinishedCallback(void( *func)(double,int, void*), void *pArg) {
+// void slsDetectorUsers::registerAcquisitionFinishedCallback(void(
+// *func)(double,int, void*), void *pArg) {
 // 	detector.registerAcquisitionFinishedCallback(func,pArg);
 // }
 
 // void slsDetectorUsers::putCommand(const std::string& command){
 // 	multiSlsDetectorClient(command, slsDetectorDefs::PUT_ACTION, &detector);
 // }
-
-
-
-
-
-
-
-
-
-
-
-

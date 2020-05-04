@@ -16,7 +16,8 @@ using test::PUT;
 /* dacs */
 
 TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs][.new]") {
-    // vb_comp, vdd_prot, vin_com, vref_prech, vb_pixbuf, vb_ds, vref_ds, vref_comp
+    // vb_comp, vdd_prot, vin_com, vref_prech, vb_pixbuf, vb_ds, vref_ds,
+    // vref_comp
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -24,7 +25,9 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs][.new]") {
         SECTION("vb_comp") { test_dac(defs::VB_COMP, "vb_comp", 1220); }
         SECTION("vdd_prot") { test_dac(defs::VDD_PROT, "vdd_prot", 3000); }
         SECTION("vin_com") { test_dac(defs::VIN_COM, "vin_com", 1053); }
-        SECTION("vref_prech") { test_dac(defs::VREF_PRECH, "vref_prech", 1450); }
+        SECTION("vref_prech") {
+            test_dac(defs::VREF_PRECH, "vref_prech", 1450);
+        }
         SECTION("vb_pixbuf") { test_dac(defs::VB_PIXBUF, "vb_pixbuf", 750); }
         SECTION("vb_ds") { test_dac(defs::VB_DS, "vb_ds", 1000); }
         SECTION("vref_ds") { test_dac(defs::VREF_DS, "vref_ds", 480); }
@@ -87,41 +90,9 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs][.new]") {
         REQUIRE_THROWS(proxy.Call("vref_cds", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_cs", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vb_opa_fd", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vcom_adc2", {}, -1, GET));        
+        REQUIRE_THROWS(proxy.Call("vcom_adc2", {}, -1, GET));
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 TEST_CASE("nframes", "[.cmd]") {
     Detector det;
@@ -171,7 +142,7 @@ TEST_CASE("timestamp", "[.cmd]") {
 }
 
 TEST_CASE("adcreg", "[.cmd]") {
-    //TODO! what is a safe value to use? 
+    // TODO! what is a safe value to use?
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -234,5 +205,3 @@ TEST_CASE("resetfpga", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("resetfpga", {}, -1, PUT));
     }
 }
-
-

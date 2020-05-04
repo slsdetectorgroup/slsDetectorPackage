@@ -1,14 +1,13 @@
-/** 
- * Utility program to generate input files for the command line 
+/**
+ * Utility program to generate input files for the command line
  * documentation. Uses the string returned from sls_detector_help cmd
- * 
+ *
  */
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
-
 
 #include "CmdProxy.h"
 #include "Detector.h"
@@ -52,5 +51,4 @@ int main() {
         auto help = replace_all(tmp, "\n\t", "\n\t\t");
         fs << '\t' << cmd << usage << help << "\n";
     }
-
 }

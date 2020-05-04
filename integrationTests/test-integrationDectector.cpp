@@ -2,9 +2,9 @@
 #include "catch.hpp"
 
 #include "ClientSocket.h"
-#include "logger.h"
 #include "DetectorImpl.h"
 #include "Module.h"
+#include "logger.h"
 #include "sls_detector_defs.h"
 
 #include "Timer.h"
@@ -79,7 +79,6 @@ TEST_CASE("Set control port then create a new object with this control port",
     d.freeSharedMemory();
 }
 
-
 TEST_CASE("single EIGER detector no receiver basic set and get",
           "[.integration][eiger]") {
     // TODO! this test should take command line arguments for config
@@ -130,8 +129,6 @@ TEST_CASE("single EIGER detector no receiver basic set and get",
     d.freeSharedMemory();
 }
 
-
-
 TEST_CASE("Locking mechanism and last ip", "[.integration][.single]") {
     Module d(test::type);
     d.setHostname(test::hostname);
@@ -154,12 +151,11 @@ TEST_CASE("Locking mechanism and last ip", "[.integration][.single]") {
     d.freeSharedMemory();
 }
 
-TEST_CASE("Set settings", "[.integration][.single]"){
+TEST_CASE("Set settings", "[.integration][.single]") {
     Module d(test::type);
     d.setHostname(test::hostname);
     CHECK(d.setSettings(defs::STANDARD) == defs::STANDARD);
 }
-
 
 TEST_CASE("Timer functions", "[.integration][cli]") {
     // FRAME_NUMBER, /**< number of real time frames: total number of
@@ -204,8 +200,7 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
     if (test::type != dt::EIGER) {
         auto delay = 10000;
         d.setDelayAfterTrigger(delay);
-        CHECK(d.getDelayAfterTrigger() ==
-              delay);
+        CHECK(d.getDelayAfterTrigger() == delay);
     }
 
     auto triggers = 2;
@@ -218,10 +213,9 @@ TEST_CASE("Timer functions", "[.integration][cli]") {
         CHECK(d.getSubExptime() == subtime);
     }
     // for (int i =0; i!=frames; ++i)
-        d.startAndReadAll();
+    d.startAndReadAll();
 
     d.freeSharedMemory();
-
 }
 
 // TEST_CASE("Aquire", "[.integration][eiger]"){
@@ -382,8 +376,8 @@ TEST_CASE("Chiptestboard Loading Patterns", "[.ctbintegration]") {
     }
 }
 
-
-TEST_CASE("Chiptestboard Dbit offset, list, sampling, advinvert", "[.ctbintegration][dbit]") {
+TEST_CASE("Chiptestboard Dbit offset, list, sampling, advinvert",
+          "[.ctbintegration][dbit]") {
     SingleDetectorConfig c;
 
     // pick up multi detector from shm id 0
@@ -403,27 +397,27 @@ TEST_CASE("Chiptestboard Dbit offset, list, sampling, advinvert", "[.ctbintegrat
 
     // dbit list
 
-    std::vector <int> list = m.getReceiverDbitList();
+    std::vector<int> list = m.getReceiverDbitList();
     list.clear();
     for (int i = 0; i < 10; ++i)
         list.push_back(i);
     m.setReceiverDbitList(list);
-    
+
     CHECK(m.getReceiverDbitList().size() == 10);
 
     list.push_back(64);
     CHECK_THROWS_AS(m.setReceiverDbitList(list), sls::RuntimeError);
-    CHECK_THROWS_WITH(m.setReceiverDbitList(list), 
-        Catch::Matchers::Contains("be between 0 and 63"));
+    CHECK_THROWS_WITH(m.setReceiverDbitList(list),
+                      Catch::Matchers::Contains("be between 0 and 63"));
 
     list.clear();
     for (int i = 0; i < 65; ++i)
         list.push_back(i);
     CHECK(list.size() == 65);
-    CHECK_THROWS_WITH(m.setReceiverDbitList(list),  
-        Catch::Matchers::Contains("be greater than 64"));
+    CHECK_THROWS_WITH(m.setReceiverDbitList(list),
+                      Catch::Matchers::Contains("be greater than 64"));
 
-    list.clear(); 
+    list.clear();
     m.setReceiverDbitList(list);
     CHECK(m.getReceiverDbitList().empty());
 
@@ -441,8 +435,8 @@ TEST_CASE("Chiptestboard Dbit offset, list, sampling, advinvert", "[.ctbintegrat
     m.setExternalSamplingSource(62);
     CHECK(m.getExternalSamplingSource() == 62);
     CHECK_THROWS_WITH(m.setExternalSamplingSource(64),
-         Catch::Matchers::Contains("be 0-63"));
-    CHECK(m.getExternalSamplingSource() == 62); 
+                      Catch::Matchers::Contains("be 0-63"));
+    CHECK(m.getExternalSamplingSource() == 62);
     m.setExternalSampling(1);
     CHECK(m.getExternalSampling() == 1);
     m.setExternalSampling(0);
@@ -450,20 +444,23 @@ TEST_CASE("Chiptestboard Dbit offset, list, sampling, advinvert", "[.ctbintegrat
     m.setExternalSampling(1);
     CHECK(m.getExternalSampling() == 1);
     CHECK(m.readRegister(0x7b) == 0x1003E);
-    
 }
 
-TEST_CASE("Eiger or Jungfrau startingfnum", "[.eigerintegration][.jungfrauintegration][startingfnum]") {
+TEST_CASE("Eiger or Jungfrau startingfnum",
+          "[.eigerintegration][.jungfrauintegration][startingfnum]") {
     SingleDetectorConfig c;
 
     // pick up multi detector from shm id 0
     DetectorImpl m(0);
 
     // ensure ctb detector type, hostname and online
-    REQUIRE(((m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::EIGER) || (m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::JUNGFRAU)));
+    REQUIRE(
+        ((m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::EIGER) ||
+         (m.getDetectorTypeAsEnum() ==
+          slsDetectorDefs::detectorType::JUNGFRAU)));
     REQUIRE(m.getHostname() == c.hostname);
 
-     CHECK(m.setNumberOfFrames(1) == 1);
+    CHECK(m.setNumberOfFrames(1) == 1);
 
     // starting fnum
     uint64_t val = 8;
@@ -498,7 +495,8 @@ TEST_CASE("Eiger readnlines", "[.eigerintegration][readnlines]") {
     DetectorImpl m(0);
 
     // ensure detector type, hostname
-    REQUIRE((m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::EIGER));
+    REQUIRE(
+        (m.getDetectorTypeAsEnum() == slsDetectorDefs::detectorType::EIGER));
     REQUIRE(m.getHostname() == c.hostname);
 
     m.setDynamicRange(16);
@@ -507,7 +505,7 @@ TEST_CASE("Eiger readnlines", "[.eigerintegration][readnlines]") {
     CHECK(m.getReadNLines() == 256);
     m.setReadNLines(1);
     CHECK(m.getReadNLines() == 1);
-        
+
     m.setDynamicRange(8);
     m.setReadNLines(256);
     CHECK(m.getReadNLines() == 256);

@@ -64,24 +64,24 @@ TEST_CASE("Creating a second shared memory with the same name throws",
 
 TEST_CASE("Open two shared memories to the same place", "[detector]") {
 
-    //Create the first shared memory
+    // Create the first shared memory
     SharedMemory<Data> shm(shm_id, -1);
     shm.CreateSharedMemory();
     shm()->x = 5;
     CHECK(shm()->x == 5);
 
-    //Open the second shared memory with the same name
+    // Open the second shared memory with the same name
     SharedMemory<Data> shm2(shm_id, -1);
     shm2.OpenSharedMemory();
     CHECK(shm2()->x == 5);
     CHECK(shm.GetName() == shm2.GetName());
 
-    //Check that they still point to the same place
+    // Check that they still point to the same place
     shm2()->x = 7;
     CHECK(shm()->x == 7);
 
-    //Remove only needs to be done once since they refer
-    //to the same memory
+    // Remove only needs to be done once since they refer
+    // to the same memory
     shm2.RemoveSharedMemory();
     CHECK(shm.IsExisting() == false);
     CHECK(shm2.IsExisting() == false);
@@ -95,19 +95,18 @@ TEST_CASE("Move SharedMemory", "[detector]") {
     shm.CreateSharedMemory();
     shm()->x = 9;
 
-    CHECK(shm.size()== sizeof(Data));
+    CHECK(shm.size() == sizeof(Data));
 
-    SharedMemory<Data> shm2(shm_id+1, -1);
-    shm2 = std::move(shm); //shm is now a moved from object!
+    SharedMemory<Data> shm2(shm_id + 1, -1);
+    shm2 = std::move(shm); // shm is now a moved from object!
 
     CHECK(shm2()->x == 9);
     CHECK(shm() == nullptr);
     CHECK(shm.size() == 0);
 
-    CHECK(shm2.GetName() == std::string("/slsDetectorPackage_multi_") +
-                                std::to_string(shm_id));
+    CHECK(shm2.GetName() ==
+          std::string("/slsDetectorPackage_multi_") + std::to_string(shm_id));
     shm2.RemoveSharedMemory();
-
 }
 
 TEST_CASE("Create several shared memories", "[detector]") {
@@ -115,7 +114,7 @@ TEST_CASE("Create several shared memories", "[detector]") {
     std::vector<SharedMemory<int>> v;
     v.reserve(N);
     for (int i = 0; i != N; ++i) {
-        v.emplace_back(shm_id+i, -1);
+        v.emplace_back(shm_id + i, -1);
         CHECK(v[i].IsExisting() == false);
         v[i].CreateSharedMemory();
         *v[i]() = i;

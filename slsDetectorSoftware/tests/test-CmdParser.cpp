@@ -3,7 +3,6 @@
 #include <exception>
 #include <string>
 
-
 // tests to add
 // help for all docs
 // command for all depreciated commands
@@ -135,9 +134,9 @@ SCENARIO("Parsing strings with -h or --help", "[support]") {
                 REQUIRE(p.argv().size() == 1);
             }
         }
-        WHEN("Parsing a string with -h at a different position"){
+        WHEN("Parsing a string with -h at a different position") {
             std::string s = "list -h something";
-            THEN("its also done right"){
+            THEN("its also done right") {
                 p.Parse(s);
                 REQUIRE(p.isHelp());
                 REQUIRE(p.command() == "list");
@@ -145,9 +144,9 @@ SCENARIO("Parsing strings with -h or --help", "[support]") {
                 REQUIRE(p.arguments().front() == "something");
             }
         }
-        WHEN("Parsing a string with -help at a different position"){
+        WHEN("Parsing a string with -help at a different position") {
             std::string s = "list --help something";
-            THEN("its also done right"){
+            THEN("its also done right") {
                 p.Parse(s);
                 REQUIRE(p.isHelp());
                 REQUIRE(p.command() == "list");
@@ -158,7 +157,7 @@ SCENARIO("Parsing strings with -h or --help", "[support]") {
     }
 }
 
-TEST_CASE("Parsing consecutive strings resets not found det id"){
+TEST_CASE("Parsing consecutive strings resets not found det id") {
     CmdParser p;
     p.Parse("1:exptime 0.5");
     REQUIRE(p.detector_id() == 1);
@@ -166,10 +165,9 @@ TEST_CASE("Parsing consecutive strings resets not found det id"){
     REQUIRE(p.detector_id() == -1);
     p.Parse("3:exptime 0.5");
     REQUIRE(p.detector_id() == 3);
-
 }
 
-TEST_CASE("Parsing consecutive strings resets not found multi id"){
+TEST_CASE("Parsing consecutive strings resets not found multi id") {
     CmdParser p;
     p.Parse("1-1:exptime 0.5");
     REQUIRE(p.multi_id() == 1);

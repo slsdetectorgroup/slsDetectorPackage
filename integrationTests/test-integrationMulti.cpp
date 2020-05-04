@@ -1,5 +1,5 @@
-#include "catch.hpp"
 #include "DetectorImpl.h"
+#include "catch.hpp"
 #include "string_utils.h"
 #include "tests/globals.h"
 #include <iostream>
@@ -23,8 +23,6 @@ TEST_CASE("Initialize a multi detector", "[.integration][.multi]") {
     CHECK(d.getNumberOfDetectors() == hostnames.size());
     d.freeSharedMemory();
 }
-
-
 
 TEST_CASE("Set and read timers", "[.integration][.multi]") {
 
@@ -57,7 +55,6 @@ TEST_CASE("Set and read timers", "[.integration][.multi]") {
     // PROGRESS, /**< fraction of measurement elapsed - only get! */
     // MEASUREMENTS_NUMBER,
 
-
     // FRAMES_FROM_START,
     // FRAMES_FROM_START_PG,
     // SAMPLES,
@@ -78,7 +75,6 @@ TEST_CASE("Set and read timers", "[.integration][.multi]") {
         CHECK(d.setSubFrameExposureDeadTime(-1) == Approx(subframe_deadtime));
     }
 
-    
     if (test::type == dt::EIGER) {
         // 32bit is needed for subframe exposure
         d.setDynamicRange(32);

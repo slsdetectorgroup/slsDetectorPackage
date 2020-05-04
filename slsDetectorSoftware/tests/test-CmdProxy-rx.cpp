@@ -27,7 +27,7 @@ TEST_CASE("rx_version", "[.cmd][.rx][.new]") {
     std::ostringstream vs;
     vs << "rx_version 0x" << std::hex << APIRECEIVER << '\n';
     REQUIRE(oss.str() == vs.str());
-    
+
     REQUIRE_THROWS(proxy.Call("rx_version", {"0"}, -1, PUT));
 }
 
@@ -106,7 +106,6 @@ TEST_CASE("rx_framescaught", "[.cmd][.rx][.new]") {
     //     proxy.Call("rx_framescaught", {}, -1, GET, oss);
     //     REQUIRE(oss.str() == "rx_framescaught 1\n");
     // }
-
 }
 
 TEST_CASE("rx_missingpackets", "[.cmd][.rx][.new]") {
@@ -141,15 +140,15 @@ TEST_CASE("rx_printconfig", "[.cmd][.rx][.new]") {
     REQUIRE_NOTHROW(proxy.Call("rx_printconfig", {}, -1, GET));
 }
 
-
-/* Receiver Config */ 
+/* Receiver Config */
 
 TEST_CASE("rx_hostname", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getRxHostname();
-    
-    // Cannot set rx_hostname (will reset parameters in rxr and no shm variables to update)
+
+    // Cannot set rx_hostname (will reset parameters in rxr and no shm variables
+    // to update)
     // {
     //     // disable receiver
     //     std::ostringstream oss;
@@ -304,7 +303,8 @@ TEST_CASE("rx_padding", "[.cmd][.rx][.new]") {
 TEST_CASE("rx_udpsocksize", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    int64_t prev_val = det.getRxUDPSocketBufferSize().tsquash("Need same udp socket buffer size to test");
+    int64_t prev_val = det.getRxUDPSocketBufferSize().tsquash(
+        "Need same udp socket buffer size to test");
     std::string s_new_val = std::to_string(prev_val - 1000);
     {
         std::ostringstream oss;
@@ -558,7 +558,7 @@ TEST_CASE("rx_framesperfile", "[.cmd][.rx][.new]") {
     }
     for (int i = 0; i != det.size(); ++i) {
         det.setFramesPerFile(prev_val[i], {i});
-    }    
+    }
 }
 
 /* ZMQ Streaming Parameters (Receiver<->Client) */
@@ -648,7 +648,7 @@ TEST_CASE("rx_zmqport", "[.cmd][.rx][.new]") {
     for (int i = 0; i != det.size(); ++i) {
         det.setRxZmqPort(prev_val_zmqport[i], i);
         if (det_type == defs::JUNGFRAU) {
-        det.setNumberofUDPInterfaces(prev_val_numinterfaces[i], {i});
+            det.setNumberofUDPInterfaces(prev_val_numinterfaces[i], {i});
         }
     }
 }
@@ -683,7 +683,9 @@ TEST_CASE("rx_dbitlist", "[.cmd][.rx][.new]") {
         auto prev_val = det.getRxDbitList();
         {
             std::ostringstream oss;
-            proxy.Call("rx_dbitlist", {"0", "4", "5", "8", "9", "10", "52", "63"}, -1, PUT, oss);
+            proxy.Call("rx_dbitlist",
+                       {"0", "4", "5", "8", "9", "10", "52", "63"}, -1, PUT,
+                       oss);
             REQUIRE(oss.str() == "rx_dbitlist [0, 4, 5, 8, 9, 10, 52, 63]\n");
         }
         {
@@ -745,7 +747,8 @@ TEST_CASE("rx_jsonaddheader", "[.cmd][.rx][.new]") {
 
     {
         std::ostringstream oss;
-        proxy.Call("rx_jsonaddheader", {"key1", "value1", "key2", "value2"}, -1, PUT, oss);
+        proxy.Call("rx_jsonaddheader", {"key1", "value1", "key2", "value2"}, -1,
+                   PUT, oss);
         REQUIRE(oss.str() == "rx_jsonaddheader {key1: value1, key2: value2}\n");
     }
     {

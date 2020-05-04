@@ -39,7 +39,7 @@ void read_int(Interface &socket) {
     std::cout << "Read <int>: " << i << "\n";
 }
 
-void read_combined(Interface &socket){
+void read_combined(Interface &socket) {
     auto i = socket.Receive<int>();
     auto d = socket.Receive<double>();
     auto f = socket.Receive<float>();

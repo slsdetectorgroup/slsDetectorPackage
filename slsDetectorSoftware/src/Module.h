@@ -8,15 +8,15 @@
 
 #include <array>
 #include <cmath>
-#include <vector>
 #include <map>
+#include <vector>
 
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
 #define SLS_SHMVERSION 0x200402
 
-namespace sls{
+namespace sls {
 
 /**
  * @short structure allocated in shared memory to store detector settings for
@@ -96,7 +96,7 @@ class Module : public virtual slsDetectorDefs {
      * one
      */
     explicit Module(detectorType type, int multi_id = 0, int det_id = 0,
-                         bool verify = true);
+                    bool verify = true);
 
     /**
      * Constructor called when opening existing shared memory
@@ -151,7 +151,7 @@ class Module : public virtual slsDetectorDefs {
     /**
      * Sets the hostname, if online flag is set connects to update the detector
      * @param name hostname
-     * @param initialChecks enable or disable initial compatibility checks 
+     * @param initialChecks enable or disable initial compatibility checks
      * and other server start up checks. Enabled by default. Disable only
      * for advanced users!
      */
@@ -181,7 +181,6 @@ class Module : public virtual slsDetectorDefs {
      * from the detector server
      */
     void updateNumberOfChannels();
-
 
     slsDetectorDefs::xy getNumberOfChannels() const;
 
@@ -272,11 +271,12 @@ class Module : public virtual slsDetectorDefs {
 
     detectorSettings getSettings();
 
-    /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2
-     * [Gotthard] Options: DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN
-     * [Gotthard2] Options: DYNAMICGAIN, FIXGAIN1, FIXGAIN2
-     * [Moench] Options: G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, 
-     *                   G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
+    /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2,
+     * FORCESWITCHG1, FORCESWITCHG2 [Gotthard] Options: DYNAMICGAIN, HIGHGAIN,
+     * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN [Gotthard2] Options: DYNAMICGAIN,
+     * FIXGAIN1, FIXGAIN2 [Moench] Options: G1_HIGHGAIN, G1_LOWGAIN,
+     * G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN,
+     * G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
      */
     void setSettings(detectorSettings isettings);
 
@@ -294,7 +294,7 @@ class Module : public virtual slsDetectorDefs {
      * @param tb 1 to include trimbits, 0 to exclude
      */
     void setThresholdEnergy(int e_eV, detectorSettings isettings = GET_SETTINGS,
-                           int tb = 1);
+                            int tb = 1);
 
     /**
      * Set threshold energy and settings (Eiger only)
@@ -405,7 +405,7 @@ class Module : public virtual slsDetectorDefs {
 
     /** [Gotthard2] only in burst mode and in auto timing mode */
     void setNumberOfBursts(int64_t value);
-   
+
     /** [Jungfrau] Advanced */
     int getNumberOfAdditionalStorageCells();
 
@@ -442,7 +442,7 @@ class Module : public virtual slsDetectorDefs {
     int64_t getBurstPeriod();
 
     /** [Gotthard2] only in burst mode and in auto timing mode */
-    void setBurstPeriod(int64_t value);   
+    void setBurstPeriod(int64_t value);
 
     /** [Eiger] in 32 bit mode */
     int64_t getSubExptime();
@@ -463,15 +463,15 @@ class Module : public virtual slsDetectorDefs {
      * Options: (0-1638375 ns (resolution of 25ns) */
     void setStorageCellDelay(int64_t value);
 
-    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3] 
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3]
      * [Gotthard2] only in continuous mode */
     int64_t getNumberOfFramesLeft() const;
 
-    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3] 
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3]
      * [Gotthard2] only in continuous mode */
     int64_t getNumberOfTriggersLeft() const;
 
-    /** [Gotthard][Jungfrau][CTB][Moench] 
+    /** [Gotthard][Jungfrau][CTB][Moench]
      * [Gotthard2] only in continuous mode */
     int64_t getDelayAfterTriggerLeft() const;
 
@@ -487,18 +487,17 @@ class Module : public virtual slsDetectorDefs {
     /** [Eiger] */
     int64_t getMeasuredSubFramePeriod() const;
 
-    /** [Jungfrau][CTB][Moench][Mythen3] 
+    /** [Jungfrau][CTB][Moench][Mythen3]
      * [Gotthard2] only in continuous mode */
     int64_t getNumberOfFramesFromStart() const;
 
-    /** [Jungfrau][CTB][Moench][Mythen3] Get time from detector start 
+    /** [Jungfrau][CTB][Moench][Mythen3] Get time from detector start
      * [Gotthard2] only in continuous mode */
     int64_t getActualTime() const;
 
-    /** [Jungfrau][CTB][Moench][Mythen3] Get timestamp at a frame start 
+    /** [Jungfrau][CTB][Moench][Mythen3] Get timestamp at a frame start
      * [Gotthard2] only in continuous mode */
     int64_t getMeasurementTime() const;
-
 
     timingMode getTimingMode();
     void setTimingMode(timingMode value);
@@ -522,9 +521,10 @@ class Module : public virtual slsDetectorDefs {
 
     /* [Gotthard2] */
     int getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex);
-    
+
     /* [Gotthard2] */
-    void setOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex, int value);    
+    void setOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex,
+                      int value);
 
     /**
      * Get adc value
@@ -560,7 +560,7 @@ class Module : public virtual slsDetectorDefs {
      * @param enable true if overflow, else false
      */
     void setOverFlowMode(const bool enable);
-    
+
     /**
      * Get overflow mode in 32 bit mode (Only for Eiger)
      * @returns overflow mode
@@ -581,7 +581,8 @@ class Module : public virtual slsDetectorDefs {
 
     /**
      * [Ctb]
-     * @param mode readout mode Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL
+     * @param mode readout mode Options: ANALOG_ONLY, DIGITAL_ONLY,
+     * ANALOG_AND_DIGITAL
      */
     void setReadoutMode(const readoutMode mode);
 
@@ -634,7 +635,7 @@ class Module : public virtual slsDetectorDefs {
      */
     uint32_t clearBit(uint32_t addr, int n);
 
-     /**
+    /**
      * Validates and sets the receiver.
      * Also updates the receiver with all the shared memory parameters
      * significant for the receiver Also configures the detector to the receiver
@@ -650,8 +651,8 @@ class Module : public virtual slsDetectorDefs {
      */
     std::string getReceiverHostname() const;
 
-   /**
-     * Validates the format of the detector MAC address and sets it 
+    /**
+     * Validates the format of the detector MAC address and sets it
      * @param mac detector MAC address
      */
     void setSourceUDPMAC(const sls::MacAddr mac);
@@ -702,14 +703,16 @@ class Module : public virtual slsDetectorDefs {
 
     /**
      * Validates the format of the receiver UDP IP address and sets it
-     * If slsReceiver used, Gets receiver udp mac address and sends it to the detector
+     * If slsReceiver used, Gets receiver udp mac address and sends it to the
+     * detector
      * @param ip receiver UDP IP address
      */
     void setDestinationUDPIP(const sls::IpAddr ip);
 
     /**
      * Returns the receiver UDP IP address
-     * If slsReceiver used, Gets receiver udp mac address and sends it to the detector
+     * If slsReceiver used, Gets receiver udp mac address and sends it to the
+     * detector
      * @returns the receiver UDP IP address
      */
     sls::IpAddr getDestinationUDPIP();
@@ -717,20 +720,22 @@ class Module : public virtual slsDetectorDefs {
     /**
      * Validates the format of the receiver UDP IP address (bottom half) and
      * sets it(Jungfrau only)
-     * If slsReceiver used, Gets receiver udp mac address2 and sends it to the detector
+     * If slsReceiver used, Gets receiver udp mac address2 and sends it to the
+     * detector
      * @param ip receiver UDP IP address (bottom half)
      */
     void setDestinationUDPIP2(const sls::IpAddr ip);
 
     /**
      * Returns the receiver UDP IP address (bottom half) Jungfrau only
-     * If slsReceiver used, Gets receiver udp mac address2 and sends it to the detector
+     * If slsReceiver used, Gets receiver udp mac address2 and sends it to the
+     * detector
      * @returns the receiver UDP IP address (bottom half)
      */
     sls::IpAddr getDestinationUDPIP2();
-  
+
     /**
-     * Validates the format of the receiver UDP MAC address and sets it 
+     * Validates the format of the receiver UDP MAC address and sets it
      * @param mac receiver UDP MAC address
      */
     void setDestinationUDPMAC(const sls::MacAddr mac);
@@ -790,7 +795,7 @@ class Module : public virtual slsDetectorDefs {
 
     /** Returns the number of udp interfaces from shared memory */
     int getNumberofUDPInterfacesFromShm();
-    
+
     /**
      * Returns the number of UDP interfaces to stream data from detector
      * (Jungfrau only)
@@ -904,13 +909,15 @@ class Module : public virtual slsDetectorDefs {
     void setTransmissionDelayRight(int value);
 
     /** empty vector deletes entire additional json header */
-    void setAdditionalJsonHeader(const std::map<std::string, std::string> &jsonHeader);
+    void setAdditionalJsonHeader(
+        const std::map<std::string, std::string> &jsonHeader);
     std::map<std::string, std::string> getAdditionalJsonHeader();
 
     /**
-     * Sets the value for the additional json header parameter key if found, else
-     * append it. If value empty, then deletes parameter */
-    void setAdditionalJsonParameter(const std::string &key, const std::string &value);
+     * Sets the value for the additional json header parameter key if found,
+     * else append it. If value empty, then deletes parameter */
+    void setAdditionalJsonParameter(const std::string &key,
+                                    const std::string &value);
     std::string getAdditionalJsonParameter(const std::string &key);
 
     /**
@@ -942,16 +949,15 @@ class Module : public virtual slsDetectorDefs {
     int getImageTestMode();
 
     /** [Gotthard] If 1, adds channel intensity with precalculated values.
-     * Default is 0 
+     * Default is 0
      * [Eiger virtual] If 1, pixels are saturated. If 0, increasing intensity
      * Only for virtual servers */
     void setImageTestMode(const int value);
 
-
     /** [Gotthard2] */
     std::array<int, 2> getInjectChannel();
 
-    /** [Gotthard2] 
+    /** [Gotthard2]
      * @param offsetChannel starting channel to be injected
      * @param incrementChannel determines succeeding channels to be injected */
     void setInjectChannel(const int offsetChannel, const int incrementChannel);
@@ -960,9 +966,10 @@ class Module : public virtual slsDetectorDefs {
     std::vector<int> getVetoPhoton(const int chipIndex);
 
     /** [Gotthard2] energy in keV */
-    void setVetoPhoton(const int chipIndex, const int numPhotons, const int energy, const std::string& fname);    
+    void setVetoPhoton(const int chipIndex, const int numPhotons,
+                       const int energy, const std::string &fname);
 
-    void setVetoReference(const int gainIndex, const int value); 
+    void setVetoReference(const int gainIndex, const int value);
 
     /** [Gotthard2]  */
     burstMode getBurstMode();
@@ -981,7 +988,7 @@ class Module : public virtual slsDetectorDefs {
 
     /** [Gotthard2] Options: TIMING_INTERNAL, TIMING_EXTERNAL */
     void setTimingSource(slsDetectorDefs::timingSourceType value);
-       
+
     /**
      * Set/get counter bit in detector (Gotthard)
      * @param i is -1 to get, 0 to reset and any other value to set the counter
@@ -1021,7 +1028,7 @@ class Module : public virtual slsDetectorDefs {
      */
     uint32_t getADCEnableMask();
 
-     /**
+    /**
      * Set 10Gb  ADC Enable Mask (CTB, Moench)
      * @param mask ADC Enable mask
      */
@@ -1031,7 +1038,7 @@ class Module : public virtual slsDetectorDefs {
      * Get 10Gb ADC Enable Mask (CTB, Moench)
      * @returns ADC Enable mask
      */
-    uint32_t getTenGigaADCEnableMask();   
+    uint32_t getTenGigaADCEnableMask();
 
     /**
      * Set ADC invert register (CTB, Moench, Jungfrau)
@@ -1078,7 +1085,7 @@ class Module : public virtual slsDetectorDefs {
     int getExternalSampling();
 
     /** digital data bits enable (CTB only) */
-    void setReceiverDbitList(const std::vector<int>& list);
+    void setReceiverDbitList(const std::vector<int> &list);
     std::vector<int> getReceiverDbitList() const;
 
     /** Set digital data offset in bytes (CTB only) */
@@ -1116,7 +1123,7 @@ class Module : public virtual slsDetectorDefs {
     /**
      * Sets the enable which determines if
      * data will be flipped across x axis (Eiger)
-     * @param value 0 or 1 to reset/set 
+     * @param value 0 or 1 to reset/set
      */
     void setFlippedDataX(bool value);
 
@@ -1134,7 +1141,7 @@ class Module : public virtual slsDetectorDefs {
      * @param vector os trimmed energies
      * @returns number of trim energies
      */
-    int setTrimEn(const std::vector<int>& energies = {});
+    int setTrimEn(const std::vector<int> &energies = {});
 
     /**
      * Returns a vector with the trimmed energies  (Eiger)
@@ -1199,12 +1206,12 @@ class Module : public virtual slsDetectorDefs {
      * @param buffer programming file in memory
      */
     void programFPGA(std::vector<char> buffer);
-    
+
     /** [Jungfau][Ctb] */
-    void programFPGAviaBlackfin(std::vector<char> buffer);    
+    void programFPGAviaBlackfin(std::vector<char> buffer);
 
     /** [Mythen3][Gotthard2] */
-    void programFPGAviaNios(std::vector<char> buffer); 
+    void programFPGAviaNios(std::vector<char> buffer);
     /**
      * Resets FPGA (Jungfrau)
      */
@@ -1330,7 +1337,7 @@ class Module : public virtual slsDetectorDefs {
     int64_t getFileIndex();
     void setFileIndex(int64_t file_index);
     void incrementFileIndex();
-    fileFormat getFileFormat() ;
+    fileFormat getFileFormat();
     void setFileFormat(fileFormat f);
     int getFramesPerFile();
     /** 0 will set frames per file to unlimited */
@@ -1339,7 +1346,6 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverFramesDiscardPolicy(frameDiscardPolicy f);
     bool getPartialFramesPadding();
     void setPartialFramesPadding(bool padding);
-
 
     /**
      * Receiver starts listening to packets
@@ -1372,7 +1378,6 @@ class Module : public virtual slsDetectorDefs {
      */
     uint64_t getReceiverCurrentFrameIndex() const;
     int getReceiverProgress() const;
-
 
     void setFileWrite(bool value);
     bool getFileWrite();
@@ -1468,7 +1473,7 @@ class Module : public virtual slsDetectorDefs {
      * @returns array of start addr and stop addr
      */
     std::array<int, 2> setPatternLoopAddresses(int level = -1, int start = -1,
-                                       int stop = -1);
+                                               int stop = -1);
 
     /**
      * Sets the pattern or loop limits (CTB/ Moench/ Mythen3)
@@ -1477,7 +1482,6 @@ class Module : public virtual slsDetectorDefs {
      * @returns number of loops
      */
     int setPatternLoopCycles(int level = -1, int n = -1);
-
 
     /**
      * Sets the wait address (CTB/ Moench/ Mythen3)
@@ -1567,7 +1571,7 @@ class Module : public virtual slsDetectorDefs {
 
     /** [Mythen3] */
     uint32_t getCounterMask();
-    
+
   private:
     /**
      * Send function parameters to detector (control server)
@@ -1581,15 +1585,14 @@ class Module : public virtual slsDetectorDefs {
                         void *retval, size_t retval_size);
 
     template <typename Arg, typename Ret>
-    void sendToDetector(int fnum, const Arg &args, Ret &retval);  
+    void sendToDetector(int fnum, const Arg &args, Ret &retval);
     template <typename Arg>
     void sendToDetector(int fnum, const Arg &args, std::nullptr_t);
     template <typename Ret>
     void sendToDetector(int fnum, std::nullptr_t, Ret &retval);
     void sendToDetector(int fnum);
 
-    template <typename Ret>
-    Ret sendToDetector(int fnum);
+    template <typename Ret> Ret sendToDetector(int fnum);
 
     template <typename Ret, typename Arg>
     Ret sendToDetector(int fnum, const Arg &args);
@@ -1662,11 +1665,9 @@ class Module : public virtual slsDetectorDefs {
     template <typename Ret>
     void sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const;
 
-    template <typename Ret>
-    Ret sendToReceiver(int fnum);
+    template <typename Ret> Ret sendToReceiver(int fnum);
 
-    template <typename Ret>
-    Ret sendToReceiver(int fnum) const;
+    template <typename Ret> Ret sendToReceiver(int fnum) const;
 
     template <typename Ret, typename Arg>
     Ret sendToReceiver(int fnum, const Arg &args);
@@ -1779,4 +1780,4 @@ class Module : public virtual slsDetectorDefs {
     mutable sls::SharedMemory<sharedSlsDetector> shm{0, 0};
 };
 
-}// sls
+} // namespace sls

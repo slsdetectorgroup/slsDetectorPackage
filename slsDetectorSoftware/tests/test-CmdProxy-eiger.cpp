@@ -14,8 +14,7 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
-
-/** temperature */ 
+/** temperature */
 
 TEST_CASE("temp_fpgaext", "[.cmd][.new]") {
     Detector det;
@@ -25,7 +24,7 @@ TEST_CASE("temp_fpgaext", "[.cmd][.new]") {
         REQUIRE_NOTHROW(proxy.Call("temp_fpgaext", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_fpgaext", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase (0, strlen("temp_fpgaext "));
+        std::string s = (oss.str()).erase(0, strlen("temp_fpgaext "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(proxy.Call("temp_fpgaext", {}, -1, GET));
@@ -40,7 +39,7 @@ TEST_CASE("temp_10ge", "[.cmd][.new]") {
         REQUIRE_NOTHROW(proxy.Call("temp_10ge", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_10ge", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase (0, strlen("temp_10ge "));
+        std::string s = (oss.str()).erase(0, strlen("temp_10ge "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(proxy.Call("temp_10ge", {}, -1, GET));
@@ -55,7 +54,7 @@ TEST_CASE("temp_dcdc", "[.cmd][.new]") {
         REQUIRE_NOTHROW(proxy.Call("temp_dcdc", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_dcdc", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase (0, strlen("temp_dcdc "));
+        std::string s = (oss.str()).erase(0, strlen("temp_dcdc "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(proxy.Call("temp_dcdc", {}, -1, GET));
@@ -70,7 +69,7 @@ TEST_CASE("temp_sodl", "[.cmd][.new]") {
         REQUIRE_NOTHROW(proxy.Call("temp_sodl", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_sodl", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase (0, strlen("temp_sodl "));
+        std::string s = (oss.str()).erase(0, strlen("temp_sodl "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(proxy.Call("temp_sodl", {}, -1, GET));
@@ -85,7 +84,7 @@ TEST_CASE("temp_sodr", "[.cmd][.new]") {
         REQUIRE_NOTHROW(proxy.Call("temp_sodr", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_sodr", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase (0, strlen("temp_sodr "));
+        std::string s = (oss.str()).erase(0, strlen("temp_sodr "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(proxy.Call("temp_sodr", {}, -1, GET));
@@ -100,7 +99,7 @@ TEST_CASE("temp_fpgafl", "[.cmd][.new]") {
         REQUIRE_NOTHROW(proxy.Call("temp_fpgafl", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_fpgafl", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase (0, strlen("temp_fpgafl "));
+        std::string s = (oss.str()).erase(0, strlen("temp_fpgafl "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(proxy.Call("temp_fpgafl", {}, -1, GET));
@@ -115,7 +114,7 @@ TEST_CASE("temp_fpgafr", "[.cmd][.new]") {
         REQUIRE_NOTHROW(proxy.Call("temp_fpgafr", {}, -1, GET));
         std::ostringstream oss;
         REQUIRE_NOTHROW(proxy.Call("temp_fpgafr", {}, 0, GET, oss));
-        std::string s = (oss.str()).erase (0, strlen("temp_fpgafr "));
+        std::string s = (oss.str()).erase(0, strlen("temp_fpgafr "));
         REQUIRE(std::stoi(s) != -1);
     } else {
         REQUIRE_THROWS(proxy.Call("temp_fpgafr", {}, -1, GET));
@@ -228,30 +227,6 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs][.new]") {
         REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 TEST_CASE("Eiger transmission delay", "[.cmd]") {
     Detector det;
@@ -518,8 +493,6 @@ TEST_CASE("quad", "[.cmd]") {
         REQUIRE_THROWS(proxy.Call("quad", {}, -1, GET));
     }
 }
-
-
 
 // TEST_CASE("trigger", "[.cmd]") {
 //     Detector det;

@@ -46,6 +46,20 @@ option(SLS_BUILD_DOCS "docs" OFF)
 option(SLS_BUILD_EXAMPLES "examples" OFF)
 option(SLS_TUNE_LOCAL "tune to local machine" OFF)
 
+# set(ClangFormat_BIN_NAME clang-format)
+set(ClangFormat_EXCLUDE_PATTERNS  "build/" 
+                                    "libs/" 
+                                    "slsDetectorCalibration/" 
+                                    "slsDetectorServers/" 
+                                    "ctbGui/" 
+                                    "slsSupportLib/"
+                                    "slsReceiverSoftware/"
+                                    "manual/"
+                                    "slsDetectorGui/"
+                                    "python/"
+                                    "sample/"
+                                    ${CMAKE_BINARY_DIR})
+find_package(ClangFormat)
 
 #Enable LTO if available
 check_ipo_supported(RESULT SLS_LTO_AVAILABLE)

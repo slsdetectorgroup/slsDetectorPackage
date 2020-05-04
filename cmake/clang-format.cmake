@@ -21,7 +21,7 @@ add_custom_target(format
     COMMENT "Running clang-format to change files"
     COMMAND ${ClangFormat_BIN}
     -style=file
-    --verbose
+    -i
     ${ALL_SOURCE_FILES}
 )
 

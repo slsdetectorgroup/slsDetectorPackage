@@ -17,6 +17,7 @@ foreach (SOURCE_FILE ${ALL_SOURCE_FILES})
     endforeach ()
 endforeach ()
 
+#target for formatting soruce files
 add_custom_target(format
     COMMENT "Running clang-format to change files"
     COMMAND ${ClangFormat_BIN}
@@ -25,7 +26,8 @@ add_custom_target(format
     ${ALL_SOURCE_FILES}
 )
 
-#put back i 
+
+#target to check format on source files 
 add_custom_target(format-check
     COMMENT "Checking clang-format changes"
     # Use ! to negate the result for correct output
@@ -37,7 +39,7 @@ add_custom_target(format-check
     | grep -q "replacement offset" 
 )
 
-
+# debug to check which file will be formatted
 add_custom_target(
     listformatfiles
     COMMAND

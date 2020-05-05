@@ -39,7 +39,7 @@ template <typename Container> bool allEqual(const Container &c) {
     return false;
 }
 
-/** 
+/**
  * Compare elements but with specified tolerance, useful
  * for floating point values.
  */
@@ -129,7 +129,7 @@ minusOneIfDifferent(const std::vector<std::array<T, size>> &container) {
     return arr;
 }
 
-/** 
+/**
  * Return the first value if all values are equal
  * otherwise return default_value. If no default
  * value is supplied it will be default constructed
@@ -145,7 +145,6 @@ Squash(const Container &c, typename Container::value_type default_value = {}) {
         return c.front();
     return default_value;
 }
-
 
 } // namespace sls
 

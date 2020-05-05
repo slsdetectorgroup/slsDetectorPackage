@@ -60,9 +60,9 @@ class MacAddr {
 };
 
 IpAddr HostnameToIp(const char *hostname);
-std::string IpToInterfaceName(const std::string& ip);
-MacAddr InterfaceNameToMac(const std::string& inf);
-IpAddr InterfaceNameToIp(const std::string& ifn);
+std::string IpToInterfaceName(const std::string &ip);
+MacAddr InterfaceNameToMac(const std::string &inf);
+IpAddr InterfaceNameToIp(const std::string &ifn);
 std::ostream &operator<<(std::ostream &out, const IpAddr &addr);
 std::ostream &operator<<(std::ostream &out, const MacAddr &addr);
 

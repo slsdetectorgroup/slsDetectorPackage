@@ -344,8 +344,9 @@ uint32_t Listener::ListenToAnImage(char *buf) {
         // copy packet
         switch (myDetectorType) {
         // for gotthard, 1st packet: 4 bytes fnum, CACA
-        // + CACA, 639*2 bytes data 				2nd packet: 4 bytes fnum, previous 1*2 bytes
-        //data  + 640*2 bytes data !!
+        // + CACA, 639*2 bytes data 				2nd packet: 4 bytes
+        // fnum, previous 1*2 bytes
+        // data  + 640*2 bytes data !!
         case GOTTHARD:
             if (!pnum)
                 memcpy(buf + fifohsize, &carryOverPacket[hsize + 4], dsize - 2);
@@ -514,8 +515,9 @@ uint32_t Listener::ListenToAnImage(char *buf) {
         // copy packet
         switch (myDetectorType) {
         // for gotthard, 1st packet: 4 bytes fnum, CACA
-        // + CACA, 639*2 bytes data 				2nd packet: 4 bytes fnum, previous 1*2 bytes
-        //data  + 640*2 bytes data !!
+        // + CACA, 639*2 bytes data 				2nd packet: 4 bytes
+        // fnum, previous 1*2 bytes
+        // data  + 640*2 bytes data !!
         case GOTTHARD:
             if (!pnum)
                 memcpy(buf + fifohsize + (pnum * dsize),

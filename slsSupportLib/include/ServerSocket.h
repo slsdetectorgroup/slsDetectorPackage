@@ -18,7 +18,7 @@ class ServerSocket : public DataSocket {
     IpAddr getLastClient() const noexcept { return lastClient; }
     IpAddr getThisClient() const noexcept { return thisClient; }
     IpAddr getLockedBy() const noexcept { return lockedBy; }
-    bool differentClients() const noexcept {return lastClient != thisClient;}
+    bool differentClients() const noexcept { return lastClient != thisClient; }
     void setLockedBy(IpAddr addr) { lockedBy = addr; }
     void setLastClient(IpAddr addr) { lastClient = addr; }
     int getPort() const noexcept { return serverPort; }

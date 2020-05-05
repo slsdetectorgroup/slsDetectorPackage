@@ -105,7 +105,7 @@ TEST_CASE("MAC Output operator gives same result as string", "[support]") {
     CHECK(os.str() == addr.str());
 }
 
-TEST_CASE("Copy construct a MacAddr"){
+TEST_CASE("Copy construct a MacAddr") {
     MacAddr addr{"00:50:c2:46:d9:a6"};
     MacAddr addr2(addr);
     CHECK(addr == addr2);

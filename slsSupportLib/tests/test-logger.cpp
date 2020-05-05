@@ -1,8 +1,8 @@
 #include "catch.hpp"
 #include "logger.h"
-#include <iostream>
-#include <fstream>
 #include <chrono>
+#include <fstream>
+#include <iostream>
 
 using sls::Logger;
 
@@ -27,25 +27,23 @@ TEST_CASE("Test output") {
 
     Logger::ReportingLevel() = logERROR;
 
-    //Redirect std::clog to local buffer
+    // Redirect std::clog to local buffer
     std::ostringstream local;
     auto clog_buff = std::clog.rdbuf();
     std::clog.rdbuf(local.rdbuf());
 
-    //Try printing something with too low level
+    // Try printing something with too low level
     LOG(logDEBUG) << "This should not be printed";
     CHECK(local.str().empty());
 
-    //Try printing something with a higher level
+    // Try printing something with a higher level
     LOG(logERROR) << "This should be printed";
     CHECK(!local.str().empty());
-    std::clog.rdbuf(clog_buff); // restore
-    Logger::ReportingLevel() = old_value; //reset
+    std::clog.rdbuf(clog_buff);           // restore
+    Logger::ReportingLevel() = old_value; // reset
 
-
-    //Check that the message is in the printed string
+    // Check that the message is in the printed string
     auto r = local.str();
     auto pos = r.find("This should be printed");
     CHECK(pos != std::string::npos);
-    
 }

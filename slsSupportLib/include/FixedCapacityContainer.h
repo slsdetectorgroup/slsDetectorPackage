@@ -104,7 +104,8 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
         }
     }
 
-    template <typename Container> bool is_equal(const Container &c) const noexcept {
+    template <typename Container>
+    bool is_equal(const Container &c) const noexcept {
         if (current_size != c.size()) {
             return false;
         } else {

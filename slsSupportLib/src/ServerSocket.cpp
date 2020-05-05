@@ -1,5 +1,5 @@
-#include "ServerInterface.h"
 #include "ServerSocket.h"
+#include "ServerInterface.h"
 
 #include "DataSocket.h"
 #include "logger.h"
@@ -13,8 +13,8 @@
 #include <stdexcept>
 #include <unistd.h>
 #define DEFAULT_PACKET_SIZE 1286
-#define SOCKET_BUFFER_SIZE (100 * 1024 * 1024) // 100 MB
-#define DEFAULT_BACKLOG 5
+#define SOCKET_BUFFER_SIZE  (100 * 1024 * 1024) // 100 MB
+#define DEFAULT_BACKLOG     5
 
 namespace sls {
 
@@ -29,7 +29,8 @@ ServerSocket::ServerSocket(int port)
     if (bind(getSocketId(), (struct sockaddr *)&serverAddr,
              sizeof(serverAddr)) != 0) {
         close();
-        throw sls::SocketError("Server ERROR: cannot bind socket. Please check if another instance is running.");
+        throw sls::SocketError("Server ERROR: cannot bind socket. Please check "
+                               "if another instance is running.");
     }
     if (listen(getSocketId(), DEFAULT_BACKLOG) != 0) {
         close();
@@ -38,7 +39,7 @@ ServerSocket::ServerSocket(int port)
 }
 
 ServerInterface ServerSocket::accept() {
-    lastClient = thisClient; //update from previous connection
+    lastClient = thisClient; // update from previous connection
     struct sockaddr_in clientAddr;
     socklen_t addr_size = sizeof clientAddr;
     int newSocket =

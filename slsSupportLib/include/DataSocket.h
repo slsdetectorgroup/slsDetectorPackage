@@ -17,13 +17,12 @@ class DataSocket {
     virtual ~DataSocket();
     DataSocket &operator=(DataSocket &&move) noexcept;
     void swap(DataSocket &other) noexcept;
-  
-    //No copy since the class manage the underlying socket
+
+    // No copy since the class manage the underlying socket
     DataSocket(const DataSocket &) = delete;
     DataSocket &operator=(DataSocket const &) = delete;
     int getSocketId() const { return sockfd_; }
 
-    
     int Send(const void *buffer, size_t size);
     template <typename T> int Send(T &&data) {
         return Send(&data, sizeof(data));
@@ -38,7 +37,7 @@ class DataSocket {
     template <typename T> int Receive(T &arg) {
         return Receive(&arg, sizeof(arg));
     }
-    
+
     template <typename T> T Receive() {
         T arg;
         Receive(&arg, sizeof(arg));

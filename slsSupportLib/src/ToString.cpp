@@ -403,7 +403,6 @@ template <> defs::burstMode StringTo(const std::string &s) {
     throw sls::RuntimeError("Unknown burst mode " + s);
 }
 
-
 template <> defs::timingSourceType StringTo(const std::string &s) {
     if (s == "internal")
         return defs::TIMING_INTERNAL;

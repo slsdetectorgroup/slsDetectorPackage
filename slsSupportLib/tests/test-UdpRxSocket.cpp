@@ -1,17 +1,17 @@
 #include "UdpRxSocket.h"
 #include "catch.hpp"
 #include "sls_detector_exceptions.h"
-#include <future>
-#include <thread>
-#include <vector>
 #include <cstdint>
 #include <errno.h>
+#include <future>
 #include <iostream>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <thread>
 #include <unistd.h>
+#include <vector>
 
 constexpr int default_port = 50001;
 
@@ -44,7 +44,7 @@ int open_socket(int port) {
     return fd;
 }
 
-TEST_CASE("Get packet size returns the packet size we set in the constructor"){
+TEST_CASE("Get packet size returns the packet size we set in the constructor") {
     constexpr int port = 50001;
     constexpr ssize_t packet_size = 8000;
     sls::UdpRxSocket s{port, packet_size};
@@ -57,17 +57,16 @@ TEST_CASE("Receive data from a vector") {
     std::vector<int> data_received(data_to_send.size());
     ssize_t packet_size =
         sizeof(decltype(data_to_send)::value_type) * data_to_send.size();
-    
+
     sls::UdpRxSocket udpsock{port, packet_size};
 
     int fd = open_socket(port);
     auto n = write(fd, data_to_send.data(), packet_size);
     CHECK(n == packet_size);
-    
-    CHECK(udpsock.ReceivePacket((char*)data_received.data()));
+
+    CHECK(udpsock.ReceivePacket((char *)data_received.data()));
     close(fd);
     CHECK(data_to_send == data_received);
-    
 }
 
 TEST_CASE("Shutdown socket without hanging when waiting for data") {

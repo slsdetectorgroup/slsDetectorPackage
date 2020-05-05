@@ -113,8 +113,7 @@ TEST_CASE("Compare a vector containing two vectors", "[support]") {
     CHECK(minusOneIfDifferent(d) == d[2]);
 }
 
-
-TEST_CASE("vector of bool", "[support]"){
+TEST_CASE("vector of bool", "[support]") {
     std::vector<bool> a{true, true, true};
     std::vector<bool> b{false, false, false};
     std::vector<bool> c{true, false, true};
@@ -124,14 +123,13 @@ TEST_CASE("vector of bool", "[support]"){
     CHECK(minusOneIfDifferent(c) == -1);
 }
 
-TEST_CASE("compare a vector of arrays", "[support]"){
+TEST_CASE("compare a vector of arrays", "[support]") {
 
-    std::vector<std::array<uint64_t, 3>> vec0{{5,6,8},{5,6,8},{5,6,8}};
-    CHECK(minusOneIfDifferent(vec0) == std::array<uint64_t, 3>{5,6,8});
+    std::vector<std::array<uint64_t, 3>> vec0{{5, 6, 8}, {5, 6, 8}, {5, 6, 8}};
+    CHECK(minusOneIfDifferent(vec0) == std::array<uint64_t, 3>{5, 6, 8});
 
     std::array<uint64_t, 3> arr;
     arr.fill(-1);
-    std::vector<std::array<uint64_t, 3>> vec1{{5,90,8},{5,6,8},{5,6,8}};
+    std::vector<std::array<uint64_t, 3>> vec1{{5, 90, 8}, {5, 6, 8}, {5, 6, 8}};
     CHECK(minusOneIfDifferent(vec1) == arr);
-
 }

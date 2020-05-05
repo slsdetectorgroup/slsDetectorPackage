@@ -15,69 +15,66 @@
 // #define ZMQ_DETAIL
 #define ROIVERBOSITY
 
-
 class zmq_msg_t;
 #include <map>
 
 /** zmq header structure */
 struct zmqHeader {
-  /** true if incoming data, false if end of acquisition */
-  bool data{true};
-  uint32_t jsonversion{0};
-  uint32_t dynamicRange{0};
-  uint64_t fileIndex{0};
-  /** number of detectors in x axis */
-  uint32_t ndetx{0}; 
-  /** number of detectors in y axis */
-  uint32_t ndety{0}; 
-  /** number of pixels/channels in x axis for this zmq socket */
-  uint32_t npixelsx{0};
-  /** number of pixels/channels in y axis for this zmq socket */
-  uint32_t npixelsy{0}; 
-  /** number of bytes for an image in this socket */
-  uint32_t imageSize{0}; 
-  /** frame number from detector */
-  uint64_t acqIndex{0}; 
-  /** frame index (starting at 0 for each acquisition) */
-  uint64_t frameIndex{0};
-  /** progress in percentage */
-  int progress{0};
-  /** file name prefix */
-  std::string fname{""};
-  /** header from detector */ 
-  uint64_t frameNumber{0}; 
-  uint32_t expLength{0};
-  uint32_t packetNumber{0}; 
-  uint64_t bunchId{0}; 
-  uint64_t timestamp{0}; 
-  uint16_t modId{0};
-  uint16_t row{0}; 
-  uint16_t column{0}; 
-  uint16_t reserved{0}; 
-  uint32_t debug{0};
-  uint16_t roundRNumber{0}; 
-  uint8_t detType{0}; 
-  uint8_t version{0};
-  /** if image should be flipped across x axis */
-  int flippedDataX{0}; 
-  /** quad type (eiger hardware specific) */
-  uint32_t quad{0}; 
-  /** true if complete image, else missing packets */
-  bool completeImage{false};
-  /** additional json header */
-  std::map<std::string, std::string> addJsonHeader;
+    /** true if incoming data, false if end of acquisition */
+    bool data{true};
+    uint32_t jsonversion{0};
+    uint32_t dynamicRange{0};
+    uint64_t fileIndex{0};
+    /** number of detectors in x axis */
+    uint32_t ndetx{0};
+    /** number of detectors in y axis */
+    uint32_t ndety{0};
+    /** number of pixels/channels in x axis for this zmq socket */
+    uint32_t npixelsx{0};
+    /** number of pixels/channels in y axis for this zmq socket */
+    uint32_t npixelsy{0};
+    /** number of bytes for an image in this socket */
+    uint32_t imageSize{0};
+    /** frame number from detector */
+    uint64_t acqIndex{0};
+    /** frame index (starting at 0 for each acquisition) */
+    uint64_t frameIndex{0};
+    /** progress in percentage */
+    int progress{0};
+    /** file name prefix */
+    std::string fname{""};
+    /** header from detector */
+    uint64_t frameNumber{0};
+    uint32_t expLength{0};
+    uint32_t packetNumber{0};
+    uint64_t bunchId{0};
+    uint64_t timestamp{0};
+    uint16_t modId{0};
+    uint16_t row{0};
+    uint16_t column{0};
+    uint16_t reserved{0};
+    uint32_t debug{0};
+    uint16_t roundRNumber{0};
+    uint8_t detType{0};
+    uint8_t version{0};
+    /** if image should be flipped across x axis */
+    int flippedDataX{0};
+    /** quad type (eiger hardware specific) */
+    uint32_t quad{0};
+    /** true if complete image, else missing packets */
+    bool completeImage{false};
+    /** additional json header */
+    std::map<std::string, std::string> addJsonHeader;
 };
 
 class ZmqSocket {
 
   public:
-
     // Socket Options for optimization
     // ZMQ_LINGER default is already -1 means no messages discarded. use this
-    // options if optimizing required ZMQ_SNDHWM default is 0 means no limit. use
-    // this to optimize if optimizing required
-    // eg. int value = -1;
-    // if (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
+    // options if optimizing required ZMQ_SNDHWM default is 0 means no limit.
+    // use this to optimize if optimizing required eg. int value = -1; if
+    // (zmq_setsockopt(socketDescriptor, ZMQ_LINGER, &value,sizeof(value))) {
     //	Close();
     /**
      * Constructor for a client
@@ -174,7 +171,7 @@ class ZmqSocket {
      * @returns 0 if error, else 1
      */
     int SendData(char *buf, int length);
-  
+
     /**
      * Receive Header
      * @param index self index for debugging
@@ -183,7 +180,7 @@ class ZmqSocket {
      * @returns 0 if error or end of acquisition, else 1 (call
      * CloseHeaderMessage after parsing header)
      */
-    int ReceiveHeader(const int index, zmqHeader& zHeader, uint32_t version);
+    int ReceiveHeader(const int index, zmqHeader &zHeader, uint32_t version);
 
     /**
      * Receive Data
@@ -200,8 +197,7 @@ class ZmqSocket {
     void PrintError();
 
   private:
-
-	/**
+    /**
      * Receive Message
      * @param index self index for debugging
      * @param message message
@@ -218,8 +214,8 @@ class ZmqSocket {
      * @param version version that has to match, -1 to not care
      * @returns true if successful else false
      */
-    int ParseHeader(const int index, int length, char *buff, 
-      zmqHeader& zHeader, uint32_t version);
+    int ParseHeader(const int index, int length, char *buff, zmqHeader &zHeader,
+                    uint32_t version);
 
     /**
      * Class to close socket descriptors automatically
@@ -251,6 +247,4 @@ class ZmqSocket {
 
     /** Socket descriptor */
     mySocketDescriptors sockfd;
-
-
 };

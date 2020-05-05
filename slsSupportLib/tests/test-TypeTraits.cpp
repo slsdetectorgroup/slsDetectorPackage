@@ -1,12 +1,12 @@
 #include "TypeTraits.h"
 #include "catch.hpp"
 #include <array>
-#include <vector>
-#include <sstream>
 #include <chrono>
 #include <initializer_list>
+#include <sstream>
+#include <vector>
 
-//Dummy classes only used here for testing
+// Dummy classes only used here for testing
 class DummyWithStr {
   public:
     std::string str();
@@ -32,7 +32,7 @@ TEST_CASE("Check for str() on ostream") {
     REQUIRE(sls::has_str<std::ostringstream>::value == true);
 }
 
-TEST_CASE("sls::is_duration"){
+TEST_CASE("sls::is_duration") {
     REQUIRE(sls::is_duration<std::chrono::nanoseconds>::value == true);
     REQUIRE(sls::is_duration<std::chrono::seconds>::value == true);
     REQUIRE(sls::is_duration<std::chrono::hours>::value == true);
@@ -41,11 +41,11 @@ TEST_CASE("sls::is_duration"){
     REQUIRE(sls::is_duration<std::vector<int>>::value == false);
 }
 
-TEST_CASE("initializer list"){
+TEST_CASE("initializer list") {
     REQUIRE(sls::is_light_container<std::initializer_list<int>>::value == true);
 }
 
-TEST_CASE("Check for emplace back"){
-    //we know vector should have this its the type trait that is tested
+TEST_CASE("Check for emplace back") {
+    // we know vector should have this its the type trait that is tested
     REQUIRE(sls::has_emplace_back<std::vector<int>>::value == true);
 }

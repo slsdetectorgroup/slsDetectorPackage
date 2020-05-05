@@ -272,7 +272,7 @@ void DataProcessor::ProcessAnImage(char *buf) {
                 buf + FIFO_HEADER_NUMBYTES,
                 sizeof(sls_receiver_header) +
                     (uint32_t)(*((uint32_t *)buf)), //+ size of data (resizable
-                                                    //from previous call back
+                                                    // from previous call back
                 fnum - firstIndex, nump);
         } catch (const sls::RuntimeError &e) {
             ; // ignore write exception for now (TODO: send error message via

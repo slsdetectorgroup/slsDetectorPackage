@@ -1,27 +1,39 @@
 #pragma once
 /*Utility to log to console*/
 
-#include "ansi.h"   //Colors
-#include <sys/time.h>
+#include "ansi.h" //Colors
 #include <iostream>
 #include <sstream>
+#include <sys/time.h>
 
-enum TLogLevel {logERROR, logWARNING, logINFOBLUE, logINFOGREEN, logINFORED, logINFO,
-	logDEBUG, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4, logDEBUG5};
+enum TLogLevel {
+    logERROR,
+    logWARNING,
+    logINFOBLUE,
+    logINFOGREEN,
+    logINFORED,
+    logINFO,
+    logDEBUG,
+    logDEBUG1,
+    logDEBUG2,
+    logDEBUG3,
+    logDEBUG4,
+    logDEBUG5
+};
 
 // Compiler should optimize away anything below this value
 #ifndef LOG_MAX_REPORTING_LEVEL
 #define LOG_MAX_REPORTING_LEVEL logINFO
 #endif
 
-#define __AT__  std::string(__FILE__) + std::string("::") + std::string(__func__) + std::string("(): ")
-#define __SHORT_FORM_OF_FILE__ \
-(strrchr(__FILE__,'/') \
-? strrchr(__FILE__,'/')+1 \
-: __FILE__ \
-)
-#define __SHORT_AT__  std::string(__SHORT_FORM_OF_FILE__) + std::string("::") + std::string(__func__) + std::string("(): ")
-
+#define __AT__                                                                 \
+    std::string(__FILE__) + std::string("::") + std::string(__func__) +        \
+        std::string("(): ")
+#define __SHORT_FORM_OF_FILE__                                                 \
+    (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define __SHORT_AT__                                                           \
+    std::string(__SHORT_FORM_OF_FILE__) + std::string("::") +                  \
+        std::string(__func__) + std::string("(): ")
 
 namespace sls {
 class Logger {

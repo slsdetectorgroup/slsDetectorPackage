@@ -1,5 +1,6 @@
 #include "sls_detector_exceptions.h"
 
+#include "network_utils.h"
 #include <algorithm>
 #include <arpa/inet.h>
 #include <cassert>
@@ -15,7 +16,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "network_utils.h"
 
 namespace sls {
 
@@ -85,7 +85,8 @@ IpAddr HostnameToIp(const char *hostname) {
     hints.ai_socktype = SOCK_STREAM;
     if (getaddrinfo(hostname, nullptr, &hints, &result)) {
         freeaddrinfo(result);
-        throw RuntimeError("Could not convert hostname (" + std::string(hostname) + ") to ip");
+        throw RuntimeError("Could not convert hostname (" +
+                           std::string(hostname) + ") to ip");
     }
     uint32_t ip = ((sockaddr_in *)result->ai_addr)->sin_addr.s_addr;
     freeaddrinfo(result);
@@ -133,7 +134,7 @@ IpAddr InterfaceNameToIp(const std::string &ifn) {
             continue;
 
         auto s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host,
-                        NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+                             NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
 
         if ((strcmp(ifa->ifa_name, ifn.c_str()) == 0) &&
             (ifa->ifa_addr->sa_family == AF_INET)) {

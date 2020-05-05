@@ -1,16 +1,16 @@
 #include "TimeHelper.h"
 #include "ToString.h"
+#include "catch.hpp"
 #include "network_utils.h"
 #include "sls_detector_defs.h"
-#include "catch.hpp"
 #include <array>
 #include <map>
 #include <vector>
 
 // using namespace sls;
+using sls::defs;
 using sls::StringTo;
 using sls::ToString;
-using sls::defs;
 using namespace sls::time;
 
 TEST_CASE("Integer conversions", "[support]") {
@@ -44,7 +44,6 @@ TEST_CASE("conversion from duration to string", "[support]") {
     REQUIRE(ToString(s(-1)) == "-1s");
     REQUIRE(ToString(us(-100)) == "-100us");
 }
-
 
 TEST_CASE("Convert vector of time", "[support]") {
     std::vector<ns> vec{ns(150), us(10), ns(600)};
@@ -85,27 +84,26 @@ TEST_CASE("Array") {
     REQUIRE(ToString(arr) == "[1, 2, 3]");
 }
 
-TEST_CASE("Convert types with str method"){
+TEST_CASE("Convert types with str method") {
     sls::IpAddr addr;
     REQUIRE(ToString(addr) == "0.0.0.0");
     REQUIRE(ToString(sls::IpAddr{}) == "0.0.0.0");
 }
 
-TEST_CASE("String to string", "[support]"){
+TEST_CASE("String to string", "[support]") {
     std::string s = "hej";
     REQUIRE(ToString(s) == "hej");
 }
 
-TEST_CASE("vector of strings"){
+TEST_CASE("vector of strings") {
     std::vector<std::string> vec{"5", "s"};
     REQUIRE(ToString(vec) == "[5, s]");
-    
+
     std::vector<std::string> vec2{"some", "strange", "words", "75"};
     REQUIRE(ToString(vec2) == "[some, strange, words, 75]");
-
 }
 
-TEST_CASE("run status"){
+TEST_CASE("run status") {
     using defs = slsDetectorDefs;
     REQUIRE(ToString(defs::runStatus::ERROR) == "error");
     REQUIRE(ToString(defs::runStatus::WAITING) == "waiting");
@@ -126,7 +124,7 @@ TEST_CASE("string to std::chrono::duration", "[support]") {
     REQUIRE_THROWS(StringTo<ns>("asvn"));
 }
 
-TEST_CASE("string to detectorType"){
+TEST_CASE("string to detectorType") {
     using dt = slsDetectorDefs::detectorType;
     REQUIRE(StringTo<dt>("Eiger") == dt::EIGER);
     REQUIRE(StringTo<dt>("Gotthard") == dt::GOTTHARD);
@@ -137,14 +135,13 @@ TEST_CASE("string to detectorType"){
     REQUIRE(StringTo<dt>("Gotthard2") == dt::GOTTHARD2);
 }
 
-TEST_CASE("vec"){
+TEST_CASE("vec") {
     using rs = slsDetectorDefs::runStatus;
     std::vector<rs> vec{rs::ERROR, rs::IDLE};
     REQUIRE(ToString(vec) == "[error, idle]");
 }
 
-
-TEST_CASE("uint32 from string"){
+TEST_CASE("uint32 from string") {
     REQUIRE(StringTo<uint32_t>("0") == 0);
     REQUIRE(StringTo<uint32_t>("5") == 5u);
     REQUIRE(StringTo<uint32_t>("16") == 16u);
@@ -153,10 +150,9 @@ TEST_CASE("uint32 from string"){
     REQUIRE(StringTo<uint32_t>("0x15") == 21u);
     REQUIRE(StringTo<uint32_t>("0x15") == 0x15);
     REQUIRE(StringTo<uint32_t>("0xffffff") == 0xffffff);
-
 }
 
-TEST_CASE("uint64 from string"){
+TEST_CASE("uint64 from string") {
     REQUIRE(StringTo<uint64_t>("0") == 0);
     REQUIRE(StringTo<uint64_t>("5") == 5u);
     REQUIRE(StringTo<uint64_t>("16") == 16u);
@@ -164,11 +160,9 @@ TEST_CASE("uint64 from string"){
     REQUIRE(StringTo<uint64_t>("0x14") == 20u);
     REQUIRE(StringTo<uint64_t>("0x15") == 21u);
     REQUIRE(StringTo<uint64_t>("0xffffff") == 0xffffff);
-    
 }
 
-
-TEST_CASE("int from string"){
+TEST_CASE("int from string") {
     REQUIRE(StringTo<int>("-1") == -1);
     REQUIRE(StringTo<int>("-0x1") == -0x1);
     REQUIRE(StringTo<int>("-0x1") == -1);
@@ -179,11 +173,9 @@ TEST_CASE("int from string"){
     REQUIRE(StringTo<int>("0x14") == 20);
     REQUIRE(StringTo<int>("0x15") == 21);
     REQUIRE(StringTo<int>("0xffffff") == 0xffffff);
-    
 }
 
-
-TEST_CASE("int64_t from string"){
+TEST_CASE("int64_t from string") {
     REQUIRE(StringTo<int64_t>("-1") == -1);
     REQUIRE(StringTo<int64_t>("-0x1") == -0x1);
     REQUIRE(StringTo<int64_t>("-0x1") == -1);
@@ -194,11 +186,9 @@ TEST_CASE("int64_t from string"){
     REQUIRE(StringTo<int64_t>("0x14") == 20);
     REQUIRE(StringTo<int64_t>("0x15") == 21);
     REQUIRE(StringTo<int64_t>("0xffffff") == 0xffffff);
-    
 }
 
-
-TEST_CASE("std::map of strings"){
+TEST_CASE("std::map of strings") {
     std::map<std::string, std::string> m;
     m["key"] = "value";
     auto s = ToString(m);
@@ -209,10 +199,9 @@ TEST_CASE("std::map of strings"){
 
     m["test"] = "tree";
     REQUIRE(ToString(m) == "{chrusi: musi, key: value, test: tree}");
-
 }
 
-TEST_CASE("std::map of ints"){
+TEST_CASE("std::map of ints") {
 
     std::map<int, int> m;
     m[5] = 10;
@@ -221,10 +210,9 @@ TEST_CASE("std::map of ints"){
     REQUIRE(ToString(m) == "{5: 10, 500: 50}");
     m[372] = 999;
     REQUIRE(ToString(m) == "{5: 10, 372: 999, 500: 50}");
-
 }
 
-TEST_CASE("Detector type"){
+TEST_CASE("Detector type") {
     auto dt = defs::detectorType::EIGER;
     REQUIRE(ToString(dt) == "Eiger");
     REQUIRE(StringTo<defs::detectorType>("Eiger") == dt);

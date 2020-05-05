@@ -1,7 +1,7 @@
 
 #pragma once
 /*
-UDP socket class to receive data. The intended use is in the 
+UDP socket class to receive data. The intended use is in the
 receiver listener loop. Should be used RAII style...
 */
 

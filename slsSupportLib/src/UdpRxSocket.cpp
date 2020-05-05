@@ -56,22 +56,21 @@ UdpRxSocket::UdpRxSocket(int port, ssize_t packet_size, const char *hostname,
 UdpRxSocket::~UdpRxSocket() { Shutdown(); }
 ssize_t UdpRxSocket::getPacketSize() const noexcept { return packet_size_; }
 
-bool UdpRxSocket::ReceivePacket(char *dst) noexcept{
+bool UdpRxSocket::ReceivePacket(char *dst) noexcept {
     auto bytes_received =
         recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
     return bytes_received == packet_size_;
 }
 
 ssize_t UdpRxSocket::ReceiveDataOnly(char *dst) noexcept {
-        auto r = recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
-        constexpr ssize_t eiger_header_packet =
-            40; // only detector that has this
-        if (r == eiger_header_packet) {
-            LOG(logWARNING) << "Got header pkg";
-            r = recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
-        }
-        return r;
+    auto r = recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
+    constexpr ssize_t eiger_header_packet = 40; // only detector that has this
+    if (r == eiger_header_packet) {
+        LOG(logWARNING) << "Got header pkg";
+        r = recvfrom(sockfd_, dst, packet_size_, 0, nullptr, nullptr);
     }
+    return r;
+}
 
 size_t UdpRxSocket::getBufferSize() const {
     size_t ret = 0;
@@ -87,10 +86,10 @@ void UdpRxSocket::setBufferSize(ssize_t size) {
 }
 
 void UdpRxSocket::Shutdown() {
-        shutdown(sockfd_, SHUT_RDWR);
-        if (sockfd_ >= 0) {
-            close(sockfd_);
-            sockfd_ = -1;
-        }
+    shutdown(sockfd_, SHUT_RDWR);
+    if (sockfd_ >= 0) {
+        close(sockfd_);
+        sockfd_ = -1;
     }
+}
 } // namespace sls

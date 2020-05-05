@@ -4,35 +4,32 @@
 #include <iostream>
 #include <string>
 
-namespace sls{
+namespace sls {
 
 class Timer {
     using clock = std::chrono::high_resolution_clock;
     using time_point = std::chrono::time_point<clock>;
 
   public:
-    Timer(std::string name = "0")
-        : t0(clock::now()), name_(name) {
-    }
+    Timer(std::string name = "0") : t0(clock::now()), name_(name) {}
 
     double elapsed_ms() {
-        return std::chrono::duration<double, std::milli>(clock::now() - t0).count();
+        return std::chrono::duration<double, std::milli>(clock::now() - t0)
+            .count();
     }
     double elapsed_s() {
         return std::chrono::duration<double>(clock::now() - t0).count();
     }
     void print_elapsed() {
-        std::cout << "Timer \"" << name_ << "\": Elapsed time " << elapsed_ms() << " ms\n";
+        std::cout << "Timer \"" << name_ << "\": Elapsed time " << elapsed_ms()
+                  << " ms\n";
     }
-    void restart() {
-        t0 = clock::now();
-    }
+    void restart() { t0 = clock::now(); }
 
   private:
     time_point t0;
     std::string name_;
 };
 
-
-}; //namespace sls
+};     // namespace sls
 #endif // TIMER_H

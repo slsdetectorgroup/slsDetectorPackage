@@ -136,8 +136,6 @@ void DataSocket::shutDownSocket() {
     close();
 }
 
-void DataSocket::shutdown(){
-    ::shutdown(sockfd_, SHUT_RDWR);
-}
+void DataSocket::shutdown() { ::shutdown(sockfd_, SHUT_RDWR); }
 
 } // namespace sls

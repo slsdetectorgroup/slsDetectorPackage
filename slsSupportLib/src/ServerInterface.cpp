@@ -5,7 +5,7 @@
 namespace sls {
 
 int ServerInterface::sendResult(int ret, void *retval, int retvalSize,
-                                 char *mess) {
+                                char *mess) {
 
     write(&ret, sizeof(ret));
     if (ret == defs::FAIL) {
@@ -13,7 +13,7 @@ int ServerInterface::sendResult(int ret, void *retval, int retvalSize,
             write(mess, MAX_STR_LENGTH);
         } else {
             LOG(logERROR) << "No error message provided for this "
-                                  "failure. Will mess up TCP\n";
+                             "failure. Will mess up TCP\n";
         }
     } else {
         write(retval, retvalSize);

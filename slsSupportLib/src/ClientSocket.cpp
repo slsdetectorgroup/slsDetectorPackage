@@ -72,7 +72,7 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
 
     try {
         Receive(&ret, sizeof(ret));
-    } 
+    }
     // debugging
     catch (sls::SocketError &e) {
         if (socketType == "Receiver") {

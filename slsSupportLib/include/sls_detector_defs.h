@@ -15,28 +15,27 @@
 #endif
 
 #ifdef __cplusplus
-//C++ includes
+// C++ includes
 #include "sls_detector_exceptions.h"
 #include <algorithm>
 #include <bitset>
 #include <cstdint>
 #include <string>
 #else
-//C includes
+// C includes
 #include <stdint.h>
 #endif
-
 
 #define BIT32_MASK  0xFFFFFFFF
 #define MAX_RX_DBIT 64
 
 /** default ports */
-#define DEFAULT_PORTNO 1952
-#define DEFAULT_UDP_PORTNO 50001
+#define DEFAULT_PORTNO        1952
+#define DEFAULT_UDP_PORTNO    50001
 #define DEFAULT_ZMQ_CL_PORTNO 30001
 #define DEFAULT_ZMQ_RX_PORTNO 30001
 
-#define SLS_DETECTOR_HEADER_VERSION 0x2
+#define SLS_DETECTOR_HEADER_VERSION      0x2
 #define SLS_DETECTOR_JSON_HEADER_VERSION 0x4
 
 // ctb/ moench 1g udp (read from fifo)
@@ -54,17 +53,16 @@
 /** get flag form most functions */
 #define GET_FLAG -1
 
-#define DEFAULT_DET_MAC "00:aa:bb:cc:dd:ee"
-#define DEFAULT_DET_IP "129.129.202.45"
+#define DEFAULT_DET_MAC  "00:aa:bb:cc:dd:ee"
+#define DEFAULT_DET_IP   "129.129.202.45"
 #define DEFAULT_DET_MAC2 "00:aa:bb:cc:dd:ff"
-#define DEFAULT_DET_IP2 "129.129.202.46"
+#define DEFAULT_DET_IP2  "129.129.202.46"
 
 /** default maximum string length */
-#define MAX_STR_LENGTH 1000
+#define MAX_STR_LENGTH   1000
 #define SHORT_STR_LENGTH 20
 
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
-
 
 #ifdef __cplusplus
 class slsDetectorDefs {
@@ -73,10 +71,10 @@ class slsDetectorDefs {
 
     /** Type of the detector */
     enum detectorType {
-        GET_DETECTOR_TYPE = -1, 
+        GET_DETECTOR_TYPE = -1,
         GENERIC,
         EIGER,
-        GOTTHARD, 
+        GOTTHARD,
         JUNGFRAU,
         CHIPTESTBOARD,
         MOENCH,
@@ -86,7 +84,7 @@ class slsDetectorDefs {
 
     /**  return values */
     enum {
-        OK,   /**< function succeeded */
+        OK,  /**< function succeeded */
         FAIL /**< function failed */
     };
 
@@ -143,7 +141,7 @@ class slsDetectorDefs {
 #define MAX_NUM_PACKETS 512
     using sls_bitset = std::bitset<MAX_NUM_PACKETS>;
     using bitset_storage = uint8_t[MAX_NUM_PACKETS / 8];
-    struct sls_receiver_header{
+    struct sls_receiver_header {
         sls_detector_header detHeader; /**< is the detector header */
         sls_bitset packetsMask;        /**< is the packets caught bit mask */
     };
@@ -171,23 +169,22 @@ class slsDetectorDefs {
         xmin,xmax,ymin,ymax define the limits of the region
     */
 
-   #ifdef __cplusplus
+#ifdef __cplusplus
     struct ROI {
         int xmin{-1}; /**< is the roi xmin (in channel number) */
         int xmax{-1}; /**< is the roi xmax  (in channel number)*/
-    }__attribute__((packed));
-    #else
-    typedef struct {
-        int xmin; /**< is the roi xmin (in channel number) */
-        int xmax; /**< is the roi xmax  (in channel number)*/
-     } ROI;
-    #endif
+    } __attribute__((packed));
+#else
+typedef struct {
+    int xmin; /**< is the roi xmin (in channel number) */
+    int xmax; /**< is the roi xmax  (in channel number)*/
+} ROI;
+#endif
 
     /**
         type of action performed (for text client)
     */
     enum { GET_ACTION, PUT_ACTION, READOUT_ACTION, HELP_ACTION };
-
 
     /**
         dimension indexes
@@ -202,10 +199,9 @@ class slsDetectorDefs {
         int x{0};
         int y{0};
         xy() = default;
-        xy(int x, int y):x(x),y(y){};
-    }__attribute__((packed));
+        xy(int x, int y) : x(x), y(y){};
+    } __attribute__((packed));
 #endif
-
 
     /**
       use of the external signals
@@ -241,10 +237,10 @@ class slsDetectorDefs {
     */
     enum timingMode {
         GET_TIMING_MODE = -1, /**<return flag for communication mode */
-        AUTO_TIMING,      /**< internal timing */
-        TRIGGER_EXPOSURE, /**< trigger mode i.e. exposure is triggered */
-        GATED,            /**< gated  */
-        BURST_TRIGGER,     /**< trigger a burst of frames */
+        AUTO_TIMING,          /**< internal timing */
+        TRIGGER_EXPOSURE,     /**< trigger mode i.e. exposure is triggered */
+        GATED,                /**< gated  */
+        BURST_TRIGGER,        /**< trigger a burst of frames */
         NUM_TIMING_MODES
     };
 
@@ -297,27 +293,27 @@ class slsDetectorDefs {
         VIPRE,
         VIINSH,
         VDCSH,
-        VTH2, 
-        VPL,  
-        VTH3, 
+        VTH2,
+        VPL,
+        VTH3,
         CASSH,
-        CAS,  
+        CAS,
         VICIN,
         VIPRE_OUT,
         VREF_H_ADC,
         VB_COMP_FE,
         VB_COMP_ADC,
-        VCOM_CDS,  
+        VCOM_CDS,
         VREF_RSTORE,
         VB_OPA_1ST,
         VREF_COMP_FE,
-        VCOM_ADC1, 
+        VCOM_ADC1,
         VREF_PRECH,
         VREF_L_ADC,
-        VREF_CDS,  
-        VB_CS,     
-        VB_OPA_FD, 
-        VCOM_ADC2, 
+        VREF_CDS,
+        VB_CS,
+        VB_OPA_FD,
+        VCOM_ADC2,
         VB_DS,
         VB_COMP,
         VB_PIXBUF,
@@ -339,7 +335,7 @@ class slsDetectorDefs {
         I_POWER_C = 108,
         I_POWER_D = 109,
         I_POWER_IO = 110,
-        V_LIMIT = 111,  
+        V_LIMIT = 111,
         SLOW_ADC0 = 1000,
         SLOW_ADC1,
         SLOW_ADC2,
@@ -355,20 +351,20 @@ class slsDetectorDefs {
        detector settings indexes
     */
     enum detectorSettings {
-        GET_SETTINGS = -1, 
-        STANDARD,          
-        FAST,              
-        HIGHGAIN,          
-        DYNAMICGAIN,       
-        LOWGAIN,           
-        MEDIUMGAIN,        
-        VERYHIGHGAIN,      
-        DYNAMICHG0,        
-        FIXGAIN1,          
-        FIXGAIN2,          
-        FORCESWITCHG1,     
-        FORCESWITCHG2,     
-        VERYLOWGAIN,       
+        GET_SETTINGS = -1,
+        STANDARD,
+        FAST,
+        HIGHGAIN,
+        DYNAMICGAIN,
+        LOWGAIN,
+        MEDIUMGAIN,
+        VERYHIGHGAIN,
+        DYNAMICHG0,
+        FIXGAIN1,
+        FIXGAIN2,
+        FORCESWITCHG1,
+        FORCESWITCHG2,
+        VERYLOWGAIN,
         G1_HIGHGAIN,
         G1_LOWGAIN,
         G2_HIGHCAP_HIGHGAIN,
@@ -377,34 +373,21 @@ class slsDetectorDefs {
         G2_LOWCAP_LOWGAIN,
         G4_HIGHGAIN,
         G4_LOWGAIN,
-        UNDEFINED = 200,   /**< undefined or custom  settings */
-        UNINITIALIZED      /**< uninitialiazed (status at startup) */
+        UNDEFINED = 200, /**< undefined or custom  settings */
+        UNINITIALIZED    /**< uninitialiazed (status at startup) */
     };
 
 #define TRIMBITMASK 0x3f
 
-    enum clockIndex {
-        ADC_CLOCK,
-        DBIT_CLOCK,
-        RUN_CLOCK,
-        SYNC_CLOCK
-    };
+    enum clockIndex { ADC_CLOCK, DBIT_CLOCK, RUN_CLOCK, SYNC_CLOCK };
 
     /**
      * read out mode (ctb, moench)
      */
-    enum readoutMode {
-        ANALOG_ONLY,
-        DIGITAL_ONLY,
-        ANALOG_AND_DIGITAL
-    };
+    enum readoutMode { ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL };
 
     /** chip speed */
-    enum speedLevel {
-        FULL_SPEED,
-        HALF_SPEED,
-        QUARTER_SPEED
-    };
+    enum speedLevel { FULL_SPEED, HALF_SPEED, QUARTER_SPEED };
 
     /** port type */
     enum portType {
@@ -447,23 +430,20 @@ class slsDetectorDefs {
      */
     enum burstMode {
         BURST_OFF,
-        BURST_INTERNAL,      
+        BURST_INTERNAL,
         BURST_EXTERNAL,
         NUM_BURST_MODES
-    };    
+    };
 
     /**
      * timing source for gotthard2
      */
-    enum timingSourceType {
-        TIMING_INTERNAL,
-        TIMING_EXTERNAL 
-    };       
+    enum timingSourceType { TIMING_INTERNAL, TIMING_EXTERNAL };
 
 #ifdef __cplusplus
     /**
      * structure to udpate receiver
-     */ 
+     */
     struct rxParameters {
         detectorType detType{GENERIC};
         xy multiSize;
@@ -496,7 +476,7 @@ class slsDetectorDefs {
         ROI roi;
         uint32_t countermask{0};
         burstMode burstType{BURST_OFF};
-    }__attribute__((packed));
+    } __attribute__((packed));
 #endif
 
 #ifdef __cplusplus
@@ -571,9 +551,10 @@ struct detParameters {
             nChipX = 10;
             nChipY = 1;
             nDacs = 14;
-            break;    
+            break;
         default:
-            throw sls::RuntimeError("Unknown detector type! " + std::to_string(type));
+            throw sls::RuntimeError("Unknown detector type! " +
+                                    std::to_string(type));
         }
     }
 };
@@ -659,11 +640,10 @@ typedef struct {
 } sls_detector_module;
 #endif
 
-
 #ifdef __cplusplus
-//TODO! discuss this
+// TODO! discuss this
 #include <vector> //hmm... but currently no way around
-namespace sls{
+namespace sls {
 using Positions = const std::vector<int> &;
 using defs = slsDetectorDefs;
 } // namespace sls

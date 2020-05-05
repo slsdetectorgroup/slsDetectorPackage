@@ -136,9 +136,10 @@ unsigned int Feb_Control_GetDynamicRange();
 int Feb_Control_SetReadoutSpeed(
     unsigned int readout_speed); // 0 was default, 0->full,1->half,2->quarter or
                                  // 3->super_slow
-int Feb_Control_SetReadoutMode(unsigned int readout_mode); /// 0 was
-                                                           /// default,0->parallel,1->non-parallel,2->
-                                                           /// safe_mode
+int Feb_Control_SetReadoutMode(
+    unsigned int readout_mode); /// 0 was
+                                /// default,0->parallel,1->non-parallel,2->
+                                /// safe_mode
 int Feb_Control_SetTriggerMode(unsigned int trigger_mode,
                                int polarity); // 0 and 1 was default,
 int Feb_Control_SetExternalEnableMode(int use_external_enable,

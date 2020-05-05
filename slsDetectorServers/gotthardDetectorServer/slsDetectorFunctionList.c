@@ -1,17 +1,17 @@
 #include "slsDetectorFunctionList.h"
-#include "versionAPI.h"
-#include "clogger.h"
 #include "RegisterDefs.h"
+#include "clogger.h"
+#include "versionAPI.h"
 
-#include "LTC2620.h"    // dacs
+#include "LTC2620.h" // dacs
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #include "communication_virtual.h"
 #endif
 
 #include "string.h"
-#include <unistd.h>     // usleep
 #include <netinet/in.h>
+#include <unistd.h> // usleep
 #ifdef VIRTUAL
 #include <pthread.h>
 #include <time.h>
@@ -25,8 +25,8 @@ int phaseShift = DEFAULT_PHASE_SHIFT;
 
 // Global variable from communication_funcs.c
 extern int isControlServer;
-extern void getMacAddressinString(char* cmac, int size, uint64_t mac);
-extern void getIpAddressinString(char* cip, uint32_t ip);
+extern void getMacAddressinString(char *cmac, int size, uint64_t mac);
+extern void getIpAddressinString(char *cip, uint32_t ip);
 
 int initError = OK;
 int initCheckDone = 0;
@@ -61,13 +61,11 @@ int slaveadcphase = 0;
 int rsttosw1delay = 2;
 int startacqdelay = 1;
 
-int isInitCheckDone() {
-	return initCheckDone;
-}
+int isInitCheckDone() { return initCheckDone; }
 
-int getInitResult(char** mess) {
-	*mess = initErrorMessage;
-	return initError;
+int getInitResult(char **mess) {
+    *mess = initErrorMessage;
+    return initError;
 }
 
 void basictests() {
@@ -77,58 +75,57 @@ void basictests() {
 #ifdef VIRTUAL
     LOG(logINFOBLUE, ("******** Gotthard Virtual Server *****************\n"));
     if (mapCSP0() == FAIL) {
-    	strcpy(initErrorMessage,
-				"Could not map to memory. Dangerous to continue.\n");
-		LOG(logERROR, (initErrorMessage));
-		initError = FAIL;
+        strcpy(initErrorMessage,
+               "Could not map to memory. Dangerous to continue.\n");
+        LOG(logERROR, (initErrorMessage));
+        initError = FAIL;
     }
     return;
 #else
     if (mapCSP0() == FAIL) {
-    	strcpy(initErrorMessage,
-				"Could not map to memory. Dangerous to continue.\n");
-		LOG(logERROR, ("%s\n\n", initErrorMessage));
-		initError = FAIL;
-		return;
+        strcpy(initErrorMessage,
+               "Could not map to memory. Dangerous to continue.\n");
+        LOG(logERROR, ("%s\n\n", initErrorMessage));
+        initError = FAIL;
+        return;
     }
 
     // does check only if flag is 0 (by default), set by command line
-	if (((checkType() == FAIL) || (testFpga() == FAIL) || (testBus() == FAIL))) {
-		strcpy(initErrorMessage,
-				"Could not pass basic tests of FPGA and bus. Dangerous to continue.\n");
-		LOG(logERROR, ("%s\n\n", initErrorMessage));
-		initError = FAIL;
-		return;
-	}
+    if (((checkType() == FAIL) || (testFpga() == FAIL) ||
+         (testBus() == FAIL))) {
+        strcpy(initErrorMessage, "Could not pass basic tests of FPGA and bus. "
+                                 "Dangerous to continue.\n");
+        LOG(logERROR, ("%s\n\n", initErrorMessage));
+        initError = FAIL;
+        return;
+    }
 
-	uint32_t boardrev           = getBoardRevision();
-	uint32_t ipadd				= getDetectorIP();
-	uint64_t macadd				= getDetectorMAC();
-    int64_t fwversion           = getFirmwareVersion();
-	int64_t swversion 			= getServerVersion();
-	int64_t client_sw_apiversion = getClientServerAPIVersion();
+    uint32_t boardrev = getBoardRevision();
+    uint32_t ipadd = getDetectorIP();
+    uint64_t macadd = getDetectorMAC();
+    int64_t fwversion = getFirmwareVersion();
+    int64_t swversion = getServerVersion();
+    int64_t client_sw_apiversion = getClientServerAPIVersion();
 
-	LOG(logINFOBLUE, ("************ Gotthard Server *********************\n"
-	        "Board Revision         : 0x%x\n"
+    LOG(logINFOBLUE,
+        ("************ Gotthard Server *********************\n"
+         "Board Revision         : 0x%x\n"
 
-			"Detector IP Addr       : 0x%x\n"
-			"Detector MAC Addr      : 0x%llx\n\n"
+         "Detector IP Addr       : 0x%x\n"
+         "Detector MAC Addr      : 0x%llx\n\n"
 
-			"Firmware Version       : 0x%llx\n"
-			"Software Version       : 0x%llx\n"
-			"Client-S/w API Version : 0x%llx\n"
-			"********************************************************\n",
-			boardrev,
+         "Firmware Version       : 0x%llx\n"
+         "Software Version       : 0x%llx\n"
+         "Client-S/w API Version : 0x%llx\n"
+         "********************************************************\n",
+         boardrev,
 
-			ipadd,
-			(long  long unsigned int)macadd,
+         ipadd, (long long unsigned int)macadd,
 
-			(long  long int)fwversion,
-			(long  long int)swversion,
-			(long long int)client_sw_apiversion
-	));
+         (long long int)fwversion, (long long int)swversion,
+         (long long int)client_sw_apiversion));
 
-	LOG(logINFO, ("Basic Tests - success\n"));
+    LOG(logINFO, ("Basic Tests - success\n"));
 #endif
 }
 
@@ -136,125 +133,129 @@ int checkType() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	u_int32_t type = ((bus_r(BOARD_REVISION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
-	if (type == DETECTOR_TYPE_MOENCH_VAL){
-			LOG(logERROR, ("This is not a Gotthard firmware (read %d, expected ?)\n", type));
-			return FAIL;
-		}
-	return OK;
+    u_int32_t type =
+        ((bus_r(BOARD_REVISION_REG) & DETECTOR_TYPE_MSK) >> DETECTOR_TYPE_OFST);
+    if (type == DETECTOR_TYPE_MOENCH_VAL) {
+        LOG(logERROR,
+            ("This is not a Gotthard firmware (read %d, expected ?)\n", type));
+        return FAIL;
+    }
+    return OK;
 }
 
 int testFpga() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	LOG(logINFO, ("Testing FPGA:\n"));
+    LOG(logINFO, ("Testing FPGA:\n"));
 
-	//fixed pattern
-	int ret = OK;
-	u_int32_t val = bus_r(FIX_PATT_REG);
-	if (val == FIX_PATT_VAL) {
-		LOG(logINFO, ("Fixed pattern: successful match (0x%08x)\n",val));
-	} else {
-		LOG(logERROR, ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n", val, FIX_PATT_VAL));
-		ret = FAIL;
-	}
+    // fixed pattern
+    int ret = OK;
+    u_int32_t val = bus_r(FIX_PATT_REG);
+    if (val == FIX_PATT_VAL) {
+        LOG(logINFO, ("Fixed pattern: successful match (0x%08x)\n", val));
+    } else {
+        LOG(logERROR,
+            ("Fixed pattern does not match! Read 0x%08x, expected 0x%08x\n",
+             val, FIX_PATT_VAL));
+        ret = FAIL;
+    }
 
-	if (ret == OK) {
-	    // dummy reg
-	    LOG(logINFO, ("\tTesting Dummy Register:\n"));
-	    u_int32_t addr = DUMMY_REG;
-	    volatile u_int32_t val = 0, readval = 0;
-	    int times = 1000 * 1000;
-	    int i = 0;
-	    for (i = 0; i < times; ++i) {
-	        val = 0x5A5A5A5A - i;
-	        bus_w(addr, val);
-	        readval = bus_r(addr);
-	        if (readval != val) {
-	            LOG(logERROR, ("1:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
-	                    i, val, readval));
-	            ret = FAIL;
-	            break;
-	        }
-	        val = (i + (i << 10) + (i << 20));
-	        bus_w(addr, val);
-	        readval = bus_r(addr);
-	        if (readval != val) {
-	            LOG(logERROR, ("2:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
-	                    i, val, readval));
-	            ret = FAIL;
-	            break;
-	        }
-	        val = 0x0F0F0F0F;
-	        bus_w(addr, val);
-	        readval = bus_r(addr);
-	        if (readval != val) {
-	            LOG(logERROR, ("3:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
-	                    i, val, readval));
-	            ret = FAIL;
-	            break;
-	        }
-	        val = 0xF0F0F0F0;
-	        bus_w(addr, val);
-	        readval = bus_r(addr);
-	        if (readval != val) {
-	            LOG(logERROR, ("4:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
-	                    i, val, readval));
-	            ret = FAIL;
-	            break;
-	        }
-	    }
-	    bus_w(addr, 0);
-	    if (ret == OK) {
-	        LOG(logINFO, ("Successfully tested FPGA Dummy Register %d times\n", times));
-	    }
-	}
+    if (ret == OK) {
+        // dummy reg
+        LOG(logINFO, ("\tTesting Dummy Register:\n"));
+        u_int32_t addr = DUMMY_REG;
+        volatile u_int32_t val = 0, readval = 0;
+        int times = 1000 * 1000;
+        int i = 0;
+        for (i = 0; i < times; ++i) {
+            val = 0x5A5A5A5A - i;
+            bus_w(addr, val);
+            readval = bus_r(addr);
+            if (readval != val) {
+                LOG(logERROR, ("1:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
+                               i, val, readval));
+                ret = FAIL;
+                break;
+            }
+            val = (i + (i << 10) + (i << 20));
+            bus_w(addr, val);
+            readval = bus_r(addr);
+            if (readval != val) {
+                LOG(logERROR, ("2:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
+                               i, val, readval));
+                ret = FAIL;
+                break;
+            }
+            val = 0x0F0F0F0F;
+            bus_w(addr, val);
+            readval = bus_r(addr);
+            if (readval != val) {
+                LOG(logERROR, ("3:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
+                               i, val, readval));
+                ret = FAIL;
+                break;
+            }
+            val = 0xF0F0F0F0;
+            bus_w(addr, val);
+            readval = bus_r(addr);
+            if (readval != val) {
+                LOG(logERROR, ("4:Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
+                               i, val, readval));
+                ret = FAIL;
+                break;
+            }
+        }
+        bus_w(addr, 0);
+        if (ret == OK) {
+            LOG(logINFO,
+                ("Successfully tested FPGA Dummy Register %d times\n", times));
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
 int testBus() {
 #ifdef VIRTUAL
     return OK;
 #endif
-	LOG(logINFO, ("Testing Bus:\n"));
+    LOG(logINFO, ("Testing Bus:\n"));
 
-	int ret = OK;
-	u_int32_t addr = DUMMY_REG;
-	volatile u_int32_t val = 0, readval = 0;
-	int times = 1000 * 1000;
-	int i = 0;
+    int ret = OK;
+    u_int32_t addr = DUMMY_REG;
+    volatile u_int32_t val = 0, readval = 0;
+    int times = 1000 * 1000;
+    int i = 0;
 
-	for (i = 0; i < times; ++i) {
-	    val += 0xbbbbb;
-		bus_w(addr, val);
-		 readval = bus_r(addr);
-		if (readval != val) {
-			LOG(logERROR, ("Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n",
-					i, val, readval));
-			ret = FAIL;
-		}
-	}
+    for (i = 0; i < times; ++i) {
+        val += 0xbbbbb;
+        bus_w(addr, val);
+        readval = bus_r(addr);
+        if (readval != val) {
+            LOG(logERROR, ("Mismatch! Loop(%d): Wrote 0x%x, read 0x%x\n", i,
+                           val, readval));
+            ret = FAIL;
+        }
+    }
 
-	bus_w(addr, 0);
+    bus_w(addr, 0);
 
-	if (ret == OK) {
-		LOG(logINFO, ("Successfully tested bus %d times\n", times));
-	}
-	return ret;
+    if (ret == OK) {
+        LOG(logINFO, ("Successfully tested bus %d times\n", times));
+    }
+    return ret;
 }
-
 
 void setTestImageMode(int ival) {
     uint32_t addr = MULTI_PURPOSE_REG;
     if (ival >= 0) {
         if (ival == 0) {
             LOG(logINFO, ("Switching off Image Test Mode\n"));
-            bus_w (addr, bus_r(addr) & ~DGTL_TST_MSK);
+            bus_w(addr, bus_r(addr) & ~DGTL_TST_MSK);
         } else {
             LOG(logINFO, ("Switching on Image Test Mode\n"));
-            bus_w (addr, bus_r(addr) | DGTL_TST_MSK);
+            bus_w(addr, bus_r(addr) | DGTL_TST_MSK);
         }
     }
 }
@@ -265,13 +266,9 @@ int getTestImageMode() {
 
 /* Ids */
 
-uint64_t getServerVersion() {
-    return APIGOTTHARD;
-}
+uint64_t getServerVersion() { return APIGOTTHARD; }
 
-uint64_t getClientServerAPIVersion() {
-    return APIGOTTHARD;
-}
+uint64_t getClientServerAPIVersion() { return APIGOTTHARD; }
 
 u_int64_t getFirmwareVersion() {
 #ifdef VIRTUAL
@@ -280,90 +277,93 @@ u_int64_t getFirmwareVersion() {
     return ((bus_r(FPGA_VERSION_REG) & FPGA_VERSION_MSK) >> FPGA_VERSION_OFST);
 }
 
-u_int32_t getDetectorNumber(){
+u_int32_t getDetectorNumber() {
 #ifdef VIRTUAL
     return 0;
 #endif
-	return 0;
+    return 0;
 }
 
-u_int64_t  getDetectorMAC() {
+u_int64_t getDetectorMAC() {
 #ifdef VIRTUAL
     return 0;
 #else
-	char output[255],mac[255]="";
-	u_int64_t res=0;
-	FILE* sysFile = popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
-	fgets(output, sizeof(output), sysFile);
-	pclose(sysFile);
-	//getting rid of ":"
-	char * pch;
-	pch = strtok (output,":");
-	while (pch != NULL){
-		strcat(mac,pch);
-		pch = strtok (NULL, ":");
-	}
-	sscanf(mac,"%llx",&res);
-	return res;
+    char output[255], mac[255] = "";
+    u_int64_t res = 0;
+    FILE *sysFile =
+        popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
+    fgets(output, sizeof(output), sysFile);
+    pclose(sysFile);
+    // getting rid of ":"
+    char *pch;
+    pch = strtok(output, ":");
+    while (pch != NULL) {
+        strcat(mac, pch);
+        pch = strtok(NULL, ":");
+    }
+    sscanf(mac, "%llx", &res);
+    return res;
 #endif
 }
 
-u_int32_t  getDetectorIP(){
+u_int32_t getDetectorIP() {
 #ifdef VIRTUAL
     return 0;
 #endif
-	char temp[50]="";
-	u_int32_t res=0;
-	//execute and get address
-	char output[255];
-	FILE* sysFile = popen("ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2", "r");
-	fgets(output, sizeof(output), sysFile);
-	pclose(sysFile);
+    char temp[50] = "";
+    u_int32_t res = 0;
+    // execute and get address
+    char output[255];
+    FILE *sysFile = popen(
+        "ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2",
+        "r");
+    fgets(output, sizeof(output), sysFile);
+    pclose(sysFile);
 
-	//converting IPaddress to hex.
-	char* pcword = strtok (output,".");
-	while (pcword != NULL) {
-		sprintf(output,"%02x",atoi(pcword));
-		strcat(temp,output);
-		pcword = strtok (NULL, ".");
-	}
-	strcpy(output,temp);
-	sscanf(output, "%x", 	&res);
-	//LOG(logINFO, ("ip:%x\n",res);
+    // converting IPaddress to hex.
+    char *pcword = strtok(output, ".");
+    while (pcword != NULL) {
+        sprintf(output, "%02x", atoi(pcword));
+        strcat(temp, output);
+        pcword = strtok(NULL, ".");
+    }
+    strcpy(output, temp);
+    sscanf(output, "%x", &res);
+    // LOG(logINFO, ("ip:%x\n",res);
 
-	return res;
+    return res;
 }
 
 u_int32_t getBoardRevision() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    return ((bus_r(BOARD_REVISION_REG) & BOARD_REVISION_MSK) >> BOARD_REVISION_OFST);
+    return ((bus_r(BOARD_REVISION_REG) & BOARD_REVISION_MSK) >>
+            BOARD_REVISION_OFST);
 }
-
 
 /* initialization */
 
-void initControlServer(){
-	if (initError == OK) {
-		setupDetector();
-	}
-	initCheckDone = 1;
+void initControlServer() {
+    if (initError == OK) {
+        setupDetector();
+    }
+    initCheckDone = 1;
 }
 
 void initStopServer() {
-	if (mapCSP0() == FAIL) {
-		LOG(logERROR, ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
-		exit(EXIT_FAILURE);
-	}
+    if (mapCSP0() == FAIL) {
+        LOG(logERROR,
+            ("Stop Server: Map Fail. Dangerous to continue. Goodbye!\n"));
+        exit(EXIT_FAILURE);
+    }
 #ifdef VIRTUAL
-	virtual_stop = 0;
-	if (!isControlServer) {
-		ComVirtual_setStop(virtual_stop);
-	}
+    virtual_stop = 0;
+    if (!isControlServer) {
+        ComVirtual_setStop(virtual_stop);
+    }
 #endif
 }
-
 
 /* set up detector */
 
@@ -371,10 +371,10 @@ void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Gotthard module (1280 channels)\n"));
 
 #ifdef VIRTUAL
-	virtual_status = 0;
-	if (isControlServer) {
-		ComVirtual_setStatus(virtual_status);
-	}
+    virtual_status = 0;
+    if (isControlServer) {
+        ComVirtual_setStatus(virtual_status);
+    }
 #endif
 
     // Initialization
@@ -385,17 +385,24 @@ void setupDetector() {
 
     // adc
     if (getBoardRevision() == 1) {
-        AD9252_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
+        AD9252_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK,
+                          ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK,
+                          ADC_SPI_SRL_DT_OTPT_OFST);
         AD9252_Disable();
         AD9252_Configure();
     } else {
-        AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK, ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_OFST);
+        AD9257_SetDefines(ADC_SPI_REG, ADC_SPI_SRL_CS_OTPT_MSK,
+                          ADC_SPI_SRL_CLK_OTPT_MSK, ADC_SPI_SRL_DT_OTPT_MSK,
+                          ADC_SPI_SRL_DT_OTPT_OFST);
         AD9257_Disable();
         AD9257_Configure();
     }
 
     // dac
-    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK, SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MIN_MV, DAC_MAX_MV);
+    LTC2620_SetDefines(SPI_REG, SPI_DAC_SRL_CS_OTPT_MSK,
+                       SPI_DAC_SRL_CLK_OTPT_MSK, SPI_DAC_SRL_DGTL_OTPT_MSK,
+                       SPI_DAC_SRL_DGTL_OTPT_OFST, NDAC, DAC_MIN_MV,
+                       DAC_MAX_MV);
     LTC2620_Disable();
     LTC2620_Configure();
     setDefaultDacs();
@@ -405,9 +412,9 @@ void setupDetector() {
     bus_w(TEMP_SPI_OUT_REG, 0x0);
 
     // roi, gbit readout
-    rois.xmin = -1; 
+    rois.xmin = -1;
     rois.xmax = -1;
-    setROI(rois);// set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
+    setROI(rois); // set adcsyncreg, daqreg, chipofinterestreg, cleanfifos,
     setGbitReadout();
 
     // master, slave (25um)
@@ -419,12 +426,11 @@ void setupDetector() {
     setSettings(DEFAULT_SETTINGS);
     setExtSignal(DEFAULT_TRIGGER_MODE);
     setTiming(DEFAULT_TIMING_MODE);
-	setNumFrames(DEFAULT_NUM_FRAMES);
-	setNumTriggers(DEFAULT_NUM_CYCLES);
-	setExpTime(DEFAULT_EXPTIME);
-	setPeriod(DEFAULT_PERIOD);
-	setDelayAfterTrigger(DEFAULT_DELAY);
-
+    setNumFrames(DEFAULT_NUM_FRAMES);
+    setNumTriggers(DEFAULT_NUM_CYCLES);
+    setExpTime(DEFAULT_EXPTIME);
+    setPeriod(DEFAULT_PERIOD);
+    setDelayAfterTrigger(DEFAULT_DELAY);
 }
 
 int setDefaultDacs() {
@@ -433,7 +439,7 @@ int setDefaultDacs() {
     {
         int i = 0;
         const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
-        for(i = 0; i < NDAC; ++i) {
+        for (i = 0; i < NDAC; ++i) {
             // if not already default, set it to default
             if (dacValues[i] != defaultvals[i]) {
                 setDAC((enum DACINDEX)i, defaultvals[i], 0);
@@ -444,17 +450,16 @@ int setDefaultDacs() {
 }
 
 uint32_t writeRegister16And32(uint32_t offset, uint32_t data) {
-   if (((offset << MEM_MAP_SHIFT) == CONTROL_REG) ||
-           ((offset << MEM_MAP_SHIFT) == FIFO_DATA_REG)) {
-       return writeRegister16(offset, data);
-   } else
-       return writeRegister(offset, data);
-
+    if (((offset << MEM_MAP_SHIFT) == CONTROL_REG) ||
+        ((offset << MEM_MAP_SHIFT) == FIFO_DATA_REG)) {
+        return writeRegister16(offset, data);
+    } else
+        return writeRegister(offset, data);
 }
 
 uint32_t readRegister16And32(uint32_t offset) {
     if (((offset << MEM_MAP_SHIFT) == CONTROL_REG) ||
-            ((offset << MEM_MAP_SHIFT) == FIFO_DATA_REG)) {
+        ((offset << MEM_MAP_SHIFT) == FIFO_DATA_REG)) {
         return readRegister16(offset);
     } else
         return readRegister(offset);
@@ -470,11 +475,14 @@ void setPhaseShiftOnce() {
     // first time detector has switched on
     if (!val) {
         detectorFirstServer = 1;
-        LOG(logINFO, ("Implementing the first phase shift of %d\n", phaseShift));
+        LOG(logINFO,
+            ("Implementing the first phase shift of %d\n", phaseShift));
         int times = 0;
         for (times = 1; times < phaseShift; ++times) {
-            bus_w(addr,(INT_RSTN_MSK | ENT_RSTN_MSK | SW1_MSK | PHS_STP_MSK));      //0x1821
-            bus_w(addr,(INT_RSTN_MSK | ENT_RSTN_MSK | (SW1_MSK &~ PHS_STP_MSK)));   //0x1820
+            bus_w(addr, (INT_RSTN_MSK | ENT_RSTN_MSK | SW1_MSK |
+                         PHS_STP_MSK)); // 0x1821
+            bus_w(addr, (INT_RSTN_MSK | ENT_RSTN_MSK |
+                         (SW1_MSK & ~PHS_STP_MSK))); // 0x1820
         }
         LOG(logDEBUG1, ("Multipurpose reg: 0x%x\n", val));
     } else
@@ -506,8 +514,9 @@ void setADCSyncRegister() {
     u_int32_t addr = ADC_SYNC_REG;
 
     // 0x88(no roi), 0x1b(roi) (MSB)
-    u_int32_t tokenDelay =  ((adcConfigured == -1) ?
-            ADC_SYNC_ENET_DELAY_NO_ROI_VAL : ADC_SYNC_ENET_DELAY_ROI_VAL);
+    u_int32_t tokenDelay =
+        ((adcConfigured == -1) ? ADC_SYNC_ENET_DELAY_NO_ROI_VAL
+                               : ADC_SYNC_ENET_DELAY_ROI_VAL);
 
     // 0x88032214(no roi), 0x1b032214(with roi)
     u_int32_t val = (ADC_SYNC_TKN_VAL | tokenDelay);
@@ -521,15 +530,16 @@ void setDAQRegister() {
     u_int32_t addr = DAQ_REG;
 
     // 0x1f16(board rev 1) 0x1f0f(board rev 2)
-    u_int32_t tokenTiming = ((getBoardRevision() == 1) ?
-            DAQ_TKN_TMNG_BRD_RVSN_1_VAL : DAQ_TKN_TMNG_BRD_RVSN_2_VAL);
+    u_int32_t tokenTiming =
+        ((getBoardRevision() == 1) ? DAQ_TKN_TMNG_BRD_RVSN_1_VAL
+                                   : DAQ_TKN_TMNG_BRD_RVSN_2_VAL);
 
     // 0x13f(no roi), 0x7f(roi)
-    u_int32_t packetLength = ((adcConfigured == -1) ?
-            DAQ_PCKT_LNGTH_NO_ROI_VAL : DAQ_PCKT_LNGTH_ROI_VAL);
+    u_int32_t packetLength = ((adcConfigured == -1) ? DAQ_PCKT_LNGTH_NO_ROI_VAL
+                                                    : DAQ_PCKT_LNGTH_ROI_VAL);
 
     // MSB: packetLength LSB: tokenTiming
-    u_int32_t val =  (tokenTiming | packetLength);
+    u_int32_t val = (tokenTiming | packetLength);
 
     bus_w(addr, val);
     LOG(logINFO, ("\tDAQ Reg: 0x%x\n", bus_r(addr)));
@@ -540,16 +550,19 @@ void setChipOfInterestRegister(int adc) {
     u_int32_t addr = CHIP_OF_INTRST_REG;
 
     // 0x1f(no roi), 0xXX(roi)
-    u_int32_t adcSelect = ((adcConfigured == -1) ?
-            CHIP_OF_INTRST_ADC_SEL_MSK :
-            (((1 << adc) << CHIP_OF_INTRST_ADC_SEL_OFST) & CHIP_OF_INTRST_ADC_SEL_MSK));
+    u_int32_t adcSelect =
+        ((adcConfigured == -1) ? CHIP_OF_INTRST_ADC_SEL_MSK
+                               : (((1 << adc) << CHIP_OF_INTRST_ADC_SEL_OFST) &
+                                  CHIP_OF_INTRST_ADC_SEL_MSK));
 
     // 0x0500(no roi), 0x0100(roi)
-    u_int32_t numChannels = (adcConfigured == -1) ? (NCHIP * NCHAN) : (NCHIPS_PER_ADC * NCHAN);
-    numChannels = ((numChannels << CHIP_OF_INTRST_NUM_CHNNLS_OFST) & CHIP_OF_INTRST_NUM_CHNNLS_MSK);
+    u_int32_t numChannels =
+        (adcConfigured == -1) ? (NCHIP * NCHAN) : (NCHIPS_PER_ADC * NCHAN);
+    numChannels = ((numChannels << CHIP_OF_INTRST_NUM_CHNNLS_OFST) &
+                   CHIP_OF_INTRST_NUM_CHNNLS_MSK);
 
     // 0x500001f(no roi), 0x10000xx(roi) MSB:num channels, LSB: selected ADC
-    u_int32_t val =  (numChannels | adcSelect);
+    u_int32_t val = (numChannels | adcSelect);
 
     bus_w(addr, val);
     LOG(logINFO, ("\tChip Of Interest Reg: 0x%x\n", bus_r(addr)));
@@ -564,8 +577,10 @@ void setROIADC(int adc) {
     cleanFifos();                   // clean fifos
     setChipOfInterestRegister(adc); // num channels & select adc
 
-    ipPacketSize = ((adcConfigured == -1) ? IP_PACKET_SIZE_NO_ROI : IP_PACKET_SIZE_ROI);
-    udpPacketSize = ((adcConfigured == -1) ? UDP_PACKETSIZE_NO_ROI : UDP_PACKETSIZE_ROI);
+    ipPacketSize =
+        ((adcConfigured == -1) ? IP_PACKET_SIZE_NO_ROI : IP_PACKET_SIZE_ROI);
+    udpPacketSize =
+        ((adcConfigured == -1) ? UDP_PACKETSIZE_NO_ROI : UDP_PACKETSIZE_ROI);
 }
 
 void setGbitReadout() {
@@ -577,8 +592,8 @@ void setGbitReadout() {
 
 int readConfigFile() {
     // open config file
-    FILE* fd = fopen(CONFIG_FILE, "r");
-    if(fd == NULL) {
+    FILE *fd = fopen(CONFIG_FILE, "r");
+    if (fd == NULL) {
         LOG(logWARNING, ("\tCould not find config file %s\n", CONFIG_FILE));
         return FAIL;
     }
@@ -604,25 +619,28 @@ int readConfigFile() {
         sscanf(line, "%s %s\n", key, value);
 
         // key is master/ slave flag
-        if (!strcasecmp(key,"masterflags")) {
-            if  (!strcasecmp(value,"is_master")) {
+        if (!strcasecmp(key, "masterflags")) {
+            if (!strcasecmp(value, "is_master")) {
                 masterflags = IS_MASTER;
                 LOG(logINFOBLUE, ("\tMaster\n"));
-            } else if (!strcasecmp(value,"is_slave")) {
+            } else if (!strcasecmp(value, "is_slave")) {
                 masterflags = IS_SLAVE;
                 LOG(logINFOBLUE, ("\tSlave\n"));
-            } else  if (!strcasecmp(value,"no_master")){
+            } else if (!strcasecmp(value, "no_master")) {
                 masterflags = NO_MASTER;
                 LOG(logINFOBLUE, ("\tNo Master\n"));
             } else {
-                LOG(logERROR, ("\tCould not scan masterflags %s value from config file\n", value));
+                LOG(logERROR,
+                    ("\tCould not scan masterflags %s value from config file\n",
+                     value));
                 scan = FAIL;
                 break;
             }
 
             // not first server since detector power on
             if (!detectorFirstServer) {
-                LOG(logINFOBLUE, ("\tServer has been started up before. Ignoring rest of config file\n"));
+                LOG(logINFOBLUE, ("\tServer has been started up before. "
+                                  "Ignoring rest of config file\n"));
                 fclose(fd);
                 return FAIL;
             }
@@ -632,8 +650,10 @@ int readConfigFile() {
         else {
             // convert value to int
             int ival = 0;
-            if(sscanf(value, "%d", &ival) <= 0) {
-                LOG(logERROR, ("\tCould not scan parameter %s value %s from config file\n", key, value));
+            if (sscanf(value, "%d", &ival) <= 0) {
+                LOG(logERROR, ("\tCould not scan parameter %s value %s from "
+                               "config file\n",
+                               key, value));
                 scan = FAIL;
                 break;
             }
@@ -653,7 +673,8 @@ int readConfigFile() {
             else if (!strcasecmp(key, "startacqdelay"))
                 startacqdelay = ival;
             else {
-                LOG(logERROR, ("\tCould not scan parameter %s from config file\n", key));
+                LOG(logERROR,
+                    ("\tCould not scan parameter %s from config file\n", key));
                 scan = FAIL;
                 break;
             }
@@ -663,21 +684,16 @@ int readConfigFile() {
     if (scan == FAIL)
         exit(EXIT_FAILURE);
 
-    LOG(logINFOBLUE, (
-            "\tmasterdefaultdelay:%d\n"
-            "\tpatternphase:%d\n"
-            "\tadcphase:%d\n"
-            "\tslavepatternphase:%d\n"
-            "\tslaveadcphase:%d\n"
-            "\trsttosw1delay:%d\n"
-            "\tstartacqdelay:%d\n",
-            masterdefaultdelay,
-            patternphase,
-            adcphase,
-            slavepatternphase,
-            slaveadcphase,
-            rsttosw1delay,
-            startacqdelay));
+    LOG(logINFOBLUE,
+        ("\tmasterdefaultdelay:%d\n"
+         "\tpatternphase:%d\n"
+         "\tadcphase:%d\n"
+         "\tslavepatternphase:%d\n"
+         "\tslaveadcphase:%d\n"
+         "\trsttosw1delay:%d\n"
+         "\tstartacqdelay:%d\n",
+         masterdefaultdelay, patternphase, adcphase, slavepatternphase,
+         slaveadcphase, rsttosw1delay, startacqdelay));
     return OK;
 }
 
@@ -694,7 +710,8 @@ void setMasterSlaveConfiguration() {
         setDelayAfterTrigger(0);
 
         // Set pattern phase for the master module
-        u_int32_t val = (bus_r(MULTI_PURPOSE_REG) & (~(PLL_CLK_SL_MSK))); // unset mask
+        u_int32_t val =
+            (bus_r(MULTI_PURPOSE_REG) & (~(PLL_CLK_SL_MSK))); // unset mask
         bus_w(MULTI_PURPOSE_REG, val | PLL_CLK_SL_MSTR_VAL);
         setPhaseShift(patternphase);
 
@@ -715,26 +732,26 @@ void setMasterSlaveConfiguration() {
 
         // Set start acq delay
         val = (bus_r(MULTI_PURPOSE_REG) & (~(STRT_ACQ_DLY_MSK))); // unset mask
-        val = val | ((startacqdelay << STRT_ACQ_DLY_OFST) & STRT_ACQ_DLY_MSK); // set val
+        val = val | ((startacqdelay << STRT_ACQ_DLY_OFST) &
+                     STRT_ACQ_DLY_MSK); // set val
         bus_w(MULTI_PURPOSE_REG, val);
         LOG(logDEBUG1, ("\tMultipurpose reg: 0x%x\n", val));
     }
 
     // all configuration - Set RST to SW1 delay
-    u_int32_t val = (bus_r(MULTI_PURPOSE_REG) & (~(RST_TO_SW1_DLY_MSK))); // unset mask
-    val = val | ((rsttosw1delay << RST_TO_SW1_DLY_OFST) & RST_TO_SW1_DLY_MSK); // set val
+    u_int32_t val =
+        (bus_r(MULTI_PURPOSE_REG) & (~(RST_TO_SW1_DLY_MSK))); // unset mask
+    val = val | ((rsttosw1delay << RST_TO_SW1_DLY_OFST) &
+                 RST_TO_SW1_DLY_MSK); // set val
     bus_w(MULTI_PURPOSE_REG, val);
     LOG(logDEBUG1, ("\tMultipurpose reg: 0x%x\n", val));
 
     LOG(logINFO, ("\tMaster Slave Configuration has been set up\n"));
 }
 
-
 /* set parameters -  dr, roi */
 
-int setDynamicRange(int dr){
-	return DYNAMIC_RANGE;
-}
+int setDynamicRange(int dr) { return DYNAMIC_RANGE; }
 
 int setROI(ROI arg) {
 
@@ -747,30 +764,31 @@ int setROI(ROI arg) {
         LOG(logINFO, ("Setting ROI:(%d, %d)\n", arg.xmin, arg.xmax));
         // validation
         // xmin divisible by 256 and less than 1280
-        if (((arg.xmin % NCHAN_PER_ADC) != 0) || (arg.xmin >= (NCHAN * NCHIP))) {
+        if (((arg.xmin % NCHAN_PER_ADC) != 0) ||
+            (arg.xmin >= (NCHAN * NCHIP))) {
             LOG(logERROR, ("Could not set roi. xmin is invalid\n"));
             return FAIL;
         }
         // xmax must be 255 more than xmin
         if (arg.xmax != (arg.xmin + NCHAN_PER_ADC - 1)) {
-            LOG(logERROR, ("Could not set roi. xmax is invalid\n"));         
-            return FAIL;   
+            LOG(logERROR, ("Could not set roi. xmax is invalid\n"));
+            return FAIL;
         }
         rois.xmin = arg.xmin;
         rois.xmax = arg.xmax;
         adc = arg.xmin / NCHAN_PER_ADC;
     }
     LOG(logINFO, ("\tAdc to be configured: %d\n", adc));
-    LOG(logINFO, ("\tROI to be configured: (%d, %d)\n",
-            (adc == -1) ? 0 :  (rois.xmin),
-                    (adc == -1) ? (NCHIP * NCHAN - 1) :  (rois.xmax)));
+    LOG(logINFO,
+        ("\tROI to be configured: (%d, %d)\n", (adc == -1) ? 0 : (rois.xmin),
+         (adc == -1) ? (NCHIP * NCHAN - 1) : (rois.xmax)));
 
-    //set adc of interest
+    // set adc of interest
     setROIADC(adc);
     return OK;
 }
 
-ROI getROI() {    
+ROI getROI() {
     LOG(logINFO, ("Getting ROI:\n"));
 
     // print
@@ -781,7 +799,6 @@ ROI getROI() {
     }
     return rois;
 }
-
 
 /* parameters - timer */
 void setNumFrames(int64_t val) {
@@ -799,7 +816,7 @@ void setNumTriggers(int64_t val) {
     if (val > 0) {
         LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
         set64BitReg(val, SET_TRAINS_LSB_REG, SET_TRAINS_MSB_REG);
-    } 
+    }
 }
 
 int64_t getNumTriggers() {
@@ -825,7 +842,8 @@ int setExpTime(int64_t val) {
 }
 
 int64_t getExpTime() {
-    return get64BitReg(SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) / (1E-9 * CLK_FREQ);
+    return get64BitReg(SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG) /
+           (1E-9 * CLK_FREQ);
 }
 
 int setPeriod(int64_t val) {
@@ -847,20 +865,25 @@ int setPeriod(int64_t val) {
 }
 
 int64_t getPeriod() {
-    return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/ (1E-9 * CLK_FREQ);
+    return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /
+           (1E-9 * CLK_FREQ);
 }
 
 int setDelayAfterTrigger(int64_t val) {
     if (val < 0) {
-        LOG(logERROR, ("Invalid delay after trigger: %lld ns\n", (long long int)val));
+        LOG(logERROR,
+            ("Invalid delay after trigger: %lld ns\n", (long long int)val));
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
     if (masterflags == IS_MASTER) {
         val += masterdefaultdelay;
-        LOG(logINFO, ("\tActual Delay (master): %lld\n", (long long int) val));
-    }    
-    val = (val * 1E-9 * CLK_FREQ) + 0.5; //because of the master delay of 62 ns (not really double of clkfreq), losing precision and 0 delay becomes -31ns, so adding +0.5. Also adding +0.5 for more tolerance for gotthard1.
+        LOG(logINFO, ("\tActual Delay (master): %lld\n", (long long int)val));
+    }
+    val = (val * 1E-9 * CLK_FREQ) +
+          0.5; // because of the master delay of 62 ns (not really double of
+               // clkfreq), losing precision and 0 delay becomes -31ns, so adding
+               // +0.5. Also adding +0.5 for more tolerance for gotthard1.
     set64BitReg(val, SET_DELAY_LSB_REG, SET_DELAY_MSB_REG);
 
     // validate for tolerance
@@ -874,12 +897,14 @@ int setDelayAfterTrigger(int64_t val) {
 }
 
 int64_t getDelayAfterTrigger() {
-    int64_t retval = get64BitReg(SET_DELAY_LSB_REG, SET_DELAY_MSB_REG) / (1E-9 * CLK_FREQ);
+    int64_t retval =
+        get64BitReg(SET_DELAY_LSB_REG, SET_DELAY_MSB_REG) / (1E-9 * CLK_FREQ);
     if (masterflags == IS_MASTER) {
-        LOG(logDEBUG1, ("\tActual Delay read (master): %lld\n", (long long int) retval));
+        LOG(logDEBUG1,
+            ("\tActual Delay read (master): %lld\n", (long long int)retval));
         retval -= masterdefaultdelay;
     }
-    return retval;    
+    return retval;
 }
 
 int64_t getNumFramesLeft() {
@@ -891,43 +916,45 @@ int64_t getNumTriggersLeft() {
 }
 
 int64_t getPeriodLeft() {
-    return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) / (1E-9 * CLK_FREQ);
+    return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) /
+           (1E-9 * CLK_FREQ);
 }
 
 int64_t getDelayAfterTriggerLeft() {
-    int64_t retval = get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-9 * CLK_FREQ);
+    int64_t retval =
+        get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) / (1E-9 * CLK_FREQ);
     if (masterflags == IS_MASTER) {
-        LOG(logDEBUG1, ("\tGetting Actual delay (master): %lld\n", (long long int) retval));
+        LOG(logDEBUG1,
+            ("\tGetting Actual delay (master): %lld\n", (long long int)retval));
         retval -= masterdefaultdelay;
-    }  
-    return retval; 
+    }
+    return retval;
 }
 
 int64_t getExpTimeLeft() {
-    return get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG) / (1E-9 * CLK_FREQ);
+    return get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG) /
+           (1E-9 * CLK_FREQ);
 }
-
-
 
 /* parameters - channel, chip, module, settings */
 
-int setModule(sls_detector_module myMod, char* mess){
+int setModule(sls_detector_module myMod, char *mess) {
 
-    LOG(logINFO, ("Setting module with settings %d\n",myMod.reg));
+    LOG(logINFO, ("Setting module with settings %d\n", myMod.reg));
 
     // settings
-	setSettings( (enum detectorSettings)myMod.reg);
+    setSettings((enum detectorSettings)myMod.reg);
 
-    //set dac values
-	{
-	    int i = 0;
-	    for(i = 0; i < NDAC; ++i)
-	        setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
-	}
-	return OK;
+    // set dac values
+    {
+        int i = 0;
+        for (i = 0; i < NDAC; ++i)
+            setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
+    }
+    return OK;
 }
 
-int getModule(sls_detector_module *myMod){
+int getModule(sls_detector_module *myMod) {
     int idac = 0;
     for (idac = 0; idac < NDAC; ++idac) {
         if (dacValues[idac] >= 0)
@@ -942,20 +969,20 @@ int getModule(sls_detector_module *myMod){
     if (initialized) {
         return OK;
     }
-	return FAIL;
+    return FAIL;
 }
 
-enum detectorSettings setSettings(enum detectorSettings sett){
-	if(sett == UNINITIALIZED)
-		return thisSettings;
+enum detectorSettings setSettings(enum detectorSettings sett) {
+    if (sett == UNINITIALIZED)
+        return thisSettings;
 
-	// set settings
-	if(sett != GET_SETTINGS) {
-	    u_int32_t addr = GAIN_REG;
+    // set settings
+    if (sett != GET_SETTINGS) {
+        u_int32_t addr = GAIN_REG;
 
-	    // find conf gain value
-	    uint32_t confgain = 0x0;
-	    switch (sett) {
+        // find conf gain value
+        uint32_t confgain = 0x0;
+        switch (sett) {
         case DYNAMICGAIN:
             LOG(logINFO, ("Set settings - Dyanmic Gain\n"));
             confgain = GAIN_CONFGAIN_DYNMC_GAIN_VAL;
@@ -977,25 +1004,28 @@ enum detectorSettings setSettings(enum detectorSettings sett){
             confgain = GAIN_CONFGAIN_VRY_HGH_GAIN_VAL;
             break;
         default:
-            LOG(logERROR, ("This settings is not defined for this detector %d\n", (int)sett));
+            LOG(logERROR,
+                ("This settings is not defined for this detector %d\n",
+                 (int)sett));
             return -1;
-	    }
-	    // set conf gain
+        }
+        // set conf gain
         bus_w(addr, bus_r(addr) & ~GAIN_CONFGAIN_MSK);
         bus_w(addr, bus_r(addr) | confgain);
         LOG(logINFO, ("\tGain Reg: 0x%x\n", bus_r(addr)));
-		thisSettings = sett;
-	}
+        thisSettings = sett;
+    }
 
-	return getSettings();
+    return getSettings();
 }
 
-enum detectorSettings getSettings(){
-	uint32_t regval = bus_r(GAIN_REG);
-	uint32_t val = regval & GAIN_CONFGAIN_MSK;
-	switch(val) {
+enum detectorSettings getSettings() {
+    uint32_t regval = bus_r(GAIN_REG);
+    uint32_t val = regval & GAIN_CONFGAIN_MSK;
+    switch (val) {
     case GAIN_CONFGAIN_DYNMC_GAIN_VAL:
-        LOG(logDEBUG1, ("Settings read: Dynamic Gain. Gain Reg: 0x%x\n", regval));
+        LOG(logDEBUG1,
+            ("Settings read: Dynamic Gain. Gain Reg: 0x%x\n", regval));
         thisSettings = DYNAMICGAIN;
         break;
     case GAIN_CONFGAIN_HGH_GAIN_VAL:
@@ -1007,21 +1037,22 @@ enum detectorSettings getSettings(){
         thisSettings = LOWGAIN;
         break;
     case GAIN_CONFGAIN_MDM_GAIN_VAL:
-        LOG(logDEBUG1, ("Settings read: Medium Gain. Gain Reg: 0x%x\n", regval));
+        LOG(logDEBUG1,
+            ("Settings read: Medium Gain. Gain Reg: 0x%x\n", regval));
         thisSettings = MEDIUMGAIN;
         break;
     case GAIN_CONFGAIN_VRY_HGH_GAIN_VAL:
-        LOG(logDEBUG1, ("Settings read: Very High Gain. Gain Reg: 0x%x\n", regval));
+        LOG(logDEBUG1,
+            ("Settings read: Very High Gain. Gain Reg: 0x%x\n", regval));
         thisSettings = VERYHIGHGAIN;
         break;
     default:
         thisSettings = UNDEFINED;
         LOG(logERROR, ("Settings read: Undefined. Gain Reg: 0x%x\n", regval));
-	}
+    }
 
-	return thisSettings;
+    return thisSettings;
 }
-
 
 /* parameters - dac, adc, hv */
 
@@ -1029,7 +1060,8 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     if (val < 0)
         return;
 
-    LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val, (mV ? "mV" : "dac units")));
+    LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val,
+                    (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
     if (!mV) {
@@ -1047,37 +1079,36 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
 
 int getDAC(enum DACINDEX ind, int mV) {
     if (!mV) {
-        LOG(logDEBUG1, ("Getting DAC %d : %d dac\n",ind, dacValues[ind]));
+        LOG(logDEBUG1, ("Getting DAC %d : %d dac\n", ind, dacValues[ind]));
         return dacValues[ind];
     }
     int voltage = -1;
     LTC2620_DacToVoltage(dacValues[ind], &voltage);
-    LOG(logDEBUG1, ("Getting DAC %d : %d dac (%d mV)\n",ind, dacValues[ind], voltage));
+    LOG(logDEBUG1,
+        ("Getting DAC %d : %d dac (%d mV)\n", ind, dacValues[ind], voltage));
     return voltage;
 }
 
-int getMaxDacSteps() {
-    return LTC2620_GetMaxNumSteps();
-}
+int getMaxDacSteps() { return LTC2620_GetMaxNumSteps(); }
 
-
-int getADC(enum ADCINDEX ind){
+int getADC(enum ADCINDEX ind) {
 #ifdef VIRTUAL
     return 0;
 #endif
-	char tempnames[2][40]={"VRs/FPGAs Temperature", "ADCs/ASICs Temperature"};
-	LOG(logDEBUG1, ("Getting Temperature for %s\n", tempnames[ind]));
+    char tempnames[2][40] = {"VRs/FPGAs Temperature", "ADCs/ASICs Temperature"};
+    LOG(logDEBUG1, ("Getting Temperature for %s\n", tempnames[ind]));
 
-	u_int32_t addr = TEMP_SPI_IN_REG;
-	uint32_t addrout = TEMP_SPI_OUT_REG;
-	const int repeats = 6; // number of register writes for delay
-	const int reads = 20;
-	u_int32_t value = 0;
+    u_int32_t addr = TEMP_SPI_IN_REG;
+    uint32_t addrout = TEMP_SPI_OUT_REG;
+    const int repeats = 6; // number of register writes for delay
+    const int reads = 20;
+    u_int32_t value = 0;
 
-	// standby, high clk, high cs
-	bus_w(addr, (TEMP_SPI_IN_T1_CLK_MSK | TEMP_SPI_IN_T1_CS_MSK | TEMP_SPI_IN_T2_CLK_MSK | TEMP_SPI_IN_T2_CS_MSK));
+    // standby, high clk, high cs
+    bus_w(addr, (TEMP_SPI_IN_T1_CLK_MSK | TEMP_SPI_IN_T1_CS_MSK |
+                 TEMP_SPI_IN_T2_CLK_MSK | TEMP_SPI_IN_T2_CS_MSK));
 
-	// high clk low cs
+    // high clk low cs
     bus_w(addr, (TEMP_SPI_IN_T1_CLK_MSK | TEMP_SPI_IN_T2_CLK_MSK));
 
     {
@@ -1088,31 +1119,34 @@ int getADC(enum ADCINDEX ind){
             // low clk low cs
             for (j = 0; j < repeats; ++j)
                 bus_w(addr, 0x0);
-            //high clk low cs
+            // high clk low cs
             for (j = 0; j < repeats; ++j)
                 bus_w(addr, (TEMP_SPI_IN_T1_CLK_MSK | TEMP_SPI_IN_T2_CLK_MSK));
 
             // only the first time
             if (i <= 10) {
                 if (ind == TEMP_ADC)
-                    value = (value << 1) + (bus_r(addrout) & TEMP_SPI_OUT_T1_DT_MSK);
+                    value = (value << 1) +
+                            (bus_r(addrout) & TEMP_SPI_OUT_T1_DT_MSK);
                 else
-                    value = (value << 1) + (bus_r(addrout) & TEMP_SPI_OUT_T2_DT_MSK);
+                    value = (value << 1) +
+                            (bus_r(addrout) & TEMP_SPI_OUT_T2_DT_MSK);
             }
         }
     }
 
     // standby high clk, high cs
-    bus_w(addr, (TEMP_SPI_IN_T1_CLK_MSK | TEMP_SPI_IN_T1_CS_MSK | TEMP_SPI_IN_T2_CLK_MSK | TEMP_SPI_IN_T2_CS_MSK));
+    bus_w(addr, (TEMP_SPI_IN_T1_CLK_MSK | TEMP_SPI_IN_T1_CS_MSK |
+                 TEMP_SPI_IN_T2_CLK_MSK | TEMP_SPI_IN_T2_CS_MSK));
 
     LOG(logDEBUG1, ("\tInitial Temperature value: %u\n", value));
     // conversion
-    value = value/4.0;
-	LOG(logINFO, ("\tTemperature %s: %f °C\n",tempnames[ind], value));
-	return value;
+    value = value / 4.0;
+    LOG(logINFO, ("\tTemperature %s: %f °C\n", tempnames[ind], value));
+    return value;
 }
 
-int setHighVoltage(int val){
+int setHighVoltage(int val) {
     u_int32_t addr = HV_REG;
     u_int32_t sel = 0x0;
 
@@ -1141,7 +1175,8 @@ int setHighVoltage(int val){
             sel = HV_SEL_200_VAL;
             break;
         default:
-            LOG(logERROR, ("%d high voltage is not defined for this detector\n", val));
+            LOG(logERROR,
+                ("%d high voltage is not defined for this detector\n", val));
             return setHighVoltage(-1);
         }
         LOG(logDEBUG1, ("\tHigh voltage value to be sent: 0x%x\n", sel));
@@ -1189,13 +1224,11 @@ int setHighVoltage(int val){
     return retval;
 }
 
-
 /* parameters - timing, extsig */
 
-
-void setTiming( enum timingMode arg){
+void setTiming(enum timingMode arg) {
     u_int32_t addr = EXT_SIGNAL_REG;
-    switch(arg) {
+    switch (arg) {
     case AUTO_TIMING:
         LOG(logINFO, ("Set Timing: Auto\n"));
         bus_w(addr, EXT_SIGNAL_OFF_VAL);
@@ -1221,90 +1254,90 @@ enum timingMode getTiming() {
     case EXT_SIGNAL_TRGGR_IN_FLLNG_VAL:
         return TRIGGER_EXPOSURE;
     default:
-       return AUTO_TIMING;
+        return AUTO_TIMING;
     }
 }
 
-void setExtSignal(enum externalSignalFlag  mode) {
+void setExtSignal(enum externalSignalFlag mode) {
     switch (mode) {
     case TRIGGER_IN_RISING_EDGE:
-        LOG(logINFO, ("Setting External Signal flag: Trigger in Rising Edge\n"));
+        LOG(logINFO,
+            ("Setting External Signal flag: Trigger in Rising Edge\n"));
         break;
     case TRIGGER_IN_FALLING_EDGE:
-        LOG(logINFO, ("Setting External Signal flag: Trigger in Falling Edge\n"));
+        LOG(logINFO,
+            ("Setting External Signal flag: Trigger in Falling Edge\n"));
         break;
     default:
-        LOG(logERROR, ("Extsig (signal mode) %d not defined for this detector\n", mode));
+        LOG(logERROR,
+            ("Extsig (signal mode) %d not defined for this detector\n", mode));
         return;
     }
     signalMode = mode;
     setTiming(getTiming());
 }
 
-int getExtSignal() {
-    return signalMode;
-}
-
+int getExtSignal() { return signalMode; }
 
 /* configure mac */
 
-void calcChecksum(mac_conf* mac, int sourceip, int destip) {
-    mac->ip.ip_ver       = 0x4;
-    mac->ip.ip_ihl       = 0x5;
-    mac->ip.ip_tos       = 0x0;
-    mac->ip.ip_len       = ipPacketSize;
-    mac->ip.ip_ident     = 0x0000;
-    mac->ip.ip_flag      = 0x2; 	//not nibble aligned (flag& offset
-    mac->ip.ip_offset    = 0x00;
-    mac->ip.ip_ttl       = 0x70;
-    mac->ip.ip_protocol  = 0x11;
-    mac->ip.ip_chksum    = 0x0000 ; // pseudo
-    mac->ip.ip_sourceip  = sourceip;
-    mac->ip.ip_destip    = destip;
+void calcChecksum(mac_conf *mac, int sourceip, int destip) {
+    mac->ip.ip_ver = 0x4;
+    mac->ip.ip_ihl = 0x5;
+    mac->ip.ip_tos = 0x0;
+    mac->ip.ip_len = ipPacketSize;
+    mac->ip.ip_ident = 0x0000;
+    mac->ip.ip_flag = 0x2; // not nibble aligned (flag& offset
+    mac->ip.ip_offset = 0x00;
+    mac->ip.ip_ttl = 0x70;
+    mac->ip.ip_protocol = 0x11;
+    mac->ip.ip_chksum = 0x0000; // pseudo
+    mac->ip.ip_sourceip = sourceip;
+    mac->ip.ip_destip = destip;
     LOG(logDEBUG1, ("\tIP TTL: 0x%x\n", mac->ip.ip_ttl));
 
-	int count = sizeof(mac->ip);
-	unsigned short *addr;
-	addr = (unsigned short*)(&(mac->ip)); /* warning: assignment from incompatible pointer type */
+    int count = sizeof(mac->ip);
+    unsigned short *addr;
+    addr = (unsigned short *)(&(
+        mac->ip)); /* warning: assignment from incompatible pointer type */
 
-	long int sum = 0;
-	while( count > 1 )  {
-		sum += *addr++;
-		count -= 2;
-	}
-	if (count > 0)
-	    sum += *addr;                     // Add left-over byte, if any
-	while (sum>>16)
-	    sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
-	long int checksum = (~sum) & 0xffff;
-	LOG(logINFO, ("\tIP checksum : 0x%lx\n", checksum));
-	mac->ip.ip_chksum   =  checksum;
+    long int sum = 0;
+    while (count > 1) {
+        sum += *addr++;
+        count -= 2;
+    }
+    if (count > 0)
+        sum += *addr; // Add left-over byte, if any
+    while (sum >> 16)
+        sum = (sum & 0xffff) + (sum >> 16); // Fold 32-bit sum to 16 bits
+    long int checksum = (~sum) & 0xffff;
+    LOG(logINFO, ("\tIP checksum : 0x%lx\n", checksum));
+    mac->ip.ip_chksum = checksum;
 }
 
 int configureMAC() {
     uint32_t srcip = udpDetails.srcip;
-	uint32_t dstip = udpDetails.dstip;
-	uint64_t srcmac = udpDetails.srcmac;
-	uint64_t dstmac = udpDetails.dstmac;
-	int srcport = udpDetails.srcport;
-	int dstport = udpDetails.dstport;	
+    uint32_t dstip = udpDetails.dstip;
+    uint64_t srcmac = udpDetails.srcmac;
+    uint64_t dstmac = udpDetails.dstmac;
+    int srcport = udpDetails.srcport;
+    int dstport = udpDetails.dstport;
 
-	LOG(logINFOBLUE, ("Configuring MAC\n"));
-	char src_mac[50], src_ip[INET_ADDRSTRLEN],dst_mac[50], dst_ip[INET_ADDRSTRLEN];
-	getMacAddressinString(src_mac, 50, srcmac);
-	getMacAddressinString(dst_mac, 50, dstmac);
-	getIpAddressinString(src_ip, srcip);
-	getIpAddressinString(dst_ip, dstip);
+    LOG(logINFOBLUE, ("Configuring MAC\n"));
+    char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
+        dst_ip[INET_ADDRSTRLEN];
+    getMacAddressinString(src_mac, 50, srcmac);
+    getMacAddressinString(dst_mac, 50, dstmac);
+    getIpAddressinString(src_ip, srcip);
+    getIpAddressinString(dst_ip, dstip);
 
-	LOG(logINFO, (
-	        "\tSource IP   : %s\n"
-	        "\tSource MAC  : %s\n"
-	        "\tSource Port : %d\n"
-	        "\tDest IP     : %s\n"
-	        "\tDest MAC    : %s\n"
-			"\tDest Port   : %d\n",
-	        src_ip, src_mac, srcport,
-	        dst_ip, dst_mac, dstport));
+    LOG(logINFO, ("\tSource IP   : %s\n"
+                  "\tSource MAC  : %s\n"
+                  "\tSource Port : %d\n"
+                  "\tDest IP     : %s\n"
+                  "\tDest MAC    : %s\n"
+                  "\tDest Port   : %d\n",
+                  src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
 #ifdef VIRTUAL
     if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
@@ -1315,94 +1348,96 @@ int configureMAC() {
 #endif
     u_int32_t addr = MULTI_PURPOSE_REG;
 
-	LOG(logDEBUG1, ("\tRoi: %d, Ip Packet size: %d UDP Packet size: %d\n",
-	        adcConfigured, ipPacketSize, udpPacketSize));
+    LOG(logDEBUG1, ("\tRoi: %d, Ip Packet size: %d UDP Packet size: %d\n",
+                    adcConfigured, ipPacketSize, udpPacketSize));
 
-	//reset mac
-	bus_w (addr, bus_r(addr) | RST_MSK);
-	LOG(logDEBUG1, ("\tReset Mac. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    // reset mac
+    bus_w(addr, bus_r(addr) | RST_MSK);
+    LOG(logDEBUG1, ("\tReset Mac. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
-	usleep(500000);
+    usleep(500000);
 
-	// release reset
-	bus_w(addr, bus_r(addr) &(~ RST_MSK));
-	LOG(logDEBUG1, ("\tReset released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    // release reset
+    bus_w(addr, bus_r(addr) & (~RST_MSK));
+    LOG(logDEBUG1, ("\tReset released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
-	// write shadow regs
+    // write shadow regs
     bus_w(addr, bus_r(addr) | (ENT_RSTN_MSK | WRT_BCK_MSK));
-    LOG(logDEBUG1, ("\tWrite shadow regs. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    LOG(logDEBUG1,
+        ("\tWrite shadow regs. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
     // release write back
-    bus_w(addr, bus_r(addr) &(~WRT_BCK_MSK));
-    LOG(logDEBUG1, ("\tWrite back released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    bus_w(addr, bus_r(addr) & (~WRT_BCK_MSK));
+    LOG(logDEBUG1,
+        ("\tWrite back released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
     LOG(logDEBUG1, ("\tConfiguring MAC CONF\n"));
-    mac_conf *mac_conf_regs = (mac_conf*)(Blackfin_getBaseAddress() + ENET_CONF_REG / 2);    // direct write
-    mac_conf_regs->mac.mac_dest_mac1  = ((dstmac >> (8 * 5)) & 0xFF);
-    mac_conf_regs->mac.mac_dest_mac2  = ((dstmac >> (8 * 4)) & 0xFF);
-    mac_conf_regs->mac.mac_dest_mac3  = ((dstmac >> (8 * 3)) & 0xFF);
-    mac_conf_regs->mac.mac_dest_mac4  = ((dstmac >> (8 * 2)) & 0xFF);
-    mac_conf_regs->mac.mac_dest_mac5  = ((dstmac >> (8 * 1)) & 0xFF);
-    mac_conf_regs->mac.mac_dest_mac6  = ((dstmac >> (8 * 0)) & 0xFF);
-    LOG(logDEBUG1, ("\tDestination Mac: %llx %x:%x:%x:%x:%x:%x\n",
-            dstmac,
-            mac_conf_regs->mac.mac_dest_mac1,
-            mac_conf_regs->mac.mac_dest_mac2,
-            mac_conf_regs->mac.mac_dest_mac3,
-            mac_conf_regs->mac.mac_dest_mac4,
-            mac_conf_regs->mac.mac_dest_mac5,
-            mac_conf_regs->mac.mac_dest_mac6));
-    mac_conf_regs->mac.mac_src_mac1  = ((srcmac >> (8 * 5)) & 0xFF);
-    mac_conf_regs->mac.mac_src_mac2  = ((srcmac >> (8 * 4)) & 0xFF);
-    mac_conf_regs->mac.mac_src_mac3  = ((srcmac >> (8 * 3)) & 0xFF);
-    mac_conf_regs->mac.mac_src_mac4  = ((srcmac >> (8 * 2)) & 0xFF);
-    mac_conf_regs->mac.mac_src_mac5  = ((srcmac >> (8 * 1)) & 0xFF);
-    mac_conf_regs->mac.mac_src_mac6  = ((srcmac >> (8 * 0)) & 0xFF);
-    LOG(logDEBUG1, ("\tSource Mac: %llx %x:%x:%x:%x:%x:%x\n",
-            srcmac,
-            mac_conf_regs->mac.mac_src_mac1,
-            mac_conf_regs->mac.mac_src_mac2,
-            mac_conf_regs->mac.mac_src_mac3,
-            mac_conf_regs->mac.mac_src_mac4,
-            mac_conf_regs->mac.mac_src_mac5,
-            mac_conf_regs->mac.mac_src_mac6));
-    mac_conf_regs->mac.mac_ether_type   = 0x0800;   //ipv4
+    mac_conf *mac_conf_regs = (mac_conf *)(Blackfin_getBaseAddress() +
+                                           ENET_CONF_REG / 2); // direct write
+    mac_conf_regs->mac.mac_dest_mac1 = ((dstmac >> (8 * 5)) & 0xFF);
+    mac_conf_regs->mac.mac_dest_mac2 = ((dstmac >> (8 * 4)) & 0xFF);
+    mac_conf_regs->mac.mac_dest_mac3 = ((dstmac >> (8 * 3)) & 0xFF);
+    mac_conf_regs->mac.mac_dest_mac4 = ((dstmac >> (8 * 2)) & 0xFF);
+    mac_conf_regs->mac.mac_dest_mac5 = ((dstmac >> (8 * 1)) & 0xFF);
+    mac_conf_regs->mac.mac_dest_mac6 = ((dstmac >> (8 * 0)) & 0xFF);
+    LOG(logDEBUG1,
+        ("\tDestination Mac: %llx %x:%x:%x:%x:%x:%x\n", dstmac,
+         mac_conf_regs->mac.mac_dest_mac1, mac_conf_regs->mac.mac_dest_mac2,
+         mac_conf_regs->mac.mac_dest_mac3, mac_conf_regs->mac.mac_dest_mac4,
+         mac_conf_regs->mac.mac_dest_mac5, mac_conf_regs->mac.mac_dest_mac6));
+    mac_conf_regs->mac.mac_src_mac1 = ((srcmac >> (8 * 5)) & 0xFF);
+    mac_conf_regs->mac.mac_src_mac2 = ((srcmac >> (8 * 4)) & 0xFF);
+    mac_conf_regs->mac.mac_src_mac3 = ((srcmac >> (8 * 3)) & 0xFF);
+    mac_conf_regs->mac.mac_src_mac4 = ((srcmac >> (8 * 2)) & 0xFF);
+    mac_conf_regs->mac.mac_src_mac5 = ((srcmac >> (8 * 1)) & 0xFF);
+    mac_conf_regs->mac.mac_src_mac6 = ((srcmac >> (8 * 0)) & 0xFF);
+    LOG(logDEBUG1,
+        ("\tSource Mac: %llx %x:%x:%x:%x:%x:%x\n", srcmac,
+         mac_conf_regs->mac.mac_src_mac1, mac_conf_regs->mac.mac_src_mac2,
+         mac_conf_regs->mac.mac_src_mac3, mac_conf_regs->mac.mac_src_mac4,
+         mac_conf_regs->mac.mac_src_mac5, mac_conf_regs->mac.mac_src_mac6));
+    mac_conf_regs->mac.mac_ether_type = 0x0800; // ipv4
 
     calcChecksum(mac_conf_regs, srcip, dstip);
-    mac_conf_regs->udp.udp_srcport      = srcport;
-    mac_conf_regs->udp.udp_destport     = dstport;
-    mac_conf_regs->udp.udp_len          = udpPacketSize;
-    mac_conf_regs->udp.udp_chksum       = 0x0000;
+    mac_conf_regs->udp.udp_srcport = srcport;
+    mac_conf_regs->udp.udp_destport = dstport;
+    mac_conf_regs->udp.udp_len = udpPacketSize;
+    mac_conf_regs->udp.udp_chksum = 0x0000;
 
     LOG(logDEBUG1, ("\tConfiguring TSE\n"));
-    tse_conf *tse_conf_regs = (tse_conf*)(Blackfin_getBaseAddress() + TSE_CONF_REG / 2);     // direct write
-    tse_conf_regs->rev                 = 0xA00;
-    tse_conf_regs->scratch             = 0xCCCCCCCC;
-    tse_conf_regs->command_config      = 0xB;
-    tse_conf_regs->mac_0               = 0x17231C00;
-    tse_conf_regs->mac_1               = 0xCB4A;
-    tse_conf_regs->frm_length          = 0x5DC;      //max frame length (1500 bytes) (was 0x41C)
-    tse_conf_regs->pause_quant         = 0x0;
-    tse_conf_regs->rx_section_empty    = 0x7F0;
-    tse_conf_regs->rx_section_full     = 0x10;
-    tse_conf_regs->tx_section_empty    = 0x3F8;      //was 0x7F0;
-    tse_conf_regs->tx_section_full     = 0x16;
-    tse_conf_regs->rx_almost_empty     = 0x8;
-    tse_conf_regs->rx_almost_full      = 0x8;
-    tse_conf_regs->tx_almost_empty     = 0x8;
-    tse_conf_regs->tx_almost_full      = 0x3;
-    tse_conf_regs->mdio_addr0          = 0x12;
-    tse_conf_regs->mdio_addr1          = 0x0;
-    mac_conf_regs->cdone               = 0xFFFFFFFF;
+    tse_conf *tse_conf_regs = (tse_conf *)(Blackfin_getBaseAddress() +
+                                           TSE_CONF_REG / 2); // direct write
+    tse_conf_regs->rev = 0xA00;
+    tse_conf_regs->scratch = 0xCCCCCCCC;
+    tse_conf_regs->command_config = 0xB;
+    tse_conf_regs->mac_0 = 0x17231C00;
+    tse_conf_regs->mac_1 = 0xCB4A;
+    tse_conf_regs->frm_length =
+        0x5DC; // max frame length (1500 bytes) (was 0x41C)
+    tse_conf_regs->pause_quant = 0x0;
+    tse_conf_regs->rx_section_empty = 0x7F0;
+    tse_conf_regs->rx_section_full = 0x10;
+    tse_conf_regs->tx_section_empty = 0x3F8; // was 0x7F0;
+    tse_conf_regs->tx_section_full = 0x16;
+    tse_conf_regs->rx_almost_empty = 0x8;
+    tse_conf_regs->rx_almost_full = 0x8;
+    tse_conf_regs->tx_almost_empty = 0x8;
+    tse_conf_regs->tx_almost_full = 0x3;
+    tse_conf_regs->mdio_addr0 = 0x12;
+    tse_conf_regs->mdio_addr1 = 0x0;
+    mac_conf_regs->cdone = 0xFFFFFFFF;
 
     bus_w(addr, bus_r(addr) | (INT_RSTN_MSK | WRT_BCK_MSK));
-    LOG(logDEBUG1, ("\tWrite shadow regs with int reset. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    LOG(logDEBUG1,
+        ("\tWrite shadow regs with int reset. MultiPurpose reg: 0x%x\n",
+         bus_r(addr)));
 
     usleep(100000);
 
     // release write back
-    bus_w(addr, bus_r(addr) &(~WRT_BCK_MSK));
-    LOG(logDEBUG1, ("\tWrite back released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
+    bus_w(addr, bus_r(addr) & (~WRT_BCK_MSK));
+    LOG(logDEBUG1,
+        ("\tWrite back released. MultiPurpose reg: 0x%x\n", bus_r(addr)));
 
     bus_w(addr, bus_r(addr) | SW1_MSK);
     LOG(logDEBUG1, ("\tSw1. MultiPurpose reg: 0x%x\n", bus_r(addr)));
@@ -1410,8 +1445,9 @@ int configureMAC() {
     usleep(1000 * 1000);
     LOG(logDEBUG1, ("\tConfigure Mac Done\n"));
     {
-        /** send out first image as first packet does not give 0xcacacaca (needed to know if first image
-         * when switching back and forth between roi and no roi
+        /** send out first image as first packet does not give 0xcacacaca
+         * (needed to know if first image when switching back and forth between
+         * roi and no roi
          */
         LOG(logINFOBLUE, ("Sending an image to counter the packet numbers\n"));
         // remember old parameters
@@ -1423,46 +1459,51 @@ int configureMAC() {
 
         // set to basic parameters
         LOG(logINFO, ("\tSetting basic parameters\n"
-                "\tTiming: auto\n"
-                "\tframes: 1\n"
-                "\ttriggers: 1\n"
-                "\tperiod: 1s\n"
-                "\texptime: 900ms\n"));
+                      "\tTiming: auto\n"
+                      "\tframes: 1\n"
+                      "\ttriggers: 1\n"
+                      "\tperiod: 1s\n"
+                      "\texptime: 900ms\n"));
         setTiming(AUTO_TIMING);
         setNumFrames(1);
         setNumTriggers(1);
-        setPeriod(1e9); // important to keep this until we have to wait for acquisition to start
+        setPeriod(1e9); // important to keep this until we have to wait for
+                        // acquisition to start
         setExpTime(900 * 1000);
 
         // take an image
         if (masterflags == IS_MASTER)
-            usleep(1 * 1000 * 1000); // required to ensure master starts acquisition only after slave has changed to basic parameters and is waiting
+            usleep(1 * 1000 * 1000); // required to ensure master starts
+                                     // acquisition only after slave has changed
+                                     // to basic parameters and is waiting
 
         int loop = 0;
         startStateMachine();
         // wait for acquisition to start (trigger from master)
         LOG(logINFO, ("\tWaiting for acquisition to start\n"));
-        while(!runBusy()) {
+        while (!runBusy()) {
             usleep(0);
             ++loop;
         }
 
         LOG(logINFO, ("\twaited %d loops to start\n", loop));
-        LOG(logINFO, ("\tWaiting for acquisition to end (frames left: %lld)\n", (long long int)getNumFramesLeft()));
-    	// wait for status to be done
-    	while(runBusy()){
-    		usleep(500);
-    	}
+        LOG(logINFO, ("\tWaiting for acquisition to end (frames left: %lld)\n",
+                      (long long int)getNumFramesLeft()));
+        // wait for status to be done
+        while (runBusy()) {
+            usleep(500);
+        }
 
         // set to previous parameters
         LOG(logINFO, ("\tSetting previous parameters:\n"
-                "\tTiming: %d\n"
-                "\tframes: %lld\n"
-                "\ttriggers: %lld\n"
-                "\tperiod: %lld ns\n"
-                "\texptime:%lld ns\n",
-                (int)oldtiming, (long long int)oldframes, (long long int)oldtriggers,
-                (long long int)oldPeriod, (long long int)oldExptime));
+                      "\tTiming: %d\n"
+                      "\tframes: %lld\n"
+                      "\ttriggers: %lld\n"
+                      "\tperiod: %lld ns\n"
+                      "\texptime:%lld ns\n",
+                      (int)oldtiming, (long long int)oldframes,
+                      (long long int)oldtriggers, (long long int)oldPeriod,
+                      (long long int)oldExptime));
         setTiming(oldtiming);
         setNumFrames(oldframes);
         setNumTriggers(oldtriggers);
@@ -1473,29 +1514,24 @@ int configureMAC() {
     return OK;
 }
 
-
-int getAdcConfigured(){
-    return adcConfigured;
-}
+int getAdcConfigured() { return adcConfigured; }
 
 int setDetectorPosition(int pos[]) {
     memcpy(detPos, pos, sizeof(detPos));
     return OK;
 }
 
-int* getDetectorPosition() {
-    return detPos;
-}
+int *getDetectorPosition() { return detPos; }
 
 /* gotthard specific - adc phase */
 int setPhase(enum CLKINDEX ind, int val, int degrees) {
     if (ind != ADC_CLK) {
-		LOG(logERROR, ("Unknown clock index: %d\n", ind));
-	    return FAIL;
-	}
+        LOG(logERROR, ("Unknown clock index: %d\n", ind));
+        return FAIL;
+    }
     if (degrees != 0) {
-		LOG(logERROR, ("Cannot set phase in degrees\n"));
-	    return FAIL;        
+        LOG(logERROR, ("Cannot set phase in degrees\n"));
+        return FAIL;
     }
     setPhaseShift(val);
     return OK;
@@ -1503,58 +1539,58 @@ int setPhase(enum CLKINDEX ind, int val, int degrees) {
 
 /* aquisition */
 
-int startStateMachine(){
+int startStateMachine() {
 #ifdef VIRTUAL
-	// create udp socket
-	if(createUDPSocket(0) != OK) {
-		return FAIL;
-	}
-	LOG(logINFOBLUE, ("Starting State Machine\n"));
+    // create udp socket
+    if (createUDPSocket(0) != OK) {
+        return FAIL;
+    }
+    LOG(logINFOBLUE, ("Starting State Machine\n"));
     virtual_status = 1;
-	if (isControlServer) {
-		ComVirtual_setStatus(virtual_status);
-		virtual_stop = ComVirtual_getStop();
-		if (virtual_stop != 0) {
-			LOG(logERROR, ("Cant start acquisition. "
-			"Stop server has not updated stop status to 0\n"));
-			return FAIL;
-		}
-	}
-	if(pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
-		LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
-		virtual_status = 0;
-		if (isControlServer) {
-			ComVirtual_setStatus(virtual_status);
-		}	
-		return FAIL;
-	}
-	LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
-	return OK;
+    if (isControlServer) {
+        ComVirtual_setStatus(virtual_status);
+        virtual_stop = ComVirtual_getStop();
+        if (virtual_stop != 0) {
+            LOG(logERROR, ("Cant start acquisition. "
+                           "Stop server has not updated stop status to 0\n"));
+            return FAIL;
+        }
+    }
+    if (pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
+        LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
+        virtual_status = 0;
+        if (isControlServer) {
+            ComVirtual_setStatus(virtual_status);
+        }
+        return FAIL;
+    }
+    LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
+    return OK;
 #endif
-	LOG(logINFOBLUE, ("Starting State Machine\n"));
-	LOG(logINFO, ("#frames to acquire:%lld\n", (long long int)getNumFrames()));
+    LOG(logINFOBLUE, ("Starting State Machine\n"));
+    LOG(logINFO, ("#frames to acquire:%lld\n", (long long int)getNumFrames()));
 
-	cleanFifos();
+    cleanFifos();
 
-	//start state machine
-	bus_w16(CONTROL_REG, CONTROL_STRT_ACQ_MSK | CONTROL_STRT_EXPSR_MSK);
-	bus_w16(CONTROL_REG, 0x0);
-	runState(logINFO);
-	return OK;
+    // start state machine
+    bus_w16(CONTROL_REG, CONTROL_STRT_ACQ_MSK | CONTROL_STRT_EXPSR_MSK);
+    bus_w16(CONTROL_REG, 0x0);
+    runState(logINFO);
+    return OK;
 }
 
 #ifdef VIRTUAL
-void* start_timer(void* arg) {
-	if (!isControlServer) {
-		return NULL;
-	}
+void *start_timer(void *arg) {
+    if (!isControlServer) {
+        return NULL;
+    }
 
-	int64_t periodNs = getPeriod();
-	int numFrames = (getNumFrames() *
-						getNumTriggers() );
-	int64_t expUs = 	getExpTime() / 1000;
+    int64_t periodNs = getPeriod();
+    int numFrames = (getNumFrames() * getNumTriggers());
+    int64_t expUs = getExpTime() / 1000;
 
-    int imageSize = adcConfigured == -1 ? DATA_BYTES : NCHAN_PER_ADC * NUM_BITS_PER_PIXEL;
+    int imageSize =
+        adcConfigured == -1 ? DATA_BYTES : NCHAN_PER_ADC * NUM_BITS_PER_PIXEL;
     int dataSize = adcConfigured == -1 ? 1280 : 512;
     int packetSize = adcConfigured == -1 ? 1286 : 518;
     int packetsPerFrame = adcConfigured == -1 ? 2 : 1;
@@ -1565,24 +1601,24 @@ void* start_timer(void* arg) {
     {
         int i = 0;
         if (adcConfigured == -1) {
-            *((uint32_t*)(imageData)) = 0xCACACACA;
+            *((uint32_t *)(imageData)) = 0xCACACACA;
         }
         for (i = sizeof(uint32_t); i < imageSize; i += sizeof(uint16_t)) {
-            *((uint16_t*)(imageData + i)) = (uint16_t)i;
-        }       
+            *((uint16_t *)(imageData + i)) = (uint16_t)i;
+        }
     }
 
-	// Send data
+    // Send data
     {
         int frameNr = 0;
         uint16_t frameHeaderNr = 2;
         // loop over number of frames
-        for(frameNr = 0; frameNr != numFrames; ++frameNr ) {
+        for (frameNr = 0; frameNr != numFrames; ++frameNr) {
 
-			// update the virtual stop from stop server
-			virtual_stop = ComVirtual_getStop();
-            //check if virtual_stop is high
-            if(virtual_stop == 1){
+            // update the virtual stop from stop server
+            virtual_stop = ComVirtual_getStop();
+            // check if virtual_stop is high
+            if (virtual_stop == 1) {
                 break;
             }
 
@@ -1595,70 +1631,70 @@ void* start_timer(void* arg) {
             // loop packet
             {
                 int i = 0;
-                for(i = 0; i != packetsPerFrame; ++i) {
-                    
+                for (i = 0; i != packetsPerFrame; ++i) {
+
                     char packetData[packetSize];
                     memset(packetData, 0, packetSize);
                     // set header
-                    *((uint16_t*)(packetData)) = frameHeaderNr;
+                    *((uint16_t *)(packetData)) = frameHeaderNr;
                     ++frameHeaderNr;
 
                     // fill data
                     memcpy(packetData + 4, imageData + srcOffset, dataSize);
                     srcOffset += dataSize;
-                    
+
                     sendUDPPacket(0, packetData, packetSize);
                 }
             }
             LOG(logINFO, ("Sent frame: %d\n", frameNr));
             clock_gettime(CLOCK_REALTIME, &end);
             int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                    (end.tv_nsec - begin.tv_nsec));
+                              (end.tv_nsec - begin.tv_nsec));
 
             // sleep for (period - exptime)
             if (frameNr < numFrames) { // if there is a next frame
                 if (periodNs > timeNs) {
-                    usleep((periodNs - timeNs)/ 1000);
+                    usleep((periodNs - timeNs) / 1000);
                 }
             }
         }
     }
 
-	closeUDPSocket(0);
+    closeUDPSocket(0);
 
-	virtual_status = 0;
-	if (isControlServer) {
-		ComVirtual_setStatus(virtual_status);
-	}
-	LOG(logINFOBLUE, ("Finished Acquiring\n"));        
-	return NULL;
+    virtual_status = 0;
+    if (isControlServer) {
+        ComVirtual_setStatus(virtual_status);
+    }
+    LOG(logINFOBLUE, ("Finished Acquiring\n"));
+    return NULL;
 }
 #endif
 
-int stopStateMachine(){
-	LOG(logINFORED, ("Stopping State Machine\n"));
+int stopStateMachine() {
+    LOG(logINFORED, ("Stopping State Machine\n"));
 #ifdef VIRTUAL
-	if (!isControlServer) {
-		virtual_stop = 1;
-		ComVirtual_setStop(virtual_stop);
-		// read till status is idle
-		int tempStatus = 1;
-		while(tempStatus == 1) {
-			tempStatus = ComVirtual_getStatus();
-		}
-		virtual_stop = 0;
-		ComVirtual_setStop(virtual_stop);
-		LOG(logINFO, ("Stopped State Machine\n"));
-	}	
-	return OK;
+    if (!isControlServer) {
+        virtual_stop = 1;
+        ComVirtual_setStop(virtual_stop);
+        // read till status is idle
+        int tempStatus = 1;
+        while (tempStatus == 1) {
+            tempStatus = ComVirtual_getStatus();
+        }
+        virtual_stop = 0;
+        ComVirtual_setStop(virtual_stop);
+        LOG(logINFO, ("Stopped State Machine\n"));
+    }
+    return OK;
 #endif
-	//stop state machine
-	bus_w16(CONTROL_REG, CONTROL_STP_ACQ_MSK);
-	usleep(100);
-	bus_w16(CONTROL_REG, 0x0);
+    // stop state machine
+    bus_w16(CONTROL_REG, CONTROL_STP_ACQ_MSK);
+    usleep(100);
+    bus_w16(CONTROL_REG, 0x0);
 
-	// check
-	usleep(500);
+    // check
+    usleep(500);
     if ((runState(logDEBUG1) & STATUS_RN_MSHN_BSY_MSK)) {
         LOG(logERROR, ("\tFailed to stop state machine.\n"));
         runState(logINFORED);
@@ -1666,33 +1702,33 @@ int stopStateMachine(){
     }
 
     runState(logINFO);
-	return OK;
+    return OK;
 }
 
-enum runStatus getRunStatus(){
+enum runStatus getRunStatus() {
 #ifdef VIRTUAL
-	if (!isControlServer) {
-		virtual_status = ComVirtual_getStatus();
-	}
-	if(virtual_status == 0) {
-		LOG(logINFOBLUE, ("Status: IDLE\n"));
-		return IDLE;
-	}else{
-		LOG(logINFOBLUE, ("Status: RUNNING\n"));
-		return RUNNING;
-	}
+    if (!isControlServer) {
+        virtual_status = ComVirtual_getStatus();
+    }
+    if (virtual_status == 0) {
+        LOG(logINFOBLUE, ("Status: IDLE\n"));
+        return IDLE;
+    } else {
+        LOG(logINFOBLUE, ("Status: RUNNING\n"));
+        return RUNNING;
+    }
 #endif
-	LOG(logDEBUG1, ("Getting status\n"));
+    LOG(logDEBUG1, ("Getting status\n"));
 
-	enum runStatus s = IDLE;
-	u_int32_t retval = runState(logINFO);
+    enum runStatus s = IDLE;
+    u_int32_t retval = runState(logINFO);
 
-	// finished (external stop or fifo full)
-	if (retval & STATUS_RN_FNSHD_MSK) {
-	    LOG(logINFORED, ("Status: Stopped\n"));
-	    s = STOPPED;
+    // finished (external stop or fifo full)
+    if (retval & STATUS_RN_FNSHD_MSK) {
+        LOG(logINFORED, ("Status: Stopped\n"));
+        s = STOPPED;
 
-	    LOG(logINFO, ("\t Reading status reg again\n"));
+        LOG(logINFO, ("\t Reading status reg again\n"));
         retval = runState(logINFO);
         // fifo full
         if (runState(logDEBUG1) & STATUS_RN_FNSHD_MSK) {
@@ -1700,88 +1736,89 @@ enum runStatus getRunStatus(){
             runState(logINFORED);
             s = ERROR;
         }
-	}
+    }
 
-	// error (fifo full)
-	else if (retval & STATUS_SM_FF_FLL_MSK) {
+    // error (fifo full)
+    else if (retval & STATUS_SM_FF_FLL_MSK) {
         LOG(logINFORED, ("Status: Error\n"));
         s = ERROR;
-	}
+    }
 
-	// not running
-	else if (!(retval & STATUS_RN_BSY_MSK)) {
-	    // read last frames
-	    if (retval & STATUS_RD_MSHN_BSY_MSK) {
-	        LOG(logINFOBLUE, ("Status: Read Machine Busy\n"));
-	        s = TRANSMITTING;
-	    }
-	    // ???
-	    else if (retval & STATUS_ALL_FF_EMPTY_MSK) {
+    // not running
+    else if (!(retval & STATUS_RN_BSY_MSK)) {
+        // read last frames
+        if (retval & STATUS_RD_MSHN_BSY_MSK) {
+            LOG(logINFOBLUE, ("Status: Read Machine Busy\n"));
+            s = TRANSMITTING;
+        }
+        // ???
+        else if (retval & STATUS_ALL_FF_EMPTY_MSK) {
             LOG(logINFOBLUE, ("Status: Data in Fifo\n"));
             s = TRANSMITTING;
-	    }
-	    // idle, unknown
-	    else if (!(retval & STATUS_IDLE_MSK)) {
+        }
+        // idle, unknown
+        else if (!(retval & STATUS_IDLE_MSK)) {
             LOG(logINFOBLUE, ("Status: IDLE\n"));
             s = IDLE;
-	    } else {
-            LOG(logINFORED, ("Status: Unknown Status: 0x%x. Trying again.\n", retval));
+        } else {
+            LOG(logINFORED,
+                ("Status: Unknown Status: 0x%x. Trying again.\n", retval));
             int iloop = 0;
             for (iloop = 0; iloop < 10; ++iloop) {
                 usleep(1000 * 1000);
                 if (runState(logDEBUG1) != retval)
                     return getRunStatus();
             }
-           s = ERROR;
-	    }
-	}
+            s = ERROR;
+        }
+    }
 
-	// running
-	else {
-	    if (retval & STATUS_WTNG_FR_TRGGR_MSK){
-	        LOG(logINFOBLUE, ("Status: Waiting\n"));
-	        s = WAITING;
-	    }
-	    else{
-	        LOG(logINFOBLUE, ("Status: Running\n"));
-	        s = RUNNING;
-	    }
-	}
+    // running
+    else {
+        if (retval & STATUS_WTNG_FR_TRGGR_MSK) {
+            LOG(logINFOBLUE, ("Status: Waiting\n"));
+            s = WAITING;
+        } else {
+            LOG(logINFOBLUE, ("Status: Running\n"));
+            s = RUNNING;
+        }
+    }
 
-	return s;
+    return s;
 }
 
-void readFrame(int *ret, char *mess){
+void readFrame(int *ret, char *mess) {
 #ifdef VIRTUAL
-	while(virtual_status) {
-		//LOG(logERROR, ("Waiting for finished flag\n");
-		usleep(5000);
-	}
-	return;
+    while (virtual_status) {
+        // LOG(logERROR, ("Waiting for finished flag\n");
+        usleep(5000);
+    }
+    return;
 #endif
-	// wait for status to be done
-	while(runBusy()){
-		usleep(500);
-	}
+    // wait for status to be done
+    while (runBusy()) {
+        usleep(500);
+    }
 
-	// frames left to give status
+    // frames left to give status
     *ret = (int)OK;
-	int64_t retval = getNumFramesLeft() + 1;
-	if ( retval > -1) {
-		LOG(logERROR, ("No data and run stopped: %lld frames left\n",(long  long int)retval));
-	} else {
-		LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
-	}
+    int64_t retval = getNumFramesLeft() + 1;
+    if (retval > -1) {
+        LOG(logERROR, ("No data and run stopped: %lld frames left\n",
+                       (long long int)retval));
+    } else {
+        LOG(logINFOGREEN, ("Acquisition successfully finished\n"));
+    }
 }
 
 u_int32_t runBusy() {
 #ifdef VIRTUAL
-	if (!isControlServer) {
-		virtual_status = ComVirtual_getStatus();
-	}
+    if (!isControlServer) {
+        virtual_status = ComVirtual_getStatus();
+    }
     return virtual_status;
 #endif
-	return runState(logDEBUG1) & STATUS_RN_BSY_MSK;
+    return runState(logDEBUG1) & STATUS_RN_BSY_MSK;
 }
 
 u_int32_t runState(enum TLogLevel lev) {
@@ -1795,13 +1832,11 @@ u_int32_t runState(enum TLogLevel lev) {
 
 /* common */
 
-int calculateDataBytes(){
-	return DATA_BYTES;
+int calculateDataBytes() { return DATA_BYTES; }
+
+int getTotalNumberOfChannels() {
+    return (getNumberOfChannelsPerChip() * getNumberOfChips());
 }
-
-int getTotalNumberOfChannels() {return  (getNumberOfChannelsPerChip() * getNumberOfChips());}
-int getNumberOfChips(){return  NCHIP;}
-int getNumberOfDACs(){return  NDAC;}
-int getNumberOfChannelsPerChip(){return  NCHAN;}
-
-
+int getNumberOfChips() { return NCHIP; }
+int getNumberOfDACs() { return NDAC; }
+int getNumberOfChannelsPerChip() { return NCHAN; }

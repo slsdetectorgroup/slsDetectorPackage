@@ -145,12 +145,14 @@
 
 /* Exposure Time Left 64 bit RO register */
 //#define EXPTIME_LEFT_LSB_REG                (0x1A << MEM_MAP_SHIFT) // Not
-//used in FW #define EXPTIME_LEFT_MSB_REG                (0x1B << MEM_MAP_SHIFT)
+// used in FW #define EXPTIME_LEFT_MSB_REG                (0x1B <<
+// MEM_MAP_SHIFT)
 //// Not used in FW
 
 /* Gates Left 64 bit RO register */
 //#define GATES_LEFT_LSB_REG                  (0x1C << MEM_MAP_SHIFT) // Not
-//used in FW #define GATES_LEFT_MSB_REG                  (0x1D << MEM_MAP_SHIFT)
+// used in FW #define GATES_LEFT_MSB_REG                  (0x1D <<
+// MEM_MAP_SHIFT)
 //// Not used in FW
 
 /* Data In 64 bit RO register TODO */
@@ -163,7 +165,8 @@
 
 /* Frames From Start 64 bit RO register TODO */
 //#define FRAMES_FROM_START_LSB_REG           (0x22 << MEM_MAP_SHIFT) // Not
-//used in FW #define FRAMES_FROM_START_MSB_REG           (0x23 << MEM_MAP_SHIFT)
+// used in FW #define FRAMES_FROM_START_MSB_REG           (0x23 <<
+// MEM_MAP_SHIFT)
 //// Not used in FW
 
 /* Frames From Start PG 64 bit RO register. Reset using CONTROL_CRST. TODO */
@@ -331,21 +334,22 @@
 #define CONTROL_STP_ACQSTN_MSK   (0x00000001 << CONTROL_STP_ACQSTN_OFST)
 //#define CONTROL_STRT_FF_TST_OFST            (2)
 //#define CONTROL_STRT_FF_TST_MSK             (0x00000001 <<
-//CONTROL_STRT_FF_TST_OFST) #define CONTROL_STP_FF_TST_OFST             (3)
+// CONTROL_STRT_FF_TST_OFST) #define CONTROL_STP_FF_TST_OFST             (3)
 //#define CONTROL_STP_FF_TST_MSK              (0x00000001 <<
-//CONTROL_STP_FF_TST_OFST) #define CONTROL_STRT_RDT_OFST               (4)
+// CONTROL_STP_FF_TST_OFST) #define CONTROL_STRT_RDT_OFST               (4)
 //#define CONTROL_STRT_RDT_MSK                (0x00000001 <<
-//CONTROL_STRT_RDT_OFST) #define CONTROL_STP_RDT_OFST                (5) #define
-//CONTROL_STP_RDT_MSK                 (0x00000001 << CONTROL_STP_RDT_OFST)
+// CONTROL_STRT_RDT_OFST) #define CONTROL_STP_RDT_OFST                (5)
+// #define CONTROL_STP_RDT_MSK                 (0x00000001 <<
+// CONTROL_STP_RDT_OFST)
 #define CONTROL_STRT_EXPSR_OFST (6)
 #define CONTROL_STRT_EXPSR_MSK  (0x00000001 << CONTROL_STRT_EXPSR_OFST)
 //#define CONTROL_STP_EXPSR_OFST              (7)
 //#define CONTROL_STP_EXPSR_MSK               (0x00000001 <<
-//CONTROL_STP_RDT_OFST) #define CONTROL_STRT_TRN_OFST               (8) #define
-//CONTROL_STRT_TRN_MSK                (0x00000001 << CONTROL_STRT_RDT_OFST)
+// CONTROL_STP_RDT_OFST) #define CONTROL_STRT_TRN_OFST               (8) #define
+// CONTROL_STRT_TRN_MSK                (0x00000001 << CONTROL_STRT_RDT_OFST)
 //#define CONTROL_STP_TRN_OFST                (9)
 //#define CONTROL_STP_TRN_MSK                 (0x00000001 <<
-//CONTROL_STP_RDT_OFST)
+// CONTROL_STP_RDT_OFST)
 #define CONTROL_CRE_RST_OFST    (10)
 #define CONTROL_CRE_RST_MSK     (0x00000001 << CONTROL_CRE_RST_OFST)
 #define CONTROL_PRPHRL_RST_OFST (11) // Only GBE10?
@@ -354,7 +358,7 @@
 #define CONTROL_MMRY_RST_MSK    (0x00000001 << CONTROL_MMRY_RST_OFST)
 //#define CONTROL_PLL_RCNFG_WR_OFST           (13)
 //#define CONTROL_PLL_RCNFG_WR_MSK            (0x00000001 <<
-//CONTROL_PLL_RCNFG_WR_OFST)
+// CONTROL_PLL_RCNFG_WR_OFST)
 #define CONTROL_SND_10GB_PCKT_OFST   (14)
 #define CONTROL_SND_10GB_PCKT_MSK    (0x00000001 << CONTROL_SND_10GB_PCKT_OFST)
 #define CONTROL_CLR_ACQSTN_FIFO_OFST (15)
@@ -486,13 +490,13 @@
 
 /* Period 64 bit RW register */
 //#define EXPTIME_LSB_REG    			    (0x68 << MEM_MAP_SHIFT) //
-//Not used in FW #define EXPTIME_MSB_REG    			    (0x69 <<
-//MEM_MAP_SHIFT)                 // Not used in FW
+// Not used in FW #define EXPTIME_MSB_REG    			    (0x69 <<
+// MEM_MAP_SHIFT)                 // Not used in FW
 
 /* Gates 64 bit RW register */
 //#define GATES_LSB_REG                      (0x6A << MEM_MAP_SHIFT) // Not used
-//in FW #define GATES_MSB_REG                      (0x6B << MEM_MAP_SHIFT) //
-//Not used in FW
+// in FW #define GATES_MSB_REG                      (0x6B << MEM_MAP_SHIFT) //
+// Not used in FW
 
 /* Pattern IO Control 64 bit RW regiser
  * Each bit configured as output(1)/ input(0) */

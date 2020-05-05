@@ -72,7 +72,7 @@
     0x000c0000 // everything at  ~200 kHz (200 kHz MHz ddr readout)
 
 //#define DAQ_FIFO_ENABLE                       0x00100000 commented out as it
-//is not used anywhere
+// is not used anywhere
 #define DAQ_REG_CHIP_CMDS_INT_TRIGGER 0x00100000
 
 // direct chip commands to the DAQ_REG_CHIP_CMDS register
@@ -84,7 +84,7 @@
 
 // DAQ_NEXPOSURERS_READOUT_COMPLETE_IMAGES is old now hard-wired in the firmware
 // that every image comes with a header #define
-//DAQ_NEXPOSURERS_READOUT_COMPLETE_IMAGES    0x00800000
+// DAQ_NEXPOSURERS_READOUT_COMPLETE_IMAGES    0x00800000
 ////DAQ_IGNORE_INITIAL_CRAP and DAQ_CLKOUT_LAST_4_BITS_AND_RETURN_TO_START
 
 #define DAQ_NEXPOSURERS_EXTERNAL_ENABLING          0x01000000
@@ -102,7 +102,7 @@
 #define DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION 0x40000000
 
 //#define DAQ_MASTER_HALF_MODULE                        0x80000000 currently not
-//used
+// used
 
 // chips static bits
 #define DAQ_STATIC_BIT_PROGRAM 0x00000001

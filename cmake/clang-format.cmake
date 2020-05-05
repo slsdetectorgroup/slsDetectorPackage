@@ -1,7 +1,7 @@
 # A CMake script to find all source files and setup clang-format targets for them
 
 # Find all source files
-set(ClangFormat_CXX_FILE_EXTENSIONS ${ClangFormat_CXX_FILE_EXTENSIONS} *.cpp *.h *.cxx *.hxx *.hpp *.cc *.ipp)
+set(ClangFormat_CXX_FILE_EXTENSIONS ${ClangFormat_CXX_FILE_EXTENSIONS} *.cpp *.h *.cxx *.hxx *.hpp *.cc *.ipp *.c)
 file(GLOB_RECURSE ALL_SOURCE_FILES ${ClangFormat_CXX_FILE_EXTENSIONS})
 
 # Don't include some common build folders

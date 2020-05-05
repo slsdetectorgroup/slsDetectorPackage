@@ -297,7 +297,7 @@ void qTabMeasurement::GetTimingMode() {
 
 void qTabMeasurement::SetTimingMode(int val) {
     LOG(logINFO) << "Setting timing mode:"
-                      << comboTimingMode->currentText().toAscii().data();
+                 << comboTimingMode->currentText().toAscii().data();
     try {
         det->setTimingMode(static_cast<slsDetectorDefs::timingMode>(val));
         EnableWidgetsforTimingMode();
@@ -438,7 +438,7 @@ void qTabMeasurement::SetExposureTime() {
     auto val = spinExpTime->value();
     auto unit = static_cast<qDefs::timeUnit>(comboExpUnit->currentIndex());
     LOG(logINFO) << "Setting exposure time to " << val << " "
-                      << qDefs::getUnitString(unit);
+                 << qDefs::getUnitString(unit);
     try {
         auto timeNS = qDefs::getNSTime(std::make_pair(val, unit));
         det->setExptime(timeNS);
@@ -476,7 +476,7 @@ void qTabMeasurement::SetAcquisitionPeriod() {
     auto val = spinPeriod->value();
     auto unit = static_cast<qDefs::timeUnit>(comboPeriodUnit->currentIndex());
     LOG(logINFO) << "Setting acquisition period to " << val << " "
-                      << qDefs::getUnitString(unit);
+                 << qDefs::getUnitString(unit);
     try {
         auto timeNS = qDefs::getNSTime(std::make_pair(val, unit));
         det->setPeriod(timeNS);
@@ -537,7 +537,7 @@ void qTabMeasurement::SetDelay() {
     auto val = spinDelay->value();
     auto unit = static_cast<qDefs::timeUnit>(comboDelayUnit->currentIndex());
     LOG(logINFO) << "Setting delay to " << val << " "
-                      << qDefs::getUnitString(unit);
+                 << qDefs::getUnitString(unit);
     try {
         auto timeNS = qDefs::getNSTime(std::make_pair(val, unit));
         det->setDelayAfterTrigger(timeNS);
@@ -573,7 +573,7 @@ void qTabMeasurement::SetBurstPeriod() {
     auto unit =
         static_cast<qDefs::timeUnit>(comboBurstPeriodUnit->currentIndex());
     LOG(logINFO) << "Setting burst period to " << val << " "
-                      << qDefs::getUnitString(unit);
+                 << qDefs::getUnitString(unit);
     try {
         auto timeNS = qDefs::getNSTime(std::make_pair(val, unit));
         det->setBurstPeriod(timeNS);
@@ -771,8 +771,7 @@ void qTabMeasurement::AcquireFinished() {
         if (startingFnumImplemented) {
             GetStartingFrameNumber();
         }
-        LOG(logDEBUG) << "Measurement " << currentMeasurement
-                           << " finished";
+        LOG(logDEBUG) << "Measurement " << currentMeasurement << " finished";
         // next measurement if acq is not stopped
         if (!isAcquisitionStopped &&
             ((currentMeasurement + 1) < numMeasurements)) {
@@ -801,8 +800,9 @@ void qTabMeasurement::Enable(bool enable) {
     frameNotTimeResolved->setEnabled(enable);
 
     // shortcut each time, else it doesnt work a second time
-    btnStart->setShortcut(QApplication::translate(
-        "TabMeasurementObject", "Shift+Space", nullptr, QApplication::UnicodeUTF8));
+    btnStart->setShortcut(QApplication::translate("TabMeasurementObject",
+                                                  "Shift+Space", nullptr,
+                                                  QApplication::UnicodeUTF8));
 }
 
 void qTabMeasurement::Refresh() {

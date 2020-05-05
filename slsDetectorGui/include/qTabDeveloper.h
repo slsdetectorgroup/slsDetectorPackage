@@ -1,7 +1,7 @@
 #pragma once
-#include "ui_form_tab_developer.h"
 #include "Detector.h"
 #include "sls_detector_defs.h"
+#include "ui_form_tab_developer.h"
 #include <vector>
 
 class qDacWidget;

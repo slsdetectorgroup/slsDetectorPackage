@@ -19,8 +19,8 @@
 #include <QScrollArea>
 #include <QSizePolicy>
 
-#include <string>
 #include <getopt.h>
+#include <string>
 #include <sys/stat.h>
 
 int main(int argc, char **argv) {
@@ -57,8 +57,7 @@ int main(int argc, char **argv) {
 
         case 'f':
             fname = optarg;
-            LOG(logDEBUG)
-                << long_options[option_index].name << " " << optarg;
+            LOG(logDEBUG) << long_options[option_index].name << " " << optarg;
             break;
 
         case 'd':
@@ -72,7 +71,7 @@ int main(int argc, char **argv) {
         case 'v':
             tempval = APIGUI;
             LOG(logINFO) << "SLS Detector GUI " << GITBRANCH << " (0x"
-                              << std::hex << tempval << ")";
+                         << std::hex << tempval << ")";
             return 0;
 
         case 'h':
@@ -93,7 +92,7 @@ int main(int argc, char **argv) {
     }
 
     QApplication app(argc, argv);
-    app.setStyle(new QPlastiqueStyle); //style is deleted by QApplication
+    app.setStyle(new QPlastiqueStyle); // style is deleted by QApplication
     try {
         qDetectorMain det(multiId, fname, isDeveloper);
         det.show();
@@ -105,18 +104,18 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-qDetectorMain::qDetectorMain(int multiId, const std::string& fname, bool isDevel)
-    : QMainWindow(nullptr), detType(slsDetectorDefs::GENERIC), isDeveloper(isDevel),
-      heightPlotWindow(0), heightCentralWidget(0) {
+qDetectorMain::qDetectorMain(int multiId, const std::string &fname,
+                             bool isDevel)
+    : QMainWindow(nullptr), detType(slsDetectorDefs::GENERIC),
+      isDeveloper(isDevel), heightPlotWindow(0), heightCentralWidget(0) {
 
     setupUi(this);
     SetUpDetector(fname, multiId);
     SetUpWidgetWindow();
 }
 
-qDetectorMain::~qDetectorMain(){
-    disconnect(tabs, SIGNAL(currentChanged(int)), this,
-            SLOT(Refresh(int)));
+qDetectorMain::~qDetectorMain() {
+    disconnect(tabs, SIGNAL(currentChanged(int)), this, SLOT(Refresh(int)));
 }
 
 void qDetectorMain::SetUpWidgetWindow() {
@@ -132,8 +131,7 @@ void qDetectorMain::SetUpWidgetWindow() {
     layoutTabs->addWidget(tabs);
 
     // creating all the other tab widgets
-    tabMeasurement =
-        new qTabMeasurement(this, det.get(), plot);
+    tabMeasurement = new qTabMeasurement(this, det.get(), plot);
     tabDataOutput = new qTabDataOutput(this, det.get());
     tabPlot = new qTabPlot(this, det.get(), plot);
     tabSettings = new qTabSettings(this, det.get());
@@ -206,7 +204,7 @@ void qDetectorMain::SetUpWidgetWindow() {
     Initialization();
 }
 
-void qDetectorMain::SetUpDetector(const std::string& config_file, int multiID) {
+void qDetectorMain::SetUpDetector(const std::string &config_file, int multiID) {
 
     // instantiate detector and set window title
     det = sls::make_unique<sls::Detector>(multiID);
@@ -260,8 +258,8 @@ void qDetectorMain::Initialization() {
     //	Measurement tab
     connect(tabMeasurement, SIGNAL(EnableTabsSignal(bool)), this,
             SLOT(EnableTabs(bool)));
-    connect(tabMeasurement, SIGNAL(FileNameChangedSignal(QString)),
-            plot, SLOT(SetSaveFileName(QString)));
+    connect(tabMeasurement, SIGNAL(FileNameChangedSignal(QString)), plot,
+            SLOT(SetSaveFileName(QString)));
     // Plot tab
     connect(tabPlot, SIGNAL(DisableZoomSignal(bool)), this,
             SLOT(SetZoomToolTip(bool)));
@@ -269,8 +267,7 @@ void qDetectorMain::Initialization() {
     // Plotting
     connect(plot, SIGNAL(AcquireFinishedSignal()), tabMeasurement,
             SLOT(AcquireFinished()));
-    connect(plot, SIGNAL(AbortSignal()), tabMeasurement,
-            SLOT(AbortAcquire()));
+    connect(plot, SIGNAL(AbortSignal()), tabMeasurement, SLOT(AbortAcquire()));
 
     // menubar
     // Modes Menu
@@ -284,7 +281,7 @@ void qDetectorMain::Initialization() {
             SLOT(ExecuteHelp(QAction *)));
 }
 
-void qDetectorMain::LoadConfigFile(const std::string& config_file) {
+void qDetectorMain::LoadConfigFile(const std::string &config_file) {
 
     LOG(logINFO) << "Loading config file at start up:" << config_file;
 
@@ -372,8 +369,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                                "The Configuration Parameters have been "
                                "configured successfully.",
                                "qDetectorMain::ExecuteUtilities");
-                LOG(logINFO)
-                    << "Configuration Parameters loaded successfully";
+                LOG(logINFO) << "Configuration Parameters loaded successfully";
             }
         }
 
@@ -438,7 +434,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
 void qDetectorMain::ExecuteHelp(QAction *action) {
     if (action == actionAbout) {
         LOG(logINFO) << "About Common GUI for Jungfrau, Eiger, Mythen3, "
-                             "Gotthard, Gotthard2 and Moench detectors";
+                        "Gotthard, Gotthard2 and Moench detectors";
 
         std::string guiVersion = std::to_string(APIGUI);
         std::string clientVersion = "unknown";

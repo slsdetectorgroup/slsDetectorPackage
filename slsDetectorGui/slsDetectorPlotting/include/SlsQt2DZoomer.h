@@ -1,9 +1,9 @@
 #ifndef SLSQT2DZOOMER_H
 #define SLSQT2DZOOMER_H
 #include "SlsQt2DHist.h"
+#include <cstdio>
 #include <qwt_plot_panner.h>
 #include <qwt_plot_zoomer.h>
-#include <cstdio>
 
 class SlsQt2DZoomer : public QwtPlotZoomer {
   private:

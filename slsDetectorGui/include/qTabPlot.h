@@ -1,6 +1,6 @@
 #pragma once
-#include "ui_form_tab_plot.h"
 #include "Detector.h"
+#include "ui_form_tab_plot.h"
 
 class qDrawPlot;
 class QButtonGroup;

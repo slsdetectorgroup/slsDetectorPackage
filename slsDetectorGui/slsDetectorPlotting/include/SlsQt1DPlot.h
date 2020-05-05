@@ -1,8 +1,8 @@
 #ifndef SLSQT1DPLOT_H
 #define SLSQT1DPLOT_H
 
-#include "ansi.h"
 #include "SlsQt1DZoomer.h"
+#include "ansi.h"
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_marker.h>

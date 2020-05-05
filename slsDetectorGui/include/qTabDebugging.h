@@ -1,6 +1,6 @@
 #pragma once
-#include "ui_form_tab_debugging.h"
 #include "Detector.h"
+#include "ui_form_tab_debugging.h"
 
 class QTreeWidget;
 class QTreeWidgetItem;

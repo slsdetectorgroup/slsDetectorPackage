@@ -6,9 +6,9 @@
 #include <QMessageBox>
 
 #include <chrono>
+#include <cstdint>
 #include <iostream>
 #include <ostream>
-#include <cstdint>
 #include <string>
 
 using std::chrono::duration;

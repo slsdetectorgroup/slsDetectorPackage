@@ -75,8 +75,8 @@ void qTabMessages::ExecuteCommand() {
     QString command = param.at(0);
     param.removeFirst();
     LOG(logINFO) << "Executing Command:[" << command.toAscii().constData()
-                      << "] with Arguments:["
-                      << param.join(" ").toAscii().constData() << "]";
+                 << "] with Arguments:["
+                 << param.join(" ").toAscii().constData() << "]";
 
     process->setProcessChannelMode(QProcess::MergedChannels);
     process->start(command, param);
@@ -121,7 +121,7 @@ void qTabMessages::SaveLog() {
             LOG(logINFO) << mess;
         } else {
             LOG(logWARNING) << "Attempt to save log file failed: "
-                                 << fName.toAscii().constData();
+                            << fName.toAscii().constData();
             qDefs::Message(qDefs::WARNING, "Attempt to save log file failed.",
                            "qTabMessages::SaveLog");
         }

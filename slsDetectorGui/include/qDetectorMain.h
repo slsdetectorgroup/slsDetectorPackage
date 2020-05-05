@@ -1,7 +1,7 @@
 #pragma once
-#include "ui_form_detectormain.h"
-#include "qDefs.h"
 #include "Detector.h"
+#include "qDefs.h"
+#include "ui_form_detectormain.h"
 #include <QTabWidget>
 
 class qDrawPlot;
@@ -29,7 +29,7 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     Q_OBJECT
 
   public:
-    qDetectorMain(int multiId, const std::string& fname, bool isDevel);
+    qDetectorMain(int multiId, const std::string &fname, bool isDevel);
     ~qDetectorMain();
 
   private slots:
@@ -51,9 +51,9 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
 
   private:
     void SetUpWidgetWindow();
-    void SetUpDetector(const std::string& config_file, int multiID);
+    void SetUpDetector(const std::string &config_file, int multiID);
     void Initialization();
-    void LoadConfigFile(const std::string& config_file);
+    void LoadConfigFile(const std::string &config_file);
 
     /** enumeration of the tabs */
     enum {
@@ -70,7 +70,7 @@ class qDetectorMain : public QMainWindow, private Ui::DetectorMainObject {
     slsDetectorDefs::detectorType detType;
     std::unique_ptr<sls::Detector> det;
     qDrawPlot *plot;
-    MyTabWidget* tabs;
+    MyTabWidget *tabs;
     std::unique_ptr<QScrollArea> scroll[NumberOfTabs];
     qTabMeasurement *tabMeasurement;
     qTabDataOutput *tabDataOutput;

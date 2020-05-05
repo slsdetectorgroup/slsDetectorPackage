@@ -1,6 +1,6 @@
 #include "qTabDebugging.h"
-#include "qDefs.h"
 #include "ToString.h"
+#include "qDefs.h"
 #include <QDesktopWidget>
 #include <QGridLayout>
 #include <QTreeWidget>
@@ -105,8 +105,9 @@ void qTabDebugging::GetInfo() {
         treeDet->setHeaderLabel("Eiger Detector");
         // get num modules
         for (int i = 0; i < comboDetector->count() / 2; ++i)
-            items.append(new QTreeWidgetItem(
-                (QTreeWidget *)nullptr, QStringList(QString("Module %1").arg(i))));
+            items.append(
+                new QTreeWidgetItem((QTreeWidget *)nullptr,
+                                    QStringList(QString("Module %1").arg(i))));
         treeDet->insertTopLevelItems(0, items);
         // gets det names
         for (int i = 0; i < comboDetector->count(); ++i) {

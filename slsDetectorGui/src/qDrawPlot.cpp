@@ -51,16 +51,16 @@ void qDrawPlot::SetupWidgetWindow() {
         gainMask = (3 << 14);
         gainOffset = 14;
         LOG(logINFO) << "Pixel Mask: " << std::hex << pixelMask
-                          << ", Gain Mask:" << gainMask
-                          << ", Gain Offset:" << std::dec << gainOffset;
+                     << ", Gain Mask:" << gainMask
+                     << ", Gain Offset:" << std::dec << gainOffset;
         break;
     case slsDetectorDefs::GOTTHARD2:
         pixelMask = ((1 << 12) - 1);
         gainMask = (3 << 12);
         gainOffset = 12;
         LOG(logINFO) << "Pixel Mask: " << std::hex << pixelMask
-                          << ", Gain Mask:" << gainMask
-                          << ", Gain Offset:" << std::dec << gainOffset;
+                     << ", Gain Mask:" << gainMask
+                     << ", Gain Offset:" << std::dec << gainOffset;
         break;
     default:
         break;
@@ -277,8 +277,7 @@ void qDrawPlot::SetPlotTitlePrefix(QString title) {
 }
 
 void qDrawPlot::SetXAxisTitle(QString title) {
-    LOG(logINFO) << "Setting X Axis Title to "
-                      << title.toAscii().constData();
+    LOG(logINFO) << "Setting X Axis Title to " << title.toAscii().constData();
     if (is1d) {
         xTitle1d = title;
     } else {
@@ -287,8 +286,7 @@ void qDrawPlot::SetXAxisTitle(QString title) {
 }
 
 void qDrawPlot::SetYAxisTitle(QString title) {
-    LOG(logINFO) << "Setting Y Axis Title to "
-                      << title.toAscii().constData();
+    LOG(logINFO) << "Setting Y Axis Title to " << title.toAscii().constData();
     if (is1d) {
         yTitle1d = title;
     } else {
@@ -297,8 +295,7 @@ void qDrawPlot::SetYAxisTitle(QString title) {
 }
 
 void qDrawPlot::SetZAxisTitle(QString title) {
-    LOG(logINFO) << "Setting Z Axis Title to "
-                      << title.toAscii().constData();
+    LOG(logINFO) << "Setting Z Axis Title to " << title.toAscii().constData();
     zTitle2d = title;
 }
 
@@ -309,8 +306,8 @@ void qDrawPlot::SetXYRangeChanged(bool disable, double *xy, bool *isXY) {
     std::copy(xy, xy + 4, xyRange);
     std::copy(isXY, isXY + 4, isXYRange);
 
-    LOG(logDEBUG) << "Setting Disable zoom to " << std::boolalpha
-                       << disable << std::noboolalpha;
+    LOG(logDEBUG) << "Setting Disable zoom to " << std::boolalpha << disable
+                  << std::noboolalpha;
     disableZoom = disable;
 }
 
@@ -348,8 +345,8 @@ double qDrawPlot::GetYMaximum() {
 }
 
 void qDrawPlot::SetDataCallBack(bool enable) {
-    LOG(logINFO) << "Setting data call back to " << std::boolalpha
-                      << enable << std::noboolalpha;
+    LOG(logINFO) << "Setting data call back to " << std::boolalpha << enable
+                 << std::noboolalpha;
     try {
         if (enable) {
             isPlot = true;
@@ -360,13 +357,14 @@ void qDrawPlot::SetDataCallBack(bool enable) {
             det->registerDataCallback(nullptr, this);
             det->setRxZmqDataStream(false);
         }
-    } CATCH_DISPLAY("Could not get set rxr data streaming enable.",
+    }
+    CATCH_DISPLAY("Could not get set rxr data streaming enable.",
                   "qDrawPlot::SetDataCallBack")
 }
 
 void qDrawPlot::SetBinary(bool enable, int from, int to) {
     LOG(logINFO) << (enable ? "Enabling" : "Disabling")
-                      << " Binary output from " << from << " to " << to;
+                 << " Binary output from " << from << " to " << to;
     binaryFrom = from;
     binaryTo = to;
     isBinary = enable;
@@ -380,7 +378,7 @@ void qDrawPlot::SetPersistency(int val) {
 void qDrawPlot::SetLines(bool enable) {
     std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting Lines to " << std::boolalpha << enable
-                      << std::noboolalpha;
+                 << std::noboolalpha;
     isLines = enable;
     for (int i = 0; i < nHists; ++i) {
         SlsQtH1D *h = hists1d.at(i);
@@ -391,7 +389,7 @@ void qDrawPlot::SetLines(bool enable) {
 void qDrawPlot::SetMarkers(bool enable) {
     std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting Markers to " << std::boolalpha << enable
-                      << std::noboolalpha;
+                 << std::noboolalpha;
     isMarkers = enable;
     for (int i = 0; i < nHists; ++i) {
         SlsQtH1D *h = hists1d.at(i);
@@ -402,28 +400,28 @@ void qDrawPlot::SetMarkers(bool enable) {
 void qDrawPlot::Set1dLogY(bool enable) {
     std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting Log Y to " << std::boolalpha << enable
-                      << std::noboolalpha;
+                 << std::noboolalpha;
     plot1d->SetLogY(enable);
 }
 
 void qDrawPlot::SetInterpolate(bool enable) {
     std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting Interpolate to " << std::boolalpha << enable
-                      << std::noboolalpha;
+                 << std::noboolalpha;
     plot2d->SetInterpolate(enable);
 }
 
 void qDrawPlot::SetContour(bool enable) {
     std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting Countour to " << std::boolalpha << enable
-                      << std::noboolalpha;
+                 << std::noboolalpha;
     plot2d->SetContour(enable);
 }
 
 void qDrawPlot::SetLogz(bool enable) {
     std::lock_guard<std::mutex> lock(mPlots);
     LOG(logINFO) << "Setting Log Z to " << std::boolalpha << enable
-                      << std::noboolalpha;
+                 << std::noboolalpha;
     plot2d->SetLogz(enable, isZRange[0], isZRange[1], zRange[0], zRange[1]);
 }
 
@@ -455,7 +453,7 @@ void qDrawPlot::ResetAccumulate() {
 
 void qDrawPlot::DisplayStatistics(bool enable) {
     LOG(logINFO) << (enable ? "Enabling" : "Disabling")
-                      << " Statistics Display";
+                 << " Statistics Display";
     displayStatistics = enable;
 }
 
@@ -471,7 +469,7 @@ void qDrawPlot::EnableGainPlot(bool enable) {
 
 void qDrawPlot::SetSaveFileName(QString val) {
     LOG(logDEBUG) << "Setting Clone/Save File Name to "
-                       << val.toAscii().constData();
+                  << val.toAscii().constData();
     fileSaveName = val;
 }
 
@@ -570,8 +568,8 @@ void qDrawPlot::ClonePlot() {
     new qCloneWidget(this, cloneplot1D, cloneplot2D, clonegainplot1D,
                      clonegainplot2D, boxPlot->title(), fileSavePath,
                      fileSaveName, currentAcqIndex, displayStatistics,
-                     lblMinDisp->text(), lblMaxDisp->text(),
-                     lblSumDisp->text(), completeImage);
+                     lblMinDisp->text(), lblMaxDisp->text(), lblSumDisp->text(),
+                     completeImage);
 }
 
 void qDrawPlot::SavePlot() {
@@ -673,8 +671,7 @@ void qDrawPlot::AcquireThread() {
     // exception in acquire will not call acquisition finished call back, so
     // handle it
     if (!mess.empty()) {
-        LOG(logERROR) << "Acquisition Finished with an exception: "
-                           << mess;
+        LOG(logERROR) << "Acquisition Finished with an exception: " << mess;
         qDefs::ExceptionMessage("Acquire unsuccessful.", mess,
                                 "qDrawPlot::AcquireFinished");
         try {
@@ -720,7 +717,7 @@ void qDrawPlot::AcquisitionFinished(double currentProgress,
         LOG(logERROR) << "Acquisition finished [Status: ERROR]";
     } else {
         LOG(logINFO) << "Acquisition finished [ Status:" << status
-                          << ", Progress: " << currentProgress << " ]";
+                     << ", Progress: " << currentProgress << " ]";
     }
     emit AcquireFinishedSignal();
 }
@@ -729,27 +726,26 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
                         uint32_t subFrameIndex) {
     std::lock_guard<std::mutex> lock(mPlots);
     LOG(logDEBUG) << "* GetData Callback *" << std::endl
-                       << "  frame index: " << frameIndex << std::endl
-                       << "  sub frame index: "
-                       << (((int)subFrameIndex == -1) ? (int)-1 : subFrameIndex)
-                       << std::endl
-                       << "  Data [" << std::endl
-                       << "  \t progress: " << data->progressIndex << std::endl
-                       << "  \t file name: " << data->fileName << std::endl
-                       << "  \t nx: " << data->nx << std::endl
-                       << "  \t ny: " << data->ny << std::endl
-                       << "  \t data bytes: " << data->databytes << std::endl
-                       << "  \t dynamic range: " << data->dynamicRange
-                       << std::endl
-                       << "  \t file index: " << data->fileIndex << std::endl
-                       << "  \t complete image: " << data->completeImage << std::endl
-                       << "  ]";
+                  << "  frame index: " << frameIndex << std::endl
+                  << "  sub frame index: "
+                  << (((int)subFrameIndex == -1) ? (int)-1 : subFrameIndex)
+                  << std::endl
+                  << "  Data [" << std::endl
+                  << "  \t progress: " << data->progressIndex << std::endl
+                  << "  \t file name: " << data->fileName << std::endl
+                  << "  \t nx: " << data->nx << std::endl
+                  << "  \t ny: " << data->ny << std::endl
+                  << "  \t data bytes: " << data->databytes << std::endl
+                  << "  \t dynamic range: " << data->dynamicRange << std::endl
+                  << "  \t file index: " << data->fileIndex << std::endl
+                  << "  \t complete image: " << data->completeImage << std::endl
+                  << "  ]";
 
     progress = (int)data->progressIndex;
     currentAcqIndex = data->fileIndex;
     currentFrame = frameIndex;
-    LOG(logDEBUG) << "[ Progress:" << progress
-                       << ", Frame:" << currentFrame << " ]";
+    LOG(logDEBUG) << "[ Progress:" << progress << ", Frame:" << currentFrame
+                  << " ]";
 
     // 2d (only image, not gain data, not pedestalvals),
     // check if npixelsX and npixelsY is the same (quad is different)
@@ -757,8 +753,8 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
                   static_cast<int>(nPixelsY) != data->ny)) {
         nPixelsX = data->nx;
         nPixelsY = data->ny;
-        LOG(logINFO) << "Change in Detector Shape:\n\tnPixelsX:"
-                          << nPixelsX << " nPixelsY:" << nPixelsY;
+        LOG(logINFO) << "Change in Detector Shape:\n\tnPixelsX:" << nPixelsX
+                     << " nPixelsY:" << nPixelsY;
 
         delete[] data2d;
         data2d = new double[nPixelsY * nPixelsX];
@@ -815,8 +811,8 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
         }
         // calculate the pedestal value
         if (pedestalCount == NUM_PEDESTAL_FRAMES) {
-            LOG(logINFO) << "Pedestal Calculated after "
-                              << NUM_PEDESTAL_FRAMES << " frames";
+            LOG(logINFO) << "Pedestal Calculated after " << NUM_PEDESTAL_FRAMES
+                         << " frames";
             for (unsigned int px = 0; px < nPixels; ++px)
                 tempPedestalVals[px] =
                     tempPedestalVals[px] / (double)NUM_PEDESTAL_FRAMES;
@@ -1115,7 +1111,7 @@ void qDrawPlot::UpdatePlot() {
     // notify of incomplete images
     lblCompleteImage->hide();
     lblInCompleteImage->hide();
-    if(completeImage) {
+    if (completeImage) {
         lblCompleteImage->show();
     } else {
         lblInCompleteImage->show();

@@ -1,6 +1,6 @@
 #include "qTabSettings.h"
-#include "qDefs.h"
 #include "ToString.h"
+#include "qDefs.h"
 #include <QStandardItemModel>
 
 qTabSettings::qTabSettings(QWidget *parent, sls::Detector *detector)
@@ -196,7 +196,7 @@ void qTabSettings::GetDynamicRange() {
 
 void qTabSettings::SetDynamicRange(int index) {
     LOG(logINFO) << "Setting dynamic range to "
-                      << comboDynamicRange->currentText().toAscii().data();
+                 << comboDynamicRange->currentText().toAscii().data();
     try {
         switch (index) {
         case DYNAMICRANGE_32:

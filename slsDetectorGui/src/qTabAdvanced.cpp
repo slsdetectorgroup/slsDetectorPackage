@@ -350,7 +350,7 @@ void qTabAdvanced::GetRxrZMQIP() {
 
 void qTabAdvanced::SetDetector() {
     LOG(logDEBUG) << "Set Detector: "
-                       << comboDetector->currentText().toAscii().data();
+                  << comboDetector->currentText().toAscii().data();
 
     GetControlPort();
     GetStopPort();
@@ -531,8 +531,7 @@ void qTabAdvanced::SetROI() {
     roi.xmax = spinXmax->value();
 
     // set roi
-    LOG(logINFO) << "Setting ROI: [" << roi.xmin << ", " << roi.xmax
-                      << "]";
+    LOG(logINFO) << "Setting ROI: [" << roi.xmin << ", " << roi.xmax << "]";
     try {
         det->setROI(roi, {comboReadout->currentIndex()});
     }
@@ -586,8 +585,7 @@ void qTabAdvanced::GetNumStoragecells() {
 }
 
 void qTabAdvanced::SetNumStoragecells(int value) {
-    LOG(logINFO) << "Setting number of additional stoarge cells: "
-                      << value;
+    LOG(logINFO) << "Setting number of additional stoarge cells: " << value;
     try {
         det->setNumberOfAdditionalStorageCells(value);
     }
@@ -621,11 +619,11 @@ void qTabAdvanced::SetSubExposureTime() {
     auto timeNS = qDefs::getNSTime(std::make_pair(
         spinSubExpTime->value(),
         static_cast<qDefs::timeUnit>(comboSubExpTimeUnit->currentIndex())));
-    LOG(logINFO)
-        << "Setting sub frame acquisition time to " << timeNS.count() << " ns"
-        << "/" << spinSubExpTime->value()
-        << qDefs::getUnitString(
-               (qDefs::timeUnit)comboSubExpTimeUnit->currentIndex());
+    LOG(logINFO) << "Setting sub frame acquisition time to " << timeNS.count()
+                 << " ns"
+                 << "/" << spinSubExpTime->value()
+                 << qDefs::getUnitString(
+                        (qDefs::timeUnit)comboSubExpTimeUnit->currentIndex());
     try {
         det->setSubExptime(timeNS);
     }
@@ -661,11 +659,10 @@ void qTabAdvanced::SetSubDeadTime() {
         spinSubDeadTime->value(),
         static_cast<qDefs::timeUnit>(comboSubDeadTimeUnit->currentIndex())));
 
-    LOG(logINFO)
-        << "Setting sub frame dead time to " << timeNS.count() << " ns"
-        << "/" << spinSubDeadTime->value()
-        << qDefs::getUnitString(
-               (qDefs::timeUnit)comboSubDeadTimeUnit->currentIndex());
+    LOG(logINFO) << "Setting sub frame dead time to " << timeNS.count() << " ns"
+                 << "/" << spinSubDeadTime->value()
+                 << qDefs::getUnitString(
+                        (qDefs::timeUnit)comboSubDeadTimeUnit->currentIndex());
     try {
         det->setSubDeadTime(timeNS);
     }

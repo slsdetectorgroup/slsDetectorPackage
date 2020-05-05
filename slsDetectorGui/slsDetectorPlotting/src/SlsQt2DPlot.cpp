@@ -216,14 +216,13 @@ QwtLinearColorMap *SlsQt2DPlot::myColourMap(QVector<double> colourStops) {
 }
 
 QwtLinearColorMap *SlsQt2DPlot::myColourMap(int log) {
-    QVector<double> cs{0.0, 0.34, 0.61 ,0.84, 1.0};
+    QVector<double> cs{0.0, 0.34, 0.61, 0.84, 1.0};
     if (log) {
         for (int i = 0; i < cs.size(); ++i)
             cs[i] = (pow(10, 2 * cs[i]) - 1) / 99.0;
     }
     return myColourMap(cs);
 }
-
 
 void SlsQt2DPlot::Update() {
     if (isLog)

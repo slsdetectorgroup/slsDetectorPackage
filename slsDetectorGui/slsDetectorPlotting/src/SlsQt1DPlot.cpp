@@ -1,7 +1,7 @@
 
 /* TODO! short description */
 #include "SlsQt1DPlot.h"
-#include <qwt_symbol.h>
+#include <iostream>
 #include <qwt_legend.h>
 #include <qwt_math.h>
 #include <qwt_painter.h>
@@ -10,8 +10,8 @@
 #include <qwt_scale_draw.h>
 #include <qwt_scale_engine.h>
 #include <qwt_scale_widget.h>
+#include <qwt_symbol.h>
 #include <stdlib.h>
-#include <iostream>
 
 #define QwtLog10ScaleEngine QwtLogScaleEngine // hmm
 
@@ -314,7 +314,8 @@ void SlsQtH1DList::Remove(SlsQtH1D *hist) {
             hl = hl->the_next;
         else { // match
             if (!hl->the_next)
-                hl->the_hist = nullptr; // first the_hist is zero when there's no next
+                hl->the_hist =
+                    nullptr; // first the_hist is zero when there's no next
             else {
                 SlsQtH1DList *t = hl->the_next;
                 hl->the_hist = t->the_hist;

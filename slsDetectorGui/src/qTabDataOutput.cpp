@@ -172,7 +172,7 @@ void qTabDataOutput::BrowseOutputDir() {
 void qTabDataOutput::SetOutputDir() {
     QString path = dispOutputDir->text();
     LOG(logDEBUG) << "Setting output directory to "
-                       << path.toAscii().constData();
+                  << path.toAscii().constData();
 
     // empty
     if (path.isEmpty()) {
@@ -222,7 +222,7 @@ void qTabDataOutput::GetFileFormat() {
 
 void qTabDataOutput::SetFileFormat(int format) {
     LOG(logINFO) << "Setting File Format to "
-                      << comboFileFormat->currentText().toAscii().data();
+                 << comboFileFormat->currentText().toAscii().data();
     try {
         det->setFileFormat(static_cast<slsDetectorDefs::fileFormat>(
             comboFileFormat->currentIndex()));
@@ -334,15 +334,13 @@ void qTabDataOutput::SetRateCorrection() {
         // custom dead time
         if (radioCustomDeadtime->isChecked()) {
             int64_t deadtime = spinCustomDeadTime->value();
-            LOG(logINFO)
-                << "Setting Rate Correction with custom dead time: "
-                << deadtime;
+            LOG(logINFO) << "Setting Rate Correction with custom dead time: "
+                         << deadtime;
             det->setRateCorrection(sls::ns(deadtime));
         }
         // default dead time
         else {
-            LOG(logINFO)
-                << "Setting Rate Correction with default dead time";
+            LOG(logINFO) << "Setting Rate Correction with default dead time";
             det->setDefaultRateCorrection();
         }
     }
@@ -367,7 +365,7 @@ void qTabDataOutput::GetSpeed() {
 
 void qTabDataOutput::SetSpeed(int speed) {
     LOG(logINFO) << "Setting Speed to "
-                      << comboEigerClkDivider->currentText().toAscii().data();
+                 << comboEigerClkDivider->currentText().toAscii().data();
     ;
     try {
         det->setSpeed(static_cast<slsDetectorDefs::speedLevel>(speed));
@@ -398,9 +396,8 @@ void qTabDataOutput::SetFlags() {
     auto mode =
         comboEigerParallelFlag->currentIndex() == PARALLEL ? true : false;
     try {
-        LOG(logINFO)
-            << "Setting Readout Flags to "
-            << comboEigerParallelFlag->currentText().toAscii().data();
+        LOG(logINFO) << "Setting Readout Flags to "
+                     << comboEigerParallelFlag->currentText().toAscii().data();
         det->setParallelMode(mode);
     }
     CATCH_HANDLE("Could not set readout flags.", "qTabDataOutput::SetFlags",

@@ -1,6 +1,6 @@
 #pragma once
-#include "ui_form_tab_dataoutput.h"
 #include "Detector.h"
+#include "ui_form_tab_dataoutput.h"
 
 class qTabDataOutput : public QWidget, private Ui::TabDataOutputObject {
     Q_OBJECT

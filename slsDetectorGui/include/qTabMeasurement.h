@@ -1,6 +1,6 @@
 #pragma once
-#include "ui_form_tab_measurement.h"
 #include "Detector.h"
+#include "ui_form_tab_measurement.h"
 
 class qDrawPlot;
 class QStandardItemModel;

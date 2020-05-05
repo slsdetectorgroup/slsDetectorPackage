@@ -6,7 +6,6 @@
 #include <QStackedLayout>
 #include <QStandardItemModel>
 
-
 QString qTabPlot::defaultPlotTitle("");
 QString qTabPlot::defaultHistXAxisTitle("Channel Number");
 QString qTabPlot::defaultHistYAxisTitle("Counts");
@@ -290,16 +289,14 @@ void qTabPlot::SetBinary() {
     bool binary1D = chkBinary->isChecked();
     bool binary2D = chkBinary_2->isChecked();
     if (is1d) {
-        LOG(logINFO) << "Binary Plot "
-                          << (binary1D ? "enabled" : "disabled");
+        LOG(logINFO) << "Binary Plot " << (binary1D ? "enabled" : "disabled");
         lblFrom->setEnabled(binary1D);
         lblTo->setEnabled(binary1D);
         spinFrom->setEnabled(binary1D);
         spinTo->setEnabled(binary1D);
         plot->SetBinary(binary1D, spinFrom->value(), spinTo->value());
     } else {
-        LOG(logINFO) << "Binary Plot "
-                          << (binary2D ? "enabled" : "disabled");
+        LOG(logINFO) << "Binary Plot " << (binary2D ? "enabled" : "disabled");
         lblFrom_2->setEnabled(binary2D);
         lblTo_2->setEnabled(binary2D);
         spinFrom_2->setEnabled(binary2D);
@@ -434,10 +431,10 @@ void qTabPlot::SetXYRange() {
     for (int i = 0; i < 4; ++i) {
         if (chkVal[i] && !dispVal[i].isEmpty()) {
             double val = dispVal[i].toDouble();
-            LOG(logDEBUG)
-                << "Setting "
-                << qDefs::getRangeAsString(static_cast<qDefs::range>(i))
-                << " to " << val;
+            LOG(logDEBUG) << "Setting "
+                          << qDefs::getRangeAsString(
+                                 static_cast<qDefs::range>(i))
+                          << " to " << val;
             xyRange[i] = val;
             isRange[i] = true;
             disablezoom = true;
@@ -482,10 +479,10 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     ranges[qDefs::YMAX] = plot->GetYMaximum();
     double idealAspectratio = (ranges[qDefs::XMAX] - ranges[qDefs::XMIN]) /
                               (ranges[qDefs::YMAX] - ranges[qDefs::YMIN]);
-    LOG(logDEBUG) << "Ideal Aspect ratio: " << idealAspectratio
-                       << " for x(" << ranges[qDefs::XMIN] << " - "
-                       << ranges[qDefs::XMAX] << "), y(" << ranges[qDefs::YMIN]
-                       << " - " << ranges[qDefs::YMAX] << ")";
+    LOG(logDEBUG) << "Ideal Aspect ratio: " << idealAspectratio << " for x("
+                  << ranges[qDefs::XMIN] << " - " << ranges[qDefs::XMAX]
+                  << "), y(" << ranges[qDefs::YMIN] << " - "
+                  << ranges[qDefs::YMAX] << ")";
 
     // calculate current aspect ratio
     ranges[qDefs::XMIN] = dispXMin->text().toDouble();
@@ -494,10 +491,10 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     ranges[qDefs::YMAX] = dispYMax->text().toDouble();
     double currentAspectRatio = (ranges[qDefs::XMAX] - ranges[qDefs::XMIN]) /
                                 (ranges[qDefs::YMAX] - ranges[qDefs::YMIN]);
-    LOG(logDEBUG) << "Current Aspect ratio: " << currentAspectRatio
-                       << " for x(" << ranges[qDefs::XMIN] << " - "
-                       << ranges[qDefs::XMAX] << "), y(" << ranges[qDefs::YMIN]
-                       << " - " << ranges[qDefs::YMAX] << ")";
+    LOG(logDEBUG) << "Current Aspect ratio: " << currentAspectRatio << " for x("
+                  << ranges[qDefs::XMIN] << " - " << ranges[qDefs::XMAX]
+                  << "), y(" << ranges[qDefs::YMIN] << " - "
+                  << ranges[qDefs::YMAX] << ")";
 
     if (currentAspectRatio != idealAspectratio) {
         // dimension: 1(x changed: y adjusted), 0(y changed: x adjusted),
@@ -643,7 +640,7 @@ void qTabPlot::SetStreamingFrequency() {
             det->setRxZmqFrequency(freqVal);
         } else {
             LOG(logINFO) << "Setting Streaming Timer to " << timeVal << " "
-                              << qDefs::getUnitString(timeUnit);
+                         << qDefs::getUnitString(timeUnit);
             auto timeMS = qDefs::getMSTime(std::make_pair(timeVal, timeUnit));
             det->setRxZmqTimer(timeMS.count());
         }

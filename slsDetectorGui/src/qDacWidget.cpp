@@ -1,7 +1,6 @@
 #include "qDacWidget.h"
 #include "qDefs.h"
 
-
 qDacWidget::qDacWidget(QWidget *parent, sls::Detector *detector, bool d,
                        std::string n, slsDetectorDefs::dacIndex i)
     : QWidget(parent), det(detector), isDac(d), index(i) {
@@ -56,8 +55,8 @@ void qDacWidget::GetDac() {
 
 void qDacWidget::SetDac() {
     int val = (int)spinDac->value();
-    LOG(logINFO) << "Setting dac:" << lblDac->text().toAscii().data()
-                      << " : " << val;
+    LOG(logINFO) << "Setting dac:" << lblDac->text().toAscii().data() << " : "
+                 << val;
 
     try {
         det->setDAC(index, val, 0, {detectorIndex});

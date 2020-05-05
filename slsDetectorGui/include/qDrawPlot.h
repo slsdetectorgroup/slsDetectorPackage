@@ -1,7 +1,7 @@
 #pragma once
-#include "ui_form_plot.h"
-#include "qDefs.h"
 #include "Detector.h"
+#include "qDefs.h"
+#include "ui_form_plot.h"
 #include <mutex>
 
 class SlsQt1DPlot;

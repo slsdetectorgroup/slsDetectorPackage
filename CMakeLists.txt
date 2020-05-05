@@ -53,7 +53,6 @@ set(ClangFormat_EXCLUDE_PATTERNS  "build/"
                                     "slsDetectorServers/" 
                                     "ctbGui/" 
                                     "manual/"
-                                    "slsDetectorGui/"
                                     "python/"
                                     "sample/"
                                     ${CMAKE_BINARY_DIR})

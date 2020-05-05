@@ -1,8 +1,8 @@
 #pragma once
 #include "container_utils.h"
 #include "logger.h"
-#include "receiver_defs.h"
 #include "network_utils.h"
+#include "receiver_defs.h"
 class GeneralData;
 class Listener;
 class DataProcessor;
@@ -12,9 +12,9 @@ class slsDetectorDefs;
 
 #include <atomic>
 #include <exception>
+#include <map>
 #include <memory>
 #include <vector>
-#include <map>
 
 class Implementation : private virtual slsDetectorDefs {
   public:
@@ -33,7 +33,7 @@ class Implementation : private virtual slsDetectorDefs {
     int getDetectorPositionId() const;
     void setDetectorPositionId(const int id);
     std::string getDetectorHostname() const;
-    void setDetectorHostname(const std::string& c);
+    void setDetectorHostname(const std::string &c);
     bool getSilentMode() const;
     void setSilentMode(const bool i);
     uint32_t getFifoDepth() const;
@@ -52,9 +52,9 @@ class Implementation : private virtual slsDetectorDefs {
     void setFileFormat(slsDetectorDefs::fileFormat f);
     std::string getFilePath() const;
     /* check for existence */
-    void setFilePath(const std::string& c);
+    void setFilePath(const std::string &c);
     std::string getFileName() const;
-    void setFileName(const std::string& c);
+    void setFileName(const std::string &c);
     uint64_t getFileIndex() const;
     void setFileIndex(const uint64_t i);
     bool getFileWriteEnable() const;
@@ -85,7 +85,6 @@ class Implementation : private virtual slsDetectorDefs {
     void closeFiles();
     void restreamStop();
 
-
     /**************************************************
      *                                                 *
      *   Network Configuration (UDP)                   *
@@ -106,8 +105,7 @@ class Implementation : private virtual slsDetectorDefs {
     void setUDPPortNumber2(const uint32_t i);
     int64_t getUDPSocketBufferSize() const;
     void setUDPSocketBufferSize(const int64_t s);
-    int64_t getActualUDPSocketBufferSize() const;    
-
+    int64_t getActualUDPSocketBufferSize() const;
 
     /**************************************************
      *                                                 *
@@ -117,18 +115,19 @@ class Implementation : private virtual slsDetectorDefs {
     bool getDataStreamEnable() const;
     void setDataStreamEnable(const bool enable);
     uint32_t getStreamingFrequency() const;
-    /* 0 for timer */    
+    /* 0 for timer */
     void setStreamingFrequency(const uint32_t freq);
     uint32_t getStreamingTimer() const;
     void setStreamingTimer(const uint32_t time_in_ms);
     uint32_t getStreamingPort() const;
     void setStreamingPort(const uint32_t i);
     sls::IpAddr getStreamingSourceIP() const;
-    void setStreamingSourceIP(const  sls::IpAddr ip);
+    void setStreamingSourceIP(const sls::IpAddr ip);
     std::map<std::string, std::string> getAdditionalJsonHeader() const;
     void setAdditionalJsonHeader(const std::map<std::string, std::string> &c);
     std::string getAdditionalJsonParameter(const std::string &key) const;
-    void setAdditionalJsonParameter(const std::string &key, const std::string &value);
+    void setAdditionalJsonParameter(const std::string &key,
+                                    const std::string &value);
 
     /**************************************************
      *                                                 *
@@ -172,7 +171,7 @@ class Implementation : private virtual slsDetectorDefs {
     /* [Gotthard] */
     void setROI(ROI arg);
     bool getTenGigaEnable() const;
-    /* [Eiger][Ctb] */    
+    /* [Eiger][Ctb] */
     void setTenGigaEnable(const bool b);
     int getFlippedDataX() const;
     void setFlippedDataX(int enable = -1);
@@ -180,7 +179,8 @@ class Implementation : private virtual slsDetectorDefs {
     /* [Eiger] */
     void setQuad(const bool b);
     bool getActivate() const;
-    /** [Eiger] If deactivated, receiver will create dummy data if deactivated padding is enabled (as it will receive nothing from detector) */
+    /** [Eiger] If deactivated, receiver will create dummy data if deactivated
+     * padding is enabled (as it will receive nothing from detector) */
     bool setActivate(const bool enable);
     bool getDeactivatedPadding() const;
     /* [Eiger] */
@@ -196,7 +196,7 @@ class Implementation : private virtual slsDetectorDefs {
     void setADCEnableMask(const uint32_t mask);
     uint32_t getTenGigaADCEnableMask() const;
     /* [Ctb][Moench] */
-    void setTenGigaADCEnableMask(const uint32_t mask);    
+    void setTenGigaADCEnableMask(const uint32_t mask);
     std::vector<int> getDbitList() const;
     /* [Ctb] */
     void setDbitList(const std::vector<int> v);
@@ -209,14 +209,18 @@ class Implementation : private virtual slsDetectorDefs {
      *    Callbacks                                   *
      *                                                *
      * ************************************************/
-    void registerCallBackStartAcquisition(
-      int (*func)(std::string, std::string, uint64_t, uint32_t, void *), void *arg);
-    void registerCallBackAcquisitionFinished(
-      void (*func)(uint64_t, void *), void *arg);
-    void registerCallBackRawDataReady(
-      void (*func)(char *, char *, uint32_t, void *), void *arg);
-    void registerCallBackRawDataModifyReady(
-      void (*func)(char *, char *, uint32_t &, void *), void *arg);
+    void registerCallBackStartAcquisition(int (*func)(std::string, std::string,
+                                                      uint64_t, uint32_t,
+                                                      void *),
+                                          void *arg);
+    void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
+                                             void *arg);
+    void registerCallBackRawDataReady(void (*func)(char *, char *, uint32_t,
+                                                   void *),
+                                      void *arg);
+    void registerCallBackRawDataModifyReady(void (*func)(char *, char *,
+                                                         uint32_t &, void *),
+                                            void *arg);
 
   private:
     void DeleteMembers();
@@ -224,19 +228,18 @@ class Implementation : private virtual slsDetectorDefs {
     void SetLocalNetworkParameters();
     void SetThreadPriorities();
     void SetupFifoStructure();
-    
+
     void ResetParametersforNewAcquisition();
     void CreateUDPSockets();
     void SetupWriter();
     void StartRunning();
-
 
     /**************************************************
      *                                                *
      *    Class Members                               *
      *                                                *
      * ************************************************/
- 
+
     // config parameters
     int numThreads;
     detectorType myDetectorType;
@@ -264,8 +267,8 @@ class Implementation : private virtual slsDetectorDefs {
 
     // network configuration (UDP)
     int numUDPInterfaces;
-    std::vector <std::string> eth;
-    std::vector <uint32_t> udpPortNum;
+    std::vector<std::string> eth;
+    std::vector<uint32_t> udpPortNum;
     int64_t udpSocketBufferSize;
     int64_t actualUDPSocketBufferSize;
 
@@ -296,19 +299,20 @@ class Implementation : private virtual slsDetectorDefs {
     ROI roi;
     bool tengigaEnable;
     int flippedDataX;
-    bool quadEnable; 
+    bool quadEnable;
     bool activated;
     bool deactivatedPaddingEnable;
     int numLinesReadout;
     readoutMode readoutType;
     uint32_t adcEnableMaskOneGiga;
-    uint32_t adcEnableMaskTenGiga;    
+    uint32_t adcEnableMaskTenGiga;
     std::vector<int> ctbDbitList;
     int ctbDbitOffset;
     int ctbAnalogDataBytes;
 
     // callbacks
-    int (*startAcquisitionCallBack)(std::string, std::string, uint64_t, uint32_t, void *);
+    int (*startAcquisitionCallBack)(std::string, std::string, uint64_t,
+                                    uint32_t, void *);
     void *pStartAcquisition;
     void (*acquisitionFinishedCallBack)(uint64_t, void *);
     void *pAcquisitionFinished;

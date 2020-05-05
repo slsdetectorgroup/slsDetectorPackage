@@ -2,10 +2,7 @@
 #include "GeneralData.h"
 #include "catch.hpp"
 
-
 #include <iostream>
-
-
 
 // using namespace sls;
 
@@ -55,7 +52,7 @@
 //     CHECK(subFrameNumber == -1);
 // }
 
-// TEST_CASE("Parse header gotthard data", "[receiver]") { 
+// TEST_CASE("Parse header gotthard data", "[receiver]") {
 //     GotthardData data;
 //     struct packet {
 //         uint32_t frameNumber;

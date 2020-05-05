@@ -11,9 +11,9 @@
 #include "sls_detector_defs.h"
 
 #include <atomic>
-#include <thread>
 #include <semaphore.h>
 #include <string>
+#include <thread>
 
 class ThreadObject : private virtual slsDetectorDefs {
   protected:
@@ -22,7 +22,7 @@ class ThreadObject : private virtual slsDetectorDefs {
   private:
     std::atomic<bool> killThread{false};
     std::atomic<bool> runningFlag{false};
-	std::thread threadObject;
+    std::thread threadObject;
     sem_t semaphore;
     const std::string type;
 

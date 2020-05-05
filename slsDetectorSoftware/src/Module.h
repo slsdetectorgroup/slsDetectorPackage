@@ -14,7 +14,7 @@
 class ServerInterface;
 
 #define SLS_SHMAPIVERSION 0x190726
-#define SLS_SHMVERSION 0x200402
+#define SLS_SHMVERSION    0x200402
 
 namespace sls {
 

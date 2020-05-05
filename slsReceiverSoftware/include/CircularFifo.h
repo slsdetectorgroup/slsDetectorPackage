@@ -30,7 +30,7 @@ template <typename Element> class CircularFifo {
     }
 
     CircularFifo(const CircularFifo &) = delete;
-    CircularFifo(CircularFifo&&) = delete;
+    CircularFifo(CircularFifo &&) = delete;
 
     virtual ~CircularFifo() {
         sem_destroy(&data_mutex);

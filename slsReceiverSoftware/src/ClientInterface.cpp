@@ -1,28 +1,28 @@
 #include "ClientInterface.h"
 #include "FixedCapacityContainer.h"
 #include "ServerSocket.h"
+#include "ToString.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
 #include "versionAPI.h"
-#include "ToString.h"
 
 #include <array>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <sstream>
 #include <string>
-#include <vector>
 #include <sys/syscall.h>
 #include <unistd.h>
-#include <map>
+#include <vector>
 
 using sls::RuntimeError;
 using sls::SocketError;
 using Interface = sls::ServerInterface;
 
-ClientInterface::~ClientInterface() { 
+ClientInterface::~ClientInterface() {
     killTcpThread = true;
     LOG(logINFO) << "Shutting down TCP Socket on port " << portNumber;
     server.shutdown();
@@ -31,25 +31,28 @@ ClientInterface::~ClientInterface() {
 }
 
 ClientInterface::ClientInterface(int portNumber)
-    : myDetectorType(GOTTHARD), 
-    portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2),
-    server(portNumber) {
+    : myDetectorType(GOTTHARD),
+      portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2),
+      server(portNumber) {
     functionTable();
     // start up tcp thread
-    tcpThread = sls::make_unique<std::thread>(&ClientInterface::startTCPServer, this);
+    tcpThread =
+        sls::make_unique<std::thread>(&ClientInterface::startTCPServer, this);
 }
 
 int64_t ClientInterface::getReceiverVersion() { return APIRECEIVER; }
 
 /***callback functions***/
 void ClientInterface::registerCallBackStartAcquisition(
-    int (*func)(std::string, std::string, uint64_t, uint32_t, void *), void *arg) {
+    int (*func)(std::string, std::string, uint64_t, uint32_t, void *),
+    void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }
 
-void ClientInterface::registerCallBackAcquisitionFinished(
-    void (*func)(uint64_t, void *), void *arg) {
+void ClientInterface::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
+                                                                       void *),
+                                                          void *arg) {
     acquisitionFinishedCallBack = func;
     pAcquisitionFinished = arg;
 }
@@ -67,9 +70,10 @@ void ClientInterface::registerCallBackRawDataModifyReady(
 }
 
 void ClientInterface::startTCPServer() {
-    LOG(logINFOBLUE) << "Created [ TCP server Tid: " << syscall(SYS_gettid) << "]";
-    LOG(logINFO) << "SLS Receiver starting TCP Server on port "
-                      << portNumber << '\n';
+    LOG(logINFOBLUE) << "Created [ TCP server Tid: " << syscall(SYS_gettid)
+                     << "]";
+    LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber
+                 << '\n';
     // server = sls::make_unique<sls::ServerSocket>(portNumber);
     while (!killTcpThread) {
         LOG(logDEBUG1) << "Start accept loop";
@@ -97,7 +101,8 @@ void ClientInterface::startTCPServer() {
     if (receiver) {
         receiver->shutDownUDPSockets();
     }
-    LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << syscall(SYS_gettid) << "]";
+    LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << syscall(SYS_gettid)
+                     << "]";
 }
 
 // clang-format off
@@ -208,12 +213,11 @@ int ClientInterface::decodeFunction(Interface &socket) {
                            std::to_string(fnum) + "\n");
     } else {
         LOG(logDEBUG1) << "calling function fnum: " << fnum << " ("
-                            << getFunctionNameFromEnum((enum detFuncs)fnum)
-                            << ")";
+                       << getFunctionNameFromEnum((enum detFuncs)fnum) << ")";
         ret = (this->*flist[fnum])(socket);
-        LOG(logDEBUG1)
-            << "Function " << getFunctionNameFromEnum((enum detFuncs)fnum)
-            << " finished";
+        LOG(logDEBUG1) << "Function "
+                       << getFunctionNameFromEnum((enum detFuncs)fnum)
+                       << " finished";
     }
     return ret;
 }
@@ -226,15 +230,15 @@ void ClientInterface::functionNotImplemented() {
 }
 
 void ClientInterface::modeNotImplemented(const std::string &modename,
-                                                   int mode) {
+                                         int mode) {
     std::ostringstream os;
     os << modename << " (" << mode << ") is not implemented for this detector";
     throw RuntimeError(os.str());
 }
 
 template <typename T>
-void ClientInterface::validate(T arg, T retval, const std::string& modename,
-                                         numberMode hex) {
+void ClientInterface::validate(T arg, T retval, const std::string &modename,
+                               numberMode hex) {
     if (ret == OK && arg != -1 && retval != arg) {
         auto format = (hex == HEX) ? std::hex : std::dec;
         auto prefix = (hex == HEX) ? "0x" : "";
@@ -254,7 +258,8 @@ void ClientInterface::verifyLock() {
 void ClientInterface::verifyIdle(Interface &socket) {
     if (impl()->getStatus() != IDLE) {
         std::ostringstream oss;
-        oss << "Can not execute " << getFunctionNameFromEnum((enum detFuncs)fnum) 
+        oss << "Can not execute "
+            << getFunctionNameFromEnum((enum detFuncs)fnum)
             << " when receiver is not idle";
         throw sls::SocketError(oss.str());
     }
@@ -292,7 +297,8 @@ int ClientInterface::lock_receiver(Interface &socket) {
     auto lock = socket.Receive<int>();
     LOG(logDEBUG1) << "Locking Server to " << lock;
     if (lock >= 0) {
-        if (!lockedByClient || (server.getLockedBy() == server.getThisClient())) {
+        if (!lockedByClient ||
+            (server.getLockedBy() == server.getThisClient())) {
             lockedByClient = lock;
             lock ? server.setLockedBy(server.getThisClient())
                  : server.setLockedBy(sls::IpAddr{});
@@ -328,41 +334,40 @@ int ClientInterface::get_version(Interface &socket) {
 
 int ClientInterface::setup_receiver(Interface &socket) {
     auto arg = socket.Receive<rxParameters>();
-    LOG(logDEBUG1) 
-        << "detType:" << arg.detType << std::endl
-        << "multiSize.x:" << arg.multiSize.x << std::endl
-        << "multiSize.y:" << arg.multiSize.y << std::endl
-        << "detId:" << arg.detId << std::endl
-        << "hostname:" << arg.hostname << std::endl
-        << "udpInterfaces:" << arg.udpInterfaces << std::endl
-        << "udp_dstport:" << arg.udp_dstport << std::endl
-        << "udp_dstip:" << sls::IpAddr(arg.udp_dstip) << std::endl
-        << "udp_dstmac:" << sls::MacAddr(arg.udp_dstmac) << std::endl
-        << "udp_dstport2:" << arg.udp_dstport2 << std::endl
-        << "udp_dstip2:" << sls::IpAddr(arg.udp_dstip2) << std::endl
-        << "udp_dstmac2:" << sls::MacAddr(arg.udp_dstmac2) << std::endl
-        << "frames:" << arg.frames << std::endl
-        << "triggers:" << arg.triggers << std::endl
-        << "bursts:" << arg.bursts << std::endl
-        << "analogSamples:" << arg.analogSamples << std::endl
-        << "digitalSamples:" << arg.digitalSamples << std::endl
-        << "expTimeNs:" << arg.expTimeNs << std::endl
-        << "periodNs:" << arg.periodNs << std::endl
-        << "subExpTimeNs:" << arg.subExpTimeNs << std::endl
-        << "subDeadTimeNs:" << arg.subDeadTimeNs << std::endl
-        << "activate:" << arg.activate << std::endl
-        << "quad:" << arg.quad << std::endl
-        << "dynamicRange:" << arg.dynamicRange << std::endl
-        << "timMode:" << arg.timMode << std::endl
-        << "tenGiga:" << arg.tenGiga << std::endl
-        << "roMode:" << arg.roMode << std::endl
-        << "adcMask:" << arg.adcMask << std::endl
-        << "adc10gMask:" << arg.adc10gMask << std::endl
-        << "roi.xmin:" << arg.roi.xmin << std::endl
-        << "roi.xmax:" << arg.roi.xmax << std::endl
-        << "countermask:" << arg.countermask << std::endl
-        << "burstType:" << arg.burstType << std::endl;
-
+    LOG(logDEBUG1) << "detType:" << arg.detType << std::endl
+                   << "multiSize.x:" << arg.multiSize.x << std::endl
+                   << "multiSize.y:" << arg.multiSize.y << std::endl
+                   << "detId:" << arg.detId << std::endl
+                   << "hostname:" << arg.hostname << std::endl
+                   << "udpInterfaces:" << arg.udpInterfaces << std::endl
+                   << "udp_dstport:" << arg.udp_dstport << std::endl
+                   << "udp_dstip:" << sls::IpAddr(arg.udp_dstip) << std::endl
+                   << "udp_dstmac:" << sls::MacAddr(arg.udp_dstmac) << std::endl
+                   << "udp_dstport2:" << arg.udp_dstport2 << std::endl
+                   << "udp_dstip2:" << sls::IpAddr(arg.udp_dstip2) << std::endl
+                   << "udp_dstmac2:" << sls::MacAddr(arg.udp_dstmac2)
+                   << std::endl
+                   << "frames:" << arg.frames << std::endl
+                   << "triggers:" << arg.triggers << std::endl
+                   << "bursts:" << arg.bursts << std::endl
+                   << "analogSamples:" << arg.analogSamples << std::endl
+                   << "digitalSamples:" << arg.digitalSamples << std::endl
+                   << "expTimeNs:" << arg.expTimeNs << std::endl
+                   << "periodNs:" << arg.periodNs << std::endl
+                   << "subExpTimeNs:" << arg.subExpTimeNs << std::endl
+                   << "subDeadTimeNs:" << arg.subDeadTimeNs << std::endl
+                   << "activate:" << arg.activate << std::endl
+                   << "quad:" << arg.quad << std::endl
+                   << "dynamicRange:" << arg.dynamicRange << std::endl
+                   << "timMode:" << arg.timMode << std::endl
+                   << "tenGiga:" << arg.tenGiga << std::endl
+                   << "roMode:" << arg.roMode << std::endl
+                   << "adcMask:" << arg.adcMask << std::endl
+                   << "adc10gMask:" << arg.adc10gMask << std::endl
+                   << "roi.xmin:" << arg.roi.xmin << std::endl
+                   << "roi.xmax:" << arg.roi.xmax << std::endl
+                   << "countermask:" << arg.countermask << std::endl
+                   << "burstType:" << arg.burstType << std::endl;
 
     // if object exists, verify unlocked and idle, else only verify lock
     // (connecting first time)
@@ -378,7 +383,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
     }
     impl()->setDetectorPositionId(arg.detId);
     impl()->setDetectorHostname(arg.hostname);
-    
+
     // udp setup
     sls::MacAddr retvals[2];
     if (arg.udp_dstmac == 0 && arg.udp_dstip != 0) {
@@ -392,9 +397,9 @@ int ClientInterface::setup_receiver(Interface &socket) {
     if (myDetectorType == JUNGFRAU) {
         try {
             impl()->setNumberofUDPInterfaces(arg.udpInterfaces);
-        } catch(const RuntimeError &e) {
-            throw RuntimeError("Failed to set number of interfaces to " + 
-            std::to_string(arg.udpInterfaces));
+        } catch (const RuntimeError &e) {
+            throw RuntimeError("Failed to set number of interfaces to " +
+                               std::to_string(arg.udpInterfaces));
         }
     }
     impl()->setUDPSocketBufferSize(0);
@@ -408,19 +413,19 @@ int ClientInterface::setup_receiver(Interface &socket) {
     if (myDetectorType == MOENCH || myDetectorType == CHIPTESTBOARD) {
         try {
             impl()->setNumberofAnalogSamples(arg.analogSamples);
-        } catch(const RuntimeError &e) {
-            throw RuntimeError("Could not set num analog samples to " + 
-            std::to_string(arg.analogSamples) + 
-            " due to fifo structure memory allocation.");
+        } catch (const RuntimeError &e) {
+            throw RuntimeError("Could not set num analog samples to " +
+                               std::to_string(arg.analogSamples) +
+                               " due to fifo structure memory allocation.");
         }
     }
     if (myDetectorType == CHIPTESTBOARD) {
         try {
             impl()->setNumberofDigitalSamples(arg.digitalSamples);
-        } catch(const RuntimeError &e) {
-            throw RuntimeError("Could not set num digital samples to " 
-            + std::to_string(arg.analogSamples) + 
-            " due to fifo structure memory allocation.");
+        } catch (const RuntimeError &e) {
+            throw RuntimeError("Could not set num digital samples to " +
+                               std::to_string(arg.analogSamples) +
+                               " due to fifo structure memory allocation.");
         }
     }
     impl()->setAcquisitionTime(arg.expTimeNs);
@@ -431,55 +436,56 @@ int ClientInterface::setup_receiver(Interface &socket) {
         impl()->setActivate(static_cast<bool>(arg.activate));
         try {
             impl()->setQuad(arg.quad == 0 ? false : true);
-        } catch(const RuntimeError &e) {
-            throw RuntimeError("Could not set quad to " + 
-            std::to_string(arg.quad) + 
-            " due to fifo strucutre memory allocation");
+        } catch (const RuntimeError &e) {
+            throw RuntimeError("Could not set quad to " +
+                               std::to_string(arg.quad) +
+                               " due to fifo strucutre memory allocation");
         }
     }
     if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
         try {
             impl()->setDynamicRange(arg.dynamicRange);
-        } catch(const RuntimeError &e) {
-            throw RuntimeError("Could not set dynamic range. Could not allocate "
-            "memory for fifo or could not start listening/writing threads");
+        } catch (const RuntimeError &e) {
+            throw RuntimeError(
+                "Could not set dynamic range. Could not allocate "
+                "memory for fifo or could not start listening/writing threads");
         }
     }
     impl()->setTimingMode(arg.timMode);
-    if (myDetectorType == EIGER || myDetectorType == MOENCH || 
+    if (myDetectorType == EIGER || myDetectorType == MOENCH ||
         myDetectorType == CHIPTESTBOARD) {
         try {
             impl()->setTenGigaEnable(arg.tenGiga);
-        } catch(const RuntimeError &e) {
+        } catch (const RuntimeError &e) {
             throw RuntimeError("Could not set 10GbE.");
-        } 
+        }
     }
     if (myDetectorType == CHIPTESTBOARD) {
         try {
             impl()->setReadoutMode(arg.roMode);
-        } catch(const RuntimeError &e) {
+        } catch (const RuntimeError &e) {
             throw RuntimeError("Could not set read out mode "
-            "due to fifo memory allocation.");
+                               "due to fifo memory allocation.");
         }
     }
     if (myDetectorType == CHIPTESTBOARD || myDetectorType == MOENCH) {
         try {
             impl()->setADCEnableMask(arg.adcMask);
-        } catch(const RuntimeError &e) {
+        } catch (const RuntimeError &e) {
             throw RuntimeError("Could not set adc enable mask "
-            "due to fifo memory allcoation");
+                               "due to fifo memory allcoation");
         }
         try {
             impl()->setTenGigaADCEnableMask(arg.adc10gMask);
-        } catch(const RuntimeError &e) {
+        } catch (const RuntimeError &e) {
             throw RuntimeError("Could not set 10Gb adc enable mask "
-            "due to fifo memory allcoation");
+                               "due to fifo memory allcoation");
         }
     }
     if (myDetectorType == GOTTHARD) {
         try {
             impl()->setROI(arg.roi);
-        } catch(const RuntimeError &e) {
+        } catch (const RuntimeError &e) {
             throw RuntimeError("Could not set ROI");
         }
     }
@@ -520,16 +526,16 @@ void ClientInterface::setDetectorType(detectorType arg) {
     // callbacks after (in setdetectortype, the object is reinitialized)
     if (startAcquisitionCallBack != nullptr)
         impl()->registerCallBackStartAcquisition(startAcquisitionCallBack,
-                                                    pStartAcquisition);
+                                                 pStartAcquisition);
     if (acquisitionFinishedCallBack != nullptr)
-        impl()->registerCallBackAcquisitionFinished(
-            acquisitionFinishedCallBack, pAcquisitionFinished);
+        impl()->registerCallBackAcquisitionFinished(acquisitionFinishedCallBack,
+                                                    pAcquisitionFinished);
     if (rawDataReadyCallBack != nullptr)
         impl()->registerCallBackRawDataReady(rawDataReadyCallBack,
-                                                pRawDataReady);
+                                             pRawDataReady);
     if (rawDataModifyReadyCallBack != nullptr)
-        impl()->registerCallBackRawDataModifyReady(
-            rawDataModifyReadyCallBack, pRawDataReady);
+        impl()->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,
+                                                   pRawDataReady);
 }
 
 int ClientInterface::set_roi(Interface &socket) {
@@ -544,7 +550,7 @@ int ClientInterface::set_roi(Interface &socket) {
     verifyIdle(socket);
     try {
         impl()->setROI(arg);
-    } catch(const RuntimeError &e) {
+    } catch (const RuntimeError &e) {
         throw RuntimeError("Could not set ROI");
     }
     return socket.Send(OK);
@@ -553,8 +559,7 @@ int ClientInterface::set_roi(Interface &socket) {
 int ClientInterface::set_num_frames(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     if (value <= 0) {
-        throw RuntimeError("Invalid number of frames " + 
-            std::to_string(value));
+        throw RuntimeError("Invalid number of frames " + std::to_string(value));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting num frames to " << value;
@@ -567,8 +572,8 @@ int ClientInterface::set_num_frames(Interface &socket) {
 int ClientInterface::set_num_triggers(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     if (value <= 0) {
-        throw RuntimeError("Invalid number of triggers " + 
-            std::to_string(value));
+        throw RuntimeError("Invalid number of triggers " +
+                           std::to_string(value));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting num triggers to " << value;
@@ -581,8 +586,7 @@ int ClientInterface::set_num_triggers(Interface &socket) {
 int ClientInterface::set_num_bursts(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     if (value <= 0) {
-        throw RuntimeError("Invalid number of bursts " + 
-            std::to_string(value));
+        throw RuntimeError("Invalid number of bursts " + std::to_string(value));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting num bursts to " << value;
@@ -595,8 +599,8 @@ int ClientInterface::set_num_bursts(Interface &socket) {
 int ClientInterface::set_num_add_storage_cells(Interface &socket) {
     auto value = socket.Receive<int>();
     if (value < 0) {
-        throw RuntimeError("Invalid number of additional storage cells " + 
-            std::to_string(value));
+        throw RuntimeError("Invalid number of additional storage cells " +
+                           std::to_string(value));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting num additional storage cells to " << value;
@@ -608,9 +612,8 @@ int ClientInterface::set_num_add_storage_cells(Interface &socket) {
 
 int ClientInterface::set_timing_mode(Interface &socket) {
     auto value = socket.Receive<int>();
-    if (value < 0 || value >= NUM_TIMING_MODES) {    
-        throw RuntimeError("Invalid timing mode " + 
-            std::to_string(value));
+    if (value < 0 || value >= NUM_TIMING_MODES) {
+        throw RuntimeError("Invalid timing mode " + std::to_string(value));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting timing mode to " << value;
@@ -622,9 +625,8 @@ int ClientInterface::set_timing_mode(Interface &socket) {
 
 int ClientInterface::set_burst_mode(Interface &socket) {
     auto value = socket.Receive<int>();
-    if (value < 0 || value >= NUM_BURST_MODES) {    
-        throw RuntimeError("Invalid burst mode " + 
-            std::to_string(value));
+    if (value < 0 || value >= NUM_BURST_MODES) {
+        throw RuntimeError("Invalid burst mode " + std::to_string(value));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting burst mode to " << value;
@@ -639,11 +641,13 @@ int ClientInterface::set_num_analog_samples(Interface &socket) {
     LOG(logDEBUG1) << "Setting num analog samples to " << value;
     if (myDetectorType != CHIPTESTBOARD && myDetectorType != MOENCH) {
         functionNotImplemented();
-    }    
+    }
     try {
         impl()->setNumberofAnalogSamples(value);
-    } catch(const RuntimeError &e) {
-        throw RuntimeError("Could not set num analog samples to " + std::to_string(value) + " due to fifo structure memory allocation.");
+    } catch (const RuntimeError &e) {
+        throw RuntimeError("Could not set num analog samples to " +
+                           std::to_string(value) +
+                           " due to fifo structure memory allocation.");
     }
     return socket.Send(OK);
 }
@@ -653,11 +657,13 @@ int ClientInterface::set_num_digital_samples(Interface &socket) {
     LOG(logDEBUG1) << "Setting num digital samples to " << value;
     if (myDetectorType != CHIPTESTBOARD) {
         functionNotImplemented();
-    }    
+    }
     try {
         impl()->setNumberofDigitalSamples(value);
-    } catch(const RuntimeError &e) {
-        throw RuntimeError("Could not set num digital samples to " + std::to_string(value) + " due to fifo structure memory allocation.");
+    } catch (const RuntimeError &e) {
+        throw RuntimeError("Could not set num digital samples to " +
+                           std::to_string(value) +
+                           " due to fifo structure memory allocation.");
     }
     return socket.Send(OK);
 }
@@ -689,7 +695,8 @@ int ClientInterface::set_subdeadtime(Interface &socket) {
     auto value = socket.Receive<int64_t>();
     LOG(logDEBUG1) << "Setting sub deadtime to " << value << "ns";
     impl()->setSubPeriod(value + impl()->getSubExpTime());
-    LOG(logDEBUG1) << "Setting sub period to " << impl()->getSubPeriod() << "ns";    
+    LOG(logDEBUG1) << "Setting sub period to " << impl()->getSubPeriod()
+                   << "ns";
     return socket.Send(OK);
 }
 
@@ -699,7 +706,7 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
         verifyIdle(socket);
         LOG(logDEBUG1) << "Setting dynamic range: " << dr;
         bool exists = false;
-        switch(myDetectorType) {
+        switch (myDetectorType) {
         case EIGER:
             if (dr == 4 || dr == 8 || dr == 16 || dr == 32) {
                 exists = true;
@@ -711,7 +718,7 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
             }
             break;
         default:
-            if (dr == 16)  {
+            if (dr == 16) {
                 exists = true;
             }
             break;
@@ -721,7 +728,7 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
         } else {
             try {
                 impl()->setDynamicRange(dr);
-            } catch(const RuntimeError &e) {
+            } catch (const RuntimeError &e) {
                 throw RuntimeError("Could not allocate memory for fifo or "
                                    "could not start listening/writing threads");
             }
@@ -736,13 +743,13 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
 int ClientInterface::set_streaming_frequency(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index < 0) {
-        throw RuntimeError("Invalid streaming frequency: "
-            + std::to_string(index));
+        throw RuntimeError("Invalid streaming frequency: " +
+                           std::to_string(index));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting streaming frequency: " << index;
     impl()->setStreamingFrequency(index);
-    
+
     int retval = impl()->getStreamingFrequency();
     validate(index, retval, "set streaming frequency", DEC);
     return socket.Send(OK);
@@ -791,11 +798,11 @@ int ClientInterface::set_file_dir(Interface &socket) {
     if (strlen(fPath) == 0) {
         throw RuntimeError("Cannot set empty file path");
     }
-    if(fPath[0] != '/')
+    if (fPath[0] != '/')
         throw RuntimeError("Receiver path needs to be absolute path");
     LOG(logDEBUG1) << "Setting file path: " << fPath;
     impl()->setFilePath(fPath);
-    
+
     std::string s = impl()->getFilePath();
     sls::strcpy_safe(retval, s.c_str());
     if ((s.empty()) || (strlen(fPath) && strcasecmp(fPath, retval)))
@@ -823,7 +830,7 @@ int ClientInterface::set_file_name(Interface &socket) {
     }
     LOG(logDEBUG1) << "Setting file name: " << fName;
     impl()->setFileName(fName);
-    
+
     std::string s = impl()->getFileName();
     sls::strcpy_safe(retval, s.c_str());
     LOG(logDEBUG1) << "file name:" << retval;
@@ -841,8 +848,7 @@ int ClientInterface::get_file_name(Interface &socket) {
 int ClientInterface::set_file_index(Interface &socket) {
     auto index = socket.Receive<int64_t>();
     if (index < 0) {
-        throw RuntimeError("Invalid file index: " 
-            + std::to_string(index));
+        throw RuntimeError("Invalid file index: " + std::to_string(index));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting file index: " << index;
@@ -887,7 +893,8 @@ int ClientInterface::get_frames_caught(Interface &socket) {
 int ClientInterface::set_file_write(Interface &socket) {
     auto enable = socket.Receive<int>();
     if (enable < 0) {
-        throw RuntimeError("Invalid file write enable: " + std::to_string(enable));
+        throw RuntimeError("Invalid file write enable: " +
+                           std::to_string(enable));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting File write enable:" << enable;
@@ -908,13 +915,13 @@ int ClientInterface::get_file_write(Interface &socket) {
 int ClientInterface::set_master_file_write(Interface &socket) {
     auto enable = socket.Receive<int>();
     if (enable < 0) {
-        throw RuntimeError("Invalid master file write enable: "
-            + std::to_string(enable));
+        throw RuntimeError("Invalid master file write enable: " +
+                           std::to_string(enable));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting Master File write enable:" << enable;
     impl()->setMasterFileWriteEnable(enable);
-    
+
     int retval = impl()->getMasterFileWriteEnable();
     validate(enable, retval, "set master file write enable", DEC);
     LOG(logDEBUG1) << "master file write enable:" << retval;
@@ -930,13 +937,13 @@ int ClientInterface::get_master_file_write(Interface &socket) {
 int ClientInterface::set_overwrite(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index < 0) {
-        throw RuntimeError("Invalid over write enable: "
-            + std::to_string(index));
+        throw RuntimeError("Invalid over write enable: " +
+                           std::to_string(index));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting File overwrite enable:" << index;
     impl()->setOverwriteEnable(index);
-    
+
     int retval = impl()->getOverwriteEnable();
     validate(index, retval, "set file overwrite enable", DEC);
     LOG(logDEBUG1) << "file overwrite enable:" << retval;
@@ -960,8 +967,8 @@ int ClientInterface::enable_tengiga(Interface &socket) {
         LOG(logDEBUG1) << "Setting 10GbE:" << val;
         try {
             impl()->setTenGigaEnable(val);
-        } catch(const RuntimeError &e) {
-            throw RuntimeError("Could not set 10GbE." );
+        } catch (const RuntimeError &e) {
+            throw RuntimeError("Could not set 10GbE.");
         }
     }
     int retval = impl()->getTenGigaEnable();
@@ -977,8 +984,9 @@ int ClientInterface::set_fifo_depth(Interface &socket) {
         LOG(logDEBUG1) << "Setting fifo depth:" << value;
         try {
             impl()->setFifoDepth(value);
-        } catch(const RuntimeError &e) {
-            throw RuntimeError("Could not set fifo depth due to fifo structure memory allocation.");
+        } catch (const RuntimeError &e) {
+            throw RuntimeError("Could not set fifo depth due to fifo structure "
+                               "memory allocation.");
         }
     }
     int retval = impl()->getFifoDepth();
@@ -1006,17 +1014,18 @@ int ClientInterface::set_activate(Interface &socket) {
 int ClientInterface::set_streaming(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index < 0) {
-        throw RuntimeError("Invalid streaming enable: "
-            + std::to_string(index));
+        throw RuntimeError("Invalid streaming enable: " +
+                           std::to_string(index));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting data stream enable:" << index;
     try {
         impl()->setDataStreamEnable(index);
-    } catch(const RuntimeError &e) {
-        throw RuntimeError("Could not set data stream enable to " + std::to_string(index));
+    } catch (const RuntimeError &e) {
+        throw RuntimeError("Could not set data stream enable to " +
+                           std::to_string(index));
     }
-    
+
     auto retval = static_cast<int>(impl()->getDataStreamEnable());
     validate(index, retval, "set data stream enable", DEC);
     LOG(logDEBUG1) << "data streaming enable:" << retval;
@@ -1063,13 +1072,12 @@ int ClientInterface::set_file_format(Interface &socket) {
     fileFormat f = GET_FILE_FORMAT;
     socket.Receive(f);
     if (f < 0 || f > NUM_FILE_FORMATS) {
-        throw RuntimeError("Invalid file format: "
-            + std::to_string(f));
+        throw RuntimeError("Invalid file format: " + std::to_string(f));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting file format:" << f;
     impl()->setFileFormat(f);
-    
+
     auto retval = impl()->getFileFormat();
     validate(f, retval, "set file format", DEC);
     LOG(logDEBUG1) << "File Format: " << retval;
@@ -1106,19 +1114,19 @@ int ClientInterface::get_streaming_port(Interface &socket) {
 int ClientInterface::set_streaming_source_ip(Interface &socket) {
     sls::IpAddr arg;
     socket.Receive(arg);
-    if (arg == 0) { 
+    if (arg == 0) {
         throw RuntimeError("Invalid zmq ip " + arg.str());
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting streaming source ip:" << arg;
     impl()->setStreamingSourceIP(arg);
-    
+
     sls::IpAddr retval = impl()->getStreamingSourceIP();
     LOG(logDEBUG1) << "streaming IP:" << retval;
     if (retval != arg && arg != 0) {
         std::ostringstream os;
-        os << "Could not set streaming ip. Set " << arg
-           << ", but read " << retval << '\n';
+        os << "Could not set streaming ip. Set " << arg << ", but read "
+           << retval << '\n';
         throw RuntimeError(os.str());
     }
     return socket.Send(OK);
@@ -1133,13 +1141,12 @@ int ClientInterface::get_streaming_source_ip(Interface &socket) {
 int ClientInterface::set_silent_mode(Interface &socket) {
     auto value = socket.Receive<int>();
     if (value < 0) {
-        throw RuntimeError("Invalid silent mode: "
-            + std::to_string(value));
+        throw RuntimeError("Invalid silent mode: " + std::to_string(value));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting silent mode:" << value;
     impl()->setSilentMode(value);
-    
+
     auto retval = static_cast<int>(impl()->getSilentMode());
     validate(value, retval, "set silent mode", DEC);
     LOG(logDEBUG1) << "silent mode:" << retval;
@@ -1173,7 +1180,7 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
         socket.Receive(args, sizeof(args));
         for (int i = 0; i < size; ++i) {
             json[args[2 * i]] = args[2 * i + 1];
-        }    
+        }
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting additional json header: " << sls::ToString(json);
@@ -1190,7 +1197,7 @@ int ClientInterface::get_additional_json_header(Interface &socket) {
         char retvals[size * 2][SHORT_STR_LENGTH];
         memset(retvals, 0, sizeof(retvals));
         int iarg = 0;
-        for (auto & it : json) {
+        for (auto &it : json) {
             sls::strcpy_safe(retvals[iarg], it.first.c_str());
             sls::strcpy_safe(retvals[iarg + 1], it.second.c_str());
             iarg += 2;
@@ -1216,8 +1223,7 @@ int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int ClientInterface::get_real_udp_socket_buffer_size(
-    Interface &socket) {
+int ClientInterface::get_real_udp_socket_buffer_size(Interface &socket) {
     auto size = impl()->getActualUDPSocketBufferSize();
     LOG(logDEBUG1) << "Actual UDP socket size :" << size;
     return socket.sendResult(size);
@@ -1226,13 +1232,12 @@ int ClientInterface::get_real_udp_socket_buffer_size(
 int ClientInterface::set_frames_per_file(Interface &socket) {
     auto index = socket.Receive<int>();
     if (index < 0) {
-        throw RuntimeError("Invalid frames per file: "
-            + std::to_string(index));
+        throw RuntimeError("Invalid frames per file: " + std::to_string(index));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting frames per file: " << index;
     impl()->setFramesPerFile(index);
-    
+
     auto retval = static_cast<int>(impl()->getFramesPerFile());
     validate(index, retval, "set frames per file", DEC);
     LOG(logDEBUG1) << "frames per file:" << retval;
@@ -1247,8 +1252,7 @@ int ClientInterface::get_frames_per_file(Interface &socket) {
 
 int ClientInterface::check_version_compatibility(Interface &socket) {
     auto arg = socket.Receive<int64_t>();
-    LOG(logDEBUG1) << "Checking versioning compatibility with value "
-                        << arg;
+    LOG(logDEBUG1) << "Checking versioning compatibility with value " << arg;
     int64_t client_requiredVersion = arg;
     int64_t rx_apiVersion = APIRECEIVER;
     int64_t rx_version = getReceiverVersion();
@@ -1314,15 +1318,14 @@ int ClientInterface::get_padding_enable(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int ClientInterface::set_deactivated_padding_enable(
-    Interface &socket) {
+int ClientInterface::set_deactivated_padding_enable(Interface &socket) {
     auto enable = socket.Receive<int>();
     if (myDetectorType != EIGER) {
         functionNotImplemented();
     }
     if (enable < 0) {
-        throw RuntimeError("Invalid Deactivated padding: " 
-            + std::to_string(enable));
+        throw RuntimeError("Invalid Deactivated padding: " +
+                           std::to_string(enable));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting deactivated padding enable: " << enable;
@@ -1334,8 +1337,7 @@ int ClientInterface::set_deactivated_padding_enable(
     return socket.Send(OK);
 }
 
-int ClientInterface::get_deactivated_padding_enable(
-    Interface &socket) {
+int ClientInterface::get_deactivated_padding_enable(Interface &socket) {
     if (myDetectorType != EIGER)
         functionNotImplemented();
     auto retval = static_cast<int>(impl()->getDeactivatedPadding());
@@ -1354,8 +1356,9 @@ int ClientInterface::set_readout_mode(Interface &socket) {
         LOG(logDEBUG1) << "Setting readout mode: " << arg;
         try {
             impl()->setReadoutMode(arg);
-        } catch(const RuntimeError &e) {
-            throw RuntimeError("Could not set read out mode due to fifo memory allocation.");
+        } catch (const RuntimeError &e) {
+            throw RuntimeError(
+                "Could not set read out mode due to fifo memory allocation.");
         }
     }
     auto retval = impl()->getReadoutMode();
@@ -1371,8 +1374,9 @@ int ClientInterface::set_adc_mask(Interface &socket) {
     LOG(logDEBUG1) << "Setting 1Gb ADC enable mask: " << arg;
     try {
         impl()->setADCEnableMask(arg);
-    } catch(const RuntimeError &e) {
-        throw RuntimeError("Could not set adc enable mask due to fifo memory allcoation");
+    } catch (const RuntimeError &e) {
+        throw RuntimeError(
+            "Could not set adc enable mask due to fifo memory allcoation");
     }
     auto retval = impl()->getADCEnableMask();
     if (retval != arg) {
@@ -1414,13 +1418,12 @@ int ClientInterface::set_dbit_offset(Interface &socket) {
     if (myDetectorType != CHIPTESTBOARD)
         functionNotImplemented();
     if (arg < 0) {
-        throw RuntimeError("Invalid dbit offset: "
-            + std::to_string(arg));
+        throw RuntimeError("Invalid dbit offset: " + std::to_string(arg));
     }
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting Dbit offset: " << arg;
     impl()->setDbitOffset(arg);
-    
+
     int retval = impl()->getDbitOffset();
     validate(arg, retval, "set dbit offset", DEC);
     LOG(logDEBUG1) << "Dbit offset retval: " << retval;
@@ -1442,8 +1445,10 @@ int ClientInterface::set_quad_type(Interface &socket) {
         LOG(logDEBUG1) << "Setting quad:" << quadEnable;
         try {
             impl()->setQuad(quadEnable == 0 ? false : true);
-        } catch(const RuntimeError &e) {
-            throw RuntimeError("Could not set quad to " + std::to_string(quadEnable) + " due to fifo strucutre memory allocation");
+        } catch (const RuntimeError &e) {
+            throw RuntimeError("Could not set quad to " +
+                               std::to_string(quadEnable) +
+                               " due to fifo strucutre memory allocation");
         }
     }
     int retval = impl()->getQuad() ? 1 : 0;
@@ -1469,12 +1474,14 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
     // getting eth
     std::string eth = sls::IpToInterfaceName(arg.str());
     if (eth == "none") {
-        throw RuntimeError("Failed to get udp ethernet interface from IP " + arg.str());
-    }   
+        throw RuntimeError("Failed to get udp ethernet interface from IP " +
+                           arg.str());
+    }
     if (eth.find('.') != std::string::npos) {
         eth = "";
-        LOG(logERROR) << "Failed to get udp ethernet interface from IP " << arg << ". Got " << eth;
-    }   
+        LOG(logERROR) << "Failed to get udp ethernet interface from IP " << arg
+                      << ". Got " << eth;
+    }
     impl()->setEthernetInterface(eth);
     if (myDetectorType == EIGER) {
         impl()->setEthernetInterface2(eth);
@@ -1482,7 +1489,8 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
     if (retval == 0) {
-        throw RuntimeError("Failed to get udp mac adddress to listen to (eth:" + eth + ", ip:" + arg.str() + ")\n");
+        throw RuntimeError("Failed to get udp mac adddress to listen to (eth:" +
+                           eth + ", ip:" + arg.str() + ")\n");
     }
     return retval;
 }
@@ -1500,18 +1508,22 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
     // getting eth
     std::string eth = sls::IpToInterfaceName(arg.str());
     if (eth == "none") {
-        throw RuntimeError("Failed to get udp ethernet interface2 from IP " + arg.str());
-    }   
+        throw RuntimeError("Failed to get udp ethernet interface2 from IP " +
+                           arg.str());
+    }
     if (eth.find('.') != std::string::npos) {
         eth = "";
-        LOG(logERROR) << "Failed to get udp ethernet interface2 from IP " << arg << ". Got " << eth;
-    }   
+        LOG(logERROR) << "Failed to get udp ethernet interface2 from IP " << arg
+                      << ". Got " << eth;
+    }
     impl()->setEthernetInterface2(eth);
 
     // get mac address
     auto retval = sls::InterfaceNameToMac(eth);
     if (retval == 0) {
-        throw RuntimeError("Failed to get udp mac adddress2 to listen to (eth:" + eth + ", ip:" + arg.str() + ")\n");
+        throw RuntimeError(
+            "Failed to get udp mac adddress2 to listen to (eth:" + eth +
+            ", ip:" + arg.str() + ")\n");
     }
     return retval;
 }
@@ -1520,7 +1532,8 @@ int ClientInterface::set_udp_ip2(Interface &socket) {
     auto arg = socket.Receive<sls::IpAddr>();
     verifyIdle(socket);
     if (myDetectorType != JUNGFRAU) {
-        throw RuntimeError("UDP Destination IP2 not implemented for this detector");
+        throw RuntimeError(
+            "UDP Destination IP2 not implemented for this detector");
     }
     LOG(logINFO) << "Received UDP IP2: " << arg;
     auto retval = setUdpIp2(arg);
@@ -1540,8 +1553,9 @@ int ClientInterface::set_udp_port2(Interface &socket) {
     auto arg = socket.Receive<int>();
     verifyIdle(socket);
     if (myDetectorType != JUNGFRAU && myDetectorType != EIGER) {
-        throw RuntimeError("UDP Destination Port2 not implemented for this detector");
-    }    
+        throw RuntimeError(
+            "UDP Destination Port2 not implemented for this detector");
+    }
     LOG(logDEBUG1) << "Setting UDP Port:" << arg;
     impl()->setUDPPortNumber2(arg);
     return socket.Send(OK);
@@ -1552,13 +1566,15 @@ int ClientInterface::set_num_interfaces(Interface &socket) {
     arg = (arg > 1 ? 2 : 1);
     verifyIdle(socket);
     if (myDetectorType != JUNGFRAU) {
-        throw RuntimeError("Number of interfaces not implemented for this detector");
-    }    
+        throw RuntimeError(
+            "Number of interfaces not implemented for this detector");
+    }
     LOG(logDEBUG1) << "Setting Number of UDP Interfaces:" << arg;
     try {
         impl()->setNumberofUDPInterfaces(arg);
-    } catch(const RuntimeError &e) {
-        throw RuntimeError("Failed to set number of interfaces to " + std::to_string(arg));
+    } catch (const RuntimeError &e) {
+        throw RuntimeError("Failed to set number of interfaces to " +
+                           std::to_string(arg));
     }
     return socket.Send(OK);
 }
@@ -1569,8 +1585,9 @@ int ClientInterface::set_adc_mask_10g(Interface &socket) {
     LOG(logDEBUG1) << "Setting 10Gb ADC enable mask: " << arg;
     try {
         impl()->setTenGigaADCEnableMask(arg);
-    } catch(const RuntimeError &e) {
-        throw RuntimeError("Could not set 10Gb adc enable mask due to fifo memory allcoation");
+    } catch (const RuntimeError &e) {
+        throw RuntimeError(
+            "Could not set 10Gb adc enable mask due to fifo memory allcoation");
     }
     auto retval = impl()->getTenGigaADCEnableMask();
     if (retval != arg) {
@@ -1600,12 +1617,12 @@ int ClientInterface::increment_file_index(Interface &socket) {
     return socket.Send(OK);
 }
 
-
 int ClientInterface::set_additional_json_parameter(Interface &socket) {
     char args[2][SHORT_STR_LENGTH]{};
     socket.Receive(args);
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting additional json parameter (" << args[0] << "): " << args[1];
+    LOG(logDEBUG1) << "Setting additional json parameter (" << args[0]
+                   << "): " << args[1];
     impl()->setAdditionalJsonParameter(args[0], args[1]);
     return socket.Send(OK);
 }

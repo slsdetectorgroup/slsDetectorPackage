@@ -1,9 +1,8 @@
 #pragma once
-#include "receiver_defs.h"
-#include "sls_detector_defs.h"
 #include "Implementation.h"
 #include "ServerSocket.h"
-class MySocketTCP;
+#include "receiver_defs.h"
+#include "sls_detector_defs.h"
 class ServerInterface;
 
 #include <atomic>
@@ -19,9 +18,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int ret{OK};
     int fnum{-1};
     int lockedByClient{0};
-    
+
     std::atomic<bool> killTcpThread{false};
-    
 
   public:
     virtual ~ClientInterface();
@@ -30,8 +28,9 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     //***callback functions***
     /** params: filepath, filename, fileindex, datasize */
-    void registerCallBackStartAcquisition(int (*func)(std::string, std::string, uint64_t,
-                                                      uint32_t, void *),
+    void registerCallBackStartAcquisition(int (*func)(std::string, std::string,
+                                                      uint64_t, uint32_t,
+                                                      void *),
                                           void *arg);
 
     /** params: total frames caught */
@@ -43,7 +42,8 @@ class ClientInterface : private virtual slsDetectorDefs {
                                                    void *),
                                       void *arg);
 
-    /** params: sls_receiver_header frame metadata, dataPointer, modified size */
+    /** params: sls_receiver_header frame metadata, dataPointer, modified size
+     */
     void registerCallBackRawDataModifyReady(void (*func)(char *, char *,
                                                          uint32_t &, void *),
                                             void *arg);
@@ -53,9 +53,9 @@ class ClientInterface : private virtual slsDetectorDefs {
     int functionTable();
     int decodeFunction(sls::ServerInterface &socket);
     void functionNotImplemented();
-    void modeNotImplemented(const std::string& modename, int mode);
+    void modeNotImplemented(const std::string &modename, int mode);
     template <typename T>
-    void validate(T arg, T retval, const std::string& modename, numberMode hex);
+    void validate(T arg, T retval, const std::string &modename, numberMode hex);
     void verifyLock();
     void verifyIdle(sls::ServerInterface &socket);
 
@@ -146,13 +146,13 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_udp_port(sls::ServerInterface &socket);
     int set_udp_port2(sls::ServerInterface &socket);
     int set_num_interfaces(sls::ServerInterface &socket);
-    int set_adc_mask_10g(sls::ServerInterface &socket);  
-    int set_num_counters(sls::ServerInterface &socket);  
+    int set_adc_mask_10g(sls::ServerInterface &socket);
+    int set_num_counters(sls::ServerInterface &socket);
     int increment_file_index(sls::ServerInterface &socket);
     int set_additional_json_parameter(sls::ServerInterface &socket);
     int get_additional_json_parameter(sls::ServerInterface &socket);
     int get_progress(sls::ServerInterface &socket);
- 
+
     Implementation *impl() {
         if (receiver != nullptr) {
             return receiver.get();
@@ -164,11 +164,11 @@ class ClientInterface : private virtual slsDetectorDefs {
 
     int (ClientInterface::*flist[NUM_REC_FUNCTIONS])(
         sls::ServerInterface &socket);
-    
+
     //***callback parameters***
-   
-    int (*startAcquisitionCallBack)(std::string, std::string, uint64_t, uint32_t,
-                                    void *) = nullptr;
+
+    int (*startAcquisitionCallBack)(std::string, std::string, uint64_t,
+                                    uint32_t, void *) = nullptr;
     void *pStartAcquisition{nullptr};
     void (*acquisitionFinishedCallBack)(uint64_t, void *) = nullptr;
     void *pAcquisitionFinished{nullptr};
@@ -176,7 +176,4 @@ class ClientInterface : private virtual slsDetectorDefs {
     void (*rawDataModifyReadyCallBack)(char *, char *, uint32_t &,
                                        void *) = nullptr;
     void *pRawDataReady{nullptr};
-
-
-    
 };

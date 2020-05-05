@@ -4,9 +4,9 @@
 #include "Fifo.h"
 #include "GeneralData.h"
 #include "Listener.h"
+#include "ToString.h"
 #include "ZmqSocket.h" //just for the zmq port define
 #include "file_utils.h"
-#include "ToString.h"
 
 #include <cerrno>  //eperm
 #include <cstdlib> //system
@@ -82,7 +82,7 @@ void Implementation::InitializeMembers() {
     udpPortNum.resize(MAX_NUMBER_OF_LISTENING_THREADS);
     for (int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; ++i) {
         eth[i] = "";
-        udpPortNum[i] =  DEFAULT_UDP_PORTNO + i;
+        udpPortNum[i] = DEFAULT_UDP_PORTNO + i;
     }
     udpSocketBufferSize = 0;
     actualUDPSocketBufferSize = 0;
@@ -188,7 +188,8 @@ void Implementation::SetupFifoStructure() {
         } catch (...) {
             fifo.clear();
             fifoDepth = 0;
-            throw sls::RuntimeError("Could not allocate memory for fifo structure " + 
+            throw sls::RuntimeError(
+                "Could not allocate memory for fifo structure " +
                 std::to_string(i) + ". FifoDepth is now 0.");
         }
         // set the listener & dataprocessor threads to point to the right fifo
@@ -201,14 +202,13 @@ void Implementation::SetupFifoStructure() {
     }
 
     LOG(logINFO) << "Memory Allocated Per Fifo: "
-                      << (double)(((size_t)(generalData->imageSize) +
-                           (size_t)(generalData->fifoBufferHeaderSize)) *
-                          (size_t)fifoDepth) / (double)(1024 * 1024)
-                      << " MB";
+                 << (double)(((size_t)(generalData->imageSize) +
+                              (size_t)(generalData->fifoBufferHeaderSize)) *
+                             (size_t)fifoDepth) /
+                        (double)(1024 * 1024)
+                 << " MB";
     LOG(logINFO) << numThreads << " Fifo structure(s) reconstructed";
 }
-
-
 
 /**************************************************
  *                                                 *
@@ -227,11 +227,11 @@ void Implementation::setDetectorType(const detectorType d) {
     case MOENCH:
     case MYTHEN3:
     case GOTTHARD2:
-        LOG(logINFO) << " ***** " << sls::ToString(d)
-                          << " Receiver *****";
+        LOG(logINFO) << " ***** " << sls::ToString(d) << " Receiver *****";
         break;
     default:
-        throw sls::RuntimeError("This is an unknown receiver type "  + std::to_string(static_cast<int>(d)));
+        throw sls::RuntimeError("This is an unknown receiver type " +
+                                std::to_string(static_cast<int>(d)));
     }
 
     // set detector specific variables
@@ -253,10 +253,10 @@ void Implementation::setDetectorType(const detectorType d) {
         break;
     case MYTHEN3:
         generalData = new Mythen3Data();
-        break;   
+        break;
     case GOTTHARD2:
         generalData = new Gotthard2Data();
-        break;                 
+        break;
     default:
         break;
     }
@@ -280,15 +280,16 @@ void Implementation::setDetectorType(const detectorType d) {
                 &activated, &deactivatedPaddingEnable, &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, myDetectorType, fifo_ptr, &fileFormatType, fileWriteEnable,
-                &masterFileWriteEnable, &dataStreamEnable, 
-                &dynamicRange, &streamingFrequency, &streamingTimerInMs,
-                &framePadding, &activated, &deactivatedPaddingEnable,
-                &silentMode, &quadEnable, &ctbDbitList, &ctbDbitOffset,
-                &ctbAnalogDataBytes));
+                &masterFileWriteEnable, &dataStreamEnable, &dynamicRange,
+                &streamingFrequency, &streamingTimerInMs, &framePadding,
+                &activated, &deactivatedPaddingEnable, &silentMode, &quadEnable,
+                &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
         } catch (...) {
             listener.clear();
             dataProcessor.clear();
-            throw sls::RuntimeError("Could not create listener/dataprocessor threads (index:" + std::to_string(i) + ")");
+            throw sls::RuntimeError(
+                "Could not create listener/dataprocessor threads (index:" +
+                std::to_string(i) + ")");
         }
     }
 
@@ -327,13 +328,13 @@ void Implementation::setMultiDetectorSize(const int *size) {
     log_message += ")";
 
     int nd[2] = {numDet[0], numDet[1]};
-	if (quadEnable) {
-		nd[0] = 1;
-		nd[1] = 2;
-	}
-	for (const auto &it : dataStreamer) {
-		it->SetNumberofDetectors(nd);
-	}
+    if (quadEnable) {
+        nd[0] = 1;
+        nd[1] = 2;
+    }
+    for (const auto &it : dataStreamer) {
+        it->SetNumberofDetectors(nd);
+    }
 
     LOG(logINFO) << log_message;
 }
@@ -349,14 +350,14 @@ void Implementation::setDetectorPositionId(const int id) {
     LOG(logINFO) << "Detector Position Id:" << detID;
 
     // update zmq port
-    streamingPort = DEFAULT_ZMQ_RX_PORTNO +
-                       (detID * (myDetectorType == EIGER ? 2 : 1));
-                       
+    streamingPort =
+        DEFAULT_ZMQ_RX_PORTNO + (detID * (myDetectorType == EIGER ? 2 : 1));
+
     for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
         dataProcessor[i]->SetupFileWriter(
-            fileWriteEnable, (int *)numDet, &framesPerFile, &fileName, &filePath,
-            &fileIndex, &overwriteEnable, &detID, &numThreads, &numberOfTotalFrames,
-            &dynamicRange, &udpPortNum[i], generalData);
+            fileWriteEnable, (int *)numDet, &framesPerFile, &fileName,
+            &filePath, &fileIndex, &overwriteEnable, &detID, &numThreads,
+            &numberOfTotalFrames, &dynamicRange, &udpPortNum[i], generalData);
     }
     assert(numDet[1] != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
@@ -373,7 +374,7 @@ std::string Implementation::getDetectorHostname() const {
     return detHostname;
 }
 
-void Implementation::setDetectorHostname(const std::string& c) {
+void Implementation::setDetectorHostname(const std::string &c) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     if (!c.empty())
@@ -412,15 +413,13 @@ Implementation::getFrameDiscardPolicy() const {
     return frameDiscardMode;
 }
 
-void Implementation::setFrameDiscardPolicy(
-    const frameDiscardPolicy i) {
+void Implementation::setFrameDiscardPolicy(const frameDiscardPolicy i) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     if (i >= 0 && i < NUM_DISCARD_POLICIES)
         frameDiscardMode = i;
 
-    LOG(logINFO) << "Frame Discard Policy: "
-                      << sls::ToString(frameDiscardMode);
+    LOG(logINFO) << "Frame Discard Policy: " << sls::ToString(frameDiscardMode);
 }
 
 bool Implementation::getFramePaddingEnable() const {
@@ -434,7 +433,6 @@ void Implementation::setFramePaddingEnable(const bool i) {
     framePadding = i;
     LOG(logINFO) << "Frame Padding: " << framePadding;
 }
-
 
 /**************************************************
  *                                                 *
@@ -469,11 +467,11 @@ std::string Implementation::getFilePath() const {
     return filePath;
 }
 
-void Implementation::setFilePath(const std::string& c) {
+void Implementation::setFilePath(const std::string &c) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     if (!c.empty()) {
-        mkdir_p(c); //throws if it can't create
+        mkdir_p(c); // throws if it can't create
         filePath = c;
     }
     LOG(logINFO) << "File path: " << filePath;
@@ -484,11 +482,11 @@ std::string Implementation::getFileName() const {
     return fileName;
 }
 
-void Implementation::setFileName(const std::string& c) {
+void Implementation::setFileName(const std::string &c) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     if (!c.empty())
-       fileName = c;
+        fileName = c;
     LOG(logINFO) << "File name: " << fileName;
 }
 
@@ -516,11 +514,13 @@ void Implementation::setFileWriteEnable(const bool b) {
             dataProcessor[i]->SetupFileWriter(
                 fileWriteEnable, (int *)numDet, &framesPerFile, &fileName,
                 &filePath, &fileIndex, &overwriteEnable, &detID, &numThreads,
-                &numberOfTotalFrames, &dynamicRange, &udpPortNum[i], generalData);
+                &numberOfTotalFrames, &dynamicRange, &udpPortNum[i],
+                generalData);
         }
     }
 
-    LOG(logINFO) << "File Write Enable: " << (fileWriteEnable ? "enabled" : "disabled");
+    LOG(logINFO) << "File Write Enable: "
+                 << (fileWriteEnable ? "enabled" : "disabled");
 }
 
 bool Implementation::getMasterFileWriteEnable() const {
@@ -532,7 +532,7 @@ void Implementation::setMasterFileWriteEnable(const bool b) {
     masterFileWriteEnable = b;
 
     LOG(logINFO) << "Master File Write Enable: "
-                      << (masterFileWriteEnable ? "enabled" : "disabled");
+                 << (masterFileWriteEnable ? "enabled" : "disabled");
 }
 
 bool Implementation::getOverwriteEnable() const {
@@ -544,7 +544,8 @@ void Implementation::setOverwriteEnable(const bool b) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     overwriteEnable = b;
-    LOG(logINFO) << "Overwrite Enable: " << (overwriteEnable ? "enabled" : "disabled");
+    LOG(logINFO) << "Overwrite Enable: "
+                 << (overwriteEnable ? "enabled" : "disabled");
 }
 
 uint32_t Implementation::getFramesPerFile() const {
@@ -558,7 +559,6 @@ void Implementation::setFramesPerFile(const uint32_t i) {
     framesPerFile = i;
     LOG(logINFO) << "Frames per file: " << framesPerFile;
 }
-
 
 /**************************************************
  *                                                 *
@@ -577,7 +577,7 @@ uint64_t Implementation::getFramesCaught() const {
     for (const auto &it : dataProcessor) {
         flagsum += it->GetStartedFlag();
         uint64_t curr = it->GetNumFramesCaught();
-        min = curr < min ? curr : min;        
+        min = curr < min ? curr : min;
     }
     // no data processed
     if (flagsum != dataProcessor.size())
@@ -617,7 +617,8 @@ int Implementation::getProgress() const {
         currentFrameIndex = -1;
     }
 
-    return (100.00 * ((double)(currentFrameIndex + 1) / (double)numberOfTotalFrames));
+    return (100.00 *
+            ((double)(currentFrameIndex + 1) / (double)numberOfTotalFrames));
 }
 
 std::vector<uint64_t> Implementation::getNumMissingPackets() const {
@@ -628,7 +629,7 @@ std::vector<uint64_t> Implementation::getNumMissingPackets() const {
         // partial readout
         if (numLinesReadout != MAX_EIGER_ROWS_PER_READOUT) {
             totnp = ((numLinesReadout * np) / MAX_EIGER_ROWS_PER_READOUT);
-        }     
+        }
         totnp *= numberOfTotalFrames;
         mp[i] = listener[i]->GetNumMissingPacket(stoppedFlag, totnp);
     }
@@ -673,9 +674,7 @@ void Implementation::startReceiver() {
     LOG(logINFO) << "Status: " << sls::ToString(status);
 }
 
-void Implementation::setStoppedFlag(bool stopped) {
-    stoppedFlag = stopped;
-}
+void Implementation::setStoppedFlag(bool stopped) { stoppedFlag = stopped; }
 
 void Implementation::stopReceiver() {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
@@ -703,8 +702,7 @@ void Implementation::stopReceiver() {
         uint64_t maxIndexCaught = 0;
         bool anycaught = false;
         for (const auto &it : dataProcessor) {
-            maxIndexCaught =
-                std::max(maxIndexCaught, it->GetProcessedIndex());
+            maxIndexCaught = std::max(maxIndexCaught, it->GetProcessedIndex());
             if (it->GetStartedFlag())
                 anycaught = true;
         }
@@ -733,16 +731,15 @@ void Implementation::stopReceiver() {
             int nf = dataProcessor[i]->GetNumFramesCaught();
             tot += nf;
 
-            TLogLevel lev =
-                (((int64_t)mp[i]) > 0) ? logINFORED : logINFOGREEN;
+            TLogLevel lev = (((int64_t)mp[i]) > 0) ? logINFORED : logINFOGREEN;
             LOG(lev) <<
                 // udp port number could be the second if selected interface is
                 // 2 for jungfrau
                 "Summary of Port " << udpPortNum[i]
-                          << "\n\tMissing Packets\t\t: " << mp[i]
-                          << "\n\tComplete Frames\t\t: " << nf
-                          << "\n\tLast Frame Caught\t: "
-                          << listener[i]->GetLastFrameIndexCaught();
+                     << "\n\tMissing Packets\t\t: " << mp[i]
+                     << "\n\tComplete Frames\t\t: " << nf
+                     << "\n\tLast Frame Caught\t: "
+                     << listener[i]->GetLastFrameIndexCaught();
         }
         if (!activated) {
             LOG(logINFORED) << "Deactivated Receiver";
@@ -770,8 +767,9 @@ void Implementation::startReadout() {
             totalPacketsReceived += it->GetPacketsCaught();
 
         // wait for all packets
-        const int numPacketsToReceive =
-            numberOfTotalFrames * generalData->packetsPerFrame * listener.size();
+        const int numPacketsToReceive = numberOfTotalFrames *
+                                        generalData->packetsPerFrame *
+                                        listener.size();
         if (totalPacketsReceived != numPacketsToReceive) {
             while (totalPacketsReceived != previousValue) {
                 LOG(logDEBUG3)
@@ -785,7 +783,7 @@ void Implementation::startReadout() {
                     totalPacketsReceived += it->GetPacketsCaught();
 
                 LOG(logDEBUG3) << "\tupdated:  totalPacketsReceived:"
-                                    << totalPacketsReceived;
+                               << totalPacketsReceived;
             }
         }
         status = TRANSMITTING;
@@ -808,8 +806,7 @@ void Implementation::closeFiles() {
     bool anycaught = false;
     for (const auto &it : dataProcessor) {
         it->CloseFiles();
-        maxIndexCaught =
-            std::max(maxIndexCaught, it->GetProcessedIndex());
+        maxIndexCaught = std::max(maxIndexCaught, it->GetProcessedIndex());
         if (it->GetStartedFlag())
             anycaught = true;
     }
@@ -846,11 +843,11 @@ void Implementation::ResetParametersforNewAcquisition() {
 void Implementation::CreateUDPSockets() {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
-    try{
+    try {
         for (unsigned int i = 0; i < listener.size(); ++i) {
             listener[i]->CreateUDPSockets();
         }
-    } catch(const sls::RuntimeError &e) {
+    } catch (const sls::RuntimeError &e) {
         shutDownUDPSockets();
         throw sls::RuntimeError("Could not create UDP Socket(s).");
     }
@@ -860,22 +857,26 @@ void Implementation::CreateUDPSockets() {
 
 void Implementation::SetupWriter() {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
-	masterAttributes attr;
-	attr.detectorType = myDetectorType;
-	attr.dynamicRange = dynamicRange;
-	attr.tenGiga = tengigaEnable;
-	attr.imageSize = generalData->imageSize;
-	attr.nPixelsX = generalData->nPixelsX;
-	attr.nPixelsY = generalData->nPixelsY;
-	attr.maxFramesPerFile = framesPerFile;
-	attr.totalFrames = numberOfTotalFrames;
-	attr.exptimeNs = acquisitionTime;
-	attr.subExptimeNs = subExpTime;
-	attr.subPeriodNs = subPeriod;
-	attr.periodNs = acquisitionPeriod;
+    masterAttributes attr;
+    attr.detectorType = myDetectorType;
+    attr.dynamicRange = dynamicRange;
+    attr.tenGiga = tengigaEnable;
+    attr.imageSize = generalData->imageSize;
+    attr.nPixelsX = generalData->nPixelsX;
+    attr.nPixelsY = generalData->nPixelsY;
+    attr.maxFramesPerFile = framesPerFile;
+    attr.totalFrames = numberOfTotalFrames;
+    attr.exptimeNs = acquisitionTime;
+    attr.subExptimeNs = subExpTime;
+    attr.subPeriodNs = subPeriod;
+    attr.periodNs = acquisitionPeriod;
     attr.quadEnable = quadEnable;
-    attr.analogFlag = (readoutType == ANALOG_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1 : 0;
-    attr.digitalFlag = (readoutType == DIGITAL_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1 : 0;
+    attr.analogFlag =
+        (readoutType == ANALOG_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1
+                                                                          : 0;
+    attr.digitalFlag =
+        (readoutType == DIGITAL_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1
+                                                                           : 0;
     attr.adcmask = tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
     attr.dbitoffset = ctbDbitOffset;
     attr.dbitlist = 0;
@@ -889,7 +890,7 @@ void Implementation::SetupWriter() {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             dataProcessor[i]->CreateNewFile(attr);
         }
-    } catch(const sls::RuntimeError &e) {
+    } catch (const sls::RuntimeError &e) {
         shutDownUDPSockets();
         closeFiles();
         throw sls::RuntimeError("Could not create file.");
@@ -913,7 +914,6 @@ void Implementation::StartRunning() {
         it->Continue();
     }
 }
-
 
 /**************************************************
  *                                                 *
@@ -967,15 +967,17 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
                     i, myDetectorType, fifo_ptr, &fileFormatType,
                     fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable,
-                    &dynamicRange, &streamingFrequency,
-                    &streamingTimerInMs, &framePadding, &activated,
-                    &deactivatedPaddingEnable, &silentMode, &quadEnable, &ctbDbitList,
-                    &ctbDbitOffset, &ctbAnalogDataBytes));
+                    &dynamicRange, &streamingFrequency, &streamingTimerInMs,
+                    &framePadding, &activated, &deactivatedPaddingEnable,
+                    &silentMode, &quadEnable, &ctbDbitList, &ctbDbitOffset,
+                    &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
             } catch (...) {
                 listener.clear();
                 dataProcessor.clear();
-                throw sls::RuntimeError("Could not create listener/dataprocessor threads (index:" + std::to_string(i) + ")");
+                throw sls::RuntimeError(
+                    "Could not create listener/dataprocessor threads (index:" +
+                    std::to_string(i) + ")");
             }
             // streamer threads
             if (dataStreamEnable) {
@@ -988,19 +990,22 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                         nd[1] = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, (int*)nd, &quadEnable, &numberOfTotalFrames));
+                        i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, fd,
+                        (int *)nd, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
-                    dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
+                    dataStreamer[i]->SetAdditionalJsonHeader(
+                        additionalJsonHeader);
 
                 } catch (...) {
                     if (dataStreamEnable) {
                         dataStreamer.clear();
                         dataStreamEnable = false;
                     }
-                    throw sls::RuntimeError("Could not create datastreamer threads (index:" + std::to_string(i) + ")");
+                    throw sls::RuntimeError(
+                        "Could not create datastreamer threads (index:" +
+                        std::to_string(i) + ")");
                 }
             }
         }
@@ -1089,7 +1094,9 @@ void Implementation::setUDPSocketBufferSize(const int64_t s) {
     size_t listSize = listener.size();
 
     if (myDetectorType == JUNGFRAU && (int)listSize != numUDPInterfaces) {
-        throw sls::RuntimeError("Number of Interfaces " + std::to_string(numUDPInterfaces) + " do not match listener size " + std::to_string(listSize));
+        throw sls::RuntimeError(
+            "Number of Interfaces " + std::to_string(numUDPInterfaces) +
+            " do not match listener size " + std::to_string(listSize));
     }
 
     for (unsigned int i = 0; i < listSize; ++i) {
@@ -1101,7 +1108,6 @@ int64_t Implementation::getActualUDPSocketBufferSize() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return actualUDPSocketBufferSize;
 }
-
 
 /**************************************************
  *                                                 *
@@ -1132,16 +1138,18 @@ void Implementation::setDataStreamEnable(const bool enable) {
                         nd[1] = 2;
                     }
                     dataStreamer.push_back(sls::make_unique<DataStreamer>(
-                        i, fifo[i].get(), &dynamicRange, &roi, &fileIndex,
-                        fd, (int*)nd, &quadEnable, &numberOfTotalFrames));
+                        i, fifo[i].get(), &dynamicRange, &roi, &fileIndex, fd,
+                        (int *)nd, &quadEnable, &numberOfTotalFrames));
                     dataStreamer[i]->SetGeneralData(generalData);
                     dataStreamer[i]->CreateZmqSockets(
                         &numThreads, streamingPort, streamingSrcIP);
-                    dataStreamer[i]->SetAdditionalJsonHeader(additionalJsonHeader);
+                    dataStreamer[i]->SetAdditionalJsonHeader(
+                        additionalJsonHeader);
                 } catch (...) {
                     dataStreamer.clear();
                     dataStreamEnable = false;
-                    throw sls::RuntimeError("Could not set data stream enable.");
+                    throw sls::RuntimeError(
+                        "Could not set data stream enable.");
                 }
             }
             SetThreadPriorities();
@@ -1196,54 +1204,65 @@ void Implementation::setStreamingSourceIP(const sls::IpAddr ip) {
     LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 
-std::map<std::string, std::string> Implementation::getAdditionalJsonHeader() const {
+std::map<std::string, std::string>
+Implementation::getAdditionalJsonHeader() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return additionalJsonHeader;
 }
 
-void Implementation::setAdditionalJsonHeader(const std::map<std::string, std::string> &c) {
+void Implementation::setAdditionalJsonHeader(
+    const std::map<std::string, std::string> &c) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     additionalJsonHeader = c;
-	for (const auto &it : dataStreamer) {
-		it->SetAdditionalJsonHeader(c);
-	}
-    LOG(logINFO) << "Additional JSON Header: " << sls::ToString(additionalJsonHeader);
+    for (const auto &it : dataStreamer) {
+        it->SetAdditionalJsonHeader(c);
+    }
+    LOG(logINFO) << "Additional JSON Header: "
+                 << sls::ToString(additionalJsonHeader);
 }
 
-std::string Implementation::getAdditionalJsonParameter(const std::string &key) const {
+std::string
+Implementation::getAdditionalJsonParameter(const std::string &key) const {
     if (additionalJsonHeader.find(key) != additionalJsonHeader.end()) {
         return additionalJsonHeader.at(key);
     }
-    throw sls::RuntimeError("No key " + key + " found in additional json header");
+    throw sls::RuntimeError("No key " + key +
+                            " found in additional json header");
 }
 
-void Implementation::setAdditionalJsonParameter(const std::string &key, const std::string &value) {
+void Implementation::setAdditionalJsonParameter(const std::string &key,
+                                                const std::string &value) {
     auto pos = additionalJsonHeader.find(key);
 
     // if value is empty, delete
     if (value.empty()) {
         // doesnt exist
         if (pos == additionalJsonHeader.end()) {
-            LOG(logINFO) << "Additional json parameter (" << key << ") does not exist anyway";
+            LOG(logINFO) << "Additional json parameter (" << key
+                         << ") does not exist anyway";
         } else {
-            LOG(logINFO) << "Deleting additional json parameter (" << key << ")";
+            LOG(logINFO) << "Deleting additional json parameter (" << key
+                         << ")";
             additionalJsonHeader.erase(pos);
         }
     }
     // if found, set it
     else if (pos != additionalJsonHeader.end()) {
         additionalJsonHeader[key] = value;
-        LOG(logINFO) << "Setting additional json parameter (" << key << ") to " << value;
-    } 
+        LOG(logINFO) << "Setting additional json parameter (" << key << ") to "
+                     << value;
+    }
     // append if not found
     else {
         additionalJsonHeader[key] = value;
-        LOG(logINFO) << "Adding additional json parameter (" << key << ") to " << value;
+        LOG(logINFO) << "Adding additional json parameter (" << key << ") to "
+                     << value;
     }
     for (const auto &it : dataStreamer) {
         it->SetAdditionalJsonHeader(additionalJsonHeader);
-    }    
-    LOG(logINFO) << "Additional JSON Header: " << sls::ToString(additionalJsonHeader);
+    }
+    LOG(logINFO) << "Additional JSON Header: "
+                 << sls::ToString(additionalJsonHeader);
 }
 
 /**************************************************
@@ -1253,18 +1272,18 @@ void Implementation::setAdditionalJsonParameter(const std::string &key, const st
  * ************************************************/
 void Implementation::updateTotalNumberOfFrames() {
     int64_t repeats = numberOfTriggers;
-    // gotthard2: auto mode 
+    // gotthard2: auto mode
     // burst mode: (bursts instead of triggers)
     // non burst mode: no bursts or triggers
-    if (myDetectorType == GOTTHARD2 &&timingMode == AUTO_TIMING) {
+    if (myDetectorType == GOTTHARD2 && timingMode == AUTO_TIMING) {
         if (burstMode == BURST_OFF) {
             repeats = numberOfBursts;
         } else {
             repeats = 1;
         }
     }
-    numberOfTotalFrames = numberOfFrames * repeats * 
-        (int64_t)(numberOfAdditionalStorageCells + 1);
+    numberOfTotalFrames = numberOfFrames * repeats *
+                          (int64_t)(numberOfAdditionalStorageCells + 1);
     if (numberOfTotalFrames == 0) {
         throw sls::RuntimeError("Invalid total number of frames to receive: 0");
     }
@@ -1315,7 +1334,8 @@ int Implementation::getNumberOfAdditionalStorageCells() const {
 void Implementation::setNumberOfAdditionalStorageCells(const int i) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     numberOfAdditionalStorageCells = i;
-    LOG(logINFO) << "Number of Additional Storage Cells: " << numberOfAdditionalStorageCells;
+    LOG(logINFO) << "Number of Additional Storage Cells: "
+                 << numberOfAdditionalStorageCells;
     updateTotalNumberOfFrames();
 }
 
@@ -1352,8 +1372,8 @@ void Implementation::setAcquisitionPeriod(const uint64_t i) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     acquisitionPeriod = i;
-    LOG(logINFO) << "Acquisition Period: "
-                      << (double)acquisitionPeriod / (1E9) << "s";
+    LOG(logINFO) << "Acquisition Period: " << (double)acquisitionPeriod / (1E9)
+                 << "s";
 }
 
 uint64_t Implementation::getAcquisitionTime() const {
@@ -1366,7 +1386,7 @@ void Implementation::setAcquisitionTime(const uint64_t i) {
 
     acquisitionTime = i;
     LOG(logINFO) << "Acquisition Time: " << (double)acquisitionTime / (1E9)
-                      << "s";
+                 << "s";
 }
 
 uint64_t Implementation::getSubExpTime() const {
@@ -1378,8 +1398,7 @@ void Implementation::setSubExpTime(const uint64_t i) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     subExpTime = i;
-    LOG(logINFO) << "Sub Exposure Time: " << (double)subExpTime / (1E9)
-                      << "s";
+    LOG(logINFO) << "Sub Exposure Time: " << (double)subExpTime / (1E9) << "s";
 }
 
 uint64_t Implementation::getSubPeriod() const {
@@ -1391,8 +1410,7 @@ void Implementation::setSubPeriod(const uint64_t i) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     subPeriod = i;
-    LOG(logINFO) << "Sub Period: " << (double)subPeriod / (1E9)
-                      << "s";
+    LOG(logINFO) << "Sub Period: " << (double)subPeriod / (1E9) << "s";
 }
 
 uint32_t Implementation::getNumberofAnalogSamples() const {
@@ -1405,17 +1423,16 @@ void Implementation::setNumberofAnalogSamples(const uint32_t i) {
         numberOfAnalogSamples = i;
 
         ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga, 
-            numberOfAnalogSamples, numberOfDigitalSamples,
-            tengigaEnable, readoutType);
-        
+            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
+            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
+            readoutType);
+
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
         SetupFifoStructure();
     }
     LOG(logINFO) << "Number of Analog Samples: " << numberOfAnalogSamples;
-    LOG(logINFO) << "Packets per Frame: "
-                      << (generalData->packetsPerFrame);
+    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 uint32_t Implementation::getNumberofDigitalSamples() const {
@@ -1428,18 +1445,16 @@ void Implementation::setNumberofDigitalSamples(const uint32_t i) {
         numberOfDigitalSamples = i;
 
         ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga, 
-            numberOfAnalogSamples, numberOfDigitalSamples,
-            tengigaEnable, readoutType);
-        
+            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
+            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
+            readoutType);
+
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
         SetupFifoStructure();
     }
-    LOG(logINFO) << "Number of Digital Samples: "
-                      << numberOfDigitalSamples;
-    LOG(logINFO) << "Packets per Frame: "
-                      << (generalData->packetsPerFrame);
+    LOG(logINFO) << "Number of Digital Samples: " << numberOfDigitalSamples;
+    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 int Implementation::getNumberofCounters() const {
@@ -1502,9 +1517,9 @@ void Implementation::setROI(slsDetectorDefs::ROI arg) {
         SetupFifoStructure();
     }
 
-    LOG(logINFO) << "ROI: [" << roi.xmin << ", " << roi.xmax << "]";;
-    LOG(logINFO) << "Packets per Frame: "
-                      << (generalData->packetsPerFrame);
+    LOG(logINFO) << "ROI: [" << roi.xmin << ", " << roi.xmax << "]";
+    ;
+    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 bool Implementation::getTenGigaEnable() const {
@@ -1523,9 +1538,9 @@ void Implementation::setTenGigaEnable(const bool b) {
         case MOENCH:
         case CHIPTESTBOARD:
             ctbAnalogDataBytes = generalData->setImageSize(
-                tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga, 
-                numberOfAnalogSamples, numberOfDigitalSamples,
-                tengigaEnable, readoutType);
+                tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
+                numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
+                readoutType);
             break;
         default:
             break;
@@ -1534,8 +1549,7 @@ void Implementation::setTenGigaEnable(const bool b) {
         SetupFifoStructure();
     }
     LOG(logINFO) << "Ten Giga: " << (tengigaEnable ? "enabled" : "disabled");
-    LOG(logINFO) << "Packets per Frame: "
-                      << (generalData->packetsPerFrame);
+    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 int Implementation::getFlippedDataX() const {
@@ -1547,47 +1561,46 @@ void Implementation::setFlippedDataX(int enable) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     flippedDataX = (enable == 0) ? 0 : 1;
 
-	if (!quadEnable) {
-		for (const auto &it : dataStreamer) {
-			it->SetFlippedDataX(flippedDataX);
-		}	
-	} 
-	else {
-		if (dataStreamer.size() == 2) {
-			dataStreamer[0]->SetFlippedDataX(0);
-			dataStreamer[1]->SetFlippedDataX(1);	
-		}
-	}
+    if (!quadEnable) {
+        for (const auto &it : dataStreamer) {
+            it->SetFlippedDataX(flippedDataX);
+        }
+    } else {
+        if (dataStreamer.size() == 2) {
+            dataStreamer[0]->SetFlippedDataX(0);
+            dataStreamer[1]->SetFlippedDataX(1);
+        }
+    }
 
     LOG(logINFO) << "Flipped Data X: " << flippedDataX;
 }
 
 bool Implementation::getQuad() const {
-	LOG(logDEBUG) << __AT__ << " starting";
-	return quadEnable;
+    LOG(logDEBUG) << __AT__ << " starting";
+    return quadEnable;
 }
 
 void Implementation::setQuad(const bool b) {
-	if (quadEnable != b) {
-		quadEnable = b;
+    if (quadEnable != b) {
+        quadEnable = b;
 
-		if (!quadEnable) {
-			for (const auto &it : dataStreamer) {
-				it->SetNumberofDetectors(numDet);
-				it->SetFlippedDataX(flippedDataX);
-			}
-		} else {
-			int size[2] = {1, 2};
-			for (const auto &it : dataStreamer) {
-			    it->SetNumberofDetectors(size);
-			}
-			if (dataStreamer.size() == 2) {
-				dataStreamer[0]->SetFlippedDataX(0);
-				dataStreamer[1]->SetFlippedDataX(1);	
-			}	
-		}
-	}
-	LOG(logINFO)  << "Quad Enable: " << quadEnable;
+        if (!quadEnable) {
+            for (const auto &it : dataStreamer) {
+                it->SetNumberofDetectors(numDet);
+                it->SetFlippedDataX(flippedDataX);
+            }
+        } else {
+            int size[2] = {1, 2};
+            for (const auto &it : dataStreamer) {
+                it->SetNumberofDetectors(size);
+            }
+            if (dataStreamer.size() == 2) {
+                dataStreamer[0]->SetFlippedDataX(0);
+                dataStreamer[1]->SetFlippedDataX(1);
+            }
+        }
+    }
+    LOG(logINFO) << "Quad Enable: " << quadEnable;
 }
 
 bool Implementation::getActivate() const {
@@ -1611,22 +1624,21 @@ bool Implementation::setDeactivatedPadding(bool enable) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     deactivatedPaddingEnable = enable;
     LOG(logINFO) << "Deactivated Padding Enable: "
-                      << (deactivatedPaddingEnable ? "enabled" : "disabled");
+                 << (deactivatedPaddingEnable ? "enabled" : "disabled");
     return deactivatedPaddingEnable;
 }
 
 int Implementation::getReadNLines() const {
-	LOG(logDEBUG) << __AT__ << " starting";
-	return numLinesReadout;
+    LOG(logDEBUG) << __AT__ << " starting";
+    return numLinesReadout;
 }
 
 void Implementation::setReadNLines(const int value) {
     numLinesReadout = value;
-	LOG(logINFO)  << "Number of Lines to readout: " << numLinesReadout;
+    LOG(logINFO) << "Number of Lines to readout: " << numLinesReadout;
 }
 
-slsDetectorDefs::readoutMode
-Implementation::getReadoutMode() const {
+slsDetectorDefs::readoutMode Implementation::getReadoutMode() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return readoutType;
 }
@@ -1637,17 +1649,16 @@ void Implementation::setReadoutMode(const readoutMode f) {
 
         // side effects
         ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga, 
-            numberOfAnalogSamples, numberOfDigitalSamples,
-            tengigaEnable, readoutType);
+            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
+            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
+            readoutType);
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
         SetupFifoStructure();
     }
 
     LOG(logINFO) << "Readout Mode: " << sls::ToString(f);
-    LOG(logINFO) << "Packets per Frame: "
-                          << (generalData->packetsPerFrame);
+    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 uint32_t Implementation::getADCEnableMask() const {
@@ -1660,19 +1671,18 @@ void Implementation::setADCEnableMask(uint32_t mask) {
         adcEnableMaskOneGiga = mask;
 
         ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga, 
-            numberOfAnalogSamples, numberOfDigitalSamples,
-            tengigaEnable, readoutType);
+            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
+            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
+            readoutType);
 
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
         SetupFifoStructure();
     }
 
-    LOG(logINFO) << "ADC Enable Mask for 1Gb mode: 0x" << std::hex << adcEnableMaskOneGiga
-                      << std::dec;
-    LOG(logINFO) << "Packets per Frame: "
-                      << (generalData->packetsPerFrame);
+    LOG(logINFO) << "ADC Enable Mask for 1Gb mode: 0x" << std::hex
+                 << adcEnableMaskOneGiga << std::dec;
+    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 uint32_t Implementation::getTenGigaADCEnableMask() const {
@@ -1685,19 +1695,18 @@ void Implementation::setTenGigaADCEnableMask(uint32_t mask) {
         adcEnableMaskTenGiga = mask;
 
         ctbAnalogDataBytes = generalData->setImageSize(
-            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga, 
-            numberOfAnalogSamples, numberOfDigitalSamples,
-            tengigaEnable, readoutType);
+            tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga,
+            numberOfAnalogSamples, numberOfDigitalSamples, tengigaEnable,
+            readoutType);
 
         for (const auto &it : dataProcessor)
             it->SetPixelDimension();
         SetupFifoStructure();
     }
 
-    LOG(logINFO) << "ADC Enable Mask for 10Gb mode: 0x" << std::hex << adcEnableMaskTenGiga
-                      << std::dec;
-    LOG(logINFO) << "Packets per Frame: "
-                      << (generalData->packetsPerFrame);
+    LOG(logINFO) << "ADC Enable Mask for 10Gb mode: 0x" << std::hex
+                 << adcEnableMaskTenGiga << std::dec;
+    LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
 std::vector<int> Implementation::getDbitList() const {
@@ -1720,20 +1729,21 @@ void Implementation::setDbitOffset(const int s) {
     ctbDbitOffset = s;
 }
 
-
 /**************************************************
  *                                                *
  *    Callbacks                                   *
  *                                                *
  * ************************************************/
 void Implementation::registerCallBackStartAcquisition(
-    int (*func)(std::string, std::string, uint64_t, uint32_t, void *), void *arg) {
+    int (*func)(std::string, std::string, uint64_t, uint32_t, void *),
+    void *arg) {
     startAcquisitionCallBack = func;
     pStartAcquisition = arg;
 }
 
-void Implementation::registerCallBackAcquisitionFinished(
-    void (*func)(uint64_t, void *), void *arg) {
+void Implementation::registerCallBackAcquisitionFinished(void (*func)(uint64_t,
+                                                                      void *),
+                                                         void *arg) {
     acquisitionFinishedCallBack = func;
     pAcquisitionFinished = arg;
 }
@@ -1754,4 +1764,3 @@ void Implementation::registerCallBackRawDataModifyReady(
         it->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,
                                                pRawDataReady);
 }
-

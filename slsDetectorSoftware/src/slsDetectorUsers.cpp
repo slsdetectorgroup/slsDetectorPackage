@@ -116,7 +116,8 @@ int slsDetectorUsers::size() const { return detector->size(); }
 // int slsDetectorUsers::setThresholdEnergy(int e_ev, int tb, int isettings, int
 // detPos) { 	return detector.setThresholdEnergy(e_ev,
 // (isettings == -1) ? slsDetectorDefs::GET_SETTINGS :
-// (slsDetectorDefs::detectorSettings)isettings, 					tb, detPos);
+// (slsDetectorDefs::detectorSettings)isettings,
+// tb, detPos);
 // }
 
 // double slsDetectorUsers::setExposureTime(double t, bool inseconds, int

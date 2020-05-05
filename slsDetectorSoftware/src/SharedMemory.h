@@ -23,8 +23,8 @@
 #include <unistd.h>
 
 #define SHM_MULTI_PREFIX "/slsDetectorPackage_multi_"
-#define SHM_SLS_PREFIX "_sls_"
-#define SHM_ENV_NAME "SLSDETNAME"
+#define SHM_SLS_PREFIX   "_sls_"
+#define SHM_ENV_NAME     "SLSDETNAME"
 
 #include <iostream>
 #include <string>

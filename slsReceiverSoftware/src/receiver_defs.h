@@ -1,64 +1,61 @@
 #pragma once
 
 #include "sls_detector_defs.h"
-#include <cstdint> 
+#include <cstdint>
 
-#define MAX_DIMENSIONS					(2)
+#define MAX_DIMENSIONS                  (2)
 #define MAX_NUMBER_OF_LISTENING_THREADS (2)
 
-//socket
-#define GOODBYE 						(-200)
-#define RECEIVE_SOCKET_BUFFER_SIZE 		(100*1024*1024)
+// socket
+#define GOODBYE                    (-200)
+#define RECEIVE_SOCKET_BUFFER_SIZE (100 * 1024 * 1024)
 
-#define MAX_SOCKET_INPUT_PACKET_QUEUE 	(250000)
+#define MAX_SOCKET_INPUT_PACKET_QUEUE (250000)
 
-
-//files
-#define MAX_FRAMES_PER_FILE 20000
-#define SHORT_MAX_FRAMES_PER_FILE 100000
-#define MOENCH_MAX_FRAMES_PER_FILE 100000
-#define EIGER_MAX_FRAMES_PER_FILE 10000
-#define JFRAU_MAX_FRAMES_PER_FILE 10000
-#define CTB_MAX_FRAMES_PER_FILE 20000
-#define MYTHEN3_MAX_FRAMES_PER_FILE 10000
+// files
+#define MAX_FRAMES_PER_FILE           20000
+#define SHORT_MAX_FRAMES_PER_FILE     100000
+#define MOENCH_MAX_FRAMES_PER_FILE    100000
+#define EIGER_MAX_FRAMES_PER_FILE     10000
+#define JFRAU_MAX_FRAMES_PER_FILE     10000
+#define CTB_MAX_FRAMES_PER_FILE       20000
+#define MYTHEN3_MAX_FRAMES_PER_FILE   10000
 #define GOTTHARD2_MAX_FRAMES_PER_FILE 20000
 
-#define DO_NOTHING						(0)
-#define DO_EVERYTHING					(1)
+#define DO_NOTHING    (0)
+#define DO_EVERYTHING (1)
 
-#define STATISTIC_FRAMENUMBER_INFINITE	(20000)
+#define STATISTIC_FRAMENUMBER_INFINITE (20000)
 
-//binary
-#define FILE_BUFFER_SIZE        		(16*1024*1024) //16mb
+// binary
+#define FILE_BUFFER_SIZE (16 * 1024 * 1024) // 16mb
 
-//fifo
-#define FIFO_HEADER_NUMBYTES			(8)
-#define FIFO_DATASIZE_NUMBYTES          (4)
-#define FIFO_PADDING_NUMBYTES           (4) // for 8 byte alignment due to sls_receiver_header structure
+// fifo
+#define FIFO_HEADER_NUMBYTES   (8)
+#define FIFO_DATASIZE_NUMBYTES (4)
+#define FIFO_PADDING_NUMBYTES                                                  \
+    (4) // for 8 byte alignment due to sls_receiver_header structure
 
+// hdf5
+#define MAX_CHUNKED_IMAGES (1)
 
-//hdf5
-#define MAX_CHUNKED_IMAGES 				(1)
+// versions
+#define HDF5_WRITER_VERSION   (5.0) // 1 decimal places
+#define BINARY_WRITER_VERSION (5.0) // 1 decimal places
 
-//versions
-#define HDF5_WRITER_VERSION 				(5.0) //1 decimal places
-#define BINARY_WRITER_VERSION 				(5.0) //1 decimal places
+// parameters to calculate fifo depth
+#define SAMPLE_TIME_IN_NS          (100000000) // 100ms
+#define MAX_EIGER_ROWS_PER_READOUT (256)
 
+// to differentiate between gotthard and short gotthard
+#define GOTTHARD_PACKET_SIZE (1286)
 
-//parameters to calculate fifo depth
-#define SAMPLE_TIME_IN_NS				(100000000)//100ms
-#define MAX_EIGER_ROWS_PER_READOUT		(256)
+#define DUMMY_PACKET_VALUE (0xFFFFFFFF)
 
-//to differentiate between gotthard and short gotthard
-#define GOTTHARD_PACKET_SIZE			(1286)
-
-
-#define DUMMY_PACKET_VALUE				(0xFFFFFFFF)
-
-#define LISTENER_PRIORITY				(90)
-#define PROCESSOR_PRIORITY				(70)
-#define STREAMER_PRIORITY				(10)
-#define TCP_PRIORITY					(10)
+#define LISTENER_PRIORITY  (90)
+#define PROCESSOR_PRIORITY (70)
+#define STREAMER_PRIORITY  (10)
+#define TCP_PRIORITY       (10)
 
 struct masterAttributes {
     double version;
@@ -82,4 +79,4 @@ struct masterAttributes {
     uint64_t dbitlist;
     uint32_t roiXmin;
     uint32_t roiXmax;
- };
+};

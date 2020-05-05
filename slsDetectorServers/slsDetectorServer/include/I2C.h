@@ -15,9 +15,9 @@
  * @param sdreg sda hold register (defined in RegisterDefs.h)
  * @param treg transfer command fifo register (defined in RegisterDefs.h)
  */
-void I2C_ConfigureI2CCore(uint32_t creg, uint32_t sreg,
-        uint32_t rreg, uint32_t rlvlreg,
-        uint32_t slreg, uint32_t shreg, uint32_t sdreg, uint32_t treg);
+void I2C_ConfigureI2CCore(uint32_t creg, uint32_t sreg, uint32_t rreg,
+                          uint32_t rlvlreg, uint32_t slreg, uint32_t shreg,
+                          uint32_t sdreg, uint32_t treg);
 
 /**
  * Read register
@@ -34,5 +34,3 @@ uint32_t I2C_Read(uint32_t devId, uint32_t addr);
  * @param data data to be written (16 bit)
  */
 void I2C_Write(uint32_t devId, uint32_t addr, uint16_t data);
-
-

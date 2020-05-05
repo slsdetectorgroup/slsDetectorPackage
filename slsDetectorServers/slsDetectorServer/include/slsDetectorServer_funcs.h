@@ -1,23 +1,24 @@
 #pragma once
-#include "sls_detector_defs.h"
 #include "clogger.h"
+#include "sls_detector_defs.h"
 
-enum numberMode {DEC, HEX};
-#define GOODBYE 					(-200)
-#define REBOOT						(-400)
+enum numberMode { DEC, HEX };
+#define GOODBYE (-200)
+#define REBOOT  (-400)
 
 // initialization functions
 int printSocketReadError();
 void init_detector();
 int decode_function(int);
-const char* getRetName();
-const char* getFunctionName(enum detFuncs func);
+const char *getRetName();
+const char *getFunctionName(enum detFuncs func);
 void function_table();
 void functionNotImplemented();
-void modeNotImplemented(char* modename, int mode);
-void validate(int arg, int retval, char* modename, enum numberMode nummode);
-void validate64(int64_t arg, int64_t retval, char* modename, enum numberMode nummode);
-int executeCommand(char* command, char* result, enum TLogLevel level);
+void modeNotImplemented(char *modename, int mode);
+void validate(int arg, int retval, char *modename, enum numberMode nummode);
+void validate64(int64_t arg, int64_t retval, char *modename,
+                enum numberMode nummode);
+int executeCommand(char *command, char *result, enum TLogLevel level);
 int M_nofunc(int);
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
 void rebootNiosControllerAndFPGA();
@@ -217,4 +218,3 @@ int set_timing_source(int);
 int get_num_channels(int);
 int update_rate_correction(int);
 int get_receiver_parameters(int);
-

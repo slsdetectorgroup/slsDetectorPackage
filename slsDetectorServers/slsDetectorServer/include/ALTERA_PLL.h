@@ -15,7 +15,9 @@
  * @param wd2msk write parameter mask for pll for dbit clock (Jungfrau only)
  * @param clk2Index clkIndex of second pll (Jungfrau only)
  */
-void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk, uint32_t wpmsk, uint32_t prmsk, uint32_t amsk, int aofst, uint32_t wd2msk, int clk2Index);
+void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
+                           uint32_t wpmsk, uint32_t prmsk, uint32_t amsk,
+                           int aofst, uint32_t wd2msk, int clk2Index);
 #else
 /**
  * Set Defines
@@ -27,26 +29,30 @@ void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk, uint32
  * @param amsk address mask
  * @param aofst address offset
  */
-void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk, uint32_t wpmsk, uint32_t prmsk, uint32_t amsk, int aofst);
+void ALTERA_PLL_SetDefines(uint32_t creg, uint32_t preg, uint32_t rprmsk,
+                           uint32_t wpmsk, uint32_t prmsk, uint32_t amsk,
+                           int aofst);
 #endif
 
 /**
  * Reset only PLL
  */
-void ALTERA_PLL_ResetPLL ();
+void ALTERA_PLL_ResetPLL();
 
 /**
  * Reset PLL Reconfiguration and PLL
  */
-void ALTERA_PLL_ResetPLLAndReconfiguration ();
+void ALTERA_PLL_ResetPLLAndReconfiguration();
 
 /**
  * Set PLL Reconfig register
  * @param reg register
  * @param val value
- * @param useDefaultWRMask only jungfrau for dbit clk (clkindex1, use second WR mask)
+ * @param useDefaultWRMask only jungfrau for dbit clk (clkindex1, use second WR
+ * mask)
  */
-void ALTERA_PLL_SetPllReconfigReg(uint32_t reg, uint32_t val, int useSecondWRMask);
+void ALTERA_PLL_SetPllReconfigReg(uint32_t reg, uint32_t val,
+                                  int useSecondWRMask);
 
 /**
  * Write Phase Shift
@@ -67,5 +73,4 @@ void ALTERA_PLL_SetModePolling();
  * @param value frequency to set to
  * @param frequency set
  */
-int ALTERA_PLL_SetOuputFrequency (int clkIndex, int pllVCOFreqMhz, int value);
-
+int ALTERA_PLL_SetOuputFrequency(int clkIndex, int pllVCOFreqMhz, int value);

@@ -11,7 +11,8 @@ int getUdPSocketDescriptor(int index);
  * @param ip udp destination ip
  * @param port udp destination port
  */
-int setUDPDestinationDetails(int index, const char* ip, unsigned short int port);
+int setUDPDestinationDetails(int index, const char *ip,
+                             unsigned short int port);
 
 /**
  * Create udp socket
@@ -25,7 +26,7 @@ int createUDPSocket(int index);
  * @param buf pointer to memory to write
  * @param length length of buffer to write to socket
  */
-int sendUDPPacket(int index, const char* buf, int length);
+int sendUDPPacket(int index, const char *buf, int length);
 
 /**
  * Close udp socket

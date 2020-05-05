@@ -14,7 +14,10 @@
  * @param vcofreq0 vco frequency of pll 0
  * @param vcofreq1 vco frequency of pll 1
  */
-void ALTERA_PLL_C10_SetDefines(int regofst, uint32_t baseaddr0, uint32_t baseaddr1, uint32_t resetreg0, uint32_t resetreg1, uint32_t resetmsk0, uint32_t resetmsk1, int vcofreq0, int vcofreq1);
+void ALTERA_PLL_C10_SetDefines(int regofst, uint32_t baseaddr0,
+                               uint32_t baseaddr1, uint32_t resetreg0,
+                               uint32_t resetreg1, uint32_t resetmsk0,
+                               uint32_t resetmsk1, int vcofreq0, int vcofreq1);
 
 /**
  * Get Max Clock Divider
@@ -35,7 +38,7 @@ int ALTERA_PLL_C10_GetVCOFrequency(int pllIndex);
 int ALTERA_PLL_C10_GetMaxPhaseShiftStepsofVCO();
 
 /**
- * Start reconfiguration 
+ * Start reconfiguration
  * @param pllIndex pll index
  */
 void ALTERA_PLL_C10_Reconfigure(int pllIndex);
@@ -44,7 +47,7 @@ void ALTERA_PLL_C10_Reconfigure(int pllIndex);
  * Reset pll
  * @param pllIndex pll index
  */
-void ALTERA_PLL_C10_ResetPLL (int pllIndex);
+void ALTERA_PLL_C10_ResetPLL(int pllIndex);
 
 /**
  * Set Phase Shift
@@ -53,7 +56,8 @@ void ALTERA_PLL_C10_ResetPLL (int pllIndex);
  * @param phase phase shift
  * @param pos 1 if up down direction of shift is positive, else 0
  */
-void ALTERA_PLL_C10_SetPhaseShift(int pllIndex, int clkIndex, int phase, int pos);
+void ALTERA_PLL_C10_SetPhaseShift(int pllIndex, int clkIndex, int phase,
+                                  int pos);
 
 /**
  * Calculate and write output frequency
@@ -61,5 +65,4 @@ void ALTERA_PLL_C10_SetPhaseShift(int pllIndex, int clkIndex, int phase, int pos
  * @param clkIndex clock index
  * @param value clock divider to set to
  */
-void ALTERA_PLL_C10_SetOuputClockDivider (int pllIndex, int clkIndex, int value);
-
+void ALTERA_PLL_C10_SetOuputClockDivider(int pllIndex, int clkIndex, int value);

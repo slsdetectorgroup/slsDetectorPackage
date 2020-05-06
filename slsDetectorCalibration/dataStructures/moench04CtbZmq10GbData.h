@@ -156,7 +156,7 @@ class moench04CtbZmq10GbData : public slsDetectorData<uint16_t> {
     if (dSamples>isample) {
       ptr=data+32*(isample+1)+8*isample;
       sample=*((uint64_t*)ptr);
-    cout << isc << " " << ibit[isc] << " " << isample << hex << sample << dec << endl;
+      // cout << isc << " " << ibit[isc] << " " << isample << hex << sample << dec << endl;
     if (sample & (1<<ibit[isc]))
       return 1;
     else

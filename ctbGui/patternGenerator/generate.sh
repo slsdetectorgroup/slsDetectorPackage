@@ -21,6 +21,7 @@ if [ -f "$infile" ]
 then
 gcc -DINFILE="\"$infile\"" -DOUTFILE="\"$outfile\""  -DOUTFILEBIN="\"$outfilebin\"" -o $exe generator.c ; 
 echo compiling
+echo gcc -DINFILE="\"$infile\"" -DOUTFILE="\"$outfile\""  -DOUTFILEBIN="\"$outfilebin\"" -o $exe generator.c ; 
 $exe ; 
 echo cleaning
 rm $exe

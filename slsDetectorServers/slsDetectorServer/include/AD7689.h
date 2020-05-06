@@ -11,7 +11,8 @@
  * @param dmsk digital output mask
  * @param dofst digital output offset
  */
-void AD7689_SetDefines(uint32_t reg, uint32_t roreg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst);
+void AD7689_SetDefines(uint32_t reg, uint32_t roreg, uint32_t cmsk,
+                       uint32_t clkmsk, uint32_t dmsk, int dofst);
 
 /**
  * Disable SPI

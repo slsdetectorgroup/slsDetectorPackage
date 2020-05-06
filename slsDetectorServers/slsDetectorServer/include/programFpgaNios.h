@@ -1,14 +1,15 @@
 #pragma once
 
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define NIOS_MAX_APP_IMAGE_SIZE (0x00580000)
 
 /** Notify microcontroller of successful server start up */
 void NotifyServerStartSuccess();
 
-/** create notification file to notify watchdog of critical tasks (to not shutdown) */
+/** create notification file to notify watchdog of critical tasks (to not
+ * shutdown) */
 void CreateNotificationForCriticalTasks();
 
 /** write 1 to notification file to postpone shut down process if requested*/
@@ -23,8 +24,8 @@ void rebootControllerAndFPGA();
 /** finds the right mtd drive
  * @param mess error message
  * @returns ok or fail
-*/
-int findFlash(char* mess);
+ */
+int findFlash(char *mess);
 
 /** erase flash */
 void eraseFlash();
@@ -35,7 +36,7 @@ void eraseFlash();
  * @param fsize file size
  * @returns ok or fail
  */
-int eraseAndWriteToFlash(char* mess, char* fpgasrc, uint64_t fsize);
+int eraseAndWriteToFlash(char *mess, char *fpgasrc, uint64_t fsize);
 
 /**
  * Write FPGA Program to flash
@@ -45,4 +46,4 @@ int eraseAndWriteToFlash(char* mess, char* fpgasrc, uint64_t fsize);
  * @param filefp pointer to flash
  * @return ok or fail
  */
-int writeFPGAProgram(char* mess, char* fpgasrc, uint64_t fsize, FILE* filefp);
+int writeFPGAProgram(char *mess, char *fpgasrc, uint64_t fsize, FILE *filefp);

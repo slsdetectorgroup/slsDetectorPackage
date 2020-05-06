@@ -490,7 +490,7 @@ int *getClusters(char *data,  int *ph=NULL) {
       	  //  (clusters+nph)->ped=getPedestal(ix,iy,0);
 	  for (ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
 	    for (ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
-	      if ((iy+ir)>=iy && (iy+ir)<ny && (ix+ic)>=ix && (ix+ic)<nx) 
+	      if ((iy+ir)>=0  && (iy+ir)<ny &&  (ix+ic)>=0 && (ix+ic)<nx) 
 		(clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
 	    }
       }

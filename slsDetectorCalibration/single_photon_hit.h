@@ -36,19 +36,17 @@ class single_photon_hit {
       \param myFile file descriptor
   */
   size_t write(FILE *myFile) {
-    //fwrite((void*)this, 1, 3*sizeof(int)+4*sizeof(double)+sizeof(quad), myFile); 
-    
-    // if (fwrite((void*)this, 1, sizeof(int)+2*sizeof(int16_t), myFile))
+    //fwrite((void*)this, 1, 3*sizeof(int)+4*sizeof(double)+sizeof(quad), myFile);  // if (fwrite((void*)this, 1, sizeof(int)+2*sizeof(int16_t), myFile))
 #ifdef OLDFORMAT 
     if (fwrite((void*)&iframe, 1,  sizeof(int), myFile)) {};
 #endif  
 #ifndef WRITE_QUAD
       //printf("no quad ");
-    //if (fwrite((void*)&x, 2,  sizeof(int16_t), myFile)) 
-      return fwrite((void*)&x, 1, dx*dy*sizeof(int)+2*sizeof(int16_t), myFile);
+    if (fwrite((void*)&x, sizeof(int16_t), 2, myFile)) 
+      return fwrite((void*)data, sizeof(int), dx*dy, myFile);
 #endif 
 #ifdef WRITE_QUAD
-    // printf("quad ");
+    //  printf("quad ");
     int qq[4];
     switch(quad) {
     case TOP_LEFT:
@@ -91,8 +89,8 @@ class single_photon_hit {
     default:
       ;
     }
-     if (fwrite((void*)&x, 2,  sizeof(int16_t), myFile)) 
-      return fwrite((void*)qq, 1, 4*sizeof(int), myFile);
+     if (fwrite((void*)&x,   sizeof(int16_t), 2, myFile)) 
+      return fwrite((void*)qq, sizeof(int), 4, myFile);
 #endif
     return 0;
   };   
@@ -109,14 +107,14 @@ class single_photon_hit {
 #endif   
 #ifndef WRITE_QUAD
       // printf( "no quad \n");
-    if (fread((void*)&x, 2,  sizeof(int16_t), myFile))  
-      return fread((void*)data, 1, dx*dy*sizeof(int), myFile);
+    if (fread((void*)&x,  sizeof(int16_t),2, myFile))  
+      return fread((void*)data, sizeof(int), dx*dy,myFile);
 #endif 
 #ifdef WRITE_QUAD
     int qq[4];
-    // printf( "quad \n");
-    if (fread((void*)&x, 2,  sizeof(int16_t), myFile))  
-      if (fread((void*)qq, 1, 4*sizeof(int), myFile)) {
+    printf( "quad \n");
+    if (fread((void*)&x, sizeof(int16_t), 2,  myFile))  
+      if (fread((void*)qq, sizeof(int), 4, myFile)) {
 
 	quad=TOP_RIGHT;
 	/*	int mm=qq[0]; */
@@ -216,7 +214,6 @@ class single_photon_hit {
     for (int iy=0; iy<dy; iy++) {
       for (int ix=0; ix<dx; ix++) {
 	printf("%d \t",data[ix+iy*dx]);
-
       }
     printf("\n");
     }

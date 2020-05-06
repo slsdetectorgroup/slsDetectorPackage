@@ -10,7 +10,8 @@
  * @param dmsk digital output mask
  * @param dofst digital output offset
  */
-void AD9252_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk, uint32_t dmsk, int dofst);
+void AD9252_SetDefines(uint32_t reg, uint32_t cmsk, uint32_t clkmsk,
+                       uint32_t dmsk, int dofst);
 
 /**
  * Disable SPI

@@ -4,7 +4,8 @@
 
 /**
  * Configure the I2C core and Enable core
- * @param rOhm shunt resister value in Ohms (defined in slsDetectorServer_defs.h)
+ * @param rOhm shunt resister value in Ohms (defined in
+ * slsDetectorServer_defs.h)
  * @param creg control register (defined in RegisterDefs.h)
  * @param sreg status register (defined in RegisterDefs.h)
  * @param rreg rx data fifo register (defined in RegisterDefs.h)
@@ -15,8 +16,8 @@
  * @param treg transfer command fifo register (defined in RegisterDefs.h)
  */
 void INA226_ConfigureI2CCore(double rOhm, uint32_t creg, uint32_t sreg,
-        uint32_t rreg, uint32_t rlvlreg,
-        uint32_t slreg, uint32_t shreg, uint32_t sdreg, uint32_t treg);
+                             uint32_t rreg, uint32_t rlvlreg, uint32_t slreg,
+                             uint32_t shreg, uint32_t sdreg, uint32_t treg);
 
 /**
  * Calibrate resolution of current register

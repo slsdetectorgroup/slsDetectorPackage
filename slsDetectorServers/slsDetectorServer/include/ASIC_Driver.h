@@ -6,7 +6,7 @@
  * Set Defines
  * @param driverfname driver file name
  */
-void ASIC_Driver_SetDefines(char* driverfname);
+void ASIC_Driver_SetDefines(char *driverfname);
 
 /**
  * Set value
@@ -15,4 +15,4 @@ void ASIC_Driver_SetDefines(char* driverfname);
  * @param buffer buffer
  * @return OK or FAIL
  */
-int ASIC_Driver_Set(int index, int length, char* buffer);
+int ASIC_Driver_Set(int index, int length, char *buffer);

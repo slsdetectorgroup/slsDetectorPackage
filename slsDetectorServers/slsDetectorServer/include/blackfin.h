@@ -1,10 +1,10 @@
 #pragma once
 
-#include <sys/types.h>
 #include <inttypes.h>
+#include <sys/types.h>
 
 /** I2C defines */
-#define I2C_CLOCK_MHZ   (131.25)
+#define I2C_CLOCK_MHZ (131.25)
 
 /**
  * Write into a 16 bit register
@@ -98,7 +98,7 @@ u_int32_t writeRegister16(u_int32_t offset, u_int32_t data);
 /**
  * Get base address for memory copy
  */
-uint32_t* Blackfin_getBaseAddress();
+uint32_t *Blackfin_getBaseAddress();
 /**
  * Map FPGA
  */

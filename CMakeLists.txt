@@ -50,7 +50,6 @@ option(SLS_TUNE_LOCAL "tune to local machine" OFF)
 set(ClangFormat_EXCLUDE_PATTERNS  "build/" 
                                     "libs/" 
                                     "slsDetectorCalibration/" 
-                                    "slsDetectorServers/" 
                                     "ctbGui/" 
                                     "manual/"
                                     "python/"

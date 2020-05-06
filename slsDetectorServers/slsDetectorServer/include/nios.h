@@ -1,7 +1,7 @@
 #pragma once
 
-#include <sys/types.h>
 #include <inttypes.h>
+#include <sys/types.h>
 
 /**
  * Write into a 32 bit register for cspbase 1
@@ -86,4 +86,4 @@ int mapCSP0(void);
 /**
  * Get Nios base address
  */
-u_int32_t* Nios_getBaseAddress();
+u_int32_t *Nios_getBaseAddress();

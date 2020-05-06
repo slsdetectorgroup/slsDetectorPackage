@@ -4,12 +4,11 @@
 
 /**
  * Set Defines
- * @param hardMaxV maximum hardware limit 
+ * @param hardMaxV maximum hardware limit
  * @param driverfname driver file name
  * @param numdacs number of dacs
  */
-void LTC2620_D_SetDefines(int hardMaxV, char* driverfname, int numdacs);
-
+void LTC2620_D_SetDefines(int hardMaxV, char *driverfname, int numdacs);
 
 /**
  * Get max number of steps
@@ -22,7 +21,7 @@ int LTC2620_D_GetMaxNumSteps();
  * @param dacval pointer to value converted to dac units
  * @returns FAIL when voltage outside limits, OK if conversion successful
  */
-int LTC2620_D_VoltageToDac(int voltage, int* dacval);
+int LTC2620_D_VoltageToDac(int voltage, int *dacval);
 
 /**
  * Convert dac units to voltage
@@ -30,7 +29,7 @@ int LTC2620_D_VoltageToDac(int voltage, int* dacval);
  * @param voltage pointer to value converted to mV
  * @returns FAIL when voltage outside limits, OK if conversion successful
  */
-int LTC2620_D_DacToVoltage(int dacval, int* voltage);
+int LTC2620_D_DacToVoltage(int dacval, int *voltage);
 
 /**
  * Set value
@@ -41,4 +40,5 @@ int LTC2620_D_DacToVoltage(int dacval, int* voltage);
  * @param dacval pointer to dac value
  * @return OK or FAIL
  */
-int LTC2620_D_SetDACValue(int dacnum, int val, int mV, char* dacname, int *dacval);
+int LTC2620_D_SetDACValue(int dacnum, int val, int mV, char *dacname,
+                          int *dacval);

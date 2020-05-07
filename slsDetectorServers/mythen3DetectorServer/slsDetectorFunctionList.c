@@ -625,6 +625,17 @@ int setTrimbits(int *trimbits) {
         // chip select
         patword = SetBit(SIGNAL_TBLoad_1 + ichip, patword);
         writePatternWord(iaddr++, patword);
+
+        // reset trimbits
+        patword = SetBit(SIGNAL_resStorage, patword);
+        patword = SetBit(SIGNAL_resCounter, patword);
+        writePatternWord(iaddr++, patword);
+        writePatternWord(iaddr++, patword);
+        patword = ClearBit(SIGNAL_resStorage, patword);
+        patword = ClearBit(SIGNAL_resCounter, patword);
+        writePatternWord(iaddr++, patword);
+        writePatternWord(iaddr++, patword);
+
         // select first channel
         patword = SetBit(SIGNAL_CHSserialIN, patword);
         writePatternWord(iaddr++, patword);
@@ -642,6 +653,7 @@ int setTrimbits(int *trimbits) {
             patword = ClearBit(SIGNAL_CHSclk, patword);
             writePatternWord(iaddr++, patword);
         }
+
         // for each channel (all chips)
         for (int ich = 0; ich < NCHAN_1_COUNTER; ich++) {
             // LOG(logINFOBLUE, (" Chip %d, Channel %d\n", ichip, ich));
@@ -662,6 +674,7 @@ int setTrimbits(int *trimbits) {
                 patword = SetBit(SIGNAL_clk, patword);
                 writePatternWord(iaddr++, patword);
             }
+
             // deserialize
             for (int i = 0; i < 18; i++) {
                 if (val & (1 << i)) {

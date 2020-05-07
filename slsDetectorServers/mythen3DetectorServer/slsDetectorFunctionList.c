@@ -594,9 +594,9 @@ int getModule(sls_detector_module *myMod) {
     return OK;
 }
 
-int SetBit(int ibit, int patword) { return patword |= (1 << ibit); }
+int setBit(int ibit, int patword) { return patword |= (1 << ibit); }
 
-int ClearBit(int ibit, int patword) { return patword &= ~(1 << ibit); }
+int clearBit(int ibit, int patword) { return patword &= ~(1 << ibit); }
 
 int setTrimbits(int *trimbits) {
     LOG(logINFOBLUE, ("Setting trimbits\n"));
@@ -623,34 +623,34 @@ int setTrimbits(int *trimbits) {
         writePatternWord(iaddr++, patword);
 
         // chip select
-        patword = SetBit(SIGNAL_TBLoad_1 + ichip, patword);
+        patword = setBit(SIGNAL_TBLoad_1 + ichip, patword);
         writePatternWord(iaddr++, patword);
 
         // reset trimbits
-        patword = SetBit(SIGNAL_resStorage, patword);
-        patword = SetBit(SIGNAL_resCounter, patword);
+        patword = setBit(SIGNAL_resStorage, patword);
+        patword = setBit(SIGNAL_resCounter, patword);
         writePatternWord(iaddr++, patword);
         writePatternWord(iaddr++, patword);
-        patword = ClearBit(SIGNAL_resStorage, patword);
-        patword = ClearBit(SIGNAL_resCounter, patword);
+        patword = clearBit(SIGNAL_resStorage, patword);
+        patword = clearBit(SIGNAL_resCounter, patword);
         writePatternWord(iaddr++, patword);
         writePatternWord(iaddr++, patword);
 
         // select first channel
-        patword = SetBit(SIGNAL_CHSserialIN, patword);
+        patword = setBit(SIGNAL_CHSserialIN, patword);
         writePatternWord(iaddr++, patword);
         // 1 clk pulse
-        patword = SetBit(SIGNAL_CHSclk, patword);
+        patword = setBit(SIGNAL_CHSclk, patword);
         writePatternWord(iaddr++, patword);
-        patword = ClearBit(SIGNAL_CHSclk, patword);
+        patword = clearBit(SIGNAL_CHSclk, patword);
         // clear 1st channel
         writePatternWord(iaddr++, patword);
-        patword = ClearBit(SIGNAL_CHSserialIN, patword);
+        patword = clearBit(SIGNAL_CHSserialIN, patword);
         // 2 clk pulses
         for (int i = 0; i < 2; i++) {
-            patword = SetBit(SIGNAL_CHSclk, patword);
+            patword = setBit(SIGNAL_CHSclk, patword);
             writePatternWord(iaddr++, patword);
-            patword = ClearBit(SIGNAL_CHSclk, patword);
+            patword = clearBit(SIGNAL_CHSclk, patword);
             writePatternWord(iaddr++, patword);
         }
 
@@ -668,24 +668,24 @@ int setTrimbits(int *trimbits) {
 
             // push 6 0 bits
             for (int i = 0; i < 6; i++) {
-                patword = ClearBit(SIGNAL_serialIN, patword);
-                patword = ClearBit(SIGNAL_clk, patword);
+                patword = clearBit(SIGNAL_serialIN, patword);
+                patword = clearBit(SIGNAL_clk, patword);
                 writePatternWord(iaddr++, patword);
-                patword = SetBit(SIGNAL_clk, patword);
+                patword = setBit(SIGNAL_clk, patword);
                 writePatternWord(iaddr++, patword);
             }
 
             // deserialize
             for (int i = 0; i < 18; i++) {
                 if (val & (1 << i)) {
-                    patword = SetBit(SIGNAL_serialIN, patword);
+                    patword = setBit(SIGNAL_serialIN, patword);
                 } else {
-                    patword = ClearBit(SIGNAL_serialIN, patword);
+                    patword = clearBit(SIGNAL_serialIN, patword);
                 }
-                patword = ClearBit(SIGNAL_clk, patword);
+                patword = clearBit(SIGNAL_clk, patword);
                 writePatternWord(iaddr++, patword);
 
-                patword = SetBit(SIGNAL_clk, patword);
+                patword = setBit(SIGNAL_clk, patword);
                 writePatternWord(iaddr++, patword);
             }
             writePatternWord(iaddr++, patword);
@@ -693,14 +693,14 @@ int setTrimbits(int *trimbits) {
 
             // move to next channel
             for (int i = 0; i < 3; i++) {
-                patword = SetBit(SIGNAL_CHSclk, patword);
+                patword = setBit(SIGNAL_CHSclk, patword);
                 writePatternWord(iaddr++, patword);
-                patword = ClearBit(SIGNAL_CHSclk, patword);
+                patword = clearBit(SIGNAL_CHSclk, patword);
                 writePatternWord(iaddr++, patword);
             }
         }
         // chip unselect
-        patword = ClearBit(SIGNAL_TBLoad_1 + ichip, patword);
+        patword = clearBit(SIGNAL_TBLoad_1 + ichip, patword);
         writePatternWord(iaddr++, patword);
 
         // last iaddr check

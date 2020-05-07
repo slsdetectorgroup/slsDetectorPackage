@@ -258,8 +258,8 @@ int getModule(sls_detector_module *myMod);
 #endif
 #ifdef MYTHEN3D
 int setTrimbits(int *trimbits);
-int SetBit(int ibit, int patword);
-int ClearBit(int ibit, int patword);
+int setBit(int ibit, int patword);
+int clearBit(int ibit, int patword);
 int setAllTrimbits(int val);
 int getAllTrimbits();
 #endif

@@ -742,17 +742,21 @@ int setTrimbits(int *trimbits) {
 }
 
 int setAllTrimbits(int val) {
-    int trimbits[NCHAN];
+    int *trimbits = malloc(sizeof(int) * NCHAN);
     int ichan = 0;
     for (ichan = 0; ichan < NCHAN; ++ichan) {
         trimbits[ichan] = val;
     }
     if (setTrimbits(trimbits) == FAIL) {
         LOG(logERROR, ("Could not set all trimbits to %d\n", val));
+        free(trimbits);
         return FAIL;
     }
-
+    // setSettings(UNDEFINED);
+    // LOG(logERROR, ("Settings has been changed to undefined (random "
+    //               "trim file)\n"));
     LOG(logINFO, ("All trimbits have been set to %d\n", val));
+    free(trimbits);
     return OK;
 }
 

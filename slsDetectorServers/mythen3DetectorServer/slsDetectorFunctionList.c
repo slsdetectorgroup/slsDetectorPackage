@@ -43,7 +43,7 @@ sls_detector_module *detectorModules = NULL;
 int *detectorChans = NULL;
 int *detectorDacs = NULL;
 
-int trimming = 0;
+enum TLogLevel trimmingPrint = logINFO;
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
 
@@ -389,7 +389,7 @@ void setupDetector() {
     clkDivider[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
 
     highvoltage = 0;
-    trimming = 0;
+    trimmingPrint = logINFO;
     {
         int i;
         for (i = 0; i < NUM_CLOCKS; ++i) {
@@ -611,7 +611,7 @@ int setTrimbits(int *trimbits) {
         }
     }
     LOG(logINFO, ("Trimbits validated\n"));
-    trimming = 1;
+    trimmingPrint = logDEBUG5;
 
     uint64_t patword = 0;
     int iaddr = 0;
@@ -707,7 +707,7 @@ int setTrimbits(int *trimbits) {
         if (iaddr >= MAX_PATTERN_LENGTH) {
             LOG(logERROR, ("Addr 0x%x is past max_address_length 0x%x!\n",
                            iaddr, MAX_PATTERN_LENGTH));
-            trimming = 0;
+            trimmingPrint = logINFO;
             return FAIL;
         }
 
@@ -737,7 +737,7 @@ int setTrimbits(int *trimbits) {
     for (ichan = 0; ichan < NCHAN; ++ichan) {
         detectorChans[ichan] = trimbits[ichan];
     }
-    trimming = 0;
+    trimmingPrint = logINFO;
     return OK;
 }
 
@@ -1203,7 +1203,7 @@ uint64_t readPatternWord(int addr) {
         return -1;
     }
 
-    LOG(logINFO, ("  Reading Pattern Word (addr:0x%x)\n", addr));
+    LOG(trimmingPrint, ("  Reading Pattern Word (addr:0x%x)\n", addr));
     uint32_t reg_lsb =
         PATTERN_STEP0_LSB_REG +
         addr * REG_OFFSET * 2; // the first word in RAM as base plus the offset
@@ -1220,21 +1220,19 @@ uint64_t readPatternWord(int addr) {
 
 uint64_t writePatternWord(int addr, uint64_t word) {
 
-    if (!trimming) {
-        // get
-        if ((int64_t)word == -1)
-            return readPatternWord(addr);
+    // get
+    if ((int64_t)word == -1)
+        return readPatternWord(addr);
 
-        // error (handled in tcp)
-        if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
-            LOG(logERROR, ("Cannot set Pattern - Word. Invalid addr 0x%x. "
-                           "Should be between 0 and 0x%x\n",
-                           addr, MAX_PATTERN_LENGTH));
-            return -1;
-        }
-        LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n", addr,
-                      (long long int)word));
+    // error (handled in tcp)
+    if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
+        LOG(logERROR, ("Cannot set Pattern - Word. Invalid addr 0x%x. "
+                       "Should be between 0 and 0x%x\n",
+                       addr, MAX_PATTERN_LENGTH));
+        return -1;
     }
+    LOG(trimmingPrint, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n", addr,
+                        (long long int)word));
 
     // write word
     uint32_t reg_lsb =
@@ -1244,25 +1242,18 @@ uint64_t writePatternWord(int addr, uint64_t word) {
     uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr * REG_OFFSET * 2;
     set64BitReg(word, reg_lsb, reg_msb);
 
-    if (!trimming) {
-        LOG(logDEBUG1, ("  Wrote word. PatternIn Reg: 0x%llx\n",
-                        get64BitReg(reg_lsb, reg_msb)));
-        return readPatternWord(addr);
-    } else {
-        return word;
-    }
+    LOG(logDEBUG1, ("  Wrote word. PatternIn Reg: 0x%llx\n",
+                    get64BitReg(reg_lsb, reg_msb)));
+    return readPatternWord(addr);
 }
 
 int setPatternWaitAddress(int level, int addr) {
-    if (!trimming) {
-        // error (handled in tcp)
-        if (addr >= MAX_PATTERN_LENGTH) {
-            LOG(logERROR,
-                ("Cannot set Pattern Wait Address. Invalid addr 0x%x. "
-                 "Should be between 0 and 0x%x\n",
-                 addr, MAX_PATTERN_LENGTH));
-            return -1;
-        }
+    // error (handled in tcp)
+    if (addr >= MAX_PATTERN_LENGTH) {
+        LOG(logERROR, ("Cannot set Pattern Wait Address. Invalid addr 0x%x. "
+                       "Should be between 0 and 0x%x\n",
+                       addr, MAX_PATTERN_LENGTH));
+        return -1;
     }
 
     uint32_t reg = 0;
@@ -1294,23 +1285,17 @@ int setPatternWaitAddress(int level, int addr) {
 
     // set
     if (addr >= 0) {
-        if (!trimming) {
-            LOG(logINFO,
-                ("Setting Pattern Wait Address (level:%d, addr:0x%x)\n", level,
-                 addr));
-        }
+        LOG(trimmingPrint,
+            ("Setting Pattern Wait Address (level:%d, addr:0x%x)\n", level,
+             addr));
         bus_w(reg, ((addr << offset) & mask));
     }
 
     // get
-    if (!trimming) {
-        uint32_t regval = ((bus_r(reg) & mask) >> offset);
-        LOG(logDEBUG1,
-            ("  Wait Address retval (level:%d, addr:0x%x)\n", level, regval));
-        return regval;
-    } else {
-        return 0;
-    }
+    uint32_t regval = ((bus_r(reg) & mask) >> offset);
+    LOG(logDEBUG1,
+        ("  Wait Address retval (level:%d, addr:0x%x)\n", level, regval));
+    return regval;
 }
 
 uint64_t setPatternWaitTime(int level, uint64_t t) {
@@ -1339,8 +1324,8 @@ uint64_t setPatternWaitTime(int level, uint64_t t) {
 
     // set
     if ((int64_t)t >= 0) {
-        LOG(logINFO, ("Setting Pattern Wait Time (level:%d, t:%lld)\n", level,
-                      (long long int)t));
+        LOG(trimmingPrint, ("Setting Pattern Wait Time (level:%d, t:%lld)\n",
+                            level, (long long int)t));
         set64BitReg(t, regl, regm);
     }
 
@@ -1353,19 +1338,16 @@ uint64_t setPatternWaitTime(int level, uint64_t t) {
 
 void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
 
-    if (!trimming) {
-        // (checked at tcp)
-        if (*startAddr >= MAX_PATTERN_LENGTH ||
-            *stopAddr >= MAX_PATTERN_LENGTH) {
-            LOG(logERROR, ("Cannot set Pattern Loop, Address (startaddr:0x%x, "
-                           "stopaddr:0x%x) must be "
-                           "less than 0x%x\n",
-                           *startAddr, *stopAddr, MAX_PATTERN_LENGTH));
-            *startAddr = -1;
-            *stopAddr = -1;
-            *nLoop = -1;
-            return;
-        }
+    // (checked at tcp)
+    if (*startAddr >= MAX_PATTERN_LENGTH || *stopAddr >= MAX_PATTERN_LENGTH) {
+        LOG(logERROR, ("Cannot set Pattern Loop, Address (startaddr:0x%x, "
+                       "stopaddr:0x%x) must be "
+                       "less than 0x%x\n",
+                       *startAddr, *stopAddr, MAX_PATTERN_LENGTH));
+        *startAddr = -1;
+        *stopAddr = -1;
+        *nLoop = -1;
+        return;
     }
 
     uint32_t addr = 0;
@@ -1423,10 +1405,8 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
     if (level >= 0) {
         // set iteration
         if (*nLoop >= 0) {
-            if (!trimming) {
-                LOG(logINFO, ("Setting Pattern Loop (level:%d, nLoop:%d)\n",
-                              level, *nLoop));
-            }
+            LOG(trimmingPrint,
+                ("Setting Pattern Loop (level:%d, nLoop:%d)\n", level, *nLoop));
             bus_w(nLoopReg, *nLoop);
         }
         *nLoop = bus_r(nLoopReg);
@@ -1435,11 +1415,9 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
     // set
     if (*startAddr >= 0 && *stopAddr >= 0) {
         // writing start and stop addr
-        if (!trimming) {
-            LOG(logINFO, ("Setting Pattern Loop (level:%d, startaddr:0x%x, "
-                          "stopaddr:0x%x)\n",
-                          level, *startAddr, *stopAddr));
-        }
+        LOG(trimmingPrint, ("Setting Pattern Loop (level:%d, startaddr:0x%x, "
+                            "stopaddr:0x%x)\n",
+                            level, *startAddr, *stopAddr));
         bus_w(addr, ((*startAddr << startOffset) & startMask) |
                         ((*stopAddr << stopOffset) & stopMask));
     }

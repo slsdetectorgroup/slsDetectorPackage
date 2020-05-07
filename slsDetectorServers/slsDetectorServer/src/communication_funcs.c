@@ -456,7 +456,7 @@ int sendModule(int file_des, sls_detector_module *myMod) {
     }
     ts += n;
     // channels
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
     n = sendData(file_des, myMod->chanregs, sizeof(int) * (myMod->nchan),
                  INT32);
     if (!n) {
@@ -473,7 +473,7 @@ int receiveModule(int file_des, sls_detector_module *myMod) {
     LOG(level, ("Receiving Module\n"));
     int ts = 0, n = 0;
     int nDacs = myMod->ndac;
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
     int nChans = myMod->nchan; // can be zero for no trimbits
     LOG(level, ("nChans: %d\n", nChans));
 #endif
@@ -542,7 +542,7 @@ int receiveModule(int file_des, sls_detector_module *myMod) {
     ts += n;
     LOG(level, ("dacs received. %d bytes.\n", n));
     // channels
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
     if (((myMod->nchan) != 0) &&      // no trimbits
         (nChans != (myMod->nchan))) { // with trimbits
         LOG(logERROR, ("received wrong number of channels. "

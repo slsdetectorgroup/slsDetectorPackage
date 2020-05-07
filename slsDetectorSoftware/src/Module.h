@@ -318,11 +318,6 @@ class Module : public virtual slsDetectorDefs {
      */
     std::string setSettingsDir(const std::string &dir);
 
-    /**
-     * Loads the modules settings/trimbits reading from a specific file
-     * file name extension is automatically generated.
-     * @param fname specific settings/trimbits file
-     */
     void loadSettingsFile(const std::string &fname);
 
     /**
@@ -1127,12 +1122,8 @@ class Module : public virtual slsDetectorDefs {
      */
     void setFlippedDataX(bool value);
 
-    /**
-     * Sets all the trimbits to a particular value (Eiger)
-     * @param val trimbit value
-     * @returns OK or FAIL
-     */
-    int setAllTrimbits(int val);
+    int getAllTrimbits();
+    void setAllTrimbits(int val);
 
     /**
      * Sets the number of trim energies and their value  (Eiger)

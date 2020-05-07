@@ -149,6 +149,18 @@ void Detector::setSettings(const defs::detectorSettings value, Positions pos) {
     pimpl->Parallel(&Module::setSettings, pos, value);
 }
 
+void Detector::loadTrimbits(const std::string &fname, Positions pos) {
+    pimpl->Parallel(&Module::loadSettingsFile, pos, fname);
+}
+
+Result<int> Detector::getAllTrimbits(Positions pos) const {
+    return pimpl->Parallel(&Module::getAllTrimbits, pos);
+}
+
+void Detector::setAllTrimbits(int value, Positions pos) {
+    pimpl->Parallel(&Module::setAllTrimbits, pos, value);
+}
+
 // Callback
 
 void Detector::registerAcquisitionFinishedCallback(void (*func)(double, int,
@@ -942,10 +954,6 @@ void Detector::setSettingsPath(const std::string &value, Positions pos) {
     pimpl->Parallel(&Module::setSettingsDir, pos, value);
 }
 
-void Detector::loadTrimbits(const std::string &fname, Positions pos) {
-    pimpl->Parallel(&Module::loadSettingsFile, pos, fname);
-}
-
 Result<bool> Detector::getParallelMode(Positions pos) const {
     return pimpl->Parallel(&Module::getParallelMode, pos);
 }
@@ -976,14 +984,6 @@ Result<bool> Detector::getBottom(Positions pos) const {
 
 void Detector::setBottom(bool value, Positions pos) {
     pimpl->Parallel(&Module::setFlippedDataX, pos, value);
-}
-
-Result<int> Detector::getAllTrimbits(Positions pos) const {
-    return pimpl->Parallel(&Module::setAllTrimbits, pos, -1);
-}
-
-void Detector::setAllTrimbits(int value, Positions pos) {
-    pimpl->Parallel(&Module::setAllTrimbits, pos, value);
 }
 
 Result<std::vector<int>> Detector::getTrimEnergies(Positions pos) const {

@@ -593,8 +593,8 @@ typedef struct {
 
 #ifdef __cplusplus
     sls_detector_module()
-        : serialnumber(0), nchan(0), nchip(0), ndac(0), reg(0), iodelay(0),
-          tau(0), eV(0), dacs(nullptr), chanregs(nullptr) {}
+        : serialnumber(0), nchan(0), nchip(0), ndac(0), reg(-1), iodelay(0),
+          tau(0), eV(-1), dacs(nullptr), chanregs(nullptr) {}
 
     explicit sls_detector_module(slsDetectorDefs::detectorType type)
         : sls_detector_module() {

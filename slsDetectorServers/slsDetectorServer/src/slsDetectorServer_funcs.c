@@ -1721,10 +1721,8 @@ int read_register(int file_des) {
 int set_module(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    enum detectorSettings retval = -1;
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) ||        \
-    defined(GOTTHARD2D)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARD2D)
     functionNotImplemented();
 #else
 
@@ -1745,7 +1743,7 @@ int set_module(int file_des) {
     } else
         module.dacs = myDac;
 
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
     // allocate chans
     if (ret == OK) {
         myChan = (int *)malloc(getTotalNumberOfChannels() * sizeof(int));
@@ -1815,6 +1813,8 @@ int set_module(int file_des) {
         case LOWGAIN:
         case MEDIUMGAIN:
         case VERYHIGHGAIN:
+#elif MYTHEN3D
+        case GET_SETTINGS:
 #endif
             break;
         default:
@@ -1823,9 +1823,11 @@ int set_module(int file_des) {
         }
 
         ret = setModule(module, mess);
-        retval = getSettings();
+#ifndef MYTHEN3D
+        enum detectorSettings retval = getSettings();
         validate(module.reg, (int)retval, "set module (settings)", DEC);
         LOG(logDEBUG1, ("Settings: %d\n", retval));
+#endif
     }
     if (myChan != NULL)
         free(myChan);
@@ -1833,7 +1835,7 @@ int set_module(int file_des) {
         free(myDac);
 #endif
 
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_module(int file_des) {
@@ -1856,12 +1858,11 @@ int get_module(int file_des) {
     } else
         module.dacs = myDac;
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) ||        \
-    defined(GOTTHARD2D)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARD2D)
     functionNotImplemented();
 #endif
 
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
     // allocate chans
     if (ret == OK) {
         myChan = (int *)malloc(getTotalNumberOfChannels() * sizeof(int));
@@ -1882,8 +1883,7 @@ int get_module(int file_des) {
 
         // only get
         LOG(logDEBUG1, ("Getting module\n"));
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) &&     \
-    !defined(GOTTHARD2D)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
         getModule(&module);
 #endif
         LOG(logDEBUG1, ("Getting module. Settings:%d\n", module.reg));
@@ -3141,7 +3141,7 @@ int set_all_trimbits(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Set all trmbits to %d\n", arg));
 
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
 
@@ -3154,10 +3154,12 @@ int set_all_trimbits(int file_des) {
             LOG(logERROR, (mess));
         } else {
             ret = setAllTrimbits(arg);
+#ifdef EIGERD
             // changes settings to undefined
             setSettings(UNDEFINED);
             LOG(logERROR, ("Settings has been changed to undefined (change all "
                            "trimbits)\n"));
+#endif
         }
     }
     // get

@@ -545,13 +545,17 @@ int setModule(sls_detector_module myMod, char *mess) {
 
     // dacs
     for (int i = 0; i < NDAC; ++i) {
-        setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
-        if (myMod.dacs[i] != detectorDacs[i]) {
-            sprintf(mess, "Could not set module. Could not set dac %d\n", i);
-            LOG(logERROR, (mess));
-            // setSettings(UNDEFINED);
-            // LOG(logERROR, ("Settings has been changed to undefined\n"));
-            return FAIL;
+        // ignore dacs with -1
+        if (myMod.dacs[i] != -1) {
+            setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
+            if (myMod.dacs[i] != detectorDacs[i]) {
+                sprintf(mess, "Could not set module. Could not set dac %d\n",
+                        i);
+                LOG(logERROR, (mess));
+                // setSettings(UNDEFINED);
+                // LOG(logERROR, ("Settings has been changed to undefined\n"));
+                return FAIL;
+            }
         }
     }
 
@@ -604,7 +608,7 @@ int setTrimbits(int *trimbits) {
     uint64_t patword = 0;
     int iaddr = 0;
     for (int ichip = 0; ichip < NCHIP; ichip++) {
-        LOG(logINFOBLUE, (" Chip %d\n", ichip));
+        LOG(logDEBUG1, (" Chip %d\n", ichip));
         iaddr = 0;
         patword = 0;
         writePatternWord(iaddr++, patword);
@@ -643,7 +647,7 @@ int setTrimbits(int *trimbits) {
 
         // for each channel (all chips)
         for (int ich = 0; ich < NCHAN_1_COUNTER; ich++) {
-            // LOG(logINFOBLUE, (" Chip %d, Channel %d\n", ichip, ich));
+            LOG(logDEBUG1, (" Chip %d, Channel %d\n", ichip, ich));
             int val = trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
                                NCOUNTERS * ich] +
                       trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
@@ -724,6 +728,7 @@ int setTrimbits(int *trimbits) {
         detectorChans[ichan] = trimbits[ichan];
     }
     trimmingPrint = logINFO;
+    LOG(logINFO, ("All trimbits have been loaded\n"));
     return OK;
 }
 

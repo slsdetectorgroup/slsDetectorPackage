@@ -208,9 +208,8 @@ int testBus() {
     int ret = OK;
     u_int32_t addr = DTA_OFFSET_REG;
     u_int32_t times = 1000 * 1000;
-    u_int32_t i = 0;
 
-    for (i = 0; i < times; ++i) {
+    for (u_int32_t i = 0; i < times; ++i) {
         bus_w(addr, i * 100);
         if (i * 100 != bus_r(addr)) {
             LOG(logERROR,
@@ -365,14 +364,12 @@ void allocateDetectorStructureMemory() {
     // thisSettings = UNINITIALIZED;
 
     // initialize dacs
-    int idac = 0;
-    for (idac = 0; idac < (detectorModules)->ndac; ++idac) {
+    for (int idac = 0; idac < (detectorModules)->ndac; ++idac) {
         detectorDacs[idac] = 0;
     }
 
     // if trimval requested, should return -1 to acknowledge unknown
-    int ichan = 0;
-    for (ichan = 0; ichan < (detectorModules->nchan); ichan++) {
+    for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
         *((detectorModules->chanregs) + ichan) = -1;
     }
 }
@@ -390,11 +387,8 @@ void setupDetector() {
 
     highvoltage = 0;
     trimmingPrint = logINFO;
-    {
-        int i;
-        for (i = 0; i < NUM_CLOCKS; ++i) {
-            clkPhase[i] = 0;
-        }
+    for (int i = 0; i < NUM_CLOCKS; ++i) {
+        clkPhase[i] = 0;
     }
 #ifdef VIRTUAL
     virtual_status = 0;
@@ -441,9 +435,8 @@ int setDefaultDacs() {
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     {
-        int i = 0;
         const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
-        for (i = 0; i < NDAC; ++i) {
+        for (int i = 0; i < NDAC; ++i) {
             setDAC((enum DACINDEX)i, defaultvals[i], 0);
             if (detectorDacs[i] != defaultvals[i]) {
                 LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
@@ -551,18 +544,14 @@ int setModule(sls_detector_module myMod, char *mess) {
     */
 
     // dacs
-    {
-        int i = 0;
-        for (i = 0; i < NDAC; ++i) {
-            setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
-            if (myMod.dacs[i] != detectorDacs[i]) {
-                sprintf(mess, "Could not set module. Could not set dac %d\n",
-                        i);
-                LOG(logERROR, (mess));
-                // setSettings(UNDEFINED);
-                // LOG(logERROR, ("Settings has been changed to undefined\n"));
-                return FAIL;
-            }
+    for (int i = 0; i < NDAC; ++i) {
+        setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
+        if (myMod.dacs[i] != detectorDacs[i]) {
+            sprintf(mess, "Could not set module. Could not set dac %d\n", i);
+            LOG(logERROR, (mess));
+            // setSettings(UNDEFINED);
+            // LOG(logERROR, ("Settings has been changed to undefined\n"));
+            return FAIL;
         }
     }
 
@@ -602,8 +591,7 @@ int setTrimbits(int *trimbits) {
     LOG(logINFOBLUE, ("Setting trimbits\n"));
 
     // validate
-    int ichan = 0;
-    for (ichan = 0; ichan < NCHAN; ++ichan) {
+    for (int ichan = 0; ichan < NCHAN; ++ichan) {
         if (trimbits[ichan] < 0 || trimbits[ichan] > 63) {
             LOG(logERROR, ("Trimbit value (%d) for channel %d is invalid\n",
                            trimbits[ichan], ichan));
@@ -615,8 +603,7 @@ int setTrimbits(int *trimbits) {
 
     uint64_t patword = 0;
     int iaddr = 0;
-    int ichip = 0;
-    for (ichip = 0; ichip < NCHIP; ichip++) {
+    for (int ichip = 0; ichip < NCHIP; ichip++) {
         LOG(logINFOBLUE, (" Chip %d\n", ichip));
         iaddr = 0;
         patword = 0;
@@ -733,8 +720,7 @@ int setTrimbits(int *trimbits) {
     }
 
     // copy trimbits locally
-    ichan = 0;
-    for (ichan = 0; ichan < NCHAN; ++ichan) {
+    for (int ichan = 0; ichan < NCHAN; ++ichan) {
         detectorChans[ichan] = trimbits[ichan];
     }
     trimmingPrint = logINFO;
@@ -743,8 +729,7 @@ int setTrimbits(int *trimbits) {
 
 int setAllTrimbits(int val) {
     int *trimbits = malloc(sizeof(int) * NCHAN);
-    int ichan = 0;
-    for (ichan = 0; ichan < NCHAN; ++ichan) {
+    for (int ichan = 0; ichan < NCHAN; ++ichan) {
         trimbits[ichan] = val;
     }
     if (setTrimbits(trimbits) == FAIL) {
@@ -761,10 +746,9 @@ int setAllTrimbits(int val) {
 }
 
 int getAllTrimbits() {
-    int ichan = 0;
     int value = detectorChans[0];
     if (detectorModules) {
-        for (ichan = 0; ichan < NCHAN; ichan++) {
+        for (int ichan = 0; ichan < NCHAN; ichan++) {
             if (detectorChans[ichan] != value) {
                 value = -1;
                 break;
@@ -1644,13 +1628,10 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 
     // Remembering old phases in degrees
     int oldPhases[NUM_CLOCKS];
-    {
-        int i = 0;
-        for (i = 0; i < NUM_CLOCKS; ++i) {
-            oldPhases[i] = getPhase(i, 1);
-            LOG(logDEBUG1, ("\tRemembering %s clock (%d) phase: %d degrees\n",
-                            clock_names[ind], ind, oldPhases[i]));
-        }
+    for (int i = 0; i < NUM_CLOCKS; ++i) {
+        oldPhases[i] = getPhase(i, 1);
+        LOG(logDEBUG1, ("\tRemembering %s clock (%d) phase: %d degrees\n",
+                        clock_names[ind], ind, oldPhases[i]));
     }
 
     // Calculate and set output frequency
@@ -1672,16 +1653,13 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     }
 
     // set the phase in degrees (reset by pll)
-    {
-        int i = 0;
-        for (i = 0; i < NUM_CLOCKS; ++i) {
-            int currPhaseDeg = getPhase(i, 1);
-            if (oldPhases[i] != currPhaseDeg) {
-                LOG(logINFO,
-                    ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n",
-                     clock_names[i], i, currPhaseDeg, oldPhases[i]));
-                setPhase(i, oldPhases[i], 1);
-            }
+    for (int i = 0; i < NUM_CLOCKS; ++i) {
+        int currPhaseDeg = getPhase(i, 1);
+        if (oldPhases[i] != currPhaseDeg) {
+            LOG(logINFO,
+                ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n",
+                 clock_names[i], i, currPhaseDeg, oldPhases[i]));
+            setPhase(i, oldPhases[i], 1);
         }
     }
     return OK;
@@ -1754,68 +1732,58 @@ void *start_timer(void *arg) {
     // Generate data
     char imageData[imagesize];
     memset(imageData, 0, imagesize);
-    {
-        int i = 0;
-        for (i = 0; i < imagesize; i += sizeof(uint8_t)) {
-            *((uint8_t *)(imageData + i)) = i;
-        }
+    for (int i = 0; i < imagesize; i += sizeof(uint8_t)) {
+        *((uint8_t *)(imageData + i)) = i;
     }
 
     // Send data
-    {
-        int frameNr = 1;
-        // loop over number of frames
-        for (frameNr = 0; frameNr != numFrames; ++frameNr) {
+    // loop over number of frames
+    for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
 
-            // update the virtual stop from stop server
-            virtual_stop = ComVirtual_getStop();
-            // check if virtual_stop is high
-            if (virtual_stop == 1) {
-                break;
-            }
+        // update the virtual stop from stop server
+        virtual_stop = ComVirtual_getStop();
+        // check if virtual_stop is high
+        if (virtual_stop == 1) {
+            break;
+        }
 
-            // sleep for exposure time
-            struct timespec begin, end;
-            clock_gettime(CLOCK_REALTIME, &begin);
-            usleep(expUs);
+        // sleep for exposure time
+        struct timespec begin, end;
+        clock_gettime(CLOCK_REALTIME, &begin);
+        usleep(expUs);
 
-            int srcOffset = 0;
-            // loop packet
-            {
-                int i = 0;
-                for (i = 0; i != PACKETS_PER_FRAME; ++i) {
-                    char packetData[packetSize];
-                    memset(packetData, 0, packetSize);
+        int srcOffset = 0;
+        // loop packet
+        for (int i = 0; i != PACKETS_PER_FRAME; ++i) {
+            char packetData[packetSize];
+            memset(packetData, 0, packetSize);
 
-                    // set header
-                    sls_detector_header *header =
-                        (sls_detector_header *)(packetData);
-                    header->detType = (uint16_t)myDetectorType;
-                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;
-                    header->frameNumber = frameNr + 1;
-                    header->packetNumber = i;
-                    header->modId = 0;
-                    header->row = detPos[X];
-                    header->column = detPos[Y];
+            // set header
+            sls_detector_header *header = (sls_detector_header *)(packetData);
+            header->detType = (uint16_t)myDetectorType;
+            header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+            header->frameNumber = frameNr + 1;
+            header->packetNumber = i;
+            header->modId = 0;
+            header->row = detPos[X];
+            header->column = detPos[Y];
 
-                    // fill data
-                    memcpy(packetData + sizeof(sls_detector_header),
-                           imageData + srcOffset, dataSize);
-                    srcOffset += dataSize;
+            // fill data
+            memcpy(packetData + sizeof(sls_detector_header),
+                   imageData + srcOffset, dataSize);
+            srcOffset += dataSize;
 
-                    sendUDPPacket(0, packetData, packetSize);
-                }
-            }
-            LOG(logINFO, ("Sent frame: %d\n", frameNr));
-            clock_gettime(CLOCK_REALTIME, &end);
-            int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                              (end.tv_nsec - begin.tv_nsec));
+            sendUDPPacket(0, packetData, packetSize);
+        }
+        LOG(logINFO, ("Sent frame: %d\n", frameNr));
+        clock_gettime(CLOCK_REALTIME, &end);
+        int64_t timeNs =
+            ((end.tv_sec - begin.tv_sec) * 1E9 + (end.tv_nsec - begin.tv_nsec));
 
-            // sleep for (period - exptime)
-            if (frameNr < numFrames) { // if there is a next frame
-                if (periodNs > timeNs) {
-                    usleep((periodNs - timeNs) / 1000);
-                }
+        // sleep for (period - exptime)
+        if (frameNr < numFrames) { // if there is a next frame
+            if (periodNs > timeNs) {
+                usleep((periodNs - timeNs) / 1000);
             }
         }
     }
@@ -1948,10 +1916,6 @@ u_int32_t runBusy() {
 /* common */
 
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
-
-    int idac, ichan;
-    int ret = OK;
-
     LOG(logDEBUG1, ("Copying module\n"));
 
     if (srcMod->serialnumber >= 0) {
@@ -1987,18 +1951,18 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
     LOG(logDEBUG1, ("Copying register %x (%x)\n", destMod->reg, srcMod->reg));
 
     if (destMod->nchan != 0) {
-        for (ichan = 0; ichan < (srcMod->nchan); ichan++) {
+        for (int ichan = 0; ichan < (srcMod->nchan); ichan++) {
             *((destMod->chanregs) + ichan) = *((srcMod->chanregs) + ichan);
         }
     } else
         LOG(logINFO, ("Not Copying trimbits\n"));
 
-    for (idac = 0; idac < (srcMod->ndac); idac++) {
+    for (int idac = 0; idac < (srcMod->ndac); idac++) {
         if (*((srcMod->dacs) + idac) >= 0) {
             *((destMod->dacs) + idac) = *((srcMod->dacs) + idac);
         }
     }
-    return ret;
+    return OK;
 }
 
 int calculateDataBytes() {

@@ -1762,10 +1762,8 @@ int set_module(int file_des) {
         module.ndac = getNumberOfDACs();
         int ts = receiveModule(file_des, &module);
         if (ts < 0) {
-            if (myChan != NULL)
-                free(myChan);
-            if (myDac != NULL)
-                free(myDac);
+            free(myChan);
+            free(myDac);
             return printSocketReadError();
         }
         LOG(logDEBUG1, ("module register is %d, nchan %d, nchip %d, "
@@ -1829,10 +1827,8 @@ int set_module(int file_des) {
         LOG(logDEBUG1, ("Settings: %d\n", retval));
 #endif
     }
-    if (myChan != NULL)
-        free(myChan);
-    if (myDac != NULL)
-        free(myDac);
+    free(myChan);
+    free(myDac);
 #endif
 
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -1895,10 +1891,8 @@ int get_module(int file_des) {
     if (ret != FAIL) {
         ret = sendModule(file_des, &module);
     }
-    if (myChan != NULL)
-        free(myChan);
-    if (myDac != NULL)
-        free(myDac);
+    free(myChan);
+    free(myDac);
     return ret;
 }
 
@@ -3934,8 +3928,7 @@ int program_fpga(int file_des) {
             Server_SendResult(file_des, INT32, NULL, 0);
 
             // free resources
-            if (fpgasrc != NULL)
-                free(fpgasrc);
+            free(fpgasrc);
         }
 
 #else // jungfrau, ctb, moench
@@ -4009,8 +4002,7 @@ int program_fpga(int file_des) {
         stopWritingFPGAprogram(fp);
 
         // free resources
-        if (fpgasrc != NULL)
-            free(fpgasrc);
+        free(fpgasrc);
         if (fp != NULL)
             fclose(fp);
 

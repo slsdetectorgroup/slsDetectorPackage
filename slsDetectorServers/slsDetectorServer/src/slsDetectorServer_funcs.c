@@ -1734,7 +1734,7 @@ int set_module(int file_des) {
 
     // allocate to receive arguments
     // allocate dacs
-    myDac = (int *)malloc(getNumberOfDACs() * sizeof(int));
+    myDac = malloc(getNumberOfDACs() * sizeof(int));
     // error
     if (getNumberOfDACs() > 0 && myDac == NULL) {
         ret = FAIL;
@@ -1746,7 +1746,7 @@ int set_module(int file_des) {
 #if defined(EIGERD) || defined(MYTHEN3D)
     // allocate chans
     if (ret == OK) {
-        myChan = (int *)malloc(getTotalNumberOfChannels() * sizeof(int));
+        myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
         if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
             ret = FAIL;
             sprintf(mess, "Could not allocate chans\n");
@@ -1845,7 +1845,7 @@ int get_module(int file_des) {
 
     // allocate to send arguments
     // allocate dacs
-    myDac = (int *)malloc(getNumberOfDACs() * sizeof(int));
+    myDac = malloc(getNumberOfDACs() * sizeof(int));
     // error
     if (getNumberOfDACs() > 0 && myDac == NULL) {
         ret = FAIL;
@@ -1861,7 +1861,7 @@ int get_module(int file_des) {
 #if defined(EIGERD) || defined(MYTHEN3D)
     // allocate chans
     if (ret == OK) {
-        myChan = (int *)malloc(getTotalNumberOfChannels() * sizeof(int));
+        myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
         if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
             ret = FAIL;
             sprintf(mess, "Could not allocate chans\n");
@@ -3920,7 +3920,7 @@ int program_fpga(int file_des) {
 
         // receive program
         if (ret == OK) {
-            char *fpgasrc = (char *)malloc(filesize);
+            char *fpgasrc = malloc(filesize);
             if (receiveData(file_des, fpgasrc, filesize, OTHER) < 0)
                 return printSocketReadError();
 
@@ -3956,7 +3956,7 @@ int program_fpga(int file_des) {
         // erasing flash
         if (ret != FAIL) {
             eraseFlash();
-            fpgasrc = (char *)malloc(MAX_FPGAPROGRAMSIZE);
+            fpgasrc = malloc(MAX_FPGAPROGRAMSIZE);
         }
 
         // writing to flash part by part

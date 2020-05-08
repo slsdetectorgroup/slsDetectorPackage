@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stdlib.h>
 #include "LocalLinkInterface.h"
 #include "slsDetectorServer_defs.h"
+#include <stdlib.h>
 
 struct BebInfo {
     unsigned int beb_number;

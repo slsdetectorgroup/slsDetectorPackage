@@ -247,7 +247,7 @@ int LTC2620_SetDACValue(int dacnum, int val, int mV, int *dacval) {
     } else if (val >= 0 && dacnum <= ndacsonly) {
         // do not convert power down dac val
         //(if not ndacsonly (pwr/vchip): dont need to print mV value as it will
-        //be wrong (wrong limits))
+        // be wrong (wrong limits))
         ret = LTC2620_DacToVoltage(val, &dacmV);
     }
 

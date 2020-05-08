@@ -106,7 +106,7 @@
 /** Receive Data Fifo Level register */
 //#define I2C_RX_DATA_FIFO_LVL_OFST           (0)
 //#define I2C_RX_DATA_FIFO_LVL_MSK            (0x000000FF <<
-//I2C_RX_DATA_FIFO_LVL_OFST)
+// I2C_RX_DATA_FIFO_LVL_OFST)
 
 // defines in the fpga
 uint32_t I2C_Control_Reg = 0x0;

@@ -880,10 +880,11 @@ int setDelayAfterTrigger(int64_t val) {
         val += masterdefaultdelay;
         LOG(logINFO, ("\tActual Delay (master): %lld\n", (long long int)val));
     }
-    val = (val * 1E-9 * CLK_FREQ) +
-          0.5; // because of the master delay of 62 ns (not really double of
-               // clkfreq), losing precision and 0 delay becomes -31ns, so adding
-               // +0.5. Also adding +0.5 for more tolerance for gotthard1.
+    val =
+        (val * 1E-9 * CLK_FREQ) +
+        0.5; // because of the master delay of 62 ns (not really double of
+             // clkfreq), losing precision and 0 delay becomes -31ns, so adding
+             // +0.5. Also adding +0.5 for more tolerance for gotthard1.
     set64BitReg(val, SET_DELAY_LSB_REG, SET_DELAY_MSB_REG);
 
     // validate for tolerance

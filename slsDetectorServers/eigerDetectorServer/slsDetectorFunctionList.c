@@ -1940,7 +1940,7 @@ void *start_timer(void *arg) {
                     sls_detector_header *header =
                         (sls_detector_header *)(packetData);
                     header->detType = 3; //(uint16_t)myDetectorType; updated
-                                         //when firmware updates
+                                         // when firmware updates
                     header->version = SLS_DETECTOR_HEADER_VERSION - 1;
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = i;
@@ -1951,7 +1951,7 @@ void *start_timer(void *arg) {
                     memset(packetData2, 0, packetsize);
                     header = (sls_detector_header *)(packetData2);
                     header->detType = 3; //(uint16_t)myDetectorType; updated
-                                         //when firmware updates
+                                         // when firmware updates
                     header->version = SLS_DETECTOR_HEADER_VERSION - 1;
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = i;
@@ -2090,7 +2090,8 @@ int startReadOut() {
             break;
         //		for(i=0;i<nimages_per_request;i++)
         //			if  ((ret_val =
-        //(!Beb_RequestNImages(beb_num,send_to_ten_gig,on_dst,1,0)))) 				break;
+        //(!Beb_RequestNImages(beb_num,send_to_ten_gig,on_dst,1,0))))
+        //break;
 
         dst_requested[on_dst++] = 0;
         on_dst %= ndsts_in_use;

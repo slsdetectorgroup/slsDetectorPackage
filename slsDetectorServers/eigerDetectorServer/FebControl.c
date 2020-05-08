@@ -1841,10 +1841,10 @@ int Feb_Control_PrepareForAcquisition() { // return 1;
     reg_nums[5] = DAQ_REG_SUBFRAME_EXPOSURES;
     reg_vals[5] =
         Feb_Control_subframe_exposure_time_in_10nsec; //(1 means 10ns, 100 means
-                                                      //1000ns)
+                                                      // 1000ns)
     reg_nums[6] = DAQ_REG_SUBFRAME_PERIOD;
     reg_vals[6] = Feb_Control_subframe_period_in_10nsec; //(1 means 10ns, 100
-                                                         //means 1000ns)
+                                                         // means 1000ns)
     // if
     // (!Feb_Interface_WriteRegisters((Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1])),20,reg_nums,reg_vals,0,0))
     // {

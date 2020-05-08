@@ -112,7 +112,7 @@ void updateDataBytes();
     defined(MOENCHD)
 int setDefaultDacs();
 #endif
-#ifdef GOTTHARD2D
+#if defined(GOTTHARD2D) || defined(EIGERD)
 int readConfigFile();
 #endif
 

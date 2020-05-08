@@ -36,8 +36,8 @@ unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb);
 void Beb_GetModuleConfiguration(int *master, int *top, int *normal);
 int Beb_IsTransmitting(int *retval, int tengiga, int waitForDelay);
 
-int Beb_SetMasterViaSoftware();
-int Beb_SetSlaveViaSoftware();
+int Beb_SetTop(int val);
+int Beb_SetMaster(int val);
 int Beb_Activate(int enable);
 int Beb_GetActivate();
 int Beb_Set32bitOverflow(int val);
@@ -51,7 +51,6 @@ int Beb_SetTransmissionDelayLeft(int value);
 int Beb_GetTransmissionDelayRight();
 int Beb_SetTransmissionDelayRight(int value);
 
-int Beb_ResetToHardwareSettings();
 u_int32_t Beb_GetFirmwareRevision();
 u_int32_t Beb_GetFirmwareSoftwareAPIVersion();
 void Beb_ResetFrameNumber();

@@ -174,6 +174,9 @@ int64_t Feb_Control_GetSubMeasuredPeriod();
 int Feb_Control_SoftwareTrigger();
 int Feb_Control_SetInterruptSubframe(int val);
 int Feb_Control_GetInterruptSubframe();
+
+int Feb_Control_SetTop(int val, int left, int right);
+int Feb_Control_SetMaster(int val);
 int Feb_Control_SetQuad(int val);
 int Feb_Control_SetReadNLines(int value);
 int Feb_Control_GetReadNLines();

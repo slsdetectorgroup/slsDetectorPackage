@@ -16,21 +16,24 @@
 #define DAQ_REG_PARTIAL_READOUT       8
 
 #define DAQ_REG_HRDWRE 12
-
-#define DAQ_REG_HRDWRE_OW_OFST         (0)
-#define DAQ_REG_HRDWRE_OW_MSK          (0x00000001 << DAQ_REG_HRDWRE_OW_OFST)
+// clang-format off
+#define DAQ_REG_HRDWRE_OW_TOP_OFST     (0)
+#define DAQ_REG_HRDWRE_OW_TOP_MSK      (0x00000001 << DAQ_REG_HRDWRE_OW_TOP_OFST)
 #define DAQ_REG_HRDWRE_TOP_OFST        (1)
 #define DAQ_REG_HRDWRE_TOP_MSK         (0x00000001 << DAQ_REG_HRDWRE_TOP_OFST)
 #define DAQ_REG_HRDWRE_INTRRPT_SF_OFST (2)
-#define DAQ_REG_HRDWRE_INTRRPT_SF_MSK                                          \
-    (0x00000001 << DAQ_REG_HRDWRE_INTRRPT_SF_OFST)
+#define DAQ_REG_HRDWRE_INTRRPT_SF_MSK  (0x00000001 << DAQ_REG_HRDWRE_INTRRPT_SF_OFST)
+#define DAQ_REG_HRDWRE_OW_MASTER_OFST  (3)
+#define DAQ_REG_HRDWRE_OW_MASTER_MSK   (0x00000001 << DAQ_REG_HRDWRE_OW_MASTER_OFST)
+#define DAQ_REG_HRDWRE_MASTER_OFST     (4)
+#define DAQ_REG_HRDWRE_MASTER_MSK      (0x00000001 << DAQ_REG_HRDWRE_MASTER_OFST)
 
-#define DAQ_REG_RO_OFFSET 20
-#define DAQ_REG_STATUS                                                         \
-    (DAQ_REG_RO_OFFSET + 0) // also pg and fifo status register
+#define DAQ_REG_RO_OFFSET   20
+#define DAQ_REG_STATUS     (DAQ_REG_RO_OFFSET + 0) // also pg and fifo status register
 #define FEB_REG_STATUS     (DAQ_REG_RO_OFFSET + 3)
 #define MEAS_SUBPERIOD_REG (DAQ_REG_RO_OFFSET + 4)
 #define MEAS_PERIOD_REG    (DAQ_REG_RO_OFFSET + 5)
+// clang-format on
 
 #define DAQ_CTRL_RESET 0x80000000
 #define DAQ_CTRL_START 0x40000000
@@ -52,10 +55,11 @@
 #define DAQ_SERIALIN_SHIFT_IN_32    0x00000100
 #define DAQ_LOAD_16ROWS_OF_TRIMBITS 0x00000200
 
-#define DAQ_IGNORE_INITIAL_CRAP 0x00000400 // crap before readout
+// crap before readout
+#define DAQ_IGNORE_INITIAL_CRAP 0x00000400
 #define DAQ_READOUT_NROWS       0x00000800
-#define DAQ_CLKOUT_LAST_4_BITS_AND_RETURN_TO_START                             \
-    0x00001000 // last 4 bit of data in the last frame
+// last 4 bit of data in the last frame
+#define DAQ_CLKOUT_LAST_4_BITS_AND_RETURN_TO_START 0x00001000
 
 #define DAQ_RELEASE_IMAGE_STORE_AFTER_READOUT  0x00002000
 #define DAQ_RESET_PIXEL_COUNTERS_AFTER_READOUT 0x00004000
@@ -64,23 +68,24 @@
 #define DAQ_CLK_MAIN_CLK_TO_SELECT_NEXT_PIXEL 0x00010000
 #define DAQ_SEND_N_TEST_PULSES                0x00020000
 
-#define DAQ_CHIP_CONTROLLER_HALF_SPEED                                         \
-    0x00040000 // everything at 100 MHz (50MHz ddr readout)
-#define DAQ_CHIP_CONTROLLER_QUARTER_SPEED                                      \
-    0x00080000 // everything at  50 MHz (25MHz ddr readout)
-#define DAQ_CHIP_CONTROLLER_SUPER_SLOW_SPEED                                   \
-    0x000c0000 // everything at  ~200 kHz (200 kHz MHz ddr readout)
+// everything at 100 MHz (50MHz ddr readout)
+#define DAQ_CHIP_CONTROLLER_HALF_SPEED 0x00040000
+// everything at  50 MHz (25MHz ddr readout)
+#define DAQ_CHIP_CONTROLLER_QUARTER_SPEED 0x00080000
+// everything at  ~200 kHz (200 kHz MHz ddr readout)
+#define DAQ_CHIP_CONTROLLER_SUPER_SLOW_SPEED 0x000c0000
 
-//#define DAQ_FIFO_ENABLE                       0x00100000 commented out as it
+//#define DAQ_FIFO_ENABLE 0x00100000 commented out as it
 // is not used anywhere
 #define DAQ_REG_CHIP_CMDS_INT_TRIGGER 0x00100000
 
 // direct chip commands to the DAQ_REG_CHIP_CMDS register
-#define DAQ_NEXPOSURERS_SAFEST_MODE_ROW_CLK_BEFORE_MODE                        \
-    0x00200000 // row clk is before main clk readout sequence
-#define DAQ_NEXPOSURERS_NORMAL_NONPARALLEL_MODE                                \
-    0x00400000 // expose ->readout ->expose -> ..., with store is always closed
-#define DAQ_NEXPOSURERS_PARALLEL_MODE 0x00600000 // parallel acquire/read mode
+// row clk is before main clk readout sequence
+#define DAQ_NEXPOSURERS_SAFEST_MODE_ROW_CLK_BEFORE_MODE 0x00200000
+// expose ->readout ->expose -> ..., with store is always closed
+#define DAQ_NEXPOSURERS_NORMAL_NONPARALLEL_MODE 0x00400000
+// parallel acquire/read mode
+#define DAQ_NEXPOSURERS_PARALLEL_MODE 0x00600000
 
 // DAQ_NEXPOSURERS_READOUT_COMPLETE_IMAGES is old now hard-wired in the firmware
 // that every image comes with a header #define
@@ -91,12 +96,14 @@
 #define DAQ_NEXPOSURERS_EXTERNAL_ENABLING_POLARITY 0x02000000
 #define DAQ_NEXPOSURERS_EXTERNAL_TRIGGER_POLARITY  0x04000000
 
-#define DAQ_NEXPOSURERS_INTERNAL_ACQUISITION 0x00000000 // internally controlled
-#define DAQ_NEXPOSURERS_EXTERNAL_ACQUISITION_START                             \
-    0x08000000 // external acquisition start
-#define DAQ_NEXPOSURERS_EXTERNAL_IMAGE_START 0x10000000 // external image start
-#define DAQ_NEXPOSURERS_EXTERNAL_IMAGE_START_AND_STOP                          \
-    0x18000000 // externally controlly, external image start and stop
+// internally controlled
+#define DAQ_NEXPOSURERS_INTERNAL_ACQUISITION 0x00000000
+// external acquisition start
+#define DAQ_NEXPOSURERS_EXTERNAL_ACQUISITION_START 0x08000000
+// external image start
+#define DAQ_NEXPOSURERS_EXTERNAL_IMAGE_START 0x10000000
+// externally controlly, external image start and stop
+#define DAQ_NEXPOSURERS_EXTERNAL_IMAGE_START_AND_STOP 0x18000000
 
 #define DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING 0x20000000
 #define DAQ_NEXPOSURERS_ACTIVATE_RATE_CORRECTION 0x40000000
@@ -106,11 +113,12 @@
 
 // chips static bits
 #define DAQ_STATIC_BIT_PROGRAM 0x00000001
-#define DAQ_STATIC_BIT_M4      0x00000002 // these are the status bits, not bit mode
-#define DAQ_STATIC_BIT_M8      0x00000004 // these are the status bits, not bit mode
-#define DAQ_STATIC_BIT_M12                                                     \
-    0x00000000 // these are the status bits, not bit mode, ie. "00" is 12 bit
-               // mode
+// these are the status bits, not bit mode
+#define DAQ_STATIC_BIT_M4 0x00000002
+#define DAQ_STATIC_BIT_M8 0x00000004
+// these are the status bits, not bit mode, ie. "00" is 12 bit mode
+#define DAQ_STATIC_BIT_M12 0x00000000
+
 #define DAQ_STATIC_BIT_CHIP_TEST 0x00000008
 #define DAQ_STATIC_BIT_ROTEST    0x00000010
 #define DAQ_CS_BAR_LEFT          0x00000020
@@ -136,18 +144,28 @@
 #define CHIP_DATA_OUT_DELAY_REG4     4
 #define CHIP_DATA_OUT_DELAY_SET      0x20000000
 
-// module configuration
-#define TOP_BIT_MASK           0x00f
-#define MASTER_BIT_MASK        0x200
-#define NORMAL_MODULE_BIT_MASK 0x400
+/** BEB Registers */
 
-// Master Slave Top Bottom Definition
-#define MODULE_CONFIGURATION_MASK 0x84
-// Software Configuration
-#define MASTERCONFIG_OFFSET    0x160 // 0x20 * 11 (P11)
-#define MASTER_BIT             0x1
-#define OVERWRITE_HARDWARE_BIT 0x2
-#define DEACTIVATE_BIT         0x4
+// module configuration - XPAR_PLB_GPIO_SYS_BASEADDR
+#define BEB_CONFIG_OW_OFST        (0x160) // 0x20 * 11 (P11)
+#define BEB_CONFIG_MASTER_OFST    (0)
+#define BEB_CONFIG_MASTER_MSK     (0x00000001 << BEB_CONFIG_MASTER_OFST)
+#define BEB_CONFIG_OW_MASTER_OFST (1)
+#define BEB_CONFIG_OW_MASTER_MSK  (0x00000001 << BEB_CONFIG_OW_MASTER_OFST)
+#define BEB_CONFIG_ACTIVATE_OFST  (2)
+#define BEB_CONFIG_ACTIVATE_MSK   (0x00000001 << BEB_CONFIG_ACTIVATE_OFST)
+#define BEB_CONFIG_TOP_OFST       (3)
+#define BEB_CONFIG_TOP_MSK        (0x00000001 << BEB_CONFIG_TOP_OFST)
+#define BEB_CONFIG_OW_TOP_OFST    (4)
+#define BEB_CONFIG_OW_TOP_MSK     (0x00000001 << BEB_CONFIG_OW_TOP_OFST)
+
+#define BEB_CONFIG_RD_OFST        (0x84)
+#define BEB_CONFIG_TOP_RD_OFST    (0)
+#define BEB_CONFIG_TOP_RD_MSK     (0x00000001 << BEB_CONFIG_TOP_RD_OFST)
+#define BEB_CONFIG_MASTER_RD_OFST (9)
+#define BEB_CONFIG_MASTER_RD_MSK  (0x00000001 << BEB_CONFIG_MASTER_RD_OFST)
+#define BEB_CONFIG_NORMAL_RD_OFST (10)
+#define BEB_CONFIG_NORMAL_RD_MSK  (0x00000001 << BEB_CONFIG_NORMAL_RD_OFST)
 
 #define FPGA_TEMP_OFFSET 0x200
 

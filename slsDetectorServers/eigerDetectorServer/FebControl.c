@@ -2459,29 +2459,87 @@ int Feb_Control_GetInterruptSubframe() {
     return value[0];
 }
 
+int Feb_Control_SetTop(int val, int left, int right) {
+    uint32_t offset = DAQ_REG_HRDWRE;
+    unsigned int addr[2] = {0, 0};
+    if (left) {
+        addr[0] = Module_GetTopLeftAddress(&modules[0]);
+    }
+    if (right) {
+        addr[1] = Module_GetTopRightAddress(&modules[0]);
+    }
+    int i = 0;
+    for (i = 0; i < 2; ++i) {
+        if (addr[i] == 0) {
+            continue;
+        }
+        uint32_t regVal = 0;
+        if (!Feb_Interface_ReadRegister(addr[i], offset, &regVal)) {
+            LOG(logERROR, ("Could not read %s DAQ_REG_HRDWRE reg\n",
+                           (i == 0 ? "left" : "right")));
+            return 0;
+        }
+        regVal |= DAQ_REG_HRDWRE_OW_TOP_MSK;
+        if (val) {
+            regVal |= DAQ_REG_HRDWRE_TOP_MSK;
+        } else {
+            regVal &= ~DAQ_REG_HRDWRE_TOP_MSK;
+        }
+
+        if (!Feb_Interface_WriteRegister(addr[i], offset, regVal, 0, 0)) {
+            LOG(logERROR,
+                ("Could not overwrite top %d to %s DAQ_REG_HRDWRE reg\n", val,
+                 (i == 0 ? "left" : "right")));
+            return 0;
+        }
+    }
+    if (left && right) {
+        LOG(logINFOBLUE,
+            ("Overwriting FEB Hardware: %s\n", (val ? "Top" : "Bottom")));
+    }
+    return 1;
+}
+
+int Feb_Control_SetMaster(int val) {
+    uint32_t offset = DAQ_REG_HRDWRE;
+    unsigned int addr[2] = {0, 0};
+    addr[0] = Module_GetTopLeftAddress(&modules[0]);
+    addr[1] = Module_GetTopRightAddress(&modules[0]);
+    int i = 0;
+    for (i = 0; i < 2; ++i) {
+        uint32_t regVal = 0;
+        if (!Feb_Interface_ReadRegister(addr[i], offset, &regVal)) {
+            LOG(logERROR, ("Could not read %s DAQ_REG_HRDWRE reg\n",
+                           (i == 0 ? "left" : "right")));
+            return 0;
+        }
+        regVal |= DAQ_REG_HRDWRE_OW_MASTER_MSK;
+        if (val) {
+            regVal |= DAQ_REG_HRDWRE_MASTER_MSK;
+        } else {
+            regVal &= ~DAQ_REG_HRDWRE_MASTER_MSK;
+        }
+
+        if (!Feb_Interface_WriteRegister(addr[i], offset, regVal, 0, 0)) {
+            LOG(logERROR,
+                ("Could not write master %d to %s DAQ_REG_HRDWRE reg\n", val,
+                 (i == 0 ? "left" : "right")));
+            return 0;
+        }
+    }
+    Feb_control_master = 1;
+    LOG(logINFOBLUE,
+        ("Overwriting FEB Hardware: %s\n", (val ? "Master" : "Slave")));
+    return 1;
+}
+
 int Feb_Control_SetQuad(int val) {
     // no bottom for quad
     if (!Module_TopAddressIsValid(&modules[1])) {
         return 1;
     }
-    uint32_t offset = DAQ_REG_HRDWRE;
     LOG(logINFO, ("Setting Quad to %d in Feb\n", val));
-    unsigned int addr = Module_GetTopRightAddress(&modules[1]);
-    uint32_t regVal = 0;
-    if (!Feb_Interface_ReadRegister(addr, offset, &regVal)) {
-        LOG(logERROR, ("Could not read top right quad reg\n"));
-        return 0;
-    }
-    uint32_t data =
-        ((val == 0)
-             ? (regVal & ~DAQ_REG_HRDWRE_OW_MSK)
-             : ((regVal | DAQ_REG_HRDWRE_OW_MSK) & ~DAQ_REG_HRDWRE_TOP_MSK));
-    if (!Feb_Interface_WriteRegister(addr, offset, data, 0, 0)) {
-        LOG(logERROR, ("Could not write 0x%x to top right quad addr 0x%x\n",
-                       data, offset));
-        return 0;
-    }
-    return 1;
+    return Feb_Control_SetTop(val, 0, 1);
 }
 
 int Feb_Control_SetReadNLines(int value) {

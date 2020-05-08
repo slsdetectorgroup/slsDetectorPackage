@@ -165,16 +165,16 @@ void Beb_GetModuleConfiguration(int *master, int *top, int *normal) {
         LOG(logERROR, ("Module Configuration FAIL\n"));
     } else {
         // read data
-        ret = Beb_Read32(csp0base, MODULE_CONFIGURATION_MASK);
+        ret = Beb_Read32(csp0base, BEB_CONFIG_RD_OFST);
         LOG(logDEBUG1, ("Module Configuration OK\n"));
         LOG(logDEBUG1, ("Beb: value =0x%x\n", ret));
-        if (ret & TOP_BIT_MASK) {
+        if (ret & BEB_CONFIG_TOP_RD_MSK) {
             *top = 1;
             Beb_top = 1;
         }
-        if (ret & MASTER_BIT_MASK)
+        if (ret & BEB_CONFIG_MASTER_RD_MSK)
             *master = 1;
-        if (ret & NORMAL_MODULE_BIT_MASK)
+        if (ret & BEB_CONFIG_NORMAL_RD_MSK)
             *normal = 1;
         // close file pointer
         Beb_close(fd, csp0base);
@@ -298,12 +298,9 @@ int Beb_IsTransmitting(int *retval, int tengiga, int waitForDelay) {
     return OK;
 }
 
-/* do not work at the moment */
-int Beb_SetMasterViaSoftware() {
-
+int Beb_SetTop(int val) {
     if (!Beb_activated)
         return 0;
-
     // mapping new memory
     u_int32_t *csp0base = 0;
     u_int32_t value = 0, ret = 1;
@@ -311,16 +308,23 @@ int Beb_SetMasterViaSoftware() {
     // open file pointer
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd < 0) {
-        LOG(logERROR, ("Set Master FAIL\n"));
+        LOG(logERROR, ("Set Top FAIL, could not open fd\n"));
     } else {
-        value = Beb_Read32(csp0base, MASTERCONFIG_OFFSET);
-        value |= MASTER_BIT;
-        value |= OVERWRITE_HARDWARE_BIT;
-        int newval = Beb_Write32(csp0base, MASTERCONFIG_OFFSET, value);
+        value = Beb_Read32(csp0base, BEB_CONFIG_WR_OFST);
+        value |= BEB_CONFIG_OW_TOP_MSK;
+        if (val) {
+            value |= BEB_CONFIG_TOP_MSK;
+        } else {
+            value &= ~BEB_CONFIG_TOP_MSK;
+        }
+        int newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
         if (newval != value) {
-            LOG(logERROR, ("Could not set Master via Software\n"));
+            LOG(logERROR, ("Could not overwrite Top to %d\n", val));
         } else {
             ret = 0;
+            LOG(logINFOBLUE,
+                ("Overwriting BEB Hardware: %s\n", (val ? "Top" : "Bottom")));
+            Beb_top = val;
         }
     }
 
@@ -331,12 +335,9 @@ int Beb_SetMasterViaSoftware() {
     return ret;
 }
 
-/* do not work at the moment */
-int Beb_SetSlaveViaSoftware() {
-
+int Beb_SetMaster(int val) {
     if (!Beb_activated)
         return 0;
-
     // mapping new memory
     u_int32_t *csp0base = 0;
     u_int32_t value = 0, ret = 1;
@@ -344,16 +345,22 @@ int Beb_SetSlaveViaSoftware() {
     // open file pointer
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd < 0) {
-        LOG(logERROR, ("Set Slave FAIL\n"));
+        LOG(logERROR, ("Set Master FAIL, could not open fd\n"));
     } else {
-        value = Beb_Read32(csp0base, MASTERCONFIG_OFFSET);
-        value &= ~MASTER_BIT;
-        value |= OVERWRITE_HARDWARE_BIT;
-        int newval = Beb_Write32(csp0base, MASTERCONFIG_OFFSET, value);
+        value = Beb_Read32(csp0base, BEB_CONFIG_WR_OFST);
+        value |= BEB_CONFIG_OW_MASTER_MSK;
+        if (val) {
+            value |= BEB_CONFIG_MASTER_MSK;
+        } else {
+            value &= ~BEB_CONFIG_MASTER_MSK;
+        }
+        int newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
         if (newval != value) {
-            LOG(logERROR, ("Could not set Slave via Software\n"));
+            LOG(logERROR, ("Could not overwrite Master to %d\n", val));
         } else {
             ret = 0;
+            LOG(logINFOBLUE,
+                ("Overwriting BEB Hardware: %s\n", (val ? "Master" : "Slave")));
         }
     }
 
@@ -372,38 +379,29 @@ int Beb_Activate(int enable) {
     // open file pointer
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd < 0) {
-        LOG(logERROR, ("Deactivate FAIL\n"));
+        LOG(logERROR, ("Activate FAIL, could not open fd\n"));
     } else {
         if (enable > -1) {
-            value = Beb_Read32(csp0base, MASTERCONFIG_OFFSET);
-            LOG(logINFO, ("Deactivate register value before:%d\n", value));
+            value = Beb_Read32(csp0base, BEB_CONFIG_WR_OFST);
+            LOG(logINFO, ("Activate register value before:%d\n", value));
             if (enable)
-                value &= ~DEACTIVATE_BIT;
+                value |= BEB_CONFIG_ACTIVATE_MSK;
             else
-                value |= DEACTIVATE_BIT;
+                value &= ~BEB_CONFIG_ACTIVATE_MSK;
 
-            int newval = Beb_Write32(csp0base, MASTERCONFIG_OFFSET, value);
+            int newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
             if (newval != value) {
-                if (enable) {
-                    LOG(logERROR, ("Could not activate via Software\n"));
-                } else {
-                    LOG(logERROR, ("Could not deactivate via Software\n"));
-                }
+                LOG(logERROR, ("Could not %s\n", (enable ? "activate" : "deactivate"));
             }
         }
 
-        value = Beb_Read32(csp0base, MASTERCONFIG_OFFSET);
-        if (value & DEACTIVATE_BIT)
-            ret = 0;
-        else
-            ret = 1;
+        value = Beb_Read32(csp0base, BEB_CONFIG_WR_OFST);
+        ret = (value & BEB_CONFIG_ACTIVATE_MSK) ? 1 : 0;
         if (enable == -1) {
             if (ret) {
-                LOG(logINFOBLUE,
-                    ("Detector is active. Register value:%d\n", value));
+                LOG(logINFOBLUE, ("Detector is active\n"));
             } else {
-                LOG(logERROR,
-                    ("Detector is deactivated! Register value:%d\n", value));
+                LOG(logINFORED, ("Detector is deactivated!\n"));
             }
         }
     }
@@ -654,35 +652,6 @@ int Beb_SetNetworkParameter(enum NETWORKINDEX mode, int val) {
         Beb_close(fd, csp0base);
 
     return valueread;
-}
-
-int Beb_ResetToHardwareSettings() {
-
-    if (!Beb_activated)
-        return 1;
-
-    // mapping new memory
-    u_int32_t *csp0base = 0;
-    u_int32_t value = 0, ret = 1;
-
-    // open file pointer
-    int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
-    if (fd < 0) {
-        LOG(logERROR, ("Reset to Hardware Settings FAIL\n"));
-    } else {
-        value = Beb_Write32(csp0base, MASTERCONFIG_OFFSET, 0);
-        if (value) {
-            LOG(logERROR, ("Could not reset to hardware settings\n"));
-        } else {
-            ret = 0;
-        }
-    }
-
-    // close file pointer
-    if (fd > 0)
-        Beb_close(fd, csp0base);
-
-    return ret;
 }
 
 u_int32_t Beb_GetFirmwareRevision() {

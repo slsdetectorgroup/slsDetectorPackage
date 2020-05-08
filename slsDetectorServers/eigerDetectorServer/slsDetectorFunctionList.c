@@ -314,6 +314,8 @@ void initControlServer() {
         getModuleConfiguration();
         setupDetector();
     }
+    eiger_virtual_activate = 0;
+    LOG(logINFORED, ("Deactivated!\n"));
     initCheckDone = 1;
     return;
 #else
@@ -341,14 +343,9 @@ void initControlServer() {
         LOG(logDEBUG1, ("Control server: BEB Initialization done\n"));
 
         setupDetector();
-        // activate (if it gets ip) (later FW will deactivate at startup)
-        if (getDetectorIP() != 0) {
-            Beb_Activate(1);
-            Feb_Control_activate(1);
-        } else {
-            Beb_Activate(0);
-            Feb_Control_activate(0);
-        }
+        // client first connect (from shm) will activate
+        Beb_Activate(0);
+        Feb_Control_activate(0);
     }
     initCheckDone = 1;
 #endif
@@ -361,6 +358,8 @@ void initStopServer() {
     if (!isControlServer) {
         ComVirtual_setStop(virtual_stop);
     }
+    eiger_virtual_activate = 0;
+    LOG(logINFORED, ("Deactivated!\n"));
     return;
 #else
     getModuleConfiguration();
@@ -375,15 +374,9 @@ void initStopServer() {
         Feb_Control_Init(master, 1, normal, getDetectorNumber());
     }
     LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
-    // activate (if it gets ip) (later FW will deactivate at startup)
-    // also needed for stop server for status
-    if (getDetectorIP() != 0) {
-        Beb_Activate(1);
-        Feb_Control_activate(1);
-    } else {
-        Beb_Activate(0);
-        Feb_Control_activate(0);
-    }
+    // client first connect (from shm) will activate
+    Beb_Activate(0);
+    Feb_Control_activate(0);
 #endif
 }
 
@@ -405,21 +398,7 @@ void getModuleConfiguration() {
 #else
     normal = 1;
 #endif
-    LOG(logINFOBLUE,
-        ("Module: %s %s %s\n", (top ? "TOP" : "BOTTOM"),
-         (master ? "MASTER" : "SLAVE"), (normal ? "NORMAL" : "SPECIAL")));
-    return;
 #else
-    int *m = &master;
-    int *t = &top;
-    int *n = &normal;
-    Beb_GetModuleConfiguration(m, t, n);
-    if (isControlServer) {
-        LOG(logINFOBLUE,
-            ("Module: %s %s %s\n", (top ? "TOP" : "BOTTOM"),
-             (master ? "MASTER" : "SLAVE"), (normal ? "NORMAL" : "SPECIAL")));
-    }
-
     // read detector id
     char output[255];
     FILE *sysFile = popen(IDFILECOMMAND, "r");
@@ -429,7 +408,140 @@ void getModuleConfiguration() {
     if (isControlServer) {
         LOG(logINFOBLUE, ("Detector ID: %u\n\n", detid));
     }
+
+    Beb_GetModuleConfiguration(&master, &top, &normal);
 #endif
+
+    if (readConfigFile() == FAIL) {
+        return;
+    }
+    if (isControlServer) {
+        LOG(logINFOBLUE,
+            ("Module: %s %s %s\n", (top ? "TOP" : "BOTTOM"),
+             (master ? "MASTER" : "SLAVE"), (normal ? "NORMAL" : "SPECIAL")));
+    }
+}
+
+int readConfigFile() {
+
+    if (initError == FAIL) {
+        return initError;
+    }
+
+    FILE *fd = fopen(CONFIG_FILE, "r");
+    if (fd == NULL) {
+        return OK;
+    }
+    LOG(logINFO, ("Reading config file %s\n", CONFIG_FILE));
+
+    // Initialization
+    const size_t LZ = 256;
+    char line[LZ];
+    memset(line, 0, LZ);
+    char command[LZ];
+
+    // keep reading a line
+    while (fgets(line, LZ, fd)) {
+
+        // ignore comments
+        if (line[0] == '#') {
+            LOG(logDEBUG1, ("Ignoring Comment\n"));
+            continue;
+        }
+
+        // ignore empty lines
+        if (strlen(line) <= 1) {
+            LOG(logDEBUG1, ("Ignoring Empty line\n"));
+            continue;
+        }
+
+        // ignoring lines beginning with space or tab
+        if (line[0] == ' ' || line[0] == '\t') {
+            LOG(logDEBUG1, ("Ignoring Lines starting with space or tabs\n"));
+            continue;
+        }
+
+        LOG(logDEBUG1, ("Command to process: (size:%d) %.*s\n", strlen(line),
+                        strlen(line) - 1, line));
+        memset(command, 0, LZ);
+
+        // top command
+        if (!strncmp(line, "top", strlen("top"))) {
+            // cannot scan values
+            if (sscanf(line, "%s %d", command, &top) != 2) {
+                sprintf(initErrorMessage,
+                        "Could not scan top commands from on-board server "
+                        "config file. Line:[%s].\n",
+                        line);
+                break;
+            }
+#ifndef VIRTUAL
+            if (Beb_SetTop(top) == FAIL) {
+                sprintf(
+                    initErrorMessage,
+                    "Could not overwrite top to %d in Beb from on-board server "
+                    "config file. Line:[%s].\n",
+                    top, line);
+                break;
+            }
+            if (Feb_Control_SetTop(top, 1, 1) == FAIL) {
+                sprintf(
+                    initErrorMessage,
+                    "Could not overwrite top to %d in Feb from on-board server "
+                    "config file. Line:[%s].\n",
+                    top, line);
+                break;
+            }
+#endif
+        }
+
+        // master command
+        else if (!strncmp(line, "master", strlen("master"))) {
+            // cannot scan values
+            if (sscanf(line, "%s %d", command, &master) != 2) {
+                sprintf(initErrorMessage,
+                        "Could not scan master commands from on-board server "
+                        "config file. Line:[%s].\n",
+                        line);
+                break;
+            }
+#ifndef VIRTUAL
+            if (Beb_SetMaster(master) == FAIL) {
+                sprintf(initErrorMessage,
+                        "Could not overwrite master to %d in Beb from on-board "
+                        "server "
+                        "config file. Line:[%s].\n",
+                        master, line);
+                break;
+            }
+            if (Feb_Control_SetMaster(master) == FAIL) {
+                sprintf(initErrorMessage,
+                        "Could not overwrite master to %d in Feb from on-board "
+                        "server "
+                        "config file. Line:[%s].\n",
+                        master, line);
+                break;
+            }
+#endif
+        }
+
+        // other commands
+        else {
+            sprintf(initErrorMessage,
+                    "Could not scan command from on-board server "
+                    "config file. Line:[%s].\n",
+                    line);
+            break;
+        }
+    }
+    fclose(fd);
+    if (strlen(initErrorMessage)) {
+        initError = FAIL;
+        LOG(logERROR, ("%s\n\n", initErrorMessage));
+    } else {
+        LOG(logINFO, ("Successfully read config file\n"));
+    }
+    return initError;
 }
 
 /* set up detector */
@@ -1685,6 +1797,11 @@ int activate(int enable) {
 #ifdef VIRTUAL
     if (enable >= 0)
         eiger_virtual_activate = enable;
+    if (eiger_virtual_activate == 0) {
+        LOG(logINFORED, ("Deactivated!\n"));
+    } else {
+        LOG(logINFOGREEN, ("Activated!\n"));
+    }
     return eiger_virtual_activate;
 #else
     int ret = Beb_Activate(enable);
@@ -1939,8 +2056,7 @@ void *start_timer(void *arg) {
                     memset(packetData, 0, packetsize);
                     sls_detector_header *header =
                         (sls_detector_header *)(packetData);
-                    header->detType = 3; //(uint16_t)myDetectorType; updated
-                                         // when firmware updates
+                    header->detType = (uint16_t)myDetectorType;
                     header->version = SLS_DETECTOR_HEADER_VERSION - 1;
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = i;
@@ -1950,8 +2066,7 @@ void *start_timer(void *arg) {
                     char packetData2[packetsize];
                     memset(packetData2, 0, packetsize);
                     header = (sls_detector_header *)(packetData2);
-                    header->detType = 3; //(uint16_t)myDetectorType; updated
-                                         // when firmware updates
+                    header->detType = (uint16_t)myDetectorType;
                     header->version = SLS_DETECTOR_HEADER_VERSION - 1;
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = i;
@@ -2091,7 +2206,7 @@ int startReadOut() {
         //		for(i=0;i<nimages_per_request;i++)
         //			if  ((ret_val =
         //(!Beb_RequestNImages(beb_num,send_to_ten_gig,on_dst,1,0))))
-        //break;
+        // break;
 
         dst_requested[on_dst++] = 0;
         on_dst %= ndsts_in_use;

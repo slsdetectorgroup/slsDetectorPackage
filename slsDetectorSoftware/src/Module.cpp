@@ -346,19 +346,19 @@ void Module::setHostname(const std::string &hostname,
     sls::strcpy_safe(shm()->hostname, hostname.c_str());
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.close();
-
-    LOG(logINFO) << "Checking Detector Version Compatibility";
-    if (!initialChecks) {
-        try {
-            checkDetectorVersionCompatibility();
-        } catch (const DetectorError &e) {
-            LOG(logWARNING) << "Bypassing Initial Checks at your own risk!";
-        }
-    } else {
+    try {
         checkDetectorVersionCompatibility();
+        LOG(logINFO) << "Detector Version Compatibility - Success";
+    } catch (const DetectorError &e) {
+        if (!initialChecks) {
+            LOG(logWARNING) << "Bypassing Initial Checks at your own risk!";
+        } else {
+            throw;
+        }
     }
-
-    LOG(logINFO) << "Detector connecting - updating!";
+    if (shm()->myDetectorType == EIGER) {
+        setActivate(true);
+    }
 }
 
 std::string Module::getHostname() const { return shm()->hostname; }
@@ -2457,16 +2457,29 @@ void Module::writeAdcRegister(uint32_t addr, uint32_t val) {
     sendToDetector(F_WRITE_ADC_REG, args, nullptr);
 }
 
-int Module::activate(int enable) {
+bool Module::getActivate() {
+    int retval = -1, retval2 = -1;
+    int arg = -1;
+    sendToDetector(F_ACTIVATE, arg, retval);
+    sendToDetectorStop(F_ACTIVATE, arg, retval2);
+    if (retval != retval2) {
+        std::ostringstream oss;
+        oss << "Inconsistent activate state. Control Server: " << retval
+            << ". Stop Server: " << retval2;
+        throw RuntimeError(oss.str());
+    }
+    return retval;
+}
+
+void Module::setActivate(const bool enable) {
     int retval = -1;
+    int arg = static_cast<int>(enable);
     LOG(logDEBUG1) << "Setting activate flag to " << enable;
-    sendToDetector(F_ACTIVATE, enable, retval);
-    sendToDetectorStop(F_ACTIVATE, enable, retval);
-    LOG(logDEBUG1) << "Activate: " << retval;
+    sendToDetector(F_ACTIVATE, arg, retval);
+    sendToDetectorStop(F_ACTIVATE, arg, retval);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_RECEIVER_ACTIVATE, retval, nullptr);
     }
-    return retval;
 }
 
 bool Module::getDeactivatedRxrPaddingMode() {

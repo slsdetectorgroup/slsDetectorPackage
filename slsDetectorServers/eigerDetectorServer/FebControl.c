@@ -2459,7 +2459,7 @@ int Feb_Control_GetInterruptSubframe() {
     return value[0];
 }
 
-int Feb_Control_SetTop(int val, int left, int right) {
+int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right) {
     uint32_t offset = DAQ_REG_HRDWRE;
     unsigned int addr[2] = {0, 0};
     if (left) {
@@ -2468,68 +2468,89 @@ int Feb_Control_SetTop(int val, int left, int right) {
     if (right) {
         addr[1] = Module_GetTopRightAddress(&modules[0]);
     }
+    char *top_names[] = {TOP_NAMES};
     int i = 0;
     for (i = 0; i < 2; ++i) {
         if (addr[i] == 0) {
             continue;
         }
-        uint32_t regVal = 0;
-        if (!Feb_Interface_ReadRegister(addr[i], offset, &regVal)) {
-            LOG(logERROR, ("Could not read %s DAQ_REG_HRDWRE reg\n",
+        uint32_t value = 0;
+        if (!Feb_Interface_ReadRegister(addr[i], offset, &value)) {
+            LOG(logERROR, ("Could not read %s Feb reg to set Top flag\n",
                            (i == 0 ? "left" : "right")));
             return 0;
         }
-        regVal |= DAQ_REG_HRDWRE_OW_TOP_MSK;
-        if (val) {
-            regVal |= DAQ_REG_HRDWRE_TOP_MSK;
-        } else {
-            regVal &= ~DAQ_REG_HRDWRE_TOP_MSK;
+        switch (ind) {
+        case TOP_HARDWARE:
+            value &= ~DAQ_REG_HRDWRE_OW_TOP_MSK;
+            break;
+        case OW_TOP:
+            value |= DAQ_REG_HRDWRE_OW_TOP_MSK;
+            value |= DAQ_REG_HRDWRE_TOP_MSK;
+            break;
+        case OW_BOTTOM:
+            value |= DAQ_REG_HRDWRE_OW_TOP_MSK;
+            value &= ~DAQ_REG_HRDWRE_TOP_MSK;
+            break;
+        default:
+            LOG(logERROR, ("Unknown top index in Feb: %d\n", ind));
+            return 0;
         }
-
-        if (!Feb_Interface_WriteRegister(addr[i], offset, regVal, 0, 0)) {
-            LOG(logERROR,
-                ("Could not overwrite top %d to %s DAQ_REG_HRDWRE reg\n", val,
-                 (i == 0 ? "left" : "right")));
+        if (!Feb_Interface_WriteRegister(addr[i], offset, value, 0, 0)) {
+            LOG(logERROR, ("Could not set Top flag to %s in %s Feb\n", val,
+                           top_names[ind], (i == 0 ? "left" : "right")));
             return 0;
         }
     }
     if (left && right) {
-        LOG(logINFOBLUE,
-            ("Overwriting FEB Hardware: %s\n", (val ? "Top" : "Bottom")));
+        LOG(logINFOBLUE, ("%s Top flag to %s Feb\n",
+                          (ind == TOP_HARDWARE ? "Resetting" : "Overwriting"),
+                          top_names[ind]));
     }
     return 1;
 }
 
-int Feb_Control_SetMaster(int val) {
+int Feb_Control_SetMaster(enum MASTERINDEX ind) {
     uint32_t offset = DAQ_REG_HRDWRE;
     unsigned int addr[2] = {0, 0};
     addr[0] = Module_GetTopLeftAddress(&modules[0]);
     addr[1] = Module_GetTopRightAddress(&modules[0]);
+    char *master_names[] = {MASTER_NAMES};
     int i = 0;
     for (i = 0; i < 2; ++i) {
-        uint32_t regVal = 0;
-        if (!Feb_Interface_ReadRegister(addr[i], offset, &regVal)) {
-            LOG(logERROR, ("Could not read %s DAQ_REG_HRDWRE reg\n",
+        uint32_t value = 0;
+        if (!Feb_Interface_ReadRegister(addr[i], offset, &value)) {
+            LOG(logERROR, ("Could not read %s Feb reg to set Master flag\n",
                            (i == 0 ? "left" : "right")));
             return 0;
         }
-        regVal |= DAQ_REG_HRDWRE_OW_MASTER_MSK;
-        if (val) {
-            regVal |= DAQ_REG_HRDWRE_MASTER_MSK;
-        } else {
-            regVal &= ~DAQ_REG_HRDWRE_MASTER_MSK;
+        switch (ind) {
+        case MASTER_HARDWARE:
+            value &= ~DAQ_REG_HRDWRE_OW_MASTER_MSK;
+            break;
+        case OW_MASTER:
+            value |= DAQ_REG_HRDWRE_OW_MASTER_MSK;
+            value |= DAQ_REG_HRDWRE_MASTER_MSK;
+            break;
+        case OW_SLAVE:
+            value |= DAQ_REG_HRDWRE_OW_MASTER_MSK;
+            value &= ~DAQ_REG_HRDWRE_MASTER_MSK;
+            break;
+        default:
+            LOG(logERROR, ("Unknown master index in Feb: %d\n", ind));
+            Beb_close(fd, csp0base);
+            return 0;
         }
 
-        if (!Feb_Interface_WriteRegister(addr[i], offset, regVal, 0, 0)) {
-            LOG(logERROR,
-                ("Could not write master %d to %s DAQ_REG_HRDWRE reg\n", val,
-                 (i == 0 ? "left" : "right")));
+        if (!Feb_Interface_WriteRegister(addr[i], offset, value, 0, 0)) {
+            LOG(logERROR, ("Could not set Master flag to %s in %s Feb\n", val,
+                           master_names[ind], (i == 0 ? "left" : "right")));
             return 0;
         }
     }
-    Feb_control_master = 1;
-    LOG(logINFOBLUE,
-        ("Overwriting FEB Hardware: %s\n", (val ? "Master" : "Slave")));
+    LOG(logINFOBLUE, ("%s Master flag to %s Feb\n",
+                      (ind == MASTER_HARDWARE ? "Resetting" : "Overwriting"),
+                      master_names[ind]));
     return 1;
 }
 

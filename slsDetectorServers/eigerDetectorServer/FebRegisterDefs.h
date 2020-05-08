@@ -147,7 +147,7 @@
 /** BEB Registers */
 
 // module configuration - XPAR_PLB_GPIO_SYS_BASEADDR
-#define BEB_CONFIG_OW_OFST        (0x160) // 0x20 * 11 (P11)
+#define BEB_CONFIG_WR_OFST        (0x160) // 0x20 * 11 (P11)
 #define BEB_CONFIG_MASTER_OFST    (0)
 #define BEB_CONFIG_MASTER_MSK     (0x00000001 << BEB_CONFIG_MASTER_OFST)
 #define BEB_CONFIG_OW_MASTER_OFST (1)

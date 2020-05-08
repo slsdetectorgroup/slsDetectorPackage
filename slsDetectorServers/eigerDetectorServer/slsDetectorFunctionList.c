@@ -309,6 +309,14 @@ u_int32_t getDetectorIP() {
 /* initialization */
 
 void initControlServer() {
+    master = -1;
+    top = -1;
+
+    // force top or master if in config file
+    if (readConfigFile() == FAIL) {
+        return;
+    }
+
 #ifdef VIRTUAL
     if (initError == OK) {
         getModuleConfiguration();
@@ -352,7 +360,15 @@ void initControlServer() {
 }
 
 void initStopServer() {
+    master = -1;
+    top = -1;
+
 #ifdef VIRTUAL
+    // force top or master if in config file
+    if (readConfigFile() == FAIL) {
+        return;
+    }
+
     getModuleConfiguration();
     virtual_stop = 0;
     if (!isControlServer) {
@@ -362,6 +378,9 @@ void initStopServer() {
     LOG(logINFORED, ("Deactivated!\n"));
     return;
 #else
+    // wait till control server has configured top/master
+    usleep(2 * 1000 * 1000);
+
     getModuleConfiguration();
     Feb_Interface_FebInterface();
     Feb_Control_FebControl();
@@ -382,22 +401,33 @@ void initStopServer() {
 
 void getModuleConfiguration() {
 #ifdef VIRTUAL
+    // if master not modified by config file
+    if (master == -1) {
 #ifdef VIRTUAL_MASTER
-    master = 1;
-    top = 1;
+        master = 1;
 #else
-    master = 0;
+        master = 0;
+#endif
+    }
+    // if top not modified by config file
+    if (top == -1) {
+#ifdef VIRTUAL_MASTER
+        top = 1;
+#else
 #ifdef VIRTUAL_TOP
-    top = 1;
+        top = 1;
 #else
-    top = 0;
+        top = 0;
 #endif
 #endif
+    }
+
 #ifdef VIRTUAL_9M
     normal = 0;
 #else
     normal = 1;
 #endif
+
 #else
     // read detector id
     char output[255];
@@ -411,10 +441,6 @@ void getModuleConfiguration() {
 
     Beb_GetModuleConfiguration(&master, &top, &normal);
 #endif
-
-    if (readConfigFile() == FAIL) {
-        return;
-    }
     if (isControlServer) {
         LOG(logINFOBLUE,
             ("Module: %s %s %s\n", (top ? "TOP" : "BOTTOM"),
@@ -476,7 +502,8 @@ int readConfigFile() {
                 break;
             }
 #ifndef VIRTUAL
-            if (Beb_SetTop(top) == FAIL) {
+            enum TOPINDEX ind = (top == 1 ? OW_TOP : OW_BOTTOM);
+            if (!Beb_SetTop(ind)) {
                 sprintf(
                     initErrorMessage,
                     "Could not overwrite top to %d in Beb from on-board server "
@@ -484,7 +511,7 @@ int readConfigFile() {
                     top, line);
                 break;
             }
-            if (Feb_Control_SetTop(top, 1, 1) == FAIL) {
+            if (!Feb_Control_SetTop(ind, 1, 1)) {
                 sprintf(
                     initErrorMessage,
                     "Could not overwrite top to %d in Feb from on-board server "
@@ -506,7 +533,8 @@ int readConfigFile() {
                 break;
             }
 #ifndef VIRTUAL
-            if (Beb_SetMaster(master) == FAIL) {
+            enum MASTERINDEX ind = (master == 1 ? OW_MASTER : OW_SLAVE);
+            if (!Beb_SetMaster(ind)) {
                 sprintf(initErrorMessage,
                         "Could not overwrite master to %d in Beb from on-board "
                         "server "
@@ -514,7 +542,7 @@ int readConfigFile() {
                         master, line);
                 break;
             }
-            if (Feb_Control_SetMaster(master) == FAIL) {
+            if (!Feb_Control_SetMaster(ind)) {
                 sprintf(initErrorMessage,
                         "Could not overwrite master to %d in Feb from on-board "
                         "server "
@@ -535,6 +563,39 @@ int readConfigFile() {
         }
     }
     fclose(fd);
+
+    // reset to hardware settings if not in config file (if overwritten)
+#ifndef VIRTUAL
+    if (top == -1) {
+        if (!Beb_SetTop(TOP_HARDWARE)) {
+            initError = FAIL;
+            sprintf(initErrorMessage,
+                    "Could not reset Top flag to Beb hardware settings.\n");
+            return;
+        }
+        if (!Feb_Control_SetTop(TOP_HARDWARE, 1, 1)) {
+            initError = FAIL;
+            sprintf(initErrorMessage,
+                    "Could not reset Top flag to Feb hardware settings.\n");
+            return;
+        }
+    }
+    if (master == -1) {
+        if (!Beb_SetMaster(TOP_HARDWARE)) {
+            initError = FAIL;
+            sprintf(initErrorMessage,
+                    "Could not reset Master flag to Beb hardware settings.\n");
+            return;
+        }
+        if (!Feb_Control_SetMaster(TOP_HARDWARE)) {
+            initError = FAIL;
+            sprintf(initErrorMessage,
+                    "Could not reset Master flag to Feb hardware settings.\n");
+            return;
+        }
+    }
+#endif
+
     if (strlen(initErrorMessage)) {
         initError = FAIL;
         LOG(logERROR, ("%s\n\n", initErrorMessage));

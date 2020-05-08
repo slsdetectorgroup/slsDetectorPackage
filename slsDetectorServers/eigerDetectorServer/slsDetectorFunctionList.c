@@ -456,6 +456,8 @@ int readConfigFile() {
 
     FILE *fd = fopen(CONFIG_FILE, "r");
     if (fd == NULL) {
+        // reset to hardware settings if not in config file (if overwritten)
+        resetToHardwareSettings();
         return OK;
     }
     LOG(logINFO, ("Reading config file %s\n", CONFIG_FILE));
@@ -565,6 +567,18 @@ int readConfigFile() {
     fclose(fd);
 
     // reset to hardware settings if not in config file (if overwritten)
+    resetToHardwareSettings();
+
+    if (strlen(initErrorMessage)) {
+        initError = FAIL;
+        LOG(logERROR, ("%s\n\n", initErrorMessage));
+    } else {
+        LOG(logINFO, ("Successfully read config file\n"));
+    }
+    return initError;
+}
+
+int resetToHardwareSettings() {
 #ifndef VIRTUAL
     if (top == -1) {
         if (!Beb_SetTop(TOP_HARDWARE)) {
@@ -595,14 +609,6 @@ int readConfigFile() {
         }
     }
 #endif
-
-    if (strlen(initErrorMessage)) {
-        initError = FAIL;
-        LOG(logERROR, ("%s\n\n", initErrorMessage));
-    } else {
-        LOG(logINFO, ("Successfully read config file\n"));
-    }
-    return initError;
 }
 
 /* set up detector */

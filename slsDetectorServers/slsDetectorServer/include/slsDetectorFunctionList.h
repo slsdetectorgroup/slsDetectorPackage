@@ -115,6 +115,9 @@ int setDefaultDacs();
 #if defined(GOTTHARD2D) || defined(EIGERD)
 int readConfigFile();
 #endif
+#ifdef EIGERD
+int resetToHardwareSettings();
+#endif
 
 // advanced read/write reg
 #ifdef EIGERD

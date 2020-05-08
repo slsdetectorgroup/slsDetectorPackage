@@ -591,7 +591,7 @@ int setTrimbits(int *trimbits) {
     LOG(logINFOBLUE, ("Setting trimbits\n"));
 
     // validate
-    for (int ichan = 0; ichan < NCHAN; ++ichan) {
+    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
         if (trimbits[ichan] < 0 || trimbits[ichan] > 63) {
             LOG(logERROR, ("Trimbit value (%d) for channel %d is invalid\n",
                            trimbits[ichan], ichan));
@@ -720,7 +720,7 @@ int setTrimbits(int *trimbits) {
     }
 
     // copy trimbits locally
-    for (int ichan = 0; ichan < NCHAN; ++ichan) {
+    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
         detectorChans[ichan] = trimbits[ichan];
     }
     trimmingPrint = logINFO;
@@ -728,8 +728,8 @@ int setTrimbits(int *trimbits) {
 }
 
 int setAllTrimbits(int val) {
-    int *trimbits = malloc(sizeof(int) * NCHAN);
-    for (int ichan = 0; ichan < NCHAN; ++ichan) {
+    int *trimbits = malloc(sizeof(int) * ((detectorModules)->nchan));
+    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
         trimbits[ichan] = val;
     }
     if (setTrimbits(trimbits) == FAIL) {
@@ -748,7 +748,7 @@ int setAllTrimbits(int val) {
 int getAllTrimbits() {
     int value = detectorChans[0];
     if (detectorModules) {
-        for (int ichan = 0; ichan < NCHAN; ichan++) {
+        for (int ichan = 0; ichan < ((detectorModules)->nchan); ichan++) {
             if (detectorChans[ichan] != value) {
                 value = -1;
                 break;

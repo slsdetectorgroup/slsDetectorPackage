@@ -1721,10 +1721,8 @@ int read_register(int file_des) {
 int set_module(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    enum detectorSettings retval = -1;
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) ||        \
-    defined(GOTTHARD2D)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARD2D)
     functionNotImplemented();
 #else
 
@@ -1736,7 +1734,7 @@ int set_module(int file_des) {
 
     // allocate to receive arguments
     // allocate dacs
-    myDac = (int *)malloc(getNumberOfDACs() * sizeof(int));
+    myDac = malloc(getNumberOfDACs() * sizeof(int));
     // error
     if (getNumberOfDACs() > 0 && myDac == NULL) {
         ret = FAIL;
@@ -1745,10 +1743,10 @@ int set_module(int file_des) {
     } else
         module.dacs = myDac;
 
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
     // allocate chans
     if (ret == OK) {
-        myChan = (int *)malloc(getTotalNumberOfChannels() * sizeof(int));
+        myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
         if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
             ret = FAIL;
             sprintf(mess, "Could not allocate chans\n");
@@ -1764,10 +1762,8 @@ int set_module(int file_des) {
         module.ndac = getNumberOfDACs();
         int ts = receiveModule(file_des, &module);
         if (ts < 0) {
-            if (myChan != NULL)
-                free(myChan);
-            if (myDac != NULL)
-                free(myDac);
+            free(myChan);
+            free(myDac);
             return printSocketReadError();
         }
         LOG(logDEBUG1, ("module register is %d, nchan %d, nchip %d, "
@@ -1815,6 +1811,8 @@ int set_module(int file_des) {
         case LOWGAIN:
         case MEDIUMGAIN:
         case VERYHIGHGAIN:
+#elif MYTHEN3D
+        case GET_SETTINGS:
 #endif
             break;
         default:
@@ -1823,17 +1821,17 @@ int set_module(int file_des) {
         }
 
         ret = setModule(module, mess);
-        retval = getSettings();
+#ifndef MYTHEN3D
+        enum detectorSettings retval = getSettings();
         validate(module.reg, (int)retval, "set module (settings)", DEC);
         LOG(logDEBUG1, ("Settings: %d\n", retval));
+#endif
     }
-    if (myChan != NULL)
-        free(myChan);
-    if (myDac != NULL)
-        free(myDac);
+    free(myChan);
+    free(myDac);
 #endif
 
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 int get_module(int file_des) {
@@ -1847,7 +1845,7 @@ int get_module(int file_des) {
 
     // allocate to send arguments
     // allocate dacs
-    myDac = (int *)malloc(getNumberOfDACs() * sizeof(int));
+    myDac = malloc(getNumberOfDACs() * sizeof(int));
     // error
     if (getNumberOfDACs() > 0 && myDac == NULL) {
         ret = FAIL;
@@ -1856,15 +1854,14 @@ int get_module(int file_des) {
     } else
         module.dacs = myDac;
 
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(MYTHEN3D) ||        \
-    defined(GOTTHARD2D)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARD2D)
     functionNotImplemented();
 #endif
 
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
     // allocate chans
     if (ret == OK) {
-        myChan = (int *)malloc(getTotalNumberOfChannels() * sizeof(int));
+        myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
         if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
             ret = FAIL;
             sprintf(mess, "Could not allocate chans\n");
@@ -1882,8 +1879,7 @@ int get_module(int file_des) {
 
         // only get
         LOG(logDEBUG1, ("Getting module\n"));
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D) &&     \
-    !defined(GOTTHARD2D)
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
         getModule(&module);
 #endif
         LOG(logDEBUG1, ("Getting module. Settings:%d\n", module.reg));
@@ -1895,10 +1891,8 @@ int get_module(int file_des) {
     if (ret != FAIL) {
         ret = sendModule(file_des, &module);
     }
-    if (myChan != NULL)
-        free(myChan);
-    if (myDac != NULL)
-        free(myDac);
+    free(myChan);
+    free(myDac);
     return ret;
 }
 
@@ -3141,7 +3135,7 @@ int set_all_trimbits(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Set all trmbits to %d\n", arg));
 
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
 
@@ -3154,10 +3148,12 @@ int set_all_trimbits(int file_des) {
             LOG(logERROR, (mess));
         } else {
             ret = setAllTrimbits(arg);
+#ifdef EIGERD
             // changes settings to undefined
             setSettings(UNDEFINED);
             LOG(logERROR, ("Settings has been changed to undefined (change all "
                            "trimbits)\n"));
+#endif
         }
     }
     // get
@@ -3924,7 +3920,7 @@ int program_fpga(int file_des) {
 
         // receive program
         if (ret == OK) {
-            char *fpgasrc = (char *)malloc(filesize);
+            char *fpgasrc = malloc(filesize);
             if (receiveData(file_des, fpgasrc, filesize, OTHER) < 0)
                 return printSocketReadError();
 
@@ -3932,8 +3928,7 @@ int program_fpga(int file_des) {
             Server_SendResult(file_des, INT32, NULL, 0);
 
             // free resources
-            if (fpgasrc != NULL)
-                free(fpgasrc);
+            free(fpgasrc);
         }
 
 #else // jungfrau, ctb, moench
@@ -3961,7 +3956,7 @@ int program_fpga(int file_des) {
         // erasing flash
         if (ret != FAIL) {
             eraseFlash();
-            fpgasrc = (char *)malloc(MAX_FPGAPROGRAMSIZE);
+            fpgasrc = malloc(MAX_FPGAPROGRAMSIZE);
         }
 
         // writing to flash part by part
@@ -4007,8 +4002,7 @@ int program_fpga(int file_des) {
         stopWritingFPGAprogram(fp);
 
         // free resources
-        if (fpgasrc != NULL)
-            free(fpgasrc);
+        free(fpgasrc);
         if (fp != NULL)
             fclose(fp);
 

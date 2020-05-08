@@ -563,6 +563,8 @@ class CmdProxy {
         {"type", &CmdProxy::type},
         {"detsize", &CmdProxy::DetectorSize},
         {"settings", &CmdProxy::settings},
+        {"trimbits", &CmdProxy::trimbits},
+        {"trimval", &CmdProxy::trimval},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::acquire},
@@ -751,13 +753,11 @@ class CmdProxy {
         {"threshold", &CmdProxy::Threshold},
         {"thresholdnotb", &CmdProxy::ThresholdNoTb},
         {"settingspath", &CmdProxy::settingspath},
-        {"trimbits", &CmdProxy::trimbits},
         {"gappixels", &CmdProxy::GapPixels},
         {"parallel", &CmdProxy::parallel},
         {"overflow", &CmdProxy::overflow},
         {"storeinram", &CmdProxy::storeinram},
         {"flippeddatax", &CmdProxy::flippeddatax},
-        {"trimval", &CmdProxy::trimval},
         {"trimen", &CmdProxy::TrimEnergies},
         {"ratecorr", &CmdProxy::RateCorrection},
         {"readnlines", &CmdProxy::readnlines},
@@ -1031,6 +1031,15 @@ class CmdProxy {
                     "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
                     "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
                     "\n\t[Eiger] Use threshold or thresholdnotb.");
+
+    EXECUTE_SET_COMMAND_NOID_1ARG(
+        trimbits, loadTrimbits,
+        "[fname]\n\t[Eiger][Mythen3] Loads the trimbit file to detector. If no "
+        "extension specified, serial number of each module is attached.");
+
+    INTEGER_COMMAND(trimval, getAllTrimbits, setAllTrimbits, StringTo<int>,
+                    "[n_trimval]\n\t[Eiger][Mythen3] All trimbits set to this "
+                    "value. Returns -1 if all trimbits are different values.");
 
     /* acquisition parameters */
 
@@ -1740,11 +1749,6 @@ class CmdProxy {
         settingspath, getSettingsPath, setSettingsPath,
         "[path]\n\t[Eiger] Directory where settings files are loaded from/to.");
 
-    EXECUTE_SET_COMMAND_NOID_1ARG(
-        trimbits, loadTrimbits,
-        "[fname]\n\t[Eiger] Loads the trimbit file to detector. If no "
-        "extension specified, serial number of each module is attached.");
-
     INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, StringTo<int>,
                     "[0, 1]\n\t[Eiger] Enable or disable parallel mode.");
 
@@ -1761,10 +1765,6 @@ class CmdProxy {
         "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 "
         "is top. Used to let Receivers and Gui know to flip the bottom image "
         "over the x axis. Files are not written without the flip however.");
-
-    INTEGER_COMMAND(trimval, getAllTrimbits, setAllTrimbits, StringTo<int>,
-                    "[n_trimval]\n\t[Eiger] All trimbits set to this value. A "
-                    "get returns -1 if all trimbits are different values.");
 
     INTEGER_COMMAND(
         readnlines, getPartialReadout, setPartialReadout, StringTo<int>,

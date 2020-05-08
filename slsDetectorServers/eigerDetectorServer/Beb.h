@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdlib.h>
 #include "LocalLinkInterface.h"
 #include "slsDetectorServer_defs.h"
 

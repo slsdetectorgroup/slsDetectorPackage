@@ -217,9 +217,8 @@ int testBus() {
     int ret = OK;
     u_int32_t addr = DTA_OFFSET_REG;
     u_int32_t times = 1000 * 1000;
-    u_int32_t i = 0;
 
-    for (i = 0; i < times; ++i) {
+    for (u_int32_t i = 0; i < times; ++i) {
         bus_w(addr, i * 100);
         if (i * 100 != bus_r(addr)) {
             LOG(logERROR,
@@ -375,26 +374,23 @@ void setupDetector() {
     delayReg = 0;
     numBurstsReg = 1;
     burstPeriodReg = 0;
-    {
-        int i, j;
-        for (i = 0; i < NUM_CLOCKS; ++i) {
-            clkPhase[i] = 0;
+    for (int i = 0; i < NUM_CLOCKS; ++i) {
+        clkPhase[i] = 0;
+    }
+    for (int i = 0; i < NDAC; ++i) {
+        dacValues[i] = 0;
+    }
+    for (int i = 0; i < ONCHIP_NDAC; ++i) {
+        for (int j = 0; j < NCHIP; ++j) {
+            onChipdacValues[i][j] = -1;
         }
-        for (i = 0; i < NDAC; ++i) {
-            dacValues[i] = 0;
+    }
+    for (int i = 0; i < NCHIP; ++i) {
+        for (int j = 0; j < NCHAN; ++j) {
+            vetoReference[i][j] = 0;
         }
-        for (i = 0; i < ONCHIP_NDAC; ++i) {
-            for (j = 0; j < NCHIP; ++j) {
-                onChipdacValues[i][j] = -1;
-            }
-        }
-        for (i = 0; i < NCHIP; ++i) {
-            for (j = 0; j < NCHAN; ++j) {
-                vetoReference[i][j] = 0;
-            }
-            for (j = 0; j < NADC; ++j) {
-                adcConfiguration[i][j] = 0;
-            }
+        for (int j = 0; j < NADC; ++j) {
+            adcConfiguration[i][j] = 0;
         }
     }
 #ifdef VIRTUAL
@@ -647,9 +643,8 @@ int readConfigFile() {
                 adcmax = iadc + 1;
             }
 
-            int i, j;
-            for (i = chipmin; i < chipmax; ++i) {
-                for (j = adcmin; j < adcmax; ++j) {
+            for (int i = chipmin; i < chipmax; ++i) {
+                for (int j = adcmin; j < adcmax; ++j) {
                     adcConfiguration[i][j] = (uint8_t)value;
                     ++nadcRead;
                 }
@@ -776,13 +771,10 @@ int readConfigFile() {
                     nadcRead, NADC * NCHIP);
         }
     }
-    {
-        int i = 0, j = 0;
-        for (i = 0; i < NCHIP; ++i) {
-            for (j = 0; j < NADC; ++j) {
-                LOG(logDEBUG2, ("adc read %d %d: 0x%02hhx\n", i, j,
-                                adcConfiguration[i][j]));
-            }
+    for (int i = 0; i < NCHIP; ++i) {
+        for (int j = 0; j < NADC; ++j) {
+            LOG(logDEBUG2,
+                ("adc read %d %d: 0x%02hhx\n", i, j, adcConfiguration[i][j]));
         }
     }
 
@@ -1143,8 +1135,7 @@ int setOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex, int val) {
     }
     // all chips
     if (chipIndex == -1) {
-        int ichip = 0;
-        for (ichip = 0; ichip < NCHIP; ++ichip) {
+        for (int ichip = 0; ichip < NCHIP; ++ichip) {
             onChipdacValues[ind][ichip] = val;
         }
     }
@@ -1160,9 +1151,8 @@ int getOnChipDAC(enum ONCHIP_DACINDEX ind, int chipIndex) {
     // all chips
     if (chipIndex == -1) {
         int retval = onChipdacValues[ind][0];
-        int ichip = 0;
         // check if same value for remaining chips
-        for (ichip = 1; ichip < NCHIP; ++ichip) {
+        for (int ichip = 1; ichip < NCHIP; ++ichip) {
             if (onChipdacValues[ind][ichip] != retval) {
                 return -1;
             }
@@ -1641,8 +1631,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     // Remembering old phases in degrees
     int oldPhases[NUM_CLOCKS];
     {
-        int i = 0;
-        for (i = 0; i < NUM_CLOCKS; ++i) {
+        for (int i = 0; i < NUM_CLOCKS; ++i) {
             oldPhases[i] = getPhase(i, 1);
             LOG(logDEBUG1, ("\tRemembering %s clock (%d) phase: %d degrees\n",
                             clock_names[ind], ind, oldPhases[i]));
@@ -1673,16 +1662,13 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     }
 
     // set the phase in degrees (reset by pll)
-    {
-        int i = 0;
-        for (i = 0; i < NUM_CLOCKS; ++i) {
-            int currPhaseDeg = getPhase(i, 1);
-            if (oldPhases[i] != currPhaseDeg) {
-                LOG(logINFO,
-                    ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n",
-                     clock_names[i], i, currPhaseDeg, oldPhases[i]));
-                setPhase(i, oldPhases[i], 1);
-            }
+    for (int i = 0; i < NUM_CLOCKS; ++i) {
+        int currPhaseDeg = getPhase(i, 1);
+        if (oldPhases[i] != currPhaseDeg) {
+            LOG(logINFO,
+                ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n",
+                 clock_names[i], i, currPhaseDeg, oldPhases[i]));
+            setPhase(i, oldPhases[i], 1);
         }
     }
     return OK;
@@ -1711,8 +1697,8 @@ int setInjectChannel(int offset, int increment) {
     char buffer[17];
     memset(buffer, 0, sizeof(buffer));
     int startCh = 4; // 4 due to padding
-    int ich = 0;
-    for (ich = startCh + offset; ich < startCh + NCHAN; ich = ich + increment) {
+    for (int ich = startCh + offset; ich < startCh + NCHAN;
+         ich = ich + increment) {
         int byteIndex = ich / 8;
         int bitIndex = ich % 8;
         buffer[byteIndex] |= (1 << (8 - 1 - bitIndex));
@@ -1741,8 +1727,7 @@ int setVetoReference(int gainIndex, int value) {
                   gainIndex, value));
     int vals[NCHAN];
     memset(vals, 0, sizeof(vals));
-    int ich = 0;
-    for (ich = 0; ich < NCHAN; ++ich) {
+    for (int ich = 0; ich < NCHAN; ++ich) {
         vals[ich] = value;
     }
     return setVetoPhoton(-1, gainIndex, vals);
@@ -1770,8 +1755,7 @@ int setVetoPhoton(int chipIndex, int gainIndex, int *values) {
             return FAIL;
         }
         LOG(logDEBUG2, ("Adding gain bits\n"));
-        int i = 0;
-        for (i = 0; i < NCHAN; ++i) {
+        for (int i = 0; i < NCHAN; ++i) {
             values[i] |= gainValue;
             LOG(logDEBUG2, ("Value %d: 0x%x\n", i, values[i]));
         }
@@ -1787,8 +1771,7 @@ int setVetoPhoton(int chipIndex, int gainIndex, int *values) {
     uint8_t commandBytes[lenTotalBits];
     memset(commandBytes, 0, sizeof(commandBytes));
     int offset = padding; // bit offset for commandbytes
-    int ich = 0;
-    for (ich = 0; ich < NCHAN; ++ich) {
+    for (int ich = 0; ich < NCHAN; ++ich) {
         // loop through all bits in a value
         int iBit = 0;
         for (iBit = 0; iBit < lenDataBitsPerchannel; ++iBit) {
@@ -1803,10 +1786,9 @@ int setVetoPhoton(int chipIndex, int gainIndex, int *values) {
     memset(buffer, 0, len);
     offset = 0;
     // loop through buffer elements
-    for (ich = 0; ich < len; ++ich) {
+    for (int ich = 0; ich < len; ++ich) {
         // loop through each bit in buffer element
-        int iBit = 0;
-        for (iBit = 0; iBit < 8; ++iBit) {
+        for (int iBit = 0; iBit < 8; ++iBit) {
             buffer[ich] |= (commandBytes[offset++] << (8 - 1 - iBit));
         }
     }
@@ -1820,10 +1802,8 @@ int setVetoPhoton(int chipIndex, int gainIndex, int *values) {
 
     // all chips
     if (chipIndex == -1) {
-        int ichip = 0;
-        int ichan = 0;
-        for (ichan = 0; ichan < NCHAN; ++ichan) {
-            for (ichip = 0; ichip < NCHIP; ++ichip) {
+        for (int ichan = 0; ichan < NCHAN; ++ichan) {
+            for (int ichip = 0; ichip < NCHIP; ++ichip) {
                 vetoReference[ichip][ichan] = values[ichan];
             }
         }
@@ -1831,8 +1811,7 @@ int setVetoPhoton(int chipIndex, int gainIndex, int *values) {
 
     // specific chip
     else {
-        int ichan = 0;
-        for (ichan = 0; ichan < NCHAN; ++ichan) {
+        for (int ichan = 0; ichan < NCHAN; ++ichan) {
             vetoReference[chipIndex][chipIndex] = values[ichan];
             ;
         }
@@ -1842,10 +1821,9 @@ int setVetoPhoton(int chipIndex, int gainIndex, int *values) {
 
 int getVetoPhoton(int chipIndex, int *retvals) {
     if (chipIndex == -1) {
-        int i = 0, j = 0;
-        for (i = 0; i < NCHAN; ++i) {
+        for (int i = 0; i < NCHAN; ++i) {
             int val = vetoReference[0][i];
-            for (j = 1; j < NCHIP; ++j) {
+            for (int j = 1; j < NCHIP; ++j) {
                 if (vetoReference[j][i] != val) {
                     LOG(logERROR,
                         ("Get vet photon fail for chipIndex:%d. Different "
@@ -1876,14 +1854,11 @@ int configureSingleADCDriver(int chipIndex) {
     memcpy(values, adcConfiguration + ind * NADC, NADC);
 
     // change adc values if continuous mode
-    {
-        int i = 0;
-        for (i = 0; i < NADC; ++i) {
-            if (burstMode == BURST_OFF) {
-                values[i] |= ASIC_CONTINUOUS_MODE_MSK;
-            }
-            LOG(logDEBUG2, ("Value %d: 0x%02hhx\n", i, values[i]));
+    for (int i = 0; i < NADC; ++i) {
+        if (burstMode == BURST_OFF) {
+            values[i] |= ASIC_CONTINUOUS_MODE_MSK;
         }
+        LOG(logDEBUG2, ("Value %d: 0x%02hhx\n", i, values[i]));
     }
 
     const int lenDataBitsPerADC = ASIC_ADC_MAX_BITS; // 7
@@ -1896,11 +1871,9 @@ int configureSingleADCDriver(int chipIndex) {
     uint8_t commandBytes[lenTotalBits];
     memset(commandBytes, 0, sizeof(commandBytes));
     int offset = padding; // bit offset for commandbytes
-    int ich = 0;
-    for (ich = 0; ich < NADC; ++ich) {
+    for (int ich = 0; ich < NADC; ++ich) {
         // loop through all bits in a value
-        int iBit = 0;
-        for (iBit = 0; iBit < lenDataBitsPerADC; ++iBit) {
+        for (int iBit = 0; iBit < lenDataBitsPerADC; ++iBit) {
             commandBytes[offset++] =
                 ((values[ich] >> (lenDataBitsPerADC - 1 - iBit)) & 0x1);
         }
@@ -1912,10 +1885,9 @@ int configureSingleADCDriver(int chipIndex) {
     memset(buffer, 0, len);
     offset = 0;
     // loop through buffer elements
-    for (ich = 0; ich < len; ++ich) {
+    for (int ich = 0; ich < len; ++ich) {
         // loop through each bit in buffer element
-        int iBit = 0;
-        for (iBit = 0; iBit < 8; ++iBit) {
+        for (int iBit = 0; iBit < 8; ++iBit) {
             buffer[ich] |= (commandBytes[offset++] << (8 - 1 - iBit));
         }
     }
@@ -1934,23 +1906,19 @@ int configureADC() {
     LOG(logINFO, ("Configuring ADC \n"));
 
     int equal = 1;
-    {
-        int i = 0, j = 0;
-        for (i = 0; i < NADC; ++i) {
-            int val = adcConfiguration[0][i];
-            for (j = 1; j < NCHIP; ++j) {
-                if (adcConfiguration[j][i] != val) {
-                    equal = 0;
-                    break;
-                }
+    for (int i = 0; i < NADC; ++i) {
+        int val = adcConfiguration[0][i];
+        for (int j = 1; j < NCHIP; ++j) {
+            if (adcConfiguration[j][i] != val) {
+                equal = 0;
+                break;
             }
         }
     }
     if (equal) {
         return configureSingleADCDriver(-1);
     } else {
-        int i = 0;
-        for (i = 0; i < NCHIP; ++i) {
+        for (int i = 0; i < NCHIP; ++i) {
             if (configureSingleADCDriver(i) == FAIL) {
                 return FAIL;
             }
@@ -2075,10 +2043,8 @@ int setBurstMode(enum burstMode burst) {
     uint8_t commandBytes[lenTotalBits];
     memset(commandBytes, 0, sizeof(commandBytes));
     int offset = padding; // bit offset for commandbytes
-    int ich = 0;
     // loop through all bits in a value
-    int iBit = 0;
-    for (iBit = 0; iBit < ASIC_GLOBAL_SETT_MAX_BITS; ++iBit) {
+    for (int iBit = 0; iBit < ASIC_GLOBAL_SETT_MAX_BITS; ++iBit) {
         commandBytes[offset++] =
             ((value >> (ASIC_GLOBAL_SETT_MAX_BITS - 1 - iBit)) & 0x1);
     }
@@ -2089,10 +2055,9 @@ int setBurstMode(enum burstMode burst) {
     memset(buffer, 0, len);
     offset = 0;
     // loop through buffer elements
-    for (ich = 0; ich < len; ++ich) {
+    for (int ich = 0; ich < len; ++ich) {
         // loop through each bit in buffer element
-        int iBit = 0;
-        for (iBit = 0; iBit < 8; ++iBit) {
+        for (int iBit = 0; iBit < 8; ++iBit) {
             buffer[ich] |= (commandBytes[offset++] << (8 - 1 - iBit));
         }
     }
@@ -2235,25 +2200,20 @@ void *start_timer(void *arg) {
     // Generate data
     char imageData[imagesize];
     memset(imageData, 0, imagesize);
-    {
-        int i = 0;
-        for (i = 0; i < imagesize; i += sizeof(uint16_t)) {
-            *((uint16_t *)(imageData + i)) = i;
-        }
+    for (int i = 0; i < imagesize; i += sizeof(uint16_t)) {
+        *((uint16_t *)(imageData + i)) = i;
     }
 
     {
-        int repeatNr = 0;
         int frameHeaderNr = 0;
         // loop over number of repeats
-        for (repeatNr = 0; repeatNr != numRepeats; ++repeatNr) {
+        for (int repeatNr = 0; repeatNr != numRepeats; ++repeatNr) {
 
             struct timespec rbegin, rend;
             clock_gettime(CLOCK_REALTIME, &rbegin);
 
-            int frameNr = 0;
             // loop over number of frames
-            for (frameNr = 0; frameNr != numFrames; ++frameNr) {
+            for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
 
                 // update the virtual stop from stop server
                 virtual_stop = ComVirtual_getStop();

@@ -108,6 +108,15 @@ class Detector {
      */
     void setSettings(defs::detectorSettings value, Positions pos = {});
 
+    /** [Eiger][Mythen3] */
+    void loadTrimbits(const std::string &fname, Positions pos = {});
+
+    /** [Eiger][Mythen3] -1 if they are all different */
+    Result<int> getAllTrimbits(Positions pos = {}) const;
+
+    /**[Eiger][Mythen3] */
+    void setAllTrimbits(int value, Positions pos = {});
+
     /**************************************************
      *                                                *
      *    Callbacks                                   *
@@ -716,9 +725,6 @@ class Detector {
     void setSettingsPath(const std::string &value, Positions pos = {});
 
     /** [Eiger] */
-    void loadTrimbits(const std::string &fname, Positions pos = {});
-
-    /** [Eiger] */
     Result<bool> getParallelMode(Positions pos = {}) const;
 
     /** [Eiger] */
@@ -741,12 +747,6 @@ class Detector {
 
     /** [Eiger] for client call back (gui) purposes */
     void setBottom(bool value, Positions pos = {});
-
-    /** [Eiger] -1 if they are all different */
-    Result<int> getAllTrimbits(Positions pos = {}) const;
-
-    /**[Eiger] */
-    void setAllTrimbits(int value, Positions pos = {});
 
     /**[Eiger] Returns energies in eV where the module is trimmed */
     Result<std::vector<int>> getTrimEnergies(Positions pos = {}) const;

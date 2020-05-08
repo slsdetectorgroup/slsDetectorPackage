@@ -99,7 +99,7 @@ void getModuleConfiguration();
 #endif
 
 // set up detector
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
 void allocateDetectorStructureMemory();
 #endif
 void setupDetector();
@@ -252,10 +252,16 @@ int64_t getMeasurementTime();
 #endif
 
 // parameters - module, settings
-#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) &&                       \
-    (!defined(MYTHEN3D)) && (!defined(GOTTHARD2D))
+#if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(GOTTHARD2D))
 int setModule(sls_detector_module myMod, char *mess);
 int getModule(sls_detector_module *myMod);
+#endif
+#ifdef MYTHEN3D
+int setTrimbits(int *trimbits);
+int setBit(int ibit, int patword);
+int clearBit(int ibit, int patword);
+int setAllTrimbits(int val);
+int getAllTrimbits();
 #endif
 #if (!defined(CHIPTESTBOARDD)) && (!defined(MYTHEN3D))
 enum detectorSettings setSettings(enum detectorSettings sett);
@@ -534,7 +540,7 @@ u_int32_t runState(enum TLogLevel lev);
 #endif
 
 // common
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);
 #endif
 int calculateDataBytes();

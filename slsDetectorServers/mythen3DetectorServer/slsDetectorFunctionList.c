@@ -39,11 +39,15 @@ int virtual_status = 0;
 int virtual_stop = 0;
 #endif
 
+sls_detector_module *detectorModules = NULL;
+int *detectorChans = NULL;
+int *detectorDacs = NULL;
+
+enum TLogLevel trimmingPrint = logINFO;
 int32_t clkPhase[NUM_CLOCKS] = {};
 uint32_t clkDivider[NUM_CLOCKS] = {};
 
 int highvoltage = 0;
-int dacValues[NDAC] = {};
 int detPos[2] = {};
 uint32_t countermask =
     0; // will be removed later when in firmware converted to mask
@@ -204,9 +208,8 @@ int testBus() {
     int ret = OK;
     u_int32_t addr = DTA_OFFSET_REG;
     u_int32_t times = 1000 * 1000;
-    u_int32_t i = 0;
 
-    for (i = 0; i < times; ++i) {
+    for (u_int32_t i = 0; i < times; ++i) {
         bus_w(addr, i * 100);
         if (i * 100 != bus_r(addr)) {
             LOG(logERROR,
@@ -340,8 +343,41 @@ void initStopServer() {
 
 /* set up detector */
 
+void allocateDetectorStructureMemory() {
+    // Allocation of memory
+    detectorModules = malloc(sizeof(sls_detector_module));
+    detectorChans = malloc(NCHIP * NCHAN * sizeof(int));
+    detectorDacs = malloc(NDAC * sizeof(int));
+    LOG(logDEBUG1,
+        ("modules from 0x%x to 0x%x\n", detectorModules, detectorModules));
+    LOG(logDEBUG1, ("chans from 0x%x to 0x%x\n", detectorChans, detectorChans));
+    LOG(logDEBUG1, ("dacs from 0x%x to 0x%x\n", detectorDacs, detectorDacs));
+    (detectorModules)->dacs = detectorDacs;
+    (detectorModules)->chanregs = detectorChans;
+    (detectorModules)->ndac = NDAC;
+    (detectorModules)->nchip = NCHIP;
+    (detectorModules)->nchan = NCHIP * NCHAN;
+    (detectorModules)->reg = UNINITIALIZED;
+    (detectorModules)->iodelay = 0;
+    (detectorModules)->tau = 0;
+    (detectorModules)->eV = 0;
+    // thisSettings = UNINITIALIZED;
+
+    // initialize dacs
+    for (int idac = 0; idac < (detectorModules)->ndac; ++idac) {
+        detectorDacs[idac] = 0;
+    }
+
+    // if trimval requested, should return -1 to acknowledge unknown
+    for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
+        *((detectorModules->chanregs) + ichan) = -1;
+    }
+}
+
 void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Mythen3 module \n"));
+
+    allocateDetectorStructureMemory();
 
     clkDivider[READOUT_C0] = DEFAULT_READOUT_C0;
     clkDivider[READOUT_C1] = DEFAULT_READOUT_C1;
@@ -350,14 +386,9 @@ void setupDetector() {
     clkDivider[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
 
     highvoltage = 0;
-    {
-        int i;
-        for (i = 0; i < NUM_CLOCKS; ++i) {
-            clkPhase[i] = 0;
-        }
-        for (i = 0; i < NDAC; ++i) {
-            dacValues[i] = 0;
-        }
+    trimmingPrint = logINFO;
+    for (int i = 0; i < NUM_CLOCKS; ++i) {
+        clkPhase[i] = 0;
     }
 #ifdef VIRTUAL
     virtual_status = 0;
@@ -404,10 +435,13 @@ int setDefaultDacs() {
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     {
-        int i = 0;
         const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
-        for (i = 0; i < NDAC; ++i) {
+        for (int i = 0; i < NDAC; ++i) {
             setDAC((enum DACINDEX)i, defaultvals[i], 0);
+            if (detectorDacs[i] != defaultvals[i]) {
+                LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
+                               defaultvals[i], detectorDacs[i]));
+            }
         }
     }
     return ret;
@@ -484,7 +518,251 @@ int setDynamicRange(int dr) {
     }
 }
 
-/* parameters - speed, readout */
+/* parameters - module, speed, readout */
+
+int setModule(sls_detector_module myMod, char *mess) {
+
+    LOG(logINFO, ("Setting module\n"));
+
+    /* future implementation
+    // settings (not yet implemented)
+    setSettings((enum detectorSettings)myMod.reg);
+    if (myMod.reg >= 0) {
+        detectorModules->reg = myMod.reg;
+    }
+
+    // threshold
+    if (myMod.eV >= 0)
+        setThresholdEnergy(myMod.eV);
+    else {
+        // (loading a random trim file) (dont return fail)
+        setSettings(UNDEFINED);
+        LOG(logERROR,
+            ("Settings has been changed to undefined (random trim
+            file)\n"));
+    }
+    */
+
+    // dacs
+    for (int i = 0; i < NDAC; ++i) {
+        // ignore dacs with -1
+        if (myMod.dacs[i] != -1) {
+            setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
+            if (myMod.dacs[i] != detectorDacs[i]) {
+                sprintf(mess, "Could not set module. Could not set dac %d\n",
+                        i);
+                LOG(logERROR, (mess));
+                // setSettings(UNDEFINED);
+                // LOG(logERROR, ("Settings has been changed to undefined\n"));
+                return FAIL;
+            }
+        }
+    }
+
+    // trimbits
+    if (myMod.nchan == 0) {
+        LOG(logINFO, ("Setting module without trimbits\n"));
+    } else {
+        // set trimbits
+        if (setTrimbits(myMod.chanregs) == FAIL) {
+            sprintf(mess, "Could not set module. Could not set trimbits\n");
+            LOG(logERROR, (mess));
+            // setSettings(UNDEFINED);
+            // LOG(logERROR, ("Settings has been changed to undefined (random "
+            //               "trim file)\n"));
+            return FAIL;
+        }
+    }
+
+    return OK;
+}
+
+int getModule(sls_detector_module *myMod) {
+    // copy local module to myMod
+    if (detectorModules) {
+        if (copyModule(myMod, detectorModules) == FAIL)
+            return FAIL;
+    } else
+        return FAIL;
+    return OK;
+}
+
+int setBit(int ibit, int patword) { return patword |= (1 << ibit); }
+
+int clearBit(int ibit, int patword) { return patword &= ~(1 << ibit); }
+
+int setTrimbits(int *trimbits) {
+    LOG(logINFOBLUE, ("Setting trimbits\n"));
+
+    // validate
+    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
+        if (trimbits[ichan] < 0 || trimbits[ichan] > 63) {
+            LOG(logERROR, ("Trimbit value (%d) for channel %d is invalid\n",
+                           trimbits[ichan], ichan));
+            return FAIL;
+        }
+    }
+    LOG(logINFO, ("Trimbits validated\n"));
+    trimmingPrint = logDEBUG5;
+
+    uint64_t patword = 0;
+    int iaddr = 0;
+    for (int ichip = 0; ichip < NCHIP; ichip++) {
+        LOG(logDEBUG1, (" Chip %d\n", ichip));
+        iaddr = 0;
+        patword = 0;
+        writePatternWord(iaddr++, patword);
+
+        // chip select
+        patword = setBit(SIGNAL_TBLoad_1 + ichip, patword);
+        writePatternWord(iaddr++, patword);
+
+        // reset trimbits
+        patword = setBit(SIGNAL_resStorage, patword);
+        patword = setBit(SIGNAL_resCounter, patword);
+        writePatternWord(iaddr++, patword);
+        writePatternWord(iaddr++, patword);
+        patword = clearBit(SIGNAL_resStorage, patword);
+        patword = clearBit(SIGNAL_resCounter, patword);
+        writePatternWord(iaddr++, patword);
+        writePatternWord(iaddr++, patword);
+
+        // select first channel
+        patword = setBit(SIGNAL_CHSserialIN, patword);
+        writePatternWord(iaddr++, patword);
+        // 1 clk pulse
+        patword = setBit(SIGNAL_CHSclk, patword);
+        writePatternWord(iaddr++, patword);
+        patword = clearBit(SIGNAL_CHSclk, patword);
+        // clear 1st channel
+        writePatternWord(iaddr++, patword);
+        patword = clearBit(SIGNAL_CHSserialIN, patword);
+        // 2 clk pulses
+        for (int i = 0; i < 2; i++) {
+            patword = setBit(SIGNAL_CHSclk, patword);
+            writePatternWord(iaddr++, patword);
+            patword = clearBit(SIGNAL_CHSclk, patword);
+            writePatternWord(iaddr++, patword);
+        }
+
+        // for each channel (all chips)
+        for (int ich = 0; ich < NCHAN_1_COUNTER; ich++) {
+            LOG(logDEBUG1, (" Chip %d, Channel %d\n", ichip, ich));
+            int val = trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
+                               NCOUNTERS * ich] +
+                      trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
+                               NCOUNTERS * ich + 1] *
+                          64 +
+                      trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
+                               NCOUNTERS * ich + 2] *
+                          64 * 64;
+
+            // push 6 0 bits
+            for (int i = 0; i < 6; i++) {
+                patword = clearBit(SIGNAL_serialIN, patword);
+                patword = clearBit(SIGNAL_clk, patword);
+                writePatternWord(iaddr++, patword);
+                patword = setBit(SIGNAL_clk, patword);
+                writePatternWord(iaddr++, patword);
+            }
+
+            // deserialize
+            for (int i = 0; i < 18; i++) {
+                if (val & (1 << i)) {
+                    patword = setBit(SIGNAL_serialIN, patword);
+                } else {
+                    patword = clearBit(SIGNAL_serialIN, patword);
+                }
+                patword = clearBit(SIGNAL_clk, patword);
+                writePatternWord(iaddr++, patword);
+
+                patword = setBit(SIGNAL_clk, patword);
+                writePatternWord(iaddr++, patword);
+            }
+            writePatternWord(iaddr++, patword);
+            writePatternWord(iaddr++, patword);
+
+            // move to next channel
+            for (int i = 0; i < 3; i++) {
+                patword = setBit(SIGNAL_CHSclk, patword);
+                writePatternWord(iaddr++, patword);
+                patword = clearBit(SIGNAL_CHSclk, patword);
+                writePatternWord(iaddr++, patword);
+            }
+        }
+        // chip unselect
+        patword = clearBit(SIGNAL_TBLoad_1 + ichip, patword);
+        writePatternWord(iaddr++, patword);
+
+        // last iaddr check
+        if (iaddr >= MAX_PATTERN_LENGTH) {
+            LOG(logERROR, ("Addr 0x%x is past max_address_length 0x%x!\n",
+                           iaddr, MAX_PATTERN_LENGTH));
+            trimmingPrint = logINFO;
+            return FAIL;
+        }
+
+        // set pattern wait address
+        for (int i = 0; i <= 2; i++)
+            setPatternWaitAddress(i, MAX_PATTERN_LENGTH - 1);
+
+        // pattern loop
+        for (int i = 0; i <= 2; i++) {
+            int stop = MAX_PATTERN_LENGTH - 1, nloop = 0;
+            setPatternLoop(i, &stop, &stop, &nloop);
+        }
+
+        // pattern limits
+        {
+            int start = 0, nloop = 0;
+            setPatternLoop(-1, &start, &iaddr, &nloop);
+        }
+        // load the trimbits
+#ifndef VIRTUAL
+        startStateMachine();
+#endif
+    }
+
+    // copy trimbits locally
+    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
+        detectorChans[ichan] = trimbits[ichan];
+    }
+    trimmingPrint = logINFO;
+    LOG(logINFO, ("All trimbits have been loaded\n"));
+    return OK;
+}
+
+int setAllTrimbits(int val) {
+    int *trimbits = malloc(sizeof(int) * ((detectorModules)->nchan));
+    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
+        trimbits[ichan] = val;
+    }
+    if (setTrimbits(trimbits) == FAIL) {
+        LOG(logERROR, ("Could not set all trimbits to %d\n", val));
+        free(trimbits);
+        return FAIL;
+    }
+    // setSettings(UNDEFINED);
+    // LOG(logERROR, ("Settings has been changed to undefined (random "
+    //               "trim file)\n"));
+    LOG(logINFO, ("All trimbits have been set to %d\n", val));
+    free(trimbits);
+    return OK;
+}
+
+int getAllTrimbits() {
+    int value = detectorChans[0];
+    if (detectorModules) {
+        for (int ichan = 0; ichan < ((detectorModules)->nchan); ichan++) {
+            if (detectorChans[ichan] != value) {
+                value = -1;
+                break;
+            }
+        }
+    }
+    LOG(logINFO, ("Value of all Trimbits: %d\n", value));
+    return value;
+}
 
 void setNumFrames(int64_t val) {
     if (val > 0) {
@@ -686,29 +964,29 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
                   val, (mV ? "mV" : "dac units")));
     if (!mV) {
-        dacValues[ind] = val;
+        detectorDacs[ind] = val;
     }
     // convert to dac units
     else if (LTC2620_D_VoltageToDac(val, &dacval) == OK) {
-        dacValues[ind] = dacval;
+        detectorDacs[ind] = dacval;
     }
 #else
     if (LTC2620_D_SetDACValue((int)ind, val, mV, dac_names[ind], &dacval) ==
         OK) {
-        dacValues[ind] = dacval;
+        detectorDacs[ind] = dacval;
     }
 #endif
 }
 
 int getDAC(enum DACINDEX ind, int mV) {
     if (!mV) {
-        LOG(logDEBUG1, ("Getting DAC %d : %d dac\n", ind, dacValues[ind]));
-        return dacValues[ind];
+        LOG(logDEBUG1, ("Getting DAC %d : %d dac\n", ind, detectorDacs[ind]));
+        return detectorDacs[ind];
     }
     int voltage = -1;
-    LTC2620_D_DacToVoltage(dacValues[ind], &voltage);
+    LTC2620_D_DacToVoltage(detectorDacs[ind], &voltage);
     LOG(logDEBUG1,
-        ("Getting DAC %d : %d dac (%d mV)\n", ind, dacValues[ind], voltage));
+        ("Getting DAC %d : %d dac (%d mV)\n", ind, detectorDacs[ind], voltage));
     return voltage;
 }
 
@@ -918,7 +1196,7 @@ uint64_t readPatternWord(int addr) {
         return -1;
     }
 
-    LOG(logINFO, ("  Reading Pattern Word (addr:0x%x)\n", addr));
+    LOG(trimmingPrint, ("  Reading Pattern Word (addr:0x%x)\n", addr));
     uint32_t reg_lsb =
         PATTERN_STEP0_LSB_REG +
         addr * REG_OFFSET * 2; // the first word in RAM as base plus the offset
@@ -934,6 +1212,7 @@ uint64_t readPatternWord(int addr) {
 }
 
 uint64_t writePatternWord(int addr, uint64_t word) {
+
     // get
     if ((int64_t)word == -1)
         return readPatternWord(addr);
@@ -945,25 +1224,23 @@ uint64_t writePatternWord(int addr, uint64_t word) {
                        addr, MAX_PATTERN_LENGTH));
         return -1;
     }
+    LOG(trimmingPrint, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n", addr,
+                        (long long int)word));
 
-    LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n", addr,
-                  (long long int)word));
+    // write word
     uint32_t reg_lsb =
         PATTERN_STEP0_LSB_REG +
         addr * REG_OFFSET * 2; // the first word in RAM as base plus the offset
                                // of the word to write (addr)
     uint32_t reg_msb = PATTERN_STEP0_MSB_REG + addr * REG_OFFSET * 2;
-
-    // write word
     set64BitReg(word, reg_lsb, reg_msb);
+
     LOG(logDEBUG1, ("  Wrote word. PatternIn Reg: 0x%llx\n",
                     get64BitReg(reg_lsb, reg_msb)));
-
     return readPatternWord(addr);
 }
 
 int setPatternWaitAddress(int level, int addr) {
-
     // error (handled in tcp)
     if (addr >= MAX_PATTERN_LENGTH) {
         LOG(logERROR, ("Cannot set Pattern Wait Address. Invalid addr 0x%x. "
@@ -1001,8 +1278,9 @@ int setPatternWaitAddress(int level, int addr) {
 
     // set
     if (addr >= 0) {
-        LOG(logINFO, ("Setting Pattern Wait Address (level:%d, addr:0x%x)\n",
-                      level, addr));
+        LOG(trimmingPrint,
+            ("Setting Pattern Wait Address (level:%d, addr:0x%x)\n", level,
+             addr));
         bus_w(reg, ((addr << offset) & mask));
     }
 
@@ -1039,8 +1317,8 @@ uint64_t setPatternWaitTime(int level, uint64_t t) {
 
     // set
     if ((int64_t)t >= 0) {
-        LOG(logINFO, ("Setting Pattern Wait Time (level:%d, t:%lld)\n", level,
-                      (long long int)t));
+        LOG(trimmingPrint, ("Setting Pattern Wait Time (level:%d, t:%lld)\n",
+                            level, (long long int)t));
         set64BitReg(t, regl, regm);
     }
 
@@ -1059,6 +1337,10 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
                        "stopaddr:0x%x) must be "
                        "less than 0x%x\n",
                        *startAddr, *stopAddr, MAX_PATTERN_LENGTH));
+        *startAddr = -1;
+        *stopAddr = -1;
+        *nLoop = -1;
+        return;
     }
 
     uint32_t addr = 0;
@@ -1116,7 +1398,7 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
     if (level >= 0) {
         // set iteration
         if (*nLoop >= 0) {
-            LOG(logINFO,
+            LOG(trimmingPrint,
                 ("Setting Pattern Loop (level:%d, nLoop:%d)\n", level, *nLoop));
             bus_w(nLoopReg, *nLoop);
         }
@@ -1126,12 +1408,11 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
     // set
     if (*startAddr >= 0 && *stopAddr >= 0) {
         // writing start and stop addr
-        LOG(logINFO,
-            ("Setting Pattern Loop (level:%d, startaddr:0x%x, stopaddr:0x%x)\n",
-             level, *startAddr, *stopAddr));
+        LOG(trimmingPrint, ("Setting Pattern Loop (level:%d, startaddr:0x%x, "
+                            "stopaddr:0x%x)\n",
+                            level, *startAddr, *stopAddr));
         bus_w(addr, ((*startAddr << startOffset) & startMask) |
                         ((*stopAddr << stopOffset) & stopMask));
-        LOG(logDEBUG1, ("Addr:0x%x, val:0x%x\n", addr, bus_r(addr)));
     }
 
     // get
@@ -1352,13 +1633,10 @@ int setClockDivider(enum CLKINDEX ind, int val) {
 
     // Remembering old phases in degrees
     int oldPhases[NUM_CLOCKS];
-    {
-        int i = 0;
-        for (i = 0; i < NUM_CLOCKS; ++i) {
-            oldPhases[i] = getPhase(i, 1);
-            LOG(logDEBUG1, ("\tRemembering %s clock (%d) phase: %d degrees\n",
-                            clock_names[ind], ind, oldPhases[i]));
-        }
+    for (int i = 0; i < NUM_CLOCKS; ++i) {
+        oldPhases[i] = getPhase(i, 1);
+        LOG(logDEBUG1, ("\tRemembering %s clock (%d) phase: %d degrees\n",
+                        clock_names[ind], ind, oldPhases[i]));
     }
 
     // Calculate and set output frequency
@@ -1380,16 +1658,13 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     }
 
     // set the phase in degrees (reset by pll)
-    {
-        int i = 0;
-        for (i = 0; i < NUM_CLOCKS; ++i) {
-            int currPhaseDeg = getPhase(i, 1);
-            if (oldPhases[i] != currPhaseDeg) {
-                LOG(logINFO,
-                    ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n",
-                     clock_names[i], i, currPhaseDeg, oldPhases[i]));
-                setPhase(i, oldPhases[i], 1);
-            }
+    for (int i = 0; i < NUM_CLOCKS; ++i) {
+        int currPhaseDeg = getPhase(i, 1);
+        if (oldPhases[i] != currPhaseDeg) {
+            LOG(logINFO,
+                ("\tCorrecting %s clock (%d) phase from %d to %d degrees\n",
+                 clock_names[i], i, currPhaseDeg, oldPhases[i]));
+            setPhase(i, oldPhases[i], 1);
         }
     }
     return OK;
@@ -1462,68 +1737,58 @@ void *start_timer(void *arg) {
     // Generate data
     char imageData[imagesize];
     memset(imageData, 0, imagesize);
-    {
-        int i = 0;
-        for (i = 0; i < imagesize; i += sizeof(uint8_t)) {
-            *((uint8_t *)(imageData + i)) = i;
-        }
+    for (int i = 0; i < imagesize; i += sizeof(uint8_t)) {
+        *((uint8_t *)(imageData + i)) = i;
     }
 
     // Send data
-    {
-        int frameNr = 1;
-        // loop over number of frames
-        for (frameNr = 0; frameNr != numFrames; ++frameNr) {
+    // loop over number of frames
+    for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
 
-            // update the virtual stop from stop server
-            virtual_stop = ComVirtual_getStop();
-            // check if virtual_stop is high
-            if (virtual_stop == 1) {
-                break;
-            }
+        // update the virtual stop from stop server
+        virtual_stop = ComVirtual_getStop();
+        // check if virtual_stop is high
+        if (virtual_stop == 1) {
+            break;
+        }
 
-            // sleep for exposure time
-            struct timespec begin, end;
-            clock_gettime(CLOCK_REALTIME, &begin);
-            usleep(expUs);
+        // sleep for exposure time
+        struct timespec begin, end;
+        clock_gettime(CLOCK_REALTIME, &begin);
+        usleep(expUs);
 
-            int srcOffset = 0;
-            // loop packet
-            {
-                int i = 0;
-                for (i = 0; i != PACKETS_PER_FRAME; ++i) {
-                    char packetData[packetSize];
-                    memset(packetData, 0, packetSize);
+        int srcOffset = 0;
+        // loop packet
+        for (int i = 0; i != PACKETS_PER_FRAME; ++i) {
+            char packetData[packetSize];
+            memset(packetData, 0, packetSize);
 
-                    // set header
-                    sls_detector_header *header =
-                        (sls_detector_header *)(packetData);
-                    header->detType = (uint16_t)myDetectorType;
-                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;
-                    header->frameNumber = frameNr + 1;
-                    header->packetNumber = i;
-                    header->modId = 0;
-                    header->row = detPos[X];
-                    header->column = detPos[Y];
+            // set header
+            sls_detector_header *header = (sls_detector_header *)(packetData);
+            header->detType = (uint16_t)myDetectorType;
+            header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+            header->frameNumber = frameNr + 1;
+            header->packetNumber = i;
+            header->modId = 0;
+            header->row = detPos[X];
+            header->column = detPos[Y];
 
-                    // fill data
-                    memcpy(packetData + sizeof(sls_detector_header),
-                           imageData + srcOffset, dataSize);
-                    srcOffset += dataSize;
+            // fill data
+            memcpy(packetData + sizeof(sls_detector_header),
+                   imageData + srcOffset, dataSize);
+            srcOffset += dataSize;
 
-                    sendUDPPacket(0, packetData, packetSize);
-                }
-            }
-            LOG(logINFO, ("Sent frame: %d\n", frameNr));
-            clock_gettime(CLOCK_REALTIME, &end);
-            int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                              (end.tv_nsec - begin.tv_nsec));
+            sendUDPPacket(0, packetData, packetSize);
+        }
+        LOG(logINFO, ("Sent frame: %d\n", frameNr));
+        clock_gettime(CLOCK_REALTIME, &end);
+        int64_t timeNs =
+            ((end.tv_sec - begin.tv_sec) * 1E9 + (end.tv_nsec - begin.tv_nsec));
 
-            // sleep for (period - exptime)
-            if (frameNr < numFrames) { // if there is a next frame
-                if (periodNs > timeNs) {
-                    usleep((periodNs - timeNs) / 1000);
-                }
+        // sleep for (period - exptime)
+        if (frameNr < numFrames) { // if there is a next frame
+            if (periodNs > timeNs) {
+                usleep((periodNs - timeNs) / 1000);
             }
         }
     }
@@ -1654,6 +1919,56 @@ u_int32_t runBusy() {
 }
 
 /* common */
+
+int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
+    LOG(logDEBUG1, ("Copying module\n"));
+
+    if (srcMod->serialnumber >= 0) {
+        destMod->serialnumber = srcMod->serialnumber;
+    }
+    // no trimbit feature
+    if (destMod->nchan && ((srcMod->nchan) > (destMod->nchan))) {
+        LOG(logINFO, ("Number of channels of source is larger than number of "
+                      "channels of destination\n"));
+        return FAIL;
+    }
+    if ((srcMod->ndac) > (destMod->ndac)) {
+        LOG(logINFO, ("Number of dacs of source is larger than number of dacs "
+                      "of destination\n"));
+        return FAIL;
+    }
+
+    LOG(logDEBUG1, ("DACs: src %d, dest %d\n", srcMod->ndac, destMod->ndac));
+    LOG(logDEBUG1, ("Chans: src %d, dest %d\n", srcMod->nchan, destMod->nchan));
+    destMod->ndac = srcMod->ndac;
+    destMod->nchip = srcMod->nchip;
+    destMod->nchan = srcMod->nchan;
+    if (srcMod->reg >= 0)
+        destMod->reg = srcMod->reg;
+    /*
+    if (srcMod->iodelay >= 0)
+        destMod->iodelay = srcMod->iodelay;
+    if (srcMod->tau >= 0)
+        destMod->tau = srcMod->tau;
+    if (srcMod->eV >= 0)
+        destMod->eV = srcMod->eV;
+    */
+    LOG(logDEBUG1, ("Copying register %x (%x)\n", destMod->reg, srcMod->reg));
+
+    if (destMod->nchan != 0) {
+        for (int ichan = 0; ichan < (srcMod->nchan); ichan++) {
+            *((destMod->chanregs) + ichan) = *((srcMod->chanregs) + ichan);
+        }
+    } else
+        LOG(logINFO, ("Not Copying trimbits\n"));
+
+    for (int idac = 0; idac < (srcMod->ndac); idac++) {
+        if (*((srcMod->dacs) + idac) >= 0) {
+            *((destMod->dacs) + idac) = *((srcMod->dacs) + idac);
+        }
+    }
+    return OK;
+}
 
 int calculateDataBytes() {
     int numCounters = __builtin_popcount(getCounterMask());

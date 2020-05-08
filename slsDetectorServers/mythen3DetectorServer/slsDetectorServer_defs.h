@@ -45,7 +45,8 @@
 #define MAX_PATTERN_LENGTH      (0x2000)     // maximum number of words (64bit)
 
 /** Other Definitions */
-#define BIT16_MASK (0xFFFF)
+#define BIT16_MASK         (0xFFFF)
+#define MAX_TRIMBITS_VALUE (63)
 
 /* Enums */
 enum DACINDEX {
@@ -126,3 +127,31 @@ typedef struct udp_header_struct {
 } udp_header;
 #define UDP_IP_HEADER_LENGTH_BYTES (28)
 #define PACKETS_PER_FRAME          (2)
+
+/** Signal Definitions */
+#define SIGNAL_TBLoad_1    (0)
+#define SIGNAL_TBLoad_2    (1)
+#define SIGNAL_TBLoad_3    (2)
+#define SIGNAL_TBLoad_4    (3)
+#define SIGNAL_TBLoad_5    (4)
+#define SIGNAL_TBLoad_6    (5)
+#define SIGNAL_TBLoad_7    (6)
+#define SIGNAL_TBLoad_8    (7)
+#define SIGNAL_TBLoad_9    (8)
+#define SIGNAL_TBLoad_10   (9)
+#define SIGNAL_AnaMode     (10)
+#define SIGNAL_CHSserialIN (11)
+#define SIGNAL_READOUT     (12)
+#define SIGNAL_pulse       (13)
+#define SIGNAL_EN1         (14)
+#define SIGNAL_EN2         (15)
+#define SIGNAL_EN3         (16)
+#define SIGNAL_clk         (17)
+#define SIGNAL_SRmode      (18)
+#define SIGNAL_serialIN    (19)
+#define SIGNAL_STO         (20)
+#define SIGNAL_STATLOAD    (21)
+#define SIGNAL_resStorage  (22)
+#define SIGNAL_resCounter  (23)
+#define SIGNAL_CHSclk      (24)
+#define SIGNAL_exposing    (25)

@@ -110,19 +110,20 @@ int64_t Module::getFirmwareVersion() {
 int64_t Module::getDetectorServerVersion() {
     int64_t retval = -1;
     sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);
-    LOG(logDEBUG1) << "firmware version: 0x" << std::hex << retval << std::dec;
+    LOG(logDEBUG1) << "detector server version: 0x" << std::hex << retval
+                   << std::dec;
     return retval;
 }
 
 int64_t Module::getSerialNumber() {
     int64_t retval = -1;
     sendToDetector(F_GET_SERIAL_NUMBER, nullptr, retval);
-    LOG(logDEBUG1) << "firmware version: 0x" << std::hex << retval << std::dec;
+    LOG(logDEBUG1) << "serial number: 0x" << std::hex << retval << std::dec;
     return retval;
 }
 
 int64_t Module::getReceiverSoftwareVersion() const {
-    LOG(logDEBUG1) << "Getting receiver software version";
+    LOG(logDEBUG1) << "Getting receiver version";
     int64_t retval = -1;
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_GET_RECEIVER_VERSION, nullptr, retval);
@@ -450,7 +451,7 @@ int Module::sendModule(sls_detector_module *myMod, sls::ClientSocket &client) {
     ts += n;
     LOG(level) << "dacs sent. " << n << " bytes";
 
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
         n = client.Send(myMod->chanregs, sizeof(int) * (myMod->nchan));
         ts += n;
         LOG(level) << "channels sent. " << n << " bytes";
@@ -472,7 +473,7 @@ int Module::receiveModule(sls_detector_module *myMod,
 
     ts += client.Receive(myMod->dacs, sizeof(int) * (myMod->ndac));
     LOG(logDEBUG1) << "received dacs of size " << ts;
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
         ts += client.Receive(myMod->chanregs, sizeof(int) * (myMod->nchan));
         LOG(logDEBUG1) << " nchan= " << myMod->nchan
                        << " nchip= " << myMod->nchip
@@ -907,7 +908,7 @@ void Module::loadSettingsFile(const std::string &fname) {
     ostfn << fname;
 
     // find specific file if it has detid in file name (.snxxx)
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
         if (fname.find(".sn") == std::string::npos &&
             fname.find(".trim") == std::string::npos &&
             fname.find(".settings") == std::string::npos) {
@@ -2509,12 +2510,18 @@ void Module::setFlippedDataX(bool value) {
     sendToReceiver(F_SET_FLIPPED_DATA_RECEIVER, arg, retval);
 }
 
-int Module::setAllTrimbits(int val) {
+int Module::getAllTrimbits() {
     int retval = -1;
-    LOG(logDEBUG1) << "Setting all trimbits to " << val;
+    int val = -1;
     sendToDetector(F_SET_ALL_TRIMBITS, val, retval);
     LOG(logDEBUG1) << "All trimbit value: " << retval;
     return retval;
+}
+
+void Module::setAllTrimbits(int val) {
+    int retval = -1;
+    LOG(logDEBUG1) << "Setting all trimbits to " << val;
+    sendToDetector(F_SET_ALL_TRIMBITS, val, retval);
 }
 
 int Module::setTrimEn(const std::vector<int> &energies) {
@@ -2766,7 +2773,6 @@ int Module::setAutoComparatorDisableMode(int ival) {
 void Module::setModule(sls_detector_module &module, int tb) {
     int fnum = F_SET_MODULE;
     int ret = FAIL;
-    int retval = -1;
     LOG(logDEBUG1) << "Setting module with tb:" << tb;
     // to exclude trimbits
     if (tb == 0) {
@@ -2783,8 +2789,6 @@ void Module::setModule(sls_detector_module &module, int tb) {
         throw RuntimeError("Detector " + std::to_string(detId) +
                            " returned error: " + mess);
     }
-    client.Receive(&retval, sizeof(retval));
-    LOG(logDEBUG1) << "Set Module returned: " << retval;
 }
 
 sls_detector_module Module::getModule() {
@@ -3554,7 +3558,7 @@ sls_detector_module Module::readSettingsFile(const std::string &fname, int tb) {
     auto names = getSettingsFileDacNames();
     // open file
     std::ifstream infile;
-    if (shm()->myDetectorType == EIGER) {
+    if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
         infile.open(fname.c_str(), std::ifstream::binary);
     } else {
         infile.open(fname.c_str(), std::ios_base::in);
@@ -3565,30 +3569,16 @@ sls_detector_module Module::readSettingsFile(const std::string &fname, int tb) {
 
     // eiger
     if (shm()->myDetectorType == EIGER) {
-        bool allread = false;
         infile.read(reinterpret_cast<char *>(myMod.dacs),
                     sizeof(int) * (myMod.ndac));
-        if (infile.good()) {
-            infile.read(reinterpret_cast<char *>(&myMod.iodelay),
-                        sizeof(myMod.iodelay));
-            if (infile.good()) {
-                infile.read(reinterpret_cast<char *>(&myMod.tau),
-                            sizeof(myMod.tau));
-                if (tb != 0) {
-                    if (infile.good()) {
-                        infile.read(reinterpret_cast<char *>(myMod.chanregs),
-                                    sizeof(int) * (myMod.nchan));
-                        if (infile) {
-                            allread = true;
-                        }
-                    }
-                } else if (infile) {
-                    allread = true;
-                }
-            }
+        infile.read(reinterpret_cast<char *>(&myMod.iodelay),
+                    sizeof(myMod.iodelay));
+        infile.read(reinterpret_cast<char *>(&myMod.tau), sizeof(myMod.tau));
+        if (tb != 0) {
+            infile.read(reinterpret_cast<char *>(myMod.chanregs),
+                        sizeof(int) * (myMod.nchan));
         }
-        if (!allread) {
-            infile.close();
+        if (!infile) {
             throw RuntimeError("readSettingsFile: Could not load all values "
                                "for settings for " +
                                fname);
@@ -3598,6 +3588,23 @@ sls_detector_module Module::readSettingsFile(const std::string &fname, int tb) {
         }
         LOG(logDEBUG1) << "iodelay:" << myMod.iodelay;
         LOG(logDEBUG1) << "tau:" << myMod.tau;
+    }
+
+    // mythen3 (dacs, trimbits)
+    else if (shm()->myDetectorType == MYTHEN3) {
+        infile.read(reinterpret_cast<char *>(myMod.dacs),
+                    sizeof(int) * (myMod.ndac));
+        infile.read(reinterpret_cast<char *>(myMod.chanregs),
+                    sizeof(int) * (myMod.nchan));
+
+        if (!infile) {
+            throw RuntimeError("readSettingsFile: Could not load all values "
+                               "for settings for " +
+                               fname);
+        }
+        for (int i = 0; i < myMod.ndac; ++i) {
+            LOG(logDEBUG1) << "dac " << i << ":" << myMod.dacs[i];
+        }
     }
 
     // gotthard, jungfrau
@@ -3626,18 +3633,15 @@ sls_detector_module Module::readSettingsFile(const std::string &fname, int tb) {
             if (!found) {
                 throw RuntimeError("readSettingsFile: Unknown dac: " +
                                    sargname);
-                infile.close();
             }
         }
         // not all read
         if (idac != names.size()) {
-            infile.close();
             throw RuntimeError("Could read only " + std::to_string(idac) +
                                " dacs. Expected " +
                                std::to_string(names.size()) + " dacs");
         }
     }
-    infile.close();
     LOG(logINFO) << "Settings file loaded: " << fname.c_str();
     return myMod;
 }
@@ -3678,7 +3682,6 @@ void Module::writeSettingsFile(const std::string &fname,
             outfile << names[i] << " " << mod.dacs[i] << std::endl;
         }
     }
-    outfile.close();
 }
 
 std::vector<std::string> Module::getSettingsFileDacNames() {
@@ -3693,6 +3696,8 @@ std::vector<std::string> Module::getSettingsFileDacNames() {
         return {"VDAC0",  "VDAC1",  "VDAC2",  "VDAC3", "VDAC4",  "VDAC5",
                 "VDAC6",  "VDAC7",  "VDAC8",  "VDAC9", "VDAC10", "VDAC11",
                 "VDAC12", "VDAC13", "VDAC14", "VDAC15"};
+        break;
+    case MYTHEN3:
         break;
     default:
         throw RuntimeError(

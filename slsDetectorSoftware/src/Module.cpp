@@ -3569,30 +3569,16 @@ sls_detector_module Module::readSettingsFile(const std::string &fname, int tb) {
 
     // eiger
     if (shm()->myDetectorType == EIGER) {
-        bool allread = false;
         infile.read(reinterpret_cast<char *>(myMod.dacs),
                     sizeof(int) * (myMod.ndac));
-        if (infile.good()) {
-            infile.read(reinterpret_cast<char *>(&myMod.iodelay),
-                        sizeof(myMod.iodelay));
-            if (infile.good()) {
-                infile.read(reinterpret_cast<char *>(&myMod.tau),
-                            sizeof(myMod.tau));
-                if (tb != 0) {
-                    if (infile.good()) {
-                        infile.read(reinterpret_cast<char *>(myMod.chanregs),
-                                    sizeof(int) * (myMod.nchan));
-                        if (infile) {
-                            allread = true;
-                        }
-                    }
-                } else if (infile) {
-                    allread = true;
-                }
-            }
+        infile.read(reinterpret_cast<char *>(&myMod.iodelay),
+                    sizeof(myMod.iodelay));
+        infile.read(reinterpret_cast<char *>(&myMod.tau), sizeof(myMod.tau));
+        if (tb != 0) {
+            infile.read(reinterpret_cast<char *>(myMod.chanregs),
+                        sizeof(int) * (myMod.nchan));
         }
-        if (!allread) {
-            infile.close();
+        if (!infile) {
             throw RuntimeError("readSettingsFile: Could not load all values "
                                "for settings for " +
                                fname);
@@ -3606,18 +3592,12 @@ sls_detector_module Module::readSettingsFile(const std::string &fname, int tb) {
 
     // mythen3 (dacs, trimbits)
     else if (shm()->myDetectorType == MYTHEN3) {
-        bool allread = false;
         infile.read(reinterpret_cast<char *>(myMod.dacs),
                     sizeof(int) * (myMod.ndac));
-        if (infile.good()) {
-            infile.read(reinterpret_cast<char *>(myMod.chanregs),
-                        sizeof(int) * (myMod.nchan));
-            if (infile) {
-                allread = true;
-            }
-        }
-        if (!allread) {
-            infile.close();
+        infile.read(reinterpret_cast<char *>(myMod.chanregs),
+                    sizeof(int) * (myMod.nchan));
+
+        if (!infile) {
             throw RuntimeError("readSettingsFile: Could not load all values "
                                "for settings for " +
                                fname);
@@ -3653,18 +3633,15 @@ sls_detector_module Module::readSettingsFile(const std::string &fname, int tb) {
             if (!found) {
                 throw RuntimeError("readSettingsFile: Unknown dac: " +
                                    sargname);
-                infile.close();
             }
         }
         // not all read
         if (idac != names.size()) {
-            infile.close();
             throw RuntimeError("Could read only " + std::to_string(idac) +
                                " dacs. Expected " +
                                std::to_string(names.size()) + " dacs");
         }
     }
-    infile.close();
     LOG(logINFO) << "Settings file loaded: " << fname.c_str();
     return myMod;
 }
@@ -3705,7 +3682,6 @@ void Module::writeSettingsFile(const std::string &fname,
             outfile << names[i] << " " << mod.dacs[i] << std::endl;
         }
     }
-    outfile.close();
 }
 
 std::vector<std::string> Module::getSettingsFileDacNames() {

@@ -385,26 +385,17 @@ void getModuleConfiguration() {
         return;
     }
 #ifdef VIRTUAL
-    // if master not modified by config file
-    if (master == -1) {
 #ifdef VIRTUAL_MASTER
         master = 1;
-#else
-        master = 0;
-#endif
-    }
-    // if top not modified by config file
-    if (top == -1) {
-#ifdef VIRTUAL_MASTER
         top = 1;
 #else
+        master = 0;
 #ifdef VIRTUAL_TOP
         top = 1;
 #else
         top = 0;
 #endif
 #endif
-    }
 
 #ifdef VIRTUAL_9M
     normal = 0;
@@ -595,7 +586,8 @@ void resetToHardwareSettings() {
             LOG(logERROR, ("%s\n\n", initErrorMessage));
             return;
         }
-        getModuleConfiguration();
+        int temp = -1, temp2 = -1;
+        Beb_GetModuleConfiguration(&temp, &top, &temp2);        
         Beb_SetTopVariable(top);
     }
     // master not set in config file
@@ -614,7 +606,8 @@ void resetToHardwareSettings() {
             LOG(logERROR, ("%s\n\n", initErrorMessage));
             return;
         }
-        getModuleConfiguration();
+        int temp = -1, temp2 = -1;
+        Beb_GetModuleConfiguration(&master, &temp, &temp2);        
         Feb_Control_SetMasterVariable(master);
     }
 #endif

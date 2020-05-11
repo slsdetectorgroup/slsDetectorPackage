@@ -386,14 +386,14 @@ void getModuleConfiguration() {
     }
 #ifdef VIRTUAL
 #ifdef VIRTUAL_MASTER
-        master = 1;
-        top = 1;
+    master = 1;
+    top = 1;
 #else
-        master = 0;
+    master = 0;
 #ifdef VIRTUAL_TOP
-        top = 1;
+    top = 1;
 #else
-        top = 0;
+    top = 0;
 #endif
 #endif
 
@@ -587,7 +587,7 @@ void resetToHardwareSettings() {
             return;
         }
         int temp = -1, temp2 = -1;
-        Beb_GetModuleConfiguration(&temp, &top, &temp2);        
+        Beb_GetModuleConfiguration(&temp, &top, &temp2);
         Beb_SetTopVariable(top);
     }
     // master not set in config file
@@ -607,7 +607,7 @@ void resetToHardwareSettings() {
             return;
         }
         int temp = -1, temp2 = -1;
-        Beb_GetModuleConfiguration(&master, &temp, &temp2);        
+        Beb_GetModuleConfiguration(&master, &temp, &temp2);
         Feb_Control_SetMasterVariable(master);
     }
 #endif

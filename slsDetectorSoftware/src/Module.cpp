@@ -136,6 +136,9 @@ void Module::sendToDetector(int fnum, std::nullptr_t, Ret &retval) {
 }
 
 void Module::sendToDetector(int fnum) {
+    LOG(logDEBUG1) << "Sending: ["
+                   << getFunctionNameFromEnum(
+                          static_cast<slsDetectorDefs::detFuncs>(fnum)) << "]";
     sendToDetector(fnum, nullptr, 0, nullptr, 0);
 }
 
@@ -209,6 +212,9 @@ void Module::sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) const {
 }
 
 void Module::sendToDetectorStop(int fnum) {
+    LOG(logDEBUG1) << "Sending to detector stop: ["
+                   << getFunctionNameFromEnum(
+                          static_cast<slsDetectorDefs::detFuncs>(fnum)) << "]";
     sendToDetectorStop(fnum, nullptr, 0, nullptr, 0);
 }
 
@@ -528,11 +534,7 @@ slsDetectorDefs::xy Module::getNumberOfChannels() const {
 }
 
 bool Module::getQuad() {
-    int retval = -1;
-    LOG(logDEBUG1) << "Getting Quad Type";
-    sendToDetector(F_GET_QUAD, nullptr, retval);
-    LOG(logDEBUG1) << "Quad Type :" << retval;
-    return retval != 0;
+    return sendToDetector<int>(F_GET_QUAD) != 0;
 }
 
 void Module::setQuad(const bool enable) {
@@ -555,11 +557,7 @@ void Module::setReadNLines(const int value) {
 }
 
 int Module::getReadNLines() {
-    int retval = -1;
-    LOG(logDEBUG1) << "Getting read n lines";
-    sendToDetector(F_GET_READ_N_LINES, nullptr, retval);
-    LOG(logDEBUG1) << "Read n lines: " << retval;
-    return retval;
+    return sendToDetector<int>(F_GET_READ_N_LINES);
 }
 
 void Module::updateMultiSize(slsDetectorDefs::xy det) {
@@ -633,7 +631,6 @@ sls::IpAddr Module::getLastClientIP() {
 }
 
 void Module::exitServer() {
-    LOG(logDEBUG1) << "Sending exit command to detector server";
     sendToDetector(F_EXIT_SERVER);
 }
 
@@ -922,16 +919,12 @@ slsDetectorDefs::runStatus Module::getRunStatus() const {
 }
 
 void Module::prepareAcquisition() {
-    LOG(logDEBUG1) << "Preparing Detector for Acquisition";
     sendToDetector(F_PREPARE_ACQUISITION);
-    LOG(logDEBUG1) << "Prepare Acquisition successful";
 }
 
 void Module::startAcquisition() {
-    LOG(logDEBUG1) << "Starting Acquisition";
     shm()->stoppedFlag = false;
     sendToDetector(F_START_ACQUISITION);
-    LOG(logDEBUG1) << "Starting Acquisition successful";
 }
 
 void Module::stopAcquisition() {
@@ -954,28 +947,20 @@ void Module::stopAcquisition() {
 }
 
 void Module::sendSoftwareTrigger() {
-    LOG(logDEBUG1) << "Sending software trigger";
     sendToDetectorStop(F_SOFTWARE_TRIGGER);
-    LOG(logDEBUG1) << "Sending software trigger successful";
 }
 
 void Module::startAndReadAll() {
-    LOG(logDEBUG1) << "Starting and reading all frames";
     shm()->stoppedFlag = false;
     sendToDetector(F_START_AND_READ_ALL);
-    LOG(logDEBUG1) << "Detector successfully finished acquisition";
 }
 
 void Module::startReadOut() {
-    LOG(logDEBUG1) << "Starting readout";
     sendToDetector(F_START_READOUT);
-    LOG(logDEBUG1) << "Starting detector readout successful";
 }
 
 void Module::readAll() {
-    LOG(logDEBUG1) << "Reading all frames";
     sendToDetector(F_READ_ALL);
-    LOG(logDEBUG1) << "Detector successfully finished reading all frames";
 }
 
 void Module::setStartingFrameNumber(uint64_t value) {
@@ -1361,11 +1346,8 @@ void Module::setParallelMode(const bool enable) {
 }
 
 bool Module::getParallelMode() {
-    int retval = -1;
-    LOG(logDEBUG1) << "Getting parallel mode";
-    sendToDetector(F_GET_PARALLEL_MODE, nullptr, retval);
-    LOG(logDEBUG1) << "Parallel mode: " << retval;
-    return static_cast<bool>(retval);
+    auto r = sendToDetector<int>(F_GET_PARALLEL_MODE);
+    return static_cast<bool>(r);
 }
 
 void Module::setOverFlowMode(const bool enable) {
@@ -1619,11 +1601,7 @@ void Module::setDestinationUDPIP(const IpAddr ip) {
 }
 
 sls::IpAddr Module::getDestinationUDPIP() {
-    sls::IpAddr retval(0U);
-    LOG(logDEBUG1) << "Getting destination udp ip";
-    sendToDetector(F_GET_DEST_UDP_IP, nullptr, retval);
-    LOG(logDEBUG1) << "Destination udp ip: " << retval;
-    return retval;
+    return sendToDetector<sls::IpAddr>(F_GET_DEST_UDP_IP);
 }
 
 void Module::setDestinationUDPIP2(const IpAddr ip) {
@@ -1643,11 +1621,7 @@ void Module::setDestinationUDPIP2(const IpAddr ip) {
 }
 
 sls::IpAddr Module::getDestinationUDPIP2() {
-    sls::IpAddr retval(0U);
-    LOG(logDEBUG1) << "Getting destination udp ip2";
-    sendToDetector(F_GET_DEST_UDP_IP2, nullptr, retval);
-    LOG(logDEBUG1) << "Destination udp ip2: " << retval;
-    return retval;
+    return sendToDetector<sls::IpAddr>(F_GET_DEST_UDP_IP2);
 }
 
 void Module::setDestinationUDPMAC(const MacAddr mac) {
@@ -1655,7 +1629,6 @@ void Module::setDestinationUDPMAC(const MacAddr mac) {
     if (mac == 0) {
         throw RuntimeError("Invalid destination udp mac address");
     }
-
     sendToDetector(F_SET_DEST_UDP_MAC, mac, nullptr);
 }
 
@@ -2649,7 +2622,6 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
 }
 
 void Module::resetFPGA() {
-    LOG(logDEBUG1) << "Sending reset FPGA";
     return sendToDetector(F_RESET_FPGA);
 }
 
@@ -2670,11 +2642,7 @@ void Module::rebootController() {
 }
 
 int Module::powerChip(int ival) {
-    int retval = -1;
-    LOG(logDEBUG1) << "Setting power chip to " << ival;
-    sendToDetector(F_POWER_CHIP, ival, retval);
-    LOG(logDEBUG1) << "Power chip: " << retval;
-    return retval;
+    return sendToDetector<int>(F_POWER_CHIP, ival);
 }
 
 int Module::setAutoComparatorDisableMode(int ival) {

@@ -3555,7 +3555,6 @@ sls_detector_module Module::interpolateTrim(sls_detector_module *a,
 sls_detector_module Module::readSettingsFile(const std::string &fname, int tb) {
     LOG(logDEBUG1) << "Read settings file " << fname;
     sls_detector_module myMod(shm()->myDetectorType);
-    auto names = getSettingsFileDacNames();
     // open file
     std::ifstream infile;
     if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
@@ -3609,6 +3608,7 @@ sls_detector_module Module::readSettingsFile(const std::string &fname, int tb) {
 
     // gotthard, jungfrau
     else {
+        auto names = getSettingsFileDacNames();
         size_t idac = 0;
         std::string str;
         while (infile.good()) {
@@ -3649,7 +3649,7 @@ sls_detector_module Module::readSettingsFile(const std::string &fname, int tb) {
 void Module::writeSettingsFile(const std::string &fname,
                                sls_detector_module &mod) {
     LOG(logDEBUG1) << "Write settings file " << fname;
-    auto names = getSettingsFileDacNames();
+    
     std::ofstream outfile;
     if (shm()->myDetectorType == EIGER) {
         outfile.open(fname.c_str(), std::ofstream::binary);
@@ -3677,6 +3677,7 @@ void Module::writeSettingsFile(const std::string &fname,
     }
     // gotthard, jungfrau
     else {
+        auto names = getSettingsFileDacNames();
         for (int i = 0; i < mod.ndac; ++i) {
             LOG(logDEBUG1) << "dac " << i << ": " << mod.dacs[i];
             outfile << names[i] << " " << mod.dacs[i] << std::endl;
@@ -3689,21 +3690,14 @@ std::vector<std::string> Module::getSettingsFileDacNames() {
     case GOTTHARD:
         return {"Vref",  "VcascN", "VcascP",    "Vout",
                 "Vcasc", "Vin",    "Vref_comp", "Vib_test"};
-        break;
-    case EIGER:
-        break;
     case JUNGFRAU:
         return {"VDAC0",  "VDAC1",  "VDAC2",  "VDAC3", "VDAC4",  "VDAC5",
                 "VDAC6",  "VDAC7",  "VDAC8",  "VDAC9", "VDAC10", "VDAC11",
                 "VDAC12", "VDAC13", "VDAC14", "VDAC15"};
-        break;
-    case MYTHEN3:
-        break;
     default:
         throw RuntimeError(
             "Unknown detector type - unknown format for settings file");
     }
-    return {};
 }
 
 } // namespace sls

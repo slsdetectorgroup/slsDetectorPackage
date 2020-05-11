@@ -2,6 +2,16 @@
 
 namespace sls {
 
+std::string ToString(const slsDetectorDefs::ROI& roi){
+    std::ostringstream oss;
+    oss << '[' << roi.xmin << ", " << roi.xmax << ']';
+    return oss.str();
+}
+
+std::ostream&operator<<(std::ostream &os, const slsDetectorDefs::ROI& roi){
+    return os << ToString(roi);
+}
+
 std::string ToString(const defs::runStatus s) {
     switch (s) {
     case defs::ERROR:

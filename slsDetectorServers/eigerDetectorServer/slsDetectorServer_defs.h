@@ -1,10 +1,10 @@
 #pragma once
 #include "sls_detector_defs.h"
 
-#define REQUIRED_FIRMWARE_VERSION          (26)
-#define IDFILECOMMAND                      "more /home/root/executables/detid.txt"
-#define CONFIG_FILE                        ("config.txt")
-#define WAIT_STOP_SERVER_START              (1 * 1000 * 1000)
+#define REQUIRED_FIRMWARE_VERSION (26)
+#define IDFILECOMMAND             "more /home/root/executables/detid.txt"
+#define CONFIG_FILE               ("config.txt")
+#define WAIT_STOP_SERVER_START    (1 * 1000 * 1000)
 
 #define STATUS_IDLE    0
 #define STATUS_RUNNING 1

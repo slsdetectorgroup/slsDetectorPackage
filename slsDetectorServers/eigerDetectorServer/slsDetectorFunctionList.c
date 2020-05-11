@@ -364,7 +364,7 @@ void initStopServer() {
     // wait a few s (control server is setting top/master from config file)
     usleep(WAIT_STOP_SERVER_START);
     LOG(logINFOBLUE, ("Configuring Stop server\n"));
-    //exit(-1);
+    // exit(-1);
     readDetectorNumber();
     getModuleConfiguration();
     Feb_Control_SetMasterVariable(master);
@@ -383,7 +383,7 @@ void initStopServer() {
 void getModuleConfiguration() {
     if (initError == FAIL) {
         return;
-    }    
+    }
 #ifdef VIRTUAL
     // if master not modified by config file
     if (master == -1) {
@@ -431,7 +431,8 @@ int readConfigFile() {
     top = -1;
     FILE *fd = fopen(CONFIG_FILE, "r");
     if (fd == NULL) {
-        LOG(logINFO, ("No config file found. Resetting to hardware settings (Top/Master)\n"));
+        LOG(logINFO, ("No config file found. Resetting to hardware settings "
+                      "(Top/Master)\n"));
         // reset to hardware settings if not in config file (if overwritten)
         resetToHardwareSettings();
         return initError;
@@ -500,8 +501,8 @@ int readConfigFile() {
             int actual_top = -1, temp = -1, temp2 = -1;
             Beb_GetModuleConfiguration(&temp, &actual_top, &temp2);
             if (actual_top != top) {
-                sprintf(initErrorMessage,
-                "Could not set top to %d. Read %d\n", top, actual_top);
+                sprintf(initErrorMessage, "Could not set top to %d. Read %d\n",
+                        top, actual_top);
                 break;
             }
             Beb_SetTopVariable(top);
@@ -541,7 +542,8 @@ int readConfigFile() {
             Beb_GetModuleConfiguration(&actual_master, &temp, &temp2);
             if (actual_master != master) {
                 sprintf(initErrorMessage,
-                "Could not set master to %d. Read %d\n", master, actual_master);
+                        "Could not set master to %d. Read %d\n", master,
+                        actual_master);
                 break;
             }
             Feb_Control_SetMasterVariable(master);
@@ -582,14 +584,14 @@ void resetToHardwareSettings() {
         if (!Beb_SetTop(TOP_HARDWARE)) {
             initError = FAIL;
             strcpy(initErrorMessage,
-                    "Could not reset Top flag to Beb hardware settings.\n");
+                   "Could not reset Top flag to Beb hardware settings.\n");
             LOG(logERROR, ("%s\n\n", initErrorMessage));
             return;
         }
         if (!Feb_Control_SetTop(TOP_HARDWARE, 1, 1)) {
             initError = FAIL;
             strcpy(initErrorMessage,
-                    "Could not reset Top flag to Feb hardware settings.\n");
+                   "Could not reset Top flag to Feb hardware settings.\n");
             LOG(logERROR, ("%s\n\n", initErrorMessage));
             return;
         }
@@ -601,14 +603,14 @@ void resetToHardwareSettings() {
         if (!Beb_SetMaster(TOP_HARDWARE)) {
             initError = FAIL;
             strcpy(initErrorMessage,
-                    "Could not reset Master flag to Beb hardware settings.\n");
+                   "Could not reset Master flag to Beb hardware settings.\n");
             LOG(logERROR, ("%s\n\n", initErrorMessage));
             return;
         }
         if (!Feb_Control_SetMaster(TOP_HARDWARE)) {
             initError = FAIL;
             strcpy(initErrorMessage,
-                    "Could not reset Master flag to Feb hardware settings.\n");
+                   "Could not reset Master flag to Feb hardware settings.\n");
             LOG(logERROR, ("%s\n\n", initErrorMessage));
             return;
         }
@@ -617,7 +619,6 @@ void resetToHardwareSettings() {
     }
 #endif
 }
-
 
 /* set up detector */
 
@@ -712,7 +713,7 @@ void setupDetector() {
     if (setActivate(0) == FAIL) {
         initError = FAIL;
         sprintf(initErrorMessage, "Could not deactivate\n");
-        LOG(logERROR, (initErrorMessage));        
+        LOG(logERROR, (initErrorMessage));
     }
 
     LOG(logDEBUG1, ("Setup detector done\n\n"));
@@ -1894,14 +1895,16 @@ int setActivate(int enable) {
     Feb_Control_activate(enable);
 #endif
     if (enable == 0) {
-        LOG(logINFORED, ("Deactivated in %s Server!\n", isControlServer ? " Control" : "Stop"));
+        LOG(logINFORED, ("Deactivated in %s Server!\n",
+                         isControlServer ? " Control" : "Stop"));
     } else {
-        LOG(logINFOGREEN, ("Activated in %s Server!\n", isControlServer ? " Control" : "Stop"));
+        LOG(logINFOGREEN, ("Activated in %s Server!\n",
+                           isControlServer ? " Control" : "Stop"));
     }
     return OK;
 }
 
-int getActivate(int* retval) {
+int getActivate(int *retval) {
 #ifdef VIRTUAL
     *retval = eiger_virtual_activate;
 #else

@@ -297,7 +297,7 @@ int Beb_IsTransmitting(int *retval, int tengiga, int waitForDelay) {
     return OK;
 }
 
-void Beb_SetTopVariable(int val) { Beb_top = val;}
+void Beb_SetTopVariable(int val) { Beb_top = val; }
 
 int Beb_SetTop(enum TOPINDEX ind) {
     if (!Beb_activated)
@@ -310,38 +310,38 @@ int Beb_SetTop(enum TOPINDEX ind) {
         LOG(logERROR, ("Set Top FAIL, could not open fd in Beb\n"));
         return 0;
     }
-        value = Beb_Read32(csp0base, BEB_CONFIG_WR_OFST);
-        switch (ind) {
-        case TOP_HARDWARE:
-            value &= ~BEB_CONFIG_OW_TOP_MSK;
-            break;
-        case OW_TOP:
-            value |= BEB_CONFIG_OW_TOP_MSK;
-            value |= BEB_CONFIG_TOP_MSK;
-            break;
-        case OW_BOTTOM:
-            value |= BEB_CONFIG_OW_TOP_MSK;
-            value &= ~BEB_CONFIG_TOP_MSK;
-            break;
-        default:
-            LOG(logERROR, ("Unknown top index in Beb: %d\n", ind));
-            Beb_close(fd, csp0base);
-            return 0;
-        }
-
-        char *top_names[] = {TOP_NAMES};
-        int newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
-        if (newval != value) {
-            LOG(logERROR,
-                ("Could not set Top flag to %s in Beb\n", top_names[ind]));
-            Beb_close(fd, csp0base);
-            return 0;
-        }
-        LOG(logINFOBLUE, ("%s Top flag to %s in Beb\n",
-                          (ind == TOP_HARDWARE ? "Resetting" : "Overwriting"),
-                          top_names[ind]));
+    value = Beb_Read32(csp0base, BEB_CONFIG_WR_OFST);
+    switch (ind) {
+    case TOP_HARDWARE:
+        value &= ~BEB_CONFIG_OW_TOP_MSK;
+        break;
+    case OW_TOP:
+        value |= BEB_CONFIG_OW_TOP_MSK;
+        value |= BEB_CONFIG_TOP_MSK;
+        break;
+    case OW_BOTTOM:
+        value |= BEB_CONFIG_OW_TOP_MSK;
+        value &= ~BEB_CONFIG_TOP_MSK;
+        break;
+    default:
+        LOG(logERROR, ("Unknown top index in Beb: %d\n", ind));
         Beb_close(fd, csp0base);
-        return 1;
+        return 0;
+    }
+
+    char *top_names[] = {TOP_NAMES};
+    int newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
+    if (newval != value) {
+        LOG(logERROR,
+            ("Could not set Top flag to %s in Beb\n", top_names[ind]));
+        Beb_close(fd, csp0base);
+        return 0;
+    }
+    LOG(logINFOBLUE,
+        ("%s Top flag to %s in Beb\n",
+         (ind == TOP_HARDWARE ? "Resetting" : "Overwriting"), top_names[ind]));
+    Beb_close(fd, csp0base);
+    return 1;
 }
 
 int Beb_SetMaster(enum MASTERINDEX ind) {
@@ -377,21 +377,21 @@ int Beb_SetMaster(enum MASTERINDEX ind) {
     char *master_names[] = {MASTER_NAMES};
     int newval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
     if (newval != value) {
-        LOG(logERROR, ("Could not set Master flag to %s in Beb\n",
-                        master_names[ind]));
+        LOG(logERROR,
+            ("Could not set Master flag to %s in Beb\n", master_names[ind]));
         Beb_close(fd, csp0base);
         return 0;
     }
     LOG(logINFOBLUE, ("%s Master flag to %s in Beb\n",
-                        (ind == MASTER_HARDWARE ? "Resetting" : "Overwriting"),
-                        master_names[ind]));
+                      (ind == MASTER_HARDWARE ? "Resetting" : "Overwriting"),
+                      master_names[ind]));
 
     Beb_close(fd, csp0base);
     return 1;
 }
 
 int Beb_SetActivate(int enable) {
-        enable = enable == 0 ? 0 : 1;
+    enable = enable == 0 ? 0 : 1;
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd < 0) {
@@ -407,7 +407,9 @@ int Beb_SetActivate(int enable) {
 
         u_int32_t retval = Beb_Write32(csp0base, BEB_CONFIG_WR_OFST, value);
         if (retval != value) {
-            LOG(logERROR, ("Could not %s. WRote 0x%x, read 0x%x\n", (enable ? "activate" : "deactivate"), value, retval));
+            LOG(logERROR,
+                ("Could not %s. WRote 0x%x, read 0x%x\n",
+                 (enable ? "activate" : "deactivate"), value, retval));
             Beb_close(fd, csp0base);
         }
     }
@@ -416,7 +418,7 @@ int Beb_SetActivate(int enable) {
     return 1;
 }
 
-int Beb_GetActivate(int* retval) {
+int Beb_GetActivate(int *retval) {
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd < 0) {
@@ -450,9 +452,8 @@ int Beb_Set32bitOverflow(int val) {
     // open file pointer
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd < 0) {
-        LOG(logERROR,
-            ("Could not read register to set overflow flag in 32 bit "
-                "mode. FAIL\n"));
+        LOG(logERROR, ("Could not read register to set overflow flag in 32 bit "
+                       "mode. FAIL\n"));
         return -1;
     } else {
         if (val > -1) {
@@ -464,9 +465,8 @@ int Beb_Set32bitOverflow(int val) {
             // set bit
             valueread = Beb_Read32(csp0base, offset);
             Beb_Write32(csp0base, offset,
-                        valueread |
-                            ((val << FLOW_REG_OVERFLOW_32_BIT_OFST) &
-                                FLOW_REG_OVERFLOW_32_BIT_MSK));
+                        valueread | ((val << FLOW_REG_OVERFLOW_32_BIT_OFST) &
+                                     FLOW_REG_OVERFLOW_32_BIT_MSK));
         }
 
         valueread =
@@ -485,12 +485,12 @@ int Beb_GetTenGigaFlowControl() {
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd <= 0) {
         LOG(logERROR, ("Could not read register to get ten giga flow "
-                        "control. FAIL\n"));
+                       "control. FAIL\n"));
         return -1;
     } else {
         u_int32_t retval = Beb_Read32(csp0base, offset);
         retval = (retval & FLOW_REG_TXM_FLOW_CNTRL_10G_MSK) >>
-                    FLOW_REG_TXM_FLOW_CNTRL_10G_OFST;
+                 FLOW_REG_TXM_FLOW_CNTRL_10G_OFST;
 
         Beb_close(fd, csp0base);
         return retval;
@@ -505,7 +505,7 @@ int Beb_SetTenGigaFlowControl(int value) {
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd <= 0) {
         LOG(logERROR, ("Could not read register to set ten giga flow "
-                        "control. FAIL\n"));
+                       "control. FAIL\n"));
         return 0;
     } else {
         // reset bit
@@ -517,7 +517,7 @@ int Beb_SetTenGigaFlowControl(int value) {
         retval = Beb_Read32(csp0base, offset);
         Beb_Write32(csp0base, offset,
                     retval | ((value << FLOW_REG_TXM_FLOW_CNTRL_10G_OFST) &
-                                FLOW_REG_TXM_FLOW_CNTRL_10G_MSK));
+                              FLOW_REG_TXM_FLOW_CNTRL_10G_MSK));
 
         Beb_close(fd, csp0base);
         return 1;
@@ -530,7 +530,7 @@ int Beb_GetTransmissionDelayFrame() {
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd <= 0) {
         LOG(logERROR, ("Could not read register to get transmission delay "
-                        "frame. FAIL\n"));
+                       "frame. FAIL\n"));
         return -1;
     } else {
         u_int32_t retval = Beb_Read32(csp0base, offset);
@@ -542,8 +542,7 @@ int Beb_GetTransmissionDelayFrame() {
 int Beb_SetTransmissionDelayFrame(int value) {
     LOG(logINFO, ("Setting transmission delay frame to %d\n", value));
     if (value < 0) {
-        LOG(logERROR,
-            ("Invalid transmission delay frame value %d\n", value));
+        LOG(logERROR, ("Invalid transmission delay frame value %d\n", value));
         return 0;
     }
     u_int32_t offset = TXM_DELAY_FRAME_OFFSET;
@@ -551,7 +550,7 @@ int Beb_SetTransmissionDelayFrame(int value) {
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd <= 0) {
         LOG(logERROR, ("Could not read register to set transmission delay "
-                        "frame. FAIL\n"));
+                       "frame. FAIL\n"));
         return 0;
     } else {
         Beb_Write32(csp0base, offset, value);
@@ -566,7 +565,7 @@ int Beb_GetTransmissionDelayLeft() {
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd <= 0) {
         LOG(logERROR, ("Could not read register to get transmission delay "
-                        "left. FAIL\n"));
+                       "left. FAIL\n"));
         return -1;
     } else {
         u_int32_t retval = Beb_Read32(csp0base, offset);
@@ -578,8 +577,7 @@ int Beb_GetTransmissionDelayLeft() {
 int Beb_SetTransmissionDelayLeft(int value) {
     LOG(logINFO, ("Setting transmission delay left to %d\n", value));
     if (value < 0) {
-        LOG(logERROR,
-            ("Invalid transmission delay left value %d\n", value));
+        LOG(logERROR, ("Invalid transmission delay left value %d\n", value));
         return 0;
     }
     u_int32_t offset = TXM_DELAY_LEFT_OFFSET;
@@ -587,7 +585,7 @@ int Beb_SetTransmissionDelayLeft(int value) {
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd <= 0) {
         LOG(logERROR, ("Could not read register to set transmission delay "
-                        "left. FAIL\n"));
+                       "left. FAIL\n"));
         return 0;
     } else {
         Beb_Write32(csp0base, offset, value);
@@ -602,7 +600,7 @@ int Beb_GetTransmissionDelayRight() {
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd <= 0) {
         LOG(logERROR, ("Could not read register to get transmission delay "
-                        "right. FAIL\n"));
+                       "right. FAIL\n"));
         return -1;
     } else {
         u_int32_t retval = Beb_Read32(csp0base, offset);
@@ -614,8 +612,7 @@ int Beb_GetTransmissionDelayRight() {
 int Beb_SetTransmissionDelayRight(int value) {
     LOG(logINFO, ("Setting transmission delay right to %d\n", value));
     if (value < 0) {
-        LOG(logERROR,
-            ("Invalid transmission delay right value %d\n", value));
+        LOG(logERROR, ("Invalid transmission delay right value %d\n", value));
         return 0;
     }
     u_int32_t offset = TXM_DELAY_RIGHT_OFFSET;
@@ -623,7 +620,7 @@ int Beb_SetTransmissionDelayRight(int value) {
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd <= 0) {
         LOG(logERROR, ("Could not read register to set transmission delay "
-                        "right. FAIL\n"));
+                       "right. FAIL\n"));
         return 0;
     } else {
         Beb_Write32(csp0base, offset, value);
@@ -654,8 +651,7 @@ int Beb_SetNetworkParameter(enum NETWORKINDEX mode, int val) {
         break;
 
     default:
-        LOG(logERROR,
-            ("Unrecognized mode in network parameter: %d\n", mode));
+        LOG(logERROR, ("Unrecognized mode in network parameter: %d\n", mode));
         return -1;
     }
     // open file pointer
@@ -692,7 +688,7 @@ u_int32_t Beb_GetFirmwareRevision() {
         value = Beb_Read32(csp0base, FIRMWARE_VERSION_OFFSET);
         if (!value) {
             LOG(logERROR, ("Firmware Revision Number does not exist in "
-                            "this version\n"));
+                           "this version\n"));
         }
     }
 
@@ -715,9 +711,8 @@ u_int32_t Beb_GetFirmwareSoftwareAPIVersion() {
     } else {
         value = Beb_Read32(csp0base, FIRMWARESOFTWARE_API_OFFSET);
         if (!value) {
-            LOG(logERROR,
-                ("Firmware Software API Version does not exist in "
-                    "this version\n"));
+            LOG(logERROR, ("Firmware Software API Version does not exist in "
+                           "this version\n"));
         }
     }
 
@@ -773,16 +768,16 @@ int Beb_InitBebInfos() { // file name at some point
     if (Beb_GetBebInfoIndex(i0)) {
         LOG(logERROR,
             ("cant add beb. adding beb %d, beb number %d already added.\n",
-                Beb_detid, i0));
+             Beb_detid, i0));
         exit(0);
     }
     struct BebInfo b1;
     BebInfo_BebInfo(&b1, i0);
     BebInfo_SetSerialAddress(&b1, i1);
     BebInfo_SetHeaderInfo(&b1, 0, (char *)"00:50:c2:46:d9:34",
-                            (char *)"129.129.205.78", 42000 + i0);
+                          (char *)"129.129.205.78", 42000 + i0);
     BebInfo_SetHeaderInfo(&b1, 1, (char *)"00:50:c2:46:d9:35",
-                            (char *)"10.0.26.1", 52000 + i0);
+                          (char *)"10.0.26.1", 52000 + i0);
     beb_infos[bebInfoSize] = b1;
     bebInfoSize++;
 
@@ -800,8 +795,8 @@ everything calculable/setable beb_infos.push_back(b);
 }
 
 int Beb_SetBebSrcHeaderInfos(unsigned int beb_number, int ten_gig,
-                                char *src_mac, char *src_ip,
-                                unsigned int src_port) {
+                             char *src_mac, char *src_ip,
+                             unsigned int src_port) {
     // so that the values can be reset externally for now....
 
     unsigned int i = 1; /*Beb_GetBebInfoIndex(beb_number);*/
@@ -810,8 +805,7 @@ int Beb_SetBebSrcHeaderInfos(unsigned int beb_number, int ten_gig,
                                                             // 0, zero is
                                                             // the global
                                                             // send
-    BebInfo_SetHeaderInfo(&beb_infos[i], ten_gig, src_mac, src_ip,
-                            src_port);
+    BebInfo_SetHeaderInfo(&beb_infos[i], ten_gig, src_mac, src_ip, src_port);
 
     LOG(logINFO, ("Printing Beb info number (%d) :\n", i));
     BebInfo_Print(&beb_infos[i]);
@@ -823,11 +817,11 @@ int Beb_CheckSourceStuffBebInfo() {
     unsigned int i;
     for (i = 1; i < bebInfoSize; i++) { // header stuff always starts from 1
         if (!Beb_SetHeaderData(BebInfo_GetBebNumber(&beb_infos[i]), 0,
-                                "00:00:00:00:00:00", "10.0.0.1", 20000) ||
+                               "00:00:00:00:00:00", "10.0.0.1", 20000) ||
             !Beb_SetHeaderData(BebInfo_GetBebNumber(&beb_infos[i]), 1,
-                                "00:00:00:00:00:00", "10.0.0.1", 20000)) {
+                               "00:00:00:00:00:00", "10.0.0.1", 20000)) {
             LOG(logINFO, ("Error in BebInfo for module number %d.\n",
-                            BebInfo_GetBebNumber(&beb_infos[i])));
+                          BebInfo_GetBebNumber(&beb_infos[i])));
             BebInfo_Print(&beb_infos[i]);
             return 0;
         }
@@ -841,8 +835,8 @@ unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb) {
     unsigned int i;
     for (i = 1; i < bebInfoSize; i++)
         if (beb_numb == BebInfo_GetBebNumber(&beb_infos[i])) {
-            LOG(logDEBUG1, ("*****found beb index:%d, for beb number:%d\n",
-                            i, beb_numb));
+            LOG(logDEBUG1,
+                ("*****found beb index:%d, for beb number:%d\n", i, beb_numb));
             return i;
         }
     LOG(logDEBUG1, ("*****Returning 0\n"));
@@ -887,8 +881,8 @@ void Beb_SwapDataFun(int little_endian, unsigned int n, unsigned int *d) {
 int Beb_SetByteOrder() { return 1; }
 
 int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig,
-                        unsigned int header_number, char *dst_mac,
-                        char *dst_ip, unsigned int dst_port) {
+                       unsigned int header_number, char *dst_mac, char *dst_ip,
+                       unsigned int dst_port) {
 
     if (!Beb_activated)
         return 1;
@@ -909,8 +903,7 @@ int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig,
         LOG(logERROR, ("Set up UDP Header FAIL\n"));
     } else {
         // read data
-        memcpy(csp0base + header_number * 16, &udp_header,
-                sizeof(udp_header));
+        memcpy(csp0base + header_number * 16, &udp_header, sizeof(udp_header));
         // close file pointer
         Beb_close(fd, csp0base);
     }
@@ -918,18 +911,18 @@ int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig,
 }
 
 int Beb_SetHeaderData(unsigned int beb_number, int ten_gig, char *dst_mac,
-                        char *dst_ip, unsigned int dst_port) {
+                      char *dst_ip, unsigned int dst_port) {
     unsigned int i = 1; /*Beb_GetBebInfoIndex(beb_number);*/
     /***********************************if (!i) return 0;
      * *************************************///i must be greater than 0, zero is the global send
     return Beb_SetHeaderData1(BebInfo_GetSrcMAC(&beb_infos[i], ten_gig),
-                                BebInfo_GetSrcIP(&beb_infos[i], ten_gig),
-                                BebInfo_GetSrcPort(&beb_infos[i], ten_gig),
-                                dst_mac, dst_ip, dst_port);
+                              BebInfo_GetSrcIP(&beb_infos[i], ten_gig),
+                              BebInfo_GetSrcPort(&beb_infos[i], ten_gig),
+                              dst_mac, dst_ip, dst_port);
 }
 
 int Beb_SetHeaderData1(char *src_mac, char *src_ip, unsigned int src_port,
-                        char *dst_mac, char *dst_ip, unsigned int dst_port) {
+                       char *dst_mac, char *dst_ip, unsigned int dst_port) {
     /* example header*/
     // static unsigned int*   word_ptr   = new unsigned int [16];
     /*static*/
@@ -1040,7 +1033,7 @@ int Beb_SetPortNumber(unsigned int port_number, uint8_t *dst_ptr) {
     return 1;
 }
 
-void Beb_AdjustIPChecksum(struct udp_header_type * ip) {
+void Beb_AdjustIPChecksum(struct udp_header_type *ip) {
     unsigned char *cptr = (unsigned char *)ip->ver_headerlen;
 
     ip->ip_header_checksum[0] = 0;
@@ -1061,10 +1054,10 @@ void Beb_AdjustIPChecksum(struct udp_header_type * ip) {
     ip->ip_header_checksum[1] = ip_checksum & 0xff;
 }
 
-int Beb_SendMultiReadRequest(
-    unsigned int beb_number, unsigned int left_right, int ten_gig,
-    unsigned int dst_number, unsigned int npackets,
-    unsigned int packet_size, int stop_read_when_fifo_empty) {
+int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int left_right,
+                             int ten_gig, unsigned int dst_number,
+                             unsigned int npackets, unsigned int packet_size,
+                             int stop_read_when_fifo_empty) {
 
     // This is a dead function, will be removed in future
     // ==================================================
@@ -1092,8 +1085,8 @@ int Beb_SendMultiReadRequest(
     npackets--;
 
     Beb_send_data[1] = 0x62000000 | (!stop_read_when_fifo_empty) << 27 |
-                        (ten_gig == 1) << 24 | packet_size << 14 |
-                        dst_number << 8 | npackets;
+                       (ten_gig == 1) << 24 | packet_size << 14 |
+                       dst_number << 8 | npackets;
     LOG(logDEBUG1, ("Beb_send_data[1]:%X\n", Beb_send_data[1]));
     Beb_send_data[2] = 0;
 
@@ -1154,8 +1147,8 @@ int Beb_StopAcquisition() {
 }
 
 int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
-                        unsigned int dst_number, unsigned int nimages,
-                        int test_just_send_out_packets_no_wait) {
+                       unsigned int dst_number, unsigned int nimages,
+                       int test_just_send_out_packets_no_wait) {
     if (!Beb_activated)
         return 1;
 
@@ -1168,7 +1161,7 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
     unsigned int npackets = (nl * maxnp) / maxnl;
     if ((nl * maxnp) % maxnl) {
         LOG(logERROR, ("Read N Lines is incorrect. Switching to Full Image "
-                        "Readout\n"));
+                       "Readout\n"));
         npackets = maxnp;
     }
     int in_two_requests = (npackets > MAX_PACKETS_PER_REQUEST) ? 1 : 0;
@@ -1179,12 +1172,11 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
     unsigned int packet_size = ten_gig ? 0x200 : 0x80; // 4k or  1k packets
 
     LOG(logDEBUG1, ("----Beb_RequestNImages Start----\n"));
-    LOG(logINFO,
-        ("beb_number:%d, ten_gig:%d,dst_number:%d, npackets:%d, "
-            "Beb_bit_mode:%d, header_size:%d, nimages:%d, "
-            "test_just_send_out_packets_no_wait:%d\n",
-            beb_number, ten_gig, dst_number, npackets, Beb_bit_mode,
-            header_size, nimages, test_just_send_out_packets_no_wait));
+    LOG(logINFO, ("beb_number:%d, ten_gig:%d,dst_number:%d, npackets:%d, "
+                  "Beb_bit_mode:%d, header_size:%d, nimages:%d, "
+                  "test_just_send_out_packets_no_wait:%d\n",
+                  beb_number, ten_gig, dst_number, npackets, Beb_bit_mode,
+                  header_size, nimages, test_just_send_out_packets_no_wait));
 
     u_int32_t right_port_value = 0x2000;
     u_int32_t *csp0base = 0;
@@ -1254,9 +1246,9 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
         {
             int i;
             for (i = 0; i < 10; i++)
-                LOG(logDEBUG1, ("%X\n", Beb_Read32(csp0base,
-                                                    (LEFT_OFFSET +
-                                                    i * 4)))); //*(ptrl+i));
+                LOG(logDEBUG1,
+                    ("%X\n", Beb_Read32(csp0base,
+                                        (LEFT_OFFSET + i * 4)))); //*(ptrl+i));
             LOG(logDEBUG1, ("%d\n", in_two_requests));
         }
         Beb_close(fd, csp0base);
@@ -1276,8 +1268,7 @@ int Beb_Test(unsigned int beb_number) {
 
     unsigned int index = Beb_GetBebInfoIndex(beb_number);
     if (!index) {
-        LOG(logERROR,
-            ("Error beb number (%d)not in list????\n", beb_number));
+        LOG(logERROR, ("Error beb number (%d)not in list????\n", beb_number));
         return 0;
     }
 
@@ -1295,8 +1286,7 @@ int Beb_Test(unsigned int beb_number) {
     //  npackets, unsigned int packet_size, int
     //  stop_read_when_fifo_empty=1);
     for (i = 0; i < 64; i++) {
-        if (!Beb_SendMultiReadRequest(beb_number, i % 3 + 1, 0, i, 1, 0,
-                                        1)) {
+        if (!Beb_SendMultiReadRequest(beb_number, i % 3 + 1, 0, i, 1, 0, 1)) {
             LOG(logERROR, ("Error requesting data....\n"));
             return 0;
         }
@@ -1319,10 +1309,9 @@ int Beb_GetBebFPGATemp() {
     } else {
         // read data
         ret = Beb_Read32(csp0base, FPGA_TEMP_OFFSET);
-        temperature =
-            ((((float)(ret) / 65536.0f) / 0.00198421639f) - 273.15f) *
-            1000; // Static conversation, copied from xps sysmon
-                    // standalone driver
+        temperature = ((((float)(ret) / 65536.0f) / 0.00198421639f) - 273.15f) *
+                      1000; // Static conversation, copied from xps sysmon
+                            // standalone driver
         // close file pointer
         Beb_close(fd, csp0base);
     }
@@ -1344,9 +1333,9 @@ void Beb_SetDetectorNumber(uint32_t detid) {
     } else {
         uint32_t value = Beb_Read32(csp0base, UDP_HEADER_A_LEFT_OFST);
         value &= UDP_HEADER_X_MSK; // to keep previous x value
-        Beb_Write32(
-            csp0base, UDP_HEADER_A_LEFT_OFST,
-            value | ((swapid << UDP_HEADER_ID_OFST) & UDP_HEADER_ID_MSK));
+        Beb_Write32(csp0base, UDP_HEADER_A_LEFT_OFST,
+                    value |
+                        ((swapid << UDP_HEADER_ID_OFST) & UDP_HEADER_ID_MSK));
         value = Beb_Read32(csp0base, UDP_HEADER_A_LEFT_OFST);
         if ((value & UDP_HEADER_ID_MSK) !=
             ((swapid << UDP_HEADER_ID_OFST) & UDP_HEADER_ID_MSK)) {
@@ -1354,9 +1343,9 @@ void Beb_SetDetectorNumber(uint32_t detid) {
         }
         value = Beb_Read32(csp0base, UDP_HEADER_A_RIGHT_OFST);
         value &= UDP_HEADER_X_MSK; // to keep previous x value
-        Beb_Write32(
-            csp0base, UDP_HEADER_A_RIGHT_OFST,
-            value | ((swapid << UDP_HEADER_ID_OFST) & UDP_HEADER_ID_MSK));
+        Beb_Write32(csp0base, UDP_HEADER_A_RIGHT_OFST,
+                    value |
+                        ((swapid << UDP_HEADER_ID_OFST) & UDP_HEADER_ID_MSK));
         value = Beb_Read32(csp0base, UDP_HEADER_A_RIGHT_OFST);
         if ((value & UDP_HEADER_ID_MSK) !=
             ((swapid << UDP_HEADER_ID_OFST) & UDP_HEADER_ID_MSK)) {
@@ -1413,8 +1402,7 @@ int Beb_SetDetectorPosition(int pos[]) {
         value = Beb_Read32(csp0base, UDP_HEADER_A_LEFT_OFST);
         value &= UDP_HEADER_ID_MSK; // to keep previous id value
         Beb_Write32(csp0base, UDP_HEADER_A_LEFT_OFST,
-                    value |
-                        ((posval << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK));
+                    value | ((posval << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK));
         value = Beb_Read32(csp0base, UDP_HEADER_A_LEFT_OFST);
         if ((value & UDP_HEADER_X_MSK) !=
             ((posval << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK)) {
@@ -1426,8 +1414,7 @@ int Beb_SetDetectorPosition(int pos[]) {
         value = Beb_Read32(csp0base, UDP_HEADER_A_RIGHT_OFST);
         value &= UDP_HEADER_ID_MSK; // to keep previous id value
         Beb_Write32(csp0base, UDP_HEADER_A_RIGHT_OFST,
-                    value |
-                        ((posval << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK));
+                    value | ((posval << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK));
         value = Beb_Read32(csp0base, UDP_HEADER_A_RIGHT_OFST);
         if ((value & UDP_HEADER_X_MSK) !=
             ((posval << UDP_HEADER_X_OFST) & UDP_HEADER_X_MSK)) {
@@ -1440,13 +1427,11 @@ int Beb_SetDetectorPosition(int pos[]) {
         value = Beb_Read32(csp0base, UDP_HEADER_B_LEFT_OFST);
         value &= UDP_HEADER_Z_MSK; // to keep previous z value
         Beb_Write32(csp0base, UDP_HEADER_B_LEFT_OFST,
-                    value |
-                        ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
+                    value | ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
         value = Beb_Read32(csp0base, UDP_HEADER_B_LEFT_OFST);
         if ((value & UDP_HEADER_Y_MSK) !=
             ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
-            LOG(logERROR,
-                ("Could not set column position for left port\n"));
+            LOG(logERROR, ("Could not set column position for left port\n"));
             ret = FAIL;
         }
 
@@ -1455,13 +1440,11 @@ int Beb_SetDetectorPosition(int pos[]) {
         value = Beb_Read32(csp0base, UDP_HEADER_B_RIGHT_OFST);
         value &= UDP_HEADER_Z_MSK; // to keep previous z value
         Beb_Write32(csp0base, UDP_HEADER_B_RIGHT_OFST,
-                    value |
-                        ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
+                    value | ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK));
         value = Beb_Read32(csp0base, UDP_HEADER_B_RIGHT_OFST);
         if ((value & UDP_HEADER_Y_MSK) !=
             ((posval << UDP_HEADER_Y_OFST) & UDP_HEADER_Y_MSK)) {
-            LOG(logERROR,
-                ("Could not set column position for right port\n"));
+            LOG(logERROR, ("Could not set column position for right port\n"));
             ret = FAIL;
         }
 
@@ -1470,9 +1453,9 @@ int Beb_SetDetectorPosition(int pos[]) {
     }
     if (ret == OK) {
         LOG(logINFO, ("Position set to...\n"
-                        "\tLeft: [%d, %d]\n"
-                        "\tRight:[%d, %d]\n",
-                        posLeft[0], posLeft[1], posRight[0], posRight[1]));
+                      "\tLeft: [%d, %d]\n"
+                      "\tRight:[%d, %d]\n",
+                      posLeft[0], posLeft[1], posRight[0], posRight[1]));
     }
 
     return ret;
@@ -1483,8 +1466,8 @@ int Beb_SetStartingFrameNumber(uint64_t value) {
         Beb_deactivatedStartFrameNumber = value;
         return OK;
     }
-    LOG(logINFO, ("Setting start frame number: %llu\n",
-                    (long long unsigned int)value));
+    LOG(logINFO,
+        ("Setting start frame number: %llu\n", (long long unsigned int)value));
 
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_TEST_BASEADDR);
@@ -1508,7 +1491,7 @@ int Beb_SetStartingFrameNumber(uint64_t value) {
     return OK;
 }
 
-int Beb_GetStartingFrameNumber(uint64_t * retval, int tengigaEnable) {
+int Beb_GetStartingFrameNumber(uint64_t *retval, int tengigaEnable) {
     if (!Beb_activated) {
         *retval = Beb_deactivatedStartFrameNumber;
         return OK;
@@ -1538,14 +1521,13 @@ int Beb_GetStartingFrameNumber(uint64_t * retval, int tengigaEnable) {
 
         Beb_close(fd, csp0base);
         if (left1g != right1g) {
-            LOG(logERROR,
-                ("Retrieved inconsistent frame numbers from 1g left "
-                    "%llu and right %llu\n",
-                    (long long int)left1g, (long long int)right1g));
+            LOG(logERROR, ("Retrieved inconsistent frame numbers from 1g left "
+                           "%llu and right %llu\n",
+                           (long long int)left1g, (long long int)right1g));
             *retval = (left1g > right1g)
-                            ? left1g
-                            : right1g; // give max to set it to when stopping
-                                        // acq & different value
+                          ? left1g
+                          : right1g; // give max to set it to when stopping
+                                     // acq & different value
             return -2; // to differentiate between failed address mapping
         }
         *retval = left1g;
@@ -1566,14 +1548,13 @@ int Beb_GetStartingFrameNumber(uint64_t * retval, int tengigaEnable) {
         ++right10g; // increment for firmware
 
         if (left10g != right10g) {
-            LOG(logERROR,
-                ("Retrieved inconsistent frame numbers from `0g left "
-                    "%llu and right %llu\n",
-                    (long long int)left10g, (long long int)right10g));
+            LOG(logERROR, ("Retrieved inconsistent frame numbers from `0g left "
+                           "%llu and right %llu\n",
+                           (long long int)left10g, (long long int)right10g));
             *retval = (left10g > right10g)
-                            ? left10g
-                            : right10g; // give max to set it to when stopping
-                                        // acq & different value
+                          ? left10g
+                          : right10g; // give max to set it to when stopping
+                                      // acq & different value
             return -2; // to differentiate between failed address mapping
         }
         *retval = left10g;
@@ -1585,16 +1566,15 @@ void Beb_SetReadNLines(int value) { Beb_readNLines = value; }
 
 uint16_t Beb_swap_uint16(uint16_t val) { return (val << 8) | (val >> 8); }
 
-int Beb_open(u_int32_t * *csp0base, u_int32_t offset) {
+int Beb_open(u_int32_t **csp0base, u_int32_t offset) {
 
     int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
     if (fd == -1) {
         LOG(logERROR, ("\nCan't find /dev/mem!\n"));
     } else {
         LOG(logDEBUG1, ("/dev/mem opened\n"));
-        *csp0base =
-            (u_int32_t *)mmap(0, BEB_MMAP_SIZE, PROT_READ | PROT_WRITE,
-                                MAP_FILE | MAP_SHARED, fd, offset);
+        *csp0base = (u_int32_t *)mmap(0, BEB_MMAP_SIZE, PROT_READ | PROT_WRITE,
+                                      MAP_FILE | MAP_SHARED, fd, offset);
         if (*csp0base == MAP_FAILED) {
             LOG(logERROR, ("\nCan't map memmory area!!\n"));
             fd = -1;
@@ -1604,14 +1584,13 @@ int Beb_open(u_int32_t * *csp0base, u_int32_t offset) {
     return fd;
 }
 
-u_int32_t Beb_Read32(u_int32_t * baseaddr, u_int32_t offset) {
+u_int32_t Beb_Read32(u_int32_t *baseaddr, u_int32_t offset) {
     volatile u_int32_t value;
     value = *(u_int32_t *)(baseaddr + offset / (sizeof(u_int32_t)));
     return value;
 }
 
-u_int32_t Beb_Write32(u_int32_t * baseaddr, u_int32_t offset,
-                        u_int32_t data) {
+u_int32_t Beb_Write32(u_int32_t *baseaddr, u_int32_t offset, u_int32_t data) {
     volatile u_int32_t *ptr1;
     ptr1 = (u_int32_t *)(baseaddr + offset / (sizeof(u_int32_t)));
     *ptr1 = data;

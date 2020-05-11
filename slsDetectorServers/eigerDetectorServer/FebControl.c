@@ -2497,7 +2497,8 @@ int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right) {
             return 0;
         }
         if (!Feb_Interface_WriteRegister(addr[i], offset, value, 0, 0)) {
-            LOG(logERROR, ("Could not set Top flag to %s in %s Feb\n",                            top_names[ind], (i == 0 ? "left" : "right")));
+            LOG(logERROR, ("Could not set Top flag to %s in %s Feb\n",
+                           top_names[ind], (i == 0 ? "left" : "right")));
             return 0;
         }
     }
@@ -2509,7 +2510,7 @@ int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right) {
     return 1;
 }
 
-void Feb_Control_SetMasterVariable(int val) {Feb_control_master = val;}
+void Feb_Control_SetMasterVariable(int val) { Feb_control_master = val; }
 
 int Feb_Control_SetMaster(enum MASTERINDEX ind) {
     uint32_t offset = DAQ_REG_HRDWRE;
@@ -2561,7 +2562,7 @@ int Feb_Control_SetQuad(int val) {
     }
     LOG(logINFO, ("Setting Quad to %d in Feb\n", val));
     // only setting on the right feb if quad
-    return Feb_Control_SetTop(val == 0 ?  TOP_HARDWARE : OW_TOP, 0, 1);
+    return Feb_Control_SetTop(val == 0 ? TOP_HARDWARE : OW_TOP, 0, 1);
 }
 
 int Feb_Control_SetReadNLines(int value) {
@@ -2645,7 +2646,7 @@ int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
     addr[1] = Module_TopAddressIsValid(&modules[1])
                   ? Module_GetTopLeftAddress(&modules[1])
                   : Module_GetBottomLeftAddress(&modules[1]);
-    
+
     uint32_t value[2] = {0, 0};
 
     int run[2] = {0, 0};

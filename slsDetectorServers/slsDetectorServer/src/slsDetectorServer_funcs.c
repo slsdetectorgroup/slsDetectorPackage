@@ -4122,7 +4122,8 @@ int set_activate(int file_des) {
         if (arg >= 0) {
             if (setActivate(arg) == FAIL) {
                 ret = FAIL;
-                sprintf(mess, "Could not %s\n", (arg == 0 ? "deactivate" : "activate"));
+                sprintf(mess, "Could not %s\n",
+                        (arg == 0 ? "deactivate" : "activate"));
                 LOG(logERROR, (mess));
             }
         }

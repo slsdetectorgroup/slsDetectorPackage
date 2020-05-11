@@ -709,13 +709,16 @@ void setupDetector() {
     if (readConfigFile() == FAIL) {
         return;
     }
+    LOG(logINFOBLUE,
+        ("Module: %s %s %s\n", (top ? "TOP" : "BOTTOM"),
+            (master ? "MASTER" : "SLAVE"), (normal ? "NORMAL" : "SPECIAL")));   
+
     // client first connect (from shm) will activate
     if (setActivate(0) == FAIL) {
         initError = FAIL;
         sprintf(initErrorMessage, "Could not deactivate\n");
         LOG(logERROR, (initErrorMessage));
     }
-
     LOG(logDEBUG1, ("Setup detector done\n\n"));
 }
 

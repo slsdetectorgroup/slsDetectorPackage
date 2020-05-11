@@ -8,19 +8,13 @@
 #include "string_utils.h"
 #include "versionAPI.h"
 
-#include <arpa/inet.h>
+#include <algorithm>
 #include <array>
 #include <bitset>
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
-#include <sys/shm.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-
-#include <algorithm>
 
 namespace sls {
 
@@ -101,34 +95,22 @@ void Module::checkReceiverVersionCompatibility() {
 }
 
 int64_t Module::getFirmwareVersion() {
-    int64_t retval = -1;
-    sendToDetector(F_GET_FIRMWARE_VERSION, nullptr, retval);
-    LOG(logDEBUG1) << "firmware version: 0x" << std::hex << retval << std::dec;
-    return retval;
+    return sendToDetector<int64_t>(F_GET_FIRMWARE_VERSION);
 }
 
 int64_t Module::getDetectorServerVersion() {
-    int64_t retval = -1;
-    sendToDetector(F_GET_SERVER_VERSION, nullptr, retval);
-    LOG(logDEBUG1) << "detector server version: 0x" << std::hex << retval
-                   << std::dec;
-    return retval;
+    return sendToDetector<int64_t>(F_GET_SERVER_VERSION);
 }
 
 int64_t Module::getSerialNumber() {
-    int64_t retval = -1;
-    sendToDetector(F_GET_SERIAL_NUMBER, nullptr, retval);
-    LOG(logDEBUG1) << "serial number: 0x" << std::hex << retval << std::dec;
-    return retval;
+    return sendToDetector<int64_t>(F_GET_SERIAL_NUMBER);
 }
 
 int64_t Module::getReceiverSoftwareVersion() const {
-    LOG(logDEBUG1) << "Getting receiver version";
-    int64_t retval = -1;
     if (shm()->useReceiverFlag) {
-        sendToReceiver(F_GET_RECEIVER_VERSION, nullptr, retval);
+        return sendToReceiver<int64_t>(F_GET_RECEIVER_VERSION);
     }
-    return retval;
+    return -1;
 }
 
 void Module::sendToDetector(int fnum, const void *args, size_t args_size,
@@ -647,17 +629,12 @@ bool Module::lockServer(int lock) {
 }
 
 sls::IpAddr Module::getLastClientIP() {
-    sls::IpAddr retval;
-    LOG(logDEBUG1) << "Getting last client ip to detector server";
-    sendToDetector(F_GET_LAST_CLIENT_IP, nullptr, retval);
-    LOG(logDEBUG1) << "Last client IP to detector: " << retval;
-    return retval;
+    return sendToDetector<sls::IpAddr>(F_GET_LAST_CLIENT_IP);
 }
 
 void Module::exitServer() {
     LOG(logDEBUG1) << "Sending exit command to detector server";
     sendToDetector(F_EXIT_SERVER);
-    LOG(logINFO) << "Shutting down the Detector server";
 }
 
 void Module::execCommand(const std::string &cmd) {
@@ -1293,11 +1270,7 @@ void Module::setTimingMode(timingMode value) {
 }
 
 int Module::getDynamicRange() {
-    int arg = -1;
-    int retval = -1;
-    sendToDetector(F_SET_DYNAMIC_RANGE, arg, retval);
-    LOG(logDEBUG1) << "Dynamic Range: " << retval;
-    return retval;
+    return sendToDetector<int>(F_SET_DYNAMIC_RANGE, -1);
 }
 
 void Module::setDynamicRange(int n) {
@@ -1402,11 +1375,8 @@ void Module::setOverFlowMode(const bool enable) {
 }
 
 bool Module::getOverFlowMode() {
-    int retval = -1;
-    LOG(logDEBUG1) << "Getting overflow mode";
-    sendToDetector(F_GET_OVERFLOW_MODE, nullptr, retval);
-    LOG(logDEBUG1) << "overflow mode: " << retval;
-    return static_cast<bool>(retval);
+    auto r = sendToDetector<int>(F_GET_OVERFLOW_MODE);
+    return static_cast<bool>(r);
 }
 
 void Module::setStoreInRamMode(const bool enable) {
@@ -1416,11 +1386,8 @@ void Module::setStoreInRamMode(const bool enable) {
 }
 
 bool Module::getStoreInRamMode() {
-    int retval = -1;
-    LOG(logDEBUG1) << "Getting store in ram mode";
-    sendToDetector(F_GET_STOREINRAM_MODE, nullptr, retval);
-    LOG(logDEBUG1) << "store in ram mode: " << retval;
-    return static_cast<bool>(retval);
+    auto r = sendToDetector<int>(F_GET_STOREINRAM_MODE);
+    return static_cast<bool>(r);
 }
 
 void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
@@ -1437,11 +1404,8 @@ void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
 }
 
 slsDetectorDefs::readoutMode Module::getReadoutMode() {
-    int retval = -1;
-    LOG(logDEBUG1) << "Getting readout mode";
-    sendToDetector(F_GET_READOUT_MODE, nullptr, retval);
-    LOG(logDEBUG1) << "Readout mode: " << retval;
-    return static_cast<readoutMode>(retval);
+    auto r = sendToDetector<int>(F_GET_READOUT_MODE);
+    return static_cast<readoutMode>(r);
 }
 
 void Module::setInterruptSubframe(const bool enable) {
@@ -1451,8 +1415,8 @@ void Module::setInterruptSubframe(const bool enable) {
 }
 
 bool Module::getInterruptSubframe() {
-    auto retval = sendToDetector<int>(F_GET_INTERRUPT_SUBFRAME);
-    return static_cast<bool>(retval);
+    auto r = sendToDetector<int>(F_GET_INTERRUPT_SUBFRAME);
+    return static_cast<bool>(r);
 }
 
 uint32_t Module::writeRegister(uint32_t addr, uint32_t val) {
@@ -1600,11 +1564,7 @@ void Module::setSourceUDPMAC(const sls::MacAddr mac) {
 }
 
 sls::MacAddr Module::getSourceUDPMAC() {
-    sls::MacAddr retval(0LU);
-    LOG(logDEBUG1) << "Getting source udp mac";
-    sendToDetector(F_GET_SOURCE_UDP_MAC, nullptr, retval);
-    LOG(logDEBUG1) << "Source udp mac: " << retval;
-    return retval;
+    return sendToDetector<sls::MacAddr>(F_GET_SOURCE_UDP_MAC);
 }
 
 void Module::setSourceUDPMAC2(const sls::MacAddr mac) {
@@ -1616,11 +1576,7 @@ void Module::setSourceUDPMAC2(const sls::MacAddr mac) {
 }
 
 sls::MacAddr Module::getSourceUDPMAC2() {
-    sls::MacAddr retval(0LU);
-    LOG(logDEBUG1) << "Getting source udp mac2";
-    sendToDetector(F_GET_SOURCE_UDP_MAC2, nullptr, retval);
-    LOG(logDEBUG1) << "Source udp mac2: " << retval;
-    return retval;
+    return sendToDetector<sls::MacAddr>(F_GET_SOURCE_UDP_MAC2);
 }
 
 void Module::setSourceUDPIP(const IpAddr ip) {
@@ -1628,16 +1584,11 @@ void Module::setSourceUDPIP(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid source udp ip address");
     }
-
     sendToDetector(F_SET_SOURCE_UDP_IP, ip, nullptr);
 }
 
 sls::IpAddr Module::getSourceUDPIP() {
-    sls::IpAddr retval(0U);
-    LOG(logDEBUG1) << "Getting source udp ip";
-    sendToDetector(F_GET_SOURCE_UDP_IP, nullptr, retval);
-    LOG(logDEBUG1) << "Source udp ip: " << retval;
-    return retval;
+    return sendToDetector<sls::IpAddr>(F_GET_SOURCE_UDP_IP);
 }
 
 void Module::setSourceUDPIP2(const IpAddr ip) {
@@ -1645,16 +1596,11 @@ void Module::setSourceUDPIP2(const IpAddr ip) {
     if (ip == 0) {
         throw RuntimeError("Invalid source udp ip address2");
     }
-
     sendToDetector(F_SET_SOURCE_UDP_IP2, ip, nullptr);
 }
 
 sls::IpAddr Module::getSourceUDPIP2() {
-    sls::IpAddr retval(0U);
-    LOG(logDEBUG1) << "Getting source udp ip2";
-    sendToDetector(F_GET_SOURCE_UDP_IP2, nullptr, retval);
-    LOG(logDEBUG1) << "Source udp ip2: " << retval;
-    return retval;
+    return sendToDetector<sls::IpAddr>(F_GET_SOURCE_UDP_IP2);
 }
 
 void Module::setDestinationUDPIP(const IpAddr ip) {
@@ -3323,29 +3269,26 @@ std::array<int, 2> Module::setPatternLoopAddresses(int level, int start,
 
 int Module::setPatternLoopCycles(int level, int n) {
     int args[]{level, n};
-    int retval = -1;
     LOG(logDEBUG1) << "Setting Pat Loop cycles, level: " << level
                    << ",nloops: " << n;
-    sendToDetector(F_SET_PATTERN_LOOP_CYCLES, args, retval);
+    auto retval = sendToDetector<int>(F_SET_PATTERN_LOOP_CYCLES, args);
     LOG(logDEBUG1) << "Set Pat Loop Cycles: " << retval;
     return retval;
 }
 
 int Module::setPatternWaitAddr(int level, int addr) {
-    int retval = -1;
     int args[]{level, addr};
     LOG(logDEBUG1) << "Setting Pat Wait Addr, level: " << level << ", addr: 0x"
                    << std::hex << addr << std::dec;
-    sendToDetector(F_SET_PATTERN_WAIT_ADDR, args, retval);
+    auto retval = sendToDetector<int>(F_SET_PATTERN_WAIT_ADDR, args);
     LOG(logDEBUG1) << "Set Pat Wait Addr: " << retval;
     return retval;
 }
 
 uint64_t Module::setPatternWaitTime(int level, uint64_t t) {
-    uint64_t retval = -1;
     uint64_t args[]{static_cast<uint64_t>(level), t};
     LOG(logDEBUG1) << "Setting Pat Wait Time, level: " << level << ", t: " << t;
-    sendToDetector(F_SET_PATTERN_WAIT_TIME, args, retval);
+    auto retval = sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
     LOG(logDEBUG1) << "Set Pat Wait Time: " << retval;
     return retval;
 }
@@ -3649,7 +3592,7 @@ sls_detector_module Module::readSettingsFile(const std::string &fname, int tb) {
 void Module::writeSettingsFile(const std::string &fname,
                                sls_detector_module &mod) {
     LOG(logDEBUG1) << "Write settings file " << fname;
-    
+
     std::ofstream outfile;
     if (shm()->myDetectorType == EIGER) {
         outfile.open(fname.c_str(), std::ofstream::binary);

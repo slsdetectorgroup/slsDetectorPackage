@@ -84,6 +84,9 @@ u_int16_t getHardwareSerialNumber();
 #ifdef JUNGFRAUD
 int isHardwareVersion2();
 #endif
+#ifdef EIGERD
+void readDetectorNumber();
+#endif
 u_int32_t getDetectorNumber();
 u_int64_t getDetectorMAC();
 u_int32_t getDetectorIP();
@@ -116,7 +119,7 @@ int setDefaultDacs();
 int readConfigFile();
 #endif
 #ifdef EIGERD
-int resetToHardwareSettings();
+void resetToHardwareSettings();
 #endif
 
 // advanced read/write reg
@@ -435,7 +438,8 @@ void setExternalGating(int enable[]);
 int setAllTrimbits(int val);
 int getAllTrimbits();
 int getBebFPGATemp();
-int activate(int enable);
+int setActivate(int enable);
+int getActivate(int* retval);
 
 // gotthard specific - adc phase
 #elif GOTTHARDD

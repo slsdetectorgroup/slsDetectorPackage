@@ -36,6 +36,7 @@ unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb);
 void Beb_GetModuleConfiguration(int *master, int *top, int *normal);
 int Beb_IsTransmitting(int *retval, int tengiga, int waitForDelay);
 
+void Beb_SetTopVariable(int val);
 int Beb_SetTop(enum TOPINDEX ind);
 int Beb_SetMaster(enum MASTERINDEX ind);
 int Beb_Activate(int enable);

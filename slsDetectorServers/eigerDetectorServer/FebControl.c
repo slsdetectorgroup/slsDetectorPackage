@@ -2463,10 +2463,10 @@ int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right) {
     uint32_t offset = DAQ_REG_HRDWRE;
     unsigned int addr[2] = {0, 0};
     if (left) {
-        addr[0] = Module_GetTopLeftAddress(&modules[0]);
+        addr[0] = Module_GetTopLeftAddress(&modules[1]);
     }
     if (right) {
-        addr[1] = Module_GetTopRightAddress(&modules[0]);
+        addr[1] = Module_GetTopRightAddress(&modules[1]);
     }
     char *top_names[] = {TOP_NAMES};
     int i = 0;
@@ -2497,8 +2497,7 @@ int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right) {
             return 0;
         }
         if (!Feb_Interface_WriteRegister(addr[i], offset, value, 0, 0)) {
-            LOG(logERROR, ("Could not set Top flag to %s in %s Feb\n", val,
-                           top_names[ind], (i == 0 ? "left" : "right")));
+            LOG(logERROR, ("Could not set Top flag to %s in %s Feb\n",                            top_names[ind], (i == 0 ? "left" : "right")));
             return 0;
         }
     }
@@ -2510,11 +2509,13 @@ int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right) {
     return 1;
 }
 
+void Feb_Control_SetMasterVariable(int val) {Feb_control_master = val;}
+
 int Feb_Control_SetMaster(enum MASTERINDEX ind) {
     uint32_t offset = DAQ_REG_HRDWRE;
     unsigned int addr[2] = {0, 0};
-    addr[0] = Module_GetTopLeftAddress(&modules[0]);
-    addr[1] = Module_GetTopRightAddress(&modules[0]);
+    addr[0] = Module_GetTopLeftAddress(&modules[1]);
+    addr[1] = Module_GetTopRightAddress(&modules[1]);
     char *master_names[] = {MASTER_NAMES};
     int i = 0;
     for (i = 0; i < 2; ++i) {
@@ -2538,12 +2539,11 @@ int Feb_Control_SetMaster(enum MASTERINDEX ind) {
             break;
         default:
             LOG(logERROR, ("Unknown master index in Feb: %d\n", ind));
-            Beb_close(fd, csp0base);
             return 0;
         }
 
         if (!Feb_Interface_WriteRegister(addr[i], offset, value, 0, 0)) {
-            LOG(logERROR, ("Could not set Master flag to %s in %s Feb\n", val,
+            LOG(logERROR, ("Could not set Master flag to %s in %s Feb\n",
                            master_names[ind], (i == 0 ? "left" : "right")));
             return 0;
         }
@@ -2560,7 +2560,8 @@ int Feb_Control_SetQuad(int val) {
         return 1;
     }
     LOG(logINFO, ("Setting Quad to %d in Feb\n", val));
-    return Feb_Control_SetTop(val, 0, 1);
+    // only setting on the right feb if quad
+    return Feb_Control_SetTop(val == 0 ?  TOP_HARDWARE : OW_TOP, 0, 1);
 }
 
 int Feb_Control_SetReadNLines(int value) {
@@ -2644,6 +2645,7 @@ int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
     addr[1] = Module_TopAddressIsValid(&modules[1])
                   ? Module_GetTopLeftAddress(&modules[1])
                   : Module_GetBottomLeftAddress(&modules[1]);
+    
     uint32_t value[2] = {0, 0};
 
     int run[2] = {0, 0};

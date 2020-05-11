@@ -40,7 +40,7 @@ void Beb_SetTopVariable(int val);
 int Beb_SetTop(enum TOPINDEX ind);
 int Beb_SetMaster(enum MASTERINDEX ind);
 int Beb_SetActivate(int enable);
-int Beb_GetActivate(int* retval);
+int Beb_GetActivate(int *retval);
 int Beb_Set32bitOverflow(int val);
 
 int Beb_GetTenGigaFlowControl();

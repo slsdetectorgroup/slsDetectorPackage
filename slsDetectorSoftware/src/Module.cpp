@@ -1660,11 +1660,7 @@ void Module::setDestinationUDPMAC(const MacAddr mac) {
 }
 
 sls::MacAddr Module::getDestinationUDPMAC() {
-    sls::MacAddr retval(0LU);
-    LOG(logDEBUG1) << "Getting destination udp mac";
-    sendToDetector(F_GET_DEST_UDP_MAC, nullptr, retval);
-    LOG(logDEBUG1) << "Destination udp mac: " << retval;
-    return retval;
+    return sendToDetector<sls::MacAddr>(F_GET_DEST_UDP_MAC);
 }
 
 void Module::setDestinationUDPMAC2(const MacAddr mac) {
@@ -1672,16 +1668,11 @@ void Module::setDestinationUDPMAC2(const MacAddr mac) {
     if (mac == 0) {
         throw RuntimeError("Invalid desinaion udp mac address2");
     }
-
     sendToDetector(F_SET_DEST_UDP_MAC2, mac, nullptr);
 }
 
 sls::MacAddr Module::getDestinationUDPMAC2() {
-    sls::MacAddr retval(0LU);
-    LOG(logDEBUG1) << "Getting destination udp mac2";
-    sendToDetector(F_GET_DEST_UDP_MAC2, nullptr, retval);
-    LOG(logDEBUG1) << "Destination udp mac2: " << retval;
-    return retval;
+    return sendToDetector<sls::MacAddr>(F_GET_DEST_UDP_MAC2);
 }
 
 void Module::setDestinationUDPPort(const int port) {
@@ -1693,12 +1684,7 @@ void Module::setDestinationUDPPort(const int port) {
 }
 
 int Module::getDestinationUDPPort() {
-    int retval = -1;
-    LOG(logDEBUG1) << "Getting destination udp port";
-    sendToDetector(F_GET_DEST_UDP_PORT, nullptr, retval);
-    LOG(logDEBUG1) << "Destination udp port: " << retval;
-
-    return retval;
+    return sendToDetector<int>(F_GET_DEST_UDP_PORT);
 }
 
 void Module::setDestinationUDPPort2(const int port) {
@@ -1710,11 +1696,7 @@ void Module::setDestinationUDPPort2(const int port) {
 }
 
 int Module::getDestinationUDPPort2() {
-    int retval = -1;
-    LOG(logDEBUG1) << "Getting destination udp port2";
-    sendToDetector(F_GET_DEST_UDP_PORT2, nullptr, retval);
-    LOG(logDEBUG1) << "Destination udp port2: " << retval;
-    return retval;
+    return sendToDetector<int>(F_GET_DEST_UDP_PORT2);
 }
 
 void Module::setNumberofUDPInterfaces(int n) {
@@ -1745,11 +1727,7 @@ void Module::selectUDPInterface(int n) {
 }
 
 int Module::getSelectedUDPInterface() {
-    int retval = -1;
-    LOG(logDEBUG1) << "Getting selected udp interface";
-    sendToDetector(F_GET_INTERFACE_SEL, nullptr, retval);
-    LOG(logDEBUG1) << "Selected udp interface: " << retval;
-    return retval;
+    return sendToDetector<int>(F_GET_INTERFACE_SEL);
 }
 
 void Module::setClientStreamingPort(int port) { shm()->zmqport = port; }
@@ -1834,10 +1812,7 @@ void Module::setTenGigaFlowControl(bool enable) {
 }
 
 int Module::getTransmissionDelayFrame() {
-    int retval = -1;
-    sendToDetector(F_GET_TRANSMISSION_DELAY_FRAME, nullptr, retval);
-    LOG(logDEBUG1) << "transmission delay frame :" << retval;
-    return retval;
+    return sendToDetector<int>(F_GET_TRANSMISSION_DELAY_FRAME);
 }
 
 void Module::setTransmissionDelayFrame(int value) {
@@ -1846,10 +1821,7 @@ void Module::setTransmissionDelayFrame(int value) {
 }
 
 int Module::getTransmissionDelayLeft() {
-    int retval = -1;
-    sendToDetector(F_GET_TRANSMISSION_DELAY_LEFT, nullptr, retval);
-    LOG(logDEBUG1) << "transmission delay left :" << retval;
-    return retval;
+    return sendToDetector<int>(F_GET_TRANSMISSION_DELAY_LEFT);
 }
 
 void Module::setTransmissionDelayLeft(int value) {
@@ -1858,10 +1830,7 @@ void Module::setTransmissionDelayLeft(int value) {
 }
 
 int Module::getTransmissionDelayRight() {
-    int retval = -1;
-    sendToDetector(F_GET_TRANSMISSION_DELAY_RIGHT, nullptr, retval);
-    LOG(logDEBUG1) << "transmission delay right :" << retval;
-    return retval;
+    return sendToDetector<int>(F_GET_TRANSMISSION_DELAY_RIGHT);
 }
 
 void Module::setTransmissionDelayRight(int value) {

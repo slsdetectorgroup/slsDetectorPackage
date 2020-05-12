@@ -1700,7 +1700,7 @@ void Module::updateReceiverStreamingIP() {
 }
 
 bool Module::getTenGigaFlowControl() {
-    return sendToDetector<int>(F_GET_TEN_GIGA_FLOW_CONTROL)!=0;
+    return sendToDetector<int>(F_GET_TEN_GIGA_FLOW_CONTROL);
 }
 
 void Module::setTenGigaFlowControl(bool enable) {
@@ -2036,7 +2036,6 @@ bool Module::getCurrentSource() {
 }
 
 void Module::setCurrentSource(bool value) {
-    LOG(logDEBUG1) << "Setting current source enable to " << value;
     sendToDetector(F_SET_CURRENT_SOURCE, static_cast<int>(value), nullptr);
 }
 
@@ -2046,7 +2045,6 @@ slsDetectorDefs::timingSourceType Module::getTimingSource() {
 }
 
 void Module::setTimingSource(slsDetectorDefs::timingSourceType value) {
-    LOG(logDEBUG1) << "Setting timing source to " << value;
     sendToDetector(F_SET_TIMING_SOURCE, static_cast<int>(value), nullptr);
 }
 

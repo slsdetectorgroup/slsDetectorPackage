@@ -1048,7 +1048,8 @@ int DetectorImpl::acquire() {
             }
             Parallel(&Module::startAndReadAll, {});
         } catch (...) {
-            Parallel(&Module::stopReceiver, {});
+            if (receiver)
+                Parallel(&Module::stopReceiver, {});
             throw;
         }
 

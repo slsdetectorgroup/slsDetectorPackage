@@ -1310,13 +1310,6 @@ class Module : public virtual slsDetectorDefs {
      */
     void exitReceiver();
 
-    /**
-     * Executes a system command on the receiver server
-     * e.g. mount an nfs disk, reboot and returns answer etc.
-     * @param cmd command to be executed
-     */
-    void execReceiverCommand(const std::string &cmd);
-
     std::string getFilePath();
     void setFilePath(const std::string &path);
     std::string getFileName();

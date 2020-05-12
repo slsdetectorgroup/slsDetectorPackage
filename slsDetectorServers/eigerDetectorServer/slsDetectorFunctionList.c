@@ -227,9 +227,7 @@ u_int64_t getFirmwareAPIVersion() {
 }
 
 void readDetectorNumber() {
-#ifdef VIRTUAL
-    return;
-#endif
+#ifndef VIRTUAL
     char output[255];
     FILE *sysFile = popen(IDFILECOMMAND, "r");
     fgets(output, sizeof(output), sysFile);
@@ -238,6 +236,7 @@ void readDetectorNumber() {
     if (isControlServer) {
         LOG(logINFOBLUE, ("Detector ID: %u\n", detid));
     }
+#endif
 }
 
 u_int32_t getDetectorNumber() {

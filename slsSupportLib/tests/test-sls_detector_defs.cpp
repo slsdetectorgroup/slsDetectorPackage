@@ -9,10 +9,10 @@ TEST_CASE("sls_detector_module default construction", "[support][new]") {
     CHECK(m.nchan == 0);
     CHECK(m.nchip == 0);
     CHECK(m.ndac == 0);
-    CHECK(m.reg == 0);
+    CHECK(m.reg == -1);
     CHECK(m.iodelay == 0);
     CHECK(m.tau == 0);
-    CHECK(m.eV == 0);
+    CHECK(m.eV == -1);
     CHECK(m.dacs == nullptr);
     CHECK(m.chanregs == nullptr);
 }
@@ -23,10 +23,10 @@ TEST_CASE("sls_detector_module from type", "[support]") {
     CHECK(m.nchan == 256 * 256 * 4);
     CHECK(m.nchip == 4);
     CHECK(m.ndac == 16);
-    CHECK(m.reg == 0);
+    CHECK(m.reg == -1);
     CHECK(m.iodelay == 0);
     CHECK(m.tau == 0);
-    CHECK(m.eV == 0);
+    CHECK(m.eV == -1);
     CHECK(m.dacs != nullptr);
     CHECK(m.chanregs != nullptr);
 }

@@ -26,7 +26,7 @@ target_compile_definitions(jungfrauDetectorServer_virtual
 )
 
 target_link_libraries(jungfrauDetectorServer_virtual
-    PUBLIC pthread rt slsProjectCWarnings
+    PUBLIC pthread rt slsProjectCSettings
 )
 
 set_target_properties(jungfrauDetectorServer_virtual PROPERTIES

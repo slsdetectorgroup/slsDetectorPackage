@@ -334,7 +334,7 @@ int ClientInterface::get_version(Interface &socket) {
 
 int ClientInterface::setup_receiver(Interface &socket) {
     auto arg = socket.Receive<rxParameters>();
-    LOG(logDEBUG1) << "detType:" << arg.detType << std::endl
+    LOG(logDEBUG) << "detType:" << arg.detType << std::endl
                    << "multiSize.x:" << arg.multiSize.x << std::endl
                    << "multiSize.y:" << arg.multiSize.y << std::endl
                    << "detId:" << arg.detId << std::endl
@@ -385,12 +385,21 @@ int ClientInterface::setup_receiver(Interface &socket) {
     impl()->setDetectorHostname(arg.hostname);
 
     // udp setup
+    // update retvals only if detmac is not the same as in detector
     sls::MacAddr retvals[2];
-    if (arg.udp_dstmac == 0 && arg.udp_dstip != 0) {
-        retvals[0] = setUdpIp(sls::IpAddr(arg.udp_dstip));
+    if (arg.udp_dstip != 0) {
+       sls::MacAddr r = setUdpIp(sls::IpAddr(arg.udp_dstip));
+       sls::MacAddr detMac{arg.udp_dstmac};
+        if (detMac != r) {
+            retvals[0] = r;
+        }
     }
-    if (arg.udp_dstmac2 == 0 && arg.udp_dstip2 != 0) {
-        retvals[1] = setUdpIp2(sls::IpAddr(arg.udp_dstip2));
+    if (arg.udp_dstip2 != 0) {
+       sls::MacAddr r = setUdpIp2(sls::IpAddr(arg.udp_dstip2));
+       sls::MacAddr detMac{arg.udp_dstmac2};
+        if (detMac != r) {
+            retvals[1] = r;
+        }
     }
     impl()->setUDPPortNumber(arg.udp_dstport);
     impl()->setUDPPortNumber2(arg.udp_dstport2);
@@ -1471,6 +1480,7 @@ int ClientInterface::set_read_n_lines(Interface &socket) {
 }
 
 sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
+    LOG(logINFO) << "Received UDP IP: " << arg;
     // getting eth
     std::string eth = sls::IpToInterfaceName(arg.str());
     if (eth == "none") {
@@ -1492,19 +1502,19 @@ sls::MacAddr ClientInterface::setUdpIp(sls::IpAddr arg) {
         throw RuntimeError("Failed to get udp mac adddress to listen to (eth:" +
                            eth + ", ip:" + arg.str() + ")\n");
     }
+    LOG(logINFO) << "Receiver MAC Address: " << retval;
     return retval;
 }
 
 int ClientInterface::set_udp_ip(Interface &socket) {
     auto arg = socket.Receive<sls::IpAddr>();
     verifyIdle(socket);
-    LOG(logINFO) << "Received UDP IP: " << arg;
     auto retval = setUdpIp(arg);
-    LOG(logINFO) << "Receiver MAC Address: " << retval;
     return socket.sendResult(retval);
 }
 
 sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
+    LOG(logINFO) << "Received UDP IP2: " << arg;
     // getting eth
     std::string eth = sls::IpToInterfaceName(arg.str());
     if (eth == "none") {
@@ -1525,6 +1535,7 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
             "Failed to get udp mac adddress2 to listen to (eth:" + eth +
             ", ip:" + arg.str() + ")\n");
     }
+    LOG(logINFO) << "Receiver MAC Address2: " << retval;
     return retval;
 }
 
@@ -1535,9 +1546,7 @@ int ClientInterface::set_udp_ip2(Interface &socket) {
         throw RuntimeError(
             "UDP Destination IP2 not implemented for this detector");
     }
-    LOG(logINFO) << "Received UDP IP2: " << arg;
     auto retval = setUdpIp2(arg);
-    LOG(logINFO) << "Receiver MAC Address2: " << retval;
     return socket.sendResult(retval);
 }
 

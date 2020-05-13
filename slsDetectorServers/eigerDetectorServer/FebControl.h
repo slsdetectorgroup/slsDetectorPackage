@@ -1,5 +1,6 @@
 #pragma once
 #include "FebInterface.h"
+#include "slsDetectorServer_defs.h"
 #include <netinet/in.h>
 
 struct Module {
@@ -174,6 +175,10 @@ int64_t Feb_Control_GetSubMeasuredPeriod();
 int Feb_Control_SoftwareTrigger();
 int Feb_Control_SetInterruptSubframe(int val);
 int Feb_Control_GetInterruptSubframe();
+
+int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right);
+void Feb_Control_SetMasterVariable(int val);
+int Feb_Control_SetMaster(enum MASTERINDEX ind);
 int Feb_Control_SetQuad(int val);
 int Feb_Control_SetReadNLines(int value);
 int Feb_Control_GetReadNLines();

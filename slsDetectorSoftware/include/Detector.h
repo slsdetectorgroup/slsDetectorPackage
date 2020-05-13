@@ -791,7 +791,7 @@ class Detector {
     Result<bool> getActive(Positions pos = {}) const;
 
     /** [Eiger] */
-    void setActive(bool active, Positions pos = {});
+    void setActive(const bool active, Positions pos = {});
 
     /** [Eiger] */
     Result<bool> getRxPadDeactivatedMode(Positions pos = {}) const;

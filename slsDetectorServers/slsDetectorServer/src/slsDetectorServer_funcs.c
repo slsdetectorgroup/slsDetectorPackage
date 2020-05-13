@@ -4119,9 +4119,24 @@ int set_activate(int file_des) {
 #else
     // set & get
     if ((arg == -1) || (Server_VerifyLock() == OK)) {
-        retval = activate(arg);
-        LOG(logDEBUG1, ("Activate: %d\n", retval));
-        validate(arg, retval, "set activate", DEC);
+        if (arg >= 0) {
+            if (setActivate(arg) == FAIL) {
+                ret = FAIL;
+                sprintf(mess, "Could not %s\n",
+                        (arg == 0 ? "deactivate" : "activate"));
+                LOG(logERROR, (mess));
+            }
+        }
+        if (ret == OK) {
+            if (getActivate(&retval) == FAIL) {
+                ret = FAIL;
+                sprintf(mess, "Could not get activate flag\n");
+                LOG(logERROR, (mess));
+            } else {
+                LOG(logDEBUG1, ("Activate: %d\n", retval));
+                validate(arg, retval, "set/get activate", DEC);
+            }
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -7264,7 +7279,8 @@ int get_receiver_parameters(int file_des) {
 
         // activate
 #ifdef EIGERD
-    i32 = activate(-1);
+    i32 = 0;
+    getActivate(&i32);
 #else
     i32 = 0;
 #endif

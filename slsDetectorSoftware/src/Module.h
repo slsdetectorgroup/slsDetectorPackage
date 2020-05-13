@@ -1095,12 +1095,8 @@ class Module : public virtual slsDetectorDefs {
      */
     void writeAdcRegister(uint32_t addr, uint32_t val);
 
-    /**
-     * Activates/Deactivates the detector (Eiger only)
-     * @param enable active (1) or inactive (0), -1 gets
-     * @returns 0 (inactive) or 1 (active)for activate mode
-     */
-    int activate(int const enable = -1);
+    bool getActivate();
+    void setActivate(const bool enable);
 
     bool getDeactivatedRxrPaddingMode();
 

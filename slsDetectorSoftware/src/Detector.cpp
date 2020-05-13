@@ -1031,11 +1031,11 @@ Result<ns> Detector::getMeasuredSubFramePeriod(Positions pos) const {
 }
 
 Result<bool> Detector::getActive(Positions pos) const {
-    return pimpl->Parallel(&Module::activate, pos, -1);
+    return pimpl->Parallel(&Module::getActivate, pos);
 }
 
-void Detector::setActive(bool active, Positions pos) {
-    pimpl->Parallel(&Module::activate, pos, static_cast<int>(active));
+void Detector::setActive(const bool active, Positions pos) {
+    pimpl->Parallel(&Module::setActivate, pos, active);
 }
 
 Result<bool> Detector::getRxPadDeactivatedMode(Positions pos) const {

@@ -1,9 +1,10 @@
 #pragma once
 #include "sls_detector_defs.h"
 
-#define REQUIRED_FIRMWARE_VERSION          (24)
-#define IDFILECOMMAND                      "more /home/root/executables/detid.txt"
-#define FIRMWARE_VERSION_SAME_TOP_BOT_ADDR (26)
+#define REQUIRED_FIRMWARE_VERSION (26)
+#define IDFILECOMMAND             "more /home/root/executables/detid.txt"
+#define CONFIG_FILE               ("config.txt")
+#define WAIT_STOP_SERVER_START    (1 * 1000 * 1000)
 
 #define STATUS_IDLE    0
 #define STATUS_RUNNING 1
@@ -61,6 +62,11 @@ enum ADCINDEX {
 enum NETWORKINDEX { TXN_LEFT, TXN_RIGHT, TXN_FRAME, FLOWCTRL_10G };
 enum ROINDEX { E_PARALLEL, E_NON_PARALLEL };
 enum CLKINDEX { RUN_CLK, NUM_CLOCKS };
+enum TOPINDEX { TOP_HARDWARE, OW_TOP, OW_BOTTOM };
+#define TOP_NAMES "hardware", "top", "bottom"
+enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
+#define MASTER_NAMES "hardware", "master", "slave"
+
 #define CLK_NAMES "run"
 
 /* Hardware Definitions */

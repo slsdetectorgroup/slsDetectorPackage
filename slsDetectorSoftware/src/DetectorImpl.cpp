@@ -515,7 +515,7 @@ void DetectorImpl::readFrameFromReceiver() {
                         nDetPixelsX = nX * nPixelsX;
                         nDetPixelsY = nY * nPixelsY;
                         // det type
-                        eiger = (zHeader.detType == static_cast<int>(3))
+                        eiger = (zHeader.detType == EIGER)
                                     ? true
                                     : false; // to be changed to EIGER when
                                              // firmware updates its header data

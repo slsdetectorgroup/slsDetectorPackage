@@ -1,4 +1,5 @@
 #include "UdpRxSocket.h"
+#include "logger.h"
 #include "network_utils.h"
 #include "sls_detector_exceptions.h"
 #include <cstdint>

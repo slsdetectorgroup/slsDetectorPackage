@@ -1282,7 +1282,8 @@ int Module::getADC(dacIndex index) {
 slsDetectorDefs::externalSignalFlag
 Module::setExternalSignalFlags(externalSignalFlag pol) {
     LOG(logDEBUG1) << "Setting signal flag to " << pol;
-    return sendToDetector<slsDetectorDefs::externalSignalFlag>(F_SET_EXTERNAL_SIGNAL_FLAG, pol);
+    return sendToDetector<slsDetectorDefs::externalSignalFlag>(
+        F_SET_EXTERNAL_SIGNAL_FLAG, pol);
 }
 
 void Module::setParallelMode(const bool enable) {
@@ -1835,7 +1836,8 @@ std::string Module::getAdditionalJsonParameter(const std::string &key) {
 }
 
 int64_t Module::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
-    return sendToReceiver<int64_t>(F_RECEIVER_UDP_SOCK_BUF_SIZE, udpsockbufsize);
+    return sendToReceiver<int64_t>(F_RECEIVER_UDP_SOCK_BUF_SIZE,
+                                   udpsockbufsize);
 }
 
 int64_t Module::getReceiverUDPSocketBufferSize() {
@@ -2216,7 +2218,8 @@ bool Module::getDeactivatedRxrPaddingMode() {
 }
 
 void Module::setDeactivatedRxrPaddingMode(bool padding) {
-    sendToReceiver(F_SET_RECEIVER_DEACTIVATED_PADDING, static_cast<int>(padding), nullptr);
+    sendToReceiver(F_SET_RECEIVER_DEACTIVATED_PADDING,
+                   static_cast<int>(padding), nullptr);
 }
 
 bool Module::getFlippedDataX() {
@@ -2656,7 +2659,7 @@ int64_t Module::getFramesCaughtByReceiver() const {
 }
 
 std::vector<uint64_t> Module::getNumMissingPackets() const {
-    //TODO!(Erik) Refactor
+    // TODO!(Erik) Refactor
     LOG(logDEBUG1) << "Getting num missing packets";
     if (shm()->useReceiverFlag) {
         int fnum = F_GET_NUM_MISSING_PACKETS;
@@ -2701,7 +2704,8 @@ bool Module::getFileWrite() {
 }
 
 void Module::setMasterFileWrite(bool value) {
-    sendToReceiver(F_SET_RECEIVER_MASTER_FILE_WRITE, static_cast<int>(value), nullptr);
+    sendToReceiver(F_SET_RECEIVER_MASTER_FILE_WRITE, static_cast<int>(value),
+                   nullptr);
 }
 
 bool Module::getMasterFileWrite() {

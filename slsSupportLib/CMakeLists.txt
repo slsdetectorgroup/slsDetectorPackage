@@ -9,13 +9,13 @@ set(SOURCES
     src/network_utils.cpp
     src/ZmqSocket.cpp
     src/UdpRxSocket.cpp
+    src/sls_detector_exceptions.cpp
 )
 
 set(HEADERS
 )
 
 set(PUBLICHEADERS
-    include/ansi.h
     include/sls_detector_defs.h
     include/sls_detector_funcs.h
     include/versionAPI.h
@@ -23,7 +23,6 @@ set(PUBLICHEADERS
     include/file_utils.h
     include/container_utils.h
     include/string_utils.h
-    include/logger.h
     include/ClientSocket.h
     include/DataSocket.h
     include/ServerSocket.h

@@ -5,8 +5,8 @@
 #include "sls_detector_defs.h"
 #include <array>
 #include <map>
-#include <vector>
 #include <sstream>
+#include <vector>
 
 // using namespace sls;
 using sls::defs;
@@ -219,28 +219,27 @@ TEST_CASE("Detector type") {
     REQUIRE(StringTo<defs::detectorType>("Eiger") == dt);
 }
 
-
-TEST_CASE("Formatting slsDetectorDefs::ROI"){
-    slsDetectorDefs::ROI roi{5,159};
+TEST_CASE("Formatting slsDetectorDefs::ROI") {
+    slsDetectorDefs::ROI roi{5, 159};
     REQUIRE(ToString(roi) == "[5, 159]");
 }
 
-TEST_CASE("Streaming of slsDetectorDefs::ROI"){
+TEST_CASE("Streaming of slsDetectorDefs::ROI") {
     using namespace sls;
-    slsDetectorDefs::ROI roi{-10,1};
+    slsDetectorDefs::ROI roi{-10, 1};
     std::ostringstream oss;
     oss << roi;
     REQUIRE(oss.str() == "[-10, 1]");
 }
 
-TEST_CASE("sls::FixedCapacityContainer"){
+TEST_CASE("sls::FixedCapacityContainer") {
     sls::FixedCapacityContainer<int, 5> vec;
     vec.push_back(3);
     vec.push_back(8);
     REQUIRE(ToString(vec) == "[3, 8]");
 }
 
-TEST_CASE("sls::FixedCapacityContainer stream"){
+TEST_CASE("sls::FixedCapacityContainer stream") {
     sls::FixedCapacityContainer<int, 5> vec;
     vec.push_back(33);
     vec.push_back(85667);

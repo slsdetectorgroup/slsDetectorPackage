@@ -1,4 +1,5 @@
 #include "ServerInterface.h"
+#include "logger.h"
 #include <cassert>
 #include <cstring>
 #include <sstream>

@@ -2,6 +2,7 @@
 #include "catch.hpp"
 #include "network_utils.h"
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 #include "sls_detector_exceptions.h"

@@ -178,13 +178,16 @@ void Implementation::SetupFifoStructure() {
 
     fifo.clear();
     for (int i = 0; i < numThreads; ++i) {
+        uint32_t datasize = generalData->imageSize;
+        // veto data size
+        if (myDetectorType == GOTTHARD2 && i != 0) {
+            datasize = generalData->vetoImageSize;
+        }
 
         // create fifo structure
         try {
             fifo.push_back(sls::make_unique<Fifo>(
-                i,
-                (generalData->imageSize) + (generalData->fifoBufferHeaderSize),
-                fifoDepth));
+                i, datasize + (generalData->fifoBufferHeaderSize), fifoDepth));
         } catch (...) {
             fifo.clear();
             fifoDepth = 0;
@@ -199,14 +202,15 @@ void Implementation::SetupFifoStructure() {
             dataProcessor[i]->SetFifo(fifo[i].get());
         if (dataStreamer.size())
             dataStreamer[i]->SetFifo(fifo[i].get());
+
+        LOG(logINFO) << "Memory Allocated for Fifo " << i << ": "
+                     << (double)(((size_t)(datasize) +
+                                  (size_t)(generalData->fifoBufferHeaderSize)) *
+                                 (size_t)fifoDepth) /
+                            (double)(1024 * 1024)
+                     << " MB";
     }
 
-    LOG(logINFO) << "Memory Allocated Per Fifo: "
-                 << (double)(((size_t)(generalData->imageSize) +
-                              (size_t)(generalData->fifoBufferHeaderSize)) *
-                             (size_t)fifoDepth) /
-                        (double)(1024 * 1024)
-                 << " MB";
     LOG(logINFO) << numThreads << " Fifo structure(s) reconstructed";
 }
 

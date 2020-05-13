@@ -379,10 +379,13 @@ class Detector {
      *                                                 *
      * ************************************************/
 
-    /** [Jungfrau] */
+    /** [Jungfrau][Gotthard2] */
     Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
 
-    /** [Jungfrau] Also restarts client and receiver sockets */
+    /** [Jungfrau][Gotthard2] Also restarts client and receiver zmq sockets
+     * [Gotthard2] second interface enabled to send veto information for
+     * debugging
+     * n can be 1 or 2 */
     void setNumberofUDPInterfaces(int n, Positions pos = {});
 
     /** [Jungfrau] */

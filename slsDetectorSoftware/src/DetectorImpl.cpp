@@ -383,8 +383,12 @@ int DetectorImpl::createReceivingDataSockets(const bool destroy) {
     if (multi_shm()->multiDetectorType == EIGER) {
         numSocketsPerDetector = 2;
     }
-    if (Parallel(&Module::getNumberofUDPInterfacesFromShm, {}).squash() == 2) {
-        numSocketsPerDetector = 2;
+    // gotthard2 second interface is only for veto debugging
+    else if (multi_shm()->multiDetectorType != GOTTHARD2) {
+        if (Parallel(&Module::getNumberofUDPInterfacesFromShm, {}).squash() ==
+            2) {
+            numSocketsPerDetector = 2;
+        }
     }
     numSockets *= numSocketsPerDetector;
 
@@ -424,9 +428,12 @@ void DetectorImpl::readFrameFromReceiver() {
     int nDetPixelsY = 0;
     bool quadEnable = false;
     bool eiger = false;
-    bool numInterfaces = Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
-                             .squash(); // cannot pick up from zmq
-
+    bool numInterfaces = 1;
+    // gotthard2 second interface is veto debugging
+    if (multi_shm()->multiDetectorType != GOTTHARD2) {
+        numInterfaces = Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
+                            .squash(); // cannot pick up from zmq
+    }
     bool runningList[zmqSocket.size()], connectList[zmqSocket.size()];
     int numRunning = 0;
     for (size_t i = 0; i < zmqSocket.size(); ++i) {

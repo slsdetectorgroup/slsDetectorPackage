@@ -5041,6 +5041,7 @@ void calculate_and_set_position() {
         return;
     }
     int maxy = maxydet;
+    // position does not change for gotthard2 (2 interfaces)
 #ifdef JUNGFRAUD
     maxy *= getNumberofUDPInterfaces();
 #endif
@@ -5076,7 +5077,7 @@ void calculate_and_set_position() {
                 udpDetails.srcmac = (udpDetails.srcmac << 8) + a[i];
             }
         }
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(GOTTHARD2D)
         if (getNumberofUDPInterfaces() > 1) {
             if (udpDetails.srcmac2 == 0) {
                 char dmac2[50];
@@ -5154,7 +5155,7 @@ int is_configurable() {
         LOG(logWARNING, ("%s", configureMessage));
         return FAIL;
     }
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(GOTTHARD2D)
     if (getNumberofUDPInterfaces() == 2) {
         if (udpDetails.srcip2 == 0) {
             strcpy(configureMessage, "udp source ip2 not configured\n");
@@ -5253,7 +5254,7 @@ int set_source_udp_ip2(int file_des) {
     arg = __builtin_bswap32(arg);
     LOG(logINFO, ("Setting udp source ip2: 0x%x\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -5275,7 +5276,7 @@ int get_source_udp_ip2(int file_des) {
     uint32_t retval = -1;
     LOG(logDEBUG1, ("Getting udp source ip2\n"));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -5332,7 +5333,7 @@ int set_dest_udp_ip2(int file_des) {
     arg = __builtin_bswap32(arg);
     LOG(logINFO, ("Setting udp destination ip2: 0x%x\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -5354,7 +5355,7 @@ int get_dest_udp_ip2(int file_des) {
     uint32_t retval = -1;
     LOG(logDEBUG1, ("Getting udp destination ip2\n"));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -5408,7 +5409,7 @@ int set_source_udp_mac2(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting udp source mac2: 0x%lx\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -5430,7 +5431,7 @@ int get_source_udp_mac2(int file_des) {
     uint64_t retval = -1;
     LOG(logDEBUG1, ("Getting udp source mac2\n"));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -5483,7 +5484,7 @@ int set_dest_udp_mac2(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting udp destination mac2: 0x%lx\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -5505,7 +5506,7 @@ int get_dest_udp_mac2(int file_des) {
     uint64_t retval = -1;
     LOG(logDEBUG1, ("Getting udp destination mac2\n"));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -5558,7 +5559,7 @@ int set_dest_udp_port2(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting udp destination port2: %u\n", arg));
 
-#if !defined(JUNGFRAUD) && !defined(EIGERD)
+#if !defined(JUNGFRAUD) && !defined(EIGERD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -5580,7 +5581,7 @@ int get_dest_udp_port2(int file_des) {
     int retval = -1;
     LOG(logDEBUG1, ("Getting destination port2\n"));
 
-#if !defined(JUNGFRAUD) && !defined(EIGERD)
+#if !defined(JUNGFRAUD) && !defined(EIGERD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // get only
@@ -5599,7 +5600,7 @@ int set_num_interfaces(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting number of interfaces: %d\n", arg));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // only set
@@ -5627,7 +5628,7 @@ int get_num_interfaces(int file_des) {
     int retval = -1;
     LOG(logDEBUG1, ("Getting number of udp interfaces\n"));
 
-#ifndef JUNGFRAUD
+#if !defined(JUNGFRAUD) && !defined(GOTTHARD2D)
     retval = 1;
 #else
     // get only
@@ -7156,7 +7157,7 @@ int get_receiver_parameters(int file_des) {
 
     // sending real detector parameters
     // udp interfaces
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(GOTTHARD2D)
     i32 = getNumberofUDPInterfaces();
 #else
     i32 = 1;

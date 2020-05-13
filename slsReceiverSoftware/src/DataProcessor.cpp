@@ -74,7 +74,6 @@ void DataProcessor::RecordFirstIndex(uint64_t fnum) {
 
 void DataProcessor::SetGeneralData(GeneralData *g) {
     generalData = g;
-    generalData->Print();
     if (file != nullptr) {
         if (file->GetFileType() == HDF5) {
             file->SetNumberofPixels(generalData->nPixelsX,
@@ -352,6 +351,9 @@ void DataProcessor::PadMissingPackets(char *buf) {
     sls_bitset pmask = header->packetsMask;
 
     uint32_t dsize = generalData->dataSize;
+    if (myDetectorType == GOTTHARD2 && index != 0) {
+        dsize = generalData->vetoDataSize;
+    }
     uint32_t fifohsize = generalData->fifoBufferHeaderSize;
     uint32_t corrected_dsize =
         dsize - ((pperFrame * dsize) - generalData->imageSize);

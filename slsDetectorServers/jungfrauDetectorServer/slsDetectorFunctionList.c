@@ -46,7 +46,6 @@ int highvoltage = 0;
 int dacValues[NDAC] = {};
 int32_t clkPhase[NUM_CLOCKS] = {};
 int detPos[4] = {};
-int numUDPInterfaces = 1;
 
 int isInitCheckDone() { return initCheckDone; }
 

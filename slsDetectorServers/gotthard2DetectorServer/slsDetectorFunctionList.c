@@ -1290,44 +1290,42 @@ enum timingMode getTiming() {
     return AUTO_TIMING;
 }
 
-int configureMAC() {
+/* configure mac */
+void setNumberofUDPInterfaces(int val) {
+    uint32_t addr = CONFIG_REG;
 
-    uint32_t srcip = udpDetails.srcip;
-    uint32_t dstip = udpDetails.dstip;
-    uint64_t srcmac = udpDetails.srcmac;
-    uint64_t dstmac = udpDetails.dstmac;
-    int srcport = udpDetails.srcport;
-    int dstport = udpDetails.dstport;
-
-    LOG(logINFOBLUE, ("Configuring MAC\n"));
-    char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
-        dst_ip[INET_ADDRSTRLEN];
-    getMacAddressinString(src_mac, 50, srcmac);
-    getMacAddressinString(dst_mac, 50, dstmac);
-    getIpAddressinString(src_ip, srcip);
-    getIpAddressinString(dst_ip, dstip);
-
-    LOG(logINFO, ("\tSource IP   : %s\n"
-                  "\tSource MAC  : %s\n"
-                  "\tSource Port : %d\n"
-                  "\tDest IP     : %s\n"
-                  "\tDest MAC    : %s\n"
-                  "\tDest Port   : %d\n",
-                  src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
-
-#ifdef VIRTUAL
-    if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
-        LOG(logERROR, ("could not set udp destination IP and port\n"));
-        return FAIL;
+    // 2 interfaces (enable veto)
+    if (val > 1) {
+        LOG(logINFOBLUE,
+            ("Setting #Interfaces: 2 (enabling veto streaming)\n"));
+        bus_w(addr, bus_r(addr) | CONFIG_VETO_ENBL_MSK);
     }
-    return OK;
-#endif
+    // 1 interface (disable veto)
+    else {
+        LOG(logINFOBLUE,
+            ("Setting #Interfaces: 1 (disabling veto streaming)\n"));
+        bus_w(addr, bus_r(addr) & ~CONFIG_VETO_ENBL_MSK);
+    }
+    LOG(logDEBUG, ("config reg:0x%x\n", bus_r(addr)));
+}
+
+int getNumberofUDPInterfaces() {
+    LOG(logDEBUG, ("config reg:0x%x\n", bus_r(CONFIG_REG)));
+    // return 2 if veto enabled, else 1
+    return ((bus_r(CONFIG_REG) & CONFIG_VETO_ENBL_MSK) ? 2 : 1);
+}
+
+void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
+                 uint64_t destmac, uint32_t destport, uint64_t sourcemac,
+                 uint32_t sourceip, uint32_t sourceport) {
 
     // start addr
     uint32_t addr = BASE_UDP_RAM;
     // calculate rxr endpoint offset
-    // addr += (iRxEntry * RXR_ENDPOINT_OFST);//TODO: is there round robin
-    // already implemented?
+    if (vetoInterface == 1) {
+        iRxEntry += RXR_ENDPOINTS_MAX;
+    }
+    addr += (iRxEntry * RXR_ENDPOINT_OFST);
     // get struct memory
     udp_header *udp =
         (udp_header *)(Nios_getBaseAddress() + addr / (sizeof(u_int32_t)));
@@ -1335,21 +1333,21 @@ int configureMAC() {
 
     //  mac addresses
     // msb (32) + lsb (16)
-    udp->udp_destmac_msb = ((dstmac >> 16) & BIT32_MASK);
-    udp->udp_destmac_lsb = ((dstmac >> 0) & BIT16_MASK);
+    udp->udp_destmac_msb = ((destmac >> 16) & BIT32_MASK);
+    udp->udp_destmac_lsb = ((destmac >> 0) & BIT16_MASK);
     // msb (16) + lsb (32)
-    udp->udp_srcmac_msb = ((srcmac >> 32) & BIT16_MASK);
-    udp->udp_srcmac_lsb = ((srcmac >> 0) & BIT32_MASK);
+    udp->udp_srcmac_msb = ((sourcemac >> 32) & BIT16_MASK);
+    udp->udp_srcmac_lsb = ((sourcemac >> 0) & BIT32_MASK);
 
     // ip addresses
-    udp->ip_srcip_msb = ((srcip >> 16) & BIT16_MASK);
-    udp->ip_srcip_lsb = ((srcip >> 0) & BIT16_MASK);
-    udp->ip_destip_msb = ((dstip >> 16) & BIT16_MASK);
-    udp->ip_destip_lsb = ((dstip >> 0) & BIT16_MASK);
+    udp->ip_srcip_msb = ((sourceip >> 16) & BIT16_MASK);
+    udp->ip_srcip_lsb = ((sourceip >> 0) & BIT16_MASK);
+    udp->ip_destip_msb = ((destip >> 16) & BIT16_MASK);
+    udp->ip_destip_lsb = ((destip >> 0) & BIT16_MASK);
 
     // source port
-    udp->udp_srcport = srcport;
-    udp->udp_destport = dstport;
+    udp->udp_srcport = sourceport;
+    udp->udp_destport = destport;
 
     // other defines
     udp->udp_ethertype = 0x800;
@@ -1361,12 +1359,6 @@ int configureMAC() {
     // total length is redefined in firmware
 
     calcChecksum(udp);
-
-    // TODO?
-    cleanFifos();
-    resetCore();
-    // alignDeserializer();
-    return OK;
 }
 
 void calcChecksum(udp_header *udp) {
@@ -1399,6 +1391,88 @@ void calcChecksum(udp_header *udp) {
     checksum += UDP_IP_HEADER_LENGTH_BYTES;
     LOG(logINFO, ("\tIP checksum is 0x%lx\n", checksum));
     udp->ip_checksum = checksum;
+}
+
+int configureMAC() {
+
+    uint32_t srcip = udpDetails.srcip;
+    uint32_t srcip2 = udpDetails.srcip2;
+    uint32_t dstip = udpDetails.dstip;
+    uint32_t dstip2 = udpDetails.dstip2;
+    uint64_t srcmac = udpDetails.srcmac;
+    uint64_t srcmac2 = udpDetails.srcmac2;
+    uint64_t dstmac = udpDetails.dstmac;
+    uint64_t dstmac2 = udpDetails.dstmac2;
+    int srcport = udpDetails.srcport;
+    int srcport2 = udpDetails.srcport2;
+    int dstport = udpDetails.dstport;
+    int dstport2 = udpDetails.dstport2;
+
+    LOG(logINFOBLUE, ("Configuring MAC\n"));
+    char src_mac[50], src_ip[INET_ADDRSTRLEN], dst_mac[50],
+        dst_ip[INET_ADDRSTRLEN];
+    getMacAddressinString(src_mac, 50, srcmac);
+    getMacAddressinString(dst_mac, 50, dstmac);
+    getIpAddressinString(src_ip, srcip);
+    getIpAddressinString(dst_ip, dstip);
+    char src_mac2[50], src_ip2[INET_ADDRSTRLEN], dst_mac2[50],
+        dst_ip2[INET_ADDRSTRLEN];
+    getMacAddressinString(src_mac2, 50, srcmac2);
+    getMacAddressinString(dst_mac2, 50, dstmac2);
+    getIpAddressinString(src_ip2, srcip2);
+    getIpAddressinString(dst_ip2, dstip2);
+
+    int numInterfaces = getNumberofUDPInterfaces();
+    LOG(logINFO, ("\t#Interfaces : %d\n", numInterfaces));
+
+    LOG(logINFO, ("\tData Interface \n"));
+    LOG(logINFO, ("\tSource IP   : %s\n"
+                  "\tSource MAC  : %s\n"
+                  "\tSource Port : %d\n"
+                  "\tDest IP     : %s\n"
+                  "\tDest MAC    : %s\n"
+                  "\tDest Port   : %d\n",
+                  src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
+
+    LOG(logINFO, ("\tVeto Interface (%s)\n",
+                  (numInterfaces == 2 ? "enabled" : "disabled")));
+    LOG(logINFO, ("\tSource IP2  : %s\n"
+                  "\tSource MAC2 : %s\n"
+                  "\tSource Port2: %d\n"
+                  "\tDest IP2    : %s\n"
+                  "\tDest MAC2   : %s\n"
+                  "\tDest Port2  : %d\n",
+                  src_ip2, src_mac2, srcport2, dst_ip2, dst_mac2, dstport2));
+
+#ifdef VIRTUAL
+    if (setUDPDestinationDetails(0, dst_ip, dstport) == FAIL) {
+        LOG(logERROR, ("could not set udp destination IP and port\n"));
+        return FAIL;
+    }
+    if (numInterfaces == 2 &&
+        setUDPDestinationDetails(1, dst_ip2, dstport2) == FAIL) {
+        LOG(logERROR,
+            ("could not set udp destination IP and port for interface 2\n"));
+        return FAIL;
+    }
+    return OK;
+#endif
+    // default one rxr entry (others not yet implemented in client yet)
+    int iRxEntry = 0;
+
+    // data
+    setupHeader(iRxEntry, 0, dstip, dstmac, dstport, srcmac, srcip, srcport);
+
+    // veto
+    if (numInterfaces == 2) {
+        setupHeader(iRxEntry, 1, dstip2, dstmac2, dstport2, srcmac2, srcip2,
+                    srcport2);
+    }
+
+    cleanFifos();
+    resetCore();
+    // alignDeserializer();
+    return OK;
 }
 
 int setDetectorPosition(int pos[]) {
@@ -2142,6 +2216,9 @@ int startStateMachine() {
     if (createUDPSocket(0) != OK) {
         return FAIL;
     }
+    if (getNumberofUDPInterfaces() == 2 && createUDPSocket(1) != OK) {
+        return FAIL;
+    }
     LOG(logINFOBLUE, ("Starting State Machine\n"));
     // set status to running
     virtual_status = 1;
@@ -2181,6 +2258,7 @@ void *start_timer(void *arg) {
         return NULL;
     }
 
+    int numInterfaces = getNumberofUDPInterfaces();
     int numRepeats = getNumTriggers();
     if (getTiming() == AUTO_TIMING) {
         if (burstMode == BURST_OFF) {
@@ -2196,12 +2274,19 @@ void *start_timer(void *arg) {
     int imagesize = NCHAN * NCHIP * 2;
     int datasize = imagesize;
     int packetsize = datasize + sizeof(sls_detector_header);
+    int vetodatasize = VETO_DATA_SIZE;
+    int vetopacketsize = vetodatasize + sizeof(sls_detector_header);
 
     // Generate data
     char imageData[imagesize];
     memset(imageData, 0, imagesize);
     for (int i = 0; i < imagesize; i += sizeof(uint16_t)) {
         *((uint16_t *)(imageData + i)) = i;
+    }
+    char vetoData[vetodatasize];
+    memset(vetoData, 0, sizeof(vetodatasize));
+    for (int i = 0; i < vetodatasize; i += sizeof(uint8_t)) {
+        *((uint16_t *)(vetoData + i)) = i;
     }
 
     {
@@ -2227,6 +2312,7 @@ void *start_timer(void *arg) {
                 clock_gettime(CLOCK_REALTIME, &begin);
                 usleep(expUs);
 
+                // first interface
                 char packetData[packetsize];
                 memset(packetData, 0, packetsize);
                 // set header
@@ -2235,18 +2321,37 @@ void *start_timer(void *arg) {
                 header->detType = (uint16_t)myDetectorType;
                 header->version = SLS_DETECTOR_HEADER_VERSION - 1;
                 header->frameNumber = frameHeaderNr;
-                ++frameHeaderNr;
                 header->packetNumber = 0;
                 header->modId = 0;
                 header->row = detPos[X];
                 header->column = detPos[Y];
-
                 // fill data
                 memcpy(packetData + sizeof(sls_detector_header), imageData,
                        datasize);
-
                 // send 1 packet = 1 frame
                 sendUDPPacket(0, packetData, packetsize);
+
+                // second interface (veto)
+                char packetData2[packetsize];
+                memset(packetData2, 0, packetsize);
+                if (numInterfaces == 2) {
+                    // set header
+                    sls_detector_header *header =
+                        (sls_detector_header *)(packetData2);
+                    header->detType = (uint16_t)myDetectorType;
+                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+                    header->frameNumber = frameHeaderNr;
+                    header->packetNumber = 0;
+                    header->modId = 0;
+                    header->row = detPos[X];
+                    header->column = detPos[Y];
+                    // fill data
+                    memcpy(packetData2 + sizeof(sls_detector_header), vetoData,
+                           vetodatasize);
+                    // send 1 packet = 1 frame
+                    sendUDPPacket(1, packetData2, vetopacketsize);
+                }
+                ++frameHeaderNr;
 
                 clock_gettime(CLOCK_REALTIME, &end);
                 LOG(logINFO,
@@ -2275,6 +2380,9 @@ void *start_timer(void *arg) {
     }
 
     closeUDPSocket(0);
+    if (numInterfaces == 2) {
+        closeUDPSocket(1);
+    }
 
     virtual_status = 0;
     if (isControlServer) {

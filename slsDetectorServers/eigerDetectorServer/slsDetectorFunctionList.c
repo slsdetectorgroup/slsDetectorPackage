@@ -2156,7 +2156,7 @@ void *start_timer(void *arg) {
                     sls_detector_header *header =
                         (sls_detector_header *)(packetData);
                     header->detType = (uint16_t)myDetectorType;
-                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+                    header->version = SLS_DETECTOR_HEADER_VERSION;
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = i;
                     header->row = row;
@@ -2166,7 +2166,7 @@ void *start_timer(void *arg) {
                     memset(packetData2, 0, packetsize);
                     header = (sls_detector_header *)(packetData2);
                     header->detType = (uint16_t)myDetectorType;
-                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+                    header->version = SLS_DETECTOR_HEADER_VERSION;
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = i;
                     header->row = row;

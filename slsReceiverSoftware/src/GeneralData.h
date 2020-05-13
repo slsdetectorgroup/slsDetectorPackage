@@ -17,86 +17,41 @@
 class GeneralData {
 
   public:
-    /** DetectorType */
-    slsDetectorDefs::detectorType myDetectorType;
-
-    /** Number of Pixels in x axis */
-    uint32_t nPixelsX;
-
-    /** Number of Pixels in y axis */
-    uint32_t nPixelsY;
-
-    /** Size of header in Packet */
-    uint32_t headerSizeinPacket;
-
+    slsDetectorDefs::detectorType myDetectorType{slsDetectorDefs::GENERIC};
+    uint32_t nPixelsX{0};
+    uint32_t nPixelsY{0};
+    uint32_t headerSizeinPacket{0};
     /** Size of just data in 1 packet (in bytes) */
-    uint32_t dataSize;
-
-    /** Size of 1 packet (in bytes) */
-    uint32_t packetSize;
-
+    uint32_t dataSize{0};
+    uint32_t packetSize{0};
     /** Number of packets in an image (for each listening UDP port) */
-    uint32_t packetsPerFrame;
-
+    uint32_t packetsPerFrame{0};
     /** Image size (in bytes, for each listening UDP port) */
-    uint32_t imageSize;
-
-    /** Frame Number Mask */
-    uint64_t frameIndexMask;
-
-    /** Frame Index Offset */
-    uint32_t frameIndexOffset;
-
-    /** Packet Index Mask */
-    uint32_t packetIndexMask;
-
-    /** Packet Index Offset */
-    uint32_t packetIndexOffset;
-
-    /** Max Frames per binary file */
-    uint32_t maxFramesPerFile;
-
+    uint32_t imageSize{0};
+    uint64_t frameIndexMask{0};
+    uint32_t frameIndexOffset{0};
+    uint32_t packetIndexMask{0};
+    uint32_t packetIndexOffset{0};
+    uint32_t maxFramesPerFile{0};
     /** Header size of data saved into fifo buffer at a time*/
-    uint32_t fifoBufferHeaderSize;
-
-    /** Default Fifo depth */
-    uint32_t defaultFifoDepth;
-
-    /** Threads per receiver */
-    uint32_t threadsPerReceiver;
-
-    /** Size of a header packet */
-    uint32_t headerPacketSize;
-
-    /** Streaming (for ROI - mainly short Gotthard) - Number of Pixels in x axis
-     */
-    uint32_t nPixelsXComplete;
-
-    /** Streaming (for ROI - mainly short Gotthard) - Number of Pixels in y axis
-     */
-    uint32_t nPixelsYComplete;
-
+    uint32_t fifoBufferHeaderSize{0};
+    uint32_t defaultFifoDepth{0};
+    uint32_t threadsPerReceiver{1};
+    uint32_t headerPacketSize{0};
+    /** Streaming (for ROI - mainly short Gotthard)  */
+    uint32_t nPixelsXComplete{0};
+    /** Streaming (for ROI - mainly short Gotthard)  */
+    uint32_t nPixelsYComplete{0};
     /** Streaming (for ROI - mainly short Gotthard) - Image size (in bytes) */
-    uint32_t imageSizeComplete;
-
+    uint32_t imageSizeComplete{0};
     /** if standard header implemented in firmware */
-    bool standardheader;
+    bool standardheader{false};
+    uint32_t defaultUdpSocketBufferSize{RECEIVE_SOCKET_BUFFER_SIZE};
+    uint32_t vetoDataSize{0};
+    uint32_t vetoPacketSize{0};
+    uint32_t vetoImageSize{0};
 
-    /** default udp socket buffer size */
-    uint32_t defaultUdpSocketBufferSize;
-
-    /** Cosntructor */
-    GeneralData()
-        : myDetectorType(slsDetectorDefs::GENERIC), nPixelsX(0), nPixelsY(0),
-          headerSizeinPacket(0), dataSize(0), packetSize(0), packetsPerFrame(0),
-          imageSize(0), frameIndexMask(0), frameIndexOffset(0),
-          packetIndexMask(0), packetIndexOffset(0), maxFramesPerFile(0),
-          fifoBufferHeaderSize(0), defaultFifoDepth(0), threadsPerReceiver(1),
-          headerPacketSize(0), nPixelsXComplete(0), nPixelsYComplete(0),
-          imageSizeComplete(0), standardheader(false),
-          defaultUdpSocketBufferSize(RECEIVE_SOCKET_BUFFER_SIZE){};
-
-    /** Destructor */
+    GeneralData(){};
     virtual ~GeneralData(){};
 
     /**
@@ -203,35 +158,6 @@ class GeneralData {
         LOG(logERROR) << "SetNumberofCounters is a generic function that "
                          "should be overloaded by a derived class";
     }
-
-    /**
-     * Print all variables
-     */
-    virtual void Print(TLogLevel level = logDEBUG1) const {
-        LOG(level) << "\n\nDetector Data Variables:";
-        LOG(level) << "myDetectorType: " << sls::ToString(myDetectorType);
-        LOG(level) << "Pixels X: " << nPixelsX;
-        LOG(level) << "Pixels Y: " << nPixelsY;
-        LOG(level) << "Header Size in Packet: " << headerSizeinPacket;
-        LOG(level) << "Data Size: " << dataSize;
-        LOG(level) << "Packet Size: " << packetSize;
-        LOG(level) << "Packets per Frame: " << packetsPerFrame;
-        LOG(level) << "Image Size: " << imageSize;
-        LOG(level) << "Frame Index Mask: " << frameIndexMask;
-        LOG(level) << "Frame Index Offset: " << frameIndexOffset;
-        LOG(level) << "Packet Index Mask: " << packetIndexMask;
-        LOG(level) << "Packet Index Offset: " << packetIndexOffset;
-        LOG(level) << "Max Frames Per File: " << maxFramesPerFile;
-        LOG(level) << "Fifo Buffer Header Size: " << fifoBufferHeaderSize;
-        LOG(level) << "Default Fifo Depth: " << defaultFifoDepth;
-        LOG(level) << "Threads Per Receiver: " << threadsPerReceiver;
-        LOG(level) << "Header Packet Size: " << headerPacketSize;
-        LOG(level) << "Complete Pixels X: " << nPixelsXComplete;
-        LOG(level) << "Complete Pixels Y: " << nPixelsYComplete;
-        LOG(level) << "Complete Image Size: " << imageSizeComplete;
-        LOG(level) << "Standard Header: " << standardheader;
-        LOG(level) << "UDP Socket Buffer Size: " << defaultUdpSocketBufferSize;
-    };
 };
 
 class GotthardData : public GeneralData {
@@ -475,7 +401,7 @@ class JungfrauData : public GeneralData {
             threadsPerReceiver = 1;
             defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
         }
-    }
+    };
 };
 
 class Mythen3Data : public GeneralData {
@@ -561,6 +487,24 @@ class Gotthard2Data : public GeneralData {
         defaultFifoDepth = 50000;
         standardheader = true;
         defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
+        vetoDataSize = 160;
+        vetoPacketSize = headerSizeinPacket + vetoDataSize;
+        vetoImageSize = vetoDataSize * packetsPerFrame;
+    };
+
+    /**
+     * set number of interfaces
+     * @param number of interfaces
+     */
+    void SetNumberofInterfaces(const int n) {
+        // 2 interfaces (+veto)
+        if (n == 2) {
+            threadsPerReceiver = 2;
+        }
+        // 1 interface (data only)
+        else {
+            threadsPerReceiver = 1;
+        }
     };
 };
 

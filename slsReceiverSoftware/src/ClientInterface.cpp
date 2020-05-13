@@ -394,7 +394,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
     }
     impl()->setUDPPortNumber(arg.udp_dstport);
     impl()->setUDPPortNumber2(arg.udp_dstport2);
-    if (myDetectorType == JUNGFRAU) {
+    if (myDetectorType == JUNGFRAU || myDetectorType == GOTTHARD2) {
         try {
             impl()->setNumberofUDPInterfaces(arg.udpInterfaces);
         } catch (const RuntimeError &e) {
@@ -1531,7 +1531,7 @@ sls::MacAddr ClientInterface::setUdpIp2(sls::IpAddr arg) {
 int ClientInterface::set_udp_ip2(Interface &socket) {
     auto arg = socket.Receive<sls::IpAddr>();
     verifyIdle(socket);
-    if (myDetectorType != JUNGFRAU) {
+    if (myDetectorType != JUNGFRAU && myDetectorType != GOTTHARD2) {
         throw RuntimeError(
             "UDP Destination IP2 not implemented for this detector");
     }
@@ -1552,7 +1552,8 @@ int ClientInterface::set_udp_port(Interface &socket) {
 int ClientInterface::set_udp_port2(Interface &socket) {
     auto arg = socket.Receive<int>();
     verifyIdle(socket);
-    if (myDetectorType != JUNGFRAU && myDetectorType != EIGER) {
+    if (myDetectorType != JUNGFRAU && myDetectorType != EIGER &&
+        myDetectorType != GOTTHARD2) {
         throw RuntimeError(
             "UDP Destination Port2 not implemented for this detector");
     }
@@ -1565,7 +1566,7 @@ int ClientInterface::set_num_interfaces(Interface &socket) {
     auto arg = socket.Receive<int>();
     arg = (arg > 1 ? 2 : 1);
     verifyIdle(socket);
-    if (myDetectorType != JUNGFRAU) {
+    if (myDetectorType != JUNGFRAU && myDetectorType != GOTTHARD2) {
         throw RuntimeError(
             "Number of interfaces not implemented for this detector");
     }

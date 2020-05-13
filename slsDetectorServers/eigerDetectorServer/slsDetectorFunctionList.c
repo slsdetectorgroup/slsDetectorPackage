@@ -1880,7 +1880,6 @@ int setActivate(int enable) {
         LOG(logERROR, ("Invalid activate argument: %d\n", enable));
         return FAIL;
     }
-    enable = enable == 0 ? 0 : 1;
 #ifdef VIRTUAL
     eiger_virtual_activate = enable;
 #else
@@ -1889,12 +1888,12 @@ int setActivate(int enable) {
     }
     Feb_Control_activate(enable);
 #endif
-    if (enable == 0) {
-        LOG(logINFORED, ("Deactivated in %s Server!\n",
-                         isControlServer ? " Control" : "Stop"));
-    } else {
+    if (enable) {
         LOG(logINFOGREEN, ("Activated in %s Server!\n",
                            isControlServer ? " Control" : "Stop"));
+    } else {
+        LOG(logINFORED, ("Deactivated in %s Server!\n",
+                         isControlServer ? " Control" : "Stop"));
     }
     return OK;
 }

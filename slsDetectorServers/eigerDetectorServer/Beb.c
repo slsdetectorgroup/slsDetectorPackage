@@ -391,7 +391,10 @@ int Beb_SetMaster(enum MASTERINDEX ind) {
 }
 
 int Beb_SetActivate(int enable) {
-    enable = enable == 0 ? 0 : 1;
+    if (enable < 0) {
+        LOG(logERROR, ("Invalid enable value\n"));
+        return 0;
+    }
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
     if (fd < 0) {

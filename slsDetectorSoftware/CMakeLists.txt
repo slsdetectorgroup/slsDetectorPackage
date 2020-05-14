@@ -1,6 +1,5 @@
 set(SOURCES
     src/DetectorImpl.cpp 
-    src/slsDetectorUsers.cpp 
     src/Module.cpp 
     src/Detector.cpp
     src/CmdProxy.cpp
@@ -39,7 +38,6 @@ target_link_libraries(slsDetectorShared
 
 
 set(PUBLICHEADERS
-    include/slsDetectorUsers.h
     include/detectorData.h
     include/Detector.h
     include/Result.h

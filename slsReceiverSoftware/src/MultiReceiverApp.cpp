@@ -2,6 +2,7 @@
  * binary */
 #include "Receiver.h"
 #include "container_utils.h"
+#include "logger.h"
 #include "sls_detector_defs.h"
 
 #include <csignal> //SIGINT

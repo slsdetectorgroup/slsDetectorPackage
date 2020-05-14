@@ -1,4 +1,5 @@
 #include "ZmqSocket.h"
+#include "logger.h"
 #include <arpa/inet.h> //inet_ntoa
 #include <errno.h>
 #include <iostream>

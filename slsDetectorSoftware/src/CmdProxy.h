@@ -1517,10 +1517,13 @@ class CmdProxy {
 
     /* Network Configuration (Detector<->Receiver) */
 
-    INTEGER_COMMAND(numinterfaces, getNumberofUDPInterfaces,
-                    setNumberofUDPInterfaces, StringTo<int>,
-                    "[1, 2]\n\t[Jungfrau] Number of udp interfaces to stream "
-                    "data from detector. Default: 1.");
+    INTEGER_COMMAND(
+        numinterfaces, getNumberofUDPInterfaces, setNumberofUDPInterfaces,
+        StringTo<int>,
+        "[1, 2]\n\t[Jungfrau][Gotthard2] Number of udp interfaces to stream "
+        "data from detector. Default: 1.\n\t"
+        "[Gotthard2] Second interface enabled to send veto information for "
+        "debugging.");
 
     INTEGER_COMMAND(
         selinterface, getSelectedUDPInterface, selectUDPInterface,

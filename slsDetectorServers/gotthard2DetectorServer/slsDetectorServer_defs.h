@@ -52,12 +52,11 @@
 #define DEFAULT_SYSTEM_C3  (5)  //(144444448) // str_clk, 144 MHz
 
 /* Firmware Definitions */
-#define IP_HEADER_SIZE          (20)
 #define FIXED_PLL_FREQUENCY     (20000000)  // 20MHz
 #define INT_SYSTEM_C0_FREQUENCY (144000000) // 144 MHz
 #define READOUT_PLL_VCO_FREQ_HZ (866666688) // 866 MHz
 #define SYSTEM_PLL_VCO_FREQ_HZ  (722222224) // 722 MHz
-
+#define VETO_DATA_SIZE          (160)
 /** Other Definitions */
 #define BIT16_MASK (0xFFFF)
 
@@ -156,4 +155,5 @@ typedef struct udp_header_struct {
     uint16_t udp_checksum;
     uint16_t udp_destport;
 } udp_header;
+#define IP_HEADER_SIZE             (20)
 #define UDP_IP_HEADER_LENGTH_BYTES (28)

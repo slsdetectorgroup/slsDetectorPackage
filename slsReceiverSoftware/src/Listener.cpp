@@ -63,10 +63,14 @@ void Listener::ResetParametersforNewAcquisition() {
     currentFrameIndex = 0;
     lastCaughtFrameIndex = 0;
     carryOverFlag = false;
-    carryOverPacket = sls::make_unique<char[]>(generalData->packetSize);
-    memset(carryOverPacket.get(), 0, generalData->packetSize);
-    listeningPacket = sls::make_unique<char[]>(generalData->packetSize);
-    memset(carryOverPacket.get(), 0, generalData->packetSize);
+    uint32_t packetSize = generalData->packetSize;
+    if (myDetectorType == GOTTHARD2 && index != 0) {
+        packetSize = generalData->vetoPacketSize;
+    }
+    carryOverPacket = sls::make_unique<char[]>(packetSize);
+    memset(carryOverPacket.get(), 0, packetSize);
+    listeningPacket = sls::make_unique<char[]>(packetSize);
+    memset(carryOverPacket.get(), 0, packetSize);
 
     numPacketsStatistic = 0;
     numFramesStatistic = 0;
@@ -89,10 +93,7 @@ void Listener::RecordFirstIndex(uint64_t fnum) {
     }
 }
 
-void Listener::SetGeneralData(GeneralData *g) {
-    generalData = g;
-    generalData->Print();
-}
+void Listener::SetGeneralData(GeneralData *g) { generalData = g; }
 
 void Listener::CreateUDPSockets() {
     if (!(*activated)) {
@@ -108,10 +109,16 @@ void Listener::CreateUDPSockets() {
     }
 
     ShutDownUDPSocket();
+
+    uint32_t packetSize = generalData->packetSize;
+    if (myDetectorType == GOTTHARD2 && index != 0) {
+        packetSize = generalData->vetoPacketSize;
+    }
+
     // InterfaceNameToIp(eth).str().c_str()
     try {
         udpSocket = sls::make_unique<sls::UdpRxSocket>(
-            *udpPortNumber, generalData->packetSize,
+            *udpPortNumber, packetSize,
             ((*eth).length() ? sls::InterfaceNameToIp(*eth).str().c_str()
                              : nullptr),
             *udpSocketBufferSize);
@@ -152,9 +159,14 @@ void Listener::CreateDummySocketForUDPSocketBufferSize(int64_t s) {
         (*eth) = "";
     }
 
+    uint32_t packetSize = generalData->packetSize;
+    if (myDetectorType == GOTTHARD2 && index != 0) {
+        packetSize = generalData->vetoPacketSize;
+    }
+
     // create dummy socket
     try {
-        sls::UdpRxSocket g(*udpPortNumber, generalData->packetSize,
+        sls::UdpRxSocket g(*udpPortNumber, packetSize,
                            ((*eth).length()
                                 ? sls::InterfaceNameToIp(*eth).str().c_str()
                                 : nullptr),
@@ -260,19 +272,24 @@ uint32_t Listener::ListenToAnImage(char *buf) {
     uint32_t pnum = 0;
     uint32_t numpackets = 0;
     uint32_t dsize = generalData->dataSize;
-    uint32_t hsize = generalData->headerSizeinPacket; //(includes empty header)
+    uint32_t imageSize = generalData->imageSize;
+    uint32_t packetSize = generalData->packetSize;
+    if (myDetectorType == GOTTHARD2 && index != 0) {
+        dsize = generalData->vetoDataSize;
+        imageSize = generalData->vetoImageSize;
+        packetSize = generalData->vetoPacketSize;
+    }
+    uint32_t hsize = generalData->headerSizeinPacket;
     uint32_t fifohsize = generalData->fifoBufferHeaderSize;
     uint32_t pperFrame = generalData->packetsPerFrame;
     bool isHeaderEmpty = true;
     sls_detector_header *old_header = nullptr;
     sls_receiver_header *new_header = nullptr;
     bool standardheader = generalData->standardheader;
-    uint32_t corrected_dsize =
-        dsize - ((pperFrame * dsize) - generalData->imageSize);
+    uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - imageSize);
 
     // reset to -1
     memset(buf, 0, fifohsize);
-    /*memset(buf + fifohsize, 0xFF, generalData->imageSize);*/
     new_header = (sls_receiver_header *)(buf + FIFO_HEADER_NUMBYTES);
 
     // deactivated (eiger)
@@ -294,7 +311,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
         new_header->detHeader.column = column;
         new_header->detHeader.detType = (uint8_t)generalData->myDetectorType;
         new_header->detHeader.version = (uint8_t)SLS_DETECTOR_HEADER_VERSION;
-        return generalData->imageSize;
+        return imageSize;
     }
 
     // look for carry over
@@ -338,7 +355,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
                 new_header->detHeader.row = row;
                 new_header->detHeader.column = column;
             }
-            return generalData->imageSize;
+            return imageSize;
         }
 
         // copy packet
@@ -427,8 +444,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
                 new_header->detHeader.row = row;
                 new_header->detHeader.column = column;
             }
-            return generalData
-                ->imageSize; // empty packet now, but not empty image
+            return imageSize; // empty packet now, but not empty image
         }
 
         // update parameters
@@ -489,8 +505,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
         // detectors)
         if (fnum != currentFrameIndex) {
             carryOverFlag = true;
-            memcpy(carryOverPacket.get(), &listeningPacket[0],
-                   generalData->packetSize);
+            memcpy(carryOverPacket.get(), &listeningPacket[0], packetSize);
 
             switch (*frameDiscardMode) {
             case DISCARD_EMPTY_FRAMES:
@@ -508,7 +523,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
                 new_header->detHeader.row = row;
                 new_header->detHeader.column = column;
             }
-            return generalData->imageSize;
+            return imageSize;
         }
 
         // copy packet
@@ -568,7 +583,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
 
     // complete image
     new_header->detHeader.packetNumber = numpackets; // number of packets caught
-    return generalData->imageSize;
+    return imageSize;
 }
 
 void Listener::PrintFifoStatistics() {

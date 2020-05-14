@@ -329,9 +329,12 @@ int getExtSignal();
 // configure mac
 #ifdef GOTTHARDD
 void calcChecksum(mac_conf *mac, int sourceip, int destip);
-#elif JUNGFRAUD
+#endif
+#if defined(JUNGFRAUD) || defined(GOTTHARD2D)
 void setNumberofUDPInterfaces(int val);
 int getNumberofUDPInterfaces();
+#endif
+#ifdef JUNGFRAUD
 void selectPrimaryInterface(int val);
 int getPrimaryInterface();
 void setupHeader(int iRxEntry, enum interfaceType type, uint32_t destip,

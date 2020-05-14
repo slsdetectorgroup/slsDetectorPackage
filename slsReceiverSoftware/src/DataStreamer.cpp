@@ -41,10 +41,8 @@ void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
         delete[] completeBuffer;
         completeBuffer = nullptr;
     }
-    if (roi->xmin != -1) {
-        if (generalData->myDetectorType == GOTTHARD) {
-            adcConfigured = generalData->GetAdcConfigured(index, *roi);
-        }
+    if (generalData->myDetectorType == GOTTHARD && roi->xmin != -1) {
+        adcConfigured = generalData->GetAdcConfigured(index, *roi);
         completeBuffer = new char[generalData->imageSizeComplete];
         memset(completeBuffer, 0, generalData->imageSizeComplete);
     }
@@ -57,10 +55,7 @@ void DataStreamer::RecordFirstIndex(uint64_t fnum) {
     LOG(logDEBUG1) << index << " First Index: " << firstIndex;
 }
 
-void DataStreamer::SetGeneralData(GeneralData *g) {
-    generalData = g;
-    generalData->Print();
-}
+void DataStreamer::SetGeneralData(GeneralData *g) { generalData = g; }
 
 void DataStreamer::SetNumberofDetectors(int *nd) {
     numDet[0] = nd[0];
@@ -147,7 +142,6 @@ void DataStreamer::ProcessAnImage(char *buf) {
 
     // shortframe gotthard
     if (completeBuffer) {
-
         // disregarding the size modified from callback (always using
         // imageSizeComplete
         // instead of buf (32 bit) because gui needs imagesizecomplete and

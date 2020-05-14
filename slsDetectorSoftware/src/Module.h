@@ -780,12 +780,7 @@ class Module : public virtual slsDetectorDefs {
      */
     int getDestinationUDPPort2();
 
-    /**
-     * Sets the number of UDP interfaces to stream data from detector (Jungfrau
-     * only)
-     * @param n number of interfaces. Options 1 or 2.
-     * @returns the number of interface
-     */
+    /** [Jungfrau][Gotthard2] */
     void setNumberofUDPInterfaces(int n);
 
     /** Returns the number of udp interfaces from shared memory */

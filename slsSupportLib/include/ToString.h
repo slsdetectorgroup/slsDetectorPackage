@@ -7,7 +7,7 @@
  *
  */
 
-#include "FixedCapacityContainer.h"
+#include "StaticVector.h"
 #include "TimeHelper.h"
 #include "TypeTraits.h"
 #include "sls_detector_defs.h"
@@ -42,7 +42,7 @@ std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::ROI &roi);
 
 template <typename T, size_t Capacity>
 std::ostream &operator<<(std::ostream &os,
-                         const sls::FixedCapacityContainer<T, Capacity> &c) {
+                         const sls::StaticVector<T, Capacity> &c) {
     return os << ToString(c);
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "ClientSocket.h"
-#include "FixedCapacityContainer.h"
 #include "SharedMemory.h"
+#include "StaticVector.h"
 #include "logger.h"
 #include "network_utils.h"
 #include "sls_detector_defs.h"
@@ -51,7 +51,7 @@ struct sharedSlsDetector {
     char settingsDir[MAX_STR_LENGTH];
 
     /** list of the energies at which the detector has been trimmed  */
-    sls::FixedCapacityContainer<int, MAX_TRIMEN> trimEnergies;
+    sls::StaticVector<int, MAX_TRIMEN> trimEnergies;
 
     /**  number of channels per chip in one direction */
     slsDetectorDefs::xy nChan;

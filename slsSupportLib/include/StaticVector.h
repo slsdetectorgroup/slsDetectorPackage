@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace sls {
-template <typename T, size_t Capacity> class FixedCapacityContainer {
+template <typename T, size_t Capacity> class StaticVector {
 
   public:
     using size_type = typename std::array<T, Capacity>::size_type;
@@ -20,10 +20,9 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
     std::array<T, Capacity> data_;
 
   public:
-    FixedCapacityContainer() = default;
+    StaticVector() = default;
 
-    explicit FixedCapacityContainer(std::initializer_list<T> l)
-        : current_size(l.size()) {
+    explicit StaticVector(std::initializer_list<T> l) : current_size(l.size()) {
         size_check(l.size());
         std::copy(l.begin(), l.end(), data_.begin());
     }
@@ -33,15 +32,14 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
               typename = typename std::enable_if<
                   is_container<V>::value &&
                   std::is_same<T, typename V::value_type>::value>::type>
-    FixedCapacityContainer(const V &v) : current_size(v.size()) {
+    StaticVector(const V &v) : current_size(v.size()) {
         size_check(v.size());
         std::copy(v.begin(), v.end(), data_.begin());
     }
 
     /** copy assignment from another container */
     template <typename V>
-    typename std::enable_if<is_container<V>::value,
-                            FixedCapacityContainer &>::type
+    typename std::enable_if<is_container<V>::value, StaticVector &>::type
     operator=(const V &other) {
         size_check(other.size());
         std::copy(other.begin(), other.end(), data_.begin());
@@ -49,7 +47,7 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
         return *this;
     }
 
-    /** Compare FixedCapacityContainer with any other container*/
+    /** Compare StaticVector with any other container*/
     // template <typename V>
     // typename std::enable_if<is_container<V>::value, bool>::type
     // operator==(const V &other) const noexcept {
@@ -143,66 +141,66 @@ template <typename T, size_t Capacity> class FixedCapacityContainer {
 } __attribute__((packed));
 
 template <typename T, size_t CapacityLhs, typename V, size_t CapacityRhs>
-bool operator==(const FixedCapacityContainer<T, CapacityLhs> &lhs,
-                const FixedCapacityContainer<V, CapacityRhs> &rhs) {
+bool operator==(const StaticVector<T, CapacityLhs> &lhs,
+                const StaticVector<V, CapacityRhs> &rhs) {
     return lhs.is_equal(rhs);
 }
 
 template <typename T, size_t CapacityLhs, typename V, size_t CapacityRhs>
-bool operator!=(const FixedCapacityContainer<T, CapacityLhs> &lhs,
-                const FixedCapacityContainer<V, CapacityRhs> &rhs) {
+bool operator!=(const StaticVector<T, CapacityLhs> &lhs,
+                const StaticVector<V, CapacityRhs> &rhs) {
     return !(lhs.is_equal(rhs));
 }
 
 // Compare with array
 
 template <typename T, size_t CapacityLhs, typename V, size_t Size>
-bool operator==(const FixedCapacityContainer<T, CapacityLhs> &lhs,
+bool operator==(const StaticVector<T, CapacityLhs> &lhs,
                 const std::array<V, Size> &rhs) {
     return lhs.is_equal(rhs);
 }
 
 template <typename T, size_t Size, typename V, size_t CapacityRhs>
 bool operator==(const std::array<T, Size> &lhs,
-                const FixedCapacityContainer<V, CapacityRhs> &rhs) {
+                const StaticVector<V, CapacityRhs> &rhs) {
     return rhs.is_equal(lhs);
 }
 
 template <typename T, size_t CapacityLhs, typename V, size_t Size>
-bool operator!=(const FixedCapacityContainer<T, CapacityLhs> &lhs,
+bool operator!=(const StaticVector<T, CapacityLhs> &lhs,
                 const std::array<V, Size> &rhs) {
     return !lhs.is_equal(rhs);
 }
 
 template <typename T, size_t Size, typename V, size_t CapacityRhs>
 bool operator!=(const std::array<T, Size> &lhs,
-                const FixedCapacityContainer<V, CapacityRhs> &rhs) {
+                const StaticVector<V, CapacityRhs> &rhs) {
     return !rhs.is_equal(lhs);
 }
 
 // Compare with vector
 
 template <typename T, size_t CapacityLhs, typename V>
-bool operator==(const FixedCapacityContainer<T, CapacityLhs> &lhs,
+bool operator==(const StaticVector<T, CapacityLhs> &lhs,
                 const std::vector<V> &rhs) {
     return lhs.is_equal(rhs);
 }
 
 template <typename T, typename V, size_t CapacityRhs>
 bool operator==(const std::vector<T> &lhs,
-                const FixedCapacityContainer<V, CapacityRhs> &rhs) {
+                const StaticVector<V, CapacityRhs> &rhs) {
     return rhs.is_equal(lhs);
 }
 
 template <typename T, size_t CapacityLhs, typename V>
-bool operator!=(const FixedCapacityContainer<T, CapacityLhs> &lhs,
+bool operator!=(const StaticVector<T, CapacityLhs> &lhs,
                 const std::vector<V> &rhs) {
     return !lhs.is_equal(rhs);
 }
 
 template <typename T, typename V, size_t CapacityRhs>
 bool operator!=(const std::vector<T> &lhs,
-                const FixedCapacityContainer<V, CapacityRhs> &rhs) {
+                const StaticVector<V, CapacityRhs> &rhs) {
     return !rhs.is_equal(lhs);
 }
 
@@ -210,7 +208,7 @@ bool operator!=(const std::vector<T> &lhs,
 // template <typename T, size_t Capacity, typename C>
 // typename std::enable_if<is_container<C>::value, bool>::type operator==(
 //     const C &container,
-//     const FixedCapacityContainer<T, Capacity> &fixed_container) noexcept {
+//     const StaticVector<T, Capacity> &fixed_container) noexcept {
 //     return fixed_container.operator==(container);
 // }
 
@@ -218,7 +216,7 @@ bool operator!=(const std::vector<T> &lhs,
 // template <typename T, size_t Capacity, typename C>
 // typename std::enable_if<is_container<C>::value, bool>::type operator!=(
 //     const C &container,
-//     const FixedCapacityContainer<T, Capacity> &fixed_container) noexcept {
+//     const StaticVector<T, Capacity> &fixed_container) noexcept {
 //     return fixed_container.operator!=(container);
 // }
 

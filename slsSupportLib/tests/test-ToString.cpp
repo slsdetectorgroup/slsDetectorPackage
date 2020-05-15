@@ -232,15 +232,15 @@ TEST_CASE("Streaming of slsDetectorDefs::ROI") {
     REQUIRE(oss.str() == "[-10, 1]");
 }
 
-TEST_CASE("sls::FixedCapacityContainer") {
-    sls::FixedCapacityContainer<int, 5> vec;
+TEST_CASE("sls::StaticVector") {
+    sls::StaticVector<int, 5> vec;
     vec.push_back(3);
     vec.push_back(8);
     REQUIRE(ToString(vec) == "[3, 8]");
 }
 
-TEST_CASE("sls::FixedCapacityContainer stream") {
-    sls::FixedCapacityContainer<int, 5> vec;
+TEST_CASE("sls::StaticVector stream") {
+    sls::StaticVector<int, 5> vec;
     vec.push_back(33);
     vec.push_back(85667);
     vec.push_back(2);

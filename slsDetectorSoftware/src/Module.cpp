@@ -2164,12 +2164,12 @@ void Module::setReceiverDbitList(const std::vector<int> &list) {
                 "Dbit list value must be between 0 and 63\n");
         }
     }
-    sls::FixedCapacityContainer<int, MAX_RX_DBIT> arg = list;
+    sls::StaticVector<int, MAX_RX_DBIT> arg = list;
     sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);
 }
 
 std::vector<int> Module::getReceiverDbitList() const {
-    return sendToReceiver<sls::FixedCapacityContainer<int, MAX_RX_DBIT>>(
+    return sendToReceiver<sls::StaticVector<int, MAX_RX_DBIT>>(
         F_GET_RECEIVER_DBIT_LIST);
 }
 

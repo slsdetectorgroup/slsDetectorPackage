@@ -1,19 +1,19 @@
-#include "FixedCapacityContainer.h"
+#include "StaticVector.h"
 #include "TypeTraits.h"
 #include "catch.hpp"
 
 #include <array>
 #include <vector>
-using sls::FixedCapacityContainer;
+using sls::StaticVector;
 
-TEST_CASE("FixedCapacityContainer is a container") {
-    REQUIRE(sls::is_container<FixedCapacityContainer<int, 7>>::value == true);
+TEST_CASE("StaticVector is a container") {
+    REQUIRE(sls::is_container<StaticVector<int, 7>>::value == true);
 }
 
-TEST_CASE("Comparing FixedCapacity containers") {
-    FixedCapacityContainer<int, 5> a{0, 1, 2};
-    FixedCapacityContainer<int, 5> b{0, 1, 2};
-    FixedCapacityContainer<int, 5> c{0, 1, 2, 4};
+TEST_CASE("Comparing StaticVector containers") {
+    StaticVector<int, 5> a{0, 1, 2};
+    StaticVector<int, 5> b{0, 1, 2};
+    StaticVector<int, 5> c{0, 1, 2, 4};
 
     REQUIRE(a == b);
     REQUIRE_FALSE(a != b);
@@ -27,7 +27,7 @@ TEST_CASE("Comparing FixedCapacity containers") {
 TEST_CASE("Compare array and fixed capacity container") {
     std::array<int, 3> arr{1, 2, 3};
     std::array<int, 3> arr2{1, 7, 3};
-    FixedCapacityContainer<int, 7> fcc{1, 2, 3};
+    StaticVector<int, 7> fcc{1, 2, 3};
     REQUIRE(fcc == arr);
     REQUIRE(arr == fcc);
     REQUIRE_FALSE(fcc != arr);
@@ -39,7 +39,7 @@ TEST_CASE("Compare array and fixed capacity container") {
 TEST_CASE("Compare vector and fixed capacity container") {
     std::vector<int> vec{1, 2, 3};
     std::vector<int> vec2{10, 2, 3};
-    FixedCapacityContainer<int, 7> fcc{1, 2, 3};
+    StaticVector<int, 7> fcc{1, 2, 3};
     REQUIRE(fcc == vec);
     REQUIRE(vec == fcc);
     REQUIRE_FALSE(fcc != vec);
@@ -50,51 +50,51 @@ TEST_CASE("Compare vector and fixed capacity container") {
 
 TEST_CASE("Construct from vector") {
     std::vector<int> vec{1, 2, 3};
-    FixedCapacityContainer<int, 5> fcc{vec};
+    StaticVector<int, 5> fcc{vec};
     REQUIRE(fcc == vec);
 }
 
 TEST_CASE("Copy construct from vector") {
     std::vector<int> vec{1, 2, 3};
-    FixedCapacityContainer<int, 5> fcc = vec;
+    StaticVector<int, 5> fcc = vec;
     REQUIRE(fcc == vec);
 }
 
 TEST_CASE("Copy assignment from vector") {
     std::vector<int> vec{1, 2, 3};
-    FixedCapacityContainer<int, 5> fcc;
+    StaticVector<int, 5> fcc;
     fcc = vec;
     REQUIRE(fcc == vec);
 }
 
 TEST_CASE("Construct from array") {
     std::array<int, 3> arr{1, 2, 3};
-    FixedCapacityContainer<int, 5> fcc{arr};
+    StaticVector<int, 5> fcc{arr};
     REQUIRE(fcc == arr);
 }
 
 TEST_CASE("Copy assign from array") {
     std::array<int, 3> arr{1, 2, 3};
-    FixedCapacityContainer<int, 5> fcc;
+    StaticVector<int, 5> fcc;
     fcc = arr;
     REQUIRE(fcc == arr);
 }
 
 TEST_CASE("Copy construct from array") {
     std::array<int, 3> arr{1, 2, 3};
-    FixedCapacityContainer<int, 5> fcc = arr;
+    StaticVector<int, 5> fcc = arr;
     REQUIRE(fcc == arr);
 }
 
 TEST_CASE("Free function and method gives the same iterators") {
-    FixedCapacityContainer<int, 3> fcc{1, 2, 3};
+    StaticVector<int, 3> fcc{1, 2, 3};
     REQUIRE(std::begin(fcc) == fcc.begin());
 }
-SCENARIO("FixedCapacityContainers can be sized and resized", "[support]") {
+SCENARIO("StaticVectors can be sized and resized", "[support]") {
 
     GIVEN("A default constructed container") {
         constexpr size_t n_elem = 5;
-        FixedCapacityContainer<int, n_elem> vec;
+        StaticVector<int, n_elem> vec;
 
         REQUIRE(vec.empty());
         REQUIRE(vec.size() == 0); // NOLINT
@@ -131,8 +131,8 @@ SCENARIO("FixedCapacityContainers can be sized and resized", "[support]") {
         }
     }
 
-    GIVEN("A FixedCapacityContainer constructed form a std::initializer list") {
-        FixedCapacityContainer<int, 10> vec{23, 52, 11};
+    GIVEN("A StaticVector constructed form a std::initializer list") {
+        StaticVector<int, 10> vec{23, 52, 11};
         REQUIRE(vec.size() == 3);
         REQUIRE(vec.capacity() == 10);
         REQUIRE(vec[0] == 23);
@@ -174,7 +174,7 @@ SCENARIO("FixedCapacityContainers can be sized and resized", "[support]") {
     GIVEN("An std::vector of size 3") {
         std::vector<int> standard_vector{5, 2, 1};
         WHEN("we construct a fixed capacity container from it") {
-            FixedCapacityContainer<int, 5> vec(standard_vector);
+            StaticVector<int, 5> vec(standard_vector);
             THEN("size and data matches") {
                 REQUIRE(vec.size() == 3);
                 REQUIRE(vec[0] == 5);
@@ -188,10 +188,10 @@ SCENARIO("FixedCapacityContainers can be sized and resized", "[support]") {
     }
 }
 
-SCENARIO("Comparison of FixedCapacityContainers", "[support]") {
+SCENARIO("Comparison of StaticVectors", "[support]") {
     GIVEN("Two containers containers that are equal at the start") {
-        FixedCapacityContainer<int, 5> a{0, 1, 2};
-        FixedCapacityContainer<int, 5> b{0, 1, 2};
+        StaticVector<int, 5> a{0, 1, 2};
+        StaticVector<int, 5> b{0, 1, 2};
         REQUIRE(a == b);
         REQUIRE_FALSE(a != b);
 
@@ -199,8 +199,8 @@ SCENARIO("Comparison of FixedCapacityContainers", "[support]") {
             a.push_back(4);
             THEN("they are not equal anymore") { REQUIRE(a != b); }
         }
-        WHEN("Compared to a FixedCapacityContainer with different capacity") {
-            FixedCapacityContainer<int, 8> c{0, 1, 2};
+        WHEN("Compared to a StaticVector with different capacity") {
+            StaticVector<int, 8> c{0, 1, 2};
             THEN("The comparison still holds") {
                 REQUIRE(a == c);
                 REQUIRE_FALSE(a != c);
@@ -232,7 +232,7 @@ SCENARIO("Comparison of FixedCapacityContainers", "[support]") {
 SCENARIO("Sorting, removing and other manipulation of a container",
          "[support]") {
     GIVEN("An unsorted container") {
-        FixedCapacityContainer<int, 5> a{14, 12, 90, 12};
+        StaticVector<int, 5> a{14, 12, 90, 12};
         WHEN("We sort it") {
             std::sort(a.begin(), a.end());
             THEN("Elements appear sorted") {
@@ -264,8 +264,8 @@ SCENARIO("Sorting, removing and other manipulation of a container",
 
 SCENARIO("Assigning containers to each other", "[support]") {
     GIVEN("Two containers") {
-        FixedCapacityContainer<int, 3> a{1, 2, 3};
-        FixedCapacityContainer<int, 3> b{4, 5, 6};
+        StaticVector<int, 3> a{1, 2, 3};
+        StaticVector<int, 3> b{4, 5, 6};
         WHEN("a is assigned to b") {
             a = b;
             THEN("A deep copy is made and both containers are equal") {
@@ -278,7 +278,7 @@ SCENARIO("Assigning containers to each other", "[support]") {
             }
         }
         WHEN("A new object is create from an old one") {
-            FixedCapacityContainer<int, 3> c(a);
+            StaticVector<int, 3> c(a);
             THEN("A deep copy is also made") {
                 REQUIRE(c == a);
                 REQUIRE(&c != &a);
@@ -288,8 +288,8 @@ SCENARIO("Assigning containers to each other", "[support]") {
                 REQUIRE(c[2] == 3);
             }
         }
-        WHEN("We create a const FixedCapacityContainer") {
-            const FixedCapacityContainer<int, 5> c(a);
+        WHEN("We create a const StaticVector") {
+            const StaticVector<int, 5> c(a);
             THEN("The values are still the same using const operators") {
                 REQUIRE(c[0] == 1);
                 REQUIRE(c[1] == 2);
@@ -302,8 +302,8 @@ SCENARIO("Assigning containers to each other", "[support]") {
 }
 
 SCENARIO("Converting to vector", "[support]") {
-    GIVEN("a FixedCapacityContainer") {
-        FixedCapacityContainer<int, 5> a{1, 2, 3};
+    GIVEN("a StaticVector") {
+        StaticVector<int, 5> a{1, 2, 3};
         WHEN("Converted into a vector") {
             std::vector<int> b(a);
             THEN("Data and size matches") {

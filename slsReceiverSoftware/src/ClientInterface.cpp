@@ -1,6 +1,6 @@
 #include "ClientInterface.h"
-#include "FixedCapacityContainer.h"
 #include "ServerSocket.h"
+#include "StaticVector.h"
 #include "ToString.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
@@ -335,39 +335,39 @@ int ClientInterface::get_version(Interface &socket) {
 int ClientInterface::setup_receiver(Interface &socket) {
     auto arg = socket.Receive<rxParameters>();
     LOG(logDEBUG) << "detType:" << arg.detType << std::endl
-                   << "multiSize.x:" << arg.multiSize.x << std::endl
-                   << "multiSize.y:" << arg.multiSize.y << std::endl
-                   << "detId:" << arg.detId << std::endl
-                   << "hostname:" << arg.hostname << std::endl
-                   << "udpInterfaces:" << arg.udpInterfaces << std::endl
-                   << "udp_dstport:" << arg.udp_dstport << std::endl
-                   << "udp_dstip:" << sls::IpAddr(arg.udp_dstip) << std::endl
-                   << "udp_dstmac:" << sls::MacAddr(arg.udp_dstmac) << std::endl
-                   << "udp_dstport2:" << arg.udp_dstport2 << std::endl
-                   << "udp_dstip2:" << sls::IpAddr(arg.udp_dstip2) << std::endl
-                   << "udp_dstmac2:" << sls::MacAddr(arg.udp_dstmac2)
-                   << std::endl
-                   << "frames:" << arg.frames << std::endl
-                   << "triggers:" << arg.triggers << std::endl
-                   << "bursts:" << arg.bursts << std::endl
-                   << "analogSamples:" << arg.analogSamples << std::endl
-                   << "digitalSamples:" << arg.digitalSamples << std::endl
-                   << "expTimeNs:" << arg.expTimeNs << std::endl
-                   << "periodNs:" << arg.periodNs << std::endl
-                   << "subExpTimeNs:" << arg.subExpTimeNs << std::endl
-                   << "subDeadTimeNs:" << arg.subDeadTimeNs << std::endl
-                   << "activate:" << arg.activate << std::endl
-                   << "quad:" << arg.quad << std::endl
-                   << "dynamicRange:" << arg.dynamicRange << std::endl
-                   << "timMode:" << arg.timMode << std::endl
-                   << "tenGiga:" << arg.tenGiga << std::endl
-                   << "roMode:" << arg.roMode << std::endl
-                   << "adcMask:" << arg.adcMask << std::endl
-                   << "adc10gMask:" << arg.adc10gMask << std::endl
-                   << "roi.xmin:" << arg.roi.xmin << std::endl
-                   << "roi.xmax:" << arg.roi.xmax << std::endl
-                   << "countermask:" << arg.countermask << std::endl
-                   << "burstType:" << arg.burstType << std::endl;
+                  << "multiSize.x:" << arg.multiSize.x << std::endl
+                  << "multiSize.y:" << arg.multiSize.y << std::endl
+                  << "detId:" << arg.detId << std::endl
+                  << "hostname:" << arg.hostname << std::endl
+                  << "udpInterfaces:" << arg.udpInterfaces << std::endl
+                  << "udp_dstport:" << arg.udp_dstport << std::endl
+                  << "udp_dstip:" << sls::IpAddr(arg.udp_dstip) << std::endl
+                  << "udp_dstmac:" << sls::MacAddr(arg.udp_dstmac) << std::endl
+                  << "udp_dstport2:" << arg.udp_dstport2 << std::endl
+                  << "udp_dstip2:" << sls::IpAddr(arg.udp_dstip2) << std::endl
+                  << "udp_dstmac2:" << sls::MacAddr(arg.udp_dstmac2)
+                  << std::endl
+                  << "frames:" << arg.frames << std::endl
+                  << "triggers:" << arg.triggers << std::endl
+                  << "bursts:" << arg.bursts << std::endl
+                  << "analogSamples:" << arg.analogSamples << std::endl
+                  << "digitalSamples:" << arg.digitalSamples << std::endl
+                  << "expTimeNs:" << arg.expTimeNs << std::endl
+                  << "periodNs:" << arg.periodNs << std::endl
+                  << "subExpTimeNs:" << arg.subExpTimeNs << std::endl
+                  << "subDeadTimeNs:" << arg.subDeadTimeNs << std::endl
+                  << "activate:" << arg.activate << std::endl
+                  << "quad:" << arg.quad << std::endl
+                  << "dynamicRange:" << arg.dynamicRange << std::endl
+                  << "timMode:" << arg.timMode << std::endl
+                  << "tenGiga:" << arg.tenGiga << std::endl
+                  << "roMode:" << arg.roMode << std::endl
+                  << "adcMask:" << arg.adcMask << std::endl
+                  << "adc10gMask:" << arg.adc10gMask << std::endl
+                  << "roi.xmin:" << arg.roi.xmin << std::endl
+                  << "roi.xmax:" << arg.roi.xmax << std::endl
+                  << "countermask:" << arg.countermask << std::endl
+                  << "burstType:" << arg.burstType << std::endl;
 
     // if object exists, verify unlocked and idle, else only verify lock
     // (connecting first time)
@@ -388,15 +388,15 @@ int ClientInterface::setup_receiver(Interface &socket) {
     // update retvals only if detmac is not the same as in detector
     sls::MacAddr retvals[2];
     if (arg.udp_dstip != 0) {
-       sls::MacAddr r = setUdpIp(sls::IpAddr(arg.udp_dstip));
-       sls::MacAddr detMac{arg.udp_dstmac};
+        sls::MacAddr r = setUdpIp(sls::IpAddr(arg.udp_dstip));
+        sls::MacAddr detMac{arg.udp_dstmac};
         if (detMac != r) {
             retvals[0] = r;
         }
     }
     if (arg.udp_dstip2 != 0) {
-       sls::MacAddr r = setUdpIp2(sls::IpAddr(arg.udp_dstip2));
-       sls::MacAddr detMac{arg.udp_dstmac2};
+        sls::MacAddr r = setUdpIp2(sls::IpAddr(arg.udp_dstip2));
+        sls::MacAddr detMac{arg.udp_dstmac2};
         if (detMac != r) {
             retvals[1] = r;
         }
@@ -1399,7 +1399,7 @@ int ClientInterface::set_adc_mask(Interface &socket) {
 }
 
 int ClientInterface::set_dbit_list(Interface &socket) {
-    sls::FixedCapacityContainer<int, MAX_RX_DBIT> args;
+    sls::StaticVector<int, MAX_RX_DBIT> args;
     socket.Receive(args);
     if (myDetectorType != CHIPTESTBOARD)
         functionNotImplemented();
@@ -1416,7 +1416,7 @@ int ClientInterface::set_dbit_list(Interface &socket) {
 int ClientInterface::get_dbit_list(Interface &socket) {
     if (myDetectorType != CHIPTESTBOARD)
         functionNotImplemented();
-    sls::FixedCapacityContainer<int, MAX_RX_DBIT> retval;
+    sls::StaticVector<int, MAX_RX_DBIT> retval;
     retval = impl()->getDbitList();
     LOG(logDEBUG1) << "Dbit list size retval:" << retval.size();
     return socket.sendResult(retval);

@@ -28,7 +28,7 @@ set(PUBLICHEADERS
     include/ServerSocket.h
     include/ServerInterface.h
     include/network_utils.h
-    include/FixedCapacityContainer.h
+    include/StaticVector.h
     include/ToString.h
     include/TimeHelper.h
     include/TypeTraits.h

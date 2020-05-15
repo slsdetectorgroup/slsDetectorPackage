@@ -1,7 +1,6 @@
 #pragma once
 #include "clogger.h"
 #include "sls_detector_defs.h"
-#include "sls_detector_funcs.h"
 
 enum numberMode { DEC, HEX };
 #define GOODBYE (-200)

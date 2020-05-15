@@ -2,6 +2,7 @@
 #include "clogger.h"
 #include "communication_funcs.h"
 #include "slsDetectorFunctionList.h"
+#include "sls_detector_funcs.h"
 
 #include <arpa/inet.h>
 #include <string.h>

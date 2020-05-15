@@ -8,16 +8,6 @@
 /** Notify microcontroller of successful server start up */
 void NotifyServerStartSuccess();
 
-/** create notification file to notify watchdog of critical tasks (to not
- * shutdown) */
-void CreateNotificationForCriticalTasks();
-
-/** write 1 to notification file to postpone shut down process if requested*/
-void NotifyCriticalTask();
-
-/** write 0 to notification file to allow shut down process if requested */
-void NotifyCriticalTaskDone();
-
 /** reset fpga and controller(only implemented for >= v1.1 boards) */
 void rebootControllerAndFPGA();
 

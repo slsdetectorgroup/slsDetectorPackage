@@ -315,7 +315,6 @@ u_int32_t getDetectorIP() {
 /* initialization */
 
 void initControlServer() {
-    CreateNotificationForCriticalTasks();
     if (initError == OK) {
         setupDetector();
     }

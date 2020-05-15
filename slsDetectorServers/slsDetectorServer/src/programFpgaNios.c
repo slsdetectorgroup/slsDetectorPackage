@@ -9,7 +9,6 @@
 /* global variables */
 #define MTDSIZE 10
 char mtdvalue[MTDSIZE] = {0};
-#define NOTIFICATION_FILE    "/tmp/block_shutdown"
 #define MICROCONTROLLER_FILE "/dev/ttyAL0"
 
 void NotifyServerStartSuccess() {
@@ -17,38 +16,6 @@ void NotifyServerStartSuccess() {
     char command[255];
     memset(command, 0, 255);
     sprintf(command, "echo r > %s", MICROCONTROLLER_FILE);
-    system(command);
-}
-
-void CreateNotificationForCriticalTasks() {
-    FILE *fd = fopen(NOTIFICATION_FILE, "r");
-    if (fd == NULL) {
-        fd = fopen(NOTIFICATION_FILE, "w");
-        if (fd == NULL) {
-            LOG(logERROR,
-                ("Could not create notication file: %s\n", NOTIFICATION_FILE));
-            return;
-        }
-        LOG(logINFOBLUE,
-            ("Created notification file: %s\n", NOTIFICATION_FILE));
-    }
-    fclose(fd);
-    NotifyCriticalTaskDone();
-}
-
-void NotifyCriticalTask() {
-    LOG(logINFO, ("\tNotifying Critical Task Ongoing\n"));
-    char command[255];
-    memset(command, 0, 255);
-    sprintf(command, "echo 1 > %s", NOTIFICATION_FILE);
-    system(command);
-}
-
-void NotifyCriticalTaskDone() {
-    LOG(logINFO, ("\tNotifying Critical Task Done\n"));
-    char command[255];
-    memset(command, 0, 255);
-    sprintf(command, "echo 0 > %s", NOTIFICATION_FILE);
     system(command);
 }
 
@@ -111,13 +78,11 @@ int eraseAndWriteToFlash(char *mess, char *fpgasrc, uint64_t fsize) {
     if (findFlash(mess) == FAIL) {
         return FAIL;
     }
-    NotifyCriticalTask();
     eraseFlash();
 
     // open file pointer to flash
     FILE *filefp = fopen(mtdvalue, "w");
     if (filefp == NULL) {
-        NotifyCriticalTaskDone();
         sprintf(mess, "Unable to open %s in write mode\n", mtdvalue);
         LOG(logERROR, (mess));
         return FAIL;
@@ -126,13 +91,11 @@ int eraseAndWriteToFlash(char *mess, char *fpgasrc, uint64_t fsize) {
 
     // write to flash
     if (writeFPGAProgram(mess, fpgasrc, fsize, filefp) == FAIL) {
-        NotifyCriticalTaskDone();
         fclose(filefp);
         return FAIL;
     }
 
     fclose(filefp);
-    NotifyCriticalTaskDone();
     return OK;
 }
 

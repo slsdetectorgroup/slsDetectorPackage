@@ -500,7 +500,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_LAST_RECEIVER_CLIENT_IP: 	return "F_GET_LAST_RECEIVER_CLIENT_IP";
 	case F_SET_RECEIVER_PORT: 				return "F_SET_RECEIVER_PORT";
 	case F_GET_RECEIVER_VERSION: 			return "F_GET_RECEIVER_VERSION";
-	case F_SETUP_RECEIVER:					return "F_SETUP_RECEIVER";
 	case F_RECEIVER_SET_ROI: 				return "F_RECEIVER_SET_ROI";
 	case F_RECEIVER_SET_NUM_FRAMES:			return "F_RECEIVER_SET_NUM_FRAMES";
 	case F_SET_RECEIVER_NUM_TRIGGERS:		return "F_SET_RECEIVER_NUM_TRIGGERS";
@@ -583,6 +582,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_ADDITIONAL_JSON_PARAMETER:	return "F_SET_ADDITIONAL_JSON_PARAMETER";
 	case F_GET_ADDITIONAL_JSON_PARAMETER:	return "F_GET_ADDITIONAL_JSON_PARAMETER";
 	case F_GET_RECEIVER_PROGRESS:			return "F_GET_RECEIVER_PROGRESS";
+	case F_SETUP_RECEIVER:					return "F_SETUP_RECEIVER";
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

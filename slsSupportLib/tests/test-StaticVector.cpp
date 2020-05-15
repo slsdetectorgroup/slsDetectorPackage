@@ -4,6 +4,7 @@
 
 #include <array>
 #include <vector>
+#include <sstream>
 using sls::StaticVector;
 
 TEST_CASE("StaticVector is a container") {
@@ -312,4 +313,21 @@ SCENARIO("Converting to vector", "[support]") {
             }
         }
     }
+}
+
+TEST_CASE("sls::StaticVector") {
+    sls::StaticVector<int, 5> vec;
+    vec.push_back(3);
+    vec.push_back(8);
+    REQUIRE(sls::ToString(vec) == "[3, 8]");
+}
+
+TEST_CASE("sls::StaticVector stream") {
+    sls::StaticVector<int, 5> vec;
+    vec.push_back(33);
+    vec.push_back(85667);
+    vec.push_back(2);
+    std::ostringstream oss;
+    oss << vec;
+    REQUIRE(oss.str() == "[33, 85667, 2]");
 }

@@ -18,23 +18,29 @@ set(HEADERS
 set(PUBLICHEADERS
     include/sls_detector_defs.h
     include/sls_detector_funcs.h
-    include/versionAPI.h
     include/sls_detector_exceptions.h
-    include/file_utils.h
     include/container_utils.h
     include/string_utils.h
-    include/ClientSocket.h
-    include/DataSocket.h
-    include/ServerSocket.h
-    include/ServerInterface.h
     include/network_utils.h
-    include/StaticVector.h
     include/ToString.h
-    include/TimeHelper.h
     include/TypeTraits.h
-    include/Timer.h
-    include/UdpRxSocket.h
+    include/TimeHelper.h
 )
+
+if(SLS_DEVEL_HEADERS)
+    set(PUBLICHEADERS
+        ${PUBLICHEADERS}
+        include/file_utils.h
+        include/ClientSocket.h
+        include/DataSocket.h
+        include/ServerSocket.h
+        include/ServerInterface.h
+        include/Timer.h
+        include/StaticVector.h
+        include/UdpRxSocket.h
+        include/versionAPI.h
+    )
+endif()
 
 add_library(slsSupportLib SHARED
     ${SOURCES}

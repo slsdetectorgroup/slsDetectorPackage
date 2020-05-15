@@ -7,7 +7,6 @@
  *
  */
 
-#include "StaticVector.h"
 #include "TimeHelper.h"
 #include "TypeTraits.h"
 #include "sls_detector_defs.h"
@@ -40,11 +39,7 @@ std::string ToString(const defs::timingSourceType s);
 std::string ToString(const slsDetectorDefs::ROI &roi);
 std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::ROI &roi);
 
-template <typename T, size_t Capacity>
-std::ostream &operator<<(std::ostream &os,
-                         const sls::StaticVector<T, Capacity> &c) {
-    return os << ToString(c);
-}
+
 
 const std::string &ToString(const std::string &s);
 

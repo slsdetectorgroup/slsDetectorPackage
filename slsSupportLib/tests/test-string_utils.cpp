@@ -30,22 +30,7 @@ TEST_CASE("copy a long string") {
     REQUIRE(dst[2] == '\0');
 }
 #endif
-TEST_CASE("Concat") {
-    std::vector<std::string> v{"one", "one", "one"};
-    std::vector<std::string> v2{"one", "one", "one"};
-    auto r = sls::concatenateIfDifferent(v);
-    REQUIRE(r == std::string("one"));
-    r.clear();
 
-    // make sure we didn't modify the string
-    REQUIRE(v == v2);
-
-    SECTION("add a different value") {
-        v.emplace_back("two");
-        REQUIRE(v != v2);
-        REQUIRE(sls::concatenateIfDifferent(v) == "one+one+one+two+");
-    }
-}
 
 TEST_CASE("split a string with end delimiter") {
     std::string s("abra+kadabra+");
@@ -64,26 +49,6 @@ TEST_CASE("split a string without end delimiter") {
     REQUIRE(r[2] == "filibom");
 }
 
-TEST_CASE("concatenate non empty strings") {
-    std::vector<std::string> vec{"hej", "kalas", "", "foto"};
-    REQUIRE(vec.size() == 4);
-    auto ret = sls::concatenateNonEmptyStrings(vec);
-    REQUIRE(ret == "hej+kalas+foto+");
-}
-
-TEST_CASE("concatenate non empty strings with only emty") {
-    std::vector<std::string> vec{"", "", ""};
-    REQUIRE(vec.size() == 3);
-    auto ret = sls::concatenateNonEmptyStrings(vec);
-    REQUIRE(ret.empty());
-}
-
-TEST_CASE("concatenate non empty strings with one element") {
-    std::vector<std::string> vec{"", "hej", "", "", ""};
-    REQUIRE(vec.size() == 5);
-    auto ret = sls::concatenateNonEmptyStrings(vec);
-    REQUIRE(ret == "hej+");
-}
 
 TEST_CASE("Remove char from string") {
     char str[] = "sometest";

@@ -45,6 +45,7 @@ option(SLS_USE_CTBGUI "ctb GUI" OFF)
 option(SLS_BUILD_DOCS "docs" OFF)
 option(SLS_BUILD_EXAMPLES "examples" OFF)
 option(SLS_TUNE_LOCAL "tune to local machine" OFF)
+option(SLS_DEVEL_HEADERS "install headers for devel" OFF)
 
 # set(ClangFormat_BIN_NAME clang-format)
 set(ClangFormat_EXCLUDE_PATTERNS  "build/" 

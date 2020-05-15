@@ -584,7 +584,8 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";
 	}
-};
-#endif
 
-// clang-format on
+    // clang-format on
+}
+
+#endif

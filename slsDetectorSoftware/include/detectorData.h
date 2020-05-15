@@ -1,6 +1,7 @@
-#include <cstring>
-#include <unistd.h>
 #pragma once
+#include <cstdint>
+#include <string>
+
 /**
    @short data structure to hold the detector data after postprocessing
  */

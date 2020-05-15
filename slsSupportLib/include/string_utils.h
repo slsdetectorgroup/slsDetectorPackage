@@ -50,29 +50,5 @@ implementation should not be used in a performance critical place.
 */
 std::vector<std::string> split(const std::string &strToSplit, char delimeter);
 
-/*
-Concatenate the non empty strings in the vector using +
-*/
-std::string concatenateNonEmptyStrings(const std::vector<std::string> &vec);
-
-/*
-Concatenate strings using + if the strings are different
-*/
-std::string concatenateIfDifferent(const std::vector<std::string> &container);
-
-/*
-Concatenate vector of things with str method using + if the strings are
-different
-*/
-template <typename T>
-std::string concatenateIfDifferent(const std::vector<T> &container);
-
-/*
-Convert an ip address string to a string in hex format. (removing dots)
-*/
-std::string stringIpToHex(const std::string &ip);
-
-// remove the end of the string starting with the first aplhabetic character
-// return the end
 std::string RemoveUnit(std::string &str);
-}; // namespace sls
+} // namespace sls

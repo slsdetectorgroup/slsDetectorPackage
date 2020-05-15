@@ -1,5 +1,6 @@
 #pragma once
 #include "TypeTraits.h"
+#include "ToString.h"
 #include <array>
 #include <cassert>
 #include <iostream>
@@ -46,28 +47,6 @@ template <typename T, size_t Capacity> class StaticVector {
         current_size = other.size();
         return *this;
     }
-
-    /** Compare StaticVector with any other container*/
-    // template <typename V>
-    // typename std::enable_if<is_container<V>::value, bool>::type
-    // operator==(const V &other) const noexcept {
-    //     if (current_size != other.size()) {
-    //         return false;
-    //     } else {
-    //         for (size_t i = 0; i != current_size; ++i) {
-    //             if (data_[i] != other[i]) {
-    //                 return false;
-    //             }
-    //         }
-    //     }
-    //     return true;
-    // }
-
-    // template <typename V>
-    // typename std::enable_if<is_container<V>::value, bool>::type
-    // operator!=(const V &other) const noexcept {
-    //     return !(*this == other);
-    // }
 
     operator std::vector<T>() { return std::vector<T>(begin(), end()); }
 
@@ -204,20 +183,13 @@ bool operator!=(const std::vector<T> &lhs,
     return !rhs.is_equal(lhs);
 }
 
-/** support flipped order compare */
-// template <typename T, size_t Capacity, typename C>
-// typename std::enable_if<is_container<C>::value, bool>::type operator==(
-//     const C &container,
-//     const StaticVector<T, Capacity> &fixed_container) noexcept {
-//     return fixed_container.operator==(container);
-// }
+template <typename T, size_t Capacity>
+std::ostream &operator<<(std::ostream &os,
+                         const sls::StaticVector<T, Capacity> &c) {
+    return os << ToString(c);
+}
 
-// /** support flipped order compare */
-// template <typename T, size_t Capacity, typename C>
-// typename std::enable_if<is_container<C>::value, bool>::type operator!=(
-//     const C &container,
-//     const StaticVector<T, Capacity> &fixed_container) noexcept {
-//     return fixed_container.operator!=(container);
-// }
 
 } // namespace sls
+
+

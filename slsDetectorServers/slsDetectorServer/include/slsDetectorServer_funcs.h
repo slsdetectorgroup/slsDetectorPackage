@@ -1,6 +1,7 @@
 #pragma once
 #include "clogger.h"
 #include "sls_detector_defs.h"
+#include "sls_detector_funcs.h"
 
 enum numberMode { DEC, HEX };
 #define GOODBYE (-200)
@@ -11,7 +12,6 @@ int printSocketReadError();
 void init_detector();
 int decode_function(int);
 const char *getRetName();
-const char *getFunctionName(enum detFuncs func);
 void function_table();
 void functionNotImplemented();
 void modeNotImplemented(char *modename, int mode);

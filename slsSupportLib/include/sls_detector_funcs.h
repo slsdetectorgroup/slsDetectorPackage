@@ -296,8 +296,7 @@ enum detFuncs {
 };
 
 // clang-format off
-#ifdef __cplusplus
-static const char* getFunctionNameFromEnum(enum detFuncs func) {
+inline const char* getFunctionNameFromEnum(enum detFuncs func) {
 	switch (func) {
 	case F_EXEC_COMMAND:					return "F_EXEC_COMMAND";
 	case F_GET_DETECTOR_TYPE:				return "F_GET_DETECTOR_TYPE";
@@ -588,4 +587,3 @@ static const char* getFunctionNameFromEnum(enum detFuncs func) {
     // clang-format on
 }
 
-#endif

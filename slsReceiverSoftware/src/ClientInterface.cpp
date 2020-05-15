@@ -2,6 +2,7 @@
 #include "ServerSocket.h"
 #include "StaticVector.h"
 #include "ToString.h"
+
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
 #include "versionAPI.h"

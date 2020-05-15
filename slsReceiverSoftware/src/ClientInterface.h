@@ -2,6 +2,7 @@
 #include "Implementation.h"
 #include "ServerSocket.h"
 #include "receiver_defs.h"
+#include "sls_detector_funcs.h"
 #include "sls_detector_defs.h"
 class ServerInterface;
 

@@ -483,9 +483,9 @@ typedef struct {
   protected:
 #endif
 
-#ifndef MYROOT
-#include "sls_detector_funcs.h"
-#endif
+// #ifndef MYROOT
+// #include "sls_detector_funcs.h"
+// #endif
 
 #ifdef __cplusplus
 };

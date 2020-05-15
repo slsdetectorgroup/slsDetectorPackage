@@ -449,6 +449,7 @@ int getActivate(int *retval);
 int setPhase(enum CLKINDEX ind, int val, int degrees);
 
 #elif MYTHEN3D
+void startPattern();
 uint64_t readPatternWord(int addr);
 uint64_t writePatternWord(int addr, uint64_t word);
 int setPatternWaitAddress(int level, int addr);

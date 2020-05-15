@@ -716,10 +716,8 @@ int setTrimbits(int *trimbits) {
             int start = 0, nloop = 0;
             setPatternLoop(-1, &start, &iaddr, &nloop);
         }
-        // load the trimbits
-#ifndef VIRTUAL
-        startStateMachine();
-#endif
+        // send pattern to the chips
+        startPattern();
     }
 
     // copy trimbits locally
@@ -1185,6 +1183,11 @@ int setDetectorPosition(int pos[]) {
 int *getDetectorPosition() { return detPos; }
 
 /* pattern */
+
+void startPattern() {
+    LOG(logINFOBLUE, ("Starting Pattern\n"));
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_PATTERN_MSK);
+}
 
 uint64_t readPatternWord(int addr) {
     // error (handled in tcp)

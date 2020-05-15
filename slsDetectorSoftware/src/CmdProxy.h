@@ -860,6 +860,7 @@ class CmdProxy {
         {"patwaittime2", &CmdProxy::PatternWaitTime},
         {"patmask", &CmdProxy::patmask},
         {"patsetbit", &CmdProxy::patsetbit},
+        {"patternstart", &CmdProxy::patternstart},
 
         /* Moench */
         {"rx_jsonaddheader", &CmdProxy::AdditionalJsonHeader},
@@ -2030,6 +2031,9 @@ class CmdProxy {
                         StringTo<uint64_t>,
                         "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit values "
                         "applied to the selected patmask for every pattern.");
+
+    EXECUTE_SET_COMMAND(patternstart, startPattern,
+                        "\n\t[Mythen3] Starts Pattern");
 
     /* Moench */
 

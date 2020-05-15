@@ -1210,6 +1210,9 @@ class Detector {
      */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
 
+    /** [Mythen3] */
+    void startPattern(Positions pos = {});
+
     /**************************************************
      *                                                *
      *    Moench                                      *

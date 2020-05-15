@@ -1574,6 +1574,10 @@ void Detector::setPatternBitMask(uint64_t mask, Positions pos) {
     pimpl->Parallel(&Module::setPatternBitMask, pos, mask);
 }
 
+void Detector::startPattern(Positions pos) {
+    pimpl->Parallel(&Module::startPattern, pos);
+}
+
 // Moench
 
 Result<std::map<std::string, std::string>>

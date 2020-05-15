@@ -197,6 +197,7 @@ enum detFuncs {
     F_GET_NUM_CHANNELS,
     F_UPDATE_RATE_CORRECTION,
     F_GET_RECEIVER_PARAMETERS,
+    F_START_PATTERN,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -490,6 +491,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_NUM_CHANNELS:				return "F_GET_NUM_CHANNELS";
 	case F_UPDATE_RATE_CORRECTION:			return "F_UPDATE_RATE_CORRECTION";
 	case F_GET_RECEIVER_PARAMETERS:			return "F_GET_RECEIVER_PARAMETERS";
+    case F_START_PATTERN:                   return "F_START_PATTERN";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
@@ -590,4 +592,3 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 
     // clang-format on
 }
-

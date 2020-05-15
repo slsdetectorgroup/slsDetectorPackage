@@ -329,6 +329,7 @@ void function_table() {
     flist[F_GET_NUM_CHANNELS] = &get_num_channels;
     flist[F_UPDATE_RATE_CORRECTION] = &update_rate_correction;
     flist[F_GET_RECEIVER_PARAMETERS] = &get_receiver_parameters;
+    flist[F_START_PATTERN] = &start_pattern;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -7009,4 +7010,20 @@ int get_receiver_parameters(int file_des) {
     LOG(logINFO, ("Sent %d bytes for receiver parameters\n", n));
 
     return OK;
+}
+
+int start_pattern(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+    LOG(logDEBUG1, ("Starting Pattern\n"));
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        startPattern();
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

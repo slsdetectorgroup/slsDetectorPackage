@@ -1500,6 +1500,9 @@ class Module : public virtual slsDetectorDefs {
      */
     uint64_t getPatternBitMask();
 
+    /** [Mythen3] */
+    void startPattern();
+
     /**
      * Set LED Enable (Moench, CTB only)
      * @param enable 1 to switch on, 0 to switch off, -1 gets

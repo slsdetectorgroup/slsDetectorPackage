@@ -30,18 +30,23 @@
 #define BASE_FMT                        (0x0120) // 0x1806_0120 - 0x1806_012F
 
 /* Packetizer */
-#define BASE_PKT                        (0x0140) // 0x1806_0140 - 0x1806_014F
+#define BASE_PKT                        (0x0130) // 0x1806_0130 - 0x1806_013F
 // https://git.psi.ch/sls_detectors_firmware/mythen_III_mcb/blob/master/code/hdl/pkt/pkt_ctrl.vhd
 
 /* Pattern control and status registers */
 #define BASE_PATTERN_CONTROL            (0x00200) // 0x1806_0200 - 0x1806_02FF
 // https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/2e81ccbdbc5cb81813ba190fbdba43e8d6884eb9/pattern_flow/pattern_flow_ctrl.vhd
 
+/* Flow control and status registers */
+#define BASE_FLOW_CONTROL               (0x00400) // 0x1806_0400 - 0x1806_04FF
+// https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/qsys/flow/flow_ctrl.vhd
+
 /* UDP datagram generator */
 #define BASE_UDP_RAM                    (0x01000) // 0x1806_1000 - 0x1806_1FFF
 
 /* Pattern RAM. Pattern table */
 #define BASE_PATTERN_RAM                (0x10000) // 0x1807_0000 - 0x1807_FFFF
+
 
 /* Clock Generation registers
  * ------------------------------------------------------*/
@@ -159,71 +164,6 @@
 #define PAT_STATUS_REG                  (0x00 * REG_OFFSET + BASE_PATTERN_CONTROL)
 #define PAT_STATUS_RUN_BUSY_OFST        (0)
 #define PAT_STATUS_RUN_BUSY_MSK         (0x00000001 << PAT_STATUS_RUN_BUSY_OFST)
-#define PAT_STATUS_WAIT_FOR_TRGGR_OFST  (3)
-#define PAT_STATUS_WAIT_FOR_TRGGR_MSK   (0x00000001 << PAT_STATUS_WAIT_FOR_TRGGR_OFST)
-#define PAT_STATUS_DLY_BFRE_TRGGR_OFST  (4)
-#define PAT_STATUS_DLY_BFRE_TRGGR_MSK   (0x00000001 << PAT_STATUS_DLY_BFRE_TRGGR_OFST)
-#define PAT_STATUS_FIFO_FULL_OFST       (5)
-#define PAT_STATUS_FIFO_FULL_MSK        (0x00000001 << PAT_STATUS_FIFO_FULL_OFST)
-#define PAT_STATUS_DLY_AFTR_TRGGR_OFST  (15)
-#define PAT_STATUS_DLY_AFTR_TRGGR_MSK   (0x00000001 << PAT_STATUS_DLY_AFTR_TRGGR_OFST)
-#define PAT_STATUS_CSM_BUSY_OFST        (17)
-#define PAT_STATUS_CSM_BUSY_MSK         (0x00000001 << PAT_STATUS_CSM_BUSY_OFST)
-
-/* Delay left 64bit Register */
-#define GET_DELAY_LSB_REG               (0x02 * REG_OFFSET + BASE_PATTERN_CONTROL)
-#define GET_DELAY_MSB_REG               (0x03 * REG_OFFSET + BASE_PATTERN_CONTROL)
-
-/* Triggers left 64bit Register */
-#define GET_CYCLES_LSB_REG              (0x04 * REG_OFFSET + BASE_PATTERN_CONTROL)
-#define GET_CYCLES_MSB_REG              (0x05 * REG_OFFSET + BASE_PATTERN_CONTROL)
-
-/* Frames left 64bit Register */
-#define GET_FRAMES_LSB_REG              (0x06 * REG_OFFSET + BASE_PATTERN_CONTROL)
-#define GET_FRAMES_MSB_REG              (0x07 * REG_OFFSET + BASE_PATTERN_CONTROL)
-
-/* Period left 64bit Register */
-#define GET_PERIOD_LSB_REG              (0x08 * REG_OFFSET + BASE_PATTERN_CONTROL)
-#define GET_PERIOD_MSB_REG              (0x09 * REG_OFFSET + BASE_PATTERN_CONTROL)
-
-/* Time from Start 64 bit register */
-#define TIME_FROM_START_LSB_REG         (0x0A * REG_OFFSET + BASE_PATTERN_CONTROL)
-#define TIME_FROM_START_MSB_REG         (0x0B * REG_OFFSET + BASE_PATTERN_CONTROL)
-
-/* Get Frames from Start 64 bit register (frames from last reset using
- * CONTROL_CRST) */
-#define FRAMES_FROM_START_LSB_REG       (0x0C * REG_OFFSET + BASE_PATTERN_CONTROL)
-#define FRAMES_FROM_START_MSB_REG       (0x0D * REG_OFFSET + BASE_PATTERN_CONTROL)
-
-/* Measurement Time 64 bit register (timestamp at a frame start until reset)*/
-#define START_FRAME_TIME_LSB_REG        (0x0E * REG_OFFSET + BASE_PATTERN_CONTROL)
-#define START_FRAME_TIME_MSB_REG        (0x0F * REG_OFFSET + BASE_PATTERN_CONTROL)
-
-/* Delay 64bit Write-register */
-#define SET_DELAY_LSB_REG               (0x22 * REG_OFFSET + BASE_PATTERN_CONTROL)
-#define SET_DELAY_MSB_REG               (0x23 * REG_OFFSET + BASE_PATTERN_CONTROL)
-
-/* Cylces 64bit Write-register */
-#define SET_CYCLES_LSB_REG              (0x24 * REG_OFFSET + BASE_PATTERN_CONTROL)
-#define SET_CYCLES_MSB_REG              (0x25 * REG_OFFSET + BASE_PATTERN_CONTROL)
-
-/* Frames 64bit Write-register */
-#define SET_FRAMES_LSB_REG              (0x26 * REG_OFFSET + BASE_PATTERN_CONTROL)
-#define SET_FRAMES_MSB_REG              (0x27 * REG_OFFSET + BASE_PATTERN_CONTROL)
-
-/* Period 64bit Write-register */
-#define SET_PERIOD_LSB_REG              (0x28 * REG_OFFSET + BASE_PATTERN_CONTROL)
-#define SET_PERIOD_MSB_REG              (0x29 * REG_OFFSET + BASE_PATTERN_CONTROL)
-
-/* External Signal register */
-#define EXT_SIGNAL_REG                  (0x30 * REG_OFFSET + BASE_PATTERN_CONTROL)
-
-#define EXT_SIGNAL_OFST                 (0)
-#define EXT_SIGNAL_MSK                  (0x00000001 << EXT_SIGNAL_OFST)
-
-/* Trigger Delay 64 bit register */
-#define SET_TRIGGER_DELAY_LSB_REG       (0x32 * REG_OFFSET + BASE_PATTERN_CONTROL)
-#define SET_TRIGGER_DELAY_MSB_REG       (0x33 * REG_OFFSET + BASE_PATTERN_CONTROL)
 
 /* Pattern Limit RW Register */
 #define PATTERN_LIMIT_REG               (0x40 * REG_OFFSET + BASE_PATTERN_CONTROL)
@@ -309,5 +249,80 @@
 /* Register of first word */
 #define PATTERN_STEP0_LSB_REG           (0x0 * REG_OFFSET + BASE_PATTERN_RAM)
 #define PATTERN_STEP0_MSB_REG           (0x1 * REG_OFFSET + BASE_PATTERN_RAM)
+
+
+/* Flow Control registers
+ * --------------------------------------------------*/
+
+/* Flow status Register*/
+#define FLOW_STATUS_REG                 (0x00 * REG_OFFSET + BASE_FLOW_CONTROL)
+
+#define FLOW_STATUS_RUN_BUSY_OFST       (0)
+#define FLOW_STATUS_RUN_BUSY_MSK        (0x00000001 << FLOW_STATUS_RUN_BUSY_OFST)
+#define FLOW_STATUS_WAIT_FOR_TRGGR_OFST (3)
+#define FLOW_STATUS_WAIT_FOR_TRGGR_MSK  (0x00000001 << FLOW_STATUS_WAIT_FOR_TRGGR_OFST)
+#define FLOW_STATUS_DLY_BFRE_TRGGR_OFST (4)
+#define FLOW_STATUS_DLY_BFRE_TRGGR_MSK  (0x00000001 << FLOW_STATUS_DLY_BFRE_TRGGR_OFST)
+#define FLOW_STATUS_FIFO_FULL_OFST      (5)
+#define FLOW_STATUS_FIFO_FULL_MSK       (0x00000001 << FLOW_STATUS_FIFO_FULL_OFST)
+#define FLOW_STATUS_DLY_AFTR_TRGGR_OFST (15)
+#define FLOW_STATUS_DLY_AFTR_TRGGR_MSK  (0x00000001 << FLOW_STATUS_DLY_AFTR_TRGGR_OFST)
+#define FLOW_STATUS_CSM_BUSY_OFST       (17)
+#define FLOW_STATUS_CSM_BUSY_MSK        (0x00000001 << FLOW_STATUS_CSM_BUSY_OFST)
+
+/* Delay left 64bit Register */
+#define GET_DELAY_LSB_REG               (0x02 * REG_OFFSET + BASE_FLOW_CONTROL)
+#define GET_DELAY_MSB_REG               (0x03 * REG_OFFSET + BASE_FLOW_CONTROL)
+
+/* Triggers left 64bit Register */
+#define GET_CYCLES_LSB_REG              (0x04 * REG_OFFSET + BASE_FLOW_CONTROL)
+#define GET_CYCLES_MSB_REG              (0x05 * REG_OFFSET + BASE_FLOW_CONTROL)
+
+/* Frames left 64bit Register */
+#define GET_FRAMES_LSB_REG              (0x06 * REG_OFFSET + BASE_FLOW_CONTROL)
+#define GET_FRAMES_MSB_REG              (0x07 * REG_OFFSET + BASE_FLOW_CONTROL)
+
+/* Period left 64bit Register */
+#define GET_PERIOD_LSB_REG              (0x08 * REG_OFFSET + BASE_FLOW_CONTROL)
+#define GET_PERIOD_MSB_REG              (0x09 * REG_OFFSET + BASE_FLOW_CONTROL)
+
+/* Time from Start 64 bit register */
+#define TIME_FROM_START_LSB_REG         (0x0A * REG_OFFSET + BASE_FLOW_CONTROL)
+#define TIME_FROM_START_MSB_REG         (0x0B * REG_OFFSET + BASE_FLOW_CONTROL)
+
+/* Get Frames from Start 64 bit register (frames from last reset using
+ * CONTROL_CRST) */
+#define FRAMES_FROM_START_LSB_REG       (0x0C * REG_OFFSET + BASE_FLOW_CONTROL)
+#define FRAMES_FROM_START_MSB_REG       (0x0D * REG_OFFSET + BASE_FLOW_CONTROL)
+
+/* Measurement Time 64 bit register (timestamp at a frame start until reset)*/
+#define START_FRAME_TIME_LSB_REG        (0x0E * REG_OFFSET + BASE_FLOW_CONTROL)
+#define START_FRAME_TIME_MSB_REG        (0x0F * REG_OFFSET + BASE_FLOW_CONTROL)
+
+/* Delay 64bit Write-register */
+#define SET_DELAY_LSB_REG               (0x22 * REG_OFFSET + BASE_FLOW_CONTROL)
+#define SET_DELAY_MSB_REG               (0x23 * REG_OFFSET + BASE_FLOW_CONTROL)
+
+/* Cylces 64bit Write-register */
+#define SET_CYCLES_LSB_REG              (0x24 * REG_OFFSET + BASE_FLOW_CONTROL)
+#define SET_CYCLES_MSB_REG              (0x25 * REG_OFFSET + BASE_FLOW_CONTROL)
+
+/* Frames 64bit Write-register */
+#define SET_FRAMES_LSB_REG              (0x26 * REG_OFFSET + BASE_FLOW_CONTROL)
+#define SET_FRAMES_MSB_REG              (0x27 * REG_OFFSET + BASE_FLOW_CONTROL)
+
+/* Period 64bit Write-register */
+#define SET_PERIOD_LSB_REG              (0x28 * REG_OFFSET + BASE_FLOW_CONTROL)
+#define SET_PERIOD_MSB_REG              (0x29 * REG_OFFSET + BASE_FLOW_CONTROL)
+
+/* External Signal register */
+#define EXT_SIGNAL_REG                  (0x30 * REG_OFFSET + BASE_FLOW_CONTROL)
+
+#define EXT_SIGNAL_OFST                 (0)
+#define EXT_SIGNAL_MSK                  (0x00000001 << EXT_SIGNAL_OFST)
+
+/* Trigger Delay 64 bit register */
+#define SET_TRIGGER_DELAY_LSB_REG       (0x32 * REG_OFFSET + BASE_FLOW_CONTROL)
+#define SET_TRIGGER_DELAY_MSB_REG       (0x33 * REG_OFFSET + BASE_FLOW_CONTROL)
 
 // clang-format on

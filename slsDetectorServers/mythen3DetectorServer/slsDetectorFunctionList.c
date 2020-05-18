@@ -1187,6 +1187,11 @@ int *getDetectorPosition() { return detPos; }
 void startPattern() {
     LOG(logINFOBLUE, ("Starting Pattern\n"));
     bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_PATTERN_MSK);
+    usleep(1);
+    while (bus_r(PAT_STATUS_REG) & PAT_STATUS_RUN_BUSY_MSK) {
+        usleep(1);
+    }
+    LOG(logINFOBLUE, ("Pattern done\n"));
 }
 
 uint64_t readPatternWord(int addr) {
@@ -1843,20 +1848,20 @@ enum runStatus getRunStatus() {
     }
 #endif
     LOG(logDEBUG1, ("Getting status\n"));
-    uint32_t retval = bus_r(PAT_STATUS_REG);
+    uint32_t retval = bus_r(FLOW_STATUS_REG);
     LOG(logINFO, ("Status Register: %08x\n", retval));
 
     enum runStatus s;
 
     // running
-    if (retval & PAT_STATUS_RUN_BUSY_MSK) {
-        if (retval & PAT_STATUS_WAIT_FOR_TRGGR_MSK) {
+    if (retval & FLOW_STATUS_RUN_BUSY_MSK) {
+        if (retval & FLOW_STATUS_WAIT_FOR_TRGGR_MSK) {
             LOG(logINFOBLUE, ("Status: WAITING\n"));
             s = WAITING;
         } else {
-            if (retval & PAT_STATUS_DLY_BFRE_TRGGR_MSK) {
+            if (retval & FLOW_STATUS_DLY_BFRE_TRGGR_MSK) {
                 LOG(logINFO, ("Status: Delay before Trigger\n"));
-            } else if (retval & PAT_STATUS_DLY_AFTR_TRGGR_MSK) {
+            } else if (retval & FLOW_STATUS_DLY_AFTR_TRGGR_MSK) {
                 LOG(logINFO, ("Status: Delay after Trigger\n"));
             }
             LOG(logINFOBLUE, ("Status: RUNNING\n"));
@@ -1867,10 +1872,10 @@ enum runStatus getRunStatus() {
     // not running
     else {
         // stopped or error
-        if (retval & PAT_STATUS_FIFO_FULL_MSK) {
+        if (retval & FLOW_STATUS_FIFO_FULL_MSK) {
             LOG(logINFOBLUE, ("Status: STOPPED\n")); // FIFO FULL??
             s = STOPPED;
-        } else if (retval & PAT_STATUS_CSM_BUSY_MSK) {
+        } else if (retval & FLOW_STATUS_CSM_BUSY_MSK) {
             LOG(logINFOBLUE, ("Status: READ MACHINE BUSY\n"));
             s = TRANSMITTING;
         } else if (!retval) {
@@ -1915,7 +1920,7 @@ u_int32_t runBusy() {
     }
     return virtual_status;
 #endif
-    u_int32_t s = (bus_r(PAT_STATUS_REG) & PAT_STATUS_RUN_BUSY_MSK);
+    u_int32_t s = (bus_r(FLOW_STATUS_REG) & FLOW_STATUS_RUN_BUSY_MSK);
     // LOG(logDEBUG1, ("Status Register: %08x\n", s));
     return s;
 }

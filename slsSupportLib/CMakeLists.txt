@@ -17,7 +17,6 @@ set(HEADERS
 
 set(PUBLICHEADERS
     include/sls_detector_defs.h
-    include/sls_detector_funcs.h
     include/sls_detector_exceptions.h
     include/container_utils.h
     include/string_utils.h
@@ -31,6 +30,7 @@ if(SLS_DEVEL_HEADERS)
     set(PUBLICHEADERS
         ${PUBLICHEADERS}
         include/file_utils.h
+        include/sls_detector_funcs.h
         include/ClientSocket.h
         include/DataSocket.h
         include/ServerSocket.h

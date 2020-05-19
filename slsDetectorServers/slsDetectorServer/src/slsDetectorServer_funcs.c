@@ -2163,7 +2163,7 @@ int set_exptime(int file_des) {
             }
             // all gate indices
             else {
-                for (int i = 0; i != 2; ++i) {
+                for (int i = 0; i != 3; ++i) {
                     ret = setExpTime(i, val);
                     int64_t retval = getExpTime(i);
                     LOG(logDEBUG1, ("retval exptime %lld ns (index:%d)\n",
@@ -7199,7 +7199,7 @@ int set_gate_delay(int file_des) {
             }
             // all gate indices
             else {
-                for (int i = 0; i != 2; ++i) {
+                for (int i = 0; i != 3; ++i) {
                     ret = setGateDelay(i, val);
                     int64_t retval = getGateDelay(i);
                     LOG(logDEBUG1, ("retval gate delay %lld ns (index:%d)\n",
@@ -7257,10 +7257,10 @@ int get_exptime_all_gates(int file_des) {
 #if !defined(MYTHEN3D)
     functionNotImplemented();
 #else
-    for (int i = 0; i != 2; ++i) {
+    for (int i = 0; i != 3; ++i) {
         retvals[i] = getExpTime(i);
-        LOG(logDEBUG1, ("retval exptime %lld ns (index:%d)\n",
-                        (long long int)retvals[i], i));
+        LOG(logINFO, ("retval exptime %lld ns (index:%d)\n",
+                      (long long int)retvals[i], i));
     }
 #endif
     return Server_SendResult(file_des, INT64, retvals, sizeof(retvals));
@@ -7274,7 +7274,7 @@ int get_gate_delay_all_gates(int file_des) {
 #if !defined(MYTHEN3D)
     functionNotImplemented();
 #else
-    for (int i = 0; i != 2; ++i) {
+    for (int i = 0; i != 3; ++i) {
         retvals[i] = getGateDelay(i);
         LOG(logDEBUG1, ("retval gate delay %lld ns (index:%d)\n",
                         (long long int)retvals[i], i));

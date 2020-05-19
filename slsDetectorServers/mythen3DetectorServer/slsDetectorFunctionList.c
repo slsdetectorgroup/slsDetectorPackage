@@ -430,7 +430,7 @@ void setupDetector() {
     setTiming(DEFAULT_TIMING_MODE);
     setNumIntGates(DEFAULT_INTERNAL_GATES);
     setNumGates(DEFAULT_EXTERNAL_GATES);
-    for (int i = 0; i != 2; ++i) {
+    for (int i = 0; i != 3; ++i) {
         setExpTime(i, DEFAULT_GATE_WIDTH);
         setGateDelay(i, DEFAULT_GATE_DELAY);
     }
@@ -850,7 +850,7 @@ int getNumGates() { return bus_r(ASIC_EXP_EXT_GATE_NUMBER_REG); }
 
 void updateGatePeriod() {
     uint64_t max = 0;
-    for (int i = 0; i != 2; ++i) {
+    for (int i = 0; i != 3; ++i) {
         // TODO: only those counters enabled (when updated to mask in firmware)
         uint64_t sum = getExpTime(i) + getGateDelay(i);
         if (sum > max) {
@@ -1219,9 +1219,9 @@ void setTiming(enum timingMode arg) {
 }
 
 enum timingMode getTiming() {
-    uint32_t extTrigger = (bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+    uint32_t extTrigger = (bus_r(EXT_SIGNAL_REG) & EXT_SIGNAL_MSK);
     uint32_t extGate =
-        (bus_r(ASIC_EXP_STATUS_REG) | ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
+        (bus_r(ASIC_EXP_STATUS_REG) & ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
     if (extTrigger) {
         if (extGate) {
             // external trigger, external gating

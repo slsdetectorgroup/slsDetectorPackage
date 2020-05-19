@@ -1027,15 +1027,26 @@ void Module::setNumberOfDigitalSamples(int value) {
     }
 }
 
-int64_t Module::getExptime() { return sendToDetector<int64_t>(F_GET_EXPTIME); }
+int Module::getNumberOfGates() { return sendToDetector<int>(F_GET_NUM_GATES); }
 
-void Module::setExptime(int64_t value) {
+void Module::setNumberOfGates(int value) {
+    LOG(logDEBUG1) << "Setting number of gates to " << value;
+    sendToDetector(F_SET_NUM_GATES, value, nullptr);
+}
+
+int64_t Module::getExptime(int gateIndex) {
+    return sendToDetector<int64_t>(F_GET_EXPTIME, gateIndex);
+}
+
+void Module::setExptime(int gateIndex, int64_t value) {
     int64_t prevVal = value;
     if (shm()->myDetectorType == EIGER) {
         prevVal = getExptime();
     }
-    LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
-    sendToDetector(F_SET_EXPTIME, value, nullptr);
+    LOG(logDEBUG1) << "Setting exptime to " << value
+                   << "ns (gateindex: " << gateIndex << ")";
+    int64_t args[]{static_cast<int64_t>(gateIndex), value};
+    sendToDetector(F_SET_EXPTIME, args, nullptr);
     if (shm()->useReceiverFlag) {
         LOG(logDEBUG1) << "Sending exptime to Receiver: " << value;
         sendToReceiver(F_RECEIVER_SET_EXPTIME, value, nullptr);
@@ -1043,6 +1054,25 @@ void Module::setExptime(int64_t value) {
     if (prevVal != value) {
         updateRateCorrection();
     }
+}
+
+std::array<int, 3> Module::getExptimeForAllGates() {
+    return sendToDetector<int64_t>(F_GET_EXPTIME_ALL_GATES);
+}
+
+int64_t Module::getGateDelay(int gateIndex) {
+    return sendToDetector<int64_t>(F_GET_GATE_DELAY, gateIndex);
+}
+
+void Module::setGateDelay(int gateIndex, int64_t value) {
+    LOG(logDEBUG1) << "Setting gate delay to " << value
+                   << "ns (gateindex: " << gateIndex << ")";
+    int64_t args[]{static_cast<int64_t>(gateIndex), value};
+    sendToDetector(F_SET_GATE_DELAY, args, nullptr);
+}
+
+std::array<int, 3> Module::getGateDelayForAllGates() {
+    return sendToDetector<int64_t>(F_GET_GATE_DELAY_ALL_GATES);
 }
 
 int64_t Module::getPeriod() { return sendToDetector<int64_t>(F_GET_PERIOD); }

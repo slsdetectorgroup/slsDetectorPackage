@@ -115,6 +115,9 @@ void updateDataBytes();
     defined(MOENCHD)
 int setDefaultDacs();
 #endif
+#ifdef MYTHEN3D
+void setASICDefaults();
+#endif
 #if defined(GOTTHARD2D) || defined(EIGERD)
 int readConfigFile();
 #endif
@@ -201,10 +204,21 @@ void setNumFrames(int64_t val);
 int64_t getNumFrames();
 void setNumTriggers(int64_t val);
 int64_t getNumTriggers();
+#ifndef MYTHEN3D
 int setExpTime(int64_t val);
 int64_t getExpTime();
+#endif
 int setPeriod(int64_t val);
 int64_t getPeriod();
+#ifdef MYTHEN3D
+void setNumIntGates(int val);
+void setNumGates(int val);
+int getNumGates();
+int setExptime(int gateIndex, int64_t val);
+int64_t getExptime(int gateIndex);
+int setGateDelay(int gateIndex, int64_t val);
+int64_t getGateDelay(int gateIndex);
+#endif
 #ifdef GOTTHARD2D
 void setNumBursts(int64_t val);
 int64_t getNumBursts();

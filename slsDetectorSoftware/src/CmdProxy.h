@@ -570,7 +570,7 @@ class CmdProxy {
         {"acquire", &CmdProxy::acquire},
         {"frames", &CmdProxy::frames},
         {"triggers", &CmdProxy::triggers},
-        {"exptime", &CmdProxy::exptime},
+        {"exptime", &CmdProxy::Exptime},
         {"period", &CmdProxy::period},
         {"delay", &CmdProxy::delay},
         {"framesl", &CmdProxy::framesl},
@@ -798,6 +798,14 @@ class CmdProxy {
 
         /* Mythen3 Specific */
         {"counters", &CmdProxy::Counters},
+        {"gates", &CmdProxy::gates},
+        {"exptime1", &CmdProxy::Exptime},
+        {"exptime2", &CmdProxy::Exptime},
+        {"exptime3", &CmdProxy::Exptime},
+        {"gatedelay", &CmdProxy::GateDelay},
+        {"gatedelay1", &CmdProxy::GateDelay},
+        {"gatedelay2", &CmdProxy::GateDelay},
+        {"gatedelay3", &CmdProxy::GateDelay},
 
         /* CTB/ Moench Specific */
         {"samples", &CmdProxy::Samples},
@@ -916,6 +924,7 @@ class CmdProxy {
     std::string DetectorSize(int action);
     /* acquisition parameters */
     std::string acquire(int action);
+    std::string Exptime(int action);
     std::string Speed(int action);
     std::string Adcphase(int action);
     std::string Dbitphase(int action);
@@ -963,6 +972,7 @@ class CmdProxy {
     std::string BurstMode(int action);
     /* Mythen3 Specific */
     std::string Counters(int action);
+    std::string GateDelay(int action);
     /* CTB/ Moench Specific */
     std::string Samples(int action);
     /* CTB Specific */
@@ -1056,11 +1066,6 @@ class CmdProxy {
                          "timing command to set timing mode.");
 
     TIME_COMMAND(
-        exptime, getExptime, setExptime,
-        "[duration] [(optional unit) ns|us|ms|s]\n\tExposure time"
-        "\n\t[Gotthard2] Uploaded to detector just before acquisition starts");
-
-    TIME_COMMAND(
         period, getPeriod, setPeriod,
         "[duration] [(optional unit) ns|us|ms|s]\n\tPeriod between frames"
         "\n\t[Gotthard2] Uploaded to detector just before acquisition starts");
@@ -1094,12 +1099,13 @@ class CmdProxy {
                      " Period left for current frame."
                      "\n\t[Gotthard2] only in continuous mode.");
 
-    INTEGER_COMMAND(
-        timing, getTimingMode, setTimingMode,
-        sls::StringTo<slsDetectorDefs::timingMode>,
-        "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of "
-        "detector.\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb][Moench] "
-        "[auto|trigger]\n\t[Eiger] [auto|trigger|gating|burst_trigger]");
+    INTEGER_COMMAND(timing, getTimingMode, setTimingMode,
+                    sls::StringTo<slsDetectorDefs::timingMode>,
+                    "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of "
+                    "detector.\n\t[Jungfrau][Gotthard][Mythen3][Ctb][Moench] "
+                    "[auto|trigger]\n\t[Gotthard2] "
+                    "[auto|trigger|gating|trigger_gating]\n\t[Eiger] "
+                    "[auto|trigger|gating|burst_trigger]");
 
     GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift,
                 "\n\t[Jungfrau][CTB][Moench] Absolute maximum Phase shift of "
@@ -1874,6 +1880,10 @@ class CmdProxy {
         "and external is system timing. Default is internal.");
 
     /* Mythen3 Specific */
+
+    INTEGER_COMMAND(gates, getNumberOfGates, setNumberOfGates, StringTo<int>,
+                    "[n_gates]\n\t[Mythen3] Number of external gates in gating "
+                    "or trigger_gating mode (external gating).");
 
     /* CTB/ Moench Specific */
 

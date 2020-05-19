@@ -419,9 +419,29 @@ class Module : public virtual slsDetectorDefs {
     /** [CTB] */
     void setNumberOfDigitalSamples(int value);
 
-    int64_t getExptime();
+    /** [Mythen3] */
+    int getNumberOfGates();
 
-    void setExptime(int64_t value);
+    /** [Mythen3] */
+    void setNumberOfGates(int value);
+
+    /** [Mythen3] gatIndex: 0-2, [Others]: -1 always */
+    int64_t getExptime(int gateIndex);
+
+    /** [Mythen3] gatIndex: -1 for all, 0-2, [Others]: -1 always */
+    void setExptime(int gateIndex, int64_t value);
+
+    /** [Mythen3] for all gates */
+    std::array<int, 3> getExptimeForAllGates();
+
+    /** [Mythen3] gatIndex: 0-2 */
+    int64_t getGateDelay(int gateIndex);
+
+    /** [Mythen3] gatIndex: -1 for all, 0-2 */
+    void setGateDelay(int gateIndex, int64_t value);
+
+    /** [Mythen3] for all gates */
+    std::array<int, 3> getGateDelayForAllGates();
 
     int64_t getPeriod();
 

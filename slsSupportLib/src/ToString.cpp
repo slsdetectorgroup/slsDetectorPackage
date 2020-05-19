@@ -128,6 +128,8 @@ std::string ToString(const defs::timingMode s) {
         return std::string("gating");
     case defs::BURST_TRIGGER:
         return std::string("burst_trigger");
+    case defs::TRIGGER_GATED:
+        return std::string("trigger_gating");
     default:
         return std::string("Unknown");
     }
@@ -318,6 +320,8 @@ template <> defs::timingMode StringTo(const std::string &s) {
         return defs::GATED;
     if (s == "burst_trigger")
         return defs::BURST_TRIGGER;
+    if (s == "trigger_gating")
+        return defs::TRIGGER_GATED;
     throw sls::RuntimeError("Unknown timing mode " + s);
 }
 

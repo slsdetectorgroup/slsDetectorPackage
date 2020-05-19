@@ -202,11 +202,11 @@ void Detector::setNumberOfTriggers(int64_t value) {
 }
 
 Result<ns> Detector::getExptime(Positions pos) const {
-    return pimpl->Parallel(&Module::getExptime, pos);
+    return pimpl->Parallel(&Module::getExptime, pos, -1);
 }
 
 void Detector::setExptime(ns t, Positions pos) {
-    pimpl->Parallel(&Module::setExptime, pos, t.count());
+    pimpl->Parallel(&Module::setExptime, pos, -1, t.count());
 }
 
 Result<ns> Detector::getPeriod(Positions pos) const {
@@ -1256,6 +1256,39 @@ Result<uint32_t> Detector::getCounterMask(Positions pos) const {
 
 void Detector::setCounterMask(uint32_t countermask, Positions pos) {
     pimpl->Parallel(&Module::setCounterMask, pos, countermask);
+}
+
+Result<int> Detector::getNumberOfGates(Positions pos) const {
+    return pimpl->Parallel(&Module::getNumberOfGates, pos);
+}
+
+void Detector::setNumberOfGates(int value, Positions pos) {
+    pimpl->Parallel(&Module::setNumberOfGates, pos, value);
+}
+
+Result<ns> Detector::getExptime(int gateIndex, Positions pos) const {
+    return pimpl->Parallel(&Module::getExptime, pos, gateIndex);
+}
+
+void Detector::setExptime(int gateIndex, ns t, Positions pos) {
+    pimpl->Parallel(&Module::setExptime, pos, gateIndex, t.count());
+}
+
+Result<std::array<ns, 3>> Detector::getExptimeForAllGates(Positions pos) const {
+    return pimpl->Parallel(&Module::getExptimeForAllGates, pos);
+}
+
+Result<ns> Detector::getGateDelay(int gateIndex, Positions pos) const {
+    return pimpl->Parallel(&Module::getGateDelay, pos, gateIndex);
+}
+
+void Detector::setGateDelay(int gateIndex, ns t, Positions pos) {
+    pimpl->Parallel(&Module::setGateDelay, pos, gateIndex, t.count());
+}
+
+Result<std::array<ns, 3>>
+Detector::getGateDelayForAllGates(Positions pos) const {
+    return pimpl->Parallel(&Module::getGateDelayForAllGates, pos);
 }
 
 // CTB/ Moench Specific

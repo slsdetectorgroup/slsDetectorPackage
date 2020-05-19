@@ -241,6 +241,7 @@ typedef struct {
         TRIGGER_EXPOSURE,     /**< trigger mode i.e. exposure is triggered */
         GATED,                /**< gated  */
         BURST_TRIGGER,        /**< trigger a burst of frames */
+        TRIGGER_GATED,        /**< trigger and gating */
         NUM_TIMING_MODES
     };
 
@@ -483,9 +484,9 @@ typedef struct {
   protected:
 #endif
 
-// #ifndef MYROOT
-// #include "sls_detector_funcs.h"
-// #endif
+    // #ifndef MYROOT
+    // #include "sls_detector_funcs.h"
+    // #endif
 
 #ifdef __cplusplus
 };

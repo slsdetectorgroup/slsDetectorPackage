@@ -19,9 +19,6 @@
 #define BASE_CONTROL                    (0x0000) // 0x1806_0000 - 0x1806_00FF
 // https://git.psi.ch/sls_detectors_firmware/mythen_III_mcb/blob/master/code/hdl/ctrl/ctrl.vhd
 
-/* ASIC Control */
-#define BASE_ASIC                       (0x0100) // 0x1806_0100 - 0x1806_010F
-
 /* ASIC Digital Interface. Data recovery core */
 #define BASE_ADIF                       (0x0110) // 0x1806_0110 - 0x1806_011F
 // https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/2e81ccbdbc5cb81813ba190fbdba43e8d6884eb9/adif/adif_ctrl.vhd
@@ -33,13 +30,20 @@
 #define BASE_PKT                        (0x0130) // 0x1806_0130 - 0x1806_013F
 // https://git.psi.ch/sls_detectors_firmware/mythen_III_mcb/blob/master/code/hdl/pkt/pkt_ctrl.vhd
 
-/* Pattern control and status registers */
+/* ASIC Exposure Control */
+#define BASE_ASIC_EXP                   (0x0180) // 0x1806_0180 - 0x1806_01BF
+
+/* Pattern control and status */
 #define BASE_PATTERN_CONTROL            (0x00200) // 0x1806_0200 - 0x1806_02FF
 // https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/2e81ccbdbc5cb81813ba190fbdba43e8d6884eb9/pattern_flow/pattern_flow_ctrl.vhd
 
-/* Flow control and status registers */
+/* Flow control and status */
 #define BASE_FLOW_CONTROL               (0x00400) // 0x1806_0400 - 0x1806_04FF
 // https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/qsys/flow/flow_ctrl.vhd
+
+/** ASIC Readout Control */
+#define BASE_ASIC_RDO                   (0x00500) // 0x1806_0500 - 0x1806_050F
+// https://git.psi.ch/sls_detectors_firmware/mythen_III_mcb/blob/master/code/hdl/asic_rdo/asic_rdo.vhd
 
 /* UDP datagram generator */
 #define BASE_UDP_RAM                    (0x01000) // 0x1806_1000 - 0x1806_1FFF
@@ -156,6 +160,53 @@
 #define COORD_RESERVED_MSK              (0x0000FFFF << COORD_RESERVED_OFST)
 #define COORD_ID_OFST                   (16) // Not connected in firmware TODO
 #define COORD_ID_MSK                    (0x0000FFFF << COORD_ID_OFST) // Not connected in firmware TODO
+
+/* ASIC Exposure Control registers
+ * --------------------------------------------------*/
+
+/** ASIC Exposure Status register */
+#define ASIC_EXP_STATUS_REG             (0x00 * REG_OFFSET + BASE_ASIC_EXP)
+
+#define ASIC_EXP_STAT_GATE_SRC_EXT_OFST (0)
+#define ASIC_EXP_STAT_GATE_SRC_EXT_MSK  (0x00000001 << ASIC_EXP_STAT_GATE_SRC_EXT_OFST)
+#define ASIC_EXP_STAT_STO_LNGTH_OFST    (16)
+#define ASIC_EXP_STAT_STO_LNGTH_MSK     (0x000000FF << ASIC_EXP_STAT_STO_LNGTH_OFST)
+#define ASIC_EXP_STAT_RSCNTR_LNGTH_OFST (24)
+#define ASIC_EXP_STAT_RSCNTR_LNGTH_MSK  (0x000000FF << ASIC_EXP_STAT_RSCNTR_LNGTH_OFST)
+
+/** Gate 0 width register */
+#define ASIC_EXP_GATE_0_WIDTH_LSB_REG   (0x01 * REG_OFFSET + BASE_ASIC_EXP)
+#define ASIC_EXP_GATE_0_WIDTH_MSB_REG   (0x02 * REG_OFFSET + BASE_ASIC_EXP)
+
+/** Gate 1 width register */
+#define ASIC_EXP_GATE_1_WIDTH_LSB_REG   (0x03 * REG_OFFSET + BASE_ASIC_EXP)
+#define ASIC_EXP_GATE_1_WIDTH_MSB_REG   (0x04 * REG_OFFSET + BASE_ASIC_EXP)
+
+/** Gate 2 width register */
+#define ASIC_EXP_GATE_2_WIDTH_LSB_REG   (0x05 * REG_OFFSET + BASE_ASIC_EXP)
+#define ASIC_EXP_GATE_2_WIDTH_MSB_REG   (0x06 * REG_OFFSET + BASE_ASIC_EXP)
+
+/** Gate 0 delay register */
+#define ASIC_EXP_GATE_0_DELAY_LSB_REG   (0x07 * REG_OFFSET + BASE_ASIC_EXP)
+#define ASIC_EXP_GATE_0_DELAY_MSB_REG   (0x08 * REG_OFFSET + BASE_ASIC_EXP)
+
+/** Gate 1 delay register */
+#define ASIC_EXP_GATE_1_DELAY_LSB_REG   (0x09 * REG_OFFSET + BASE_ASIC_EXP)
+#define ASIC_EXP_GATE_1_DELAY_MSB_REG   (0x0A * REG_OFFSET + BASE_ASIC_EXP)
+
+/** Gate 2 delay register */
+#define ASIC_EXP_GATE_2_DELAY_LSB_REG   (0x0B * REG_OFFSET + BASE_ASIC_EXP)
+#define ASIC_EXP_GATE_2_DELAY_MSB_REG   (0x0C * REG_OFFSET + BASE_ASIC_EXP)
+
+/** Gate period register */
+#define ASIC_EXP_GATE_PERIOD_LSB_REG    (0x0D * REG_OFFSET + BASE_ASIC_EXP)
+#define ASIC_EXP_GATE_PERIOD_MSB_REG    (0x0E * REG_OFFSET + BASE_ASIC_EXP)
+
+/** Number of Internal Gates register */
+#define ASIC_EXP_INT_GATE_NUMBER_REG    (0x0F * REG_OFFSET + BASE_ASIC_EXP)
+
+/** Number of Internal Gates register */
+#define ASIC_EXP_EXT_GATE_NUMBER_REG    (0x10 * REG_OFFSET + BASE_ASIC_EXP)
 
 /* Pattern Control registers
  * --------------------------------------------------*/
@@ -324,5 +375,14 @@
 /* Trigger Delay 64 bit register */
 #define SET_TRIGGER_DELAY_LSB_REG       (0x32 * REG_OFFSET + BASE_FLOW_CONTROL)
 #define SET_TRIGGER_DELAY_MSB_REG       (0x33 * REG_OFFSET + BASE_FLOW_CONTROL)
+
+
+/* ASIC Readout Control registers
+ * --------------------------------------------------*/
+
+#define ASIC_RDO_CONFIG_REG             (0x01 * REG_OFFSET + BASE_ASIC_RDO)
+
+#define ASICRDO_CNFG_RESSTRG_LNGTH_OFST (0)
+#define ASICRDO_CNFG_RESSTRG_LNGTH_MSK  (0x000000FF << ASICRDO_CNFG_RESSTRG_LNGTH_OFST)
 
 // clang-format on

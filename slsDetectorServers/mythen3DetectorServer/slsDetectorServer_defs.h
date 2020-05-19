@@ -23,19 +23,23 @@
 #define TYPE_NO_MODULE_STARTING_VAL (800)
 
 /** Default Parameters */
-#define DEFAULT_DYNAMIC_RANGE       (24)
-#define DEFAULT_NUM_FRAMES          (1)
-#define DEFAULT_NUM_CYCLES          (1)
-#define DEFAULT_EXPTIME             (100 * 1000 * 1000) // ns
-#define DEFAULT_PERIOD              (2 * 1000 * 1000)   // ns
-#define DEFAULT_DELAY_AFTER_TRIGGER (0)
-#define DEFAULT_HIGH_VOLTAGE        (0)
-#define DEFAULT_TIMING_MODE         (AUTO_TIMING)
-#define DEFAULT_READOUT_C0          (10) //(125000000) // rdo_clk, 125 MHz
-#define DEFAULT_READOUT_C1          (10) //(125000000) // rdo_x2_clk, 125 MHz
-#define DEFAULT_SYSTEM_C0           (5)  //(250000000) // run_clk, 250 MHz
-#define DEFAULT_SYSTEM_C1           (10) //(125000000) // chip_clk, 125 MHz
-#define DEFAULT_SYSTEM_C2           (10) //(125000000) // sync_clk, 125 MHz
+#define DEFAULT_INTERNAL_GATES           (1)
+#define DEFAULT_EXTERNAL_GATES           (1)
+#define DEFAULT_DYNAMIC_RANGE            (24)
+#define DEFAULT_NUM_FRAMES               (1)
+#define DEFAULT_NUM_CYCLES               (1)
+#define DEFAULT_GATE_WIDTH               (100 * 1000 * 1000) // ns
+#define DEFAULT_GATE_DELAY               (0)
+#define DEFAULT_PERIOD                   (2 * 1000 * 1000) // ns
+#define DEFAULT_DELAY_AFTER_TRIGGER      (0)
+#define DEFAULT_HIGH_VOLTAGE             (0)
+#define DEFAULT_TIMING_MODE              (AUTO_TIMING)
+#define DEFAULT_READOUT_C0               (10) //(125000000) // rdo_clk, 125 MHz
+#define DEFAULT_READOUT_C1               (10) //(125000000) // rdo_x2_clk, 125 MHz
+#define DEFAULT_SYSTEM_C0                (5)  //(250000000) // run_clk, 250 MHz
+#define DEFAULT_SYSTEM_C1                (10) //(125000000) // chip_clk, 125 MHz
+#define DEFAULT_SYSTEM_C2                (10) //(125000000) // sync_clk, 125 MHz
+#define DEFAULT_ASIC_LATCHING_NUM_PULSES (10)
 
 /* Firmware Definitions */
 #define IP_HEADER_SIZE          (20)

@@ -137,7 +137,6 @@ const char *getRunStateName(enum runStatus ind) {
     }
 }
 
-
 void function_table() {
     flist[F_EXEC_COMMAND] = &exec_command;
     flist[F_GET_DETECTOR_TYPE] = &get_detector_type;
@@ -330,6 +329,12 @@ void function_table() {
     flist[F_UPDATE_RATE_CORRECTION] = &update_rate_correction;
     flist[F_GET_RECEIVER_PARAMETERS] = &get_receiver_parameters;
     flist[F_START_PATTERN] = &start_pattern;
+    FLIST[F_SET_NUM_GATES] = &set_num_gates;
+    FLIST[F_GET_NUM_GATES] = &get_num_gates;
+    FLIST[F_SET_GATE_DELAY] = &set_gate_delay;
+    FLIST[F_GET_GATE_DELAY] = &get_gate_delay;
+    flist[F_GET_EXPTIME_ALL_GATES = &get_exptime_all_gates;
+    flist[F_GET_GATE_DELAY_ALL_GATES = &get_gate_delay_all_gates;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -510,6 +515,9 @@ int set_timing_mode(int file_des) {
 #ifdef EIGERD
         case GATED:
         case BURST_TRIGGER:
+#elif MYTHEN3D
+        case GATED:
+        case TRIGGER_GATED:
 #endif
             setTiming(arg);
             break;
@@ -2083,34 +2091,114 @@ int set_num_digital_samples(int file_des) {
 int get_exptime(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
+    int gateIndex = -1;
     int64_t retval = -1;
 
-    // get only
-    retval = getExpTime();
-    LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
+    if (receiveData(file_des, &gateIndex, sizeof(gateIndex), INT32) < 0)
+        return printSocketReadError();
+
+        // get only
+#ifdef MYTHEN3D
+    if (gateIndex < 0 || gateIndex > 2) {
+        ret = FAIL;
+        sprintf(mess,
+                "Could not get exposure time. Invalid gate index %d. "
+                "Options [0-2]\n",
+                gateIndex);
+        LOG(logERROR, (mess));
+    } else {
+        retval = getExptime(gateIndex);
+        LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
+    }
+#else
+    if (gateIndex != -1) {
+        ret = FAIL;
+        sprintf(mess, "Could not get exposure time. Gate index not implemented "
+                      "for this detector\n");
+        LOG(logERROR, (mess));
+    } else {
+        retval = getExpTime();
+        LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
+    }
+#endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_exptime(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int64_t arg = -1;
+    int64_t args[2] = {-1, -1};
 
-    if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+    if (receiveData(file_des, args, sizeof(args), INT64) < 0)
         return printSocketReadError();
-    LOG(logDEBUG1, ("Setting exptime %lld ns\n", (long long int)arg));
+    int gateIndex = args[0];
+    int64_t val = args[1];
+    LOG(logDEBUG1, ("Setting exptime %lld ns (gateIndex:%d)\n",
+                    (long long int)val, gateIndex));
 
     // only set
     if (Server_VerifyLock() == OK) {
-        ret = setExpTime(arg);
-        int64_t retval = getExpTime();
-        LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
-        if (ret == FAIL) {
+#ifdef MYTHEN3D
+        if (gateIndex < -1 || gateIndex > 2) {
+            ret = FAIL;
             sprintf(mess,
-                    "Could not set exposure time. Set %lld ns, read %lld ns.\n",
-                    (long long int)arg, (long long int)retval);
+                    "Could not set exposure time. Invalid gate index %d. "
+                    "Options [-1, 0-2]\n",
+                    gateIndex);
             LOG(logERROR, (mess));
+        } else {
+            // specific gate index
+            if (gateIndex != -1) {
+                ret = setExpTime(gateIndex, val);
+                int64_t retval = getExpTime(gateIndex);
+                LOG(logDEBUG1,
+                    ("retval exptime %lld ns\n", (long long int)retval));
+                if (ret == FAIL) {
+                    sprintf(mess,
+                            "Could not set exposure time. Set %lld ns, read "
+                            "%lld ns.\n",
+                            (long long int)val, (long long int)retval);
+                    LOG(logERROR, (mess));
+                }
+            }
+            // all gate indices
+            else {
+                for (int i = 0; i != 2; ++i) {
+                    ret = setExpTime(i, val);
+                    int64_t retval = getExpTime(i);
+                    LOG(logDEBUG1, ("retval exptime %lld ns (index:%d)\n",
+                                    (long long int)retval, i));
+                    if (ret == FAIL) {
+                        sprintf(mess,
+                                "Could not set exptime. Set %lld ns, read %lld "
+                                "ns.\n",
+                                (long long int)val, (long long int)retval);
+                        LOG(logERROR, (mess));
+                        break;
+                    }
+                }
+            }
         }
+#else
+        if (gateIndex != -1) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not get exposure time. Gate index not implemented "
+                    "for this detector\n");
+            LOG(logERROR, (mess));
+        } else {
+            ret = setExpTime(val);
+            int64_t retval = getExpTime();
+            LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
+            if (ret == FAIL) {
+                sprintf(
+                    mess,
+                    "Could not set exposure time. Set %lld ns, read %lld ns.\n",
+                    (long long int)val, (long long int)retval);
+                LOG(logERROR, (mess));
+            }
+        }
+#endif
     }
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
@@ -7026,4 +7114,167 @@ int start_pattern(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int set_num_gates(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting number of gates %d\n", arg));
+
+#if !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        setNumGates(arg);
+        int retval = getNumGates();
+        LOG(logDEBUG1, ("retval num gates %d\n", retval));
+        validate(arg, retval, "set number of gates", DEC);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_num_gates(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+#if !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    // get only
+    retval = getNumGates();
+    LOG(logDEBUG1, ("retval num gates %d\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_gate_delay(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int64_t args[2] = {-1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT64) < 0)
+        return printSocketReadError();
+    int gateIndex = args[0];
+    int64_t val = args[1];
+    LOG(logDEBUG1, ("Setting gate delay %lld ns (gateIndex:%d)\n",
+                    (long long int)val, gateIndex));
+
+#if !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (gateIndex < -1 || gateIndex > 2) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set gate delay. Invalid gate index %d. "
+                    "Options [-1, 0-2]\n",
+                    gateIndex);
+            LOG(logERROR, (mess));
+        } else {
+            // specific gate index
+            if (gateIndex != -1) {
+                ret = setGateDelay(gateIndex, val);
+                int64_t retval = getGateDelay(gateIndex);
+                LOG(logDEBUG1,
+                    ("retval exptime %lld ns\n", (long long int)retval));
+                if (ret == FAIL) {
+                    sprintf(mess,
+                            "Could not set gate delay. Set %lld ns, read %lld "
+                            "ns.\n",
+                            (long long int)val, (long long int)retval);
+                    LOG(logERROR, (mess));
+                }
+            }
+            // all gate indices
+            else {
+                for (int i = 0; i != 2; ++i) {
+                    ret = setGateDelay(i, val);
+                    int64_t retval = getGateDelay(i);
+                    LOG(logDEBUG1, ("retval gate delay %lld ns (index:%d)\n",
+                                    (long long int)retval, i));
+                    if (ret == FAIL) {
+                        sprintf(
+                            mess,
+                            "Could not set gate delay. Set %lld ns, read %lld "
+                            "ns.\n",
+                            (long long int)val, (long long int)retval);
+                        LOG(logERROR, (mess));
+                        break;
+                    }
+                }
+            }
+        }
+#endif
+    return Server_SendResult(file_des, INT64, NULL, 0);
+}
+
+int get_gate_delay(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int gateIndex = -1;
+    int64_t retval = -1;
+
+    if (receiveData(file_des, &gateIndex, sizeof(gateIndex), INT32) < 0)
+        return printSocketReadError();
+
+#if !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+        // get only
+        if (gateIndex < 0 || gateIndex > 2) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set gate delay. Invalid gate index %d. "
+                    "Options [0-2]\n",
+                    gateIndex);
+            LOG(logERROR, (mess));
+        } else {
+            retval = getGateDelay(gateIndex);
+            LOG(logDEBUG1,
+                ("retval gate delay %lld ns\n", (long long int)retval));
+        }
+#endif
+    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+}
+
+int get_exptime_all_gates(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int64_t retvals[3] = {-1, -1, -1};
+
+#if !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+        for (int i = 0; i != 2; ++i) {
+            retvals[i] = getExpTime(i);
+            LOG(logDEBUG1, ("retval exptime %lld ns (index:%d)\n",
+                            (long long int)retvals[i], i));
+        }
+#endif
+    return Server_SendResult(file_des, INT64, retvals, sizeof(retvals));
+}
+
+int get_gate_delay_all_gates(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int64_t retvals[3] = {-1, -1, -1};
+
+#if !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+        for (int i = 0; i != 2; ++i) {
+            retvals[i] = getGateDelay(i);
+            LOG(logDEBUG1, ("retval gate delay %lld ns (index:%d)\n",
+                            (long long int)retvals[i], i));
+        }
+#endif
+    return Server_SendResult(file_des, INT64, retvals, sizeof(retvals));
 }

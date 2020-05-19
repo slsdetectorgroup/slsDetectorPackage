@@ -846,7 +846,7 @@ void setNumGates(int val) {
     }
 }
 
-int getNumExtGates() { return bus_r(ASIC_EXP_EXT_GATE_NUMBER_REG); }
+int getNumGates() { return bus_r(ASIC_EXP_EXT_GATE_NUMBER_REG); }
 
 void updateGatePeriod() {
     uint64_t max = 0;
@@ -863,21 +863,27 @@ void updateGatePeriod() {
                 ASIC_EXP_GATE_PERIOD_MSB_REG);
 }
 
-int setExptime(int gateIndex, int64_t val) {
+int64_t getGatePeriod() {
+    return get64BitReg(ASIC_EXP_GATE_PERIOD_LSB_REG,
+                       ASIC_EXP_GATE_PERIOD_MSB_REG) /
+           (1E-9 * getFrequency(SYSTEM_C2));
+}
+
+int setExpTime(int gateIndex, int64_t val) {
     uint32_t alsb = 0;
     uint32_t amsb = 0;
     switch (gateIndex) {
     case 0:
         alsb = ASIC_EXP_GATE_0_WIDTH_LSB_REG;
-        blsb = ASIC_EXP_GATE_0_WIDTH_MSB_REG;
+        amsb = ASIC_EXP_GATE_0_WIDTH_MSB_REG;
         break;
     case 1:
         alsb = ASIC_EXP_GATE_1_WIDTH_LSB_REG;
-        blsb = ASIC_EXP_GATE_1_WIDTH_MSB_REG;
+        amsb = ASIC_EXP_GATE_1_WIDTH_MSB_REG;
         break;
     case 2:
         alsb = ASIC_EXP_GATE_2_WIDTH_LSB_REG;
-        blsb = ASIC_EXP_GATE_2_WIDTH_MSB_REG;
+        amsb = ASIC_EXP_GATE_2_WIDTH_MSB_REG;
         break;
     default:
         LOG(logERROR, ("Invalid gate index: %d\n", gateIndex));
@@ -905,19 +911,21 @@ int setExptime(int gateIndex, int64_t val) {
     return OK;
 }
 
-int64_t getExptime(int gateIndex) {
+int64_t getExpTime(int gateIndex) {
+    uint32_t alsb = 0;
+    uint32_t amsb = 0;
     switch (gateIndex) {
     case 0:
         alsb = ASIC_EXP_GATE_0_WIDTH_LSB_REG;
-        blsb = ASIC_EXP_GATE_0_WIDTH_MSB_REG;
+        amsb = ASIC_EXP_GATE_0_WIDTH_MSB_REG;
         break;
     case 1:
         alsb = ASIC_EXP_GATE_1_WIDTH_LSB_REG;
-        blsb = ASIC_EXP_GATE_1_WIDTH_MSB_REG;
+        amsb = ASIC_EXP_GATE_1_WIDTH_MSB_REG;
         break;
     case 2:
         alsb = ASIC_EXP_GATE_2_WIDTH_LSB_REG;
-        blsb = ASIC_EXP_GATE_2_WIDTH_MSB_REG;
+        amsb = ASIC_EXP_GATE_2_WIDTH_MSB_REG;
         break;
     default:
         LOG(logERROR, ("Invalid gate index: %d\n", gateIndex));
@@ -932,15 +940,15 @@ int setGateDelay(int gateIndex, int64_t val) {
     switch (gateIndex) {
     case 0:
         alsb = ASIC_EXP_GATE_0_DELAY_LSB_REG;
-        blsb = ASIC_EXP_GATE_0_DELAY_MSB_REG;
+        amsb = ASIC_EXP_GATE_0_DELAY_MSB_REG;
         break;
     case 1:
         alsb = ASIC_EXP_GATE_1_DELAY_LSB_REG;
-        blsb = ASIC_EXP_GATE_1_DELAY_MSB_REG;
+        amsb = ASIC_EXP_GATE_1_DELAY_MSB_REG;
         break;
     case 2:
         alsb = ASIC_EXP_GATE_2_DELAY_LSB_REG;
-        blsb = ASIC_EXP_GATE_2_DELAY_MSB_REG;
+        amsb = ASIC_EXP_GATE_2_DELAY_MSB_REG;
         break;
     default:
         LOG(logERROR, ("Invalid gate index: %d\n", gateIndex));
@@ -969,18 +977,20 @@ int setGateDelay(int gateIndex, int64_t val) {
 }
 
 int64_t getGateDelay(int gateIndex) {
+    uint32_t alsb = 0;
+    uint32_t amsb = 0;
     switch (gateIndex) {
     case 0:
         alsb = ASIC_EXP_GATE_0_DELAY_LSB_REG;
-        blsb = ASIC_EXP_GATE_0_DELAY_MSB_REG;
+        amsb = ASIC_EXP_GATE_0_DELAY_MSB_REG;
         break;
     case 1:
         alsb = ASIC_EXP_GATE_1_DELAY_LSB_REG;
-        blsb = ASIC_EXP_GATE_1_DELAY_MSB_REG;
+        amsb = ASIC_EXP_GATE_1_DELAY_MSB_REG;
         break;
     case 2:
         alsb = ASIC_EXP_GATE_2_DELAY_LSB_REG;
-        blsb = ASIC_EXP_GATE_2_DELAY_MSB_REG;
+        amsb = ASIC_EXP_GATE_2_DELAY_MSB_REG;
         break;
     default:
         LOG(logERROR, ("Invalid gate index: %d\n", gateIndex));
@@ -1204,16 +1214,6 @@ void setTiming(enum timingMode arg) {
         default:
             LOG(logERROR, ("Unknown timing mode %d\n", arg));
             return;
-        }
-        // internal gating
-        if (arg == AUTO_TIMING || arg == TRIGGER_EXPOSURE) {
-            setNumGates(1); // should be in firmware
-            // TOOD: number of counters-> set appropriate gatewidth and
-            // gatedelay to 0
-            setMaxGatePulseWidth();
-        }
-        // external gating
-        else {
         }
     }
 }
@@ -1942,7 +1942,7 @@ void *start_timer(void *arg) {
 
     int64_t periodNs = getPeriod();
     int numFrames = (getNumFrames() * getNumTriggers());
-    int64_t expUs = getExpTime() / 1000;
+    int64_t expUs = getGatePeriod() / 1000;
 
     // int dr = setDynamicRange(-1);
     int imagesize = calculateDataBytes();

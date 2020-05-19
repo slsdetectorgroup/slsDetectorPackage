@@ -381,7 +381,7 @@ std::string CmdProxy::Exptime(int action) {
             WrongNumberOfParameters(1);
         }
         // vector of exptimes
-        if (gateIndex == -1 &
+        if (gateIndex == -1 &&
             det->getDetectorType().squash() == defs::MYTHEN3) {
             auto t = det->getExptimeForAllGates({det_id});
             if (args.size() == 0) {
@@ -410,14 +410,14 @@ std::string CmdProxy::Exptime(int action) {
             std::string time_str(args[0]);
             std::string unit = RemoveUnit(time_str);
             auto t = StringTo<time::ns>(time_str, unit);
-            if (type == MYTHEN3) {
+            if (type == defs::MYTHEN3) {
                 det->setExptime(gateIndex, t, {det_id});
             } else {
                 det->setExptime(t, {det_id});
             }
         } else if (args.size() == 2) {
             auto t = StringTo<time::ns>(args[0], args[1]);
-            if (type == MYTHEN3) {
+            if (type == defs::MYTHEN3) {
                 det->setExptime(gateIndex, t, {det_id});
             } else {
                 det->setExptime(t, {det_id});
@@ -434,6 +434,7 @@ std::string CmdProxy::Exptime(int action) {
     } else {
         throw sls::RuntimeError("Unknown action");
     }
+    return os.str();
 }
 
 std::string CmdProxy::Speed(int action) {
@@ -1777,6 +1778,7 @@ std::string CmdProxy::GateDelay(int action) {
     } else {
         throw sls::RuntimeError("Unknown action");
     }
+    return os.str();
 }
 
 /* CTB / Moench Specific */

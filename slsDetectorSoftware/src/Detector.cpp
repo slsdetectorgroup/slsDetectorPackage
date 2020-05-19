@@ -1275,7 +1275,14 @@ void Detector::setExptime(int gateIndex, ns t, Positions pos) {
 }
 
 Result<std::array<ns, 3>> Detector::getExptimeForAllGates(Positions pos) const {
-    return pimpl->Parallel(&Module::getExptimeForAllGates, pos);
+    auto t = pimpl->Parallel(&Module::getExptimeForAllGates, pos);
+    Result<std::array<ns, 3>> res(t.size());
+    for (unsigned int i = 0; i < t.size(); ++i) {
+        for (unsigned int j = 0; j != 3; ++j) {
+            res[i][j] = static_cast<ns>(t[i][j]);
+        }
+    }
+    return res;
 }
 
 Result<ns> Detector::getGateDelay(int gateIndex, Positions pos) const {
@@ -1288,7 +1295,14 @@ void Detector::setGateDelay(int gateIndex, ns t, Positions pos) {
 
 Result<std::array<ns, 3>>
 Detector::getGateDelayForAllGates(Positions pos) const {
-    return pimpl->Parallel(&Module::getGateDelayForAllGates, pos);
+    auto t = pimpl->Parallel(&Module::getGateDelayForAllGates, pos);
+    Result<std::array<ns, 3>> res(t.size());
+    for (unsigned int i = 0; i < t.size(); ++i) {
+        for (unsigned int j = 0; j != 3; ++j) {
+            res[i][j] = static_cast<ns>(t[i][j]);
+        }
+    }
+    return res;
 }
 
 // CTB/ Moench Specific

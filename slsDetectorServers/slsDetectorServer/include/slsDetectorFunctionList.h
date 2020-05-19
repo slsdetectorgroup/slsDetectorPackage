@@ -214,8 +214,10 @@ int64_t getPeriod();
 void setNumIntGates(int val);
 void setNumGates(int val);
 int getNumGates();
-int setExptime(int gateIndex, int64_t val);
-int64_t getExptime(int gateIndex);
+void updateGatePeriod();
+int64_t getGatePeriod();
+int setExpTime(int gateIndex, int64_t val);
+int64_t getExpTime(int gateIndex);
 int setGateDelay(int gateIndex, int64_t val);
 int64_t getGateDelay(int gateIndex);
 #endif

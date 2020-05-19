@@ -329,12 +329,12 @@ void function_table() {
     flist[F_UPDATE_RATE_CORRECTION] = &update_rate_correction;
     flist[F_GET_RECEIVER_PARAMETERS] = &get_receiver_parameters;
     flist[F_START_PATTERN] = &start_pattern;
-    FLIST[F_SET_NUM_GATES] = &set_num_gates;
-    FLIST[F_GET_NUM_GATES] = &get_num_gates;
-    FLIST[F_SET_GATE_DELAY] = &set_gate_delay;
-    FLIST[F_GET_GATE_DELAY] = &get_gate_delay;
-    flist[F_GET_EXPTIME_ALL_GATES = &get_exptime_all_gates;
-    flist[F_GET_GATE_DELAY_ALL_GATES = &get_gate_delay_all_gates;
+    flist[F_SET_NUM_GATES] = &set_num_gates;
+    flist[F_GET_NUM_GATES] = &get_num_gates;
+    flist[F_SET_GATE_DELAY] = &set_gate_delay;
+    flist[F_GET_GATE_DELAY] = &get_gate_delay;
+    flist[F_GET_EXPTIME_ALL_GATES] = &get_exptime_all_gates;
+    flist[F_GET_GATE_DELAY_ALL_GATES] = &get_gate_delay_all_gates;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -2107,7 +2107,7 @@ int get_exptime(int file_des) {
                 gateIndex);
         LOG(logERROR, (mess));
     } else {
-        retval = getExptime(gateIndex);
+        retval = getExpTime(gateIndex);
         LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
     }
 #else
@@ -6953,8 +6953,12 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // exptime
+        // exptime
+#ifdef MYTHEN3D
+    i64 = getExpTime(0);
+#else
     i64 = getExpTime();
+#endif
     n += sendData(file_des, &i64, sizeof(i64), INT64);
     if (n < 0)
         return printSocketReadError();
@@ -7212,6 +7216,7 @@ int set_gate_delay(int file_des) {
                 }
             }
         }
+    }
 #endif
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
@@ -7228,19 +7233,18 @@ int get_gate_delay(int file_des) {
 #if !defined(MYTHEN3D)
     functionNotImplemented();
 #else
-        // get only
-        if (gateIndex < 0 || gateIndex > 2) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not set gate delay. Invalid gate index %d. "
-                    "Options [0-2]\n",
-                    gateIndex);
-            LOG(logERROR, (mess));
-        } else {
-            retval = getGateDelay(gateIndex);
-            LOG(logDEBUG1,
-                ("retval gate delay %lld ns\n", (long long int)retval));
-        }
+    // get only
+    if (gateIndex < 0 || gateIndex > 2) {
+        ret = FAIL;
+        sprintf(mess,
+                "Could not set gate delay. Invalid gate index %d. "
+                "Options [0-2]\n",
+                gateIndex);
+        LOG(logERROR, (mess));
+    } else {
+        retval = getGateDelay(gateIndex);
+        LOG(logDEBUG1, ("retval gate delay %lld ns\n", (long long int)retval));
+    }
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
@@ -7253,11 +7257,11 @@ int get_exptime_all_gates(int file_des) {
 #if !defined(MYTHEN3D)
     functionNotImplemented();
 #else
-        for (int i = 0; i != 2; ++i) {
-            retvals[i] = getExpTime(i);
-            LOG(logDEBUG1, ("retval exptime %lld ns (index:%d)\n",
-                            (long long int)retvals[i], i));
-        }
+    for (int i = 0; i != 2; ++i) {
+        retvals[i] = getExpTime(i);
+        LOG(logDEBUG1, ("retval exptime %lld ns (index:%d)\n",
+                        (long long int)retvals[i], i));
+    }
 #endif
     return Server_SendResult(file_des, INT64, retvals, sizeof(retvals));
 }
@@ -7270,11 +7274,11 @@ int get_gate_delay_all_gates(int file_des) {
 #if !defined(MYTHEN3D)
     functionNotImplemented();
 #else
-        for (int i = 0; i != 2; ++i) {
-            retvals[i] = getGateDelay(i);
-            LOG(logDEBUG1, ("retval gate delay %lld ns (index:%d)\n",
-                            (long long int)retvals[i], i));
-        }
+    for (int i = 0; i != 2; ++i) {
+        retvals[i] = getGateDelay(i);
+        LOG(logDEBUG1, ("retval gate delay %lld ns (index:%d)\n",
+                        (long long int)retvals[i], i));
+    }
 #endif
     return Server_SendResult(file_des, INT64, retvals, sizeof(retvals));
 }

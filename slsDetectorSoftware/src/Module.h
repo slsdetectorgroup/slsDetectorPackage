@@ -432,7 +432,7 @@ class Module : public virtual slsDetectorDefs {
     void setExptime(int gateIndex, int64_t value);
 
     /** [Mythen3] for all gates */
-    std::array<int, 3> getExptimeForAllGates();
+    std::array<int64_t, 3> getExptimeForAllGates();
 
     /** [Mythen3] gatIndex: 0-2 */
     int64_t getGateDelay(int gateIndex);
@@ -441,7 +441,7 @@ class Module : public virtual slsDetectorDefs {
     void setGateDelay(int gateIndex, int64_t value);
 
     /** [Mythen3] for all gates */
-    std::array<int, 3> getGateDelayForAllGates();
+    std::array<int64_t, 3> getGateDelayForAllGates();
 
     int64_t getPeriod();
 

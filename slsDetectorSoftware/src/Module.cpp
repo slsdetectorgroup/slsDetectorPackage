@@ -1041,7 +1041,7 @@ int64_t Module::getExptime(int gateIndex) {
 void Module::setExptime(int gateIndex, int64_t value) {
     int64_t prevVal = value;
     if (shm()->myDetectorType == EIGER) {
-        prevVal = getExptime();
+        prevVal = getExptime(-1);
     }
     LOG(logDEBUG1) << "Setting exptime to " << value
                    << "ns (gateindex: " << gateIndex << ")";
@@ -1056,8 +1056,10 @@ void Module::setExptime(int gateIndex, int64_t value) {
     }
 }
 
-std::array<int, 3> Module::getExptimeForAllGates() {
-    return sendToDetector<int64_t>(F_GET_EXPTIME_ALL_GATES);
+std::array<int64_t, 3> Module::getExptimeForAllGates() {
+    std::array<int64_t, 3> retval;
+    sendToDetector(F_GET_EXPTIME_ALL_GATES, nullptr, retval);
+    return retval;
 }
 
 int64_t Module::getGateDelay(int gateIndex) {
@@ -1071,8 +1073,10 @@ void Module::setGateDelay(int gateIndex, int64_t value) {
     sendToDetector(F_SET_GATE_DELAY, args, nullptr);
 }
 
-std::array<int, 3> Module::getGateDelayForAllGates() {
-    return sendToDetector<int64_t>(F_GET_GATE_DELAY_ALL_GATES);
+std::array<int64_t, 3> Module::getGateDelayForAllGates() {
+    std::array<int64_t, 3> retval;
+    sendToDetector(F_GET_GATE_DELAY_ALL_GATES, nullptr, retval);
+    return retval;
 }
 
 int64_t Module::getPeriod() { return sendToDetector<int64_t>(F_GET_PERIOD); }

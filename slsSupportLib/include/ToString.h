@@ -12,6 +12,7 @@
 #include "sls_detector_defs.h"
 #include "sls_detector_exceptions.h"
 #include "string_utils.h"
+#include <array>
 #include <chrono>
 #include <iomanip>
 #include <map>
@@ -38,9 +39,6 @@ std::string ToString(const defs::timingSourceType s);
 
 std::string ToString(const slsDetectorDefs::ROI &roi);
 std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::ROI &roi);
-
-
-
 const std::string &ToString(const std::string &s);
 
 /** Convert std::chrono::duration with specified output unit */

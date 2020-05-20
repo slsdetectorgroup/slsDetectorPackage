@@ -1056,8 +1056,9 @@ void Module::setExptime(int gateIndex, int64_t value) {
     }
 }
 
-std::array<int64_t, 3> Module::getExptimeForAllGates() {
-    return sendToDetector<std::array<int64_t, 3>>(F_GET_EXPTIME_ALL_GATES);
+std::array<time::ns, 3> Module::getExptimeForAllGates() {
+    static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
+    return sendToDetector<std::array<time::ns, 3>>(F_GET_EXPTIME_ALL_GATES);
 
 }
 

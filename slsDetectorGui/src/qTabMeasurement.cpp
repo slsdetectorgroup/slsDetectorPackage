@@ -451,7 +451,7 @@ void qTabMeasurement::GetNumSamples() {
 }
 
 void qTabMeasurement::SetNumSamples(int val) {
-    LOG(logINFO) << "Getting number of external gates to " << val;
+    LOG(logINFO) << "Getting number of samples to " << val;
     try {
         det->setNumberOfAnalogSamples(val);
     }
@@ -476,7 +476,7 @@ void qTabMeasurement::GetNumGates() {
 }
 
 void qTabMeasurement::SetNumGates(int val) {
-    LOG(logINFO) << "Setting number of gates to " << val;
+    LOG(logINFO) << "Setting number of external gates to " << val;
     try {
         det->setNumberOfGates(val);
     }

@@ -1275,7 +1275,7 @@ void setExtSignal(int signalIndex, enum externalSignalFlag mode) {
         int offset = DOUTIF1_INVERSION_OFST + signalIndex - 4;
         mask = (1 << offset);
     }
-    LOG(logINFO, ("addr: 0x%x mask:0x%x\n", addr, mask));
+    LOG(logDEBUG, ("addr: 0x%x mask:0x%x\n", addr, mask));
 
     switch (mode) {
     case TRIGGER_IN_RISING_EDGE:
@@ -1318,7 +1318,7 @@ int getExtSignal(int signalIndex) {
         int offset = DOUTIF1_INVERSION_OFST + signalIndex - 4;
         mask = (1 << offset);
     }
-    LOG(logINFO, ("addr: 0x%x mask:0x%x\n", addr, mask));
+    LOG(logDEBUG, ("addr: 0x%x mask:0x%x\n", addr, mask));
 
     int val = bus_r(addr) & mask;
     // master input trigger signal

@@ -1300,10 +1300,6 @@ void Implementation::updateTotalNumberOfFrames() {
             repeats = 1;
         }
     }
-    if (myDetectorType == MYTHEN3 &&
-        (timingMode == AUTO_TIMING || timingMode == GATED)) {
-        repeats = 1;
-    }
     numberOfTotalFrames = numberOfFrames * repeats *
                           (int64_t)(numberOfAdditionalStorageCells + 1);
     if (numberOfTotalFrames == 0) {

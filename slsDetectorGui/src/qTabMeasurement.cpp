@@ -451,7 +451,7 @@ void qTabMeasurement::GetNumSamples() {
 }
 
 void qTabMeasurement::SetNumSamples(int val) {
-    LOG(logINFO) << "Getting number of samples to " << val;
+    LOG(logINFO) << "Setting number of samples to " << val;
     try {
         det->setNumberOfAnalogSamples(val);
     }

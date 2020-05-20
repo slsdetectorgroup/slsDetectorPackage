@@ -1063,7 +1063,6 @@ void Module::setExptime(int gateIndex, int64_t value) {
 std::array<time::ns, 3> Module::getExptimeForAllGates() {
     static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
     return sendToDetector<std::array<time::ns, 3>>(F_GET_EXPTIME_ALL_GATES);
-
 }
 
 int64_t Module::getGateDelay(int gateIndex) {
@@ -1081,10 +1080,9 @@ void Module::setGateDelay(int gateIndex, int64_t value) {
     }
 }
 
-std::array<int64_t, 3> Module::getGateDelayForAllGates() {
-    std::array<int64_t, 3> retval;
-    sendToDetector(F_GET_GATE_DELAY_ALL_GATES, nullptr, retval);
-    return retval;
+std::array<time::ns, 3> Module::getGateDelayForAllGates() {
+    static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
+    return sendToDetector<std::array<time::ns, 3>>(F_GET_GATE_DELAY_ALL_GATES);
 }
 
 int64_t Module::getPeriod() { return sendToDetector<int64_t>(F_GET_PERIOD); }

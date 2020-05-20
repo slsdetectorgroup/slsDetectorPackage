@@ -441,7 +441,7 @@ class Module : public virtual slsDetectorDefs {
     void setGateDelay(int gateIndex, int64_t value);
 
     /** [Mythen3] for all gates */
-    std::array<int64_t, 3> getGateDelayForAllGates();
+    std::array<time::ns, 3> getGateDelayForAllGates();
 
     int64_t getPeriod();
 

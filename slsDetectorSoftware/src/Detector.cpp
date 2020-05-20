@@ -1288,14 +1288,7 @@ void Detector::setGateDelay(int gateIndex, ns t, Positions pos) {
 
 Result<std::array<ns, 3>>
 Detector::getGateDelayForAllGates(Positions pos) const {
-    auto t = pimpl->Parallel(&Module::getGateDelayForAllGates, pos);
-    Result<std::array<ns, 3>> res(t.size());
-    for (unsigned int i = 0; i < t.size(); ++i) {
-        for (unsigned int j = 0; j != 3; ++j) {
-            res[i][j] = static_cast<ns>(t[i][j]);
-        }
-    }
-    return res;
+    return pimpl->Parallel(&Module::getGateDelayForAllGates, pos);
 }
 
 // CTB/ Moench Specific

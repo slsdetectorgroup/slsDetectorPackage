@@ -45,6 +45,7 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
      * show bursts and burst period
      */
     void ShowTriggerDelay();
+    void ShowGates();
     void SetupTimingMode();
     void EnableWidgetsforTimingMode();
 
@@ -53,6 +54,7 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     void GetNumTriggers();
     void GetNumBursts();
     void GetNumSamples();
+    void GetNumGates();
     void GetExposureTime();
     void GetAcquisitionPeriod();
     void CheckAcqPeriodGreaterThanExp();
@@ -76,7 +78,7 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     sls::Detector *det;
     qDrawPlot *plot;
     // enum for the timing mode
-    enum { AUTO, TRIGGER, GATED, BURST_TRIGGER, NUMTIMINGMODES };
+    enum { AUTO, TRIGGER, GATED, BURST_TRIGGER, TRIGGER_GATED, NUMTIMINGMODES };
     QTimer *progressTimer;
     // tool tip variables
     QString acqPeriodTip;
@@ -84,6 +86,7 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     QPalette red;
     bool delayImplemented;
     bool sampleImplemented;
+    bool gateImplemented;
     bool startingFnumImplemented;
     bool isAcquisitionStopped{false};
     int numMeasurements{1};

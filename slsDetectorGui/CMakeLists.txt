@@ -89,6 +89,7 @@ target_include_directories(slsDetectorGui PUBLIC
 
 target_link_libraries(slsDetectorGui PUBLIC
     slsDetectorShared
+    slsSupportLib
     ${QT_QTCORE_LIBRARIES}
     ${QT_QTGUI_LIBRARIES}
     ${QWT_LIBRARIES}

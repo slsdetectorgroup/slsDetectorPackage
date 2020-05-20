@@ -25,6 +25,7 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     void SetNumTriggers(int val);
     void SetNumBursts(int val);
     void SetNumSamples(int val);
+    void SetNumGates(int val);
     void SetExposureTime();
     void SetAcquisitionPeriod();
     void SetDelay();

@@ -197,11 +197,11 @@ void qTabMeasurement::SetupTimingMode() {
         item[(int)BURST_TRIGGER]->setEnabled(false);
         item[(int)TRIGGER_GATED]->setEnabled(false);
         switch (det->getDetectorType().squash()) {
-        case EIGER:
+        case slsDetectorDefs::EIGER:
             item[(int)GATED]->setEnabled(true);
             item[(int)BURST_TRIGGER]->setEnabled(true);
             break;
-        case MYTHEN3:
+        case slsDetectorDefs::MYTHEN3:
             item[(int)GATED]->setEnabled(true);
             item[(int)TRIGGER_GATED]->setEnabled(true);
             break;
@@ -498,8 +498,8 @@ void qTabMeasurement::GetExposureTime() {
         spinExpTime->setValue(-1);
 
         bool inconsistentGateValues = false;
-        Result<ns> retval;
-        if (det->getDetectorType().squash() == MYTHEN3) {
+        std::chrono::nanoseconds retval;
+        if (det->getDetectorType().squash() == slsDetectorDefs::MYTHEN3) {
             auto retvals = det->getExptimeForAllGates().tsquash(
                 "Inconsistent exposure time for all detectors.");
             // all gates have same value

@@ -151,7 +151,7 @@ template <typename Ret> Ret Module::sendToDetector(int fnum) {
                    << sizeof(Ret) << "]";
     Ret retval{};
     sendToDetector(fnum, nullptr, 0, &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
+    LOG(logDEBUG1) << "Got back: " << ToString(retval);
     return retval;
 }
 
@@ -163,7 +163,7 @@ Ret Module::sendToDetector(int fnum, const Arg &args) {
                    << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
     Ret retval{};
     sendToDetector(fnum, &args, sizeof(args), &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
+    LOG(logDEBUG1) << "Got back: " << ToString(retval);
     return retval;
 }
 
@@ -1057,9 +1057,8 @@ void Module::setExptime(int gateIndex, int64_t value) {
 }
 
 std::array<int64_t, 3> Module::getExptimeForAllGates() {
-    std::array<int64_t, 3> retval;
-    sendToDetector(F_GET_EXPTIME_ALL_GATES, nullptr, retval);
-    return retval;
+    return sendToDetector<std::array<int64_t, 3>>(F_GET_EXPTIME_ALL_GATES);
+
 }
 
 int64_t Module::getGateDelay(int gateIndex) {

@@ -21,6 +21,7 @@
 #define TYPE_MYTHEN3_MODULE_VAL     (93)
 #define TYPE_TOLERANCE              (10)
 #define TYPE_NO_MODULE_STARTING_VAL (800)
+#define MAX_EXT_SIGNALS             (8)
 
 /** Default Parameters */
 #define DEFAULT_INTERNAL_GATES           (1)

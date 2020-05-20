@@ -1169,14 +1169,14 @@ Result<ns> Detector::getExptimeLeft(Positions pos) const {
 }
 
 Result<defs::externalSignalFlag>
-Detector::getExternalSignalFlags(Positions pos) const {
-    return pimpl->Parallel(&Module::setExternalSignalFlags, pos,
-                           defs::GET_EXTERNAL_SIGNAL_FLAG);
+Detector::getExternalSignalFlags(int signalIndex, Positions pos) const {
+    return pimpl->Parallel(&Module::getExternalSignalFlags, pos, signalIndex);
 }
 
-void Detector::setExternalSignalFlags(defs::externalSignalFlag value,
+void Detector::setExternalSignalFlags(int signalIndex,
+                                      defs::externalSignalFlag value,
                                       Positions pos) {
-    pimpl->Parallel(&Module::setExternalSignalFlags, pos, value);
+    pimpl->Parallel(&Module::setExternalSignalFlags, pos, signalIndex, value);
 }
 
 // Gotthard2 Specific

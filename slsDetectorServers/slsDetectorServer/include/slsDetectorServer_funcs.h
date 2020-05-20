@@ -26,6 +26,7 @@ void rebootNiosControllerAndFPGA();
 // functions called by client
 int exec_command(int);
 int get_detector_type(int);
+int get_external_signal_flag(int);
 int set_external_signal_flag(int);
 int set_timing_mode(int);
 int get_firmware_version(int);

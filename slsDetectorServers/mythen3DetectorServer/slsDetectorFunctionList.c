@@ -434,6 +434,7 @@ void setupDetector() {
         setExpTime(i, DEFAULT_GATE_WIDTH);
         setGateDelay(i, DEFAULT_GATE_DELAY);
     }
+    setInitialExtSignals();
 }
 
 int setDefaultDacs() {
@@ -1237,6 +1238,101 @@ enum timingMode getTiming() {
         } else {
             // internal trigger, internal gating
             return AUTO_TIMING;
+        }
+    }
+}
+
+void setInitialExtSignals() {
+    LOG(logINFOBLUE, ("Setting Initial External Signals\n"));
+    // default, everything is 0
+    // bypass everything
+    // (except master input can edge detect)
+    bus_w(DINF1_REG, DINF1_BYPASS_GATE_MSK);
+    bus_w(DOUTIF1_REG, DOUTIF1_BYPASS_MSK);
+    bus_w(DINF2_REG, DINF2_BYPASS_MSK);
+
+    // master input can edge detect, so rising is 1
+    bus_w(DINF1_REG, bus_r(DINF1_REG) | DINF1_RISING_TRIGGER_MSK);
+}
+
+void setExtSignal(int signalIndex, enum externalSignalFlag mode) {
+    LOG(logDEBUG1, ("Setting signal flag[%d] to %d\n", signalIndex, mode));
+
+    if (signalIndex == 0 && mode != TRIGGER_IN_RISING_EDGE &&
+        mode != TRIGGER_IN_FALLING_EDGE) {
+        return;
+    }
+
+    // getting addr and mask for each signal
+    uint32_t addr = 0;
+    uint32_t mask = 0;
+    if (signalIndex <= 3) {
+        addr = DINF1_REG;
+        int offset = DINF1_INVERSION_OFST + signalIndex;
+        mask = (1 << offset);
+    } else {
+        addr = DOUTIF1_REG;
+        int offset = DOUTIF1_INVERSION_OFST + signalIndex - 4;
+        mask = (1 << offset);
+    }
+    LOG(logINFO, ("addr: 0x%x mask:0x%x\n", addr, mask));
+
+    switch (mode) {
+    case TRIGGER_IN_RISING_EDGE:
+        LOG(logINFO, ("Setting External Master Input Signal flag: Trigger in "
+                      "Rising Edge\n"));
+        bus_w(addr, bus_r(addr) & ~mask);
+        break;
+    case TRIGGER_IN_FALLING_EDGE:
+        LOG(logINFO, ("Setting External Master Input Signal flag: Trigger in "
+                      "Falling Edge\n"));
+        bus_w(addr, bus_r(addr) | mask);
+        break;
+    case INVERSION_ON:
+        LOG(logINFO, ("Setting External Master %s Signal flag: Inversion on\n",
+                      (signalIndex <= 3 ? "Input" : "Output")));
+        bus_w(addr, bus_r(addr) | mask);
+        break;
+    case INVERSION_OFF:
+        LOG(logINFO, ("Setting External Master %s Signal flag: Inversion offn",
+                      (signalIndex <= 3 ? "Input" : "Output")));
+        bus_w(addr, bus_r(addr) & ~mask);
+        break;
+    default:
+        LOG(logERROR,
+            ("Extsig (signal mode) %d not defined for this detector\n", mode));
+        return;
+    }
+}
+
+int getExtSignal(int signalIndex) {
+    // getting addr and mask for each signal
+    uint32_t addr = 0;
+    uint32_t mask = 0;
+    if (signalIndex <= 3) {
+        addr = DINF1_REG;
+        int offset = DINF1_INVERSION_OFST + signalIndex;
+        mask = (1 << offset);
+    } else {
+        addr = DOUTIF1_REG;
+        int offset = DOUTIF1_INVERSION_OFST + signalIndex - 4;
+        mask = (1 << offset);
+    }
+    LOG(logINFO, ("addr: 0x%x mask:0x%x\n", addr, mask));
+
+    int val = bus_r(addr) & mask;
+    // master input trigger signal
+    if (signalIndex == 0) {
+        if (val) {
+            return TRIGGER_IN_FALLING_EDGE;
+        } else {
+            return TRIGGER_IN_RISING_EDGE;
+        }
+    } else {
+        if (val) {
+            return INVERSION_ON;
+        } else {
+            return INVERSION_OFF;
         }
     }
 }

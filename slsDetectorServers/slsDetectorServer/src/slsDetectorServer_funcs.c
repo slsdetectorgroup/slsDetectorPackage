@@ -140,6 +140,7 @@ const char *getRunStateName(enum runStatus ind) {
 void function_table() {
     flist[F_EXEC_COMMAND] = &exec_command;
     flist[F_GET_DETECTOR_TYPE] = &get_detector_type;
+    flist[F_GET_EXTERNAL_SIGNAL_FLAG] = &get_external_signal_flag;
     flist[F_SET_EXTERNAL_SIGNAL_FLAG] = &set_external_signal_flag;
     flist[F_SET_TIMING_MODE] = &set_timing_mode;
     flist[F_GET_FIRMWARE_VERSION] = &get_firmware_version;
@@ -470,29 +471,98 @@ int get_detector_type(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_external_signal_flag(int file_des) {
+int get_external_signal_flag(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int arg = -1;
-    enum externalSignalFlag retval = GET_EXTERNAL_SIGNAL_FLAG;
+    enum externalSignalFlag retval = -1;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
 
-    enum externalSignalFlag flag = arg;
-    LOG(logDEBUG1, ("Setting external signal flag to %d\n", flag));
+    LOG(logDEBUG1, ("Getting external signal flag (%d)\n", arg));
 
-#ifndef GOTTHARDD
+#if !defined(GOTTHARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
-    // set
-    if ((flag != GET_EXTERNAL_SIGNAL_FLAG) && (Server_VerifyLock() == OK)) {
-        setExtSignal(flag);
-    }
     // get
-    retval = getExtSignal();
-    validate((int)flag, (int)retval, "set external signal flag", DEC);
-    LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
+    if (arg < 0 || arg >= MAX_EXT_SIGNALS) {
+        ret = FAIL;
+        sprintf(mess, "Signal index %d can only be between 0 and %d\n", arg,
+                MAX_EXT_SIGNALS - 1);
+        LOG(logERROR, (mess));
+    } else {
+        retval = getExtSignal(arg);
+        LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_external_signal_flag(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = {-1, -1};
+    enum externalSignalFlag retval = -1;
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+
+    int signalIndex = args[0];
+    enum externalSignalFlag flag = args[1];
+    LOG(logDEBUG1,
+        ("Setting external signal flag [%d] to %d\n", signalIndex, flag));
+
+#if !defined(GOTTHARDD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    if (Server_VerifyLock() == OK) {
+        if (signalIndex < 0 || signalIndex >= MAX_EXT_SIGNALS) {
+            ret = FAIL;
+            sprintf(mess, "Signal index %d can only be between 0 and %d\n",
+                    signalIndex, MAX_EXT_SIGNALS - 1);
+            LOG(logERROR, (mess));
+        } else {
+            switch (flag) {
+            case TRIGGER_IN_RISING_EDGE:
+            case TRIGGER_IN_FALLING_EDGE:
+#ifdef MYTHEN3D
+                if (signalIndex > 0) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Only Master input trigger signal can edge detect. "
+                            "Not signal %d\n",
+                            signalIndex);
+                    LOG(logERROR, (mess));
+                }
+#endif
+                break;
+#ifdef MYTHEN3D
+            case INVERSION_ON:
+            case INVERSION_OFF:
+                if (signalIndex == 0) {
+                    ret = FAIL;
+                    sprintf(
+                        mess,
+                        "Master input trigger signal cannot invert. Use "
+                        "trigger_in_rising_edge or trigger_in_falling_edge\n");
+                    LOG(logERROR, (mess));
+                }
+                break;
+#endif
+            default:
+                ret = FAIL;
+                sprintf(mess, "Unknown flag %d for this detector\n", flag);
+                LOG(logERROR, (mess));
+            }
+        }
+        if (ret == OK) {
+            setExtSignal(signalIndex, flag);
+            retval = getExtSignal(signalIndex);
+            validate((int)flag, (int)retval, "set external signal flag", DEC);
+            LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
+        }
+    }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -2191,10 +2261,10 @@ int set_exptime(int file_des) {
             int64_t retval = getExpTime();
             LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
             if (ret == FAIL) {
-                sprintf(
-                    mess,
-                    "Could not set exposure time. Set %lld ns, read %lld ns.\n",
-                    (long long int)val, (long long int)retval);
+                sprintf(mess,
+                        "Could not set exposure time. Set %lld ns, read "
+                        "%lld ns.\n",
+                        (long long int)val, (long long int)retval);
                 LOG(logERROR, (mess));
             }
         }
@@ -3355,8 +3425,8 @@ int set_rate_correct(int file_des) {
     // only set
     if (Server_VerifyLock() == OK) {
         ret = validateAndSetRateCorrection(tau_ns, mess);
-        int64_t retval = getCurrentTau(); // to update eiger_tau_ns (for update
-                                          // rate correction)
+        int64_t retval = getCurrentTau(); // to update eiger_tau_ns (for
+                                          // update rate correction)
         if (ret == FAIL) {
             strcpy(mess, "Rate correction failed\n");
             LOG(logERROR, (mess));
@@ -3779,14 +3849,13 @@ int power_chip(int file_des) {
                     LOG(logERROR, (mess));
                 } else if (type_ret == FAIL) {
                     ret = FAIL;
-                    sprintf(
-                        mess,
-                        "Could not power on chip. Wrong module attached!\n");
+                    sprintf(mess, "Could not power on chip. Wrong module "
+                                  "attached!\n");
                     LOG(logERROR, (mess));
                 }
             } else {
-                LOG(logINFOBLUE,
-                    ("In No-Module mode: Ignoring module type. Continuing.\n"));
+                LOG(logINFOBLUE, ("In No-Module mode: Ignoring module "
+                                  "type. Continuing.\n"));
             }
         }
 #endif
@@ -4313,10 +4382,10 @@ int set_adc_enable_mask_10g(int file_des) {
         uint32_t retval = getADCEnableMask_10G();
         if (arg != retval) {
             ret = FAIL;
-            sprintf(
-                mess,
-                "Could not set 10Gb ADC Enable mask. Set 0x%x, but read 0x%x\n",
-                arg, retval);
+            sprintf(mess,
+                    "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
+                    "read 0x%x\n",
+                    arg, retval);
             LOG(logERROR, (mess));
         }
     }
@@ -4359,10 +4428,10 @@ int set_adc_invert(int file_des) {
         uint32_t retval = getADCInvertRegister();
         if (arg != retval) {
             ret = FAIL;
-            sprintf(
-                mess,
-                "Could not set ADC Invert register. Set 0x%x, but read 0x%x\n",
-                arg, retval);
+            sprintf(mess,
+                    "Could not set ADC Invert register. Set 0x%x, but read "
+                    "0x%x\n",
+                    arg, retval);
             LOG(logERROR, (mess));
         }
     }
@@ -4535,9 +4604,8 @@ int get_starting_frame_number(int file_des) {
     // get
     ret = getStartingFrameNumber(&retval);
     if (ret == FAIL) {
-        sprintf(
-            mess,
-            "Could not get starting frame number. Failed to map address.\n");
+        sprintf(mess, "Could not get starting frame number. Failed to map "
+                      "address.\n");
         LOG(logERROR, (mess));
     } else if (ret == -2) {
         sprintf(mess, "Inconsistent starting frame number from left and right "
@@ -4621,10 +4689,10 @@ int set_interrupt_subframe(int file_des) {
             int retval = getInterruptSubframe();
             if (arg != retval) {
                 ret = FAIL;
-                sprintf(
-                    mess,
-                    "Could not set Intertupt Subframe. Set %d, but read %d\n",
-                    retval, arg);
+                sprintf(mess,
+                        "Could not set Intertupt Subframe. Set %d, but "
+                        "read %d\n",
+                        retval, arg);
                 LOG(logERROR, (mess));
             }
         }
@@ -4702,10 +4770,10 @@ int set_read_n_lines(int file_des) {
                     int retval = getReadNLines();
                     if (arg != retval) {
                         ret = FAIL;
-                        sprintf(
-                            mess,
-                            "Could not set read n lines. Set %d, but read %d\n",
-                            retval, arg);
+                        sprintf(mess,
+                                "Could not set read n lines. Set %d, but "
+                                "read %d\n",
+                                retval, arg);
                         LOG(logERROR, (mess));
                     }
                 }
@@ -6268,10 +6336,10 @@ int get_on_chip_dac(int file_des) {
                 (int)dacIndex, chipIndex);
         if (chipIndex < -1 || chipIndex >= NCHIP) {
             ret = FAIL;
-            sprintf(
-                mess,
-                "Could not get %s. Invalid Chip Index. Options[-1, 0 - %d]\n",
-                modeName, NCHIP - 1);
+            sprintf(mess,
+                    "Could not get %s. Invalid Chip Index. Options[-1, 0 - "
+                    "%d]\n",
+                    modeName, NCHIP - 1);
             LOG(logERROR, (mess));
         } else {
             retval = getOnChipDAC(dacIndex, chipIndex);
@@ -6300,10 +6368,10 @@ int set_inject_channel(int file_des) {
         int increment = args[1];
         if (offset < 0 || increment < 1) {
             ret = FAIL;
-            sprintf(
-                mess,
-                "Could not inject channel. Invalid offset %d or increment %d\n",
-                offset, increment);
+            sprintf(mess,
+                    "Could not inject channel. Invalid offset %d or "
+                    "increment %d\n",
+                    offset, increment);
             LOG(logERROR, (mess));
         } else {
             ret = setInjectChannel(offset, increment);
@@ -7275,11 +7343,11 @@ int set_gate_delay(int file_des) {
                     LOG(logDEBUG1, ("retval gate delay %lld ns (index:%d)\n",
                                     (long long int)retval, i));
                     if (ret == FAIL) {
-                        sprintf(
-                            mess,
-                            "Could not set gate delay. Set %lld ns, read %lld "
-                            "ns.\n",
-                            (long long int)val, (long long int)retval);
+                        sprintf(mess,
+                                "Could not set gate delay. Set %lld ns, "
+                                "read %lld "
+                                "ns.\n",
+                                (long long int)val, (long long int)retval);
                         LOG(logERROR, (mess));
                         break;
                     }

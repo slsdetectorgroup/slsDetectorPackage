@@ -756,6 +756,39 @@ std::string CmdProxy::ClockDivider(int action) {
     return os.str();
 }
 
+std::string CmdProxy::ExternalSignal(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_signal] [signal_type] External signal mode for trigger "
+              "timing mode."
+              "\n\t[Gotthard] [0] "
+              "[trigger_in_rising_edge|trigger_in_falling_edge]"
+              "\n\t[Mythen3] [0-7] "
+              "[trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|"
+              "inversion_off]\n\t where 0-3 is master input signals and 4-7 is "
+              "master output signals"
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        auto t = det->getExternalSignalFlags(StringTo<int>(args[0]), {det_id});
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }
+        det->setExternalSignalFlags(
+            StringTo<int>(args[0]),
+            StringTo<slsDetectorDefs::externalSignalFlag>(args[1]), {det_id});
+        os << args[1] << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /** temperature */
 /* dacs */
 std::string CmdProxy::Dac(int action) {

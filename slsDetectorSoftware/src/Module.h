@@ -549,14 +549,8 @@ class Module : public virtual slsDetectorDefs {
      */
     int getADC(dacIndex index);
 
-    /**
-     * Set/get external signal flags (to specify triggerinrising edge etc)
-     * (Gotthard, Mythen)
-     * @param pol external signal flag (-1 gets)
-     * @returns current timing mode
-     */
-    externalSignalFlag
-    setExternalSignalFlags(externalSignalFlag pol = GET_EXTERNAL_SIGNAL_FLAG);
+    externalSignalFlag getExternalSignalFlags(int signalIndex);
+    void setExternalSignalFlags(int signalIndex, externalSignalFlag type);
 
     /**
      * Set Parallel readout mode (Only for Eiger)

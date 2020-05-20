@@ -337,9 +337,12 @@ int setHighVoltage(int val);
 // parameters - timing, extsig
 void setTiming(enum timingMode arg);
 enum timingMode getTiming();
-#ifdef GOTTHARDD
-void setExtSignal(enum externalSignalFlag mode);
-int getExtSignal();
+#ifdef MYTHEN3D
+void setInitialExtSignals();
+#endif
+#if defined(GOTTHARDD) || defined(MYTHEN3D)
+void setExtSignal(int signalIndex, enum externalSignalFlag mode);
+int getExtSignal(int signalIndex);
 #endif
 
 // configure mac

@@ -916,12 +916,17 @@ class Detector {
     /** [Gotthard] */
     Result<ns> getExptimeLeft(Positions pos = {}) const;
 
-    /** [Gotthard] */
+    /** [Gotthard] signal index is 0
+     * [Mythen3] signal index 0-3 for master input, 4-7 master output signals */
     Result<defs::externalSignalFlag>
-    getExternalSignalFlags(Positions pos = {}) const;
+    getExternalSignalFlags(int signalIndex, Positions pos = {}) const;
 
-    /** [Gotthard] Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE */
-    void setExternalSignalFlags(defs::externalSignalFlag value,
+    /** [Gotthard]  signal index is 0
+     * Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE
+     * [Mythen3] signal index 0-3 for master input, 4-7 master output signals
+     * Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE (for master
+     * input trigger only), INVERSION_ON, INVERSION_OFF */
+    void setExternalSignalFlags(int signalIndex, defs::externalSignalFlag value,
                                 Positions pos = {});
 
     /**************************************************

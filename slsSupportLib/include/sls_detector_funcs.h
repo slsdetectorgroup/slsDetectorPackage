@@ -11,6 +11,7 @@
 enum detFuncs {
     F_EXEC_COMMAND = 0,
     F_GET_DETECTOR_TYPE,
+    F_GET_EXTERNAL_SIGNAL_FLAG,
     F_SET_EXTERNAL_SIGNAL_FLAG,
     F_SET_TIMING_MODE,
     F_GET_FIRMWARE_VERSION,
@@ -313,6 +314,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	switch (func) {
 	case F_EXEC_COMMAND:					return "F_EXEC_COMMAND";
 	case F_GET_DETECTOR_TYPE:				return "F_GET_DETECTOR_TYPE";
+    case F_GET_EXTERNAL_SIGNAL_FLAG:        return "F_GET_EXTERNAL_SIGNAL_FLAG";
 	case F_SET_EXTERNAL_SIGNAL_FLAG:		return "F_SET_EXTERNAL_SIGNAL_FLAG";
 	case F_SET_TIMING_MODE:					return "F_SET_TIMING_MODE";
 	case F_GET_FIRMWARE_VERSION:			return "F_GET_FIRMWARE_VERSION";	

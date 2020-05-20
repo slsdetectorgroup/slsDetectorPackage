@@ -590,6 +590,7 @@ class CmdProxy {
         {"vhighvoltage", &CmdProxy::vhighvoltage},
         {"powerchip", &CmdProxy::powerchip},
         {"imagetest", &CmdProxy::imagetest},
+        {"extsig", &CmdProxy::ExternalSignal},
 
         /** temperature */
         {"temp_adc", &CmdProxy::temp_adc},
@@ -784,7 +785,6 @@ class CmdProxy {
         {"roi", &CmdProxy::ROI},
         {"clearroi", &CmdProxy::ClearROI},
         {"exptimel", &CmdProxy::exptimel},
-        {"extsig", &CmdProxy::extsig},
 
         /* Gotthard2 Specific */
         {"bursts", &CmdProxy::bursts},
@@ -932,6 +932,7 @@ class CmdProxy {
     std::string ClockPhase(int action);
     std::string MaxClockPhaseShift(int action);
     std::string ClockDivider(int action);
+    std::string ExternalSignal(int action);
     /** temperature */
     /* dacs */
     std::string Dac(int action);
@@ -1855,11 +1856,6 @@ class CmdProxy {
     TIME_GET_COMMAND(exptimel, getExptimeLeft,
                      "[(optional unit) ns|us|ms|s]\n\t[Gotthard] Exposure time "
                      "left for current frame. ");
-
-    INTEGER_COMMAND(extsig, getExternalSignalFlags, setExternalSignalFlags,
-                    sls::StringTo<slsDetectorDefs::externalSignalFlag>,
-                    "[trigger_in_rising_edge|trigger_in_falling_edge]\n\t["
-                    "Gotthard] External signal mode for trigger timing mode.");
 
     /* Gotthard2 Specific */
     INTEGER_COMMAND_NOID(

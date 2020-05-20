@@ -21,7 +21,7 @@
 
 /* ASIC Digital Interface. Data recovery core */
 #define BASE_ADIF                       (0x0110) // 0x1806_0110 - 0x1806_011F
-// https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/2e81ccbdbc5cb81813ba190fbdba43e8d6884eb9/adif/adif_ctrl.vhd
+// https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/xxx/adif/adif_ctrl.vhd
 
 /* Formatting of data core */
 #define BASE_FMT                        (0x0120) // 0x1806_0120 - 0x1806_012F
@@ -30,12 +30,16 @@
 #define BASE_PKT                        (0x0130) // 0x1806_0130 - 0x1806_013F
 // https://git.psi.ch/sls_detectors_firmware/mythen_III_mcb/blob/master/code/hdl/pkt/pkt_ctrl.vhd
 
+/** Pipeline (Timing Rec) */
+#define BASE_PIPELINE                   (0x0140) // 0x1806_0140 - 0x1806_014F
+// https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/xxx/MythenIIITriggerBoard/timingReceier.vhd
+
 /* ASIC Exposure Control */
 #define BASE_ASIC_EXP                   (0x0180) // 0x1806_0180 - 0x1806_01BF
 
 /* Pattern control and status */
 #define BASE_PATTERN_CONTROL            (0x00200) // 0x1806_0200 - 0x1806_02FF
-// https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/2e81ccbdbc5cb81813ba190fbdba43e8d6884eb9/pattern_flow/pattern_flow_ctrl.vhd
+// https://git.psi.ch/sls_detectors_firmware/vhdl_library/blob/xxx/pattern_flow/pattern_flow_ctrl.vhd
 
 /* Flow control and status */
 #define BASE_FLOW_CONTROL               (0x00400) // 0x1806_0400 - 0x1806_04FF
@@ -160,6 +164,61 @@
 #define COORD_RESERVED_MSK              (0x0000FFFF << COORD_RESERVED_OFST)
 #define COORD_ID_OFST                   (16) // Not connected in firmware TODO
 #define COORD_ID_MSK                    (0x0000FFFF << COORD_ID_OFST) // Not connected in firmware TODO
+
+/* Pipeline -------------------------------------------------------------*/
+
+/** DINF1 Master Input Register */
+#define DINF1_REG                       (0x00 * REG_OFFSET + BASE_PIPELINE)
+
+#define DINF1_TRIGGER_BYPASS_OFST       (0)
+#define DINF1_TRIGGER_BYPASS_MSK        (0x00000001 << DINF1_TRIGGER_BYPASS_OFST)
+#define DINF1_BYPASS_GATE_OFST          (1)
+#define DINF1_BYPASS_GATE_MSK           (0x00000007 << DINF1_BYPASS_GATE_OFST)
+#define DINF1_INVERSION_OFST            (4)
+#define DINF1_INVERSION_MSK             (0x0000000F << DINF1_INVERSION_OFST)
+#define DINF1_RISING_TRIGGER_OFST       (8)
+#define DINF1_RISING_TRIGGER_MSK        (0x00000001 << DINF1_RISING_TRIGGER_OFST)
+#define DINF1_RISING_GATE_OFST          (9)
+#define DINF1_RISING_GATE_MSK           (0x00000007 << DINF1_RISING_GATE_OFST)
+#define DINF1_FALLING_OFST              (12)
+#define DINF1_FALLING_MSK               (0x0000000F << DINF1_FALLING_OFST)
+
+/** DOUTIF1 Master Ouput Register */
+#define DOUTIF1_REG                     (0x01 * REG_OFFSET + BASE_PIPELINE)
+
+#define DOUTIF1_BYPASS_OFST             (0)
+#define DOUTIF1_BYPASS_MSK              (0x0000000F << DOUTIF1_BYPASS_OFST)
+#define DOUTIF1_INVERSION_OFST          (4)
+#define DOUTIF1_INVERSION_MSK           (0x0000000F << DOUTIF1_INVERSION_OFST)
+#define DOUTIF1_RISING_OFST             (8)
+#define DOUTIF1_RISING_MSK              (0x0000000F << DOUTIF1_RISING_OFST)
+#define DOUTIF1_FALLING_OFST            (12)
+#define DOUTIF1_FALLING_MSK             (0x0000000F << DOUTIF1_FALLING_OFST)
+
+/** DINF2 Slave Input Register */
+#define DINF2_REG                       (0x02 * REG_OFFSET + BASE_PIPELINE)
+
+#define DINF2_BYPASS_OFST               (0)
+#define DINF2_BYPASS_MSK                (0x0000000F << DINF2_BYPASS_OFST)
+#define DINF2_INVERSION_OFST            (4)
+#define DINF2_INVERSION_MSK             (0x0000000F << DINF2_INVERSION_OFST)
+#define DINF2_RISING_OFST               (8)
+#define DINF2_RISING_MSK                (0x0000000F << DINF2_RISING_OFST)
+#define DINF2_FALLING_OFST              (12)
+#define DINF2_FALLING_MSK               (0x0000000F << DINF2_FALLING_OFST)
+
+/* Pulse length after rising edge TODO (maybe fix a value for port 1 later )*/
+#define DOUTIF_RISING_LNGTH_REG         (0x03 * REG_OFFSET + BASE_PIPELINE)
+
+#define DOUTIF_RISING_LNGTH_PORT_1_OFST (0)
+#define DOUTIF_RISING_LNGTH_PORT_1_MSK  (0x0000000F << DOUTIF_RISING_LNGTH_PORT_1_OFST)
+#define DOUTIF_RISING_LNGTH_PORT_2_OFST (0)
+#define DOUTIF_RISING_LNGTH_PORT_2_MSK  (0x0000000F << DOUTIF_RISING_LNGTH_PORT_2_OFST)
+#define DOUTIF_RISING_LNGTH_PORT_3_OFST (0)
+#define DOUTIF_RISING_LNGTH_PORT_3_MSK  (0x0000000F << DOUTIF_RISING_LNGTH_PORT_3_OFST)
+#define DOUTIF_RISING_LNGTH_PORT_4_OFST (0)
+#define DOUTIF_RISING_LNGTH_PORT_4_MSK  (0x0000000F << DOUTIF_RISING_LNGTH_PORT_4_OFST)
+
 
 /* ASIC Exposure Control registers
  * --------------------------------------------------*/

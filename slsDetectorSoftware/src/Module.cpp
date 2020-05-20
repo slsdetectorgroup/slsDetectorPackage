@@ -1312,10 +1312,15 @@ int Module::getADC(dacIndex index) {
 }
 
 slsDetectorDefs::externalSignalFlag
-Module::setExternalSignalFlags(externalSignalFlag pol) {
-    LOG(logDEBUG1) << "Setting signal flag to " << pol;
+Module::getExternalSignalFlags(int signalIndex) {
     return sendToDetector<slsDetectorDefs::externalSignalFlag>(
-        F_SET_EXTERNAL_SIGNAL_FLAG, pol);
+        F_GET_EXTERNAL_SIGNAL_FLAG, signalIndex);
+}
+
+void Module::setExternalSignalFlags(int signalIndex, externalSignalFlag type) {
+    LOG(logDEBUG1) << "Setting signal flag (" << signalIndex << ") to " << type;
+    int args[2] = {signalIndex, static_cast<int>(type)};
+    sendToDetector(F_SET_EXTERNAL_SIGNAL_FLAG, args, nullptr);
 }
 
 void Module::setParallelMode(const bool enable) {

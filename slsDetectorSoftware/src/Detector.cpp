@@ -1275,14 +1275,7 @@ void Detector::setExptime(int gateIndex, ns t, Positions pos) {
 }
 
 Result<std::array<ns, 3>> Detector::getExptimeForAllGates(Positions pos) const {
-    auto t = pimpl->Parallel(&Module::getExptimeForAllGates, pos);
-    Result<std::array<ns, 3>> res(t.size());
-    for (size_t i = 0; i < t.size(); ++i) {
-        for (size_t j = 0; j != 3; ++j) {
-            res[i][j] = ns(t[i][j]);
-        }
-    }
-    return res;
+    return pimpl->Parallel(&Module::getExptimeForAllGates, pos);
 }
 
 Result<ns> Detector::getGateDelay(int gateIndex, Positions pos) const {

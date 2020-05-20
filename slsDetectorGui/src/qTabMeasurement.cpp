@@ -281,9 +281,6 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
         }
         lblNumFrames->setEnabled(true);
         spinNumFrames->setEnabled(true);
-        if (det->getDetectorType().squash() == slsDetectorDefs::GOTTHARD2) {
-            ShowTriggerDelay();
-        }
         break;
     case BURST_TRIGGER:
         // #frames, exptime, period

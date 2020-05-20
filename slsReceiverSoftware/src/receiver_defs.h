@@ -40,8 +40,8 @@
 #define MAX_CHUNKED_IMAGES (1)
 
 // versions
-#define HDF5_WRITER_VERSION   (5.0) // 1 decimal places
-#define BINARY_WRITER_VERSION (5.0) // 1 decimal places
+#define HDF5_WRITER_VERSION   (6.0) // 1 decimal places
+#define BINARY_WRITER_VERSION (6.0) // 1 decimal places
 
 // parameters to calculate fifo depth
 #define SAMPLE_TIME_IN_NS          (100000000) // 100ms
@@ -79,4 +79,11 @@ struct masterAttributes {
     uint64_t dbitlist;
     uint32_t roiXmin;
     uint32_t roiXmax;
+    uint64_t exptime1Ns;
+    uint64_t exptime2Ns;
+    uint64_t exptime3Ns;
+    uint64_t gateDelay1Ns;
+    uint64_t gateDelay2Ns;
+    uint64_t gateDelay3Ns;
+    uint32_t gates;
 };

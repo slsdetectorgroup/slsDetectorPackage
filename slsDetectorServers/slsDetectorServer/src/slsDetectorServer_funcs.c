@@ -6955,7 +6955,7 @@ int get_receiver_parameters(int file_des) {
 
         // exptime
 #ifdef MYTHEN3D
-    i64 = getExpTime(0);
+    i64 = 0;
 #else
     i64 = getExpTime();
 #endif
@@ -7092,6 +7092,76 @@ int get_receiver_parameters(int file_des) {
         // burst mode
 #ifdef GOTTHARD2D
     i32 = (int)getBurstMode();
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
+        // exptime1
+#ifdef MYTHEN3D
+    i64 = getExpTime(0);
+#else
+    i64 = 0;
+#endif
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // exptime2
+#ifdef MYTHEN3D
+    i64 = getExpTime(1);
+#else
+    i64 = 0;
+#endif
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // exptime3
+#ifdef MYTHEN3D
+    i64 = getExpTime(2);
+#else
+    i64 = 0;
+#endif
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // gatedelay1
+#ifdef MYTHEN3D
+    i64 = getGateDelay(0);
+#else
+    i64 = 0;
+#endif
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // gatedelay2
+#ifdef MYTHEN3D
+    i64 = getGateDelay(1);
+#else
+    i64 = 0;
+#endif
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // gatedelay3
+#ifdef MYTHEN3D
+    i64 = getGateDelay(2);
+#else
+    i64 = 0;
+#endif
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // gates
+#ifdef MYTHEN3D
+    i32 = getNumGates();
 #else
     i32 = 0;
 #endif

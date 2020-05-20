@@ -1032,6 +1032,10 @@ int Module::getNumberOfGates() { return sendToDetector<int>(F_GET_NUM_GATES); }
 void Module::setNumberOfGates(int value) {
     LOG(logDEBUG1) << "Setting number of gates to " << value;
     sendToDetector(F_SET_NUM_GATES, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending number of gates to Receiver: " << value;
+        sendToReceiver(F_SET_RECEIVER_NUM_GATES, value, nullptr);
+    }
 }
 
 int64_t Module::getExptime(int gateIndex) {
@@ -1049,7 +1053,7 @@ void Module::setExptime(int gateIndex, int64_t value) {
     sendToDetector(F_SET_EXPTIME, args, nullptr);
     if (shm()->useReceiverFlag) {
         LOG(logDEBUG1) << "Sending exptime to Receiver: " << value;
-        sendToReceiver(F_RECEIVER_SET_EXPTIME, value, nullptr);
+        sendToReceiver(F_RECEIVER_SET_EXPTIME, args, nullptr);
     }
     if (prevVal != value) {
         updateRateCorrection();
@@ -1071,6 +1075,10 @@ void Module::setGateDelay(int gateIndex, int64_t value) {
                    << "ns (gateindex: " << gateIndex << ")";
     int64_t args[]{static_cast<int64_t>(gateIndex), value};
     sendToDetector(F_SET_GATE_DELAY, args, nullptr);
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending gate delay to Receiver: " << value;
+        sendToReceiver(F_SET_RECEIVER_GATE_DELAY, args, nullptr);
+    }
 }
 
 std::array<int64_t, 3> Module::getGateDelayForAllGates() {
@@ -1473,7 +1481,14 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
                    << "roi.xmin:" << retval.roi.xmin << std::endl
                    << "roi.xmax:" << retval.roi.xmax << std::endl
                    << "countermask:" << retval.countermask << std::endl
-                   << "burstType:" << retval.burstType << std::endl;
+                   << "burstType:" << retval.burstType << std::endl
+                   << "exptime1:" << retval.expTime1Ns << std::endl
+                   << "exptime2:" << retval.expTime2Ns << std::endl
+                   << "exptime3:" << retval.expTime3Ns << std::endl
+                   << "gateDelay1:" << retval.gateDelay1Ns << std::endl
+                   << "gateDelay2:" << retval.gateDelay2Ns << std::endl
+                   << "gateDelay3:" << retval.gateDelay3Ns << std::endl
+                   << "gates:" << retval.gates << std::endl;
 
     sls::MacAddr retvals[2];
     sendToReceiver(F_SETUP_RECEIVER, retval, retvals);

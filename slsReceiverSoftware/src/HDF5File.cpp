@@ -725,6 +725,98 @@ void HDF5File::CreateMasterDataFile(masterAttributes &masterFileAttributes) {
                           PredType::NATIVE_INT);
         }
 
+        // Exptime1
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group5.createDataSet(
+                "exposure time1", PredType::STD_U64LE, dataspace);
+            dataset.write(&(masterFileAttributes.exptime1Ns),
+                          PredType::STD_U64LE);
+            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            Attribute attribute =
+                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
+            attribute.write(strdatatype, std::string("ns"));
+        }
+
+        // Exptime2
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group5.createDataSet(
+                "exposure time2", PredType::STD_U64LE, dataspace);
+            dataset.write(&(masterFileAttributes.exptime2Ns),
+                          PredType::STD_U64LE);
+            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            Attribute attribute =
+                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
+            attribute.write(strdatatype, std::string("ns"));
+        }
+
+        // Exptime3
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group5.createDataSet(
+                "exposure time3", PredType::STD_U64LE, dataspace);
+            dataset.write(&(masterFileAttributes.exptime3Ns),
+                          PredType::STD_U64LE);
+            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            Attribute attribute =
+                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
+            attribute.write(strdatatype, std::string("ns"));
+        }
+
+        // GateDelay1
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group5.createDataSet(
+                "gate delay1", PredType::STD_U64LE, dataspace);
+            dataset.write(&(masterFileAttributes.gateDelay1Ns),
+                          PredType::STD_U64LE);
+            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            Attribute attribute =
+                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
+            attribute.write(strdatatype, std::string("ns"));
+        }
+
+        // GateDelay2
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group5.createDataSet(
+                "gate delay2", PredType::STD_U64LE, dataspace);
+            dataset.write(&(masterFileAttributes.gateDelay2Ns),
+                          PredType::STD_U64LE);
+            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            Attribute attribute =
+                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
+            attribute.write(strdatatype, std::string("ns"));
+        }
+
+        // GateDelay3
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group5.createDataSet(
+                "gate delay3", PredType::STD_U64LE, dataspace);
+            dataset.write(&(masterFileAttributes.gateDelay3Ns),
+                          PredType::STD_U64LE);
+            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            Attribute attribute =
+                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
+            attribute.write(strdatatype, std::string("ns"));
+        }
+
+        // Dbit Offset
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset =
+                group5.createDataSet("gates", PredType::NATIVE_INT, dataspace);
+            dataset.write(&(masterFileAttributes.gates), PredType::NATIVE_INT);
+        }
+
         // Timestamp
         {
             time_t t = time(0);

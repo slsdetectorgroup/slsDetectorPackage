@@ -477,6 +477,13 @@ typedef struct {
         ROI roi;
         uint32_t countermask{0};
         burstMode burstType{BURST_OFF};
+        int64_t expTime1Ns{0};
+        int64_t expTime2Ns{0};
+        int64_t expTime3Ns{0};
+        int64_t gateDelay1Ns{0};
+        int64_t gateDelay2Ns{0};
+        int64_t gateDelay3Ns{0};
+        int gates{0};
     } __attribute__((packed));
 #endif
 

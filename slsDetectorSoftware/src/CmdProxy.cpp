@@ -774,7 +774,7 @@ std::string CmdProxy::ExternalSignal(int action) {
             WrongNumberOfParameters(1);
         }
         auto t = det->getExternalSignalFlags(StringTo<int>(args[0]), {det_id});
-        os << OutString(t) << '\n';
+        os << args[0] << " " << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
@@ -782,7 +782,7 @@ std::string CmdProxy::ExternalSignal(int action) {
         det->setExternalSignalFlags(
             StringTo<int>(args[0]),
             StringTo<slsDetectorDefs::externalSignalFlag>(args[1]), {det_id});
-        os << args[1] << '\n';
+        os << args[0] << " " << args[1] << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }

@@ -190,6 +190,46 @@ TEST_CASE("settings", "[.cmd][.new]") {
     }
 }
 
+TEST_CASE("trimbits", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("trimbits", {}, -1, GET));
+}
+
+TEST_CASE("trimval", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::MYTHEN3 || det_type == defs::EIGER) {
+        auto prev_val = det.getAllTrimbits();
+        {
+            std::ostringstream oss;
+            proxy.Call("trimval", {"63"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "trimval 63\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("trimval", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "trimval 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("trimval", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "trimval 0\n");
+        }
+        REQUIRE_THROWS(proxy.Call("trimval", {"64"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("trimval", {"-1"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            if (prev_val[i] != -1) {
+                det.setAllTrimbits(prev_val[i], {i});
+            }
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("trimval", {}, -1, GET));
+    }
+}
+
 /* acquisition parameters */
 
 // acquire: not testing
@@ -407,9 +447,27 @@ TEST_CASE("timing", "[.cmd][.new]") {
             proxy.Call("timing", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "timing burst_trigger\n");
         }
+        REQUIRE_THROWS(proxy.Call("timing", {"trigger_gating"}, -1, PUT));
+    } else if (det_type == defs::MYTHEN3) {
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("timing", {"gating"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing gating\n");
+            proxy.Call("timing", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "timing gating\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("timing", {"trigger_gating"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing trigger_gating\n");
+            proxy.Call("timing", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "timing trigger_gating\n");
+        }
+        REQUIRE_THROWS(proxy.Call("timing", {"burst_trigger"}, -1, PUT));
     } else {
         REQUIRE_THROWS(proxy.Call("timing", {"gating"}, -1, PUT));
         REQUIRE_THROWS(proxy.Call("timing", {"burst_trigger"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("timing", {"trigger_gating"}, -1, PUT));
     }
     for (int i = 0; i != det.size(); ++i) {
         det.setTimingMode(prev_val[i], {i});
@@ -809,6 +867,85 @@ TEST_CASE("imagetest", "[.cmd][.new]") {
     } else if (det_type != defs::JUNGFRAU && det_type != defs::EIGER) {
         // wont fail for eiger and jungfrau virtual servers
         REQUIRE_THROWS(proxy.Call("imagetest", {}, -1, GET));
+    }
+}
+
+TEST_CASE("extsig", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD) {
+        auto prev_val = det.getExternalSignalFlags(0);
+        REQUIRE_THROWS(proxy.Call("extsig", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("extsig", {"1"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("extsig", {"0", "inversion_on"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("extsig", {"0", "inversion_off"}, -1, PUT));
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("extsig", {"0", "trigger_in_rising_edge"}, -1, PUT,
+                       oss1);
+            REQUIRE(oss1.str() == "extsig 0 trigger_in_rising_edge\n");
+            proxy.Call("extsig", {"0"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "extsig trigger_in_rising_edge\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("extsig", {"0", "trigger_in_falling_edge"}, -1, PUT,
+                       oss1);
+            REQUIRE(oss1.str() == "extsig 0 trigger_in_falling_edge\n");
+            proxy.Call("extsig", {"0"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "extsig 0 trigger_in_falling_edge\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setExternalSignalFlags(0, prev_val[i], {i});
+        }
+    } else if (det_type == defs::MYTHEN3) {
+        auto prev_val_0 = det.getExternalSignalFlags(0);
+        auto prev_val_1 = det.getExternalSignalFlags(1);
+        REQUIRE_THROWS(proxy.Call("extsig", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("extsig", {"8"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("extsig", {"0", "inversion_on"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("extsig", {"0", "inversion_off"}, -1, PUT));
+        REQUIRE_THROWS(
+            proxy.Call("extsig", {"1", "trigger_in_rising_edge"}, -1, PUT));
+        REQUIRE_THROWS(
+            proxy.Call("extsig", {"1", "trigger_in_falling_edge"}, -1, PUT));
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("extsig", {"0", "trigger_in_rising_edge"}, -1, PUT,
+                       oss1);
+            REQUIRE(oss1.str() == "extsig 0 trigger_in_rising_edge\n");
+            proxy.Call("extsig", {"0"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "extsig trigger_in_rising_edge\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("extsig", {"0", "trigger_in_falling_edge"}, -1, PUT,
+                       oss1);
+            REQUIRE(oss1.str() == "extsig 0 trigger_in_falling_edge\n");
+            proxy.Call("extsig", {"0"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "extsig 0 trigger_in_falling_edge\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("extsig", {"1", "inversion_off"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "extsig 1 inversion_off\n");
+            proxy.Call("extsig", {"1"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "extsig inversion_off\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("extsig", {"1", "inversion_on"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "extsig 1 inversion_on\n");
+            proxy.Call("extsig", {"1"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "extsig 1 inversion_on\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setExternalSignalFlags(0, prev_val_0[i], {i});
+            det.setExternalSignalFlags(1, prev_val_1[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("extsig", {}, -1, GET));
     }
 }
 
@@ -2363,29 +2500,6 @@ TEST_CASE("stopport", "[.cmd]") {
 //         REQUIRE_NOTHROW(multiSlsDetectorClient("ratecorr 0", PUT));
 //     } else {
 //         REQUIRE_THROWS(multiSlsDetectorClient("ratecorr", GET));
-//     }
-// }
-
-// TEST_CASE("trimval", "[.cmd][.eiger]") {
-//     if (test::type == defs::EIGER) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("trimval 63", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "trimval 63\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("trimval", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "trimval 63\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("trimval 31", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "trimval 31\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("trimval 0", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("trimval", GET));
 //     }
 // }
 

@@ -270,22 +270,25 @@ uint32_t Listener::ListenToAnImage(char *buf) {
     int rc = 0;
     uint64_t fnum = 0;
     uint32_t pnum = 0;
+    uint64_t bnum = 0;
     uint32_t numpackets = 0;
     uint32_t dsize = generalData->dataSize;
     uint32_t imageSize = generalData->imageSize;
     uint32_t packetSize = generalData->packetSize;
+    uint32_t hsize = generalData->headerSizeinPacket;
+    uint32_t fifohsize = generalData->fifoBufferHeaderSize;
+    bool standardheader = generalData->standardheader;
     if (myDetectorType == GOTTHARD2 && index != 0) {
         dsize = generalData->vetoDataSize;
         imageSize = generalData->vetoImageSize;
         packetSize = generalData->vetoPacketSize;
+        hsize = generalData->vetoHsize;
+        standardheader = false;
     }
-    uint32_t hsize = generalData->headerSizeinPacket;
-    uint32_t fifohsize = generalData->fifoBufferHeaderSize;
     uint32_t pperFrame = generalData->packetsPerFrame;
     bool isHeaderEmpty = true;
     sls_detector_header *old_header = nullptr;
     sls_receiver_header *new_header = nullptr;
-    bool standardheader = generalData->standardheader;
     uint32_t corrected_dsize = dsize - ((pperFrame * dsize) - imageSize);
 
     // reset to -1
@@ -329,7 +332,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
         // -----------------------------------------------------------------------------
         else {
             generalData->GetHeaderInfo(index, &carryOverPacket[0],
-                                       oddStartingPacket, fnum, pnum);
+                                       oddStartingPacket, fnum, pnum, bnum);
         }
         //------------------------------------------------------------------------------------------------------------
         if (fnum != currentFrameIndex) {
@@ -403,6 +406,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
             // ------------------------------------------------------------------------------
             else {
                 new_header->detHeader.frameNumber = fnum;
+                new_header->detHeader.bunchId = bnum;
                 new_header->detHeader.row = row;
                 new_header->detHeader.column = column;
                 new_header->detHeader.detType =
@@ -470,7 +474,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
             }
 
             generalData->GetHeaderInfo(index, &listeningPacket[0],
-                                       oddStartingPacket, fnum, pnum);
+                                       oddStartingPacket, fnum, pnum, bnum);
         }
         //------------------------------------------------------------------------------------------------------------
 
@@ -569,6 +573,7 @@ uint32_t Listener::ListenToAnImage(char *buf) {
             // ------------------------------------------------------------------------------
             else {
                 new_header->detHeader.frameNumber = fnum;
+                new_header->detHeader.bunchId = bnum;
                 new_header->detHeader.row = row;
                 new_header->detHeader.column = column;
                 new_header->detHeader.detType =

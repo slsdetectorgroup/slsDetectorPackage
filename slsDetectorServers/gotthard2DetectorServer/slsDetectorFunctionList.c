@@ -2274,7 +2274,7 @@ void *start_timer(void *arg) {
     int datasize = imagesize;
     int packetsize = datasize + sizeof(sls_detector_header);
     int vetodatasize = VETO_DATA_SIZE;
-    int vetopacketsize = vetodatasize + sizeof(sls_detector_header);
+    int vetopacketsize = vetodatasize + VETO_HEADER_SIZE;
 
     // Generate data
     char imageData[imagesize];
@@ -2331,21 +2331,16 @@ void *start_timer(void *arg) {
                 sendUDPPacket(0, packetData, packetsize);
 
                 // second interface (veto)
-                char packetData2[packetsize];
-                memset(packetData2, 0, packetsize);
+                char packetData2[vetopacketsize];
+                memset(packetData2, 0, vetopacketsize);
                 if (numInterfaces == 2) {
                     // set header
-                    sls_detector_header *header =
-                        (sls_detector_header *)(packetData2);
-                    header->detType = (uint16_t)myDetectorType;
-                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+                    veto_header *header = (veto_header *)(packetData2);
                     header->frameNumber = frameHeaderNr;
-                    header->packetNumber = 0;
-                    header->modId = 0;
-                    header->row = detPos[X];
-                    header->column = detPos[Y];
+                    header->bunchId = 0;
+                    header->reserved = 0;
                     // fill data
-                    memcpy(packetData2 + sizeof(sls_detector_header), vetoData,
+                    memcpy(packetData2 + VETO_HEADER_SIZE, vetoData,
                            vetodatasize);
                     // send 1 packet = 1 frame
                     sendUDPPacket(1, packetData2, vetopacketsize);

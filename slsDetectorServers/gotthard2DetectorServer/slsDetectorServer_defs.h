@@ -57,6 +57,13 @@
 #define READOUT_PLL_VCO_FREQ_HZ (866666688) // 866 MHz
 #define SYSTEM_PLL_VCO_FREQ_HZ  (722222224) // 722 MHz
 #define VETO_DATA_SIZE          (160)
+#define VETO_HEADER_SIZE        (24)
+typedef struct {
+    uint64_t frameNumber;
+    uint64_t bunchId;
+    uint64_t reserved;
+} veto_header;
+
 /** Other Definitions */
 #define BIT16_MASK (0xFFFF)
 

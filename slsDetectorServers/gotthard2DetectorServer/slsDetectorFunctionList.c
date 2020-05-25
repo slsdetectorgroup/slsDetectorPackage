@@ -2274,7 +2274,7 @@ void *start_timer(void *arg) {
     int datasize = imagesize;
     int packetsize = datasize + sizeof(sls_detector_header);
     int vetodatasize = VETO_DATA_SIZE;
-    int vetopacketsize = vetodatasize + VETO_HEADER_SIZE;
+    int vetopacketsize = vetodatasize + sizeof(veto_header);
 
     // Generate data
     char imageData[imagesize];
@@ -2340,7 +2340,7 @@ void *start_timer(void *arg) {
                     header->bunchId = 0;
                     header->reserved = 0;
                     // fill data
-                    memcpy(packetData2 + VETO_HEADER_SIZE, vetoData,
+                    memcpy(packetData2 + sizeof(veto_header), vetoData,
                            vetodatasize);
                     // send 1 packet = 1 frame
                     sendUDPPacket(1, packetData2, vetopacketsize);

@@ -1095,6 +1095,43 @@ TEST_CASE("startingfnum", "[.cmd][.new]") {
     }
 }
 
+/* Network Configuration (Detector<->Receiver) */
+
+TEST_CASE("numinterfaces", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2) {
+        auto prev_val = det.getNumberofUDPInterfaces().tsquash(
+            "inconsistent numinterfaces to test");
+        {
+            std::ostringstream oss;
+            proxy.Call("numinterfaces", {"2"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "numinterfaces 2\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("numinterfaces", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "numinterfaces 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("numinterfaces", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "numinterfaces 1\n");
+        }
+        det.setNumberofUDPInterfaces(prev_val);
+    } else {
+        std::ostringstream oss;
+        proxy.Call("numinterfaces", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "numinterfaces 1\n");
+        REQUIRE_THROWS(proxy.Call("numinterfaces", {"1"}, -1, PUT));
+    }
+    REQUIRE_THROWS(proxy.Call("numinterfaces", {"3"}, -1, PUT));
+    REQUIRE_THROWS(proxy.Call("numinterfaces", {"0"}, -1, PUT));
+}
+
+/* Advanced */
+
 TEST_CASE("initialchecks", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -1124,18 +1161,7 @@ TEST_CASE("initialchecks", "[.cmd]") {
     det.setInitialChecks(check);
 }
 
-TEST_CASE("user", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    proxy.Call("user", {}, -1, GET);
-
-    // This is a get only command
-    REQUIRE_THROWS(proxy.Call("user", {}, -1, PUT));
-}
-
-// TEST_CASE("execcommand", "[.cmd]") {
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("execcommand ls", PUT));
-// }
+/* Insignificant */
 
 TEST_CASE("port", "[.cmd]") {
     Detector det;
@@ -1169,6 +1195,19 @@ TEST_CASE("stopport", "[.cmd]") {
     proxy.Call("stopport", {"1953"}, -1, PUT);
     auto port = det.getStopPort().squash();
     REQUIRE(port == 1953);
+}
+
+// TEST_CASE("execcommand", "[.cmd]") {
+//     REQUIRE_NOTHROW(multiSlsDetectorClient("execcommand ls", PUT));
+// }
+
+TEST_CASE("user", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    proxy.Call("user", {}, -1, GET);
+
+    // This is a get only command
+    REQUIRE_THROWS(proxy.Call("user", {}, -1, PUT));
 }
 
 // TEST_CASE("reg", "[.cmd]") {
@@ -2858,29 +2897,6 @@ TEST_CASE("zmqport", "[.cmd]") {
 //     } else {
 //         REQUIRE_THROWS(multiSlsDetectorClient("selinterface", GET));
 //     }
-// }
-
-// TEST_CASE("numinterfaces", "[.cmd][.jungfrau]") {
-//     if (test::type == defs::JUNGFRAU) {
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 2", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:numinterfaces", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "numinterfaces 2\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 1", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:numinterfaces", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "numinterfaces 1\n");
-//         }
-//     } else {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:numinterfaces", GET,
-//         nullptr, oss)); REQUIRE(oss.str() == "numinterfaces 1\n");
-//     }
-//     REQUIRE_THROWS(multiSlsDetectorClient("numinterfaces 3", PUT));
-//     REQUIRE_THROWS(multiSlsDetectorClient("numinterfaces 0", PUT));
 // }
 
 // TEST_CASE("adc", "[.cmd][.ctb]") {

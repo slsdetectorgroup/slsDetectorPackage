@@ -11,10 +11,15 @@
 #include "network_utils.h"
 #include "sls_detector_defs.h"
 #include "typecaster.h"
+
+#include "TimeHelper.h"
+#include <array>
+#include <chrono>
 namespace py = pybind11;
 void init_det(py::module &m) {
     using sls::defs;
     using sls::Detector;
+    using sls::ns;
     using sls::Positions;
     using sls::Result;
 
@@ -32,7 +37,7 @@ void init_det(py::module &m) {
                  Detector::loadParameters,
              py::arg())
         .def("getHostname",
-             (Result<std::string>(Detector::*)(sls::Positions)) &
+             (Result<std::string>(Detector::*)(sls::Positions) const) &
                  Detector::getHostname,
              py::arg() = Positions{})
         .def("setHostname",
@@ -43,51 +48,64 @@ void init_det(py::module &m) {
              (void (Detector::*)(int, int)) &
                  Detector::setVirtualDetectorServers,
              py::arg(), py::arg())
-        .def("getShmId", (int (Detector::*)()) & Detector::getShmId)
+        .def("getShmId", (int (Detector::*)() const) & Detector::getShmId)
         .def("getPackageVersion",
-             (std::string(Detector::*)()) & Detector::getPackageVersion)
+             (std::string(Detector::*)() const) & Detector::getPackageVersion)
         .def("getClientVersion",
-             (int64_t(Detector::*)()) & Detector::getClientVersion)
+             (int64_t(Detector::*)() const) & Detector::getClientVersion)
         .def("getFirmwareVersion",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getFirmwareVersion,
              py::arg() = Positions{})
         .def("getDetectorServerVersion",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getDetectorServerVersion,
              py::arg() = Positions{})
         .def("getSerialNumber",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getSerialNumber,
              py::arg() = Positions{})
         .def("getReceiverVersion",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getReceiverVersion,
              py::arg() = Positions{})
         .def("getDetectorType",
-             (Result<defs::detectorType>(Detector::*)(sls::Positions)) &
+             (Result<defs::detectorType>(Detector::*)(sls::Positions) const) &
                  Detector::getDetectorType,
              py::arg() = Positions{})
-        .def("size", (int (Detector::*)()) & Detector::size)
-        .def("empty", (bool (Detector::*)()) & Detector::empty)
+        .def("size", (int (Detector::*)() const) & Detector::size)
+        .def("empty", (bool (Detector::*)() const) & Detector::empty)
         .def("getModuleGeometry",
-             (defs::xy(Detector::*)()) & Detector::getModuleGeometry)
+             (defs::xy(Detector::*)() const) & Detector::getModuleGeometry)
         .def("getModuleSize",
-             (Result<defs::xy>(Detector::*)(sls::Positions)) &
+             (Result<defs::xy>(Detector::*)(sls::Positions) const) &
                  Detector::getModuleSize,
              py::arg() = Positions{})
         .def("getDetectorSize",
-             (defs::xy(Detector::*)()) & Detector::getDetectorSize)
+             (defs::xy(Detector::*)() const) & Detector::getDetectorSize)
         .def("setDetectorSize",
              (void (Detector::*)(const defs::xy)) & Detector::setDetectorSize,
              py::arg())
         .def("getSettings",
-             (Result<defs::detectorSettings>(Detector::*)(sls::Positions)) &
+             (Result<defs::detectorSettings>(Detector::*)(sls::Positions)
+                  const) &
                  Detector::getSettings,
              py::arg() = Positions{})
         .def("setSettings",
              (void (Detector::*)(defs::detectorSettings, sls::Positions)) &
                  Detector::setSettings,
+             py::arg(), py::arg() = Positions{})
+        .def("loadTrimbits",
+             (void (Detector::*)(const std::string &, sls::Positions)) &
+                 Detector::loadTrimbits,
+             py::arg(), py::arg() = Positions{})
+        .def("getAllTrimbits",
+             (Result<int>(Detector::*)(sls::Positions) const) &
+                 Detector::getAllTrimbits,
+             py::arg() = Positions{})
+        .def("setAllTrimbits",
+             (void (Detector::*)(int, sls::Positions)) &
+                 Detector::setAllTrimbits,
              py::arg(), py::arg() = Positions{})
         .def("registerAcquisitionFinishedCallback",
              (void (Detector::*)(void (*)(double, int, void *), void *)) &
@@ -100,27 +118,27 @@ void init_det(py::module &m) {
                 Detector::registerDataCallback,
             py::arg(), py::arg())
         .def("getGapPixelsinCallback",
-             (bool (Detector::*)()) & Detector::getGapPixelsinCallback)
+             (bool (Detector::*)() const) & Detector::getGapPixelsinCallback)
         .def("setGapPixelsinCallback",
              (void (Detector::*)(const bool)) &
                  Detector::setGapPixelsinCallback,
              py::arg())
         .def("getNumberOfFrames",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfFrames,
              py::arg() = Positions{})
         .def("setNumberOfFrames",
              (void (Detector::*)(int64_t)) & Detector::setNumberOfFrames,
              py::arg())
         .def("getNumberOfTriggers",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfTriggers,
              py::arg() = Positions{})
         .def("setNumberOfTriggers",
              (void (Detector::*)(int64_t)) & Detector::setNumberOfTriggers,
              py::arg())
         .def("getExptime",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getExptime,
              py::arg() = Positions{})
         .def("setExptime",
@@ -128,7 +146,7 @@ void init_det(py::module &m) {
                  Detector::setExptime,
              py::arg(), py::arg() = Positions{})
         .def("getPeriod",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getPeriod,
              py::arg() = Positions{})
         .def("setPeriod",
@@ -136,7 +154,7 @@ void init_det(py::module &m) {
                  Detector::setPeriod,
              py::arg(), py::arg() = Positions{})
         .def("getDelayAfterTrigger",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getDelayAfterTrigger,
              py::arg() = Positions{})
         .def("setDelayAfterTrigger",
@@ -144,23 +162,23 @@ void init_det(py::module &m) {
                  Detector::setDelayAfterTrigger,
              py::arg(), py::arg() = Positions{})
         .def("getNumberOfFramesLeft",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfFramesLeft,
              py::arg() = Positions{})
         .def("getNumberOfTriggersLeft",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfTriggersLeft,
              py::arg() = Positions{})
         .def("getPeriodLeft",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getPeriodLeft,
              py::arg() = Positions{})
         .def("getDelayAfterTriggerLeft",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getDelayAfterTriggerLeft,
              py::arg() = Positions{})
         .def("getTimingMode",
-             (Result<defs::timingMode>(Detector::*)(sls::Positions)) &
+             (Result<defs::timingMode>(Detector::*)(sls::Positions) const) &
                  Detector::getTimingMode,
              py::arg() = Positions{})
         .def("setTimingMode",
@@ -168,7 +186,7 @@ void init_det(py::module &m) {
                  Detector::setTimingMode,
              py::arg(), py::arg() = Positions{})
         .def("getSpeed",
-             (Result<defs::speedLevel>(Detector::*)(sls::Positions)) &
+             (Result<defs::speedLevel>(Detector::*)(sls::Positions) const) &
                  Detector::getSpeed,
              py::arg() = Positions{})
         .def("setSpeed",
@@ -176,17 +194,18 @@ void init_det(py::module &m) {
                  Detector::setSpeed,
              py::arg(), py::arg() = Positions{})
         .def("getADCPhase",
-             (Result<int>(Detector::*)(sls::Positions)) & Detector::getADCPhase,
+             (Result<int>(Detector::*)(sls::Positions) const) &
+                 Detector::getADCPhase,
              py::arg() = Positions{})
         .def("setADCPhase",
              (void (Detector::*)(int, sls::Positions)) & Detector::setADCPhase,
              py::arg(), py::arg() = Positions{})
         .def("getMaxADCPhaseShift",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getMaxADCPhaseShift,
              py::arg() = Positions{})
         .def("getADCPhaseInDegrees",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getADCPhaseInDegrees,
              py::arg() = Positions{})
         .def("setADCPhaseInDegrees",
@@ -194,18 +213,18 @@ void init_det(py::module &m) {
                  Detector::setADCPhaseInDegrees,
              py::arg(), py::arg() = Positions{})
         .def("getDBITPhase",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getDBITPhase,
              py::arg() = Positions{})
         .def("setDBITPhase",
              (void (Detector::*)(int, sls::Positions)) & Detector::setDBITPhase,
              py::arg(), py::arg() = Positions{})
         .def("getMaxDBITPhaseShift",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getMaxDBITPhaseShift,
              py::arg() = Positions{})
         .def("getDBITPhaseInDegrees",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getDBITPhaseInDegrees,
              py::arg() = Positions{})
         .def("setDBITPhaseInDegrees",
@@ -249,7 +268,7 @@ void init_det(py::module &m) {
                  Detector::setClockDivider,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("getHighVoltage",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getHighVoltage,
              py::arg() = Positions{})
         .def("setHighVoltage",
@@ -257,7 +276,7 @@ void init_det(py::module &m) {
                  Detector::setHighVoltage,
              py::arg(), py::arg() = Positions{})
         .def("getPowerChip",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getPowerChip,
              py::arg() = Positions{})
         .def("setPowerChip",
@@ -273,11 +292,12 @@ void init_det(py::module &m) {
                  Detector::setImageTestMode,
              py::arg(), py::arg() = Positions{})
         .def("getTemperature",
-             (Result<int>(Detector::*)(defs::dacIndex, sls::Positions)) &
+             (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
                  Detector::getTemperature,
              py::arg(), py::arg() = Positions{})
         .def("getDAC",
-             (Result<int>(Detector::*)(defs::dacIndex, bool, sls::Positions)) &
+             (Result<int>(Detector::*)(defs::dacIndex, bool, sls::Positions)
+                  const) &
                  Detector::getDAC,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("setDAC",
@@ -285,7 +305,8 @@ void init_det(py::module &m) {
                  Detector::setDAC,
              py::arg(), py::arg(), py::arg(), py::arg() = Positions{})
         .def("getOnChipDAC",
-             (Result<int>(Detector::*)(defs::dacIndex, int, sls::Positions)) &
+             (Result<int>(Detector::*)(defs::dacIndex, int, sls::Positions)
+                  const) &
                  Detector::getOnChipDAC,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("setOnChipDAC",
@@ -300,23 +321,24 @@ void init_det(py::module &m) {
         .def("startDetector", (void (Detector::*)()) & Detector::startDetector)
         .def("stopDetector", (void (Detector::*)()) & Detector::stopDetector)
         .def("getDetectorStatus",
-             (Result<defs::runStatus>(Detector::*)(sls::Positions)) &
+             (Result<defs::runStatus>(Detector::*)(sls::Positions) const) &
                  Detector::getDetectorStatus,
              py::arg() = Positions{})
         .def("getReceiverStatus",
-             (Result<defs::runStatus>(Detector::*)(sls::Positions)) &
+             (Result<defs::runStatus>(Detector::*)(sls::Positions) const) &
                  Detector::getReceiverStatus,
              py::arg() = Positions{})
         .def("getFramesCaught",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getFramesCaught,
              py::arg() = Positions{})
-        .def("getNumMissingPackets",
-             (Result<std::vector<uint64_t>>(Detector::*)(sls::Positions)) &
-                 Detector::getNumMissingPackets,
-             py::arg() = Positions{})
+        .def(
+            "getNumMissingPackets",
+            (Result<std::vector<uint64_t>>(Detector::*)(sls::Positions) const) &
+                Detector::getNumMissingPackets,
+            py::arg() = Positions{})
         .def("getStartingFrameNumber",
-             (Result<uint64_t>(Detector::*)(sls::Positions)) &
+             (Result<uint64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getStartingFrameNumber,
              py::arg() = Positions{})
         .def("setStartingFrameNumber",
@@ -328,7 +350,7 @@ void init_det(py::module &m) {
                  Detector::sendSoftwareTrigger,
              py::arg() = Positions{})
         .def("getNumberofUDPInterfaces",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberofUDPInterfaces,
              py::arg() = Positions{})
         .def("setNumberofUDPInterfaces",
@@ -336,7 +358,7 @@ void init_det(py::module &m) {
                  Detector::setNumberofUDPInterfaces,
              py::arg(), py::arg() = Positions{})
         .def("getSelectedUDPInterface",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getSelectedUDPInterface,
              py::arg() = Positions{})
         .def("selectUDPInterface",
@@ -344,7 +366,7 @@ void init_det(py::module &m) {
                  Detector::selectUDPInterface,
              py::arg(), py::arg() = Positions{})
         .def("getSourceUDPIP",
-             (Result<sls::IpAddr>(Detector::*)(sls::Positions)) &
+             (Result<sls::IpAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getSourceUDPIP,
              py::arg() = Positions{})
         .def("setSourceUDPIP",
@@ -352,7 +374,7 @@ void init_det(py::module &m) {
                  Detector::setSourceUDPIP,
              py::arg(), py::arg() = Positions{})
         .def("getSourceUDPIP2",
-             (Result<sls::IpAddr>(Detector::*)(sls::Positions)) &
+             (Result<sls::IpAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getSourceUDPIP2,
              py::arg() = Positions{})
         .def("setSourceUDPIP2",
@@ -360,7 +382,7 @@ void init_det(py::module &m) {
                  Detector::setSourceUDPIP2,
              py::arg(), py::arg() = Positions{})
         .def("getSourceUDPMAC",
-             (Result<sls::MacAddr>(Detector::*)(sls::Positions)) &
+             (Result<sls::MacAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getSourceUDPMAC,
              py::arg() = Positions{})
         .def("setSourceUDPMAC",
@@ -368,7 +390,7 @@ void init_det(py::module &m) {
                  Detector::setSourceUDPMAC,
              py::arg(), py::arg() = Positions{})
         .def("getSourceUDPMAC2",
-             (Result<sls::MacAddr>(Detector::*)(sls::Positions)) &
+             (Result<sls::MacAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getSourceUDPMAC2,
              py::arg() = Positions{})
         .def("setSourceUDPMAC2",
@@ -376,7 +398,7 @@ void init_det(py::module &m) {
                  Detector::setSourceUDPMAC2,
              py::arg(), py::arg() = Positions{})
         .def("getDestinationUDPIP",
-             (Result<sls::IpAddr>(Detector::*)(sls::Positions)) &
+             (Result<sls::IpAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getDestinationUDPIP,
              py::arg() = Positions{})
         .def("setDestinationUDPIP",
@@ -384,7 +406,7 @@ void init_det(py::module &m) {
                  Detector::setDestinationUDPIP,
              py::arg(), py::arg() = Positions{})
         .def("getDestinationUDPIP2",
-             (Result<sls::IpAddr>(Detector::*)(sls::Positions)) &
+             (Result<sls::IpAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getDestinationUDPIP2,
              py::arg() = Positions{})
         .def("setDestinationUDPIP2",
@@ -392,7 +414,7 @@ void init_det(py::module &m) {
                  Detector::setDestinationUDPIP2,
              py::arg(), py::arg() = Positions{})
         .def("getDestinationUDPMAC",
-             (Result<sls::MacAddr>(Detector::*)(sls::Positions)) &
+             (Result<sls::MacAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getDestinationUDPMAC,
              py::arg() = Positions{})
         .def("setDestinationUDPMAC",
@@ -400,7 +422,7 @@ void init_det(py::module &m) {
                  Detector::setDestinationUDPMAC,
              py::arg(), py::arg() = Positions{})
         .def("getDestinationUDPMAC2",
-             (Result<sls::MacAddr>(Detector::*)(sls::Positions)) &
+             (Result<sls::MacAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getDestinationUDPMAC2,
              py::arg() = Positions{})
         .def("setDestinationUDPMAC2",
@@ -408,31 +430,32 @@ void init_det(py::module &m) {
                  Detector::setDestinationUDPMAC2,
              py::arg(), py::arg() = Positions{})
         .def("getDestinationUDPPort",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getDestinationUDPPort,
              py::arg() = Positions{})
         .def("setDestinationUDPPort",
              (void (Detector::*)(int, int)) & Detector::setDestinationUDPPort,
              py::arg(), py::arg())
         .def("getDestinationUDPPort2",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getDestinationUDPPort2,
              py::arg() = Positions{})
         .def("setDestinationUDPPort2",
              (void (Detector::*)(int, int)) & Detector::setDestinationUDPPort2,
              py::arg(), py::arg())
         .def("printRxConfiguration",
-             (Result<std::string>(Detector::*)(sls::Positions)) &
+             (Result<std::string>(Detector::*)(sls::Positions) const) &
                  Detector::printRxConfiguration,
              py::arg() = Positions{})
         .def("getTenGiga",
-             (Result<bool>(Detector::*)(sls::Positions)) & Detector::getTenGiga,
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getTenGiga,
              py::arg() = Positions{})
         .def("setTenGiga",
              (void (Detector::*)(bool, sls::Positions)) & Detector::setTenGiga,
              py::arg(), py::arg() = Positions{})
         .def("getTenGigaFlowControl",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getTenGigaFlowControl,
              py::arg() = Positions{})
         .def("setTenGigaFlowControl",
@@ -440,7 +463,7 @@ void init_det(py::module &m) {
                  Detector::setTenGigaFlowControl,
              py::arg(), py::arg() = Positions{})
         .def("getTransmissionDelayFrame",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getTransmissionDelayFrame,
              py::arg() = Positions{})
         .def("setTransmissionDelayFrame",
@@ -448,7 +471,7 @@ void init_det(py::module &m) {
                  Detector::setTransmissionDelayFrame,
              py::arg(), py::arg() = Positions{})
         .def("getTransmissionDelayLeft",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getTransmissionDelayLeft,
              py::arg() = Positions{})
         .def("setTransmissionDelayLeft",
@@ -456,7 +479,7 @@ void init_det(py::module &m) {
                  Detector::setTransmissionDelayLeft,
              py::arg(), py::arg() = Positions{})
         .def("getTransmissionDelayRight",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getTransmissionDelayRight,
              py::arg() = Positions{})
         .def("setTransmissionDelayRight",
@@ -464,11 +487,11 @@ void init_det(py::module &m) {
                  Detector::setTransmissionDelayRight,
              py::arg(), py::arg() = Positions{})
         .def("getUseReceiverFlag",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getUseReceiverFlag,
              py::arg() = Positions{})
         .def("getRxHostname",
-             (Result<std::string>(Detector::*)(sls::Positions)) &
+             (Result<std::string>(Detector::*)(sls::Positions) const) &
                  Detector::getRxHostname,
              py::arg() = Positions{})
         .def("setRxHostname",
@@ -480,12 +503,13 @@ void init_det(py::module &m) {
                  Detector::setRxHostname,
              py::arg())
         .def("getRxPort",
-             (Result<int>(Detector::*)(sls::Positions)) & Detector::getRxPort,
+             (Result<int>(Detector::*)(sls::Positions) const) &
+                 Detector::getRxPort,
              py::arg() = Positions{})
         .def("setRxPort", (void (Detector::*)(int, int)) & Detector::setRxPort,
              py::arg(), py::arg())
         .def("getRxFifoDepth",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getRxFifoDepth,
              py::arg() = Positions{})
         .def("setRxFifoDepth",
@@ -493,7 +517,7 @@ void init_det(py::module &m) {
                  Detector::setRxFifoDepth,
              py::arg(), py::arg() = Positions{})
         .def("getRxSilentMode",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getRxSilentMode,
              py::arg() = Positions{})
         .def("setRxSilentMode",
@@ -501,7 +525,8 @@ void init_det(py::module &m) {
                  Detector::setRxSilentMode,
              py::arg(), py::arg() = Positions{})
         .def("getRxFrameDiscardPolicy",
-             (Result<defs::frameDiscardPolicy>(Detector::*)(sls::Positions)) &
+             (Result<defs::frameDiscardPolicy>(Detector::*)(sls::Positions)
+                  const) &
                  Detector::getRxFrameDiscardPolicy,
              py::arg() = Positions{})
         .def("setRxFrameDiscardPolicy",
@@ -509,7 +534,7 @@ void init_det(py::module &m) {
                  Detector::setRxFrameDiscardPolicy,
              py::arg(), py::arg() = Positions{})
         .def("getPartialFramesPadding",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getPartialFramesPadding,
              py::arg() = Positions{})
         .def("setPartialFramesPadding",
@@ -517,7 +542,7 @@ void init_det(py::module &m) {
                  Detector::setPartialFramesPadding,
              py::arg(), py::arg() = Positions{})
         .def("getRxUDPSocketBufferSize",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getRxUDPSocketBufferSize,
              py::arg() = Positions{})
         .def("setRxUDPSocketBufferSize",
@@ -525,7 +550,7 @@ void init_det(py::module &m) {
                  Detector::setRxUDPSocketBufferSize,
              py::arg(), py::arg() = Positions{})
         .def("getRxRealUDPSocketBufferSize",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getRxRealUDPSocketBufferSize,
              py::arg() = Positions{})
         .def("getRxLock",
@@ -535,11 +560,11 @@ void init_det(py::module &m) {
              (void (Detector::*)(bool, sls::Positions)) & Detector::setRxLock,
              py::arg(), py::arg() = Positions{})
         .def("getRxLastClientIP",
-             (Result<sls::IpAddr>(Detector::*)(sls::Positions)) &
+             (Result<sls::IpAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getRxLastClientIP,
              py::arg() = Positions{})
         .def("getFileFormat",
-             (Result<defs::fileFormat>(Detector::*)(sls::Positions)) &
+             (Result<defs::fileFormat>(Detector::*)(sls::Positions) const) &
                  Detector::getFileFormat,
              py::arg() = Positions{})
         .def("setFileFormat",
@@ -547,7 +572,7 @@ void init_det(py::module &m) {
                  Detector::setFileFormat,
              py::arg(), py::arg() = Positions{})
         .def("getFilePath",
-             (Result<std::string>(Detector::*)(sls::Positions)) &
+             (Result<std::string>(Detector::*)(sls::Positions) const) &
                  Detector::getFilePath,
              py::arg() = Positions{})
         .def("setFilePath",
@@ -555,7 +580,7 @@ void init_det(py::module &m) {
                  Detector::setFilePath,
              py::arg(), py::arg() = Positions{})
         .def("getFileNamePrefix",
-             (Result<std::string>(Detector::*)(sls::Positions)) &
+             (Result<std::string>(Detector::*)(sls::Positions) const) &
                  Detector::getFileNamePrefix,
              py::arg() = Positions{})
         .def("setFileNamePrefix",
@@ -563,7 +588,7 @@ void init_det(py::module &m) {
                  Detector::setFileNamePrefix,
              py::arg(), py::arg() = Positions{})
         .def("getAcquisitionIndex",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getAcquisitionIndex,
              py::arg() = Positions{})
         .def("setAcquisitionIndex",
@@ -571,7 +596,7 @@ void init_det(py::module &m) {
                  Detector::setAcquisitionIndex,
              py::arg(), py::arg() = Positions{})
         .def("getFileWrite",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getFileWrite,
              py::arg() = Positions{})
         .def("setFileWrite",
@@ -579,7 +604,7 @@ void init_det(py::module &m) {
                  Detector::setFileWrite,
              py::arg(), py::arg() = Positions{})
         .def("getMasterFileWrite",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getMasterFileWrite,
              py::arg() = Positions{})
         .def("setMasterFileWrite",
@@ -587,7 +612,7 @@ void init_det(py::module &m) {
                  Detector::setMasterFileWrite,
              py::arg(), py::arg() = Positions{})
         .def("getFileOverWrite",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getFileOverWrite,
              py::arg() = Positions{})
         .def("setFileOverWrite",
@@ -595,7 +620,7 @@ void init_det(py::module &m) {
                  Detector::setFileOverWrite,
              py::arg(), py::arg() = Positions{})
         .def("getFramesPerFile",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getFramesPerFile,
              py::arg() = Positions{})
         .def("setFramesPerFile",
@@ -603,7 +628,7 @@ void init_det(py::module &m) {
                  Detector::setFramesPerFile,
              py::arg(), py::arg() = Positions{})
         .def("getRxZmqDataStream",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getRxZmqDataStream,
              py::arg() = Positions{})
         .def("setRxZmqDataStream",
@@ -611,7 +636,7 @@ void init_det(py::module &m) {
                  Detector::setRxZmqDataStream,
              py::arg(), py::arg() = Positions{})
         .def("getRxZmqFrequency",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getRxZmqFrequency,
              py::arg() = Positions{})
         .def("setRxZmqFrequency",
@@ -619,7 +644,7 @@ void init_det(py::module &m) {
                  Detector::setRxZmqFrequency,
              py::arg(), py::arg() = Positions{})
         .def("getRxZmqTimer",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getRxZmqTimer,
              py::arg() = Positions{})
         .def("setRxZmqTimer",
@@ -627,14 +652,14 @@ void init_det(py::module &m) {
                  Detector::setRxZmqTimer,
              py::arg(), py::arg() = Positions{})
         .def("getRxZmqPort",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getRxZmqPort,
              py::arg() = Positions{})
         .def("setRxZmqPort",
              (void (Detector::*)(int, int)) & Detector::setRxZmqPort, py::arg(),
              py::arg())
         .def("getRxZmqIP",
-             (Result<sls::IpAddr>(Detector::*)(sls::Positions)) &
+             (Result<sls::IpAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getRxZmqIP,
              py::arg() = Positions{})
         .def("setRxZmqIP",
@@ -642,14 +667,14 @@ void init_det(py::module &m) {
                  Detector::setRxZmqIP,
              py::arg(), py::arg() = Positions{})
         .def("getClientZmqPort",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getClientZmqPort,
              py::arg() = Positions{})
         .def("setClientZmqPort",
              (void (Detector::*)(int, int)) & Detector::setClientZmqPort,
              py::arg(), py::arg())
         .def("getClientZmqIp",
-             (Result<sls::IpAddr>(Detector::*)(sls::Positions)) &
+             (Result<sls::IpAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getClientZmqIp,
              py::arg() = Positions{})
         .def("setClientZmqIp",
@@ -657,13 +682,13 @@ void init_det(py::module &m) {
                  Detector::setClientZmqIp,
              py::arg(), py::arg() = Positions{})
         .def("getDynamicRange",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getDynamicRange,
              py::arg() = Positions{})
         .def("setDynamicRange",
              (void (Detector::*)(int)) & Detector::setDynamicRange, py::arg())
         .def("getSubExptime",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getSubExptime,
              py::arg() = Positions{})
         .def("setSubExptime",
@@ -671,7 +696,7 @@ void init_det(py::module &m) {
                  Detector::setSubExptime,
              py::arg(), py::arg() = Positions{})
         .def("getSubDeadTime",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getSubDeadTime,
              py::arg() = Positions{})
         .def("setSubDeadTime",
@@ -679,7 +704,7 @@ void init_det(py::module &m) {
                  Detector::setSubDeadTime,
              py::arg(), py::arg() = Positions{})
         .def("getThresholdEnergy",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getThresholdEnergy,
              py::arg() = Positions{})
         .def("setThresholdEnergy",
@@ -688,19 +713,15 @@ void init_det(py::module &m) {
                  Detector::setThresholdEnergy,
              py::arg(), py::arg(), py::arg(), py::arg() = Positions{})
         .def("getSettingsPath",
-             (Result<std::string>(Detector::*)(sls::Positions)) &
+             (Result<std::string>(Detector::*)(sls::Positions) const) &
                  Detector::getSettingsPath,
              py::arg() = Positions{})
         .def("setSettingsPath",
              (void (Detector::*)(const std::string &, sls::Positions)) &
                  Detector::setSettingsPath,
              py::arg(), py::arg() = Positions{})
-        .def("loadTrimbits",
-             (void (Detector::*)(const std::string &, sls::Positions)) &
-                 Detector::loadTrimbits,
-             py::arg(), py::arg() = Positions{})
         .def("getParallelMode",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getParallelMode,
              py::arg() = Positions{})
         .def("setParallelMode",
@@ -708,7 +729,7 @@ void init_det(py::module &m) {
                  Detector::setParallelMode,
              py::arg(), py::arg() = Positions{})
         .def("getOverFlowMode",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getOverFlowMode,
              py::arg() = Positions{})
         .def("setOverFlowMode",
@@ -716,7 +737,7 @@ void init_det(py::module &m) {
                  Detector::setOverFlowMode,
              py::arg(), py::arg() = Positions{})
         .def("getStoreInRamMode",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getStoreInRamMode,
              py::arg() = Positions{})
         .def("setStoreInRamMode",
@@ -724,21 +745,14 @@ void init_det(py::module &m) {
                  Detector::setStoreInRamMode,
              py::arg(), py::arg() = Positions{})
         .def("getBottom",
-             (Result<bool>(Detector::*)(sls::Positions)) & Detector::getBottom,
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getBottom,
              py::arg() = Positions{})
         .def("setBottom",
              (void (Detector::*)(bool, sls::Positions)) & Detector::setBottom,
              py::arg(), py::arg() = Positions{})
-        .def("getAllTrimbits",
-             (Result<int>(Detector::*)(sls::Positions)) &
-                 Detector::getAllTrimbits,
-             py::arg() = Positions{})
-        .def("setAllTrimbits",
-             (void (Detector::*)(int, sls::Positions)) &
-                 Detector::setAllTrimbits,
-             py::arg(), py::arg() = Positions{})
         .def("getTrimEnergies",
-             (Result<std::vector<int>>(Detector::*)(sls::Positions)) &
+             (Result<std::vector<int>>(Detector::*)(sls::Positions) const) &
                  Detector::getTrimEnergies,
              py::arg() = Positions{})
         .def("setTrimEnergies",
@@ -746,7 +760,7 @@ void init_det(py::module &m) {
                  Detector::setTrimEnergies,
              py::arg(), py::arg() = Positions{})
         .def("getRateCorrection",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getRateCorrection,
              py::arg() = Positions{})
         .def("setDefaultRateCorrection",
@@ -758,7 +772,7 @@ void init_det(py::module &m) {
                  Detector::setRateCorrection,
              py::arg(), py::arg() = Positions{})
         .def("getPartialReadout",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getPartialReadout,
              py::arg() = Positions{})
         .def("setPartialReadout",
@@ -766,7 +780,7 @@ void init_det(py::module &m) {
                  Detector::setPartialReadout,
              py::arg(), py::arg() = Positions{})
         .def("getInterruptSubframe",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getInterruptSubframe,
              py::arg() = Positions{})
         .def("setInterruptSubframe",
@@ -774,21 +788,23 @@ void init_det(py::module &m) {
                  Detector::setInterruptSubframe,
              py::arg(), py::arg() = Positions{})
         .def("getMeasuredPeriod",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getMeasuredPeriod,
              py::arg() = Positions{})
         .def("getMeasuredSubFramePeriod",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getMeasuredSubFramePeriod,
              py::arg() = Positions{})
         .def("getActive",
-             (Result<bool>(Detector::*)(sls::Positions)) & Detector::getActive,
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getActive,
              py::arg() = Positions{})
         .def("setActive",
-             (void (Detector::*)(bool, sls::Positions)) & Detector::setActive,
+             (void (Detector::*)(const bool, sls::Positions)) &
+                 Detector::setActive,
              py::arg(), py::arg() = Positions{})
         .def("getRxPadDeactivatedMode",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getRxPadDeactivatedMode,
              py::arg() = Positions{})
         .def("setRxPadDeactivatedMode",
@@ -796,7 +812,7 @@ void init_det(py::module &m) {
                  Detector::setRxPadDeactivatedMode,
              py::arg(), py::arg() = Positions{})
         .def("getPartialReset",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getPartialReset,
              py::arg() = Positions{})
         .def("setPartialReset",
@@ -815,12 +831,13 @@ void init_det(py::module &m) {
              (void (Detector::*)(int, sls::Positions)) & Detector::pulseChip,
              py::arg(), py::arg() = Positions{})
         .def("getQuad",
-             (Result<bool>(Detector::*)(sls::Positions)) & Detector::getQuad,
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getQuad,
              py::arg() = Positions{})
         .def("setQuad", (void (Detector::*)(const bool)) & Detector::setQuad,
              py::arg())
         .def("getThresholdTemperature",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getThresholdTemperature,
              py::arg() = Positions{})
         .def("setThresholdTemperature",
@@ -828,7 +845,7 @@ void init_det(py::module &m) {
                  Detector::setThresholdTemperature,
              py::arg(), py::arg() = Positions{})
         .def("getTemperatureControl",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getTemperatureControl,
              py::arg() = Positions{})
         .def("setTemperatureControl",
@@ -836,7 +853,7 @@ void init_det(py::module &m) {
                  Detector::setTemperatureControl,
              py::arg(), py::arg() = Positions{})
         .def("getTemperatureEvent",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getTemperatureEvent,
              py::arg() = Positions{})
         .def("resetTemperatureEvent",
@@ -844,7 +861,7 @@ void init_det(py::module &m) {
                  Detector::resetTemperatureEvent,
              py::arg() = Positions{})
         .def("getAutoCompDisable",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getAutoCompDisable,
              py::arg() = Positions{})
         .def("setAutoCompDisable",
@@ -852,7 +869,7 @@ void init_det(py::module &m) {
                  Detector::setAutoCompDisable,
              py::arg(), py::arg() = Positions{})
         .def("getNumberOfAdditionalStorageCells",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfAdditionalStorageCells,
              py::arg() = Positions{})
         .def("setNumberOfAdditionalStorageCells",
@@ -860,7 +877,7 @@ void init_det(py::module &m) {
                  Detector::setNumberOfAdditionalStorageCells,
              py::arg())
         .def("getStorageCellStart",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getStorageCellStart,
              py::arg() = Positions{})
         .def("setStoragecellStart",
@@ -868,7 +885,7 @@ void init_det(py::module &m) {
                  Detector::setStoragecellStart,
              py::arg(), py::arg() = Positions{})
         .def("getStorageCellDelay",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getStorageCellDelay,
              py::arg() = Positions{})
         .def("setStorageCellDelay",
@@ -876,7 +893,7 @@ void init_det(py::module &m) {
                  Detector::setStorageCellDelay,
              py::arg(), py::arg() = Positions{})
         .def("getROI",
-             (Result<defs::ROI>(Detector::*)(sls::Positions)) &
+             (Result<defs::ROI>(Detector::*)(sls::Positions) const) &
                  Detector::getROI,
              py::arg() = Positions{})
         .def("setROI", (void (Detector::*)(defs::ROI, int)) & Detector::setROI,
@@ -885,26 +902,28 @@ void init_det(py::module &m) {
              (void (Detector::*)(sls::Positions)) & Detector::clearROI,
              py::arg() = Positions{})
         .def("getExptimeLeft",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getExptimeLeft,
              py::arg() = Positions{})
         .def("getExternalSignalFlags",
-             (Result<defs::externalSignalFlag>(Detector::*)(sls::Positions)) &
+             (Result<defs::externalSignalFlag>(Detector::*)(int, sls::Positions)
+                  const) &
                  Detector::getExternalSignalFlags,
-             py::arg() = Positions{})
-        .def("setExternalSignalFlags",
-             (void (Detector::*)(defs::externalSignalFlag, sls::Positions)) &
-                 Detector::setExternalSignalFlags,
              py::arg(), py::arg() = Positions{})
+        .def("setExternalSignalFlags",
+             (void (Detector::*)(int, defs::externalSignalFlag,
+                                 sls::Positions)) &
+                 Detector::setExternalSignalFlags,
+             py::arg(), py::arg(), py::arg() = Positions{})
         .def("getNumberOfBursts",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfBursts,
              py::arg() = Positions{})
         .def("setNumberOfBursts",
              (void (Detector::*)(int64_t)) & Detector::setNumberOfBursts,
              py::arg())
         .def("getBurstPeriod",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getBurstPeriod,
              py::arg() = Positions{})
         .def("setBurstPeriod",
@@ -943,7 +962,7 @@ void init_det(py::module &m) {
                  Detector::setBurstMode,
              py::arg(), py::arg() = Positions{})
         .def("getCurrentSource",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getCurrentSource,
              py::arg() = Positions{})
         .def("setCurrentSource",
@@ -951,7 +970,8 @@ void init_det(py::module &m) {
                  Detector::setCurrentSource,
              py::arg(), py::arg() = Positions{})
         .def("getTimingSource",
-             (Result<defs::timingSourceType>(Detector::*)(sls::Positions)) &
+             (Result<defs::timingSourceType>(Detector::*)(sls::Positions)
+                  const) &
                  Detector::getTimingSource,
              py::arg() = Positions{})
         .def("setTimingSource",
@@ -959,15 +979,47 @@ void init_det(py::module &m) {
                  Detector::setTimingSource,
              py::arg(), py::arg() = Positions{})
         .def("getCounterMask",
-             (Result<uint32_t>(Detector::*)(sls::Positions)) &
+             (Result<uint32_t>(Detector::*)(sls::Positions) const) &
                  Detector::getCounterMask,
              py::arg() = Positions{})
         .def("setCounterMask",
              (void (Detector::*)(uint32_t, sls::Positions)) &
                  Detector::setCounterMask,
              py::arg(), py::arg() = Positions{})
+        .def("getNumberOfGates",
+             (Result<int>(Detector::*)(sls::Positions) const) &
+                 Detector::getNumberOfGates,
+             py::arg() = Positions{})
+        .def("setNumberOfGates",
+             (void (Detector::*)(int, sls::Positions)) &
+                 Detector::setNumberOfGates,
+             py::arg(), py::arg() = Positions{})
+        .def("getExptime",
+             (Result<sls::ns>(Detector::*)(int, sls::Positions) const) &
+                 Detector::getExptime,
+             py::arg(), py::arg() = Positions{})
+        .def("setExptime",
+             (void (Detector::*)(int, sls::ns, sls::Positions)) &
+                 Detector::setExptime,
+             py::arg(), py::arg(), py::arg() = Positions{})
+        .def("getExptimeForAllGates",
+             (Result<std::array<ns, 3>>(Detector::*)(sls::Positions) const) &
+                 Detector::getExptimeForAllGates,
+             py::arg() = Positions{})
+        .def("getGateDelay",
+             (Result<sls::ns>(Detector::*)(int, sls::Positions) const) &
+                 Detector::getGateDelay,
+             py::arg(), py::arg() = Positions{})
+        .def("setGateDelay",
+             (void (Detector::*)(int, sls::ns, sls::Positions)) &
+                 Detector::setGateDelay,
+             py::arg(), py::arg(), py::arg() = Positions{})
+        .def("getGateDelayForAllGates",
+             (Result<std::array<ns, 3>>(Detector::*)(sls::Positions) const) &
+                 Detector::getGateDelayForAllGates,
+             py::arg() = Positions{})
         .def("getNumberOfAnalogSamples",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfAnalogSamples,
              py::arg() = Positions{})
         .def("setNumberOfAnalogSamples",
@@ -975,23 +1027,25 @@ void init_det(py::module &m) {
                  Detector::setNumberOfAnalogSamples,
              py::arg(), py::arg() = Positions{})
         .def("getADCClock",
-             (Result<int>(Detector::*)(sls::Positions)) & Detector::getADCClock,
+             (Result<int>(Detector::*)(sls::Positions) const) &
+                 Detector::getADCClock,
              py::arg() = Positions{})
         .def("setADCClock",
              (void (Detector::*)(int, sls::Positions)) & Detector::setADCClock,
              py::arg(), py::arg() = Positions{})
         .def("getRUNClock",
-             (Result<int>(Detector::*)(sls::Positions)) & Detector::getRUNClock,
+             (Result<int>(Detector::*)(sls::Positions) const) &
+                 Detector::getRUNClock,
              py::arg() = Positions{})
         .def("setRUNClock",
              (void (Detector::*)(int, sls::Positions)) & Detector::setRUNClock,
              py::arg(), py::arg() = Positions{})
         .def("getSYNCClock",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getSYNCClock,
              py::arg() = Positions{})
         .def("getADCPipeline",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getADCPipeline,
              py::arg() = Positions{})
         .def("setADCPipeline",
@@ -999,7 +1053,7 @@ void init_det(py::module &m) {
                  Detector::setADCPipeline,
              py::arg(), py::arg() = Positions{})
         .def("getVoltage",
-             (Result<int>(Detector::*)(defs::dacIndex, sls::Positions)) &
+             (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
                  Detector::getVoltage,
              py::arg(), py::arg() = Positions{})
         .def("setVoltage",
@@ -1007,7 +1061,7 @@ void init_det(py::module &m) {
                  Detector::setVoltage,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("getADCEnableMask",
-             (Result<uint32_t>(Detector::*)(sls::Positions)) &
+             (Result<uint32_t>(Detector::*)(sls::Positions) const) &
                  Detector::getADCEnableMask,
              py::arg() = Positions{})
         .def("setADCEnableMask",
@@ -1015,7 +1069,7 @@ void init_det(py::module &m) {
                  Detector::setADCEnableMask,
              py::arg(), py::arg() = Positions{})
         .def("getTenGigaADCEnableMask",
-             (Result<uint32_t>(Detector::*)(sls::Positions)) &
+             (Result<uint32_t>(Detector::*)(sls::Positions) const) &
                  Detector::getTenGigaADCEnableMask,
              py::arg() = Positions{})
         .def("setTenGigaADCEnableMask",
@@ -1023,7 +1077,7 @@ void init_det(py::module &m) {
                  Detector::setTenGigaADCEnableMask,
              py::arg(), py::arg() = Positions{})
         .def("getNumberOfDigitalSamples",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfDigitalSamples,
              py::arg() = Positions{})
         .def("setNumberOfDigitalSamples",
@@ -1031,7 +1085,7 @@ void init_det(py::module &m) {
                  Detector::setNumberOfDigitalSamples,
              py::arg(), py::arg() = Positions{})
         .def("getReadoutMode",
-             (Result<defs::readoutMode>(Detector::*)(sls::Positions)) &
+             (Result<defs::readoutMode>(Detector::*)(sls::Positions) const) &
                  Detector::getReadoutMode,
              py::arg() = Positions{})
         .def("setReadoutMode",
@@ -1039,14 +1093,14 @@ void init_det(py::module &m) {
                  Detector::setReadoutMode,
              py::arg(), py::arg() = Positions{})
         .def("getDBITClock",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getDBITClock,
              py::arg() = Positions{})
         .def("setDBITClock",
              (void (Detector::*)(int, sls::Positions)) & Detector::setDBITClock,
              py::arg(), py::arg() = Positions{})
         .def("getDBITPipeline",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getDBITPipeline,
              py::arg() = Positions{})
         .def("setDBITPipeline",
@@ -1054,19 +1108,19 @@ void init_det(py::module &m) {
                  Detector::setDBITPipeline,
              py::arg(), py::arg() = Positions{})
         .def("getMeasuredVoltage",
-             (Result<int>(Detector::*)(defs::dacIndex, sls::Positions)) &
+             (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
                  Detector::getMeasuredVoltage,
              py::arg(), py::arg() = Positions{})
         .def("getMeasuredCurrent",
-             (Result<int>(Detector::*)(defs::dacIndex, sls::Positions)) &
+             (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
                  Detector::getMeasuredCurrent,
              py::arg(), py::arg() = Positions{})
         .def("getSlowADC",
-             (Result<int>(Detector::*)(defs::dacIndex, sls::Positions)) &
+             (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
                  Detector::getSlowADC,
              py::arg(), py::arg() = Positions{})
         .def("getExternalSamplingSource",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getExternalSamplingSource,
              py::arg() = Positions{})
         .def("setExternalSamplingSource",
@@ -1074,7 +1128,7 @@ void init_det(py::module &m) {
                  Detector::setExternalSamplingSource,
              py::arg(), py::arg() = Positions{})
         .def("getExternalSampling",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getExternalSampling,
              py::arg() = Positions{})
         .def("setExternalSampling",
@@ -1082,7 +1136,7 @@ void init_det(py::module &m) {
                  Detector::setExternalSampling,
              py::arg(), py::arg() = Positions{})
         .def("getRxDbitList",
-             (Result<std::vector<int>>(Detector::*)(sls::Positions)) &
+             (Result<std::vector<int>>(Detector::*)(sls::Positions) const) &
                  Detector::getRxDbitList,
              py::arg() = Positions{})
         .def("setRxDbitList",
@@ -1090,7 +1144,7 @@ void init_det(py::module &m) {
                  Detector::setRxDbitList,
              py::arg(), py::arg() = Positions{})
         .def("getRxDbitOffset",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getRxDbitOffset,
              py::arg() = Positions{})
         .def("setRxDbitOffset",
@@ -1102,7 +1156,7 @@ void init_det(py::module &m) {
                  Detector::setDigitalIODelay,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("getLEDEnable",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getLEDEnable,
              py::arg() = Positions{})
         .def("setLEDEnable",
@@ -1117,7 +1171,7 @@ void init_det(py::module &m) {
              (void (Detector::*)(const std::string &)) & Detector::savePattern,
              py::arg())
         .def("getPatternIOControl",
-             (Result<uint64_t>(Detector::*)(sls::Positions)) &
+             (Result<uint64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getPatternIOControl,
              py::arg() = Positions{})
         .def("setPatternIOControl",
@@ -1125,7 +1179,7 @@ void init_det(py::module &m) {
                  Detector::setPatternIOControl,
              py::arg(), py::arg() = Positions{})
         .def("getPatternClockControl",
-             (Result<uint64_t>(Detector::*)(sls::Positions)) &
+             (Result<uint64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getPatternClockControl,
              py::arg() = Positions{})
         .def("setPatternClockControl",
@@ -1141,7 +1195,8 @@ void init_det(py::module &m) {
                  Detector::setPatternWord,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("getPatternLoopAddresses",
-             (Result<std::array<int, 2>>(Detector::*)(int, sls::Positions)) &
+             (Result<std::array<int, 2>>(Detector::*)(int, sls::Positions)
+                  const) &
                  Detector::getPatternLoopAddresses,
              py::arg(), py::arg() = Positions{})
         .def("setPatternLoopAddresses",
@@ -1149,7 +1204,7 @@ void init_det(py::module &m) {
                  Detector::setPatternLoopAddresses,
              py::arg(), py::arg(), py::arg(), py::arg() = Positions{})
         .def("getPatternLoopCycles",
-             (Result<int>(Detector::*)(int, sls::Positions)) &
+             (Result<int>(Detector::*)(int, sls::Positions) const) &
                  Detector::getPatternLoopCycles,
              py::arg(), py::arg() = Positions{})
         .def("setPatternLoopCycles",
@@ -1157,7 +1212,7 @@ void init_det(py::module &m) {
                  Detector::setPatternLoopCycles,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("getPatternWaitAddr",
-             (Result<int>(Detector::*)(int, sls::Positions)) &
+             (Result<int>(Detector::*)(int, sls::Positions) const) &
                  Detector::getPatternWaitAddr,
              py::arg(), py::arg() = Positions{})
         .def("setPatternWaitAddr",
@@ -1165,7 +1220,7 @@ void init_det(py::module &m) {
                  Detector::setPatternWaitAddr,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("getPatternWaitTime",
-             (Result<uint64_t>(Detector::*)(int, sls::Positions)) &
+             (Result<uint64_t>(Detector::*)(int, sls::Positions) const) &
                  Detector::getPatternWaitTime,
              py::arg(), py::arg() = Positions{})
         .def("setPatternWaitTime",
@@ -1181,16 +1236,19 @@ void init_det(py::module &m) {
                  Detector::setPatternMask,
              py::arg(), py::arg() = Positions{})
         .def("getPatternBitMask",
-             (Result<uint64_t>(Detector::*)(sls::Positions)) &
+             (Result<uint64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getPatternBitMask,
              py::arg() = Positions{})
         .def("setPatternBitMask",
              (void (Detector::*)(uint64_t, sls::Positions)) &
                  Detector::setPatternBitMask,
              py::arg(), py::arg() = Positions{})
+        .def("startPattern",
+             (void (Detector::*)(sls::Positions)) & Detector::startPattern,
+             py::arg() = Positions{})
         .def("getAdditionalJsonHeader",
              (Result<std::map<std::string, std::string>>(Detector::*)(
-                 sls::Positions)) &
+                 sls::Positions) const) &
                  Detector::getAdditionalJsonHeader,
              py::arg() = Positions{})
         .def("setAdditionalJsonHeader",
@@ -1200,7 +1258,7 @@ void init_det(py::module &m) {
              py::arg(), py::arg() = Positions{})
         .def("getAdditionalJsonParameter",
              (Result<std::string>(Detector::*)(const std::string &,
-                                               sls::Positions)) &
+                                               sls::Positions) const) &
                  Detector::getAdditionalJsonParameter,
              py::arg(), py::arg() = Positions{})
         .def("setAdditionalJsonParameter",
@@ -1209,7 +1267,7 @@ void init_det(py::module &m) {
                  Detector::setAdditionalJsonParameter,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("getDetectorMinMaxEnergyThreshold",
-             (Result<int>(Detector::*)(const bool, sls::Positions)) &
+             (Result<int>(Detector::*)(const bool, sls::Positions) const) &
                  Detector::getDetectorMinMaxEnergyThreshold,
              py::arg(), py::arg() = Positions{})
         .def("setDetectorMinMaxEnergyThreshold",
@@ -1217,7 +1275,7 @@ void init_det(py::module &m) {
                  Detector::setDetectorMinMaxEnergyThreshold,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("getFrameMode",
-             (Result<defs::frameModeType>(Detector::*)(sls::Positions)) &
+             (Result<defs::frameModeType>(Detector::*)(sls::Positions) const) &
                  Detector::getFrameMode,
              py::arg() = Positions{})
         .def("setFrameMode",
@@ -1225,7 +1283,8 @@ void init_det(py::module &m) {
                  Detector::setFrameMode,
              py::arg(), py::arg() = Positions{})
         .def("getDetectorMode",
-             (Result<defs::detectorModeType>(Detector::*)(sls::Positions)) &
+             (Result<defs::detectorModeType>(Detector::*)(sls::Positions)
+                  const) &
                  Detector::getDetectorMode,
              py::arg() = Positions{})
         .def("setDetectorMode",
@@ -1253,7 +1312,7 @@ void init_det(py::module &m) {
                  Detector::updateFirmwareAndServer,
              py::arg(), py::arg(), py::arg(), py::arg() = Positions{})
         .def("readRegister",
-             (Result<uint32_t>(Detector::*)(uint32_t, sls::Positions)) &
+             (Result<uint32_t>(Detector::*)(uint32_t, sls::Positions) const) &
                  Detector::readRegister,
              py::arg(), py::arg() = Positions{})
         .def("writeRegister",
@@ -1280,12 +1339,12 @@ void init_det(py::module &m) {
                  Detector::writeAdcRegister,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("getInitialChecks",
-             (bool (Detector::*)()) & Detector::getInitialChecks)
+             (bool (Detector::*)() const) & Detector::getInitialChecks)
         .def("setInitialChecks",
              (void (Detector::*)(const bool)) & Detector::setInitialChecks,
              py::arg())
         .def("getADCInvert",
-             (Result<uint32_t>(Detector::*)(sls::Positions)) &
+             (Result<uint32_t>(Detector::*)(sls::Positions) const) &
                  Detector::getADCInvert,
              py::arg() = Positions{})
         .def("setADCInvert",
@@ -1293,7 +1352,7 @@ void init_det(py::module &m) {
                  Detector::setADCInvert,
              py::arg(), py::arg() = Positions{})
         .def("getControlPort",
-             (Result<int>(Detector::*)(sls::Positions)) &
+             (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getControlPort,
              py::arg() = Positions{})
         .def("setControlPort",
@@ -1301,13 +1360,14 @@ void init_det(py::module &m) {
                  Detector::setControlPort,
              py::arg(), py::arg() = Positions{})
         .def("getStopPort",
-             (Result<int>(Detector::*)(sls::Positions)) & Detector::getStopPort,
+             (Result<int>(Detector::*)(sls::Positions) const) &
+                 Detector::getStopPort,
              py::arg() = Positions{})
         .def("setStopPort",
              (void (Detector::*)(int, sls::Positions)) & Detector::setStopPort,
              py::arg(), py::arg() = Positions{})
         .def("getDetectorLock",
-             (Result<bool>(Detector::*)(sls::Positions)) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getDetectorLock,
              py::arg() = Positions{})
         .def("setDetectorLock",
@@ -1315,7 +1375,7 @@ void init_det(py::module &m) {
                  Detector::setDetectorLock,
              py::arg(), py::arg() = Positions{})
         .def("getLastClientIP",
-             (Result<sls::IpAddr>(Detector::*)(sls::Positions)) &
+             (Result<sls::IpAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getLastClientIP,
              py::arg() = Positions{})
         .def("executeCommand",
@@ -1323,21 +1383,21 @@ void init_det(py::module &m) {
                  Detector::executeCommand,
              py::arg(), py::arg() = Positions{})
         .def("getNumberOfFramesFromStart",
-             (Result<int64_t>(Detector::*)(sls::Positions)) &
+             (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfFramesFromStart,
              py::arg() = Positions{})
         .def("getActualTime",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getActualTime,
              py::arg() = Positions{})
         .def("getMeasurementTime",
-             (Result<sls::ns>(Detector::*)(sls::Positions)) &
+             (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getMeasurementTime,
              py::arg() = Positions{})
         .def("getUserDetails",
-             (std::string(Detector::*)()) & Detector::getUserDetails)
+             (std::string(Detector::*)() const) & Detector::getUserDetails)
         .def("getRxCurrentFrameIndex",
-             (Result<uint64_t>(Detector::*)(sls::Positions)) &
+             (Result<uint64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getRxCurrentFrameIndex,
              py::arg() = Positions{});
 }

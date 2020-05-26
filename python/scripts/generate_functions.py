@@ -47,6 +47,8 @@ lines = []
 
 ag2 = []
 
+cn = []
+
 def get_arguments(node):
     args = [a.type.spelling for a in node.get_arguments()]
     args = [
@@ -66,8 +68,12 @@ def get_fdec(node):
     else:
         return_type = 'void'
     
+    if node.is_const_method():
+        const = 'const'
+    else:
+        const = ''
     args = ", ".join(args)
-    args = f'({return_type}(Detector::*)({args}))'
+    args = f'({return_type}(Detector::*)({args}){const})'
     return args
 
 
@@ -85,6 +91,7 @@ def visit(node):
                     lines.append(
                         f'.def("{child.spelling}",{fs} &Detector::{child.spelling}{args})'
                     )
+                    cn.append(child)
     for child in node.get_children():
         visit(child)
 

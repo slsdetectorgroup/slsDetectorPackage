@@ -8,12 +8,17 @@
 #include "network_utils.h"
 #include "sls_detector_defs.h"
 #include "typecaster.h"
+
+#include "TimeHelper.h"
+#include <array>
+#include <chrono>
 namespace py = pybind11;
 void init_det(py::module &m) {
     using sls::Detector;
     using sls::Positions;
     using sls::Result;
     using sls::defs;
+    using sls::ns;
     
     py::class_<Detector> CppDetectorApi(m, "CppDetectorApi");
     CppDetectorApi

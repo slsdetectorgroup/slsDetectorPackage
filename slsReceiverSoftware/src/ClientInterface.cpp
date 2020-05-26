@@ -417,7 +417,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
     // acquisition parameters
     impl()->setNumberOfFrames(arg.frames);
     impl()->setNumberOfTriggers(arg.triggers);
-    if (myDetectorType == GOTTHARD) {
+    if (myDetectorType == GOTTHARD2) {
         impl()->setNumberOfBursts(arg.bursts);
     }
     if (myDetectorType == MOENCH || myDetectorType == CHIPTESTBOARD) {
@@ -503,7 +503,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
         int ncounters = __builtin_popcount(arg.countermask);
         impl()->setNumberofCounters(ncounters);
     }
-    if (myDetectorType == GOTTHARD) {
+    if (myDetectorType == GOTTHARD2) {
         impl()->setBurstMode(arg.burstType);
     }
 

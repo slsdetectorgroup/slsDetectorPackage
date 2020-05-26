@@ -101,7 +101,7 @@ void Implementation::InitializeMembers() {
     numberOfBursts = 1;
     numberOfAdditionalStorageCells = 0;
     timingMode = AUTO_TIMING;
-    burstMode = BURST_OFF;
+    burstMode = BURST_INTERNAL;
     acquisitionPeriod = SAMPLE_TIME_IN_NS;
     acquisitionTime = 0;
     subExpTime = 0;
@@ -1280,7 +1280,7 @@ void Implementation::updateTotalNumberOfFrames() {
     // burst mode: (bursts instead of triggers)
     // non burst mode: no bursts or triggers
     if (myDetectorType == GOTTHARD2 && timingMode == AUTO_TIMING) {
-        if (burstMode == BURST_OFF) {
+        if (burstMode != BURST_OFF) {
             repeats = numberOfBursts;
         } else {
             repeats = 1;

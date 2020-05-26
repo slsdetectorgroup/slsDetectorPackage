@@ -12,7 +12,7 @@
 #define NADC                        (32)
 #define ONCHIP_NDAC                 (7)
 #define DYNAMIC_RANGE               (16)
-#define HV_SOFT_MAX_VOLTAGE         (200)
+#define HV_SOFT_MAX_VOLTAGE         (500)
 #define HV_HARD_MAX_VOLTAGE         (530)
 #define HV_DRIVER_FILE_NAME         ("/etc/devlinks/hvdac")
 #define DAC_DRIVER_FILE_NAME        ("/etc/devlinks/dac")

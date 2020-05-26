@@ -205,6 +205,8 @@ void qTabMeasurement::SetupTimingMode() {
             item[(int)GATED]->setEnabled(true);
             item[(int)TRIGGER_GATED]->setEnabled(true);
             break;
+        default:
+            break;
         }
     }
 }

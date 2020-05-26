@@ -1319,7 +1319,7 @@ Module::getExternalSignalFlags(int signalIndex) {
 
 void Module::setExternalSignalFlags(int signalIndex, externalSignalFlag type) {
     LOG(logDEBUG1) << "Setting signal flag (" << signalIndex << ") to " << type;
-    int args[2] = {signalIndex, static_cast<int>(type)};
+    int args[]{signalIndex, static_cast<int>(type)};
     sendToDetector(F_SET_EXTERNAL_SIGNAL_FLAG, args, nullptr);
 }
 

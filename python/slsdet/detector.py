@@ -8,7 +8,7 @@ dacIndex = slsDetectorDefs.dacIndex
 detectorType = slsDetectorDefs.detectorType
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
-from .utils import Geometry, to_geo, element, reduce_time
+from .utils import Geometry, to_geo, element, reduce_time, is_iterable
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -183,6 +183,26 @@ class Detector(CppDetectorApi):
             self.setExptime(t)
         else:
             self.setExptime(dt.timedelta(seconds=t))
+
+    @property
+    def gatedelay(self):
+        return reduce_time(self.getGateDelayForAllGates())
+
+    @gatedelay.setter
+    def gatedelay(self, value):
+        if is_iterable(value):
+            if len(value) == 3:
+                for i,v in enumerate(value):
+                    if isinstance(v, dt.timedelta):
+                        self.setGateDelay(i, v)
+                    else:
+                        self.setGateDelay(i, dt.timedelta(seconds = v))
+        else:
+            if isinstance(value, dt.timedelta):
+                self.setGateDelay(-1, value)
+            else:
+                self.setGateDelay(-1, dt.timedelta(seconds=value))
+            
 
     @property
     def subexptime(self):

@@ -11,7 +11,7 @@ import datetime as dt
 
 Geometry = namedtuple('Geometry', ['x', 'y'])
 
-def iterable(item):
+def is_iterable(item):
     try: 
         iter(item)
     except TypeError:
@@ -48,7 +48,7 @@ def all_equal(mylist):
 
 def element_if_equal(mylist):
     """If all elements are equal return only one element"""
-    if not iterable(mylist):
+    if not is_iterable(mylist):
         return mylist
         
     if all_equal(mylist):
@@ -63,6 +63,8 @@ def reduce_time(mylist):
     res = element_if_equal(element_if_equal(mylist))
     if isinstance(res, dt.timedelta):
         return res.total_seconds()
+    elif isinstance(res[0], list):
+        return [[item.total_seconds() for item in subl] for subl in res]
     else:
         return [r.total_seconds() for r in res]
 

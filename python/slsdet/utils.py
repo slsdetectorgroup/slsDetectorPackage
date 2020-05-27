@@ -7,9 +7,16 @@ but not directly used in controlling the detector
 from collections import namedtuple
 import _slsdet #C++ lib
 import functools
-
+import datetime as dt
 
 Geometry = namedtuple('Geometry', ['x', 'y'])
+
+def iterable(item):
+    try: 
+        iter(item)
+    except TypeError:
+        return False
+    return True
 
 def get_set_bits(mask):
     """
@@ -41,6 +48,9 @@ def all_equal(mylist):
 
 def element_if_equal(mylist):
     """If all elements are equal return only one element"""
+    if not iterable(mylist):
+        return mylist
+        
     if all_equal(mylist):
         if len(mylist) == 0:
             return None
@@ -48,6 +58,13 @@ def element_if_equal(mylist):
             return mylist[0]
     else:
         return mylist
+
+def reduce_time(mylist):
+    res = element_if_equal(element_if_equal(mylist))
+    if isinstance(res, dt.timedelta):
+        return res.total_seconds()
+    else:
+        return [r.total_seconds() for r in res]
 
 def element(func):
     """

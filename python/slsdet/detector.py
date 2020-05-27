@@ -5,9 +5,10 @@ from _slsdet import IpAddr, MacAddr
 runStatus = slsDetectorDefs.runStatus
 speedLevel = slsDetectorDefs.speedLevel
 dacIndex = slsDetectorDefs.dacIndex
+detectorType = slsDetectorDefs.detectorType
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
-from .utils import Geometry, to_geo, element
+from .utils import Geometry, to_geo, element, reduce_time
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -170,6 +171,9 @@ class Detector(CppDetectorApi):
 
     @property
     def exptime(self):
+        if self.type == detectorType.MYTHEN3:
+            res = self.getExptimeForAllGates()
+            return reduce_time(res)
         res = self.getExptime()
         return element_if_equal([it.total_seconds() for it in res])
 

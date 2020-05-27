@@ -5,7 +5,28 @@ Testing functions from utils.py
 """
 
 import pytest
-from sls_detector.utils import *
+from slsdet.utils import *
+import datetime as dt
+
+def test_iterable():
+    assert iterable(5) == False
+    assert iterable('abc') == True
+    assert iterable([]) == True
+    assert iterable(5.9) == False
+
+def test_reduce_time_to_single_value_from_list():
+    t = 3*[dt.timedelta(seconds = 1)]
+    assert reduce_time(t) == 1
+
+def test_reduce_time_to_single_value_from_list_of_lists():
+    t = 3*[dt.timedelta(seconds = 3.3)]
+    tt = 5*t
+    assert reduce_time(tt) == 3.3
+
+def test_reduce_time_when_sublist_is_different():
+    t = [dt.timedelta(seconds = 1), dt.timedelta(seconds = 2), dt.timedelta(seconds = 1)]
+    tt = 4*t
+    assert reduce_time(tt) == [1,2,1]
 
 
 def test_convert_zero():

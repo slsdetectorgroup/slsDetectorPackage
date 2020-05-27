@@ -518,6 +518,8 @@ void setCurrentSource(int value);
 int getCurrentSource();
 void setTimingSource(enum timingSourceType value);
 enum timingSourceType getTimingSource();
+void setVeto(int enable);
+int getVeto();
 #endif
 
 #if defined(JUNGFRAUD) || defined(EIGERD)

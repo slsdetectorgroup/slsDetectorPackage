@@ -1295,23 +1295,21 @@ void setNumberofUDPInterfaces(int val) {
 
     // 2 interfaces (enable veto)
     if (val > 1) {
-        LOG(logINFOBLUE,
-            ("Setting #Interfaces: 2 (enabling veto streaming)\n"));
-        bus_w(addr, bus_r(addr) | CONFIG_VETO_ENBL_MSK);
+        LOG(logINFOBLUE, ("Setting #Interfaces: 2 (10gbps veto streaming)\n"));
+        bus_w(addr, bus_r(addr) | CONFIG_VETO_CH_10GB_ENBL_MSK);
     }
     // 1 interface (disable veto)
     else {
-        LOG(logINFOBLUE,
-            ("Setting #Interfaces: 1 (disabling veto streaming)\n"));
-        bus_w(addr, bus_r(addr) & ~CONFIG_VETO_ENBL_MSK);
+        LOG(logINFOBLUE, ("Setting #Interfaces: 1 (2.5gbps veto streaming)\n"));
+        bus_w(addr, bus_r(addr) & ~CONFIG_VETO_CH_10GB_ENBL_MSK);
     }
     LOG(logDEBUG, ("config reg:0x%x\n", bus_r(addr)));
 }
 
 int getNumberofUDPInterfaces() {
     LOG(logDEBUG, ("config reg:0x%x\n", bus_r(CONFIG_REG)));
-    // return 2 if veto enabled, else 1
-    return ((bus_r(CONFIG_REG) & CONFIG_VETO_ENBL_MSK) ? 2 : 1);
+    // return 2 if 10gbps veto streaming enabled, else 1
+    return ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_10GB_ENBL_MSK) ? 2 : 1);
 }
 
 void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
@@ -2205,6 +2203,27 @@ enum timingSourceType getTimingSource() {
         return TIMING_EXTERNAL;
     }
     return TIMING_INTERNAL;
+}
+
+void setVeto(int enable) {
+    if (enable >= 0) {
+        uint32_t addr = CONFIG_REG;
+
+        if (enable) {
+            LOG(logINFOBLUE, ("Enabling veto streaming\n"));
+            bus_w(addr, bus_r(addr) | CONFIG_VETO_ENBL_MSK);
+        } else {
+            LOG(logINFOBLUE, ("Disabling veto streaming\n"));
+            bus_w(addr, bus_r(addr) & ~CONFIG_VETO_ENBL_MSK);
+        }
+        LOG(logDEBUG, ("config reg:0x%x\n", bus_r(addr)));
+    }
+}
+
+int getVeto() {
+    LOG(logDEBUG, ("config reg:0x%x\n", bus_r(CONFIG_REG)));
+    return ((bus_r(CONFIG_REG) & CONFIG_VETO_ENBL_MSK) >>
+            CONFIG_VETO_ENBL_OFST);
 }
 
 /* aquisition */

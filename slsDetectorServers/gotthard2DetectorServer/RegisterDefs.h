@@ -89,6 +89,8 @@
 
 #define CONFIG_VETO_ENBL_OFST               (0)
 #define CONFIG_VETO_ENBL_MSK                (0x00000001 << CONFIG_VETO_ENBL_OFST)
+#define CONFIG_VETO_CH_10GB_ENBL_OFST       (1)
+#define CONFIG_VETO_CH_10GB_ENBL_MSK        (0x00000001 << CONFIG_VETO_CH_10GB_ENBL_OFST)
 
 /* Control RW register */
 #define CONTROL_REG                         (0x21 * REG_OFFSET + BASE_CONTROL)

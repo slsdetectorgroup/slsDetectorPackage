@@ -100,10 +100,17 @@ void Implementation::InitializeMembers() {
     numberOfTriggers = 1;
     numberOfBursts = 1;
     numberOfAdditionalStorageCells = 0;
+    numberOfGates = 0;
     timingMode = AUTO_TIMING;
     burstMode = BURST_OFF;
     acquisitionPeriod = SAMPLE_TIME_IN_NS;
     acquisitionTime = 0;
+    acquisitionTime1 = 0;
+    acquisitionTime2 = 0;
+    acquisitionTime3 = 0;
+    gateDelay1 = 0;
+    gateDelay2 = 0;
+    gateDelay3 = 0;
     subExpTime = 0;
     subPeriod = 0;
     numberOfAnalogSamples = 0;
@@ -889,6 +896,13 @@ void Implementation::SetupWriter() {
     for (auto &i : ctbDbitList) {
         attr.dbitlist |= (1 << i);
     }
+    attr.exptime1Ns = acquisitionTime1;
+    attr.exptime2Ns = acquisitionTime2;
+    attr.exptime3Ns = acquisitionTime3;
+    attr.gateDelay1Ns = gateDelay1;
+    attr.gateDelay2Ns = gateDelay2;
+    attr.gateDelay3Ns = gateDelay3;
+    attr.gates = numberOfGates;
 
     try {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
@@ -1343,6 +1357,12 @@ void Implementation::setNumberOfAdditionalStorageCells(const int i) {
     updateTotalNumberOfFrames();
 }
 
+void Implementation::setNumberOfGates(const int i) {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    numberOfGates = i;
+    LOG(logINFO) << "Number of Gates: " << numberOfGates;
+}
+
 slsDetectorDefs::timingMode Implementation::getTimingMode() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return timingMode;
@@ -1385,12 +1405,69 @@ uint64_t Implementation::getAcquisitionTime() const {
     return acquisitionTime;
 }
 
+void Implementation::updateAcquisitionTime() {
+    if (acquisitionTime1 == acquisitionTime2 &&
+        acquisitionTime2 == acquisitionTime3) {
+        acquisitionTime = acquisitionTime1;
+    } else {
+        acquisitionTime = -1;
+    }
+}
+
 void Implementation::setAcquisitionTime(const uint64_t i) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
 
     acquisitionTime = i;
     LOG(logINFO) << "Acquisition Time: " << (double)acquisitionTime / (1E9)
                  << "s";
+}
+
+void Implementation::setAcquisitionTime1(const uint64_t i) {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+
+    acquisitionTime1 = i;
+    LOG(logINFO) << "Acquisition Time1: " << (double)acquisitionTime1 / (1E9)
+                 << "s";
+    updateAcquisitionTime();
+}
+
+void Implementation::setAcquisitionTime2(const uint64_t i) {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+
+    acquisitionTime2 = i;
+    LOG(logINFO) << "Acquisition Time2: " << (double)acquisitionTime2 / (1E9)
+                 << "s";
+    updateAcquisitionTime();
+}
+
+void Implementation::setAcquisitionTime3(const uint64_t i) {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+
+    acquisitionTime3 = i;
+    LOG(logINFO) << "Acquisition Time3: " << (double)acquisitionTime3 / (1E9)
+                 << "s";
+    updateAcquisitionTime();
+}
+
+void Implementation::setGateDelay1(const uint64_t i) {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+
+    gateDelay1 = i;
+    LOG(logINFO) << "Gate Delay1: " << (double)gateDelay1 / (1E9) << "s";
+}
+
+void Implementation::setGateDelay2(const uint64_t i) {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+
+    gateDelay2 = i;
+    LOG(logINFO) << "Gate Delay2: " << (double)gateDelay2 / (1E9) << "s";
+}
+
+void Implementation::setGateDelay3(const uint64_t i) {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+
+    gateDelay3 = i;
+    LOG(logINFO) << "Gate Delay3: " << (double)gateDelay3 / (1E9) << "s";
 }
 
 uint64_t Implementation::getSubExpTime() const {

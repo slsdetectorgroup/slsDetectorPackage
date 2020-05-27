@@ -128,6 +128,8 @@ std::string ToString(const defs::timingMode s) {
         return std::string("gating");
     case defs::BURST_TRIGGER:
         return std::string("burst_trigger");
+    case defs::TRIGGER_GATED:
+        return std::string("trigger_gating");
     default:
         return std::string("Unknown");
     }
@@ -163,6 +165,10 @@ std::string ToString(const defs::externalSignalFlag s) {
         return std::string("trigger_in_rising_edge");
     case defs::TRIGGER_IN_FALLING_EDGE:
         return std::string("trigger_in_falling_edge");
+    case defs::INVERSION_ON:
+        return std::string("inversion_on");
+    case defs::INVERSION_OFF:
+        return std::string("inversion_off");
     default:
         return std::string("Unknown");
     }
@@ -318,6 +324,8 @@ template <> defs::timingMode StringTo(const std::string &s) {
         return defs::GATED;
     if (s == "burst_trigger")
         return defs::BURST_TRIGGER;
+    if (s == "trigger_gating")
+        return defs::TRIGGER_GATED;
     throw sls::RuntimeError("Unknown timing mode " + s);
 }
 
@@ -344,6 +352,10 @@ template <> defs::externalSignalFlag StringTo(const std::string &s) {
         return defs::TRIGGER_IN_RISING_EDGE;
     if (s == "trigger_in_falling_edge")
         return defs::TRIGGER_IN_FALLING_EDGE;
+    if (s == "inversion_on")
+        return defs::INVERSION_ON;
+    if (s == "inversion_off")
+        return defs::INVERSION_OFF;
     throw sls::RuntimeError("Unknown external signal flag " + s);
 }
 

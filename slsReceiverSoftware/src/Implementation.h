@@ -140,15 +140,34 @@ class Implementation : private virtual slsDetectorDefs {
     uint64_t getNumberOfTriggers() const;
     void setNumberOfTriggers(const uint64_t i);
     uint64_t getNumberOfBursts() const;
+    /** [Gottthard2] */
     void setNumberOfBursts(const uint64_t i);
     int getNumberOfAdditionalStorageCells() const;
+    /** [Jungfrau] */
     void setNumberOfAdditionalStorageCells(const int i);
+    /** [Mythen3] */
+    void setNumberOfGates(const int i);
     timingMode getTimingMode() const;
     void setTimingMode(const timingMode i);
     burstMode getBurstMode() const;
+    /** [Gottthard2] */
     void setBurstMode(const burstMode i);
     uint64_t getAcquisitionTime() const;
     void setAcquisitionTime(const uint64_t i);
+    /** [Mythen3] */
+    void updateAcquisitionTime();
+    /** [Mythen3] */
+    void setAcquisitionTime1(const uint64_t i);
+    /** [Mythen3] */
+    void setAcquisitionTime2(const uint64_t i);
+    /** [Mythen3] */
+    void setAcquisitionTime3(const uint64_t i);
+    /** [Mythen3] */
+    void setGateDelay1(const uint64_t i);
+    /** [Mythen3] */
+    void setGateDelay2(const uint64_t i);
+    /** [Mythen3] */
+    void setGateDelay3(const uint64_t i);
     uint64_t getAcquisitionPeriod() const;
     void setAcquisitionPeriod(const uint64_t i);
     uint64_t getSubExpTime() const;
@@ -286,10 +305,17 @@ class Implementation : private virtual slsDetectorDefs {
     uint64_t numberOfTriggers;
     uint64_t numberOfBursts;
     int numberOfAdditionalStorageCells;
+    int numberOfGates;
     timingMode timingMode;
     burstMode burstMode;
     uint64_t acquisitionPeriod;
     uint64_t acquisitionTime;
+    uint64_t acquisitionTime1;
+    uint64_t acquisitionTime2;
+    uint64_t acquisitionTime3;
+    uint64_t gateDelay1;
+    uint64_t gateDelay2;
+    uint64_t gateDelay3;
     uint64_t subExpTime;
     uint64_t subPeriod;
     uint64_t numberOfAnalogSamples;

@@ -333,6 +333,110 @@ std::string CmdProxy::DetectorSize(int action) {
 
 /* acquisition parameters */
 
+std::string CmdProxy::Exptime(int action) {
+    int gateIndex = -1;
+    if (cmd == "exptime") {
+        gateIndex = -1;
+    } else if (cmd == "exptime1") {
+        gateIndex = 0;
+    } else if (cmd == "exptime2") {
+        gateIndex = 1;
+    } else if (cmd == "exptime3") {
+        gateIndex = 2;
+    } else {
+        throw sls::RuntimeError(
+            "Unknown command, use list to list all commands");
+    }
+
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        if (cmd == "exptime") {
+            os << "[duration] [(optional unit) "
+                  "ns|us|ms|s]\n\t[Eiger][Jungfrau][Gotthard][Gotthard2]["
+                  "Moench][Ctb] Exposure time"
+                  "\n\t[Gotthard2] Uploaded to detector just before "
+                  "acquisition starts"
+                  "\n\t[Mythen3] Exposure time of all gate signals in auto and "
+                  "trigger mode (internal gating)."
+               << '\n';
+        } else if (cmd == "exptime1") {
+            os << "[n_value]\n\t[Mythen3] Exposure time of gate signal 1 in "
+                  "auto and "
+                  "trigger mode (internal gating)."
+               << '\n';
+        } else if (cmd == "exptime2") {
+            os << "[n_value]\n\t[Mythen3] Exposure time of gate signal 2 in "
+                  "auto and "
+                  "trigger mode (internal gating)."
+               << '\n';
+        } else {
+            os << "[n_value]\n\t[Mythen3] Exposure time of gate signal 3 in "
+                  "auto and "
+                  "trigger mode (internal gating)."
+               << '\n';
+        }
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() > 1) {
+            WrongNumberOfParameters(1);
+        }
+        // vector of exptimes
+        if (gateIndex == -1 &&
+            det->getDetectorType().squash() == defs::MYTHEN3) {
+            auto t = det->getExptimeForAllGates({det_id});
+            if (args.size() == 0) {
+                os << OutString(t) << '\n';
+            } else if (args.size() == 1) {
+                os << OutString(t, args[0]) << '\n';
+            }
+        }
+        // single exptime
+        else {
+            Result<ns> t;
+            if (gateIndex == -1) {
+                t = det->getExptime({det_id});
+            } else {
+                t = det->getExptime(gateIndex, {det_id});
+            }
+            if (args.size() == 0) {
+                os << OutString(t) << '\n';
+            } else if (args.size() == 1) {
+                os << OutString(t, args[0]) << '\n';
+            }
+        }
+    } else if (action == defs::PUT_ACTION) {
+        defs::detectorType type = det->getDetectorType().squash();
+        if (args.size() == 1) {
+            std::string time_str(args[0]);
+            std::string unit = RemoveUnit(time_str);
+            auto t = StringTo<time::ns>(time_str, unit);
+            if (type == defs::MYTHEN3) {
+                det->setExptime(gateIndex, t, {det_id});
+            } else {
+                det->setExptime(t, {det_id});
+            }
+        } else if (args.size() == 2) {
+            auto t = StringTo<time::ns>(args[0], args[1]);
+            if (type == defs::MYTHEN3) {
+                det->setExptime(gateIndex, t, {det_id});
+            } else {
+                det->setExptime(t, {det_id});
+            }
+        } else {
+            WrongNumberOfParameters(2);
+        }
+        /* TODO: os << args << '\n'; (doesnt work for vectors in .h)*/
+        if (args.size() > 1) {
+            os << args[0] << args[1] << '\n';
+        } else {
+            os << args[0] << '\n';
+        }
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::Speed(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -648,6 +752,39 @@ std::string CmdProxy::ClockDivider(int action) {
         } else {
             throw sls::RuntimeError("Unknown action");
         }
+    }
+    return os.str();
+}
+
+std::string CmdProxy::ExternalSignal(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[n_signal] [signal_type] External signal mode for trigger "
+              "timing mode."
+              "\n\t[Gotthard] [0] "
+              "[trigger_in_rising_edge|trigger_in_falling_edge]"
+              "\n\t[Mythen3] [0-7] "
+              "[trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|"
+              "inversion_off]\n\t where 0-3 is master input signals and 4-7 is "
+              "master output signals"
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        auto t = det->getExternalSignalFlags(StringTo<int>(args[0]), {det_id});
+        os << args[0] << " " << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }
+        det->setExternalSignalFlags(
+            StringTo<int>(args[0]),
+            StringTo<slsDetectorDefs::externalSignalFlag>(args[1]), {det_id});
+        os << args[0] << " " << args[1] << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
     }
     return os.str();
 }
@@ -1585,6 +1722,92 @@ std::string CmdProxy::Counters(int action) {
         }
         det->setCounterMask(mask, {det_id});
         os << sls::ToString(args) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::GateDelay(int action) {
+    int gateIndex = -1;
+    if (cmd == "gatedelay") {
+        gateIndex = -1;
+    } else if (cmd == "gatedelay1") {
+        gateIndex = 0;
+    } else if (cmd == "gatedelay2") {
+        gateIndex = 1;
+    } else if (cmd == "gatedelay3") {
+        gateIndex = 2;
+    } else {
+        throw sls::RuntimeError(
+            "Unknown command, use list to list all commands");
+    }
+
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        if (cmd == "gatedelay") {
+            os << "[duration] [(optional unit) "
+                  "ns|us|ms|s]\n\t[Mythen3] Gate Delay of all gate signals in "
+                  "auto and "
+                  "trigger mode (internal gating)."
+               << '\n';
+        } else if (cmd == "gatedelay1") {
+            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 1 in "
+                  "auto and "
+                  "trigger mode (internal gating)."
+               << '\n';
+        } else if (cmd == "gatedelay2") {
+            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 2 in "
+                  "auto and "
+                  "trigger mode (internal gating)."
+               << '\n';
+        } else {
+            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 3 in "
+                  "auto and "
+                  "trigger mode (internal gating)."
+               << '\n';
+        }
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() > 1) {
+            WrongNumberOfParameters(1);
+        }
+        // vector of gate delays
+        if (gateIndex == -1) {
+            auto t = det->getGateDelayForAllGates({det_id});
+            if (args.size() == 0) {
+                os << OutString(t) << '\n';
+            } else if (args.size() == 1) {
+                os << OutString(t, args[0]) << '\n';
+            }
+        }
+        // single gate delay
+        else {
+            auto t = det->getGateDelay(gateIndex, {det_id});
+            if (args.size() == 0) {
+                os << OutString(t) << '\n';
+            } else if (args.size() == 1) {
+                os << OutString(t, args[0]) << '\n';
+            }
+        }
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() == 1) {
+            std::string time_str(args[0]);
+            std::string unit = RemoveUnit(time_str);
+            auto t = StringTo<time::ns>(time_str, unit);
+            det->setGateDelay(gateIndex, t, {det_id});
+        } else if (args.size() == 2) {
+            auto t = StringTo<time::ns>(args[0], args[1]);
+            det->setGateDelay(gateIndex, t, {det_id});
+        } else {
+            WrongNumberOfParameters(2);
+        }
+        /* TODO: os << args << '\n'; (doesnt work for vectors in .h)*/
+        if (args.size() > 1) {
+            os << args[0] << args[1] << '\n';
+        } else {
+            os << args[0] << '\n';
+        }
     } else {
         throw sls::RuntimeError("Unknown action");
     }

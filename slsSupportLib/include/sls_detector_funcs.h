@@ -11,6 +11,7 @@
 enum detFuncs {
     F_EXEC_COMMAND = 0,
     F_GET_DETECTOR_TYPE,
+    F_GET_EXTERNAL_SIGNAL_FLAG,
     F_SET_EXTERNAL_SIGNAL_FLAG,
     F_SET_TIMING_MODE,
     F_GET_FIRMWARE_VERSION,
@@ -197,6 +198,13 @@ enum detFuncs {
     F_GET_NUM_CHANNELS,
     F_UPDATE_RATE_CORRECTION,
     F_GET_RECEIVER_PARAMETERS,
+    F_START_PATTERN,
+    F_SET_NUM_GATES,
+    F_GET_NUM_GATES,
+    F_SET_GATE_DELAY,
+    F_GET_GATE_DELAY,
+    F_GET_EXPTIME_ALL_GATES,
+    F_GET_GATE_DELAY_ALL_GATES,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -291,6 +299,8 @@ enum detFuncs {
     F_GET_ADDITIONAL_JSON_PARAMETER,
     F_GET_RECEIVER_PROGRESS,
     F_SETUP_RECEIVER,
+    F_SET_RECEIVER_NUM_GATES,
+    F_SET_RECEIVER_GATE_DELAY,
 
     NUM_REC_FUNCTIONS
 };
@@ -304,6 +314,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	switch (func) {
 	case F_EXEC_COMMAND:					return "F_EXEC_COMMAND";
 	case F_GET_DETECTOR_TYPE:				return "F_GET_DETECTOR_TYPE";
+    case F_GET_EXTERNAL_SIGNAL_FLAG:        return "F_GET_EXTERNAL_SIGNAL_FLAG";
 	case F_SET_EXTERNAL_SIGNAL_FLAG:		return "F_SET_EXTERNAL_SIGNAL_FLAG";
 	case F_SET_TIMING_MODE:					return "F_SET_TIMING_MODE";
 	case F_GET_FIRMWARE_VERSION:			return "F_GET_FIRMWARE_VERSION";	
@@ -490,6 +501,14 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_NUM_CHANNELS:				return "F_GET_NUM_CHANNELS";
 	case F_UPDATE_RATE_CORRECTION:			return "F_UPDATE_RATE_CORRECTION";
 	case F_GET_RECEIVER_PARAMETERS:			return "F_GET_RECEIVER_PARAMETERS";
+    case F_START_PATTERN:                   return "F_START_PATTERN";
+    case F_SET_NUM_GATES:                   return "F_SET_NUM_GATES";           
+    case F_GET_NUM_GATES:                   return "F_GET_NUM_GATES";           
+    case F_SET_GATE_DELAY:                  return "F_SET_GATE_DELAY";       
+    case F_GET_GATE_DELAY:                  return "F_GET_GATE_DELAY";     
+    case F_GET_EXPTIME_ALL_GATES:           return "F_GET_EXPTIME_ALL_GATES";        
+    case F_GET_GATE_DELAY_ALL_GATES:        return "F_GET_GATE_DELAY_ALL_GATES";            
+
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
@@ -583,6 +602,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_ADDITIONAL_JSON_PARAMETER:	return "F_GET_ADDITIONAL_JSON_PARAMETER";
 	case F_GET_RECEIVER_PROGRESS:			return "F_GET_RECEIVER_PROGRESS";
 	case F_SETUP_RECEIVER:					return "F_SETUP_RECEIVER";
+    case F_SET_RECEIVER_NUM_GATES:          return "F_SET_RECEIVER_NUM_GATES"               ;
+    case F_SET_RECEIVER_GATE_DELAY:         return "F_SET_RECEIVER_GATE_DELAY"              ;
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";
@@ -590,4 +611,3 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 
     // clang-format on
 }
-

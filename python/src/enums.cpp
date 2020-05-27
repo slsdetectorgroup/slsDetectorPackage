@@ -65,38 +65,14 @@ void init_enums(py::module &m) {
         .export_values();
 
     py::enum_<slsDetectorDefs::externalSignalFlag>(Defs, "externalSignalFlag")
-        .value("GET_EXTERNAL_SIGNAL_FLAG",
-               slsDetectorDefs::externalSignalFlag::GET_EXTERNAL_SIGNAL_FLAG)
-        .value("SIGNAL_OFF", slsDetectorDefs::externalSignalFlag::SIGNAL_OFF)
-        .value("GATE_IN_ACTIVE_HIGH",
-               slsDetectorDefs::externalSignalFlag::GATE_IN_ACTIVE_HIGH)
-        .value("GATE_IN_ACTIVE_LOW",
-               slsDetectorDefs::externalSignalFlag::GATE_IN_ACTIVE_LOW)
         .value("TRIGGER_IN_RISING_EDGE",
                slsDetectorDefs::externalSignalFlag::TRIGGER_IN_RISING_EDGE)
         .value("TRIGGER_IN_FALLING_EDGE",
                slsDetectorDefs::externalSignalFlag::TRIGGER_IN_FALLING_EDGE)
-        .value("RO_TRIGGER_IN_RISING_EDGE",
-               slsDetectorDefs::externalSignalFlag::RO_TRIGGER_IN_RISING_EDGE)
-        .value("RO_TRIGGER_IN_FALLING_EDGE",
-               slsDetectorDefs::externalSignalFlag::RO_TRIGGER_IN_FALLING_EDGE)
-        .value("GATE_OUT_ACTIVE_HIGH",
-               slsDetectorDefs::externalSignalFlag::GATE_OUT_ACTIVE_HIGH)
-        .value("GATE_OUT_ACTIVE_LOW",
-               slsDetectorDefs::externalSignalFlag::GATE_OUT_ACTIVE_LOW)
-        .value("TRIGGER_OUT_RISING_EDGE",
-               slsDetectorDefs::externalSignalFlag::TRIGGER_OUT_RISING_EDGE)
-        .value("TRIGGER_OUT_FALLING_EDGE",
-               slsDetectorDefs::externalSignalFlag::TRIGGER_OUT_FALLING_EDGE)
-        .value("RO_TRIGGER_OUT_RISING_EDGE",
-               slsDetectorDefs::externalSignalFlag::RO_TRIGGER_OUT_RISING_EDGE)
-        .value("RO_TRIGGER_OUT_FALLING_EDGE",
-               slsDetectorDefs::externalSignalFlag::RO_TRIGGER_OUT_FALLING_EDGE)
-        .value("OUTPUT_LOW", slsDetectorDefs::externalSignalFlag::OUTPUT_LOW)
-        .value("OUTPUT_HIGH", slsDetectorDefs::externalSignalFlag::OUTPUT_HIGH)
-        .value(
-            "MASTER_SLAVE_SYNCHRONIZATION",
-            slsDetectorDefs::externalSignalFlag::MASTER_SLAVE_SYNCHRONIZATION)
+        .value("INVERSION_ON",
+               slsDetectorDefs::externalSignalFlag::INVERSION_ON)
+        .value("INVERSION_OFF",
+               slsDetectorDefs::externalSignalFlag::INVERSION_OFF)
         .export_values();
 
     py::enum_<slsDetectorDefs::timingMode>(Defs, "timingMode")
@@ -106,6 +82,9 @@ void init_enums(py::module &m) {
                slsDetectorDefs::timingMode::TRIGGER_EXPOSURE)
         .value("GATED", slsDetectorDefs::timingMode::GATED)
         .value("BURST_TRIGGER", slsDetectorDefs::timingMode::BURST_TRIGGER)
+        .value("TRIGGER_GATED", slsDetectorDefs::timingMode::TRIGGER_GATED)
+        .value("NUM_TIMING_MODES",
+               slsDetectorDefs::timingMode::NUM_TIMING_MODES)
         .export_values();
 
     py::enum_<slsDetectorDefs::dacIndex>(Defs, "dacIndex")
@@ -248,22 +227,22 @@ void init_enums(py::module &m) {
 
     py::enum_<slsDetectorDefs::clockIndex>(Defs, "clockIndex")
         .value("ADC_CLOCK", slsDetectorDefs::clockIndex::ADC_CLOCK)
-        .value("DBIT_CLOCK", slsDetectorDefs::clockIndex::DBIT_CLOCK)
-        .value("RUN_CLOCK", slsDetectorDefs::clockIndex::RUN_CLOCK)
-        .value("SYNC_CLOCK", slsDetectorDefs::clockIndex::SYNC_CLOCK)
+        .value(" DBIT_CLOCK", slsDetectorDefs::clockIndex::DBIT_CLOCK)
+        .value(" RUN_CLOCK", slsDetectorDefs::clockIndex::RUN_CLOCK)
+        .value(" SYNC_CLOCK", slsDetectorDefs::clockIndex::SYNC_CLOCK)
         .export_values();
 
     py::enum_<slsDetectorDefs::readoutMode>(Defs, "readoutMode")
         .value("ANALOG_ONLY", slsDetectorDefs::readoutMode::ANALOG_ONLY)
-        .value("DIGITAL_ONLY", slsDetectorDefs::readoutMode::DIGITAL_ONLY)
-        .value("ANALOG_AND_DIGITAL",
+        .value(" DIGITAL_ONLY", slsDetectorDefs::readoutMode::DIGITAL_ONLY)
+        .value(" ANALOG_AND_DIGITAL",
                slsDetectorDefs::readoutMode::ANALOG_AND_DIGITAL)
         .export_values();
 
     py::enum_<slsDetectorDefs::speedLevel>(Defs, "speedLevel")
         .value("FULL_SPEED", slsDetectorDefs::speedLevel::FULL_SPEED)
-        .value("HALF_SPEED", slsDetectorDefs::speedLevel::HALF_SPEED)
-        .value("QUARTER_SPEED", slsDetectorDefs::speedLevel::QUARTER_SPEED)
+        .value(" HALF_SPEED", slsDetectorDefs::speedLevel::HALF_SPEED)
+        .value(" QUARTER_SPEED", slsDetectorDefs::speedLevel::QUARTER_SPEED)
         .export_values();
 
     py::enum_<slsDetectorDefs::portType>(Defs, "portType")
@@ -300,12 +279,13 @@ void init_enums(py::module &m) {
         .value("BURST_OFF", slsDetectorDefs::burstMode::BURST_OFF)
         .value("BURST_INTERNAL", slsDetectorDefs::burstMode::BURST_INTERNAL)
         .value("BURST_EXTERNAL", slsDetectorDefs::burstMode::BURST_EXTERNAL)
+        .value("NUM_BURST_MODES", slsDetectorDefs::burstMode::NUM_BURST_MODES)
         .export_values();
 
     py::enum_<slsDetectorDefs::timingSourceType>(Defs, "timingSourceType")
         .value("TIMING_INTERNAL",
                slsDetectorDefs::timingSourceType::TIMING_INTERNAL)
-        .value("TIMING_EXTERNAL",
+        .value(" TIMING_EXTERNAL",
                slsDetectorDefs::timingSourceType::TIMING_EXTERNAL)
         .export_values();
 }

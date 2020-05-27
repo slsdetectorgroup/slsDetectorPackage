@@ -11,6 +11,10 @@ import subprocess
 
 from parse import remove_comments
 
+def single_line_enum(line):
+    sub = line[line.find('{')+1:line.find('}')]
+    return sub.strip().split(',')
+
 def extract_enums(lines):
     line_iter = iter(lines)
     enums = {}
@@ -18,19 +22,26 @@ def extract_enums(lines):
         m = re.search("(?<=enum )\w+(?= {)", line)
         if m:
             enum_name = m.group()
-            # print(enum_name)
+            print(enum_name)
+            # print(line)
             fields = []
-            while True:
-                l  = next(line_iter)
-                if '};' in l:
-                    break
-                m = re.search("\w+", l)
-                try:
-                    # print('\t', m.group())
-                    fields.append(m.group())
 
-                except:
-                    pass
+            #deal with single line enums
+            if '};' in line:
+                fields = single_line_enum(line)
+            else:
+                #deal with multi line enums
+                while True:
+                    l  = next(line_iter)
+                    if '};' in l:
+                        break
+                    m = re.search("\w+", l)
+                    try:
+                        # print('\t', m.group())
+                        fields.append(m.group())
+
+                    except:
+                        pass
             enums[enum_name] = fields
     return enums
 

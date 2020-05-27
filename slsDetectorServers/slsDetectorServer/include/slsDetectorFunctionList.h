@@ -115,6 +115,9 @@ void updateDataBytes();
     defined(MOENCHD)
 int setDefaultDacs();
 #endif
+#ifdef MYTHEN3D
+void setASICDefaults();
+#endif
 #if defined(GOTTHARD2D) || defined(EIGERD)
 int readConfigFile();
 #endif
@@ -201,10 +204,23 @@ void setNumFrames(int64_t val);
 int64_t getNumFrames();
 void setNumTriggers(int64_t val);
 int64_t getNumTriggers();
+#ifndef MYTHEN3D
 int setExpTime(int64_t val);
 int64_t getExpTime();
+#endif
 int setPeriod(int64_t val);
 int64_t getPeriod();
+#ifdef MYTHEN3D
+void setNumIntGates(int val);
+void setNumGates(int val);
+int getNumGates();
+void updateGatePeriod();
+int64_t getGatePeriod();
+int setExpTime(int gateIndex, int64_t val);
+int64_t getExpTime(int gateIndex);
+int setGateDelay(int gateIndex, int64_t val);
+int64_t getGateDelay(int gateIndex);
+#endif
 #ifdef GOTTHARD2D
 void setNumBursts(int64_t val);
 int64_t getNumBursts();
@@ -321,9 +337,12 @@ int setHighVoltage(int val);
 // parameters - timing, extsig
 void setTiming(enum timingMode arg);
 enum timingMode getTiming();
-#ifdef GOTTHARDD
-void setExtSignal(enum externalSignalFlag mode);
-int getExtSignal();
+#ifdef MYTHEN3D
+void setInitialExtSignals();
+#endif
+#if defined(GOTTHARDD) || defined(MYTHEN3D)
+void setExtSignal(int signalIndex, enum externalSignalFlag mode);
+int getExtSignal(int signalIndex);
 #endif
 
 // configure mac
@@ -449,6 +468,7 @@ int getActivate(int *retval);
 int setPhase(enum CLKINDEX ind, int val, int degrees);
 
 #elif MYTHEN3D
+void startPattern();
 uint64_t readPatternWord(int addr);
 uint64_t writePatternWord(int addr, uint64_t word);
 int setPatternWaitAddress(int level, int addr);

@@ -190,6 +190,46 @@ TEST_CASE("settings", "[.cmd][.new]") {
     }
 }
 
+TEST_CASE("trimbits", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("trimbits", {}, -1, GET));
+}
+
+TEST_CASE("trimval", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::MYTHEN3 || det_type == defs::EIGER) {
+        auto prev_val = det.getAllTrimbits();
+        {
+            std::ostringstream oss;
+            proxy.Call("trimval", {"63"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "trimval 63\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("trimval", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "trimval 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("trimval", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "trimval 0\n");
+        }
+        REQUIRE_THROWS(proxy.Call("trimval", {"64"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("trimval", {"-1"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            if (prev_val[i] != -1) {
+                det.setAllTrimbits(prev_val[i], {i});
+            }
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("trimval", {}, -1, GET));
+    }
+}
+
 /* acquisition parameters */
 
 // acquire: not testing
@@ -407,9 +447,27 @@ TEST_CASE("timing", "[.cmd][.new]") {
             proxy.Call("timing", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "timing burst_trigger\n");
         }
+        REQUIRE_THROWS(proxy.Call("timing", {"trigger_gating"}, -1, PUT));
+    } else if (det_type == defs::MYTHEN3) {
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("timing", {"gating"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing gating\n");
+            proxy.Call("timing", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "timing gating\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("timing", {"trigger_gating"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "timing trigger_gating\n");
+            proxy.Call("timing", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "timing trigger_gating\n");
+        }
+        REQUIRE_THROWS(proxy.Call("timing", {"burst_trigger"}, -1, PUT));
     } else {
         REQUIRE_THROWS(proxy.Call("timing", {"gating"}, -1, PUT));
         REQUIRE_THROWS(proxy.Call("timing", {"burst_trigger"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("timing", {"trigger_gating"}, -1, PUT));
     }
     for (int i = 0; i != det.size(); ++i) {
         det.setTimingMode(prev_val[i], {i});
@@ -812,6 +870,85 @@ TEST_CASE("imagetest", "[.cmd][.new]") {
     }
 }
 
+TEST_CASE("extsig", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD) {
+        auto prev_val = det.getExternalSignalFlags(0);
+        REQUIRE_THROWS(proxy.Call("extsig", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("extsig", {"1"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("extsig", {"0", "inversion_on"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("extsig", {"0", "inversion_off"}, -1, PUT));
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("extsig", {"0", "trigger_in_rising_edge"}, -1, PUT,
+                       oss1);
+            REQUIRE(oss1.str() == "extsig 0 trigger_in_rising_edge\n");
+            proxy.Call("extsig", {"0"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "extsig trigger_in_rising_edge\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("extsig", {"0", "trigger_in_falling_edge"}, -1, PUT,
+                       oss1);
+            REQUIRE(oss1.str() == "extsig 0 trigger_in_falling_edge\n");
+            proxy.Call("extsig", {"0"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "extsig 0 trigger_in_falling_edge\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setExternalSignalFlags(0, prev_val[i], {i});
+        }
+    } else if (det_type == defs::MYTHEN3) {
+        auto prev_val_0 = det.getExternalSignalFlags(0);
+        auto prev_val_1 = det.getExternalSignalFlags(1);
+        REQUIRE_THROWS(proxy.Call("extsig", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("extsig", {"8"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("extsig", {"0", "inversion_on"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("extsig", {"0", "inversion_off"}, -1, PUT));
+        REQUIRE_THROWS(
+            proxy.Call("extsig", {"1", "trigger_in_rising_edge"}, -1, PUT));
+        REQUIRE_THROWS(
+            proxy.Call("extsig", {"1", "trigger_in_falling_edge"}, -1, PUT));
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("extsig", {"0", "trigger_in_rising_edge"}, -1, PUT,
+                       oss1);
+            REQUIRE(oss1.str() == "extsig 0 trigger_in_rising_edge\n");
+            proxy.Call("extsig", {"0"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "extsig trigger_in_rising_edge\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("extsig", {"0", "trigger_in_falling_edge"}, -1, PUT,
+                       oss1);
+            REQUIRE(oss1.str() == "extsig 0 trigger_in_falling_edge\n");
+            proxy.Call("extsig", {"0"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "extsig 0 trigger_in_falling_edge\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("extsig", {"1", "inversion_off"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "extsig 1 inversion_off\n");
+            proxy.Call("extsig", {"1"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "extsig inversion_off\n");
+        }
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("extsig", {"1", "inversion_on"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "extsig 1 inversion_on\n");
+            proxy.Call("extsig", {"1"}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "extsig 1 inversion_on\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setExternalSignalFlags(0, prev_val_0[i], {i});
+            det.setExternalSignalFlags(1, prev_val_1[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("extsig", {}, -1, GET));
+    }
+}
+
 /** temperature */
 
 TEST_CASE("temp_adc", "[.cmd][.new]") {
@@ -958,6 +1095,43 @@ TEST_CASE("startingfnum", "[.cmd][.new]") {
     }
 }
 
+/* Network Configuration (Detector<->Receiver) */
+
+TEST_CASE("numinterfaces", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2) {
+        auto prev_val = det.getNumberofUDPInterfaces().tsquash(
+            "inconsistent numinterfaces to test");
+        {
+            std::ostringstream oss;
+            proxy.Call("numinterfaces", {"2"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "numinterfaces 2\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("numinterfaces", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "numinterfaces 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("numinterfaces", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "numinterfaces 1\n");
+        }
+        det.setNumberofUDPInterfaces(prev_val);
+    } else {
+        std::ostringstream oss;
+        proxy.Call("numinterfaces", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "numinterfaces 1\n");
+        REQUIRE_THROWS(proxy.Call("numinterfaces", {"1"}, -1, PUT));
+    }
+    REQUIRE_THROWS(proxy.Call("numinterfaces", {"3"}, -1, PUT));
+    REQUIRE_THROWS(proxy.Call("numinterfaces", {"0"}, -1, PUT));
+}
+
+/* Advanced */
+
 TEST_CASE("initialchecks", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -987,18 +1161,7 @@ TEST_CASE("initialchecks", "[.cmd]") {
     det.setInitialChecks(check);
 }
 
-TEST_CASE("user", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    proxy.Call("user", {}, -1, GET);
-
-    // This is a get only command
-    REQUIRE_THROWS(proxy.Call("user", {}, -1, PUT));
-}
-
-// TEST_CASE("execcommand", "[.cmd]") {
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("execcommand ls", PUT));
-// }
+/* Insignificant */
 
 TEST_CASE("port", "[.cmd]") {
     Detector det;
@@ -1032,6 +1195,19 @@ TEST_CASE("stopport", "[.cmd]") {
     proxy.Call("stopport", {"1953"}, -1, PUT);
     auto port = det.getStopPort().squash();
     REQUIRE(port == 1953);
+}
+
+// TEST_CASE("execcommand", "[.cmd]") {
+//     REQUIRE_NOTHROW(multiSlsDetectorClient("execcommand ls", PUT));
+// }
+
+TEST_CASE("user", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    proxy.Call("user", {}, -1, GET);
+
+    // This is a get only command
+    REQUIRE_THROWS(proxy.Call("user", {}, -1, PUT));
 }
 
 // TEST_CASE("reg", "[.cmd]") {
@@ -2366,29 +2542,6 @@ TEST_CASE("stopport", "[.cmd]") {
 //     }
 // }
 
-// TEST_CASE("trimval", "[.cmd][.eiger]") {
-//     if (test::type == defs::EIGER) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("trimval 63", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "trimval 63\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("trimval", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "trimval 63\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("trimval 31", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "trimval 31\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("trimval 0", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("trimval", GET));
-//     }
-// }
-
 // TEST_CASE("flippeddatax", "[.cmd][.eiger]") {
 //     if (test::type == defs::EIGER) {
 //         {
@@ -2744,29 +2897,6 @@ TEST_CASE("zmqport", "[.cmd]") {
 //     } else {
 //         REQUIRE_THROWS(multiSlsDetectorClient("selinterface", GET));
 //     }
-// }
-
-// TEST_CASE("numinterfaces", "[.cmd][.jungfrau]") {
-//     if (test::type == defs::JUNGFRAU) {
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 2", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:numinterfaces", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "numinterfaces 2\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 1", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:numinterfaces", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "numinterfaces 1\n");
-//         }
-//     } else {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:numinterfaces", GET,
-//         nullptr, oss)); REQUIRE(oss.str() == "numinterfaces 1\n");
-//     }
-//     REQUIRE_THROWS(multiSlsDetectorClient("numinterfaces 3", PUT));
-//     REQUIRE_THROWS(multiSlsDetectorClient("numinterfaces 0", PUT));
 // }
 
 // TEST_CASE("adc", "[.cmd][.ctb]") {

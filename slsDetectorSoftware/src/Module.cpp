@@ -4,8 +4,8 @@
 #include "ToString.h"
 #include "file_utils.h"
 #include "network_utils.h"
-#include "sls_detector_funcs.h"
 #include "sls_detector_exceptions.h"
+#include "sls_detector_funcs.h"
 #include "string_utils.h"
 #include "versionAPI.h"
 
@@ -139,34 +139,31 @@ void Module::sendToDetector(int fnum, std::nullptr_t, Ret &retval) {
 
 void Module::sendToDetector(int fnum) {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << "]";
     sendToDetector(fnum, nullptr, 0, nullptr, 0);
 }
 
 template <typename Ret> Ret Module::sendToDetector(int fnum) {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
     Ret retval{};
     sendToDetector(fnum, nullptr, 0, &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
+    LOG(logDEBUG1) << "Got back: " << ToString(retval);
     return retval;
 }
 
 template <typename Ret, typename Arg>
 Ret Module::sendToDetector(int fnum, const Arg &args) {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
                    << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
     Ret retval{};
     sendToDetector(fnum, &args, sizeof(args), &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
+    LOG(logDEBUG1) << "Got back: " << ToString(retval);
     return retval;
 }
 
@@ -216,8 +213,7 @@ void Module::sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) const {
 
 void Module::sendToDetectorStop(int fnum) {
     LOG(logDEBUG1) << "Sending to detector stop: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << "]";
     sendToDetectorStop(fnum, nullptr, 0, nullptr, 0);
 }
@@ -237,8 +233,7 @@ void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
     if (!shm()->useReceiverFlag) {
         std::ostringstream oss;
         oss << "Set rx_hostname first to use receiver parameters, ";
-        oss << getFunctionNameFromEnum(
-            static_cast<detFuncs>(fnum));
+        oss << getFunctionNameFromEnum(static_cast<detFuncs>(fnum));
         throw RuntimeError(oss.str());
     }
     auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
@@ -278,8 +273,7 @@ void Module::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const {
 
 template <typename Ret> Ret Module::sendToReceiver(int fnum) {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
     Ret retval{};
@@ -290,8 +284,7 @@ template <typename Ret> Ret Module::sendToReceiver(int fnum) {
 
 template <typename Ret> Ret Module::sendToReceiver(int fnum) const {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
     Ret retval{};
@@ -303,8 +296,7 @@ template <typename Ret> Ret Module::sendToReceiver(int fnum) const {
 template <typename Ret, typename Arg>
 Ret Module::sendToReceiver(int fnum, const Arg &args) {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
                    << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
     Ret retval{};
@@ -316,8 +308,7 @@ Ret Module::sendToReceiver(int fnum, const Arg &args) {
 template <typename Ret, typename Arg>
 Ret Module::sendToReceiver(int fnum, const Arg &args) const {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
                    << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
     Ret retval{};
@@ -1036,22 +1027,62 @@ void Module::setNumberOfDigitalSamples(int value) {
     }
 }
 
-int64_t Module::getExptime() { return sendToDetector<int64_t>(F_GET_EXPTIME); }
+int Module::getNumberOfGates() { return sendToDetector<int>(F_GET_NUM_GATES); }
 
-void Module::setExptime(int64_t value) {
+void Module::setNumberOfGates(int value) {
+    LOG(logDEBUG1) << "Setting number of gates to " << value;
+    sendToDetector(F_SET_NUM_GATES, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending number of gates to Receiver: " << value;
+        sendToReceiver(F_SET_RECEIVER_NUM_GATES, value, nullptr);
+    }
+}
+
+int64_t Module::getExptime(int gateIndex) {
+    return sendToDetector<int64_t>(F_GET_EXPTIME, gateIndex);
+}
+
+void Module::setExptime(int gateIndex, int64_t value) {
     int64_t prevVal = value;
     if (shm()->myDetectorType == EIGER) {
-        prevVal = getExptime();
+        prevVal = getExptime(-1);
     }
-    LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
-    sendToDetector(F_SET_EXPTIME, value, nullptr);
+    LOG(logDEBUG1) << "Setting exptime to " << value
+                   << "ns (gateindex: " << gateIndex << ")";
+    int64_t args[]{static_cast<int64_t>(gateIndex), value};
+    sendToDetector(F_SET_EXPTIME, args, nullptr);
     if (shm()->useReceiverFlag) {
         LOG(logDEBUG1) << "Sending exptime to Receiver: " << value;
-        sendToReceiver(F_RECEIVER_SET_EXPTIME, value, nullptr);
+        sendToReceiver(F_RECEIVER_SET_EXPTIME, args, nullptr);
     }
     if (prevVal != value) {
         updateRateCorrection();
     }
+}
+
+std::array<time::ns, 3> Module::getExptimeForAllGates() {
+    static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
+    return sendToDetector<std::array<time::ns, 3>>(F_GET_EXPTIME_ALL_GATES);
+}
+
+int64_t Module::getGateDelay(int gateIndex) {
+    return sendToDetector<int64_t>(F_GET_GATE_DELAY, gateIndex);
+}
+
+void Module::setGateDelay(int gateIndex, int64_t value) {
+    LOG(logDEBUG1) << "Setting gate delay to " << value
+                   << "ns (gateindex: " << gateIndex << ")";
+    int64_t args[]{static_cast<int64_t>(gateIndex), value};
+    sendToDetector(F_SET_GATE_DELAY, args, nullptr);
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending gate delay to Receiver: " << value;
+        sendToReceiver(F_SET_RECEIVER_GATE_DELAY, args, nullptr);
+    }
+}
+
+std::array<time::ns, 3> Module::getGateDelayForAllGates() {
+    static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
+    return sendToDetector<std::array<time::ns, 3>>(F_GET_GATE_DELAY_ALL_GATES);
 }
 
 int64_t Module::getPeriod() { return sendToDetector<int64_t>(F_GET_PERIOD); }
@@ -1281,10 +1312,15 @@ int Module::getADC(dacIndex index) {
 }
 
 slsDetectorDefs::externalSignalFlag
-Module::setExternalSignalFlags(externalSignalFlag pol) {
-    LOG(logDEBUG1) << "Setting signal flag to " << pol;
+Module::getExternalSignalFlags(int signalIndex) {
     return sendToDetector<slsDetectorDefs::externalSignalFlag>(
-        F_SET_EXTERNAL_SIGNAL_FLAG, pol);
+        F_GET_EXTERNAL_SIGNAL_FLAG, signalIndex);
+}
+
+void Module::setExternalSignalFlags(int signalIndex, externalSignalFlag type) {
+    LOG(logDEBUG1) << "Setting signal flag (" << signalIndex << ") to " << type;
+    int args[]{signalIndex, static_cast<int>(type)};
+    sendToDetector(F_SET_EXTERNAL_SIGNAL_FLAG, args, nullptr);
 }
 
 void Module::setParallelMode(const bool enable) {
@@ -1448,7 +1484,14 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
                    << "roi.xmin:" << retval.roi.xmin << std::endl
                    << "roi.xmax:" << retval.roi.xmax << std::endl
                    << "countermask:" << retval.countermask << std::endl
-                   << "burstType:" << retval.burstType << std::endl;
+                   << "burstType:" << retval.burstType << std::endl
+                   << "exptime1:" << retval.expTime1Ns << std::endl
+                   << "exptime2:" << retval.expTime2Ns << std::endl
+                   << "exptime3:" << retval.expTime3Ns << std::endl
+                   << "gateDelay1:" << retval.gateDelay1Ns << std::endl
+                   << "gateDelay2:" << retval.gateDelay2Ns << std::endl
+                   << "gateDelay3:" << retval.gateDelay3Ns << std::endl
+                   << "gates:" << retval.gates << std::endl;
 
     sls::MacAddr retvals[2];
     sendToReceiver(F_SETUP_RECEIVER, retval, retvals);
@@ -2876,6 +2919,8 @@ void Module::setPatternBitMask(uint64_t mask) {
 uint64_t Module::getPatternBitMask() {
     return sendToDetector<uint64_t>(F_GET_PATTERN_BIT_MASK);
 }
+
+void Module::startPattern() { sendToDetector(F_START_PATTERN); }
 
 int Module::setLEDEnable(int enable) {
     return sendToDetector<int>(F_LED, enable);

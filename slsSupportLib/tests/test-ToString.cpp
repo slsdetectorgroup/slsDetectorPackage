@@ -232,3 +232,9 @@ TEST_CASE("Streaming of slsDetectorDefs::ROI") {
     REQUIRE(oss.str() == "[-10, 1]");
 }
 
+TEST_CASE("std::array"){
+    std::array<int, 3> arr{4,6,7};
+    REQUIRE(ToString(arr) == "[4, 6, 7]");
+}
+
+

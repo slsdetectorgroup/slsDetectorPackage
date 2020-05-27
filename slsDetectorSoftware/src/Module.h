@@ -979,6 +979,12 @@ class Module : public virtual slsDetectorDefs {
     /** [Gotthard2] Options: TIMING_INTERNAL, TIMING_EXTERNAL */
     void setTimingSource(slsDetectorDefs::timingSourceType value);
 
+    /** [Gotthard2] */
+    bool getVeto();
+
+    /** default disabled */
+    void setVeto(bool enable);
+
     /**
      * Set/get counter bit in detector (Gotthard)
      * @param i is -1 to get, 0 to reset and any other value to set the counter

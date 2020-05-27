@@ -1248,6 +1248,14 @@ void Detector::setTimingSource(defs::timingSourceType value, Positions pos) {
     pimpl->Parallel(&Module::setTimingSource, pos, value);
 }
 
+Result<bool> Detector::getVeto(Positions pos) const {
+    return pimpl->Parallel(&Module::getVeto, pos);
+}
+
+void Detector::setVeto(bool enable, Positions pos) {
+    pimpl->Parallel(&Module::setVeto, pos, enable);
+}
+
 // Mythen3 Specific
 
 Result<uint32_t> Detector::getCounterMask(Positions pos) const {

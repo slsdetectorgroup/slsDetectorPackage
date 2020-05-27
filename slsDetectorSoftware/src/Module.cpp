@@ -4,8 +4,8 @@
 #include "ToString.h"
 #include "file_utils.h"
 #include "network_utils.h"
-#include "sls_detector_funcs.h"
 #include "sls_detector_exceptions.h"
+#include "sls_detector_funcs.h"
 #include "string_utils.h"
 #include "versionAPI.h"
 
@@ -139,16 +139,14 @@ void Module::sendToDetector(int fnum, std::nullptr_t, Ret &retval) {
 
 void Module::sendToDetector(int fnum) {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << "]";
     sendToDetector(fnum, nullptr, 0, nullptr, 0);
 }
 
 template <typename Ret> Ret Module::sendToDetector(int fnum) {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
     Ret retval{};
@@ -160,8 +158,7 @@ template <typename Ret> Ret Module::sendToDetector(int fnum) {
 template <typename Ret, typename Arg>
 Ret Module::sendToDetector(int fnum, const Arg &args) {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
                    << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
     Ret retval{};
@@ -216,8 +213,7 @@ void Module::sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) const {
 
 void Module::sendToDetectorStop(int fnum) {
     LOG(logDEBUG1) << "Sending to detector stop: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << "]";
     sendToDetectorStop(fnum, nullptr, 0, nullptr, 0);
 }
@@ -237,8 +233,7 @@ void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
     if (!shm()->useReceiverFlag) {
         std::ostringstream oss;
         oss << "Set rx_hostname first to use receiver parameters, ";
-        oss << getFunctionNameFromEnum(
-            static_cast<detFuncs>(fnum));
+        oss << getFunctionNameFromEnum(static_cast<detFuncs>(fnum));
         throw RuntimeError(oss.str());
     }
     auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
@@ -278,8 +273,7 @@ void Module::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const {
 
 template <typename Ret> Ret Module::sendToReceiver(int fnum) {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
     Ret retval{};
@@ -290,8 +284,7 @@ template <typename Ret> Ret Module::sendToReceiver(int fnum) {
 
 template <typename Ret> Ret Module::sendToReceiver(int fnum) const {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
     Ret retval{};
@@ -303,8 +296,7 @@ template <typename Ret> Ret Module::sendToReceiver(int fnum) const {
 template <typename Ret, typename Arg>
 Ret Module::sendToReceiver(int fnum, const Arg &args) {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
                    << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
     Ret retval{};
@@ -316,8 +308,7 @@ Ret Module::sendToReceiver(int fnum, const Arg &args) {
 template <typename Ret, typename Arg>
 Ret Module::sendToReceiver(int fnum, const Arg &args) const {
     LOG(logDEBUG1) << "Sending: ["
-                   << getFunctionNameFromEnum(
-                          static_cast<detFuncs>(fnum))
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
                    << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
     Ret retval{};
@@ -2049,6 +2040,12 @@ slsDetectorDefs::timingSourceType Module::getTimingSource() {
 
 void Module::setTimingSource(slsDetectorDefs::timingSourceType value) {
     sendToDetector(F_SET_TIMING_SOURCE, static_cast<int>(value), nullptr);
+}
+
+bool Module::getVeto() { return sendToDetector<int>(F_GET_VETO); }
+
+void Module::setVeto(bool enable) {
+    sendToDetector(F_SET_VETO, static_cast<int>(enable), nullptr);
 }
 
 int Module::setCounterBit(int cb) {

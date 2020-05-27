@@ -137,10 +137,10 @@ const char *getRunStateName(enum runStatus ind) {
     }
 }
 
-
 void function_table() {
     flist[F_EXEC_COMMAND] = &exec_command;
     flist[F_GET_DETECTOR_TYPE] = &get_detector_type;
+    flist[F_GET_EXTERNAL_SIGNAL_FLAG] = &get_external_signal_flag;
     flist[F_SET_EXTERNAL_SIGNAL_FLAG] = &set_external_signal_flag;
     flist[F_SET_TIMING_MODE] = &set_timing_mode;
     flist[F_GET_FIRMWARE_VERSION] = &get_firmware_version;
@@ -329,6 +329,13 @@ void function_table() {
     flist[F_GET_NUM_CHANNELS] = &get_num_channels;
     flist[F_UPDATE_RATE_CORRECTION] = &update_rate_correction;
     flist[F_GET_RECEIVER_PARAMETERS] = &get_receiver_parameters;
+    flist[F_START_PATTERN] = &start_pattern;
+    flist[F_SET_NUM_GATES] = &set_num_gates;
+    flist[F_GET_NUM_GATES] = &get_num_gates;
+    flist[F_SET_GATE_DELAY] = &set_gate_delay;
+    flist[F_GET_GATE_DELAY] = &get_gate_delay;
+    flist[F_GET_EXPTIME_ALL_GATES] = &get_exptime_all_gates;
+    flist[F_GET_GATE_DELAY_ALL_GATES] = &get_gate_delay_all_gates;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -464,29 +471,98 @@ int get_detector_type(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_external_signal_flag(int file_des) {
+int get_external_signal_flag(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int arg = -1;
-    enum externalSignalFlag retval = GET_EXTERNAL_SIGNAL_FLAG;
+    enum externalSignalFlag retval = -1;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
 
-    enum externalSignalFlag flag = arg;
-    LOG(logDEBUG1, ("Setting external signal flag to %d\n", flag));
+    LOG(logDEBUG1, ("Getting external signal flag (%d)\n", arg));
 
-#ifndef GOTTHARDD
+#if !defined(GOTTHARDD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
-    // set
-    if ((flag != GET_EXTERNAL_SIGNAL_FLAG) && (Server_VerifyLock() == OK)) {
-        setExtSignal(flag);
-    }
     // get
-    retval = getExtSignal();
-    validate((int)flag, (int)retval, "set external signal flag", DEC);
-    LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
+    if (arg < 0 || arg >= MAX_EXT_SIGNALS) {
+        ret = FAIL;
+        sprintf(mess, "Signal index %d can only be between 0 and %d\n", arg,
+                MAX_EXT_SIGNALS - 1);
+        LOG(logERROR, (mess));
+    } else {
+        retval = getExtSignal(arg);
+        LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_external_signal_flag(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = {-1, -1};
+    enum externalSignalFlag retval = -1;
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+
+    int signalIndex = args[0];
+    enum externalSignalFlag flag = args[1];
+    LOG(logDEBUG1,
+        ("Setting external signal flag [%d] to %d\n", signalIndex, flag));
+
+#if !defined(GOTTHARDD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    if (Server_VerifyLock() == OK) {
+        if (signalIndex < 0 || signalIndex >= MAX_EXT_SIGNALS) {
+            ret = FAIL;
+            sprintf(mess, "Signal index %d can only be between 0 and %d\n",
+                    signalIndex, MAX_EXT_SIGNALS - 1);
+            LOG(logERROR, (mess));
+        } else {
+            switch (flag) {
+            case TRIGGER_IN_RISING_EDGE:
+            case TRIGGER_IN_FALLING_EDGE:
+#ifdef MYTHEN3D
+                if (signalIndex > 0) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Only Master input trigger signal can edge detect. "
+                            "Not signal %d\n",
+                            signalIndex);
+                    LOG(logERROR, (mess));
+                }
+#endif
+                break;
+#ifdef MYTHEN3D
+            case INVERSION_ON:
+            case INVERSION_OFF:
+                if (signalIndex == 0) {
+                    ret = FAIL;
+                    sprintf(
+                        mess,
+                        "Master input trigger signal cannot invert. Use "
+                        "trigger_in_rising_edge or trigger_in_falling_edge\n");
+                    LOG(logERROR, (mess));
+                }
+                break;
+#endif
+            default:
+                ret = FAIL;
+                sprintf(mess, "Unknown flag %d for this detector\n", flag);
+                LOG(logERROR, (mess));
+            }
+        }
+        if (ret == OK) {
+            setExtSignal(signalIndex, flag);
+            retval = getExtSignal(signalIndex);
+            validate((int)flag, (int)retval, "set external signal flag", DEC);
+            LOG(logDEBUG1, ("External Signal Flag: %d\n", retval));
+        }
+    }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -509,6 +585,9 @@ int set_timing_mode(int file_des) {
 #ifdef EIGERD
         case GATED:
         case BURST_TRIGGER:
+#elif MYTHEN3D
+        case GATED:
+        case TRIGGER_GATED:
 #endif
             setTiming(arg);
             break;
@@ -2082,34 +2161,114 @@ int set_num_digital_samples(int file_des) {
 int get_exptime(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
+    int gateIndex = -1;
     int64_t retval = -1;
 
-    // get only
-    retval = getExpTime();
-    LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
+    if (receiveData(file_des, &gateIndex, sizeof(gateIndex), INT32) < 0)
+        return printSocketReadError();
+
+        // get only
+#ifdef MYTHEN3D
+    if (gateIndex < 0 || gateIndex > 2) {
+        ret = FAIL;
+        sprintf(mess,
+                "Could not get exposure time. Invalid gate index %d. "
+                "Options [0-2]\n",
+                gateIndex);
+        LOG(logERROR, (mess));
+    } else {
+        retval = getExpTime(gateIndex);
+        LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
+    }
+#else
+    if (gateIndex != -1) {
+        ret = FAIL;
+        sprintf(mess, "Could not get exposure time. Gate index not implemented "
+                      "for this detector\n");
+        LOG(logERROR, (mess));
+    } else {
+        retval = getExpTime();
+        LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
+    }
+#endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
 int set_exptime(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int64_t arg = -1;
+    int64_t args[2] = {-1, -1};
 
-    if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
+    if (receiveData(file_des, args, sizeof(args), INT64) < 0)
         return printSocketReadError();
-    LOG(logDEBUG1, ("Setting exptime %lld ns\n", (long long int)arg));
+    int gateIndex = args[0];
+    int64_t val = args[1];
+    LOG(logDEBUG1, ("Setting exptime %lld ns (gateIndex:%d)\n",
+                    (long long int)val, gateIndex));
 
     // only set
     if (Server_VerifyLock() == OK) {
-        ret = setExpTime(arg);
-        int64_t retval = getExpTime();
-        LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
-        if (ret == FAIL) {
+#ifdef MYTHEN3D
+        if (gateIndex < -1 || gateIndex > 2) {
+            ret = FAIL;
             sprintf(mess,
-                    "Could not set exposure time. Set %lld ns, read %lld ns.\n",
-                    (long long int)arg, (long long int)retval);
+                    "Could not set exposure time. Invalid gate index %d. "
+                    "Options [-1, 0-2]\n",
+                    gateIndex);
             LOG(logERROR, (mess));
+        } else {
+            // specific gate index
+            if (gateIndex != -1) {
+                ret = setExpTime(gateIndex, val);
+                int64_t retval = getExpTime(gateIndex);
+                LOG(logDEBUG1,
+                    ("retval exptime %lld ns\n", (long long int)retval));
+                if (ret == FAIL) {
+                    sprintf(mess,
+                            "Could not set exposure time. Set %lld ns, read "
+                            "%lld ns.\n",
+                            (long long int)val, (long long int)retval);
+                    LOG(logERROR, (mess));
+                }
+            }
+            // all gate indices
+            else {
+                for (int i = 0; i != 3; ++i) {
+                    ret = setExpTime(i, val);
+                    int64_t retval = getExpTime(i);
+                    LOG(logDEBUG1, ("retval exptime %lld ns (index:%d)\n",
+                                    (long long int)retval, i));
+                    if (ret == FAIL) {
+                        sprintf(mess,
+                                "Could not set exptime. Set %lld ns, read %lld "
+                                "ns.\n",
+                                (long long int)val, (long long int)retval);
+                        LOG(logERROR, (mess));
+                        break;
+                    }
+                }
+            }
         }
+#else
+        if (gateIndex != -1) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not get exposure time. Gate index not implemented "
+                    "for this detector\n");
+            LOG(logERROR, (mess));
+        } else {
+            ret = setExpTime(val);
+            int64_t retval = getExpTime();
+            LOG(logDEBUG1, ("retval exptime %lld ns\n", (long long int)retval));
+            if (ret == FAIL) {
+                sprintf(mess,
+                        "Could not set exposure time. Set %lld ns, read "
+                        "%lld ns.\n",
+                        (long long int)val, (long long int)retval);
+                LOG(logERROR, (mess));
+            }
+        }
+#endif
     }
     return Server_SendResult(file_des, INT64, NULL, 0);
 }
@@ -3266,8 +3425,8 @@ int set_rate_correct(int file_des) {
     // only set
     if (Server_VerifyLock() == OK) {
         ret = validateAndSetRateCorrection(tau_ns, mess);
-        int64_t retval = getCurrentTau(); // to update eiger_tau_ns (for update
-                                          // rate correction)
+        int64_t retval = getCurrentTau(); // to update eiger_tau_ns (for
+                                          // update rate correction)
         if (ret == FAIL) {
             strcpy(mess, "Rate correction failed\n");
             LOG(logERROR, (mess));
@@ -3690,14 +3849,13 @@ int power_chip(int file_des) {
                     LOG(logERROR, (mess));
                 } else if (type_ret == FAIL) {
                     ret = FAIL;
-                    sprintf(
-                        mess,
-                        "Could not power on chip. Wrong module attached!\n");
+                    sprintf(mess, "Could not power on chip. Wrong module "
+                                  "attached!\n");
                     LOG(logERROR, (mess));
                 }
             } else {
-                LOG(logINFOBLUE,
-                    ("In No-Module mode: Ignoring module type. Continuing.\n"));
+                LOG(logINFOBLUE, ("In No-Module mode: Ignoring module "
+                                  "type. Continuing.\n"));
             }
         }
 #endif
@@ -4224,10 +4382,10 @@ int set_adc_enable_mask_10g(int file_des) {
         uint32_t retval = getADCEnableMask_10G();
         if (arg != retval) {
             ret = FAIL;
-            sprintf(
-                mess,
-                "Could not set 10Gb ADC Enable mask. Set 0x%x, but read 0x%x\n",
-                arg, retval);
+            sprintf(mess,
+                    "Could not set 10Gb ADC Enable mask. Set 0x%x, but "
+                    "read 0x%x\n",
+                    arg, retval);
             LOG(logERROR, (mess));
         }
     }
@@ -4270,10 +4428,10 @@ int set_adc_invert(int file_des) {
         uint32_t retval = getADCInvertRegister();
         if (arg != retval) {
             ret = FAIL;
-            sprintf(
-                mess,
-                "Could not set ADC Invert register. Set 0x%x, but read 0x%x\n",
-                arg, retval);
+            sprintf(mess,
+                    "Could not set ADC Invert register. Set 0x%x, but read "
+                    "0x%x\n",
+                    arg, retval);
             LOG(logERROR, (mess));
         }
     }
@@ -4446,9 +4604,8 @@ int get_starting_frame_number(int file_des) {
     // get
     ret = getStartingFrameNumber(&retval);
     if (ret == FAIL) {
-        sprintf(
-            mess,
-            "Could not get starting frame number. Failed to map address.\n");
+        sprintf(mess, "Could not get starting frame number. Failed to map "
+                      "address.\n");
         LOG(logERROR, (mess));
     } else if (ret == -2) {
         sprintf(mess, "Inconsistent starting frame number from left and right "
@@ -4532,10 +4689,10 @@ int set_interrupt_subframe(int file_des) {
             int retval = getInterruptSubframe();
             if (arg != retval) {
                 ret = FAIL;
-                sprintf(
-                    mess,
-                    "Could not set Intertupt Subframe. Set %d, but read %d\n",
-                    retval, arg);
+                sprintf(mess,
+                        "Could not set Intertupt Subframe. Set %d, but "
+                        "read %d\n",
+                        retval, arg);
                 LOG(logERROR, (mess));
             }
         }
@@ -4613,10 +4770,10 @@ int set_read_n_lines(int file_des) {
                     int retval = getReadNLines();
                     if (arg != retval) {
                         ret = FAIL;
-                        sprintf(
-                            mess,
-                            "Could not set read n lines. Set %d, but read %d\n",
-                            retval, arg);
+                        sprintf(mess,
+                                "Could not set read n lines. Set %d, but "
+                                "read %d\n",
+                                retval, arg);
                         LOG(logERROR, (mess));
                     }
                 }
@@ -6179,10 +6336,10 @@ int get_on_chip_dac(int file_des) {
                 (int)dacIndex, chipIndex);
         if (chipIndex < -1 || chipIndex >= NCHIP) {
             ret = FAIL;
-            sprintf(
-                mess,
-                "Could not get %s. Invalid Chip Index. Options[-1, 0 - %d]\n",
-                modeName, NCHIP - 1);
+            sprintf(mess,
+                    "Could not get %s. Invalid Chip Index. Options[-1, 0 - "
+                    "%d]\n",
+                    modeName, NCHIP - 1);
             LOG(logERROR, (mess));
         } else {
             retval = getOnChipDAC(dacIndex, chipIndex);
@@ -6211,10 +6368,10 @@ int set_inject_channel(int file_des) {
         int increment = args[1];
         if (offset < 0 || increment < 1) {
             ret = FAIL;
-            sprintf(
-                mess,
-                "Could not inject channel. Invalid offset %d or increment %d\n",
-                offset, increment);
+            sprintf(mess,
+                    "Could not inject channel. Invalid offset %d or "
+                    "increment %d\n",
+                    offset, increment);
             LOG(logERROR, (mess));
         } else {
             ret = setInjectChannel(offset, increment);
@@ -6864,8 +7021,12 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
-    // exptime
+        // exptime
+#ifdef MYTHEN3D
+    i64 = 0;
+#else
     i64 = getExpTime();
+#endif
     n += sendData(file_des, &i64, sizeof(i64), INT64);
     if (n < 0)
         return printSocketReadError();
@@ -7006,7 +7167,256 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
+        // exptime1
+#ifdef MYTHEN3D
+    i64 = getExpTime(0);
+#else
+    i64 = 0;
+#endif
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // exptime2
+#ifdef MYTHEN3D
+    i64 = getExpTime(1);
+#else
+    i64 = 0;
+#endif
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // exptime3
+#ifdef MYTHEN3D
+    i64 = getExpTime(2);
+#else
+    i64 = 0;
+#endif
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // gatedelay1
+#ifdef MYTHEN3D
+    i64 = getGateDelay(0);
+#else
+    i64 = 0;
+#endif
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // gatedelay2
+#ifdef MYTHEN3D
+    i64 = getGateDelay(1);
+#else
+    i64 = 0;
+#endif
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // gatedelay3
+#ifdef MYTHEN3D
+    i64 = getGateDelay(2);
+#else
+    i64 = 0;
+#endif
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
+    if (n < 0)
+        return printSocketReadError();
+
+        // gates
+#ifdef MYTHEN3D
+    i32 = getNumGates();
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
     LOG(logINFO, ("Sent %d bytes for receiver parameters\n", n));
 
     return OK;
+}
+
+int start_pattern(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+    LOG(logDEBUG1, ("Starting Pattern\n"));
+#ifndef MYTHEN3D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        startPattern();
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int set_num_gates(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = -1;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Setting number of gates %d\n", arg));
+
+#if !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        setNumGates(arg);
+        int retval = getNumGates();
+        LOG(logDEBUG1, ("retval num gates %d\n", retval));
+        validate(arg, retval, "set number of gates", DEC);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_num_gates(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+#if !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    // get only
+    retval = getNumGates();
+    LOG(logDEBUG1, ("retval num gates %d\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_gate_delay(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int64_t args[2] = {-1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT64) < 0)
+        return printSocketReadError();
+    int gateIndex = args[0];
+    int64_t val = args[1];
+    LOG(logDEBUG1, ("Setting gate delay %lld ns (gateIndex:%d)\n",
+                    (long long int)val, gateIndex));
+
+#if !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (gateIndex < -1 || gateIndex > 2) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set gate delay. Invalid gate index %d. "
+                    "Options [-1, 0-2]\n",
+                    gateIndex);
+            LOG(logERROR, (mess));
+        } else {
+            // specific gate index
+            if (gateIndex != -1) {
+                ret = setGateDelay(gateIndex, val);
+                int64_t retval = getGateDelay(gateIndex);
+                LOG(logDEBUG1,
+                    ("retval exptime %lld ns\n", (long long int)retval));
+                if (ret == FAIL) {
+                    sprintf(mess,
+                            "Could not set gate delay. Set %lld ns, read %lld "
+                            "ns.\n",
+                            (long long int)val, (long long int)retval);
+                    LOG(logERROR, (mess));
+                }
+            }
+            // all gate indices
+            else {
+                for (int i = 0; i != 3; ++i) {
+                    ret = setGateDelay(i, val);
+                    int64_t retval = getGateDelay(i);
+                    LOG(logDEBUG1, ("retval gate delay %lld ns (index:%d)\n",
+                                    (long long int)retval, i));
+                    if (ret == FAIL) {
+                        sprintf(mess,
+                                "Could not set gate delay. Set %lld ns, "
+                                "read %lld "
+                                "ns.\n",
+                                (long long int)val, (long long int)retval);
+                        LOG(logERROR, (mess));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT64, NULL, 0);
+}
+
+int get_gate_delay(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int gateIndex = -1;
+    int64_t retval = -1;
+
+    if (receiveData(file_des, &gateIndex, sizeof(gateIndex), INT32) < 0)
+        return printSocketReadError();
+
+#if !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    // get only
+    if (gateIndex < 0 || gateIndex > 2) {
+        ret = FAIL;
+        sprintf(mess,
+                "Could not set gate delay. Invalid gate index %d. "
+                "Options [0-2]\n",
+                gateIndex);
+        LOG(logERROR, (mess));
+    } else {
+        retval = getGateDelay(gateIndex);
+        LOG(logDEBUG1, ("retval gate delay %lld ns\n", (long long int)retval));
+    }
+#endif
+    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+}
+
+int get_exptime_all_gates(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int64_t retvals[3] = {-1, -1, -1};
+
+#if !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    for (int i = 0; i != 3; ++i) {
+        retvals[i] = getExpTime(i);
+        LOG(logINFO, ("retval exptime %lld ns (index:%d)\n",
+                      (long long int)retvals[i], i));
+    }
+#endif
+    return Server_SendResult(file_des, INT64, retvals, sizeof(retvals));
+}
+
+int get_gate_delay_all_gates(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int64_t retvals[3] = {-1, -1, -1};
+
+#if !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    for (int i = 0; i != 3; ++i) {
+        retvals[i] = getGateDelay(i);
+        LOG(logDEBUG1, ("retval gate delay %lld ns (index:%d)\n",
+                        (long long int)retvals[i], i));
+    }
+#endif
+    return Server_SendResult(file_des, INT64, retvals, sizeof(retvals));
 }

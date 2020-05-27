@@ -44,7 +44,7 @@ int findFlash(char *mess) {
     if (fp == NULL) {
         strcpy(mess, "popen returned NULL. Need that to get mtd drive.\n");
         LOG(logERROR, (mess));
-        return RO_TRIGGER_IN_FALLING_EDGE;
+        return FAIL;
     }
     if (fgets(output, sizeof(output), fp) == NULL) {
         strcpy(mess, "fgets returned NULL. Need that to get mtd drive.\n");

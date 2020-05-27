@@ -207,29 +207,10 @@ typedef struct {
       use of the external signals
     */
     enum externalSignalFlag {
-        GET_EXTERNAL_SIGNAL_FLAG = -1, /**<return flag for signal */
-        SIGNAL_OFF,                    /**<signal unused - tristate*/
-        GATE_IN_ACTIVE_HIGH,           /**<input gate active high*/
-        GATE_IN_ACTIVE_LOW,            /**<input gate active low */
-        TRIGGER_IN_RISING_EDGE,    /**<input exposure trigger on rising edge */
-        TRIGGER_IN_FALLING_EDGE,   /**<input exposure trigger on falling edge */
-        RO_TRIGGER_IN_RISING_EDGE, /**<input raedout trigger on rising edge */
-        RO_TRIGGER_IN_FALLING_EDGE, /**<input readout trigger on falling edge */
-        GATE_OUT_ACTIVE_HIGH, /**<output active high when detector is exposing*/
-        GATE_OUT_ACTIVE_LOW,  /**<output active low when detector is exposing*/
-        TRIGGER_OUT_RISING_EDGE,     /**<output trigger rising edge at start of
-                                        exposure */
-        TRIGGER_OUT_FALLING_EDGE,    /**<output trigger falling edge at start of
-                                        exposure */
-        RO_TRIGGER_OUT_RISING_EDGE,  /**<output trigger rising edge at start of
-                                        readout */
-        RO_TRIGGER_OUT_FALLING_EDGE, /**<output trigger falling edge at start of
-                                        readout */
-        OUTPUT_LOW,                  /**< output always low */
-        OUTPUT_HIGH,                 /**< output always high */
-        MASTER_SLAVE_SYNCHRONIZATION /**< reserved for master/slave
-                                        synchronization in multi detector
-                                        systems */
+        TRIGGER_IN_RISING_EDGE,
+        TRIGGER_IN_FALLING_EDGE,
+        INVERSION_ON,
+        INVERSION_OFF
     };
 
     /**
@@ -241,6 +222,7 @@ typedef struct {
         TRIGGER_EXPOSURE,     /**< trigger mode i.e. exposure is triggered */
         GATED,                /**< gated  */
         BURST_TRIGGER,        /**< trigger a burst of frames */
+        TRIGGER_GATED,        /**< trigger and gating */
         NUM_TIMING_MODES
     };
 
@@ -476,6 +458,13 @@ typedef struct {
         ROI roi;
         uint32_t countermask{0};
         burstMode burstType{BURST_OFF};
+        int64_t expTime1Ns{0};
+        int64_t expTime2Ns{0};
+        int64_t expTime3Ns{0};
+        int64_t gateDelay1Ns{0};
+        int64_t gateDelay2Ns{0};
+        int64_t gateDelay3Ns{0};
+        int gates{0};
     } __attribute__((packed));
 #endif
 
@@ -483,9 +472,9 @@ typedef struct {
   protected:
 #endif
 
-// #ifndef MYROOT
-// #include "sls_detector_funcs.h"
-// #endif
+    // #ifndef MYROOT
+    // #include "sls_detector_funcs.h"
+    // #endif
 
 #ifdef __cplusplus
 };

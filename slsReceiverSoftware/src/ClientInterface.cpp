@@ -197,7 +197,9 @@ int ClientInterface::functionTable(){
     flist[F_SET_ADDITIONAL_JSON_PARAMETER]  =   &ClientInterface::set_additional_json_parameter;
 	flist[F_GET_ADDITIONAL_JSON_PARAMETER]  =   &ClientInterface::get_additional_json_parameter;
 	flist[F_GET_RECEIVER_PROGRESS]          =   &ClientInterface::get_progress;
-      
+    flist[F_SET_RECEIVER_NUM_GATES]         =   &ClientInterface::set_num_gates;    
+    flist[F_SET_RECEIVER_GATE_DELAY]        =   &ClientInterface::set_gate_delay;        
+
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
 				getFunctionNameFromEnum((enum detFuncs)i) << ") located at " << flist[i];
@@ -368,7 +370,14 @@ int ClientInterface::setup_receiver(Interface &socket) {
                   << "roi.xmin:" << arg.roi.xmin << std::endl
                   << "roi.xmax:" << arg.roi.xmax << std::endl
                   << "countermask:" << arg.countermask << std::endl
-                  << "burstType:" << arg.burstType << std::endl;
+                  << "burstType:" << arg.burstType << std::endl
+                  << "exptime1:" << arg.expTime1Ns << std::endl
+                  << "exptime2:" << arg.expTime2Ns << std::endl
+                  << "exptime3:" << arg.expTime3Ns << std::endl
+                  << "gateDelay1:" << arg.gateDelay1Ns << std::endl
+                  << "gateDelay2:" << arg.gateDelay2Ns << std::endl
+                  << "gateDelay3:" << arg.gateDelay3Ns << std::endl
+                  << "gates:" << arg.gates << std::endl;
 
     // if object exists, verify unlocked and idle, else only verify lock
     // (connecting first time)
@@ -438,7 +447,9 @@ int ClientInterface::setup_receiver(Interface &socket) {
                                " due to fifo structure memory allocation.");
         }
     }
-    impl()->setAcquisitionTime(arg.expTimeNs);
+    if (myDetectorType != MYTHEN3) {
+        impl()->setAcquisitionTime(arg.expTimeNs);
+    }
     impl()->setAcquisitionPeriod(arg.periodNs);
     if (myDetectorType == EIGER) {
         impl()->setSubExpTime(arg.subExpTimeNs);
@@ -502,6 +513,13 @@ int ClientInterface::setup_receiver(Interface &socket) {
     if (myDetectorType == MYTHEN3) {
         int ncounters = __builtin_popcount(arg.countermask);
         impl()->setNumberofCounters(ncounters);
+        impl()->setAcquisitionTime1(arg.expTime1Ns);
+        impl()->setAcquisitionTime2(arg.expTime2Ns);
+        impl()->setAcquisitionTime3(arg.expTime3Ns);
+        impl()->setGateDelay1(arg.gateDelay1Ns);
+        impl()->setGateDelay2(arg.gateDelay2Ns);
+        impl()->setGateDelay3(arg.gateDelay3Ns);
+        impl()->setNumberOfGates(arg.gates);
     }
     if (myDetectorType == GOTTHARD2) {
         impl()->setBurstMode(arg.burstType);
@@ -679,9 +697,44 @@ int ClientInterface::set_num_digital_samples(Interface &socket) {
 }
 
 int ClientInterface::set_exptime(Interface &socket) {
-    auto value = socket.Receive<int64_t>();
-    LOG(logDEBUG1) << "Setting exptime to " << value << "ns";
-    impl()->setAcquisitionTime(value);
+    int64_t args[2]{-1, -1};
+    socket.Receive(args);
+    int gateIndex = static_cast<int>(args[0]);
+    int64_t value = args[1];
+    LOG(logDEBUG1) << "Setting exptime to " << value
+                   << "ns (gateIndex: " << gateIndex << ")";
+    switch (gateIndex) {
+    case -1:
+        if (myDetectorType == MYTHEN3) {
+            impl()->setAcquisitionTime1(value);
+            impl()->setAcquisitionTime2(value);
+            impl()->setAcquisitionTime3(value);
+        } else {
+            impl()->setAcquisitionTime(value);
+        }
+        break;
+    case 0:
+        if (myDetectorType != MYTHEN3) {
+            functionNotImplemented();
+        }
+        impl()->setAcquisitionTime1(value);
+        break;
+    case 1:
+        if (myDetectorType != MYTHEN3) {
+            functionNotImplemented();
+        }
+        impl()->setAcquisitionTime2(value);
+        break;
+    case 2:
+        if (myDetectorType != MYTHEN3) {
+            functionNotImplemented();
+        }
+        impl()->setAcquisitionTime3(value);
+        break;
+    default:
+        throw RuntimeError("Unknown gate index for exptime " +
+                           std::to_string(gateIndex));
+    }
     return socket.Send(OK);
 }
 
@@ -1651,4 +1704,46 @@ int ClientInterface::get_progress(Interface &socket) {
     int retval = impl()->getProgress();
     LOG(logDEBUG1) << "progress retval: " << retval;
     return socket.sendResult(retval);
+}
+
+int ClientInterface::set_num_gates(Interface &socket) {
+    auto value = socket.Receive<int>();
+    LOG(logDEBUG1) << "Setting num gates to " << value;
+    if (myDetectorType != MYTHEN3) {
+        functionNotImplemented();
+    }
+    impl()->setNumberOfGates(value);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_gate_delay(Interface &socket) {
+    int64_t args[2]{-1, -1};
+    socket.Receive(args);
+    int gateIndex = static_cast<int>(args[0]);
+    int64_t value = args[1];
+    LOG(logDEBUG1) << "Setting gate delay to " << value
+                   << "ns (gateIndex: " << gateIndex << ")";
+    if (myDetectorType != MYTHEN3) {
+        functionNotImplemented();
+    }
+    switch (gateIndex) {
+    case -1:
+        impl()->setGateDelay1(value);
+        impl()->setGateDelay2(value);
+        impl()->setGateDelay3(value);
+        break;
+    case 0:
+        impl()->setGateDelay1(value);
+        break;
+    case 1:
+        impl()->setGateDelay2(value);
+        break;
+    case 2:
+        impl()->setGateDelay3(value);
+        break;
+    default:
+        throw RuntimeError("Unknown gate index for gate delay " +
+                           std::to_string(gateIndex));
+    }
+    return socket.Send(OK);
 }

@@ -203,7 +203,9 @@ class Detector {
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
-     * [Gotthard][Jungfrau][CTB][Moench] Options: AUTO_TIMING, TRIGGER_EXPOSURE
+     * [Gotthard][Jungfrau][CTB][Moench][Mythen3] Options:
+     * AUTO_TIMING, TRIGGER_EXPOSURE
+     * [Gotthard2] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED
      * [Eiger] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
      */
     void setTimingMode(defs::timingMode value, Positions pos = {});
@@ -914,12 +916,17 @@ class Detector {
     /** [Gotthard] */
     Result<ns> getExptimeLeft(Positions pos = {}) const;
 
-    /** [Gotthard] */
+    /** [Gotthard] signal index is 0
+     * [Mythen3] signal index 0-3 for master input, 4-7 master output signals */
     Result<defs::externalSignalFlag>
-    getExternalSignalFlags(Positions pos = {}) const;
+    getExternalSignalFlags(int signalIndex, Positions pos = {}) const;
 
-    /** [Gotthard] Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE */
-    void setExternalSignalFlags(defs::externalSignalFlag value,
+    /** [Gotthard]  signal index is 0
+     * Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE
+     * [Mythen3] signal index 0-3 for master input, 4-7 master output signals
+     * Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE (for master
+     * input trigger only), INVERSION_ON, INVERSION_OFF */
+    void setExternalSignalFlags(int signalIndex, defs::externalSignalFlag value,
                                 Positions pos = {});
 
     /**************************************************
@@ -996,6 +1003,36 @@ class Detector {
 
     /** [Mythen3] countermask bit set for each counter enabled */
     void setCounterMask(uint32_t countermask, Positions pos = {});
+
+    Result<int> getNumberOfGates(Positions pos = {}) const;
+
+    /** [Mythen3] external gates in gating or trigger_gating mode (external
+     * gating) */
+    void setNumberOfGates(int value, Positions pos = {});
+
+    /** [Mythen3] exptime for each gate signal in auto or trigger timing mode
+     * (internal gating). Gate index: 0-2 */
+    Result<ns> getExptime(int gateIndex, Positions pos = {}) const;
+
+    /** [Mythen3] exptime for each gate signal in auto or trigger timing mode
+     * (internal gating). Gate index: 0-2, -1 for all */
+    void setExptime(int gateIndex, ns t, Positions pos = {});
+
+    /** [Mythen3] exptime for each gate signal in auto or trigger timing mode
+     * (internal gating). Gate index: 0-2, -1 for all */
+    Result<std::array<ns, 3>> getExptimeForAllGates(Positions pos = {}) const;
+
+    /** [Mythen3] gate delay for each gate signal in auto or trigger timing mode
+     * (internal gating). Gate index: 0-2 */
+    Result<ns> getGateDelay(int gateIndex, Positions pos = {}) const;
+
+    /** [Mythen3] gate delay for each gate signal in auto or trigger timing mode
+     * (internal gating). Gate index: 0-2, -1 for all */
+    void setGateDelay(int gateIndex, ns t, Positions pos = {});
+
+    /** [Mythen3] gate delay for each gate signal in auto or trigger timing mode
+     * (internal gating). Gate index: 0-2, -1 for all */
+    Result<std::array<ns, 3>> getGateDelayForAllGates(Positions pos = {}) const;
 
     /**************************************************
      *                                                *
@@ -1215,6 +1252,9 @@ class Detector {
      * for every pattern
      */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
+
+    /** [Mythen3] */
+    void startPattern(Positions pos = {});
 
     /**************************************************
      *                                                *

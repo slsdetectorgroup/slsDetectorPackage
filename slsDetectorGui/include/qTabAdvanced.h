@@ -36,6 +36,9 @@ class qTabAdvanced : public QWidget, private Ui::TabAdvancedObject {
     void SetNumStoragecells(int value);
     void SetSubExposureTime();
     void SetSubDeadTime();
+    void SetGateIndex(int value);
+    void SetExposureTime();
+    void SetGateDelay();
 
   private:
     void SetupWidgetWindow();
@@ -59,6 +62,8 @@ class qTabAdvanced : public QWidget, private Ui::TabAdvancedObject {
     void GetNumStoragecells();
     void GetSubExposureTime();
     void GetSubDeadTime();
+    void GetExposureTime();
+    void GetGateDelay();
 
     sls::Detector *det;
     qDrawPlot *plot;

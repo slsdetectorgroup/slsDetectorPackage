@@ -1,13 +1,12 @@
 /** API versions */
-#define GITBRANCH   "setrxhostname"
-#define APILIB      0x200409
-#define APIRECEIVER 0x200409
-#define APIGUI      0x200409
-
-#define APIEIGER 0x200515
-#define APICTB 0x200515
-#define APIGOTTHARD 0x200515
-#define APIJUNGFRAU 0x200515
-#define APIMYTHEN3 0x200515
-#define APIMOENCH 0x200515
-#define APIGOTTHARD2 0x200526
+#define GITBRANCH    "setrxhostname"
+#define APILIB       0x200409
+#define APIRECEIVER  0x200409
+#define APIGUI       0x200409
+#define APICTB       0x200520
+#define APIGOTTHARD  0x200520
+#define APIJUNGFRAU  0x200520
+#define APIMOENCH    0x200515
+#define APIEIGER     0x200520
+#define APIMYTHEN3   0x200526
+#define APIGOTTHARD2 0x200527

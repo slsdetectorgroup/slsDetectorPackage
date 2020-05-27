@@ -29,9 +29,21 @@ void qTabAdvanced::SetupWidgetWindow() {
         tab_roi->setEnabled(true);
         break;
     case slsDetectorDefs::MYTHEN3:
+        lblDiscardBits->setEnabled(true);
+        spinDiscardBits->setEnabled(true);
+        lblGateIndex->setEnabled(true);
+        spinGateIndex->setEnabled(true);
+        lblExpTime->setEnabled(true);
+        spinExpTime->setEnabled(true);
+        comboExpTimeUnit->setEnabled(true);
+        lblGateDelay->setEnabled(true);
+        spinGateDelay->setEnabled(true);
+        comboGateDelayUnit->setEnabled(true);
+        break;
     case slsDetectorDefs::GOTTHARD2:
         lblDiscardBits->setEnabled(true);
         spinDiscardBits->setEnabled(true);
+        break;
     default:
         break;
     }
@@ -115,6 +127,28 @@ void qTabAdvanced::Initialization() {
     if (lblDiscardBits->isEnabled()) {
         connect(spinDiscardBits, SIGNAL(valueChanged(int)), plot,
                 SLOT(SetNumDiscardBits(int)));
+    }
+
+    // gate index
+    if (lblGateIndex->isEnabled()) {
+        connect(spinGateIndex, SIGNAL(valueChanged(int)), this,
+                SLOT(SetGateIndex(int)));
+    }
+
+    // exptime1, exptime2, exptme3
+    if (lblExpTime->isEnabled()) {
+        connect(spinExpTime, SIGNAL(valueChanged(double)), this,
+                SLOT(SetExposureTime()));
+        connect(comboExpTimeUnit, SIGNAL(currentIndexChanged(int)), this,
+                SLOT(SetExposureTime()));
+    }
+
+    // gatedelay1, gatedelay2, gatedelay3
+    if (lblGateDelay->isEnabled()) {
+        connect(spinGateDelay, SIGNAL(valueChanged(double)), this,
+                SLOT(SetGateDelay()));
+        connect(comboGateDelayUnit, SIGNAL(currentIndexChanged(int)), this,
+                SLOT(SetGateDelay()));
     }
 }
 
@@ -671,6 +705,92 @@ void qTabAdvanced::SetSubDeadTime() {
     GetSubDeadTime();
 }
 
+void qTabAdvanced::SetGateIndex(int value) {
+    LOG(logINFO) << "Getting exptime and gate delay for gate index: " << value;
+    GetExposureTime();
+    GetGateDelay();
+}
+
+void qTabAdvanced::GetExposureTime() {
+    int gateIndex = spinGateIndex->value();
+    LOG(logDEBUG) << "Getting exposure time" << gateIndex;
+    disconnect(spinExpTime, SIGNAL(valueChanged(double)), this,
+               SLOT(SetExposureTime()));
+    disconnect(comboExpTimeUnit, SIGNAL(currentIndexChanged(int)), this,
+               SLOT(SetExposureTime()));
+    try {
+        auto retval = det->getExptime(gateIndex).tsquash(
+            "Exptime is inconsistent for all detectors.");
+        auto time = qDefs::getUserFriendlyTime(retval);
+        spinExpTime->setValue(time.first);
+        comboExpTimeUnit->setCurrentIndex(static_cast<int>(time.second));
+    }
+    CATCH_DISPLAY("Could not get exposure time.",
+                  "qTabSettings::GetExposureTime")
+    connect(spinExpTime, SIGNAL(valueChanged(double)), this,
+            SLOT(SetExposureTime()));
+    connect(comboExpTimeUnit, SIGNAL(currentIndexChanged(int)), this,
+            SLOT(SetExposureTime()));
+}
+
+void qTabAdvanced::SetExposureTime() {
+    int gateIndex = spinGateIndex->value();
+    auto timeNS = qDefs::getNSTime(std::make_pair(
+        spinExpTime->value(),
+        static_cast<qDefs::timeUnit>(comboExpTimeUnit->currentIndex())));
+    LOG(logINFO) << "Setting exptime" << gateIndex << " to " << timeNS.count()
+                 << " ns"
+                 << "/" << spinExpTime->value()
+                 << qDefs::getUnitString(
+                        (qDefs::timeUnit)comboExpTimeUnit->currentIndex());
+    try {
+        det->setExptime(gateIndex, timeNS);
+    }
+    CATCH_DISPLAY("Could not set exposure time.",
+                  "qTabAdvanced::SetExposureTime")
+
+    GetExposureTime();
+}
+
+void qTabAdvanced::GetGateDelay() {
+    int gateIndex = spinGateIndex->value();
+    LOG(logDEBUG) << "Getting gate delay" << gateIndex;
+    disconnect(spinGateDelay, SIGNAL(valueChanged(double)), this,
+               SLOT(SetGateDelay()));
+    disconnect(comboGateDelayUnit, SIGNAL(currentIndexChanged(int)), this,
+               SLOT(SetGateDelay()));
+    try {
+        auto retval = det->getGateDelay(gateIndex).tsquash(
+            "GateDelay is inconsistent for all detectors.");
+        auto time = qDefs::getUserFriendlyTime(retval);
+        spinGateDelay->setValue(time.first);
+        comboGateDelayUnit->setCurrentIndex(static_cast<int>(time.second));
+    }
+    CATCH_DISPLAY("Could not get gate delay.", "qTabSettings::GetGateDelay")
+    connect(spinGateDelay, SIGNAL(valueChanged(double)), this,
+            SLOT(SetGateDelay()));
+    connect(comboGateDelayUnit, SIGNAL(currentIndexChanged(int)), this,
+            SLOT(SetGateDelay()));
+}
+
+void qTabAdvanced::SetGateDelay() {
+    int gateIndex = spinGateIndex->value();
+    auto timeNS = qDefs::getNSTime(std::make_pair(
+        spinGateDelay->value(),
+        static_cast<qDefs::timeUnit>(comboGateDelayUnit->currentIndex())));
+    LOG(logINFO) << "Setting gatedelay" << gateIndex << " to " << timeNS.count()
+                 << " ns"
+                 << "/" << spinGateDelay->value()
+                 << qDefs::getUnitString(
+                        (qDefs::timeUnit)comboGateDelayUnit->currentIndex());
+    try {
+        det->setGateDelay(gateIndex, timeNS);
+    }
+    CATCH_DISPLAY("Could not set gate delay.", "qTabAdvanced::SetGateDelay")
+
+    GetGateDelay();
+}
+
 void qTabAdvanced::Refresh() {
     LOG(logDEBUG) << "**Updating Advanced Tab";
 
@@ -698,5 +818,14 @@ void qTabAdvanced::Refresh() {
         GetSubDeadTime();
     }
 
+    // exptime1, exptime2, exptme3
+    if (lblExpTime->isEnabled()) {
+        GetExposureTime();
+    }
+
+    // gatedelay1, gatedelay2, gatedelay3
+    if (lblGateDelay->isEnabled()) {
+        GetGateDelay();
+    }
     LOG(logDEBUG) << "**Updated Advanced Tab";
 }

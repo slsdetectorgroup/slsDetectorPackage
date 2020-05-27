@@ -424,7 +424,7 @@ void setupDetector() {
     LOG(logINFOBLUE, ("Setting Default parameters\n"));
 
     setSettings(DEFAULT_SETTINGS);
-    setExtSignal(DEFAULT_TRIGGER_MODE);
+    setExtSignal(0, DEFAULT_TRIGGER_MODE);
     setTiming(DEFAULT_TIMING_MODE);
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
@@ -1259,7 +1259,8 @@ enum timingMode getTiming() {
     }
 }
 
-void setExtSignal(enum externalSignalFlag mode) {
+void setExtSignal(int signalIndex, enum externalSignalFlag mode) {
+    LOG(logDEBUG1, ("Setting signal flag[%d] to %d\n", signalIndex, mode));
     switch (mode) {
     case TRIGGER_IN_RISING_EDGE:
         LOG(logINFO,
@@ -1278,7 +1279,10 @@ void setExtSignal(enum externalSignalFlag mode) {
     setTiming(getTiming());
 }
 
-int getExtSignal() { return signalMode; }
+int getExtSignal(int signalIndex) {
+    LOG(logDEBUG1, ("Getting signal flag[%d]\n", signalIndex));
+    return signalMode;
+}
 
 /* configure mac */
 

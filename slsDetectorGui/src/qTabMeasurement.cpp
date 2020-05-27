@@ -31,6 +31,7 @@ void qTabMeasurement::SetupWidgetWindow() {
     progressTimer = new QTimer(this);
 
     sampleImplemented = false;
+    gateImplemented = false;
     delayImplemented = true;
     startingFnumImplemented = false;
     // by default, delay and starting fnum is disabled in form
@@ -41,6 +42,8 @@ void qTabMeasurement::SetupWidgetWindow() {
     // default is triggers and delay (not #bursts and burst period for gotthard2
     // in auto mode)
     ShowTriggerDelay();
+    // default is to show samples, mythen3, show gates
+    ShowGates();
 
     // enabling according to det type
     switch (det->getDetectorType().squash()) {
@@ -66,6 +69,9 @@ void qTabMeasurement::SetupWidgetWindow() {
         lblBurstPeriod->setEnabled(true);
         spinBurstPeriod->setEnabled(true);
         comboBurstPeriodUnit->setEnabled(true);
+        break;
+    case slsDetectorDefs::MYTHEN3:
+        gateImplemented = true;
         break;
     default:
         break;
@@ -96,6 +102,10 @@ void qTabMeasurement::Initialization() {
     if (spinNumSamples->isEnabled()) {
         connect(spinNumSamples, SIGNAL(valueChanged(int)), this,
                 SLOT(SetNumSamples(int)));
+    }
+    if (gateImplemented) {
+        connect(spinNumGates, SIGNAL(valueChanged(int)), this,
+                SLOT(SetNumGates(int)));
     }
     connect(spinExpTime, SIGNAL(valueChanged(double)), this,
             SLOT(SetExposureTime()));
@@ -161,6 +171,16 @@ void qTabMeasurement::ShowTriggerDelay() {
     }
 }
 
+void qTabMeasurement::ShowGates() {
+    if (det->getDetectorType().squash() == slsDetectorDefs::MYTHEN3) {
+        stackedLblSamplesGates->setCurrentWidget(pageLblGates);
+        stackedSpinSamplesGates->setCurrentWidget(pageSpinGates);
+    } else {
+        stackedLblSamplesGates->setCurrentWidget(pageLblSamples);
+        stackedSpinSamplesGates->setCurrentWidget(pageSpinSamples);
+    }
+}
+
 void qTabMeasurement::SetupTimingMode() {
     QStandardItemModel *model =
         qobject_cast<QStandardItemModel *>(comboTimingMode->model());
@@ -173,9 +193,20 @@ void qTabMeasurement::SetupTimingMode() {
             item[i] = model->itemFromIndex(index[i]);
         }
 
-        if (det->getDetectorType().squash() != slsDetectorDefs::EIGER) {
-            item[(int)GATED]->setEnabled(false);
-            item[(int)BURST_TRIGGER]->setEnabled(false);
+        item[(int)GATED]->setEnabled(false);
+        item[(int)BURST_TRIGGER]->setEnabled(false);
+        item[(int)TRIGGER_GATED]->setEnabled(false);
+        switch (det->getDetectorType().squash()) {
+        case slsDetectorDefs::EIGER:
+            item[(int)GATED]->setEnabled(true);
+            item[(int)BURST_TRIGGER]->setEnabled(true);
+            break;
+        case slsDetectorDefs::MYTHEN3:
+            item[(int)GATED]->setEnabled(true);
+            item[(int)TRIGGER_GATED]->setEnabled(true);
+            break;
+        default:
+            break;
         }
     }
 }
@@ -197,6 +228,8 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
     lblDelay->setEnabled(false);
     spinDelay->setEnabled(false);
     comboDelayUnit->setEnabled(false);
+    lblNumGates->setEnabled(false);
+    spinNumGates->setEnabled(false);
 
     switch (comboTimingMode->currentIndex()) {
     case AUTO:
@@ -223,6 +256,7 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
         lblExpTime->setEnabled(true);
         spinExpTime->setEnabled(true);
         comboExpUnit->setEnabled(true);
+        // not implemented  in FW to have multiple frames for eiger
         if (det->getDetectorType().squash() == slsDetectorDefs::EIGER) {
             spinNumFrames->setValue(1);
         } else {
@@ -241,8 +275,12 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
         }
         break;
     case GATED:
-        // #frames
+        // #frames, #gates(mythen3)
         spinNumTriggers->setValue(1);
+        if (det->getDetectorType().squash() == slsDetectorDefs::MYTHEN3) {
+            lblNumGates->setEnabled(true);
+            spinNumGates->setEnabled(true);
+        }
         lblNumFrames->setEnabled(true);
         spinNumFrames->setEnabled(true);
         break;
@@ -257,6 +295,18 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
         lblPeriod->setEnabled(true);
         spinPeriod->setEnabled(true);
         comboPeriodUnit->setEnabled(true);
+        break;
+    case TRIGGER_GATED:
+        // #triggers, delay, #frames, #gates
+        lblNumTriggers->setEnabled(true);
+        spinNumTriggers->setEnabled(true);
+        lblDelay->setEnabled(true);
+        spinDelay->setEnabled(true);
+        comboDelayUnit->setEnabled(true);
+        lblNumFrames->setEnabled(true);
+        spinNumFrames->setEnabled(true);
+        lblNumGates->setEnabled(true);
+        spinNumGates->setEnabled(true);
         break;
     default:
         break;
@@ -278,6 +328,7 @@ void qTabMeasurement::GetTimingMode() {
         case slsDetectorDefs::TRIGGER_EXPOSURE:
         case slsDetectorDefs::GATED:
         case slsDetectorDefs::BURST_TRIGGER:
+        case slsDetectorDefs::TRIGGER_GATED:
             comboTimingMode->setCurrentIndex((int)retval);
             // update widget enable only if different
             if (oldMode != comboTimingMode->currentIndex()) {
@@ -411,6 +462,31 @@ void qTabMeasurement::SetNumSamples(int val) {
                  &qTabMeasurement::GetNumSamples)
 }
 
+void qTabMeasurement::GetNumGates() {
+    LOG(logDEBUG) << "Getting number of gates";
+    disconnect(spinNumGates, SIGNAL(valueChanged(int)), this,
+               SLOT(SetNumGates(int)));
+    try {
+        auto retval = det->getNumberOfGates().tsquash(
+            "Inconsistent number of gates for all detectors.");
+        spinNumGates->setValue(retval);
+    }
+    CATCH_DISPLAY("Could not get number of gates.",
+                  "qTabMeasurement::GetNumGates")
+    connect(spinNumGates, SIGNAL(valueChanged(int)), this,
+            SLOT(SetNumGates(int)));
+}
+
+void qTabMeasurement::SetNumGates(int val) {
+    LOG(logINFO) << "Setting number of external gates to " << val;
+    try {
+        det->setNumberOfGates(val);
+    }
+    CATCH_HANDLE("Could not set number of gates.",
+                 "qTabMeasurement::SetNumGates", this,
+                 &qTabMeasurement::GetNumGates)
+}
+
 void qTabMeasurement::GetExposureTime() {
     LOG(logDEBUG) << "Getting exposure time";
     disconnect(spinExpTime, SIGNAL(valueChanged(double)), this,
@@ -419,12 +495,30 @@ void qTabMeasurement::GetExposureTime() {
                SLOT(SetExposureTime()));
     try {
         spinExpTime->setValue(-1);
-        auto retval = det->getExptime().tsquash(
-            "Inconsistent exposure time for all detectors.");
-        auto time = qDefs::getUserFriendlyTime(retval);
-        spinExpTime->setValue(time.first);
-        comboExpUnit->setCurrentIndex(static_cast<int>(time.second));
-        CheckAcqPeriodGreaterThanExp();
+
+        bool inconsistentGateValues = false;
+        std::chrono::nanoseconds retval;
+        if (det->getDetectorType().squash() == slsDetectorDefs::MYTHEN3) {
+            auto retvals = det->getExptimeForAllGates().tsquash(
+                "Inconsistent exposure time for all detectors.");
+            // all gates have same value
+            if (retvals[0] == retvals[1] && retvals[1] == retvals[2]) {
+                retval = retvals[0];
+            } else {
+                // dont throw, just leave it as -1
+                inconsistentGateValues = true;
+            }
+        } else {
+            retval = det->getExptime().tsquash(
+                "Inconsistent exposure time for all detectors.");
+        }
+
+        if (!inconsistentGateValues) {
+            auto time = qDefs::getUserFriendlyTime(retval);
+            spinExpTime->setValue(time.first);
+            comboExpUnit->setCurrentIndex(static_cast<int>(time.second));
+            CheckAcqPeriodGreaterThanExp();
+        }
     }
     CATCH_DISPLAY("Could not get exposure time.",
                   "qTabMeasurement::GetExposureTime")
@@ -825,6 +919,9 @@ void qTabMeasurement::Refresh() {
         }
         if (sampleImplemented) {
             GetNumSamples();
+        }
+        if (gateImplemented) {
+            GetNumGates();
         }
         GetFileWrite();
         GetFileName();

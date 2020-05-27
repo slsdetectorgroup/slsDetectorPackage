@@ -2,8 +2,8 @@
 #include "Implementation.h"
 #include "ServerSocket.h"
 #include "receiver_defs.h"
-#include "sls_detector_funcs.h"
 #include "sls_detector_defs.h"
+#include "sls_detector_funcs.h"
 class ServerInterface;
 
 #include <atomic>
@@ -153,6 +153,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int set_additional_json_parameter(sls::ServerInterface &socket);
     int get_additional_json_parameter(sls::ServerInterface &socket);
     int get_progress(sls::ServerInterface &socket);
+    int set_num_gates(sls::ServerInterface &socket);
+    int set_gate_delay(sls::ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {

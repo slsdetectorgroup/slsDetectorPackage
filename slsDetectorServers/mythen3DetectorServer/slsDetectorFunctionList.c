@@ -415,6 +415,7 @@ void setupDetector() {
     // defaults
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
     setDefaultDacs();
+    setASICDefaults();
 
     // dynamic range
     setDynamicRange(DEFAULT_DYNAMIC_RANGE);
@@ -424,10 +425,16 @@ void setupDetector() {
     // Initialization of acquistion parameters
     setNumFrames(DEFAULT_NUM_FRAMES);
     setNumTriggers(DEFAULT_NUM_CYCLES);
-    setExpTime(DEFAULT_EXPTIME);
     setPeriod(DEFAULT_PERIOD);
     setDelayAfterTrigger(DEFAULT_DELAY_AFTER_TRIGGER);
     setTiming(DEFAULT_TIMING_MODE);
+    setNumIntGates(DEFAULT_INTERNAL_GATES);
+    setNumGates(DEFAULT_EXTERNAL_GATES);
+    for (int i = 0; i != 3; ++i) {
+        setExpTime(i, DEFAULT_GATE_WIDTH);
+        setGateDelay(i, DEFAULT_GATE_DELAY);
+    }
+    setInitialExtSignals();
 }
 
 int setDefaultDacs() {
@@ -444,6 +451,25 @@ int setDefaultDacs() {
         }
     }
     return ret;
+}
+
+void setASICDefaults() {
+    uint32_t val = bus_r(ASIC_EXP_STATUS_REG);
+    val &= (~ASIC_EXP_STAT_STO_LNGTH_MSK);
+    val |= ((DEFAULT_ASIC_LATCHING_NUM_PULSES << ASIC_EXP_STAT_STO_LNGTH_OFST) &
+            ASIC_EXP_STAT_STO_LNGTH_MSK);
+    val &= (~ASIC_EXP_STAT_RSCNTR_LNGTH_MSK);
+    val |=
+        ((DEFAULT_ASIC_LATCHING_NUM_PULSES << ASIC_EXP_STAT_RSCNTR_LNGTH_OFST) &
+         ASIC_EXP_STAT_RSCNTR_LNGTH_MSK);
+    bus_w(ASIC_EXP_STATUS_REG, val);
+
+    val = bus_r(ASIC_RDO_CONFIG_REG);
+    val &= (~ASICRDO_CNFG_RESSTRG_LNGTH_MSK);
+    val |=
+        ((DEFAULT_ASIC_LATCHING_NUM_PULSES << ASICRDO_CNFG_RESSTRG_LNGTH_OFST) &
+         ASICRDO_CNFG_RESSTRG_LNGTH_MSK);
+    bus_w(ASIC_RDO_CONFIG_REG, val);
 }
 
 /* firmware functions (resets) */
@@ -716,10 +742,8 @@ int setTrimbits(int *trimbits) {
             int start = 0, nloop = 0;
             setPatternLoop(-1, &start, &iaddr, &nloop);
         }
-        // load the trimbits
-#ifndef VIRTUAL
-        startStateMachine();
-#endif
+        // send pattern to the chips
+        startPattern();
     }
 
     // copy trimbits locally
@@ -785,40 +809,18 @@ int64_t getNumTriggers() {
     return get64BitReg(SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
 }
 
-int setExpTime(int64_t val) {
-    if (val < 0) {
-        LOG(logERROR, ("Invalid exptime: %lld ns\n", (long long int)val));
-        return FAIL;
-    }
-    LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
-    val *= (1E-9 * getFrequency(SYSTEM_C0));
-    setPatternWaitTime(0, val);
-
-    // validate for tolerance
-    int64_t retval = getExpTime();
-    val /= (1E-9 * getFrequency(SYSTEM_C0));
-    if (val != retval) {
-        return FAIL;
-    }
-    return OK;
-}
-
-int64_t getExpTime() {
-    return setPatternWaitTime(0, -1) / (1E-9 * getFrequency(SYSTEM_C0));
-}
-
 int setPeriod(int64_t val) {
     if (val < 0) {
         LOG(logERROR, ("Invalid period: %lld ns\n", (long long int)val));
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-9 * FIXED_PLL_FREQUENCY);
+    val *= (1E-9 * getFrequency(SYSTEM_C2));
     set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getPeriod();
-    val /= (1E-9 * FIXED_PLL_FREQUENCY);
+    val /= (1E-9 * getFrequency(SYSTEM_C2));
     if (val != retval) {
         return FAIL;
     }
@@ -827,7 +829,175 @@ int setPeriod(int64_t val) {
 
 int64_t getPeriod() {
     return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /
-           (1E-9 * FIXED_PLL_FREQUENCY);
+           (1E-9 * getFrequency(SYSTEM_C2));
+}
+
+void setNumIntGates(int val) {
+    if (val > 0) {
+        LOG(logINFO,
+            ("Setting number of Internal Gates %lld\n", (long long int)val));
+        bus_w(ASIC_EXP_INT_GATE_NUMBER_REG, val);
+    }
+}
+
+void setNumGates(int val) {
+    if (val > 0) {
+        LOG(logINFO, ("Setting number of Gates %lld\n", (long long int)val));
+        bus_w(ASIC_EXP_EXT_GATE_NUMBER_REG, val);
+    }
+}
+
+int getNumGates() { return bus_r(ASIC_EXP_EXT_GATE_NUMBER_REG); }
+
+void updateGatePeriod() {
+    uint64_t max = 0;
+    for (int i = 0; i != 3; ++i) {
+        // TODO: only those counters enabled (when updated to mask in firmware)
+        uint64_t sum = getExpTime(i) + getGateDelay(i);
+        if (sum > max) {
+            max = sum;
+        }
+    }
+    LOG(logINFO, ("\tSetting Gate Period to %lld ns\n", (long long int)max));
+    max *= (1E-9 * getFrequency(SYSTEM_C2));
+    set64BitReg(max, ASIC_EXP_GATE_PERIOD_LSB_REG,
+                ASIC_EXP_GATE_PERIOD_MSB_REG);
+}
+
+int64_t getGatePeriod() {
+    return get64BitReg(ASIC_EXP_GATE_PERIOD_LSB_REG,
+                       ASIC_EXP_GATE_PERIOD_MSB_REG) /
+           (1E-9 * getFrequency(SYSTEM_C2));
+}
+
+int setExpTime(int gateIndex, int64_t val) {
+    uint32_t alsb = 0;
+    uint32_t amsb = 0;
+    switch (gateIndex) {
+    case 0:
+        alsb = ASIC_EXP_GATE_0_WIDTH_LSB_REG;
+        amsb = ASIC_EXP_GATE_0_WIDTH_MSB_REG;
+        break;
+    case 1:
+        alsb = ASIC_EXP_GATE_1_WIDTH_LSB_REG;
+        amsb = ASIC_EXP_GATE_1_WIDTH_MSB_REG;
+        break;
+    case 2:
+        alsb = ASIC_EXP_GATE_2_WIDTH_LSB_REG;
+        amsb = ASIC_EXP_GATE_2_WIDTH_MSB_REG;
+        break;
+    default:
+        LOG(logERROR, ("Invalid gate index: %d\n", gateIndex));
+        return FAIL;
+    }
+    if (val < 0) {
+        LOG(logERROR, ("Invalid exptime (index:%d): %lld ns\n", gateIndex,
+                       (long long int)val));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting exptime %lld ns (index:%d)\n", (long long int)val,
+                  gateIndex));
+    val *= (1E-9 * getFrequency(SYSTEM_C2));
+    set64BitReg(val, alsb, amsb);
+
+    // validate for tolerance
+    int64_t retval = getExpTime(gateIndex);
+    val /= (1E-9 * getFrequency(SYSTEM_C2));
+    if (val != retval) {
+        return FAIL;
+    }
+
+    updateGatePeriod();
+
+    return OK;
+}
+
+int64_t getExpTime(int gateIndex) {
+    uint32_t alsb = 0;
+    uint32_t amsb = 0;
+    switch (gateIndex) {
+    case 0:
+        alsb = ASIC_EXP_GATE_0_WIDTH_LSB_REG;
+        amsb = ASIC_EXP_GATE_0_WIDTH_MSB_REG;
+        break;
+    case 1:
+        alsb = ASIC_EXP_GATE_1_WIDTH_LSB_REG;
+        amsb = ASIC_EXP_GATE_1_WIDTH_MSB_REG;
+        break;
+    case 2:
+        alsb = ASIC_EXP_GATE_2_WIDTH_LSB_REG;
+        amsb = ASIC_EXP_GATE_2_WIDTH_MSB_REG;
+        break;
+    default:
+        LOG(logERROR, ("Invalid gate index: %d\n", gateIndex));
+        return -1;
+    }
+    return get64BitReg(alsb, amsb) / (1E-9 * getFrequency(SYSTEM_C2));
+}
+
+int setGateDelay(int gateIndex, int64_t val) {
+    uint32_t alsb = 0;
+    uint32_t amsb = 0;
+    switch (gateIndex) {
+    case 0:
+        alsb = ASIC_EXP_GATE_0_DELAY_LSB_REG;
+        amsb = ASIC_EXP_GATE_0_DELAY_MSB_REG;
+        break;
+    case 1:
+        alsb = ASIC_EXP_GATE_1_DELAY_LSB_REG;
+        amsb = ASIC_EXP_GATE_1_DELAY_MSB_REG;
+        break;
+    case 2:
+        alsb = ASIC_EXP_GATE_2_DELAY_LSB_REG;
+        amsb = ASIC_EXP_GATE_2_DELAY_MSB_REG;
+        break;
+    default:
+        LOG(logERROR, ("Invalid gate index: %d\n", gateIndex));
+        return FAIL;
+    }
+    if (val < 0) {
+        LOG(logERROR, ("Invalid gate delay (index:%d): %lld ns\n", gateIndex,
+                       (long long int)val));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting gate delay %lld ns (index:%d)\n", (long long int)val,
+                  gateIndex));
+    val *= (1E-9 * getFrequency(SYSTEM_C2));
+    set64BitReg(val, alsb, amsb);
+
+    // validate for tolerance
+    int64_t retval = getGateDelay(gateIndex);
+    val /= (1E-9 * getFrequency(SYSTEM_C2));
+    if (val != retval) {
+        return FAIL;
+    }
+
+    updateGatePeriod();
+
+    return OK;
+}
+
+int64_t getGateDelay(int gateIndex) {
+    uint32_t alsb = 0;
+    uint32_t amsb = 0;
+    switch (gateIndex) {
+    case 0:
+        alsb = ASIC_EXP_GATE_0_DELAY_LSB_REG;
+        amsb = ASIC_EXP_GATE_0_DELAY_MSB_REG;
+        break;
+    case 1:
+        alsb = ASIC_EXP_GATE_1_DELAY_LSB_REG;
+        amsb = ASIC_EXP_GATE_1_DELAY_MSB_REG;
+        break;
+    case 2:
+        alsb = ASIC_EXP_GATE_2_DELAY_LSB_REG;
+        amsb = ASIC_EXP_GATE_2_DELAY_MSB_REG;
+        break;
+    default:
+        LOG(logERROR, ("Invalid gate index: %d\n", gateIndex));
+        return -1;
+    }
+    return get64BitReg(alsb, amsb) / (1E-9 * getFrequency(SYSTEM_C2));
 }
 
 void setCounterMask(uint32_t arg) {
@@ -854,6 +1024,8 @@ void setCounterMask(uint32_t arg) {
     bus_w(addr, bus_r(addr) & ~CONFIG_COUNTER_ENA_MSK);
     bus_w(addr, bus_r(addr) | val);
     LOG(logDEBUG, ("Config Reg: 0x%x\n", bus_r(addr)));
+
+    updateGatePeriod();
 }
 
 uint32_t getCounterMask() {
@@ -899,12 +1071,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    val *= (1E-9 * FIXED_PLL_FREQUENCY);
+    val *= (1E-9 * getFrequency(SYSTEM_C2));
     set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-9 * FIXED_PLL_FREQUENCY);
+    val /= (1E-9 * getFrequency(SYSTEM_C2));
     if (val != retval) {
         return FAIL;
     }
@@ -913,7 +1085,7 @@ int setDelayAfterTrigger(int64_t val) {
 
 int64_t getDelayAfterTrigger() {
     return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) /
-           (1E-9 * FIXED_PLL_FREQUENCY);
+           (1E-9 * getFrequency(SYSTEM_C2));
 }
 
 int64_t getNumFramesLeft() {
@@ -926,12 +1098,12 @@ int64_t getNumTriggersLeft() {
 
 int64_t getDelayAfterTriggerLeft() {
     return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) /
-           (1E-9 * FIXED_PLL_FREQUENCY);
+           (1E-9 * getFrequency(SYSTEM_C2));
 }
 
 int64_t getPeriodLeft() {
     return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) /
-           (1E-9 * FIXED_PLL_FREQUENCY);
+           (1E-9 * getFrequency(SYSTEM_C2));
 }
 
 int64_t getFramesFromStart() {
@@ -1016,23 +1188,153 @@ void setTiming(enum timingMode arg) {
     if (arg != GET_TIMING_MODE) {
         switch (arg) {
         case AUTO_TIMING:
-            LOG(logINFO, ("Set Timing: Auto\n"));
+            LOG(logINFO, ("Set Timing: Auto (Int. Trigger, Int. Gating)\n"));
             bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+            bus_w(ASIC_EXP_STATUS_REG,
+                  bus_r(ASIC_EXP_STATUS_REG) & ~ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
             break;
         case TRIGGER_EXPOSURE:
-            LOG(logINFO, ("Set Timing: Trigger\n"));
+            LOG(logINFO, ("Set Timing: Trigger (Ext. Trigger, Int. Gating)\n"));
             bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+            bus_w(ASIC_EXP_STATUS_REG,
+                  bus_r(ASIC_EXP_STATUS_REG) & ~ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
+            break;
+        case GATED:
+            LOG(logINFO, ("Set Timing: Gating (Int. Trigger, Ext. Gating)\n"));
+            bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+            bus_w(ASIC_EXP_STATUS_REG,
+                  bus_r(ASIC_EXP_STATUS_REG) | ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
+            break;
+        case TRIGGER_GATED:
+            LOG(logINFO,
+                ("Set Timing: Trigger_Gating (Ext. Trigger, Ext. Gating)\n"));
+            bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+            bus_w(ASIC_EXP_STATUS_REG,
+                  bus_r(ASIC_EXP_STATUS_REG) | ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
             break;
         default:
             LOG(logERROR, ("Unknown timing mode %d\n", arg));
+            return;
         }
     }
 }
 
 enum timingMode getTiming() {
-    if (bus_r(EXT_SIGNAL_REG) == EXT_SIGNAL_MSK)
-        return TRIGGER_EXPOSURE;
-    return AUTO_TIMING;
+    uint32_t extTrigger = (bus_r(EXT_SIGNAL_REG) & EXT_SIGNAL_MSK);
+    uint32_t extGate =
+        (bus_r(ASIC_EXP_STATUS_REG) & ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
+    if (extTrigger) {
+        if (extGate) {
+            // external trigger, external gating
+            return TRIGGER_GATED;
+        } else {
+            // external trigger, internal gating
+            return TRIGGER_EXPOSURE;
+        }
+    } else {
+        if (extGate) {
+            // internal trigger, external gating
+            return GATED;
+        } else {
+            // internal trigger, internal gating
+            return AUTO_TIMING;
+        }
+    }
+}
+
+void setInitialExtSignals() {
+    LOG(logINFOBLUE, ("Setting Initial External Signals\n"));
+    // default, everything is 0
+    // bypass everything
+    // (except master input can edge detect)
+    bus_w(DINF1_REG, DINF1_BYPASS_GATE_MSK);
+    bus_w(DOUTIF1_REG, DOUTIF1_BYPASS_MSK);
+    bus_w(DINF2_REG, DINF2_BYPASS_MSK);
+
+    // master input can edge detect, so rising is 1
+    bus_w(DINF1_REG, bus_r(DINF1_REG) | DINF1_RISING_TRIGGER_MSK);
+}
+
+void setExtSignal(int signalIndex, enum externalSignalFlag mode) {
+    LOG(logDEBUG1, ("Setting signal flag[%d] to %d\n", signalIndex, mode));
+
+    if (signalIndex == 0 && mode != TRIGGER_IN_RISING_EDGE &&
+        mode != TRIGGER_IN_FALLING_EDGE) {
+        return;
+    }
+
+    // getting addr and mask for each signal
+    uint32_t addr = 0;
+    uint32_t mask = 0;
+    if (signalIndex <= 3) {
+        addr = DINF1_REG;
+        int offset = DINF1_INVERSION_OFST + signalIndex;
+        mask = (1 << offset);
+    } else {
+        addr = DOUTIF1_REG;
+        int offset = DOUTIF1_INVERSION_OFST + signalIndex - 4;
+        mask = (1 << offset);
+    }
+    LOG(logDEBUG, ("addr: 0x%x mask:0x%x\n", addr, mask));
+
+    switch (mode) {
+    case TRIGGER_IN_RISING_EDGE:
+        LOG(logINFO, ("Setting External Master Input Signal flag: Trigger in "
+                      "Rising Edge\n"));
+        bus_w(addr, bus_r(addr) & ~mask);
+        break;
+    case TRIGGER_IN_FALLING_EDGE:
+        LOG(logINFO, ("Setting External Master Input Signal flag: Trigger in "
+                      "Falling Edge\n"));
+        bus_w(addr, bus_r(addr) | mask);
+        break;
+    case INVERSION_ON:
+        LOG(logINFO, ("Setting External Master %s Signal flag: Inversion on\n",
+                      (signalIndex <= 3 ? "Input" : "Output")));
+        bus_w(addr, bus_r(addr) | mask);
+        break;
+    case INVERSION_OFF:
+        LOG(logINFO, ("Setting External Master %s Signal flag: Inversion offn",
+                      (signalIndex <= 3 ? "Input" : "Output")));
+        bus_w(addr, bus_r(addr) & ~mask);
+        break;
+    default:
+        LOG(logERROR,
+            ("Extsig (signal mode) %d not defined for this detector\n", mode));
+        return;
+    }
+}
+
+int getExtSignal(int signalIndex) {
+    // getting addr and mask for each signal
+    uint32_t addr = 0;
+    uint32_t mask = 0;
+    if (signalIndex <= 3) {
+        addr = DINF1_REG;
+        int offset = DINF1_INVERSION_OFST + signalIndex;
+        mask = (1 << offset);
+    } else {
+        addr = DOUTIF1_REG;
+        int offset = DOUTIF1_INVERSION_OFST + signalIndex - 4;
+        mask = (1 << offset);
+    }
+    LOG(logDEBUG, ("addr: 0x%x mask:0x%x\n", addr, mask));
+
+    int val = bus_r(addr) & mask;
+    // master input trigger signal
+    if (signalIndex == 0) {
+        if (val) {
+            return TRIGGER_IN_FALLING_EDGE;
+        } else {
+            return TRIGGER_IN_RISING_EDGE;
+        }
+    } else {
+        if (val) {
+            return INVERSION_ON;
+        } else {
+            return INVERSION_OFF;
+        }
+    }
 }
 
 int configureMAC() {
@@ -1185,6 +1487,16 @@ int setDetectorPosition(int pos[]) {
 int *getDetectorPosition() { return detPos; }
 
 /* pattern */
+
+void startPattern() {
+    LOG(logINFOBLUE, ("Starting Pattern\n"));
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_PATTERN_MSK);
+    usleep(1);
+    while (bus_r(PAT_STATUS_REG) & PAT_STATUS_RUN_BUSY_MSK) {
+        usleep(1);
+    }
+    LOG(logINFOBLUE, ("Pattern done\n"));
+}
 
 uint64_t readPatternWord(int addr) {
     // error (handled in tcp)
@@ -1726,7 +2038,7 @@ void *start_timer(void *arg) {
 
     int64_t periodNs = getPeriod();
     int numFrames = (getNumFrames() * getNumTriggers());
-    int64_t expUs = getExpTime() / 1000;
+    int64_t expUs = getGatePeriod() / 1000;
 
     // int dr = setDynamicRange(-1);
     int imagesize = calculateDataBytes();
@@ -1840,20 +2152,20 @@ enum runStatus getRunStatus() {
     }
 #endif
     LOG(logDEBUG1, ("Getting status\n"));
-    uint32_t retval = bus_r(PAT_STATUS_REG);
+    uint32_t retval = bus_r(FLOW_STATUS_REG);
     LOG(logINFO, ("Status Register: %08x\n", retval));
 
     enum runStatus s;
 
     // running
-    if (retval & PAT_STATUS_RUN_BUSY_MSK) {
-        if (retval & PAT_STATUS_WAIT_FOR_TRGGR_MSK) {
+    if (retval & FLOW_STATUS_RUN_BUSY_MSK) {
+        if (retval & FLOW_STATUS_WAIT_FOR_TRGGR_MSK) {
             LOG(logINFOBLUE, ("Status: WAITING\n"));
             s = WAITING;
         } else {
-            if (retval & PAT_STATUS_DLY_BFRE_TRGGR_MSK) {
+            if (retval & FLOW_STATUS_DLY_BFRE_TRGGR_MSK) {
                 LOG(logINFO, ("Status: Delay before Trigger\n"));
-            } else if (retval & PAT_STATUS_DLY_AFTR_TRGGR_MSK) {
+            } else if (retval & FLOW_STATUS_DLY_AFTR_TRGGR_MSK) {
                 LOG(logINFO, ("Status: Delay after Trigger\n"));
             }
             LOG(logINFOBLUE, ("Status: RUNNING\n"));
@@ -1864,10 +2176,10 @@ enum runStatus getRunStatus() {
     // not running
     else {
         // stopped or error
-        if (retval & PAT_STATUS_FIFO_FULL_MSK) {
+        if (retval & FLOW_STATUS_FIFO_FULL_MSK) {
             LOG(logINFOBLUE, ("Status: STOPPED\n")); // FIFO FULL??
             s = STOPPED;
-        } else if (retval & PAT_STATUS_CSM_BUSY_MSK) {
+        } else if (retval & FLOW_STATUS_CSM_BUSY_MSK) {
             LOG(logINFOBLUE, ("Status: READ MACHINE BUSY\n"));
             s = TRANSMITTING;
         } else if (!retval) {
@@ -1912,7 +2224,7 @@ u_int32_t runBusy() {
     }
     return virtual_status;
 #endif
-    u_int32_t s = (bus_r(PAT_STATUS_REG) & PAT_STATUS_RUN_BUSY_MSK);
+    u_int32_t s = (bus_r(FLOW_STATUS_REG) & FLOW_STATUS_RUN_BUSY_MSK);
     // LOG(logDEBUG1, ("Status Register: %08x\n", s));
     return s;
 }

@@ -191,6 +191,13 @@ void BinaryFile::CreateMasterFile(bool masterFileWriteEnable,
                 "Dbit Offset                : %d\n"
                 "Dbit Bitset                : %lld\n"
                 "Roi (xmin, xmax)           : %d %d\n"
+                "Exptime1 (ns)              : %lld\n"
+                "Exptime2 (ns)              : %lld\n"
+                "Exptime3 (ns)              : %lld\n"
+                "GateDelay1 (ns)            : %lld\n"
+                "GateDelay2 (ns)            : %lld\n"
+                "GateDelay3 (ns)            : %lld\n"
+                "Gates                      : %d\n"
                 "Timestamp                  : %s\n\n"
 
                 "#Frame Header\n"
@@ -224,7 +231,13 @@ void BinaryFile::CreateMasterFile(bool masterFileWriteEnable,
                 masterFileAttributes.dbitoffset,
                 (long long int)masterFileAttributes.dbitlist,
                 masterFileAttributes.roiXmin, masterFileAttributes.roiXmax,
-                ctime(&t));
+                (long long int)masterFileAttributes.exptime1Ns,
+                (long long int)masterFileAttributes.exptime2Ns,
+                (long long int)masterFileAttributes.exptime3Ns,
+                (long long int)masterFileAttributes.gateDelay1Ns,
+                (long long int)masterFileAttributes.gateDelay2Ns,
+                (long long int)masterFileAttributes.gateDelay3Ns,
+                masterFileAttributes.gates, ctime(&t));
         if (strlen(message) > maxMasterFileSize) {
             throw sls::RuntimeError("Master File Size " +
                                     std::to_string(strlen(message)) +

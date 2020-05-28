@@ -1245,14 +1245,28 @@ enum timingMode getTiming() {
 void setInitialExtSignals() {
     LOG(logINFOBLUE, ("Setting Initial External Signals\n"));
     // default, everything is 0
+    bus_w(DINF1_REG, 0);
+    bus_w(DOUTIF1_REG, 0);
+    bus_w(DINF2_REG, 0);
+    bus_w(DOUTIF_RISING_LNGTH_REG, 0);
+
     // bypass everything
-    // (except master input can edge detect)
+    // (except master triggers can edge detect)
     bus_w(DINF1_REG, DINF1_BYPASS_GATE_MSK);
-    bus_w(DOUTIF1_REG, DOUTIF1_BYPASS_MSK);
+    bus_w(DOUTIF1_REG, DOUTIF1_BYPASS_GATE_MSK);
     bus_w(DINF2_REG, DINF2_BYPASS_MSK);
 
-    // master input can edge detect, so rising is 1
+    // master input/output  can edge detect, so rising is 1
     bus_w(DINF1_REG, bus_r(DINF1_REG) | DINF1_RISING_TRIGGER_MSK);
+    bus_w(DOUTIF1_REG, bus_r(DOUTIF1_REG) | DOUTIF1_RISING_TRIGGER_MSK);
+
+    // set default value for master output rising pulse length for port1
+    bus_w(DOUTIF_RISING_LNGTH_REG,
+          bus_r(DOUTIF_RISING_LNGTH_REG) & ~DOUTIF_RISING_LNGTH_PORT_1_MSK);
+    bus_w(DOUTIF_RISING_LNGTH_REG, bus_r(DOUTIF_RISING_LNGTH_REG) |
+                                       ((DEFAULT_MSTR_OTPT_P1_NUM_PULSES
+                                         << DOUTIF_RISING_LNGTH_PORT_1_OFST) &
+                                        DOUTIF_RISING_LNGTH_PORT_1_MSK));
 }
 
 void setExtSignal(int signalIndex, enum externalSignalFlag mode) {

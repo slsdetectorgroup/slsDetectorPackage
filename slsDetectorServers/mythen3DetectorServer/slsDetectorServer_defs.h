@@ -41,6 +41,7 @@
 #define DEFAULT_SYSTEM_C1                (10) //(125000000) // chip_clk, 125 MHz
 #define DEFAULT_SYSTEM_C2                (10) //(125000000) // sync_clk, 125 MHz
 #define DEFAULT_ASIC_LATCHING_NUM_PULSES (10)
+#define DEFAULT_MSTR_OTPT_P1_NUM_PULSES  (20)
 
 /* Firmware Definitions */
 #define IP_HEADER_SIZE          (20)

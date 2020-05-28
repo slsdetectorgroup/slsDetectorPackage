@@ -923,9 +923,11 @@ class Detector {
 
     /** [Gotthard]  signal index is 0
      * Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE
-     * [Mythen3] signal index 0-3 for master input, 4-7 master output signals
-     * Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE (for master
-     * input trigger only), INVERSION_ON, INVERSION_OFF */
+     * [Mythen3] signal index 0 is master input trigger signal, 1-3 for master
+     * input gate signals, 4 is busy out signal, 5-7 is master output gate
+     * signals.
+     * Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE (for
+     * master input trigger only), INVERSION_ON, INVERSION_OFF */
     void setExternalSignalFlags(int signalIndex, defs::externalSignalFlag value,
                                 Positions pos = {});
 

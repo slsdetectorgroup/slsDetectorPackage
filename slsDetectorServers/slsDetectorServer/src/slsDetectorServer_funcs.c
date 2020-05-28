@@ -517,7 +517,16 @@ int set_external_signal_flag(int file_des) {
     functionNotImplemented();
 #else
     if (Server_VerifyLock() == OK) {
-        if (signalIndex < 0 || signalIndex >= MAX_EXT_SIGNALS) {
+#ifdef MYTHEN3D
+        // to be implemented in hardware as busy configurable
+        if (signalIndex == 4) {
+            ret = FAIL;
+            sprintf(mess, "Signal index %d not configurable yet\n",
+                    signalIndex);
+            LOG(logERROR, (mess));
+        } else
+#endif
+            if (signalIndex < 0 || signalIndex >= MAX_EXT_SIGNALS) {
             ret = FAIL;
             sprintf(mess, "Signal index %d can only be between 0 and %d\n",
                     signalIndex, MAX_EXT_SIGNALS - 1);

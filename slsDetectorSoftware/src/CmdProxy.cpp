@@ -766,8 +766,9 @@ std::string CmdProxy::ExternalSignal(int action) {
               "[trigger_in_rising_edge|trigger_in_falling_edge]"
               "\n\t[Mythen3] [0-7] "
               "[trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|"
-              "inversion_off]\n\t where 0-3 is master input signals and 4-7 is "
-              "master output signals"
+              "inversion_off]\n\t where 0 is master input trigger signal, 1-3 "
+              "is master input gate signals, 4 is busy out signal and 5-7 is "
+              "master output gate signals"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {

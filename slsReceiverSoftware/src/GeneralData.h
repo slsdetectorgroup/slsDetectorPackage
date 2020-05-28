@@ -495,9 +495,9 @@ class Gotthard2Data : public GeneralData {
         standardheader = true;
         defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
         vetoDataSize = 160;
-        vetoPacketSize = headerSizeinPacket + vetoDataSize;
         vetoImageSize = vetoDataSize * packetsPerFrame;
-        vetoHsize = 24;
+        vetoHsize = 16;
+        vetoPacketSize = vetoHsize + vetoDataSize;
     };
 
     /**

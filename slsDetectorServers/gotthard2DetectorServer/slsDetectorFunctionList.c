@@ -2364,7 +2364,6 @@ void *start_timer(void *arg) {
                     veto_header *header = (veto_header *)(packetData2);
                     header->frameNumber = frameHeaderNr;
                     header->bunchId = 0;
-                    header->reserved = 0;
                     // fill data
                     memcpy(packetData2 + sizeof(veto_header), vetoData,
                            vetodatasize);

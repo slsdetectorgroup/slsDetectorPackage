@@ -60,7 +60,6 @@
 typedef struct {
     uint64_t frameNumber;
     uint64_t bunchId;
-    uint64_t reserved;
 } veto_header;
 
 /** Other Definitions */

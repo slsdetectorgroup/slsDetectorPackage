@@ -1200,7 +1200,7 @@ class Module : public virtual slsDetectorDefs {
      * @param value storage cell index. Value can be 0 to 15. (-1 gets)
      * @returns the storage cell that stores the first acquisition of the series
      */
-    int setStoragecellStart(int pos = -1);
+    int setStorageCellStart(int pos = -1);
 
     /**
      * [Jungfau][Ctb] Programs FPGA with raw file from pof file

@@ -884,7 +884,7 @@ class Detector {
     /** [Jungfrau] Advanced. Sets the storage cell storing the first acquisition
      * of the series. Options: 0-15
      */
-    void setStoragecellStart(int cell, Positions pos = {});
+    void setStorageCellStart(int cell, Positions pos = {});
 
     /** [Jungfrau] Advanced*/
     Result<ns> getStorageCellDelay(Positions pos = {}) const;

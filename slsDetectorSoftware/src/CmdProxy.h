@@ -1844,7 +1844,7 @@ class CmdProxy {
         "(#storagecells + 1).");
 
     INTEGER_COMMAND(
-        storagecell_start, getStorageCellStart, setStoragecellStart,
+        storagecell_start, getStorageCellStart, setStorageCellStart,
         StringTo<int>,
         "[0-15]\n\t[Jungfrau] Storage cell that stores the first acquisition "
         "of the series. Default is 15. For advanced users only.");

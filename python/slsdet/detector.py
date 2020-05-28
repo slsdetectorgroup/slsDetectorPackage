@@ -748,6 +748,38 @@ class Detector(CppDetectorApi):
     def storeinram(self, value):
         self.setStoreInRamMode(value)
 
+
+    """
+    Jungfrau specific
+    """
+
+    @property
+    @element
+    def storagecells(self):
+        return self.getNumberOfAdditionalStorageCells()
+
+    @storagecells.setter
+    def storagecells(self, n_cells):
+        self.setNumberOfAdditionalStorageCells(n_cells)
+
+    @property
+    @element
+    def storagecell_start(self):
+        return self.getStorageCellStart()
+
+    @storagecell_start.setter
+    def storagecell_start(self, value):
+        self.setStorageCellStart(value)
+
+    @property
+    @element
+    def storagecell_delay(self):
+        return ut.reduce_time(self.getStorageCellDelay())
+
+    @storagecell_delay.setter
+    def storagecell_delay(self, t):
+        self.setStorageCellDelay(ut.make_timedelta(t))
+
     """
     Gotthard2
     """

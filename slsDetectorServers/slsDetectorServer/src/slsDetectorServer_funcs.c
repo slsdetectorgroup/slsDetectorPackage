@@ -7454,10 +7454,39 @@ int set_veto(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        setVeto(arg);
-        int retval = getVeto();
-        LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
-        validate(arg, retval, "set veto mode", DEC);
+        // veto allowed only if module attached or in -nomodule mode
+        if (checkModuleFlag) {
+            int type_ret = checkDetectorType();
+            if (type_ret == -1) {
+                ret = FAIL;
+                sprintf(
+                    mess,
+                    "Could not enable/disable veto streaming. Could not open "
+                    "file to know if module attached.\n");
+                LOG(logERROR, (mess));
+            } else if (type_ret == -2) {
+                ret = FAIL;
+                sprintf(mess, "Could not enable/disable veto streaming. No "
+                              "module attached!\n");
+                LOG(logERROR, (mess));
+            } else if (type_ret == FAIL) {
+                ret = FAIL;
+                sprintf(mess, "Could not enable/disable veto streaming. Wrong "
+                              "module type "
+                              "attached!\n");
+                LOG(logERROR, (mess));
+            }
+        } else {
+            LOG(logINFOBLUE,
+                ("In No-Module mode: Ignoring module-attached check. "
+                 "Continuing to enable/disable veto streaming.\n"));
+        }
+        if (ret == OK) {
+            setVeto(arg);
+            int retval = getVeto();
+            LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
+            validate(arg, retval, "set veto mode", DEC);
+        }
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

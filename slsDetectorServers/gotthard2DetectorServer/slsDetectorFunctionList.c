@@ -1420,7 +1420,10 @@ int configureMAC() {
     getIpAddressinString(dst_ip2, dstip2);
 
     int numInterfaces = getNumberofUDPInterfaces();
-    LOG(logINFO, ("\t#Interfaces : %d\n", numInterfaces));
+    int vetoEnabled = getVeto();
+
+    LOG(logINFO, ("\t#Veto            : %d\n", vetoEnabled));
+    LOG(logINFO, ("\t#10Gb Interfaces : %d\n", numInterfaces));
 
     LOG(logINFO, ("\tData Interface \n"));
     LOG(logINFO, ("\tSource IP   : %s\n"
@@ -1431,8 +1434,9 @@ int configureMAC() {
                   "\tDest Port   : %d\n",
                   src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
-    LOG(logINFO, ("\tVeto Interface (%s)\n",
-                  (numInterfaces == 2 ? "enabled" : "disabled")));
+    LOG(logINFO,
+        ("\tVeto Interface (%s)\n",
+         (vetoEnabled && numInterfaces == 2 ? "enabled" : "disabled")));
     LOG(logINFO, ("\tSource IP2  : %s\n"
                   "\tSource MAC2 : %s\n"
                   "\tSource Port2: %d\n"
@@ -1446,7 +1450,7 @@ int configureMAC() {
         LOG(logERROR, ("could not set udp destination IP and port\n"));
         return FAIL;
     }
-    if (numInterfaces == 2 &&
+    if (vetoEnabled && numInterfaces == 2 &&
         setUDPDestinationDetails(1, dst_ip2, dstport2) == FAIL) {
         LOG(logERROR,
             ("could not set udp destination IP and port for interface 2\n"));
@@ -1461,7 +1465,7 @@ int configureMAC() {
     setupHeader(iRxEntry, 0, dstip, dstmac, dstport, srcmac, srcip, srcport);
 
     // veto
-    if (numInterfaces == 2) {
+    if (vetoEnabled && numInterfaces == 2) {
         setupHeader(iRxEntry, 1, dstip2, dstmac2, dstport2, srcmac2, srcip2,
                     srcport2);
     }
@@ -2234,7 +2238,8 @@ int startStateMachine() {
     if (createUDPSocket(0) != OK) {
         return FAIL;
     }
-    if (getNumberofUDPInterfaces() == 2 && createUDPSocket(1) != OK) {
+    if (getVeto() && getNumberofUDPInterfaces() == 2 &&
+        createUDPSocket(1) != OK) {
         return FAIL;
     }
     LOG(logINFOBLUE, ("Starting State Machine\n"));
@@ -2277,6 +2282,8 @@ void *start_timer(void *arg) {
     }
 
     int numInterfaces = getNumberofUDPInterfaces();
+    int vetoEnabled = getVeto();
+
     int numRepeats = getNumTriggers();
     if (getTiming() == AUTO_TIMING) {
         if (burstMode == BURST_OFF) {
@@ -2352,7 +2359,7 @@ void *start_timer(void *arg) {
                 // second interface (veto)
                 char packetData2[vetopacketsize];
                 memset(packetData2, 0, vetopacketsize);
-                if (numInterfaces == 2) {
+                if (vetoEnabled && numInterfaces == 2) {
                     // set header
                     veto_header *header = (veto_header *)(packetData2);
                     header->frameNumber = frameHeaderNr;
@@ -2393,7 +2400,7 @@ void *start_timer(void *arg) {
     }
 
     closeUDPSocket(0);
-    if (numInterfaces == 2) {
+    if (vetoEnabled && numInterfaces == 2) {
         closeUDPSocket(1);
     }
 

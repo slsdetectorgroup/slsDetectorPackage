@@ -2355,7 +2355,7 @@ int Module::setTemperatureEvent(int val) {
     return retval;
 }
 
-int Module::setStoragecellStart(int pos) {
+int Module::setStorageCellStart(int pos) {
     return sendToDetector<int>(F_STORAGE_CELL_START, pos);
 }
 

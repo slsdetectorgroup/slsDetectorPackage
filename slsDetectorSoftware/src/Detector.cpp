@@ -1132,11 +1132,11 @@ void Detector::setNumberOfAdditionalStorageCells(int value) {
 }
 
 Result<int> Detector::getStorageCellStart(Positions pos) const {
-    return pimpl->Parallel(&Module::setStoragecellStart, pos, -1);
+    return pimpl->Parallel(&Module::setStorageCellStart, pos, -1);
 }
 
-void Detector::setStoragecellStart(int cell, Positions pos) {
-    pimpl->Parallel(&Module::setStoragecellStart, pos, cell);
+void Detector::setStorageCellStart(int cell, Positions pos) {
+    pimpl->Parallel(&Module::setStorageCellStart, pos, cell);
 }
 
 Result<ns> Detector::getStorageCellDelay(Positions pos) const {

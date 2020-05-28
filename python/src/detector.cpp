@@ -880,9 +880,9 @@ void init_det(py::module &m) {
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getStorageCellStart,
              py::arg() = Positions{})
-        .def("setStoragecellStart",
+        .def("setStorageCellStart",
              (void (Detector::*)(int, sls::Positions)) &
-                 Detector::setStoragecellStart,
+                 Detector::setStorageCellStart,
              py::arg(), py::arg() = Positions{})
         .def("getStorageCellDelay",
              (Result<sls::ns>(Detector::*)(sls::Positions) const) &

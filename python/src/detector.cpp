@@ -978,6 +978,14 @@ void init_det(py::module &m) {
              (void (Detector::*)(defs::timingSourceType, sls::Positions)) &
                  Detector::setTimingSource,
              py::arg(), py::arg() = Positions{})
+        .def("getVeto",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getVeto,
+             py::arg() = Positions{})
+        .def("setVeto",
+             (void (Detector::*)(const bool, sls::Positions)) &
+                 Detector::setVeto,
+             py::arg(), py::arg() = Positions{})
         .def("getCounterMask",
              (Result<uint32_t>(Detector::*)(sls::Positions) const) &
                  Detector::getCounterMask,

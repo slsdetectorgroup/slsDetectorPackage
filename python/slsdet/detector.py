@@ -9,6 +9,7 @@ detectorType = slsDetectorDefs.detectorType
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
+from . import utils as ut
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -173,16 +174,14 @@ class Detector(CppDetectorApi):
     def exptime(self):
         if self.type == detectorType.MYTHEN3:
             res = self.getExptimeForAllGates()
-            return reduce_time(res)
-        res = self.getExptime()
-        return element_if_equal([it.total_seconds() for it in res])
+        else:
+            res = self.getExptime()
+        return reduce_time(res)
+
 
     @exptime.setter
     def exptime(self, t):
-        if isinstance(t, dt.timedelta):
-            self.setExptime(t)
-        else:
-            self.setExptime(dt.timedelta(seconds=t))
+        self.setExptime(ut.make_timedelta(t))
 
     @property
     def gatedelay(self):
@@ -193,57 +192,36 @@ class Detector(CppDetectorApi):
         if is_iterable(value):
             if len(value) == 3:
                 for i,v in enumerate(value):
-                    if isinstance(v, dt.timedelta):
-                        self.setGateDelay(i, v)
-                    else:
-                        self.setGateDelay(i, dt.timedelta(seconds = v))
+                    self.setGateDelay(i, ut.make_timedelta(v))
         else:
-            if isinstance(value, dt.timedelta):
-                self.setGateDelay(-1, value)
-            else:
-                self.setGateDelay(-1, dt.timedelta(seconds=value))
-            
-
+            self.setGateDelay(-1, ut.make_timedelta(value))
+        
     @property
     def subexptime(self):
         res = self.getSubExptime()
-        return element_if_equal([it.total_seconds() for it in res])
+        return reduce_time(res)
 
     @subexptime.setter
     def subexptime(self, t):
-        if isinstance(t, dt.timedelta):
-            self.setSubExptime(t)
-        else:
-            self.setSubExptime(dt.timedelta(seconds=t))
+        self.setSubExptime(ut.make_timedelta(t))
 
     @property
     def subdeadtime(self):
         res = self.getSubDeadTime()
-        return element_if_equal([it.total_seconds() for it in res])
+        reduce_time(res)
 
     @subdeadtime.setter
     def subdeadtime(self, t):
-        if isinstance(t, dt.timedelta):
-            self.setSubDeadTime(t)
-        else:
-            self.setSubDeadTime(dt.timedelta(seconds=t))
-
+        self.setSubDeadTime(ut.make_timedelta(t))
 
     @property
     def period(self):
         res = self.getPeriod()
-        return element_if_equal([it.total_seconds() for it in res])
+        reduce_time(res)
 
     @period.setter
     def period(self, t):
-        if isinstance(t, dt.timedelta):
-            self.setPeriod(t)
-        else:
-            self.setPeriod(dt.timedelta(seconds=t))
-
-    
-
-    
+        self.setPeriod(ut.make_timedelta(t))
   
     # Time
     @property
@@ -769,6 +747,19 @@ class Detector(CppDetectorApi):
     @storeinram.setter
     def storeinram(self, value):
         self.setStoreInRamMode(value)
+
+    """
+    Gotthard2
+    """
+    @property
+    @element
+    def veto(self):
+        return self.getVeto()
+
+    @veto.setter
+    def veto(self, value):
+        self.setVeto(value)
+
 
 
     """

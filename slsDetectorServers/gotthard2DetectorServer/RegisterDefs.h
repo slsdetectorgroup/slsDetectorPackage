@@ -250,6 +250,6 @@
 
 /* UDP datagram registers --------------------------------------------------*/
 #define RXR_ENDPOINTS_MAX                   (32)
-#define RXR_ENDPOINT_OFST                   (0x10)
+#define RXR_ENDPOINT_OFST                   (16 * REG_OFFSET)
 
 // clang-format on

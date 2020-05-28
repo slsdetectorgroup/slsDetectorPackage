@@ -7454,36 +7454,25 @@ int set_veto(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        // veto allowed only if module attached or in -nomodule mode
-        if (arg > 0) {
-            if (checkModuleFlag) {
-                int type_ret = checkDetectorType();
-                if (type_ret == -1) {
-                    ret = FAIL;
-                    sprintf(mess, "Could not enable veto streaming. "
-                                  "Could not open "
-                                  "file to know if module attached.\n");
-                    LOG(logERROR, (mess));
-                } else if (type_ret == -2) {
-                    ret = FAIL;
-                    sprintf(mess, "Could not enable veto streaming. No "
-                                  "module attached!\n");
-                    LOG(logERROR, (mess));
-                } else if (type_ret == FAIL) {
-                    ret = FAIL;
-                    sprintf(mess, "Could not enable veto streaming. Wrong "
-                                  "module type "
-                                  "attached!\n");
-                    LOG(logERROR, (mess));
-                }
+        setVeto(arg);
+        // if numinterfaces is 2 and veto is 1 now, then configuremac
+        if (arg > 0 && getNumberofUDPInterfaces() == 2 &&
+            is_configurable() == OK) {
+            ret = configureMAC();
+            if (ret != OK) {
+                sprintf(mess, "Configure Mac failed after enabling veto\n");
+                strcpy(configureMessage, mess);
+                LOG(logERROR, (mess));
+                configured = FAIL;
+                LOG(logWARNING, ("Configure FAIL, not all parameters "
+                                 "configured yet\n"));
+
             } else {
-                LOG(logINFOBLUE,
-                    ("In No-Module mode: Ignoring module-attached check. "
-                     "Continuing to enable veto streaming.\n"));
+                LOG(logINFOGREEN, ("\tConfigure MAC successful\n"));
+                configured = OK;
             }
         }
         if (ret == OK) {
-            setVeto(arg);
             int retval = getVeto();
             LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
             validate(arg, retval, "set veto mode", DEC);

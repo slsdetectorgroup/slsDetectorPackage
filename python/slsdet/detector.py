@@ -3,6 +3,7 @@ from _slsdet import slsDetectorDefs
 from _slsdet import IpAddr, MacAddr
 
 runStatus = slsDetectorDefs.runStatus
+timingMode = slsDetectorDefs.timingMode
 speedLevel = slsDetectorDefs.speedLevel
 dacIndex = slsDetectorDefs.dacIndex
 detectorType = slsDetectorDefs.detectorType
@@ -16,6 +17,7 @@ import datetime as dt
 from functools import wraps
 from collections import namedtuple
 import socket
+
 
 def freeze(cls):
     cls._frozen = False
@@ -61,15 +63,12 @@ class Detector(CppDetectorApi):
         self._register = Register(self)
         self._adc_register = Adc_register(self)
 
-
     # CONFIGURATION
     def __len__(self):
         return self.size()
 
     def __repr__(self):
-            return '{}(id = {})'.format(self.__class__.__name__,
-                                        self.getShmId())
-
+        return "{}(id = {})".format(self.__class__.__name__, self.getShmId())
 
     def free(self):
         self.freeSharedMemory()
@@ -92,7 +91,6 @@ class Detector(CppDetectorApi):
 
     @property
     def hostname(self):
-        print('getting host!')
         return self.getHostname()
 
     @hostname.setter
@@ -110,7 +108,7 @@ class Detector(CppDetectorApi):
 
     @property
     def server_version(self):
-        #TODO! handle hex print
+        # TODO! handle hex print
         return element_if_equal(self.getDetectorServerVersion())
 
     @property
@@ -131,7 +129,7 @@ class Detector(CppDetectorApi):
 
     @dr.setter
     def dr(self, dr):
-        self.setDynamicRange(dr)    
+        self.setDynamicRange(dr)
 
     @property
     def module_geometry(self):
@@ -178,56 +176,38 @@ class Detector(CppDetectorApi):
             res = self.getExptime()
         return reduce_time(res)
 
-
     @exptime.setter
     def exptime(self, t):
         self.setExptime(ut.make_timedelta(t))
 
     @property
-    def gatedelay(self):
-        return reduce_time(self.getGateDelayForAllGates())
-
-    @gatedelay.setter
-    def gatedelay(self, value):
-        if is_iterable(value):
-            if len(value) == 3:
-                for i,v in enumerate(value):
-                    self.setGateDelay(i, ut.make_timedelta(v))
-        else:
-            self.setGateDelay(-1, ut.make_timedelta(value))
-        
-    @property
-    def subexptime(self):
-        res = self.getSubExptime()
-        return reduce_time(res)
-
-    @subexptime.setter
-    def subexptime(self, t):
-        self.setSubExptime(ut.make_timedelta(t))
-
-    @property
-    def subdeadtime(self):
-        res = self.getSubDeadTime()
-        reduce_time(res)
-
-    @subdeadtime.setter
-    def subdeadtime(self, t):
-        self.setSubDeadTime(ut.make_timedelta(t))
-
-    @property
     def period(self):
         res = self.getPeriod()
-        reduce_time(res)
+        return reduce_time(res)
 
     @period.setter
     def period(self, t):
         self.setPeriod(ut.make_timedelta(t))
-  
+
+    @property
+    @element
+    def delay(self):
+        return ut.reduce_time(self.getDelayAfterTrigger())
+
+    @delay.setter
+    def delay(self, t):
+        self.setDelayAfterTrigger(ut.make_timedelta(t))
+
+    @property
+    @element
+    def delayl(self):
+        return ut.reduce_time(self.getDelayAfterTriggerLeft())
+
+   
     # Time
     @property
     def rx_framescaught(self):
         return element_if_equal(self.getFramesCaught())
-    
 
     @property
     def startingfnum(self):
@@ -236,10 +216,7 @@ class Detector(CppDetectorApi):
     @startingfnum.setter
     def startingfnum(self, value):
         self.setStartingFrameNumber(value)
-
-
-
-     #TODO! add txdelay
+    # TODO! add txdelay
 
     @property
     def use_receiver(self):
@@ -305,14 +282,21 @@ class Detector(CppDetectorApi):
     @property
     def rx_lastclient(self):
         return element_if_equal(self.getRxLastClientIP())
+    # FILE
 
+    @property
+    @element
+    def numinterfaces(self):
+        return self.getNumberofUDPInterfaces()
 
-    #FILE
+    @numinterfaces.setter
+    def numinterfaces(self, value):
+        self.setNumberofUDPInterfaces(value)
 
     @property
     def fformat(self):
         return element_if_equal(self.getFileFormat())
-    
+
     @fformat.setter
     def fformat(self, format):
         self.setFileFormat(format)
@@ -423,14 +407,13 @@ class Detector(CppDetectorApi):
     def zmqip(self, ip):
         self.setClientZmqIp(ip)
 
-
     @property
     def udp_dstip(self):
         return element_if_equal(self.getDestinationUDPIP())
 
     @udp_dstip.setter
     def udp_dstip(self, ip):
-        if ip == 'auto':
+        if ip == "auto":
             ip = socket.gethostbyname(self.rx_hostname)
         self.setDestinationUDPIP(IpAddr(ip))
 
@@ -440,7 +423,7 @@ class Detector(CppDetectorApi):
 
     @udp_dstip2.setter
     def udp_dstip2(self, ip):
-        if ip == 'auto':
+        if ip == "auto":
             ip = socket.gethostbyname(self.rx_hostname)
         self.setDestinationUDPIP2(IpAddr(ip))
 
@@ -459,7 +442,6 @@ class Detector(CppDetectorApi):
     @udp_dstmac2.setter
     def udp_dstmac2(self, mac):
         self.setDestinationUDPMAC2(MacAddr(mac))
-
 
     @property
     def udp_srcip(self):
@@ -517,7 +499,6 @@ class Detector(CppDetectorApi):
     def src_udpip(self, ip):
         self.setSourceUDPIP(IpAddr(ip))
 
-
     @property
     def src_udpmac2(self):
         return element_if_equal(self.getSourceUDPMAC2())
@@ -554,8 +535,6 @@ class Detector(CppDetectorApi):
     def rx_status(self):
         return element_if_equal(self.getReceiverStatus())
 
-
-
     @property
     def rx_udpsocksize(self):
         return element_if_equal(self.getRxUDPSocketBufferSize())
@@ -570,7 +549,7 @@ class Detector(CppDetectorApi):
 
     @property
     def trimbits(self):
-        return NotImplementedError('trimbits are set only')
+        return NotImplementedError("trimbits are set only")
 
     @trimbits.setter
     def trimbits(self, fname):
@@ -603,7 +582,6 @@ class Detector(CppDetectorApi):
     @property
     def adcreg(self):
         return self._adc_register
-
 
     @property
     def led(self):
@@ -645,11 +623,11 @@ class Detector(CppDetectorApi):
 
     @property
     def timing(self):
-        return element_if_equal(self.getTimingMode()) 
+        return element_if_equal(self.getTimingMode())
 
     @timing.setter
     def timing(self, mode):
-        self.setTimingMode(mode) 
+        self.setTimingMode(mode)
 
     @property
     def trimen(self):
@@ -663,8 +641,6 @@ class Detector(CppDetectorApi):
     def vthreshold(self):
         return element_if_equal(self.getDAC(dacIndex.THRESHOLD))
 
-    
-
     @property
     def type(self):
         return element_if_equal(self.getDetectorType())
@@ -677,10 +653,27 @@ class Detector(CppDetectorApi):
     def rx_missingpackets(self):
         return element_if_equal(self.getNumMissingPackets())
 
-
     """
     Some Eiger stuff, does this have to be here or can we move it to subclass?
     """
+    @property
+    def subexptime(self):
+        res = self.getSubExptime()
+        return reduce_time(res)
+
+    @subexptime.setter
+    def subexptime(self, t):
+        self.setSubExptime(ut.make_timedelta(t))
+
+    @property
+    def subdeadtime(self):
+        res = self.getSubDeadTime()
+        reduce_time(res)
+
+    @subdeadtime.setter
+    def subdeadtime(self, t):
+        self.setSubDeadTime(ut.make_timedelta(t))
+
     @property
     def partialreset(self):
         return element_if_equal(self.getPartialReset())
@@ -692,7 +685,7 @@ class Detector(CppDetectorApi):
     @property
     def tengiga(self):
         return element_if_equal(self.getTenGiga())
-    
+
     @tengiga.setter
     def tengiga(self, value):
         self.setTenGiga(value)
@@ -739,7 +732,6 @@ class Detector(CppDetectorApi):
         res = self.getMeasuredSubFramePeriod()
         return element_if_equal([it.total_seconds() for it in res])
 
-
     @property
     def storeinram(self):
         return element_if_equal(self.getStoreInRamMode())
@@ -748,10 +740,18 @@ class Detector(CppDetectorApi):
     def storeinram(self, value):
         self.setStoreInRamMode(value)
 
-
     """
     Jungfrau specific
     """
+
+    @property
+    @element
+    def auto_comp_disable(self):
+        return self.getAutoCompDisable()
+
+    @auto_comp_disable.setter
+    def auto_comp_disable(self, value):
+        self.setAutoCompDisable(value)
 
     @property
     @element
@@ -780,9 +780,49 @@ class Detector(CppDetectorApi):
     def storagecell_delay(self, t):
         self.setStorageCellDelay(ut.make_timedelta(t))
 
+    @property
+    @element
+    def temp_threshold(self):
+        return self.getThresholdTemperature()
+
+    @temp_threshold.setter
+    def temp_threshold(self, value):
+        self.setThresholdTemperature(value)
+
+    @property
+    @element
+    def temp_event(self):
+        return self.getTemperatureEvent()
+
+    @temp_event.setter
+    def temp_event(self, value):
+        if value != 0:
+            raise ValueError("Value needs to be 0 for reset. Setting not allowed")
+        self.resetTemperatureEvent()
+
+    @property
+    @element
+    def temp_control(self):
+        return self.getTemperatureControl()
+
+    @temp_control.setter
+    def temp_control(self, value):
+        self.setTemperatureControl(value)
+
+
+    @property
+    @element
+    def selinterface(self):
+        return self.getSelectedUDPInterface()
+
+    @selinterface.setter
+    def selinterface(self, i):
+        self.selectUDPInterface(i)
+
     """
     Gotthard2
     """
+
     @property
     @element
     def veto(self):
@@ -793,10 +833,22 @@ class Detector(CppDetectorApi):
         self.setVeto(value)
 
 
-
     """
     Mythen3 specific
     """
+
+    @property
+    def gatedelay(self):
+        return reduce_time(self.getGateDelayForAllGates())
+
+    @gatedelay.setter
+    def gatedelay(self, value):
+        if is_iterable(value):
+            if len(value) == 3:
+                for i, v in enumerate(value):
+                    self.setGateDelay(i, ut.make_timedelta(v))
+        else:
+            self.setGateDelay(-1, ut.make_timedelta(value))
 
     @property
     def counters(self):
@@ -807,11 +859,10 @@ class Detector(CppDetectorApi):
         else:
             return [get_set_bits(m) for m in mask]
 
-
     @counters.setter
     def counters(self, values):
         self.setCounterMask(list_to_bitmask(values))
-        
+
     """
     CTB stuff 
     """
@@ -859,7 +910,7 @@ class Detector(CppDetectorApi):
     @property
     def dbitclk(self):
         return element_if_equal(self.getDBITClock())
-    
+
     @dbitclk.setter
     def dbitclk(self, value):
         self.setDBITClock(value)
@@ -899,7 +950,7 @@ class Detector(CppDetectorApi):
     @property
     def adcphase(self):
         return element_if_equal(self.getADCPhase())
-    
+
     @adcphase.setter
     def adcphase(self, value):
         self.setADCPhase(value)
@@ -923,10 +974,10 @@ class Detector(CppDetectorApi):
     @property
     def syncclk(self):
         return element_if_equal(self.getSYNCClock())
-    
+
     @property
     def pattern(self):
-        #TODO! Clean fix
+        # TODO! Clean fix
         print("Set only")
         return 0
 
@@ -1015,7 +1066,6 @@ class Detector(CppDetectorApi):
     def patwaittime2(self, nclk):
         self.setPatternWaitTime(2, nclk)
 
-
     @property
     def patloop0(self):
         return element_if_equal(self.getPatternLoopAddresses(0))
@@ -1063,7 +1113,6 @@ class Detector(CppDetectorApi):
     @patnloop2.setter
     def patnloop2(self, n):
         self.setPatternLoopCycles(2, n)
-
 
     @property
     @element

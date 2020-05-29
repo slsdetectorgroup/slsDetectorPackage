@@ -1183,6 +1183,48 @@ TEST_CASE("numinterfaces", "[.cmd][.new]") {
     REQUIRE_THROWS(proxy.Call("numinterfaces", {"0"}, -1, PUT));
 }
 
+TEST_CASE("udp_srcip", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getSourceUDPIP();
+    REQUIRE_THROWS(proxy.Call("udp_srcip", {"0.0.0.0"}, -1, PUT));
+    {
+        std::ostringstream oss;
+        proxy.Call("udp_srcip", {"129.129.205.12"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_srcip 129.129.205.12\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setSourceUDPIP(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("udp_dstip", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("udp_dstip", {"0.0.0.0"}, -1, PUT));
+}
+
+TEST_CASE("udp_srcmac", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getSourceUDPMAC();
+    REQUIRE_THROWS(proxy.Call("udp_srcmac", {"00:00:00:00:00:00"}, -1, PUT));
+    {
+        std::ostringstream oss;
+        proxy.Call("udp_srcmac", {"00:50:c2:42:34:12"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_srcmac 00:50:c2:42:34:12\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setSourceUDPMAC(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("udp_dstmac", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("udp_dstmac", {"00:00:00:00:00:00"}, -1, PUT));
+}
+
 /* Advanced */
 
 TEST_CASE("initialchecks", "[.cmd]") {

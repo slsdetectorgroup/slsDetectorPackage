@@ -94,6 +94,37 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs][.new]") {
     }
 }
 
+/* Network Configuration (Detector<->Receiver) */
+
+TEST_CASE("selinterface", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getSelectedUDPInterface().tsquash(
+            "inconsistent selected interface to test");
+        {
+            std::ostringstream oss;
+            proxy.Call("selinterface", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "selinterface 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("selinterface", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "selinterface 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("selinterface", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "selinterface 0\n");
+        }
+        det.selectUDPInterface(prev_val);
+        REQUIRE_THROWS(proxy.Call("selinterface", {"2"}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("selinterface", {}, -1, GET));
+    }
+}
+
 TEST_CASE("nframes", "[.cmd]") {
     Detector det;
     CmdProxy proxy(&det);

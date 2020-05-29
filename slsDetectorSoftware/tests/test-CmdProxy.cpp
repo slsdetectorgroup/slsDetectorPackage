@@ -1225,6 +1225,224 @@ TEST_CASE("udp_dstmac", "[.cmd][.new]") {
     REQUIRE_THROWS(proxy.Call("udp_dstmac", {"00:00:00:00:00:00"}, -1, PUT));
 }
 
+TEST_CASE("udp_dstport", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getDestinationUDPPort();
+    {
+        std::ostringstream oss;
+        proxy.Call("udp_dstport", {"50084"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_dstport 50084\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setDestinationUDPPort(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("udp_srcip2", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getSourceUDPIP2();
+    REQUIRE_THROWS(proxy.Call("udp_srcip2", {"0.0.0.0"}, -1, PUT));
+    {
+        std::ostringstream oss;
+        proxy.Call("udp_srcip2", {"129.129.205.12"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_srcip2 129.129.205.12\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setSourceUDPIP2(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("udp_dstip2", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("udp_dstip2", {"0.0.0.0"}, -1, PUT));
+}
+
+TEST_CASE("udp_srcmac2", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getSourceUDPMAC2();
+    REQUIRE_THROWS(proxy.Call("udp_srcmac2", {"00:00:00:00:00:00"}, -1, PUT));
+    {
+        std::ostringstream oss;
+        proxy.Call("udp_srcmac2", {"00:50:c2:42:34:12"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_srcmac2 00:50:c2:42:34:12\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setSourceUDPMAC2(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("udp_dstmac2", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("udp_dstmac2", {"00:00:00:00:00:00"}, -1, PUT));
+}
+
+TEST_CASE("udp_dstport2", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getDestinationUDPPort2();
+    {
+        std::ostringstream oss;
+        proxy.Call("udp_dstport2", {"50084"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_dstport2 50084\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setDestinationUDPPort2(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("flowcontrol10g", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getTenGigaFlowControl();
+        {
+            std::ostringstream oss;
+            proxy.Call("flowcontrol10g", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "flowcontrol10g 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("flowcontrol10g", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "flowcontrol10g 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("flowcontrol10g", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "flowcontrol10g 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTenGigaFlowControl(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("flowcontrol10g", {}, -1, GET));
+    }
+}
+
+TEST_CASE("txndelay_left", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getTransmissionDelayLeft();
+        auto val = 5000;
+        if (det_type == defs::JUNGFRAU) {
+            val = 5;
+        }
+        std::string sval = std::to_string(val);
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("txndelay_left", {sval}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txndelay_left " + sval + "\n");
+            proxy.Call("txndelay_left", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txndelay_left " + sval + "\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTransmissionDelayLeft(prev_val[i]);
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("txndelay_left", {}, -1, GET));
+    }
+}
+
+TEST_CASE("txndelay_right", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getTransmissionDelayRight();
+        auto val = 5000;
+        if (det_type == defs::JUNGFRAU) {
+            val = 5;
+        }
+        std::string sval = std::to_string(val);
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("txndelay_right", {sval}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txndelay_right " + sval + "\n");
+            proxy.Call("txndelay_right", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txndelay_right " + sval + "\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTransmissionDelayRight(prev_val[i]);
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("txndelay_right", {}, -1, GET));
+    }
+}
+
+/* ZMQ Streaming Parameters (Receiver<->Client) */
+
+TEST_CASE("zmqport", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    int socketsperdetector = 1;
+    auto det_type = det.getDetectorType().squash();
+    int prev = 1;
+    if (det_type == defs::EIGER) {
+        socketsperdetector *= 2;
+    } else if (det_type == defs::JUNGFRAU) {
+        prev = det.getNumberofUDPInterfaces().squash();
+        det.setNumberofUDPInterfaces(2);
+        socketsperdetector *= 2;
+    }
+    int port = 3500;
+    auto port_str = std::to_string(port);
+    {
+        std::ostringstream oss;
+        proxy.Call("zmqport", {port_str}, -1, PUT, oss);
+        REQUIRE(oss.str() == "zmqport " + port_str + '\n');
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        std::ostringstream oss;
+        proxy.Call("zmqport", {}, i, GET, oss);
+        REQUIRE(oss.str() == "zmqport " +
+                                 std::to_string(port + i * socketsperdetector) +
+                                 '\n');
+    }
+
+    port = 1954;
+    port_str = std::to_string(port);
+    {
+        std::ostringstream oss;
+        proxy.Call("zmqport", {port_str}, -1, PUT, oss);
+        REQUIRE(oss.str() == "zmqport " + port_str + '\n');
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        std::ostringstream oss;
+        proxy.Call("zmqport", {}, i, GET, oss);
+        REQUIRE(oss.str() == "zmqport " +
+                                 std::to_string(port + i * socketsperdetector) +
+                                 '\n');
+    }
+    if (det_type == defs::JUNGFRAU) {
+        det.setNumberofUDPInterfaces(prev);
+    }
+}
+
+TEST_CASE("zmqip", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    std::ostringstream oss1, oss2;
+    auto zmqip = det.getClientZmqIp();
+    proxy.Call("zmqip", {}, 0, GET, oss1);
+    REQUIRE(oss1.str() == "zmqip " + zmqip[0].str() + '\n');
+
+    proxy.Call("zmqip", {zmqip[0].str()}, 0, PUT, oss2);
+    REQUIRE(oss2.str() == "zmqip " + zmqip[0].str() + '\n');
+
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxZmqIP(zmqip[i], {i});
+    }
+}
+
 /* Advanced */
 
 TEST_CASE("initialchecks", "[.cmd]") {
@@ -2710,70 +2928,6 @@ TEST_CASE("user", "[.cmd]") {
 //     REQUIRE_NOTHROW(multiSlsDetectorClient("settingspath", GET, nullptr,
 //     oss)); s = oss.str(); REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));
 // }
-
-TEST_CASE("zmqip", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    std::ostringstream oss1, oss2;
-    auto zmqip = det.getClientZmqIp();
-    proxy.Call("zmqip", {}, 0, GET, oss1);
-    REQUIRE(oss1.str() == "zmqip " + zmqip[0].str() + '\n');
-
-    proxy.Call("zmqip", {zmqip[0].str()}, 0, PUT, oss2);
-    REQUIRE(oss2.str() == "zmqip " + zmqip[0].str() + '\n');
-
-    for (int i = 0; i != det.size(); ++i) {
-        det.setRxZmqIP(zmqip[i], {i});
-    }
-}
-
-TEST_CASE("zmqport", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-
-    int socketsperdetector = 1;
-    auto det_type = det.getDetectorType().squash();
-    int prev = 1;
-    if (det_type == defs::EIGER) {
-        socketsperdetector *= 2;
-    } else if (det_type == defs::JUNGFRAU) {
-        prev = det.getNumberofUDPInterfaces().squash();
-        det.setNumberofUDPInterfaces(2);
-        socketsperdetector *= 2;
-    }
-    int port = 3500;
-    auto port_str = std::to_string(port);
-    {
-        std::ostringstream oss;
-        proxy.Call("zmqport", {port_str}, -1, PUT, oss);
-        REQUIRE(oss.str() == "zmqport " + port_str + '\n');
-    }
-    for (int i = 0; i != det.size(); ++i) {
-        std::ostringstream oss;
-        proxy.Call("zmqport", {}, i, GET, oss);
-        REQUIRE(oss.str() == "zmqport " +
-                                 std::to_string(port + i * socketsperdetector) +
-                                 '\n');
-    }
-
-    port = 1954;
-    port_str = std::to_string(port);
-    {
-        std::ostringstream oss;
-        proxy.Call("zmqport", {port_str}, -1, PUT, oss);
-        REQUIRE(oss.str() == "zmqport " + port_str + '\n');
-    }
-    for (int i = 0; i != det.size(); ++i) {
-        std::ostringstream oss;
-        proxy.Call("zmqport", {}, i, GET, oss);
-        REQUIRE(oss.str() == "zmqport " +
-                                 std::to_string(port + i * socketsperdetector) +
-                                 '\n');
-    }
-    if (det_type == defs::JUNGFRAU) {
-        det.setNumberofUDPInterfaces(prev);
-    }
-}
 
 // TEST_CASE("txndelay", "[.cmd][.eiger][.jungfrau]") {
 //     if (test::type == defs::EIGER) {

@@ -271,44 +271,28 @@ TEST_CASE("trigger", "[.cmd][.new]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("Eiger transmission delay", "[.cmd]") {
+TEST_CASE("txndelay_frame", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    auto frame = det.getTransmissionDelayFrame();
-    auto left = det.getTransmissionDelayLeft();
-    auto right = det.getTransmissionDelayRight();
     if (det_type == defs::EIGER) {
-        SECTION("txndelay_frame") {
+        auto prev_val = det.getTransmissionDelayFrame();
+        {
             std::ostringstream oss1, oss2;
             proxy.Call("txndelay_frame", {"5000"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "txndelay_frame 5000\n");
             proxy.Call("txndelay_frame", {}, -1, GET, oss2);
             REQUIRE(oss2.str() == "txndelay_frame 5000\n");
         }
-        SECTION("txndelay_left") {
-            std::ostringstream oss1, oss2;
-            proxy.Call("txndelay_left", {"5000"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "txndelay_left 5000\n");
-            proxy.Call("txndelay_left", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "txndelay_left 5000\n");
-        }
-        SECTION("txndelay_right") {
-            std::ostringstream oss1, oss2;
-            proxy.Call("txndelay_right", {"5000"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "txndelay_right 5000\n");
-            proxy.Call("txndelay_right", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "txndelay_right 5000\n");
-        }
-
-        // Reset to previous values
         for (int i = 0; i != det.size(); ++i) {
-            det.setTransmissionDelayFrame(frame[i]);
-            det.setTransmissionDelayLeft(left[i]);
-            det.setTransmissionDelayRight(right[i]);
+            det.setTransmissionDelayFrame(prev_val[i]);
         }
+    } else {
+        REQUIRE_THROWS(proxy.Call("txndelay_frame", {}, -1, GET));
     }
 }
+
+/* Eiger Specific */
 
 TEST_CASE("dr", "[.cmd]") {
     Detector det;

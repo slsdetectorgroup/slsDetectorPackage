@@ -4,6 +4,7 @@
 #include "sls_detector_defs.h"
 #include <array>
 #include <sstream>
+#include <thread>
 
 #include "test-CmdProxy-global.h"
 #include "tests/globals.h"
@@ -242,8 +243,14 @@ TEST_CASE("trigger", "[.cmd][.new]") {
             det.getTimingMode().tsquash("inconsistent timing mode in test");
         auto prev_frames =
             det.getNumberOfFrames().tsquash("inconsistent #frames in test");
+        auto prev_exptime =
+            det.getExptime().tsquash("inconsistent exptime in test");
+        auto prev_period =
+            det.getPeriod().tsquash("inconsistent period in test");
         det.setTimingMode(defs::TRIGGER_EXPOSURE);
         det.setNumberOfFrames(1);
+        det.setExptime(std::chrono::milliseconds(1));
+        det.setPeriod(std::chrono::milliseconds(1));
         auto startingfnum = det.getStartingFrameNumber().tsquash(
             "inconsistent frame nr in test");
         det.startDetector();
@@ -252,6 +259,7 @@ TEST_CASE("trigger", "[.cmd][.new]") {
             proxy.Call("trigger", {}, -1, PUT, oss);
             REQUIRE(oss.str() == "trigger successful\n");
         }
+        std::this_thread::sleep_for(std::chrono::seconds(2));
         auto currentfnum = det.getStartingFrameNumber().tsquash(
             "inconsistent frame nr in test");
         REQUIRE(startingfnum + 1 == currentfnum);

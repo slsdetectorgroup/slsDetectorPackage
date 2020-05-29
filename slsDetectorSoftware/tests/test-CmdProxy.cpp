@@ -2,6 +2,7 @@
 #include "Detector.h"
 #include "catch.hpp"
 #include "sls_detector_defs.h"
+
 #include <chrono>
 #include <sstream>
 #include <thread>
@@ -116,7 +117,7 @@ TEST_CASE("type", "[.cmd][.new]") {
     proxy.Call("type", {}, -1, GET, oss);
     auto ans = oss.str().erase(0, strlen("type "));
     REQUIRE(ans == sls::ToString(dt) + '\n');
-    REQUIRE(dt == test::type);
+    // REQUIRE(dt == test::type);
 }
 
 TEST_CASE("detsize", "[.cmd][.new]") {
@@ -193,7 +194,7 @@ TEST_CASE("settings", "[.cmd][.new]") {
 TEST_CASE("trimbits", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_NOTHROW(proxy.Call("trimbits", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("trimbits", {}, -1, GET));
 }
 
 TEST_CASE("trimval", "[.cmd][.new]") {
@@ -219,7 +220,7 @@ TEST_CASE("trimval", "[.cmd][.new]") {
             REQUIRE(oss.str() == "trimval 0\n");
         }
         REQUIRE_THROWS(proxy.Call("trimval", {"64"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("trimval", {"-1"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("trimval", {"-2"}, -1, PUT));
         for (int i = 0; i != det.size(); ++i) {
             if (prev_val[i] != -1) {
                 det.setAllTrimbits(prev_val[i], {i});
@@ -285,13 +286,24 @@ TEST_CASE("triggers", "[.cmd][.new]") {
 TEST_CASE("exptime", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto prev_val = det.getExptime();
+    auto det_type = det.getDetectorType().squash();
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
+    } else {
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw sls::RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
+    }
     {
         std::ostringstream oss;
         proxy.Call("exptime", {"0.05"}, -1, PUT, oss);
         REQUIRE(oss.str() == "exptime 0.05\n");
     }
-    {
+    if (det_type != defs::MYTHEN3) {
         std::ostringstream oss;
         proxy.Call("exptime", {}, -1, GET, oss);
         REQUIRE(oss.str() == "exptime 50ms\n");
@@ -306,9 +318,7 @@ TEST_CASE("exptime", "[.cmd][.new]") {
         proxy.Call("exptime", {"0"}, -1, PUT, oss);
         REQUIRE(oss.str() == "exptime 0\n");
     }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setExptime(prev_val[i], {i});
-    }
+    det.setExptime(-1, prev_val);
 }
 
 TEST_CASE("period", "[.cmd][.new]") {
@@ -394,10 +404,17 @@ TEST_CASE("delayl", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
+    switch (det_type) {
+    case defs::EIGER:
+    case defs::CHIPTESTBOARD:
+    case defs::MOENCH:
+    case defs::GOTTHARD2:
+    case defs::MYTHEN3:
         REQUIRE_THROWS(proxy.Call("delayl", {}, -1, GET));
-    } else {
+        break;
+    default:
         REQUIRE_NOTHROW(proxy.Call("delayl", {}, -1, GET));
+        break;
     }
 }
 
@@ -405,10 +422,17 @@ TEST_CASE("periodl", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
+    switch (det_type) {
+    case defs::EIGER:
+    case defs::CHIPTESTBOARD:
+    case defs::MOENCH:
+    case defs::GOTTHARD2:
+    case defs::MYTHEN3:
         REQUIRE_THROWS(proxy.Call("periodl", {}, -1, GET));
-    } else {
+        break;
+    default:
         REQUIRE_NOTHROW(proxy.Call("periodl", {}, -1, GET));
+        break;
     }
 }
 
@@ -654,6 +678,8 @@ TEST_CASE("clkphase", "[.cmd][.new]") {
         std::string s_deg_val = "15";
         if (det_type == defs::MYTHEN3) {
             s_deg_val = "14";
+        } else if (det_type == defs::GOTTHARD2) {
+            s_deg_val = "23";
         }
         {
             std::ostringstream oss1, oss2;
@@ -886,7 +912,7 @@ TEST_CASE("extsig", "[.cmd][.new]") {
                        oss1);
             REQUIRE(oss1.str() == "extsig 0 trigger_in_rising_edge\n");
             proxy.Call("extsig", {"0"}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "extsig trigger_in_rising_edge\n");
+            REQUIRE(oss2.str() == "extsig 0 trigger_in_rising_edge\n");
         }
         {
             std::ostringstream oss1, oss2;
@@ -916,7 +942,7 @@ TEST_CASE("extsig", "[.cmd][.new]") {
                        oss1);
             REQUIRE(oss1.str() == "extsig 0 trigger_in_rising_edge\n");
             proxy.Call("extsig", {"0"}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "extsig trigger_in_rising_edge\n");
+            REQUIRE(oss2.str() == "extsig 0 trigger_in_rising_edge\n");
         }
         {
             std::ostringstream oss1, oss2;
@@ -931,7 +957,7 @@ TEST_CASE("extsig", "[.cmd][.new]") {
             proxy.Call("extsig", {"1", "inversion_off"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "extsig 1 inversion_off\n");
             proxy.Call("extsig", {"1"}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "extsig inversion_off\n");
+            REQUIRE(oss2.str() == "extsig 1 inversion_off\n");
         }
         {
             std::ostringstream oss1, oss2;
@@ -997,8 +1023,19 @@ TEST_CASE("start", "[.cmd][.new]") {
     CmdProxy proxy(&det);
     // PUT only command
     REQUIRE_THROWS(proxy.Call("start", {}, -1, GET));
-    auto prev_val = det.getExptime();
-    det.setExptime(std::chrono::seconds(2));
+    auto det_type = det.getDetectorType().squash();
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
+    } else {
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw sls::RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
+    }
+    det.setExptime(-1, std::chrono::seconds(2));
     {
         std::ostringstream oss;
         proxy.Call("start", {}, -1, PUT, oss);
@@ -1010,9 +1047,7 @@ TEST_CASE("start", "[.cmd][.new]") {
         REQUIRE(oss.str() == "status running\n");
     }
     det.stopDetector();
-    for (int i = 0; i != det.size(); ++i) {
-        det.setExptime(prev_val[i], {i});
-    }
+    det.setExptime(-1, prev_val);
 }
 
 TEST_CASE("stop", "[.cmd][.new]") {
@@ -1020,8 +1055,19 @@ TEST_CASE("stop", "[.cmd][.new]") {
     CmdProxy proxy(&det);
     // PUT only command
     REQUIRE_THROWS(proxy.Call("stop", {}, -1, GET));
-    auto prev_val = det.getExptime();
-    det.setExptime(std::chrono::seconds(2));
+    auto det_type = det.getDetectorType().squash();
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
+    } else {
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw sls::RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
+    }
+    det.setExptime(-1, std::chrono::seconds(2));
     det.startDetector();
     {
         std::ostringstream oss;
@@ -1038,16 +1084,25 @@ TEST_CASE("stop", "[.cmd][.new]") {
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status idle\n");
     }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setExptime(prev_val[i], {i});
-    }
+    det.setExptime(-1, prev_val);
 }
 
 TEST_CASE("status", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto prev_val = det.getExptime();
-    det.setExptime(std::chrono::seconds(2));
+    auto det_type = det.getDetectorType().squash();
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
+    } else {
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw sls::RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
+    }
+    det.setExptime(-1, std::chrono::seconds(2));
     det.startDetector();
     {
         std::ostringstream oss;
@@ -1060,9 +1115,7 @@ TEST_CASE("status", "[.cmd][.new]") {
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status idle\n");
     }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setExptime(prev_val[i], {i});
-    }
+    det.setExptime(-1, prev_val);
 }
 
 TEST_CASE("startingfnum", "[.cmd][.new]") {

@@ -1295,23 +1295,21 @@ void setNumberofUDPInterfaces(int val) {
 
     // 2 interfaces (enable veto)
     if (val > 1) {
-        LOG(logINFOBLUE,
-            ("Setting #Interfaces: 2 (enabling veto streaming)\n"));
-        bus_w(addr, bus_r(addr) | CONFIG_VETO_ENBL_MSK);
+        LOG(logINFOBLUE, ("Setting #Interfaces: 2 (10gbps veto streaming)\n"));
+        bus_w(addr, bus_r(addr) | CONFIG_VETO_CH_10GB_ENBL_MSK);
     }
     // 1 interface (disable veto)
     else {
-        LOG(logINFOBLUE,
-            ("Setting #Interfaces: 1 (disabling veto streaming)\n"));
-        bus_w(addr, bus_r(addr) & ~CONFIG_VETO_ENBL_MSK);
+        LOG(logINFOBLUE, ("Setting #Interfaces: 1 (2.5gbps veto streaming)\n"));
+        bus_w(addr, bus_r(addr) & ~CONFIG_VETO_CH_10GB_ENBL_MSK);
     }
     LOG(logDEBUG, ("config reg:0x%x\n", bus_r(addr)));
 }
 
 int getNumberofUDPInterfaces() {
     LOG(logDEBUG, ("config reg:0x%x\n", bus_r(CONFIG_REG)));
-    // return 2 if veto enabled, else 1
-    return ((bus_r(CONFIG_REG) & CONFIG_VETO_ENBL_MSK) ? 2 : 1);
+    // return 2 if 10gbps veto streaming enabled, else 1
+    return ((bus_r(CONFIG_REG) & CONFIG_VETO_CH_10GB_ENBL_MSK) ? 2 : 1);
 }
 
 void setupHeader(int iRxEntry, int vetoInterface, uint32_t destip,
@@ -1422,7 +1420,10 @@ int configureMAC() {
     getIpAddressinString(dst_ip2, dstip2);
 
     int numInterfaces = getNumberofUDPInterfaces();
-    LOG(logINFO, ("\t#Interfaces : %d\n", numInterfaces));
+    int vetoEnabled = getVeto();
+
+    LOG(logINFO, ("\t#Veto            : %d\n", vetoEnabled));
+    LOG(logINFO, ("\t#10Gb Interfaces : %d\n", numInterfaces));
 
     LOG(logINFO, ("\tData Interface \n"));
     LOG(logINFO, ("\tSource IP   : %s\n"
@@ -1433,8 +1434,9 @@ int configureMAC() {
                   "\tDest Port   : %d\n",
                   src_ip, src_mac, srcport, dst_ip, dst_mac, dstport));
 
-    LOG(logINFO, ("\tVeto Interface (%s)\n",
-                  (numInterfaces == 2 ? "enabled" : "disabled")));
+    LOG(logINFO,
+        ("\tVeto Interface (%s)\n",
+         (vetoEnabled && numInterfaces == 2 ? "enabled" : "disabled")));
     LOG(logINFO, ("\tSource IP2  : %s\n"
                   "\tSource MAC2 : %s\n"
                   "\tSource Port2: %d\n"
@@ -1448,7 +1450,7 @@ int configureMAC() {
         LOG(logERROR, ("could not set udp destination IP and port\n"));
         return FAIL;
     }
-    if (numInterfaces == 2 &&
+    if (vetoEnabled && numInterfaces == 2 &&
         setUDPDestinationDetails(1, dst_ip2, dstport2) == FAIL) {
         LOG(logERROR,
             ("could not set udp destination IP and port for interface 2\n"));
@@ -1463,7 +1465,7 @@ int configureMAC() {
     setupHeader(iRxEntry, 0, dstip, dstmac, dstport, srcmac, srcip, srcport);
 
     // veto
-    if (numInterfaces == 2) {
+    if (vetoEnabled && numInterfaces == 2) {
         setupHeader(iRxEntry, 1, dstip2, dstmac2, dstport2, srcmac2, srcip2,
                     srcport2);
     }
@@ -2207,6 +2209,27 @@ enum timingSourceType getTimingSource() {
     return TIMING_INTERNAL;
 }
 
+void setVeto(int enable) {
+    if (enable >= 0) {
+        uint32_t addr = CONFIG_REG;
+
+        if (enable) {
+            LOG(logINFOBLUE, ("Enabling veto streaming\n"));
+            bus_w(addr, bus_r(addr) | CONFIG_VETO_ENBL_MSK);
+        } else {
+            LOG(logINFOBLUE, ("Disabling veto streaming\n"));
+            bus_w(addr, bus_r(addr) & ~CONFIG_VETO_ENBL_MSK);
+        }
+        LOG(logDEBUG, ("config reg:0x%x\n", bus_r(addr)));
+    }
+}
+
+int getVeto() {
+    LOG(logDEBUG, ("config reg:0x%x\n", bus_r(CONFIG_REG)));
+    return ((bus_r(CONFIG_REG) & CONFIG_VETO_ENBL_MSK) >>
+            CONFIG_VETO_ENBL_OFST);
+}
+
 /* aquisition */
 
 int startStateMachine() {
@@ -2215,7 +2238,8 @@ int startStateMachine() {
     if (createUDPSocket(0) != OK) {
         return FAIL;
     }
-    if (getNumberofUDPInterfaces() == 2 && createUDPSocket(1) != OK) {
+    if (getVeto() && getNumberofUDPInterfaces() == 2 &&
+        createUDPSocket(1) != OK) {
         return FAIL;
     }
     LOG(logINFOBLUE, ("Starting State Machine\n"));
@@ -2258,6 +2282,8 @@ void *start_timer(void *arg) {
     }
 
     int numInterfaces = getNumberofUDPInterfaces();
+    int vetoEnabled = getVeto();
+
     int numRepeats = getNumTriggers();
     if (getTiming() == AUTO_TIMING) {
         if (burstMode == BURST_OFF) {
@@ -2274,7 +2300,7 @@ void *start_timer(void *arg) {
     int datasize = imagesize;
     int packetsize = datasize + sizeof(sls_detector_header);
     int vetodatasize = VETO_DATA_SIZE;
-    int vetopacketsize = vetodatasize + sizeof(sls_detector_header);
+    int vetopacketsize = vetodatasize + sizeof(veto_header);
 
     // Generate data
     char imageData[imagesize];
@@ -2331,21 +2357,15 @@ void *start_timer(void *arg) {
                 sendUDPPacket(0, packetData, packetsize);
 
                 // second interface (veto)
-                char packetData2[packetsize];
-                memset(packetData2, 0, packetsize);
-                if (numInterfaces == 2) {
+                char packetData2[vetopacketsize];
+                memset(packetData2, 0, vetopacketsize);
+                if (vetoEnabled && numInterfaces == 2) {
                     // set header
-                    sls_detector_header *header =
-                        (sls_detector_header *)(packetData2);
-                    header->detType = (uint16_t)myDetectorType;
-                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+                    veto_header *header = (veto_header *)(packetData2);
                     header->frameNumber = frameHeaderNr;
-                    header->packetNumber = 0;
-                    header->modId = 0;
-                    header->row = detPos[X];
-                    header->column = detPos[Y];
+                    header->bunchId = 0;
                     // fill data
-                    memcpy(packetData2 + sizeof(sls_detector_header), vetoData,
+                    memcpy(packetData2 + sizeof(veto_header), vetoData,
                            vetodatasize);
                     // send 1 packet = 1 frame
                     sendUDPPacket(1, packetData2, vetopacketsize);
@@ -2379,7 +2399,7 @@ void *start_timer(void *arg) {
     }
 
     closeUDPSocket(0);
-    if (numInterfaces == 2) {
+    if (vetoEnabled && numInterfaces == 2) {
         closeUDPSocket(1);
     }
 

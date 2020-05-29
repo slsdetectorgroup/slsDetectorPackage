@@ -2094,6 +2094,12 @@ void Module::setTimingSource(slsDetectorDefs::timingSourceType value) {
     sendToDetector(F_SET_TIMING_SOURCE, static_cast<int>(value), nullptr);
 }
 
+bool Module::getVeto() { return sendToDetector<int>(F_GET_VETO); }
+
+void Module::setVeto(bool enable) {
+    sendToDetector(F_SET_VETO, static_cast<int>(enable), nullptr);
+}
+
 int Module::setCounterBit(int cb) {
     return sendToDetector<int>(F_SET_COUNTER_BIT, cb);
 }
@@ -2349,7 +2355,7 @@ int Module::setTemperatureEvent(int val) {
     return retval;
 }
 
-int Module::setStoragecellStart(int pos) {
+int Module::setStorageCellStart(int pos) {
     return sendToDetector<int>(F_STORAGE_CELL_START, pos);
 }
 

@@ -385,8 +385,8 @@ class Detector {
     Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
 
     /** [Jungfrau][Gotthard2] Also restarts client and receiver zmq sockets
-     * [Gotthard2] second interface enabled to send veto information for
-     * debugging
+     * [Gotthard2] second interface enabled to send veto information via 10gbps
+     * for debugging. By default it is sent via 2.5gbps if veto enabled
      * n can be 1 or 2 */
     void setNumberofUDPInterfaces(int n, Positions pos = {});
 
@@ -884,7 +884,7 @@ class Detector {
     /** [Jungfrau] Advanced. Sets the storage cell storing the first acquisition
      * of the series. Options: 0-15
      */
-    void setStoragecellStart(int cell, Positions pos = {});
+    void setStorageCellStart(int cell, Positions pos = {});
 
     /** [Jungfrau] Advanced*/
     Result<ns> getStorageCellDelay(Positions pos = {}) const;
@@ -988,6 +988,12 @@ class Detector {
 
     /** [Gotthard2] Options: TIMING_INTERNAL, TIMING_EXTERNAL */
     void setTimingSource(defs::timingSourceType value, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<bool> getVeto(Positions pos = {}) const;
+
+    /** [Gotthard2] */
+    void setVeto(const bool enable, Positions pos = {});
 
     /**************************************************
      *                                                *

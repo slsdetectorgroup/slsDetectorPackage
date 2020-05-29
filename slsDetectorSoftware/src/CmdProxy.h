@@ -795,6 +795,7 @@ class CmdProxy {
         {"burstmode", &CmdProxy::BurstMode},
         {"currentsource", &CmdProxy::currentsource},
         {"timingsource", &CmdProxy::timingsource},
+        {"veto", &CmdProxy::veto},
 
         /* Mythen3 Specific */
         {"counters", &CmdProxy::Counters},
@@ -1530,8 +1531,10 @@ class CmdProxy {
         StringTo<int>,
         "[1, 2]\n\t[Jungfrau][Gotthard2] Number of udp interfaces to stream "
         "data from detector. Default: 1.\n\t"
-        "[Gotthard2] Second interface enabled to send veto information for "
-        "debugging.");
+        "[Gotthard2] 2 will select 10gbps as channel for veto data streaming "
+        "in detector and also enable second interface in receiver to listen to "
+        "it. This is mainly for debugging purposes. By default, numinterfaces "
+        "is 1 and if veto enabled, it is sent via 2.5 gbps interface");
 
     INTEGER_COMMAND(
         selinterface, getSelectedUDPInterface, selectUDPInterface,
@@ -1841,7 +1844,7 @@ class CmdProxy {
         "(#storagecells + 1).");
 
     INTEGER_COMMAND(
-        storagecell_start, getStorageCellStart, setStoragecellStart,
+        storagecell_start, getStorageCellStart, setStorageCellStart,
         StringTo<int>,
         "[0-15]\n\t[Jungfrau] Storage cell that stores the first acquisition "
         "of the series. Default is 15. For advanced users only.");
@@ -1874,6 +1877,10 @@ class CmdProxy {
         sls::StringTo<slsDetectorDefs::timingSourceType>,
         "[internal|external]\n\t[Gotthard2] Timing source. Internal is crystal "
         "and external is system timing. Default is internal.");
+
+    INTEGER_COMMAND(veto, getVeto, setVeto, StringTo<int>,
+                    "[0, 1]\n\t[Gotthard2] Enable or disable veto data "
+                    "streaming from detector. Default is 0.");
 
     /* Mythen3 Specific */
 

@@ -1132,11 +1132,11 @@ void Detector::setNumberOfAdditionalStorageCells(int value) {
 }
 
 Result<int> Detector::getStorageCellStart(Positions pos) const {
-    return pimpl->Parallel(&Module::setStoragecellStart, pos, -1);
+    return pimpl->Parallel(&Module::setStorageCellStart, pos, -1);
 }
 
-void Detector::setStoragecellStart(int cell, Positions pos) {
-    pimpl->Parallel(&Module::setStoragecellStart, pos, cell);
+void Detector::setStorageCellStart(int cell, Positions pos) {
+    pimpl->Parallel(&Module::setStorageCellStart, pos, cell);
 }
 
 Result<ns> Detector::getStorageCellDelay(Positions pos) const {
@@ -1246,6 +1246,14 @@ Result<defs::timingSourceType> Detector::getTimingSource(Positions pos) const {
 
 void Detector::setTimingSource(defs::timingSourceType value, Positions pos) {
     pimpl->Parallel(&Module::setTimingSource, pos, value);
+}
+
+Result<bool> Detector::getVeto(Positions pos) const {
+    return pimpl->Parallel(&Module::getVeto, pos);
+}
+
+void Detector::setVeto(bool enable, Positions pos) {
+    pimpl->Parallel(&Module::setVeto, pos, enable);
 }
 
 // Mythen3 Specific

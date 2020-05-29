@@ -993,6 +993,12 @@ class Module : public virtual slsDetectorDefs {
     /** [Gotthard2] Options: TIMING_INTERNAL, TIMING_EXTERNAL */
     void setTimingSource(slsDetectorDefs::timingSourceType value);
 
+    /** [Gotthard2] */
+    bool getVeto();
+
+    /** default disabled */
+    void setVeto(bool enable);
+
     /**
      * Set/get counter bit in detector (Gotthard)
      * @param i is -1 to get, 0 to reset and any other value to set the counter
@@ -1194,7 +1200,7 @@ class Module : public virtual slsDetectorDefs {
      * @param value storage cell index. Value can be 0 to 15. (-1 gets)
      * @returns the storage cell that stores the first acquisition of the series
      */
-    int setStoragecellStart(int pos = -1);
+    int setStorageCellStart(int pos = -1);
 
     /**
      * [Jungfau][Ctb] Programs FPGA with raw file from pof file

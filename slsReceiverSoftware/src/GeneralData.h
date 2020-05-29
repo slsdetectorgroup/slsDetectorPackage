@@ -50,6 +50,7 @@ class GeneralData {
     uint32_t vetoDataSize{0};
     uint32_t vetoPacketSize{0};
     uint32_t vetoImageSize{0};
+    uint32_t vetoHsize{0};
 
     GeneralData(){};
     virtual ~GeneralData(){};
@@ -61,14 +62,17 @@ class GeneralData {
      * @param oddStartingPacket odd starting packet (gotthard)
      * @param frameNumber frame number
      * @param packetNumber packet number
+     * @param bunchId bunch Id
      */
     virtual void GetHeaderInfo(int index, char *packetData,
                                bool oddStartingPacket, uint64_t &frameNumber,
-                               uint32_t &packetNumber) const {
+                               uint32_t &packetNumber,
+                               uint64_t &bunchId) const {
         frameNumber = ((uint32_t)(*((uint32_t *)(packetData))));
         frameNumber++;
         packetNumber = frameNumber & packetIndexMask;
         frameNumber = (frameNumber & frameIndexMask) >> frameIndexOffset;
+        bunchId = -1;
     }
 
     /**
@@ -194,9 +198,11 @@ class GotthardData : public GeneralData {
      * @param oddStartingPacket odd starting packet (gotthard)
      * @param frameNumber frame number
      * @param packetNumber packet number
+     * @param bunchId bunch Id
      */
     void GetHeaderInfo(int index, char *packetData, bool oddStartingPacket,
-                       uint64_t &frameNumber, uint32_t &packetNumber) const {
+                       uint64_t &frameNumber, uint32_t &packetNumber,
+                       uint64_t &bunchId) const {
         if (nPixelsX == 1280) {
             frameNumber = *reinterpret_cast<uint32_t *>(packetData);
             if (oddStartingPacket)
@@ -207,6 +213,7 @@ class GotthardData : public GeneralData {
             frameNumber = *reinterpret_cast<uint32_t *>(packetData);
             packetNumber = 0;
         }
+        bunchId = -1;
     }
 
     /**
@@ -488,8 +495,9 @@ class Gotthard2Data : public GeneralData {
         standardheader = true;
         defaultUdpSocketBufferSize = (1000 * 1024 * 1024);
         vetoDataSize = 160;
-        vetoPacketSize = headerSizeinPacket + vetoDataSize;
         vetoImageSize = vetoDataSize * packetsPerFrame;
+        vetoHsize = 16;
+        vetoPacketSize = vetoHsize + vetoDataSize;
     };
 
     /**
@@ -506,6 +514,23 @@ class Gotthard2Data : public GeneralData {
             threadsPerReceiver = 1;
         }
     };
+
+    /**
+     * Get Header Infomation (frame number, packet number) for veto packets
+     * @param index thread index for debugging purposes
+     * @param packetData pointer to data
+     * @param oddStartingPacket odd starting packet (gotthard)
+     * @param frameNumber frame number
+     * @param packetNumber packet number
+     * @param bunchId bunch Id
+     */
+    void GetHeaderInfo(int index, char *packetData, bool oddStartingPacket,
+                       uint64_t &frameNumber, uint32_t &packetNumber,
+                       uint64_t &bunchId) const {
+        frameNumber = *reinterpret_cast<uint64_t *>(packetData);
+        bunchId = *reinterpret_cast<uint64_t *>(packetData + 8);
+        packetNumber = 0;
+    }
 };
 
 class ChipTestBoardData : public GeneralData {

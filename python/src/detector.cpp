@@ -880,9 +880,9 @@ void init_det(py::module &m) {
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getStorageCellStart,
              py::arg() = Positions{})
-        .def("setStoragecellStart",
+        .def("setStorageCellStart",
              (void (Detector::*)(int, sls::Positions)) &
-                 Detector::setStoragecellStart,
+                 Detector::setStorageCellStart,
              py::arg(), py::arg() = Positions{})
         .def("getStorageCellDelay",
              (Result<sls::ns>(Detector::*)(sls::Positions) const) &
@@ -977,6 +977,14 @@ void init_det(py::module &m) {
         .def("setTimingSource",
              (void (Detector::*)(defs::timingSourceType, sls::Positions)) &
                  Detector::setTimingSource,
+             py::arg(), py::arg() = Positions{})
+        .def("getVeto",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getVeto,
+             py::arg() = Positions{})
+        .def("setVeto",
+             (void (Detector::*)(const bool, sls::Positions)) &
+                 Detector::setVeto,
              py::arg(), py::arg() = Positions{})
         .def("getCounterMask",
              (Result<uint32_t>(Detector::*)(sls::Positions) const) &

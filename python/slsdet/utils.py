@@ -88,3 +88,8 @@ def eiger_register_to_time(register):
     exponent = register & 0b111
     return clocks*10**exponent / 100e6
 
+def make_timedelta(t):
+    if isinstance(t, dt.timedelta):
+           return t
+    else:
+        return dt.timedelta(seconds=t)

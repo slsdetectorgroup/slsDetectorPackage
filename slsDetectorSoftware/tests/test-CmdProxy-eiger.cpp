@@ -271,24 +271,45 @@ TEST_CASE("trigger", "[.cmd][.new]") {
 
 /* Network Configuration (Detector<->Receiver) */
 
-TEST_CASE("txndelay_frame", "[.cmd][.new]") {
+TEST_CASE("txndelay_left", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER) {
-        auto prev_val = det.getTransmissionDelayFrame();
+        auto prev_val = det.getTransmissionDelayLeft();
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("txndelay_frame", {"5000"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "txndelay_frame 5000\n");
-            proxy.Call("txndelay_frame", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "txndelay_frame 5000\n");
+            proxy.Call("txndelay_left", {"5000"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txndelay_left 5000\n");
+            proxy.Call("txndelay_left", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txndelay_left 5000\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setTransmissionDelayFrame(prev_val[i]);
+            det.setTransmissionDelayLeft(prev_val[i]);
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("txndelay_frame", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("txndelay_left", {}, -1, GET));
+    }
+}
+
+TEST_CASE("txndelay_right", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_val = det.getTransmissionDelayRight();
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("txndelay_right", {"5000"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txndelay_right 5000\n");
+            proxy.Call("txndelay_right", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txndelay_right 5000\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTransmissionDelayRight(prev_val[i]);
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("txndelay_right", {}, -1, GET));
     }
 }
 

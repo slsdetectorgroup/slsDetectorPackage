@@ -1386,11 +1386,15 @@ bool Module::getInterruptSubframe() {
 
 uint32_t Module::writeRegister(uint32_t addr, uint32_t val) {
     uint32_t args[]{addr, val};
-    return sendToDetector<uint32_t>(F_WRITE_REGISTER, args);
+    uint32_t retval = -1;
+    sendToDetectorStop(F_WRITE_REGISTER, args, retval);
+    return retval;
 }
 
 uint32_t Module::readRegister(uint32_t addr) {
-    return sendToDetector<uint32_t>(F_READ_REGISTER, addr);
+    uint32_t retval = -1;
+    sendToDetectorStop(F_READ_REGISTER, addr, retval);
+    return retval;
 }
 
 uint32_t Module::setBit(uint32_t addr, int n) {

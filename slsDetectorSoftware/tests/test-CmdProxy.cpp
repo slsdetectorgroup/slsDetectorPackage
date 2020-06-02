@@ -1242,56 +1242,82 @@ TEST_CASE("udp_dstport", "[.cmd][.new]") {
 TEST_CASE("udp_srcip2", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto prev_val = det.getSourceUDPIP2();
-    REQUIRE_THROWS(proxy.Call("udp_srcip2", {"0.0.0.0"}, -1, PUT));
-    {
-        std::ostringstream oss;
-        proxy.Call("udp_srcip2", {"129.129.205.12"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "udp_srcip2 129.129.205.12\n");
-    }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setSourceUDPIP2(prev_val[i], {i});
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2) {
+        auto prev_val = det.getSourceUDPIP2();
+        REQUIRE_THROWS(proxy.Call("udp_srcip2", {"0.0.0.0"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_srcip2", {"129.129.205.12"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_srcip2 129.129.205.12\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setSourceUDPIP2(prev_val[i], {i});
+        }
     }
 }
 
 TEST_CASE("udp_dstip2", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_THROWS(proxy.Call("udp_dstip2", {"0.0.0.0"}, -1, PUT));
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2) {
+        REQUIRE_THROWS(proxy.Call("udp_dstip2", {"0.0.0.0"}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_dstip2", {}, -1, GET));
+    }
 }
 
 TEST_CASE("udp_srcmac2", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto prev_val = det.getSourceUDPMAC2();
-    REQUIRE_THROWS(proxy.Call("udp_srcmac2", {"00:00:00:00:00:00"}, -1, PUT));
-    {
-        std::ostringstream oss;
-        proxy.Call("udp_srcmac2", {"00:50:c2:42:34:12"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "udp_srcmac2 00:50:c2:42:34:12\n");
-    }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setSourceUDPMAC2(prev_val[i], {i});
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2) {
+        auto prev_val = det.getSourceUDPMAC2();
+        REQUIRE_THROWS(
+            proxy.Call("udp_srcmac2", {"00:00:00:00:00:00"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_srcmac2", {"00:50:c2:42:34:12"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_srcmac2 00:50:c2:42:34:12\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setSourceUDPMAC2(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_srcmac2", {}, -1, GET));
     }
 }
 
 TEST_CASE("udp_dstmac2", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_THROWS(proxy.Call("udp_dstmac2", {"00:00:00:00:00:00"}, -1, PUT));
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2) {
+        REQUIRE_THROWS(
+            proxy.Call("udp_dstmac2", {"00:00:00:00:00:00"}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_dstmac2", {}, -1, GET));
+    }
 }
 
 TEST_CASE("udp_dstport2", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto prev_val = det.getDestinationUDPPort2();
-    {
-        std::ostringstream oss;
-        proxy.Call("udp_dstport2", {"50084"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "udp_dstport2 50084\n");
-    }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setDestinationUDPPort2(prev_val[i], {i});
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2 ||
+        det_type == defs::EIGER) {
+        auto prev_val = det.getDestinationUDPPort2();
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_dstport2", {"50084"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_dstport2 50084\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDestinationUDPPort2(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_dstport2", {}, -1, GET));
     }
 }
 
@@ -1325,12 +1351,12 @@ TEST_CASE("flowcontrol10g", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("txndelay_left", "[.cmd][.new]") {
+TEST_CASE("txndelay_frame", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getTransmissionDelayLeft();
+        auto prev_val = det.getTransmissionDelayFrame();
         auto val = 5000;
         if (det_type == defs::JUNGFRAU) {
             val = 5;
@@ -1338,42 +1364,16 @@ TEST_CASE("txndelay_left", "[.cmd][.new]") {
         std::string sval = std::to_string(val);
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("txndelay_left", {sval}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "txndelay_left " + sval + "\n");
-            proxy.Call("txndelay_left", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "txndelay_left " + sval + "\n");
+            proxy.Call("txndelay_frame", {sval}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txndelay_frame " + sval + "\n");
+            proxy.Call("txndelay_frame", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txndelay_frame " + sval + "\n");
         }
         for (int i = 0; i != det.size(); ++i) {
-            det.setTransmissionDelayLeft(prev_val[i]);
+            det.setTransmissionDelayFrame(prev_val[i]);
         }
     } else {
-        REQUIRE_THROWS(proxy.Call("txndelay_left", {}, -1, GET));
-    }
-}
-
-TEST_CASE("txndelay_right", "[.cmd][.new]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
-        auto prev_val = det.getTransmissionDelayRight();
-        auto val = 5000;
-        if (det_type == defs::JUNGFRAU) {
-            val = 5;
-        }
-        std::string sval = std::to_string(val);
-        {
-            std::ostringstream oss1, oss2;
-            proxy.Call("txndelay_right", {sval}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "txndelay_right " + sval + "\n");
-            proxy.Call("txndelay_right", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "txndelay_right " + sval + "\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setTransmissionDelayRight(prev_val[i]);
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("txndelay_right", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("txndelay_frame", {}, -1, GET));
     }
 }
 

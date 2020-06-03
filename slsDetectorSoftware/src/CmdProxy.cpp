@@ -1527,7 +1527,7 @@ std::string CmdProxy::ROI(int action) {
         t.xmin = StringTo<int>(args[0]);
         t.xmax = StringTo<int>(args[1]);
         det->setROI(t, det_id);
-        os << '[' << t.xmin << ", " << t.xmax << "] \n";
+        os << '[' << t.xmin << ", " << t.xmax << "]\n";
     } else {
         throw sls::RuntimeError("Unknown action");
     }

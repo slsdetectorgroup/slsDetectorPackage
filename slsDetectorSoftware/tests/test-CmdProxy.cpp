@@ -2579,30 +2579,6 @@ TEST_CASE("resetfpga", "[.cmd]") {
 //     }
 // }
 
-// TEST_CASE("roi", "[.cmd][.gotthard]") {
-//     if (test::type == defs::GOTTHARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("roi 0 255", PUT, nullptr,
-//             oss)); REQUIRE(oss.str() == "roi [0, 255] \n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("roi 256 511", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "roi [256, 511] \n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("clearroi", PUT, nullptr,
-//             oss)); REQUIRE(oss.str() == "clearroi [-1, -1] \n");
-//         }
-//     REQUIRE_THROWS(multiSlsDetectorClient("roi 0 256", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("roi", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("clearroi", PUT));
-//     }
-// }
-
 // TEST_CASE("adc", "[.cmd][.ctb]") {
 //     if (test::type != defs::CHIPTESTBOARD) {
 //         REQUIRE_THROWS(multiSlsDetectorClient("adc 8", GET));

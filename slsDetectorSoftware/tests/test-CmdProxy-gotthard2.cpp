@@ -15,82 +15,6 @@ using sls::Detector;
 using test::GET;
 using test::PUT;
 
-/* acquisition parameters */
-
-TEST_CASE("bursts", "[.cmd][.new]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::GOTTHARD2) {
-        auto prev_burst =
-            det.getNumberOfBursts().tsquash("#bursts should be same to test");
-        auto prev_trigger =
-            det.getNumberOfFrames().tsquash("#frames should be same to test");
-        auto prev_frames = det.getNumberOfTriggers().tsquash(
-            "#triggers should be same to test");
-        auto prev_timingMode = det.getTimingMode();
-        auto prev_burstMode = det.getBurstMode();
-        // changing continuous mode frames and bursts
-        det.setBurstMode(defs::BURST_INTERNAL);
-        det.setTimingMode(defs::AUTO_TIMING);
-        {
-            std::ostringstream oss;
-            proxy.Call("bursts", {"3"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "bursts 3\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("bursts", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "bursts 3\n");
-        }
-        REQUIRE_THROWS(proxy.Call("bursts", {"0"}, -1, PUT));
-        // trigger mode: reg set to 1, but bursts must be same
-        det.setTimingMode(defs::TRIGGER_EXPOSURE);
-        {
-            std::ostringstream oss;
-            proxy.Call("bursts", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "bursts 3\n");
-        }
-        det.setTimingMode(defs::AUTO_TIMING);
-        {
-            std::ostringstream oss;
-            proxy.Call("bursts", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "bursts 3\n");
-        }
-        // continuous mode: reg set to #frames,
-        // but bursts should return same value
-        det.setBurstMode(defs::BURST_OFF);
-        det.setNumberOfFrames(2);
-        {
-            std::ostringstream oss;
-            proxy.Call("bursts", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "bursts 3\n");
-        }
-        det.setTimingMode(defs::TRIGGER_EXPOSURE);
-        {
-            std::ostringstream oss;
-            proxy.Call("bursts", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "bursts 3\n");
-        }
-        det.setBurstMode(defs::BURST_INTERNAL);
-        {
-            std::ostringstream oss;
-            proxy.Call("bursts", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "bursts 3\n");
-        }
-        // set to previous values
-        det.setNumberOfBursts(prev_burst);
-        det.setNumberOfFrames(prev_frames);
-        det.setNumberOfTriggers(prev_trigger);
-        for (int i = 0; i != det.size(); ++i) {
-            det.setTimingMode(prev_timingMode[i], {i});
-            det.setBurstMode(prev_burstMode[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("bursts", {}, -1, GET));
-    }
-}
-
 /* dacs */
 
 TEST_CASE("Setting and reading back GOTTHARD2 dacs", "[.cmd][.dacs][.new]") {
@@ -262,7 +186,164 @@ TEST_CASE("vchip_cs", "[.cmd][.onchipdacs][.new]") {
     }
 }
 
-TEST_CASE("burstmode", "[.cmd]") {
+/* Gotthard2 Specific */
+
+TEST_CASE("bursts", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2) {
+        auto prev_burst =
+            det.getNumberOfBursts().tsquash("#bursts should be same to test");
+        auto prev_trigger =
+            det.getNumberOfFrames().tsquash("#frames should be same to test");
+        auto prev_frames = det.getNumberOfTriggers().tsquash(
+            "#triggers should be same to test");
+        auto prev_timingMode = det.getTimingMode();
+        auto prev_burstMode = det.getBurstMode();
+        // changing continuous mode frames and bursts
+        det.setBurstMode(defs::BURST_INTERNAL);
+        det.setTimingMode(defs::AUTO_TIMING);
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {"3"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        REQUIRE_THROWS(proxy.Call("bursts", {"0"}, -1, PUT));
+        // trigger mode: reg set to 1, but bursts must be same
+        det.setTimingMode(defs::TRIGGER_EXPOSURE);
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        det.setTimingMode(defs::AUTO_TIMING);
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        // continuous mode: reg set to #frames,
+        // but bursts should return same value
+        det.setBurstMode(defs::BURST_OFF);
+        det.setNumberOfFrames(2);
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        det.setTimingMode(defs::TRIGGER_EXPOSURE);
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        det.setBurstMode(defs::BURST_INTERNAL);
+        {
+            std::ostringstream oss;
+            proxy.Call("bursts", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "bursts 3\n");
+        }
+        // set to previous values
+        det.setNumberOfBursts(prev_burst);
+        det.setNumberOfFrames(prev_frames);
+        det.setNumberOfTriggers(prev_trigger);
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTimingMode(prev_timingMode[i], {i});
+            det.setBurstMode(prev_burstMode[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("bursts", {}, -1, GET));
+    }
+}
+
+TEST_CASE("burstperiod", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2) {
+        auto previous = det.getBurstPeriod();
+
+        std::ostringstream oss_set, oss_get;
+        proxy.Call("burstperiod", {"30ms"}, -1, PUT, oss_set);
+        REQUIRE(oss_set.str() == "burstperiod 30ms\n");
+        proxy.Call("burstperiod", {}, -1, GET, oss_get);
+        REQUIRE(oss_get.str() == "burstperiod 30ms\n");
+        // Reset to previous value
+        for (int i = 0; i != det.size(); ++i) {
+            det.setBurstPeriod(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("burstperiod", {}, -1, GET));
+    }
+}
+
+TEST_CASE("inj_ch", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2) {
+        REQUIRE_THROWS(
+            proxy.Call("inj_ch", {"-1", "1"}, -1, PUT)); // invalid offset
+        REQUIRE_THROWS(
+            proxy.Call("inj_ch", {"0", "0"}, -1, PUT)); // invalid increment
+        {
+            std::ostringstream oss;
+            proxy.Call("inj_ch", {"0", "1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "inj_ch [0, 1]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("inj_ch", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "inj_ch [0, 1]\n");
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("inj_ch", {}, -1, GET));
+    }
+}
+
+TEST_CASE("vetophoton", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2) {
+        REQUIRE_THROWS(proxy.Call("vetophoton", {}, -1, GET));
+        REQUIRE_NOTHROW(proxy.Call("vetophoton", {"-1"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vetophoton", {"12", "1", "39950"}, -1,
+                                  PUT)); // invalid chip index
+        REQUIRE_THROWS(proxy.Call("vetophoton", {"-1", "0"}, -1,
+                                  PUT)); // invalid photon number
+        REQUIRE_THROWS(proxy.Call("vetophoton", {"-1", "1", "39950"}, -1,
+                                  PUT)); // invald file
+    } else {
+        REQUIRE_THROWS(proxy.Call("vetophoton", {"-1"}, -1, GET));
+    }
+}
+
+TEST_CASE("vetoref", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2) {
+        REQUIRE_THROWS(proxy.Call("vetoref", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vetoref", {"3", "0x3ff"}, -1,
+                                  PUT)); // invalid chip index
+        REQUIRE_NOTHROW(proxy.Call("vetoref", {"1", "0x010"}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("vetoref", {"3", "0x0"}, -1, PUT));
+    }
+}
+
+TEST_CASE("burstmode", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -293,92 +374,7 @@ TEST_CASE("burstmode", "[.cmd]") {
     }
 }
 
-TEST_CASE("vetoref", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::GOTTHARD2) {
-        REQUIRE_THROWS(proxy.Call("vetoref", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vetoref", {"3", "0x3ff"}, -1,
-                                  PUT)); // invalid chip index
-        REQUIRE_NOTHROW(proxy.Call("vetoref", {"1", "0x010"}, -1, PUT));
-    } else {
-        REQUIRE_THROWS(proxy.Call("vetoref", {"3", "0x0"}, -1, PUT));
-    }
-}
-
-TEST_CASE("vetophoton", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::GOTTHARD2) {
-        REQUIRE_THROWS(proxy.Call("vetophoton", {}, -1, GET));
-        REQUIRE_NOTHROW(proxy.Call("vetophoton", {"-1"}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vetophoton", {"12", "1", "39950"}, -1,
-                                  PUT)); // invalid chip index
-        REQUIRE_THROWS(proxy.Call("vetophoton", {"-1", "0"}, -1,
-                                  PUT)); // invalid photon number
-        REQUIRE_THROWS(proxy.Call("vetophoton", {"-1", "1", "39950"}, -1,
-                                  PUT)); // invald file
-    } else {
-        REQUIRE_THROWS(proxy.Call("vetophoton", {"-1"}, -1, GET));
-    }
-}
-
-TEST_CASE("inj_ch", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::GOTTHARD2) {
-        auto inj = det.getInjectChannel();
-        REQUIRE_THROWS(
-            proxy.Call("inj_ch", {"-1", "1"}, -1, PUT)); // invalid offset
-        REQUIRE_THROWS(
-            proxy.Call("inj_ch", {"0", "0"}, -1, PUT)); // invalid increment
-        {
-            std::ostringstream oss;
-            proxy.Call("inj_ch", {"0", "1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "inj_ch [0, 1]\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("inj_ch", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "inj_ch [0, 1]\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setInjectChannel(inj[i][0], inj[i][1], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("inj_ch", {}, -1, GET));
-    }
-}
-
-TEST_CASE("burstperiod", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::GOTTHARD2) {
-        auto previous = det.getBurstPeriod();
-
-        std::ostringstream oss_set, oss_get;
-        proxy.Call("burstperiod", {"30ms"}, -1, PUT, oss_set);
-        REQUIRE(oss_set.str() == "burstperiod 30ms\n");
-        proxy.Call("burstperiod", {}, -1, GET, oss_get);
-        REQUIRE(oss_get.str() == "burstperiod 30ms\n");
-        // Reset to previous value
-        for (int i = 0; i != det.size(); ++i) {
-            det.setBurstPeriod(previous[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("burstperiod", {}, -1, GET));
-    }
-}
-
-TEST_CASE("currentsource", "[.cmd]") {
+TEST_CASE("currentsource", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -408,7 +404,7 @@ TEST_CASE("currentsource", "[.cmd]") {
     }
 }
 
-TEST_CASE("timingsource", "[.cmd]") {
+TEST_CASE("timingsource", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -435,5 +431,35 @@ TEST_CASE("timingsource", "[.cmd]") {
         }
     } else {
         REQUIRE_THROWS(proxy.Call("timingsource", {}, -1, GET));
+    }
+}
+
+TEST_CASE("veto", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2) {
+        auto prev_val = det.getVeto();
+        {
+            std::ostringstream oss;
+            proxy.Call("veto", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "veto 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("veto", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "veto 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("veto", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "veto 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setVeto(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("veto", {}, -1, GET));
     }
 }

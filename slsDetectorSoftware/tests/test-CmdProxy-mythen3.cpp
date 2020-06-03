@@ -89,7 +89,9 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs][.new]") {
     }
 }
 
-TEST_CASE("counters", "[.cmd]") {
+/* Mythen3 Specific */
+
+TEST_CASE("counters", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -118,5 +120,245 @@ TEST_CASE("counters", "[.cmd]") {
         REQUIRE(oss_get.str() == "counters " + sls::ToString(list_str) + "\n");
     } else {
         REQUIRE_THROWS(proxy.Call("counters", {}, -1, GET));
+    }
+}
+
+TEST_CASE("gates", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MYTHEN3) {
+        auto prev_val = det.getNumberOfGates();
+        {
+            std::ostringstream oss;
+            proxy.Call("gates", {"1000"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gates 1000\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gates", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "gates 1000\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gates", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gates 1\n");
+        }
+        REQUIRE_THROWS(proxy.Call("gates", {"0"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            det.setNumberOfGates(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("gates", {}, -1, GET));
+    }
+}
+
+TEST_CASE("exptime1", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MYTHEN3) {
+        auto prev_val = det.getExptime(0);
+        {
+            std::ostringstream oss;
+            proxy.Call("exptime1", {"1.25s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "exptime1 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("exptime1", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "exptime1 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("exptime1", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "exptime1 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setExptime(0, prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("exptime1", {}, -1, GET));
+    }
+}
+
+TEST_CASE("exptime2", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MYTHEN3) {
+        auto prev_val = det.getExptime(1);
+        {
+            std::ostringstream oss;
+            proxy.Call("exptime2", {"1.25s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "exptime2 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("exptime2", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "exptime2 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("exptime2", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "exptime2 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setExptime(1, prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("exptime2", {}, -1, GET));
+    }
+}
+
+TEST_CASE("exptime3", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MYTHEN3) {
+        auto prev_val = det.getExptime(2);
+        {
+            std::ostringstream oss;
+            proxy.Call("exptime3", {"1.25s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "exptime3 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("exptime3", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "exptime3 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("exptime3", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "exptime3 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setExptime(2, prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("exptime3", {}, -1, GET));
+    }
+}
+
+TEST_CASE("gatedelay", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MYTHEN3) {
+        auto prev_val = det.getExptimeForAllGates().tsquash(
+            "inconsistent gatedelay to test");
+        if (prev_val[0] != prev_val[1] || prev_val[1] != prev_val[2]) {
+            throw sls::RuntimeError("inconsistent gatedelay for all gates");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gatedelay", {"0.05"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gatedelay 0.05\n");
+        }
+        if (det_type != defs::MYTHEN3) {
+            std::ostringstream oss;
+            proxy.Call("gatedelay", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "gatedelay 50ms\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gatedelay", {"1s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gatedelay 1s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gatedelay", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gatedelay 0\n");
+        }
+        det.setGateDelay(-1, prev_val[0]);
+    } else {
+        REQUIRE_THROWS(proxy.Call("gatedelay", {}, -1, GET));
+    }
+}
+
+TEST_CASE("gatedelay1", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MYTHEN3) {
+        auto prev_val = det.getGateDelay(0);
+        {
+            std::ostringstream oss;
+            proxy.Call("gatedelay1", {"1.25s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gatedelay1 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gatedelay1", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "gatedelay1 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gatedelay1", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gatedelay1 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setGateDelay(0, prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("gatedelay1", {}, -1, GET));
+    }
+}
+
+TEST_CASE("gatedelay2", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MYTHEN3) {
+        auto prev_val = det.getGateDelay(1);
+        {
+            std::ostringstream oss;
+            proxy.Call("gatedelay2", {"1.25s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gatedelay2 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gatedelay2", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "gatedelay2 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gatedelay2", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gatedelay2 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setGateDelay(1, prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("gatedelay2", {}, -1, GET));
+    }
+}
+
+TEST_CASE("gatedelay3", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MYTHEN3) {
+        auto prev_val = det.getGateDelay(2);
+        {
+            std::ostringstream oss;
+            proxy.Call("gatedelay3", {"1.25s"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gatedelay3 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gatedelay3", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "gatedelay3 1.25s\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gatedelay3", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gatedelay3 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setGateDelay(2, prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("gatedelay3", {}, -1, GET));
     }
 }

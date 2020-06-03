@@ -161,6 +161,14 @@ void Detector::setAllTrimbits(int value, Positions pos) {
     pimpl->Parallel(&Module::setAllTrimbits, pos, value);
 }
 
+bool Detector::getGapPixelsinCallback() const {
+    return pimpl->getGapPixelsinCallback();
+}
+
+void Detector::setGapPixelsinCallback(bool enable) {
+    pimpl->setGapPixelsinCallback(enable);
+}
+
 // Callback
 
 void Detector::registerAcquisitionFinishedCallback(void (*func)(double, int,
@@ -173,14 +181,6 @@ void Detector::registerDataCallback(void (*func)(detectorData *, uint64_t,
                                                  uint32_t, void *),
                                     void *pArg) {
     pimpl->registerDataCallback(func, pArg);
-}
-
-bool Detector::getGapPixelsinCallback() const {
-    return pimpl->getGapPixelsinCallback();
-}
-
-void Detector::setGapPixelsinCallback(bool enable) {
-    pimpl->setGapPixelsinCallback(enable);
 }
 
 // Acquisition Parameters

@@ -4775,7 +4775,7 @@ int set_read_n_lines(int file_des) {
             } else {
                 if (setReadNLines(arg) == FAIL) {
                     ret = FAIL;
-                    sprintf(mess, "Could not set read n lines.\n");
+                    sprintf(mess, "Could not set read n lines to %d.\n", arg);
                     LOG(logERROR, (mess));
                 } else {
                     int retval = getReadNLines();

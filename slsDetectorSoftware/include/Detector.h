@@ -117,6 +117,16 @@ class Detector {
     /**[Eiger][Mythen3] */
     void setAllTrimbits(int value, Positions pos = {});
 
+    /**[Eiger][Jungfrau] */
+    bool getGapPixelsinCallback() const;
+
+    /**
+     * [Eiger][Jungfrau]
+     * Only in client data call back
+     * Fills in gap pixels in data
+     */
+    void setGapPixelsinCallback(const bool enable);
+
     /**************************************************
      *                                                *
      *    Callbacks                                   *
@@ -145,16 +155,6 @@ class Detector {
     void registerDataCallback(void (*func)(detectorData *, uint64_t, uint32_t,
                                            void *),
                               void *pArg);
-
-    /**[Eiger][Jungfrau] */
-    bool getGapPixelsinCallback() const;
-
-    /**
-     * [Eiger][Jungfrau]
-     * Only in client data call back
-     * Fills in gap pixels in data
-     */
-    void setGapPixelsinCallback(const bool enable);
 
     /**************************************************
      *                                                *

@@ -315,7 +315,7 @@ TEST_CASE("txndelay_right", "[.cmd][.new]") {
 
 /* Eiger Specific */
 
-TEST_CASE("dr", "[.cmd]") {
+TEST_CASE("dr", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -347,124 +347,7 @@ TEST_CASE("dr", "[.cmd]") {
     }
 }
 
-TEST_CASE("interruptsubframe", "[.cmd][!mayfail]") {
-    // TODO! Fix this for virtual server
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        auto previous = det.getInterruptSubframe();
-
-        std::ostringstream oss1, oss2, oss3;
-        proxy.Call("interruptsubframe", {"1"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "interruptsubframe 1\n");
-        proxy.Call("interruptsubframe", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "interruptsubframe 1\n");
-        proxy.Call("interruptsubframe", {"0"}, -1, PUT, oss3);
-        REQUIRE(oss3.str() == "interruptsubframe 0\n");
-        for (int i = 0; i != det.size(); ++i) {
-            det.setInterruptSubframe(previous[i], {i});
-        }
-
-    } else {
-        REQUIRE_THROWS(proxy.Call("interruptsubframe", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("interruptsubframe", {"1"}, -1, PUT));
-    }
-}
-
-TEST_CASE("overflow", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        auto previous = det.getOverFlowMode();
-
-        std::ostringstream oss1, oss2, oss3;
-        proxy.Call("overflow", {"1"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "overflow 1\n");
-        proxy.Call("overflow", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "overflow 1\n");
-        proxy.Call("overflow", {"0"}, -1, PUT, oss3);
-        REQUIRE(oss3.str() == "overflow 0\n");
-        for (int i = 0; i != det.size(); ++i) {
-            det.setOverFlowMode(previous[i], {i});
-        }
-
-    } else {
-        REQUIRE_THROWS(proxy.Call("overflow", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("overflow", {"1"}, -1, PUT));
-    }
-}
-
-TEST_CASE("trimen", "[.cmd][.this]") {
-    // TODO! Also Mythen?
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-
-        auto previous = det.getTrimEnergies();
-        std::ostringstream oss1, oss2;
-        proxy.Call("trimen", {"4500", "5400", "6400"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "trimen [4500, 5400, 6400]\n");
-        proxy.Call("trimen", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "trimen [4500, 5400, 6400]\n");
-
-        for (int i = 0; i != det.size(); ++i) {
-            det.setTrimEnergies(previous[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("trimen", {"4500", "5400", "6400"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("trimen", {}, -1, GET));
-    }
-}
-
-// TEST_CASE("threshold"{
-
-// })
-
-// TEST_CASE("activate", "[.cmd][.eiger]") {
-//     if (test::type == slsDetectorDefs::EIGER) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "activate 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 1 nopadding",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "activate 1
-//             nopadding\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 0 padding",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "activate 0
-//             padding\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 0 nopadding",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "activate 0
-//             nopadding\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate 1 padding",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "activate 1
-//             padding\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:activate", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "activate 1 padding\n");
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("activate", GET));
-//     }
-// }
-
-TEST_CASE("subexptime", "[.cmd]") {
+TEST_CASE("subexptime", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -485,7 +368,7 @@ TEST_CASE("subexptime", "[.cmd]") {
     }
 }
 
-TEST_CASE("subdeadtime", "[.cmd]") {
+TEST_CASE("subdeadtime", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -506,37 +389,468 @@ TEST_CASE("subdeadtime", "[.cmd]") {
     }
 }
 
-TEST_CASE("tengiga", "[.cmd]") {
+TEST_CASE("threshold", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
 
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::CHIPTESTBOARD) {
-        auto tengiga = det.getTenGiga();
-        det.setTenGiga(false);
-
-        std::ostringstream oss1, oss2;
-        proxy.Call("tengiga", {"1"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "tengiga 1\n");
-        proxy.Call("tengiga", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "tengiga 1\n");
-
-        for (int i = 0; i != det.size(); ++i) {
-            det.setTenGiga(tengiga[i], {i});
+    if (det_type == defs::EIGER) {
+        auto prev_threshold = det.getThresholdEnergy();
+        auto prev_energies =
+            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
+        if (prev_energies.size() != 0) {
+            std::ostringstream oss1, oss2;
+            proxy.Call("threshold", {"4500", "standard"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "threshold [4500, standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "threshold 4500\n");
+            det.setTrimEnergies(prev_energies);
+            for (int i = 0; i != det.size(); ++i) {
+                if (prev_threshold[i] >= 0) {
+                    det.setThresholdEnergy(prev_threshold[i], defs::STANDARD,
+                                           true, {i});
+                }
+            }
         }
+        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("threshold", {}, -1, GET));
     }
 }
 
-TEST_CASE("quad", "[.cmd]") {
-    // TODO! set and get once available in virtual detector
+TEST_CASE("thresholdnotb", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_threshold = det.getThresholdEnergy();
+        auto prev_energies =
+            det.getTrimEnergies().tsquash("inconsistent trim energies to test");
+        if (prev_energies.size() != 0) {
+            std::ostringstream oss1, oss2;
+            proxy.Call("thresholdnotb", {"4500 standard"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "thresholdnotb [4500 standard]\n");
+            proxy.Call("threshold", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "threshold 4500\n");
+            det.setTrimEnergies(prev_energies);
+            for (int i = 0; i != det.size(); ++i) {
+                if (prev_threshold[i] >= 0) {
+                    det.setThresholdEnergy(prev_threshold[i], defs::STANDARD,
+                                           false, {i});
+                }
+            }
+        }
+        REQUIRE_NOTHROW(proxy.Call("threshold", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("thresholdnotb", {}, -1, GET));
+    }
+}
+
+TEST_CASE("settingspath", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getSettingsPath();
+    {
+        std::ostringstream oss1, oss2;
+        proxy.Call("settingspath", {"/tmp"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "settingspath /tmp\n");
+        proxy.Call("settingspath", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "settingspath /tmp\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setSettingsPath(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("parallel", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::EIGER) {
+        auto prev_val = det.getParallelMode();
+        {
+            std::ostringstream oss;
+            proxy.Call("parallel", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "parallel 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("parallel", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "parallel 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("parallel", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "parallel 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setParallelMode(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("parallel", {}, -1, GET));
+    }
+}
+
+TEST_CASE("overflow", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER) {
+        auto previous = det.getOverFlowMode();
+        std::ostringstream oss1, oss2, oss3;
+        proxy.Call("overflow", {"1"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "overflow 1\n");
+        proxy.Call("overflow", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "overflow 1\n");
+        proxy.Call("overflow", {"0"}, -1, PUT, oss3);
+        REQUIRE(oss3.str() == "overflow 0\n");
+        for (int i = 0; i != det.size(); ++i) {
+            det.setOverFlowMode(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("overflow", {}, -1, GET));
+    }
+}
+
+TEST_CASE("storeinram", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto previous = det.getStoreInRamMode();
+        std::ostringstream oss1, oss2, oss3;
+        proxy.Call("storeinram", {"1"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "storeinram 1\n");
+        proxy.Call("storeinram", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "storeinram 1\n");
+        proxy.Call("storeinram", {"0"}, -1, PUT, oss3);
+        REQUIRE(oss3.str() == "storeinram 0\n");
+        for (int i = 0; i != det.size(); ++i) {
+            det.setStoreInRamMode(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("storeinram", {}, -1, GET));
+    }
+}
+
+TEST_CASE("flippeddatax", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto previous = det.getBottom();
+        std::ostringstream oss1, oss2, oss3;
+        proxy.Call("flippeddatax", {"1"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "flippeddatax 1\n");
+        proxy.Call("flippeddatax", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "flippeddatax 1\n");
+        proxy.Call("flippeddatax", {"0"}, -1, PUT, oss3);
+        REQUIRE(oss3.str() == "flippeddatax 0\n");
+        for (int i = 0; i != det.size(); ++i) {
+            det.setBottom(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("flippeddatax", {}, -1, GET));
+    }
+}
+
+TEST_CASE("trimen", "[.cmd][.this][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto previous = det.getTrimEnergies();
+        std::ostringstream oss1, oss2;
+        proxy.Call("trimen", {"4500", "5400", "6400"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "trimen [4500, 5400, 6400]\n");
+        proxy.Call("trimen", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "trimen [4500, 5400, 6400]\n");
+
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTrimEnergies(previous[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("trimen", {"4500", "5400", "6400"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("trimen", {}, -1, GET));
+    }
+}
+
+TEST_CASE("ratecorr", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_dr = det.getDynamicRange().tsquash("inconsistent dr to test");
+        auto prev_tau = det.getRateCorrection();
+        det.setDynamicRange(16);
+        {
+            std::ostringstream oss;
+            proxy.Call("ratecorr", {"120"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "ratecorr 120ns\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("ratecorr", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "ratecorr 120ns\n");
+        }
+        // may fail if default settings not loaded
+        // REQUIRE_NOTHROW(proxy.Call("ratecorr", {"-1"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            proxy.Call("ratecorr", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "ratecorr 0ns\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setRateCorrection(prev_tau[i], {i});
+        }
+        det.setDynamicRange(prev_dr);
+    } else {
+        REQUIRE_THROWS(proxy.Call("ratecorr", {}, -1, GET));
+    }
+}
+
+TEST_CASE("readnlines", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_val = det.getPartialReadout();
+        {
+            std::ostringstream oss;
+            proxy.Call("readnlines", {"256"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "readnlines 256\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("readnlines", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "readnlines 256\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("readnlines", {"16"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "readnlines 16\n");
+        }
+        REQUIRE_THROWS(proxy.Call("readnlines", {"0"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            det.setPartialReadout(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("readnlines", {}, -1, GET));
+    }
+}
+
+TEST_CASE("interruptsubframe", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_val = det.getInterruptSubframe();
+
+        std::ostringstream oss1, oss2, oss3;
+        proxy.Call("interruptsubframe", {"1"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "interruptsubframe 1\n");
+        proxy.Call("interruptsubframe", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "interruptsubframe 1\n");
+        proxy.Call("interruptsubframe", {"0"}, -1, PUT, oss3);
+        REQUIRE(oss3.str() == "interruptsubframe 0\n");
+        for (int i = 0; i != det.size(); ++i) {
+            det.setInterruptSubframe(prev_val[i], {i});
+        }
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("interruptsubframe", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("interruptsubframe", {"1"}, -1, PUT));
+    }
+}
+
+TEST_CASE("measuredperiod", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_frames = det.getNumberOfFrames().tsquash(
+            "inconsistent number of frames to test");
+        auto prev_timing =
+            det.getTimingMode().tsquash("inconsistent timing mode to test");
+        auto prev_period = det.getPeriod();
+        det.setNumberOfFrames(2);
+        det.setPeriod(std::chrono::seconds(1));
+        det.setTimingMode(defs::AUTO_TIMING);
+        det.startDetector();
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        std::ostringstream oss;
+        proxy.Call("measuredperiod", {}, -1, GET, oss);
+        std::string st = oss.str();
+        std::string s = st.erase(0, strlen("measuredperiod "));
+        double val = std::stod(s);
+        // REQUIRE(val >= 1.0);
+        REQUIRE(val < 2.0);
+        for (int i = 0; i != det.size(); ++i) {
+            det.setPeriod(prev_period[i], {i});
+        }
+        det.setNumberOfFrames(prev_frames);
+        det.setTimingMode(prev_timing);
+    } else {
+        REQUIRE_THROWS(proxy.Call("measuredperiod", {}, -1, GET));
+    }
+}
+
+TEST_CASE("measuredsubperiod", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_frames = det.getNumberOfFrames().tsquash(
+            "inconsistent number of frames to test");
+        auto prev_timing =
+            det.getTimingMode().tsquash("inconsistent timing mode to test");
+        auto prev_period = det.getPeriod();
+        auto prev_dr = det.getDynamicRange().tsquash("inconsistent dr to test");
+        det.setNumberOfFrames(1);
+        det.setPeriod(std::chrono::seconds(1));
+        det.setTimingMode(defs::AUTO_TIMING);
+        det.setDynamicRange(32);
+        det.startDetector();
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+        std::ostringstream oss;
+        proxy.Call("measuredsubperiod", {}, -1, GET, oss);
+        std::string st = oss.str();
+        std::string s = st.erase(0, strlen("measuredsubperiod "));
+        double val = std::stod(s);
+        REQUIRE(val >= 0);
+        REQUIRE(val < 1000);
+        for (int i = 0; i != det.size(); ++i) {
+            det.setPeriod(prev_period[i], {i});
+        }
+        det.setNumberOfFrames(prev_frames);
+        det.setTimingMode(prev_timing);
+        det.setDynamicRange(prev_dr);
+    } else {
+        REQUIRE_THROWS(proxy.Call("measuredsubperiod", {}, -1, GET));
+    }
+}
+
+TEST_CASE("activate", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_val = det.getActive();
+        {
+            std::ostringstream oss;
+            proxy.Call("activate", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "activate 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("activate", {"1", "nopadding"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "activate 1 nopadding\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("activate", {"0", "padding"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "activate 0 padding\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("activate", {"0", "nopadding"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "activate 0 nopadding\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("activate", {"1", "padding"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "activate 1 padding\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setActive(prev_val[i], {i});
+        }
+
+    } else {
+        REQUIRE_THROWS(proxy.Call("activate", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("activate", {"1"}, -1, PUT));
+    }
+}
+
+TEST_CASE("partialreset", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_val = det.getPartialReset();
+        std::ostringstream oss1, oss2, oss3;
+        proxy.Call("partialreset", {"1"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "partialreset 1\n");
+        proxy.Call("partialreset", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "partialreset 1\n");
+        proxy.Call("partialreset", {"0"}, -1, PUT, oss3);
+        REQUIRE(oss3.str() == "partialreset 0\n");
+        for (int i = 0; i != det.size(); ++i) {
+            det.setPartialReset(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("partialreset", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("partialreset", {"1"}, -1, PUT));
+    }
+}
+
+TEST_CASE("pulse", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        REQUIRE_THROWS(proxy.Call("pulse", {}, -1, GET));
+        std::ostringstream oss;
+        proxy.Call("pulse", {"1", "1", "5"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "pulse [1, 1, 5]\n");
+    } else {
+        REQUIRE_THROWS(proxy.Call("pulse", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("pulse", {"1", "1", "5"}, -1, PUT));
+    }
+}
+
+TEST_CASE("pulsenmove", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        REQUIRE_THROWS(proxy.Call("pulsenmove", {}, -1, GET));
+        std::ostringstream oss;
+        proxy.Call("pulsenmove", {"1", "1", "5"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "pulsenmove [1, 1, 5]\n");
+    } else {
+        REQUIRE_THROWS(proxy.Call("pulsenmove", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("pulsenmove", {"1", "1", "5"}, -1, PUT));
+    }
+}
+
+TEST_CASE("pulsechip", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        REQUIRE_THROWS(proxy.Call("pulsechip", {}, -1, GET));
+        std::ostringstream oss;
+        proxy.Call("pulsechip", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "pulsechip 1\n");
+    } else {
+        REQUIRE_THROWS(proxy.Call("pulsechip", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("pulsechip", {"1"}, -1, PUT));
+    }
+}
+
+TEST_CASE("quad", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto prev_val = det.getQuad().tsquash("inconsistent quad to test");
         // Quad only works with a single half module EIGER
         std::ostringstream oss;
         proxy.Call("quad", {}, -1, GET, oss);
         REQUIRE(oss.str() == "quad 0\n");
+        det.setQuad(prev_val);
     } else {
         REQUIRE_THROWS(proxy.Call("quad", {}, -1, GET));
     }

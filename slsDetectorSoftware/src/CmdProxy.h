@@ -565,6 +565,7 @@ class CmdProxy {
         {"settings", &CmdProxy::settings},
         {"trimbits", &CmdProxy::trimbits},
         {"trimval", &CmdProxy::trimval},
+        {"gappixels", &CmdProxy::GapPixels},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::acquire},
@@ -754,7 +755,6 @@ class CmdProxy {
         {"threshold", &CmdProxy::Threshold},
         {"thresholdnotb", &CmdProxy::ThresholdNoTb},
         {"settingspath", &CmdProxy::settingspath},
-        {"gappixels", &CmdProxy::GapPixels},
         {"parallel", &CmdProxy::parallel},
         {"overflow", &CmdProxy::overflow},
         {"storeinram", &CmdProxy::storeinram},
@@ -923,6 +923,7 @@ class CmdProxy {
     std::string PackageVersion(int action);
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
+    std::string GapPixels(int action);
     /* acquisition parameters */
     std::string acquire(int action);
     std::string Exptime(int action);
@@ -954,7 +955,6 @@ class CmdProxy {
     std::string DynamicRange(int action);
     std::string Threshold(int action);
     std::string ThresholdNoTb(int action);
-    std::string GapPixels(int action);
     std::string TrimEnergies(int action);
     std::string RateCorrection(int action);
     std::string Activate(int action);

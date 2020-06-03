@@ -8,7 +8,7 @@ LDFLAG= ../tiffIO.cpp -L/usr/lib64/ -lpthread -lm  -lstdc++   -pthread -lrt    -
 MAIN=moench03ClusterFinder.cpp
 
 
-all: moenchClusterFinder moenchMakeEta moenchInterpolation moenchNoInterpolation moenchPhotonCounter moenchAnalog
+all: moenchClusterFinder moenchMakeEta moenchMakeEta3 moenchInterpolation moenchInterpolation3 moenchNoInterpolation moenchPhotonCounter moenchAnalog
 
 
 
@@ -25,8 +25,14 @@ moenchClusterFinderHighZ:  moench03ClusterFinder.cpp  $(INCS) clean
 moenchMakeEta:  moench03Interpolation.cpp  $(INCS) clean
 			 g++ -o moenchMakeEta moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DFF
 
+moenchMakeEta3:  moench03Interpolation.cpp  $(INCS) clean
+			 g++ -o moenchMakeEta3 moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) -DFF -DETA3
+
 moenchInterpolation:  moench03Interpolation.cpp  $(INCS) clean
 			 g++ -o moenchInterpolation moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  
+
+moenchInterpolation3:  moench03Interpolation.cpp  $(INCS) clean
+			 g++ -o moenchInterpolation3 moench03Interpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF)  -DETA3
 
 moenchNoInterpolation:  moench03NoInterpolation.cpp  $(INCS) clean
 			 g++ -o moenchNoInterpolation moench03NoInterpolation.cpp    $(LDFLAG) $(INCDIR) $(LIBHDF5) $(LIBRARYCBF) 

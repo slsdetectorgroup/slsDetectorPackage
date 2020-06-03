@@ -487,6 +487,12 @@ int main(int argc, char *argv[]) {
   }
   
   
+  sprintf(imgfname,"%s/%s_ped.tiff",outdir,fformat);
+  mt->writePedestal(imgfname);
+  sprintf(imgfname,"%s/%s_noise.tiff",outdir,fformat);
+  mt->writePedestalRMS(imgfname);
+
+  
   
   return 0;
 }

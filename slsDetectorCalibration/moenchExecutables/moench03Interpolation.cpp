@@ -77,28 +77,24 @@ int main(int argc, char *argv[]) {
 #ifndef NOINTERPOLATION
   int etabins=1000;//nsubpix*2*100;
   int etabinsY=etabins;//nsubpix*2*100;
-#ifndef ETA3
+
   double etamin=-1, etamax=2;
   //double etamin=-0.1, etamax=1.1;
+ 
   double etax=0, etay=0; 
 #ifndef FF
   double int_x, int_y;
   //  double d_x, d_y, res=5, xx, yy;
   int ok;
 #endif
-#endif
 #ifdef ETA3
-  double eta3min=-2, eta3max=2;
-  double eta3x, eta3y;
-   
-#ifndef FF
-  double int3_x, int3_y;
+  etamin=-2;
+  etamax=2;
 #endif
 #endif
-  #endif
-#ifndef FF
+  //#ifndef FF
   int quad;
-#endif
+  //#endif
   double sum, totquad;
   double sDum[2][2];
 
@@ -133,7 +129,13 @@ int main(int argc, char *argv[]) {
 #endif
 // #endif
 #ifndef NOINTERPOLATION
+#ifndef ETA3
     eta2InterpolationPosXY *interp=new eta2InterpolationPosXY(NC, NR, nSubPixels, nSubPixelsY, etabins, etabinsY, etamin, etamax);
+#endif
+#ifdef ETA3
+    eta3InterpolationPosXY *interp=new eta3InterpolationPosXY(NC, NR, nSubPixels, nSubPixelsY, etabins, etabinsY, etamin, etamax);
+#endif
+
    //eta2InterpolationCleverAdaptiveBins *interp=new eta2InterpolationCleverAdaptiveBins(NC, NR, nsubpix, etabins, etamin, etamax);  
 #endif
 #ifdef NOINTERPOLATION
@@ -191,12 +193,20 @@ int main(int argc, char *argv[]) {
 	    if (nframes==0) f0=lastframe;
 	    nframes++;
 	  }
-#ifndef FF
+	  //#ifndef FF
+#ifndef ETA3
 	  quad=interp->calcEta(cl.get_cluster(), etax, etay, sum, totquad, sDum);
 #endif
-#ifdef FF
-	  interp->calcEta(cl.get_cluster(), etax, etay, sum, totquad, sDum);
+#ifdef ETA3
+	  quad=interp->calcEta3(cl.get_cluster(), etax, etay, sum);
+	  totquad=sum;
 #endif
+	  //#endif
+// #ifdef FF
+// #ifndef ETA3
+// 	  interp->calcEta(cl.get_cluster(), etax, etay, sum, totquad, sDum);
+// #endif
+// #endif
 	  
 	    if (sum>cmin && totquad/sum>0.8 && totquad/sum<1.2 && sum<cmax ) {
 	      nph++;

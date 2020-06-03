@@ -1173,7 +1173,17 @@ TEST_CASE("gappixels", "[.cmd][.new]") {
         }
         det.setGapPixelsinCallback(prev_val);
     } else {
-        REQUIRE_THROWS(proxy.Call("gappixels", {}, -1, GET));
+        {
+            std::ostringstream oss;
+            proxy.Call("gappixels", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "gappixels 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gappixels", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gappixels 0\n");
+        }
+        REQUIRE_THROWS(proxy.Call("gappixels", {"1"}, -1, PUT));
     }
 }
 
@@ -1355,7 +1365,8 @@ TEST_CASE("tengiga", "[.cmd][.new]") {
     CmdProxy proxy(&det);
 
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::CHIPTESTBOARD) {
+    if (det_type == defs::EIGER || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH) {
         auto tengiga = det.getTenGiga();
         det.setTenGiga(false);
 

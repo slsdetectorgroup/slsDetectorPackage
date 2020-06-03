@@ -1255,9 +1255,6 @@ int setDetectorPosition(int pos[]) {
 int *getDetectorPosition() { return detPos; }
 
 int enableTenGigabitEthernet(int val) {
-#ifdef VIRTUAL
-    return 0;
-#endif
     uint32_t addr = CONFIG_REG;
 
     // set

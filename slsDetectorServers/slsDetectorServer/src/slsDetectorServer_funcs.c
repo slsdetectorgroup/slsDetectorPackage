@@ -5633,7 +5633,8 @@ int set_readout_mode(int file_des) {
         if (ret == OK) {
             if (setReadoutMode(arg) == FAIL) {
                 ret = FAIL;
-                sprintf(mess, "Could not set readout mode\n");
+                sprintf(mess, "Could not set readout mode. Check #samples or "
+                              "memory allocation\n");
                 LOG(logERROR, (mess));
             } else {
                 int retval = getReadoutMode();

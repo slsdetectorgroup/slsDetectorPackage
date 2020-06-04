@@ -1143,7 +1143,7 @@ class Detector {
     void setExternalSamplingSource(int value, Positions pos = {});
 
     /** [CTB] */
-    Result<int> getExternalSampling(Positions pos = {}) const;
+    Result<bool> getExternalSampling(Positions pos = {}) const;
 
     /** [CTB] */
     void setExternalSampling(bool value, Positions pos = {});

@@ -1468,7 +1468,7 @@ void Detector::setExternalSamplingSource(int value, Positions pos) {
     pimpl->Parallel(&Module::setExternalSamplingSource, pos, value);
 }
 
-Result<int> Detector::getExternalSampling(Positions pos) const {
+Result<bool> Detector::getExternalSampling(Positions pos) const {
     return pimpl->Parallel(&Module::getExternalSampling, pos);
 }
 

@@ -2201,11 +2201,14 @@ int Module::getExternalSamplingSource() {
     return setExternalSamplingSource(-1);
 }
 
-int Module::setExternalSampling(int value) {
-    return sendToDetector<int>(F_EXTERNAL_SAMPLING, value);
+void Module::setExternalSampling(bool value) {
+    sendToDetector<int>(F_EXTERNAL_SAMPLING, static_cast<int>(value));
 }
 
-int Module::getExternalSampling() { return setExternalSampling(-1); }
+bool Module::getExternalSampling() {
+    int arg = -1;
+    return sendToDetector<int>(F_EXTERNAL_SAMPLING, arg);
+}
 
 void Module::setReceiverDbitList(const std::vector<int> &list) {
     LOG(logDEBUG1) << "Setting Receiver Dbit List";

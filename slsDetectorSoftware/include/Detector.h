@@ -1186,16 +1186,16 @@ class Detector {
     /** [CTB][Moench][Mythen3] */
     void savePattern(const std::string &fname);
 
-    /** [CTB][Moench][Mythen3] */
+    /** [CTB][Moench] */
     Result<uint64_t> getPatternIOControl(Positions pos = {}) const;
 
-    /** [CTB][Moench][Mythen3] */
+    /** [CTB][Moench] */
     void setPatternIOControl(uint64_t word, Positions pos = {});
 
-    /** [CTB][Moench][Mythen3] */
+    /** [CTB][Moench] */
     Result<uint64_t> getPatternClockControl(Positions pos = {}) const;
 
-    /** [CTB][Moench][Mythen3] */
+    /** [CTB][Moench] */
     void setPatternClockControl(uint64_t word, Positions pos = {});
 
     /** [CTB][Moench][Mythen3] same as executing for ctb and moench */

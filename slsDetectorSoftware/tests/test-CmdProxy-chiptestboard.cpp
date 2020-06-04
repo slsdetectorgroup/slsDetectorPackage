@@ -116,8 +116,8 @@ TEST_CASE("samples", "[.cmd][.new]") {
         }
         {
             std::ostringstream oss;
-            proxy.Call("samples", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "samples 1\n");
+            proxy.Call("samples", {"25"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "samples 25\n");
         }
         {
             std::ostringstream oss;
@@ -159,8 +159,8 @@ TEST_CASE("asamples", "[.cmd][.new]") {
         auto prev_val = det.getNumberOfAnalogSamples();
         {
             std::ostringstream oss;
-            proxy.Call("asamples", {"1"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "asamples 1\n");
+            proxy.Call("asamples", {"25"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "asamples 25\n");
         }
         {
             std::ostringstream oss;
@@ -333,8 +333,8 @@ TEST_CASE("adcenable", "[.cmd][.new]") {
         auto prev_val = det.getADCEnableMask();
         {
             std::ostringstream oss;
-            proxy.Call("adcenable", {"0x8d0a21d4"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcenable 0x8d0a21d4\n");
+            proxy.Call("adcenable", {"0x8d0aa0d8"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcenable 0x8d0aa0d8\n");
         }
         {
             std::ostringstream oss;
@@ -363,8 +363,8 @@ TEST_CASE("adcenable10g", "[.cmd][.new]") {
         auto prev_val = det.getTenGigaADCEnableMask();
         {
             std::ostringstream oss;
-            proxy.Call("adcenable10g", {"0xff00f0f0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "adcenable10g 0xff00f0f0\n");
+            proxy.Call("adcenable10g", {"0xff0000ff"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcenable10g 0xff0000ff\n");
         }
         {
             std::ostringstream oss;

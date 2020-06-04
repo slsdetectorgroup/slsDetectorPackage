@@ -2027,12 +2027,12 @@ class CmdProxy {
 
     INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl,
                         StringTo<uint64_t>,
-                        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask "
+                        "[64 bit mask]\n\t[Ctb][Moench] 64 bit mask "
                         "defining input (0) and output (1) signals.");
 
     INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl,
                         setPatternClockControl, StringTo<uint64_t>,
-                        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask "
+                        "[64 bit mask]\n\t[Ctb][Moench] 64 bit mask "
                         "defining output clock enable.");
 
     INTEGER_COMMAND_HEX(

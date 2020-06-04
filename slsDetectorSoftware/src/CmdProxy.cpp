@@ -1961,7 +1961,7 @@ std::string CmdProxy::Pattern(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Mythen3][Moench][Ctb][Moench] Loads binary pattern "
+        os << "[fname]\n\t[Mythen3][Moench][Ctb] Loads binary pattern "
               "file with only pattern "
               "words"
            << '\n';

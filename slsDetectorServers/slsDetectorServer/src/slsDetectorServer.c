@@ -177,7 +177,9 @@ int main(int argc, char *argv[]) {
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
         rebootNiosControllerAndFPGA();
 #else
+#ifndef VIRTUAL
         system("reboot");
+#endif
 #endif
     }
     LOG(logINFO, ("Goodbye!\n"));

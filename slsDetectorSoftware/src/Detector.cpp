@@ -1525,13 +1525,17 @@ void Detector::savePattern(const std::string &fname) {
         proxy.Call("patword", {addr}, -1, defs::GET_ACTION, outfile);
     }
     // rest of pattern file
-    const std::vector<std::string> commands{
+    std::vector<std::string> commands{
         "patioctrl",    "patclkctrl", "patlimits",    "patloop0",
         "patnloop0",    "patloop1",   "patnloop1",    "patloop2",
         "patnloop2",    "patwait0",   "patwaittime0", "patwait1",
         "patwaittime1", "patwait2",   "patwaittime2", "patmask",
         "patsetbit",
     };
+    auto det_type = getDetectorType().squash();
+    if (det_type == defs::MYTHEN3) {
+        commands.erase(commands.begin(), commands.begin() + 2);
+    }
     for (const auto &cmd : commands)
         proxy.Call(cmd, {}, -1, defs::GET_ACTION, outfile);
 }

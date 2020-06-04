@@ -534,9 +534,10 @@ TEST_CASE("patsetbit", "[.cmd][.new]") {
 TEST_CASE("patternstart", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("patternstart", {}, -1, GET));
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::MYTHEN3) {
-        REQUIRE_THROWS(proxy.Call("patternstart", {}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("patternstart", {}, -1, PUT));
     } else {
         REQUIRE_THROWS(proxy.Call("patternstart", {}, -1, PUT));
     }

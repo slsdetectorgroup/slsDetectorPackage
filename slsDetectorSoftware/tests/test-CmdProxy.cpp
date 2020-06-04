@@ -1566,7 +1566,7 @@ TEST_CASE("rebootcontroller", "[.cmd][.new]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
         det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+        det_type == defs::GOTTHARD2 || det_type == defs::GOTTHARD) {
         // TODO: reboot real server?
         // REQUIRE_NOTHROW(proxy.Call("rebootcontroller", {}, -1, PUT));
         REQUIRE_THROWS(proxy.Call("rebootcontroller", {}, -1, GET));
@@ -1710,8 +1710,8 @@ TEST_CASE("firmwaretest", "[.cmd][.new]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::GOTTHARD || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+        det_type == defs::MOENCH || det_type == defs::GOTTHARD ||
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
         std::ostringstream oss;
         proxy.Call("firmwaretest", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "firmwaretest successful\n");
@@ -1727,8 +1727,8 @@ TEST_CASE("bustest", "[.cmd][.new]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::GOTTHARD || det_type == defs::MYTHEN3 ||
-        det_type == defs::GOTTHARD2) {
+        det_type == defs::MOENCH || det_type == defs::GOTTHARD ||
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
         std::ostringstream oss;
         proxy.Call("bustest", {}, -1, PUT, oss);
         REQUIRE(oss.str() == "bustest successful\n");

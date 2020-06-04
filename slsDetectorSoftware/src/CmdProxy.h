@@ -2081,7 +2081,7 @@ class CmdProxy {
 
     INTEGER_COMMAND_HEX(
         adcinvert, getADCInvert, setADCInvert, StringTo<uint32_t>,
-        "[bitmask]\n\t[Ctb][Moench][Jungfrau][Moench] ADC Inversion "
+        "[bitmask]\n\t[Ctb][Moench][Jungfrau] ADC Inversion "
         "Mask.\n\t[Jungfrau][Moench] Inversions on top of the default mask.");
 
     /* Insignificant */
@@ -2104,7 +2104,7 @@ class CmdProxy {
         "\n\tClient IP Address that last communicated with the detector.");
 
     GET_COMMAND(nframes, getNumberOfFramesFromStart,
-                "\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB][Moench] "
+                "\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] "
                 "Number of frames from start run control."
                 "\n\t[Gotthard2] only in continuous mode.");
 

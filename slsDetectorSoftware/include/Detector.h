@@ -1324,7 +1324,7 @@ class Detector {
     /** [Jungfrau][CTB][Moench] */
     void resetFPGA(Positions pos = {});
 
-    /** [Jungfrau][Gotthard][CTB][Moench]
+    /** [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2]
      * Copy detector server fname from tftp folder of hostname to detector
      * Also changes respawn server, which is effective after a reboot.
      */

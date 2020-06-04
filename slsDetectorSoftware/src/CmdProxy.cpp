@@ -1548,7 +1548,7 @@ std::string CmdProxy::ClearROI(int action) {
             WrongNumberOfParameters(0);
         }
         det->clearROI({det_id});
-        os << "[-1, -1] \n";
+        os << "[-1, -1]\n";
     } else {
         throw sls::RuntimeError("Unknown action");
     }
@@ -2361,7 +2361,9 @@ std::string CmdProxy::CopyDetectorServer(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[server_name] [pc_host_name]\n\t[Jungfrau][Ctb][Moench] Copies "
+        os << "[server_name] "
+              "[pc_host_name]\n\t[Jungfrau][Ctb][Moench][Mythen3][Gotthard2] "
+              "Copies "
               "detector "
               "server via tftp from pc and changes respawn server name in "
               "/etc/inittab of detector."

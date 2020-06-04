@@ -106,3 +106,137 @@ TEST_CASE("Setting and reading back MOENCH dacs", "[.cmd][.dacs][.new]") {
         REQUIRE_THROWS(proxy.Call("vcom_adc2", {}, -1, GET));
     }
 }
+
+/* Moench */
+
+TEST_CASE("emin", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MOENCH) {
+        auto prev_val = det.getDetectorMinMaxEnergyThreshold(false);
+        {
+            std::ostringstream oss;
+            proxy.Call("emin", {"100"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "emin 100\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("emin", {"200"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "emin 200\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("emin", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "emin 200\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDetectorMinMaxEnergyThreshold(false, prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("emin", {}, -1, GET));
+    }
+}
+
+TEST_CASE("emax", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MOENCH) {
+        auto prev_val = det.getDetectorMinMaxEnergyThreshold(true);
+        {
+            std::ostringstream oss;
+            proxy.Call("emax", {"100"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "emax 100\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("emax", {"200"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "emax 200\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("emax", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "emax 200\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDetectorMinMaxEnergyThreshold(true, prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("emax", {}, -1, GET));
+    }
+}
+
+TEST_CASE("framemode", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MOENCH) {
+        auto prev_val = det.getFrameMode();
+        {
+            std::ostringstream oss;
+            proxy.Call("framemode", {"pedestal"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "framemode pedestal\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("framemode", {"newpedestal"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "framemode newpedestal\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("framemode", {"flatfield"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "framemode flatfield\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("framemode", {"newflatfield"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "framemode newflatfield\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("framemode", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "framemode newflatfield\n");
+        }
+        REQUIRE_THROWS(proxy.Call("framemode", {"counting"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            det.setFrameMode(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("framemode", {}, -1, GET));
+    }
+}
+
+TEST_CASE("detectormode", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::MOENCH) {
+        auto prev_val = det.getDetectorMode();
+        {
+            std::ostringstream oss;
+            proxy.Call("detectormode", {"counting"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "detectormode counting\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("detectormode", {"interpolating"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "detectormode interpolating\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("detectormode", {"analog"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "detectormode analog\n");
+        }
+        std::ostringstream oss;
+        proxy.Call("detectormode", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "detectormode analog\n");
+
+        REQUIRE_THROWS(proxy.Call("detectormode", {"pedestal"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDetectorMode(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("detectormode", {}, -1, GET));
+    }
+}

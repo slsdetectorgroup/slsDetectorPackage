@@ -101,6 +101,36 @@ TEST_CASE("Setting and reading back Chip test board dacs",
     }
 }
 
+TEST_CASE("adcvpp", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
+        auto prev_val = det.getDAC(defs::ADC_VPP, false);
+        {
+            std::ostringstream oss;
+            proxy.Call("adcvpp", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcvpp 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("adcvpp", {"1140", "mv"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcvpp 1140 mv\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("adcvpp", {"mv"}, -1, GET, oss);
+            REQUIRE(oss.str() == "adcvpp 1140 mv\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDAC(defs::ADC_VPP, prev_val[i], false, {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("adcvpp", {}, -1, GET));
+    }
+}
+
 /* CTB/ Moench Specific */
 
 TEST_CASE("samples", "[.cmd][.new]") {

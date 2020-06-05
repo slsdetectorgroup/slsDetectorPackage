@@ -917,22 +917,23 @@ std::string CmdProxy::DacValues(int action) {
         os << "\n\tGets the list of commands for every dac for this detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        std::vector<std::string> names = DacCommands();
-        std::vector<std::string> res(names.size());
-        std::vector<std::string> args;
-        for (size_t i = 0; i < names.size(); ++i) {
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        auto t = det->getDacList();
+        std::vector<std::string> res(t.size());
+        for (size_t i = 0; i < t.size(); ++i) {
+            std::string name = ToString(t[i], det_type);
             // for multiple values for each command (to use ToString on vector)
             std::ostringstream each;
-            size_t spacepos = names[i].find(' ');
+            size_t spacepos = name.find(' ');
             // chip test board (dac)
             if (spacepos != std::string::npos) {
                 if (args.empty()) {
                     args.resize(1);
                 }
-                args[0] = names[i].substr(spacepos + 1 - 1);
-                names[i] = names[i].substr(0, spacepos);
+                args[0] = name.substr(spacepos + 1 - 1);
+                name = name.substr(0, spacepos);
             }
-            Call(names[i], args, det_id, action, each);
+            Call(name, args, det_id, action, each);
             res[i] = each.str();
             res[i].pop_back(); // remove last \n character
         }

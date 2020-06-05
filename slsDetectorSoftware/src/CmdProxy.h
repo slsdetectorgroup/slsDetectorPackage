@@ -562,6 +562,7 @@ class CmdProxy {
         {"detectornumber", &CmdProxy::detectornumber},
         {"type", &CmdProxy::type},
         {"detsize", &CmdProxy::DetectorSize},
+        {"settingslist", &CmdProxy::SettingsList},
         {"settings", &CmdProxy::settings},
         {"trimbits", &CmdProxy::trimbits},
         {"trimval", &CmdProxy::trimval},
@@ -924,6 +925,7 @@ class CmdProxy {
     std::string PackageVersion(int action);
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
+    std::string SettingsList(int action);
     std::string GapPixels(int action);
     /* acquisition parameters */
     std::string acquire(int action);

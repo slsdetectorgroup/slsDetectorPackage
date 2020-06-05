@@ -34,6 +34,7 @@ std::string ToString(const defs::externalSignalFlag s);
 std::string ToString(const defs::readoutMode s);
 std::string ToString(const defs::frameModeType s);
 std::string ToString(const defs::detectorModeType s);
+std::string ToString(const defs::dacIndex s, const defs::detectorType t);
 std::string ToString(const defs::burstMode s);
 std::string ToString(const defs::timingSourceType s);
 
@@ -235,6 +236,11 @@ template <typename T> T StringTo(const std::string &t) {
     return StringTo<T>(tmp, unit);
 }
 
+template <typename T>
+T StringTo(const std::string &s, const defs::detectorType t) {
+    return StringTo<T>(s, t);
+}
+
 template <> defs::detectorType StringTo(const std::string &s);
 template <> defs::detectorSettings StringTo(const std::string &s);
 template <> defs::speedLevel StringTo(const std::string &s);
@@ -245,7 +251,8 @@ template <> defs::externalSignalFlag StringTo(const std::string &s);
 template <> defs::readoutMode StringTo(const std::string &s);
 template <> defs::frameModeType StringTo(const std::string &s);
 template <> defs::detectorModeType StringTo(const std::string &s);
-template <> defs::dacIndex StringTo(const std::string &s);
+template <>
+defs::dacIndex StringTo(const std::string &s, const defs::detectorType t);
 template <> defs::burstMode StringTo(const std::string &s);
 template <> defs::timingSourceType StringTo(const std::string &s);
 

@@ -126,6 +126,13 @@ TEST_CASE("detsize", "[.cmd][.new]") {
     REQUIRE_NOTHROW(proxy.Call("detsize", {}, -1, GET));
 }
 
+TEST_CASE("settingslist", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("settingslist", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("settingslist", {}, -1, PUT));
+}
+
 TEST_CASE("settings", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);

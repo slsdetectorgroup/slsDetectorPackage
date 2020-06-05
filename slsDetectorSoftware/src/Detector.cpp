@@ -141,6 +141,55 @@ void Detector::setDetectorSize(const defs::xy value) {
     pimpl->setNumberOfChannels(value);
 }
 
+std::vector<defs::detectorSettings> Detector::getSettingsList() const {
+    std::vector<defs::detectorSettings> retval;
+    switch (getDetectorType().squash()) {
+    case defs::EIGER:
+        retval.push_back(defs::STANDARD);
+        retval.push_back(defs::HIGHGAIN);
+        retval.push_back(defs::LOWGAIN);
+        retval.push_back(defs::VERYHIGHGAIN);
+        retval.push_back(defs::VERYLOWGAIN);
+        break;
+    case defs::GOTTHARD:
+        retval.push_back(defs::HIGHGAIN);
+        retval.push_back(defs::DYNAMICGAIN);
+        retval.push_back(defs::LOWGAIN);
+        retval.push_back(defs::MEDIUMGAIN);
+        retval.push_back(defs::VERYHIGHGAIN);
+        break;
+    case defs::JUNGFRAU:
+        retval.push_back(defs::DYNAMICGAIN);
+        retval.push_back(defs::DYNAMICHG0);
+        retval.push_back(defs::FIXGAIN1);
+        retval.push_back(defs::FIXGAIN2);
+        retval.push_back(defs::FORCESWITCHG1);
+        retval.push_back(defs::FORCESWITCHG2);
+        break;
+    case defs::GOTTHARD2:
+        retval.push_back(defs::DYNAMICGAIN);
+        retval.push_back(defs::FIXGAIN1);
+        retval.push_back(defs::FIXGAIN2);
+        break;
+    case defs::MOENCH:
+        retval.push_back(defs::G1_HIGHGAIN);
+        retval.push_back(defs::G1_LOWGAIN);
+        retval.push_back(defs::G2_HIGHCAP_HIGHGAIN);
+        retval.push_back(defs::G2_HIGHCAP_LOWGAIN);
+        retval.push_back(defs::G2_LOWCAP_HIGHGAIN);
+        retval.push_back(defs::G2_LOWCAP_LOWGAIN);
+        retval.push_back(defs::G4_HIGHGAIN);
+        retval.push_back(defs::G4_LOWGAIN);
+        break;
+    case defs::CHIPTESTBOARD:
+    case defs::MYTHEN3:
+        throw RuntimeError("Settings not implemented for this detector");
+    default:
+        throw RuntimeError("Unknown detector type");
+    }
+    return retval;
+}
+
 Result<defs::detectorSettings> Detector::getSettings(Positions pos) const {
     return pimpl->Parallel(&Module::getSettings, pos);
 }
@@ -403,6 +452,104 @@ Result<int> Detector::getTemperature(defs::dacIndex index,
         break;
     }
     return res;
+}
+
+std::vector<defs::dacIndex> Detector::getDacList() const {
+    std::vector<defs::dacIndex> retval;
+    int i = 0;
+    switch (getDetectorType().squash()) {
+    case defs::EIGER:
+        retval.push_back(defs::SVP);
+        retval.push_back(defs::VTR);
+        retval.push_back(defs::VRF);
+        retval.push_back(defs::VRS);
+        retval.push_back(defs::SVN);
+        retval.push_back(defs::VTGSTV);
+        retval.push_back(defs::VCMP_LL);
+        retval.push_back(defs::VCMP_LR);
+        retval.push_back(defs::CAL);
+        retval.push_back(defs::VCMP_RL);
+        retval.push_back(defs::RXB_RB);
+        retval.push_back(defs::RXB_LB);
+        retval.push_back(defs::VCMP_RR);
+        retval.push_back(defs::VCP);
+        retval.push_back(defs::VCN);
+        retval.push_back(defs::VIS);
+        retval.push_back(defs::THRESHOLD);
+        break;
+    case defs::GOTTHARD:
+        retval.push_back(defs::VREF_DS);
+        retval.push_back(defs::VCASCN_PB);
+        retval.push_back(defs::VCASCP_PB);
+        retval.push_back(defs::VOUT_CM);
+        retval.push_back(defs::VCASC_OUT);
+        retval.push_back(defs::VIN_CM);
+        retval.push_back(defs::VREF_COMP);
+        retval.push_back(defs::IB_TESTC);
+        break;
+    case defs::JUNGFRAU:
+        retval.push_back(defs::VB_COMP);
+        retval.push_back(defs::VDD_PROT);
+        retval.push_back(defs::VIN_COM);
+        retval.push_back(defs::VREF_PRECH);
+        retval.push_back(defs::VB_PIXBUF);
+        retval.push_back(defs::VB_DS);
+        retval.push_back(defs::VREF_DS);
+        retval.push_back(defs::VREF_COMP);
+        break;
+    case defs::GOTTHARD2:
+        retval.push_back(defs::VREF_H_ADC);
+        retval.push_back(defs::VB_COMP_FE);
+        retval.push_back(defs::VB_COMP_ADC);
+        retval.push_back(defs::VCOM_CDS);
+        retval.push_back(defs::VREF_RSTORE);
+        retval.push_back(defs::VB_OPA_1ST);
+        retval.push_back(defs::VREF_COMP_FE);
+        retval.push_back(defs::VCOM_ADC1);
+        retval.push_back(defs::VREF_PRECH);
+        retval.push_back(defs::VREF_L_ADC);
+        retval.push_back(defs::VREF_CDS);
+        retval.push_back(defs::VB_CS);
+        retval.push_back(defs::VB_OPA_FD);
+        retval.push_back(defs::VCOM_ADC2);
+        break;
+    case defs::MYTHEN3:
+        retval.push_back(defs::CASSH);
+        retval.push_back(defs::VTH2);
+        retval.push_back(defs::SHAPER1);
+        retval.push_back(defs::SHAPER2);
+        retval.push_back(defs::VIPRE_OUT);
+        retval.push_back(defs::VTH3);
+        retval.push_back(defs::THRESHOLD);
+        retval.push_back(defs::VICIN);
+        retval.push_back(defs::CAS);
+        retval.push_back(defs::PREAMP);
+        retval.push_back(defs::VPL);
+        retval.push_back(defs::VIPRE);
+        retval.push_back(defs::VIINSH);
+        retval.push_back(defs::CALIBRATION_PULSE);
+        retval.push_back(defs::TRIMBIT_SIZE);
+        retval.push_back(defs::VDCSH);
+        break;
+    case defs::MOENCH:
+        retval.push_back(defs::VBP_COLBUF);
+        retval.push_back(defs::VIPRE);
+        retval.push_back(defs::VIN_CM);
+        retval.push_back(defs::VB_SDA);
+        retval.push_back(defs::VCASC_SFP);
+        retval.push_back(defs::VOUT_CM);
+        retval.push_back(defs::VIPRE_CDS);
+        retval.push_back(defs::IBIAS_SFP);
+        break;
+    case defs::CHIPTESTBOARD:
+        for (i = 0; i != 18; ++i) {
+            retval.push_back(static_cast<defs::dacIndex>(i));
+        }
+        break;
+    default:
+        throw RuntimeError("Unknown detector type");
+    }
+    return retval;
 }
 
 Result<int> Detector::getDAC(defs::dacIndex index, bool mV,

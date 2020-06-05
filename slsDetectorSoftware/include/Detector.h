@@ -96,6 +96,9 @@ class Detector {
      */
     void setDetectorSize(const defs::xy value);
 
+    /** list of possible settings for this detector */
+    std::vector<defs::detectorSettings> getSettingsList() const;
+
     /** [Jungfrau][Gotthard][Gotthard2] */
     Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
 
@@ -308,6 +311,9 @@ class Detector {
      * [CTB] Options: SLOW_ADC_TEMP
      */
     Result<int> getTemperature(defs::dacIndex index, Positions pos = {}) const;
+
+    /** gets list of dac indices for this detector */
+    std::vector<defs::dacIndex> getDacList() const;
 
     Result<int> getDAC(defs::dacIndex index, bool mV, Positions pos = {}) const;
 

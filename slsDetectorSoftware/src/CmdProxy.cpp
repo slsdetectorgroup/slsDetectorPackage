@@ -331,6 +331,25 @@ std::string CmdProxy::DetectorSize(int action) {
     return os.str();
 }
 
+std::string CmdProxy::SettingsList(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "\n\tList of settings implemented for this detector" << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getSettingsList();
+        os << ToString(t) << "\n";
+    } else if (action == defs::PUT_ACTION) {
+        throw sls::RuntimeError("Cannot put");
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::GapPixels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -877,7 +896,12 @@ std::string CmdProxy::DacList(int action) {
         os << "\n\tGets the list of commands for every dac for this detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        os << sls::ToString(DacCommands()) << '\n';
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getDacList();
+        auto det_type = det->getDetectorType().squash(defs::GENERIC);
+        os << ToString(t, det_type) << "\n";
     } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("Cannot put");
     } else {

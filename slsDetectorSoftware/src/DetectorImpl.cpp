@@ -357,7 +357,7 @@ void DetectorImpl::setGapPixelsinCallback(const bool enable) {
             break;
         default:
             throw RuntimeError("Gap Pixels is not implemented for " +
-                               multi_shm()->multiDetectorType);
+                               ToString(multi_shm()->multiDetectorType));
         }
     }
     multi_shm()->gapPixels = enable;

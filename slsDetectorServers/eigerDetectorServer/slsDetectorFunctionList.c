@@ -96,6 +96,8 @@ uint64_t eiger_virtual_startingframenumber = 1;
 int eiger_virtual_detPos[2] = {0, 0};
 int eiger_virtual_test_mode = 0;
 int eiger_virtual_quad_mode = 0;
+int eiger_virtual_read_nlines = 256;
+int eiger_virtual_interrupt_subframe = 0;
 #endif
 
 int isInitCheckDone() { return initCheckDone; }
@@ -1516,13 +1518,15 @@ int setInterruptSubframe(int value) {
     if (!Feb_Control_SetInterruptSubframe(value)) {
         return FAIL;
     }
+#else
+    eiger_virtual_interrupt_subframe = value;
 #endif
     return OK;
 }
 
 int getInterruptSubframe() {
 #ifdef VIRTUAL
-    return 0;
+    return eiger_virtual_interrupt_subframe;
 #else
     return Feb_Control_GetInterruptSubframe();
 #endif
@@ -1536,13 +1540,15 @@ int setReadNLines(int value) {
         return FAIL;
     }
     Beb_SetReadNLines(value);
+#else
+    eiger_virtual_read_nlines = value;
 #endif
     return OK;
 }
 
 int getReadNLines() {
 #ifdef VIRTUAL
-    return 0;
+    return eiger_virtual_read_nlines;
 #else
     return Feb_Control_GetReadNLines();
 #endif
@@ -1835,6 +1841,7 @@ void setExternalGating(int enable[]) {
 }
 
 int setAllTrimbits(int val) {
+    LOG(logINFO, ("Setting all trimbits to %d\n", val));
 #ifndef VIRTUAL
     if (!Feb_Control_SaveAllTrimbitsTo(val, top)) {
         LOG(logERROR, ("Could not set all trimbits\n"));

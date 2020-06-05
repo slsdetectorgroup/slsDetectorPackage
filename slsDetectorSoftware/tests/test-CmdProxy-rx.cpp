@@ -374,7 +374,7 @@ TEST_CASE("rx_lastclient", "[.cmd][.rx][.new]") {
 
 /* File */
 
-TEST_CASE("fformat", "[.cmd]") {
+TEST_CASE("fformat", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getFileFormat();
@@ -393,7 +393,7 @@ TEST_CASE("fformat", "[.cmd]") {
     }
 }
 
-TEST_CASE("fpath", "[.cmd]") {
+TEST_CASE("fpath", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getFilePath();
@@ -412,7 +412,7 @@ TEST_CASE("fpath", "[.cmd]") {
     }
 }
 
-TEST_CASE("fname", "[.cmd]") {
+TEST_CASE("fname", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getFileNamePrefix();
@@ -436,7 +436,7 @@ TEST_CASE("fname", "[.cmd]") {
     }
 }
 
-TEST_CASE("findex", "[.cmd]") {
+TEST_CASE("findex", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getAcquisitionIndex();
@@ -460,7 +460,7 @@ TEST_CASE("findex", "[.cmd]") {
     }
 }
 
-TEST_CASE("fwrite", "[.cmd]") {
+TEST_CASE("fwrite", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getFileWrite();
@@ -484,7 +484,7 @@ TEST_CASE("fwrite", "[.cmd]") {
     }
 }
 
-TEST_CASE("fmaster", "[.cmd]") {
+TEST_CASE("fmaster", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getMasterFileWrite();
@@ -508,7 +508,7 @@ TEST_CASE("fmaster", "[.cmd]") {
     }
 }
 
-TEST_CASE("foverwrite", "[.cmd]") {
+TEST_CASE("foverwrite", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getFileOverWrite();

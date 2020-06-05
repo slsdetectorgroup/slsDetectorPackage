@@ -117,6 +117,16 @@ class Detector {
     /**[Eiger][Mythen3] */
     void setAllTrimbits(int value, Positions pos = {});
 
+    /**[Eiger][Jungfrau] */
+    bool getGapPixelsinCallback() const;
+
+    /**
+     * [Eiger][Jungfrau]
+     * Only in client data call back
+     * Fills in gap pixels in data
+     */
+    void setGapPixelsinCallback(const bool enable);
+
     /**************************************************
      *                                                *
      *    Callbacks                                   *
@@ -145,16 +155,6 @@ class Detector {
     void registerDataCallback(void (*func)(detectorData *, uint64_t, uint32_t,
                                            void *),
                               void *pArg);
-
-    /**[Eiger][Jungfrau] */
-    bool getGapPixelsinCallback() const;
-
-    /**
-     * [Eiger][Jungfrau]
-     * Only in client data call back
-     * Fills in gap pixels in data
-     */
-    void setGapPixelsinCallback(const bool enable);
 
     /**************************************************
      *                                                *
@@ -1143,7 +1143,7 @@ class Detector {
     void setExternalSamplingSource(int value, Positions pos = {});
 
     /** [CTB] */
-    Result<int> getExternalSampling(Positions pos = {}) const;
+    Result<bool> getExternalSampling(Positions pos = {}) const;
 
     /** [CTB] */
     void setExternalSampling(bool value, Positions pos = {});
@@ -1186,16 +1186,16 @@ class Detector {
     /** [CTB][Moench][Mythen3] */
     void savePattern(const std::string &fname);
 
-    /** [CTB][Moench][Mythen3] */
+    /** [CTB][Moench] */
     Result<uint64_t> getPatternIOControl(Positions pos = {}) const;
 
-    /** [CTB][Moench][Mythen3] */
+    /** [CTB][Moench] */
     void setPatternIOControl(uint64_t word, Positions pos = {});
 
-    /** [CTB][Moench][Mythen3] */
+    /** [CTB][Moench] */
     Result<uint64_t> getPatternClockControl(Positions pos = {}) const;
 
-    /** [CTB][Moench][Mythen3] */
+    /** [CTB][Moench] */
     void setPatternClockControl(uint64_t word, Positions pos = {});
 
     /** [CTB][Moench][Mythen3] same as executing for ctb and moench */
@@ -1324,7 +1324,7 @@ class Detector {
     /** [Jungfrau][CTB][Moench] */
     void resetFPGA(Positions pos = {});
 
-    /** [Jungfrau][Gotthard][CTB][Moench]
+    /** [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2]
      * Copy detector server fname from tftp folder of hostname to detector
      * Also changes respawn server, which is effective after a reboot.
      */

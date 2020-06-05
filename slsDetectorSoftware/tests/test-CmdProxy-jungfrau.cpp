@@ -94,114 +94,248 @@ TEST_CASE("Setting and reading back Jungfrau dacs", "[.cmd][.dacs][.new]") {
     }
 }
 
-TEST_CASE("nframes", "[.cmd]") {
+/* Network Configuration (Detector<->Receiver) */
+
+TEST_CASE("selinterface", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD) {
-        auto nframes = det.getNumberOfFramesFromStart().squash();
-        std::ostringstream oss;
-        proxy.Call("nframes", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "nframes " + std::to_string(nframes) + "\n");
-
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getSelectedUDPInterface().tsquash(
+            "inconsistent selected interface to test");
+        {
+            std::ostringstream oss;
+            proxy.Call("selinterface", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "selinterface 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("selinterface", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "selinterface 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("selinterface", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "selinterface 0\n");
+        }
+        det.selectUDPInterface(prev_val);
+        REQUIRE_THROWS(proxy.Call("selinterface", {"2"}, -1, PUT));
     } else {
-        REQUIRE_THROWS(proxy.Call("nframes", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("selinterface", {}, -1, GET));
     }
 }
 
-TEST_CASE("now", "[.cmd]") {
-    // TODO! can we test this?
+/* Jungfrau Specific */
+
+TEST_CASE("temp_threshold", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD) {
-        std::ostringstream oss;
-        proxy.Call("now", {}, -1, GET, oss);
-
-        // Get only
-        REQUIRE_THROWS(proxy.Call("now", {"2019"}, -1, PUT));
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getThresholdTemperature();
+        {
+            std::ostringstream oss;
+            proxy.Call("temp_threshold", {"65"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "temp_threshold 65\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("temp_threshold", {"70"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "temp_threshold 70\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("temp_threshold", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "temp_threshold 70\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setThresholdTemperature(prev_val[i], {i});
+        }
     } else {
-        REQUIRE_THROWS(proxy.Call("now", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("temp_threshold", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("temp_threshold", {"70"}, -1, PUT));
     }
 }
 
-TEST_CASE("timestamp", "[.cmd]") {
-    // TODO! can we test this?
+TEST_CASE("temp_control", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD) {
-        std::ostringstream oss;
-        proxy.Call("timestamp", {}, -1, GET, oss);
-
-        // Get only
-        REQUIRE_THROWS(proxy.Call("timestamp", {"2019"}, -1, PUT));
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getTemperatureControl();
+        {
+            std::ostringstream oss;
+            proxy.Call("temp_control", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "temp_control 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("temp_control", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "temp_control 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("temp_control", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "temp_control 1\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTemperatureControl(prev_val[i], {i});
+        }
     } else {
-        REQUIRE_THROWS(proxy.Call("timestamp", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("temp_control", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("temp_control", {"0"}, -1, PUT));
     }
 }
 
-TEST_CASE("adcreg", "[.cmd]") {
-    // TODO! what is a safe value to use?
+TEST_CASE("temp_event", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::GOTTHARD) {
-        std::ostringstream oss;
-        proxy.Call("adcreg", {"0x0", "0"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "adcreg [0x0, 0]\n");
-        // This is a put only command
-        REQUIRE_THROWS(proxy.Call("adcreg", {}, -1, GET));
+    if (det_type == defs::JUNGFRAU) {
+        {
+            std::ostringstream oss;
+            proxy.Call("temp_event", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "temp_event cleared\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("temp_event", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "temp_event 0\n");
+        }
     } else {
-        REQUIRE_THROWS(proxy.Call("adcreg", {"0x0", "0"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("adcreg", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("temp_event", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("temp_event", {"0"}, -1, PUT));
     }
 }
 
-TEST_CASE("bustest", "[.cmd]") {
+TEST_CASE("auto_comp_disable", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::GOTTHARD) {
-        std::ostringstream oss;
-        proxy.Call("bustest", {}, -1, PUT, oss);
-        REQUIRE(oss.str() == "bustest successful\n");
-        REQUIRE_THROWS(proxy.Call("bustest", {}, -1, GET));
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getAutoCompDisable();
+        {
+            std::ostringstream oss;
+            proxy.Call("auto_comp_disable", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "auto_comp_disable 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("auto_comp_disable", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "auto_comp_disable 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("auto_comp_disable", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "auto_comp_disable 1\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setAutoCompDisable(prev_val[i], {i});
+        }
     } else {
-        REQUIRE_THROWS(proxy.Call("bustest", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("bustest", {}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("auto_comp_disable", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("auto_comp_disable", {"0"}, -1, PUT));
     }
 }
 
-TEST_CASE("firmwaretest", "[.cmd]") {
+TEST_CASE("storagecells", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::GOTTHARD) {
-        std::ostringstream oss;
-        proxy.Call("firmwaretest", {}, -1, PUT, oss);
-        REQUIRE(oss.str() == "firmwaretest successful\n");
-        REQUIRE_THROWS(proxy.Call("firmwaretest", {}, -1, GET));
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getNumberOfAdditionalStorageCells().tsquash(
+            "inconsistent #additional storage cells to test");
+        {
+            std::ostringstream oss;
+            proxy.Call("storagecells", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "storagecells 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("storagecells", {"15"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "storagecells 15\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("storagecells", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "storagecells 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("storagecells", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "storagecells 0\n");
+        }
+        REQUIRE_THROWS(proxy.Call("storagecells", {"16"}, -1, PUT));
+        det.setNumberOfAdditionalStorageCells(prev_val);
     } else {
-        REQUIRE_THROWS(proxy.Call("firmwaretest", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("firmwaretest", {}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("storagecells", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("storagecells", {"0"}, -1, PUT));
     }
 }
 
-TEST_CASE("resetfpga", "[.cmd]") {
+TEST_CASE("storagecell_start", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD) {
-        std::ostringstream oss;
-        proxy.Call("resetfpga", {}, -1, PUT, oss);
-        REQUIRE(oss.str() == "resetfpga successful\n");
-        REQUIRE_THROWS(proxy.Call("resetfpga", {}, -1, GET));
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getStorageCellStart();
+        {
+            std::ostringstream oss;
+            proxy.Call("storagecell_start", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "storagecell_start 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("storagecell_start", {"15"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "storagecell_start 15\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("storagecell_start", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "storagecell_start 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("storagecell_start", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "storagecell_start 0\n");
+        }
+        REQUIRE_THROWS(proxy.Call("storagecell_start", {"16"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            det.setStorageCellStart(prev_val[i], {i});
+        }
     } else {
-        REQUIRE_THROWS(proxy.Call("resetfpga", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("resetfpga", {}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("storagecell_start", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("storagecell_start", {"0"}, -1, PUT));
+    }
+}
+
+TEST_CASE("storagecell_delay", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getStorageCellDelay();
+        {
+            std::ostringstream oss;
+            proxy.Call("storagecell_delay", {"1.62ms"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "storagecell_delay 1.62ms\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("storagecell_delay", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "storagecell_delay 1.62ms\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("storagecell_delay", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "storagecell_delay 0\n");
+        }
+        REQUIRE_THROWS(proxy.Call("storagecell_delay", {"1638376ns"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            det.setStorageCellDelay(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("storagecell_delay", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("storagecell_delay", {"0"}, -1, PUT));
     }
 }

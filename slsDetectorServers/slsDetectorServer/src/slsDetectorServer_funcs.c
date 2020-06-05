@@ -2591,8 +2591,8 @@ int get_period_left(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
-    !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) /* && !defined(CHIPTESTBOARDD)  \
+   && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)*/
     functionNotImplemented();
 #else
     // get only
@@ -2607,8 +2607,8 @@ int get_delay_after_trigger_left(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
 
-#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) && !defined(CHIPTESTBOARDD) &&  \
-    !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)
+#if !defined(JUNGFRAUD) && !defined(GOTTHARDD) /* && !defined(CHIPTESTBOARDD)  \
+    && !defined(MOENCHD) && !defined(MYTHEN3D) && !defined(GOTTHARD2D)*/
     functionNotImplemented();
 #else
     // get only
@@ -4775,7 +4775,7 @@ int set_read_n_lines(int file_des) {
             } else {
                 if (setReadNLines(arg) == FAIL) {
                     ret = FAIL;
-                    sprintf(mess, "Could not set read n lines.\n");
+                    sprintf(mess, "Could not set read n lines to %d.\n", arg);
                     LOG(logERROR, (mess));
                 } else {
                     int retval = getReadNLines();
@@ -5633,7 +5633,8 @@ int set_readout_mode(int file_des) {
         if (ret == OK) {
             if (setReadoutMode(arg) == FAIL) {
                 ret = FAIL;
-                sprintf(mess, "Could not set readout mode\n");
+                sprintf(mess, "Could not set readout mode. Check #samples or "
+                              "memory allocation\n");
                 LOG(logERROR, (mess));
             } else {
                 int retval = getReadoutMode();

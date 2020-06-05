@@ -331,6 +331,37 @@ std::string CmdProxy::DetectorSize(int action) {
     return os.str();
 }
 
+std::string CmdProxy::GapPixels(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[0, 1]\n\t[Eiger][Jungfrau] Include Gap pixels only in data "
+              "call back."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (det_id != -1) {
+            throw sls::RuntimeError("Cannot get gap pixels at module level");
+        }
+        if (!args.empty()) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getGapPixelsinCallback();
+        os << t << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (det_id != -1) {
+            throw sls::RuntimeError("Cannot add gap pixels at module level");
+        }
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->setGapPixelsinCallback(StringTo<int>(args[0]));
+        os << args.front() << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* acquisition parameters */
 
 std::string CmdProxy::Exptime(int action) {
@@ -1224,37 +1255,6 @@ std::string CmdProxy::ThresholdNoTb(int action) {
     return os.str();
 }
 
-std::string CmdProxy::GapPixels(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "[0, 1]\n\t[Eiger][Jungfrau] Include Gap pixels only in data "
-              "call back."
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        if (det_id != -1) {
-            throw sls::RuntimeError("Cannot get gap pixels at module level");
-        }
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getGapPixelsinCallback();
-        os << t << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        if (det_id != -1) {
-            throw sls::RuntimeError("Cannot add gap pixels at module level");
-        }
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
-        }
-        det->setGapPixelsinCallback(StringTo<int>(args[0]));
-        os << args.front() << '\n';
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
 std::string CmdProxy::TrimEnergies(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -1271,13 +1271,11 @@ std::string CmdProxy::TrimEnergies(int action) {
         auto t = det->getTrimEnergies({det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
-        if (args.empty()) {
-            WrongNumberOfParameters(1);
-        }
-
         std::vector<int> t(args.size());
-        for (size_t i = 0; i < t.size(); ++i) {
-            t[i] = StringTo<int>(args[i]);
+        if (!args.empty()) {
+            for (size_t i = 0; i < t.size(); ++i) {
+                t[i] = StringTo<int>(args[i]);
+            }
         }
         det->setTrimEnergies(t, {det_id});
         os << sls::ToString(args) << '\n';
@@ -1529,7 +1527,7 @@ std::string CmdProxy::ROI(int action) {
         t.xmin = StringTo<int>(args[0]);
         t.xmax = StringTo<int>(args[1]);
         det->setROI(t, det_id);
-        os << '[' << t.xmin << ", " << t.xmax << "] \n";
+        os << '[' << t.xmin << ", " << t.xmax << "]\n";
     } else {
         throw sls::RuntimeError("Unknown action");
     }
@@ -1550,7 +1548,7 @@ std::string CmdProxy::ClearROI(int action) {
             WrongNumberOfParameters(0);
         }
         det->clearROI({det_id});
-        os << "[-1, -1] \n";
+        os << "[-1, -1]\n";
     } else {
         throw sls::RuntimeError("Unknown action");
     }
@@ -1963,7 +1961,7 @@ std::string CmdProxy::Pattern(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Mythen3][Moench][Ctb][Moench] Loads binary pattern "
+        os << "[fname]\n\t[Mythen3][Moench][Ctb] Loads binary pattern "
               "file with only pattern "
               "words"
            << '\n';
@@ -2363,7 +2361,9 @@ std::string CmdProxy::CopyDetectorServer(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[server_name] [pc_host_name]\n\t[Jungfrau][Ctb][Moench] Copies "
+        os << "[server_name] "
+              "[pc_host_name]\n\t[Jungfrau][Ctb][Moench][Mythen3][Gotthard2] "
+              "Copies "
               "detector "
               "server via tftp from pc and changes respawn server name in "
               "/etc/inittab of detector."

@@ -1079,20 +1079,9 @@ class Module : public virtual slsDetectorDefs {
      */
     int getExternalSamplingSource();
 
-    /**
-     * Set external sampling enable (CTB only)
-     * @param value external sampling source (Option: 0-63)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns  external sampling enable
-     */
-    int setExternalSampling(int value);
+    void setExternalSampling(bool value);
 
-    /**
-     * Get external sampling source (CTB only)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns external sampling enable
-     */
-    int getExternalSampling();
+    bool getExternalSampling();
 
     /** digital data bits enable (CTB only) */
     void setReceiverDbitList(const std::vector<int> &list);

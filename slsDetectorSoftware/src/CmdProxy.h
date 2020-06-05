@@ -565,6 +565,7 @@ class CmdProxy {
         {"settings", &CmdProxy::settings},
         {"trimbits", &CmdProxy::trimbits},
         {"trimval", &CmdProxy::trimval},
+        {"gappixels", &CmdProxy::GapPixels},
 
         /* acquisition parameters */
         {"acquire", &CmdProxy::acquire},
@@ -754,7 +755,6 @@ class CmdProxy {
         {"threshold", &CmdProxy::Threshold},
         {"thresholdnotb", &CmdProxy::ThresholdNoTb},
         {"settingspath", &CmdProxy::settingspath},
-        {"gappixels", &CmdProxy::GapPixels},
         {"parallel", &CmdProxy::parallel},
         {"overflow", &CmdProxy::overflow},
         {"storeinram", &CmdProxy::storeinram},
@@ -923,6 +923,7 @@ class CmdProxy {
     std::string PackageVersion(int action);
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
+    std::string GapPixels(int action);
     /* acquisition parameters */
     std::string acquire(int action);
     std::string Exptime(int action);
@@ -954,7 +955,6 @@ class CmdProxy {
     std::string DynamicRange(int action);
     std::string Threshold(int action);
     std::string ThresholdNoTb(int action);
-    std::string GapPixels(int action);
     std::string TrimEnergies(int action);
     std::string RateCorrection(int action);
     std::string Activate(int action);
@@ -2027,12 +2027,12 @@ class CmdProxy {
 
     INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl,
                         StringTo<uint64_t>,
-                        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask "
+                        "[64 bit mask]\n\t[Ctb][Moench] 64 bit mask "
                         "defining input (0) and output (1) signals.");
 
     INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl,
                         setPatternClockControl, StringTo<uint64_t>,
-                        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask "
+                        "[64 bit mask]\n\t[Ctb][Moench] 64 bit mask "
                         "defining output clock enable.");
 
     INTEGER_COMMAND_HEX(
@@ -2081,7 +2081,7 @@ class CmdProxy {
 
     INTEGER_COMMAND_HEX(
         adcinvert, getADCInvert, setADCInvert, StringTo<uint32_t>,
-        "[bitmask]\n\t[Ctb][Moench][Jungfrau][Moench] ADC Inversion "
+        "[bitmask]\n\t[Ctb][Moench][Jungfrau] ADC Inversion "
         "Mask.\n\t[Jungfrau][Moench] Inversions on top of the default mask.");
 
     /* Insignificant */
@@ -2104,7 +2104,7 @@ class CmdProxy {
         "\n\tClient IP Address that last communicated with the detector.");
 
     GET_COMMAND(nframes, getNumberOfFramesFromStart,
-                "\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB][Moench] "
+                "\n\t[Jungfrau][Mythen3][Gotthard2][Moench][CTB] "
                 "Number of frames from start run control."
                 "\n\t[Gotthard2] only in continuous mode.");
 

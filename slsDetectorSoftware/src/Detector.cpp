@@ -161,6 +161,14 @@ void Detector::setAllTrimbits(int value, Positions pos) {
     pimpl->Parallel(&Module::setAllTrimbits, pos, value);
 }
 
+bool Detector::getGapPixelsinCallback() const {
+    return pimpl->getGapPixelsinCallback();
+}
+
+void Detector::setGapPixelsinCallback(bool enable) {
+    pimpl->setGapPixelsinCallback(enable);
+}
+
 // Callback
 
 void Detector::registerAcquisitionFinishedCallback(void (*func)(double, int,
@@ -173,14 +181,6 @@ void Detector::registerDataCallback(void (*func)(detectorData *, uint64_t,
                                                  uint32_t, void *),
                                     void *pArg) {
     pimpl->registerDataCallback(func, pArg);
-}
-
-bool Detector::getGapPixelsinCallback() const {
-    return pimpl->getGapPixelsinCallback();
-}
-
-void Detector::setGapPixelsinCallback(bool enable) {
-    pimpl->setGapPixelsinCallback(enable);
 }
 
 // Acquisition Parameters
@@ -1468,7 +1468,7 @@ void Detector::setExternalSamplingSource(int value, Positions pos) {
     pimpl->Parallel(&Module::setExternalSamplingSource, pos, value);
 }
 
-Result<int> Detector::getExternalSampling(Positions pos) const {
+Result<bool> Detector::getExternalSampling(Positions pos) const {
     return pimpl->Parallel(&Module::getExternalSampling, pos);
 }
 
@@ -1525,13 +1525,17 @@ void Detector::savePattern(const std::string &fname) {
         proxy.Call("patword", {addr}, -1, defs::GET_ACTION, outfile);
     }
     // rest of pattern file
-    const std::vector<std::string> commands{
+    std::vector<std::string> commands{
         "patioctrl",    "patclkctrl", "patlimits",    "patloop0",
         "patnloop0",    "patloop1",   "patnloop1",    "patloop2",
         "patnloop2",    "patwait0",   "patwaittime0", "patwait1",
         "patwaittime1", "patwait2",   "patwaittime2", "patmask",
         "patsetbit",
     };
+    auto det_type = getDetectorType().squash();
+    if (det_type == defs::MYTHEN3) {
+        commands.erase(commands.begin(), commands.begin() + 2);
+    }
     for (const auto &cmd : commands)
         proxy.Call(cmd, {}, -1, defs::GET_ACTION, outfile);
 }

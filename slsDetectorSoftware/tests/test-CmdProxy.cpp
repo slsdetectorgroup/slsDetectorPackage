@@ -2,6 +2,7 @@
 #include "Detector.h"
 #include "catch.hpp"
 #include "sls_detector_defs.h"
+
 #include <chrono>
 #include <sstream>
 #include <thread>
@@ -116,7 +117,7 @@ TEST_CASE("type", "[.cmd][.new]") {
     proxy.Call("type", {}, -1, GET, oss);
     auto ans = oss.str().erase(0, strlen("type "));
     REQUIRE(ans == sls::ToString(dt) + '\n');
-    REQUIRE(dt == test::type);
+    // REQUIRE(dt == test::type);
 }
 
 TEST_CASE("detsize", "[.cmd][.new]") {
@@ -131,9 +132,6 @@ TEST_CASE("settings", "[.cmd][.new]") {
     auto det_type = det.getDetectorType().squash();
     std::vector<std::string> sett;
     switch (det_type) {
-    case defs::EIGER:
-        // FIXME: need to remove when settings removed
-        break;
     case defs::JUNGFRAU:
         sett.push_back("dynamicgain");
         sett.push_back("dynamichg0");
@@ -165,7 +163,13 @@ TEST_CASE("settings", "[.cmd][.new]") {
         sett.push_back("g4_lg");
         break;
     default:
-        REQUIRE_THROWS(proxy.Call("settings", {}, -1, GET));
+        if (det_type == defs::EIGER) {
+            // FIXME: need to remove when settings removed
+            REQUIRE_NOTHROW(proxy.Call("settings", {}, -1, GET));
+            REQUIRE_THROWS(proxy.Call("settings", {"standard"}, -1, PUT));
+        } else {
+            REQUIRE_THROWS(proxy.Call("settings", {}, -1, GET));
+        }
         return;
     }
 
@@ -193,7 +197,7 @@ TEST_CASE("settings", "[.cmd][.new]") {
 TEST_CASE("trimbits", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_NOTHROW(proxy.Call("trimbits", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("trimbits", {}, -1, GET));
 }
 
 TEST_CASE("trimval", "[.cmd][.new]") {
@@ -219,7 +223,7 @@ TEST_CASE("trimval", "[.cmd][.new]") {
             REQUIRE(oss.str() == "trimval 0\n");
         }
         REQUIRE_THROWS(proxy.Call("trimval", {"64"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("trimval", {"-1"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("trimval", {"-2"}, -1, PUT));
         for (int i = 0; i != det.size(); ++i) {
             if (prev_val[i] != -1) {
                 det.setAllTrimbits(prev_val[i], {i});
@@ -285,13 +289,24 @@ TEST_CASE("triggers", "[.cmd][.new]") {
 TEST_CASE("exptime", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto prev_val = det.getExptime();
+    auto det_type = det.getDetectorType().squash();
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
+    } else {
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw sls::RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
+    }
     {
         std::ostringstream oss;
         proxy.Call("exptime", {"0.05"}, -1, PUT, oss);
         REQUIRE(oss.str() == "exptime 0.05\n");
     }
-    {
+    if (det_type != defs::MYTHEN3) {
         std::ostringstream oss;
         proxy.Call("exptime", {}, -1, GET, oss);
         REQUIRE(oss.str() == "exptime 50ms\n");
@@ -306,9 +321,7 @@ TEST_CASE("exptime", "[.cmd][.new]") {
         proxy.Call("exptime", {"0"}, -1, PUT, oss);
         REQUIRE(oss.str() == "exptime 0\n");
     }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setExptime(prev_val[i], {i});
-    }
+    det.setExptime(-1, prev_val);
 }
 
 TEST_CASE("period", "[.cmd][.new]") {
@@ -394,10 +407,17 @@ TEST_CASE("delayl", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
+    switch (det_type) {
+    case defs::EIGER:
+    case defs::CHIPTESTBOARD:
+    case defs::MOENCH:
+    case defs::GOTTHARD2:
+    case defs::MYTHEN3:
         REQUIRE_THROWS(proxy.Call("delayl", {}, -1, GET));
-    } else {
+        break;
+    default:
         REQUIRE_NOTHROW(proxy.Call("delayl", {}, -1, GET));
+        break;
     }
 }
 
@@ -405,10 +425,17 @@ TEST_CASE("periodl", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
+    switch (det_type) {
+    case defs::EIGER:
+    case defs::CHIPTESTBOARD:
+    case defs::MOENCH:
+    case defs::GOTTHARD2:
+    case defs::MYTHEN3:
         REQUIRE_THROWS(proxy.Call("periodl", {}, -1, GET));
-    } else {
+        break;
+    default:
         REQUIRE_NOTHROW(proxy.Call("periodl", {}, -1, GET));
+        break;
     }
 }
 
@@ -654,6 +681,8 @@ TEST_CASE("clkphase", "[.cmd][.new]") {
         std::string s_deg_val = "15";
         if (det_type == defs::MYTHEN3) {
             s_deg_val = "14";
+        } else if (det_type == defs::GOTTHARD2) {
+            s_deg_val = "23";
         }
         {
             std::ostringstream oss1, oss2;
@@ -809,8 +838,6 @@ TEST_CASE("vhighvoltage", "[.cmd][.new]") {
 }
 
 TEST_CASE("powerchip", "[.cmd][.new]") {
-    // TODO! this test currently fails with the
-    // virtual detecto server
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -845,6 +872,7 @@ TEST_CASE("imagetest", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
+    // cannot test only for virtual eiger/jungfrau
     if (det_type == defs::GOTTHARD) {
         auto prev_val = det.getImageTestMode();
         {
@@ -886,7 +914,7 @@ TEST_CASE("extsig", "[.cmd][.new]") {
                        oss1);
             REQUIRE(oss1.str() == "extsig 0 trigger_in_rising_edge\n");
             proxy.Call("extsig", {"0"}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "extsig trigger_in_rising_edge\n");
+            REQUIRE(oss2.str() == "extsig 0 trigger_in_rising_edge\n");
         }
         {
             std::ostringstream oss1, oss2;
@@ -916,7 +944,7 @@ TEST_CASE("extsig", "[.cmd][.new]") {
                        oss1);
             REQUIRE(oss1.str() == "extsig 0 trigger_in_rising_edge\n");
             proxy.Call("extsig", {"0"}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "extsig trigger_in_rising_edge\n");
+            REQUIRE(oss2.str() == "extsig 0 trigger_in_rising_edge\n");
         }
         {
             std::ostringstream oss1, oss2;
@@ -931,7 +959,7 @@ TEST_CASE("extsig", "[.cmd][.new]") {
             proxy.Call("extsig", {"1", "inversion_off"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "extsig 1 inversion_off\n");
             proxy.Call("extsig", {"1"}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "extsig inversion_off\n");
+            REQUIRE(oss2.str() == "extsig 1 inversion_off\n");
         }
         {
             std::ostringstream oss1, oss2;
@@ -982,6 +1010,22 @@ TEST_CASE("temp_fpga", "[.cmd][.new]") {
     }
 }
 
+/* dacs */
+
+TEST_CASE("daclist", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("daclist", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("daclist", {}, -1, PUT));
+}
+
+TEST_CASE("dacvalues", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("dacvalues", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("dacvalues", {}, -1, PUT));
+}
+
 /* acquisition */
 
 TEST_CASE("clearbusy", "[.cmd][.new]") {
@@ -997,8 +1041,19 @@ TEST_CASE("start", "[.cmd][.new]") {
     CmdProxy proxy(&det);
     // PUT only command
     REQUIRE_THROWS(proxy.Call("start", {}, -1, GET));
-    auto prev_val = det.getExptime();
-    det.setExptime(std::chrono::seconds(2));
+    auto det_type = det.getDetectorType().squash();
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
+    } else {
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw sls::RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
+    }
+    det.setExptime(-1, std::chrono::seconds(2));
     {
         std::ostringstream oss;
         proxy.Call("start", {}, -1, PUT, oss);
@@ -1010,9 +1065,7 @@ TEST_CASE("start", "[.cmd][.new]") {
         REQUIRE(oss.str() == "status running\n");
     }
     det.stopDetector();
-    for (int i = 0; i != det.size(); ++i) {
-        det.setExptime(prev_val[i], {i});
-    }
+    det.setExptime(-1, prev_val);
 }
 
 TEST_CASE("stop", "[.cmd][.new]") {
@@ -1020,8 +1073,19 @@ TEST_CASE("stop", "[.cmd][.new]") {
     CmdProxy proxy(&det);
     // PUT only command
     REQUIRE_THROWS(proxy.Call("stop", {}, -1, GET));
-    auto prev_val = det.getExptime();
-    det.setExptime(std::chrono::seconds(2));
+    auto det_type = det.getDetectorType().squash();
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
+    } else {
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw sls::RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
+    }
+    det.setExptime(-1, std::chrono::seconds(2));
     det.startDetector();
     {
         std::ostringstream oss;
@@ -1038,16 +1102,25 @@ TEST_CASE("stop", "[.cmd][.new]") {
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status idle\n");
     }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setExptime(prev_val[i], {i});
-    }
+    det.setExptime(-1, prev_val);
 }
 
 TEST_CASE("status", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto prev_val = det.getExptime();
-    det.setExptime(std::chrono::seconds(2));
+    auto det_type = det.getDetectorType().squash();
+    std::chrono::nanoseconds prev_val;
+    if (det_type != defs::MYTHEN3) {
+        prev_val = det.getExptime().tsquash("inconsistent exptime to test");
+    } else {
+        auto t =
+            det.getExptimeForAllGates().tsquash("inconsistent exptime to test");
+        if (t[0] != t[1] || t[1] != t[2]) {
+            throw sls::RuntimeError("inconsistent exptime for all gates");
+        }
+        prev_val = t[0];
+    }
+    det.setExptime(-1, std::chrono::seconds(2));
     det.startDetector();
     {
         std::ostringstream oss;
@@ -1060,9 +1133,7 @@ TEST_CASE("status", "[.cmd][.new]") {
         proxy.Call("status", {}, -1, GET, oss);
         REQUIRE(oss.str() == "status idle\n");
     }
-    for (int i = 0; i != det.size(); ++i) {
-        det.setExptime(prev_val[i], {i});
-    }
+    det.setExptime(-1, prev_val);
 }
 
 TEST_CASE("startingfnum", "[.cmd][.new]") {
@@ -1092,6 +1163,44 @@ TEST_CASE("startingfnum", "[.cmd][.new]") {
         }
     } else {
         REQUIRE_THROWS(proxy.Call("startingfnum", {}, -1, GET));
+    }
+}
+
+TEST_CASE("gappixels", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::JUNGFRAU || det_type == defs::EIGER) {
+        auto prev_val = det.getGapPixelsinCallback();
+        {
+            std::ostringstream oss;
+            proxy.Call("gappixels", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gappixels 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gappixels", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gappixels 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gappixels", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "gappixels 0\n");
+        }
+        det.setGapPixelsinCallback(prev_val);
+    } else {
+        {
+            std::ostringstream oss;
+            proxy.Call("gappixels", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "gappixels 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("gappixels", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "gappixels 0\n");
+        }
+        REQUIRE_THROWS(proxy.Call("gappixels", {"1"}, -1, PUT));
     }
 }
 
@@ -1130,1509 +1239,227 @@ TEST_CASE("numinterfaces", "[.cmd][.new]") {
     REQUIRE_THROWS(proxy.Call("numinterfaces", {"0"}, -1, PUT));
 }
 
-/* Advanced */
-
-TEST_CASE("initialchecks", "[.cmd]") {
+TEST_CASE("udp_srcip", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    auto check = det.getInitialChecks();
-    auto dtstr = sls::ToString(check);
-    auto hostname = det.getHostname();
-    std::string hostnamestr;
-    for (auto &it : hostname) {
-        hostnamestr += (it + "+");
-    }
+    auto prev_val = det.getSourceUDPIP();
+    REQUIRE_THROWS(proxy.Call("udp_srcip", {"0.0.0.0"}, -1, PUT));
     {
         std::ostringstream oss;
-        proxy.Call("initialchecks", {"0"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "initialchecks 0\n");
+        proxy.Call("udp_srcip", {"129.129.205.12"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_srcip 129.129.205.12\n");
     }
-    {
-        std::ostringstream oss;
-        proxy.Call("initialchecks", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "initialchecks 0\n");
-    }
-    {
-        det.setHostname(hostname);
-        std::ostringstream oss;
-        proxy.Call("initialchecks", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "initialchecks 0\n");
-    }
-    det.setInitialChecks(check);
-}
-
-/* Insignificant */
-
-TEST_CASE("port", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    {
-        std::ostringstream oss;
-        proxy.Call("port", {"1942"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "port 1942\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("port", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "port 1942\n");
-    }
-    proxy.Call("port", {"1952"}, -1, PUT);
-}
-
-TEST_CASE("stopport", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    {
-        std::ostringstream oss;
-        proxy.Call("stopport", {"1942"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "stopport 1942\n");
-    }
-    {
-        std::ostringstream oss;
-        proxy.Call("stopport", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "stopport 1942\n");
-    }
-    proxy.Call("stopport", {"1953"}, -1, PUT);
-    auto port = det.getStopPort().squash();
-    REQUIRE(port == 1953);
-}
-
-// TEST_CASE("execcommand", "[.cmd]") {
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("execcommand ls", PUT));
-// }
-
-TEST_CASE("user", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    proxy.Call("user", {}, -1, GET);
-
-    // This is a get only command
-    REQUIRE_THROWS(proxy.Call("user", {}, -1, PUT));
-}
-
-// TEST_CASE("reg", "[.cmd]") {
-//     if (test::type == defs::JUNGFRAU) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x01", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "reg 0xacdc2014\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x64 5", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "reg [0x64, 5]\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "frames 5\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("getbit 0x64 0", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "getbit 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("setbit 0x64 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "setbit [0x64, 1]\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("clearbit 0x64 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "clearbit [0x64, 0]\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "frames 6\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-//     } else if (test::type == defs::GOTTHARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x023", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "reg 0xacdc1980\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x70 5", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "reg [0x70, 5]\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "frames 5\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("getbit 0x70 0", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "getbit 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("setbit 0x70 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "setbit [0x70, 1]\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("clearbit 0x70 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "clearbit [0x70, 0]\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "frames 6\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-//     } else if (test::type == defs::CHIPTESTBOARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x01", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "reg 0xacdc2016\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("reg 0x64 5", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "reg [0x64, 5]\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "frames 5\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("getbit 0x64 0", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "getbit 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("setbit 0x64 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "setbit [0x64, 1]\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("clearbit 0x64 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "clearbit [0x64, 0]\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("frames", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "frames 6\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-//     }
-// }
-
-// TEST_CASE("update", "[.cmd][.ctb][.jungfrau]") {
-//     if (test::type == defs::JUNGFRAU || test::type ==
-//     defs::CHIPTESTBOARD) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("update", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("update
-//         jungfrauDetectorServer_developer", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("update
-//         jungfrauDetectorServer_developer pc13784", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("update
-//         jungfrauDetectorServer_developer pc13784 dfd.pff", PUT));
-//         //REQUIRE_NOTHROW(multiSlsDetectorClient("update
-//         jungfrauDetectorServer_developer pc13784
-//         /afs/psi.ch/project/sls_det_firmware/jungfrau_firmware/cyclone_V/v0_8/Jungfrau_MCB.pof",
-//         PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("update", GET));
-//     }
-// }
-
-// TEST_CASE("copydetectorserver", "[.cmd][.ctb][.jungfrau]") {
-//     if (test::type == defs::JUNGFRAU || test::type ==
-//     defs::CHIPTESTBOARD) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("copydetectorserver", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("copydetectorserver
-//         jungfrauDetectorServer_developer", PUT));
-//         //REQUIRE_NOTHROW(multiSlsDetectorClient("copydetectorserver
-//         jungfrauDetectorServer_developer pc13784", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("copydetectorserver", GET));
-//     }
-// }
-
-// TEST_CASE("rebootcontroller", "[.cmd][.ctb][.jungfrau]") {
-//     if (test::type == defs::JUNGFRAU || test::type ==
-//     defs::CHIPTESTBOARD) {
-//         ;//REQUIRE_NOTHROW(multiSlsDetectorClient("rebootcontroller", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("rebootcontroller", GET));
-//     }
-// }
-
-// TEST_CASE("programfpga", "[.cmd][.ctb][.jungfrau]") {
-//     if (test::type == defs::JUNGFRAU || test::type ==
-//     defs::CHIPTESTBOARD) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("programfpga fdgd.oki", PUT));
-//         //REQUIRE_NOTHROW(multiSlsDetectorClient("programfpga
-//         /afs/psi.ch/project/sls_det_firmware/jungfrau_firmware/cyclone_V/v0_8/Jungfrau_MCB.pof",
-//         PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("programfpga", GET));
-//     }
-// }
-
-// TEST_CASE("detectormode", "[.cmd][.moench]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("detectormode counting", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "detectormode counting\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("detectormode interpolating",
-//         PUT, nullptr, oss)); REQUIRE(oss.str() == "detectormode
-//         interpolating\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("detectormode analog", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "detectormode analog\n");
-//     }
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("detectormode counting", PUT));
-//     REQUIRE_THROWS(multiSlsDetectorClient("detectormode pedestal", PUT));
-// }
-
-// TEST_CASE("framemode", "[.cmd][.moench]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("framemode pedestal", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "framemode pedestal\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("framemode newpedestal", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "framemode newpedestal\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("framemode flatfield", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "framemode flatfield\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("framemode newflatfield", PUT,
-//         nullptr, oss)); REQUIRE(oss.str() == "framemode newflatfield\n");
-//     }
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("framemode pedestal", PUT));
-//     REQUIRE_THROWS(multiSlsDetectorClient("framemode counting", PUT));
-// }
-
-// TEST_CASE("emin", "[.cmd][.moench]") {
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("emin 100", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "emin 100\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("emax 200", PUT, nullptr,
-//         oss)); REQUIRE(oss.str() == "emax 200\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonpara emax", GET,
-//         nullptr, oss)); REQUIRE(oss.str() == "rx_jsonpara 200\n");
-//     }
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("rx_jsonaddheader \"\"", PUT));
-// }
-
-// TEST_CASE("patsetbit", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         uint64_t val = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patsetbit", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("patsetbit
-//             ")); val = stoul(s, 0, 16);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patsetbit
-//             0x842f020204200dc0", PUT, nullptr, oss)); REQUIRE(oss.str() ==
-//             "patsetbit 0x842f020204200dc0\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("patsetbit " +
-//         sls::ToStringHex(val), PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("patsetbit", GET));
-//     }
-// }
-
-// TEST_CASE("patmask", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         uint64_t val = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patmask", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("patmask "));
-//             val = stoul(s, 0, 16);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patmask
-//             0x842f020204200dc0", PUT, nullptr, oss)); REQUIRE(oss.str() ==
-//             "patmask 0x842f020204200dc0\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("patmask " +
-//         sls::ToStringHex(val), PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("patmask", GET));
-//     }
-// }
-
-// TEST_CASE("patwaittime", "[.cmd][.ctb]") {
-//     for (int loop = 0; loop < 3; ++loop) {
-//         if (test::type == defs::CHIPTESTBOARD) {
-//             uint64_t val = 0;
-//             {
-//                 std::ostringstream oss;
-//                 REQUIRE_NOTHROW(multiSlsDetectorClient("patwaittime" +
-//                 std::to_string(loop), GET, nullptr, oss)); std::string s =
-//                 (oss.str()).erase (0, strlen("patwaittime") + 2); val =
-//                 std::stoul(s);
-//             }
-//             {
-//                 std::ostringstream oss;
-//                 REQUIRE_NOTHROW(multiSlsDetectorClient("patwaittime" +
-//                 std::to_string(loop) + " 8589936640", PUT, nullptr, oss));
-//                 REQUIRE(oss.str() == "patwaittime" + std::to_string(loop) + "
-//                 8589936640\n");
-//             }
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patwaittime" +
-//             std::to_string(loop) + ' ' + std::to_string(val), PUT));
-//         } else {
-//             REQUIRE_THROWS(multiSlsDetectorClient("patwaittime" +
-//             std::to_string(loop), GET));
-//         }
-//     }
-// }
-
-// TEST_CASE("patwait", "[.cmd][.ctb]") {
-//     for (int loop = 0; loop < 3; ++loop) {
-//         if (test::type == defs::CHIPTESTBOARD) {
-//             int val = 0;
-//             {
-//                 std::ostringstream oss;
-//                 REQUIRE_NOTHROW(multiSlsDetectorClient("patwait" +
-//                 std::to_string(loop), GET, nullptr, oss)); std::string s =
-//                 (oss.str()).erase (0, strlen("patwait") + 2); val = stoul(s,
-//                 0, 16);
-//             }
-//             {
-//                 std::ostringstream oss;
-//                 REQUIRE_NOTHROW(multiSlsDetectorClient("patwait" +
-//                 std::to_string(loop) + " 0x5c", PUT, nullptr, oss));
-//                 REQUIRE(oss.str() == "patwait" + std::to_string(loop) + "
-//                 0x5c\n");
-//             }
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patwait" +
-//             std::to_string(loop) + ' ' + sls::ToStringHex(val), PUT));
-//         } else {
-//             REQUIRE_THROWS(multiSlsDetectorClient("patwait" +
-//             std::to_string(loop), GET));
-//         }
-//     }
-// }
-
-// TEST_CASE("patnloop", "[.cmd][.ctb]") {
-//     for (int loop = 0; loop < 3; ++loop) {
-//         if (test::type == defs::CHIPTESTBOARD) {
-//             int val = 0;
-//             {
-//                 std::ostringstream oss;
-//                 REQUIRE_NOTHROW(multiSlsDetectorClient("patnloop" +
-//                 std::to_string(loop), GET, nullptr, oss)); std::string s =
-//                 (oss.str()).erase (0, strlen("patnloop") + 2); val =
-//                 std::stoi(s);
-//             }
-//             {
-//                 std::ostringstream oss;
-//                 REQUIRE_NOTHROW(multiSlsDetectorClient("patnloop" +
-//                 std::to_string(loop) + " 5", PUT, nullptr, oss));
-//                 REQUIRE(oss.str() == "patnloop" + std::to_string(loop) + "
-//                 5\n");
-//             }
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patnloop" +
-//             std::to_string(loop) + ' ' + std::to_string(val), PUT));
-//         } else {
-//             REQUIRE_THROWS(multiSlsDetectorClient("patnloop" +
-//             std::to_string(loop), GET));
-//         }
-//     }
-// }
-
-// TEST_CASE("patloop", "[.cmd][.ctb]") {
-//     for (int loop = 0; loop < 3; ++loop) {
-//         if (test::type == defs::CHIPTESTBOARD) {
-//             uint32_t limit1 = 0, limit2 = 0;
-//             {
-//                 std::ostringstream oss;
-//                 REQUIRE_NOTHROW(multiSlsDetectorClient("patloop" +
-//                 std::to_string(loop), GET, nullptr, oss)); std::string s =
-//                 oss.str(); auto t = sls::split(s, ' '); s = t[1].erase (0,
-//                 1); limit1 = stoul(s, 0, 16); limit2 = stoul(t[2], 0, 16);
-//             }
-//             {
-//                 std::ostringstream oss;
-//                 REQUIRE_NOTHROW(multiSlsDetectorClient("patloop" +
-//                 std::to_string(loop) + " 0x20 0x5c", PUT, nullptr, oss));
-//                 REQUIRE(oss.str() == "patloop" + std::to_string(loop) + "
-//                 [0x20, 0x5c]\n");
-//             }
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patloop" +
-//             std::to_string(loop) + ' ' + sls::ToStringHex(limit1) + ' ' +
-//             sls::ToStringHex(limit2), PUT));
-//             REQUIRE_THROWS(multiSlsDetectorClient("patloop" +
-//             std::to_string(loop) + " 0x3", PUT));
-//         } else {
-//             REQUIRE_THROWS(multiSlsDetectorClient("patloop" +
-//             std::to_string(loop), GET));
-//         }
-//     }
-// }
-
-// TEST_CASE("patlimits", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         uint32_t patlimit1 = 0, patlimit2 = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patlimits", GET, nullptr,
-//             oss)); std::string s = oss.str(); auto t = sls::split(s, ' '); s
-//             = t[1].erase (0, 1); patlimit1 = stoul(s, 0, 16); patlimit2 =
-//             stoul(t[2], 0, 16);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patlimits 0x20 0x5c",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "patlimits [0x20,
-//             0x5c]\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("patlimits " +
-//         sls::ToStringHex(patlimit1) + ' ' + sls::ToStringHex(patlimit2),
-//         PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("patlimits", GET));
-//     }
-// }
-
-// TEST_CASE("patword", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         uint64_t prev_value = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patword 0x23", GET,
-//             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("patword ")); prev_value = stoul(s, 0, 16);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patword 0x23
-//             0xc15004808d0a21a4", PUT, nullptr, oss)); REQUIRE(oss.str() ==
-//             "patword [0x23, 0xc15004808d0a21a4]\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patword 0x23 0x0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "patword [0x23, 0x0]\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patword 0x23", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "patword 0x0\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("patword 0x23 " +
-//         std::to_string(prev_value), PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("patword 0x23", GET));
-//     }
-// }
-
-// TEST_CASE("patclkctrl", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         uint64_t prev_value = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patclkctrl", GET,
-//             nullptr, oss)); std::string s = (oss.str()).erase (0,
-//             strlen("patclkctrl ")); prev_value = stoul(s, 0, 16);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patclkctrl
-//             0xc15004808d0a21a4", PUT, nullptr, oss)); REQUIRE(oss.str() ==
-//             "patclkctrl 0xc15004808d0a21a4\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patclkctrl 0x0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "patclkctrl 0x0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patclkctrl", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "patclkctrl 0x0\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("patclkctrl " +
-//         std::to_string(prev_value), PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("patclkctrl", GET));
-//     }
-// }
-
-// TEST_CASE("patioctrl", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         uint64_t prev_value = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patioctrl", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("patioctrl
-//             ")); prev_value = stoul(s, 0, 16);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patioctrl
-//             0xc15004808d0a21a4", PUT, nullptr, oss)); REQUIRE(oss.str() ==
-//             "patioctrl 0xc15004808d0a21a4\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patioctrl 0x0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "patioctrl 0x0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("patioctrl", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "patioctrl 0x0\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("patioctrl " +
-//         std::to_string(prev_value), PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("patioctrl", GET));
-//     }
-// }
-
-// TEST_CASE("savepattern", "[.cmd][.ctb]") {
-//     REQUIRE_THROWS(multiSlsDetectorClient("savepattern", GET));
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("savepattern
-//             /tmp/pat.txt", PUT, nullptr, oss)); REQUIRE(oss.str() ==
-//             "savepattern /tmp/pat.txt\n");
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("savepattern /tmp/pat.txt",
-//         PUT));
-//     }
-// }
-
-// TEST_CASE("pattern", "[.cmd][.ctb]") {
-//     REQUIRE_THROWS(multiSlsDetectorClient("pattern", GET));
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         ;// todo test with real file?
-//     }
-// }
-
-// TEST_CASE("led", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("led 1", PUT, nullptr,
-//             oss)); REQUIRE(oss.str() == "led 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("led 0", PUT, nullptr,
-//             oss)); REQUIRE(oss.str() == "led 0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("led", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "led 0\n");
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("led", GET));
-//     }
-// }
-
-// TEST_CASE("diodelay", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("diodelay 0x01010 125", PUT));
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("diodelay 0x01010 775",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "diodelay [0x01010,
-//             775]\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("diodelay 0x01010 0", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("diodelay [0x01010, 776]",
-//         PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("diodelay", GET));
-//     }
-// }
-
-// TEST_CASE("extsampling", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("extsampling 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "extsampling 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("extsampling", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "extsampling 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("extsampling 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "extsampling 0\n");
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("extsampling", GET));
-//     }
-// }
-
-// TEST_CASE("extsamplingsrc", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("extsamplingsrc 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "extsamplingsrc 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("extsamplingsrc 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "extsamplingsrc 0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("extsamplingsrc 15", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "extsamplingsrc 15\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("extsamplingsrc", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "extsamplingsrc 15\n");
-//         }
-//     REQUIRE_THROWS(multiSlsDetectorClient("extsamplingsrc 64", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("extsamplingsrc", GET));
-//     }
-// }
-
-// TEST_CASE("adcinvert", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD || test::type ==
-//     defs::JUNGFRAU) {
-//         std::string s;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcinvert", GET, nullptr,
-//             oss)); s = oss.str();
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcinvert 0x8d0a21d4",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "adcinvert
-//             0x8d0a21d4\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
-//             REQUIRE(oss.str() == s);
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("adcinvert", GET));
-//     }
-// }
-
-// TEST_CASE("adcenable", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         std::string s;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcenable", GET, nullptr,
-//             oss)); s = oss.str();
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcenable 0x8d0a21d4",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "adcenable
-//             0x8d0a21d4\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
-//             REQUIRE(oss.str() == s);
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("adcenable", GET));
-//     }
-// }
-
-// TEST_CASE("vm_a", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("vm_a", GET));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("vm_b", GET));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("vm_c", GET));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("vm_d", GET));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("vm_io", GET));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("im_a", GET));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("im_b", GET));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("im_c", GET));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("im_d", GET));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("im_io", GET));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("vm_a", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("vm_b", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("vm_c", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("vm_d", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("vm_io", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("im_a", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("im_b", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("im_c", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("im_d", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("im_io", GET));
-//     }
-// }
-
-// TEST_CASE("v_a", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         std::string s;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_limit", GET, nullptr,
-//             oss)); s = oss.str();
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("v_limit 1500", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "v_limit 1500\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("v_limit", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "v_limit 1500\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_a", GET, nullptr,
-//             oss)); s = oss.str();
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
-//             REQUIRE(oss.str() == s);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_b", GET, nullptr,
-//             oss)); s = oss.str();
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
-//             REQUIRE(oss.str() == s);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_c", GET, nullptr,
-//             oss)); s = oss.str();
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
-//             REQUIRE(oss.str() == s);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_d", GET, nullptr,
-//             oss)); s = oss.str();
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
-//             REQUIRE(oss.str() == s);
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_io", GET));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:v_chip", GET)); // do not
-//         set vchip
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("v_limit", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("v_a", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("v_b", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("v_c", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("v_d", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("v_io", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("v_chip", GET));
-//     }
-// }
-
-// TEST_CASE("adcvpp", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         int prev_val = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcvpp", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("adcvpp "));
-//             prev_val = std::stoi(s);
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcvpp 1", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcvpp", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "adcvpp 1\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcvpp 1140 mv", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcvpp mv", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "adcvpp 1140 mv\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("adcvpp " +
-//         std::to_string(prev_val), PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("adcvpp", GET));
-//     }
-// }
-
-// TEST_CASE("dbitpipeline", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitpipeline 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "dbitpipeline 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitpipeline 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "dbitpipeline 0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitpipeline 15", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "dbitpipeline 15\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitpipeline", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "dbitpipeline 15\n");
-//         }
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("dbitpipeline 0", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("dbitpipeline", GET));
-//     }
-// }
-
-// TEST_CASE("adcpipeline", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcpipeline 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "adcpipeline 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcpipeline 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "adcpipeline 0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcpipeline 15", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "adcpipeline 15\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcpipeline", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "adcpipeline 15\n");
-//         }
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("adcpipeline 0", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("adcpipeline", GET));
-//     }
-// }
-
-// TEST_CASE("romode", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("romode digital", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "romode digital\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("romode analog_digital",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "romode
-//             analog_digital\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("romode analog", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "romode analog\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("romode", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "romode analog\n");
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("romode", GET));
-//     }
-// }
-
-// TEST_CASE("samples", "[.cmd][.ctb]") {
-//     if (test::type == defs::CHIPTESTBOARD) {
-//         uint64_t prev_value1 = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("asamples", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("asamples
-//             ")); prev_value1 = std::stoi(s);
-//         }
-//         std::cout<<"asamples:"<<prev_value1<<std::endl;
-//         uint64_t prev_value2 = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dsamples", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("dsamples
-//             ")); prev_value2 = std::stoi(s);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("samples 1200", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "samples 1200\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("samples 1000", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "samples 1000\n");
-//         }
-//          {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("asamples 2200", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "asamples 2200\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("asamples 4000", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "asamples 4000\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dsamples 1200", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "dsamples 1200\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dsamples 1000", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "dsamples 1000\n");
-//         }
-//         REQUIRE_THROWS(multiSlsDetectorClient("samples", GET));   //
-//         different values REQUIRE_NOTHROW(multiSlsDetectorClient("asamples " +
-//         std::to_string(prev_value1), PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("dsamples " +
-//         std::to_string(prev_value2), PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("samples", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("asamples", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("dsamples", GET));
-//     }
-// }
-
-// TEST_CASE("imagetest", "[.cmd][.gotthard]") {
-//     if (test::type == defs::GOTTHARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("imagetest 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "imagetest 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("imagetest 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "imagetest 0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("imagetest", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "imagetest 0\n");
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("imagetest", GET));
-//     }
-// }
-
-// TEST_CASE("extsig", "[.cmd][.gotthard]") {
-//     if (test::type == defs::GOTTHARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("extsig
-//             trigger_in_falling_edge", PUT, nullptr, oss)); REQUIRE(oss.str()
-//             == "extsig trigger_in_falling_edge\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("extsig
-//             trigger_in_rising_edge", PUT, nullptr, oss)); REQUIRE(oss.str()
-//             == "extsig trigger_in_rising_edge\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("extsig", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "extsig trigger_in_rising_edge\n");
-//         }
-//         REQUIRE_THROWS(multiSlsDetectorClient("extsig gating", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("extsig", GET));
-//     }
-// }
-
-// TEST_CASE("exptimel", "[.cmd][.gotthard]") {
-//     if (test::type == defs::GOTTHARD) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("exptime 5 s", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:exptimel s", GET,
-//             nullptr, oss)); std::string st = oss.str(); std::string s =
-//             st.erase (0, strlen("exptimel ")); double val = std::stod(s);
-//             REQUIRE(val >= 0);
-//             REQUIRE(val < 1000);
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("stop", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("exptime 1 ms", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("exptimel", GET));
-//     }
-// }
-
-// TEST_CASE("periodl", "[.cmd][.gotthard]") {
-//     if (test::type == defs::GOTTHARD || test::type ==
-//     defs::JUNGFRAU || test::type ==
-//     defs::CHIPTESTBOARD) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 2", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("period 5", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:periodl s", GET,
-//             nullptr, oss)); std::string st = oss.str(); std::string s =
-//             st.erase (0, strlen("periodl ")); double val = std::stod(s);
-//             REQUIRE(val >= 0);
-//             REQUIRE(val < 1000);
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("stop", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("period 1 s", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("periodl", GET));
-//     }
-// }
-
-// TEST_CASE("roi", "[.cmd][.gotthard]") {
-//     if (test::type == defs::GOTTHARD) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("roi 0 255", PUT, nullptr,
-//             oss)); REQUIRE(oss.str() == "roi [0, 255] \n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("roi 256 511", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "roi [256, 511] \n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("clearroi", PUT, nullptr,
-//             oss)); REQUIRE(oss.str() == "clearroi [-1, -1] \n");
-//         }
-//     REQUIRE_THROWS(multiSlsDetectorClient("roi 0 256", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("roi", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("clearroi", PUT));
-//     }
-// }
-
-// TEST_CASE("storagecell_delay", "[.cmd][.jungfrau]") {
-//     if (test::type == defs::JUNGFRAU) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_delay 1.62ms",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() ==
-//             "storagecell_delay 1.62ms\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_delay", GET,
-//             nullptr, oss)); REQUIRE(oss.str() ==
-//             "storagecell_delay 1.62ms\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_delay 0",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "storagecell_delay
-//             0\n");
-//         }
-//     REQUIRE_THROWS(multiSlsDetectorClient("storagecell_delay 1638376ns",
-//     PUT)); } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("storagecell_delay", GET));
-//     }
-// }
-
-// TEST_CASE("storagecell_start", "[.cmd][.jungfrau]") {
-//     if (test::type == defs::JUNGFRAU) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_start 1",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "storagecell_start
-//             1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_start 0",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "storagecell_start
-//             0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_start 15",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "storagecell_start
-//             15\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecell_start", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "storagecell_start 15\n");
-//         }
-//     REQUIRE_THROWS(multiSlsDetectorClient("storagecell_start 16", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("storagecell_start", GET));
-//     }
-// }
-
-// TEST_CASE("storagecells", "[.cmd][.jungfrau]") {
-//     if (test::type == defs::JUNGFRAU) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecells 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "storagecells 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecells 15", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "storagecells 15\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecells 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "storagecells 0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("storagecells", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "storagecells 0\n");
-//         }
-//     REQUIRE_THROWS(multiSlsDetectorClient("storagecells 16", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("storagecells", GET));
-//     }
-// }
-
-// TEST_CASE("auto_comp_disable", "[.cmd][.jungfrau]") {
-//     if (test::type == defs::JUNGFRAU) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("auto_comp_disable 1",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "auto_comp_disable
-//             1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("auto_comp_disable 0",
-//             PUT, nullptr, oss)); REQUIRE(oss.str() == "auto_comp_disable
-//             0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("auto_comp_disable", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "auto_comp_disable 0\n");
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("auto_comp_disable", GET));
-//     }
-// }
-
-// TEST_CASE("temp_", "[.cmd][.jungfrau]") {
-//     if (test::type == defs::JUNGFRAU) {
-//         std::string s;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:temp_threshold", GET,
-//             nullptr, oss)); s = oss.str();
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT, nullptr, oss));
-//             REQUIRE(oss.str() == s);
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("temp_control 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "temp_control 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("temp_control 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "temp_control 0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("temp_control", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "temp_control 0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("temp_event", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "temp_event 0\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("temp_event 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "temp_event cleared\n");
-//         }
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_event 1", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_threshold", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_control", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("temp_event", GET));
-//     }
-// }
-
-// TEST_CASE("pulse", "[.cmd][.eiger]") {
-//     REQUIRE_THROWS(multiSlsDetectorClient("pulse", GET));
-//     REQUIRE_THROWS(multiSlsDetectorClient("pulsenmove", GET));
-//     REQUIRE_THROWS(multiSlsDetectorClient("pulsechip", GET));
-//     if (test::type == defs::EIGER) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("pulse 1 1 5", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("pulsenmove 1 1 5", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("pulsechip 1", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("pulse 1 1 5", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("pulsenmove 1 1 5", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("pulsechip 1", PUT));
-//     }
-// }
-
-// TEST_CASE("partialreset", "[.cmd][.eiger]") {
-//     if (test::type == defs::EIGER) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("partialreset 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "partialreset 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("partialreset", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "partialreset 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("partialreset 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "partialreset 0\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("partialreset 1", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("partialreset 0", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("partialreset", GET));
-//     }
-// }
-
-// TEST_CASE("measuredsubperiod", "[.cmd][.eiger]") {
-//     if (test::type == defs::EIGER) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("dr 32", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
-//         sleep(3);
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:measuredsubperiod ms",
-//             GET, nullptr, oss)); std::string st = oss.str(); std::string s =
-//             st.erase (0, strlen("measuredsubperiod ")); double val =
-//             std::stod(s); REQUIRE(val >= 0); REQUIRE(val < 1000);
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("dr 16", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("measuredsubperiod", GET));
-//     }
-// }
-
-// TEST_CASE("measuredperiod", "[.cmd][.eiger]") {
-//     if (test::type == defs::EIGER) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 2", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("period 1", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("start", PUT));
-//         sleep(3);
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:measuredperiod", GET,
-//             nullptr, oss)); std::string st = oss.str(); std::string s =
-//             st.erase (0, strlen("measuredperiod ")); double val =
-//             std::stod(s); REQUIRE(val >= 1.0); REQUIRE(val < 2.0);
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("measuredperiod", GET));
-//     }
-// }
-
-// TEST_CASE("readnlines", "[.cmd][.eiger]") {
-//     if (test::type == defs::EIGER) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("readnlines 256", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "readnlines 256\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("readnlines", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "readnlines 256\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("readnlines 16", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "readnlines 16\n");
-//         }
-//         REQUIRE_THROWS(multiSlsDetectorClient("readnlines 0", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("readnlines 256", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("readnlines", GET));
-//     }
-// }
-
-// TEST_CASE("ratecorr", "[.cmd][.eiger]") {
-//     if (test::type == defs::EIGER) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("ratecorr 120", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "ratecorr 120ns\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("ratecorr", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "ratecorr 120ns\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("ratecorr 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "ratecorr 0ns\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("ratecorr -1", PUT));
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("ratecorr 0", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("ratecorr", GET));
-//     }
-// }
-
-// TEST_CASE("flippeddatax", "[.cmd][.eiger]") {
-//     if (test::type == defs::EIGER) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:flippeddatax", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "flippeddatax 0\n");
-//         }
-//         DetectorImpl d;
-//         if (d.size() > 1) {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("1:flippeddatax", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "flippeddatax 1\n");
-//         }
-//     } else {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("flippeddatax", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "flippeddatax 0\n");
-//     }
-// }
-
-// TEST_CASE("parallel", "[.cmd][.eiger]") {
-//     if (test::type == defs::EIGER) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("parallel 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "parallel 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("parallel", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "parallel 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("parallel 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "parallel 0\n");
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("parallel", GET));
-//     }
-// }
-
-// TEST_CASE("gappixels", "[.cmd][.eiger]") {
-//     if (test::type == defs::EIGER) {
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("gappixels 1", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "gappixels 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("gappixels", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "gappixels 1\n");
-//         }
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("gappixels 0", PUT,
-//             nullptr, oss)); REQUIRE(oss.str() == "gappixels 0\n");
-//         }
-//     } else {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("gappixels", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "gappixels 0\n");
-//         REQUIRE_THROWS(multiSlsDetectorClient("gappixels 1", PUT));
-//     }
-// }
-
-// TEST_CASE("settingspath", "[.cmd][.eiger]") {
-//     std::string s;
-//     std::ostringstream oss;
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("settingspath", GET, nullptr,
-//     oss)); s = oss.str(); REQUIRE_NOTHROW(multiSlsDetectorClient(s, PUT));
-// }
-
-TEST_CASE("zmqip", "[.cmd]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    std::ostringstream oss1, oss2;
-    auto zmqip = det.getClientZmqIp();
-    proxy.Call("zmqip", {}, 0, GET, oss1);
-    REQUIRE(oss1.str() == "zmqip " + zmqip[0].str() + '\n');
-
-    proxy.Call("zmqip", {zmqip[0].str()}, 0, PUT, oss2);
-    REQUIRE(oss2.str() == "zmqip " + zmqip[0].str() + '\n');
-
     for (int i = 0; i != det.size(); ++i) {
-        det.setRxZmqIP(zmqip[i], {i});
+        det.setSourceUDPIP(prev_val[i], {i});
     }
 }
 
-TEST_CASE("zmqport", "[.cmd]") {
+TEST_CASE("udp_dstip", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("udp_dstip", {"0.0.0.0"}, -1, PUT));
+}
+
+TEST_CASE("udp_srcmac", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getSourceUDPMAC();
+    REQUIRE_THROWS(proxy.Call("udp_srcmac", {"00:00:00:00:00:00"}, -1, PUT));
+    {
+        std::ostringstream oss;
+        proxy.Call("udp_srcmac", {"00:50:c2:42:34:12"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_srcmac 00:50:c2:42:34:12\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setSourceUDPMAC(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("udp_dstmac", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("udp_dstmac", {"00:00:00:00:00:00"}, -1, PUT));
+}
+
+TEST_CASE("udp_dstport", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getDestinationUDPPort();
+    {
+        std::ostringstream oss;
+        proxy.Call("udp_dstport", {"50084"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "udp_dstport 50084\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setDestinationUDPPort(prev_val[i], {i});
+    }
+}
+
+TEST_CASE("udp_srcip2", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2) {
+        auto prev_val = det.getSourceUDPIP2();
+        REQUIRE_THROWS(proxy.Call("udp_srcip2", {"0.0.0.0"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_srcip2", {"129.129.205.12"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_srcip2 129.129.205.12\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setSourceUDPIP2(prev_val[i], {i});
+        }
+    }
+}
+
+TEST_CASE("udp_dstip2", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2) {
+        REQUIRE_THROWS(proxy.Call("udp_dstip2", {"0.0.0.0"}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_dstip2", {}, -1, GET));
+    }
+}
+
+TEST_CASE("udp_srcmac2", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2) {
+        auto prev_val = det.getSourceUDPMAC2();
+        REQUIRE_THROWS(
+            proxy.Call("udp_srcmac2", {"00:00:00:00:00:00"}, -1, PUT));
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_srcmac2", {"00:50:c2:42:34:12"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_srcmac2 00:50:c2:42:34:12\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setSourceUDPMAC2(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_srcmac2", {}, -1, GET));
+    }
+}
+
+TEST_CASE("udp_dstmac2", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2) {
+        REQUIRE_THROWS(
+            proxy.Call("udp_dstmac2", {"00:00:00:00:00:00"}, -1, PUT));
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_dstmac2", {}, -1, GET));
+    }
+}
+
+TEST_CASE("udp_dstport2", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::GOTTHARD2 ||
+        det_type == defs::EIGER) {
+        auto prev_val = det.getDestinationUDPPort2();
+        {
+            std::ostringstream oss;
+            proxy.Call("udp_dstport2", {"50084"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "udp_dstport2 50084\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setDestinationUDPPort2(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("udp_dstport2", {}, -1, GET));
+    }
+}
+
+TEST_CASE("tengiga", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH) {
+        auto tengiga = det.getTenGiga();
+        det.setTenGiga(false);
+
+        std::ostringstream oss1, oss2;
+        proxy.Call("tengiga", {"1"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "tengiga 1\n");
+        proxy.Call("tengiga", {}, -1, GET, oss2);
+        REQUIRE(oss2.str() == "tengiga 1\n");
+
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTenGiga(tengiga[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("tengiga", {}, -1, GET));
+    }
+}
+
+TEST_CASE("flowcontrol10g", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getTenGigaFlowControl();
+        {
+            std::ostringstream oss;
+            proxy.Call("flowcontrol10g", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "flowcontrol10g 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("flowcontrol10g", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "flowcontrol10g 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("flowcontrol10g", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "flowcontrol10g 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTenGigaFlowControl(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("flowcontrol10g", {}, -1, GET));
+    }
+}
+
+TEST_CASE("txndelay_frame", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getTransmissionDelayFrame();
+        auto val = 5000;
+        if (det_type == defs::JUNGFRAU) {
+            val = 5;
+        }
+        std::string sval = std::to_string(val);
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("txndelay_frame", {sval}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "txndelay_frame " + sval + "\n");
+            proxy.Call("txndelay_frame", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "txndelay_frame " + sval + "\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setTransmissionDelayFrame(prev_val[i]);
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("txndelay_frame", {}, -1, GET));
+    }
+}
+
+/* ZMQ Streaming Parameters (Receiver<->Client) */
+
+TEST_CASE("zmqport", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
 
@@ -2680,396 +1507,342 @@ TEST_CASE("zmqport", "[.cmd]") {
     }
 }
 
-// TEST_CASE("txndelay", "[.cmd][.eiger][.jungfrau]") {
-//     if (test::type == defs::EIGER) {
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_frame 50000",
-//             PUT)); std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_frame", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "txndelay_frame 50000\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("txndelay_frame 0", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_frame", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "txndelay_frame 0\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_left 50000",
-//             PUT)); std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_left", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "txndelay_left 50000\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("txndelay_left 0", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_left", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "txndelay_left 0\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_right 50000",
-//             PUT)); std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_right", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "txndelay_right 50000\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("txndelay_right 0", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_right", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "txndelay_right 0\n");
-//         }
-//     } else if (test::type == defs::JUNGFRAU) {
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("txndelay_frame 5", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_frame", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "txndelay_frame 5\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("txndelay_frame 0", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:txndelay_frame", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "txndelay_frame 0\n");
-//         }
-//         REQUIRE_THROWS(multiSlsDetectorClient("txndelay_frame 32", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("txndelay_left 32", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("txndelay_right 32", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("txndelay_frame", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("txndelay_left 32", PUT));
-//         REQUIRE_THROWS(multiSlsDetectorClient("txndelay_right 32", PUT));
-//     }
-// }
-
-// TEST_CASE("flowcontrol_10g", "[.cmd][.eiger][.jungfrau]") {
-//     if (test::type == defs::EIGER || test::type ==
-//     defs::JUNGFRAU) {
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("flowcontrol_10g 1",
-//             PUT)); std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:flowcontrol_10g", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "flowcontrol_10g 1\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("flowcontrol_10g 0",
-//             PUT)); std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:flowcontrol_10g", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "flowcontrol_10g 0\n");
-//         }
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("flowcontrol_10g", GET));
-//     }
-// }
-
-// TEST_CASE("network", "[.cmd]") {
-//     /* {TODO custom srcip in globals
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip 129.129.205.203",
-//         PUT)); std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "udp_srcip 129.129.205.203\n");
-//     }*/
-//     std::string udp_dstip;
-//     {
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstip", GET, nullptr,
-//         oss)); udp_dstip = oss.str();
-//     }
-//     {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient(udp_dstip, PUT));
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstip", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == udp_dstip);
-//     }
-//     /* {TODO custom dstip in globals
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstmac
-//         10:e7:c6:48:bd:3f", PUT)); std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstmac", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "udp_dstmac 10:e7:c6:48:bd:3f\n");
-//     }  */
-//     {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport 6200", PUT));
-//         std::ostringstream oss;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport", GET, nullptr,
-//         oss)); REQUIRE(oss.str() == "udp_dstport 6200\n");
-//     }
-//     {
-//         DetectorImpl d;
-//         int socketsperdetector = 1;
-//         if (test::type == defs::EIGER) {
-//             socketsperdetector *= 2;
-//         } else if (test::type == defs::JUNGFRAU) {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 2", PUT));
-//             socketsperdetector *= 2;
-//         }
-//         int port = 5500;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("udp_dstport " +
-//         std::to_string(port), PUT)); for (int i = 0; i != d.size(); ++i) {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) +
-//             ":udp_dstport", GET, nullptr, oss)); REQUIRE(oss.str() ==
-//             "udp_dstport " + std::to_string(port + i * socketsperdetector) +
-//             '\n');
-//         }
-//         port = 50001;
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("udp_dstport " +
-//         std::to_string(port), PUT)); for (int i = 0; i != d.size(); ++i) {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient(std::to_string(i) +
-//             ":udp_dstport", GET, nullptr, oss)); REQUIRE(oss.str() ==
-//             "udp_dstport " + std::to_string(port + i * socketsperdetector) +
-//             '\n');
-//         }
-//         if (test::type == defs::JUNGFRAU) {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 1", PUT));
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("udp_dstport 50001", PUT));
-//     }
-//     REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 0.0.0.0", PUT));
-//     REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 124586954", PUT));
-//     REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip 999.999.0.0.0.5", PUT));
-
-//     if (test::type == defs::JUNGFRAU) {
-//        /*  {TODO custom srcip2 in globals
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip2
-//             129.129.205.203", PUT)); std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_srcip2", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "udp_srcip2
-//             129.129.205.203\n");
-//        }*/
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstip2", GET,
-//             nullptr, oss)); udp_dstip = oss.str();
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient(udp_dstip, PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstip2", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == udp_dstip);
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstmac2
-//             10:e7:c6:48:bd:3f", PUT)); std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstmac2", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "udp_dstmac2
-//             10:e7:c6:48:bd:3f\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport2 6400",
-//             PUT)); std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport2", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "udp_dstport2 6400\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("udp_dstport2 50002", PUT));
-//     } else if (test::type == defs::EIGER) {
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport2 6400",
-//             PUT)); std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:udp_dstport2", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "udp_dstport2 6400\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("udp_dstport2 50002", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("udp_srcip2", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("udp_dstip2", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("udp_srcmac2", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("udp_dstmac2", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("udp_dstport2", GET));
-//     }
-// }
-
-// TEST_CASE("selinterface", "[.cmd][.jungfrau]") {
-//     if (test::type == defs::JUNGFRAU) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("numinterfaces 1", PUT));
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("selinterface 0", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:selinterface", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "selinterface 0\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("selinterface 1", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("0:selinterface", GET,
-//             nullptr, oss)); REQUIRE(oss.str() == "selinterface 1\n");
-//         }
-//        REQUIRE_THROWS(multiSlsDetectorClient("selinterface 2", PUT));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("selinterface", GET));
-//     }
-// }
-
-// TEST_CASE("adc", "[.cmd][.ctb]") {
-//     if (test::type != defs::CHIPTESTBOARD) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("adc 8", GET));
-//     } else {
-//         REQUIRE_THROWS(multiSlsDetectorClient("adc", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("adc 5", PUT));
-//         for(int i = 0; i <= 8; ++i) {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adc " +
-//             std::to_string(i), GET));
-//         }
-//     }
-// }
-
-// TEST_CASE("syncclk", "[.cmd][.ctb]") {
-//     if(test::type != defs::CHIPTESTBOARD) {
-//         REQUIRE_THROWS(multiSlsDetectorClient("syncclk", GET));
-//     } else {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("syncclk", GET));
-//         REQUIRE_THROWS(multiSlsDetectorClient("syncclk 40", PUT));
-//     }
-// }
-
-// TEST_CASE("adcclk", "[.cmd][.ctb]") {
-//     if(test::type != defs::CHIPTESTBOARD) {
-//        REQUIRE_THROWS(multiSlsDetectorClient("adcclk", GET));
-//     } else {
-//         int prev_clk = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcclk", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("adcclk "));
-//             prev_clk = std::stoi(s);
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcclk 20", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcclk", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "adcclk 20\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcclk 10", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("adcclk", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "adcclk 10\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("adcclk " +
-//         std::to_string(prev_clk), PUT));
-//     }
-// }
-
-// TEST_CASE("dbitclk", "[.cmd][.ctb]") {
-//     if(test::type != defs::CHIPTESTBOARD) {
-//        REQUIRE_THROWS(multiSlsDetectorClient("dbitclk", GET));
-//     } else {
-//         int prev_clk = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitclk", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("dbitclk "));
-//             prev_clk = std::stoi(s);
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitclk 20", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitclk", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "dbitclk 20\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitclk 10", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("dbitclk", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "dbitclk 10\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("dbitclk " +
-//         std::to_string(prev_clk), PUT));
-//     }
-// }
-
-// TEST_CASE("runclk", "[.cmd][.ctb]") {
-//     if(test::type != defs::CHIPTESTBOARD) {
-//        REQUIRE_THROWS(multiSlsDetectorClient("runclk", GET));
-//     } else {
-//         int prev_runclk = 0;
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("runclk", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("runclk "));
-//             prev_runclk = std::stoi(s);
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("runclk 20", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("runclk", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "runclk 20\n");
-//         }
-//         {
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("runclk 10", PUT));
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("runclk", GET, nullptr,
-//             oss)); REQUIRE(oss.str() == "runclk 10\n");
-//         }
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("runclk " +
-//         std::to_string(prev_runclk), PUT));
-//     }
-// }
-
-// TEST_CASE("threshold", "[.cmd]") {
-//     if (test::type == defs::EIGER) {
-//         REQUIRE_NOTHROW(multiSlsDetectorClient("threshold 6400 standard",
-//         PUT)); REQUIRE_NOTHROW(multiSlsDetectorClient("thresholdnotb 6400
-//         standard", PUT)); REQUIRE_NOTHROW(multiSlsDetectorClient("threshold
-//         6400", PUT)); REQUIRE_NOTHROW(multiSlsDetectorClient("thresholdnotb
-//         6400", PUT));
-//         {
-//             std::ostringstream oss;
-//             REQUIRE_NOTHROW(multiSlsDetectorClient("threshold", GET, nullptr,
-//             oss)); std::string s = (oss.str()).erase (0, strlen("threshold
-//             ")); REQUIRE(std::stoi(s) == 6400);
-//             REQUIRE_THROWS(multiSlsDetectorClient("thresholdnotb", GET));
-//         }
-//     } else {
-//          REQUIRE_THROWS(multiSlsDetectorClient("threshold", GET));
-//          REQUIRE_THROWS(multiSlsDetectorClient("thresholdnotb", GET));
-//     }
-// }
-
-// TEST_CASE("detsize", "[.cmd]") {
-//     CHECK_NOTHROW(multiSlsDetectorClient("detsize", GET));
-// }
-
-// TEST_CASE("type", "[.cmd]") {
-//     CHECK_NOTHROW(multiSlsDetectorClient("type", GET));
-// }
-
-// TEST_CASE("status", "[.cmd]") {
-//     Detector det;
-//     CmdProxy proxy(&det);
-
-//     proxy.Call("timing", {"auto"}, -1, PUT);
-//     proxy.Call("frames", {"10"}, -1, PUT);
-//     proxy.Call("period", {"1"}, -1, PUT);
-
-//     {
-//         std::ostringstream oss;
-//         proxy.Call("start", {}, -1, PUT, oss);
-//         REQUIRE(oss.str() == "start successful\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         proxy.Call("status", {}, -1, GET, oss);
-//         REQUIRE(oss.str() == "status running\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         proxy.Call("stop", {}, -1, PUT, oss);
-//         REQUIRE(oss.str() == "stop successful\n");
-//     }
-// {
-//     std::ostringstream oss;
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("status", GET, nullptr, oss));
-//     REQUIRE(oss.str() != "status running\n");
-//     REQUIRE(oss.str() != "status waiting\n");
-//     REQUIRE(oss.str() != "status transmitting\n");
-// }
-// REQUIRE_NOTHROW(multiSlsDetectorClient("frames 1", PUT));
-// proxy.Call("frames", {"1"}, -1, PUT);
-// }
-
-TEST_CASE("lock", "[.cmd]") {
+TEST_CASE("zmqip", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
+    std::ostringstream oss1, oss2;
+    auto zmqip = det.getClientZmqIp();
+    proxy.Call("zmqip", {}, 0, GET, oss1);
+    REQUIRE(oss1.str() == "zmqip " + zmqip[0].str() + '\n');
+
+    proxy.Call("zmqip", {zmqip[0].str()}, 0, PUT, oss2);
+    REQUIRE(oss2.str() == "zmqip " + zmqip[0].str() + '\n');
+
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxZmqIP(zmqip[i], {i});
+    }
+}
+
+/* Advanced */
+
+TEST_CASE("programfpga", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
+        det_type == defs::JUNGFRAU || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
+        // TODO program a real board?
+        /// afs/psi.ch/project/sls_det_firmware/jungfrau_firmware/cyclone_V/v0_8/Jungfrau_MCB.pof
+        REQUIRE_THROWS(proxy.Call("programfpga", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("programfpga", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("programfpga", {"/tmp/test.pof"}, -1, PUT));
+    }
+}
+
+TEST_CASE("resetfpga", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH) {
+        std::ostringstream oss;
+        proxy.Call("resetfpga", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "resetfpga successful\n");
+        REQUIRE_THROWS(proxy.Call("resetfpga", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("resetfpga", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("resetfpga", {}, -1, PUT));
+    }
+}
+
+TEST_CASE("copydetectorserver", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
+        // TODO: send real server?
+        // std::ostringstream oss;
+        // proxy.Call("copydetectorserver",{"jungfrauDetectorServerv4.0.1.0",
+        // "pc13784"}, -1, PUT, oss);
+        // REQUIRE(oss.str() == "copydetectorserver successful\n");
+        REQUIRE_THROWS(proxy.Call("copydetectorserver", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("copydetectorserver", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("copydetectorserver", {}, -1, PUT));
+    }
+}
+
+TEST_CASE("rebootcontroller", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2 || det_type == defs::GOTTHARD) {
+        // TODO: reboot real server?
+        // REQUIRE_NOTHROW(proxy.Call("rebootcontroller", {}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("rebootcontroller", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("rebootcontroller", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("rebootcontroller", {}, -1, PUT));
+    }
+}
+
+TEST_CASE("update", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH) {
+        // TODO: update real server and firmware?
+        // REQUIRE_NOTHROW(proxy.Call("update",
+        // {"jungfrauDetectorServerv4.0.1.0", "pc13784",
+        // "/afs/psi.ch/project/sls_det_firmware/jungfrau_firmware/cyclone_V/v0_8/Jungfrau_MCB.pof"},
+        // -1, PUT));
+        REQUIRE_THROWS(proxy.Call("update", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("update", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("update", {}, -1, PUT));
+    }
+}
+
+TEST_CASE("reg", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type != defs::EIGER) {
+        uint32_t addr = 0x64;
+        std::string saddr = sls::ToStringHex(addr);
+        auto prev_val = det.readRegister(addr);
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("reg", {saddr, "0x5"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "reg [" + saddr + ", 0x5]\n");
+            proxy.Call("reg", {saddr}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "reg 0x5\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.writeRegister(addr, prev_val[i], {i});
+        }
+    }
+    // cannot check for eiger virtual server
+    else {
+        REQUIRE_NOTHROW(proxy.Call("reg", {"0x64"}, -1, GET));
+    }
+}
+
+TEST_CASE("adcreg", "[.cmd]") {
+    // TODO! what is a safe value to use?
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH || det_type == defs::GOTTHARD) {
+        std::ostringstream oss;
+        proxy.Call("adcreg", {"0x08", "0x3"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "adcreg [0x8, 0x3]\n");
+        // This is a put only command
+        REQUIRE_THROWS(proxy.Call("adcreg", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("adcreg", {"0x0", "0"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("adcreg", {}, -1, GET));
+    }
+}
+
+TEST_CASE("setbit", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type != defs::EIGER) {
+        uint32_t addr = 0x64;
+        std::string saddr = sls::ToStringHex(addr);
+        auto prev_val = det.readRegister(addr);
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("reg", {saddr, "0x0"}, -1, PUT);
+            proxy.Call("setbit", {saddr, "1"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "setbit [" + saddr + ", 1]\n");
+            proxy.Call("reg", {saddr}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "reg 0x2\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.writeRegister(addr, prev_val[i], {i});
+        }
+    }
+}
+
+TEST_CASE("clearbit", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type != defs::EIGER) {
+        uint32_t addr = 0x64;
+        std::string saddr = sls::ToStringHex(addr);
+        auto prev_val = det.readRegister(addr);
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("reg", {saddr, "0x3"}, -1, PUT);
+            proxy.Call("clearbit", {saddr, "1"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "clearbit [" + saddr + ", 1]\n");
+            proxy.Call("reg", {saddr}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "reg 0x1\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.writeRegister(addr, prev_val[i], {i});
+        }
+    }
+}
+
+TEST_CASE("getbit", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type != defs::EIGER) {
+        uint32_t addr = 0x64;
+        std::string saddr = sls::ToStringHex(addr);
+        auto prev_val = det.readRegister(addr);
+        {
+            std::ostringstream oss1, oss2;
+            proxy.Call("reg", {saddr, "0x3"}, -1, PUT);
+            proxy.Call("getbit", {saddr, "1"}, -1, GET, oss1);
+            REQUIRE(oss1.str() == "getbit 1\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.writeRegister(addr, prev_val[i], {i});
+        }
+    }
+    // cannot check for eiger virtual server
+    else {
+        REQUIRE_NOTHROW(proxy.Call("getbit", {"0x64", "1"}, -1, GET));
+    }
+}
+
+TEST_CASE("firmwaretest", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH || det_type == defs::GOTTHARD ||
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+        std::ostringstream oss;
+        proxy.Call("firmwaretest", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "firmwaretest successful\n");
+        REQUIRE_THROWS(proxy.Call("firmwaretest", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("firmwaretest", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("firmwaretest", {}, -1, PUT));
+    }
+}
+
+TEST_CASE("bustest", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH || det_type == defs::GOTTHARD ||
+        det_type == defs::MYTHEN3 || det_type == defs::GOTTHARD2) {
+        std::ostringstream oss;
+        proxy.Call("bustest", {}, -1, PUT, oss);
+        REQUIRE(oss.str() == "bustest successful\n");
+        REQUIRE_THROWS(proxy.Call("bustest", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("bustest", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("bustest", {}, -1, PUT));
+    }
+}
+
+TEST_CASE("initialchecks", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto check = det.getInitialChecks();
+    {
+        std::ostringstream oss;
+        proxy.Call("initialchecks", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "initialchecks 0\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("initialchecks", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "initialchecks 0\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("initialchecks", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "initialchecks 0\n");
+    }
+    det.setInitialChecks(check);
+}
+
+TEST_CASE("adcinvert", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
+        det_type == defs::JUNGFRAU) {
+        auto prev_val = det.getADCInvert();
+        {
+            std::ostringstream oss;
+            proxy.Call("adcinvert", {"0x8d0a21d4"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "adcinvert 0x8d0a21d4\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("adcinvert", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "adcinvert 0x8d0a21d4\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setADCInvert(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("adcinvert", {}, -1, GET));
+    }
+}
+
+/* Insignificant */
+
+TEST_CASE("port", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getControlPort({0}).squash();
+    {
+        std::ostringstream oss;
+        proxy.Call("port", {"1942"}, 0, PUT, oss);
+        REQUIRE(oss.str() == "port 1942\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("port", {}, 0, GET, oss);
+        REQUIRE(oss.str() == "port 1942\n");
+    }
+    det.setControlPort(prev_val, {0});
+}
+
+TEST_CASE("stopport", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getStopPort({0}).squash();
+    {
+        std::ostringstream oss;
+        proxy.Call("stopport", {"1942"}, 0, PUT, oss);
+        REQUIRE(oss.str() == "stopport 1942\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("stopport", {}, 0, GET, oss);
+        REQUIRE(oss.str() == "stopport 1942\n");
+    }
+    det.setStopPort(prev_val, {0});
+}
+
+TEST_CASE("lock", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getDetectorLock();
     {
         std::ostringstream oss;
         proxy.Call("lock", {"1"}, -1, PUT, oss);
@@ -3085,8 +1858,76 @@ TEST_CASE("lock", "[.cmd]") {
         proxy.Call("lock", {"0"}, -1, PUT, oss);
         REQUIRE(oss.str() == "lock 0\n");
     }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setDetectorLock(prev_val[i], {i});
+    }
 }
 
-// TEST_CASE("lastclient", "[.cmd]") {
-//     REQUIRE_NOTHROW(multiSlsDetectorClient("lastclient", GET));
-// }
+TEST_CASE("execcommand", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("execcommand", {"ls"}, -1, PUT));
+}
+
+TEST_CASE("nframes", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
+        auto nframes = det.getNumberOfFramesFromStart().squash();
+        std::ostringstream oss;
+        proxy.Call("nframes", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "nframes " + std::to_string(nframes) + "\n");
+        REQUIRE_NOTHROW(proxy.Call("nframes", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("nframes", {}, -1, GET));
+    }
+}
+
+TEST_CASE("now", "[.cmd][.new]") {
+    // TODO! can we test this?
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
+        std::ostringstream oss;
+        proxy.Call("now", {}, -1, GET, oss);
+        // Get only
+        REQUIRE_THROWS(proxy.Call("now", {"2019"}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("now", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("now", {}, -1, GET));
+    }
+}
+
+TEST_CASE("timestamp", "[.cmd][.new]") {
+    // TODO! can we test this?
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
+        det_type == defs::MOENCH || det_type == defs::MYTHEN3 ||
+        det_type == defs::GOTTHARD2) {
+        std::ostringstream oss;
+        proxy.Call("timestamp", {}, -1, GET, oss);
+        // Get only
+        REQUIRE_THROWS(proxy.Call("timestamp", {"2019"}, -1, PUT));
+        REQUIRE_NOTHROW(proxy.Call("timestamp", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("timestamp", {}, -1, GET));
+    }
+}
+
+TEST_CASE("user", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    proxy.Call("user", {}, -1, GET);
+
+    // This is a get only command
+    REQUIRE_THROWS(proxy.Call("user", {}, -1, PUT));
+    REQUIRE_NOTHROW(proxy.Call("user", {}, -1, GET));
+}

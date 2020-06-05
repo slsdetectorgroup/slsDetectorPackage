@@ -94,3 +94,62 @@ TEST_CASE("Setting and reading back GOTTHARD dacs", "[.cmd][.dacs][.new]") {
         REQUIRE_THROWS(proxy.Call("vcom_adc2", {}, -1, GET));
     }
 }
+
+/* Gotthard Specific */
+
+TEST_CASE("roi", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD) {
+        auto prev_val = det.getROI();
+        {
+            std::ostringstream oss;
+            proxy.Call("roi", {"0", "255"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "roi [0, 255]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("roi", {"256", "511"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "roi [256, 511]\n");
+        }
+        REQUIRE_THROWS(proxy.Call("roi", {"0", "256"}, -1, PUT));
+        for (int i = 0; i != det.size(); ++i) {
+            det.setROI(prev_val[i], i);
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("roi", {}, -1, GET));
+    }
+}
+
+TEST_CASE("clearroi", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD) {
+        auto prev_val = det.getROI();
+        {
+            std::ostringstream oss;
+            proxy.Call("clearroi", {}, -1, PUT, oss);
+            REQUIRE(oss.str() == "clearroi [-1, -1]\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setROI(prev_val[i], i);
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("clearroi", {}, -1, PUT));
+    }
+}
+
+TEST_CASE("exptimel", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD) {
+        REQUIRE_NOTHROW(proxy.Call("exptimel", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("exptimel", {}, -1, GET));
+    }
+}

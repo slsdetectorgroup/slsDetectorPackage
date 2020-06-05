@@ -759,6 +759,11 @@ Result<sls::IpAddr> Detector::getRxLastClientIP(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverLastClientIP, pos);
 }
 
+Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
+Detector::getRxThreadIds(Positions pos) const {
+    return pimpl->Parallel(&Module::getReceiverThreadIds, pos);
+}
+
 // File
 
 Result<defs::fileFormat> Detector::getFileFormat(Positions pos) const {

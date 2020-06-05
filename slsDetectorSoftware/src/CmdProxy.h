@@ -729,6 +729,7 @@ class CmdProxy {
         {"rx_realudpsocksize", &CmdProxy::rx_realudpsocksize},
         {"rx_lock", &CmdProxy::rx_lock},
         {"rx_lastclient", &CmdProxy::rx_lastclient},
+        {"rx_threads", &CmdProxy::rx_threads},
 
         /* File */
         {"fformat", &CmdProxy::fformat},
@@ -1662,6 +1663,14 @@ class CmdProxy {
     GET_COMMAND(
         rx_lastclient, getRxLastClientIP,
         "\n\tClient IP Address that last communicated with the receiver.");
+
+    GET_COMMAND(
+        rx_threads, getRxThreadIds,
+        "\n\tGet thread ids from the receiver in order of [parent, tcp, "
+        "listener 0, "
+        "processor 0, streamer 0, listener 1, processor 1, streamer 1]. If no "
+        "streamer yet or there is no second interface, it gives 0 in its "
+        "place.");
 
     /* File */
 

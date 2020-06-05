@@ -303,6 +303,7 @@ enum detFuncs {
     F_SETUP_RECEIVER,
     F_SET_RECEIVER_NUM_GATES,
     F_SET_RECEIVER_GATE_DELAY,
+    F_GET_RECEIVER_THREAD_IDS,
 
     NUM_REC_FUNCTIONS
 };
@@ -605,8 +606,9 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_ADDITIONAL_JSON_PARAMETER:	return "F_GET_ADDITIONAL_JSON_PARAMETER";
 	case F_GET_RECEIVER_PROGRESS:			return "F_GET_RECEIVER_PROGRESS";
 	case F_SETUP_RECEIVER:					return "F_SETUP_RECEIVER";
-    case F_SET_RECEIVER_NUM_GATES:          return "F_SET_RECEIVER_NUM_GATES"               ;
-    case F_SET_RECEIVER_GATE_DELAY:         return "F_SET_RECEIVER_GATE_DELAY"              ;
+    case F_SET_RECEIVER_NUM_GATES:          return "F_SET_RECEIVER_NUM_GATES";
+    case F_SET_RECEIVER_GATE_DELAY:         return "F_SET_RECEIVER_GATE_DELAY";
+    case F_GET_RECEIVER_THREAD_IDS:         return "F_GET_RECEIVER_THREAD_IDS";
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

@@ -28,6 +28,8 @@ ThreadObject::~ThreadObject() {
     sem_destroy(&semaphore);
 }
 
+pid_t ThreadObject::GetThreadId() const { return threadId; }
+
 bool ThreadObject::IsRunning() const { return runningFlag; }
 
 void ThreadObject::StartRunning() { runningFlag = true; }
@@ -35,8 +37,9 @@ void ThreadObject::StartRunning() { runningFlag = true; }
 void ThreadObject::StopRunning() { runningFlag = false; }
 
 void ThreadObject::RunningThread() {
+    threadId = syscall(SYS_gettid);
     LOG(logINFOBLUE) << "Created [ " << type << "Thread " << index
-                     << ", Tid: " << syscall(SYS_gettid) << "]";
+                     << ", Tid: " << threadId << "]";
     while (!killThread) {
         while (IsRunning()) {
             ThreadExecution();
@@ -45,7 +48,8 @@ void ThreadObject::RunningThread() {
         sem_wait(&semaphore);
     }
     LOG(logINFOBLUE) << "Exiting [ " << type << " Thread " << index
-                     << ", Tid: " << syscall(SYS_gettid) << "]";
+                     << ", Tid: " << threadId << "]";
+    threadId = 0;
 }
 
 void ThreadObject::Continue() { sem_post(&semaphore); }

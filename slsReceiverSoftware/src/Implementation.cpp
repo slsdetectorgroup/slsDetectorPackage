@@ -445,6 +445,37 @@ void Implementation::setFramePaddingEnable(const bool i) {
     LOG(logINFO) << "Frame Padding: " << framePadding;
 }
 
+void Implementation::setThreadIds(const pid_t parentTid, const pid_t tcpTid) {
+    parentThreadId = parentTid;
+    tcpThreadId = tcpTid;
+}
+
+std::array<pid_t, NUM_RX_THREAD_IDS> Implementation::getThreadIds() const {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+
+    std::array<pid_t, NUM_RX_THREAD_IDS> retval{};
+    int id = 0;
+    retval[id++] = parentThreadId;
+    retval[id++] = tcpThreadId;
+    retval[id++] = listener[0]->GetThreadId();
+    retval[id++] = dataProcessor[0]->GetThreadId();
+    if (dataStreamEnable) {
+        retval[id++] = dataStreamer[0]->GetThreadId();
+    } else {
+        retval[id++] = 0;
+    }
+    if (numThreads == 2) {
+        retval[id++] = listener[1]->GetThreadId();
+        retval[id++] = dataProcessor[1]->GetThreadId();
+        if (dataStreamEnable) {
+            retval[id++] = dataStreamer[1]->GetThreadId();
+        } else {
+            retval[id++] = 0;
+        }
+    }
+    return retval;
+}
+
 /**************************************************
  *                                                 *
  *   File Parameters                               *

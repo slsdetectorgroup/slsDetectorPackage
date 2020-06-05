@@ -372,6 +372,13 @@ TEST_CASE("rx_lastclient", "[.cmd][.rx][.new]") {
     }
 }
 
+TEST_CASE("rx_threads", "[.cmd][.rx][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    std::ostringstream oss;
+    REQUIRE_NOTHROW(proxy.Call("rx_threads", {}, -1, GET, oss));
+}
+
 /* File */
 
 TEST_CASE("fformat", "[.cmd][.new]") {

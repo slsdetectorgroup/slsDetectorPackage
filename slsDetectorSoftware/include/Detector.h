@@ -585,6 +585,9 @@ class Detector {
 
     Result<sls::IpAddr> getRxLastClientIP(Positions pos = {}) const;
 
+    Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
+    getRxThreadIds(Positions pos = {}) const;
+
     /**************************************************
      *                                                *
      *    File                                        *

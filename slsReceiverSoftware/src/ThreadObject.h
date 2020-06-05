@@ -25,10 +25,12 @@ class ThreadObject : private virtual slsDetectorDefs {
     std::thread threadObject;
     sem_t semaphore;
     const std::string type;
+    pid_t threadId{0};
 
   public:
     ThreadObject(int threadIndex, std::string threadType);
     virtual ~ThreadObject();
+    pid_t GetThreadId() const;
     bool IsRunning() const;
     void StartRunning();
     void StopRunning();

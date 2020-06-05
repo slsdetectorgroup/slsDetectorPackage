@@ -1010,6 +1010,22 @@ TEST_CASE("temp_fpga", "[.cmd][.new]") {
     }
 }
 
+/* dacs */
+
+TEST_CASE("daclist", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("daclist", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("daclist", {}, -1, PUT));
+}
+
+TEST_CASE("dacvalues", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("dacvalues", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("dacvalues", {}, -1, PUT));
+}
+
 /* acquisition */
 
 TEST_CASE("clearbusy", "[.cmd][.new]") {

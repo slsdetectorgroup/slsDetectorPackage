@@ -17,8 +17,7 @@ using test::PUT;
 
 /* dacs */
 
-TEST_CASE("Setting and reading back Chip test board dacs",
-          "[.cmd][.dacs][.new]") {
+TEST_CASE("dac", "[.cmd][.dacs][.new]") {
     // dac 0 to dac 17
 
     Detector det;

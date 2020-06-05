@@ -943,7 +943,6 @@ class CmdProxy {
     std::string Dac(int action);
     std::string DacList(int action);
     std::string DacValues(int action);
-    std::vector<std::string> DacCommands();
     /* acquisition */
     std::string ReceiverStatus(int action);
     std::string DetectorStatus(int action);

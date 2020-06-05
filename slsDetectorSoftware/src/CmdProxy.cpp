@@ -946,53 +946,6 @@ std::string CmdProxy::DacValues(int action) {
     return os.str();
 }
 
-std::vector<std::string> CmdProxy::DacCommands() {
-    switch (det->getDetectorType().squash(defs::GENERIC)) {
-    case defs::EIGER:
-        return std::vector<std::string>{
-            "vsvp",    "vtr",     "vrf",  "vrs",     "vsvn",      "vtgstv",
-            "vcmp_ll", "vcmp_lr", "vcal", "vcmp_rl", "rxb_rb",    "rxb_lb",
-            "vcmp_rr", "vcp",     "vcn",  "vis",     "vthreshold"};
-        break;
-    case defs::JUNGFRAU:
-        return std::vector<std::string>{"vb_comp",    "vdd_prot",  "vin_com",
-                                        "vref_prech", "vb_pixbuf", "vb_ds",
-                                        "vref_ds",    "vref_comp"};
-        break;
-    case defs::GOTTHARD:
-        return std::vector<std::string>{"vref_ds",   "vcascn_pb", "vcascp_pb",
-                                        "vout_cm",   "vcasc_out", "vin_cm",
-                                        "vref_comp", "ib_test_c"};
-        break;
-    case defs::GOTTHARD2:
-        return std::vector<std::string>{
-            "vref_h_adc",  "vb_comp_fe", "vb_comp_adc",  "vcom_cds",
-            "vref_rstore", "vb_opa_1st", "vref_comp_fe", "vcom_adc1",
-            "vref_prech",  "vref_l_adc", "vref_cds",     "vb_cs",
-            "vb_opa_fd",   "vcom_adc2"};
-        break;
-    case defs::MYTHEN3:
-        return std::vector<std::string>{
-            "vcassh", "vth2",  "vshaper", "vshaperneg", "vipre_out", "vth3",
-            "vth1",   "vicin", "vcas",    "vpreamp",    "vpl",       "vipre",
-            "viinsh", "vph",   "vtrim",   "vdcsh"};
-        break;
-    case defs::MOENCH:
-        return std::vector<std::string>{"vbp_colbuf", "vipre",     "vin_cm",
-                                        "vb_sda",     "vcasc_sfp", "vout_cm",
-                                        "vipre_cds",  "ibias_sfp"};
-        break;
-    case defs::CHIPTESTBOARD:
-        return std::vector<std::string>{
-            "dac 0",  "dac 1",  "dac 2",  "dac 3",  "dac 4",  "dac 5",
-            "dac 6",  "dac 7",  "dac 8",  "dac 9",  "dac 10", "dac 11",
-            "dac 12", "dac 13", "dac 14", "dac 15", "dac 16", "dac 17"};
-        break;
-    default:
-        throw sls::RuntimeError("Unknown detector type.");
-    }
-}
-
 /* acquisition */
 
 std::string CmdProxy::ReceiverStatus(int action) {

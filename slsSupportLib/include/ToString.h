@@ -35,6 +35,7 @@ std::string ToString(const defs::readoutMode s);
 std::string ToString(const defs::frameModeType s);
 std::string ToString(const defs::detectorModeType s);
 std::string ToString(const defs::dacIndex s, const defs::detectorType t);
+std::string ToString(const std::vector<defs::dacIndex>& vec, const defs::detectorType t);
 std::string ToString(const defs::burstMode s);
 std::string ToString(const defs::timingSourceType s);
 
@@ -166,6 +167,7 @@ ToString(const T &container) {
     return os.str();
 }
 
+
 /**
  * Special case when container holds a string, don't call ToString again but
  * print directly to stream
@@ -239,6 +241,16 @@ template <typename T> T StringTo(const std::string &t) {
 template <typename T>
 T StringTo(const std::string &s, const defs::detectorType t) {
     return StringTo<T>(s, t);
+}
+
+template <typename T>
+std::vector<T> StringTo(const std::vector<std::string>& vec, const defs::detectorType t){
+    std::vector<T> result;
+    result.reserve(vec.size());
+    for (const auto& s : vec){
+        result.push_back(StringTo<T>(s, t));
+    }
+    return result;
 }
 
 template <> defs::detectorType StringTo(const std::string &s);

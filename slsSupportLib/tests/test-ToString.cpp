@@ -238,3 +238,28 @@ TEST_CASE("std::array"){
 }
 
 
+TEST_CASE("string to dac index"){
+    //test a few dacs
+    REQUIRE(defs::CAL == StringTo<defs::dacIndex>("vcal", defs::EIGER));
+    REQUIRE(defs::VIN_CM == StringTo<defs::dacIndex>("vin_cm", defs::GOTTHARD));
+    REQUIRE(defs::VB_DS == StringTo<defs::dacIndex>("vb_ds", defs::JUNGFRAU));
+}
+
+TEST_CASE("dac index to string"){
+    REQUIRE(ToString(defs::CAL, defs::EIGER) == "vcal");
+    REQUIRE(ToString(defs::VB_DS, defs::JUNGFRAU) == "vb_ds");
+}
+
+
+TEST_CASE("convert vector of strings to dac index"){
+    std::vector<std::string> dacs{"vcassh", "vth2", "vshaper"};
+    std::vector<defs::dacIndex> daci{defs::CASSH, defs::VTH2, defs::SHAPER1};
+    auto r = StringTo<defs::dacIndex>(dacs, defs::MYTHEN3);
+    REQUIRE(r == daci);
+}
+
+TEST_CASE("vector of dac index to string"){
+    std::vector<defs::dacIndex> daci{defs::CASSH, defs::VTH2, defs::SHAPER1};
+    auto r = ToString(daci, defs::MYTHEN3);
+    REQUIRE(r == "[vcassh, vth2, vshaper]");
+}

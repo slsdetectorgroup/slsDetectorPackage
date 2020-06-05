@@ -400,6 +400,19 @@ std::string ToString(const defs::dacIndex s, const defs::detectorType t) {
     }
 }
 
+std::string ToString(const std::vector<defs::dacIndex>& vec, const defs::detectorType t){
+    std::ostringstream os;
+    os << '[';
+    if (!vec.empty()) {
+        auto it = vec.begin();
+        os << ToString(*it++, t);
+        while (it != vec.end())
+            os << ", " << ToString(*it++, t);
+    }
+    os << ']';
+    return os.str();
+}
+
 std::string ToString(const defs::burstMode s) {
     switch (s) {
     case defs::BURST_OFF:

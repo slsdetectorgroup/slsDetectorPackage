@@ -86,6 +86,9 @@ void init_det(py::module &m) {
         .def("setDetectorSize",
              (void (Detector::*)(const defs::xy)) & Detector::setDetectorSize,
              py::arg())
+        .def("getSettingsList",
+             (std::vector<defs::detectorSettings>(Detector::*)() const) &
+                 Detector::getSettingsList)
         .def("getSettings",
              (Result<defs::detectorSettings>(Detector::*)(sls::Positions)
                   const) &
@@ -107,6 +110,12 @@ void init_det(py::module &m) {
              (void (Detector::*)(int, sls::Positions)) &
                  Detector::setAllTrimbits,
              py::arg(), py::arg() = Positions{})
+        .def("getGapPixelsinCallback",
+             (bool (Detector::*)() const) & Detector::getGapPixelsinCallback)
+        .def("setGapPixelsinCallback",
+             (void (Detector::*)(const bool)) &
+                 Detector::setGapPixelsinCallback,
+             py::arg())
         .def("registerAcquisitionFinishedCallback",
              (void (Detector::*)(void (*)(double, int, void *), void *)) &
                  Detector::registerAcquisitionFinishedCallback,
@@ -117,12 +126,6 @@ void init_det(py::module &m) {
                 void (*)(detectorData *, uint64_t, uint32_t, void *), void *)) &
                 Detector::registerDataCallback,
             py::arg(), py::arg())
-        .def("getGapPixelsinCallback",
-             (bool (Detector::*)() const) & Detector::getGapPixelsinCallback)
-        .def("setGapPixelsinCallback",
-             (void (Detector::*)(const bool)) &
-                 Detector::setGapPixelsinCallback,
-             py::arg())
         .def("getNumberOfFrames",
              (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfFrames,
@@ -295,6 +298,8 @@ void init_det(py::module &m) {
              (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
                  Detector::getTemperature,
              py::arg(), py::arg() = Positions{})
+        .def("getDacList", (std::vector<defs::dacIndex>(Detector::*)() const) &
+                               Detector::getDacList)
         .def("getDAC",
              (Result<int>(Detector::*)(defs::dacIndex, bool, sls::Positions)
                   const) &
@@ -562,6 +567,10 @@ void init_det(py::module &m) {
         .def("getRxLastClientIP",
              (Result<sls::IpAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getRxLastClientIP,
+             py::arg() = Positions{})
+        .def("getRxThreadIds",
+             (Result<std::array<pid_t, 8>>(Detector::*)(sls::Positions) const) &
+                 Detector::getRxThreadIds,
              py::arg() = Positions{})
         .def("getFileFormat",
              (Result<defs::fileFormat>(Detector::*)(sls::Positions) const) &
@@ -1136,7 +1145,7 @@ void init_det(py::module &m) {
                  Detector::setExternalSamplingSource,
              py::arg(), py::arg() = Positions{})
         .def("getExternalSampling",
-             (Result<int>(Detector::*)(sls::Positions) const) &
+             (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getExternalSampling,
              py::arg() = Positions{})
         .def("setExternalSampling",

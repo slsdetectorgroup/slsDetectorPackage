@@ -237,22 +237,6 @@ template <typename T> T StringTo(const std::string &t) {
     return StringTo<T>(tmp, unit);
 }
 
-template <typename T>
-T StringTo(const std::string &s, const defs::detectorType t) {
-    return StringTo<T>(s, t);
-}
-
-template <typename T>
-std::vector<T> StringTo(const std::vector<std::string> &vec,
-                        const defs::detectorType t) {
-    std::vector<T> result;
-    result.reserve(vec.size());
-    for (const auto &s : vec) {
-        result.push_back(StringTo<T>(s, t));
-    }
-    return result;
-}
-
 template <> defs::detectorType StringTo(const std::string &s);
 template <> defs::detectorSettings StringTo(const std::string &s);
 template <> defs::speedLevel StringTo(const std::string &s);
@@ -277,6 +261,15 @@ template <typename T>
 typename std::enable_if<has_str<T>::value, std::string>::type
 ToString(const T &obj) {
     return obj.str();
+}
+
+template <typename T>
+std::vector<T> StringTo(const std::vector<std::string>& strings){
+    std::vector<T> result;
+    result.reserve(strings.size());
+    for (const auto& s : strings)
+        result.push_back(StringTo<T>(s));
+    return result;
 }
 
 } // namespace sls

@@ -25,21 +25,23 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs][.new]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::MYTHEN3) {
-        SECTION("vcassh") { test_dac(defs::CASSH, "vcassh", 1200); }
+        SECTION("vcassh") { test_dac(defs::VCASSH, "vcassh", 1200); }
         SECTION("vth2") { test_dac(defs::VTH2, "vth2", 2800); }
-        SECTION("vshaper") { test_dac(defs::SHAPER1, "vshaper", 1280); }
-        SECTION("vshaperneg") { test_dac(defs::SHAPER2, "vshaperneg", 2800); }
+        SECTION("vshaper") { test_dac(defs::VSHAPER, "vshaper", 1280); }
+        SECTION("vshaperneg") {
+            test_dac(defs::VSHAPERNEG, "vshaperneg", 2800);
+        }
         SECTION("vipre_out") { test_dac(defs::VIPRE_OUT, "vipre_out", 1220); }
         SECTION("vth3") { test_dac(defs::VTH3, "vth3", 2800); }
-        SECTION("vth1") { test_dac(defs::THRESHOLD, "vth1", 2880); }
+        SECTION("vth1") { test_dac(defs::VTH1, "vth1", 2880); }
         SECTION("vicin") { test_dac(defs::VICIN, "vicin", 1708); }
-        SECTION("vcas") { test_dac(defs::CAS, "vcas", 1800); }
-        SECTION("vpreamp") { test_dac(defs::PREAMP, "vpreamp", 1100); }
+        SECTION("vcas") { test_dac(defs::VCAS, "vcas", 1800); }
+        SECTION("vpreamp") { test_dac(defs::VPREAMP, "vpreamp", 1100); }
         SECTION("vpl") { test_dac(defs::VPL, "vpl", 1100); }
         SECTION("vipre") { test_dac(defs::VIPRE, "vipre", 2624); }
         SECTION("viinsh") { test_dac(defs::VIINSH, "viinsh", 1708); }
-        SECTION("vph") { test_dac(defs::CALIBRATION_PULSE, "vph", 1712); }
-        SECTION("vtrim") { test_dac(defs::TRIMBIT_SIZE, "vtrim", 2800); }
+        SECTION("vph") { test_dac(defs::VPH, "vph", 1712); }
+        SECTION("vtrim") { test_dac(defs::VTRIM, "vtrim", 2800); }
         SECTION("vdcsh") { test_dac(defs::VDCSH, "vdcsh", 800); }
 
         REQUIRE_THROWS(proxy.Call("vsvp", {}, -1, GET));

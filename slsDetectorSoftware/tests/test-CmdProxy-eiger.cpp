@@ -131,15 +131,15 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs][.new]") {
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER) {
-        SECTION("vsvp") { test_dac(defs::SVP, "vsvp", 5); }
+        SECTION("vsvp") { test_dac(defs::VSVP, "vsvp", 5); }
         SECTION("vtr") { test_dac(defs::VRF, "vtr", 1200); }
         SECTION("vrf") { test_dac(defs::VRF, "vrf", 1500); }
         SECTION("vrs") { test_dac(defs::VRF, "vrs", 1510); }
-        SECTION("vsvn") { test_dac(defs::SVN, "vsvn", 3800); }
+        SECTION("vsvn") { test_dac(defs::VSVN, "vsvn", 3800); }
         SECTION("vtgstv") { test_dac(defs::VTGSTV, "vtgstv", 2550); }
         SECTION("vcmp_ll") { test_dac(defs::VCMP_LL, "vcmp_ll", 1400); }
         SECTION("vcmp_lr") { test_dac(defs::VCMP_LR, "vcmp_lr", 1400); }
-        SECTION("vcal") { test_dac(defs::CAL, "vcal", 1400); }
+        SECTION("vcal") { test_dac(defs::VCAL, "vcal", 1400); }
         SECTION("vcmp_rl") { test_dac(defs::VCMP_RL, "vcmp_rl", 1400); }
         SECTION("rxb_rb") { test_dac(defs::RXB_RB, "rxb_rb", 1400); }
         SECTION("rxb_lb") { test_dac(defs::RXB_LB, "rxb_lb", 1400); }

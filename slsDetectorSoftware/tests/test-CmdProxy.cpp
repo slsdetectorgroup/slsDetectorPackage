@@ -129,8 +129,13 @@ TEST_CASE("detsize", "[.cmd][.new]") {
 TEST_CASE("settingslist", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_NOTHROW(proxy.Call("settingslist", {}, -1, GET));
-    REQUIRE_THROWS(proxy.Call("settingslist", {}, -1, PUT));
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MYTHEN3) {
+        REQUIRE_THROWS(proxy.Call("settingslist", {}, -1, GET));
+    } else {
+        REQUIRE_NOTHROW(proxy.Call("settingslist", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("settingslist", {}, -1, PUT));
+    }
 }
 
 TEST_CASE("settings", "[.cmd][.new]") {

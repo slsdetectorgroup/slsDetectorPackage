@@ -12,15 +12,15 @@
 
 /* Enums */
 enum DACINDEX {
-    E_SVP,
+    E_VSVP,
     E_VTR,
     E_VRF,
     E_VRS,
-    E_SVN,
+    E_VSVN,
     E_VTGSTV,
     E_VCMP_LL,
     E_VCMP_LR,
-    E_CAL,
+    E_VCAL,
     E_VCMP_RL,
     E_RXB_RB,
     E_RXB_LB,

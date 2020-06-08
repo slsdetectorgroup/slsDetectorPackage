@@ -1182,15 +1182,15 @@ class CmdProxy {
 
     /* dacs */
 
-    DAC_COMMAND(vthreshold, getDAC, setDAC, defs::THRESHOLD,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger][Mythen3] "
+    DAC_COMMAND(vthreshold, getDAC, setDAC, defs::VTHRESHOLD,
+                "[dac or mv value][(optional unit) mv] \n\t[Eiger] "
                 "Detector threshold voltage for single photon counters.");
 
-    DAC_COMMAND(vsvp, getDAC, setDAC, defs::SVP,
+    DAC_COMMAND(vsvp, getDAC, setDAC, defs::VSVP,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
-    DAC_COMMAND(vsvn, getDAC, setDAC, defs::SVN,
+    DAC_COMMAND(vsvn, getDAC, setDAC, defs::VSVN,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
@@ -1218,7 +1218,7 @@ class CmdProxy {
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
-    DAC_COMMAND(vcal, getDAC, setDAC, defs::CAL,
+    DAC_COMMAND(vcal, getDAC, setDAC, defs::VCAL,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
@@ -1286,15 +1286,15 @@ class CmdProxy {
                 "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for "
                 "?? "); // TODO
 
-    DAC_COMMAND(vpreamp, getDAC, setDAC, defs::PREAMP,
+    DAC_COMMAND(vpreamp, getDAC, setDAC, defs::VPREAMP,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] voltage "
                 "to define the preamplifier feedback resistance.");
 
-    DAC_COMMAND(vshaper, getDAC, setDAC, defs::SHAPER1,
+    DAC_COMMAND(vshaper, getDAC, setDAC, defs::VSHAPER,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] voltage "
                 "to define feedback resistance of the first shaper");
 
-    DAC_COMMAND(vshaperneg, getDAC, setDAC, defs::SHAPER2,
+    DAC_COMMAND(vshaperneg, getDAC, setDAC, defs::VSHAPERNEG,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] voltage "
                 "to define feedback resistance of the second shaper.");
 
@@ -1311,7 +1311,7 @@ class CmdProxy {
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "the reference (DC) voltage for the shaper.");
 
-    DAC_COMMAND(vth1, getDAC, setDAC, defs::THRESHOLD,
+    DAC_COMMAND(vth1, getDAC, setDAC, defs::VTH1,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "first detector threshold voltage.");
 
@@ -1327,19 +1327,19 @@ class CmdProxy {
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "the low voltage for analog pulsing.");
 
-    DAC_COMMAND(vph, getDAC, setDAC, defs::CALIBRATION_PULSE,
+    DAC_COMMAND(vph, getDAC, setDAC, defs::VPH,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "the high voltage for analog pulsing.");
 
-    DAC_COMMAND(vtrim, getDAC, setDAC, defs::TRIMBIT_SIZE,
+    DAC_COMMAND(vtrim, getDAC, setDAC, defs::VTRIM,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "the voltage defining the trim bit size.");
 
-    DAC_COMMAND(vcassh, getDAC, setDAC, defs::CASSH,
+    DAC_COMMAND(vcassh, getDAC, setDAC, defs::VCASSH,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "the shaper's cascode voltage.");
 
-    DAC_COMMAND(vcas, getDAC, setDAC, defs::CAS,
+    DAC_COMMAND(vcas, getDAC, setDAC, defs::VCAS,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "the preamplifier's cascode voltage.");
 

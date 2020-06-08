@@ -56,7 +56,7 @@
 
 /* Enums */
 enum DACINDEX {
-    M_CASSH,
+    M_VCASSH,
     M_VTH2,
     M_VRFSH,
     M_VRFSHNPOL,
@@ -64,7 +64,7 @@ enum DACINDEX {
     M_VTH3,
     M_VTH1,
     M_VICIN,
-    M_CAS,
+    M_VCAS,
     M_VRF,
     M_VPL,
     M_VIPRE,

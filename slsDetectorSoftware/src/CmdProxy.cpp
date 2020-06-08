@@ -899,9 +899,17 @@ std::string CmdProxy::DacList(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        auto t = det->getDacList();
         auto det_type = det->getDetectorType().squash(defs::GENERIC);
-        os << ToString(t, det_type) << "\n";
+        if (det_type == defs::CHIPTESTBOARD) {
+            std::vector<std::string> t;
+            for (int i = 0; i != 18; ++i) {
+                t.push_back("dac " + std::to_string(i));
+            }
+            os << ToString(t) << '\n';
+        } else {
+            auto t = det->getDacList();
+            os << ToString(t) << '\n';
+        }
     } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("Cannot put");
     } else {
@@ -921,7 +929,10 @@ std::string CmdProxy::DacValues(int action) {
         auto t = det->getDacList();
         std::vector<std::string> res(t.size());
         for (size_t i = 0; i < t.size(); ++i) {
-            std::string name = ToString(t[i], det_type);
+            std::string name = ToString(t[i]);
+            if (det_type == defs::CHIPTESTBOARD) {
+                name = "dac " + std::to_string(i);
+            }
             // for multiple values for each command (to use ToString on vector)
             std::ostringstream each;
             size_t spacepos = name.find(' ');

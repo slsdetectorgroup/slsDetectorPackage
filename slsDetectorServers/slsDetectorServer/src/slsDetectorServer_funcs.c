@@ -751,14 +751,14 @@ int set_dac(int file_des) {
     case HIGH_VOLTAGE:
         break;
 #elif EIGERD
-    case THRESHOLD:
+    case VTHRESHOLD:
         serverDacIndex = E_VTHRESHOLD;
         break;
-    case SVP:
-        serverDacIndex = E_SVP;
+    case VSVP:
+        serverDacIndex = E_VSVP;
         break;
-    case SVN:
-        serverDacIndex = E_SVN;
+    case VSVN:
+        serverDacIndex = E_VSVN;
         break;
     case VTR:
         serverDacIndex = E_VTR;
@@ -778,8 +778,8 @@ int set_dac(int file_des) {
     case VCMP_LR:
         serverDacIndex = E_VCMP_LR;
         break;
-    case CAL:
-        serverDacIndex = E_CAL;
+    case VCAL:
+        serverDacIndex = E_VCAL;
         break;
     case VCMP_RL:
         serverDacIndex = E_VCMP_RL;
@@ -862,16 +862,16 @@ int set_dac(int file_des) {
 #elif MYTHEN3D
     case HIGH_VOLTAGE:
         break;
-    case CASSH:
-        serverDacIndex = M_CASSH;
+    case VCASSH:
+        serverDacIndex = M_VCASSH;
         break;
     case VTH2:
         serverDacIndex = M_VTH2;
         break;
-    case SHAPER1:
+    case VSHAPER:
         serverDacIndex = M_VRFSH;
         break;
-    case SHAPER2:
+    case VSHAPERNEG:
         serverDacIndex = M_VRFSHNPOL;
         break;
     case VIPRE_OUT:
@@ -880,19 +880,19 @@ int set_dac(int file_des) {
     case VTH3:
         serverDacIndex = M_VTH3;
         break;
-    case THRESHOLD:
+    case VTH1:
         serverDacIndex = M_VTH1;
         break;
     case VICIN:
         serverDacIndex = M_VICIN;
         break;
-    case CAS:
-        serverDacIndex = M_CAS;
+    case VCAS:
+        serverDacIndex = M_VCAS;
         break;
-    case PREAMP:
+    case VPREAMP:
         serverDacIndex = M_VRF;
         break;
-    case CALIBRATION_PULSE:
+    case VPH:
         serverDacIndex = M_VPH;
         break;
     case VIPRE:
@@ -904,7 +904,7 @@ int set_dac(int file_des) {
     case VPL:
         serverDacIndex = M_VPL;
         break;
-    case TRIMBIT_SIZE:
+    case VTRIM:
         serverDacIndex = M_VTRIM;
         break;
     case VDCSH:

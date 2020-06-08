@@ -459,15 +459,15 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
     int i = 0;
     switch (getDetectorType().squash()) {
     case defs::EIGER:
-        retval.push_back(defs::SVP);
+        retval.push_back(defs::VSVP);
         retval.push_back(defs::VTR);
         retval.push_back(defs::VRF);
         retval.push_back(defs::VRS);
-        retval.push_back(defs::SVN);
+        retval.push_back(defs::VSVN);
         retval.push_back(defs::VTGSTV);
         retval.push_back(defs::VCMP_LL);
         retval.push_back(defs::VCMP_LR);
-        retval.push_back(defs::CAL);
+        retval.push_back(defs::VCAL);
         retval.push_back(defs::VCMP_RL);
         retval.push_back(defs::RXB_RB);
         retval.push_back(defs::RXB_LB);
@@ -475,7 +475,7 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
         retval.push_back(defs::VCP);
         retval.push_back(defs::VCN);
         retval.push_back(defs::VIS);
-        retval.push_back(defs::THRESHOLD);
+        retval.push_back(defs::VTHRESHOLD);
         break;
     case defs::GOTTHARD:
         retval.push_back(defs::VREF_DS);
@@ -514,21 +514,21 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
         retval.push_back(defs::VCOM_ADC2);
         break;
     case defs::MYTHEN3:
-        retval.push_back(defs::CASSH);
+        retval.push_back(defs::VCASSH);
         retval.push_back(defs::VTH2);
-        retval.push_back(defs::SHAPER1);
-        retval.push_back(defs::SHAPER2);
+        retval.push_back(defs::VSHAPER);
+        retval.push_back(defs::VSHAPERNEG);
         retval.push_back(defs::VIPRE_OUT);
         retval.push_back(defs::VTH3);
-        retval.push_back(defs::THRESHOLD);
+        retval.push_back(defs::VTH1);
         retval.push_back(defs::VICIN);
-        retval.push_back(defs::CAS);
-        retval.push_back(defs::PREAMP);
+        retval.push_back(defs::VCAS);
+        retval.push_back(defs::VPREAMP);
         retval.push_back(defs::VPL);
         retval.push_back(defs::VIPRE);
         retval.push_back(defs::VIINSH);
-        retval.push_back(defs::CALIBRATION_PULSE);
-        retval.push_back(defs::TRIMBIT_SIZE);
+        retval.push_back(defs::VPH);
+        retval.push_back(defs::VTRIM);
         retval.push_back(defs::VDCSH);
         break;
     case defs::MOENCH:

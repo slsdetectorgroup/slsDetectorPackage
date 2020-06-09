@@ -60,15 +60,15 @@ class EigerDacs(DetectorDacs):
     """
     Eiger specific dacs
     """
-    _dacs = [('vsvp',    dacIndex.SVP,0, 4000,    0),
+    _dacs = [('vsvp',    dacIndex.VSVP,0, 4000,    0),
              ('vtr',     dacIndex.VTR,0, 4000, 2500),
              ('vrf',     dacIndex.VRF,0, 4000, 3300),
              ('vrs',     dacIndex.VRS,0, 4000, 1400),
-             ('vsvn',    dacIndex.SVN,0, 4000, 4000),
+             ('vsvn',    dacIndex.VSVN,0, 4000, 4000),
              ('vtgstv',  dacIndex.VTGSTV,0, 4000, 2556),
              ('vcmp_ll', dacIndex.VCMP_LL,0, 4000, 1500),
              ('vcmp_lr', dacIndex.VCMP_LR,0, 4000, 1500),
-             ('vcall',   dacIndex.CAL,0, 4000, 4000),
+             ('vcall',   dacIndex.VCAL,0, 4000, 4000),
              ('vcmp_rl', dacIndex.VCMP_RL,0, 4000, 1500),
              ('rxb_rb',  dacIndex.RXB_RB,0, 4000, 1100),
              ('rxb_lb',  dacIndex.RXB_LB,0, 4000, 1100),

@@ -852,7 +852,7 @@ void updateGatePeriod() {
     uint32_t countermask = getCounterMask();
     for (int i = 0; i != 3; ++i) {
         // only if counter enabled
-        if ((1 << i) & countermask) {
+        if (countermask & (1 << i)) {
             uint64_t sum = getExpTime(i) + getGateDelay(i);
             if (sum > max) {
                 max = sum;
@@ -1082,6 +1082,15 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         return;
     }
 
+    if (ind == M_VTHRESHOLD) {
+        LOG(logINFO,
+            ("Setting Threshold voltages to %d %s\n", val, (mV ? "mv" : "")));
+        setDAC(M_VTH1, val, mV);
+        setDAC(M_VTH2, val, mV);
+        setDAC(M_VTH3, val, mV);
+        return;
+    }
+
     char *dac_names[] = {DAC_NAMES};
     LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
                     val, (mV ? "mV" : "dac units")));
@@ -1106,6 +1115,23 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
 }
 
 int getDAC(enum DACINDEX ind, int mV) {
+    if (ind == M_VTHRESHOLD) {
+        int ret[3] = {0};
+        ret[0] = getDAC(M_VTH1, mV);
+        ret[1] = getDAC(M_VTH2, mV);
+        ret[2] = getDAC(M_VTH3, mV);
+
+        if ((ret[0] == ret[1]) && (ret[1] == ret[2])) {
+            LOG(logINFO, ("\tvthreshold match\n"));
+            return ret[0];
+        } else {
+            LOG(logERROR, ("\tvthreshold mismatch vth1:%d vth2:%d "
+                           "vth3:%d\n",
+                           ret[0], ret[1], ret[2]));
+            return -1;
+        }
+    }
+
     if (!mV) {
         LOG(logDEBUG1, ("Getting DAC %d : %d dac\n", ind, detectorDacs[ind]));
         return detectorDacs[ind];

@@ -442,10 +442,10 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
     switch (getDetectorType().squash()) {
     case defs::EIGER:
         return std::vector<defs::dacIndex>{
-            defs::VSVP,      defs::VTR,     defs::VRF,     defs::VRS,
-            defs::VSVN,      defs::VTGSTV,  defs::VCMP_LL, defs::VCMP_LR,
-            defs::VCAL,      defs::VCMP_RL, defs::RXB_RB,  defs::RXB_LB,
-            defs::VCMP_RR,   defs::VCP,     defs::VCN,     defs::VIS,
+            defs::VSVP,      defs::VTRIM,   defs::VRPREAMP, defs::VRSHAPER,
+            defs::VSVN,      defs::VTGSTV,  defs::VCMP_LL,  defs::VCMP_LR,
+            defs::VCAL,      defs::VCMP_RL, defs::RXB_RB,   defs::RXB_LB,
+            defs::VCMP_RR,   defs::VCP,     defs::VCN,      defs::VISHAPER,
             defs::VTHRESHOLD};
     case defs::GOTTHARD:
         return std::vector<defs::dacIndex>{
@@ -464,10 +464,11 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
             defs::VB_OPA_FD,    defs::VCOM_ADC2};
     case defs::MYTHEN3:
         return std::vector<defs::dacIndex>{
-            defs::VCASSH,    defs::VTH2,    defs::VSHAPER, defs::VSHAPERNEG,
-            defs::VIPRE_OUT, defs::VTH3,    defs::VTH1,    defs::VICIN,
-            defs::VCAS,      defs::VPREAMP, defs::VPL,     defs::VIPRE,
-            defs::VIINSH,    defs::VPH,     defs::VTRIM,   defs::VDCSH};
+            defs::VCASSH,    defs::VTH2,     defs::VRSHAPER, defs::VRSHAPER_N,
+            defs::VIPRE_OUT, defs::VTH3,     defs::VTH1,     defs::VICIN,
+            defs::VCAS,      defs::VRPREAMP, defs::VCAL_N,   defs::VIPRE,
+            defs::VISHAPER,  defs::VCAL_P,   defs::VTRIM,    defs::VDCSH,
+            defs::VTHRESHOLD};
     case defs::MOENCH:
         return std::vector<defs::dacIndex>{
             defs::VBP_COLBUF, defs::VIPRE,   defs::VIN_CM,    defs::VB_SDA,

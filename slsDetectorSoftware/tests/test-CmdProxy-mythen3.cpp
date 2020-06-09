@@ -27,28 +27,52 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs][.new]") {
     if (det_type == defs::MYTHEN3) {
         SECTION("vcassh") { test_dac(defs::VCASSH, "vcassh", 1200); }
         SECTION("vth2") { test_dac(defs::VTH2, "vth2", 2800); }
-        SECTION("vshaper") { test_dac(defs::VSHAPER, "vshaper", 1280); }
-        SECTION("vshaperneg") {
-            test_dac(defs::VSHAPERNEG, "vshaperneg", 2800);
+        SECTION("vrshaper") { test_dac(defs::VRSHAPER, "vrshaper", 1280); }
+        SECTION("vrshaper_n") {
+            test_dac(defs::VRSHAPER_N, "vrshaper_n", 2800);
         }
         SECTION("vipre_out") { test_dac(defs::VIPRE_OUT, "vipre_out", 1220); }
         SECTION("vth3") { test_dac(defs::VTH3, "vth3", 2800); }
         SECTION("vth1") { test_dac(defs::VTH1, "vth1", 2880); }
         SECTION("vicin") { test_dac(defs::VICIN, "vicin", 1708); }
         SECTION("vcas") { test_dac(defs::VCAS, "vcas", 1800); }
-        SECTION("vpreamp") { test_dac(defs::VPREAMP, "vpreamp", 1100); }
-        SECTION("vpl") { test_dac(defs::VPL, "vpl", 1100); }
+        SECTION("vrpreamp") { test_dac(defs::VRPREAMP, "vrpreamp", 1100); }
+        SECTION("vcal_n") { test_dac(defs::VCAL_N, "vcal_n", 1100); }
         SECTION("vipre") { test_dac(defs::VIPRE, "vipre", 2624); }
-        SECTION("viinsh") { test_dac(defs::VIINSH, "viinsh", 1708); }
-        SECTION("vph") { test_dac(defs::VPH, "vph", 1712); }
+        SECTION("vishaper") { test_dac(defs::VISHAPER, "vishaper", 1708); }
+        SECTION("vcal_p") { test_dac(defs::VCAL_P, "vcal_p", 1712); }
         SECTION("vtrim") { test_dac(defs::VTRIM, "vtrim", 2800); }
         SECTION("vdcsh") { test_dac(defs::VDCSH, "vdcsh", 800); }
+        SECTION("vthreshold") {
+            // Read out individual vcmp to be able to reset after
+            // the test is done
+            auto vth1 = det.getDAC(defs::VTH1, false);
+            auto vth2 = det.getDAC(defs::VTH2, false);
+            auto vth3 = det.getDAC(defs::VTH3, false);
 
+            {
+                std::ostringstream oss;
+                proxy.Call("vthreshold", {"1234"}, -1, PUT, oss);
+                REQUIRE(oss.str() == "vthreshold 1234\n");
+            }
+            {
+                std::ostringstream oss;
+                proxy.Call("vthreshold", {}, -1, GET, oss);
+                REQUIRE(oss.str() == "vthreshold 1234\n");
+            }
+
+            // Reset dacs after test
+            for (int i = 0; i != det.size(); ++i) {
+                det.setDAC(defs::VTH1, vth1[i], false, {i});
+                det.setDAC(defs::VTH2, vth2[i], false, {i});
+                det.setDAC(defs::VTH3, vth3[i], false, {i});
+            }
+        }
         REQUIRE_THROWS(proxy.Call("vsvp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vsvn", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vtr", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vrf", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vrs", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vtrim", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vrpreamp", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vrshaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vtgstv", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcmp_ll", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcmp_lr", {}, -1, GET));
@@ -59,7 +83,7 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs][.new]") {
         REQUIRE_THROWS(proxy.Call("rxb_lb", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcn", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vis", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vishaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("iodelay", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vref_ds", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcascn_pb", {}, -1, GET));

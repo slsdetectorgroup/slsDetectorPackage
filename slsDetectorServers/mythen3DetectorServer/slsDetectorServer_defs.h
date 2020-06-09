@@ -58,41 +58,42 @@
 enum DACINDEX {
     M_VCASSH,
     M_VTH2,
-    M_VRFSH,
-    M_VRFSHNPOL,
+    M_VRSHAPER,
+    M_VRSHAPER_N,
     M_VIPRE_OUT,
     M_VTH3,
     M_VTH1,
     M_VICIN,
     M_VCAS,
-    M_VRF,
-    M_VPL,
+    M_VRPREAMP,
+    M_VCAL_N,
     M_VIPRE,
-    M_VIINSH,
-    M_VPH,
+    M_VISHAPER,
+    M_VCAL_P,
     M_VTRIM,
-    M_VDCSH
+    M_VDCSH,
+    M_VTHRESHOLD
 };
 #define DAC_NAMES                                                              \
-    "vcassh", "vth2", "vshaper", "vshaperneg", "vipre_out", "vth3", "vth1",    \
-        "vicin", "vcas", "vpreamp", "vpl", "vipre", "viinsh", "vph", "vtrim",  \
-        "vdcsh"
+    "vcassh", "vth2", "vrshaper", "vrshaper_n", "vipre_out", "vth3", "vth1",   \
+        "vicin", "vcas", "vrpreamp", "vcal_n", "vipre", "vishaper", "vcal_p",  \
+        "vtrim", "vdcsh"
 #define DEFAULT_DAC_VALS                                                       \
     {                                                                          \
         1200, /* casSh */                                                      \
         2800, /* Vth2 */                                                       \
-        1280, /* VrfSh */                                                      \
-        2800, /* VrfShNpol */                                                  \
+        1280, /* Vrshaper */                                                   \
+        2800, /* Vrshaper_n */                                                 \
         1220, /* vIpreOut */                                                   \
         2800, /* Vth3 */                                                       \
         2800, /* Vth1 */                                                       \
         1708, /* vIcin */                                                      \
         1800, /* cas */                                                        \
-        1100, /* Vrf */                                                        \
-        1100, /* VPL */                                                        \
+        1100, /* Vrpreamp */                                                   \
+        1100, /* Vcal_n */                                                     \
         2624, /* vIpre */                                                      \
-        1708, /* vIinSh */                                                     \
-        1712, /* VPH */                                                        \
+        1708, /* vishaper */                                                   \
+        1712, /* Vcal_p */                                                     \
         2800, /* vTrim */                                                      \
         800   /* VdcSh */                                                      \
     };

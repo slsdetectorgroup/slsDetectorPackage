@@ -255,12 +255,12 @@ std::string ToString(const defs::dacIndex s) {
         return std::string("dac 17");
     case defs::VSVP:
         return std::string("vsvp");
-    case defs::VTR:
-        return std::string("vtr");
-    case defs::VRF:
-        return std::string("vrf");
-    case defs::VRS:
-        return std::string("vrs");
+    case defs::VTRIM:
+        return std::string("vtrim");
+    case defs::VRPREAMP:
+        return std::string("vrpreamp");
+    case defs::VRSHAPER:
+        return std::string("vrshaper");
     case defs::VSVN:
         return std::string("vsvn");
     case defs::VTGSTV:
@@ -283,8 +283,8 @@ std::string ToString(const defs::dacIndex s) {
         return std::string("vcp");
     case defs::VCN:
         return std::string("vcn");
-    case defs::VIS:
-        return std::string("vis");
+    case defs::VISHAPER:
+        return std::string("vishaper");
     case defs::VTHRESHOLD:
         return std::string("vthreshold");
     case defs::VREF_DS:
@@ -345,10 +345,8 @@ std::string ToString(const defs::dacIndex s) {
         return std::string("vcassh");
     case defs::VTH2:
         return std::string("vth2");
-    case defs::VSHAPER:
-        return std::string("vshaper");
-    case defs::VSHAPERNEG:
-        return std::string("vshaperneg");
+    case defs::VRSHAPER_N:
+        return std::string("vrshaper_n");
     case defs::VIPRE_OUT:
         return std::string("vipre_out");
     case defs::VTH3:
@@ -359,18 +357,12 @@ std::string ToString(const defs::dacIndex s) {
         return std::string("vicin");
     case defs::VCAS:
         return std::string("vcas");
-    case defs::VPREAMP:
-        return std::string("vpreamp");
-    case defs::VPL:
-        return std::string("vpl");
+    case defs::VCAL_N:
+        return std::string("vcal_n");
     case defs::VIPRE:
         return std::string("vipre");
-    case defs::VIINSH:
-        return std::string("viinsh");
-    case defs::VPH:
-        return std::string("vph");
-    case defs::VTRIM:
-        return std::string("vtrim");
+    case defs::VCAL_P:
+        return std::string("vcal_p");
     case defs::VDCSH:
         return std::string("vdcsh");
     case defs::VBP_COLBUF:
@@ -616,12 +608,12 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::DAC_17;
     if (s == "vsvp")
         return defs::VSVP;
-    if (s == "vtr")
-        return defs::VTR;
-    if (s == "vrf")
-        return defs::VRF;
-    if (s == "vrs")
-        return defs::VRS;
+    if (s == "vtrim")
+        return defs::VTRIM;
+    if (s == "vrpreamp")
+        return defs::VRPREAMP;
+    if (s == "vrshaper")
+        return defs::VRSHAPER;
     if (s == "vsvn")
         return defs::VSVN;
     if (s == "vtgstv")
@@ -644,8 +636,8 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::VCP;
     if (s == "vcn")
         return defs::VCN;
-    if (s == "vis")
-        return defs::VIS;
+    if (s == "vishaper")
+        return defs::VISHAPER;
     if (s == "vthreshold")
         return defs::VTHRESHOLD;
     if (s == "vref_ds")
@@ -706,10 +698,8 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::VCASSH;
     if (s == "vth2")
         return defs::VTH2;
-    if (s == "vshaper")
-        return defs::VSHAPER;
-    if (s == "vshaperneg")
-        return defs::VSHAPERNEG;
+    if (s == "vrshaper_n")
+        return defs::VRSHAPER_N;
     if (s == "vipre_out")
         return defs::VIPRE_OUT;
     if (s == "vth3")
@@ -720,18 +710,12 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::VICIN;
     if (s == "vcas")
         return defs::VCAS;
-    if (s == "vpreamp")
-        return defs::VPREAMP;
-    if (s == "vpl")
-        return defs::VPL;
+    if (s == "vcal_n")
+        return defs::VCAL_N;
     if (s == "vipre")
         return defs::VIPRE;
-    if (s == "viinsh")
-        return defs::VIINSH;
-    if (s == "vph")
-        return defs::VPH;
-    if (s == "vtrim")
-        return defs::VTRIM;
+    if (s == "vcal_p")
+        return defs::VCAL_P;
     if (s == "vdcsh")
         return defs::VDCSH;
     if (s == "vbp_colbuf")

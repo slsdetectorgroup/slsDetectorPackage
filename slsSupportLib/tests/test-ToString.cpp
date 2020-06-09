@@ -250,14 +250,14 @@ TEST_CASE("dac index to string") {
 }
 
 TEST_CASE("convert vector of strings to dac index") {
-    std::vector<std::string> dacs{"vcassh", "vth2", "vshaper"};
-    std::vector<defs::dacIndex> daci{defs::VCASSH, defs::VTH2, defs::VSHAPER};
+    std::vector<std::string> dacs{"vcassh", "vth2", "vrshaper"};
+    std::vector<defs::dacIndex> daci{defs::VCASSH, defs::VTH2, defs::VRSHAPER};
     auto r = StringTo<defs::dacIndex>(dacs);
     REQUIRE(r == daci);
 }
 
 TEST_CASE("vector of dac index to string") {
-    std::vector<defs::dacIndex> daci{defs::VCASSH, defs::VTH2, defs::VSHAPER};
+    std::vector<defs::dacIndex> daci{defs::VCASSH, defs::VTH2, defs::VRSHAPER};
     auto r = ToString(daci);
-    REQUIRE(r == "[vcassh, vth2, vshaper]");
+    REQUIRE(r == "[vcassh, vth2, vrshaper]");
 }

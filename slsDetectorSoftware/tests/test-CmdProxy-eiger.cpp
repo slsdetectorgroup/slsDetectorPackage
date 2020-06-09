@@ -132,9 +132,9 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs][.new]") {
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER) {
         SECTION("vsvp") { test_dac(defs::VSVP, "vsvp", 5); }
-        SECTION("vtr") { test_dac(defs::VRF, "vtr", 1200); }
-        SECTION("vrf") { test_dac(defs::VRF, "vrf", 1500); }
-        SECTION("vrs") { test_dac(defs::VRF, "vrs", 1510); }
+        SECTION("vtrim") { test_dac(defs::VTRIM, "vtrim", 1200); }
+        SECTION("vrpreamp") { test_dac(defs::VRPREAMP, "vrpreamp", 1500); }
+        SECTION("vrshaper") { test_dac(defs::VRSHAPER, "vrshaper", 1510); }
         SECTION("vsvn") { test_dac(defs::VSVN, "vsvn", 3800); }
         SECTION("vtgstv") { test_dac(defs::VTGSTV, "vtgstv", 2550); }
         SECTION("vcmp_ll") { test_dac(defs::VCMP_LL, "vcmp_ll", 1400); }
@@ -146,7 +146,7 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs][.new]") {
         SECTION("vcmp_rr") { test_dac(defs::VCMP_RR, "vcmp_rr", 1400); }
         SECTION("vcp") { test_dac(defs::VCP, "vcp", 1400); }
         SECTION("vcn") { test_dac(defs::VCN, "vcn", 1400); }
-        SECTION("vis") { test_dac(defs::VIS, "vis", 1400); }
+        SECTION("vishaper") { test_dac(defs::VISHAPER, "vishaper", 1400); }
         SECTION("iodelay") { test_dac(defs::IO_DELAY, "iodelay", 1400); }
         SECTION("vthreshold") {
             // Read out individual vcmp to be able to reset after
@@ -171,9 +171,9 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs][.new]") {
             // Reset dacs after test
             for (int i = 0; i != det.size(); ++i) {
                 det.setDAC(defs::VCMP_LL, vcmp_ll[i], false, {i});
-                det.setDAC(defs::VCMP_LR, vcmp_ll[i], false, {i});
-                det.setDAC(defs::VCMP_RL, vcmp_ll[i], false, {i});
-                det.setDAC(defs::VCMP_RR, vcmp_ll[i], false, {i});
+                det.setDAC(defs::VCMP_LR, vcmp_lr[i], false, {i});
+                det.setDAC(defs::VCMP_RL, vcmp_rl[i], false, {i});
+                det.setDAC(defs::VCMP_RR, vcmp_rr[i], false, {i});
                 det.setDAC(defs::VCP, vcp[i], false, {i});
             }
         }
@@ -187,17 +187,17 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs][.new]") {
         REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("ib_test_c", {}, -1, GET));
         // mythen3
-        REQUIRE_THROWS(proxy.Call("vpreamp", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vshaper", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vshaperneg", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vrpreamp", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vrshaper", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vrshaper_n", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vipre", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("viinsh", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vishaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vdcsh", {}, -1, GET));
         // REQUIRE_THROWS(proxy.Call("vth1", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vth2", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vth3", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vpl", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vph", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vcal_n", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vcal_p", {}, -1, GET));
         // REQUIRE_THROWS(proxy.Call("vtrim", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcassh", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcas", {}, -1, GET));

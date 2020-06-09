@@ -33,9 +33,9 @@ TEST_CASE("dac", "[.cmd][.dacs][.new]") {
         // REQUIRE_THROWS(proxy.Call("vthreshold", {}, -1, GET));
         // REQUIRE_THROWS(proxy.Call("vsvp", {}, -1, GET));
         // REQUIRE_THROWS(proxy.Call("vsvn", {}, -1, GET));
-        // REQUIRE_THROWS(proxy.Call("vtr", {}, -1, GET));
-        // REQUIRE_THROWS(proxy.Call("vrf", {}, -1, GET));
-        // REQUIRE_THROWS(proxy.Call("vrs", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vtrim", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vrpreamp", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vrshaper", {}, -1, GET));
         // REQUIRE_THROWS(proxy.Call("vtgstv", {}, -1, GET));
         // REQUIRE_THROWS(proxy.Call("vcmp_ll", {}, -1, GET));
         // REQUIRE_THROWS(proxy.Call("vcmp_lr", {}, -1, GET));
@@ -46,7 +46,7 @@ TEST_CASE("dac", "[.cmd][.dacs][.new]") {
         // REQUIRE_THROWS(proxy.Call("rxb_lb", {}, -1, GET));
         // REQUIRE_THROWS(proxy.Call("vcp", {}, -1, GET));
         // REQUIRE_THROWS(proxy.Call("vcn", {}, -1, GET));
-        // REQUIRE_THROWS(proxy.Call("vis", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vishaper", {}, -1, GET));
         // REQUIRE_THROWS(proxy.Call("iodelay", {}, -1, GET));
         // jungfrau
         REQUIRE_THROWS(proxy.Call("vb_comp", {}, -1, GET));
@@ -67,17 +67,17 @@ TEST_CASE("dac", "[.cmd][.dacs][.new]") {
         REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("ib_test_c", {}, -1, GET));
         // mythen3
-        REQUIRE_THROWS(proxy.Call("vpreamp", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vshaper", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vshaperneg", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vrpreamp", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vrshaper", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vrshaper_n", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vipre", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("viinsh", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vishaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vdcsh", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vth1", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vth2", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vth3", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vpl", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vph", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vcal_n", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vcal_p", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vtrim", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcassh", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcas", {}, -1, GET));

@@ -751,23 +751,23 @@ int set_dac(int file_des) {
     case HIGH_VOLTAGE:
         break;
 #elif EIGERD
-    case THRESHOLD:
+    case VTHRESHOLD:
         serverDacIndex = E_VTHRESHOLD;
         break;
-    case SVP:
-        serverDacIndex = E_SVP;
+    case VSVP:
+        serverDacIndex = E_VSVP;
         break;
-    case SVN:
-        serverDacIndex = E_SVN;
+    case VSVN:
+        serverDacIndex = E_VSVN;
         break;
-    case VTR:
-        serverDacIndex = E_VTR;
+    case VTRIM:
+        serverDacIndex = E_VTRIM;
         break;
-    case VRF:
-        serverDacIndex = E_VRF;
+    case VRPREAMP:
+        serverDacIndex = E_VRPREAMP;
         break;
-    case VRS:
-        serverDacIndex = E_VRS;
+    case VRSHAPER:
+        serverDacIndex = E_VRSHAPER;
         break;
     case VTGSTV:
         serverDacIndex = E_VTGSTV;
@@ -778,8 +778,8 @@ int set_dac(int file_des) {
     case VCMP_LR:
         serverDacIndex = E_VCMP_LR;
         break;
-    case CAL:
-        serverDacIndex = E_CAL;
+    case VCAL:
+        serverDacIndex = E_VCAL;
         break;
     case VCMP_RL:
         serverDacIndex = E_VCMP_RL;
@@ -799,8 +799,8 @@ int set_dac(int file_des) {
     case VCN:
         serverDacIndex = E_VCN;
         break;
-    case VIS:
-        serverDacIndex = E_VIS;
+    case VISHAPER:
+        serverDacIndex = E_VISHAPER;
         break;
     case HIGH_VOLTAGE:
     case IO_DELAY:
@@ -862,17 +862,17 @@ int set_dac(int file_des) {
 #elif MYTHEN3D
     case HIGH_VOLTAGE:
         break;
-    case CASSH:
-        serverDacIndex = M_CASSH;
+    case VCASSH:
+        serverDacIndex = M_VCASSH;
         break;
     case VTH2:
         serverDacIndex = M_VTH2;
         break;
-    case SHAPER1:
-        serverDacIndex = M_VRFSH;
+    case VRSHAPER:
+        serverDacIndex = M_VRSHAPER;
         break;
-    case SHAPER2:
-        serverDacIndex = M_VRFSHNPOL;
+    case VRSHAPER_N:
+        serverDacIndex = M_VRSHAPER_N;
         break;
     case VIPRE_OUT:
         serverDacIndex = M_VIPRE_OUT;
@@ -880,35 +880,38 @@ int set_dac(int file_des) {
     case VTH3:
         serverDacIndex = M_VTH3;
         break;
-    case THRESHOLD:
+    case VTH1:
         serverDacIndex = M_VTH1;
         break;
     case VICIN:
         serverDacIndex = M_VICIN;
         break;
-    case CAS:
-        serverDacIndex = M_CAS;
+    case VCAS:
+        serverDacIndex = M_VCAS;
         break;
-    case PREAMP:
-        serverDacIndex = M_VRF;
+    case VRPREAMP:
+        serverDacIndex = M_VRPREAMP;
         break;
-    case CALIBRATION_PULSE:
-        serverDacIndex = M_VPH;
+    case VCAL_P:
+        serverDacIndex = M_VCAL_P;
         break;
     case VIPRE:
         serverDacIndex = M_VIPRE;
         break;
-    case VIINSH:
-        serverDacIndex = M_VIINSH;
+    case VISHAPER:
+        serverDacIndex = M_VISHAPER;
         break;
-    case VPL:
-        serverDacIndex = M_VPL;
+    case VCAL_N:
+        serverDacIndex = M_VCAL_N;
         break;
-    case TRIMBIT_SIZE:
+    case VTRIM:
         serverDacIndex = M_VTRIM;
         break;
     case VDCSH:
         serverDacIndex = M_VDCSH;
+        break;
+    case VTHRESHOLD:
+        serverDacIndex = M_VTHRESHOLD;
         break;
 #elif GOTTHARD2D
     case HIGH_VOLTAGE:
@@ -1198,7 +1201,7 @@ int set_dac(int file_des) {
                     case E_VCMP_LR:
                     case E_VCMP_RL:
                     case E_VCMP_RR:
-                    case E_VRF:
+                    case E_VRPREAMP:
                     case E_VCP:
                         setSettings(UNDEFINED);
                         LOG(logERROR,

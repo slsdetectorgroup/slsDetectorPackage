@@ -141,6 +141,38 @@ void Detector::setDetectorSize(const defs::xy value) {
     pimpl->setNumberOfChannels(value);
 }
 
+std::vector<defs::detectorSettings> Detector::getSettingsList() const {
+    switch (getDetectorType().squash()) {
+    case defs::EIGER:
+        return std::vector<defs::detectorSettings>{
+            defs::STANDARD, defs::HIGHGAIN, defs::LOWGAIN, defs::VERYHIGHGAIN,
+            defs::VERYLOWGAIN};
+    case defs::GOTTHARD:
+        return std::vector<defs::detectorSettings>{
+            defs::HIGHGAIN, defs::DYNAMICGAIN, defs::LOWGAIN, defs::MEDIUMGAIN,
+            defs::VERYHIGHGAIN};
+    case defs::JUNGFRAU:
+        return std::vector<defs::detectorSettings>{
+            defs::DYNAMICGAIN, defs::DYNAMICHG0,    defs::FIXGAIN1,
+            defs::FIXGAIN2,    defs::FORCESWITCHG1, defs::FORCESWITCHG2};
+    case defs::GOTTHARD2:
+        return std::vector<defs::detectorSettings>{
+            defs::DYNAMICGAIN, defs::DYNAMICHG0, defs::FIXGAIN1,
+            defs::FIXGAIN2};
+    case defs::MOENCH:
+        return std::vector<defs::detectorSettings>{
+            defs::G1_HIGHGAIN,         defs::G1_LOWGAIN,
+            defs::G2_HIGHCAP_HIGHGAIN, defs::G2_HIGHCAP_LOWGAIN,
+            defs::G2_LOWCAP_HIGHGAIN,  defs::G2_LOWCAP_LOWGAIN,
+            defs::G4_HIGHGAIN,         defs::G4_LOWGAIN};
+    case defs::CHIPTESTBOARD:
+    case defs::MYTHEN3:
+        throw RuntimeError("Settings not implemented for this detector");
+    default:
+        throw RuntimeError("Unknown detector type");
+    }
+}
+
 Result<defs::detectorSettings> Detector::getSettings(Positions pos) const {
     return pimpl->Parallel(&Module::getSettings, pos);
 }
@@ -403,6 +435,53 @@ Result<int> Detector::getTemperature(defs::dacIndex index,
         break;
     }
     return res;
+}
+
+std::vector<defs::dacIndex> Detector::getDacList() const {
+    std::vector<defs::dacIndex> retval;
+    switch (getDetectorType().squash()) {
+    case defs::EIGER:
+        return std::vector<defs::dacIndex>{
+            defs::VSVP,      defs::VTRIM,   defs::VRPREAMP, defs::VRSHAPER,
+            defs::VSVN,      defs::VTGSTV,  defs::VCMP_LL,  defs::VCMP_LR,
+            defs::VCAL,      defs::VCMP_RL, defs::RXB_RB,   defs::RXB_LB,
+            defs::VCMP_RR,   defs::VCP,     defs::VCN,      defs::VISHAPER,
+            defs::VTHRESHOLD};
+    case defs::GOTTHARD:
+        return std::vector<defs::dacIndex>{
+            defs::VREF_DS,   defs::VCASCN_PB, defs::VCASCP_PB, defs::VOUT_CM,
+            defs::VCASC_OUT, defs::VIN_CM,    defs::VREF_COMP, defs::IB_TESTC};
+    case defs::JUNGFRAU:
+        return std::vector<defs::dacIndex>{
+            defs::VB_COMP,   defs::VDD_PROT, defs::VIN_COM, defs::VREF_PRECH,
+            defs::VB_PIXBUF, defs::VB_DS,    defs::VREF_DS, defs::VREF_COMP};
+    case defs::GOTTHARD2:
+        return std::vector<defs::dacIndex>{
+            defs::VREF_H_ADC,   defs::VB_COMP_FE,  defs::VB_COMP_ADC,
+            defs::VCOM_CDS,     defs::VREF_RSTORE, defs::VB_OPA_1ST,
+            defs::VREF_COMP_FE, defs::VCOM_ADC1,   defs::VREF_PRECH,
+            defs::VREF_L_ADC,   defs::VREF_CDS,    defs::VB_CS,
+            defs::VB_OPA_FD,    defs::VCOM_ADC2};
+    case defs::MYTHEN3:
+        return std::vector<defs::dacIndex>{
+            defs::VCASSH,    defs::VTH2,     defs::VRSHAPER, defs::VRSHAPER_N,
+            defs::VIPRE_OUT, defs::VTH3,     defs::VTH1,     defs::VICIN,
+            defs::VCAS,      defs::VRPREAMP, defs::VCAL_N,   defs::VIPRE,
+            defs::VISHAPER,  defs::VCAL_P,   defs::VTRIM,    defs::VDCSH,
+            defs::VTHRESHOLD};
+    case defs::MOENCH:
+        return std::vector<defs::dacIndex>{
+            defs::VBP_COLBUF, defs::VIPRE,   defs::VIN_CM,    defs::VB_SDA,
+            defs::VCASC_SFP,  defs::VOUT_CM, defs::VIPRE_CDS, defs::IBIAS_SFP};
+    case defs::CHIPTESTBOARD:
+        for (int i = 0; i != 18; ++i) {
+            retval.push_back(static_cast<defs::dacIndex>(i));
+        }
+        break;
+    default:
+        throw RuntimeError("Unknown detector type");
+    }
+    return retval;
 }
 
 Result<int> Detector::getDAC(defs::dacIndex index, bool mV,
@@ -757,6 +836,11 @@ void Detector::setRxLock(bool value, Positions pos) {
 
 Result<sls::IpAddr> Detector::getRxLastClientIP(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverLastClientIP, pos);
+}
+
+Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
+Detector::getRxThreadIds(Positions pos) const {
+    return pimpl->Parallel(&Module::getReceiverThreadIds, pos);
 }
 
 // File

@@ -12,42 +12,42 @@
 
 /* Enums */
 enum DACINDEX {
-    E_SVP,
-    E_VTR,
-    E_VRF,
-    E_VRS,
-    E_SVN,
+    E_VSVP,
+    E_VTRIM,
+    E_VRPREAMP,
+    E_VRSHAPER,
+    E_VSVN,
     E_VTGSTV,
     E_VCMP_LL,
     E_VCMP_LR,
-    E_CAL,
+    E_VCAL,
     E_VCMP_RL,
     E_RXB_RB,
     E_RXB_LB,
     E_VCMP_RR,
     E_VCP,
     E_VCN,
-    E_VIS,
+    E_VISHAPER,
     E_VTHRESHOLD
 };
 #define DEFAULT_DAC_VALS                                                       \
     {                                                                          \
-        0,    /* SvP		*/                                                       \
-        2480, /* Vtr		*/                                                       \
-        3300, /* Vrf		*/                                                       \
-        1400, /* Vrs		*/                                                       \
-        4000, /* SvN		*/                                                       \
+        0,    /* VSvP		*/                                                      \
+        2480, /* Vtrim		*/                                                     \
+        3300, /* Vrpreamp		*/                                                  \
+        1400, /* Vrshaper		*/                                                  \
+        4000, /* VSvN		*/                                                      \
         2556, /* Vtgstv	*/                                                     \
         1000, /* Vcmp_ll	*/                                                    \
         1000, /* Vcmp_lr	*/                                                    \
-        0,    /* cal		*/                                                       \
+        0,    /* Vcal		*/                                                      \
         1000, /* Vcmp_rl	*/                                                    \
         1100, /* rxb_rb	*/                                                     \
         1100, /* rxb_lb	*/                                                     \
         1000, /* Vcmp_rr	*/                                                    \
         1000, /* Vcp		*/                                                       \
         2000, /* Vcn		*/                                                       \
-        1550  /* Vis		*/                                                       \
+        1550  /* Vishaper		*/                                                  \
     };
 enum ADCINDEX {
     TEMP_FPGAEXT,

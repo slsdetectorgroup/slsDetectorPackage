@@ -215,6 +215,184 @@ std::string ToString(const defs::detectorModeType s) {
     }
 }
 
+std::string ToString(const defs::dacIndex s) {
+    switch (s) {
+    case defs::DAC_0:
+        return std::string("dac 0");
+    case defs::DAC_1:
+        return std::string("dac 1");
+    case defs::DAC_2:
+        return std::string("dac 2");
+    case defs::DAC_3:
+        return std::string("dac 3");
+    case defs::DAC_4:
+        return std::string("dac 4");
+    case defs::DAC_5:
+        return std::string("dac 5");
+    case defs::DAC_6:
+        return std::string("dac 6");
+    case defs::DAC_7:
+        return std::string("dac 7");
+    case defs::DAC_8:
+        return std::string("dac 8");
+    case defs::DAC_9:
+        return std::string("dac 9");
+    case defs::DAC_10:
+        return std::string("dac 10");
+    case defs::DAC_11:
+        return std::string("dac 11");
+    case defs::DAC_12:
+        return std::string("dac 12");
+    case defs::DAC_13:
+        return std::string("dac 13");
+    case defs::DAC_14:
+        return std::string("dac 14");
+    case defs::DAC_15:
+        return std::string("dac 15");
+    case defs::DAC_16:
+        return std::string("dac 16");
+    case defs::DAC_17:
+        return std::string("dac 17");
+    case defs::VSVP:
+        return std::string("vsvp");
+    case defs::VTRIM:
+        return std::string("vtrim");
+    case defs::VRPREAMP:
+        return std::string("vrpreamp");
+    case defs::VRSHAPER:
+        return std::string("vrshaper");
+    case defs::VSVN:
+        return std::string("vsvn");
+    case defs::VTGSTV:
+        return std::string("vtgstv");
+    case defs::VCMP_LL:
+        return std::string("vcmp_ll");
+    case defs::VCMP_LR:
+        return std::string("vcmp_lr");
+    case defs::VCAL:
+        return std::string("vcal");
+    case defs::VCMP_RL:
+        return std::string("vcmp_rl");
+    case defs::RXB_RB:
+        return std::string("rxb_rb");
+    case defs::RXB_LB:
+        return std::string("rxb_lb");
+    case defs::VCMP_RR:
+        return std::string("vcmp_rr");
+    case defs::VCP:
+        return std::string("vcp");
+    case defs::VCN:
+        return std::string("vcn");
+    case defs::VISHAPER:
+        return std::string("vishaper");
+    case defs::VTHRESHOLD:
+        return std::string("vthreshold");
+    case defs::VREF_DS:
+        return std::string("vref_ds");
+    case defs::VCASCN_PB:
+        return std::string("vcascn_pb");
+    case defs::VCASCP_PB:
+        return std::string("vcascp_pb");
+    case defs::VOUT_CM:
+        return std::string("vout_cm");
+    case defs::VCASC_OUT:
+        return std::string("vcasc_out");
+    case defs::VIN_CM:
+        return std::string("vin_cm");
+    case defs::VREF_COMP:
+        return std::string("vref_comp");
+    case defs::IB_TESTC:
+        return std::string("ib_test_c");
+    case defs::VB_COMP:
+        return std::string("vb_comp");
+    case defs::VDD_PROT:
+        return std::string("vdd_prot");
+    case defs::VIN_COM:
+        return std::string("vin_com");
+    case defs::VREF_PRECH:
+        return std::string("vref_prech");
+    case defs::VB_PIXBUF:
+        return std::string("vb_pixbuf");
+    case defs::VB_DS:
+        return std::string("vb_ds");
+    case defs::VREF_H_ADC:
+        return std::string("vref_h_adc");
+    case defs::VB_COMP_FE:
+        return std::string("vb_comp_fe");
+    case defs::VB_COMP_ADC:
+        return std::string("vb_comp_adc");
+    case defs::VCOM_CDS:
+        return std::string("vcom_cds");
+    case defs::VREF_RSTORE:
+        return std::string("vref_rstore");
+    case defs::VB_OPA_1ST:
+        return std::string("vb_opa_1st");
+    case defs::VREF_COMP_FE:
+        return std::string("vref_comp_fe");
+    case defs::VCOM_ADC1:
+        return std::string("vcom_adc1");
+    case defs::VREF_L_ADC:
+        return std::string("vref_l_adc");
+    case defs::VREF_CDS:
+        return std::string("vref_cds");
+    case defs::VB_CS:
+        return std::string("vb_cs");
+    case defs::VB_OPA_FD:
+        return std::string("vb_opa_fd");
+    case defs::VCOM_ADC2:
+        return std::string("vcom_adc2");
+    case defs::VCASSH:
+        return std::string("vcassh");
+    case defs::VTH2:
+        return std::string("vth2");
+    case defs::VRSHAPER_N:
+        return std::string("vrshaper_n");
+    case defs::VIPRE_OUT:
+        return std::string("vipre_out");
+    case defs::VTH3:
+        return std::string("vth3");
+    case defs::VTH1:
+        return std::string("vth1");
+    case defs::VICIN:
+        return std::string("vicin");
+    case defs::VCAS:
+        return std::string("vcas");
+    case defs::VCAL_N:
+        return std::string("vcal_n");
+    case defs::VIPRE:
+        return std::string("vipre");
+    case defs::VCAL_P:
+        return std::string("vcal_p");
+    case defs::VDCSH:
+        return std::string("vdcsh");
+    case defs::VBP_COLBUF:
+        return std::string("vbp_colbuf");
+    case defs::VB_SDA:
+        return std::string("vb_sda");
+    case defs::VCASC_SFP:
+        return std::string("vcasc_sfp");
+    case defs::VIPRE_CDS:
+        return std::string("vipre_cds");
+    case defs::IBIAS_SFP:
+        return std::string("ibias_sfp");
+    default:
+        return std::string("Unknown");
+    }
+}
+
+std::string ToString(const std::vector<defs::dacIndex> &vec) {
+    std::ostringstream os;
+    os << '[';
+    if (!vec.empty()) {
+        auto it = vec.begin();
+        os << ToString(*it++);
+        while (it != vec.end())
+            os << ", " << ToString(*it++);
+    }
+    os << ']';
+    return os.str();
+}
+
 std::string ToString(const defs::burstMode s) {
     switch (s) {
     case defs::BURST_OFF:
@@ -392,26 +570,164 @@ template <> defs::detectorModeType StringTo(const std::string &s) {
 }
 
 template <> defs::dacIndex StringTo(const std::string &s) {
+    if (s == "dac 0")
+        return defs::DAC_0;
+    if (s == "dac 1")
+        return defs::DAC_1;
+    if (s == "dac 2")
+        return defs::DAC_2;
+    if (s == "dac 3")
+        return defs::DAC_3;
+    if (s == "dac 4")
+        return defs::DAC_4;
+    if (s == "dac 5")
+        return defs::DAC_5;
+    if (s == "dac 6")
+        return defs::DAC_6;
+    if (s == "dac 7")
+        return defs::DAC_7;
+    if (s == "dac 8")
+        return defs::DAC_8;
+    if (s == "dac 9")
+        return defs::DAC_9;
+    if (s == "dac 10")
+        return defs::DAC_10;
+    if (s == "dac 11")
+        return defs::DAC_11;
+    if (s == "dac 12")
+        return defs::DAC_12;
+    if (s == "dac 13")
+        return defs::DAC_13;
+    if (s == "dac 14")
+        return defs::DAC_14;
+    if (s == "dac 15")
+        return defs::DAC_15;
+    if (s == "dac 16")
+        return defs::DAC_16;
+    if (s == "dac 17")
+        return defs::DAC_17;
+    if (s == "vsvp")
+        return defs::VSVP;
+    if (s == "vtrim")
+        return defs::VTRIM;
+    if (s == "vrpreamp")
+        return defs::VRPREAMP;
+    if (s == "vrshaper")
+        return defs::VRSHAPER;
+    if (s == "vsvn")
+        return defs::VSVN;
+    if (s == "vtgstv")
+        return defs::VTGSTV;
     if (s == "vcmp_ll")
         return defs::VCMP_LL;
     if (s == "vcmp_lr")
         return defs::VCMP_LR;
+    if (s == "vcal")
+        return defs::VCAL;
     if (s == "vcmp_rl")
         return defs::VCMP_RL;
+    if (s == "rxb_rb")
+        return defs::RXB_RB;
+    if (s == "rxb_lb")
+        return defs::RXB_LB;
     if (s == "vcmp_rr")
         return defs::VCMP_RR;
-    if (s == "vthreshold")
-        return defs::THRESHOLD;
-    if (s == "vrf")
-        return defs::VRF;
-    if (s == "vrs")
-        return defs::VRS;
-    if (s == "vtr")
-        return defs::VTR;
-    if (s == "vcall")
-        return defs::CAL;
     if (s == "vcp")
         return defs::VCP;
+    if (s == "vcn")
+        return defs::VCN;
+    if (s == "vishaper")
+        return defs::VISHAPER;
+    if (s == "vthreshold")
+        return defs::VTHRESHOLD;
+    if (s == "vref_ds")
+        return defs::VREF_DS;
+    if (s == "vcascn_pb")
+        return defs::VCASCN_PB;
+    if (s == "vcascp_pb")
+        return defs::VCASCP_PB;
+    if (s == "vout_cm")
+        return defs::VOUT_CM;
+    if (s == "vcasc_out")
+        return defs::VCASC_OUT;
+    if (s == "vin_cm")
+        return defs::VIN_CM;
+    if (s == "vref_comp")
+        return defs::VREF_COMP;
+    if (s == "ib_test_c")
+        return defs::IB_TESTC;
+    if (s == "vb_comp")
+        return defs::VB_COMP;
+    if (s == "vdd_prot")
+        return defs::VDD_PROT;
+    if (s == "vin_com")
+        return defs::VIN_COM;
+    if (s == "vref_prech")
+        return defs::VREF_PRECH;
+    if (s == "vb_pixbuf")
+        return defs::VB_PIXBUF;
+    if (s == "vb_ds")
+        return defs::VB_DS;
+    if (s == "vref_h_adc")
+        return defs::VREF_H_ADC;
+    if (s == "vb_comp_fe")
+        return defs::VB_COMP_FE;
+    if (s == "vb_comp_adc")
+        return defs::VB_COMP_ADC;
+    if (s == "vcom_cds")
+        return defs::VCOM_CDS;
+    if (s == "vref_rstore")
+        return defs::VREF_RSTORE;
+    if (s == "vb_opa_1st")
+        return defs::VB_OPA_1ST;
+    if (s == "vref_comp_fe")
+        return defs::VREF_COMP_FE;
+    if (s == "vcom_adc1")
+        return defs::VCOM_ADC1;
+    if (s == "vref_l_adc")
+        return defs::VREF_L_ADC;
+    if (s == "vref_cds")
+        return defs::VREF_CDS;
+    if (s == "vb_cs")
+        return defs::VB_CS;
+    if (s == "vb_opa_fd")
+        return defs::VB_OPA_FD;
+    if (s == "vcom_adc2")
+        return defs::VCOM_ADC2;
+    if (s == "vcassh")
+        return defs::VCASSH;
+    if (s == "vth2")
+        return defs::VTH2;
+    if (s == "vrshaper_n")
+        return defs::VRSHAPER_N;
+    if (s == "vipre_out")
+        return defs::VIPRE_OUT;
+    if (s == "vth3")
+        return defs::VTH3;
+    if (s == "vth1")
+        return defs::VTH1;
+    if (s == "vicin")
+        return defs::VICIN;
+    if (s == "vcas")
+        return defs::VCAS;
+    if (s == "vcal_n")
+        return defs::VCAL_N;
+    if (s == "vipre")
+        return defs::VIPRE;
+    if (s == "vcal_p")
+        return defs::VCAL_P;
+    if (s == "vdcsh")
+        return defs::VDCSH;
+    if (s == "vbp_colbuf")
+        return defs::VBP_COLBUF;
+    if (s == "vb_sda")
+        return defs::VB_SDA;
+    if (s == "vcasc_sfp")
+        return defs::VCASC_SFP;
+    if (s == "vipre_cds")
+        return defs::VIPRE_CDS;
+    if (s == "ibias_sfp")
+        return defs::IBIAS_SFP;
     throw sls::RuntimeError("Unknown dac Index " + s);
 }
 

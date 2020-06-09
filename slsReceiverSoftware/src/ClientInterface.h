@@ -155,6 +155,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_progress(sls::ServerInterface &socket);
     int set_num_gates(sls::ServerInterface &socket);
     int set_gate_delay(sls::ServerInterface &socket);
+    int get_thread_ids(sls::ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {
@@ -179,4 +180,7 @@ class ClientInterface : private virtual slsDetectorDefs {
     void (*rawDataModifyReadyCallBack)(char *, char *, uint32_t &,
                                        void *) = nullptr;
     void *pRawDataReady{nullptr};
+
+    pid_t parentThreadId{0};
+    pid_t tcpThreadId{0};
 };

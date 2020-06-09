@@ -1309,6 +1309,8 @@ class Module : public virtual slsDetectorDefs {
      */
     sls::IpAddr getReceiverLastClientIP() const;
 
+    std::array<pid_t, NUM_RX_THREAD_IDS> getReceiverThreadIds() const;
+
     /**
      * Exits the receiver TCP server
      */

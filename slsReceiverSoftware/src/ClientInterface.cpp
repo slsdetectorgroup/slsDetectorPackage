@@ -36,6 +36,7 @@ ClientInterface::ClientInterface(int portNumber)
       portNumber(portNumber > 0 ? portNumber : DEFAULT_PORTNO + 2),
       server(portNumber) {
     functionTable();
+    parentThreadId = syscall(SYS_gettid);
     // start up tcp thread
     tcpThread =
         sls::make_unique<std::thread>(&ClientInterface::startTCPServer, this);
@@ -71,8 +72,8 @@ void ClientInterface::registerCallBackRawDataModifyReady(
 }
 
 void ClientInterface::startTCPServer() {
-    LOG(logINFOBLUE) << "Created [ TCP server Tid: " << syscall(SYS_gettid)
-                     << "]";
+    tcpThreadId = syscall(SYS_gettid);
+    LOG(logINFOBLUE) << "Created [ TCP server Tid: " << tcpThreadId << "]";
     LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber
                  << '\n';
     // server = sls::make_unique<sls::ServerSocket>(portNumber);
@@ -102,8 +103,7 @@ void ClientInterface::startTCPServer() {
     if (receiver) {
         receiver->shutDownUDPSockets();
     }
-    LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << syscall(SYS_gettid)
-                     << "]";
+    LOG(logINFOBLUE) << "Exiting [ TCP server Tid: " << tcpThreadId << "]";
 }
 
 // clang-format off
@@ -199,6 +199,7 @@ int ClientInterface::functionTable(){
 	flist[F_GET_RECEIVER_PROGRESS]          =   &ClientInterface::get_progress;
     flist[F_SET_RECEIVER_NUM_GATES]         =   &ClientInterface::set_num_gates;    
     flist[F_SET_RECEIVER_GATE_DELAY]        =   &ClientInterface::set_gate_delay;        
+    flist[F_GET_RECEIVER_THREAD_IDS]        =   &ClientInterface::get_thread_ids;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -564,6 +565,8 @@ void ClientInterface::setDetectorType(detectorType arg) {
     if (rawDataModifyReadyCallBack != nullptr)
         impl()->registerCallBackRawDataModifyReady(rawDataModifyReadyCallBack,
                                                    pRawDataReady);
+
+    impl()->setThreadIds(parentThreadId, tcpThreadId);
 }
 
 int ClientInterface::set_roi(Interface &socket) {
@@ -1746,4 +1749,10 @@ int ClientInterface::set_gate_delay(Interface &socket) {
                            std::to_string(gateIndex));
     }
     return socket.Send(OK);
+}
+
+int ClientInterface::get_thread_ids(Interface &socket) {
+    auto retval = impl()->getThreadIds();
+    LOG(logDEBUG1) << "thread ids retval: " << sls::ToString(retval);
+    return socket.sendResult(retval);
 }

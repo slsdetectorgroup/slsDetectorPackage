@@ -639,7 +639,7 @@ class Detector(CppDetectorApi):
 
     @property
     def vthreshold(self):
-        return element_if_equal(self.getDAC(dacIndex.THRESHOLD))
+        return element_if_equal(self.getDAC(dacIndex.VTHRESHOLD, False))
 
     @property
     def type(self):

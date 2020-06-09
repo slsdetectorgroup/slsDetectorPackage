@@ -42,6 +42,8 @@ class Implementation : private virtual slsDetectorDefs {
     void setFrameDiscardPolicy(const frameDiscardPolicy i);
     bool getFramePaddingEnable() const;
     void setFramePaddingEnable(const bool i);
+    void setThreadIds(const pid_t parentTid, const pid_t tcpTid);
+    std::array<pid_t, NUM_RX_THREAD_IDS> getThreadIds() const;
 
     /**************************************************
      *                                                 *
@@ -269,6 +271,8 @@ class Implementation : private virtual slsDetectorDefs {
     uint32_t fifoDepth;
     frameDiscardPolicy frameDiscardMode;
     bool framePadding;
+    pid_t parentThreadId;
+    pid_t tcpThreadId;
 
     // file parameters
     fileFormat fileFormatType;

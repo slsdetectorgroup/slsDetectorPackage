@@ -478,8 +478,19 @@ class CmdProxy {
         {"digitest", "imagetest"},
 
         /** temperature */
+
         /** dacs */
+        {"vtr", "vtrim"},
+        {"vrf", "vrpreamp"},
+        {"vrs", "vrshaper"},
         {"vcall", "vcal"},
+        {"vis", "vishaper"},
+        {"vshaper", "vrshaper"},
+        {"vpreamp", "vrpreamp"},
+        {"vshaperneg", "vrshaper_n"},
+        {"viinsh", "vishaper"},
+        {"vpl", "vcal_n"},
+        {"vph", "vcal_p"},
 
         /* acquisition */
         {"busy", "clearbusy"},
@@ -562,6 +573,7 @@ class CmdProxy {
         {"detectornumber", &CmdProxy::detectornumber},
         {"type", &CmdProxy::type},
         {"detsize", &CmdProxy::DetectorSize},
+        {"settingslist", &CmdProxy::SettingsList},
         {"settings", &CmdProxy::settings},
         {"trimbits", &CmdProxy::trimbits},
         {"trimval", &CmdProxy::trimval},
@@ -608,9 +620,9 @@ class CmdProxy {
         {"vthreshold", &CmdProxy::vthreshold},
         {"vsvp", &CmdProxy::vsvp},
         {"vsvn", &CmdProxy::vsvn},
-        {"vtr", &CmdProxy::vtr},
-        {"vrf", &CmdProxy::vrf},
-        {"vrs", &CmdProxy::vrs},
+        {"vtrim", &CmdProxy::vtrim},
+        {"vrpreamp", &CmdProxy::vrpreamp},
+        {"vrshaper", &CmdProxy::vrshaper},
         {"vtgstv", &CmdProxy::vtgstv},
         {"vcmp_ll", &CmdProxy::vcmp_ll},
         {"vcmp_lr", &CmdProxy::vcmp_lr},
@@ -621,7 +633,7 @@ class CmdProxy {
         {"rxb_lb", &CmdProxy::rxb_lb},
         {"vcp", &CmdProxy::vcp},
         {"vcn", &CmdProxy::vcn},
-        {"vis", &CmdProxy::vis},
+        {"vishaper", &CmdProxy::vishaper},
         {"iodelay", &CmdProxy::iodelay},
         {"vref_ds", &CmdProxy::vref_ds},
         {"vcascn_pb", &CmdProxy::vcascn_pb},
@@ -631,18 +643,14 @@ class CmdProxy {
         {"vin_cm", &CmdProxy::vin_cm},
         {"vref_comp", &CmdProxy::vref_comp},
         {"ib_test_c", &CmdProxy::ib_test_c},
-        {"vpreamp", &CmdProxy::vpreamp},
-        {"vshaper", &CmdProxy::vshaper},
-        {"vshaperneg", &CmdProxy::vshaperneg},
+        {"vrshaper_n", &CmdProxy::vrshaper_n},
         {"vipre", &CmdProxy::vipre},
-        {"viinsh", &CmdProxy::viinsh},
         {"vdcsh", &CmdProxy::vdcsh},
         {"vth1", &CmdProxy::vth1},
         {"vth2", &CmdProxy::vth2},
         {"vth3", &CmdProxy::vth3},
-        {"vpl", &CmdProxy::vpl},
-        {"vph", &CmdProxy::vph},
-        {"vtrim", &CmdProxy::vtrim},
+        {"vcal_n", &CmdProxy::vcal_n},
+        {"vcal_p", &CmdProxy::vcal_p},
         {"vcassh", &CmdProxy::vcassh},
         {"vcas", &CmdProxy::vcas},
         {"vicin", &CmdProxy::vicin},
@@ -729,6 +737,7 @@ class CmdProxy {
         {"rx_realudpsocksize", &CmdProxy::rx_realudpsocksize},
         {"rx_lock", &CmdProxy::rx_lock},
         {"rx_lastclient", &CmdProxy::rx_lastclient},
+        {"rx_threads", &CmdProxy::rx_threads},
 
         /* File */
         {"fformat", &CmdProxy::fformat},
@@ -923,6 +932,7 @@ class CmdProxy {
     std::string PackageVersion(int action);
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
+    std::string SettingsList(int action);
     std::string GapPixels(int action);
     /* acquisition parameters */
     std::string acquire(int action);
@@ -940,7 +950,6 @@ class CmdProxy {
     std::string Dac(int action);
     std::string DacList(int action);
     std::string DacValues(int action);
-    std::vector<std::string> DacCommands();
     /* acquisition */
     std::string ReceiverStatus(int action);
     std::string DetectorStatus(int action);
@@ -1180,29 +1189,33 @@ class CmdProxy {
 
     /* dacs */
 
-    DAC_COMMAND(vthreshold, getDAC, setDAC, defs::THRESHOLD,
+    DAC_COMMAND(vthreshold, getDAC, setDAC, defs::VTHRESHOLD,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger][Mythen3] "
                 "Detector threshold voltage for single photon counters.");
 
-    DAC_COMMAND(vsvp, getDAC, setDAC, defs::SVP,
+    DAC_COMMAND(vsvp, getDAC, setDAC, defs::VSVP,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
-    DAC_COMMAND(vsvn, getDAC, setDAC, defs::SVN,
+    DAC_COMMAND(vsvn, getDAC, setDAC, defs::VSVN,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
-                "?? "); // TODO
+                "?? \n\t[Mythen3] voltage "
+                "to define feedback resistance of the first shaper"); // TODO
 
-    DAC_COMMAND(vtr, getDAC, setDAC, defs::VTR,
+    DAC_COMMAND(vtrim, getDAC, setDAC, defs::VTRIM,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
-                "?? "); // TODO
+                "?? \n\t[Mythen3] Dac for "
+                "the voltage defining the trim bit size."); // TODO
 
-    DAC_COMMAND(vrf, getDAC, setDAC, defs::VRF,
+    DAC_COMMAND(vrpreamp, getDAC, setDAC, defs::VRPREAMP,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
-                "?? "); // TODO
+                "?? \n\t[Mythen3] voltage "
+                "to define the preamplifier feedback resistance."); // TODO
 
-    DAC_COMMAND(vrs, getDAC, setDAC, defs::VRS,
+    DAC_COMMAND(vrshaper, getDAC, setDAC, defs::VRSHAPER,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
-                "?? "); // TODO
+                "?? \n\t[Mythen3] voltage to define feedback resistance of "
+                "the first shaper"); // TODO
 
     DAC_COMMAND(vtgstv, getDAC, setDAC, defs::VTGSTV,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
@@ -1216,7 +1229,7 @@ class CmdProxy {
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
-    DAC_COMMAND(vcal, getDAC, setDAC, defs::CAL,
+    DAC_COMMAND(vcal, getDAC, setDAC, defs::VCAL,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
@@ -1244,9 +1257,10 @@ class CmdProxy {
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
-    DAC_COMMAND(vis, getDAC, setDAC, defs::VIS,
+    DAC_COMMAND(vishaper, getDAC, setDAC, defs::VISHAPER,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
-                "?? "); // TODO
+                "?? \n\t[Mythen3] Dac for "
+                "the bias current for the shaper."); // TODO
 
     DAC_COMMAND(iodelay, getDAC, setDAC, defs::IO_DELAY,
                 "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
@@ -1284,15 +1298,7 @@ class CmdProxy {
                 "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for "
                 "?? "); // TODO
 
-    DAC_COMMAND(vpreamp, getDAC, setDAC, defs::PREAMP,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] voltage "
-                "to define the preamplifier feedback resistance.");
-
-    DAC_COMMAND(vshaper, getDAC, setDAC, defs::SHAPER1,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] voltage "
-                "to define feedback resistance of the first shaper");
-
-    DAC_COMMAND(vshaperneg, getDAC, setDAC, defs::SHAPER2,
+    DAC_COMMAND(vrshaper_n, getDAC, setDAC, defs::VRSHAPER_N,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] voltage "
                 "to define feedback resistance of the second shaper.");
 
@@ -1301,15 +1307,11 @@ class CmdProxy {
         "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for the "
         "preamplifier's input transistor current.\n\t[Moench] Dac for 1");
 
-    DAC_COMMAND(viinsh, getDAC, setDAC, defs::VIINSH,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
-                "the bias current for the shaper.");
-
     DAC_COMMAND(vdcsh, getDAC, setDAC, defs::VDCSH,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "the reference (DC) voltage for the shaper.");
 
-    DAC_COMMAND(vth1, getDAC, setDAC, defs::THRESHOLD,
+    DAC_COMMAND(vth1, getDAC, setDAC, defs::VTH1,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "first detector threshold voltage.");
 
@@ -1321,23 +1323,19 @@ class CmdProxy {
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "third detector threshold voltage.");
 
-    DAC_COMMAND(vpl, getDAC, setDAC, defs::VPL,
+    DAC_COMMAND(vcal_n, getDAC, setDAC, defs::VCAL_N,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "the low voltage for analog pulsing.");
 
-    DAC_COMMAND(vph, getDAC, setDAC, defs::CALIBRATION_PULSE,
+    DAC_COMMAND(vcal_p, getDAC, setDAC, defs::VCAL_P,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "the high voltage for analog pulsing.");
 
-    DAC_COMMAND(vtrim, getDAC, setDAC, defs::TRIMBIT_SIZE,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
-                "the voltage defining the trim bit size.");
-
-    DAC_COMMAND(vcassh, getDAC, setDAC, defs::CASSH,
+    DAC_COMMAND(vcassh, getDAC, setDAC, defs::VCASSH,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "the shaper's cascode voltage.");
 
-    DAC_COMMAND(vcas, getDAC, setDAC, defs::CAS,
+    DAC_COMMAND(vcas, getDAC, setDAC, defs::VCAS,
                 "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
                 "the preamplifier's cascode voltage.");
 
@@ -1662,6 +1660,14 @@ class CmdProxy {
     GET_COMMAND(
         rx_lastclient, getRxLastClientIP,
         "\n\tClient IP Address that last communicated with the receiver.");
+
+    GET_COMMAND(
+        rx_threads, getRxThreadIds,
+        "\n\tGet thread ids from the receiver in order of [parent, tcp, "
+        "listener 0, "
+        "processor 0, streamer 0, listener 1, processor 1, streamer 1]. If no "
+        "streamer yet or there is no second interface, it gives 0 in its "
+        "place.");
 
     /* File */
 

@@ -289,7 +289,7 @@ template <typename Ret> Ret Module::sendToReceiver(int fnum) const {
                    << sizeof(Ret) << "]";
     Ret retval{};
     sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
+    LOG(logDEBUG1) << "Got back: " << ToString(retval);
     return retval;
 }
 
@@ -2612,6 +2612,11 @@ int Module::lockReceiver(int lock) {
 
 sls::IpAddr Module::getReceiverLastClientIP() const {
     return sendToReceiver<sls::IpAddr>(F_GET_LAST_RECEIVER_CLIENT_IP);
+}
+
+std::array<pid_t, NUM_RX_THREAD_IDS> Module::getReceiverThreadIds() const {
+    return sendToReceiver<std::array<pid_t, NUM_RX_THREAD_IDS>>(
+        F_GET_RECEIVER_THREAD_IDS);
 }
 
 void Module::exitReceiver() {

@@ -34,6 +34,8 @@ std::string ToString(const defs::externalSignalFlag s);
 std::string ToString(const defs::readoutMode s);
 std::string ToString(const defs::frameModeType s);
 std::string ToString(const defs::detectorModeType s);
+std::string ToString(const defs::dacIndex s);
+std::string ToString(const std::vector<defs::dacIndex> &vec);
 std::string ToString(const defs::burstMode s);
 std::string ToString(const defs::timingSourceType s);
 
@@ -259,6 +261,15 @@ template <typename T>
 typename std::enable_if<has_str<T>::value, std::string>::type
 ToString(const T &obj) {
     return obj.str();
+}
+
+template <typename T>
+std::vector<T> StringTo(const std::vector<std::string>& strings){
+    std::vector<T> result;
+    result.reserve(strings.size());
+    for (const auto& s : strings)
+        result.push_back(StringTo<T>(s));
+    return result;
 }
 
 } // namespace sls

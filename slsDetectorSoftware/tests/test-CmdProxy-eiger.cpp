@@ -187,13 +187,13 @@ TEST_CASE("Setting and reading back EIGER dacs", "[.cmd][.dacs][.new]") {
         REQUIRE_THROWS(proxy.Call("vref_comp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("ib_test_c", {}, -1, GET));
         // mythen3
-        REQUIRE_THROWS(proxy.Call("vrpreamp", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vrshaper", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vrpreamp", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vrshaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vrshaper_n", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vipre", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vishaper", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vishaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vdcsh", {}, -1, GET));
-        // REQUIRE_THROWS(proxy.Call("vth1", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vth1", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vth2", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vth3", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcal_n", {}, -1, GET));

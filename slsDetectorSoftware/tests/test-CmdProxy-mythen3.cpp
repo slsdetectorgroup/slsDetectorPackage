@@ -70,9 +70,9 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs][.new]") {
         }
         REQUIRE_THROWS(proxy.Call("vsvp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vsvn", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vtrim", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vrpreamp", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vrshaper", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vtrim", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vrpreamp", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vrshaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vtgstv", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcmp_ll", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcmp_lr", {}, -1, GET));
@@ -83,7 +83,7 @@ TEST_CASE("Setting and reading back MYTHEN3 dacs", "[.cmd][.dacs][.new]") {
         REQUIRE_THROWS(proxy.Call("rxb_lb", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcp", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcn", {}, -1, GET));
-        REQUIRE_THROWS(proxy.Call("vishaper", {}, -1, GET));
+        // REQUIRE_THROWS(proxy.Call("vishaper", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("iodelay", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vref_ds", {}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vcascn_pb", {}, -1, GET));

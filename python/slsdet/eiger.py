@@ -60,23 +60,23 @@ class EigerDacs(DetectorDacs):
     """
     Eiger specific dacs
     """
-    _dacs = [('vsvp',    dacIndex.VSVP,0, 4000,    0),
-             ('vtr',     dacIndex.VTR,0, 4000, 2500),
-             ('vrf',     dacIndex.VRF,0, 4000, 3300),
-             ('vrs',     dacIndex.VRS,0, 4000, 1400),
-             ('vsvn',    dacIndex.VSVN,0, 4000, 4000),
-             ('vtgstv',  dacIndex.VTGSTV,0, 4000, 2556),
-             ('vcmp_ll', dacIndex.VCMP_LL,0, 4000, 1500),
-             ('vcmp_lr', dacIndex.VCMP_LR,0, 4000, 1500),
-             ('vcall',   dacIndex.VCAL,0, 4000, 4000),
-             ('vcmp_rl', dacIndex.VCMP_RL,0, 4000, 1500),
-             ('rxb_rb',  dacIndex.RXB_RB,0, 4000, 1100),
-             ('rxb_lb',  dacIndex.RXB_LB,0, 4000, 1100),
-             ('vcmp_rr', dacIndex.VCMP_RR,0, 4000, 1500),
-             ('vcp',     dacIndex.VCP,0, 4000,  200),
-             ('vcn',     dacIndex.VCN,0, 4000, 2000),
-             ('vis',     dacIndex.VIS,0, 4000, 1550),
-             ('iodelay', dacIndex.IO_DELAY,0, 4000,  660)]
+    _dacs = [('vsvp',     dacIndex.VSVP,0, 4000,    0),
+             ('vtrim',    dacIndex.VTRIM,0, 4000, 2500),
+             ('vrpreamp', dacIndex.VRPREAMP,0, 4000, 3300),
+             ('vrshaper', dacIndex.VRSHAPER,0, 4000, 1400),
+             ('vsvn',     dacIndex.VSVN,0, 4000, 4000),
+             ('vtgstv',   dacIndex.VTGSTV,0, 4000, 2556),
+             ('vcmp_ll',  dacIndex.VCMP_LL,0, 4000, 1500),
+             ('vcmp_lr',  dacIndex.VCMP_LR,0, 4000, 1500),
+             ('vcal',    dacIndex.VCAL,0, 4000, 4000),
+             ('vcmp_rl',  dacIndex.VCMP_RL,0, 4000, 1500),
+             ('rxb_rb',   dacIndex.RXB_RB,0, 4000, 1100),
+             ('rxb_lb',   dacIndex.RXB_LB,0, 4000, 1100),
+             ('vcmp_rr',  dacIndex.VCMP_RR,0, 4000, 1500),
+             ('vcp',      dacIndex.VCP,0, 4000,  200),
+             ('vcn',      dacIndex.VCN,0, 4000, 2000),
+             ('vishaper', dacIndex.VISHAPER,0, 4000, 1550),
+             ('iodelay',  dacIndex.IO_DELAY,0, 4000,  660)]
     _dacnames = [_d[0] for _d in _dacs]
 
 # # noinspection PyProtectedMember

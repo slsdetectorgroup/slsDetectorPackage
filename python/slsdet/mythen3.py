@@ -13,6 +13,7 @@ import _slsdet
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
 from .detector_property import DetectorProperty
 
+
 # @freeze
 class Mythen3Dacs(DetectorDacs):
     """
@@ -20,24 +21,24 @@ class Mythen3Dacs(DetectorDacs):
     """
     _dacs = [('vcassh',     dacIndex.VCASSH,     0, 4000, 1220),
              ('vth2',       dacIndex.VTH2,      0, 4000, 2800),
-             ('vshaper',    dacIndex.VSHAPER,   0, 4000, 1280),
-             ('vshaperneg', dacIndex.VSHAPERNEG,   0, 4000, 2800),
+             ('vrshaper',   dacIndex.VRSHAPER,   0, 4000, 1280),
+             ('vrshaper_n', dacIndex.VRSHAPER_N,   0, 4000, 2800),
              ('vipre_out',  dacIndex.VIPRE_OUT, 0, 4000, 1220),
              ('vth3',       dacIndex.VTH3,      0, 4000, 2800),
              ('vth1',       dacIndex.VTH1,      0, 4000,  2800),
              ('vicin',      dacIndex.VICIN,     0, 4000,  1708),
              ('vcas',       dacIndex.VCAS,       0, 4000,  1800),
-             ('vpreamp',    dacIndex.VPREAMP,    0, 4000,  1100),
-             ('vpl',        dacIndex.VPL,       0, 4000,  1100),
+             ('vrpreamp',    dacIndex.VRPREAMP,    0, 4000,  1100),
+             ('vcal_n',     dacIndex.VCAL_N,       0, 4000,  1100),
              ('vipre',      dacIndex.VIPRE,     0, 4000,  2624),
-             ('viinsh',     dacIndex.VIINSH,    0, 4000,  1708),
-             ('vph',        dacIndex.VPH,    0, 4000,  1712),
+             ('vishaper',   dacIndex.VISHAPER,    0, 4000,  1708),
+             ('vcal_p',     dacIndex.VCAL_P,    0, 4000,  1712),
              ('vtrim',      dacIndex.VTRIM,    0, 4000,  2800),
              ('vdcsh',      dacIndex.VDCSH,    0, 4000,  800),
             ]
     _dacnames = [_d[0] for _d in _dacs]
 
-
+#vthreshold??
 
 
 @freeze

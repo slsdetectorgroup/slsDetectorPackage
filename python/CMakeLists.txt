@@ -12,6 +12,7 @@ target_link_libraries(_slsdet PUBLIC
                         slsDetectorShared
                         slsReceiverShared
                         slsSupportLib
+                        ${ZeroMQ_LIBRARIES}
                         )  
 
 

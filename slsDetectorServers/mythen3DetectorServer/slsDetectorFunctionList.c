@@ -49,8 +49,6 @@ uint32_t clkDivider[NUM_CLOCKS] = {};
 
 int highvoltage = 0;
 int detPos[2] = {};
-uint32_t countermask =
-    0; // will be removed later when in firmware converted to mask
 
 int isInitCheckDone() { return initCheckDone; }
 
@@ -851,11 +849,14 @@ int getNumGates() { return bus_r(ASIC_EXP_EXT_GATE_NUMBER_REG); }
 
 void updateGatePeriod() {
     uint64_t max = 0;
+    uint32_t countermask = getCounterMask();
     for (int i = 0; i != 3; ++i) {
-        // TODO: only those counters enabled (when updated to mask in firmware)
-        uint64_t sum = getExpTime(i) + getGateDelay(i);
-        if (sum > max) {
-            max = sum;
+        // only if counter enabled
+        if ((1 << i) & countermask) {
+            uint64_t sum = getExpTime(i) + getGateDelay(i);
+            if (sum > max) {
+                max = sum;
+            }
         }
     }
     LOG(logINFO, ("\tSetting Gate Period to %lld ns\n", (long long int)max));
@@ -1004,64 +1005,19 @@ void setCounterMask(uint32_t arg) {
     if (arg == 0 || arg > MAX_COUNTER_MSK) {
         return;
     }
-    countermask = arg;
-    // convert mask into number of counters (until firmware converts to mask)
-    int ncounters = __builtin_popcount(countermask);
-    LOG(logINFO, ("Setting number of counters to %d\n", ncounters));
-    uint32_t val = 0;
-    switch (ncounters) {
-    case 1:
-        val = CONFIG_COUNTER_ENA_1_VAL;
-        break;
-    case 2:
-        val = CONFIG_COUNTER_ENA_2_VAL;
-        break;
-    default:
-        val = CONFIG_COUNTER_ENA_ALL_VAL;
-        break;
-    }
+    LOG(logINFO, ("Setting counter mask to  0x%x\n", arg));
     uint32_t addr = CONFIG_REG;
-    bus_w(addr, bus_r(addr) & ~CONFIG_COUNTER_ENA_MSK);
-    bus_w(addr, bus_r(addr) | val);
+    bus_w(addr, bus_r(addr) & ~CONFIG_COUNTERS_ENA_MSK);
+    bus_w(addr, bus_r(addr) | ((arg << CONFIG_COUNTERS_ENA_OFST) &
+                               CONFIG_COUNTERS_ENA_MSK));
     LOG(logDEBUG, ("Config Reg: 0x%x\n", bus_r(addr)));
 
     updateGatePeriod();
 }
 
 uint32_t getCounterMask() {
-    uint32_t addr = CONFIG_REG;
-    uint32_t regval = (bus_r(addr) & CONFIG_COUNTER_ENA_MSK);
-    int ncounters = 0;
-    switch (regval) {
-    case CONFIG_COUNTER_ENA_1_VAL:
-        ncounters = 1;
-        break;
-    case CONFIG_COUNTER_ENA_2_VAL:
-        ncounters = 2;
-        break;
-    default:
-        ncounters = 3;
-        break;
-    }
-    // confirm ncounters work with mask saved in server (until firmware converts
-    // to mask)
-    int nc = __builtin_popcount(countermask);
-    // if not equal, make a mask of what is in register (will change once
-    // firmware changes)
-    if (nc != ncounters) {
-        switch (ncounters) {
-        case 1:
-            countermask = 0x1;
-            break;
-        case 2:
-            countermask = 0x3;
-            break;
-        default:
-            countermask = 0x7;
-            break;
-        }
-    }
-    return countermask;
+    return ((bus_r(CONFIG_REG) & CONFIG_COUNTERS_ENA_MSK) >>
+            CONFIG_COUNTERS_ENA_OFST);
 }
 
 int setDelayAfterTrigger(int64_t val) {

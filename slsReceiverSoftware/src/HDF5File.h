@@ -84,7 +84,7 @@ class HDF5File : private virtual slsDetectorDefs, public File {
     uint64_t numActualPacketsInFile;
     int numFilesinAcquisition;
 
-    std::vector<const char *> parameterNames;
+    std::vector<std::string> parameterNames;
     std::vector<DataType> parameterDataTypes;
     DataSpace *dataspace_para;
     std::vector<DataSet *> dataset_para;

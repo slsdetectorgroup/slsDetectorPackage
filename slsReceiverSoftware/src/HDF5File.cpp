@@ -31,48 +31,74 @@ HDF5File::HDF5File(int ind, uint32_t *maxf, int *nd, std::string *fname,
     parameterNames.clear();
     parameterDataTypes.clear();
 
-    parameterNames.push_back("frame number");
-    parameterDataTypes.push_back(PredType::STD_U64LE);
-
-    parameterNames.push_back("exp length or sub exposure time");
-    parameterDataTypes.push_back(PredType::STD_U32LE);
-
-    parameterNames.push_back("packets caught");
-    parameterDataTypes.push_back(PredType::STD_U32LE);
-
-    parameterNames.push_back("bunch id");
-    parameterDataTypes.push_back(PredType::STD_U64LE);
-
-    parameterNames.push_back("timestamp");
-    parameterDataTypes.push_back(PredType::STD_U64LE);
-
-    parameterNames.push_back("mod id");
-    parameterDataTypes.push_back(PredType::STD_U16LE);
-
-    parameterNames.push_back("row");
-    parameterDataTypes.push_back(PredType::STD_U16LE);
-
-    parameterNames.push_back("column");
-    parameterDataTypes.push_back(PredType::STD_U16LE);
-
-    parameterNames.push_back("reserved");
-    parameterDataTypes.push_back(PredType::STD_U16LE);
-
-    parameterNames.push_back("debug");
-    parameterDataTypes.push_back(PredType::STD_U32LE);
-
-    parameterNames.push_back("round robin number");
-    parameterDataTypes.push_back(PredType::STD_U16LE);
-
-    parameterNames.push_back("detector type");
-    parameterDataTypes.push_back(PredType::STD_U8LE);
-
-    parameterNames.push_back("detector header version");
-    parameterDataTypes.push_back(PredType::STD_U8LE);
-
-    parameterNames.push_back("packets caught bit mask");
+    parameterNames = std::vector<std::string>{
+        "frame number",
+        "exp length or sub exposure time",
+        "packets caught",
+        "bunch id",
+        "timestamp",
+        "mod id",
+        "row",
+        "column",
+        "reserved",
+        "debug",
+        "round robin number",
+        "detector type",
+        "detector header version",
+        "packets caught bit mask",
+    };
     StrType strdatatype(PredType::C_S1, sizeof(bitset_storage));
-    parameterDataTypes.push_back(strdatatype);
+    parameterDataTypes = std::vector<DataType>{
+        PredType::STD_U64LE, PredType::STD_U32LE, PredType::STD_U32LE,
+        PredType::STD_U64LE, PredType::STD_U64LE, PredType::STD_U16LE,
+        PredType::STD_U16LE, PredType::STD_U16LE, PredType::STD_U16LE,
+        PredType::STD_U32LE, PredType::STD_U16LE, PredType::STD_U8LE,
+        PredType::STD_U8LE,  strdatatype};
+
+    /*
+        parameterNames.push_back("frame number");
+        parameterDataTypes.push_back(PredType::STD_U64LE);
+
+        parameterNames.push_back("exp length or sub exposure time");
+        parameterDataTypes.push_back(PredType::STD_U32LE);
+
+        parameterNames.push_back("packets caught");
+        parameterDataTypes.push_back(PredType::STD_U32LE);
+
+        parameterNames.push_back("bunch id");
+        parameterDataTypes.push_back(PredType::STD_U64LE);
+
+        parameterNames.push_back("timestamp");
+        parameterDataTypes.push_back(PredType::STD_U64LE);
+
+        parameterNames.push_back("mod id");
+        parameterDataTypes.push_back(PredType::STD_U16LE);
+
+        parameterNames.push_back("row");
+        parameterDataTypes.push_back(PredType::STD_U16LE);
+
+        parameterNames.push_back("column");
+        parameterDataTypes.push_back(PredType::STD_U16LE);
+
+        parameterNames.push_back("reserved");
+        parameterDataTypes.push_back(PredType::STD_U16LE);
+
+        parameterNames.push_back("debug");
+        parameterDataTypes.push_back(PredType::STD_U32LE);
+
+        parameterNames.push_back("round robin number");
+        parameterDataTypes.push_back(PredType::STD_U16LE);
+
+        parameterNames.push_back("detector type");
+        parameterDataTypes.push_back(PredType::STD_U8LE);
+
+        parameterNames.push_back("detector header version");
+        parameterDataTypes.push_back(PredType::STD_U8LE);
+
+        parameterNames.push_back("packets caught bit mask");
+        StrType strdatatype(PredType::C_S1, sizeof(bitset_storage));
+        parameterDataTypes.push_back(strdatatype);
+        */
 }
 
 HDF5File::~HDF5File() { CloseAllFiles(); }
@@ -461,9 +487,9 @@ void HDF5File::CreateDataFile() {
         paralist.setChunk(1, chunkpara_dims);
 
         for (unsigned int i = 0; i < parameterNames.size(); ++i) {
-            DataSet *ds = new DataSet(
-                filefd->createDataSet(parameterNames[i], parameterDataTypes[i],
-                                      *dataspace_para, paralist));
+            DataSet *ds = new DataSet(filefd->createDataSet(
+                parameterNames[i].c_str(), parameterDataTypes[i],
+                *dataspace_para, paralist));
             dataset_para.push_back(ds);
         }
     } catch (const Exception &error) {
@@ -1011,7 +1037,7 @@ void HDF5File::CreateVirtualDataFile(uint32_t maxFramesPerFile, uint64_t numf) {
                 for (unsigned int k = 0; k < parameterNames.size(); ++k) {
                     if (H5Pset_virtual(dcpl_para[k], vdsDataspace_para,
                                        relative_srcFileName.c_str(),
-                                       parameterNames[k],
+                                       parameterNames[k].c_str(),
                                        srcDataspace_para) < 0) {
                         throw sls::RuntimeError(
                             "Could not set mapping for paramter " +
@@ -1043,7 +1069,7 @@ void HDF5File::CreateVirtualDataFile(uint32_t maxFramesPerFile, uint64_t numf) {
         // virtual parameter dataset
         for (unsigned int i = 0; i < parameterNames.size(); ++i) {
             hid_t vdsdataset_para = H5Dcreate2(
-                virtualfd, parameterNames[i],
+                virtualfd, parameterNames[i].c_str(),
                 GetDataTypeinC(parameterDataTypes[i]), vdsDataspace_para,
                 H5P_DEFAULT, dcpl_para[i], H5P_DEFAULT);
             if (vdsdataset_para < 0)
@@ -1134,9 +1160,8 @@ void HDF5File::LinkVirtualInMaster(std::string fname, std::string dsetname) {
                     (std::string(parameterNames[i])).c_str());
 
             if (H5Lcreate_external(relative_virtualfname.c_str(),
-                                   (std::string(parameterNames[i])).c_str(),
-                                   mfd, linkname, H5P_DEFAULT,
-                                   H5P_DEFAULT) < 0) {
+                                   parameterNames[i].c_str(), mfd, linkname,
+                                   H5P_DEFAULT, H5P_DEFAULT) < 0) {
                 H5Fclose(mfd);
                 mfd = 0;
                 throw sls::RuntimeError(

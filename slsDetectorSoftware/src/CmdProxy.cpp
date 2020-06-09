@@ -913,7 +913,8 @@ std::string CmdProxy::DacValues(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\tGets the list of commands for every dac for this detector."
+        os << "[(optional unit) mv] \n\tGets the list of commands for every "
+              "dac for this detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         bool mv = false;

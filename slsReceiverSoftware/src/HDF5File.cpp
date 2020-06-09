@@ -54,51 +54,6 @@ HDF5File::HDF5File(int ind, uint32_t *maxf, int *nd, std::string *fname,
         PredType::STD_U16LE, PredType::STD_U16LE, PredType::STD_U16LE,
         PredType::STD_U32LE, PredType::STD_U16LE, PredType::STD_U8LE,
         PredType::STD_U8LE,  strdatatype};
-
-    /*
-        parameterNames.push_back("frame number");
-        parameterDataTypes.push_back(PredType::STD_U64LE);
-
-        parameterNames.push_back("exp length or sub exposure time");
-        parameterDataTypes.push_back(PredType::STD_U32LE);
-
-        parameterNames.push_back("packets caught");
-        parameterDataTypes.push_back(PredType::STD_U32LE);
-
-        parameterNames.push_back("bunch id");
-        parameterDataTypes.push_back(PredType::STD_U64LE);
-
-        parameterNames.push_back("timestamp");
-        parameterDataTypes.push_back(PredType::STD_U64LE);
-
-        parameterNames.push_back("mod id");
-        parameterDataTypes.push_back(PredType::STD_U16LE);
-
-        parameterNames.push_back("row");
-        parameterDataTypes.push_back(PredType::STD_U16LE);
-
-        parameterNames.push_back("column");
-        parameterDataTypes.push_back(PredType::STD_U16LE);
-
-        parameterNames.push_back("reserved");
-        parameterDataTypes.push_back(PredType::STD_U16LE);
-
-        parameterNames.push_back("debug");
-        parameterDataTypes.push_back(PredType::STD_U32LE);
-
-        parameterNames.push_back("round robin number");
-        parameterDataTypes.push_back(PredType::STD_U16LE);
-
-        parameterNames.push_back("detector type");
-        parameterDataTypes.push_back(PredType::STD_U8LE);
-
-        parameterNames.push_back("detector header version");
-        parameterDataTypes.push_back(PredType::STD_U8LE);
-
-        parameterNames.push_back("packets caught bit mask");
-        StrType strdatatype(PredType::C_S1, sizeof(bitset_storage));
-        parameterDataTypes.push_back(strdatatype);
-        */
 }
 
 HDF5File::~HDF5File() { CloseAllFiles(); }

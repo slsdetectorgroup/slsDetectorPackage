@@ -217,6 +217,42 @@ std::string ToString(const defs::detectorModeType s) {
 
 std::string ToString(const defs::dacIndex s) {
     switch (s) {
+    case defs::DAC_0:
+        return std::string("dac 0");
+    case defs::DAC_1:
+        return std::string("dac 1");
+    case defs::DAC_2:
+        return std::string("dac 2");
+    case defs::DAC_3:
+        return std::string("dac 3");
+    case defs::DAC_4:
+        return std::string("dac 4");
+    case defs::DAC_5:
+        return std::string("dac 5");
+    case defs::DAC_6:
+        return std::string("dac 6");
+    case defs::DAC_7:
+        return std::string("dac 7");
+    case defs::DAC_8:
+        return std::string("dac 8");
+    case defs::DAC_9:
+        return std::string("dac 9");
+    case defs::DAC_10:
+        return std::string("dac 10");
+    case defs::DAC_11:
+        return std::string("dac 11");
+    case defs::DAC_12:
+        return std::string("dac 12");
+    case defs::DAC_13:
+        return std::string("dac 13");
+    case defs::DAC_14:
+        return std::string("dac 14");
+    case defs::DAC_15:
+        return std::string("dac 15");
+    case defs::DAC_16:
+        return std::string("dac 16");
+    case defs::DAC_17:
+        return std::string("dac 17");
     case defs::VSVP:
         return std::string("vsvp");
     case defs::VTR:
@@ -542,6 +578,42 @@ template <> defs::detectorModeType StringTo(const std::string &s) {
 }
 
 template <> defs::dacIndex StringTo(const std::string &s) {
+    if (s == "dac 0")
+        return defs::DAC_0;
+    if (s == "dac 1")
+        return defs::DAC_1;
+    if (s == "dac 2")
+        return defs::DAC_2;
+    if (s == "dac 3")
+        return defs::DAC_3;
+    if (s == "dac 4")
+        return defs::DAC_4;
+    if (s == "dac 5")
+        return defs::DAC_5;
+    if (s == "dac 6")
+        return defs::DAC_6;
+    if (s == "dac 7")
+        return defs::DAC_7;
+    if (s == "dac 8")
+        return defs::DAC_8;
+    if (s == "dac 9")
+        return defs::DAC_9;
+    if (s == "dac 10")
+        return defs::DAC_10;
+    if (s == "dac 11")
+        return defs::DAC_11;
+    if (s == "dac 12")
+        return defs::DAC_12;
+    if (s == "dac 13")
+        return defs::DAC_13;
+    if (s == "dac 14")
+        return defs::DAC_14;
+    if (s == "dac 15")
+        return defs::DAC_15;
+    if (s == "dac 16")
+        return defs::DAC_16;
+    if (s == "dac 17")
+        return defs::DAC_17;
     if (s == "vsvp")
         return defs::VSVP;
     if (s == "vtr")

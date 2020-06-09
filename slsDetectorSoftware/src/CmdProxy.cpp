@@ -899,17 +899,8 @@ std::string CmdProxy::DacList(int action) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
-        auto det_type = det->getDetectorType().squash(defs::GENERIC);
-        if (det_type == defs::CHIPTESTBOARD) {
-            std::vector<std::string> t;
-            for (int i = 0; i != 18; ++i) {
-                t.push_back("dac " + std::to_string(i));
-            }
-            os << ToString(t) << '\n';
-        } else {
-            auto t = det->getDacList();
-            os << ToString(t) << '\n';
-        }
+        auto t = det->getDacList();
+        os << ToString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("Cannot put");
     } else {
@@ -925,30 +916,28 @@ std::string CmdProxy::DacValues(int action) {
         os << "\n\tGets the list of commands for every dac for this detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        auto det_type = det->getDetectorType().squash(defs::GENERIC);
-        auto t = det->getDacList();
-        std::vector<std::string> res(t.size());
-        for (size_t i = 0; i < t.size(); ++i) {
-            std::string name = ToString(t[i]);
-            if (det_type == defs::CHIPTESTBOARD) {
-                name = "dac " + std::to_string(i);
+        bool mv = false;
+        if (args.size() == 1) {
+            if (args[0] != "mv") {
+                throw sls::RuntimeError("Unknown argument " + args[0] +
+                                        ". Did you mean mv?");
             }
-            // for multiple values for each command (to use ToString on vector)
-            std::ostringstream each;
-            size_t spacepos = name.find(' ');
-            // chip test board (dac)
-            if (spacepos != std::string::npos) {
-                if (args.empty()) {
-                    args.resize(1);
-                }
-                args[0] = name.substr(spacepos + 1 - 1);
-                name = name.substr(0, spacepos);
-            }
-            Call(name, args, det_id, action, each);
-            res[i] = each.str();
-            res[i].pop_back(); // remove last \n character
+            mv = true;
+        } else if (args.size() > 1) {
+            WrongNumberOfParameters(1);
         }
-        os << sls::ToString(res) << '\n';
+        auto t = det->getDacList();
+        os << '[';
+        auto it = t.cbegin();
+        os << ToString(*it) << ' '
+           << OutString(det->getDAC(*it++, mv, {det_id}))
+           << (args.size() > 0 ? " mv" : "");
+        while (it != t.cend()) {
+            os << ", " << ToString(*it) << ' '
+               << OutString(det->getDAC(*it++, mv, {det_id}))
+               << (args.size() > 0 ? " mv" : "");
+        }
+        os << "]\n";
     } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("Cannot put");
     } else {

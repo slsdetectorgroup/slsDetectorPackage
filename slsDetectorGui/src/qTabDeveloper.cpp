@@ -384,9 +384,9 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
     case slsDetectorDefs::EIGER:
         switch (index) {
         case 0:
-            return slsDetectorDefs::SVP;
+            return slsDetectorDefs::VSVP;
         case 1:
-            return slsDetectorDefs::SVN;
+            return slsDetectorDefs::VSVN;
         case 2:
             return slsDetectorDefs::VRF;
         case 3:
@@ -396,7 +396,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
         case 5:
             return slsDetectorDefs::VTGSTV;
         case 6:
-            return slsDetectorDefs::CAL;
+            return slsDetectorDefs::VCAL;
         case 7:
             return slsDetectorDefs::VCP;
         case 8:
@@ -416,7 +416,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
         case 15:
             return slsDetectorDefs::VCMP_RR;
         case 16:
-            return slsDetectorDefs::THRESHOLD;
+            return slsDetectorDefs::VTHRESHOLD;
         case 17:
             return slsDetectorDefs::TEMPERATURE_FPGAEXT;
         case 18:
@@ -515,27 +515,27 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
     case slsDetectorDefs::MYTHEN3:
         switch (index) {
         case 0:
-            return slsDetectorDefs::CASSH;
+            return slsDetectorDefs::VCASSH;
         case 1:
             return slsDetectorDefs::VTH2;
         case 2:
-            return slsDetectorDefs::SHAPER1;
+            return slsDetectorDefs::VSHAPER;
         case 3:
-            return slsDetectorDefs::SHAPER2;
+            return slsDetectorDefs::VSHAPERNEG;
         case 4:
             return slsDetectorDefs::VIPRE_OUT;
         case 5:
             return slsDetectorDefs::VTH3;
         case 6:
-            return slsDetectorDefs::THRESHOLD;
+            return slsDetectorDefs::VTH1;
         case 7:
             return slsDetectorDefs::VICIN;
         case 8:
-            return slsDetectorDefs::CAS;
+            return slsDetectorDefs::VCAS;
         case 9:
-            return slsDetectorDefs::PREAMP;
+            return slsDetectorDefs::VPREAMP;
         case 10:
-            return slsDetectorDefs::CALIBRATION_PULSE;
+            return slsDetectorDefs::VPH;
         case 11:
             return slsDetectorDefs::VIPRE;
         case 12:
@@ -543,7 +543,7 @@ qTabDeveloper::getSLSIndex(slsDetectorDefs::detectorType detType, int index) {
         case 13:
             return slsDetectorDefs::VPL;
         case 14:
-            return slsDetectorDefs::TRIMBIT_SIZE;
+            return slsDetectorDefs::VTRIM;
         case 15:
             return slsDetectorDefs::VDCSH;
         default:

@@ -722,7 +722,7 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage, bool quadEnable,
                          "Sending dummy data without gap pixels.\n";
         double bytesPerPixel = (double)dr / 8.00;
         int imagesize = nPixelsy * nPixelsx * bytesPerPixel;
-        if (gpImage == NULL) {
+        if (gpImage == nullptr) {
             gpImage = new char[imagesize];
         }
         memset(gpImage, 0xFF, imagesize);
@@ -789,7 +789,7 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage, bool quadEnable,
                   << "nMod1TotPixelsx: " << nMod1TotPixelsx << "\n\t"
                   << "divisionValue: " << divisionValue << "\n\n";
 
-    if (gpImage == NULL) {
+    if (gpImage == nullptr) {
         gpImage = new char[imagesize];
     }
     memset(gpImage, 0xFF, imagesize);

@@ -129,12 +129,12 @@ IpAddr InterfaceNameToIp(const std::string &ifn) {
         return {};
     }
 
-    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr == NULL)
+    for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == nullptr)
             continue;
 
         auto s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host,
-                             NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+                             NI_MAXHOST, nullptr, 0, NI_NUMERICHOST);
 
         if ((strcmp(ifa->ifa_name, ifn.c_str()) == 0) &&
             (ifa->ifa_addr->sa_family == AF_INET)) {

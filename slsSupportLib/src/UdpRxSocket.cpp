@@ -22,7 +22,7 @@ UdpRxSocket::UdpRxSocket(int port, ssize_t packet_size, const char *hostname,
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_protocol = 0;
     hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
-    struct addrinfo *res = 0;
+    struct addrinfo *res = nullptr;
 
     const std::string portname = std::to_string(port);
     if (getaddrinfo(hostname, portname.c_str(), &hints, &res)) {

@@ -673,12 +673,9 @@ void DetectorImpl::readFrameFromReceiver() {
     }
 
     // free resources
-    if (image != nullptr)
-        delete[] image;
-    if (multiframe)
-        delete[] multiframe;
-    if (multigappixels)
-        delete[] multigappixels;
+    delete[] image;
+    delete[] multiframe;    
+    delete[] multigappixels;
 }
 
 int DetectorImpl::InsertGapPixels(char *image, char *&gpImage, bool quadEnable,

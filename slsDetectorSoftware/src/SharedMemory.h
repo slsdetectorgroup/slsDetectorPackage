@@ -218,7 +218,7 @@ template <typename T> class SharedMemory {
     std::string ConstructSharedMemoryName(int multiId, int slsId) {
 
         // using environment path
-        std::string sEnvPath = "";
+        std::string sEnvPath;
         char *envpath = getenv(SHM_ENV_NAME);
         if (envpath != nullptr) {
             sEnvPath.assign(envpath);

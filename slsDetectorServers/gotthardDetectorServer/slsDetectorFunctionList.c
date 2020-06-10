@@ -1113,11 +1113,11 @@ int getADC(enum ADCINDEX ind) {
         // only the first time
         if (i <= 10) {
             if (ind == TEMP_ADC)
-                value = (value << 1) +
-                        (bus_r(addrout) & TEMP_SPI_OUT_T1_DT_MSK);
+                value =
+                    (value << 1) + (bus_r(addrout) & TEMP_SPI_OUT_T1_DT_MSK);
             else
-                value = (value << 1) +
-                        (bus_r(addrout) & TEMP_SPI_OUT_T2_DT_MSK);
+                value =
+                    (value << 1) + (bus_r(addrout) & TEMP_SPI_OUT_T2_DT_MSK);
         }
     }
 

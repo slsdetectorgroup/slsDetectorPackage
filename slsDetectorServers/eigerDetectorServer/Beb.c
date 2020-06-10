@@ -748,9 +748,7 @@ void Beb_ResetFrameNumber() {
     }
 }
 
-void Beb_ClearBebInfos() {
-    bebInfoSize = 0;
-}
+void Beb_ClearBebInfos() { bebInfoSize = 0; }
 
 int Beb_InitBebInfos() { // file name at some point
     Beb_ClearBebInfos();
@@ -814,7 +812,8 @@ int Beb_SetBebSrcHeaderInfos(unsigned int beb_number, int ten_gig,
 }
 
 int Beb_CheckSourceStuffBebInfo() {
-    for (unsigned int i = 1; i < bebInfoSize; i++) { // header stuff always starts from 1
+    for (unsigned int i = 1; i < bebInfoSize;
+         i++) { // header stuff always starts from 1
         if (!Beb_SetHeaderData(BebInfo_GetBebNumber(&beb_infos[i]), 0,
                                "00:00:00:00:00:00", "10.0.0.1", 20000) ||
             !Beb_SetHeaderData(BebInfo_GetBebNumber(&beb_infos[i]), 1,
@@ -1187,7 +1186,7 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
             (ten_gig == 1) << 24 | header_size << 14 | 0;
         u_int32_t send_frame_command =
             0x62000000 | (!test_just_send_out_packets_no_wait) << 27 |
-        (ten_gig == 1) << 24 | packet_size << 14 | (npackets - 1);
+            (ten_gig == 1) << 24 | packet_size << 14 | (npackets - 1);
         for (int i = 0; i < 10; i++) {
             LOG(logDEBUG1,
                 ("%X\n", Beb_Read32(csp0base, (LEFT_OFFSET + i * 4))));

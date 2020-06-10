@@ -264,10 +264,10 @@ ToString(const T &obj) {
 }
 
 template <typename T>
-std::vector<T> StringTo(const std::vector<std::string>& strings){
+std::vector<T> StringTo(const std::vector<std::string> &strings) {
     std::vector<T> result;
     result.reserve(strings.size());
-    for (const auto& s : strings)
+    for (const auto &s : strings)
         result.push_back(StringTo<T>(s));
     return result;
 }

@@ -153,15 +153,16 @@ void BinaryFile::CreateMasterFile(bool masterFileWriteEnable,
 
         // create master file
         if (!(*overWriteEnable)) {
-            if (nullptr == (masterfd = fopen((const char *)masterFileName.c_str(),
-                                          "wx"))) {
+            if (nullptr == (masterfd = fopen(
+                                (const char *)masterFileName.c_str(), "wx"))) {
                 masterfd = nullptr;
                 throw sls::RuntimeError("Could not create binary master file "
                                         "(without overwrite enable) " +
                                         masterFileName);
             }
-        } else if (nullptr == (masterfd = fopen(
-                                (const char *)masterFileName.c_str(), "w"))) {
+        } else if (nullptr ==
+                   (masterfd =
+                        fopen((const char *)masterFileName.c_str(), "w"))) {
             masterfd = nullptr;
             throw sls::RuntimeError("Could not create binary master file "
                                     "(with overwrite enable) " +

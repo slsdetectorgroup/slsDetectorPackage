@@ -112,7 +112,7 @@ int Local_Write(struct LocalLinkInterface *ll, unsigned int buffer_len,
 
         // Just to know: #define PLB_LL_FIFO_ALMOST_FULL_THRESHOLD_WORDS    100
         for (int i = 0; ((i < PLB_LL_FIFO_ALMOST_FULL_THRESHOLD_WORDS) &&
-                     (words_send <= last_word));
+                         (words_send <= last_word));
              i++) {
             fifo_ctrl = 0;
             if (words_send == 0) {

@@ -1019,8 +1019,7 @@ int setModule(sls_detector_module myMod, char *mess) {
     for (int i = 0; i < NDAC; ++i) {
         setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
         if (myMod.dacs[i] != (detectorModules)->dacs[i]) {
-            sprintf(mess, "Could not set module. Could not set dac %d\n",
-                    i);
+            sprintf(mess, "Could not set module. Could not set dac %d\n", i);
             LOG(logERROR, (mess));
             setSettings(UNDEFINED);
             LOG(logERROR, ("Settings has been changed to undefined\n"));
@@ -2138,8 +2137,9 @@ void *start_timer(void *arg) {
 
             // loop packet
             {
-                
-                int i = 0; i != numPacketsPerFrame; ++i) {
+
+                int i = 0;
+                i != numPacketsPerFrame; ++i) {
                     // set header
                     char packetData[packetsize];
                     memset(packetData, 0, packetsize);
@@ -2170,7 +2170,8 @@ void *start_timer(void *arg) {
                     int dstOffset = sizeof(sls_detector_header);
                     int dstOffset2 = sizeof(sls_detector_header);
                     {
-                        for (int psize = 0; psize < datasize; psize += npixelsx) {
+                        for (int psize = 0; psize < datasize;
+                             psize += npixelsx) {
 
                             if (dr == 32 && tgEnable == 0) {
                                 memcpy(packetData + dstOffset,

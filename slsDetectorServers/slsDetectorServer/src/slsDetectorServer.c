@@ -76,8 +76,8 @@ int main(int argc, char *argv[]) {
                 return -1;
             }
             if (sscanf(argv[i + 1], "%d", &portno) == 0) {
-                LOG(logERROR, ("cannot decode port value %s. Exiting.\n",
-                                argv[i + 1]));
+                LOG(logERROR,
+                    ("cannot decode port value %s. Exiting.\n", argv[i + 1]));
                 return -1;
             }
             LOG(logINFO, ("Detected port: %d\n", portno));
@@ -89,9 +89,8 @@ int main(int argc, char *argv[]) {
                 return -1;
             }
             if (sscanf(argv[i + 1], "%d", &phaseShift) == 0) {
-                LOG(logERROR,
-                    ("cannot decode phase shift value %s. Exiting.\n",
-                        argv[i + 1]));
+                LOG(logERROR, ("cannot decode phase shift value %s. Exiting.\n",
+                               argv[i + 1]));
                 return -1;
             }
             LOG(logINFO, ("Detected phase shift of %d\n", phaseShift));

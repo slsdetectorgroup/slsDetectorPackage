@@ -1962,8 +1962,7 @@ void *start_timer(void *arg) {
             // set header
             char packetData[packetSize];
             memset(packetData, 0, packetSize);
-            sls_detector_header *header =
-                (sls_detector_header *)(packetData);
+            sls_detector_header *header = (sls_detector_header *)(packetData);
             header->detType = (uint16_t)myDetectorType;
             header->version = SLS_DETECTOR_HEADER_VERSION - 1;
             header->frameNumber = frameNr;
@@ -1974,15 +1973,15 @@ void *start_timer(void *arg) {
 
             // fill data
             memcpy(packetData + sizeof(sls_detector_header),
-                    imageData + srcOffset, dataSize);
+                   imageData + srcOffset, dataSize);
             srcOffset += dataSize;
 
             sendUDPPacket(0, packetData, packetSize);
         }
         LOG(logINFO, ("Sent frame: %d\n", frameNr));
         clock_gettime(CLOCK_REALTIME, &end);
-        int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                            (end.tv_nsec - begin.tv_nsec));
+        int64_t timeNs =
+            ((end.tv_sec - begin.tv_sec) * 1E9 + (end.tv_nsec - begin.tv_nsec));
 
         // sleep for (period - exptime)
         if (frameNr < numFrames) { // if there is a next frame

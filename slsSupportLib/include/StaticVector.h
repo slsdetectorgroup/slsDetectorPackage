@@ -1,6 +1,6 @@
 #pragma once
-#include "TypeTraits.h"
 #include "ToString.h"
+#include "TypeTraits.h"
 #include <array>
 #include <cassert>
 #include <iostream>
@@ -189,7 +189,4 @@ std::ostream &operator<<(std::ostream &os,
     return os << ToString(c);
 }
 
-
 } // namespace sls
-
-

@@ -1789,7 +1789,7 @@ void *start_timer(void *arg) {
 
                 // fill data
                 memcpy(packetData + sizeof(sls_detector_header),
-                        imageData + srcOffset, dataSize);
+                       imageData + srcOffset, dataSize);
                 srcOffset += dataSize;
 
                 sendUDPPacket(0, packetData, packetsize);
@@ -1809,7 +1809,7 @@ void *start_timer(void *arg) {
 
                     // fill data
                     memcpy(packetData2 + sizeof(sls_detector_header),
-                            imageData + srcOffset2, dataSize);
+                           imageData + srcOffset2, dataSize);
                     srcOffset2 += dataSize;
 
                     sendUDPPacket(1, packetData2, packetsize);

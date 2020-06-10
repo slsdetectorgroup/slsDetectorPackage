@@ -527,7 +527,7 @@ void setupDetector() {
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
     for (int idac = 0; idac < NDAC; ++idac) {
         setDAC(idac, LTC2620_GetPowerDownValue(),
-                0); // has to be before setvchip
+               0); // has to be before setvchip
     }
 
     // power regulators
@@ -2339,7 +2339,7 @@ void *start_timer(void *arg) {
 
                 // fill data
                 memcpy(packetData + sizeof(sls_detector_header),
-                        imageData + srcOffset, dataSize);
+                       imageData + srcOffset, dataSize);
                 srcOffset += dataSize;
 
                 sendUDPPacket(0, packetData, packetSize);

@@ -33,12 +33,12 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
 
     // create context
     sockfd.contextDescriptor = zmq_ctx_new();
-    if (sockfd.contextDescriptor == 0)
+    if (sockfd.contextDescriptor == nullptr)
         throw sls::ZmqSocketError("Could not create contextDescriptor");
 
     // create publisher
     sockfd.socketDescriptor = zmq_socket(sockfd.contextDescriptor, ZMQ_SUB);
-    if (sockfd.socketDescriptor == 0) {
+    if (sockfd.socketDescriptor == nullptr) {
         PrintError();
         Close();
         throw sls::ZmqSocketError("Could not create socket");
@@ -73,11 +73,11 @@ ZmqSocket::ZmqSocket(const uint32_t portnumber, const char *ethip)
 
     // create context
     sockfd.contextDescriptor = zmq_ctx_new();
-    if (sockfd.contextDescriptor == 0)
+    if (sockfd.contextDescriptor == nullptr)
         throw sls::ZmqSocketError("Could not create contextDescriptor");
     // create publisher
     sockfd.socketDescriptor = zmq_socket(sockfd.contextDescriptor, ZMQ_PUB);
-    if (sockfd.socketDescriptor == 0) {
+    if (sockfd.socketDescriptor == nullptr) {
         PrintError();
         Close();
         throw sls::ZmqSocketError("Could not create socket");
@@ -117,12 +117,12 @@ int ZmqSocket::ConvertHostnameToInternetAddress(const char *const hostname,
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
     // get host info into res
-    int errcode = getaddrinfo(hostname, NULL, &hints, res);
+    int errcode = getaddrinfo(hostname, nullptr, &hints, res);
     if (errcode != 0) {
         LOG(logERROR) << "Error: Could not convert hostname " << hostname
                       << " to internet address (zmq):" << gai_strerror(errcode);
     } else {
-        if (*res == NULL) {
+        if (*res == nullptr) {
             LOG(logERROR) << "Could not convert hostname " << hostname
                           << " to internet address (zmq): "
                              "gettaddrinfo returned null";
@@ -138,7 +138,7 @@ int ZmqSocket::ConvertInternetAddresstoIpString(struct addrinfo *res, char *ip,
                                                 const int ipsize) {
     if (inet_ntop(res->ai_family,
                   &((struct sockaddr_in *)res->ai_addr)->sin_addr, ip,
-                  ipsize) != NULL) {
+                  ipsize) != nullptr) {
         freeaddrinfo(res);
         return 0;
     }
@@ -436,7 +436,7 @@ void ZmqSocket::PrintError() {
 
 // Nested class to do RAII handling of socket descriptors
 ZmqSocket::mySocketDescriptors::mySocketDescriptors()
-    : server(false), contextDescriptor(0), socketDescriptor(0){};
+    : server(false), contextDescriptor(nullptr), socketDescriptor(nullptr){};
 ZmqSocket::mySocketDescriptors::~mySocketDescriptors() {
     Disconnect();
     Close();
@@ -448,13 +448,13 @@ void ZmqSocket::mySocketDescriptors::Disconnect() {
         zmq_disconnect(socketDescriptor, serverAddress);
 };
 void ZmqSocket::mySocketDescriptors::Close() {
-    if (socketDescriptor != NULL) {
+    if (socketDescriptor != nullptr) {
         zmq_close(socketDescriptor);
-        socketDescriptor = NULL;
+        socketDescriptor = nullptr;
     }
 
-    if (contextDescriptor != NULL) {
+    if (contextDescriptor != nullptr) {
         zmq_ctx_destroy(contextDescriptor);
-        contextDescriptor = NULL;
+        contextDescriptor = nullptr;
     }
 };

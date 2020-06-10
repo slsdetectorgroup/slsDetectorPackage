@@ -46,19 +46,19 @@ void BinaryFile::CreateFile() {
     currentFileName = os.str();
 
     if (!(*overWriteEnable)) {
-        if (NULL ==
+        if (nullptr ==
             (filefd = fopen((const char *)currentFileName.c_str(), "wx"))) {
-            filefd = 0;
+            filefd = nullptr;
             throw sls::RuntimeError("Could not create/overwrite file " +
                                     currentFileName);
         }
-    } else if (NULL ==
+    } else if (nullptr ==
                (filefd = fopen((const char *)currentFileName.c_str(), "w"))) {
-        filefd = 0;
+        filefd = nullptr;
         throw sls::RuntimeError("Could not create file " + currentFileName);
     }
     // setting to no file buffering
-    setvbuf(filefd, NULL, _IONBF, 0);
+    setvbuf(filefd, nullptr, _IONBF, 0);
 
     if (!(*silentMode)) {
         LOG(logINFO) << "[" << *udpPortNumber
@@ -69,7 +69,7 @@ void BinaryFile::CreateFile() {
 void BinaryFile::CloseCurrentFile() {
     if (filefd)
         fclose(filefd);
-    filefd = 0;
+    filefd = nullptr;
 }
 
 void BinaryFile::CloseAllFiles() {
@@ -77,7 +77,7 @@ void BinaryFile::CloseAllFiles() {
     if (master) {
         if (masterfd)
             fclose(masterfd);
-        masterfd = 0;
+        masterfd = nullptr;
     }
 }
 
@@ -153,22 +153,22 @@ void BinaryFile::CreateMasterFile(bool masterFileWriteEnable,
 
         // create master file
         if (!(*overWriteEnable)) {
-            if (NULL == (masterfd = fopen((const char *)masterFileName.c_str(),
+            if (nullptr == (masterfd = fopen((const char *)masterFileName.c_str(),
                                           "wx"))) {
-                masterfd = 0;
+                masterfd = nullptr;
                 throw sls::RuntimeError("Could not create binary master file "
                                         "(without overwrite enable) " +
                                         masterFileName);
             }
-        } else if (NULL == (masterfd = fopen(
+        } else if (nullptr == (masterfd = fopen(
                                 (const char *)masterFileName.c_str(), "w"))) {
-            masterfd = 0;
+            masterfd = nullptr;
             throw sls::RuntimeError("Could not create binary master file "
                                     "(with overwrite enable) " +
                                     masterFileName);
         }
         // create master file data
-        time_t t = time(0);
+        time_t t = time(nullptr);
         char message[maxMasterFileSize];
         sprintf(message,
                 "Version                    : %.1f\n"
@@ -252,6 +252,6 @@ void BinaryFile::CreateMasterFile(bool masterFileWriteEnable,
         }
         if (masterfd)
             fclose(masterfd);
-        masterfd = 0;
+        masterfd = nullptr;
     }
 }

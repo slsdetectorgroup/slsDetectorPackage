@@ -639,8 +639,7 @@ void allocateDetectorStructureMemory() {
     thisSettings = UNINITIALIZED;
 
     // if trimval requested, should return -1 to acknowledge unknown
-    int ichan = 0;
-    for (ichan = 0; ichan < (detectorModules->nchan); ichan++) {
+    for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
         *((detectorModules->chanregs) + ichan) = -1;
     }
 }
@@ -651,9 +650,8 @@ void setupDetector() {
     // set dacs
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
     {
-        int i = 0;
         const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
-        for (i = 0; i < NDAC; ++i) {
+        for (int i = 0; i < NDAC; ++i) {
             setDAC((enum DACINDEX)i, defaultvals[i], 0);
             if ((detectorModules)->dacs[i] != defaultvals[i]) {
                 LOG(logERROR, ("Setting dac %d failed, wrote %d, read %d\n", i,
@@ -748,8 +746,7 @@ int setDynamicRange(int dr) {
 #ifndef VIRTUAL
         if (Feb_Control_SetDynamicRange(dr)) {
             on_dst = 0;
-            int i;
-            for (i = 0; i < 32; i++)
+            for (int i = 0; i < 32; ++i)
                 dst_requested[i] = 0; // clear dst requested
             if (!Beb_SetUpTransferParameters(dr)) {
                 LOG(logERROR, ("Could not set bit mode in the back end\n"));
@@ -829,8 +826,7 @@ void setNumFrames(int64_t val) {
         if (Feb_Control_SetNExposures((unsigned int)val * eiger_ntriggers)) {
             eiger_nexposures = val;
             on_dst = 0;
-            int i;
-            for (i = 0; i < 32; i++)
+            for (int i = 0; i < 32; ++i)
                 dst_requested[i] = 0; // clear dst requested
             ndsts_in_use = 1;
             nimages_per_request = eiger_nexposures * eiger_ntriggers;
@@ -851,8 +847,7 @@ void setNumTriggers(int64_t val) {
         if (Feb_Control_SetNExposures((unsigned int)val * eiger_nexposures)) {
             eiger_ntriggers = val;
             on_dst = 0;
-            int i;
-            for (i = 0; i < 32; i++)
+            for (int i = 0; i < 32; ++i)
                 dst_requested[i] = 0; // clear dst requested
             nimages_per_request = eiger_nexposures * eiger_ntriggers;
         }
@@ -1021,18 +1016,15 @@ int setModule(sls_detector_module myMod, char *mess) {
     }
 
     // dacs
-    {
-        int i = 0;
-        for (i = 0; i < NDAC; ++i) {
-            setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
-            if (myMod.dacs[i] != (detectorModules)->dacs[i]) {
-                sprintf(mess, "Could not set module. Could not set dac %d\n",
-                        i);
-                LOG(logERROR, (mess));
-                setSettings(UNDEFINED);
-                LOG(logERROR, ("Settings has been changed to undefined\n"));
-                return FAIL;
-            }
+    for (int i = 0; i < NDAC; ++i) {
+        setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
+        if (myMod.dacs[i] != (detectorModules)->dacs[i]) {
+            sprintf(mess, "Could not set module. Could not set dac %d\n",
+                    i);
+            LOG(logERROR, (mess));
+            setSettings(UNDEFINED);
+            LOG(logERROR, ("Settings has been changed to undefined\n"));
+            return FAIL;
         }
     }
 
@@ -1044,10 +1036,10 @@ int setModule(sls_detector_module myMod, char *mess) {
         LOG(logINFO, ("Setting module with trimbits\n"));
         // includ gap pixels
         unsigned int tt[263680];
-        int iy, ichip, ix, ip = 0, ich = 0;
-        for (iy = 0; iy < 256; ++iy) {
-            for (ichip = 0; ichip < 4; ++ichip) {
-                for (ix = 0; ix < 256; ++ix) {
+        int ip = 0, ich = 0;
+        for (int iy = 0; iy < 256; ++iy) {
+            for (int ichip = 0; ichip < 4; ++ichip) {
+                for (int ix = 0; ix < 256; ++ix) {
                     tt[ip++] = myMod.chanregs[ich++];
                 }
                 if (ichip < 3) {
@@ -1121,10 +1113,10 @@ int getModule(sls_detector_module *myMod) {
     tt = Feb_Control_GetTrimbits();
 
     // exclude gap pixels
-    int iy, ichip, ix, ip = 0, ich = 0;
-    for (iy = 0; iy < 256; ++iy) {
-        for (ichip = 0; ichip < 4; ++ichip) {
-            for (ix = 0; ix < 256; ++iy) {
+    int ip = 0, ich = 0;
+    for (int iy = 0; iy < 256; ++iy) {
+        for (int ichip = 0; ichip < 4; ++ichip) {
+            for (int ix = 0; ix < 256; ++iy) {
                 myMod->chanregs[ich++] = tt[ip++];
             }
             if (ichip < 3) {
@@ -1432,37 +1424,32 @@ int configureMAC() {
     if (!top)
         dst_port = dstport2;
 
-    int i = 0;
-    /* for(i=0;i<32;i++) { modified for Aldo*/
     if (Beb_SetBebSrcHeaderInfos(beb_num, send_to_ten_gig, src_mac, src_ip,
                                  srcport) &&
-        Beb_SetUpUDPHeader(beb_num, send_to_ten_gig, header_number + i, dst_mac,
+        Beb_SetUpUDPHeader(beb_num, send_to_ten_gig, header_number, dst_mac,
                            dst_ip, dst_port)) {
         LOG(logDEBUG1, ("\tset up left ok\n"));
     } else {
         return FAIL;
     }
-    /*}*/
 
     header_number = 32;
     dst_port = dstport2;
     if (!top)
         dst_port = dstport;
 
-    /*for(i=0;i<32;i++) {*/ /** modified for Aldo*/
     if (Beb_SetBebSrcHeaderInfos(beb_num, send_to_ten_gig, src_mac, src_ip,
                                  srcport) &&
-        Beb_SetUpUDPHeader(beb_num, send_to_ten_gig, header_number + i, dst_mac,
+        Beb_SetUpUDPHeader(beb_num, send_to_ten_gig, header_number, dst_mac,
                            dst_ip, dst_port)) {
         LOG(logDEBUG1, (" set up right ok\n"));
     } else {
         return FAIL;
     }
-    /*}*/
 
     on_dst = 0;
 
-    for (i = 0; i < 32; i++)
+    for (int i = 0; i < 32; ++i)
         dst_requested[i] = 0; // clear dst requested
     nimages_per_request = eiger_nexposures * eiger_ntriggers;
 #endif
@@ -1849,8 +1836,7 @@ int setAllTrimbits(int val) {
     }
 #endif
     if (detectorModules) {
-        int ichan;
-        for (ichan = 0; ichan < (detectorModules->nchan); ichan++) {
+        for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
             *((detectorModules->chanregs) + ichan) = val;
         }
     }
@@ -1860,10 +1846,9 @@ int setAllTrimbits(int val) {
 }
 
 int getAllTrimbits() {
-    int ichan = 0;
     int value = *((detectorModules->chanregs));
     if (detectorModules) {
-        for (ichan = 0; ichan < (detectorModules->nchan); ichan++) {
+        for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
             if (*((detectorModules->chanregs) + ichan) != value) {
                 value = -1;
                 break;
@@ -2094,10 +2079,9 @@ void *start_timer(void *arg) {
     char imageData[databytes * 2];
     memset(imageData, 0, databytes * 2);
     {
-        int i = 0;
         switch (dr) {
         case 4:
-            for (i = 0; i < ntotpixels / 2; ++i) {
+            for (int i = 0; i < ntotpixels / 2; ++i) {
                 *((uint8_t *)(imageData + i)) =
                     eiger_virtual_test_mode
                         ? 0xEE
@@ -2105,19 +2089,19 @@ void *start_timer(void *arg) {
             }
             break;
         case 8:
-            for (i = 0; i < ntotpixels; ++i) {
+            for (int i = 0; i < ntotpixels; ++i) {
                 *((uint8_t *)(imageData + i)) =
                     eiger_virtual_test_mode ? 0xFE : (uint8_t)i;
             }
             break;
         case 16:
-            for (i = 0; i < ntotpixels; ++i) {
+            for (int i = 0; i < ntotpixels; ++i) {
                 *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
                     eiger_virtual_test_mode ? 0xFFE : (uint16_t)i;
             }
             break;
         case 32:
-            for (i = 0; i < ntotpixels; ++i) {
+            for (int i = 0; i < ntotpixels; ++i) {
                 *((uint32_t *)(imageData + i * sizeof(uint32_t))) =
                     eiger_virtual_test_mode ? 0xFFFFFE : (uint32_t)i;
             }
@@ -2132,8 +2116,7 @@ void *start_timer(void *arg) {
         uint64_t frameNr = 0;
         getStartingFrameNumber(&frameNr);
         // loop over number of frames
-        int iframes = 0;
-        for (iframes = 0; iframes != numFrames; ++iframes) {
+        for (int iframes = 0; iframes != numFrames; ++iframes) {
 
             usleep(eiger_virtual_transmission_delay_frame);
 
@@ -2155,8 +2138,8 @@ void *start_timer(void *arg) {
 
             // loop packet
             {
-                int i = 0;
-                for (i = 0; i != numPacketsPerFrame; ++i) {
+                
+                int i = 0; i != numPacketsPerFrame; ++i) {
                     // set header
                     char packetData[packetsize];
                     memset(packetData, 0, packetsize);
@@ -2187,8 +2170,7 @@ void *start_timer(void *arg) {
                     int dstOffset = sizeof(sls_detector_header);
                     int dstOffset2 = sizeof(sls_detector_header);
                     {
-                        int psize = 0;
-                        for (psize = 0; psize < datasize; psize += npixelsx) {
+                        for (int psize = 0; psize < datasize; psize += npixelsx) {
 
                             if (dr == 32 && tgEnable == 0) {
                                 memcpy(packetData + dstOffset,
@@ -2309,10 +2291,6 @@ int startReadOut() {
         if ((ret_val = (!Beb_RequestNImages(beb_num, send_to_ten_gig, on_dst,
                                             nimages_per_request, 0))))
             break;
-        //		for(i=0;i<nimages_per_request;i++)
-        //			if  ((ret_val =
-        //(!Beb_RequestNImages(beb_num,send_to_ten_gig,on_dst,1,0))))
-        // break;
 
         dst_requested[on_dst++] = 0;
         on_dst %= ndsts_in_use;
@@ -2407,10 +2385,6 @@ void readFrame(int *ret, char *mess) {
 /* common */
 
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
-
-    int idac, ichan;
-    int ret = OK;
-
     LOG(logDEBUG1, ("Copying module\n"));
 
     if (srcMod->serialnumber >= 0) {
@@ -2445,19 +2419,19 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
     LOG(logDEBUG1, ("Copying register %x (%x)\n", destMod->reg, srcMod->reg));
 
     if (destMod->nchan != 0) {
-        for (ichan = 0; ichan < (srcMod->nchan); ichan++) {
+        for (int ichan = 0; ichan < (srcMod->nchan); ichan++) {
             if (*((srcMod->chanregs) + ichan) >= 0)
                 *((destMod->chanregs) + ichan) = *((srcMod->chanregs) + ichan);
         }
     } else
         LOG(logINFO, ("Not Copying trimbits\n"));
 
-    for (idac = 0; idac < (srcMod->ndac); idac++) {
+    for (int idac = 0; idac < (srcMod->ndac); idac++) {
         if (*((srcMod->dacs) + idac) >= 0) {
             *((destMod->dacs) + idac) = *((srcMod->dacs) + idac);
         }
     }
-    return ret;
+    return OK;
 }
 
 int calculateDataBytes() {

@@ -83,8 +83,7 @@ void sendDataToSPI(uint32_t *valw, uint32_t addr, uint32_t val,
          "clkmask:0x%x digmask:0x%x digofst:%d\n",
          *valw, addr, val, numbitstosend, clkmask, digoutmask, digofset));
 
-    int i = 0;
-    for (i = 0; i < numbitstosend; ++i) {
+    for (int i = 0; i < numbitstosend; ++i) {
 
         // clk down
         (*valw) &= ~clkmask;
@@ -112,9 +111,7 @@ uint32_t receiveDataFromSPI(uint32_t *valw, uint32_t addr, int numbitstoreceive,
                     *valw, addr, numbitstoreceive, clkmask, readaddr));
 
     uint32_t retval = 0;
-    int i = 0;
-
-    for (i = 0; i < numbitstoreceive; ++i) {
+    for (int i = 0; i < numbitstoreceive; ++i) {
 
         // clk down
         (*valw) &= ~clkmask;

@@ -89,8 +89,7 @@ int mapCSP0(void) {
     u_int32_t **cspbases[2] = {&csp0base, &csp1base};
     char names[2][10] = {"csp0base", "csp1base"};
 
-    int i = 0;
-    for (i = 0; i < 2; ++i) {
+    for (int i = 0; i < 2; ++i) {
         // if not mapped
         if (*cspbases[i] == 0) {
             LOG(logINFO, ("Mapping memory for %s\n", names[i]));

@@ -233,8 +233,7 @@ int testFpga() {
 
         volatile uint32_t val = 0, readval = 0;
         int times = 1000 * 1000;
-        int i = 0;
-        for (i = 0; i < times; ++i) {
+        for (int i = 0; i < times; ++i) {
             val = 0x5A5A5A5A - i;
             bus_w(addr, val);
             readval = bus_r(addr);
@@ -298,9 +297,8 @@ int testBus() {
 
     volatile uint32_t val = 0, readval = 0;
     int times = 1000 * 1000;
-    int i = 0;
 
-    for (i = 0; i < times; ++i) {
+    for (int i = 0; i < times; ++i) {
         val += 0xbbbbb;
         bus_w(addr, val);
         readval = bus_r(addr);
@@ -458,33 +456,30 @@ void setupDetector() {
     }
     analogDataPtr = 0;
     digitalDataPtr = 0;
-    {
-        int i = 0;
-        for (i = 0; i < NUM_CLOCKS; ++i) {
-            clkPhase[i] = 0;
-        }
-        clkFrequency[RUN_CLK] = DEFAULT_RUN_CLK_AT_STARTUP;
-        clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK_AT_STARTUP;
-        clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK_AT_STARTUP;
-        clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK_AT_STARTUP;
-        // default adc phase in deg
-        /*
-                {
-                    int phase_shifts = 0;
-                    ConvertToDifferentRange(0, 359, 0, getMaxPhase(ADC_CLK) - 1,
-           DEFAULT_ADC_PHASE_DEG, &phase_shifts); clkPhase[ADC_CLK] =
-           phase_shifts;
-                }
-                LOG(logINFO, ("Default Run clk: %d MHz\n",
-           clkFrequency[RUN_CLK])); LOG(logINFO, ("Default Adc clk: %d MHz\n",
-           clkFrequency[ADC_CLK])); LOG(logINFO, ("Default Sync clk: %d MHz\n",
-           clkFrequency[SYNC_CLK])); LOG(logINFO, ("Default Dbit clk: %d MHz\n",
-           clkFrequency[DBIT_CLK])); LOG(logINFO, ("Default Adc Phase: %d (%d
-           deg)\n", clkPhase[ADC_CLK], getPhase(ADC_CLK, 1)));
-        */
-        for (i = 0; i < NDAC; ++i)
-            dacValues[i] = -1;
+    for (int i = 0; i < NUM_CLOCKS; ++i) {
+        clkPhase[i] = 0;
     }
+    clkFrequency[RUN_CLK] = DEFAULT_RUN_CLK_AT_STARTUP;
+    clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK_AT_STARTUP;
+    clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK_AT_STARTUP;
+    clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK_AT_STARTUP;
+    // default adc phase in deg
+    /*
+            {
+                int phase_shifts = 0;
+                ConvertToDifferentRange(0, 359, 0, getMaxPhase(ADC_CLK) - 1,
+        DEFAULT_ADC_PHASE_DEG, &phase_shifts); clkPhase[ADC_CLK] =
+        phase_shifts;
+            }
+            LOG(logINFO, ("Default Run clk: %d MHz\n",
+        clkFrequency[RUN_CLK])); LOG(logINFO, ("Default Adc clk: %d MHz\n",
+        clkFrequency[ADC_CLK])); LOG(logINFO, ("Default Sync clk: %d MHz\n",
+        clkFrequency[SYNC_CLK])); LOG(logINFO, ("Default Dbit clk: %d MHz\n",
+        clkFrequency[DBIT_CLK])); LOG(logINFO, ("Default Adc Phase: %d (%d
+        deg)\n", clkPhase[ADC_CLK], getPhase(ADC_CLK, 1)));
+    */
+    for (int i = 0; i < NDAC; ++i)
+        dacValues[i] = -1;
     vLimit = DEFAULT_VLIMIT;
     highvoltage = 0;
     adcEnableMask_1g = 0;
@@ -610,8 +605,7 @@ void updateDataBytes() {
     if (adcEnableMask_1g == BIT32_MSK)
         nchans = 32;
     else {
-        int ichan = 0;
-        for (ichan = 0; ichan < NCHAN; ++ichan) {
+        for (int ichan = 0; ichan < NCHAN; ++ichan) {
             if (adcEnableMask_1g & (1 << ichan))
                 ++nchans;
         }
@@ -625,14 +619,11 @@ void updateDataBytes() {
 int setDefaultDacs() {
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
-    {
-        int i = 0;
-        const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
-        for (i = 0; i < NDAC; ++i) {
-            // if not already default, set it to default
-            if (dacValues[i] != defaultvals[i]) {
-                setDAC((enum DACINDEX)i, defaultvals[i], 0);
-            }
+    const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
+    for (int i = 0; i < NDAC; ++i) {
+        // if not already default, set it to default
+        if (dacValues[i] != defaultvals[i]) {
+            setDAC((enum DACINDEX)i, defaultvals[i], 0);
         }
     }
     return ret;
@@ -712,8 +703,7 @@ void setADCEnableMask_10G(uint32_t mask) {
     uint8_t actualMask = 0;
     if (mask != 0) {
         int ival = 0;
-        int ich = 0;
-        for (ich = 0; ich < NCHAN; ich = ich + 4) {
+        for (int ich = 0; ich < NCHAN; ich = ich + 4) {
             if ((1 << ich) & mask) {
                 actualMask |= (1 << ival);
             }
@@ -739,13 +729,11 @@ uint32_t getADCEnableMask_10G() {
     // convert 8 bit mask to 32 bit mask
     uint32_t retval = 0;
     if (adcEnableMask_10g) {
-        int ival = 0;
-        int iloop = 0;
-        for (ival = 0; ival < 8; ++ival) {
+        for (int ival = 0; ival < 8; ++ival) {
             // if bit in 8 bit mask set
             if ((1 << ival) & adcEnableMask_10g) {
                 // set it for 4 bits in 32 bit mask
-                for (iloop = 0; iloop < 4; ++iloop) {
+                for (int iloop = 0; iloop < 4; ++iloop) {
                     retval |= (1 << (ival * 4 + iloop));
                 }
             }
@@ -1948,67 +1936,58 @@ void *start_timer(void *arg) {
     // Generate Data
     char imageData[imageSize];
     memset(imageData, 0, imageSize);
-    {
-        int i = 0;
-        for (i = 0; i < imageSize; i += sizeof(uint16_t)) {
-            *((uint16_t *)(imageData + i)) = i;
-        }
+    for (int i = 0; i < imageSize; i += sizeof(uint16_t)) {
+        *((uint16_t *)(imageData + i)) = i;
     }
 
     // Send data
-    {
-        int frameNr = 0;
-        // loop over number of frames
-        for (frameNr = 0; frameNr != numFrames; ++frameNr) {
+    // loop over number of frames
+    for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
 
-            // update the virtual stop from stop server
-            virtual_stop = ComVirtual_getStop();
-            // check if virtual_stop is high
-            if (virtual_stop == 1) {
-                break;
-            }
+        // update the virtual stop from stop server
+        virtual_stop = ComVirtual_getStop();
+        // check if virtual_stop is high
+        if (virtual_stop == 1) {
+            break;
+        }
 
-            // sleep for exposure time
-            struct timespec begin, end;
-            clock_gettime(CLOCK_REALTIME, &begin);
-            usleep(expNs / 1000);
+        // sleep for exposure time
+        struct timespec begin, end;
+        clock_gettime(CLOCK_REALTIME, &begin);
+        usleep(expNs / 1000);
 
-            int srcOffset = 0;
-            // loop packet
-            {
-                int i = 0;
-                for (i = 0; i != packetsPerFrame; ++i) {
-                    // set header
-                    char packetData[packetSize];
-                    memset(packetData, 0, packetSize);
-                    sls_detector_header *header =
-                        (sls_detector_header *)(packetData);
-                    header->detType = (uint16_t)myDetectorType;
-                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;
-                    header->frameNumber = frameNr;
-                    header->packetNumber = i;
-                    header->modId = 0;
-                    header->row = detPos[X];
-                    header->column = detPos[Y];
+        int srcOffset = 0;
+        // loop packet
+        for (int i = 0; i != packetsPerFrame; ++i) {
+            // set header
+            char packetData[packetSize];
+            memset(packetData, 0, packetSize);
+            sls_detector_header *header =
+                (sls_detector_header *)(packetData);
+            header->detType = (uint16_t)myDetectorType;
+            header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+            header->frameNumber = frameNr;
+            header->packetNumber = i;
+            header->modId = 0;
+            header->row = detPos[X];
+            header->column = detPos[Y];
 
-                    // fill data
-                    memcpy(packetData + sizeof(sls_detector_header),
-                           imageData + srcOffset, dataSize);
-                    srcOffset += dataSize;
+            // fill data
+            memcpy(packetData + sizeof(sls_detector_header),
+                    imageData + srcOffset, dataSize);
+            srcOffset += dataSize;
 
-                    sendUDPPacket(0, packetData, packetSize);
-                }
-            }
-            LOG(logINFO, ("Sent frame: %d\n", frameNr));
-            clock_gettime(CLOCK_REALTIME, &end);
-            int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                              (end.tv_nsec - begin.tv_nsec));
+            sendUDPPacket(0, packetData, packetSize);
+        }
+        LOG(logINFO, ("Sent frame: %d\n", frameNr));
+        clock_gettime(CLOCK_REALTIME, &end);
+        int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
+                            (end.tv_nsec - begin.tv_nsec));
 
-            // sleep for (period - exptime)
-            if (frameNr < numFrames) { // if there is a next frame
-                if (periodNs > timeNs) {
-                    usleep((periodNs - timeNs) / 1000);
-                }
+        // sleep for (period - exptime)
+        if (frameNr < numFrames) { // if there is a next frame
+            if (periodNs > timeNs) {
+                usleep((periodNs - timeNs) / 1000);
             }
         }
     }
@@ -2192,11 +2171,8 @@ void readSample(int ns) {
         bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
 
         // wait for 1 us to latch different clocks of read and read strobe
-        {
-            int i = 0;
-            for (i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
-                ;
-        }
+        for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+            ;
 
         if (!(ns % 1000)) {
             LOG(logDEBUG1, ("Reading sample ns:%d of %d AEmtpy:0x%x AFull:0x%x "
@@ -2206,8 +2182,7 @@ void readSample(int ns) {
         }
 
         // loop through all channels
-        int ich = 0;
-        for (ich = 0; ich < NCHAN; ++ich) {
+        for (int ich = 0; ich < NCHAN; ++ich) {
 
             // if channel is in enable mask
             if ((1 << ich) & (adcEnableMask_1g)) {

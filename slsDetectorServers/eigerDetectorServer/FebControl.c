@@ -63,7 +63,6 @@ int Feb_Control_hv_fd = -1;
 
 void Module_Module(struct Module *mod, unsigned int number,
                    unsigned int address_top) {
-    unsigned int i;
     mod->module_number = number;
     mod->top_address_valid = 1;
     mod->top_left_address = 0x100 | (0xff & address_top);
@@ -75,15 +74,14 @@ void Module_Module(struct Module *mod, unsigned int number,
     mod->high_voltage = -1;
     mod->top_dac = malloc(Module_ndacs * sizeof(int));
     mod->bottom_dac = malloc(Module_ndacs * sizeof(int));
-    for (i = 0; i < Module_ndacs; i++)
+    for (unsigned int i = 0; i < Module_ndacs; i++)
         mod->top_dac[i] = mod->top_address_valid ? -1 : 0;
-    for (i = 0; i < Module_ndacs; i++)
+    for (unsigned int i = 0; i < Module_ndacs; i++)
         mod->bottom_dac[i] = mod->bottom_address_valid ? -1 : 0;
 }
 
 void Module_ModuleBottom(struct Module *mod, unsigned int number,
                          unsigned int address_bottom) {
-    unsigned int i;
     mod->module_number = number;
     mod->top_address_valid = 0;
     mod->top_left_address = 0;
@@ -94,20 +92,19 @@ void Module_ModuleBottom(struct Module *mod, unsigned int number,
 
     mod->high_voltage = -1;
 
-    for (i = 0; i < 4; i++)
+    for (unsigned int i = 0; i < 4; i++)
         mod->idelay_top[i] = mod->idelay_bottom[i] = 0;
 
     mod->top_dac = malloc(Module_ndacs * sizeof(int));
     mod->bottom_dac = malloc(Module_ndacs * sizeof(int));
-    for (i = 0; i < Module_ndacs; i++)
+    for (unsigned int i = 0; i < Module_ndacs; i++)
         mod->top_dac[i] = mod->top_address_valid ? -1 : 0;
-    for (i = 0; i < Module_ndacs; i++)
+    for (unsigned int i = 0; i < Module_ndacs; i++)
         mod->bottom_dac[i] = mod->bottom_address_valid ? -1 : 0;
 }
 
 void Module_Module1(struct Module *mod, unsigned int number,
                     unsigned int address_top, unsigned int address_bottom) {
-    unsigned int i;
     mod->module_number = number;
     mod->top_address_valid = 1;
     mod->top_left_address = 0x100 | (0xff & address_top);
@@ -118,14 +115,14 @@ void Module_Module1(struct Module *mod, unsigned int number,
 
     mod->high_voltage = -1;
 
-    for (i = 0; i < 4; i++)
+    for (unsigned int i = 0; i < 4; i++)
         mod->idelay_top[i] = mod->idelay_bottom[i] = 0;
 
     mod->top_dac = malloc(Module_ndacs * sizeof(int));
     mod->bottom_dac = malloc(Module_ndacs * sizeof(int));
-    for (i = 0; i < Module_ndacs; i++)
+    for (unsigned int i = 0; i < Module_ndacs; i++)
         mod->top_dac[i] = mod->top_address_valid ? -1 : 0;
-    for (i = 0; i < Module_ndacs; i++)
+    for (unsigned int i = 0; i < Module_ndacs; i++)
         mod->bottom_dac[i] = mod->bottom_address_valid ? -1 : 0;
 }
 
@@ -219,7 +216,6 @@ void Feb_Control_FebControl() {
 }
 
 int Feb_Control_Init(int master, int top, int normal, int module_num) {
-    unsigned int i;
     Feb_Control_module_number = 0;
     Feb_Control_current_index = 0;
     Feb_control_master = master;
@@ -241,7 +237,7 @@ int Feb_Control_Init(int master, int top, int normal, int module_num) {
 
     unsigned int nfebs = 0;
     unsigned int *feb_list = malloc(moduleSize * 4 * sizeof(unsigned int));
-    for (i = 1; i < moduleSize; i++) {
+    for (unsigned int i = 1; i < moduleSize; i++) {
         if (Module_TopAddressIsValid(&modules[i])) {
             feb_list[nfebs++] = Module_GetTopRightAddress(&modules[i]);
             feb_list[nfebs++] = Module_GetTopLeftAddress(&modules[i]);
@@ -321,9 +317,8 @@ void Feb_Control_CloseSerialCommunication() {
 }
 
 void Feb_Control_PrintModuleList() {
-    unsigned int i;
     LOG(logDEBUG1, ("Module list:\n"));
-    for (i = 0; i < moduleSize; i++) {
+    for (unsigned int i = 0; i < moduleSize; i++) {
         LOG(logDEBUG1,
             ("\t%d) %s modules: %d    0x%x %s\n", i,
              ((i == 0) ? "All   " : ((i == 1) ? "Master" : "      ")),
@@ -338,8 +333,7 @@ void Feb_Control_PrintModuleList() {
 
 int Feb_Control_GetModuleIndex(unsigned int module_number,
                                unsigned int *module_index) {
-    unsigned int i;
-    for (i = 0; i < moduleSize; i++) {
+    for (unsigned int i = 0; i < moduleSize; i++) {
         if (Module_GetModuleNumber(&modules[i]) == module_number) {
             *module_index = i;
             return 1;
@@ -350,10 +344,9 @@ int Feb_Control_GetModuleIndex(unsigned int module_number,
 }
 
 int Feb_Control_CheckModuleAddresses(struct Module *m) {
-    unsigned int i;
     int found_t = 0;
     int found_b = 0;
-    for (i = 0; i < moduleSize; i++) {
+    for (unsigned int i = 0; i < moduleSize; i++) {
         if ((Module_TopAddressIsValid(m) &&
              Module_GetTopBaseAddress(&modules[i]) &&
              Module_GetTopBaseAddress(m) ==
@@ -408,8 +401,7 @@ int Feb_Control_AddModule1(unsigned int module_number, int top_enable,
         LOG(logINFO, ("\tRemoving previous assignment of module number %d.\n",
                       module_number));
         // free(modules[pre_module_index]);
-        int i;
-        for (i = pre_module_index; i < moduleSize - 1; i++)
+        for (int i = pre_module_index; i < moduleSize - 1; i++)
             modules[i] = modules[i + 1];
         moduleSize--;
         parameters_ok = 0;
@@ -460,13 +452,12 @@ Module_ModuleBottom(m,module_number,top_address);*/
 
 int Feb_Control_CheckSetup(int master) {
     LOG(logDEBUG1, ("Checking Set up\n"));
-    unsigned int i, j;
+    unsigned int i;
     int ok = 1;
 
-    /*for(i=0;i<moduleSize;i++) {*/
     i = Feb_Control_current_index;
 
-    for (j = 0; j < 4; j++) {
+    for (unsigned int j = 0; j < 4; j++) {
         if (Module_GetTopIDelay(&modules[i], j) < 0) {
             LOG(logERROR, ("module %d's idelay top number %d not set.\n",
                            Module_GetModuleNumber(&modules[i]), j));
@@ -484,7 +475,7 @@ int Feb_Control_CheckSetup(int master) {
                        Module_GetModuleNumber(&modules[i])));
         ok = 0;
     }
-    for (j = 0; j < Module_ndacs; j++) {
+    for (unsigned int j = 0; j < Module_ndacs; j++) {
         if (Module_GetTopDACValue(&modules[i], j) < 0) {
             LOG(logERROR,
                 ("module %d's top \"%s\" dac is not set.\n",
@@ -511,8 +502,7 @@ unsigned int Feb_Control_GetNModules() {
 
 unsigned int Feb_Control_GetNHalfModules() {
     unsigned int n_half_modules = 0;
-    unsigned int i;
-    for (i = 1; i < moduleSize; i++) {
+    for (unsigned int i = 1; i < moduleSize; i++) {
         if (Module_TopAddressIsValid(&modules[i]))
             n_half_modules++;
         if (Module_BottomAddressIsValid(&modules[i]))
@@ -536,7 +526,6 @@ int Feb_Control_SetIDelays(unsigned int module_num, unsigned int ndelay_units) {
 int Feb_Control_SetIDelays1(
     unsigned int module_num, unsigned int chip_pos,
     unsigned int ndelay_units) { // chip_pos 0=ll,1=lr,0=rl,1=rr
-    unsigned int i;
     // currently set same for top and bottom
     if (chip_pos > 3) {
         LOG(logERROR, ("SetIDelay chip_pos %d doesn't exist.\n", chip_pos));
@@ -560,10 +549,10 @@ int Feb_Control_SetIDelays1(
                     Module_SetTopIDelay(&modules[module_index], chip_pos,
                                         ndelay_units);
                 else {
-                    for (i = 0; i < moduleSize; i++)
+                    for (unsigned int i = 0; i < moduleSize; i++)
                         Module_SetTopIDelay(&modules[i], chip_pos,
                                             ndelay_units);
-                    for (i = 0; i < moduleSize; i++)
+                    for (unsigned int i = 0; i < moduleSize; i++)
                         Module_SetBottomIDelay(&modules[i], chip_pos,
                                                ndelay_units);
                 }
@@ -582,10 +571,10 @@ int Feb_Control_SetIDelays1(
                     Module_SetBottomIDelay(&modules[module_index], chip_pos,
                                            ndelay_units);
                 else {
-                    for (i = 0; i < moduleSize; i++)
+                    for (unsigned int i = 0; i < moduleSize; i++)
                         Module_SetTopIDelay(&modules[i], chip_pos,
                                             ndelay_units);
-                    for (i = 0; i < moduleSize; i++)
+                    for (unsigned int i = 0; i < moduleSize; i++)
                         Module_SetBottomIDelay(&modules[i], chip_pos,
                                                ndelay_units);
                 }
@@ -605,7 +594,7 @@ int Feb_Control_SetIDelays1(
                     Module_SetTopIDelay(&modules[module_index], chip_pos,
                                         ndelay_units);
                 else
-                    for (i = 0; i < moduleSize; i++)
+                    for (unsigned int i = 0; i < moduleSize; i++)
                         Module_SetTopIDelay(&modules[i], chip_pos,
                                             ndelay_units);
             } else {
@@ -623,7 +612,7 @@ int Feb_Control_SetIDelays1(
                     Module_SetBottomIDelay(&modules[module_index], chip_pos,
                                            ndelay_units);
                 else
-                    for (i = 0; i < moduleSize; i++)
+                    for (unsigned int i = 0; i < moduleSize; i++)
                         Module_SetBottomIDelay(&modules[i], chip_pos,
                                                ndelay_units);
             } else {
@@ -930,7 +919,6 @@ int Feb_Control_DecodeDACString(char *dac_str, unsigned int *module_index,
 }
 
 int Feb_Control_SetDAC(char *dac_str, int value, int is_a_voltage_mv) {
-    unsigned int i;
     unsigned int module_index, dac_ch;
     int top, bottom;
     if (!Feb_Control_DecodeDACString(dac_str, &module_index, &top, &bottom,
@@ -958,7 +946,7 @@ int Feb_Control_SetDAC(char *dac_str, int value, int is_a_voltage_mv) {
         if (module_index != 0)
             Module_SetTopDACValue(&modules[module_index], dac_ch, v);
         else
-            for (i = 0; i < moduleSize; i++)
+            for (unsigned int i = 0; i < moduleSize; i++)
                 Module_SetTopDACValue(&modules[i], dac_ch, v);
     }
 
@@ -970,7 +958,7 @@ int Feb_Control_SetDAC(char *dac_str, int value, int is_a_voltage_mv) {
         if (module_index != 0)
             Module_SetBottomDACValue(&modules[module_index], dac_ch, v);
         else
-            for (i = 0; i < moduleSize; i++)
+            for (unsigned int i = 0; i < moduleSize; i++)
                 Module_SetBottomDACValue(&modules[i], dac_ch, v);
     }
 
@@ -1004,8 +992,7 @@ int Feb_Control_GetDACName(unsigned int dac_num, char *s) {
 }
 
 int Feb_Control_GetDACNumber(char *s, unsigned int *n) {
-    unsigned int i;
-    for (i = 0; i < Module_ndacs; i++) {
+    for (unsigned int i = 0; i < Module_ndacs; i++) {
         if (!strcmp(Module_dac_names[i], s)) {
             *n = i;
             return 1;
@@ -1051,10 +1038,6 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits,
                             int top) {
     LOG(logINFO, ("Setting Trimbits\n"));
 
-    // for (int iy=10000;iy<20020;++iy)//263681
-    // for (int iy=263670;iy<263680;++iy)//263681
-    //	LOG(logINFO, ("%d:%c\t\t",iy,trimbits[iy]));
-
     unsigned int trimbits_to_load_l[1024];
     unsigned int trimbits_to_load_r[1024];
 
@@ -1067,8 +1050,7 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits,
     if (Feb_Control_Reset() == STATUS_ERROR) {
         LOG(logERROR, ("could not reset DAQ.\n"));
     }
-    int l_r;
-    for (l_r = 0; l_r < 2; l_r++) { // l_r loop
+    for (int l_r = 0; l_r < 2; l_r++) { // l_r loop
         unsigned int disable_chip_mask =
             l_r ? DAQ_CS_BAR_LEFT : DAQ_CS_BAR_RIGHT;
         if (Feb_Control_activated) {
@@ -1085,8 +1067,7 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits,
             }
         }
 
-        int row_set;
-        for (row_set = 0; row_set < 16; row_set++) { // 16 rows at a time
+        for (int row_set = 0; row_set < 16; row_set++) { // 16 rows at a time
             if (row_set == 0) {
                 if (!Feb_Control_SetCommandRegister(
                         DAQ_RESET_COMPLETELY | DAQ_SEND_A_TOKEN_IN |
@@ -1104,11 +1085,9 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits,
                 }
             }
 
-            int row;
-            for (row = 0; row < 16; row++) { // row loop
+            for (int row = 0; row < 16; row++) { // row loop
                 int offset = 2 * 32 * row;
-                int sc;
-                for (sc = 0; sc < 32; sc++) { // supercolumn loop sc
+                for (int sc = 0; sc < 32; sc++) { // supercolumn loop sc
                     int super_column_start_position_l =
                         1030 * row + l_r * 258 + sc * 8;
                     int super_column_start_position_r =
@@ -1125,8 +1104,7 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits,
                     trimbits_to_load_r[offset + chip_sc] = 0;
                     trimbits_to_load_l[offset + chip_sc + 32] = 0;
                     trimbits_to_load_r[offset + chip_sc + 32] = 0;
-                    int i;
-                    for (i = 0; i < 8; i++) { // column loop i
+                    for (int i = 0; i < 8; i++) { // column loop i
 
                         if (top == 1) {
                             trimbits_to_load_l[offset + chip_sc] |=
@@ -1865,8 +1843,7 @@ int Feb_Control_StartAcquisition() {
     static unsigned int reg_nums[20];
     static unsigned int reg_vals[20];
 
-    int i;
-    for (i = 0; i < 14; i++) {
+    for (int i = 0; i < 14; i++) {
         reg_nums[i] = DAQ_REG_CTRL;
         reg_vals[i] = 0;
     }
@@ -1888,8 +1865,7 @@ int Feb_Control_StopAcquisition() { return Feb_Control_Reset(); }
 
 int Feb_Control_SaveAllTrimbitsTo(int value, int top) {
     unsigned int chanregs[Feb_Control_trimbit_size];
-    int i;
-    for (i = 0; i < Feb_Control_trimbit_size; i++)
+    for (int i = 0; i < Feb_Control_trimbit_size; i++)
         chanregs[i] = value;
     return Feb_Control_SetTrimbits(0, chanregs, top);
 }
@@ -1902,7 +1878,6 @@ int Feb_Control_Pulse_Pixel(int npulses, int x, int y) {
     // this function is not designed for speed
 
     int pulse_multiple = 0; // has to be 0 or 1
-    int i;
 
     if (x < 0) {
         x = -x;
@@ -1939,7 +1914,7 @@ int Feb_Control_Pulse_Pixel(int npulses, int x, int y) {
 
     if (!pulse_multiple)
         serial_in = 0;
-    for (i = 0; i < x / 8; i++)
+    for (int i = 0; i < x / 8; i++)
         Feb_Control_Shift32InSerialIn(serial_in);
 
     Feb_Control_SendTokenIn();
@@ -2015,7 +1990,6 @@ int Feb_Control_ClockRowClock(unsigned int ntimes) {
 }
 
 int Feb_Control_PulseChip(int npulses) {
-    int i;
     int on = 1;
 
     if (npulses == -1) {
@@ -2030,7 +2004,7 @@ int Feb_Control_PulseChip(int npulses) {
     Feb_Control_SetStaticBits(); // toggle the enable 2x times
     Feb_Control_ResetChipCompletely();
 
-    for (i = 0; i < npulses; i++) {
+    for (int i = 0; i < npulses; i++) {
         if (!Feb_Control_SetCommandRegister(
                 DAQ_CHIP_CONTROLLER_SUPER_SLOW_SPEED | DAQ_RESET_PERIPHERY |
                 DAQ_RESET_COLUMN_SELECT)) {
@@ -2092,8 +2066,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
                   tau_in_sec, period_in_sec));
 
     LOG(logINFO, ("\tCalculating table for tau of %lld ns.\n", tau_in_Nsec));
-    int i;
-    for (i = 0; i < np; i++) {
+    for (int i = 0; i < np; i++) {
         Feb_Control_rate_meas[i] = i * exp(-i / period_in_sec * tau_in_sec);
         if (Feb_Control_rate_meas[i] > ratemax)
             ratemax = Feb_Control_rate_meas[i];
@@ -2123,8 +2096,7 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
     Feb_Control_rate_correction_table[0] =
         (((int)(m[0] + 0.5) & 0xf) << 14) | ((int)(b0[0] + 0.5) & 0x3fff);
 
-    int b = 0;
-    for (b = 1; b < 1024; b++) {
+    for (int b = 1; b < 1024; b++) {
         if (m[b - 1] < 15) {
             double s = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
             for (;; next_i++) {
@@ -2278,9 +2250,8 @@ void Feb_Control_SetRateCorrectionVariable(int activate_rate_correction) {
 }
 
 int Feb_Control_PrintCorrectedValues() {
-    int i;
     int delta, slope, base, lsb, corr;
-    for (i = 0; i < 4096; i++) {
+    for (int i = 0; i < 4096; i++) {
         lsb = i & 3;
         base = Feb_Control_rate_correction_table[i >> 2] & 0x3fff;
         slope = ((Feb_Control_rate_correction_table[i >> 2] & 0x3c000) >> 14);
@@ -2400,8 +2371,7 @@ int Feb_Control_SetInterruptSubframe(int val) {
                   ? Module_GetTopLeftAddress(&modules[1])
                   : Module_GetBottomLeftAddress(&modules[1]);
 
-    int iloop = 0;
-    for (iloop = 0; iloop < 2; ++iloop) {
+    for (int iloop = 0; iloop < 2; ++iloop) {
         // get previous value to keep it
         if (!Feb_Interface_ReadRegister(addr[iloop], offset, &regVal)) {
             LOG(logERROR, ("Could not read %s %s interrupt subframe\n", isTop,
@@ -2438,8 +2408,7 @@ int Feb_Control_GetInterruptSubframe() {
                   : Module_GetBottomLeftAddress(&modules[1]);
     uint32_t value[2] = {0, 0};
 
-    int iloop = 0;
-    for (iloop = 0; iloop < 2; ++iloop) {
+    for (int iloop = 0; iloop < 2; ++iloop) {
         if (!Feb_Interface_ReadRegister(addr[iloop], offset, &regVal)) {
             LOG(logERROR, ("Could not read back %s %s interrupt subframe\n",
                            isTop, side[iloop]));
@@ -2469,8 +2438,7 @@ int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right) {
         addr[1] = Module_GetTopRightAddress(&modules[1]);
     }
     char *top_names[] = {TOP_NAMES};
-    int i = 0;
-    for (i = 0; i < 2; ++i) {
+    for (int i = 0; i < 2; ++i) {
         if (addr[i] == 0) {
             continue;
         }
@@ -2518,8 +2486,7 @@ int Feb_Control_SetMaster(enum MASTERINDEX ind) {
     addr[0] = Module_GetTopLeftAddress(&modules[1]);
     addr[1] = Module_GetTopRightAddress(&modules[1]);
     char *master_names[] = {MASTER_NAMES};
-    int i = 0;
-    for (i = 0; i < 2; ++i) {
+    for (int i = 0; i < 2; ++i) {
         uint32_t value = 0;
         if (!Feb_Interface_ReadRegister(addr[i], offset, &value)) {
             LOG(logERROR, ("Could not read %s Feb reg to set Master flag\n",
@@ -2617,8 +2584,7 @@ int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
         actualOffset = offset - 0x100;
     }
 
-    int iloop = 0;
-    for (iloop = 0; iloop < 2; ++iloop) {
+    for (int iloop = 0; iloop < 2; ++iloop) {
         if (run[iloop]) {
             LOG(logINFO, ("Writing 0x%x to %s %s 0x%x\n", data, isTop,
                           side[iloop], actualOffset));
@@ -2666,8 +2632,7 @@ int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
         actualOffset = offset - 0x100;
     }
 
-    int iloop = 0;
-    for (iloop = 0; iloop < 2; ++iloop) {
+    for (int iloop = 0; iloop < 2; ++iloop) {
         if (run[iloop]) {
             if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset,
                                             &value[iloop])) {

@@ -60,46 +60,43 @@ int main(int argc, char *argv[]) {
     signal(SIGPIPE, SIG_IGN);
 
     // circumvent the basic tests
-    {
-        int i;
-        for (i = 1; i < argc; ++i) {
-            if (!strcasecmp(argv[i], "-stopserver")) {
-                LOG(logINFO, ("Detected stop server\n"));
-                isControlServer = 0;
-            } else if (!strcasecmp(argv[i], "-devel")) {
-                LOG(logINFO, ("Detected developer mode\n"));
-                debugflag = 1;
-            } else if (!strcasecmp(argv[i], "-nomodule")) {
-                LOG(logINFO, ("Detected No Module mode\n"));
-                checkModuleFlag = 0;
-            } else if (!strcasecmp(argv[i], "-port")) {
-                if ((i + 1) >= argc) {
-                    LOG(logERROR, ("no port value given. Exiting.\n"));
-                    return -1;
-                }
-                if (sscanf(argv[i + 1], "%d", &portno) == 0) {
-                    LOG(logERROR, ("cannot decode port value %s. Exiting.\n",
-                                   argv[i + 1]));
-                    return -1;
-                }
-                LOG(logINFO, ("Detected port: %d\n", portno));
+    for (int i = 1; i < argc; ++i) {
+        if (!strcasecmp(argv[i], "-stopserver")) {
+            LOG(logINFO, ("Detected stop server\n"));
+            isControlServer = 0;
+        } else if (!strcasecmp(argv[i], "-devel")) {
+            LOG(logINFO, ("Detected developer mode\n"));
+            debugflag = 1;
+        } else if (!strcasecmp(argv[i], "-nomodule")) {
+            LOG(logINFO, ("Detected No Module mode\n"));
+            checkModuleFlag = 0;
+        } else if (!strcasecmp(argv[i], "-port")) {
+            if ((i + 1) >= argc) {
+                LOG(logERROR, ("no port value given. Exiting.\n"));
+                return -1;
             }
-#ifdef GOTTHARDD
-            else if (!strcasecmp(argv[i], "-phaseshift")) {
-                if ((i + 1) >= argc) {
-                    LOG(logERROR, ("no phase shift value given. Exiting.\n"));
-                    return -1;
-                }
-                if (sscanf(argv[i + 1], "%d", &phaseShift) == 0) {
-                    LOG(logERROR,
-                        ("cannot decode phase shift value %s. Exiting.\n",
-                         argv[i + 1]));
-                    return -1;
-                }
-                LOG(logINFO, ("Detected phase shift of %d\n", phaseShift));
+            if (sscanf(argv[i + 1], "%d", &portno) == 0) {
+                LOG(logERROR, ("cannot decode port value %s. Exiting.\n",
+                                argv[i + 1]));
+                return -1;
             }
-#endif
+            LOG(logINFO, ("Detected port: %d\n", portno));
         }
+#ifdef GOTTHARDD
+        else if (!strcasecmp(argv[i], "-phaseshift")) {
+            if ((i + 1) >= argc) {
+                LOG(logERROR, ("no phase shift value given. Exiting.\n"));
+                return -1;
+            }
+            if (sscanf(argv[i + 1], "%d", &phaseShift) == 0) {
+                LOG(logERROR,
+                    ("cannot decode phase shift value %s. Exiting.\n",
+                        argv[i + 1]));
+                return -1;
+            }
+            LOG(logINFO, ("Detected phase shift of %d\n", phaseShift));
+        }
+#endif
     }
 
     // control server
@@ -108,26 +105,23 @@ int main(int argc, char *argv[]) {
         // start stop server process
         char cmd[MAX_STR_LENGTH];
         memset(cmd, 0, MAX_STR_LENGTH);
-        {
-            int i;
-            for (i = 0; i < argc; ++i) {
-                if (!strcasecmp(argv[i], "-port")) {
-                    i += 2;
-                    continue;
-                }
-                if (i > 0) {
-                    strcat(cmd, " ");
-                }
-                strcat(cmd, argv[i]);
+        for (int i = 0; i < argc; ++i) {
+            if (!strcasecmp(argv[i], "-port")) {
+                i += 2;
+                continue;
             }
-            char temp[50];
-            memset(temp, 0, sizeof(temp));
-            sprintf(temp, " -stopserver -port %d &", portno + 1);
-            strcat(cmd, temp);
-
-            LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
-            system(cmd);
+            if (i > 0) {
+                strcat(cmd, " ");
+            }
+            strcat(cmd, argv[i]);
         }
+        char temp[50];
+        memset(temp, 0, sizeof(temp));
+        sprintf(temp, " -stopserver -port %d &", portno + 1);
+        strcat(cmd, temp);
+
+        LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
+        system(cmd);
         LOG(logINFOBLUE, ("Control Server [%d]\n", portno));
 #ifdef VIRTUAL
         // creating files for virtual servers to communicate with each other

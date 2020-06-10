@@ -237,8 +237,7 @@ int testFpga() {
 
         volatile uint32_t val = 0, readval = 0;
         int times = 1000 * 1000;
-        int i = 0;
-        for (i = 0; i < times; ++i) {
+        for (int i = 0; i < times; ++i) {
             val = 0x5A5A5A5A - i;
             bus_w(addr, val);
             readval = bus_r(addr);
@@ -302,9 +301,8 @@ int testBus() {
 
     volatile uint32_t val = 0, readval = 0;
     int times = 1000 * 1000;
-    int i = 0;
 
-    for (i = 0; i < times; ++i) {
+    for (int i = 0; i < times; ++i) {
         val += 0xbbbbb;
         bus_w(addr, val);
         readval = bus_r(addr);
@@ -463,15 +461,14 @@ void setupDetector() {
     analogDataPtr = 0;
     digitalDataPtr = 0;
     {
-        int i = 0;
-        for (i = 0; i < NUM_CLOCKS; ++i) {
+        for (int i = 0; i < NUM_CLOCKS; ++i) {
             clkPhase[i] = 0;
         }
         clkFrequency[RUN_CLK] = DEFAULT_RUN_CLK;
         clkFrequency[ADC_CLK] = DEFAULT_ADC_CLK;
         clkFrequency[SYNC_CLK] = DEFAULT_SYNC_CLK;
         clkFrequency[DBIT_CLK] = DEFAULT_DBIT_CLK;
-        for (i = 0; i < NDAC; ++i)
+        for (int i = 0; i < NDAC; ++i)
             dacValues[i] = -1;
     }
     vLimit = DEFAULT_VLIMIT;
@@ -528,12 +525,9 @@ void setupDetector() {
     // switch off dacs (power regulators most likely only sets to minimum (if
     // power enable on))
     LOG(logINFOBLUE, ("Powering down all dacs\n"));
-    {
-        int idac = 0;
-        for (idac = 0; idac < NDAC; ++idac) {
-            setDAC(idac, LTC2620_GetPowerDownValue(),
-                   0); // has to be before setvchip
-        }
+    for (int idac = 0; idac < NDAC; ++idac) {
+        setDAC(idac, LTC2620_GetPowerDownValue(),
+                0); // has to be before setvchip
     }
 
     // power regulators
@@ -649,8 +643,7 @@ void updateDataBytes() {
         if (adcEnableMask_1g == BIT32_MSK)
             nachans = 32;
         else {
-            int ichan = 0;
-            for (ichan = 0; ichan < NCHAN_ANALOG; ++ichan) {
+            for (int ichan = 0; ichan < NCHAN_ANALOG; ++ichan) {
                 if (adcEnableMask_1g & (1 << ichan))
                     ++nachans;
             }
@@ -735,8 +728,7 @@ void setADCEnableMask_10G(uint32_t mask) {
     uint8_t actualMask = 0;
     if (mask != 0) {
         int ival = 0;
-        int ich = 0;
-        for (ich = 0; ich < NCHAN_ANALOG; ich = ich + 4) {
+        for (int ich = 0; ich < NCHAN_ANALOG; ich = ich + 4) {
             if ((1 << ich) & mask) {
                 actualMask |= (1 << ival);
             }
@@ -766,13 +758,11 @@ uint32_t getADCEnableMask_10G() {
     // convert 8 bit mask to 32 bit mask
     uint32_t retval = 0;
     if (adcEnableMask_10g) {
-        int ival = 0;
-        int iloop = 0;
-        for (ival = 0; ival < 8; ++ival) {
+        for (int ival = 0; ival < 8; ++ival) {
             // if bit in 8 bit mask set
             if ((1 << ival) & adcEnableMask_10g) {
                 // set it for 4 bits in 32 bit mask
-                for (iloop = 0; iloop < 4; ++iloop) {
+                for (int iloop = 0; iloop < 4; ++iloop) {
                     retval |= (1 << (ival * 4 + iloop));
                 }
             }
@@ -1196,9 +1186,8 @@ int getVChipToSet(enum DACINDEX ind, int val) {
     // get maximum value of the adc values (minimum is 0)
     int max = 0;
 
-    int ipwr = 0;
     // loop through the adcs
-    for (ipwr = 0; ipwr < NPWR - 1; ++ipwr) {
+    for (int ipwr = 0; ipwr < NPWR - 1; ++ipwr) {
 
         // get the dac values for each adc
         int dacmV = getPower(getDACIndexFromADCIndex(ipwr));
@@ -2310,18 +2299,14 @@ void *start_timer(void *arg) {
     // Generate Data
     char imageData[imageSize];
     memset(imageData, 0, imageSize);
-    {
-        int i = 0;
-        for (i = 0; i < imageSize; i += sizeof(uint16_t)) {
-            *((uint16_t *)(imageData + i)) = i;
-        }
+    for (int i = 0; i < imageSize; i += sizeof(uint16_t)) {
+        *((uint16_t *)(imageData + i)) = i;
     }
 
     // Send data
     {
-        int frameNr = 0;
         // loop over number of frames
-        for (frameNr = 0; frameNr != numFrames; ++frameNr) {
+        for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
 
             // update the virtual stop from stop server
             virtual_stop = ComVirtual_getStop();
@@ -2337,30 +2322,27 @@ void *start_timer(void *arg) {
 
             int srcOffset = 0;
             // loop packet
-            {
-                int i = 0;
-                for (i = 0; i != packetsPerFrame; ++i) {
+            for (int i = 0; i != packetsPerFrame; ++i) {
 
-                    char packetData[packetSize];
-                    memset(packetData, 0, packetSize);
-                    // set header
-                    sls_detector_header *header =
-                        (sls_detector_header *)(packetData);
-                    header->detType = (uint16_t)myDetectorType;
-                    header->version = SLS_DETECTOR_HEADER_VERSION - 1;
-                    header->frameNumber = frameNr;
-                    header->packetNumber = i;
-                    header->modId = 0;
-                    header->row = detPos[X];
-                    header->column = detPos[Y];
+                char packetData[packetSize];
+                memset(packetData, 0, packetSize);
+                // set header
+                sls_detector_header *header =
+                    (sls_detector_header *)(packetData);
+                header->detType = (uint16_t)myDetectorType;
+                header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+                header->frameNumber = frameNr;
+                header->packetNumber = i;
+                header->modId = 0;
+                header->row = detPos[X];
+                header->column = detPos[Y];
 
-                    // fill data
-                    memcpy(packetData + sizeof(sls_detector_header),
-                           imageData + srcOffset, dataSize);
-                    srcOffset += dataSize;
+                // fill data
+                memcpy(packetData + sizeof(sls_detector_header),
+                        imageData + srcOffset, dataSize);
+                srcOffset += dataSize;
 
-                    sendUDPPacket(0, packetData, packetSize);
-                }
+                sendUDPPacket(0, packetData, packetSize);
             }
             LOG(logINFO, ("Sent frame: %d\n", frameNr));
             clock_gettime(CLOCK_REALTIME, &end);
@@ -2555,11 +2537,8 @@ void readSample(int ns) {
         bus_w(addr, bus_r(addr) & (~DUMMY_ANLG_FIFO_RD_STRBE_MSK));
 
         // wait for 1 us to latch different clocks of read and read strobe
-        {
-            int i = 0;
-            for (i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
-                ;
-        }
+        for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+            ;
 
         if (!(ns % 1000)) {
             LOG(logDEBUG1, ("Reading sample ns:%d of %d AEmtpy:0x%x AFull:0x%x "
@@ -2569,8 +2548,7 @@ void readSample(int ns) {
         }
 
         // loop through all channels
-        int ich = 0;
-        for (ich = 0; ich < NCHAN_ANALOG; ++ich) {
+        for (int ich = 0; ich < NCHAN_ANALOG; ++ich) {
 
             // if channel is in enable mask
             if ((1 << ich) & (adcEnableMask_1g)) {
@@ -2604,11 +2582,8 @@ void readSample(int ns) {
         bus_w(addr, bus_r(addr) & (~DUMMY_DGTL_FIFO_RD_STRBE_MSK));
 
         // wait for 1 us to latch different clocks of read and read strobe
-        {
-            int i = 0;
-            for (i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
-                ;
-        }
+        for (int i = 0; i < WAIT_TIME_1US_FOR_LOOP_CNT; ++i)
+            ;
 
         // wait as it is connected directly to fifo running on a different clock
         if (!(ns % 1000)) {
@@ -2735,8 +2710,7 @@ void getNumberOfChannels(int *nchanx, int *nchany) {
         if (mask == BIT32_MASK) {
             nachans = NCHAN_ANALOG;
         } else {
-            int ich = 0;
-            for (ich = 0; ich < NCHAN_ANALOG; ++ich) {
+            for (int ich = 0; ich < NCHAN_ANALOG; ++ich) {
                 if ((mask & (1 << ich)) != 0U)
                     ++nachans;
             }

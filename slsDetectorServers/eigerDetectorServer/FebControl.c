@@ -64,66 +64,12 @@ int Feb_Control_hv_fd = -1;
 void Module_Module(struct Module *mod, unsigned int number,
                    unsigned int address_top) {
     mod->module_number = number;
-    mod->top_address_valid = 1;
-    mod->top_left_address = 0x100 | (0xff & address_top);
-    mod->top_right_address = (0x200 | (0xff & address_top));
-    mod->bottom_address_valid = 0;
-    mod->bottom_left_address = 0;
-    mod->bottom_right_address = 0;
-
+    mod->left_address = 0x100 | (0xff & address_top);
+    mod->right_address = (0x200 | (0xff & address_top));
     mod->high_voltage = -1;
-    mod->top_dac = malloc(Module_ndacs * sizeof(int));
-    mod->bottom_dac = malloc(Module_ndacs * sizeof(int));
+    mod->dac = malloc(Module_ndacs * sizeof(int));
     for (unsigned int i = 0; i < Module_ndacs; i++)
-        mod->top_dac[i] = mod->top_address_valid ? -1 : 0;
-    for (unsigned int i = 0; i < Module_ndacs; i++)
-        mod->bottom_dac[i] = mod->bottom_address_valid ? -1 : 0;
-}
-
-void Module_ModuleBottom(struct Module *mod, unsigned int number,
-                         unsigned int address_bottom) {
-    mod->module_number = number;
-    mod->top_address_valid = 0;
-    mod->top_left_address = 0;
-    mod->top_right_address = 0;
-    mod->bottom_address_valid = 1;
-    mod->bottom_left_address = 0x100 | (0xff & address_bottom);
-    mod->bottom_right_address = (0x200 | (0xff & address_bottom));
-
-    mod->high_voltage = -1;
-
-    for (unsigned int i = 0; i < 4; i++)
-        mod->idelay_top[i] = mod->idelay_bottom[i] = 0;
-
-    mod->top_dac = malloc(Module_ndacs * sizeof(int));
-    mod->bottom_dac = malloc(Module_ndacs * sizeof(int));
-    for (unsigned int i = 0; i < Module_ndacs; i++)
-        mod->top_dac[i] = mod->top_address_valid ? -1 : 0;
-    for (unsigned int i = 0; i < Module_ndacs; i++)
-        mod->bottom_dac[i] = mod->bottom_address_valid ? -1 : 0;
-}
-
-void Module_Module1(struct Module *mod, unsigned int number,
-                    unsigned int address_top, unsigned int address_bottom) {
-    mod->module_number = number;
-    mod->top_address_valid = 1;
-    mod->top_left_address = 0x100 | (0xff & address_top);
-    mod->top_right_address = 0x200 | (0xff & address_top);
-    mod->bottom_address_valid = 1;
-    mod->bottom_left_address = 0x100 | (0xff & address_bottom);
-    mod->bottom_right_address = 0x200 | (0xff & address_bottom);
-
-    mod->high_voltage = -1;
-
-    for (unsigned int i = 0; i < 4; i++)
-        mod->idelay_top[i] = mod->idelay_bottom[i] = 0;
-
-    mod->top_dac = malloc(Module_ndacs * sizeof(int));
-    mod->bottom_dac = malloc(Module_ndacs * sizeof(int));
-    for (unsigned int i = 0; i < Module_ndacs; i++)
-        mod->top_dac[i] = mod->top_address_valid ? -1 : 0;
-    for (unsigned int i = 0; i < Module_ndacs; i++)
-        mod->bottom_dac[i] = mod->bottom_address_valid ? -1 : 0;
+        mod->dac[i] = 0;
 }
 
 unsigned int Module_GetModuleNumber(struct Module *mod) {
@@ -222,7 +168,7 @@ int Feb_Control_Init(int master, int top, int normal, int module_num) {
     Feb_control_normal = normal;
 
     // global send
-    Feb_Control_AddModule1(0, 1, 0xff, 0, 1);
+    Feb_Control_AddModule(0, 0xff);
     Feb_Control_PrintModuleList();
     Feb_Control_module_number = (module_num & 0xFF);
 
@@ -232,7 +178,7 @@ int Feb_Control_Init(int master, int top, int normal, int module_num) {
     Feb_Control_current_index = 1;
 
     // Add the half module
-    Feb_Control_AddModule1(Feb_Control_module_number, top, serial, serial, 1);
+    Feb_Control_AddModule(Feb_Control_module_number, serial);
     Feb_Control_PrintModuleList();
 
     unsigned int nfebs = 0;
@@ -389,13 +335,8 @@ int Feb_Control_CheckModuleAddresses(struct Module *m) {
 
 int Feb_Control_AddModule(unsigned int module_number,
                           unsigned int top_address) {
-    return Feb_Control_AddModule1(module_number, 1, top_address, 0, 1);
-}
-int Feb_Control_AddModule1(unsigned int module_number, int top_enable,
-                           unsigned int top_address,
-                           unsigned int bottom_address,
-                           int half_module) { // bot_address 0 for half module
     int parameters_ok = 1;
+<<<<<<< Updated upstream
     unsigned int pre_module_index = 0;
     if (Feb_Control_GetModuleIndex(module_number, &pre_module_index)) {
         LOG(logINFO, ("\tRemoving previous assignment of module number %d.\n",
@@ -407,19 +348,11 @@ int Feb_Control_AddModule1(unsigned int module_number, int top_enable,
         parameters_ok = 0;
     }
 
+=======
+>>>>>>> Stashed changes
     struct Module mod, *m;
     m = &mod;
-
-    /* if ((half_module)&& (top_address != 1))
-Module_Module(m,module_number,top_address); else if (half_module)
-Module_ModuleBottom(m,module_number,top_address);*/
-    if ((half_module) && (top_enable))
-        Module_Module(m, module_number, top_address);
-    else if (half_module)
-        Module_ModuleBottom(m, module_number, bottom_address);
-    else
-        Module_Module1(m, module_number, top_address, bottom_address);
-
+    Module_Module(m, module_number, top_address);
     parameters_ok &= Feb_Control_CheckModuleAddresses(m);
 
     if (Module_TopAddressIsValid(m) && Module_BottomAddressIsValid(m)) {

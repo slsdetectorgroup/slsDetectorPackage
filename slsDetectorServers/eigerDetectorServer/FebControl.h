@@ -5,26 +5,15 @@
 
 struct Module {
     unsigned int module_number;
-    int top_address_valid;
-    unsigned int top_left_address;
-    unsigned int top_right_address;
-    int bottom_address_valid;
-    unsigned int bottom_left_address;
-    unsigned int bottom_right_address;
-
-    unsigned int idelay_top[4];    // ll,lr,rl,ll
-    unsigned int idelay_bottom[4]; // ll,lr,rl,ll
+    unsigned int left_address;
+    unsigned int right_address;
+    unsigned int idelay_top[4]; // ll,lr,rl,ll
     float high_voltage;
-    int *top_dac;
-    int *bottom_dac;
+    int *dac;
 };
 
 void Module_Module(struct Module *mod, unsigned int number,
                    unsigned int address_top);
-void Module_ModuleBottom(struct Module *mod, unsigned int number,
-                         unsigned int address_bottom);
-void Module_Module1(struct Module *mod, unsigned int number,
-                    unsigned int address_top, unsigned int address_bottom);
 unsigned int Module_GetModuleNumber(struct Module *mod);
 int Module_TopAddressIsValid(struct Module *mod);
 unsigned int Module_GetTopBaseAddress(struct Module *mod);
@@ -59,9 +48,6 @@ int Feb_Control_GetModuleIndex(unsigned int module_number,
                                unsigned int *module_index);
 int Feb_Control_CheckModuleAddresses(struct Module *m);
 int Feb_Control_AddModule(unsigned int module_number, unsigned int top_address);
-int Feb_Control_AddModule1(unsigned int module_number, int top_enable,
-                           unsigned int top_address,
-                           unsigned int bottom_address, int half_module);
 int Feb_Control_GetDACNumber(char *s, unsigned int *n);
 int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch,
                              unsigned int *value);

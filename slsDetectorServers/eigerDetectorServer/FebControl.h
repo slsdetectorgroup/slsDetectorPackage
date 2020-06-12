@@ -7,7 +7,7 @@ struct Module {
     unsigned int module_number;
     unsigned int left_address;
     unsigned int right_address;
-    unsigned int idelay_top[4]; // ll,lr,rl,ll
+    unsigned int idelay[4]; // ll,lr,rl,ll
     float high_voltage;
     int *dac;
 };
@@ -15,34 +15,19 @@ struct Module {
 void Module_Module(struct Module *mod, unsigned int number,
                    unsigned int address_top);
 unsigned int Module_GetModuleNumber(struct Module *mod);
-int Module_TopAddressIsValid(struct Module *mod);
-unsigned int Module_GetTopBaseAddress(struct Module *mod);
-unsigned int Module_GetTopLeftAddress(struct Module *mod);
-unsigned int Module_GetTopRightAddress(struct Module *mod);
-unsigned int Module_GetBottomBaseAddress(struct Module *mod);
-int Module_BottomAddressIsValid(struct Module *mod);
-unsigned int Module_GetBottomLeftAddress(struct Module *mod);
-unsigned int Module_GetBottomRightAddress(struct Module *mod);
-unsigned int Module_SetTopIDelay(struct Module *mod, unsigned int chip,
-                                 unsigned int value);
-unsigned int Module_GetTopIDelay(struct Module *mod, unsigned int chip);
-unsigned int Module_SetBottomIDelay(struct Module *mod, unsigned int chip,
-                                    unsigned int value);
-unsigned int Module_GetBottomIDelay(struct Module *mod, unsigned int chip);
-
+unsigned int Module_GetBaseAddress(struct Module *mod);
+unsigned int Module_GetLeftAddress(struct Module *mod);
+unsigned int Module_GetRightAddress(struct Module *mod);
+unsigned int Module_SetIDelay(struct Module *mod, unsigned int chip,
+                              unsigned int value);
+unsigned int Module_GetIDelay(struct Module *mod, unsigned int chip);
 float Module_SetHighVoltage(struct Module *mod, float value);
 float Module_GetHighVoltage(struct Module *mod);
-
-int Module_SetTopDACValue(struct Module *mod, unsigned int i, int value);
-int Module_GetTopDACValue(struct Module *mod, unsigned int i);
-int Module_SetBottomDACValue(struct Module *mod, unsigned int i, int value);
-int Module_GetBottomDACValue(struct Module *mod, unsigned int i);
+int Module_SetDACValue(struct Module *mod, unsigned int i, int value);
+int Module_GetDACValue(struct Module *mod, unsigned int i);
 
 void Feb_Control_activate(int activate);
-
-int Feb_Control_IsBottomModule();
 int Feb_Control_GetModuleNumber();
-
 void Feb_Control_PrintModuleList();
 int Feb_Control_GetModuleIndex(unsigned int module_number,
                                unsigned int *module_index);

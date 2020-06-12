@@ -75,79 +75,44 @@ void Module_Module(struct Module *mod, unsigned int number,
 unsigned int Module_GetModuleNumber(struct Module *mod) {
     return mod->module_number;
 }
-int Module_TopAddressIsValid(struct Module *mod) {
-    return mod->top_address_valid;
-}
-unsigned int Module_GetTopBaseAddress(struct Module *mod) {
-    return (mod->top_left_address & 0xff);
-}
-unsigned int Module_GetTopLeftAddress(struct Module *mod) {
-    return mod->top_left_address;
-}
-unsigned int Module_GetTopRightAddress(struct Module *mod) {
-    return mod->top_right_address;
-}
-unsigned int Module_GetBottomBaseAddress(struct Module *mod) {
-    return (mod->bottom_left_address & 0xff);
-}
-int Module_BottomAddressIsValid(struct Module *mod) {
-    return mod->bottom_address_valid;
-}
-unsigned int Module_GetBottomLeftAddress(struct Module *mod) {
-    return mod->bottom_left_address;
-}
-unsigned int Module_GetBottomRightAddress(struct Module *mod) {
-    return mod->bottom_right_address;
+
+unsigned int Module_GetBaseAddress(struct Module *mod) {
+    return (mod->left_address & 0xff);
 }
 
-unsigned int Module_SetTopIDelay(struct Module *mod, unsigned int chip,
-                                 unsigned int value) {
-    return Module_TopAddressIsValid(mod) && chip < 4
-               ? (mod->idelay_top[chip] = value)
-               : 0;
-} // chip 0=ll,1=lr,0=rl,1=rr
-unsigned int Module_GetTopIDelay(struct Module *mod, unsigned int chip) {
-    return chip < 4 ? mod->idelay_top[chip] : 0;
-} // chip 0=ll,1=lr,0=rl,1=rr
-unsigned int Module_SetBottomIDelay(struct Module *mod, unsigned int chip,
-                                    unsigned int value) {
-    return Module_BottomAddressIsValid(mod) && chip < 4
-               ? (mod->idelay_bottom[chip] = value)
-               : 0;
-} // chip 0=ll,1=lr,0=rl,1=rr
-unsigned int Module_GetBottomIDelay(struct Module *mod, unsigned int chip) {
-    return chip < 4 ? mod->idelay_bottom[chip] : 0;
-} // chip 0=ll,1=lr,0=rl,1=rr
+unsigned int Module_GetLeftAddress(struct Module *mod) {
+    return mod->left_address;
+}
+
+unsigned int Module_GetRightAddress(struct Module *mod) {
+    return mod->right_address;
+}
+
+unsigned int Module_SetIDelay(struct Module *mod, unsigned int chip,
+                              unsigned int value) {
+    // chip 0=ll,1=lr,0=rl,1=rr
+    return chip < 4 ? (mod->idelay[chip] = value) : 0;
+}
+
+unsigned int Module_GetIDelay(struct Module *mod, unsigned int chip) {
+    return chip < 4 ? mod->idelay[chip] : 0;
+}
 
 float Module_SetHighVoltage(struct Module *mod, float value) {
     return Feb_control_master ? (mod->high_voltage = value) : -1;
-} // Module_TopAddressIsValid(mod) ? (mod->high_voltage=value) : -1;}
+}
+
 float Module_GetHighVoltage(struct Module *mod) { return mod->high_voltage; }
 
-int Module_SetTopDACValue(struct Module *mod, unsigned int i, int value) {
-    return (i < Module_ndacs && Module_TopAddressIsValid(mod))
-               ? (mod->top_dac[i] = value)
-               : -1;
+int Module_SetDACValue(struct Module *mod, unsigned int i, int value) {
+    return (i < Module_ndacs) ? (mod->dac[i] = value) : -1;
 }
-int Module_GetTopDACValue(struct Module *mod, unsigned int i) {
-    return (i < Module_ndacs) ? mod->top_dac[i] : -1;
-}
-int Module_SetBottomDACValue(struct Module *mod, unsigned int i, int value) {
-    return (i < Module_ndacs && Module_BottomAddressIsValid(mod))
-               ? (mod->bottom_dac[i] = value)
-               : -1;
-}
-int Module_GetBottomDACValue(struct Module *mod, unsigned int i) {
-    return (i < Module_ndacs) ? mod->bottom_dac[i] : -1;
+
+int Module_GetDACValue(struct Module *mod, unsigned int i) {
+    return (i < Module_ndacs) ? mod->dac[i] : -1;
 }
 
 void Feb_Control_activate(int activate) { Feb_Control_activated = activate; }
-
-int Feb_Control_IsBottomModule() {
-    if (Module_BottomAddressIsValid(&modules[Feb_Control_current_index]))
-        return 1;
-    return 0;
-}
 
 int Feb_Control_GetModuleNumber() { return Feb_Control_module_number; }
 
@@ -336,20 +301,6 @@ int Feb_Control_CheckModuleAddresses(struct Module *m) {
 int Feb_Control_AddModule(unsigned int module_number,
                           unsigned int top_address) {
     int parameters_ok = 1;
-<<<<<<< Updated upstream
-    unsigned int pre_module_index = 0;
-    if (Feb_Control_GetModuleIndex(module_number, &pre_module_index)) {
-        LOG(logINFO, ("\tRemoving previous assignment of module number %d.\n",
-                      module_number));
-        // free(modules[pre_module_index]);
-        for (int i = pre_module_index; i < moduleSize - 1; i++)
-            modules[i] = modules[i + 1];
-        moduleSize--;
-        parameters_ok = 0;
-    }
-
-=======
->>>>>>> Stashed changes
     struct Module mod, *m;
     m = &mod;
     Module_Module(m, module_number, top_address);

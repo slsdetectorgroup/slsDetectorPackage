@@ -34,9 +34,9 @@ int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
 
 const char *dac_names[16] = {"VSvP",    "Vtrim",   "Vrpreamp", "Vrshaper",
-                                 "VSvN",    "Vtgstv",  "Vcmp_ll",  "Vcmp_lr",
-                                 "Vcal",    "Vcmp_rl", "rxb_rb",   "rxb_lb",
-                                 "Vcmp_rr", "Vcp",     "Vcn",      "Vishaper"};
+                             "VSvN",    "Vtgstv",  "Vcmp_ll",  "Vcmp_lr",
+                             "Vcal",    "Vcmp_rl", "rxb_rb",   "rxb_lb",
+                             "Vcmp_rr", "Vcp",     "Vcn",      "Vishaper"};
 int default_tau_from_file = -1;
 enum detectorSettings thisSettings;
 sls_detector_module *detectorModules = NULL;

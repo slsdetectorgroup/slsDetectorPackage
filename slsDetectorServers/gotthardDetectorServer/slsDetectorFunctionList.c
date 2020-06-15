@@ -167,8 +167,7 @@ int testFpga() {
         u_int32_t addr = DUMMY_REG;
         volatile u_int32_t val = 0, readval = 0;
         int times = 1000 * 1000;
-        int i = 0;
-        for (i = 0; i < times; ++i) {
+        for (int i = 0; i < times; ++i) {
             val = 0x5A5A5A5A - i;
             bus_w(addr, val);
             readval = bus_r(addr);
@@ -226,9 +225,8 @@ int testBus() {
     u_int32_t addr = DUMMY_REG;
     volatile u_int32_t val = 0, readval = 0;
     int times = 1000 * 1000;
-    int i = 0;
 
-    for (i = 0; i < times; ++i) {
+    for (int i = 0; i < times; ++i) {
         val += 0xbbbbb;
         bus_w(addr, val);
         readval = bus_r(addr);
@@ -436,14 +434,11 @@ void setupDetector() {
 int setDefaultDacs() {
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
-    {
-        int i = 0;
-        const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
-        for (i = 0; i < NDAC; ++i) {
-            // if not already default, set it to default
-            if (dacValues[i] != defaultvals[i]) {
-                setDAC((enum DACINDEX)i, defaultvals[i], 0);
-            }
+    const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
+    for (int i = 0; i < NDAC; ++i) {
+        // if not already default, set it to default
+        if (dacValues[i] != defaultvals[i]) {
+            setDAC((enum DACINDEX)i, defaultvals[i], 0);
         }
     }
     return ret;
@@ -477,8 +472,7 @@ void setPhaseShiftOnce() {
         detectorFirstServer = 1;
         LOG(logINFO,
             ("Implementing the first phase shift of %d\n", phaseShift));
-        int times = 0;
-        for (times = 1; times < phaseShift; ++times) {
+        for (int times = 1; times < phaseShift; ++times) {
             bus_w(addr, (INT_RSTN_MSK | ENT_RSTN_MSK | SW1_MSK |
                          PHS_STP_MSK)); // 0x1821
             bus_w(addr, (INT_RSTN_MSK | ENT_RSTN_MSK |
@@ -495,8 +489,7 @@ void setPhaseShift(int numphaseshift) {
 
     volatile u_int32_t val = bus_r(addr);
     LOG(logDEBUG1, ("Multipurpose reg: 0x%x\n", val));
-    int times = 0;
-    for (times = 1; times < numphaseshift; ++times) {
+    for (int times = 1; times < numphaseshift; ++times) {
         bus_w(addr, val | PHS_STP_MSK);
         bus_w(addr, val & (~PHS_STP_MSK));
     }
@@ -947,23 +940,19 @@ int setModule(sls_detector_module myMod, char *mess) {
     setSettings((enum detectorSettings)myMod.reg);
 
     // set dac values
-    {
-        int i = 0;
-        for (i = 0; i < NDAC; ++i)
-            setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
-    }
+    for (int i = 0; i < NDAC; ++i)
+        setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
     return OK;
 }
 
 int getModule(sls_detector_module *myMod) {
-    int idac = 0;
-    for (idac = 0; idac < NDAC; ++idac) {
+    for (int idac = 0; idac < NDAC; ++idac) {
         if (dacValues[idac] >= 0)
             *((myMod->dacs) + idac) = dacValues[idac];
     }
     // check if all of them are not initialized
     int initialized = 0;
-    for (idac = 0; idac < NDAC; ++idac) {
+    for (int idac = 0; idac < NDAC; ++idac) {
         if (dacValues[idac] >= 0)
             initialized = 1;
     }
@@ -1112,27 +1101,23 @@ int getADC(enum ADCINDEX ind) {
     // high clk low cs
     bus_w(addr, (TEMP_SPI_IN_T1_CLK_MSK | TEMP_SPI_IN_T2_CLK_MSK));
 
-    {
-        int i = 0;
-        for (i = 0; i < reads; ++i) {
+    for (int i = 0; i < reads; ++i) {
 
-            int j = 0;
-            // low clk low cs
-            for (j = 0; j < repeats; ++j)
-                bus_w(addr, 0x0);
-            // high clk low cs
-            for (j = 0; j < repeats; ++j)
-                bus_w(addr, (TEMP_SPI_IN_T1_CLK_MSK | TEMP_SPI_IN_T2_CLK_MSK));
+        // low clk low cs
+        for (int j = 0; j < repeats; ++j)
+            bus_w(addr, 0x0);
+        // high clk low cs
+        for (int j = 0; j < repeats; ++j)
+            bus_w(addr, (TEMP_SPI_IN_T1_CLK_MSK | TEMP_SPI_IN_T2_CLK_MSK));
 
-            // only the first time
-            if (i <= 10) {
-                if (ind == TEMP_ADC)
-                    value = (value << 1) +
-                            (bus_r(addrout) & TEMP_SPI_OUT_T1_DT_MSK);
-                else
-                    value = (value << 1) +
-                            (bus_r(addrout) & TEMP_SPI_OUT_T2_DT_MSK);
-            }
+        // only the first time
+        if (i <= 10) {
+            if (ind == TEMP_ADC)
+                value =
+                    (value << 1) + (bus_r(addrout) & TEMP_SPI_OUT_T1_DT_MSK);
+            else
+                value =
+                    (value << 1) + (bus_r(addrout) & TEMP_SPI_OUT_T2_DT_MSK);
         }
     }
 
@@ -1603,22 +1588,18 @@ void *start_timer(void *arg) {
     // Generate Data
     char imageData[imageSize];
     memset(imageData, 0, imageSize);
-    {
-        int i = 0;
-        if (adcConfigured == -1) {
-            *((uint32_t *)(imageData)) = 0xCACACACA;
-        }
-        for (i = sizeof(uint32_t); i < imageSize; i += sizeof(uint16_t)) {
-            *((uint16_t *)(imageData + i)) = (uint16_t)i;
-        }
+    if (adcConfigured == -1) {
+        *((uint32_t *)(imageData)) = 0xCACACACA;
+    }
+    for (int i = sizeof(uint32_t); i < imageSize; i += sizeof(uint16_t)) {
+        *((uint16_t *)(imageData + i)) = (uint16_t)i;
     }
 
     // Send data
     {
-        int frameNr = 0;
         uint16_t frameHeaderNr = 2;
         // loop over number of frames
-        for (frameNr = 0; frameNr != numFrames; ++frameNr) {
+        for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
 
             // update the virtual stop from stop server
             virtual_stop = ComVirtual_getStop();
@@ -1634,22 +1615,19 @@ void *start_timer(void *arg) {
 
             int srcOffset = 0;
             // loop packet
-            {
-                int i = 0;
-                for (i = 0; i != packetsPerFrame; ++i) {
+            for (int i = 0; i != packetsPerFrame; ++i) {
 
-                    char packetData[packetSize];
-                    memset(packetData, 0, packetSize);
-                    // set header
-                    *((uint16_t *)(packetData)) = frameHeaderNr;
-                    ++frameHeaderNr;
+                char packetData[packetSize];
+                memset(packetData, 0, packetSize);
+                // set header
+                *((uint16_t *)(packetData)) = frameHeaderNr;
+                ++frameHeaderNr;
 
-                    // fill data
-                    memcpy(packetData + 4, imageData + srcOffset, dataSize);
-                    srcOffset += dataSize;
+                // fill data
+                memcpy(packetData + 4, imageData + srcOffset, dataSize);
+                srcOffset += dataSize;
 
-                    sendUDPPacket(0, packetData, packetSize);
-                }
+                sendUDPPacket(0, packetData, packetSize);
             }
             LOG(logINFO, ("Sent frame: %d\n", frameNr));
             clock_gettime(CLOCK_REALTIME, &end);
@@ -1768,8 +1746,7 @@ enum runStatus getRunStatus() {
         } else {
             LOG(logINFORED,
                 ("Status: Unknown Status: 0x%x. Trying again.\n", retval));
-            int iloop = 0;
-            for (iloop = 0; iloop < 10; ++iloop) {
+            for (int iloop = 0; iloop < 10; ++iloop) {
                 usleep(1000 * 1000);
                 if (runState(logDEBUG1) != retval)
                     return getRunStatus();

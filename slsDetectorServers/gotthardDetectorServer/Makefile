@@ -5,7 +5,7 @@ support_lib = ../../slsSupportLib/include/
 
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -DGOTTHARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -std=gnu99 -DGOTTHARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm  
 PROGS		= 	gotthardDetectorServer 
 DESTDIR		?= 	bin

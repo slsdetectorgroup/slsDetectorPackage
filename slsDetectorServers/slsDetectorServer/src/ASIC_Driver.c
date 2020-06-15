@@ -35,8 +35,7 @@ int ASIC_Driver_Set(int index, int length, char *buffer) {
         ("\t[chip index: %d, length: %d, fname: %s]\n", index, length, fname));
     {
         LOG(logDEBUG2, ("\t[values: \n"));
-        int i;
-        for (i = 0; i < length; ++i) {
+        for (int i = 0; i < length; ++i) {
             LOG(logDEBUG2, ("\t%d: 0x%02hhx\n", i, buffer[i]));
         }
         LOG(logDEBUG2, ("\t]\n"));

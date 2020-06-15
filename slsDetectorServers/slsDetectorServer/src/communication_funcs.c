@@ -121,7 +121,6 @@ int bindSocket(unsigned short int port_number) {
 }
 
 int acceptConnection(int socketDescriptor) {
-    int j;
     struct sockaddr_in addressC;
     int file_des = -1;
     struct timeval tv;
@@ -159,7 +158,7 @@ int acceptConnection(int socketDescriptor) {
             ("%s select returned!\n", (isControlServer ? "control" : "stop")));
 
         // loop through the file descriptor set
-        for (j = 0; j < maxfd + 1; ++j) {
+        for (int j = 0; j < maxfd + 1; ++j) {
 
             // checks if file descriptor part of set
             if (FD_ISSET(j, &tempset)) {
@@ -264,11 +263,10 @@ void exitServer(int socketDescriptor) {
 }
 
 void swapData(void *val, int length, intType itype) {
-    int i;
     int16_t *c = (int16_t *)val;
     int32_t *a = (int32_t *)val;
     int64_t *b = (int64_t *)val;
-    for (i = 0; length > 0; i++) {
+    for (int i = 0; length > 0; i++) {
         switch (itype) {
         case INT16:
             c[i] = ((c[i] & 0x00FF) << 8) | ((c[i] & 0xFF00) >> 8);

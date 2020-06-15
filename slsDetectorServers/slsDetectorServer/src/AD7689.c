@@ -219,8 +219,7 @@ void AD7689_Configure() {
     LOG(logINFO,
         ("\tConfiguring %d x due to invalid conversions from power up\n",
          AD7689_NUM_INVALID_CONVERSIONS));
-    int i = 0;
-    for (i = 0; i < AD7689_NUM_INVALID_CONVERSIONS; ++i) {
+    for (int i = 0; i < AD7689_NUM_INVALID_CONVERSIONS; ++i) {
         AD7689_Set(
             // read back
             AD7689_CFG_RB_MSK |

@@ -5,7 +5,7 @@ support_lib = ../../slsSupportLib/include/
 
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -DCHIPTESTBOARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir) #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -std=gnu99 -DCHIPTESTBOARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir) #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm  
 PROGS		= 	ctbDetectorServer 
 DESTDIR		?= 	bin

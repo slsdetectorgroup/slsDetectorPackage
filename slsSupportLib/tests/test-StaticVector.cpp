@@ -3,8 +3,8 @@
 #include "catch.hpp"
 
 #include <array>
-#include <vector>
 #include <sstream>
+#include <vector>
 using sls::StaticVector;
 
 TEST_CASE("StaticVector is a container") {

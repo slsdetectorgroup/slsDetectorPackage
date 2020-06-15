@@ -141,8 +141,7 @@ void Beb_Beb(int id) {
         exit(1);
 
     LOG(logDEBUG1, ("Printing Beb infos:\n"));
-    unsigned int i;
-    for (i = 1; i < bebInfoSize; i++)
+    for (unsigned int i = 1; i < bebInfoSize; i++)
         BebInfo_Print(&beb_infos[i]);
 
     Beb_bit_mode = 4;
@@ -749,11 +748,7 @@ void Beb_ResetFrameNumber() {
     }
 }
 
-void Beb_ClearBebInfos() {
-    // unsigned int i;
-    // for(i=0;i<bebInfoSize;i++) free(beb_infos[i]);
-    bebInfoSize = 0;
-}
+void Beb_ClearBebInfos() { bebInfoSize = 0; }
 
 int Beb_InitBebInfos() { // file name at some point
     Beb_ClearBebInfos();
@@ -817,8 +812,8 @@ int Beb_SetBebSrcHeaderInfos(unsigned int beb_number, int ten_gig,
 }
 
 int Beb_CheckSourceStuffBebInfo() {
-    unsigned int i;
-    for (i = 1; i < bebInfoSize; i++) { // header stuff always starts from 1
+    for (unsigned int i = 1; i < bebInfoSize;
+         i++) { // header stuff always starts from 1
         if (!Beb_SetHeaderData(BebInfo_GetBebNumber(&beb_infos[i]), 0,
                                "00:00:00:00:00:00", "10.0.0.1", 20000) ||
             !Beb_SetHeaderData(BebInfo_GetBebNumber(&beb_infos[i]), 1,
@@ -833,10 +828,7 @@ int Beb_CheckSourceStuffBebInfo() {
 }
 
 unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb) {
-    /******************** if (!beb_numb) return
-     * 0;******************************/
-    unsigned int i;
-    for (i = 1; i < bebInfoSize; i++)
+    for (unsigned int i = 1; i < bebInfoSize; i++)
         if (beb_numb == BebInfo_GetBebNumber(&beb_infos[i])) {
             LOG(logDEBUG1,
                 ("*****found beb index:%d, for beb number:%d\n", i, beb_numb));
@@ -870,14 +862,13 @@ int Beb_WriteTo(unsigned int index) {
 }
 
 void Beb_SwapDataFun(int little_endian, unsigned int n, unsigned int *d) {
-    unsigned int i;
     if (little_endian)
-        for (i = 0; i < n; i++)
+        for (unsigned int i = 0; i < n; i++)
             d[i] = (((d[i] & 0xff) << 24) | ((d[i] & 0xff00) << 8) |
                     ((d[i] & 0xff0000) >> 8) |
                     ((d[i] & 0xff000000) >> 24)); // little_endian
     else
-        for (i = 0; i < n; i++)
+        for (unsigned int i = 0; i < n; i++)
             d[i] = (((d[i] & 0xffff) << 16) | ((d[i] & 0xffff0000) >> 16));
 }
 
@@ -976,13 +967,9 @@ udp_header_type udp_header = {
 
     unsigned int *base_ptr = (unsigned int *)&udp_header;
     unsigned int num_words = (sizeof(struct udp_header_type) + 3) / 4;
-    //  for(unsigned int i=0; i<num_words; i++)  word_ptr[i] = base_ptr[i];
-    //  for(unsigned int i=num_words; i<16; i++) word_ptr[i] = 0;
-    //  return word_ptr;
-    unsigned int i;
-    for (i = 0; i < num_words; i++)
+    for (unsigned int i = 0; i < num_words; i++)
         Beb_send_data[i + 2] = base_ptr[i];
-    for (i = num_words; i < 16; i++)
+    for (unsigned int i = num_words; i < 16; i++)
         Beb_send_data[i + 2] = 0;
 
     return 1;
@@ -1046,8 +1033,7 @@ void Beb_AdjustIPChecksum(struct udp_header_type *ip) {
 
     // calc ip checksum
     unsigned int ip_checksum = 0;
-    unsigned int i;
-    for (i = 0; i < 10; i++) {
+    for (unsigned int i = 0; i < 10; i++) {
         ip_checksum += ((cptr[2 * i] << 8) + (cptr[2 * i + 1]));
         if (ip_checksum & 0x00010000)
             ip_checksum = (ip_checksum + 1) & 0x0000ffff;
@@ -1190,11 +1176,9 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
         LOG(logERROR, ("Beb Request N Images FAIL\n"));
         return 0;
     } else {
-        {
-            int i;
-            for (i = 0; i < 10; i++)
-                LOG(logDEBUG1,
-                    ("%X\n", Beb_Read32(csp0base, (LEFT_OFFSET + i * 4))));
+        for (int i = 0; i < 10; i++) {
+            LOG(logDEBUG1,
+                ("%X\n", Beb_Read32(csp0base, (LEFT_OFFSET + i * 4))));
         }
         // Generating commands
         u_int32_t send_header_command =
@@ -1203,13 +1187,11 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
         u_int32_t send_frame_command =
             0x62000000 | (!test_just_send_out_packets_no_wait) << 27 |
             (ten_gig == 1) << 24 | packet_size << 14 | (npackets - 1);
-        {
-            int i;
-            for (i = 0; i < 10; i++)
-                LOG(logDEBUG1,
-                    ("%X\n", Beb_Read32(csp0base, (LEFT_OFFSET + i * 4))));
-            LOG(logDEBUG1, ("%d\n", in_two_requests));
+        for (int i = 0; i < 10; i++) {
+            LOG(logDEBUG1,
+                ("%X\n", Beb_Read32(csp0base, (LEFT_OFFSET + i * 4))));
         }
+        LOG(logDEBUG1, ("%d\n", in_two_requests));
         //"0x20 << 8" is dst_number (0x00 for left, 0x20 for right)
         // Left
         Beb_Write32(csp0base, (LEFT_OFFSET + FIRST_CMD_PART1_OFFSET), 0);
@@ -1246,14 +1228,12 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig,
                     nimages * (2 + in_two_requests));
         Beb_Write32(csp0base, (RIGHT_OFFSET + COMMAND_COUNTER_OFFSET),
                     nimages * (2 + in_two_requests));
-        {
-            int i;
-            for (i = 0; i < 10; i++)
-                LOG(logDEBUG1,
-                    ("%X\n", Beb_Read32(csp0base,
-                                        (LEFT_OFFSET + i * 4)))); //*(ptrl+i));
-            LOG(logDEBUG1, ("%d\n", in_two_requests));
+        for (int i = 0; i < 10; i++) {
+            LOG(logDEBUG1,
+                ("%X\n", Beb_Read32(csp0base,
+                                    (LEFT_OFFSET + i * 4)))); //*(ptrl+i));
         }
+        LOG(logDEBUG1, ("%d\n", in_two_requests));
         Beb_close(fd, csp0base);
 
         LOG(logDEBUG1, ("----Beb_RequestNImages----\n"));
@@ -1275,8 +1255,7 @@ int Beb_Test(unsigned int beb_number) {
         return 0;
     }
 
-    unsigned int i;
-    for (i = 0; i < 64; i++) {
+    for (unsigned int i = 0; i < 64; i++) {
         if (!Beb_SetUpUDPHeader(beb_number, 0, i, "60:fb:42:f4:e3:d2",
                                 "129.129.205.186", 22000 + i)) {
             LOG(logERROR, ("Error setting up header table....\n"));
@@ -1288,7 +1267,7 @@ int Beb_Test(unsigned int beb_number) {
     //  left_right, int ten_gig, unsigned int dst_number, unsigned int
     //  npackets, unsigned int packet_size, int
     //  stop_read_when_fifo_empty=1);
-    for (i = 0; i < 64; i++) {
+    for (unsigned int i = 0; i < 64; i++) {
         if (!Beb_SendMultiReadRequest(beb_number, i % 3 + 1, 0, i, 1, 0, 1)) {
             LOG(logERROR, ("Error requesting data....\n"));
             return 0;

@@ -116,7 +116,6 @@ void LTC2620_SetDaisy(int cmd, int data, int dacaddr, int chipIndex) {
 
     int nchip = LTC2620_Ndac / LTC2620_NUMCHANNELS;
     uint32_t valw = 0;
-    int ichip = 0;
 
     LOG(logDEBUG2, ("(Daisy) desired chip index:%d, nchip:%d, dac ch:%d, "
                     "val:%d, cmd:0x%x \n",
@@ -136,7 +135,7 @@ void LTC2620_SetDaisy(int cmd, int data, int dacaddr, int chipIndex) {
     // send same data to all
     if (chipIndex < 0) {
         LOG(logDEBUG2, ("Send same data to all\n"));
-        for (ichip = 0; ichip < nchip; ++ichip) {
+        for (int ichip = 0; ichip < nchip; ++ichip) {
             LOG(logDEBUG2, ("Send data  (0x%x) to ichip %d\n", codata, ichip));
             LTC2620_SendDaisyData(&valw, codata);
         }
@@ -146,7 +145,7 @@ void LTC2620_SetDaisy(int cmd, int data, int dacaddr, int chipIndex) {
     else {
         // send nothing to subsequent ichips (daisy chain) (if any chips after
         // desired chip)
-        for (ichip = chipIndex + 1; ichip < nchip; ++ichip) {
+        for (int ichip = chipIndex + 1; ichip < nchip; ++ichip) {
             LOG(logDEBUG2, ("Send nothing to ichip %d\n", ichip));
             LTC2620_SendDaisyData(&valw, LTC2620_DAC_CMD_NO_OPRTN_VAL);
         }
@@ -157,7 +156,7 @@ void LTC2620_SetDaisy(int cmd, int data, int dacaddr, int chipIndex) {
 
         // send nothing to preceding ichips (daisy chain) (if any chips in front
         // of desired chip)
-        for (ichip = 0; ichip < chipIndex; ++ichip) {
+        for (int ichip = 0; ichip < chipIndex; ++ichip) {
             LOG(logDEBUG2, ("Send nothing to ichip %d\n", ichip));
             LTC2620_SendDaisyData(&valw, LTC2620_DAC_CMD_NO_OPRTN_VAL);
         }

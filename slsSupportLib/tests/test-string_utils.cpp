@@ -31,7 +31,6 @@ TEST_CASE("copy a long string") {
 }
 #endif
 
-
 TEST_CASE("split a string with end delimiter") {
     std::string s("abra+kadabra+");
     auto r = sls::split(s, '+');
@@ -48,7 +47,6 @@ TEST_CASE("split a string without end delimiter") {
     REQUIRE(r[1] == "kadabra");
     REQUIRE(r[2] == "filibom");
 }
-
 
 TEST_CASE("Remove char from string") {
     char str[] = "sometest";

@@ -8,7 +8,6 @@ if [ $# -eq 0 ]; then
 		)
 else
 	declare -a det=("${1}")
-	echo "got something"
 fi
 
 declare -a deterror=("OK" "OK" "OK" "OK" "OK" "OK")

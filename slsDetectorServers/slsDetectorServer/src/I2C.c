@@ -234,10 +234,8 @@ uint32_t I2C_Read(uint32_t devId, uint32_t addr) {
     int level = bus_r(I2C_Rx_Data_Fifo_Level_Reg);
     LOG(logDEBUG2, (" level:%d\n", level));
 
-    int iloop = level - 1;
-
     // level bytes to read, read 1 byte at a time
-    for (iloop = level - 1; iloop >= 0; --iloop) {
+    for (int iloop = level - 1; iloop >= 0; --iloop) {
         u_int16_t byte =
             bus_r(I2C_Rx_Data_Fifo_Reg) & I2C_RX_DATA_FIFO_RXDATA_MSK;
         LOG(logDEBUG2, (" byte nr %d:0x%x\n", iloop, byte));

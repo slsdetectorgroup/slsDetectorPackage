@@ -674,7 +674,7 @@ void DetectorImpl::readFrameFromReceiver() {
 
     // free resources
     delete[] image;
-    delete[] multiframe;    
+    delete[] multiframe;
     delete[] multigappixels;
 }
 

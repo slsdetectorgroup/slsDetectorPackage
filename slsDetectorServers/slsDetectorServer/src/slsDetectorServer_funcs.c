@@ -346,8 +346,7 @@ void function_table() {
         exit(EXIT_FAILURE);
     }
 
-    int iloop = 0;
-    for (iloop = 0; iloop < NUM_DET_FUNCTIONS; ++iloop) {
+    for (int iloop = 0; iloop < NUM_DET_FUNCTIONS; ++iloop) {
         LOG(logDEBUG3, ("function fnum=%d, (%s)\n", iloop,
                         getFunctionNameFromEnum((enum detFuncs)iloop)));
     }
@@ -4861,8 +4860,7 @@ void calculate_and_set_position() {
             sscanf(dmac, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &a[0], &a[1], &a[2],
                    &a[3], &a[4], &a[5]);
             udpDetails.srcmac = 0;
-            int i;
-            for (i = 0; i < 6; ++i) {
+            for (int i = 0; i < 6; ++i) {
                 udpDetails.srcmac = (udpDetails.srcmac << 8) + a[i];
             }
         }
@@ -4878,8 +4876,7 @@ void calculate_and_set_position() {
                 sscanf(dmac2, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &a[0], &a[1],
                        &a[2], &a[3], &a[4], &a[5]);
                 udpDetails.srcmac2 = 0;
-                int i;
-                for (i = 0; i < 6; ++i) {
+                for (int i = 0; i < 6; ++i) {
                     udpDetails.srcmac2 = (udpDetails.srcmac2 << 8) + a[i];
                 }
             }
@@ -6460,8 +6457,7 @@ int set_veto_photon(int file_des) {
                     numChannels, NCHAN);
             LOG(logERROR, (mess));
         } else {
-            int i = 0;
-            for (i = 0; i < NCHAN; ++i) {
+            for (int i = 0; i < NCHAN; ++i) {
                 if (values[i] > ADU_MAX_VAL) {
                     ret = FAIL;
                     sprintf(mess,
@@ -6515,8 +6511,7 @@ int get_veto_photon(int file_des) {
                          "same for all chips.\n");
             LOG(logERROR, (mess));
         } else {
-            int i = 0;
-            for (i = 0; i < NCHAN; ++i) {
+            for (int i = 0; i < NCHAN; ++i) {
                 LOG(logDEBUG1, ("%d:0x%x\n", i, retvals[i]));
             }
         }

@@ -5,7 +5,7 @@ support_lib = ../../slsSupportLib/include/
 
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -DJUNGFRAUD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -std=gnu99 -DJUNGFRAUD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir)#-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm
 PROGS		= 	jungfrauDetectorServer 
 DESTDIR		?= 	bin

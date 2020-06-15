@@ -5,7 +5,7 @@ support_lib = ../../slsSupportLib/include/
 
 CROSS  		= nios2-buildroot-linux-gnu-
 CC    		= $(CROSS)gcc
-CFLAGS		+=  -Wall -DMYTHEN3D  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir) #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
+CFLAGS		+=  -Wall -std=gnu99 -DMYTHEN3D  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir) #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
 LDLIBS		+= 	-lm
 PROGS		= 	mythen3DetectorServer 
 DESTDIR		?= 	bin

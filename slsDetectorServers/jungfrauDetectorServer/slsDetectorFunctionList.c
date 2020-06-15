@@ -210,9 +210,8 @@ int testBus() {
     int ret = OK;
     u_int32_t addr = SET_TRIGGER_DELAY_LSB_REG;
     u_int32_t times = 1000 * 1000;
-    u_int32_t i = 0;
 
-    for (i = 0; i < times; ++i) {
+    for (u_int32_t i = 0; i < times; ++i) {
         bus_w(addr, i * 100);
         if (i * 100 != bus_r(addr)) {
             LOG(logERROR,
@@ -376,11 +375,8 @@ void initStopServer() {
 void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Jungfrau module (500k)\n"));
 
-    {
-        int i = 0;
-        for (i = 0; i < NUM_CLOCKS; ++i) {
-            clkPhase[i] = 0;
-        }
+    for (int i = 0; i < NUM_CLOCKS; ++i) {
+        clkPhase[i] = 0;
     }
 #ifdef VIRTUAL
     virtual_status = 0;
@@ -462,14 +458,11 @@ void setupDetector() {
 int setDefaultDacs() {
     int ret = OK;
     LOG(logINFOBLUE, ("Setting Default Dac values\n"));
-    {
-        int i = 0;
-        const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
-        for (i = 0; i < NDAC; ++i) {
-            // if not already default, set it to default
-            if (dacValues[i] != defaultvals[i]) {
-                setDAC((enum DACINDEX)i, defaultvals[i], 0);
-            }
+    const int defaultvals[NDAC] = DEFAULT_DAC_VALS;
+    for (int i = 0; i < NDAC; ++i) {
+        // if not already default, set it to default
+        if (dacValues[i] != defaultvals[i]) {
+            setDAC((enum DACINDEX)i, defaultvals[i], 0);
         }
     }
     return ret;
@@ -747,23 +740,19 @@ int setModule(sls_detector_module myMod, char *mess) {
     setSettings((enum detectorSettings)myMod.reg);
 
     // set dac values
-    {
-        int i = 0;
-        for (i = 0; i < NDAC; ++i)
-            setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
-    }
+    for (int i = 0; i < NDAC; ++i)
+        setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
     return OK;
 }
 
 int getModule(sls_detector_module *myMod) {
-    int idac = 0;
-    for (idac = 0; idac < NDAC; ++idac) {
+    for (int idac = 0; idac < NDAC; ++idac) {
         if (dacValues[idac] >= 0)
             *((myMod->dacs) + idac) = dacValues[idac];
     }
     // check if all of them are not initialized
     int initialized = 0;
-    for (idac = 0; idac < NDAC; ++idac) {
+    for (int idac = 0; idac < NDAC; ++idac) {
         if (dacValues[idac] >= 0)
             initialized = 1;
     }
@@ -1753,22 +1742,18 @@ void *start_timer(void *arg) {
     // Generate data
     char imageData[DATA_BYTES];
     memset(imageData, 0, DATA_BYTES);
-    {
-        int i = 0;
-        for (i = 0; i < npixels; ++i) {
-            // avoiding gain also being divided when gappixels enabled in call
-            // back
-            *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
-                virtual_image_test_mode ? 0x0FFE : (uint16_t)i;
-        }
+    for (int i = 0; i < npixels; ++i) {
+        // avoiding gain also being divided when gappixels enabled in call
+        // back
+        *((uint16_t *)(imageData + i * sizeof(uint16_t))) =
+            virtual_image_test_mode ? 0x0FFE : (uint16_t)i;
     }
 
     // Send data
     {
         uint64_t frameNr = 0;
         getStartingFrameNumber(&frameNr);
-        int iframes = 0;
-        for (iframes = 0; iframes != numFrames; ++iframes) {
+        for (int iframes = 0; iframes != numFrames; ++iframes) {
 
             usleep(transmissionDelayUs);
 
@@ -1788,49 +1773,46 @@ void *start_timer(void *arg) {
             int srcOffset = 0;
             int srcOffset2 = DATA_BYTES / 2;
             // loop packet
-            {
-                int i = 0;
-                for (i = 0; i != packetsPerFrame; ++i) {
-                    // set header
-                    char packetData[packetsize];
-                    memset(packetData, 0, packetsize);
-                    sls_detector_header *header =
-                        (sls_detector_header *)(packetData);
+            for (int i = 0; i != packetsPerFrame; ++i) {
+                // set header
+                char packetData[packetsize];
+                memset(packetData, 0, packetsize);
+                sls_detector_header *header =
+                    (sls_detector_header *)(packetData);
+                header->detType = (uint16_t)myDetectorType;
+                header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+                header->frameNumber = frameNr + iframes;
+                header->packetNumber = i;
+                header->modId = 0;
+                header->row = detPos[2];
+                header->column = detPos[3];
+
+                // fill data
+                memcpy(packetData + sizeof(sls_detector_header),
+                       imageData + srcOffset, dataSize);
+                srcOffset += dataSize;
+
+                sendUDPPacket(0, packetData, packetsize);
+
+                // second interface
+                char packetData2[packetsize];
+                memset(packetData2, 0, packetsize);
+                if (numInterfaces == 2) {
+                    header = (sls_detector_header *)(packetData2);
                     header->detType = (uint16_t)myDetectorType;
                     header->version = SLS_DETECTOR_HEADER_VERSION - 1;
                     header->frameNumber = frameNr + iframes;
                     header->packetNumber = i;
                     header->modId = 0;
-                    header->row = detPos[2];
-                    header->column = detPos[3];
+                    header->row = detPos[0];
+                    header->column = detPos[1];
 
                     // fill data
-                    memcpy(packetData + sizeof(sls_detector_header),
-                           imageData + srcOffset, dataSize);
-                    srcOffset += dataSize;
+                    memcpy(packetData2 + sizeof(sls_detector_header),
+                           imageData + srcOffset2, dataSize);
+                    srcOffset2 += dataSize;
 
-                    sendUDPPacket(0, packetData, packetsize);
-
-                    // second interface
-                    char packetData2[packetsize];
-                    memset(packetData2, 0, packetsize);
-                    if (numInterfaces == 2) {
-                        header = (sls_detector_header *)(packetData2);
-                        header->detType = (uint16_t)myDetectorType;
-                        header->version = SLS_DETECTOR_HEADER_VERSION - 1;
-                        header->frameNumber = frameNr + iframes;
-                        header->packetNumber = i;
-                        header->modId = 0;
-                        header->row = detPos[0];
-                        header->column = detPos[1];
-
-                        // fill data
-                        memcpy(packetData2 + sizeof(sls_detector_header),
-                               imageData + srcOffset2, dataSize);
-                        srcOffset2 += dataSize;
-
-                        sendUDPPacket(1, packetData2, packetsize);
-                    }
+                    sendUDPPacket(1, packetData2, packetsize);
                 }
             }
             LOG(logINFO, ("Sent frame: %d\n", iframes));

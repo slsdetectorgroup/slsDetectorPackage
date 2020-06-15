@@ -1848,8 +1848,7 @@ int setVetoPhoton(int chipIndex, int gainIndex, int *values) {
     int offset = padding; // bit offset for commandbytes
     for (int ich = 0; ich < NCHAN; ++ich) {
         // loop through all bits in a value
-        int iBit = 0;
-        for (iBit = 0; iBit < lenDataBitsPerchannel; ++iBit) {
+        for (int iBit = 0; iBit < lenDataBitsPerchannel; ++iBit) {
             commandBytes[offset++] =
                 ((values[ich] >> (lenDataBitsPerchannel - 1 - iBit)) & 0x1);
         }

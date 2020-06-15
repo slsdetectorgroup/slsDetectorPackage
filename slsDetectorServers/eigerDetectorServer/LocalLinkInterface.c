@@ -81,7 +81,6 @@ int Local_Write(struct LocalLinkInterface *ll, unsigned int buffer_len,
     // note: buffer must be word (4 byte) aligned
     // frame_len in byte
     int vacancy = 0;
-    int i;
     int words_send = 0;
     int last_word;
     unsigned int *word_ptr;
@@ -96,7 +95,7 @@ int Local_Write(struct LocalLinkInterface *ll, unsigned int buffer_len,
 
     LOG(logDEBUG1, ("LL Write - Len: %2d - If: %X - Data: ", buffer_len,
                     ll->ll_fifo_base));
-    for (i = 0; i < buffer_len / 4; i++)
+    for (int i = 0; i < buffer_len / 4; i++)
         LOG(logDEBUG1, ("%.8X ", *(((unsigned *)buffer) + i)));
 
     while (words_send <= last_word) {
@@ -112,8 +111,8 @@ int Local_Write(struct LocalLinkInterface *ll, unsigned int buffer_len,
         }
 
         // Just to know: #define PLB_LL_FIFO_ALMOST_FULL_THRESHOLD_WORDS    100
-        for (i = 0; ((i < PLB_LL_FIFO_ALMOST_FULL_THRESHOLD_WORDS) &&
-                     (words_send <= last_word));
+        for (int i = 0; ((i < PLB_LL_FIFO_ALMOST_FULL_THRESHOLD_WORDS) &&
+                         (words_send <= last_word));
              i++) {
             fifo_ctrl = 0;
             if (words_send == 0) {

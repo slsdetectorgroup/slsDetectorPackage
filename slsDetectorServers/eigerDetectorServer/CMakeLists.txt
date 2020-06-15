@@ -58,7 +58,7 @@ target_compile_definitions(eigerDetectorServerSlaveTop_virtual
 )
 
 target_link_libraries(eigerDetectorServerSlaveTop_virtual
-    PUBLIC pthread rt
+    PUBLIC pthread rt slsProjectCSettings
 )
 
 set_target_properties(eigerDetectorServerSlaveTop_virtual PROPERTIES

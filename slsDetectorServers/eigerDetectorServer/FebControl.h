@@ -54,7 +54,7 @@ int Feb_Control_StartDAQOnlyNWaitForFinish(int sleep_time_us);
 int Feb_Control_ResetChipCompletely();
 int Feb_Control_ResetChipPartially();
 void Feb_Control_FebControl();
-int Feb_Control_Init(int master, int top, int normal, int module_num);
+int Feb_Control_Init(int master, int normal, int module_num);
 int Feb_Control_OpenSerialCommunication();
 void Feb_Control_CloseSerialCommunication();
 int Feb_Control_CheckSetup();

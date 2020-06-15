@@ -333,7 +333,7 @@ void initControlServer() {
         Feb_Interface_FebInterface();
         Feb_Control_FebControl();
         // same addresses for top and bottom
-        Feb_Control_Init(master, 1, normal, getDetectorNumber());
+        Feb_Control_Init(master, normal, getDetectorNumber());
         // master of 9M, check high voltage serial communication to blackfin
         if (master && !normal) {
             if (Feb_Control_OpenSerialCommunication())
@@ -372,7 +372,7 @@ void initStopServer() {
     Feb_Interface_FebInterface();
     Feb_Control_FebControl();
     // same addresses for top and bottom
-    Feb_Control_Init(master, 1, normal, getDetectorNumber());
+    Feb_Control_Init(master, normal, getDetectorNumber());
     LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
 #endif
     // client first connect (from shm) will activate

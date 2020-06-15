@@ -126,7 +126,7 @@ void Feb_Control_FebControl() {
     moduleSize = 0;
 }
 
-int Feb_Control_Init(int master, int top, int normal, int module_num) {
+int Feb_Control_Init(int master, int normal, int module_num) {
     Feb_Control_module_number = 0;
     Feb_Control_current_index = 0;
     Feb_control_master = master;
@@ -135,28 +135,18 @@ int Feb_Control_Init(int master, int top, int normal, int module_num) {
     // global send
     Feb_Control_AddModule(0, 0xff);
     Feb_Control_PrintModuleList();
-    Feb_Control_module_number = (module_num & 0xFF);
-
-    int serial = !top;
-    LOG(logDEBUG1, ("serial: %d\n", serial));
-
-    Feb_Control_current_index = 1;
 
     // Add the half module
-    Feb_Control_AddModule(Feb_Control_module_number, serial);
+    Feb_Control_module_number = (module_num & 0xFF);
+    Feb_Control_current_index = 1;
+    Feb_Control_AddModule(Feb_Control_module_number, 0);
     Feb_Control_PrintModuleList();
 
     unsigned int nfebs = 0;
     unsigned int *feb_list = malloc(moduleSize * 4 * sizeof(unsigned int));
     for (unsigned int i = 1; i < moduleSize; i++) {
-        if (Module_TopAddressIsValid(&modules[i])) {
-            feb_list[nfebs++] = Module_GetTopRightAddress(&modules[i]);
-            feb_list[nfebs++] = Module_GetTopLeftAddress(&modules[i]);
-        }
-        if (Module_BottomAddressIsValid(&modules[i])) {
-            feb_list[nfebs++] = Module_GetBottomRightAddress(&modules[i]);
-            feb_list[nfebs++] = Module_GetBottomLeftAddress(&modules[i]);
-        }
+        feb_list[nfebs++] = Module_GetTopRightAddress(&modules[i]);
+        feb_list[nfebs++] = Module_GetTopLeftAddress(&modules[i]);
     }
 
     Feb_Interface_SendCompleteList(nfebs, feb_list);

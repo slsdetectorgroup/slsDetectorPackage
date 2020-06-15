@@ -86,7 +86,7 @@ target_compile_definitions(eigerDetectorServerSlaveBottom_virtual
 )
 
 target_link_libraries(eigerDetectorServerSlaveBottom_virtual
-    PUBLIC pthread rt
+    PUBLIC pthread rt slsProjectCSettings
 )
 
 set_target_properties(eigerDetectorServerSlaveBottom_virtual PROPERTIES

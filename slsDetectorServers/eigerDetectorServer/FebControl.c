@@ -20,8 +20,7 @@ char Module_dac_names[16][10] = {"VSvP",    "Vtrim",   "Vrpreamp", "Vrshaper",
                                  "Vcal",    "Vcmp_rl", "rxb_rb",   "rxb_lb",
                                  "Vcmp_rr", "Vcp",     "Vcn",      "Vishaper"};
 
-struct Module modules[2];
-int moduleSize = 0;
+struct Module module;
 
 unsigned int
     Feb_Control_staticBits; // program=1,m4=2,m8=4,test=8,rotest=16,cs_bar_left=32,cs_bar_right=64
@@ -47,8 +46,6 @@ int64_t Feb_Control_RateTable_Period_in_nsec = -1;
 unsigned int Feb_Control_trimbit_size;
 unsigned int *Feb_Control_last_downloaded_trimbits;
 
-int Feb_Control_module_number;
-
 int Feb_Control_counter_bit = 1;
 int Feb_control_master = 0;
 int Feb_control_normal = 0;
@@ -62,13 +59,8 @@ int Feb_Control_hv_fd = -1;
 
 // module
 void Module_Module(struct Module *mod, unsigned int number) {
-    mod->module_number = number;
     mod->left_address = 0x100;
     mod->right_address = 0x200;
-    if (number == 0u) {
-        mod->left_address |= 0xff;
-        mod->right_address |= 0xff;
-    }
     mod->high_voltage = -1;
     mod->dac = malloc(Module_ndacs * sizeof(int));
     for (unsigned int i = 0; i < Module_ndacs; i++)
@@ -114,8 +106,6 @@ int Module_GetDACValue(struct Module *mod, unsigned int i) {
 // setup
 void Feb_Control_activate(int activate) { Feb_Control_activated = activate; }
 
-int Feb_Control_GetModuleNumber() { return Feb_Control_module_number; }
-
 void Feb_Control_FebControl() {
     Feb_Control_staticBits = Feb_Control_acquireNReadoutMode =
         Feb_Control_triggerMode = Feb_Control_externalEnableMode =
@@ -123,25 +113,14 @@ void Feb_Control_FebControl() {
     Feb_Control_trimbit_size = 263680;
     Feb_Control_last_downloaded_trimbits =
         malloc(Feb_Control_trimbit_size * sizeof(int));
-    moduleSize = 0;
 }
 
 int Feb_Control_Init(int master, int normal, int module_num) {
     Feb_control_master = master;
     Feb_control_normal = normal;
-
-    // global send (module number 0)
-    Feb_Control_AddModule(0);
-    Feb_Control_PrintModuleList();
-
-    // Add the half module
-    Feb_Control_module_number = (module_num & 0xFF);
-    Feb_Control_AddModule(Feb_Control_module_number);
-    Feb_Control_PrintModuleList();
-
-    // interface setup
-    Feb_Interface_SetAddress(Module_GetRightAddress(&modules[1]),
-                             Module_GetLeftAddress(&modules[1]));
+    Feb_Control_AddModule();
+    Feb_Interface_SetAddress(Module_GetRightAddress(&module),
+                             Module_GetLeftAddress(&module));
     if (Feb_Control_activated) {
         return Feb_Interface_SetByteOrder();
     }
@@ -207,33 +186,22 @@ void Feb_Control_CloseSerialCommunication() {
         close(Feb_Control_hv_fd);
 }
 
-void Feb_Control_PrintModuleList() {
-    LOG(logDEBUG1, ("Module list:\n"));
-    for (unsigned int i = 0; i < moduleSize; i++) {
-        LOG(logDEBUG1,
-            ("\t%d) %s\t: [Module Number:%d, Base Address: 0x%x]\n", i,
-             ((i == 0) ? "Global" : "Half Module"), modules[i].module_number,
-             Module_GetBaseAddress(&modules[i])));
-    }
-}
-
-void Feb_Control_AddModule(unsigned int module_number) {
+void Feb_Control_AddModule() {
     struct Module mod, *m;
     m = &mod;
-    Module_Module(m, module_number);
+    Module_Module(m);
 
     LOG(logDEBUG1, ("\tAdding half module number %d with "
                     "top base address: %d\n",
                     m->module_number, Module_GetBaseAddress(m)));
-    modules[moduleSize] = mod;
-    moduleSize++;
+    module = mod;
 }
 
 int Feb_Control_CheckSetup(int master) {
     LOG(logDEBUG1, ("Checking Set up\n"));
 
     for (unsigned int j = 0; j < 4; j++) {
-        if (Module_GetIDelay(&modules[1], j) < 0) {
+        if (Module_GetIDelay(&module, j) < 0) {
             LOG(logERROR, ("idelay chip %d not set.\n", j));
             return 0;
         }
@@ -244,7 +212,7 @@ int Feb_Control_CheckSetup(int master) {
         return 0;
     }
     for (unsigned int j = 0; j < Module_ndacs; j++) {
-        if (Module_GetDACValue(&modules[1], j) < 0) {
+        if (Module_GetDACValue(&module, j) < 0) {
             LOG(logERROR, ("\"%s\" dac is not set.\n", Module_dac_names[j]));
             return 0;
         }
@@ -254,8 +222,7 @@ int Feb_Control_CheckSetup(int master) {
 }
 
 unsigned int Feb_Control_AddressToAll() {
-    return Module_GetLeftAddress(&modules[1]) |
-           Module_GetRightAddress(&modules[1]);
+    return Module_GetLeftAddress(&module) | Module_GetRightAddress(&module);
 }
 
 int Feb_Control_SetCommandRegister(unsigned int cmd) {
@@ -321,19 +288,19 @@ int Feb_Control_SetIDelays1(
     }
 
     if (chip_pos / 2 == 0) { // left fpga
-        if (Feb_Control_SendIDelays(Module_GetLeftAddress(&modules[1]),
+        if (Feb_Control_SendIDelays(Module_GetLeftAddress(&module),
                                     chip_pos % 2 == 0, 0xffffffff,
                                     ndelay_units)) {
-            Module_SetIDelay(&modules[1], chip_pos, ndelay_units);
+            Module_SetIDelay(&module, chip_pos, ndelay_units);
         } else {
             LOG(logERROR, ("could not set idelay (left).\n"));
             return 0;
         }
     } else {
-        if (Feb_Control_SendIDelays(Module_GetRightAddress(&modules[1]),
+        if (Feb_Control_SendIDelays(Module_GetRightAddress(&module),
                                     chip_pos % 2 == 0, 0xffffffff,
                                     ndelay_units)) {
-            Module_SetIDelay(&modules[1], chip_pos, ndelay_units);
+            Module_SetIDelay(&module, chip_pos, ndelay_units);
         } else {
             LOG(logERROR, ("could not set idelay (right).\n"));
             return 0;
@@ -638,11 +605,10 @@ int Feb_Control_SetDAC(char *dac_str, int value, int is_a_voltage_mv) {
         LOG(logERROR, ("SetDac bad value, %d. The range is 0 to 4095.\n", v));
         return 0;
     }
-    if (!Feb_Control_SendDACValue(Module_GetRightAddress(&modules[1]), dac_ch,
-                                  &v))
+    if (!Feb_Control_SendDACValue(Module_GetRightAddress(&module), dac_ch, &v))
         return 0;
 
-    Module_SetDACValue(&modules[1], dac_ch, v);
+    Module_SetDACValue(&module, dac_ch, v);
     return 1;
 }
 
@@ -651,7 +617,7 @@ int Feb_Control_GetDAC(char *s, int *ret_value, int voltage_mv) {
     if (!Feb_Control_DecodeDACString(s, &dac_ch))
         return 0;
 
-    *ret_value = Module_GetDACValue(&modules[1], dac_ch);
+    *ret_value = Module_GetDACValue(&module, dac_ch);
     if (voltage_mv)
         *ret_value = Feb_Control_DACToVoltage(*ret_value, 4096, 0, 2048);
     return 1;
@@ -833,10 +799,10 @@ int Feb_Control_SetTrimbits(unsigned int *trimbits, int top) {
 
             if (Feb_Control_activated) {
                 if (!Feb_Interface_WriteMemoryInLoops(
-                        Module_GetLeftAddress(&modules[1]), 0, 0, 1024,
+                        Module_GetLeftAddress(&module), 0, 0, 1024,
                         trimbits_to_load_l) ||
                     !Feb_Interface_WriteMemoryInLoops(
-                        Module_GetRightAddress(&modules[1]), 0, 0, 1024,
+                        Module_GetRightAddress(&module), 0, 0, 1024,
                         trimbits_to_load_r) ||
                     (Feb_Control_StartDAQOnlyNWaitForFinish(5000) !=
                      STATUS_IDLE)) {
@@ -871,13 +837,13 @@ int Feb_Control_AcquisitionInProgress() {
     if (!Feb_Control_activated)
         return STATUS_IDLE;
 
-    if (!(Feb_Control_GetDAQStatusRegister(Module_GetRightAddress(&modules[1]),
+    if (!(Feb_Control_GetDAQStatusRegister(Module_GetRightAddress(&module),
                                            &status_reg_r))) {
         LOG(logERROR, ("Error: Trouble reading Status register (right)"
                        "address\n"));
         return STATUS_ERROR;
     }
-    if (!(Feb_Control_GetDAQStatusRegister(Module_GetLeftAddress(&modules[1]),
+    if (!(Feb_Control_GetDAQStatusRegister(Module_GetLeftAddress(&module),
                                            &status_reg_l))) {
         LOG(logERROR, ("Error: Trouble reading Status register (left)\n"));
         return STATUS_ERROR;
@@ -896,12 +862,12 @@ int Feb_Control_AcquisitionStartedBit() {
     if (!Feb_Control_activated)
         return 1;
 
-    if (!(Feb_Control_GetDAQStatusRegister(Module_GetRightAddress(&modules[1]),
+    if (!(Feb_Control_GetDAQStatusRegister(Module_GetRightAddress(&module),
                                            &status_reg_r))) {
         LOG(logERROR, ("Error: Trouble reading Status register (right)\n"));
         return -1;
     }
-    if (!(Feb_Control_GetDAQStatusRegister(Module_GetLeftAddress(&modules[1]),
+    if (!(Feb_Control_GetDAQStatusRegister(Module_GetLeftAddress(&module),
                                            &status_reg_l))) {
         LOG(logERROR, ("Error: Trouble reading Status register (left)\n"));
         return -1;
@@ -1416,8 +1382,8 @@ int Feb_Control_SetInterruptSubframe(int val) {
     uint32_t offset = DAQ_REG_HRDWRE;
     uint32_t regVal = 0;
     char side[2][10] = {"right", "left"};
-    unsigned int addr[2] = {Module_GetRightAddress(&modules[1]),
-                            Module_GetLeftAddress(&modules[1])};
+    unsigned int addr[2] = {Module_GetRightAddress(&module),
+                            Module_GetLeftAddress(&module)};
     for (int iloop = 0; iloop < 2; ++iloop) {
         // get previous value to keep it
         if (!Feb_Interface_ReadRegister(addr[iloop], offset, &regVal)) {
@@ -1444,8 +1410,8 @@ int Feb_Control_GetInterruptSubframe() {
     uint32_t regVal = 0;
 
     char side[2][10] = {"right", "left"};
-    unsigned int addr[2] = {Module_GetRightAddress(&modules[1]),
-                            Module_GetLeftAddress(&modules[1])};
+    unsigned int addr[2] = {Module_GetRightAddress(&module),
+                            Module_GetLeftAddress(&module)};
     uint32_t value[2] = {0, 0};
     for (int iloop = 0; iloop < 2; ++iloop) {
         if (!Feb_Interface_ReadRegister(addr[iloop], offset, &regVal)) {
@@ -1470,10 +1436,10 @@ int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right) {
     uint32_t offset = DAQ_REG_HRDWRE;
     unsigned int addr[2] = {0, 0};
     if (left) {
-        addr[0] = Module_GetLeftAddress(&modules[1]);
+        addr[0] = Module_GetLeftAddress(&module);
     }
     if (right) {
-        addr[1] = Module_GetRightAddress(&modules[1]);
+        addr[1] = Module_GetRightAddress(&module);
     }
     char *top_names[] = {TOP_NAMES};
     for (int i = 0; i < 2; ++i) {
@@ -1520,8 +1486,8 @@ void Feb_Control_SetMasterVariable(int val) { Feb_control_master = val; }
 
 int Feb_Control_SetMaster(enum MASTERINDEX ind) {
     uint32_t offset = DAQ_REG_HRDWRE;
-    unsigned int addr[2] = {Module_GetLeftAddress(&modules[1]),
-                            Module_GetRightAddress(&modules[1])};
+    unsigned int addr[2] = {Module_GetLeftAddress(&module),
+                            Module_GetRightAddress(&module)};
     char *master_names[] = {MASTER_NAMES};
     for (int i = 0; i < 2; ++i) {
         uint32_t value = 0;
@@ -1589,8 +1555,8 @@ int Feb_Control_GetReadNLines() {
 int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
     uint32_t actualOffset = offset;
     char side[2][10] = {"right", "left"};
-    unsigned int addr[2] = {Module_GetRightAddress(&modules[1]),
-                            Module_GetLeftAddress(&modules[1])};
+    unsigned int addr[2] = {Module_GetRightAddress(&module),
+                            Module_GetLeftAddress(&module)};
 
     int run[2] = {0, 0};
     // both registers
@@ -1628,8 +1594,8 @@ int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
 int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
     uint32_t actualOffset = offset;
     char side[2][10] = {"right", "left"};
-    unsigned int addr[2] = {Module_GetRightAddress(&modules[1]),
-                            Module_GetLeftAddress(&modules[1])};
+    unsigned int addr[2] = {Module_GetRightAddress(&module),
+                            Module_GetLeftAddress(&module)};
     uint32_t value[2] = {0, 0};
     int run[2] = {0, 0};
     // both registers
@@ -1995,10 +1961,10 @@ int Feb_Control_SetRateCorrectionTable(unsigned int *table) {
 
     if (Feb_Control_activated) {
         if (!Feb_Interface_WriteMemoryInLoops(
-                Module_GetLeftAddress(&modules[1]), 1, 0, 1024,
+                Module_GetLeftAddress(&module), 1, 0, 1024,
                 Feb_Control_rate_correction_table) ||
             !Feb_Interface_WriteMemoryInLoops(
-                Module_GetRightAddress(&modules[1]), 1, 0, 1024,
+                Module_GetRightAddress(&module), 1, 0, 1024,
                 Feb_Control_rate_correction_table) ||
             (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)) {
             LOG(logERROR, ("could not write to memory (top) "
@@ -2050,8 +2016,8 @@ int Feb_Control_PrintCorrectedValues() {
 // A1) and then A1/65536/0.00198421639-273.15
 int Feb_Control_GetLeftFPGATemp() {
     unsigned int temperature = 0;
-    Feb_Interface_ReadRegister(Module_GetLeftAddress(&modules[1]),
-                               FEB_REG_STATUS, &temperature);
+    Feb_Interface_ReadRegister(Module_GetLeftAddress(&module), FEB_REG_STATUS,
+                               &temperature);
 
     temperature = temperature >> 16;
     temperature =
@@ -2063,8 +2029,8 @@ int Feb_Control_GetLeftFPGATemp() {
 
 int Feb_Control_GetRightFPGATemp() {
     unsigned int temperature = 0;
-    Feb_Interface_ReadRegister(Module_GetRightAddress(&modules[1]),
-                               FEB_REG_STATUS, &temperature);
+    Feb_Interface_ReadRegister(Module_GetRightAddress(&module), FEB_REG_STATUS,
+                               &temperature);
     temperature = temperature >> 16;
     temperature =
         ((((float)(temperature) / 65536.0f) / 0.00198421639f) - 273.15f) *
@@ -2075,14 +2041,14 @@ int Feb_Control_GetRightFPGATemp() {
 
 int64_t Feb_Control_GetMeasuredPeriod() {
     unsigned int value = 0;
-    Feb_Interface_ReadRegister(Module_GetLeftAddress(&modules[1]),
-                               MEAS_PERIOD_REG, &value);
+    Feb_Interface_ReadRegister(Module_GetLeftAddress(&module), MEAS_PERIOD_REG,
+                               &value);
     return (int64_t)value * 10;
 }
 
 int64_t Feb_Control_GetSubMeasuredPeriod() {
     unsigned int value = 0;
-    Feb_Interface_ReadRegister(Module_GetLeftAddress(&modules[1]),
+    Feb_Interface_ReadRegister(Module_GetLeftAddress(&module),
                                MEAS_SUBPERIOD_REG, &value);
     return (int64_t)value * 10;
 }

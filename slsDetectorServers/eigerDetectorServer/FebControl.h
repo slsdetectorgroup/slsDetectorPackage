@@ -4,7 +4,6 @@
 #include <netinet/in.h>
 
 struct Module {
-    unsigned int module_number;
     unsigned int left_address;
     unsigned int right_address;
     unsigned int idelay[4]; // ll,lr,rl,ll
@@ -12,7 +11,7 @@ struct Module {
     int *dac;
 };
 // module struct
-void Module_Module(struct Module *mod, unsigned int number);
+void Module_Module(struct Module *mod);
 unsigned int Module_GetBaseAddress(struct Module *mod);
 unsigned int Module_GetLeftAddress(struct Module *mod);
 unsigned int Module_GetRightAddress(struct Module *mod);
@@ -25,13 +24,11 @@ int Module_SetDACValue(struct Module *mod, unsigned int i, int value);
 int Module_GetDACValue(struct Module *mod, unsigned int i);
 // setup
 void Feb_Control_activate(int activate);
-int Feb_Control_GetModuleNumber();
 void Feb_Control_FebControl();
 int Feb_Control_Init(int master, int normal, int module_num);
 int Feb_Control_OpenSerialCommunication();
 void Feb_Control_CloseSerialCommunication();
-void Feb_Control_PrintModuleList();
-void Feb_Control_AddModule(unsigned int module_number);
+void Feb_Control_AddModule();
 int Feb_Control_CheckSetup();
 unsigned int Feb_Control_AddressToAll();
 int Feb_Control_SetCommandRegister(unsigned int cmd);

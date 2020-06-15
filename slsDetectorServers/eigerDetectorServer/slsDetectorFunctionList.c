@@ -1495,7 +1495,7 @@ int setQuad(int value) {
         return OK;
     }
     // only top can be set to quad
-    if (!top & value > 0) {
+    if (!top && value > 0) {
         LOG(logERROR, ("Only a top can be set to quad\n"));
         return FAIL;
     }

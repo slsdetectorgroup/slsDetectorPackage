@@ -20,7 +20,7 @@ char Module_dac_names[16][10] = {"VSvP",    "Vtrim",   "Vrpreamp", "Vrshaper",
                                  "Vcal",    "Vcmp_rl", "rxb_rb",   "rxb_lb",
                                  "Vcmp_rr", "Vcp",     "Vcn",      "Vishaper"};
 
-struct Module modules[10];
+struct Module modules[2];
 int moduleSize = 0;
 
 unsigned int
@@ -833,13 +833,11 @@ int Feb_Control_SetTrimbits(unsigned int *trimbits, int top) {
 
             if (Feb_Control_activated) {
                 if (!Feb_Interface_WriteMemoryInLoops(
-                        Module_GetLeftAddress(
-                            &modules[Feb_Control_current_index]),
-                        0, 0, 1024, trimbits_to_load_l) ||
+                        Module_GetLeftAddress(&modules[1]), 0, 0, 1024,
+                        trimbits_to_load_l) ||
                     !Feb_Interface_WriteMemoryInLoops(
-                        Module_GetRightAddress(
-                            &modules[Feb_Control_current_index]),
-                        0, 0, 1024, trimbits_to_load_r) ||
+                        Module_GetRightAddress(&modules[1]), 0, 0, 1024,
+                        trimbits_to_load_r) ||
                     (Feb_Control_StartDAQOnlyNWaitForFinish(5000) !=
                      STATUS_IDLE)) {
                     LOG(logERROR, (" some errror in setting trimbits!\n"));

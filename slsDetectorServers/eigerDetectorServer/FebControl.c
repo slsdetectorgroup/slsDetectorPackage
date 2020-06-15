@@ -58,7 +58,7 @@ int Feb_Control_activated = 1;
 int Feb_Control_hv_fd = -1;
 
 // module
-void Module_Module(struct Module *mod, unsigned int number) {
+void Module_Module(struct Module *mod) {
     mod->left_address = 0x100;
     mod->right_address = 0x200;
     mod->high_voltage = -1;

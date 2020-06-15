@@ -64,7 +64,7 @@ int Feb_Control_hv_fd = -1;
 void Module_Module(struct Module *mod, unsigned int number) {
     mod->module_number = number;
     mod->left_address = 0x100;
-    mod->right_address = (0x200;
+    mod->right_address = 0x200;
     if (number == 0u) {
         mod->left_address |= 0xff;
         mod->right_address |= 0xff;
@@ -212,7 +212,7 @@ void Feb_Control_PrintModuleList() {
     for (unsigned int i = 0; i < moduleSize; i++) {
         LOG(logDEBUG1,
             ("\t%d) %s\t: [Module Number:%d, Base Address: 0x%x]\n", i,
-             ((i == 0) ? "Global" : "Half Module"), modules[i]->module_number,
+             ((i == 0) ? "Global" : "Half Module"), modules[i].module_number,
              Module_GetBaseAddress(&modules[i])));
     }
 }
@@ -858,7 +858,7 @@ int Feb_Control_SaveAllTrimbitsTo(int value, int top) {
     unsigned int chanregs[Feb_Control_trimbit_size];
     for (int i = 0; i < Feb_Control_trimbit_size; i++)
         chanregs[i] = value;
-    return Feb_Control_SetTrimbits(0, chanregs, top);
+    return Feb_Control_SetTrimbits(chanregs, top);
 }
 
 unsigned int *Feb_Control_GetTrimbits() {

@@ -333,11 +333,24 @@ void initControlServer() {
         Feb_Interface_FebInterface();
         Feb_Control_FebControl();
         // same addresses for top and bottom
-        Feb_Control_Init(master, normal, getDetectorNumber());
+        if (!Feb_Control_Init(master, normal, getDetectorNumber()) {
+            initError = FAIL;
+            sprintf(initErrorMessage, "Could not intitalize feb control\n");
+            LOG(logERROR, (initErrorMessage));
+            initCheckDone = 1;
+            return;
+        }
         // master of 9M, check high voltage serial communication to blackfin
         if (master && !normal) {
-            if (Feb_Control_OpenSerialCommunication())
-                ; //	Feb_Control_CloseSerialCommunication();
+            if (!Feb_Control_OpenSerialCommunication()) {
+                initError = FAIL;
+                sprintf(
+                    initErrorMessage,
+                    "Could not intitalize feb control serial communication\n");
+                LOG(logERROR, (initErrorMessage));
+                initCheckDone = 1;
+                return;
+            }
         }
         LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
         Beb_SetTopVariable(top);
@@ -695,7 +708,12 @@ void setupDetector() {
 #endif
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 #ifndef VIRTUAL
-    Feb_Control_CheckSetup();
+    if (!Feb_Control_CheckSetup()) {
+        initError = FAIL;
+        sprintf(initErrorMessage, "Could not pass feb control setup checks\n");
+        LOG(logERROR, (initErrorMessage));
+        return;
+    }
 #endif
     // force top or master if in config file
     if (readConfigFile() == FAIL) {
@@ -1049,7 +1067,7 @@ int setModule(sls_detector_module myMod, char *mess) {
         }
 
         // set trimbits
-        if (!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(), tt, top)) {
+        if (!Feb_Control_SetTrimbits(tt, top)) {
             sprintf(mess, "Could not set module. Could not set trimbits\n");
             LOG(logERROR, (mess));
             setSettings(UNDEFINED);
@@ -1355,7 +1373,7 @@ void setTiming(enum timingMode arg) {
     }
     LOG(logDEBUG1, ("Setting Triggering Mode: %d\n", (int)ret));
 #ifndef VIRTUAL
-    if (Feb_Control_SetTriggerMode(ret, 1))
+    if (Feb_Control_SetTriggerMode(ret))
 #endif
         eiger_triggermode = ret;
 }
@@ -1476,6 +1494,11 @@ int setQuad(int value) {
     if (value < 0) {
         return OK;
     }
+    // only top can be set to quad
+    if (!top & value > 0) {
+        LOG(logERROR, ("Only a top can be set to quad\n"));
+        return FAIL;
+    }
 #ifndef VIRTUAL
     if (Beb_SetQuad(value) == FAIL) {
         return FAIL;
@@ -1580,7 +1603,7 @@ int setIODelay(int val) {
     if (val != -1) {
         LOG(logDEBUG1, ("Setting IO Delay: %d\n", val));
 #ifndef VIRTUAL
-        if (Feb_Control_SetIDelays(Feb_Control_GetModuleNumber(), val))
+        if (Feb_Control_SetIDelays(val))
 #endif
             eiger_iodelay = val;
     }
@@ -1813,6 +1836,8 @@ int64_t getCurrentTau() {
 }
 
 void setExternalGating(int enable[]) {
+    // not configured from client
+    // default: disable gating with positive polarity
     if (enable[0] >= 0 && enable[1] >= 0) {
 #ifndef VIRTUAL
         Feb_Control_SetExternalEnableMode(

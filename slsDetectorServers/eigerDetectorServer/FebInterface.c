@@ -41,13 +41,13 @@ void Feb_Interface_FebInterface() {
         ll, XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_RIGHT_BASEADDR);
 }
 
-void Feb_Interface_SendCompleteList(unsigned int n, unsigned int *list) {
+void Feb_Interface_SetAddress(unsigned int leftAddr, unsigned int rightAddr) {
     if (Feb_Interface_feb_numb)
         free(Feb_Interface_feb_numb);
-    Feb_Interface_nfebs = n;
-    Feb_Interface_feb_numb = malloc(n * sizeof(unsigned int));
-    for (unsigned int i = 0; i < n; i++)
-        Feb_Interface_feb_numb[i] = list[i];
+    Feb_Interface_nfebs = 2;
+    Feb_Interface_feb_numb = malloc(2 * sizeof(unsigned int));
+    Feb_Interface_feb_numb[0] = leftAddr;
+    Feb_Interface_feb_numb[1] = rightAddr;
 }
 
 int Feb_Interface_WriteTo(unsigned int ch) {
@@ -104,7 +104,9 @@ int Feb_Interface_SetByteOrder() {
     for (unsigned int i = 0; i < Feb_Interface_nfebs; i++)
         dst = (dst | Feb_Interface_feb_numb[i]);
     int passed = Feb_Interface_WriteTo(dst);
-
+    if (!passed) {
+        LOG(logERROR, ("Could not set byte order in Feb Interface\n"));
+    }
     return passed;
 }
 

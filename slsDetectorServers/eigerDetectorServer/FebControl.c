@@ -663,7 +663,7 @@ int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch,
 }
 
 int Feb_Control_SetTrimbits(unsigned int *trimbits, int top) {
-    LOG(logINFO, ("Setting Trimbits\n"));
+    LOG(logINFO, ("Setting Trimbits (top:%d)\n", top));
     unsigned int trimbits_to_load_l[1024];
     unsigned int trimbits_to_load_r[1024];
 

@@ -144,10 +144,8 @@ int Feb_Control_Init(int master, int normal, int module_num) {
 
     unsigned int nfebs = 0;
     unsigned int *feb_list = malloc(moduleSize * 4 * sizeof(unsigned int));
-    for (unsigned int i = 1; i < moduleSize; i++) {
-        feb_list[nfebs++] = Module_GetTopRightAddress(&modules[i]);
-        feb_list[nfebs++] = Module_GetTopLeftAddress(&modules[i]);
-    }
+    feb_list[nfebs++] = Module_GetRightAddress(&modules[1]);
+    feb_list[nfebs++] = Module_GetLeftAddress(&modules[1]);
 
     Feb_Interface_SendCompleteList(nfebs, feb_list);
     free(feb_list);

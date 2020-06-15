@@ -28,7 +28,6 @@ void Feb_Control_FebControl();
 int Feb_Control_Init(int master, int normal, int module_num);
 int Feb_Control_OpenSerialCommunication();
 void Feb_Control_CloseSerialCommunication();
-void Feb_Control_AddModule();
 int Feb_Control_CheckSetup();
 unsigned int Feb_Control_AddressToAll();
 int Feb_Control_SetCommandRegister(unsigned int cmd);

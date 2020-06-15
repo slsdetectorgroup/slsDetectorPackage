@@ -118,7 +118,7 @@ void Feb_Control_FebControl() {
 int Feb_Control_Init(int master, int normal, int module_num) {
     Feb_control_master = master;
     Feb_control_normal = normal;
-    Feb_Control_AddModule();
+    Module_Module(&module);
     Feb_Interface_SetAddress(Module_GetRightAddress(&module),
                              Module_GetLeftAddress(&module));
     if (Feb_Control_activated) {
@@ -184,17 +184,6 @@ int Feb_Control_OpenSerialCommunication() {
 void Feb_Control_CloseSerialCommunication() {
     if (Feb_Control_hv_fd != -1)
         close(Feb_Control_hv_fd);
-}
-
-void Feb_Control_AddModule() {
-    struct Module mod, *m;
-    m = &mod;
-    Module_Module(m);
-
-    LOG(logDEBUG1, ("\tAdding half module number %d with "
-                    "top base address: %d\n",
-                    m->module_number, Module_GetBaseAddress(m)));
-    module = mod;
 }
 
 int Feb_Control_CheckSetup(int master) {

@@ -3,25 +3,6 @@
 #include "slsDetectorServer_defs.h"
 #include <netinet/in.h>
 
-struct Module {
-    unsigned int left_address;
-    unsigned int right_address;
-    unsigned int idelay[4]; // ll,lr,rl,ll
-    float high_voltage;
-    int *dac;
-};
-// module struct
-void Module_Module(struct Module *mod);
-unsigned int Module_GetBaseAddress(struct Module *mod);
-unsigned int Module_GetLeftAddress(struct Module *mod);
-unsigned int Module_GetRightAddress(struct Module *mod);
-unsigned int Module_SetIDelay(struct Module *mod, unsigned int chip,
-                              unsigned int value);
-unsigned int Module_GetIDelay(struct Module *mod, unsigned int chip);
-float Module_SetHighVoltage(struct Module *mod, float value);
-float Module_GetHighVoltage(struct Module *mod);
-int Module_SetDACValue(struct Module *mod, unsigned int i, int value);
-int Module_GetDACValue(struct Module *mod, unsigned int i);
 // setup
 void Feb_Control_activate(int activate);
 void Feb_Control_FebControl();

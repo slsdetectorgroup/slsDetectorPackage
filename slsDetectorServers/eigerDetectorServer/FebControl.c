@@ -29,7 +29,7 @@ int Feb_Control_normal = 0;
 int Feb_Control_activated = 1;
 
 int Feb_Control_hv_fd = -1;
-const unsigned int Feb_Control_ndacs = 16;
+const static unsigned int Feb_Control_ndacs = 16;
 int Feb_Control_dacs[Feb_Control_ndacs];
 unsigned int Feb_Control_idelay[4]; // ll,lr,rl,ll
 int Feb_Control_counter_bit = 1;

@@ -29,8 +29,7 @@ int Feb_Control_normal = 0;
 int Feb_Control_activated = 1;
 
 int Feb_Control_hv_fd = -1;
-const static unsigned int Feb_Control_ndacs = 16;
-int Feb_Control_dacs[Feb_Control_ndacs];
+int Feb_Control_dacs[NDAC];
 unsigned int Feb_Control_idelay[4]; // ll,lr,rl,ll
 int Feb_Control_counter_bit = 1;
 unsigned int Feb_Control_staticBits;
@@ -70,7 +69,7 @@ void Feb_Control_FebControl() {
 int Feb_Control_Init(int master, int normal, int module_num) {
     Feb_Control_master = master;
     Feb_Control_normal = normal;
-    for (unsigned int i = 0; i < Feb_Control_ndacs; ++i) {
+    for (unsigned int i = 0; i < NDAC; ++i) {
         Feb_Control_dacs[i] = 0;
     }
     Feb_Interface_SetAddress(Feb_Control_rightAddress, Feb_Control_leftAddress);
@@ -153,7 +152,7 @@ int Feb_Control_CheckSetup(int master) {
         LOG(logERROR, ("high voltage not set.\n"));
         return 0;
     }
-    for (unsigned int j = 0; j < Feb_Control_ndacs; j++) {
+    for (unsigned int j = 0; j < NDAC; j++) {
         if (Feb_Control_dacs[j] < 0) {
             LOG(logERROR, ("\"%s\" dac is not set.\n", Module_dac_names[j]));
             return 0;
@@ -566,7 +565,7 @@ int Feb_Control_GetDAC(char *s, int *ret_value, int voltage_mv) {
 }
 
 int Feb_Control_GetDACName(unsigned int dac_num, char *s) {
-    if (dac_num >= Feb_Control_ndacs) {
+    if (dac_num >= NDAC) {
         LOG(logERROR,
             ("GetDACName index out of range, %d invalid.\n", dac_num));
         return 0;
@@ -576,7 +575,7 @@ int Feb_Control_GetDACName(unsigned int dac_num, char *s) {
 }
 
 int Feb_Control_GetDACNumber(char *s, unsigned int *n) {
-    for (unsigned int i = 0; i < Feb_Control_ndacs; i++) {
+    for (unsigned int i = 0; i < NDAC; i++) {
         if (!strcmp(Module_dac_names[i], s)) {
             *n = i;
             return 1;

@@ -30,6 +30,10 @@ enum DACINDEX {
     E_VISHAPER,
     E_VTHRESHOLD
 };
+#define DAC_NAMES
+"VSvP", "Vtrim", "Vrpreamp", "Vrshaper", "VSvN", "Vtgstv", "Vcmp_ll", "Vcmp_lr",
+    "Vcal", "Vcmp_rl", "rxb_rb", "rxb_lb", "Vcmp_rr", "Vcp", "Vcn",
+    "Vishaper"
 #define DEFAULT_DAC_VALS                                                       \
     {                                                                          \
         0,    /* VSvP		*/                                                      \
@@ -49,16 +53,16 @@ enum DACINDEX {
         2000, /* Vcn		*/                                                       \
         1550  /* Vishaper		*/                                                  \
     };
-enum ADCINDEX {
-    TEMP_FPGAEXT,
-    TEMP_10GE,
-    TEMP_DCDC,
-    TEMP_SODL,
-    TEMP_SODR,
-    TEMP_FPGA,
-    TEMP_FPGAFEBL,
-    TEMP_FPGAFEBR
-};
+    enum ADCINDEX {
+        TEMP_FPGAEXT,
+        TEMP_10GE,
+        TEMP_DCDC,
+        TEMP_SODL,
+        TEMP_SODR,
+        TEMP_FPGA,
+        TEMP_FPGAFEBL,
+        TEMP_FPGAFEBR
+    };
 enum NETWORKINDEX { TXN_LEFT, TXN_RIGHT, TXN_FRAME, FLOWCTRL_10G };
 enum ROINDEX { E_PARALLEL, E_NON_PARALLEL };
 enum CLKINDEX { RUN_CLK, NUM_CLOCKS };

@@ -45,7 +45,9 @@ void qDacWidget::GetDac() {
         spinDac->setValue(retval);
         // mv
         retval = det->getDAC(index, 1, {detectorIndex}).squash(-1);
-        lblDacmV->setText(QString("%1mV").arg(retval - 10));
+        // -6 is the minimum amt of space it occupies, if more needed, its
+        // padded with ' ', negative value for left aligned text
+        lblDacmV->setText(QString("%1mV").arg(retval, -6));
     }
     CATCH_DISPLAY(std::string("Could not get dac ") + std::to_string(index),
                   "qDacWidget::GetDac")

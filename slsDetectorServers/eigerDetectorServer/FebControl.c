@@ -12,8 +12,6 @@
 #include <time.h>
 #include <unistd.h>
 
-// GetDAQStatusRegister(512,current_mode_bits_from_fpga)) {
-
 char Module_dac_names[16][10] = {"VSvP",    "Vtrim",   "Vrpreamp", "Vrshaper",
                                  "VSvN",    "Vtgstv",  "Vcmp_ll",  "Vcmp_lr",
                                  "Vcal",    "Vcmp_rl", "rxb_rb",   "rxb_lb",
@@ -27,7 +25,6 @@ int Feb_Control_normal = 0;
 int Feb_Control_activated = 1;
 
 int Feb_Control_hv_fd = -1;
-int Feb_Control_dacs[NDAC];
 unsigned int Feb_Control_idelay[4]; // ll,lr,rl,ll
 int Feb_Control_counter_bit = 1;
 unsigned int Feb_Control_staticBits;
@@ -67,9 +64,6 @@ void Feb_Control_FebControl() {
 int Feb_Control_Init(int master, int normal, int module_num) {
     Feb_Control_master = master;
     Feb_Control_normal = normal;
-    for (unsigned int i = 0; i < NDAC; ++i) {
-        Feb_Control_dacs[i] = 0;
-    }
     Feb_Interface_SetAddress(Feb_Control_rightAddress, Feb_Control_leftAddress);
     if (Feb_Control_activated) {
         return Feb_Interface_SetByteOrder();
@@ -149,12 +143,6 @@ int Feb_Control_CheckSetup(int master) {
     if ((Feb_Control_master) && (!Feb_Control_GetHighVoltage(&value))) {
         LOG(logERROR, ("high voltage not set.\n"));
         return 0;
-    }
-    for (unsigned int j = 0; j < NDAC; j++) {
-        if (Feb_Control_dacs[j] < 0) {
-            LOG(logERROR, ("\"%s\" dac is not set.\n", Module_dac_names[j]));
-            return 0;
-        }
     }
     LOG(logDEBUG1, ("Done Checking Set up\n"));
     return 1;
@@ -517,69 +505,8 @@ float Feb_Control_DACToVoltage(unsigned int digital, unsigned int nsteps,
     return vmin + (vmax - vmin) * digital / (nsteps - 1);
 }
 
-int Feb_Control_DecodeDACString(char *dac_str, unsigned int *dac_ch) {
-    *dac_ch = 0;
-    if (!Feb_Control_GetDACNumber(dac_str, dac_ch)) {
-        LOG(logERROR, ("invalid dac_name: %s \n", dac_str));
-        return 0;
-    }
-    return 1;
-}
-
-int Feb_Control_SetDAC(char *dac_str, int value, int is_a_voltage_mv) {
-    unsigned int dac_ch;
-    // test dac_ch validity
-    if (!Feb_Control_DecodeDACString(dac_str, &dac_ch))
-        return 0;
-
-    unsigned int v = value;
-    if (is_a_voltage_mv &&
-        !Feb_Control_VoltageToDAC(value, &v, 4096, 0, 2048)) {
-        LOG(logERROR,
-            ("SetDac bad value, %d. The range is 0 to 2048 mV.\n", value));
-        return 0;
-    }
-    if (v < 0 || v > 4095) {
-        LOG(logERROR, ("SetDac bad value, %d. The range is 0 to 4095.\n", v));
-        return 0;
-    }
-    if (!Feb_Control_SendDACValue(Feb_Control_rightAddress, dac_ch, &v))
-        return 0;
-
-    Feb_Control_dacs[dac_ch] = v;
-    return 1;
-}
-
-int Feb_Control_GetDAC(char *s, int *ret_value, int voltage_mv) {
-    unsigned int dac_ch;
-    // test dac_ch validity
-    if (!Feb_Control_DecodeDACString(s, &dac_ch))
-        return 0;
-
-    *ret_value = Feb_Control_dacs[dac_ch];
-    if (voltage_mv)
-        *ret_value = Feb_Control_DACToVoltage(*ret_value, 4096, 0, 2048);
-    return 1;
-}
-
-int Feb_Control_GetDACName(unsigned int dac_num, char *s) {
-    if (dac_num >= NDAC) {
-        LOG(logERROR,
-            ("GetDACName index out of range, %d invalid.\n", dac_num));
-        return 0;
-    }
-    strcpy(s, Module_dac_names[dac_num]);
-    return 1;
-}
-
-int Feb_Control_GetDACNumber(char *s, unsigned int *n) {
-    for (unsigned int i = 0; i < NDAC; i++) {
-        if (!strcmp(Module_dac_names[i], s)) {
-            *n = i;
-            return 1;
-        }
-    }
-    return 0;
+int Feb_Control_SetDAC(unsigned int dac_ch, int value) {
+    return Feb_Control_SendDACValue(Feb_Control_rightAddress, dac_ch, &value);
 }
 
 int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch,

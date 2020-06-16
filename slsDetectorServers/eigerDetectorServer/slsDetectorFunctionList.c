@@ -33,10 +33,6 @@ int initError = OK;
 int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
 
-const char *dac_names[16] = {"VSvP",    "Vtrim",   "Vrpreamp", "Vrshaper",
-                             "VSvN",    "Vtgstv",  "Vcmp_ll",  "Vcmp_lr",
-                             "Vcal",    "Vcmp_rl", "rxb_rb",   "rxb_lb",
-                             "Vcmp_rr", "Vcp",     "Vcn",      "Vishaper"};
 int default_tau_from_file = -1;
 enum detectorSettings thisSettings;
 sls_detector_module *detectorModules = NULL;
@@ -1205,6 +1201,10 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         return;
     }
 
+    char *dac_names[] = {DAC_NAMES};
+    LOG(logINFO, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
+                  val, (mV ? "mV" : "dac units")));
+
 #ifdef VIRTUAL
     int dacval = 0;
     if (!mV) {
@@ -1216,11 +1216,17 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         (detectorModules)->dacs[ind] = dacval;
     }
 #else
-    char iname[10];
-    strcpy(iname, dac_names[(int)ind]);
-    if (Feb_Control_SetDAC(iname, val, mV)) {
-        int dacval = 0;
-        Feb_Control_GetDAC(iname, &dacval, 0);
+    int dacval = val;
+    if (mV) {
+        // convert to dac units
+        if (ConvertToDifferentRange(DAC_MIN_MV, DAC_MAX_MV, LTC2620_MIN_VAL,
+                                    LTC2620_MAX_VAL, val, &dacval) == FAIL) {
+            LOG(logERRROR,
+                ("Could not convert %d mV for dac to dac units\n", val));
+            return;
+        }
+    }
+    if (Feb_Control_SetDAC(ind, dacval)) {
         (detectorModules)->dacs[ind] = dacval;
     }
 #endif

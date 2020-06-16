@@ -31,11 +31,7 @@ int Feb_Control_VoltageToDAC(float value, unsigned int *digital,
                              unsigned int nsteps, float vmin, float vmax);
 float Feb_Control_DACToVoltage(unsigned int digital, unsigned int nsteps,
                                float vmin, float vmax);
-int Feb_Control_DecodeDACString(char *dac_str, unsigned int *dac_ch);
-int Feb_Control_SetDAC(char *s, int value, int is_a_voltage_mv);
-int Feb_Control_GetDAC(char *s, int *ret_value, int voltage_mv);
-int Feb_Control_GetDACName(unsigned int dac_num, char *s);
-int Feb_Control_GetDACNumber(char *s, unsigned int *n);
+int Feb_Control_SetDAC(unsigned int dac_ch, int value, );
 int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch,
                              unsigned int *value);
 

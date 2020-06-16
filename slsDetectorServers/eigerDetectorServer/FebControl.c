@@ -19,8 +19,6 @@ char Module_dac_names[16][10] = {"VSvP",    "Vtrim",   "Vrpreamp", "Vrshaper",
                                  "Vcal",    "Vcmp_rl", "rxb_rb",   "rxb_lb",
                                  "Vcmp_rr", "Vcp",     "Vcn",      "Vishaper"};
 
-struct Module module;
-
 const unsigned int Feb_Control_leftAddress = 0x100;
 const unsigned int Feb_Control_rightAddress = 0x200;
 

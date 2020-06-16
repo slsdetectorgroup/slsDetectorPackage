@@ -1221,7 +1221,7 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
         // convert to dac units
         if (ConvertToDifferentRange(DAC_MIN_MV, DAC_MAX_MV, LTC2620_MIN_VAL,
                                     LTC2620_MAX_VAL, val, &dacval) == FAIL) {
-            LOG(logERRROR,
+            LOG(logERROR,
                 ("Could not convert %d mV for dac to dac units\n", val));
             return;
         }

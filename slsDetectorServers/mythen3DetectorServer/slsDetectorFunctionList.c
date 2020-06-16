@@ -813,12 +813,12 @@ int setPeriod(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
-    val *= (1E-9 * getFrequency(SYSTEM_C2));
+    val *= (1E-9 * getFrequency(SYSTEM_C0));
     set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getPeriod();
-    val /= (1E-9 * getFrequency(SYSTEM_C2));
+    val /= (1E-9 * getFrequency(SYSTEM_C0));
     if (val != retval) {
         return FAIL;
     }
@@ -827,7 +827,7 @@ int setPeriod(int64_t val) {
 
 int64_t getPeriod() {
     return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /
-           (1E-9 * getFrequency(SYSTEM_C2));
+           (1E-9 * getFrequency(SYSTEM_C0));
 }
 
 void setNumIntGates(int val) {
@@ -860,7 +860,7 @@ void updateGatePeriod() {
         }
     }
     LOG(logINFO, ("\tSetting Gate Period to %lld ns\n", (long long int)max));
-    max *= (1E-9 * getFrequency(SYSTEM_C2));
+    max *= (1E-9 * getFrequency(SYSTEM_C0));
     set64BitReg(max, ASIC_EXP_GATE_PERIOD_LSB_REG,
                 ASIC_EXP_GATE_PERIOD_MSB_REG);
 }
@@ -868,7 +868,7 @@ void updateGatePeriod() {
 int64_t getGatePeriod() {
     return get64BitReg(ASIC_EXP_GATE_PERIOD_LSB_REG,
                        ASIC_EXP_GATE_PERIOD_MSB_REG) /
-           (1E-9 * getFrequency(SYSTEM_C2));
+           (1E-9 * getFrequency(SYSTEM_C0));
 }
 
 int setExpTime(int gateIndex, int64_t val) {
@@ -898,12 +898,12 @@ int setExpTime(int gateIndex, int64_t val) {
     }
     LOG(logINFO, ("Setting exptime %lld ns (index:%d)\n", (long long int)val,
                   gateIndex));
-    val *= (1E-9 * getFrequency(SYSTEM_C2));
+    val *= (1E-9 * getFrequency(SYSTEM_C0));
     set64BitReg(val, alsb, amsb);
 
     // validate for tolerance
     int64_t retval = getExpTime(gateIndex);
-    val /= (1E-9 * getFrequency(SYSTEM_C2));
+    val /= (1E-9 * getFrequency(SYSTEM_C0));
     if (val != retval) {
         return FAIL;
     }
@@ -933,7 +933,7 @@ int64_t getExpTime(int gateIndex) {
         LOG(logERROR, ("Invalid gate index: %d\n", gateIndex));
         return -1;
     }
-    return get64BitReg(alsb, amsb) / (1E-9 * getFrequency(SYSTEM_C2));
+    return get64BitReg(alsb, amsb) / (1E-9 * getFrequency(SYSTEM_C0));
 }
 
 int setGateDelay(int gateIndex, int64_t val) {
@@ -963,12 +963,12 @@ int setGateDelay(int gateIndex, int64_t val) {
     }
     LOG(logINFO, ("Setting gate delay %lld ns (index:%d)\n", (long long int)val,
                   gateIndex));
-    val *= (1E-9 * getFrequency(SYSTEM_C2));
+    val *= (1E-9 * getFrequency(SYSTEM_C0));
     set64BitReg(val, alsb, amsb);
 
     // validate for tolerance
     int64_t retval = getGateDelay(gateIndex);
-    val /= (1E-9 * getFrequency(SYSTEM_C2));
+    val /= (1E-9 * getFrequency(SYSTEM_C0));
     if (val != retval) {
         return FAIL;
     }
@@ -998,7 +998,7 @@ int64_t getGateDelay(int gateIndex) {
         LOG(logERROR, ("Invalid gate index: %d\n", gateIndex));
         return -1;
     }
-    return get64BitReg(alsb, amsb) / (1E-9 * getFrequency(SYSTEM_C2));
+    return get64BitReg(alsb, amsb) / (1E-9 * getFrequency(SYSTEM_C0));
 }
 
 void setCounterMask(uint32_t arg) {
@@ -1027,12 +1027,12 @@ int setDelayAfterTrigger(int64_t val) {
         return FAIL;
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", (long long int)val));
-    val *= (1E-9 * getFrequency(SYSTEM_C2));
+    val *= (1E-9 * getFrequency(SYSTEM_C0));
     set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
 
     // validate for tolerance
     int64_t retval = getDelayAfterTrigger();
-    val /= (1E-9 * getFrequency(SYSTEM_C2));
+    val /= (1E-9 * getFrequency(SYSTEM_C0));
     if (val != retval) {
         return FAIL;
     }
@@ -1041,7 +1041,7 @@ int setDelayAfterTrigger(int64_t val) {
 
 int64_t getDelayAfterTrigger() {
     return get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG) /
-           (1E-9 * getFrequency(SYSTEM_C2));
+           (1E-9 * getFrequency(SYSTEM_C0));
 }
 
 int64_t getNumFramesLeft() {
@@ -1054,12 +1054,12 @@ int64_t getNumTriggersLeft() {
 
 int64_t getDelayAfterTriggerLeft() {
     return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG) /
-           (1E-9 * getFrequency(SYSTEM_C2));
+           (1E-9 * getFrequency(SYSTEM_C0));
 }
 
 int64_t getPeriodLeft() {
     return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG) /
-           (1E-9 * getFrequency(SYSTEM_C2));
+           (1E-9 * getFrequency(SYSTEM_C0));
 }
 
 int64_t getFramesFromStart() {

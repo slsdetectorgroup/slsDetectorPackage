@@ -65,10 +65,7 @@ public analogDetector<uint16_t> {
    fm=new mutex;
    // fm=new pthread_mutex_t ;
 
-    eventMask=new eventType*[ny];
-    for (int i=0; i<ny; i++) {
-      eventMask[i]=new eventType[nx];
-    }
+    eventMask=new eventType[ny*nx];
     
     if (ny==1)
       clusterSizeY=1;
@@ -84,7 +81,7 @@ public analogDetector<uint16_t> {
     /**
        destructor. Deletes the cluster structure, the pdestalSubtraction and the image array
     */
-  virtual ~singlePhotonDetector() {delete [] clusters; for (int i=0; i<ny; i++) delete [] eventMask[i]; delete [] eventMask; };
+  virtual ~singlePhotonDetector() {delete [] clusters; for (int i=0; i<ny; i++)  delete [] eventMask; };
 
     
   
@@ -99,10 +96,7 @@ public analogDetector<uint16_t> {
     nDark=orig->nDark;
     myFile=orig->myFile;
     
-    eventMask=new eventType*[ny];
-    for (int i=0; i<ny; i++) {
-      eventMask[i]=new eventType[nx];
-    }
+    eventMask=new eventType[ny*nx];
     eMin=orig->eMin;
     eMax=orig->eMax;
     
@@ -185,7 +179,7 @@ public analogDetector<uint16_t> {
 	nph=image;
       //nph=new int[nx*ny];
       
-      double rest[ny][nx];
+      double rest[ny*nx];
       //int cy=(clusterSizeY+1)/2; //quad size
       //int cs=(clusterSize+1)/2; //quad size
       
@@ -221,19 +215,19 @@ public analogDetector<uint16_t> {
 	    cout << "add to common mode?"<< endl;
 	    addToCommonMode(data);
 	  }
-	    for (int iy=ymin; iy<ymax; iy++) {
-	  for (int ix=xmin; ix<xmax; ix++) {
+	  for (int iy=ymin; iy<ymax; iy++) {
+	    for (int ix=xmin; ix<xmax; ix++) {
 	      if (det->isGood(ix,iy)) {
 		val=subtractPedestal(data,ix,iy, cm);
 		
 		nn=analogDetector<uint16_t>::getNPhotons(data,ix,iy);//val/thr;//
 		if (nn>0) {
 		  nph[ix+nx*iy]+=nn;
-		  rest[iy][ix]=(val-nn*thr);//?+0.5*thr
+		  rest[iy*nx+ix]=(val-nn*thr);//?+0.5*thr
 		  nphFrame+=nn;
 		  nphTot+=nn;
 		} else 
-		  rest[iy][ix]=val;
+		  rest[iy*nx+ix]=val;
 		
 	      }
 	    }
@@ -243,7 +237,7 @@ public analogDetector<uint16_t> {
 	for (int ix=xmin; ix<xmax; ix++) {
 	    
 	    if (det->isGood(ix,iy)) {
-	      eventMask[iy][ix]=PEDESTAL;
+	      eventMask[iy*nx+ix]=PEDESTAL;
 	      max=0;
 	      tl=0;
 	      tr=0;
@@ -252,15 +246,15 @@ public analogDetector<uint16_t> {
 	      tot=0;
 	      quadTot=0;
 	      
-	      if (rest[iy][ix]>0.25*thr) {
-		eventMask[iy][ix]=NEIGHBOUR;
+	      if (rest[iy*nx+ix]>0.25*thr) {
+		eventMask[iy*nx+ix]=NEIGHBOUR;
 		for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
 		  for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
 		    if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
-		      //clusters->set_data(rest[iy+ir][ix+ic], ic, ir);
+		      //clusters->set_data(rest[(iy+ir)*nx+ix+ic], ic, ir);
 		    
 		      
-		      v=rest[iy+ir][ix+ic];//clusters->get_data(ic,ir);
+		      v=rest[(iy+ir)*nx+ix+ic];//clusters->get_data(ic,ir);
 		      tot+=v;
 		      
 		      if (ir<=0 && ic<=0)
@@ -279,8 +273,9 @@ public analogDetector<uint16_t> {
 		      //}
 		    }
 		  }
+		}
 		
-		if (rest[iy][ix]>=max) { 
+		if (rest[iy*nx+ix]>=max) { 
 		  if (bl>=br && bl>=tl && bl>=tr) {
 		    quad=BOTTOM_LEFT;
 		    quadTot=bl;
@@ -292,9 +287,9 @@ public analogDetector<uint16_t> {
 		    quadTot=tl;
 		  } else if   (tr>=bl && tr>=tl && tr>=br) {
 		    quad=TOP_RIGHT;
-		  quadTot=tr;
+		    quadTot=tr;
 		  }
-		 
+		  
 		  if (nSigma==0) {
 		    tthr=thr;
 		    tthr1=thr;
@@ -315,9 +310,9 @@ public analogDetector<uint16_t> {
 		  }
 		  
 		  if (tot>tthr1 || quadTot>tthr2 || max>tthr) {
-		    eventMask[iy][ix]=PHOTON;
+		    eventMask[iy*nx+ix]=PHOTON;
 		    nph[ix+nx*iy]++;
-		    rest[iy][ix]-=thr;
+		    rest[iy*nx+ix]-=thr;
 		    nphFrame++;
 		    nphTot++;
 		    
@@ -325,9 +320,8 @@ public analogDetector<uint16_t> {
 		}
 	      }
 	    }
-	  }
-		}
 	}
+	  }
 	} else return getClusters(data, nph);
       }
       return NULL;
@@ -349,7 +343,7 @@ int *getClusters(char *data,  int *ph=NULL) {
 
  
   int nph=0;
-  double val[ny][nx];
+  double val[ny*nx];
   int cy=(clusterSizeY+1)/2;
   int cs=(clusterSize+1)/2;
   //int ir, ic;
@@ -387,7 +381,7 @@ int *getClusters(char *data,  int *ph=NULL) {
 	
       
 	
-	eventMask[iy][ix]=PEDESTAL;
+	eventMask[iy*nx+ix]=PEDESTAL;
 	
 	
 	(clusters+nph)->rms=getPedestalRMS(ix,iy);
@@ -399,38 +393,38 @@ int *getClusters(char *data,  int *ph=NULL) {
 	    
 	    if ((iy+ir)>=0 &&  (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
 	      if ((iy+ir)>=iy &&(ix+ic)>=ix)
-		val[iy+ir][ix+ic]=subtractPedestal(data,ix+ic,iy+ir, cm);
-
-	      (clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
-	  
-	    v=&(val[iy+ir][ix+ic]);
-	    tot+=*v;
-	    if (ir<=0 && ic<=0)
-	      bl+=*v;
-	    if (ir<=0 && ic>=0)
-	      br+=*v;
-	    if (ir>=0 && ic<=0)
-	      tl+=*v;
-	    if (ir>=0 && ic>=0)
-	      tr+=*v;
-	    if (*v>max) {
-	      max=*v;
-	    }
+		val[(iy+ir)*nx+ix+ic]=subtractPedestal(data,ix+ic,iy+ir, cm);
+	      
+	      (clusters+nph)->set_data(val[(iy+ir)*nx+ix+ic],ic,ir);
+	      
+	      v=&(val[(iy+ir)*nx+ix+ic]);
+	      tot+=*v;
+	      if (ir<=0 && ic<=0)
+		bl+=*v;
+	      if (ir<=0 && ic>=0)
+		br+=*v;
+	      if (ir>=0 && ic<=0)
+		tl+=*v;
+	      if (ir>=0 && ic>=0)
+		tr+=*v;
+	      if (*v>max) {
+		max=*v;
+	      }
 	    
 	    
-	    if (ir==0 && ic==0) {
-	      if (*v<-nSigma*(clusters+nph)->rms)
-		eventMask[iy][ix]=NEGATIVE_PEDESTAL;
-	      else if (*v>nSigma*(clusters+nph)->rms)
-		eventMask[iy][ix]=PHOTON;
-	    }
-	    
+	      if (ir==0 && ic==0) {
+		if (*v<-nSigma*(clusters+nph)->rms)
+		  eventMask[iy*nx+ix]=NEGATIVE_PEDESTAL;
+		else if (*v>nSigma*(clusters+nph)->rms)
+		  eventMask[iy*nx+ix]=PHOTON;
+	      }
+	      
 	    } else
-		  (clusters+nph)->set_data(0,ic,ir);
+	      (clusters+nph)->set_data(0,ic,ir);
 	      
 	  }
 	}
-	if (eventMask[iy][ix]==PHOTON && val[iy][ix]<max) 
+	if (eventMask[iy*nx+ix]==PHOTON && val[iy*nx+ix]<max) 
 	  continue;
 	
 	if (bl>=br && bl>=tl && bl>=tr) {
@@ -438,7 +432,7 @@ int *getClusters(char *data,  int *ph=NULL) {
 	  (clusters+nph)->quadTot=bl;
 	} else if (br>=bl && br>=tl && br>=tr) {
 	  (clusters+nph)->quad=BOTTOM_RIGHT;
-	(clusters+nph)->quadTot=br;
+	  (clusters+nph)->quadTot=br;
 	} else if (tl>=br && tl>=bl && tl>=tr) {
 	  (clusters+nph)->quad=TOP_LEFT;
 	  (clusters+nph)->quadTot=tl;
@@ -446,20 +440,20 @@ int *getClusters(char *data,  int *ph=NULL) {
 	  (clusters+nph)->quad=TOP_RIGHT;
 	  (clusters+nph)->quadTot=tr;
 	}
-      
+	
 	if (max>nSigma*(clusters+nph)->rms || tot>sqrt(clusterSizeY*clusterSize)*nSigma*(clusters+nph)->rms || ((clusters+nph)->quadTot)>sqrt(cy*cs)*nSigma*(clusters+nph)->rms) {
-	  if (val[iy][ix]>=max) {
-	    eventMask[iy][ix]=PHOTON_MAX;
+	  if (val[iy*nx+ix]>=max) {
+	    eventMask[iy*nx+ix]=PHOTON_MAX;
 	    //   (clusters+nph)->tot=tot;
 	    (clusters+nph)->x=ix;
 	    (clusters+nph)->y=iy;
 	    (clusters+nph)->iframe=iframe;
-	  // cout << det->getFrameNumber(data) << " " << (clusters+nph)->iframe << endl;
+	    // cout << det->getFrameNumber(data) << " " << (clusters+nph)->iframe << endl;
 	    //   (clusters+nph)->ped=getPedestal(ix,iy,0);
 	    // for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
 	    //   for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
 	    // 	if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx)
-	    // 	  (clusters+nph)->set_data(val[iy+ir][ix+ic],ic,ir);
+	    // 	  (clusters+nph)->set_data(val[(iy+ir)*nx+ix+ic],ic,ir);
 	    // 	else
 	    // 	  (clusters+nph)->set_data(0,ic,ir);
 		  
@@ -472,12 +466,10 @@ int *getClusters(char *data,  int *ph=NULL) {
 	      nph++;
 	      image[iy*nx+ix]++;
 	    }
-	  
-
 	  } else {
-	    eventMask[iy][ix]=PHOTON;
+	    eventMask[iy*nx+ix]=PHOTON;
 	  }
-	} else if (eventMask[iy][ix]==PEDESTAL) {
+	} else if (eventMask[iy*nx+ix]==PEDESTAL) {
 	  addToPedestal(data,ix,iy,cm);
 	}
       }
@@ -530,7 +522,7 @@ int *getClusters(char *data,  int *ph=NULL) {
 	\param ir y coordinate (center is (0,0))
 	\returns event mask enum for the given pixel
     */
-    eventType getEventMask(int ic, int ir=0){return eventMask[ir][ic];};
+    eventType getEventMask(int ic, int ir=0){return eventMask[ir*nx+ic];};
  
 
 #ifdef MYROOT1
@@ -579,7 +571,9 @@ int *getClusters(char *data,  int *ph=NULL) {
 /*       if (fwrite((void*)&fn, 1,  sizeof(int), f))  */
 /* 	if (fwrite((void*)&nph, 1,  sizeof(int), f))  */
 /* #endif    */
-	  for (int i=0; i<nph; i++) (cl+i)->write(f);
+      if (f)
+	for (int i=0; i<nph; i++) (cl+i)->write(f);
+
 };
  void writeClusters(FILE *f, int fn=0){
    writeClusters(f,clusters,nphFrame, fn);
@@ -635,7 +629,7 @@ int *getClusters(char *data,  int *ph=NULL) {
  protected:
 
     int nDark; /**< number of frames to be used at the beginning of the dataset to calculate pedestal without applying photon discrimination */
-    eventType **eventMask; /**< matrix of event type or each pixel */
+    eventType *eventMask; /**< matrix of event type or each pixel */
     double nSigma; /**< number of sigma parameter for photon discrimination */
     double eMin, eMax;
     int clusterSize; /**< cluster size in the x direction */

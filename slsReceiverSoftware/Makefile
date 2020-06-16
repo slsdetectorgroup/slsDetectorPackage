@@ -62,6 +62,7 @@ else
 	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS) -fPIC  $(EPICSFLAGS) $(LDFLAGRXR) -pthread $(FLAGS) $(LIBZMQ)  -lrt 
 endif
 
+
 versioning: 
 	$(call colorecho,`./updateGitVersion.sh`)
 

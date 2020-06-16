@@ -364,8 +364,9 @@ int main(int argc, char *argv[]) {
 
 
 	    while (mt->isBusy()) {;}//wait until all data are processed from the queues
-	    
+	    usleep(1000);
 	    if (of) {
+	      mt->setFilePointer(NULL);
 	      fclose(of);
 	      of=NULL;
 	    }
@@ -536,8 +537,8 @@ int main(int argc, char *argv[]) {
 	      //   auto meas_duration = duration_cast<microseconds>( t2 - t0 ).count();
 	      //   auto real_duration = duration_cast<microseconds>( t2 - t1 ).count();
 	    
-	    cout << "Measurement lasted " << difftime(end,begin) << endl;
-	    cout << "Processing lasted " << difftime(finished,begin) << endl;
+	      // cout << "Measurement lasted " << difftime(end,begin) << endl;
+	      //cout << "Processing lasted " << difftime(finished,begin) << endl;
 	    continue; //continue to not get out
 
 

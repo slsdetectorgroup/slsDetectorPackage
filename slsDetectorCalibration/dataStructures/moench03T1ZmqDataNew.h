@@ -60,12 +60,12 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 	    } else {
 	      row=200+i/sc_width;
 	    }
-	    dataMap[row][col]=(nadc*i+iadc)*2+offset;//+16*(ip+1);
+	    dataMap[row*nx+col]=(nadc*i+iadc)*2+offset;//+16*(ip+1);
 #ifdef HIGHZ
-	    dataMask[row][col]=0x3fff;
+	    dataMask[row*nx+col]=0x3fff;
 #endif
-	    if (dataMap[row][col]<0 || dataMap[row][col]>=dataSize)
-	      cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
+	    if (dataMap[row*nx+col]<0 || dataMap[row*nx+col]>=dataSize)
+	      cout << "Error: pointer " << dataMap[row*nx+col] << " out of range "<< endl;
 	  }
 	}
       }

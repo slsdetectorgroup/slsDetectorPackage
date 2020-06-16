@@ -102,7 +102,7 @@ class moench03T1ZmqDataNew : public slsDetectorData<uint16_t> {
 	      iy=row*2;
 	    }
 #endif
-	    dataMap[iy][ix]=pix;
+	    dataMap[iy*nx+ix]=pix;
 	  }
 	}
       }

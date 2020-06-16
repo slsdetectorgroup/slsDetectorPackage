@@ -67,11 +67,11 @@ template <class dataType> class analogDetector {
     if (det)
       det->getDetectorSize(nx,ny);
     
-    stat=new pedestalSubtraction*[ny];
+    stat=new pedestalSubtraction[ny*nx];
     for (int i=0; i<ny; i++) {
-      stat[i]=new pedestalSubtraction[nx];
+      // stat[i]=new pedestalSubtraction[nx];
       for (int ix=0; ix<nx; ix++) {
-	stat[i][ix].SetNPedestals(nped);
+	stat[i*nx+ix].SetNPedestals(nped);
       }
     }
     image=new int[nx*ny];
@@ -95,7 +95,7 @@ template <class dataType> class analogDetector {
   /**
      destructor. Deletes the pdestalSubtraction array and the image
   */
-  virtual ~analogDetector() {for (int i=0; i<ny; i++) delete [] stat[i]; delete [] stat; delete [] image;
+  virtual ~analogDetector() {for (int i=0; i<ny; i++) delete [] stat;  delete [] image;
 #ifdef ROOTSPECTRUM
     delete hs;
 #ifdef ROOTCLUST
@@ -131,16 +131,13 @@ template <class dataType> class analogDetector {
     myFile=orig->myFile;
     
 
-    stat=new pedestalSubtraction*[ny];
-    for (int i=0; i<ny; i++) {
-      stat[i]=new pedestalSubtraction[nx];
-    }
+    stat=new pedestalSubtraction[ny*nx];
     
     int nped=orig->SetNPedestals();
     //cout << nped << " " << orig->getPedestal(ix,iy) << orig->getPedestalRMS(ix,iy) << endl;
     for (int iy=0; iy<ny; iy++) {
       for (int ix=0; ix<nx; ix++) {
-	stat[iy][ix].SetNPedestals(nped);
+	stat[iy*nx+ix].SetNPedestals(nped);
 	setPedestal(ix,iy,orig->getPedestal(ix,iy),orig->getPedestalRMS(ix,iy),orig->GetNPedestals(ix,iy));
       }
     }
@@ -272,7 +269,7 @@ template <class dataType> class analogDetector {
     iframe=-1; 
     for (int iy=0; iy<ny; iy++) 
       for (int ix=0; ix<nx; ix++) {
-	stat[iy][ix].Clear(); 
+	stat[iy*nx+ix].Clear(); 
 	image[iy*nx+ix]=0;
       }
     if (cmSub) cmSub->Clear(); 
@@ -342,7 +339,7 @@ template <class dataType> class analogDetector {
 	val+=getGhost(ix,iy);
 	//	cout << val ;
 	//	cout << endl;
-	stat[iy][ix].addToPedestal(val); 
+	stat[iy*nx+ix].addToPedestal(val); 
 	/* if (cmSub && cm>0)  { */
 	/*   if (det) if (det->isGood(ix, iy)==0) return; */
 	/*   cmSub->addToCommonMode(val, ix, iy); */
@@ -405,9 +402,9 @@ template <class dataType> class analogDetector {
     virtual double getPedestal (int ix, int iy, int cm=0){
       if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
 	if (cmSub && cm>0) {
-	  return stat[iy][ix].getPedestal()+getCommonMode(ix,iy); 
+	  return stat[iy*nx+ix].getPedestal()+getCommonMode(ix,iy); 
 	  
-	}     	else return stat[iy][ix].getPedestal(); 
+	}     	else return stat[iy*nx+ix].getPedestal(); 
       } else return -1;
     };
 
@@ -426,14 +423,14 @@ template <class dataType> class analogDetector {
 	  if (g==0) g=-1.;
 	}
       
-	return stat[iy][ix].getPedestalRMS()/g;//divide by gain?
+	return stat[iy*nx+ix].getPedestalRMS()/g;//divide by gain?
       }
       return -1;
     };
 
      virtual int getNumpedestals(int ix, int iy){
       if (ix>=0 && ix<nx && iy>=0 && iy<ny) 
-	return stat[iy][ix].getNumpedestals();
+	return stat[iy*nx+ix].getNumpedestals();
       return -1;
     };
     /**
@@ -449,7 +446,7 @@ template <class dataType> class analogDetector {
       }
       for (int iy=0; iy<ny; iy++) {
 	for (int ix=0; ix<nx; ix++) {
-	  ped[iy*nx+ix]=stat[iy][ix].getPedestal();
+	  ped[iy*nx+ix]=stat[iy*nx+ix].getPedestal();
 	    //cout << ped[iy*nx+ix] << " " ;
 	}
       }
@@ -468,7 +465,7 @@ template <class dataType> class analogDetector {
       }
       for (int iy=0; iy<ny; iy++) {
 	for (int ix=0; ix<nx; ix++) {
-	  ped[iy*nx+ix]=stat[iy][ix].getPedestalRMS();
+	  ped[iy*nx+ix]=stat[iy*nx+ix].getPedestalRMS();
 	}
       }
       return ped;
@@ -494,7 +491,7 @@ template <class dataType> class analogDetector {
        \param rms rms to be set if any, defaults to 0
        \param m number of pedestal samples to be set or the moving stat structure is any, defaults to 0
     */
-    virtual void setPedestal(int ix, int iy, double val, double rms=0, int m=-1){if (ix>=0 && ix<nx && iy>=0 && iy<ny) stat[iy][ix].setPedestal(val,rms, m);};
+    virtual void setPedestal(int ix, int iy, double val, double rms=0, int m=-1){if (ix>=0 && ix<nx && iy>=0 && iy<ny) stat[iy*nx+ix].setPedestal(val,rms, m);};
     
   /**
        sets  pedestal
@@ -509,8 +506,8 @@ template <class dataType> class analogDetector {
       for (int iy=ymin; iy<ymax; iy++) {
 	for (int ix=xmin; ix<xmax; ix++) {
 	  if (rms) rr=rms[iy*nx+ix];
-	  stat[iy][ix].setPedestal(ped[iy*nx+ix],rr, m);
-	  //  cout << ix << " " << iy << " " << ped[iy*nx+ix] << " " << stat[iy][ix].getPedestal() << endl;
+	  stat[iy*nx+ix].setPedestal(ped[iy*nx+ix],rr, m);
+	  //  cout << ix << " " << iy << " " << ped[iy*nx+ix] << " " << stat[iy*nx+ix].getPedestal() << endl;
 	};
       };
       
@@ -526,7 +523,7 @@ template <class dataType> class analogDetector {
        \param iy pixel y coordinate
        \param rms value to set
     */
-    virtual void setPedestalRMS(int ix, int iy, double rms=0){if (ix>=0 && ix<nx && iy>=0 && iy<ny) stat[iy][ix].setPedestalRMS(rms);};
+    virtual void setPedestalRMS(int ix, int iy, double rms=0){if (ix>=0 && ix<nx && iy>=0 && iy<ny) stat[iy*nx+ix].setPedestalRMS(rms);};
     
 
 
@@ -538,7 +535,7 @@ template <class dataType> class analogDetector {
  virtual void setPedestalRMS(double *rms){
 	for (int iy=ymin; iy<ymax; iy++) {
       for (int ix=xmin; ix<xmax; ix++) {
-	  stat[iy][ix].setPedestalRMS(rms[iy*nx+ix]);
+	  stat[iy*nx+ix].setPedestalRMS(rms[iy*nx+ix]);
 	};
       };
 
@@ -628,9 +625,9 @@ template <class dataType> class analogDetector {
       for (int iy=0; iy<ny; iy++) {
     for (int ix=0; ix<nx; ix++) {
 	/* if (cmSub)  */
-	/*     gm[iy*nx+ix]=stat[iy][ix].getPedestal()-cmSub->getCommonMode(); */
+	/*     gm[iy*nx+ix]=stat[iy*nx+ix].getPedestal()-cmSub->getCommonMode(); */
 	/* else */
-	  gm[iy*nx+ix]=stat[iy][ix].getPedestal();
+	  gm[iy*nx+ix]=stat[iy*nx+ix].getPedestal();
 #ifdef ROOTSPECTRUM
 	  hmap->SetBinContent(ix+1, iy+1,gm[iy*nx+ix]);
 #endif
@@ -674,7 +671,7 @@ template <class dataType> class analogDetector {
     if (gm) {
 	for (int iy=0; iy<nny; iy++) {
       for (int ix=0; ix<nnx; ix++) {
-	  stat[iy][ix].setPedestal(gm[iy*nx+ix],-1,-1);
+	  stat[iy*nx+ix].setPedestal(gm[iy*nx+ix],-1,-1);
 	}
       }
       delete [] gm;
@@ -725,7 +722,7 @@ template <class dataType> class analogDetector {
       gm=new float[nx*ny];
 	for (int iy=0; iy<ny; iy++) {
       for (int ix=0; ix<nx; ix++) {
-	    gm[iy*nx+ix]=stat[iy][ix].getPedestalRMS();
+	    gm[iy*nx+ix]=stat[iy*nx+ix].getPedestalRMS();
 	}
       }
       ret=WriteToTiff(gm, imgname, ny, nx);  
@@ -747,7 +744,7 @@ template <class dataType> class analogDetector {
     if (gm) {
 	for (int iy=0; iy<nny; iy++) {
       for (int ix=0; ix<nnx; ix++) {
-	  stat[iy][ix].setPedestalRMS(gm[iy*nx+ix]);
+	  stat[iy*nx+ix].setPedestalRMS(gm[iy*nx+ix]);
 	}
       }
       delete [] gm;
@@ -1023,7 +1020,7 @@ template <class dataType> class analogDetector {
 	 nph=v/thr;
 	 
 	 /* if (ix ==10 && iy<20) */
-	 /*   cout << det->getValue(data,ix,iy) << " " << stat[iy][ix].getPedestal() << " " << getCommonMode(ix,iy) << " " << getPedestal(ix,iy,0)<< " "  << getPedestal(ix,iy,1) << endl; */
+	 /*   cout << det->getValue(data,ix,iy) << " " << stat[iy*nx+ix].getPedestal() << " " << getCommonMode(ix,iy) << " " << getPedestal(ix,iy,0)<< " "  << getPedestal(ix,iy,1) << endl; */
 	 // cout << subtractPedestal(data,ix,iy,0) << " " << subtractPedestal(data,ix,iy,1) << " " << nph << endl;
 	 if (nph>0) {
 	   //cout << " " << nph << endl;
@@ -1100,8 +1097,8 @@ template <class dataType> class analogDetector {
       if (i>0) 
 	  for (iy=0; iy<ny; iy++) 
 	for (ix=0; ix<nx; ix++) 
-	    stat[iy][ix].SetNPedestals(i); 
-      return stat[0][0].SetNPedestals();
+	    stat[iy*nx+ix].SetNPedestals(i); 
+      return stat[0].SetNPedestals();
     };
 
  /** gets number of samples for moving average pedestal calculation
@@ -1109,7 +1106,7 @@ template <class dataType> class analogDetector {
     */
     int GetNPedestals(int ix, int iy) {
       if  (ix>=0 &&  ix<nx && iy>=0 && iy<ny) 
-	return stat[iy][ix].GetNPedestals(); 
+	return stat[iy*nx+ix].GetNPedestals(); 
       else
 	return -1;
     };
@@ -1237,7 +1234,7 @@ FILE *getFilePointer(){return myFile;};
     slsDetectorData<dataType> *det; /**< slsDetectorData to be used */
     int nx; /**< Size of the detector in x direction */
     int ny; /**< Size of the detector in y direction */
-    pedestalSubtraction **stat; /**< pedestalSubtraction class */
+    pedestalSubtraction *stat; /**< pedestalSubtraction class */
     commonModeSubtraction *cmSub;/**< commonModeSubtraction class */
     int dataSign; /**< sign of the data i.e. 1 if photon is positive, -1 if negative */
     int iframe;  /**< frame number (not from file but incremented within the dataset every time newFrame is called */

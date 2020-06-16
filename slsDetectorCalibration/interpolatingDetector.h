@@ -50,7 +50,12 @@ class interpolatingDetector : public singlePhotonDetector {
   singlePhotonDetector(d, 3,nsigma,sign, cm, nped, nd, nnx, nny, gm, gs) , interp(inte), id(0)  {
     //cout << "**"<< xmin << " " << xmax << " " << ymin << " " << ymax << endl;
     fi=new pthread_mutex_t ;
+    
 
+    if (pthread_mutex_init(fi, NULL) != 0)
+    {
+        printf("\n mutex init failed\n");
+    }
 };
   
   

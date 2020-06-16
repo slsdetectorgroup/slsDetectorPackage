@@ -12,11 +12,6 @@
 #include <time.h>
 #include <unistd.h>
 
-char Module_dac_names[16][10] = {"VSvP",    "Vtrim",   "Vrpreamp", "Vrshaper",
-                                 "VSvN",    "Vtgstv",  "Vcmp_ll",  "Vcmp_lr",
-                                 "Vcal",    "Vcmp_rl", "rxb_rb",   "rxb_lb",
-                                 "Vcmp_rr", "Vcp",     "Vcn",      "Vishaper"};
-
 const unsigned int Feb_Control_leftAddress = 0x100;
 const unsigned int Feb_Control_rightAddress = 0x200;
 
@@ -505,23 +500,18 @@ float Feb_Control_DACToVoltage(unsigned int digital, unsigned int nsteps,
     return vmin + (vmax - vmin) * digital / (nsteps - 1);
 }
 
-int Feb_Control_SetDAC(unsigned int dac_ch, int value) {
-    return Feb_Control_SendDACValue(Feb_Control_rightAddress, dac_ch, &value);
-}
-
-int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch,
-                             unsigned int *value) {
-
+int Feb_Control_SetDAC(unsigned int ch, int value) {
+    unsigned int dst_num = Feb_Control_rightAddress;
     if (ch < 0 || ch > 15) {
         LOG(logERROR, ("invalid ch for SetDAC.\n"));
         return 0;
     }
 
-    *value &= 0xfff;
+    value &= 0xfff;
     unsigned int dac_ic = (ch < 8) ? 1 : 2;
     unsigned int dac_ch = ch % 8;
     unsigned int r =
-        dac_ic << 30 | 3 << 16 | dac_ch << 12 | *value; // 3 write and power up
+        dac_ic << 30 | 3 << 16 | dac_ch << 12 | value; // 3 write and power up
 
     if (Feb_Control_activated) {
         if (!Feb_Interface_WriteRegister(dst_num, 0, r, 1, 0)) {
@@ -530,12 +520,8 @@ int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch,
         }
     }
 
-    float voltage = Feb_Control_DACToVoltage(*value, 4096, 0, 2048);
-
-    LOG(logINFO,
-        ("%s set to %d (%.2fmV)\n", Module_dac_names[ch], *value, voltage));
-    LOG(logDEBUG1, ("Dac number %d (%s) of dst %d set to %d (%f mV)\n", ch,
-                    Module_dac_names[ch], dst_num, *value, voltage));
+    float voltage = Feb_Control_DACToVoltage(value, 4096, 0, 2048);
+    LOG(logINFO, ("\tset to %d (%.2fmV)\n", value, voltage));
     return 1;
 }
 

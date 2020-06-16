@@ -31,9 +31,7 @@ int Feb_Control_VoltageToDAC(float value, unsigned int *digital,
                              unsigned int nsteps, float vmin, float vmax);
 float Feb_Control_DACToVoltage(unsigned int digital, unsigned int nsteps,
                                float vmin, float vmax);
-int Feb_Control_SetDAC(unsigned int dac_ch, int value);
-int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch,
-                             unsigned int *value);
+int Feb_Control_SetDAC(unsigned int ch, int value);
 
 // trimbits
 int Feb_Control_SetTrimbits(unsigned int *trimbits, int top);

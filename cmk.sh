@@ -12,6 +12,7 @@ TESTS=0
 SIMULATOR=0
 CTBGUI=0
 MANUALS=0
+MOENCHZMQ=0
 
 
 CLEAN=0
@@ -20,7 +21,7 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [-h] [-d <HDF5 directory>] [-j] <Number of threads>
+Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [-h] [z] [-d <HDF5 directory>] [-j] <Number of threads>
  -[no option]: only make
  -c: Clean
  -b: Builds/Rebuilds CMake files normal mode
@@ -36,6 +37,7 @@ Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [-h] [-d <HDF5 director
  -e: Debug mode
  -i: Builds tests
  -m: Manuals
+ -z: Moench zmq processor
 
 Rebuild when you switch to a new build and compile in parallel:
 ./cmk.sh -bj5
@@ -71,7 +73,7 @@ For rebuilding only certain sections
  
  " ; exit 1; }
 
-while getopts ":bpchd:j:trgeisum" opt ; do
+while getopts ":bpchd:j:trgeisumz" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
@@ -129,6 +131,10 @@ while getopts ":bpchd:j:trgeisum" opt ; do
 	m)	
 		echo "Compiling Manuals"
 		MANUALS=1
+		;;
+	z)	
+		echo "Compiling Moench Zmq Processor"
+		MOENCHZMQ=1
 		;;
 	u)
 		echo "Compiling Options: Chip Test Gui"
@@ -208,6 +214,12 @@ fi
 if [ $MANUALS -eq 1 ]; then
 	CMAKE_POST+=" -DSLS_BUILD_DOCS=ON "
 	echo "Manuals Option enabled"
+fi 
+
+#Moench zmq processor
+if [ $MOENCHZMQ -eq 1 ]; then
+	CMAKE_POST+=" -DSLS_USE_MOENCH=ON "
+	echo "Moench Zmq Processor Option enabled"
 fi 
 
 #Chip Test Gui

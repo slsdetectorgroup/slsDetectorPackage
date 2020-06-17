@@ -46,6 +46,7 @@ option(SLS_BUILD_DOCS "docs" OFF)
 option(SLS_BUILD_EXAMPLES "examples" OFF)
 option(SLS_TUNE_LOCAL "tune to local machine" OFF)
 option(SLS_DEVEL_HEADERS "install headers for devel" OFF)
+option(SLS_USE_MOENCH "compile zmq and post processing for Moench" OFF)
 
 # set(ClangFormat_BIN_NAME clang-format)
 set(ClangFormat_EXCLUDE_PATTERNS  "build/" 
@@ -228,6 +229,11 @@ endif(SLS_BUILD_EXAMPLES)
 if(SLS_BUILD_DOCS)
     add_subdirectory(docs)
 endif(SLS_BUILD_DOCS)
+
+
+if(SLS_USE_MOENCH)
+    add_subdirectory(slsDetectorCalibration/moenchExecutables)
+endif(SLS_USE_MOENCH)
 
 if(SLS_MASTER_PROJECT)
     # Set install dir CMake packages

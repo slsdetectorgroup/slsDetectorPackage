@@ -318,14 +318,8 @@ class Module : public virtual slsDetectorDefs {
      */
     std::string setSettingsDir(const std::string &dir);
 
+    /** [Eiger][Mythen3] */
     void loadSettingsFile(const std::string &fname);
-
-    /**
-     * Saves the modules settings/trimbits to a specific file
-     * file name extension is automatically generated.
-     * @param fname specific settings/trimbits file
-     */
-    void saveSettingsFile(const std::string &fname);
 
     /**
      * Get run status of the detector

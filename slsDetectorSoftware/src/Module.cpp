@@ -872,25 +872,12 @@ void Module::loadSettingsFile(const std::string &fname) {
             ostfn << ".sn" << std::setfill('0') << std::setw(3) << std::dec
                   << getSerialNumber();
         }
+    } else {
+        throw RuntimeError("not implemented for this detector");
     }
     fn = ostfn.str();
     auto myMod = readSettingsFile(fn);
     setModule(myMod);
-}
-
-void Module::saveSettingsFile(const std::string &fname) {
-    std::string fn = fname;
-    std::ostringstream ostfn;
-    ostfn << fname;
-
-    // find specific file if it has detid in file name (.snxxx)
-    if (shm()->myDetectorType == EIGER) {
-        ostfn << ".sn" << std::setfill('0') << std::setw(3) << std::dec
-              << getSerialNumber();
-    }
-    fn = ostfn.str();
-    sls_detector_module myMod = getModule();
-    writeSettingsFile(fn, myMod);
 }
 
 slsDetectorDefs::runStatus Module::getRunStatus() const {
@@ -3142,98 +3129,11 @@ sls_detector_module Module::readSettingsFile(const std::string &fname, int tb) {
         }
     }
 
-    // gotthard, jungfrau
     else {
-        auto names = getSettingsFileDacNames();
-        size_t idac = 0;
-        std::string str;
-        while (infile.good()) {
-            getline(infile, str);
-            if (str.empty()) {
-                break;
-            }
-            LOG(logDEBUG1) << str;
-            std::string sargname;
-            int ival = 0;
-            std::istringstream ssstr(str);
-            ssstr >> sargname >> ival;
-            bool found = false;
-            for (size_t i = 0; i < names.size(); ++i) {
-                if (sargname == names[i]) {
-                    myMod.dacs[i] = ival;
-                    found = true;
-                    LOG(logDEBUG1) << names[i] << "(" << i << "): " << ival;
-                    ++idac;
-                }
-            }
-            if (!found) {
-                throw RuntimeError("readSettingsFile: Unknown dac: " +
-                                   sargname);
-            }
-        }
-        // not all read
-        if (idac != names.size()) {
-            throw RuntimeError("Could read only " + std::to_string(idac) +
-                               " dacs. Expected " +
-                               std::to_string(names.size()) + " dacs");
-        }
+        throw RuntimeError("Not implemented for this detector");
     }
     LOG(logINFO) << "Settings file loaded: " << fname.c_str();
     return myMod;
-}
-
-void Module::writeSettingsFile(const std::string &fname,
-                               sls_detector_module &mod) {
-    LOG(logDEBUG1) << "Write settings file " << fname;
-
-    std::ofstream outfile;
-    if (shm()->myDetectorType == EIGER) {
-        outfile.open(fname.c_str(), std::ofstream::binary);
-    } else {
-        outfile.open(fname.c_str(), std::ios_base::out);
-    }
-    if (!outfile.is_open()) {
-        throw RuntimeError("Could not open settings file for writing: " +
-                           fname);
-    }
-    if (shm()->myDetectorType == EIGER) {
-        for (int i = 0; i < mod.ndac; ++i) {
-            LOG(logINFO) << "dac " << i << ":" << mod.dacs[i];
-        }
-        LOG(logINFO) << "iodelay: " << mod.iodelay;
-        LOG(logINFO) << "tau: " << mod.tau;
-
-        outfile.write(reinterpret_cast<char *>(mod.dacs),
-                      sizeof(int) * (mod.ndac));
-        outfile.write(reinterpret_cast<char *>(&mod.iodelay),
-                      sizeof(mod.iodelay));
-        outfile.write(reinterpret_cast<char *>(&mod.tau), sizeof(mod.tau));
-        outfile.write(reinterpret_cast<char *>(mod.chanregs),
-                      sizeof(int) * (mod.nchan));
-    }
-    // gotthard, jungfrau
-    else {
-        auto names = getSettingsFileDacNames();
-        for (int i = 0; i < mod.ndac; ++i) {
-            LOG(logDEBUG1) << "dac " << i << ": " << mod.dacs[i];
-            outfile << names[i] << " " << mod.dacs[i] << std::endl;
-        }
-    }
-}
-
-std::vector<std::string> Module::getSettingsFileDacNames() {
-    switch (shm()->myDetectorType) {
-    case GOTTHARD:
-        return {"Vref",  "VcascN", "VcascP",    "Vout",
-                "Vcasc", "Vin",    "Vref_comp", "Vib_test"};
-    case JUNGFRAU:
-        return {"VDAC0",  "VDAC1",  "VDAC2",  "VDAC3", "VDAC4",  "VDAC5",
-                "VDAC6",  "VDAC7",  "VDAC8",  "VDAC9", "VDAC10", "VDAC11",
-                "VDAC12", "VDAC13", "VDAC14", "VDAC15"};
-    default:
-        throw RuntimeError(
-            "Unknown detector type - unknown format for settings file");
-    }
 }
 
 } // namespace sls

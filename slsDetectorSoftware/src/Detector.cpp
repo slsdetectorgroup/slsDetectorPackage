@@ -503,6 +503,17 @@ void Detector::setOnChipDAC(defs::dacIndex index, int chipIndex, int value,
     pimpl->Parallel(&Module::setOnChipDAC, pos, index, chipIndex, value);
 }
 
+Result<defs::externalSignalFlag>
+Detector::getExternalSignalFlags(int signalIndex, Positions pos) const {
+    return pimpl->Parallel(&Module::getExternalSignalFlags, pos, signalIndex);
+}
+
+void Detector::setExternalSignalFlags(int signalIndex,
+                                      defs::externalSignalFlag value,
+                                      Positions pos) {
+    pimpl->Parallel(&Module::setExternalSignalFlags, pos, signalIndex, value);
+}
+
 // Acquisition
 
 void Detector::acquire() { pimpl->acquire(); }
@@ -826,11 +837,11 @@ Result<int64_t> Detector::getRxRealUDPSocketBufferSize(Positions pos) const {
 }
 
 Result<bool> Detector::getRxLock(Positions pos) {
-    return pimpl->Parallel(&Module::lockReceiver, pos, -1);
+    return pimpl->Parallel(&Module::getReceiverLock, pos);
 }
 
 void Detector::setRxLock(bool value, Positions pos) {
-    pimpl->Parallel(&Module::lockReceiver, pos, static_cast<int>(value));
+    pimpl->Parallel(&Module::setReceiverLock, pos, value);
 }
 
 Result<sls::IpAddr> Detector::getRxLastClientIP(Positions pos) const {
@@ -927,7 +938,7 @@ void Detector::setRxZmqFrequency(int freq, Positions pos) {
 }
 
 Result<int> Detector::getRxZmqTimer(Positions pos) const {
-    return pimpl->Parallel(&Module::setReceiverStreamingTimer, pos, -1);
+    return pimpl->Parallel(&Module::getReceiverStreamingTimer, pos);
 }
 
 void Detector::setRxZmqTimer(int time_in_ms, Positions pos) {
@@ -1130,16 +1141,11 @@ void Detector::setRxPadDeactivatedMode(bool pad, Positions pos) {
 }
 
 Result<bool> Detector::getPartialReset(Positions pos) const {
-    auto res = pimpl->Parallel(&Module::setCounterBit, pos, -1);
-    Result<bool> t(res.size());
-    for (unsigned int i = 0; i < res.size(); ++i) {
-        t[i] = !res[i];
-    }
-    return t;
+    return pimpl->Parallel(&Module::getCounterBit, pos);
 }
 
 void Detector::setPartialReset(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setCounterBit, pos, !value);
+    pimpl->Parallel(&Module::setCounterBit, pos, value);
 }
 
 void Detector::pulsePixel(int n, defs::xy pixel, Positions pos) {
@@ -1169,41 +1175,35 @@ void Detector::setQuad(const bool enable) {
 // Jungfrau Specific
 
 Result<int> Detector::getThresholdTemperature(Positions pos) const {
-    auto res = pimpl->Parallel(&Module::setThresholdTemperature, pos, -1);
-    for (auto &it : res) {
-        it /= 1000;
-    }
-    return res;
+    return pimpl->Parallel(&Module::getThresholdTemperature, pos);
 }
 
 void Detector::setThresholdTemperature(int temp, Positions pos) {
-    pimpl->Parallel(&Module::setThresholdTemperature, pos, temp * 1000);
+    pimpl->Parallel(&Module::setThresholdTemperature, pos, temp);
 }
 
 Result<bool> Detector::getTemperatureControl(Positions pos) const {
-    return pimpl->Parallel(&Module::setTemperatureControl, pos, -1);
+    return pimpl->Parallel(&Module::getTemperatureControl, pos);
 }
 
 void Detector::setTemperatureControl(bool enable, Positions pos) {
-    pimpl->Parallel(&Module::setTemperatureControl, pos,
-                    static_cast<int>(enable));
+    pimpl->Parallel(&Module::setTemperatureControl, pos, enable);
 }
 
 Result<int> Detector::getTemperatureEvent(Positions pos) const {
-    return pimpl->Parallel(&Module::setTemperatureEvent, pos, -1);
+    return pimpl->Parallel(&Module::getTemperatureEvent, pos);
 }
 
 void Detector::resetTemperatureEvent(Positions pos) {
-    pimpl->Parallel(&Module::setTemperatureEvent, pos, 0);
+    pimpl->Parallel(&Module::resetTemperatureEvent, pos);
 }
 
 Result<bool> Detector::getAutoCompDisable(Positions pos) const {
-    return pimpl->Parallel(&Module::setAutoComparatorDisableMode, pos, -1);
+    return pimpl->Parallel(&Module::getAutoComparatorDisableMode, pos);
 }
 
 void Detector::setAutoCompDisable(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setAutoComparatorDisableMode, pos,
-                    static_cast<int>(value));
+    pimpl->Parallel(&Module::setAutoComparatorDisableMode, pos, value);
 }
 
 Result<int> Detector::getNumberOfAdditionalStorageCells(Positions pos) const {
@@ -1215,7 +1215,7 @@ void Detector::setNumberOfAdditionalStorageCells(int value) {
 }
 
 Result<int> Detector::getStorageCellStart(Positions pos) const {
-    return pimpl->Parallel(&Module::setStorageCellStart, pos, -1);
+    return pimpl->Parallel(&Module::getStorageCellStart, pos);
 }
 
 void Detector::setStorageCellStart(int cell, Positions pos) {
@@ -1249,17 +1249,6 @@ void Detector::clearROI(Positions pos) {
 
 Result<ns> Detector::getExptimeLeft(Positions pos) const {
     return pimpl->Parallel(&Module::getExptimeLeft, pos);
-}
-
-Result<defs::externalSignalFlag>
-Detector::getExternalSignalFlags(int signalIndex, Positions pos) const {
-    return pimpl->Parallel(&Module::getExternalSignalFlags, pos, signalIndex);
-}
-
-void Detector::setExternalSignalFlags(int signalIndex,
-                                      defs::externalSignalFlag value,
-                                      Positions pos) {
-    pimpl->Parallel(&Module::setExternalSignalFlags, pos, signalIndex, value);
 }
 
 // Gotthard2 Specific

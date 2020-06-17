@@ -145,6 +145,8 @@ class Module : public virtual slsDetectorDefs {
     int getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex);
     void setOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex,
                       int value);
+    externalSignalFlag getExternalSignalFlags(int signalIndex);
+    void setExternalSignalFlags(int signalIndex, externalSignalFlag type);
 
     /**************************************************
      *                                                *
@@ -220,30 +222,145 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverFifoDepth(int n_frames);
     bool getReceiverSilentMode();
     void setReceiverSilentMode(bool enable);
+    frameDiscardPolicy getReceiverFramesDiscardPolicy();
+    void setReceiverFramesDiscardPolicy(frameDiscardPolicy f);
+    bool getPartialFramesPadding();
+    void setPartialFramesPadding(bool padding);
+    int64_t getReceiverUDPSocketBufferSize() const;
+    int64_t getReceiverRealUDPSocketBufferSize() const;
+    void setReceiverUDPSocketBufferSize(int64_t udpsockbufsize);
+    bool getReceiverLock();
+    void setReceiverLock(bool lock);
+    sls::IpAddr getReceiverLastClientIP() const;
+    std::array<pid_t, NUM_RX_THREAD_IDS> getReceiverThreadIds() const;
 
-    /**
-     * Get Quad Type (Only for Eiger Quad detector hardware)
-     * @returns quad type
-     */
+    /**************************************************
+     *                                                *
+     *    File                                        *
+     *                                                *
+     * ************************************************/
+    fileFormat getFileFormat();
+    void setFileFormat(fileFormat f);
+    std::string getFilePath();
+    void setFilePath(const std::string &path);
+    std::string getFileName();
+    void setFileName(const std::string &fname);
+    int64_t getFileIndex();
+    void setFileIndex(int64_t file_index);
+    void incrementFileIndex();
+    bool getFileWrite();
+    void setFileWrite(bool value);
+    bool getMasterFileWrite();
+    void setMasterFileWrite(bool value);
+    bool getFileOverWrite();
+    void setFileOverWrite(bool value);
+    int getFramesPerFile();
+    /** 0 will set frames per file to unlimited */
+    void setFramesPerFile(int n_frames);
+
+    /**************************************************
+     *                                                *
+     *    ZMQ Streaming Parameters (Receiver<->Client)*
+     *                                                *
+     * ************************************************/
+    bool getReceiverStreaming();
+    void setReceiverStreaming(bool enable);
+    int getReceiverStreamingFrequency();
+    /** Option: nth frame streamed out, if 0, streamed out at a timer of 200 */
+    void setReceiverStreamingFrequency(int freq);
+    int getReceiverStreamingTimer();
+    void setReceiverStreamingTimer(int time_in_ms = 200);
+    int getReceiverStreamingPort();
+    void setReceiverStreamingPort(int port);
+    sls::IpAddr getReceiverStreamingIP();
+    void setReceiverStreamingIP(const sls::IpAddr ip);
+    int getClientStreamingPort();
+    void setClientStreamingPort(int port);
+    sls::IpAddr getClientStreamingIP();
+    void setClientStreamingIP(const sls::IpAddr ip);
+
+    /**************************************************
+     *                                                *
+     *    Eiger Specific                              *
+     *                                                *
+     * ************************************************/
+    int getDynamicRange();
+    void setDynamicRange(int n);
+    int64_t getSubExptime();
+    void setSubExptime(int64_t value);
+    int64_t getSubDeadTime();
+    void setSubDeadTime(int64_t value);
+    int getThresholdEnergy();
+    void setThresholdEnergy(int e_eV, detectorSettings isettings = GET_SETTINGS,
+                            bool trimbits = true);
+    std::string getSettingsDir();
+    std::string setSettingsDir(const std::string &dir);
+    bool getParallelMode();
+    void setParallelMode(const bool enable);
+    bool getOverFlowMode();
+    void setOverFlowMode(const bool enable);
+    bool getStoreInRamMode();
+    void setStoreInRamMode(const bool enable);
+    bool getFlippedDataX();
+    void setFlippedDataX(bool value);
+    std::vector<int> getTrimEn();
+    int setTrimEn(const std::vector<int> &energies = {});
+    int64_t getRateCorrection();
+    void setDefaultRateCorrection();
+    void setRateCorrection(int64_t t = 0);
+    int getReadNLines();
+    void setReadNLines(const int value);
+    bool getInterruptSubframe();
+    void setInterruptSubframe(const bool enable);
+    int64_t getMeasuredPeriod() const;
+    int64_t getMeasuredSubFramePeriod() const;
+    bool getActivate();
+    void setActivate(const bool enable);
+    bool getDeactivatedRxrPaddingMode();
+    void setDeactivatedRxrPaddingMode(bool padding);
+    bool getCounterBit();
+    void setCounterBit(bool cb);
+    void pulsePixel(int n = 0, int x = 0, int y = 0);
+    void pulsePixelNMove(int n = 0, int x = 0, int y = 0);
+    void pulseChip(int n_pulses = 0);
     bool getQuad();
-
-    /**
-     * Set Quad Type (Only for Eiger Quad detector hardware)
-     * @param enable true if quad type set, else false
-     */
     void setQuad(const bool enable);
 
-    /**
-     * Set number of rows to read out (Only for Eiger)
-     * @param value number of lines
-     */
-    void setReadNLines(const int value);
+    /**************************************************
+     *                                                *
+     *    Jungfrau Specific                           *
+     *                                                *
+     * ************************************************/
+    int getThresholdTemperature();
+    void setThresholdTemperature(int val);
+    bool getTemperatureControl();
+    void setTemperatureControl(bool val);
+    int getTemperatureEvent();
+    void resetTemperatureEvent();
+    bool getAutoComparatorDisableMode();
+    void setAutoComparatorDisableMode(bool val);
+    int getNumberOfAdditionalStorageCells();
+    void setNumberOfAdditionalStorageCells(int value);
+    int getStorageCellStart();
+    void setStorageCellStart(int pos);
+    int64_t getStorageCellDelay();
+    void setStorageCellDelay(int64_t value);
 
-    /**
-     * Get number of rows to read out (Only for Eiger)
-     * @returns  number of lines
-     */
-    int getReadNLines();
+    /**************************************************
+     *                                                *
+     *    Gotthard Specific                           *
+     *                                                *
+     * ************************************************/
+    slsDetectorDefs::ROI getROI();
+    void setROI(slsDetectorDefs::ROI arg);
+    void clearROI();
+    int64_t getExptimeLeft() const;
+
+    /**************************************************
+     *                                                *
+     *    Gotthard2 Specific                          *
+     *                                                *
+     * ************************************************/
 
     /**
      * Set Detector offset in shared memory in dimension d
@@ -298,42 +415,13 @@ class Module : public virtual slsDetectorDefs {
     std::vector<std::string> getConfigFileCommands();
 
     /**
-     * Get threshold energy (Mythen and Eiger)
-     * @returns current threshold value in ev (-1 failed)
-     */
-    int getThresholdEnergy();
-
-    /**
-     * Set threshold energy (Mythen and Eiger)
-     * For Eiger, calls setThresholdEneryAndSettings
-     * @param e_eV threshold in eV
-     * @param isettings ev. change settings
-     * @param tb 1 to include trimbits, 0 to exclude
-     */
-    void setThresholdEnergy(int e_eV, detectorSettings isettings = GET_SETTINGS,
-                            int tb = 1);
-
-    /**
      * Set threshold energy and settings (Eiger only)
      * @param e_eV threshold in eV
      * @param isettings ev. change settings
      * @param tb 1 to include trimbits, 0 to exclude
      */
     void setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
-                                       int tb = 1);
-
-    /**
-     * Returns the detector trimbit/settings directory  \sa sharedSlsDetector
-     * @returns the trimbit/settings directory
-     */
-    std::string getSettingsDir();
-
-    /**
-     * Sets the detector trimbit/settings directory  \sa sharedSlsDetector
-     * @param s trimbits/settings directory
-     * @returns the trimbit/settings directory
-     */
-    std::string setSettingsDir(const std::string &dir);
+                                       bool trimbits = true);
 
     /**
      * Start detector acquisition and read all data (Blocking until end of
@@ -362,12 +450,6 @@ class Module : public virtual slsDetectorDefs {
 
     /** [Gotthard2] only in burst mode and in auto timing mode */
     void setNumberOfBursts(int64_t value);
-
-    /** [Jungfrau] Advanced */
-    int getNumberOfAdditionalStorageCells();
-
-    /** [Jungfrau] Advanced */
-    void setNumberOfAdditionalStorageCells(int value);
 
     /** [CTB][Moench] */
     int getNumberOfAnalogSamples();
@@ -405,34 +487,6 @@ class Module : public virtual slsDetectorDefs {
     /** [Gotthard2] only in burst mode and in auto timing mode */
     void setBurstPeriod(int64_t value);
 
-    /** [Eiger] in 32 bit mode */
-    int64_t getSubExptime();
-
-    /** [Eiger] in 32 bit mode */
-    void setSubExptime(int64_t value);
-
-    /** [Eiger] in 32 bit mode */
-    int64_t getSubDeadTime();
-
-    /** [Eiger] in 32 bit mode */
-    void setSubDeadTime(int64_t value);
-
-    /** [Jungfrau] Advanced*/
-    int64_t getStorageCellDelay();
-
-    /** [Jungfrau] Advanced
-     * Options: (0-1638375 ns (resolution of 25ns) */
-    void setStorageCellDelay(int64_t value);
-
-    /** [Gotthard] */
-    int64_t getExptimeLeft() const;
-
-    /** [Eiger] minimum two frames */
-    int64_t getMeasuredPeriod() const;
-
-    /** [Eiger] */
-    int64_t getMeasuredSubFramePeriod() const;
-
     /** [Jungfrau][CTB][Moench][Mythen3]
      * [Gotthard2] only in continuous mode */
     int64_t getNumberOfFramesFromStart() const;
@@ -444,53 +498,6 @@ class Module : public virtual slsDetectorDefs {
     /** [Jungfrau][CTB][Moench][Mythen3] Get timestamp at a frame start
      * [Gotthard2] only in continuous mode */
     int64_t getMeasurementTime() const;
-
-    int getDynamicRange();
-    /**
-     * Set/get dynamic range
-     * (Eiger: If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to
-     * 1)
-     */
-    void setDynamicRange(int n);
-
-    externalSignalFlag getExternalSignalFlags(int signalIndex);
-    void setExternalSignalFlags(int signalIndex, externalSignalFlag type);
-
-    /**
-     * Set Parallel readout mode (Only for Eiger)
-     * @param enable true if parallel, else false for non parallel
-     */
-    void setParallelMode(const bool enable);
-
-    /**
-     * Get parallel mode (Only for Eiger)
-     * @returns parallel mode
-     */
-    bool getParallelMode();
-
-    /**
-     * Set overflow readout mode in 32 bit mode (Only for Eiger)
-     * @param enable true if overflow, else false
-     */
-    void setOverFlowMode(const bool enable);
-
-    /**
-     * Get overflow mode in 32 bit mode (Only for Eiger)
-     * @returns overflow mode
-     */
-    bool getOverFlowMode();
-
-    /**
-     * Set store in ram readout mode (Only for Eiger)
-     * @param enable true if store in ram, else false
-     */
-    void setStoreInRamMode(const bool enable);
-
-    /**
-     * Get store in ram mode (Only for Eiger)
-     * @returns store in ram mode
-     */
-    bool getStoreInRamMode();
 
     /**
      * [Ctb]
@@ -504,18 +511,6 @@ class Module : public virtual slsDetectorDefs {
      * @returns readout mode
      */
     readoutMode getReadoutMode();
-
-    /**
-     * Set Interrupt last sub frame (Only for Eiger)
-     * @param enable true if interrupt last subframe set, else false
-     */
-    void setInterruptSubframe(const bool enable);
-
-    /**
-     * Get Interrupt last sub frame (Only for Eiger)
-     * @returns true if interrupt last subframe set, else false
-     */
-    bool getInterruptSubframe();
 
     /**
      * Write in a register. For Advanced users
@@ -550,53 +545,7 @@ class Module : public virtual slsDetectorDefs {
 
     void test();
 
-    /**
-     * Sets the client zmq port\sa sharedSlsDetector
-     * @param port client zmq port
-     */
-    void setClientStreamingPort(int port);
-
-    /**
-     * Returns the client zmq port \sa sharedSlsDetector
-     * @returns the client zmq port
-     */
-    int getClientStreamingPort();
-
-    /**
-     * Sets the receiver zmq port\sa sharedSlsDetector
-     * @param port receiver zmq port
-     */
-    void setReceiverStreamingPort(int port);
-
-    /**
-     * Returns the receiver zmq port \sa sharedSlsDetector
-     * @returns the receiver zmq port
-     */
-    int getReceiverStreamingPort();
-
-    /**
-     * Sets the client zmq ip\sa sharedSlsDetector
-     * @param ip client zmq ip
-     */
-    void setClientStreamingIP(const sls::IpAddr ip);
-
-    /**
-     * Returns the client zmq ip \sa sharedSlsDetector
-     * @returns the client zmq ip
-     */
-    sls::IpAddr getClientStreamingIP();
-
-    /**
-     * Sets the receiver zmq ip\sa sharedSlsDetector
-     * @param ip receiver zmq ip
-     */
-    void setReceiverStreamingIP(const sls::IpAddr ip);
-
-    /**
-     * Returns the receiver zmq ip \sa sharedSlsDetector
-     * @returns the receiver zmq ip
-     */
-    sls::IpAddr getReceiverStreamingIP();
+    int getReceiverProgress() const;
 
     /** update receiver stremaing ip from shm to receiver
      * if empty, use rx_hostname ip
@@ -614,25 +563,6 @@ class Module : public virtual slsDetectorDefs {
     void setAdditionalJsonParameter(const std::string &key,
                                     const std::string &value);
     std::string getAdditionalJsonParameter(const std::string &key);
-
-    /**
-     * Sets the receiver UDP socket buffer size
-     * @param udpsockbufsize additional json header
-     * @returns receiver udp socket buffer size
-     */
-    int64_t setReceiverUDPSocketBufferSize(int64_t udpsockbufsize = -1);
-
-    /**
-     * Returns the receiver UDP socket buffer size\sa sharedSlsDetector
-     * @returns the receiver UDP socket buffer size
-     */
-    int64_t getReceiverUDPSocketBufferSize();
-
-    /**
-     * Returns the receiver real UDP socket buffer size\sa sharedSlsDetector
-     * @returns the receiver real UDP socket buffer size
-     */
-    int64_t getReceiverRealUDPSocketBufferSize() const;
 
     /** [Gotthard][Jungfrau][CTB][Moench] */
     void executeFirmwareTest();
@@ -680,33 +610,6 @@ class Module : public virtual slsDetectorDefs {
 
     /** default disabled */
     void setVeto(bool enable);
-
-    /**
-     * Set/get counter bit in detector (Gotthard)
-     * @param i is -1 to get, 0 to reset and any other value to set the counter
-     * bit
-     * @returns the counter bit in detector
-     */
-    int setCounterBit(int cb = -1);
-
-    /**
-     * Clear ROI (Gotthard)
-     */
-    void clearROI();
-
-    /**
-     * Set ROI (Gotthard)
-     * Also calls configuremac
-     * @param arg roi
-     */
-    void setROI(slsDetectorDefs::ROI arg);
-
-    /**
-     * Get ROI (Gotthard)
-     * Update receiver if different from shm
-     * @returns roi
-     */
-    slsDetectorDefs::ROI getROI();
 
     /**
      * Set ADC Enable Mask (CTB, Moench)
@@ -781,94 +684,11 @@ class Module : public virtual slsDetectorDefs {
      */
     void writeAdcRegister(uint32_t addr, uint32_t val);
 
-    bool getActivate();
-    void setActivate(const bool enable);
-
-    bool getDeactivatedRxrPaddingMode();
-
-    /**
-     * Set deactivated Receiver padding mode (Eiger only)
-     */
-    void setDeactivatedRxrPaddingMode(bool padding);
-
-    /**
-     * Returns the enable if data will be flipped across x axis (Eiger)
-     * @returns if flipped across x axis
-     */
-    bool getFlippedDataX();
-
-    /**
-     * Sets the enable which determines if
-     * data will be flipped across x axis (Eiger)
-     * @param value 0 or 1 to reset/set
-     */
-    void setFlippedDataX(bool value);
-
-    /**
-     * Sets the number of trim energies and their value  (Eiger)
-     * \sa sharedSlsDetector
-     * @param nen number of energies
-     * @param vector os trimmed energies
-     * @returns number of trim energies
-     */
-    int setTrimEn(const std::vector<int> &energies = {});
-
-    /**
-     * Returns a vector with the trimmed energies  (Eiger)
-     * \sa sharedSlsDetector
-     * @returns vector with the trimmed energies
-     */
-    std::vector<int> getTrimEn();
-
-    /**
-     * Pulse Pixel (Eiger)
-     * @param n is number of times to pulse
-     * @param x is x coordinate
-     * @param y is y coordinate
-     */
-    void pulsePixel(int n = 0, int x = 0, int y = 0);
-
-    /**
-     * Pulse Pixel and move by a relative value (Eiger)
-     * @param n is number of times to pulse
-     * @param x is relative x value
-     * @param y is relative y value
-     */
-    void pulsePixelNMove(int n = 0, int x = 0, int y = 0);
-
-    /**
-     * Pulse Chip (Eiger)
-     * @param n is number of times to pulse
-     */
-    void pulseChip(int n_pulses = 0);
-
-    /**
-     * Set/gets threshold temperature (Jungfrau)
-     * @param val value in millidegrees, -1 gets
-     * @returns threshold temperature in millidegrees
-     */
-    int setThresholdTemperature(int val = -1);
-
-    /**
-     * Enables/disables temperature control (Jungfrau)
-     * @param val value, -1 gets
-     * @returns temperature control enable
-     */
-    int setTemperatureControl(int val = -1);
-
-    /**
-     * Resets/ gets over-temperature event (Jungfrau)
-     * @param val value, -1 gets
-     * @returns over-temperature event
-     */
-    int setTemperatureEvent(int val = -1);
-
     /**
      * Set storage cell that stores first acquisition of the series (Jungfrau)
      * @param value storage cell index. Value can be 0 to 15. (-1 gets)
      * @returns the storage cell that stores the first acquisition of the series
      */
-    int setStorageCellStart(int pos = -1);
 
     /**
      * [Jungfau][Ctb] Programs FPGA with raw file from pof file
@@ -902,13 +722,6 @@ class Module : public virtual slsDetectorDefs {
     void rebootController();
 
     /**
-     * Automatic comparator disable (Jungfrau)
-     * @param ival on is 1, off is 0, -1 to get
-     * @returns OK or FAIL
-     */
-    int setAutoComparatorDisableMode(int ival = -1);
-
-    /**
      * Get trimbit filename with path for settings and energy
      *
      */
@@ -922,7 +735,7 @@ class Module : public virtual slsDetectorDefs {
      * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
      * \sa ::sls_detector_module
      */
-    void setModule(sls_detector_module &module, int tb = 1);
+    void setModule(sls_detector_module &module, bool trimbits = true);
 
     /**
      * Get module structure from detector (all detectors)
@@ -932,25 +745,6 @@ class Module : public virtual slsDetectorDefs {
     sls_detector_module getModule();
 
     /**
-     * Set Default Rate correction from trimbit file(Eiger)
-     */
-    void setDefaultRateCorrection();
-
-    /**
-     * Set Rate correction (Eiger)
-     * @param t dead time in ns - if 0 disable correction,
-     * if >0 set dead time to t, cannot be < 0
-     * for current settings
-     */
-    void setRateCorrection(int64_t t = 0);
-
-    /**
-     * Get rate correction (Eiger)
-     * @returns 0 if rate correction disabled,  > 0 otherwise
-     */
-    int64_t getRateCorrection();
-
-    /**
      * Update rate correction according to dynamic range (Eiger)
      * If rate correction enabled and dr is 8 or 16, it will throw
      * Otherwise update ratecorrection if enabled
@@ -958,80 +752,15 @@ class Module : public virtual slsDetectorDefs {
     void updateRateCorrection();
 
     /**
-     * Locks/Unlocks the connection to the receiver
-     * @param lock sets (1), usets (0), gets (-1) the lock
-     * @returns lock status of the receiver
-     */
-    int lockReceiver(int lock = -1);
-
-    /**
-     * Returns the IP of the last client connecting to the receiver
-     * @returns the IP of the last client connecting to the receiver
-     */
-    sls::IpAddr getReceiverLastClientIP() const;
-
-    std::array<pid_t, NUM_RX_THREAD_IDS> getReceiverThreadIds() const;
-
-    /**
      * Exits the receiver TCP server
      */
     void exitReceiver();
-
-    std::string getFilePath();
-    void setFilePath(const std::string &path);
-    std::string getFileName();
-    void setFileName(const std::string &fname);
-    int64_t getFileIndex();
-    void setFileIndex(int64_t file_index);
-    void incrementFileIndex();
-    fileFormat getFileFormat();
-    void setFileFormat(fileFormat f);
-    int getFramesPerFile();
-    /** 0 will set frames per file to unlimited */
-    void setFramesPerFile(int n_frames);
-    frameDiscardPolicy getReceiverFramesDiscardPolicy();
-    void setReceiverFramesDiscardPolicy(frameDiscardPolicy f);
-    bool getPartialFramesPadding();
-    void setPartialFramesPadding(bool padding);
 
     /**
      * Gets the current frame index of receiver
      * @returns current frame index of receiver
      */
     uint64_t getReceiverCurrentFrameIndex() const;
-    int getReceiverProgress() const;
-
-    void setFileWrite(bool value);
-    bool getFileWrite();
-    void setMasterFileWrite(bool value);
-    bool getMasterFileWrite();
-    void setFileOverWrite(bool value);
-    bool getFileOverWrite();
-
-    int getReceiverStreamingFrequency();
-
-    /**
-     * (previously setReadReceiverFrequency)
-     * Sets the receiver streaming frequency
-     * @param freq nth frame streamed out, if 0, streamed out at a timer of 200
-     * ms
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void setReceiverStreamingFrequency(int freq);
-
-    /**
-     * (previously setReceiverReadTimer)
-     * Sets the receiver streaming timer
-     * If receiver streaming frequency is 0, then this timer between each
-     * data stream is set. Default is 200 ms.
-     * @param time_in_ms timer between frames
-     * @returns receiver streaming timer in ms
-     */
-    int setReceiverStreamingTimer(int time_in_ms = 200);
-
-    bool getReceiverStreaming();
-
-    void setReceiverStreaming(bool enable);
 
     /**
      * If data streaming in receiver is enabled,
@@ -1331,7 +1060,7 @@ class Module : public virtual slsDetectorDefs {
     sls_detector_module interpolateTrim(sls_detector_module *a,
                                         sls_detector_module *b,
                                         const int energy, const int e1,
-                                        const int e2, int tb = 1);
+                                        const int e2, bool trimbits = true);
 
     /**
      * reads a trim/settings file
@@ -1342,7 +1071,8 @@ class Module : public virtual slsDetectorDefs {
      * @returns the pointer to myMod or NULL if reading the file failed
      */
 
-    sls_detector_module readSettingsFile(const std::string &fname, int tb = 1);
+    sls_detector_module readSettingsFile(const std::string &fname,
+                                         bool trimbits = true);
 
     /** Module Id or position in the detectors list */
     const int moduleId;

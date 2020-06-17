@@ -1275,7 +1275,7 @@ int Feb_Control_GetInterruptSubframe() {
     // inconsistent
     if (value[0] != value[1]) {
         LOG(logERROR, ("Inconsistent values of interrupt subframe betweeen "
-                       "left %d and right %d\n",
+                       "right %d and left %d\n",
                        value[0], value[1]));
         return -1;
     }

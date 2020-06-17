@@ -12,26 +12,20 @@
 #include <time.h>
 #include <unistd.h>
 
-// GetDAQStatusRegister(512,current_mode_bits_from_fpga)) {
+const unsigned int Feb_Control_leftAddress = 0x100;
+const unsigned int Feb_Control_rightAddress = 0x200;
 
-unsigned int Module_ndacs = 16;
-char Module_dac_names[16][10] = {"VSvP",    "Vtrim",   "Vrpreamp", "Vrshaper",
-                                 "VSvN",    "Vtgstv",  "Vcmp_ll",  "Vcmp_lr",
-                                 "Vcal",    "Vcmp_rl", "rxb_rb",   "rxb_lb",
-                                 "Vcmp_rr", "Vcp",     "Vcn",      "Vishaper"};
+int Feb_Control_master = 0;
+int Feb_Control_normal = 0;
+int Feb_Control_activated = 1;
 
-struct Module modules[10];
-int moduleSize = 0;
-
-unsigned int
-    Feb_Control_staticBits; // program=1,m4=2,m8=4,test=8,rotest=16,cs_bar_left=32,cs_bar_right=64
-unsigned int
-    Feb_Control_acquireNReadoutMode; // safe or parallel, half or full speed
-unsigned int
-    Feb_Control_triggerMode; // internal timer, external start, external window,
-                             // signal polarity (external trigger and enable)
-unsigned int Feb_Control_externalEnableMode; // external enabling engaged and
-                                             // it's polarity
+int Feb_Control_hv_fd = -1;
+unsigned int Feb_Control_idelay[4]; // ll,lr,rl,ll
+int Feb_Control_counter_bit = 1;
+unsigned int Feb_Control_staticBits;
+unsigned int Feb_Control_acquireNReadoutMode;
+unsigned int Feb_Control_triggerMode;
+unsigned int Feb_Control_externalEnableMode;
 unsigned int Feb_Control_subFrameMode;
 unsigned int Feb_Control_softwareTrigger;
 
@@ -41,169 +35,17 @@ int64_t Feb_Control_subframe_exposure_time_in_10nsec;
 int64_t Feb_Control_subframe_period_in_10nsec;
 double Feb_Control_exposure_period_in_sec;
 
-int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
-int64_t Feb_Control_RateTable_Period_in_nsec = -1;
-
 unsigned int Feb_Control_trimbit_size;
 unsigned int *Feb_Control_last_downloaded_trimbits;
 
-int Feb_Control_module_number;
-int Feb_Control_current_index;
-
-int Feb_Control_counter_bit = 1;
-int Feb_control_master = 0;
-int Feb_control_normal = 0;
-
+int64_t Feb_Control_RateTable_Tau_in_nsec = -1;
+int64_t Feb_Control_RateTable_Period_in_nsec = -1;
 unsigned int Feb_Control_rate_correction_table[1024];
 double Feb_Control_rate_meas[16384];
-
 double ratemax = -1;
-int Feb_Control_activated = 1;
-int Feb_Control_hv_fd = -1;
 
-void Module_Module(struct Module *mod, unsigned int number,
-                   unsigned int address_top) {
-    mod->module_number = number;
-    mod->top_address_valid = 1;
-    mod->top_left_address = 0x100 | (0xff & address_top);
-    mod->top_right_address = (0x200 | (0xff & address_top));
-    mod->bottom_address_valid = 0;
-    mod->bottom_left_address = 0;
-    mod->bottom_right_address = 0;
-
-    mod->high_voltage = -1;
-    mod->top_dac = malloc(Module_ndacs * sizeof(int));
-    mod->bottom_dac = malloc(Module_ndacs * sizeof(int));
-    for (unsigned int i = 0; i < Module_ndacs; i++)
-        mod->top_dac[i] = mod->top_address_valid ? -1 : 0;
-    for (unsigned int i = 0; i < Module_ndacs; i++)
-        mod->bottom_dac[i] = mod->bottom_address_valid ? -1 : 0;
-}
-
-void Module_ModuleBottom(struct Module *mod, unsigned int number,
-                         unsigned int address_bottom) {
-    mod->module_number = number;
-    mod->top_address_valid = 0;
-    mod->top_left_address = 0;
-    mod->top_right_address = 0;
-    mod->bottom_address_valid = 1;
-    mod->bottom_left_address = 0x100 | (0xff & address_bottom);
-    mod->bottom_right_address = (0x200 | (0xff & address_bottom));
-
-    mod->high_voltage = -1;
-
-    for (unsigned int i = 0; i < 4; i++)
-        mod->idelay_top[i] = mod->idelay_bottom[i] = 0;
-
-    mod->top_dac = malloc(Module_ndacs * sizeof(int));
-    mod->bottom_dac = malloc(Module_ndacs * sizeof(int));
-    for (unsigned int i = 0; i < Module_ndacs; i++)
-        mod->top_dac[i] = mod->top_address_valid ? -1 : 0;
-    for (unsigned int i = 0; i < Module_ndacs; i++)
-        mod->bottom_dac[i] = mod->bottom_address_valid ? -1 : 0;
-}
-
-void Module_Module1(struct Module *mod, unsigned int number,
-                    unsigned int address_top, unsigned int address_bottom) {
-    mod->module_number = number;
-    mod->top_address_valid = 1;
-    mod->top_left_address = 0x100 | (0xff & address_top);
-    mod->top_right_address = 0x200 | (0xff & address_top);
-    mod->bottom_address_valid = 1;
-    mod->bottom_left_address = 0x100 | (0xff & address_bottom);
-    mod->bottom_right_address = 0x200 | (0xff & address_bottom);
-
-    mod->high_voltage = -1;
-
-    for (unsigned int i = 0; i < 4; i++)
-        mod->idelay_top[i] = mod->idelay_bottom[i] = 0;
-
-    mod->top_dac = malloc(Module_ndacs * sizeof(int));
-    mod->bottom_dac = malloc(Module_ndacs * sizeof(int));
-    for (unsigned int i = 0; i < Module_ndacs; i++)
-        mod->top_dac[i] = mod->top_address_valid ? -1 : 0;
-    for (unsigned int i = 0; i < Module_ndacs; i++)
-        mod->bottom_dac[i] = mod->bottom_address_valid ? -1 : 0;
-}
-
-unsigned int Module_GetModuleNumber(struct Module *mod) {
-    return mod->module_number;
-}
-int Module_TopAddressIsValid(struct Module *mod) {
-    return mod->top_address_valid;
-}
-unsigned int Module_GetTopBaseAddress(struct Module *mod) {
-    return (mod->top_left_address & 0xff);
-}
-unsigned int Module_GetTopLeftAddress(struct Module *mod) {
-    return mod->top_left_address;
-}
-unsigned int Module_GetTopRightAddress(struct Module *mod) {
-    return mod->top_right_address;
-}
-unsigned int Module_GetBottomBaseAddress(struct Module *mod) {
-    return (mod->bottom_left_address & 0xff);
-}
-int Module_BottomAddressIsValid(struct Module *mod) {
-    return mod->bottom_address_valid;
-}
-unsigned int Module_GetBottomLeftAddress(struct Module *mod) {
-    return mod->bottom_left_address;
-}
-unsigned int Module_GetBottomRightAddress(struct Module *mod) {
-    return mod->bottom_right_address;
-}
-
-unsigned int Module_SetTopIDelay(struct Module *mod, unsigned int chip,
-                                 unsigned int value) {
-    return Module_TopAddressIsValid(mod) && chip < 4
-               ? (mod->idelay_top[chip] = value)
-               : 0;
-} // chip 0=ll,1=lr,0=rl,1=rr
-unsigned int Module_GetTopIDelay(struct Module *mod, unsigned int chip) {
-    return chip < 4 ? mod->idelay_top[chip] : 0;
-} // chip 0=ll,1=lr,0=rl,1=rr
-unsigned int Module_SetBottomIDelay(struct Module *mod, unsigned int chip,
-                                    unsigned int value) {
-    return Module_BottomAddressIsValid(mod) && chip < 4
-               ? (mod->idelay_bottom[chip] = value)
-               : 0;
-} // chip 0=ll,1=lr,0=rl,1=rr
-unsigned int Module_GetBottomIDelay(struct Module *mod, unsigned int chip) {
-    return chip < 4 ? mod->idelay_bottom[chip] : 0;
-} // chip 0=ll,1=lr,0=rl,1=rr
-
-float Module_SetHighVoltage(struct Module *mod, float value) {
-    return Feb_control_master ? (mod->high_voltage = value) : -1;
-} // Module_TopAddressIsValid(mod) ? (mod->high_voltage=value) : -1;}
-float Module_GetHighVoltage(struct Module *mod) { return mod->high_voltage; }
-
-int Module_SetTopDACValue(struct Module *mod, unsigned int i, int value) {
-    return (i < Module_ndacs && Module_TopAddressIsValid(mod))
-               ? (mod->top_dac[i] = value)
-               : -1;
-}
-int Module_GetTopDACValue(struct Module *mod, unsigned int i) {
-    return (i < Module_ndacs) ? mod->top_dac[i] : -1;
-}
-int Module_SetBottomDACValue(struct Module *mod, unsigned int i, int value) {
-    return (i < Module_ndacs && Module_BottomAddressIsValid(mod))
-               ? (mod->bottom_dac[i] = value)
-               : -1;
-}
-int Module_GetBottomDACValue(struct Module *mod, unsigned int i) {
-    return (i < Module_ndacs) ? mod->bottom_dac[i] : -1;
-}
-
+// setup
 void Feb_Control_activate(int activate) { Feb_Control_activated = activate; }
-
-int Feb_Control_IsBottomModule() {
-    if (Module_BottomAddressIsValid(&modules[Feb_Control_current_index]))
-        return 1;
-    return 0;
-}
-
-int Feb_Control_GetModuleNumber() { return Feb_Control_module_number; }
 
 void Feb_Control_FebControl() {
     Feb_Control_staticBits = Feb_Control_acquireNReadoutMode =
@@ -212,53 +54,20 @@ void Feb_Control_FebControl() {
     Feb_Control_trimbit_size = 263680;
     Feb_Control_last_downloaded_trimbits =
         malloc(Feb_Control_trimbit_size * sizeof(int));
-    moduleSize = 0;
 }
 
-int Feb_Control_Init(int master, int top, int normal, int module_num) {
-    Feb_Control_module_number = 0;
-    Feb_Control_current_index = 0;
-    Feb_control_master = master;
-    Feb_control_normal = normal;
-
-    // global send
-    Feb_Control_AddModule1(0, 1, 0xff, 0, 1);
-    Feb_Control_PrintModuleList();
-    Feb_Control_module_number = (module_num & 0xFF);
-
-    int serial = !top;
-    LOG(logDEBUG1, ("serial: %d\n", serial));
-
-    Feb_Control_current_index = 1;
-
-    // Add the half module
-    Feb_Control_AddModule1(Feb_Control_module_number, top, serial, serial, 1);
-    Feb_Control_PrintModuleList();
-
-    unsigned int nfebs = 0;
-    unsigned int *feb_list = malloc(moduleSize * 4 * sizeof(unsigned int));
-    for (unsigned int i = 1; i < moduleSize; i++) {
-        if (Module_TopAddressIsValid(&modules[i])) {
-            feb_list[nfebs++] = Module_GetTopRightAddress(&modules[i]);
-            feb_list[nfebs++] = Module_GetTopLeftAddress(&modules[i]);
-        }
-        if (Module_BottomAddressIsValid(&modules[i])) {
-            feb_list[nfebs++] = Module_GetBottomRightAddress(&modules[i]);
-            feb_list[nfebs++] = Module_GetBottomLeftAddress(&modules[i]);
-        }
+int Feb_Control_Init(int master, int normal, int module_num) {
+    Feb_Control_master = master;
+    Feb_Control_normal = normal;
+    Feb_Interface_SetAddress(Feb_Control_rightAddress, Feb_Control_leftAddress);
+    if (Feb_Control_activated) {
+        return Feb_Interface_SetByteOrder();
     }
-
-    Feb_Interface_SendCompleteList(nfebs, feb_list);
-    free(feb_list);
-    if (Feb_Control_activated)
-        Feb_Interface_SetByteOrder();
-
     return 1;
 }
 
 int Feb_Control_OpenSerialCommunication() {
     LOG(logINFO, ("opening serial communication of hv\n"));
-    // if (Feb_Control_hv_fd != -1)
     close(Feb_Control_hv_fd);
     Feb_Control_hv_fd =
         open(SPECIAL9M_HIGHVOLTAGE_PORT, O_RDWR | O_NOCTTY | O_SYNC);
@@ -316,207 +125,76 @@ void Feb_Control_CloseSerialCommunication() {
         close(Feb_Control_hv_fd);
 }
 
-void Feb_Control_PrintModuleList() {
-    LOG(logDEBUG1, ("Module list:\n"));
-    for (unsigned int i = 0; i < moduleSize; i++) {
-        LOG(logDEBUG1,
-            ("\t%d) %s modules: %d    0x%x %s\n", i,
-             ((i == 0) ? "All   " : ((i == 1) ? "Master" : "      ")),
-             Module_GetModuleNumber(&modules[i]),
-             (Module_TopAddressIsValid(&modules[i])
-                  ? Module_GetTopBaseAddress(&modules[i])
-                  : Module_GetBottomBaseAddress(&modules[i])),
-             (Module_TopAddressIsValid(&modules[i]) ? "(top)    "
-                                                    : "(bottom)    ")));
-    }
-}
-
-int Feb_Control_GetModuleIndex(unsigned int module_number,
-                               unsigned int *module_index) {
-    for (unsigned int i = 0; i < moduleSize; i++) {
-        if (Module_GetModuleNumber(&modules[i]) == module_number) {
-            *module_index = i;
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-int Feb_Control_CheckModuleAddresses(struct Module *m) {
-    int found_t = 0;
-    int found_b = 0;
-    for (unsigned int i = 0; i < moduleSize; i++) {
-        if ((Module_TopAddressIsValid(m) &&
-             Module_GetTopBaseAddress(&modules[i]) &&
-             Module_GetTopBaseAddress(m) ==
-                 Module_GetTopBaseAddress(&modules[i])) ||
-            (Module_TopAddressIsValid(m) &&
-             Module_GetBottomBaseAddress(&modules[i]) &&
-             Module_GetTopBaseAddress(m) ==
-                 Module_GetBottomBaseAddress(&modules[i])))
-            found_t = 1;
-        if ((Module_BottomAddressIsValid(m) &&
-             Module_GetTopBaseAddress(&modules[i]) &&
-             Module_GetBottomBaseAddress(m) ==
-                 Module_GetTopBaseAddress(&modules[i])) ||
-            (Module_BottomAddressIsValid(m) &&
-             Module_GetBottomBaseAddress(&modules[i]) &&
-             Module_GetBottomBaseAddress(m) ==
-                 Module_GetBottomBaseAddress(&modules[i])))
-            found_b = 1;
-    }
-
-    if (found_t) {
-        LOG(logERROR,
-            ("top address %d already used.\n", Module_GetTopBaseAddress(m)));
-    }
-    if (found_b) {
-        LOG(logERROR, ("bottom address %d already used.\n",
-                       Module_GetBottomBaseAddress(m)));
-    }
-
-    int top_bottom_same =
-        Module_TopAddressIsValid(m) && Module_BottomAddressIsValid(m) &&
-        Module_GetTopBaseAddress(m) == Module_GetBottomBaseAddress(m);
-    if (top_bottom_same) {
-        LOG(logERROR, ("top and bottom address are the same %d.\n",
-                       Module_GetTopBaseAddress(m)));
-    }
-
-    return !(top_bottom_same || found_t || found_b);
-}
-
-int Feb_Control_AddModule(unsigned int module_number,
-                          unsigned int top_address) {
-    return Feb_Control_AddModule1(module_number, 1, top_address, 0, 1);
-}
-int Feb_Control_AddModule1(unsigned int module_number, int top_enable,
-                           unsigned int top_address,
-                           unsigned int bottom_address,
-                           int half_module) { // bot_address 0 for half module
-    int parameters_ok = 1;
-    unsigned int pre_module_index = 0;
-    if (Feb_Control_GetModuleIndex(module_number, &pre_module_index)) {
-        LOG(logINFO, ("\tRemoving previous assignment of module number %d.\n",
-                      module_number));
-        // free(modules[pre_module_index]);
-        for (int i = pre_module_index; i < moduleSize - 1; i++)
-            modules[i] = modules[i + 1];
-        moduleSize--;
-        parameters_ok = 0;
-    }
-
-    struct Module mod, *m;
-    m = &mod;
-
-    /* if ((half_module)&& (top_address != 1))
-Module_Module(m,module_number,top_address); else if (half_module)
-Module_ModuleBottom(m,module_number,top_address);*/
-    if ((half_module) && (top_enable))
-        Module_Module(m, module_number, top_address);
-    else if (half_module)
-        Module_ModuleBottom(m, module_number, bottom_address);
-    else
-        Module_Module1(m, module_number, top_address, bottom_address);
-
-    parameters_ok &= Feb_Control_CheckModuleAddresses(m);
-
-    if (Module_TopAddressIsValid(m) && Module_BottomAddressIsValid(m)) {
-        LOG(logDEBUG1, ("\tAdding full module number %d with top and bottom "
-                        "base addresses: %d %d\n",
-                        Module_GetModuleNumber(m), Module_GetTopBaseAddress(m),
-                        Module_GetBottomBaseAddress(m)));
-        modules[moduleSize] = mod;
-        moduleSize++;
-    } else if (Module_TopAddressIsValid(m)) {
-        LOG(logDEBUG1,
-            ("\tAdding half module number %d with "
-             "top base address: %d\n",
-             Module_GetModuleNumber(m), Module_GetTopBaseAddress(m)));
-        modules[moduleSize] = mod;
-        moduleSize++;
-    } else if (Module_BottomAddressIsValid(m)) {
-        LOG(logDEBUG1,
-            ("\tAdding half module number %d with "
-             "bottom base address: %d\n",
-             Module_GetModuleNumber(m), Module_GetBottomBaseAddress(m)));
-        modules[moduleSize] = mod;
-        moduleSize++;
-    } else {
-        // free(m);
-    }
-
-    return parameters_ok;
-}
-
 int Feb_Control_CheckSetup(int master) {
     LOG(logDEBUG1, ("Checking Set up\n"));
-    unsigned int i;
-    int ok = 1;
-
-    i = Feb_Control_current_index;
 
     for (unsigned int j = 0; j < 4; j++) {
-        if (Module_GetTopIDelay(&modules[i], j) < 0) {
-            LOG(logERROR, ("module %d's idelay top number %d not set.\n",
-                           Module_GetModuleNumber(&modules[i]), j));
-            ok = 0;
-        }
-        if (Module_GetBottomIDelay(&modules[i], j) < 0) {
-            LOG(logERROR, ("module %d's idelay bottom number %d not set.\n",
-                           Module_GetModuleNumber(&modules[i]), j));
-            ok = 0;
+        if (Feb_Control_idelay[j] < 0) {
+            LOG(logERROR, ("idelay chip %d not set.\n", j));
+            return 0;
         }
     }
     int value = 0;
-    if ((Feb_control_master) && (!Feb_Control_GetHighVoltage(&value))) {
-        LOG(logERROR, ("module %d's high voltage not set.\n",
-                       Module_GetModuleNumber(&modules[i])));
-        ok = 0;
-    }
-    for (unsigned int j = 0; j < Module_ndacs; j++) {
-        if (Module_GetTopDACValue(&modules[i], j) < 0) {
-            LOG(logERROR,
-                ("module %d's top \"%s\" dac is not set.\n",
-                 Module_GetModuleNumber(&modules[i]), Module_dac_names[i]));
-            ok = 0;
-        }
-        if (Module_GetBottomDACValue(&modules[i], j) < 0) {
-            LOG(logERROR,
-                ("module %d's bottom \"%s\" dac is not set.\n",
-                 Module_GetModuleNumber(&modules[i]), Module_dac_names[i]));
-            ok = 0;
-        }
-    }
-    /* }*/
-    LOG(logDEBUG1, ("Done Checking Set up\n"));
-    return ok;
-}
-
-unsigned int Feb_Control_GetNModules() {
-    if (moduleSize <= 0)
+    if ((Feb_Control_master) && (!Feb_Control_GetHighVoltage(&value))) {
+        LOG(logERROR, ("high voltage not set.\n"));
         return 0;
-    return moduleSize - 1;
-}
-
-unsigned int Feb_Control_GetNHalfModules() {
-    unsigned int n_half_modules = 0;
-    for (unsigned int i = 1; i < moduleSize; i++) {
-        if (Module_TopAddressIsValid(&modules[i]))
-            n_half_modules++;
-        if (Module_BottomAddressIsValid(&modules[i]))
-            n_half_modules++;
     }
-
-    return n_half_modules;
+    LOG(logDEBUG1, ("Done Checking Set up\n"));
+    return 1;
 }
 
-int Feb_Control_SetIDelays(unsigned int module_num, unsigned int ndelay_units) {
-    int ret = Feb_Control_SetIDelays1(module_num, 0, ndelay_units) &&
-              Feb_Control_SetIDelays1(module_num, 1, ndelay_units) &&
-              Feb_Control_SetIDelays1(module_num, 2, ndelay_units) &&
-              Feb_Control_SetIDelays1(module_num, 3, ndelay_units);
+unsigned int Feb_Control_AddressToAll() {
+    return Feb_Control_leftAddress | Feb_Control_rightAddress;
+}
+
+int Feb_Control_SetCommandRegister(unsigned int cmd) {
+    if (Feb_Control_activated)
+        return Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                           DAQ_REG_CHIP_CMDS, cmd, 0, 0);
+    else
+        return 1;
+}
+
+int Feb_Control_SetStaticBits() {
+    if (Feb_Control_activated) {
+        // program=1,m4=2,m8=4,test=8,rotest=16,cs_bar_left=32,cs_bar_right=64
+        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                         DAQ_REG_STATIC_BITS,
+                                         Feb_Control_staticBits, 0, 0) ||
+            !Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT) ||
+            (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)) {
+            LOG(logERROR, ("Could not set static bits\n"));
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int Feb_Control_SetStaticBits1(unsigned int the_static_bits) {
+    Feb_Control_staticBits = the_static_bits;
+    return Feb_Control_SetStaticBits();
+}
+
+int Feb_Control_SetInTestModeVariable(int on) {
+    if (on)
+        Feb_Control_staticBits |=
+            DAQ_STATIC_BIT_CHIP_TEST; // setting test bit to high
+    else
+        Feb_Control_staticBits &=
+            (~DAQ_STATIC_BIT_CHIP_TEST); // setting test bit to low
+    return 1;
+}
+
+int Feb_Control_GetTestModeVariable() {
+    return Feb_Control_staticBits & DAQ_STATIC_BIT_CHIP_TEST;
+}
+
+// idelay
+int Feb_Control_SetIDelays(unsigned int ndelay_units) {
+    int ret = Feb_Control_SetIDelays1(0, ndelay_units) &&
+              Feb_Control_SetIDelays1(1, ndelay_units) &&
+              Feb_Control_SetIDelays1(2, ndelay_units) &&
+              Feb_Control_SetIDelays1(3, ndelay_units);
     if (ret) {
         LOG(logINFO, ("IODelay set to %d\n", ndelay_units));
     }
@@ -524,107 +202,31 @@ int Feb_Control_SetIDelays(unsigned int module_num, unsigned int ndelay_units) {
 }
 
 int Feb_Control_SetIDelays1(
-    unsigned int module_num, unsigned int chip_pos,
+    unsigned int chip_pos,
     unsigned int ndelay_units) { // chip_pos 0=ll,1=lr,0=rl,1=rr
-    // currently set same for top and bottom
     if (chip_pos > 3) {
         LOG(logERROR, ("SetIDelay chip_pos %d doesn't exist.\n", chip_pos));
         return 0;
     }
 
-    unsigned int module_index = 0;
-    if (!Feb_Control_GetModuleIndex(module_num, &module_index)) {
-        LOG(logERROR,
-            ("could not set i delay module number %d invalid.\n", module_num));
-        return 0;
-    }
-
-    int ok = 1;
     if (chip_pos / 2 == 0) { // left fpga
-        if (Module_TopAddressIsValid(&modules[module_index])) {
-            if (Feb_Control_SendIDelays(
-                    Module_GetTopLeftAddress(&modules[module_index]),
-                    chip_pos % 2 == 0, 0xffffffff, ndelay_units)) {
-                if (module_index != 0)
-                    Module_SetTopIDelay(&modules[module_index], chip_pos,
-                                        ndelay_units);
-                else {
-                    for (unsigned int i = 0; i < moduleSize; i++)
-                        Module_SetTopIDelay(&modules[i], chip_pos,
-                                            ndelay_units);
-                    for (unsigned int i = 0; i < moduleSize; i++)
-                        Module_SetBottomIDelay(&modules[i], chip_pos,
-                                               ndelay_units);
-                }
-            } else {
-                LOG(logERROR,
-                    ("could not set idelay module number %d (top_left).\n",
-                     module_num));
-                ok = 0;
-            }
-        }
-        if (Module_BottomAddressIsValid(&modules[module_index])) {
-            if (Feb_Control_SendIDelays(
-                    Module_GetBottomLeftAddress(&modules[module_index]),
-                    chip_pos % 2 == 0, 0xffffffff, ndelay_units)) {
-                if (module_index != 0)
-                    Module_SetBottomIDelay(&modules[module_index], chip_pos,
-                                           ndelay_units);
-                else {
-                    for (unsigned int i = 0; i < moduleSize; i++)
-                        Module_SetTopIDelay(&modules[i], chip_pos,
-                                            ndelay_units);
-                    for (unsigned int i = 0; i < moduleSize; i++)
-                        Module_SetBottomIDelay(&modules[i], chip_pos,
-                                               ndelay_units);
-                }
-            } else {
-                LOG(logERROR,
-                    ("could not set idelay module number %d (bottom_left).\n",
-                     module_num));
-                ok = 0;
-            }
+        if (Feb_Control_SendIDelays(Feb_Control_leftAddress, chip_pos % 2 == 0,
+                                    0xffffffff, ndelay_units)) {
+            Feb_Control_idelay[chip_pos] = ndelay_units;
+        } else {
+            LOG(logERROR, ("could not set idelay (left).\n"));
+            return 0;
         }
     } else {
-        if (Module_TopAddressIsValid(&modules[module_index])) {
-            if (Feb_Control_SendIDelays(
-                    Module_GetTopRightAddress(&modules[module_index]),
-                    chip_pos % 2 == 0, 0xffffffff, ndelay_units)) {
-                if (module_index != 0)
-                    Module_SetTopIDelay(&modules[module_index], chip_pos,
-                                        ndelay_units);
-                else
-                    for (unsigned int i = 0; i < moduleSize; i++)
-                        Module_SetTopIDelay(&modules[i], chip_pos,
-                                            ndelay_units);
-            } else {
-                LOG(logERROR,
-                    ("could not set idelay module number %d (top_right).\n",
-                     module_num));
-                ok = 0;
-            }
-        }
-        if (Module_BottomAddressIsValid(&modules[module_index])) {
-            if (Feb_Control_SendIDelays(
-                    Module_GetBottomRightAddress(&modules[module_index]),
-                    chip_pos % 2 == 0, 0xffffffff, ndelay_units)) {
-                if (module_index != 0)
-                    Module_SetBottomIDelay(&modules[module_index], chip_pos,
-                                           ndelay_units);
-                else
-                    for (unsigned int i = 0; i < moduleSize; i++)
-                        Module_SetBottomIDelay(&modules[i], chip_pos,
-                                               ndelay_units);
-            } else {
-                LOG(logERROR,
-                    ("could not set idelay module number %d (bottom_right).\n",
-                     module_num));
-                ok = 0;
-            }
+        if (Feb_Control_SendIDelays(Feb_Control_rightAddress, chip_pos % 2 == 0,
+                                    0xffffffff, ndelay_units)) {
+            Feb_Control_idelay[chip_pos] = ndelay_units;
+        } else {
+            LOG(logERROR, ("could not set idelay (right).\n"));
+            return 0;
         }
     }
-
-    return ok;
+    return 1;
 }
 
 int Feb_Control_SendIDelays(unsigned int dst_num, int chip_lr,
@@ -662,23 +264,10 @@ int Feb_Control_SendIDelays(unsigned int dst_num, int chip_lr,
             return 0;
         }
     }
-
     return 1;
 }
 
-int Feb_Control_VoltageToDAC(float value, unsigned int *digital,
-                             unsigned int nsteps, float vmin, float vmax) {
-    if (value < vmin || value > vmax)
-        return 0;
-    *digital = (int)(((value - vmin) / (vmax - vmin)) * (nsteps - 1) + 0.5);
-    return 1;
-}
-
-float Feb_Control_DACToVoltage(unsigned int digital, unsigned int nsteps,
-                               float vmin, float vmax) {
-    return vmin + (vmax - vmin) * digital / (nsteps - 1);
-}
-
+// highvoltage
 // only master gets to call this function
 int Feb_Control_SetHighVoltage(int value) {
     LOG(logDEBUG1, (" Setting High Voltage:\t"));
@@ -690,7 +279,7 @@ int Feb_Control_SetHighVoltage(int value) {
      */
     const float vmin = 0;
     float vmax = 200;
-    if (Feb_control_normal)
+    if (Feb_Control_normal)
         vmax = 300;
     const float vlimit = 200;
     const unsigned int ntotalsteps = 256;
@@ -726,7 +315,7 @@ int Feb_Control_GetHighVoltage(int *value) {
      */
     const float vmin = 0;
     float vmax = 200;
-    if (Feb_control_normal)
+    if (Feb_Control_normal)
         vmax = 300;
     const float vlimit = 200;
     const unsigned int ntotalsteps = 256;
@@ -740,7 +329,7 @@ int Feb_Control_GetHighVoltage(int *value) {
 
 int Feb_Control_SendHighVoltage(int dacvalue) {
     // normal
-    if (Feb_control_normal) {
+    if (Feb_Control_normal) {
         // open file
         FILE *fd = fopen(NORMAL_HIGHVOLTAGE_OUTPUTPORT, "w");
         if (fd == NULL) {
@@ -803,7 +392,7 @@ int Feb_Control_SendHighVoltage(int dacvalue) {
 int Feb_Control_ReceiveHighVoltage(unsigned int *value) {
 
     // normal
-    if (Feb_control_normal) {
+    if (Feb_Control_normal) {
         // open file
         FILE *fd = fopen(NORMAL_HIGHVOLTAGE_INPUTPORT, "r");
         if (fd == NULL) {
@@ -897,126 +486,32 @@ int Feb_Control_ReceiveHighVoltage(unsigned int *value) {
     return 1;
 }
 
-int Feb_Control_DecodeDACString(char *dac_str, unsigned int *module_index,
-                                int *top, int *bottom, unsigned int *dac_ch) {
-    char *local_s = dac_str;
-    *module_index = Feb_Control_current_index;
-    *top = 1; // make them both 1 instead of this
-    *bottom = 1;
-
-    if (Module_BottomAddressIsValid(&modules[*module_index]))
-        *top = 0;
-    else
-        *bottom = 0;
-
-    *dac_ch = 0;
-    if (!Feb_Control_GetDACNumber(local_s, dac_ch)) {
-        LOG(logERROR, ("invalid dac_name: %s  (%s)\n", dac_str, local_s));
+// dacs
+int Feb_Control_VoltageToDAC(float value, unsigned int *digital,
+                             unsigned int nsteps, float vmin, float vmax) {
+    if (value < vmin || value > vmax)
         return 0;
-    }
-
+    *digital = (int)(((value - vmin) / (vmax - vmin)) * (nsteps - 1) + 0.5);
     return 1;
 }
 
-int Feb_Control_SetDAC(char *dac_str, int value, int is_a_voltage_mv) {
-    unsigned int module_index, dac_ch;
-    int top, bottom;
-    if (!Feb_Control_DecodeDACString(dac_str, &module_index, &top, &bottom,
-                                     &dac_ch))
-        return 0;
-
-    unsigned int v = value;
-    if (is_a_voltage_mv &&
-        !Feb_Control_VoltageToDAC(value, &v, 4096, 0, 2048)) {
-        LOG(logERROR,
-            ("SetDac bad value, %d. The range is 0 to 2048 mV.\n", value));
-        return 0;
-    }
-    if (v < 0 || v > 4095) {
-        LOG(logERROR, ("SetDac bad value, %d. The range is 0 to 4095.\n", v));
-        return 0;
-    }
-
-    if (top && Module_TopAddressIsValid(&modules[module_index])) {
-
-        if (!Feb_Control_SendDACValue(
-                Module_GetTopRightAddress(&modules[module_index]), dac_ch, &v))
-            return 0;
-
-        if (module_index != 0)
-            Module_SetTopDACValue(&modules[module_index], dac_ch, v);
-        else
-            for (unsigned int i = 0; i < moduleSize; i++)
-                Module_SetTopDACValue(&modules[i], dac_ch, v);
-    }
-
-    if (bottom && Module_BottomAddressIsValid(&modules[module_index])) {
-        if (!Feb_Control_SendDACValue(
-                Module_GetBottomRightAddress(&modules[module_index]), dac_ch,
-                &v))
-            return 0;
-        if (module_index != 0)
-            Module_SetBottomDACValue(&modules[module_index], dac_ch, v);
-        else
-            for (unsigned int i = 0; i < moduleSize; i++)
-                Module_SetBottomDACValue(&modules[i], dac_ch, v);
-    }
-
-    return 1;
+float Feb_Control_DACToVoltage(unsigned int digital, unsigned int nsteps,
+                               float vmin, float vmax) {
+    return vmin + (vmax - vmin) * digital / (nsteps - 1);
 }
 
-int Feb_Control_GetDAC(char *s, int *ret_value, int voltage_mv) {
-
-    unsigned int module_index, dac_ch;
-    int top, bottom;
-    if (!Feb_Control_DecodeDACString(s, &module_index, &top, &bottom, &dac_ch))
-        return 0;
-
-    *ret_value = top ? Module_GetTopDACValue(&modules[module_index], dac_ch)
-                     : Module_GetBottomDACValue(&modules[module_index], dac_ch);
-
-    if (voltage_mv)
-        *ret_value = Feb_Control_DACToVoltage(*ret_value, 4096, 0, 2048);
-
-    return 1;
-}
-
-int Feb_Control_GetDACName(unsigned int dac_num, char *s) {
-    if (dac_num >= Module_ndacs) {
-        LOG(logERROR,
-            ("GetDACName index out of range, %d invalid.\n", dac_num));
-        return 0;
-    }
-    strcpy(s, Module_dac_names[dac_num]);
-    return 1;
-}
-
-int Feb_Control_GetDACNumber(char *s, unsigned int *n) {
-    for (unsigned int i = 0; i < Module_ndacs; i++) {
-        if (!strcmp(Module_dac_names[i], s)) {
-            *n = i;
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch,
-                             unsigned int *value) {
-
+int Feb_Control_SetDAC(unsigned int ch, int value) {
+    unsigned int dst_num = Feb_Control_rightAddress;
     if (ch < 0 || ch > 15) {
         LOG(logERROR, ("invalid ch for SetDAC.\n"));
         return 0;
     }
 
-    // if (voltage<0) return PowerDownDAC(socket_num,ch);
-
-    *value &= 0xfff;
+    value &= 0xfff;
     unsigned int dac_ic = (ch < 8) ? 1 : 2;
     unsigned int dac_ch = ch % 8;
     unsigned int r =
-        dac_ic << 30 | 3 << 16 | dac_ch << 12 | *value; // 3 write and power up
+        dac_ic << 30 | 3 << 16 | dac_ch << 12 | value; // 3 write and power up
 
     if (Feb_Control_activated) {
         if (!Feb_Interface_WriteRegister(dst_num, 0, r, 1, 0)) {
@@ -1025,31 +520,20 @@ int Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch,
         }
     }
 
-    float voltage = Feb_Control_DACToVoltage(*value, 4096, 0, 2048);
-
-    LOG(logINFO,
-        ("%s set to %d (%.2fmV)\n", Module_dac_names[ch], *value, voltage));
-    LOG(logDEBUG1, ("Dac number %d (%s) of dst %d set to %d (%f mV)\n", ch,
-                    Module_dac_names[ch], dst_num, *value, voltage));
+    float voltage = Feb_Control_DACToVoltage(value, 4096, 0, 2048);
+    LOG(logINFO, ("\tset to %d (%.2fmV)\n", value, voltage));
     return 1;
 }
 
-int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits,
-                            int top) {
-    LOG(logINFO, ("Setting Trimbits\n"));
-
+int Feb_Control_SetTrimbits(unsigned int *trimbits, int top) {
+    LOG(logINFO, ("Setting Trimbits (top:%d)\n", top));
     unsigned int trimbits_to_load_l[1024];
     unsigned int trimbits_to_load_r[1024];
-
-    unsigned int module_index = 0;
-    if (!Feb_Control_GetModuleIndex(module_num, &module_index)) {
-        LOG(logERROR, ("could not set trimbits, bad module number.\n"));
-        return 0;
-    }
 
     if (Feb_Control_Reset() == STATUS_ERROR) {
         LOG(logERROR, ("could not reset DAQ.\n"));
     }
+
     for (int l_r = 0; l_r < 2; l_r++) { // l_r loop
         unsigned int disable_chip_mask =
             l_r ? DAQ_CS_BAR_LEFT : DAQ_CS_BAR_RIGHT;
@@ -1165,43 +649,17 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits,
                 }     // end supercolumn loop sc
             }         // end row loop
 
-            if (Module_TopAddressIsValid(&modules[1])) {
-                if (Feb_Control_activated) {
-                    if (!Feb_Interface_WriteMemoryInLoops(
-                            Module_GetTopLeftAddress(
-                                &modules[Feb_Control_current_index]),
-                            0, 0, 1024, trimbits_to_load_l) ||
-                        !Feb_Interface_WriteMemoryInLoops(
-                            Module_GetTopRightAddress(
-                                &modules[Feb_Control_current_index]),
-                            0, 0, 1024, trimbits_to_load_r) ||
-                        // if
-                        // (!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
-                        //	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
-                        (Feb_Control_StartDAQOnlyNWaitForFinish(5000) !=
-                         STATUS_IDLE)) {
-                        LOG(logERROR, (" some errror!\n"));
-                        return 0;
-                    }
-                }
-            } else {
-                if (Feb_Control_activated) {
-                    if (!Feb_Interface_WriteMemoryInLoops(
-                            Module_GetBottomLeftAddress(
-                                &modules[Feb_Control_current_index]),
-                            0, 0, 1024, trimbits_to_load_l) ||
-                        !Feb_Interface_WriteMemoryInLoops(
-                            Module_GetBottomRightAddress(
-                                &modules[Feb_Control_current_index]),
-                            0, 0, 1024, trimbits_to_load_r) ||
-                        // if
-                        // (!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
-                        //	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
-                        (Feb_Control_StartDAQOnlyNWaitForFinish(5000) !=
-                         STATUS_IDLE)) {
-                        LOG(logERROR, (" some errror!\n"));
-                        return 0;
-                    }
+            if (Feb_Control_activated) {
+                if (!Feb_Interface_WriteMemoryInLoops(Feb_Control_leftAddress,
+                                                      0, 0, 1024,
+                                                      trimbits_to_load_l) ||
+                    !Feb_Interface_WriteMemoryInLoops(Feb_Control_rightAddress,
+                                                      0, 0, 1024,
+                                                      trimbits_to_load_r) ||
+                    (Feb_Control_StartDAQOnlyNWaitForFinish(5000) !=
+                     STATUS_IDLE)) {
+                    LOG(logERROR, (" some errror in setting trimbits!\n"));
+                    return 0;
                 }
             }
 
@@ -1214,107 +672,36 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits,
     return Feb_Control_SetStaticBits(); // send the static bits
 }
 
+int Feb_Control_SaveAllTrimbitsTo(int value, int top) {
+    unsigned int chanregs[Feb_Control_trimbit_size];
+    for (int i = 0; i < Feb_Control_trimbit_size; i++)
+        chanregs[i] = value;
+    return Feb_Control_SetTrimbits(chanregs, top);
+}
+
 unsigned int *Feb_Control_GetTrimbits() {
     return Feb_Control_last_downloaded_trimbits;
 }
 
-unsigned int Feb_Control_AddressToAll() {
-    LOG(logDEBUG1, ("in Feb_Control_AddressToAll()\n"));
-
-    if (moduleSize == 0)
-        return 0;
-
-    if (Module_BottomAddressIsValid(&modules[1])) {
-        // if (Feb_Control_am_i_master)
-        return Module_GetBottomLeftAddress(&modules[1]) |
-               Module_GetBottomRightAddress(&modules[1]);
-        // else return 0;
-    }
-
-    return Module_GetTopLeftAddress(&modules[1]) |
-           Module_GetTopRightAddress(&modules[1]);
-    // return
-    // Module_GetTopLeftAddress(&modules[0])|Module_GetTopRightAddress(&modules[0]);
-}
-
-int Feb_Control_SetCommandRegister(unsigned int cmd) {
-    if (Feb_Control_activated)
-        return Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                           DAQ_REG_CHIP_CMDS, cmd, 0, 0);
-    else
-        return 1;
-}
-
-int Feb_Control_GetDAQStatusRegister(unsigned int dst_address,
-                                     unsigned int *ret_status) {
-    // if deactivated, should  be handled earlier and should not get into this
-    // function
-    if (Feb_Control_activated) {
-        if (!Feb_Interface_ReadRegister(dst_address, DAQ_REG_STATUS,
-                                        ret_status)) {
-            LOG(logERROR, ("Error: reading status register.\n"));
-            return 0;
-        }
-    }
-
-    *ret_status = (0x02FF0000 & *ret_status) >> 16;
-    return 1;
-}
-
-int Feb_Control_StartDAQOnlyNWaitForFinish(int sleep_time_us) {
-    if (Feb_Control_activated) {
-        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_CTRL, 0, 0, 0) ||
-            !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_CTRL, DAQ_CTRL_START, 0, 0)) {
-            LOG(logERROR, ("could not start.\n"));
-            return 0;
-        }
-    }
-    return Feb_Control_WaitForFinishedFlag(sleep_time_us);
-}
-
 int Feb_Control_AcquisitionInProgress() {
     unsigned int status_reg_r = 0, status_reg_l = 0;
-
     // deactivated should return end of acquisition
     if (!Feb_Control_activated)
         return STATUS_IDLE;
 
-    int ind = Feb_Control_current_index;
-    if (Module_BottomAddressIsValid(&modules[ind])) {
-
-        if (!(Feb_Control_GetDAQStatusRegister(
-                Module_GetBottomRightAddress(&modules[ind]), &status_reg_r))) {
-            LOG(logERROR, ("Error: Trouble reading Status register. bottom "
-                           "right address\n"));
-            return STATUS_ERROR;
-        }
-        if (!(Feb_Control_GetDAQStatusRegister(
-                Module_GetBottomLeftAddress(&modules[ind]), &status_reg_l))) {
-            LOG(logERROR, ("Error: Trouble reading Status register. bottom "
-                           "left address\n"));
-            return STATUS_ERROR;
-        }
-
-    } else {
-        if (!(Feb_Control_GetDAQStatusRegister(
-                Module_GetTopRightAddress(&modules[ind]), &status_reg_r))) {
-            LOG(logERROR, ("Error: Trouble reading Status register. top right "
-                           "address\n"));
-            return STATUS_ERROR;
-        }
-        if (!(Feb_Control_GetDAQStatusRegister(
-                Module_GetTopLeftAddress(&modules[ind]), &status_reg_l))) {
-            LOG(logERROR,
-                ("Error: Trouble reading Status register. top left address\n"));
-            return STATUS_ERROR;
-        }
+    if (!(Feb_Control_GetDAQStatusRegister(Feb_Control_rightAddress,
+                                           &status_reg_r))) {
+        LOG(logERROR, ("Error: Trouble reading Status register (right)"
+                       "address\n"));
+        return STATUS_ERROR;
     }
-
+    if (!(Feb_Control_GetDAQStatusRegister(Feb_Control_leftAddress,
+                                           &status_reg_l))) {
+        LOG(logERROR, ("Error: Trouble reading Status register (left)\n"));
+        return STATUS_ERROR;
+    }
     // running
     if ((status_reg_r | status_reg_l) & DAQ_STATUS_DAQ_RUNNING) {
-        LOG(logDEBUG1, ("**runningggg\n"));
         return STATUS_RUNNING;
     }
     // idle
@@ -1323,47 +710,46 @@ int Feb_Control_AcquisitionInProgress() {
 
 int Feb_Control_AcquisitionStartedBit() {
     unsigned int status_reg_r = 0, status_reg_l = 0;
-
     // deactivated should return acquisition started/ready
     if (!Feb_Control_activated)
         return 1;
 
-    int ind = Feb_Control_current_index;
-    if (Module_BottomAddressIsValid(&modules[ind])) {
-
-        if (!(Feb_Control_GetDAQStatusRegister(
-                Module_GetBottomRightAddress(&modules[ind]), &status_reg_r))) {
-            LOG(logERROR, ("Error: Trouble reading Status register. bottom "
-                           "right address\n"));
-            return -1;
-        }
-        if (!(Feb_Control_GetDAQStatusRegister(
-                Module_GetBottomLeftAddress(&modules[ind]), &status_reg_l))) {
-            LOG(logERROR, ("Error: Trouble reading Status register. bottom "
-                           "left address\n"));
-            return -1;
-        }
-
-    } else {
-        if (!(Feb_Control_GetDAQStatusRegister(
-                Module_GetTopRightAddress(&modules[ind]), &status_reg_r))) {
-            LOG(logERROR, ("Error: Trouble reading Status register. top right "
-                           "address\n"));
-            return -1;
-        }
-        if (!(Feb_Control_GetDAQStatusRegister(
-                Module_GetTopLeftAddress(&modules[ind]), &status_reg_l))) {
-            LOG(logERROR,
-                ("Error: Trouble reading Status register. top left address\n"));
-            return -1;
-        }
+    if (!(Feb_Control_GetDAQStatusRegister(Feb_Control_rightAddress,
+                                           &status_reg_r))) {
+        LOG(logERROR, ("Error: Trouble reading Status register (right)\n"));
+        return -1;
     }
-
+    if (!(Feb_Control_GetDAQStatusRegister(Feb_Control_leftAddress,
+                                           &status_reg_l))) {
+        LOG(logERROR, ("Error: Trouble reading Status register (left)\n"));
+        return -1;
+    }
     // doesnt mean it started, just the bit
     if ((status_reg_r | status_reg_l) & DAQ_STATUS_DAQ_RUN_TOGGLE)
         return 1;
-
     return 0;
+}
+
+int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag) {
+    // deactivated dont wait (otherwise give a toggle value back)
+    if (!Feb_Control_activated)
+        return 1;
+
+    // did not start
+    if (prev_flag == -1)
+        return 0;
+
+    int value = prev_flag;
+    while (value == prev_flag) {
+        usleep(sleep_time_us);
+        value = Feb_Control_AcquisitionStartedBit();
+    }
+
+    // did not start
+    if (value == -1)
+        return 0;
+
+    return 1;
 }
 
 int Feb_Control_WaitForFinishedFlag(int sleep_time_us) {
@@ -1386,31 +772,35 @@ int Feb_Control_WaitForFinishedFlag(int sleep_time_us) {
         else
             check_error = 0;
     }
-
     return is_running;
 }
 
-int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag) {
-
-    // deactivated dont wait (otherwise give a toggle value back)
-    if (!Feb_Control_activated)
-        return 1;
-
-    // did not start
-    if (prev_flag == -1)
-        return 0;
-
-    int value = prev_flag;
-    while (value == prev_flag) {
-        usleep(sleep_time_us);
-        value = Feb_Control_AcquisitionStartedBit();
+int Feb_Control_GetDAQStatusRegister(unsigned int dst_address,
+                                     unsigned int *ret_status) {
+    // if deactivated, should  be handled earlier and should not get into this
+    // function
+    if (Feb_Control_activated) {
+        if (!Feb_Interface_ReadRegister(dst_address, DAQ_REG_STATUS,
+                                        ret_status)) {
+            LOG(logERROR, ("Error: reading status register.\n"));
+            return 0;
+        }
     }
-
-    // did not start
-    if (value == -1)
-        return 0;
-
+    *ret_status = (0x02FF0000 & *ret_status) >> 16;
     return 1;
+}
+
+int Feb_Control_StartDAQOnlyNWaitForFinish(int sleep_time_us) {
+    if (Feb_Control_activated) {
+        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                         DAQ_REG_CTRL, 0, 0, 0) ||
+            !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                         DAQ_REG_CTRL, DAQ_CTRL_START, 0, 0)) {
+            LOG(logERROR, ("could not start.\n"));
+            return 0;
+        }
+    }
+    return Feb_Control_WaitForFinishedFlag(sleep_time_us);
 }
 
 int Feb_Control_Reset() {
@@ -1426,44 +816,201 @@ int Feb_Control_Reset() {
             return 0;
         }
     }
-
     return Feb_Control_WaitForFinishedFlag(5000);
 }
 
-int Feb_Control_SetStaticBits() {
+int Feb_Control_ResetChipCompletely() {
+    if (!Feb_Control_SetCommandRegister(DAQ_RESET_COMPLETELY) ||
+        (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)) {
+        LOG(logERROR, ("could not ResetChipCompletely() with 0x%x.\n",
+                       DAQ_RESET_COMPLETELY));
+        return 0;
+    }
+    LOG(logINFO, ("Chip reset completely\n"));
+    return 1;
+}
+
+int Feb_Control_ResetChipPartially() {
+    if (!Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY) ||
+        (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)) {
+        LOG(logERROR, ("could not ResetChipPartially with periphery\n"));
+        return 0;
+    }
+    LOG(logINFO, ("Chip reset periphery 0x%x\n", DAQ_RESET_PERIPHERY));
+
+    if (!Feb_Control_SetCommandRegister(DAQ_RESET_COLUMN_SELECT) ||
+        (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)) {
+        LOG(logERROR, ("could not ResetChipPartially with column select\n"));
+        return 0;
+    }
+    LOG(logINFO, ("Chip reset column select 0x%x\n", DAQ_RESET_COLUMN_SELECT));
+    return 1;
+}
+
+int Feb_Control_SendBitModeToBebServer() {
+    unsigned int just_bit_mode =
+        (DAQ_STATIC_BIT_M4 | DAQ_STATIC_BIT_M8) & Feb_Control_staticBits;
+    unsigned int bit_mode = 16; // default
+    if (just_bit_mode == DAQ_STATIC_BIT_M4)
+        bit_mode = 4;
+    else if (just_bit_mode == DAQ_STATIC_BIT_M8)
+        bit_mode = 8;
+    else if (Feb_Control_subFrameMode &
+             DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING)
+        bit_mode = 32;
+
+    if (!Beb_SetUpTransferParameters(bit_mode)) {
+        LOG(logERROR, ("Error: sending bit mode to beb\n"));
+        return 0;
+    }
+    return 1;
+}
+
+unsigned int Feb_Control_ConvertTimeToRegister(float time_in_sec) {
+    float n_clk_cycles =
+        round(time_in_sec / 10e-9); // 200 MHz ctb clk or 100 MHz feb clk
+
+    unsigned int decoded_time;
+    if (n_clk_cycles > (pow(2, 29) - 1) * pow(10, 7)) {
+        float max_time = 10e-9 * (pow(2, 28) - 1) * pow(10, 7);
+        LOG(logERROR, ("time exceeds (%f) maximum exposure time of %f sec.\n",
+                       time_in_sec, max_time));
+        LOG(logINFO, ("\t Setting to maximum %f us.\n", max_time));
+        decoded_time = 0xffffffff;
+    } else {
+        int power_of_ten = 0;
+        while (n_clk_cycles > pow(2, 29) - 1) {
+            power_of_ten++;
+            n_clk_cycles = round(n_clk_cycles / 10.0);
+        }
+        decoded_time = (int)(n_clk_cycles) << 3 | (int)(power_of_ten);
+    }
+    return decoded_time;
+}
+
+int Feb_Control_PrepareForAcquisition() {
+    LOG(logINFOBLUE, ("Preparing for Acquisition\n"));
+    Feb_Control_PrintAcquisitionSetup();
+
+    if (Feb_Control_Reset() == STATUS_ERROR) {
+        LOG(logERROR, ("Trouble reseting daq or data stream\n"));
+        return 0;
+    }
+
+    if (!Feb_Control_SetStaticBits1(Feb_Control_staticBits &
+                                    (DAQ_STATIC_BIT_M4 | DAQ_STATIC_BIT_M8))) {
+        LOG(logERROR, ("Trouble setting static bits\n"));
+        return 0;
+    }
+
+    if (!Feb_Control_SendBitModeToBebServer()) {
+        LOG(logERROR, ("Trouble sending static bits to server\n"));
+        return 0;
+    }
+
+    int ret = 0;
+    if (Feb_Control_counter_bit)
+        ret = Feb_Control_ResetChipCompletely();
+    else
+        ret = Feb_Control_ResetChipPartially();
+    if (!ret) {
+        LOG(logERROR, ("Trouble resetting chips\n"));
+        return 0;
+    }
+
+    unsigned int reg_nums[7];
+    unsigned int reg_vals[7];
+    reg_nums[0] = DAQ_REG_CTRL;
+    reg_vals[0] = 0;
+    reg_nums[1] = DAQ_REG_NEXPOSURES;
+    reg_vals[1] = Feb_Control_nimages;
+    reg_nums[2] = DAQ_REG_EXPOSURE_TIMER;
+    reg_vals[2] =
+        Feb_Control_ConvertTimeToRegister(Feb_Control_exposure_time_in_sec);
+    reg_nums[3] = DAQ_REG_EXPOSURE_REPEAT_TIMER;
+    reg_vals[3] =
+        Feb_Control_ConvertTimeToRegister(Feb_Control_exposure_period_in_sec);
+    reg_nums[4] = DAQ_REG_CHIP_CMDS;
+    reg_vals[4] = (Feb_Control_acquireNReadoutMode | Feb_Control_triggerMode |
+                   Feb_Control_externalEnableMode | Feb_Control_subFrameMode);
+    reg_nums[5] = DAQ_REG_SUBFRAME_EXPOSURES;
+    reg_vals[5] = Feb_Control_subframe_exposure_time_in_10nsec;
+    reg_nums[6] = DAQ_REG_SUBFRAME_PERIOD;
+    reg_vals[6] = Feb_Control_subframe_period_in_10nsec;
     if (Feb_Control_activated) {
-        // program=1,m4=2,m8=4,test=8,rotest=16,cs_bar_left=32,cs_bar_right=64
-        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_STATIC_BITS,
-                                         Feb_Control_staticBits, 0, 0) ||
-            !Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT) ||
-            (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)) {
-            LOG(logERROR, ("Could not set static bits\n"));
+        if (!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(), 7,
+                                          reg_nums, reg_vals, 0, 0)) {
+            LOG(logERROR, ("Trouble starting acquisition\n"));
             return 0;
         }
     }
-
-    return 1;
-}
-int Feb_Control_SetStaticBits1(unsigned int the_static_bits) {
-    Feb_Control_staticBits = the_static_bits;
-    return Feb_Control_SetStaticBits();
-}
-
-int Feb_Control_SetInTestModeVariable(int on) {
-    if (on)
-        Feb_Control_staticBits |=
-            DAQ_STATIC_BIT_CHIP_TEST; // setting test bit to high
-    else
-        Feb_Control_staticBits &=
-            (~DAQ_STATIC_BIT_CHIP_TEST); // setting test bit to low
     return 1;
 }
 
-int Feb_Control_GetTestModeVariable() {
-    return Feb_Control_staticBits & DAQ_STATIC_BIT_CHIP_TEST;
+void Feb_Control_PrintAcquisitionSetup() {
+    time_t rawtime;
+    time(&rawtime);
+    struct tm *timeinfo = localtime(&rawtime);
+    LOG(logINFO,
+        ("Starting an exposure: (%s)"
+         "\t Dynamic range nbits: %d\n"
+         "\t Trigger mode: 0x%x\n"
+         "\t Number of exposures: %d\n"
+         "\t Exsposure time (if used): %f seconds.\n"
+         "\t Exsposure period (if used): %f seconds.\n\n",
+         asctime(timeinfo), Feb_Control_GetDynamicRange(),
+         Feb_Control_triggerMode, Feb_Control_GetNExposures(),
+         Feb_Control_exposure_time_in_sec, Feb_Control_exposure_period_in_sec));
 }
 
+int Feb_Control_StartAcquisition() {
+    LOG(logINFOBLUE, ("Starting Acquisition\n"));
+    unsigned int reg_nums[15];
+    unsigned int reg_vals[15];
+    for (int i = 0; i < 14; i++) {
+        reg_nums[i] = DAQ_REG_CTRL;
+        reg_vals[i] = 0;
+    }
+    reg_nums[14] = DAQ_REG_CTRL;
+    reg_vals[14] = ACQ_CTRL_START;
+    if (Feb_Control_activated) {
+        if (!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(), 15,
+                                          reg_nums, reg_vals, 0, 0)) {
+            LOG(logERROR, ("Trouble starting acquisition\n"));
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int Feb_Control_StopAcquisition() { return Feb_Control_Reset(); }
+
+int Feb_Control_SoftwareTrigger() {
+    unsigned int orig_value = 0;
+    Feb_Interface_ReadRegister(Feb_Control_AddressToAll(), DAQ_REG_CHIP_CMDS,
+                               &orig_value);
+    unsigned int cmd = orig_value | DAQ_REG_CHIP_CMDS_INT_TRIGGER;
+    if (Feb_Control_activated) {
+        // set trigger bit
+        LOG(logDEBUG1, ("Setting Trigger, Register:0x%x\n", cmd));
+        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                         DAQ_REG_CHIP_CMDS, cmd, 0, 0)) {
+            LOG(logERROR, ("Could not give software trigger\n"));
+            return 0;
+        }
+        // unset trigger bit
+        LOG(logDEBUG1, ("Unsetting Trigger, Register:0x%x\n", orig_value));
+        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                         DAQ_REG_CHIP_CMDS, orig_value, 0, 0)) {
+            LOG(logERROR, ("Could not give software trigger\n"));
+            return 0;
+        }
+        LOG(logINFO, ("Software Internal Trigger Sent!\n"));
+    }
+    return 1;
+}
+
+// parameters
 int Feb_Control_SetDynamicRange(unsigned int four_eight_sixteen_or_thirtytwo) {
     static unsigned int everything_but_bit_mode = DAQ_STATIC_BIT_PROGRAM |
                                                   DAQ_STATIC_BIT_CHIP_TEST |
@@ -1509,8 +1056,8 @@ unsigned int Feb_Control_GetDynamicRange() {
     return 16;
 }
 
-int Feb_Control_SetReadoutSpeed(
-    unsigned int readout_speed) { // 0->full,1->half,2->quarter or 3->super_slow
+int Feb_Control_SetReadoutSpeed(unsigned int readout_speed) {
+    // 0->full,1->half,2->quarter or 3->super_slow
     Feb_Control_acquireNReadoutMode &= (~DAQ_CHIP_CONTROLLER_SUPER_SLOW_SPEED);
     if (readout_speed == 1) {
         Feb_Control_acquireNReadoutMode |= DAQ_CHIP_CONTROLLER_HALF_SPEED;
@@ -1528,12 +1075,11 @@ int Feb_Control_SetReadoutSpeed(
         }
         LOG(logINFO, ("Speed set to full speed (100 MHz)\n"));
     }
-
     return 1;
 }
 
-int Feb_Control_SetReadoutMode(
-    unsigned int readout_mode) { // 0->parallel,1->non-parallel,2-> safe_mode
+int Feb_Control_SetReadoutMode(unsigned int readout_mode) {
+    // 0->parallel,1->non-parallel,2-> safe_mode
     Feb_Control_acquireNReadoutMode &= (~DAQ_NEXPOSURERS_PARALLEL_MODE);
     if (readout_mode == 1) {
         Feb_Control_acquireNReadoutMode |=
@@ -1559,7 +1105,7 @@ int Feb_Control_SetReadoutMode(
     return 1;
 }
 
-int Feb_Control_SetTriggerMode(unsigned int trigger_mode, int polarity) {
+int Feb_Control_SetTriggerMode(unsigned int trigger_mode) {
     //"00"-> internal exposure time and period,
     //"01"-> external acquistion start and internal exposure time and period,
     //"10"-> external start trigger and internal exposure time,
@@ -1585,7 +1131,8 @@ int Feb_Control_SetTriggerMode(unsigned int trigger_mode, int polarity) {
         LOG(logINFO, ("Trigger mode set to Auto\n"));
         return trigger_mode == 0;
     }
-
+    // polarity
+    int polarity = 1; // hard coded (can be configured in future)
     if (polarity) {
         Feb_Control_triggerMode |= DAQ_NEXPOSURERS_EXTERNAL_TRIGGER_POLARITY;
         LOG(logINFO, ("External trigger polarity set to positive\n"));
@@ -1593,7 +1140,6 @@ int Feb_Control_SetTriggerMode(unsigned int trigger_mode, int polarity) {
         Feb_Control_triggerMode &= (~DAQ_NEXPOSURERS_EXTERNAL_TRIGGER_POLARITY);
         LOG(logINFO, ("External trigger polarity set to negitive\n"));
     }
-
     return 1;
 }
 
@@ -1611,12 +1157,9 @@ int Feb_Control_SetExternalEnableMode(int use_external_enable, int polarity) {
                       (polarity ? "positive" : "negative")));
 
     } else {
-        Feb_Control_externalEnableMode =
-            0; /* changed by Dhanya according to old code &=
-                  (~DAQ_NEXPOSURERS_EXTERNAL_ENABLING);*/
+        Feb_Control_externalEnableMode = 0;
         LOG(logINFO, ("External enabling disabled\n"));
     }
-
     return 1;
 }
 
@@ -1625,7 +1168,6 @@ int Feb_Control_SetNExposures(unsigned int n_images) {
         LOG(logERROR, ("nimages must be greater than zero.%d\n", n_images));
         return 0;
     }
-
     Feb_Control_nimages = n_images;
     LOG(logDEBUG1, ("Number of images set to %d\n", Feb_Control_nimages));
     return 1;
@@ -1638,9 +1180,11 @@ int Feb_Control_SetExposureTime(double the_exposure_time_in_sec) {
         ("Exposure time set to %fs\n", Feb_Control_exposure_time_in_sec));
     return 1;
 }
+
 double Feb_Control_GetExposureTime() {
     return Feb_Control_exposure_time_in_sec;
 }
+
 int64_t Feb_Control_GetExposureTime_in_nsec() {
     return (int64_t)(Feb_Control_exposure_time_in_sec * (1E9));
 }
@@ -1654,6 +1198,7 @@ int Feb_Control_SetSubFrameExposureTime(
          (long long int)Feb_Control_subframe_exposure_time_in_10nsec * 10));
     return 1;
 }
+
 int64_t Feb_Control_GetSubFrameExposureTime() {
     return Feb_Control_subframe_exposure_time_in_10nsec * 10;
 }
@@ -1678,205 +1223,275 @@ double Feb_Control_GetExposurePeriod() {
     return Feb_Control_exposure_period_in_sec;
 }
 
-unsigned int Feb_Control_ConvertTimeToRegister(float time_in_sec) {
-    float n_clk_cycles =
-        round(time_in_sec / 10e-9); // 200 MHz ctb clk or 100 MHz feb clk
-
-    unsigned int decoded_time;
-    if (n_clk_cycles > (pow(2, 29) - 1) * pow(10, 7)) {
-        float max_time = 10e-9 * (pow(2, 28) - 1) * pow(10, 7);
-        LOG(logERROR, ("time exceeds (%f) maximum exposure time of %f sec.\n",
-                       time_in_sec, max_time));
-        LOG(logINFO, ("\t Setting to maximum %f us.\n", max_time));
-        decoded_time = 0xffffffff;
-    } else {
-        int power_of_ten = 0;
-        while (n_clk_cycles > pow(2, 29) - 1) {
-            power_of_ten++;
-            n_clk_cycles = round(n_clk_cycles / 10.0);
-        }
-        decoded_time = (int)(n_clk_cycles) << 3 | (int)(power_of_ten);
-    }
-
-    return decoded_time;
-}
-
-int Feb_Control_ResetChipCompletely() {
-    if (!Feb_Control_SetCommandRegister(DAQ_RESET_COMPLETELY) ||
-        (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)) {
-        LOG(logERROR, ("could not ResetChipCompletely() with 0x%x.\n",
-                       DAQ_RESET_COMPLETELY));
-        return 0;
-    }
-    LOG(logINFO, ("Chip reset completely\n"));
-    return 1;
-}
-
-int Feb_Control_ResetChipPartially() {
-    if (!Feb_Control_SetCommandRegister(DAQ_RESET_PERIPHERY) ||
-        (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)) {
-        LOG(logERROR, ("could not ResetChipPartially with periphery\n"));
-        return 0;
-    }
-    LOG(logINFO, ("Chip reset periphery 0x%x\n", DAQ_RESET_PERIPHERY));
-
-    if (!Feb_Control_SetCommandRegister(DAQ_RESET_COLUMN_SELECT) ||
-        (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)) {
-        LOG(logERROR, ("could not ResetChipPartially with column select\n"));
-        return 0;
-    }
-    LOG(logINFO, ("Chip reset column select 0x%x\n", DAQ_RESET_COLUMN_SELECT));
-
-    return 1;
-}
-
-void Feb_Control_PrintAcquisitionSetup() {
-
-    time_t rawtime;
-    time(&rawtime);
-    struct tm *timeinfo = localtime(&rawtime);
-
-    LOG(logINFO,
-        ("Starting an exposure: (%s)"
-         "\t Dynamic range nbits: %d\n"
-         "\t Trigger mode: 0x%x\n"
-         "\t Number of exposures: %d\n"
-         "\t Exsposure time (if used): %f seconds.\n"
-         "\t Exsposure period (if used): %f seconds.\n\n",
-         asctime(timeinfo), Feb_Control_GetDynamicRange(),
-         Feb_Control_triggerMode, Feb_Control_GetNExposures(),
-         Feb_Control_exposure_time_in_sec, Feb_Control_exposure_period_in_sec));
-}
-
-int Feb_Control_SendBitModeToBebServer() {
-
-    unsigned int just_bit_mode =
-        (DAQ_STATIC_BIT_M4 | DAQ_STATIC_BIT_M8) & Feb_Control_staticBits;
-    unsigned int bit_mode = 16; // default
-    if (just_bit_mode == DAQ_STATIC_BIT_M4)
-        bit_mode = 4;
-    else if (just_bit_mode == DAQ_STATIC_BIT_M8)
-        bit_mode = 8;
-    else if (Feb_Control_subFrameMode &
-             DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING)
-        bit_mode = 32;
-
-    if (!Beb_SetUpTransferParameters(bit_mode)) {
-        LOG(logERROR, ("Error: sending bit mode ...\n"));
-        return 0;
-    }
-
-    return 1;
-}
-
-int Feb_Control_PrepareForAcquisition() { // return 1;
-    LOG(logINFO, ("Going to Prepare for Acquisition\n\n\n"));
-    static unsigned int reg_nums[20];
-    static unsigned int reg_vals[20];
-
-    Feb_Control_PrintAcquisitionSetup();
-
-    //  if (!Reset()||!ResetDataStream()) {
-    if (Feb_Control_Reset() == STATUS_ERROR) {
-        LOG(logERROR, ("Trouble reseting daq or data stream...\n"));
-        return 0;
-    }
-
-    if (!Feb_Control_SetStaticBits1(Feb_Control_staticBits &
-                                    (DAQ_STATIC_BIT_M4 | DAQ_STATIC_BIT_M8))) {
-        LOG(logERROR, ("Trouble setting static bits ...\n"));
-        return 0;
-    }
-
-    if (!Feb_Control_SendBitModeToBebServer()) {
-        LOG(logERROR, ("Trouble sending static bits to server ...\n"));
-        return 0;
-    }
-
-    int ret = 0;
-    if (Feb_Control_counter_bit)
-        ret = Feb_Control_ResetChipCompletely();
-    else
-        ret = Feb_Control_ResetChipPartially();
-    if (!ret) {
-        LOG(logERROR, ("Trouble resetting chips ...\n"));
-        return 0;
-    }
-
-    reg_nums[0] = DAQ_REG_CTRL;
-    reg_vals[0] = 0;
-    reg_nums[1] = DAQ_REG_NEXPOSURES;
-    reg_vals[1] = Feb_Control_nimages;
-    reg_nums[2] = DAQ_REG_EXPOSURE_TIMER;
-    reg_vals[2] =
-        Feb_Control_ConvertTimeToRegister(Feb_Control_exposure_time_in_sec);
-    reg_nums[3] = DAQ_REG_EXPOSURE_REPEAT_TIMER;
-    reg_vals[3] =
-        Feb_Control_ConvertTimeToRegister(Feb_Control_exposure_period_in_sec);
-    reg_nums[4] = DAQ_REG_CHIP_CMDS;
-    reg_vals[4] = (Feb_Control_acquireNReadoutMode | Feb_Control_triggerMode |
-                   Feb_Control_externalEnableMode | Feb_Control_subFrameMode);
-    reg_nums[5] = DAQ_REG_SUBFRAME_EXPOSURES;
-    reg_vals[5] =
-        Feb_Control_subframe_exposure_time_in_10nsec; //(1 means 10ns, 100 means
-                                                      // 1000ns)
-    reg_nums[6] = DAQ_REG_SUBFRAME_PERIOD;
-    reg_vals[6] = Feb_Control_subframe_period_in_10nsec; //(1 means 10ns, 100
-                                                         // means 1000ns)
-    // if
-    // (!Feb_Interface_WriteRegisters((Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1])),20,reg_nums,reg_vals,0,0))
-    // {
-    if (Feb_Control_activated) {
-        if (!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(), 7,
-                                          reg_nums, reg_vals, 0, 0)) {
-            LOG(logERROR, ("Trouble starting acquisition....\n"));
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-int Feb_Control_StartAcquisition() {
-    LOG(logINFOBLUE, ("Starting Acquisition\n"));
-
-    static unsigned int reg_nums[20];
-    static unsigned int reg_vals[20];
-
-    for (int i = 0; i < 14; i++) {
-        reg_nums[i] = DAQ_REG_CTRL;
-        reg_vals[i] = 0;
-    }
-    reg_nums[14] = DAQ_REG_CTRL;
-    reg_vals[14] = ACQ_CTRL_START;
-
-    if (Feb_Control_activated) {
-        if (!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(), 15,
-                                          reg_nums, reg_vals, 0, 0)) {
-            LOG(logERROR, ("Trouble starting acquisition....\n"));
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-int Feb_Control_StopAcquisition() { return Feb_Control_Reset(); }
-
-int Feb_Control_SaveAllTrimbitsTo(int value, int top) {
-    unsigned int chanregs[Feb_Control_trimbit_size];
-    for (int i = 0; i < Feb_Control_trimbit_size; i++)
-        chanregs[i] = value;
-    return Feb_Control_SetTrimbits(0, chanregs, top);
-}
-
 void Feb_Control_Set_Counter_Bit(int value) { Feb_Control_counter_bit = value; }
 
 int Feb_Control_Get_Counter_Bit() { return Feb_Control_counter_bit; }
 
+int Feb_Control_SetInterruptSubframe(int val) {
+    LOG(logINFO, ("Setting Interrupt Subframe to %d\n", val));
+    // they need to be written separately because the left and right registers
+    // have different values for this particular register
+    uint32_t offset = DAQ_REG_HRDWRE;
+    uint32_t regVal = 0;
+    char side[2][10] = {"right", "left"};
+    unsigned int addr[2] = {Feb_Control_rightAddress, Feb_Control_leftAddress};
+    for (int iloop = 0; iloop < 2; ++iloop) {
+        // get previous value to keep it
+        if (!Feb_Interface_ReadRegister(addr[iloop], offset, &regVal)) {
+            LOG(logERROR,
+                ("Could not read %s interrupt subframe\n", side[iloop]));
+            return 0;
+        }
+        uint32_t data = ((val == 0) ? (regVal & ~DAQ_REG_HRDWRE_INTRRPT_SF_MSK)
+                                    : (regVal | DAQ_REG_HRDWRE_INTRRPT_SF_MSK));
+        if (!Feb_Interface_WriteRegister(addr[iloop], offset, data, 0, 0)) {
+            LOG(logERROR,
+                ("Could not write 0x%x to %s interrupt subframe addr 0x%x\n",
+                 data, side[iloop], offset));
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int Feb_Control_GetInterruptSubframe() {
+    // they need to be written separately because the left and right registers
+    // have different values for this particular register
+    uint32_t offset = DAQ_REG_HRDWRE;
+    uint32_t regVal = 0;
+
+    char side[2][10] = {"right", "left"};
+    unsigned int addr[2] = {Feb_Control_rightAddress, Feb_Control_leftAddress};
+    uint32_t value[2] = {0, 0};
+    for (int iloop = 0; iloop < 2; ++iloop) {
+        if (!Feb_Interface_ReadRegister(addr[iloop], offset, &regVal)) {
+            LOG(logERROR,
+                ("Could not read back %s interrupt subframe\n", side[iloop]));
+            return -1;
+        }
+        value[iloop] = (regVal & DAQ_REG_HRDWRE_INTRRPT_SF_MSK) >>
+                       DAQ_REG_HRDWRE_INTRRPT_SF_OFST;
+    }
+    // inconsistent
+    if (value[0] != value[1]) {
+        LOG(logERROR, ("Inconsistent values of interrupt subframe betweeen "
+                       "right %d and left %d\n",
+                       value[0], value[1]));
+        return -1;
+    }
+    return value[0];
+}
+
+int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right) {
+    uint32_t offset = DAQ_REG_HRDWRE;
+    unsigned int addr[2] = {0, 0};
+    if (left) {
+        addr[0] = Feb_Control_leftAddress;
+    }
+    if (right) {
+        addr[1] = Feb_Control_rightAddress;
+    }
+    char *top_names[] = {TOP_NAMES};
+    for (int i = 0; i < 2; ++i) {
+        if (addr[i] == 0) {
+            continue;
+        }
+        uint32_t value = 0;
+        if (!Feb_Interface_ReadRegister(addr[i], offset, &value)) {
+            LOG(logERROR, ("Could not read %s Feb reg to set Top flag\n",
+                           (i == 0 ? "left" : "right")));
+            return 0;
+        }
+        switch (ind) {
+        case TOP_HARDWARE:
+            value &= ~DAQ_REG_HRDWRE_OW_TOP_MSK;
+            break;
+        case OW_TOP:
+            value |= DAQ_REG_HRDWRE_OW_TOP_MSK;
+            value |= DAQ_REG_HRDWRE_TOP_MSK;
+            break;
+        case OW_BOTTOM:
+            value |= DAQ_REG_HRDWRE_OW_TOP_MSK;
+            value &= ~DAQ_REG_HRDWRE_TOP_MSK;
+            break;
+        default:
+            LOG(logERROR, ("Unknown top index in Feb: %d\n", ind));
+            return 0;
+        }
+        if (!Feb_Interface_WriteRegister(addr[i], offset, value, 0, 0)) {
+            LOG(logERROR, ("Could not set Top flag to %s in %s Feb\n",
+                           top_names[ind], (i == 0 ? "left" : "right")));
+            return 0;
+        }
+    }
+    if (left && right) {
+        LOG(logINFOBLUE, ("%s Top flag to %s Feb\n",
+                          (ind == TOP_HARDWARE ? "Resetting" : "Overwriting"),
+                          top_names[ind]));
+    }
+    return 1;
+}
+
+void Feb_Control_SetMasterVariable(int val) { Feb_Control_master = val; }
+
+int Feb_Control_SetMaster(enum MASTERINDEX ind) {
+    uint32_t offset = DAQ_REG_HRDWRE;
+    unsigned int addr[2] = {Feb_Control_leftAddress, Feb_Control_rightAddress};
+    char *master_names[] = {MASTER_NAMES};
+    for (int i = 0; i < 2; ++i) {
+        uint32_t value = 0;
+        if (!Feb_Interface_ReadRegister(addr[i], offset, &value)) {
+            LOG(logERROR, ("Could not read %s Feb reg to set Master flag\n",
+                           (i == 0 ? "left" : "right")));
+            return 0;
+        }
+        switch (ind) {
+        case MASTER_HARDWARE:
+            value &= ~DAQ_REG_HRDWRE_OW_MASTER_MSK;
+            break;
+        case OW_MASTER:
+            value |= DAQ_REG_HRDWRE_OW_MASTER_MSK;
+            value |= DAQ_REG_HRDWRE_MASTER_MSK;
+            break;
+        case OW_SLAVE:
+            value |= DAQ_REG_HRDWRE_OW_MASTER_MSK;
+            value &= ~DAQ_REG_HRDWRE_MASTER_MSK;
+            break;
+        default:
+            LOG(logERROR, ("Unknown master index in Feb: %d\n", ind));
+            return 0;
+        }
+
+        if (!Feb_Interface_WriteRegister(addr[i], offset, value, 0, 0)) {
+            LOG(logERROR, ("Could not set Master flag to %s in %s Feb\n",
+                           master_names[ind], (i == 0 ? "left" : "right")));
+            return 0;
+        }
+    }
+    LOG(logINFOBLUE, ("%s Master flag to %s Feb\n",
+                      (ind == MASTER_HARDWARE ? "Resetting" : "Overwriting"),
+                      master_names[ind]));
+    return 1;
+}
+
+int Feb_Control_SetQuad(int val) {
+    LOG(logINFO, ("Setting Quad to %d in Feb\n", val));
+    // only setting on the right feb if quad
+    return Feb_Control_SetTop(val == 0 ? TOP_HARDWARE : OW_TOP, 0, 1);
+}
+
+int Feb_Control_SetReadNLines(int value) {
+    LOG(logINFO, ("Setting Read N Lines to %d\n", value));
+    if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
+                                     DAQ_REG_PARTIAL_READOUT, value, 0, 0)) {
+        LOG(logERROR, ("Could not write %d to read n lines reg\n", value));
+        return 0;
+    }
+    return 1;
+}
+
+int Feb_Control_GetReadNLines() {
+    uint32_t regVal = 0;
+    if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
+                                    DAQ_REG_PARTIAL_READOUT, &regVal)) {
+        LOG(logERROR, ("Could not read back read n lines reg\n"));
+        return -1;
+    }
+    LOG(logDEBUG1, ("Retval read n lines: %d\n", regVal));
+    return regVal;
+}
+
+int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
+    uint32_t actualOffset = offset;
+    char side[2][10] = {"right", "left"};
+    unsigned int addr[2] = {Feb_Control_rightAddress, Feb_Control_leftAddress};
+
+    int run[2] = {0, 0};
+    // both registers
+    if (offset < 0x100) {
+        run[0] = 1;
+        run[1] = 1;
+    }
+    // right registers only
+    else if (offset >= 0x200) {
+        run[0] = 1;
+        actualOffset = offset - 0x200;
+    }
+    // left registers only
+    else {
+        run[1] = 1;
+        actualOffset = offset - 0x100;
+    }
+
+    for (int iloop = 0; iloop < 2; ++iloop) {
+        if (run[iloop]) {
+            LOG(logINFO,
+                ("Writing 0x%x to %s 0x%x\n", data, side[iloop], actualOffset));
+            if (!Feb_Interface_WriteRegister(addr[iloop], actualOffset, data, 0,
+                                             0)) {
+                LOG(logERROR, ("Could not write 0x%x to %s addr 0x%x\n", data,
+                               side[iloop], actualOffset));
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
+    uint32_t actualOffset = offset;
+    char side[2][10] = {"right", "left"};
+    unsigned int addr[2] = {Feb_Control_rightAddress, Feb_Control_leftAddress};
+    uint32_t value[2] = {0, 0};
+    int run[2] = {0, 0};
+    // both registers
+    if (offset < 0x100) {
+        run[0] = 1;
+        run[1] = 1;
+    }
+    // right registers only
+    else if (offset >= 0x200) {
+        run[0] = 1;
+        actualOffset = offset - 0x200;
+    }
+    // left registers only
+    else {
+        run[1] = 1;
+        actualOffset = offset - 0x100;
+    }
+
+    for (int iloop = 0; iloop < 2; ++iloop) {
+        if (run[iloop]) {
+            if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset,
+                                            &value[iloop])) {
+                LOG(logERROR, ("Could not read from %s addr 0x%x\n",
+                               side[iloop], actualOffset));
+                return 0;
+            }
+            LOG(logINFO, ("Read 0x%x from %s 0x%x\n", value[iloop], side[iloop],
+                          actualOffset));
+            *retval = value[iloop];
+            // if not the other (left, not right OR right, not left), return the
+            // value
+            if (!run[iloop ? 0 : 1]) {
+                return 1;
+            }
+        }
+    }
+    // Inconsistent values
+    if (value[0] != value[1]) {
+        LOG(logERROR,
+            ("Inconsistent values read from left 0x%x and right 0x%x\n",
+             value[0], value[1]));
+        return 0;
+    }
+    return 1;
+}
+
+// pulsing
 int Feb_Control_Pulse_Pixel(int npulses, int x, int y) {
     // this function is not designed for speed
-
     int pulse_multiple = 0; // has to be 0 or 1
 
     if (x < 0) {
@@ -1920,7 +1535,6 @@ int Feb_Control_Pulse_Pixel(int npulses, int x, int y) {
     Feb_Control_SendTokenIn();
     Feb_Control_ClockRowClock(nrowclocks);
     Feb_Control_PulsePixelNMove(npulses, 0, 0);
-
     return 1;
 }
 
@@ -1939,11 +1553,9 @@ int Feb_Control_PulsePixelNMove(int npulses, int inc_x_pos, int inc_y_pos) {
             return 0;
         }
     }
-
     return 1;
 }
 
-/**new*/
 int Feb_Control_Shift32InSerialIn(unsigned int value_to_shift_in) {
     if (Feb_Control_activated) {
         if (!Feb_Control_SetCommandRegister(DAQ_SERIALIN_SHIFT_IN_32) ||
@@ -1974,7 +1586,6 @@ int Feb_Control_ClockRowClock(unsigned int ntimes) {
                        ntimes));
         ntimes = 1023;
     }
-
     if (Feb_Control_activated) {
         if (!Feb_Control_SetCommandRegister(DAQ_CLK_ROW_CLK_NTIMES) ||
             !Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
@@ -1985,13 +1596,11 @@ int Feb_Control_ClockRowClock(unsigned int ntimes) {
             return 0;
         }
     }
-
     return 1;
 }
 
 int Feb_Control_PulseChip(int npulses) {
     int on = 1;
-
     if (npulses == -1) {
         on = 0;
         LOG(logINFO, ("\nResetting to normal mode\n"));
@@ -2017,7 +1626,6 @@ int Feb_Control_PulseChip(int npulses) {
     Feb_Control_SetExternalEnableMode(on, 1);
     Feb_Control_counter_bit = (on ? 0 : 1);
     LOG(logINFO, ("Feb_Control_counter_bit:%d\n", Feb_Control_counter_bit));
-
     if (on) {
         LOG(logINFO, ("Pulse chip success\n\n"));
     } else {
@@ -2026,15 +1634,16 @@ int Feb_Control_PulseChip(int npulses) {
     return 1;
 }
 
+// rate correction
 int64_t Feb_Control_Get_RateTable_Tau_in_nsec() {
     return Feb_Control_RateTable_Tau_in_nsec;
 }
+
 int64_t Feb_Control_Get_RateTable_Period_in_nsec() {
     return Feb_Control_RateTable_Period_in_nsec;
 }
 
 int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
-
     // period = exptime if 16bit, period = subexptime if 32 bit
     int dr = Feb_Control_GetDynamicRange();
     double period_in_sec =
@@ -2064,7 +1673,6 @@ int Feb_Control_SetRateCorrectionTau(int64_t tau_in_Nsec) {
 
     LOG(logINFO, ("Changing Rate Correction Table tau:%0.8f sec, period:%f sec",
                   tau_in_sec, period_in_sec));
-
     LOG(logINFO, ("\tCalculating table for tau of %lld ns.\n", tau_in_Nsec));
     for (int i = 0; i < np; i++) {
         Feb_Control_rate_meas[i] = i * exp(-i / period_in_sec * tau_in_sec);
@@ -2198,37 +1806,17 @@ int Feb_Control_SetRateCorrectionTable(unsigned int *table) {
     }
     LOG(logINFO, ("daq reset completely\n"));
 
-    if (Module_TopAddressIsValid(&modules[1])) {
-        if (Feb_Control_activated) {
-            if (!Feb_Interface_WriteMemoryInLoops(
-                    Module_GetTopLeftAddress(
-                        &modules[Feb_Control_current_index]),
-                    1, 0, 1024, Feb_Control_rate_correction_table) ||
-                !Feb_Interface_WriteMemoryInLoops(
-                    Module_GetTopRightAddress(
-                        &modules[Feb_Control_current_index]),
-                    1, 0, 1024, Feb_Control_rate_correction_table) ||
-                (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)) {
-                LOG(logERROR, ("could not write to memory (top) "
-                               "::Feb_Control_SetRateCorrectionTable\n"));
-                return 0;
-            }
-        }
-    } else {
-        if (Feb_Control_activated) {
-            if (!Feb_Interface_WriteMemoryInLoops(
-                    Module_GetBottomLeftAddress(
-                        &modules[Feb_Control_current_index]),
-                    1, 0, 1024, Feb_Control_rate_correction_table) ||
-                !Feb_Interface_WriteMemoryInLoops(
-                    Module_GetBottomRightAddress(
-                        &modules[Feb_Control_current_index]),
-                    1, 0, 1024, Feb_Control_rate_correction_table) ||
-                (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)) {
-                LOG(logERROR, ("could not write to memory (bottom) "
-                               "::Feb_Control_SetRateCorrectionTable\n"));
-                return 0;
-            }
+    if (Feb_Control_activated) {
+        if (!Feb_Interface_WriteMemoryInLoops(
+                Feb_Control_leftAddress, 1, 0, 1024,
+                Feb_Control_rate_correction_table) ||
+            !Feb_Interface_WriteMemoryInLoops(
+                Feb_Control_rightAddress, 1, 0, 1024,
+                Feb_Control_rate_correction_table) ||
+            (Feb_Control_StartDAQOnlyNWaitForFinish(5000) != STATUS_IDLE)) {
+            LOG(logERROR, ("could not write to memory (top) "
+                           "::Feb_Control_SetRateCorrectionTable\n"));
+            return 0;
         }
     }
     return 1;
@@ -2270,17 +1858,14 @@ int Feb_Control_PrintCorrectedValues() {
     return 1;
 }
 
+// adcs
 // So if software says now 40.00 you neeed to convert to mdegrees 40000(call it
 // A1) and then A1/65536/0.00198421639-273.15
-
 int Feb_Control_GetLeftFPGATemp() {
     unsigned int temperature = 0;
-    if (Module_TopAddressIsValid(&modules[1]))
-        Feb_Interface_ReadRegister(Module_GetTopLeftAddress(&modules[1]),
-                                   FEB_REG_STATUS, &temperature);
-    else
-        Feb_Interface_ReadRegister(Module_GetBottomLeftAddress(&modules[1]),
-                                   FEB_REG_STATUS, &temperature);
+    Feb_Interface_ReadRegister(Feb_Control_leftAddress, FEB_REG_STATUS,
+                               &temperature);
+
     temperature = temperature >> 16;
     temperature =
         ((((float)(temperature) / 65536.0f) / 0.00198421639f) - 273.15f) *
@@ -2291,12 +1876,8 @@ int Feb_Control_GetLeftFPGATemp() {
 
 int Feb_Control_GetRightFPGATemp() {
     unsigned int temperature = 0;
-    if (Module_TopAddressIsValid(&modules[1]))
-        Feb_Interface_ReadRegister(Module_GetTopRightAddress(&modules[1]),
-                                   FEB_REG_STATUS, &temperature);
-    else
-        Feb_Interface_ReadRegister(Module_GetBottomRightAddress(&modules[1]),
-                                   FEB_REG_STATUS, &temperature);
+    Feb_Interface_ReadRegister(Feb_Control_rightAddress, FEB_REG_STATUS,
+                               &temperature);
     temperature = temperature >> 16;
     temperature =
         ((((float)(temperature) / 65536.0f) / 0.00198421639f) - 273.15f) *
@@ -2306,357 +1887,15 @@ int Feb_Control_GetRightFPGATemp() {
 }
 
 int64_t Feb_Control_GetMeasuredPeriod() {
-    unsigned int sub_num = (Module_TopAddressIsValid(&modules[1]))
-                               ? Module_GetTopLeftAddress(&modules[1])
-                               : Module_GetBottomLeftAddress(&modules[1]);
-
     unsigned int value = 0;
-    Feb_Interface_ReadRegister(sub_num, MEAS_PERIOD_REG, &value);
+    Feb_Interface_ReadRegister(Feb_Control_leftAddress, MEAS_PERIOD_REG,
+                               &value);
     return (int64_t)value * 10;
 }
 
 int64_t Feb_Control_GetSubMeasuredPeriod() {
-    unsigned int sub_num = (Module_TopAddressIsValid(&modules[1]))
-                               ? Module_GetTopLeftAddress(&modules[1])
-                               : Module_GetBottomLeftAddress(&modules[1]);
-
     unsigned int value = 0;
-    Feb_Interface_ReadRegister(sub_num, MEAS_SUBPERIOD_REG, &value);
+    Feb_Interface_ReadRegister(Feb_Control_leftAddress, MEAS_SUBPERIOD_REG,
+                               &value);
     return (int64_t)value * 10;
-}
-
-int Feb_Control_SoftwareTrigger() {
-    unsigned int orig_value = 0;
-    Feb_Interface_ReadRegister(Feb_Control_AddressToAll(), DAQ_REG_CHIP_CMDS,
-                               &orig_value);
-
-    unsigned int cmd = orig_value | DAQ_REG_CHIP_CMDS_INT_TRIGGER;
-
-    if (Feb_Control_activated) {
-        // set trigger bit
-        LOG(logDEBUG1, ("Setting Trigger, Register:0x%x\n", cmd));
-        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_CHIP_CMDS, cmd, 0, 0)) {
-            LOG(logERROR, ("Could not give software trigger\n"));
-            return 0;
-        }
-        // unset trigger bit
-        LOG(logDEBUG1, ("Unsetting Trigger, Register:0x%x\n", orig_value));
-        if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                         DAQ_REG_CHIP_CMDS, orig_value, 0, 0)) {
-            LOG(logERROR, ("Could not give software trigger\n"));
-            return 0;
-        }
-        LOG(logINFO, ("Software Internal Trigger Sent!\n"));
-    }
-
-    return 1;
-}
-
-int Feb_Control_SetInterruptSubframe(int val) {
-    LOG(logINFO, ("Setting Interrupt Subframe to %d\n", val));
-
-    // they need to be written separately because the left and right registers
-    // have different values for this particular register
-    uint32_t offset = DAQ_REG_HRDWRE;
-    uint32_t regVal = 0;
-    char side[2][10] = {"right", "left"};
-    char isTop[10];
-    strcpy(isTop, Module_TopAddressIsValid(&modules[1]) ? "top" : "bottom");
-    unsigned int addr[2];
-    addr[0] = Module_TopAddressIsValid(&modules[1])
-                  ? Module_GetTopRightAddress(&modules[1])
-                  : Module_GetBottomRightAddress(&modules[1]);
-    addr[1] = Module_TopAddressIsValid(&modules[1])
-                  ? Module_GetTopLeftAddress(&modules[1])
-                  : Module_GetBottomLeftAddress(&modules[1]);
-
-    for (int iloop = 0; iloop < 2; ++iloop) {
-        // get previous value to keep it
-        if (!Feb_Interface_ReadRegister(addr[iloop], offset, &regVal)) {
-            LOG(logERROR, ("Could not read %s %s interrupt subframe\n", isTop,
-                           side[iloop]));
-            return 0;
-        }
-        uint32_t data = ((val == 0) ? (regVal & ~DAQ_REG_HRDWRE_INTRRPT_SF_MSK)
-                                    : (regVal | DAQ_REG_HRDWRE_INTRRPT_SF_MSK));
-        if (!Feb_Interface_WriteRegister(addr[iloop], offset, data, 0, 0)) {
-            LOG(logERROR,
-                ("Could not write 0x%x to %s %s interrupt subframe addr 0x%x\n",
-                 data, isTop, side[iloop], offset));
-            return 0;
-        }
-    }
-    return 1;
-}
-
-int Feb_Control_GetInterruptSubframe() {
-    // they need to be written separately because the left and right registers
-    // have different values for this particular register
-    uint32_t offset = DAQ_REG_HRDWRE;
-    uint32_t regVal = 0;
-
-    char side[2][10] = {"right", "left"};
-    char isTop[10];
-    strcpy(isTop, Module_TopAddressIsValid(&modules[1]) ? "top" : "bottom");
-    unsigned int addr[2];
-    addr[0] = Module_TopAddressIsValid(&modules[1])
-                  ? Module_GetTopRightAddress(&modules[1])
-                  : Module_GetBottomRightAddress(&modules[1]);
-    addr[1] = Module_TopAddressIsValid(&modules[1])
-                  ? Module_GetTopLeftAddress(&modules[1])
-                  : Module_GetBottomLeftAddress(&modules[1]);
-    uint32_t value[2] = {0, 0};
-
-    for (int iloop = 0; iloop < 2; ++iloop) {
-        if (!Feb_Interface_ReadRegister(addr[iloop], offset, &regVal)) {
-            LOG(logERROR, ("Could not read back %s %s interrupt subframe\n",
-                           isTop, side[iloop]));
-            return -1;
-        }
-        value[iloop] = (regVal & DAQ_REG_HRDWRE_INTRRPT_SF_MSK) >>
-                       DAQ_REG_HRDWRE_INTRRPT_SF_OFST;
-    }
-
-    // inconsistent
-    if (value[0] != value[1]) {
-        LOG(logERROR, ("Inconsistent values of interrupt subframe betweeen "
-                       "left %d and right %d\n",
-                       value[0], value[1]));
-        return -1;
-    }
-    return value[0];
-}
-
-int Feb_Control_SetTop(enum TOPINDEX ind, int left, int right) {
-    uint32_t offset = DAQ_REG_HRDWRE;
-    unsigned int addr[2] = {0, 0};
-    if (left) {
-        addr[0] = Module_GetTopLeftAddress(&modules[1]);
-    }
-    if (right) {
-        addr[1] = Module_GetTopRightAddress(&modules[1]);
-    }
-    char *top_names[] = {TOP_NAMES};
-    for (int i = 0; i < 2; ++i) {
-        if (addr[i] == 0) {
-            continue;
-        }
-        uint32_t value = 0;
-        if (!Feb_Interface_ReadRegister(addr[i], offset, &value)) {
-            LOG(logERROR, ("Could not read %s Feb reg to set Top flag\n",
-                           (i == 0 ? "left" : "right")));
-            return 0;
-        }
-        switch (ind) {
-        case TOP_HARDWARE:
-            value &= ~DAQ_REG_HRDWRE_OW_TOP_MSK;
-            break;
-        case OW_TOP:
-            value |= DAQ_REG_HRDWRE_OW_TOP_MSK;
-            value |= DAQ_REG_HRDWRE_TOP_MSK;
-            break;
-        case OW_BOTTOM:
-            value |= DAQ_REG_HRDWRE_OW_TOP_MSK;
-            value &= ~DAQ_REG_HRDWRE_TOP_MSK;
-            break;
-        default:
-            LOG(logERROR, ("Unknown top index in Feb: %d\n", ind));
-            return 0;
-        }
-        if (!Feb_Interface_WriteRegister(addr[i], offset, value, 0, 0)) {
-            LOG(logERROR, ("Could not set Top flag to %s in %s Feb\n",
-                           top_names[ind], (i == 0 ? "left" : "right")));
-            return 0;
-        }
-    }
-    if (left && right) {
-        LOG(logINFOBLUE, ("%s Top flag to %s Feb\n",
-                          (ind == TOP_HARDWARE ? "Resetting" : "Overwriting"),
-                          top_names[ind]));
-    }
-    return 1;
-}
-
-void Feb_Control_SetMasterVariable(int val) { Feb_control_master = val; }
-
-int Feb_Control_SetMaster(enum MASTERINDEX ind) {
-    uint32_t offset = DAQ_REG_HRDWRE;
-    unsigned int addr[2] = {0, 0};
-    addr[0] = Module_GetTopLeftAddress(&modules[1]);
-    addr[1] = Module_GetTopRightAddress(&modules[1]);
-    char *master_names[] = {MASTER_NAMES};
-    for (int i = 0; i < 2; ++i) {
-        uint32_t value = 0;
-        if (!Feb_Interface_ReadRegister(addr[i], offset, &value)) {
-            LOG(logERROR, ("Could not read %s Feb reg to set Master flag\n",
-                           (i == 0 ? "left" : "right")));
-            return 0;
-        }
-        switch (ind) {
-        case MASTER_HARDWARE:
-            value &= ~DAQ_REG_HRDWRE_OW_MASTER_MSK;
-            break;
-        case OW_MASTER:
-            value |= DAQ_REG_HRDWRE_OW_MASTER_MSK;
-            value |= DAQ_REG_HRDWRE_MASTER_MSK;
-            break;
-        case OW_SLAVE:
-            value |= DAQ_REG_HRDWRE_OW_MASTER_MSK;
-            value &= ~DAQ_REG_HRDWRE_MASTER_MSK;
-            break;
-        default:
-            LOG(logERROR, ("Unknown master index in Feb: %d\n", ind));
-            return 0;
-        }
-
-        if (!Feb_Interface_WriteRegister(addr[i], offset, value, 0, 0)) {
-            LOG(logERROR, ("Could not set Master flag to %s in %s Feb\n",
-                           master_names[ind], (i == 0 ? "left" : "right")));
-            return 0;
-        }
-    }
-    LOG(logINFOBLUE, ("%s Master flag to %s Feb\n",
-                      (ind == MASTER_HARDWARE ? "Resetting" : "Overwriting"),
-                      master_names[ind]));
-    return 1;
-}
-
-int Feb_Control_SetQuad(int val) {
-    // no bottom for quad
-    if (!Module_TopAddressIsValid(&modules[1])) {
-        return 1;
-    }
-    LOG(logINFO, ("Setting Quad to %d in Feb\n", val));
-    // only setting on the right feb if quad
-    return Feb_Control_SetTop(val == 0 ? TOP_HARDWARE : OW_TOP, 0, 1);
-}
-
-int Feb_Control_SetReadNLines(int value) {
-    LOG(logINFO, ("Setting Read N Lines to %d\n", value));
-    if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
-                                     DAQ_REG_PARTIAL_READOUT, value, 0, 0)) {
-        LOG(logERROR, ("Could not write %d to read n lines reg\n", value));
-        return 0;
-    }
-
-    return 1;
-}
-
-int Feb_Control_GetReadNLines() {
-    uint32_t regVal = 0;
-    if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
-                                    DAQ_REG_PARTIAL_READOUT, &regVal)) {
-        LOG(logERROR, ("Could not read back read n lines reg\n"));
-        return -1;
-    }
-    LOG(logDEBUG1, ("Retval read n lines: %d\n", regVal));
-    return regVal;
-}
-
-int Feb_Control_WriteRegister(uint32_t offset, uint32_t data) {
-    uint32_t actualOffset = offset;
-    char side[2][10] = {"right", "left"};
-    char isTop[10];
-    strcpy(isTop, Module_TopAddressIsValid(&modules[1]) ? "top" : "bottom");
-    unsigned int addr[2];
-    addr[0] = Module_TopAddressIsValid(&modules[1])
-                  ? Module_GetTopRightAddress(&modules[1])
-                  : Module_GetBottomRightAddress(&modules[1]);
-    addr[1] = Module_TopAddressIsValid(&modules[1])
-                  ? Module_GetTopLeftAddress(&modules[1])
-                  : Module_GetBottomLeftAddress(&modules[1]);
-
-    int run[2] = {0, 0};
-    // both registers
-    if (offset < 0x100) {
-        run[0] = 1;
-        run[1] = 1;
-    }
-    // right registers only
-    else if (offset >= 0x200) {
-        run[0] = 1;
-        actualOffset = offset - 0x200;
-    }
-    // left registers only
-    else {
-        run[1] = 1;
-        actualOffset = offset - 0x100;
-    }
-
-    for (int iloop = 0; iloop < 2; ++iloop) {
-        if (run[iloop]) {
-            LOG(logINFO, ("Writing 0x%x to %s %s 0x%x\n", data, isTop,
-                          side[iloop], actualOffset));
-            if (!Feb_Interface_WriteRegister(addr[iloop], actualOffset, data, 0,
-                                             0)) {
-                LOG(logERROR, ("Could not write 0x%x to %s %s addr 0x%x\n",
-                               data, isTop, side[iloop], actualOffset));
-                return 0;
-            }
-        }
-    }
-
-    return 1;
-}
-
-int Feb_Control_ReadRegister(uint32_t offset, uint32_t *retval) {
-    uint32_t actualOffset = offset;
-    char side[2][10] = {"right", "left"};
-    char isTop[10];
-    strcpy(isTop, Module_TopAddressIsValid(&modules[1]) ? "top" : "bottom");
-    unsigned int addr[2];
-    addr[0] = Module_TopAddressIsValid(&modules[1])
-                  ? Module_GetTopRightAddress(&modules[1])
-                  : Module_GetBottomRightAddress(&modules[1]);
-    addr[1] = Module_TopAddressIsValid(&modules[1])
-                  ? Module_GetTopLeftAddress(&modules[1])
-                  : Module_GetBottomLeftAddress(&modules[1]);
-
-    uint32_t value[2] = {0, 0};
-
-    int run[2] = {0, 0};
-    // both registers
-    if (offset < 0x100) {
-        run[0] = 1;
-        run[1] = 1;
-    }
-    // right registers only
-    else if (offset >= 0x200) {
-        run[0] = 1;
-        actualOffset = offset - 0x200;
-    }
-    // left registers only
-    else {
-        run[1] = 1;
-        actualOffset = offset - 0x100;
-    }
-
-    for (int iloop = 0; iloop < 2; ++iloop) {
-        if (run[iloop]) {
-            if (!Feb_Interface_ReadRegister(addr[iloop], actualOffset,
-                                            &value[iloop])) {
-                LOG(logERROR, ("Could not read from %s %s addr 0x%x\n", isTop,
-                               side[iloop], actualOffset));
-                return 0;
-            }
-            LOG(logINFO, ("Read 0x%x from %s %s 0x%x\n", value[iloop], isTop,
-                          side[iloop], actualOffset));
-            *retval = value[iloop];
-            // if not the other (left, not right OR right, not left), return the
-            // value
-            if (!run[iloop ? 0 : 1]) {
-                return 1;
-            }
-        }
-    }
-
-    // Inconsistent values
-    if (value[0] != value[1]) {
-        LOG(logERROR,
-            ("Inconsistent values read from left 0x%x and right 0x%x\n",
-             value[0], value[1]));
-        return 0;
-    }
-    return 1;
 }

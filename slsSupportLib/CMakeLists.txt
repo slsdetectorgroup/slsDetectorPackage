@@ -75,11 +75,9 @@ target_link_libraries(slsSupportLib
     slsProjectOptions 
     # ${ZeroMQ_LIBRARIES}
     zmq
-    PRIVATE
-    
-    slsProjectWarnings 
-    PUBLIC
     rapidjson
+    PRIVATE
+    slsProjectWarnings     
 )
 
 

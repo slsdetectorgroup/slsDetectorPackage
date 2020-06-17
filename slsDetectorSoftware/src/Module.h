@@ -1743,19 +1743,6 @@ class Module : public virtual slsDetectorDefs {
 
     sls_detector_module readSettingsFile(const std::string &fname, int tb = 1);
 
-    /**
-     * writes a trim/settings file
-     * @param fname name of the file to be written
-     * @param mod module structure which has to be written to file
-     */
-    void writeSettingsFile(const std::string &fname, sls_detector_module &mod);
-
-    /**
-     * Get Names of dacs in settings file
-     * @returns vector dac names expected in settings file
-     */
-    std::vector<std::string> getSettingsFileDacNames();
-
     /** Module Id or position in the detectors list */
     const int detId;
 

@@ -6916,7 +6916,7 @@ int get_receiver_parameters(int file_des) {
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
         return printSocketReadError();
-    // multisize
+    // numberOfDetector
     i32 = 0;
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)

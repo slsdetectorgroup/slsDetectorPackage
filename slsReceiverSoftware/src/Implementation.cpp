@@ -315,12 +315,12 @@ void Implementation::setDetectorType(const detectorType d) {
     LOG(logDEBUG) << " Detector type set to " << sls::ToString(d);
 }
 
-int *Implementation::getMultiDetectorSize() const {
+int *Implementation::getDetectorSize() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return (int *)numDet;
 }
 
-void Implementation::setMultiDetectorSize(const int *size) {
+void Implementation::setDetectorSize(const int *size) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     std::string log_message = "Detector Size (ports): (";
     for (int i = 0; i < MAX_DIMENSIONS; ++i) {
@@ -1062,7 +1062,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         SetThreadPriorities();
 
         // update (from 1 to 2 interface) & also for printout
-        setMultiDetectorSize(numDet);
+        setDetectorSize(numDet);
         // update row and column in dataprocessor
         setDetectorPositionId(detID);
 

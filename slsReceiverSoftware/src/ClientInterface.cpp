@@ -339,8 +339,10 @@ int ClientInterface::get_version(Interface &socket) {
 int ClientInterface::setup_receiver(Interface &socket) {
     auto arg = socket.Receive<rxParameters>();
     LOG(logDEBUG) << "detType:" << arg.detType << std::endl
-                  << "multiSize.x:" << arg.multiSize.x << std::endl
-                  << "multiSize.y:" << arg.multiSize.y << std::endl
+                  << "numberOfDetector.x:" << arg.numberOfDetector.x
+                  << std::endl
+                  << "numberOfDetector.y:" << arg.numberOfDetector.y
+                  << std::endl
                   << "detId:" << arg.detId << std::endl
                   << "hostname:" << arg.hostname << std::endl
                   << "udpInterfaces:" << arg.udpInterfaces << std::endl
@@ -389,8 +391,8 @@ int ClientInterface::setup_receiver(Interface &socket) {
     // basic setup
     setDetectorType(arg.detType);
     {
-        int msize[2] = {arg.multiSize.x, arg.multiSize.y};
-        impl()->setMultiDetectorSize(msize);
+        int msize[2] = {arg.numberOfDetector.x, arg.numberOfDetector.y};
+        impl()->setDetectorSize(msize);
     }
     impl()->setDetectorPositionId(arg.detId);
     impl()->setDetectorHostname(arg.hostname);

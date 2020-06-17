@@ -375,8 +375,8 @@ void Module::initializeDetectorStructure(detectorType type) {
     shm()->shmversion = SLS_SHMVERSION;
     memset(shm()->hostname, 0, MAX_STR_LENGTH);
     shm()->myDetectorType = type;
-    shm()->multiSize.x = 0;
-    shm()->multiSize.y = 0;
+    shm()->numberOfDetector.x = 0;
+    shm()->numberOfDetector.y = 0;
     shm()->controlPort = DEFAULT_PORTNO;
     shm()->stopPort = DEFAULT_PORTNO + 1;
     sls::strcpy_safe(shm()->settingsDir, getenv("HOME"));
@@ -558,9 +558,9 @@ void Module::setReadNLines(const int value) {
 
 int Module::getReadNLines() { return sendToDetector<int>(F_GET_READ_N_LINES); }
 
-void Module::updateMultiSize(slsDetectorDefs::xy det) {
-    shm()->multiSize = det;
-    int args[2] = {shm()->multiSize.y, detId};
+void Module::updateNumberOfDetector(slsDetectorDefs::xy det) {
+    shm()->numberOfDetector = det;
+    int args[2] = {shm()->numberOfDetector.y, detId};
     sendToDetector(F_SET_POSITION, args, nullptr);
 }
 
@@ -1434,15 +1434,17 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
 
     // populate from shared memory
     retval.detType = shm()->myDetectorType;
-    retval.multiSize.x = shm()->multiSize.x;
-    retval.multiSize.y = shm()->multiSize.y;
+    retval.numberOfDetector.x = shm()->numberOfDetector.x;
+    retval.numberOfDetector.y = shm()->numberOfDetector.y;
     retval.detId = detId;
     memset(retval.hostname, 0, sizeof(retval.hostname));
     strcpy_safe(retval.hostname, shm()->hostname);
 
     LOG(logDEBUG1) << "detType:" << retval.detType << std::endl
-                   << "multiSize.x:" << retval.multiSize.x << std::endl
-                   << "multiSize.y:" << retval.multiSize.y << std::endl
+                   << "numberOfDetector.x:" << retval.numberOfDetector.x
+                   << std::endl
+                   << "numberOfDetector.y:" << retval.numberOfDetector.y
+                   << std::endl
                    << "detId:" << retval.detId << std::endl
                    << "hostname:" << retval.hostname << std::endl
                    << "udpInterfaces:" << retval.udpInterfaces << std::endl

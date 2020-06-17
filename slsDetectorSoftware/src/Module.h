@@ -26,20 +26,14 @@ struct sharedSlsDetector {
 
     /* FIXED PATTERN FOR STATIC FUNCTIONS. DO NOT CHANGE, ONLY APPEND ------*/
 
-    /** shared memory version */
     int shmversion;
-
-    /** is the hostname (or IP address) of the detector. needs to be set
-     * before starting the communication */
     char hostname[MAX_STR_LENGTH];
-
-    /** detector type  \ see :: detectorType*/
     slsDetectorDefs::detectorType myDetectorType;
 
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
     /** Number of detectors in multi list in x dir and y dir */
-    slsDetectorDefs::xy multiSize;
+    slsDetectorDefs::xy numberOfDetector;
 
     /** is the port used for control functions */
     int controlPort;
@@ -212,7 +206,7 @@ class Module : public virtual slsDetectorDefs {
      * Set Detector offset in shared memory in dimension d
      * @param det detector size
      */
-    void updateMultiSize(slsDetectorDefs::xy det);
+    void updateNumberOfDetector(slsDetectorDefs::xy det);
 
     int setControlPort(int port_number);
 

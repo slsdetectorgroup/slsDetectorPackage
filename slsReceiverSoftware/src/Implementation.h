@@ -28,8 +28,8 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
 
     void setDetectorType(const detectorType d);
-    int *getMultiDetectorSize() const;
-    void setMultiDetectorSize(const int *size);
+    int *getDetectorSize() const;
+    void setDetectorSize(const int *size);
     int getDetectorPositionId() const;
     void setDetectorPositionId(const int id);
     std::string getDetectorHostname() const;

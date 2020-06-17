@@ -30,8 +30,8 @@ class Implementation : private virtual slsDetectorDefs {
     void setDetectorType(const detectorType d);
     int *getDetectorSize() const;
     void setDetectorSize(const int *size);
-    int getDetectorPositionId() const;
-    void setDetectorPositionId(const int id);
+    int getModulePositionId() const;
+    void setModulePositionId(const int id);
     std::string getDetectorHostname() const;
     void setDetectorHostname(const std::string &c);
     bool getSilentMode() const;
@@ -265,7 +265,7 @@ class Implementation : private virtual slsDetectorDefs {
     int numThreads;
     detectorType myDetectorType;
     int numDet[MAX_DIMENSIONS];
-    int detID;
+    int modulePos;
     std::string detHostname;
     bool silentMode;
     uint32_t fifoDepth;

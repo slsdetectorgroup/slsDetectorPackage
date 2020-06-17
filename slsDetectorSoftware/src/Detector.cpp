@@ -376,25 +376,25 @@ void Detector::setClockDivider(int clkIndex, int value, Positions pos) {
 }
 
 Result<int> Detector::getHighVoltage(Positions pos) const {
-    return pimpl->Parallel(&Module::setDAC, pos, -1, defs::HIGH_VOLTAGE, 0);
+    return pimpl->Parallel(&Module::getDAC, pos, defs::HIGH_VOLTAGE, false);
 }
 
 void Detector::setHighVoltage(int value, Positions pos) {
-    pimpl->Parallel(&Module::setDAC, pos, value, defs::HIGH_VOLTAGE, 0);
+    pimpl->Parallel(&Module::setDAC, pos, value, defs::HIGH_VOLTAGE, false);
 }
 
 Result<bool> Detector::getPowerChip(Positions pos) const {
-    return pimpl->Parallel(&Module::powerChip, pos, -1);
+    return pimpl->Parallel(&Module::getPowerChip, pos);
 }
 
 void Detector::setPowerChip(bool on, Positions pos) {
     if ((pos.empty() || pos[0] == -1) && on && pimpl->size() > 3) {
         for (int i = 0; i != pimpl->size(); ++i) {
-            pimpl->Parallel(&Module::powerChip, {i}, static_cast<int>(on));
+            pimpl->Parallel(&Module::setPowerChip, {i}, on);
             usleep(1000 * 1000);
         }
     } else {
-        pimpl->Parallel(&Module::powerChip, pos, static_cast<int>(on));
+        pimpl->Parallel(&Module::setPowerChip, pos, on);
     }
 }
 
@@ -486,7 +486,7 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
 
 Result<int> Detector::getDAC(defs::dacIndex index, bool mV,
                              Positions pos) const {
-    return pimpl->Parallel(&Module::setDAC, pos, -1, index, mV);
+    return pimpl->Parallel(&Module::getDAC, pos, index, mV);
 }
 
 void Detector::setDAC(defs::dacIndex index, int value, bool mV, Positions pos) {
@@ -690,12 +690,11 @@ Result<std::string> Detector::printRxConfiguration(Positions pos) const {
 }
 
 Result<bool> Detector::getTenGiga(Positions pos) const {
-    return pimpl->Parallel(&Module::enableTenGigabitEthernet, pos, -1);
+    return pimpl->Parallel(&Module::getTenGiga, pos);
 }
 
 void Detector::setTenGiga(bool value, Positions pos) {
-    pimpl->Parallel(&Module::enableTenGigabitEthernet, pos,
-                    static_cast<int>(value));
+    pimpl->Parallel(&Module::setTenGiga, pos, value);
 }
 
 Result<bool> Detector::getTenGigaFlowControl(Positions pos) const {
@@ -780,7 +779,7 @@ void Detector::setRxPort(int port, int module_id) {
 }
 
 Result<int> Detector::getRxFifoDepth(Positions pos) const {
-    return pimpl->Parallel(&Module::setReceiverFifoDepth, pos, -1);
+    return pimpl->Parallel(&Module::getReceiverFifoDepth, pos);
 }
 
 void Detector::setRxFifoDepth(int nframes, Positions pos) {
@@ -1440,7 +1439,7 @@ Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
     default:
         throw RuntimeError("Unknown Voltage Index");
     }
-    return pimpl->Parallel(&Module::setDAC, pos, -1, index, 1);
+    return pimpl->Parallel(&Module::getDAC, pos, index, true);
 }
 
 void Detector::setVoltage(defs::dacIndex index, int value, Positions pos) {
@@ -1456,7 +1455,7 @@ void Detector::setVoltage(defs::dacIndex index, int value, Positions pos) {
     default:
         throw RuntimeError("Unknown Voltage Index");
     }
-    pimpl->Parallel(&Module::setDAC, pos, value, index, 1);
+    pimpl->Parallel(&Module::setDAC, pos, value, index, true);
 }
 
 Result<uint32_t> Detector::getADCEnableMask(Positions pos) const {

@@ -32,151 +32,194 @@ struct sharedSlsDetector {
 
     /** END OF FIXED PATTERN -----------------------------------------------*/
 
-    /** Number of detectors in multi list in x dir and y dir */
     slsDetectorDefs::xy numberOfDetector;
-
-    /** is the port used for control functions */
     int controlPort;
-
-    /** is the port used to stop the acquisition */
     int stopPort;
-
-    /** path of the trimbits/settings files */
     char settingsDir[MAX_STR_LENGTH];
-
     /** list of the energies at which the detector has been trimmed  */
     sls::StaticVector<int, MAX_TRIMEN> trimEnergies;
-
-    /**  number of channels per chip in one direction */
+    /**  number of channels per chip */
     slsDetectorDefs::xy nChan;
-
-    /**  number of chips per module in one direction */
     slsDetectorDefs::xy nChip;
-
-    /**  number of dacs per module*/
     int nDacs;
-
-    /** ip address/hostname of the receiver for client control via TCP */
     char rxHostname[MAX_STR_LENGTH];
-
-    /** is the TCP port used to communicate between client and the receiver */
     int rxTCPPort;
-
-    /** is set if the receiver hostname given and is connected,
-     * unset if socket connection is not possible  */
+    /** if rxHostname and rxTCPPort can be connected to */
     bool useReceiverFlag;
-
-    /** tcp port from gui/different process to receiver (only data) */
+    /** Listening tcp port from gui (only data) */
     int zmqport;
-
-    /**  zmq tcp src ip address in client (only data) **/
+    /**  Listening tcp ip address from gui (only data) **/
     sls::IpAddr zmqip;
-
-    /** num udp interfaces */
     int numUDPInterfaces;
-
-    /** stopped flag to inform rxr */
+    /** to inform rxr when stopping rxr */
     bool stoppedFlag;
 };
 
 class Module : public virtual slsDetectorDefs {
   public:
-    /**
-     * Constructor called when creating new shared memory
-     * @param type detector type
-     * @param multi_id multi detector shared memory id
-     * @param id sls detector id (position in detectors list)
-     * @param verify true to verify if shared memory version matches existing
-     * one
-     */
-    explicit Module(detectorType type, int multi_id = 0, int det_id = 0,
+    /**************************************************
+     *                                                *
+     *    Configuration                               *
+     *                                                *
+     * ************************************************/
+
+    /** creating new shared memory
+    @param verify if shared memory version matches existing one */
+    explicit Module(detectorType type, int det_id = 0, int module_id = 0,
                     bool verify = true);
 
-    /**
-     * Constructor called when opening existing shared memory
-     * @param multi_id multi detector shared memory id
-     * @param id sls detector id (position in detectors list)
-     * @param verify true to verify if shared memory version matches existing
-     * one
-     */
-    explicit Module(int multi_id = 0, int det_id = 0, bool verify = true);
+    /** opening existing shared memory
+    @param verify if shared memory version matches existing one */
+    explicit Module(int det_id = 0, int module_id = 0, bool verify = true);
 
-    /**
-     * Destructor
-     */
     virtual ~Module();
 
-    /**
-     * Returns false if it cannot get fixed pattern from an old version of shm
-     * (hostname, type), else true
-     */
-    bool isFixedPatternSharedMemoryCompatible();
-
-    /**
-     * Check version compatibility with receiver software
-     */
-    void checkReceiverVersionCompatibility();
-
-    /**
-     * Check version compatibility with detector software
-     */
-    void checkDetectorVersionCompatibility();
-
-    int64_t getFirmwareVersion();
-
-    int64_t getDetectorServerVersion();
-
-    int64_t getSerialNumber();
-
-    /**
-     * Get Receiver Software version
-     */
-    int64_t getReceiverSoftwareVersion() const;
-
-    /**
-     * Free shared memory and delete shared memory structure
-     * occupied by the sharedSlsDetector structure
-     * Is only safe to call if one deletes the Module object afterward
-     * and frees multi shared memory/updates
-     * thisMultiDetector->numberOfDetectors
-     */
+    /** Frees shared memory and deletes shared memory structure
+    Safe to call only if detector shm also deleted or its numberOfDetectors is
+    updated */
     void freeSharedMemory();
-
-    /**
-     * Sets the hostname, if online flag is set connects to update the detector
-     * @param name hostname
-     * @param initialChecks enable or disable initial compatibility checks
-     * and other server start up checks. Enabled by default. Disable only
-     * for advanced users!
-     */
-    void setHostname(const std::string &hostname, const bool initialChecks);
-
-    /**
-     * Gets the hostname of detector
-     * @returns hostname
-     */
+    bool isFixedPatternSharedMemoryCompatible();
     std::string getHostname() const;
 
-    /**
-     * Get detector type by connecting to the detector
-     * @returns detector tpe or GENERIC if failed
-     */
+    /** @param initialChecks enable or disable initial compatibility checks and
+    other server start up checks. Enabled by default. Disable only for advanced
+    users! */
+    void setHostname(const std::string &hostname, const bool initialChecks);
+
+    int64_t getFirmwareVersion();
+    int64_t getDetectorServerVersion();
+    int64_t getSerialNumber();
+    int64_t getReceiverSoftwareVersion() const;
     static detectorType getTypeFromDetector(const std::string &hostname,
                                             int cport = DEFAULT_PORTNO);
 
-    /**
-     * Get Detector type from shared memory variable
-     * @returns detector type from shared memory variable
-     */
+    /** Get Detector type from shared memory */
     detectorType getDetectorType() const;
-
-    /**
-     * Update total number of channels (chiptestboard or moench)
-     * from the detector server
-     */
     void updateNumberOfChannels();
-
     slsDetectorDefs::xy getNumberOfChannels() const;
+    void updateNumberOfDetector(slsDetectorDefs::xy det);
+    detectorSettings getSettings();
+    void setSettings(detectorSettings isettings);
+    void loadSettingsFile(const std::string &fname);
+    int getAllTrimbits();
+    void setAllTrimbits(int val);
+
+    /**************************************************
+     *                                                *
+     *    Acquisition Parameters                      *
+     *                                                *
+     * ************************************************/
+    int64_t getNumberOfFrames();
+    void setNumberOfFrames(int64_t value);
+    int64_t getNumberOfTriggers();
+    void setNumberOfTriggers(int64_t value);
+    /** [Mythen3] gatIndex: 0-2, [Others]: -1 always */
+    int64_t getExptime(int gateIndex);
+    /** [Mythen3] gatIndex: -1 for all, 0-2, [Others]: -1 always */
+    void setExptime(int gateIndex, int64_t value);
+    int64_t getPeriod();
+    void setPeriod(int64_t value);
+    int64_t getDelayAfterTrigger();
+    void setDelayAfterTrigger(int64_t value);
+    int64_t getNumberOfFramesLeft() const;
+    int64_t getNumberOfTriggersLeft() const;
+    int64_t getDelayAfterTriggerLeft() const;
+    int64_t getPeriodLeft() const;
+    timingMode getTimingMode();
+    void setTimingMode(timingMode value);
+    int getClockDivider(int clkIndex);
+    void setClockDivider(int clkIndex, int value);
+    int getClockPhase(int clkIndex, bool inDegrees);
+    void setClockPhase(int clkIndex, int value, bool inDegrees);
+    int getMaxClockPhaseShift(int clkIndex);
+    int getClockFrequency(int clkIndex);
+    void setClockFrequency(int clkIndex, int value);
+    int getDAC(dacIndex index, bool mV);
+    void setDAC(int val, dacIndex index, bool mV);
+    bool getPowerChip();
+    void setPowerChip(bool on);
+    int getImageTestMode();
+    void setImageTestMode(const int value);
+    /* temperature in millidegrees */
+    int getADC(dacIndex index);
+    int getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex);
+    void setOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex,
+                      int value);
+
+    /**************************************************
+     *                                                *
+     *    Acquisition                                 *
+     *                                                *
+     * ************************************************/
+    void startReceiver();
+    void stopReceiver();
+    void prepareAcquisition();
+    void startAcquisition();
+    void stopAcquisition();
+    runStatus getRunStatus() const;
+    runStatus getReceiverStatus() const;
+    int64_t getFramesCaughtByReceiver() const;
+    std::vector<uint64_t> getNumMissingPackets() const;
+    uint64_t getStartingFrameNumber();
+    void setStartingFrameNumber(uint64_t value);
+    void sendSoftwareTrigger();
+
+    /**************************************************
+     *                                                 *
+     *    Network Configuration (Detector<->Receiver)  *
+     *                                                 *
+     * ************************************************/
+    int getNumberofUDPInterfacesFromShm();
+    int getNumberofUDPInterfaces();
+    void setNumberofUDPInterfaces(int n);
+    int getSelectedUDPInterface();
+    void selectUDPInterface(int n);
+    sls::IpAddr getSourceUDPIP();
+    void setSourceUDPIP(const sls::IpAddr ip);
+    sls::IpAddr getSourceUDPIP2();
+    void setSourceUDPIP2(const sls::IpAddr ip);
+    sls::MacAddr getSourceUDPMAC();
+    void setSourceUDPMAC(const sls::MacAddr mac);
+    sls::MacAddr getSourceUDPMAC2();
+    void setSourceUDPMAC2(const sls::MacAddr mac);
+    sls::IpAddr getDestinationUDPIP();
+    void setDestinationUDPIP(const sls::IpAddr ip);
+    sls::IpAddr getDestinationUDPIP2();
+    void setDestinationUDPIP2(const sls::IpAddr ip);
+    sls::MacAddr getDestinationUDPMAC();
+    void setDestinationUDPMAC(const sls::MacAddr mac);
+    sls::MacAddr getDestinationUDPMAC2();
+    void setDestinationUDPMAC2(const sls::MacAddr mac);
+    int getDestinationUDPPort();
+    void setDestinationUDPPort(int udpport);
+    int getDestinationUDPPort2();
+    void setDestinationUDPPort2(int udpport);
+    std::string printReceiverConfiguration();
+    bool getTenGiga();
+    void setTenGiga(bool value);
+    bool getTenGigaFlowControl();
+    void setTenGigaFlowControl(bool enable);
+    int getTransmissionDelayFrame();
+    void setTransmissionDelayFrame(int value);
+    int getTransmissionDelayLeft();
+    void setTransmissionDelayLeft(int value);
+    int getTransmissionDelayRight();
+    void setTransmissionDelayRight(int value);
+
+    /**************************************************
+     *                                                *
+     *    Receiver Config                             *
+     *                                                *
+     * ************************************************/
+    bool getUseReceiverFlag() const;
+    std::string getReceiverHostname() const;
+    void setReceiverHostname(const std::string &receiver);
+    int getReceiverPort() const;
+    int setReceiverPort(int port_number);
+    int getReceiverFifoDepth();
+    void setReceiverFifoDepth(int n_frames);
+    bool getReceiverSilentMode();
+    void setReceiverSilentMode(bool enable);
 
     /**
      * Get Quad Type (Only for Eiger Quad detector hardware)
@@ -206,7 +249,6 @@ class Module : public virtual slsDetectorDefs {
      * Set Detector offset in shared memory in dimension d
      * @param det detector size
      */
-    void updateNumberOfDetector(slsDetectorDefs::xy det);
 
     int setControlPort(int port_number);
 
@@ -223,14 +265,6 @@ class Module : public virtual slsDetectorDefs {
      * @returns the detector TCP stop port
      */
     int getStopPort() const;
-
-    int setReceiverPort(int port_number);
-
-    /**
-     * Returns the receiver TCP 	port  \sa sharedSlsDetector
-     * @returns the receiver TCP port
-     */
-    int getReceiverPort() const;
 
     /**
      * Lock server for this client IP
@@ -262,17 +296,6 @@ class Module : public virtual slsDetectorDefs {
      * @returns vector of strings with commands
      */
     std::vector<std::string> getConfigFileCommands();
-
-    detectorSettings getSettings();
-
-    /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2,
-     * FORCESWITCHG1, FORCESWITCHG2 [Gotthard] Options: DYNAMICGAIN, HIGHGAIN,
-     * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN [Gotthard2] Options: DYNAMICGAIN,
-     * FIXGAIN1, FIXGAIN2 [Moench] Options: G1_HIGHGAIN, G1_LOWGAIN,
-     * G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN,
-     * G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
-     */
-    void setSettings(detectorSettings isettings);
 
     /**
      * Get threshold energy (Mythen and Eiger)
@@ -312,35 +335,6 @@ class Module : public virtual slsDetectorDefs {
      */
     std::string setSettingsDir(const std::string &dir);
 
-    /** [Eiger][Mythen3] */
-    void loadSettingsFile(const std::string &fname);
-
-    /**
-     * Get run status of the detector
-     * @returns the status of the detector
-     */
-    runStatus getRunStatus() const;
-
-    /**
-     * Prepares detector for acquisition (Eiger)
-     */
-    void prepareAcquisition();
-
-    /**
-     * Start detector acquisition (Non blocking)
-     */
-    void startAcquisition();
-
-    /**
-     * Stop detector acquisition
-     */
-    void stopAcquisition();
-
-    /**
-     * Give an internal software trigger to the detector (Eiger only)
-     */
-    void sendSoftwareTrigger();
-
     /**
      * Start detector acquisition and read all data (Blocking until end of
      * acquisition)
@@ -362,26 +356,6 @@ class Module : public virtual slsDetectorDefs {
      * Configures in detector the destination for UDP packets
      */
     void configureMAC();
-
-    /**
-     * Set starting frame number for the next acquisition
-     * @param val starting frame number
-     */
-    void setStartingFrameNumber(uint64_t value);
-
-    /**
-     * Get starting frame number for the next acquisition
-     * @returns starting frame number
-     */
-    uint64_t getStartingFrameNumber();
-
-    int64_t getNumberOfFrames();
-
-    void setNumberOfFrames(int64_t value);
-
-    int64_t getNumberOfTriggers();
-
-    void setNumberOfTriggers(int64_t value);
 
     /** [Gotthard2] only in burst mode and in auto timing mode */
     int64_t getNumberOfBursts();
@@ -413,12 +387,6 @@ class Module : public virtual slsDetectorDefs {
     /** [Mythen3] */
     void setNumberOfGates(int value);
 
-    /** [Mythen3] gatIndex: 0-2, [Others]: -1 always */
-    int64_t getExptime(int gateIndex);
-
-    /** [Mythen3] gatIndex: -1 for all, 0-2, [Others]: -1 always */
-    void setExptime(int gateIndex, int64_t value);
-
     /** [Mythen3] for all gates */
     std::array<time::ns, 3> getExptimeForAllGates();
 
@@ -430,16 +398,6 @@ class Module : public virtual slsDetectorDefs {
 
     /** [Mythen3] for all gates */
     std::array<time::ns, 3> getGateDelayForAllGates();
-
-    int64_t getPeriod();
-
-    void setPeriod(int64_t value);
-
-    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] */
-    int64_t getDelayAfterTrigger();
-
-    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] */
-    void setDelayAfterTrigger(int64_t value);
 
     /** [Gotthard2] only in burst mode and in auto timing mode */
     int64_t getBurstPeriod();
@@ -466,23 +424,8 @@ class Module : public virtual slsDetectorDefs {
      * Options: (0-1638375 ns (resolution of 25ns) */
     void setStorageCellDelay(int64_t value);
 
-    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3]
-     * [Gotthard2] only in continuous mode */
-    int64_t getNumberOfFramesLeft() const;
-
-    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3]
-     * [Gotthard2] only in continuous mode */
-    int64_t getNumberOfTriggersLeft() const;
-
-    /** [Gotthard][Jungfrau][CTB][Moench]
-     * [Gotthard2] only in continuous mode */
-    int64_t getDelayAfterTriggerLeft() const;
-
     /** [Gotthard] */
     int64_t getExptimeLeft() const;
-
-    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2]  */
-    int64_t getPeriodLeft() const;
 
     /** [Eiger] minimum two frames */
     int64_t getMeasuredPeriod() const;
@@ -502,9 +445,6 @@ class Module : public virtual slsDetectorDefs {
      * [Gotthard2] only in continuous mode */
     int64_t getMeasurementTime() const;
 
-    timingMode getTimingMode();
-    void setTimingMode(timingMode value);
-
     int getDynamicRange();
     /**
      * Set/get dynamic range
@@ -512,30 +452,6 @@ class Module : public virtual slsDetectorDefs {
      * 1)
      */
     void setDynamicRange(int n);
-
-    /**
-     * Set/get dacs value
-     * @param val value (in V)
-     * @param index DAC index
-     * @param mV 0 in dac units or 1 in mV
-     * @returns current DAC value
-     */
-    int setDAC(int val, dacIndex index, int mV);
-
-    /* [Gotthard2] */
-    int getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex);
-
-    /* [Gotthard2] */
-    void setOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex,
-                      int value);
-
-    /**
-     * Get adc value
-     * @param index adc(DAC) index
-     * @returns current adc value (temperature for eiger and jungfrau in
-     * millidegrees)
-     */
-    int getADC(dacIndex index);
 
     externalSignalFlag getExternalSignalFlags(int signalIndex);
     void setExternalSignalFlags(int signalIndex, externalSignalFlag type);
@@ -632,183 +548,7 @@ class Module : public virtual slsDetectorDefs {
      */
     uint32_t clearBit(uint32_t addr, int n);
 
-    /**
-     * Validates and sets the receiver.
-     * Also updates the receiver with all the shared memory parameters
-     * significant for the receiver Also configures the detector to the receiver
-     * as UDP destination
-     * @param receiver receiver hostname or IP address
-     */
-    void setReceiverHostname(const std::string &receiver);
-
     void test();
-    /**
-     * Returns the receiver IP address\sa sharedSlsDetector
-     * @returns the receiver IP address
-     */
-    std::string getReceiverHostname() const;
-
-    /**
-     * Validates the format of the detector MAC address and sets it
-     * @param mac detector MAC address
-     */
-    void setSourceUDPMAC(const sls::MacAddr mac);
-
-    /**
-     * Returns the detector MAC address
-     * @returns the detector MAC address
-     */
-    sls::MacAddr getSourceUDPMAC();
-
-    /**
-     * Validates the format of the detector MAC address (bottom half) and sets
-     * it (Jungfrau only)
-     * @param mac detector MAC address (bottom half)
-     */
-    void setSourceUDPMAC2(const sls::MacAddr mac);
-
-    /**
-     * Returns the detector MAC address (bottom half) Jungfrau only
-     * @returns the detector MAC address (bottom half)
-     */
-    sls::MacAddr getSourceUDPMAC2();
-
-    /**
-     * Validates the format of the detector IP address and sets it
-     * @param ip detector IP address
-     */
-    void setSourceUDPIP(const sls::IpAddr ip);
-
-    /**
-     * Returns the detector IP address
-     * @returns the detector IP address
-     */
-    sls::IpAddr getSourceUDPIP();
-
-    /**
-     * Validates the format of the detector IP address (bottom half) and sets it
-     * (Jungfrau only)
-     * @param ip detector IP address (bottom half)
-     */
-    void setSourceUDPIP2(const sls::IpAddr ip);
-
-    /**
-     * Returns the detector IP address (bottom half) Jungfrau only
-     * @returns the detector IP address (bottom half)
-     */
-    sls::IpAddr getSourceUDPIP2();
-
-    /**
-     * Validates the format of the receiver UDP IP address and sets it
-     * If slsReceiver used, Gets receiver udp mac address and sends it to the
-     * detector
-     * @param ip receiver UDP IP address
-     */
-    void setDestinationUDPIP(const sls::IpAddr ip);
-
-    /**
-     * Returns the receiver UDP IP address
-     * If slsReceiver used, Gets receiver udp mac address and sends it to the
-     * detector
-     * @returns the receiver UDP IP address
-     */
-    sls::IpAddr getDestinationUDPIP();
-
-    /**
-     * Validates the format of the receiver UDP IP address (bottom half) and
-     * sets it(Jungfrau only)
-     * If slsReceiver used, Gets receiver udp mac address2 and sends it to the
-     * detector
-     * @param ip receiver UDP IP address (bottom half)
-     */
-    void setDestinationUDPIP2(const sls::IpAddr ip);
-
-    /**
-     * Returns the receiver UDP IP address (bottom half) Jungfrau only
-     * If slsReceiver used, Gets receiver udp mac address2 and sends it to the
-     * detector
-     * @returns the receiver UDP IP address (bottom half)
-     */
-    sls::IpAddr getDestinationUDPIP2();
-
-    /**
-     * Validates the format of the receiver UDP MAC address and sets it
-     * @param mac receiver UDP MAC address
-     */
-    void setDestinationUDPMAC(const sls::MacAddr mac);
-
-    /**
-     * Returns the receiver UDP MAC address
-     * @returns the receiver UDP MAC address
-     */
-    sls::MacAddr getDestinationUDPMAC();
-
-    /**
-     * Validates the format of the receiver UDP MAC address  (bottom half) and
-     * sets it (Jungfrau only)
-     * @param mac receiver UDP MAC address (bottom half)
-     */
-    void setDestinationUDPMAC2(const sls::MacAddr mac);
-
-    /**
-     * Returns the receiver UDP MAC address (bottom half) Jungfrau only
-     * @returns the receiver UDP MAC address (bottom half)
-     */
-    sls::MacAddr getDestinationUDPMAC2();
-
-    /**
-     * Sets the receiver UDP port\sa sharedSlsDetector
-     * @param udpport receiver UDP port
-     */
-    void setDestinationUDPPort(int udpport);
-
-    /**
-     * Returns the receiver UDP port\sa sharedSlsDetector
-     * @returns the receiver UDP port
-     */
-    int getDestinationUDPPort();
-
-    /**
-     * Sets the receiver UDP port 2\sa sharedSlsDetector (Eiger and Jungfrau
-     * only)
-     * @param udpport receiver UDP port 2
-     */
-    void setDestinationUDPPort2(int udpport);
-
-    /**
-     * Returns the receiver UDP port 2 of same interface\sa sharedSlsDetector
-     * (Eiger and Jungfrau only)
-     * @returns the receiver UDP port 2 of same interface
-     */
-    int getDestinationUDPPort2();
-
-    /** [Jungfrau][Gotthard2] */
-    void setNumberofUDPInterfaces(int n);
-
-    /** Returns the number of udp interfaces from shared memory */
-    int getNumberofUDPInterfacesFromShm();
-
-    /**
-     * Returns the number of UDP interfaces to stream data from detector
-     * (Jungfrau only)
-     * @returns the number of interfaces
-     */
-    int getNumberofUDPInterfaces();
-
-    /**
-     * Selects the UDP interfaces to stream data from detector. Effective only
-     * when number of interfaces is 1. (Jungfrau only)
-     * @param n selected interface. Options 1 or 2.
-     * @returns the interface selected
-     */
-    void selectUDPInterface(int n);
-
-    /**
-     * Returns the UDP interfaces to stream data from detector. Effective only
-     * when number of interfaces is 1. (Jungfrau only)
-     * @returns the interface selected
-     */
-    int getSelectedUDPInterface();
 
     /**
      * Sets the client zmq port\sa sharedSlsDetector
@@ -863,43 +603,6 @@ class Module : public virtual slsDetectorDefs {
      */
     void updateReceiverStreamingIP();
 
-    /** [Eiger, Jungfrau] */
-    bool getTenGigaFlowControl();
-
-    /** [Eiger, Jungfrau] */
-    void setTenGigaFlowControl(bool enable);
-
-    /** [Eiger, Jungfrau] */
-    int getTransmissionDelayFrame();
-
-    /**
-     * [Jungfrau]: Sets the transmission delay of the first UDP packet being
-     * streamed out of the module. Options: 0 - 31, each value represenets 1 ms
-     * [Eiger]: Sets the transmission delay of entire frame streamed out for
-     * both left and right UDP ports. Options: //TODO possible values
-     */
-    void setTransmissionDelayFrame(int value);
-
-    /** [Eiger] */
-    int getTransmissionDelayLeft();
-
-    /**
-     * [Eiger]
-     * Sets the transmission delay of first packet streamed out of the left UDP
-     * port
-     */
-    void setTransmissionDelayLeft(int value);
-
-    /** [Eiger] */
-    int getTransmissionDelayRight();
-
-    /**
-     * [Eiger]
-     * Sets the transmission delay of first packet streamed ut of the right UDP
-     * port
-     */
-    void setTransmissionDelayRight(int value);
-
     /** empty vector deletes entire additional json header */
     void setAdditionalJsonHeader(
         const std::map<std::string, std::string> &jsonHeader);
@@ -936,15 +639,6 @@ class Module : public virtual slsDetectorDefs {
 
     /** [Gotthard][Jungfrau][CTB][Moench] */
     void executeBusTest();
-
-    /** [Gotthard][Eiger virtual] */
-    int getImageTestMode();
-
-    /** [Gotthard] If 1, adds channel intensity with precalculated values.
-     * Default is 0
-     * [Eiger virtual] If 1, pixels are saturated. If 0, increasing intensity
-     * Only for virtual servers */
-    void setImageTestMode(const int value);
 
     /** [Gotthard2] */
     std::array<int, 2> getInjectChannel();
@@ -1110,9 +804,6 @@ class Module : public virtual slsDetectorDefs {
      */
     void setFlippedDataX(bool value);
 
-    int getAllTrimbits();
-    void setAllTrimbits(int val);
-
     /**
      * Sets the number of trim energies and their value  (Eiger)
      * \sa sharedSlsDetector
@@ -1211,13 +902,6 @@ class Module : public virtual slsDetectorDefs {
     void rebootController();
 
     /**
-     * Power on/off Chip (Jungfrau)
-     * @param ival on is 1, off is 0, -1 to get
-     * @returns OK or FAIL
-     */
-    int powerChip(int ival = -1);
-
-    /**
      * Automatic comparator disable (Jungfrau)
      * @param ival on is 1, off is 0, -1 to get
      * @returns OK or FAIL
@@ -1274,17 +958,6 @@ class Module : public virtual slsDetectorDefs {
     void updateRateCorrection();
 
     /**
-     * Prints receiver configuration
-     * @returns receiver configuration
-     */
-    std::string printReceiverConfiguration();
-
-    /**
-     * Gets the use receiver flag from shared memory
-     */
-    bool getUseReceiverFlag() const;
-
-    /**
      * Locks/Unlocks the connection to the receiver
      * @param lock sets (1), usets (0), gets (-1) the lock
      * @returns lock status of the receiver
@@ -1320,31 +993,6 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverFramesDiscardPolicy(frameDiscardPolicy f);
     bool getPartialFramesPadding();
     void setPartialFramesPadding(bool padding);
-
-    /**
-     * Receiver starts listening to packets
-     */
-    void startReceiver();
-
-    /**
-     * Stops the listening mode of receiver
-     */
-    void stopReceiver();
-
-    /**
-     * Gets the status of the listening mode of receiver
-     * @returns status
-     */
-    runStatus getReceiverStatus() const;
-
-    /**
-     * Gets the number of frames caught by receiver
-     * @returns number of frames caught by receiver
-     */
-    int64_t getFramesCaughtByReceiver() const;
-
-    /** Gets number of missing packets */
-    std::vector<uint64_t> getNumMissingPackets() const;
 
     /**
      * Gets the current frame index of receiver
@@ -1384,23 +1032,6 @@ class Module : public virtual slsDetectorDefs {
     bool getReceiverStreaming();
 
     void setReceiverStreaming(bool enable);
-
-    /**
-     * Enable/disable or 10Gbe
-     * @param i is -1 to get, 0 to disable and 1 to enable
-     * @returns if 10Gbe is enabled
-     */
-    bool enableTenGigabitEthernet(int value = -1);
-
-    /**
-     * Set/get receiver fifo depth
-     * @param i is -1 to get, any other value to set the fifo deph
-     * @returns the receiver fifo depth
-     */
-    int setReceiverFifoDepth(int n_frames = -1);
-
-    bool getReceiverSilentMode();
-    void setReceiverSilentMode(bool enable);
 
     /**
      * If data streaming in receiver is enabled,
@@ -1516,27 +1147,6 @@ class Module : public virtual slsDetectorDefs {
      */
     void setDigitalIODelay(uint64_t pinMask, int delay);
 
-    /** [Mythen3][Gotthard2] */
-    int getClockFrequency(int clkIndex);
-
-    /** [Mythen3][Gotthard2] */
-    void setClockFrequency(int clkIndex, int value);
-
-    /** [Mythen3][Gotthard2] */
-    int getClockPhase(int clkIndex, bool inDegrees);
-
-    /** [Mythen3][Gotthard2] */
-    void setClockPhase(int clkIndex, int value, bool inDegrees);
-
-    /** [Mythen3][Gotthard2] */
-    int getMaxClockPhaseShift(int clkIndex);
-
-    /** [Mythen3][Gotthard2] */
-    int getClockDivider(int clkIndex);
-
-    /** [Mythen3][Gotthard2] */
-    void setClockDivider(int clkIndex, int value);
-
     /** [Ctb][Moench] */
     int getPipeline(int clkIndex);
 
@@ -1610,6 +1220,13 @@ class Module : public virtual slsDetectorDefs {
 
     void sendToDetectorStop(int fnum) const;
 
+    template <typename Ret> Ret sendToDetectorStop(int fnum);
+
+    template <typename Ret> Ret sendToDetectorStop(int fnum) const;
+
+    template <typename Ret, typename Arg>
+    Ret sendToDetectorStop(int fnum, const Arg &args);
+
     /**
      * Send function parameters to receiver
      * @param fnum function enum
@@ -1652,30 +1269,20 @@ class Module : public virtual slsDetectorDefs {
     template <typename Ret, typename Arg>
     Ret sendToReceiver(int fnum, const Arg &args) const;
 
-    /**
-     * Get Detector Type from Shared Memory (opening shm without verifying size)
-     * @param multi_id multi detector Id
-     * @param verify true to verify if shm size matches existing one
-     * @returns detector type
-     */
-    detectorType getDetectorTypeFromShm(int multi_id, bool verify = true);
+    /** Get Detector Type from Shared Memory
+    @param verify if shm size matches existing one */
+    detectorType getDetectorTypeFromShm(int det_id, bool verify = true);
 
-    /**
-     * Initialize shared memory
-     * @param created true if shared memory must be created, else false to open
-     * @param type type of detector
-     * @param multi_id multi detector Id
-     * @param verify true to verify if shm size matches existing one
-     * @returns true if the shared memory was created now
-     */
-    void initSharedMemory(detectorType type, int multi_id, bool verify = true);
+    /** Initialize shared memory
+     @param verify if shm size matches existing one  */
+    void initSharedMemory(detectorType type, int det_id, bool verify = true);
 
-    /**
-     * Initialize detector structure to defaults
-     * Called when new shared memory is created
-     * @param type type of detector
-     */
+    /** Initialize detector structure to defaults,
+    Called when new shared memory is created */
     void initializeDetectorStructure(detectorType type);
+
+    void checkDetectorVersionCompatibility();
+    void checkReceiverVersionCompatibility();
 
     /**
      * Send a sls_detector_module structure over socket
@@ -1738,7 +1345,7 @@ class Module : public virtual slsDetectorDefs {
     sls_detector_module readSettingsFile(const std::string &fname, int tb = 1);
 
     /** Module Id or position in the detectors list */
-    const int detId;
+    const int moduleId;
 
     /** Shared Memory object */
     mutable sls::SharedMemory<sharedSlsDetector> shm{0, 0};

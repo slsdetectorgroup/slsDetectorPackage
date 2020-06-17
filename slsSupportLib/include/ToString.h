@@ -41,6 +41,9 @@ std::string ToString(const defs::timingSourceType s);
 
 std::string ToString(const slsDetectorDefs::ROI &roi);
 std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::ROI &roi);
+std::string ToString(const slsDetectorDefs::rxParameters &r);
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::rxParameters &r);
 const std::string &ToString(const std::string &s);
 
 /** Convert std::chrono::duration with specified output unit */

@@ -1,4 +1,5 @@
 #include "ToString.h"
+#include "network_utils.h"
 
 namespace sls {
 
@@ -10,6 +11,57 @@ std::string ToString(const slsDetectorDefs::ROI &roi) {
 
 std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::ROI &roi) {
     return os << ToString(roi);
+}
+
+std::string ToString(const slsDetectorDefs::rxParameters &r) {
+    std::ostringstream oss;
+    oss << '[' << "detType:" << r.detType << std::endl
+        << "numberOfDetector.x:" << r.numberOfDetector.x << std::endl
+        << "numberOfDetector.y:" << r.numberOfDetector.y << std::endl
+        << "moduleId:" << r.moduleId << std::endl
+        << "hostname:" << r.hostname << std::endl
+        << "udpInterfaces:" << r.udpInterfaces << std::endl
+        << "udp_dstport:" << r.udp_dstport << std::endl
+        << "udp_dstip:" << sls::IpAddr(r.udp_dstip) << std::endl
+        << "udp_dstmac:" << sls::MacAddr(r.udp_dstmac) << std::endl
+        << "udp_dstport2:" << r.udp_dstport2 << std::endl
+        << "udp_dstip2:" << sls::IpAddr(r.udp_dstip2) << std::endl
+        << "udp_dstmac2:" << sls::MacAddr(r.udp_dstmac2) << std::endl
+        << "frames:" << r.frames << std::endl
+        << "triggers:" << r.triggers << std::endl
+        << "bursts:" << r.bursts << std::endl
+        << "analogSamples:" << r.analogSamples << std::endl
+        << "digitalSamples:" << r.digitalSamples << std::endl
+        << "expTimeNs:" << r.expTimeNs << std::endl
+        << "periodNs:" << r.periodNs << std::endl
+        << "subExpTimeNs:" << r.subExpTimeNs << std::endl
+        << "subDeadTimeNs:" << r.subDeadTimeNs << std::endl
+        << "activate:" << r.activate << std::endl
+        << "quad:" << r.quad << std::endl
+        << "dynamicRange:" << r.dynamicRange << std::endl
+        << "timMode:" << r.timMode << std::endl
+        << "tenGiga:" << r.tenGiga << std::endl
+        << "roMode:" << r.roMode << std::endl
+        << "adcMask:" << r.adcMask << std::endl
+        << "adc10gMask:" << r.adc10gMask << std::endl
+        << "roi.xmin:" << r.roi.xmin << std::endl
+        << "roi.xmax:" << r.roi.xmax << std::endl
+        << "countermask:" << r.countermask << std::endl
+        << "burstType:" << r.burstType << std::endl
+        << "exptime1:" << r.expTime1Ns << std::endl
+        << "exptime2:" << r.expTime2Ns << std::endl
+        << "exptime3:" << r.expTime3Ns << std::endl
+        << "gateDelay1:" << r.gateDelay1Ns << std::endl
+        << "gateDelay2:" << r.gateDelay2Ns << std::endl
+        << "gateDelay3:" << r.gateDelay3Ns << std::endl
+        << "gates:" << r.gates << std::endl
+        << ']';
+    return oss.str();
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::rxParameters &r) {
+    return os << ToString(r);
 }
 
 std::string ToString(const defs::runStatus s) {

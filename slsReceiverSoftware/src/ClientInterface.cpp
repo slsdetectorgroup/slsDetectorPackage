@@ -338,49 +338,7 @@ int ClientInterface::get_version(Interface &socket) {
 
 int ClientInterface::setup_receiver(Interface &socket) {
     auto arg = socket.Receive<rxParameters>();
-    LOG(logDEBUG) << "detType:" << arg.detType << std::endl
-                  << "numberOfDetector.x:" << arg.numberOfDetector.x
-                  << std::endl
-                  << "numberOfDetector.y:" << arg.numberOfDetector.y
-                  << std::endl
-                  << "detId:" << arg.detId << std::endl
-                  << "hostname:" << arg.hostname << std::endl
-                  << "udpInterfaces:" << arg.udpInterfaces << std::endl
-                  << "udp_dstport:" << arg.udp_dstport << std::endl
-                  << "udp_dstip:" << sls::IpAddr(arg.udp_dstip) << std::endl
-                  << "udp_dstmac:" << sls::MacAddr(arg.udp_dstmac) << std::endl
-                  << "udp_dstport2:" << arg.udp_dstport2 << std::endl
-                  << "udp_dstip2:" << sls::IpAddr(arg.udp_dstip2) << std::endl
-                  << "udp_dstmac2:" << sls::MacAddr(arg.udp_dstmac2)
-                  << std::endl
-                  << "frames:" << arg.frames << std::endl
-                  << "triggers:" << arg.triggers << std::endl
-                  << "bursts:" << arg.bursts << std::endl
-                  << "analogSamples:" << arg.analogSamples << std::endl
-                  << "digitalSamples:" << arg.digitalSamples << std::endl
-                  << "expTimeNs:" << arg.expTimeNs << std::endl
-                  << "periodNs:" << arg.periodNs << std::endl
-                  << "subExpTimeNs:" << arg.subExpTimeNs << std::endl
-                  << "subDeadTimeNs:" << arg.subDeadTimeNs << std::endl
-                  << "activate:" << arg.activate << std::endl
-                  << "quad:" << arg.quad << std::endl
-                  << "dynamicRange:" << arg.dynamicRange << std::endl
-                  << "timMode:" << arg.timMode << std::endl
-                  << "tenGiga:" << arg.tenGiga << std::endl
-                  << "roMode:" << arg.roMode << std::endl
-                  << "adcMask:" << arg.adcMask << std::endl
-                  << "adc10gMask:" << arg.adc10gMask << std::endl
-                  << "roi.xmin:" << arg.roi.xmin << std::endl
-                  << "roi.xmax:" << arg.roi.xmax << std::endl
-                  << "countermask:" << arg.countermask << std::endl
-                  << "burstType:" << arg.burstType << std::endl
-                  << "exptime1:" << arg.expTime1Ns << std::endl
-                  << "exptime2:" << arg.expTime2Ns << std::endl
-                  << "exptime3:" << arg.expTime3Ns << std::endl
-                  << "gateDelay1:" << arg.gateDelay1Ns << std::endl
-                  << "gateDelay2:" << arg.gateDelay2Ns << std::endl
-                  << "gateDelay3:" << arg.gateDelay3Ns << std::endl
-                  << "gates:" << arg.gates << std::endl;
+    LOG(logDEBUG) << sls::ToString(arg);
 
     // if object exists, verify unlocked and idle, else only verify lock
     // (connecting first time)
@@ -394,7 +352,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
         int msize[2] = {arg.numberOfDetector.x, arg.numberOfDetector.y};
         impl()->setDetectorSize(msize);
     }
-    impl()->setDetectorPositionId(arg.detId);
+    impl()->setModulePositionId(arg.moduleId);
     impl()->setDetectorHostname(arg.hostname);
 
     // udp setup

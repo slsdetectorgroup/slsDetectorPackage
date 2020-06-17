@@ -43,7 +43,7 @@ class Detector {
      * ************************************************/
 
     /* Free the shared memory of this detector and all modules
-     * belonging to it.*/
+     * belonging to it */
     void freeSharedMemory();
 
     void loadConfig(const std::string &fname);

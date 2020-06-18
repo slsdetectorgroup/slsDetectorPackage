@@ -361,7 +361,7 @@ void modeNotImplemented(char *modename, int mode) {
 }
 
 void validate(int arg, int retval, char *modename, enum numberMode nummode) {
-    if (ret == OK && arg != -1 && retval != arg) {
+    if (ret == OK && arg != GET_FLAG && retval != arg) {
         ret = FAIL;
         if (nummode == HEX)
             sprintf(mess, "Could not %s. Set 0x%x, but read 0x%x\n", modename,
@@ -375,7 +375,7 @@ void validate(int arg, int retval, char *modename, enum numberMode nummode) {
 
 void validate64(int64_t arg, int64_t retval, char *modename,
                 enum numberMode nummode) {
-    if (ret == OK && arg != -1 && retval != arg) {
+    if (ret == OK && arg != GET_FLAG && retval != arg) {
         ret = FAIL;
         if (nummode == HEX)
             sprintf(mess, "Could not %s. Set 0x%llx, but read 0x%llx\n",
@@ -998,7 +998,7 @@ int set_dac(int file_des) {
                         (mV ? "mV" : "dac units")));
 
         // set & get
-        if ((val == -1) || (Server_VerifyLock() == OK)) {
+        if ((val == GET_FLAG) || (Server_VerifyLock() == OK)) {
             switch (ind) {
 
                 // adc vpp
@@ -1072,7 +1072,7 @@ int set_dac(int file_des) {
             case V_POWER_C:
             case V_POWER_D:
             case V_POWER_IO:
-                if (val != -1) {
+                if (val != GET_FLAG) {
                     if (!mV) {
                         ret = FAIL;
                         sprintf(mess,
@@ -1126,7 +1126,8 @@ int set_dac(int file_des) {
                 }
                 retval = getVchip();
                 LOG(logDEBUG1, ("Vchip: %d\n", retval));
-                if (ret == OK && val != -1 && val != -100 && retval != val) {
+                if (ret == OK && val != GET_FLAG && val != -100 &&
+                    retval != val) {
                     ret = FAIL;
                     sprintf(mess, "Could not set vchip. Set %d, but read %d\n",
                             val, retval);
@@ -1170,9 +1171,9 @@ int set_dac(int file_des) {
                     LOG(logERROR, (mess));
                 } else {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-                    if ((val != -1 && mV &&
+                    if ((val != GET_FLAG && mV &&
                          checkVLimitCompliant(val) == FAIL) ||
-                        (val != -1 && !mV &&
+                        (val != GET_FLAG && !mV &&
                          checkVLimitDacCompliant(val) == FAIL)) {
                         ret = FAIL;
                         sprintf(mess,
@@ -1187,7 +1188,7 @@ int set_dac(int file_des) {
                     retval = getDAC(serverDacIndex, mV);
                 }
 #ifdef EIGERD
-                if (val != -1) {
+                if (val != GET_FLAG) {
                     // changing dac changes settings to undefined
                     switch (serverDacIndex) {
                     case E_VCMP_LL:
@@ -1208,7 +1209,7 @@ int set_dac(int file_des) {
 #endif
                 // check
                 if (ret == OK) {
-                    if ((abs(retval - val) <= 5) || val == -1) {
+                    if ((abs(retval - val) <= 5) || val == GET_FLAG) {
                         ret = OK;
                     } else {
                         ret = FAIL;
@@ -1686,7 +1687,7 @@ int start_acquisition(int file_des) {
                     "same as hardware detector mac address %s\n",
                     src_mac);
             LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(-1) &&
+        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
                    (udpDetails.srcip != getDetectorIP())) {
             ret = FAIL;
             uint32_t sourceip = getDetectorIP();
@@ -1804,7 +1805,7 @@ int start_and_read_all(int file_des) {
                     "same as hardware detector mac address %s\n",
                     src_mac);
             LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(-1) &&
+        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
                    (udpDetails.srcip != getDetectorIP())) {
             ret = FAIL;
             uint32_t sourceip = getDetectorIP();
@@ -2623,10 +2624,10 @@ int set_dynamic_range(int file_des) {
     LOG(logDEBUG1, ("Setting dr to %d\n", dr));
 
     // set & get
-    if ((dr == -1) || (Server_VerifyLock() == OK)) {
+    if ((dr == GET_FLAG) || (Server_VerifyLock() == OK)) {
         // check dr
         switch (dr) {
-        case -1:
+        case GET_FLAG:
 #ifdef MYTHEN3D
         case 32:
 #elif EIGERD
@@ -2795,8 +2796,8 @@ int enable_ten_giga(int file_des) {
     functionNotImplemented();
 #else
     // set & get
-    if ((arg == -1) || (Server_VerifyLock() == OK)) {
-        if (arg >= 0 && enableTenGigabitEthernet(-1) != arg) {
+    if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
+        if (arg >= 0 && enableTenGigabitEthernet(GET_FLAG) != arg) {
             enableTenGigabitEthernet(arg);
             uint64_t hardwaremac = getDetectorMAC();
             if (udpDetails.srcmac != hardwaremac) {
@@ -2810,7 +2811,7 @@ int enable_ten_giga(int file_des) {
             }
             configure_mac();
         }
-        retval = enableTenGigabitEthernet(-1);
+        retval = enableTenGigabitEthernet(GET_FLAG);
         LOG(logDEBUG1, ("10GbE: %d\n", retval));
         validate(arg, retval, "enable/disable 10GbE", DEC);
     }
@@ -2870,7 +2871,7 @@ int set_pattern_io_control(int file_des) {
 #else
     LOG(logDEBUG1,
         ("Setting Pattern IO Control to 0x%llx\n", (long long int)arg));
-    if (((int64_t)arg == -1) || (Server_VerifyLock() == OK)) {
+    if (((int64_t)arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = writePatternIOControl(arg);
         LOG(logDEBUG1,
             ("Pattern IO Control retval: 0x%llx\n", (long long int)retval));
@@ -2893,7 +2894,7 @@ int set_pattern_clock_control(int file_des) {
 #else
     LOG(logDEBUG1,
         ("Setting Pattern Clock Control to 0x%llx\n", (long long int)arg));
-    if (((int64_t)arg == -1) || (Server_VerifyLock() == OK)) {
+    if (((int64_t)arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = writePatternClkControl(arg);
         LOG(logDEBUG1,
             ("Pattern Clock Control retval: 0x%llx\n", (long long int)retval));
@@ -2955,7 +2956,8 @@ int set_pattern_loop_addresses(int file_des) {
     LOG(logDEBUG1, ("Setting Pattern loop addresses(loopLevel:%d "
                     "startAddr:0x%x stopAddr:0x%x)\n",
                     loopLevel, startAddr, stopAddr));
-    if ((startAddr == -1) || (stopAddr == -1) || (Server_VerifyLock() == OK)) {
+    if ((startAddr == GET_FLAG) || (stopAddr == GET_FLAG) ||
+        (Server_VerifyLock() == OK)) {
         // valid loop level
         if (loopLevel < -1 ||
             loopLevel > 2) { // loop level of -1 : complete pattern
@@ -3007,7 +3009,7 @@ int set_pattern_loop_cycles(int file_des) {
     int numLoops = args[1];
     LOG(logDEBUG1, ("Setting Pattern loop cycles (loopLevel:%d numLoops:%d)\n",
                     loopLevel, numLoops));
-    if ((numLoops == -1) || (Server_VerifyLock() == OK)) {
+    if ((numLoops == GET_FLAG) || (Server_VerifyLock() == OK)) {
         // valid loop level
         if (loopLevel < 0 || loopLevel > 2) {
             ret = FAIL;
@@ -3017,8 +3019,8 @@ int set_pattern_loop_cycles(int file_des) {
                     loopLevel);
             LOG(logERROR, (mess));
         } else {
-            int startAddr = -1;
-            int stopAddr = -1;
+            int startAddr = GET_FLAG;
+            int stopAddr = GET_FLAG;
             setPatternLoop(loopLevel, &startAddr, &stopAddr, &numLoops);
             retval = numLoops;
             LOG(logDEBUG1,
@@ -3045,7 +3047,7 @@ int set_pattern_wait_addr(int file_des) {
     int addr = args[1];
     LOG(logDEBUG1, ("Setting Pattern wait address (loopLevel:%d addr:0x%x)\n",
                     loopLevel, addr));
-    if ((addr == -1) || (Server_VerifyLock() == OK)) {
+    if ((addr == GET_FLAG) || (Server_VerifyLock() == OK)) {
         // valid loop level 0-2
         if (loopLevel < 0 || loopLevel > 2) {
             ret = FAIL;
@@ -3088,7 +3090,7 @@ int set_pattern_wait_time(int file_des) {
     uint64_t timeval = args[1];
     LOG(logDEBUG1, ("Setting Pattern wait time (loopLevel:%d timeval:0x%llx)\n",
                     loopLevel, (long long int)timeval));
-    if (((int64_t)timeval == -1) || (Server_VerifyLock() == OK)) {
+    if (((int64_t)timeval == GET_FLAG) || (Server_VerifyLock() == OK)) {
         // valid loop level 0-2
         if (loopLevel < 0 || loopLevel > 2) {
             ret = FAIL;
@@ -3245,7 +3247,7 @@ int set_counter_bit(int file_des) {
         setCounterBit(arg);
     }
     // get
-    retval = setCounterBit(-1);
+    retval = setCounterBit(GET_FLAG);
     LOG(logDEBUG1, ("Set counter bit retval: %d\n", retval));
     validate(arg, retval, "set counter bit", DEC);
 #endif
@@ -3747,7 +3749,7 @@ int power_chip(int file_des) {
     functionNotImplemented();
 #else
     // set & get
-    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+    if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
 #if defined(MYTHEN3D) || defined(GOTTHARD2D)
         // check only when powering on
         if (arg != -1 && arg != 0) {
@@ -3783,7 +3785,7 @@ int power_chip(int file_des) {
 #ifdef JUNGFRAUD
         // narrow down error when powering on
         if (ret == FAIL && arg > 0) {
-            if (setTemperatureEvent(-1) == 1)
+            if (setTemperatureEvent(GET_FLAG) == 1)
                 sprintf(mess,
                         "Powering chip failed due to over-temperature event. "
                         "Clear event & power chip again. Set %d, read %d \n",
@@ -3810,7 +3812,7 @@ int set_activate(int file_des) {
     functionNotImplemented();
 #else
     // set & get
-    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+    if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         if (arg >= 0) {
             if (setActivate(arg) == FAIL) {
                 ret = FAIL;
@@ -3869,7 +3871,7 @@ int threshold_temp(int file_des) {
     functionNotImplemented();
 #else
     // set & get
-    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+    if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         if (arg > MAX_THRESHOLD_TEMP_VAL) {
             ret = FAIL;
             sprintf(mess, "Threshold Temp %d should be in range: 0 - %d\n", arg,
@@ -3902,7 +3904,7 @@ int temp_control(int file_des) {
     functionNotImplemented();
 #else
     // set & get
-    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+    if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = setTemperatureControl(arg);
         LOG(logDEBUG1, ("Temperature control: %d\n", retval));
         validate(arg, retval, "set temperature control", DEC);
@@ -3926,7 +3928,7 @@ int temp_event(int file_des) {
     functionNotImplemented();
 #else
     // set & get
-    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+    if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = setTemperatureEvent(arg);
         LOG(logDEBUG1, ("Temperature event: %d\n", retval));
         validate(arg, retval, "set temperature event", DEC);
@@ -3949,7 +3951,7 @@ int auto_comp_disable(int file_des) {
     functionNotImplemented();
 #else
     // set & get
-    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+    if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = autoCompDisable(arg);
         LOG(logDEBUG1, ("Auto comp disable: %d\n", retval));
         validate(arg, retval, "set auto comp disable", DEC);
@@ -3972,7 +3974,7 @@ int storage_cell_start(int file_des) {
     functionNotImplemented();
 #else
     // set & get
-    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+    if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         if (arg > MAX_STORAGE_CELL_VAL) {
             ret = FAIL;
             strcpy(mess, "Max Storage cell number should not exceed 15\n");
@@ -4092,7 +4094,7 @@ int led(int file_des) {
     functionNotImplemented();
 #else
     // set & get
-    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+    if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = setLEDEnable(arg);
         LOG(logDEBUG1, ("LED Enable: %d\n", retval));
         validate(arg, retval, "LED Enable", DEC);
@@ -4386,7 +4388,7 @@ int set_external_sampling_source(int file_des) {
     functionNotImplemented();
 #else
     // set & get
-    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+    if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         if (arg < -1 || arg > 63) {
             ret = FAIL;
             sprintf(mess,
@@ -4418,7 +4420,7 @@ int set_external_sampling(int file_des) {
     functionNotImplemented();
 #else
     // set & get
-    if ((arg == -1) || (Server_VerifyLock() == OK)) {
+    if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         arg = (arg > 0) ? 1 : arg;
         retval = setExternalSampling(arg);
         LOG(logDEBUG1, ("External Sampling enable: %d\n", retval));
@@ -4663,8 +4665,8 @@ int set_read_n_lines(int file_des) {
                     MAX_ROWS_PER_READOUT);
             LOG(logERROR, (mess));
         } else {
-            int dr = setDynamicRange(-1);
-            int isTenGiga = enableTenGigabitEthernet(-1);
+            int dr = setDynamicRange(GET_FLAG);
+            int isTenGiga = enableTenGigabitEthernet(GET_FLAG);
             unsigned int maxnl = MAX_ROWS_PER_READOUT;
             unsigned int maxnp = (isTenGiga ? 4 : 16) * dr;
             if ((arg * maxnp) % maxnl) {
@@ -6955,7 +6957,7 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
     // dynamic range
-    i32 = setDynamicRange(-1);
+    i32 = setDynamicRange(GET_FLAG);
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
         return printSocketReadError();
@@ -6968,7 +6970,7 @@ int get_receiver_parameters(int file_des) {
 
         // 10 gbe
 #if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-    i32 = enableTenGigabitEthernet(-1);
+    i32 = enableTenGigabitEthernet(GET_FLAG);
 #else
     i32 = 0;
 #endif

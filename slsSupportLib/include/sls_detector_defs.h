@@ -50,7 +50,6 @@
 /** maximum unit size of program sent to detector */
 #define MAX_FPGAPROGRAMSIZE (2 * 1024 * 1024)
 
-/** get flag form most functions */
 #define GET_FLAG -1
 
 #define DEFAULT_DET_MAC  "00:aa:bb:cc:dd:ee"
@@ -73,7 +72,6 @@ class slsDetectorDefs {
 
     /** Type of the detector */
     enum detectorType {
-        GET_DETECTOR_TYPE = -1,
         GENERIC,
         EIGER,
         GOTTHARD,
@@ -85,20 +83,17 @@ class slsDetectorDefs {
     };
 
     /**  return values */
-    enum {
-        OK,  /**< function succeeded */
-        FAIL /**< function failed */
-    };
+    enum { OK, FAIL };
 
     /** staus mask */
     enum runStatus {
-        IDLE,    /**< detector ready to start acquisition - no data in memory */
-        ERROR,   /**< error i.e. normally fifo full */
-        WAITING, /**< waiting for trigger or gate signal */
-        RUN_FINISHED, /**< acquisition not running but data in memory */
-        TRANSMITTING, /**< acquisition running and data in memory */
-        RUNNING,      /**< acquisition  running, no data in memory */
-        STOPPED       /**< acquisition stopped externally */
+        IDLE,
+        ERROR,
+        WAITING,
+        RUN_FINISHED,
+        TRANSMITTING,
+        RUNNING,
+        STOPPED
     };
 
     /**
@@ -121,22 +116,19 @@ class slsDetectorDefs {
     */
 
     typedef struct {
-        uint64_t frameNumber; /**< is the frame number */
-        uint32_t expLength;   /**< is the subframe number (32 bit eiger) or real
-                                 time exposure time in 100ns (others) */
-        uint32_t packetNumber; /**< is the packet number */
-        uint64_t bunchId;      /**< is the bunch id from beamline */
-        uint64_t timestamp;    /**< is the time stamp with 10 MHz clock */
-        uint16_t modId; /**< is the unique module id (unique even for left,
-                           right, top, bottom) */
-        uint16_t row;   /**< is the row index in the complete detector system */
-        uint16_t
-            column; /**< is the column index in the complete detector system */
-        uint16_t reserved;     /**< is reserved */
-        uint32_t debug;        /**< is for debugging purposes */
-        uint16_t roundRNumber; /**< is the round robin set number */
-        uint8_t detType;       /**< is the detector type see :: detectorType */
-        uint8_t version; /**< is the version number of this structure format */
+        uint64_t frameNumber;
+        uint32_t expLength;
+        uint32_t packetNumber;
+        uint64_t bunchId;
+        uint64_t timestamp;
+        uint16_t modId;
+        uint16_t row;
+        uint16_t column;
+        uint16_t reserved;
+        uint32_t debug;
+        uint16_t roundRNumber;
+        uint8_t detType;
+        uint8_t version;
     } sls_detector_header;
 
 #ifdef __cplusplus
@@ -149,37 +141,27 @@ class slsDetectorDefs {
     };
 #endif
     enum frameDiscardPolicy {
-        GET_FRAME_DISCARD_POLICY = -1, /**< to get the missing packet mode */
-        NO_DISCARD, /**< pad incomplete packets with -1, default mode */
-        DISCARD_EMPTY_FRAMES, /**< discard incomplete frames, fastest mode, save
-                                 space, not suitable for multiple modules */
-        DISCARD_PARTIAL_FRAMES, /**< ignore missing packets, must check with
-                                   packetsMask for data integrity, fast mode and
-                                   suitable for multiple modules */
+        NO_DISCARD,
+        DISCARD_EMPTY_FRAMES,
+        DISCARD_PARTIAL_FRAMES,
         NUM_DISCARD_POLICIES
     };
 
-    enum fileFormat {
-        GET_FILE_FORMAT = -1, /**< the receiver will return its file format */
-        BINARY,               /**< binary format */
-        HDF5,                 /**< hdf5 format */
-        NUM_FILE_FORMATS
-    };
+    enum fileFormat { BINARY, HDF5, NUM_FILE_FORMATS };
 
     /**
         @short structure for a region of interest
         xmin,xmax,ymin,ymax define the limits of the region
     */
-
 #ifdef __cplusplus
     struct ROI {
-        int xmin{-1}; /**< is the roi xmin (in channel number) */
-        int xmax{-1}; /**< is the roi xmax  (in channel number)*/
+        int xmin{-1};
+        int xmax{-1};
     } __attribute__((packed));
 #else
 typedef struct {
-    int xmin; /**< is the roi xmin (in channel number) */
-    int xmax; /**< is the roi xmax  (in channel number)*/
+    int xmin;
+    int xmax;
 } ROI;
 #endif
 
@@ -191,10 +173,7 @@ typedef struct {
     /**
         dimension indexes
     */
-    enum dimension {
-        X = 0, /**< X dimension */
-        Y = 1  /**< Y dimension */
-    };
+    enum dimension { X, Y };
 
 #ifdef __cplusplus
     struct xy {
@@ -219,12 +198,11 @@ typedef struct {
       communication mode using external signals
     */
     enum timingMode {
-        GET_TIMING_MODE = -1, /**<return flag for communication mode */
-        AUTO_TIMING,          /**< internal timing */
-        TRIGGER_EXPOSURE,     /**< trigger mode i.e. exposure is triggered */
-        GATED,                /**< gated  */
-        BURST_TRIGGER,        /**< trigger a burst of frames */
-        TRIGGER_GATED,        /**< trigger and gating */
+        AUTO_TIMING,
+        TRIGGER_EXPOSURE,
+        GATED,
+        BURST_TRIGGER,
+        TRIGGER_GATED,
         NUM_TIMING_MODES
     };
 
@@ -350,7 +328,6 @@ typedef struct {
        detector settings indexes
     */
     enum detectorSettings {
-        GET_SETTINGS = -1,
         STANDARD,
         FAST,
         HIGHGAIN,
@@ -372,8 +349,8 @@ typedef struct {
         G2_LOWCAP_LOWGAIN,
         G4_HIGHGAIN,
         G4_LOWGAIN,
-        UNDEFINED = 200, /**< undefined or custom  settings */
-        UNINITIALIZED    /**< uninitialiazed (status at startup) */
+        UNDEFINED = 200,
+        UNINITIALIZED
     };
 
 #define TRIMBITMASK 0x3f
@@ -388,41 +365,18 @@ typedef struct {
     /** chip speed */
     enum speedLevel { FULL_SPEED, HALF_SPEED, QUARTER_SPEED };
 
-    /** port type */
-    enum portType {
-        CONTROL_PORT, /**< control port */
-        STOP_PORT,    /**<stop port */
-        DATA_PORT     /**< receiver tcp port with client*/
-    };
-
     /** hierarchy in multi-detector structure, if any */
-    enum masterFlags {
-        GET_MASTER = -1, /**< return master flag */
-        NO_MASTER,       /**< no master/slave hierarchy defined */
-        IS_MASTER,       /**<is master */
-        IS_SLAVE         /**< is slave */
-    };
+    enum masterFlags { NO_MASTER, IS_MASTER, IS_SLAVE };
 
     /**
      * frame mode for processor
      */
-    enum frameModeType {
-        GET_FRAME_MODE = -1,
-        PEDESTAL,     /** < pedestal */
-        NEW_PEDESTAL, /** < new pedestal */
-        FLATFIELD,    /** < flatfield */
-        NEW_FLATFIELD /** < new flatfield */
-    };
+    enum frameModeType { PEDESTAL, NEW_PEDESTAL, FLATFIELD, NEW_FLATFIELD };
 
     /**
      * detector mode for processor
      */
-    enum detectorModeType {
-        GET_DETECTOR_MODE = -1,
-        COUNTING,      /** < counting */
-        INTERPOLATING, /** < interpolating */
-        ANALOG         /** < analog */
-    };
+    enum detectorModeType { COUNTING, INTERPOLATING, ANALOG };
 
     /**
      * burst mode for gotthard2

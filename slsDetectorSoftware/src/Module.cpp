@@ -142,7 +142,7 @@ void Module::updateNumberOfDetector(slsDetectorDefs::xy det) {
 }
 
 slsDetectorDefs::detectorSettings Module::getSettings() {
-    auto r = sendToDetector<int>(F_SET_SETTINGS, -1);
+    auto r = sendToDetector<int>(F_SET_SETTINGS, GET_FLAG);
     return static_cast<detectorSettings>(r);
 }
 
@@ -176,7 +176,7 @@ void Module::loadSettingsFile(const std::string &fname) {
 }
 
 int Module::getAllTrimbits() {
-    return sendToDetector<int>(F_SET_ALL_TRIMBITS, -1);
+    return sendToDetector<int>(F_SET_ALL_TRIMBITS, GET_FLAG);
 }
 
 void Module::setAllTrimbits(int val) {
@@ -242,36 +242,27 @@ void Module::setDelayAfterTrigger(int64_t value) {
 }
 
 int64_t Module::getNumberOfFramesLeft() const {
-    int64_t retval = -1;
-    sendToDetectorStop(F_GET_FRAMES_LEFT, nullptr, retval);
-    return retval;
+    return sendToDetectorStop<int64_t>(F_GET_FRAMES_LEFT);
 }
 
 int64_t Module::getNumberOfTriggersLeft() const {
-    int64_t retval = -1;
-    sendToDetectorStop(F_GET_TRIGGERS_LEFT, nullptr, retval);
-    return retval;
+    return sendToDetectorStop<int64_t>(F_GET_TRIGGERS_LEFT);
 }
 
 int64_t Module::getDelayAfterTriggerLeft() const {
-    int64_t retval = -1;
-    sendToDetectorStop(F_GET_DELAY_AFTER_TRIGGER_LEFT, nullptr, retval);
-    return retval;
+    return sendToDetectorStop<int64_t>(F_GET_DELAY_AFTER_TRIGGER_LEFT);
 }
 
 int64_t Module::getPeriodLeft() const {
-    int64_t retval = -1;
-    sendToDetectorStop(F_GET_PERIOD_LEFT, nullptr, retval);
-    return retval;
+    return sendToDetectorStop<int64_t>(F_GET_PERIOD_LEFT);
 }
 
 slsDetectorDefs::timingMode Module::getTimingMode() {
-    return sendToDetector<timingMode>(F_SET_TIMING_MODE, -1);
+    return sendToDetector<timingMode>(F_SET_TIMING_MODE, GET_FLAG);
 }
 
 void Module::setTimingMode(timingMode value) {
-    timingMode retval = GET_TIMING_MODE;
-    sendToDetector(F_SET_TIMING_MODE, static_cast<int>(value), retval);
+    sendToDetector<int>(F_SET_TIMING_MODE, static_cast<int>(value));
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_TIMING_MODE, value, nullptr);
     }
@@ -310,7 +301,7 @@ void Module::setClockFrequency(int clkIndex, int value) {
 }
 
 int Module::getDAC(dacIndex index, bool mV) {
-    int args[]{static_cast<int>(index), static_cast<int>(mV), -1};
+    int args[]{static_cast<int>(index), static_cast<int>(mV), GET_FLAG};
     return sendToDetector<int>(F_SET_DAC, args);
 }
 
@@ -320,7 +311,7 @@ void Module::setDAC(int val, dacIndex index, bool mV) {
 }
 
 bool Module::getPowerChip() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return sendToDetector<int>(F_POWER_CHIP, arg);
 }
 
@@ -640,17 +631,16 @@ std::string Module::printReceiverConfiguration() {
 }
 
 bool Module::getTenGiga() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return static_cast<bool>(sendToDetector<int>(F_ENABLE_TEN_GIGA, arg));
 }
 
 void Module::setTenGiga(bool value) {
     int arg = static_cast<int>(value);
-    int retval = -1;
-    sendToDetector(F_ENABLE_TEN_GIGA, arg, retval);
+    auto retval = sendToDetector<int>(F_ENABLE_TEN_GIGA, arg);
     sendToDetectorStop<int>(F_ENABLE_TEN_GIGA, arg);
     arg = retval;
-    if (shm()->useReceiverFlag && arg != -1) {
+    if (shm()->useReceiverFlag && arg != GET_FLAG) {
         sendToReceiver<int>(F_ENABLE_RECEIVER_TEN_GIGA, arg);
     }
 }
@@ -769,9 +759,8 @@ int Module::getReceiverPort() const { return shm()->rxTCPPort; }
 int Module::setReceiverPort(int port_number) {
     if (port_number >= 0 && port_number != shm()->rxTCPPort) {
         if (shm()->useReceiverFlag) {
-            int retval = -1;
-            sendToReceiver(F_SET_RECEIVER_PORT, port_number, retval);
-            shm()->rxTCPPort = retval;
+            shm()->rxTCPPort =
+                sendToReceiver<int>(F_SET_RECEIVER_PORT, port_number);
         } else {
             shm()->rxTCPPort = port_number;
         }
@@ -780,7 +769,7 @@ int Module::setReceiverPort(int port_number) {
 }
 
 int Module::getReceiverFifoDepth() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return sendToReceiver<int>(F_SET_RECEIVER_FIFO_DEPTH, arg);
 }
 
@@ -815,7 +804,7 @@ void Module::setPartialFramesPadding(bool padding) {
 }
 
 int64_t Module::getReceiverUDPSocketBufferSize() const {
-    int64_t arg = -1;
+    int64_t arg = GET_FLAG;
     return sendToReceiver<int64_t>(F_RECEIVER_UDP_SOCK_BUF_SIZE, arg);
 }
 
@@ -828,7 +817,7 @@ void Module::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
 }
 
 bool Module::getReceiverLock() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return static_cast<bool>(sendToReceiver<int>(F_LOCK_RECEIVER, arg));
 }
 
@@ -954,7 +943,7 @@ void Module::setReceiverStreamingFrequency(int freq) {
 }
 
 int Module::getReceiverStreamingTimer() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return sendToReceiver<int>(F_RECEIVER_STREAMING_TIMER, arg);
 }
 
@@ -1001,7 +990,7 @@ void Module::setClientStreamingIP(const sls::IpAddr ip) {
 //  Eiger Specific
 
 int Module::getDynamicRange() {
-    return sendToDetector<int>(F_SET_DYNAMIC_RANGE, -1);
+    return sendToDetector<int>(F_SET_DYNAMIC_RANGE, GET_FLAG);
 }
 
 void Module::setDynamicRange(int n) {
@@ -1120,7 +1109,7 @@ void Module::setOverFlowMode(const bool enable) {
 }
 
 bool Module::getFlippedDataX() {
-    return sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER, -1);
+    return sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER, GET_FLAG);
 }
 
 void Module::setFlippedDataX(bool value) {
@@ -1191,7 +1180,7 @@ int64_t Module::getMeasuredSubFramePeriod() const {
 }
 
 bool Module::getActivate() {
-    int arg = -1;
+    int arg = GET_FLAG;
     auto retval = sendToDetector<int>(F_ACTIVATE, arg);
     auto retval2 = sendToDetectorStop<int>(F_ACTIVATE, arg);
     if (retval != retval2) {
@@ -1222,7 +1211,7 @@ void Module::setDeactivatedRxrPaddingMode(bool padding) {
 }
 
 bool Module::getCounterBit() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return (!static_cast<bool>(sendToDetector<int>(F_SET_COUNTER_BIT, arg)));
 }
 
@@ -1257,7 +1246,7 @@ void Module::setQuad(const bool enable) {
 // Jungfrau Specific
 
 int Module::getThresholdTemperature() {
-    int arg = -1;
+    int arg = GET_FLAG;
     auto retval = sendToDetectorStop<int>(F_THRESHOLD_TEMP, arg);
     if (retval != 0) {
         retval /= 1000;
@@ -1275,7 +1264,7 @@ void Module::setThresholdTemperature(int val) {
 }
 
 bool Module::getTemperatureControl() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return static_cast<bool>(sendToDetectorStop<int>(F_TEMP_CONTROL, arg));
 }
 
@@ -1284,7 +1273,7 @@ void Module::setTemperatureControl(bool val) {
 }
 
 int Module::getTemperatureEvent() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return sendToDetectorStop<int>(F_TEMP_EVENT, arg);
 }
 
@@ -1294,7 +1283,7 @@ void Module::resetTemperatureEvent() {
 }
 
 bool Module::getAutoComparatorDisableMode() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return static_cast<bool>(sendToDetector<int>(F_AUTO_COMP_DISABLE, arg));
 }
 
@@ -1311,7 +1300,7 @@ void Module::setNumberOfAdditionalStorageCells(int value) {
 }
 
 int Module::getStorageCellStart() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return sendToDetector<int>(F_STORAGE_CELL_START, arg);
 }
 
@@ -1696,7 +1685,7 @@ void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
 }
 
 int Module::getExternalSamplingSource() {
-    return setExternalSamplingSource(-1);
+    return setExternalSamplingSource(GET_FLAG);
 }
 
 int Module::setExternalSamplingSource(int value) {
@@ -1704,7 +1693,7 @@ int Module::setExternalSamplingSource(int value) {
 }
 
 bool Module::getExternalSampling() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return sendToDetector<int>(F_EXTERNAL_SAMPLING, arg);
 }
 
@@ -1746,7 +1735,7 @@ void Module::setDigitalIODelay(uint64_t pinMask, int delay) {
 }
 
 bool Module::getLEDEnable() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return static_cast<bool>(sendToDetector<int>(F_LED, arg));
 }
 
@@ -1773,7 +1762,7 @@ void Module::setPattern(const std::string &fname) {
 }
 
 uint64_t Module::getPatternIOControl() {
-    int64_t arg = -1;
+    int64_t arg = GET_FLAG;
     return sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL, arg);
 }
 
@@ -1782,7 +1771,7 @@ void Module::setPatternIOControl(uint64_t word) {
 }
 
 uint64_t Module::getPatternClockControl() {
-    int64_t arg = -1;
+    int64_t arg = GET_FLAG;
     return sendToDetector<uint64_t>(F_SET_PATTERN_CLOCK_CONTROL, arg);
 }
 
@@ -1791,7 +1780,8 @@ void Module::setPatternClockControl(uint64_t word) {
 }
 
 uint64_t Module::getPatternWord(int addr) {
-    uint64_t args[]{static_cast<uint64_t>(addr), static_cast<uint64_t>(-1)};
+    uint64_t args[]{static_cast<uint64_t>(addr),
+                    static_cast<uint64_t>(GET_FLAG)};
     return sendToDetector<uint64_t>(F_SET_PATTERN_WORD, args);
 }
 
@@ -1801,7 +1791,7 @@ void Module::setPatternWord(int addr, uint64_t word) {
 }
 
 std::array<int, 2> Module::getPatternLoopAddresses(int level) {
-    int args[]{level, -1, -1};
+    int args[]{level, GET_FLAG, GET_FLAG};
     std::array<int, 2> retvals{};
     sendToDetector(F_SET_PATTERN_LOOP_ADDRESSES, args, retvals);
     return retvals;
@@ -1814,7 +1804,7 @@ void Module::setPatternLoopAddresses(int level, int start, int stop) {
 }
 
 int Module::getPatternLoopCycles(int level) {
-    int args[]{level, -1};
+    int args[]{level, GET_FLAG};
     return sendToDetector<int>(F_SET_PATTERN_LOOP_CYCLES, args);
 }
 
@@ -1824,7 +1814,7 @@ void Module::setPatternLoopCycles(int level, int n) {
 }
 
 int Module::getPatternWaitAddr(int level) {
-    int args[]{level, -1};
+    int args[]{level, GET_FLAG};
     return sendToDetector<int>(F_SET_PATTERN_WAIT_ADDR, args);
 }
 
@@ -1834,7 +1824,8 @@ void Module::setPatternWaitAddr(int level, int addr) {
 }
 
 uint64_t Module::getPatternWaitTime(int level) {
-    uint64_t args[]{static_cast<uint64_t>(level), static_cast<uint64_t>(-1)};
+    uint64_t args[]{static_cast<uint64_t>(level),
+                    static_cast<uint64_t>(GET_FLAG)};
     return sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
 }
 
@@ -2069,7 +2060,7 @@ int Module::setStopPort(int port_number) {
 }
 
 bool Module::getLockDetector() {
-    int arg = -1;
+    int arg = GET_FLAG;
     return static_cast<bool>(sendToDetector<int>(F_LOCK_SERVER, arg));
 }
 
@@ -2618,10 +2609,6 @@ void Module::updateRateCorrection() {
 void Module::setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
                                            bool trimbits) {
 
-    // if settings provided, use that, else use the shared memory variable
-    detectorSettings is =
-        ((isettings != GET_SETTINGS) ? isettings : getSettings());
-
     // verify e_eV exists in trimEneregies[]
     if (shm()->trimEnergies.empty() || (e_eV < shm()->trimEnergies.front()) ||
         (e_eV > shm()->trimEnergies.back())) {
@@ -2636,7 +2623,7 @@ void Module::setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
     sls_detector_module myMod{shm()->myDetectorType};
 
     if (!interpolate) {
-        std::string settingsfname = getTrimbitFilename(is, e_eV);
+        std::string settingsfname = getTrimbitFilename(isettings, e_eV);
         LOG(logDEBUG1) << "Settings File is " << settingsfname;
         myMod = readSettingsFile(settingsfname, trimbits);
     } else {
@@ -2649,8 +2636,8 @@ void Module::setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
                 break;
             }
         }
-        std::string settingsfname1 = getTrimbitFilename(is, trim1);
-        std::string settingsfname2 = getTrimbitFilename(is, trim2);
+        std::string settingsfname1 = getTrimbitFilename(isettings, trim1);
+        std::string settingsfname2 = getTrimbitFilename(isettings, trim2);
         LOG(logDEBUG1) << "Settings Files are " << settingsfname1 << " and "
                        << settingsfname2;
         auto myMod1 = readSettingsFile(settingsfname1, trimbits);
@@ -2665,10 +2652,10 @@ void Module::setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
             linearInterpolation(e_eV, trim1, trim2, myMod1.tau, myMod2.tau);
     }
 
-    myMod.reg = is;
+    myMod.reg = isettings;
     myMod.eV = e_eV;
     setModule(myMod, trimbits);
-    if (getSettings() != is) {
+    if (getSettings() != isettings) {
         throw RuntimeError("setThresholdEnergyAndSettings: Could not set "
                            "settings in detector");
     }

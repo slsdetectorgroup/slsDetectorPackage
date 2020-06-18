@@ -1088,8 +1088,7 @@ int ClientInterface::set_flipped_data(Interface &socket) {
 }
 
 int ClientInterface::set_file_format(Interface &socket) {
-    fileFormat f = GET_FILE_FORMAT;
-    socket.Receive(f);
+    auto f = socket.Receive<fileFormat>();
     if (f < 0 || f > NUM_FILE_FORMATS) {
         throw RuntimeError("Invalid file format: " + std::to_string(f));
     }

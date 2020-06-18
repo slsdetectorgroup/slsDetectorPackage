@@ -293,8 +293,8 @@ class Module : public virtual slsDetectorDefs {
     int64_t getSubDeadTime();
     void setSubDeadTime(int64_t value);
     int getThresholdEnergy();
-    void setThresholdEnergy(int e_eV, detectorSettings isettings = GET_SETTINGS,
-                            bool trimbits = true);
+    void setThresholdEnergy(int e_eV, detectorSettings isettings,
+                            bool trimbits);
     std::string getSettingsDir();
     std::string setSettingsDir(const std::string &dir);
     bool getParallelMode();

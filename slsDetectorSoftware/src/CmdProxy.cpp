@@ -1186,9 +1186,9 @@ std::string CmdProxy::Threshold(int action) {
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() == 1) {
-            det->setThresholdEnergy(StringTo<int>(args[0]),
-                                    slsDetectorDefs::GET_SETTINGS, true,
-                                    {det_id});
+            auto t = det->getSettings({det_id}).tsquash(
+                "Inconsistent settings between detectors");
+            det->setThresholdEnergy(StringTo<int>(args[0]), t, true, {det_id});
         } else if (args.size() == 2) {
             det->setThresholdEnergy(
                 StringTo<int>(args[0]),
@@ -1216,9 +1216,9 @@ std::string CmdProxy::ThresholdNoTb(int action) {
         throw sls::RuntimeError("cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() == 1) {
-            det->setThresholdEnergy(StringTo<int>(args[0]),
-                                    slsDetectorDefs::GET_SETTINGS, false,
-                                    {det_id});
+            auto t = det->getSettings({det_id}).tsquash(
+                "Inconsistent settings between detectors");
+            det->setThresholdEnergy(StringTo<int>(args[0]), t, false, {det_id});
         } else if (args.size() == 2) {
             det->setThresholdEnergy(
                 StringTo<int>(args[0]),

@@ -732,13 +732,6 @@ class Detector(CppDetectorApi):
         res = self.getMeasuredSubFramePeriod()
         return element_if_equal([it.total_seconds() for it in res])
 
-    @property
-    def storeinram(self):
-        return element_if_equal(self.getStoreInRamMode())
-
-    @storeinram.setter
-    def storeinram(self, value):
-        self.setStoreInRamMode(value)
 
     """
     Jungfrau specific

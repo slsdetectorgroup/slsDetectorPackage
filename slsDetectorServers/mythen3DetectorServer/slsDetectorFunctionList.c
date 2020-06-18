@@ -600,16 +600,6 @@ int setModule(sls_detector_module myMod, char *mess) {
     return OK;
 }
 
-int getModule(sls_detector_module *myMod) {
-    // copy local module to myMod
-    if (detectorModules) {
-        if (copyModule(myMod, detectorModules) == FAIL)
-            return FAIL;
-    } else
-        return FAIL;
-    return OK;
-}
-
 int setBit(int ibit, int patword) { return patword |= (1 << ibit); }
 
 int clearBit(int ibit, int patword) { return patword &= ~(1 << ibit); }

@@ -155,15 +155,12 @@ void function_table() {
     flist[F_WRITE_REGISTER] = &write_register;
     flist[F_READ_REGISTER] = &read_register;
     flist[F_SET_MODULE] = &set_module;
-    flist[F_GET_MODULE] = &get_module;
     flist[F_SET_SETTINGS] = &set_settings;
     flist[F_GET_THRESHOLD_ENERGY] = &get_threshold_energy;
     flist[F_START_ACQUISITION] = &start_acquisition;
     flist[F_STOP_ACQUISITION] = &stop_acquisition;
-    flist[F_START_READOUT] = &start_readout;
     flist[F_GET_RUN_STATUS] = &get_run_status;
     flist[F_START_AND_READ_ALL] = &start_and_read_all;
-    flist[F_READ_ALL] = &read_all;
     flist[F_GET_NUM_FRAMES] = &get_num_frames;
     flist[F_SET_NUM_FRAMES] = &set_num_frames;
     flist[F_GET_NUM_TRIGGERS] = &get_num_triggers;
@@ -201,7 +198,6 @@ void function_table() {
     flist[F_SET_DYNAMIC_RANGE] = &set_dynamic_range;
     flist[F_SET_ROI] = &set_roi;
     flist[F_GET_ROI] = &get_roi;
-    flist[F_EXIT_SERVER] = &exit_server;
     flist[F_LOCK_SERVER] = &lock_server;
     flist[F_GET_LAST_CLIENT_IP] = &get_last_client_ip;
     flist[F_SET_PORT] = &set_port;
@@ -292,8 +288,6 @@ void function_table() {
     flist[F_GET_PARALLEL_MODE] = &get_parallel_mode;
     flist[F_SET_OVERFLOW_MODE] = &set_overflow_mode;
     flist[F_GET_OVERFLOW_MODE] = &get_overflow_mode;
-    flist[F_SET_STOREINRAM_MODE] = &set_storeinram;
-    flist[F_GET_STOREINRAM_MODE] = &get_storeinram;
     flist[F_SET_READOUT_MODE] = &set_readout_mode;
     flist[F_GET_READOUT_MODE] = &get_readout_mode;
     flist[F_SET_CLOCK_FREQUENCY] = &set_clock_frequency;
@@ -1544,68 +1538,6 @@ int set_module(int file_des) {
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
-int get_module(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    sls_detector_module module;
-    int *myDac = NULL;
-    int *myChan = NULL;
-    module.dacs = NULL;
-    module.chanregs = NULL;
-
-    // allocate to send arguments
-    // allocate dacs
-    myDac = malloc(getNumberOfDACs() * sizeof(int));
-    // error
-    if (getNumberOfDACs() > 0 && myDac == NULL) {
-        ret = FAIL;
-        sprintf(mess, "Could not allocate dacs\n");
-        LOG(logERROR, (mess));
-    } else
-        module.dacs = myDac;
-
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(GOTTHARD2D)
-    functionNotImplemented();
-#endif
-
-#if defined(EIGERD) || defined(MYTHEN3D)
-    // allocate chans
-    if (ret == OK) {
-        myChan = malloc(getTotalNumberOfChannels() * sizeof(int));
-        if (getTotalNumberOfChannels() > 0 && myChan == NULL) {
-            ret = FAIL;
-            sprintf(mess, "Could not allocate chans\n");
-            LOG(logERROR, (mess));
-        } else
-            module.chanregs = myChan;
-    }
-#endif
-
-    // get module
-    if (ret == OK) {
-        module.nchip = getNumberOfChips();
-        module.nchan = getTotalNumberOfChannels();
-        module.ndac = getNumberOfDACs();
-
-        // only get
-        LOG(logDEBUG1, ("Getting module\n"));
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(GOTTHARD2D)
-        getModule(&module);
-#endif
-        LOG(logDEBUG1, ("Getting module. Settings:%d\n", module.reg));
-    }
-
-    Server_SendResult(file_des, INT32, NULL, 0);
-
-    // send module, 0 is to receive partially (without trimbits etc)
-    if (ret != FAIL) {
-        ret = sendModule(file_des, &module);
-    }
-    free(myChan);
-    free(myDac);
-    return ret;
-}
-
 int set_settings(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
@@ -1805,27 +1737,6 @@ int stop_acquisition(int file_des) {
         }
         LOG(logDEBUG1, ("Stopping Acquisition ret: %d\n", ret));
     }
-    return Server_SendResult(file_des, INT32, NULL, 0);
-}
-
-int start_readout(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-
-    LOG(logDEBUG1, ("Starting readout\n"));
-#ifndef EIGERD
-    functionNotImplemented();
-#else
-    // only set
-    if (Server_VerifyLock() == OK) {
-        ret = startReadOut();
-        if (ret == FAIL) {
-            sprintf(mess, "Could not start readout\n");
-            LOG(logERROR, (mess));
-        }
-        LOG(logDEBUG1, ("Starting readout ret: %d\n", ret));
-    }
-#endif
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
@@ -2791,14 +2702,6 @@ int get_roi(int file_des) {
         sendData(file_des, &retval.xmax, sizeof(int), INT32);
     }
     return ret;
-}
-
-int exit_server(int file_des) {
-    LOG(logINFORED, ("Closing Server\n"));
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    Server_SendResult(file_des, INT32, NULL, 0);
-    return GOODBYE;
 }
 
 int lock_server(int file_des) {
@@ -5327,11 +5230,11 @@ int get_dest_udp_port(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int retval = -1;
-    LOG(logDEBUG1, ("Getting destination porstore in ram moden"));
+    LOG(logDEBUG1, ("Getting destination port"));
 
     // get only
     retval = udpDetails.dstport;
-    LOG(logDEBUG, ("udp destination port retstore in ram model: %u\n", retval));
+    LOG(logDEBUG, ("udp destination port retval: %u\n", retval));
 
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -5566,43 +5469,6 @@ int get_overflow_mode(int file_des) {
     // get only
     retval = getOverFlowMode();
     LOG(logDEBUG1, ("overflow mode retval: %u\n", retval));
-#endif
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
-}
-
-int set_storeinram(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int arg = 0;
-
-    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
-        return printSocketReadError();
-    LOG(logINFO, ("Setting store in ram mode: %u\n", arg));
-
-#ifndef EIGERD
-    functionNotImplemented();
-#else
-    // only set
-    if (Server_VerifyLock() == OK) {
-        setStoreInRamMode(arg);
-    }
-#endif
-    return Server_SendResult(file_des, INT32, NULL, 0);
-}
-
-int get_storeinram(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int retval = -1;
-
-    LOG(logDEBUG1, ("Getting store in ram mode\n"));
-
-#ifndef EIGERD
-    functionNotImplemented();
-#else
-    // get only
-    retval = getStoreInRamMode();
-    LOG(logDEBUG1, ("store in ram mode retval: %u\n", retval));
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -6916,7 +6782,7 @@ int get_receiver_parameters(int file_des) {
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)
         return printSocketReadError();
-    // multisize
+    // numberOfDetector
     i32 = 0;
     n += sendData(file_des, &i32, sizeof(i32), INT32);
     if (n < 0)

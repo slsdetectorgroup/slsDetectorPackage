@@ -315,7 +315,7 @@ void DetectorImpl::updateDetectorSize() {
                   << multi_shm()->numberOfChannels.y;
 
     for (auto &d : detectors) {
-        d->updateMultiSize(multi_shm()->numberOfDetector);
+        d->updateNumberOfDetector(multi_shm()->numberOfDetector);
     }
 }
 

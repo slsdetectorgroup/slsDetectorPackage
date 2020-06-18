@@ -523,27 +523,6 @@ TEST_CASE("overflow", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("storeinram", "[.cmd][.new]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        auto previous = det.getStoreInRamMode();
-        std::ostringstream oss1, oss2, oss3;
-        proxy.Call("storeinram", {"1"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "storeinram 1\n");
-        proxy.Call("storeinram", {}, -1, GET, oss2);
-        REQUIRE(oss2.str() == "storeinram 1\n");
-        proxy.Call("storeinram", {"0"}, -1, PUT, oss3);
-        REQUIRE(oss3.str() == "storeinram 0\n");
-        for (int i = 0; i != det.size(); ++i) {
-            det.setStoreInRamMode(previous[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("storeinram", {}, -1, GET));
-    }
-}
-
 TEST_CASE("flippeddatax", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);

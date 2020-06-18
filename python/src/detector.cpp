@@ -318,6 +318,16 @@ void init_det(py::module &m) {
              (void (Detector::*)(defs::dacIndex, int, int, sls::Positions)) &
                  Detector::setOnChipDAC,
              py::arg(), py::arg(), py::arg(), py::arg() = Positions{})
+        .def("getExternalSignalFlags",
+             (Result<defs::externalSignalFlag>(Detector::*)(int, sls::Positions)
+                  const) &
+                 Detector::getExternalSignalFlags,
+             py::arg(), py::arg() = Positions{})
+        .def("setExternalSignalFlags",
+             (void (Detector::*)(int, defs::externalSignalFlag,
+                                 sls::Positions)) &
+                 Detector::setExternalSignalFlags,
+             py::arg(), py::arg(), py::arg() = Positions{})
         .def("acquire", (void (Detector::*)()) & Detector::acquire)
         .def("clearAcquiringFlag",
              (void (Detector::*)()) & Detector::clearAcquiringFlag)
@@ -745,14 +755,6 @@ void init_det(py::module &m) {
              (void (Detector::*)(bool, sls::Positions)) &
                  Detector::setOverFlowMode,
              py::arg(), py::arg() = Positions{})
-        .def("getStoreInRamMode",
-             (Result<bool>(Detector::*)(sls::Positions) const) &
-                 Detector::getStoreInRamMode,
-             py::arg() = Positions{})
-        .def("setStoreInRamMode",
-             (void (Detector::*)(bool, sls::Positions)) &
-                 Detector::setStoreInRamMode,
-             py::arg(), py::arg() = Positions{})
         .def("getBottom",
              (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getBottom,
@@ -914,16 +916,6 @@ void init_det(py::module &m) {
              (Result<sls::ns>(Detector::*)(sls::Positions) const) &
                  Detector::getExptimeLeft,
              py::arg() = Positions{})
-        .def("getExternalSignalFlags",
-             (Result<defs::externalSignalFlag>(Detector::*)(int, sls::Positions)
-                  const) &
-                 Detector::getExternalSignalFlags,
-             py::arg(), py::arg() = Positions{})
-        .def("setExternalSignalFlags",
-             (void (Detector::*)(int, defs::externalSignalFlag,
-                                 sls::Positions)) &
-                 Detector::setExternalSignalFlags,
-             py::arg(), py::arg(), py::arg() = Positions{})
         .def("getNumberOfBursts",
              (Result<int64_t>(Detector::*)(sls::Positions) const) &
                  Detector::getNumberOfBursts,
@@ -1396,7 +1388,8 @@ void init_det(py::module &m) {
                  Detector::getLastClientIP,
              py::arg() = Positions{})
         .def("executeCommand",
-             (void (Detector::*)(const std::string &, sls::Positions)) &
+             (Result<std::string>(Detector::*)(const std::string &,
+                                               sls::Positions)) &
                  Detector::executeCommand,
              py::arg(), py::arg() = Positions{})
         .def("getNumberOfFramesFromStart",

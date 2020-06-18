@@ -404,68 +404,6 @@ int receiveDataOnly(int file_des, void *buf, int length) {
     return total_received;
 }
 
-int sendModule(int file_des, sls_detector_module *myMod) {
-    int ts = 0, n = 0;
-    n = sendData(file_des, &(myMod->serialnumber), sizeof(myMod->serialnumber),
-                 INT32);
-    if (!n) {
-        return -1;
-    }
-    ts += n;
-    n = sendData(file_des, &(myMod->nchan), sizeof(myMod->nchan), INT32);
-    if (!n) {
-        return -1;
-    }
-    ts += n;
-    n = sendData(file_des, &(myMod->nchip), sizeof(myMod->nchip), INT32);
-    if (!n) {
-        return -1;
-    }
-    ts += n;
-    n = sendData(file_des, &(myMod->ndac), sizeof(myMod->ndac), INT32);
-    if (!n) {
-        return -1;
-    }
-    ts += n;
-    n = sendData(file_des, &(myMod->reg), sizeof(myMod->reg), INT32);
-    if (!n) {
-        return -1;
-    }
-    ts += n;
-    n = sendData(file_des, &(myMod->iodelay), sizeof(myMod->iodelay), INT32);
-    if (!n) {
-        return -1;
-    }
-    ts += n;
-    n = sendData(file_des, &(myMod->tau), sizeof(myMod->tau), INT32);
-    if (!n) {
-        return -1;
-    }
-    ts += n;
-    n = sendData(file_des, &(myMod->eV), sizeof(myMod->eV), INT32);
-    if (!n) {
-        return -1;
-    }
-    ts += n;
-    // dacs
-    n = sendData(file_des, myMod->dacs, sizeof(int) * (myMod->ndac), INT32);
-    if (!n) {
-        return -1;
-    }
-    ts += n;
-    // channels
-#if defined(EIGERD) || defined(MYTHEN3D)
-    n = sendData(file_des, myMod->chanregs, sizeof(int) * (myMod->nchan),
-                 INT32);
-    if (!n) {
-        return -1;
-    }
-    ts += n;
-#endif
-    LOG(logDEBUG1, ("module of size %d sent register %x\n", ts, myMod->reg));
-    return ts;
-}
-
 int receiveModule(int file_des, sls_detector_module *myMod) {
     enum TLogLevel level = logDEBUG1;
     LOG(level, ("Receiving Module\n"));

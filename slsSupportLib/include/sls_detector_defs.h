@@ -445,8 +445,8 @@ typedef struct {
      */
     struct rxParameters {
         detectorType detType{GENERIC};
-        xy multiSize;
-        int detId{0};
+        xy numberOfDetector;
+        int moduleId{0};
         char hostname[MAX_STR_LENGTH];
         int udpInterfaces{1};
         int udp_dstport{0};

@@ -766,7 +766,6 @@ class CmdProxy {
         {"settingspath", &CmdProxy::settingspath},
         {"parallel", &CmdProxy::parallel},
         {"overflow", &CmdProxy::overflow},
-        {"storeinram", &CmdProxy::storeinram},
         {"flippeddatax", &CmdProxy::flippeddatax},
         {"trimen", &CmdProxy::TrimEnergies},
         {"ratecorr", &CmdProxy::RateCorrection},
@@ -1775,10 +1774,6 @@ class CmdProxy {
     INTEGER_COMMAND(overflow, getOverFlowMode, setOverFlowMode, StringTo<int>,
                     "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in "
                     "32 bit mode.");
-
-    INTEGER_COMMAND(storeinram, getStoreInRamMode, setStoreInRamMode,
-                    StringTo<int>,
-                    "[0, 1]\n\t[Eiger] Enable or disable store in ram mode.");
 
     INTEGER_COMMAND(
         flippeddatax, getBottom, setBottom, StringTo<int>,

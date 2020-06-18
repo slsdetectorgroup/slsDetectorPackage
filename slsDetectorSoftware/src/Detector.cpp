@@ -376,25 +376,25 @@ void Detector::setClockDivider(int clkIndex, int value, Positions pos) {
 }
 
 Result<int> Detector::getHighVoltage(Positions pos) const {
-    return pimpl->Parallel(&Module::setDAC, pos, -1, defs::HIGH_VOLTAGE, 0);
+    return pimpl->Parallel(&Module::getDAC, pos, defs::HIGH_VOLTAGE, false);
 }
 
 void Detector::setHighVoltage(int value, Positions pos) {
-    pimpl->Parallel(&Module::setDAC, pos, value, defs::HIGH_VOLTAGE, 0);
+    pimpl->Parallel(&Module::setDAC, pos, value, defs::HIGH_VOLTAGE, false);
 }
 
 Result<bool> Detector::getPowerChip(Positions pos) const {
-    return pimpl->Parallel(&Module::powerChip, pos, -1);
+    return pimpl->Parallel(&Module::getPowerChip, pos);
 }
 
 void Detector::setPowerChip(bool on, Positions pos) {
     if ((pos.empty() || pos[0] == -1) && on && pimpl->size() > 3) {
         for (int i = 0; i != pimpl->size(); ++i) {
-            pimpl->Parallel(&Module::powerChip, {i}, static_cast<int>(on));
+            pimpl->Parallel(&Module::setPowerChip, {i}, on);
             usleep(1000 * 1000);
         }
     } else {
-        pimpl->Parallel(&Module::powerChip, pos, static_cast<int>(on));
+        pimpl->Parallel(&Module::setPowerChip, pos, on);
     }
 }
 
@@ -486,7 +486,7 @@ std::vector<defs::dacIndex> Detector::getDacList() const {
 
 Result<int> Detector::getDAC(defs::dacIndex index, bool mV,
                              Positions pos) const {
-    return pimpl->Parallel(&Module::setDAC, pos, -1, index, mV);
+    return pimpl->Parallel(&Module::getDAC, pos, index, mV);
 }
 
 void Detector::setDAC(defs::dacIndex index, int value, bool mV, Positions pos) {
@@ -501,6 +501,17 @@ Result<int> Detector::getOnChipDAC(defs::dacIndex index, int chipIndex,
 void Detector::setOnChipDAC(defs::dacIndex index, int chipIndex, int value,
                             Positions pos) {
     pimpl->Parallel(&Module::setOnChipDAC, pos, index, chipIndex, value);
+}
+
+Result<defs::externalSignalFlag>
+Detector::getExternalSignalFlags(int signalIndex, Positions pos) const {
+    return pimpl->Parallel(&Module::getExternalSignalFlags, pos, signalIndex);
+}
+
+void Detector::setExternalSignalFlags(int signalIndex,
+                                      defs::externalSignalFlag value,
+                                      Positions pos) {
+    pimpl->Parallel(&Module::setExternalSignalFlags, pos, signalIndex, value);
 }
 
 // Acquisition
@@ -690,12 +701,11 @@ Result<std::string> Detector::printRxConfiguration(Positions pos) const {
 }
 
 Result<bool> Detector::getTenGiga(Positions pos) const {
-    return pimpl->Parallel(&Module::enableTenGigabitEthernet, pos, -1);
+    return pimpl->Parallel(&Module::getTenGiga, pos);
 }
 
 void Detector::setTenGiga(bool value, Positions pos) {
-    pimpl->Parallel(&Module::enableTenGigabitEthernet, pos,
-                    static_cast<int>(value));
+    pimpl->Parallel(&Module::setTenGiga, pos, value);
 }
 
 Result<bool> Detector::getTenGigaFlowControl(Positions pos) const {
@@ -780,7 +790,7 @@ void Detector::setRxPort(int port, int module_id) {
 }
 
 Result<int> Detector::getRxFifoDepth(Positions pos) const {
-    return pimpl->Parallel(&Module::setReceiverFifoDepth, pos, -1);
+    return pimpl->Parallel(&Module::getReceiverFifoDepth, pos);
 }
 
 void Detector::setRxFifoDepth(int nframes, Positions pos) {
@@ -827,11 +837,11 @@ Result<int64_t> Detector::getRxRealUDPSocketBufferSize(Positions pos) const {
 }
 
 Result<bool> Detector::getRxLock(Positions pos) {
-    return pimpl->Parallel(&Module::lockReceiver, pos, -1);
+    return pimpl->Parallel(&Module::getReceiverLock, pos);
 }
 
 void Detector::setRxLock(bool value, Positions pos) {
-    pimpl->Parallel(&Module::lockReceiver, pos, static_cast<int>(value));
+    pimpl->Parallel(&Module::setReceiverLock, pos, value);
 }
 
 Result<sls::IpAddr> Detector::getRxLastClientIP(Positions pos) const {
@@ -928,7 +938,7 @@ void Detector::setRxZmqFrequency(int freq, Positions pos) {
 }
 
 Result<int> Detector::getRxZmqTimer(Positions pos) const {
-    return pimpl->Parallel(&Module::setReceiverStreamingTimer, pos, -1);
+    return pimpl->Parallel(&Module::getReceiverStreamingTimer, pos);
 }
 
 void Detector::setRxZmqTimer(int time_in_ms, Positions pos) {
@@ -1054,14 +1064,6 @@ void Detector::setOverFlowMode(bool value, Positions pos) {
     pimpl->Parallel(&Module::setOverFlowMode, pos, value);
 }
 
-Result<bool> Detector::getStoreInRamMode(Positions pos) const {
-    return pimpl->Parallel(&Module::getStoreInRamMode, pos);
-}
-
-void Detector::setStoreInRamMode(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setStoreInRamMode, pos, value);
-}
-
 Result<bool> Detector::getBottom(Positions pos) const {
     return pimpl->Parallel(&Module::getFlippedDataX, pos);
 }
@@ -1131,16 +1133,11 @@ void Detector::setRxPadDeactivatedMode(bool pad, Positions pos) {
 }
 
 Result<bool> Detector::getPartialReset(Positions pos) const {
-    auto res = pimpl->Parallel(&Module::setCounterBit, pos, -1);
-    Result<bool> t(res.size());
-    for (unsigned int i = 0; i < res.size(); ++i) {
-        t[i] = !res[i];
-    }
-    return t;
+    return pimpl->Parallel(&Module::getCounterBit, pos);
 }
 
 void Detector::setPartialReset(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setCounterBit, pos, !value);
+    pimpl->Parallel(&Module::setCounterBit, pos, value);
 }
 
 void Detector::pulsePixel(int n, defs::xy pixel, Positions pos) {
@@ -1170,41 +1167,35 @@ void Detector::setQuad(const bool enable) {
 // Jungfrau Specific
 
 Result<int> Detector::getThresholdTemperature(Positions pos) const {
-    auto res = pimpl->Parallel(&Module::setThresholdTemperature, pos, -1);
-    for (auto &it : res) {
-        it /= 1000;
-    }
-    return res;
+    return pimpl->Parallel(&Module::getThresholdTemperature, pos);
 }
 
 void Detector::setThresholdTemperature(int temp, Positions pos) {
-    pimpl->Parallel(&Module::setThresholdTemperature, pos, temp * 1000);
+    pimpl->Parallel(&Module::setThresholdTemperature, pos, temp);
 }
 
 Result<bool> Detector::getTemperatureControl(Positions pos) const {
-    return pimpl->Parallel(&Module::setTemperatureControl, pos, -1);
+    return pimpl->Parallel(&Module::getTemperatureControl, pos);
 }
 
 void Detector::setTemperatureControl(bool enable, Positions pos) {
-    pimpl->Parallel(&Module::setTemperatureControl, pos,
-                    static_cast<int>(enable));
+    pimpl->Parallel(&Module::setTemperatureControl, pos, enable);
 }
 
 Result<int> Detector::getTemperatureEvent(Positions pos) const {
-    return pimpl->Parallel(&Module::setTemperatureEvent, pos, -1);
+    return pimpl->Parallel(&Module::getTemperatureEvent, pos);
 }
 
 void Detector::resetTemperatureEvent(Positions pos) {
-    pimpl->Parallel(&Module::setTemperatureEvent, pos, 0);
+    pimpl->Parallel(&Module::resetTemperatureEvent, pos);
 }
 
 Result<bool> Detector::getAutoCompDisable(Positions pos) const {
-    return pimpl->Parallel(&Module::setAutoComparatorDisableMode, pos, -1);
+    return pimpl->Parallel(&Module::getAutoComparatorDisableMode, pos);
 }
 
 void Detector::setAutoCompDisable(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setAutoComparatorDisableMode, pos,
-                    static_cast<int>(value));
+    pimpl->Parallel(&Module::setAutoComparatorDisableMode, pos, value);
 }
 
 Result<int> Detector::getNumberOfAdditionalStorageCells(Positions pos) const {
@@ -1216,7 +1207,7 @@ void Detector::setNumberOfAdditionalStorageCells(int value) {
 }
 
 Result<int> Detector::getStorageCellStart(Positions pos) const {
-    return pimpl->Parallel(&Module::setStorageCellStart, pos, -1);
+    return pimpl->Parallel(&Module::getStorageCellStart, pos);
 }
 
 void Detector::setStorageCellStart(int cell, Positions pos) {
@@ -1250,17 +1241,6 @@ void Detector::clearROI(Positions pos) {
 
 Result<ns> Detector::getExptimeLeft(Positions pos) const {
     return pimpl->Parallel(&Module::getExptimeLeft, pos);
-}
-
-Result<defs::externalSignalFlag>
-Detector::getExternalSignalFlags(int signalIndex, Positions pos) const {
-    return pimpl->Parallel(&Module::getExternalSignalFlags, pos, signalIndex);
-}
-
-void Detector::setExternalSignalFlags(int signalIndex,
-                                      defs::externalSignalFlag value,
-                                      Positions pos) {
-    pimpl->Parallel(&Module::setExternalSignalFlags, pos, signalIndex, value);
 }
 
 // Gotthard2 Specific
@@ -1440,7 +1420,7 @@ Result<int> Detector::getVoltage(defs::dacIndex index, Positions pos) const {
     default:
         throw RuntimeError("Unknown Voltage Index");
     }
-    return pimpl->Parallel(&Module::setDAC, pos, -1, index, 1);
+    return pimpl->Parallel(&Module::getDAC, pos, index, true);
 }
 
 void Detector::setVoltage(defs::dacIndex index, int value, Positions pos) {
@@ -1456,7 +1436,7 @@ void Detector::setVoltage(defs::dacIndex index, int value, Positions pos) {
     default:
         throw RuntimeError("Unknown Voltage Index");
     }
-    pimpl->Parallel(&Module::setDAC, pos, value, index, 1);
+    pimpl->Parallel(&Module::setDAC, pos, value, index, true);
 }
 
 Result<uint32_t> Detector::getADCEnableMask(Positions pos) const {
@@ -1581,11 +1561,11 @@ void Detector::setDigitalIODelay(uint64_t pinMask, int delay, Positions pos) {
 }
 
 Result<bool> Detector::getLEDEnable(Positions pos) const {
-    return pimpl->Parallel(&Module::setLEDEnable, pos, -1);
+    return pimpl->Parallel(&Module::getLEDEnable, pos);
 }
 
 void Detector::setLEDEnable(bool enable, Positions pos) {
-    pimpl->Parallel(&Module::setLEDEnable, pos, static_cast<int>(enable));
+    pimpl->Parallel(&Module::setLEDEnable, pos, enable);
 }
 
 // Pattern
@@ -1597,7 +1577,7 @@ void Detector::savePattern(const std::string &fname) {
         throw RuntimeError("Could not create file to save pattern");
     }
     // get pattern limits
-    auto r = pimpl->Parallel(&Module::setPatternLoopAddresses, {}, -1, -1, -1)
+    auto r = pimpl->Parallel(&Module::getPatternLoopAddresses, {}, -1)
                  .tsquash("Inconsistent pattern limits");
 
     CmdProxy proxy(this);
@@ -1629,7 +1609,7 @@ void Detector::setPattern(const std::string &fname, Positions pos) {
 }
 
 Result<uint64_t> Detector::getPatternIOControl(Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternIOControl, pos, -1);
+    return pimpl->Parallel(&Module::getPatternIOControl, pos);
 }
 
 void Detector::setPatternIOControl(uint64_t word, Positions pos) {
@@ -1637,7 +1617,7 @@ void Detector::setPatternIOControl(uint64_t word, Positions pos) {
 }
 
 Result<uint64_t> Detector::getPatternClockControl(Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternClockControl, pos, -1);
+    return pimpl->Parallel(&Module::getPatternClockControl, pos);
 }
 
 void Detector::setPatternClockControl(uint64_t word, Positions pos) {
@@ -1645,7 +1625,7 @@ void Detector::setPatternClockControl(uint64_t word, Positions pos) {
 }
 
 Result<uint64_t> Detector::getPatternWord(int addr, Positions pos) {
-    return pimpl->Parallel(&Module::setPatternWord, pos, addr, -1);
+    return pimpl->Parallel(&Module::getPatternWord, pos, addr);
 }
 
 void Detector::setPatternWord(int addr, uint64_t word, Positions pos) {
@@ -1654,8 +1634,7 @@ void Detector::setPatternWord(int addr, uint64_t word, Positions pos) {
 
 Result<std::array<int, 2>>
 Detector::getPatternLoopAddresses(int level, Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternLoopAddresses, pos, level, -1,
-                           -1);
+    return pimpl->Parallel(&Module::getPatternLoopAddresses, pos, level);
 }
 
 void Detector::setPatternLoopAddresses(int level, int start, int stop,
@@ -1664,7 +1643,7 @@ void Detector::setPatternLoopAddresses(int level, int start, int stop,
 }
 
 Result<int> Detector::getPatternLoopCycles(int level, Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternLoopCycles, pos, level, -1);
+    return pimpl->Parallel(&Module::getPatternLoopCycles, pos, level);
 }
 
 void Detector::setPatternLoopCycles(int level, int n, Positions pos) {
@@ -1672,7 +1651,7 @@ void Detector::setPatternLoopCycles(int level, int n, Positions pos) {
 }
 
 Result<int> Detector::getPatternWaitAddr(int level, Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternWaitAddr, pos, level, -1);
+    return pimpl->Parallel(&Module::getPatternWaitAddr, pos, level);
 }
 
 void Detector::setPatternWaitAddr(int level, int addr, Positions pos) {
@@ -1680,7 +1659,7 @@ void Detector::setPatternWaitAddr(int level, int addr, Positions pos) {
 }
 
 Result<uint64_t> Detector::getPatternWaitTime(int level, Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternWaitTime, pos, level, -1);
+    return pimpl->Parallel(&Module::getPatternWaitTime, pos, level);
 }
 
 void Detector::setPatternWaitTime(int level, uint64_t t, Positions pos) {
@@ -1886,19 +1865,20 @@ void Detector::setStopPort(int value, Positions pos) {
 }
 
 Result<bool> Detector::getDetectorLock(Positions pos) const {
-    return pimpl->Parallel(&Module::lockServer, pos, -1);
+    return pimpl->Parallel(&Module::getLockDetector, pos);
 }
 
 void Detector::setDetectorLock(bool lock, Positions pos) {
-    pimpl->Parallel(&Module::lockServer, pos, static_cast<int>(lock));
+    pimpl->Parallel(&Module::setLockDetector, pos, lock);
 }
 
 Result<sls::IpAddr> Detector::getLastClientIP(Positions pos) const {
     return pimpl->Parallel(&Module::getLastClientIP, pos);
 }
 
-void Detector::executeCommand(const std::string &value, Positions pos) {
-    pimpl->Parallel(&Module::execCommand, pos, value);
+Result<std::string> Detector::executeCommand(const std::string &value,
+                                             Positions pos) {
+    return pimpl->Parallel(&Module::execCommand, pos, value);
 }
 
 Result<int64_t> Detector::getNumberOfFramesFromStart(Positions pos) const {

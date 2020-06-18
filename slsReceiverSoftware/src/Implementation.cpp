@@ -55,7 +55,7 @@ void Implementation::InitializeMembers() {
     myDetectorType = GENERIC;
     for (int i = 0; i < MAX_DIMENSIONS; ++i)
         numDet[i] = 0;
-    detID = 0;
+    modulePos = 0;
     detHostname = "";
     silentMode = false;
     fifoDepth = 0;
@@ -315,12 +315,12 @@ void Implementation::setDetectorType(const detectorType d) {
     LOG(logDEBUG) << " Detector type set to " << sls::ToString(d);
 }
 
-int *Implementation::getMultiDetectorSize() const {
+int *Implementation::getDetectorSize() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return (int *)numDet;
 }
 
-void Implementation::setMultiDetectorSize(const int *size) {
+void Implementation::setDetectorSize(const int *size) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
     std::string log_message = "Detector Size (ports): (";
     for (int i = 0; i < MAX_DIMENSIONS; ++i) {
@@ -350,31 +350,32 @@ void Implementation::setMultiDetectorSize(const int *size) {
     LOG(logINFO) << log_message;
 }
 
-int Implementation::getDetectorPositionId() const {
+int Implementation::getModulePositionId() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return detID;
+    return modulePos;
 }
 
-void Implementation::setDetectorPositionId(const int id) {
+void Implementation::setModulePositionId(const int id) {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    detID = id;
-    LOG(logINFO) << "Detector Position Id:" << detID;
+    modulePos = id;
+    LOG(logINFO) << "Module Position Id:" << modulePos;
 
     // update zmq port
     streamingPort =
-        DEFAULT_ZMQ_RX_PORTNO + (detID * (myDetectorType == EIGER ? 2 : 1));
+        DEFAULT_ZMQ_RX_PORTNO + (modulePos * (myDetectorType == EIGER ? 2 : 1));
 
     for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
         dataProcessor[i]->SetupFileWriter(
             fileWriteEnable, (int *)numDet, &framesPerFile, &fileName,
-            &filePath, &fileIndex, &overwriteEnable, &detID, &numThreads,
+            &filePath, &fileIndex, &overwriteEnable, &modulePos, &numThreads,
             &numberOfTotalFrames, &dynamicRange, &udpPortNum[i], generalData);
     }
     assert(numDet[1] != 0);
     for (unsigned int i = 0; i < listener.size(); ++i) {
         uint16_t row = 0, col = 0;
-        row = (detID % numDet[1]) * ((numUDPInterfaces == 2) ? 2 : 1); // row
-        col = (detID / numDet[1]) * ((myDetectorType == EIGER) ? 2 : 1) +
+        row =
+            (modulePos % numDet[1]) * ((numUDPInterfaces == 2) ? 2 : 1); // row
+        col = (modulePos / numDet[1]) * ((myDetectorType == EIGER) ? 2 : 1) +
               i; // col for horiz. udp ports
         listener[i]->SetHardCodedPosition(row, col);
     }
@@ -555,9 +556,9 @@ void Implementation::setFileWriteEnable(const bool b) {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
             dataProcessor[i]->SetupFileWriter(
                 fileWriteEnable, (int *)numDet, &framesPerFile, &fileName,
-                &filePath, &fileIndex, &overwriteEnable, &detID, &numThreads,
-                &numberOfTotalFrames, &dynamicRange, &udpPortNum[i],
-                generalData);
+                &filePath, &fileIndex, &overwriteEnable, &modulePos,
+                &numThreads, &numberOfTotalFrames, &dynamicRange,
+                &udpPortNum[i], generalData);
         }
     }
 
@@ -1062,9 +1063,9 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
         SetThreadPriorities();
 
         // update (from 1 to 2 interface) & also for printout
-        setMultiDetectorSize(numDet);
+        setDetectorSize(numDet);
         // update row and column in dataprocessor
-        setDetectorPositionId(detID);
+        setModulePositionId(modulePos);
 
         // update call backs
         if (rawDataReadyCallBack) {

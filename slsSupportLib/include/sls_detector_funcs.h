@@ -26,15 +26,12 @@ enum detFuncs {
     F_WRITE_REGISTER,
     F_READ_REGISTER,
     F_SET_MODULE,
-    F_GET_MODULE,
     F_SET_SETTINGS,
     F_GET_THRESHOLD_ENERGY,
     F_START_ACQUISITION,
     F_STOP_ACQUISITION,
-    F_START_READOUT,
     F_GET_RUN_STATUS,
     F_START_AND_READ_ALL,
-    F_READ_ALL,
     F_GET_NUM_FRAMES,
     F_SET_NUM_FRAMES,
     F_GET_NUM_TRIGGERS,
@@ -70,7 +67,6 @@ enum detFuncs {
     F_SET_DYNAMIC_RANGE,
     F_SET_ROI,
     F_GET_ROI,
-    F_EXIT_SERVER,
     F_LOCK_SERVER,
     F_GET_LAST_CLIENT_IP,
     F_SET_PORT,
@@ -161,8 +157,6 @@ enum detFuncs {
     F_GET_PARALLEL_MODE,
     F_SET_OVERFLOW_MODE,
     F_GET_OVERFLOW_MODE,
-    F_SET_STOREINRAM_MODE,
-    F_GET_STOREINRAM_MODE,
     F_SET_READOUT_MODE,
     F_GET_READOUT_MODE,
     F_SET_CLOCK_FREQUENCY,
@@ -213,7 +207,6 @@ enum detFuncs {
                                   (detector server should not compile anyway) */
 
     F_EXEC_RECEIVER_COMMAND,
-    F_EXIT_RECEIVER,
     F_LOCK_RECEIVER,
     F_GET_LAST_RECEIVER_CLIENT_IP,
     F_SET_RECEIVER_PORT,
@@ -332,15 +325,12 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_WRITE_REGISTER:					return "F_WRITE_REGISTER";
 	case F_READ_REGISTER:					return "F_READ_REGISTER";
 	case F_SET_MODULE:						return "F_SET_MODULE";
-	case F_GET_MODULE:						return "F_GET_MODULE";
 	case F_SET_SETTINGS:					return "F_SET_SETTINGS";
 	case F_GET_THRESHOLD_ENERGY:			return "F_GET_THRESHOLD_ENERGY";
 	case F_START_ACQUISITION:				return "F_START_ACQUISITION";
 	case F_STOP_ACQUISITION:				return "F_STOP_ACQUISITION";
-	case F_START_READOUT:					return "F_START_READOUT";
 	case F_GET_RUN_STATUS:					return "F_GET_RUN_STATUS";
 	case F_START_AND_READ_ALL:				return "F_START_AND_READ_ALL";
-	case F_READ_ALL:						return "F_READ_ALL";
 	case F_GET_NUM_FRAMES:					return "F_GET_NUM_FRAMES";
 	case F_SET_NUM_FRAMES:					return "F_SET_NUM_FRAMES";
 	case F_GET_NUM_TRIGGERS:				return "F_GET_NUM_TRIGGERS";
@@ -376,7 +366,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_SET_DYNAMIC_RANGE:				return "F_SET_DYNAMIC_RANGE";
 	case F_SET_ROI:							return "F_SET_ROI";
 	case F_GET_ROI:							return "F_GET_ROI";
-	case F_EXIT_SERVER:						return "F_EXIT_SERVER";
 	case F_LOCK_SERVER:						return "F_LOCK_SERVER";
 	case F_GET_LAST_CLIENT_IP:				return "F_GET_LAST_CLIENT_IP";
 	case F_SET_PORT:						return "F_SET_PORT";
@@ -467,8 +456,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_GET_PARALLEL_MODE:				return "F_GET_PARALLEL_MODE";	
 	case F_SET_OVERFLOW_MODE:				return "F_SET_OVERFLOW_MODE";	
 	case F_GET_OVERFLOW_MODE:				return "F_GET_OVERFLOW_MODE";	
-	case F_SET_STOREINRAM_MODE:				return "F_SET_STOREINRAM_MODE";	
-	case F_GET_STOREINRAM_MODE:				return "F_GET_STOREINRAM_MODE";
 	case F_SET_READOUT_MODE:				return "F_SET_READOUT_MODE";	
 	case F_GET_READOUT_MODE:				return "F_GET_READOUT_MODE";
 	case F_SET_CLOCK_FREQUENCY:				return "F_SET_CLOCK_FREQUENCY";
@@ -518,7 +505,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
 
 	case F_EXEC_RECEIVER_COMMAND:			return "F_EXEC_RECEIVER_COMMAND";
-	case F_EXIT_RECEIVER: 					return "F_EXIT_RECEIVER";
 	case F_LOCK_RECEIVER: 					return "F_LOCK_RECEIVER";
 	case F_GET_LAST_RECEIVER_CLIENT_IP: 	return "F_GET_LAST_RECEIVER_CLIENT_IP";
 	case F_SET_RECEIVER_PORT: 				return "F_SET_RECEIVER_PORT";

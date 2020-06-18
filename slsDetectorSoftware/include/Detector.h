@@ -43,7 +43,7 @@ class Detector {
      * ************************************************/
 
     /* Free the shared memory of this detector and all modules
-     * belonging to it.*/
+     * belonging to it */
     void freeSharedMemory();
 
     void loadConfig(const std::string &fname);
@@ -326,6 +326,21 @@ class Detector {
     /* [Gotthard2] */
     void setOnChipDAC(defs::dacIndex index, int chipIndex, int value,
                       Positions pos = {});
+
+    /** [Gotthard] signal index is 0
+     * [Mythen3] signal index 0-3 for master input, 4-7 master output signals */
+    Result<defs::externalSignalFlag>
+    getExternalSignalFlags(int signalIndex, Positions pos = {}) const;
+
+    /** [Gotthard]  signal index is 0
+     * Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE
+     * [Mythen3] signal index 0 is master input trigger signal, 1-3 for master
+     * input gate signals, 4 is busy out signal, 5-7 is master output gate
+     * signals.
+     * Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE (for
+     * master input trigger only), INVERSION_ON, INVERSION_OFF */
+    void setExternalSignalFlags(int signalIndex, defs::externalSignalFlag value,
+                                Positions pos = {});
 
     /**************************************************
      *                                                *
@@ -751,12 +766,6 @@ class Detector {
     void setOverFlowMode(bool value, Positions pos = {});
 
     /** [Eiger] */
-    Result<bool> getStoreInRamMode(Positions pos = {}) const;
-
-    /** [Eiger] */
-    void setStoreInRamMode(bool value, Positions pos = {});
-
-    /** [Eiger] */
     Result<bool> getBottom(Positions pos = {}) const;
 
     /** [Eiger] for client call back (gui) purposes */
@@ -924,21 +933,6 @@ class Detector {
 
     /** [Gotthard] */
     Result<ns> getExptimeLeft(Positions pos = {}) const;
-
-    /** [Gotthard] signal index is 0
-     * [Mythen3] signal index 0-3 for master input, 4-7 master output signals */
-    Result<defs::externalSignalFlag>
-    getExternalSignalFlags(int signalIndex, Positions pos = {}) const;
-
-    /** [Gotthard]  signal index is 0
-     * Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE
-     * [Mythen3] signal index 0 is master input trigger signal, 1-3 for master
-     * input gate signals, 4 is busy out signal, 5-7 is master output gate
-     * signals.
-     * Options: TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE (for
-     * master input trigger only), INVERSION_ON, INVERSION_OFF */
-    void setExternalSignalFlags(int signalIndex, defs::externalSignalFlag value,
-                                Positions pos = {});
 
     /**************************************************
      *                                                *
@@ -1412,7 +1406,8 @@ class Detector {
     Result<sls::IpAddr> getLastClientIP(Positions pos = {}) const;
 
     /** Execute a command on the detector server console */
-    void executeCommand(const std::string &value, Positions pos = {});
+    Result<std::string> executeCommand(const std::string &value,
+                                       Positions pos = {});
 
     /** [Jungfrau][Mythen3][CTB][Moench]
      * [Gotthard2] only in continuous mode */

@@ -367,6 +367,9 @@ void initStopServer() {
     if (!isControlServer) {
         ComVirtual_setStop(virtual_stop);
     }
+    // temp threshold and reset event (read by stop server)
+    setThresholdTemperature(DEFAULT_TMP_THRSHLD);
+    setTemperatureEvent(0);
 #endif
 }
 
@@ -743,23 +746,6 @@ int setModule(sls_detector_module myMod, char *mess) {
     for (int i = 0; i < NDAC; ++i)
         setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
     return OK;
-}
-
-int getModule(sls_detector_module *myMod) {
-    for (int idac = 0; idac < NDAC; ++idac) {
-        if (dacValues[idac] >= 0)
-            *((myMod->dacs) + idac) = dacValues[idac];
-    }
-    // check if all of them are not initialized
-    int initialized = 0;
-    for (int idac = 0; idac < NDAC; ++idac) {
-        if (dacValues[idac] >= 0)
-            initialized = 1;
-    }
-    if (initialized) {
-        return OK;
-    }
-    return FAIL;
 }
 
 enum detectorSettings setSettings(enum detectorSettings sett) {

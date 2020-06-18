@@ -815,7 +815,7 @@ void Module::setPartialFramesPadding(bool padding) {
 }
 
 int64_t Module::getReceiverUDPSocketBufferSize() const {
-    int arg = -1;
+    int64_t arg = -1;
     return sendToReceiver<int64_t>(F_RECEIVER_UDP_SOCK_BUF_SIZE, arg);
 }
 

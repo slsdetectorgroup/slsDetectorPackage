@@ -367,6 +367,9 @@ void initStopServer() {
     if (!isControlServer) {
         ComVirtual_setStop(virtual_stop);
     }
+    // temp threshold and reset event (read by stop server)
+    setThresholdTemperature(DEFAULT_TMP_THRSHLD);
+    setTemperatureEvent(0);
 #endif
 }
 

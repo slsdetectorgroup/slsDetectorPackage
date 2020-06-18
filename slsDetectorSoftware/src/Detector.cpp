@@ -569,7 +569,7 @@ Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {
 }
 
 void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
-    int previouslyClientStreaming = pimpl->enableDataStreamingToClient();
+    int previouslyClientStreaming = pimpl->getDataStreamingToClient();
     bool useReceiver = getUseReceiverFlag().squash(false);
     bool previouslyReceiverStreaming = false;
     if (useReceiver) {
@@ -583,8 +583,8 @@ void Detector::setNumberofUDPInterfaces(int n, Positions pos) {
     }
     // redo the zmq sockets if enabled
     if (previouslyClientStreaming != 0) {
-        pimpl->enableDataStreamingToClient(0);
-        pimpl->enableDataStreamingToClient(1);
+        pimpl->setDataStreamingToClient(false);
+        pimpl->setDataStreamingToClient(true);
     }
     if (previouslyReceiverStreaming) {
         setRxZmqDataStream(false, pos);
@@ -995,11 +995,11 @@ Result<IpAddr> Detector::getClientZmqIp(Positions pos) const {
 }
 
 void Detector::setClientZmqIp(const IpAddr ip, Positions pos) {
-    int previouslyClientStreaming = pimpl->enableDataStreamingToClient(-1);
+    int previouslyClientStreaming = pimpl->getDataStreamingToClient();
     pimpl->Parallel(&Module::setClientStreamingIP, pos, ip);
     if (previouslyClientStreaming != 0) {
-        pimpl->enableDataStreamingToClient(0);
-        pimpl->enableDataStreamingToClient(1);
+        pimpl->setDataStreamingToClient(false);
+        pimpl->setDataStreamingToClient(true);
     }
 }
 

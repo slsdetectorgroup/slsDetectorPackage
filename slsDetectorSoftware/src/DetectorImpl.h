@@ -238,12 +238,8 @@ class DetectorImpl : public virtual slsDetectorDefs {
     /** [Eiger][Jungfrau] */
     void setGapPixelsinCallback(const bool enable);
 
-    /**
-     * Enable data streaming to client
-     * @param enable 0 to disable, 1 to enable, -1 to get the value
-     * @returns data streaming to client enable
-     */
-    bool enableDataStreamingToClient(int enable = -1);
+    bool getDataStreamingToClient();
+    void setDataStreamingToClient(bool enable);
 
     /**
      * register callback for accessing acquisition final data

@@ -1157,37 +1157,35 @@ int setHighVoltage(int val) {
 
 /* parameters - timing */
 void setTiming(enum timingMode arg) {
-    if (arg != GET_TIMING_MODE) {
-        switch (arg) {
-        case AUTO_TIMING:
-            LOG(logINFO, ("Set Timing: Auto (Int. Trigger, Int. Gating)\n"));
-            bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
-            bus_w(ASIC_EXP_STATUS_REG,
-                  bus_r(ASIC_EXP_STATUS_REG) & ~ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
-            break;
-        case TRIGGER_EXPOSURE:
-            LOG(logINFO, ("Set Timing: Trigger (Ext. Trigger, Int. Gating)\n"));
-            bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
-            bus_w(ASIC_EXP_STATUS_REG,
-                  bus_r(ASIC_EXP_STATUS_REG) & ~ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
-            break;
-        case GATED:
-            LOG(logINFO, ("Set Timing: Gating (Int. Trigger, Ext. Gating)\n"));
-            bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
-            bus_w(ASIC_EXP_STATUS_REG,
-                  bus_r(ASIC_EXP_STATUS_REG) | ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
-            break;
-        case TRIGGER_GATED:
-            LOG(logINFO,
-                ("Set Timing: Trigger_Gating (Ext. Trigger, Ext. Gating)\n"));
-            bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
-            bus_w(ASIC_EXP_STATUS_REG,
-                  bus_r(ASIC_EXP_STATUS_REG) | ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
-            break;
-        default:
-            LOG(logERROR, ("Unknown timing mode %d\n", arg));
-            return;
-        }
+    switch (arg) {
+    case AUTO_TIMING:
+        LOG(logINFO, ("Set Timing: Auto (Int. Trigger, Int. Gating)\n"));
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+        bus_w(ASIC_EXP_STATUS_REG,
+              bus_r(ASIC_EXP_STATUS_REG) & ~ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
+        break;
+    case TRIGGER_EXPOSURE:
+        LOG(logINFO, ("Set Timing: Trigger (Ext. Trigger, Int. Gating)\n"));
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+        bus_w(ASIC_EXP_STATUS_REG,
+              bus_r(ASIC_EXP_STATUS_REG) & ~ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
+        break;
+    case GATED:
+        LOG(logINFO, ("Set Timing: Gating (Int. Trigger, Ext. Gating)\n"));
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) & ~EXT_SIGNAL_MSK);
+        bus_w(ASIC_EXP_STATUS_REG,
+              bus_r(ASIC_EXP_STATUS_REG) | ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
+        break;
+    case TRIGGER_GATED:
+        LOG(logINFO,
+            ("Set Timing: Trigger_Gating (Ext. Trigger, Ext. Gating)\n"));
+        bus_w(EXT_SIGNAL_REG, bus_r(EXT_SIGNAL_REG) | EXT_SIGNAL_MSK);
+        bus_w(ASIC_EXP_STATUS_REG,
+              bus_r(ASIC_EXP_STATUS_REG) | ASIC_EXP_STAT_GATE_SRC_EXT_MSK);
+        break;
+    default:
+        LOG(logERROR, ("Unknown timing mode %d\n", arg));
+        return;
     }
 }
 

@@ -950,44 +950,41 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         return thisSettings;
 
     // set settings
-    if (sett != GET_SETTINGS) {
-        u_int32_t addr = GAIN_REG;
+    u_int32_t addr = GAIN_REG;
 
-        // find conf gain value
-        uint32_t confgain = 0x0;
-        switch (sett) {
-        case DYNAMICGAIN:
-            LOG(logINFO, ("Set settings - Dyanmic Gain\n"));
-            confgain = GAIN_CONFGAIN_DYNMC_GAIN_VAL;
-            break;
-        case HIGHGAIN:
-            LOG(logINFO, ("Set settings - High Gain\n"));
-            confgain = GAIN_CONFGAIN_HGH_GAIN_VAL;
-            break;
-        case LOWGAIN:
-            LOG(logINFO, ("Set settings - Low Gain\n"));
-            confgain = GAIN_CONFGAIN_LW_GAIN_VAL;
-            break;
-        case MEDIUMGAIN:
-            LOG(logINFO, ("Set settings - Medium Gain\n"));
-            confgain = GAIN_CONFGAIN_MDM_GAIN_VAL;
-            break;
-        case VERYHIGHGAIN:
-            LOG(logINFO, ("Set settings - Very High Gain\n"));
-            confgain = GAIN_CONFGAIN_VRY_HGH_GAIN_VAL;
-            break;
-        default:
-            LOG(logERROR,
-                ("This settings is not defined for this detector %d\n",
-                 (int)sett));
-            return -1;
-        }
-        // set conf gain
-        bus_w(addr, bus_r(addr) & ~GAIN_CONFGAIN_MSK);
-        bus_w(addr, bus_r(addr) | confgain);
-        LOG(logINFO, ("\tGain Reg: 0x%x\n", bus_r(addr)));
-        thisSettings = sett;
+    // find conf gain value
+    uint32_t confgain = 0x0;
+    switch (sett) {
+    case DYNAMICGAIN:
+        LOG(logINFO, ("Set settings - Dyanmic Gain\n"));
+        confgain = GAIN_CONFGAIN_DYNMC_GAIN_VAL;
+        break;
+    case HIGHGAIN:
+        LOG(logINFO, ("Set settings - High Gain\n"));
+        confgain = GAIN_CONFGAIN_HGH_GAIN_VAL;
+        break;
+    case LOWGAIN:
+        LOG(logINFO, ("Set settings - Low Gain\n"));
+        confgain = GAIN_CONFGAIN_LW_GAIN_VAL;
+        break;
+    case MEDIUMGAIN:
+        LOG(logINFO, ("Set settings - Medium Gain\n"));
+        confgain = GAIN_CONFGAIN_MDM_GAIN_VAL;
+        break;
+    case VERYHIGHGAIN:
+        LOG(logINFO, ("Set settings - Very High Gain\n"));
+        confgain = GAIN_CONFGAIN_VRY_HGH_GAIN_VAL;
+        break;
+    default:
+        LOG(logERROR,
+            ("This settings is not defined for this detector %d\n", (int)sett));
+        return -1;
     }
+    // set conf gain
+    bus_w(addr, bus_r(addr) & ~GAIN_CONFGAIN_MSK);
+    bus_w(addr, bus_r(addr) | confgain);
+    LOG(logINFO, ("\tGain Reg: 0x%x\n", bus_r(addr)));
+    thisSettings = sett;
 
     return getSettings();
 }

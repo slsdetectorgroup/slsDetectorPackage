@@ -574,15 +574,15 @@ int set_external_signal_flag(int file_des) {
 int set_timing_mode(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    enum timingMode arg = GET_TIMING_MODE;
-    enum timingMode retval = GET_TIMING_MODE;
+    enum timingMode arg = AUTO_TIMING;
+    enum timingMode retval = AUTO_TIMING;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
     LOG(logDEBUG1, ("Setting external communication mode to %d\n", arg));
 
     // set
-    if ((arg != GET_TIMING_MODE) && (Server_VerifyLock() == OK)) {
+    if (((int)arg != GET_FLAG) && (Server_VerifyLock() == OK)) {
         switch (arg) {
         case AUTO_TIMING:
         case TRIGGER_EXPOSURE:
@@ -1501,7 +1501,6 @@ int set_module(int file_des) {
         case VERYHIGHGAIN:
         case VERYLOWGAIN:
 #elif JUNGFRAUD
-        case GET_SETTINGS:
         case DYNAMICGAIN:
         case DYNAMICHG0:
         case FIXGAIN1:
@@ -1509,14 +1508,11 @@ int set_module(int file_des) {
         case FORCESWITCHG1:
         case FORCESWITCHG2:
 #elif GOTTHARDD
-        case GET_SETTINGS:
         case DYNAMICGAIN:
         case HIGHGAIN:
         case LOWGAIN:
         case MEDIUMGAIN:
         case VERYHIGHGAIN:
-#elif MYTHEN3D
-        case GET_SETTINGS:
 #endif
             break;
         default:
@@ -1541,8 +1537,8 @@ int set_module(int file_des) {
 int set_settings(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    enum detectorSettings isett = GET_SETTINGS;
-    enum detectorSettings retval = GET_SETTINGS;
+    enum detectorSettings isett = STANDARD;
+    enum detectorSettings retval = STANDARD;
 
     if (receiveData(file_des, &isett, sizeof(isett), INT32) < 0)
         return printSocketReadError();
@@ -1553,58 +1549,62 @@ int set_settings(int file_des) {
     LOG(logDEBUG1, ("Setting settings %d\n", isett));
 
     // set & get
-    if ((isett == GET_SETTINGS) || (Server_VerifyLock() == OK)) {
+    if (((int)isett == GET_FLAG) || (Server_VerifyLock() == OK)) {
 
-        // check index
-        switch (isett) {
-        case GET_SETTINGS:
+        if ((int)isett != GET_FLAG) {
+            // check index
+            switch (isett) {
 #ifdef JUNGFRAUD
-        case DYNAMICGAIN:
-        case DYNAMICHG0:
-        case FIXGAIN1:
-        case FIXGAIN2:
-        case FORCESWITCHG1:
-        case FORCESWITCHG2:
+            case DYNAMICGAIN:
+            case DYNAMICHG0:
+            case FIXGAIN1:
+            case FIXGAIN2:
+            case FORCESWITCHG1:
+            case FORCESWITCHG2:
 #elif GOTTHARDD
-        case DYNAMICGAIN:
-        case HIGHGAIN:
-        case LOWGAIN:
-        case MEDIUMGAIN:
-        case VERYHIGHGAIN:
+            case DYNAMICGAIN:
+            case HIGHGAIN:
+            case LOWGAIN:
+            case MEDIUMGAIN:
+            case VERYHIGHGAIN:
 #elif GOTTHARD2D
-        case DYNAMICGAIN:
-        case FIXGAIN1:
-        case FIXGAIN2:
+            case DYNAMICGAIN:
+            case FIXGAIN1:
+            case FIXGAIN2:
 #elif MOENCHD
-        case G1_HIGHGAIN:
-        case G1_LOWGAIN:
-        case G2_HIGHCAP_HIGHGAIN:
-        case G2_HIGHCAP_LOWGAIN:
-        case G2_LOWCAP_HIGHGAIN:
-        case G2_LOWCAP_LOWGAIN:
-        case G4_HIGHGAIN:
-        case G4_LOWGAIN:
+            case G1_HIGHGAIN:
+            case G1_LOWGAIN:
+            case G2_HIGHCAP_HIGHGAIN:
+            case G2_HIGHCAP_LOWGAIN:
+            case G2_LOWCAP_HIGHGAIN:
+            case G2_LOWCAP_LOWGAIN:
+            case G4_HIGHGAIN:
+            case G4_LOWGAIN:
 #endif
-            break;
-        default:
-            if (myDetectorType == EIGER) {
-                ret = FAIL;
-                sprintf(mess, "Cannot set settings via SET_SETTINGS, use "
-                              "SET_MODULE (set threshold)\n");
-                LOG(logERROR, (mess));
-            } else
-                modeNotImplemented("Settings Index", (int)isett);
-            break;
-        }
+                break;
+            default:
+                if (myDetectorType == EIGER) {
+                    ret = FAIL;
+                    sprintf(mess, "Cannot set settings via SET_SETTINGS, use "
+                                  "SET_MODULE (set threshold)\n");
+                    LOG(logERROR, (mess));
+                } else
+                    modeNotImplemented("Settings Index", (int)isett);
+                break;
+            }
 
-        // if index is okay, set & get
-        if (ret == OK) {
-            retval = setSettings(isett);
-            LOG(logDEBUG1, ("Settings: %d\n", retval));
+            if (ret == OK) {
+                setSettings(isett);
+            }
+        }
+        retval = getSettings();
+        LOG(logDEBUG1, ("Settings: %d\n", retval));
+
+        if ((int)isett != GET_FLAG) {
             validate((int)isett, (int)retval, "set settings", DEC);
 #if defined(JUNGFRAUD) || defined(GOTTHARDD)
             // gotthard2 does not set default dacs
-            if (ret == OK && isett >= 0) {
+            if (ret == OK) {
                 ret = setDefaultDacs();
                 if (ret == FAIL) {
                     strcpy(mess, "Could change settings, but could not set to "

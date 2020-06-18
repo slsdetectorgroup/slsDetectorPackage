@@ -361,6 +361,105 @@ class Module : public virtual slsDetectorDefs {
      *    Gotthard2 Specific                          *
      *                                                *
      * ************************************************/
+    int64_t getNumberOfBursts();
+    void setNumberOfBursts(int64_t value);
+    int64_t getBurstPeriod();
+    void setBurstPeriod(int64_t value);
+    std::array<int, 2> getInjectChannel();
+    void setInjectChannel(const int offsetChannel, const int incrementChannel);
+    std::vector<int> getVetoPhoton(const int chipIndex);
+    void setVetoPhoton(const int chipIndex, const int numPhotons,
+                       const int energy, const std::string &fname);
+    void setVetoReference(const int gainIndex, const int value);
+    burstMode getBurstMode();
+    void setBurstMode(burstMode value);
+    bool getCurrentSource();
+    void setCurrentSource(bool value);
+    slsDetectorDefs::timingSourceType getTimingSource();
+    void setTimingSource(slsDetectorDefs::timingSourceType value);
+    bool getVeto();
+    void setVeto(bool enable);
+
+    /**************************************************
+     *                                                *
+     *    Mythen3 Specific                            *
+     *                                                *
+     * ************************************************/
+    uint32_t getCounterMask();
+    void setCounterMask(uint32_t countermask);
+    int getNumberOfGates();
+    void setNumberOfGates(int value);
+    std::array<time::ns, 3> getExptimeForAllGates();
+    int64_t getGateDelay(int gateIndex);
+    void setGateDelay(int gateIndex, int64_t value);
+    std::array<time::ns, 3> getGateDelayForAllGates();
+
+    /**************************************************
+     *                                                *
+     *    CTB / Moench Specific                       *
+     *                                                *
+     * ************************************************/
+    int getNumberOfAnalogSamples();
+    void setNumberOfAnalogSamples(int value);
+    int getPipeline(int clkIndex);
+    void setPipeline(int clkIndex, int value);
+    uint32_t getADCEnableMask();
+    void setADCEnableMask(uint32_t mask);
+    uint32_t getTenGigaADCEnableMask();
+    void setTenGigaADCEnableMask(uint32_t mask);
+
+    /**************************************************
+     *                                                *
+     *    CTB Specific                                *
+     *                                                *
+     * ************************************************/
+    int getNumberOfDigitalSamples();
+    void setNumberOfDigitalSamples(int value);
+    readoutMode getReadoutMode();
+    void setReadoutMode(const readoutMode mode);
+    int getExternalSamplingSource();
+    int setExternalSamplingSource(int value);
+    bool getExternalSampling();
+    void setExternalSampling(bool value);
+    std::vector<int> getReceiverDbitList() const;
+    void setReceiverDbitList(const std::vector<int> &list);
+    int getReceiverDbitOffset();
+    void setReceiverDbitOffset(int value);
+    void setDigitalIODelay(uint64_t pinMask, int delay);
+    bool getLEDEnable();
+    void setLEDEnable(bool enable);
+
+    /**************************************************
+     *                                                *
+     *    Pattern                                     *
+     *                                                *
+     * ************************************************/
+    void setPattern(const std::string &fname);
+    uint64_t getPatternIOControl();
+    void setPatternIOControl(uint64_t word);
+    uint64_t getPatternClockControl();
+    void setPatternClockControl(uint64_t word);
+    uint64_t getPatternWord(int addr);
+    void setPatternWord(int addr, uint64_t word);
+    std::array<int, 2> getPatternLoopAddresses(int level);
+    void setPatternLoopAddresses(int level, int start, int stop);
+    int getPatternLoopCycles(int level);
+    void setPatternLoopCycles(int level, int n);
+    int getPatternWaitAddr(int level);
+    void setPatternWaitAddr(int level, int addr);
+    uint64_t getPatternWaitTime(int level);
+    void setPatternWaitTime(int level, uint64_t t);
+    uint64_t getPatternMask();
+    void setPatternMask(uint64_t mask);
+    uint64_t getPatternBitMask();
+    void setPatternBitMask(uint64_t mask);
+    void startPattern();
+
+    /**************************************************
+     *                                                *
+     *    Moench                                      *
+     *                                                *
+     * ************************************************/
 
     /**
      * Set Detector offset in shared memory in dimension d
@@ -445,48 +544,6 @@ class Module : public virtual slsDetectorDefs {
      */
     void configureMAC();
 
-    /** [Gotthard2] only in burst mode and in auto timing mode */
-    int64_t getNumberOfBursts();
-
-    /** [Gotthard2] only in burst mode and in auto timing mode */
-    void setNumberOfBursts(int64_t value);
-
-    /** [CTB][Moench] */
-    int getNumberOfAnalogSamples();
-
-    /** [CTB][Moench] */
-    void setNumberOfAnalogSamples(int value);
-
-    /** [CTB] */
-    int getNumberOfDigitalSamples();
-
-    /** [CTB] */
-    void setNumberOfDigitalSamples(int value);
-
-    /** [Mythen3] */
-    int getNumberOfGates();
-
-    /** [Mythen3] */
-    void setNumberOfGates(int value);
-
-    /** [Mythen3] for all gates */
-    std::array<time::ns, 3> getExptimeForAllGates();
-
-    /** [Mythen3] gatIndex: 0-2 */
-    int64_t getGateDelay(int gateIndex);
-
-    /** [Mythen3] gatIndex: -1 for all, 0-2 */
-    void setGateDelay(int gateIndex, int64_t value);
-
-    /** [Mythen3] for all gates */
-    std::array<time::ns, 3> getGateDelayForAllGates();
-
-    /** [Gotthard2] only in burst mode and in auto timing mode */
-    int64_t getBurstPeriod();
-
-    /** [Gotthard2] only in burst mode and in auto timing mode */
-    void setBurstPeriod(int64_t value);
-
     /** [Jungfrau][CTB][Moench][Mythen3]
      * [Gotthard2] only in continuous mode */
     int64_t getNumberOfFramesFromStart() const;
@@ -498,19 +555,6 @@ class Module : public virtual slsDetectorDefs {
     /** [Jungfrau][CTB][Moench][Mythen3] Get timestamp at a frame start
      * [Gotthard2] only in continuous mode */
     int64_t getMeasurementTime() const;
-
-    /**
-     * [Ctb]
-     * @param mode readout mode Options: ANALOG_ONLY, DIGITAL_ONLY,
-     * ANALOG_AND_DIGITAL
-     */
-    void setReadoutMode(const readoutMode mode);
-
-    /**
-     * [Ctb]
-     * @returns readout mode
-     */
-    readoutMode getReadoutMode();
 
     /**
      * Write in a register. For Advanced users
@@ -570,71 +614,6 @@ class Module : public virtual slsDetectorDefs {
     /** [Gotthard][Jungfrau][CTB][Moench] */
     void executeBusTest();
 
-    /** [Gotthard2] */
-    std::array<int, 2> getInjectChannel();
-
-    /** [Gotthard2]
-     * @param offsetChannel starting channel to be injected
-     * @param incrementChannel determines succeeding channels to be injected */
-    void setInjectChannel(const int offsetChannel, const int incrementChannel);
-
-    /** [Gotthard2] asic input */
-    std::vector<int> getVetoPhoton(const int chipIndex);
-
-    /** [Gotthard2] energy in keV */
-    void setVetoPhoton(const int chipIndex, const int numPhotons,
-                       const int energy, const std::string &fname);
-
-    void setVetoReference(const int gainIndex, const int value);
-
-    /** [Gotthard2]  */
-    burstMode getBurstMode();
-
-    /** [Gotthard2] BURST_OFF, BURST_INTERNAL (default), BURST_EXTERNAL */
-    void setBurstMode(burstMode value);
-
-    /** [Gotthard2] */
-    bool getCurrentSource();
-
-    /** default disabled */
-    void setCurrentSource(bool value);
-
-    /** [Gotthard2] */
-    slsDetectorDefs::timingSourceType getTimingSource();
-
-    /** [Gotthard2] Options: TIMING_INTERNAL, TIMING_EXTERNAL */
-    void setTimingSource(slsDetectorDefs::timingSourceType value);
-
-    /** [Gotthard2] */
-    bool getVeto();
-
-    /** default disabled */
-    void setVeto(bool enable);
-
-    /**
-     * Set ADC Enable Mask (CTB, Moench)
-     * @param mask ADC Enable mask
-     */
-    void setADCEnableMask(uint32_t mask);
-
-    /**
-     * Get ADC Enable Mask (CTB, Moench)
-     * @returns ADC Enable mask
-     */
-    uint32_t getADCEnableMask();
-
-    /**
-     * Set 10Gb  ADC Enable Mask (CTB, Moench)
-     * @param mask ADC Enable mask
-     */
-    void setTenGigaADCEnableMask(uint32_t mask);
-
-    /**
-     * Get 10Gb ADC Enable Mask (CTB, Moench)
-     * @returns ADC Enable mask
-     */
-    uint32_t getTenGigaADCEnableMask();
-
     /**
      * Set ADC invert register (CTB, Moench, Jungfrau)
      * @param value ADC invert value
@@ -648,33 +627,6 @@ class Module : public virtual slsDetectorDefs {
      * @returns ADC invert value
      */
     uint32_t getADCInvert();
-
-    /**
-     * Set external sampling source (CTB only)
-     * @param value external sampling source (Option: 0-63)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns external sampling source
-     */
-    int setExternalSamplingSource(int value);
-
-    /**
-     * Get external sampling source (CTB only)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns external sampling source
-     */
-    int getExternalSamplingSource();
-
-    void setExternalSampling(bool value);
-
-    bool getExternalSampling();
-
-    /** digital data bits enable (CTB only) */
-    void setReceiverDbitList(const std::vector<int> &list);
-    std::vector<int> getReceiverDbitList() const;
-
-    /** Set digital data offset in bytes (CTB only) */
-    void setReceiverDbitOffset(int value);
-    int getReceiverDbitOffset();
 
     /**
      * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert
@@ -769,124 +721,6 @@ class Module : public virtual slsDetectorDefs {
      * in case it is lost in network due to high data rate
      */
     void restreamStopFromReceiver();
-
-    /**
-     * Opens pattern file and sends pattern to CTB
-     * @param fname pattern file to open
-     */
-    void setPattern(const std::string &fname);
-
-    /**
-     * Sets pattern IO control (CTB/ Moench)
-     * @param word 64bit word to be written, -1 gets
-     * @returns actual value
-     */
-    uint64_t setPatternIOControl(uint64_t word = -1);
-
-    /**
-     * Sets pattern clock control (CTB/ Moench)
-     * @param word 64bit word to be written, -1 gets
-     * @returns actual value
-     */
-    uint64_t setPatternClockControl(uint64_t word = -1);
-
-    /**
-     * Writes a pattern word (CTB/ Moench/ Mythen3)
-     * @param addr address of the word
-     * @param word 64bit word to be written, -1 reads the addr (same as
-     * executing the pattern for ctb)
-     * @returns actual value
-     */
-    uint64_t setPatternWord(int addr, uint64_t word);
-
-    /**
-     * Sets the pattern or loop limits (CTB/ Moench/ Mythen3)
-     * @param level -1 complete pattern, 0,1,2, loop level
-     * @param start start address for level 0-2, -1 gets
-     * @param stop stop address for level 0-2, -1 gets
-     * @returns array of start addr and stop addr
-     */
-    std::array<int, 2> setPatternLoopAddresses(int level = -1, int start = -1,
-                                               int stop = -1);
-
-    /**
-     * Sets the pattern or loop limits (CTB/ Moench/ Mythen3)
-     * @param level -1 complete pattern, 0,1,2, loop level
-     * @param n number of loops for level 0-2, -1 gets
-     * @returns number of loops
-     */
-    int setPatternLoopCycles(int level = -1, int n = -1);
-
-    /**
-     * Sets the wait address (CTB/ Moench/ Mythen3)
-     * @param level  0,1,2, wait level
-     * @param addr wait address, -1 gets
-     * @returns actual value
-     */
-    int setPatternWaitAddr(int level, int addr = -1);
-
-    /**
-     * Sets the wait time (CTB/ Moench/ Mythen3)
-     * @param level  0,1,2, wait level
-     * @param t wait time, -1 gets
-     * @returns actual value
-     */
-    uint64_t setPatternWaitTime(int level, uint64_t t = -1);
-
-    /**
-     * Sets the mask applied to every pattern (CTB/ Moench/ Mythen3)
-     * @param mask mask to be applied
-     */
-    void setPatternMask(uint64_t mask);
-
-    /**
-     * Gets the mask applied to every pattern (CTB/ Moench/ Mythen3)
-     * @returns mask set
-     */
-    uint64_t getPatternMask();
-
-    /**
-     * Selects the bits that the mask will be applied to for every pattern (CTB/
-     * Moench/ Mythen3)
-     * @param mask mask to select bits
-     */
-    void setPatternBitMask(uint64_t mask);
-
-    /**
-     * Gets the bits that the mask will be applied to for every pattern (CTB/
-     * Moench/ Mythen3)
-     * @returns mask  of bits selected
-     */
-    uint64_t getPatternBitMask();
-
-    /** [Mythen3] */
-    void startPattern();
-
-    /**
-     * Set LED Enable (Moench, CTB only)
-     * @param enable 1 to switch on, 0 to switch off, -1 gets
-     * @returns LED enable
-     */
-    int setLEDEnable(int enable = -1);
-
-    /**
-     * Set Digital IO Delay (Moench, CTB only)
-     * @param digital IO mask to select the pins
-     * @param delay delay in ps(1 bit=25ps, max of 775 ps)
-     */
-    void setDigitalIODelay(uint64_t pinMask, int delay);
-
-    /** [Ctb][Moench] */
-    int getPipeline(int clkIndex);
-
-    /** [Ctb][Moench] */
-    void setPipeline(int clkIndex, int value);
-
-    /** [Mythen3] */
-    void setCounterMask(uint32_t countermask);
-
-    /** [Mythen3] */
-    uint32_t getCounterMask();
 
   private:
     /**

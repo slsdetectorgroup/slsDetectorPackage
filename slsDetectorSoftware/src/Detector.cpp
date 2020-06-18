@@ -1569,11 +1569,11 @@ void Detector::setDigitalIODelay(uint64_t pinMask, int delay, Positions pos) {
 }
 
 Result<bool> Detector::getLEDEnable(Positions pos) const {
-    return pimpl->Parallel(&Module::setLEDEnable, pos, -1);
+    return pimpl->Parallel(&Module::getLEDEnable, pos);
 }
 
 void Detector::setLEDEnable(bool enable, Positions pos) {
-    pimpl->Parallel(&Module::setLEDEnable, pos, static_cast<int>(enable));
+    pimpl->Parallel(&Module::setLEDEnable, pos, enable);
 }
 
 // Pattern
@@ -1585,7 +1585,7 @@ void Detector::savePattern(const std::string &fname) {
         throw RuntimeError("Could not create file to save pattern");
     }
     // get pattern limits
-    auto r = pimpl->Parallel(&Module::setPatternLoopAddresses, {}, -1, -1, -1)
+    auto r = pimpl->Parallel(&Module::getPatternLoopAddresses, {}, -1)
                  .tsquash("Inconsistent pattern limits");
 
     CmdProxy proxy(this);
@@ -1617,7 +1617,7 @@ void Detector::setPattern(const std::string &fname, Positions pos) {
 }
 
 Result<uint64_t> Detector::getPatternIOControl(Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternIOControl, pos, -1);
+    return pimpl->Parallel(&Module::getPatternIOControl, pos);
 }
 
 void Detector::setPatternIOControl(uint64_t word, Positions pos) {
@@ -1625,7 +1625,7 @@ void Detector::setPatternIOControl(uint64_t word, Positions pos) {
 }
 
 Result<uint64_t> Detector::getPatternClockControl(Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternClockControl, pos, -1);
+    return pimpl->Parallel(&Module::getPatternClockControl, pos);
 }
 
 void Detector::setPatternClockControl(uint64_t word, Positions pos) {
@@ -1633,7 +1633,7 @@ void Detector::setPatternClockControl(uint64_t word, Positions pos) {
 }
 
 Result<uint64_t> Detector::getPatternWord(int addr, Positions pos) {
-    return pimpl->Parallel(&Module::setPatternWord, pos, addr, -1);
+    return pimpl->Parallel(&Module::getPatternWord, pos, addr);
 }
 
 void Detector::setPatternWord(int addr, uint64_t word, Positions pos) {
@@ -1642,8 +1642,7 @@ void Detector::setPatternWord(int addr, uint64_t word, Positions pos) {
 
 Result<std::array<int, 2>>
 Detector::getPatternLoopAddresses(int level, Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternLoopAddresses, pos, level, -1,
-                           -1);
+    return pimpl->Parallel(&Module::getPatternLoopAddresses, pos, level);
 }
 
 void Detector::setPatternLoopAddresses(int level, int start, int stop,
@@ -1652,7 +1651,7 @@ void Detector::setPatternLoopAddresses(int level, int start, int stop,
 }
 
 Result<int> Detector::getPatternLoopCycles(int level, Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternLoopCycles, pos, level, -1);
+    return pimpl->Parallel(&Module::getPatternLoopCycles, pos, level);
 }
 
 void Detector::setPatternLoopCycles(int level, int n, Positions pos) {
@@ -1660,7 +1659,7 @@ void Detector::setPatternLoopCycles(int level, int n, Positions pos) {
 }
 
 Result<int> Detector::getPatternWaitAddr(int level, Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternWaitAddr, pos, level, -1);
+    return pimpl->Parallel(&Module::getPatternWaitAddr, pos, level);
 }
 
 void Detector::setPatternWaitAddr(int level, int addr, Positions pos) {
@@ -1668,7 +1667,7 @@ void Detector::setPatternWaitAddr(int level, int addr, Positions pos) {
 }
 
 Result<uint64_t> Detector::getPatternWaitTime(int level, Positions pos) const {
-    return pimpl->Parallel(&Module::setPatternWaitTime, pos, level, -1);
+    return pimpl->Parallel(&Module::getPatternWaitTime, pos, level);
 }
 
 void Detector::setPatternWaitTime(int level, uint64_t t, Positions pos) {

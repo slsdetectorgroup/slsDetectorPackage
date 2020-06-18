@@ -205,6 +205,25 @@ void Module::setNumberOfTriggers(int64_t value) {
     }
 }
 
+int64_t Module::getExptime(int gateIndex) {
+    return sendToDetector<int64_t>(F_GET_EXPTIME, gateIndex);
+}
+
+void Module::setExptime(int gateIndex, int64_t value) {
+    int64_t prevVal = value;
+    if (shm()->myDetectorType == EIGER) {
+        prevVal = getExptime(-1);
+    }
+    int64_t args[]{static_cast<int64_t>(gateIndex), value};
+    sendToDetector(F_SET_EXPTIME, args, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_EXPTIME, args, nullptr);
+    }
+    if (prevVal != value) {
+        updateRateCorrection();
+    }
+}
+
 int64_t Module::getPeriod() { return sendToDetector<int64_t>(F_GET_PERIOD); }
 
 void Module::setPeriod(int64_t value) {
@@ -1329,13 +1348,521 @@ void Module::setROI(slsDetectorDefs::ROI arg) {
 void Module::clearROI() { setROI(slsDetectorDefs::ROI{}); }
 
 int64_t Module::getExptimeLeft() const {
-    int64_t retval = -1;
-    sendToDetectorStop(F_GET_EXPTIME_LEFT, nullptr, retval);
-    LOG(logDEBUG1) << "exptime left :" << retval << "ns";
-    return retval;
+    return sendToDetectorStop<int64_t>(F_GET_EXPTIME_LEFT);
 }
 
 // Gotthard2 Specific
+
+int64_t Module::getNumberOfBursts() {
+    return sendToDetector<int64_t>(F_GET_NUM_BURSTS);
+}
+
+void Module::setNumberOfBursts(int64_t value) {
+    sendToDetector(F_SET_NUM_BURSTS, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_SET_RECEIVER_NUM_BURSTS, value, nullptr);
+    }
+}
+
+int64_t Module::getBurstPeriod() {
+    return sendToDetector<int64_t>(F_GET_BURST_PERIOD);
+}
+
+void Module::setBurstPeriod(int64_t value) {
+    sendToDetector(F_SET_BURST_PERIOD, value, nullptr);
+}
+
+std::array<int, 2> Module::getInjectChannel() {
+    std::array<int, 2> retvals{};
+    sendToDetector(F_GET_INJECT_CHANNEL, nullptr, retvals);
+    return retvals;
+}
+
+void Module::setInjectChannel(const int offsetChannel,
+                              const int incrementChannel) {
+    int args[]{offsetChannel, incrementChannel};
+    sendToDetector(F_SET_INJECT_CHANNEL, args, nullptr);
+}
+
+std::vector<int> Module::getVetoPhoton(const int chipIndex) {
+    int fnum = F_GET_VETO_PHOTON;
+    int ret = FAIL;
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(&chipIndex, sizeof(chipIndex));
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Detector " + std::to_string(moduleId) +
+                           " returned error: " + std::string(mess));
+    } else {
+        int nch = -1;
+        client.Receive(&nch, sizeof(nch));
+
+        int adus[nch];
+        memset(adus, 0, sizeof(adus));
+        client.Receive(adus, sizeof(adus));
+        std::vector<int> retvals(adus, adus + nch);
+        LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]: " << nch
+                       << " channels\n";
+        return retvals;
+    }
+}
+
+void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
+                           const int energy, const std::string &fname) {
+    if (shm()->myDetectorType != GOTTHARD2) {
+        throw RuntimeError(
+            "Set Veto reference is not implemented for this detector");
+    }
+    if (chipIndex < -1 || chipIndex >= shm()->nChip.x) {
+        throw RuntimeError("Could not set veto photon. Invalid chip index: " +
+                           std::to_string(chipIndex));
+    }
+    if (numPhotons < 1) {
+        throw RuntimeError(
+            "Could not set veto photon. Invalid number of photons: " +
+            std::to_string(numPhotons));
+    }
+    if (energy < 1) {
+        throw RuntimeError("Could not set veto photon. Invalid energy: " +
+                           std::to_string(energy));
+    }
+    std::ifstream infile(fname.c_str());
+    if (!infile.is_open()) {
+        throw RuntimeError("Could not set veto photon. Could not open file: " +
+                           fname);
+    }
+
+    int totalEnergy = numPhotons * energy;
+    int ch = shm()->nChan.x;
+    int gainIndex = 2;
+    int nRead = 0;
+    int value[ch];
+    memset(value, 0, sizeof(value));
+    bool firstLine = true;
+
+    while (infile.good()) {
+        std::string line;
+        getline(infile, line);
+        if (line.find('#') != std::string::npos) {
+            line.erase(line.find('#'));
+        }
+        if (line.length() < 1) {
+            continue;
+        }
+        std::istringstream ss(line);
+        // first line: caluclate gain index from gain thresholds from file
+        if (firstLine) {
+            int g0 = -1, g1 = -1;
+            if (!(ss >> g0 >> g1)) {
+                throw RuntimeError(
+                    "Could not set veto photon. Invalid gain thresholds");
+            }
+            // set gain index and gain bit values
+            if (totalEnergy < g0) {
+                gainIndex = 0;
+            } else if (totalEnergy < g1) {
+                gainIndex = 1;
+            }
+            LOG(logINFO) << "Setting veto photon. Reading Gain " << gainIndex
+                         << " values";
+            firstLine = false;
+        }
+        // read pedestal and gain values
+        else {
+            double p[3] = {-1, -1, -1}, g[3] = {-1, -1, -1};
+            if (!(ss >> p[0] >> p[1] >> p[2] >> g[0] >> g[1] >> g[2])) {
+                throw RuntimeError("Could not set veto photon. Invalid "
+                                   "pedestal or gain values for channel " +
+                                   std::to_string(nRead));
+            }
+            value[nRead] =
+                p[gainIndex] +
+                (g[gainIndex] *
+                 totalEnergy); // ADU value = pedestal  + gain * total energy
+            ++nRead;
+            if (nRead >= ch) {
+                break;
+            }
+        }
+    }
+    if (nRead != ch) {
+        throw RuntimeError("Could not set veto photon. Insufficient pedestal "
+                           "pr gain values: " +
+                           std::to_string(nRead));
+    }
+
+    int fnum = F_SET_VETO_PHOTON;
+    int ret = FAIL;
+    int args[]{chipIndex, gainIndex, ch};
+    LOG(logDEBUG) << "Sending veto photon value to detector [chip:" << chipIndex
+                  << ", G" << gainIndex << "]: " << args;
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(args, sizeof(args));
+    client.Send(value, sizeof(value));
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Detector " + std::to_string(moduleId) +
+                           " returned error: " + std::string(mess));
+    }
+}
+
+void Module::setVetoReference(const int gainIndex, const int value) {
+    int args[]{gainIndex, value};
+    sendToDetector(F_SET_VETO_REFERENCE, args, nullptr);
+}
+
+slsDetectorDefs::burstMode Module::getBurstMode() {
+    auto r = sendToDetector<int>(F_GET_BURST_MODE);
+    return static_cast<slsDetectorDefs::burstMode>(r);
+}
+
+void Module::setBurstMode(slsDetectorDefs::burstMode value) {
+    int arg = static_cast<int>(value);
+    sendToDetector(F_SET_BURST_MODE, arg, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);
+    }
+}
+
+bool Module::getCurrentSource() {
+    return sendToDetector<int>(F_GET_CURRENT_SOURCE);
+}
+
+void Module::setCurrentSource(bool value) {
+    sendToDetector(F_SET_CURRENT_SOURCE, static_cast<int>(value), nullptr);
+}
+
+slsDetectorDefs::timingSourceType Module::getTimingSource() {
+    auto r = sendToDetector<int>(F_GET_TIMING_SOURCE);
+    return static_cast<slsDetectorDefs::timingSourceType>(r);
+}
+
+void Module::setTimingSource(slsDetectorDefs::timingSourceType value) {
+    sendToDetector(F_SET_TIMING_SOURCE, static_cast<int>(value), nullptr);
+}
+
+bool Module::getVeto() { return sendToDetector<int>(F_GET_VETO); }
+
+void Module::setVeto(bool enable) {
+    sendToDetector(F_SET_VETO, static_cast<int>(enable), nullptr);
+}
+
+// Mythen3 Specific
+
+uint32_t Module::getCounterMask() {
+    return sendToDetector<uint32_t>(F_GET_COUNTER_MASK);
+}
+
+void Module::setCounterMask(uint32_t countermask) {
+    LOG(logDEBUG1) << "Setting Counter mask to " << countermask;
+    sendToDetector(F_SET_COUNTER_MASK, countermask, nullptr);
+    if (shm()->useReceiverFlag) {
+        int ncounters = __builtin_popcount(countermask);
+        LOG(logDEBUG1) << "Sending Reciver #counters: " << ncounters;
+        sendToReceiver(F_RECEIVER_SET_NUM_COUNTERS, ncounters, nullptr);
+    }
+}
+
+int Module::getNumberOfGates() { return sendToDetector<int>(F_GET_NUM_GATES); }
+
+void Module::setNumberOfGates(int value) {
+    sendToDetector(F_SET_NUM_GATES, value, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_SET_RECEIVER_NUM_GATES, value, nullptr);
+    }
+}
+
+std::array<time::ns, 3> Module::getExptimeForAllGates() {
+    static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
+    return sendToDetector<std::array<time::ns, 3>>(F_GET_EXPTIME_ALL_GATES);
+}
+
+int64_t Module::getGateDelay(int gateIndex) {
+    return sendToDetector<int64_t>(F_GET_GATE_DELAY, gateIndex);
+}
+
+void Module::setGateDelay(int gateIndex, int64_t value) {
+    int64_t args[]{static_cast<int64_t>(gateIndex), value};
+    sendToDetector(F_SET_GATE_DELAY, args, nullptr);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_SET_RECEIVER_GATE_DELAY, args, nullptr);
+    }
+}
+
+std::array<time::ns, 3> Module::getGateDelayForAllGates() {
+    static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
+    return sendToDetector<std::array<time::ns, 3>>(F_GET_GATE_DELAY_ALL_GATES);
+}
+
+// CTB / Moench Specific
+
+int Module::getNumberOfAnalogSamples() {
+    return sendToDetector<int>(F_GET_NUM_ANALOG_SAMPLES);
+}
+
+void Module::setNumberOfAnalogSamples(int value) {
+    sendToDetector(F_SET_NUM_ANALOG_SAMPLES, value, nullptr);
+    // update #nchan, as it depends on #samples, adcmask
+    updateNumberOfChannels();
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_NUM_ANALOG_SAMPLES, value, nullptr);
+    }
+}
+
+int Module::getPipeline(int clkIndex) {
+    return sendToDetector<int>(F_GET_PIPELINE, clkIndex);
+}
+
+void Module::setPipeline(int clkIndex, int value) {
+    int args[]{clkIndex, value};
+    sendToDetector(F_SET_PIPELINE, args, nullptr);
+}
+
+uint32_t Module::getADCEnableMask() {
+    return sendToDetector<uint32_t>(F_GET_ADC_ENABLE_MASK);
+}
+
+void Module::setADCEnableMask(uint32_t mask) {
+    sendToDetector(F_SET_ADC_ENABLE_MASK, mask, nullptr);
+    // update #nchan, as it depends on #samples, adcmask,
+    updateNumberOfChannels();
+
+    // send to processor
+    if (shm()->myDetectorType == MOENCH)
+        setAdditionalJsonParameter("adcmask_1g", std::to_string(mask));
+
+    if (shm()->useReceiverFlag) {
+        sendToReceiver<int>(F_RECEIVER_SET_ADC_MASK, mask);
+    }
+}
+
+uint32_t Module::getTenGigaADCEnableMask() {
+    return sendToDetector<uint32_t>(F_GET_ADC_ENABLE_MASK_10G);
+}
+
+void Module::setTenGigaADCEnableMask(uint32_t mask) {
+    sendToDetector(F_SET_ADC_ENABLE_MASK_10G, mask, nullptr);
+    // update #nchan, as it depends on #samples, adcmask,
+    updateNumberOfChannels();
+
+    // send to processor
+    if (shm()->myDetectorType == MOENCH)
+        setAdditionalJsonParameter("adcmask_10g", std::to_string(mask));
+
+    if (shm()->useReceiverFlag) {
+        sendToReceiver<int>(F_RECEIVER_SET_ADC_MASK_10G, mask);
+    }
+}
+
+// CTB Specific
+
+int Module::getNumberOfDigitalSamples() {
+    return sendToDetector<int>(F_GET_NUM_DIGITAL_SAMPLES);
+}
+
+void Module::setNumberOfDigitalSamples(int value) {
+    LOG(logDEBUG1) << "Setting number of digital samples to " << value;
+    sendToDetector(F_SET_NUM_DIGITAL_SAMPLES, value, nullptr);
+    // update #nchan, as it depends on #samples, adcmask
+    updateNumberOfChannels();
+    if (shm()->useReceiverFlag) {
+        LOG(logDEBUG1) << "Sending number of digital samples to Receiver: "
+                       << value;
+        sendToReceiver(F_RECEIVER_SET_NUM_DIGITAL_SAMPLES, value, nullptr);
+    }
+}
+
+slsDetectorDefs::readoutMode Module::getReadoutMode() {
+    auto r = sendToDetector<int>(F_GET_READOUT_MODE);
+    return static_cast<readoutMode>(r);
+}
+
+void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
+    auto arg = static_cast<uint32_t>(mode);
+    LOG(logDEBUG1) << "Setting readout mode to " << arg;
+    sendToDetector(F_SET_READOUT_MODE, arg, nullptr);
+    // update #nchan, as it depends on #samples, adcmask,
+    if (shm()->myDetectorType == CHIPTESTBOARD) {
+        updateNumberOfChannels();
+    }
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_RECEIVER_SET_READOUT_MODE, mode, nullptr);
+    }
+}
+
+int Module::getExternalSamplingSource() {
+    return setExternalSamplingSource(-1);
+}
+
+int Module::setExternalSamplingSource(int value) {
+    return sendToDetector<int>(F_EXTERNAL_SAMPLING_SOURCE, value);
+}
+
+bool Module::getExternalSampling() {
+    int arg = -1;
+    return sendToDetector<int>(F_EXTERNAL_SAMPLING, arg);
+}
+
+void Module::setExternalSampling(bool value) {
+    sendToDetector<int>(F_EXTERNAL_SAMPLING, static_cast<int>(value));
+}
+
+std::vector<int> Module::getReceiverDbitList() const {
+    return sendToReceiver<sls::StaticVector<int, MAX_RX_DBIT>>(
+        F_GET_RECEIVER_DBIT_LIST);
+}
+
+void Module::setReceiverDbitList(const std::vector<int> &list) {
+    LOG(logDEBUG1) << "Setting Receiver Dbit List";
+    if (list.size() > 64) {
+        throw sls::RuntimeError("Dbit list size cannot be greater than 64\n");
+    }
+    for (auto &it : list) {
+        if (it < 0 || it > 63) {
+            throw sls::RuntimeError(
+                "Dbit list value must be between 0 and 63\n");
+        }
+    }
+    sls::StaticVector<int, MAX_RX_DBIT> arg = list;
+    sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);
+}
+
+int Module::getReceiverDbitOffset() {
+    return sendToReceiver<int>(F_GET_RECEIVER_DBIT_OFFSET);
+}
+
+void Module::setReceiverDbitOffset(int value) {
+    sendToReceiver(F_SET_RECEIVER_DBIT_OFFSET, value, nullptr);
+}
+
+void Module::setDigitalIODelay(uint64_t pinMask, int delay) {
+    uint64_t args[]{pinMask, static_cast<uint64_t>(delay)};
+    sendToDetector(F_DIGITAL_IO_DELAY, args, nullptr);
+}
+
+bool Module::getLEDEnable() {
+    int arg = -1;
+    return static_cast<bool>(sendToDetector<int>(F_LED, arg));
+}
+
+void Module::setLEDEnable(bool enable) {
+    sendToDetector<int>(F_LED, static_cast<int>(enable));
+}
+
+// Pattern
+
+void Module::setPattern(const std::string &fname) {
+    uint64_t word;
+    uint64_t addr = 0;
+    FILE *fd = fopen(fname.c_str(), "r");
+    if (fd != nullptr) {
+        while (fread(&word, sizeof(word), 1, fd) != 0U) {
+            setPatternWord(addr, word); // TODO! (Erik) do we need to send
+                                        // pattern in 64bit chunks?
+            ++addr;
+        }
+        fclose(fd);
+    } else {
+        throw RuntimeError("Could not open file to set pattern");
+    }
+}
+
+uint64_t Module::getPatternIOControl() {
+    int64_t arg = -1;
+    return sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL, arg);
+}
+
+void Module::setPatternIOControl(uint64_t word) {
+    sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL, word);
+}
+
+uint64_t Module::getPatternClockControl() {
+    int64_t arg = -1;
+    return sendToDetector<uint64_t>(F_SET_PATTERN_CLOCK_CONTROL, arg);
+}
+
+void Module::setPatternClockControl(uint64_t word) {
+    sendToDetector<uint64_t>(F_SET_PATTERN_CLOCK_CONTROL, word);
+}
+
+uint64_t Module::getPatternWord(int addr) {
+    uint64_t args[]{static_cast<uint64_t>(addr), static_cast<uint64_t>(-1)};
+    return sendToDetector<uint64_t>(F_SET_PATTERN_WORD, args);
+}
+
+void Module::setPatternWord(int addr, uint64_t word) {
+    uint64_t args[]{static_cast<uint64_t>(addr), word};
+    sendToDetector<uint64_t>(F_SET_PATTERN_WORD, args);
+}
+
+std::array<int, 2> Module::getPatternLoopAddresses(int level) {
+    int args[]{level, -1, -1};
+    std::array<int, 2> retvals{};
+    sendToDetector(F_SET_PATTERN_LOOP_ADDRESSES, args, retvals);
+    return retvals;
+}
+
+void Module::setPatternLoopAddresses(int level, int start, int stop) {
+    int args[]{level, start, stop};
+    std::array<int, 2> retvals{};
+    sendToDetector(F_SET_PATTERN_LOOP_ADDRESSES, args, retvals);
+}
+
+int Module::getPatternLoopCycles(int level) {
+    int args[]{level, -1};
+    return sendToDetector<int>(F_SET_PATTERN_LOOP_CYCLES, args);
+}
+
+void Module::setPatternLoopCycles(int level, int n) {
+    int args[]{level, n};
+    sendToDetector<int>(F_SET_PATTERN_LOOP_CYCLES, args);
+}
+
+int Module::getPatternWaitAddr(int level) {
+    int args[]{level, -1};
+    return sendToDetector<int>(F_SET_PATTERN_WAIT_ADDR, args);
+}
+
+void Module::setPatternWaitAddr(int level, int addr) {
+    int args[]{level, addr};
+    sendToDetector<int>(F_SET_PATTERN_WAIT_ADDR, args);
+}
+
+uint64_t Module::getPatternWaitTime(int level) {
+    uint64_t args[]{static_cast<uint64_t>(level), static_cast<uint64_t>(-1)};
+    return sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
+}
+
+void Module::setPatternWaitTime(int level, uint64_t t) {
+    uint64_t args[]{static_cast<uint64_t>(level), t};
+    sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
+}
+
+uint64_t Module::getPatternMask() {
+    return sendToDetector<uint64_t>(F_GET_PATTERN_MASK);
+}
+
+void Module::setPatternMask(uint64_t mask) {
+    sendToDetector(F_SET_PATTERN_MASK, mask, nullptr);
+}
+
+uint64_t Module::getPatternBitMask() {
+    return sendToDetector<uint64_t>(F_GET_PATTERN_BIT_MASK);
+}
+
+void Module::setPatternBitMask(uint64_t mask) {
+    sendToDetector(F_SET_PATTERN_BIT_MASK, mask, nullptr);
+}
+
+void Module::startPattern() { sendToDetector(F_START_PATTERN); }
+
+// Moench
 
 // private
 
@@ -2064,120 +2591,6 @@ void Module::startReadOut() { sendToDetector(F_START_READOUT); }
 
 void Module::readAll() { sendToDetector(F_READ_ALL); }
 
-int64_t Module::getNumberOfBursts() {
-    return sendToDetector<int64_t>(F_GET_NUM_BURSTS);
-}
-
-void Module::setNumberOfBursts(int64_t value) {
-    LOG(logDEBUG1) << "Setting number of bursts to " << value;
-    sendToDetector(F_SET_NUM_BURSTS, value, nullptr);
-    if (shm()->useReceiverFlag) {
-        LOG(logDEBUG1) << "Sending number of bursts to Receiver: " << value;
-        sendToReceiver(F_SET_RECEIVER_NUM_BURSTS, value, nullptr);
-    }
-}
-
-int Module::getNumberOfAnalogSamples() {
-    return sendToDetector<int>(F_GET_NUM_ANALOG_SAMPLES);
-}
-
-void Module::setNumberOfAnalogSamples(int value) {
-    LOG(logDEBUG1) << "Setting number of analog samples to " << value;
-    sendToDetector(F_SET_NUM_ANALOG_SAMPLES, value, nullptr);
-    // update #nchan, as it depends on #samples, adcmask
-    updateNumberOfChannels();
-    if (shm()->useReceiverFlag) {
-        LOG(logDEBUG1) << "Sending number of analog samples to Receiver: "
-                       << value;
-        sendToReceiver(F_RECEIVER_SET_NUM_ANALOG_SAMPLES, value, nullptr);
-    }
-}
-
-int Module::getNumberOfDigitalSamples() {
-    return sendToDetector<int>(F_GET_NUM_DIGITAL_SAMPLES);
-}
-
-void Module::setNumberOfDigitalSamples(int value) {
-    LOG(logDEBUG1) << "Setting number of digital samples to " << value;
-    sendToDetector(F_SET_NUM_DIGITAL_SAMPLES, value, nullptr);
-    // update #nchan, as it depends on #samples, adcmask
-    updateNumberOfChannels();
-    if (shm()->useReceiverFlag) {
-        LOG(logDEBUG1) << "Sending number of digital samples to Receiver: "
-                       << value;
-        sendToReceiver(F_RECEIVER_SET_NUM_DIGITAL_SAMPLES, value, nullptr);
-    }
-}
-
-int Module::getNumberOfGates() { return sendToDetector<int>(F_GET_NUM_GATES); }
-
-void Module::setNumberOfGates(int value) {
-    LOG(logDEBUG1) << "Setting number of gates to " << value;
-    sendToDetector(F_SET_NUM_GATES, value, nullptr);
-    if (shm()->useReceiverFlag) {
-        LOG(logDEBUG1) << "Sending number of gates to Receiver: " << value;
-        sendToReceiver(F_SET_RECEIVER_NUM_GATES, value, nullptr);
-    }
-}
-
-int64_t Module::getExptime(int gateIndex) {
-    return sendToDetector<int64_t>(F_GET_EXPTIME, gateIndex);
-}
-
-void Module::setExptime(int gateIndex, int64_t value) {
-    int64_t prevVal = value;
-    if (shm()->myDetectorType == EIGER) {
-        prevVal = getExptime(-1);
-    }
-    LOG(logDEBUG1) << "Setting exptime to " << value
-                   << "ns (gateindex: " << gateIndex << ")";
-    int64_t args[]{static_cast<int64_t>(gateIndex), value};
-    sendToDetector(F_SET_EXPTIME, args, nullptr);
-    if (shm()->useReceiverFlag) {
-        LOG(logDEBUG1) << "Sending exptime to Receiver: " << value;
-        sendToReceiver(F_RECEIVER_SET_EXPTIME, args, nullptr);
-    }
-    if (prevVal != value) {
-        updateRateCorrection();
-    }
-}
-
-std::array<time::ns, 3> Module::getExptimeForAllGates() {
-    static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
-    return sendToDetector<std::array<time::ns, 3>>(F_GET_EXPTIME_ALL_GATES);
-}
-
-int64_t Module::getGateDelay(int gateIndex) {
-    return sendToDetector<int64_t>(F_GET_GATE_DELAY, gateIndex);
-}
-
-void Module::setGateDelay(int gateIndex, int64_t value) {
-    LOG(logDEBUG1) << "Setting gate delay to " << value
-                   << "ns (gateindex: " << gateIndex << ")";
-    int64_t args[]{static_cast<int64_t>(gateIndex), value};
-    sendToDetector(F_SET_GATE_DELAY, args, nullptr);
-    if (shm()->useReceiverFlag) {
-        LOG(logDEBUG1) << "Sending gate delay to Receiver: " << value;
-        sendToReceiver(F_SET_RECEIVER_GATE_DELAY, args, nullptr);
-    }
-}
-
-std::array<time::ns, 3> Module::getGateDelayForAllGates() {
-    static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
-    return sendToDetector<std::array<time::ns, 3>>(F_GET_GATE_DELAY_ALL_GATES);
-}
-
-int64_t Module::getBurstPeriod() {
-    return sendToDetector<int64_t>(F_GET_BURST_PERIOD);
-}
-
-void Module::setBurstPeriod(int64_t value) {
-    LOG(logDEBUG1) << "Setting burst period to " << value << "ns";
-    sendToDetector(F_SET_BURST_PERIOD, value, nullptr);
-}
-
-// Acquisition Parameters
-
 int64_t Module::getNumberOfFramesFromStart() const {
     int64_t retval = -1;
     sendToDetectorStop(F_GET_FRAMES_FROM_START, nullptr, retval);
@@ -2197,24 +2610,6 @@ int64_t Module::getMeasurementTime() const {
     sendToDetectorStop(F_GET_MEASUREMENT_TIME, nullptr, retval);
     LOG(logDEBUG1) << "measurement time :" << retval << "ns";
     return retval;
-}
-
-void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
-    auto arg = static_cast<uint32_t>(mode);
-    LOG(logDEBUG1) << "Setting readout mode to " << arg;
-    sendToDetector(F_SET_READOUT_MODE, arg, nullptr);
-    // update #nchan, as it depends on #samples, adcmask,
-    if (shm()->myDetectorType == CHIPTESTBOARD) {
-        updateNumberOfChannels();
-    }
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RECEIVER_SET_READOUT_MODE, mode, nullptr);
-    }
-}
-
-slsDetectorDefs::readoutMode Module::getReadoutMode() {
-    auto r = sendToDetector<int>(F_GET_READOUT_MODE);
-    return static_cast<readoutMode>(r);
 }
 
 uint32_t Module::writeRegister(uint32_t addr, uint32_t val) {
@@ -2370,247 +2765,6 @@ void Module::executeBusTest() {
     sendToDetector(F_SET_BUS_TEST);
 }
 
-std::array<int, 2> Module::getInjectChannel() {
-    std::array<int, 2> retvals{};
-    sendToDetector(F_GET_INJECT_CHANNEL, nullptr, retvals);
-    LOG(logDEBUG1) << "Inject Channel: [offset: " << retvals[0]
-                   << ", increment: " << retvals[1] << ']';
-    return retvals;
-}
-
-void Module::setInjectChannel(const int offsetChannel,
-                              const int incrementChannel) {
-    int args[]{offsetChannel, incrementChannel};
-    LOG(logDEBUG1) << "Setting inject channels [offset: " << offsetChannel
-                   << ", increment: " << incrementChannel << ']';
-    sendToDetector(F_SET_INJECT_CHANNEL, args, nullptr);
-}
-
-std::vector<int> Module::getVetoPhoton(const int chipIndex) {
-    int fnum = F_GET_VETO_PHOTON;
-    int ret = FAIL;
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Send(&chipIndex, sizeof(chipIndex));
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
-        throw RuntimeError("Detector " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
-    } else {
-        int nch = -1;
-        client.Receive(&nch, sizeof(nch));
-
-        int adus[nch];
-        memset(adus, 0, sizeof(adus));
-        client.Receive(adus, sizeof(adus));
-        std::vector<int> retvals(adus, adus + nch);
-        LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]: " << nch
-                       << " channels\n";
-        return retvals;
-    }
-}
-
-void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
-                           const int energy, const std::string &fname) {
-    if (shm()->myDetectorType != GOTTHARD2) {
-        throw RuntimeError(
-            "Set Veto reference is not implemented for this detector");
-    }
-    if (chipIndex < -1 || chipIndex >= shm()->nChip.x) {
-        throw RuntimeError("Could not set veto photon. Invalid chip index: " +
-                           std::to_string(chipIndex));
-    }
-    if (numPhotons < 1) {
-        throw RuntimeError(
-            "Could not set veto photon. Invalid number of photons: " +
-            std::to_string(numPhotons));
-    }
-    if (energy < 1) {
-        throw RuntimeError("Could not set veto photon. Invalid energy: " +
-                           std::to_string(energy));
-    }
-    std::ifstream infile(fname.c_str());
-    if (!infile.is_open()) {
-        throw RuntimeError("Could not set veto photon. Could not open file: " +
-                           fname);
-    }
-
-    int totalEnergy = numPhotons * energy;
-    int ch = shm()->nChan.x;
-    int gainIndex = 2;
-    int nRead = 0;
-    int value[ch];
-    memset(value, 0, sizeof(value));
-    bool firstLine = true;
-
-    while (infile.good()) {
-        std::string line;
-        getline(infile, line);
-        if (line.find('#') != std::string::npos) {
-            line.erase(line.find('#'));
-        }
-        if (line.length() < 1) {
-            continue;
-        }
-        std::istringstream ss(line);
-        // first line: caluclate gain index from gain thresholds from file
-        if (firstLine) {
-            int g0 = -1, g1 = -1;
-            if (!(ss >> g0 >> g1)) {
-                throw RuntimeError(
-                    "Could not set veto photon. Invalid gain thresholds");
-            }
-            // set gain index and gain bit values
-            if (totalEnergy < g0) {
-                gainIndex = 0;
-            } else if (totalEnergy < g1) {
-                gainIndex = 1;
-            }
-            LOG(logINFO) << "Setting veto photon. Reading Gain " << gainIndex
-                         << " values";
-            firstLine = false;
-        }
-        // read pedestal and gain values
-        else {
-            double p[3] = {-1, -1, -1}, g[3] = {-1, -1, -1};
-            if (!(ss >> p[0] >> p[1] >> p[2] >> g[0] >> g[1] >> g[2])) {
-                throw RuntimeError("Could not set veto photon. Invalid "
-                                   "pedestal or gain values for channel " +
-                                   std::to_string(nRead));
-            }
-            value[nRead] =
-                p[gainIndex] +
-                (g[gainIndex] *
-                 totalEnergy); // ADU value = pedestal  + gain * total energy
-            ++nRead;
-            if (nRead >= ch) {
-                break;
-            }
-        }
-    }
-    if (nRead != ch) {
-        throw RuntimeError("Could not set veto photon. Insufficient pedestal "
-                           "pr gain values: " +
-                           std::to_string(nRead));
-    }
-
-    int fnum = F_SET_VETO_PHOTON;
-    int ret = FAIL;
-    int args[]{chipIndex, gainIndex, ch};
-    LOG(logDEBUG) << "Sending veto photon value to detector [chip:" << chipIndex
-                  << ", G" << gainIndex << "]: " << args;
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Send(args, sizeof(args));
-    client.Send(value, sizeof(value));
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
-        throw RuntimeError("Detector " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
-    }
-}
-
-void Module::setVetoReference(const int gainIndex, const int value) {
-    int args[]{gainIndex, value};
-    LOG(logDEBUG1) << "Setting veto reference [gainIndex: " << gainIndex
-                   << ", value: 0x" << std::hex << value << std::dec << ']';
-    sendToDetector(F_SET_VETO_REFERENCE, args, nullptr);
-}
-
-slsDetectorDefs::burstMode Module::getBurstMode() {
-    auto r = sendToDetector<int>(F_GET_BURST_MODE);
-    return static_cast<slsDetectorDefs::burstMode>(r);
-}
-
-void Module::setBurstMode(slsDetectorDefs::burstMode value) {
-    int arg = static_cast<int>(value);
-    LOG(logDEBUG1) << "Setting burst mode to " << arg;
-    sendToDetector(F_SET_BURST_MODE, arg, nullptr);
-    if (shm()->useReceiverFlag) {
-        LOG(logDEBUG1) << "Sending burst mode to Receiver: " << value;
-        sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);
-    }
-}
-
-bool Module::getCurrentSource() {
-    return sendToDetector<int>(F_GET_CURRENT_SOURCE);
-}
-
-void Module::setCurrentSource(bool value) {
-    sendToDetector(F_SET_CURRENT_SOURCE, static_cast<int>(value), nullptr);
-}
-
-slsDetectorDefs::timingSourceType Module::getTimingSource() {
-    auto r = sendToDetector<int>(F_GET_TIMING_SOURCE);
-    return static_cast<slsDetectorDefs::timingSourceType>(r);
-}
-
-void Module::setTimingSource(slsDetectorDefs::timingSourceType value) {
-    sendToDetector(F_SET_TIMING_SOURCE, static_cast<int>(value), nullptr);
-}
-
-bool Module::getVeto() { return sendToDetector<int>(F_GET_VETO); }
-
-void Module::setVeto(bool enable) {
-    sendToDetector(F_SET_VETO, static_cast<int>(enable), nullptr);
-}
-
-void Module::setADCEnableMask(uint32_t mask) {
-    uint32_t arg = mask;
-    LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex << arg
-                   << std::dec;
-    sendToDetector(F_SET_ADC_ENABLE_MASK, &arg, sizeof(arg), nullptr, 0);
-
-    // update #nchan, as it depends on #samples, adcmask,
-    updateNumberOfChannels();
-
-    // send to processor
-    if (shm()->myDetectorType == MOENCH)
-        setAdditionalJsonParameter("adcmask_1g", std::to_string(mask));
-
-    if (shm()->useReceiverFlag) {
-        int fnum = F_RECEIVER_SET_ADC_MASK;
-        int retval = -1;
-        LOG(logDEBUG1) << "Setting ADC Enable mask to 0x" << std::hex << mask
-                       << std::dec << " in receiver";
-        sendToReceiver(fnum, mask, retval);
-    }
-}
-
-uint32_t Module::getADCEnableMask() {
-    return sendToDetector<uint32_t>(F_GET_ADC_ENABLE_MASK);
-}
-
-void Module::setTenGigaADCEnableMask(uint32_t mask) {
-    uint32_t arg = mask;
-    LOG(logDEBUG1) << "Setting 10Gb ADC Enable mask to 0x" << std::hex << arg
-                   << std::dec;
-    sendToDetector(F_SET_ADC_ENABLE_MASK_10G, &arg, sizeof(arg), nullptr, 0);
-
-    // update #nchan, as it depends on #samples, adcmask,
-    updateNumberOfChannels();
-
-    // send to processor
-    if (shm()->myDetectorType == MOENCH)
-        setAdditionalJsonParameter("adcmask_10g", std::to_string(mask));
-
-    if (shm()->useReceiverFlag) {
-        int fnum = F_RECEIVER_SET_ADC_MASK_10G;
-        int retval = -1;
-        LOG(logDEBUG1) << "Setting 10Gb ADC Enable mask to 0x" << std::hex
-                       << mask << std::dec << " in receiver";
-        sendToReceiver(fnum, mask, retval);
-    }
-}
-
-uint32_t Module::getTenGigaADCEnableMask() {
-    return sendToDetector<uint32_t>(F_GET_ADC_ENABLE_MASK_10G);
-}
-
 void Module::setADCInvert(uint32_t value) {
     LOG(logDEBUG1) << "Setting ADC Invert to 0x" << std::hex << value
                    << std::dec;
@@ -2619,51 +2773,6 @@ void Module::setADCInvert(uint32_t value) {
 
 uint32_t Module::getADCInvert() {
     return sendToDetector<uint32_t>(F_GET_ADC_INVERT);
-}
-
-int Module::setExternalSamplingSource(int value) {
-    return sendToDetector<int>(F_EXTERNAL_SAMPLING_SOURCE, value);
-}
-
-int Module::getExternalSamplingSource() {
-    return setExternalSamplingSource(-1);
-}
-
-void Module::setExternalSampling(bool value) {
-    sendToDetector<int>(F_EXTERNAL_SAMPLING, static_cast<int>(value));
-}
-
-bool Module::getExternalSampling() {
-    int arg = -1;
-    return sendToDetector<int>(F_EXTERNAL_SAMPLING, arg);
-}
-
-void Module::setReceiverDbitList(const std::vector<int> &list) {
-    LOG(logDEBUG1) << "Setting Receiver Dbit List";
-    if (list.size() > 64) {
-        throw sls::RuntimeError("Dbit list size cannot be greater than 64\n");
-    }
-    for (auto &it : list) {
-        if (it < 0 || it > 63) {
-            throw sls::RuntimeError(
-                "Dbit list value must be between 0 and 63\n");
-        }
-    }
-    sls::StaticVector<int, MAX_RX_DBIT> arg = list;
-    sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);
-}
-
-std::vector<int> Module::getReceiverDbitList() const {
-    return sendToReceiver<sls::StaticVector<int, MAX_RX_DBIT>>(
-        F_GET_RECEIVER_DBIT_LIST);
-}
-
-void Module::setReceiverDbitOffset(int value) {
-    sendToReceiver(F_SET_RECEIVER_DBIT_OFFSET, value, nullptr);
-}
-
-int Module::getReceiverDbitOffset() {
-    return sendToReceiver<int>(F_GET_RECEIVER_DBIT_OFFSET);
 }
 
 void Module::writeAdcRegister(uint32_t addr, uint32_t val) {
@@ -2878,131 +2987,6 @@ void Module::restreamStopFromReceiver() {
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER, nullptr, nullptr);
     }
-}
-
-void Module::setPattern(const std::string &fname) {
-    uint64_t word;
-    uint64_t addr = 0;
-    FILE *fd = fopen(fname.c_str(), "r");
-    if (fd != nullptr) {
-        while (fread(&word, sizeof(word), 1, fd) != 0U) {
-            setPatternWord(addr, word); // TODO! (Erik) do we need to send
-                                        // pattern in 64bit chunks?
-            ++addr;
-        }
-        fclose(fd);
-    } else {
-        throw RuntimeError("Could not open file to set pattern");
-    }
-}
-
-uint64_t Module::setPatternIOControl(uint64_t word) {
-    LOG(logDEBUG1) << "Setting Pattern IO Control, word: 0x" << std::hex << word
-                   << std::dec;
-    return sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL, word);
-}
-
-uint64_t Module::setPatternClockControl(uint64_t word) {
-    LOG(logDEBUG1) << "Setting Pattern Clock Control, word: 0x" << std::hex
-                   << word << std::dec;
-    return sendToDetector<uint64_t>(F_SET_PATTERN_CLOCK_CONTROL, word);
-}
-
-uint64_t Module::setPatternWord(int addr, uint64_t word) {
-    uint64_t args[]{static_cast<uint64_t>(addr), word};
-
-    LOG(logDEBUG1) << "Setting Pattern word, addr: 0x" << std::hex << addr
-                   << ", word: 0x" << word << std::dec;
-    return sendToDetector<uint64_t>(F_SET_PATTERN_WORD, args);
-}
-
-std::array<int, 2> Module::setPatternLoopAddresses(int level, int start,
-                                                   int stop) {
-    int args[]{level, start, stop};
-    std::array<int, 2> retvals{};
-    LOG(logDEBUG1) << "Setting Pat Loop Addresses, level: " << level
-                   << ", start: " << start << ", stop: " << stop;
-    sendToDetector(F_SET_PATTERN_LOOP_ADDRESSES, args, retvals);
-    LOG(logDEBUG1) << "Set Pat Loop Addresses: " << retvals[0] << ", "
-                   << retvals[1];
-    return retvals;
-}
-
-int Module::setPatternLoopCycles(int level, int n) {
-    int args[]{level, n};
-    LOG(logDEBUG1) << "Setting Pat Loop cycles, level: " << level
-                   << ",nloops: " << n;
-    return sendToDetector<int>(F_SET_PATTERN_LOOP_CYCLES, args);
-}
-
-int Module::setPatternWaitAddr(int level, int addr) {
-    int args[]{level, addr};
-    LOG(logDEBUG1) << "Setting Pat Wait Addr, level: " << level << ", addr: 0x"
-                   << std::hex << addr << std::dec;
-    return sendToDetector<int>(F_SET_PATTERN_WAIT_ADDR, args);
-}
-
-uint64_t Module::setPatternWaitTime(int level, uint64_t t) {
-    uint64_t args[]{static_cast<uint64_t>(level), t};
-    return sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
-}
-
-void Module::setPatternMask(uint64_t mask) {
-    LOG(logDEBUG1) << "Setting Pattern Mask " << std::hex << mask << std::dec;
-    sendToDetector(F_SET_PATTERN_MASK, mask, nullptr);
-}
-
-uint64_t Module::getPatternMask() {
-    return sendToDetector<uint64_t>(F_GET_PATTERN_MASK);
-}
-
-void Module::setPatternBitMask(uint64_t mask) {
-    LOG(logDEBUG1) << "Setting Pattern Bit Mask " << std::hex << mask
-                   << std::dec;
-    sendToDetector(F_SET_PATTERN_BIT_MASK, mask, nullptr);
-    LOG(logDEBUG1) << "Pattern Bit Mask successful";
-}
-
-uint64_t Module::getPatternBitMask() {
-    return sendToDetector<uint64_t>(F_GET_PATTERN_BIT_MASK);
-}
-
-void Module::startPattern() { sendToDetector(F_START_PATTERN); }
-
-int Module::setLEDEnable(int enable) {
-    return sendToDetector<int>(F_LED, enable);
-}
-
-void Module::setDigitalIODelay(uint64_t pinMask, int delay) {
-    uint64_t args[]{pinMask, static_cast<uint64_t>(delay)};
-    LOG(logDEBUG1) << "Sending Digital IO Delay, pin mask: " << std::hex
-                   << args[0] << ", delay: " << std::dec << args[1] << " ps";
-    sendToDetector(F_DIGITAL_IO_DELAY, args, nullptr);
-    LOG(logDEBUG1) << "Digital IO Delay successful";
-}
-
-int Module::getPipeline(int clkIndex) {
-    return sendToDetector<int>(F_GET_PIPELINE, clkIndex);
-}
-
-void Module::setPipeline(int clkIndex, int value) {
-    int args[]{clkIndex, value};
-    LOG(logDEBUG1) << "Setting Clock " << clkIndex << " pipeline to " << value;
-    sendToDetector(F_SET_PIPELINE, args, nullptr);
-}
-
-void Module::setCounterMask(uint32_t countermask) {
-    LOG(logDEBUG1) << "Setting Counter mask to " << countermask;
-    sendToDetector(F_SET_COUNTER_MASK, countermask, nullptr);
-    if (shm()->useReceiverFlag) {
-        int ncounters = __builtin_popcount(countermask);
-        LOG(logDEBUG1) << "Sending Reciver #counters: " << ncounters;
-        sendToReceiver(F_RECEIVER_SET_NUM_COUNTERS, ncounters, nullptr);
-    }
-}
-
-uint32_t Module::getCounterMask() {
-    return sendToDetector<uint32_t>(F_GET_COUNTER_MASK);
 }
 
 sls_detector_module Module::interpolateTrim(sls_detector_module *a,

@@ -2545,8 +2545,8 @@ std::string CmdProxy::ExecuteCommand(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        det->executeCommand(args[0], {det_id});
-        os << "successful" << '\n';
+        auto t = det->executeCommand(args[0], {det_id});
+        os << OutString(t) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }

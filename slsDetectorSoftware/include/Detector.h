@@ -766,12 +766,6 @@ class Detector {
     void setOverFlowMode(bool value, Positions pos = {});
 
     /** [Eiger] */
-    Result<bool> getStoreInRamMode(Positions pos = {}) const;
-
-    /** [Eiger] */
-    void setStoreInRamMode(bool value, Positions pos = {});
-
-    /** [Eiger] */
     Result<bool> getBottom(Positions pos = {}) const;
 
     /** [Eiger] for client call back (gui) purposes */
@@ -1412,7 +1406,8 @@ class Detector {
     Result<sls::IpAddr> getLastClientIP(Positions pos = {}) const;
 
     /** Execute a command on the detector server console */
-    void executeCommand(const std::string &value, Positions pos = {});
+    Result<std::string> executeCommand(const std::string &value,
+                                       Positions pos = {});
 
     /** [Jungfrau][Mythen3][CTB][Moench]
      * [Gotthard2] only in continuous mode */

@@ -109,7 +109,6 @@ void ClientInterface::startTCPServer() {
 // clang-format off
 int ClientInterface::functionTable(){
 	flist[F_EXEC_RECEIVER_COMMAND]			=	&ClientInterface::exec_command;
-	flist[F_EXIT_RECEIVER]					=	&ClientInterface::exit_server;
 	flist[F_LOCK_RECEIVER]					=	&ClientInterface::lock_receiver;
 	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&ClientInterface::get_last_client_ip;
 	flist[F_SET_RECEIVER_PORT]				=	&ClientInterface::set_port;
@@ -289,12 +288,6 @@ int ClientInterface::exec_command(Interface &socket) {
         LOG(logINFO) << "Result of cmd (" << cmd << "):\n" << retval;
     }
     return socket.sendResult(retval);
-}
-
-int ClientInterface::exit_server(Interface &socket) {
-    LOG(logINFO) << "Closing server";
-    socket.Send(OK);
-    return GOODBYE;
 }
 
 int ClientInterface::lock_receiver(Interface &socket) {

@@ -158,8 +158,10 @@ class Module : public virtual slsDetectorDefs {
     void prepareAcquisition();
     void startAcquisition();
     void stopAcquisition();
+    void startAndReadAll();
     runStatus getRunStatus() const;
     runStatus getReceiverStatus() const;
+    int getReceiverProgress() const;
     int64_t getFramesCaughtByReceiver() const;
     std::vector<uint64_t> getNumMissingPackets() const;
     uint64_t getStartingFrameNumber();
@@ -299,8 +301,6 @@ class Module : public virtual slsDetectorDefs {
     void setParallelMode(const bool enable);
     bool getOverFlowMode();
     void setOverFlowMode(const bool enable);
-    bool getStoreInRamMode();
-    void setStoreInRamMode(const bool enable);
     bool getFlippedDataX();
     void setFlippedDataX(bool value);
     std::vector<int> getTrimEn();
@@ -460,267 +460,50 @@ class Module : public virtual slsDetectorDefs {
      *    Moench                                      *
      *                                                *
      * ************************************************/
-
-    /**
-     * Set Detector offset in shared memory in dimension d
-     * @param det detector size
-     */
-
-    int setControlPort(int port_number);
-
-    /**
-     * Returns the detector TCP control port  \sa sharedSlsDetector
-     * @returns the detector TCP control port
-     */
-    int getControlPort() const;
-
-    int setStopPort(int port_number);
-
-    /**
-     * Returns the detector TCP stop port  \sa sharedSlsDetector
-     * @returns the detector TCP stop port
-     */
-    int getStopPort() const;
-
-    /**
-     * Lock server for this client IP
-     * @param p 0 to unlock, 1 to lock (-1 gets)
-     * @returns true for locked or false for unlocked
-     */
-    bool lockServer(int lock = -1);
-
-    /**
-     * Get last client IP saved on detector server
-     * @returns last client IP saved on detector server
-     */
-    sls::IpAddr getLastClientIP();
-
-    /**
-     * Exit detector server
-     */
-    void exitServer();
-
-    /**
-     * Executes a system command on the detector server
-     * e.g. mount an nfs disk, reboot and returns answer etc.
-     * @param cmd command to be executed
-     */
-    void execCommand(const std::string &cmd);
-
-    /**
-     * Get detector specific commands to write into config file
-     * @returns vector of strings with commands
-     */
-    std::vector<std::string> getConfigFileCommands();
-
-    /**
-     * Set threshold energy and settings (Eiger only)
-     * @param e_eV threshold in eV
-     * @param isettings ev. change settings
-     * @param tb 1 to include trimbits, 0 to exclude
-     */
-    void setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
-                                       bool trimbits = true);
-
-    /**
-     * Start detector acquisition and read all data (Blocking until end of
-     * acquisition)
-     */
-    void startAndReadAll();
-
-    /**
-     * Start readout (without exposure or interrupting exposure) (Eiger store in
-     * ram)
-     */
-    void startReadOut();
-
-    /**
-     * Requests and  receives all data from the detector (Eiger store in ram)
-     */
-    void readAll();
-
-    /**
-     * Configures in detector the destination for UDP packets
-     */
-    void configureMAC();
-
-    /** [Jungfrau][CTB][Moench][Mythen3]
-     * [Gotthard2] only in continuous mode */
-    int64_t getNumberOfFramesFromStart() const;
-
-    /** [Jungfrau][CTB][Moench][Mythen3] Get time from detector start
-     * [Gotthard2] only in continuous mode */
-    int64_t getActualTime() const;
-
-    /** [Jungfrau][CTB][Moench][Mythen3] Get timestamp at a frame start
-     * [Gotthard2] only in continuous mode */
-    int64_t getMeasurementTime() const;
-
-    /**
-     * Write in a register. For Advanced users
-     * @param addr address of register
-     * @param val value to write into register
-     * @returns value read after writing
-     */
-    uint32_t writeRegister(uint32_t addr, uint32_t val);
-
-    /**
-     * Read from a register. For Advanced users
-     * @param addr address of register
-     * @returns value read from register
-     */
-    uint32_t readRegister(uint32_t addr);
-
-    /**
-     * Set bit in a register. For Advanced users
-     * @param addr address of register
-     * @param n nth bit
-     * @returns value read from register
-     */
-    uint32_t setBit(uint32_t addr, int n);
-
-    /**
-     * Clear bit in a register. For Advanced users
-     * @param addr address of register
-     * @param n nth bit
-     * @returns value read from register
-     */
-    uint32_t clearBit(uint32_t addr, int n);
-
-    void test();
-
-    int getReceiverProgress() const;
-
-    /** update receiver stremaing ip from shm to receiver
-     * if empty, use rx_hostname ip
-     */
-    void updateReceiverStreamingIP();
-
-    /** empty vector deletes entire additional json header */
+    std::map<std::string, std::string> getAdditionalJsonHeader();
     void setAdditionalJsonHeader(
         const std::map<std::string, std::string> &jsonHeader);
-    std::map<std::string, std::string> getAdditionalJsonHeader();
-
-    /**
-     * Sets the value for the additional json header parameter key if found,
-     * else append it. If value empty, then deletes parameter */
+    std::string getAdditionalJsonParameter(const std::string &key);
     void setAdditionalJsonParameter(const std::string &key,
                                     const std::string &value);
-    std::string getAdditionalJsonParameter(const std::string &key);
 
-    /** [Gotthard][Jungfrau][CTB][Moench] */
-    void executeFirmwareTest();
-
-    /** [Gotthard][Jungfrau][CTB][Moench] */
-    void executeBusTest();
-
-    /**
-     * Set ADC invert register (CTB, Moench, Jungfrau)
-     * @param value ADC invert value
-     * @param detPos -1 for all detectors in  list or specific detector position
-     */
-    void setADCInvert(uint32_t value);
-
-    /**
-     * Get ADC invert register (CTB, Moench, Jungfrau)
-     * @param detPos -1 for all detectors in  list or specific detector position
-     * @returns ADC invert value
-     */
-    uint32_t getADCInvert();
-
-    /**
-     * Write to ADC register (Gotthard, Jungfrau, ChipTestBoard). For expert
-     * users
-     * @param addr address of adc register
-     * @param val value
-     */
-    void writeAdcRegister(uint32_t addr, uint32_t val);
-
-    /**
-     * Set storage cell that stores first acquisition of the series (Jungfrau)
-     * @param value storage cell index. Value can be 0 to 15. (-1 gets)
-     * @returns the storage cell that stores the first acquisition of the series
-     */
-
-    /**
-     * [Jungfau][Ctb] Programs FPGA with raw file from pof file
-     * [Mythen3][Gotthard2] Programs FPGA with raw file from rbf file
-     * @param buffer programming file in memory
-     */
+    /**************************************************
+     *                                                *
+     *    Advanced                                    *
+     *                                                *
+     * ************************************************/
     void programFPGA(std::vector<char> buffer);
-
-    /** [Jungfau][Ctb] */
-    void programFPGAviaBlackfin(std::vector<char> buffer);
-
-    /** [Mythen3][Gotthard2] */
-    void programFPGAviaNios(std::vector<char> buffer);
-    /**
-     * Resets FPGA (Jungfrau)
-     */
     void resetFPGA();
-
-    /**
-     * Copies detector server from tftp and changes respawn server (Not Eiger)
-     * @param fname name of detector server binary
-     * @param hostname name of pc to tftp from
-     */
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname);
-
-    /**
-     * [Jungfrau][Ctb][Gotthard][Mythen3][Gotthard2]
-     * Reboot detector controller (blackfin/ powerpc)
-     */
     void rebootController();
+    uint32_t readRegister(uint32_t addr);
+    uint32_t writeRegister(uint32_t addr, uint32_t val);
+    uint32_t setBit(uint32_t addr, int n);
+    uint32_t clearBit(uint32_t addr, int n);
+    void executeFirmwareTest();
+    void executeBusTest();
+    void writeAdcRegister(uint32_t addr, uint32_t val);
+    uint32_t getADCInvert();
+    void setADCInvert(uint32_t value);
 
-    /**
-     * Get trimbit filename with path for settings and energy
-     *
-     */
-    std::string getTrimbitFilename(detectorSettings settings, int e_eV);
-
-    /**
-     * Configure Module (Eiger)
-     * Called for loading trimbits and settings settings to the detector
-     * @param module module to be set - must contain correct module number and
-     * also channel and chip registers
-     * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
-     * \sa ::sls_detector_module
-     */
-    void setModule(sls_detector_module &module, bool trimbits = true);
-
-    /**
-     * Get module structure from detector (all detectors)
-     * @returns pointer to module structure (which has been created and must
-     * then be deleted)
-     */
-    sls_detector_module getModule();
-
-    /**
-     * Update rate correction according to dynamic range (Eiger)
-     * If rate correction enabled and dr is 8 or 16, it will throw
-     * Otherwise update ratecorrection if enabled
-     */
-    void updateRateCorrection();
-
-    /**
-     * Exits the receiver TCP server
-     */
-    void exitReceiver();
-
-    /**
-     * Gets the current frame index of receiver
-     * @returns current frame index of receiver
-     */
+    /**************************************************
+     *                                                *
+     *    Insignificant                               *
+     *                                                *
+     * ************************************************/
+    int getControlPort() const;
+    int setControlPort(int port_number);
+    int getStopPort() const;
+    int setStopPort(int port_number);
+    bool getLockDetector();
+    void setLockDetector(bool lock);
+    sls::IpAddr getLastClientIP();
+    std::string execCommand(const std::string &cmd);
+    int64_t getNumberOfFramesFromStart() const;
+    int64_t getActualTime() const;
+    int64_t getMeasurementTime() const;
     uint64_t getReceiverCurrentFrameIndex() const;
-
-    /**
-     * If data streaming in receiver is enabled,
-     * restream the stop dummy packet from receiver
-     * Used usually for Moench,
-     * in case it is lost in network due to high data rate
-     */
-    void restreamStopFromReceiver();
 
   private:
     /**
@@ -747,14 +530,7 @@ class Module : public virtual slsDetectorDefs {
     template <typename Ret, typename Arg>
     Ret sendToDetector(int fnum, const Arg &args);
 
-    /**
-     * Send function parameters to detector (stop server)
-     * @param fnum function enum
-     * @param args argument pointer
-     * @param args_size size of argument
-     * @param retval return pointers
-     * @param retval_size size of return value
-     */
+    /** Send function parameters to detector (stop server) */
     void sendToDetectorStop(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size);
 
@@ -790,14 +566,7 @@ class Module : public virtual slsDetectorDefs {
     template <typename Ret, typename Arg>
     Ret sendToDetectorStop(int fnum, const Arg &args);
 
-    /**
-     * Send function parameters to receiver
-     * @param fnum function enum
-     * @param args argument pointer
-     * @param args_size size of argument
-     * @param retval return pointers
-     * @param retval_size size of return value
-     */
+    /** Send function parameters to receiver */
     void sendToReceiver(int fnum, const void *args, size_t args_size,
                         void *retval, size_t retval_size);
 
@@ -846,31 +615,16 @@ class Module : public virtual slsDetectorDefs {
 
     void checkDetectorVersionCompatibility();
     void checkReceiverVersionCompatibility();
-
-    /**
-     * Send a sls_detector_module structure over socket
-     * @param myMod module structure to send
-     * @returns number of bytes sent to the detector
-     */
+    void restreamStopFromReceiver();
+    void setModule(sls_detector_module &module, bool trimbits = true);
     int sendModule(sls_detector_module *myMod, sls::ClientSocket &client);
+    void updateReceiverStreamingIP();
 
-    /**
-     * Receive a sls_detector_module structure over socket
-     * @param myMod module structure to receive
-     * @returns number of bytes received from the detector
-     */
-    int receiveModule(sls_detector_module *myMod, sls::ClientSocket &client);
-
-    /**
-     * Get MAC from the receiver using udpip and
-     * set up UDP connection in detector
-     */
-    void setUDPConnection();
-
-    /*
-     * Template function to do linear interpolation between two points (Eiger
-     * only)
-     */
+    void updateRateCorrection();
+    void setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
+                                       bool trimbits = true);
+    /** Template function to do linear interpolation between two points (Eiger
+     only) */
     template <typename E, typename V>
     V linearInterpolation(const E x, const E x1, const E x2, const V y1,
                           const V y2) {
@@ -896,22 +650,13 @@ class Module : public virtual slsDetectorDefs {
                                         const int energy, const int e1,
                                         const int e2, bool trimbits = true);
 
-    /**
-     * reads a trim/settings file
-     * @param fname name of the file to be read
-     * @param myMod pointer to the module structure which has to be set. <BR>
-     * If it is NULL a new module structure will be created
-     * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
-     * @returns the pointer to myMod or NULL if reading the file failed
-     */
-
+    std::string getTrimbitFilename(detectorSettings settings, int e_eV);
     sls_detector_module readSettingsFile(const std::string &fname,
                                          bool trimbits = true);
+    void programFPGAviaBlackfin(std::vector<char> buffer);
+    void programFPGAviaNios(std::vector<char> buffer);
 
-    /** Module Id or position in the detectors list */
     const int moduleId;
-
-    /** Shared Memory object */
     mutable sls::SharedMemory<sharedSlsDetector> shm{0, 0};
 };
 

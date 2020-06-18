@@ -184,8 +184,6 @@ int setParallelMode(int mode);
 int getParallelMode();
 int setOverFlowMode(int mode);
 int getOverFlowMode();
-void setStoreInRamMode(int mode);
-int getStoreInRamMode();
 #endif
 #ifdef CHIPTESTBOARDD
 int setReadoutMode(enum readoutMode mode);
@@ -276,7 +274,6 @@ int64_t getMeasurementTime();
 // parameters - module, settings
 #if (!defined(CHIPTESTBOARDD)) && (!defined(MOENCHD)) && (!defined(GOTTHARD2D))
 int setModule(sls_detector_module myMod, char *mess);
-int getModule(sls_detector_module *myMod);
 #endif
 #ifdef MYTHEN3D
 int setTrimbits(int *trimbits);

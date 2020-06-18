@@ -1064,14 +1064,6 @@ void Detector::setOverFlowMode(bool value, Positions pos) {
     pimpl->Parallel(&Module::setOverFlowMode, pos, value);
 }
 
-Result<bool> Detector::getStoreInRamMode(Positions pos) const {
-    return pimpl->Parallel(&Module::getStoreInRamMode, pos);
-}
-
-void Detector::setStoreInRamMode(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setStoreInRamMode, pos, value);
-}
-
 Result<bool> Detector::getBottom(Positions pos) const {
     return pimpl->Parallel(&Module::getFlippedDataX, pos);
 }
@@ -1873,19 +1865,20 @@ void Detector::setStopPort(int value, Positions pos) {
 }
 
 Result<bool> Detector::getDetectorLock(Positions pos) const {
-    return pimpl->Parallel(&Module::lockServer, pos, -1);
+    return pimpl->Parallel(&Module::getLockDetector, pos);
 }
 
 void Detector::setDetectorLock(bool lock, Positions pos) {
-    pimpl->Parallel(&Module::lockServer, pos, static_cast<int>(lock));
+    pimpl->Parallel(&Module::setLockDetector, pos, lock);
 }
 
 Result<sls::IpAddr> Detector::getLastClientIP(Positions pos) const {
     return pimpl->Parallel(&Module::getLastClientIP, pos);
 }
 
-void Detector::executeCommand(const std::string &value, Positions pos) {
-    pimpl->Parallel(&Module::execCommand, pos, value);
+Result<std::string> Detector::executeCommand(const std::string &value,
+                                             Positions pos) {
+    return pimpl->Parallel(&Module::execCommand, pos, value);
 }
 
 Result<int64_t> Detector::getNumberOfFramesFromStart(Positions pos) const {

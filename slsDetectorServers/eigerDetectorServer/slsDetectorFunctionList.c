@@ -60,7 +60,6 @@ int eiger_iodelay = 0;
 int eiger_photonenergy = 0;
 int eiger_dynamicrange = 0;
 int eiger_parallelmode = 0;
-int eiger_storeinmem = 0;
 int eiger_overflow32 = 0;
 int eiger_readoutspeed = 0;
 int eiger_triggermode = 0;
@@ -687,8 +686,7 @@ void setupDetector() {
     setDynamicRange(DEFAULT_DYNAMIC_RANGE);
     eiger_photonenergy = DEFAULT_PHOTON_ENERGY;
     setParallelMode(DEFAULT_PARALLEL_MODE);
-    setOverFlowMode(DEFAULT_READOUT_STOREINRAM_MODE);
-    setStoreInRamMode(DEFAULT_READOUT_OVERFLOW32_MODE);
+    setOverFlowMode(DEFAULT_READOUT_OVERFLOW32_MODE);
     setClockDivider(RUN_CLK, DEFAULT_CLK_SPEED); // clk_devider,half speed
     setIODelay(DEFAULT_IO_DELAY);
     setTiming(DEFAULT_TIMING_MODE);
@@ -804,14 +802,6 @@ int setOverFlowMode(int mode) {
 }
 
 int getOverFlowMode() { return eiger_overflow32; }
-
-void setStoreInRamMode(int mode) {
-    mode = (mode == 0 ? 0 : 1);
-    LOG(logINFO, ("Setting Store in Ram mode to %d\n", mode));
-    eiger_storeinmem = mode;
-}
-
-int getStoreInRamMode() { return eiger_storeinmem; }
 
 /* parameters - timer */
 
@@ -1115,37 +1105,6 @@ int setModule(sls_detector_module myMod, char *mess) {
             }
         }
     }
-    return OK;
-}
-
-int getModule(sls_detector_module *myMod) {
-
-#ifndef VIRTUAL
-    // trimbits
-    unsigned int *tt;
-    tt = Feb_Control_GetTrimbits();
-
-    // exclude gap pixels
-    int ip = 0, ich = 0;
-    for (int iy = 0; iy < 256; ++iy) {
-        for (int ichip = 0; ichip < 4; ++ichip) {
-            for (int ix = 0; ix < 256; ++iy) {
-                myMod->chanregs[ich++] = tt[ip++];
-            }
-            if (ichip < 3) {
-                ip++;
-                ip++;
-            }
-        }
-    }
-#endif
-
-    // copy local module to myMod
-    if (detectorModules) {
-        if (copyModule(myMod, detectorModules) == FAIL)
-            return FAIL;
-    } else
-        return FAIL;
     return OK;
 }
 
@@ -2057,10 +2016,8 @@ int startStateMachine() {
     LOG(logINFO, ("Going to start acquisition\n"));
     Feb_Control_StartAcquisition();
 
-    if (!eiger_storeinmem) {
-        LOG(logINFO, ("requesting images right after start\n"));
-        ret = startReadOut();
-    }
+    LOG(logINFO, ("requesting images right after start\n"));
+    ret = startReadOut();
 
     // wait for acquisition start
     if (ret == OK) {
@@ -2381,16 +2338,6 @@ void readFrame(int *ret, char *mess) {
         return;
     }
     LOG(logINFOGREEN, ("Acquisition finished\n"));
-
-    if (eiger_storeinmem) {
-        LOG(logINFO, ("requesting images after storing in memory\n"));
-        if (startReadOut() == FAIL) {
-            strcpy(mess, "Could not execute read image requests\n");
-            LOG(logERROR, (mess));
-            *ret = (int)FAIL;
-            return;
-        }
-    }
 
     // wait for detector to send
     int isTransmitting = 1;

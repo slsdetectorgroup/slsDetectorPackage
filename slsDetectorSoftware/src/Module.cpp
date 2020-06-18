@@ -398,12 +398,21 @@ void Module::stopAcquisition() {
     }
 }
 
+void Module::startAndReadAll() {
+    shm()->stoppedFlag = false;
+    sendToDetector(F_START_AND_READ_ALL);
+}
+
 slsDetectorDefs::runStatus Module::getRunStatus() const {
     return sendToDetectorStop<runStatus>(F_GET_RUN_STATUS);
 }
 
 slsDetectorDefs::runStatus Module::getReceiverStatus() const {
     return sendToReceiver<runStatus>(F_GET_RECEIVER_STATUS);
+}
+
+int Module::getReceiverProgress() const {
+    return sendToReceiver<int>(F_GET_RECEIVER_PROGRESS);
 }
 
 int64_t Module::getFramesCaughtByReceiver() const {
@@ -1108,16 +1117,6 @@ bool Module::getOverFlowMode() {
 void Module::setOverFlowMode(const bool enable) {
     int arg = static_cast<int>(enable);
     sendToDetector(F_SET_OVERFLOW_MODE, arg, nullptr);
-}
-
-bool Module::getStoreInRamMode() {
-    auto r = sendToDetector<int>(F_GET_STOREINRAM_MODE);
-    return static_cast<bool>(r);
-}
-
-void Module::setStoreInRamMode(const bool enable) {
-    int arg = static_cast<int>(enable);
-    sendToDetector(F_SET_STOREINRAM_MODE, arg, nullptr);
 }
 
 bool Module::getFlippedDataX() {
@@ -1864,6 +1863,248 @@ void Module::startPattern() { sendToDetector(F_START_PATTERN); }
 
 // Moench
 
+std::map<std::string, std::string> Module::getAdditionalJsonHeader() {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters "
+                           "(zmq json header)");
+    }
+    int fnum = F_GET_ADDITIONAL_JSON_HEADER;
+    int ret = FAIL;
+    int size = 0;
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Receiver " + std::to_string(moduleId) +
+                           " returned error: " + std::string(mess));
+    } else {
+        client.Receive(&size, sizeof(size));
+        std::map<std::string, std::string> retval;
+        if (size > 0) {
+            char retvals[size * 2][SHORT_STR_LENGTH];
+            memset(retvals, 0, sizeof(retvals));
+            client.Receive(retvals, sizeof(retvals));
+            for (int i = 0; i < size; ++i) {
+                retval[retvals[2 * i]] = retvals[2 * i + 1];
+            }
+        }
+        LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
+        return retval;
+    }
+}
+
+void Module::setAdditionalJsonHeader(
+    const std::map<std::string, std::string> &jsonHeader) {
+    if (!shm()->useReceiverFlag) {
+        throw RuntimeError("Set rx_hostname first to use receiver parameters "
+                           "(zmq json header)");
+    }
+    for (auto &it : jsonHeader) {
+        if (it.first.empty() || it.first.length() > SHORT_STR_LENGTH ||
+            it.second.length() > SHORT_STR_LENGTH) {
+            throw RuntimeError(
+                it.first + " or " + it.second +
+                " pair has invalid size. "
+                "Key cannot be empty. Both can have max 20 characters");
+        }
+    }
+    const int size = jsonHeader.size();
+    int fnum = F_SET_ADDITIONAL_JSON_HEADER;
+    int ret = FAIL;
+    LOG(logDEBUG) << "Sending to receiver additional json header "
+                  << ToString(jsonHeader);
+    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(&size, sizeof(size));
+    if (size > 0) {
+        char args[size * 2][SHORT_STR_LENGTH];
+        memset(args, 0, sizeof(args));
+        int iarg = 0;
+        for (auto &it : jsonHeader) {
+            sls::strcpy_safe(args[iarg], it.first.c_str());
+            sls::strcpy_safe(args[iarg + 1], it.second.c_str());
+            iarg += 2;
+        }
+        client.Send(args, sizeof(args));
+    }
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Receiver " + std::to_string(moduleId) +
+                           " returned error: " + std::string(mess));
+    }
+}
+
+std::string Module::getAdditionalJsonParameter(const std::string &key) {
+    char arg[SHORT_STR_LENGTH]{};
+    sls::strcpy_safe(arg, key.c_str());
+    char retval[SHORT_STR_LENGTH]{};
+    sendToReceiver(F_GET_ADDITIONAL_JSON_PARAMETER, arg, retval);
+    return retval;
+}
+
+void Module::setAdditionalJsonParameter(const std::string &key,
+                                        const std::string &value) {
+    if (key.empty() || key.length() > SHORT_STR_LENGTH ||
+        value.length() > SHORT_STR_LENGTH) {
+        throw RuntimeError(
+            key + " or " + value +
+            " pair has invalid size. "
+            "Key cannot be empty. Both can have max 2 characters");
+    }
+    char args[2][SHORT_STR_LENGTH]{};
+    sls::strcpy_safe(args[0], key.c_str());
+    sls::strcpy_safe(args[1], value.c_str());
+    sendToReceiver(F_SET_ADDITIONAL_JSON_PARAMETER, args, nullptr);
+}
+
+// Advanced
+
+void Module::programFPGA(std::vector<char> buffer) {
+    switch (shm()->myDetectorType) {
+    case JUNGFRAU:
+    case CHIPTESTBOARD:
+    case MOENCH:
+        programFPGAviaBlackfin(buffer);
+        break;
+    case MYTHEN3:
+    case GOTTHARD2:
+        programFPGAviaNios(buffer);
+        break;
+    default:
+        throw RuntimeError("Program FPGA is not implemented for this detector");
+    }
+}
+
+void Module::resetFPGA() { return sendToDetector(F_RESET_FPGA); }
+
+void Module::copyDetectorServer(const std::string &fname,
+                                const std::string &hostname) {
+    char args[2][MAX_STR_LENGTH]{};
+    sls::strcpy_safe(args[0], fname.c_str());
+    sls::strcpy_safe(args[1], hostname.c_str());
+    LOG(logINFO) << "Sending detector server " << args[0] << " from host "
+                 << args[1];
+    sendToDetector(F_COPY_DET_SERVER, args, nullptr);
+}
+
+void Module::rebootController() {
+    sendToDetector(F_REBOOT_CONTROLLER, nullptr, nullptr);
+    LOG(logINFO) << "Controller rebooted successfully!";
+}
+
+uint32_t Module::readRegister(uint32_t addr) {
+    return sendToDetectorStop<uint32_t>(F_READ_REGISTER, addr);
+}
+
+uint32_t Module::writeRegister(uint32_t addr, uint32_t val) {
+    uint32_t args[]{addr, val};
+    return sendToDetectorStop<uint32_t>(F_WRITE_REGISTER, args);
+}
+
+uint32_t Module::setBit(uint32_t addr, int n) {
+    if (n < 0 || n > 31) {
+        throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
+    } else {
+        uint32_t val = readRegister(addr);
+        return writeRegister(addr, val | 1 << n);
+    }
+}
+
+uint32_t Module::clearBit(uint32_t addr, int n) {
+    if (n < 0 || n > 31) {
+        throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
+    } else {
+        uint32_t val = readRegister(addr);
+        return writeRegister(addr, val & ~(1 << n));
+    }
+}
+
+void Module::executeFirmwareTest() { sendToDetector(F_SET_FIRMWARE_TEST); }
+
+void Module::executeBusTest() { sendToDetector(F_SET_BUS_TEST); }
+
+void Module::writeAdcRegister(uint32_t addr, uint32_t val) {
+    uint32_t args[]{addr, val};
+    sendToDetector(F_WRITE_ADC_REG, args, nullptr);
+}
+
+uint32_t Module::getADCInvert() {
+    return sendToDetector<uint32_t>(F_GET_ADC_INVERT);
+}
+
+void Module::setADCInvert(uint32_t value) {
+    sendToDetector(F_SET_ADC_INVERT, value, nullptr);
+}
+
+// Insignificant
+
+int Module::getControlPort() const { return shm()->controlPort; }
+
+int Module::setControlPort(int port_number) {
+    if (port_number >= 0 && port_number != shm()->controlPort) {
+        if (strlen(shm()->hostname) > 0) {
+            shm()->controlPort = sendToDetector<int>(F_SET_PORT, port_number);
+        } else {
+            shm()->controlPort = port_number;
+        }
+    }
+    return shm()->controlPort;
+}
+
+int Module::getStopPort() const { return shm()->stopPort; }
+
+int Module::setStopPort(int port_number) {
+    if (port_number >= 0 && port_number != shm()->stopPort) {
+        if (strlen(shm()->hostname) > 0) {
+            shm()->stopPort = sendToDetectorStop<int>(F_SET_PORT, port_number);
+        } else {
+            shm()->stopPort = port_number;
+        }
+    }
+    return shm()->stopPort;
+}
+
+bool Module::getLockDetector() {
+    int arg = -1;
+    return static_cast<bool>(sendToDetector<int>(F_LOCK_SERVER, arg));
+}
+
+void Module::setLockDetector(bool lock) {
+    sendToDetector<int>(F_LOCK_SERVER, static_cast<int>(lock));
+}
+
+sls::IpAddr Module::getLastClientIP() {
+    return sendToDetector<sls::IpAddr>(F_GET_LAST_CLIENT_IP);
+}
+
+std::string Module::execCommand(const std::string &cmd) {
+    char arg[MAX_STR_LENGTH]{};
+    char retval[MAX_STR_LENGTH]{};
+    sls::strcpy_safe(arg, cmd.c_str());
+    sendToDetector(F_EXEC_COMMAND, arg, retval);
+    return std::string(retval);
+}
+
+int64_t Module::getNumberOfFramesFromStart() const {
+    return sendToDetectorStop<int64_t>(F_GET_FRAMES_FROM_START);
+}
+
+int64_t Module::getActualTime() const {
+    return sendToDetectorStop<int64_t>(F_GET_ACTUAL_TIME);
+}
+
+int64_t Module::getMeasurementTime() const {
+    return sendToDetectorStop<int64_t>(F_GET_MEASUREMENT_TIME);
+}
+
+uint64_t Module::getReceiverCurrentFrameIndex() const {
+    return sendToReceiver<uint64_t>(F_GET_RECEIVER_FRAME_INDEX);
+}
+
 // private
 
 void Module::sendToDetector(int fnum, const void *args, size_t args_size,
@@ -2243,10 +2484,7 @@ void Module::initializeDetectorStructure(detectorType type) {
 }
 
 void Module::checkDetectorVersionCompatibility() {
-    int fnum = F_CHECK_VERSION;
     int64_t arg = 0;
-
-    // get api version number for detector server
     switch (shm()->myDetectorType) {
     case EIGER:
         arg = APIEIGER;
@@ -2273,19 +2511,18 @@ void Module::checkDetectorVersionCompatibility() {
         throw NotImplementedError(
             "Check version compatibility is not implemented for this detector");
     }
-    LOG(logDEBUG1) << "Checking version compatibility with detector with value "
-                   << std::hex << arg << std::dec;
-
-    sendToDetector(fnum, arg, nullptr);
-    sendToDetectorStop(fnum, arg, nullptr);
+    sendToDetector(F_CHECK_VERSION, arg, nullptr);
+    sendToDetectorStop(F_CHECK_VERSION, arg, nullptr);
 }
 
 void Module::checkReceiverVersionCompatibility() {
     // TODO! Verify that this works as intended when version don't match
     int64_t arg = APIRECEIVER;
-    LOG(logDEBUG1) << "Checking version compatibility with receiver with value "
-                   << std::hex << arg << std::dec;
     sendToReceiver(F_RECEIVER_CHECK_VERSION, arg, nullptr);
+}
+
+void Module::restreamStopFromReceiver() {
+    sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER, nullptr, nullptr);
 }
 
 int Module::sendModule(sls_detector_module *myMod, sls::ClientSocket &client) {
@@ -2339,158 +2576,43 @@ int Module::sendModule(sls_detector_module *myMod, sls::ClientSocket &client) {
     return ts;
 }
 
-int Module::receiveModule(sls_detector_module *myMod,
-                          sls::ClientSocket &client) {
-    int ts = 0;
-    ts += client.Receive(&(myMod->serialnumber), sizeof(myMod->serialnumber));
-    ts += client.Receive(&(myMod->nchan), sizeof(myMod->nchan));
-    ts += client.Receive(&(myMod->nchip), sizeof(myMod->nchip));
-    ts += client.Receive(&(myMod->ndac), sizeof(myMod->ndac));
-    ts += client.Receive(&(myMod->reg), sizeof(myMod->reg));
-    ts += client.Receive(&(myMod->iodelay), sizeof(myMod->iodelay));
-    ts += client.Receive(&(myMod->tau), sizeof(myMod->tau));
-    ts += client.Receive(&(myMod->eV), sizeof(myMod->eV));
-
-    ts += client.Receive(myMod->dacs, sizeof(int) * (myMod->ndac));
-    LOG(logDEBUG1) << "received dacs of size " << ts;
-    if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
-        ts += client.Receive(myMod->chanregs, sizeof(int) * (myMod->nchan));
-        LOG(logDEBUG1) << " nchan= " << myMod->nchan
-                       << " nchip= " << myMod->nchip
-                       << "received chans of size " << ts;
+void Module::setModule(sls_detector_module &module, bool trimbits) {
+    int fnum = F_SET_MODULE;
+    int ret = FAIL;
+    LOG(logDEBUG1) << "Setting module with trimbits:" << trimbits;
+    // to exclude trimbits
+    if (!trimbits) {
+        module.nchan = 0;
+        module.nchip = 0;
     }
-    LOG(logDEBUG1) << "received module of size " << ts << " register "
-                   << myMod->reg;
-    return ts;
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    sendModule(&module, client);
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH] = {0};
+        client.Receive(mess, sizeof(mess));
+        throw RuntimeError("Detector " + std::to_string(moduleId) +
+                           " returned error: " + mess);
+    }
 }
 
-int Module::setControlPort(int port_number) {
-    int retval = -1;
-    LOG(logDEBUG1) << "Setting control port to " << port_number;
-    if (port_number >= 0 && port_number != shm()->controlPort) {
-        if (strlen(shm()->hostname) > 0) {
-            sendToDetector(F_SET_PORT, port_number, retval);
-            shm()->controlPort = retval;
-            LOG(logDEBUG1) << "Control port: " << retval;
-        } else {
-            shm()->controlPort = port_number;
+void Module::updateReceiverStreamingIP() {
+    auto ip = getReceiverStreamingIP();
+    if (ip == 0) {
+        // Hostname could be ip try to decode otherwise look up the hostname
+        ip = sls::IpAddr{shm()->rxHostname};
+        if (ip == 0) {
+            ip = HostnameToIp(shm()->rxHostname);
         }
+        LOG(logINFO) << "Setting default receiver " << moduleId
+                     << " streaming zmq ip to " << ip;
     }
-    return shm()->controlPort;
+    setReceiverStreamingIP(ip);
 }
 
-int Module::setStopPort(int port_number) {
-    int retval = -1;
-    LOG(logDEBUG1) << "Setting stop port to " << port_number;
-    if (port_number >= 0 && port_number != shm()->stopPort) {
-        if (strlen(shm()->hostname) > 0) {
-            sendToDetectorStop(F_SET_PORT, port_number, retval);
-            shm()->stopPort = retval;
-            LOG(logDEBUG1) << "Stop port: " << retval;
-        } else {
-            shm()->stopPort = port_number;
-        }
-    }
-    return shm()->stopPort;
-}
-
-int Module::getControlPort() const { return shm()->controlPort; }
-
-int Module::getStopPort() const { return shm()->stopPort; }
-
-bool Module::lockServer(int lock) {
-    return sendToDetector<int>(F_LOCK_SERVER, lock) != 0;
-}
-
-sls::IpAddr Module::getLastClientIP() {
-    return sendToDetector<sls::IpAddr>(F_GET_LAST_CLIENT_IP);
-}
-
-void Module::exitServer() { sendToDetector(F_EXIT_SERVER); }
-
-void Module::execCommand(const std::string &cmd) {
-    char arg[MAX_STR_LENGTH]{};
-    char retval[MAX_STR_LENGTH]{};
-    sls::strcpy_safe(arg, cmd.c_str());
-    LOG(logDEBUG1) << "Sending command to detector " << arg;
-    sendToDetector(F_EXEC_COMMAND, arg, retval);
-    if (strlen(retval) != 0U) {
-        LOG(logINFO) << "Detector " << moduleId << " returned:\n" << retval;
-    }
-}
-
-std::vector<std::string> Module::getConfigFileCommands() {
-    std::vector<std::string> base{"hostname",    "port",       "stopport",
-                                  "settingsdir", "fpath",      "lock",
-                                  "zmqport",     "rx_zmqport", "zmqip",
-                                  "rx_zmqip",    "rx_tcpport"};
-
-    switch (shm()->myDetectorType) {
-    case GOTTHARD:
-        base.emplace_back("detectormac");
-        base.emplace_back("detectorip");
-        base.emplace_back("rx_udpport");
-        base.emplace_back("rx_udpip");
-        base.emplace_back("rx_udpmac");
-        base.emplace_back("extsig");
-        break;
-    case EIGER:
-        base.emplace_back("detectormac");
-        base.emplace_back("detectorip");
-        base.emplace_back("rx_udpport");
-        base.emplace_back("rx_udpport2");
-        base.emplace_back("rx_udpip");
-        base.emplace_back("rx_udpmac");
-        base.emplace_back("trimen");
-        base.emplace_back("iodelay");
-        base.emplace_back("tengiga");
-        break;
-    case JUNGFRAU:
-        base.emplace_back("detectormac");
-        base.emplace_back("detectormac2");
-        base.emplace_back("detectorip");
-        base.emplace_back("detectorip2");
-        base.emplace_back("rx_udpport");
-        base.emplace_back("rx_udpport2");
-        base.emplace_back("rx_udpip");
-        base.emplace_back("rx_udpip2");
-        base.emplace_back("rx_udpmac");
-        base.emplace_back("rx_udpmac2");
-        base.emplace_back("powerchip");
-        break;
-    case CHIPTESTBOARD:
-        base.emplace_back("detectormac");
-        base.emplace_back("detectorip");
-        base.emplace_back("rx_udpport");
-        base.emplace_back("rx_udpip");
-        base.emplace_back("rx_udpmac");
-        break;
-    case MOENCH:
-        base.emplace_back("detectormac");
-        base.emplace_back("detectorip");
-        base.emplace_back("rx_udpport");
-        base.emplace_back("rx_udpip");
-        base.emplace_back("rx_udpmac");
-        break;
-    default:
-        throw RuntimeError(
-            "Write configuration file called with unknown detector: " +
-            std::to_string(shm()->myDetectorType));
-    }
-
-    base.emplace_back("vhighvoltage");
-    base.emplace_back("rx_hostname");
-    base.emplace_back("r_readfreq");
-    base.emplace_back("rx_udpsocksize");
-    base.emplace_back("rx_realudpsocksize");
-
-    std::vector<std::string> commands;
-    for (const auto &cmd : base) {
-        std::ostringstream os;
-        os << moduleId << ':' << cmd;
-        commands.emplace_back(os.str());
-    }
-    return commands;
+void Module::updateRateCorrection() {
+    sendToDetector(F_UPDATE_RATE_CORRECTION);
 }
 
 void Module::setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
@@ -2552,6 +2674,76 @@ void Module::setThresholdEnergyAndSettings(int e_eV, detectorSettings isettings,
     }
 }
 
+sls_detector_module Module::interpolateTrim(sls_detector_module *a,
+                                            sls_detector_module *b,
+                                            const int energy, const int e1,
+                                            const int e2, bool trimbits) {
+
+    // only implemented for eiger currently (in terms of which dacs)
+    if (shm()->myDetectorType != EIGER) {
+        throw NotImplementedError(
+            "Interpolation of Trim values not implemented for this detector!");
+    }
+
+    sls_detector_module myMod{shm()->myDetectorType};
+    enum eiger_DacIndex {
+        E_SVP,
+        E_VTR,
+        E_VRF,
+        E_VRS,
+        E_SVN,
+        E_VTGSTV,
+        E_VCMP_LL,
+        E_VCMP_LR,
+        E_CAL,
+        E_VCMP_RL,
+        E_RXB_RB,
+        E_RXB_LB,
+        E_VCMP_RR,
+        E_VCP,
+        E_VCN,
+        E_VIS
+    };
+
+    // Copy other dacs
+    int dacs_to_copy[] = {E_SVP,    E_VTR,    E_SVN, E_VTGSTV,
+                          E_RXB_RB, E_RXB_LB, E_VCN, E_VIS};
+    int num_dacs_to_copy = sizeof(dacs_to_copy) / sizeof(dacs_to_copy[0]);
+    for (int i = 0; i < num_dacs_to_copy; ++i) {
+        if (a->dacs[dacs_to_copy[i]] != b->dacs[dacs_to_copy[i]]) {
+            throw RuntimeError("Interpolate module: dacs different");
+        }
+        myMod.dacs[dacs_to_copy[i]] = a->dacs[dacs_to_copy[i]];
+    }
+
+    // Copy irrelevant dacs (without failing): CAL
+    if (a->dacs[E_CAL] != b->dacs[E_CAL]) {
+        LOG(logWARNING) << "DAC CAL differs in both energies ("
+                        << a->dacs[E_CAL] << "," << b->dacs[E_CAL]
+                        << ")!\nTaking first: " << a->dacs[E_CAL];
+    }
+    myMod.dacs[E_CAL] = a->dacs[E_CAL];
+
+    // Interpolate vrf, vcmp, vcp
+    int dacs_to_interpolate[] = {E_VRF,     E_VCMP_LL, E_VCMP_LR, E_VCMP_RL,
+                                 E_VCMP_RR, E_VCP,     E_VRS};
+    int num_dacs_to_interpolate =
+        sizeof(dacs_to_interpolate) / sizeof(dacs_to_interpolate[0]);
+    for (int i = 0; i < num_dacs_to_interpolate; ++i) {
+        myMod.dacs[dacs_to_interpolate[i]] =
+            linearInterpolation(energy, e1, e2, a->dacs[dacs_to_interpolate[i]],
+                                b->dacs[dacs_to_interpolate[i]]);
+    }
+    // Interpolate all trimbits
+    if (trimbits) {
+        for (int i = 0; i < myMod.nchan; ++i) {
+            myMod.chanregs[i] = linearInterpolation(
+                energy, e1, e2, a->chanregs[i], b->chanregs[i]);
+        }
+    }
+    return myMod;
+}
+
 std::string Module::getTrimbitFilename(detectorSettings s, int e_eV) {
     std::string ssettings;
     switch (s) {
@@ -2582,220 +2774,66 @@ std::string Module::getTrimbitFilename(detectorSettings s, int e_eV) {
     return ostfn.str();
 }
 
-void Module::startAndReadAll() {
-    shm()->stoppedFlag = false;
-    sendToDetector(F_START_AND_READ_ALL);
-}
-
-void Module::startReadOut() { sendToDetector(F_START_READOUT); }
-
-void Module::readAll() { sendToDetector(F_READ_ALL); }
-
-int64_t Module::getNumberOfFramesFromStart() const {
-    int64_t retval = -1;
-    sendToDetectorStop(F_GET_FRAMES_FROM_START, nullptr, retval);
-    LOG(logDEBUG1) << "number of frames from start :" << retval;
-    return retval;
-}
-
-int64_t Module::getActualTime() const {
-    int64_t retval = -1;
-    sendToDetectorStop(F_GET_ACTUAL_TIME, nullptr, retval);
-    LOG(logDEBUG1) << "actual time :" << retval << "ns";
-    return retval;
-}
-
-int64_t Module::getMeasurementTime() const {
-    int64_t retval = -1;
-    sendToDetectorStop(F_GET_MEASUREMENT_TIME, nullptr, retval);
-    LOG(logDEBUG1) << "measurement time :" << retval << "ns";
-    return retval;
-}
-
-uint32_t Module::writeRegister(uint32_t addr, uint32_t val) {
-    uint32_t args[]{addr, val};
-    uint32_t retval = -1;
-    sendToDetectorStop(F_WRITE_REGISTER, args, retval);
-    return retval;
-}
-
-uint32_t Module::readRegister(uint32_t addr) {
-    uint32_t retval = -1;
-    sendToDetectorStop(F_READ_REGISTER, addr, retval);
-    return retval;
-}
-
-uint32_t Module::setBit(uint32_t addr, int n) {
-    if (n < 0 || n > 31) {
-        throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
+sls_detector_module Module::readSettingsFile(const std::string &fname,
+                                             bool trimbits) {
+    LOG(logDEBUG1) << "Read settings file " << fname;
+    sls_detector_module myMod(shm()->myDetectorType);
+    // open file
+    std::ifstream infile;
+    if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
+        infile.open(fname.c_str(), std::ifstream::binary);
     } else {
-        uint32_t val = readRegister(addr);
-        return writeRegister(addr, val | 1 << n);
+        infile.open(fname.c_str(), std::ios_base::in);
     }
-}
-
-uint32_t Module::clearBit(uint32_t addr, int n) {
-    if (n < 0 || n > 31) {
-        throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
-    } else {
-        uint32_t val = readRegister(addr);
-        return writeRegister(addr, val & ~(1 << n));
+    if (!infile.is_open()) {
+        throw RuntimeError("Could not open settings file: " + fname);
     }
-}
 
-void Module::updateReceiverStreamingIP() {
-    auto ip = getReceiverStreamingIP();
-    if (ip == 0) {
-        // Hostname could be ip try to decode otherwise look up the hostname
-        ip = sls::IpAddr{shm()->rxHostname};
-        if (ip == 0) {
-            ip = HostnameToIp(shm()->rxHostname);
+    // eiger
+    if (shm()->myDetectorType == EIGER) {
+        infile.read(reinterpret_cast<char *>(myMod.dacs),
+                    sizeof(int) * (myMod.ndac));
+        infile.read(reinterpret_cast<char *>(&myMod.iodelay),
+                    sizeof(myMod.iodelay));
+        infile.read(reinterpret_cast<char *>(&myMod.tau), sizeof(myMod.tau));
+        if (trimbits) {
+            infile.read(reinterpret_cast<char *>(myMod.chanregs),
+                        sizeof(int) * (myMod.nchan));
         }
-        LOG(logINFO) << "Setting default receiver " << moduleId
-                     << " streaming zmq ip to " << ip;
+        if (!infile) {
+            throw RuntimeError("readSettingsFile: Could not load all values "
+                               "for settings for " +
+                               fname);
+        }
+        for (int i = 0; i < myMod.ndac; ++i) {
+            LOG(logDEBUG1) << "dac " << i << ":" << myMod.dacs[i];
+        }
+        LOG(logDEBUG1) << "iodelay:" << myMod.iodelay;
+        LOG(logDEBUG1) << "tau:" << myMod.tau;
     }
-    setReceiverStreamingIP(ip);
-}
 
-void Module::setAdditionalJsonHeader(
-    const std::map<std::string, std::string> &jsonHeader) {
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters "
-                           "(zmq json header)");
-    }
-    for (auto &it : jsonHeader) {
-        if (it.first.empty() || it.first.length() > SHORT_STR_LENGTH ||
-            it.second.length() > SHORT_STR_LENGTH) {
-            throw RuntimeError(
-                it.first + " or " + it.second +
-                " pair has invalid size. "
-                "Key cannot be empty. Both can have max 20 characters");
+    // mythen3 (dacs, trimbits)
+    else if (shm()->myDetectorType == MYTHEN3) {
+        infile.read(reinterpret_cast<char *>(myMod.dacs),
+                    sizeof(int) * (myMod.ndac));
+        infile.read(reinterpret_cast<char *>(myMod.chanregs),
+                    sizeof(int) * (myMod.nchan));
+
+        if (!infile) {
+            throw RuntimeError("readSettingsFile: Could not load all values "
+                               "for settings for " +
+                               fname);
+        }
+        for (int i = 0; i < myMod.ndac; ++i) {
+            LOG(logDEBUG1) << "dac " << i << ":" << myMod.dacs[i];
         }
     }
-    const int size = jsonHeader.size();
-    int fnum = F_SET_ADDITIONAL_JSON_HEADER;
-    int ret = FAIL;
-    LOG(logDEBUG) << "Sending to receiver additional json header "
-                  << ToString(jsonHeader);
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Send(&size, sizeof(size));
-    if (size > 0) {
-        char args[size * 2][SHORT_STR_LENGTH];
-        memset(args, 0, sizeof(args));
-        int iarg = 0;
-        for (auto &it : jsonHeader) {
-            sls::strcpy_safe(args[iarg], it.first.c_str());
-            sls::strcpy_safe(args[iarg + 1], it.second.c_str());
-            iarg += 2;
-        }
-        client.Send(args, sizeof(args));
+
+    else {
+        throw RuntimeError("Not implemented for this detector");
     }
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
-        throw RuntimeError("Receiver " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
-    }
-}
-
-std::map<std::string, std::string> Module::getAdditionalJsonHeader() {
-    if (!shm()->useReceiverFlag) {
-        throw RuntimeError("Set rx_hostname first to use receiver parameters "
-                           "(zmq json header)");
-    }
-    int fnum = F_GET_ADDITIONAL_JSON_HEADER;
-    int ret = FAIL;
-    int size = 0;
-    auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
-        throw RuntimeError("Receiver " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
-    } else {
-        client.Receive(&size, sizeof(size));
-        std::map<std::string, std::string> retval;
-        if (size > 0) {
-            char retvals[size * 2][SHORT_STR_LENGTH];
-            memset(retvals, 0, sizeof(retvals));
-            client.Receive(retvals, sizeof(retvals));
-            for (int i = 0; i < size; ++i) {
-                retval[retvals[2 * i]] = retvals[2 * i + 1];
-            }
-        }
-        LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
-        return retval;
-    }
-}
-
-void Module::setAdditionalJsonParameter(const std::string &key,
-                                        const std::string &value) {
-    if (key.empty() || key.length() > SHORT_STR_LENGTH ||
-        value.length() > SHORT_STR_LENGTH) {
-        throw RuntimeError(
-            key + " or " + value +
-            " pair has invalid size. "
-            "Key cannot be empty. Both can have max 2 characters");
-    }
-    char args[2][SHORT_STR_LENGTH]{};
-    sls::strcpy_safe(args[0], key.c_str());
-    sls::strcpy_safe(args[1], value.c_str());
-    sendToReceiver(F_SET_ADDITIONAL_JSON_PARAMETER, args, nullptr);
-}
-
-std::string Module::getAdditionalJsonParameter(const std::string &key) {
-    char arg[SHORT_STR_LENGTH]{};
-    sls::strcpy_safe(arg, key.c_str());
-    char retval[SHORT_STR_LENGTH]{};
-    sendToReceiver(F_GET_ADDITIONAL_JSON_PARAMETER, arg, retval);
-    return retval;
-}
-
-void Module::executeFirmwareTest() {
-    LOG(logDEBUG1) << "Executing firmware test";
-    sendToDetector(F_SET_FIRMWARE_TEST);
-}
-
-void Module::executeBusTest() {
-    LOG(logDEBUG1) << "Executing bus test";
-    sendToDetector(F_SET_BUS_TEST);
-}
-
-void Module::setADCInvert(uint32_t value) {
-    LOG(logDEBUG1) << "Setting ADC Invert to 0x" << std::hex << value
-                   << std::dec;
-    sendToDetector(F_SET_ADC_INVERT, value, nullptr);
-}
-
-uint32_t Module::getADCInvert() {
-    return sendToDetector<uint32_t>(F_GET_ADC_INVERT);
-}
-
-void Module::writeAdcRegister(uint32_t addr, uint32_t val) {
-    uint32_t args[]{addr, val};
-    LOG(logDEBUG1) << "Writing to ADC register 0x" << std::hex << addr
-                   << "data: 0x" << std::hex << val << std::dec;
-    sendToDetector(F_WRITE_ADC_REG, args, nullptr);
-}
-
-void Module::programFPGA(std::vector<char> buffer) {
-    switch (shm()->myDetectorType) {
-    case JUNGFRAU:
-    case CHIPTESTBOARD:
-    case MOENCH:
-        programFPGAviaBlackfin(buffer);
-        break;
-    case MYTHEN3:
-    case GOTTHARD2:
-        programFPGAviaNios(buffer);
-        break;
-    default:
-        throw RuntimeError("Program FPGA is not implemented for this detector");
-    }
+    LOG(logINFO) << "Settings file loaded: " << fname.c_str();
+    return myMod;
 }
 
 void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
@@ -2914,211 +2952,6 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
     }
     LOG(logINFO) << "FPGA programmed successfully";
     rebootController();
-}
-
-void Module::resetFPGA() { return sendToDetector(F_RESET_FPGA); }
-
-void Module::copyDetectorServer(const std::string &fname,
-                                const std::string &hostname) {
-    char args[2][MAX_STR_LENGTH]{};
-    sls::strcpy_safe(args[0], fname.c_str());
-    sls::strcpy_safe(args[1], hostname.c_str());
-    LOG(logINFO) << "Sending detector server " << args[0] << " from host "
-                 << args[1];
-    sendToDetector(F_COPY_DET_SERVER, args, nullptr);
-}
-
-void Module::rebootController() {
-    LOG(logDEBUG1) << "Rebooting Controller";
-    sendToDetector(F_REBOOT_CONTROLLER, nullptr, nullptr);
-    LOG(logINFO) << "Controller rebooted successfully!";
-}
-
-void Module::setModule(sls_detector_module &module, bool trimbits) {
-    int fnum = F_SET_MODULE;
-    int ret = FAIL;
-    LOG(logDEBUG1) << "Setting module with trimbits:" << trimbits;
-    // to exclude trimbits
-    if (!trimbits) {
-        module.nchan = 0;
-        module.nchip = 0;
-    }
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
-    sendModule(&module, client);
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH] = {0};
-        client.Receive(mess, sizeof(mess));
-        throw RuntimeError("Detector " + std::to_string(moduleId) +
-                           " returned error: " + mess);
-    }
-}
-
-sls_detector_module Module::getModule() {
-    int fnum = F_GET_MODULE;
-    LOG(logDEBUG1) << "Getting module";
-    sls_detector_module myMod{shm()->myDetectorType};
-    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.sendCommandThenRead(fnum, nullptr, 0, nullptr, 0);
-    receiveModule(&myMod, client);
-    return myMod;
-}
-
-void Module::updateRateCorrection() {
-    sendToDetector(F_UPDATE_RATE_CORRECTION);
-}
-
-void Module::exitReceiver() {
-    LOG(logDEBUG1) << "Sending exit command to receiver server";
-    sendToReceiver(F_EXIT_RECEIVER, nullptr, nullptr);
-}
-
-uint64_t Module::getReceiverCurrentFrameIndex() const {
-    return sendToReceiver<uint64_t>(F_GET_RECEIVER_FRAME_INDEX);
-}
-
-int Module::getReceiverProgress() const {
-    return sendToReceiver<int>(F_GET_RECEIVER_PROGRESS);
-}
-
-void Module::restreamStopFromReceiver() {
-    LOG(logDEBUG1) << "Restream stop dummy from Receiver via zmq";
-    if (shm()->useReceiverFlag) {
-        sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER, nullptr, nullptr);
-    }
-}
-
-sls_detector_module Module::interpolateTrim(sls_detector_module *a,
-                                            sls_detector_module *b,
-                                            const int energy, const int e1,
-                                            const int e2, bool trimbits) {
-
-    // only implemented for eiger currently (in terms of which dacs)
-    if (shm()->myDetectorType != EIGER) {
-        throw NotImplementedError(
-            "Interpolation of Trim values not implemented for this detector!");
-    }
-
-    sls_detector_module myMod{shm()->myDetectorType};
-    enum eiger_DacIndex {
-        E_SVP,
-        E_VTR,
-        E_VRF,
-        E_VRS,
-        E_SVN,
-        E_VTGSTV,
-        E_VCMP_LL,
-        E_VCMP_LR,
-        E_CAL,
-        E_VCMP_RL,
-        E_RXB_RB,
-        E_RXB_LB,
-        E_VCMP_RR,
-        E_VCP,
-        E_VCN,
-        E_VIS
-    };
-
-    // Copy other dacs
-    int dacs_to_copy[] = {E_SVP,    E_VTR,    E_SVN, E_VTGSTV,
-                          E_RXB_RB, E_RXB_LB, E_VCN, E_VIS};
-    int num_dacs_to_copy = sizeof(dacs_to_copy) / sizeof(dacs_to_copy[0]);
-    for (int i = 0; i < num_dacs_to_copy; ++i) {
-        if (a->dacs[dacs_to_copy[i]] != b->dacs[dacs_to_copy[i]]) {
-            throw RuntimeError("Interpolate module: dacs different");
-        }
-        myMod.dacs[dacs_to_copy[i]] = a->dacs[dacs_to_copy[i]];
-    }
-
-    // Copy irrelevant dacs (without failing): CAL
-    if (a->dacs[E_CAL] != b->dacs[E_CAL]) {
-        LOG(logWARNING) << "DAC CAL differs in both energies ("
-                        << a->dacs[E_CAL] << "," << b->dacs[E_CAL]
-                        << ")!\nTaking first: " << a->dacs[E_CAL];
-    }
-    myMod.dacs[E_CAL] = a->dacs[E_CAL];
-
-    // Interpolate vrf, vcmp, vcp
-    int dacs_to_interpolate[] = {E_VRF,     E_VCMP_LL, E_VCMP_LR, E_VCMP_RL,
-                                 E_VCMP_RR, E_VCP,     E_VRS};
-    int num_dacs_to_interpolate =
-        sizeof(dacs_to_interpolate) / sizeof(dacs_to_interpolate[0]);
-    for (int i = 0; i < num_dacs_to_interpolate; ++i) {
-        myMod.dacs[dacs_to_interpolate[i]] =
-            linearInterpolation(energy, e1, e2, a->dacs[dacs_to_interpolate[i]],
-                                b->dacs[dacs_to_interpolate[i]]);
-    }
-    // Interpolate all trimbits
-    if (trimbits) {
-        for (int i = 0; i < myMod.nchan; ++i) {
-            myMod.chanregs[i] = linearInterpolation(
-                energy, e1, e2, a->chanregs[i], b->chanregs[i]);
-        }
-    }
-    return myMod;
-}
-
-sls_detector_module Module::readSettingsFile(const std::string &fname,
-                                             bool trimbits) {
-    LOG(logDEBUG1) << "Read settings file " << fname;
-    sls_detector_module myMod(shm()->myDetectorType);
-    // open file
-    std::ifstream infile;
-    if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
-        infile.open(fname.c_str(), std::ifstream::binary);
-    } else {
-        infile.open(fname.c_str(), std::ios_base::in);
-    }
-    if (!infile.is_open()) {
-        throw RuntimeError("Could not open settings file: " + fname);
-    }
-
-    // eiger
-    if (shm()->myDetectorType == EIGER) {
-        infile.read(reinterpret_cast<char *>(myMod.dacs),
-                    sizeof(int) * (myMod.ndac));
-        infile.read(reinterpret_cast<char *>(&myMod.iodelay),
-                    sizeof(myMod.iodelay));
-        infile.read(reinterpret_cast<char *>(&myMod.tau), sizeof(myMod.tau));
-        if (trimbits) {
-            infile.read(reinterpret_cast<char *>(myMod.chanregs),
-                        sizeof(int) * (myMod.nchan));
-        }
-        if (!infile) {
-            throw RuntimeError("readSettingsFile: Could not load all values "
-                               "for settings for " +
-                               fname);
-        }
-        for (int i = 0; i < myMod.ndac; ++i) {
-            LOG(logDEBUG1) << "dac " << i << ":" << myMod.dacs[i];
-        }
-        LOG(logDEBUG1) << "iodelay:" << myMod.iodelay;
-        LOG(logDEBUG1) << "tau:" << myMod.tau;
-    }
-
-    // mythen3 (dacs, trimbits)
-    else if (shm()->myDetectorType == MYTHEN3) {
-        infile.read(reinterpret_cast<char *>(myMod.dacs),
-                    sizeof(int) * (myMod.ndac));
-        infile.read(reinterpret_cast<char *>(myMod.chanregs),
-                    sizeof(int) * (myMod.nchan));
-
-        if (!infile) {
-            throw RuntimeError("readSettingsFile: Could not load all values "
-                               "for settings for " +
-                               fname);
-        }
-        for (int i = 0; i < myMod.ndac; ++i) {
-            LOG(logDEBUG1) << "dac " << i << ":" << myMod.dacs[i];
-        }
-    }
-
-    else {
-        throw RuntimeError("Not implemented for this detector");
-    }
-    LOG(logINFO) << "Settings file loaded: " << fname.c_str();
-    return myMod;
 }
 
 } // namespace sls

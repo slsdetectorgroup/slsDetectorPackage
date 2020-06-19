@@ -39,6 +39,7 @@ if(SLS_DEVEL_HEADERS)
         include/StaticVector.h
         include/UdpRxSocket.h
         include/versionAPI.h
+        include/ZmqSocket.h
     )
 endif()
 
@@ -48,7 +49,7 @@ add_library(slsSupportLib SHARED
 )
 
 
-if(SLS_LTO_AVAILABLE)
+if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsSupportLib PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 

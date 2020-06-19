@@ -15,7 +15,7 @@ add_library(slsDetectorShared SHARED
 )
 
 
-if(SLS_LTO_AVAILABLE)
+if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsDetectorShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 

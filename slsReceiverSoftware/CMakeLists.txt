@@ -30,7 +30,7 @@ add_library(slsReceiverShared SHARED
 )
 
 
-if(SLS_LTO_AVAILABLE)
+if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsReceiverShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 

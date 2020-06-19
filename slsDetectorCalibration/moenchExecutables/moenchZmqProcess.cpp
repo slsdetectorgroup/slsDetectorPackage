@@ -245,7 +245,7 @@ int main(int argc, char *argv[]) {
 	  delete zmqsocket;
 	  return EXIT_FAILURE;
 	} else 
-	  printf("Zmq Client at %s\n", zmqsocket->GetZmqServerAddress());
+	  printf("Zmq Client at %s\n", zmqsocket->GetZmqServerAddress().c_str());
 	
 	// send socket
 	ZmqSocket* zmqsocket2 = 0;

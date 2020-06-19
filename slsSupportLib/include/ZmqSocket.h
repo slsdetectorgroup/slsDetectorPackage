@@ -16,8 +16,9 @@
 #define ROIVERBOSITY
 
 class zmq_msg_t;
+#include "container_utils.h"
 #include <map>
-
+#include <memory>
 /** zmq header structure */
 struct zmqHeader {
     /** true if incoming data, false if end of acquisition */
@@ -42,7 +43,7 @@ struct zmqHeader {
     /** progress in percentage */
     int progress{0};
     /** file name prefix */
-    std::string fname{""};
+    std::string fname;
     /** header from detector */
     uint64_t frameNumber{0};
     uint32_t expLength{0};
@@ -94,11 +95,6 @@ class ZmqSocket {
     ZmqSocket(const uint32_t portnumber, const char *ethip);
 
     /**
-     * Destructor
-     */
-    ~ZmqSocket() = default;
-
-    /**
      * Returns Port Number
      * @returns Port Number
      */
@@ -108,14 +104,7 @@ class ZmqSocket {
      * Returns Server Address
      * @returns Server Address
      */
-    char *GetZmqServerAddress() { return sockfd.serverAddress; }
-
-    /**
-     * Returns Socket Descriptor
-     * @reutns Socket descriptor
-     */
-
-    void *GetsocketDescriptor() { return sockfd.socketDescriptor; }
+    std::string GetZmqServerAddress() { return sockfd.serverAddress; }
 
     /**
      * Connect client socket to server socket
@@ -126,35 +115,7 @@ class ZmqSocket {
     /**
      * Unbinds the Socket
      */
-    void Disconnect() { sockfd.Disconnect(); };
-
-    /**
-     * Close Socket and destroy Context
-     */
-    void Close() { sockfd.Close(); };
-
-    /**
-     * Convert Hostname to Internet address info structure
-     * One must use freeaddrinfo(res) after using it
-     * @param hostname hostname
-     * @param res address of pointer to address info structure
-     * @return 1 for fail, 0 for success
-     */
-    // Do not make this static (for multi threading environment)
-    int ConvertHostnameToInternetAddress(const char *const hostname,
-                                         struct addrinfo **res);
-
-    /**
-     * Convert Internet Address structure pointer to ip string (char*)
-     * Clears the internet address structure as well
-     * @param res pointer to internet address structure
-     * @param ip pointer to char array to store result in
-     * @param ipsize size available in ip buffer
-     * @return 1 for fail, 0 for success
-     */
-    // Do not make this static (for multi threading environment)
-    int ConvertInternetAddresstoIpString(struct addrinfo *res, char *ip,
-                                         const int ipsize);
+    void Disconnect() { sockfd.Disconnect(); }
 
     /**
      * Send Message Header
@@ -224,7 +185,7 @@ class ZmqSocket {
     class mySocketDescriptors {
       public:
         /** Constructor */
-        mySocketDescriptors();
+        mySocketDescriptors(bool server);
         /** Destructor */
         ~mySocketDescriptors();
         /** Unbinds the Socket */
@@ -232,19 +193,21 @@ class ZmqSocket {
         /** Close Socket and destroy Context */
         void Close();
         /** true if server, else false */
-        bool server;
+        const bool server;
         /** Server Address */
-        char serverAddress[1000];
+        std::string serverAddress;
         /** Context Descriptor */
         void *contextDescriptor;
         /** Socket Descriptor */
         void *socketDescriptor;
     };
 
-  private:
     /** Port Number */
     uint32_t portno;
 
     /** Socket descriptor */
     mySocketDescriptors sockfd;
+
+    std::unique_ptr<char[]> header_buffer =
+        sls::make_unique<char[]>(MAX_STR_LENGTH);
 };

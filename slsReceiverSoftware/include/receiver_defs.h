@@ -21,7 +21,7 @@
 #define FILE_BUFFER_SIZE        		(16*1024*1024) //16mb
 
 //fifo
-#define FIFO_HEADER_NUMBYTES			4
+#define FIFO_HEADER_NUMBYTES			8
 
 
 //hdf5

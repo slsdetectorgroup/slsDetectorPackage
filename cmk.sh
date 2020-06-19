@@ -60,6 +60,7 @@ while getopts ":bchd:j:trge" opt ; do
 	b) 
 		echo "Building of CMake files Required"
 		REBUILD=1
+		CLEAN=1
 		;;
 	c) 
 		echo "Clean Required"
@@ -69,6 +70,7 @@ while getopts ":bchd:j:trge" opt ; do
 		echo "Building of CMake files with HDF5 option Required"
 		HDF5=1
 		REBUILD=1
+		CLEAN=1
 		;;
 	d) 
 		echo "New HDF5 directory: $OPTARG" 
@@ -82,16 +84,19 @@ while getopts ":bchd:j:trge" opt ; do
     	echo "Compiling Options: Text Client" 
 		TEXTCLIENT=1
 		REBUILD=1
+		CLEAN=1
 		;;      
 	r) 
 		echo "Compiling Options: Receiver" 
 		RECEIVER=1
 		REBUILD=1
+		CLEAN=1
 		;;      
 	g) 
 		echo "Compiling Options: GUI" 
 		GUI=1
 		REBUILD=1
+		CLEAN=1
 		;;  
 	e)
 		echo "Compiling Options: Debug" 

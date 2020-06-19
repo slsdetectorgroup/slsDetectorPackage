@@ -846,6 +846,7 @@ virtual int enableDataStreamingFromReceiver(int enable=-1)=0;
     case RUNNING:      return std::string("running");\
     case TRANSMITTING:      return std::string("data");	\
     case  RUN_FINISHED:      return std::string("finished");	\
+    case STOPPED:           return std::string("stopped");  \
     default:       return std::string("idle");		\
     }};
 

@@ -1112,8 +1112,7 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     if (sett == UNINITIALIZED) {
         return thisSettings;
     }
-    if (sett != GET_SETTINGS)
-        thisSettings = sett;
+    thisSettings = sett;
     LOG(logINFO, ("Settings: %d\n", thisSettings));
     return thisSettings;
 }
@@ -1355,7 +1354,7 @@ enum timingMode getTiming() {
         return GATED;
     default:
         LOG(logERROR, ("Unknown trigger mode found %d\n", eiger_triggermode));
-        return GET_TIMING_MODE;
+        return GET_FLAG;
     }
 }
 

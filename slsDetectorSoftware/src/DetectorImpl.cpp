@@ -975,19 +975,18 @@ int DetectorImpl::InsertGapPixels(char *image, char *&gpImage, bool quadEnable,
     return imagesize;
 }
 
-bool DetectorImpl::enableDataStreamingToClient(int enable) {
-    if (enable >= 0) {
-        // destroy data threads
-        if (enable == 0) {
-            createReceivingDataSockets(true);
-            // create data threads
-        } else {
-            if (createReceivingDataSockets() == FAIL) {
-                throw RuntimeError("Could not create data threads in client.");
-            }
+bool DetectorImpl::getDataStreamingToClient() { return client_downstream; }
+
+void DetectorImpl::setDataStreamingToClient(bool enable) {
+    // destroy data threads
+    if (!enable) {
+        createReceivingDataSockets(true);
+        // create data threads
+    } else {
+        if (createReceivingDataSockets() == FAIL) {
+            throw RuntimeError("Could not create data threads in client.");
         }
     }
-    return client_downstream;
 }
 
 void DetectorImpl::registerAcquisitionFinishedCallback(void (*func)(double, int,
@@ -1003,7 +1002,7 @@ void DetectorImpl::registerDataCallback(void (*userCallback)(detectorData *,
                                         void *pArg) {
     dataReady = userCallback;
     pCallbackArg = pArg;
-    enableDataStreamingToClient(dataReady == nullptr ? 0 : 1);
+    setDataStreamingToClient(dataReady == nullptr ? false : true);
 }
 
 int DetectorImpl::acquire() {

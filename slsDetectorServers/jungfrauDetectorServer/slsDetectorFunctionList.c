@@ -753,52 +753,49 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
         return thisSettings;
 
     // set settings
-    if (sett != GET_SETTINGS) {
-        switch (sett) {
-        case DYNAMICGAIN:
-            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-            LOG(logINFO, ("Set settings - Dyanmic Gain, DAQ Reg: 0x%x\n",
-                          bus_r(DAQ_REG)));
-            break;
-        case DYNAMICHG0:
-            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
-            LOG(logINFO, ("Set settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n",
-                          bus_r(DAQ_REG)));
-            break;
-        case FIXGAIN1:
-            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_1_VAL);
-            LOG(logINFO,
-                ("Set settings - Fix Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-            break;
-        case FIXGAIN2:
-            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_2_VAL);
-            LOG(logINFO,
-                ("Set settings - Fix Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
-            break;
-        case FORCESWITCHG1:
-            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_1_VAL);
-            LOG(logINFO, ("Set settings - Force Switch Gain 1, DAQ Reg: 0x%x\n",
-                          bus_r(DAQ_REG)));
-            break;
-        case FORCESWITCHG2:
-            bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
-            bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_2_VAL);
-            LOG(logINFO, ("Set settings - Force Switch Gain 2, DAQ Reg: 0x%x\n",
-                          bus_r(DAQ_REG)));
-            break;
-        default:
-            LOG(logERROR,
-                ("This settings is not defined for this detector %d\n",
-                 (int)sett));
-            return -1;
-        }
-
-        thisSettings = sett;
+    switch (sett) {
+    case DYNAMICGAIN:
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+        LOG(logINFO,
+            ("Set settings - Dyanmic Gain, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
+        break;
+    case DYNAMICHG0:
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_HIGHGAIN_VAL);
+        LOG(logINFO, ("Set settings - Dyanmic High Gain 0, DAQ Reg: 0x%x\n",
+                      bus_r(DAQ_REG)));
+        break;
+    case FIXGAIN1:
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_1_VAL);
+        LOG(logINFO,
+            ("Set settings - Fix Gain 1, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
+        break;
+    case FIXGAIN2:
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FIX_GAIN_STG_2_VAL);
+        LOG(logINFO,
+            ("Set settings - Fix Gain 2, DAQ Reg: 0x%x\n", bus_r(DAQ_REG)));
+        break;
+    case FORCESWITCHG1:
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_1_VAL);
+        LOG(logINFO, ("Set settings - Force Switch Gain 1, DAQ Reg: 0x%x\n",
+                      bus_r(DAQ_REG)));
+        break;
+    case FORCESWITCHG2:
+        bus_w(DAQ_REG, bus_r(DAQ_REG) & ~DAQ_SETTINGS_MSK);
+        bus_w(DAQ_REG, bus_r(DAQ_REG) | DAQ_FRCE_GAIN_STG_2_VAL);
+        LOG(logINFO, ("Set settings - Force Switch Gain 2, DAQ Reg: 0x%x\n",
+                      bus_r(DAQ_REG)));
+        break;
+    default:
+        LOG(logERROR,
+            ("This settings is not defined for this detector %d\n", (int)sett));
+        return -1;
     }
+
+    thisSettings = sett;
 
     return getSettings();
 }

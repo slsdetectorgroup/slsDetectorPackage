@@ -1044,34 +1044,31 @@ enum detectorSettings setSettings(enum detectorSettings sett) {
     // set settings
     uint32_t addr = ASIC_CONFIG_REG;
     uint32_t mask = ASIC_CONFIG_GAIN_MSK;
-    if (sett != GET_SETTINGS) {
-        switch (sett) {
-        case DYNAMICGAIN:
-            bus_w(addr, bus_r(addr) & ~mask);
-            bus_w(addr, bus_r(addr) | ASIC_CONFIG_DYNAMIC_GAIN_VAL);
-            LOG(logINFO, ("Set settings - Dyanmic Gain, val: 0x%x\n",
-                          bus_r(addr) & mask));
-            break;
-        case FIXGAIN1:
-            bus_w(addr, bus_r(addr) & ~mask);
-            bus_w(addr, bus_r(addr) | ASIC_CONFIG_FIX_GAIN_1_VAL);
-            LOG(logINFO,
-                ("Set settings - Fix Gain 1, val: 0x%x\n", bus_r(addr) & mask));
-            break;
-        case FIXGAIN2:
-            bus_w(addr, bus_r(addr) & ~mask);
-            bus_w(addr, bus_r(addr) | ASIC_CONFIG_FIX_GAIN_2_VAL);
-            LOG(logINFO,
-                ("Set settings - Fix Gain 2, val: 0x%x\n", bus_r(addr) & mask));
-            break;
-        default:
-            LOG(logERROR,
-                ("This settings is not defined for this detector %d\n",
-                 (int)sett));
-            return -1;
-        }
-        thisSettings = sett;
+    switch (sett) {
+    case DYNAMICGAIN:
+        bus_w(addr, bus_r(addr) & ~mask);
+        bus_w(addr, bus_r(addr) | ASIC_CONFIG_DYNAMIC_GAIN_VAL);
+        LOG(logINFO,
+            ("Set settings - Dyanmic Gain, val: 0x%x\n", bus_r(addr) & mask));
+        break;
+    case FIXGAIN1:
+        bus_w(addr, bus_r(addr) & ~mask);
+        bus_w(addr, bus_r(addr) | ASIC_CONFIG_FIX_GAIN_1_VAL);
+        LOG(logINFO,
+            ("Set settings - Fix Gain 1, val: 0x%x\n", bus_r(addr) & mask));
+        break;
+    case FIXGAIN2:
+        bus_w(addr, bus_r(addr) & ~mask);
+        bus_w(addr, bus_r(addr) | ASIC_CONFIG_FIX_GAIN_2_VAL);
+        LOG(logINFO,
+            ("Set settings - Fix Gain 2, val: 0x%x\n", bus_r(addr) & mask));
+        break;
+    default:
+        LOG(logERROR,
+            ("This settings is not defined for this detector %d\n", (int)sett));
+        return -1;
     }
+    thisSettings = sett;
 
     return getSettings();
 }

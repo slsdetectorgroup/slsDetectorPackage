@@ -89,7 +89,7 @@ std::string ToString(const slsDetectorDefs::patternParameters &r) {
         << "patwait1 0x" << r.patwait[1] << std::endl
         << "patwaittime1 " << std::dec << r.patwaittime[1] << std::hex
         << std::endl
-        << "patwait1 0x" << r.patwait[1] << std::endl
+        << "patwait2 0x" << r.patwait[1] << std::endl
         << "patwaittime2 " << std::dec << r.patwaittime[2] << std::hex
         << std::endl
         << ']';

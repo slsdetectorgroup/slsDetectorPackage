@@ -1855,8 +1855,7 @@ void Module::setPattern(const std::string &fname) {
         }
     }
     input_file.close();
-    std::cout << "sizeof pat:" << sizeof(pat) << std::endl;
-    sendToDetector<uint64_t>(F_SET_PATTERN, pat);
+    sendToDetector(F_SET_PATTERN, pat, nullptr);
 }
 
 uint64_t Module::getPatternIOControl() {

@@ -133,7 +133,6 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define VIO_MIN_MV          (1200) // for fpga to function
 
 /* Defines in the Firmware */
-#define MAX_PATTERN_LENGTH (0x2000)
 #define DIGITAL_IO_DELAY_MAXIMUM_PS                                            \
     ((OUTPUT_DELAY_0_OTPT_STTNG_MSK >> OUTPUT_DELAY_0_OTPT_STTNG_OFST) *       \
      OUTPUT_DELAY_0_OTPT_STTNG_STEPS)

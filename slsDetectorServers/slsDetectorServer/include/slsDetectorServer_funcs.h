@@ -222,3 +222,4 @@ int get_exptime_all_gates(int);
 int get_gate_delay_all_gates(int);
 int get_veto(int);
 int set_veto(int);
+int set_pattern(int);

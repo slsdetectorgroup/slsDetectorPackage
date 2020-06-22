@@ -332,6 +332,7 @@ void function_table() {
     flist[F_GET_GATE_DELAY_ALL_GATES] = &get_gate_delay_all_gates;
     flist[F_GET_VETO] = &get_veto;
     flist[F_SET_VETO] = &set_veto;
+    flist[F_SET_PATTERN] = &set_pattern;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -2917,8 +2918,8 @@ int set_pattern_word(int file_des) {
 #else
     int addr = (int)args[0];
     uint64_t word = args[1];
-    LOG(logDEBUG1, ("Setting Pattern Word (addr:0x%x, word:0x%llx\n", addr,
-                    (long long int)word));
+    LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx\n", addr,
+                  (long long int)word));
     if (Server_VerifyLock() == OK) {
         // valid address
         if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
@@ -7352,6 +7353,125 @@ int set_veto(int file_des) {
             int retval = getVeto();
             LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
             validate(arg, retval, "set veto mode", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int set_pattern(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint64_t word[MAX_PATTERN_LENGTH];
+    memset(word, 0, sizeof(word));
+    uint64_t patioctrl = 0;
+    uint64_t patclkctrl = 0;
+    uint32_t patlimits[2] = {0, 0};
+    uint32_t patloop[6] = {0, 0, 0, 0, 0, 0};
+    uint32_t patnloop[3] = {0, 0, 0};
+    uint32_t patwait[3] = {0, 0, 0};
+    uint64_t patwaittime[3] = {0, 0, 0};
+    if (receiveData(file_des, word, sizeof(word), INT64) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, &patioctrl, sizeof(patioctrl), INT64) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, &patclkctrl, sizeof(patclkctrl), INT64) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, patlimits, sizeof(patlimits), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, patloop, sizeof(patloop), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, patwait, sizeof(patwait), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, patlimits, sizeof(patlimits), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, patwaittime, sizeof(patwaittime), INT64) < 0)
+        return printSocketReadError();
+
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    if (Server_VerifyLock() == OK) {
+        LOG(logINFO, ("Setting Pattern Word\n");
+        for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
+            writePatternWord(i, word[i]);
+        }
+        int numLoops = -1, retval0 = -1, retval1 = -1;
+        uint64_t retval64 = -1;
+#ifndef MYTHEN3D
+        if (ret == OK) {
+            retval64 = writePatternIOControl(patioctrl);
+            validate64(patioctrl, retval64, "Pattern IO Control", HEX);
+        }
+        if (ret == OK) {
+            retval64 = writePatternClkControl(patclkctrl);
+            validate64(patclkctrl, retval64, "Pattern Clock Control", HEX);
+        }
+#endif
+        if (ret == OK) {
+            numLoops = -1;
+            retval0 = patlimits[0];
+            retval1 = patlimits[1];
+            setPatternLoop(-1, &retval0, &retval1, &numLoops);
+            setPatternLoop(-1, &retval0, &retval1, &numLoops);
+            validate(patlimits[0], retval0, "Pattern Limits start address",
+                     HEX);
+            validate(patlimits[1], retval1, "Pattern Limits start address",
+                     HEX);
+        }
+        if (ret == OK) {
+            retval0 = patloop[0];
+            retval1 = patnloop[1];
+            numLoops = patnloop[0];
+            setPatternLoop(0, &patloop[0], &patloop[1], &patnloop[0]);
+            validate(patloop[0], retval0, "Pattern Loop 0 start address", HEX);
+            validate(patloop[1], retval1, "Pattern Loop 0 stop address", HEX);
+            validate(patnloop[0], numLoops, "Pattern Loop 0 num loops", HEX);  
+        }
+        if (ret == OK) {
+            retval0 = patloop[2];
+            retval1 = patnloop[3];
+            numLoops = patnloop[1];
+            setPatternLoop(1, &patloop[2], &patloop[3], &patnloop[1]);
+            validate(patloop[2], retval0, "Pattern Loop 1 start address", HEX);
+            validate(patloop[3], retval1, "Pattern Loop 1 stop address", HEX);
+            validate(patnloop[1], numLoops, "Pattern Loop 1 num loops", HEX); 
+        }
+        if (ret == OK) {
+            retval0 = patloop[4];
+            retval1 = patnloop[5];
+            numLoops = patnloop[2];
+            setPatternLoop(2, &patloop[4], &patloop[5], &patnloop[2]);
+            validate(patloop[4], retval0, "Pattern Loop 2 start address", HEX);
+            validate(patloop[5], retval1, "Pattern Loop 2 stop address", HEX);
+            validate(patnloop[2], numLoops, "Pattern Loop 2 num loops", HEX); 
+        }
+        if (ret == OK) {
+            retval0 = setPatternWaitAddress(0, &patwait[0]);
+            validate(patwait[0], retval0, "Pattern Loop 0 wait address", HEX);
+        }
+        if (ret == OK) {
+            retval0 = setPatternWaitAddress(1, &patwait[1]);
+            validate(patwait[1], retval0, "Pattern Loop 1 wait address", HEX);
+        }
+        if (ret == OK) {
+            retval0 = setPatternWaitAddress(2, &patwait[2]);
+            validate(patwait[2], retval0, "Pattern Loop 2 wait address", HEX);
+        }
+        if (ret == OK) {
+            uint64_t retval64 = setPatternWaitTime(0, &patwaittime[0]);
+            validate64(patwaittime[0], retval64, "Pattern Loop 0 wait time",
+                       HEX);
+        }
+        if (ret == OK) {
+            retval64 = setPatternWaitTime(1, &patwaittime[1]);
+            validate64(patwaittime[1], retval64, "Pattern Loop 1 wait time",
+                       HEX);
+        }
+        if (ret == OK) {
+            retval64 = setPatternWaitTime(2, &patwaittime[2]);
+            validate64(patwaittime[1], retval64, "Pattern Loop 2 wait time",
+                       HEX);
         }
     }
 #endif

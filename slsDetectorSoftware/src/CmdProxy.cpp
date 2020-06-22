@@ -1940,9 +1940,8 @@ std::string CmdProxy::Pattern(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Mythen3][Moench][Ctb] Loads binary pattern "
-              "file with only pattern "
-              "words"
+        os << "[fname]\n\t[Mythen3][Moench][Ctb] Loads ASCII pattern file "
+              "directly to server (instead of executing line by line)"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");

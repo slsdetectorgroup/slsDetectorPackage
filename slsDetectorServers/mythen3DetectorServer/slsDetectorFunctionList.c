@@ -1491,7 +1491,7 @@ uint64_t readPatternWord(int addr) {
         return -1;
     }
 
-    LOG(trimmingPrint, ("  Reading Pattern Word (addr:0x%x)\n", addr));
+    LOG(logDEBUG1, ("  Reading Pattern Word (addr:0x%x)\n", addr));
     uint32_t reg_lsb =
         PATTERN_STEP0_LSB_REG +
         addr * REG_OFFSET * 2; // the first word in RAM as base plus the offset
@@ -1519,8 +1519,8 @@ uint64_t writePatternWord(int addr, uint64_t word) {
                        addr, MAX_PATTERN_LENGTH));
         return -1;
     }
-    LOG(trimmingPrint, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n", addr,
-                        (long long int)word));
+    LOG(logDEBUG1, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n", addr,
+                    (long long int)word));
 
     // write word
     uint32_t reg_lsb =
@@ -1710,18 +1710,15 @@ void setPatternLoop(int level, int *startAddr, int *stopAddr, int *nLoop) {
                         ((*stopAddr << stopOffset) & stopMask));
     }
 
-    // get
-    else {
-        *startAddr = ((bus_r(addr) & startMask) >> startOffset);
-        LOG(logDEBUG1, ("Getting Pattern Loop Start Address (level:%d, Read "
-                        "startAddr:0x%x)\n",
-                        level, *startAddr));
+    *startAddr = ((bus_r(addr) & startMask) >> startOffset);
+    LOG(logDEBUG1, ("Getting Pattern Loop Start Address (level:%d, Read "
+                    "startAddr:0x%x)\n",
+                    level, *startAddr));
 
-        *stopAddr = ((bus_r(addr) & stopMask) >> stopOffset);
-        LOG(logDEBUG1, ("Getting Pattern Loop Stop Address (level:%d, Read "
-                        "stopAddr:0x%x)\n",
-                        level, *stopAddr));
-    }
+    *stopAddr = ((bus_r(addr) & stopMask) >> stopOffset);
+    LOG(logDEBUG1, ("Getting Pattern Loop Stop Address (level:%d, Read "
+                    "stopAddr:0x%x)\n",
+                    level, *stopAddr));
 }
 
 void setPatternMask(uint64_t mask) {

@@ -1970,7 +1970,7 @@ std::string CmdProxy::PatternWord(int action) {
             WrongNumberOfParameters(1);
         }
         auto t = det->getPatternWord(StringTo<uint64_t>(args[0]), {det_id});
-        os << OutStringHex(t, 16) << '\n';
+        os << OutStringHex(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);

@@ -1790,12 +1790,6 @@ void Module::setPattern(const std::string &fname) {
                                        ToString(args));
                 }
                 pat.patioctrl = StringTo<uint64_t>(args[1]);
-            } else if (cmd == "patclkctrl") {
-                if (nargs != 1) {
-                    throw RuntimeError("Invalid arguments for " +
-                                       ToString(args));
-                }
-                pat.patclkctrl = StringTo<uint64_t>(args[1]);
             } else if (cmd == "patlimits") {
                 if (nargs != 2) {
                     throw RuntimeError("Invalid arguments for " +
@@ -1865,15 +1859,6 @@ uint64_t Module::getPatternIOControl() {
 
 void Module::setPatternIOControl(uint64_t word) {
     sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL, word);
-}
-
-uint64_t Module::getPatternClockControl() {
-    int64_t arg = GET_FLAG;
-    return sendToDetector<uint64_t>(F_SET_PATTERN_CLOCK_CONTROL, arg);
-}
-
-void Module::setPatternClockControl(uint64_t word) {
-    sendToDetector<uint64_t>(F_SET_PATTERN_CLOCK_CONTROL, word);
 }
 
 uint64_t Module::getPatternWord(int addr) {

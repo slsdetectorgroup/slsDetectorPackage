@@ -444,7 +444,6 @@ typedef struct {
     struct patternParameters {
         uint64_t word[MAX_PATTERN_LENGTH];
         uint64_t patioctrl;
-        uint64_t patclkctrl;
         uint32_t patlimits[2];
         uint32_t patloop[6];
         uint32_t patnloop[3];

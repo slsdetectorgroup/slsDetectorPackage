@@ -403,7 +403,6 @@ void setPipeline(enum CLKINDEX ind, int val);
 int getPipeline(enum CLKINDEX ind);
 // patterns
 uint64_t writePatternIOControl(uint64_t word);
-uint64_t writePatternClkControl(uint64_t word);
 uint64_t readPatternWord(int addr);
 uint64_t writePatternWord(int addr, uint64_t word);
 int setPatternWaitAddress(int level, int addr);

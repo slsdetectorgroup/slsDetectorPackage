@@ -105,7 +105,33 @@
         return os.str();                                                       \
     }
 
-/** int or enum */
+/** int or enum hex with 16 bit width (64 bit)*/
+#define INTEGER_COMMAND_HEX_WIDTH16(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)     \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            if (args.size() != 0) {                                            \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            auto t = det->GETFCN({det_id});                                    \
+            os << OutStringHex(t, 16) << '\n';                                 \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            auto val = CONV(args[0]);                                          \
+            det->SETFCN(val, {det_id});                                        \
+            os << ToStringHex(val, 16) << '\n';                                \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+/** int or enum hex */
 #define INTEGER_COMMAND_HEX(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)             \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -131,7 +157,7 @@
         return os.str();                                                       \
     }
 
-/** int or enum  hex val */
+/** int or enum */
 #define INTEGER_COMMAND(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)                 \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
@@ -866,7 +892,6 @@ class CmdProxy {
         {"pattern", &CmdProxy::Pattern},
         {"savepattern", &CmdProxy::savepattern},
         {"patioctrl", &CmdProxy::patioctrl},
-        {"patclkctrl", &CmdProxy::patclkctrl},
         {"patword", &CmdProxy::PatternWord},
         {"patlimits", &CmdProxy::PatternLoopAddresses},
         {"patloop0", &CmdProxy::PatternLoopAddresses},
@@ -2032,25 +2057,20 @@ class CmdProxy {
         "[fname]\n\t[Ctb][Moench][Mythen3] Saves pattern to file (ascii). Also "
         "executes pattern.");
 
-    INTEGER_COMMAND_HEX(patioctrl, getPatternIOControl, setPatternIOControl,
-                        StringTo<uint64_t>,
-                        "[64 bit mask]\n\t[Ctb][Moench] 64 bit mask "
-                        "defining input (0) and output (1) signals.");
+    INTEGER_COMMAND_HEX_WIDTH16(patioctrl, getPatternIOControl,
+                                setPatternIOControl, StringTo<uint64_t>,
+                                "[64 bit mask]\n\t[Ctb][Moench] 64 bit mask "
+                                "defining input (0) and output (1) signals.");
 
-    INTEGER_COMMAND_HEX(patclkctrl, getPatternClockControl,
-                        setPatternClockControl, StringTo<uint64_t>,
-                        "[64 bit mask]\n\t[Ctb][Moench] 64 bit mask "
-                        "defining output clock enable.");
-
-    INTEGER_COMMAND_HEX(
+    INTEGER_COMMAND_HEX_WIDTH16(
         patmask, getPatternMask, setPatternMask, StringTo<uint64_t>,
         "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit mask applied to every "
         "pattern. Only these bits for each pattern will be masked against.");
 
-    INTEGER_COMMAND_HEX(patsetbit, getPatternBitMask, setPatternBitMask,
-                        StringTo<uint64_t>,
-                        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit values "
-                        "applied to the selected patmask for every pattern.");
+    INTEGER_COMMAND_HEX_WIDTH16(
+        patsetbit, getPatternBitMask, setPatternBitMask, StringTo<uint64_t>,
+        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit values "
+        "applied to the selected patmask for every pattern.");
 
     EXECUTE_SET_COMMAND(patternstart, startPattern,
                         "\n\t[Mythen3] Starts Pattern");

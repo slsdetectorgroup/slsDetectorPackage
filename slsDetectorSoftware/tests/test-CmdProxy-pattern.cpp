@@ -60,49 +60,19 @@ TEST_CASE("patioctrl", "[.cmd][.new]") {
         }
         {
             std::ostringstream oss;
-            proxy.Call("patioctrl", {"0x0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patioctrl 0x0\n");
+            proxy.Call("patioctrl", {"0xaadf0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "patioctrl 0x00000000000aadf0\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("patioctrl", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patioctrl 0x0\n");
+            REQUIRE(oss.str() == "patioctrl 0x00000000000aadf0\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPatternIOControl(prev_val[i], {i});
         }
     } else {
         REQUIRE_THROWS(proxy.Call("patioctrl", {}, -1, GET));
-    }
-}
-
-TEST_CASE("patclkctrl", "[.cmd][.new]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-
-    if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH) {
-        auto prev_val = det.getPatternClockControl();
-        {
-            std::ostringstream oss;
-            proxy.Call("patclkctrl", {"0xc15004808d0a21a4"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patclkctrl 0xc15004808d0a21a4\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patclkctrl", {"0x0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patclkctrl 0x0\n");
-        }
-        {
-            std::ostringstream oss;
-            proxy.Call("patclkctrl", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patclkctrl 0x0\n");
-        }
-        for (int i = 0; i != det.size(); ++i) {
-            det.setPatternClockControl(prev_val[i], {i});
-        }
-    } else {
-        REQUIRE_THROWS(proxy.Call("patclkctrl", {}, -1, GET));
     }
 }
 
@@ -114,7 +84,7 @@ TEST_CASE("patword", "[.cmd][.new]") {
     if (det_type == defs::CHIPTESTBOARD || det_type == defs::MOENCH ||
         det_type == defs::MYTHEN3) {
         int addr = 0x23;
-        std::string saddr = sls::ToStringHex(addr);
+        std::string saddr = sls::ToStringHex(addr, 4);
         auto prev_val = det.getPatternWord(addr);
         {
             std::ostringstream oss;
@@ -124,13 +94,15 @@ TEST_CASE("patword", "[.cmd][.new]") {
         }
         {
             std::ostringstream oss;
-            proxy.Call("patword", {saddr, "0x0"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patword [" + saddr + ", 0x0]\n");
+            proxy.Call("patword", {saddr, "0xaadf0"}, -1, PUT, oss);
+            REQUIRE(oss.str() ==
+                    "patword [" + saddr + ", 0x00000000000aadf0]\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("patword", {saddr}, -1, GET, oss);
-            REQUIRE(oss.str() == "patword 0x0\n");
+            REQUIRE(oss.str() ==
+                    "patword [" + saddr + ", 0x00000000000aadf0]\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPatternWord(addr, prev_val[i], {i});
@@ -151,12 +123,12 @@ TEST_CASE("patlimits", "[.cmd][.new]") {
         {
             std::ostringstream oss;
             proxy.Call("patlimits", {"0x20", "0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patlimits [0x20, 0x5c]\n");
+            REQUIRE(oss.str() == "patlimits [0x0020, 0x005c]\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("patlimits", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patlimits [0x20, 0x5c]\n");
+            REQUIRE(oss.str() == "patlimits [0x0020, 0x005c]\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPatternLoopAddresses(-1, prev_val[i][0], prev_val[i][1],
@@ -178,12 +150,12 @@ TEST_CASE("patloop0", "[.cmd][.new]") {
         {
             std::ostringstream oss;
             proxy.Call("patloop0", {"0x20", "0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patloop0 [0x20, 0x5c]\n");
+            REQUIRE(oss.str() == "patloop0 [0x0020, 0x005c]\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("patloop0", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patloop0 [0x20, 0x5c]\n");
+            REQUIRE(oss.str() == "patloop0 [0x0020, 0x005c]\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPatternLoopAddresses(0, prev_val[i][0], prev_val[i][1], {i});
@@ -204,12 +176,12 @@ TEST_CASE("patloop1", "[.cmd][.new]") {
         {
             std::ostringstream oss;
             proxy.Call("patloop1", {"0x20", "0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patloop1 [0x20, 0x5c]\n");
+            REQUIRE(oss.str() == "patloop1 [0x0020, 0x005c]\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("patloop1", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patloop1 [0x20, 0x5c]\n");
+            REQUIRE(oss.str() == "patloop1 [0x0020, 0x005c]\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPatternLoopAddresses(1, prev_val[i][0], prev_val[i][1], {i});
@@ -230,12 +202,12 @@ TEST_CASE("patloop2", "[.cmd][.new]") {
         {
             std::ostringstream oss;
             proxy.Call("patloop2", {"0x20", "0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patloop2 [0x20, 0x5c]\n");
+            REQUIRE(oss.str() == "patloop2 [0x0020, 0x005c]\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("patloop2", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patloop2 [0x20, 0x5c]\n");
+            REQUIRE(oss.str() == "patloop2 [0x0020, 0x005c]\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPatternLoopAddresses(2, prev_val[i][0], prev_val[i][1], {i});
@@ -334,12 +306,12 @@ TEST_CASE("patwait0", "[.cmd][.new]") {
         {
             std::ostringstream oss;
             proxy.Call("patwait0", {"0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patwait0 0x5c\n");
+            REQUIRE(oss.str() == "patwait0 0x005c\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("patwait0", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patwait0 0x5c\n");
+            REQUIRE(oss.str() == "patwait0 0x005c\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPatternWaitAddr(0, prev_val[i], {i});
@@ -360,12 +332,12 @@ TEST_CASE("patwait1", "[.cmd][.new]") {
         {
             std::ostringstream oss;
             proxy.Call("patwait1", {"0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patwait1 0x5c\n");
+            REQUIRE(oss.str() == "patwait1 0x005c\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("patwait1", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patwait1 0x5c\n");
+            REQUIRE(oss.str() == "patwait1 0x005c\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPatternWaitAddr(1, prev_val[i], {i});
@@ -386,12 +358,12 @@ TEST_CASE("patwait2", "[.cmd][.new]") {
         {
             std::ostringstream oss;
             proxy.Call("patwait2", {"0x5c"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "patwait2 0x5c\n");
+            REQUIRE(oss.str() == "patwait2 0x005c\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("patwait2", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "patwait2 0x5c\n");
+            REQUIRE(oss.str() == "patwait2 0x005c\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setPatternWaitAddr(2, prev_val[i], {i});

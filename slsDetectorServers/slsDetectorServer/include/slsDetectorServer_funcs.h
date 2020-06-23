@@ -90,7 +90,6 @@ int calibrate_pedestal(int);
 int enable_ten_giga(int);
 int set_all_trimbits(int);
 int set_pattern_io_control(int);
-int set_pattern_clock_control(int);
 int set_pattern_word(int);
 int set_pattern_loop_addresses(int);
 int set_pattern_loop_cycles(int);

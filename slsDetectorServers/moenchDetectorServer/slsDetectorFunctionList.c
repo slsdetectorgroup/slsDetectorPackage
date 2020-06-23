@@ -43,6 +43,7 @@ char initErrorMessage[MAX_STR_LENGTH];
 pthread_t pthread_virtual_tid;
 int virtual_status = 0;
 int virtual_stop = 0;
+uint64_t virtual_pattern[MAX_PATTERN_LENGTH];
 #endif
 
 // 1g readout
@@ -490,6 +491,7 @@ void setupDetector() {
     if (isControlServer) {
         ComVirtual_setStatus(virtual_status);
     }
+    memset(virtual_pattern, 0, sizeof(virtual_pattern));
 #endif
 
     ALTERA_PLL_ResetPLLAndReconfiguration();
@@ -1574,19 +1576,6 @@ uint64_t writePatternIOControl(uint64_t word) {
     return retval;
 }
 
-uint64_t writePatternClkControl(uint64_t word) {
-    if ((int64_t)word != -1) {
-        LOG(logINFO,
-            ("Setting Pattern Clock Control: 0x%llx\n", (long long int)word));
-        set64BitReg(word, PATTERN_IO_CLK_CNTRL_LSB_REG,
-                    PATTERN_IO_CLK_CNTRL_MSB_REG);
-    }
-    uint64_t retval =
-        get64BitReg(PATTERN_IO_CLK_CNTRL_LSB_REG, PATTERN_IO_CLK_CNTRL_MSB_REG);
-    LOG(logDEBUG1, ("  Clock Control retval: 0x%llx\n", (long long int)retval));
-    return retval;
-}
-
 uint64_t readPatternWord(int addr) {
     // error (handled in tcp)
     if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
@@ -1613,7 +1602,9 @@ uint64_t readPatternWord(int addr) {
     uint64_t retval = get64BitReg(PATTERN_OUT_LSB_REG, PATTERN_OUT_MSB_REG);
     LOG(logDEBUG1,
         ("  Word(addr:0x%x) retval: 0x%llx\n", addr, (long long int)retval));
-
+#ifdef VIRTUAL
+    retval = virtual_pattern[addr];
+#endif
     return retval;
 }
 
@@ -1647,7 +1638,9 @@ uint64_t writePatternWord(int addr, uint64_t word) {
 
     // unset write strobe
     bus_w(reg, bus_r(reg) & (~PATTERN_CNTRL_WR_MSK));
-
+#ifdef VIRTUAL
+    virtual_pattern[addr] = word;
+#endif
     return word;
     // return readPatternWord(addr); // will start executing the pattern
 }

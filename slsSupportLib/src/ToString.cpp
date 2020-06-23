@@ -76,7 +76,6 @@ std::string ToString(const slsDetectorDefs::patternParameters &r) {
         }
     }
     oss << "patioctrl " << ToStringHex(r.patioctrl, word_width) << std::endl
-        << "patclkctrl " << ToStringHex(r.patclkctrl, word_width) << std::endl
         << "patlimits " << ToStringHex(r.patlimits[0], addr_width) << " "
         << ToStringHex(r.patlimits[1], addr_width) << std::endl
         << "patloop0 " << ToStringHex(r.patloop[0], addr_width) << " "

@@ -204,7 +204,6 @@ void function_table() {
     flist[F_ENABLE_TEN_GIGA] = &enable_ten_giga;
     flist[F_SET_ALL_TRIMBITS] = &set_all_trimbits;
     flist[F_SET_PATTERN_IO_CONTROL] = &set_pattern_io_control;
-    flist[F_SET_PATTERN_CLOCK_CONTROL] = &set_pattern_clock_control;
     flist[F_SET_PATTERN_WORD] = &set_pattern_word;
     flist[F_SET_PATTERN_LOOP_ADDRESSES] = &set_pattern_loop_addresses;
     flist[F_SET_PATTERN_LOOP_CYCLES] = &set_pattern_loop_cycles;
@@ -2877,29 +2876,6 @@ int set_pattern_io_control(int file_des) {
         LOG(logDEBUG1,
             ("Pattern IO Control retval: 0x%llx\n", (long long int)retval));
         validate64(arg, retval, "Pattern IO Control", HEX);
-    }
-#endif
-    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
-}
-
-int set_pattern_clock_control(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    uint64_t arg = -1;
-    uint64_t retval = -1;
-
-    if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
-        return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
-    functionNotImplemented();
-#else
-    LOG(logDEBUG1,
-        ("Setting Pattern Clock Control to 0x%llx\n", (long long int)arg));
-    if (((int64_t)arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        retval = writePatternClkControl(arg);
-        LOG(logDEBUG1,
-            ("Pattern Clock Control retval: 0x%llx\n", (long long int)retval));
-        validate64(arg, retval, "Pattern Clock Control", HEX);
     }
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
@@ -7365,7 +7341,6 @@ int set_pattern(int file_des) {
     uint64_t patwords[MAX_PATTERN_LENGTH];
     memset(patwords, 0, sizeof(patwords));
     uint64_t patioctrl = 0;
-    uint64_t patclkctrl = 0;
     int patlimits[2] = {0, 0};
     int patloop[6] = {0, 0, 0, 0, 0, 0};
     int patnloop[3] = {0, 0, 0};
@@ -7374,8 +7349,6 @@ int set_pattern(int file_des) {
     if (receiveData(file_des, patwords, sizeof(patwords), INT64) < 0)
         return printSocketReadError();
     if (receiveData(file_des, &patioctrl, sizeof(patioctrl), INT64) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, &patclkctrl, sizeof(patclkctrl), INT64) < 0)
         return printSocketReadError();
     if (receiveData(file_des, patlimits, sizeof(patlimits), INT32) < 0)
         return printSocketReadError();
@@ -7408,10 +7381,6 @@ int set_pattern(int file_des) {
         if (ret == OK) {
             retval64 = writePatternIOControl(patioctrl);
             validate64(patioctrl, retval64, "Pattern IO Control", HEX);
-        }
-        if (ret == OK) {
-            retval64 = writePatternClkControl(patclkctrl);
-            validate64(patclkctrl, retval64, "Pattern Clock Control", HEX);
         }
 #endif
         if (ret == OK) {

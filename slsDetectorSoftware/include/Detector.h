@@ -1195,12 +1195,6 @@ class Detector {
     /** [CTB][Moench] */
     void setPatternIOControl(uint64_t word, Positions pos = {});
 
-    /** [CTB][Moench] */
-    Result<uint64_t> getPatternClockControl(Positions pos = {}) const;
-
-    /** [CTB][Moench] */
-    void setPatternClockControl(uint64_t word, Positions pos = {});
-
     /** [CTB][Moench][Mythen3] same as executing for ctb and moench */
     Result<uint64_t> getPatternWord(int addr, Positions pos = {});
 

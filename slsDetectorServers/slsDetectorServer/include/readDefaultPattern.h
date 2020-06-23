@@ -9,8 +9,6 @@ int default_writePatternWord(char *line, uint32_t addr, uint64_t word);
 
 int default_writePatternIOControl(char *line, uint64_t arg);
 
-int default_writePatternClkControl(char *line, uint64_t arg);
-
 int default_setPatternLoopLimits(char *line, uint32_t startAddr,
                                  uint32_t stopAddr);
 

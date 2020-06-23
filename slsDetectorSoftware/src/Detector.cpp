@@ -1590,11 +1590,10 @@ void Detector::savePattern(const std::string &fname) {
     }
     // rest of pattern file
     std::vector<std::string> commands{
-        "patioctrl",    "patclkctrl", "patlimits",    "patloop0",
-        "patnloop0",    "patloop1",   "patnloop1",    "patloop2",
-        "patnloop2",    "patwait0",   "patwaittime0", "patwait1",
-        "patwaittime1", "patwait2",   "patwaittime2", "patmask",
-        "patsetbit",
+        "patioctrl", "patlimits",    "patloop0", "patnloop0",
+        "patloop1",  "patnloop1",    "patloop2", "patnloop2",
+        "patwait0",  "patwaittime0", "patwait1", "patwaittime1",
+        "patwait2",  "patwaittime2", "patmask",  "patsetbit",
     };
     auto det_type = getDetectorType().squash();
     if (det_type == defs::MYTHEN3) {
@@ -1614,14 +1613,6 @@ Result<uint64_t> Detector::getPatternIOControl(Positions pos) const {
 
 void Detector::setPatternIOControl(uint64_t word, Positions pos) {
     pimpl->Parallel(&Module::setPatternIOControl, pos, word);
-}
-
-Result<uint64_t> Detector::getPatternClockControl(Positions pos) const {
-    return pimpl->Parallel(&Module::getPatternClockControl, pos);
-}
-
-void Detector::setPatternClockControl(uint64_t word, Positions pos) {
-    pimpl->Parallel(&Module::setPatternClockControl, pos, word);
 }
 
 Result<uint64_t> Detector::getPatternWord(int addr, Positions pos) {

@@ -437,8 +437,6 @@ class Module : public virtual slsDetectorDefs {
     void setPattern(const std::string &fname);
     uint64_t getPatternIOControl();
     void setPatternIOControl(uint64_t word);
-    uint64_t getPatternClockControl();
-    void setPatternClockControl(uint64_t word);
     uint64_t getPatternWord(int addr);
     void setPatternWord(int addr, uint64_t word);
     std::array<int, 2> getPatternLoopAddresses(int level);

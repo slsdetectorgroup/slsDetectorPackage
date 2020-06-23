@@ -7338,15 +7338,15 @@ int set_veto(int file_des) {
 int set_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint64_t patwords[MAX_PATTERN_LENGTH];
-    memset(patwords, 0, sizeof(patwords));
+    uint64_t* patwords = malloc(sizeof(uint64_t) * MAX_PATTERN_LENGTH);
+    memset(patwords, 0, sizeof(uint64_t) * MAX_PATTERN_LENGTH);
     uint64_t patioctrl = 0;
     int patlimits[2] = {0, 0};
     int patloop[6] = {0, 0, 0, 0, 0, 0};
     int patnloop[3] = {0, 0, 0};
     int patwait[3] = {0, 0, 0};
     uint64_t patwaittime[3] = {0, 0, 0};
-    if (receiveData(file_des, patwords, sizeof(patwords), INT64) < 0)
+    if (receiveData(file_des, patwords, sizeof(uint64_t) * MAX_PATTERN_LENGTH, INT64) < 0)
         return printSocketReadError();
     if (receiveData(file_des, &patioctrl, sizeof(patioctrl), INT64) < 0)
         return printSocketReadError();

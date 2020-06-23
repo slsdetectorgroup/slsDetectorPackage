@@ -442,13 +442,13 @@ typedef struct {
 
     /** pattern structure */
     struct patternParameters {
-        uint64_t word[MAX_PATTERN_LENGTH];
-        uint64_t patioctrl;
-        uint32_t patlimits[2];
-        uint32_t patloop[6];
-        uint32_t patnloop[3];
-        uint32_t patwait[3];
-        uint64_t patwaittime[3];
+        uint64_t word[MAX_PATTERN_LENGTH] = {};
+        uint64_t patioctrl{0};
+        uint32_t patlimits[2] = {};
+        uint32_t patloop[6] = {};
+        uint32_t patnloop[3] = {};
+        uint32_t patwait[3] = {};
+        uint64_t patwaittime[3] = {};
     } __attribute__((packed));
 #endif
 

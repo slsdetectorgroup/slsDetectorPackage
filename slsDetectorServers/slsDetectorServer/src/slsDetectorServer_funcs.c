@@ -2894,9 +2894,9 @@ int set_pattern_word(int file_des) {
 #else
     int addr = (int)args[0];
     uint64_t word = args[1];
-    if (word != (int64_t)-1) {
+    if (word != (uint64_t)-1) {
         LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx\n", addr,
-                  (long long int)word));
+                      (long long int)word));
     }
     if (Server_VerifyLock() == OK) {
         // valid address
@@ -7340,7 +7340,7 @@ int set_veto(int file_des) {
 int set_pattern(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    uint64_t* patwords = malloc(sizeof(uint64_t) * MAX_PATTERN_LENGTH);
+    uint64_t *patwords = malloc(sizeof(uint64_t) * MAX_PATTERN_LENGTH);
     memset(patwords, 0, sizeof(uint64_t) * MAX_PATTERN_LENGTH);
     uint64_t patioctrl = 0;
     int patlimits[2] = {0, 0};
@@ -7348,7 +7348,8 @@ int set_pattern(int file_des) {
     int patnloop[3] = {0, 0, 0};
     int patwait[3] = {0, 0, 0};
     uint64_t patwaittime[3] = {0, 0, 0};
-    if (receiveData(file_des, patwords, sizeof(uint64_t) * MAX_PATTERN_LENGTH, INT64) < 0)
+    if (receiveData(file_des, patwords, sizeof(uint64_t) * MAX_PATTERN_LENGTH,
+                    INT64) < 0)
         return printSocketReadError();
     if (receiveData(file_des, &patioctrl, sizeof(patioctrl), INT64) < 0)
         return printSocketReadError();
@@ -7368,12 +7369,12 @@ int set_pattern(int file_des) {
 #else
     if (Server_VerifyLock() == OK) {
         LOG(logINFO, ("Setting Pattern from file\n"));
-        LOG(logINFO, ("Setting Pattern Word (printing every 10 words that are not 0\n"));
+        LOG(logINFO,
+            ("Setting Pattern Word (printing every 10 words that are not 0\n"));
         for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
-            if ((i%10 == 0) && patwords[i] != 0) {
-                LOG(logINFO,
-                    ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n", i,
-                     (long long int)patwords[i]));
+            if ((i % 10 == 0) && patwords[i] != 0) {
+                LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n",
+                              i, (long long int)patwords[i]));
             }
             writePatternWord(i, patwords[i]);
         }

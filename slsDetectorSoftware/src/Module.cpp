@@ -1748,25 +1748,20 @@ void Module::setLEDEnable(bool enable) {
 
 void Module::setPattern(const std::string &fname) {
     patternParameters pat;
-    memset(&pat, 0, sizeof(pat));
-    std::ifstream input_file;
-    input_file.open(fname.c_str(), std::ios_base::in);
+    std::ifstream input_file(fname);
     if (!input_file.is_open()) {
         throw RuntimeError("Could not open pattern file " + fname +
                            " for reading");
     }
-    std::string current_line;
-    while (input_file.good()) {
-        getline(input_file, current_line);
-        if (current_line.find('#') != std::string::npos) {
-            current_line.erase(current_line.find('#'));
+    for (std::string line; std::getline(input_file, line);) {
+        if (line.find('#') != std::string::npos) {
+            line.erase(line.find('#'));
         }
-        LOG(logDEBUG1) << "current_line after removing comments:\n\t"
-                       << current_line;
-        if (current_line.length() > 1) {
+        LOG(logDEBUG1) << "line after removing comments:\n\t" << line;
+        if (line.length() > 1) {
 
             // convert command and string to a vector
-            std::istringstream iss(current_line);
+            std::istringstream iss(line);
             auto it = std::istream_iterator<std::string>(iss);
             std::vector<std::string> args = std::vector<std::string>(
                 it, std::istream_iterator<std::string>());
@@ -1848,7 +1843,6 @@ void Module::setPattern(const std::string &fname) {
             }
         }
     }
-    input_file.close();
     sendToDetector(F_SET_PATTERN, pat, nullptr);
 }
 

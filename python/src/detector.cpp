@@ -1187,14 +1187,6 @@ void init_det(py::module &m) {
              (void (Detector::*)(uint64_t, sls::Positions)) &
                  Detector::setPatternIOControl,
              py::arg(), py::arg() = Positions{})
-        .def("getPatternClockControl",
-             (Result<uint64_t>(Detector::*)(sls::Positions) const) &
-                 Detector::getPatternClockControl,
-             py::arg() = Positions{})
-        .def("setPatternClockControl",
-             (void (Detector::*)(uint64_t, sls::Positions)) &
-                 Detector::setPatternClockControl,
-             py::arg(), py::arg() = Positions{})
         .def("getPatternWord",
              (Result<uint64_t>(Detector::*)(int, sls::Positions)) &
                  Detector::getPatternWord,

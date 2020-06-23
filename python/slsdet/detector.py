@@ -974,14 +974,6 @@ class Detector(CppDetectorApi):
         print("Set only")
         return 0
 
-    @property
-    def patclkctrl(self):
-        return element_if_equal(self.getPatternClockControl())
-
-    @patclkctrl.setter
-    def patclkctrl(self, mask):
-        self.setPatternClockControl(mask)
-
     # patioctrl
     @property
     def patioctrl(self):

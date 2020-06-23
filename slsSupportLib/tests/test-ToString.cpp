@@ -12,6 +12,7 @@
 using sls::defs;
 using sls::StringTo;
 using sls::ToString;
+using sls::ToStringHex;
 using namespace sls::time;
 
 TEST_CASE("Integer conversions", "[support]") {
@@ -260,4 +261,16 @@ TEST_CASE("vector of dac index to string") {
     std::vector<defs::dacIndex> daci{defs::VCASSH, defs::VTH2, defs::VRSHAPER};
     auto r = ToString(daci);
     REQUIRE(r == "[vcassh, vth2, vrshaper]");
+}
+
+TEST_CASE("int or uin64_t to a string in hex") {
+    REQUIRE(ToStringHex(65535) == "0xffff");
+    REQUIRE(ToStringHex(65535, 8) == "0x0000ffff");
+    REQUIRE(ToStringHex(8927748192) == "0x21422a060");
+    REQUIRE(ToStringHex(8927748192, 16) == "0x000000021422a060");
+    std::vector<int> temp{244, 65535, 1638582};
+    auto r = ToStringHex(temp);
+    REQUIRE(r == "[0xf4, 0xffff, 0x1900b6]");
+    r = ToStringHex(temp, 8);
+    REQUIRE(r == "[0x000000f4, 0x0000ffff, 0x001900b6]");
 }

@@ -144,6 +144,24 @@ ToStringHex(const T &container) {
     return os.str();
 }
 
+template <typename T>
+typename std::enable_if<
+    is_container<T>::value &&
+        !std::is_same<typename T::value_type, std::string>::value,
+    std::string>::type
+ToStringHex(const T &container, int width) {
+    std::ostringstream os;
+    os << '[';
+    if (!container.empty()) {
+        auto it = container.cbegin();
+        os << ToStringHex(*it++, width);
+        while (it != container.cend())
+            os << ", " << ToStringHex(*it++, width);
+    }
+    os << ']';
+    return os.str();
+}
+
 template <typename KeyType, typename ValueType>
 std::string ToString(const std::map<KeyType, ValueType> &m) {
     std::ostringstream os;

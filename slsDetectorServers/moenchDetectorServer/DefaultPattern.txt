@@ -273,7 +273,6 @@ patword 0x010f 0x0008599f0008503a
 patword 0x0110 0x0008599f0008503a
 patword 0x0111 0x0008599f0008503a
 patioctrl 0x8f0effff6dbffdbf
-patclkctrl 0x0000000000000000
 patlimits 0x0000 0x0110
 patloop0 0x00be 0x00ef
 patnloop0 199

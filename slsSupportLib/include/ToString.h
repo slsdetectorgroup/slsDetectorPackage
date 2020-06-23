@@ -44,6 +44,9 @@ std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::ROI &roi);
 std::string ToString(const slsDetectorDefs::rxParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::rxParameters &r);
+std::string ToString(const slsDetectorDefs::patternParameters &r);
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::patternParameters &r);
 const std::string &ToString(const std::string &s);
 
 /** Convert std::chrono::duration with specified output unit */
@@ -108,6 +111,16 @@ ToStringHex(const T &value) {
     return os.str();
 }
 
+/** Conversion of integer types, do not remove trailing zeros */
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value, std::string>::type
+ToStringHex(const T &value, int width) {
+    std::ostringstream os;
+    os << "0x" << std::hex << std::setfill('0') << std::setw(width) << value
+       << std::dec;
+    return os.str();
+}
+
 /**
  * hex
  * For a container loop over all elements and call ToString on the element
@@ -126,6 +139,24 @@ ToStringHex(const T &container) {
         os << ToStringHex(*it++);
         while (it != container.cend())
             os << ", " << ToStringHex(*it++);
+    }
+    os << ']';
+    return os.str();
+}
+
+template <typename T>
+typename std::enable_if<
+    is_container<T>::value &&
+        !std::is_same<typename T::value_type, std::string>::value,
+    std::string>::type
+ToStringHex(const T &container, int width) {
+    std::ostringstream os;
+    os << '[';
+    if (!container.empty()) {
+        auto it = container.cbegin();
+        os << ToStringHex(*it++, width);
+        while (it != container.cend())
+            os << ", " << ToStringHex(*it++, width);
     }
     os << ']';
     return os.str();

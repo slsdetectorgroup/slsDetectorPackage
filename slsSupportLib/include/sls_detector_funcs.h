@@ -73,7 +73,6 @@ enum detFuncs {
     F_ENABLE_TEN_GIGA,
     F_SET_ALL_TRIMBITS,
     F_SET_PATTERN_IO_CONTROL,
-    F_SET_PATTERN_CLOCK_CONTROL,
     F_SET_PATTERN_WORD,
     F_SET_PATTERN_LOOP_ADDRESSES,
     F_SET_PATTERN_LOOP_CYCLES,
@@ -201,6 +200,7 @@ enum detFuncs {
     F_GET_GATE_DELAY_ALL_GATES,
     F_GET_VETO,
     F_SET_VETO,
+    F_SET_PATTERN,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -372,7 +372,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_ENABLE_TEN_GIGA:					return "F_ENABLE_TEN_GIGA";
 	case F_SET_ALL_TRIMBITS:				return "F_SET_ALL_TRIMBITS";
 	case F_SET_PATTERN_IO_CONTROL:			return "F_SET_PATTERN_IO_CONTROL";
-	case F_SET_PATTERN_CLOCK_CONTROL:		return "F_SET_PATTERN_CLOCK_CONTROL";
 	case F_SET_PATTERN_WORD:				return "F_SET_PATTERN_WORD";
 	case F_SET_PATTERN_LOOP_ADDRESSES:		return "F_SET_PATTERN_LOOP_ADDRESSES";
 	case F_SET_PATTERN_LOOP_CYCLES:			return "F_SET_PATTERN_LOOP_CYCLES";
@@ -500,6 +499,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_GATE_DELAY_ALL_GATES:        return "F_GET_GATE_DELAY_ALL_GATES";            
     case F_GET_VETO:                        return "F_GET_VETO";
     case F_SET_VETO:                        return "F_SET_VETO";
+    case F_SET_PATTERN:                     return "F_SET_PATTERN";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

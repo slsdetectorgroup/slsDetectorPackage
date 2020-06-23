@@ -1940,9 +1940,8 @@ std::string CmdProxy::Pattern(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[fname]\n\t[Mythen3][Moench][Ctb] Loads binary pattern "
-              "file with only pattern "
-              "words"
+        os << "[fname]\n\t[Mythen3][Moench][Ctb] Loads ASCII pattern file "
+              "directly to server (instead of executing line by line)"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
@@ -1970,15 +1969,19 @@ std::string CmdProxy::PatternWord(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        auto t = det->getPatternWord(StringTo<uint64_t>(args[0]), {det_id});
-        os << OutStringHex(t) << '\n';
+        int addr = StringTo<int>(args[0]);
+        auto t = det->getPatternWord(addr, {det_id});
+        os << '[' << ToStringHex(addr, 4) << ", " << OutStringHex(t, 16)
+           << "]\n";
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->setPatternWord(StringTo<int>(args[0]), StringTo<uint64_t>(args[1]),
-                            {det_id});
-        os << sls::ToString(args) << '\n';
+        int addr = StringTo<int>(args[0]);
+        uint64_t word = StringTo<uint64_t>(args[1]);
+        det->setPatternWord(addr, word, {det_id});
+        os << '[' << ToStringHex(addr, 4) << ", " << ToStringHex(word, 16)
+           << "]\n";
     } else {
         throw sls::RuntimeError("Unknown action");
     }
@@ -2029,14 +2032,16 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
                 WrongNumberOfParameters(0);
             }
             auto t = det->getPatternLoopAddresses(level, {det_id});
-            os << OutStringHex(t) << '\n';
+            os << OutStringHex(t, 4) << '\n';
         } else if (action == defs::PUT_ACTION) {
             if (args.size() != 2) {
                 WrongNumberOfParameters(2);
             }
-            det->setPatternLoopAddresses(level, StringTo<int>(args[0]),
-                                         StringTo<int>(args[1]), {det_id});
-            os << sls::ToString(args) << '\n';
+            int start = StringTo<int>(args[0]);
+            int stop = StringTo<int>(args[1]);
+            det->setPatternLoopAddresses(level, start, stop, {det_id});
+            os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
+               << "]\n";
         } else {
             throw sls::RuntimeError("Unknown action");
         }
@@ -2126,13 +2131,14 @@ std::string CmdProxy::PatternWaitAddress(int action) {
                 WrongNumberOfParameters(0);
             }
             auto t = det->getPatternWaitAddr(level, {det_id});
-            os << OutStringHex(t) << '\n';
+            os << OutStringHex(t, 4) << '\n';
         } else if (action == defs::PUT_ACTION) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            det->setPatternWaitAddr(level, StringTo<int>(args[0]), {det_id});
-            os << args.front() << '\n';
+            int addr = StringTo<int>(args[0]);
+            det->setPatternWaitAddr(level, addr, {det_id});
+            os << ToStringHex(addr, 4) << '\n';
         } else {
             throw sls::RuntimeError("Unknown action");
         }

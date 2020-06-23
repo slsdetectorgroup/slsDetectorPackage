@@ -10,7 +10,6 @@ extern char initErrorMessage[MAX_STR_LENGTH];
 extern int initError;
 
 extern uint64_t writePatternIOControl(uint64_t word);
-extern uint64_t writePatternClkControl(uint64_t word);
 extern uint64_t writePatternWord(int addr, uint64_t word);
 extern int setPatternWaitAddress(int level, int addr);
 extern uint64_t setPatternWaitTime(int level, uint64_t t);
@@ -121,28 +120,6 @@ int loadDefaultPattern(char *fname) {
             }
 
             if (default_writePatternIOControl(line, arg) == FAIL) {
-                break;
-            }
-        }
-
-        // patclkctrl
-        if (!strncmp(line, "patclkctrl", strlen("patclkctrl"))) {
-            uint64_t arg = 0;
-
-            // cannot scan values
-#ifdef VIRTUAL
-            if (sscanf(line, "%s 0x%lx", command, &arg) != 2) {
-#else
-            if (sscanf(line, "%s 0x%llx", command, &arg) != 2) {
-#endif
-                sprintf(initErrorMessage,
-                        "Could not scan patclkctrl arguments from default "
-                        "pattern file. Line:[%s].\n",
-                        line);
-                break;
-            }
-
-            if (default_writePatternClkControl(line, arg) == FAIL) {
                 break;
             }
         }
@@ -334,25 +311,6 @@ int default_writePatternIOControl(char *line, uint64_t arg) {
 #else
         sprintf(initErrorMessage,
                 "Could not set patioctrl from default pattern "
-                "file. Set 0x%llx, read 0x%llx. Line:[%s]\n",
-                arg, retval, line);
-#endif
-        return FAIL;
-    }
-    return OK;
-}
-
-int default_writePatternClkControl(char *line, uint64_t arg) {
-    uint64_t retval = writePatternClkControl(arg);
-    if (retval != arg) {
-#ifdef VIRTUAL
-        sprintf(initErrorMessage,
-                "Could not set patclkctrl from default pattern "
-                "file. Set 0x%lx, read 0x%lx. Line:[%s]\n",
-                arg, retval, line);
-#else
-        sprintf(initErrorMessage,
-                "Could not set patclkctrl from default pattern "
                 "file. Set 0x%llx, read 0x%llx. Line:[%s]\n",
                 arg, retval, line);
 #endif

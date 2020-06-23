@@ -61,6 +61,8 @@
 #define MAX_STR_LENGTH   1000
 #define SHORT_STR_LENGTH 20
 
+#define MAX_PATTERN_LENGTH 0x2000
+
 #define DEFAULT_STREAMING_TIMER_IN_MS 200
 
 #define NUM_RX_THREAD_IDS 8
@@ -436,6 +438,17 @@ typedef struct {
         int64_t gateDelay2Ns{0};
         int64_t gateDelay3Ns{0};
         int gates{0};
+    } __attribute__((packed));
+
+    /** pattern structure */
+    struct patternParameters {
+        uint64_t word[MAX_PATTERN_LENGTH]{};
+        uint64_t patioctrl{0};
+        uint32_t patlimits[2]{};
+        uint32_t patloop[6]{};
+        uint32_t patnloop[3]{};
+        uint32_t patwait[3]{};
+        uint64_t patwaittime[3]{};
     } __attribute__((packed));
 #endif
 

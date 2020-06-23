@@ -204,7 +204,6 @@ void function_table() {
     flist[F_ENABLE_TEN_GIGA] = &enable_ten_giga;
     flist[F_SET_ALL_TRIMBITS] = &set_all_trimbits;
     flist[F_SET_PATTERN_IO_CONTROL] = &set_pattern_io_control;
-    flist[F_SET_PATTERN_CLOCK_CONTROL] = &set_pattern_clock_control;
     flist[F_SET_PATTERN_WORD] = &set_pattern_word;
     flist[F_SET_PATTERN_LOOP_ADDRESSES] = &set_pattern_loop_addresses;
     flist[F_SET_PATTERN_LOOP_CYCLES] = &set_pattern_loop_cycles;
@@ -332,6 +331,7 @@ void function_table() {
     flist[F_GET_GATE_DELAY_ALL_GATES] = &get_gate_delay_all_gates;
     flist[F_GET_VETO] = &get_veto;
     flist[F_SET_VETO] = &set_veto;
+    flist[F_SET_PATTERN] = &set_pattern;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -2881,29 +2881,6 @@ int set_pattern_io_control(int file_des) {
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
-int set_pattern_clock_control(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    uint64_t arg = -1;
-    uint64_t retval = -1;
-
-    if (receiveData(file_des, &arg, sizeof(arg), INT64) < 0)
-        return printSocketReadError();
-#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD)
-    functionNotImplemented();
-#else
-    LOG(logDEBUG1,
-        ("Setting Pattern Clock Control to 0x%llx\n", (long long int)arg));
-    if (((int64_t)arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
-        retval = writePatternClkControl(arg);
-        LOG(logDEBUG1,
-            ("Pattern Clock Control retval: 0x%llx\n", (long long int)retval));
-        validate64(arg, retval, "Pattern Clock Control", HEX);
-    }
-#endif
-    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
-}
-
 int set_pattern_word(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
@@ -2917,8 +2894,10 @@ int set_pattern_word(int file_des) {
 #else
     int addr = (int)args[0];
     uint64_t word = args[1];
-    LOG(logDEBUG1, ("Setting Pattern Word (addr:0x%x, word:0x%llx\n", addr,
-                    (long long int)word));
+    if (word != (uint64_t)-1) {
+        LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx\n", addr,
+                      (long long int)word));
+    }
     if (Server_VerifyLock() == OK) {
         // valid address
         if (addr < 0 || addr >= MAX_PATTERN_LENGTH) {
@@ -7352,6 +7331,124 @@ int set_veto(int file_des) {
             int retval = getVeto();
             LOG(logDEBUG1, ("veto mode retval: %u\n", retval));
             validate(arg, retval, "set veto mode", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int set_pattern(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    uint64_t *patwords = malloc(sizeof(uint64_t) * MAX_PATTERN_LENGTH);
+    memset(patwords, 0, sizeof(uint64_t) * MAX_PATTERN_LENGTH);
+    uint64_t patioctrl = 0;
+    int patlimits[2] = {0, 0};
+    int patloop[6] = {0, 0, 0, 0, 0, 0};
+    int patnloop[3] = {0, 0, 0};
+    int patwait[3] = {0, 0, 0};
+    uint64_t patwaittime[3] = {0, 0, 0};
+    if (receiveData(file_des, patwords, sizeof(uint64_t) * MAX_PATTERN_LENGTH,
+                    INT64) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, &patioctrl, sizeof(patioctrl), INT64) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, patlimits, sizeof(patlimits), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, patloop, sizeof(patloop), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, patnloop, sizeof(patnloop), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, patwait, sizeof(patwait), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, patwaittime, sizeof(patwaittime), INT64) < 0)
+        return printSocketReadError();
+
+#if !defined(CHIPTESTBOARDD) && !defined(MOENCHD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    if (Server_VerifyLock() == OK) {
+        LOG(logINFO, ("Setting Pattern from file\n"));
+        LOG(logINFO,
+            ("Setting Pattern Word (printing every 10 words that are not 0\n"));
+        for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
+            if ((i % 10 == 0) && patwords[i] != 0) {
+                LOG(logINFO, ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n",
+                              i, (long long int)patwords[i]));
+            }
+            writePatternWord(i, patwords[i]);
+        }
+        int numLoops = -1, retval0 = -1, retval1 = -1;
+        uint64_t retval64 = -1;
+#ifndef MYTHEN3D
+        if (ret == OK) {
+            retval64 = writePatternIOControl(patioctrl);
+            validate64(patioctrl, retval64, "Pattern IO Control", HEX);
+        }
+#endif
+        if (ret == OK) {
+            numLoops = -1;
+            retval0 = patlimits[0];
+            retval1 = patlimits[1];
+            setPatternLoop(-1, &retval0, &retval1, &numLoops);
+            validate(patlimits[0], retval0, "Pattern Limits start address",
+                     HEX);
+            validate(patlimits[1], retval1, "Pattern Limits start address",
+                     HEX);
+        }
+        if (ret == OK) {
+            retval0 = patloop[0];
+            retval1 = patloop[1];
+            numLoops = patnloop[0];
+            setPatternLoop(0, &patloop[0], &patloop[1], &numLoops);
+            validate(patloop[0], retval0, "Pattern Loop 0 start address", HEX);
+            validate(patloop[1], retval1, "Pattern Loop 0 stop address", HEX);
+            validate(patnloop[0], numLoops, "Pattern Loop 0 num loops", HEX);
+        }
+        if (ret == OK) {
+            retval0 = patloop[2];
+            retval1 = patloop[3];
+            numLoops = patnloop[1];
+            setPatternLoop(1, &patloop[2], &patloop[3], &numLoops);
+            validate(patloop[2], retval0, "Pattern Loop 1 start address", HEX);
+            validate(patloop[3], retval1, "Pattern Loop 1 stop address", HEX);
+            validate(patnloop[1], numLoops, "Pattern Loop 1 num loops", HEX);
+        }
+        if (ret == OK) {
+            retval0 = patloop[4];
+            retval1 = patloop[5];
+            numLoops = patnloop[2];
+            setPatternLoop(2, &patloop[4], &patloop[5], &numLoops);
+            validate(patloop[4], retval0, "Pattern Loop 2 start address", HEX);
+            validate(patloop[5], retval1, "Pattern Loop 2 stop address", HEX);
+            validate(patnloop[2], numLoops, "Pattern Loop 2 num loops", HEX);
+        }
+        if (ret == OK) {
+            retval0 = setPatternWaitAddress(0, patwait[0]);
+            validate(patwait[0], retval0, "Pattern Loop 0 wait address", HEX);
+        }
+        if (ret == OK) {
+            retval0 = setPatternWaitAddress(1, patwait[1]);
+            validate(patwait[1], retval0, "Pattern Loop 1 wait address", HEX);
+        }
+        if (ret == OK) {
+            retval0 = setPatternWaitAddress(2, patwait[2]);
+            validate(patwait[2], retval0, "Pattern Loop 2 wait address", HEX);
+        }
+        if (ret == OK) {
+            uint64_t retval64 = setPatternWaitTime(0, patwaittime[0]);
+            validate64(patwaittime[0], retval64, "Pattern Loop 0 wait time",
+                       HEX);
+        }
+        if (ret == OK) {
+            retval64 = setPatternWaitTime(1, patwaittime[1]);
+            validate64(patwaittime[1], retval64, "Pattern Loop 1 wait time",
+                       HEX);
+        }
+        if (ret == OK) {
+            retval64 = setPatternWaitTime(2, patwaittime[2]);
+            validate64(patwaittime[1], retval64, "Pattern Loop 2 wait time",
+                       HEX);
         }
     }
 #endif

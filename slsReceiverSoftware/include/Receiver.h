@@ -54,7 +54,7 @@ class Receiver : private virtual slsDetectorDefs {
     /**
      * Call back for acquisition finished
      * callback argument is
-     * @param total frames caught
+     * total frames caught
      */
     void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void *),
                                              void *arg);
@@ -62,9 +62,9 @@ class Receiver : private virtual slsDetectorDefs {
     /**
      * Call back for raw data
      * args to raw data ready callback are
-     * @param sls_receiver_header frame metadata
-     * @param dataPointer is the pointer to the data
-     * @param dataSize in bytes is the size of the data in bytes.
+     * sls_receiver_header frame metadata,
+     * dataPointer is the pointer to the data,
+     * dataSize in bytes is the size of the data in bytes.
      */
     void registerCallBackRawDataReady(void (*func)(char *, char *, uint32_t,
                                                    void *),
@@ -73,9 +73,9 @@ class Receiver : private virtual slsDetectorDefs {
     /**
      * Call back for raw data (modified)
      * args to raw data ready callback are
-     * @param sls_receiver_header frame metadata
-     * @param dataPointer is the pointer to the data
-     * @param revDatasize is the reference of data size in bytes.
+     * sls_receiver_header frame metadata,
+     * dataPointer is the pointer to the data,
+     * revDatasize is the reference of data size in bytes.
      * Can be modified to the new size to be written/streamed. (only smaller
      * value).
      */

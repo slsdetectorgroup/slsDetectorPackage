@@ -133,7 +133,7 @@ class Listener : private virtual slsDetectorDefs, public ThreadObject {
     /**
      * Listen to the UDP Socket for an image,
      * place them in the right order
-     * @param buffer
+     * @param buf address of buffer
      * @returns number of bytes of relevant data, can be image size or 0 (stop
      * acquisition) or -1 to discard image
      */

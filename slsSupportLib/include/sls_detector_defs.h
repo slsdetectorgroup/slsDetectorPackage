@@ -535,18 +535,6 @@ struct detParameters {
 
 /**
     @short  structure for a detector module
-
-    should not be used by unexperienced users
-
-    \see  :: moduleRegisterBit ::chipRegisterBit :channelRegisterBit
-
-    @li reg is the module register (e.g. dynamic range? see moduleRegisterBit)
-    @li dacs is the pointer to the array of dac values (in V)
-    @li adcs is the pointer to the array of adc values (in V)
-    @li chipregs is the pointer to the array of chip registers
-    @li chanregs is the pointer to the array of channel registers
-    @li gain is the module gain
-    @li offset is the module offset
 */
 #ifdef __cplusplus
 struct sls_detector_module {

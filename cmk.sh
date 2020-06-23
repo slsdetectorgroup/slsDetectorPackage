@@ -271,13 +271,20 @@ if [ $COMPILERTHREADS -gt 0 ]; then
 	BUILDCOMMAND="make -j$COMPILERTHREADS"
 	echo $BUILDCOMMAND
 	eval $BUILDCOMMAND
+	if [ $MANUALS -eq 1 ]; then
+		BUILDCOMMAND="make docs -j$COMPILERTHREADS"
+		echo $BUILDCOMMAND
+		eval $BUILDCOMMAND
+	fi 
 else
+	echo "make"
 	make
+	if [ $MANUALS -eq 1 ]; then
+		echo "make docs"
+		make docs
+	fi 
 fi
 
-if [ $MANUALS -eq 1 ]; then
-	make docs
-fi 
 
 
 

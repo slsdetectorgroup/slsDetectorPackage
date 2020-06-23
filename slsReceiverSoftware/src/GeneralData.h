@@ -87,7 +87,7 @@ class GeneralData {
     /**
      * Get Adc configured
      * @param index thread index for debugging purposes
-     * @param ROI
+     * @param i
      * @returns adc configured
      */
     virtual int GetAdcConfigured(int index, slsDetectorDefs::ROI i) const {
@@ -138,7 +138,7 @@ class GeneralData {
      * @returns analog data bytes
      */
     virtual int setImageSize(uint32_t a, uint32_t as, uint32_t ds, bool t,
-                             slsDetectorDefs::readoutMode) {
+                             slsDetectorDefs::readoutMode f) {
         LOG(logERROR) << "setImageSize is a generic function that should be "
                          "overloaded by a derived class";
         return 0;
@@ -388,7 +388,7 @@ class JungfrauData : public GeneralData {
 
     /**
      * set number of interfaces (jungfrau)
-     * @param number of interfaces
+     * @param n number of interfaces
      */
     void SetNumberofInterfaces(const int n) {
         // 2 interfaces
@@ -502,7 +502,7 @@ class Gotthard2Data : public GeneralData {
 
     /**
      * set number of interfaces
-     * @param number of interfaces
+     * @param n number of interfaces
      */
     void SetNumberofInterfaces(const int n) {
         // 2 interfaces (+veto)
@@ -662,7 +662,7 @@ class MoenchData : public GeneralData {
      * @returns analog data bytes
      */
     int setImageSize(uint32_t a, uint32_t as, uint32_t ds, bool t,
-                     slsDetectorDefs::readoutMode) {
+                     slsDetectorDefs::readoutMode f) {
 
         // count number of channels in x, each adc has 25 channels each
         int nchanTop = __builtin_popcount(a & 0xF0F0F0F0) * 25;

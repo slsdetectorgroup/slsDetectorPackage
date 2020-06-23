@@ -62,13 +62,13 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
     /**
      * Set number of detectors
-     * @param number of detectors in both dimensions
+     * @param nd number of detectors in both dimensions
      */
     void SetNumberofDetectors(int *nd);
 
     /**
      * Set Flipped data enable across x dimension
-     * @param flipped data enable in x dimension
+     * @param fd data enable in x dimension
      */
     void SetFlippedDataX(int fd);
 
@@ -121,7 +121,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     /**
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
-     * @param buffer
+     * @param buf address of pointer
      */
     void ProcessAnImage(char *buf);
 

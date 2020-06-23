@@ -64,12 +64,12 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
 
     /** creating new shared memory
-    @param verify if shared memory version matches existing one */
+    verify is if shared memory version matches existing one */
     explicit Module(detectorType type, int det_id = 0, int module_id = 0,
                     bool verify = true);
 
     /** opening existing shared memory
-    @param verify if shared memory version matches existing one */
+    verify is if shared memory version matches existing one */
     explicit Module(int det_id = 0, int module_id = 0, bool verify = true);
 
     virtual ~Module();
@@ -81,7 +81,7 @@ class Module : public virtual slsDetectorDefs {
     bool isFixedPatternSharedMemoryCompatible();
     std::string getHostname() const;
 
-    /** @param initialChecks enable or disable initial compatibility checks and
+    /** initialChecks is enable or disable initial compatibility checks and
     other server start up checks. Enabled by default. Disable only for advanced
     users! */
     void setHostname(const std::string &hostname, const bool initialChecks);
@@ -600,11 +600,11 @@ class Module : public virtual slsDetectorDefs {
     Ret sendToReceiver(int fnum, const Arg &args) const;
 
     /** Get Detector Type from Shared Memory
-    @param verify if shm size matches existing one */
+    verify is if shm size matches existing one */
     detectorType getDetectorTypeFromShm(int det_id, bool verify = true);
 
     /** Initialize shared memory
-     @param verify if shm size matches existing one  */
+    verify is if shm size matches existing one  */
     void initSharedMemory(detectorType type, int det_id, bool verify = true);
 
     /** Initialize detector structure to defaults,
@@ -639,7 +639,7 @@ class Module : public virtual slsDetectorDefs {
      * @param energy energy to trim at
      * @param e1 reference trim value
      * @param e2 reference trim value
-     * @param tb 1 to include trimbits, 0 to exclude (used for eiger)
+     * @param trimbits 1 to include trimbits, 0 to exclude (used for eiger)
      * @returns  the pointer to the module structure with interpolated values or
      * NULL if error
      */

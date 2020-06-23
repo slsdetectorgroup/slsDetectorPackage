@@ -74,6 +74,7 @@ class File : private virtual slsDetectorDefs {
     /**
      * Write data to file
      * @param buffer buffer to write from
+     * @param buffersize size of buffer
      * @param fnum current image number
      * @param nump number of packets caught
      */

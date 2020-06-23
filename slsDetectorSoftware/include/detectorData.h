@@ -11,9 +11,9 @@ class detectorData {
      * Constructor
      * @param progress progress index
      * @param fname file name prefix
-     * @param nx number of detector channels (1D detector) or dimension in x (2D
+     * @param x number of detector channels (1D detector) or dimension in x (2D
      * detector)
-     * @param ny dimension in y (2D detector)
+     * @param y dimension in y (2D detector)
      * @param d pointer to data in char* format
      * @param dbytes number of bytes of image pointed to by cval pointer
      * @param dr dynamic range or bits per pixel

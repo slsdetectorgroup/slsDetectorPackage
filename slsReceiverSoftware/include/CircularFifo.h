@@ -63,7 +63,7 @@ template <typename Element> int CircularFifo<Element>::getFreeValue() const {
  * If queue is full at 'push' operation no update/overwrite
  * will happen, it is up to the caller to handle this case
  *
- * \param item_ copy by reference the input item
+ * \param item copy by reference the input item
  * \param no_block if true, return immediately if fifo is full
  * \return whether operation was successful or not */
 template <typename Element>
@@ -83,7 +83,7 @@ bool CircularFifo<Element>::push(Element *&item, bool no_block) {
  * If queue is empty at 'pop' operation no retrieve will happen
  * It is up to the caller to handle this case
  *
- * \param item_ return by reference the wanted item
+ * \param item return by reference the wanted item
  * \param no_block if true, return immediately if fifo is full
  * \return whether operation was successful or not */
 template <typename Element>
@@ -120,7 +120,7 @@ template <typename Element> bool CircularFifo<Element>::isFull() const {
 /** Increment helper function for index of the circular queue
  * index is incremented or wrapped
  *
- *  \param idx_ the index to the incremented/wrapped
+ *  \param i the index to the incremented/wrapped
  *  \return new value for the index */
 template <typename Element>
 size_t CircularFifo<Element>::increment(size_t i) const {

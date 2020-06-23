@@ -92,7 +92,6 @@ template <typename T> class SharedMemory {
 
     /**
      * Verify if it exists
-     * @param name of shared memory
      * @return true if exists, else false
      */
     bool IsExisting() {
@@ -116,7 +115,6 @@ template <typename T> class SharedMemory {
      * Create Shared memory and call MapSharedMemory to map it to an address
      * throws a SharedMemoryError exception on failure to create, ftruncate or
      * map
-     * @param sz of shared memory
      */
     void CreateSharedMemory() {
         fd = shm_open(name.c_str(), O_CREAT | O_TRUNC | O_EXCL | O_RDWR,
@@ -144,7 +142,6 @@ template <typename T> class SharedMemory {
     /**
      * Open existing Shared memory and call MapSharedMemory to map it to an
      * address throws a SharedMemoryError exception on failure to open or map
-     * @param sz of shared memory
      */
     void OpenSharedMemory() {
         fd = shm_open(name.c_str(), O_RDWR, 0);
@@ -248,7 +245,6 @@ template <typename T> class SharedMemory {
     /**
      * Map shared memory to an address
      * throws a SharedMemoryException exception on failure
-     * @param sz of shared memory
      */
 
     T *MapSharedMemory() {

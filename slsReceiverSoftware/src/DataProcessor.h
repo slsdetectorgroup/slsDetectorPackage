@@ -32,7 +32,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * @param f address of Fifo pointer
      * @param ftype pointer to file format type
      * @param fwenable file writer enable
-     * @apram mfwenable pointer to master file write enable
+     * @param mfwenable pointer to master file write enable
      * @param dsEnable pointer to data stream enable
      * @param dr pointer to dynamic range
      * @param freq pointer to streaming frequency
@@ -104,7 +104,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     /**
      * Set File Format
-     * @param f file format
+     * @param fs file format
      */
     void SetFileFormat(const fileFormat fs);
 
@@ -200,7 +200,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     /**
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
-     * @param buffer
+     * @param buf address of pointer
      */
     void ProcessAnImage(char *buf);
 

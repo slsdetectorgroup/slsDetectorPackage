@@ -550,7 +550,7 @@ class Detector {
      * Validates and sets the receiver.
      * Updates local receiver cache parameters
      * Configures the detector to the receiver as UDP destination
-     * @param receiver receiver hostname or IP address, can include tcp port eg.
+     * receiver is receiver hostname or IP address, can include tcp port eg.
      * hostname:port
      */
     void setRxHostname(const std::string &receiver, Positions pos = {});
@@ -669,7 +669,7 @@ class Detector {
 
     Result<int> getRxZmqFrequency(Positions pos = {}) const;
 
-    /** @param freq nth frame streamed out of receiver.
+    /** freq is nth frame streamed out of receiver.
      * If 0, streaming timer is the timeout,
      * after which current frame sent out. Default is 0 at 200 ms.
      * Default is 1: send every frame.
@@ -863,7 +863,7 @@ class Detector {
      * and temperature control is enabled,
      * power to chip will be switched off and
      * temperature event will be set
-     * @param val value in degrees
+     * val is value in degrees
      */
     void setThresholdTemperature(int temp, Positions pos = {});
 
@@ -924,7 +924,7 @@ class Detector {
      * [Gotthard]
      * Options: Only a single ROI per module
      * Can set only a single ROI at a time
-     * @param module position index
+     * module_id is position index
      */
     void setROI(defs::ROI value, int module_id);
 
@@ -956,8 +956,8 @@ class Detector {
     Result<std::array<int, 2>> getInjectChannel(Positions pos = {});
 
     /** [Gotthard2]
-     * @param offsetChannel starting channel to be injected
-     * @param incrementChannel determines succeeding channels to be injected */
+     * offsetChannel is starting channel to be injected
+     * incrementChannel is determines succeeding channels to be injected */
     void setInjectChannel(const int offsetChannel, const int incrementChannel,
                           Positions pos = {});
 
@@ -1166,8 +1166,8 @@ class Detector {
     /**
      * [CTB] Set Digital IO Delay
      * cannot get
-     * @param digital IO mask to select the pins
-     * @param delay delay in ps(1 bit=25ps, max of 775 ps)
+     * pinMask is IO mask to select the pins
+     * delay is delay in ps(1 bit=25ps, max of 775 ps)
      */
     void setDigitalIODelay(uint64_t pinMask, int delay, Positions pos = {});
 
@@ -1335,11 +1335,10 @@ class Detector {
      * [Jungfrau][Gotthard][CTB][Moench]
      * Updates the firmware, detector server and then reboots detector
      * controller blackfin.
-     * @param sname name of detector server binary found on tftp folder of host
+     * sname is name of detector server binary found on tftp folder of host
      * pc
-     * @param hostname name of pc to tftp from
-     * @param fname programming file name
-     * @param pos detector positions
+     * hostname is name of pc to tftp from
+     * fname is programming file name
      */
     void updateFirmwareAndServer(const std::string &sname,
                                  const std::string &hostname,

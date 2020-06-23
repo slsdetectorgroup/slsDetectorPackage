@@ -68,7 +68,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
   public:
     /**
      * Constructor
-     * @param id multi detector id
+     * @param multi_id multi detector id
      * @param verify true to verify if shared memory version matches existing
      * one
      * @param update true to update last user pid, date etc
@@ -213,7 +213,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     /**
      * Connect to Virtual Detector Servers at local host
-     * @param ndet number of detectors
+     * @param numdet number of detectors
      * @param port starting port number
      */
     void setVirtualDetectorServers(const int numdet, const int port);
@@ -283,8 +283,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * [Jungfrau][Ctb] from pof file
      * [Mythen3][Gotthard2] from rbf file
      * @param fname name of pof/rbf file
-     * @param fpgasrc pointer in memory to read programming file to
-     * @returns file size
+     * @returns binary of the program
      */
     std::vector<char> readProgrammingFile(const std::string &fname);
 
@@ -302,7 +301,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * Creates shm and initializes shm structure OR
      * Open shm and maps to structure
      * @param verify true to verify if shm size matches existing one
-     * @param update true to update last user pid, date etc
      */
     void initSharedMemory(bool verify = true);
 
@@ -364,7 +362,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     /**
      * Main thread sets if the processing thread should join it
-     * @param v true if it should join, else false
+     * @param value true if it should join, else false
      */
     void setJoinThreadFlag(bool value);
 

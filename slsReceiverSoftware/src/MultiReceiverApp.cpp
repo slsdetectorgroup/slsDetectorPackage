@@ -106,7 +106,6 @@ void GetData(char *metadata, char *datapointer, uint32_t datasize, void *p) {
  * for each image call back.
  * @param metadata sls_receiver_header metadata
  * @param datapointer pointer to data
- * @param datasize data size in bytes.
  * @param revDatasize new data size in bytes after the callback.
  * This will be the size written/streamed. (only smaller value is allowed).
  * @param p pointer to object

@@ -19,7 +19,7 @@ int readDataFile(std::ifstream &infile, short int *data, int nch,
 
 /** (used by multi and sls)
  * reads a short int rawdata file
- * @param name of the file to be read
+ * @param fname name of the file to be read
  * @param data array of data value
  * @param nch number of channels
  * @returns OK or FAIL if it could not read the file or data=NULL

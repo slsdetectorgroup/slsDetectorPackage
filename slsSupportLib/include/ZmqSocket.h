@@ -80,7 +80,7 @@ class ZmqSocket {
     /**
      * Constructor for a client
      * Creates socket, context and connects to server
-     * @param hostname hostname or ip of server
+     * @param hostname_or_ip hostname or ip of server
      * @param portnumber port number
      */
     ZmqSocket(const char *const hostname_or_ip, const uint32_t portnumber);
@@ -88,7 +88,6 @@ class ZmqSocket {
     /**
      * Constructor for a server
      * Creates socket, context and connects to server
-     * @param hostname hostname or ip of server
      * @param portnumber port number
      * @param ethip is the ip of the ethernet interface to stream zmq from
      */
@@ -170,7 +169,7 @@ class ZmqSocket {
      * Parse Header
      * @param index self index for debugging
      * @param length length of message
-     * @param message message
+     * @param buff message
      * @param zHeader filled out zmqHeader structure (parsed from json header)
      * @param version version that has to match, -1 to not care
      * @returns true if successful else false

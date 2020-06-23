@@ -434,6 +434,12 @@ class CmdProxy {
         return ToStringHex(value);
     }
 
+    template <typename V> std::string OutStringHex(const V &value, int width) {
+        if (value.equal())
+            return ToStringHex(value.front(), width);
+        return ToStringHex(value, width);
+    }
+
     template <typename V> std::string OutString(const V &value) {
         if (value.equal())
             return ToString(value.front());

@@ -111,6 +111,16 @@ ToStringHex(const T &value) {
     return os.str();
 }
 
+/** Conversion of integer types, do not remove trailing zeros */
+template <typename T>
+typename std::enable_if<std::is_integral<T>::value, std::string>::type
+ToStringHex(const T &value, int width) {
+    std::ostringstream os;
+    os << "0x" << std::hex << std::setfill('0') << std::setw(width) << value
+       << std::dec;
+    return os.str();
+}
+
 /**
  * hex
  * For a container loop over all elements and call ToString on the element

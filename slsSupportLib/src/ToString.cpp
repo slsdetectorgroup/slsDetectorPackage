@@ -66,32 +66,34 @@ std::ostream &operator<<(std::ostream &os,
 
 std::string ToString(const slsDetectorDefs::patternParameters &r) {
     std::ostringstream oss;
-    oss << '[' << std::endl;
+    oss << '[' << std::setfill('0') << std::endl;
+    int addr_width = 4;
+    int word_width = 16;
     for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
         if (r.word[i] != 0) {
-            oss << "patword 0x" << std::hex << i << " 0x" << std::hex
-                << r.word[i] << std::endl;
+            oss << "patword " << ToStringHex(i, addr_width) << " "
+                << ToStringHex(r.word[i], word_width) << std::endl;
         }
     }
-    oss << "patioctrl 0x" << std::hex << r.patioctrl << std::endl
-        << "patclkctrl 0x" << r.patclkctrl << std::endl
-        << "patlimits 0x" << r.patlimits[0] << " 0x" << r.patlimits[1]
-        << std::endl
-        << "patloop0 0x" << r.patloop[0] << " 0x" << r.patloop[1] << std::endl
-        << "patnloop0 " << std::dec << r.patnloop[0] << std::hex << std::endl
-        << "patloop1 0x" << r.patloop[2] << " 0x" << r.patloop[3] << std::endl
-        << "patnloop1 " << std::dec << r.patnloop[1] << std::hex << std::endl
-        << "patloop2 0x" << r.patloop[4] << " 0x" << r.patloop[5] << std::endl
-        << "patnloop2 " << std::dec << r.patnloop[2] << std::hex << std::endl
-        << "patwait0 0x" << r.patwait[0] << std::endl
-        << "patwaittime0 " << std::dec << r.patwaittime[0] << std::hex
-        << std::endl
-        << "patwait1 0x" << r.patwait[1] << std::endl
-        << "patwaittime1 " << std::dec << r.patwaittime[1] << std::hex
-        << std::endl
-        << "patwait2 0x" << r.patwait[1] << std::endl
-        << "patwaittime2 " << std::dec << r.patwaittime[2] << std::hex
-        << std::endl
+    oss << "patioctrl " << ToStringHex(r.patioctrl, word_width) << std::endl
+        << "patclkctrl " << ToStringHex(r.patclkctrl, word_width) << std::endl
+        << "patlimits " << ToStringHex(r.patlimits[0], addr_width) << " "
+        << ToStringHex(r.patlimits[1], addr_width) << std::endl
+        << "patloop0 " << ToStringHex(r.patloop[0], addr_width) << " "
+        << ToStringHex(r.patloop[1], addr_width) << std::endl
+        << "patnloop0 " << r.patnloop[0] << std::endl
+        << "patloop1 " << ToStringHex(r.patloop[2], addr_width) << " "
+        << ToStringHex(r.patloop[3], addr_width) << std::endl
+        << "patnloop1 " << r.patnloop[1] << std::endl
+        << "patloop2 " << ToStringHex(r.patloop[4], addr_width) << " "
+        << ToStringHex(r.patloop[5], addr_width) << std::endl
+        << "patnloop2 " << r.patnloop[2] << std::endl
+        << "patwait0 " << ToStringHex(r.patwait[0], addr_width) << std::endl
+        << "patwaittime0 " << r.patwaittime[0] << std::endl
+        << "patwait1 " << ToStringHex(r.patwait[1], addr_width) << std::endl
+        << "patwaittime1 " << r.patwaittime[1] << std::endl
+        << "patwait2 " << ToStringHex(r.patwait[2], addr_width) << std::endl
+        << "patwaittime2 " << r.patwaittime[2] << std::endl
         << ']';
     return oss.str();
 }

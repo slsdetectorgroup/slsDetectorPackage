@@ -7395,6 +7395,11 @@ int set_pattern(int file_des) {
         LOG(logINFO, ("Setting Pattern\n"));
         LOG(logINFO, ("Setting Pattern Word\n"));
         for (int i = 0; i < MAX_PATTERN_LENGTH; ++i) {
+            if (patwords[i] != 0) {
+                LOG(logDEBUG1,
+                    ("Setting Pattern Word (addr:0x%x, word:0x%llx)\n", i,
+                     (long long int)patwords[i]));
+            }
             writePatternWord(i, patwords[i]);
         }
         int numLoops = -1, retval0 = -1, retval1 = -1;

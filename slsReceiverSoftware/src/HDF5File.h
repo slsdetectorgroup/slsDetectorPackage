@@ -1,4 +1,3 @@
-#ifdef HDF5C
 #pragma once
 /************************************************
  * @file HDF5File.h
@@ -91,4 +90,3 @@ class HDF5File : private virtual slsDetectorDefs, public File {
 
     uint64_t extNumImages;
 };
-#endif

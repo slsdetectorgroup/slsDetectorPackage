@@ -1,5 +1,5 @@
 """
-Setup file for sls_detector
+Setup file for slsdet
 Build upon the pybind11 example found here: https://github.com/pybind/python_example
 """
 from setuptools import setup, Extension, find_packages

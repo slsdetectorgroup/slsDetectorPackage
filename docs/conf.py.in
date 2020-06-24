@@ -21,7 +21,7 @@ print(sys.path)
 # -- Project information -----------------------------------------------------
 
 project = 'slsDetectorPackage'
-copyright = '2019, PSD Detector Group'
+copyright = '2020, PSD Detector Group'
 author = 'PSD Detector Group'
 version = '@PROJECT_VERSION@'
 

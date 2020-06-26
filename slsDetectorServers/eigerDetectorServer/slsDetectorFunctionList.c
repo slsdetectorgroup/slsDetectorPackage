@@ -1,13 +1,12 @@
 #include "slsDetectorFunctionList.h"
 #include "clogger.h"
 #include "common.h"
+#include "sharedMemory.h"
 #include "versionAPI.h"
 
 #ifndef VIRTUAL
 #include "Beb.h"
 #include "FebControl.h"
-#else
-#include "communication_virtual.h"
 #endif
 
 #include <string.h>
@@ -32,6 +31,7 @@ extern void getIpAddressinString(char *cip, uint32_t ip);
 int initError = OK;
 int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
+sharedMem *thisMem;
 
 int default_tau_from_file = -1;
 enum detectorSettings thisSettings;
@@ -251,9 +251,10 @@ u_int64_t getDetectorMAC() {
     // execute and get address
     char output[255];
 #ifdef VIRTUAL
-    FILE *sysFile = popen("cat /sys/class/net/$(ip route show default | awk "
-                          "'/default/ {print $5}')/address",
-                          "r");
+    FILE *sysFile =
+        popen("cat /sys/class/net/$(ip route show default | grep -v vpn  | awk "
+              "'/default/ {print $5}')/address",
+              "r");
 #else
     FILE *sysFile = popen("more /sys/class/net/eth0/address", "r");
 #endif
@@ -288,9 +289,10 @@ u_int32_t getDetectorIP() {
     // execute and get address
     char output[255];
 #ifdef VIRTUAL
-    FILE *sysFile = popen("ifconfig $(ip route show default | awk '/default/ "
-                          "{print $5}') | grep 'inet ' | cut -d ' ' -f10",
-                          "r");
+    FILE *sysFile =
+        popen("ifconfig $(ip route show default | grep -v vpn | awk '/default/ "
+              "{print $5}') | grep 'inet ' | cut -d ' ' -f10",
+              "r");
 #else
     FILE *sysFile = popen(
         "ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2",
@@ -365,7 +367,9 @@ void initStopServer() {
     getModuleConfiguration();
     virtual_stop = 0;
     if (!isControlServer) {
-        ComVirtual_setStop(virtual_stop);
+        lockSharedMemory(thisMem);
+        thisMem->stop = virtual_stop;
+        unlockSharedMemory(thisMem);
     }
     // get top/master in virtual
     readConfigFile();
@@ -670,7 +674,9 @@ void setupDetector() {
 #ifdef VIRTUAL
     virtual_status = 0;
     if (isControlServer) {
-        ComVirtual_setStatus(virtual_status);
+        lockSharedMemory(thisMem);
+        thisMem->status = virtual_status;
+        unlockSharedMemory(thisMem);
     }
 #endif
 
@@ -1986,21 +1992,27 @@ int startStateMachine() {
         return FAIL;
     }
     LOG(logINFOBLUE, ("Starting State Machine\n"));
-    virtual_status = 1;
     if (isControlServer) {
-        ComVirtual_setStatus(virtual_status);
-        virtual_stop = ComVirtual_getStop();
+        lockSharedMemory(thisMem);
+        virtual_stop = thisMem->stop;
+        unlockSharedMemory(thisMem);
         if (virtual_stop != 0) {
             LOG(logERROR, ("Cant start acquisition. "
                            "Stop server has not updated stop status to 0\n"));
             return FAIL;
         }
+        virtual_status = 1;
+        lockSharedMemory(thisMem);
+        thisMem->status = virtual_status;
+        unlockSharedMemory(thisMem);
     }
     if (pthread_create(&virtual_tid, NULL, &start_timer, NULL)) {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         virtual_status = 0;
         if (isControlServer) {
-            ComVirtual_setStatus(virtual_status);
+            lockSharedMemory(thisMem);
+            thisMem->status = virtual_status;
+            unlockSharedMemory(thisMem);
         }
         return FAIL;
     }
@@ -2107,7 +2119,9 @@ void *start_timer(void *arg) {
             usleep(eiger_virtual_transmission_delay_frame);
 
             // update the virtual stop from stop server
-            virtual_stop = ComVirtual_getStop();
+            lockSharedMemory(thisMem);
+            virtual_stop = thisMem->stop;
+            unlockSharedMemory(thisMem);
             // check if virtual_stop is high
             if (virtual_stop == 1) {
                 setStartingFrameNumber(frameNr + iframes + 1);
@@ -2210,7 +2224,9 @@ void *start_timer(void *arg) {
 
     virtual_status = 0;
     if (isControlServer) {
-        ComVirtual_setStatus(virtual_status);
+        lockSharedMemory(thisMem);
+        thisMem->status = virtual_status;
+        unlockSharedMemory(thisMem);
     }
     LOG(logINFOBLUE, ("Finished Acquiring\n"));
     return NULL;
@@ -2222,14 +2238,20 @@ int stopStateMachine() {
 #ifdef VIRTUAL
     if (!isControlServer) {
         virtual_stop = 1;
-        ComVirtual_setStop(virtual_stop);
+        lockSharedMemory(thisMem);
+        virtual_stop = thisMem->stop;
+        unlockSharedMemory(thisMem);
         // read till status is idle
         int tempStatus = 1;
         while (tempStatus == 1) {
-            tempStatus = ComVirtual_getStatus();
+            lockSharedMemory(thisMem);
+            tempStatus = thisMem->status;
+            unlockSharedMemory(thisMem);
         }
         virtual_stop = 0;
-        ComVirtual_setStop(virtual_stop);
+        lockSharedMemory(thisMem);
+        virtual_stop = thisMem->stop;
+        unlockSharedMemory(thisMem);
         LOG(logINFO, ("Stopped State Machine\n"));
     }
     return OK;
@@ -2289,7 +2311,9 @@ int startReadOut() {
 enum runStatus getRunStatus() {
 #ifdef VIRTUAL
     if (!isControlServer) {
-        virtual_status = ComVirtual_getStatus();
+        lockSharedMemory(thisMem);
+        virtual_status = thisMem->status;
+        unlockSharedMemory(thisMem);
     }
     if (virtual_status == 0) {
         LOG(logINFO, ("Status: IDLE\n"));

@@ -3,13 +3,11 @@
 
 #include "clogger.h"
 #include "communication_funcs.h"
+#include "sharedMemory.h"
 #include "slsDetectorServer_defs.h"
 #include "slsDetectorServer_funcs.h"
 #include "sls_detector_defs.h"
 #include "versionAPI.h"
-#ifdef VIRTUAL
-#include "communication_virtual.h"
-#endif
 
 #include <signal.h>
 #include <string.h>
@@ -28,6 +26,7 @@ extern int checkModuleFlag;
 #ifdef GOTTHARDD
 extern int phaseShift;
 #endif
+extern sharedMem *thisMem;
 
 void error(char *msg) { perror(msg); }
 
@@ -100,6 +99,10 @@ int main(int argc, char *argv[]) {
 
     // control server
     if (isControlServer) {
+        LOG(logINFOBLUE, ("Control Server [%d]\n", portno));
+        if (!createSharedMemory(&thisMem, portno)) {
+            return -1;
+        }
 #ifdef STOP_SERVER
         // start stop server process
         char cmd[MAX_STR_LENGTH];
@@ -121,21 +124,14 @@ int main(int argc, char *argv[]) {
 
         LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
         system(cmd);
-        LOG(logINFOBLUE, ("Control Server [%d]\n", portno));
-#ifdef VIRTUAL
-        // creating files for virtual servers to communicate with each other
-        if (!ComVirtual_createFiles(portno)) {
-            return -1;
-        }
-#endif
 #endif
     }
     // stop server
     else {
         LOG(logINFOBLUE, ("Stop Server [%d]\n", portno));
-#ifdef VIRTUAL
-        ComVirtual_setFileNames(portno - 1);
-#endif
+        if (!openSharedMemory(&thisMem, portno - 1)) {
+            return -1;
+        }
     }
 
     init_detector();
@@ -163,6 +159,17 @@ int main(int argc, char *argv[]) {
     }
 
     exitServer(sockfd);
+
+    // detach shared memory
+    if (!detachSharedMemory(&thisMem)) {
+        return -1;
+    }
+    // remove shared memory (control server)
+    if (isControlServer) {
+        if (!removeSharedMemory()) {
+            return -1;
+        }
+    }
 
     if (retval == REBOOT) {
         LOG(logINFORED, ("Rebooting!\n"));

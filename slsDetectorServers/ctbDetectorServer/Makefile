@@ -6,13 +6,13 @@ support_lib = ../../slsSupportLib/include/
 CROSS  		= bfin-uclinux-
 CC    		= $(CROSS)gcc
 CFLAGS		+=  -Wall -std=gnu99 -DCHIPTESTBOARDD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir) #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
-LDLIBS		+= 	-lm  
+LDLIBS		+= 	-lm -lrt -pthread
 PROGS		= 	ctbDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRCS 		= 	slsDetectorFunctionList.c  
-SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c $(main_src)common.c $(main_src)commonServerFunctions.c $(main_src)communication_funcs_UDP.c $(main_src)UDPPacketHeaderGenerator.c $(main_src)AD7689.c $(main_src)AD9257.c $(main_src)ALTERA_PLL.c  $(main_src)I2C.c  $(main_src)INA226.c  $(main_src)LTC2620.c $(main_src)MAX1932.c $(main_src)programFpgaBlackfin.c
+SRCS		+=	$(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs.c $(main_src)blackfin.c $(main_src)common.c $(main_src)commonServerFunctions.c $(main_src)communication_funcs_UDP.c $(main_src)UDPPacketHeaderGenerator.c $(main_src)AD7689.c $(main_src)AD9257.c $(main_src)ALTERA_PLL.c  $(main_src)I2C.c  $(main_src)INA226.c  $(main_src)LTC2620.c $(main_src)MAX1932.c $(main_src)programFpgaBlackfin.c $(main_src)/sharedMemory.c
 
 OBJS 		= 	$(SRCS:.c=.o) 
  

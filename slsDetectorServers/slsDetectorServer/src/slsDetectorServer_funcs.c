@@ -50,6 +50,13 @@ int detectorId = -1;
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
 
+// scan variables
+int scan = 0;
+int numScanSteps = 0;
+int *scanSteps = NULL;
+enum DACINDEX scanDac = 0;
+int scanTrimbits = 0;
+
 /* initialization functions */
 
 int printSocketReadError() {
@@ -332,7 +339,10 @@ void function_table() {
     flist[F_GET_VETO] = &get_veto;
     flist[F_SET_VETO] = &set_veto;
     flist[F_SET_PATTERN] = &set_pattern;
-
+    flist[F_GET_SCAN] = get_scan;
+    flist[F_GET_NUM_SCAN_STEPS] = get_num_scan_steps;
+    flist[F_DISABLE_SCAN] = disable_scan;
+    flist[F_ENABLE_SCAN] = enable_scan;
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -1707,16 +1717,41 @@ int start_acquisition(int file_des) {
             strcat(mess, configureMessage);
             LOG(logERROR, (mess));
         } else {
-            ret = startStateMachine();
-            if (ret == FAIL) {
+            int times = 1;
+            if (scan) {
+                times = numScanSteps;
+            }
+            for (int i = 0; i != times; ++i) {
+                if (scanTrimbits) {
+#ifdef EIGERD
+                    setAllTrimbits(scanSteps[i]);
+#else
+                    LOG(logERROR, ("trimbit scan not implemented!\n"));
+#endif
+                } else {
+                    setDac(scanDac, scanSteps[i], 0);
+                    int retval = getDAC(scanDac, 0);
+                    if (abs(retval - val) > 5) {
+                        ret = FAIL;
+                        sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
+                                dacIndex, scanSteps[i], retval);
+                        LOG(logERROR, (mess));
+                        break;
+                    }
+                }
+                ret = startStateMachine();
+                if (ret == FAIL) {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(VIRTUAL)
-                sprintf(mess,
+                    sprintf(
+                        mess,
                         "Could not start acquisition. Could not create udp "
                         "socket in server. Check udp_dstip & udp_dstport.\n");
 #else
-                sprintf(mess, "Could not start acquisition\n");
+                    sprintf(mess, "Could not start acquisition\n");
 #endif
-                LOG(logERROR, (mess));
+                    LOG(logERROR, (mess));
+                    break;
+                }
             }
         }
         LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
@@ -1866,8 +1901,14 @@ int get_num_frames(int file_des) {
     int64_t retval = -1;
 
     // get only
-    retval = getNumFrames();
-    LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
+    if (!scan) {
+        retval = getNumFrames();
+        LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
+    } else {
+        retval = numScanSteps;
+        LOG(logDEBUG1, ("retval num frames (num scan steps) %lld\n",
+                        (long long int)retval));
+    }
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -1882,22 +1923,26 @@ int set_num_frames(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
+        // only set number of frames if normal mode (not scan)
+        if (!scan) {
 #ifdef GOTTHARD2D
-        // validate #frames in burst mode
-        if (getBurstMode() != BURST_OFF && arg > MAX_FRAMES_IN_BURST_MODE) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not set number of frames %lld. Must be <= %d in "
-                    "burst mode.\n",
-                    (long long unsigned int)arg, MAX_FRAMES_IN_BURST_MODE);
-            LOG(logERROR, (mess));
-        }
+            // validate #frames in burst mode
+            if (getBurstMode() != BURST_OFF && arg > MAX_FRAMES_IN_BURST_MODE) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set number of frames %lld. Must be <= %d in "
+                        "burst mode.\n",
+                        (long long unsigned int)arg, MAX_FRAMES_IN_BURST_MODE);
+                LOG(logERROR, (mess));
+            }
 #endif
-        if (ret == OK) {
-            setNumFrames(arg);
-            int64_t retval = getNumFrames();
-            LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
-            validate64(arg, retval, "set number of frames", DEC);
+            if (ret == OK) {
+                setNumFrames(arg);
+                int64_t retval = getNumFrames();
+                LOG(logDEBUG1,
+                    ("retval num frames %lld\n", (long long int)retval));
+                validate64(arg, retval, "set number of frames", DEC);
+            }
         }
     }
     return Server_SendResult(file_des, INT64, NULL, 0);
@@ -7452,5 +7497,160 @@ int set_pattern(int file_des) {
         }
     }
 #endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_scan(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting scan\n"));
+
+    // get only
+    retval = scan;
+    LOG(logDEBUG1, ("scan mode retval: %u\n", retval));
+
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int get_num_scan_steps(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting num scan steps\n"));
+
+    // get only
+    retval = numScanSteps;
+    LOG(logDEBUG1, ("num scan steps retval: %u\n", retval));
+
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int disable_scan(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        LOG(logINFOBLUE, ("Disabling scan\n"));
+        scan = 0;
+        scanTrimbits = 0;
+        numScanSteps = 0;
+        if (scanSteps != NULL) {
+            free(scanSteps);
+            scanSteps = NULL;
+        }
+        setNumFrames(1);
+        int64_t retval = getNumFrames();
+        LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
+        validate64(arg, retval, "set number of frames", DEC);
+    }
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int enable_scan(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[4] = {-1, -1, -1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        int startOffset = args[1];
+        int endOffset = args[2];
+        int stepSize = args[3];
+        scanTrimbits = 0;
+        // trimbit scan
+        if (args[0] == TRIMBIT_SCAN) {
+#ifdef EIGERD
+            if (startOffset < 0 || startOffset > MAX_TRIMBITS_VALUE ||
+                endOffset < 0 || endOffset > MAX_TRIMBITS_VALUE) {
+                ret = FAIL;
+                sprintf(mess, "Invalid trimbits scan values\n");
+                LOG(logERROR, (mess));
+            } else {
+                scanTrimbits = 1;
+                // changes settings to undefined
+                setSettings(UNDEFINED);
+                LOG(logERROR,
+                    ("Settings has been changed to undefined (change all "
+                     "trimbits)\n"));
+            }
+#else
+            ret = FAIL;
+            sprintf(mess, "Cannot enable trimbit scan. Not implemented for "
+                          "this detector\n");
+            LOG(logERROR, (mess));
+#endif
+        } else {
+            ret = converttodac(args[0], &scanDac);
+            if (ret == FAIL) {
+                sprintf(mess,
+                        "Cannot enable scan. Dac index %d not implemented for "
+                        "this detector\n",
+                        args[0]);
+                LOG(logERROR, (mess));
+            } else if (startOffset < 0 || startOffset > getMaxDacSteps() ||
+                       endOffset < 0 || endOffset > getMaxDacSteps()) {
+                ret = FAIL;
+                sprintf(mess, "Invalid dac scan values\n");
+                LOG(logERROR, (mess));
+            }
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+            else if (checkVLimitDacCompliant(startOffset) == FAIL ||
+                     checkVLimitDacCompliant(endOffset) == FAIL) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Invalid scan dac values."
+                        "Exceeds voltage limit %d.\n",
+                        getVLimit());
+                LOG(logERROR, (mess));
+            }
+#endif
+#ifdef EIGERD
+            if (ret == OK) {
+                // changing dac changes settings to undefined
+                switch (scanDac) {
+                case E_VCMP_LL:
+                case E_VCMP_LR:
+                case E_VCMP_RL:
+                case E_VCMP_RR:
+                case E_VRPREAMP:
+                case E_VCP:
+                    setSettings(UNDEFINED);
+                    LOG(logERROR, ("Settings has been changed "
+                                   "to undefined (changed specific dacs)\n"));
+                    break;
+                default:
+                    break;
+                }
+            }
+#endif
+        }
+        if (ret == OK) {
+            scan = 1;
+            numScanSteps = ((startOffset - endOffset) / stepSize) + 1;
+            if (scanSteps != NULL) {
+                free(scanSteps);
+            }
+            scanSteps = malloc(numScanSteps * sizeof(int));
+            for (int i = 0; i != numScanSteps; ++i) {
+                scanSteps[i] = startOffset + i * stepSize;
+            }
+
+            LOG(logINFOBLUE,
+                ("Enabling scan for dac[%d], start[%d], end[%d], "
+                 "stepsize[%d], nsteps[%d]\n",
+                 ind, startOffset, endOffset, stepSize, numScanSteps));
+            setNumFrames(1);
+            int64_t retval = getNumFrames();
+            LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
+            validate64(arg, retval, "set number of frames", DEC);
+        }
+    }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }

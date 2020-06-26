@@ -303,6 +303,7 @@ typedef struct {
         TEMPERATURE_SODR,
         TEMPERATURE_FPGA2,
         TEMPERATURE_FPGA3,
+        TRIMBIT_SCAN,
         V_POWER_A = 100,
         V_POWER_B = 101,
         V_POWER_C = 102,

@@ -465,6 +465,8 @@ std::string ToString(const defs::dacIndex s) {
         return std::string("vipre_cds");
     case defs::IBIAS_SFP:
         return std::string("ibias_sfp");
+    case defs::TRIMBIT_SCAN:
+        return std::string("trimbit_scan");
     default:
         return std::string("Unknown");
     }
@@ -818,6 +820,8 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::VIPRE_CDS;
     if (s == "ibias_sfp")
         return defs::IBIAS_SFP;
+    if (s == "trimbit_scan")
+        return defs::TRIMBIT_SCAN;
     throw sls::RuntimeError("Unknown dac Index " + s);
 }
 

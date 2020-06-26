@@ -178,7 +178,7 @@ std::string CmdProxy::VirtualServer(int action) {
     return os.str();
 }
 
-std::string CmdProxy::acquire(int action) {
+std::string CmdProxy::Acquire(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
         os << cmd << " - Acquire the number of frames set up.\n";
@@ -991,6 +991,41 @@ std::string CmdProxy::DetectorStatus(int action) {
     return os.str();
 }
 
+std::string CmdProxy::Scan(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[dac_name|0|trimbit_scan] [start_val] [stop_val] "
+              "[step_size]\n\tConfigures to scan "
+              "dac. Must acquire after this. To cancel the scan configuration "
+              "set dac to '0' without further arguments."
+              "\n\t[Eiger]Use trimbit_scan as dac name for a trimbit scan."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getScan();
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() == 1) {
+            det->disableScan();
+            os << "scan disabled" << '\n';
+        } else if (args.size() != 4) {
+            WrongNumberOfParameters(4);
+        } else {
+            auto t = det->enableScan(
+                StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
+                StringTo<int>(args[2]), StringTo<int>(args[3]));
+            auto nsteps = det->getNumScanSteps().tsquash(
+                "inconsistent number of scan steps");
+            os << "scan enabled for " << nsteps << "steps" << '\n';
+        }
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
 /* Network Configuration (Detector<->Receiver) */
 
 std::string CmdProxy::UDPDestinationIP(int action) {

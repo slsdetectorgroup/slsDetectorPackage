@@ -201,6 +201,10 @@ enum detFuncs {
     F_GET_VETO,
     F_SET_VETO,
     F_SET_PATTERN,
+    F_GET_SCAN,
+    F_GET_NUM_SCAN_STEPS,
+    F_DISABLE_SCAN,
+    F_ENABLE_SCAN,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -500,6 +504,10 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_VETO:                        return "F_GET_VETO";
     case F_SET_VETO:                        return "F_SET_VETO";
     case F_SET_PATTERN:                     return "F_SET_PATTERN";
+    case F_GET_SCAN:                        return "F_GET_SCAN"; 
+    case F_GET_NUM_SCAN_STEPS:              return "F_GET_NUM_SCAN_STEPS";         
+    case F_DISABLE_SCAN:                    return "F_DISABLE_SCAN";     
+    case F_ENABLE_SCAN:                     return "F_ENABLE_SCAN"; 
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

@@ -20,6 +20,8 @@
 typedef struct Memory {
     int version;
     sem_t sem;
+    int scanStatus;
+    int scanStop;
 #ifdef VIRTUAL
     int status;
     int stop;
@@ -139,6 +141,7 @@ void sharedMemory_lock() { sem_wait(&(shm->sem)); }
 
 void sharedMemory_unlock() { sem_post(&(shm->sem)); }
 
+#ifdef VIRTUAL
 void sharedMemory_setStatus(int s) {
     sharedMemory_lock();
     shm->status = s;
@@ -163,6 +166,35 @@ int sharedMemory_getStop() {
     int s = 0;
     sharedMemory_lock();
     s = shm->stop;
+    sharedMemory_unlock();
+    return s;
+}
+#endif
+
+void sharedMemory_setScanStatus(int s) {
+    sharedMemory_lock();
+    shm->scanStatus = s;
+    sharedMemory_unlock();
+}
+
+int sharedMemory_getScanStatus() {
+    int s = 0;
+    sharedMemory_lock();
+    s = shm->scanStatus;
+    sharedMemory_unlock();
+    return s;
+}
+
+void sharedMemory_setScanStop(int s) {
+    sharedMemory_lock();
+    shm->scanStop = s;
+    sharedMemory_unlock();
+}
+
+int sharedMemory_getScanStop() {
+    int s = 0;
+    sharedMemory_lock();
+    s = shm->scanStop;
     sharedMemory_unlock();
     return s;
 }

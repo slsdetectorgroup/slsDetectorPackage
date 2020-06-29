@@ -2407,6 +2407,10 @@ void *start_timer(void *arg) {
 
 int stopStateMachine() {
     LOG(logINFORED, ("Stopping State Machine\n"));
+    // if scan active, stop scan
+    if (sharedMemory_getScanStatus()) {
+        sharedMemory_setScanStop(1);
+    }
 #ifdef VIRTUAL
     if (!isControlServer) {
         virtual_stop = 1;
@@ -2430,19 +2434,19 @@ int stopStateMachine() {
 }
 
 enum runStatus getRunStatus() {
+    LOG(logDEBUG1, ("Getting status\n"));
 #ifdef VIRTUAL
-    if (!isControlServer) {
-        virtual_status = sharedMemory_getStatus();
-    }
-    if (virtual_status == 0) {
-        LOG(logINFOBLUE, ("Status: IDLE\n"));
-        return IDLE;
-    } else {
+    if (sharedMemory_getScanStatus() || sharedMemory_getStatus()) {
         LOG(logINFOBLUE, ("Status: RUNNING\n"));
         return RUNNING;
     }
+    LOG(logINFOBLUE, ("Status: IDLE\n"));
+    return IDLE;
 #endif
-    LOG(logDEBUG1, ("Getting status\n"));
+    if (sharedMemory_getScanStatus()) {
+        LOG(logINFOBLUE, ("Status: Scan RUNNING\n"));
+        return RUNNING;
+    }
     uint32_t retval = bus_r(FLOW_STATUS_REG);
     LOG(logINFO, ("Status Register: %08x\n", retval));
 

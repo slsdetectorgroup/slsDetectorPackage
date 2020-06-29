@@ -1,6 +1,7 @@
 #include "slsDetectorServer_funcs.h"
 #include "clogger.h"
 #include "communication_funcs.h"
+#include "sharedMemory.h"
 #include "slsDetectorFunctionList.h"
 #include "sls_detector_funcs.h"
 
@@ -1725,10 +1726,19 @@ int start_state_machine(int blocking, int file_des) {
             LOG(logERROR, (mess));
         } else {
             int times = 1;
+            // start of scan
             if (scan) {
+                sharedMemory_setScanStop(0);
+                sharedMemory_setScanStatus(1);
                 times = numScanSteps;
             }
             for (int i = 0; i != times; ++i) {
+                // if scanstop
+                if (scan && sharedMemory_getScanStop()) {
+                    LOG(logINFORED, ("Scan stopped!\n"));
+                    sharedMemory_setScanStatus(0);
+                    break;
+                }
                 if (scanTrimbits) {
                     LOG(logINFOBLUE, ("Trimbits scan %d/%d: [%d]\n", i, times,
                                       scanSteps[i]));
@@ -1744,15 +1754,27 @@ int start_state_machine(int blocking, int file_des) {
                     int retval = getDAC(scanDac, 0);
                     if (abs(retval - scanSteps[i]) > 5) {
                         ret = FAIL;
-                        sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
+                        sprintf(mess,
+                                "Could not scan. Setting dac %d : wrote %d but "
+                                "read %d\n",
                                 scanDac, scanSteps[i], scanSteps[i]);
                         LOG(logERROR, (mess));
+                        if (scan) {
+                            sharedMemory_setScanStatus(0);
+                        }
                         break;
                     }
                 } else {
                     LOG(logINFOBLUE, ("Normal Acquisition (not scan)\n"));
                 }
+                // if scanstop
+                if (scan && sharedMemory_getScanStop()) {
+                    LOG(logINFORED, ("Scan stopped!\n"));
+                    sharedMemory_setScanStatus(0);
+                    break;
+                }
                 ret = startStateMachine();
+                LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
                 if (ret == FAIL) {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(VIRTUAL)
                     sprintf(
@@ -1763,6 +1785,9 @@ int start_state_machine(int blocking, int file_des) {
                     sprintf(mess, "Could not start acquisition\n");
 #endif
                     LOG(logERROR, (mess));
+                    if (scan) {
+                        sharedMemory_setScanStatus(0);
+                    }
                     break;
                 }
                 // blocking or scan
@@ -1771,7 +1796,10 @@ int start_state_machine(int blocking, int file_des) {
                 }
             }
         }
-        LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
+        // end of scan
+        if (scan) {
+            sharedMemory_setScanStatus(0);
+        }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }

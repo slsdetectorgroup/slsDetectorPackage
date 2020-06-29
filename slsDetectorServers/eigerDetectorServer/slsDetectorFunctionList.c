@@ -2219,7 +2219,11 @@ void *start_timer(void *arg) {
 #endif
 
 int stopStateMachine() {
-    LOG(logINFORED, ("Going to stop acquisition\n"));
+    LOG(logINFORED, ("Stopping state machine\n"));
+    // if scan active, stop scan
+    if (sharedMemory_getScanStatus()) {
+        sharedMemory_setScanStop(1);
+    }
 #ifdef VIRTUAL
     if (!isControlServer) {
         virtual_stop = 1;
@@ -2289,19 +2293,19 @@ int startReadOut() {
 }
 
 enum runStatus getRunStatus() {
+    LOG(logDEBUG1, ("Getting status\n"));
 #ifdef VIRTUAL
-    if (!isControlServer) {
-        virtual_status = sharedMemory_getStatus();
-    }
-    if (virtual_status == 0) {
-        LOG(logINFO, ("Status: IDLE\n"));
-        return IDLE;
-    } else {
-        LOG(logINFO, ("Status: RUNNING...\n"));
+    if (sharedMemory_getScanStatus() || sharedMemory_getStatus()) {
+        LOG(logINFOBLUE, ("Status: RUNNING\n"));
         return RUNNING;
     }
+    LOG(logINFOBLUE, ("Status: IDLE\n"));
+    return IDLE;
 #else
-
+    if (sharedMemory_getScanStatus()) {
+        LOG(logINFOBLUE, ("Status: Scan RUNNING\n"));
+        return RUNNING;
+    }
     int i = Feb_Control_AcquisitionInProgress();
     if (i == STATUS_ERROR) {
         LOG(logERROR, ("Status: ERROR reading status register\n"));

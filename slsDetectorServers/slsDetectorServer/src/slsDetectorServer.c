@@ -26,7 +26,6 @@ extern int checkModuleFlag;
 #ifdef GOTTHARDD
 extern int phaseShift;
 #endif
-extern sharedMem *thisMem;
 
 void error(char *msg) { perror(msg); }
 
@@ -100,7 +99,7 @@ int main(int argc, char *argv[]) {
     // control server
     if (isControlServer) {
         LOG(logINFOBLUE, ("Control Server [%d]\n", portno));
-        if (!createSharedMemory(&thisMem, portno)) {
+        if (!sharedMemory_create(portno)) {
             return -1;
         }
 #ifdef STOP_SERVER
@@ -129,7 +128,7 @@ int main(int argc, char *argv[]) {
     // stop server
     else {
         LOG(logINFOBLUE, ("Stop Server [%d]\n", portno));
-        if (!openSharedMemory(&thisMem, portno - 1)) {
+        if (!sharedMemory_open(portno - 1)) {
             return -1;
         }
     }
@@ -161,12 +160,12 @@ int main(int argc, char *argv[]) {
     exitServer(sockfd);
 
     // detach shared memory
-    if (!detachSharedMemory(&thisMem)) {
+    if (!sharedMemory_detach()) {
         return -1;
     }
     // remove shared memory (control server)
     if (isControlServer) {
-        if (!removeSharedMemory()) {
+        if (!sharedMemory_remove()) {
             return -1;
         }
     }

@@ -33,7 +33,6 @@ extern void getIpAddressinString(char *cip, uint32_t ip);
 int initError = OK;
 int initCheckDone = 0;
 char initErrorMessage[MAX_STR_LENGTH];
-sharedMem *thisMem;
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
@@ -366,9 +365,7 @@ void initStopServer() {
 #ifdef VIRTUAL
     virtual_stop = 0;
     if (!isControlServer) {
-        lockSharedMemory(thisMem);
-        thisMem->stop = virtual_stop;
-        unlockSharedMemory(thisMem);
+        sharedMemory_setStop(virtual_stop);
     }
     // temp threshold and reset event (read by stop server)
     setThresholdTemperature(DEFAULT_TMP_THRSHLD);
@@ -387,9 +384,7 @@ void setupDetector() {
 #ifdef VIRTUAL
     virtual_status = 0;
     if (isControlServer) {
-        lockSharedMemory(thisMem);
-        thisMem->status = virtual_status;
-        unlockSharedMemory(thisMem);
+        sharedMemory_setStatus(virtual_status);
     }
 #endif
 
@@ -1678,26 +1673,20 @@ int startStateMachine() {
     }
     LOG(logINFOBLUE, ("starting state machine\n"));
     if (isControlServer) {
-        lockSharedMemory(thisMem);
-        virtual_stop = thisMem->stop;
-        unlockSharedMemory(thisMem);
+        virtual_stop = sharedMemory_getStop();
         if (virtual_stop != 0) {
             LOG(logERROR, ("Cant start acquisition. "
                            "Stop server has not updated stop status to 0\n"));
             return FAIL;
         }
         virtual_status = 1;
-        lockSharedMemory(thisMem);
-        thisMem->status = virtual_status;
-        unlockSharedMemory(thisMem);
+        sharedMemory_setStatus(virtual_status);
     }
     if (pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
         virtual_status = 0;
         if (isControlServer) {
-            lockSharedMemory(thisMem);
-            thisMem->status = virtual_status;
-            unlockSharedMemory(thisMem);
+            sharedMemory_setStatus(virtual_status);
         }
         return FAIL;
     }
@@ -1752,9 +1741,7 @@ void *start_timer(void *arg) {
             usleep(transmissionDelayUs);
 
             // update the virtual stop from stop server
-            lockSharedMemory(thisMem);
-            virtual_stop = thisMem->stop;
-            unlockSharedMemory(thisMem);
+            virtual_stop = sharedMemory_getStop();
             // check if virtual_stop is high
             if (virtual_stop == 1) {
                 setStartingFrameNumber(frameNr + iframes + 1);
@@ -1833,9 +1820,7 @@ void *start_timer(void *arg) {
 
     virtual_status = 0;
     if (isControlServer) {
-        lockSharedMemory(thisMem);
-        thisMem->status = virtual_status;
-        unlockSharedMemory(thisMem);
+        sharedMemory_setStatus(virtual_status);
     }
     LOG(logINFOBLUE, ("Finished Acquiring\n"));
     return NULL;
@@ -1847,20 +1832,15 @@ int stopStateMachine() {
 #ifdef VIRTUAL
     if (!isControlServer) {
         virtual_stop = 1;
-        lockSharedMemory(thisMem);
-        virtual_stop = thisMem->stop;
-        unlockSharedMemory(thisMem);
+        sharedMemory_setStop(virtual_stop);
         // read till status is idle
         int tempStatus = 1;
         while (tempStatus == 1) {
-            lockSharedMemory(thisMem);
-            tempStatus = thisMem->status;
-            unlockSharedMemory(thisMem);
+            tempStatus = sharedMemory_getStatus();
         }
         virtual_stop = 0;
-        lockSharedMemory(thisMem);
-        virtual_stop = thisMem->stop;
-        unlockSharedMemory(thisMem);
+        sharedMemory_setStop(virtual_stop);
+        virtual_status = tempStatus;
         LOG(logINFO, ("Stopped State Machine\n"));
     }
     return OK;
@@ -1877,9 +1857,7 @@ int stopStateMachine() {
 enum runStatus getRunStatus() {
 #ifdef VIRTUAL
     if (!isControlServer) {
-        lockSharedMemory(thisMem);
-        virtual_status = thisMem->status;
-        unlockSharedMemory(thisMem);
+        virtual_status = sharedMemory_getStatus();
     }
     if (virtual_status == 0) {
         LOG(logINFOBLUE, ("Status: IDLE\n"));
@@ -1952,9 +1930,7 @@ void readFrame(int *ret, char *mess) {
 u_int32_t runBusy() {
 #ifdef VIRTUAL
     if (!isControlServer) {
-        lockSharedMemory(thisMem);
-        virtual_status = thisMem->status;
-        unlockSharedMemory(thisMem);
+        virtual_status = sharedMemory_getStatus();
     }
     return virtual_status;
 #endif

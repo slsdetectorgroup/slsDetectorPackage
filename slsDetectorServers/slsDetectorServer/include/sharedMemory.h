@@ -2,22 +2,18 @@
 
 #include <semaphore.h>
 
-typedef struct Memory {
-    int version;
-    sem_t sem;
-#ifdef VIRTUAL
-    int status;
-    int stop;
-#endif
-} sharedMem;
+char *sharedMemory_getError();
+void sharedMemory_print();
+int sharedMemory_create(int port);
+void sharedMemory_initialize();
+int sharedMemory_open(int port);
+int sharedMemory_attach();
+int sharedMemory_detach();
+int sharedMemory_remove();
+void sharedMemory_lock();
+void sharedMemory_unlock();
 
-char *getSharedMemoryError();
-void printSharedMemory(sharedMem *shm);
-int createSharedMemory(sharedMem **shm, int port);
-void initializeSharedMemory(sharedMem *shm);
-int openSharedMemory(sharedMem **shm, int port);
-int attachSharedMemory(sharedMem **shm);
-int detachSharedMemory(sharedMem **shm);
-int removeSharedMemory();
-void lockSharedMemory();
-void unlockSharedMemory();
+void sharedMemory_setStatus(int s);
+int sharedMemory_getStatus();
+void sharedMemory_setStop(int s);
+int sharedMemory_getStop();

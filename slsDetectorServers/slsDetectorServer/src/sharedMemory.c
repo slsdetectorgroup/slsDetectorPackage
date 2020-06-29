@@ -16,14 +16,25 @@
 #define SHM_NAME    "sls_server_shared_memory"
 #define SHM_VERSION 0x200625
 #define SHM_KEY     5678
+
+typedef struct Memory {
+    int version;
+    sem_t sem;
+#ifdef VIRTUAL
+    int status;
+    int stop;
+#endif
+} sharedMem;
+
+sharedMem *shm = NULL;
 char shmMess[MAX_STR_LENGTH];
 int shmFd = -1;
 
 extern int isControlServer;
 
-char *getSharedMemoryError() { return shmMess; }
+char *sharedMemory_getError() { return shmMess; }
 
-void printSharedMemory(sharedMem *shm) {
+void sharedMemory_print() {
     LOG(logINFO, ("%s Shared Memory:\n", isControlServer ? "c" : "s"));
     LOG(logINFO,
         ("%s version:0x%x\n", isControlServer ? "c" : "s", shm->version));
@@ -33,7 +44,7 @@ void printSharedMemory(sharedMem *shm) {
 #endif
 }
 
-int createSharedMemory(sharedMem **shm, int port) {
+int sharedMemory_create(int port) {
     memset(shmMess, 0, MAX_STR_LENGTH);
 
     // if sham existed, delete old shm and create again
@@ -53,14 +64,14 @@ int createSharedMemory(sharedMem **shm, int port) {
         return 0;
     }
     LOG(logINFO, ("Shared memory created\n"));
-    if (!attachSharedMemory(shm)) {
+    if (!sharedMemory_attach()) {
         return 0;
     }
-    initializeSharedMemory(*shm);
+    sharedMemory_initialize();
     return 1;
 }
 
-void initializeSharedMemory(sharedMem *shm) {
+void sharedMemory_initialize() {
     shm->version = SHM_VERSION;
     sem_init(&(shm->sem), 1, 1);
 #ifdef VIRTUAL
@@ -70,7 +81,7 @@ void initializeSharedMemory(sharedMem *shm) {
     LOG(logINFO, ("Shared memory initialized\n"))
 }
 
-int openSharedMemory(sharedMem **shm, int port) {
+int sharedMemory_open(int port) {
     memset(shmMess, 0, MAX_STR_LENGTH);
     shmFd = shmget(SHM_KEY + port, sizeof(sharedMem), 0666);
     if (shmFd == -1) {
@@ -78,22 +89,22 @@ int openSharedMemory(sharedMem **shm, int port) {
         LOG(logERROR, (shmMess));
         return 0;
     }
-    if (!attachSharedMemory(shm)) {
+    if (!sharedMemory_attach()) {
         return 0;
     }
-    if ((*shm)->version != SHM_VERSION) {
+    if (shm->version != SHM_VERSION) {
         sprintf(shmMess,
                 "Shared memory version 0x%x does not match! (expected: 0x%x)\n",
-                (*shm)->version, SHM_VERSION);
+                shm->version, SHM_VERSION);
         LOG(logERROR, (shmMess));
     }
     LOG(logINFO, ("Shared memory opened\n"));
     return 1;
 }
 
-int attachSharedMemory(sharedMem **shm) {
-    *shm = (sharedMem *)shmat(shmFd, NULL, 0);
-    if (*shm == (void *)-1) {
+int sharedMemory_attach() {
+    shm = (sharedMem *)shmat(shmFd, NULL, 0);
+    if (shm == (void *)-1) {
         sprintf(shmMess, "could not attach: %s\n", strerror(errno));
         LOG(logERROR, (shmMess));
         return 0;
@@ -102,9 +113,9 @@ int attachSharedMemory(sharedMem **shm) {
     return 1;
 }
 
-int detachSharedMemory(sharedMem **shm) {
+int sharedMemory_detach() {
     memset(shmMess, 0, MAX_STR_LENGTH);
-    if (shmdt(*shm) == -1) {
+    if (shmdt(shm) == -1) {
         sprintf(shmMess, "could not detach: %s\n", strerror(errno));
         LOG(logERROR, (shmMess));
         return 0;
@@ -113,7 +124,7 @@ int detachSharedMemory(sharedMem **shm) {
     return 1;
 }
 
-int removeSharedMemory() {
+int sharedMemory_remove() {
     memset(shmMess, 0, MAX_STR_LENGTH);
     if (shmctl(shmFd, IPC_RMID, NULL) == -1) {
         sprintf(shmMess, "could not remove: %s\n", strerror(errno));
@@ -124,6 +135,34 @@ int removeSharedMemory() {
     return 1;
 }
 
-void lockSharedMemory(sharedMem *shm) { sem_wait(&(shm->sem)); }
+void sharedMemory_lock() { sem_wait(&(shm->sem)); }
 
-void unlockSharedMemory(sharedMem *shm) { sem_post(&(shm->sem)); }
+void sharedMemory_unlock() { sem_post(&(shm->sem)); }
+
+void sharedMemory_setStatus(int s) {
+    sharedMemory_lock();
+    shm->status = s;
+    sharedMemory_unlock();
+}
+
+int sharedMemory_getStatus() {
+    int s = 0;
+    sharedMemory_lock();
+    s = shm->status;
+    sharedMemory_unlock();
+    return s;
+}
+
+void sharedMemory_setStop(int s) {
+    sharedMemory_lock();
+    shm->stop = s;
+    sharedMemory_unlock();
+}
+
+int sharedMemory_getStop() {
+    int s = 0;
+    sharedMemory_lock();
+    s = shm->stop;
+    sharedMemory_unlock();
+    return s;
+}

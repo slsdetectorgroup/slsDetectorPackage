@@ -22,10 +22,10 @@ HDF5File::HDF5File(int ind, uint32_t *maxf, int *nd, std::string *fname,
 
       File(ind, HDF5, maxf, nd, fname, fpath, findex, owenable, dindex, nunits,
            nf, dr, portno, smode),
-      masterfd(0), virtualfd(0), filefd(0), dataspace(0), dataset(0),
+      masterfd(nullptr), virtualfd(0), filefd(nullptr), dataspace(nullptr), dataset(nullptr),
       datatype(PredType::STD_U16LE), nPixelsX(nx), nPixelsY(ny),
       numFramesInFile(0), numActualPacketsInFile(0), numFilesinAcquisition(0),
-      dataspace_para(0), extNumImages(0) {
+      dataspace_para(nullptr), extNumImages(0) {
     PrintMembers();
     dataset_para.clear();
     parameterNames.clear();
@@ -92,15 +92,15 @@ void HDF5File::CloseCurrentFile() {
     dataset_para.clear();
     if (dataspace_para) {
         delete dataspace_para;
-        dataspace_para = 0;
+        dataspace_para = nullptr;
     }
     if (dataset) {
         delete dataset;
-        dataset = 0;
+        dataset = nullptr;
     }
     if (dataspace) {
         delete dataspace;
-        dataspace = 0;
+        dataspace = nullptr;
     }
 }
 
@@ -207,7 +207,7 @@ void HDF5File::CloseFile(H5File *&fd, bool masterFile) {
         if (fd) {
             fd->close();
             delete fd;
-            fd = 0;
+            fd = nullptr;
         }
     } catch (const Exception &error) {
         LOG(logERROR) << "Could not close " << (masterFile ? "master" : "data")
@@ -339,14 +339,14 @@ void HDF5File::ExtendDataset() {
 
         dataset->extend(dims);
         delete dataspace;
-        dataspace = 0;
+        dataspace = nullptr;
         dataspace = new DataSpace(dataset->getSpace());
 
         hsize_t dims_para[1] = {dims[0]};
         for (unsigned int i = 0; i < dataset_para.size(); ++i)
             dataset_para[i]->extend(dims_para);
         delete dataspace_para;
-        dataspace_para = 0;
+        dataspace_para = nullptr;
         dataspace_para = new DataSpace(dataset_para[0]->getSpace());
 
     } catch (const Exception &error) {
@@ -388,7 +388,7 @@ void HDF5File::CreateDataFile() {
         // file
         FileAccPropList fapl;
         fapl.setFcloseDegree(H5F_CLOSE_STRONG);
-        filefd = 0;
+        filefd = nullptr;
         if (!(*overWriteEnable))
             filefd = new H5File(currentFileName.c_str(), H5F_ACC_EXCL,
                                 FileCreatPropList::DEFAULT, fapl);
@@ -406,7 +406,7 @@ void HDF5File::CreateDataFile() {
         // dataspace
         hsize_t srcdims[3] = {nDimx, nDimy, nDimz};
         hsize_t srcdimsmax[3] = {H5S_UNLIMITED, nDimy, nDimz};
-        dataspace = 0;
+        dataspace = nullptr;
         dataspace = new DataSpace(3, srcdims, srcdimsmax);
 
         // dataset name
@@ -425,14 +425,14 @@ void HDF5File::CreateDataFile() {
         // supported with chunked layout
         hsize_t chunk_dims[3] = {MAX_CHUNKED_IMAGES, nDimy, nDimz};
         plist.setChunk(3, chunk_dims);
-        dataset = 0;
+        dataset = nullptr;
         dataset = new DataSet(filefd->createDataSet(dsetname.c_str(), datatype,
                                                     *dataspace, plist));
 
         // create parameter datasets
         hsize_t dims[1] = {nDimx};
         hsize_t dimsmax[1] = {H5S_UNLIMITED};
-        dataspace_para = 0;
+        dataspace_para = nullptr;
         dataspace_para = new DataSpace(1, dims, dimsmax);
 
         // always create chunked dataset as unlimited is only
@@ -480,7 +480,7 @@ void HDF5File::CreateMasterDataFile(masterAttributes &masterFileAttributes) {
 
         FileAccPropList flist;
         flist.setFcloseDegree(H5F_CLOSE_STRONG);
-        masterfd = 0;
+        masterfd = nullptr;
         if (!(*overWriteEnable))
             masterfd = new H5File(masterFileName.c_str(), H5F_ACC_EXCL,
                                   FileCreatPropList::DEFAULT, flist);
@@ -800,7 +800,7 @@ void HDF5File::CreateMasterDataFile(masterAttributes &masterFileAttributes) {
 
         // Timestamp
         {
-            time_t t = time(0);
+            time_t t = time(nullptr);
             StrType strdatatype(PredType::C_S1, 256);
             DataSpace dataspace = DataSpace(H5S_SCALAR);
             DataSet dataset =
@@ -874,12 +874,12 @@ void HDF5File::CreateVirtualDataFile(uint32_t maxFramesPerFile, uint64_t numf) {
 
         // virtual dataspace
         hsize_t vdsdims[3] = {numf, numDetY * nDimy, numDetz * nDimz};
-        hid_t vdsDataspace = H5Screate_simple(3, vdsdims, NULL);
+        hid_t vdsDataspace = H5Screate_simple(3, vdsdims, nullptr);
         if (vdsDataspace < 0)
             throw sls::RuntimeError(
                 "Could not create virtual dataspace in virtual file " + vname);
         hsize_t vdsdims_para[2] = {numf, (unsigned int)numDetY * numDetz};
-        hid_t vdsDataspace_para = H5Screate_simple(2, vdsdims_para, NULL);
+        hid_t vdsDataspace_para = H5Screate_simple(2, vdsdims_para, nullptr);
         if (vdsDataspace_para < 0)
             throw sls::RuntimeError("Could not create virtual dataspace "
                                     "(parameters) in virtual file " +
@@ -930,12 +930,12 @@ void HDF5File::CreateVirtualDataFile(uint32_t maxFramesPerFile, uint64_t numf) {
 
                 // setect hyperslabs
                 if (H5Sselect_hyperslab(vdsDataspace, H5S_SELECT_SET, offset,
-                                        NULL, count, NULL) < 0) {
+                                        nullptr, count, nullptr) < 0) {
                     throw sls::RuntimeError("Could not select hyperslab");
                 }
                 if (H5Sselect_hyperslab(vdsDataspace_para, H5S_SELECT_SET,
-                                        offset_para, NULL, count_para,
-                                        NULL) < 0) {
+                                        offset_para, nullptr, count_para,
+                                        nullptr) < 0) {
                     throw sls::RuntimeError(
                         "Could not select hyperslab for parameters");
                 }

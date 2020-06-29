@@ -25,7 +25,7 @@ int open_socket(int port) {
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_protocol = 0;
     hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
-    struct addrinfo *res = 0;
+    struct addrinfo *res = nullptr;
 
     const std::string portname = std::to_string(port);
     if (getaddrinfo(host, portname.c_str(), &hints, &res)) {

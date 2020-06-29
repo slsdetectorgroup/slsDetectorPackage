@@ -434,7 +434,7 @@ std::string CmdProxy::Exptime(int action) {
         if (gateIndex == -1 &&
             det->getDetectorType().squash() == defs::MYTHEN3) {
             auto t = det->getExptimeForAllGates({det_id});
-            if (args.size() == 0) {
+            if (args.empty()) {
                 os << OutString(t) << '\n';
             } else if (args.size() == 1) {
                 os << OutString(t, args[0]) << '\n';
@@ -448,7 +448,7 @@ std::string CmdProxy::Exptime(int action) {
             } else {
                 t = det->getExptime(gateIndex, {det_id});
             }
-            if (args.size() == 0) {
+            if (args.empty()) {
                 os << OutString(t) << '\n';
             } else if (args.size() == 1) {
                 os << OutString(t, args[0]) << '\n';
@@ -932,11 +932,11 @@ std::string CmdProxy::DacValues(int action) {
         auto it = t.cbegin();
         os << ToString(*it) << ' '
            << OutString(det->getDAC(*it++, mv, {det_id}))
-           << (args.size() > 0 ? " mv" : "");
+           << (!args.empty() ? " mv" : "");
         while (it != t.cend()) {
             os << ", " << ToString(*it) << ' '
                << OutString(det->getDAC(*it++, mv, {det_id}))
-               << (args.size() > 0 ? " mv" : "");
+               << (!args.empty() ? " mv" : "");
         }
         os << "]\n";
     } else if (action == defs::PUT_ACTION) {
@@ -955,7 +955,7 @@ std::string CmdProxy::ReceiverStatus(int action) {
     if (action == defs::HELP_ACTION) {
         os << "running, idle]\n\tReceiver listener status." << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getReceiverStatus({det_id});
@@ -977,7 +977,7 @@ std::string CmdProxy::DetectorStatus(int action) {
               "idle]\n\tDetector status."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getDetectorStatus({det_id});
@@ -1003,7 +1003,7 @@ std::string CmdProxy::UDPDestinationIP(int action) {
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getDestinationUDPIP({det_id});
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         os << OutString(t) << '\n';
@@ -1045,7 +1045,7 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getDestinationUDPIP2({det_id});
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         os << OutString(t) << '\n';
@@ -1753,7 +1753,7 @@ std::string CmdProxy::GateDelay(int action) {
         // vector of gate delays
         if (gateIndex == -1) {
             auto t = det->getGateDelayForAllGates({det_id});
-            if (args.size() == 0) {
+            if (args.empty()) {
                 os << OutString(t) << '\n';
             } else if (args.size() == 1) {
                 os << OutString(t, args[0]) << '\n';
@@ -1762,7 +1762,7 @@ std::string CmdProxy::GateDelay(int action) {
         // single gate delay
         else {
             auto t = det->getGateDelay(gateIndex, {det_id});
-            if (args.size() == 0) {
+            if (args.empty()) {
                 os << OutString(t) << '\n';
             } else if (args.size() == 1) {
                 os << OutString(t, args[0]) << '\n';
@@ -2212,7 +2212,7 @@ std::string CmdProxy::AdditionalJsonHeader(int action) {
               "listening to receiver zmq packets. Empty value deletes header. "
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 0) {
+        if (!args.empty()) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getAdditionalJsonHeader({det_id});

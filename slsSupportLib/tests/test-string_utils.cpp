@@ -57,7 +57,7 @@ TEST_CASE("Remove char from string") {
 TEST_CASE("Remove char from empty string") {
     char str[50] = {};
     sls::removeChar(str, 'e');
-    REQUIRE(std::string(str) == "");
+    REQUIRE(std::string(str).empty());
 }
 
 TEST_CASE("Many characters in a row") {

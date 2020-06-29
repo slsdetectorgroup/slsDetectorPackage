@@ -407,7 +407,7 @@ TEST_CASE("threshold", "[.cmd][.new]") {
         auto prev_threshold = det.getThresholdEnergy();
         auto prev_energies =
             det.getTrimEnergies().tsquash("inconsistent trim energies to test");
-        if (prev_energies.size() != 0) {
+        if (!prev_energies.empty()) {
             std::ostringstream oss1, oss2;
             proxy.Call("threshold", {"4500", "standard"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "threshold [4500, standard]\n");
@@ -436,7 +436,7 @@ TEST_CASE("thresholdnotb", "[.cmd][.new]") {
         auto prev_threshold = det.getThresholdEnergy();
         auto prev_energies =
             det.getTrimEnergies().tsquash("inconsistent trim energies to test");
-        if (prev_energies.size() != 0) {
+        if (!prev_energies.empty()) {
             std::ostringstream oss1, oss2;
             proxy.Call("thresholdnotb", {"4500 standard"}, -1, PUT, oss1);
             REQUIRE(oss1.str() == "thresholdnotb [4500 standard]\n");

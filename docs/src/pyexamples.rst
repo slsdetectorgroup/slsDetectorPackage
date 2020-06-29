@@ -74,7 +74,7 @@ But lets start looking at the at the manual way:
 ::
 
     import time
-    from sls_detector import Eiger
+    from slsdet import Eiger
     d = Eiger()
 
     n = 10
@@ -114,7 +114,7 @@ hang around until the main process exits.
 
     import time
     from multiprocessing import Process
-    from sls_detector import Eiger
+    from slsdet import Eiger
 
     def acquire():
         """

@@ -25,7 +25,7 @@
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
             auto t = det->GETFCN({det_id});                                    \
-            if (args.size() == 0) {                                            \
+            if (args.empty()) {                                                \
                 os << OutString(t) << '\n';                                    \
             } else if (args.size() == 1) {                                     \
                 os << OutString(t, args[0]) << '\n';                           \
@@ -65,7 +65,7 @@
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
             auto t = det->GETFCN({det_id});                                    \
-            if (args.size() == 0) {                                            \
+            if (args.empty()) {                                                \
                 os << OutString(t) << '\n';                                    \
             } else if (args.size() == 1) {                                     \
                 os << OutString(t, args[0]) << '\n';                           \
@@ -88,7 +88,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            if (args.size() != 0) {                                            \
+            if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN({det_id});                                    \
@@ -113,7 +113,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            if (args.size() != 0) {                                            \
+            if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN({det_id});                                    \
@@ -139,7 +139,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            if (args.size() != 0) {                                            \
+            if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN({det_id});                                    \
@@ -165,7 +165,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            if (args.size() != 0) {                                            \
+            if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN({det_id});                                    \
@@ -194,7 +194,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            if (args.size() != 0) {                                            \
+            if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN();                                            \
@@ -220,7 +220,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            if (args.size() != 0) {                                            \
+            if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN(INDEX, {det_id});                             \
@@ -316,7 +316,7 @@
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
             throw sls::RuntimeError("Cannot get");                             \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
-            if (args.size() != 0) {                                            \
+            if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             det->SETFCN();                                                     \
@@ -337,7 +337,7 @@
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
             throw sls::RuntimeError("Cannot get");                             \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
-            if (args.size() != 0) {                                            \
+            if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             det->SETFCN({det_id});                                             \
@@ -380,7 +380,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            if (args.size() != 0) {                                            \
+            if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN({det_id});                                    \
@@ -401,7 +401,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            if (args.size() != 0) {                                            \
+            if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN({det_id});                                    \
@@ -421,7 +421,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            if (args.size() != 0) {                                            \
+            if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN(VAL, {det_id});                               \

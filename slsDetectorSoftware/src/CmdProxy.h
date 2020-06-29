@@ -283,7 +283,7 @@
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN(DAC_INDEX, mv, {det_id});                     \
-            os << OutString(t) << (args.size() > 0 ? " mv\n" : "\n");          \
+            os << OutString(t) << (!args.empty() ? " mv\n" : "\n");          \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             bool mv = false;                                                   \
             if (args.size() == 2) {                                            \
@@ -292,7 +292,7 @@
                                             ". Did you mean mv?");             \
                 }                                                              \
                 mv = true;                                                     \
-            } else if (args.size() > 2 || args.size() < 1) {                   \
+            } else if (args.size() > 2 || args.empty()) {                      \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             det->SETFCN(DAC_INDEX, StringTo<int>(args[0]), mv, {det_id});      \

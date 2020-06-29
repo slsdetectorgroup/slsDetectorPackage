@@ -139,7 +139,7 @@ int ZmqSocket::SendHeader(int index, zmqHeader header) {
             // additional stuff
             header.flippedDataX, header.quad);
 
-    if (header.addJsonHeader.size() > 0) {
+    if (!header.addJsonHeader.empty()) {
         strcat(header_buffer.get(), ", ");
         strcat(header_buffer.get(), "\"addJsonHeader\": {");
         for (auto it = header.addJsonHeader.begin();

@@ -22,10 +22,10 @@ HDF5File::HDF5File(int ind, uint32_t *maxf, int *nd, std::string *fname,
 
       File(ind, HDF5, maxf, nd, fname, fpath, findex, owenable, dindex, nunits,
            nf, dr, portno, smode),
-      masterfd(nullptr), virtualfd(0), filefd(nullptr), dataspace(nullptr), dataset(nullptr),
-      datatype(PredType::STD_U16LE), nPixelsX(nx), nPixelsY(ny),
-      numFramesInFile(0), numActualPacketsInFile(0), numFilesinAcquisition(0),
-      dataspace_para(nullptr), extNumImages(0) {
+      masterfd(nullptr), virtualfd(0), filefd(nullptr), dataspace(nullptr),
+      dataset(nullptr), datatype(PredType::STD_U16LE), nPixelsX(nx),
+      nPixelsY(ny), numFramesInFile(0), numActualPacketsInFile(0),
+      numFilesinAcquisition(0), dataspace_para(nullptr), extNumImages(0) {
     PrintMembers();
     dataset_para.clear();
     parameterNames.clear();
@@ -123,12 +123,9 @@ void HDF5File::CloseAllFiles() {
     for (unsigned int i = 0; i < dataset_para.size(); ++i)
         delete dataset_para[i];
     dataset_para.clear();
-    if (dataspace_para)
-        delete dataspace_para;
-    if (dataset)
-        delete dataset;
-    if (dataspace)
-        delete dataspace;
+    delete dataspace_para;
+    delete dataset;
+    delete dataspace;
 }
 
 void HDF5File::WriteToFile(char *buffer, int bufferSize,

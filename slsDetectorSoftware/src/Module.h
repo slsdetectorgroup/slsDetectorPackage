@@ -167,8 +167,8 @@ class Module : public virtual slsDetectorDefs {
     uint64_t getStartingFrameNumber();
     void setStartingFrameNumber(uint64_t value);
     void sendSoftwareTrigger();
-    bool getScan() const;
-    int getNumberOfScanSteps() const;
+    bool getScan();
+    int getNumberOfScanSteps();
     void disableScan();
     void enableScan(const defs::dacIndex dac, const int start_offset,
                     const int end_offset, const int step_size);

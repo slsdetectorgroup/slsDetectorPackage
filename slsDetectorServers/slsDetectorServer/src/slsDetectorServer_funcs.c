@@ -710,20 +710,8 @@ int get_image_test_mode(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_dac(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int args[3] = {-1, -1, -1};
-    int retval = -1;
-
-    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-        return printSocketReadError();
-
-    enum dacIndex ind = args[0];
-    int mV = args[1];
-    int val = args[2];
+enum DACINDEX getDACIndex(enum dacIndex ind) {
     enum DACINDEX serverDacIndex = 0;
-
     // check if dac exists for this detector
     switch (ind) {
 #ifdef GOTTHARDD
@@ -1000,6 +988,22 @@ int set_dac(int file_des) {
         modeNotImplemented("Dac Index", (int)ind);
         break;
     }
+    return serverDacIndex;
+}
+
+int set_dac(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[3] = {-1, -1, -1};
+    int retval = -1;
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+
+    enum dacIndex ind = args[0];
+    int mV = args[1];
+    int val = args[2];
+    enum DACINDEX serverDacIndex = getDACIndex(ind);
 
     // index exists
     if (ret == OK) {
@@ -1647,11 +1651,14 @@ int get_threshold_energy(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int start_acquisition(int file_des) {
+int start_state_machine(int blocking, int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-
-    LOG(logDEBUG1, ("Starting Acquisition\n"));
+    if (blocking) {
+        LOG(logINFOBLUE, ("Blocking Acquisition\n"));
+    } else {
+        LOG(logINFOBLUE, ("Unblocking Acquisition\n"));
+    }
     // only set
     if (Server_VerifyLock() == OK) {
 #if defined(MOENCHD)
@@ -1723,21 +1730,27 @@ int start_acquisition(int file_des) {
             }
             for (int i = 0; i != times; ++i) {
                 if (scanTrimbits) {
+                    LOG(logINFOBLUE, ("Trimbits scan %d/%d: [%d]\n", i, times,
+                                      scanSteps[i]));
 #ifdef EIGERD
                     setAllTrimbits(scanSteps[i]);
 #else
                     LOG(logERROR, ("trimbit scan not implemented!\n"));
 #endif
-                } else {
-                    setDac(scanDac, scanSteps[i], 0);
+                } else if (numScanSteps > 0) {
+                    LOG(logINFOBLUE, ("Dac [%d] scan %d/%d: [%d]\n", scanDac, i,
+                                      times, scanSteps[i]));
+                    setDAC(scanDac, scanSteps[i], 0);
                     int retval = getDAC(scanDac, 0);
-                    if (abs(retval - val) > 5) {
+                    if (abs(retval - scanSteps[i]) > 5) {
                         ret = FAIL;
                         sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
-                                dacIndex, scanSteps[i], retval);
+                                scanDac, scanSteps[i], scanSteps[i]);
                         LOG(logERROR, (mess));
                         break;
                     }
+                } else {
+                    LOG(logINFOBLUE, ("Normal Acquisition (not scan)\n"));
                 }
                 ret = startStateMachine();
                 if (ret == FAIL) {
@@ -1752,12 +1765,18 @@ int start_acquisition(int file_des) {
                     LOG(logERROR, (mess));
                     break;
                 }
+                // blocking or scan
+                if (blocking || times > 1) {
+                    readFrame(&ret, mess);
+                }
             }
         }
         LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
+
+int start_acquisition(int file_des) { return start_state_machine(0, file_des); }
 
 int stop_acquisition(int file_des) {
     ret = OK;
@@ -1789,98 +1808,7 @@ int get_run_status(int file_des) {
 }
 
 int start_and_read_all(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-
-    LOG(logDEBUG1, ("Starting Acquisition and read all frames\n"));
-    // start state machine
-    LOG(logDEBUG1, ("Starting Acquisition\n"));
-    // only set
-    if (Server_VerifyLock() == OK) {
-#if defined(MOENCHD)
-        if (getNumAnalogSamples() <= 0) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of analog "
-                    "samples: %d.\n",
-                    getNumAnalogSamples());
-            LOG(logERROR, (mess));
-        } else
-#endif
-#if defined(CHIPTESTBOARDD)
-            if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                 getReadoutMode() == ANALOG_ONLY) &&
-                (getNumAnalogSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of analog "
-                    "samples: %d.\n",
-                    getNumAnalogSamples());
-            LOG(logERROR, (mess));
-        } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                    getReadoutMode() == DIGITAL_ONLY) &&
-                   (getNumDigitalSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of digital "
-                    "samples: %d.\n",
-                    getNumDigitalSamples());
-            LOG(logERROR, (mess));
-        } else
-#endif
-#ifdef EIGERD
-            // check for hardware mac and hardware ip
-            if (udpDetails.srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[50];
-            getMacAddressinString(src_mac, 50, sourcemac);
-            sprintf(mess,
-                    "Invalid udp source mac address for this detector. Must be "
-                    "same as hardware detector mac address %s\n",
-                    src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails.srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(
-                mess,
-                "Invalid udp source ip address for this detector. Must be same "
-                "as hardware detector ip address %s in 1G readout mode \n",
-                src_ip);
-            LOG(logERROR, (mess));
-        } else
-#endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else {
-            ret = startStateMachine();
-            if (ret == FAIL) {
-#if defined(VIRTUAL) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-                sprintf(mess,
-                        "Could not start acquisition. Could not create udp "
-                        "socket in server. Check udp_dstip & udp_dstport.\n");
-#else
-                sprintf(mess, "Could not start acquisition\n");
-#endif
-                LOG(logERROR, (mess));
-            }
-        }
-        LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
-    }
-
-    // lock or acquisition start error
-    if (ret == FAIL)
-        return Server_SendResult(file_des, INT32, NULL, 0);
-
-    // read all (again validate lock, but should pass and not fail)
-    return read_all(file_des);
+    return start_state_machine(1, file_des);
 }
 
 int read_all(int file_des) {
@@ -7542,7 +7470,8 @@ int disable_scan(int file_des) {
             free(scanSteps);
             scanSteps = NULL;
         }
-        setNumFrames(1);
+        int64_t arg = 1;
+        setNumFrames(arg);
         int64_t retval = getNumFrames();
         LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
         validate64(arg, retval, "set number of frames", DEC);
@@ -7564,89 +7493,125 @@ int enable_scan(int file_des) {
         int endOffset = args[2];
         int stepSize = args[3];
         scanTrimbits = 0;
-        // trimbit scan
-        if (args[0] == TRIMBIT_SCAN) {
-#ifdef EIGERD
-            if (startOffset < 0 || startOffset > MAX_TRIMBITS_VALUE ||
-                endOffset < 0 || endOffset > MAX_TRIMBITS_VALUE) {
-                ret = FAIL;
-                sprintf(mess, "Invalid trimbits scan values\n");
-                LOG(logERROR, (mess));
-            } else {
-                scanTrimbits = 1;
-                // changes settings to undefined
-                setSettings(UNDEFINED);
-                LOG(logERROR,
-                    ("Settings has been changed to undefined (change all "
-                     "trimbits)\n"));
-            }
-#else
+
+        if ((startOffset < endOffset && stepSize <= 0) ||
+            (endOffset < startOffset && stepSize >= 0)) {
             ret = FAIL;
-            sprintf(mess, "Cannot enable trimbit scan. Not implemented for "
-                          "this detector\n");
+            sprintf(mess, "Invalid scan parameters\n");
             LOG(logERROR, (mess));
-#endif
         } else {
-            ret = converttodac(args[0], &scanDac);
-            if (ret == FAIL) {
-                sprintf(mess,
-                        "Cannot enable scan. Dac index %d not implemented for "
-                        "this detector\n",
-                        args[0]);
-                LOG(logERROR, (mess));
-            } else if (startOffset < 0 || startOffset > getMaxDacSteps() ||
-                       endOffset < 0 || endOffset > getMaxDacSteps()) {
-                ret = FAIL;
-                sprintf(mess, "Invalid dac scan values\n");
-                LOG(logERROR, (mess));
-            }
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-            else if (checkVLimitDacCompliant(startOffset) == FAIL ||
-                     checkVLimitDacCompliant(endOffset) == FAIL) {
-                ret = FAIL;
-                sprintf(mess,
-                        "Invalid scan dac values."
-                        "Exceeds voltage limit %d.\n",
-                        getVLimit());
-                LOG(logERROR, (mess));
-            }
-#endif
+            // trimbit scan
+            if (args[0] == TRIMBIT_SCAN) {
 #ifdef EIGERD
-            if (ret == OK) {
-                // changing dac changes settings to undefined
-                switch (scanDac) {
-                case E_VCMP_LL:
-                case E_VCMP_LR:
-                case E_VCMP_RL:
-                case E_VCMP_RR:
-                case E_VRPREAMP:
-                case E_VCP:
+                if (startOffset < 0 || startOffset > MAX_TRIMBITS_VALUE ||
+                    endOffset < 0 || endOffset > MAX_TRIMBITS_VALUE) {
+                    ret = FAIL;
+                    sprintf(mess, "Invalid trimbits scan values\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    scanTrimbits = 1;
+                    LOG(logINFOBLUE, ("Trimbit scan enabled\n"));
+                    // changes settings to undefined
                     setSettings(UNDEFINED);
-                    LOG(logERROR, ("Settings has been changed "
-                                   "to undefined (changed specific dacs)\n"));
+                    LOG(logERROR,
+                        ("Settings has been changed to undefined (change all "
+                         "trimbits)\n"));
+                }
+#else
+                ret = FAIL;
+                sprintf(mess, "Cannot enable trimbit scan. Not implemented for "
+                              "this detector\n");
+                LOG(logERROR, (mess));
+#endif
+            } else {
+                switch ((enum dacIndex)args[0]) {
+                case HIGH_VOLTAGE:
+#ifdef EIGERD
+                case IO_DELAY:
+#elif CHIPTESTBOARDD
+                case ADC_VPP:
+                case V_POWER_A:
+                case V_POWER_B:
+                case V_POWER_C:
+                case V_POWER_D:
+                case V_POWER_IO:
+                case V_POWER_CHIP:
+                case V_LIMIT:
+#elif MOENCHD
+                case ADC_VPP:
+                case V_LIMIT:
+#endif
+                    modeNotImplemented("Scan Dac Index", args[0]);
                     break;
                 default:
                     break;
                 }
-            }
+                scanDac = getDACIndex(args[0]);
+                if (ret == FAIL) {
+                    sprintf(
+                        mess,
+                        "Cannot enable scan. Dac index %d not implemented for "
+                        "this detector for scanning\n",
+                        args[0]);
+                    LOG(logERROR, (mess));
+                } else if (startOffset < 0 || startOffset > getMaxDacSteps() ||
+                           endOffset < 0 || endOffset > getMaxDacSteps()) {
+                    ret = FAIL;
+                    sprintf(mess, "Invalid dac scan values\n");
+                    LOG(logERROR, (mess));
+                }
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+                else if (checkVLimitDacCompliant(startOffset) == FAIL ||
+                         checkVLimitDacCompliant(endOffset) == FAIL) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Invalid scan dac values."
+                            "Exceeds voltage limit %d.\n",
+                            getVLimit());
+                    LOG(logERROR, (mess));
+                }
 #endif
+                if (ret == OK) {
+#ifdef EIGERD
+                    // changing dac changes settings to undefined
+                    switch (scanDac) {
+                    case E_VCMP_LL:
+                    case E_VCMP_LR:
+                    case E_VCMP_RL:
+                    case E_VCMP_RR:
+                    case E_VRPREAMP:
+                    case E_VCP:
+                        setSettings(UNDEFINED);
+                        LOG(logERROR,
+                            ("Settings has been changed "
+                             "to undefined (changed specific dacs)\n"));
+                        break;
+                    default:
+                        break;
+                    }
+#endif
+                    LOG(logINFOBLUE, ("Dac [%d] scan enabled\n", scanDac));
+                }
+            }
         }
         if (ret == OK) {
             scan = 1;
-            numScanSteps = ((startOffset - endOffset) / stepSize) + 1;
+            numScanSteps = (abs(endOffset - startOffset) / abs(stepSize)) + 1;
             if (scanSteps != NULL) {
                 free(scanSteps);
             }
             scanSteps = malloc(numScanSteps * sizeof(int));
             for (int i = 0; i != numScanSteps; ++i) {
                 scanSteps[i] = startOffset + i * stepSize;
+                LOG(logDEBUG1, ("scansteps[%d]:%d\n", i, scanSteps[i]));
             }
 
             LOG(logINFOBLUE,
                 ("Enabling scan for dac[%d], start[%d], end[%d], "
                  "stepsize[%d], nsteps[%d]\n",
-                 ind, startOffset, endOffset, stepSize, numScanSteps));
-            setNumFrames(1);
+                 scanDac, startOffset, endOffset, stepSize, numScanSteps));
+            int64_t arg = 1;
+            setNumFrames(arg);
             int64_t retval = getNumFrames();
             LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
             validate64(arg, retval, "set number of frames", DEC);

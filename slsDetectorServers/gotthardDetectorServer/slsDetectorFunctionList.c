@@ -38,6 +38,7 @@ pthread_t pthread_virtual_tid;
 int virtual_status = 0;
 int virtual_stop = 0;
 int highvoltage = 0;
+int64_t virtual_currentFrameNumber = 2;
 #endif
 int detPos[2] = {};
 
@@ -1587,51 +1588,49 @@ void *start_timer(void *arg) {
     }
 
     // Send data
-    {
-        uint16_t frameHeaderNr = 2;
-        // loop over number of frames
-        for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
+    // loop over number of frames
+    for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
 
-            // update the virtual stop from stop server
-            lockSharedMemory(thisMem);
-            virtual_stop = thisMem->stop;
-            unlockSharedMemory(thisMem);
-            // check if virtual_stop is high
-            if (virtual_stop == 1) {
-                break;
-            }
+        // update the virtual stop from stop server
+        lockSharedMemory(thisMem);
+        virtual_stop = thisMem->stop;
+        unlockSharedMemory(thisMem);
+        // check if virtual_stop is high
+        if (virtual_stop == 1) {
+            break;
+        }
 
-            // sleep for exposure time
-            struct timespec begin, end;
-            clock_gettime(CLOCK_REALTIME, &begin);
-            usleep(expUs);
+        // sleep for exposure time
+        struct timespec begin, end;
+        clock_gettime(CLOCK_REALTIME, &begin);
+        usleep(expUs);
 
-            int srcOffset = 0;
-            // loop packet
-            for (int i = 0; i != packetsPerFrame; ++i) {
+        int srcOffset = 0;
+        // loop packet
+        for (int i = 0; i != packetsPerFrame; ++i) {
 
-                char packetData[packetSize];
-                memset(packetData, 0, packetSize);
-                // set header
-                *((uint16_t *)(packetData)) = frameHeaderNr;
-                ++frameHeaderNr;
+            char packetData[packetSize];
+            memset(packetData, 0, packetSize);
+            // set header
+            *((uint16_t *)(packetData)) = virtual_currentFrameNumber;
+            ++virtual_currentFrameNumber;
 
-                // fill data
-                memcpy(packetData + 4, imageData + srcOffset, dataSize);
-                srcOffset += dataSize;
+            // fill data
+            memcpy(packetData + 4, imageData + srcOffset, dataSize);
+            srcOffset += dataSize;
 
-                sendUDPPacket(0, packetData, packetSize);
-            }
-            LOG(logINFO, ("Sent frame: %d\n", frameNr));
-            clock_gettime(CLOCK_REALTIME, &end);
-            int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                              (end.tv_nsec - begin.tv_nsec));
+            sendUDPPacket(0, packetData, packetSize);
+        }
+        LOG(logINFO,
+            ("Sent frame: %d [%d]\n", frameNr, virtual_currentFrameNumber));
+        clock_gettime(CLOCK_REALTIME, &end);
+        int64_t timeNs =
+            ((end.tv_sec - begin.tv_sec) * 1E9 + (end.tv_nsec - begin.tv_nsec));
 
-            // sleep for (period - exptime)
-            if (frameNr < numFrames) { // if there is a next frame
-                if (periodNs > timeNs) {
-                    usleep((periodNs - timeNs) / 1000);
-                }
+        // sleep for (period - exptime)
+        if (frameNr < numFrames) { // if there is a next frame
+            if (periodNs > timeNs) {
+                usleep((periodNs - timeNs) / 1000);
             }
         }
     }

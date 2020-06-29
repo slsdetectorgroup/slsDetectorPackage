@@ -451,11 +451,11 @@ void Module::setStartingFrameNumber(uint64_t value) {
 
 void Module::sendSoftwareTrigger() { sendToDetectorStop(F_SOFTWARE_TRIGGER); }
 
-bool Module::getScan() const {
+bool Module::getScan() {
     return static_cast<bool>(sendToDetector<int>(F_GET_SCAN));
 }
 
-int Module::getNumberOfScanSteps() const {
+int Module::getNumberOfScanSteps() {
     return sendToDetector<int>(F_GET_NUM_SCAN_STEPS);
 }
 

@@ -45,6 +45,7 @@ pthread_t pthread_virtual_tid;
 int virtual_status = 0;
 int virtual_stop = 0;
 uint64_t virtual_pattern[MAX_PATTERN_LENGTH];
+int64_t virtual_currentFrameNumber = 2;
 #endif
 
 // 1g readout
@@ -2304,60 +2305,59 @@ void *start_timer(void *arg) {
     }
 
     // Send data
-    {
-        // loop over number of frames
-        for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
+    // loop over number of frames
+    for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
 
-            // update the virtual stop from stop server
-            lockSharedMemory(thisMem);
-            virtual_stop = thisMem->stop;
-            unlockSharedMemory(thisMem);
-            // check if virtual_stop is high
-            if (virtual_stop == 1) {
-                break;
-            }
+        // update the virtual stop from stop server
+        lockSharedMemory(thisMem);
+        virtual_stop = thisMem->stop;
+        unlockSharedMemory(thisMem);
+        // check if virtual_stop is high
+        if (virtual_stop == 1) {
+            break;
+        }
 
-            // sleep for exposure time
-            struct timespec begin, end;
-            clock_gettime(CLOCK_REALTIME, &begin);
-            usleep(expUs);
+        // sleep for exposure time
+        struct timespec begin, end;
+        clock_gettime(CLOCK_REALTIME, &begin);
+        usleep(expUs);
 
-            int srcOffset = 0;
-            // loop packet
-            for (int i = 0; i != packetsPerFrame; ++i) {
+        int srcOffset = 0;
+        // loop packet
+        for (int i = 0; i != packetsPerFrame; ++i) {
 
-                char packetData[packetSize];
-                memset(packetData, 0, packetSize);
-                // set header
-                sls_detector_header *header =
-                    (sls_detector_header *)(packetData);
-                header->detType = (uint16_t)myDetectorType;
-                header->version = SLS_DETECTOR_HEADER_VERSION - 1;
-                header->frameNumber = frameNr;
-                header->packetNumber = i;
-                header->modId = 0;
-                header->row = detPos[X];
-                header->column = detPos[Y];
+            char packetData[packetSize];
+            memset(packetData, 0, packetSize);
+            // set header
+            sls_detector_header *header = (sls_detector_header *)(packetData);
+            header->detType = (uint16_t)myDetectorType;
+            header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+            header->frameNumber = virtual_currentFrameNumber;
+            header->packetNumber = i;
+            header->modId = 0;
+            header->row = detPos[X];
+            header->column = detPos[Y];
 
-                // fill data
-                memcpy(packetData + sizeof(sls_detector_header),
-                       imageData + srcOffset, dataSize);
-                srcOffset += dataSize;
+            // fill data
+            memcpy(packetData + sizeof(sls_detector_header),
+                   imageData + srcOffset, dataSize);
+            srcOffset += dataSize;
 
-                sendUDPPacket(0, packetData, packetSize);
-            }
-            LOG(logINFO, ("Sent frame: %d\n", frameNr));
-            clock_gettime(CLOCK_REALTIME, &end);
-            int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                              (end.tv_nsec - begin.tv_nsec));
+            sendUDPPacket(0, packetData, packetSize);
+        }
+        LOG(logINFO, ("Sent frame: %d [%lld]\n", frameNr,
+                      (long long unsigned int)virtual_currentFrameNumber));
+        clock_gettime(CLOCK_REALTIME, &end);
+        int64_t timeNs =
+            ((end.tv_sec - begin.tv_sec) * 1E9 + (end.tv_nsec - begin.tv_nsec));
 
-            // sleep for (period - exptime)
-            if (frameNr < numFrames) { // if there is a next frame
-                if (periodNs > timeNs) {
-                    usleep((periodNs - timeNs) / 1000);
-                }
+        // sleep for (period - exptime)
+        if (frameNr < numFrames) { // if there is a next frame
+            if (periodNs > timeNs) {
+                usleep((periodNs - timeNs) / 1000);
             }
         }
+        ++virtual_currentFrameNumber;
     }
 
     closeUDPSocket(0);

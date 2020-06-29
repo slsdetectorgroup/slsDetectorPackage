@@ -43,6 +43,7 @@ pthread_t pthread_virtual_tid;
 int virtual_status = 0;
 int virtual_stop = 0;
 uint64_t virtual_pattern[MAX_PATTERN_LENGTH];
+int64_t virtual_currentFrameNumber = 2;
 #endif
 
 // 1g readout
@@ -1963,7 +1964,7 @@ void *start_timer(void *arg) {
             sls_detector_header *header = (sls_detector_header *)(packetData);
             header->detType = (uint16_t)myDetectorType;
             header->version = SLS_DETECTOR_HEADER_VERSION - 1;
-            header->frameNumber = frameNr;
+            header->frameNumber = virtual_currentFrameNumber;
             header->packetNumber = i;
             header->modId = 0;
             header->row = detPos[X];
@@ -1976,7 +1977,8 @@ void *start_timer(void *arg) {
 
             sendUDPPacket(0, packetData, packetSize);
         }
-        LOG(logINFO, ("Sent frame: %d\n", frameNr));
+        LOG(logINFO, ("Sent frame: %d [%lld]\n", frameNr,
+                      (long long unsigned int)virtual_currentFrameNumber));
         clock_gettime(CLOCK_REALTIME, &end);
         int64_t timeNs =
             ((end.tv_sec - begin.tv_sec) * 1E9 + (end.tv_nsec - begin.tv_nsec));
@@ -1987,6 +1989,7 @@ void *start_timer(void *arg) {
                 usleep((periodNs - timeNs) / 1000);
             }
         }
+        ++virtual_currentFrameNumber;
     }
 
     closeUDPSocket(0);

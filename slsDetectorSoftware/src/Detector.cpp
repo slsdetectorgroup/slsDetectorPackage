@@ -562,25 +562,26 @@ void Detector::sendSoftwareTrigger(Positions pos) {
     pimpl->Parallel(&Module::sendSoftwareTrigger, pos);
 }
 
-Result<bool> getScan(Positions pos = {}) const {
+Result<bool> Detector::getScan(Positions pos) const {
     return pimpl->Parallel(&Module::getScan, pos);
 }
 
-Result<int> getNumberOfScanSteps(Positions pos = {}) const {
+Result<int> Detector::getNumberOfScanSteps(Positions pos) const {
     return pimpl->Parallel(&Module::getNumberOfScanSteps, pos);
 }
 
-void disableScan() {
-    pimpl->Parallel(&Module::disableScan);
+void Detector::disableScan() {
+    pimpl->Parallel(&Module::disableScan, {});
     setNumberOfFrames(1);
 }
 
 void Detector::enableScan(const defs::dacIndex dac, const int start_offset,
                           const int end_offset, const int step_size) {
-    pimpl->Parallel(&Module::scan, start_offset, end_offset, step_size, {-1});
+    pimpl->Parallel(&Module::enableScan, {}, dac, start_offset, end_offset,
+                    step_size);
     auto t =
         getNumberOfScanSteps().tsquash("inconsistent number of scan steps");
-    setNumberOfFrames(nsteps);
+    setNumberOfFrames(t);
 }
 
 // Network Configuration (Detector<->Receiver)

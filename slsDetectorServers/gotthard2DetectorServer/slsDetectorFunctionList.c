@@ -40,6 +40,7 @@ sharedMem *thisMem;
 pthread_t pthread_virtual_tid;
 int virtual_status = 0;
 int virtual_stop = 0;
+int64_t virtual_currentFrameNumber = 2;
 #endif
 
 enum detectorSettings thisSettings = UNINITIALIZED;
@@ -2321,88 +2322,84 @@ void *start_timer(void *arg) {
         *((uint16_t *)(vetoData + i)) = i;
     }
 
-    {
-        int frameHeaderNr = 0;
-        // loop over number of repeats
-        for (int repeatNr = 0; repeatNr != numRepeats; ++repeatNr) {
+    // loop over number of repeats
+    for (int repeatNr = 0; repeatNr != numRepeats; ++repeatNr) {
 
-            struct timespec rbegin, rend;
-            clock_gettime(CLOCK_REALTIME, &rbegin);
+        struct timespec rbegin, rend;
+        clock_gettime(CLOCK_REALTIME, &rbegin);
 
-            // loop over number of frames
-            for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
+        // loop over number of frames
+        for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
 
-                // update the virtual stop from stop server
-                lockSharedMemory(thisMem);
-                virtual_stop = thisMem->stop;
-                unlockSharedMemory(thisMem);
-                // check if virtual_stop is high
-                if (virtual_stop == 1) {
-                    break;
-                }
+            // update the virtual stop from stop server
+            lockSharedMemory(thisMem);
+            virtual_stop = thisMem->stop;
+            unlockSharedMemory(thisMem);
+            // check if virtual_stop is high
+            if (virtual_stop == 1) {
+                break;
+            }
 
-                // sleep for exposure time
-                struct timespec begin, end;
-                clock_gettime(CLOCK_REALTIME, &begin);
-                usleep(expUs);
+            // sleep for exposure time
+            struct timespec begin, end;
+            clock_gettime(CLOCK_REALTIME, &begin);
+            usleep(expUs);
 
-                // first interface
-                char packetData[packetsize];
-                memset(packetData, 0, packetsize);
+            // first interface
+            char packetData[packetsize];
+            memset(packetData, 0, packetsize);
+            // set header
+            sls_detector_header *header = (sls_detector_header *)(packetData);
+            header->detType = (uint16_t)myDetectorType;
+            header->version = SLS_DETECTOR_HEADER_VERSION - 1;
+            header->frameNumber = virtual_currentFrameNumber;
+            header->packetNumber = 0;
+            header->modId = 0;
+            header->row = detPos[X];
+            header->column = detPos[Y];
+            // fill data
+            memcpy(packetData + sizeof(sls_detector_header), imageData,
+                   datasize);
+            // send 1 packet = 1 frame
+            sendUDPPacket(0, packetData, packetsize);
+
+            // second interface (veto)
+            char packetData2[vetopacketsize];
+            memset(packetData2, 0, vetopacketsize);
+            if (vetoEnabled && numInterfaces == 2) {
                 // set header
-                sls_detector_header *header =
-                    (sls_detector_header *)(packetData);
-                header->detType = (uint16_t)myDetectorType;
-                header->version = SLS_DETECTOR_HEADER_VERSION - 1;
-                header->frameNumber = frameHeaderNr;
-                header->packetNumber = 0;
-                header->modId = 0;
-                header->row = detPos[X];
-                header->column = detPos[Y];
+                veto_header *header = (veto_header *)(packetData2);
+                header->frameNumber = virtual_currentFrameNumber;
+                header->bunchId = 0;
                 // fill data
-                memcpy(packetData + sizeof(sls_detector_header), imageData,
-                       datasize);
+                memcpy(packetData2 + sizeof(veto_header), vetoData,
+                       vetodatasize);
                 // send 1 packet = 1 frame
-                sendUDPPacket(0, packetData, packetsize);
+                sendUDPPacket(1, packetData2, vetopacketsize);
+            }
+            LOG(logINFO,
+                ("Sent frame: %d (bursts: %d) [%lld]\n", frameNr, repeatNr,
+                 (long long unsigned int)virtual_currentFrameNumber));
+            clock_gettime(CLOCK_REALTIME, &end);
+            int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
+                              (end.tv_nsec - begin.tv_nsec));
 
-                // second interface (veto)
-                char packetData2[vetopacketsize];
-                memset(packetData2, 0, vetopacketsize);
-                if (vetoEnabled && numInterfaces == 2) {
-                    // set header
-                    veto_header *header = (veto_header *)(packetData2);
-                    header->frameNumber = frameHeaderNr;
-                    header->bunchId = 0;
-                    // fill data
-                    memcpy(packetData2 + sizeof(veto_header), vetoData,
-                           vetodatasize);
-                    // send 1 packet = 1 frame
-                    sendUDPPacket(1, packetData2, vetopacketsize);
-                }
-                ++frameHeaderNr;
-
-                clock_gettime(CLOCK_REALTIME, &end);
-                LOG(logINFO,
-                    ("Sent frame: %d (bursts: %d)\n", frameNr, repeatNr));
-                int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
-                                  (end.tv_nsec - begin.tv_nsec));
-
-                // sleep for (period - exptime)
-                if (frameNr < numFrames) { // if there is a next frame
-                    if (periodNs > timeNs) {
-                        usleep((periodNs - timeNs) / 1000);
-                    }
+            // sleep for (period - exptime)
+            if (frameNr < numFrames) { // if there is a next frame
+                if (periodNs > timeNs) {
+                    usleep((periodNs - timeNs) / 1000);
                 }
             }
-            clock_gettime(CLOCK_REALTIME, &rend);
-            int64_t timeNs = ((rend.tv_sec - rbegin.tv_sec) * 1E9 +
-                              (rend.tv_nsec - rbegin.tv_nsec));
+            ++virtual_currentFrameNumber;
+        }
+        clock_gettime(CLOCK_REALTIME, &rend);
+        int64_t timeNs = ((rend.tv_sec - rbegin.tv_sec) * 1E9 +
+                          (rend.tv_nsec - rbegin.tv_nsec));
 
-            // sleep for (repeatPeriodNs - time remaining)
-            if (repeatNr < numRepeats) { // if there is a next repeat
-                if (repeatPeriodNs > timeNs) {
-                    usleep((repeatPeriodNs - timeNs) / 1000);
-                }
+        // sleep for (repeatPeriodNs - time remaining)
+        if (repeatNr < numRepeats) { // if there is a next repeat
+            if (repeatPeriodNs > timeNs) {
+                usleep((repeatPeriodNs - timeNs) / 1000);
             }
         }
     }

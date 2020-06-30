@@ -360,16 +360,16 @@ In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from
 \hline 
 1 &  32 &  \textbf{128} & 7820 & \\
 \hline 
-10 & 4 & \textbf{10240} & 98 & 105/128\\
+10 & 4 & \textbf{7813} & 98 & 105/128\\
 \hline 
-10 & 8 & \textbf{5120} & 196 & 210/250\\
+10 & 8 & \textbf{4000} & 196 & 210/250\\
 \hline
-10 & 16 & \textbf{2560} & 391 & 420/490\\  
+10 & 16 & \textbf{2000} & 391 & 420/490\\  
 \hline 
-10 & 32 & \textbf{1280} & 782 & 840/977\\  
+10 & 32 & \textbf{1023} & 782 & 840/977\\  
 \hline 
 \end{tabular}
-\caption{Frame rate limits for the CONTINUOS streaming out of images, i.e. the data rate out is just below 1Gb/s or 10Gb/s. 1280~Hz for 32-bit, 10GbE is obtained from the 10GbE limitation. The maximum achievable frame rate is 977~Hz.} 
+\caption{Frame rate limits for the CONTINUOS streaming out of images, i.e. the data rate out is just below 1Gb/s or 10Gb/s. 1023~Hz for 32-bit, 10GbE is obtained from the 10GbE limitation. The maximum achievable frame rate is 977~Hz.} 
 \label{tcont}\end{table}
  Note that in the {\tt{continuous}} flag mode, some buffering is still done on the memories, so a higher frame rate than the proper real continuous one can be achieved. Still, this extra buffering is possible till the memories are not saturated. The number of images that can be stored on the DDR2 on board memories are listed in table~\ref{timgs}.
 \begin{table}

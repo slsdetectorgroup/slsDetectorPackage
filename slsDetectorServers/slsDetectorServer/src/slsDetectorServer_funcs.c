@@ -1741,7 +1741,7 @@ int start_state_machine(int blocking, int file_des) {
                 if (scanTrimbits) {
                     LOG(logINFOBLUE, ("Trimbits scan %d/%d: [%d]\n", i, times,
                                       scanSteps[i]));
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
                     setAllTrimbits(scanSteps[i]);
 #else
                     LOG(logERROR, ("trimbit scan not implemented!\n"));
@@ -7512,7 +7512,7 @@ int enable_scan(int file_des) {
         } else {
             // trimbit scan
             if (args[0] == TRIMBIT_SCAN) {
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
                 if (startOffset < 0 || startOffset > MAX_TRIMBITS_VALUE ||
                     endOffset < 0 || endOffset > MAX_TRIMBITS_VALUE) {
                     ret = FAIL;
@@ -7521,11 +7521,13 @@ int enable_scan(int file_des) {
                 } else {
                     scanTrimbits = 1;
                     LOG(logINFOBLUE, ("Trimbit scan enabled\n"));
+#ifdef EIGERD
                     // changes settings to undefined
                     setSettings(UNDEFINED);
                     LOG(logERROR,
                         ("Settings has been changed to undefined (change all "
                          "trimbits)\n"));
+#endif
                 }
 #else
                 ret = FAIL;

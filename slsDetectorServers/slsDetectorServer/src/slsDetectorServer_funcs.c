@@ -240,7 +240,6 @@ void function_table() {
     flist[F_RESET_FPGA] = &reset_fpga;
     flist[F_POWER_CHIP] = &power_chip;
     flist[F_ACTIVATE] = &set_activate;
-    flist[F_PREPARE_ACQUISITION] = &prepare_acquisition;
     flist[F_THRESHOLD_TEMP] = &threshold_temp;
     flist[F_TEMP_CONTROL] = &temp_control;
     flist[F_TEMP_EVENT] = &temp_event;
@@ -3817,26 +3816,6 @@ int set_activate(int file_des) {
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
-}
-
-int prepare_acquisition(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-
-    LOG(logDEBUG1, ("Preparing Acquisition\n"));
-#ifndef EIGERD
-    functionNotImplemented();
-#else
-    // only set
-    if (Server_VerifyLock() == OK) {
-        ret = prepareAcquisition();
-        if (ret == FAIL) {
-            strcpy(mess, "Could not prepare acquisition\n");
-            LOG(logERROR, (mess));
-        }
-    }
-#endif
-    return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
 // stop server

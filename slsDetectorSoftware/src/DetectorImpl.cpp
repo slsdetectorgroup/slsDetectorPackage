@@ -1046,9 +1046,6 @@ int DetectorImpl::acquire() {
 
         // start and read all
         try {
-            if (multi_shm()->multiDetectorType == EIGER) {
-                Parallel(&Module::prepareAcquisition, {});
-            }
             Parallel(&Module::startAndReadAll, {});
         } catch (...) {
             if (receiver)

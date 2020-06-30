@@ -120,7 +120,6 @@ int program_fpga(int);
 int reset_fpga(int);
 int power_chip(int);
 int set_activate(int);
-int prepare_acquisition(int);
 int threshold_temp(int);
 int temp_control(int);
 int temp_event(int);

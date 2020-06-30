@@ -155,7 +155,6 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
     void startReceiver();
     void stopReceiver();
-    void prepareAcquisition();
     void startAcquisition();
     void stopAcquisition();
     void startAndReadAll();

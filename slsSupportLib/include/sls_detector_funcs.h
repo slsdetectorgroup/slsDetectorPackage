@@ -101,7 +101,6 @@ enum detFuncs {
     F_RESET_FPGA,
     F_POWER_CHIP,
     F_ACTIVATE,
-    F_PREPARE_ACQUISITION,
     F_THRESHOLD_TEMP,
     F_TEMP_CONTROL,
     F_TEMP_EVENT,
@@ -404,7 +403,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_RESET_FPGA:						return "F_RESET_FPGA";
 	case F_POWER_CHIP:						return "F_POWER_CHIP";
 	case F_ACTIVATE:						return "F_ACTIVATE";
-	case F_PREPARE_ACQUISITION:				return "F_PREPARE_ACQUISITION";
 	case F_THRESHOLD_TEMP:                  return "F_THRESHOLD_TEMP";
 	case F_TEMP_CONTROL:                    return "F_TEMP_CONTROL";
 	case F_TEMP_EVENT:                      return "F_TEMP_EVENT";

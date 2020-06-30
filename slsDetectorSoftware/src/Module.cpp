@@ -367,8 +367,6 @@ void Module::stopReceiver() {
     sendToReceiver(F_STOP_RECEIVER, arg, nullptr);
 }
 
-void Module::prepareAcquisition() { sendToDetector(F_PREPARE_ACQUISITION); }
-
 void Module::startAcquisition() {
     shm()->stoppedFlag = false;
     sendToDetector(F_START_ACQUISITION);

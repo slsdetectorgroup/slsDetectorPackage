@@ -2008,12 +2008,12 @@ int startStateMachine() {
     LOG(logINFO, ("Virtual Acquisition started\n"));
     return OK;
 #else
-    LOG(logINFOBLUE, ("Starting State Machine\n"));
+    LOG(logINFO, ("Acquisition started bit toggled\n"));
     int ret = OK, prev_flag;
     // get the DAQ toggle bit
     prev_flag = Feb_Control_AcquisitionStartedBit();
 
-    LOG(logINFO, ("Going to start acquisition\n"));
+    LOG(logINFOBLUE, ("Starting State Machine\n"));
     Feb_Control_StartAcquisition();
 
     LOG(logINFO, ("requesting images right after start\n"));

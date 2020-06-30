@@ -1773,6 +1773,9 @@ int start_state_machine(int blocking, int file_des) {
                     sharedMemory_setScanStatus(0);
                     break;
                 }
+#ifdef EIGERD
+                prepareAcquisition();
+#endif
                 ret = startStateMachine();
                 LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
                 if (ret == FAIL) {

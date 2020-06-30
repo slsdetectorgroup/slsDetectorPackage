@@ -525,9 +525,9 @@ void Detector::startReceiver() { pimpl->Parallel(&Module::startReceiver, {}); }
 void Detector::stopReceiver() { pimpl->Parallel(&Module::stopReceiver, {}); }
 
 void Detector::startDetector() {
-    if (getDetectorType().squash() == defs::EIGER) {
+    /*if (getDetectorType().squash() == defs::EIGER) {
         pimpl->Parallel(&Module::prepareAcquisition, {});
-    }
+    }*/
     pimpl->Parallel(&Module::startAcquisition, {});
 }
 

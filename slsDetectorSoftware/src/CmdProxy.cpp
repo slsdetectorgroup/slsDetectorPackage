@@ -1011,6 +1011,9 @@ std::string CmdProxy::Scan(int action) {
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() == 1) {
+            if (StringTo<int>(args[0]) != 0) {
+                throw sls::RuntimeError("Did you mean '0' to disable?");
+            }
             det->disableScan();
             os << "scan disabled" << '\n';
         } else if (args.size() != 4) {

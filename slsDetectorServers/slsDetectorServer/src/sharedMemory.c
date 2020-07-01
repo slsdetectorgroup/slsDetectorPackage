@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <unistd.h>
 
 #define SHM_NAME    "sls_server_shared_memory"
 #define SHM_VERSION 0x200625
@@ -47,24 +48,26 @@ int sharedMemory_create(int port) {
     shmFd =
         shmget(SHM_KEY + port, sizeof(sharedMem), IPC_CREAT | IPC_EXCL | 0666);
     if (shmFd == -1 && errno == EEXIST) {
-        LOG(logWARNING, ("Removing old shared memory\n"));
-        // cuz of unknown previous shm size, it has to  be deleted like this
-        system(
-            "for i in seq `ipcs -m | cut -d ' ' -f1`; do ipcrm -M $i; done;");
+        char cmd[MAX_STR_LENGTH];
+        memset(cmd, 0, MAX_STR_LENGTH);
+        sprintf(cmd, "ipcrm -M 0x%x", SHM_KEY + port);
+        system(cmd);
+        LOG(logWARNING,
+            ("Removed old shared memory with id 0x%x\n", SHM_KEY + port));
         shmFd = shmget(SHM_KEY + port, sizeof(sharedMem),
                        IPC_CREAT | IPC_EXCL | 0666);
     }
     if (shmFd == -1) {
         sprintf(shmMess, "Create shared memory failed: %s\n", strerror(errno));
         LOG(logERROR, (shmMess));
-        return 0;
+        return FAIL;
     }
     LOG(logINFO, ("Shared memory created\n"));
-    if (!sharedMemory_attach()) {
-        return 0;
+    if (sharedMemory_attach() == FAIL) {
+        return FAIL;
     }
     sharedMemory_initialize();
-    return 1;
+    return OK;
 }
 
 void sharedMemory_initialize() {
@@ -83,10 +86,10 @@ int sharedMemory_open(int port) {
     if (shmFd == -1) {
         sprintf(shmMess, "Open shared memory failed: %s\n", strerror(errno));
         LOG(logERROR, (shmMess));
-        return 0;
+        return FAIL;
     }
-    if (!sharedMemory_attach()) {
-        return 0;
+    if (sharedMemory_attach() == FAIL) {
+        return FAIL;
     }
     if (shm->version != SHM_VERSION) {
         sprintf(shmMess,
@@ -95,7 +98,7 @@ int sharedMemory_open(int port) {
         LOG(logERROR, (shmMess));
     }
     LOG(logINFO, ("Shared memory opened\n"));
-    return 1;
+    return OK;
 }
 
 int sharedMemory_attach() {
@@ -103,10 +106,10 @@ int sharedMemory_attach() {
     if (shm == (void *)-1) {
         sprintf(shmMess, "could not attach: %s\n", strerror(errno));
         LOG(logERROR, (shmMess));
-        return 0;
+        return FAIL;
     }
     LOG(logINFO, ("Shared memory attached\n"));
-    return 1;
+    return OK;
 }
 
 int sharedMemory_detach() {
@@ -114,10 +117,10 @@ int sharedMemory_detach() {
     if (shmdt(shm) == -1) {
         sprintf(shmMess, "could not detach: %s\n", strerror(errno));
         LOG(logERROR, (shmMess));
-        return 0;
+        return FAIL;
     }
     LOG(logINFO, ("Shared memory detached\n"));
-    return 1;
+    return OK;
 }
 
 int sharedMemory_remove() {
@@ -125,10 +128,10 @@ int sharedMemory_remove() {
     if (shmctl(shmFd, IPC_RMID, NULL) == -1) {
         sprintf(shmMess, "could not remove: %s\n", strerror(errno));
         LOG(logERROR, (shmMess));
-        return 0;
+        return FAIL;
     }
     LOG(logINFO, ("Shared memory removed\n"));
-    return 1;
+    return OK;
 }
 
 void sharedMemory_lock() { sem_wait(&(shm->sem)); }

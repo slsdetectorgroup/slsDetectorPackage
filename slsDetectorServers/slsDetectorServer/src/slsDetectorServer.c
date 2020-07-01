@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
     // control server
     if (isControlServer) {
         LOG(logINFOBLUE, ("Control Server [%d]\n", portno));
-        if (!sharedMemory_create(portno)) {
+        if (sharedMemory_create(portno) == FAIL) {
             return -1;
         }
 #ifdef STOP_SERVER
@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
     // stop server
     else {
         LOG(logINFOBLUE, ("Stop Server [%d]\n", portno));
-        if (!sharedMemory_open(portno - 1)) {
+        if (sharedMemory_open(portno - 1) == FAIL) {
             return -1;
         }
     }
@@ -160,12 +160,12 @@ int main(int argc, char *argv[]) {
     exitServer(sockfd);
 
     // detach shared memory
-    if (!sharedMemory_detach()) {
+    if (sharedMemory_detach() == FAIL) {
         return -1;
     }
     // remove shared memory (control server)
     if (isControlServer) {
-        if (!sharedMemory_remove()) {
+        if (sharedMemory_remove() == FAIL) {
             return -1;
         }
     }

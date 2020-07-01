@@ -449,20 +449,18 @@ void Module::setStartingFrameNumber(uint64_t value) {
 
 void Module::sendSoftwareTrigger() { sendToDetectorStop(F_SOFTWARE_TRIGGER); }
 
-bool Module::getScan() {
-    return static_cast<bool>(sendToDetector<int>(F_GET_SCAN));
+defs::scanParameters Module::getScan() {
+    return sendToDetector<defs::scanParameters>(F_GET_SCAN);
 }
 
-int Module::getNumberOfScanSteps() {
-    return sendToDetector<int>(F_GET_NUM_SCAN_STEPS);
+void Module::disableScan() {
+    sendToDetector(F_DISABLE_SCAN);
+    setNumberOfFrames(1);
 }
 
-void Module::disableScan() { sendToDetector(F_DISABLE_SCAN); }
-
-void Module::enableScan(const defs::dacIndex dac, const int start_offset,
-                        const int end_offset, const int step_size) {
-    int args[]{static_cast<int>(dac), start_offset, end_offset, step_size};
-    sendToDetector(F_ENABLE_SCAN, args, nullptr);
+void Module::enableScan(const defs::scanParameters t) {
+    auto retval = sendToDetector<int64_t>(F_ENABLE_SCAN, t);
+    setNumberOfFrames(retval);
 }
 
 // Network Configuration (Detector<->Receiver)

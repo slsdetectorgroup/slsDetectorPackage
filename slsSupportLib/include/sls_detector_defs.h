@@ -19,6 +19,7 @@
 #include "sls_detector_exceptions.h"
 #include <algorithm>
 #include <bitset>
+#include <chrono>
 #include <cstdint>
 #include <string>
 #else
@@ -450,6 +451,24 @@ typedef struct {
         uint32_t patnloop[3]{};
         uint32_t patwait[3]{};
         uint64_t patwaittime[3]{};
+    } __attribute__((packed));
+
+    /** scan structure */
+    struct scanParameters {
+        dacIndex dacInd{DAC_0};
+        int startOffset{0};
+        int stopOffset{0};
+        int stepSize{0};
+        int64_t dacSettleTime_ns{100 * 1000};
+
+        scanParameters() = default;
+        scanParameters(
+            dacIndex dac, int start, int stop, int step,
+            std::chrono::nanoseconds t = std::chrono::nanoseconds{10000})
+            : dacInd(dac), startOffset(start), stopOffset(stop),
+              stepSize(step) {
+            dacSettleTime_ns = t.count();
+        }
     } __attribute__((packed));
 #endif
 

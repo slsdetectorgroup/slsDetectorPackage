@@ -996,9 +996,9 @@ std::string CmdProxy::Scan(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[dac_name|0|trimbit_scan] [start_val] [stop_val] "
-              "[step_size]\n\tConfigures to scan "
-              "dac and sets number of frames to number of steps. Must acquire "
-              "after this. To cancel the scan configuration "
+              "[step_size] [dac settling time ns|us|ms|s]\n\tConfigures to "
+              "scan dac and sets number of frames to number of steps. Must "
+              "acquire after this. To cancel the scan configuration "
               "set dac to '0' without further arguments. This also sets number "
               "of frames back to 1."
               "\n\t[Eiger]Use trimbit_scan as dac name for a trimbit scan."
@@ -1008,7 +1008,7 @@ std::string CmdProxy::Scan(int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getScan();
-        os << OutString(t) << '\n';
+        os << ToString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() == 1) {
             if (StringTo<int>(args[0]) != 0) {
@@ -1016,21 +1016,26 @@ std::string CmdProxy::Scan(int action) {
             }
             det->disableScan();
             os << "scan disabled" << '\n';
-        } else if (args.size() != 4) {
-            WrongNumberOfParameters(4);
+        } else if (args.size() == 4) {
+            det->enableScan(defs::scanParameters(
+                StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
+                StringTo<int>(args[2]), StringTo<int>(args[3])));
+        } else if (args.size() == 5) {
+            std::string time_str(args[4]);
+            std::string unit = RemoveUnit(time_str);
+            auto t = StringTo<time::ns>(time_str, unit);
+            det->enableScan(defs::scanParameters(
+                StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
+                StringTo<int>(args[2]), StringTo<int>(args[3]), t));
         } else {
-            det->enableScan(StringTo<defs::dacIndex>(args[0]),
-                            StringTo<int>(args[1]), StringTo<int>(args[2]),
-                            StringTo<int>(args[3]));
-            auto nsteps = det->getNumberOfScanSteps().tsquash(
-                "inconsistent number of scan steps");
-            os << "scan enabled for " << nsteps << " steps" << '\n';
+            WrongNumberOfParameters(4);
         }
+        os << ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }
     return os.str();
-}
+} // namespace sls
 /* Network Configuration (Detector<->Receiver) */
 
 std::string CmdProxy::UDPDestinationIP(int action) {

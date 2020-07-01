@@ -102,6 +102,23 @@ std::ostream &operator<<(std::ostream &os,
     return os << ToString(r);
 }
 
+std::string ToString(const slsDetectorDefs::scanParameters &r) {
+    std::ostringstream oss;
+    oss << '[' << "dac " << r.dacInd << std::endl
+        << "start " << r.startOffset << std::endl
+        << "stop " << r.stopOffset << std::endl
+        << "step " << r.stepSize << std::endl
+        << "settleTime "
+        << ToString(std::chrono::nanoseconds{r.dacSettleTime_ns}) << std::endl
+        << ']';
+    return oss.str();
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::scanParameters &r) {
+    return os << ToString(r);
+}
+
 std::string ToString(const defs::runStatus s) {
     switch (s) {
     case defs::ERROR:

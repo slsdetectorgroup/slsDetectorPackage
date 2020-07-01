@@ -394,19 +394,14 @@ class Detector {
     /** [Eiger] Sends an internal software trigger to the detector */
     void sendSoftwareTrigger(Positions pos = {});
 
-    Result<bool> getScan(Positions pos = {}) const;
-
-    Result<int> getNumberOfScanSteps(Positions pos = {}) const;
+    Result<defs::scanParameters> getScan(Positions pos = {}) const;
 
     /** also sets number of frames to 1 */
     void disableScan();
 
-    /** scan dac, [Eiger] use TRIMBIT_SCAN for scanning trimbits, also sets
-     * number of frames to number of steps in receiver */
-    void enableScan(const defs::dacIndex dac, const int start_offset,
-                    const int end_offset, const int step_size);
-
-    // TODO: remove resetframescaught in receiver
+    /** scan dac, trimbits scan only for [Eiger/ Mythen3] TRIMBIT_SCAN, also
+     * sets number of frames to number of steps in receiver */
+    void enableScan(const defs::scanParameters t);
 
     /**************************************************
      *                                                 *

@@ -2,7 +2,6 @@
 
 #include <semaphore.h>
 
-char *sharedMemory_getError();
 void sharedMemory_print();
 int sharedMemory_create(int port);
 void sharedMemory_initialize();

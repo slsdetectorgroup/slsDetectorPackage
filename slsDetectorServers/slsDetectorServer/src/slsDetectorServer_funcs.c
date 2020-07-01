@@ -55,6 +55,7 @@ int (*flist[NUM_DET_FUNCTIONS])(int);
 int scan = 0;
 int numScanSteps = 0;
 int *scanSteps = NULL;
+int64_t scanDacSettleTime_us = 0;
 enum DACINDEX scanDac = 0;
 int scanTrimbits = 0;
 
@@ -340,7 +341,6 @@ void function_table() {
     flist[F_SET_VETO] = &set_veto;
     flist[F_SET_PATTERN] = &set_pattern;
     flist[F_GET_SCAN] = get_scan;
-    flist[F_GET_NUM_SCAN_STEPS] = get_num_scan_steps;
     flist[F_DISABLE_SCAN] = disable_scan;
     flist[F_ENABLE_SCAN] = enable_scan;
     // check
@@ -1772,6 +1772,7 @@ int start_state_machine(int blocking, int file_des) {
                     sharedMemory_setScanStatus(0);
                     break;
                 }
+                usleep(scanDacSettleTime_us);
 #ifdef EIGERD
                 prepareAcquisition();
 #endif
@@ -2968,7 +2969,8 @@ int set_pattern_loop_addresses(int file_des) {
                  startAddr, stopAddr));
             retvals[0] = startAddr;
             retvals[1] = stopAddr;
-            validate(args[1], startAddr, "set Pattern loops' start address", HEX);
+            validate(args[1], startAddr, "set Pattern loops' start address",
+                     HEX);
             validate(args[2], stopAddr, "set Pattern loops' stop address", HEX);
         }
     }
@@ -3007,7 +3009,8 @@ int set_pattern_loop_cycles(int file_des) {
             retval = numLoops;
             LOG(logDEBUG1,
                 ("Pattern loop cycles retval: (ncycles:%d)\n", retval));
-            validate(args[1], retval, "set Pattern loops' number of cycles", DEC);
+            validate(args[1], retval, "set Pattern loops' number of cycles",
+                     DEC);
         }
     }
 #endif
@@ -7384,39 +7387,51 @@ int set_pattern(int file_des) {
             retval1 = patloop[1];
             numLoops = patnloop[0];
             setPatternLoop(0, &patloop[0], &patloop[1], &numLoops);
-            validate(patloop[0], retval0, "set pattern Loop 0 start address", HEX);
-            validate(patloop[1], retval1, "set pattern Loop 0 stop address", HEX);
-            validate(patnloop[0], numLoops, "set pattern Loop 0 num loops", HEX);
+            validate(patloop[0], retval0, "set pattern Loop 0 start address",
+                     HEX);
+            validate(patloop[1], retval1, "set pattern Loop 0 stop address",
+                     HEX);
+            validate(patnloop[0], numLoops, "set pattern Loop 0 num loops",
+                     HEX);
         }
         if (ret == OK) {
             retval0 = patloop[2];
             retval1 = patloop[3];
             numLoops = patnloop[1];
             setPatternLoop(1, &patloop[2], &patloop[3], &numLoops);
-            validate(patloop[2], retval0, "set pattern Loop 1 start address", HEX);
-            validate(patloop[3], retval1, "set pattern Loop 1 stop address", HEX);
-            validate(patnloop[1], numLoops, "set pattern Loop 1 num loops", HEX);
+            validate(patloop[2], retval0, "set pattern Loop 1 start address",
+                     HEX);
+            validate(patloop[3], retval1, "set pattern Loop 1 stop address",
+                     HEX);
+            validate(patnloop[1], numLoops, "set pattern Loop 1 num loops",
+                     HEX);
         }
         if (ret == OK) {
             retval0 = patloop[4];
             retval1 = patloop[5];
             numLoops = patnloop[2];
             setPatternLoop(2, &patloop[4], &patloop[5], &numLoops);
-            validate(patloop[4], retval0, "set pattern Loop 2 start address", HEX);
-            validate(patloop[5], retval1, "set pattern Loop 2 stop address", HEX);
-            validate(patnloop[2], numLoops, "set pattern Loop 2 num loops", HEX);
+            validate(patloop[4], retval0, "set pattern Loop 2 start address",
+                     HEX);
+            validate(patloop[5], retval1, "set pattern Loop 2 stop address",
+                     HEX);
+            validate(patnloop[2], numLoops, "set pattern Loop 2 num loops",
+                     HEX);
         }
         if (ret == OK) {
             retval0 = setPatternWaitAddress(0, patwait[0]);
-            validate(patwait[0], retval0, "set pattern Loop 0 wait address", HEX);
+            validate(patwait[0], retval0, "set pattern Loop 0 wait address",
+                     HEX);
         }
         if (ret == OK) {
             retval0 = setPatternWaitAddress(1, patwait[1]);
-            validate(patwait[1], retval0, "set pattern Loop 1 wait address", HEX);
+            validate(patwait[1], retval0, "set pattern Loop 1 wait address",
+                     HEX);
         }
         if (ret == OK) {
             retval0 = setPatternWaitAddress(2, patwait[2]);
-            validate(patwait[2], retval0, "set pattern Loop 2 wait address", HEX);
+            validate(patwait[2], retval0, "set pattern Loop 2 wait address",
+                     HEX);
         }
         if (ret == OK) {
             uint64_t retval64 = setPatternWaitTime(0, patwaittime[0]);
@@ -7441,27 +7456,14 @@ int set_pattern(int file_des) {
 int get_scan(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int retval = -1;
+    int retval[4] = {-1, -1, -1, -1};
+    int64_t retval_time = -1;
 
     LOG(logDEBUG1, ("Getting scan\n"));
 
     // get only
-    retval = scan;
+    retval[0] = scan;
     LOG(logDEBUG1, ("scan mode retval: %u\n", retval));
-
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
-}
-
-int get_num_scan_steps(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int retval = -1;
-
-    LOG(logDEBUG1, ("Getting num scan steps\n"));
-
-    // get only
-    retval = numScanSteps;
-    LOG(logDEBUG1, ("num scan steps retval: %u\n", retval));
 
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -7493,8 +7495,11 @@ int enable_scan(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     int args[4] = {-1, -1, -1, -1};
+    int64_t args_time = -1;
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, args_time, sizeof(args_time), INT64) < 0)
         return printSocketReadError();
 
     // only set
@@ -7502,6 +7507,7 @@ int enable_scan(int file_des) {
         int startOffset = args[1];
         int endOffset = args[2];
         int stepSize = args[3];
+        scanDacSettleTime_us = args[4] / 1000;
         scanTrimbits = 0;
 
         if ((startOffset < endOffset && stepSize <= 0) ||

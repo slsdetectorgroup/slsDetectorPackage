@@ -224,6 +224,5 @@ int get_veto(int);
 int set_veto(int);
 int set_pattern(int);
 int get_scan(int);
-int get_num_scan_steps(int);
 int disable_scan(int);
 int enable_scan(int);

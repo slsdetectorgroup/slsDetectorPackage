@@ -2,7 +2,7 @@
 #include "clogger.h"
 #include "sls_detector_defs.h"
 
-#include <errno.h> // errno
+#include <errno.h>
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>

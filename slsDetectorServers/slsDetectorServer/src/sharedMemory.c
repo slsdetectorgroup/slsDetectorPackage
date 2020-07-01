@@ -3,15 +3,9 @@
 #include "sls_detector_defs.h"
 
 #include <errno.h> // errno
-#include <fcntl.h> // O_CREAT, O_TRUNC..
 #include <string.h>
-#include <sys/mman.h> // shared memory
-#include <sys/stat.h> // fstat
-#include <unistd.h>
-
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include <sys/types.h>
 
 #define SHM_NAME    "sls_server_shared_memory"
 #define SHM_VERSION 0x200625

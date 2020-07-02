@@ -6,6 +6,7 @@
 #include "sls_detector_funcs.h"
 
 #include <arpa/inet.h>
+#include <pthread.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -50,6 +51,7 @@ int detectorId = -1;
 
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
+pthread_t pthread_tid;
 
 // scan variables
 int scan = 0;
@@ -1651,7 +1653,7 @@ int get_threshold_energy(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int start_state_machine(int blocking, int file_des) {
+int acquire(int blocking, int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
     if (blocking) {
@@ -1729,105 +1731,115 @@ int start_state_machine(int blocking, int file_des) {
                          "already running!\n");
             LOG(logERROR, (mess));
         } else {
-            // start acquisition thread should start here
-
-            int times = 1;
             sharedMemory_setScanStop(0);
             sharedMemory_setScanStatus(IDLE); // if it was error
-            // start of scan
-            if (scan) {
-                sharedMemory_setScanStatus(RUNNING);
-                times = numScanSteps;
-            }
-            for (int i = 0; i != times; ++i) {
-                // normal acquisition
-                if (scan == 0) {
-                    LOG(logINFOBLUE, ("Normal Acquisition (not scan)\n"));
-                }
-                // scan
-                else {
-                    // check scan stop
-                    if (sharedMemory_getScanStop()) {
-                        LOG(logINFORED, ("Scan manually stopped!\n"));
-                        sharedMemory_setScanStatus(IDLE);
-                        break;
-                    }
-                    // trimbits scan
-                    if (scanTrimbits) {
-                        LOG(logINFOBLUE, ("Trimbits scan %d/%d: [%d]\n", i,
-                                          times, scanSteps[i]));
-#if !defined(EIGERD) && !defined(MYTHEN3D)
-                        ret = FAIL;
-                        sprintf(mess, "trimbit scan not implemented for this "
-                                      "detector!\n");
-                        LOG(logERROR, (mess));
-                        sharedMemory_setScanStatus(ERROR);
-                        break;
-#else
-                        setAllTrimbits(scanSteps[i]);
-#endif
-                    }
-                    // dac scan
-                    else {
-                        LOG(logINFOBLUE, ("Dac [%d] scan %d/%d: [%d]\n",
-                                          scanDac, i, times, scanSteps[i]));
-                        setDAC(scanDac, scanSteps[i], 0);
-                        int retval = getDAC(scanDac, 0);
-                        if (abs(retval - scanSteps[i]) > 5) {
-                            ret = FAIL;
-                            sprintf(
-                                mess,
-                                "Could not scan. Setting dac %d : wrote %d but "
-                                "read %d\n",
-                                scanDac, scanSteps[i], scanSteps[i]);
-                            LOG(logERROR, (mess));
-                            sharedMemory_setScanStatus(ERROR);
-                            break;
-                        }
-                    }
-                    // check scan stop
-                    if (sharedMemory_getScanStop()) {
-                        LOG(logINFORED, ("Scan manually stopped!\n"));
-                        sharedMemory_setScanStatus(IDLE);
-                        break;
-                    }
-                    usleep(scanSettleTime_ns / 1000);
-                }
-#ifdef EIGERD
-                prepareAcquisition();
-#endif
-                ret = startStateMachine();
-                LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
-                if (ret == FAIL) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(VIRTUAL)
-                    sprintf(
-                        mess,
-                        "Could not start acquisition. Could not create udp "
-                        "socket in server. Check udp_dstip & udp_dstport.\n");
-#else
-                    sprintf(mess, "Could not start acquisition\n");
-#endif
-                    LOG(logERROR, (mess));
-                    if (scan) {
-                        sharedMemory_setScanStatus(ERROR);
-                    }
-                    break;
-                }
-                // blocking or scan
-                if (blocking || times > 1) {
-                    readFrame(&ret, mess);
+            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                               &blocking)) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition thread!\n");
+                LOG(logERROR, (mess));
+            } else {
+                if (blocking) {
+                    pthread_join(pthread_tid, NULL);
                 }
             }
-        }
-        // end of scan
-        if (scan) {
-            sharedMemory_setScanStatus(IDLE);
         }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
 
-int start_acquisition(int file_des) { return start_state_machine(0, file_des); }
+void *start_state_machine(void *arg) {
+    int *blocking = (int *)arg;
+    int times = 1;
+    // start of scan
+    if (scan) {
+        sharedMemory_setScanStatus(RUNNING);
+        times = numScanSteps;
+    }
+    for (int i = 0; i != times; ++i) {
+        // normal acquisition
+        if (scan == 0) {
+            LOG(logINFOBLUE, ("Normal Acquisition (not scan)\n"));
+        }
+        // scan
+        else {
+            // check scan stop
+            if (sharedMemory_getScanStop()) {
+                LOG(logINFORED, ("Scan manually stopped!\n"));
+                sharedMemory_setScanStatus(IDLE);
+                break;
+            }
+            // trimbits scan
+            if (scanTrimbits) {
+                LOG(logINFOBLUE,
+                    ("Trimbits scan %d/%d: [%d]\n", i, times, scanSteps[i]));
+#if !defined(EIGERD) && !defined(MYTHEN3D)
+                ret = FAIL;
+                sprintf(mess, "trimbit scan not implemented for this "
+                              "detector!\n");
+                LOG(logERROR, (mess));
+                sharedMemory_setScanStatus(ERROR);
+                break;
+#else
+                setAllTrimbits(scanSteps[i]);
+#endif
+            }
+            // dac scan
+            else {
+                LOG(logINFOBLUE, ("Dac [%d] scan %d/%d: [%d]\n", scanDac, i,
+                                  times, scanSteps[i]));
+                setDAC(scanDac, scanSteps[i], 0);
+                int retval = getDAC(scanDac, 0);
+                if (abs(retval - scanSteps[i]) > 5) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not scan. Setting dac %d : wrote %d but "
+                            "read %d\n",
+                            scanDac, scanSteps[i], scanSteps[i]);
+                    LOG(logERROR, (mess));
+                    sharedMemory_setScanStatus(ERROR);
+                    break;
+                }
+            }
+            // check scan stop
+            if (sharedMemory_getScanStop()) {
+                LOG(logINFORED, ("Scan manually stopped!\n"));
+                sharedMemory_setScanStatus(IDLE);
+                break;
+            }
+            usleep(scanSettleTime_ns / 1000);
+        }
+#ifdef EIGERD
+        prepareAcquisition();
+#endif
+        ret = startStateMachine();
+        LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
+        if (ret == FAIL) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(VIRTUAL)
+            sprintf(mess, "Could not start acquisition. Could not create udp "
+                          "socket in server. Check udp_dstip & udp_dstport.\n");
+#else
+            sprintf(mess, "Could not start acquisition\n");
+#endif
+            LOG(logERROR, (mess));
+            if (scan) {
+                sharedMemory_setScanStatus(ERROR);
+            }
+            break;
+        }
+        // blocking or scan
+        if (*blocking || times > 1) {
+            readFrame(&ret, mess);
+        }
+    }
+    // end of scan
+    if (scan) {
+        sharedMemory_setScanStatus(IDLE);
+    }
+    return NULL;
+}
+
+int start_acquisition(int file_des) { return acquire(0, file_des); }
 
 int stop_acquisition(int file_des) {
     ret = OK;
@@ -1858,9 +1870,7 @@ int get_run_status(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int start_and_read_all(int file_des) {
-    return start_state_machine(1, file_des);
-}
+int start_and_read_all(int file_des) { return acquire(1, file_des); }
 
 int read_all(int file_des) {
     ret = OK;
@@ -7682,6 +7692,7 @@ int set_scan(int file_des) {
                 LOG(logDEBUG1,
                     ("retval num frames %lld\n", (long long int)retval));
                 validate64(arg, retval, "set number of frames", DEC);
+                retval = numScanSteps;
             }
         }
     }

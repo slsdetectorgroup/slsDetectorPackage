@@ -1913,7 +1913,14 @@ int set_num_frames(int file_des) {
     // only set
     if (Server_VerifyLock() == OK) {
         // only set number of frames if normal mode (not scan)
-        if (!scan) {
+        if (scan) {
+            if (arg != numScanSteps) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set number of frames %lld. In scan mode, it is number of steps %d\n", (long long unsigned int)arg, numScanSteps);
+                LOG(logERROR, (mess));
+            }
+        } else {
 #ifdef GOTTHARD2D
             // validate #frames in burst mode
             if (getBurstMode() != BURST_OFF && arg > MAX_FRAMES_IN_BURST_MODE) {

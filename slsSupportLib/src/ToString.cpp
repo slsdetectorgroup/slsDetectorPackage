@@ -107,7 +107,7 @@ std::string ToString(const slsDetectorDefs::scanParameters &r) {
     oss << '[';
     if (r.enable) {
         oss << "enabled " << std::endl
-            << "dac " << r.dacInd << std::endl
+            << "dac " << ToString(r.dacInd) << std::endl
             << "start " << r.startOffset << std::endl
             << "stop " << r.stopOffset << std::endl
             << "step " << r.stepSize << std::endl

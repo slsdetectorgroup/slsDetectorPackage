@@ -563,10 +563,8 @@ Result<defs::scanParameters> Detector::getScan(Positions pos) const {
     return pimpl->Parallel(&Module::getScan, pos);
 }
 
-void Detector::disableScan() { pimpl->Parallel(&Module::disableScan, {}); }
-
-void Detector::enableScan(const defs::scanParameters t) {
-    pimpl->Parallel(&Module::enableScan, {}, t);
+void Detector::setScan(const defs::scanParameters t) {
+    pimpl->Parallel(&Module::setScan, {}, t);
 }
 
 // Network Configuration (Detector<->Receiver)

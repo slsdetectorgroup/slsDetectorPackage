@@ -1010,21 +1010,25 @@ std::string CmdProxy::Scan(int action) {
         auto t = det->getScan();
         os << ToString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
+        // disable
         if (args.size() == 1) {
             if (StringTo<int>(args[0]) != 0) {
                 throw sls::RuntimeError("Did you mean '0' to disable?");
             }
-            det->disableScan();
-            os << "scan disabled" << '\n';
-        } else if (args.size() == 4) {
-            det->enableScan(defs::scanParameters(
+            det->setScan(defs::scanParameters());
+        }
+        // enable without settling time
+        else if (args.size() == 4) {
+            det->setScan(defs::scanParameters(
                 StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
                 StringTo<int>(args[2]), StringTo<int>(args[3])));
-        } else if (args.size() == 5) {
+        }
+        // enable with all parameters
+        else if (args.size() == 5) {
             std::string time_str(args[4]);
             std::string unit = RemoveUnit(time_str);
             auto t = StringTo<time::ns>(time_str, unit);
-            det->enableScan(defs::scanParameters(
+            det->setScan(defs::scanParameters(
                 StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
                 StringTo<int>(args[2]), StringTo<int>(args[3]), t));
         } else {

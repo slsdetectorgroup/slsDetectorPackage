@@ -55,7 +55,8 @@ int (*flist[NUM_DET_FUNCTIONS])(int);
 int scan = 0;
 int numScanSteps = 0;
 int *scanSteps = NULL;
-int64_t scanDacSettleTime_us = 0;
+int64_t scanSettleTime_ns = 0;
+enum dacIndex scanGlobalIndex = 0;
 enum DACINDEX scanDac = 0;
 int scanTrimbits = 0;
 
@@ -341,8 +342,7 @@ void function_table() {
     flist[F_SET_VETO] = &set_veto;
     flist[F_SET_PATTERN] = &set_pattern;
     flist[F_GET_SCAN] = get_scan;
-    flist[F_DISABLE_SCAN] = disable_scan;
-    flist[F_ENABLE_SCAN] = enable_scan;
+    flist[F_SET_SCAN] = set_scan;
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -1723,56 +1723,76 @@ int start_state_machine(int blocking, int file_des) {
             strcpy(mess, "Could not start acquisition because ");
             strcat(mess, configureMessage);
             LOG(logERROR, (mess));
+        } else if (sharedMemory_getScanStatus() == RUNNING) {
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition because a scan is "
+                         "already running!\n");
+            LOG(logERROR, (mess));
         } else {
+            // start acquisition thread should start here
+
             int times = 1;
+            sharedMemory_setScanStop(0);
+            sharedMemory_setScanStatus(IDLE); // if it was error
             // start of scan
             if (scan) {
-                sharedMemory_setScanStop(0);
-                sharedMemory_setScanStatus(1);
+                sharedMemory_setScanStatus(RUNNING);
                 times = numScanSteps;
             }
             for (int i = 0; i != times; ++i) {
-                // if scanstop
-                if (scan && sharedMemory_getScanStop()) {
-                    LOG(logINFORED, ("Scan stopped!\n"));
-                    sharedMemory_setScanStatus(0);
-                    break;
+                // normal acquisition
+                if (scan == 0) {
+                    LOG(logINFOBLUE, ("Normal Acquisition (not scan)\n"));
                 }
-                if (scanTrimbits) {
-                    LOG(logINFOBLUE, ("Trimbits scan %d/%d: [%d]\n", i, times,
-                                      scanSteps[i]));
-#if defined(EIGERD) || defined(MYTHEN3D)
-                    setAllTrimbits(scanSteps[i]);
-#else
-                    LOG(logERROR, ("trimbit scan not implemented!\n"));
-#endif
-                } else if (numScanSteps > 0) {
-                    LOG(logINFOBLUE, ("Dac [%d] scan %d/%d: [%d]\n", scanDac, i,
-                                      times, scanSteps[i]));
-                    setDAC(scanDac, scanSteps[i], 0);
-                    int retval = getDAC(scanDac, 0);
-                    if (abs(retval - scanSteps[i]) > 5) {
+                // scan
+                else {
+                    // check scan stop
+                    if (sharedMemory_getScanStop()) {
+                        LOG(logINFORED, ("Scan manually stopped!\n"));
+                        sharedMemory_setScanStatus(IDLE);
+                        break;
+                    }
+                    // trimbits scan
+                    if (scanTrimbits) {
+                        LOG(logINFOBLUE, ("Trimbits scan %d/%d: [%d]\n", i,
+                                          times, scanSteps[i]));
+#if !defined(EIGERD) && !defined(MYTHEN3D)
                         ret = FAIL;
-                        sprintf(mess,
+                        sprintf(mess, "trimbit scan not implemented for this "
+                                      "detector!\n");
+                        LOG(logERROR, (mess));
+                        sharedMemory_setScanStatus(ERROR);
+                        break;
+#else
+                        setAllTrimbits(scanSteps[i]);
+#endif
+                    }
+                    // dac scan
+                    else {
+                        LOG(logINFOBLUE, ("Dac [%d] scan %d/%d: [%d]\n",
+                                          scanDac, i, times, scanSteps[i]));
+                        setDAC(scanDac, scanSteps[i], 0);
+                        int retval = getDAC(scanDac, 0);
+                        if (abs(retval - scanSteps[i]) > 5) {
+                            ret = FAIL;
+                            sprintf(
+                                mess,
                                 "Could not scan. Setting dac %d : wrote %d but "
                                 "read %d\n",
                                 scanDac, scanSteps[i], scanSteps[i]);
-                        LOG(logERROR, (mess));
-                        if (scan) {
-                            sharedMemory_setScanStatus(0);
+                            LOG(logERROR, (mess));
+                            sharedMemory_setScanStatus(ERROR);
+                            break;
                         }
+                    }
+                    // check scan stop
+                    if (sharedMemory_getScanStop()) {
+                        LOG(logINFORED, ("Scan manually stopped!\n"));
+                        sharedMemory_setScanStatus(IDLE);
                         break;
                     }
-                } else {
-                    LOG(logINFOBLUE, ("Normal Acquisition (not scan)\n"));
+                    usleep(scanSettleTime_ns / 1000);
                 }
-                // if scanstop
-                if (scan && sharedMemory_getScanStop()) {
-                    LOG(logINFORED, ("Scan stopped!\n"));
-                    sharedMemory_setScanStatus(0);
-                    break;
-                }
-                usleep(scanDacSettleTime_us);
 #ifdef EIGERD
                 prepareAcquisition();
 #endif
@@ -1789,7 +1809,7 @@ int start_state_machine(int blocking, int file_des) {
 #endif
                     LOG(logERROR, (mess));
                     if (scan) {
-                        sharedMemory_setScanStatus(0);
+                        sharedMemory_setScanStatus(ERROR);
                     }
                     break;
                 }
@@ -1801,7 +1821,7 @@ int start_state_machine(int blocking, int file_des) {
         }
         // end of scan
         if (scan) {
-            sharedMemory_setScanStatus(0);
+            sharedMemory_setScanStatus(IDLE);
         }
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -7456,184 +7476,214 @@ int set_pattern(int file_des) {
 int get_scan(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int retval[4] = {-1, -1, -1, -1};
-    int64_t retval_time = -1;
+    int retvals[5] = {0, 0, 0, 0, 0};
+    int64_t retvals_dacTime = 0;
 
     LOG(logDEBUG1, ("Getting scan\n"));
 
     // get only
-    retval[0] = scan;
-    LOG(logDEBUG1, ("scan mode retval: %u\n", retval));
-
-    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
-}
-
-int disable_scan(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-
-    // only set
-    if (Server_VerifyLock() == OK) {
-        LOG(logINFOBLUE, ("Disabling scan\n"));
-        scan = 0;
-        scanTrimbits = 0;
-        numScanSteps = 0;
-        if (scanSteps != NULL) {
-            free(scanSteps);
-            scanSteps = NULL;
-        }
-        int64_t arg = 1;
-        setNumFrames(arg);
-        int64_t retval = getNumFrames();
-        LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
-        validate64(arg, retval, "set number of frames", DEC);
+    retvals[0] = scan;
+    if (scan) {
+        retvals[1] = scanGlobalIndex;
+        retvals[2] = scanSteps[0];
+        retvals[3] = scanSteps[numScanSteps - 1];
+        retvals[4] = scanSteps[1] - scanSteps[0];
+        retvals_dacTime = scanSettleTime_ns;
     }
-    return Server_SendResult(file_des, INT32, NULL, 0);
+    LOG(logDEBUG1, ("scan retval: [%s, dac:%d, start:%d, stop:%d, step:%d, "
+                    "dacTime:%lldns]\n",
+                    retvals[0] ? "enabled" : "disabled", retvals[1], retvals[2],
+                    retvals[3], retvals[4], (long long int)retvals_dacTime));
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret != FAIL) {
+        sendData(file_des, retvals, sizeof(retvals), INT32);
+        sendData(file_des, &retvals_dacTime, sizeof(retvals_dacTime), INT64);
+    }
+    return ret;
 }
 
-int enable_scan(int file_des) {
+int set_scan(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int args[4] = {-1, -1, -1, -1};
-    int64_t args_time = -1;
+    int args[5] = {-1, -1, -1, -1, -1};
+    int64_t dacTime = -1;
+    int64_t retval = -1;
 
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-    if (receiveData(file_des, args_time, sizeof(args_time), INT64) < 0)
+    if (receiveData(file_des, &dacTime, sizeof(dacTime), INT64) < 0)
         return printSocketReadError();
 
     // only set
     if (Server_VerifyLock() == OK) {
-        int startOffset = args[1];
-        int endOffset = args[2];
-        int stepSize = args[3];
-        scanDacSettleTime_us = args[4] / 1000;
-        scanTrimbits = 0;
+        int enable = args[0];
+        enum dacIndex index = args[1];
+        int start = args[2];
+        int stop = args[3];
+        int step = args[4];
 
-        if ((startOffset < endOffset && stepSize <= 0) ||
-            (endOffset < startOffset && stepSize >= 0)) {
-            ret = FAIL;
-            sprintf(mess, "Invalid scan parameters\n");
-            LOG(logERROR, (mess));
-        } else {
-            // trimbit scan
-            if (args[0] == TRIMBIT_SCAN) {
-#if defined(EIGERD) || defined(MYTHEN3D)
-                if (startOffset < 0 || startOffset > MAX_TRIMBITS_VALUE ||
-                    endOffset < 0 || endOffset > MAX_TRIMBITS_VALUE) {
-                    ret = FAIL;
-                    sprintf(mess, "Invalid trimbits scan values\n");
-                    LOG(logERROR, (mess));
-                } else {
-                    scanTrimbits = 1;
-                    LOG(logINFOBLUE, ("Trimbit scan enabled\n"));
-#ifdef EIGERD
-                    // changes settings to undefined
-                    setSettings(UNDEFINED);
-                    LOG(logERROR,
-                        ("Settings has been changed to undefined (change all "
-                         "trimbits)\n"));
-#endif
-                }
-#else
-                ret = FAIL;
-                sprintf(mess, "Cannot enable trimbit scan. Not implemented for "
-                              "this detector\n");
-                LOG(logERROR, (mess));
-#endif
-            } else {
-                switch ((enum dacIndex)args[0]) {
-                case HIGH_VOLTAGE:
-#ifdef EIGERD
-                case IO_DELAY:
-#elif CHIPTESTBOARDD
-                case ADC_VPP:
-                case V_POWER_A:
-                case V_POWER_B:
-                case V_POWER_C:
-                case V_POWER_D:
-                case V_POWER_IO:
-                case V_POWER_CHIP:
-                case V_LIMIT:
-#elif MOENCHD
-                case ADC_VPP:
-                case V_LIMIT:
-#endif
-                    modeNotImplemented("Scan Dac Index", args[0]);
-                    break;
-                default:
-                    break;
-                }
-                scanDac = getDACIndex(args[0]);
-                if (ret == FAIL) {
-                    sprintf(
-                        mess,
-                        "Cannot enable scan. Dac index %d not implemented for "
-                        "this detector for scanning\n",
-                        args[0]);
-                    LOG(logERROR, (mess));
-                } else if (startOffset < 0 || startOffset > getMaxDacSteps() ||
-                           endOffset < 0 || endOffset > getMaxDacSteps()) {
-                    ret = FAIL;
-                    sprintf(mess, "Invalid dac scan values\n");
-                    LOG(logERROR, (mess));
-                }
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-                else if (checkVLimitDacCompliant(startOffset) == FAIL ||
-                         checkVLimitDacCompliant(endOffset) == FAIL) {
-                    ret = FAIL;
-                    sprintf(mess,
-                            "Invalid scan dac values."
-                            "Exceeds voltage limit %d.\n",
-                            getVLimit());
-                    LOG(logERROR, (mess));
-                }
-#endif
-                if (ret == OK) {
-#ifdef EIGERD
-                    // changing dac changes settings to undefined
-                    switch (scanDac) {
-                    case E_VCMP_LL:
-                    case E_VCMP_LR:
-                    case E_VCMP_RL:
-                    case E_VCMP_RR:
-                    case E_VRPREAMP:
-                    case E_VCP:
-                        setSettings(UNDEFINED);
-                        LOG(logERROR,
-                            ("Settings has been changed "
-                             "to undefined (changed specific dacs)\n"));
-                        break;
-                    default:
-                        break;
-                    }
-#endif
-                    LOG(logINFOBLUE, ("Dac [%d] scan enabled\n", scanDac));
-                }
-            }
-        }
-        if (ret == OK) {
-            scan = 1;
-            numScanSteps = (abs(endOffset - startOffset) / abs(stepSize)) + 1;
-            if (scanSteps != NULL) {
-                free(scanSteps);
-            }
-            scanSteps = malloc(numScanSteps * sizeof(int));
-            for (int i = 0; i != numScanSteps; ++i) {
-                scanSteps[i] = startOffset + i * stepSize;
-                LOG(logDEBUG1, ("scansteps[%d]:%d\n", i, scanSteps[i]));
-            }
-
-            LOG(logINFOBLUE,
-                ("Enabling scan for dac[%d], start[%d], end[%d], "
-                 "stepsize[%d], nsteps[%d]\n",
-                 scanDac, startOffset, endOffset, stepSize, numScanSteps));
+        // disable scan
+        if (enable == 0) {
+            LOG(logINFOBLUE, ("Disabling scan"));
+            scan = 0;
+            numScanSteps = 0;
+            // setting number of frames to 1
             int64_t arg = 1;
             setNumFrames(arg);
-            int64_t retval = getNumFrames();
+            retval = getNumFrames();
             LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
             validate64(arg, retval, "set number of frames", DEC);
         }
+        // enable scan
+        else {
+            if ((start < stop && step <= 0) || (stop < start && step >= 0)) {
+                ret = FAIL;
+                sprintf(mess, "Invalid scan parameters\n");
+                LOG(logERROR, (mess));
+            } else {
+
+                // trimbit scan
+                if (args[0] == TRIMBIT_SCAN) {
+#if !defined(EIGERD) && !defined(MYTHEN3D)
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Cannot enable trimbit scan. Not implemented for "
+                            "this detector\n");
+                    LOG(logERROR, (mess));
+#else
+                    if (start < 0 || start > MAX_TRIMBITS_VALUE || stop < 0 ||
+                        stop > MAX_TRIMBITS_VALUE) {
+                        ret = FAIL;
+                        sprintf(mess, "Invalid trimbits scan values\n");
+                        LOG(logERROR, (mess));
+                    }
+                    // validated
+                    else {
+                        LOG(logINFOBLUE, ("Trimbit scan enabled\n"));
+                        scanTrimbits = 1;
+                        scanGlobalIndex = index;
+                        scanSettleTime_ns = dacTime;
+#ifdef EIGERD
+                        // changing trimbits, settings to undefined
+                        setSettings(UNDEFINED);
+                        LOG(logERROR, ("Settings has been changed to undefined "
+                                       "(change all "
+                                       "trimbits)\n"));
+#endif
+                    }
+#endif
+                }
+                // dac scan
+                else {
+                    if (start < 0 || start > getMaxDacSteps() || stop < 0 ||
+                        stop > getMaxDacSteps()) {
+                        ret = FAIL;
+                        sprintf(mess, "Invalid dac scan values\n");
+                        LOG(logERROR, (mess));
+                    }
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+                    else if (checkVLimitDacCompliant(start) == FAIL ||
+                             checkVLimitDacCompliant(stop) == FAIL) {
+                        ret = FAIL;
+                        sprintf(mess,
+                                "Invalid scan dac values."
+                                "Exceeds voltage limit %d.\n",
+                                getVLimit());
+                        LOG(logERROR, (mess));
+                    }
+#endif
+                    else {
+                        // validate allowed dac scans
+                        switch (index) {
+                        case HIGH_VOLTAGE:
+#ifdef EIGERD
+                        case IO_DELAY:
+#elif CHIPTESTBOARDD
+                        case ADC_VPP:
+                        case V_POWER_A:
+                        case V_POWER_B:
+                        case V_POWER_C:
+                        case V_POWER_D:
+                        case V_POWER_IO:
+                        case V_POWER_CHIP:
+                        case V_LIMIT:
+#elif MOENCHD
+                        case ADC_VPP:
+                        case V_LIMIT:
+#endif
+                            modeNotImplemented("Scan Dac Index", args[0]);
+                            break;
+                        default:
+                            break;
+                        }
+                        // validate dac according to detector type
+                        if (ret == OK) {
+                            enum DACINDEX dac = getDACIndex(index);
+                            if (ret == FAIL) {
+                                sprintf(mess,
+                                        "Cannot enable scan. Dac index %d not "
+                                        "implemented for "
+                                        "this detector for scanning\n",
+                                        (int)index);
+                                LOG(logERROR, (mess));
+                            }
+                            // validated
+                            else {
+                                LOG(logINFOBLUE,
+                                    ("Dac [%d] scan enabled\n", scanDac));
+                                scanTrimbits = 0;
+                                scanGlobalIndex = index;
+                                scanSettleTime_ns = dacTime;
+                                scanDac = dac;
+#ifdef EIGERD
+                                // changing dac changes settings to undefined
+                                switch (scanDac) {
+                                case E_VCMP_LL:
+                                case E_VCMP_LR:
+                                case E_VCMP_RL:
+                                case E_VCMP_RR:
+                                case E_VRPREAMP:
+                                case E_VCP:
+                                    setSettings(UNDEFINED);
+                                    LOG(logERROR, ("Settings has been changed "
+                                                   "to undefined (changed "
+                                                   "specific dacs)\n"));
+                                    break;
+                                default:
+                                    break;
+                                }
+#endif
+                            }
+                        }
+                    }
+                }
+            }
+            // valid scan
+            if (ret == OK) {
+                scan = 1;
+                numScanSteps = (abs(stop - start) / abs(step)) + 1;
+                if (scanSteps != NULL) {
+                    free(scanSteps);
+                }
+                scanSteps = malloc(numScanSteps * sizeof(int));
+                for (int i = 0; i != numScanSteps; ++i) {
+                    scanSteps[i] = start + i * step;
+                    LOG(logDEBUG1, ("scansteps[%d]:%d\n", i, scanSteps[i]));
+                }
+                LOG(logINFOBLUE, ("Enabling scan for %s, start[%d], stop[%d], "
+                                  "step[%d], nsteps[%d]\n",
+                                  scanTrimbits == 1 ? "trimbits" : "dac", start,
+                                  stop, step, numScanSteps));
+
+                // setting number of frames to scansteps
+                int64_t arg = 1;
+                setNumFrames(arg);
+                retval = getNumFrames();
+                LOG(logDEBUG1,
+                    ("retval num frames %lld\n", (long long int)retval));
+                validate64(arg, retval, "set number of frames", DEC);
+            }
+        }
     }
-    return Server_SendResult(file_des, INT32, NULL, 0);
+    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }

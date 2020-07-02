@@ -396,12 +396,10 @@ class Detector {
 
     Result<defs::scanParameters> getScan(Positions pos = {}) const;
 
-    /** also sets number of frames to 1 */
-    void disableScan();
-
-    /** scan dac, trimbits scan only for [Eiger/ Mythen3] TRIMBIT_SCAN, also
-     * sets number of frames to number of steps in receiver */
-    void enableScan(const defs::scanParameters t);
+    /** enables/ disables scans for  dac, trimbits [Eiger/ Mythen3]
+     * TRIMBIT_SCAN. Enabling scan sets number of frames to number of steps in
+     * receiver. Disabling scan sets number of frames to 1 */
+    void setScan(const defs::scanParameters t);
 
     /**************************************************
      *                                                 *

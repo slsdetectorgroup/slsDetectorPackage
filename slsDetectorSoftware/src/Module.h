@@ -167,8 +167,7 @@ class Module : public virtual slsDetectorDefs {
     void setStartingFrameNumber(uint64_t value);
     void sendSoftwareTrigger();
     defs::scanParameters getScan();
-    void disableScan();
-    void enableScan(const defs::scanParameters t);
+    void setScan(const defs::scanParameters t);
 
     /**************************************************
      *                                                 *

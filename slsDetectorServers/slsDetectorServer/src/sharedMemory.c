@@ -1,6 +1,5 @@
 #include "sharedMemory.h"
 #include "clogger.h"
-#include "sls_detector_defs.h"
 
 #include <errno.h>
 #include <string.h>
@@ -15,10 +14,10 @@
 typedef struct Memory {
     int version;
     sem_t sem;
-    int scanStatus;
+    enum runStatus scanStatus; // idle, running or error
     int scanStop;
 #ifdef VIRTUAL
-    int status;
+    enum runStatus status;
     int stop;
 #endif
 } sharedMem;
@@ -32,8 +31,13 @@ void sharedMemory_print() {
     LOG(logINFO, ("%s Shared Memory:\n", isControlServer ? "c" : "s"));
     LOG(logINFO,
         ("%s version:0x%x\n", isControlServer ? "c" : "s", shm->version));
+    LOG(logINFO, ("%s scan status: %d\n", isControlServer ? "c" : "s",
+                  (int)shm->scanStatus));
+    LOG(logINFO,
+        ("%s scan stop: %d\n", isControlServer ? "c" : "s", shm->scanStop));
 #ifdef VIRTUAL
-    LOG(logINFO, ("%s status: %d\n", isControlServer ? "c" : "s", shm->status));
+    LOG(logINFO,
+        ("%s status: %d\n", isControlServer ? "c" : "s", (int)shm->status));
     LOG(logINFO, ("%s stop: %d\n", isControlServer ? "c" : "s", shm->stop));
 #endif
 }
@@ -67,8 +71,10 @@ int sharedMemory_create(int port) {
 void sharedMemory_initialize() {
     shm->version = SHM_VERSION;
     sem_init(&(shm->sem), 1, 1);
+    shm->scanStatus = IDLE;
+    shm->scanStop = 0;
 #ifdef VIRTUAL
-    shm->status = 0;
+    shm->status = IDLE;
     shm->stop = 0;
 #endif
     LOG(logINFO, ("Shared memory initialized\n"))
@@ -125,14 +131,14 @@ void sharedMemory_lock() { sem_wait(&(shm->sem)); }
 void sharedMemory_unlock() { sem_post(&(shm->sem)); }
 
 #ifdef VIRTUAL
-void sharedMemory_setStatus(int s) {
+void sharedMemory_setStatus(enum runStatus s) {
     sharedMemory_lock();
     shm->status = s;
     sharedMemory_unlock();
 }
 
-int sharedMemory_getStatus() {
-    int s = 0;
+enum runStatus sharedMemory_getStatus() {
+    enum runStatus s = 0;
     sharedMemory_lock();
     s = shm->status;
     sharedMemory_unlock();
@@ -154,14 +160,14 @@ int sharedMemory_getStop() {
 }
 #endif
 
-void sharedMemory_setScanStatus(int s) {
+void sharedMemory_setScanStatus(enum runStatus s) {
     sharedMemory_lock();
     shm->scanStatus = s;
     sharedMemory_unlock();
 }
 
-int sharedMemory_getScanStatus() {
-    int s = 0;
+enum runStatus sharedMemory_getScanStatus() {
+    enum runStatus s = IDLE;
     sharedMemory_lock();
     s = shm->scanStatus;
     sharedMemory_unlock();

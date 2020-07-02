@@ -453,13 +453,9 @@ defs::scanParameters Module::getScan() {
     return sendToDetector<defs::scanParameters>(F_GET_SCAN);
 }
 
-void Module::disableScan() {
-    sendToDetector(F_DISABLE_SCAN);
-    setNumberOfFrames(1);
-}
-
-void Module::enableScan(const defs::scanParameters t) {
-    auto retval = sendToDetector<int64_t>(F_ENABLE_SCAN, t);
+void Module::setScan(const defs::scanParameters t) {
+    auto retval = sendToDetector<int64_t>(F_SET_SCAN, t);
+    // if disabled, retval is 1, else its number of steps
     setNumberOfFrames(retval);
 }
 

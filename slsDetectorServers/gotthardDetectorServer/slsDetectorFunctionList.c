@@ -34,8 +34,6 @@ char initErrorMessage[MAX_STR_LENGTH];
 
 #ifdef VIRTUAL
 pthread_t pthread_virtual_tid;
-int virtual_status = 0;
-int virtual_stop = 0;
 int highvoltage = 0;
 int64_t virtual_currentFrameNumber = 2;
 #endif
@@ -357,10 +355,7 @@ void initStopServer() {
         exit(EXIT_FAILURE);
     }
 #ifdef VIRTUAL
-    virtual_stop = 0;
-    if (!isControlServer) {
-        sharedMemory_setStop(virtual_stop);
-    }
+    sharedMemory_setStop(0);
 #endif
 }
 
@@ -370,10 +365,7 @@ void setupDetector() {
     LOG(logINFO, ("This Server is for 1 Gotthard module (1280 channels)\n"));
 
 #ifdef VIRTUAL
-    virtual_status = 0;
-    if (isControlServer) {
-        sharedMemory_setStatus(virtual_status);
-    }
+    sharedMemory_setStatus(IDLE);
 #endif
 
     // Initialization
@@ -1517,22 +1509,15 @@ int startStateMachine() {
         return FAIL;
     }
     LOG(logINFOBLUE, ("Starting State Machine\n"));
-    if (isControlServer) {
-        virtual_stop = sharedMemory_getStop();
-        if (virtual_stop != 0) {
-            LOG(logERROR, ("Cant start acquisition. "
-                           "Stop server has not updated stop status to 0\n"));
-            return FAIL;
-        }
-        virtual_status = 1;
-        sharedMemory_setStatus(virtual_status);
+    if (sharedMemory_getStop() != 0) {
+        LOG(logERROR, ("Cant start acquisition. "
+                       "Stop server has not updated stop status to 0\n"));
+        return FAIL;
     }
+    sharedMemory_setStatus(RUNNING);
     if (pthread_create(&pthread_virtual_tid, NULL, &start_timer, NULL)) {
         LOG(logERROR, ("Could not start Virtual acquisition thread\n"));
-        virtual_status = 0;
-        if (isControlServer) {
-            sharedMemory_setStatus(virtual_status);
-        }
+        sharedMemory_setStatus(IDLE);
         return FAIL;
     }
     LOG(logINFOGREEN, ("Virtual Acquisition started\n"));
@@ -1580,10 +1565,8 @@ void *start_timer(void *arg) {
     // loop over number of frames
     for (int frameNr = 0; frameNr != numFrames; ++frameNr) {
 
-        // update the virtual stop from stop server
-        virtual_stop = sharedMemory_getStop();
-        // check if virtual_stop is high
-        if (virtual_stop == 1) {
+        // check if manual stop
+        if (sharedMemory_getStop() == 1) {
             break;
         }
 
@@ -1624,10 +1607,7 @@ void *start_timer(void *arg) {
 
     closeUDPSocket(0);
 
-    virtual_status = 0;
-    if (isControlServer) {
-        sharedMemory_setStatus(virtual_status);
-    }
+    sharedMemory_setStatus(IDLE);
     LOG(logINFOBLUE, ("Finished Acquiring\n"));
     return NULL;
 }
@@ -1636,21 +1616,16 @@ void *start_timer(void *arg) {
 int stopStateMachine() {
     LOG(logINFORED, ("Stopping State Machine\n"));
     // if scan active, stop scan
-    if (sharedMemory_getScanStatus()) {
+    if (sharedMemory_getScanStatus() == RUNNING) {
         sharedMemory_setScanStop(1);
     }
 #ifdef VIRTUAL
     if (!isControlServer) {
-        virtual_stop = 1;
-        sharedMemory_setStop(virtual_stop);
+        sharedMemory_setStop(1);
         // read till status is idle
-        int tempStatus = 1;
-        while (tempStatus == 1) {
-            tempStatus = sharedMemory_getStatus();
-        }
-        virtual_stop = 0;
-        sharedMemory_setStop(virtual_stop);
-        virtual_status = tempStatus;
+        while (sharedMemory_getStatus() == RUNNING)
+            ;
+        sharedMemory_setStop(0);
         LOG(logINFO, ("Stopped State Machine\n"));
     }
     return OK;
@@ -1674,18 +1649,24 @@ int stopStateMachine() {
 
 enum runStatus getRunStatus() {
     LOG(logDEBUG1, ("Getting status\n"));
+    // scan error or running
+    if (sharedMemory_getScanStatus() == ERROR) {
+        LOG(logINFOBLUE, ("Status: scan ERROR\n"));
+        return ERROR;
+    }
+    if (sharedMemory_getScanStatus() == RUNNING) {
+        LOG(logINFOBLUE, ("Status: scan RUNNING\n"));
+        return RUNNING;
+    }
 #ifdef VIRTUAL
-    if (sharedMemory_getScanStatus() || sharedMemory_getStatus()) {
+    if (sharedMemory_getStatus() == RUNNING) {
         LOG(logINFOBLUE, ("Status: RUNNING\n"));
         return RUNNING;
     }
     LOG(logINFOBLUE, ("Status: IDLE\n"));
     return IDLE;
 #endif
-    if (sharedMemory_getScanStatus()) {
-        LOG(logINFOBLUE, ("Status: Scan RUNNING\n"));
-        return RUNNING;
-    }
+
     enum runStatus s = IDLE;
     u_int32_t retval = runState(logINFO);
 
@@ -1754,7 +1735,7 @@ enum runStatus getRunStatus() {
 
 void readFrame(int *ret, char *mess) {
 #ifdef VIRTUAL
-    while (virtual_status) {
+    while (sharedMemory_getStatus() == RUNNING) {
         // LOG(logERROR, ("Waiting for finished flag\n");
         usleep(5000);
     }
@@ -1778,17 +1759,14 @@ void readFrame(int *ret, char *mess) {
 
 u_int32_t runBusy() {
 #ifdef VIRTUAL
-    if (!isControlServer) {
-        virtual_status = sharedMemory_getStatus();
-    }
-    return virtual_status;
+    return ((sharedMemory_getStatus() == RUNNING) ? 1 : 0);
 #endif
     return runState(logDEBUG1) & STATUS_RN_BSY_MSK;
 }
 
 u_int32_t runState(enum TLogLevel lev) {
 #ifdef VIRTUAL
-    return virtual_status;
+    return (int)sharedMemory_getStatus();
 #endif
     u_int32_t s = bus_r(STATUS_REG);
     LOG(lev, ("Status Register: 0x%08x\n", s));

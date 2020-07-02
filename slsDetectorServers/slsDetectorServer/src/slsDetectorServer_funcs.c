@@ -6853,7 +6853,11 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
     // frames
-    i64 = getNumFrames();
+    if (!scan) {
+        i64 = getNumFrames();
+    } else {
+        i64 = numScanSteps;
+    }
     n += sendData(file_des, &i64, sizeof(i64), INT64);
     if (n < 0)
         return printSocketReadError();

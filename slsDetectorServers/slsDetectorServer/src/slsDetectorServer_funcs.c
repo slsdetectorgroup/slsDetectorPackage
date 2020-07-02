@@ -7557,7 +7557,7 @@ int set_scan(int file_des) {
             } else {
 
                 // trimbit scan
-                if (args[0] == TRIMBIT_SCAN) {
+                if (index == TRIMBIT_SCAN) {
 #if !defined(EIGERD) && !defined(MYTHEN3D)
                     ret = FAIL;
                     sprintf(mess,
@@ -7625,7 +7625,7 @@ int set_scan(int file_des) {
                         case ADC_VPP:
                         case V_LIMIT:
 #endif
-                            modeNotImplemented("Scan Dac Index", args[0]);
+                            modeNotImplemented("Scan Dac Index", index);
                             break;
                         default:
                             break;

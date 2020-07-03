@@ -465,11 +465,11 @@ typedef struct {
         /** disable scan */
         scanParameters()
             : enable(0), dacInd(DAC_0), startOffset(0), stopOffset(0),
-              stepSize(0), dacSettleTime_ns{10000} {}
+              stepSize(0), dacSettleTime_ns{0} {}
         /** enable scan */
         scanParameters(
             dacIndex dac, int start, int stop, int step,
-            std::chrono::nanoseconds t = std::chrono::nanoseconds{10000})
+            std::chrono::nanoseconds t = std::chrono::milliseconds{1})
             : enable(1), dacInd(dac), startOffset(start), stopOffset(stop),
               stepSize(step) {
             dacSettleTime_ns = t.count();

@@ -567,6 +567,10 @@ void Detector::setScan(const defs::scanParameters t) {
     pimpl->Parallel(&Module::setScan, {}, t);
 }
 
+Result<std::string> Detector::getScanErrorMessage(Positions pos) const {
+    return pimpl->Parallel(&Module::getScanErrorMessage, pos);
+}
+
 // Network Configuration (Detector<->Receiver)
 
 Result<int> Detector::getNumberofUDPInterfaces(Positions pos) const {

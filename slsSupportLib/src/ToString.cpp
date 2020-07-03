@@ -491,6 +491,10 @@ std::string ToString(const defs::dacIndex s) {
         return std::string("ibias_sfp");
     case defs::TRIMBIT_SCAN:
         return std::string("trimbit_scan");
+    case defs::HIGH_VOLTAGE:
+        return std::string("vhighvoltage");
+    case defs::IO_DELAY:
+        return std::string("iodelay");
     default:
         return std::string("Unknown");
     }
@@ -846,6 +850,11 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::IBIAS_SFP;
     if (s == "trimbit_scan")
         return defs::TRIMBIT_SCAN;
+    if (s == "vhighvoltage")
+        return defs::HIGH_VOLTAGE;
+    if (s == "iodelay")
+        return defs::IO_DELAY;
+
     throw sls::RuntimeError("Unknown dac Index " + s);
 }
 

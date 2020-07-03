@@ -202,6 +202,7 @@ enum detFuncs {
     F_SET_PATTERN,
     F_GET_SCAN,
     F_SET_SCAN,
+    F_GET_SCAN_ERROR_MESSAGE,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -502,6 +503,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_PATTERN:                     return "F_SET_PATTERN";
     case F_GET_SCAN:                        return "F_GET_SCAN"; 
     case F_SET_SCAN:                        return "F_SET_SCAN"; 
+    case F_GET_SCAN_ERROR_MESSAGE:          return "F_GET_SCAN_ERROR_MESSAGE"; 
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

@@ -401,6 +401,10 @@ class Detector {
      * receiver. Disabling scan sets number of frames to 1 */
     void setScan(const defs::scanParameters t);
 
+    /** gets scan error message in case of error during scan in case of non
+     * blocking acquisition (startDetector, not acquire) */
+    Result<std::string> getScanErrorMessage(Positions pos = {}) const;
+
     /**************************************************
      *                                                 *
      *    Network Configuration (Detector<->Receiver)  *

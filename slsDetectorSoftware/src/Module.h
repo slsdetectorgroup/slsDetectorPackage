@@ -168,6 +168,7 @@ class Module : public virtual slsDetectorDefs {
     void sendSoftwareTrigger();
     defs::scanParameters getScan();
     void setScan(const defs::scanParameters t);
+    std::string getScanErrorMessage();
 
     /**************************************************
      *                                                 *

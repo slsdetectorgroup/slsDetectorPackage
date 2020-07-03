@@ -59,8 +59,8 @@ int numScanSteps = 0;
 int *scanSteps = NULL;
 int64_t scanSettleTime_ns = 0;
 enum dacIndex scanGlobalIndex = 0;
-enum DACINDEX scanDac = 0;
 int scanTrimbits = 0;
+char scanErrMessage[MAX_STR_LENGTH] = "";
 
 /* initialization functions */
 
@@ -345,6 +345,8 @@ void function_table() {
     flist[F_SET_PATTERN] = &set_pattern;
     flist[F_GET_SCAN] = get_scan;
     flist[F_SET_SCAN] = set_scan;
+    flist[F_GET_SCAN_ERROR_MESSAGE] = get_scan_error_message;
+
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
         LOG(logERROR, ("The last detector function enum has reached its "
@@ -713,7 +715,7 @@ int get_image_test_mode(int file_des) {
 }
 
 enum DACINDEX getDACIndex(enum dacIndex ind) {
-    enum DACINDEX serverDacIndex = 0;
+    enum DACINDEX serverDacIndex = -1;
     // check if dac exists for this detector
     switch (ind) {
 #ifdef GOTTHARDD
@@ -993,6 +995,235 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     return serverDacIndex;
 }
 
+int validateAndSetDac(enum dacIndex ind, int val, int mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = getDACIndex(ind);
+
+    if (ret == OK) {
+        switch (ind) {
+
+            // adc vpp
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+        case ADC_VPP:
+            // set
+            if (val >= 0) {
+                ret = AD9257_SetVrefVoltage(val, mV);
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not set Adc Vpp. Please set a "
+                                  "proper value\n");
+                    LOG(logERROR, (mess));
+                }
+            }
+            retval = AD9257_GetVrefVoltage(mV);
+            LOG(logDEBUG1,
+                ("Adc Vpp retval: %d %s\n", retval, (mV ? "mV" : "mode")));
+            // cannot validate (its just a variable and mv gives different
+            // value)
+            break;
+#endif
+
+            // io delay
+#ifdef EIGERD
+        case IO_DELAY:
+            retval = setIODelay(val);
+            LOG(logDEBUG1, ("IODelay: %d\n", retval));
+            validate(val, retval, "set iodelay", DEC);
+            break;
+#endif
+
+        // high voltage
+        case HIGH_VOLTAGE:
+            retval = setHighVoltage(val);
+            LOG(logDEBUG1, ("High Voltage: %d\n", retval));
+#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
+    defined(GOTTHARD2D) || defined(MYTHEN3D)
+            validate(val, retval, "set high voltage", DEC);
+#endif
+#ifdef GOTTHARDD
+            if (retval == -1) {
+                ret = FAIL;
+                strcpy(mess, "Invalid Voltage. Valid values are 0, 90, "
+                             "110, 120, 150, 180, 200\n");
+                LOG(logERROR, (mess));
+            } else
+                validate(val, retval, "set high voltage", DEC);
+#elif EIGERD
+            if ((retval != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval < 0)) {
+                ret = FAIL;
+                if (retval == -1)
+                    sprintf(mess,
+                            "Setting high voltage failed. Bad value %d. "
+                            "The range is from 0 to 200 V.\n",
+                            val);
+                else if (retval == -2)
+                    strcpy(mess, "Setting high voltage failed. "
+                                 "Serial/i2c communication failed.\n");
+                else if (retval == -3)
+                    strcpy(mess, "Getting high voltage failed. "
+                                 "Serial/i2c communication failed.\n");
+                LOG(logERROR, (mess));
+            }
+#endif
+            break;
+
+            // power, vlimit
+#ifdef CHIPTESTBOARDD
+        case V_POWER_A:
+        case V_POWER_B:
+        case V_POWER_C:
+        case V_POWER_D:
+        case V_POWER_IO:
+            if (val != GET_FLAG) {
+                if (!mV) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set power. Power regulator %d "
+                            "should be in mV and not dac units.\n",
+                            ind);
+                    LOG(logERROR, (mess));
+                } else if (checkVLimitCompliant(val) == FAIL) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set power. Power regulator %d "
+                            "exceeds voltage limit %d.\n",
+                            ind, getVLimit());
+                    LOG(logERROR, (mess));
+                } else if (!isPowerValid(serverDacIndex, val)) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set power. Power regulator %d "
+                            "should be between %d and %d mV\n",
+                            ind,
+                            (serverDacIndex == D_PWR_IO ? VIO_MIN_MV
+                                                        : POWER_RGLTR_MIN),
+                            (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT));
+                    LOG(logERROR, (mess));
+                } else {
+                    setPower(serverDacIndex, val);
+                }
+            }
+            retval = getPower(serverDacIndex);
+            LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
+            validate(val, retval, "set power regulator", DEC);
+            break;
+
+        case V_POWER_CHIP:
+            if (val >= 0) {
+                ret = FAIL;
+                sprintf(mess, "Can not set Vchip. Can only be set "
+                              "automatically in the background (+200mV "
+                              "from highest power regulator voltage).\n");
+                LOG(logERROR, (mess));
+                /* restrict users from setting vchip
+                if (!mV) {
+                    ret = FAIL;
+                    sprintf(mess,"Could not set Vchip. Should be in mV and
+                not dac units.\n"); LOG(logERROR,(mess)); } else if
+                (!isVchipValid(val)) { ret = FAIL; sprintf(mess,"Could not
+                set Vchip. Should be between %d and %d mV\n", VCHIP_MIN_MV,
+                VCHIP_MAX_MV); LOG(logERROR,(mess)); } else { setVchip(val);
+                }
+                */
+            }
+            retval = getVchip();
+            LOG(logDEBUG1, ("Vchip: %d\n", retval));
+            if (ret == OK && val != GET_FLAG && val != -100 && retval != val) {
+                ret = FAIL;
+                sprintf(mess, "Could not set vchip. Set %d, but read %d\n", val,
+                        retval);
+                LOG(logERROR, (mess));
+            }
+            break;
+#endif
+
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+        case V_LIMIT:
+            if (val >= 0) {
+                if (!mV) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not set power. VLimit should be in "
+                                 "mV and not dac units.\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    setVLimit(val);
+                }
+            }
+            retval = getVLimit();
+            LOG(logDEBUG1, ("VLimit: %d\n", retval));
+            validate(val, retval, "set vlimit", DEC);
+            break;
+#endif
+            // dacs
+        default:
+            if (mV && val > DAC_MAX_MV) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set dac %d to value %d. Allowed limits "
+                        "(0 - %d mV).\n",
+                        ind, val, DAC_MAX_MV);
+                LOG(logERROR, (mess));
+            } else if (!mV && val > getMaxDacSteps()) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set dac %d to value %d. Allowed limits "
+                        "(0 - %d dac units).\n",
+                        ind, val, getMaxDacSteps());
+                LOG(logERROR, (mess));
+            } else {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+                if ((val != GET_FLAG && mV &&
+                     checkVLimitCompliant(val) == FAIL) ||
+                    (val != GET_FLAG && !mV &&
+                     checkVLimitDacCompliant(val) == FAIL)) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set dac %d to value %d. "
+                            "Exceeds voltage limit %d.\n",
+                            ind, (mV ? val : dacToVoltage(val)), getVLimit());
+                    LOG(logERROR, (mess));
+                } else
+#endif
+                    setDAC(serverDacIndex, val, mV);
+                retval = getDAC(serverDacIndex, mV);
+            }
+#ifdef EIGERD
+            if (val != GET_FLAG && getSettings() != UNDEFINED) {
+                // changing dac changes settings to undefined
+                switch (serverDacIndex) {
+                case E_VCMP_LL:
+                case E_VCMP_LR:
+                case E_VCMP_RL:
+                case E_VCMP_RR:
+                case E_VRPREAMP:
+                case E_VCP:
+                    setSettings(UNDEFINED);
+                    LOG(logERROR, ("Settings has been changed "
+                                   "to undefined (changed specific dacs)\n"));
+                    break;
+                default:
+                    break;
+                }
+            }
+#endif
+            // check
+            if (ret == OK) {
+                if ((abs(retval - val) <= 5) || val == GET_FLAG) {
+                    ret = OK;
+                } else {
+                    ret = FAIL;
+                    sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
+                            serverDacIndex, val, retval);
+                    LOG(logERROR, (mess));
+                }
+            }
+            LOG(logDEBUG1, ("Dac (%d): %d %s\n\n", serverDacIndex, retval,
+                            (mV ? "mV" : "dac units")));
+            break;
+        }
+    }
+    return retval;
+}
+
 int set_dac(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
@@ -1005,240 +1236,12 @@ int set_dac(int file_des) {
     enum dacIndex ind = args[0];
     int mV = args[1];
     int val = args[2];
-    enum DACINDEX serverDacIndex = getDACIndex(ind);
 
-    // index exists
-    if (ret == OK) {
-
-        LOG(logDEBUG1, ("Setting DAC %d to %d %s\n", serverDacIndex, val,
-                        (mV ? "mV" : "dac units")));
-
-        // set & get
-        if ((val == GET_FLAG) || (Server_VerifyLock() == OK)) {
-            switch (ind) {
-
-                // adc vpp
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-            case ADC_VPP:
-                // set
-                if (val >= 0) {
-                    ret = AD9257_SetVrefVoltage(val, mV);
-                    if (ret == FAIL) {
-                        sprintf(mess, "Could not set Adc Vpp. Please set a "
-                                      "proper value\n");
-                        LOG(logERROR, (mess));
-                    }
-                }
-                retval = AD9257_GetVrefVoltage(mV);
-                LOG(logDEBUG1,
-                    ("Adc Vpp retval: %d %s\n", retval, (mV ? "mV" : "mode")));
-                // cannot validate (its just a variable and mv gives different
-                // value)
-                break;
-#endif
-
-                // io delay
-#ifdef EIGERD
-            case IO_DELAY:
-                retval = setIODelay(val);
-                LOG(logDEBUG1, ("IODelay: %d\n", retval));
-                validate(val, retval, "set iodelay", DEC);
-                break;
-#endif
-
-            // high voltage
-            case HIGH_VOLTAGE:
-                retval = setHighVoltage(val);
-                LOG(logDEBUG1, ("High Voltage: %d\n", retval));
-#if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
-    defined(GOTTHARD2D) || defined(MYTHEN3D)
-                validate(val, retval, "set high voltage", DEC);
-#endif
-#ifdef GOTTHARDD
-                if (retval == -1) {
-                    ret = FAIL;
-                    strcpy(mess, "Invalid Voltage. Valid values are 0, 90, "
-                                 "110, 120, 150, 180, 200\n");
-                    LOG(logERROR, (mess));
-                } else
-                    validate(val, retval, "set high voltage", DEC);
-#elif EIGERD
-                if ((retval != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval < 0)) {
-                    ret = FAIL;
-                    if (retval == -1)
-                        sprintf(mess,
-                                "Setting high voltage failed. Bad value %d. "
-                                "The range is from 0 to 200 V.\n",
-                                val);
-                    else if (retval == -2)
-                        strcpy(mess, "Setting high voltage failed. "
-                                     "Serial/i2c communication failed.\n");
-                    else if (retval == -3)
-                        strcpy(mess, "Getting high voltage failed. "
-                                     "Serial/i2c communication failed.\n");
-                    LOG(logERROR, (mess));
-                }
-#endif
-                break;
-
-                // power, vlimit
-#ifdef CHIPTESTBOARDD
-            case V_POWER_A:
-            case V_POWER_B:
-            case V_POWER_C:
-            case V_POWER_D:
-            case V_POWER_IO:
-                if (val != GET_FLAG) {
-                    if (!mV) {
-                        ret = FAIL;
-                        sprintf(mess,
-                                "Could not set power. Power regulator %d "
-                                "should be in mV and not dac units.\n",
-                                ind);
-                        LOG(logERROR, (mess));
-                    } else if (checkVLimitCompliant(val) == FAIL) {
-                        ret = FAIL;
-                        sprintf(mess,
-                                "Could not set power. Power regulator %d "
-                                "exceeds voltage limit %d.\n",
-                                ind, getVLimit());
-                        LOG(logERROR, (mess));
-                    } else if (!isPowerValid(serverDacIndex, val)) {
-                        ret = FAIL;
-                        sprintf(mess,
-                                "Could not set power. Power regulator %d "
-                                "should be between %d and %d mV\n",
-                                ind,
-                                (serverDacIndex == D_PWR_IO ? VIO_MIN_MV
-                                                            : POWER_RGLTR_MIN),
-                                (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT));
-                        LOG(logERROR, (mess));
-                    } else {
-                        setPower(serverDacIndex, val);
-                    }
-                }
-                retval = getPower(serverDacIndex);
-                LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
-                validate(val, retval, "set power regulator", DEC);
-                break;
-
-            case V_POWER_CHIP:
-                if (val >= 0) {
-                    ret = FAIL;
-                    sprintf(mess, "Can not set Vchip. Can only be set "
-                                  "automatically in the background (+200mV "
-                                  "from highest power regulator voltage).\n");
-                    LOG(logERROR, (mess));
-                    /* restrict users from setting vchip
-                    if (!mV) {
-                        ret = FAIL;
-                        sprintf(mess,"Could not set Vchip. Should be in mV and
-                    not dac units.\n"); LOG(logERROR,(mess)); } else if
-                    (!isVchipValid(val)) { ret = FAIL; sprintf(mess,"Could not
-                    set Vchip. Should be between %d and %d mV\n", VCHIP_MIN_MV,
-                    VCHIP_MAX_MV); LOG(logERROR,(mess)); } else { setVchip(val);
-                    }
-                    */
-                }
-                retval = getVchip();
-                LOG(logDEBUG1, ("Vchip: %d\n", retval));
-                if (ret == OK && val != GET_FLAG && val != -100 &&
-                    retval != val) {
-                    ret = FAIL;
-                    sprintf(mess, "Could not set vchip. Set %d, but read %d\n",
-                            val, retval);
-                    LOG(logERROR, (mess));
-                }
-                break;
-#endif
-
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-            case V_LIMIT:
-                if (val >= 0) {
-                    if (!mV) {
-                        ret = FAIL;
-                        strcpy(mess, "Could not set power. VLimit should be in "
-                                     "mV and not dac units.\n");
-                        LOG(logERROR, (mess));
-                    } else {
-                        setVLimit(val);
-                    }
-                }
-                retval = getVLimit();
-                LOG(logDEBUG1, ("VLimit: %d\n", retval));
-                validate(val, retval, "set vlimit", DEC);
-                break;
-#endif
-                // dacs
-            default:
-                if (mV && val > DAC_MAX_MV) {
-                    ret = FAIL;
-                    sprintf(mess,
-                            "Could not set dac %d to value %d. Allowed limits "
-                            "(0 - %d mV).\n",
-                            ind, val, DAC_MAX_MV);
-                    LOG(logERROR, (mess));
-                } else if (!mV && val > getMaxDacSteps()) {
-                    ret = FAIL;
-                    sprintf(mess,
-                            "Could not set dac %d to value %d. Allowed limits "
-                            "(0 - %d dac units).\n",
-                            ind, val, getMaxDacSteps());
-                    LOG(logERROR, (mess));
-                } else {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-                    if ((val != GET_FLAG && mV &&
-                         checkVLimitCompliant(val) == FAIL) ||
-                        (val != GET_FLAG && !mV &&
-                         checkVLimitDacCompliant(val) == FAIL)) {
-                        ret = FAIL;
-                        sprintf(mess,
-                                "Could not set dac %d to value %d. "
-                                "Exceeds voltage limit %d.\n",
-                                ind, (mV ? val : dacToVoltage(val)),
-                                getVLimit());
-                        LOG(logERROR, (mess));
-                    } else
-#endif
-                        setDAC(serverDacIndex, val, mV);
-                    retval = getDAC(serverDacIndex, mV);
-                }
-#ifdef EIGERD
-                if (val != GET_FLAG) {
-                    // changing dac changes settings to undefined
-                    switch (serverDacIndex) {
-                    case E_VCMP_LL:
-                    case E_VCMP_LR:
-                    case E_VCMP_RL:
-                    case E_VCMP_RR:
-                    case E_VRPREAMP:
-                    case E_VCP:
-                        setSettings(UNDEFINED);
-                        LOG(logERROR,
-                            ("Settings has been changed "
-                             "to undefined (changed specific dacs)\n"));
-                        break;
-                    default:
-                        break;
-                    }
-                }
-#endif
-                // check
-                if (ret == OK) {
-                    if ((abs(retval - val) <= 5) || val == GET_FLAG) {
-                        ret = OK;
-                    } else {
-                        ret = FAIL;
-                        sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
-                                serverDacIndex, val, retval);
-                        LOG(logERROR, (mess));
-                    }
-                }
-                LOG(logDEBUG1, ("Dac (%d): %d %s\n\n", serverDacIndex, retval,
-                                (mV ? "mV" : "dac units")));
-                break;
-            }
-        }
+    LOG(logDEBUG1,
+        ("Setting DAC %d to %d %s\n", ind, val, (mV ? "mV" : "dac units")));
+    // set & get
+    if ((val == GET_FLAG) || (Server_VerifyLock() == OK)) {
+        retval = validateAndSetDac(ind, val, mV);
     }
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -1731,6 +1734,7 @@ int acquire(int blocking, int file_des) {
                          "already running!\n");
             LOG(logERROR, (mess));
         } else {
+            memset(scanErrMessage, 0, MAX_STR_LENGTH);
             sharedMemory_setScanStop(0);
             sharedMemory_setScanStatus(IDLE); // if it was error
             if (pthread_create(&pthread_tid, NULL, &start_state_machine,
@@ -1773,30 +1777,24 @@ void *start_state_machine(void *arg) {
             if (scanTrimbits) {
                 LOG(logINFOBLUE,
                     ("Trimbits scan %d/%d: [%d]\n", i, times, scanSteps[i]));
-#if !defined(EIGERD) && !defined(MYTHEN3D)
-                ret = FAIL;
-                sprintf(mess, "trimbit scan not implemented for this "
-                              "detector!\n");
-                LOG(logERROR, (mess));
-                sharedMemory_setScanStatus(ERROR);
-                break;
-#else
-                setAllTrimbits(scanSteps[i]);
-#endif
+                validateAndSetAllTrimbits(scanSteps[i]);
+                if (ret == FAIL) {
+                    sprintf(scanErrMessage, "Cannot scan trimbit %d. ",
+                            scanSteps[i]);
+                    strcat(scanErrMessage, mess);
+                    sharedMemory_setScanStatus(ERROR);
+                    break;
+                }
             }
             // dac scan
             else {
-                LOG(logINFOBLUE, ("Dac [%d] scan %d/%d: [%d]\n", scanDac, i,
-                                  times, scanSteps[i]));
-                setDAC(scanDac, scanSteps[i], 0);
-                int retval = getDAC(scanDac, 0);
-                if (abs(retval - scanSteps[i]) > 5) {
-                    ret = FAIL;
-                    sprintf(mess,
-                            "Could not scan. Setting dac %d : wrote %d but "
-                            "read %d\n",
-                            scanDac, scanSteps[i], scanSteps[i]);
-                    LOG(logERROR, (mess));
+                LOG(logINFOBLUE, ("Dac [%d] scan %d/%d: [%d]\n",
+                                  scanGlobalIndex, i, times, scanSteps[i]));
+                validateAndSetDac(scanGlobalIndex, scanSteps[i], 0);
+                if (ret == FAIL) {
+                    sprintf(scanErrMessage, "Cannot scan dac %d at %d. ",
+                            scanGlobalIndex, scanSteps[i]);
+                    strcat(scanErrMessage, mess);
                     sharedMemory_setScanStatus(ERROR);
                     break;
                 }
@@ -1823,6 +1821,8 @@ void *start_state_machine(void *arg) {
 #endif
             LOG(logERROR, (mess));
             if (scan) {
+                sprintf(scanErrMessage, "Cannot scan at %d. ", scanSteps[i]);
+                strcat(scanErrMessage, mess);
                 sharedMemory_setScanStatus(ERROR);
             }
             break;
@@ -1830,10 +1830,16 @@ void *start_state_machine(void *arg) {
         // blocking or scan
         if (*blocking || times > 1) {
             readFrame(&ret, mess);
+            if (ret == FAIL && scan) {
+                sprintf(scanErrMessage, "Cannot scan at %d. ", scanSteps[i]);
+                strcat(scanErrMessage, mess);
+                sharedMemory_setScanStatus(ERROR);
+                break;
+            }
         }
     }
     // end of scan
-    if (scan) {
+    if (scan && sharedMemory_getScanStatus() != ERROR) {
         sharedMemory_setScanStatus(IDLE);
     }
     return NULL;
@@ -1917,7 +1923,9 @@ int set_num_frames(int file_des) {
             if (arg != numScanSteps) {
                 ret = FAIL;
                 sprintf(mess,
-                        "Could not set number of frames %lld. In scan mode, it is number of steps %d\n", (long long unsigned int)arg, numScanSteps);
+                        "Could not set number of frames %lld. In scan mode, it "
+                        "is number of steps %d\n",
+                        (long long unsigned int)arg, numScanSteps);
                 LOG(logERROR, (mess));
             }
         } else {
@@ -2860,6 +2868,40 @@ int enable_ten_giga(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
+int validateAndSetAllTrimbits(int arg) {
+    int retval = -1;
+
+#if !defined(EIGERD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    // set
+    if (arg >= 0) {
+        if (arg > MAX_TRIMBITS_VALUE) {
+            ret = FAIL;
+            sprintf(mess, "Cannot set all trimbits. Range: 0 - %d\n",
+                    MAX_TRIMBITS_VALUE);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setAllTrimbits(arg);
+#ifdef EIGERD
+            // changes settings to undefined
+            if (getSettings() != UNDEFINED) {
+                setSettings(UNDEFINED);
+                LOG(logERROR,
+                    ("Settings has been changed to undefined (change all "
+                     "trimbits)\n"));
+            }
+#endif
+        }
+    }
+    // get
+    retval = getAllTrimbits();
+    LOG(logDEBUG1, ("All trimbits: %d\n", retval));
+    validate(arg, retval, "set all trimbits", DEC);
+#endif
+    return retval;
+}
+
 int set_all_trimbits(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
@@ -2870,32 +2912,10 @@ int set_all_trimbits(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Set all trmbits to %d\n", arg));
 
-#if !defined(EIGERD) && !defined(MYTHEN3D)
-    functionNotImplemented();
-#else
-
-    // set
-    if (arg >= 0 && Server_VerifyLock() == OK) {
-        if (arg > MAX_TRIMBITS_VALUE) {
-            ret = FAIL;
-            sprintf(mess, "Cannot set all trimbits. Range: 0 - %d\n",
-                    MAX_TRIMBITS_VALUE);
-            LOG(logERROR, (mess));
-        } else {
-            ret = setAllTrimbits(arg);
-#ifdef EIGERD
-            // changes settings to undefined
-            setSettings(UNDEFINED);
-            LOG(logERROR, ("Settings has been changed to undefined (change all "
-                           "trimbits)\n"));
-#endif
-        }
+    if ((arg >= 0 && Server_VerifyLock() == OK) || arg < 0) {
+        retval = validateAndSetAllTrimbits(arg);
     }
-    // get
-    retval = getAllTrimbits();
-    LOG(logDEBUG1, ("All trimbits: %d\n", retval));
-    validate(arg, retval, "set all trimbits", DEC);
-#endif
+
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -4816,7 +4836,8 @@ int set_detector_position(int file_des) {
 
 int check_detector_idle() {
     enum runStatus status = getRunStatus();
-    if (status != IDLE && status != RUN_FINISHED && status != STOPPED) {
+    if (status != IDLE && status != RUN_FINISHED && status != STOPPED &&
+        status != ERROR) {
         ret = FAIL;
         sprintf(mess,
                 "Cannot configure mac when detector is not idle. Detector at "
@@ -7562,120 +7583,21 @@ int set_scan(int file_des) {
                 sprintf(mess, "Invalid scan parameters\n");
                 LOG(logERROR, (mess));
             } else {
-
                 // trimbit scan
                 if (index == TRIMBIT_SCAN) {
-#if !defined(EIGERD) && !defined(MYTHEN3D)
-                    ret = FAIL;
-                    sprintf(mess,
-                            "Cannot enable trimbit scan. Not implemented for "
-                            "this detector\n");
-                    LOG(logERROR, (mess));
-#else
-                    if (start < 0 || start > MAX_TRIMBITS_VALUE || stop < 0 ||
-                        stop > MAX_TRIMBITS_VALUE) {
-                        ret = FAIL;
-                        sprintf(mess, "Invalid trimbits scan values\n");
-                        LOG(logERROR, (mess));
-                    }
-                    // validated
-                    else {
-                        LOG(logINFOBLUE, ("Trimbit scan enabled\n"));
-                        scanTrimbits = 1;
-                        scanGlobalIndex = index;
-                        scanSettleTime_ns = dacTime;
-#ifdef EIGERD
-                        // changing trimbits, settings to undefined
-                        setSettings(UNDEFINED);
-                        LOG(logERROR, ("Settings has been changed to undefined "
-                                       "(change all "
-                                       "trimbits)\n"));
-#endif
-                    }
-#endif
+                    LOG(logINFOBLUE, ("Trimbit scan enabled\n"));
+                    scanTrimbits = 1;
+                    scanGlobalIndex = index;
+                    scanSettleTime_ns = dacTime;
                 }
                 // dac scan
                 else {
-                    if (start < 0 || start > getMaxDacSteps() || stop < 0 ||
-                        stop > getMaxDacSteps()) {
-                        ret = FAIL;
-                        sprintf(mess, "Invalid dac scan values\n");
-                        LOG(logERROR, (mess));
-                    }
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-                    else if (checkVLimitDacCompliant(start) == FAIL ||
-                             checkVLimitDacCompliant(stop) == FAIL) {
-                        ret = FAIL;
-                        sprintf(mess,
-                                "Invalid scan dac values."
-                                "Exceeds voltage limit %d.\n",
-                                getVLimit());
-                        LOG(logERROR, (mess));
-                    }
-#endif
-                    else {
-                        // validate allowed dac scans
-                        switch (index) {
-                        case HIGH_VOLTAGE:
-#ifdef EIGERD
-                        case IO_DELAY:
-#elif CHIPTESTBOARDD
-                        case ADC_VPP:
-                        case V_POWER_A:
-                        case V_POWER_B:
-                        case V_POWER_C:
-                        case V_POWER_D:
-                        case V_POWER_IO:
-                        case V_POWER_CHIP:
-                        case V_LIMIT:
-#elif MOENCHD
-                        case ADC_VPP:
-                        case V_LIMIT:
-#endif
-                            modeNotImplemented("Scan Dac Index", index);
-                            break;
-                        default:
-                            break;
-                        }
-                        // validate dac according to detector type
-                        if (ret == OK) {
-                            enum DACINDEX dac = getDACIndex(index);
-                            if (ret == FAIL) {
-                                sprintf(mess,
-                                        "Cannot enable scan. Dac index %d not "
-                                        "implemented for "
-                                        "this detector for scanning\n",
-                                        (int)index);
-                                LOG(logERROR, (mess));
-                            }
-                            // validated
-                            else {
-                                LOG(logINFOBLUE,
-                                    ("Dac [%d] scan enabled\n", scanDac));
-                                scanTrimbits = 0;
-                                scanGlobalIndex = index;
-                                scanSettleTime_ns = dacTime;
-                                scanDac = dac;
-#ifdef EIGERD
-                                // changing dac changes settings to undefined
-                                switch (scanDac) {
-                                case E_VCMP_LL:
-                                case E_VCMP_LR:
-                                case E_VCMP_RL:
-                                case E_VCMP_RR:
-                                case E_VRPREAMP:
-                                case E_VCP:
-                                    setSettings(UNDEFINED);
-                                    LOG(logERROR, ("Settings has been changed "
-                                                   "to undefined (changed "
-                                                   "specific dacs)\n"));
-                                    break;
-                                default:
-                                    break;
-                                }
-#endif
-                            }
-                        }
+                    getDACIndex(index);
+                    if (ret == OK) {
+                        LOG(logINFOBLUE, ("Dac [%d] scan enabled\n", index));
+                        scanTrimbits = 0;
+                        scanGlobalIndex = index;
+                        scanSettleTime_ns = dacTime;
                     }
                 }
             }
@@ -7708,4 +7630,19 @@ int set_scan(int file_des) {
         }
     }
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+}
+
+int get_scan_error_message(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    char retvals[MAX_STR_LENGTH];
+    memset(retvals, 0, MAX_STR_LENGTH);
+
+    LOG(logDEBUG1, ("Getting scan error message\n"));
+
+    // get only
+    strcpy(retvals, scanErrMessage);
+    LOG(logDEBUG1, ("scan retval err message: [%s]\n", retvals));
+
+    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }

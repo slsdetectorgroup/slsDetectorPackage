@@ -1198,17 +1198,11 @@ int setHighVoltage(int val) {
         val = HV_SOFT_MAX_VOLTAGE;
     }
 
-#ifdef VIRTUAL
-    if (val >= 0)
-        highvoltage = val;
-    return highvoltage;
-#endif
-
     // setting hv
     if (val >= 0) {
         LOG(logINFO, ("Setting High voltage: %d V\n", val));
-        DAC6571_Set(val);
-        highvoltage = val;
+        if (DAC6571_Set(val) == OK)
+            highvoltage = val;
     }
     return highvoltage;
 }

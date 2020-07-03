@@ -459,6 +459,12 @@ void Module::setScan(const defs::scanParameters t) {
     setNumberOfFrames(retval);
 }
 
+std::string Module::getScanErrorMessage() {
+    char retval[MAX_STR_LENGTH]{};
+    sendToDetector(F_GET_SCAN_ERROR_MESSAGE, nullptr, retval);
+    return retval;
+}
+
 // Network Configuration (Detector<->Receiver)
 
 int Module::getNumberofUDPInterfacesFromShm() {

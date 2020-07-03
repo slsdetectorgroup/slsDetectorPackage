@@ -1039,7 +1039,8 @@ std::string CmdProxy::Scan(int action) {
         throw sls::RuntimeError("Unknown action");
     }
     return os.str();
-} // namespace sls
+}
+
 /* Network Configuration (Detector<->Receiver) */
 
 std::string CmdProxy::UDPDestinationIP(int action) {

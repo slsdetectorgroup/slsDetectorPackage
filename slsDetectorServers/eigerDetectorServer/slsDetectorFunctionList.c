@@ -1267,6 +1267,7 @@ int setHighVoltage(int val) {
     if (master) {
         // set
         if (val != -1) {
+            LOG(logINFO, ("Setting High voltage: %d V\n", val));
             eiger_theo_highvoltage = val;
         }
         return eiger_theo_highvoltage;

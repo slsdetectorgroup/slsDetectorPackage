@@ -738,6 +738,7 @@ class CmdProxy {
         {"startingfnum", &CmdProxy::startingfnum},
         {"trigger", &CmdProxy::trigger},
         {"scan", &CmdProxy::Scan},
+        {"scanerrmsg", &CmdProxy::scanerrmsg},
 
         /* Network Configuration (Detector<->Receiver) */
         {"numinterfaces", &CmdProxy::numinterfaces},
@@ -1553,6 +1554,10 @@ class CmdProxy {
     EXECUTE_SET_COMMAND(
         trigger, sendSoftwareTrigger,
         "\n\t[Eiger] Sends software trigger signal to detector.");
+
+    GET_COMMAND(scanerrmsg, getScanErrorMessage,
+                "\n\tGets Scan error message if scan ended in error for non "
+                "blocking acquisitions.");
 
     /* Network Configuration (Detector<->Receiver) */
 

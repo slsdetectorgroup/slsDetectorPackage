@@ -474,6 +474,13 @@ typedef struct {
               stepSize(step) {
             dacSettleTime_ns = t.count();
         }
+        bool operator==(const scanParameters &other) const {
+            return ((enable == other.enable) && (dacInd == other.dacInd) &&
+                    (startOffset == other.startOffset) &&
+                    (stopOffset == other.stopOffset) &&
+                    (stepSize == other.stepSize) &&
+                    (dacSettleTime_ns == other.dacSettleTime_ns));
+        }
     } __attribute__((packed));
 #endif
 

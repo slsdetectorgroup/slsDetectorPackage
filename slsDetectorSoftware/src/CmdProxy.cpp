@@ -1008,7 +1008,7 @@ std::string CmdProxy::Scan(int action) {
             WrongNumberOfParameters(0);
         }
         auto t = det->getScan();
-        os << ToString(t) << '\n';
+        os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         // disable
         if (args.size() == 1) {

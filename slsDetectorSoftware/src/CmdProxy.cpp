@@ -1010,6 +1010,10 @@ std::string CmdProxy::Scan(int action) {
         auto t = det->getScan();
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
+        if (det_id != -1) {
+            throw sls::RuntimeError(
+                "Cannot configure scan at module level");
+        }
         // disable
         if (args.size() == 1) {
             if (StringTo<int>(args[0]) != 0) {

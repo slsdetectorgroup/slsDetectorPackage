@@ -612,7 +612,7 @@ class CmdProxy {
         {"gappixels", &CmdProxy::GapPixels},
 
         /* acquisition parameters */
-        {"acquire", &CmdProxy::acquire},
+        {"acquire", &CmdProxy::Acquire},
         {"frames", &CmdProxy::frames},
         {"triggers", &CmdProxy::triggers},
         {"exptime", &CmdProxy::Exptime},
@@ -737,6 +737,8 @@ class CmdProxy {
         {"rx_missingpackets", &CmdProxy::rx_missingpackets},
         {"startingfnum", &CmdProxy::startingfnum},
         {"trigger", &CmdProxy::trigger},
+        {"scan", &CmdProxy::Scan},
+        {"scanerrmsg", &CmdProxy::scanerrmsg},
 
         /* Network Configuration (Detector<->Receiver) */
         {"numinterfaces", &CmdProxy::numinterfaces},
@@ -965,7 +967,7 @@ class CmdProxy {
     std::string SettingsList(int action);
     std::string GapPixels(int action);
     /* acquisition parameters */
-    std::string acquire(int action);
+    std::string Acquire(int action);
     std::string Exptime(int action);
     std::string Speed(int action);
     std::string Adcphase(int action);
@@ -983,6 +985,7 @@ class CmdProxy {
     /* acquisition */
     std::string ReceiverStatus(int action);
     std::string DetectorStatus(int action);
+    std::string Scan(int action);
     /* Network Configuration (Detector<->Receiver) */
     std::string UDPDestinationIP(int action);
     std::string UDPDestinationIP2(int action);
@@ -1551,6 +1554,10 @@ class CmdProxy {
     EXECUTE_SET_COMMAND(
         trigger, sendSoftwareTrigger,
         "\n\t[Eiger] Sends software trigger signal to detector.");
+
+    GET_COMMAND(scanerrmsg, getScanErrorMessage,
+                "\n\tGets Scan error message if scan ended in error for non "
+                "blocking acquisitions.");
 
     /* Network Configuration (Detector<->Receiver) */
 

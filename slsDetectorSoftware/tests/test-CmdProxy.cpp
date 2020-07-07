@@ -1178,6 +1178,134 @@ TEST_CASE("startingfnum", "[.cmd][.new]") {
     }
 }
 
+TEST_CASE("scan", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    defs::dacIndex ind = defs::DAC_0;
+    defs::dacIndex notImplementedInd = defs::DAC_0;
+    auto det_type = det.getDetectorType().squash();
+    switch (det_type) {
+    case defs::CHIPTESTBOARD:
+        ind = defs::DAC_0;
+        notImplementedInd = defs::VSVP;
+        break;
+    case defs::EIGER:
+        ind = defs::VCMP_LL;
+        notImplementedInd = defs::VCASCP_PB;
+        break;
+    case defs::JUNGFRAU:
+        ind = defs::VB_COMP;
+        notImplementedInd = defs::VSVP;
+        break;
+    case defs::GOTTHARD:
+        ind = defs::VREF_DS;
+        notImplementedInd = defs::VSVP;
+        break;
+    case defs::MOENCH:
+        ind = defs::VBP_COLBUF;
+        notImplementedInd = defs::VSVP;
+        break;
+    case defs::GOTTHARD2:
+        ind = defs::VB_COMP_FE;
+        notImplementedInd = defs::VSVP;
+        break;
+    case defs::MYTHEN3:
+        ind = defs::VTH2;
+        notImplementedInd = defs::VSVP;
+        break;
+    default:
+        break;
+    }
+
+    // when taking acquisition
+    // auto previous = det.getDAC(ind, false);
+    // auto notImplementedPrevious = det.getDAC(notImplementedInd, false);
+
+    {
+        std::ostringstream oss;
+        proxy.Call("scan", {sls::ToString(ind), "500", "1500", "500"}, -1, PUT,
+                   oss);
+        REQUIRE(oss.str() ==
+                "scan [" + sls::ToString(ind) + ", 500, 1500, 500]\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("scan", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "scan [[enabled\ndac " + sls::ToString(ind) +
+                                 "\nstart 500\nstop 1500\nstep "
+                                 "500\nsettleTime 1ms\n]]\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("scan", {sls::ToString(ind), "500", "1500", "500", "2s"}, -1,
+                   PUT, oss);
+        REQUIRE(oss.str() ==
+                "scan [" + sls::ToString(ind) + ", 500, 1500, 500, 2s]\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("scan", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "scan [[enabled\ndac " + sls::ToString(ind) +
+                                 "\nstart 500\nstop 1500\nstep "
+                                 "500\nsettleTime 2s\n]]\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("scan", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "scan [0]\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("scan", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "scan [[disabled]]\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("scan", {sls::ToString(ind), "1500", "500", "-500"}, -1, PUT,
+                   oss);
+        REQUIRE(oss.str() ==
+                "scan [" + sls::ToString(ind) + ", 1500, 500, -500]\n");
+    }
+    REQUIRE_THROWS(proxy.Call(
+        "scan", {sls::ToString(notImplementedInd), "500", "1500", "500"}, -1,
+        PUT));
+    REQUIRE_THROWS(proxy.Call(
+        "scan", {sls::ToString(ind), "500", "1500", "-500"}, -1, PUT));
+    REQUIRE_THROWS(proxy.Call(
+        "scan", {sls::ToString(ind), "1500", "500", "500"}, -1, PUT));
+
+    if (det_type == defs::MYTHEN3 || defs::EIGER) {
+        {
+            std::ostringstream oss;
+            proxy.Call("scan", {"trimbit_scan", "0", "63", "16", "2s"}, -1, PUT,
+                       oss);
+            REQUIRE(oss.str() == "scan [trimbit_scan, 0, 63, 16, 2s]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("scan", {}, -1, GET, oss);
+            REQUIRE(oss.str() ==
+                    "scan [[enabled\ndac trimbit_scan\nstart 0\nstop 48\nstep "
+                    "16\nsettleTime 2s\n]]\n");
+        }
+    }
+    // acquire for each?
+
+    // when taking acquisition
+    // Reset all dacs to previous value
+    // for (int i = 0; i != det.size(); ++i) {
+    //     det.setDAC(ind, previous[i], false, {i});
+    //     det.setDAC(notImplementedInd, notImplementedPrevious[i], false, {i});
+    // }
+}
+
+TEST_CASE("scanerrmsg", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("scanerrmsg", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("scanerrmsg", {""}, -1, PUT));
+}
+
 TEST_CASE("gappixels", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);

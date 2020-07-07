@@ -7,13 +7,13 @@ BLACKFIN_CC = bfin-uclinux-gcc
 CROSS		= powerpc-4xx-softfloat-
 CC    		= $(CROSS)gcc
 CFLAGS		+=  -Wall -std=gnu99 -DEIGERD  -DSTOP_SERVER -I$(main_inc) -I$(support_lib) -I$(current_dir) #-DDEBUG1 #-DVERBOSEI #-DVERBOSE 
-LDLIBS		+= 	-lm 
+LDLIBS		+= 	-lm -lrt -pthread
 PROGS		= 	eigerDetectorServer 
 DESTDIR		= 	bin
 INSTMODE	= 	0777
 
 SRCS 		= 	slsDetectorFunctionList.c HardwareIO.c LocalLinkInterface.c  FebInterface.c FebControl.c Beb.c 
-SRCS		+=	$(main_src)communication_funcs.c $(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs_UDP.c $(main_src)common.c
+SRCS		+=	$(main_src)communication_funcs.c $(main_src)slsDetectorServer.c $(main_src)slsDetectorServer_funcs.c $(main_src)communication_funcs_UDP.c $(main_src)common.c $(main_src)/sharedMemory.c
 
 OBJS 		= 	$(SRCS:.c=.o) 
 

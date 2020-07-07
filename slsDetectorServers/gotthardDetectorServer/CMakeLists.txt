@@ -10,7 +10,7 @@ add_executable(gotthardDetectorServer_virtual
     ../slsDetectorServer/src/common.c
     ../slsDetectorServer/src/commonServerFunctions.c    
     ../slsDetectorServer/src/communication_funcs_UDP.c    
-    ../slsDetectorServer/src/communication_virtual.c
+    ../slsDetectorServer/src/sharedMemory.c
 )
 
 include_directories(

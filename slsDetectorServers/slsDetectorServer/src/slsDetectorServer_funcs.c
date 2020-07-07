@@ -1,10 +1,12 @@
 #include "slsDetectorServer_funcs.h"
 #include "clogger.h"
 #include "communication_funcs.h"
+#include "sharedMemory.h"
 #include "slsDetectorFunctionList.h"
 #include "sls_detector_funcs.h"
 
 #include <arpa/inet.h>
+#include <pthread.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -49,6 +51,16 @@ int detectorId = -1;
 
 // Local variables
 int (*flist[NUM_DET_FUNCTIONS])(int);
+pthread_t pthread_tid;
+
+// scan variables
+int scan = 0;
+int numScanSteps = 0;
+int *scanSteps = NULL;
+int64_t scanSettleTime_ns = 0;
+enum dacIndex scanGlobalIndex = 0;
+int scanTrimbits = 0;
+char scanErrMessage[MAX_STR_LENGTH] = "";
 
 /* initialization functions */
 
@@ -232,7 +244,6 @@ void function_table() {
     flist[F_RESET_FPGA] = &reset_fpga;
     flist[F_POWER_CHIP] = &power_chip;
     flist[F_ACTIVATE] = &set_activate;
-    flist[F_PREPARE_ACQUISITION] = &prepare_acquisition;
     flist[F_THRESHOLD_TEMP] = &threshold_temp;
     flist[F_TEMP_CONTROL] = &temp_control;
     flist[F_TEMP_EVENT] = &temp_event;
@@ -332,6 +343,9 @@ void function_table() {
     flist[F_GET_VETO] = &get_veto;
     flist[F_SET_VETO] = &set_veto;
     flist[F_SET_PATTERN] = &set_pattern;
+    flist[F_GET_SCAN] = get_scan;
+    flist[F_SET_SCAN] = set_scan;
+    flist[F_GET_SCAN_ERROR_MESSAGE] = get_scan_error_message;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -700,20 +714,8 @@ int get_image_test_mode(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int set_dac(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int args[3] = {-1, -1, -1};
-    int retval = -1;
-
-    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-        return printSocketReadError();
-
-    enum dacIndex ind = args[0];
-    int mV = args[1];
-    int val = args[2];
-    enum DACINDEX serverDacIndex = 0;
-
+enum DACINDEX getDACIndex(enum dacIndex ind) {
+    enum DACINDEX serverDacIndex = -1;
     // check if dac exists for this detector
     switch (ind) {
 #ifdef GOTTHARDD
@@ -990,239 +992,256 @@ int set_dac(int file_des) {
         modeNotImplemented("Dac Index", (int)ind);
         break;
     }
+    return serverDacIndex;
+}
 
-    // index exists
+int validateAndSetDac(enum dacIndex ind, int val, int mV) {
+    int retval = -1;
+    enum DACINDEX serverDacIndex = getDACIndex(ind);
+
     if (ret == OK) {
+        switch (ind) {
 
-        LOG(logDEBUG1, ("Setting DAC %d to %d %s\n", serverDacIndex, val,
-                        (mV ? "mV" : "dac units")));
-
-        // set & get
-        if ((val == GET_FLAG) || (Server_VerifyLock() == OK)) {
-            switch (ind) {
-
-                // adc vpp
+            // adc vpp
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-            case ADC_VPP:
-                // set
-                if (val >= 0) {
-                    ret = AD9257_SetVrefVoltage(val, mV);
-                    if (ret == FAIL) {
-                        sprintf(mess, "Could not set Adc Vpp. Please set a "
-                                      "proper value\n");
-                        LOG(logERROR, (mess));
-                    }
+        case ADC_VPP:
+            // set
+            if (val >= 0) {
+                ret = AD9257_SetVrefVoltage(val, mV);
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not set Adc Vpp. Please set a "
+                                  "proper value\n");
+                    LOG(logERROR, (mess));
                 }
-                retval = AD9257_GetVrefVoltage(mV);
-                LOG(logDEBUG1,
-                    ("Adc Vpp retval: %d %s\n", retval, (mV ? "mV" : "mode")));
-                // cannot validate (its just a variable and mv gives different
-                // value)
-                break;
+            }
+            retval = AD9257_GetVrefVoltage(mV);
+            LOG(logDEBUG1,
+                ("Adc Vpp retval: %d %s\n", retval, (mV ? "mV" : "mode")));
+            // cannot validate (its just a variable and mv gives different
+            // value)
+            break;
 #endif
 
-                // io delay
+            // io delay
 #ifdef EIGERD
-            case IO_DELAY:
-                retval = setIODelay(val);
-                LOG(logDEBUG1, ("IODelay: %d\n", retval));
-                validate(val, retval, "set iodelay", DEC);
-                break;
+        case IO_DELAY:
+            retval = setIODelay(val);
+            LOG(logDEBUG1, ("IODelay: %d\n", retval));
+            validate(val, retval, "set iodelay", DEC);
+            break;
 #endif
 
-            // high voltage
-            case HIGH_VOLTAGE:
-                retval = setHighVoltage(val);
-                LOG(logDEBUG1, ("High Voltage: %d\n", retval));
+        // high voltage
+        case HIGH_VOLTAGE:
+            retval = setHighVoltage(val);
+            LOG(logDEBUG1, ("High Voltage: %d\n", retval));
 #if defined(JUNGFRAUD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||       \
     defined(GOTTHARD2D) || defined(MYTHEN3D)
-                validate(val, retval, "set high voltage", DEC);
+            validate(val, retval, "set high voltage", DEC);
 #endif
 #ifdef GOTTHARDD
-                if (retval == -1) {
-                    ret = FAIL;
-                    strcpy(mess, "Invalid Voltage. Valid values are 0, 90, "
-                                 "110, 120, 150, 180, 200\n");
-                    LOG(logERROR, (mess));
-                } else
-                    validate(val, retval, "set high voltage", DEC);
+            if (retval == -1) {
+                ret = FAIL;
+                strcpy(mess, "Invalid Voltage. Valid values are 0, 90, "
+                             "110, 120, 150, 180, 200\n");
+                LOG(logERROR, (mess));
+            } else
+                validate(val, retval, "set high voltage", DEC);
 #elif EIGERD
-                if ((retval != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval < 0)) {
-                    ret = FAIL;
-                    if (retval == -1)
-                        sprintf(mess,
-                                "Setting high voltage failed. Bad value %d. "
-                                "The range is from 0 to 200 V.\n",
-                                val);
-                    else if (retval == -2)
-                        strcpy(mess, "Setting high voltage failed. "
-                                     "Serial/i2c communication failed.\n");
-                    else if (retval == -3)
-                        strcpy(mess, "Getting high voltage failed. "
-                                     "Serial/i2c communication failed.\n");
-                    LOG(logERROR, (mess));
-                }
+            if ((retval != SLAVE_HIGH_VOLTAGE_READ_VAL) && (retval < 0)) {
+                ret = FAIL;
+                if (retval == -1)
+                    sprintf(mess,
+                            "Setting high voltage failed. Bad value %d. "
+                            "The range is from 0 to 200 V.\n",
+                            val);
+                else if (retval == -2)
+                    strcpy(mess, "Setting high voltage failed. "
+                                 "Serial/i2c communication failed.\n");
+                else if (retval == -3)
+                    strcpy(mess, "Getting high voltage failed. "
+                                 "Serial/i2c communication failed.\n");
+                LOG(logERROR, (mess));
+            }
 #endif
-                break;
+            break;
 
-                // power, vlimit
+            // power, vlimit
 #ifdef CHIPTESTBOARDD
-            case V_POWER_A:
-            case V_POWER_B:
-            case V_POWER_C:
-            case V_POWER_D:
-            case V_POWER_IO:
-                if (val != GET_FLAG) {
-                    if (!mV) {
-                        ret = FAIL;
-                        sprintf(mess,
-                                "Could not set power. Power regulator %d "
-                                "should be in mV and not dac units.\n",
-                                ind);
-                        LOG(logERROR, (mess));
-                    } else if (checkVLimitCompliant(val) == FAIL) {
-                        ret = FAIL;
-                        sprintf(mess,
-                                "Could not set power. Power regulator %d "
-                                "exceeds voltage limit %d.\n",
-                                ind, getVLimit());
-                        LOG(logERROR, (mess));
-                    } else if (!isPowerValid(serverDacIndex, val)) {
-                        ret = FAIL;
-                        sprintf(mess,
-                                "Could not set power. Power regulator %d "
-                                "should be between %d and %d mV\n",
-                                ind,
-                                (serverDacIndex == D_PWR_IO ? VIO_MIN_MV
-                                                            : POWER_RGLTR_MIN),
-                                (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT));
-                        LOG(logERROR, (mess));
-                    } else {
-                        setPower(serverDacIndex, val);
-                    }
-                }
-                retval = getPower(serverDacIndex);
-                LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
-                validate(val, retval, "set power regulator", DEC);
-                break;
-
-            case V_POWER_CHIP:
-                if (val >= 0) {
-                    ret = FAIL;
-                    sprintf(mess, "Can not set Vchip. Can only be set "
-                                  "automatically in the background (+200mV "
-                                  "from highest power regulator voltage).\n");
-                    LOG(logERROR, (mess));
-                    /* restrict users from setting vchip
-                    if (!mV) {
-                        ret = FAIL;
-                        sprintf(mess,"Could not set Vchip. Should be in mV and
-                    not dac units.\n"); LOG(logERROR,(mess)); } else if
-                    (!isVchipValid(val)) { ret = FAIL; sprintf(mess,"Could not
-                    set Vchip. Should be between %d and %d mV\n", VCHIP_MIN_MV,
-                    VCHIP_MAX_MV); LOG(logERROR,(mess)); } else { setVchip(val);
-                    }
-                    */
-                }
-                retval = getVchip();
-                LOG(logDEBUG1, ("Vchip: %d\n", retval));
-                if (ret == OK && val != GET_FLAG && val != -100 &&
-                    retval != val) {
-                    ret = FAIL;
-                    sprintf(mess, "Could not set vchip. Set %d, but read %d\n",
-                            val, retval);
-                    LOG(logERROR, (mess));
-                }
-                break;
-#endif
-
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-            case V_LIMIT:
-                if (val >= 0) {
-                    if (!mV) {
-                        ret = FAIL;
-                        strcpy(mess, "Could not set power. VLimit should be in "
-                                     "mV and not dac units.\n");
-                        LOG(logERROR, (mess));
-                    } else {
-                        setVLimit(val);
-                    }
-                }
-                retval = getVLimit();
-                LOG(logDEBUG1, ("VLimit: %d\n", retval));
-                validate(val, retval, "set vlimit", DEC);
-                break;
-#endif
-                // dacs
-            default:
-                if (mV && val > DAC_MAX_MV) {
+        case V_POWER_A:
+        case V_POWER_B:
+        case V_POWER_C:
+        case V_POWER_D:
+        case V_POWER_IO:
+            if (val != GET_FLAG) {
+                if (!mV) {
                     ret = FAIL;
                     sprintf(mess,
-                            "Could not set dac %d to value %d. Allowed limits "
-                            "(0 - %d mV).\n",
-                            ind, val, DAC_MAX_MV);
+                            "Could not set power. Power regulator %d "
+                            "should be in mV and not dac units.\n",
+                            ind);
                     LOG(logERROR, (mess));
-                } else if (!mV && val > getMaxDacSteps()) {
+                } else if (checkVLimitCompliant(val) == FAIL) {
                     ret = FAIL;
                     sprintf(mess,
-                            "Could not set dac %d to value %d. Allowed limits "
-                            "(0 - %d dac units).\n",
-                            ind, val, getMaxDacSteps());
+                            "Could not set power. Power regulator %d "
+                            "exceeds voltage limit %d.\n",
+                            ind, getVLimit());
+                    LOG(logERROR, (mess));
+                } else if (!isPowerValid(serverDacIndex, val)) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set power. Power regulator %d "
+                            "should be between %d and %d mV\n",
+                            ind,
+                            (serverDacIndex == D_PWR_IO ? VIO_MIN_MV
+                                                        : POWER_RGLTR_MIN),
+                            (VCHIP_MAX_MV - VCHIP_POWER_INCRMNT));
                     LOG(logERROR, (mess));
                 } else {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
-                    if ((val != GET_FLAG && mV &&
-                         checkVLimitCompliant(val) == FAIL) ||
-                        (val != GET_FLAG && !mV &&
-                         checkVLimitDacCompliant(val) == FAIL)) {
-                        ret = FAIL;
-                        sprintf(mess,
-                                "Could not set dac %d to value %d. "
-                                "Exceeds voltage limit %d.\n",
-                                ind, (mV ? val : dacToVoltage(val)),
-                                getVLimit());
-                        LOG(logERROR, (mess));
-                    } else
-#endif
-                        setDAC(serverDacIndex, val, mV);
-                    retval = getDAC(serverDacIndex, mV);
+                    setPower(serverDacIndex, val);
                 }
-#ifdef EIGERD
-                if (val != GET_FLAG) {
-                    // changing dac changes settings to undefined
-                    switch (serverDacIndex) {
-                    case E_VCMP_LL:
-                    case E_VCMP_LR:
-                    case E_VCMP_RL:
-                    case E_VCMP_RR:
-                    case E_VRPREAMP:
-                    case E_VCP:
-                        setSettings(UNDEFINED);
-                        LOG(logERROR,
-                            ("Settings has been changed "
-                             "to undefined (changed specific dacs)\n"));
-                        break;
-                    default:
-                        break;
-                    }
-                }
-#endif
-                // check
-                if (ret == OK) {
-                    if ((abs(retval - val) <= 5) || val == GET_FLAG) {
-                        ret = OK;
-                    } else {
-                        ret = FAIL;
-                        sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
-                                serverDacIndex, val, retval);
-                        LOG(logERROR, (mess));
-                    }
-                }
-                LOG(logDEBUG1, ("Dac (%d): %d %s\n\n", serverDacIndex, retval,
-                                (mV ? "mV" : "dac units")));
-                break;
             }
+            retval = getPower(serverDacIndex);
+            LOG(logDEBUG1, ("Power regulator(%d): %d\n", ind, retval));
+            validate(val, retval, "set power regulator", DEC);
+            break;
+
+        case V_POWER_CHIP:
+            if (val >= 0) {
+                ret = FAIL;
+                sprintf(mess, "Can not set Vchip. Can only be set "
+                              "automatically in the background (+200mV "
+                              "from highest power regulator voltage).\n");
+                LOG(logERROR, (mess));
+                /* restrict users from setting vchip
+                if (!mV) {
+                    ret = FAIL;
+                    sprintf(mess,"Could not set Vchip. Should be in mV and
+                not dac units.\n"); LOG(logERROR,(mess)); } else if
+                (!isVchipValid(val)) { ret = FAIL; sprintf(mess,"Could not
+                set Vchip. Should be between %d and %d mV\n", VCHIP_MIN_MV,
+                VCHIP_MAX_MV); LOG(logERROR,(mess)); } else { setVchip(val);
+                }
+                */
+            }
+            retval = getVchip();
+            LOG(logDEBUG1, ("Vchip: %d\n", retval));
+            if (ret == OK && val != GET_FLAG && val != -100 && retval != val) {
+                ret = FAIL;
+                sprintf(mess, "Could not set vchip. Set %d, but read %d\n", val,
+                        retval);
+                LOG(logERROR, (mess));
+            }
+            break;
+#endif
+
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+        case V_LIMIT:
+            if (val >= 0) {
+                if (!mV) {
+                    ret = FAIL;
+                    strcpy(mess, "Could not set power. VLimit should be in "
+                                 "mV and not dac units.\n");
+                    LOG(logERROR, (mess));
+                } else {
+                    setVLimit(val);
+                }
+            }
+            retval = getVLimit();
+            LOG(logDEBUG1, ("VLimit: %d\n", retval));
+            validate(val, retval, "set vlimit", DEC);
+            break;
+#endif
+            // dacs
+        default:
+            if (mV && val > DAC_MAX_MV) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set dac %d to value %d. Allowed limits "
+                        "(0 - %d mV).\n",
+                        ind, val, DAC_MAX_MV);
+                LOG(logERROR, (mess));
+            } else if (!mV && val > getMaxDacSteps()) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set dac %d to value %d. Allowed limits "
+                        "(0 - %d dac units).\n",
+                        ind, val, getMaxDacSteps());
+                LOG(logERROR, (mess));
+            } else {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD)
+                if ((val != GET_FLAG && mV &&
+                     checkVLimitCompliant(val) == FAIL) ||
+                    (val != GET_FLAG && !mV &&
+                     checkVLimitDacCompliant(val) == FAIL)) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set dac %d to value %d. "
+                            "Exceeds voltage limit %d.\n",
+                            ind, (mV ? val : dacToVoltage(val)), getVLimit());
+                    LOG(logERROR, (mess));
+                } else
+#endif
+                    setDAC(serverDacIndex, val, mV);
+                retval = getDAC(serverDacIndex, mV);
+            }
+#ifdef EIGERD
+            if (val != GET_FLAG && getSettings() != UNDEFINED) {
+                // changing dac changes settings to undefined
+                switch (serverDacIndex) {
+                case E_VCMP_LL:
+                case E_VCMP_LR:
+                case E_VCMP_RL:
+                case E_VCMP_RR:
+                case E_VRPREAMP:
+                case E_VCP:
+                    setSettings(UNDEFINED);
+                    LOG(logERROR, ("Settings has been changed "
+                                   "to undefined (changed specific dacs)\n"));
+                    break;
+                default:
+                    break;
+                }
+            }
+#endif
+            // check
+            if (ret == OK) {
+                if ((abs(retval - val) <= 5) || val == GET_FLAG) {
+                    ret = OK;
+                } else {
+                    ret = FAIL;
+                    sprintf(mess, "Setting dac %d : wrote %d but read %d\n",
+                            serverDacIndex, val, retval);
+                    LOG(logERROR, (mess));
+                }
+            }
+            LOG(logDEBUG1, ("Dac (%d): %d %s\n\n", serverDacIndex, retval,
+                            (mV ? "mV" : "dac units")));
+            break;
         }
+    }
+    return retval;
+}
+
+int set_dac(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[3] = {-1, -1, -1};
+    int retval = -1;
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+
+    enum dacIndex ind = args[0];
+    int mV = args[1];
+    int val = args[2];
+
+    LOG(logDEBUG1,
+        ("Setting DAC %d to %d %s\n", ind, val, (mV ? "mV" : "dac units")));
+    // set & get
+    if ((val == GET_FLAG) || (Server_VerifyLock() == OK)) {
+        retval = validateAndSetDac(ind, val, mV);
     }
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
@@ -1637,11 +1656,14 @@ int get_threshold_energy(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int start_acquisition(int file_des) {
+int acquire(int blocking, int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-
-    LOG(logDEBUG1, ("Starting Acquisition\n"));
+    if (blocking) {
+        LOG(logINFOBLUE, ("Blocking Acquisition\n"));
+    } else {
+        LOG(logINFOBLUE, ("Unblocking Acquisition\n"));
+    }
     // only set
     if (Server_VerifyLock() == OK) {
 #if defined(MOENCHD)
@@ -1706,23 +1728,124 @@ int start_acquisition(int file_des) {
             strcpy(mess, "Could not start acquisition because ");
             strcat(mess, configureMessage);
             LOG(logERROR, (mess));
+        } else if (sharedMemory_getScanStatus() == RUNNING) {
+            ret = FAIL;
+            strcpy(mess, "Could not start acquisition because a scan is "
+                         "already running!\n");
+            LOG(logERROR, (mess));
         } else {
-            ret = startStateMachine();
-            if (ret == FAIL) {
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(VIRTUAL)
-                sprintf(mess,
-                        "Could not start acquisition. Could not create udp "
-                        "socket in server. Check udp_dstip & udp_dstport.\n");
-#else
-                sprintf(mess, "Could not start acquisition\n");
-#endif
+            memset(scanErrMessage, 0, MAX_STR_LENGTH);
+            sharedMemory_setScanStop(0);
+            sharedMemory_setScanStatus(IDLE); // if it was error
+            if (pthread_create(&pthread_tid, NULL, &start_state_machine,
+                               &blocking)) {
+                ret = FAIL;
+                strcpy(mess, "Could not start acquisition thread!\n");
                 LOG(logERROR, (mess));
+            } else {
+                if (blocking) {
+                    pthread_join(pthread_tid, NULL);
+                }
             }
         }
-        LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
     }
     return Server_SendResult(file_des, INT32, NULL, 0);
 }
+
+void *start_state_machine(void *arg) {
+    int *blocking = (int *)arg;
+    int times = 1;
+    // start of scan
+    if (scan) {
+        sharedMemory_setScanStatus(RUNNING);
+        times = numScanSteps;
+    }
+    for (int i = 0; i != times; ++i) {
+        // normal acquisition
+        if (scan == 0) {
+            LOG(logINFOBLUE, ("Normal Acquisition (not scan)\n"));
+        }
+        // scan
+        else {
+            // check scan stop
+            if (sharedMemory_getScanStop()) {
+                LOG(logINFORED, ("Scan manually stopped!\n"));
+                sharedMemory_setScanStatus(IDLE);
+                break;
+            }
+            // trimbits scan
+            if (scanTrimbits) {
+                LOG(logINFOBLUE,
+                    ("Trimbits scan %d/%d: [%d]\n", i, times, scanSteps[i]));
+                validateAndSetAllTrimbits(scanSteps[i]);
+                if (ret == FAIL) {
+                    sprintf(scanErrMessage, "Cannot scan trimbit %d. ",
+                            scanSteps[i]);
+                    strcat(scanErrMessage, mess);
+                    sharedMemory_setScanStatus(ERROR);
+                    break;
+                }
+            }
+            // dac scan
+            else {
+                LOG(logINFOBLUE, ("Dac [%d] scan %d/%d: [%d]\n",
+                                  scanGlobalIndex, i, times, scanSteps[i]));
+                validateAndSetDac(scanGlobalIndex, scanSteps[i], 0);
+                if (ret == FAIL) {
+                    sprintf(scanErrMessage, "Cannot scan dac %d at %d. ",
+                            scanGlobalIndex, scanSteps[i]);
+                    strcat(scanErrMessage, mess);
+                    sharedMemory_setScanStatus(ERROR);
+                    break;
+                }
+            }
+            // check scan stop
+            if (sharedMemory_getScanStop()) {
+                LOG(logINFORED, ("Scan manually stopped!\n"));
+                sharedMemory_setScanStatus(IDLE);
+                break;
+            }
+            usleep(scanSettleTime_ns / 1000);
+        }
+#ifdef EIGERD
+        prepareAcquisition();
+#endif
+        ret = startStateMachine();
+        LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
+        if (ret == FAIL) {
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(VIRTUAL)
+            sprintf(mess, "Could not start acquisition. Could not create udp "
+                          "socket in server. Check udp_dstip & udp_dstport.\n");
+#else
+            sprintf(mess, "Could not start acquisition\n");
+#endif
+            LOG(logERROR, (mess));
+            if (scan) {
+                sprintf(scanErrMessage, "Cannot scan at %d. ", scanSteps[i]);
+                strcat(scanErrMessage, mess);
+                sharedMemory_setScanStatus(ERROR);
+            }
+            break;
+        }
+        // blocking or scan
+        if (*blocking || times > 1) {
+            readFrame(&ret, mess);
+            if (ret == FAIL && scan) {
+                sprintf(scanErrMessage, "Cannot scan at %d. ", scanSteps[i]);
+                strcat(scanErrMessage, mess);
+                sharedMemory_setScanStatus(ERROR);
+                break;
+            }
+        }
+    }
+    // end of scan
+    if (scan && sharedMemory_getScanStatus() != ERROR) {
+        sharedMemory_setScanStatus(IDLE);
+    }
+    return NULL;
+}
+
+int start_acquisition(int file_des) { return acquire(0, file_des); }
 
 int stop_acquisition(int file_des) {
     ret = OK;
@@ -1753,100 +1876,7 @@ int get_run_status(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int start_and_read_all(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-
-    LOG(logDEBUG1, ("Starting Acquisition and read all frames\n"));
-    // start state machine
-    LOG(logDEBUG1, ("Starting Acquisition\n"));
-    // only set
-    if (Server_VerifyLock() == OK) {
-#if defined(MOENCHD)
-        if (getNumAnalogSamples() <= 0) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of analog "
-                    "samples: %d.\n",
-                    getNumAnalogSamples());
-            LOG(logERROR, (mess));
-        } else
-#endif
-#if defined(CHIPTESTBOARDD)
-            if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                 getReadoutMode() == ANALOG_ONLY) &&
-                (getNumAnalogSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of analog "
-                    "samples: %d.\n",
-                    getNumAnalogSamples());
-            LOG(logERROR, (mess));
-        } else if ((getReadoutMode() == ANALOG_AND_DIGITAL ||
-                    getReadoutMode() == DIGITAL_ONLY) &&
-                   (getNumDigitalSamples() <= 0)) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not start acquisition. Invalid number of digital "
-                    "samples: %d.\n",
-                    getNumDigitalSamples());
-            LOG(logERROR, (mess));
-        } else
-#endif
-#ifdef EIGERD
-            // check for hardware mac and hardware ip
-            if (udpDetails.srcmac != getDetectorMAC()) {
-            ret = FAIL;
-            uint64_t sourcemac = getDetectorMAC();
-            char src_mac[50];
-            getMacAddressinString(src_mac, 50, sourcemac);
-            sprintf(mess,
-                    "Invalid udp source mac address for this detector. Must be "
-                    "same as hardware detector mac address %s\n",
-                    src_mac);
-            LOG(logERROR, (mess));
-        } else if (!enableTenGigabitEthernet(GET_FLAG) &&
-                   (udpDetails.srcip != getDetectorIP())) {
-            ret = FAIL;
-            uint32_t sourceip = getDetectorIP();
-            char src_ip[INET_ADDRSTRLEN];
-            getIpAddressinString(src_ip, sourceip);
-            sprintf(
-                mess,
-                "Invalid udp source ip address for this detector. Must be same "
-                "as hardware detector ip address %s in 1G readout mode \n",
-                src_ip);
-            LOG(logERROR, (mess));
-        } else
-#endif
-            if (configured == FAIL) {
-            ret = FAIL;
-            strcpy(mess, "Could not start acquisition because ");
-            strcat(mess, configureMessage);
-            LOG(logERROR, (mess));
-        } else {
-            ret = startStateMachine();
-            if (ret == FAIL) {
-#if defined(VIRTUAL) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
-                sprintf(mess,
-                        "Could not start acquisition. Could not create udp "
-                        "socket in server. Check udp_dstip & udp_dstport.\n");
-#else
-                sprintf(mess, "Could not start acquisition\n");
-#endif
-                LOG(logERROR, (mess));
-            }
-        }
-        LOG(logDEBUG2, ("Starting Acquisition ret: %d\n", ret));
-    }
-
-    // lock or acquisition start error
-    if (ret == FAIL)
-        return Server_SendResult(file_des, INT32, NULL, 0);
-
-    // read all (again validate lock, but should pass and not fail)
-    return read_all(file_des);
-}
+int start_and_read_all(int file_des) { return acquire(1, file_des); }
 
 int read_all(int file_des) {
     ret = OK;
@@ -1866,8 +1896,14 @@ int get_num_frames(int file_des) {
     int64_t retval = -1;
 
     // get only
-    retval = getNumFrames();
-    LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
+    if (!scan) {
+        retval = getNumFrames();
+        LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
+    } else {
+        retval = numScanSteps;
+        LOG(logDEBUG1, ("retval num frames (num scan steps) %lld\n",
+                        (long long int)retval));
+    }
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -1882,22 +1918,35 @@ int set_num_frames(int file_des) {
 
     // only set
     if (Server_VerifyLock() == OK) {
+        // only set number of frames if normal mode (not scan)
+        if (scan) {
+            if (arg != numScanSteps) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set number of frames %lld. In scan mode, it "
+                        "is number of steps %d\n",
+                        (long long unsigned int)arg, numScanSteps);
+                LOG(logERROR, (mess));
+            }
+        } else {
 #ifdef GOTTHARD2D
-        // validate #frames in burst mode
-        if (getBurstMode() != BURST_OFF && arg > MAX_FRAMES_IN_BURST_MODE) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not set number of frames %lld. Must be <= %d in "
-                    "burst mode.\n",
-                    (long long unsigned int)arg, MAX_FRAMES_IN_BURST_MODE);
-            LOG(logERROR, (mess));
-        }
+            // validate #frames in burst mode
+            if (getBurstMode() != BURST_OFF && arg > MAX_FRAMES_IN_BURST_MODE) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set number of frames %lld. Must be <= %d in "
+                        "burst mode.\n",
+                        (long long unsigned int)arg, MAX_FRAMES_IN_BURST_MODE);
+                LOG(logERROR, (mess));
+            }
 #endif
-        if (ret == OK) {
-            setNumFrames(arg);
-            int64_t retval = getNumFrames();
-            LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
-            validate64(arg, retval, "set number of frames", DEC);
+            if (ret == OK) {
+                setNumFrames(arg);
+                int64_t retval = getNumFrames();
+                LOG(logDEBUG1,
+                    ("retval num frames %lld\n", (long long int)retval));
+                validate64(arg, retval, "set number of frames", DEC);
+            }
         }
     }
     return Server_SendResult(file_des, INT64, NULL, 0);
@@ -2819,6 +2868,40 @@ int enable_ten_giga(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
+int validateAndSetAllTrimbits(int arg) {
+    int retval = -1;
+
+#if !defined(EIGERD) && !defined(MYTHEN3D)
+    functionNotImplemented();
+#else
+    // set
+    if (arg >= 0) {
+        if (arg > MAX_TRIMBITS_VALUE) {
+            ret = FAIL;
+            sprintf(mess, "Cannot set all trimbits. Range: 0 - %d\n",
+                    MAX_TRIMBITS_VALUE);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setAllTrimbits(arg);
+#ifdef EIGERD
+            // changes settings to undefined
+            if (getSettings() != UNDEFINED) {
+                setSettings(UNDEFINED);
+                LOG(logERROR,
+                    ("Settings has been changed to undefined (change all "
+                     "trimbits)\n"));
+            }
+#endif
+        }
+    }
+    // get
+    retval = getAllTrimbits();
+    LOG(logDEBUG1, ("All trimbits: %d\n", retval));
+    validate(arg, retval, "set all trimbits", DEC);
+#endif
+    return retval;
+}
+
 int set_all_trimbits(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
@@ -2829,32 +2912,10 @@ int set_all_trimbits(int file_des) {
         return printSocketReadError();
     LOG(logDEBUG1, ("Set all trmbits to %d\n", arg));
 
-#if !defined(EIGERD) && !defined(MYTHEN3D)
-    functionNotImplemented();
-#else
-
-    // set
-    if (arg >= 0 && Server_VerifyLock() == OK) {
-        if (arg > MAX_TRIMBITS_VALUE) {
-            ret = FAIL;
-            sprintf(mess, "Cannot set all trimbits. Range: 0 - %d\n",
-                    MAX_TRIMBITS_VALUE);
-            LOG(logERROR, (mess));
-        } else {
-            ret = setAllTrimbits(arg);
-#ifdef EIGERD
-            // changes settings to undefined
-            setSettings(UNDEFINED);
-            LOG(logERROR, ("Settings has been changed to undefined (change all "
-                           "trimbits)\n"));
-#endif
-        }
+    if ((arg >= 0 && Server_VerifyLock() == OK) || arg < 0) {
+        retval = validateAndSetAllTrimbits(arg);
     }
-    // get
-    retval = getAllTrimbits();
-    LOG(logDEBUG1, ("All trimbits: %d\n", retval));
-    validate(arg, retval, "set all trimbits", DEC);
-#endif
+
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
@@ -2875,7 +2936,7 @@ int set_pattern_io_control(int file_des) {
         retval = writePatternIOControl(arg);
         LOG(logDEBUG1,
             ("Pattern IO Control retval: 0x%llx\n", (long long int)retval));
-        validate64(arg, retval, "Pattern IO Control", HEX);
+        validate64(arg, retval, "set Pattern IO Control", HEX);
     }
 #endif
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
@@ -2965,8 +3026,9 @@ int set_pattern_loop_addresses(int file_des) {
                  startAddr, stopAddr));
             retvals[0] = startAddr;
             retvals[1] = stopAddr;
-            validate(args[1], startAddr, "Pattern loops' start address", HEX);
-            validate(args[2], stopAddr, "Pattern loops' stop address", HEX);
+            validate(args[1], startAddr, "set Pattern loops' start address",
+                     HEX);
+            validate(args[2], stopAddr, "set Pattern loops' stop address", HEX);
         }
     }
 #endif
@@ -3004,7 +3066,8 @@ int set_pattern_loop_cycles(int file_des) {
             retval = numLoops;
             LOG(logDEBUG1,
                 ("Pattern loop cycles retval: (ncycles:%d)\n", retval));
-            validate(args[1], retval, "Pattern loops' number of cycles", DEC);
+            validate(args[1], retval, "set Pattern loops' number of cycles",
+                     DEC);
         }
     }
 #endif
@@ -3047,7 +3110,7 @@ int set_pattern_wait_addr(int file_des) {
         } else {
             retval = setPatternWaitAddress(loopLevel, addr);
             LOG(logDEBUG1, ("Pattern wait address retval: 0x%x\n", retval));
-            validate(addr, retval, "Pattern wait address", HEX);
+            validate(addr, retval, "set Pattern wait address", HEX);
         }
     }
 #endif
@@ -3082,7 +3145,7 @@ int set_pattern_wait_time(int file_des) {
             retval = setPatternWaitTime(loopLevel, timeval);
             LOG(logDEBUG1,
                 ("Pattern wait time retval: 0x%llx\n", (long long int)retval));
-            validate64(timeval, retval, "Pattern wait time", HEX);
+            validate64(timeval, retval, "set Pattern wait time", HEX);
         }
     }
 #endif
@@ -3107,7 +3170,7 @@ int set_pattern_mask(int file_des) {
         uint64_t retval64 = getPatternMask();
         LOG(logDEBUG1,
             ("Pattern mask: 0x%llx\n", (long long unsigned int)retval64));
-        validate64(arg, retval64, "Set Pattern Mask", HEX);
+        validate64(arg, retval64, "set Pattern Mask", HEX);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -3150,7 +3213,7 @@ int set_pattern_bit_mask(int file_des) {
         uint64_t retval64 = getPatternBitMask();
         LOG(logDEBUG1,
             ("Pattern bit mask: 0x%llx\n", (long long unsigned int)retval64));
-        validate64(arg, retval64, "Set Pattern Bit Mask", HEX);
+        validate64(arg, retval64, "set Pattern Bit Mask", HEX);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -3815,26 +3878,6 @@ int set_activate(int file_des) {
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
 }
 
-int prepare_acquisition(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-
-    LOG(logDEBUG1, ("Preparing Acquisition\n"));
-#ifndef EIGERD
-    functionNotImplemented();
-#else
-    // only set
-    if (Server_VerifyLock() == OK) {
-        ret = prepareAcquisition();
-        if (ret == FAIL) {
-            strcpy(mess, "Could not prepare acquisition\n");
-            LOG(logERROR, (mess));
-        }
-    }
-#endif
-    return Server_SendResult(file_des, INT32, NULL, 0);
-}
-
 // stop server
 int threshold_temp(int file_des) {
     ret = OK;
@@ -4076,7 +4119,7 @@ int led(int file_des) {
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         retval = setLEDEnable(arg);
         LOG(logDEBUG1, ("LED Enable: %d\n", retval));
-        validate(arg, retval, "LED Enable", DEC);
+        validate(arg, retval, "enable/disable LED", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -4378,7 +4421,7 @@ int set_external_sampling_source(int file_des) {
         } else {
             retval = setExternalSamplingSource(arg);
             LOG(logDEBUG1, ("External Sampling source: %d\n", retval));
-            validate(arg, retval, "External sampling source", DEC);
+            validate(arg, retval, "set external sampling source", DEC);
         }
     }
 #endif
@@ -4403,7 +4446,7 @@ int set_external_sampling(int file_des) {
         arg = (arg > 0) ? 1 : arg;
         retval = setExternalSampling(arg);
         LOG(logDEBUG1, ("External Sampling enable: %d\n", retval));
-        validate(arg, retval, "External sampling enable", DEC);
+        validate(arg, retval, "set external sampling enable", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
@@ -4793,7 +4836,8 @@ int set_detector_position(int file_des) {
 
 int check_detector_idle() {
     enum runStatus status = getRunStatus();
-    if (status != IDLE && status != RUN_FINISHED && status != STOPPED) {
+    if (status != IDLE && status != RUN_FINISHED && status != STOPPED &&
+        status != ERROR) {
         ret = FAIL;
         sprintf(mess,
                 "Cannot configure mac when detector is not idle. Detector at "
@@ -6630,7 +6674,7 @@ int set_current_source(int file_des) {
         setCurrentSource(arg);
         int retval = getCurrentSource();
         LOG(logDEBUG1, ("current source enable retval: %u\n", retval));
-        validate(arg, retval, "current source enable", DEC);
+        validate(arg, retval, "set current source enable", DEC);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
@@ -6837,7 +6881,11 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
     // frames
-    i64 = getNumFrames();
+    if (!scan) {
+        i64 = getNumFrames();
+    } else {
+        i64 = numScanSteps;
+    }
     n += sendData(file_des, &i64, sizeof(i64), INT64);
     if (n < 0)
         return printSocketReadError();
@@ -7383,7 +7431,7 @@ int set_pattern(int file_des) {
 #ifndef MYTHEN3D
         if (ret == OK) {
             retval64 = writePatternIOControl(patioctrl);
-            validate64(patioctrl, retval64, "Pattern IO Control", HEX);
+            validate64(patioctrl, retval64, "set pattern IO Control", HEX);
         }
 #endif
         if (ret == OK) {
@@ -7391,9 +7439,9 @@ int set_pattern(int file_des) {
             retval0 = patlimits[0];
             retval1 = patlimits[1];
             setPatternLoop(-1, &retval0, &retval1, &numLoops);
-            validate(patlimits[0], retval0, "Pattern Limits start address",
+            validate(patlimits[0], retval0, "set pattern Limits start address",
                      HEX);
-            validate(patlimits[1], retval1, "Pattern Limits start address",
+            validate(patlimits[1], retval1, "set pattern Limits start address",
                      HEX);
         }
         if (ret == OK) {
@@ -7401,56 +7449,200 @@ int set_pattern(int file_des) {
             retval1 = patloop[1];
             numLoops = patnloop[0];
             setPatternLoop(0, &patloop[0], &patloop[1], &numLoops);
-            validate(patloop[0], retval0, "Pattern Loop 0 start address", HEX);
-            validate(patloop[1], retval1, "Pattern Loop 0 stop address", HEX);
-            validate(patnloop[0], numLoops, "Pattern Loop 0 num loops", HEX);
+            validate(patloop[0], retval0, "set pattern Loop 0 start address",
+                     HEX);
+            validate(patloop[1], retval1, "set pattern Loop 0 stop address",
+                     HEX);
+            validate(patnloop[0], numLoops, "set pattern Loop 0 num loops",
+                     HEX);
         }
         if (ret == OK) {
             retval0 = patloop[2];
             retval1 = patloop[3];
             numLoops = patnloop[1];
             setPatternLoop(1, &patloop[2], &patloop[3], &numLoops);
-            validate(patloop[2], retval0, "Pattern Loop 1 start address", HEX);
-            validate(patloop[3], retval1, "Pattern Loop 1 stop address", HEX);
-            validate(patnloop[1], numLoops, "Pattern Loop 1 num loops", HEX);
+            validate(patloop[2], retval0, "set pattern Loop 1 start address",
+                     HEX);
+            validate(patloop[3], retval1, "set pattern Loop 1 stop address",
+                     HEX);
+            validate(patnloop[1], numLoops, "set pattern Loop 1 num loops",
+                     HEX);
         }
         if (ret == OK) {
             retval0 = patloop[4];
             retval1 = patloop[5];
             numLoops = patnloop[2];
             setPatternLoop(2, &patloop[4], &patloop[5], &numLoops);
-            validate(patloop[4], retval0, "Pattern Loop 2 start address", HEX);
-            validate(patloop[5], retval1, "Pattern Loop 2 stop address", HEX);
-            validate(patnloop[2], numLoops, "Pattern Loop 2 num loops", HEX);
+            validate(patloop[4], retval0, "set pattern Loop 2 start address",
+                     HEX);
+            validate(patloop[5], retval1, "set pattern Loop 2 stop address",
+                     HEX);
+            validate(patnloop[2], numLoops, "set pattern Loop 2 num loops",
+                     HEX);
         }
         if (ret == OK) {
             retval0 = setPatternWaitAddress(0, patwait[0]);
-            validate(patwait[0], retval0, "Pattern Loop 0 wait address", HEX);
+            validate(patwait[0], retval0, "set pattern Loop 0 wait address",
+                     HEX);
         }
         if (ret == OK) {
             retval0 = setPatternWaitAddress(1, patwait[1]);
-            validate(patwait[1], retval0, "Pattern Loop 1 wait address", HEX);
+            validate(patwait[1], retval0, "set pattern Loop 1 wait address",
+                     HEX);
         }
         if (ret == OK) {
             retval0 = setPatternWaitAddress(2, patwait[2]);
-            validate(patwait[2], retval0, "Pattern Loop 2 wait address", HEX);
+            validate(patwait[2], retval0, "set pattern Loop 2 wait address",
+                     HEX);
         }
         if (ret == OK) {
             uint64_t retval64 = setPatternWaitTime(0, patwaittime[0]);
-            validate64(patwaittime[0], retval64, "Pattern Loop 0 wait time",
+            validate64(patwaittime[0], retval64, "set pattern Loop 0 wait time",
                        HEX);
         }
         if (ret == OK) {
             retval64 = setPatternWaitTime(1, patwaittime[1]);
-            validate64(patwaittime[1], retval64, "Pattern Loop 1 wait time",
+            validate64(patwaittime[1], retval64, "set pattern Loop 1 wait time",
                        HEX);
         }
         if (ret == OK) {
             retval64 = setPatternWaitTime(2, patwaittime[2]);
-            validate64(patwaittime[1], retval64, "Pattern Loop 2 wait time",
+            validate64(patwaittime[1], retval64, "set pattern Loop 2 wait time",
                        HEX);
         }
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_scan(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retvals[5] = {0, 0, 0, 0, 0};
+    int64_t retvals_dacTime = 0;
+
+    LOG(logDEBUG1, ("Getting scan\n"));
+
+    // get only
+    retvals[0] = scan;
+    if (scan) {
+        retvals[1] = scanGlobalIndex;
+        retvals[2] = scanSteps[0];
+        retvals[3] = scanSteps[numScanSteps - 1];
+        retvals[4] = scanSteps[1] - scanSteps[0];
+        retvals_dacTime = scanSettleTime_ns;
+    }
+    LOG(logDEBUG1, ("scan retval: [%s, dac:%d, start:%d, stop:%d, step:%d, "
+                    "dacTime:%lldns]\n",
+                    retvals[0] ? "enabled" : "disabled", retvals[1], retvals[2],
+                    retvals[3], retvals[4], (long long int)retvals_dacTime));
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret != FAIL) {
+        sendData(file_des, retvals, sizeof(retvals), INT32);
+        sendData(file_des, &retvals_dacTime, sizeof(retvals_dacTime), INT64);
+    }
+    return ret;
+}
+
+int set_scan(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[5] = {-1, -1, -1, -1, -1};
+    int64_t dacTime = -1;
+    int64_t retval = -1;
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, &dacTime, sizeof(dacTime), INT64) < 0)
+        return printSocketReadError();
+
+    // only set
+    if (Server_VerifyLock() == OK) {
+        int enable = args[0];
+        enum dacIndex index = args[1];
+        int start = args[2];
+        int stop = args[3];
+        int step = args[4];
+
+        // disable scan
+        if (enable == 0) {
+            LOG(logINFOBLUE, ("Disabling scan"));
+            scan = 0;
+            numScanSteps = 0;
+            // setting number of frames to 1
+            int64_t arg = 1;
+            setNumFrames(arg);
+            retval = getNumFrames();
+            LOG(logDEBUG1, ("retval num frames %lld\n", (long long int)retval));
+            validate64(arg, retval, "set number of frames", DEC);
+        }
+        // enable scan
+        else {
+            if ((start < stop && step <= 0) || (stop < start && step >= 0)) {
+                ret = FAIL;
+                sprintf(mess, "Invalid scan parameters\n");
+                LOG(logERROR, (mess));
+            } else {
+                // trimbit scan
+                if (index == TRIMBIT_SCAN) {
+                    LOG(logINFOBLUE, ("Trimbit scan enabled\n"));
+                    scanTrimbits = 1;
+                    scanGlobalIndex = index;
+                    scanSettleTime_ns = dacTime;
+                }
+                // dac scan
+                else {
+                    getDACIndex(index);
+                    if (ret == OK) {
+                        LOG(logINFOBLUE, ("Dac [%d] scan enabled\n", index));
+                        scanTrimbits = 0;
+                        scanGlobalIndex = index;
+                        scanSettleTime_ns = dacTime;
+                    }
+                }
+            }
+            // valid scan
+            if (ret == OK) {
+                scan = 1;
+                numScanSteps = (abs(stop - start) / abs(step)) + 1;
+                if (scanSteps != NULL) {
+                    free(scanSteps);
+                }
+                scanSteps = malloc(numScanSteps * sizeof(int));
+                for (int i = 0; i != numScanSteps; ++i) {
+                    scanSteps[i] = start + i * step;
+                    LOG(logDEBUG1, ("scansteps[%d]:%d\n", i, scanSteps[i]));
+                }
+                LOG(logINFOBLUE, ("Enabling scan for %s, start[%d], stop[%d], "
+                                  "step[%d], nsteps[%d]\n",
+                                  scanTrimbits == 1 ? "trimbits" : "dac", start,
+                                  stop, step, numScanSteps));
+
+                // setting number of frames to scansteps
+                int64_t arg = 1;
+                setNumFrames(arg);
+                retval = getNumFrames();
+                LOG(logDEBUG1,
+                    ("retval num frames %lld\n", (long long int)retval));
+                validate64(arg, retval, "set number of frames", DEC);
+                retval = numScanSteps;
+            }
+        }
+    }
+    return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
+}
+
+int get_scan_error_message(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    char retvals[MAX_STR_LENGTH];
+    memset(retvals, 0, MAX_STR_LENGTH);
+
+    LOG(logDEBUG1, ("Getting scan error message\n"));
+
+    // get only
+    strcpy(retvals, scanErrMessage);
+    LOG(logDEBUG1, ("scan retval err message: [%s]\n", retvals));
+
+    return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
 }

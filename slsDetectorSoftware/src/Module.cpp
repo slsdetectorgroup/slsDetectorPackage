@@ -367,8 +367,6 @@ void Module::stopReceiver() {
     sendToReceiver(F_STOP_RECEIVER, arg, nullptr);
 }
 
-void Module::prepareAcquisition() { sendToDetector(F_PREPARE_ACQUISITION); }
-
 void Module::startAcquisition() {
     shm()->stoppedFlag = false;
     sendToDetector(F_START_ACQUISITION);
@@ -450,6 +448,22 @@ void Module::setStartingFrameNumber(uint64_t value) {
 }
 
 void Module::sendSoftwareTrigger() { sendToDetectorStop(F_SOFTWARE_TRIGGER); }
+
+defs::scanParameters Module::getScan() {
+    return sendToDetector<defs::scanParameters>(F_GET_SCAN);
+}
+
+void Module::setScan(const defs::scanParameters t) {
+    auto retval = sendToDetector<int64_t>(F_SET_SCAN, t);
+    // if disabled, retval is 1, else its number of steps
+    setNumberOfFrames(retval);
+}
+
+std::string Module::getScanErrorMessage() {
+    char retval[MAX_STR_LENGTH]{};
+    sendToDetector(F_GET_SCAN_ERROR_MESSAGE, nullptr, retval);
+    return retval;
+}
 
 // Network Configuration (Detector<->Receiver)
 

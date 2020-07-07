@@ -394,7 +394,16 @@ class Detector {
     /** [Eiger] Sends an internal software trigger to the detector */
     void sendSoftwareTrigger(Positions pos = {});
 
-    // TODO: remove resetframescaught in receiver
+    Result<defs::scanParameters> getScan(Positions pos = {}) const;
+
+    /** enables/ disables scans for  dac, trimbits [Eiger/ Mythen3]
+     * TRIMBIT_SCAN. Enabling scan sets number of frames to number of steps in
+     * receiver. Disabling scan sets number of frames to 1 */
+    void setScan(const defs::scanParameters t);
+
+    /** gets scan error message in case of error during scan in case of non
+     * blocking acquisition (startDetector, not acquire) */
+    Result<std::string> getScanErrorMessage(Positions pos = {}) const;
 
     /**************************************************
      *                                                 *

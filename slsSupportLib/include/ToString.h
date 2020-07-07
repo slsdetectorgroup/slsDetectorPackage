@@ -47,8 +47,10 @@ std::ostream &operator<<(std::ostream &os,
 std::string ToString(const slsDetectorDefs::patternParameters &r);
 std::ostream &operator<<(std::ostream &os,
                          const slsDetectorDefs::patternParameters &r);
+std::string ToString(const slsDetectorDefs::scanParameters &r);
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::scanParameters &r);
 const std::string &ToString(const std::string &s);
-
 /** Convert std::chrono::duration with specified output unit */
 template <typename T, typename Rep = double>
 typename std::enable_if<is_duration<T>::value, std::string>::type

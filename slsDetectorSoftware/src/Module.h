@@ -155,7 +155,6 @@ class Module : public virtual slsDetectorDefs {
      * ************************************************/
     void startReceiver();
     void stopReceiver();
-    void prepareAcquisition();
     void startAcquisition();
     void stopAcquisition();
     void startAndReadAll();
@@ -167,6 +166,9 @@ class Module : public virtual slsDetectorDefs {
     uint64_t getStartingFrameNumber();
     void setStartingFrameNumber(uint64_t value);
     void sendSoftwareTrigger();
+    defs::scanParameters getScan();
+    void setScan(const defs::scanParameters t);
+    std::string getScanErrorMessage();
 
     /**************************************************
      *                                                 *

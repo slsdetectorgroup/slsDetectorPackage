@@ -274,3 +274,28 @@ TEST_CASE("int or uin64_t to a string in hex") {
     r = ToStringHex(temp, 8);
     REQUIRE(r == "[0x000000f4, 0x0000ffff, 0x001900b6]");
 }
+
+TEST_CASE("Streaming of slsDetectorDefs::scanParameters") {
+    using namespace sls;
+    {
+        defs::scanParameters t{};
+        std::ostringstream oss;
+        oss << t;
+        REQUIRE(oss.str() == "[disabled]");
+    }
+    {
+        defs::scanParameters t{defs::VTH2, 500, 1500, 500};
+        std::ostringstream oss;
+        oss << t;
+        REQUIRE(oss.str() == "[enabled\ndac vth2\nstart 500\nstop 1500\nstep "
+                             "500\nsettleTime 1ms\n]");
+    }
+    {
+        defs::scanParameters t{defs::VTH2, 500, 1500, 500,
+                               std::chrono::milliseconds{500}};
+        std::ostringstream oss;
+        oss << t;
+        REQUIRE(oss.str() == "[enabled\ndac vth2\nstart 500\nstop 1500\nstep "
+                             "500\nsettleTime 0.5s\n]");
+    }
+}

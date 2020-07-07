@@ -101,7 +101,6 @@ enum detFuncs {
     F_RESET_FPGA,
     F_POWER_CHIP,
     F_ACTIVATE,
-    F_PREPARE_ACQUISITION,
     F_THRESHOLD_TEMP,
     F_TEMP_CONTROL,
     F_TEMP_EVENT,
@@ -201,6 +200,9 @@ enum detFuncs {
     F_GET_VETO,
     F_SET_VETO,
     F_SET_PATTERN,
+    F_GET_SCAN,
+    F_SET_SCAN,
+    F_GET_SCAN_ERROR_MESSAGE,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -400,7 +402,6 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
 	case F_RESET_FPGA:						return "F_RESET_FPGA";
 	case F_POWER_CHIP:						return "F_POWER_CHIP";
 	case F_ACTIVATE:						return "F_ACTIVATE";
-	case F_PREPARE_ACQUISITION:				return "F_PREPARE_ACQUISITION";
 	case F_THRESHOLD_TEMP:                  return "F_THRESHOLD_TEMP";
 	case F_TEMP_CONTROL:                    return "F_TEMP_CONTROL";
 	case F_TEMP_EVENT:                      return "F_TEMP_EVENT";
@@ -500,6 +501,9 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_VETO:                        return "F_GET_VETO";
     case F_SET_VETO:                        return "F_SET_VETO";
     case F_SET_PATTERN:                     return "F_SET_PATTERN";
+    case F_GET_SCAN:                        return "F_GET_SCAN"; 
+    case F_SET_SCAN:                        return "F_SET_SCAN"; 
+    case F_GET_SCAN_ERROR_MESSAGE:          return "F_GET_SCAN_ERROR_MESSAGE"; 
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

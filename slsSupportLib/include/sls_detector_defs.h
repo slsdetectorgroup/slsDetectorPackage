@@ -19,6 +19,7 @@
 #include "sls_detector_exceptions.h"
 #include <algorithm>
 #include <bitset>
+#include <chrono>
 #include <cstdint>
 #include <string>
 #else
@@ -303,6 +304,7 @@ typedef struct {
         TEMPERATURE_SODR,
         TEMPERATURE_FPGA2,
         TEMPERATURE_FPGA3,
+        TRIMBIT_SCAN,
         V_POWER_A = 100,
         V_POWER_B = 101,
         V_POWER_C = 102,
@@ -449,6 +451,36 @@ typedef struct {
         uint32_t patnloop[3]{};
         uint32_t patwait[3]{};
         uint64_t patwaittime[3]{};
+    } __attribute__((packed));
+
+    /** scan structure */
+    struct scanParameters {
+        int enable;
+        dacIndex dacInd;
+        int startOffset;
+        int stopOffset;
+        int stepSize;
+        int64_t dacSettleTime_ns;
+
+        /** disable scan */
+        scanParameters()
+            : enable(0), dacInd(DAC_0), startOffset(0), stopOffset(0),
+              stepSize(0), dacSettleTime_ns{0} {}
+        /** enable scan */
+        scanParameters(
+            dacIndex dac, int start, int stop, int step,
+            std::chrono::nanoseconds t = std::chrono::milliseconds{1})
+            : enable(1), dacInd(dac), startOffset(start), stopOffset(stop),
+              stepSize(step) {
+            dacSettleTime_ns = t.count();
+        }
+        bool operator==(const scanParameters &other) const {
+            return ((enable == other.enable) && (dacInd == other.dacInd) &&
+                    (startOffset == other.startOffset) &&
+                    (stopOffset == other.stopOffset) &&
+                    (stepSize == other.stepSize) &&
+                    (dacSettleTime_ns == other.dacSettleTime_ns));
+        }
     } __attribute__((packed));
 #endif
 

@@ -178,7 +178,7 @@ std::string CmdProxy::VirtualServer(int action) {
     return os.str();
 }
 
-std::string CmdProxy::acquire(int action) {
+std::string CmdProxy::Acquire(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
         os << cmd << " - Acquire the number of frames set up.\n";
@@ -985,6 +985,60 @@ std::string CmdProxy::DetectorStatus(int action) {
     } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError(
             "Cannot put. Did you mean to use command 'start' or 'stop'?");
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::Scan(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[dac_name|0|trimbit_scan] [start_val] [stop_val] "
+              "[step_size] [dac settling time ns|us|ms|s]\n\tConfigures to "
+              "scan dac and sets number of frames to number of steps. Must "
+              "acquire after this. To cancel the scan configuration "
+              "set dac to '0' without further arguments. This also sets number "
+              "of frames back to 1."
+              "\n\t[Eiger]Use trimbit_scan as dac name for a trimbit scan."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getScan();
+        os << OutString(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (det_id != -1) {
+            throw sls::RuntimeError(
+                "Cannot configure scan at module level");
+        }
+        // disable
+        if (args.size() == 1) {
+            if (StringTo<int>(args[0]) != 0) {
+                throw sls::RuntimeError("Did you mean '0' to disable?");
+            }
+            det->setScan(defs::scanParameters());
+        }
+        // enable without settling time
+        else if (args.size() == 4) {
+            det->setScan(defs::scanParameters(
+                StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
+                StringTo<int>(args[2]), StringTo<int>(args[3])));
+        }
+        // enable with all parameters
+        else if (args.size() == 5) {
+            std::string time_str(args[4]);
+            std::string unit = RemoveUnit(time_str);
+            auto t = StringTo<time::ns>(time_str, unit);
+            det->setScan(defs::scanParameters(
+                StringTo<defs::dacIndex>(args[0]), StringTo<int>(args[1]),
+                StringTo<int>(args[2]), StringTo<int>(args[3]), t));
+        } else {
+            WrongNumberOfParameters(4);
+        }
+        os << ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }

@@ -525,9 +525,6 @@ void Detector::startReceiver() { pimpl->Parallel(&Module::startReceiver, {}); }
 void Detector::stopReceiver() { pimpl->Parallel(&Module::stopReceiver, {}); }
 
 void Detector::startDetector() {
-    if (getDetectorType().squash() == defs::EIGER) {
-        pimpl->Parallel(&Module::prepareAcquisition, {});
-    }
     pimpl->Parallel(&Module::startAcquisition, {});
 }
 
@@ -560,6 +557,18 @@ void Detector::setStartingFrameNumber(uint64_t value, Positions pos) {
 
 void Detector::sendSoftwareTrigger(Positions pos) {
     pimpl->Parallel(&Module::sendSoftwareTrigger, pos);
+}
+
+Result<defs::scanParameters> Detector::getScan(Positions pos) const {
+    return pimpl->Parallel(&Module::getScan, pos);
+}
+
+void Detector::setScan(const defs::scanParameters t) {
+    pimpl->Parallel(&Module::setScan, {}, t);
+}
+
+Result<std::string> Detector::getScanErrorMessage(Positions pos) const {
+    return pimpl->Parallel(&Module::getScanErrorMessage, pos);
 }
 
 // Network Configuration (Detector<->Receiver)

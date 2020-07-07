@@ -50,3 +50,25 @@ TEST_CASE("assign module", "[support]") {
     CHECK(m3.iodelay == 750);
     CHECK(m3.nchan == 256 * 256 * 4);
 }
+
+TEST_CASE("default construct scanParameters"){
+    slsDetectorDefs::scanParameters p;
+    CHECK(p.dacSettleTime_ns == 0);
+    CHECK(p.dacInd == slsDetectorDefs::DAC_0);
+    CHECK(p.enable == 0);
+    CHECK(p.startOffset == 0);
+    CHECK(p.stopOffset == 0);
+    CHECK(p.stepSize == 0);
+
+}
+
+TEST_CASE("compare two scanParameters"){
+    slsDetectorDefs::scanParameters p0;
+    slsDetectorDefs::scanParameters p1;
+
+    CHECK(p0 == p1);
+
+    p0.enable = 1;
+    CHECK_FALSE(p0 == p1);
+
+}

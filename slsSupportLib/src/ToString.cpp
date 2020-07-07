@@ -102,6 +102,30 @@ std::ostream &operator<<(std::ostream &os,
     return os << ToString(r);
 }
 
+std::string ToString(const slsDetectorDefs::scanParameters &r) {
+    std::ostringstream oss;
+    oss << '[';
+    if (r.enable) {
+        oss << "enabled" << std::endl
+            << "dac " << ToString(r.dacInd) << std::endl
+            << "start " << r.startOffset << std::endl
+            << "stop " << r.stopOffset << std::endl
+            << "step " << r.stepSize << std::endl
+            << "settleTime "
+            << ToString(std::chrono::nanoseconds{r.dacSettleTime_ns})
+            << std::endl;
+    } else {
+        oss << "disabled";
+    }
+    oss << ']';
+    return oss.str();
+}
+
+std::ostream &operator<<(std::ostream &os,
+                         const slsDetectorDefs::scanParameters &r) {
+    return os << ToString(r);
+}
+
 std::string ToString(const defs::runStatus s) {
     switch (s) {
     case defs::ERROR:
@@ -465,6 +489,12 @@ std::string ToString(const defs::dacIndex s) {
         return std::string("vipre_cds");
     case defs::IBIAS_SFP:
         return std::string("ibias_sfp");
+    case defs::TRIMBIT_SCAN:
+        return std::string("trimbit_scan");
+    case defs::HIGH_VOLTAGE:
+        return std::string("vhighvoltage");
+    case defs::IO_DELAY:
+        return std::string("iodelay");
     default:
         return std::string("Unknown");
     }
@@ -818,6 +848,13 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::VIPRE_CDS;
     if (s == "ibias_sfp")
         return defs::IBIAS_SFP;
+    if (s == "trimbit_scan")
+        return defs::TRIMBIT_SCAN;
+    if (s == "vhighvoltage")
+        return defs::HIGH_VOLTAGE;
+    if (s == "iodelay")
+        return defs::IO_DELAY;
+
     throw sls::RuntimeError("Unknown dac Index " + s);
 }
 

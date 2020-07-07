@@ -998,10 +998,12 @@ std::string CmdProxy::Scan(int action) {
         os << "[dac_name|0|trimbit_scan] [start_val] [stop_val] "
               "[step_size] [dac settling time ns|us|ms|s]\n\tConfigures to "
               "scan dac and sets number of frames to number of steps. Must "
-              "acquire after this. To cancel the scan configuration "
-              "set dac to '0' without further arguments. This also sets number "
+              "acquire after this. \n\tTo cancel the scan configuration "
+              "set dac to '0' without further arguments, which also sets "
+              "number "
               "of frames back to 1."
-              "\n\t[Eiger]Use trimbit_scan as dac name for a trimbit scan."
+              "\n\t[Eiger][Mythen3] Use trimbit_scan as dac name for a trimbit "
+              "scan."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
@@ -1011,8 +1013,7 @@ std::string CmdProxy::Scan(int action) {
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (det_id != -1) {
-            throw sls::RuntimeError(
-                "Cannot configure scan at module level");
+            throw sls::RuntimeError("Cannot configure scan at module level");
         }
         // disable
         if (args.size() == 1) {

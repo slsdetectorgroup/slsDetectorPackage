@@ -8,7 +8,7 @@
     defined(MOENCHD)
 #include "AD9257.h" // commonServerFunctions.h, blackfin.h, ansi.h
 #endif
-#ifdef MOENCHD
+#if defined(MOENCHD) || defined(MYTHEN3D)
 #include "readDefaultPattern.h"
 #endif
 

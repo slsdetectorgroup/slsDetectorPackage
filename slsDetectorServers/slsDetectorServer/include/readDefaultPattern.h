@@ -7,7 +7,9 @@ int loadDefaultPattern(char *fname);
 
 int default_writePatternWord(char *line, uint32_t addr, uint64_t word);
 
+#ifndef MYTHEN3D
 int default_writePatternIOControl(char *line, uint64_t arg);
+#endif
 
 int default_setPatternLoopLimits(char *line, uint32_t startAddr,
                                  uint32_t stopAddr);

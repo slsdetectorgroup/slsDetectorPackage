@@ -24,6 +24,7 @@
 #define MAX_EXT_SIGNALS             (8)
 
 /** Default Parameters */
+#define DEFAULT_PATTERN_FILE             ("DefaultPattern.txt")
 #define DEFAULT_INTERNAL_GATES           (1)
 #define DEFAULT_EXTERNAL_GATES           (1)
 #define DEFAULT_DYNAMIC_RANGE            (24)

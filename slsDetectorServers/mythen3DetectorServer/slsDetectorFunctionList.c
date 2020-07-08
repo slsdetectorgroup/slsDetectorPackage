@@ -426,6 +426,7 @@ void setupDetector() {
         setGateDelay(i, DEFAULT_GATE_DELAY);
     }
     setInitialExtSignals();
+    loadDefaultPattern(DEFAULT_PATTERN_FILE);
 }
 
 int setDefaultDacs() {

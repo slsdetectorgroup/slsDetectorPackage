@@ -9,7 +9,9 @@
 extern char initErrorMessage[MAX_STR_LENGTH];
 extern int initError;
 
+#ifndef MYTHEN3D
 extern uint64_t writePatternIOControl(uint64_t word);
+#endif
 extern uint64_t writePatternWord(int addr, uint64_t word);
 extern int setPatternWaitAddress(int level, int addr);
 extern uint64_t setPatternWaitTime(int level, uint64_t t);
@@ -103,6 +105,7 @@ int loadDefaultPattern(char *fname) {
         }
 
         // patioctrl
+#ifndef MYTHEN3D
         if (!strncmp(line, "patioctrl", strlen("patioctrl"))) {
             uint64_t arg = 0;
 
@@ -123,6 +126,7 @@ int loadDefaultPattern(char *fname) {
                 break;
             }
         }
+#endif
 
         // patlimits
         if (!strncmp(line, "patlimits", strlen("patlimits"))) {
@@ -300,6 +304,7 @@ int default_writePatternWord(char *line, uint32_t addr, uint64_t word) {
     return OK;
 }
 
+#ifndef MYTHEN3D
 int default_writePatternIOControl(char *line, uint64_t arg) {
     uint64_t retval = writePatternIOControl(arg);
     if (retval != arg) {
@@ -318,6 +323,7 @@ int default_writePatternIOControl(char *line, uint64_t arg) {
     }
     return OK;
 }
+#endif
 
 int default_setPatternLoopLimits(char *line, uint32_t startAddr,
                                  uint32_t stopAddr) {

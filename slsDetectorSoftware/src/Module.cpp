@@ -330,7 +330,7 @@ void Module::setImageTestMode(const int value) {
 }
 
 int Module::getADC(dacIndex index) {
-    return sendToDetector<int>(F_GET_ADC, static_cast<int>(index));
+    return sendToDetectorStop<int>(F_GET_ADC, static_cast<int>(index));
 }
 
 int Module::getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex) {

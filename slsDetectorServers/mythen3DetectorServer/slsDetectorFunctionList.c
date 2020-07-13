@@ -1929,7 +1929,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
                   clkDivider[ind]));
 
     // phase is reset by pll (when setting output frequency)
-    if (ind >= READOUT_C0) {
+    if (ind < SYSTEM_C0) {
         clkPhase[READOUT_C0] = 0;
         clkPhase[READOUT_C1] = 0;
     } else {

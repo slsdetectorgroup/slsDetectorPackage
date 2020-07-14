@@ -56,6 +56,8 @@ int64_t numTriggersReg = 1;
 int64_t delayReg = 0;
 int64_t numBurstsReg = 1;
 int64_t burstPeriodReg = 0;
+int filter = 0;
+int cdsGain = 0;
 int detPos[2] = {};
 
 int isInitCheckDone() { return initCheckDone; }
@@ -369,6 +371,8 @@ void setupDetector() {
     delayReg = 0;
     numBurstsReg = 1;
     burstPeriodReg = 0;
+    filter = 0;
+    cdsGain = 0;
     for (int i = 0; i < NUM_CLOCKS; ++i) {
         clkPhase[i] = 0;
     }
@@ -450,6 +454,8 @@ void setupDetector() {
         return;
     }
     setBurstMode(DEFAULT_BURST_MODE);
+    setFilter(DEFAULT_FILTER);
+    setCDSGain(DEFAILT_CDS_GAIN);
     setSettings(DEFAULT_SETTINGS);
 
     // Initialization of acquistion parameters
@@ -2088,9 +2094,19 @@ int setBurstMode(enum burstMode burst) {
     }
     LOG(logINFO, ("\tDone Updating registers\n"))
 
+    return configureASICGlobalSettings();
+}
+
+int configureASICGlobalSettings() {
     LOG(logINFO, ("\tSetting %s Mode in Chip\n",
                   burstMode == BURST_OFF ? "Continuous" : "Burst"));
-    int value = burstMode ? ASIC_GLOBAL_BURST_VALUE : ASIC_GLOBAL_CONT_VALUE;
+    int modeValue =
+        burstMode ? ASIC_GLOBAL_BURST_VALUE : ASIC_GLOBAL_CONT_VALUE;
+    int value = ((modeValue << ASIC_GLOBAL_MODE_OFST) & ASIC_GLOBAL_MODE_MSK) |
+                ((filter << ASIC_FILTER_OFST) & ASIC_FILTER_MSK) |
+                ((cdsGain << ASIC_CDS_GAIN_OFST) & ASIC_CDS_GAIN_MSK);
+    LOG(logINFO, ("\tsetting value:0x%x (mode:%d, filter:%d, cdsgain:%d)\n",
+                  value, modeValue, filter, cdsGain));
 
     const int padding = 6; // due to address (4) to make it byte aligned
     const int lenTotalBits = padding + ASIC_GLOBAL_SETT_MAX_BITS +
@@ -2150,6 +2166,30 @@ enum burstMode getBurstMode() {
     }
     return burstMode;
 }
+
+int setCDSGain(int enable) {
+    if (enable >= 0) {
+        cdsGain = (enable == 0 ? 0 : 1);
+        LOG(logINFO,
+            ("%s CDS Gain\n", (cdsGain == 0 ? "Disabling" : "Enabling")));
+        return configureASICGlobalSettings();
+    }
+    return FAIL;
+}
+
+int getCDSGain() { return cdsGain; }
+
+int setFilter(int value) {
+    if (value < 0 || value > ASIC_FILTER_MAX_VALUE) {
+        LOG(logERROR, ("Invalid filter value %d\n", value));
+        return FAIL;
+    }
+    filter = value;
+    LOG(logINFO, ("Setting Filter to %d\n", filter));
+    return configureASICGlobalSettings();
+}
+
+int getFilter() { return filter; }
 
 void setCurrentSource(int value) {
     uint32_t addr = ASIC_CONFIG_REG;

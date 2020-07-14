@@ -1534,6 +1534,18 @@ void Module::setBurstMode(slsDetectorDefs::burstMode value) {
     }
 }
 
+bool Module::getCDSGain() { return sendToDetector<int>(F_GET_CDS_GAIN); }
+
+void Module::setCDSGain(bool value) {
+    sendToDetector(F_SET_CDS_GAIN, static_cast<int>(value), nullptr);
+}
+
+int Module::getFilter() { return sendToDetector<int>(F_GET_FILTER); }
+
+void Module::setFilter(int value) {
+    sendToDetector(F_SET_FILTER, value, nullptr);
+}
+
 bool Module::getCurrentSource() {
     return sendToDetector<int>(F_GET_CURRENT_SOURCE);
 }

@@ -990,6 +990,18 @@ class Detector {
     void setBurstMode(defs::burstMode value, Positions pos = {});
 
     /** [Gotthard2] */
+    Result<bool> getCDSGain(Positions pos = {}) const;
+
+    /** default disabled */
+    void setCDSGain(bool value, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<int> getFilter(Positions pos = {}) const;
+
+    /** default 0 */
+    void setFilter(int value, Positions pos = {});
+
+    /** [Gotthard2] */
     Result<bool> getCurrentSource(Positions pos = {}) const;
 
     /** default disabled */

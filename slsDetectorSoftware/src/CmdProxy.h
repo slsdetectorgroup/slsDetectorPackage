@@ -283,7 +283,7 @@
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN(DAC_INDEX, mv, {det_id});                     \
-            os << OutString(t) << (!args.empty() ? " mv\n" : "\n");          \
+            os << OutString(t) << (!args.empty() ? " mv\n" : "\n");            \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             bool mv = false;                                                   \
             if (args.size() == 2) {                                            \
@@ -835,6 +835,8 @@ class CmdProxy {
         {"vetophoton", &CmdProxy::VetoPhoton},
         {"vetoref", &CmdProxy::VetoReference},
         {"burstmode", &CmdProxy::BurstMode},
+        {"cdsgain", &CmdProxy::cdsgain},
+        {"filter", &CmdProxy::filter},
         {"currentsource", &CmdProxy::currentsource},
         {"timingsource", &CmdProxy::timingsource},
         {"veto", &CmdProxy::veto},
@@ -1118,10 +1120,6 @@ class CmdProxy {
                  "[duration] [(optional unit) "
                  "ns|us|ms|s]\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb]["
                  "Moench] Delay after trigger");
-
-    TIME_COMMAND(burstperiod, getBurstPeriod, setBurstPeriod,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] Burst "
-                 "period. Only in burst mode and auto timing mode.");
 
     GET_COMMAND(framesl, getNumberOfFramesLeft,
                 "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] "
@@ -1905,6 +1903,18 @@ class CmdProxy {
         "[n_bursts]\n\t[Gotthard2] Number of bursts per aquire. Only in auto "
         "timing mode and burst mode. Use timing command to set timing mode and "
         "burstmode command to set burst mode.");
+
+    TIME_COMMAND(burstperiod, getBurstPeriod, setBurstPeriod,
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] Burst "
+                 "period. Only in burst mode and auto timing mode.");
+
+    INTEGER_COMMAND(cdsgain, getCDSGain, setCDSGain, StringTo<bool>,
+                    "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default "
+                    "is disabled.");
+
+    INTEGER_COMMAND(
+        filter, getFilter, setFilter, StringTo<int>,
+        "[0|1|2|3]\n\t[Gotthard2] Set filter resistor. Default is 0.");
 
     INTEGER_COMMAND(currentsource, getCurrentSource, setCurrentSource,
                     StringTo<int>,

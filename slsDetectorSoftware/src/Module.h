@@ -375,6 +375,10 @@ class Module : public virtual slsDetectorDefs {
     void setVetoReference(const int gainIndex, const int value);
     burstMode getBurstMode();
     void setBurstMode(burstMode value);
+    bool getCDSGain();
+    void setCDSGain(bool value);
+    int getFilter();
+    void setFilter(int value);
     bool getCurrentSource();
     void setCurrentSource(bool value);
     slsDetectorDefs::timingSourceType getTimingSource();

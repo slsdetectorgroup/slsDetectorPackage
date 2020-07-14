@@ -31,6 +31,8 @@
 
 /** Default Parameters */
 #define DEFAULT_BURST_MODE          (BURST_INTERNAL)
+#define DEFAULT_FILTER              (0)
+#define DEFAILT_CDS_GAIN            (0)
 #define DEFAULT_NUM_FRAMES          (1)
 #define DEFAULT_NUM_CYCLES          (1)
 #define DEFAULT_NUM_BURSTS          (1)
@@ -135,7 +137,14 @@ enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
 #define ASIC_ADC_MAX_VAL          (0x7F)
 #define ASIC_GLOBAL_SETT_MAX_BITS (6)
 #define ASIC_GLOBAL_BURST_VALUE   (0x0)
-#define ASIC_GLOBAL_CONT_VALUE    (0x1E)
+#define ASIC_GLOBAL_CONT_VALUE    (0x6)
+#define ASIC_GLOBAL_MODE_OFST     (0)
+#define ASIC_GLOBAL_MODE_MSK      (0x7 << ASIC_GLOBAL_MODE_OFST)
+#define ASIC_FILTER_OFST          (3)
+#define ASIC_FILTER_MSK           (0x3 << ASIC_FILTER_OFST)
+#define ASIC_FILTER_MAX_VALUE     (3)
+#define ASIC_CDS_GAIN_OFST        (5)
+#define ASIC_CDS_GAIN_MSK         (0x1 << ASIC_CDS_GAIN_OFST)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

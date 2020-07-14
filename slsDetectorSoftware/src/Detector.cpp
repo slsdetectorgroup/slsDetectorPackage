@@ -1305,6 +1305,22 @@ void Detector::setBurstMode(defs::burstMode value, Positions pos) {
     pimpl->Parallel(&Module::setBurstMode, pos, value);
 }
 
+Result<bool> Detector::getCDSGain(Positions pos) const {
+    return pimpl->Parallel(&Module::getCDSGain, pos);
+}
+
+void Detector::setCDSGain(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setCDSGain, pos, value);
+}
+
+Result<int> Detector::getFilter(Positions pos) const {
+    return pimpl->Parallel(&Module::getFilter, pos);
+}
+
+void Detector::setFilter(int value, Positions pos) {
+    pimpl->Parallel(&Module::setFilter, pos, value);
+}
+
 Result<bool> Detector::getCurrentSource(Positions pos) const {
     return pimpl->Parallel(&Module::getCurrentSource, pos);
 }

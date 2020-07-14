@@ -374,6 +374,66 @@ TEST_CASE("burstmode", "[.cmd][.new]") {
     }
 }
 
+TEST_CASE("cdsgain", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2) {
+        auto prev_val = det.getCDSGain();
+        {
+            std::ostringstream oss;
+            proxy.Call("cdsgain", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "cdsgain 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("cdsgain", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "cdsgain 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("cdsgain", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "cdsgain 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setCDSGain(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("cdsgain", {}, -1, GET));
+    }
+}
+
+TEST_CASE("filter", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2) {
+        auto prev_val = det.getFilter();
+        {
+            std::ostringstream oss;
+            proxy.Call("filter", {"1"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "filter 1\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("filter", {"0"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "filter 0\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("filter", {}, -1, GET, oss);
+            REQUIRE(oss.str() == "filter 0\n");
+        }
+        for (int i = 0; i != det.size(); ++i) {
+            det.setFilter(prev_val[i], {i});
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("filter", {}, -1, GET));
+    }
+}
+
 TEST_CASE("currentsource", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);

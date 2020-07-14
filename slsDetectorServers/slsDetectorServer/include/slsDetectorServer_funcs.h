@@ -229,3 +229,7 @@ int set_pattern(int);
 int get_scan(int);
 int set_scan(int);
 int get_scan_error_message(int);
+int get_cds_gain(int);
+int set_cds_gain(int);
+int get_filter(int);
+int set_filter(int);

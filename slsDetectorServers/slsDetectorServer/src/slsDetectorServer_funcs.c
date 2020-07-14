@@ -343,9 +343,13 @@ void function_table() {
     flist[F_GET_VETO] = &get_veto;
     flist[F_SET_VETO] = &set_veto;
     flist[F_SET_PATTERN] = &set_pattern;
-    flist[F_GET_SCAN] = get_scan;
-    flist[F_SET_SCAN] = set_scan;
-    flist[F_GET_SCAN_ERROR_MESSAGE] = get_scan_error_message;
+    flist[F_GET_SCAN] = &get_scan;
+    flist[F_SET_SCAN] = &set_scan;
+    flist[F_GET_SCAN_ERROR_MESSAGE] = &get_scan_error_message;
+    flist[F_GET_CDS_GAIN] = &get_cds_gain;
+    flist[F_SET_CDS_GAIN] = &set_cds_gain;
+    flist[F_GET_FILTER] = &get_filter;
+    flist[F_SET_FILTER] = &set_filter;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -637,8 +641,7 @@ int get_server_version(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
     retval = getServerVersion();
-    LOG(logDEBUG1,
-        ("server version retval: 0x%llx\n", (long long int)retval));
+    LOG(logDEBUG1, ("server version retval: 0x%llx\n", (long long int)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -647,8 +650,7 @@ int get_serial_number(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
     retval = getDetectorNumber();
-    LOG(logDEBUG1,
-        ("detector number retval: 0x%llx\n", (long long int)retval));
+    LOG(logDEBUG1, ("detector number retval: 0x%llx\n", (long long int)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -7645,4 +7647,102 @@ int get_scan_error_message(int file_des) {
     LOG(logDEBUG1, ("scan retval err message: [%s]\n", retvals));
 
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
+}
+
+int get_cds_gain(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting cds gain enable\n"));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // get only
+    retval = getCDSGain();
+    LOG(logDEBUG1, ("cds gain enable retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_cds_gain(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting cds gain enable: %u\n", arg));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg != 0 && arg != 1) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set CDS gain. Invalid value %d. "
+                    "Options [0-1]\n",
+                    arg);
+            LOG(logERROR, (mess));
+        } else {
+            setCDSGain(arg);
+            int retval = getCDSGain();
+            LOG(logDEBUG1, ("cds gain enable retval: %u\n", retval));
+            validate(arg, retval, "set cds gain enable", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_filter(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting filter\n"));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // get only
+    retval = getFilter();
+    LOG(logDEBUG1, ("filter retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_filter(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting filter: %u\n", arg));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg < 0 || arg > ASIC_FILTER_MAX_VALUE) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set filter. Invalid filter %d. "
+                    "Options [0-%d]\n",
+                    arg, ASIC_FILTER_MAX_VALUE);
+            LOG(logERROR, (mess));
+        } else {
+            setFilter(arg);
+            int retval = getFilter();
+            LOG(logDEBUG1, ("filter retval: %u\n", retval));
+            validate(arg, retval, "set filter", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

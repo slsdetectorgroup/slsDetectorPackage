@@ -638,7 +638,7 @@ int get_server_version(int file_des) {
     int64_t retval = -1;
     retval = getServerVersion();
     LOG(logDEBUG1,
-        ("firmware version retval: 0x%llx\n", (long long int)retval));
+        ("server version retval: 0x%llx\n", (long long int)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -648,7 +648,7 @@ int get_serial_number(int file_des) {
     int64_t retval = -1;
     retval = getDetectorNumber();
     LOG(logDEBUG1,
-        ("firmware version retval: 0x%llx\n", (long long int)retval));
+        ("detector number retval: 0x%llx\n", (long long int)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 

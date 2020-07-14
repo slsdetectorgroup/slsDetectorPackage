@@ -68,6 +68,8 @@ int DataSocket::Send(const void *buffer, size_t size) {
     int data_size = static_cast<int>(size); // signed size
     while (bytes_sent < (data_size)) {
         auto this_send = ::write(getSocketId(), buffer, size);
+        usleep(0); // TODO: fix for rhel7 (not fedora) sending 0 chars for mess
+                   // (rx_start with fwrite 1 and fpath /)
         if (this_send <= 0)
             break;
         bytes_sent += this_send;

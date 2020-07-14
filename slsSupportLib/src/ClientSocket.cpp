@@ -72,6 +72,22 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
 
     try {
         Receive(&ret, sizeof(ret));
+        if (ret == slsDetectorDefs::FAIL) {
+            char mess[MAX_STR_LENGTH]{};
+            // get error message
+            Receive(mess, sizeof(mess));
+            // Do we need to know hostname here?
+            // In that case save it???
+            if (socketType == "Receiver") {
+                throw ReceiverError("Receiver returned: " + std::string(mess));
+            } else if (socketType == "Detector") {
+                throw DetectorError("Detector returned: " + std::string(mess));
+            } else {
+                throw GuiError(mess);
+            }
+        }
+        // get retval
+        Receive(retval, retval_size);
     }
     // debugging
     catch (sls::SocketError &e) {
@@ -83,22 +99,6 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
             throw GuiError(e.what());
         }
     }
-    if (ret == slsDetectorDefs::FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        // get error message
-        Receive(mess, sizeof(mess));
-        // Do we need to know hostname here?
-        // In that case save it???
-        if (socketType == "Receiver") {
-            throw ReceiverError("Receiver returned: " + std::string(mess));
-        } else if (socketType == "Detector") {
-            throw DetectorError("Detector returned: " + std::string(mess));
-        } else {
-            throw GuiError(mess);
-        }
-    }
-    // get retval
-    Receive(retval, retval_size);
 }
 
 }; // namespace sls

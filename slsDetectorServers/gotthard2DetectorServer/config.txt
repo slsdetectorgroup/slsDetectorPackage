@@ -7,20 +7,20 @@ vchip_ref_comp_fe   -1          0x100
 vchip_cs            -1          0x0D0
 
 #dacs           value (max 4096)
-vref_h_adc      2099
+vref_h_adc      2116
 vb_comp_fe      0
 vb_comp_adc     0
-vcom_cds        1400
-vref_rstore    640
+vcom_cds        705
+vref_rstore     205
 vb_opa_1st      0
 vref_comp_fe    0
-vcom_adc1       1400
-vref_prech      1720
+vcom_adc1       705
+vref_prech      900
 vref_l_adc      700
-vref_cds        1200
+vref_cds        600
 vb_cs           2799
 vb_opa_fd       0
-vcom_adc2       1400
+vcom_adc2       704
 
 #configure adc  chip index      adc index   value(max 0x7F)
 confadc         -1              -1          0x22

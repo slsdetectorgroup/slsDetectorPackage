@@ -350,6 +350,7 @@ void function_table() {
     flist[F_SET_CDS_GAIN] = &set_cds_gain;
     flist[F_GET_FILTER] = &get_filter;
     flist[F_SET_FILTER] = &set_filter;
+    flist[F_SET_VETO_FILE] = &set_veto_file;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -6319,6 +6320,7 @@ int set_veto_photon(int file_des) {
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     int values[args[2]];
+    memset(values, 0, sizeof(values));
     if (receiveData(file_des, values, sizeof(values), INT32) < 0)
         return printSocketReadError();
     LOG(logINFO, ("Setting Veto Photon: [chipIndex:%d, G%d, nch:%d]\n", args[0],
@@ -6356,7 +6358,7 @@ int set_veto_photon(int file_des) {
                     sprintf(mess,
                             "Could not set veto photon. Invalid ADU value 0x%x "
                             "for channel %d, must be 12 bit.\n",
-                            i, values[i]);
+                            values[i], i);
                     LOG(logERROR, (mess));
                     break;
                 }
@@ -7741,6 +7743,78 @@ int set_filter(int file_des) {
             int retval = getFilter();
             LOG(logDEBUG1, ("filter retval: %u\n", retval));
             validate(arg, retval, "set filter", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int set_veto_file(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = {-1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    int chipIndex = args[0];
+    int nch = args[1];
+    int gainIndices[nch];
+    memset(gainIndices, 0, sizeof(gainIndices));
+    int values[nch];
+    memset(values, 0, sizeof(values));
+    if (receiveData(file_des, gainIndices, sizeof(gainIndices), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, values, sizeof(values), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO,
+        ("Setting Veto file: [chipIndex:%d, nch:%d]\n", chipIndex, nch));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (chipIndex < -1 || chipIndex >= NCHIP) {
+            ret = FAIL;
+            sprintf(mess, "Could not set veto file. Invalid chip index %d\n",
+                    chipIndex);
+            LOG(logERROR, (mess));
+        } else if (nch != NCHAN) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set veto file. Invalid number of channels %d. "
+                    "Expected %d\n",
+                    nch, NCHAN);
+            LOG(logERROR, (mess));
+        } else {
+            for (int i = 0; i < NCHAN; ++i) {
+                if (values[i] < 0 || values[i] > ADU_MAX_VAL) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set veto file. Invalid ADU value 0x%x "
+                            "for channel %d, must be 12 bit.\n",
+                            values[i], i);
+                    LOG(logERROR, (mess));
+                    break;
+                }
+                if (gainIndices[i] < 0 || gainIndices[i] > 2) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set veto file. Invalid gain index %d "
+                            "for channel %d\n",
+                            gainIndices[i], i);
+                    LOG(logERROR, (mess));
+                    break;
+                }
+            }
+            if (ret == OK) {
+                ret = setVetoFile(chipIndex, gainIndices, values);
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not set veto file for chip index %d\n",
+                            chipIndex);
+                    LOG(logERROR, (mess));
+                }
+            }
         }
     }
 #endif

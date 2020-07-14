@@ -373,6 +373,7 @@ class Module : public virtual slsDetectorDefs {
     void setVetoPhoton(const int chipIndex, const int numPhotons,
                        const int energy, const std::string &fname);
     void setVetoReference(const int gainIndex, const int value);
+    void setVetoFile(const int chipIndex, const std::string &fname);
     burstMode getBurstMode();
     void setBurstMode(burstMode value);
     bool getCDSGain();

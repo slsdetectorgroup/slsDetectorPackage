@@ -834,6 +834,7 @@ class CmdProxy {
         {"inj_ch", &CmdProxy::InjectChannel},
         {"vetophoton", &CmdProxy::VetoPhoton},
         {"vetoref", &CmdProxy::VetoReference},
+        {"vetofile", &CmdProxy::VetoFile},
         {"burstmode", &CmdProxy::BurstMode},
         {"cdsgain", &CmdProxy::cdsgain},
         {"filter", &CmdProxy::filter},
@@ -1015,6 +1016,7 @@ class CmdProxy {
     std::string InjectChannel(int action);
     std::string VetoPhoton(int action);
     std::string VetoReference(int action);
+    std::string VetoFile(int action);
     std::string BurstMode(int action);
     /* Mythen3 Specific */
     std::string Counters(int action);

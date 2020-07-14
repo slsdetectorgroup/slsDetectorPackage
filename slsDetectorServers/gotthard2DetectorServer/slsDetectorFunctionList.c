@@ -1803,29 +1803,31 @@ int setVetoPhoton(int chipIndex, int gainIndex, int *values) {
         ("Setting veto photon [chip:%d, G%d]\n", chipIndex, gainIndex));
 
     // add gain bits
-    {
-        int gainValue = 0;
-        switch (gainIndex) {
-        case 0:
-            gainValue = ASIC_G0_VAL;
-            break;
-        case 1:
-            gainValue = ASIC_G1_VAL;
-            break;
-        case 2:
-            gainValue = ASIC_G2_VAL;
-            break;
-        default:
-            LOG(logERROR, ("Unknown gain index %d\n", gainIndex));
-            return FAIL;
-        }
-        LOG(logDEBUG2, ("Adding gain bits\n"));
-        for (int i = 0; i < NCHAN; ++i) {
-            values[i] |= gainValue;
-            LOG(logDEBUG2, ("Value %d: 0x%x\n", i, values[i]));
-        }
+    int gainValue = 0;
+    switch (gainIndex) {
+    case 0:
+        gainValue = ASIC_G0_VAL;
+        break;
+    case 1:
+        gainValue = ASIC_G1_VAL;
+        break;
+    case 2:
+        gainValue = ASIC_G2_VAL;
+        break;
+    default:
+        LOG(logERROR, ("Unknown gain index %d\n", gainIndex));
+        return FAIL;
+    }
+    LOG(logDEBUG2, ("Adding gain bits\n"));
+    for (int i = 0; i < NCHAN; ++i) {
+        values[i] |= gainValue;
+        LOG(logDEBUG2, ("Value %d: 0x%x\n", i, values[i]));
     }
 
+    return configureASICVetoReference(chipIndex, values);
+}
+
+int configureASICVetoReference(int chipIndex, int *values) {
     const int lenDataBitsPerchannel = ASIC_GAIN_MAX_BITS + ADU_MAX_BITS; // 14
     const int lenBits = lenDataBitsPerchannel * NCHAN;                   // 1792
     const int padding = 4; // due to address (4) to make it byte aligned
@@ -1904,6 +1906,32 @@ int getVetoPhoton(int chipIndex, int *retvals) {
            ((char *)vetoReference) + NCHAN * chipIndex * sizeof(int),
            sizeof(int) * NCHAN);
     return OK;
+}
+
+int setVetoFile(int chipIndex, int *gainIndices, int *values) {
+    LOG(logINFO, ("Setting veto file [chip:%d]\n", chipIndex));
+
+    // correct gain bits and integrate into values
+    for (int i = 0; i < NCHAN; ++i) {
+        switch (gainIndices[i]) {
+        case 0:
+            gainIndices[i] = ASIC_G0_VAL;
+            break;
+        case 1:
+            gainIndices[i] = ASIC_G1_VAL;
+            break;
+        case 2:
+            gainIndices[i] = ASIC_G2_VAL;
+            break;
+        default:
+            LOG(logERROR,
+                ("Unknown gain index %d for channel %d\n", gainIndices[i], i));
+            return FAIL;
+        }
+        values[i] |= gainIndices[i];
+        LOG(logDEBUG2, ("Values[%d]: 0x%x\n", i, values[i]));
+    }
+    return configureASICVetoReference(chipIndex, values);
 }
 
 int configureSingleADCDriver(int chipIndex) {

@@ -984,6 +984,10 @@ class Detector {
                           Positions pos = {});
 
     /** [Gotthard2]  */
+    void setVetoFile(const int chipIndex, const std::string &fname,
+                     Positions pos = {});
+
+    /** [Gotthard2]  */
     Result<defs::burstMode> getBurstMode(Positions pos = {});
 
     /** [Gotthard2]  BURST_OFF, BURST_INTERNAL (default), BURST_EXTERNAL */

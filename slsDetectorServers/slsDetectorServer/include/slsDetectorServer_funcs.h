@@ -233,3 +233,4 @@ int get_cds_gain(int);
 int set_cds_gain(int);
 int get_filter(int);
 int set_filter(int);
+int set_veto_file(int);

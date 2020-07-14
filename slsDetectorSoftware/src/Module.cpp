@@ -1521,6 +1521,82 @@ void Module::setVetoReference(const int gainIndex, const int value) {
     sendToDetector(F_SET_VETO_REFERENCE, args, nullptr);
 }
 
+void Module::setVetoFile(const int chipIndex, const std::string &fname) {
+    if (shm()->myDetectorType != GOTTHARD2) {
+        throw RuntimeError(
+            "Set Veto file is not implemented for this detector");
+    }
+    if (chipIndex < -1 || chipIndex >= shm()->nChip.x) {
+        throw RuntimeError("Could not set veto file. Invalid chip index: " +
+                           std::to_string(chipIndex));
+    }
+    std::ifstream infile(fname.c_str());
+    if (!infile.is_open()) {
+        throw RuntimeError("Could not set veto file for chip " +
+                           std::to_string(chipIndex) +
+                           ". Could not open file: " + fname);
+    }
+
+    std::ifstream input_file(fname);
+    if (!input_file.is_open()) {
+        throw RuntimeError("Could not open veto file " + fname +
+                           " for reading");
+    }
+
+    int ch = shm()->nChan.x;
+    int nRead = 0;
+    int gainIndices[ch];
+    memset(gainIndices, 0, sizeof(gainIndices));
+    int values[ch];
+    memset(values, 0, sizeof(values));
+
+    for (std::string line; std::getline(input_file, line);) {
+        if (line.find('#') != std::string::npos) {
+            line.erase(line.find('#'));
+        }
+        LOG(logDEBUG1) << "line after removing comments:\n\t" << line;
+        if (line.length() > 1) {
+            // convert command and string to a vector
+            std::istringstream iss(line);
+            std::string val;
+            if (!(iss >> gainIndices[nRead] >> val)) {
+                throw RuntimeError("Could not set veto file. Invalid gain "
+                                   "or reference value for channel " +
+                                   std::to_string(nRead));
+            }
+            try {
+                values[nRead] = StringTo<int>(val);
+            } catch (...) {
+                throw RuntimeError("Could not set veto file. Invalid value " +
+                                   val + " for channel " +
+                                   std::to_string(nRead));
+            }
+            ++nRead;
+            if (nRead >= ch) {
+                break;
+            }
+        }
+    }
+
+    int fnum = F_SET_VETO_FILE;
+    int ret = FAIL;
+    int args[]{chipIndex, ch};
+    LOG(logDEBUG) << "Sending veto file value to detector [chip:" << chipIndex
+                  << "]: " << args;
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(args, sizeof(args));
+    client.Send(gainIndices, sizeof(gainIndices));
+    client.Send(values, sizeof(values));
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Detector " + std::to_string(moduleId) +
+                           " returned error: " + std::string(mess));
+    }
+}
+
 slsDetectorDefs::burstMode Module::getBurstMode() {
     auto r = sendToDetector<int>(F_GET_BURST_MODE);
     return static_cast<slsDetectorDefs::burstMode>(r);

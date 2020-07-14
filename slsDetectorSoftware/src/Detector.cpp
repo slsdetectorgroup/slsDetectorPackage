@@ -1297,6 +1297,11 @@ void Detector::setVetoReference(const int gainIndex, const int value,
     pimpl->Parallel(&Module::setVetoReference, pos, gainIndex, value);
 }
 
+void Detector::setVetoFile(const int chipIndex, const std::string &fname,
+                           Positions pos) {
+    pimpl->Parallel(&Module::setVetoFile, pos, chipIndex, fname);
+}
+
 Result<defs::burstMode> Detector::getBurstMode(Positions pos) {
     return pimpl->Parallel(&Module::getBurstMode, pos);
 }

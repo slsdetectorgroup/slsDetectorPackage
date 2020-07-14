@@ -1669,6 +1669,29 @@ std::string CmdProxy::VetoReference(int action) {
     return os.str();
 }
 
+std::string CmdProxy::VetoFile(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[chip index 0-10, -1 for all] [file name] \n\t[Gotthard2] Set "
+              "veto reference for each 128 channels for specific chip. The "
+              "file should have 128 rows of gain index and 12 bit value in hex"
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError(
+            "cannot get vetofile. Did you mean vetophoton?");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }
+        det->setVetoFile(StringTo<int>(args[0]), args[1], {det_id});
+        os << sls::ToString(args) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::BurstMode(int action) {
     std::ostringstream os;
     os << cmd << ' ';

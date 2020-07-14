@@ -343,6 +343,20 @@ TEST_CASE("vetoref", "[.cmd][.new]") {
     }
 }
 
+TEST_CASE("vetofile", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2) {
+        REQUIRE_THROWS(proxy.Call("vetofile", {}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vetofile", {"12", "/tmp/bla.txt"}, -1,
+                                  PUT)); // invalid chip index
+    } else {
+        REQUIRE_THROWS(proxy.Call("vetofile", {"-1"}, -1, GET));
+    }
+}
+
 TEST_CASE("burstmode", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);

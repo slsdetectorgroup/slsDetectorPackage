@@ -1,7 +1,7 @@
 #pragma once
 #include "sls_detector_defs.h"
 
-#define REQRD_FRMWRE_VRSN (0x190000)
+#define REQRD_FRMWRE_VRSN (0x200707)
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 

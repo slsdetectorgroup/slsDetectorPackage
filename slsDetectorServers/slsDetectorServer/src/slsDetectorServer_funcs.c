@@ -351,6 +351,8 @@ void function_table() {
     flist[F_GET_FILTER] = &get_filter;
     flist[F_SET_FILTER] = &set_filter;
     flist[F_SET_VETO_FILE] = &set_veto_file;
+    flist[F_GET_ADC_CONFIGURATION] = &get_adc_config;
+    flist[F_SET_ADC_CONFIGURATION] = &set_adc_config;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -7814,6 +7816,110 @@ int set_veto_file(int file_des) {
                             chipIndex);
                     LOG(logERROR, (mess));
                 }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_adc_config(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = {-1, -1};
+    int retval = -1;
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Getting adc configuration [chipIndex:%d, adcIndex:%d]\n",
+                    args[0], args[1]));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // get only
+    int chipIndex = args[0];
+    int adcIndex = args[1];
+    if (chipIndex < -1 || chipIndex >= NCHIP) {
+        ret = FAIL;
+        sprintf(mess,
+                "Could not get adc configuration. Invalid chip index %d\n",
+                chipIndex);
+        LOG(logERROR, (mess));
+    } else if (adcIndex < -1 || adcIndex >= NADC) {
+        ret = FAIL;
+        sprintf(mess, "Could not get adc configuration. Invalid adc index %d\n",
+                adcIndex);
+        LOG(logERROR, (mess));
+    } else {
+        retval = getADCConfiguration(chipIndex, adcIndex);
+        LOG(logDEBUG1, ("adc config retval: %u\n", retval));
+        if (retval == -1) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not get a single adc configuration. Different "
+                    "values for "
+                    "selected adc (%d) and chip (%d) range.\n",
+                    chipIndex, adcIndex);
+            LOG(logERROR, (mess));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_adc_config(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[3] = {-1, -1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1,
+        ("Setting adc configuration [chipIndex:%d, adcIndex:%d, value:0x%x]\n",
+         args[0], args[1], args[2]));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        int chipIndex = args[0];
+        int adcIndex = args[1];
+        int value = args[2];
+        if (chipIndex < -1 || chipIndex >= NCHIP) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not get adc configuration. Invalid chip index %d. "
+                    "Options: [-1 to %d]\n",
+                    chipIndex, NCHIP);
+            LOG(logERROR, (mess));
+        } else if (adcIndex < -1 || adcIndex >= NADC) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not get adc configuration. Invalid adc index %d. "
+                    "Options: [-1 to %d]\n",
+                    adcIndex, NADC);
+            LOG(logERROR, (mess));
+        } else if (value < 0 || value > ASIC_ADC_MAX_VAL) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not get adc configuration. Invalid value 0x%x. "
+                    "Options: [0 to 0x%x]\n",
+                    value, ASIC_ADC_MAX_VAL);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setADCConfiguration(chipIndex, adcIndex, value);
+            if (ret == FAIL) {
+                sprintf(mess,
+                        "Could not set adc configuration in chip (chipIndex: "
+                        "%d, adcIndex: %d, value:0x%x).\n",
+                        chipIndex, adcIndex, value);
+                LOG(logERROR, (mess));
+            } else {
+                int retval = getADCConfiguration(chipIndex, adcIndex);
+                LOG(logDEBUG1, ("adc config retval: %u\n", retval));
+                validate(value, retval, "configure adc", HEX);
             }
         }
     }

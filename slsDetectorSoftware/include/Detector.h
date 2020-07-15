@@ -1023,6 +1023,14 @@ class Detector {
     /** [Gotthard2] */
     void setVeto(const bool enable, Positions pos = {});
 
+    /** [Gotthard2] */
+    Result<int> getADCConfiguration(const int chipIndex, const int adcIndex,
+                                    Positions pos = {}) const;
+
+    /** [Gotthard2] */
+    void setADCConfiguration(const int chipIndex, const int adcIndex,
+                             const int value, Positions pos = {});
+
     /**************************************************
      *                                                *
      *    Mythen3 Specific                            *

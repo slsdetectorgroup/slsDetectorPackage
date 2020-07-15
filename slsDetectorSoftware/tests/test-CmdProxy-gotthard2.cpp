@@ -537,3 +537,50 @@ TEST_CASE("veto", "[.cmd][.new]") {
         REQUIRE_THROWS(proxy.Call("veto", {}, -1, GET));
     }
 }
+
+TEST_CASE("confadc", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+
+    if (det_type == defs::GOTTHARD2) {
+        int ndet = det.size();
+        int nchip = 10;
+        int nadc = 32;
+        int prev_val[ndet][nchip][nadc];
+        for (int i = 0; i != ndet; ++i) {
+            for (int j = 0; j != nchip; ++j) {
+                for (int k = 0; k != nadc; ++k) {
+                    prev_val[i][j][k] =
+                        det.getADCConfiguration(j, k, {i}).squash();
+                }
+            }
+        }
+
+        REQUIRE_THROWS(proxy.Call("confadc", {"11", "2", "0x3ff"}, -1,
+                                  PUT)); // invalid chip index
+        REQUIRE_THROWS(proxy.Call("confadc", {"-1", "10", "0x3ff"}, -1,
+                                  PUT)); // invalid adc index
+        REQUIRE_THROWS(proxy.Call("confadc", {"-1", "10", "0x1fff"}, -1,
+                                  PUT)); // invalid value
+        {
+            std::ostringstream oss;
+            proxy.Call("confadc", {"-1", "-1", "0x11"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "confadc [-1, -1, 0x11]\n");
+        }
+        {
+            std::ostringstream oss;
+            proxy.Call("confadc", {"2", "3"}, -1, GET, oss);
+            REQUIRE(oss.str() == "confadc 0x11\n");
+        }
+        for (int i = 0; i != ndet; ++i) {
+            for (int j = 0; j != nchip; ++j) {
+                for (int k = 0; k != nadc; ++k) {
+                    det.setADCConfiguration(j, k, prev_val[i][j][k], {i});
+                }
+            }
+        }
+    } else {
+        REQUIRE_THROWS(proxy.Call("confadc", {}, -1, GET));
+    }
+}

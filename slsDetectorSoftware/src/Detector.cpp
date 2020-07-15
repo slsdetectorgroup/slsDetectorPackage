@@ -1350,6 +1350,19 @@ void Detector::setVeto(bool enable, Positions pos) {
     pimpl->Parallel(&Module::setVeto, pos, enable);
 }
 
+Result<int> Detector::getADCConfiguration(const int chipIndex,
+                                          const int adcIndex,
+                                          Positions pos) const {
+    return pimpl->Parallel(&Module::getADCConfiguration, pos, chipIndex,
+                           adcIndex);
+}
+
+void Detector::setADCConfiguration(const int chipIndex, const int adcIndex,
+                                   const int value, Positions pos) {
+    pimpl->Parallel(&Module::setADCConfiguration, pos, chipIndex, adcIndex,
+                    value);
+}
+
 // Mythen3 Specific
 
 Result<uint32_t> Detector::getCounterMask(Positions pos) const {

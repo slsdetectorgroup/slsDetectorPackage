@@ -503,7 +503,7 @@ int readConfigFile() {
     memset(line, 0, LZ);
     char command[LZ];
 
-    int nadcRead = 0;
+    int nAdcTotal = 0;
 
     // keep reading a line
     while (fgets(line, LZ, fd)) {
@@ -617,7 +617,7 @@ int readConfigFile() {
                 break;
             }
             // validations
-            if (value > ASIC_ADC_MAX_VAL) {
+            if (value < 0 || value > ASIC_ADC_MAX_VAL) {
                 sprintf(initErrorMessage,
                         "Could not configure adc from on-board server config "
                         "file. Invalid value (max 0x%x). Line:[%s].\n",
@@ -625,28 +625,23 @@ int readConfigFile() {
                 break;
             }
 
-            int chipmin = 0;
-            int chipmax = NCHIP;
-            int adcmin = 0;
-            int adcmax = NADC;
-
-            // specific chip
-            if (ichip != -1) {
-                chipmin = ichip;
-                chipmax = ichip + 1;
-            }
-            // specific adc
-            if (iadc != -1) {
-                adcmin = iadc;
-                adcmax = iadc + 1;
+            if (setADCConfiguration(ichip, iadc, value) == FAIL) {
+                sprintf(initErrorMessage,
+                        "Could not configure adc from on-board server "
+                        "config file. Line:[%s].\n",
+                        line);
+                break;
             }
 
-            for (int i = chipmin; i < chipmax; ++i) {
-                for (int j = adcmin; j < adcmax; ++j) {
-                    adcConfiguration[i][j] = (uint8_t)value;
-                    ++nadcRead;
-                }
+            // to ensure all adcs are configured at start up
+            int nadc = 1;
+            if (iadc == -1) {
+                nadc = NADC;
             }
+            if (ichip == -1) {
+                nadc *= NCHIP;
+            }
+            nAdcTotal += nadc;
         }
 
         // vchip command
@@ -762,17 +757,11 @@ int readConfigFile() {
     fclose(fd);
 
     if (!strlen(initErrorMessage)) {
-        if (nadcRead != NADC * NCHIP) {
+        if (nAdcTotal != NADC * NCHIP) {
             sprintf(initErrorMessage,
                     "Could not configure adc from on-board server config file. "
                     "Insufficient adcconf commands. Read %d, expected %d\n",
-                    nadcRead, NADC * NCHIP);
-        }
-    }
-    for (int i = 0; i < NCHIP; ++i) {
-        for (int j = 0; j < NADC; ++j) {
-            LOG(logDEBUG2,
-                ("adc read %d %d: 0x%02hhx\n", i, j, adcConfiguration[i][j]));
+                    nAdcTotal, NADC * NCHIP);
         }
     }
 
@@ -1934,23 +1923,51 @@ int setVetoFile(int chipIndex, int *gainIndices, int *values) {
     return configureASICVetoReference(chipIndex, values);
 }
 
-int configureSingleADCDriver(int chipIndex) {
-    LOG(logINFO, ("Configuring ADC for %s chips [chipIndex:%d Burst Mode:%d]\n",
-                  chipIndex == -1 ? "All" : "Single", chipIndex, burstMode));
+int setADCConfiguration(int chipIndex, int adcIndex, int value) {
+    LOG(logINFO, ("Configuring ADC [chipIndex:%d, adcIndex:%d, value:0x%x]\n",
+                  chipIndex, adcIndex, value));
 
+    // validations
+    if (chipIndex < -1 || chipIndex >= NCHIP) {
+        LOG(logERROR, ("Invalid chip index %d\n", chipIndex));
+        return FAIL;
+    }
+    if (adcIndex < -1 || adcIndex >= NADC) {
+        LOG(logERROR, ("Invalid adc index %d\n", adcIndex));
+        return FAIL;
+    }
+    // validations
+    if (value < 0 || value > ASIC_ADC_MAX_VAL) {
+        LOG(logERROR, ("Invalid value 0x%x\n", value));
+        return FAIL;
+    }
+    int chipmin = 0;
+    int chipmax = NCHIP;
+    int adcmin = 0;
+    int adcmax = NADC;
+    // specific chip
+    if (chipIndex != -1) {
+        chipmin = chipIndex;
+        chipmax = chipIndex + 1;
+    }
+    // specific adc
+    if (adcIndex != -1) {
+        adcmin = adcIndex;
+        adcmax = adcIndex + 1;
+    }
+    // update values
+    for (int i = chipmin; i < chipmax; ++i) {
+        for (int j = adcmin; j < adcmax; ++j) {
+            adcConfiguration[i][j] = (uint8_t)value;
+            LOG(logDEBUG1,
+                ("Value [%d][%d]: 0x%02hhx\n", i, j, adcConfiguration[i][j]));
+        }
+    }
+    // single chip configuration
     int ind = chipIndex;
+    // all chips, take the first one as all equal
     if (ind == -1) {
         ind = 0;
-    }
-    uint8_t values[NADC];
-    memcpy(values, adcConfiguration + ind * NADC, NADC);
-
-    // change adc values if continuous mode
-    for (int i = 0; i < NADC; ++i) {
-        if (burstMode == BURST_OFF) {
-            values[i] |= ASIC_CONTINUOUS_MODE_MSK;
-        }
-        LOG(logDEBUG2, ("Value %d: 0x%02hhx\n", i, values[i]));
     }
 
     const int lenDataBitsPerADC = ASIC_ADC_MAX_BITS; // 7
@@ -1966,8 +1983,9 @@ int configureSingleADCDriver(int chipIndex) {
     for (int ich = 0; ich < NADC; ++ich) {
         // loop through all bits in a value
         for (int iBit = 0; iBit < lenDataBitsPerADC; ++iBit) {
-            commandBytes[offset++] =
-                ((values[ich] >> (lenDataBitsPerADC - 1 - iBit)) & 0x1);
+            commandBytes[offset++] = ((adcConfiguration[ind][ich] >>
+                                       (lenDataBitsPerADC - 1 - iBit)) &
+                                      0x1);
         }
     }
 
@@ -1994,29 +2012,46 @@ int configureSingleADCDriver(int chipIndex) {
     return OK;
 }
 
-int configureADC() {
-    LOG(logINFO, ("Configuring ADC \n"));
+int getADCConfiguration(int chipIndex, int adcIndex) {
+    // already validated at tcp interface
+    if (chipIndex < -1 || chipIndex >= NCHIP) {
+        LOG(logERROR, ("Invalid chip index %d\n", chipIndex));
+        return -1;
+    }
+    if (adcIndex < -1 || adcIndex >= NADC) {
+        LOG(logERROR, ("Invalid adc index %d\n", adcIndex));
+        return -1;
+    }
+    int chipmin = 0;
+    int chipmax = NCHIP;
+    int adcmin = 0;
+    int adcmax = NADC;
+    // specific chip
+    if (chipIndex != -1) {
+        chipmin = chipIndex;
+        chipmax = chipIndex + 1;
+    }
+    // specific adc
+    if (adcIndex != -1) {
+        adcmin = adcIndex;
+        adcmax = adcIndex + 1;
+    }
+    int val = adcConfiguration[chipmin][adcmin];
 
-    int equal = 1;
-    for (int i = 0; i < NADC; ++i) {
-        int val = adcConfiguration[0][i];
-        for (int j = 1; j < NCHIP; ++j) {
-            if (adcConfiguration[j][i] != val) {
-                equal = 0;
-                break;
+    // ensure same values for chip and adc in question
+    for (int i = chipmin; i < chipmax; ++i) {
+        for (int j = adcmin; j < adcmax; ++j) {
+            if (adcConfiguration[i][j] != val) {
+                LOG(logINFO,
+                    ("\tADC configuration 0x%x at [%d][%d] differs from 0x%x "
+                     "at "
+                     "[%d][%d], returning -1\n",
+                     adcConfiguration[i][j], i, j, val, chipmin, adcmin));
+                return -1;
             }
         }
     }
-    if (equal) {
-        return configureSingleADCDriver(-1);
-    } else {
-        for (int i = 0; i < NCHIP; ++i) {
-            if (configureSingleADCDriver(i) == FAIL) {
-                return FAIL;
-            }
-        }
-    }
-    return OK;
+    return val;
 }
 
 int setBurstModeinFPGA(enum burstMode value) {
@@ -2121,20 +2156,20 @@ int setBurstMode(enum burstMode burst) {
         }
     }
     LOG(logINFO, ("\tDone Updating registers\n"))
-
     return configureASICGlobalSettings();
 }
 
 int configureASICGlobalSettings() {
-    LOG(logINFO, ("\tSetting %s Mode in Chip\n",
-                  burstMode == BURST_OFF ? "Continuous" : "Burst"));
     int modeValue =
         burstMode ? ASIC_GLOBAL_BURST_VALUE : ASIC_GLOBAL_CONT_VALUE;
     int value = ((modeValue << ASIC_GLOBAL_MODE_OFST) & ASIC_GLOBAL_MODE_MSK) |
                 ((filter << ASIC_FILTER_OFST) & ASIC_FILTER_MSK) |
                 ((cdsGain << ASIC_CDS_GAIN_OFST) & ASIC_CDS_GAIN_MSK);
-    LOG(logINFO, ("\tsetting value:0x%x (mode:%d, filter:%d, cdsgain:%d)\n",
-                  value, modeValue, filter, cdsGain));
+    LOG(logINFO,
+        ("\tSending Global Chip settings:0x%x (mode:%d(%s), filter:%d, "
+         "cdsgain:%d)\n",
+         value, modeValue, (burstMode == BURST_OFF ? "Continuous" : "Burst"),
+         filter, cdsGain));
 
     const int padding = 6; // due to address (4) to make it byte aligned
     const int lenTotalBits = padding + ASIC_GLOBAL_SETT_MAX_BITS +
@@ -2172,7 +2207,7 @@ int configureASICGlobalSettings() {
         return FAIL;
     }
 
-    return configureADC();
+    return OK;
 }
 
 enum burstMode getBurstMode() {

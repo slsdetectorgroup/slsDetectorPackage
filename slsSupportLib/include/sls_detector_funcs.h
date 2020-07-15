@@ -208,6 +208,8 @@ enum detFuncs {
     F_GET_FILTER,
     F_SET_FILTER,
     F_SET_VETO_FILE,
+    F_GET_ADC_CONFIGURATION,
+    F_SET_ADC_CONFIGURATION,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -514,6 +516,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_FILTER:                      return "F_GET_FILTER";
     case F_SET_FILTER:                      return "F_SET_FILTER";
     case F_SET_VETO_FILE:                   return "F_SET_VETO_FILE";
+    case F_SET_ADC_CONFIGURATION:           return "F_SET_ADC_CONFIGURATION";       
+    case F_GET_ADC_CONFIGURATION:           return "F_GET_ADC_CONFIGURATION";       
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

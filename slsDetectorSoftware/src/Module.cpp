@@ -1645,6 +1645,17 @@ void Module::setVeto(bool enable) {
     sendToDetector(F_SET_VETO, static_cast<int>(enable), nullptr);
 }
 
+int Module::getADCConfiguration(const int chipIndex, const int adcIndex) {
+    int args[]{chipIndex, adcIndex};
+    return sendToDetector<int>(F_GET_ADC_CONFIGURATION, args);
+}
+
+void Module::setADCConfiguration(const int chipIndex, const int adcIndex,
+                                 int value) {
+    int args[]{chipIndex, adcIndex, value};
+    sendToDetector(F_SET_ADC_CONFIGURATION, args, nullptr);
+}
+
 // Mythen3 Specific
 
 uint32_t Module::getCounterMask() {

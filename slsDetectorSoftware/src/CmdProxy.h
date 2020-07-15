@@ -841,6 +841,7 @@ class CmdProxy {
         {"currentsource", &CmdProxy::currentsource},
         {"timingsource", &CmdProxy::timingsource},
         {"veto", &CmdProxy::veto},
+        {"confadc", &CmdProxy::ConfigureADC},
 
         /* Mythen3 Specific */
         {"counters", &CmdProxy::Counters},
@@ -1018,6 +1019,7 @@ class CmdProxy {
     std::string VetoReference(int action);
     std::string VetoFile(int action);
     std::string BurstMode(int action);
+    std::string ConfigureADC(int action);
     /* Mythen3 Specific */
     std::string Counters(int action);
     std::string GateDelay(int action);

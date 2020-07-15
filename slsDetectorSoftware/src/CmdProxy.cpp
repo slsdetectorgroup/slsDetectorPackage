@@ -1738,6 +1738,37 @@ std::string CmdProxy::BurstMode(int action) {
     return os.str();
 }
 
+std::string CmdProxy::ConfigureADC(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[chip index 0-10, -1 for all] [adc index 0-31, -1 for all] [12 "
+              "bit configuration value in hex]\n\t[Gotthard2] Sets "
+              "configuration for specific chip and adc, but configures 1 chip "
+              "(all adcs for that chip) at a time."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }
+        auto t = det->getADCConfiguration(StringTo<int>(args[0]),
+                                          StringTo<int>(args[1]));
+        os << OutStringHex(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 3) {
+            WrongNumberOfParameters(3);
+        }
+        int value = StringTo<int>(args[2]);
+        det->setADCConfiguration(StringTo<int>(args[0]), StringTo<int>(args[1]),
+                                 value, {det_id});
+        os << '[' << args[0] << ", " << args[1] << ", " << ToStringHex(value)
+           << "]\n";
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* Mythen3 Specific */
 
 std::string CmdProxy::Counters(int action) {

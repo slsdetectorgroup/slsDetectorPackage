@@ -386,6 +386,9 @@ class Module : public virtual slsDetectorDefs {
     void setTimingSource(slsDetectorDefs::timingSourceType value);
     bool getVeto();
     void setVeto(bool enable);
+    int getADCConfiguration(const int chipIndex, const int adcIndex);
+    void setADCConfiguration(const int chipIndex, const int adcIndex,
+                             int value);
 
     /**************************************************
      *                                                *

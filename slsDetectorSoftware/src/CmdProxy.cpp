@@ -1752,7 +1752,7 @@ std::string CmdProxy::ConfigureADC(int action) {
             WrongNumberOfParameters(2);
         }
         auto t = det->getADCConfiguration(StringTo<int>(args[0]),
-                                          StringTo<int>(args[1]));
+                                          StringTo<int>(args[1]), {det_id});
         os << OutStringHex(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 3) {
@@ -1763,6 +1763,31 @@ std::string CmdProxy::ConfigureADC(int action) {
                                  value, {det_id});
         os << '[' << args[0] << ", " << args[1] << ", " << ToStringHex(value)
            << "]\n";
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::BadChannels(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[fname]\n\t[Gotthard2] Sets the bad channels (from file of bad "
+              "channel numbers) to be masked out."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->getBadChannels(args[0], {det_id});
+        os << "successfully retrieved" << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->setBadChannels(args[0], {det_id});
+        os << "successfully loaded" << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
     }

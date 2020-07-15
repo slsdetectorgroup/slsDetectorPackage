@@ -236,3 +236,5 @@ int set_filter(int);
 int set_veto_file(int);
 int get_adc_config(int);
 int set_adc_config(int);
+int get_bad_channels(int);
+int set_bad_channels(int);

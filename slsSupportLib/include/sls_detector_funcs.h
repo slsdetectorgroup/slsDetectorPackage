@@ -210,6 +210,8 @@ enum detFuncs {
     F_SET_VETO_FILE,
     F_GET_ADC_CONFIGURATION,
     F_SET_ADC_CONFIGURATION,
+    F_GET_BAD_CHANNELS,
+    F_SET_BAD_CHANNELS,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -518,6 +520,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_VETO_FILE:                   return "F_SET_VETO_FILE";
     case F_SET_ADC_CONFIGURATION:           return "F_SET_ADC_CONFIGURATION";       
     case F_GET_ADC_CONFIGURATION:           return "F_GET_ADC_CONFIGURATION";       
+    case F_GET_BAD_CHANNELS:                return "F_GET_BAD_CHANNELS";
+    case F_SET_BAD_CHANNELS:                return "F_SET_BAD_CHANNELS";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";

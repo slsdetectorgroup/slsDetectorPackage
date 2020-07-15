@@ -1363,6 +1363,14 @@ void Detector::setADCConfiguration(const int chipIndex, const int adcIndex,
                     value);
 }
 
+void Detector::getBadChannels(const std::string &fname, Positions pos) const {
+    pimpl->Parallel(&Module::getBadChannels, pos, fname);
+}
+
+void Detector::setBadChannels(const std::string &fname, Positions pos) {
+    pimpl->Parallel(&Module::setBadChannels, pos, fname);
+}
+
 // Mythen3 Specific
 
 Result<uint32_t> Detector::getCounterMask(Positions pos) const {

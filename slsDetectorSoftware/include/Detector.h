@@ -1031,6 +1031,12 @@ class Detector {
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              const int value, Positions pos = {});
 
+    /** [Gotthard2] */
+    void getBadChannels(const std::string &fname, Positions pos = {}) const;
+
+    /** [Gotthard2] */
+    void setBadChannels(const std::string &fname, Positions pos = {});
+
     /**************************************************
      *                                                *
      *    Mythen3 Specific                            *

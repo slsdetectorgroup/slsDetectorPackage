@@ -353,6 +353,8 @@ void function_table() {
     flist[F_SET_VETO_FILE] = &set_veto_file;
     flist[F_GET_ADC_CONFIGURATION] = &get_adc_config;
     flist[F_SET_ADC_CONFIGURATION] = &set_adc_config;
+    flist[F_GET_BAD_CHANNELS] = &get_bad_channels;
+    flist[F_SET_BAD_CHANNELS] = &set_bad_channels;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -7922,6 +7924,103 @@ int set_adc_config(int file_des) {
                 validate(value, retval, "configure adc", HEX);
             }
         }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_bad_channels(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int nretvals = 0;
+    int *retvals = NULL;
+
+    LOG(logDEBUG1, ("Getting bad channels\n"));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // get only
+    retvals = getBadChannels(&nretvals);
+    if (nretvals == -1) {
+        ret = FAIL;
+        strcpy(mess, "Could not get bad channels. Memory allcoation error\n");
+        LOG(logERROR, (mess));
+    }
+#endif
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret != FAIL) {
+        sendData(file_des, &nretvals, sizeof(nretvals), INT32);
+        if (nretvals > 0) {
+            sendData(file_des, retvals, sizeof(int) * nretvals, INT32);
+        }
+    }
+    if (retvals != NULL) {
+        free(retvals);
+    }
+    return ret;
+}
+
+int set_bad_channels(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int nargs = 0;
+    int *args = NULL;
+
+    if (receiveData(file_des, &nargs, sizeof(nargs), INT32) < 0)
+        return printSocketReadError();
+
+    if (nargs > 0) {
+        args = malloc(nargs * sizeof(int));
+        if (receiveData(file_des, args, nargs * sizeof(int), INT32) < 0)
+            return printSocketReadError();
+    }
+
+    LOG(logDEBUG1, ("Setting %d bad channels\n", nargs));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        // validate bad channel number
+        for (int i = 0; i < nargs; ++i) {
+            LOG(logDEBUG1, ("\t[%d]:%d\n", i, args[i]));
+            if (args[i] < 0 || args[i] >= (NCHAN * NCHIP)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set bad channels. Invalid bad channel "
+                        "number %d. Options [0-%d]\n",
+                        args[i], NCHIP * NCHAN - 1);
+                LOG(logERROR, (mess));
+                break;
+            }
+        }
+        if (ret == OK) {
+            setBadChannels(nargs, args);
+            int nretvals = 0;
+            int *retvals = getBadChannels(&nretvals);
+            if (nretvals == -1) {
+                ret = FAIL;
+                strcpy(mess,
+                       "Could not get bad channels. Memory allcoation error\n");
+                LOG(logERROR, (mess));
+            } else if (nretvals != nargs) {
+                ret = FAIL;
+                sprintf(
+                    mess,
+                    "Could not set bad channels. Set %d channels, but read %d "
+                    "channels\n",
+                    nargs, nretvals);
+                LOG(logERROR, (mess));
+            }
+            if (retvals != NULL) {
+                free(retvals);
+            }
+        }
+    }
+    if (args != NULL) {
+        free(args);
     }
 #endif
     return Server_SendResult(file_des, INT32, NULL, 0);

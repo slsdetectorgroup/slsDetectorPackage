@@ -2316,6 +2316,72 @@ int getVeto() {
             CONFIG_VETO_ENBL_OFST);
 }
 
+void setBadChannels(int nch, int *channels) {
+    LOG(logINFO, ("Setting %d bad channels\n", nch));
+
+    int numAddr = MASK_STRIP_NUM_REGS;
+    int startAddr = MASK_STRIP_START_REG;
+
+    // resetting all mask registers first
+    for (int iaddr = 0; iaddr < numAddr; ++iaddr) {
+        uint32_t addr = startAddr + iaddr * REG_OFFSET;
+        bus_w(addr, 0);
+    }
+
+    // setting badchannels, loop through list
+    for (int i = 0; i < nch; ++i) {
+        LOG(logINFO, ("\t[%d]: %d\n", i, channels[i]));
+        int iaddr = channels[i] / 32;
+        int iBit = channels[i] % 32;
+        uint32_t addr = startAddr + iaddr * REG_OFFSET;
+        LOG(logDEBUG1,
+            ("val:%d iaddr:%d iBit:%d, addr:0x%x old:0x%x val:0x%x\n",
+             channels[i], iaddr, iBit, addr, bus_r(addr), (1 << iBit)));
+        bus_w(addr, bus_r(addr) | (1 << iBit));
+    }
+}
+
+int *getBadChannels(int *nch) {
+    int *retvals = NULL;
+    // count number of bad channels
+    *nch = 0;
+    for (int i = 0; i < MASK_STRIP_NUM_REGS; ++i) {
+        uint32_t addr = MASK_STRIP_START_REG + i * REG_OFFSET;
+        *nch += __builtin_popcount(bus_r(addr));
+    }
+    if (*nch > 0) {
+        // get list of bad channels
+        retvals = malloc(*nch * sizeof(int));
+        if (retvals == NULL) {
+            *nch = -1;
+            return NULL;
+        }
+        int chIndex = 0;
+        int numAddr = MASK_STRIP_NUM_REGS;
+        // loop through registers
+        for (int iaddr = 0; iaddr < numAddr; ++iaddr) {
+            // calculate address and get value
+            uint32_t addr = MASK_STRIP_START_REG + iaddr * REG_OFFSET;
+            uint32_t val = bus_r(addr);
+            // loop through 32 bits
+            for (int iBit = 0; iBit < 32; ++iBit) {
+                // masked, add to list
+                if ((val >> iBit) & 0x1) {
+                    LOG(logDEBUG1, ("iaddr:%d iBit:%d val:0x%x, ch:%d\n", iaddr,
+                                    iBit, val, iaddr * 32 + iBit));
+                    retvals[chIndex++] = iaddr * 32 + iBit;
+                }
+            }
+        }
+    }
+    // debugging
+    LOG(logDEBUG1, ("Reading Bad channel list\n"));
+    for (int i = 0; i < (*nch); ++i) {
+        LOG(logDEBUG1, ("[%d]: %d\n", i, retvals[i]));
+    }
+    return retvals;
+}
+
 /* aquisition */
 
 int startStateMachine() {

@@ -389,6 +389,8 @@ class Module : public virtual slsDetectorDefs {
     int getADCConfiguration(const int chipIndex, const int adcIndex);
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              int value);
+    void getBadChannels(const std::string &fname);
+    void setBadChannels(const std::string &fname);
 
     /**************************************************
      *                                                *

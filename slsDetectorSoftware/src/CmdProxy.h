@@ -372,6 +372,27 @@
         return os.str();                                                       \
     }
 
+/** set only, 1 argument */
+#define EXECUTE_SET_COMMAND_1ARG(CMDNAME, SETFCN, HLPSTR)                      \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            throw sls::RuntimeError("Cannot get");                             \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            det->SETFCN(args[0]);                                              \
+            os << args.front() << '\n';                                        \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
 /** get only */
 #define GET_COMMAND(CMDNAME, GETFCN, HLPSTR)                                   \
     std::string CMDNAME(const int action) {                                    \
@@ -842,6 +863,7 @@ class CmdProxy {
         {"timingsource", &CmdProxy::timingsource},
         {"veto", &CmdProxy::veto},
         {"confadc", &CmdProxy::ConfigureADC},
+        {"badchannels", &CmdProxy::BadChannels},
 
         /* Mythen3 Specific */
         {"counters", &CmdProxy::Counters},
@@ -1020,6 +1042,7 @@ class CmdProxy {
     std::string VetoFile(int action);
     std::string BurstMode(int action);
     std::string ConfigureADC(int action);
+    std::string BadChannels(int action);
     /* Mythen3 Specific */
     std::string Counters(int action);
     std::string GateDelay(int action);
@@ -1093,7 +1116,7 @@ class CmdProxy {
                     "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
                     "\n\t[Eiger] Use threshold or thresholdnotb.");
 
-    EXECUTE_SET_COMMAND_NOID_1ARG(
+    EXECUTE_SET_COMMAND_1ARG(
         trimbits, loadTrimbits,
         "[fname]\n\t[Eiger][Mythen3] Loads the trimbit file to detector. If no "
         "extension specified, serial number of each module is attached.");

@@ -523,6 +523,8 @@ void setTimingSource(enum timingSourceType value);
 enum timingSourceType getTimingSource();
 void setVeto(int enable);
 int getVeto();
+void setBadChannels(int nch, int *channels);
+int *getBadChannels(int *nch);
 #endif
 
 #if defined(JUNGFRAUD) || defined(EIGERD)

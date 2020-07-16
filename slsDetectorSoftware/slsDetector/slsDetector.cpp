@@ -3242,13 +3242,13 @@ string slsDetector::getSettingsDir() {
 	return std::string(thisDetector->settingsDir);
 }
 string slsDetector::setSettingsDir(string s) {
-	sprintf(thisDetector->settingsDir, s.c_str()); return thisDetector->settingsDir;
+	sprintf(thisDetector->settingsDir, "%s", s.c_str()); return thisDetector->settingsDir;
 }
 string slsDetector::getCalDir() {
 	return thisDetector->calDir;
 }
 string slsDetector::setCalDir(string s) {
-	sprintf(thisDetector->calDir, s.c_str()); return thisDetector->calDir;
+	sprintf(thisDetector->calDir, "%s", s.c_str()); return thisDetector->calDir;
 }
 
 
@@ -4432,7 +4432,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index, int imod) {
 
 
 	int fnum=F_GET_TIME_LEFT;
-	int64_t retval;
+	int64_t retval = FAIL;
 	char mess[MAX_STR_LENGTH]="";
 	int ret=OK;
 
@@ -6057,8 +6057,10 @@ int slsDetector::setUDPConnection() {
 				std::cout << "could not configure mac" << endl;
 			}
 		}
-	}else
+	}else{
 		ret=FAIL;
+		setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
+	}
 #ifdef VERBOSE
 	printReceiverConfiguration();
 #endif

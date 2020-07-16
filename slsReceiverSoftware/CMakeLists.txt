@@ -105,7 +105,5 @@ install(TARGETS slsReceiverShared slsReceiverStatic slsReceiver
         PUBLIC_HEADER DESTINATION include)
         
  
-#install(FILES ${ZMQ_STATIC_ARCHIVE}
-#DESTINATION lib)     
-install(FILES 
-DESTINATION lib)         
+install(FILES ${ZMQ_STATIC_ARCHIVE}
+DESTINATION lib)     

@@ -4952,6 +4952,9 @@ int multiSlsDetector::createReceivingDataSockets(const bool destroy) {
 		cout << "Destroyed Receiving Data Socket(s)" << endl;
 		return OK;
 	}
+	if (client_downstream) {
+		return OK;
+	}
 
 	cprintf(MAGENTA, "Going to create data sockets\n");
 

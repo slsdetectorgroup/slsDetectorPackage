@@ -454,11 +454,11 @@ int main(int argc, char *argv[]) {
 	    }
 #ifdef INTERP
 	    else if  (fMode==eFlat) {
-	       int nb;
+	      int nb, nby;
 	       double emi=0, ema=1;
-	       int *ff=mt->getFlatField(nb, emi, ema);
+	       int *ff=mt->getFlatField(nb, nby, emi, ema);
 	       nnx=nb;
-	       nny=nb;
+	       nny=nby;
 	       dout= new int32_t[nb*nb];
 	       for (int ix=0; ix<nb*nb; ix++) {
 	     	dout[ix]=ff[ix];
@@ -811,7 +811,7 @@ int main(int argc, char *argv[]) {
 	  //  timestamp=doc["timestamp"].GetUint();
 	  packetNumber=doc["packetNumber"].GetUint();
 	  // cout << acqIndex << " " << frameIndex << " " << subFrameIndex << " "<< bunchId << " " << timestamp << " " << packetNumber << endl;
-	  if (packetNumber>=40) {
+	  if (packetNumber>0) {
 	    //*((int*)buff)=frameIndex;
 	    if (insubframe==0) f0=frameIndex;
 	    memcpy(buff,&frameIndex,sizeof(int));
@@ -823,7 +823,7 @@ int main(int argc, char *argv[]) {
 	    insubframe++;
 	    nsubframes=frameIndex+1-f0;
 	  } else {
-	    cprintf(RED, "Incomplete frame: received only %d packet\n", packetNumber);
+	    cprintf(RED, "Empty frame %d\n", frameIndex);
 	    //length = 
 	    zmqsocket->ReceiveData(0, dummybuff, size);
 	  }

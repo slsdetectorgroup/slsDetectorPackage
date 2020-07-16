@@ -6,7 +6,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <unistd.h>
-#include <semaphore.h>
+#include <pthread.h> 
 
 #define SHM_NAME    "sls_server_shared_memory"
 #define SHM_VERSION 0x200625
@@ -15,7 +15,7 @@
 
 typedef struct Memory {
     int version;
-    sem_t sem;
+    pthread_mutex_t lock;
     enum runStatus scanStatus; // idle, running or error
     int scanStop;
 #ifdef VIRTUAL
@@ -81,11 +81,10 @@ int sharedMemory_create(int port) {
 
 int sharedMemory_initialize() {
     shm->version = SHM_VERSION;
-    if (sem_init(&(shm->sem), 1, 1)) {
-        LOG(logERROR, ("Failed to initialize semaphore for shared memory\n"));
-        LOG(logERROR, ("ERror: %s\n", strerror(errno)));
+    if (pthread_mutex_init(&(shm->lock), NULL) != 0) { 
+        LOG(logERROR, ("Failed to initialize pthread lock for shared memory\n"));
         return FAIL;
-    }
+    } 
     shm->scanStatus = IDLE;
     shm->scanStop = 0;
 #ifdef VIRTUAL
@@ -142,9 +141,9 @@ int sharedMemory_remove() {
     return OK;
 }
 
-void sharedMemory_lock() { sem_wait(&(shm->sem)); }
+void sharedMemory_lock() { pthread_mutex_lock(&(shm->lock)); }
 
-void sharedMemory_unlock() { sem_post(&(shm->sem)); }
+void sharedMemory_unlock() { pthread_mutex_unlock(&(shm->lock)); }
 
 #ifdef VIRTUAL
 void sharedMemory_setStatus(enum runStatus s) {

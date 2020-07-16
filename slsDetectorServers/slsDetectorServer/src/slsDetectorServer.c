@@ -30,7 +30,6 @@ extern int phaseShift;
 void error(char *msg) { perror(msg); }
 
 void sigInterruptHandler(int p) { 
-    sharedMemory_detach();
     sharedMemory_remove();
     exit(-1);
 }

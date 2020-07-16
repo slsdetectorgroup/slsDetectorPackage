@@ -695,6 +695,15 @@ class Detector {
      */
     void setRxZmqTimer(int time_in_ms, Positions pos = {});
 
+    Result<int> getRxZmqStartingFrame(Positions pos = {}) const;
+
+    /**
+     * The starting frame index to stream out. 0 by default, which streams 
+     * the first frame in an acquisition, and then depending on the rx zmq 
+     * frequency/ timer.
+     */
+    void setRxZmqStartingFrame(int fnum, Positions pos = {});
+
     Result<int> getRxZmqPort(Positions pos = {}) const;
 
     /**

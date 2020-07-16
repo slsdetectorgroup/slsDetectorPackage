@@ -199,6 +199,8 @@ int ClientInterface::functionTable(){
     flist[F_SET_RECEIVER_NUM_GATES]         =   &ClientInterface::set_num_gates;    
     flist[F_SET_RECEIVER_GATE_DELAY]        =   &ClientInterface::set_gate_delay;        
     flist[F_GET_RECEIVER_THREAD_IDS]        =   &ClientInterface::get_thread_ids;
+    flist[F_GET_RECEIVER_STREAMING_START_FNUM] = &ClientInterface::get_streaming_start_fnum;
+    flist[F_SET_RECEIVER_STREAMING_START_FNUM] = &ClientInterface::set_streaming_start_fnum;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -1707,4 +1709,25 @@ int ClientInterface::get_thread_ids(Interface &socket) {
     auto retval = impl()->getThreadIds();
     LOG(logDEBUG1) << "thread ids retval: " << sls::ToString(retval);
     return socket.sendResult(retval);
+}
+
+int ClientInterface::get_streaming_start_fnum(Interface &socket) {
+    int retval = impl()->getStreamingStartingFrameNumber();
+    LOG(logDEBUG1) << "streaming start fnum:" << retval;
+    return socket.sendResult(retval);
+}
+
+int ClientInterface::set_streaming_start_fnum(Interface &socket) {
+   auto index = socket.Receive<int>();
+    if (index < 0) {
+        throw RuntimeError("Invalid streaming start frame number: " +
+                           std::to_string(index));
+    }
+    verifyIdle(socket);
+    LOG(logDEBUG1) << "Setting streaming start fnum: " << index;
+    impl()->setStreamingStartingFrameNumber(index);
+
+    int retval = impl()->getStreamingStartingFrameNumber();
+    validate(index, retval, "set streaming start fnum", DEC);
+    return socket.Send(OK);
 }

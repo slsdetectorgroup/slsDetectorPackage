@@ -274,6 +274,8 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverStreamingFrequency(int freq);
     int getReceiverStreamingTimer();
     void setReceiverStreamingTimer(int time_in_ms = 200);
+    int getReceiverStreamingStartingFrame();
+    void setReceiverStreamingStartingFrame(int fnum);
     int getReceiverStreamingPort();
     void setReceiverStreamingPort(int port);
     sls::IpAddr getReceiverStreamingIP();

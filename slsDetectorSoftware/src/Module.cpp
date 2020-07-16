@@ -967,6 +967,18 @@ void Module::setReceiverStreamingTimer(int time_in_ms) {
     sendToReceiver<int>(F_RECEIVER_STREAMING_TIMER, time_in_ms);
 }
 
+int Module::getReceiverStreamingStartingFrame() {
+    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_START_FNUM);
+}
+
+void Module::setReceiverStreamingStartingFrame(int fnum) {
+    if (fnum < 0) {
+        throw RuntimeError("Invalid streaming starting frame number " +
+                           std::to_string(fnum));
+    }
+    sendToReceiver(F_SET_RECEIVER_STREAMING_START_FNUM, fnum, nullptr);
+}
+
 int Module::getReceiverStreamingPort() {
     return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
 }

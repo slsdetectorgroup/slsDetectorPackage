@@ -807,6 +807,7 @@ class CmdProxy {
         /* ZMQ Streaming Parameters (Receiver<->Client) */
         {"rx_datastream", &CmdProxy::rx_datastream},
         {"rx_readfreq", &CmdProxy::rx_readfreq},
+        {"rx_zmqstartfnum", &CmdProxy::rx_zmqstartfnum},
         {"rx_zmqport", &CmdProxy::rx_zmqport},
         {"zmqport", &CmdProxy::zmqport},
         {"rx_zmqip", &CmdProxy::rx_zmqip},
@@ -1783,6 +1784,10 @@ class CmdProxy {
         rx_readfreq, getRxZmqFrequency, setRxZmqFrequency, StringTo<int>,
         "[nth frame]\n\tStream out every nth frame. Default is 1. 0 means "
         "streaming every 200 ms and discarding frames in this interval.");
+
+    INTEGER_COMMAND(
+        rx_zmqstartfnum, getRxZmqStartingFrame, setRxZmqStartingFrame, StringTo<int>,
+        "[fnum]\n\tThe starting frame index to stream out. 0 by default, which streams the first frame in an acquisition, and then depending on the rx zmq frequency/ timer");
 
     INTEGER_COMMAND(
         rx_zmqport, getRxZmqPort, setRxZmqPort, StringTo<int>,

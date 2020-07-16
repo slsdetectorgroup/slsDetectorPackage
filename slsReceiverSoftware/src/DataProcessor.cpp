@@ -24,13 +24,14 @@ const std::string DataProcessor::TypeName = "DataProcessor";
 DataProcessor::DataProcessor(int ind, detectorType dtype, Fifo *f,
                              fileFormat *ftype, bool fwenable, bool *mfwenable,
                              bool *dsEnable, uint32_t *dr, uint32_t *freq,
-                             uint32_t *timer, bool *fp, bool *act,
+                             uint32_t *timer, uint32_t *sfnum, bool *fp, bool *act,
                              bool *depaden, bool *sm, bool *qe,
                              std::vector<int> *cdl, int *cdo, int *cad)
     : ThreadObject(ind, TypeName), fifo(f), myDetectorType(dtype),
       dataStreamEnable(dsEnable), fileFormatType(ftype),
       fileWriteEnable(fwenable), masterFileWriteEnable(mfwenable),
       dynamicRange(dr), streamingFrequency(freq), streamingTimerInMs(timer),
+      streamingStartFnum(sfnum),
       activated(act), deactivatedPaddingEnable(depaden), silentMode(sm),
       quadEnable(qe), framePadding(fp), ctbDbitList(cdl), ctbDbitOffset(cdo),
       ctbAnalogDataBytes(cad) {
@@ -229,7 +230,7 @@ void DataProcessor::ProcessAnImage(char *buf) {
             timerBegin.tv_nsec -= ((*streamingTimerInMs) % 1000) * 1000000;
 
             // to send first image
-            currentFreqCount = *streamingFrequency;
+            currentFreqCount = *streamingFrequency - *streamingStartFnum;
         }
     }
 

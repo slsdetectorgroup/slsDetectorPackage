@@ -954,6 +954,14 @@ void Detector::setRxZmqTimer(int time_in_ms, Positions pos) {
     pimpl->Parallel(&Module::setReceiverStreamingTimer, pos, time_in_ms);
 }
 
+Result<int> Detector::getRxZmqStartingFrame(Positions pos) const {
+    return pimpl->Parallel(&Module::getReceiverStreamingStartingFrame, pos);
+}
+
+void Detector::setRxZmqStartingFrame(int fnum, Positions pos) {
+    pimpl->Parallel(&Module::setReceiverStreamingStartingFrame, pos, fnum);
+}
+
 Result<int> Detector::getRxZmqPort(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverStreamingPort, pos);
 }

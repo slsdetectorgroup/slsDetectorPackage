@@ -37,6 +37,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * @param dr pointer to dynamic range
      * @param freq pointer to streaming frequency
      * @param timer pointer to timer if streaming frequency is random
+     * @param sfnum pointer to streaming starting fnum
      * @param fp pointer to frame padding enable
      * @param act pointer to activated
      * @param depaden pointer to deactivated padding enable
@@ -48,7 +49,8 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      */
     DataProcessor(int ind, detectorType dtype, Fifo *f, fileFormat *ftype,
                   bool fwenable, bool *mfwenable, bool *dsEnable, uint32_t *dr,
-                  uint32_t *freq, uint32_t *timer, bool *fp, bool *act,
+                  uint32_t *freq, uint32_t *timer, 
+                  uint32_t *sfnum, bool *fp, bool *act,
                   bool *depaden, bool *sm, bool *qe, std::vector<int> *cdl,
                   int *cdo, int *cad);
 
@@ -274,6 +276,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     /** Pointer to the timer if Streaming frequency is random */
     uint32_t *streamingTimerInMs;
+
+    /** Pointer to streaming starting fnum */
+    uint32_t *streamingStartFnum;
 
     /** Current frequency count */
     uint32_t currentFreqCount{0};

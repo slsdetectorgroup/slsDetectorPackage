@@ -53,7 +53,7 @@ int sharedMemory_create(int port) {
         shmFd = shmget(SHM_KEY + port, MEM_SIZE,
                        IPC_CREAT | 0666);
         if (shmFd == -1) {
-            LOG(logERROR, ("Create shared memory failed: %s\n", strerror(errno)));
+            LOG(logERROR, ("c: open existing shared memory (to delete) failed: %s\n", strerror(errno)));
             return FAIL;
         }
         // delete existing one

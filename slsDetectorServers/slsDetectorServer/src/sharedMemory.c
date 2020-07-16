@@ -6,11 +6,12 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <unistd.h>
+#include <semaphore.h>
 
 #define SHM_NAME    "sls_server_shared_memory"
 #define SHM_VERSION 0x200625
 #define SHM_KEY     5678
-#define MEM_SIZE 128
+#define MEM_SIZE    128
 
 typedef struct Memory {
     int version;

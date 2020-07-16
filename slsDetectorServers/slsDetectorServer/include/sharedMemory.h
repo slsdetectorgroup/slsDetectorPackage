@@ -1,6 +1,5 @@
 #pragma once
 #include "sls_detector_defs.h"
-#include <semaphore.h>
 
 void sharedMemory_print();
 int sharedMemory_create(int port);

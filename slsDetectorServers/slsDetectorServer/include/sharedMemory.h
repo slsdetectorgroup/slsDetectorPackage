@@ -4,7 +4,7 @@
 
 void sharedMemory_print();
 int sharedMemory_create(int port);
-void sharedMemory_initialize();
+int sharedMemory_initialize();
 int sharedMemory_open(int port);
 int sharedMemory_attach();
 int sharedMemory_detach();

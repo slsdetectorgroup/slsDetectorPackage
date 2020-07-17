@@ -2,11 +2,11 @@
 #include "clogger.h"
 
 #include <errno.h>
+#include <pthread.h>
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <unistd.h>
-#include <pthread.h> 
 
 #define SHM_NAME    "sls_server_shared_memory"
 #define SHM_VERSION 0x200625
@@ -46,24 +46,23 @@ void sharedMemory_print() {
 
 int sharedMemory_create(int port) {
     // if shm existed, delete old shm and create again
-    shmFd =
-        shmget(SHM_KEY + port, MEM_SIZE, IPC_CREAT | IPC_EXCL | 0666);
+    shmFd = shmget(SHM_KEY + port, MEM_SIZE, IPC_CREAT | IPC_EXCL | 0666);
     if (shmFd == -1 && errno == EEXIST) {
         // open existing one
-        shmFd = shmget(SHM_KEY + port, MEM_SIZE,
-                       IPC_CREAT | 0666);
+        shmFd = shmget(SHM_KEY + port, MEM_SIZE, IPC_CREAT | 0666);
         if (shmFd == -1) {
-            LOG(logERROR, ("c: open existing shared memory (to delete) failed: %s\n", strerror(errno)));
+            LOG(logERROR,
+                ("c: open existing shared memory (to delete) failed: %s\n",
+                 strerror(errno)));
             return FAIL;
         }
         // delete existing one
         sharedMemory_remove();
-        LOG(logWARNING,
-            ("Removed old shared memory with id 0x%x (%d)\n", SHM_KEY + port, SHM_KEY + port));
-        
+        LOG(logWARNING, ("Removed old shared memory with id 0x%x (%d)\n",
+                         SHM_KEY + port, SHM_KEY + port));
+
         // create it again with current structure
-        shmFd = shmget(SHM_KEY + port, MEM_SIZE,
-                       IPC_CREAT | IPC_EXCL | 0666);
+        shmFd = shmget(SHM_KEY + port, MEM_SIZE, IPC_CREAT | IPC_EXCL | 0666);
     }
     if (shmFd == -1) {
         LOG(logERROR, ("Create shared memory failed: %s\n", strerror(errno)));
@@ -81,10 +80,11 @@ int sharedMemory_create(int port) {
 
 int sharedMemory_initialize() {
     shm->version = SHM_VERSION;
-    if (pthread_mutex_init(&(shm->lock), NULL) != 0) { 
-        LOG(logERROR, ("Failed to initialize pthread lock for shared memory\n"));
+    if (pthread_mutex_init(&(shm->lock), NULL) != 0) {
+        LOG(logERROR,
+            ("Failed to initialize pthread lock for shared memory\n"));
         return FAIL;
-    } 
+    }
     shm->scanStatus = IDLE;
     shm->scanStop = 0;
 #ifdef VIRTUAL

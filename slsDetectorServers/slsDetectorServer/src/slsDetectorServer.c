@@ -29,7 +29,7 @@ extern int phaseShift;
 
 void error(char *msg) { perror(msg); }
 
-void sigInterruptHandler(int p) { 
+void sigInterruptHandler(int p) {
     sharedMemory_remove();
     exit(-1);
 }
@@ -107,12 +107,12 @@ int main(int argc, char *argv[]) {
 
         // Catch signal SIGINT to destroy shm properly
         struct sigaction sa;
-        sa.sa_flags = 0;// no flags
-        sa.sa_handler = sigInterruptHandler;// handler function
-        sigemptyset(&sa.sa_mask); // dont block additional signals during invocation
-                                // of handler
+        sa.sa_flags = 0;                     // no flags
+        sa.sa_handler = sigInterruptHandler; // handler function
+        sigemptyset(&sa.sa_mask); // dont block additional signals during
+                                  // invocation of handler
         if (sigaction(SIGINT, &sa, NULL) == -1) {
-            LOG(logERROR,("Could not set handler function for SIGINT"));
+            LOG(logERROR, ("Could not set handler function for SIGINT"));
         }
 
         if (sharedMemory_create(portno) == FAIL) {

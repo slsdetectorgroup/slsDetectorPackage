@@ -2094,9 +2094,6 @@ void *start_timer(void *arg) {
             break;
         }
     }
-    for (int i = 0; i < imagesize; i += sizeof(uint8_t)) {
-        *((uint8_t *)(imageData + i)) = i;
-    }
 
     // Send data
     // loop over number of frames

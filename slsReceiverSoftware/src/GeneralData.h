@@ -449,11 +449,7 @@ class Mythen3Data : public GeneralData {
         ncounters = n;
         nPixelsX = NCHAN * ncounters;
         LOG(logINFO) << "nPixelsX: " << nPixelsX;
-        imageSize = nPixelsX * nPixelsY *
-                    ((dr > 16) ? 4 :            // 32 bit
-                         ((dr > 8) ? 2 :        // 16 bit
-                              ((dr > 4) ? 0.5 : // 4 bit
-                                   0.125)));    // 1 bit
+        imageSize = nPixelsX * nPixelsY * ((double)dr / 8.00);
         dataSize = imageSize / packetsPerFrame;
         packetSize = headerSizeinPacket + dataSize;
         LOG(logINFO) << "PacketSize: " << packetSize;
@@ -465,11 +461,7 @@ class Mythen3Data : public GeneralData {
      * @param tgEnable (discarded, of no value to mythen3)
      */
     void SetDynamicRange(int dr, bool tgEnable) {
-        imageSize = nPixelsX * nPixelsY *
-                    ((dr > 16) ? 4 :            // 32 bit
-                         ((dr > 8) ? 2 :        // 16 bit
-                              ((dr > 4) ? 0.5 : // 4 bit
-                                   0.125)));    // 1 bit
+        imageSize = nPixelsX * nPixelsY * ((double)dr / 8.00);
         dataSize = imageSize / packetsPerFrame;
         packetSize = headerSizeinPacket + dataSize;
         LOG(logINFO) << "PacketSize: " << packetSize;

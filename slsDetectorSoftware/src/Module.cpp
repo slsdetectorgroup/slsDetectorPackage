@@ -259,6 +259,38 @@ int64_t Module::getPeriodLeft() const {
     return sendToDetectorStop<int64_t>(F_GET_PERIOD_LEFT);
 }
 
+int Module::getDynamicRange() {
+    return sendToDetector<int>(F_SET_DYNAMIC_RANGE, GET_FLAG);
+}
+
+void Module::setDynamicRange(int n) {
+    int prev_val = n;
+    if (shm()->myDetectorType == EIGER) {
+        prev_val = getDynamicRange();
+    }
+
+    auto retval = sendToDetector<int>(F_SET_DYNAMIC_RANGE, n);
+    if (shm()->useReceiverFlag) {
+        int arg = retval;
+        sendToReceiver<int>(F_SET_RECEIVER_DYNAMIC_RANGE, arg);
+    }
+
+    // changes in dr
+    if (n != prev_val) {
+        // update speed for usability
+        if (n == 32) {
+            LOG(logINFO) << "Setting Clock to Quarter Speed to cope with "
+                            "Dynamic Range of 32";
+            setClockDivider(RUN_CLOCK, 2);
+        } else if (prev_val == 32) {
+            LOG(logINFO) << "Setting Clock to Full Speed for Dynamic Range of "
+                         << n;
+            setClockDivider(RUN_CLOCK, 0);
+        }
+        updateRateCorrection();
+    }
+}
+
 slsDetectorDefs::timingMode Module::getTimingMode() {
     return sendToDetector<timingMode>(F_SET_TIMING_MODE, GET_FLAG);
 }
@@ -1016,38 +1048,6 @@ void Module::setClientStreamingIP(const sls::IpAddr ip) {
 }
 
 //  Eiger Specific
-
-int Module::getDynamicRange() {
-    return sendToDetector<int>(F_SET_DYNAMIC_RANGE, GET_FLAG);
-}
-
-void Module::setDynamicRange(int n) {
-    int prev_val = n;
-    if (shm()->myDetectorType == EIGER) {
-        prev_val = getDynamicRange();
-    }
-
-    auto retval = sendToDetector<int>(F_SET_DYNAMIC_RANGE, n);
-    if (shm()->useReceiverFlag) {
-        int arg = retval;
-        sendToReceiver<int>(F_SET_RECEIVER_DYNAMIC_RANGE, arg);
-    }
-
-    // changes in dr
-    if (n != prev_val) {
-        // update speed for usability
-        if (n == 32) {
-            LOG(logINFO) << "Setting Clock to Quarter Speed to cope with "
-                            "Dynamic Range of 32";
-            setClockDivider(RUN_CLOCK, 2);
-        } else if (prev_val == 32) {
-            LOG(logINFO) << "Setting Clock to Full Speed for Dynamic Range of "
-                         << n;
-            setClockDivider(RUN_CLOCK, 0);
-        }
-        updateRateCorrection();
-    }
-}
 
 int64_t Module::getSubExptime() {
     return sendToDetector<int64_t>(F_GET_SUB_EXPTIME);

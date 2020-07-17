@@ -27,7 +27,7 @@
 #define DEFAULT_PATTERN_FILE             ("DefaultPattern.txt")
 #define DEFAULT_INTERNAL_GATES           (1)
 #define DEFAULT_EXTERNAL_GATES           (1)
-#define DEFAULT_DYNAMIC_RANGE            (24)
+#define DEFAULT_DYNAMIC_RANGE            (32)
 #define DEFAULT_NUM_FRAMES               (1)
 #define DEFAULT_NUM_CYCLES               (1)
 #define DEFAULT_GATE_WIDTH               (100 * 1000 * 1000) // ns

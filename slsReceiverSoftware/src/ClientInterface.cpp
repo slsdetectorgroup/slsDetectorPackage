@@ -727,21 +727,28 @@ int ClientInterface::set_dynamic_range(Interface &socket) {
         verifyIdle(socket);
         LOG(logDEBUG1) << "Setting dynamic range: " << dr;
         bool exists = false;
-        switch (myDetectorType) {
-        case EIGER:
-            if (dr == 4 || dr == 8 || dr == 16 || dr == 32) {
+        switch (dr) {
+        case 16:
+            exists = true;
+            break;
+        /*case 1: //TODO: Not yet implemented in firmware
+            if (myDetectorType == MYTHEN3) {
                 exists = true;
             }
             break;
-        case MYTHEN3:
-            if (dr == 1 || dr == 4 || dr == 16 || dr == 32) {
+        */
+        case 4:
+            if (myDetectorType == EIGER) {
+                exists = true;
+            }
+            break;
+        case 8:
+        case 32:
+            if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
                 exists = true;
             }
             break;
         default:
-            if (dr == 16) {
-                exists = true;
-            }
             break;
         }
         if (!exists) {
@@ -1718,7 +1725,7 @@ int ClientInterface::get_streaming_start_fnum(Interface &socket) {
 }
 
 int ClientInterface::set_streaming_start_fnum(Interface &socket) {
-   auto index = socket.Receive<int>();
+    auto index = socket.Receive<int>();
     if (index < 0) {
         throw RuntimeError("Invalid streaming start frame number: " +
                            std::to_string(index));

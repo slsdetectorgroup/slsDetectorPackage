@@ -2684,10 +2684,13 @@ int set_dynamic_range(int file_des) {
         // check dr
         switch (dr) {
         case GET_FLAG:
-#ifdef MYTHEN3D
-        case 32:
-#elif EIGERD
+/*#ifdef MYTHEN3D TODO:Not implemented in firmware yet
+        case 1:
+#endif*/
+#ifdef EIGERD
         case 4:
+#endif
+#if defined(EIGERD) || defined(MYTHEN3D)
         case 8:
         case 16:
         case 32:
@@ -2698,6 +2701,11 @@ int set_dynamic_range(int file_des) {
 #endif
             retval = setDynamicRange(dr);
             LOG(logDEBUG1, ("Dynamic range: %d\n", retval));
+            if (retval == -1) {
+                ret = FAIL;
+                sprintf(mess, "Could not get dynamic range.\n");
+                LOG(logERROR, (mess));
+            }
             validate(dr, retval, "set dynamic range", DEC);
             break;
         default:

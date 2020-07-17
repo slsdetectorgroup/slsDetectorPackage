@@ -125,6 +125,8 @@ class Module : public virtual slsDetectorDefs {
     int64_t getNumberOfTriggersLeft() const;
     int64_t getDelayAfterTriggerLeft() const;
     int64_t getPeriodLeft() const;
+    int getDynamicRange();
+    void setDynamicRange(int n);
     timingMode getTimingMode();
     void setTimingMode(timingMode value);
     int getClockDivider(int clkIndex);
@@ -290,8 +292,6 @@ class Module : public virtual slsDetectorDefs {
      *    Eiger Specific                              *
      *                                                *
      * ************************************************/
-    int getDynamicRange();
-    void setDynamicRange(int n);
     int64_t getSubExptime();
     void setSubExptime(int64_t value);
     int64_t getSubDeadTime();

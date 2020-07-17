@@ -15,19 +15,31 @@ qTabSettings::~qTabSettings() {}
 void qTabSettings::SetupWidgetWindow() {
 
     // enabling according to det type
-    switch (det->getDetectorType().squash()) {
-    case slsDetectorDefs::MYTHEN3:
+    slsDetectorDefs::detectorType detType = det->getDetectorType().squash();
+    if (detType == slsDetectorDefs::MYTHEN3) {
         lblSettings->setEnabled(false);
         comboSettings->setEnabled(false);
-        break;
-    case slsDetectorDefs::EIGER:
+
+        lblDynamicRange->setEnabled(true);
+        comboDynamicRange->setEnabled(true);
+        // disable dr
+        QStandardItemModel *model =
+            qobject_cast<QStandardItemModel *>(comboDynamicRange->model());
+        if (model) {
+            QModelIndex index;
+            QStandardItem *item;
+            index =
+                model->index(DYNAMICRANGE_4, comboDynamicRange->modelColumn(),
+                             comboDynamicRange->rootModelIndex());
+            item = model->itemFromIndex(index);
+            item->setEnabled(false);
+        }
+
+    } else if (detType == slsDetectorDefs::EIGER) {
         lblDynamicRange->setEnabled(true);
         comboDynamicRange->setEnabled(true);
         lblThreshold->setEnabled(true);
         spinThreshold->setEnabled(true);
-        break;
-    default:
-        break;
     }
 
     // default settings for the disabled

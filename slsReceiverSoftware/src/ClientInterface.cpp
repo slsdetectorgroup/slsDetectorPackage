@@ -430,7 +430,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
     }
     impl()->setTimingMode(arg.timMode);
     if (myDetectorType == EIGER || myDetectorType == MOENCH ||
-        myDetectorType == CHIPTESTBOARD) {
+        myDetectorType == CHIPTESTBOARD || myDetectorType == MYTHEN3) {
         try {
             impl()->setTenGigaEnable(arg.tenGiga);
         } catch (const RuntimeError &e) {
@@ -987,7 +987,7 @@ int ClientInterface::get_overwrite(Interface &socket) {
 int ClientInterface::enable_tengiga(Interface &socket) {
     auto val = socket.Receive<int>();
     if (myDetectorType != EIGER && myDetectorType != CHIPTESTBOARD &&
-        myDetectorType != MOENCH)
+        myDetectorType != MOENCH && myDetectorType != MYTHEN3)
         functionNotImplemented();
 
     if (val >= 0) {

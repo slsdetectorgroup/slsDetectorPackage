@@ -1648,7 +1648,7 @@ class CmdProxy {
                 "\n\tPrints the receiver configuration.");
 
     INTEGER_COMMAND(tengiga, getTenGiga, setTenGiga, StringTo<int>,
-                    "[0, 1]\n\t[Eiger][Ctb][Moench] 10GbE Enable.");
+                    "[0, 1]\n\t[Eiger][Ctb][Moench][Mythen3] 10GbE Enable.");
 
     INTEGER_COMMAND(flowcontrol10g, getTenGigaFlowControl,
                     setTenGigaFlowControl, StringTo<int>,

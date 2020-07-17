@@ -427,6 +427,8 @@ void setupDetector() {
         setGateDelay(i, DEFAULT_GATE_DELAY);
     }
     setInitialExtSignals();
+    // 10G UDP
+    enableTenGigabitEthernet(1);
 
     // check module type attached if not in debug mode
     {
@@ -1492,6 +1494,26 @@ int setDetectorPosition(int pos[]) {
 }
 
 int *getDetectorPosition() { return detPos; }
+
+int enableTenGigabitEthernet(int val) {
+    uint32_t addr = PKT_CONFIG_REG;
+
+    // set
+    if (val != -1) {
+        LOG(logINFO, ("Setting 10Gbe: %d\n", (val > 0) ? 1 : 0));
+        // 1g
+        if (val == 0) {
+            bus_w(addr, bus_r(addr) | PKT_CONFIG_1G_INTERFACE_MSK);
+        }
+        // 10g
+        else {
+            bus_w(addr, bus_r(addr) & (~PKT_CONFIG_1G_INTERFACE_MSK));
+        }
+    }
+    int oneG = ((bus_r(addr) & PKT_CONFIG_1G_INTERFACE_MSK) >>
+                PKT_CONFIG_1G_INTERFACE_OFST);
+    return oneG ? 0 : 1;
+}
 
 /* pattern */
 

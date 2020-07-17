@@ -1528,7 +1528,6 @@ int enableTenGigabitEthernet(int val) {
             send_to_ten_gig = 1;
         else
             send_to_ten_gig = 0;
-        // configuremac called from client
     }
     return send_to_ten_gig;
 }

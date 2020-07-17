@@ -2855,14 +2855,14 @@ int enable_ten_giga(int file_des) {
         return printSocketReadError();
     LOG(logINFOBLUE, ("Setting 10GbE: %d\n", arg));
 
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(MYTHEN3D) ||           \
-    defined(GOTTHARD2D)
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // set & get
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         if (arg >= 0 && enableTenGigabitEthernet(GET_FLAG) != arg) {
             enableTenGigabitEthernet(arg);
+#ifdef EIGERD
             uint64_t hardwaremac = getDetectorMAC();
             if (udpDetails.srcmac != hardwaremac) {
                 LOG(logINFOBLUE, ("Updating udp source mac\n"));
@@ -2873,6 +2873,7 @@ int enable_ten_giga(int file_des) {
                 LOG(logINFOBLUE, ("Updating udp source ip\n"));
                 udpDetails.srcip = hardwareip;
             }
+#endif
             configure_mac();
         }
         retval = enableTenGigabitEthernet(GET_FLAG);

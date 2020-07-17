@@ -377,7 +377,8 @@ int getInterruptSubframe();
 int setReadNLines(int value);
 int getReadNLines();
 #endif
-#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(EIGERD)
+#if defined(CHIPTESTBOARDD) || defined(MOENCHD) || defined(EIGERD) ||          \
+    defined(MYTHEN3D)
 int enableTenGigabitEthernet(int val);
 #endif
 

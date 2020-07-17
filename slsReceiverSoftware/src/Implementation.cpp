@@ -1662,6 +1662,9 @@ void Implementation::setTenGigaEnable(const bool b) {
         case EIGER:
             generalData->SetTenGigaEnable(b, dynamicRange);
             break;
+        case MYTHEN3:
+            generalData->SetDynamicRange(dynamicRange, b);
+            break;
         case MOENCH:
         case CHIPTESTBOARD:
             ctbAnalogDataBytes = generalData->setImageSize(

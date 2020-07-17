@@ -511,10 +511,10 @@ class Detector {
 
     Result<std::string> printRxConfiguration(Positions pos = {}) const;
 
-    /** [Eiger][CTB][Moench] */
+    /** [Eiger][CTB][Moench][Mythen3] */
     Result<bool> getTenGiga(Positions pos = {}) const;
 
-    /** [Eiger][CTB][Moench] */
+    /** [Eiger][CTB][Moench][Mythen3] */
     void setTenGiga(bool value, Positions pos = {});
 
     /** [Eiger, Jungfrau] */

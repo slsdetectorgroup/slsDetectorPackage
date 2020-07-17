@@ -21,6 +21,7 @@
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
+extern int checkModuleFlag;
 extern udpStruct udpDetails;
 extern const enum detectorType myDetectorType;
 
@@ -426,6 +427,40 @@ void setupDetector() {
         setGateDelay(i, DEFAULT_GATE_DELAY);
     }
     setInitialExtSignals();
+
+    // check module type attached if not in debug mode
+    {
+        int ret = checkDetectorType();
+        if (checkModuleFlag) {
+            switch (ret) {
+            case -1:
+                sprintf(initErrorMessage,
+                        "Could not get the module type attached.\n");
+                initError = FAIL;
+                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
+                return;
+            case -2:
+                sprintf(initErrorMessage,
+                        "No Module attached! Run server with -nomodule.\n");
+                initError = FAIL;
+                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
+                return;
+            case FAIL:
+                sprintf(initErrorMessage,
+                        "Wrong Module (Not Mythen3) attached!\n");
+                initError = FAIL;
+                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
+                return;
+            default:
+                break;
+            }
+        } else {
+            LOG(logINFOBLUE,
+                ("In No-Module mode: Ignoring module type. Continuing.\n"));
+        }
+    }
+
+    powerChip(1);
     loadDefaultPattern(DEFAULT_PATTERN_FILE);
 }
 

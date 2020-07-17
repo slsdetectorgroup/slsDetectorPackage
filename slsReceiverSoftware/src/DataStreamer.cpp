@@ -48,11 +48,14 @@ void DataStreamer::ResetParametersforNewAcquisition(const std::string &fname) {
     }
 }
 
-void DataStreamer::RecordFirstIndex(uint64_t fnum) {
+void DataStreamer::RecordFirstIndex(uint64_t fnum, char *buf) {
     startedFlag = true;
-    firstIndex = fnum;
+    // streamer first index needn't be
+    uint64_t firstVal = fnum - (*((uint32_t *)(buf + FIFO_DATASIZE_NUMBYTES)));
 
-    LOG(logDEBUG1) << index << " First Index: " << firstIndex;
+    firstIndex = firstVal;
+    LOG(logDEBUG1) << index << " First Index: " << firstIndex
+                   << ", First Streamer Index:" << fnum;
 }
 
 void DataStreamer::SetGeneralData(GeneralData *g) { generalData = g; }
@@ -137,7 +140,7 @@ void DataStreamer::ProcessAnImage(char *buf) {
     LOG(logDEBUG1) << "DataStreamer " << index << ": fnum:" << fnum;
 
     if (!startedFlag) {
-        RecordFirstIndex(fnum);
+        RecordFirstIndex(fnum, buf);
     }
 
     // shortframe gotthard

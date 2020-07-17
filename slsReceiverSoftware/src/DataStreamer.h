@@ -101,9 +101,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
   private:
     /**
      * Record First Index
-     * @param fnum frame index to record
+     * @param fnum current frame number
+     * @param buf get frame index from buffer to calculate first index to record
      */
-    void RecordFirstIndex(uint64_t fnum);
+    void RecordFirstIndex(uint64_t fnum, char *buf);
 
     /**
      * Thread Exeution for DataStreamer Class

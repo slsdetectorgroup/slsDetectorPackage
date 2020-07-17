@@ -620,6 +620,30 @@ TEST_CASE("rx_readfreq", "[.cmd][.rx][.new]") {
     }
 }
 
+TEST_CASE("rx_zmqstartfnum", "[.cmd][.rx][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getRxZmqStartingFrame();
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_zmqstartfnum", {"5"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_zmqstartfnum 5\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_zmqstartfnum", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_zmqstartfnum 5\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("rx_zmqstartfnum", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_zmqstartfnum 0\n");
+    }
+    for (int i = 0; i != det.size(); ++i) {
+        det.setRxZmqStartingFrame(prev_val[i], {i});
+    }
+}
+
 TEST_CASE("rx_zmqport", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);

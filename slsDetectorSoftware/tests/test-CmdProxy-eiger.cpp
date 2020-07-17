@@ -315,47 +315,6 @@ TEST_CASE("txndelay_right", "[.cmd][.new]") {
 
 /* Eiger Specific */
 
-TEST_CASE("dr", "[.cmd][.new]") {
-    Detector det;
-    CmdProxy proxy(&det);
-    auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER) {
-        auto dr = det.getDynamicRange().squash();
-        std::array<int, 4> vals{4, 8, 16, 32};
-        for (const auto val : vals) {
-            std::ostringstream oss1, oss2;
-            proxy.Call("dr", {std::to_string(val)}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "dr " + std::to_string(val) + '\n');
-            proxy.Call("dr", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "dr " + std::to_string(val) + '\n');
-        }
-        det.setDynamicRange(dr);
-    } else if (det_type == defs::MYTHEN3) {
-        // not updated in firmware to support anything other than 32 at the
-        // moment
-        std::ostringstream oss1, oss2;
-        proxy.Call("dr", {"32"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "dr 32\n");
-        proxy.Call("dr", {"32"}, -1, PUT, oss2);
-        REQUIRE(oss2.str() == "dr 32\n");
-        REQUIRE_THROWS(proxy.Call("dr", {"4"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("dr", {"8"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("dr", {"16"}, -1, PUT));
-    } else {
-        // For the other detectors we should get an error message
-        // except for dr 16
-        REQUIRE_THROWS(proxy.Call("dr", {"4"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("dr", {"8"}, -1, PUT));
-        REQUIRE_THROWS(proxy.Call("dr", {"32"}, -1, PUT));
-
-        std::ostringstream oss1, oss2;
-        proxy.Call("dr", {"16"}, -1, PUT, oss1);
-        REQUIRE(oss1.str() == "dr 16\n");
-        proxy.Call("dr", {"16"}, -1, PUT, oss2);
-        REQUIRE(oss2.str() == "dr 16\n");
-    }
-}
-
 TEST_CASE("subexptime", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);

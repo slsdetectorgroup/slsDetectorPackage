@@ -451,6 +451,48 @@ TEST_CASE("periodl", "[.cmd][.new]") {
     }
 }
 
+TEST_CASE("dr", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::EIGER) {
+        auto dr = det.getDynamicRange().squash();
+        std::array<int, 4> vals{4, 8, 16, 32};
+        for (const auto val : vals) {
+            std::ostringstream oss1, oss2;
+            proxy.Call("dr", {std::to_string(val)}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "dr " + std::to_string(val) + '\n');
+            proxy.Call("dr", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "dr " + std::to_string(val) + '\n');
+        }
+        det.setDynamicRange(dr);
+    } else if (det_type == defs::MYTHEN3) {
+        auto dr = det.getDynamicRange().squash();
+        // not updated in firmware to support dr 1
+        std::array<int, 3> vals{8, 16, 32};
+        for (const auto val : vals) {
+            std::ostringstream oss1, oss2;
+            proxy.Call("dr", {std::to_string(val)}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "dr " + std::to_string(val) + '\n');
+            proxy.Call("dr", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "dr " + std::to_string(val) + '\n');
+        }
+        det.setDynamicRange(dr);
+    } else {
+        // For the other detectors we should get an error message
+        // except for dr 16
+        REQUIRE_THROWS(proxy.Call("dr", {"4"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("dr", {"8"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("dr", {"32"}, -1, PUT));
+
+        std::ostringstream oss1, oss2;
+        proxy.Call("dr", {"16"}, -1, PUT, oss1);
+        REQUIRE(oss1.str() == "dr 16\n");
+        proxy.Call("dr", {"16"}, -1, PUT, oss2);
+        REQUIRE(oss2.str() == "dr 16\n");
+    }
+}
+
 TEST_CASE("timing", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -1523,7 +1565,7 @@ TEST_CASE("tengiga", "[.cmd][.new]") {
 
     auto det_type = det.getDetectorType().squash();
     if (det_type == defs::EIGER || det_type == defs::CHIPTESTBOARD ||
-        det_type == defs::MOENCH) {
+        det_type == defs::MOENCH || det_type == defs::MYTHEN3) {
         auto tengiga = det.getTenGiga();
         det.setTenGiga(false);
 

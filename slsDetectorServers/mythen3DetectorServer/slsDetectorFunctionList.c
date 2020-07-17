@@ -21,6 +21,7 @@
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
+extern int checkModuleFlag;
 extern udpStruct udpDetails;
 extern const enum detectorType myDetectorType;
 
@@ -426,6 +427,42 @@ void setupDetector() {
         setGateDelay(i, DEFAULT_GATE_DELAY);
     }
     setInitialExtSignals();
+    // 10G UDP
+    enableTenGigabitEthernet(1);
+
+    // check module type attached if not in debug mode
+    {
+        int ret = checkDetectorType();
+        if (checkModuleFlag) {
+            switch (ret) {
+            case -1:
+                sprintf(initErrorMessage,
+                        "Could not get the module type attached.\n");
+                initError = FAIL;
+                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
+                return;
+            case -2:
+                sprintf(initErrorMessage,
+                        "No Module attached! Run server with -nomodule.\n");
+                initError = FAIL;
+                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
+                return;
+            case FAIL:
+                sprintf(initErrorMessage,
+                        "Wrong Module (Not Mythen3) attached!\n");
+                initError = FAIL;
+                LOG(logERROR, ("Aborting startup!\n\n", initErrorMessage));
+                return;
+            default:
+                break;
+            }
+        } else {
+            LOG(logINFOBLUE,
+                ("In No-Module mode: Ignoring module type. Continuing.\n"));
+        }
+    }
+
+    powerChip(1);
     loadDefaultPattern(DEFAULT_PATTERN_FILE);
 }
 
@@ -496,16 +533,15 @@ int setDynamicRange(int dr) {
     if (dr > 0) {
         uint32_t regval = 0;
         switch (dr) {
-        case 1:
+        /*case 1: TODO:Not implemented in firmware yet
             regval = CONFIG_DYNAMIC_RANGE_1_VAL;
-            break;
-        case 4:
-            regval = CONFIG_DYNAMIC_RANGE_4_VAL;
+            break;*/
+        case 8:
+            regval = CONFIG_DYNAMIC_RANGE_8_VAL;
             break;
         case 16:
             regval = CONFIG_DYNAMIC_RANGE_16_VAL;
             break;
-        case 24:
         case 32:
             regval = CONFIG_DYNAMIC_RANGE_24_VAL;
             break;
@@ -520,10 +556,10 @@ int setDynamicRange(int dr) {
 
     uint32_t regval = bus_r(CONFIG_REG) & CONFIG_DYNAMIC_RANGE_MSK;
     switch (regval) {
-    case CONFIG_DYNAMIC_RANGE_1_VAL:
-        return 1;
-    case CONFIG_DYNAMIC_RANGE_4_VAL:
-        return 4;
+    /*case CONFIG_DYNAMIC_RANGE_1_VAL: TODO:Not implemented in firmware yet
+        return 1;*/
+    case CONFIG_DYNAMIC_RANGE_8_VAL:
+        return 8;
     case CONFIG_DYNAMIC_RANGE_16_VAL:
         return 16;
     case CONFIG_DYNAMIC_RANGE_24_VAL:
@@ -1459,6 +1495,26 @@ int setDetectorPosition(int pos[]) {
 
 int *getDetectorPosition() { return detPos; }
 
+int enableTenGigabitEthernet(int val) {
+    uint32_t addr = PKT_CONFIG_REG;
+
+    // set
+    if (val != -1) {
+        LOG(logINFO, ("Setting 10Gbe: %d\n", (val > 0) ? 1 : 0));
+        // 1g
+        if (val == 0) {
+            bus_w(addr, bus_r(addr) | PKT_CONFIG_1G_INTERFACE_MSK);
+        }
+        // 10g
+        else {
+            bus_w(addr, bus_r(addr) & (~PKT_CONFIG_1G_INTERFACE_MSK));
+        }
+    }
+    int oneG = ((bus_r(addr) & PKT_CONFIG_1G_INTERFACE_MSK) >>
+                PKT_CONFIG_1G_INTERFACE_OFST);
+    return oneG ? 0 : 1;
+}
+
 /* pattern */
 
 void startPattern() {
@@ -2003,7 +2059,6 @@ void *start_timer(void *arg) {
     int numFrames = (getNumFrames() * getNumTriggers());
     int64_t expUs = getGatePeriod() / 1000;
 
-    // int dr = setDynamicRange(-1);
     int imagesize = calculateDataBytes();
     int dataSize = imagesize / PACKETS_PER_FRAME;
     int packetSize = dataSize + sizeof(sls_detector_header);
@@ -2011,8 +2066,33 @@ void *start_timer(void *arg) {
     // Generate data
     char imageData[imagesize];
     memset(imageData, 0, imagesize);
-    for (int i = 0; i < imagesize; i += sizeof(uint8_t)) {
-        *((uint8_t *)(imageData + i)) = i;
+    {
+        int dr = setDynamicRange(-1);
+        int numCounters = __builtin_popcount(getCounterMask());
+        int nchannels = NCHAN_1_COUNTER * NCHIP * numCounters;
+
+        switch (dr) {
+        /*case 1: // TODO: Not implemented in firmware yet
+                break;*/
+        case 8:
+            for (int i = 0; i < nchannels; ++i) {
+                *((uint8_t *)(imageData + i)) = (uint8_t)i;
+            }
+            break;
+        case 16:
+            for (int i = 0; i < nchannels; ++i) {
+                *((uint16_t *)(imageData + i * sizeof(uint16_t))) = (uint16_t)i;
+            }
+            break;
+        case 32:
+            for (int i = 0; i < nchannels; ++i) {
+                *((uint32_t *)(imageData + i * sizeof(uint32_t))) =
+                    ((uint32_t)i & 0xFFFFFF); // 24 bit
+            }
+            break;
+        default:
+            break;
+        }
     }
 
     // Send data
@@ -2247,13 +2327,7 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 int calculateDataBytes() {
     int numCounters = __builtin_popcount(getCounterMask());
     int dr = setDynamicRange(-1);
-    int databytes = NCHAN_1_COUNTER * NCHIP * numCounters *
-                    ((dr > 16) ? 4 :            // 32 bit
-                         ((dr > 8) ? 2 :        // 16 bit
-                              ((dr > 4) ? 0.5 : // 4 bit
-                                   0.125)));    // 1 bit
-
-    return databytes;
+    return (NCHAN_1_COUNTER * NCHIP * numCounters * ((double)dr / 8.00));
 }
 
 int getTotalNumberOfChannels() {

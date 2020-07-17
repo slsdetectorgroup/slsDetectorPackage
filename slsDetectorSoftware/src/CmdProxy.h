@@ -643,6 +643,7 @@ class CmdProxy {
         {"triggersl", &CmdProxy::triggersl},
         {"delayl", &CmdProxy::delayl},
         {"periodl", &CmdProxy::periodl},
+        {"dr", &CmdProxy::DynamicRange},
         {"timing", &CmdProxy::timing},
         {"speed", &CmdProxy::Speed},
         {"adcphase", &CmdProxy::Adcphase},
@@ -814,7 +815,6 @@ class CmdProxy {
         {"zmqip", &CmdProxy::zmqip},
 
         /* Eiger Specific */
-        {"dr", &CmdProxy::DynamicRange},
         {"subexptime", &CmdProxy::subexptime},
         {"subdeadtime", &CmdProxy::subdeadtime},
         {"threshold", &CmdProxy::Threshold},
@@ -996,6 +996,7 @@ class CmdProxy {
     /* acquisition parameters */
     std::string Acquire(int action);
     std::string Exptime(int action);
+    std::string DynamicRange(int action);
     std::string Speed(int action);
     std::string Adcphase(int action);
     std::string Dbitphase(int action);
@@ -1021,7 +1022,6 @@ class CmdProxy {
     /* File */
     /* ZMQ Streaming Parameters (Receiver<->Client) */
     /* Eiger Specific */
-    std::string DynamicRange(int action);
     std::string Threshold(int action);
     std::string ThresholdNoTb(int action);
     std::string TrimEnergies(int action);
@@ -1648,7 +1648,7 @@ class CmdProxy {
                 "\n\tPrints the receiver configuration.");
 
     INTEGER_COMMAND(tengiga, getTenGiga, setTenGiga, StringTo<int>,
-                    "[0, 1]\n\t[Eiger][Ctb][Moench] 10GbE Enable.");
+                    "[0, 1]\n\t[Eiger][Ctb][Moench][Mythen3] 10GbE Enable.");
 
     INTEGER_COMMAND(flowcontrol10g, getTenGigaFlowControl,
                     setTenGigaFlowControl, StringTo<int>,
@@ -1785,9 +1785,11 @@ class CmdProxy {
         "[nth frame]\n\tStream out every nth frame. Default is 1. 0 means "
         "streaming every 200 ms and discarding frames in this interval.");
 
-    INTEGER_COMMAND(
-        rx_zmqstartfnum, getRxZmqStartingFrame, setRxZmqStartingFrame, StringTo<int>,
-        "[fnum]\n\tThe starting frame index to stream out. 0 by default, which streams the first frame in an acquisition, and then depending on the rx zmq frequency/ timer");
+    INTEGER_COMMAND(rx_zmqstartfnum, getRxZmqStartingFrame,
+                    setRxZmqStartingFrame, StringTo<int>,
+                    "[fnum]\n\tThe starting frame index to stream out. 0 by "
+                    "default, which streams the first frame in an acquisition, "
+                    "and then depending on the rx zmq frequency/ timer");
 
     INTEGER_COMMAND(
         rx_zmqport, getRxZmqPort, setRxZmqPort, StringTo<int>,

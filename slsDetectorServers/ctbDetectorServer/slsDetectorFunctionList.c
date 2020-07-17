@@ -1614,7 +1614,6 @@ int enableTenGigabitEthernet(int val) {
         } else {
             bus_w(addr, bus_r(addr) & (~CONFIG_GB10_SND_UDP_MSK));
         }
-        // configuremac called from client
     }
     return ((bus_r(addr) & CONFIG_GB10_SND_UDP_MSK) >>
             CONFIG_GB10_SND_UDP_OFST);

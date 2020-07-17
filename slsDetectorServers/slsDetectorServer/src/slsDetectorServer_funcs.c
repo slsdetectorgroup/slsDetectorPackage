@@ -2684,10 +2684,13 @@ int set_dynamic_range(int file_des) {
         // check dr
         switch (dr) {
         case GET_FLAG:
-#ifdef MYTHEN3D
-        case 32:
-#elif EIGERD
+/*#ifdef MYTHEN3D TODO:Not implemented in firmware yet
+        case 1:
+#endif*/
+#ifdef EIGERD
         case 4:
+#endif
+#if defined(EIGERD) || defined(MYTHEN3D)
         case 8:
         case 16:
         case 32:
@@ -2698,6 +2701,11 @@ int set_dynamic_range(int file_des) {
 #endif
             retval = setDynamicRange(dr);
             LOG(logDEBUG1, ("Dynamic range: %d\n", retval));
+            if (retval == -1) {
+                ret = FAIL;
+                sprintf(mess, "Could not get dynamic range.\n");
+                LOG(logERROR, (mess));
+            }
             validate(dr, retval, "set dynamic range", DEC);
             break;
         default:
@@ -2847,14 +2855,14 @@ int enable_ten_giga(int file_des) {
         return printSocketReadError();
     LOG(logINFOBLUE, ("Setting 10GbE: %d\n", arg));
 
-#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(MYTHEN3D) ||           \
-    defined(GOTTHARD2D)
+#if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(GOTTHARD2D)
     functionNotImplemented();
 #else
     // set & get
     if ((arg == GET_FLAG) || (Server_VerifyLock() == OK)) {
         if (arg >= 0 && enableTenGigabitEthernet(GET_FLAG) != arg) {
             enableTenGigabitEthernet(arg);
+#ifdef EIGERD
             uint64_t hardwaremac = getDetectorMAC();
             if (udpDetails.srcmac != hardwaremac) {
                 LOG(logINFOBLUE, ("Updating udp source mac\n"));
@@ -2865,6 +2873,7 @@ int enable_ten_giga(int file_des) {
                 LOG(logINFOBLUE, ("Updating udp source ip\n"));
                 udpDetails.srcip = hardwareip;
             }
+#endif
             configure_mac();
         }
         retval = enableTenGigabitEthernet(GET_FLAG);

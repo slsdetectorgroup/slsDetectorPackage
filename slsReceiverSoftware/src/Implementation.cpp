@@ -293,9 +293,10 @@ void Implementation::setDetectorType(const detectorType d) {
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, myDetectorType, fifo_ptr, &fileFormatType, fileWriteEnable,
                 &masterFileWriteEnable, &dataStreamEnable, &dynamicRange,
-                &streamingFrequency, &streamingTimerInMs, &streamingStartFnum, &framePadding,
-                &activated, &deactivatedPaddingEnable, &silentMode, &quadEnable,
-                &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
+                &streamingFrequency, &streamingTimerInMs, &streamingStartFnum,
+                &framePadding, &activated, &deactivatedPaddingEnable,
+                &silentMode, &quadEnable, &ctbDbitList, &ctbDbitOffset,
+                &ctbAnalogDataBytes));
         } catch (...) {
             listener.clear();
             dataProcessor.clear();
@@ -1018,10 +1019,10 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
                     i, myDetectorType, fifo_ptr, &fileFormatType,
                     fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable,
-                    &dynamicRange, &streamingFrequency, &streamingTimerInMs, &streamingStartFnum, 
-                    &framePadding, &activated, &deactivatedPaddingEnable,
-                    &silentMode, &quadEnable, &ctbDbitList, &ctbDbitOffset,
-                    &ctbAnalogDataBytes));
+                    &dynamicRange, &streamingFrequency, &streamingTimerInMs,
+                    &streamingStartFnum, &framePadding, &activated,
+                    &deactivatedPaddingEnable, &silentMode, &quadEnable,
+                    &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
             } catch (...) {
                 listener.clear();
@@ -1660,6 +1661,9 @@ void Implementation::setTenGigaEnable(const bool b) {
         switch (myDetectorType) {
         case EIGER:
             generalData->SetTenGigaEnable(b, dynamicRange);
+            break;
+        case MYTHEN3:
+            generalData->SetDynamicRange(dynamicRange, b);
             break;
         case MOENCH:
         case CHIPTESTBOARD:

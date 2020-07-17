@@ -203,6 +203,16 @@ class Detector {
      * [Gotthard2] only in continuous mode */
     Result<ns> getDelayAfterTriggerLeft(Positions pos = {}) const;
 
+    Result<int> getDynamicRange(Positions pos = {}) const;
+
+    /**
+     * [Eiger] Options: 4, 8, 16, 32
+     * [Mythen3] Options: 8, 16, 32
+     * [Eiger] If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to
+     * 1
+     */
+    void setDynamicRange(int value);
+
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
@@ -501,10 +511,10 @@ class Detector {
 
     Result<std::string> printRxConfiguration(Positions pos = {}) const;
 
-    /** [Eiger][CTB][Moench] */
+    /** [Eiger][CTB][Moench][Mythen3] */
     Result<bool> getTenGiga(Positions pos = {}) const;
 
-    /** [Eiger][CTB][Moench] */
+    /** [Eiger][CTB][Moench][Mythen3] */
     void setTenGiga(bool value, Positions pos = {});
 
     /** [Eiger, Jungfrau] */
@@ -698,8 +708,8 @@ class Detector {
     Result<int> getRxZmqStartingFrame(Positions pos = {}) const;
 
     /**
-     * The starting frame index to stream out. 0 by default, which streams 
-     * the first frame in an acquisition, and then depending on the rx zmq 
+     * The starting frame index to stream out. 0 by default, which streams
+     * the first frame in an acquisition, and then depending on the rx zmq
      * frequency/ timer.
      */
     void setRxZmqStartingFrame(int fnum, Positions pos = {});
@@ -735,15 +745,6 @@ class Detector {
      *    Eiger Specific                              *
      *                                                *
      * ************************************************/
-
-    Result<int> getDynamicRange(Positions pos = {}) const;
-
-    /**
-     * [Eiger]
-     * Options: 4, 8, 16, 32
-     * If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to 1
-     */
-    void setDynamicRange(int value);
 
     /** [Eiger] in 32 bit mode */
     Result<ns> getSubExptime(Positions pos = {}) const;

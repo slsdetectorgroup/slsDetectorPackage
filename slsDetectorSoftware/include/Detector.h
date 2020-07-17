@@ -695,6 +695,15 @@ class Detector {
      */
     void setRxZmqTimer(int time_in_ms, Positions pos = {});
 
+    Result<int> getRxZmqStartingFrame(Positions pos = {}) const;
+
+    /**
+     * The starting frame index to stream out. 0 by default, which streams 
+     * the first frame in an acquisition, and then depending on the rx zmq 
+     * frequency/ timer.
+     */
+    void setRxZmqStartingFrame(int fnum, Positions pos = {});
+
     Result<int> getRxZmqPort(Positions pos = {}) const;
 
     /**
@@ -984,10 +993,26 @@ class Detector {
                           Positions pos = {});
 
     /** [Gotthard2]  */
+    void setVetoFile(const int chipIndex, const std::string &fname,
+                     Positions pos = {});
+
+    /** [Gotthard2]  */
     Result<defs::burstMode> getBurstMode(Positions pos = {});
 
     /** [Gotthard2]  BURST_OFF, BURST_INTERNAL (default), BURST_EXTERNAL */
     void setBurstMode(defs::burstMode value, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<bool> getCDSGain(Positions pos = {}) const;
+
+    /** default disabled */
+    void setCDSGain(bool value, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<int> getFilter(Positions pos = {}) const;
+
+    /** default 0 */
+    void setFilter(int value, Positions pos = {});
 
     /** [Gotthard2] */
     Result<bool> getCurrentSource(Positions pos = {}) const;
@@ -1006,6 +1031,20 @@ class Detector {
 
     /** [Gotthard2] */
     void setVeto(const bool enable, Positions pos = {});
+
+    /** [Gotthard2] */
+    Result<int> getADCConfiguration(const int chipIndex, const int adcIndex,
+                                    Positions pos = {}) const;
+
+    /** [Gotthard2] */
+    void setADCConfiguration(const int chipIndex, const int adcIndex,
+                             const int value, Positions pos = {});
+
+    /** [Gotthard2] */
+    void getBadChannels(const std::string &fname, Positions pos = {}) const;
+
+    /** [Gotthard2] */
+    void setBadChannels(const std::string &fname, Positions pos = {});
 
     /**************************************************
      *                                                *

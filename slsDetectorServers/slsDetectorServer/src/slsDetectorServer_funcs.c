@@ -343,9 +343,18 @@ void function_table() {
     flist[F_GET_VETO] = &get_veto;
     flist[F_SET_VETO] = &set_veto;
     flist[F_SET_PATTERN] = &set_pattern;
-    flist[F_GET_SCAN] = get_scan;
-    flist[F_SET_SCAN] = set_scan;
-    flist[F_GET_SCAN_ERROR_MESSAGE] = get_scan_error_message;
+    flist[F_GET_SCAN] = &get_scan;
+    flist[F_SET_SCAN] = &set_scan;
+    flist[F_GET_SCAN_ERROR_MESSAGE] = &get_scan_error_message;
+    flist[F_GET_CDS_GAIN] = &get_cds_gain;
+    flist[F_SET_CDS_GAIN] = &set_cds_gain;
+    flist[F_GET_FILTER] = &get_filter;
+    flist[F_SET_FILTER] = &set_filter;
+    flist[F_SET_VETO_FILE] = &set_veto_file;
+    flist[F_GET_ADC_CONFIGURATION] = &get_adc_config;
+    flist[F_SET_ADC_CONFIGURATION] = &set_adc_config;
+    flist[F_GET_BAD_CHANNELS] = &get_bad_channels;
+    flist[F_SET_BAD_CHANNELS] = &set_bad_channels;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -637,8 +646,7 @@ int get_server_version(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
     retval = getServerVersion();
-    LOG(logDEBUG1,
-        ("server version retval: 0x%llx\n", (long long int)retval));
+    LOG(logDEBUG1, ("server version retval: 0x%llx\n", (long long int)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -647,8 +655,7 @@ int get_serial_number(int file_des) {
     memset(mess, 0, sizeof(mess));
     int64_t retval = -1;
     retval = getDetectorNumber();
-    LOG(logDEBUG1,
-        ("detector number retval: 0x%llx\n", (long long int)retval));
+    LOG(logDEBUG1, ("detector number retval: 0x%llx\n", (long long int)retval));
     return Server_SendResult(file_des, INT64, &retval, sizeof(retval));
 }
 
@@ -6317,6 +6324,7 @@ int set_veto_photon(int file_des) {
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     int values[args[2]];
+    memset(values, 0, sizeof(values));
     if (receiveData(file_des, values, sizeof(values), INT32) < 0)
         return printSocketReadError();
     LOG(logINFO, ("Setting Veto Photon: [chipIndex:%d, G%d, nch:%d]\n", args[0],
@@ -6354,7 +6362,7 @@ int set_veto_photon(int file_des) {
                     sprintf(mess,
                             "Could not set veto photon. Invalid ADU value 0x%x "
                             "for channel %d, must be 12 bit.\n",
-                            i, values[i]);
+                            values[i], i);
                     LOG(logERROR, (mess));
                     break;
                 }
@@ -7645,4 +7653,375 @@ int get_scan_error_message(int file_des) {
     LOG(logDEBUG1, ("scan retval err message: [%s]\n", retvals));
 
     return Server_SendResult(file_des, OTHER, retvals, sizeof(retvals));
+}
+
+int get_cds_gain(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting cds gain enable\n"));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // get only
+    retval = getCDSGain();
+    LOG(logDEBUG1, ("cds gain enable retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_cds_gain(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting cds gain enable: %u\n", arg));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg != 0 && arg != 1) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set CDS gain. Invalid value %d. "
+                    "Options [0-1]\n",
+                    arg);
+            LOG(logERROR, (mess));
+        } else {
+            setCDSGain(arg);
+            int retval = getCDSGain();
+            LOG(logDEBUG1, ("cds gain enable retval: %u\n", retval));
+            validate(arg, retval, "set cds gain enable", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_filter(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int retval = -1;
+
+    LOG(logDEBUG1, ("Getting filter\n"));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // get only
+    retval = getFilter();
+    LOG(logDEBUG1, ("filter retval: %u\n", retval));
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_filter(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int arg = 0;
+
+    if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO, ("Setting filter: %u\n", arg));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (arg < 0 || arg > ASIC_FILTER_MAX_VALUE) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set filter. Invalid filter %d. "
+                    "Options [0-%d]\n",
+                    arg, ASIC_FILTER_MAX_VALUE);
+            LOG(logERROR, (mess));
+        } else {
+            setFilter(arg);
+            int retval = getFilter();
+            LOG(logDEBUG1, ("filter retval: %u\n", retval));
+            validate(arg, retval, "set filter", DEC);
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int set_veto_file(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = {-1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    int chipIndex = args[0];
+    int nch = args[1];
+    int gainIndices[nch];
+    memset(gainIndices, 0, sizeof(gainIndices));
+    int values[nch];
+    memset(values, 0, sizeof(values));
+    if (receiveData(file_des, gainIndices, sizeof(gainIndices), INT32) < 0)
+        return printSocketReadError();
+    if (receiveData(file_des, values, sizeof(values), INT32) < 0)
+        return printSocketReadError();
+    LOG(logINFO,
+        ("Setting Veto file: [chipIndex:%d, nch:%d]\n", chipIndex, nch));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        if (chipIndex < -1 || chipIndex >= NCHIP) {
+            ret = FAIL;
+            sprintf(mess, "Could not set veto file. Invalid chip index %d\n",
+                    chipIndex);
+            LOG(logERROR, (mess));
+        } else if (nch != NCHAN) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not set veto file. Invalid number of channels %d. "
+                    "Expected %d\n",
+                    nch, NCHAN);
+            LOG(logERROR, (mess));
+        } else {
+            for (int i = 0; i < NCHAN; ++i) {
+                if (values[i] < 0 || values[i] > ADU_MAX_VAL) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set veto file. Invalid ADU value 0x%x "
+                            "for channel %d, must be 12 bit.\n",
+                            values[i], i);
+                    LOG(logERROR, (mess));
+                    break;
+                }
+                if (gainIndices[i] < 0 || gainIndices[i] > 2) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set veto file. Invalid gain index %d "
+                            "for channel %d\n",
+                            gainIndices[i], i);
+                    LOG(logERROR, (mess));
+                    break;
+                }
+            }
+            if (ret == OK) {
+                ret = setVetoFile(chipIndex, gainIndices, values);
+                if (ret == FAIL) {
+                    sprintf(mess, "Could not set veto file for chip index %d\n",
+                            chipIndex);
+                    LOG(logERROR, (mess));
+                }
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_adc_config(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[2] = {-1, -1};
+    int retval = -1;
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1, ("Getting adc configuration [chipIndex:%d, adcIndex:%d]\n",
+                    args[0], args[1]));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // get only
+    int chipIndex = args[0];
+    int adcIndex = args[1];
+    if (chipIndex < -1 || chipIndex >= NCHIP) {
+        ret = FAIL;
+        sprintf(mess,
+                "Could not get adc configuration. Invalid chip index %d\n",
+                chipIndex);
+        LOG(logERROR, (mess));
+    } else if (adcIndex < -1 || adcIndex >= NADC) {
+        ret = FAIL;
+        sprintf(mess, "Could not get adc configuration. Invalid adc index %d\n",
+                adcIndex);
+        LOG(logERROR, (mess));
+    } else {
+        retval = getADCConfiguration(chipIndex, adcIndex);
+        LOG(logDEBUG1, ("adc config retval: %u\n", retval));
+        if (retval == -1) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not get a single adc configuration. Different "
+                    "values for "
+                    "selected adc (%d) and chip (%d) range.\n",
+                    chipIndex, adcIndex);
+            LOG(logERROR, (mess));
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, &retval, sizeof(retval));
+}
+
+int set_adc_config(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int args[3] = {-1, -1, -1};
+
+    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
+        return printSocketReadError();
+    LOG(logDEBUG1,
+        ("Setting adc configuration [chipIndex:%d, adcIndex:%d, value:0x%x]\n",
+         args[0], args[1], args[2]));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        int chipIndex = args[0];
+        int adcIndex = args[1];
+        int value = args[2];
+        if (chipIndex < -1 || chipIndex >= NCHIP) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not get adc configuration. Invalid chip index %d. "
+                    "Options: [-1 to %d]\n",
+                    chipIndex, NCHIP);
+            LOG(logERROR, (mess));
+        } else if (adcIndex < -1 || adcIndex >= NADC) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not get adc configuration. Invalid adc index %d. "
+                    "Options: [-1 to %d]\n",
+                    adcIndex, NADC);
+            LOG(logERROR, (mess));
+        } else if (value < 0 || value > ASIC_ADC_MAX_VAL) {
+            ret = FAIL;
+            sprintf(mess,
+                    "Could not get adc configuration. Invalid value 0x%x. "
+                    "Options: [0 to 0x%x]\n",
+                    value, ASIC_ADC_MAX_VAL);
+            LOG(logERROR, (mess));
+        } else {
+            ret = setADCConfiguration(chipIndex, adcIndex, value);
+            if (ret == FAIL) {
+                sprintf(mess,
+                        "Could not set adc configuration in chip (chipIndex: "
+                        "%d, adcIndex: %d, value:0x%x).\n",
+                        chipIndex, adcIndex, value);
+                LOG(logERROR, (mess));
+            } else {
+                int retval = getADCConfiguration(chipIndex, adcIndex);
+                LOG(logDEBUG1, ("adc config retval: %u\n", retval));
+                validate(value, retval, "configure adc", HEX);
+            }
+        }
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int get_bad_channels(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int nretvals = 0;
+    int *retvals = NULL;
+
+    LOG(logDEBUG1, ("Getting bad channels\n"));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // get only
+    retvals = getBadChannels(&nretvals);
+    if (nretvals == -1) {
+        ret = FAIL;
+        strcpy(mess, "Could not get bad channels. Memory allcoation error\n");
+        LOG(logERROR, (mess));
+    }
+#endif
+    Server_SendResult(file_des, INT32, NULL, 0);
+    if (ret != FAIL) {
+        sendData(file_des, &nretvals, sizeof(nretvals), INT32);
+        if (nretvals > 0) {
+            sendData(file_des, retvals, sizeof(int) * nretvals, INT32);
+        }
+    }
+    if (retvals != NULL) {
+        free(retvals);
+    }
+    return ret;
+}
+
+int set_bad_channels(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+    int nargs = 0;
+    int *args = NULL;
+
+    if (receiveData(file_des, &nargs, sizeof(nargs), INT32) < 0)
+        return printSocketReadError();
+
+    if (nargs > 0) {
+        args = malloc(nargs * sizeof(int));
+        if (receiveData(file_des, args, nargs * sizeof(int), INT32) < 0)
+            return printSocketReadError();
+    }
+
+    LOG(logDEBUG1, ("Setting %d bad channels\n", nargs));
+
+#ifndef GOTTHARD2D
+    functionNotImplemented();
+#else
+    // only set
+    if (Server_VerifyLock() == OK) {
+        // validate bad channel number
+        for (int i = 0; i < nargs; ++i) {
+            LOG(logDEBUG1, ("\t[%d]:%d\n", i, args[i]));
+            if (args[i] < 0 || args[i] >= (NCHAN * NCHIP)) {
+                ret = FAIL;
+                sprintf(mess,
+                        "Could not set bad channels. Invalid bad channel "
+                        "number %d. Options [0-%d]\n",
+                        args[i], NCHIP * NCHAN - 1);
+                LOG(logERROR, (mess));
+                break;
+            }
+        }
+        if (ret == OK) {
+            setBadChannels(nargs, args);
+            int nretvals = 0;
+            int *retvals = getBadChannels(&nretvals);
+            if (nretvals == -1) {
+                ret = FAIL;
+                strcpy(mess,
+                       "Could not get bad channels. Memory allcoation error\n");
+                LOG(logERROR, (mess));
+            } else if (nretvals != nargs) {
+                ret = FAIL;
+                sprintf(
+                    mess,
+                    "Could not set bad channels. Set %d channels, but read %d "
+                    "channels\n",
+                    nargs, nretvals);
+                LOG(logERROR, (mess));
+            }
+            if (retvals != NULL) {
+                free(retvals);
+            }
+        }
+    }
+    if (args != NULL) {
+        free(args);
+    }
+#endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
 }

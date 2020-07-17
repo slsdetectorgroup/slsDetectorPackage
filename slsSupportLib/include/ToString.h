@@ -290,6 +290,7 @@ template <> defs::timingSourceType StringTo(const std::string &s);
 template <> uint32_t StringTo(const std::string &s);
 template <> uint64_t StringTo(const std::string &s);
 template <> int StringTo(const std::string &s);
+template <> bool StringTo(const std::string &s);
 template <> int64_t StringTo(const std::string &s);
 
 /** For types with a .str() method use this for conversion */

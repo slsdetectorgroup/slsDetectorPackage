@@ -283,7 +283,7 @@
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN(DAC_INDEX, mv, {det_id});                     \
-            os << OutString(t) << (!args.empty() ? " mv\n" : "\n");          \
+            os << OutString(t) << (!args.empty() ? " mv\n" : "\n");            \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             bool mv = false;                                                   \
             if (args.size() == 2) {                                            \
@@ -356,6 +356,27 @@
         if (det_id != -1) {                                                    \
             throw sls::RuntimeError("Cannot execute this at module level");    \
         }                                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            throw sls::RuntimeError("Cannot get");                             \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            det->SETFCN(args[0]);                                              \
+            os << args.front() << '\n';                                        \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+/** set only, 1 argument */
+#define EXECUTE_SET_COMMAND_1ARG(CMDNAME, SETFCN, HLPSTR)                      \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
@@ -786,6 +807,7 @@ class CmdProxy {
         /* ZMQ Streaming Parameters (Receiver<->Client) */
         {"rx_datastream", &CmdProxy::rx_datastream},
         {"rx_readfreq", &CmdProxy::rx_readfreq},
+        {"rx_zmqstartfnum", &CmdProxy::rx_zmqstartfnum},
         {"rx_zmqport", &CmdProxy::rx_zmqport},
         {"zmqport", &CmdProxy::zmqport},
         {"rx_zmqip", &CmdProxy::rx_zmqip},
@@ -834,10 +856,15 @@ class CmdProxy {
         {"inj_ch", &CmdProxy::InjectChannel},
         {"vetophoton", &CmdProxy::VetoPhoton},
         {"vetoref", &CmdProxy::VetoReference},
+        {"vetofile", &CmdProxy::VetoFile},
         {"burstmode", &CmdProxy::BurstMode},
+        {"cdsgain", &CmdProxy::cdsgain},
+        {"filter", &CmdProxy::filter},
         {"currentsource", &CmdProxy::currentsource},
         {"timingsource", &CmdProxy::timingsource},
         {"veto", &CmdProxy::veto},
+        {"confadc", &CmdProxy::ConfigureADC},
+        {"badchannels", &CmdProxy::BadChannels},
 
         /* Mythen3 Specific */
         {"counters", &CmdProxy::Counters},
@@ -1013,7 +1040,10 @@ class CmdProxy {
     std::string InjectChannel(int action);
     std::string VetoPhoton(int action);
     std::string VetoReference(int action);
+    std::string VetoFile(int action);
     std::string BurstMode(int action);
+    std::string ConfigureADC(int action);
+    std::string BadChannels(int action);
     /* Mythen3 Specific */
     std::string Counters(int action);
     std::string GateDelay(int action);
@@ -1087,7 +1117,7 @@ class CmdProxy {
                     "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
                     "\n\t[Eiger] Use threshold or thresholdnotb.");
 
-    EXECUTE_SET_COMMAND_NOID_1ARG(
+    EXECUTE_SET_COMMAND_1ARG(
         trimbits, loadTrimbits,
         "[fname]\n\t[Eiger][Mythen3] Loads the trimbit file to detector. If no "
         "extension specified, serial number of each module is attached.");
@@ -1118,10 +1148,6 @@ class CmdProxy {
                  "[duration] [(optional unit) "
                  "ns|us|ms|s]\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb]["
                  "Moench] Delay after trigger");
-
-    TIME_COMMAND(burstperiod, getBurstPeriod, setBurstPeriod,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] Burst "
-                 "period. Only in burst mode and auto timing mode.");
 
     GET_COMMAND(framesl, getNumberOfFramesLeft,
                 "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] "
@@ -1760,6 +1786,10 @@ class CmdProxy {
         "streaming every 200 ms and discarding frames in this interval.");
 
     INTEGER_COMMAND(
+        rx_zmqstartfnum, getRxZmqStartingFrame, setRxZmqStartingFrame, StringTo<int>,
+        "[fnum]\n\tThe starting frame index to stream out. 0 by default, which streams the first frame in an acquisition, and then depending on the rx zmq frequency/ timer");
+
+    INTEGER_COMMAND(
         rx_zmqport, getRxZmqPort, setRxZmqPort, StringTo<int>,
         "[port]\n\tZmq port for data to be streamed out of the receiver. Also "
         "restarts receiver zmq streaming if enabled. Default is 30001. "
@@ -1905,6 +1935,18 @@ class CmdProxy {
         "[n_bursts]\n\t[Gotthard2] Number of bursts per aquire. Only in auto "
         "timing mode and burst mode. Use timing command to set timing mode and "
         "burstmode command to set burst mode.");
+
+    TIME_COMMAND(burstperiod, getBurstPeriod, setBurstPeriod,
+                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] Burst "
+                 "period. Only in burst mode and auto timing mode.");
+
+    INTEGER_COMMAND(cdsgain, getCDSGain, setCDSGain, StringTo<bool>,
+                    "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default "
+                    "is disabled.");
+
+    INTEGER_COMMAND(
+        filter, getFilter, setFilter, StringTo<int>,
+        "[0|1|2|3]\n\t[Gotthard2] Set filter resistor. Default is 0.");
 
     INTEGER_COMMAND(currentsource, getCurrentSource, setCurrentSource,
                     StringTo<int>,

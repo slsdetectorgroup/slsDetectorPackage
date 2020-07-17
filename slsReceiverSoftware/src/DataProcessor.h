@@ -37,6 +37,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * @param dr pointer to dynamic range
      * @param freq pointer to streaming frequency
      * @param timer pointer to timer if streaming frequency is random
+     * @param sfnum pointer to streaming starting fnum
      * @param fp pointer to frame padding enable
      * @param act pointer to activated
      * @param depaden pointer to deactivated padding enable
@@ -48,9 +49,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      */
     DataProcessor(int ind, detectorType dtype, Fifo *f, fileFormat *ftype,
                   bool fwenable, bool *mfwenable, bool *dsEnable, uint32_t *dr,
-                  uint32_t *freq, uint32_t *timer, bool *fp, bool *act,
-                  bool *depaden, bool *sm, bool *qe, std::vector<int> *cdl,
-                  int *cdo, int *cad);
+                  uint32_t *freq, uint32_t *timer, uint32_t *sfnum, bool *fp,
+                  bool *act, bool *depaden, bool *sm, bool *qe,
+                  std::vector<int> *cdl, int *cdo, int *cad);
 
     /**
      * Destructor
@@ -201,8 +202,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * Process an image popped from fifo,
      * write to file if fw enabled & update parameters
      * @param buf address of pointer
+     * @returns frame number
      */
-    void ProcessAnImage(char *buf);
+    uint64_t ProcessAnImage(char *buf);
 
     /**
      * Calls CheckTimer and CheckCount for streaming frequency and timer
@@ -275,6 +277,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     /** Pointer to the timer if Streaming frequency is random */
     uint32_t *streamingTimerInMs;
 
+    /** Pointer to streaming starting fnum */
+    uint32_t *streamingStartFnum;
+
     /** Current frequency count */
     uint32_t currentFreqCount{0};
 
@@ -318,6 +323,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     /** Frame Number of latest processed frame number */
     std::atomic<uint64_t> currentFrameIndex{0};
+
+    /** first streamer frame to add frame index in fifo header */
+    bool firstStreamerFrame{false};
 
     // call back
     /**

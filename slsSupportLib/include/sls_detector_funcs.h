@@ -203,6 +203,15 @@ enum detFuncs {
     F_GET_SCAN,
     F_SET_SCAN,
     F_GET_SCAN_ERROR_MESSAGE,
+    F_GET_CDS_GAIN,
+    F_SET_CDS_GAIN,
+    F_GET_FILTER,
+    F_SET_FILTER,
+    F_SET_VETO_FILE,
+    F_GET_ADC_CONFIGURATION,
+    F_SET_ADC_CONFIGURATION,
+    F_GET_BAD_CHANNELS,
+    F_SET_BAD_CHANNELS,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -299,6 +308,8 @@ enum detFuncs {
     F_SET_RECEIVER_NUM_GATES,
     F_SET_RECEIVER_GATE_DELAY,
     F_GET_RECEIVER_THREAD_IDS,
+    F_GET_RECEIVER_STREAMING_START_FNUM,
+    F_SET_RECEIVER_STREAMING_START_FNUM,
 
     NUM_REC_FUNCTIONS
 };
@@ -504,6 +515,15 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_SCAN:                        return "F_GET_SCAN"; 
     case F_SET_SCAN:                        return "F_SET_SCAN"; 
     case F_GET_SCAN_ERROR_MESSAGE:          return "F_GET_SCAN_ERROR_MESSAGE"; 
+    case F_GET_CDS_GAIN:                    return "F_GET_CDS_GAIN";
+    case F_SET_CDS_GAIN:                    return "F_SET_CDS_GAIN";
+    case F_GET_FILTER:                      return "F_GET_FILTER";
+    case F_SET_FILTER:                      return "F_SET_FILTER";
+    case F_SET_VETO_FILE:                   return "F_SET_VETO_FILE";
+    case F_SET_ADC_CONFIGURATION:           return "F_SET_ADC_CONFIGURATION";       
+    case F_GET_ADC_CONFIGURATION:           return "F_GET_ADC_CONFIGURATION";       
+    case F_GET_BAD_CHANNELS:                return "F_GET_BAD_CHANNELS";
+    case F_SET_BAD_CHANNELS:                return "F_SET_BAD_CHANNELS";
 
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
@@ -599,6 +619,9 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_RECEIVER_NUM_GATES:          return "F_SET_RECEIVER_NUM_GATES";
     case F_SET_RECEIVER_GATE_DELAY:         return "F_SET_RECEIVER_GATE_DELAY";
     case F_GET_RECEIVER_THREAD_IDS:         return "F_GET_RECEIVER_THREAD_IDS";
+
+    case F_GET_RECEIVER_STREAMING_START_FNUM: return "F_GET_RECEIVER_STREAMING_START_FNUM";
+    case F_SET_RECEIVER_STREAMING_START_FNUM: return "F_SET_RECEIVER_STREAMING_START_FNUM";
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

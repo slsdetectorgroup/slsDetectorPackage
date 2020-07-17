@@ -1669,6 +1669,29 @@ std::string CmdProxy::VetoReference(int action) {
     return os.str();
 }
 
+std::string CmdProxy::VetoFile(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[chip index 0-10, -1 for all] [file name] \n\t[Gotthard2] Set "
+              "veto reference for each 128 channels for specific chip. The "
+              "file should have 128 rows of gain index and 12 bit value in hex"
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        throw sls::RuntimeError(
+            "cannot get vetofile. Did you mean vetophoton?");
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }
+        det->setVetoFile(StringTo<int>(args[0]), args[1], {det_id});
+        os << sls::ToString(args) << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 std::string CmdProxy::BurstMode(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -1711,6 +1734,62 @@ std::string CmdProxy::BurstMode(int action) {
         } else {
             throw sls::RuntimeError("Unknown action");
         }
+    }
+    return os.str();
+}
+
+std::string CmdProxy::ConfigureADC(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[chip index 0-10, -1 for all] [adc index 0-31, -1 for all] [12 "
+              "bit configuration value in hex]\n\t[Gotthard2] Sets "
+              "configuration for specific chip and adc, but configures 1 chip "
+              "(all adcs for that chip) at a time."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
+        }
+        auto t = det->getADCConfiguration(StringTo<int>(args[0]),
+                                          StringTo<int>(args[1]), {det_id});
+        os << OutStringHex(t) << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 3) {
+            WrongNumberOfParameters(3);
+        }
+        int value = StringTo<int>(args[2]);
+        det->setADCConfiguration(StringTo<int>(args[0]), StringTo<int>(args[1]),
+                                 value, {det_id});
+        os << '[' << args[0] << ", " << args[1] << ", " << ToStringHex(value)
+           << "]\n";
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
+std::string CmdProxy::BadChannels(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "[fname]\n\t[Gotthard2] Sets the bad channels (from file of bad "
+              "channel numbers) to be masked out."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->getBadChannels(args[0], {det_id});
+        os << "successfully retrieved" << '\n';
+    } else if (action == defs::PUT_ACTION) {
+        if (args.size() != 1) {
+            WrongNumberOfParameters(1);
+        }
+        det->setBadChannels(args[0], {det_id});
+        os << "successfully loaded" << '\n';
+    } else {
+        throw sls::RuntimeError("Unknown action");
     }
     return os.str();
 }

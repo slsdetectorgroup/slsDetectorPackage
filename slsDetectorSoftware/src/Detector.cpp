@@ -954,6 +954,14 @@ void Detector::setRxZmqTimer(int time_in_ms, Positions pos) {
     pimpl->Parallel(&Module::setReceiverStreamingTimer, pos, time_in_ms);
 }
 
+Result<int> Detector::getRxZmqStartingFrame(Positions pos) const {
+    return pimpl->Parallel(&Module::getReceiverStreamingStartingFrame, pos);
+}
+
+void Detector::setRxZmqStartingFrame(int fnum, Positions pos) {
+    pimpl->Parallel(&Module::setReceiverStreamingStartingFrame, pos, fnum);
+}
+
 Result<int> Detector::getRxZmqPort(Positions pos) const {
     return pimpl->Parallel(&Module::getReceiverStreamingPort, pos);
 }
@@ -1297,12 +1305,33 @@ void Detector::setVetoReference(const int gainIndex, const int value,
     pimpl->Parallel(&Module::setVetoReference, pos, gainIndex, value);
 }
 
+void Detector::setVetoFile(const int chipIndex, const std::string &fname,
+                           Positions pos) {
+    pimpl->Parallel(&Module::setVetoFile, pos, chipIndex, fname);
+}
+
 Result<defs::burstMode> Detector::getBurstMode(Positions pos) {
     return pimpl->Parallel(&Module::getBurstMode, pos);
 }
 
 void Detector::setBurstMode(defs::burstMode value, Positions pos) {
     pimpl->Parallel(&Module::setBurstMode, pos, value);
+}
+
+Result<bool> Detector::getCDSGain(Positions pos) const {
+    return pimpl->Parallel(&Module::getCDSGain, pos);
+}
+
+void Detector::setCDSGain(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setCDSGain, pos, value);
+}
+
+Result<int> Detector::getFilter(Positions pos) const {
+    return pimpl->Parallel(&Module::getFilter, pos);
+}
+
+void Detector::setFilter(int value, Positions pos) {
+    pimpl->Parallel(&Module::setFilter, pos, value);
 }
 
 Result<bool> Detector::getCurrentSource(Positions pos) const {
@@ -1327,6 +1356,27 @@ Result<bool> Detector::getVeto(Positions pos) const {
 
 void Detector::setVeto(bool enable, Positions pos) {
     pimpl->Parallel(&Module::setVeto, pos, enable);
+}
+
+Result<int> Detector::getADCConfiguration(const int chipIndex,
+                                          const int adcIndex,
+                                          Positions pos) const {
+    return pimpl->Parallel(&Module::getADCConfiguration, pos, chipIndex,
+                           adcIndex);
+}
+
+void Detector::setADCConfiguration(const int chipIndex, const int adcIndex,
+                                   const int value, Positions pos) {
+    pimpl->Parallel(&Module::setADCConfiguration, pos, chipIndex, adcIndex,
+                    value);
+}
+
+void Detector::getBadChannels(const std::string &fname, Positions pos) const {
+    pimpl->Parallel(&Module::getBadChannels, pos, fname);
+}
+
+void Detector::setBadChannels(const std::string &fname, Positions pos) {
+    pimpl->Parallel(&Module::setBadChannels, pos, fname);
 }
 
 // Mythen3 Specific

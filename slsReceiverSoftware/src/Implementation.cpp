@@ -91,6 +91,7 @@ void Implementation::InitializeMembers() {
     dataStreamEnable = false;
     streamingFrequency = 1;
     streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
+    streamingStartFnum = 0;
     streamingPort = 0;
     streamingSrcIP = sls::IpAddr{};
 
@@ -292,7 +293,7 @@ void Implementation::setDetectorType(const detectorType d) {
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, myDetectorType, fifo_ptr, &fileFormatType, fileWriteEnable,
                 &masterFileWriteEnable, &dataStreamEnable, &dynamicRange,
-                &streamingFrequency, &streamingTimerInMs, &framePadding,
+                &streamingFrequency, &streamingTimerInMs, &streamingStartFnum, &framePadding,
                 &activated, &deactivatedPaddingEnable, &silentMode, &quadEnable,
                 &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
         } catch (...) {
@@ -1017,7 +1018,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
                     i, myDetectorType, fifo_ptr, &fileFormatType,
                     fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable,
-                    &dynamicRange, &streamingFrequency, &streamingTimerInMs,
+                    &dynamicRange, &streamingFrequency, &streamingTimerInMs, &streamingStartFnum, 
                     &framePadding, &activated, &deactivatedPaddingEnable,
                     &silentMode, &quadEnable, &ctbDbitList, &ctbDbitOffset,
                     &ctbAnalogDataBytes));
@@ -1230,6 +1231,18 @@ void Implementation::setStreamingTimer(const uint32_t time_in_ms) {
 
     streamingTimerInMs = time_in_ms;
     LOG(logINFO) << "Streamer Timer: " << streamingTimerInMs;
+}
+
+uint32_t Implementation::getStreamingStartingFrameNumber() const {
+    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+    return streamingStartFnum;
+}
+
+void Implementation::setStreamingStartingFrameNumber(const uint32_t fnum) {
+    if (streamingStartFnum != fnum) {
+        streamingStartFnum = fnum;
+    }
+    LOG(logINFO) << "Streaming Start Frame num: " << streamingStartFnum;
 }
 
 uint32_t Implementation::getStreamingPort() const {

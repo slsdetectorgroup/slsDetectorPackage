@@ -967,6 +967,18 @@ void Module::setReceiverStreamingTimer(int time_in_ms) {
     sendToReceiver<int>(F_RECEIVER_STREAMING_TIMER, time_in_ms);
 }
 
+int Module::getReceiverStreamingStartingFrame() {
+    return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_START_FNUM);
+}
+
+void Module::setReceiverStreamingStartingFrame(int fnum) {
+    if (fnum < 0) {
+        throw RuntimeError("Invalid streaming starting frame number " +
+                           std::to_string(fnum));
+    }
+    sendToReceiver(F_SET_RECEIVER_STREAMING_START_FNUM, fnum, nullptr);
+}
+
 int Module::getReceiverStreamingPort() {
     return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
 }
@@ -1400,18 +1412,17 @@ std::vector<int> Module::getVetoPhoton(const int chipIndex) {
         client.Receive(mess, MAX_STR_LENGTH);
         throw RuntimeError("Detector " + std::to_string(moduleId) +
                            " returned error: " + std::string(mess));
-    } else {
-        int nch = -1;
-        client.Receive(&nch, sizeof(nch));
-
-        int adus[nch];
-        memset(adus, 0, sizeof(adus));
-        client.Receive(adus, sizeof(adus));
-        std::vector<int> retvals(adus, adus + nch);
-        LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]: " << nch
-                       << " channels\n";
-        return retvals;
     }
+    int nch = -1;
+    client.Receive(&nch, sizeof(nch));
+
+    int adus[nch];
+    memset(adus, 0, sizeof(adus));
+    client.Receive(adus, sizeof(adus));
+    std::vector<int> retvals(adus, adus + nch);
+    LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]: " << nch
+                   << " channels\n";
+    return retvals;
 }
 
 void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
@@ -1460,7 +1471,8 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
         // first line: caluclate gain index from gain thresholds from file
         if (firstLine) {
             int g0 = -1, g1 = -1;
-            if (!(ss >> g0 >> g1)) {
+            ss >> g0 >> g1;
+            if (ss.fail()) {
                 throw RuntimeError(
                     "Could not set veto photon. Invalid gain thresholds");
             }
@@ -1477,7 +1489,8 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
         // read pedestal and gain values
         else {
             double p[3] = {-1, -1, -1}, g[3] = {-1, -1, -1};
-            if (!(ss >> p[0] >> p[1] >> p[2] >> g[0] >> g[1] >> g[2])) {
+            ss >> p[0] >> p[1] >> p[2] >> g[0] >> g[1] >> g[2];
+            if (ss.fail()) {
                 throw RuntimeError("Could not set veto photon. Invalid "
                                    "pedestal or gain values for channel " +
                                    std::to_string(nRead));
@@ -1521,6 +1534,83 @@ void Module::setVetoReference(const int gainIndex, const int value) {
     sendToDetector(F_SET_VETO_REFERENCE, args, nullptr);
 }
 
+void Module::setVetoFile(const int chipIndex, const std::string &fname) {
+    if (shm()->myDetectorType != GOTTHARD2) {
+        throw RuntimeError(
+            "Set Veto file is not implemented for this detector");
+    }
+    if (chipIndex < -1 || chipIndex >= shm()->nChip.x) {
+        throw RuntimeError("Could not set veto file. Invalid chip index: " +
+                           std::to_string(chipIndex));
+    }
+    std::ifstream infile(fname.c_str());
+    if (!infile.is_open()) {
+        throw RuntimeError("Could not set veto file for chip " +
+                           std::to_string(chipIndex) +
+                           ". Could not open file: " + fname);
+    }
+
+    std::ifstream input_file(fname);
+    if (!input_file.is_open()) {
+        throw RuntimeError("Could not open veto file " + fname +
+                           " for reading");
+    }
+
+    int ch = shm()->nChan.x;
+    int nRead = 0;
+    int gainIndices[ch];
+    memset(gainIndices, 0, sizeof(gainIndices));
+    int values[ch];
+    memset(values, 0, sizeof(values));
+
+    for (std::string line; std::getline(input_file, line);) {
+        if (line.find('#') != std::string::npos) {
+            line.erase(line.find('#'));
+        }
+        LOG(logDEBUG1) << "line after removing comments:\n\t" << line;
+        if (line.length() > 1) {
+            // convert command and string to a vector
+            std::istringstream iss(line);
+            std::string val;
+            iss >> gainIndices[nRead] >> val;
+            if (iss.fail()) {
+                throw RuntimeError("Could not set veto file. Invalid gain "
+                                   "or reference value for channel " +
+                                   std::to_string(nRead));
+            }
+            try {
+                values[nRead] = StringTo<int>(val);
+            } catch (...) {
+                throw RuntimeError("Could not set veto file. Invalid value " +
+                                   val + " for channel " +
+                                   std::to_string(nRead));
+            }
+            ++nRead;
+            if (nRead >= ch) {
+                break;
+            }
+        }
+    }
+
+    int fnum = F_SET_VETO_FILE;
+    int ret = FAIL;
+    int args[]{chipIndex, ch};
+    LOG(logDEBUG) << "Sending veto file value to detector [chip:" << chipIndex
+                  << "]: " << args;
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(args, sizeof(args));
+    client.Send(gainIndices, sizeof(gainIndices));
+    client.Send(values, sizeof(values));
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Detector " + std::to_string(moduleId) +
+                           " returned error: " + std::string(mess));
+    }
+}
+
 slsDetectorDefs::burstMode Module::getBurstMode() {
     auto r = sendToDetector<int>(F_GET_BURST_MODE);
     return static_cast<slsDetectorDefs::burstMode>(r);
@@ -1532,6 +1622,18 @@ void Module::setBurstMode(slsDetectorDefs::burstMode value) {
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);
     }
+}
+
+bool Module::getCDSGain() { return sendToDetector<int>(F_GET_CDS_GAIN); }
+
+void Module::setCDSGain(bool value) {
+    sendToDetector(F_SET_CDS_GAIN, static_cast<int>(value), nullptr);
+}
+
+int Module::getFilter() { return sendToDetector<int>(F_GET_FILTER); }
+
+void Module::setFilter(int value) {
+    sendToDetector(F_SET_FILTER, value, nullptr);
 }
 
 bool Module::getCurrentSource() {
@@ -1555,6 +1657,101 @@ bool Module::getVeto() { return sendToDetector<int>(F_GET_VETO); }
 
 void Module::setVeto(bool enable) {
     sendToDetector(F_SET_VETO, static_cast<int>(enable), nullptr);
+}
+
+int Module::getADCConfiguration(const int chipIndex, const int adcIndex) {
+    int args[]{chipIndex, adcIndex};
+    return sendToDetector<int>(F_GET_ADC_CONFIGURATION, args);
+}
+
+void Module::setADCConfiguration(const int chipIndex, const int adcIndex,
+                                 int value) {
+    int args[]{chipIndex, adcIndex, value};
+    sendToDetector(F_SET_ADC_CONFIGURATION, args, nullptr);
+}
+
+void Module::getBadChannels(const std::string &fname) {
+    LOG(logDEBUG1) << "Getting bad channels to " << fname;
+    int fnum = F_GET_BAD_CHANNELS;
+    int ret = FAIL;
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Detector " + std::to_string(moduleId) +
+                           " returned error: " + std::string(mess));
+    }
+    // receive badchannels
+    int nch = -1;
+    std::vector<int> badchannels;
+    client.Receive(&nch, sizeof(nch));
+    if (nch > 0) {
+        int temp[nch];
+        memset(temp, 0, sizeof(temp));
+        client.Receive(temp, sizeof(temp));
+        badchannels.insert(badchannels.end(), &temp[0], &temp[nch]);
+        for (int i = 0; i < (int)badchannels.size(); ++i) {
+            LOG(logDEBUG1) << i << ":" << badchannels[i];
+        }
+    }
+
+    // save to file
+    std::ofstream outfile;
+    outfile.open(fname.c_str(), std::ios_base::out);
+    if (!outfile.is_open()) {
+        throw RuntimeError("Could not create file to save pattern");
+    }
+    for (int i = 0; i < nch; ++i) {
+        outfile << badchannels[i] << '\n';
+    }
+    LOG(logDEBUG1) << nch << " bad channels saved to file";
+}
+
+void Module::setBadChannels(const std::string &fname) {
+    // read bad channels file
+    std::ifstream input_file(fname);
+    if (!input_file.is_open()) {
+        throw RuntimeError("Could not open bad channels file " + fname +
+                           " for reading");
+    }
+    std::vector<int> badchannels;
+    for (std::string line; std::getline(input_file, line);) {
+        if (line.find(' ') != std::string::npos) {
+            line.erase(line.find(' '));
+        }
+        if (line.length() >= 1) {
+            std::istringstream iss(line);
+            int ival = 0;
+            iss >> ival;
+            if (iss.fail()) {
+                throw RuntimeError("Could not load bad channels file. Invalid "
+                                   "channel number at position " +
+                                   std::to_string(badchannels.size()));
+            }
+            badchannels.push_back(ival);
+        }
+    }
+
+    // send bad channels to module
+    int fnum = F_SET_BAD_CHANNELS;
+    int ret = FAIL;
+    int nch = badchannels.size();
+    LOG(logDEBUG1) << "Sending bad channels to detector, nch:" << nch;
+    auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
+    client.Send(&fnum, sizeof(fnum));
+    client.Send(&nch, sizeof(nch));
+    if (nch > 0) {
+        client.Send(badchannels.data(), sizeof(int) * nch);
+    }
+    client.Receive(&ret, sizeof(ret));
+    if (ret == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
+        client.Receive(mess, MAX_STR_LENGTH);
+        throw RuntimeError("Detector " + std::to_string(moduleId) +
+                           " returned error: " + std::string(mess));
+    }
 }
 
 // Mythen3 Specific

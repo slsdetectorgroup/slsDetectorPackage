@@ -891,6 +891,18 @@ template <> int StringTo(const std::string &s) {
     return std::stoi(s, nullptr, base);
 }
 
+template <> bool StringTo(const std::string &s) {
+    int i = std::stoi(s, nullptr, 10);
+    switch (i) {
+    case 0:
+        return false;
+    case 1:
+        return true;
+    default:
+        throw sls::RuntimeError("Unknown boolean. Expecting be 0 or 1.");
+    }
+}
+
 template <> int64_t StringTo(const std::string &s) {
     int base = s.find("0x") != std::string::npos ? 16 : 10;
     return std::stol(s, nullptr, base);

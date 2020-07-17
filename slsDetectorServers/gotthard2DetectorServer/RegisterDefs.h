@@ -78,14 +78,11 @@
 /* Status register */
 #define STATUS_REG                          (0x04 * REG_OFFSET + BASE_CONTROL)
 
-/* Look at me read only register */
-#define LOOK_AT_ME_REG                      (0x05 * REG_OFFSET + BASE_CONTROL)
-
 /* System status register */
-#define SYSTEM_STATUS_REG                   (0x06 * REG_OFFSET + BASE_CONTROL)
+#define SYSTEM_STATUS_REG                   (0x05 * REG_OFFSET + BASE_CONTROL)
 
 /* Config RW regiseter */
-#define CONFIG_REG                          (0x20 * REG_OFFSET + BASE_CONTROL)
+#define CONFIG_REG                          (0x08 * REG_OFFSET + BASE_CONTROL)
 
 #define CONFIG_VETO_ENBL_OFST               (0)
 #define CONFIG_VETO_ENBL_MSK                (0x00000001 << CONFIG_VETO_ENBL_OFST)
@@ -93,7 +90,7 @@
 #define CONFIG_VETO_CH_10GB_ENBL_MSK        (0x00000001 << CONFIG_VETO_CH_10GB_ENBL_OFST)
 
 /* Control RW register */
-#define CONTROL_REG                         (0x21 * REG_OFFSET + BASE_CONTROL)
+#define CONTROL_REG                         (0x09 * REG_OFFSET + BASE_CONTROL)
 
 #define CONTROL_STRT_ACQSTN_OFST            (0)
 #define CONTROL_STRT_ACQSTN_MSK             (0x00000001 << CONTROL_STRT_ACQSTN_OFST)
@@ -111,12 +108,16 @@
 #define CONTROL_PWR_CHIP_MSK                (0x00000001 << CONTROL_PWR_CHIP_OFST)
 
 /** DTA Offset Register */
-#define DTA_OFFSET_REG (0x24 * REG_OFFSET + BASE_CONTROL)
+#define DTA_OFFSET_REG                      (0x0A * REG_OFFSET + BASE_CONTROL)
+
+/** Mask Strip Registers (40) */
+#define MASK_STRIP_START_REG                (0x18 * REG_OFFSET + BASE_CONTROL)
+#define MASK_STRIP_NUM_REGS                 (40)
 
 /* ASIC registers --------------------------------------------------*/
 
 /* ASIC Config register */
-#define ASIC_CONFIG_REG (0x00 * REG_OFFSET + BASE_ASIC)
+#define ASIC_CONFIG_REG                     (0x00 * REG_OFFSET + BASE_ASIC)
 
 #define ASIC_CONFIG_RUN_MODE_OFST           (0)
 #define ASIC_CONFIG_RUN_MODE_MSK            (0x00000003 << ASIC_CONFIG_RUN_MODE_OFST)

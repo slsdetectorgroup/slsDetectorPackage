@@ -121,6 +121,8 @@ class Implementation : private virtual slsDetectorDefs {
     void setStreamingFrequency(const uint32_t freq);
     uint32_t getStreamingTimer() const;
     void setStreamingTimer(const uint32_t time_in_ms);
+    uint32_t getStreamingStartingFrameNumber() const;
+    void setStreamingStartingFrameNumber(const uint32_t fnum);
     uint32_t getStreamingPort() const;
     void setStreamingPort(const uint32_t i);
     sls::IpAddr getStreamingSourceIP() const;
@@ -299,6 +301,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool dataStreamEnable;
     uint32_t streamingFrequency;
     uint32_t streamingTimerInMs;
+    uint32_t streamingStartFnum;
     uint32_t streamingPort;
     sls::IpAddr streamingSrcIP;
     std::map<std::string, std::string> additionalJsonHeader;

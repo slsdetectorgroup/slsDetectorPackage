@@ -504,18 +504,27 @@ int setInjectChannel(int offset, int increment);
 void getInjectedChannels(int *offset, int *increment);
 int setVetoReference(int gainIndex, int value);
 int setVetoPhoton(int chipIndex, int gainIndex, int *values);
+int configureASICVetoReference(int chipIndex, int *values);
 int getVetoPhoton(int chipIndex, int *retvals);
-int configureSingleADCDriver(int chipIndex);
-int configureADC();
+int setVetoFile(int chipIndex, int *gainIndices, int *values);
+int setADCConfiguration(int chipIndex, int adcIndex, int value);
+int getADCConfiguration(int chipIndex, int adcIndex);
 int setBurstModeinFPGA(enum burstMode value);
 int setBurstMode(enum burstMode burst);
+int configureASICGlobalSettings();
 enum burstMode getBurstMode();
+int setCDSGain(int enable);
+int getCDSGain();
+int setFilter(int value);
+int getFilter();
 void setCurrentSource(int value);
 int getCurrentSource();
 void setTimingSource(enum timingSourceType value);
 enum timingSourceType getTimingSource();
 void setVeto(int enable);
 int getVeto();
+void setBadChannels(int nch, int *channels);
+int *getBadChannels(int *nch);
 #endif
 
 #if defined(JUNGFRAUD) || defined(EIGERD)

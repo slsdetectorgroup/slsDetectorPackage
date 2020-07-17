@@ -274,6 +274,8 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverStreamingFrequency(int freq);
     int getReceiverStreamingTimer();
     void setReceiverStreamingTimer(int time_in_ms = 200);
+    int getReceiverStreamingStartingFrame();
+    void setReceiverStreamingStartingFrame(int fnum);
     int getReceiverStreamingPort();
     void setReceiverStreamingPort(int port);
     sls::IpAddr getReceiverStreamingIP();
@@ -373,14 +375,24 @@ class Module : public virtual slsDetectorDefs {
     void setVetoPhoton(const int chipIndex, const int numPhotons,
                        const int energy, const std::string &fname);
     void setVetoReference(const int gainIndex, const int value);
+    void setVetoFile(const int chipIndex, const std::string &fname);
     burstMode getBurstMode();
     void setBurstMode(burstMode value);
+    bool getCDSGain();
+    void setCDSGain(bool value);
+    int getFilter();
+    void setFilter(int value);
     bool getCurrentSource();
     void setCurrentSource(bool value);
     slsDetectorDefs::timingSourceType getTimingSource();
     void setTimingSource(slsDetectorDefs::timingSourceType value);
     bool getVeto();
     void setVeto(bool enable);
+    int getADCConfiguration(const int chipIndex, const int adcIndex);
+    void setADCConfiguration(const int chipIndex, const int adcIndex,
+                             int value);
+    void getBadChannels(const std::string &fname);
+    void setBadChannels(const std::string &fname);
 
     /**************************************************
      *                                                *

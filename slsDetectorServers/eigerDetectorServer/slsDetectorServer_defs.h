@@ -3,7 +3,7 @@
 
 #define REQUIRED_FIRMWARE_VERSION (26)
 #define IDFILECOMMAND             "more /home/root/executables/detid.txt"
-#define CONFIG_FILE               ("config.txt")
+#define CONFIG_FILE               ("config_eiger.txt")
 #define WAIT_STOP_SERVER_START    (1 * 1000 * 1000)
 
 #define STATUS_IDLE    0

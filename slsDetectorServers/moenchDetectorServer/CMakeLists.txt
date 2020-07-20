@@ -43,4 +43,4 @@ install(TARGETS moenchDetectorServer_virtual
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-configure_file(DefaultPattern_mythen3.txt ${CMAKE_BINARY_DIR}/bin/DefaultPattern_moench.txt COPYONLY)
+configure_file(DefaultPattern_moench.txt ${CMAKE_BINARY_DIR}/bin/DefaultPattern_moench.txt COPYONLY)

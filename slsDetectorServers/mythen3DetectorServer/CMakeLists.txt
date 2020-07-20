@@ -38,3 +38,5 @@ set_target_properties(mythen3DetectorServer_virtual PROPERTIES
 install(TARGETS mythen3DetectorServer_virtual
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+configure_file(DefaultPattern_mythen3.txt ${CMAKE_BINARY_DIR}/bin/DefaultPattern_mythen3.txt COPYONLY)

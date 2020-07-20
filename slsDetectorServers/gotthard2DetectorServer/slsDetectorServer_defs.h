@@ -18,7 +18,7 @@
 #define DAC_DRIVER_FILE_NAME        ("/etc/devlinks/dac")
 #define ONCHIP_DAC_DRIVER_FILE_NAME ("/etc/devlinks/chipdac")
 #define TYPE_FILE_NAME              ("/etc/devlinks/type")
-#define CONFIG_FILE                 ("config.txt")
+#define CONFIG_FILE                 ("config_gotthard2.txt")
 #define DAC_MAX_MV                  (2048)
 #define ONCHIP_DAC_MAX_VAL          (0x3FF)
 #define ADU_MAX_VAL                 (0xFFF)

@@ -38,3 +38,5 @@ set_target_properties(gotthard2DetectorServer_virtual PROPERTIES
 install(TARGETS gotthard2DetectorServer_virtual
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+configure_file(config_gotthard2.txt ${CMAKE_BINARY_DIR}/bin/config_gotthard2.txt COPYONLY)

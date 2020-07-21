@@ -96,3 +96,7 @@ set_target_properties(eigerDetectorServerSlaveBottom_virtual PROPERTIES
 install(TARGETS eigerDetectorServerSlaveBottom_virtual
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+
+
+configure_file(config_eiger.txt ${CMAKE_BINARY_DIR}/bin/config_eiger.txt COPYONLY)

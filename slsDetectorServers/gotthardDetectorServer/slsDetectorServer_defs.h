@@ -30,7 +30,7 @@ enum CLKINDEX { ADC_CLK, NUM_CLOCKS };
     };
 
 /* for 25 um */
-#define CONFIG_FILE "config.txt"
+#define CONFIG_FILE "config_gotthard.txt"
 
 /* Hardware Definitions */
 #define NCHAN              (128)

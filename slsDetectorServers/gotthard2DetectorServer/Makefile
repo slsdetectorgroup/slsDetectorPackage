@@ -32,6 +32,7 @@ $(PROGS): $(OBJS)
 	mkdir -p $(DESTDIR) 
 	$(CC) -o $@ $^ $(CFLAGS)  $(LDLIBS)  
 	mv $(PROGS) $(DESTDIR)
+	cp config_gotthard2.txt $(DESTDIR)
 	rm $(main_src)*.o	
 
 clean:

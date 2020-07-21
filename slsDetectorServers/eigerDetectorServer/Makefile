@@ -33,6 +33,7 @@ $(PROGS):  $(OBJS)
 	mkdir -p $(DESTDIR) 
 	$(CC)  	-o $@  $^ $(CFLAGS) $(LDLIBS) 
 	mv $(PROGS) $(DESTDIR)
+	cp config_eiger.txt $(DESTDIR)
 	
 
 hv9m_blackfin_server:9mhvserial_bf.c

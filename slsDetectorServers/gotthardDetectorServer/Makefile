@@ -31,6 +31,7 @@ $(PROGS): $(OBJS)
 	mkdir -p $(DESTDIR) 
 	$(CC) -o $@ $^ $(CFLAGS)   $(LDLIBS)
 	mv $(PROGS) $(DESTDIR)
+	cp config_gotthard.txt $(DESTDIR)
 	rm *.gdb
 	rm $(main_src)*.o
 

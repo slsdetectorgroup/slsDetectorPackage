@@ -74,7 +74,7 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define NCHANS_PER_ADC      (25)
 
 /** Default Parameters */
-#define DEFAULT_PATTERN_FILE ("DefaultPattern.txt")
+#define DEFAULT_PATTERN_FILE ("DefaultPattern_moench.txt")
 #define DEFAULT_DATA_BYTES   (NCHIP * NCHAN * NUM_BITS_PER_PIXEL)
 #define DEFAULT_NUM_SAMPLES  (5000)
 #define DEFAULT_EXPTIME      (0)

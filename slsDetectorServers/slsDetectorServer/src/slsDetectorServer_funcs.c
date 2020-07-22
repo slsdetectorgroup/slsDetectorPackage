@@ -992,7 +992,8 @@ enum DACINDEX getDACIndex(enum dacIndex ind) {
     default:
 #ifdef CHIPTESTBOARDD
         if (ind < NDAC_ONLY) {
-            serverDacIndex = ind;
+            //For CTB use the index directly, no conversion
+            serverDacIndex = (enum DACINDEX)ind;
             break;
         }
 #endif

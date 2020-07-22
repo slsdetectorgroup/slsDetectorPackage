@@ -24,7 +24,7 @@
 #define ADU_MAX_VAL                 (0xFFF)
 #define ADU_MAX_BITS                (12)
 #define MAX_FRAMES_IN_BURST_MODE    (2720)
-#define TYPE_GOTTHARD2_MODULE_VAL   (512)
+#define TYPE_GOTTHARD2_MODULE_VAL   (536)
 #define TYPE_TOLERANCE              (10)
 #define TYPE_NO_MODULE_STARTING_VAL (800)
 #define INITIAL_STARTUP_WAIT        (1 * 1000 * 1000)

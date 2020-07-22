@@ -4,14 +4,13 @@
 #include "sharedMemory.h"
 #include "versionAPI.h"
 
-#include <libgen.h>
-
 #include "LTC2620.h" // dacs
 #ifdef VIRTUAL
 #include "communication_funcs_UDP.h"
 #endif
 
 #include "string.h"
+#include <libgen.h> // dirname
 #include <netinet/in.h>
 #include <unistd.h> // usleep
 #ifdef VIRTUAL

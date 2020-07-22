@@ -4,7 +4,9 @@
 #include "slsDetectorServer_defs.h"
 #include "sls_detector_defs.h"
 
+#include <libgen.h> // dirname
 #include <string.h>
+#include <unistd.h> //readlink
 
 extern char initErrorMessage[MAX_STR_LENGTH];
 extern int initError;
@@ -18,19 +20,38 @@ extern uint64_t setPatternWaitTime(int level, uint64_t t);
 extern void setPatternLoop(int level, int *startAddr, int *stopAddr,
                            int *nLoop);
 
-int loadDefaultPattern(char *fname) {
+int loadDefaultPattern(char *patFname) {
     if (initError == FAIL) {
         return initError;
     }
 
+    // get path of current binary
+    char path[128];
+    memset(path, 0, sizeof(path));
+    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
+    if (len < 0) {
+        LOG(logWARNING, ("Could not readlink current binary\n"));
+        return FAIL;
+    }
+    path[len] = '\0';
+
+    // get dir path and attach config file name
+    char *dir = dirname(path);
+    char fname[128];
+    memset(fname, 0, sizeof(fname));
+    sprintf(fname, "%s/%s", dir, patFname);
+    LOG(logDEBUG1, ("fname:%s\n", fname));
+
+    // open config file
     FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
-        sprintf(initErrorMessage, "Could not open pattern file [%s].\n", fname);
+        sprintf(initErrorMessage, "Could not open pattern file [%s].\n",
+                patFname);
         initError = FAIL;
         LOG(logERROR, ("%s\n\n", initErrorMessage));
         return FAIL;
     }
-    LOG(logINFOBLUE, ("Reading default pattern file %s\n", fname));
+    LOG(logINFOBLUE, ("Reading default pattern file %s\n", patFname));
 
     // Initialization
     const size_t LZ = 256;

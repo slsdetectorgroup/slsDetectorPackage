@@ -391,7 +391,7 @@ void Module::setExternalSignalFlags(int signalIndex, externalSignalFlag type) {
 
 void Module::startReceiver() {
     shm()->stoppedFlag = false;
-    sendToReceiver(F_START_RECEIVER, nullptr, nullptr);
+    sendToReceiver(F_START_RECEIVER);
 }
 
 void Module::stopReceiver() {
@@ -2671,6 +2671,20 @@ template <typename Ret> Ret Module::sendToReceiver(int fnum) const {
     sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << ToString(retval);
     return retval;
+}
+
+void Module::sendToReceiver(int fnum) {
+    LOG(logDEBUG1) << "Sending to Receiver: ["
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
+                   << ", nullptr, 0, nullptr, 0]";
+    sendToReceiver(fnum, nullptr, 0, nullptr, 0);
+}
+
+void Module::sendToReceiver(int fnum) const {
+    LOG(logDEBUG1) << "Sending to Receiver: ["
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
+                   << ", nullptr, 0, nullptr, 0]";
+    sendToReceiver(fnum, nullptr, 0, nullptr, 0);
 }
 
 template <typename Ret, typename Arg>

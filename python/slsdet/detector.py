@@ -178,7 +178,7 @@ class Detector(CppDetectorApi):
 
     @exptime.setter
     def exptime(self, t):
-        self.setExptime(ut.make_timedelta(t))
+        self.setExptime(t)
 
     @property
     def period(self):
@@ -187,7 +187,7 @@ class Detector(CppDetectorApi):
 
     @period.setter
     def period(self, t):
-        self.setPeriod(ut.make_timedelta(t))
+        self.setPeriod(t)
 
     @property
     @element
@@ -196,7 +196,7 @@ class Detector(CppDetectorApi):
 
     @delay.setter
     def delay(self, t):
-        self.setDelayAfterTrigger(ut.make_timedelta(t))
+        self.setDelayAfterTrigger(t)
 
     @property
     @element
@@ -663,7 +663,7 @@ class Detector(CppDetectorApi):
 
     @subexptime.setter
     def subexptime(self, t):
-        self.setSubExptime(ut.make_timedelta(t))
+        self.setSubExptime(t)
 
     @property
     def subdeadtime(self):
@@ -672,7 +672,7 @@ class Detector(CppDetectorApi):
 
     @subdeadtime.setter
     def subdeadtime(self, t):
-        self.setSubDeadTime(ut.make_timedelta(t))
+        self.setSubDeadTime(t)
 
     @property
     def partialreset(self):
@@ -771,7 +771,7 @@ class Detector(CppDetectorApi):
 
     @storagecell_delay.setter
     def storagecell_delay(self, t):
-        self.setStorageCellDelay(ut.make_timedelta(t))
+        self.setStorageCellDelay(t)
 
     @property
     @element
@@ -839,9 +839,9 @@ class Detector(CppDetectorApi):
         if is_iterable(value):
             if len(value) == 3:
                 for i, v in enumerate(value):
-                    self.setGateDelay(i, ut.make_timedelta(v))
+                    self.setGateDelay(i, v)
         else:
-            self.setGateDelay(-1, ut.make_timedelta(value))
+            self.setGateDelay(-1, value)
 
     @property
     def counters(self):

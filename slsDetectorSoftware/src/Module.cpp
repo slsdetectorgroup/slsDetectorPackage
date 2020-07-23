@@ -391,7 +391,7 @@ void Module::setExternalSignalFlags(int signalIndex, externalSignalFlag type) {
 
 void Module::startReceiver() {
     shm()->stoppedFlag = false;
-    sendToReceiver(F_START_RECEIVER, nullptr, nullptr);
+    sendToReceiver(F_START_RECEIVER);
 }
 
 void Module::stopReceiver() {
@@ -932,7 +932,7 @@ void Module::setFileIndex(int64_t file_index) {
 }
 
 void Module::incrementFileIndex() {
-    sendToReceiver(F_INCREMENT_FILE_INDEX, nullptr, nullptr);
+    sendToReceiver(F_INCREMENT_FILE_INDEX);
 }
 
 bool Module::getFileWrite() {
@@ -2273,7 +2273,7 @@ void Module::copyDetectorServer(const std::string &fname,
 }
 
 void Module::rebootController() {
-    sendToDetector(F_REBOOT_CONTROLLER, nullptr, nullptr);
+    sendToDetector(F_REBOOT_CONTROLLER);
     LOG(logINFO) << "Controller rebooted successfully!";
 }
 
@@ -2673,6 +2673,20 @@ template <typename Ret> Ret Module::sendToReceiver(int fnum) const {
     return retval;
 }
 
+void Module::sendToReceiver(int fnum) {
+    LOG(logDEBUG1) << "Sending to Receiver: ["
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
+                   << ", nullptr, 0, nullptr, 0]";
+    sendToReceiver(fnum, nullptr, 0, nullptr, 0);
+}
+
+void Module::sendToReceiver(int fnum) const {
+    LOG(logDEBUG1) << "Sending to Receiver: ["
+                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
+                   << ", nullptr, 0, nullptr, 0]";
+    sendToReceiver(fnum, nullptr, 0, nullptr, 0);
+}
+
 template <typename Ret, typename Arg>
 Ret Module::sendToReceiver(int fnum, const Arg &args) {
     LOG(logDEBUG1) << "Sending to Receiver: ["
@@ -2803,7 +2817,7 @@ void Module::checkReceiverVersionCompatibility() {
 }
 
 void Module::restreamStopFromReceiver() {
-    sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER, nullptr, nullptr);
+    sendToReceiver(F_RESTREAM_STOP_FROM_RECEIVER);
 }
 
 int Module::sendModule(sls_detector_module *myMod, sls::ClientSocket &client) {

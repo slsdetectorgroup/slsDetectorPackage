@@ -607,6 +607,10 @@ class Module : public virtual slsDetectorDefs {
 
     template <typename Ret> Ret sendToReceiver(int fnum) const;
 
+    void sendToReceiver(int fnum);
+
+    void sendToReceiver(int fnum) const;
+
     template <typename Ret, typename Arg>
     Ret sendToReceiver(int fnum, const Arg &args);
 

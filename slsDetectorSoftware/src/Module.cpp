@@ -1391,9 +1391,7 @@ void Module::setBurstPeriod(int64_t value) {
 }
 
 std::array<int, 2> Module::getInjectChannel() {
-    std::array<int, 2> retvals{};
-    sendToDetector(F_GET_INJECT_CHANNEL, nullptr, retvals);
-    return retvals;
+    return sendToDetector<std::array<int, 2> >(F_GET_INJECT_CHANNEL);
 }
 
 void Module::setInjectChannel(const int offsetChannel,
@@ -2262,7 +2260,7 @@ void Module::programFPGA(std::vector<char> buffer) {
     }
 }
 
-void Module::resetFPGA() { return sendToDetector(F_RESET_FPGA); }
+void Module::resetFPGA() { sendToDetector(F_RESET_FPGA); }
 
 void Module::copyDetectorServer(const std::string &fname,
                                 const std::string &hostname) {

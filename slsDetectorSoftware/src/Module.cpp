@@ -2823,7 +2823,7 @@ void Module::restreamStopFromReceiver() {
 }
 
 int Module::sendModule(sls_detector_module *myMod, sls::ClientSocket &client) {
-    TLogLevel level = logDEBUG1;
+    constexpr TLogLevel level = logDEBUG1;
     LOG(level) << "Sending Module";
     int ts = 0;
     int n = 0;

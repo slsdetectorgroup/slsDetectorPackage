@@ -425,7 +425,14 @@ int readConfigFile() {
     }
     master = -1;
     top = -1;
-    FILE *fd = fopen(CONFIG_FILE, "r");
+
+    char fname[128];
+    if (getAbsPath(fname, 128, CONFIG_FILE) == FAIL) {
+        return FAIL;
+    }
+
+    // open config file
+    FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
         LOG(logINFO, ("No config file found. Resetting to hardware settings "
                       "(Top/Master)\n"));

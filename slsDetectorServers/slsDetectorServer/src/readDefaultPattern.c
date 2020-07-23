@@ -3,6 +3,7 @@
 #include "clogger.h"
 #include "slsDetectorServer_defs.h"
 #include "sls_detector_defs.h"
+#include "common.h"
 
 #include <string.h>
 
@@ -18,19 +19,26 @@ extern uint64_t setPatternWaitTime(int level, uint64_t t);
 extern void setPatternLoop(int level, int *startAddr, int *stopAddr,
                            int *nLoop);
 
-int loadDefaultPattern(char *fname) {
+int loadDefaultPattern(char *patFname) {
     if (initError == FAIL) {
         return initError;
     }
 
+    char fname[128];
+    if (getAbsPath(fname, 128, patFname) == FAIL) {
+        return FAIL;
+    }
+
+    // open config file
     FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
-        sprintf(initErrorMessage, "Could not open pattern file [%s].\n", fname);
+        sprintf(initErrorMessage, "Could not open pattern file [%s].\n",
+                patFname);
         initError = FAIL;
         LOG(logERROR, ("%s\n\n", initErrorMessage));
         return FAIL;
     }
-    LOG(logINFOBLUE, ("Reading default pattern file %s\n", fname));
+    LOG(logINFOBLUE, ("Reading default pattern file %s\n", patFname));
 
     // Initialization
     const size_t LZ = 256;

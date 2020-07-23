@@ -485,7 +485,13 @@ int readConfigFile() {
 
     usleep(INITIAL_STARTUP_WAIT);
 
-    FILE *fd = fopen(CONFIG_FILE, "r");
+    char fname[128];
+    if (getAbsPath(fname, 128, CONFIG_FILE) == FAIL) {
+        return FAIL;
+    }
+
+    // open config file
+    FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
         sprintf(initErrorMessage,
                 "Could not open on-board detector server config file [%s].\n",

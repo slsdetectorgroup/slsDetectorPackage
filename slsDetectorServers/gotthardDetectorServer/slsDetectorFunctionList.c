@@ -3,6 +3,7 @@
 #include "clogger.h"
 #include "sharedMemory.h"
 #include "versionAPI.h"
+#include "common.h"
 
 #include "LTC2620.h" // dacs
 #ifdef VIRTUAL
@@ -577,10 +578,15 @@ void setGbitReadout() {
 }
 
 int readConfigFile() {
+    char fname[128];
+    if (getAbsPath(fname, 128, CONFIG_FILE) == FAIL) {
+        return FAIL;
+    }
+
     // open config file
-    FILE *fd = fopen(CONFIG_FILE, "r");
+    FILE *fd = fopen(fname, "r");
     if (fd == NULL) {
-        LOG(logWARNING, ("\tCould not find config file %s\n", CONFIG_FILE));
+        LOG(logWARNING, ("Could not find config file %s\n", CONFIG_FILE));
         return FAIL;
     }
     LOG(logINFO, ("\tConfig file %s opened\n", CONFIG_FILE));

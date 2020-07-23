@@ -9,7 +9,6 @@
 #include "FebControl.h"
 #endif
 
-#include <libgen.h> // dirname
 #include <string.h>
 #include <unistd.h> //to gethostname
 #ifdef VIRTUAL
@@ -427,22 +426,10 @@ int readConfigFile() {
     master = -1;
     top = -1;
 
-    // get path of current binary
-    char path[128];
-    memset(path, 0, sizeof(path));
-    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
-    if (len < 0) {
-        LOG(logWARNING, ("Could not readlink current binary\n"));
+    char fname[128];
+    if (getAbsPath(fname, 128, CONFIG_FILE) == FAIL) {
         return FAIL;
     }
-    path[len] = '\0';
-
-    // get dir path and attach config file name
-    char *dir = dirname(path);
-    char fname[128];
-    memset(fname, 0, sizeof(fname));
-    sprintf(fname, "%s/%s", dir, CONFIG_FILE);
-    LOG(logDEBUG1, ("fname:%s\n", fname));
 
     // open config file
     FILE *fd = fopen(fname, "r");

@@ -2,6 +2,10 @@
 #include "clogger.h"
 #include "sls_detector_defs.h"
 
+#include <string.h>
+#include <libgen.h> // dirname
+#include <unistd.h> // readlink
+
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue) {
     LOG(logDEBUG1, (" Input Value: %d (Input:(%d - %d), Output:(%d - %d))\n",
@@ -35,5 +39,25 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
     *outputValue = value;
 
     LOG(logDEBUG1, (" Converted Output Value: %d\n", *outputValue));
+    return OK;
+}
+
+
+int getAbsPath(char* buf, size_t bufSize, char* fname) {
+    // get path of current binary
+    char path[bufSize];
+    memset(path, 0, bufSize);
+    ssize_t len = readlink("/proc/self/exe", path, bufSize - 1);
+    if (len < 0) {
+        LOG(logWARNING, ("Could not readlink current binary for %s\n", fname));
+        return FAIL;
+    }
+    path[len] = '\0';
+
+    // get dir path and attach config file name
+    char *dir = dirname(path);
+    memset(buf, 0, bufSize);
+    sprintf(buf, "%s/%s", dir, fname);
+    LOG(logDEBUG1, ("full path for %s: %s\n", fname, buf)); 
     return OK;
 }

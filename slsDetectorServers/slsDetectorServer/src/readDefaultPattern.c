@@ -3,10 +3,9 @@
 #include "clogger.h"
 #include "slsDetectorServer_defs.h"
 #include "sls_detector_defs.h"
+#include "common.h"
 
-#include <libgen.h> // dirname
 #include <string.h>
-#include <unistd.h> //readlink
 
 extern char initErrorMessage[MAX_STR_LENGTH];
 extern int initError;
@@ -25,22 +24,10 @@ int loadDefaultPattern(char *patFname) {
         return initError;
     }
 
-    // get path of current binary
-    char path[128];
-    memset(path, 0, sizeof(path));
-    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
-    if (len < 0) {
-        LOG(logWARNING, ("Could not readlink current binary\n"));
+    char fname[128];
+    if (getAbsPath(fname, 128, patFname) == FAIL) {
         return FAIL;
     }
-    path[len] = '\0';
-
-    // get dir path and attach config file name
-    char *dir = dirname(path);
-    char fname[128];
-    memset(fname, 0, sizeof(fname));
-    sprintf(fname, "%s/%s", dir, patFname);
-    LOG(logDEBUG1, ("fname:%s\n", fname));
 
     // open config file
     FILE *fd = fopen(fname, "r");

@@ -15,6 +15,8 @@
 #include <bitset>
 #include <cassert>
 #include <cmath>
+#include <chrono>
+#include <thread>
 #include <cstdlib>
 #include <iomanip>
 #include <iterator>
@@ -3160,7 +3162,7 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     const int ERASE_TIME = 65;
     int count = ERASE_TIME + 1;
     while (count > 0) {
-        usleep(1 * 1000 * 1000);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
         --count;
         printf(
             "%d%%\r",

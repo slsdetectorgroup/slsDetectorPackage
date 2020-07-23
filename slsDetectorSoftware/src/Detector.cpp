@@ -10,6 +10,8 @@
 #include "versionAPI.h"
 
 #include <fstream>
+#include <chrono>
+#include <thread>
 
 namespace sls {
 
@@ -399,7 +401,7 @@ void Detector::setPowerChip(bool on, Positions pos) {
     if ((pos.empty() || pos[0] == -1) && on && pimpl->size() > 3) {
         for (int i = 0; i != pimpl->size(); ++i) {
             pimpl->Parallel(&Module::setPowerChip, {i}, on);
-            usleep(1000 * 1000);
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     } else {
         pimpl->Parallel(&Module::setPowerChip, pos, on);

@@ -13,6 +13,8 @@
 #include <cstring>
 #include <cstring> //strcpy
 #include <fstream>
+#include <chrono>
+#include <thread>
 #include <iostream>
 #include <sys/stat.h> // stat
 #include <unistd.h>
@@ -739,7 +741,7 @@ void Implementation::stopReceiver() {
         for (const auto &it : dataProcessor)
             if (it->IsRunning())
                 running = true;
-        usleep(5000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 
     // create virtual file
@@ -763,7 +765,7 @@ void Implementation::stopReceiver() {
         for (const auto &it : dataStreamer)
             if (it->IsRunning())
                 running = true;
-        usleep(5000);
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 
     status = RUN_FINISHED;
@@ -821,7 +823,8 @@ void Implementation::startReadout() {
                     << "waiting for all packets, previousValue:"
                     << previousValue
                     << " totalPacketsReceived: " << totalPacketsReceived;
-                usleep(5 * 1000); /* TODO! Need to find optimal time **/
+                /* TODO! Need to find optimal time **/
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
                 previousValue = totalPacketsReceived;
                 totalPacketsReceived = 0;
                 for (const auto &it : listener)

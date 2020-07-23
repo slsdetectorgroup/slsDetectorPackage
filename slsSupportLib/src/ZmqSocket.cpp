@@ -3,7 +3,8 @@
 #include <errno.h>
 #include <iostream>
 #include <string.h>
-#include <unistd.h> //usleep in some machines
+#include <chrono>
+#include <thread>
 #include <vector>
 #include <sstream>
 #include <zmq.h>
@@ -76,8 +77,8 @@ ZmqSocket::ZmqSocket(const uint32_t portnumber, const char *ethip)
         PrintError();
         throw sls::ZmqSocketError("Could not bind socket");
     }
-    // sleep for a few milliseconds to allow a slow-joiner
-    usleep(200 * 1000);
+    // sleep to allow a slow-joiner
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 };
 
 int ZmqSocket::Connect() {

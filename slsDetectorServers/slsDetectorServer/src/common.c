@@ -2,8 +2,8 @@
 #include "clogger.h"
 #include "sls_detector_defs.h"
 
-#include <string.h>
 #include <libgen.h> // dirname
+#include <string.h>
 #include <unistd.h> // readlink
 
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
@@ -42,8 +42,7 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
     return OK;
 }
 
-
-int getAbsPath(char* buf, size_t bufSize, char* fname) {
+int getAbsPath(char *buf, size_t bufSize, char *fname) {
     // get path of current binary
     char path[bufSize];
     memset(path, 0, bufSize);
@@ -58,6 +57,6 @@ int getAbsPath(char* buf, size_t bufSize, char* fname) {
     char *dir = dirname(path);
     memset(buf, 0, bufSize);
     sprintf(buf, "%s/%s", dir, fname);
-    LOG(logDEBUG1, ("full path for %s: %s\n", fname, buf)); 
+    LOG(logDEBUG1, ("full path for %s: %s\n", fname, buf));
     return OK;
 }

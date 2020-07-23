@@ -51,7 +51,7 @@ TEST_CASE("assign module", "[support]") {
     CHECK(m3.nchan == 256 * 256 * 4);
 }
 
-TEST_CASE("default construct scanParameters"){
+TEST_CASE("default construct scanParameters") {
     slsDetectorDefs::scanParameters p;
     CHECK(p.dacSettleTime_ns == 0);
     CHECK(p.dacInd == slsDetectorDefs::DAC_0);
@@ -59,10 +59,9 @@ TEST_CASE("default construct scanParameters"){
     CHECK(p.startOffset == 0);
     CHECK(p.stopOffset == 0);
     CHECK(p.stepSize == 0);
-
 }
 
-TEST_CASE("compare two scanParameters"){
+TEST_CASE("compare two scanParameters") {
     slsDetectorDefs::scanParameters p0;
     slsDetectorDefs::scanParameters p1;
 
@@ -70,5 +69,4 @@ TEST_CASE("compare two scanParameters"){
 
     p0.enable = 1;
     CHECK_FALSE(p0 == p1);
-
 }

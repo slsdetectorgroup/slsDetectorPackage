@@ -9,8 +9,8 @@
 #include "sls_detector_defs.h"
 #include "versionAPI.h"
 
-#include <fstream>
 #include <chrono>
+#include <fstream>
 #include <thread>
 
 namespace sls {

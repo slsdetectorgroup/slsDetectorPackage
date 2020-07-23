@@ -1,22 +1,21 @@
 #include "ZmqSocket.h"
 #include "logger.h"
+#include "network_utils.h" //ip
+#include <chrono>
 #include <errno.h>
 #include <iostream>
+#include <sstream>
 #include <string.h>
-#include <chrono>
 #include <thread>
 #include <vector>
-#include <sstream>
 #include <zmq.h>
-#include "network_utils.h" //ip 
 
 using namespace rapidjson;
 ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
                      const uint32_t portnumber)
-    : portno(portnumber), sockfd(false)
-{
+    : portno(portnumber), sockfd(false) {
     // Extra check that throws if conversion fails, could be removed
-    auto ipstr = sls::HostnameToIp(hostname_or_ip).str(); 
+    auto ipstr = sls::HostnameToIp(hostname_or_ip).str();
     std::ostringstream oss;
     oss << "tcp://" << ipstr << ":" << portno;
     sockfd.serverAddress = oss.str();
@@ -52,8 +51,7 @@ ZmqSocket::ZmqSocket(const char *const hostname_or_ip,
 }
 
 ZmqSocket::ZmqSocket(const uint32_t portnumber, const char *ethip)
-    :portno(portnumber), sockfd(true)
-{
+    : portno(portnumber), sockfd(true) {
     // create context
     sockfd.contextDescriptor = zmq_ctx_new();
     if (sockfd.contextDescriptor == nullptr)
@@ -124,11 +122,11 @@ int ZmqSocket::SendHeader(int index, zmqHeader header) {
                                     "\"flippedDataX\":%u, "
                                     "\"quad\":%u"
 
-        ; //"}\n";
-    memset(header_buffer.get(),'\0',MAX_STR_LENGTH); //TODO! Do we need this
-    sprintf(header_buffer.get(), jsonHeaderFormat, header.jsonversion, header.dynamicRange,
-            header.fileIndex, header.ndetx, header.ndety, header.npixelsx,
-            header.npixelsy, header.imageSize, header.acqIndex,
+        ;                                              //"}\n";
+    memset(header_buffer.get(), '\0', MAX_STR_LENGTH); // TODO! Do we need this
+    sprintf(header_buffer.get(), jsonHeaderFormat, header.jsonversion,
+            header.dynamicRange, header.fileIndex, header.ndetx, header.ndety,
+            header.npixelsx, header.npixelsy, header.imageSize, header.acqIndex,
             header.frameIndex, header.progress, header.fname.c_str(),
             header.data ? 1 : 0, header.completeImage ? 1 : 0,
 
@@ -186,14 +184,15 @@ int ZmqSocket::SendData(char *buf, int length) {
 
 int ZmqSocket::ReceiveHeader(const int index, zmqHeader &zHeader,
                              uint32_t version) {
-    const int bytes_received =
-        zmq_recv(sockfd.socketDescriptor, header_buffer.get(), MAX_STR_LENGTH, 0);
+    const int bytes_received = zmq_recv(sockfd.socketDescriptor,
+                                        header_buffer.get(), MAX_STR_LENGTH, 0);
     if (bytes_received > 0) {
 #ifdef ZMQ_DETAIL
         cprintf(BLUE, "Header %d [%d] Length: %d Header:%s \n", index, portno,
                 bytes_received, buffer.data());
 #endif
-        if (ParseHeader(index, bytes_received, header_buffer.get(), zHeader, version)) {
+        if (ParseHeader(index, bytes_received, header_buffer.get(), zHeader,
+                        version)) {
 #ifdef ZMQ_DETAIL
             cprintf(RED, "Parsed Header %d [%d] Length: %d Header:%s \n", index,
                     portno, bytes_received, buffer.data());

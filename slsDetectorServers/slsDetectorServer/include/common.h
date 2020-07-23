@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 
-
 /**
  * Convert a value from a range to a different range (eg voltage to dac or vice
  * versa)
@@ -17,6 +16,4 @@
 int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue);
 
-
-
-int getAbsPath(char* buf, size_t bufSize, char* fname);
+int getAbsPath(char *buf, size_t bufSize, char *fname);

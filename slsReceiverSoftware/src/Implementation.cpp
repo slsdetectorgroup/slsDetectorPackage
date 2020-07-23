@@ -8,15 +8,15 @@
 #include "ZmqSocket.h" //just for the zmq port define
 #include "file_utils.h"
 
-#include <cerrno>  //eperm
+#include <cerrno> //eperm
+#include <chrono>
 #include <cstdlib> //system
 #include <cstring>
 #include <cstring> //strcpy
 #include <fstream>
-#include <chrono>
-#include <thread>
 #include <iostream>
 #include <sys/stat.h> // stat
+#include <thread>
 #include <unistd.h>
 
 /** cosntructor & destructor */

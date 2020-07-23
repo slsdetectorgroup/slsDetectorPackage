@@ -14,13 +14,13 @@
 #include <array>
 #include <bitset>
 #include <cassert>
-#include <cmath>
 #include <chrono>
-#include <thread>
+#include <cmath>
 #include <cstdlib>
 #include <iomanip>
 #include <iterator>
 #include <sstream>
+#include <thread>
 
 namespace sls {
 
@@ -933,9 +933,7 @@ void Module::setFileIndex(int64_t file_index) {
     sendToReceiver(F_SET_RECEIVER_FILE_INDEX, file_index, nullptr);
 }
 
-void Module::incrementFileIndex() {
-    sendToReceiver(F_INCREMENT_FILE_INDEX);
-}
+void Module::incrementFileIndex() { sendToReceiver(F_INCREMENT_FILE_INDEX); }
 
 bool Module::getFileWrite() {
     return sendToReceiver<int>(F_GET_RECEIVER_FILE_WRITE);
@@ -1391,7 +1389,7 @@ void Module::setBurstPeriod(int64_t value) {
 }
 
 std::array<int, 2> Module::getInjectChannel() {
-    return sendToDetector<std::array<int, 2> >(F_GET_INJECT_CHANNEL);
+    return sendToDetector<std::array<int, 2>>(F_GET_INJECT_CHANNEL);
 }
 
 void Module::setInjectChannel(const int offsetChannel,

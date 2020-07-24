@@ -4,7 +4,6 @@ about: Create a report to help us improve
 title: New Bug Report
 labels: action - Bug, priority - Unclassified, status - Pending
 template: bug_report.md
-projects: slsDetectorPackage
 ---
 
 <!--  Check an option by - [x], Uncheck an option by - [ ] -->

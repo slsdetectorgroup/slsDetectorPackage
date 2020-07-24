@@ -2,7 +2,7 @@
 name: Bug Report
 about: Create a report to help us improve 
 title: New Bug Report
-labels: action - bug, priority - unclassified, status - pending
+labels: action - Bug, priority - Unclassified, status - Pending
 template: bug_report.md
 projects: slsDetectorPackage
 ---
@@ -26,6 +26,7 @@ projects: slsDetectorPackage
 - [ ] Other
 
 ##### *Detector type: 
+- [x] Not applicable
 - [ ] Eiger
 - [ ] Jungfrau
 - [ ] Mythen3
@@ -39,6 +40,7 @@ projects: slsDetectorPackage
 - [ ] developer
 - [ ] 4.2.0
 - [ ] 4.1.1
+<!-- If others, please describe -- >
 
 ### *Describe the bug
 <!--  A clear and concise description of what the bug is -->

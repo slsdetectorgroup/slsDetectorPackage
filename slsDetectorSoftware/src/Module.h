@@ -518,6 +518,8 @@ class Module : public virtual slsDetectorDefs {
     uint64_t getReceiverCurrentFrameIndex() const;
 
   private:
+    void preSendArgsCheck(const void * args, size_t args_size, void * retval, size_t retval_size) const;
+
     /**
      * Send function parameters to detector (control server)
      * @param fnum function enum
@@ -528,6 +530,9 @@ class Module : public virtual slsDetectorDefs {
      */
     void sendToDetector(int fnum, const void *args, size_t args_size,
                         void *retval, size_t retval_size);
+
+    void sendToDetector(int fnum, const void *args, size_t args_size,
+                        void *retval, size_t retval_size) const;
 
     template <typename Arg, typename Ret>
     void sendToDetector(int fnum, const Arg &args, Ret &retval);

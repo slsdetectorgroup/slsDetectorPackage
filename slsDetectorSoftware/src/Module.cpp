@@ -2386,8 +2386,39 @@ uint64_t Module::getReceiverCurrentFrameIndex() const {
 
 // private
 
+void Module::preSendArgsCheck(const void *args, size_t args_size, void *retval,
+                              size_t retval_size) const {
+    if (args == nullptr && args_size != 0)
+        throw RuntimeError(
+            "Passed nullptr as args to Send function but size is not 0");
+    if (args != nullptr && args_size == 0)
+        throw RuntimeError(
+            "Passed size 0 to Send function but args is not nullptr");
+    if (retval == nullptr && retval_size != 0)
+        throw RuntimeError(
+            "Passed nullptr as retval to Send function but size is not 0");
+    if (retval != nullptr && retval_size == 0)
+        throw RuntimeError(
+            "Passed size 0 to Send function but retval is not nullptr");
+}
+
+// Macro to check arguments passed to send to receiver and send to detector
+// Should detect and fail on pointer types and on nullptr_t
+#define STATIC_ASSERT_ARG(ARG, DST)                                            \
+    static_assert(!std::is_pointer<ARG>::value,                                \
+                  "Pointer type is incompatible with templated " DST);         \
+    static_assert(!std::is_same<ARG, std::nullptr_t>::value,                   \
+                  "nullptr_t type is incompatible with templated " DST);
+
 void Module::sendToDetector(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size) {
+    static_cast<const Module &>(*this).sendToDetector(fnum, args, args_size,
+                                                      retval, retval_size);
+}
+
+void Module::sendToDetector(int fnum, const void *args, size_t args_size,
+                            void *retval, size_t retval_size) const {
+    preSendArgsCheck(args, args_size, retval, retval_size);
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     client.close();
@@ -2452,27 +2483,23 @@ Ret Module::sendToDetector(int fnum, const Arg &args) {
     return retval;
 }
 
-void Module::sendToDetectorStop(int fnum, const void *args, size_t args_size,
-                                void *retval, size_t retval_size) {
-    static_cast<const Module &>(*this).sendToDetectorStop(fnum, args, args_size,
-                                                          retval, retval_size);
-}
+//---------------------------------------------------------- sendToDetectorStop
 
 void Module::sendToDetectorStop(int fnum, const void *args, size_t args_size,
                                 void *retval, size_t retval_size) const {
+    // This is the only function that actually sends data to the detector stop
+    // the other versions use templates to deduce sizes and create
+    // the return type
+    preSendArgsCheck(args, args_size, retval, retval_size);
     auto stop = DetectorSocket(shm()->hostname, shm()->stopPort);
     stop.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     stop.close();
 }
 
-template <typename Arg, typename Ret>
-void Module::sendToDetectorStop(int fnum, const Arg &args, Ret &retval) {
-    LOG(logDEBUG1) << "Sending to Stop: ["
-                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
-                   << ", " << args << ", " << sizeof(args) << ", "
-                   << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
-    sendToDetectorStop(fnum, &args, sizeof(args), &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << ToString(retval);
+void Module::sendToDetectorStop(int fnum, const void *args, size_t args_size,
+                                void *retval, size_t retval_size) {
+    static_cast<const Module &>(*this).sendToDetectorStop(fnum, args, args_size,
+                                                          retval, retval_size);
 }
 
 template <typename Arg, typename Ret>
@@ -2485,13 +2512,9 @@ void Module::sendToDetectorStop(int fnum, const Arg &args, Ret &retval) const {
     LOG(logDEBUG1) << "Got back: " << ToString(retval);
 }
 
-template <typename Arg>
-void Module::sendToDetectorStop(int fnum, const Arg &args, std::nullptr_t) {
-    LOG(logDEBUG1) << "Sending to Stop: ["
-                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
-                   << ", " << typeid(Arg).name() << ", " << sizeof(Arg)
-                   << ", nullptr, 0 ]";
-    sendToDetectorStop(fnum, &args, sizeof(args), nullptr, 0);
+template <typename Arg, typename Ret>
+void Module::sendToDetectorStop(int fnum, const Arg &args, Ret &retval) {
+    static_cast<const Module &>(*this).sendToDetectorStop(fnum, args, retval);
 }
 
 template <typename Arg>
@@ -2504,14 +2527,9 @@ void Module::sendToDetectorStop(int fnum, const Arg &args,
     sendToDetectorStop(fnum, &args, sizeof(args), nullptr, 0);
 }
 
-template <typename Ret>
-void Module::sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) {
-    LOG(logDEBUG1) << "Sending to Stop: ["
-                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
-                   << ", nullptr, 0, " << typeid(Ret).name() << ", "
-                   << sizeof(Ret) << "]";
-    sendToDetectorStop(fnum, nullptr, 0, &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
+template <typename Arg>
+void Module::sendToDetectorStop(int fnum, const Arg &args, std::nullptr_t) {
+    static_cast<const Module &>(*this).sendToDetectorStop(fnum, args, nullptr);
 }
 
 template <typename Ret>
@@ -2524,11 +2542,9 @@ void Module::sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) const {
     LOG(logDEBUG1) << "Got back: " << retval;
 }
 
-void Module::sendToDetectorStop(int fnum) {
-    LOG(logDEBUG1) << "Sending to Stop: ["
-                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
-                   << ", nullptr, 0, nullptr, 0]";
-    sendToDetectorStop(fnum, nullptr, 0, nullptr, 0);
+template <typename Ret>
+void Module::sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) {
+    static_cast<const Module &>(*this).sendToDetectorStop(fnum, nullptr, retval);
 }
 
 void Module::sendToDetectorStop(int fnum) const {
@@ -2536,6 +2552,10 @@ void Module::sendToDetectorStop(int fnum) const {
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, nullptr, 0]";
     sendToDetectorStop(fnum, nullptr, 0, nullptr, 0);
+}
+
+void Module::sendToDetectorStop(int fnum) {
+    static_cast<const Module &>(*this).sendToDetectorStop(fnum);
 }
 
 template <typename Ret> Ret Module::sendToDetectorStop(int fnum) {
@@ -2572,23 +2592,29 @@ Ret Module::sendToDetectorStop(int fnum, const Arg &args) {
     return retval;
 }
 
-void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
-                            void *retval, size_t retval_size) {
-    static_cast<const Module &>(*this).sendToReceiver(fnum, args, args_size,
-                                                      retval, retval_size);
-}
+//-------------------------------------------------------------- sendToReceiver
 
 void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size) const {
+    // This is the only function that actually sends data to the receiver
+    // the other versions use templates to deduce sizes and create
+    // the return type
     if (!shm()->useReceiverFlag) {
         std::ostringstream oss;
         oss << "Set rx_hostname first to use receiver parameters, ";
         oss << getFunctionNameFromEnum(static_cast<detFuncs>(fnum));
         throw RuntimeError(oss.str());
     }
+    preSendArgsCheck(args, args_size, retval, retval_size);
     auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     receiver.close();
+}
+
+void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
+                            void *retval, size_t retval_size) {
+    static_cast<const Module &>(*this).sendToReceiver(fnum, args, args_size,
+                                                      retval, retval_size);
 }
 
 template <typename Arg, typename Ret>
@@ -2597,27 +2623,15 @@ void Module::sendToReceiver(int fnum, const Arg &args, Ret &retval) {
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
                    << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    STATIC_ASSERT_ARG(Arg, "sendToReceiver")
+    STATIC_ASSERT_ARG(Ret, "sendToReceiver")
     sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << retval;
 }
 
 template <typename Arg, typename Ret>
 void Module::sendToReceiver(int fnum, const Arg &args, Ret &retval) const {
-    LOG(logDEBUG1) << "Sending to Receiver: ["
-                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
-                   << ", " << args << ", " << sizeof(args) << ", "
-                   << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
-    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << ToString(retval);
-}
-
-template <typename Arg>
-void Module::sendToReceiver(int fnum, const Arg &args, std::nullptr_t) {
-    LOG(logDEBUG1) << "Sending to Receiver: ["
-                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
-                   << ", " << typeid(Arg).name() << ", " << sizeof(Arg)
-                   << ", nullptr, 0 ]";
-    sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
+    static_cast<const Module &>(*this).sendToReceiver(fnum, args, retval);
 }
 
 template <typename Arg>
@@ -2626,17 +2640,13 @@ void Module::sendToReceiver(int fnum, const Arg &args, std::nullptr_t) const {
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << typeid(Arg).name() << ", " << sizeof(Arg)
                    << ", nullptr, 0 ]";
+    STATIC_ASSERT_ARG(Arg, "sendToReceiver")
     sendToReceiver(fnum, &args, sizeof(args), nullptr, 0);
 }
 
-template <typename Ret>
-void Module::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) {
-    LOG(logDEBUG1) << "Sending to Receiver: ["
-                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
-                   << ", nullptr, 0, " << typeid(Ret).name() << ", "
-                   << sizeof(Ret) << "]";
-    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << ToString(retval);
+template <typename Arg>
+void Module::sendToReceiver(int fnum, const Arg &args, std::nullptr_t) {
+    static_cast<const Module &>(*this).sendToReceiver(fnum, args, nullptr);
 }
 
 template <typename Ret>
@@ -2645,19 +2655,14 @@ void Module::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) const {
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
+    STATIC_ASSERT_ARG(Ret, "sendToReceiver")
     sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << ToString(retval);
 }
 
-template <typename Ret> Ret Module::sendToReceiver(int fnum) {
-    LOG(logDEBUG1) << "Sending to Receiver: ["
-                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
-                   << ", nullptr, 0, " << typeid(Ret).name() << ", "
-                   << sizeof(Ret) << "]";
-    Ret retval{};
-    sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
-    return retval;
+template <typename Ret>
+void Module::sendToReceiver(int fnum, std::nullptr_t, Ret &retval) {
+    static_cast<const Module &>(*this).sendToReceiver(fnum, nullptr, retval);
 }
 
 template <typename Ret> Ret Module::sendToReceiver(int fnum) const {
@@ -2665,17 +2670,15 @@ template <typename Ret> Ret Module::sendToReceiver(int fnum) const {
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
+    STATIC_ASSERT_ARG(Ret, "sendToReceiver")
     Ret retval{};
     sendToReceiver(fnum, nullptr, 0, &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << ToString(retval);
     return retval;
 }
 
-void Module::sendToReceiver(int fnum) {
-    LOG(logDEBUG1) << "Sending to Receiver: ["
-                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
-                   << ", nullptr, 0, nullptr, 0]";
-    sendToReceiver(fnum, nullptr, 0, nullptr, 0);
+template <typename Ret> Ret Module::sendToReceiver(int fnum) {
+    return static_cast<const Module &>(*this).sendToReceiver<Ret>(fnum);
 }
 
 void Module::sendToReceiver(int fnum) const {
@@ -2685,16 +2688,8 @@ void Module::sendToReceiver(int fnum) const {
     sendToReceiver(fnum, nullptr, 0, nullptr, 0);
 }
 
-template <typename Ret, typename Arg>
-Ret Module::sendToReceiver(int fnum, const Arg &args) {
-    LOG(logDEBUG1) << "Sending to Receiver: ["
-                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
-                   << ", " << args << ", " << sizeof(args) << ", "
-                   << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
-    Ret retval{};
-    sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
-    return retval;
+void Module::sendToReceiver(int fnum) {
+    static_cast<const Module &>(*this).sendToReceiver(fnum);
 }
 
 template <typename Ret, typename Arg>
@@ -2703,10 +2698,17 @@ Ret Module::sendToReceiver(int fnum, const Arg &args) const {
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
                    << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    STATIC_ASSERT_ARG(Arg, "sendToReceiver")
+    STATIC_ASSERT_ARG(Ret, "sendToReceiver")
     Ret retval{};
     sendToReceiver(fnum, &args, sizeof(args), &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << retval;
     return retval;
+}
+
+template <typename Ret, typename Arg>
+Ret Module::sendToReceiver(int fnum, const Arg &args) {
+    return static_cast<const Module &>(*this).sendToReceiver<Ret>(fnum, args);
 }
 
 slsDetectorDefs::detectorType Module::getDetectorTypeFromShm(int det_id,

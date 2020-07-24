@@ -1,6 +1,6 @@
 ---
 name: Change Request
-about: Suggest a change
+about: Suggest a change to an existing feature
 title: New Change Request
 labels: action - Change, priority - Unclassified, status - Pending
 template: change_request.md

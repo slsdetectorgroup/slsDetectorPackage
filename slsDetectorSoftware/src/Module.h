@@ -518,7 +518,7 @@ class Module : public virtual slsDetectorDefs {
     uint64_t getReceiverCurrentFrameIndex() const;
 
   private:
-    void preSendArgsCheck(const void *args, size_t args_size, void *retval,
+    void checkArgs(const void *args, size_t args_size, void *retval,
                           size_t retval_size) const;
 
     /**

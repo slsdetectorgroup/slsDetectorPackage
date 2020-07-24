@@ -2386,7 +2386,7 @@ uint64_t Module::getReceiverCurrentFrameIndex() const {
 
 // private
 
-void Module::preSendArgsCheck(const void *args, size_t args_size, void *retval,
+void Module::checkArgs(const void *args, size_t args_size, void *retval,
                               size_t retval_size) const {
     if (args == nullptr && args_size != 0)
         throw RuntimeError(
@@ -2415,7 +2415,7 @@ void Module::sendToDetector(int fnum, const void *args, size_t args_size,
     // This is the only function that actually sends data to the detector
     // the other versions use templates to deduce sizes and create
     // the return type
-    preSendArgsCheck(args, args_size, retval, retval_size);
+    checkArgs(args, args_size, retval, retval_size);
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     client.close();
@@ -2528,7 +2528,7 @@ void Module::sendToDetectorStop(int fnum, const void *args, size_t args_size,
     // This is the only function that actually sends data to the detector stop
     // the other versions use templates to deduce sizes and create
     // the return type
-    preSendArgsCheck(args, args_size, retval, retval_size);
+    checkArgs(args, args_size, retval, retval_size);
     auto stop = DetectorSocket(shm()->hostname, shm()->stopPort);
     stop.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     stop.close();
@@ -2650,7 +2650,7 @@ void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
         oss << getFunctionNameFromEnum(static_cast<detFuncs>(fnum));
         throw RuntimeError(oss.str());
     }
-    preSendArgsCheck(args, args_size, retval, retval_size);
+    checkArgs(args, args_size, retval, retval_size);
     auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     receiver.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     receiver.close();

@@ -1,9 +1,5 @@
 
-Installation
-==============================================
 
-Build from source using CMake
----------------------------------
 
 .. note :: 
 
@@ -13,16 +9,53 @@ Build from source using CMake
     without being communicated. If absolute stability of the API is needed please
     use one of the release versions. 
 
+.. warning ::
+    
+    Before building from source make sure that you have the 
+    :doc:`dependencies <../dependencies>` installed. If installing using conda, conda will 
+    manage the dependencies.
+    
+
+
+Installation
+==============================================
+
+Build from source using CMake
+---------------------------------
+
+Note that on some systems, for example RH7,  cmake v3+ is available under the cmake3 alias.
+It is also required to clone with the option --recursive to get the git submodules used
+in the package. 
+
+
 .. code-block:: bash
 
-    git clone https://github.com/slsdetectorgroup/slsDetectorPackage.git
+    git clone --recursive https://github.com/slsdetectorgroup/slsDetectorPackage.git
     mkdir build && cd build
     cmake ../slsDetectorPackage -DCMAKE_INSTALL_PREFIX=/your/install/path
-    make -j12
+    make -j12 #or whatever number of cores you are using to build
     make install
+
+The easiest way to configure options is to use the ccmake utility. 
+
+.. code-block:: bash
+
+    #from the build directory
+    ccmake .
+
 
 Install binaries using conda
 --------------------------------
+
+Conda is not only useful to manage python environments but can also
+be used as a user space package manager. 
+
+We have three different packages available:
+
+ * **slsdetlib**, shared libraries and command line utilities 
+ * **slsdetgui**, GUI
+ * **slsdet**, Python bindings
+
 
 .. code-block:: bash
 
@@ -32,13 +65,18 @@ Install binaries using conda
     conda config --set channel_priority strict
 
     #cerate an environment with our library, then activate
-    conda create -n myenv slsdetlib=2020.03.18.dev2
-    codna activate myenv
+    conda create -n myenv slsdetlib=2020.07.23.dev0
+    conda activate myenv
 
     #ready to use
     sls_detector_get exptime
     etc ...
 
+
+.. code-block:: bash
+
+    #List available versions
+    conda search slsdet
 
 
 Build from source on old distributions
@@ -67,3 +105,10 @@ is to use conda
 .. code-block:: bash
 
     conda create -n myenv python sphinx sphinx_rtd_theme
+
+Then enable the option SLS_BUILD_DOCS to create the targets
+
+.. code-block:: bash
+
+    make docs # generate API docs and build Sphinx RST
+    make rst # rst only, saves time in case the API did not change

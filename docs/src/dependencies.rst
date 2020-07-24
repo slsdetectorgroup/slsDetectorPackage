@@ -42,7 +42,7 @@ The documentation that you are reading now is built with
 
  * Doxygen (to extract C++ classes etc.)
  * Breathe (Sphinx plugin to handle doxygen xml)
- * Sphinx 
+ * Sphinx with sphinx_rtd_theme 
 
 -----------------------
 Packaged in libs/

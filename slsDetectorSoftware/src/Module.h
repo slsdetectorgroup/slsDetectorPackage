@@ -518,7 +518,8 @@ class Module : public virtual slsDetectorDefs {
     uint64_t getReceiverCurrentFrameIndex() const;
 
   private:
-    void preSendArgsCheck(const void * args, size_t args_size, void * retval, size_t retval_size) const;
+    void preSendArgsCheck(const void *args, size_t args_size, void *retval,
+                          size_t retval_size) const;
 
     /**
      * Send function parameters to detector (control server)
@@ -536,16 +537,33 @@ class Module : public virtual slsDetectorDefs {
 
     template <typename Arg, typename Ret>
     void sendToDetector(int fnum, const Arg &args, Ret &retval);
+
+    template <typename Arg, typename Ret>
+    void sendToDetector(int fnum, const Arg &args, Ret &retval) const;
+
     template <typename Arg>
     void sendToDetector(int fnum, const Arg &args, std::nullptr_t);
+
+    template <typename Arg>
+    void sendToDetector(int fnum, const Arg &args, std::nullptr_t) const;
+
     template <typename Ret>
     void sendToDetector(int fnum, std::nullptr_t, Ret &retval);
+
+    template <typename Ret>
+    void sendToDetector(int fnum, std::nullptr_t, Ret &retval) const;
+
     void sendToDetector(int fnum);
+    void sendToDetector(int fnum) const;
 
     template <typename Ret> Ret sendToDetector(int fnum);
+    template <typename Ret> Ret sendToDetector(int fnum) const;
 
     template <typename Ret, typename Arg>
     Ret sendToDetector(int fnum, const Arg &args);
+
+    template <typename Ret, typename Arg>
+    Ret sendToDetector(int fnum, const Arg &args) const;
 
     /** Send function parameters to detector (stop server) */
     void sendToDetectorStop(int fnum, const void *args, size_t args_size,
@@ -582,6 +600,9 @@ class Module : public virtual slsDetectorDefs {
 
     template <typename Ret, typename Arg>
     Ret sendToDetectorStop(int fnum, const Arg &args);
+
+    template <typename Ret, typename Arg>
+    Ret sendToDetectorStop(int fnum, const Arg &args) const;
 
     /** Send function parameters to receiver */
     void sendToReceiver(int fnum, const void *args, size_t args_size,

@@ -2411,76 +2411,114 @@ void Module::preSendArgsCheck(const void *args, size_t args_size, void *retval,
                   "nullptr_t type is incompatible with templated " DST);
 
 void Module::sendToDetector(int fnum, const void *args, size_t args_size,
-                            void *retval, size_t retval_size) {
-    static_cast<const Module &>(*this).sendToDetector(fnum, args, args_size,
-                                                      retval, retval_size);
-}
-
-void Module::sendToDetector(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size) const {
+    // This is the only function that actually sends data to the detector
+    // the other versions use templates to deduce sizes and create
+    // the return type
     preSendArgsCheck(args, args_size, retval, retval_size);
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.sendCommandThenRead(fnum, args, args_size, retval, retval_size);
     client.close();
 }
 
+void Module::sendToDetector(int fnum, const void *args, size_t args_size,
+                            void *retval, size_t retval_size) {
+    static_cast<const Module &>(*this).sendToDetector(fnum, args, args_size,
+                                                      retval, retval_size);
+}
+
 template <typename Arg, typename Ret>
-void Module::sendToDetector(int fnum, const Arg &args, Ret &retval) {
+void Module::sendToDetector(int fnum, const Arg &args, Ret &retval) const {
     LOG(logDEBUG1) << "Sending: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
+    STATIC_ASSERT_ARG(Arg, "sendToDetector")
+    STATIC_ASSERT_ARG(Ret, "sendToDetector")
     sendToDetector(fnum, &args, sizeof(args), &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << ToString(retval);
 }
 
+template <typename Arg, typename Ret>
+void Module::sendToDetector(int fnum, const Arg &args, Ret &retval) {
+    static_cast<const Module &>(*this).sendToDetector(fnum, args, retval);
+}
+
 template <typename Arg>
-void Module::sendToDetector(int fnum, const Arg &args, std::nullptr_t) {
+void Module::sendToDetector(int fnum, const Arg &args, std::nullptr_t) const {
     LOG(logDEBUG1) << "Sending: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << typeid(Arg).name() << ", " << sizeof(Arg)
                    << ", nullptr, 0 ]";
+    STATIC_ASSERT_ARG(Arg, "sendToDetector")
     sendToDetector(fnum, &args, sizeof(args), nullptr, 0);
 }
 
+template <typename Arg>
+void Module::sendToDetector(int fnum, const Arg &args, std::nullptr_t) {
+    static_cast<const Module &>(*this).sendToDetector(fnum, args, nullptr);
+}
+
 template <typename Ret>
-void Module::sendToDetector(int fnum, std::nullptr_t, Ret &retval) {
+void Module::sendToDetector(int fnum, std::nullptr_t, Ret &retval) const {
     LOG(logDEBUG1) << "Sending: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
+    STATIC_ASSERT_ARG(Ret, "sendToDetector")
     sendToDetector(fnum, nullptr, 0, &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << ToString(retval);
 }
 
-void Module::sendToDetector(int fnum) {
+template <typename Ret>
+void Module::sendToDetector(int fnum, std::nullptr_t, Ret &retval) {
+    static_cast<const Module &>(*this).sendToDetector(fnum, nullptr, retval);
+}
+
+void Module::sendToDetector(int fnum) const {
     LOG(logDEBUG1) << "Sending: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << "]";
     sendToDetector(fnum, nullptr, 0, nullptr, 0);
 }
 
-template <typename Ret> Ret Module::sendToDetector(int fnum) {
+void Module::sendToDetector(int fnum) {
+    static_cast<const Module &>(*this).sendToDetector(fnum);
+}
+
+template <typename Ret> Ret Module::sendToDetector(int fnum) const {
     LOG(logDEBUG1) << "Sending: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
+    STATIC_ASSERT_ARG(Ret, "sendToDetector")
     Ret retval{};
     sendToDetector(fnum, nullptr, 0, &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << ToString(retval);
     return retval;
 }
 
+template <typename Ret> Ret Module::sendToDetector(int fnum) {
+    return static_cast<const Module &>(*this).sendToDetector<Ret>(fnum);
+}
+
 template <typename Ret, typename Arg>
-Ret Module::sendToDetector(int fnum, const Arg &args) {
+Ret Module::sendToDetector(int fnum, const Arg &args) const {
     LOG(logDEBUG1) << "Sending: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
                    << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    STATIC_ASSERT_ARG(Arg, "sendToDetector")
+    STATIC_ASSERT_ARG(Ret, "sendToDetector")
     Ret retval{};
     sendToDetector(fnum, &args, sizeof(args), &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << ToString(retval);
     return retval;
+}
+
+template <typename Ret, typename Arg>
+Ret Module::sendToDetector(int fnum, const Arg &args) {
+    return static_cast<const Module &>(*this).sendToDetector<Ret>(fnum, args);
 }
 
 //---------------------------------------------------------- sendToDetectorStop
@@ -2508,6 +2546,8 @@ void Module::sendToDetectorStop(int fnum, const Arg &args, Ret &retval) const {
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
                    << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    STATIC_ASSERT_ARG(Arg, "sendToDetectorStop")
+    STATIC_ASSERT_ARG(Ret, "sendToDetectorStop")
     sendToDetectorStop(fnum, &args, sizeof(args), &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << ToString(retval);
 }
@@ -2524,6 +2564,7 @@ void Module::sendToDetectorStop(int fnum, const Arg &args,
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << typeid(Arg).name() << ", " << sizeof(Arg)
                    << ", nullptr, 0 ]";
+    STATIC_ASSERT_ARG(Arg, "sendToDetectorStop")
     sendToDetectorStop(fnum, &args, sizeof(args), nullptr, 0);
 }
 
@@ -2538,13 +2579,15 @@ void Module::sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) const {
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
+    STATIC_ASSERT_ARG(Ret, "sendToDetectorStop")
     sendToDetectorStop(fnum, nullptr, 0, &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << retval;
 }
 
 template <typename Ret>
 void Module::sendToDetectorStop(int fnum, std::nullptr_t, Ret &retval) {
-    static_cast<const Module &>(*this).sendToDetectorStop(fnum, nullptr, retval);
+    static_cast<const Module &>(*this).sendToDetectorStop(fnum, nullptr,
+                                                          retval);
 }
 
 void Module::sendToDetectorStop(int fnum) const {
@@ -2558,38 +2601,40 @@ void Module::sendToDetectorStop(int fnum) {
     static_cast<const Module &>(*this).sendToDetectorStop(fnum);
 }
 
-template <typename Ret> Ret Module::sendToDetectorStop(int fnum) {
-    LOG(logDEBUG1) << "Sending to Stop: ["
-                   << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
-                   << ", nullptr, 0, " << typeid(Ret).name() << ", "
-                   << sizeof(Ret) << "]";
-    Ret retval{};
-    sendToDetectorStop(fnum, nullptr, 0, &retval, sizeof(retval));
-    LOG(logDEBUG1) << "Got back: " << retval;
-    return retval;
-}
-
 template <typename Ret> Ret Module::sendToDetectorStop(int fnum) const {
     LOG(logDEBUG1) << "Sending to Stop: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", nullptr, 0, " << typeid(Ret).name() << ", "
                    << sizeof(Ret) << "]";
+    STATIC_ASSERT_ARG(Ret, "sendToDetectorStop")
     Ret retval{};
     sendToDetectorStop(fnum, nullptr, 0, &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << retval;
     return retval;
 }
 
+template <typename Ret> Ret Module::sendToDetectorStop(int fnum) {
+    return static_cast<const Module &>(*this).sendToDetectorStop<Ret>(fnum);
+}
+
 template <typename Ret, typename Arg>
-Ret Module::sendToDetectorStop(int fnum, const Arg &args) {
+Ret Module::sendToDetectorStop(int fnum, const Arg &args) const {
     LOG(logDEBUG1) << "Sending to Stop: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
                    << typeid(Ret).name() << ", " << sizeof(Ret) << "]";
+    STATIC_ASSERT_ARG(Arg, "sendToDetectorStop")
+    STATIC_ASSERT_ARG(Ret, "sendToDetectorStop")
     Ret retval{};
     sendToDetectorStop(fnum, &args, sizeof(args), &retval, sizeof(retval));
     LOG(logDEBUG1) << "Got back: " << ToString(retval);
     return retval;
+}
+
+template <typename Ret, typename Arg>
+Ret Module::sendToDetectorStop(int fnum, const Arg &args) {
+    return static_cast<const Module &>(*this).sendToDetectorStop<Ret>(fnum,
+                                                                      args);
 }
 
 //-------------------------------------------------------------- sendToReceiver

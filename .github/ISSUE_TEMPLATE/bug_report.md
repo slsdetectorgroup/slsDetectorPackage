@@ -11,13 +11,6 @@ template: bug_report.md
 
 <!-- Please fill out everything with an *, as this report will be discarded otherwise -->
 
-##### *Priority:
-- [ ] Super Low
-- [ ] Low
-- [ ] Medium
-- [ ] High
-- [ ] Super High
-
 ##### *Distribution: 
 - [x] RHEL7
 - [ ] RHEL6
@@ -41,6 +34,13 @@ template: bug_report.md
 - [ ] 4.1.1
 <!-- If others, please describe -- >
 
+##### Priority:
+- [ ] Super Low
+- [ ] Low
+- [ ] Medium
+- [ ] High
+- [ ] Super High
+
 ### *Describe the bug
 <!--  A clear and concise description of what the bug is -->
 
@@ -56,7 +56,6 @@ template: bug_report.md
 
 ### Screenshots
 <!--  If applicable, add screenshots to help explain your problem. -->
-
 
 ### Additional context
 <!--  Add any other context about the problem here. -->

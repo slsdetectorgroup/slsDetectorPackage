@@ -2166,16 +2166,22 @@ int setBurstMode(enum burstMode burst) {
 }
 
 int configureASICGlobalSettings() {
-    int modeValue =
-        burstMode ? ASIC_GLOBAL_BURST_VALUE : ASIC_GLOBAL_CONT_VALUE;
-    int value = ((modeValue << ASIC_GLOBAL_MODE_OFST) & ASIC_GLOBAL_MODE_MSK) |
-                ((filter << ASIC_FILTER_OFST) & ASIC_FILTER_MSK) |
+    int value = ((filter << ASIC_FILTER_OFST) & ASIC_FILTER_MSK) |
                 ((cdsGain << ASIC_CDS_GAIN_OFST) & ASIC_CDS_GAIN_MSK);
+    switch (burstMode) {
+        case BURST_OFF:
+            value |= (ASIC_CONT_MODE_MSK | ASIC_EXT_TIMING_MSK);
+            break;
+        case BURST_INTERNAL:
+            break;
+        case BURST_EXTERNAL:
+            value |= ASIC_EXT_TIMING_MSK;
+            break;
+    }
     LOG(logINFO,
-        ("\tSending Global Chip settings:0x%x (mode:%d(%s), filter:%d, "
+        ("\tSending Global Chip settings:0x%x (filter:%d, "
          "cdsgain:%d)\n",
-         value, modeValue, (burstMode == BURST_OFF ? "Continuous" : "Burst"),
-         filter, cdsGain));
+         value, filter, cdsGain));
 
     const int padding = 6; // due to address (4) to make it byte aligned
     const int lenTotalBits = padding + ASIC_GLOBAL_SETT_MAX_BITS +

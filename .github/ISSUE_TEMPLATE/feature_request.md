@@ -25,7 +25,7 @@ template: feature_request.md
 - [ ] developer
 - [ ] 4.2.0
 - [ ] 4.1.1
-<!-- If others, please describe -- >
+<!-- If others, please describe -->
 
 ##### Priority:
 - [ ] Super Low

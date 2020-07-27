@@ -1267,53 +1267,53 @@ TEST_CASE("scan", "[.cmd][.new]") {
         std::ostringstream oss;
         proxy.Call("scan", {sls::ToString(ind), "500", "1500", "500"}, -1, PUT,
                    oss);
-        REQUIRE(oss.str() ==
+        CHECK(oss.str() ==
                 "scan [" + sls::ToString(ind) + ", 500, 1500, 500]\n");
     }
     {
         std::ostringstream oss;
         proxy.Call("scan", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "scan [[enabled\ndac " + sls::ToString(ind) +
+        CHECK(oss.str() == "scan [enabled\ndac " + sls::ToString(ind) +
                                  "\nstart 500\nstop 1500\nstep "
-                                 "500\nsettleTime 1ms\n]]\n");
+                                 "500\nsettleTime 1ms\n]\n");
     }
     {
         std::ostringstream oss;
         proxy.Call("scan", {sls::ToString(ind), "500", "1500", "500", "2s"}, -1,
                    PUT, oss);
-        REQUIRE(oss.str() ==
+        CHECK(oss.str() ==
                 "scan [" + sls::ToString(ind) + ", 500, 1500, 500, 2s]\n");
     }
     {
         std::ostringstream oss;
         proxy.Call("scan", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "scan [[enabled\ndac " + sls::ToString(ind) +
+        CHECK(oss.str() == "scan [enabled\ndac " + sls::ToString(ind) +
                                  "\nstart 500\nstop 1500\nstep "
-                                 "500\nsettleTime 2s\n]]\n");
+                                 "500\nsettleTime 2s\n]\n");
     }
     {
         std::ostringstream oss;
         proxy.Call("scan", {"0"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "scan [0]\n");
+        CHECK(oss.str() == "scan [0]\n");
     }
     {
         std::ostringstream oss;
         proxy.Call("scan", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "scan [[disabled]]\n");
+        CHECK(oss.str() == "scan [disabled]\n");
     }
     {
         std::ostringstream oss;
         proxy.Call("scan", {sls::ToString(ind), "1500", "500", "-500"}, -1, PUT,
                    oss);
-        REQUIRE(oss.str() ==
+        CHECK(oss.str() ==
                 "scan [" + sls::ToString(ind) + ", 1500, 500, -500]\n");
     }
-    REQUIRE_THROWS(proxy.Call(
+    CHECK_THROWS(proxy.Call(
         "scan", {sls::ToString(notImplementedInd), "500", "1500", "500"}, -1,
         PUT));
-    REQUIRE_THROWS(proxy.Call(
+    CHECK_THROWS(proxy.Call(
         "scan", {sls::ToString(ind), "500", "1500", "-500"}, -1, PUT));
-    REQUIRE_THROWS(proxy.Call(
+    CHECK_THROWS(proxy.Call(
         "scan", {sls::ToString(ind), "1500", "500", "500"}, -1, PUT));
 
     if (det_type == defs::MYTHEN3 || defs::EIGER) {
@@ -1321,16 +1321,19 @@ TEST_CASE("scan", "[.cmd][.new]") {
             std::ostringstream oss;
             proxy.Call("scan", {"trimbit_scan", "0", "63", "16", "2s"}, -1, PUT,
                        oss);
-            REQUIRE(oss.str() == "scan [trimbit_scan, 0, 63, 16, 2s]\n");
+            CHECK(oss.str() == "scan [trimbit_scan, 0, 63, 16, 2s]\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("scan", {}, -1, GET, oss);
-            REQUIRE(oss.str() ==
-                    "scan [[enabled\ndac trimbit_scan\nstart 0\nstop 48\nstep "
-                    "16\nsettleTime 2s\n]]\n");
+            CHECK(oss.str() ==
+                    "scan [enabled\ndac trimbit_scan\nstart 0\nstop 48\nstep "
+                    "16\nsettleTime 2s\n]\n");
         }
     }
+
+    //Switch off scan for future tests
+    det.setScan(defs::scanParameters());
     // acquire for each?
 
     // when taking acquisition
@@ -1825,7 +1828,7 @@ TEST_CASE("adcreg", "[.cmd]") {
     if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
         det_type == defs::MOENCH || det_type == defs::GOTTHARD) {
         std::ostringstream oss;
-        proxy.Call("adcreg", {"0x08", "0x3"}, -1, PUT, oss);
+        proxy.Call("adcreg", {"0x8", "0x3"}, -1, PUT, oss);
         REQUIRE(oss.str() == "adcreg [0x8, 0x3]\n");
         // This is a put only command
         REQUIRE_THROWS(proxy.Call("adcreg", {}, -1, GET));

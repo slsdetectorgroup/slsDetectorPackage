@@ -1274,12 +1274,8 @@ void Module::setQuad(const bool enable) {
 // Jungfrau Specific
 
 int Module::getThresholdTemperature() const {
-    int arg = GET_FLAG;
-    auto retval = sendToDetectorStop<int>(F_THRESHOLD_TEMP, arg);
-    if (retval != 0) {
-        retval /= 1000;
-    }
-    return retval;
+    auto retval = sendToDetectorStop<int>(F_THRESHOLD_TEMP, GET_FLAG);
+    return retval / 1000;
 }
 
 void Module::setThresholdTemperature(int val) {

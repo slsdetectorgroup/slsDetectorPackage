@@ -58,7 +58,7 @@ void Module::freeSharedMemory() {
     }
 }
 
-bool Module::isFixedPatternSharedMemoryCompatible() {
+bool Module::isFixedPatternSharedMemoryCompatible() const {
     return (shm()->shmversion >= SLS_SHMAPIVERSION);
 }
 
@@ -84,15 +84,15 @@ void Module::setHostname(const std::string &hostname,
     }
 }
 
-int64_t Module::getFirmwareVersion() {
+int64_t Module::getFirmwareVersion() const {
     return sendToDetector<int64_t>(F_GET_FIRMWARE_VERSION);
 }
 
-int64_t Module::getDetectorServerVersion() {
+int64_t Module::getDetectorServerVersion() const {
     return sendToDetector<int64_t>(F_GET_SERVER_VERSION);
 }
 
-int64_t Module::getSerialNumber() {
+int64_t Module::getSerialNumber() const {
     return sendToDetector<int64_t>(F_GET_SERIAL_NUMBER);
 }
 
@@ -145,7 +145,7 @@ void Module::updateNumberOfDetector(slsDetectorDefs::xy det) {
     sendToDetector(F_SET_POSITION, args, nullptr);
 }
 
-slsDetectorDefs::detectorSettings Module::getSettings() {
+slsDetectorDefs::detectorSettings Module::getSettings() const {
     auto r = sendToDetector<int>(F_SET_SETTINGS, GET_FLAG);
     return static_cast<detectorSettings>(r);
 }
@@ -179,7 +179,7 @@ void Module::loadSettingsFile(const std::string &fname) {
     setModule(myMod);
 }
 
-int Module::getAllTrimbits() {
+int Module::getAllTrimbits() const {
     return sendToDetector<int>(F_SET_ALL_TRIMBITS, GET_FLAG);
 }
 
@@ -187,7 +187,7 @@ void Module::setAllTrimbits(int val) {
     sendToDetector<int>(F_SET_ALL_TRIMBITS, val);
 }
 
-int64_t Module::getNumberOfFrames() {
+int64_t Module::getNumberOfFrames() const{
     return sendToDetector<int64_t>(F_GET_NUM_FRAMES);
 }
 
@@ -198,7 +198,7 @@ void Module::setNumberOfFrames(int64_t value) {
     }
 }
 
-int64_t Module::getNumberOfTriggers() {
+int64_t Module::getNumberOfTriggers() const{
     return sendToDetector<int64_t>(F_GET_NUM_TRIGGERS);
 }
 
@@ -209,7 +209,7 @@ void Module::setNumberOfTriggers(int64_t value) {
     }
 }
 
-int64_t Module::getExptime(int gateIndex) {
+int64_t Module::getExptime(int gateIndex) const{
     return sendToDetector<int64_t>(F_GET_EXPTIME, gateIndex);
 }
 
@@ -228,7 +228,7 @@ void Module::setExptime(int gateIndex, int64_t value) {
     }
 }
 
-int64_t Module::getPeriod() { return sendToDetector<int64_t>(F_GET_PERIOD); }
+int64_t Module::getPeriod() const { return sendToDetector<int64_t>(F_GET_PERIOD); }
 
 void Module::setPeriod(int64_t value) {
     sendToDetector(F_SET_PERIOD, value, nullptr);
@@ -237,7 +237,7 @@ void Module::setPeriod(int64_t value) {
     }
 }
 
-int64_t Module::getDelayAfterTrigger() {
+int64_t Module::getDelayAfterTrigger() const {
     return sendToDetector<int64_t>(F_GET_DELAY_AFTER_TRIGGER);
 }
 
@@ -261,7 +261,7 @@ int64_t Module::getPeriodLeft() const {
     return sendToDetectorStop<int64_t>(F_GET_PERIOD_LEFT);
 }
 
-int Module::getDynamicRange() {
+int Module::getDynamicRange() const {
     return sendToDetector<int>(F_SET_DYNAMIC_RANGE, GET_FLAG);
 }
 
@@ -293,7 +293,7 @@ void Module::setDynamicRange(int n) {
     }
 }
 
-slsDetectorDefs::timingMode Module::getTimingMode() {
+slsDetectorDefs::timingMode Module::getTimingMode() const {
     return sendToDetector<timingMode>(F_SET_TIMING_MODE, GET_FLAG);
 }
 
@@ -304,7 +304,7 @@ void Module::setTimingMode(timingMode value) {
     }
 }
 
-int Module::getClockDivider(int clkIndex) {
+int Module::getClockDivider(int clkIndex) const {
     return sendToDetector<int>(F_GET_CLOCK_DIVIDER, clkIndex);
 }
 
@@ -313,7 +313,7 @@ void Module::setClockDivider(int clkIndex, int value) {
     sendToDetector(F_SET_CLOCK_DIVIDER, args, nullptr);
 }
 
-int Module::getClockPhase(int clkIndex, bool inDegrees) {
+int Module::getClockPhase(int clkIndex, bool inDegrees) const {
     int args[]{clkIndex, static_cast<int>(inDegrees)};
     return sendToDetector<int>(F_GET_CLOCK_PHASE, args);
 }
@@ -323,11 +323,11 @@ void Module::setClockPhase(int clkIndex, int value, bool inDegrees) {
     sendToDetector(F_SET_CLOCK_PHASE, args, nullptr);
 }
 
-int Module::getMaxClockPhaseShift(int clkIndex) {
+int Module::getMaxClockPhaseShift(int clkIndex) const{
     return sendToDetector<int>(F_GET_MAX_CLOCK_PHASE_SHIFT, clkIndex);
 }
 
-int Module::getClockFrequency(int clkIndex) {
+int Module::getClockFrequency(int clkIndex) const {
     return sendToDetector<int>(F_GET_CLOCK_FREQUENCY, clkIndex);
 }
 
@@ -336,7 +336,7 @@ void Module::setClockFrequency(int clkIndex, int value) {
     sendToDetector(F_SET_CLOCK_FREQUENCY, args, nullptr);
 }
 
-int Module::getDAC(dacIndex index, bool mV) {
+int Module::getDAC(dacIndex index, bool mV) const {
     int args[]{static_cast<int>(index), static_cast<int>(mV), GET_FLAG};
     return sendToDetector<int>(F_SET_DAC, args);
 }
@@ -346,7 +346,7 @@ void Module::setDAC(int val, dacIndex index, bool mV) {
     sendToDetector<int>(F_SET_DAC, args);
 }
 
-bool Module::getPowerChip() {
+bool Module::getPowerChip() const {
     int arg = GET_FLAG;
     return sendToDetector<int>(F_POWER_CHIP, arg);
 }
@@ -355,7 +355,7 @@ void Module::setPowerChip(bool on) {
     sendToDetector<int>(F_POWER_CHIP, static_cast<int>(on));
 }
 
-int Module::getImageTestMode() {
+int Module::getImageTestMode() const {
     return sendToDetector<int>(F_GET_IMAGE_TEST_MODE);
 }
 
@@ -363,11 +363,11 @@ void Module::setImageTestMode(const int value) {
     sendToDetector(F_SET_IMAGE_TEST_MODE, value, nullptr);
 }
 
-int Module::getADC(dacIndex index) {
+int Module::getADC(dacIndex index) const {
     return sendToDetectorStop<int>(F_GET_ADC, static_cast<int>(index));
 }
 
-int Module::getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex) {
+int Module::getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex) const {
     int args[]{static_cast<int>(index), chipIndex};
     return sendToDetector<int>(F_GET_ON_CHIP_DAC, args);
 }
@@ -379,7 +379,7 @@ void Module::setOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex,
 }
 
 slsDetectorDefs::externalSignalFlag
-Module::getExternalSignalFlags(int signalIndex) {
+Module::getExternalSignalFlags(int signalIndex) const {
     return sendToDetector<slsDetectorDefs::externalSignalFlag>(
         F_GET_EXTERNAL_SIGNAL_FLAG, signalIndex);
 }
@@ -473,7 +473,7 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
     throw RuntimeError("No receiver to get missing packets.");
 }
 
-uint64_t Module::getStartingFrameNumber() {
+uint64_t Module::getStartingFrameNumber() const {
     return sendToDetector<uint64_t>(F_GET_STARTING_FRAME_NUMBER);
 }
 
@@ -483,7 +483,7 @@ void Module::setStartingFrameNumber(uint64_t value) {
 
 void Module::sendSoftwareTrigger() { sendToDetectorStop(F_SOFTWARE_TRIGGER); }
 
-defs::scanParameters Module::getScan() {
+defs::scanParameters Module::getScan() const {
     return sendToDetector<defs::scanParameters>(F_GET_SCAN);
 }
 
@@ -493,7 +493,7 @@ void Module::setScan(const defs::scanParameters t) {
     setNumberOfFrames(retval);
 }
 
-std::string Module::getScanErrorMessage() {
+std::string Module::getScanErrorMessage() const {
     char retval[MAX_STR_LENGTH]{};
     sendToDetector(F_GET_SCAN_ERROR_MESSAGE, nullptr, retval);
     return retval;
@@ -501,11 +501,11 @@ std::string Module::getScanErrorMessage() {
 
 // Network Configuration (Detector<->Receiver)
 
-int Module::getNumberofUDPInterfacesFromShm() {
+int Module::getNumberofUDPInterfacesFromShm() const{
     return shm()->numUDPInterfaces;
 }
 
-int Module::getNumberofUDPInterfaces() {
+int Module::getNumberofUDPInterfaces() const{
     shm()->numUDPInterfaces = sendToDetector<int>(F_GET_NUM_INTERFACES);
     return shm()->numUDPInterfaces;
 }
@@ -518,7 +518,7 @@ void Module::setNumberofUDPInterfaces(int n) {
     }
 }
 
-int Module::getSelectedUDPInterface() {
+int Module::getSelectedUDPInterface() const {
     return sendToDetector<int>(F_GET_INTERFACE_SEL);
 }
 
@@ -526,7 +526,7 @@ void Module::selectUDPInterface(int n) {
     sendToDetector(F_SET_INTERFACE_SEL, n, nullptr);
 }
 
-sls::IpAddr Module::getSourceUDPIP() {
+sls::IpAddr Module::getSourceUDPIP() const {
     return sendToDetector<sls::IpAddr>(F_GET_SOURCE_UDP_IP);
 }
 
@@ -537,7 +537,7 @@ void Module::setSourceUDPIP(const IpAddr ip) {
     sendToDetector(F_SET_SOURCE_UDP_IP, ip, nullptr);
 }
 
-sls::IpAddr Module::getSourceUDPIP2() {
+sls::IpAddr Module::getSourceUDPIP2() const{
     return sendToDetector<sls::IpAddr>(F_GET_SOURCE_UDP_IP2);
 }
 
@@ -548,7 +548,7 @@ void Module::setSourceUDPIP2(const IpAddr ip) {
     sendToDetector(F_SET_SOURCE_UDP_IP2, ip, nullptr);
 }
 
-sls::MacAddr Module::getSourceUDPMAC() {
+sls::MacAddr Module::getSourceUDPMAC() const {
     return sendToDetector<sls::MacAddr>(F_GET_SOURCE_UDP_MAC);
 }
 
@@ -559,7 +559,7 @@ void Module::setSourceUDPMAC(const sls::MacAddr mac) {
     sendToDetector(F_SET_SOURCE_UDP_MAC, mac, nullptr);
 }
 
-sls::MacAddr Module::getSourceUDPMAC2() {
+sls::MacAddr Module::getSourceUDPMAC2() const {
     return sendToDetector<sls::MacAddr>(F_GET_SOURCE_UDP_MAC2);
 }
 
@@ -570,7 +570,7 @@ void Module::setSourceUDPMAC2(const sls::MacAddr mac) {
     sendToDetector(F_SET_SOURCE_UDP_MAC2, mac, nullptr);
 }
 
-sls::IpAddr Module::getDestinationUDPIP() {
+sls::IpAddr Module::getDestinationUDPIP() const {
     return sendToDetector<sls::IpAddr>(F_GET_DEST_UDP_IP);
 }
 
@@ -588,7 +588,7 @@ void Module::setDestinationUDPIP(const IpAddr ip) {
     }
 }
 
-sls::IpAddr Module::getDestinationUDPIP2() {
+sls::IpAddr Module::getDestinationUDPIP2() const {
     return sendToDetector<sls::IpAddr>(F_GET_DEST_UDP_IP2);
 }
 
@@ -608,7 +608,7 @@ void Module::setDestinationUDPIP2(const IpAddr ip) {
     }
 }
 
-sls::MacAddr Module::getDestinationUDPMAC() {
+sls::MacAddr Module::getDestinationUDPMAC() const {
     return sendToDetector<sls::MacAddr>(F_GET_DEST_UDP_MAC);
 }
 
@@ -619,7 +619,7 @@ void Module::setDestinationUDPMAC(const MacAddr mac) {
     sendToDetector(F_SET_DEST_UDP_MAC, mac, nullptr);
 }
 
-sls::MacAddr Module::getDestinationUDPMAC2() {
+sls::MacAddr Module::getDestinationUDPMAC2() const {
     return sendToDetector<sls::MacAddr>(F_GET_DEST_UDP_MAC2);
 }
 
@@ -630,7 +630,7 @@ void Module::setDestinationUDPMAC2(const MacAddr mac) {
     sendToDetector(F_SET_DEST_UDP_MAC2, mac, nullptr);
 }
 
-int Module::getDestinationUDPPort() {
+int Module::getDestinationUDPPort() const {
     return sendToDetector<int>(F_GET_DEST_UDP_PORT);
 }
 
@@ -641,7 +641,7 @@ void Module::setDestinationUDPPort(const int port) {
     }
 }
 
-int Module::getDestinationUDPPort2() {
+int Module::getDestinationUDPPort2() const{
     return sendToDetector<int>(F_GET_DEST_UDP_PORT2);
 }
 
@@ -680,7 +680,7 @@ std::string Module::printReceiverConfiguration() {
     return os.str();
 }
 
-bool Module::getTenGiga() {
+bool Module::getTenGiga() const {
     int arg = GET_FLAG;
     return static_cast<bool>(sendToDetector<int>(F_ENABLE_TEN_GIGA, arg));
 }
@@ -695,7 +695,7 @@ void Module::setTenGiga(bool value) {
     }
 }
 
-bool Module::getTenGigaFlowControl() {
+bool Module::getTenGigaFlowControl() const {
     return sendToDetector<int>(F_GET_TEN_GIGA_FLOW_CONTROL);
 }
 
@@ -704,7 +704,7 @@ void Module::setTenGigaFlowControl(bool enable) {
     sendToDetector(F_SET_TEN_GIGA_FLOW_CONTROL, arg, nullptr);
 }
 
-int Module::getTransmissionDelayFrame() {
+int Module::getTransmissionDelayFrame() const {
     return sendToDetector<int>(F_GET_TRANSMISSION_DELAY_FRAME);
 }
 
@@ -712,7 +712,7 @@ void Module::setTransmissionDelayFrame(int value) {
     sendToDetector(F_SET_TRANSMISSION_DELAY_FRAME, value, nullptr);
 }
 
-int Module::getTransmissionDelayLeft() {
+int Module::getTransmissionDelayLeft() const {
     return sendToDetector<int>(F_GET_TRANSMISSION_DELAY_LEFT);
 }
 
@@ -720,7 +720,7 @@ void Module::setTransmissionDelayLeft(int value) {
     sendToDetector(F_SET_TRANSMISSION_DELAY_LEFT, value, nullptr);
 }
 
-int Module::getTransmissionDelayRight() {
+int Module::getTransmissionDelayRight() const {
     return sendToDetector<int>(F_GET_TRANSMISSION_DELAY_RIGHT);
 }
 
@@ -818,7 +818,7 @@ int Module::setReceiverPort(int port_number) {
     return shm()->rxTCPPort;
 }
 
-int Module::getReceiverFifoDepth() {
+int Module::getReceiverFifoDepth() const {
     int arg = GET_FLAG;
     return sendToReceiver<int>(F_SET_RECEIVER_FIFO_DEPTH, arg);
 }
@@ -827,7 +827,7 @@ void Module::setReceiverFifoDepth(int n_frames) {
     sendToReceiver<int>(F_SET_RECEIVER_FIFO_DEPTH, n_frames);
 }
 
-bool Module::getReceiverSilentMode() {
+bool Module::getReceiverSilentMode() const {
     return sendToReceiver<int>(F_GET_RECEIVER_SILENT_MODE);
 }
 
@@ -836,7 +836,7 @@ void Module::setReceiverSilentMode(bool enable) {
                    nullptr);
 }
 
-slsDetectorDefs::frameDiscardPolicy Module::getReceiverFramesDiscardPolicy() {
+slsDetectorDefs::frameDiscardPolicy Module::getReceiverFramesDiscardPolicy() const {
     return static_cast<frameDiscardPolicy>(
         sendToReceiver<int>(F_GET_RECEIVER_DISCARD_POLICY));
 }
@@ -845,7 +845,7 @@ void Module::setReceiverFramesDiscardPolicy(frameDiscardPolicy f) {
     sendToReceiver(F_SET_RECEIVER_DISCARD_POLICY, static_cast<int>(f), nullptr);
 }
 
-bool Module::getPartialFramesPadding() {
+bool Module::getPartialFramesPadding() const {
     return sendToReceiver<int>(F_GET_RECEIVER_PADDING);
 }
 
@@ -866,7 +866,7 @@ void Module::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
     sendToReceiver<int64_t>(F_RECEIVER_UDP_SOCK_BUF_SIZE, udpsockbufsize);
 }
 
-bool Module::getReceiverLock() {
+bool Module::getReceiverLock() const {
     int arg = GET_FLAG;
     return static_cast<bool>(sendToReceiver<int>(F_LOCK_RECEIVER, arg));
 }
@@ -886,7 +886,7 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Module::getReceiverThreadIds() const {
 
 // File
 
-slsDetectorDefs::fileFormat Module::getFileFormat() {
+slsDetectorDefs::fileFormat Module::getFileFormat() const{
     return static_cast<fileFormat>(
         sendToReceiver<int>(F_GET_RECEIVER_FILE_FORMAT));
 }
@@ -895,7 +895,7 @@ void Module::setFileFormat(fileFormat f) {
     sendToReceiver(F_SET_RECEIVER_FILE_FORMAT, static_cast<int>(f), nullptr);
 }
 
-std::string Module::getFilePath() {
+std::string Module::getFilePath() const {
     char ret[MAX_STR_LENGTH]{};
     sendToReceiver(F_GET_RECEIVER_FILE_PATH, nullptr, ret);
     return ret;
@@ -910,7 +910,7 @@ void Module::setFilePath(const std::string &path) {
     sendToReceiver(F_SET_RECEIVER_FILE_PATH, args, nullptr);
 }
 
-std::string Module::getFileName() {
+std::string Module::getFileName() const {
     char retvals[MAX_STR_LENGTH]{};
     sendToReceiver(F_GET_RECEIVER_FILE_NAME, nullptr, retvals);
     return std::string(retvals);
@@ -925,7 +925,7 @@ void Module::setFileName(const std::string &fname) {
     sendToReceiver(F_SET_RECEIVER_FILE_NAME, args, nullptr);
 }
 
-int64_t Module::getFileIndex() {
+int64_t Module::getFileIndex() const {
     return sendToReceiver<int64_t>(F_GET_RECEIVER_FILE_INDEX);
 }
 
@@ -935,7 +935,7 @@ void Module::setFileIndex(int64_t file_index) {
 
 void Module::incrementFileIndex() { sendToReceiver(F_INCREMENT_FILE_INDEX); }
 
-bool Module::getFileWrite() {
+bool Module::getFileWrite() const {
     return sendToReceiver<int>(F_GET_RECEIVER_FILE_WRITE);
 }
 
@@ -943,7 +943,7 @@ void Module::setFileWrite(bool value) {
     sendToReceiver(F_SET_RECEIVER_FILE_WRITE, static_cast<int>(value), nullptr);
 }
 
-bool Module::getMasterFileWrite() {
+bool Module::getMasterFileWrite() const {
     return sendToReceiver<int>(F_GET_RECEIVER_MASTER_FILE_WRITE);
 }
 
@@ -952,7 +952,7 @@ void Module::setMasterFileWrite(bool value) {
                    nullptr);
 }
 
-bool Module::getFileOverWrite() {
+bool Module::getFileOverWrite() const {
     return sendToReceiver<int>(F_GET_RECEIVER_OVERWRITE);
 }
 
@@ -960,7 +960,7 @@ void Module::setFileOverWrite(bool value) {
     sendToReceiver(F_SET_RECEIVER_OVERWRITE, static_cast<int>(value), nullptr);
 }
 
-int Module::getFramesPerFile() {
+int Module::getFramesPerFile() const {
     return sendToReceiver<int>(F_GET_RECEIVER_FRAMES_PER_FILE);
 }
 
@@ -970,7 +970,7 @@ void Module::setFramesPerFile(int n_frames) {
 
 // ZMQ Streaming Parameters (Receiver<->Client)
 
-bool Module::getReceiverStreaming() {
+bool Module::getReceiverStreaming() const {
     return sendToReceiver<int>(F_GET_RECEIVER_STREAMING);
 }
 
@@ -978,7 +978,7 @@ void Module::setReceiverStreaming(bool enable) {
     sendToReceiver(F_SET_RECEIVER_STREAMING, static_cast<int>(enable), nullptr);
 }
 
-int Module::getReceiverStreamingFrequency() {
+int Module::getReceiverStreamingFrequency() const {
     return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_FREQUENCY);
 }
 
@@ -990,7 +990,7 @@ void Module::setReceiverStreamingFrequency(int freq) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_FREQUENCY, freq, nullptr);
 }
 
-int Module::getReceiverStreamingTimer() {
+int Module::getReceiverStreamingTimer() const {
     int arg = GET_FLAG;
     return sendToReceiver<int>(F_RECEIVER_STREAMING_TIMER, arg);
 }
@@ -999,7 +999,7 @@ void Module::setReceiverStreamingTimer(int time_in_ms) {
     sendToReceiver<int>(F_RECEIVER_STREAMING_TIMER, time_in_ms);
 }
 
-int Module::getReceiverStreamingStartingFrame() {
+int Module::getReceiverStreamingStartingFrame() const {
     return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_START_FNUM);
 }
 
@@ -1011,7 +1011,7 @@ void Module::setReceiverStreamingStartingFrame(int fnum) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_START_FNUM, fnum, nullptr);
 }
 
-int Module::getReceiverStreamingPort() {
+int Module::getReceiverStreamingPort() const {
     return sendToReceiver<int>(F_GET_RECEIVER_STREAMING_PORT);
 }
 
@@ -1019,7 +1019,7 @@ void Module::setReceiverStreamingPort(int port) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_PORT, port, nullptr);
 }
 
-sls::IpAddr Module::getReceiverStreamingIP() {
+sls::IpAddr Module::getReceiverStreamingIP() const {
     return sendToReceiver<sls::IpAddr>(F_GET_RECEIVER_STREAMING_SRC_IP);
 }
 
@@ -1034,11 +1034,11 @@ void Module::setReceiverStreamingIP(const sls::IpAddr ip) {
     sendToReceiver(F_SET_RECEIVER_STREAMING_SRC_IP, ip, nullptr);
 }
 
-int Module::getClientStreamingPort() { return shm()->zmqport; }
+int Module::getClientStreamingPort() const { return shm()->zmqport; }
 
 void Module::setClientStreamingPort(int port) { shm()->zmqport = port; }
 
-sls::IpAddr Module::getClientStreamingIP() { return shm()->zmqip; }
+sls::IpAddr Module::getClientStreamingIP() const { return shm()->zmqip; }
 
 void Module::setClientStreamingIP(const sls::IpAddr ip) {
     if (ip == 0) {
@@ -1049,7 +1049,7 @@ void Module::setClientStreamingIP(const sls::IpAddr ip) {
 
 //  Eiger Specific
 
-int64_t Module::getSubExptime() {
+int64_t Module::getSubExptime() const {
     return sendToDetector<int64_t>(F_GET_SUB_EXPTIME);
 }
 
@@ -1067,7 +1067,7 @@ void Module::setSubExptime(int64_t value) {
     }
 }
 
-int64_t Module::getSubDeadTime() {
+int64_t Module::getSubDeadTime() const {
     return sendToDetector<int64_t>(F_GET_SUB_DEADTIME);
 }
 
@@ -1078,7 +1078,7 @@ void Module::setSubDeadTime(int64_t value) {
     }
 }
 
-int Module::getThresholdEnergy() {
+int Module::getThresholdEnergy() const {
     // moench - get threshold energy from json header
     if (shm()->myDetectorType == MOENCH) {
         getAdditionalJsonHeader();
@@ -1110,14 +1110,14 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
     }
 }
 
-std::string Module::getSettingsDir() { return std::string(shm()->settingsDir); }
+std::string Module::getSettingsDir() const { return std::string(shm()->settingsDir); }
 
 std::string Module::setSettingsDir(const std::string &dir) {
     sls::strcpy_safe(shm()->settingsDir, dir.c_str());
     return shm()->settingsDir;
 }
 
-bool Module::getParallelMode() {
+bool Module::getParallelMode() const {
     auto r = sendToDetector<int>(F_GET_PARALLEL_MODE);
     return static_cast<bool>(r);
 }
@@ -1126,7 +1126,7 @@ void Module::setParallelMode(const bool enable) {
     sendToDetector(F_SET_PARALLEL_MODE, static_cast<int>(enable), nullptr);
 }
 
-bool Module::getOverFlowMode() {
+bool Module::getOverFlowMode() const {
     auto r = sendToDetector<int>(F_GET_OVERFLOW_MODE);
     return static_cast<bool>(r);
 }
@@ -1136,7 +1136,7 @@ void Module::setOverFlowMode(const bool enable) {
     sendToDetector(F_SET_OVERFLOW_MODE, arg, nullptr);
 }
 
-bool Module::getFlippedDataX() {
+bool Module::getFlippedDataX() const {
     return sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER, GET_FLAG);
 }
 
@@ -1144,7 +1144,7 @@ void Module::setFlippedDataX(bool value) {
     sendToReceiver<int>(F_SET_FLIPPED_DATA_RECEIVER, static_cast<int>(value));
 }
 
-std::vector<int> Module::getTrimEn() {
+std::vector<int> Module::getTrimEn() const {
     if (shm()->myDetectorType != EIGER) {
         throw RuntimeError("getTrimEn not implemented for this detector.");
     }
@@ -1167,7 +1167,7 @@ int Module::setTrimEn(const std::vector<int> &energies) {
     return shm()->trimEnergies.size();
 }
 
-int64_t Module::getRateCorrection() {
+int64_t Module::getRateCorrection() const {
     return sendToDetector<int64_t>(F_GET_RATE_CORRECT);
 }
 
@@ -1180,7 +1180,7 @@ void Module::setRateCorrection(int64_t t) {
     sendToDetector(F_SET_RATE_CORRECT, t, nullptr);
 }
 
-int Module::getReadNLines() { return sendToDetector<int>(F_GET_READ_N_LINES); }
+int Module::getReadNLines() const { return sendToDetector<int>(F_GET_READ_N_LINES); }
 
 void Module::setReadNLines(const int value) {
     sendToDetector(F_SET_READ_N_LINES, value, nullptr);
@@ -1189,7 +1189,7 @@ void Module::setReadNLines(const int value) {
     }
 }
 
-bool Module::getInterruptSubframe() {
+bool Module::getInterruptSubframe() const {
     auto r = sendToDetector<int>(F_GET_INTERRUPT_SUBFRAME);
     return static_cast<bool>(r);
 }
@@ -1207,7 +1207,7 @@ int64_t Module::getMeasuredSubFramePeriod() const {
     return sendToDetectorStop<int64_t>(F_GET_MEASURED_SUBPERIOD);
 }
 
-bool Module::getActivate() {
+bool Module::getActivate() const {
     int arg = GET_FLAG;
     auto retval = sendToDetector<int>(F_ACTIVATE, arg);
     auto retval2 = sendToDetectorStop<int>(F_ACTIVATE, arg);
@@ -1229,7 +1229,7 @@ void Module::setActivate(const bool enable) {
     }
 }
 
-bool Module::getDeactivatedRxrPaddingMode() {
+bool Module::getDeactivatedRxrPaddingMode() const {
     return sendToReceiver<int>(F_GET_RECEIVER_DEACTIVATED_PADDING);
 }
 
@@ -1238,7 +1238,7 @@ void Module::setDeactivatedRxrPaddingMode(bool padding) {
                    static_cast<int>(padding), nullptr);
 }
 
-bool Module::getCounterBit() {
+bool Module::getCounterBit() const {
     int arg = GET_FLAG;
     return (!static_cast<bool>(sendToDetector<int>(F_SET_COUNTER_BIT, arg)));
 }
@@ -1261,7 +1261,7 @@ void Module::pulseChip(int n_pulses) {
     sendToDetector(F_PULSE_CHIP, n_pulses, nullptr);
 }
 
-bool Module::getQuad() { return sendToDetector<int>(F_GET_QUAD) != 0; }
+bool Module::getQuad() const { return sendToDetector<int>(F_GET_QUAD) != 0; }
 
 void Module::setQuad(const bool enable) {
     int value = enable ? 1 : 0;
@@ -2142,7 +2142,7 @@ void Module::startPattern() { sendToDetector(F_START_PATTERN); }
 
 // Moench
 
-std::map<std::string, std::string> Module::getAdditionalJsonHeader() {
+std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters "
                            "(zmq json header)");
@@ -2217,7 +2217,7 @@ void Module::setAdditionalJsonHeader(
     }
 }
 
-std::string Module::getAdditionalJsonParameter(const std::string &key) {
+std::string Module::getAdditionalJsonParameter(const std::string &key) const {
     char arg[SHORT_STR_LENGTH]{};
     sls::strcpy_safe(arg, key.c_str());
     char retval[SHORT_STR_LENGTH]{};
@@ -2387,7 +2387,7 @@ uint64_t Module::getReceiverCurrentFrameIndex() const {
 // private
 
 void Module::checkArgs(const void *args, size_t args_size, void *retval,
-                              size_t retval_size) const {
+                       size_t retval_size) const {
     if (args == nullptr && args_size != 0)
         throw RuntimeError(
             "Passed nullptr as args to Send function but size is not 0");

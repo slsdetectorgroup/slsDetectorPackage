@@ -78,7 +78,7 @@ class Module : public virtual slsDetectorDefs {
     Safe to call only if detector shm also deleted or its numberOfDetectors is
     updated */
     void freeSharedMemory();
-    bool isFixedPatternSharedMemoryCompatible();
+    bool isFixedPatternSharedMemoryCompatible() const;
     std::string getHostname() const;
 
     /** initialChecks is enable or disable initial compatibility checks and
@@ -86,9 +86,9 @@ class Module : public virtual slsDetectorDefs {
     users! */
     void setHostname(const std::string &hostname, const bool initialChecks);
 
-    int64_t getFirmwareVersion();
-    int64_t getDetectorServerVersion();
-    int64_t getSerialNumber();
+    int64_t getFirmwareVersion() const;
+    int64_t getDetectorServerVersion() const;
+    int64_t getSerialNumber() const;
     int64_t getReceiverSoftwareVersion() const;
     static detectorType getTypeFromDetector(const std::string &hostname,
                                             int cport = DEFAULT_PORTNO);
@@ -98,10 +98,10 @@ class Module : public virtual slsDetectorDefs {
     void updateNumberOfChannels();
     slsDetectorDefs::xy getNumberOfChannels() const;
     void updateNumberOfDetector(slsDetectorDefs::xy det);
-    detectorSettings getSettings();
+    detectorSettings getSettings() const;
     void setSettings(detectorSettings isettings);
     void loadSettingsFile(const std::string &fname);
-    int getAllTrimbits();
+    int getAllTrimbits() const;
     void setAllTrimbits(int val);
 
     /**************************************************
@@ -109,45 +109,45 @@ class Module : public virtual slsDetectorDefs {
      *    Acquisition Parameters                      *
      *                                                *
      * ************************************************/
-    int64_t getNumberOfFrames();
+    int64_t getNumberOfFrames() const;
     void setNumberOfFrames(int64_t value);
-    int64_t getNumberOfTriggers();
+    int64_t getNumberOfTriggers() const;
     void setNumberOfTriggers(int64_t value);
     /** [Mythen3] gatIndex: 0-2, [Others]: -1 always */
-    int64_t getExptime(int gateIndex);
+    int64_t getExptime(int gateIndex) const;
     /** [Mythen3] gatIndex: -1 for all, 0-2, [Others]: -1 always */
     void setExptime(int gateIndex, int64_t value);
-    int64_t getPeriod();
+    int64_t getPeriod() const;
     void setPeriod(int64_t value);
-    int64_t getDelayAfterTrigger();
+    int64_t getDelayAfterTrigger() const;
     void setDelayAfterTrigger(int64_t value);
     int64_t getNumberOfFramesLeft() const;
     int64_t getNumberOfTriggersLeft() const;
     int64_t getDelayAfterTriggerLeft() const;
     int64_t getPeriodLeft() const;
-    int getDynamicRange();
+    int getDynamicRange() const;
     void setDynamicRange(int n);
-    timingMode getTimingMode();
+    timingMode getTimingMode() const;
     void setTimingMode(timingMode value);
-    int getClockDivider(int clkIndex);
+    int getClockDivider(int clkIndex) const;
     void setClockDivider(int clkIndex, int value);
-    int getClockPhase(int clkIndex, bool inDegrees);
+    int getClockPhase(int clkIndex, bool inDegrees) const;
     void setClockPhase(int clkIndex, int value, bool inDegrees);
-    int getMaxClockPhaseShift(int clkIndex);
-    int getClockFrequency(int clkIndex);
+    int getMaxClockPhaseShift(int clkIndex) const;
+    int getClockFrequency(int clkIndex) const;
     void setClockFrequency(int clkIndex, int value);
-    int getDAC(dacIndex index, bool mV);
+    int getDAC(dacIndex index, bool mV) const;
     void setDAC(int val, dacIndex index, bool mV);
-    bool getPowerChip();
+    bool getPowerChip() const;
     void setPowerChip(bool on);
-    int getImageTestMode();
+    int getImageTestMode() const;
     void setImageTestMode(const int value);
     /* temperature in millidegrees */
-    int getADC(dacIndex index);
-    int getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex);
+    int getADC(dacIndex index) const;
+    int getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex) const;
     void setOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex,
                       int value);
-    externalSignalFlag getExternalSignalFlags(int signalIndex);
+    externalSignalFlag getExternalSignalFlags(int signalIndex) const;
     void setExternalSignalFlags(int signalIndex, externalSignalFlag type);
 
     /**************************************************
@@ -165,53 +165,53 @@ class Module : public virtual slsDetectorDefs {
     int getReceiverProgress() const;
     int64_t getFramesCaughtByReceiver() const;
     std::vector<uint64_t> getNumMissingPackets() const;
-    uint64_t getStartingFrameNumber();
+    uint64_t getStartingFrameNumber() const;
     void setStartingFrameNumber(uint64_t value);
     void sendSoftwareTrigger();
-    defs::scanParameters getScan();
+    defs::scanParameters getScan() const;
     void setScan(const defs::scanParameters t);
-    std::string getScanErrorMessage();
+    std::string getScanErrorMessage() const;
 
     /**************************************************
      *                                                 *
      *    Network Configuration (Detector<->Receiver)  *
      *                                                 *
      * ************************************************/
-    int getNumberofUDPInterfacesFromShm();
-    int getNumberofUDPInterfaces();
+    int getNumberofUDPInterfacesFromShm() const;
+    int getNumberofUDPInterfaces() const;
     void setNumberofUDPInterfaces(int n);
-    int getSelectedUDPInterface();
+    int getSelectedUDPInterface() const;
     void selectUDPInterface(int n);
-    sls::IpAddr getSourceUDPIP();
+    sls::IpAddr getSourceUDPIP() const;
     void setSourceUDPIP(const sls::IpAddr ip);
-    sls::IpAddr getSourceUDPIP2();
+    sls::IpAddr getSourceUDPIP2() const;
     void setSourceUDPIP2(const sls::IpAddr ip);
-    sls::MacAddr getSourceUDPMAC();
+    sls::MacAddr getSourceUDPMAC() const;
     void setSourceUDPMAC(const sls::MacAddr mac);
-    sls::MacAddr getSourceUDPMAC2();
+    sls::MacAddr getSourceUDPMAC2() const;
     void setSourceUDPMAC2(const sls::MacAddr mac);
-    sls::IpAddr getDestinationUDPIP();
+    sls::IpAddr getDestinationUDPIP() const;
     void setDestinationUDPIP(const sls::IpAddr ip);
-    sls::IpAddr getDestinationUDPIP2();
+    sls::IpAddr getDestinationUDPIP2() const;
     void setDestinationUDPIP2(const sls::IpAddr ip);
-    sls::MacAddr getDestinationUDPMAC();
+    sls::MacAddr getDestinationUDPMAC() const;
     void setDestinationUDPMAC(const sls::MacAddr mac);
-    sls::MacAddr getDestinationUDPMAC2();
+    sls::MacAddr getDestinationUDPMAC2() const;
     void setDestinationUDPMAC2(const sls::MacAddr mac);
-    int getDestinationUDPPort();
+    int getDestinationUDPPort() const;
     void setDestinationUDPPort(int udpport);
-    int getDestinationUDPPort2();
+    int getDestinationUDPPort2() const;
     void setDestinationUDPPort2(int udpport);
     std::string printReceiverConfiguration();
-    bool getTenGiga();
+    bool getTenGiga() const;
     void setTenGiga(bool value);
-    bool getTenGigaFlowControl();
+    bool getTenGigaFlowControl() const;
     void setTenGigaFlowControl(bool enable);
-    int getTransmissionDelayFrame();
+    int getTransmissionDelayFrame() const;
     void setTransmissionDelayFrame(int value);
-    int getTransmissionDelayLeft();
+    int getTransmissionDelayLeft() const;
     void setTransmissionDelayLeft(int value);
-    int getTransmissionDelayRight();
+    int getTransmissionDelayRight() const;
     void setTransmissionDelayRight(int value);
 
     /**************************************************
@@ -224,18 +224,18 @@ class Module : public virtual slsDetectorDefs {
     void setReceiverHostname(const std::string &receiver);
     int getReceiverPort() const;
     int setReceiverPort(int port_number);
-    int getReceiverFifoDepth();
+    int getReceiverFifoDepth() const;
     void setReceiverFifoDepth(int n_frames);
-    bool getReceiverSilentMode();
+    bool getReceiverSilentMode() const;
     void setReceiverSilentMode(bool enable);
-    frameDiscardPolicy getReceiverFramesDiscardPolicy();
+    frameDiscardPolicy getReceiverFramesDiscardPolicy() const;
     void setReceiverFramesDiscardPolicy(frameDiscardPolicy f);
-    bool getPartialFramesPadding();
+    bool getPartialFramesPadding() const;
     void setPartialFramesPadding(bool padding);
     int64_t getReceiverUDPSocketBufferSize() const;
     int64_t getReceiverRealUDPSocketBufferSize() const;
     void setReceiverUDPSocketBufferSize(int64_t udpsockbufsize);
-    bool getReceiverLock();
+    bool getReceiverLock() const;
     void setReceiverLock(bool lock);
     sls::IpAddr getReceiverLastClientIP() const;
     std::array<pid_t, NUM_RX_THREAD_IDS> getReceiverThreadIds() const;
@@ -245,22 +245,22 @@ class Module : public virtual slsDetectorDefs {
      *    File                                        *
      *                                                *
      * ************************************************/
-    fileFormat getFileFormat();
+    fileFormat getFileFormat() const;
     void setFileFormat(fileFormat f);
-    std::string getFilePath();
+    std::string getFilePath() const;
     void setFilePath(const std::string &path);
-    std::string getFileName();
+    std::string getFileName() const;
     void setFileName(const std::string &fname);
-    int64_t getFileIndex();
+    int64_t getFileIndex() const;
     void setFileIndex(int64_t file_index);
     void incrementFileIndex();
-    bool getFileWrite();
+    bool getFileWrite() const;
     void setFileWrite(bool value);
-    bool getMasterFileWrite();
+    bool getMasterFileWrite() const;
     void setMasterFileWrite(bool value);
-    bool getFileOverWrite();
+    bool getFileOverWrite() const;
     void setFileOverWrite(bool value);
-    int getFramesPerFile();
+    int getFramesPerFile() const;
     /** 0 will set frames per file to unlimited */
     void setFramesPerFile(int n_frames);
 
@@ -269,22 +269,22 @@ class Module : public virtual slsDetectorDefs {
      *    ZMQ Streaming Parameters (Receiver<->Client)*
      *                                                *
      * ************************************************/
-    bool getReceiverStreaming();
+    bool getReceiverStreaming() const;
     void setReceiverStreaming(bool enable);
-    int getReceiverStreamingFrequency();
+    int getReceiverStreamingFrequency() const;
     /** Option: nth frame streamed out, if 0, streamed out at a timer of 200 */
     void setReceiverStreamingFrequency(int freq);
-    int getReceiverStreamingTimer();
+    int getReceiverStreamingTimer() const;
     void setReceiverStreamingTimer(int time_in_ms = 200);
-    int getReceiverStreamingStartingFrame();
+    int getReceiverStreamingStartingFrame() const;
     void setReceiverStreamingStartingFrame(int fnum);
-    int getReceiverStreamingPort();
+    int getReceiverStreamingPort() const;
     void setReceiverStreamingPort(int port);
-    sls::IpAddr getReceiverStreamingIP();
+    sls::IpAddr getReceiverStreamingIP() const;
     void setReceiverStreamingIP(const sls::IpAddr ip);
-    int getClientStreamingPort();
+    int getClientStreamingPort() const;
     void setClientStreamingPort(int port);
-    sls::IpAddr getClientStreamingIP();
+    sls::IpAddr getClientStreamingIP() const;
     void setClientStreamingIP(const sls::IpAddr ip);
 
     /**************************************************
@@ -292,42 +292,42 @@ class Module : public virtual slsDetectorDefs {
      *    Eiger Specific                              *
      *                                                *
      * ************************************************/
-    int64_t getSubExptime();
+    int64_t getSubExptime() const;
     void setSubExptime(int64_t value);
-    int64_t getSubDeadTime();
+    int64_t getSubDeadTime() const;
     void setSubDeadTime(int64_t value);
-    int getThresholdEnergy();
+    int getThresholdEnergy() const;
     void setThresholdEnergy(int e_eV, detectorSettings isettings,
                             bool trimbits);
-    std::string getSettingsDir();
+    std::string getSettingsDir() const;
     std::string setSettingsDir(const std::string &dir);
-    bool getParallelMode();
+    bool getParallelMode() const;
     void setParallelMode(const bool enable);
-    bool getOverFlowMode();
+    bool getOverFlowMode() const;
     void setOverFlowMode(const bool enable);
-    bool getFlippedDataX();
+    bool getFlippedDataX() const;
     void setFlippedDataX(bool value);
-    std::vector<int> getTrimEn();
+    std::vector<int> getTrimEn() const;
     int setTrimEn(const std::vector<int> &energies = {});
-    int64_t getRateCorrection();
+    int64_t getRateCorrection() const;
     void setDefaultRateCorrection();
     void setRateCorrection(int64_t t = 0);
-    int getReadNLines();
+    int getReadNLines() const;
     void setReadNLines(const int value);
-    bool getInterruptSubframe();
+    bool getInterruptSubframe() const;
     void setInterruptSubframe(const bool enable);
     int64_t getMeasuredPeriod() const;
     int64_t getMeasuredSubFramePeriod() const;
-    bool getActivate();
+    bool getActivate() const;
     void setActivate(const bool enable);
-    bool getDeactivatedRxrPaddingMode();
+    bool getDeactivatedRxrPaddingMode() const;
     void setDeactivatedRxrPaddingMode(bool padding);
-    bool getCounterBit();
+    bool getCounterBit() const;
     void setCounterBit(bool cb);
     void pulsePixel(int n = 0, int x = 0, int y = 0);
     void pulsePixelNMove(int n = 0, int x = 0, int y = 0);
     void pulseChip(int n_pulses = 0);
-    bool getQuad();
+    bool getQuad() const;
     void setQuad(const bool enable);
 
     /**************************************************
@@ -472,10 +472,10 @@ class Module : public virtual slsDetectorDefs {
      *    Moench                                      *
      *                                                *
      * ************************************************/
-    std::map<std::string, std::string> getAdditionalJsonHeader();
+    std::map<std::string, std::string> getAdditionalJsonHeader() const;
     void setAdditionalJsonHeader(
         const std::map<std::string, std::string> &jsonHeader);
-    std::string getAdditionalJsonParameter(const std::string &key);
+    std::string getAdditionalJsonParameter(const std::string &key) const;
     void setAdditionalJsonParameter(const std::string &key,
                                     const std::string &value);
 

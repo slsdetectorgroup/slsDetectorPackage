@@ -347,8 +347,7 @@ void Module::setDAC(int val, dacIndex index, bool mV) {
 }
 
 bool Module::getPowerChip() const {
-    int arg = GET_FLAG;
-    return sendToDetector<int>(F_POWER_CHIP, arg);
+    return sendToDetector<int>(F_POWER_CHIP, GET_FLAG);
 }
 
 void Module::setPowerChip(bool on) {
@@ -681,8 +680,7 @@ std::string Module::printReceiverConfiguration() {
 }
 
 bool Module::getTenGiga() const {
-    int arg = GET_FLAG;
-    return static_cast<bool>(sendToDetector<int>(F_ENABLE_TEN_GIGA, arg));
+    return static_cast<bool>(sendToDetector<int>(F_ENABLE_TEN_GIGA, GET_FLAG));
 }
 
 void Module::setTenGiga(bool value) {
@@ -819,8 +817,7 @@ int Module::setReceiverPort(int port_number) {
 }
 
 int Module::getReceiverFifoDepth() const {
-    int arg = GET_FLAG;
-    return sendToReceiver<int>(F_SET_RECEIVER_FIFO_DEPTH, arg);
+    return sendToReceiver<int>(F_SET_RECEIVER_FIFO_DEPTH, GET_FLAG);
 }
 
 void Module::setReceiverFifoDepth(int n_frames) {
@@ -867,8 +864,7 @@ void Module::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
 }
 
 bool Module::getReceiverLock() const {
-    int arg = GET_FLAG;
-    return static_cast<bool>(sendToReceiver<int>(F_LOCK_RECEIVER, arg));
+    return static_cast<bool>(sendToReceiver<int>(F_LOCK_RECEIVER, GET_FLAG));
 }
 
 void Module::setReceiverLock(bool lock) {
@@ -991,8 +987,7 @@ void Module::setReceiverStreamingFrequency(int freq) {
 }
 
 int Module::getReceiverStreamingTimer() const {
-    int arg = GET_FLAG;
-    return sendToReceiver<int>(F_RECEIVER_STREAMING_TIMER, arg);
+    return sendToReceiver<int>(F_RECEIVER_STREAMING_TIMER, GET_FLAG);
 }
 
 void Module::setReceiverStreamingTimer(int time_in_ms) {
@@ -1208,9 +1203,8 @@ int64_t Module::getMeasuredSubFramePeriod() const {
 }
 
 bool Module::getActivate() const {
-    int arg = GET_FLAG;
-    auto retval = sendToDetector<int>(F_ACTIVATE, arg);
-    auto retval2 = sendToDetectorStop<int>(F_ACTIVATE, arg);
+    auto retval = sendToDetector<int>(F_ACTIVATE, GET_FLAG);
+    auto retval2 = sendToDetectorStop<int>(F_ACTIVATE, GET_FLAG);
     if (retval != retval2) {
         std::ostringstream oss;
         oss << "Inconsistent activate state. Control Server: " << retval
@@ -1239,8 +1233,7 @@ void Module::setDeactivatedRxrPaddingMode(bool padding) {
 }
 
 bool Module::getCounterBit() const {
-    int arg = GET_FLAG;
-    return (!static_cast<bool>(sendToDetector<int>(F_SET_COUNTER_BIT, arg)));
+    return (!static_cast<bool>(sendToDetector<int>(F_SET_COUNTER_BIT, GET_FLAG)));
 }
 
 void Module::setCounterBit(bool cb) {
@@ -1288,8 +1281,7 @@ void Module::setThresholdTemperature(int val) {
 }
 
 bool Module::getTemperatureControl() const {
-    int arg = GET_FLAG;
-    return static_cast<bool>(sendToDetectorStop<int>(F_TEMP_CONTROL, arg));
+    return static_cast<bool>(sendToDetectorStop<int>(F_TEMP_CONTROL, GET_FLAG));
 }
 
 void Module::setTemperatureControl(bool val) {
@@ -1297,8 +1289,7 @@ void Module::setTemperatureControl(bool val) {
 }
 
 int Module::getTemperatureEvent() const {
-    int arg = GET_FLAG;
-    return sendToDetectorStop<int>(F_TEMP_EVENT, arg);
+    return sendToDetectorStop<int>(F_TEMP_EVENT, GET_FLAG);
 }
 
 void Module::resetTemperatureEvent() {
@@ -1307,8 +1298,7 @@ void Module::resetTemperatureEvent() {
 }
 
 bool Module::getAutoComparatorDisableMode() const{
-    int arg = GET_FLAG;
-    return static_cast<bool>(sendToDetector<int>(F_AUTO_COMP_DISABLE, arg));
+    return static_cast<bool>(sendToDetector<int>(F_AUTO_COMP_DISABLE, GET_FLAG));
 }
 
 void Module::setAutoComparatorDisableMode(bool val) {
@@ -1324,8 +1314,7 @@ void Module::setNumberOfAdditionalStorageCells(int value) {
 }
 
 int Module::getStorageCellStart() const {
-    int arg = GET_FLAG;
-    return sendToDetector<int>(F_STORAGE_CELL_START, arg);
+    return sendToDetector<int>(F_STORAGE_CELL_START, GET_FLAG);
 }
 
 void Module::setStorageCellStart(int pos) {
@@ -1900,8 +1889,7 @@ int Module::setExternalSamplingSource(int value) {
 }
 
 bool Module::getExternalSampling() const{
-    int arg = GET_FLAG;
-    return sendToDetector<int>(F_EXTERNAL_SAMPLING, arg);
+    return sendToDetector<int>(F_EXTERNAL_SAMPLING, GET_FLAG);
 }
 
 void Module::setExternalSampling(bool value) {
@@ -1942,8 +1930,7 @@ void Module::setDigitalIODelay(uint64_t pinMask, int delay) {
 }
 
 bool Module::getLEDEnable() const {
-    int arg = GET_FLAG;
-    return static_cast<bool>(sendToDetector<int>(F_LED, arg));
+    return static_cast<bool>(sendToDetector<int>(F_LED, GET_FLAG));
 }
 
 void Module::setLEDEnable(bool enable) {
@@ -2344,8 +2331,7 @@ int Module::setStopPort(int port_number) {
 }
 
 bool Module::getLockDetector() const {
-    int arg = GET_FLAG;
-    return static_cast<bool>(sendToDetector<int>(F_LOCK_SERVER, arg));
+    return static_cast<bool>(sendToDetector<int>(F_LOCK_SERVER, GET_FLAG));
 }
 
 void Module::setLockDetector(bool lock) {

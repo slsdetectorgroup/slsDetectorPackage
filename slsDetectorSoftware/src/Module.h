@@ -335,19 +335,19 @@ class Module : public virtual slsDetectorDefs {
      *    Jungfrau Specific                           *
      *                                                *
      * ************************************************/
-    int getThresholdTemperature();
+    int getThresholdTemperature() const;
     void setThresholdTemperature(int val);
-    bool getTemperatureControl();
+    bool getTemperatureControl() const;
     void setTemperatureControl(bool val);
-    int getTemperatureEvent();
+    int getTemperatureEvent() const;
     void resetTemperatureEvent();
-    bool getAutoComparatorDisableMode();
+    bool getAutoComparatorDisableMode() const;
     void setAutoComparatorDisableMode(bool val);
-    int getNumberOfAdditionalStorageCells();
+    int getNumberOfAdditionalStorageCells() const;
     void setNumberOfAdditionalStorageCells(int value);
-    int getStorageCellStart();
+    int getStorageCellStart() const;
     void setStorageCellStart(int pos);
-    int64_t getStorageCellDelay();
+    int64_t getStorageCellDelay() const;
     void setStorageCellDelay(int64_t value);
 
     /**************************************************
@@ -355,7 +355,7 @@ class Module : public virtual slsDetectorDefs {
      *    Gotthard Specific                           *
      *                                                *
      * ************************************************/
-    slsDetectorDefs::ROI getROI();
+    slsDetectorDefs::ROI getROI() const;
     void setROI(slsDetectorDefs::ROI arg);
     void clearROI();
     int64_t getExptimeLeft() const;
@@ -365,33 +365,33 @@ class Module : public virtual slsDetectorDefs {
      *    Gotthard2 Specific                          *
      *                                                *
      * ************************************************/
-    int64_t getNumberOfBursts();
+    int64_t getNumberOfBursts() const;
     void setNumberOfBursts(int64_t value);
-    int64_t getBurstPeriod();
+    int64_t getBurstPeriod() const;
     void setBurstPeriod(int64_t value);
-    std::array<int, 2> getInjectChannel();
+    std::array<int, 2> getInjectChannel() const;
     void setInjectChannel(const int offsetChannel, const int incrementChannel);
-    std::vector<int> getVetoPhoton(const int chipIndex);
+    std::vector<int> getVetoPhoton(const int chipIndex) const;
     void setVetoPhoton(const int chipIndex, const int numPhotons,
                        const int energy, const std::string &fname);
     void setVetoReference(const int gainIndex, const int value);
     void setVetoFile(const int chipIndex, const std::string &fname);
-    burstMode getBurstMode();
+    burstMode getBurstMode() const;
     void setBurstMode(burstMode value);
-    bool getCDSGain();
+    bool getCDSGain() const;
     void setCDSGain(bool value);
-    int getFilter();
+    int getFilter() const;
     void setFilter(int value);
-    bool getCurrentSource();
+    bool getCurrentSource() const;
     void setCurrentSource(bool value);
-    slsDetectorDefs::timingSourceType getTimingSource();
+    slsDetectorDefs::timingSourceType getTimingSource() const;
     void setTimingSource(slsDetectorDefs::timingSourceType value);
-    bool getVeto();
+    bool getVeto() const;
     void setVeto(bool enable);
-    int getADCConfiguration(const int chipIndex, const int adcIndex);
+    int getADCConfiguration(const int chipIndex, const int adcIndex) const;
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              int value);
-    void getBadChannels(const std::string &fname);
+    void getBadChannels(const std::string &fname) const;
     void setBadChannels(const std::string &fname);
 
     /**************************************************
@@ -399,27 +399,27 @@ class Module : public virtual slsDetectorDefs {
      *    Mythen3 Specific                            *
      *                                                *
      * ************************************************/
-    uint32_t getCounterMask();
+    uint32_t getCounterMask() const;
     void setCounterMask(uint32_t countermask);
-    int getNumberOfGates();
+    int getNumberOfGates() const;
     void setNumberOfGates(int value);
-    std::array<time::ns, 3> getExptimeForAllGates();
-    int64_t getGateDelay(int gateIndex);
+    std::array<time::ns, 3> getExptimeForAllGates() const;
+    int64_t getGateDelay(int gateIndex) const;
     void setGateDelay(int gateIndex, int64_t value);
-    std::array<time::ns, 3> getGateDelayForAllGates();
+    std::array<time::ns, 3> getGateDelayForAllGates() const;
 
     /**************************************************
      *                                                *
      *    CTB / Moench Specific                       *
      *                                                *
      * ************************************************/
-    int getNumberOfAnalogSamples();
+    int getNumberOfAnalogSamples() const;
     void setNumberOfAnalogSamples(int value);
-    int getPipeline(int clkIndex);
+    int getPipeline(int clkIndex) const;
     void setPipeline(int clkIndex, int value);
-    uint32_t getADCEnableMask();
+    uint32_t getADCEnableMask() const;
     void setADCEnableMask(uint32_t mask);
-    uint32_t getTenGigaADCEnableMask();
+    uint32_t getTenGigaADCEnableMask() const;
     void setTenGigaADCEnableMask(uint32_t mask);
 
     /**************************************************
@@ -427,20 +427,20 @@ class Module : public virtual slsDetectorDefs {
      *    CTB Specific                                *
      *                                                *
      * ************************************************/
-    int getNumberOfDigitalSamples();
+    int getNumberOfDigitalSamples() const;
     void setNumberOfDigitalSamples(int value);
-    readoutMode getReadoutMode();
+    readoutMode getReadoutMode() const;
     void setReadoutMode(const readoutMode mode);
     int getExternalSamplingSource();
     int setExternalSamplingSource(int value);
-    bool getExternalSampling();
+    bool getExternalSampling() const;
     void setExternalSampling(bool value);
     std::vector<int> getReceiverDbitList() const;
     void setReceiverDbitList(const std::vector<int> &list);
-    int getReceiverDbitOffset();
+    int getReceiverDbitOffset() const;
     void setReceiverDbitOffset(int value);
     void setDigitalIODelay(uint64_t pinMask, int delay);
-    bool getLEDEnable();
+    bool getLEDEnable() const;
     void setLEDEnable(bool enable);
 
     /**************************************************
@@ -449,21 +449,21 @@ class Module : public virtual slsDetectorDefs {
      *                                                *
      * ************************************************/
     void setPattern(const std::string &fname);
-    uint64_t getPatternIOControl();
+    uint64_t getPatternIOControl() const;
     void setPatternIOControl(uint64_t word);
-    uint64_t getPatternWord(int addr);
+    uint64_t getPatternWord(int addr) const;
     void setPatternWord(int addr, uint64_t word);
-    std::array<int, 2> getPatternLoopAddresses(int level);
+    std::array<int, 2> getPatternLoopAddresses(int level) const;
     void setPatternLoopAddresses(int level, int start, int stop);
-    int getPatternLoopCycles(int level);
+    int getPatternLoopCycles(int level) const;
     void setPatternLoopCycles(int level, int n);
-    int getPatternWaitAddr(int level);
+    int getPatternWaitAddr(int level) const;
     void setPatternWaitAddr(int level, int addr);
-    uint64_t getPatternWaitTime(int level);
+    uint64_t getPatternWaitTime(int level) const;
     void setPatternWaitTime(int level, uint64_t t);
-    uint64_t getPatternMask();
+    uint64_t getPatternMask() const;
     void setPatternMask(uint64_t mask);
-    uint64_t getPatternBitMask();
+    uint64_t getPatternBitMask() const;
     void setPatternBitMask(uint64_t mask);
     void startPattern();
 
@@ -489,14 +489,14 @@ class Module : public virtual slsDetectorDefs {
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname);
     void rebootController();
-    uint32_t readRegister(uint32_t addr);
+    uint32_t readRegister(uint32_t addr) const;
     uint32_t writeRegister(uint32_t addr, uint32_t val);
     uint32_t setBit(uint32_t addr, int n);
     uint32_t clearBit(uint32_t addr, int n);
     void executeFirmwareTest();
     void executeBusTest();
     void writeAdcRegister(uint32_t addr, uint32_t val);
-    uint32_t getADCInvert();
+    uint32_t getADCInvert() const;
     void setADCInvert(uint32_t value);
 
     /**************************************************
@@ -508,9 +508,9 @@ class Module : public virtual slsDetectorDefs {
     int setControlPort(int port_number);
     int getStopPort() const;
     int setStopPort(int port_number);
-    bool getLockDetector();
+    bool getLockDetector() const;
     void setLockDetector(bool lock);
-    sls::IpAddr getLastClientIP();
+    sls::IpAddr getLastClientIP() const;
     std::string execCommand(const std::string &cmd);
     int64_t getNumberOfFramesFromStart() const;
     int64_t getActualTime() const;

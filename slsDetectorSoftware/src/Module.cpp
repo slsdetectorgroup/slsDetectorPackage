@@ -1273,7 +1273,7 @@ void Module::setQuad(const bool enable) {
 
 // Jungfrau Specific
 
-int Module::getThresholdTemperature() {
+int Module::getThresholdTemperature() const {
     int arg = GET_FLAG;
     auto retval = sendToDetectorStop<int>(F_THRESHOLD_TEMP, arg);
     if (retval != 0) {
@@ -1291,7 +1291,7 @@ void Module::setThresholdTemperature(int val) {
     sendToDetectorStop<int>(F_THRESHOLD_TEMP, val);
 }
 
-bool Module::getTemperatureControl() {
+bool Module::getTemperatureControl() const {
     int arg = GET_FLAG;
     return static_cast<bool>(sendToDetectorStop<int>(F_TEMP_CONTROL, arg));
 }
@@ -1300,7 +1300,7 @@ void Module::setTemperatureControl(bool val) {
     sendToDetectorStop<int>(F_TEMP_CONTROL, static_cast<int>(val));
 }
 
-int Module::getTemperatureEvent() {
+int Module::getTemperatureEvent() const {
     int arg = GET_FLAG;
     return sendToDetectorStop<int>(F_TEMP_EVENT, arg);
 }
@@ -1310,7 +1310,7 @@ void Module::resetTemperatureEvent() {
     sendToDetectorStop<int>(F_TEMP_EVENT, arg);
 }
 
-bool Module::getAutoComparatorDisableMode() {
+bool Module::getAutoComparatorDisableMode() const{
     int arg = GET_FLAG;
     return static_cast<bool>(sendToDetector<int>(F_AUTO_COMP_DISABLE, arg));
 }
@@ -1319,7 +1319,7 @@ void Module::setAutoComparatorDisableMode(bool val) {
     sendToDetector<int>(F_AUTO_COMP_DISABLE, static_cast<int>(val));
 }
 
-int Module::getNumberOfAdditionalStorageCells() {
+int Module::getNumberOfAdditionalStorageCells() const {
     return sendToDetector<int>(F_GET_NUM_ADDITIONAL_STORAGE_CELLS);
 }
 
@@ -1327,7 +1327,7 @@ void Module::setNumberOfAdditionalStorageCells(int value) {
     sendToDetector(F_SET_NUM_ADDITIONAL_STORAGE_CELLS, value, nullptr);
 }
 
-int Module::getStorageCellStart() {
+int Module::getStorageCellStart() const {
     int arg = GET_FLAG;
     return sendToDetector<int>(F_STORAGE_CELL_START, arg);
 }
@@ -1336,7 +1336,7 @@ void Module::setStorageCellStart(int pos) {
     sendToDetector<int>(F_STORAGE_CELL_START, pos);
 }
 
-int64_t Module::getStorageCellDelay() {
+int64_t Module::getStorageCellDelay() const {
     return sendToDetector<int64_t>(F_GET_STORAGE_CELL_DELAY);
 }
 
@@ -1346,7 +1346,7 @@ void Module::setStorageCellDelay(int64_t value) {
 
 // Gotthard Specific
 
-slsDetectorDefs::ROI Module::getROI() {
+slsDetectorDefs::ROI Module::getROI() const {
     return sendToDetector<slsDetectorDefs::ROI>(F_GET_ROI);
 }
 
@@ -1369,7 +1369,7 @@ int64_t Module::getExptimeLeft() const {
 
 // Gotthard2 Specific
 
-int64_t Module::getNumberOfBursts() {
+int64_t Module::getNumberOfBursts() const {
     return sendToDetector<int64_t>(F_GET_NUM_BURSTS);
 }
 
@@ -1380,7 +1380,7 @@ void Module::setNumberOfBursts(int64_t value) {
     }
 }
 
-int64_t Module::getBurstPeriod() {
+int64_t Module::getBurstPeriod() const {
     return sendToDetector<int64_t>(F_GET_BURST_PERIOD);
 }
 
@@ -1388,7 +1388,7 @@ void Module::setBurstPeriod(int64_t value) {
     sendToDetector(F_SET_BURST_PERIOD, value, nullptr);
 }
 
-std::array<int, 2> Module::getInjectChannel() {
+std::array<int, 2> Module::getInjectChannel() const {
     return sendToDetector<std::array<int, 2>>(F_GET_INJECT_CHANNEL);
 }
 
@@ -1398,7 +1398,7 @@ void Module::setInjectChannel(const int offsetChannel,
     sendToDetector(F_SET_INJECT_CHANNEL, args, nullptr);
 }
 
-std::vector<int> Module::getVetoPhoton(const int chipIndex) {
+std::vector<int> Module::getVetoPhoton(const int chipIndex) const {
     int fnum = F_GET_VETO_PHOTON;
     int ret = FAIL;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
@@ -1609,7 +1609,7 @@ void Module::setVetoFile(const int chipIndex, const std::string &fname) {
     }
 }
 
-slsDetectorDefs::burstMode Module::getBurstMode() {
+slsDetectorDefs::burstMode Module::getBurstMode() const{
     auto r = sendToDetector<int>(F_GET_BURST_MODE);
     return static_cast<slsDetectorDefs::burstMode>(r);
 }
@@ -1622,19 +1622,19 @@ void Module::setBurstMode(slsDetectorDefs::burstMode value) {
     }
 }
 
-bool Module::getCDSGain() { return sendToDetector<int>(F_GET_CDS_GAIN); }
+bool Module::getCDSGain() const { return sendToDetector<int>(F_GET_CDS_GAIN); }
 
 void Module::setCDSGain(bool value) {
     sendToDetector(F_SET_CDS_GAIN, static_cast<int>(value), nullptr);
 }
 
-int Module::getFilter() { return sendToDetector<int>(F_GET_FILTER); }
+int Module::getFilter() const { return sendToDetector<int>(F_GET_FILTER); }
 
 void Module::setFilter(int value) {
     sendToDetector(F_SET_FILTER, value, nullptr);
 }
 
-bool Module::getCurrentSource() {
+bool Module::getCurrentSource() const {
     return sendToDetector<int>(F_GET_CURRENT_SOURCE);
 }
 
@@ -1642,7 +1642,7 @@ void Module::setCurrentSource(bool value) {
     sendToDetector(F_SET_CURRENT_SOURCE, static_cast<int>(value), nullptr);
 }
 
-slsDetectorDefs::timingSourceType Module::getTimingSource() {
+slsDetectorDefs::timingSourceType Module::getTimingSource() const {
     auto r = sendToDetector<int>(F_GET_TIMING_SOURCE);
     return static_cast<slsDetectorDefs::timingSourceType>(r);
 }
@@ -1651,13 +1651,13 @@ void Module::setTimingSource(slsDetectorDefs::timingSourceType value) {
     sendToDetector(F_SET_TIMING_SOURCE, static_cast<int>(value), nullptr);
 }
 
-bool Module::getVeto() { return sendToDetector<int>(F_GET_VETO); }
+bool Module::getVeto() const { return sendToDetector<int>(F_GET_VETO); }
 
 void Module::setVeto(bool enable) {
     sendToDetector(F_SET_VETO, static_cast<int>(enable), nullptr);
 }
 
-int Module::getADCConfiguration(const int chipIndex, const int adcIndex) {
+int Module::getADCConfiguration(const int chipIndex, const int adcIndex) const {
     int args[]{chipIndex, adcIndex};
     return sendToDetector<int>(F_GET_ADC_CONFIGURATION, args);
 }
@@ -1668,7 +1668,7 @@ void Module::setADCConfiguration(const int chipIndex, const int adcIndex,
     sendToDetector(F_SET_ADC_CONFIGURATION, args, nullptr);
 }
 
-void Module::getBadChannels(const std::string &fname) {
+void Module::getBadChannels(const std::string &fname) const {
     LOG(logDEBUG1) << "Getting bad channels to " << fname;
     int fnum = F_GET_BAD_CHANNELS;
     int ret = FAIL;
@@ -1754,7 +1754,7 @@ void Module::setBadChannels(const std::string &fname) {
 
 // Mythen3 Specific
 
-uint32_t Module::getCounterMask() {
+uint32_t Module::getCounterMask() const {
     return sendToDetector<uint32_t>(F_GET_COUNTER_MASK);
 }
 
@@ -1768,7 +1768,7 @@ void Module::setCounterMask(uint32_t countermask) {
     }
 }
 
-int Module::getNumberOfGates() { return sendToDetector<int>(F_GET_NUM_GATES); }
+int Module::getNumberOfGates() const { return sendToDetector<int>(F_GET_NUM_GATES); }
 
 void Module::setNumberOfGates(int value) {
     sendToDetector(F_SET_NUM_GATES, value, nullptr);
@@ -1777,12 +1777,12 @@ void Module::setNumberOfGates(int value) {
     }
 }
 
-std::array<time::ns, 3> Module::getExptimeForAllGates() {
+std::array<time::ns, 3> Module::getExptimeForAllGates() const {
     static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
     return sendToDetector<std::array<time::ns, 3>>(F_GET_EXPTIME_ALL_GATES);
 }
 
-int64_t Module::getGateDelay(int gateIndex) {
+int64_t Module::getGateDelay(int gateIndex) const {
     return sendToDetector<int64_t>(F_GET_GATE_DELAY, gateIndex);
 }
 
@@ -1794,14 +1794,14 @@ void Module::setGateDelay(int gateIndex, int64_t value) {
     }
 }
 
-std::array<time::ns, 3> Module::getGateDelayForAllGates() {
+std::array<time::ns, 3> Module::getGateDelayForAllGates() const {
     static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
     return sendToDetector<std::array<time::ns, 3>>(F_GET_GATE_DELAY_ALL_GATES);
 }
 
 // CTB / Moench Specific
 
-int Module::getNumberOfAnalogSamples() {
+int Module::getNumberOfAnalogSamples() const {
     return sendToDetector<int>(F_GET_NUM_ANALOG_SAMPLES);
 }
 
@@ -1814,7 +1814,7 @@ void Module::setNumberOfAnalogSamples(int value) {
     }
 }
 
-int Module::getPipeline(int clkIndex) {
+int Module::getPipeline(int clkIndex) const {
     return sendToDetector<int>(F_GET_PIPELINE, clkIndex);
 }
 
@@ -1823,7 +1823,7 @@ void Module::setPipeline(int clkIndex, int value) {
     sendToDetector(F_SET_PIPELINE, args, nullptr);
 }
 
-uint32_t Module::getADCEnableMask() {
+uint32_t Module::getADCEnableMask() const {
     return sendToDetector<uint32_t>(F_GET_ADC_ENABLE_MASK);
 }
 
@@ -1841,7 +1841,7 @@ void Module::setADCEnableMask(uint32_t mask) {
     }
 }
 
-uint32_t Module::getTenGigaADCEnableMask() {
+uint32_t Module::getTenGigaADCEnableMask() const {
     return sendToDetector<uint32_t>(F_GET_ADC_ENABLE_MASK_10G);
 }
 
@@ -1861,7 +1861,7 @@ void Module::setTenGigaADCEnableMask(uint32_t mask) {
 
 // CTB Specific
 
-int Module::getNumberOfDigitalSamples() {
+int Module::getNumberOfDigitalSamples() const {
     return sendToDetector<int>(F_GET_NUM_DIGITAL_SAMPLES);
 }
 
@@ -1877,7 +1877,7 @@ void Module::setNumberOfDigitalSamples(int value) {
     }
 }
 
-slsDetectorDefs::readoutMode Module::getReadoutMode() {
+slsDetectorDefs::readoutMode Module::getReadoutMode() const {
     auto r = sendToDetector<int>(F_GET_READOUT_MODE);
     return static_cast<readoutMode>(r);
 }
@@ -1903,7 +1903,7 @@ int Module::setExternalSamplingSource(int value) {
     return sendToDetector<int>(F_EXTERNAL_SAMPLING_SOURCE, value);
 }
 
-bool Module::getExternalSampling() {
+bool Module::getExternalSampling() const{
     int arg = GET_FLAG;
     return sendToDetector<int>(F_EXTERNAL_SAMPLING, arg);
 }
@@ -1932,7 +1932,7 @@ void Module::setReceiverDbitList(const std::vector<int> &list) {
     sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);
 }
 
-int Module::getReceiverDbitOffset() {
+int Module::getReceiverDbitOffset() const {
     return sendToReceiver<int>(F_GET_RECEIVER_DBIT_OFFSET);
 }
 
@@ -1945,7 +1945,7 @@ void Module::setDigitalIODelay(uint64_t pinMask, int delay) {
     sendToDetector(F_DIGITAL_IO_DELAY, args, nullptr);
 }
 
-bool Module::getLEDEnable() {
+bool Module::getLEDEnable() const {
     int arg = GET_FLAG;
     return static_cast<bool>(sendToDetector<int>(F_LED, arg));
 }
@@ -2058,7 +2058,7 @@ void Module::setPattern(const std::string &fname) {
                    0);
 }
 
-uint64_t Module::getPatternIOControl() {
+uint64_t Module::getPatternIOControl() const {
     int64_t arg = GET_FLAG;
     return sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL, arg);
 }
@@ -2067,7 +2067,7 @@ void Module::setPatternIOControl(uint64_t word) {
     sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL, word);
 }
 
-uint64_t Module::getPatternWord(int addr) {
+uint64_t Module::getPatternWord(int addr) const {
     uint64_t args[]{static_cast<uint64_t>(addr),
                     static_cast<uint64_t>(GET_FLAG)};
     return sendToDetector<uint64_t>(F_SET_PATTERN_WORD, args);
@@ -2078,7 +2078,7 @@ void Module::setPatternWord(int addr, uint64_t word) {
     sendToDetector<uint64_t>(F_SET_PATTERN_WORD, args);
 }
 
-std::array<int, 2> Module::getPatternLoopAddresses(int level) {
+std::array<int, 2> Module::getPatternLoopAddresses(int level) const {
     int args[]{level, GET_FLAG, GET_FLAG};
     std::array<int, 2> retvals{};
     sendToDetector(F_SET_PATTERN_LOOP_ADDRESSES, args, retvals);
@@ -2091,7 +2091,7 @@ void Module::setPatternLoopAddresses(int level, int start, int stop) {
     sendToDetector(F_SET_PATTERN_LOOP_ADDRESSES, args, retvals);
 }
 
-int Module::getPatternLoopCycles(int level) {
+int Module::getPatternLoopCycles(int level) const {
     int args[]{level, GET_FLAG};
     return sendToDetector<int>(F_SET_PATTERN_LOOP_CYCLES, args);
 }
@@ -2101,7 +2101,7 @@ void Module::setPatternLoopCycles(int level, int n) {
     sendToDetector<int>(F_SET_PATTERN_LOOP_CYCLES, args);
 }
 
-int Module::getPatternWaitAddr(int level) {
+int Module::getPatternWaitAddr(int level) const {
     int args[]{level, GET_FLAG};
     return sendToDetector<int>(F_SET_PATTERN_WAIT_ADDR, args);
 }
@@ -2111,7 +2111,7 @@ void Module::setPatternWaitAddr(int level, int addr) {
     sendToDetector<int>(F_SET_PATTERN_WAIT_ADDR, args);
 }
 
-uint64_t Module::getPatternWaitTime(int level) {
+uint64_t Module::getPatternWaitTime(int level) const {
     uint64_t args[]{static_cast<uint64_t>(level),
                     static_cast<uint64_t>(GET_FLAG)};
     return sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
@@ -2122,7 +2122,7 @@ void Module::setPatternWaitTime(int level, uint64_t t) {
     sendToDetector<uint64_t>(F_SET_PATTERN_WAIT_TIME, args);
 }
 
-uint64_t Module::getPatternMask() {
+uint64_t Module::getPatternMask() const {
     return sendToDetector<uint64_t>(F_GET_PATTERN_MASK);
 }
 
@@ -2130,7 +2130,7 @@ void Module::setPatternMask(uint64_t mask) {
     sendToDetector(F_SET_PATTERN_MASK, mask, nullptr);
 }
 
-uint64_t Module::getPatternBitMask() {
+uint64_t Module::getPatternBitMask() const {
     return sendToDetector<uint64_t>(F_GET_PATTERN_BIT_MASK);
 }
 
@@ -2275,7 +2275,7 @@ void Module::rebootController() {
     LOG(logINFO) << "Controller rebooted successfully!";
 }
 
-uint32_t Module::readRegister(uint32_t addr) {
+uint32_t Module::readRegister(uint32_t addr) const {
     return sendToDetectorStop<uint32_t>(F_READ_REGISTER, addr);
 }
 
@@ -2311,7 +2311,7 @@ void Module::writeAdcRegister(uint32_t addr, uint32_t val) {
     sendToDetector(F_WRITE_ADC_REG, args, nullptr);
 }
 
-uint32_t Module::getADCInvert() {
+uint32_t Module::getADCInvert() const {
     return sendToDetector<uint32_t>(F_GET_ADC_INVERT);
 }
 
@@ -2347,7 +2347,7 @@ int Module::setStopPort(int port_number) {
     return shm()->stopPort;
 }
 
-bool Module::getLockDetector() {
+bool Module::getLockDetector() const {
     int arg = GET_FLAG;
     return static_cast<bool>(sendToDetector<int>(F_LOCK_SERVER, arg));
 }
@@ -2356,7 +2356,7 @@ void Module::setLockDetector(bool lock) {
     sendToDetector<int>(F_LOCK_SERVER, static_cast<int>(lock));
 }
 
-sls::IpAddr Module::getLastClientIP() {
+sls::IpAddr Module::getLastClientIP() const {
     return sendToDetector<sls::IpAddr>(F_GET_LAST_CLIENT_IP);
 }
 

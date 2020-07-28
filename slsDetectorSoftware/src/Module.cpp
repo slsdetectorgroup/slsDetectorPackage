@@ -187,7 +187,7 @@ void Module::setAllTrimbits(int val) {
     sendToDetector<int>(F_SET_ALL_TRIMBITS, val);
 }
 
-int64_t Module::getNumberOfFrames() const{
+int64_t Module::getNumberOfFrames() const {
     return sendToDetector<int64_t>(F_GET_NUM_FRAMES);
 }
 
@@ -198,7 +198,7 @@ void Module::setNumberOfFrames(int64_t value) {
     }
 }
 
-int64_t Module::getNumberOfTriggers() const{
+int64_t Module::getNumberOfTriggers() const {
     return sendToDetector<int64_t>(F_GET_NUM_TRIGGERS);
 }
 
@@ -209,7 +209,7 @@ void Module::setNumberOfTriggers(int64_t value) {
     }
 }
 
-int64_t Module::getExptime(int gateIndex) const{
+int64_t Module::getExptime(int gateIndex) const {
     return sendToDetector<int64_t>(F_GET_EXPTIME, gateIndex);
 }
 
@@ -228,7 +228,9 @@ void Module::setExptime(int gateIndex, int64_t value) {
     }
 }
 
-int64_t Module::getPeriod() const { return sendToDetector<int64_t>(F_GET_PERIOD); }
+int64_t Module::getPeriod() const {
+    return sendToDetector<int64_t>(F_GET_PERIOD);
+}
 
 void Module::setPeriod(int64_t value) {
     sendToDetector(F_SET_PERIOD, value, nullptr);
@@ -276,18 +278,21 @@ void Module::setDynamicRange(int dr) {
         sendToReceiver<int>(F_SET_RECEIVER_DYNAMIC_RANGE, retval);
     }
 
-    // EIGER only, update speed and rate correction when dr changes
-    if (dr != prev_val) {
+    // update speed
+    if (shm()->myDetectorType == EIGER) {
         if (dr == 32) {
             LOG(logINFO) << "Setting Clock to Quarter Speed to cope with "
                             "Dynamic Range of 32";
             setClockDivider(RUN_CLOCK, 2);
-        } else if (prev_val == 32) {
+        } else {
             LOG(logINFO) << "Setting Clock to Full Speed for Dynamic Range of "
                          << dr;
             setClockDivider(RUN_CLOCK, 0);
         }
-        updateRateCorrection();
+        // EIGER only, update speed and rate correction when dr changes
+        if (dr != prev_val) {
+            updateRateCorrection();
+        }
     }
 }
 
@@ -321,7 +326,7 @@ void Module::setClockPhase(int clkIndex, int value, bool inDegrees) {
     sendToDetector(F_SET_CLOCK_PHASE, args, nullptr);
 }
 
-int Module::getMaxClockPhaseShift(int clkIndex) const{
+int Module::getMaxClockPhaseShift(int clkIndex) const {
     return sendToDetector<int>(F_GET_MAX_CLOCK_PHASE_SHIFT, clkIndex);
 }
 
@@ -498,11 +503,11 @@ std::string Module::getScanErrorMessage() const {
 
 // Network Configuration (Detector<->Receiver)
 
-int Module::getNumberofUDPInterfacesFromShm() const{
+int Module::getNumberofUDPInterfacesFromShm() const {
     return shm()->numUDPInterfaces;
 }
 
-int Module::getNumberofUDPInterfaces() const{
+int Module::getNumberofUDPInterfaces() const {
     shm()->numUDPInterfaces = sendToDetector<int>(F_GET_NUM_INTERFACES);
     return shm()->numUDPInterfaces;
 }
@@ -534,7 +539,7 @@ void Module::setSourceUDPIP(const IpAddr ip) {
     sendToDetector(F_SET_SOURCE_UDP_IP, ip, nullptr);
 }
 
-sls::IpAddr Module::getSourceUDPIP2() const{
+sls::IpAddr Module::getSourceUDPIP2() const {
     return sendToDetector<sls::IpAddr>(F_GET_SOURCE_UDP_IP2);
 }
 
@@ -638,7 +643,7 @@ void Module::setDestinationUDPPort(const int port) {
     }
 }
 
-int Module::getDestinationUDPPort2() const{
+int Module::getDestinationUDPPort2() const {
     return sendToDetector<int>(F_GET_DEST_UDP_PORT2);
 }
 
@@ -831,7 +836,8 @@ void Module::setReceiverSilentMode(bool enable) {
                    nullptr);
 }
 
-slsDetectorDefs::frameDiscardPolicy Module::getReceiverFramesDiscardPolicy() const {
+slsDetectorDefs::frameDiscardPolicy
+Module::getReceiverFramesDiscardPolicy() const {
     return static_cast<frameDiscardPolicy>(
         sendToReceiver<int>(F_GET_RECEIVER_DISCARD_POLICY));
 }
@@ -880,7 +886,7 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Module::getReceiverThreadIds() const {
 
 // File
 
-slsDetectorDefs::fileFormat Module::getFileFormat() const{
+slsDetectorDefs::fileFormat Module::getFileFormat() const {
     return static_cast<fileFormat>(
         sendToReceiver<int>(F_GET_RECEIVER_FILE_FORMAT));
 }
@@ -1103,7 +1109,9 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
     }
 }
 
-std::string Module::getSettingsDir() const { return std::string(shm()->settingsDir); }
+std::string Module::getSettingsDir() const {
+    return std::string(shm()->settingsDir);
+}
 
 std::string Module::setSettingsDir(const std::string &dir) {
     sls::strcpy_safe(shm()->settingsDir, dir.c_str());
@@ -1173,7 +1181,9 @@ void Module::setRateCorrection(int64_t t) {
     sendToDetector(F_SET_RATE_CORRECT, t, nullptr);
 }
 
-int Module::getReadNLines() const { return sendToDetector<int>(F_GET_READ_N_LINES); }
+int Module::getReadNLines() const {
+    return sendToDetector<int>(F_GET_READ_N_LINES);
+}
 
 void Module::setReadNLines(const int value) {
     sendToDetector(F_SET_READ_N_LINES, value, nullptr);
@@ -1231,7 +1241,8 @@ void Module::setDeactivatedRxrPaddingMode(bool padding) {
 }
 
 bool Module::getCounterBit() const {
-    return (!static_cast<bool>(sendToDetector<int>(F_SET_COUNTER_BIT, GET_FLAG)));
+    return (
+        !static_cast<bool>(sendToDetector<int>(F_SET_COUNTER_BIT, GET_FLAG)));
 }
 
 void Module::setCounterBit(bool cb) {
@@ -1294,8 +1305,9 @@ void Module::resetTemperatureEvent() {
     sendToDetectorStop<int>(F_TEMP_EVENT, 0);
 }
 
-bool Module::getAutoComparatorDisableMode() const{
-    return static_cast<bool>(sendToDetector<int>(F_AUTO_COMP_DISABLE, GET_FLAG));
+bool Module::getAutoComparatorDisableMode() const {
+    return static_cast<bool>(
+        sendToDetector<int>(F_AUTO_COMP_DISABLE, GET_FLAG));
 }
 
 void Module::setAutoComparatorDisableMode(bool val) {
@@ -1591,7 +1603,7 @@ void Module::setVetoFile(const int chipIndex, const std::string &fname) {
     }
 }
 
-slsDetectorDefs::burstMode Module::getBurstMode() const{
+slsDetectorDefs::burstMode Module::getBurstMode() const {
     auto r = sendToDetector<int>(F_GET_BURST_MODE);
     return static_cast<slsDetectorDefs::burstMode>(r);
 }
@@ -1750,7 +1762,9 @@ void Module::setCounterMask(uint32_t countermask) {
     }
 }
 
-int Module::getNumberOfGates() const { return sendToDetector<int>(F_GET_NUM_GATES); }
+int Module::getNumberOfGates() const {
+    return sendToDetector<int>(F_GET_NUM_GATES);
+}
 
 void Module::setNumberOfGates(int value) {
     sendToDetector(F_SET_NUM_GATES, value, nullptr);
@@ -1885,7 +1899,7 @@ int Module::setExternalSamplingSource(int value) {
     return sendToDetector<int>(F_EXTERNAL_SAMPLING_SOURCE, value);
 }
 
-bool Module::getExternalSampling() const{
+bool Module::getExternalSampling() const {
     return sendToDetector<int>(F_EXTERNAL_SAMPLING, GET_FLAG);
 }
 

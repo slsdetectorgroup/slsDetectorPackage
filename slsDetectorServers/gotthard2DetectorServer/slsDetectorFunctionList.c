@@ -1757,8 +1757,9 @@ int setInjectChannel(int offset, int increment) {
     char buffer[17];
     memset(buffer, 0, sizeof(buffer));
     int startCh = 4; // 4 due to padding
-    for (int ich = startCh + offset; ich < startCh + NCHAN;
-         ich = ich + increment) {
+    // reversing the channels sent (offset 0 is 127, 50 is 77 etc..)
+    for (int ich = startCh + NCHAN - 1 - offset; ich >= startCh;
+         ich -= increment) {
         int byteIndex = ich / 8;
         int bitIndex = ich % 8;
         buffer[byteIndex] |= (1 << (8 - 1 - bitIndex));
@@ -1829,6 +1830,12 @@ int configureASICVetoReference(int chipIndex, int *values) {
     const int lenTotalBits = padding + lenBits + ASIC_ADDR_MAX_BITS; // 1800
     const int len = lenTotalBits / 8;                                // 225
 
+    // reversing the values sent to the chip
+    int revValues[NCHAN] = {};
+    for (int i = 0; i < NCHAN; ++i) {
+        revValues[i] = values[NCHAN - 1 - i];
+    }
+
     // assign each bit into 4 + 1792  into byte array
     uint8_t commandBytes[lenTotalBits];
     memset(commandBytes, 0, sizeof(commandBytes));
@@ -1837,7 +1844,7 @@ int configureASICVetoReference(int chipIndex, int *values) {
         // loop through all bits in a value
         for (int iBit = 0; iBit < lenDataBitsPerchannel; ++iBit) {
             commandBytes[offset++] =
-                ((values[ich] >> (lenDataBitsPerchannel - 1 - iBit)) & 0x1);
+                ((revValues[ich] >> (lenDataBitsPerchannel - 1 - iBit)) & 0x1);
         }
     }
 
@@ -1861,7 +1868,7 @@ int configureASICVetoReference(int chipIndex, int *values) {
         return FAIL;
     }
 
-    // all chips
+    // all chips (saving unreversed values)
     if (chipIndex == -1) {
         for (int ichan = 0; ichan < NCHAN; ++ichan) {
             for (int ichip = 0; ichip < NCHIP; ++ichip) {
@@ -1956,10 +1963,10 @@ int setADCConfiguration(int chipIndex, int adcIndex, int value) {
         chipmin = chipIndex;
         chipmax = chipIndex + 1;
     }
-    // specific adc
+    // specific adc (reversing adc when sending to chip)
     if (adcIndex != -1) {
-        adcmin = adcIndex;
-        adcmax = adcIndex + 1;
+        adcmin = NADC - 1 - adcIndex;
+        adcmax = NADC - adcIndex;
     }
     // update values
     for (int i = chipmin; i < chipmax; ++i) {
@@ -2037,10 +2044,10 @@ int getADCConfiguration(int chipIndex, int adcIndex) {
         chipmin = chipIndex;
         chipmax = chipIndex + 1;
     }
-    // specific adc
+    // specific adc (reversing adc when sending to chip)
     if (adcIndex != -1) {
-        adcmin = adcIndex;
-        adcmax = adcIndex + 1;
+        adcmin = NADC - 1 - adcIndex;
+        adcmax = NADC - adcIndex;
     }
     int val = adcConfiguration[chipmin][adcmin];
 
@@ -2169,19 +2176,18 @@ int configureASICGlobalSettings() {
     int value = ((filter << ASIC_FILTER_OFST) & ASIC_FILTER_MSK) |
                 ((cdsGain << ASIC_CDS_GAIN_OFST) & ASIC_CDS_GAIN_MSK);
     switch (burstMode) {
-        case BURST_OFF:
-            value |= (ASIC_CONT_MODE_MSK | ASIC_EXT_TIMING_MSK);
-            break;
-        case BURST_INTERNAL:
-            break;
-        case BURST_EXTERNAL:
-            value |= ASIC_EXT_TIMING_MSK;
-            break;
+    case BURST_OFF:
+        value |= (ASIC_CONT_MODE_MSK | ASIC_EXT_TIMING_MSK);
+        break;
+    case BURST_INTERNAL:
+        break;
+    case BURST_EXTERNAL:
+        value |= ASIC_EXT_TIMING_MSK;
+        break;
     }
-    LOG(logINFO,
-        ("\tSending Global Chip settings:0x%x (filter:%d, "
-         "cdsgain:%d)\n",
-         value, filter, cdsGain));
+    LOG(logINFO, ("\tSending Global Chip settings:0x%x (filter:%d, "
+                  "cdsgain:%d)\n",
+                  value, filter, cdsGain));
 
     const int padding = 6; // due to address (4) to make it byte aligned
     const int lenTotalBits = padding + ASIC_GLOBAL_SETT_MAX_BITS +

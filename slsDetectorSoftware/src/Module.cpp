@@ -265,28 +265,26 @@ int Module::getDynamicRange() const {
     return sendToDetector<int>(F_SET_DYNAMIC_RANGE, GET_FLAG);
 }
 
-void Module::setDynamicRange(int n) {
-    int prev_val = n;
+void Module::setDynamicRange(int dr) {
+    int prev_val = dr;
     if (shm()->myDetectorType == EIGER) {
         prev_val = getDynamicRange();
     }
 
-    auto retval = sendToDetector<int>(F_SET_DYNAMIC_RANGE, n);
+    auto retval = sendToDetector<int>(F_SET_DYNAMIC_RANGE, dr);
     if (shm()->useReceiverFlag) {
-        int arg = retval;
-        sendToReceiver<int>(F_SET_RECEIVER_DYNAMIC_RANGE, arg);
+        sendToReceiver<int>(F_SET_RECEIVER_DYNAMIC_RANGE, retval);
     }
 
-    // changes in dr
-    if (n != prev_val) {
-        // update speed for usability
-        if (n == 32) {
+    // EIGER only, update speed and rate correction when dr changes
+    if (dr != prev_val) {
+        if (dr == 32) {
             LOG(logINFO) << "Setting Clock to Quarter Speed to cope with "
                             "Dynamic Range of 32";
             setClockDivider(RUN_CLOCK, 2);
         } else if (prev_val == 32) {
             LOG(logINFO) << "Setting Clock to Full Speed for Dynamic Range of "
-                         << n;
+                         << dr;
             setClockDivider(RUN_CLOCK, 0);
         }
         updateRateCorrection();
@@ -1293,8 +1291,7 @@ int Module::getTemperatureEvent() const {
 }
 
 void Module::resetTemperatureEvent() {
-    int arg = 0;
-    sendToDetectorStop<int>(F_TEMP_EVENT, arg);
+    sendToDetectorStop<int>(F_TEMP_EVENT, 0);
 }
 
 bool Module::getAutoComparatorDisableMode() const{

@@ -126,7 +126,7 @@ class Module : public virtual slsDetectorDefs {
     int64_t getDelayAfterTriggerLeft() const;
     int64_t getPeriodLeft() const;
     int getDynamicRange() const;
-    void setDynamicRange(int n);
+    void setDynamicRange(int dr);
     timingMode getTimingMode() const;
     void setTimingMode(timingMode value);
     int getClockDivider(int clkIndex) const;

@@ -374,26 +374,16 @@ void setupDetector() {
     burstPeriodReg = 0;
     filter = 0;
     cdsGain = 0;
-    for (int i = 0; i < NUM_CLOCKS; ++i) {
-        clkPhase[i] = 0;
-    }
-    for (int i = 0; i < NDAC; ++i) {
-        dacValues[i] = 0;
-    }
+    memset(clkPhase, 0, sizeof(clkPhase));
+    memset(dacValues, 0, sizeof(dacValues));
     for (int i = 0; i < ONCHIP_NDAC; ++i) {
         for (int j = 0; j < NCHIP; ++j) {
             onChipdacValues[i][j] = -1;
         }
     }
-    for (int i = 0; i < NCHIP; ++i) {
-        for (int j = 0; j < NCHAN; ++j) {
-            vetoReference[i][j] = 0;
-            vetoGainIndices[i][j] = 0;
-        }
-        for (int j = 0; j < NADC; ++j) {
-            adcConfiguration[i][j] = 0;
-        }
-    }
+    memset(vetoReference, 0, sizeof(vetoReference));
+    memset(vetoGainIndices, 0, sizeof(vetoGainIndices));
+    memset(adcConfiguration, 0, sizeof(adcConfiguration));
 #ifdef VIRTUAL
     sharedMemory_setStatus(IDLE);
 #endif
@@ -1789,9 +1779,7 @@ int setVetoReference(int gainIndex, int value) {
     LOG(logINFO, ("Setting veto reference [chip:-1, G%d, value:0x%x]\n",
                   gainIndex, value));
     int values[NCHAN];
-    memset(values, 0, sizeof(values));
     int gainIndices[NCHAN];
-    memset(gainIndices, 0, sizeof(gainIndices));
     for (int ich = 0; ich < NCHAN; ++ich) {
         values[ich] = value;
         gainIndices[ich] = gainIndex;

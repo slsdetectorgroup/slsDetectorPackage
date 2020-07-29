@@ -1389,19 +1389,25 @@ void Module::setInjectChannel(const int offsetChannel,
     sendToDetector(F_SET_INJECT_CHANNEL, args, nullptr);
 }
 
-void Module::sendVetoPhoton(const int chipIndex, int *gainIndices,
-                            int *values) {
-    int fnum = F_SET_VETO_PHOTON;
-    int ret = FAIL;
-    int nch = shm()->nChan.x;
-    int args[]{chipIndex, nch};
+void Module::sendVetoPhoton(const int chipIndex, std::vector<int> gainIndices,
+                            std::vector<int> values) {
+    const int nch = gainIndices.size();
+    if (gainIndices.size() != values.size()) {
+        throw RuntimeError("Number of Gain Indices and values do not match! "
+                           "Gain Indices size: " +
+                           std::to_string(gainIndices.size()) +
+                           ", values size: " + std::to_string(values.size()));
+    }
     LOG(logDEBUG1) << "Sending veto photon/file to detector [chip:" << chipIndex
                    << ", nch:" << nch << "]";
+    int fnum = F_SET_VETO_PHOTON;
+    int ret = FAIL;
+    int args[]{chipIndex, nch};
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(&fnum, sizeof(fnum));
     client.Send(args, sizeof(args));
-    client.Send(gainIndices, sizeof(int) * nch);
-    client.Send(values, sizeof(int) * nch);
+    client.Send(gainIndices.data(), sizeof(int) * nch);
+    client.Send(values.data(), sizeof(int) * nch);
     client.Receive(&ret, sizeof(ret));
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH]{};
@@ -1413,6 +1419,7 @@ void Module::sendVetoPhoton(const int chipIndex, int *gainIndices,
 
 void Module::getVetoPhoton(const int chipIndex,
                            const std::string &fname) const {
+    LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]\n";
     int fnum = F_GET_VETO_PHOTON;
     int ret = FAIL;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
@@ -1425,16 +1432,18 @@ void Module::getVetoPhoton(const int chipIndex,
         throw RuntimeError("Detector " + std::to_string(moduleId) +
                            " returned error: " + std::string(mess));
     }
+
     int nch = -1;
     client.Receive(&nch, sizeof(nch));
-    LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]: " << nch
-                   << " channels\n";
-    int gainIndices[nch];
-    memset(gainIndices, 0, sizeof(gainIndices));
-    client.Receive(gainIndices, sizeof(gainIndices));
-    int values[nch];
-    memset(values, 0, sizeof(values));
-    client.Receive(values, sizeof(values));
+    if (nch != shm()->nChan.x) {
+        throw RuntimeError("Could not get veto photon. Expected " +
+                           std::to_string(shm()->nChan.x) + " channels, got " +
+                           std::to_string(nch));
+    }
+    std::vector<int> gainIndices(nch);
+    std::vector<int> values(nch);
+    client.Receive(gainIndices.data(), nch * sizeof(int));
+    client.Receive(values.data(), nch * sizeof(int));
 
     // save to file
     std::ofstream outfile;
@@ -1475,12 +1484,8 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
     LOG(logDEBUG1) << "Setting veto photon. Reading Gain values from file";
 
     int totalEnergy = numPhotons * energy;
-    int ch = shm()->nChan.x;
-    int nRead = 0;
-    int values[ch];
-    int gainIndices[ch];
-    memset(values, 0, sizeof(values));
-    memset(gainIndices, 0, sizeof(gainIndices));
+    std::vector<int> gainIndices;
+    std::vector<int> values;
 
     while (infile.good()) {
         std::string line;
@@ -1503,7 +1508,7 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
         if (ss.fail()) {
             throw RuntimeError("Could not set veto photon. Invalid pedestals, "
                                "gain values or gain thresholds for channel " +
-                               std::to_string(nRead));
+                               std::to_string(gainIndices.size()));
         }
 
         // caluclate gain index from gain thresholds and threhsold energy
@@ -1513,19 +1518,17 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
         } else if (totalEnergy < gainThreshold[1]) {
             gainIndex = 1;
         }
-        // calculate ADU values = pedestal + gainvalue * total energy
-        values[nRead] =
-            gainPedestal[gainIndex] + (gainValue[gainIndex] * totalEnergy);
-        gainIndices[nRead] = gainIndex;
-        ++nRead;
-        if (nRead >= ch) {
-            break;
-        }
+        gainIndices.push_back(gainIndex);
+        // calculate ADU value
+        values.push_back(gainPedestal[gainIndex] +
+                         (gainValue[gainIndex] * totalEnergy));
     }
-    if (nRead != ch) {
-        throw RuntimeError("Could not set veto photon. Insufficient pedestal "
-                           "for gain values: " +
-                           std::to_string(nRead));
+    // check size
+    if ((int)gainIndices.size() != shm()->nChan.x) {
+        throw RuntimeError("Could not set veto photon. Invalid number of "
+                           "entries in file. Expected " +
+                           std::to_string(shm()->nChan.x) + ", read " +
+                           std::to_string(gainIndices.size()));
     }
 
     sendVetoPhoton(chipIndex, gainIndices, values);
@@ -1558,12 +1561,8 @@ void Module::setVetoFile(const int chipIndex, const std::string &fname) {
                            " for reading");
     }
 
-    int ch = shm()->nChan.x;
-    int nRead = 0;
-    int gainIndices[ch];
-    memset(gainIndices, 0, sizeof(gainIndices));
-    int values[ch];
-    memset(values, 0, sizeof(values));
+    std::vector<int> gainIndices;
+    std::vector<int> values;
 
     for (std::string line; std::getline(input_file, line);) {
         if (line.find('#') != std::string::npos) {
@@ -1574,24 +1573,31 @@ void Module::setVetoFile(const int chipIndex, const std::string &fname) {
             // convert command and string to a vector
             std::istringstream iss(line);
             std::string val;
-            iss >> gainIndices[nRead] >> val;
+            int gainIndex = -1;
+            int value = -1;
+            iss >> gainIndex >> val;
             if (iss.fail()) {
                 throw RuntimeError("Could not set veto file. Invalid gain "
                                    "or reference value for channel " +
-                                   std::to_string(nRead));
+                                   std::to_string(gainIndices.size()));
             }
             try {
-                values[nRead] = StringTo<int>(val);
+                value = StringTo<int>(val);
             } catch (...) {
                 throw RuntimeError("Could not set veto file. Invalid value " +
                                    val + " for channel " +
-                                   std::to_string(nRead));
+                                   std::to_string(gainIndices.size()));
             }
-            ++nRead;
-            if (nRead >= ch) {
-                break;
-            }
+            gainIndices.push_back(gainIndex);
+            values.push_back(value);
         }
+    }
+    // check size
+    if ((int)gainIndices.size() != shm()->nChan.x) {
+        throw RuntimeError("Could not set veto file. Invalid number of "
+                           "entries in file. Expected " +
+                           std::to_string(shm()->nChan.x) + ", read " +
+                           std::to_string(gainIndices.size()));
     }
 
     sendVetoPhoton(chipIndex, gainIndices, values);

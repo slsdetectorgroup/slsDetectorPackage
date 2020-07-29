@@ -6332,16 +6332,14 @@ int set_veto_photon(int file_des) {
     int args[2] = {-1, -1};
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-    int chipIndex = args[0];
-    int numChannels = args[1];
+    const int chipIndex = args[0];
+    const int numChannels = args[1];
 
-    int gainIndices[args[1]];
-    memset(gainIndices, 0, sizeof(gainIndices));
+    int gainIndices[numChannels];
     if (receiveData(file_des, gainIndices, sizeof(gainIndices), INT32) < 0)
         return printSocketReadError();
 
-    int values[args[1]];
-    memset(values, 0, sizeof(values));
+    int values[numChannels];
     if (receiveData(file_des, values, sizeof(values), INT32) < 0)
         return printSocketReadError();
 
@@ -6353,18 +6351,17 @@ int set_veto_photon(int file_des) {
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-
-        if (chipIndex < -1 || chipIndex >= NCHIP) {
-            ret = FAIL;
-            sprintf(mess, "Could not set veto photon. Invalid chip index %d\n",
-                    chipIndex);
-            LOG(logERROR, (mess));
-        } else if (numChannels != NCHAN) {
+        if (numChannels != NCHAN) {
             ret = FAIL;
             sprintf(mess,
                     "Could not set veto photon. Invalid number of channels %d. "
                     "Expected %d\n",
                     numChannels, NCHAN);
+            LOG(logERROR, (mess));
+        } else if (chipIndex < -1 || chipIndex >= NCHIP) {
+            ret = FAIL;
+            sprintf(mess, "Could not set veto photon. Invalid chip index %d\n",
+                    chipIndex);
             LOG(logERROR, (mess));
         } else {
             for (int i = 0; i < NCHAN; ++i) {

@@ -279,6 +279,7 @@ u_int16_t getHardwareSerialNumber() {
             HARDWARE_SERIAL_NUM_OFST);
 }
 
+// is board 1.0?, with value 2 (resistor network)
 int isHardwareVersion2() {
     return (((bus_r(MOD_SERIAL_NUM_REG) & HARDWARE_VERSION_NUM_MSK) ==
              HARDWARE_VERSION_2_VAL)

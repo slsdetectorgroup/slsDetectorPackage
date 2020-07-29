@@ -3,8 +3,8 @@
 #include "sls_detector_defs.h"
 
 #define MIN_REQRD_VRSN_T_RD_API  0x171220
-#define REQRD_FRMWRE_VRSN_BOARD2 0x190716 // old
-#define REQRD_FRMWRE_VRSN        0x200305 // new
+#define REQRD_FRMWRE_VRSN_BOARD2 0x200724 // 1.0 pcb
+#define REQRD_FRMWRE_VRSN        0x200721 // 2.0 pcb
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 
@@ -66,7 +66,6 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define NCHAN               (256 * 256)
 #define NCHIP               (8)
 #define NDAC                (8)
-#define NDAC_OLDBOARD       (16)
 #define DYNAMIC_RANGE       (16)
 #define NUM_BYTES_PER_PIXEL (DYNAMIC_RANGE / 8)
 #define DATA_BYTES          (NCHIP * NCHAN * NUM_BYTES_PER_PIXEL)
@@ -103,42 +102,45 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define MAX_STORAGE_CELL_DLY_NS_VAL (ASIC_CTRL_EXPSRE_TMR_MAX_VAL)
 #define ACQ_TIME_MIN_CLOCK          (2)
 
-#define MAX_PHASE_SHIFTS (160)
+#define MAX_PHASE_SHIFTS (240)
 #define BIT16_MASK       (0xFFFF)
 
-#define ADC_OFST_FULL_SPEED_VAL           (0xf)
-#define ADC_OFST_HALF_SPEED_VAL           (0xb)
-#define ADC_OFST_QUARTER_SPEED_VAL        (0x7)
-#define ADC_OFST_HALF_SPEED_BOARD2_VAL    (0x13)
-#define ADC_OFST_QUARTER_SPEED_BOARD2_VAL (0x0b)
+// pipeline
+#define ADC_OFST_FULL_SPEED_VAL           (0x10) // 2.0 pcb
+#define ADC_OFST_HALF_SPEED_VAL           (0x08) // 2.0 pcb
+#define ADC_OFST_QUARTER_SPEED_VAL        (0x04) // 2.0 pcb
+#define ADC_OFST_HALF_SPEED_BOARD2_VAL    (0x13) // 1.0 pcb (2 resistor network)
+#define ADC_OFST_QUARTER_SPEED_BOARD2_VAL (0x0b) // 1.0 pcb (2 resistor network)
 
 #define ADC_PORT_INVERT_VAL        (0x5A5A5A5A)
 #define ADC_PORT_INVERT_BOARD2_VAL (0x453b2a9c)
 
+// 2.0 pcb
 #define SAMPLE_ADC_FULL_SPEED                                                  \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_2_VAL + SAMPLE_DECMT_FACTOR_FULL_VAL) // 0x200
+     SAMPLE_DGTL_SAMPLE_1_VAL + SAMPLE_DECMT_FACTOR_FULL_VAL) // 0x100
 #define SAMPLE_ADC_HALF_SPEED                                                  \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
      SAMPLE_DGTL_SAMPLE_3_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1310
 #define SAMPLE_ADC_QUARTER_SPEED                                               \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_3_VAL +                 \
      SAMPLE_DGTL_SAMPLE_6_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2630
+// 1.0 pcb (2 resistor network)
 #define SAMPLE_ADC_HALF_SPEED_BOARD2                                           \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_0_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_6_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1600
+     SAMPLE_DGTL_SAMPLE_3_VAL + SAMPLE_DECMT_FACTOR_HALF_VAL) // 0x1300
 #define SAMPLE_ADC_QUARTER_SPEED_BOARD2                                        \
     (SAMPLE_ADC_SAMPLE_0_VAL + SAMPLE_ADC_DECMT_FACTOR_1_VAL +                 \
-     SAMPLE_DGTL_SAMPLE_11_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2b10
+     SAMPLE_DGTL_SAMPLE_6_VAL + SAMPLE_DECMT_FACTOR_QUARTER_VAL) // 0x2610
 
-#define ADC_PHASE_FULL_SPEED           (28)
-#define ADC_PHASE_HALF_SPEED           (35)
-#define ADC_PHASE_QUARTER_SPEED        (35)
-#define ADC_PHASE_HALF_SPEED_BOARD2    (0x1E) // 30
-#define ADC_PHASE_QUARTER_SPEED_BOARD2 (0x1E) // 30
+#define ADC_PHASE_FULL_SPEED           (150) // 2.0 pcb
+#define ADC_PHASE_HALF_SPEED           (200) // 2.0 pcb
+#define ADC_PHASE_QUARTER_SPEED        (200) // 2.0 pcb
+#define ADC_PHASE_HALF_SPEED_BOARD2    (75)  // 1.0 pcb (2 resistor network)
+#define ADC_PHASE_QUARTER_SPEED_BOARD2 (75)  // 1.0 pcb (2 resistor network)
 
-#define DBIT_PHASE_FULL_SPEED           (37)
-#define DBIT_PHASE_HALF_SPEED           (37)
-#define DBIT_PHASE_QUARTER_SPEED        (37)
-#define DBIT_PHASE_HALF_SPEED_BOARD2    (37)
-#define DBIT_PHASE_QUARTER_SPEED_BOARD2 (37)
+#define DBIT_PHASE_FULL_SPEED           (85)  // 2.0 pcb
+#define DBIT_PHASE_HALF_SPEED           (150) // 2.0 pcb
+#define DBIT_PHASE_QUARTER_SPEED        (150) // 2.0 pcb
+#define DBIT_PHASE_HALF_SPEED_BOARD2    (150) // 1.0 pcb (2 resistor network)
+#define DBIT_PHASE_QUARTER_SPEED_BOARD2 (150) // 1.0 pcb (2 resistor network)

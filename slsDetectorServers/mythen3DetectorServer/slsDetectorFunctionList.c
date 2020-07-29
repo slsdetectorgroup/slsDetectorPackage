@@ -2055,21 +2055,28 @@ void *start_timer(void *arg) {
         return NULL;
     }
 
-    int64_t periodNs = getPeriod();
-    int numFrames = (getNumFrames() * getNumTriggers());
-    int64_t expUs = getGatePeriod() / 1000;
+    const int64_t periodNs = getPeriod();
+    const int numFrames = (getNumFrames() * getNumTriggers());
+    const int64_t expUs = getGatePeriod() / 1000;
 
-    int imagesize = calculateDataBytes();
-    int dataSize = imagesize / PACKETS_PER_FRAME;
-    int packetSize = dataSize + sizeof(sls_detector_header);
+    const int imagesize = calculateDataBytes();
+    const int tgEnable = enableTenGigabitEthernet(-1);
+    const int packetsPerFrame =
+        tgEnable ? PACKETS_PER_FRAME_10G : PACKETS_PER_FRAME_1G;
+    const int dataSize = imagesize / packetsPerFrame;
+    const int packetSize = dataSize + sizeof(sls_detector_header);
+
+    LOG(logDEBUG1,
+        ("imagesize:%d tg:%d packets/Frame:%d datasize:%d packetSize:%d\n",
+         imagesize, tgEnable, packetsPerFrame, dataSize, packetSize));
 
     // Generate data
     char imageData[imagesize];
     memset(imageData, 0, imagesize);
     {
-        int dr = setDynamicRange(-1);
-        int numCounters = __builtin_popcount(getCounterMask());
-        int nchannels = NCHAN_1_COUNTER * NCHIP * numCounters;
+        const int dr = setDynamicRange(-1);
+        const int numCounters = __builtin_popcount(getCounterMask());
+        const int nchannels = NCHAN_1_COUNTER * NCHIP * numCounters;
 
         switch (dr) {
         /*case 1: // TODO: Not implemented in firmware yet
@@ -2111,7 +2118,7 @@ void *start_timer(void *arg) {
 
         int srcOffset = 0;
         // loop packet
-        for (int i = 0; i != PACKETS_PER_FRAME; ++i) {
+        for (int i = 0; i != packetsPerFrame; ++i) {
             char packetData[packetSize];
             memset(packetData, 0, packetSize);
 

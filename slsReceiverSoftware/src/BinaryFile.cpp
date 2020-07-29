@@ -183,7 +183,7 @@ void BinaryFile::CreateMasterFile(bool masterFileWriteEnable,
                 "Total Frames               : %lld\n"
                 "Exptime (ns)               : %lld\n"
                 "SubExptime (ns)            : %lld\n"
-                "SubPeriod(ns)              : %lld\n"
+                "SubPeriod (ns)             : %lld\n"
                 "Period (ns)                : %lld\n"
                 "Quad Enable                : %d\n"
                 "Analog Flag                : %d\n"

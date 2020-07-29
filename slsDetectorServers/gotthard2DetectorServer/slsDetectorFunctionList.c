@@ -50,6 +50,7 @@ int onChipdacValues[ONCHIP_NDAC][NCHIP] = {};
 int injectedChannelsOffset = 0;
 int injectedChannelsIncrement = 0;
 int vetoReference[NCHIP][NCHAN];
+int vetoGainIndices[NCHIP][NCHAN];
 uint8_t adcConfiguration[NCHIP][NADC];
 int burstMode = BURST_INTERNAL;
 int64_t numTriggersReg = 1;
@@ -387,6 +388,7 @@ void setupDetector() {
     for (int i = 0; i < NCHIP; ++i) {
         for (int j = 0; j < NCHAN; ++j) {
             vetoReference[i][j] = 0;
+            vetoGainIndices[i][j] = 0;
         }
         for (int j = 0; j < NADC; ++j) {
             adcConfiguration[i][j] = 0;
@@ -1786,55 +1788,57 @@ void getInjectedChannels(int *offset, int *increment) {
 int setVetoReference(int gainIndex, int value) {
     LOG(logINFO, ("Setting veto reference [chip:-1, G%d, value:0x%x]\n",
                   gainIndex, value));
-    int vals[NCHAN];
-    memset(vals, 0, sizeof(vals));
+    int values[NCHAN];
+    memset(values, 0, sizeof(values));
+    int gainIndices[NCHAN];
+    memset(gainIndices, 0, sizeof(gainIndices));
     for (int ich = 0; ich < NCHAN; ++ich) {
-        vals[ich] = value;
+        values[ich] = value;
+        gainIndices[ich] = gainIndex;
     }
-    return setVetoPhoton(-1, gainIndex, vals);
+    return configureASICVetoReference(-1, gainIndices, values);
 }
 
-int setVetoPhoton(int chipIndex, int gainIndex, int *values) {
-    LOG(logINFO,
-        ("Setting veto photon [chip:%d, G%d]\n", chipIndex, gainIndex));
-
-    // add gain bits
-    int gainValue = 0;
-    switch (gainIndex) {
-    case 0:
-        gainValue = ASIC_G0_VAL;
-        break;
-    case 1:
-        gainValue = ASIC_G1_VAL;
-        break;
-    case 2:
-        gainValue = ASIC_G2_VAL;
-        break;
-    default:
-        LOG(logERROR, ("Unknown gain index %d\n", gainIndex));
-        return FAIL;
-    }
-    LOG(logDEBUG2, ("Adding gain bits\n"));
-    for (int i = 0; i < NCHAN; ++i) {
-        values[i] |= gainValue;
-        LOG(logDEBUG2, ("Value %d: 0x%x\n", i, values[i]));
-    }
-
-    return configureASICVetoReference(chipIndex, values);
+int setVetoPhoton(int chipIndex, int *gainIndices, int *values) {
+    return configureASICVetoReference(chipIndex, gainIndices, values);
 }
 
-int configureASICVetoReference(int chipIndex, int *values) {
-    const int lenDataBitsPerchannel = ASIC_GAIN_MAX_BITS + ADU_MAX_BITS; // 14
-    const int lenBits = lenDataBitsPerchannel * NCHAN;                   // 1792
-    const int padding = 4; // due to address (4) to make it byte aligned
-    const int lenTotalBits = padding + lenBits + ASIC_ADDR_MAX_BITS; // 1800
-    const int len = lenTotalBits / 8;                                // 225
+int configureASICVetoReference(int chipIndex, int *gainIndices, int *values) {
+    LOG(logINFO, ("Setting veto photon/file/reference [chip:%d]\n", chipIndex));
 
     // reversing the values sent to the chip
     int revValues[NCHAN] = {};
     for (int i = 0; i < NCHAN; ++i) {
         revValues[i] = values[NCHAN - 1 - i];
     }
+
+    // correct gain bits and integrate into revValues
+    for (int i = 0; i < NCHAN; ++i) {
+        int gainValue = 0;
+        switch (gainIndices[i]) {
+        case 0:
+            gainValue = ASIC_G0_VAL;
+            break;
+        case 1:
+            gainValue = ASIC_G1_VAL;
+            break;
+        case 2:
+            gainValue = ASIC_G2_VAL;
+            break;
+        default:
+            LOG(logERROR,
+                ("Unknown gain index %d for channel %d\n", gainIndices[i], i));
+            return FAIL;
+        }
+        revValues[i] |= gainValue;
+        LOG(logDEBUG2, ("Values[%d]: 0x%x\n", i, revValues[i]));
+    }
+
+    const int lenDataBitsPerchannel = ASIC_GAIN_MAX_BITS + ADU_MAX_BITS; // 14
+    const int lenBits = lenDataBitsPerchannel * NCHAN;                   // 1792
+    const int padding = 4; // due to address (4) to make it byte aligned
+    const int lenTotalBits = padding + lenBits + ASIC_ADDR_MAX_BITS; // 1800
+    const int len = lenTotalBits / 8;                                // 225
 
     // assign each bit into 4 + 1792  into byte array
     uint8_t commandBytes[lenTotalBits];
@@ -1873,6 +1877,7 @@ int configureASICVetoReference(int chipIndex, int *values) {
         for (int ichan = 0; ichan < NCHAN; ++ichan) {
             for (int ichip = 0; ichip < NCHIP; ++ichip) {
                 vetoReference[ichip][ichan] = values[ichan];
+                vetoGainIndices[ichip][ichan] = gainIndices[ichan];
             }
         }
     }
@@ -1880,17 +1885,19 @@ int configureASICVetoReference(int chipIndex, int *values) {
     // specific chip
     else {
         for (int ichan = 0; ichan < NCHAN; ++ichan) {
-            vetoReference[chipIndex][chipIndex] = values[ichan];
-            ;
+            vetoReference[chipIndex][ichan] = values[ichan];
+            vetoGainIndices[chipIndex][ichan] = gainIndices[ichan];
         }
     }
     return OK;
 }
 
-int getVetoPhoton(int chipIndex, int *retvals) {
+int getVetoPhoton(int chipIndex, int *retvals, int *gainRetvals) {
     if (chipIndex == -1) {
+        // if chipindex is -1, check that all values and gain indices are same
         for (int i = 0; i < NCHAN; ++i) {
             int val = vetoReference[0][i];
+            int gval = vetoGainIndices[0][i];
             for (int j = 1; j < NCHIP; ++j) {
                 if (vetoReference[j][i] != val) {
                     LOG(logERROR,
@@ -1900,6 +1907,14 @@ int getVetoPhoton(int chipIndex, int *retvals) {
                          chipIndex, j, i, vetoReference[j][i], i, val));
                     return FAIL;
                 }
+                if (vetoGainIndices[j][i] != gval) {
+                    LOG(logERROR,
+                        ("Get vet photon fail for chipIndex:%d. Different "
+                         "gain indices between [nchip:%d, nchan:%d, gain "
+                         "index:%d] and [nchip:0, nchan:%d, gain index:%d]\n",
+                         chipIndex, j, i, vetoGainIndices[j][i], i, gval));
+                    return FAIL;
+                }
             }
         }
         chipIndex = 0;
@@ -1907,33 +1922,10 @@ int getVetoPhoton(int chipIndex, int *retvals) {
     memcpy((char *)retvals,
            ((char *)vetoReference) + NCHAN * chipIndex * sizeof(int),
            sizeof(int) * NCHAN);
+    memcpy((char *)gainRetvals,
+           ((char *)vetoGainIndices) + NCHAN * chipIndex * sizeof(int),
+           sizeof(int) * NCHAN);
     return OK;
-}
-
-int setVetoFile(int chipIndex, int *gainIndices, int *values) {
-    LOG(logINFO, ("Setting veto file [chip:%d]\n", chipIndex));
-
-    // correct gain bits and integrate into values
-    for (int i = 0; i < NCHAN; ++i) {
-        switch (gainIndices[i]) {
-        case 0:
-            gainIndices[i] = ASIC_G0_VAL;
-            break;
-        case 1:
-            gainIndices[i] = ASIC_G1_VAL;
-            break;
-        case 2:
-            gainIndices[i] = ASIC_G2_VAL;
-            break;
-        default:
-            LOG(logERROR,
-                ("Unknown gain index %d for channel %d\n", gainIndices[i], i));
-            return FAIL;
-        }
-        values[i] |= gainIndices[i];
-        LOG(logDEBUG2, ("Values[%d]: 0x%x\n", i, values[i]));
-    }
-    return configureASICVetoReference(chipIndex, values);
 }
 
 int setADCConfiguration(int chipIndex, int adcIndex, int value) {

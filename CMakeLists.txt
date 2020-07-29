@@ -97,6 +97,7 @@ target_compile_options(slsProjectWarnings INTERFACE
                                             -Wformat=2
                                             -Wredundant-decls
                                             # -Wconversion
+                                            -Wvla
                                             -Wdouble-promotion
                                             -Werror=return-type
 

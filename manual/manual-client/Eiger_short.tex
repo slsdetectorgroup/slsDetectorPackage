@@ -122,7 +122,23 @@ To do that:
 sls_detector_put 0-config mydetector.config
 \end{verbatim}
 
-In the config file, if client, receiver and detector are using \textbf{1GbE} the following lines are mandatory (see slsDetectorsPackage/examples/eiger\_1Gb.config):
+In the config file, if client, receiver and detector are using \textbf{1GbE} the following lines are mandatory (see slsDetectorsPackage/examples/eiger\_1Gb.config). It has been adapted to the the new 5.0 major release change:
+\begin{verbatim}
+detsize 1024 512 #detector geometry, long side of the module first
+hostname beb059+beb058+ #1Gb detector hostname for controls
+#1Gb receiver pc hostname to be inserted immediately and tcp\_ports to be stated immediately
+rx_hostname x12sa-vcons:1991+pc1875:1992+
+0:udp_dstport 50011 #udp port first quadrant, first halfmodule         
+0:udp_dstport2 50012 #udp port second quadrant, first halfmodule       
+1:udp_dstport 50013 #udp port first quadrant, second halfmodule       
+1:udp_dstport2 50014 #udp port second quadrant, second halfmodule      
+0:udp_srcip 129.129.202.237
+0:udp_dstip auto
+1:udp_srcip 129.129.202.236
+1:udp_dstip auto
+fpath /sls/X12SA/data/x12saop/Data10/Eiger0.5M
+\end{verbatim}
+In the old 3.x and 4.x release it was: 
 \begin{verbatim}
 detsizechan 1024 512 #detector geometry, long side of the module first
 hostname beb059+beb058+ #1Gb detector hostname for controls
@@ -172,6 +188,8 @@ configuremac 0
 rx_udpmac xx:xx:...
 \end{verbatim}
 
+Now we will give general communication commands. Commands with a diffent name in the \textcolor{red}{5.x} realease will be highlighted in \textcolor{red}{red}.
+
 One can configure all the detector settings in a parameter file {\tt{setup.det}}, which is loaded by doing:
 \begin{verbatim}
 sls_detector_put 0-parameters setup.det
@@ -182,14 +200,13 @@ In the case of \E, the proper bias voltage of the sensor has to be setup, i.e. t
 Other important settings that are configured in the {\tt{setup.det}} file are:
 \begin{itemize}
 \item {\tt{tengiga 0/1}}, which sets whether the detector is enabled to send data through the 1~or the 10~Gb Ethernet.
-\item {\tt{flags parallel/nonparallel}}, which sets whether the detector is set in parallel acquisition and readout or in sequential mode. This changes the readout time of the chip and affects the frame rate capability (faster is {\tt{parallel}}, with higher noise but needed when the frame rate is $>2$~kHz. 
+\item {\tt{flags parallel/nonparallel}} or {\tt{\textcolor{red}{parallel 1/0}}}, which sets whether the detector is set in parallel acquisition and readout or in sequential mode. This changes the readout time of the chip and affects the frame rate capability (faster is {\tt{parallel}}).
 \item {\tt{dr 32/16/8/4}} sets the detector in autosumming mode (32 bit counter or not autosumming, 12 bit out of the chip). This is strictly connected to what is required for the readout clock of chip. See next point.
-\item {\tt{clkdivider 0/1/2}}. Changes the readout clock: 200, 100, 50~MHz (also referred to as full, half, quarter speed). Note that autosumming mode ({\tt{dr 32}} only works at {clkdivider 2}=quarter speed). By selecting Refer to readout timing specifications in~section\ref{timing} for how to set the detector. 
+\item {\tt{clkdivider 0/1/2}} or {\tt{\textcolor{red}{speed full\_speed/half\_speed/quart\_speed}}}. Changes the readout clock: 200, 100, 50~MHz (also referred to as full, half, quarter speed). Note that autosumming mode ({\tt{dr 32}} only works at \tt{clkdivider 2}=\tt{quart\_speed}). By selecting Refer to readout timing specifications in~section\ref{timing} for how to set the detector. 
 \item {\tt{flags continuous/storeinram}}. Allows to take frame continuously or storing them on memory. Users should use the {\tt{continuous}} flags. Enabling the {\tt{stroreinram}} flag makes the data to be sent out all at the end of the acquisition. Refer to readout timing specifications in section~\ref{timing} for how to set the detector. Examples will be given in section~\ref{}.
 \end{itemize}
 
-One should notice that, by default, by choosing the option {\tt{dr 32}}, then the software automatically sets the detector to  {\tt{clkdivider 2}}. By choosing the option {\tt{dr 16}}, the software automatically sets the detector to  {\tt{clkdivider 1}}. One needs to choose {\tt{clkdivider 0}} after setting the {\tt{dr 16}} option to have the fastest frame rate. 
-We would recommend expert users (beamline people) to write their parameters file for the users. 
+One should notice that, by default, by choosing the option {\tt{dr 32}}, then the software automatically sets the detector to  {\tt{clkdivider 2}} ({\tt{\textcolor{red}{quart\_speed}}}). By choosing the option {\tt{dr 16}}, the software automatically sets the detector to  {\tt{clkdivider 1}} ({\tt{\textcolor{red}{speed quart\_speed}}}). From release 5.x, 
 
 \section{API versioning} \label{api}
 The eigerDetectorServer running on the boards has a versioning API scheme that will make it crash if used with a wrong firmware.
@@ -210,10 +227,18 @@ Killing and starting the server on the boards allows you to check the firmware v
 
 \section{Setting up the threshold}
 \begin{verbatim}
+sls_detector_put 0-settingsdir /path
 sls_detector_put 0-trimen N xxxx yyyy zzzz
 sls_detector_put 0-settings standard 
 sls_detector_put 0-threshold energy_in_eV standard
 \end{verbatim}
+or in \textcolor{red}{5.x}:
+\begin{verbatim}
+sls_detector_put 0-settingspath /path}
+sls_detector_put 0-trimen N xxxx yyyy zzzz}
+sls_detector_put 0-threshold energy_in_eV standard
+\end{verbatim}
+
 The first line requires to specify how many ({\tt{N}}) and at which energies in eV {\{tt{xxxx}}, {\tt{yyyy}}, {\tt{zzzz}} and so on) trimmed files were generated (to allow for an interpolation). This line should normally be included into the {\tt{mydetector.config}} file and should be set for you by one of the detector group.
 NORMALLY, in this new calibration scheme, only {\tt{settings standard}} will be provided to you, unless specific cases to be discussed.
 The threshold at 6000 eV , for example would be set as:{\tt{sls\_detector\_put 0-threshold 6000 standard}}.
@@ -347,8 +372,11 @@ col                        : 257 pixels
 \end{verbatim}
 
 \section{Readout timing- maximum frame rate}\label{timing}
-IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{clkdivider}}, i.e. the speed at which the data are read, i.e. 200/100/50~MHz for {\tt{clkdivider 0/1/2}} and the dead time between frames through {\tt{flags parallel}}, i.e. acquire and read at the same time or acquire and then read out.
-The configuration of this timing variables allows to achieve different frame rates. NOTE THAT IN EIGER, WHATEVER YOU DO, THE FRAME RATE LIMITATIONS COME FROM THE NETWORK BOTTLENECK AS THE HARDWARE GOES FASTER THAN THE DATA OUT.
+IMPORTANT: to have faster readout and smaller dead time, one can configure {\tt{clkdivider}}, i.e. the {\tt{textcolor}{red}{speed} at which the data are read, i.e. 200/100/50~MHz for {\tt{clkdivider 0/1/2}} ({\tt{
+\textcolor{red}{speed full\_speed/half\_speed/quart\_speed}}) and the dead time between frames through {\tt{flags parallel}} or {\tt{\textcolor{red}{parallel 1}}}, i.e. acquire and read at the same time or acquire and then read out.
+The configuration of this timing variables allows to achieve different frame rates. NOTE THAT IN EIGER, WHATEVER YOU DO, THE FRAME RATE LIMITATIONS COME FROM THE NETWORK BOTTLENECK AS THE HARDWARE GOES FASTER THAN THE DATA OUT. WE recconmmend using the detector in \tt{dr 4/8/16}, \tt{\textcolor{red}{speed full\_speed}}, \tt{parallel 1} or \tt{dr 32}, \tt{\textcolor{red}{speed quart\_speed}}, \tt{parallel 1. All those options are now the defaults options starting from version 5.x.
+
+
 
 In the case of REAL CONTINUOUS readout, i.e. continuous acquire and readout from the boards (independent on how the chip is set), the continuous frame rates are listed in table~\ref{tcont}. The time to send out the frame out of the board 
 \begin{table} 
@@ -384,11 +412,11 @@ dynamic range & images\\
 16 & 7600\\
 \hline
 \end{tabular}
-\caption{Amount of images that can be stored on board. As while we store them, we start to send them out, the effective number of images could be larger than this, but it will depend on the network setup (how fats you stream out images).}
+\caption{Amount of images that can be stored on board. As while we store them, we start to send them out, the effective number of images could be larger than this, but it will depend on the network setup (how fast you stream out images).}
 \label{timgs}
 \end{table}
 
-The maximum frame rate achievable with 10~GbE, {\tt{dr 16}}, {\tt{flags continuous}}, {\tt{flags parallel}},{\tt{clkdivider 0}}, \textbf{6.1~kHz}. This is currently limited by the connection between the Front End Board and the Backend board. We expect the 32 bit mode limit, internally, to be \textbf{2~kHz} ({\tt{clkdivider 2}}).
+The maximum frame rate achievable with 10~GbE, {\tt{dr 16}}, {\tt{flags continuous}}, {\tt{flags parallel}} ({\tt{\textcolor{red}{parallel 1}}}),{\tt{clkdivider 0}} ({\tt{\textcolor{red}{speed full\_speed}}}), \textbf{6.1~kHz}. This is currently limited by the connection between the Front End Board and the Backend board. We expect the 32 bit mode limit, internally, to be \textbf{2~kHz} ({\tt{clkdivider 2}}).
  In dynamic range {\tt{dr 8}} the frame rate is \textbf{11~kHz} and for{\tt{dr 4}} is \textbf{22~kHz}. For 4 and 8 bit mode the frame rate are directly limited by the speed of the detector chip and not by the readout boards.    
 
 \subsection{Minimum time between frames and Maximum frame rate}
@@ -579,10 +607,10 @@ The number of subframes composing a single 32bit acquisition can be calculated a
 \end{equation}
 This also means that {\tt{exptime}}$<${\tt{subexptime}} will be rounded to{\tt{subexptime}}. If you want shorter acquisitions, either reduce the {\tt{subexptime}} or switch two 16-bit mode (you can always sum offline if needed).   
 
-From release 4.0.0, an extra {\tt{flag overflow/nooverflow}} is added, with {\tt{nooverflow}} default:
+From release 4.0.0, an extra {\tt{flag overflow/nooverflow}} is added (\tt{\textcolor{red}{overflow 0/1}}), with {\tt{nooverflow}} (\tt{\textcolor{red}{overflow 0}}) default:
 \begin{itemize}
-\item {\tt{nooverflow}}: the internal 12-bit result is summed, even if there was saturation of the 12-bit counter (4095) in any of the subframes. Note that if there is saturation for every subframe, you might get as a result a value of the counter equal to (4095$\times$~number~of~subframes), which you need to correctly identify. On the other hand if the saturation occurred only one time, you will get something "close'' to the real number.
-\item {\tt{overflow}}: In this case, even if a pixel saturate only 1 time in a subframe, you will be returned as a value of the counter for that pixel: $2^{32}-1$, i.e. 4294967295.  
+\item {\tt{nooverflow}} (\tt{\textcolor{red}{overflow 0}}): the internal 12-bit result is summed, even if there was saturation of the 12-bit counter (4095) in any of the subframes. Note that if there is saturation for every subframe, you might get as a result a value of the counter equal to (4095$\times$~number~of~subframes), which you need to correctly identify. On the other hand if the saturation occurred only one time, you will get something "close'' to the real number.
+\item {\tt{overflow}} (\tt{\textcolor{red}{overflow 1}})): In this case, even if a pixel saturate only 1 time in a subframe, you will be returned as a value of the counter for that pixel: $2^{32}-1$, i.e. 4294967295.  
 \end{itemize}
 
 The UDP header will contain, after you receive the data, the effective number of subframe per image (see section~\ref{UDP}) as  "SubFrame Num or Exp Time", i.e. the number of subframes recorded  (32 bit eiger).
@@ -716,7 +744,7 @@ If \textbf{dr} is 32 and \textbf{clkdivider} is not 2, whatever the detector get
 
 Here is a list of parameters that should be reset:
 \begin{enumerate}
-\item  \textbf{resetframescaught} should be reset to zero after every acquisition taken with {\tt{receiver start}},{\tt{status start}},{\tt{receiver stop}}. If the acquisition is taken with {\tt{sls\_detector\_acquire}}, there is no need to reset this.
+\item  \textbf{resetframescaught} (only for releases < 5.x) should be reset to zero after every acquisition taken with {\tt{receiver start}},{\tt{status start}},{\tt{receiver stop}}. If the acquisition is taken with {\tt{sls\_detector\_acquire}}, there is no need to reset this.
 \item After changing the {\tt{timing}} mode of the detector, one should reset to '1' the unused value, in that specific timing mode, between \textbf{frames} and \textbf{cycles}. See section~\ref{triggering} for how to use the timing. At the present moment the detector will acquire more frames than planned if the variable not used between \textbf{frames} and \textbf{cycles} is not reset. In future releases, the unused variable will be ignored. Still resetting is a good practice.
       
 \end{enumerate}

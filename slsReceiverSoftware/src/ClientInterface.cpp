@@ -901,14 +901,12 @@ int ClientInterface::get_frame_index(Interface &socket) {
 }
 
 int ClientInterface::get_missing_packets(Interface &socket) {
-    std::vector<uint64_t> m = impl()->getNumMissingPackets();
-    LOG(logDEBUG1) << "missing packets:" << sls::ToString(m);
-    int retvalsize = m.size();
-    uint64_t retval[retvalsize];
-    std::copy(std::begin(m), std::end(m), retval);
+    auto missing_packets = impl()->getNumMissingPackets();
+    LOG(logDEBUG1) << "missing packets:" << sls::ToString(missing_packets);
+    auto size = static_cast<int>(missing_packets.size());
     socket.Send(OK);
-    socket.Send(&retvalsize, sizeof(retvalsize));
-    socket.Send(retval, sizeof(retval));
+    socket.Send(size);
+    socket.Send(missing_packets.data(), sizeof(missing_packets[0])* missing_packets.size());
     return OK;
 }
 

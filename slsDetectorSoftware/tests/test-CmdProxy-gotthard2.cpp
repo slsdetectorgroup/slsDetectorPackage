@@ -316,7 +316,9 @@ TEST_CASE("vetophoton", "[.cmd][.new]") {
 
     if (det_type == defs::GOTTHARD2) {
         REQUIRE_THROWS(proxy.Call("vetophoton", {}, -1, GET));
-        REQUIRE_NOTHROW(proxy.Call("vetophoton", {"-1"}, -1, GET));
+        REQUIRE_THROWS(proxy.Call("vetophoton", {"-1"}, -1, GET));
+        REQUIRE_NOTHROW(
+            proxy.Call("vetophoton", {"-1", "/tmp/bla.txt"}, -1, GET));
         REQUIRE_THROWS(proxy.Call("vetophoton", {"12", "1", "39950"}, -1,
                                   PUT)); // invalid chip index
         REQUIRE_THROWS(proxy.Call("vetophoton", {"-1", "0"}, -1,
@@ -324,7 +326,8 @@ TEST_CASE("vetophoton", "[.cmd][.new]") {
         REQUIRE_THROWS(proxy.Call("vetophoton", {"-1", "1", "39950"}, -1,
                                   PUT)); // invald file
     } else {
-        REQUIRE_THROWS(proxy.Call("vetophoton", {"-1"}, -1, GET));
+        REQUIRE_THROWS(
+            proxy.Call("vetophoton", {"-1", "/tmp/bla.txt"}, -1, GET));
     }
 }
 

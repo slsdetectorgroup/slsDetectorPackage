@@ -1290,9 +1290,9 @@ void Detector::setInjectChannel(const int offsetChannel,
                     incrementChannel);
 }
 
-Result<std::vector<int>> Detector::getVetoPhoton(const int chipIndex,
-                                                 Positions pos) {
-    return pimpl->Parallel(&Module::getVetoPhoton, pos, chipIndex);
+void Detector::getVetoPhoton(const int chipIndex, const std::string &fname,
+                             Positions pos) {
+    pimpl->Parallel(&Module::getVetoPhoton, pos, chipIndex, fname);
 }
 
 void Detector::setVetoPhoton(const int chipIndex, const int numPhotons,

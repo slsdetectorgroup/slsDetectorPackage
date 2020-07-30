@@ -133,7 +133,8 @@ typedef struct udp_header_struct {
     uint16_t udp_destport;
 } udp_header;
 #define UDP_IP_HEADER_LENGTH_BYTES (28)
-#define PACKETS_PER_FRAME          (2)
+#define PACKETS_PER_FRAME_10G      (2)
+#define PACKETS_PER_FRAME_1G       (20)
 
 /** Signal Definitions */
 #define SIGNAL_TBLoad_1    (0)

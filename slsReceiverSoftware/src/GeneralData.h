@@ -462,6 +462,7 @@ class Mythen3Data : public GeneralData {
      */
     void SetDynamicRange(int dr, bool tgEnable) {
         imageSize = nPixelsX * nPixelsY * ((double)dr / 8.00);
+        packetsPerFrame = tgEnable ? 2 : 20;
         dataSize = imageSize / packetsPerFrame;
         packetSize = headerSizeinPacket + dataSize;
         LOG(logINFO) << "PacketSize: " << packetSize;

@@ -980,9 +980,9 @@ class Detector {
     void setInjectChannel(const int offsetChannel, const int incrementChannel,
                           Positions pos = {});
 
-    /** [Gotthard2] adu values for each channel */
-    Result<std::vector<int>> getVetoPhoton(const int chipIndex,
-                                           Positions pos = {});
+    /** [Gotthard2] gain indices and adu values for each channel */
+    void getVetoPhoton(const int chipIndex, const std::string &fname,
+                       Positions pos = {});
 
     /** [Gotthard2] energy in keV */
     void setVetoPhoton(const int chipIndex, const int numPhotons,
@@ -993,7 +993,7 @@ class Detector {
     void setVetoReference(const int gainIndex, const int value,
                           Positions pos = {});
 
-    /** [Gotthard2]  */
+    /** [Gotthard2] gain indices and adu values for each channel */
     void setVetoFile(const int chipIndex, const std::string &fname,
                      Positions pos = {});
 

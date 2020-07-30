@@ -1818,7 +1818,7 @@ int configureASICVetoReference(int chipIndex, int *gainIndices, int *values) {
                 ("Unknown gain index %d for channel %d\n", gainIndices[i], i));
             return FAIL;
         }
-        revValues[i] |= gainValue;
+        revValues[NCHAN - 1 - i] |= gainValue; // reversed list, so NCHAN - 1 - i
         LOG(logDEBUG2, ("Values[%d]: 0x%x\n", i, revValues[i]));
     }
 

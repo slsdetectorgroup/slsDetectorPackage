@@ -458,12 +458,11 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
             throw RuntimeError("Receiver " + std::to_string(moduleId) +
                                " returned error: " + std::string(mess));
         } else {
-            int nports = -1;
+            int nports = 0;
             client.Receive(&nports, sizeof(nports));
-            uint64_t mp[nports];
-            memset(mp, 0, sizeof(mp));
-            client.Receive(mp, sizeof(mp));
-            std::vector<uint64_t> retval(mp, mp + nports);
+            std::vector<uint64_t> retval(nports);
+            client.Receive(retval.data(),
+                           sizeof(decltype(retval[0])) * retval.size());
             LOG(logDEBUG1) << "Missing packets of Receiver" << moduleId << ": "
                            << sls::ToString(retval);
             return retval;
@@ -1679,27 +1678,23 @@ void Module::getBadChannels(const std::string &fname) const {
     }
     // receive badchannels
     int nch = -1;
-    std::vector<int> badchannels;
     client.Receive(&nch, sizeof(nch));
+    std::vector<int> badchannels(nch);
     if (nch > 0) {
-        int temp[nch];
-        memset(temp, 0, sizeof(temp));
-        client.Receive(temp, sizeof(temp));
-        badchannels.insert(badchannels.end(), &temp[0], &temp[nch]);
-        for (int i = 0; i < (int)badchannels.size(); ++i) {
+        client.Receive(badchannels.data(),
+                       sizeof(badchannels[0]) * badchannels.size());
+        for (size_t i = 0; i < badchannels.size(); ++i) {
             LOG(logDEBUG1) << i << ":" << badchannels[i];
         }
     }
 
     // save to file
-    std::ofstream outfile;
-    outfile.open(fname.c_str(), std::ios_base::out);
+    std::ofstream outfile(fname);
     if (!outfile.is_open()) {
         throw RuntimeError("Could not create file to save bad channels");
     }
-    for (int i = 0; i < nch; ++i) {
-        outfile << badchannels[i] << '\n';
-    }
+    for (auto ch : badchannels)
+        outfile << ch << '\n';
     LOG(logDEBUG1) << nch << " bad channels saved to file";
 }
 
@@ -1712,10 +1707,9 @@ void Module::setBadChannels(const std::string &fname) {
     }
     std::vector<int> badchannels;
     for (std::string line; std::getline(input_file, line);) {
-        if (line.find(' ') != std::string::npos) {
-            line.erase(line.find(' '));
-        }
-        if (line.length() >= 1) {
+        line.erase(std::remove_if(begin(line), end(line), isspace),
+                   end(line)); // remove space
+        if (!line.empty()) {
             std::istringstream iss(line);
             int ival = 0;
             iss >> ival;
@@ -2139,30 +2133,31 @@ void Module::startPattern() { sendToDetector(F_START_PATTERN); }
 // Moench
 
 std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
+    //TODO, refactor this function with a more robust sending. 
+    // Now assuming whitespace separated key value
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters "
                            "(zmq json header)");
     }
-    int fnum = F_GET_ADDITIONAL_JSON_HEADER;
-    int ret = FAIL;
-    int size = 0;
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Receive(&ret, sizeof(ret));
+    client.Send(F_GET_ADDITIONAL_JSON_HEADER);
+    auto ret = client.Receive<int>();
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH]{};
         client.Receive(mess, MAX_STR_LENGTH);
         throw RuntimeError("Receiver " + std::to_string(moduleId) +
                            " returned error: " + std::string(mess));
     } else {
-        client.Receive(&size, sizeof(size));
+        auto size = client.Receive<int>();
+        std::string buff(size, '\0');
         std::map<std::string, std::string> retval;
         if (size > 0) {
-            char retvals[size * 2][SHORT_STR_LENGTH];
-            memset(retvals, 0, sizeof(retvals));
-            client.Receive(retvals, sizeof(retvals));
-            for (int i = 0; i < size; ++i) {
-                retval[retvals[2 * i]] = retvals[2 * i + 1];
+            client.Receive(&buff[0], buff.size());
+            std::istringstream iss(buff);
+            std::string key, value;
+            while(iss >> key){
+                iss >> value;
+                retval[key] = value;
             }
         }
         LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
@@ -2185,26 +2180,20 @@ void Module::setAdditionalJsonHeader(
                 "Key cannot be empty. Both can have max 20 characters");
         }
     }
-    const int size = jsonHeader.size();
-    int fnum = F_SET_ADDITIONAL_JSON_HEADER;
-    int ret = FAIL;
+    std::ostringstream oss;
+    for (auto& it : jsonHeader)
+        oss << it.first << ' ' << it.second << ' ';
+    auto buff = oss.str();
+    const auto size = static_cast<int>(buff.size());
     LOG(logDEBUG) << "Sending to receiver additional json header "
                   << ToString(jsonHeader);
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Send(&size, sizeof(size));
-    if (size > 0) {
-        char args[size * 2][SHORT_STR_LENGTH];
-        memset(args, 0, sizeof(args));
-        int iarg = 0;
-        for (auto &it : jsonHeader) {
-            sls::strcpy_safe(args[iarg], it.first.c_str());
-            sls::strcpy_safe(args[iarg + 1], it.second.c_str());
-            iarg += 2;
-        }
-        client.Send(args, sizeof(args));
-    }
-    client.Receive(&ret, sizeof(ret));
+    client.Send(F_SET_ADDITIONAL_JSON_HEADER);
+    client.Send(size);
+    if (size > 0)
+        client.Send(&buff[0], buff.size());
+
+    auto ret = client.Receive<int>();
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH]{};
         client.Receive(mess, MAX_STR_LENGTH);

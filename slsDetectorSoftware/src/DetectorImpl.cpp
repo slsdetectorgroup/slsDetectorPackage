@@ -434,7 +434,8 @@ void DetectorImpl::readFrameFromReceiver() {
         numInterfaces = Parallel(&Module::getNumberofUDPInterfacesFromShm, {})
                             .squash(); // cannot pick up from zmq
     }
-    bool runningList[zmqSocket.size()], connectList[zmqSocket.size()];
+    std::vector<bool> runningList(zmqSocket.size());
+    std::vector<bool> connectList(zmqSocket.size());
     int numRunning = 0;
     for (size_t i = 0; i < zmqSocket.size(); ++i) {
         if (zmqSocket[i]->Connect() == 0) {

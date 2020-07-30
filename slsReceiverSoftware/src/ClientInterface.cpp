@@ -901,14 +901,12 @@ int ClientInterface::get_frame_index(Interface &socket) {
 }
 
 int ClientInterface::get_missing_packets(Interface &socket) {
-    std::vector<uint64_t> m = impl()->getNumMissingPackets();
-    LOG(logDEBUG1) << "missing packets:" << sls::ToString(m);
-    int retvalsize = m.size();
-    uint64_t retval[retvalsize];
-    std::copy(std::begin(m), std::end(m), retval);
+    auto missing_packets = impl()->getNumMissingPackets();
+    LOG(logDEBUG1) << "missing packets:" << sls::ToString(missing_packets);
+    auto size = static_cast<int>(missing_packets.size());
     socket.Send(OK);
-    socket.Send(&retvalsize, sizeof(retvalsize));
-    socket.Send(retval, sizeof(retval));
+    socket.Send(size);
+    socket.Send(missing_packets.data(), sizeof(missing_packets[0])* missing_packets.size());
     return OK;
 }
 
@@ -1200,13 +1198,15 @@ int ClientInterface::restream_stop(Interface &socket) {
 
 int ClientInterface::set_additional_json_header(Interface &socket) {
     std::map<std::string, std::string> json;
-    int size = socket.Receive<int>();
+    auto size = socket.Receive<int>();
     if (size > 0) {
-        char args[size * 2][SHORT_STR_LENGTH];
-        memset(args, 0, sizeof(args));
-        socket.Receive(args, sizeof(args));
-        for (int i = 0; i < size; ++i) {
-            json[args[2 * i]] = args[2 * i + 1];
+        std::string buff(size, '\0');
+        socket.Receive(&buff[0], buff.size());
+        std::istringstream iss(buff);
+        std::string key, value;
+        while(iss >> key){
+            iss >> value;
+            json[key] = value;
         }
     }
     verifyIdle(socket);
@@ -1218,18 +1218,15 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
 int ClientInterface::get_additional_json_header(Interface &socket) {
     std::map<std::string, std::string> json = impl()->getAdditionalJsonHeader();
     LOG(logDEBUG1) << "additional json header:" << sls::ToString(json);
-    int size = json.size();
+    std::ostringstream oss;
+    for (auto & it : json){
+        oss << it.first << ' ' << it.second << ' ';
+    }
+    auto buff = oss.str();
+    auto size = static_cast<int>(buff.size());
     socket.sendResult(size);
     if (size > 0) {
-        char retvals[size * 2][SHORT_STR_LENGTH];
-        memset(retvals, 0, sizeof(retvals));
-        int iarg = 0;
-        for (auto &it : json) {
-            sls::strcpy_safe(retvals[iarg], it.first.c_str());
-            sls::strcpy_safe(retvals[iarg + 1], it.second.c_str());
-            iarg += 2;
-        }
-        socket.Send(retvals, sizeof(retvals));
+        socket.Send(&buff[0], buff.size());
     }
     return OK;
 }

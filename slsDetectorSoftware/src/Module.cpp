@@ -2170,27 +2170,20 @@ void Module::setAdditionalJsonHeader(
                 "Key cannot be empty. Both can have max 20 characters");
         }
     }
-    const int size = jsonHeader.size();
-    int fnum = F_SET_ADDITIONAL_JSON_HEADER;
-    int ret = FAIL;
+    std::ostringstream oss;
+    for (auto& it : jsonHeader)
+        oss << it.first << ' ' << it.second << ' ';
+    auto buff = oss.str();
+    const auto size = static_cast<int>(buff.size());
     LOG(logDEBUG) << "Sending to receiver additional json header "
                   << ToString(jsonHeader);
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Send(&size, sizeof(size));
-    if (size > 0) {
-        char args[size * 2][SHORT_STR_LENGTH];
-        memset(args, 0, sizeof(args));
-        int iarg = 0;
-        for (auto &it : jsonHeader) {
-            sls::strcpy_safe(args[iarg], it.first.c_str());
-            sls::strcpy_safe(args[iarg + 1], it.second.c_str());
-            iarg += 2;
-        }
+    client.Send(F_SET_ADDITIONAL_JSON_HEADER);
+    client.Send(size);
+    if (size > 0)
+        client.Send(&buff[0], buff.size());
 
-        client.Send(args, sizeof(args));
-    }
-    client.Receive(&ret, sizeof(ret));
+    auto ret = client.Receive<int>();
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH]{};
         client.Receive(mess, MAX_STR_LENGTH);

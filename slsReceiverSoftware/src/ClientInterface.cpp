@@ -1200,13 +1200,15 @@ int ClientInterface::restream_stop(Interface &socket) {
 
 int ClientInterface::set_additional_json_header(Interface &socket) {
     std::map<std::string, std::string> json;
-    int size = socket.Receive<int>();
+    auto size = socket.Receive<int>();
     if (size > 0) {
-        char args[size * 2][SHORT_STR_LENGTH];
-        memset(args, 0, sizeof(args));
-        socket.Receive(args, sizeof(args));
-        for (int i = 0; i < size; ++i) {
-            json[args[2 * i]] = args[2 * i + 1];
+        std::string buff(size, '\0');
+        socket.Receive(&buff[0], buff.size());
+        std::istringstream iss(buff);
+        std::string key, value;
+        while(iss >> key){
+            iss >> value;
+            json[key] = value;
         }
     }
     verifyIdle(socket);

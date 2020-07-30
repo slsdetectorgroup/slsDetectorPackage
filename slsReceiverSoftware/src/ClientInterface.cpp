@@ -1218,18 +1218,15 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
 int ClientInterface::get_additional_json_header(Interface &socket) {
     std::map<std::string, std::string> json = impl()->getAdditionalJsonHeader();
     LOG(logDEBUG1) << "additional json header:" << sls::ToString(json);
-    int size = json.size();
+    std::ostringstream oss;
+    for (auto & it : json){
+        oss << it.first << ' ' << it.second << ' ';
+    }
+    auto buff = oss.str();
+    auto size = static_cast<int>(buff.size());
     socket.sendResult(size);
     if (size > 0) {
-        char retvals[size * 2][SHORT_STR_LENGTH];
-        memset(retvals, 0, sizeof(retvals));
-        int iarg = 0;
-        for (auto &it : json) {
-            sls::strcpy_safe(retvals[iarg], it.first.c_str());
-            sls::strcpy_safe(retvals[iarg + 1], it.second.c_str());
-            iarg += 2;
-        }
-        socket.Send(retvals, sizeof(retvals));
+        socket.Send(&buff[0], buff.size());
     }
     return OK;
 }

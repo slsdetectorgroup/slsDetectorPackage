@@ -187,7 +187,7 @@ void Module::setAllTrimbits(int val) {
     sendToDetector<int>(F_SET_ALL_TRIMBITS, val);
 }
 
-int64_t Module::getNumberOfFrames() const{
+int64_t Module::getNumberOfFrames() const {
     return sendToDetector<int64_t>(F_GET_NUM_FRAMES);
 }
 
@@ -198,7 +198,7 @@ void Module::setNumberOfFrames(int64_t value) {
     }
 }
 
-int64_t Module::getNumberOfTriggers() const{
+int64_t Module::getNumberOfTriggers() const {
     return sendToDetector<int64_t>(F_GET_NUM_TRIGGERS);
 }
 
@@ -209,7 +209,7 @@ void Module::setNumberOfTriggers(int64_t value) {
     }
 }
 
-int64_t Module::getExptime(int gateIndex) const{
+int64_t Module::getExptime(int gateIndex) const {
     return sendToDetector<int64_t>(F_GET_EXPTIME, gateIndex);
 }
 
@@ -228,7 +228,9 @@ void Module::setExptime(int gateIndex, int64_t value) {
     }
 }
 
-int64_t Module::getPeriod() const { return sendToDetector<int64_t>(F_GET_PERIOD); }
+int64_t Module::getPeriod() const {
+    return sendToDetector<int64_t>(F_GET_PERIOD);
+}
 
 void Module::setPeriod(int64_t value) {
     sendToDetector(F_SET_PERIOD, value, nullptr);
@@ -321,7 +323,7 @@ void Module::setClockPhase(int clkIndex, int value, bool inDegrees) {
     sendToDetector(F_SET_CLOCK_PHASE, args, nullptr);
 }
 
-int Module::getMaxClockPhaseShift(int clkIndex) const{
+int Module::getMaxClockPhaseShift(int clkIndex) const {
     return sendToDetector<int>(F_GET_MAX_CLOCK_PHASE_SHIFT, clkIndex);
 }
 
@@ -459,7 +461,8 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
             int nports = 0;
             client.Receive(&nports, sizeof(nports));
             std::vector<uint64_t> retval(nports);
-            client.Receive(retval.data(), sizeof(decltype(retval[0])) * retval.size() );
+            client.Receive(retval.data(),
+                           sizeof(decltype(retval[0])) * retval.size());
             LOG(logDEBUG1) << "Missing packets of Receiver" << moduleId << ": "
                            << sls::ToString(retval);
             return retval;
@@ -496,11 +499,11 @@ std::string Module::getScanErrorMessage() const {
 
 // Network Configuration (Detector<->Receiver)
 
-int Module::getNumberofUDPInterfacesFromShm() const{
+int Module::getNumberofUDPInterfacesFromShm() const {
     return shm()->numUDPInterfaces;
 }
 
-int Module::getNumberofUDPInterfaces() const{
+int Module::getNumberofUDPInterfaces() const {
     shm()->numUDPInterfaces = sendToDetector<int>(F_GET_NUM_INTERFACES);
     return shm()->numUDPInterfaces;
 }
@@ -532,7 +535,7 @@ void Module::setSourceUDPIP(const IpAddr ip) {
     sendToDetector(F_SET_SOURCE_UDP_IP, ip, nullptr);
 }
 
-sls::IpAddr Module::getSourceUDPIP2() const{
+sls::IpAddr Module::getSourceUDPIP2() const {
     return sendToDetector<sls::IpAddr>(F_GET_SOURCE_UDP_IP2);
 }
 
@@ -636,7 +639,7 @@ void Module::setDestinationUDPPort(const int port) {
     }
 }
 
-int Module::getDestinationUDPPort2() const{
+int Module::getDestinationUDPPort2() const {
     return sendToDetector<int>(F_GET_DEST_UDP_PORT2);
 }
 
@@ -829,7 +832,8 @@ void Module::setReceiverSilentMode(bool enable) {
                    nullptr);
 }
 
-slsDetectorDefs::frameDiscardPolicy Module::getReceiverFramesDiscardPolicy() const {
+slsDetectorDefs::frameDiscardPolicy
+Module::getReceiverFramesDiscardPolicy() const {
     return static_cast<frameDiscardPolicy>(
         sendToReceiver<int>(F_GET_RECEIVER_DISCARD_POLICY));
 }
@@ -878,7 +882,7 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Module::getReceiverThreadIds() const {
 
 // File
 
-slsDetectorDefs::fileFormat Module::getFileFormat() const{
+slsDetectorDefs::fileFormat Module::getFileFormat() const {
     return static_cast<fileFormat>(
         sendToReceiver<int>(F_GET_RECEIVER_FILE_FORMAT));
 }
@@ -1101,7 +1105,9 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
     }
 }
 
-std::string Module::getSettingsDir() const { return std::string(shm()->settingsDir); }
+std::string Module::getSettingsDir() const {
+    return std::string(shm()->settingsDir);
+}
 
 std::string Module::setSettingsDir(const std::string &dir) {
     sls::strcpy_safe(shm()->settingsDir, dir.c_str());
@@ -1171,7 +1177,9 @@ void Module::setRateCorrection(int64_t t) {
     sendToDetector(F_SET_RATE_CORRECT, t, nullptr);
 }
 
-int Module::getReadNLines() const { return sendToDetector<int>(F_GET_READ_N_LINES); }
+int Module::getReadNLines() const {
+    return sendToDetector<int>(F_GET_READ_N_LINES);
+}
 
 void Module::setReadNLines(const int value) {
     sendToDetector(F_SET_READ_N_LINES, value, nullptr);
@@ -1229,7 +1237,8 @@ void Module::setDeactivatedRxrPaddingMode(bool padding) {
 }
 
 bool Module::getCounterBit() const {
-    return (!static_cast<bool>(sendToDetector<int>(F_SET_COUNTER_BIT, GET_FLAG)));
+    return (
+        !static_cast<bool>(sendToDetector<int>(F_SET_COUNTER_BIT, GET_FLAG)));
 }
 
 void Module::setCounterBit(bool cb) {
@@ -1292,8 +1301,9 @@ void Module::resetTemperatureEvent() {
     sendToDetectorStop<int>(F_TEMP_EVENT, 0);
 }
 
-bool Module::getAutoComparatorDisableMode() const{
-    return static_cast<bool>(sendToDetector<int>(F_AUTO_COMP_DISABLE, GET_FLAG));
+bool Module::getAutoComparatorDisableMode() const {
+    return static_cast<bool>(
+        sendToDetector<int>(F_AUTO_COMP_DISABLE, GET_FLAG));
 }
 
 void Module::setAutoComparatorDisableMode(bool val) {
@@ -1394,7 +1404,7 @@ std::vector<int> Module::getVetoPhoton(const int chipIndex) const {
     int nch = -1;
     client.Receive(&nch, sizeof(nch));
     std::vector<int> adus(nch);
-    client.Receive(adus.data(), sizeof(adus[0])*adus.size());
+    client.Receive(adus.data(), sizeof(adus[0]) * adus.size());
     LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]: " << nch
                    << " channels\n";
     return adus;
@@ -1532,12 +1542,8 @@ void Module::setVetoFile(const int chipIndex, const std::string &fname) {
 
     int ch = shm()->nChan.x;
     int nRead = 0;
-    // int gainIndices[ch];
     std::vector<int> gainIndices(ch);
-    // memset(gainIndices, 0, sizeof(gainIndices));
-    // int values[ch];
-    std::vector<int>values(ch);
-    // memset(values, 0, sizeof(values));
+    std::vector<int> values(ch);
 
     for (std::string line; std::getline(input_file, line);) {
         if (line.find('#') != std::string::npos) {
@@ -1576,7 +1582,8 @@ void Module::setVetoFile(const int chipIndex, const std::string &fname) {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(&fnum, sizeof(fnum));
     client.Send(args, sizeof(args));
-    client.Send(gainIndices.data(), sizeof(gainIndices[0])*gainIndices.size());
+    client.Send(gainIndices.data(),
+                sizeof(gainIndices[0]) * gainIndices.size());
     client.Send(values.data(), sizeof(values[0]) * values.size());
     client.Receive(&ret, sizeof(ret));
     if (ret == FAIL) {
@@ -1587,7 +1594,7 @@ void Module::setVetoFile(const int chipIndex, const std::string &fname) {
     }
 }
 
-slsDetectorDefs::burstMode Module::getBurstMode() const{
+slsDetectorDefs::burstMode Module::getBurstMode() const {
     auto r = sendToDetector<int>(F_GET_BURST_MODE);
     return static_cast<slsDetectorDefs::burstMode>(r);
 }
@@ -1661,27 +1668,23 @@ void Module::getBadChannels(const std::string &fname) const {
     }
     // receive badchannels
     int nch = -1;
-    std::vector<int> badchannels;
     client.Receive(&nch, sizeof(nch));
+    std::vector<int> badchannels(nch);
     if (nch > 0) {
-        int temp[nch];
-        memset(temp, 0, sizeof(temp));
-        client.Receive(temp, sizeof(temp));
-        badchannels.insert(badchannels.end(), &temp[0], &temp[nch]);
-        for (int i = 0; i < (int)badchannels.size(); ++i) {
+        client.Receive(badchannels.data(),
+                       sizeof(badchannels[0]) * badchannels.size());
+        for (size_t i = 0; i < badchannels.size(); ++i) {
             LOG(logDEBUG1) << i << ":" << badchannels[i];
         }
     }
 
     // save to file
-    std::ofstream outfile;
-    outfile.open(fname.c_str(), std::ios_base::out);
+    std::ofstream outfile(fname);
     if (!outfile.is_open()) {
         throw RuntimeError("Could not create file to save pattern");
     }
-    for (int i = 0; i < nch; ++i) {
-        outfile << badchannels[i] << '\n';
-    }
+    for (auto ch : badchannels)
+        outfile << ch << '\n';
     LOG(logDEBUG1) << nch << " bad channels saved to file";
 }
 
@@ -1694,10 +1697,9 @@ void Module::setBadChannels(const std::string &fname) {
     }
     std::vector<int> badchannels;
     for (std::string line; std::getline(input_file, line);) {
-        if (line.find(' ') != std::string::npos) {
-            line.erase(line.find(' '));
-        }
-        if (line.length() >= 1) {
+        line.erase(std::remove_if(begin(line), end(line), isspace),
+                   end(line)); // remove space
+        if (!line.empty()) {
             std::istringstream iss(line);
             int ival = 0;
             iss >> ival;
@@ -1746,7 +1748,9 @@ void Module::setCounterMask(uint32_t countermask) {
     }
 }
 
-int Module::getNumberOfGates() const { return sendToDetector<int>(F_GET_NUM_GATES); }
+int Module::getNumberOfGates() const {
+    return sendToDetector<int>(F_GET_NUM_GATES);
+}
 
 void Module::setNumberOfGates(int value) {
     sendToDetector(F_SET_NUM_GATES, value, nullptr);
@@ -1881,7 +1885,7 @@ int Module::setExternalSamplingSource(int value) {
     return sendToDetector<int>(F_EXTERNAL_SAMPLING_SOURCE, value);
 }
 
-bool Module::getExternalSampling() const{
+bool Module::getExternalSampling() const {
     return sendToDetector<int>(F_EXTERNAL_SAMPLING, GET_FLAG);
 }
 
@@ -2119,30 +2123,31 @@ void Module::startPattern() { sendToDetector(F_START_PATTERN); }
 // Moench
 
 std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
+    //TODO, refactor this function with a more robust sending. 
+    // Now assuming whitespace separated key value
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters "
                            "(zmq json header)");
     }
-    int fnum = F_GET_ADDITIONAL_JSON_HEADER;
-    int ret = FAIL;
-    int size = 0;
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Receive(&ret, sizeof(ret));
+    client.Send(F_GET_ADDITIONAL_JSON_HEADER);
+    auto ret = client.Receive<int>();
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH]{};
         client.Receive(mess, MAX_STR_LENGTH);
         throw RuntimeError("Receiver " + std::to_string(moduleId) +
                            " returned error: " + std::string(mess));
     } else {
-        client.Receive(&size, sizeof(size));
+        auto size = client.Receive<int>();
+        std::string buff(size, '\0');
         std::map<std::string, std::string> retval;
         if (size > 0) {
-            char retvals[size * 2][SHORT_STR_LENGTH];
-            memset(retvals, 0, sizeof(retvals));
-            client.Receive(retvals, sizeof(retvals));
-            for (int i = 0; i < size; ++i) {
-                retval[retvals[2 * i]] = retvals[2 * i + 1];
+            client.Receive(&buff[0], buff.size());
+            std::istringstream iss(buff);
+            std::string key, value;
+            while(iss >> key){
+                iss >> value;
+                retval[key] = value;
             }
         }
         LOG(logDEBUG) << "Getting additional json header " << ToString(retval);
@@ -2182,6 +2187,7 @@ void Module::setAdditionalJsonHeader(
             sls::strcpy_safe(args[iarg + 1], it.second.c_str());
             iarg += 2;
         }
+
         client.Send(args, sizeof(args));
     }
     client.Receive(&ret, sizeof(ret));

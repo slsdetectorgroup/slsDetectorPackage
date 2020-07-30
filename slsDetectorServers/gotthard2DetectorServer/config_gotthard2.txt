@@ -25,5 +25,5 @@ vcom_adc2       704
 #configure adc  chip index      adc index   value(max 0x7F)
 confadc         -1              -1          0x22
 
-#vetoreference  gain index  value(max 0x3ff)
-vetoref         1           0x0
+#vetoreference  gain index  value(max 1023)
+vetoref         1           0

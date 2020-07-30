@@ -6455,7 +6455,7 @@ int set_veto_reference(int file_des) {
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
     LOG(logINFO,
-        ("Setting Veto Reference: [G%d, value:0x%x]\n", args[0], args[1]));
+        ("Setting Veto Reference: [G%d, value:%d]\n", args[0], args[1]));
 
 #ifndef GOTTHARD2D
     functionNotImplemented();
@@ -6473,7 +6473,7 @@ int set_veto_reference(int file_des) {
         } else if (value > ADU_MAX_VAL) {
             ret = FAIL;
             sprintf(mess,
-                    "Could not set veto reference. Invalid ADU value 0x%x, "
+                    "Could not set veto reference. Invalid ADU value %d, "
                     "must be 12 bit.\n",
                     value);
             LOG(logERROR, (mess));

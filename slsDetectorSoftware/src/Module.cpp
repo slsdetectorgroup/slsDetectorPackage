@@ -1392,8 +1392,8 @@ void Module::setInjectChannel(const int offsetChannel,
     sendToDetector(F_SET_INJECT_CHANNEL, args, nullptr);
 }
 
-void Module::sendVetoPhoton(const int chipIndex, std::vector<int> gainIndices,
-                            std::vector<int> values) {
+void Module::sendVetoPhoton(const int chipIndex, const std::vector<int>& gainIndices,
+                            const std::vector<int>& values) {
     const int nch = gainIndices.size();
     if (gainIndices.size() != values.size()) {
         throw RuntimeError("Number of Gain Indices and values do not match! "
@@ -1409,6 +1409,8 @@ void Module::sendVetoPhoton(const int chipIndex, std::vector<int> gainIndices,
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(&fnum, sizeof(fnum));
     client.Send(args, sizeof(args));
+    client.Send(gainIndices.data(), sizeof(decltype(gainIndices[0])) * nch);
+    client.Send(values.data(), sizeof(decltype(values[0])) * nch);
     client.Send(gainIndices.data(), sizeof(int) * nch);
     client.Send(values.data(), sizeof(int) * nch);
     client.Receive(&ret, sizeof(ret));

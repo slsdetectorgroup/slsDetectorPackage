@@ -7026,7 +7026,8 @@ int get_receiver_parameters(int file_des) {
         return printSocketReadError();
 
         // 10 gbe
-#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD)
+#if defined(EIGERD) || defined(CHIPTESTBOARDD) || defined(MOENCHD) ||          \
+    defined(MYTHEN3D)
     i32 = enableTenGigabitEthernet(GET_FLAG);
 #else
     i32 = 0;

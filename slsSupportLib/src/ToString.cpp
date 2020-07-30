@@ -492,7 +492,7 @@ std::string ToString(const defs::dacIndex s) {
     case defs::TRIMBIT_SCAN:
         return std::string("trimbit_scan");
     case defs::HIGH_VOLTAGE:
-        return std::string("vhighvoltage");
+        return std::string("highvoltage");
     case defs::IO_DELAY:
         return std::string("iodelay");
     default:
@@ -850,7 +850,7 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::IBIAS_SFP;
     if (s == "trimbit_scan")
         return defs::TRIMBIT_SCAN;
-    if (s == "vhighvoltage")
+    if (s == "highvoltage")
         return defs::HIGH_VOLTAGE;
     if (s == "iodelay")
         return defs::IO_DELAY;

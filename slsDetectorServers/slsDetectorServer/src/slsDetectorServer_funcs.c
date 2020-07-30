@@ -350,7 +350,6 @@ void function_table() {
     flist[F_SET_CDS_GAIN] = &set_cds_gain;
     flist[F_GET_FILTER] = &get_filter;
     flist[F_SET_FILTER] = &set_filter;
-    flist[F_SET_VETO_FILE] = &set_veto_file;
     flist[F_GET_ADC_CONFIGURATION] = &get_adc_config;
     flist[F_SET_ADC_CONFIGURATION] = &set_adc_config;
     flist[F_GET_BAD_CHANNELS] = &get_bad_channels;
@@ -6329,44 +6328,52 @@ int get_inject_channel(int file_des) {
 int set_veto_photon(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    int args[3] = {-1, -1, -1};
 
+    int args[2] = {-1, -1};
     if (receiveData(file_des, args, sizeof(args), INT32) < 0)
         return printSocketReadError();
-    int values[args[2]];
-    memset(values, 0, sizeof(values));
+    const int chipIndex = args[0];
+    const int numChannels = args[1];
+
+    int gainIndices[numChannels];
+    if (receiveData(file_des, gainIndices, sizeof(gainIndices), INT32) < 0)
+        return printSocketReadError();
+
+    int values[numChannels];
     if (receiveData(file_des, values, sizeof(values), INT32) < 0)
         return printSocketReadError();
-    LOG(logINFO, ("Setting Veto Photon: [chipIndex:%d, G%d, nch:%d]\n", args[0],
-                  args[1], args[2]));
+
+    LOG(logINFO, ("Setting Veto Photon: [chipIndex:%d, nch:%d]\n", chipIndex,
+                  numChannels));
 
 #ifndef GOTTHARD2D
     functionNotImplemented();
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-        int chipIndex = args[0];
-        int gainIndex = args[1];
-        int numChannels = args[2];
-        if (chipIndex < -1 || chipIndex >= NCHIP) {
-            ret = FAIL;
-            sprintf(mess, "Could not set veto photon. Invalid chip index %d\n",
-                    chipIndex);
-            LOG(logERROR, (mess));
-        } else if (gainIndex < 0 || gainIndex > 2) {
-            ret = FAIL;
-            sprintf(mess, "Could not set veto photon. Invalid gain index %d\n",
-                    gainIndex);
-            LOG(logERROR, (mess));
-        } else if (numChannels != NCHAN) {
+        if (numChannels != NCHAN) {
             ret = FAIL;
             sprintf(mess,
                     "Could not set veto photon. Invalid number of channels %d. "
                     "Expected %d\n",
                     numChannels, NCHAN);
             LOG(logERROR, (mess));
+        } else if (chipIndex < -1 || chipIndex >= NCHIP) {
+            ret = FAIL;
+            sprintf(mess, "Could not set veto photon. Invalid chip index %d\n",
+                    chipIndex);
+            LOG(logERROR, (mess));
         } else {
             for (int i = 0; i < NCHAN; ++i) {
+                if (gainIndices[i] < 0 || gainIndices[i] > 2) {
+                    ret = FAIL;
+                    sprintf(mess,
+                            "Could not set veto photon. Invalid gain index %d "
+                            "for channel %d.\n",
+                            gainIndices[i], i);
+                    LOG(logERROR, (mess));
+                    break;
+                }
                 if (values[i] > ADU_MAX_VAL) {
                     ret = FAIL;
                     sprintf(mess,
@@ -6378,7 +6385,7 @@ int set_veto_photon(int file_des) {
                 }
             }
             if (ret == OK) {
-                ret = setVetoPhoton(chipIndex, gainIndex, values);
+                ret = setVetoPhoton(chipIndex, gainIndices, values);
                 if (ret == FAIL) {
                     sprintf(mess,
                             "Could not set veto photon for chip index %d\n",
@@ -6398,6 +6405,8 @@ int get_veto_photon(int file_des) {
     int arg = -1;
     int retvals[NCHAN];
     memset(retvals, 0, sizeof(retvals));
+    int gainRetvals[NCHAN];
+    memset(gainRetvals, 0, sizeof(gainRetvals));
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
@@ -6414,14 +6423,16 @@ int get_veto_photon(int file_des) {
                 chipIndex);
         LOG(logERROR, (mess));
     } else {
-        ret = getVetoPhoton(chipIndex, retvals);
+        ret = getVetoPhoton(chipIndex, retvals, gainRetvals);
         if (ret == FAIL) {
-            strcpy(mess, "Could not get veto photon for chipIndex -1. Not the "
-                         "same for all chips.\n");
+            strcpy(mess,
+                   "Could not get veto photon for chipIndex -1. Not the "
+                   "same for all chips. Select specific chip index instead.\n");
             LOG(logERROR, (mess));
         } else {
             for (int i = 0; i < NCHAN; ++i) {
-                LOG(logDEBUG1, ("%d:0x%x\n", i, retvals[i]));
+                LOG(logDEBUG1,
+                    ("%d:[%d, %d]\n", i, retvals[i], gainRetvals[i]));
             }
         }
     }
@@ -6430,6 +6441,7 @@ int get_veto_photon(int file_des) {
     if (ret != FAIL) {
         int nch = NCHAN;
         sendData(file_des, &nch, sizeof(nch), INT32);
+        sendData(file_des, gainRetvals, sizeof(gainRetvals), INT32);
         sendData(file_des, retvals, sizeof(retvals), INT32);
     }
     return ret;
@@ -7757,78 +7769,6 @@ int set_filter(int file_des) {
             int retval = getFilter();
             LOG(logDEBUG1, ("filter retval: %u\n", retval));
             validate(arg, retval, "set filter", DEC);
-        }
-    }
-#endif
-    return Server_SendResult(file_des, INT32, NULL, 0);
-}
-
-int set_veto_file(int file_des) {
-    ret = OK;
-    memset(mess, 0, sizeof(mess));
-    int args[2] = {-1, -1};
-
-    if (receiveData(file_des, args, sizeof(args), INT32) < 0)
-        return printSocketReadError();
-    int chipIndex = args[0];
-    int nch = args[1];
-    int gainIndices[nch];
-    memset(gainIndices, 0, sizeof(gainIndices));
-    int values[nch];
-    memset(values, 0, sizeof(values));
-    if (receiveData(file_des, gainIndices, sizeof(gainIndices), INT32) < 0)
-        return printSocketReadError();
-    if (receiveData(file_des, values, sizeof(values), INT32) < 0)
-        return printSocketReadError();
-    LOG(logINFO,
-        ("Setting Veto file: [chipIndex:%d, nch:%d]\n", chipIndex, nch));
-
-#ifndef GOTTHARD2D
-    functionNotImplemented();
-#else
-    // only set
-    if (Server_VerifyLock() == OK) {
-        if (chipIndex < -1 || chipIndex >= NCHIP) {
-            ret = FAIL;
-            sprintf(mess, "Could not set veto file. Invalid chip index %d\n",
-                    chipIndex);
-            LOG(logERROR, (mess));
-        } else if (nch != NCHAN) {
-            ret = FAIL;
-            sprintf(mess,
-                    "Could not set veto file. Invalid number of channels %d. "
-                    "Expected %d\n",
-                    nch, NCHAN);
-            LOG(logERROR, (mess));
-        } else {
-            for (int i = 0; i < NCHAN; ++i) {
-                if (values[i] < 0 || values[i] > ADU_MAX_VAL) {
-                    ret = FAIL;
-                    sprintf(mess,
-                            "Could not set veto file. Invalid ADU value 0x%x "
-                            "for channel %d, must be 12 bit.\n",
-                            values[i], i);
-                    LOG(logERROR, (mess));
-                    break;
-                }
-                if (gainIndices[i] < 0 || gainIndices[i] > 2) {
-                    ret = FAIL;
-                    sprintf(mess,
-                            "Could not set veto file. Invalid gain index %d "
-                            "for channel %d\n",
-                            gainIndices[i], i);
-                    LOG(logERROR, (mess));
-                    break;
-                }
-            }
-            if (ret == OK) {
-                ret = setVetoFile(chipIndex, gainIndices, values);
-                if (ret == FAIL) {
-                    sprintf(mess, "Could not set veto file for chip index %d\n",
-                            chipIndex);
-                    LOG(logERROR, (mess));
-                }
-            }
         }
     }
 #endif

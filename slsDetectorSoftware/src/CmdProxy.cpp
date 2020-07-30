@@ -1625,17 +1625,19 @@ std::string CmdProxy::VetoPhoton(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_chip] [#photons] [energy in keV] [reference "
+        os << "[ichip] [#photons] [energy in keV] [reference "
               "file]\n\t[Gotthard2] Set veto reference for 128 channels for "
-              "chip n_chip according to referenc file and #photons and energy "
-              "in keV."
+              "chip ichip according to reference file and #photons and energy "
+              "in keV.\n"
+           << "[ichip] [output file]\n\t Get gain indices and veto reference "
+              "for 128 channels for chip ichip, saved to file."
            << '\n';
     } else if (action == defs::GET_ACTION) {
-        if (args.size() != 1) {
-            WrongNumberOfParameters(1);
+        if (args.size() != 2) {
+            WrongNumberOfParameters(2);
         }
-        auto t = det->getVetoPhoton(StringTo<int>(args[0]), {det_id});
-        os << args[0] << ' ' << OutStringHex(t) << '\n';
+        det->getVetoPhoton(StringTo<int>(args[0]), args[1], {det_id});
+        os << "saved to file " << args[1] << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 4) {
             WrongNumberOfParameters(4);
@@ -1653,7 +1655,7 @@ std::string CmdProxy::VetoReference(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[gain index] [12 bit value in hex] \n\t[Gotthard2] Set veto "
+        os << "[gain index] [12 bit value] \n\t[Gotthard2] Set veto "
               "reference for all 128 channels for all chips."
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -1677,7 +1679,7 @@ std::string CmdProxy::VetoFile(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[chip index 0-10, -1 for all] [file name] \n\t[Gotthard2] Set "
               "veto reference for each 128 channels for specific chip. The "
-              "file should have 128 rows of gain index and 12 bit value in hex"
+              "file should have 128 rows of gain index and 12 bit value in dec"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError(

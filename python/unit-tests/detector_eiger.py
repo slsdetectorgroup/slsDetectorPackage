@@ -164,18 +164,18 @@ def test_cannot_set_fw_version(d):
 def test_get_high_voltage_call_signature(d, mocker):
     m = mocker.patch('_slsdet.DetectorApi.getDac')
     d.high_voltage
-    m.assert_called_once_with('vhighvoltage', -1)
+    m.assert_called_once_with('highvoltage', -1)
 
 def test_get_high_voltage(d, mocker):
     m = mocker.patch('_slsdet.DetectorApi.getDac')
     m.return_value = 80
     assert d.high_voltage == 80
 
-#self._api.setDac('vhighvoltage', -1, voltage)
+#self._api.setDac('highvoltage', -1, voltage)
 def test_set_high_voltage(d, mocker):
     m = mocker.patch('_slsdet.DetectorApi.setDac')
     d.high_voltage = 80
-    m.assert_called_once_with('vhighvoltage', -1, 80)
+    m.assert_called_once_with('highvoltage', -1, 80)
 
 def test_decode_hostname_two_names(d, mocker):
     m = mocker.patch('_slsdet.DetectorApi.getHostname')

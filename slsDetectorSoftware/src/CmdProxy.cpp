@@ -1559,9 +1559,7 @@ std::string CmdProxy::ROI(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        defs::ROI t;
-        t.xmin = StringTo<int>(args[0]);
-        t.xmax = StringTo<int>(args[1]);
+        defs::ROI t(StringTo<int>(args[0]), StringTo<int>(args[1]));
         det->setROI(t, det_id);
         os << '[' << t.xmin << ", " << t.xmax << "]\n";
     } else {

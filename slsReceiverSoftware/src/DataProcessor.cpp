@@ -411,6 +411,7 @@ void DataProcessor::PadMissingPackets(char *buf) {
 
 /** ctb specific */
 void DataProcessor::RearrangeDbitData(char *buf) {
+    //TODO! (Erik) Refactor and add tests
     int totalSize = (int)(*((uint32_t *)buf));
     int ctbDigitalDataBytes =
         totalSize - (*ctbAnalogDataBytes) - (*ctbDbitOffset);
@@ -429,9 +430,8 @@ void DataProcessor::RearrangeDbitData(char *buf) {
     // ceil as numResult8Bits could be decimal
     const int numResult8Bits =
         ceil((double)(numSamples * (*ctbDbitList).size()) / 8.00);
-    uint8_t result[numResult8Bits];
-    memset(result, 0, numResult8Bits * sizeof(uint8_t));
-    uint8_t *dest = result;
+    std::vector<uint8_t> result(numResult8Bits);
+    uint8_t *dest = &result[0];
 
     auto *source = (uint64_t *)(buf + digOffset + (*ctbDbitOffset));
 
@@ -459,6 +459,6 @@ void DataProcessor::RearrangeDbitData(char *buf) {
     }
 
     // copy back to buf and update size
-    memcpy(buf + digOffset, result, numResult8Bits * sizeof(uint8_t));
+    memcpy(buf + digOffset, result.data(), numResult8Bits * sizeof(uint8_t));
     (*((uint32_t *)buf)) = numResult8Bits * sizeof(uint8_t);
 }

@@ -51,9 +51,12 @@ class BinaryFile : private virtual slsDetectorDefs, public File {
   private:
     int WriteData(char *buf, int bsize);
 
-    FILE *filefd;
+    FILE *filefd = nullptr;
     static FILE *masterfd;
-    uint32_t numFramesInFile;
-    uint64_t numActualPacketsInFile;
-    const size_t maxMasterFileSize;
+    uint32_t numFramesInFile = 0;
+    uint64_t numActualPacketsInFile = 0;
+    //Make sure this is known at compile time
+    //TODO! Later away from stack allocation of message
+    static constexpr size_t maxMasterFileSize = 2000; 
+    
 };

@@ -456,12 +456,10 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
             throw RuntimeError("Receiver " + std::to_string(moduleId) +
                                " returned error: " + std::string(mess));
         } else {
-            int nports = -1;
+            int nports = 0;
             client.Receive(&nports, sizeof(nports));
-            uint64_t mp[nports];
-            memset(mp, 0, sizeof(mp));
-            client.Receive(mp, sizeof(mp));
-            std::vector<uint64_t> retval(mp, mp + nports);
+            std::vector<uint64_t> retval(nports);
+            client.Receive(retval.data(), sizeof(decltype(retval[0])) * retval.size() );
             LOG(logDEBUG1) << "Missing packets of Receiver" << moduleId << ": "
                            << sls::ToString(retval);
             return retval;
@@ -1395,14 +1393,11 @@ std::vector<int> Module::getVetoPhoton(const int chipIndex) const {
     }
     int nch = -1;
     client.Receive(&nch, sizeof(nch));
-
-    int adus[nch];
-    memset(adus, 0, sizeof(adus));
-    client.Receive(adus, sizeof(adus));
-    std::vector<int> retvals(adus, adus + nch);
+    std::vector<int> adus(nch);
+    client.Receive(adus.data(), sizeof(adus[0])*adus.size());
     LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]: " << nch
                    << " channels\n";
-    return retvals;
+    return adus;
 }
 
 void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
@@ -1434,8 +1429,7 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
     int ch = shm()->nChan.x;
     int gainIndex = 2;
     int nRead = 0;
-    int value[ch];
-    memset(value, 0, sizeof(value));
+    std::vector<int> value(ch);
     bool firstLine = true;
 
     while (infile.good()) {
@@ -1499,7 +1493,7 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(&fnum, sizeof(fnum));
     client.Send(args, sizeof(args));
-    client.Send(value, sizeof(value));
+    client.Send(value.data(), sizeof(value[0]) * value.size());
     client.Receive(&ret, sizeof(ret));
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH]{};
@@ -1538,10 +1532,12 @@ void Module::setVetoFile(const int chipIndex, const std::string &fname) {
 
     int ch = shm()->nChan.x;
     int nRead = 0;
-    int gainIndices[ch];
-    memset(gainIndices, 0, sizeof(gainIndices));
-    int values[ch];
-    memset(values, 0, sizeof(values));
+    // int gainIndices[ch];
+    std::vector<int> gainIndices(ch);
+    // memset(gainIndices, 0, sizeof(gainIndices));
+    // int values[ch];
+    std::vector<int>values(ch);
+    // memset(values, 0, sizeof(values));
 
     for (std::string line; std::getline(input_file, line);) {
         if (line.find('#') != std::string::npos) {
@@ -1580,8 +1576,8 @@ void Module::setVetoFile(const int chipIndex, const std::string &fname) {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(&fnum, sizeof(fnum));
     client.Send(args, sizeof(args));
-    client.Send(gainIndices, sizeof(gainIndices));
-    client.Send(values, sizeof(values));
+    client.Send(gainIndices.data(), sizeof(gainIndices[0])*gainIndices.size());
+    client.Send(values.data(), sizeof(values[0]) * values.size());
     client.Receive(&ret, sizeof(ret));
     if (ret == FAIL) {
         char mess[MAX_STR_LENGTH]{};

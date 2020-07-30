@@ -3,6 +3,16 @@
 
 namespace sls {
 
+std::string ToString(const slsDetectorDefs::xy &coord) {
+    std::ostringstream oss;
+    oss << '[' << coord.x << ", " << coord.y << ']';
+    return oss.str();
+}
+
+std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::xy &coord) {
+    return os << ToString(coord);
+}
+
 std::string ToString(const slsDetectorDefs::ROI &roi) {
     std::ostringstream oss;
     oss << '[' << roi.xmin << ", " << roi.xmax << ']';

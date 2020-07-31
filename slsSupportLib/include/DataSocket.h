@@ -1,10 +1,12 @@
 #pragma once
 
+#include "TypeTraits.h"
 #include <cstddef>
 #include <cstdint>
 #include <netdb.h>
 #include <numeric>
 #include <string>
+#include <vector>
 namespace sls {
 
 /* Base class for TCP socket, this is used to send data between detector, client
@@ -24,9 +26,21 @@ class DataSocket {
     int getSocketId() const { return sockfd_; }
 
     int Send(const void *buffer, size_t size);
-    template <typename T> int Send(T &&data) {
+
+    // Send everything that is not a vector by using address and sizeof
+    // TODO! We probably should restrict this even more to avoid bugs when
+    // we send object instead of data
+    template <typename T>
+    typename std::enable_if<
+        !is_vector<typename std::remove_reference<T>::type>::value, int>::type
+    Send(T &&data) {
         return Send(&data, sizeof(data));
     }
+
+    template <typename T> int Send(const std::vector<T> &vec) {
+        return Send(vec.data(), sizeof(T) * vec.size());
+    }
+
     // Variadic template to send all arguments
     template <class... Args> int SendAll(Args &&... args) {
         auto l = std::initializer_list<int>{Send(args)...};

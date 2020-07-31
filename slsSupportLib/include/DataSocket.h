@@ -48,6 +48,7 @@ class DataSocket {
         return sum;
     }
     int Receive(void *buffer, size_t size);
+    
     template <typename T> int Receive(T &arg) {
         return Receive(&arg, sizeof(arg));
     }

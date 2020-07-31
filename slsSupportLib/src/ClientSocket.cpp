@@ -101,4 +101,10 @@ void ClientSocket::readReply(int &ret, void *retval, size_t retval_size) {
     }
 }
 
+std::string ClientSocket::readErrorMessage(){
+    std::string error_msg(MAX_STR_LENGTH, '\0');
+    Receive(&error_msg[0], error_msg.size());
+    return error_msg;
+}
+
 }; // namespace sls

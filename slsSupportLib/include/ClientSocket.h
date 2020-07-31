@@ -15,6 +15,7 @@ class ClientSocket : public DataSocket {
     int sendCommandThenRead(int fnum, const void *args, size_t args_size,
                             void *retval, size_t retval_size);
 
+    std::string readErrorMessage();
   private:
     void readReply(int &ret, void *retval, size_t retval_size);
     struct sockaddr_in serverAddr {};

@@ -1380,8 +1380,9 @@ void Module::setInjectChannel(const int offsetChannel,
     sendToDetector(F_SET_INJECT_CHANNEL, args, nullptr);
 }
 
-void Module::sendVetoPhoton(const int chipIndex, const std::vector<int>& gainIndices,
-                            const std::vector<int>& values) {
+void Module::sendVetoPhoton(const int chipIndex,
+                            const std::vector<int> &gainIndices,
+                            const std::vector<int> &values) {
     const int nch = gainIndices.size();
     if (gainIndices.size() != values.size()) {
         throw RuntimeError("Number of Gain Indices and values do not match! "
@@ -1399,10 +1400,8 @@ void Module::sendVetoPhoton(const int chipIndex, const std::vector<int>& gainInd
     client.Send(gainIndices);
     client.Send(values);
     if (client.Receive<int>() == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
         throw RuntimeError("Detector " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
+                           " returned error: " + client.readErrorMessage());
     }
 }
 
@@ -1413,10 +1412,8 @@ void Module::getVetoPhoton(const int chipIndex,
     client.Send(F_GET_VETO_PHOTON);
     client.Send(chipIndex);
     if (client.Receive<int>() == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
         throw RuntimeError("Detector " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
+                           " returned error: " + client.readErrorMessage());
     }
 
     auto nch = client.Receive<int>();
@@ -1647,10 +1644,8 @@ void Module::getBadChannels(const std::string &fname) const {
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_GET_BAD_CHANNELS);
     if (client.Receive<int>() == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
         throw RuntimeError("Detector " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
+                           " returned error: " + client.readErrorMessage());
     }
     // receive badchannels
     auto nch = client.Receive<int>();
@@ -1706,10 +1701,8 @@ void Module::setBadChannels(const std::string &fname) {
         client.Send(badchannels);
     }
     if (client.Receive<int>() == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
         throw RuntimeError("Detector " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
+                           " returned error: " + client.readErrorMessage());
     }
 }
 
@@ -2104,7 +2097,7 @@ void Module::startPattern() { sendToDetector(F_START_PATTERN); }
 // Moench
 
 std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
-    //TODO, refactor this function with a more robust sending. 
+    // TODO, refactor this function with a more robust sending.
     // Now assuming whitespace separated key value
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters "
@@ -2114,10 +2107,8 @@ std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
     client.Send(F_GET_ADDITIONAL_JSON_HEADER);
     auto ret = client.Receive<int>();
     if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
         throw RuntimeError("Receiver " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
+                           " returned error: " + client.readErrorMessage());
     } else {
         auto size = client.Receive<int>();
         std::string buff(size, '\0');
@@ -2126,7 +2117,7 @@ std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
             client.Receive(&buff[0], buff.size());
             std::istringstream iss(buff);
             std::string key, value;
-            while(iss >> key){
+            while (iss >> key) {
                 iss >> value;
                 retval[key] = value;
             }
@@ -2152,7 +2143,7 @@ void Module::setAdditionalJsonHeader(
         }
     }
     std::ostringstream oss;
-    for (auto& it : jsonHeader)
+    for (auto &it : jsonHeader)
         oss << it.first << ' ' << it.second << ' ';
     auto buff = oss.str();
     const auto size = static_cast<int>(buff.size());

@@ -462,7 +462,7 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
             client.Receive(&nports, sizeof(nports));
             std::vector<uint64_t> retval(nports);
             client.Receive(retval.data(),
-                           sizeof(decltype(retval[0])) * retval.size());
+                           sizeof(retval[0]) * retval.size());
             LOG(logDEBUG1) << "Missing packets of Receiver" << moduleId << ": "
                            << sls::ToString(retval);
             return retval;
@@ -1405,8 +1405,8 @@ void Module::sendVetoPhoton(const int chipIndex, const std::vector<int>& gainInd
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(&fnum, sizeof(fnum));
     client.Send(args, sizeof(args));
-    client.Send(gainIndices.data(), sizeof(decltype(gainIndices[0])) * nch);
-    client.Send(values.data(), sizeof(decltype(values[0])) * nch);
+    client.Send(gainIndices.data(), sizeof(gainIndices[0]) * nch);
+    client.Send(values.data(), sizeof(values[0]) * nch);
     client.Send(gainIndices.data(), sizeof(int) * nch);
     client.Send(values.data(), sizeof(int) * nch);
     client.Receive(&ret, sizeof(ret));

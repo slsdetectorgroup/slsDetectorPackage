@@ -7,6 +7,7 @@
 #include "ToString.h"
 #include "ZmqSocket.h" //just for the zmq port define
 #include "file_utils.h"
+#include "masterFileAttributes.h"
 
 #include <cerrno> //eperm
 #include <chrono>

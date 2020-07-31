@@ -508,11 +508,11 @@ class Detector(CppDetectorApi):
         self.setSourceUDPMAC2(MacAddr(mac))
 
     @property
-    def vhighvoltage(self):
+    def highvoltage(self):
         return element_if_equal(self.getHighVoltage())
 
-    @vhighvoltage.setter
-    def vhighvoltage(self, v):
+    @highvoltage.setter
+    def highvoltage(self, v):
         self.setHighVoltage(v)
 
     @property

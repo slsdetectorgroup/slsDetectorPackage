@@ -10,5 +10,5 @@ sls_detector_put exptime 0.000005
 sls_detector_put period 0.01
 
 
-sls_detector_put vhighvoltage 90
+sls_detector_put highvoltage 90
 

@@ -528,6 +528,7 @@ class CmdProxy {
         {"cycles", "triggers"},
         {"cyclesl", "triggersl"},
         {"clkdivider", "speed"},
+        {"vhighvoltage", "highvoltage"},
         {"digitest", "imagetest"},
 
         /** temperature */
@@ -654,7 +655,7 @@ class CmdProxy {
         {"clkphase", &CmdProxy::ClockPhase},
         {"maxclkphaseshift", &CmdProxy::MaxClockPhaseShift},
         {"clkdiv", &CmdProxy::ClockDivider},
-        {"vhighvoltage", &CmdProxy::vhighvoltage},
+        {"highvoltage", &CmdProxy::highvoltage},
         {"powerchip", &CmdProxy::powerchip},
         {"imagetest", &CmdProxy::imagetest},
         {"extsig", &CmdProxy::ExternalSignal},
@@ -1185,7 +1186,7 @@ class CmdProxy {
                 "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the "
                 "clock to latch digital bits.");
 
-    INTEGER_COMMAND(vhighvoltage, getHighVoltage, setHighVoltage, StringTo<int>,
+    INTEGER_COMMAND(highvoltage, getHighVoltage, setHighVoltage, StringTo<int>,
                     "[n_value]\n\tHigh voltage to the sensor in Voltage."
                     "\n\t[Gotthard] [0|90|110|120|150|180|200]"
                     "\n\t[Eiger][Mythen3][Gotthard2] 0-200"

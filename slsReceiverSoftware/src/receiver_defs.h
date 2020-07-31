@@ -39,10 +39,6 @@
 // hdf5
 #define MAX_CHUNKED_IMAGES (1)
 
-// versions
-#define HDF5_WRITER_VERSION   (6.0) // 1 decimal places
-#define BINARY_WRITER_VERSION (6.0) // 1 decimal places
-
 // parameters to calculate fifo depth
 #define SAMPLE_TIME_IN_NS          (100000000) // 100ms
 #define MAX_EIGER_ROWS_PER_READOUT (256)
@@ -57,6 +53,9 @@
 #define STREAMER_PRIORITY  (10)
 #define TCP_PRIORITY       (10)
 
+
+#define HDF5_WRITER_VERSION   (6.1) // 1 decimal places
+#define BINARY_WRITER_VERSION (6.1) // 1 decimal places
 struct masterAttributes {
     double version;
     uint32_t detectorType;

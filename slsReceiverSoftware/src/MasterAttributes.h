@@ -21,6 +21,7 @@ using ns = std::chrono::nanoseconds;
 class MasterAttributes {
   public:
     slsDetectorDefs::detectorType detType{slsDetectorDefs::GENERIC};
+    slsDetectorDefs::timingMode timingMode{slsDetectorDefs::AUTO_TIMING};
     uint32_t imageSize{0};
     slsDetectorDefs::xy nPixels{};
     uint32_t maxFramesPerFile{0};
@@ -61,6 +62,8 @@ class MasterAttributes {
             << BINARY_WRITER_VERSION << '\n'
             << "TimeStamp                  : " << ctime(&t) << '\n'
             << "Detector Type              : " << sls::ToString(detType) << '\n'
+            << "Timing Mode                : " << sls::ToString(timingMode)
+            << '\n'
             << "Image Size                 : " << imageSize << " bytes" << '\n'
             << "Pixels                     : " << sls::ToString(nPixels) << '\n'
             << "Max Frames Per File        : " << maxFramesPerFile << '\n'
@@ -124,6 +127,14 @@ class MasterAttributes {
             DataSet dataset =
                 group->createDataSet("detector type", strdatatype, dataspace);
             dataset.write(sls::ToString(detType), strdatatype);
+        }
+        // timing mode
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            DataSet dataset =
+                group->createDataSet("timing mode", strdatatype, dataspace);
+            dataset.write(sls::ToString(timingMode), strdatatype);
         }
         // Image Size
         {

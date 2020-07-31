@@ -30,6 +30,7 @@ class MasterAttributes {
     ns period{0};
     uint32_t dynamicRange{0};
     uint32_t tenGiga{0};
+    int threshold{0};
     ns subExptime{0};
     ns subPeriod{0};
     uint32_t quad{0};
@@ -303,6 +304,18 @@ class EigerMasterAttributes : public MasterAttributes {
         MasterAttributes::WriteHDF5TenGiga(fd, group);
         MasterAttributes::WriteHDF5Exptime(fd, group);
         MasterAttributes::WriteHDF5Period(fd, group);
+        // threshold
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "threshold", PredType::NATIVE_INT, dataspace);
+            dataset.write(&threshold, PredType::NATIVE_INT);
+            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            Attribute attribute =
+                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
+            attribute.write(strdatatype, std::string("eV"));
+        }
         // SubExptime
         {
             DataSpace dataspace = DataSpace(H5S_SCALAR);

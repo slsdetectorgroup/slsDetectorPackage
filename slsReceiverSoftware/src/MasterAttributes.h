@@ -34,6 +34,7 @@ class MasterAttributes {
     ns subExptime{0};
     ns subPeriod{0};
     uint32_t quad{0};
+    std::vector<int64_t> ratecorr;
     uint32_t adcmask{0};
     uint32_t analog{0};
     uint32_t digital{0};
@@ -292,7 +293,9 @@ class EigerMasterAttributes : public MasterAttributes {
             << '\n'
             << "SubPeriod                  : " << sls::ToString(subPeriod)
             << '\n'
-            << "Quad                       : " << quad << '\n';
+            << "Quad                       : " << quad << '\n'
+            << "Rate Corrections           : " << sls::ToString(ratecorr)
+            << '\n';
         std::string message = oss.str();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
@@ -338,6 +341,14 @@ class EigerMasterAttributes : public MasterAttributes {
             DataSet dataset =
                 group->createDataSet("quad", PredType::NATIVE_INT, dataspace);
             dataset.write(&quad, PredType::NATIVE_INT);
+        }
+        // Rate corrections
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            DataSet dataset = group->createDataSet("rate corrections",
+                                                   strdatatype, dataspace);
+            dataset.write(sls::ToString(ratecorr), strdatatype);
         }
     };
 #endif

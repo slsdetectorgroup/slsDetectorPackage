@@ -1469,6 +1469,7 @@ class Detector {
 
   private:
     std::vector<int> getPortNumbers(int start_port);
+    void updateRxRateCorrections();
 };
 
 } // namespace sls

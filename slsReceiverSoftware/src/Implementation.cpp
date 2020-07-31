@@ -47,6 +47,7 @@ void Implementation::DeleteMembers() {
     fifo.clear();
     eth.clear();
     udpPortNum.clear();
+    rateCorrections.clear();
     ctbDbitList.clear();
 }
 
@@ -946,6 +947,7 @@ void Implementation::SetupWriter() {
     masterAttributes->subExptime = std::chrono::nanoseconds(subExpTime);
     masterAttributes->subPeriod = std::chrono::nanoseconds(subPeriod);
     masterAttributes->quad = quadEnable;
+    masterAttributes->ratecorr = rateCorrections;
     masterAttributes->adcmask =
         tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
     masterAttributes->analog =
@@ -1796,6 +1798,11 @@ int Implementation::getReadNLines() const {
 void Implementation::setReadNLines(const int value) {
     numLinesReadout = value;
     LOG(logINFO) << "Number of Lines to readout: " << numLinesReadout;
+}
+
+void Implementation::setRateCorrections(const std::vector<int64_t> &t) {
+    rateCorrections = t;
+    LOG(logINFO) << "Rate Corrections: " << sls::ToString(rateCorrections);
 }
 
 slsDetectorDefs::readoutMode Implementation::getReadoutMode() const {

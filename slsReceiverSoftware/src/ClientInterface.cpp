@@ -201,6 +201,7 @@ int ClientInterface::functionTable(){
     flist[F_GET_RECEIVER_THREAD_IDS]        =   &ClientInterface::get_thread_ids;
     flist[F_GET_RECEIVER_STREAMING_START_FNUM] = &ClientInterface::get_streaming_start_fnum;
     flist[F_SET_RECEIVER_STREAMING_START_FNUM] = &ClientInterface::set_streaming_start_fnum;
+    flist[F_SET_RECEIVER_RATE_CORRECT]      =   &ClientInterface::set_rate_correct;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -906,7 +907,8 @@ int ClientInterface::get_missing_packets(Interface &socket) {
     auto size = static_cast<int>(missing_packets.size());
     socket.Send(OK);
     socket.Send(size);
-    socket.Send(missing_packets.data(), sizeof(missing_packets[0])* missing_packets.size());
+    socket.Send(missing_packets.data(),
+                sizeof(missing_packets[0]) * missing_packets.size());
     return OK;
 }
 
@@ -1204,7 +1206,7 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
         socket.Receive(&buff[0], buff.size());
         std::istringstream iss(buff);
         std::string key, value;
-        while(iss >> key){
+        while (iss >> key) {
             iss >> value;
             json[key] = value;
         }
@@ -1219,7 +1221,7 @@ int ClientInterface::get_additional_json_header(Interface &socket) {
     std::map<std::string, std::string> json = impl()->getAdditionalJsonHeader();
     LOG(logDEBUG1) << "additional json header:" << sls::ToString(json);
     std::ostringstream oss;
-    for (auto & it : json){
+    for (auto &it : json) {
         oss << it.first << ' ' << it.second << ' ';
     }
     auto buff = oss.str();
@@ -1733,5 +1735,20 @@ int ClientInterface::set_streaming_start_fnum(Interface &socket) {
 
     int retval = impl()->getStreamingStartingFrameNumber();
     validate(index, retval, "set streaming start fnum", DEC);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_rate_correct(Interface &socket) {
+    auto index = socket.Receive<int>();
+    if (index <= 0) {
+        throw RuntimeError("Invalid number of rate correction values: " +
+                           std::to_string(index));
+    }
+    LOG(logDEBUG) << "Number of detectors for rate correction: " << index;
+    std::vector<int64_t> t(index);
+    socket.Receive(t.data(), t.size() * sizeof(t[0]));
+    verifyIdle(socket);
+    LOG(logINFOBLUE) << "Setting rate corrections[" << index << ']';
+    impl()->setRateCorrections(t);
     return socket.Send(OK);
 }

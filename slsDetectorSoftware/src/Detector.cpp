@@ -771,6 +771,7 @@ Result<std::string> Detector::getRxHostname(Positions pos) const {
 
 void Detector::setRxHostname(const std::string &receiver, Positions pos) {
     pimpl->Parallel(&Module::setReceiverHostname, pos, receiver);
+    updateRxRateCorrections();
 }
 
 void Detector::setRxHostname(const std::vector<std::string> &name) {
@@ -788,6 +789,7 @@ void Detector::setRxHostname(const std::vector<std::string> &name) {
             pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet]);
         }
     }
+    updateRxRateCorrections();
 }
 
 Result<int> Detector::getRxPort(Positions pos) const {
@@ -1109,6 +1111,20 @@ void Detector::setDefaultRateCorrection(Positions pos) {
 
 void Detector::setRateCorrection(ns dead_time, Positions pos) {
     pimpl->Parallel(&Module::setRateCorrection, pos, dead_time.count());
+    updateRxRateCorrections();
+}
+
+void Detector::updateRxRateCorrections() {
+    // get tau from all modules and send to Rx index 0
+    if (getUseReceiverFlag().squash(false)) {
+        // convert Result<ns> to std::vector<in64_t>
+        auto retval = getRateCorrection();
+        std::vector<int64_t> t(retval.size());
+        for (int i = 0; i < (int)retval.size(); ++i) {
+            t[i] = retval[i].count();
+        }
+        pimpl->Parallel(&Module::sendReceiverRateCorrections, {0}, t);
+    }
 }
 
 Result<int> Detector::getPartialReadout(Positions pos) const {

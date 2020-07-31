@@ -1163,6 +1163,21 @@ void Module::setRateCorrection(int64_t t) {
     sendToDetector(F_SET_RATE_CORRECT, t, nullptr);
 }
 
+void Module::sendReceiverRateCorrections(const std::vector<int64_t> &t) {
+    LOG(logDEBUG) << "Sending to detector [rate corrections: " << ToString(t)
+                  << ']';
+    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    receiver.Send(F_SET_RECEIVER_RATE_CORRECT);
+    // TODO: use overload for vector
+    int size = t.size();
+    receiver.Send(size);
+    receiver.Send(t.data(), t.size() * sizeof(t[0]));
+    if (receiver.Receive<int>() == FAIL) {
+        throw RuntimeError("Receiver " + std::to_string(moduleId) +
+                           " returned error: " + receiver.readErrorMessage());
+    }
+}
+
 int Module::getReadNLines() const {
     return sendToDetector<int>(F_GET_READ_N_LINES);
 }

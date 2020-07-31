@@ -1462,7 +1462,7 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
                            std::to_string(energy));
     }
     std::ifstream infile(fname.c_str());
-    if (!infile.is_open()) {
+    if (!infile) {
         throw RuntimeError("Could not set veto photon. Could not open file: " +
                            fname);
     }
@@ -1533,17 +1533,12 @@ void Module::setVetoFile(const int chipIndex, const std::string &fname) {
         throw RuntimeError("Could not set veto file. Invalid chip index: " +
                            std::to_string(chipIndex));
     }
-    std::ifstream infile(fname.c_str());
-    if (!infile.is_open()) {
+
+    std::ifstream input_file(fname);
+    if (!input_file) {
         throw RuntimeError("Could not set veto file for chip " +
                            std::to_string(chipIndex) +
                            ". Could not open file: " + fname);
-    }
-
-    std::ifstream input_file(fname);
-    if (!input_file.is_open()) {
-        throw RuntimeError("Could not open veto file " + fname +
-                           " for reading");
     }
 
     std::vector<int> gainIndices;
@@ -1925,7 +1920,7 @@ void Module::setLEDEnable(bool enable) {
 void Module::setPattern(const std::string &fname) {
     auto pat = sls::make_unique<patternParameters>();
     std::ifstream input_file(fname);
-    if (!input_file.is_open()) {
+    if (!input_file) {
         throw RuntimeError("Could not open pattern file " + fname +
                            " for reading");
     }
@@ -3081,7 +3076,7 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
     } else {
         infile.open(fname.c_str(), std::ios_base::in);
     }
-    if (!infile.is_open()) {
+    if (!infile) {
         throw RuntimeError("Could not open settings file: " + fname);
     }
 
@@ -3218,18 +3213,15 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
 
 void Module::programFPGAviaNios(std::vector<char> buffer) {
     uint64_t filesize = buffer.size();
-    int fnum = F_PROGRAM_FPGA;
-    int ret = FAIL;
-    char mess[MAX_STR_LENGTH] = {0};
     LOG(logINFO) << "Sending programming binary (from rbf) to detector "
                  << moduleId << " (" << shm()->hostname << ")";
 
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
+    client.Send(F_PROGRAM_FPGA);
     // filesize
-    client.Send(&filesize, sizeof(filesize));
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
+    client.Send(filesize);
+    if (client.Receive<int>() == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
         client.Receive(mess, sizeof(mess));
         std::ostringstream os;
         os << "Detector " << moduleId << " (" << shm()->hostname << ")"
@@ -3237,9 +3229,9 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
         throw RuntimeError(os.str());
     }
     // program
-    client.Send(&buffer[0], filesize);
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
+    client.Send(buffer);
+    if (client.Receive<int>() == FAIL) {
+        char mess[MAX_STR_LENGTH]{};
         client.Receive(mess, sizeof(mess));
         std::ostringstream os;
         os << "Detector " << moduleId << " (" << shm()->hostname << ")"

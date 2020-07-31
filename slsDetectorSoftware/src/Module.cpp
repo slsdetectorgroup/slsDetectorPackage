@@ -1404,10 +1404,8 @@ void Module::sendVetoPhoton(const int chipIndex, const std::vector<int>& gainInd
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_SET_VETO_PHOTON);
     client.Send(args);
-    client.Send(gainIndices.data(), sizeof(gainIndices[0]) * nch);
-    client.Send(values.data(), sizeof(values[0]) * nch);
-    client.Send(gainIndices.data(), sizeof(gainIndices[0]) * nch);
-    client.Send(values.data(), sizeof(values[0]) * nch);
+    client.Send(gainIndices);
+    client.Send(values);
     if (client.Receive<int>() == FAIL) {
         char mess[MAX_STR_LENGTH]{};
         client.Receive(mess, MAX_STR_LENGTH);
@@ -1429,8 +1427,7 @@ void Module::getVetoPhoton(const int chipIndex,
                            " returned error: " + std::string(mess));
     }
 
-    int nch = -1;
-    client.Receive(&nch, sizeof(nch));
+    auto nch = client.Receive<int>();
     if (nch != shm()->nChan.x) {
         throw RuntimeError("Could not get veto photon. Expected " +
                            std::to_string(shm()->nChan.x) + " channels, got " +
@@ -1438,13 +1435,13 @@ void Module::getVetoPhoton(const int chipIndex,
     }
     std::vector<int> gainIndices(nch);
     std::vector<int> values(nch);
-    client.Receive(gainIndices.data(), nch * sizeof(int));
-    client.Receive(values.data(), nch * sizeof(int));
+    client.Receive(gainIndices);
+    client.Receive(values);
 
     // save to file
-    std::ofstream outfile;
-    outfile.open(fname.c_str(), std::ios_base::out);
-    if (!outfile.is_open()) {
+    std::ofstream outfile(fname);
+
+    if (!outfile) {
         throw RuntimeError("Could not create file to save veto photon");
     }
     for (int i = 0; i < nch; ++i) {
@@ -1672,8 +1669,7 @@ void Module::getBadChannels(const std::string &fname) const {
     auto nch = client.Receive<int>();
     std::vector<int> badchannels(nch);
     if (nch > 0) {
-        client.Receive(badchannels.data(),
-                       sizeof(badchannels[0]) * badchannels.size());
+        client.Receive(badchannels);
         for (size_t i = 0; i < badchannels.size(); ++i) {
             LOG(logDEBUG1) << i << ":" << badchannels[i];
         }
@@ -1714,14 +1710,12 @@ void Module::setBadChannels(const std::string &fname) {
     }
 
     // send bad channels to module
-    int fnum = F_SET_BAD_CHANNELS;
-    int nch = badchannels.size();
+    auto nch = static_cast<int>(badchannels.size());
     LOG(logDEBUG1) << "Sending bad channels to detector, nch:" << nch;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Send(&nch, sizeof(nch));
+    client.Send(F_SET_BAD_CHANNELS);
+    client.Send(nch);
     if (nch > 0) {
-        // client.Send(badchannels.data(), sizeof(badchannels[0]) * nch);
         client.Send(badchannels);
     }
     if (client.Receive<int>() == FAIL) {

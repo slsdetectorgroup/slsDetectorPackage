@@ -52,6 +52,11 @@ class DataSocket {
         return Receive(&arg, sizeof(arg));
     }
 
+    template<typename T>
+    int Receive(std::vector<T>& buff){
+        return Receive(buff.data(), sizeof(T) * buff.size());
+    }
+
     template <typename T> T Receive() {
         T arg;
         Receive(&arg, sizeof(arg));

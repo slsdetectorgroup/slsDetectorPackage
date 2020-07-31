@@ -813,7 +813,7 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
         plotTitlePrefix + QString(data->fileName.c_str()).section('/', -1);
     indexTitle = QString("%1").arg(frameIndex);
     if ((int)subFrameIndex != -1) {
-        indexTitle = QString("%1 %2").arg(frameIndex, subFrameIndex);
+        indexTitle = QString("%1 %2").arg(frameIndex).arg(subFrameIndex);
     }
     completeImage = data->completeImage;
 

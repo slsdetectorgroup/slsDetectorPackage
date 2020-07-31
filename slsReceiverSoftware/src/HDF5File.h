@@ -51,7 +51,7 @@ class HDF5File : private virtual slsDetectorDefs, public File {
     void WriteToFile(char *buffer, int bufferSize, uint64_t currentFrameNumber,
                      uint32_t numPacketsCaught);
     void CreateMasterFile(bool masterFileWriteEnable,
-                          MasterAttributes &attr) override;
+                          MasterAttributes *attr) override;
     void EndofAcquisition(bool anyPacketsCaught, uint64_t numImagesCaught);
 
   private:
@@ -61,7 +61,7 @@ class HDF5File : private virtual slsDetectorDefs, public File {
                                 sls_receiver_header *rheader);
     void ExtendDataset();
     void CreateDataFile();
-    void CreateMasterDataFile(MasterAttributes &attr);
+    void CreateMasterDataFile(MasterAttributes *attr);
     void CreateVirtualDataFile(uint32_t maxFramesPerFile, uint64_t numf);
     void LinkVirtualInMaster(std::string fname, std::string dsetname);
     hid_t GetDataTypeinC(DataType dtype);

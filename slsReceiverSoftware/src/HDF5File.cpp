@@ -153,7 +153,7 @@ void HDF5File::WriteToFile(char *buffer, int bufferSize,
 }
 
 void HDF5File::CreateMasterFile(bool masterFileWriteEnable,
-                                MasterAttributes &attr) {
+                                MasterAttributes *attr) {
 
     // beginning of every acquisition
     numFramesInFile = 0;
@@ -459,7 +459,7 @@ void HDF5File::CreateDataFile() {
     }
 }
 
-void HDF5File::CreateMasterDataFile(MasterAttributes &attr) {
+void HDF5File::CreateMasterDataFile(MasterAttributes *attr) {
 
     std::ostringstream os;
     os << *filePath << "/" << *fileNamePrefix << "_master"
@@ -469,7 +469,6 @@ void HDF5File::CreateMasterDataFile(MasterAttributes &attr) {
     if (!(*silentMode)) {
         LOG(logINFO) << "Master File: " << masterFileName;
     }
-    masterFileAttributes.version = HDF5_WRITER_VERSION;
 
     std::lock_guard<std::mutex> lock(HDF5File::hdf5Lib);
 
@@ -486,15 +485,6 @@ void HDF5File::CreateMasterDataFile(MasterAttributes &attr) {
             masterfd = new H5File(masterFileName.c_str(), H5F_ACC_TRUNC,
                                   FileCreatPropList::DEFAULT, flist);
 
-        // create attributes
-        // version
-        {
-            double dValue = masterFileAttributes.version;
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            Attribute attribute = masterfd->createAttribute(
-                "version", PredType::NATIVE_DOUBLE, dataspace);
-            attribute.write(PredType::NATIVE_DOUBLE, &dValue);
-        }
         // Create a group in the file
         Group group1(masterfd->createGroup("entry"));
         Group group2(group1.createGroup("data"));
@@ -503,309 +493,7 @@ void HDF5File::CreateMasterDataFile(MasterAttributes &attr) {
         Group group5(group3.createGroup("detector"));
         Group group6(group1.createGroup("sample"));
 
-        // Dynamic Range
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "dynamic range", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.dynamicRange),
-                          PredType::NATIVE_INT);
-            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
-            Attribute attribute =
-                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
-            attribute.write(strdatatype, std::string("bits"));
-        }
-
-        // Ten Giga
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            int iValue = masterFileAttributes.tenGiga;
-            DataSet dataset = group5.createDataSet(
-                "ten giga enable", PredType::NATIVE_INT, dataspace);
-            dataset.write(&iValue, PredType::NATIVE_INT);
-        }
-
-        // Image Size
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "image size", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.imageSize),
-                          PredType::NATIVE_INT);
-            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
-            Attribute attribute =
-                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
-            attribute.write(strdatatype, std::string("bytes"));
-        }
-
-        // x
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "number of pixels in x axis", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.nPixelsX),
-                          PredType::NATIVE_INT);
-        }
-
-        // y
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "number of pixels in y axis", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.nPixelsY),
-                          PredType::NATIVE_INT);
-        }
-
-        // Maximum frames per file
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "maximum frames per file", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.maxFramesPerFile),
-                          PredType::NATIVE_INT);
-        }
-
-        // Total Frames
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "total frames", PredType::STD_U64LE, dataspace);
-            dataset.write(&(masterFileAttributes.totalFrames),
-                          PredType::STD_U64LE);
-        }
-
-        // Exptime
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "exposure time", PredType::STD_U64LE, dataspace);
-            dataset.write(&(masterFileAttributes.exptimeNs),
-                          PredType::STD_U64LE);
-            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
-            Attribute attribute =
-                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
-            attribute.write(strdatatype, std::string("ns"));
-        }
-
-        // SubExptime
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "sub exposure time", PredType::STD_U64LE, dataspace);
-            dataset.write(&(masterFileAttributes.subExptimeNs),
-                          PredType::STD_U64LE);
-            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
-            Attribute attribute =
-                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
-            attribute.write(strdatatype, std::string("ns"));
-        }
-
-        // SubPeriod
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "sub period", PredType::STD_U64LE, dataspace);
-            dataset.write(&(masterFileAttributes.subPeriodNs),
-                          PredType::STD_U64LE);
-            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
-            Attribute attribute =
-                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
-            attribute.write(strdatatype, std::string("ns"));
-        }
-
-        // Period
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "acquisition period", PredType::STD_U64LE, dataspace);
-            dataset.write(&(masterFileAttributes.periodNs),
-                          PredType::STD_U64LE);
-            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
-            Attribute attribute =
-                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
-            attribute.write(strdatatype, std::string("ns"));
-        }
-
-        // Quad Enable
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "quad enable", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.quadEnable),
-                          PredType::NATIVE_INT);
-        }
-
-        // Analog Flag
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "analog flag", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.analogFlag),
-                          PredType::NATIVE_INT);
-        }
-
-        // Digital Flag
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "digital flag", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.digitalFlag),
-                          PredType::NATIVE_INT);
-        }
-
-        // ADC Mask
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "adc mask", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.adcmask),
-                          PredType::NATIVE_INT);
-        }
-
-        // Dbit Offset
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "dbit offset", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.dbitoffset),
-                          PredType::NATIVE_INT);
-        }
-
-        // Dbit List
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "dbit bitset list", PredType::STD_U64LE, dataspace);
-            dataset.write(&(masterFileAttributes.dbitlist),
-                          PredType::STD_U64LE);
-        }
-
-        // Roi xmin
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "roi xmin", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.roiXmin),
-                          PredType::NATIVE_INT);
-        }
-
-        // Roi xmax
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "roi xmax", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.roiXmax),
-                          PredType::NATIVE_INT);
-        }
-
-        // Exptime1
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "exposure time1", PredType::STD_U64LE, dataspace);
-            dataset.write(&(masterFileAttributes.exptime1Ns),
-                          PredType::STD_U64LE);
-            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
-            Attribute attribute =
-                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
-            attribute.write(strdatatype, std::string("ns"));
-        }
-
-        // Exptime2
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "exposure time2", PredType::STD_U64LE, dataspace);
-            dataset.write(&(masterFileAttributes.exptime2Ns),
-                          PredType::STD_U64LE);
-            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
-            Attribute attribute =
-                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
-            attribute.write(strdatatype, std::string("ns"));
-        }
-
-        // Exptime3
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "exposure time3", PredType::STD_U64LE, dataspace);
-            dataset.write(&(masterFileAttributes.exptime3Ns),
-                          PredType::STD_U64LE);
-            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
-            Attribute attribute =
-                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
-            attribute.write(strdatatype, std::string("ns"));
-        }
-
-        // GateDelay1
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "gate delay1", PredType::STD_U64LE, dataspace);
-            dataset.write(&(masterFileAttributes.gateDelay1Ns),
-                          PredType::STD_U64LE);
-            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
-            Attribute attribute =
-                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
-            attribute.write(strdatatype, std::string("ns"));
-        }
-
-        // GateDelay2
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "gate delay2", PredType::STD_U64LE, dataspace);
-            dataset.write(&(masterFileAttributes.gateDelay2Ns),
-                          PredType::STD_U64LE);
-            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
-            Attribute attribute =
-                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
-            attribute.write(strdatatype, std::string("ns"));
-        }
-
-        // GateDelay3
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset = group5.createDataSet(
-                "gate delay3", PredType::STD_U64LE, dataspace);
-            dataset.write(&(masterFileAttributes.gateDelay3Ns),
-                          PredType::STD_U64LE);
-            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
-            Attribute attribute =
-                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
-            attribute.write(strdatatype, std::string("ns"));
-        }
-
-        // Dbit Offset
-        {
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset =
-                group5.createDataSet("gates", PredType::NATIVE_INT, dataspace);
-            dataset.write(&(masterFileAttributes.gates), PredType::NATIVE_INT);
-        }
-
-        // Timestamp
-        {
-            time_t t = time(nullptr);
-            StrType strdatatype(PredType::C_S1, 256);
-            DataSpace dataspace = DataSpace(H5S_SCALAR);
-            DataSet dataset =
-                group5.createDataSet("timestamp", strdatatype, dataspace);
-            dataset.write(std::string(ctime(&t)), strdatatype);
-        }
-
+        attr->WriteMasterHDF5Attributes(masterfd, &group5);
         masterfd->close();
 
     } catch (const Exception &error) {
@@ -893,7 +581,7 @@ void HDF5File::CreateVirtualDataFile(uint32_t maxFramesPerFile, uint64_t numf) {
         if (H5Pset_fill_value(dcpl, GetDataTypeinC(datatype), &fill_value) < 0)
             throw sls::RuntimeError(
                 "Could not create fill value in virtual file " + vname);
-        hid_t dcpl_para[parameterNames.size()];
+        std::vector<hid_t> dcpl_para(parameterNames.size());
         for (unsigned int i = 0; i < parameterNames.size(); ++i) {
             dcpl_para[i] = H5Pcreate(H5P_DATASET_CREATE);
             if (dcpl_para[i] < 0)

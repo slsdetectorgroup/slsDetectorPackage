@@ -93,9 +93,118 @@ class MasterAttributes {
     };
 
 #ifdef HDF5C
-    virtual void Write
+    virtual void WriteMasterHDF5Attributes(H5File *fd, Group *group) {
+        LOG(logERROR) << "WriteMasterHdf5Attributes should have been called "
+                         "by a child class";
+    };
+
+    void WriteHDF5Attributes(H5File *fd, Group *group){
+        // clang-format off
+        // version
+        {
+            double version = BINARY_WRITER_VERSION;
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            Attribute attribute = fd->createAttribute(
+                "version", PredType::NATIVE_DOUBLE, dataspace);
+            attribute.write(PredType::NATIVE_DOUBLE, &version);
+        }
+        // timestamp
+        {
+            time_t t = time(nullptr);
+            StrType strdatatype(PredType::C_S1, 256);
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset =
+                group->createDataSet("timestamp", strdatatype, dataspace);
+            dataset.write(std::string(ctime(&t)), strdatatype);
+        }
+        // detector type
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            DataSet dataset =
+                group->createDataSet("detector type", strdatatype, dataspace);
+            dataset.write(sls::ToString(detType), strdatatype);
+        }
+        // Image Size
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "image size", PredType::NATIVE_INT, dataspace);
+            dataset.write(&imageSize, PredType::NATIVE_INT);
+            DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            Attribute attribute =
+                dataset.createAttribute("unit", strdatatype, dataspaceAttr);
+            attribute.write(strdatatype, std::string("bytes"));
+        }
+        //TODO: make this into an array?
+        // x
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "number of pixels in x axis", PredType::NATIVE_INT, dataspace);
+            dataset.write(&nPixels.x, PredType::NATIVE_INT);
+        }
+        // y
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "number of pixels in y axis", PredType::NATIVE_INT, dataspace);
+            dataset.write(&nPixels.y, PredType::NATIVE_INT);
+        }
+        // Maximum frames per file
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "maximum frames per file", PredType::NATIVE_INT, dataspace);
+            dataset.write(&maxFramesPerFile, PredType::NATIVE_INT);
+        }
+        // Total Frames
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "total frames", PredType::STD_U64LE, dataspace);
+            dataset.write(&totalFrames, PredType::STD_U64LE);
+        }
+    };
+
+    void WriteHDF5Exptime(H5File *fd, Group *group) {
+        DataSpace dataspace = DataSpace(H5S_SCALAR);
+        StrType strdatatype(PredType::C_S1, 256);
+        DataSet dataset =
+            group->createDataSet("exposure time", strdatatype, dataspace);
+        dataset.write(sls::ToString(exptime), strdatatype);
+    };
+
+    void WriteHDF5Period(H5File *fd, Group *group) {
+        DataSpace dataspace = DataSpace(H5S_SCALAR);
+        StrType strdatatype(PredType::C_S1, 256);
+        DataSet dataset =
+            group->createDataSet("acquisition period", strdatatype, dataspace);
+        dataset.write(sls::ToString(period), strdatatype);
+    };
+
+    void WriteHDF5DynamicRange(H5File *fd, Group *group) {
+        DataSpace dataspace = DataSpace(H5S_SCALAR);
+        DataSet dataset = group->createDataSet(
+            "dynamic range", PredType::NATIVE_INT, dataspace);
+        dataset.write(&dynamicRange, PredType::NATIVE_INT);
+        DataSpace dataspaceAttr = DataSpace(H5S_SCALAR);
+        StrType strdatatype(PredType::C_S1, 256);
+        Attribute attribute =
+            dataset.createAttribute("unit", strdatatype, dataspaceAttr);
+        attribute.write(strdatatype, std::string("bits"));
+    };
+
+    void WriteHDF5TenGiga(H5File *fd, Group *group) {
+        DataSpace dataspace = DataSpace(H5S_SCALAR);
+        DataSet dataset = group->createDataSet(
+            "ten giga enable", PredType::NATIVE_INT, dataspace);
+        dataset.write(&tenGiga, PredType::NATIVE_INT);
+    };
 #endif
 };
+// clang-format on
 
 class GotthardMasterAttributes : public MasterAttributes {
   public:
@@ -110,6 +219,28 @@ class GotthardMasterAttributes : public MasterAttributes {
         std::string message = oss.str();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
+
+#ifdef HDF5C
+    void WriteMasterHDF5Attributes(H5File *fd, Group *group) override {
+        MasterAttributes::WriteHDF5Attributes(fd, group);
+        MasterAttributes::WriteHDF5Exptime(fd, group);
+        MasterAttributes::WriteHDF5Period(fd, group);
+        // Roi xmin
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "roi xmin", PredType::NATIVE_INT, dataspace);
+            dataset.write(&roi.xmin, PredType::NATIVE_INT);
+        }
+        // Roi xmax
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "roi xmax", PredType::NATIVE_INT, dataspace);
+            dataset.write(&roi.xmax, PredType::NATIVE_INT);
+        }
+    };
+#endif
 };
 
 class JungfrauMasterAttributes : public MasterAttributes {
@@ -124,6 +255,14 @@ class JungfrauMasterAttributes : public MasterAttributes {
         std::string message = oss.str();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
+
+#ifdef HDF5C
+    void WriteMasterHDF5Attributes(H5File *fd, Group *group) override {
+        MasterAttributes::WriteHDF5Attributes(fd, group);
+        MasterAttributes::WriteHDF5Exptime(fd, group);
+        MasterAttributes::WriteHDF5Period(fd, group);
+    };
+#endif
 };
 
 class EigerMasterAttributes : public MasterAttributes {
@@ -145,6 +284,39 @@ class EigerMasterAttributes : public MasterAttributes {
         std::string message = oss.str();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
+
+#ifdef HDF5C
+    void WriteMasterHDF5Attributes(H5File *fd, Group *group) override {
+        MasterAttributes::WriteHDF5Attributes(fd, group);
+        MasterAttributes::WriteHDF5DynamicRange(fd, group);
+        MasterAttributes::WriteHDF5TenGiga(fd, group);
+        MasterAttributes::WriteHDF5Exptime(fd, group);
+        MasterAttributes::WriteHDF5Period(fd, group);
+        // SubExptime
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            DataSet dataset = group->createDataSet("sub exposure time",
+                                                   strdatatype, dataspace);
+            dataset.write(sls::ToString(subExptime), strdatatype);
+        }
+        // SubPeriod
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            DataSet dataset =
+                group->createDataSet("sub period", strdatatype, dataspace);
+            dataset.write(sls::ToString(subPeriod), strdatatype);
+        }
+        // Quad
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset =
+                group->createDataSet("quad", PredType::NATIVE_INT, dataspace);
+            dataset.write(&quad, PredType::NATIVE_INT);
+        }
+    };
+#endif
 };
 
 class Mythen3MasterAttributes : public MasterAttributes {
@@ -173,6 +345,70 @@ class Mythen3MasterAttributes : public MasterAttributes {
         std::string message = oss.str();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
+
+#ifdef HDF5C
+    void WriteMasterHDF5Attributes(H5File *fd, Group *group) override {
+        MasterAttributes::WriteHDF5Attributes(fd, group);
+        MasterAttributes::WriteHDF5DynamicRange(fd, group);
+        MasterAttributes::WriteHDF5TenGiga(fd, group);
+        MasterAttributes::WriteHDF5Period(fd, group);
+        // Exptime1
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            DataSet dataset =
+                group->createDataSet("exposure time1", strdatatype, dataspace);
+            dataset.write(sls::ToString(exptime1), strdatatype);
+        }
+        // Exptime2
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            DataSet dataset =
+                group->createDataSet("exposure time2", strdatatype, dataspace);
+            dataset.write(sls::ToString(exptime2), strdatatype);
+        }
+        // Exptime3
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            DataSet dataset =
+                group->createDataSet("exposure time3", strdatatype, dataspace);
+            dataset.write(sls::ToString(exptime3), strdatatype);
+        }
+        // GateDelay1
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            DataSet dataset =
+                group->createDataSet("gate delay1", strdatatype, dataspace);
+            dataset.write(sls::ToString(gateDelay1), strdatatype);
+        }
+        // GateDelay2
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            DataSet dataset =
+                group->createDataSet("gate delay2", strdatatype, dataspace);
+            dataset.write(sls::ToString(gateDelay2), strdatatype);
+        }
+        // GateDelay3
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            StrType strdatatype(PredType::C_S1, 256);
+            DataSet dataset =
+                group->createDataSet("gate delay3", strdatatype, dataspace);
+            dataset.write(sls::ToString(gateDelay3), strdatatype);
+        }
+        // Gates
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset =
+                group->createDataSet("gates", PredType::STD_U32LE, dataspace);
+            dataset.write(&gates, PredType::STD_U64LE);
+        }
+    };
+#endif
 };
 
 class Gotthard2MasterAttributes : public MasterAttributes {
@@ -187,6 +423,14 @@ class Gotthard2MasterAttributes : public MasterAttributes {
         std::string message = oss.str();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
+
+#ifdef HDF5C
+    void WriteMasterHDF5Attributes(H5File *fd, Group *group) override {
+        MasterAttributes::WriteHDF5Attributes(fd, group);
+        MasterAttributes::WriteHDF5Exptime(fd, group);
+        MasterAttributes::WriteHDF5Period(fd, group);
+    };
+#endif
 };
 
 class MoenchMasterAttributes : public MasterAttributes {
@@ -204,6 +448,22 @@ class MoenchMasterAttributes : public MasterAttributes {
         std::string message = oss.str();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
+
+#ifdef HDF5C
+    void WriteMasterHDF5Attributes(H5File *fd, Group *group) override {
+        MasterAttributes::WriteHDF5Attributes(fd, group);
+        MasterAttributes::WriteHDF5Exptime(fd, group);
+        MasterAttributes::WriteHDF5Period(fd, group);
+        MasterAttributes::WriteHDF5TenGiga(fd, group);
+        // ADC Mask
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "adc mask", PredType::NATIVE_INT, dataspace);
+            dataset.write(&adcmask, PredType::NATIVE_INT);
+        }
+    };
+#endif
 };
 
 class CtbMasterAttributes : public MasterAttributes {
@@ -225,4 +485,48 @@ class CtbMasterAttributes : public MasterAttributes {
         std::string message = oss.str();
         MasterAttributes::WriteBinaryAttributes(fd, message);
     };
+
+#ifdef HDF5C
+    void WriteMasterHDF5Attributes(H5File *fd, Group *group) override {
+        MasterAttributes::WriteHDF5Attributes(fd, group);
+        MasterAttributes::WriteHDF5Exptime(fd, group);
+        MasterAttributes::WriteHDF5Period(fd, group);
+        MasterAttributes::WriteHDF5TenGiga(fd, group);
+        // ADC Mask
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "adc mask", PredType::NATIVE_INT, dataspace);
+            dataset.write(&adcmask, PredType::NATIVE_INT);
+        }
+        // Analog Flag
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "analog flag", PredType::NATIVE_INT, dataspace);
+            dataset.write(&analog, PredType::NATIVE_INT);
+        }
+        // Digital Flag
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "digital flag", PredType::NATIVE_INT, dataspace);
+            dataset.write(&digital, PredType::NATIVE_INT);
+        }
+        // Dbit Offset
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "dbit offset", PredType::NATIVE_INT, dataspace);
+            dataset.write(&dbitoffset, PredType::NATIVE_INT);
+        }
+        // Dbit List
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "dbit bitset list", PredType::STD_U64LE, dataspace);
+            dataset.write(&dbitlist, PredType::STD_U64LE);
+        }
+    };
+#endif
 };

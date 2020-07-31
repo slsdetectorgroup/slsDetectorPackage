@@ -53,7 +53,7 @@
 #define STREAMER_PRIORITY  (10)
 #define TCP_PRIORITY       (10)
 
-
+/*
 #define HDF5_WRITER_VERSION   (6.1) // 1 decimal places
 #define BINARY_WRITER_VERSION (6.1) // 1 decimal places
 struct masterAttributes {
@@ -86,3 +86,4 @@ struct masterAttributes {
     uint64_t gateDelay3Ns;
     uint32_t gates;
 };
+*/

@@ -55,7 +55,4 @@ class BinaryFile : private virtual slsDetectorDefs, public File {
     static FILE *masterfd;
     uint32_t numFramesInFile = 0;
     uint64_t numActualPacketsInFile = 0;
-    // Make sure this is known at compile time
-    // TODO! Later away from stack allocation of message
-    static constexpr size_t maxMasterFileSize = 2000;
 };

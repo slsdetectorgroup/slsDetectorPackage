@@ -5,6 +5,7 @@
  ***********************************************/
 #include "HDF5File.h"
 #include "Fifo.h"
+#include "MasterAttributes.h"
 #include "receiver_defs.h"
 
 #include <iomanip>
@@ -152,7 +153,7 @@ void HDF5File::WriteToFile(char *buffer, int bufferSize,
 }
 
 void HDF5File::CreateMasterFile(bool masterFileWriteEnable,
-                                masterAttributes &masterFileAttributes) {
+                                MasterAttributes &attr) {
 
     // beginning of every acquisition
     numFramesInFile = 0;
@@ -161,7 +162,7 @@ void HDF5File::CreateMasterFile(bool masterFileWriteEnable,
 
     if (masterFileWriteEnable && master) {
         virtualfd = 0;
-        CreateMasterDataFile(masterFileAttributes);
+        CreateMasterDataFile(attr);
     }
 }
 
@@ -458,7 +459,7 @@ void HDF5File::CreateDataFile() {
     }
 }
 
-void HDF5File::CreateMasterDataFile(masterAttributes &masterFileAttributes) {
+void HDF5File::CreateMasterDataFile(MasterAttributes &attr) {
 
     std::ostringstream os;
     os << *filePath << "/" << *fileNamePrefix << "_master"

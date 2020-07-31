@@ -166,17 +166,8 @@ void BinaryFile::CreateMasterFile(bool masterFileWriteEnable,
                                     "(with overwrite enable) " +
                                     masterFileName);
         }
-        // create master file data
-        std::string strAttributes = attr->GetBinaryMasterAttributes();
-        char message[maxMasterFileSize];
-        memset(message, 0, maxMasterFileSize);
-        sls::strcpy_safe(message, strAttributes.c_str());
-        // write and close file
-        if (fwrite((void *)message, 1, strlen(message), masterfd) !=
-            strlen(message)) {
-            throw sls::RuntimeError(
-                "Master binary file incorrect number of bytes written to file");
-        }
+
+        attr->WriteMasterBinaryAttributes(masterfd);
         if (masterfd)
             fclose(masterfd);
         masterfd = nullptr;

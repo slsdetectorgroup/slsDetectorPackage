@@ -3,6 +3,14 @@
 #include "ToString.h"
 #include "logger.h"
 #include "sls_detector_defs.h"
+
+#ifdef HDF5C
+#include "H5Cpp.h"
+#ifndef H5_NO_NAMESPACE
+using namespace H5;
+#endif
+#endif
+
 #include <chrono>
 using ns = std::chrono::nanoseconds;
 
@@ -11,7 +19,6 @@ using ns = std::chrono::nanoseconds;
 #define BINARY_WRITER_VERSION (6.1) // 1 decimal places
 
 class MasterAttributes {
-
   public:
     slsDetectorDefs::detectorType detType{slsDetectorDefs::GENERIC};
     uint32_t imageSize{0};
@@ -42,7 +49,12 @@ class MasterAttributes {
     MasterAttributes(){};
     virtual ~MasterAttributes(){};
 
-    virtual std::string GetBinaryMasterAttributes() {
+    virtual void WriteMasterBinaryAttributes(FILE *fd) {
+        LOG(logERROR) << "WriteMasterBinaryAttributes should have been called "
+                         "by a child class";
+    }
+
+    std::string GetBinaryMasterAttributes() {
         time_t t = time(nullptr);
         std::ostringstream oss;
         oss << "Version                    : " << std::setprecision(2)
@@ -56,39 +68,47 @@ class MasterAttributes {
         return oss.str();
     };
 
-    std::string GetBinaryFrameHeaderFormat() {
-        return std::string("\n#Frame Header\n"
-                           "Frame Number               : 8 bytes\n"
-                           "SubFrame Number/ExpLength  : 4 bytes\n"
-                           "Packet Number              : 4 bytes\n"
-                           "Bunch ID                   : 8 bytes\n"
-                           "Timestamp                  : 8 bytes\n"
-                           "Module Id                  : 2 bytes\n"
-                           "Row                        : 2 bytes\n"
-                           "Column                     : 2 bytes\n"
-                           "Reserved                   : 2 bytes\n"
-                           "Debug                      : 4 bytes\n"
-                           "Round Robin Number         : 2 bytes\n"
-                           "Detector Type              : 1 byte\n"
-                           "Header Version             : 1 byte\n"
-                           "Packets Caught Mask        : 64 bytes\n");
+    void WriteBinaryAttributes(FILE *fd, std::string message) {
+        message += std::string("\n#Frame Header\n"
+                               "Frame Number               : 8 bytes\n"
+                               "SubFrame Number/ExpLength  : 4 bytes\n"
+                               "Packet Number              : 4 bytes\n"
+                               "Bunch ID                   : 8 bytes\n"
+                               "Timestamp                  : 8 bytes\n"
+                               "Module Id                  : 2 bytes\n"
+                               "Row                        : 2 bytes\n"
+                               "Column                     : 2 bytes\n"
+                               "Reserved                   : 2 bytes\n"
+                               "Debug                      : 4 bytes\n"
+                               "Round Robin Number         : 2 bytes\n"
+                               "Detector Type              : 1 byte\n"
+                               "Header Version             : 1 byte\n"
+                               "Packets Caught Mask        : 64 bytes\n");
+
+        if (fwrite((void *)message.c_str(), 1, message.length(), fd) !=
+            message.length()) {
+            throw sls::RuntimeError(
+                "Master binary file incorrect number of bytes written to file");
+        }
     };
 
-    // hdf5
+#ifdef HDF5C
+    virtual void Write
+#endif
 };
 
 class GotthardMasterAttributes : public MasterAttributes {
   public:
     GotthardMasterAttributes(){};
 
-    std::string GetBinaryMasterAttributes() override {
+    void WriteMasterBinaryAttributes(FILE *fd) override {
         std::ostringstream oss;
         oss << MasterAttributes::GetBinaryMasterAttributes()
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
             << "Period                     : " << sls::ToString(period) << '\n'
-            << "Roi (xmin, xmax)           : " << sls::ToString(roi) << '\n'
-            << GetBinaryFrameHeaderFormat();
-        return oss.str();
+            << "Roi (xmin, xmax)           : " << sls::ToString(roi) << '\n';
+        std::string message = oss.str();
+        MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 };
 
@@ -96,13 +116,13 @@ class JungfrauMasterAttributes : public MasterAttributes {
   public:
     JungfrauMasterAttributes(){};
 
-    std::string GetBinaryMasterAttributes() override {
+    void WriteMasterBinaryAttributes(FILE *fd) override {
         std::ostringstream oss;
         oss << MasterAttributes::GetBinaryMasterAttributes()
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
-            << "Period                     : " << sls::ToString(period) << '\n'
-            << GetBinaryFrameHeaderFormat();
-        return oss.str();
+            << "Period                     : " << sls::ToString(period) << '\n';
+        std::string message = oss.str();
+        MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 };
 
@@ -110,7 +130,7 @@ class EigerMasterAttributes : public MasterAttributes {
   public:
     EigerMasterAttributes(){};
 
-    std::string GetBinaryMasterAttributes() override {
+    void WriteMasterBinaryAttributes(FILE *fd) override {
         std::ostringstream oss;
         oss << MasterAttributes::GetBinaryMasterAttributes()
             << "Dynamic Range              : " << dynamicRange << '\n'
@@ -121,9 +141,9 @@ class EigerMasterAttributes : public MasterAttributes {
             << '\n'
             << "SubPeriod                  : " << sls::ToString(subPeriod)
             << '\n'
-            << "Quad                       : " << quad << '\n'
-            << GetBinaryFrameHeaderFormat();
-        return oss.str();
+            << "Quad                       : " << quad << '\n';
+        std::string message = oss.str();
+        MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 };
 
@@ -131,7 +151,7 @@ class Mythen3MasterAttributes : public MasterAttributes {
   public:
     Mythen3MasterAttributes(){};
 
-    std::string GetBinaryMasterAttributes() override {
+    void WriteMasterBinaryAttributes(FILE *fd) override {
         std::ostringstream oss;
         oss << MasterAttributes::GetBinaryMasterAttributes()
             << "Dynamic Range              : " << dynamicRange << '\n'
@@ -149,9 +169,9 @@ class Mythen3MasterAttributes : public MasterAttributes {
             << '\n'
             << "GateDelay3                 : " << sls::ToString(gateDelay3)
             << '\n'
-            << "Gates                      : " << gates << '\n'
-            << GetBinaryFrameHeaderFormat();
-        return oss.str();
+            << "Gates                      : " << gates << '\n';
+        std::string message = oss.str();
+        MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 };
 
@@ -159,13 +179,13 @@ class Gotthard2MasterAttributes : public MasterAttributes {
   public:
     Gotthard2MasterAttributes(){};
 
-    std::string GetBinaryMasterAttributes() override {
+    void WriteMasterBinaryAttributes(FILE *fd) override {
         std::ostringstream oss;
         oss << MasterAttributes::GetBinaryMasterAttributes()
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
-            << "Period                     : " << sls::ToString(period) << '\n'
-            << GetBinaryFrameHeaderFormat();
-        return oss.str();
+            << "Period                     : " << sls::ToString(period) << '\n';
+        std::string message = oss.str();
+        MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 };
 
@@ -173,16 +193,16 @@ class MoenchMasterAttributes : public MasterAttributes {
   public:
     MoenchMasterAttributes(){};
 
-    std::string GetBinaryMasterAttributes() override {
+    void WriteMasterBinaryAttributes(FILE *fd) override {
         std::ostringstream oss;
         oss << MasterAttributes::GetBinaryMasterAttributes()
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
             << "Period                     : " << sls::ToString(period) << '\n'
             << "Ten Giga                   : " << tenGiga << '\n'
             << "ADC Mask                   : " << sls::ToStringHex(adcmask)
-            << '\n'
-            << GetBinaryFrameHeaderFormat();
-        return oss.str();
+            << '\n';
+        std::string message = oss.str();
+        MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 };
 
@@ -190,7 +210,7 @@ class CtbMasterAttributes : public MasterAttributes {
   public:
     CtbMasterAttributes(){};
 
-    std::string GetBinaryMasterAttributes() override {
+    void WriteMasterBinaryAttributes(FILE *fd) override {
         std::ostringstream oss;
         oss << MasterAttributes::GetBinaryMasterAttributes()
             << "Exptime                    : " << sls::ToString(exptime) << '\n'
@@ -201,8 +221,8 @@ class CtbMasterAttributes : public MasterAttributes {
             << "Analog Flag                : " << analog << '\n'
             << "Digital Flag               : " << digital << '\n'
             << "Dbit Offset                : " << dbitoffset << '\n'
-            << "Dbit Bitset                : " << dbitlist << '\n'
-            << GetBinaryFrameHeaderFormat();
-        return oss.str();
+            << "Dbit Bitset                : " << dbitlist << '\n';
+        std::string message = oss.str();
+        MasterAttributes::WriteBinaryAttributes(fd, message);
     };
 };

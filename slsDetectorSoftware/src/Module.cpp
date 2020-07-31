@@ -24,8 +24,6 @@
 
 namespace sls {
 
-// Configuration
-
 // creating new shm
 Module::Module(detectorType type, int det_id, int module_id, bool verify)
     : moduleId(module_id), shm(det_id, module_id) {
@@ -106,14 +104,11 @@ int64_t Module::getReceiverSoftwareVersion() const {
 // static function
 slsDetectorDefs::detectorType
 Module::getTypeFromDetector(const std::string &hostname, int cport) {
-    int fnum = F_GET_DETECTOR_TYPE;
-    int ret = FAIL;
-    detectorType retval = GENERIC;
     LOG(logDEBUG1) << "Getting detector type ";
-    sls::ClientSocket cs("Detector", hostname, cport);
-    cs.Send(reinterpret_cast<char *>(&fnum), sizeof(fnum));
-    cs.Receive(reinterpret_cast<char *>(&ret), sizeof(ret));
-    cs.Receive(reinterpret_cast<char *>(&retval), sizeof(retval));
+    sls::ClientSocket socket("Detector", hostname, cport);
+    socket.Send(F_GET_DETECTOR_TYPE);
+    socket.Receive<int>(); // TODO! Should we look at this OK/FAIL?
+    auto retval = socket.Receive<detectorType>();
     LOG(logDEBUG1) << "Detector type is " << retval;
     return retval;
 }
@@ -159,24 +154,21 @@ void Module::setSettings(detectorSettings isettings) {
 }
 
 void Module::loadSettingsFile(const std::string &fname) {
-    std::string fn = fname;
-    std::ostringstream ostfn;
-    ostfn << fname;
-
     // find specific file if it has detid in file name (.snxxx)
     if (shm()->myDetectorType == EIGER || shm()->myDetectorType == MYTHEN3) {
+        std::ostringstream ostfn;
+        ostfn << fname;
         if (fname.find(".sn") == std::string::npos &&
             fname.find(".trim") == std::string::npos &&
             fname.find(".settings") == std::string::npos) {
             ostfn << ".sn" << std::setfill('0') << std::setw(3) << std::dec
                   << getSerialNumber();
         }
+        auto myMod = readSettingsFile(ostfn.str());
+        setModule(myMod);
     } else {
         throw RuntimeError("not implemented for this detector");
     }
-    fn = ostfn.str();
-    auto myMod = readSettingsFile(fn);
-    setModule(myMod);
 }
 
 int Module::getAllTrimbits() const {
@@ -450,22 +442,15 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
     // TODO!(Erik) Refactor
     LOG(logDEBUG1) << "Getting num missing packets";
     if (shm()->useReceiverFlag) {
-        int fnum = F_GET_NUM_MISSING_PACKETS;
-        int ret = FAIL;
         auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-        client.Send(&fnum, sizeof(fnum));
-        client.Receive(&ret, sizeof(ret));
-        if (ret == FAIL) {
-            char mess[MAX_STR_LENGTH]{};
-            client.Receive(mess, MAX_STR_LENGTH);
+        client.Send(F_GET_NUM_MISSING_PACKETS);
+        if (client.Receive<int>() == FAIL) {
             throw RuntimeError("Receiver " + std::to_string(moduleId) +
-                               " returned error: " + std::string(mess));
+                               " returned error: " + client.readErrorMessage());
         } else {
-            int nports = 0;
-            client.Receive(&nports, sizeof(nports));
+            auto nports = client.Receive<int>();
             std::vector<uint64_t> retval(nports);
-            client.Receive(retval.data(),
-                           sizeof(decltype(retval[0])) * retval.size());
+            client.Receive(retval);
             LOG(logDEBUG1) << "Missing packets of Receiver" << moduleId << ": "
                            << sls::ToString(retval);
             return retval;
@@ -738,14 +723,13 @@ std::string Module::getReceiverHostname() const {
 
 void Module::setReceiverHostname(const std::string &receiverIP) {
     LOG(logDEBUG1) << "Setting up Receiver with " << receiverIP;
-    // recieverIP is none
+
     if (receiverIP == "none") {
         memset(shm()->rxHostname, 0, MAX_STR_LENGTH);
         sls::strcpy_safe(shm()->rxHostname, "none");
         shm()->useReceiverFlag = false;
     }
 
-    // stop acquisition if running
     if (getRunStatus() == RUNNING) {
         LOG(logWARNING) << "Acquisition already running, Stopping it.";
         stopAcquisition();
@@ -790,7 +774,6 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
         sendToDetector(F_SET_DEST_UDP_MAC2, retvals[1], nullptr);
     }
 
-    // update numinterfaces if different
     shm()->numUDPInterfaces = retval.udpInterfaces;
 
     if (shm()->myDetectorType == MOENCH) {
@@ -910,9 +893,9 @@ void Module::setFilePath(const std::string &path) {
 }
 
 std::string Module::getFileName() const {
-    char retvals[MAX_STR_LENGTH]{};
-    sendToReceiver(F_GET_RECEIVER_FILE_NAME, nullptr, retvals);
-    return std::string(retvals);
+    char buff[MAX_STR_LENGTH]{};
+    sendToReceiver(F_GET_RECEIVER_FILE_NAME, nullptr, buff);
+    return buff;
 }
 
 void Module::setFileName(const std::string &fname) {
@@ -1391,8 +1374,9 @@ void Module::setInjectChannel(const int offsetChannel,
     sendToDetector(F_SET_INJECT_CHANNEL, args, nullptr);
 }
 
-void Module::sendVetoPhoton(const int chipIndex, const std::vector<int>& gainIndices,
-                            const std::vector<int>& values) {
+void Module::sendVetoPhoton(const int chipIndex,
+                            const std::vector<int> &gainIndices,
+                            const std::vector<int> &values) {
     const int nch = gainIndices.size();
     if (gainIndices.size() != values.size()) {
         throw RuntimeError("Number of Gain Indices and values do not match! "
@@ -1402,43 +1386,31 @@ void Module::sendVetoPhoton(const int chipIndex, const std::vector<int>& gainInd
     }
     LOG(logDEBUG1) << "Sending veto photon/file to detector [chip:" << chipIndex
                    << ", nch:" << nch << "]";
-    int fnum = F_SET_VETO_PHOTON;
-    int ret = FAIL;
-    int args[]{chipIndex, nch};
+
+    const int args[]{chipIndex, nch};
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Send(args, sizeof(args));
-    client.Send(gainIndices.data(), sizeof(decltype(gainIndices[0])) * nch);
-    client.Send(values.data(), sizeof(decltype(values[0])) * nch);
-    client.Send(gainIndices.data(), sizeof(int) * nch);
-    client.Send(values.data(), sizeof(int) * nch);
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
+    client.Send(F_SET_VETO_PHOTON);
+    client.Send(args);
+    client.Send(gainIndices);
+    client.Send(values);
+    if (client.Receive<int>() == FAIL) {
         throw RuntimeError("Detector " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
+                           " returned error: " + client.readErrorMessage());
     }
 }
 
 void Module::getVetoPhoton(const int chipIndex,
                            const std::string &fname) const {
     LOG(logDEBUG1) << "Getting veto photon [" << chipIndex << "]\n";
-    int fnum = F_GET_VETO_PHOTON;
-    int ret = FAIL;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Send(&chipIndex, sizeof(chipIndex));
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
+    client.Send(F_GET_VETO_PHOTON);
+    client.Send(chipIndex);
+    if (client.Receive<int>() == FAIL) {
         throw RuntimeError("Detector " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
+                           " returned error: " + client.readErrorMessage());
     }
 
-    int nch = -1;
-    client.Receive(&nch, sizeof(nch));
+    auto nch = client.Receive<int>();
     if (nch != shm()->nChan.x) {
         throw RuntimeError("Could not get veto photon. Expected " +
                            std::to_string(shm()->nChan.x) + " channels, got " +
@@ -1446,13 +1418,13 @@ void Module::getVetoPhoton(const int chipIndex,
     }
     std::vector<int> gainIndices(nch);
     std::vector<int> values(nch);
-    client.Receive(gainIndices.data(), nch * sizeof(int));
-    client.Receive(values.data(), nch * sizeof(int));
+    client.Receive(gainIndices);
+    client.Receive(values);
 
     // save to file
-    std::ofstream outfile;
-    outfile.open(fname.c_str(), std::ios_base::out);
-    if (!outfile.is_open()) {
+    std::ofstream outfile(fname);
+
+    if (!outfile) {
         throw RuntimeError("Could not create file to save veto photon");
     }
     for (int i = 0; i < nch; ++i) {
@@ -1481,13 +1453,13 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
                            std::to_string(energy));
     }
     std::ifstream infile(fname.c_str());
-    if (!infile.is_open()) {
+    if (!infile) {
         throw RuntimeError("Could not set veto photon. Could not open file: " +
                            fname);
     }
     LOG(logDEBUG1) << "Setting veto photon. Reading Gain values from file";
 
-    int totalEnergy = numPhotons * energy;
+    const int totalEnergy = numPhotons * energy;
     std::vector<int> gainIndices;
     std::vector<int> values;
 
@@ -1515,7 +1487,7 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
                                std::to_string(gainIndices.size()));
         }
 
-        // caluclate gain index from gain thresholds and threhsold energy
+        // caluclate gain index from gain thresholds and threshold energy
         int gainIndex = 2;
         if (totalEnergy < gainThreshold[0]) {
             gainIndex = 0;
@@ -1552,17 +1524,12 @@ void Module::setVetoFile(const int chipIndex, const std::string &fname) {
         throw RuntimeError("Could not set veto file. Invalid chip index: " +
                            std::to_string(chipIndex));
     }
-    std::ifstream infile(fname.c_str());
-    if (!infile.is_open()) {
+
+    std::ifstream input_file(fname);
+    if (!input_file) {
         throw RuntimeError("Could not set veto file for chip " +
                            std::to_string(chipIndex) +
                            ". Could not open file: " + fname);
-    }
-
-    std::ifstream input_file(fname);
-    if (!input_file.is_open()) {
-        throw RuntimeError("Could not open veto file " + fname +
-                           " for reading");
     }
 
     std::vector<int> gainIndices;
@@ -1668,24 +1635,17 @@ void Module::setADCConfiguration(const int chipIndex, const int adcIndex,
 
 void Module::getBadChannels(const std::string &fname) const {
     LOG(logDEBUG1) << "Getting bad channels to " << fname;
-    int fnum = F_GET_BAD_CHANNELS;
-    int ret = FAIL;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
+    client.Send(F_GET_BAD_CHANNELS);
+    if (client.Receive<int>() == FAIL) {
         throw RuntimeError("Detector " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
+                           " returned error: " + client.readErrorMessage());
     }
     // receive badchannels
-    int nch = -1;
-    client.Receive(&nch, sizeof(nch));
+    auto nch = client.Receive<int>();
     std::vector<int> badchannels(nch);
     if (nch > 0) {
-        client.Receive(badchannels.data(),
-                       sizeof(badchannels[0]) * badchannels.size());
+        client.Receive(badchannels);
         for (size_t i = 0; i < badchannels.size(); ++i) {
             LOG(logDEBUG1) << i << ":" << badchannels[i];
         }
@@ -1693,7 +1653,7 @@ void Module::getBadChannels(const std::string &fname) const {
 
     // save to file
     std::ofstream outfile(fname);
-    if (!outfile.is_open()) {
+    if (!outfile) {
         throw RuntimeError("Could not create file to save bad channels");
     }
     for (auto ch : badchannels)
@@ -1704,7 +1664,7 @@ void Module::getBadChannels(const std::string &fname) const {
 void Module::setBadChannels(const std::string &fname) {
     // read bad channels file
     std::ifstream input_file(fname);
-    if (!input_file.is_open()) {
+    if (!input_file) {
         throw RuntimeError("Could not open bad channels file " + fname +
                            " for reading");
     }
@@ -1726,22 +1686,17 @@ void Module::setBadChannels(const std::string &fname) {
     }
 
     // send bad channels to module
-    int fnum = F_SET_BAD_CHANNELS;
-    int ret = FAIL;
-    int nch = badchannels.size();
+    auto nch = static_cast<int>(badchannels.size());
     LOG(logDEBUG1) << "Sending bad channels to detector, nch:" << nch;
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Send(&nch, sizeof(nch));
+    client.Send(F_SET_BAD_CHANNELS);
+    client.Send(nch);
     if (nch > 0) {
-        client.Send(badchannels.data(), sizeof(int) * nch);
+        client.Send(badchannels);
     }
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
+    if (client.Receive<int>() == FAIL) {
         throw RuntimeError("Detector " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
+                           " returned error: " + client.readErrorMessage());
     }
 }
 
@@ -1842,8 +1797,7 @@ uint32_t Module::getTenGigaADCEnableMask() const {
 
 void Module::setTenGigaADCEnableMask(uint32_t mask) {
     sendToDetector(F_SET_ADC_ENABLE_MASK_10G, mask, nullptr);
-    // update #nchan, as it depends on #samples, adcmask,
-    updateNumberOfChannels();
+    updateNumberOfChannels(); // depends on samples and adcmask
 
     // send to processor
     if (shm()->myDetectorType == MOENCH)
@@ -1863,8 +1817,7 @@ int Module::getNumberOfDigitalSamples() const {
 void Module::setNumberOfDigitalSamples(int value) {
     LOG(logDEBUG1) << "Setting number of digital samples to " << value;
     sendToDetector(F_SET_NUM_DIGITAL_SAMPLES, value, nullptr);
-    // update #nchan, as it depends on #samples, adcmask
-    updateNumberOfChannels();
+    updateNumberOfChannels(); // depends on samples and adcmask
     if (shm()->useReceiverFlag) {
         LOG(logDEBUG1) << "Sending number of digital samples to Receiver: "
                        << value;
@@ -1952,7 +1905,7 @@ void Module::setLEDEnable(bool enable) {
 void Module::setPattern(const std::string &fname) {
     auto pat = sls::make_unique<patternParameters>();
     std::ifstream input_file(fname);
-    if (!input_file.is_open()) {
+    if (!input_file) {
         throw RuntimeError("Could not open pattern file " + fname +
                            " for reading");
     }
@@ -2136,7 +2089,7 @@ void Module::startPattern() { sendToDetector(F_START_PATTERN); }
 // Moench
 
 std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
-    //TODO, refactor this function with a more robust sending. 
+    // TODO, refactor this function with a more robust sending.
     // Now assuming whitespace separated key value
     if (!shm()->useReceiverFlag) {
         throw RuntimeError("Set rx_hostname first to use receiver parameters "
@@ -2144,12 +2097,9 @@ std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
     }
     auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     client.Send(F_GET_ADDITIONAL_JSON_HEADER);
-    auto ret = client.Receive<int>();
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
+    if (client.Receive<int>() == FAIL) {
         throw RuntimeError("Receiver " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
+                           " returned error: " + client.readErrorMessage());
     } else {
         auto size = client.Receive<int>();
         std::string buff(size, '\0');
@@ -2158,7 +2108,7 @@ std::map<std::string, std::string> Module::getAdditionalJsonHeader() const {
             client.Receive(&buff[0], buff.size());
             std::istringstream iss(buff);
             std::string key, value;
-            while(iss >> key){
+            while (iss >> key) {
                 iss >> value;
                 retval[key] = value;
             }
@@ -2184,7 +2134,7 @@ void Module::setAdditionalJsonHeader(
         }
     }
     std::ostringstream oss;
-    for (auto& it : jsonHeader)
+    for (auto &it : jsonHeader)
         oss << it.first << ' ' << it.second << ' ';
     auto buff = oss.str();
     const auto size = static_cast<int>(buff.size());
@@ -2196,12 +2146,9 @@ void Module::setAdditionalJsonHeader(
     if (size > 0)
         client.Send(&buff[0], buff.size());
 
-    auto ret = client.Receive<int>();
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH]{};
-        client.Receive(mess, MAX_STR_LENGTH);
+    if (client.Receive<int>() == FAIL) {
         throw RuntimeError("Receiver " + std::to_string(moduleId) +
-                           " returned error: " + std::string(mess));
+                           " returned error: " + client.readErrorMessage());
     }
 }
 
@@ -2904,8 +2851,6 @@ int Module::sendModule(sls_detector_module *myMod, sls::ClientSocket &client) {
 }
 
 void Module::setModule(sls_detector_module &module, bool trimbits) {
-    int fnum = F_SET_MODULE;
-    int ret = FAIL;
     LOG(logDEBUG1) << "Setting module with trimbits:" << trimbits;
     // to exclude trimbits
     if (!trimbits) {
@@ -2913,14 +2858,11 @@ void Module::setModule(sls_detector_module &module, bool trimbits) {
         module.nchip = 0;
     }
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
+    client.Send(F_SET_MODULE);
     sendModule(&module, client);
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        char mess[MAX_STR_LENGTH] = {0};
-        client.Receive(mess, sizeof(mess));
+    if (client.Receive<int>() == FAIL) {
         throw RuntimeError("Detector " + std::to_string(moduleId) +
-                           " returned error: " + mess);
+                           " returned error: " + client.readErrorMessage());
     }
 }
 
@@ -3108,7 +3050,7 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
     } else {
         infile.open(fname.c_str(), std::ios_base::in);
     }
-    if (!infile.is_open()) {
+    if (!infile) {
         throw RuntimeError("Could not open settings file: " + fname);
     }
 
@@ -3161,24 +3103,17 @@ sls_detector_module Module::readSettingsFile(const std::string &fname,
 
 void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
     uint64_t filesize = buffer.size();
-
     // send program from memory to detector
-    int fnum = F_PROGRAM_FPGA;
-    int ret = FAIL;
-    char mess[MAX_STR_LENGTH] = {0};
     LOG(logINFO) << "Sending programming binary (from pof) to detector "
                  << moduleId << " (" << shm()->hostname << ")";
-
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
-    client.Send(&filesize, sizeof(filesize));
-    client.Receive(&ret, sizeof(ret));
+    client.Send(F_PROGRAM_FPGA);
+    client.Send(filesize);
     // error in detector at opening file pointer to flash
-    if (ret == FAIL) {
-        client.Receive(mess, sizeof(mess));
+    if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleId << " (" << shm()->hostname << ")"
-           << " returned error: " << mess;
+           << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }
 
@@ -3219,13 +3154,11 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
                        << "\t filesize:" << filesize;
 
         client.Send(&buffer[currentPointer], unitprogramsize);
-        client.Receive(&ret, sizeof(ret));
-        if (ret == FAIL) {
-            printf("\n");
-            client.Receive(mess, sizeof(mess));
+        if (client.Receive<int>() == FAIL) {
+            std::cout << '\n';
             std::ostringstream os;
             os << "Detector " << moduleId << " (" << shm()->hostname << ")"
-               << " returned error: " << mess;
+               << " returned error: " << client.readErrorMessage();
             throw RuntimeError(os.str());
         }
         filesize -= unitprogramsize;
@@ -3238,39 +3171,32 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
                 (static_cast<double>(totalsize - filesize) / totalsize) * 100));
         std::cout << std::flush;
     }
-    printf("\n");
+    std::cout << '\n';
     LOG(logINFO) << "FPGA programmed successfully";
     rebootController();
 }
 
 void Module::programFPGAviaNios(std::vector<char> buffer) {
     uint64_t filesize = buffer.size();
-    int fnum = F_PROGRAM_FPGA;
-    int ret = FAIL;
-    char mess[MAX_STR_LENGTH] = {0};
     LOG(logINFO) << "Sending programming binary (from rbf) to detector "
                  << moduleId << " (" << shm()->hostname << ")";
 
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
-    client.Send(&fnum, sizeof(fnum));
+    client.Send(F_PROGRAM_FPGA);
     // filesize
-    client.Send(&filesize, sizeof(filesize));
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        client.Receive(mess, sizeof(mess));
+    client.Send(filesize);
+    if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleId << " (" << shm()->hostname << ")"
-           << " returned error: " << mess;
+           << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }
     // program
-    client.Send(&buffer[0], filesize);
-    client.Receive(&ret, sizeof(ret));
-    if (ret == FAIL) {
-        client.Receive(mess, sizeof(mess));
+    client.Send(buffer);
+    if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
         os << "Detector " << moduleId << " (" << shm()->hostname << ")"
-           << " returned error: " << mess;
+           << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }
     LOG(logINFO) << "FPGA programmed successfully";

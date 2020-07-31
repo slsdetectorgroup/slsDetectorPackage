@@ -1,5 +1,6 @@
 #pragma once
 #include <type_traits>
+#include <vector>
 
 namespace sls {
 
@@ -62,14 +63,17 @@ template <typename T>
 struct is_container<
     T, typename std::conditional<
            false,
-           is_container_helper<typename T::value_type, typename T::size_type,
-                               typename T::iterator, typename T::const_iterator,
-                               decltype(std::declval<T>().size()),
-                               decltype(std::declval<T>().begin()),
-                               decltype(std::declval<T>().end()),
-                               decltype(std::declval<T>().cbegin()),
-                               decltype(std::declval<T>().cend()),
-                               decltype(std::declval<T>().empty())>,
+           is_container_helper<
+               typename std::remove_reference<T>::type::value_type,
+               typename std::remove_reference<T>::type::size_type,
+               typename std::remove_reference<T>::type::iterator,
+               typename std::remove_reference<T>::type::const_iterator,
+               decltype(std::declval<T>().size()),
+               decltype(std::declval<T>().begin()),
+               decltype(std::declval<T>().end()),
+               decltype(std::declval<T>().cbegin()),
+               decltype(std::declval<T>().cend()),
+               decltype(std::declval<T>().empty())>,
            void>::type> : public std::true_type {};
 
 /**
@@ -91,5 +95,10 @@ struct is_light_container<
                                decltype(std::declval<T>().begin()),
                                decltype(std::declval<T>().end())>,
            void>::type> : public std::true_type {};
+
+template <typename T> struct is_vector : public std::false_type {};
+
+template <typename T>
+struct is_vector<std::vector<T>> : public std::true_type {};
 
 } // namespace sls

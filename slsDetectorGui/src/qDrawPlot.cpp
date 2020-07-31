@@ -747,6 +747,35 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
     LOG(logDEBUG) << "[ Progress:" << progress << ", Frame:" << currentFrame
                   << " ]";
 
+    // 1d check if npixelX has changed (m3 for different counters enabled)
+    if (is1d && static_cast<int>(nPixelsX) != data->nx) {
+        nPixelsX = data->nx;
+        LOG(logINFO) << "Change in Detector Shape:\n\tnPixelsX:" << nPixelsX;
+
+        delete[] datax1d;
+        datax1d = new double[nPixelsX];
+        for (unsigned int px = 0; px < nPixelsX; ++px) {
+            datax1d[px] = px;
+        }
+        if (datay1d.size()) {
+            for (auto &it : datay1d) {
+                delete[] it;
+            }
+            datay1d.clear();
+        }
+        datay1d.push_back(new double[nPixelsX]);
+        for (unsigned int px = 0; px < nPixelsX; ++px) {
+            datax1d[px] = px;
+            datay1d[0][px] = 0;
+        }
+        currentPersistency = 0;
+        if (gainDatay1d) {
+            delete[] gainDatay1d;
+            gainDatay1d = new double[nPixelsX];
+            std::fill(gainDatay1d, gainDatay1d + nPixelsX, 0);
+        }
+    }
+
     // 2d (only image, not gain data, not pedestalvals),
     // check if npixelsX and npixelsY is the same (quad is different)
     if (!is1d && (static_cast<int>(nPixelsX) != data->nx ||

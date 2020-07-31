@@ -106,14 +106,11 @@ int64_t Module::getReceiverSoftwareVersion() const {
 // static function
 slsDetectorDefs::detectorType
 Module::getTypeFromDetector(const std::string &hostname, int cport) {
-    int fnum = F_GET_DETECTOR_TYPE;
-    int ret = FAIL;
-    detectorType retval = GENERIC;
     LOG(logDEBUG1) << "Getting detector type ";
-    sls::ClientSocket cs("Detector", hostname, cport);
-    cs.Send(reinterpret_cast<char *>(&fnum), sizeof(fnum));
-    cs.Receive(reinterpret_cast<char *>(&ret), sizeof(ret));
-    cs.Receive(reinterpret_cast<char *>(&retval), sizeof(retval));
+    sls::ClientSocket socket("Detector", hostname, cport);
+    socket.Send(F_GET_DETECTOR_TYPE);
+    socket.Receive<int>(); // TODO! Should we look at this OK/FAIL?
+    auto retval = socket.Receive<detectorType>();
     LOG(logDEBUG1) << "Detector type is " << retval;
     return retval;
 }
@@ -447,22 +444,17 @@ std::vector<uint64_t> Module::getNumMissingPackets() const {
     // TODO!(Erik) Refactor
     LOG(logDEBUG1) << "Getting num missing packets";
     if (shm()->useReceiverFlag) {
-        int fnum = F_GET_NUM_MISSING_PACKETS;
-        int ret = FAIL;
         auto client = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
-        client.Send(&fnum, sizeof(fnum));
-        client.Receive(&ret, sizeof(ret));
-        if (ret == FAIL) {
+        client.Send(F_GET_NUM_MISSING_PACKETS);
+        if (client.Receive<int>() == FAIL) {
             char mess[MAX_STR_LENGTH]{};
             client.Receive(mess, MAX_STR_LENGTH);
             throw RuntimeError("Receiver " + std::to_string(moduleId) +
                                " returned error: " + std::string(mess));
         } else {
-            int nports = 0;
-            client.Receive(&nports, sizeof(nports));
+            auto nports = client.Receive<int>();
             std::vector<uint64_t> retval(nports);
-            client.Receive(retval.data(),
-                           sizeof(retval[0]) * retval.size());
+            client.Receive(retval);
             LOG(logDEBUG1) << "Missing packets of Receiver" << moduleId << ": "
                            << sls::ToString(retval);
             return retval;

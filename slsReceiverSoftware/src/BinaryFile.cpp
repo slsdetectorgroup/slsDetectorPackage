@@ -19,9 +19,7 @@ BinaryFile::BinaryFile(int ind, uint32_t *maxf, int *nd, std::string *fname,
                        int *dindex, int *nunits, uint64_t *nf, uint32_t *dr,
                        uint32_t *portno, bool *smode)
     : File(ind, BINARY, maxf, nd, fname, fpath, findex, owenable, dindex,
-           nunits, nf, dr, portno, smode),
-      filefd(nullptr), numFramesInFile(0), numActualPacketsInFile(0),
-      maxMasterFileSize(2000) {
+           nunits, nf, dr, portno, smode) {
 #ifdef VERBOSE
     PrintMembers();
 #endif
@@ -239,6 +237,8 @@ void BinaryFile::CreateMasterFile(bool masterFileWriteEnable,
                 (long long int)masterFileAttributes.gateDelay2Ns,
                 (long long int)masterFileAttributes.gateDelay3Ns,
                 masterFileAttributes.gates, ctime(&t));
+
+        //TODO! snprintf? This would already have been a buffer overflow
         if (strlen(message) > maxMasterFileSize) {
             throw sls::RuntimeError("Master File Size " +
                                     std::to_string(strlen(message)) +

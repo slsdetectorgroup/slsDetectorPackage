@@ -552,7 +552,7 @@ int readConfigFile() {
             int value = 0;
 
             // cannot scan values
-            if (sscanf(line, "%s %d 0x%x", command, &igain, &value) != 3) {
+            if (sscanf(line, "%s %d %d", command, &igain, &value) != 3) {
                 sprintf(initErrorMessage,
                         "Could not scan vetoref commands from on-board server "
                         "config file. Line:[%s].\n",
@@ -1776,7 +1776,7 @@ void getInjectedChannels(int *offset, int *increment) {
 }
 
 int setVetoReference(int gainIndex, int value) {
-    LOG(logINFO, ("Setting veto reference [chip:-1, G%d, value:0x%x]\n",
+    LOG(logINFO, ("Setting veto reference [chip:-1, G%d, value:%d]\n",
                   gainIndex, value));
     int values[NCHAN];
     int gainIndices[NCHAN];
@@ -1818,7 +1818,7 @@ int configureASICVetoReference(int chipIndex, int *gainIndices, int *values) {
                 ("Unknown gain index %d for channel %d\n", gainIndices[i], i));
             return FAIL;
         }
-        revValues[i] |= gainValue;
+        revValues[NCHAN - 1 - i] |= gainValue; // reversed list, so NCHAN - 1 - i
         LOG(logDEBUG2, ("Values[%d]: 0x%x\n", i, revValues[i]));
     }
 

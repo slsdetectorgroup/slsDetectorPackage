@@ -1168,10 +1168,8 @@ void Module::sendReceiverRateCorrections(const std::vector<int64_t> &t) {
                   << ']';
     auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
     receiver.Send(F_SET_RECEIVER_RATE_CORRECT);
-    // TODO: use overload for vector
-    int size = t.size();
-    receiver.Send(size);
-    receiver.Send(t.data(), t.size() * sizeof(t[0]));
+    receiver.Send(static_cast<int>(t.size()));
+    receiver.Send(t);
     if (receiver.Receive<int>() == FAIL) {
         throw RuntimeError("Receiver " + std::to_string(moduleId) +
                            " returned error: " + receiver.readErrorMessage());

@@ -42,6 +42,7 @@ def extract_enums(lines):
 
                     except:
                         pass
+            fields = [f.strip() for f in fields]
             enums[enum_name] = fields
     return enums
 

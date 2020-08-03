@@ -15,7 +15,7 @@
 
 #include <string>
 
-class MasterAttributes;
+struct MasterAttributes;
 
 class File : private virtual slsDetectorDefs {
 

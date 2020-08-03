@@ -16,7 +16,7 @@ class GeneralData;
 class Fifo;
 class File;
 class DataStreamer;
-class MasterAttributes;
+struct MasterAttributes;
 
 #include <atomic>
 #include <vector>

@@ -1121,13 +1121,11 @@ void Detector::updateRxRateCorrections() {
     // get tau from all modules and send to Rx index 0
     if (getDetectorType().squash() == defs::EIGER) {
         if (getUseReceiverFlag().squash(false)) {
-            // convert Result<ns> to std::vector<in64_t>
-            auto retval = getRateCorrection();
-            std::vector<int64_t> t(retval.size());
-            for (int i = 0; i < (int)retval.size(); ++i) {
-                t[i] = retval[i].count();
-            }
-            pimpl->Parallel(&Module::sendReceiverRateCorrections, {0}, t);
+            std::vector<int64_t> dead_times;
+            for (auto item : getRateCorrection())
+                dead_times.push_back(item.count());
+            pimpl->Parallel(&Module::sendReceiverRateCorrections, {0},
+                            dead_times);
         }
     }
 }

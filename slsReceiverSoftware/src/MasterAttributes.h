@@ -18,8 +18,7 @@ using ns = std::chrono::nanoseconds;
 #define HDF5_WRITER_VERSION   (6.1) // 1 decimal places
 #define BINARY_WRITER_VERSION (6.1) // 1 decimal places
 
-class MasterAttributes {
-  public:
+struct MasterAttributes {
     slsDetectorDefs::detectorType detType{slsDetectorDefs::GENERIC};
     slsDetectorDefs::timingMode timingMode{slsDetectorDefs::AUTO_TIMING};
     uint32_t imageSize{0};

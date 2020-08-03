@@ -1119,7 +1119,7 @@ void Detector::setRateCorrection(ns dead_time, Positions pos) {
 
 void Detector::updateRxRateCorrections() {
     // get tau from all modules and send to Rx index 0
-    if (getDetectorType().squash() == EIGER) {
+    if (getDetectorType().squash() == defs::EIGER) {
         if (getUseReceiverFlag().squash(false)) {
             // convert Result<ns> to std::vector<in64_t>
             auto retval = getRateCorrection();

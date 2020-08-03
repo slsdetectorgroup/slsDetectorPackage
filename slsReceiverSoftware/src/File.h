@@ -15,6 +15,8 @@
 
 #include <string>
 
+struct MasterAttributes;
+
 class File : private virtual slsDetectorDefs {
 
   public:
@@ -86,7 +88,7 @@ class File : private virtual slsDetectorDefs {
      * @param mfwenable master file write enable
      * @param attr master file attributes
      */
-    virtual void CreateMasterFile(bool mfwenable, masterAttributes &attr) = 0;
+    virtual void CreateMasterFile(bool mfwenable, MasterAttributes *attr) = 0;
 
     // HDf5 specific
     /**

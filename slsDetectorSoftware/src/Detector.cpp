@@ -281,6 +281,7 @@ Result<int> Detector::getDynamicRange(Positions pos) const {
 
 void Detector::setDynamicRange(int value) {
     pimpl->Parallel(&Module::setDynamicRange, {}, value);
+    updateRxRateCorrections();
 }
 
 Result<defs::timingMode> Detector::getTimingMode(Positions pos) const {
@@ -771,6 +772,7 @@ Result<std::string> Detector::getRxHostname(Positions pos) const {
 
 void Detector::setRxHostname(const std::string &receiver, Positions pos) {
     pimpl->Parallel(&Module::setReceiverHostname, pos, receiver);
+    updateRxRateCorrections();
 }
 
 void Detector::setRxHostname(const std::vector<std::string> &name) {
@@ -788,6 +790,7 @@ void Detector::setRxHostname(const std::vector<std::string> &name) {
             pimpl->Parallel(&Module::setReceiverHostname, {idet}, name[idet]);
         }
     }
+    updateRxRateCorrections();
 }
 
 Result<int> Detector::getRxPort(Positions pos) const {
@@ -1038,6 +1041,7 @@ Result<ns> Detector::getSubExptime(Positions pos) const {
 
 void Detector::setSubExptime(ns t, Positions pos) {
     pimpl->Parallel(&Module::setSubExptime, pos, t.count());
+    updateRxRateCorrections();
 }
 
 Result<ns> Detector::getSubDeadTime(Positions pos) const {
@@ -1105,10 +1109,25 @@ Result<ns> Detector::getRateCorrection(Positions pos) const {
 
 void Detector::setDefaultRateCorrection(Positions pos) {
     pimpl->Parallel(&Module::setDefaultRateCorrection, pos);
+    updateRxRateCorrections();
 }
 
 void Detector::setRateCorrection(ns dead_time, Positions pos) {
     pimpl->Parallel(&Module::setRateCorrection, pos, dead_time.count());
+    updateRxRateCorrections();
+}
+
+void Detector::updateRxRateCorrections() {
+    // get tau from all modules and send to Rx index 0
+    if (getDetectorType().squash() == defs::EIGER) {
+        if (getUseReceiverFlag().squash(false)) {
+            std::vector<int64_t> dead_times;
+            for (auto item : getRateCorrection())
+                dead_times.push_back(item.count());
+            pimpl->Parallel(&Module::sendReceiverRateCorrections, {0},
+                            dead_times);
+        }
+    }
 }
 
 Result<int> Detector::getPartialReadout(Positions pos) const {
@@ -1405,6 +1424,7 @@ Result<ns> Detector::getExptime(int gateIndex, Positions pos) const {
 
 void Detector::setExptime(int gateIndex, ns t, Positions pos) {
     pimpl->Parallel(&Module::setExptime, pos, gateIndex, t.count());
+    updateRxRateCorrections();
 }
 
 Result<std::array<ns, 3>> Detector::getExptimeForAllGates(Positions pos) const {

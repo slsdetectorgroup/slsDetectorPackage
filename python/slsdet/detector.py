@@ -508,11 +508,11 @@ class Detector(CppDetectorApi):
         self.setSourceUDPMAC2(MacAddr(mac))
 
     @property
-    def vhighvoltage(self):
+    def highvoltage(self):
         return element_if_equal(self.getHighVoltage())
 
-    @vhighvoltage.setter
-    def vhighvoltage(self, v):
+    @highvoltage.setter
+    def highvoltage(self, v):
         self.setHighVoltage(v)
 
     @property
@@ -601,13 +601,12 @@ class Detector(CppDetectorApi):
         self.setRateCorrection(tau)
 
     @property
-    def clkdivider(self):
-        res = [int(value) for value in self.getSpeed()]
-        return element_if_equal(res)
+    def speed(self):
+        return element_if_equal(self.getSpeed())
 
-    @clkdivider.setter
-    def clkdivider(self, value):
-        self.setSpeed(speedLevel(value))
+    @speed.setter
+    def speed(self, value):
+        self.setSpeed(value)
 
     @property
     def frameindex(self):

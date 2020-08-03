@@ -793,97 +793,97 @@ TEST_CASE("maxclkphaseshift", "[.cmd][.new]") {
     }
 }
 
-TEST_CASE("vhighvoltage", "[.cmd][.new]") {
+TEST_CASE("highvoltage", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
     auto prev_val = det.getHighVoltage();
     // selected values
     if (det_type == defs::GOTTHARD) {
-        REQUIRE_THROWS(proxy.Call("vhighvoltage", {"50"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("highvoltage", {"50"}, -1, PUT));
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"90"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "vhighvoltage 90\n");
-            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "vhighvoltage 90\n");
+            proxy.Call("highvoltage", {"90"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "highvoltage 90\n");
+            proxy.Call("highvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "highvoltage 90\n");
         }
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"0"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "vhighvoltage 0\n");
-            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "vhighvoltage 0\n");
+            proxy.Call("highvoltage", {"0"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "highvoltage 0\n");
+            proxy.Call("highvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "highvoltage 0\n");
         }
     }
     // range 0, 60 - 200
     else if (det_type == defs::JUNGFRAU || det_type == defs::CHIPTESTBOARD ||
              det_type == defs::MOENCH) {
-        REQUIRE_THROWS(proxy.Call("vhighvoltage", {"50"}, -1, PUT));
+        REQUIRE_THROWS(proxy.Call("highvoltage", {"50"}, -1, PUT));
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"90"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "vhighvoltage 90\n");
-            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "vhighvoltage 90\n");
+            proxy.Call("highvoltage", {"90"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "highvoltage 90\n");
+            proxy.Call("highvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "highvoltage 90\n");
         }
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"0"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "vhighvoltage 0\n");
-            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "vhighvoltage 0\n");
+            proxy.Call("highvoltage", {"0"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "highvoltage 0\n");
+            proxy.Call("highvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "highvoltage 0\n");
         }
     }
     // full range 0 - 200 (get needs to wait)
     else if (det_type == defs::EIGER) {
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"50"}, 0, PUT, oss1);
-            REQUIRE(oss1.str() == "vhighvoltage 50\n");
+            proxy.Call("highvoltage", {"50"}, 0, PUT, oss1);
+            REQUIRE(oss1.str() == "highvoltage 50\n");
             std::this_thread::sleep_for(std::chrono::seconds(2));
-            proxy.Call("vhighvoltage", {}, 0, GET, oss2);
-            REQUIRE(oss2.str() == "vhighvoltage 50\n");
+            proxy.Call("highvoltage", {}, 0, GET, oss2);
+            REQUIRE(oss2.str() == "highvoltage 50\n");
         }
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"120"}, 0, PUT, oss1);
-            REQUIRE(oss1.str() == "vhighvoltage 120\n");
+            proxy.Call("highvoltage", {"120"}, 0, PUT, oss1);
+            REQUIRE(oss1.str() == "highvoltage 120\n");
             std::this_thread::sleep_for(std::chrono::seconds(2));
-            proxy.Call("vhighvoltage", {}, 0, GET, oss2);
-            REQUIRE(oss2.str() == "vhighvoltage 120\n");
+            proxy.Call("highvoltage", {}, 0, GET, oss2);
+            REQUIRE(oss2.str() == "highvoltage 120\n");
         }
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"0"}, 0, PUT, oss1);
-            REQUIRE(oss1.str() == "vhighvoltage 0\n");
+            proxy.Call("highvoltage", {"0"}, 0, PUT, oss1);
+            REQUIRE(oss1.str() == "highvoltage 0\n");
             std::this_thread::sleep_for(std::chrono::seconds(2));
-            proxy.Call("vhighvoltage", {}, 0, GET, oss2);
-            REQUIRE(oss2.str() == "vhighvoltage 0\n");
+            proxy.Call("highvoltage", {}, 0, GET, oss2);
+            REQUIRE(oss2.str() == "highvoltage 0\n");
         }
     }
     // full range 0 - 200
     else {
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"50"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "vhighvoltage 50\n");
-            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "vhighvoltage 50\n");
+            proxy.Call("highvoltage", {"50"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "highvoltage 50\n");
+            proxy.Call("highvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "highvoltage 50\n");
         }
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"120"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "vhighvoltage 120\n");
-            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "vhighvoltage 120\n");
+            proxy.Call("highvoltage", {"120"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "highvoltage 120\n");
+            proxy.Call("highvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "highvoltage 120\n");
         }
         {
             std::ostringstream oss1, oss2;
-            proxy.Call("vhighvoltage", {"0"}, -1, PUT, oss1);
-            REQUIRE(oss1.str() == "vhighvoltage 0\n");
-            proxy.Call("vhighvoltage", {}, -1, GET, oss2);
-            REQUIRE(oss2.str() == "vhighvoltage 0\n");
+            proxy.Call("highvoltage", {"0"}, -1, PUT, oss1);
+            REQUIRE(oss1.str() == "highvoltage 0\n");
+            proxy.Call("highvoltage", {}, -1, GET, oss2);
+            REQUIRE(oss2.str() == "highvoltage 0\n");
         }
     }
     for (int i = 0; i != det.size(); ++i) {

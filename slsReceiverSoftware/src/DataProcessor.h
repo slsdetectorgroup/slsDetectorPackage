@@ -16,6 +16,7 @@ class GeneralData;
 class Fifo;
 class File;
 class DataStreamer;
+struct MasterAttributes;
 
 #include <atomic>
 #include <vector>
@@ -134,7 +135,7 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * Create New File
      * @param attr master file attributes
      */
-    void CreateNewFile(masterAttributes &attr);
+    void CreateNewFile(MasterAttributes *attr);
 
     /**
      * Closes files

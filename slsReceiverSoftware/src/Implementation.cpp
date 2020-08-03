@@ -4,6 +4,7 @@
 #include "Fifo.h"
 #include "GeneralData.h"
 #include "Listener.h"
+#include "MasterAttributes.h"
 #include "ToString.h"
 #include "ZmqSocket.h" //just for the zmq port define
 #include "file_utils.h"
@@ -46,6 +47,7 @@ void Implementation::DeleteMembers() {
     fifo.clear();
     eth.clear();
     udpPortNum.clear();
+    rateCorrections.clear();
     ctbDbitList.clear();
 }
 
@@ -905,45 +907,72 @@ void Implementation::CreateUDPSockets() {
 
 void Implementation::SetupWriter() {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    masterAttributes attr;
-    attr.detectorType = myDetectorType;
-    attr.dynamicRange = dynamicRange;
-    attr.tenGiga = tengigaEnable;
-    attr.imageSize = generalData->imageSize;
-    attr.nPixelsX = generalData->nPixelsX;
-    attr.nPixelsY = generalData->nPixelsY;
-    attr.maxFramesPerFile = framesPerFile;
-    attr.totalFrames = numberOfTotalFrames;
-    attr.exptimeNs = acquisitionTime;
-    attr.subExptimeNs = subExpTime;
-    attr.subPeriodNs = subPeriod;
-    attr.periodNs = acquisitionPeriod;
-    attr.quadEnable = quadEnable;
-    attr.analogFlag =
+    std::unique_ptr<MasterAttributes> masterAttributes;
+    switch (myDetectorType) {
+    case GOTTHARD:
+        masterAttributes = sls::make_unique<GotthardMasterAttributes>();
+        break;
+    case JUNGFRAU:
+        masterAttributes = sls::make_unique<JungfrauMasterAttributes>();
+        break;
+    case EIGER:
+        masterAttributes = sls::make_unique<EigerMasterAttributes>();
+        break;
+    case MYTHEN3:
+        masterAttributes = sls::make_unique<Mythen3MasterAttributes>();
+        break;
+    case GOTTHARD2:
+        masterAttributes = sls::make_unique<Gotthard2MasterAttributes>();
+        break;
+    case MOENCH:
+        masterAttributes = sls::make_unique<MoenchMasterAttributes>();
+        break;
+    case CHIPTESTBOARD:
+        masterAttributes = sls::make_unique<CtbMasterAttributes>();
+        break;
+    default:
+        throw sls::RuntimeError(
+            "Unknown detector type to set up master file attributes");
+    }
+    masterAttributes->detType = myDetectorType;
+    masterAttributes->imageSize = generalData->imageSize;
+    masterAttributes->nPixels =
+        xy(generalData->nPixelsX, generalData->nPixelsY);
+    masterAttributes->maxFramesPerFile = framesPerFile;
+    masterAttributes->totalFrames = numberOfTotalFrames;
+    masterAttributes->exptime = std::chrono::nanoseconds(acquisitionTime);
+    masterAttributes->period = std::chrono::nanoseconds(acquisitionPeriod);
+    masterAttributes->dynamicRange = dynamicRange;
+    masterAttributes->tenGiga = tengigaEnable;
+    masterAttributes->subExptime = std::chrono::nanoseconds(subExpTime);
+    masterAttributes->subPeriod = std::chrono::nanoseconds(subPeriod);
+    masterAttributes->quad = quadEnable;
+    masterAttributes->ratecorr = rateCorrections;
+    masterAttributes->adcmask =
+        tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
+    masterAttributes->analog =
         (readoutType == ANALOG_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1
                                                                           : 0;
-    attr.digitalFlag =
+    masterAttributes->digital =
         (readoutType == DIGITAL_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1
                                                                            : 0;
-    attr.adcmask = tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
-    attr.dbitoffset = ctbDbitOffset;
-    attr.dbitlist = 0;
-    attr.roiXmin = roi.xmin;
-    attr.roiXmax = roi.xmax;
+    masterAttributes->dbitoffset = ctbDbitOffset;
+    masterAttributes->dbitlist = 0;
     for (auto &i : ctbDbitList) {
-        attr.dbitlist |= (1 << i);
+        masterAttributes->dbitlist |= (1 << i);
     }
-    attr.exptime1Ns = acquisitionTime1;
-    attr.exptime2Ns = acquisitionTime2;
-    attr.exptime3Ns = acquisitionTime3;
-    attr.gateDelay1Ns = gateDelay1;
-    attr.gateDelay2Ns = gateDelay2;
-    attr.gateDelay3Ns = gateDelay3;
-    attr.gates = numberOfGates;
+    masterAttributes->roi = roi;
+    masterAttributes->exptime1 = std::chrono::nanoseconds(acquisitionTime1);
+    masterAttributes->exptime2 = std::chrono::nanoseconds(acquisitionTime2);
+    masterAttributes->exptime3 = std::chrono::nanoseconds(acquisitionTime3);
+    masterAttributes->gateDelay1 = std::chrono::nanoseconds(gateDelay1);
+    masterAttributes->gateDelay2 = std::chrono::nanoseconds(gateDelay2);
+    masterAttributes->gateDelay3 = std::chrono::nanoseconds(gateDelay3);
+    masterAttributes->gates = numberOfGates;
 
     try {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {
-            dataProcessor[i]->CreateNewFile(attr);
+            dataProcessor[i]->CreateNewFile(masterAttributes.get());
         }
     } catch (const sls::RuntimeError &e) {
         shutDownUDPSockets();
@@ -1769,6 +1798,11 @@ int Implementation::getReadNLines() const {
 void Implementation::setReadNLines(const int value) {
     numLinesReadout = value;
     LOG(logINFO) << "Number of Lines to readout: " << numLinesReadout;
+}
+
+void Implementation::setRateCorrections(const std::vector<int64_t> &t) {
+    rateCorrections = t;
+    LOG(logINFO) << "Rate Corrections: " << sls::ToString(rateCorrections);
 }
 
 slsDetectorDefs::readoutMode Implementation::getReadoutMode() const {

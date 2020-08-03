@@ -39,6 +39,8 @@ std::string ToString(const std::vector<defs::dacIndex> &vec);
 std::string ToString(const defs::burstMode s);
 std::string ToString(const defs::timingSourceType s);
 
+std::string ToString(const slsDetectorDefs::xy &coord);
+std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::xy &coord);
 std::string ToString(const slsDetectorDefs::ROI &roi);
 std::ostream &operator<<(std::ostream &os, const slsDetectorDefs::ROI &roi);
 std::string ToString(const slsDetectorDefs::rxParameters &r);

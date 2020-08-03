@@ -560,9 +560,7 @@ void qTabAdvanced::ClearROI() {
 
 void qTabAdvanced::SetROI() {
 
-    slsDetectorDefs::ROI roi;
-    roi.xmin = spinXmin->value();
-    roi.xmax = spinXmax->value();
+    slsDetectorDefs::ROI roi(spinXmin->value(), spinXmax->value());
 
     // set roi
     LOG(logINFO) << "Setting ROI: [" << roi.xmin << ", " << roi.xmax << "]";

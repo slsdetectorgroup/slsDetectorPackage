@@ -196,7 +196,7 @@ sls_detector_put 0-parameters setup.det
 \end{verbatim}
 Note that the parameter file for any realease before 4.1.1 has not the possibility to understand parameters to be set differently for different half modules, i.e.  {\tt{0:txndelay\_left xxxxx},\tt{1:txndelay\_left yyyyy}}. 
 
-In the case of \E, the proper bias voltage of the sensor has to be setup, i.e. the {\tt{setup.det}} file needs to contain the line {\tt{vhighvoltage 150}}. Other detector functionality, which are rarely changed can be setup here. 
+In the case of \E, the proper bias voltage of the sensor has to be setup, i.e. the {\tt{setup.det}} file needs to contain the line {\tt{highvoltage 150}}. Other detector functionality, which are rarely changed can be setup here. 
 Other important settings that are configured in the {\tt{setup.det}} file are:
 \begin{itemize}
 \item {\tt{tengiga 0/1}}, which sets whether the detector is enabled to send data through the 1~or the 10~Gb Ethernet.
@@ -1174,10 +1174,10 @@ In 500k--2M pixel systems there is a hardware temperature safety switch, which w
  
 The HV can also be set and read through the software:
 \begin{verbatim}
-./sls_detector_put vhighvoltage 150
-./sls_detector_get vhighvoltage 
+./sls_detector_put highvoltage 150
+./sls_detector_get highvoltage 
 \end{verbatim}
-Note that the get {\tt{vhighvoltage}} would return the measured HV from the master module only. If getting the vhighvoltage for individual halfmodules, only the master will have a value different from -999.
+Note that the get {\tt{highvoltage}} would return the measured HV from the master module only. If getting the highvoltage for individual halfmodules, only the master will have a value different from -999.
 
 \appendix
 
@@ -1454,7 +1454,7 @@ Environment variable SLSDETNAME can be set for using 2 different detectors from 
 \subsection{Measure the HV}
 For every system: 
 \begin{itemize}
-\item Software-wise measure it (now the software returns the measured value), with {\tt{sls\_detector\_get vhighvoltage}}. The returned value is the HV (for proper Eiger setting is approximately 150~V) if it is correctly set. If two master modules are presents (multi systems), the average is returned (still to be tested). If one asks for the individual $n$ half module bias voltage through {\tt{sls\_detector\_get n:vhighvoltage}}, if the $n$ module is a master, the actual voltage will be returned. If it is a slave, -999 will be returned. 
+\item Software-wise measure it (now the software returns the measured value), with {\tt{sls\_detector\_get highvoltage}}. The returned value is the HV (for proper Eiger setting is approximately 150~V) if it is correctly set. If two master modules are presents (multi systems), the average is returned (still to be tested). If one asks for the individual $n$ half module bias voltage through {\tt{sls\_detector\_get n:highvoltage}}, if the $n$ module is a master, the actual voltage will be returned. If it is a slave, -999 will be returned. 
 \item Hardware-wise (opening the detector) measure value of HV on C14 on the power distribution board. Check also that the small HV connector cable is really connected. 
  \end{itemize}
 
@@ -1505,7 +1505,7 @@ Scroll up in the terminal till you find:\\
 There is also an easier way, that is that only the master module will return the real value of the HV. If you have more than 1 detector system, then you will have more than 1 physical master, as the HV needs to be applied to all the systems.
 
 \begin{verbatim}
-for i in $(seq 0 36); do sls_detector_put $i:vhighvoltage; done
+for i in $(seq 0 36); do sls_detector_put $i:highvoltage; done
 \end{verbatim}
  Only the master will return to you a sensible number (150 normally). the others will return -999.
 
@@ -1666,10 +1666,10 @@ ratecorr number
 where {\tt{number}} is a string that should be interpreted as a float in s.  0.000000 means correction off. Values above zero are the value of $\tau$ in ns.
 
 \item \begin{verbatim}
-sls_detector_get vhighvoltage
-vhighvoltage number
+sls_detector_get highvoltage
+highvoltage number
 \end{verbatim}
-where {\tt{number}} is a string that should be interpreted as an int and for proper Eiger setting is approximately 150~V if it is correctly set. If two master modules are presents (multi systems), the average is returned (still to be tested). If one asks for the individual $n$ half module bias voltage through {\tt{sls\_detector\_get n:vhighvoltage}}, if the $n$ module is a master, the actual voltage will be returned. If it is a slave, -999 will be returned. 
+where {\tt{number}} is a string that should be interpreted as an int and for proper Eiger setting is approximately 150~V if it is correctly set. If two master modules are presents (multi systems), the average is returned (still to be tested). If one asks for the individual $n$ half module bias voltage through {\tt{sls\_detector\_get n:highvoltage}}, if the $n$ module is a master, the actual voltage will be returned. If it is a slave, -999 will be returned. 
   
 \item \begin{verbatim}
 sls_detector_get busy

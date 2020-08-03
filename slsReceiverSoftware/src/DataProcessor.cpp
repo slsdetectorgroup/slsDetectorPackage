@@ -9,6 +9,7 @@
 #include "BinaryFile.h"
 #include "Fifo.h"
 #include "GeneralData.h"
+#include "MasterAttributes.h"
 #ifdef HDF5C
 #include "HDF5File.h"
 #endif
@@ -143,7 +144,7 @@ void DataProcessor::SetupFileWriter(bool fwe, int *nd, uint32_t *maxf,
 }
 
 // only the first file
-void DataProcessor::CreateNewFile(masterAttributes &attr) {
+void DataProcessor::CreateNewFile(MasterAttributes *attr) {
     if (file == nullptr) {
         throw sls::RuntimeError("file object not contstructed");
     }
@@ -411,7 +412,7 @@ void DataProcessor::PadMissingPackets(char *buf) {
 
 /** ctb specific */
 void DataProcessor::RearrangeDbitData(char *buf) {
-    //TODO! (Erik) Refactor and add tests
+    // TODO! (Erik) Refactor and add tests
     int totalSize = (int)(*((uint32_t *)buf));
     int ctbDigitalDataBytes =
         totalSize - (*ctbAnalogDataBytes) - (*ctbDbitOffset);

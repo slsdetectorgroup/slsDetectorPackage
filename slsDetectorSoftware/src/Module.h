@@ -312,6 +312,7 @@ class Module : public virtual slsDetectorDefs {
     int64_t getRateCorrection() const;
     void setDefaultRateCorrection();
     void setRateCorrection(int64_t t = 0);
+    void sendReceiverRateCorrections(const std::vector<int64_t> &t);
     int getReadNLines() const;
     void setReadNLines(const int value);
     bool getInterruptSubframe() const;
@@ -371,8 +372,9 @@ class Module : public virtual slsDetectorDefs {
     void setBurstPeriod(int64_t value);
     std::array<int, 2> getInjectChannel() const;
     void setInjectChannel(const int offsetChannel, const int incrementChannel);
-    void sendVetoPhoton(const int chipIndex, const std::vector<int>& gainIndices,
-                        const std::vector<int>& values);
+    void sendVetoPhoton(const int chipIndex,
+                        const std::vector<int> &gainIndices,
+                        const std::vector<int> &values);
     void getVetoPhoton(const int chipIndex, const std::string &fname) const;
     void setVetoPhoton(const int chipIndex, const int numPhotons,
                        const int energy, const std::string &fname);

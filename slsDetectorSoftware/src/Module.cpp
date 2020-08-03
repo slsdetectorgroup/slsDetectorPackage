@@ -270,18 +270,21 @@ void Module::setDynamicRange(int dr) {
         sendToReceiver<int>(F_SET_RECEIVER_DYNAMIC_RANGE, retval);
     }
 
-    // EIGER only, update speed and rate correction when dr changes
-    if (dr != prev_val) {
+    // update speed
+    if (shm()->myDetectorType == EIGER) {
         if (dr == 32) {
             LOG(logINFO) << "Setting Clock to Quarter Speed to cope with "
                             "Dynamic Range of 32";
             setClockDivider(RUN_CLOCK, 2);
-        } else if (prev_val == 32) {
+        } else {
             LOG(logINFO) << "Setting Clock to Full Speed for Dynamic Range of "
                          << dr;
             setClockDivider(RUN_CLOCK, 0);
         }
-        updateRateCorrection();
+        // EIGER only, update speed and rate correction when dr changes
+        if (dr != prev_val) {
+            updateRateCorrection();
+        }
     }
 }
 
@@ -1158,6 +1161,19 @@ void Module::setDefaultRateCorrection() {
 
 void Module::setRateCorrection(int64_t t) {
     sendToDetector(F_SET_RATE_CORRECT, t, nullptr);
+}
+
+void Module::sendReceiverRateCorrections(const std::vector<int64_t> &t) {
+    LOG(logDEBUG) << "Sending to detector [rate corrections: " << ToString(t)
+                  << ']';
+    auto receiver = ReceiverSocket(shm()->rxHostname, shm()->rxTCPPort);
+    receiver.Send(F_SET_RECEIVER_RATE_CORRECT);
+    receiver.Send(static_cast<int>(t.size()));
+    receiver.Send(t);
+    if (receiver.Receive<int>() == FAIL) {
+        throw RuntimeError("Receiver " + std::to_string(moduleId) +
+                           " returned error: " + receiver.readErrorMessage());
+    }
 }
 
 int Module::getReadNLines() const {

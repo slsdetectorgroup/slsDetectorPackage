@@ -211,6 +211,8 @@ class Implementation : private virtual slsDetectorDefs {
     int getReadNLines() const;
     /* [Eiger] */
     void setReadNLines(const int value);
+    /* [Eiger] */
+    void setRateCorrections(const std::vector<int64_t> &t);
     readoutMode getReadoutMode() const;
     /* [Ctb] */
     void setReadoutMode(const readoutMode f);
@@ -336,6 +338,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool activated;
     bool deactivatedPaddingEnable;
     int numLinesReadout;
+    std::vector<int64_t> rateCorrections;
     readoutMode readoutType;
     uint32_t adcEnableMaskOneGiga;
     uint32_t adcEnableMaskTenGiga;

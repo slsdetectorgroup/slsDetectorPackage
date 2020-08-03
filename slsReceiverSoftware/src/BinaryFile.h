@@ -42,7 +42,7 @@ class BinaryFile : private virtual slsDetectorDefs, public File {
     void PrintMembers(TLogLevel level = logDEBUG1) override;
     void CreateFile() override;
     void CreateMasterFile(bool masterFileWriteEnable,
-                          masterAttributes &masterFileAttributes) override;
+                          MasterAttributes *attr) override;
     void CloseCurrentFile() override;
     void CloseAllFiles() override;
     void WriteToFile(char *buffer, int buffersize, uint64_t currentFrameNumber,
@@ -55,8 +55,4 @@ class BinaryFile : private virtual slsDetectorDefs, public File {
     static FILE *masterfd;
     uint32_t numFramesInFile = 0;
     uint64_t numActualPacketsInFile = 0;
-    //Make sure this is known at compile time
-    //TODO! Later away from stack allocation of message
-    static constexpr size_t maxMasterFileSize = 2000; 
-    
 };

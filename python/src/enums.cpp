@@ -49,14 +49,14 @@ void init_enums(py::module &m) {
 
     py::enum_<slsDetectorDefs::fileFormat>(Defs, "fileFormat")
         .value("BINARY", slsDetectorDefs::fileFormat::BINARY)
-        .value(" HDF5", slsDetectorDefs::fileFormat::HDF5)
-        .value(" NUM_FILE_FORMATS",
+        .value("HDF5", slsDetectorDefs::fileFormat::HDF5)
+        .value("NUM_FILE_FORMATS",
                slsDetectorDefs::fileFormat::NUM_FILE_FORMATS)
         .export_values();
 
     py::enum_<slsDetectorDefs::dimension>(Defs, "dimension")
         .value("X", slsDetectorDefs::dimension::X)
-        .value(" Y", slsDetectorDefs::dimension::Y)
+        .value("Y", slsDetectorDefs::dimension::Y)
         .export_values();
 
     py::enum_<slsDetectorDefs::externalSignalFlag>(Defs, "externalSignalFlag")
@@ -176,6 +176,7 @@ void init_enums(py::module &m) {
                slsDetectorDefs::dacIndex::TEMPERATURE_FPGA2)
         .value("TEMPERATURE_FPGA3",
                slsDetectorDefs::dacIndex::TEMPERATURE_FPGA3)
+        .value("TRIMBIT_SCAN", slsDetectorDefs::dacIndex::TRIMBIT_SCAN)
         .value("V_POWER_A", slsDetectorDefs::dacIndex::V_POWER_A)
         .value("V_POWER_B", slsDetectorDefs::dacIndex::V_POWER_B)
         .value("V_POWER_C", slsDetectorDefs::dacIndex::V_POWER_C)
@@ -234,42 +235,42 @@ void init_enums(py::module &m) {
 
     py::enum_<slsDetectorDefs::clockIndex>(Defs, "clockIndex")
         .value("ADC_CLOCK", slsDetectorDefs::clockIndex::ADC_CLOCK)
-        .value(" DBIT_CLOCK", slsDetectorDefs::clockIndex::DBIT_CLOCK)
-        .value(" RUN_CLOCK", slsDetectorDefs::clockIndex::RUN_CLOCK)
-        .value(" SYNC_CLOCK", slsDetectorDefs::clockIndex::SYNC_CLOCK)
+        .value("DBIT_CLOCK", slsDetectorDefs::clockIndex::DBIT_CLOCK)
+        .value("RUN_CLOCK", slsDetectorDefs::clockIndex::RUN_CLOCK)
+        .value("SYNC_CLOCK", slsDetectorDefs::clockIndex::SYNC_CLOCK)
         .export_values();
 
     py::enum_<slsDetectorDefs::readoutMode>(Defs, "readoutMode")
         .value("ANALOG_ONLY", slsDetectorDefs::readoutMode::ANALOG_ONLY)
-        .value(" DIGITAL_ONLY", slsDetectorDefs::readoutMode::DIGITAL_ONLY)
-        .value(" ANALOG_AND_DIGITAL",
+        .value("DIGITAL_ONLY", slsDetectorDefs::readoutMode::DIGITAL_ONLY)
+        .value("ANALOG_AND_DIGITAL",
                slsDetectorDefs::readoutMode::ANALOG_AND_DIGITAL)
         .export_values();
 
     py::enum_<slsDetectorDefs::speedLevel>(Defs, "speedLevel")
         .value("FULL_SPEED", slsDetectorDefs::speedLevel::FULL_SPEED)
-        .value(" HALF_SPEED", slsDetectorDefs::speedLevel::HALF_SPEED)
-        .value(" QUARTER_SPEED", slsDetectorDefs::speedLevel::QUARTER_SPEED)
+        .value("HALF_SPEED", slsDetectorDefs::speedLevel::HALF_SPEED)
+        .value("QUARTER_SPEED", slsDetectorDefs::speedLevel::QUARTER_SPEED)
         .export_values();
 
     py::enum_<slsDetectorDefs::masterFlags>(Defs, "masterFlags")
         .value("NO_MASTER", slsDetectorDefs::masterFlags::NO_MASTER)
-        .value(" IS_MASTER", slsDetectorDefs::masterFlags::IS_MASTER)
-        .value(" IS_SLAVE", slsDetectorDefs::masterFlags::IS_SLAVE)
+        .value("IS_MASTER", slsDetectorDefs::masterFlags::IS_MASTER)
+        .value("IS_SLAVE", slsDetectorDefs::masterFlags::IS_SLAVE)
         .export_values();
 
     py::enum_<slsDetectorDefs::frameModeType>(Defs, "frameModeType")
         .value("PEDESTAL", slsDetectorDefs::frameModeType::PEDESTAL)
-        .value(" NEW_PEDESTAL", slsDetectorDefs::frameModeType::NEW_PEDESTAL)
-        .value(" FLATFIELD", slsDetectorDefs::frameModeType::FLATFIELD)
-        .value(" NEW_FLATFIELD", slsDetectorDefs::frameModeType::NEW_FLATFIELD)
+        .value("NEW_PEDESTAL", slsDetectorDefs::frameModeType::NEW_PEDESTAL)
+        .value("FLATFIELD", slsDetectorDefs::frameModeType::FLATFIELD)
+        .value("NEW_FLATFIELD", slsDetectorDefs::frameModeType::NEW_FLATFIELD)
         .export_values();
 
     py::enum_<slsDetectorDefs::detectorModeType>(Defs, "detectorModeType")
         .value("COUNTING", slsDetectorDefs::detectorModeType::COUNTING)
-        .value(" INTERPOLATING",
+        .value("INTERPOLATING",
                slsDetectorDefs::detectorModeType::INTERPOLATING)
-        .value(" ANALOG", slsDetectorDefs::detectorModeType::ANALOG)
+        .value("ANALOG", slsDetectorDefs::detectorModeType::ANALOG)
         .export_values();
 
     py::enum_<slsDetectorDefs::burstMode>(Defs, "burstMode")
@@ -282,7 +283,7 @@ void init_enums(py::module &m) {
     py::enum_<slsDetectorDefs::timingSourceType>(Defs, "timingSourceType")
         .value("TIMING_INTERNAL",
                slsDetectorDefs::timingSourceType::TIMING_INTERNAL)
-        .value(" TIMING_EXTERNAL",
+        .value("TIMING_EXTERNAL",
                slsDetectorDefs::timingSourceType::TIMING_EXTERNAL)
         .export_values();
 }

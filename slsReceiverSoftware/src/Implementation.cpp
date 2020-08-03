@@ -120,7 +120,7 @@ void Implementation::InitializeMembers() {
     subPeriod = 0;
     numberOfAnalogSamples = 0;
     numberOfDigitalSamples = 0;
-    numberOfCounters = 0;
+    counterMask = 0;
     dynamicRange = 16;
     roi.xmin = -1;
     roi.xmax = -1;
@@ -962,6 +962,7 @@ void Implementation::SetupWriter() {
         masterAttributes->dbitlist |= (1 << i);
     }
     masterAttributes->roi = roi;
+    masterAttributes->counterMask = counterMask;
     masterAttributes->exptime1 = std::chrono::nanoseconds(acquisitionTime1);
     masterAttributes->exptime2 = std::chrono::nanoseconds(acquisitionTime2);
     masterAttributes->exptime3 = std::chrono::nanoseconds(acquisitionTime3);
@@ -1616,24 +1617,27 @@ void Implementation::setNumberofDigitalSamples(const uint32_t i) {
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
-int Implementation::getNumberofCounters() const {
+uint32_t Implementation::getCounterMask() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return numberOfCounters;
+    return counterMask;
 }
 
-void Implementation::setNumberofCounters(const int i) {
-    if (numberOfCounters != i) {
-        numberOfCounters = i;
+void Implementation::setCounterMask(const uint32_t i) {
+    if (counterMask != i) {
+        counterMask = i;
 
         if (myDetectorType == MYTHEN3) {
-            generalData->SetNumberofCounters(i, dynamicRange);
+            int ncounters = __builtin_popcount(i);
+            generalData->SetNumberofCounters(ncounters, dynamicRange);
             // to update npixelsx, npixelsy in file writer
             for (const auto &it : dataProcessor)
                 it->SetPixelDimension();
             SetupFifoStructure();
         }
     }
-    LOG(logINFO) << "Number of Counters: " << numberOfCounters;
+    LOG(logINFO) << "Counter mask: " << sls::ToStringHex(counterMask);
+    int ncounters = __builtin_popcount(counterMask);
+    LOG(logINFO) << "Number of counters: " << ncounters;
 }
 
 uint32_t Implementation::getDynamicRange() const {

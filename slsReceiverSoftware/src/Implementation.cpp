@@ -1628,7 +1628,8 @@ void Implementation::setCounterMask(const uint32_t i) {
 
         if (myDetectorType == MYTHEN3) {
             int ncounters = __builtin_popcount(i);
-            generalData->SetNumberofCounters(ncounters, dynamicRange);
+            generalData->SetNumberofCounters(ncounters, dynamicRange,
+                                             tengigaEnable);
             // to update npixelsx, npixelsy in file writer
             for (const auto &it : dataProcessor)
                 it->SetPixelDimension();
@@ -1651,7 +1652,14 @@ void Implementation::setDynamicRange(const uint32_t i) {
         dynamicRange = i;
 
         if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
-            generalData->SetDynamicRange(i, tengigaEnable);
+
+            if (myDetectorType == EIGER) {
+                generalData->SetDynamicRange(i, tengigaEnable);
+            } else {
+                int ncounters = __builtin_popcount(counterMask);
+                generalData->SetNumberofCounters(ncounters, i, tengigaEnable);
+            }
+
             // to update npixelsx, npixelsy in file writer
             for (const auto &it : dataProcessor)
                 it->SetPixelDimension();
@@ -1693,13 +1701,14 @@ bool Implementation::getTenGigaEnable() const {
 void Implementation::setTenGigaEnable(const bool b) {
     if (tengigaEnable != b) {
         tengigaEnable = b;
+        int ncounters = __builtin_popcount(counterMask);
         // side effects
         switch (myDetectorType) {
         case EIGER:
             generalData->SetTenGigaEnable(b, dynamicRange);
             break;
         case MYTHEN3:
-            generalData->SetDynamicRange(dynamicRange, b);
+            generalData->SetNumberofCounters(ncounters, dynamicRange, b);
             break;
         case MOENCH:
         case CHIPTESTBOARD:

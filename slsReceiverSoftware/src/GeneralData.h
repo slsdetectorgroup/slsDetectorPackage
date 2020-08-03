@@ -157,8 +157,9 @@ class GeneralData {
      * set number of counters (mythen3)
      * @param n number of counters
      * @param dr dynamic range
+     * @param tgEnable ten giga enable
      */
-    virtual void SetNumberofCounters(const int n, const int dr) {
+    virtual void SetNumberofCounters(const int n, const int dr, bool tgEnable) {
         LOG(logERROR) << "SetNumberofCounters is a generic function that "
                          "should be overloaded by a derived class";
     }
@@ -440,8 +441,9 @@ class Mythen3Data : public GeneralData {
      * set number of counters (mythen3)
      * @param n number of counters
      * @param dr dynamic range
+     * @param tgEnable ten giga enable
      */
-    virtual void SetNumberofCounters(const int n, const int dr) {
+    virtual void SetNumberofCounters(const int n, const int dr, bool tgEnable) {
         if (n < 1 || n > 3) {
             throw sls::RuntimeError("Invalid number of counters " +
                                     std::to_string(n));
@@ -450,7 +452,26 @@ class Mythen3Data : public GeneralData {
         nPixelsX = NCHAN * ncounters;
         LOG(logINFO) << "nPixelsX: " << nPixelsX;
         imageSize = nPixelsX * nPixelsY * ((double)dr / 8.00);
-        dataSize = imageSize / packetsPerFrame;
+        // 10g
+        if (tgEnable) {
+            if (dr == 32 && n > 1) {
+                packetsPerFrame = 2;
+            } else {
+                packetsPerFrame = 1;
+            }
+            dataSize = imageSize / packetsPerFrame;
+        }
+        // 1g
+        else {
+            if (n == 3) {
+                dataSize = 768;
+            } else {
+                dataSize = 1280;
+            }
+            packetsPerFrame = imageSize / dataSize;
+        }
+
+        LOG(logINFO) << "Packets Per Frame: " << packetsPerFrame;
         packetSize = headerSizeinPacket + dataSize;
         LOG(logINFO) << "PacketSize: " << packetSize;
     }
@@ -462,6 +483,7 @@ class Mythen3Data : public GeneralData {
      */
     void SetDynamicRange(int dr, bool tgEnable) {
         imageSize = nPixelsX * nPixelsY * ((double)dr / 8.00);
+
         packetsPerFrame = tgEnable ? 2 : 20;
         dataSize = imageSize / packetsPerFrame;
         packetSize = headerSizeinPacket + dataSize;

@@ -49,6 +49,7 @@
 #define FIXED_PLL_FREQUENCY     (020000000)  // 20MHz
 #define READOUT_PLL_VCO_FREQ_HZ (1250000000) // 1.25GHz
 #define SYSTEM_PLL_VCO_FREQ_HZ  (1000000000) // 1GHz
+#define MAX_NUM_DESERIALIZERS   (40)
 
 /** Other Definitions */
 #define BIT16_MASK         (0xFFFF)

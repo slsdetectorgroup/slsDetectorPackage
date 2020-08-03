@@ -552,6 +552,7 @@ int setDynamicRange(int dr) {
         // set it
         bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_DYNAMIC_RANGE_MSK);
         bus_w(CONFIG_REG, bus_r(CONFIG_REG) | regval);
+        updateNumberOfDeserializers();
     }
 
     uint32_t regval = bus_r(CONFIG_REG) & CONFIG_DYNAMIC_RANGE_MSK;
@@ -1032,12 +1033,41 @@ void setCounterMask(uint32_t arg) {
                                CONFIG_COUNTERS_ENA_MSK));
     LOG(logDEBUG, ("Config Reg: 0x%x\n", bus_r(addr)));
 
+    updateNumberOfDeserializers();
     updateGatePeriod();
 }
 
 uint32_t getCounterMask() {
     return ((bus_r(CONFIG_REG) & CONFIG_COUNTERS_ENA_MSK) >>
             CONFIG_COUNTERS_ENA_OFST);
+}
+
+void updateNumberOfDeserializers() {
+    const uint32_t counterMask = getCounterMask();
+    const int ncounters = __builtin_popcount(counterMask);
+    const int dr = setDynamicRange(-1);
+    const int tgEnable = enableTenGigabitEthernet(-1);
+    int packetsPerFrame = 0;
+
+    // 10g
+    if (tgEnable) {
+        packetsPerFrame = 1;
+        if (dr == 32 && n > 1) {
+            packetsPerFrame = 2;
+        }
+    }
+    // 1g
+    else {
+        int datasize = 1280;
+        if (n == 3) {
+            dataSize = 768;
+        }
+        packetsPerFrame = imageSize / dataSize;
+    }
+
+    int numDeserializers = MAX_NUM_DESERIALIZERS / packetsPerFrame;
+    // bus_w()
+    LOG(logINFO, ("Number of Deserializers: %d\n", numDeserializers));
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -1509,6 +1539,7 @@ int enableTenGigabitEthernet(int val) {
         else {
             bus_w(addr, bus_r(addr) & (~PKT_CONFIG_1G_INTERFACE_MSK));
         }
+        updateNumberOfDeserializers();
     }
     int oneG = ((bus_r(addr) & PKT_CONFIG_1G_INTERFACE_MSK) >>
                 PKT_CONFIG_1G_INTERFACE_OFST);

@@ -1268,28 +1268,28 @@ TEST_CASE("scan", "[.cmd][.new]") {
         proxy.Call("scan", {sls::ToString(ind), "500", "1500", "500"}, -1, PUT,
                    oss);
         CHECK(oss.str() ==
-                "scan [" + sls::ToString(ind) + ", 500, 1500, 500]\n");
+              "scan [" + sls::ToString(ind) + ", 500, 1500, 500]\n");
     }
     {
         std::ostringstream oss;
         proxy.Call("scan", {}, -1, GET, oss);
         CHECK(oss.str() == "scan [enabled\ndac " + sls::ToString(ind) +
-                                 "\nstart 500\nstop 1500\nstep "
-                                 "500\nsettleTime 1ms\n]\n");
+                               "\nstart 500\nstop 1500\nstep "
+                               "500\nsettleTime 1ms\n]\n");
     }
     {
         std::ostringstream oss;
         proxy.Call("scan", {sls::ToString(ind), "500", "1500", "500", "2s"}, -1,
                    PUT, oss);
         CHECK(oss.str() ==
-                "scan [" + sls::ToString(ind) + ", 500, 1500, 500, 2s]\n");
+              "scan [" + sls::ToString(ind) + ", 500, 1500, 500, 2s]\n");
     }
     {
         std::ostringstream oss;
         proxy.Call("scan", {}, -1, GET, oss);
         CHECK(oss.str() == "scan [enabled\ndac " + sls::ToString(ind) +
-                                 "\nstart 500\nstop 1500\nstep "
-                                 "500\nsettleTime 2s\n]\n");
+                               "\nstart 500\nstop 1500\nstep "
+                               "500\nsettleTime 2s\n]\n");
     }
     {
         std::ostringstream oss;
@@ -1306,15 +1306,15 @@ TEST_CASE("scan", "[.cmd][.new]") {
         proxy.Call("scan", {sls::ToString(ind), "1500", "500", "-500"}, -1, PUT,
                    oss);
         CHECK(oss.str() ==
-                "scan [" + sls::ToString(ind) + ", 1500, 500, -500]\n");
+              "scan [" + sls::ToString(ind) + ", 1500, 500, -500]\n");
     }
     CHECK_THROWS(proxy.Call(
         "scan", {sls::ToString(notImplementedInd), "500", "1500", "500"}, -1,
         PUT));
-    CHECK_THROWS(proxy.Call(
-        "scan", {sls::ToString(ind), "500", "1500", "-500"}, -1, PUT));
-    CHECK_THROWS(proxy.Call(
-        "scan", {sls::ToString(ind), "1500", "500", "500"}, -1, PUT));
+    CHECK_THROWS(proxy.Call("scan", {sls::ToString(ind), "500", "1500", "-500"},
+                            -1, PUT));
+    CHECK_THROWS(proxy.Call("scan", {sls::ToString(ind), "1500", "500", "500"},
+                            -1, PUT));
 
     if (det_type == defs::MYTHEN3 || defs::EIGER) {
         {
@@ -1327,12 +1327,12 @@ TEST_CASE("scan", "[.cmd][.new]") {
             std::ostringstream oss;
             proxy.Call("scan", {}, -1, GET, oss);
             CHECK(oss.str() ==
-                    "scan [enabled\ndac trimbit_scan\nstart 0\nstop 48\nstep "
-                    "16\nsettleTime 2s\n]\n");
+                  "scan [enabled\ndac trimbit_scan\nstart 0\nstop 48\nstep "
+                  "16\nsettleTime 2s\n]\n");
         }
     }
 
-    //Switch off scan for future tests
+    // Switch off scan for future tests
     det.setScan(defs::scanParameters());
     // acquire for each?
 
@@ -1560,6 +1560,20 @@ TEST_CASE("udp_dstport2", "[.cmd][.new]") {
     } else {
         REQUIRE_THROWS(proxy.Call("udp_dstport2", {}, -1, GET));
     }
+}
+
+TEST_CASE("udp_reconfigure", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("udp_reconfigure", {}, -1, GET));
+    REQUIRE_NOTHROW(proxy.Call("udp_reconfigure", {}, -1, PUT));
+}
+
+TEST_CASE("udp_validate", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_THROWS(proxy.Call("udp_validate", {}, -1, GET));
+    REQUIRE_NOTHROW(proxy.Call("udp_validate", {}, -1, PUT));
 }
 
 TEST_CASE("tengiga", "[.cmd][.new]") {

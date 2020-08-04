@@ -866,8 +866,7 @@ int ClientInterface::get_missing_packets(Interface &socket) {
     auto size = static_cast<int>(missing_packets.size());
     socket.Send(OK);
     socket.Send(size);
-    socket.Send(missing_packets.data(),
-                sizeof(missing_packets[0]) * missing_packets.size());
+    socket.Send(missing_packets);
     return OK;
 }
 
@@ -1270,9 +1269,6 @@ int ClientInterface::set_discard_policy(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting frames discard policy: " << index;
     impl()->setFrameDiscardPolicy(static_cast<frameDiscardPolicy>(index));
-    int retval = impl()->getFrameDiscardPolicy();
-    validate(index, retval, "set discard policy", DEC);
-    LOG(logDEBUG1) << "frame discard policy:" << retval;
     return socket.Send(OK);
 }
 
@@ -1290,10 +1286,6 @@ int ClientInterface::set_padding_enable(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting frames padding enable: " << index;
     impl()->setFramePaddingEnable(static_cast<bool>(index));
-
-    auto retval = static_cast<int>(impl()->getFramePaddingEnable());
-    validate(index, retval, "set frame padding enable", DEC);
-    LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
     return socket.Send(OK);
 }
 
@@ -1614,12 +1606,10 @@ int ClientInterface::set_additional_json_parameter(Interface &socket) {
 }
 
 int ClientInterface::get_additional_json_parameter(Interface &socket) {
-    char arg[SHORT_STR_LENGTH]{};
-    socket.Receive(arg);
-    char retval[SHORT_STR_LENGTH]{};
-    sls::strcpy_safe(retval, impl()->getAdditionalJsonParameter(arg).c_str());
-    LOG(logDEBUG1) << "additional json parameter (" << arg << "):" << retval;
-    return socket.sendResult(retval);
+    std::string key = socket.Receive(SHORT_STR_LENGTH);
+    std::string value = impl()->getAdditionalJsonParameter(key);
+    value.resize(SHORT_STR_LENGTH);
+    return socket.sendResult(value);
 }
 
 int ClientInterface::get_progress(Interface &socket) {
@@ -1691,9 +1681,6 @@ int ClientInterface::set_streaming_start_fnum(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting streaming start fnum: " << index;
     impl()->setStreamingStartingFrameNumber(index);
-
-    int retval = impl()->getStreamingStartingFrameNumber();
-    validate(index, retval, "set streaming start fnum", DEC);
     return socket.Send(OK);
 }
 
@@ -1705,7 +1692,7 @@ int ClientInterface::set_rate_correct(Interface &socket) {
     }
     LOG(logDEBUG) << "Number of detectors for rate correction: " << index;
     std::vector<int64_t> t(index);
-    socket.Receive(t.data(), t.size() * sizeof(t[0]));
+    socket.Receive(t);
     verifyIdle(socket);
     LOG(logINFOBLUE) << "Setting rate corrections[" << index << ']';
     impl()->setRateCorrections(t);

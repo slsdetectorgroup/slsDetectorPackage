@@ -427,27 +427,20 @@ void Implementation::setFifoDepth(const uint32_t i) {
 
 slsDetectorDefs::frameDiscardPolicy
 Implementation::getFrameDiscardPolicy() const {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+
     return frameDiscardMode;
 }
 
 void Implementation::setFrameDiscardPolicy(const frameDiscardPolicy i) {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
-
-    if (i >= 0 && i < NUM_DISCARD_POLICIES)
-        frameDiscardMode = i;
-
+    frameDiscardMode = i;
     LOG(logINFO) << "Frame Discard Policy: " << sls::ToString(frameDiscardMode);
 }
 
 bool Implementation::getFramePaddingEnable() const {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return framePadding;
 }
 
 void Implementation::setFramePaddingEnable(const bool i) {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
-
     framePadding = i;
     LOG(logINFO) << "Frame Padding: " << framePadding;
 }
@@ -1273,14 +1266,11 @@ uint32_t Implementation::getStreamingStartingFrameNumber() const {
 }
 
 void Implementation::setStreamingStartingFrameNumber(const uint32_t fnum) {
-    if (streamingStartFnum != fnum) {
-        streamingStartFnum = fnum;
-    }
+    streamingStartFnum = fnum;
     LOG(logINFO) << "Streaming Start Frame num: " << streamingStartFnum;
 }
 
 uint32_t Implementation::getStreamingPort() const {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return streamingPort;
 }
 
@@ -1291,19 +1281,16 @@ void Implementation::setStreamingPort(const uint32_t i) {
 }
 
 sls::IpAddr Implementation::getStreamingSourceIP() const {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return streamingSrcIP;
 }
 
 void Implementation::setStreamingSourceIP(const sls::IpAddr ip) {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     streamingSrcIP = ip;
     LOG(logINFO) << "Streaming Source IP: " << streamingSrcIP;
 }
 
 std::map<std::string, std::string>
 Implementation::getAdditionalJsonHeader() const {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return additionalJsonHeader;
 }
 

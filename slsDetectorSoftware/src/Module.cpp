@@ -2615,7 +2615,7 @@ void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
 }
 
 template <typename Arg, typename Ret>
-void Module::sendToReceiver(int fnum, const Arg &args, Ret &retval) {
+void Module::sendToReceiver(int fnum, const Arg &args, Ret &retval) const{
     LOG(logDEBUG1) << "Sending to Receiver: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
@@ -2627,7 +2627,7 @@ void Module::sendToReceiver(int fnum, const Arg &args, Ret &retval) {
 }
 
 template <typename Arg, typename Ret>
-void Module::sendToReceiver(int fnum, const Arg &args, Ret &retval) const {
+void Module::sendToReceiver(int fnum, const Arg &args, Ret &retval) {
     static_cast<const Module &>(*this).sendToReceiver(fnum, args, retval);
 }
 

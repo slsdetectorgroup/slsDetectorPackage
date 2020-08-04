@@ -527,8 +527,6 @@ int ClientInterface::set_num_frames(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting num frames to " << value;
     impl()->setNumberOfFrames(value);
-    int64_t retval = impl()->getNumberOfFrames();
-    validate(value, retval, "set number of frames", DEC);
     return socket.Send(OK);
 }
 
@@ -539,10 +537,7 @@ int ClientInterface::set_num_triggers(Interface &socket) {
                            std::to_string(value));
     }
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting num triggers to " << value;
     impl()->setNumberOfTriggers(value);
-    int64_t retval = impl()->getNumberOfTriggers();
-    validate(value, retval, "set number of triggers", DEC);
     return socket.Send(OK);
 }
 
@@ -552,10 +547,7 @@ int ClientInterface::set_num_bursts(Interface &socket) {
         throw RuntimeError("Invalid number of bursts " + std::to_string(value));
     }
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting num bursts to " << value;
     impl()->setNumberOfBursts(value);
-    int64_t retval = impl()->getNumberOfBursts();
-    validate(value, retval, "set number of bursts", DEC);
     return socket.Send(OK);
 }
 
@@ -568,8 +560,6 @@ int ClientInterface::set_num_add_storage_cells(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting num additional storage cells to " << value;
     impl()->setNumberOfAdditionalStorageCells(value);
-    int retval = impl()->getNumberOfAdditionalStorageCells();
-    validate(value, retval, "set number of additional storage cells", DEC);
     return socket.Send(OK);
 }
 
@@ -581,8 +571,6 @@ int ClientInterface::set_timing_mode(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting timing mode to " << value;
     impl()->setTimingMode(static_cast<timingMode>(value));
-    int retval = impl()->getTimingMode();
-    validate(value, retval, "set timing mode", DEC);
     return socket.Send(OK);
 }
 
@@ -594,8 +582,6 @@ int ClientInterface::set_burst_mode(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting burst mode to " << value;
     impl()->setBurstMode(static_cast<burstMode>(value));
-    int retval = impl()->getBurstMode();
-    validate(value, retval, "set burst mode", DEC);
     return socket.Send(OK);
 }
 
@@ -752,11 +738,7 @@ int ClientInterface::set_streaming_frequency(Interface &socket) {
                            std::to_string(index));
     }
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting streaming frequency: " << index;
     impl()->setStreamingFrequency(index);
-
-    int retval = impl()->getStreamingFrequency();
-    validate(index, retval, "set streaming frequency", DEC);
     return socket.Send(OK);
 }
 
@@ -839,12 +821,7 @@ int ClientInterface::set_file_index(Interface &socket) {
         throw RuntimeError("Invalid file index: " + std::to_string(index));
     }
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting file index: " << index;
     impl()->setFileIndex(index);
-
-    int64_t retval = impl()->getFileIndex();
-    validate(index, retval, "set file index", DEC);
-    LOG(logDEBUG1) << "file index:" << retval;
     return socket.Send(OK);
 }
 
@@ -866,8 +843,7 @@ int ClientInterface::get_missing_packets(Interface &socket) {
     auto size = static_cast<int>(missing_packets.size());
     socket.Send(OK);
     socket.Send(size);
-    socket.Send(missing_packets.data(),
-                sizeof(missing_packets[0]) * missing_packets.size());
+    socket.Send(missing_packets);
     return OK;
 }
 
@@ -886,10 +862,6 @@ int ClientInterface::set_file_write(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting File write enable:" << enable;
     impl()->setFileWriteEnable(enable);
-
-    int retval = impl()->getFileWriteEnable();
-    validate(enable, retval, "set file write enable", DEC);
-    LOG(logDEBUG1) << "file write enable:" << retval;
     return socket.Send(OK);
 }
 
@@ -1082,12 +1054,7 @@ int ClientInterface::set_streaming_port(Interface &socket) {
         throw RuntimeError("Invalid zmq port " + std::to_string(port));
     }
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting streaming port:" << port;
     impl()->setStreamingPort(port);
-
-    int retval = impl()->getStreamingPort();
-    validate(port, retval, "set streaming port", DEC);
-    LOG(logDEBUG1) << "streaming port:" << retval;
     return socket.Send(OK);
 }
 
@@ -1132,10 +1099,6 @@ int ClientInterface::set_silent_mode(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting silent mode:" << value;
     impl()->setSilentMode(value);
-
-    auto retval = static_cast<int>(impl()->getSilentMode());
-    validate(value, retval, "set silent mode", DEC);
-    LOG(logDEBUG1) << "silent mode:" << retval;
     return socket.Send(OK);
 }
 
@@ -1222,10 +1185,6 @@ int ClientInterface::set_frames_per_file(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting frames per file: " << index;
     impl()->setFramesPerFile(index);
-
-    auto retval = static_cast<int>(impl()->getFramesPerFile());
-    validate(index, retval, "set frames per file", DEC);
-    LOG(logDEBUG1) << "frames per file:" << retval;
     return socket.Send(OK);
 }
 
@@ -1270,9 +1229,6 @@ int ClientInterface::set_discard_policy(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting frames discard policy: " << index;
     impl()->setFrameDiscardPolicy(static_cast<frameDiscardPolicy>(index));
-    int retval = impl()->getFrameDiscardPolicy();
-    validate(index, retval, "set discard policy", DEC);
-    LOG(logDEBUG1) << "frame discard policy:" << retval;
     return socket.Send(OK);
 }
 
@@ -1290,10 +1246,6 @@ int ClientInterface::set_padding_enable(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting frames padding enable: " << index;
     impl()->setFramePaddingEnable(static_cast<bool>(index));
-
-    auto retval = static_cast<int>(impl()->getFramePaddingEnable());
-    validate(index, retval, "set frame padding enable", DEC);
-    LOG(logDEBUG1) << "Frame Padding Enable:" << retval;
     return socket.Send(OK);
 }
 
@@ -1315,10 +1267,6 @@ int ClientInterface::set_deactivated_padding_enable(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting deactivated padding enable: " << enable;
     impl()->setDeactivatedPadding(enable > 0);
-
-    auto retval = static_cast<int>(impl()->getDeactivatedPadding());
-    validate(enable, retval, "set deactivated padding enable", DEC);
-    LOG(logDEBUG1) << "Deactivated Padding Enable: " << retval;
     return socket.Send(OK);
 }
 
@@ -1614,12 +1562,10 @@ int ClientInterface::set_additional_json_parameter(Interface &socket) {
 }
 
 int ClientInterface::get_additional_json_parameter(Interface &socket) {
-    char arg[SHORT_STR_LENGTH]{};
-    socket.Receive(arg);
-    char retval[SHORT_STR_LENGTH]{};
-    sls::strcpy_safe(retval, impl()->getAdditionalJsonParameter(arg).c_str());
-    LOG(logDEBUG1) << "additional json parameter (" << arg << "):" << retval;
-    return socket.sendResult(retval);
+    std::string key = socket.Receive(SHORT_STR_LENGTH);
+    std::string value = impl()->getAdditionalJsonParameter(key);
+    value.resize(SHORT_STR_LENGTH);
+    return socket.sendResult(value);
 }
 
 int ClientInterface::get_progress(Interface &socket) {
@@ -1691,9 +1637,6 @@ int ClientInterface::set_streaming_start_fnum(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting streaming start fnum: " << index;
     impl()->setStreamingStartingFrameNumber(index);
-
-    int retval = impl()->getStreamingStartingFrameNumber();
-    validate(index, retval, "set streaming start fnum", DEC);
     return socket.Send(OK);
 }
 
@@ -1705,7 +1648,7 @@ int ClientInterface::set_rate_correct(Interface &socket) {
     }
     LOG(logDEBUG) << "Number of detectors for rate correction: " << index;
     std::vector<int64_t> t(index);
-    socket.Receive(t.data(), t.size() * sizeof(t[0]));
+    socket.Receive(t);
     verifyIdle(socket);
     LOG(logINFOBLUE) << "Setting rate corrections[" << index << ']';
     impl()->setRateCorrections(t);

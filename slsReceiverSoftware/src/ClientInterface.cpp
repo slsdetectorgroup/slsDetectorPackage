@@ -190,7 +190,7 @@ int ClientInterface::functionTable(){
 	flist[F_SET_RECEIVER_UDP_PORT2]         =   &ClientInterface::set_udp_port2;
 	flist[F_SET_RECEIVER_NUM_INTERFACES]    =   &ClientInterface::set_num_interfaces;
 	flist[F_RECEIVER_SET_ADC_MASK_10G]		=	&ClientInterface::set_adc_mask_10g;
-    flist[F_RECEIVER_SET_NUM_COUNTERS]      =   &ClientInterface::set_num_counters;
+    flist[F_RECEIVER_SET_COUNTER_MASK]      =   &ClientInterface::set_counter_mask;
     flist[F_INCREMENT_FILE_INDEX]           =   &ClientInterface::increment_file_index;
     flist[F_SET_ADDITIONAL_JSON_PARAMETER]  =   &ClientInterface::set_additional_json_parameter;
 	flist[F_GET_ADDITIONAL_JSON_PARAMETER]  =   &ClientInterface::get_additional_json_parameter;
@@ -445,8 +445,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
         }
     }
     if (myDetectorType == MYTHEN3) {
-        int ncounters = __builtin_popcount(arg.countermask);
-        impl()->setNumberofCounters(ncounters);
+        impl()->setCounterMask(arg.countermask);
         impl()->setAcquisitionTime1(arg.expTime1Ns);
         impl()->setAcquisitionTime2(arg.expTime2Ns);
         impl()->setAcquisitionTime3(arg.expTime3Ns);
@@ -1587,11 +1586,11 @@ int ClientInterface::set_adc_mask_10g(Interface &socket) {
     return socket.sendResult(retval);
 }
 
-int ClientInterface::set_num_counters(Interface &socket) {
-    auto arg = socket.Receive<int>();
+int ClientInterface::set_counter_mask(Interface &socket) {
+    auto arg = socket.Receive<uint32_t>();
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting counters: " << arg;
-    impl()->setNumberofCounters(arg);
+    impl()->setCounterMask(arg);
     return socket.Send(OK);
 }
 

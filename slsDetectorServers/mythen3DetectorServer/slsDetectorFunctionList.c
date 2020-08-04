@@ -409,6 +409,9 @@ void setupDetector() {
     setDefaultDacs();
     setASICDefaults();
 
+    // no roi for 1g and 10g
+    setumberOfDeserializers(MAX_NUM_DESERIALIZERS, 0);
+    setumberOfDeserializers(MAX_NUM_DESERIALIZERS, 1);
     // dynamic range
     setDynamicRange(DEFAULT_DYNAMIC_RANGE);
     // enable all counters
@@ -552,6 +555,7 @@ int setDynamicRange(int dr) {
         // set it
         bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_DYNAMIC_RANGE_MSK);
         bus_w(CONFIG_REG, bus_r(CONFIG_REG) | regval);
+        updateNumberOfPackets();
     }
 
     uint32_t regval = bus_r(CONFIG_REG) & CONFIG_DYNAMIC_RANGE_MSK;
@@ -1032,12 +1036,66 @@ void setCounterMask(uint32_t arg) {
                                CONFIG_COUNTERS_ENA_MSK));
     LOG(logDEBUG, ("Config Reg: 0x%x\n", bus_r(addr)));
 
+    updateNumberOfPackets();
     updateGatePeriod();
 }
 
 uint32_t getCounterMask() {
     return ((bus_r(CONFIG_REG) & CONFIG_COUNTERS_ENA_MSK) >>
             CONFIG_COUNTERS_ENA_OFST);
+}
+void setumberOfDeserializers(int val, int tgEnable) {
+    const uint32_t addr = PKT_FRAG_REG;
+    LOG(logINFO, ("Setting Number of deserializers per packet: %d for %s\n",
+                  val, (tgEnable ? "10g" : "1g")));
+    if (tgEnable) {
+        bus_w(addr, bus_r(addr) & ~PKT_FRAG_10G_N_DSR_PER_PKT_MSK);
+        bus_w(addr, bus_r(addr) | ((val << PKT_FRAG_10G_N_DSR_PER_PKT_OFST) &
+                                   PKT_FRAG_10G_N_DSR_PER_PKT_MSK));
+    } else {
+        bus_w(addr, bus_r(addr) & ~PKT_FRAG_1G_N_DSR_PER_PKT_MSK);
+        bus_w(addr, bus_r(addr) | ((val << PKT_FRAG_1G_N_DSR_PER_PKT_OFST) &
+                                   PKT_FRAG_1G_N_DSR_PER_PKT_MSK));
+    }
+}
+
+void updateNumberOfPackets() {
+    const int ncounters = __builtin_popcount(getCounterMask());
+    const int tgEnable = enableTenGigabitEthernet(-1);
+    int packetsPerFrame = 0;
+
+    // 10g
+    if (tgEnable) {
+        const int dr = setDynamicRange(-1);
+        packetsPerFrame = 1;
+        if (dr == 32 && ncounters > 1) {
+            packetsPerFrame = 2;
+        }
+    }
+    // 1g
+    else {
+        int dataSize = 1280;
+        if (ncounters == 3) {
+            dataSize = 768;
+        }
+        packetsPerFrame = calculateDataBytes() / dataSize;
+    }
+
+    // bus_w()
+    LOG(logINFO, ("Number of Packets/Frame: %d for %s\n", packetsPerFrame,
+                  (tgEnable ? "10g" : "1g")));
+    const uint32_t addr = PKT_FRAG_REG;
+    if (tgEnable) {
+        bus_w(addr, bus_r(addr) & ~PKT_FRAG_10G_NUM_PACKETS_MSK);
+        bus_w(addr, bus_r(addr) |
+                        ((packetsPerFrame << PKT_FRAG_10G_NUM_PACKETS_OFST) &
+                         PKT_FRAG_10G_NUM_PACKETS_MSK));
+    } else {
+        bus_w(addr, bus_r(addr) & ~PKT_FRAG_1G_NUM_PACKETS_MSK);
+        bus_w(addr,
+              bus_r(addr) | ((packetsPerFrame << PKT_FRAG_1G_NUM_PACKETS_OFST) &
+                             PKT_FRAG_1G_NUM_PACKETS_MSK));
+    }
 }
 
 int setDelayAfterTrigger(int64_t val) {
@@ -1509,6 +1567,7 @@ int enableTenGigabitEthernet(int val) {
         else {
             bus_w(addr, bus_r(addr) & (~PKT_CONFIG_1G_INTERFACE_MSK));
         }
+        updateNumberOfPackets();
     }
     int oneG = ((bus_r(addr) & PKT_CONFIG_1G_INTERFACE_MSK) >>
                 PKT_CONFIG_1G_INTERFACE_OFST);
@@ -2059,24 +2118,38 @@ void *start_timer(void *arg) {
     const int numFrames = (getNumFrames() * getNumTriggers());
     const int64_t expUs = getGatePeriod() / 1000;
 
-    const int imagesize = calculateDataBytes();
+    const int imageSize = calculateDataBytes();
     const int tgEnable = enableTenGigabitEthernet(-1);
-    const int packetsPerFrame =
-        tgEnable ? PACKETS_PER_FRAME_10G : PACKETS_PER_FRAME_1G;
-    const int dataSize = imagesize / packetsPerFrame;
+    const int dr = setDynamicRange(-1);
+    int ncounters = __builtin_popcount(getCounterMask());
+    int dataSize = 0;
+    int packetsPerFrame = 0;
+    // 10g
+    if (tgEnable) {
+        packetsPerFrame = 1;
+        if (dr == 32 && ncounters > 1) {
+            packetsPerFrame = 2;
+        }
+    }
+    // 1g
+    else {
+        dataSize = 1280;
+        if (ncounters == 3) {
+            dataSize = 768;
+        }
+        packetsPerFrame = imageSize / dataSize;
+    }
     const int packetSize = dataSize + sizeof(sls_detector_header);
 
     LOG(logDEBUG1,
-        ("imagesize:%d tg:%d packets/Frame:%d datasize:%d packetSize:%d\n",
-         imagesize, tgEnable, packetsPerFrame, dataSize, packetSize));
+        ("imageSize:%d tg:%d packets/Frame:%d datasize:%d packetSize:%d\n",
+         imageSize, tgEnable, packetsPerFrame, dataSize, packetSize));
 
     // Generate data
-    char imageData[imagesize];
-    memset(imageData, 0, imagesize);
+    char imageData[imageSize];
+    memset(imageData, 0, imageSize);
     {
-        const int dr = setDynamicRange(-1);
-        const int numCounters = __builtin_popcount(getCounterMask());
-        const int nchannels = NCHAN_1_COUNTER * NCHIP * numCounters;
+        const int nchannels = NCHAN_1_COUNTER * NCHIP * ncounters;
 
         switch (dr) {
         /*case 1: // TODO: Not implemented in firmware yet

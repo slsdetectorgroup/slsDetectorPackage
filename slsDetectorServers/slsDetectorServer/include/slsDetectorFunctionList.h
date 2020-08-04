@@ -250,6 +250,8 @@ int getNumDigitalSamples();
 #ifdef MYTHEN3D
 void setCounterMask(uint32_t arg);
 uint32_t getCounterMask();
+void setumberOfDeserializers(int val, int tgEnable);
+void updateNumberOfPackets();
 #endif
 
 #if defined(JUNGFRAUD) || defined(GOTTHARDD) || defined(CHIPTESTBOARDD) ||     \

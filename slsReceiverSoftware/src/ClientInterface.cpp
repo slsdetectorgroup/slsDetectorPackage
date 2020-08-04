@@ -797,58 +797,41 @@ int ClientInterface::stop_receiver(Interface &socket) {
 }
 
 int ClientInterface::set_file_dir(Interface &socket) {
-    char fPath[MAX_STR_LENGTH]{};
-    char retval[MAX_STR_LENGTH]{};
-    socket.Receive(fPath);
+    std::string fpath = socket.Receive(MAX_STR_LENGTH);
 
-    if (strlen(fPath) == 0) {
+    if (fpath.empty()) {
         throw RuntimeError("Cannot set empty file path");
     }
-    if (fPath[0] != '/')
+    if (fpath[0] != '/')
         throw RuntimeError("Receiver path needs to be absolute path");
-    LOG(logDEBUG1) << "Setting file path: " << fPath;
-    impl()->setFilePath(fPath);
-
-    std::string s = impl()->getFilePath();
-    sls::strcpy_safe(retval, s.c_str());
-    if ((s.empty()) || (strlen(fPath) && strcasecmp(fPath, retval)))
-        throw RuntimeError("Receiver file path does not exist");
-    else
-        LOG(logDEBUG1) << "file path:" << retval;
-
+        
+    LOG(logDEBUG1) << "Setting file path: " << fpath;
+    impl()->setFilePath(fpath);
     return socket.Send(OK);
 }
 
 int ClientInterface::get_file_dir(Interface &socket) {
-    char retval[MAX_STR_LENGTH]{};
-    std::string s = impl()->getFilePath();
-    sls::strcpy_safe(retval, s.c_str());
-    LOG(logDEBUG1) << "file path:" << retval;
-    return socket.sendResult(retval);
+    auto fpath = impl()->getFilePath();
+    LOG(logDEBUG1) << "file path:" << fpath;
+    fpath.resize(MAX_STR_LENGTH);
+    return socket.sendResult(fpath);
 }
 
 int ClientInterface::set_file_name(Interface &socket) {
-    char fName[MAX_STR_LENGTH]{};
-    char retval[MAX_STR_LENGTH]{};
-    socket.Receive(fName);
-    if (strlen(fName) == 0) {
+    std::string fname = socket.Receive(MAX_STR_LENGTH);
+    if (fname.empty()) {
         throw RuntimeError("Cannot set empty file name");
     }
-    LOG(logDEBUG1) << "Setting file name: " << fName;
-    impl()->setFileName(fName);
-
-    std::string s = impl()->getFileName();
-    sls::strcpy_safe(retval, s.c_str());
-    LOG(logDEBUG1) << "file name:" << retval;
+    LOG(logDEBUG1) << "Setting file name: " << fname;
+    impl()->setFileName(fname);
     return socket.Send(OK);
 }
 
 int ClientInterface::get_file_name(Interface &socket) {
-    char retval[MAX_STR_LENGTH]{};
-    std::string s = impl()->getFileName();
-    sls::strcpy_safe(retval, s.c_str());
-    LOG(logDEBUG1) << "file name:" << retval;
-    return socket.sendResult(retval);
+    auto fname = impl()->getFileName();
+    LOG(logDEBUG1) << "file name:" << fname;
+    fname.resize(MAX_STR_LENGTH);
+    return socket.sendResult(fname);
 }
 
 int ClientInterface::set_file_index(Interface &socket) {

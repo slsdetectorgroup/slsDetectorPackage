@@ -63,6 +63,14 @@ int DataSocket::Receive(void *buffer, size_t size) {
     }
 }
 
+std::string DataSocket::Receive(size_t length) {
+    std::string buff(length, '\0');
+    Receive(&buff[0], buff.size());
+    auto pos = buff.find('\0');
+    if (pos != std::string::npos)
+        buff.erase(pos);
+    return buff;
+}
 int DataSocket::Send(const void *buffer, size_t size) {
     int bytes_sent = 0;
     int data_size = static_cast<int>(size); // signed size
@@ -80,6 +88,8 @@ int DataSocket::Send(const void *buffer, size_t size) {
     }
     return bytes_sent;
 }
+
+int DataSocket::Send(const std::string &s) { return Send(&s[0], s.size()); }
 
 int DataSocket::write(void *buffer, size_t size) {
     return ::write(getSocketId(), buffer, size);

@@ -3,6 +3,7 @@
 #include "TypeTraits.h"
 #include <cstddef>
 #include <cstdint>
+#include <iostream>
 #include <netdb.h>
 #include <numeric>
 #include <string>
@@ -27,12 +28,16 @@ class DataSocket {
 
     int Send(const void *buffer, size_t size);
 
-    // Send everything that is not a vector by using address and sizeof
+    // Send everything that is not a vector or string by using address and
+    // sizeof
     // TODO! We probably should restrict this even more to avoid bugs when
     // we send object instead of data
     template <typename T>
     typename std::enable_if<
-        !is_vector<typename std::remove_reference<T>::type>::value, int>::type
+        !is_vector<typename std::remove_reference<T>::type>::value &&
+            !std::is_same<typename std::remove_reference<T>::type,
+                          std::string>::value,
+        int>::type
     Send(T &&data) {
         return Send(&data, sizeof(data));
     }
@@ -41,6 +46,8 @@ class DataSocket {
         return Send(vec.data(), sizeof(T) * vec.size());
     }
 
+    int Send(const std::string &s);
+
     // Variadic template to send all arguments
     template <class... Args> int SendAll(Args &&... args) {
         auto l = std::initializer_list<int>{Send(args)...};
@@ -48,13 +55,12 @@ class DataSocket {
         return sum;
     }
     int Receive(void *buffer, size_t size);
-    
+
     template <typename T> int Receive(T &arg) {
         return Receive(&arg, sizeof(arg));
     }
 
-    template<typename T>
-    int Receive(std::vector<T>& buff){
+    template <typename T> int Receive(std::vector<T> &buff) {
         return Receive(buff.data(), sizeof(T) * buff.size());
     }
 
@@ -63,6 +69,8 @@ class DataSocket {
         Receive(&arg, sizeof(arg));
         return arg;
     }
+
+    std::string Receive(size_t length);
 
     int read(void *buffer, size_t size);
     int write(void *buffer, size_t size);

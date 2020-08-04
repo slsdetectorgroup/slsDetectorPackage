@@ -1624,17 +1624,19 @@ uint32_t Implementation::getCounterMask() const {
 
 void Implementation::setCounterMask(const uint32_t i) {
     if (counterMask != i) {
-        counterMask = i;
-
-        if (myDetectorType == MYTHEN3) {
-            int ncounters = __builtin_popcount(i);
-            generalData->SetNumberofCounters(ncounters, dynamicRange,
-                                             tengigaEnable);
-            // to update npixelsx, npixelsy in file writer
-            for (const auto &it : dataProcessor)
-                it->SetPixelDimension();
-            SetupFifoStructure();
+        int ncounters = __builtin_popcount(i);
+        if (ncounters < 1 || ncounters > 3) {
+            throw sls::RuntimeError("Invalid number of counters " +
+                                    std::to_string(ncounters) +
+                                    ". Expected 1-3.");
         }
+        counterMask = i;
+        generalData->SetNumberofCounters(ncounters, dynamicRange,
+                                         tengigaEnable);
+        // to update npixelsx, npixelsy in file writer
+        for (const auto &it : dataProcessor)
+            it->SetPixelDimension();
+        SetupFifoStructure();
     }
     LOG(logINFO) << "Counter mask: " << sls::ToStringHex(counterMask);
     int ncounters = __builtin_popcount(counterMask);

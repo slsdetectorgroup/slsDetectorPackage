@@ -444,10 +444,6 @@ class Mythen3Data : public GeneralData {
      * @param tgEnable ten giga enable
      */
     virtual void SetNumberofCounters(const int n, const int dr, bool tgEnable) {
-        if (n < 1 || n > 3) {
-            throw sls::RuntimeError("Invalid number of counters " +
-                                    std::to_string(n));
-        }
         ncounters = n;
         nPixelsX = NCHAN * ncounters;
         LOG(logINFO) << "nPixelsX: " << nPixelsX;

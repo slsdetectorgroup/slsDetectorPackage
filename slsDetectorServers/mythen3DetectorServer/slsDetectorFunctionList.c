@@ -1060,15 +1060,13 @@ void setumberOfDeserializers(int val, int tgEnable) {
 }
 
 void updateNumberOfPackets() {
-    const uint32_t addr = PKT_FRAG_REG;
     const int ncounters = __builtin_popcount(getCounterMask());
-    const int dr = setDynamicRange(-1);
     const int tgEnable = enableTenGigabitEthernet(-1);
-    const int imageSize = calculateDataBytes();
     int packetsPerFrame = 0;
 
     // 10g
     if (tgEnable) {
+        const int dr = setDynamicRange(-1);
         packetsPerFrame = 1;
         if (dr == 32 && ncounters > 1) {
             packetsPerFrame = 2;
@@ -1080,12 +1078,13 @@ void updateNumberOfPackets() {
         if (ncounters == 3) {
             dataSize = 768;
         }
-        packetsPerFrame = imageSize / dataSize;
+        packetsPerFrame = calculateDataBytes() / dataSize;
     }
 
     // bus_w()
     LOG(logINFO, ("Number of Packets/Frame: %d for %s\n", packetsPerFrame,
                   (tgEnable ? "10g" : "1g")));
+    const uint32_t addr = PKT_FRAG_REG;
     if (tgEnable) {
         bus_w(addr, bus_r(addr) & ~PKT_FRAG_10G_NUM_PACKETS_MSK);
         bus_w(addr, bus_r(addr) |

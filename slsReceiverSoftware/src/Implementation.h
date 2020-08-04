@@ -208,7 +208,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool setActivate(const bool enable);
     bool getDeactivatedPadding() const;
     /* [Eiger] */
-    bool setDeactivatedPadding(const bool enable);
+    void setDeactivatedPadding(const bool enable);
     int getReadNLines() const;
     /* [Eiger] */
     void setReadNLines(const int value);

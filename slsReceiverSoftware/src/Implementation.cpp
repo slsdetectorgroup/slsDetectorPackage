@@ -393,21 +393,16 @@ std::string Implementation::getDetectorHostname() const {
 }
 
 void Implementation::setDetectorHostname(const std::string &c) {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
-
     if (!c.empty())
         detHostname = c;
     LOG(logINFO) << "Detector Hostname: " << detHostname;
 }
 
 bool Implementation::getSilentMode() const {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return silentMode;
 }
 
 void Implementation::setSilentMode(const bool i) {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
-
     silentMode = i;
     LOG(logINFO) << "Silent Mode: " << i;
 }
@@ -538,8 +533,6 @@ uint64_t Implementation::getFileIndex() const {
 }
 
 void Implementation::setFileIndex(const uint64_t i) {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
-
     fileIndex = i;
     LOG(logINFO) << "File Index: " << fileIndex;
 }
@@ -583,21 +576,16 @@ bool Implementation::getOverwriteEnable() const {
 }
 
 void Implementation::setOverwriteEnable(const bool b) {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
-
     overwriteEnable = b;
     LOG(logINFO) << "Overwrite Enable: "
                  << (overwriteEnable ? "enabled" : "disabled");
 }
 
 uint32_t Implementation::getFramesPerFile() const {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return framesPerFile;
 }
 
 void Implementation::setFramesPerFile(const uint32_t i) {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
-
     framesPerFile = i;
     LOG(logINFO) << "Frames per file: " << framesPerFile;
 }
@@ -1242,9 +1230,7 @@ uint32_t Implementation::getStreamingFrequency() const {
 }
 
 void Implementation::setStreamingFrequency(const uint32_t freq) {
-    if (streamingFrequency != freq) {
-        streamingFrequency = freq;
-    }
+    streamingFrequency = freq;
     LOG(logINFO) << "Streaming Frequency: " << streamingFrequency;
 }
 
@@ -1276,7 +1262,6 @@ uint32_t Implementation::getStreamingPort() const {
 
 void Implementation::setStreamingPort(const uint32_t i) {
     streamingPort = i;
-
     LOG(logINFO) << "Streaming Port: " << streamingPort;
 }
 
@@ -1435,7 +1420,6 @@ slsDetectorDefs::timingMode Implementation::getTimingMode() const {
 }
 
 void Implementation::setTimingMode(const slsDetectorDefs::timingMode i) {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     timingMode = i;
     LOG(logINFO) << "Timing Mode: " << timingMode;
     updateTotalNumberOfFrames();
@@ -1447,7 +1431,6 @@ slsDetectorDefs::burstMode Implementation::getBurstMode() const {
 }
 
 void Implementation::setBurstMode(const slsDetectorDefs::burstMode i) {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     burstMode = i;
     LOG(logINFO) << "Burst Mode: " << burstMode;
     updateTotalNumberOfFrames();
@@ -1768,12 +1751,10 @@ void Implementation::setQuad(const bool b) {
 }
 
 bool Implementation::getActivate() const {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     return activated;
 }
 
 bool Implementation::setActivate(bool enable) {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
     activated = enable;
     LOG(logINFO) << "Activation: " << (activated ? "enabled" : "disabled");
     return activated;
@@ -1784,12 +1765,10 @@ bool Implementation::getDeactivatedPadding() const {
     return deactivatedPaddingEnable;
 }
 
-bool Implementation::setDeactivatedPadding(bool enable) {
-    LOG(logDEBUG3) << __SHORT_AT__ << " called";
+void Implementation::setDeactivatedPadding(bool enable) {
     deactivatedPaddingEnable = enable;
     LOG(logINFO) << "Deactivated Padding Enable: "
                  << (deactivatedPaddingEnable ? "enabled" : "disabled");
-    return deactivatedPaddingEnable;
 }
 
 int Implementation::getReadNLines() const {

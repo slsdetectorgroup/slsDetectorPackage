@@ -354,6 +354,8 @@ void function_table() {
     flist[F_SET_ADC_CONFIGURATION] = &set_adc_config;
     flist[F_GET_BAD_CHANNELS] = &get_bad_channels;
     flist[F_SET_BAD_CHANNELS] = &set_bad_channels;
+    flist[F_RECONFIGURE_UDP] = &reconfigure_udp;
+    flist[F_VALIDATE_UDP_CONFIG] = &validate_udp_configuration;
 
     // check
     if (NUM_DET_FUNCTIONS >= RECEIVER_ENUM_START) {
@@ -4865,13 +4867,13 @@ int check_detector_idle() {
 }
 
 int is_configurable() {
-    if (udpDetails.srcip == 0) {
-        strcpy(configureMessage, "udp source ip not configured\n");
+    if (udpDetails.dstip == 0) {
+        strcpy(configureMessage, "udp destination ip not configured\n");
         LOG(logWARNING, ("%s", configureMessage));
         return FAIL;
     }
-    if (udpDetails.dstip == 0) {
-        strcpy(configureMessage, "udp destination ip not configured\n");
+    if (udpDetails.srcip == 0) {
+        strcpy(configureMessage, "udp source ip not configured\n");
         LOG(logWARNING, ("%s", configureMessage));
         return FAIL;
     }
@@ -7974,5 +7976,39 @@ int set_bad_channels(int file_des) {
         free(args);
     }
 #endif
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int reconfigure_udp(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+    if (Server_VerifyLock() == OK) {
+        LOG(logINFO, ("Reconfiguring UDP\n"));
+        if (check_detector_idle() == OK) {
+            configure_mac();
+            if (configured == FAIL) {
+                ret = FAIL;
+                strcpy(mess, "Invalid UDP Configuration because ");
+                strcat(mess, configureMessage);
+                LOG(logERROR, (mess));
+            }
+        }
+    }
+    return Server_SendResult(file_des, INT32, NULL, 0);
+}
+
+int validate_udp_configuration(int file_des) {
+    ret = OK;
+    memset(mess, 0, sizeof(mess));
+
+    LOG(logINFO, ("Validating UDP Configuration\n"));
+    if (configured == FAIL) {
+        ret = FAIL;
+        strcpy(mess, "Invalid UDP Configuration because ");
+        strcat(mess, configureMessage);
+        LOG(logERROR, (mess));
+    }
+
     return Server_SendResult(file_des, INT32, NULL, 0);
 }

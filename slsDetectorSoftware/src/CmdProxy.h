@@ -776,6 +776,8 @@ class CmdProxy {
         {"udp_dstmac2", &CmdProxy::udp_dstmac2},
         {"udp_dstport", &CmdProxy::udp_dstport},
         {"udp_dstport2", &CmdProxy::udp_dstport2},
+        {"udp_reconfigure", &CmdProxy::udp_reconfigure},
+        {"udp_validate", &CmdProxy::udp_validate},
         {"rx_printconfig", &CmdProxy::rx_printconfig},
         {"tengiga", &CmdProxy::tengiga},
         {"flowcontrol10g", &CmdProxy::flowcontrol10g},
@@ -1644,6 +1646,18 @@ class CmdProxy {
         "(destination) udp interface where the second half of detector data is "
         "sent to. \n[Eiger] Port number of the reciever (desintation) udp "
         "interface where the right half of the detector data is sent to.");
+
+    EXECUTE_SET_COMMAND(
+        udp_reconfigure, reconfigureUDPDestination,
+        "\n\tReconfigures Detector with UDP destination. More for debugging as "
+        "the configuration is done automatically when the detector has "
+        "sufficient UDP details.");
+
+    EXECUTE_SET_COMMAND(
+        udp_validate, validateUDPConfiguration,
+        "\n\tValidates that UDP configuration in the detector is "
+        "valid. If not configured, it will throw with error message "
+        "requesting missing udp information.");
 
     GET_COMMAND(rx_printconfig, printRxConfiguration,
                 "\n\tPrints the receiver configuration.");

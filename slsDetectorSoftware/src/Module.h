@@ -202,6 +202,8 @@ class Module : public virtual slsDetectorDefs {
     void setDestinationUDPPort(int udpport);
     int getDestinationUDPPort2() const;
     void setDestinationUDPPort2(int udpport);
+    void reconfigureUDPDestination();
+    void validateUDPConfiguration();
     std::string printReceiverConfiguration();
     bool getTenGiga() const;
     void setTenGiga(bool value);

@@ -638,6 +638,12 @@ void Module::setDestinationUDPPort2(const int port) {
     }
 }
 
+void Module::reconfigureUDPDestination() { sendToDetector(F_RECONFIGURE_UDP); }
+
+void Module::validateUDPConfiguration() {
+    sendToDetector(F_VALIDATE_UDP_CONFIG);
+}
+
 std::string Module::printReceiverConfiguration() {
     std::ostringstream os;
     os << "\n\nDetector " << moduleId << "\nReceiver Hostname:\t"

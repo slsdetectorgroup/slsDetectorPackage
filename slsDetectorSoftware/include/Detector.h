@@ -509,6 +509,10 @@ class Detector {
      */
     void setDestinationUDPPort2(int port, int module_id = -1);
 
+    void reconfigureUDPDestination(Positions pos = {});
+
+    void validateUDPConfiguration(Positions pos = {});
+
     Result<std::string> printRxConfiguration(Positions pos = {}) const;
 
     /** [Eiger][CTB][Moench][Mythen3] */

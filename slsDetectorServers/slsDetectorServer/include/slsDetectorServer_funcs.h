@@ -237,3 +237,5 @@ int get_adc_config(int);
 int set_adc_config(int);
 int get_bad_channels(int);
 int set_bad_channels(int);
+int reconfigure_udp(int);
+int validate_udp_configuration(int);

@@ -409,9 +409,6 @@ void setupDetector() {
     setDefaultDacs();
     setASICDefaults();
 
-    // no roi for 1g and 10g
-    setumberOfDeserializers(MAX_NUM_DESERIALIZERS, 0);
-    setumberOfDeserializers(MAX_NUM_DESERIALIZERS, 1);
     // dynamic range
     setDynamicRange(DEFAULT_DYNAMIC_RANGE);
     // enable all counters
@@ -555,7 +552,7 @@ int setDynamicRange(int dr) {
         // set it
         bus_w(CONFIG_REG, bus_r(CONFIG_REG) & ~CONFIG_DYNAMIC_RANGE_MSK);
         bus_w(CONFIG_REG, bus_r(CONFIG_REG) | regval);
-        updateNumberOfPackets();
+        updatePacketizing();
     }
 
     uint32_t regval = bus_r(CONFIG_REG) & CONFIG_DYNAMIC_RANGE_MSK;
@@ -1036,7 +1033,7 @@ void setCounterMask(uint32_t arg) {
                                CONFIG_COUNTERS_ENA_MSK));
     LOG(logDEBUG, ("Config Reg: 0x%x\n", bus_r(addr)));
 
-    updateNumberOfPackets();
+    updatePacketizing();
     updateGatePeriod();
 }
 
@@ -1044,22 +1041,8 @@ uint32_t getCounterMask() {
     return ((bus_r(CONFIG_REG) & CONFIG_COUNTERS_ENA_MSK) >>
             CONFIG_COUNTERS_ENA_OFST);
 }
-void setumberOfDeserializers(int val, int tgEnable) {
-    const uint32_t addr = PKT_FRAG_REG;
-    LOG(logINFO, ("Setting Number of deserializers per packet: %d for %s\n",
-                  val, (tgEnable ? "10g" : "1g")));
-    if (tgEnable) {
-        bus_w(addr, bus_r(addr) & ~PKT_FRAG_10G_N_DSR_PER_PKT_MSK);
-        bus_w(addr, bus_r(addr) | ((val << PKT_FRAG_10G_N_DSR_PER_PKT_OFST) &
-                                   PKT_FRAG_10G_N_DSR_PER_PKT_MSK));
-    } else {
-        bus_w(addr, bus_r(addr) & ~PKT_FRAG_1G_N_DSR_PER_PKT_MSK);
-        bus_w(addr, bus_r(addr) | ((val << PKT_FRAG_1G_N_DSR_PER_PKT_OFST) &
-                                   PKT_FRAG_1G_N_DSR_PER_PKT_MSK));
-    }
-}
 
-void updateNumberOfPackets() {
+void updatePacketizing() {
     const int ncounters = __builtin_popcount(getCounterMask());
     const int tgEnable = enableTenGigabitEthernet(-1);
     int packetsPerFrame = 0;
@@ -1080,21 +1063,31 @@ void updateNumberOfPackets() {
         }
         packetsPerFrame = calculateDataBytes() / dataSize;
     }
+    const int deserializersPerPacket = MAX_NUM_DESERIALIZERS / packetsPerFrame;
 
     // bus_w()
-    LOG(logINFO, ("Number of Packets/Frame: %d for %s\n", packetsPerFrame,
-                  (tgEnable ? "10g" : "1g")));
+    LOG(logINFO,
+        ("[#Packets/Frame: %d, #Deserializers/Packet: %d] for %s\n",
+         packetsPerFrame, deserializersPerPacket, (tgEnable ? "10g" : "1g")));
     const uint32_t addr = PKT_FRAG_REG;
     if (tgEnable) {
         bus_w(addr, bus_r(addr) & ~PKT_FRAG_10G_NUM_PACKETS_MSK);
         bus_w(addr, bus_r(addr) |
                         ((packetsPerFrame << PKT_FRAG_10G_NUM_PACKETS_OFST) &
                          PKT_FRAG_10G_NUM_PACKETS_MSK));
+        bus_w(addr, bus_r(addr) & ~PKT_FRAG_10G_N_DSR_PER_PKT_MSK);
+        bus_w(addr, bus_r(addr) | ((deserializersPerPacket
+                                    << PKT_FRAG_10G_N_DSR_PER_PKT_OFST) &
+                                   PKT_FRAG_10G_N_DSR_PER_PKT_MSK));
     } else {
         bus_w(addr, bus_r(addr) & ~PKT_FRAG_1G_NUM_PACKETS_MSK);
         bus_w(addr,
               bus_r(addr) | ((packetsPerFrame << PKT_FRAG_1G_NUM_PACKETS_OFST) &
                              PKT_FRAG_1G_NUM_PACKETS_MSK));
+        bus_w(addr, bus_r(addr) & ~PKT_FRAG_1G_N_DSR_PER_PKT_MSK);
+        bus_w(addr, bus_r(addr) | ((deserializersPerPacket
+                                    << PKT_FRAG_1G_N_DSR_PER_PKT_OFST) &
+                                   PKT_FRAG_1G_N_DSR_PER_PKT_MSK));
     }
 }
 
@@ -1567,7 +1560,7 @@ int enableTenGigabitEthernet(int val) {
         else {
             bus_w(addr, bus_r(addr) & (~PKT_CONFIG_1G_INTERFACE_MSK));
         }
-        updateNumberOfPackets();
+        updatePacketizing();
     }
     int oneG = ((bus_r(addr) & PKT_CONFIG_1G_INTERFACE_MSK) >>
                 PKT_CONFIG_1G_INTERFACE_OFST);

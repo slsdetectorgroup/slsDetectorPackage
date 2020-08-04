@@ -120,7 +120,7 @@ void Implementation::InitializeMembers() {
     subPeriod = 0;
     numberOfAnalogSamples = 0;
     numberOfDigitalSamples = 0;
-    numberOfCounters = 0;
+    counterMask = 0;
     dynamicRange = 16;
     roi.xmin = -1;
     roi.xmax = -1;
@@ -962,6 +962,7 @@ void Implementation::SetupWriter() {
         masterAttributes->dbitlist |= (1 << i);
     }
     masterAttributes->roi = roi;
+    masterAttributes->counterMask = counterMask;
     masterAttributes->exptime1 = std::chrono::nanoseconds(acquisitionTime1);
     masterAttributes->exptime2 = std::chrono::nanoseconds(acquisitionTime2);
     masterAttributes->exptime3 = std::chrono::nanoseconds(acquisitionTime3);
@@ -1616,24 +1617,30 @@ void Implementation::setNumberofDigitalSamples(const uint32_t i) {
     LOG(logINFO) << "Packets per Frame: " << (generalData->packetsPerFrame);
 }
 
-int Implementation::getNumberofCounters() const {
+uint32_t Implementation::getCounterMask() const {
     LOG(logDEBUG3) << __SHORT_AT__ << " called";
-    return numberOfCounters;
+    return counterMask;
 }
 
-void Implementation::setNumberofCounters(const int i) {
-    if (numberOfCounters != i) {
-        numberOfCounters = i;
-
-        if (myDetectorType == MYTHEN3) {
-            generalData->SetNumberofCounters(i, dynamicRange);
-            // to update npixelsx, npixelsy in file writer
-            for (const auto &it : dataProcessor)
-                it->SetPixelDimension();
-            SetupFifoStructure();
+void Implementation::setCounterMask(const uint32_t i) {
+    if (counterMask != i) {
+        int ncounters = __builtin_popcount(i);
+        if (ncounters < 1 || ncounters > 3) {
+            throw sls::RuntimeError("Invalid number of counters " +
+                                    std::to_string(ncounters) +
+                                    ". Expected 1-3.");
         }
+        counterMask = i;
+        generalData->SetNumberofCounters(ncounters, dynamicRange,
+                                         tengigaEnable);
+        // to update npixelsx, npixelsy in file writer
+        for (const auto &it : dataProcessor)
+            it->SetPixelDimension();
+        SetupFifoStructure();
     }
-    LOG(logINFO) << "Number of Counters: " << numberOfCounters;
+    LOG(logINFO) << "Counter mask: " << sls::ToStringHex(counterMask);
+    int ncounters = __builtin_popcount(counterMask);
+    LOG(logINFO) << "Number of counters: " << ncounters;
 }
 
 uint32_t Implementation::getDynamicRange() const {
@@ -1647,7 +1654,14 @@ void Implementation::setDynamicRange(const uint32_t i) {
         dynamicRange = i;
 
         if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
-            generalData->SetDynamicRange(i, tengigaEnable);
+
+            if (myDetectorType == EIGER) {
+                generalData->SetDynamicRange(i, tengigaEnable);
+            } else {
+                int ncounters = __builtin_popcount(counterMask);
+                generalData->SetNumberofCounters(ncounters, i, tengigaEnable);
+            }
+
             // to update npixelsx, npixelsy in file writer
             for (const auto &it : dataProcessor)
                 it->SetPixelDimension();
@@ -1689,13 +1703,14 @@ bool Implementation::getTenGigaEnable() const {
 void Implementation::setTenGigaEnable(const bool b) {
     if (tengigaEnable != b) {
         tengigaEnable = b;
+        int ncounters = __builtin_popcount(counterMask);
         // side effects
         switch (myDetectorType) {
         case EIGER:
             generalData->SetTenGigaEnable(b, dynamicRange);
             break;
         case MYTHEN3:
-            generalData->SetDynamicRange(dynamicRange, b);
+            generalData->SetNumberofCounters(ncounters, dynamicRange, b);
             break;
         case MOENCH:
         case CHIPTESTBOARD:

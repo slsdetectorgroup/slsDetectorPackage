@@ -40,6 +40,7 @@ struct MasterAttributes {
     uint32_t dbitoffset{0};
     uint64_t dbitlist{0};
     slsDetectorDefs::ROI roi{};
+    uint32_t counterMask{0};
     ns exptime1{0};
     ns exptime2{0};
     ns exptime3{0};
@@ -344,7 +345,7 @@ class EigerMasterAttributes : public MasterAttributes {
         // Rate corrections
         {
             DataSpace dataspace = DataSpace(H5S_SCALAR);
-            StrType strdatatype(PredType::C_S1, 256);
+            StrType strdatatype(PredType::C_S1, 1024);
             DataSet dataset = group->createDataSet("rate corrections",
                                                    strdatatype, dataspace);
             dataset.write(sls::ToString(ratecorr), strdatatype);
@@ -363,6 +364,8 @@ class Mythen3MasterAttributes : public MasterAttributes {
             << "Dynamic Range              : " << dynamicRange << '\n'
             << "Ten Giga                   : " << tenGiga << '\n'
             << "Period                     : " << sls::ToString(period) << '\n'
+            << "Counter Mask               : " << sls::ToStringHex(counterMask)
+            << '\n'
             << "Exptime1                   : " << sls::ToString(exptime1)
             << '\n'
             << "Exptime2                   : " << sls::ToString(exptime2)
@@ -386,6 +389,13 @@ class Mythen3MasterAttributes : public MasterAttributes {
         MasterAttributes::WriteHDF5DynamicRange(fd, group);
         MasterAttributes::WriteHDF5TenGiga(fd, group);
         MasterAttributes::WriteHDF5Period(fd, group);
+        // Counter Mask
+        {
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset = group->createDataSet(
+                "counter mask", PredType::STD_U32LE, dataspace);
+            dataset.write(&counterMask, PredType::STD_U32LE);
+        }
         // Exptime1
         {
             DataSpace dataspace = DataSpace(H5S_SCALAR);
@@ -439,7 +449,7 @@ class Mythen3MasterAttributes : public MasterAttributes {
             DataSpace dataspace = DataSpace(H5S_SCALAR);
             DataSet dataset =
                 group->createDataSet("gates", PredType::STD_U32LE, dataspace);
-            dataset.write(&gates, PredType::STD_U64LE);
+            dataset.write(&gates, PredType::STD_U32LE);
         }
     };
 #endif

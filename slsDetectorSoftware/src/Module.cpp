@@ -1723,9 +1723,8 @@ void Module::setCounterMask(uint32_t countermask) {
     LOG(logDEBUG1) << "Setting Counter mask to " << countermask;
     sendToDetector(F_SET_COUNTER_MASK, countermask, nullptr);
     if (shm()->useReceiverFlag) {
-        int ncounters = __builtin_popcount(countermask);
-        LOG(logDEBUG1) << "Sending Reciver #counters: " << ncounters;
-        sendToReceiver(F_RECEIVER_SET_NUM_COUNTERS, ncounters, nullptr);
+        LOG(logDEBUG1) << "Sending Reciver counter mask: " << countermask;
+        sendToReceiver(F_RECEIVER_SET_COUNTER_MASK, countermask, nullptr);
     }
 }
 

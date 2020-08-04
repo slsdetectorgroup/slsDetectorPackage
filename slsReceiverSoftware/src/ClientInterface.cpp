@@ -108,7 +108,6 @@ void ClientInterface::startTCPServer() {
 
 // clang-format off
 int ClientInterface::functionTable(){
-	flist[F_EXEC_RECEIVER_COMMAND]			=	&ClientInterface::exec_command;
 	flist[F_LOCK_RECEIVER]					=	&ClientInterface::lock_receiver;
 	flist[F_GET_LAST_RECEIVER_CLIENT_IP]	=	&ClientInterface::get_last_client_ip;
 	flist[F_SET_RECEIVER_PORT]				=	&ClientInterface::set_port;
@@ -269,28 +268,6 @@ void ClientInterface::verifyIdle(Interface &socket) {
             << " when receiver is not idle";
         throw sls::SocketError(oss.str());
     }
-}
-
-int ClientInterface::exec_command(Interface &socket) {
-    char cmd[MAX_STR_LENGTH]{};
-    char retval[MAX_STR_LENGTH]{};
-    socket.Receive(cmd);
-    LOG(logINFO) << "Executing command (" << cmd << ")";
-    const size_t tempsize = 256;
-    std::array<char, tempsize> temp{};
-    std::string sresult;
-    std::shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
-        throw RuntimeError("Executing Command failed\n");
-    } else {
-        while (!feof(pipe.get())) {
-            if (fgets(temp.data(), tempsize, pipe.get()) != nullptr)
-                sresult += temp.data();
-        }
-        strncpy(retval, sresult.c_str(), MAX_STR_LENGTH);
-        LOG(logINFO) << "Result of cmd (" << cmd << "):\n" << retval;
-    }
-    return socket.sendResult(retval);
 }
 
 int ClientInterface::lock_receiver(Interface &socket) {

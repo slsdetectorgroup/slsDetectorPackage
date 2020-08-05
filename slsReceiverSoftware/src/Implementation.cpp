@@ -23,13 +23,16 @@
 /** cosntructor & destructor */
 
 Implementation::Implementation(const detectorType d) {
-    InitializeMembers();
+
+    // network configuration (UDP)
+    for (int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; ++i) {
+        udpPortNum[i] = DEFAULT_UDP_PORTNO + i;
+    }
+
     setDetectorType(d);
 }
 
-Implementation::~Implementation() { DeleteMembers(); }
-
-void Implementation::DeleteMembers() {
+Implementation::~Implementation() {
     delete generalData;
     generalData = nullptr;
     additionalJsonHeader.clear();
@@ -41,103 +44,6 @@ void Implementation::DeleteMembers() {
     udpPortNum.clear();
     rateCorrections.clear();
     ctbDbitList.clear();
-}
-
-void Implementation::InitializeMembers() {
-    // config parameters
-    numThreads = 1;
-    myDetectorType = GENERIC;
-    for (int i = 0; i < MAX_DIMENSIONS; ++i)
-        numDet[i] = 0;
-    modulePos = 0;
-    detHostname = "";
-    silentMode = false;
-    fifoDepth = 0;
-    frameDiscardMode = NO_DISCARD;
-    framePadding = true;
-
-    // file parameters
-    fileFormatType = BINARY;
-    filePath = "/";
-    fileName = "run";
-    fileIndex = 0;
-    fileWriteEnable = true;
-    masterFileWriteEnable = true;
-    overwriteEnable = true;
-    framesPerFile = 0;
-
-    // acquisition
-    status = IDLE;
-    stoppedFlag = false;
-
-    // network configuration (UDP)
-    numUDPInterfaces = 1;
-    eth.resize(MAX_NUMBER_OF_LISTENING_THREADS);
-    udpPortNum.resize(MAX_NUMBER_OF_LISTENING_THREADS);
-    for (int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; ++i) {
-        eth[i] = "";
-        udpPortNum[i] = DEFAULT_UDP_PORTNO + i;
-    }
-    udpSocketBufferSize = 0;
-    actualUDPSocketBufferSize = 0;
-
-    // zmq parameters
-    dataStreamEnable = false;
-    streamingFrequency = 1;
-    streamingTimerInMs = DEFAULT_STREAMING_TIMER_IN_MS;
-    streamingStartFnum = 0;
-    streamingPort = 0;
-    streamingSrcIP = sls::IpAddr{};
-
-    // detector parameters
-    numberOfTotalFrames = 0;
-    numberOfFrames = 1;
-    numberOfTriggers = 1;
-    numberOfBursts = 1;
-    numberOfAdditionalStorageCells = 0;
-    numberOfGates = 0;
-    timingMode = AUTO_TIMING;
-    burstMode = BURST_INTERNAL;
-    acquisitionPeriod = std::chrono::nanoseconds(SAMPLE_TIME_IN_NS);
-    acquisitionTime = std::chrono::nanoseconds(0);
-    acquisitionTime1 = std::chrono::nanoseconds(0);
-    acquisitionTime2 = std::chrono::nanoseconds(0);
-    acquisitionTime3 = std::chrono::nanoseconds(0);
-    gateDelay1 = std::chrono::nanoseconds(0);
-    gateDelay2 = std::chrono::nanoseconds(0);
-    gateDelay3 = std::chrono::nanoseconds(0);
-    subExpTime = std::chrono::nanoseconds(0);
-    subPeriod = std::chrono::nanoseconds(0);
-    numberOfAnalogSamples = 0;
-    numberOfDigitalSamples = 0;
-    counterMask = 0;
-    dynamicRange = 16;
-    roi.xmin = -1;
-    roi.xmax = -1;
-    tengigaEnable = false;
-    flippedDataX = 0;
-    quadEnable = false;
-    activated = true;
-    deactivatedPaddingEnable = true;
-    numLinesReadout = MAX_EIGER_ROWS_PER_READOUT;
-    readoutType = ANALOG_ONLY;
-    adcEnableMaskOneGiga = BIT32_MASK;
-    adcEnableMaskTenGiga = BIT32_MASK;
-
-    ctbDbitOffset = 0;
-    ctbAnalogDataBytes = 0;
-
-    // callbacks
-    startAcquisitionCallBack = nullptr;
-    pStartAcquisition = nullptr;
-    acquisitionFinishedCallBack = nullptr;
-    pAcquisitionFinished = nullptr;
-    rawDataReadyCallBack = nullptr;
-    rawDataModifyReadyCallBack = nullptr;
-    pRawDataReady = nullptr;
-
-    // class objects
-    generalData = nullptr;
 }
 
 void Implementation::SetLocalNetworkParameters() {

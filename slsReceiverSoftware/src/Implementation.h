@@ -251,8 +251,6 @@ class Implementation : private virtual slsDetectorDefs {
                                             void *arg);
 
   private:
-    void DeleteMembers();
-    void InitializeMembers();
     void SetLocalNetworkParameters();
     void SetThreadPriorities();
     void SetupFifoStructure();
@@ -269,89 +267,89 @@ class Implementation : private virtual slsDetectorDefs {
      * ************************************************/
 
     // config parameters
-    int numThreads;
-    detectorType myDetectorType;
-    int numDet[MAX_DIMENSIONS];
-    int modulePos;
+    int numThreads{1};
+    detectorType myDetectorType{GENERIC};
+    int numDet[MAX_DIMENSIONS] = {0, 0};
+    int modulePos{0};
     std::string detHostname;
-    bool silentMode;
-    uint32_t fifoDepth;
-    frameDiscardPolicy frameDiscardMode;
-    bool framePadding;
+    bool silentMode{false};
+    uint32_t fifoDepth{0};
+    frameDiscardPolicy frameDiscardMode{NO_DISCARD};
+    bool framePadding{true};
     pid_t parentThreadId;
     pid_t tcpThreadId;
 
     // file parameters
-    fileFormat fileFormatType;
-    std::string filePath;
-    std::string fileName;
-    uint64_t fileIndex;
-    bool fileWriteEnable;
-    bool masterFileWriteEnable;
-    bool overwriteEnable;
-    uint32_t framesPerFile;
+    fileFormat fileFormatType{BINARY};
+    std::string filePath{"/"};
+    std::string fileName{"run"};
+    uint64_t fileIndex{0};
+    bool fileWriteEnable{true};
+    bool masterFileWriteEnable{true};
+    bool overwriteEnable{true};
+    uint32_t framesPerFile{0};
 
     // acquisition
-    std::atomic<runStatus> status;
-    bool stoppedFlag;
+    std::atomic<runStatus> status{IDLE};
+    bool stoppedFlag{false};
 
     // network configuration (UDP)
-    int numUDPInterfaces;
-    std::vector<std::string> eth;
-    std::vector<uint32_t> udpPortNum;
-    int64_t udpSocketBufferSize;
-    int64_t actualUDPSocketBufferSize;
+    int numUDPInterfaces{1};
+    std::vector<std::string> eth;     //(MAX_NUMBER_OF_LISTENING_THREADS);
+    std::vector<uint32_t> udpPortNum; //(MAX_NUMBER_OF_LISTENING_THREADS);
+    int64_t udpSocketBufferSize{0};
+    int64_t actualUDPSocketBufferSize{0};
 
     // zmq parameters
-    bool dataStreamEnable;
-    uint32_t streamingFrequency;
-    uint32_t streamingTimerInMs;
-    uint32_t streamingStartFnum;
-    uint32_t streamingPort;
-    sls::IpAddr streamingSrcIP;
+    bool dataStreamEnable{false};
+    uint32_t streamingFrequency{1};
+    uint32_t streamingTimerInMs{DEFAULT_STREAMING_TIMER_IN_MS};
+    uint32_t streamingStartFnum{0};
+    uint32_t streamingPort{0};
+    sls::IpAddr streamingSrcIP = sls::IpAddr{};
     std::map<std::string, std::string> additionalJsonHeader;
 
     // detector parameters
-    uint64_t numberOfTotalFrames;
-    uint64_t numberOfFrames;
-    uint64_t numberOfTriggers;
-    uint64_t numberOfBursts;
-    int numberOfAdditionalStorageCells;
-    int numberOfGates;
-    timingMode timingMode;
-    burstMode burstMode;
-    ns acquisitionPeriod;
-    ns acquisitionTime;
-    ns acquisitionTime1;
-    ns acquisitionTime2;
-    ns acquisitionTime3;
-    ns gateDelay1;
-    ns gateDelay2;
-    ns gateDelay3;
-    ns subExpTime;
-    ns subPeriod;
-    uint32_t numberOfAnalogSamples;
-    uint32_t numberOfDigitalSamples;
-    uint32_t counterMask;
-    uint32_t dynamicRange;
-    ROI roi;
-    bool tengigaEnable;
-    int flippedDataX;
-    bool quadEnable;
-    bool activated;
-    bool deactivatedPaddingEnable;
-    int numLinesReadout;
+    uint64_t numberOfTotalFrames{0};
+    uint64_t numberOfFrames{1};
+    uint64_t numberOfTriggers{1};
+    uint64_t numberOfBursts{1};
+    int numberOfAdditionalStorageCells{0};
+    int numberOfGates{0};
+    timingMode timingMode{AUTO_TIMING};
+    burstMode burstMode{BURST_INTERNAL};
+    ns acquisitionPeriod = std::chrono::nanoseconds(SAMPLE_TIME_IN_NS);
+    ns acquisitionTime = std::chrono::nanoseconds(0);
+    ns acquisitionTime1 = std::chrono::nanoseconds(0);
+    ns acquisitionTime2 = std::chrono::nanoseconds(0);
+    ns acquisitionTime3 = std::chrono::nanoseconds(0);
+    ns gateDelay1 = std::chrono::nanoseconds(0);
+    ns gateDelay2 = std::chrono::nanoseconds(0);
+    ns gateDelay3 = std::chrono::nanoseconds(0);
+    ns subExpTime = std::chrono::nanoseconds(0);
+    ns subPeriod = std::chrono::nanoseconds(0);
+    uint32_t numberOfAnalogSamples{0};
+    uint32_t numberOfDigitalSamples{0};
+    uint32_t counterMask{0};
+    uint32_t dynamicRange{16};
+    ROI roi{};
+    bool tengigaEnable{false};
+    int flippedDataX{0};
+    bool quadEnable{false};
+    bool activated{true};
+    bool deactivatedPaddingEnable{true};
+    int numLinesReadout{MAX_EIGER_ROWS_PER_READOUT};
     std::vector<int64_t> rateCorrections;
-    readoutMode readoutType;
-    uint32_t adcEnableMaskOneGiga;
-    uint32_t adcEnableMaskTenGiga;
+    readoutMode readoutType{ANALOG_ONLY};
+    uint32_t adcEnableMaskOneGiga{BIT32_MASK};
+    uint32_t adcEnableMaskTenGiga{BIT32_MASK};
     std::vector<int> ctbDbitList;
-    int ctbDbitOffset;
-    int ctbAnalogDataBytes;
+    int ctbDbitOffset{0};
+    int ctbAnalogDataBytes{0};
 
     // callbacks
     int (*startAcquisitionCallBack)(std::string, std::string, uint64_t,
-                                    uint32_t, void *);
+                                    uint32_t, void *){nullptr};
     void *pStartAcquisition;
     void (*acquisitionFinishedCallBack)(uint64_t, void *);
     void *pAcquisitionFinished;

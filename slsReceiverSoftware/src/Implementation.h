@@ -295,8 +295,8 @@ class Implementation : private virtual slsDetectorDefs {
 
     // network configuration (UDP)
     int numUDPInterfaces{1};
-    std::vector<std::string> eth;     //(MAX_NUMBER_OF_LISTENING_THREADS);
-    std::vector<uint32_t> udpPortNum; //(MAX_NUMBER_OF_LISTENING_THREADS);
+    std::array<std::string,MAX_NUMBER_OF_LISTENING_THREADS>eth;
+    std::array<uint32_t,MAX_NUMBER_OF_LISTENING_THREADS> udpPortNum{DEFAULT_UDP_PORTNO, DEFAULT_UDP_PORTNO+1};
     int64_t udpSocketBufferSize{0};
     int64_t actualUDPSocketBufferSize{0};
 

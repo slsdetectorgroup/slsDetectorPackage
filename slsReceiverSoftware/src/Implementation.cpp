@@ -23,29 +23,12 @@
 /** cosntructor & destructor */
 
 Implementation::Implementation(const detectorType d) {
-
-    // network configuration (UDP)
-    eth.resize(MAX_NUMBER_OF_LISTENING_THREADS);
-    udpPortNum.resize(MAX_NUMBER_OF_LISTENING_THREADS);
-    for (int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; ++i) {
-        udpPortNum[i] = DEFAULT_UDP_PORTNO + i;
-    }
-
     setDetectorType(d);
 }
 
 Implementation::~Implementation() {
     delete generalData;
     generalData = nullptr;
-    additionalJsonHeader.clear();
-    listener.clear();
-    dataProcessor.clear();
-    dataStreamer.clear();
-    fifo.clear();
-    eth.clear();
-    udpPortNum.clear();
-    rateCorrections.clear();
-    ctbDbitList.clear();
 }
 
 void Implementation::SetLocalNetworkParameters() {

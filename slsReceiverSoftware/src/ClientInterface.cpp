@@ -37,7 +37,6 @@ ClientInterface::ClientInterface(int portNumber)
       server(portNumber) {
     functionTable();
     parentThreadId = syscall(SYS_gettid);
-    // start up tcp thread
     tcpThread =
         sls::make_unique<std::thread>(&ClientInterface::startTCPServer, this);
 }
@@ -76,7 +75,7 @@ void ClientInterface::startTCPServer() {
     LOG(logINFOBLUE) << "Created [ TCP server Tid: " << tcpThreadId << "]";
     LOG(logINFO) << "SLS Receiver starting TCP Server on port " << portNumber
                  << '\n';
-    // server = sls::make_unique<sls::ServerSocket>(portNumber);
+
     while (!killTcpThread) {
         LOG(logDEBUG1) << "Start accept loop";
         try {
@@ -502,9 +501,7 @@ void ClientInterface::setDetectorType(detectorType arg) {
 }
 
 int ClientInterface::set_roi(Interface &socket) {
-    static_assert(sizeof(ROI) == 2 * sizeof(int), "ROI not packed");
-    ROI arg;
-    socket.Receive(arg);
+    auto arg = socket.Receive<ROI>();
     LOG(logDEBUG1) << "Set ROI: [" << arg.xmin << ", " << arg.xmax << "]";
 
     if (myDetectorType != GOTTHARD)
@@ -1051,23 +1048,11 @@ int ClientInterface::get_streaming_port(Interface &socket) {
 }
 
 int ClientInterface::set_streaming_source_ip(Interface &socket) {
-    sls::IpAddr arg;
-    socket.Receive(arg);
-    if (arg == 0) {
-        throw RuntimeError("Invalid zmq ip " + arg.str());
-    }
+    auto ip = socket.Receive<sls::IpAddr>();
+    if (ip == 0)
+        throw RuntimeError("Invalid zmq ip " + ip.str());
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting streaming source ip:" << arg;
-    impl()->setStreamingSourceIP(arg);
-
-    sls::IpAddr retval = impl()->getStreamingSourceIP();
-    LOG(logDEBUG1) << "streaming IP:" << retval;
-    if (retval != arg && arg != 0) {
-        std::ostringstream os;
-        os << "Could not set streaming ip. Set " << arg << ", but read "
-           << retval << '\n';
-        throw RuntimeError(os.str());
-    }
+    impl()->setStreamingSourceIP(ip);
     return socket.Send(OK);
 }
 
@@ -1135,9 +1120,8 @@ int ClientInterface::get_additional_json_header(Interface &socket) {
     auto buff = oss.str();
     auto size = static_cast<int>(buff.size());
     socket.sendResult(size);
-    if (size > 0) {
-        socket.Send(&buff[0], buff.size());
-    }
+    if (size > 0)
+        socket.Send(buff);
     return OK;
 }
 

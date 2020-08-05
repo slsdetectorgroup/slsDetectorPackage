@@ -4866,7 +4866,7 @@ int check_detector_idle() {
     return ret;
 }
 
-int is_configurable() {
+int is_udp_configured() {
     if (udpDetails.dstip == 0) {
         strcpy(configureMessage, "udp destination ip not configured\n");
         LOG(logWARNING, ("%s", configureMessage));
@@ -4915,7 +4915,7 @@ int is_configurable() {
 }
 
 void configure_mac() {
-    if (is_configurable() == OK) {
+    if (is_udp_configured() == OK) {
         ret = configureMAC();
         if (ret != OK) {
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
@@ -7393,7 +7393,7 @@ int set_veto(int file_des) {
         setVeto(arg);
         // if numinterfaces is 2 and veto is 1 now, then configuremac
         if (arg > 0 && getNumberofUDPInterfaces() == 2 &&
-            is_configurable() == OK) {
+            is_udp_configured() == OK) {
             ret = configureMAC();
             if (ret != OK) {
                 sprintf(mess, "Configure Mac failed after enabling veto\n");

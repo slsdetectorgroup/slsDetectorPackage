@@ -151,7 +151,7 @@ int get_read_n_lines(int);
 void calculate_and_set_position();
 int set_detector_position(int);
 int check_detector_idle();
-int is_configurable();
+int is_udp_configured();
 void configure_mac();
 int set_source_udp_ip(int);
 int get_source_udp_ip(int);

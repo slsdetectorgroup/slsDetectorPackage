@@ -1,4 +1,5 @@
 target_sources(tests PRIVATE 
+                ${CMAKE_CURRENT_SOURCE_DIR}/test-bit_stuff.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-container_utils.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-network_utils.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/test-string_utils.cpp

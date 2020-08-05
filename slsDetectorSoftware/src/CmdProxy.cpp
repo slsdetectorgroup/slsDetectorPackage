@@ -1,4 +1,5 @@
 #include "CmdProxy.h"
+#include "bit_stuff.h"
 #include "TimeHelper.h"
 #include "ToString.h"
 #include "container_utils.h"
@@ -1810,14 +1811,7 @@ std::string CmdProxy::Counters(int action) {
             WrongNumberOfParameters(0);
         }
         auto mask = det->getCounterMask({det_id}).squash(-1);
-        // scan counter enable mask to get vector
-        std::vector<int> result;
-        for (size_t i = 0; i < 32; ++i) {
-            if (mask & (1 << i)) {
-                result.push_back(static_cast<int>(i));
-            }
-        }
-        os << sls::ToString(result) << '\n';
+        os << sls::ToString(getSetBits(mask)) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.empty()) {
             WrongNumberOfParameters(1);

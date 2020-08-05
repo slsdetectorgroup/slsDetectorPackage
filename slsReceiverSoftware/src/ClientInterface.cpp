@@ -8,6 +8,7 @@
 #include "versionAPI.h"
 
 #include <array>
+#include <chrono>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -19,6 +20,7 @@
 #include <unistd.h>
 #include <vector>
 
+using ns = std::chrono::nanoseconds;
 using sls::RuntimeError;
 using sls::SocketError;
 using Interface = sls::ServerInterface;
@@ -381,12 +383,13 @@ int ClientInterface::setup_receiver(Interface &socket) {
         }
     }
     if (myDetectorType != MYTHEN3) {
-        impl()->setAcquisitionTime(arg.expTimeNs);
+        impl()->setAcquisitionTime(std::chrono::nanoseconds(arg.expTimeNs));
     }
-    impl()->setAcquisitionPeriod(arg.periodNs);
+    impl()->setAcquisitionPeriod(std::chrono::nanoseconds(arg.periodNs));
     if (myDetectorType == EIGER) {
-        impl()->setSubExpTime(arg.subExpTimeNs);
-        impl()->setSubPeriod(arg.subExpTimeNs + arg.subDeadTimeNs);
+        impl()->setSubExpTime(std::chrono::nanoseconds(arg.subExpTimeNs));
+        impl()->setSubPeriod(std::chrono::nanoseconds(arg.subExpTimeNs) +
+                             std::chrono::nanoseconds(arg.subDeadTimeNs));
         impl()->setActivate(static_cast<bool>(arg.activate));
         try {
             impl()->setQuad(arg.quad == 0 ? false : true);
@@ -445,12 +448,12 @@ int ClientInterface::setup_receiver(Interface &socket) {
     }
     if (myDetectorType == MYTHEN3) {
         impl()->setCounterMask(arg.countermask);
-        impl()->setAcquisitionTime1(arg.expTime1Ns);
-        impl()->setAcquisitionTime2(arg.expTime2Ns);
-        impl()->setAcquisitionTime3(arg.expTime3Ns);
-        impl()->setGateDelay1(arg.gateDelay1Ns);
-        impl()->setGateDelay2(arg.gateDelay2Ns);
-        impl()->setGateDelay3(arg.gateDelay3Ns);
+        impl()->setAcquisitionTime1(std::chrono::nanoseconds(arg.expTime1Ns));
+        impl()->setAcquisitionTime2(std::chrono::nanoseconds(arg.expTime2Ns));
+        impl()->setAcquisitionTime3(std::chrono::nanoseconds(arg.expTime3Ns));
+        impl()->setGateDelay1(std::chrono::nanoseconds(arg.gateDelay1Ns));
+        impl()->setGateDelay2(std::chrono::nanoseconds(arg.gateDelay2Ns));
+        impl()->setGateDelay3(std::chrono::nanoseconds(arg.gateDelay3Ns));
         impl()->setNumberOfGates(arg.gates);
     }
     if (myDetectorType == GOTTHARD2) {
@@ -618,9 +621,9 @@ int ClientInterface::set_exptime(Interface &socket) {
     int64_t args[2]{-1, -1};
     socket.Receive(args);
     int gateIndex = static_cast<int>(args[0]);
-    int64_t value = args[1];
-    LOG(logDEBUG1) << "Setting exptime to " << value
-                   << "ns (gateIndex: " << gateIndex << ")";
+    ns value = std::chrono::nanoseconds(args[1]);
+    LOG(logDEBUG1) << "Setting exptime to " << sls::ToString(value)
+                   << " (gateIndex: " << gateIndex << ")";
     switch (gateIndex) {
     case -1:
         if (myDetectorType == MYTHEN3) {
@@ -657,27 +660,27 @@ int ClientInterface::set_exptime(Interface &socket) {
 }
 
 int ClientInterface::set_period(Interface &socket) {
-    auto value = socket.Receive<int64_t>();
-    LOG(logDEBUG1) << "Setting period to " << value << "ns";
+    auto value = std::chrono::nanoseconds(socket.Receive<int64_t>());
+    LOG(logDEBUG1) << "Setting period to " << sls::ToString(value);
     impl()->setAcquisitionPeriod(value);
     return socket.Send(OK);
 }
 
 int ClientInterface::set_subexptime(Interface &socket) {
-    auto value = socket.Receive<int64_t>();
-    LOG(logDEBUG1) << "Setting period to " << value << "ns";
-    uint64_t subdeadtime = impl()->getSubPeriod() - impl()->getSubExpTime();
+    auto value = std::chrono::nanoseconds(socket.Receive<int64_t>());
+    LOG(logDEBUG1) << "Setting period to " << sls::ToString(value);
+    ns subdeadtime = impl()->getSubPeriod() - impl()->getSubExpTime();
     impl()->setSubExpTime(value);
     impl()->setSubPeriod(impl()->getSubExpTime() + subdeadtime);
     return socket.Send(OK);
 }
 
 int ClientInterface::set_subdeadtime(Interface &socket) {
-    auto value = socket.Receive<int64_t>();
-    LOG(logDEBUG1) << "Setting sub deadtime to " << value << "ns";
+    auto value = std::chrono::nanoseconds(socket.Receive<int64_t>());
+    LOG(logDEBUG1) << "Setting sub deadtime to " << sls::ToString(value);
     impl()->setSubPeriod(value + impl()->getSubExpTime());
-    LOG(logDEBUG1) << "Setting sub period to " << impl()->getSubPeriod()
-                   << "ns";
+    LOG(logDEBUG1) << "Setting sub period to "
+                   << sls::ToString(impl()->getSubPeriod());
     return socket.Send(OK);
 }
 
@@ -782,7 +785,7 @@ int ClientInterface::set_file_dir(Interface &socket) {
     }
     if (fpath[0] != '/')
         throw RuntimeError("Receiver path needs to be absolute path");
-        
+
     LOG(logDEBUG1) << "Setting file path: " << fpath;
     impl()->setFilePath(fpath);
     return socket.Send(OK);
@@ -1554,9 +1557,9 @@ int ClientInterface::set_gate_delay(Interface &socket) {
     int64_t args[2]{-1, -1};
     socket.Receive(args);
     int gateIndex = static_cast<int>(args[0]);
-    int64_t value = args[1];
-    LOG(logDEBUG1) << "Setting gate delay to " << value
-                   << "ns (gateIndex: " << gateIndex << ")";
+    auto value = std::chrono::nanoseconds(args[1]);
+    LOG(logDEBUG1) << "Setting gate delay to " << sls::ToString(value)
+                   << " (gateIndex: " << gateIndex << ")";
     if (myDetectorType != MYTHEN3) {
         functionNotImplemented();
     }

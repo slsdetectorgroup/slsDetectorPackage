@@ -98,16 +98,16 @@ void Implementation::InitializeMembers() {
     numberOfGates = 0;
     timingMode = AUTO_TIMING;
     burstMode = BURST_INTERNAL;
-    acquisitionPeriod = SAMPLE_TIME_IN_NS;
-    acquisitionTime = 0;
-    acquisitionTime1 = 0;
-    acquisitionTime2 = 0;
-    acquisitionTime3 = 0;
-    gateDelay1 = 0;
-    gateDelay2 = 0;
-    gateDelay3 = 0;
-    subExpTime = 0;
-    subPeriod = 0;
+    acquisitionPeriod = std::chrono::nanoseconds(SAMPLE_TIME_IN_NS);
+    acquisitionTime = std::chrono::nanoseconds(0);
+    acquisitionTime1 = std::chrono::nanoseconds(0);
+    acquisitionTime2 = std::chrono::nanoseconds(0);
+    acquisitionTime3 = std::chrono::nanoseconds(0);
+    gateDelay1 = std::chrono::nanoseconds(0);
+    gateDelay2 = std::chrono::nanoseconds(0);
+    gateDelay3 = std::chrono::nanoseconds(0);
+    subExpTime = std::chrono::nanoseconds(0);
+    subPeriod = std::chrono::nanoseconds(0);
     numberOfAnalogSamples = 0;
     numberOfDigitalSamples = 0;
     counterMask = 0;
@@ -835,12 +835,12 @@ void Implementation::SetupWriter() {
         xy(generalData->nPixelsX, generalData->nPixelsY);
     masterAttributes->maxFramesPerFile = framesPerFile;
     masterAttributes->totalFrames = numberOfTotalFrames;
-    masterAttributes->exptime = std::chrono::nanoseconds(acquisitionTime);
-    masterAttributes->period = std::chrono::nanoseconds(acquisitionPeriod);
+    masterAttributes->exptime = acquisitionTime;
+    masterAttributes->period = acquisitionPeriod;
     masterAttributes->dynamicRange = dynamicRange;
     masterAttributes->tenGiga = tengigaEnable;
-    masterAttributes->subExptime = std::chrono::nanoseconds(subExpTime);
-    masterAttributes->subPeriod = std::chrono::nanoseconds(subPeriod);
+    masterAttributes->subExptime = subExpTime;
+    masterAttributes->subPeriod = subPeriod;
     masterAttributes->quad = quadEnable;
     masterAttributes->ratecorr = rateCorrections;
     masterAttributes->adcmask =
@@ -858,12 +858,12 @@ void Implementation::SetupWriter() {
     }
     masterAttributes->roi = roi;
     masterAttributes->counterMask = counterMask;
-    masterAttributes->exptime1 = std::chrono::nanoseconds(acquisitionTime1);
-    masterAttributes->exptime2 = std::chrono::nanoseconds(acquisitionTime2);
-    masterAttributes->exptime3 = std::chrono::nanoseconds(acquisitionTime3);
-    masterAttributes->gateDelay1 = std::chrono::nanoseconds(gateDelay1);
-    masterAttributes->gateDelay2 = std::chrono::nanoseconds(gateDelay2);
-    masterAttributes->gateDelay3 = std::chrono::nanoseconds(gateDelay3);
+    masterAttributes->exptime1 = acquisitionTime1;
+    masterAttributes->exptime2 = acquisitionTime2;
+    masterAttributes->exptime3 = acquisitionTime3;
+    masterAttributes->gateDelay1 = gateDelay1;
+    masterAttributes->gateDelay2 = gateDelay2;
+    masterAttributes->gateDelay3 = gateDelay3;
     masterAttributes->gates = numberOfGates;
 
     try {
@@ -1298,81 +1298,74 @@ void Implementation::setBurstMode(const slsDetectorDefs::burstMode i) {
     updateTotalNumberOfFrames();
 }
 
-uint64_t Implementation::getAcquisitionPeriod() const {
-    return acquisitionPeriod;
-}
+ns Implementation::getAcquisitionPeriod() const { return acquisitionPeriod; }
 
-void Implementation::setAcquisitionPeriod(const uint64_t i) {
+void Implementation::setAcquisitionPeriod(const ns i) {
     acquisitionPeriod = i;
-    LOG(logINFO) << "Acquisition Period: " << (double)acquisitionPeriod / (1E9)
-                 << "s";
+    LOG(logINFO) << "Acquisition Period: " << sls::ToString(acquisitionPeriod);
 }
 
-uint64_t Implementation::getAcquisitionTime() const { return acquisitionTime; }
+ns Implementation::getAcquisitionTime() const { return acquisitionTime; }
 
 void Implementation::updateAcquisitionTime() {
     if (acquisitionTime1 == acquisitionTime2 &&
         acquisitionTime2 == acquisitionTime3) {
         acquisitionTime = acquisitionTime1;
     } else {
-        acquisitionTime = -1;
+        acquisitionTime = std::chrono::nanoseconds(0);
     }
 }
 
-void Implementation::setAcquisitionTime(const uint64_t i) {
+void Implementation::setAcquisitionTime(const ns i) {
     acquisitionTime = i;
-    LOG(logINFO) << "Acquisition Time: " << (double)acquisitionTime / (1E9)
-                 << "s";
+    LOG(logINFO) << "Acquisition Time: " << sls::ToString(acquisitionTime);
 }
 
-void Implementation::setAcquisitionTime1(const uint64_t i) {
+void Implementation::setAcquisitionTime1(const ns i) {
     acquisitionTime1 = i;
-    LOG(logINFO) << "Acquisition Time1: " << (double)acquisitionTime1 / (1E9)
-                 << "s";
+    LOG(logINFO) << "Acquisition Time1: " << sls::ToString(acquisitionTime1);
     updateAcquisitionTime();
 }
 
-void Implementation::setAcquisitionTime2(const uint64_t i) {
+void Implementation::setAcquisitionTime2(const ns i) {
     acquisitionTime2 = i;
-    LOG(logINFO) << "Acquisition Time2: " << (double)acquisitionTime2 / (1E9)
-                 << "s";
+    LOG(logINFO) << "Acquisition Time2: " << sls::ToString(acquisitionTime2);
     updateAcquisitionTime();
 }
 
-void Implementation::setAcquisitionTime3(const uint64_t i) {
+void Implementation::setAcquisitionTime3(const ns i) {
     acquisitionTime3 = i;
-    LOG(logINFO) << "Acquisition Time3: " << (double)acquisitionTime3 / (1E9)
-                 << "s";
+    LOG(logINFO) << "Acquisition Time3: " << sls::ToString(acquisitionTime3);
     updateAcquisitionTime();
 }
 
-void Implementation::setGateDelay1(const uint64_t i) {
+void Implementation::setGateDelay1(const ns i) {
     gateDelay1 = i;
-    LOG(logINFO) << "Gate Delay1: " << (double)gateDelay1 / (1E9) << "s";
+    LOG(logINFO) << "Gate Delay1: " << sls::ToString(gateDelay1);
 }
 
-void Implementation::setGateDelay2(const uint64_t i) {
+void Implementation::setGateDelay2(const ns i) {
     gateDelay2 = i;
-    LOG(logINFO) << "Gate Delay2: " << (double)gateDelay2 / (1E9) << "s";
+    LOG(logINFO) << "Gate Delay2: " << sls::ToString(gateDelay2);
 }
 
-void Implementation::setGateDelay3(const uint64_t i) {
+void Implementation::setGateDelay3(const ns i) {
     gateDelay3 = i;
-    LOG(logINFO) << "Gate Delay3: " << (double)gateDelay3 / (1E9) << "s";
+    LOG(logINFO) << "Gate Delay3: " << sls::ToString(gateDelay3);
 }
 
-uint64_t Implementation::getSubExpTime() const { return subExpTime; }
+ns Implementation::getSubExpTime() const { return subExpTime; }
 
-void Implementation::setSubExpTime(const uint64_t i) {
+void Implementation::setSubExpTime(const ns i) {
     subExpTime = i;
-    LOG(logINFO) << "Sub Exposure Time: " << (double)subExpTime / (1E9) << "s";
+    LOG(logINFO) << "Sub Exposure Time: " << sls::ToString(subExpTime);
 }
 
-uint64_t Implementation::getSubPeriod() const { return subPeriod; }
+ns Implementation::getSubPeriod() const { return subPeriod; }
 
-void Implementation::setSubPeriod(const uint64_t i) {
+void Implementation::setSubPeriod(const ns i) {
     subPeriod = i;
-    LOG(logINFO) << "Sub Period: " << (double)subPeriod / (1E9) << "s";
+    LOG(logINFO) << "Sub Period: " << sls::ToString(subPeriod);
 }
 
 uint32_t Implementation::getNumberofAnalogSamples() const {

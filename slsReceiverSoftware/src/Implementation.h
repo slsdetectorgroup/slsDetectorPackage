@@ -11,10 +11,12 @@ class Fifo;
 class slsDetectorDefs;
 
 #include <atomic>
+#include <chrono>
 #include <exception>
 #include <map>
 #include <memory>
 #include <vector>
+using ns = std::chrono::nanoseconds;
 
 class Implementation : private virtual slsDetectorDefs {
   public:
@@ -156,30 +158,30 @@ class Implementation : private virtual slsDetectorDefs {
     burstMode getBurstMode() const;
     /** [Gottthard2] */
     void setBurstMode(const burstMode i);
-    uint64_t getAcquisitionTime() const;
-    void setAcquisitionTime(const uint64_t i);
+    ns getAcquisitionTime() const;
+    void setAcquisitionTime(const ns i);
     /** [Mythen3] */
     void updateAcquisitionTime();
     /** [Mythen3] */
-    void setAcquisitionTime1(const uint64_t i);
+    void setAcquisitionTime1(const ns i);
     /** [Mythen3] */
-    void setAcquisitionTime2(const uint64_t i);
+    void setAcquisitionTime2(const ns i);
     /** [Mythen3] */
-    void setAcquisitionTime3(const uint64_t i);
+    void setAcquisitionTime3(const ns i);
     /** [Mythen3] */
-    void setGateDelay1(const uint64_t i);
+    void setGateDelay1(const ns i);
     /** [Mythen3] */
-    void setGateDelay2(const uint64_t i);
+    void setGateDelay2(const ns i);
     /** [Mythen3] */
-    void setGateDelay3(const uint64_t i);
-    uint64_t getAcquisitionPeriod() const;
-    void setAcquisitionPeriod(const uint64_t i);
-    uint64_t getSubExpTime() const;
+    void setGateDelay3(const ns i);
+    ns getAcquisitionPeriod() const;
+    void setAcquisitionPeriod(const ns i);
+    ns getSubExpTime() const;
     /* [Eiger] */
-    void setSubExpTime(const uint64_t i);
-    uint64_t getSubPeriod() const;
+    void setSubExpTime(const ns i);
+    ns getSubPeriod() const;
     /* [Eiger] */
-    void setSubPeriod(const uint64_t i);
+    void setSubPeriod(const ns i);
     uint32_t getNumberofAnalogSamples() const;
     /**[Ctb][Moench] */
     void setNumberofAnalogSamples(const uint32_t i);
@@ -225,7 +227,7 @@ class Implementation : private virtual slsDetectorDefs {
     void setTenGigaADCEnableMask(const uint32_t mask);
     std::vector<int> getDbitList() const;
     /* [Ctb] */
-    void setDbitList(const std::vector<int>& v);
+    void setDbitList(const std::vector<int> &v);
     int getDbitOffset() const;
     /* [Ctb] */
     void setDbitOffset(const int s);
@@ -318,18 +320,18 @@ class Implementation : private virtual slsDetectorDefs {
     int numberOfGates;
     timingMode timingMode;
     burstMode burstMode;
-    uint64_t acquisitionPeriod;
-    uint64_t acquisitionTime;
-    uint64_t acquisitionTime1;
-    uint64_t acquisitionTime2;
-    uint64_t acquisitionTime3;
-    uint64_t gateDelay1;
-    uint64_t gateDelay2;
-    uint64_t gateDelay3;
-    uint64_t subExpTime;
-    uint64_t subPeriod;
-    uint64_t numberOfAnalogSamples;
-    uint64_t numberOfDigitalSamples;
+    ns acquisitionPeriod;
+    ns acquisitionTime;
+    ns acquisitionTime1;
+    ns acquisitionTime2;
+    ns acquisitionTime3;
+    ns gateDelay1;
+    ns gateDelay2;
+    ns gateDelay3;
+    ns subExpTime;
+    ns subPeriod;
+    uint32_t numberOfAnalogSamples;
+    uint32_t numberOfDigitalSamples;
     uint32_t counterMask;
     uint32_t dynamicRange;
     ROI roi;

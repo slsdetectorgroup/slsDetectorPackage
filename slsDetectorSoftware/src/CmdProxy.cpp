@@ -1,5 +1,5 @@
 #include "CmdProxy.h"
-#include "bit_stuff.h"
+#include "bit_utils.h"
 #include "TimeHelper.h"
 #include "ToString.h"
 #include "container_utils.h"

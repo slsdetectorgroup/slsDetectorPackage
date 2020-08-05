@@ -1,6 +1,6 @@
 #include "catch.hpp"
 #include <vector>
-#include "bit_stuff.h"
+#include "bit_utils.h"
 
 TEST_CASE("Get set bits from 0"){
     auto vec = sls::getSetBits(0);

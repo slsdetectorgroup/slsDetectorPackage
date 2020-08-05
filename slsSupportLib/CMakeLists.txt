@@ -40,7 +40,7 @@ if(SLS_DEVEL_HEADERS)
         include/UdpRxSocket.h
         include/versionAPI.h
         include/ZmqSocket.h
-        include/bit_stuff.h
+        include/bit_utils.h
     )
 endif()
 

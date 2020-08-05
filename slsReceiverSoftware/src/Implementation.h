@@ -20,7 +20,7 @@ using ns = std::chrono::nanoseconds;
 
 class Implementation : private virtual slsDetectorDefs {
   public:
-    Implementation(const detectorType d);
+    explicit Implementation(const detectorType d);
     virtual ~Implementation();
 
     /**************************************************

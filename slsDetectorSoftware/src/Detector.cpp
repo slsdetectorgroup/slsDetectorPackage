@@ -716,6 +716,14 @@ void Detector::setDestinationUDPPort2(int port, int module_id) {
     }
 }
 
+void Detector::reconfigureUDPDestination(Positions pos) {
+    pimpl->Parallel(&Module::reconfigureUDPDestination, pos);
+}
+
+void Detector::validateUDPConfiguration(Positions pos) {
+    pimpl->Parallel(&Module::validateUDPConfiguration, pos);
+}
+
 Result<std::string> Detector::printRxConfiguration(Positions pos) const {
     return pimpl->Parallel(&Module::printReceiverConfiguration, pos);
 }

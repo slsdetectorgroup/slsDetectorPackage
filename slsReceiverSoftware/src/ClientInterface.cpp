@@ -878,12 +878,7 @@ int ClientInterface::set_master_file_write(Interface &socket) {
                            std::to_string(enable));
     }
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting Master File write enable:" << enable;
     impl()->setMasterFileWriteEnable(enable);
-
-    int retval = impl()->getMasterFileWriteEnable();
-    validate(enable, retval, "set master file write enable", DEC);
-    LOG(logDEBUG1) << "master file write enable:" << retval;
     return socket.Send(OK);
 }
 
@@ -900,12 +895,7 @@ int ClientInterface::set_overwrite(Interface &socket) {
                            std::to_string(index));
     }
     verifyIdle(socket);
-    LOG(logDEBUG1) << "Setting File overwrite enable:" << index;
     impl()->setOverwriteEnable(index);
-
-    int retval = impl()->getOverwriteEnable();
-    validate(index, retval, "set file overwrite enable", DEC);
-    LOG(logDEBUG1) << "file overwrite enable:" << retval;
     return socket.Send(OK);
 }
 
@@ -984,10 +974,6 @@ int ClientInterface::set_streaming(Interface &socket) {
         throw RuntimeError("Could not set data stream enable to " +
                            std::to_string(index));
     }
-
-    auto retval = static_cast<int>(impl()->getDataStreamEnable());
-    validate(index, retval, "set data stream enable", DEC);
-    LOG(logDEBUG1) << "data streaming enable:" << retval;
     return socket.Send(OK);
 }
 
@@ -1331,7 +1317,7 @@ int ClientInterface::set_dbit_list(Interface &socket) {
     for (auto &it : args) {
         LOG(logDEBUG1) << it << " ";
     }
-    LOG(logDEBUG1) << "\n";
+    LOG(logDEBUG1) << '\n';
     verifyIdle(socket);
     impl()->setDbitList(args);
     return socket.Send(OK);
@@ -1356,10 +1342,6 @@ int ClientInterface::set_dbit_offset(Interface &socket) {
     verifyIdle(socket);
     LOG(logDEBUG1) << "Setting Dbit offset: " << arg;
     impl()->setDbitOffset(arg);
-
-    int retval = impl()->getDbitOffset();
-    validate(arg, retval, "set dbit offset", DEC);
-    LOG(logDEBUG1) << "Dbit offset retval: " << retval;
     return socket.Send(OK);
 }
 

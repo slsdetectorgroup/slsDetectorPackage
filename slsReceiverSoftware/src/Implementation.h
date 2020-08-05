@@ -225,7 +225,7 @@ class Implementation : private virtual slsDetectorDefs {
     void setTenGigaADCEnableMask(const uint32_t mask);
     std::vector<int> getDbitList() const;
     /* [Ctb] */
-    void setDbitList(const std::vector<int> v);
+    void setDbitList(const std::vector<int>& v);
     int getDbitOffset() const;
     /* [Ctb] */
     void setDbitOffset(const int s);

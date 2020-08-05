@@ -25,6 +25,8 @@
 Implementation::Implementation(const detectorType d) {
 
     // network configuration (UDP)
+    eth.resize(MAX_NUMBER_OF_LISTENING_THREADS);
+    udpPortNum.resize(MAX_NUMBER_OF_LISTENING_THREADS);
     for (int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; ++i) {
         udpPortNum[i] = DEFAULT_UDP_PORTNO + i;
     }

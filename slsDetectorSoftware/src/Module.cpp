@@ -672,7 +672,7 @@ std::string Module::printReceiverConfiguration() {
 }
 
 bool Module::getTenGiga() const {
-    return static_cast<bool>(sendToDetector<int>(F_ENABLE_TEN_GIGA, GET_FLAG));
+    return sendToDetector<int>(F_ENABLE_TEN_GIGA, GET_FLAG);
 }
 
 void Module::setTenGiga(bool value) {
@@ -854,7 +854,7 @@ void Module::setReceiverUDPSocketBufferSize(int64_t udpsockbufsize) {
 }
 
 bool Module::getReceiverLock() const {
-    return static_cast<bool>(sendToReceiver<int>(F_LOCK_RECEIVER, GET_FLAG));
+    return sendToReceiver<int>(F_LOCK_RECEIVER, GET_FLAG);
 }
 
 void Module::setReceiverLock(bool lock) {
@@ -1103,8 +1103,7 @@ std::string Module::setSettingsDir(const std::string &dir) {
 }
 
 bool Module::getParallelMode() const {
-    auto r = sendToDetector<int>(F_GET_PARALLEL_MODE);
-    return static_cast<bool>(r);
+    return sendToDetector<int>(F_GET_PARALLEL_MODE);
 }
 
 void Module::setParallelMode(const bool enable) {
@@ -1112,8 +1111,7 @@ void Module::setParallelMode(const bool enable) {
 }
 
 bool Module::getOverFlowMode() const {
-    auto r = sendToDetector<int>(F_GET_OVERFLOW_MODE);
-    return static_cast<bool>(r);
+    return sendToDetector<int>(F_GET_OVERFLOW_MODE);
 }
 
 void Module::setOverFlowMode(const bool enable) {
@@ -1189,8 +1187,7 @@ void Module::setReadNLines(const int value) {
 }
 
 bool Module::getInterruptSubframe() const {
-    auto r = sendToDetector<int>(F_GET_INTERRUPT_SUBFRAME);
-    return static_cast<bool>(r);
+    return sendToDetector<int>(F_GET_INTERRUPT_SUBFRAME);
 }
 
 void Module::setInterruptSubframe(const bool enable) {
@@ -2277,7 +2274,7 @@ void Module::setStopPort(int port_number) {
 }
 
 bool Module::getLockDetector() const {
-    return static_cast<bool>(sendToDetector<int>(F_LOCK_SERVER, GET_FLAG));
+    return sendToDetector<int>(F_LOCK_SERVER, GET_FLAG);
 }
 
 void Module::setLockDetector(bool lock) {
@@ -3169,13 +3166,12 @@ void Module::programFPGAviaBlackfin(std::vector<char> buffer) {
 }
 
 void Module::programFPGAviaNios(std::vector<char> buffer) {
-    uint64_t filesize = buffer.size();
     LOG(logINFO) << "Sending programming binary (from rbf) to detector "
                  << moduleId << " (" << shm()->hostname << ")";
 
     auto client = DetectorSocket(shm()->hostname, shm()->controlPort);
     client.Send(F_PROGRAM_FPGA);
-    // filesize
+    uint64_t filesize = buffer.size();
     client.Send(filesize);
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;
@@ -3183,7 +3179,6 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
            << " returned error: " << client.readErrorMessage();
         throw RuntimeError(os.str());
     }
-    // program
     client.Send(buffer);
     if (client.Receive<int>() == FAIL) {
         std::ostringstream os;

@@ -141,8 +141,7 @@ void Module::updateNumberOfDetector(slsDetectorDefs::xy det) {
 }
 
 slsDetectorDefs::detectorSettings Module::getSettings() const {
-    auto r = sendToDetector<int>(F_SET_SETTINGS, GET_FLAG);
-    return static_cast<detectorSettings>(r);
+    return sendToDetector<detectorSettings>(F_SET_SETTINGS, GET_FLAG);
 }
 
 void Module::setSettings(detectorSettings isettings) {
@@ -150,7 +149,7 @@ void Module::setSettings(detectorSettings isettings) {
         throw RuntimeError(
             "Cannot set settings for Eiger. Use threshold energy.");
     }
-    sendToDetector<int>(F_SET_SETTINGS, static_cast<int>(isettings));
+    sendToDetector<int>(F_SET_SETTINGS, isettings);
 }
 
 void Module::loadSettingsFile(const std::string &fname) {
@@ -293,7 +292,7 @@ slsDetectorDefs::timingMode Module::getTimingMode() const {
 }
 
 void Module::setTimingMode(timingMode value) {
-    sendToDetector<int>(F_SET_TIMING_MODE, static_cast<int>(value));
+    sendToDetector<int>(F_SET_TIMING_MODE, value);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_TIMING_MODE, value, nullptr);
     }
@@ -358,7 +357,7 @@ void Module::setImageTestMode(const int value) {
 }
 
 int Module::getADC(dacIndex index) const {
-    return sendToDetectorStop<int>(F_GET_ADC, static_cast<int>(index));
+    return sendToDetectorStop<int>(F_GET_ADC, index);
 }
 
 int Module::getOnChipDAC(slsDetectorDefs::dacIndex index, int chipIndex) const {
@@ -873,14 +872,12 @@ std::array<pid_t, NUM_RX_THREAD_IDS> Module::getReceiverThreadIds() const {
 }
 
 // File
-
 slsDetectorDefs::fileFormat Module::getFileFormat() const {
-    return static_cast<fileFormat>(
-        sendToReceiver<int>(F_GET_RECEIVER_FILE_FORMAT));
+    return sendToReceiver<fileFormat>(F_GET_RECEIVER_FILE_FORMAT);
 }
 
 void Module::setFileFormat(fileFormat f) {
-    sendToReceiver(F_SET_RECEIVER_FILE_FORMAT, static_cast<int>(f), nullptr);
+    sendToReceiver(F_SET_RECEIVER_FILE_FORMAT, f, nullptr);
 }
 
 std::string Module::getFilePath() const {

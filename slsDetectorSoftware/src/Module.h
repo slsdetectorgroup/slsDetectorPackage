@@ -511,9 +511,9 @@ class Module : public virtual slsDetectorDefs {
      *                                                *
      * ************************************************/
     int getControlPort() const;
-    int setControlPort(int port_number);
+    void setControlPort(int port_number);
     int getStopPort() const;
-    int setStopPort(int port_number);
+    void setStopPort(int port_number);
     bool getLockDetector() const;
     void setLockDetector(bool lock);
     sls::IpAddr getLastClientIP() const;

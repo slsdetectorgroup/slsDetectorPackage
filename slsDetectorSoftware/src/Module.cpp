@@ -390,8 +390,8 @@ void Module::startReceiver() {
 }
 
 void Module::stopReceiver() {
-    int arg = static_cast<int>(shm()->stoppedFlag);
-    sendToReceiver(F_STOP_RECEIVER, arg, nullptr);
+    sendToReceiver(F_STOP_RECEIVER, static_cast<int>(shm()->stoppedFlag),
+                   nullptr);
 }
 
 void Module::startAcquisition() {
@@ -676,7 +676,7 @@ bool Module::getTenGiga() const {
 }
 
 void Module::setTenGiga(bool value) {
-    int arg = static_cast<int>(value);
+    auto arg = static_cast<int>(value);
     auto retval = sendToDetector<int>(F_ENABLE_TEN_GIGA, arg);
     sendToDetectorStop<int>(F_ENABLE_TEN_GIGA, arg);
     arg = retval;
@@ -690,8 +690,8 @@ bool Module::getTenGigaFlowControl() const {
 }
 
 void Module::setTenGigaFlowControl(bool enable) {
-    int arg = static_cast<int>(enable);
-    sendToDetector(F_SET_TEN_GIGA_FLOW_CONTROL, arg, nullptr);
+    sendToDetector(F_SET_TEN_GIGA_FLOW_CONTROL, static_cast<int>(enable),
+                   nullptr);
 }
 
 int Module::getTransmissionDelayFrame() const {
@@ -825,8 +825,7 @@ void Module::setReceiverSilentMode(bool enable) {
 
 slsDetectorDefs::frameDiscardPolicy
 Module::getReceiverFramesDiscardPolicy() const {
-    return static_cast<frameDiscardPolicy>(
-        sendToReceiver<int>(F_GET_RECEIVER_DISCARD_POLICY));
+    return sendToReceiver<frameDiscardPolicy>(F_GET_RECEIVER_DISCARD_POLICY);
 }
 
 void Module::setReceiverFramesDiscardPolicy(frameDiscardPolicy f) {
@@ -1118,8 +1117,7 @@ bool Module::getOverFlowMode() const {
 }
 
 void Module::setOverFlowMode(const bool enable) {
-    int arg = static_cast<int>(enable);
-    sendToDetector(F_SET_OVERFLOW_MODE, arg, nullptr);
+    sendToDetector(F_SET_OVERFLOW_MODE, static_cast<int>(enable), nullptr);
 }
 
 bool Module::getFlippedDataX() const {
@@ -1196,8 +1194,7 @@ bool Module::getInterruptSubframe() const {
 }
 
 void Module::setInterruptSubframe(const bool enable) {
-    int arg = static_cast<int>(enable);
-    sendToDetector(F_SET_INTERRUPT_SUBFRAME, arg, nullptr);
+    sendToDetector(F_SET_INTERRUPT_SUBFRAME, static_cast<int>(enable), nullptr);
 }
 
 int64_t Module::getMeasuredPeriod() const {
@@ -1248,12 +1245,12 @@ void Module::setCounterBit(bool cb) {
 }
 
 void Module::pulsePixel(int n, int x, int y) {
-    int args[]{n, x, y};
+    const int args[]{n, x, y};
     sendToDetector(F_PULSE_PIXEL, args, nullptr);
 }
 
 void Module::pulsePixelNMove(int n, int x, int y) {
-    int args[]{n, x, y};
+    const int args[]{n, x, y};
     sendToDetector(F_PULSE_PIXEL_AND_MOVE, args, nullptr);
 }
 
@@ -1288,7 +1285,7 @@ void Module::setThresholdTemperature(int val) {
 }
 
 bool Module::getTemperatureControl() const {
-    return static_cast<bool>(sendToDetectorStop<int>(F_TEMP_CONTROL, GET_FLAG));
+    return sendToDetectorStop<int>(F_TEMP_CONTROL, GET_FLAG);
 }
 
 void Module::setTemperatureControl(bool val) {
@@ -1304,8 +1301,7 @@ void Module::resetTemperatureEvent() {
 }
 
 bool Module::getAutoComparatorDisableMode() const {
-    return static_cast<bool>(
-        sendToDetector<int>(F_AUTO_COMP_DISABLE, GET_FLAG));
+    return sendToDetector<int>(F_AUTO_COMP_DISABLE, GET_FLAG);
 }
 
 void Module::setAutoComparatorDisableMode(bool val) {
@@ -1439,7 +1435,6 @@ void Module::getVetoPhoton(const int chipIndex,
 
     // save to file
     std::ofstream outfile(fname);
-
     if (!outfile) {
         throw RuntimeError("Could not create file to save veto photon");
     }
@@ -1527,7 +1522,7 @@ void Module::setVetoPhoton(const int chipIndex, const int numPhotons,
 }
 
 void Module::setVetoReference(const int gainIndex, const int value) {
-    int args[]{gainIndex, value};
+    const int args[]{gainIndex, value};
     sendToDetector(F_SET_VETO_REFERENCE, args, nullptr);
 }
 
@@ -1591,13 +1586,11 @@ void Module::setVetoFile(const int chipIndex, const std::string &fname) {
 }
 
 slsDetectorDefs::burstMode Module::getBurstMode() const {
-    auto r = sendToDetector<int>(F_GET_BURST_MODE);
-    return static_cast<slsDetectorDefs::burstMode>(r);
+    return sendToDetector<burstMode>(F_GET_BURST_MODE);
 }
 
 void Module::setBurstMode(slsDetectorDefs::burstMode value) {
-    int arg = static_cast<int>(value);
-    sendToDetector(F_SET_BURST_MODE, arg, nullptr);
+    sendToDetector(F_SET_BURST_MODE, value, nullptr);
     if (shm()->useReceiverFlag) {
         sendToReceiver(F_SET_RECEIVER_BURST_MODE, value, nullptr);
     }
@@ -1624,8 +1617,7 @@ void Module::setCurrentSource(bool value) {
 }
 
 slsDetectorDefs::timingSourceType Module::getTimingSource() const {
-    auto r = sendToDetector<int>(F_GET_TIMING_SOURCE);
-    return static_cast<slsDetectorDefs::timingSourceType>(r);
+    return sendToDetector<timingSourceType>(F_GET_TIMING_SOURCE);
 }
 
 void Module::setTimingSource(slsDetectorDefs::timingSourceType value) {
@@ -1743,7 +1735,6 @@ void Module::setNumberOfGates(int value) {
 }
 
 std::array<time::ns, 3> Module::getExptimeForAllGates() const {
-    static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
     return sendToDetector<std::array<time::ns, 3>>(F_GET_EXPTIME_ALL_GATES);
 }
 
@@ -1760,12 +1751,10 @@ void Module::setGateDelay(int gateIndex, int64_t value) {
 }
 
 std::array<time::ns, 3> Module::getGateDelayForAllGates() const {
-    static_assert(sizeof(time::ns) == 8, "ns needs to be 64bit");
     return sendToDetector<std::array<time::ns, 3>>(F_GET_GATE_DELAY_ALL_GATES);
 }
 
 // CTB / Moench Specific
-
 int Module::getNumberOfAnalogSamples() const {
     return sendToDetector<int>(F_GET_NUM_ANALOG_SAMPLES);
 }
@@ -1841,13 +1830,11 @@ void Module::setNumberOfDigitalSamples(int value) {
 }
 
 slsDetectorDefs::readoutMode Module::getReadoutMode() const {
-    auto r = sendToDetector<int>(F_GET_READOUT_MODE);
-    return static_cast<readoutMode>(r);
+    return sendToDetector<readoutMode>(F_GET_READOUT_MODE);
 }
 
 void Module::setReadoutMode(const slsDetectorDefs::readoutMode mode) {
-    auto arg = static_cast<uint32_t>(mode);
-    LOG(logDEBUG1) << "Setting readout mode to " << arg;
+    auto arg = static_cast<uint32_t>(mode); // TODO! unit?
     sendToDetector(F_SET_READOUT_MODE, arg, nullptr);
     // update #nchan, as it depends on #samples, adcmask,
     if (shm()->myDetectorType == CHIPTESTBOARD) {
@@ -1908,7 +1895,7 @@ void Module::setDigitalIODelay(uint64_t pinMask, int delay) {
 }
 
 bool Module::getLEDEnable() const {
-    return static_cast<bool>(sendToDetector<int>(F_LED, GET_FLAG));
+    return sendToDetector<int>(F_LED, GET_FLAG);
 }
 
 void Module::setLEDEnable(bool enable) {
@@ -2020,8 +2007,8 @@ void Module::setPattern(const std::string &fname) {
 }
 
 uint64_t Module::getPatternIOControl() const {
-    int64_t arg = GET_FLAG;
-    return sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL, arg);
+    return sendToDetector<uint64_t>(F_SET_PATTERN_IO_CONTROL,
+                                    int64_t(GET_FLAG));
 }
 
 void Module::setPatternIOControl(uint64_t word) {
@@ -2191,7 +2178,6 @@ void Module::setAdditionalJsonParameter(const std::string &key,
 }
 
 // Advanced
-
 void Module::programFPGA(std::vector<char> buffer) {
     switch (shm()->myDetectorType) {
     case JUNGFRAU:
@@ -2270,31 +2256,24 @@ void Module::setADCInvert(uint32_t value) {
 }
 
 // Insignificant
-
 int Module::getControlPort() const { return shm()->controlPort; }
 
-int Module::setControlPort(int port_number) {
-    if (port_number >= 0 && port_number != shm()->controlPort) {
-        if (strlen(shm()->hostname) > 0) {
-            shm()->controlPort = sendToDetector<int>(F_SET_PORT, port_number);
-        } else {
-            shm()->controlPort = port_number;
-        }
+void Module::setControlPort(int port_number) {
+    if (strlen(shm()->hostname) > 0) {
+        shm()->controlPort = sendToDetector<int>(F_SET_PORT, port_number);
+    } else {
+        shm()->controlPort = port_number;
     }
-    return shm()->controlPort;
 }
 
 int Module::getStopPort() const { return shm()->stopPort; }
 
-int Module::setStopPort(int port_number) {
-    if (port_number >= 0 && port_number != shm()->stopPort) {
-        if (strlen(shm()->hostname) > 0) {
-            shm()->stopPort = sendToDetectorStop<int>(F_SET_PORT, port_number);
-        } else {
-            shm()->stopPort = port_number;
-        }
+void Module::setStopPort(int port_number) {
+    if (strlen(shm()->hostname) > 0) {
+        shm()->stopPort = sendToDetectorStop<int>(F_SET_PORT, port_number);
+    } else {
+        shm()->stopPort = port_number;
     }
-    return shm()->stopPort;
 }
 
 bool Module::getLockDetector() const {
@@ -2314,7 +2293,7 @@ std::string Module::execCommand(const std::string &cmd) {
     char retval[MAX_STR_LENGTH]{};
     sls::strcpy_safe(arg, cmd.c_str());
     sendToDetector(F_EXEC_COMMAND, arg, retval);
-    return std::string(retval);
+    return retval;
 }
 
 int64_t Module::getNumberOfFramesFromStart() const {
@@ -2612,7 +2591,7 @@ void Module::sendToReceiver(int fnum, const void *args, size_t args_size,
 }
 
 template <typename Arg, typename Ret>
-void Module::sendToReceiver(int fnum, const Arg &args, Ret &retval) const{
+void Module::sendToReceiver(int fnum, const Arg &args, Ret &retval) const {
     LOG(logDEBUG1) << "Sending to Receiver: ["
                    << getFunctionNameFromEnum(static_cast<detFuncs>(fnum))
                    << ", " << args << ", " << sizeof(args) << ", "
@@ -2723,8 +2702,7 @@ slsDetectorDefs::detectorType Module::getDetectorTypeFromShm(int det_id,
         shm.UnmapSharedMemory();
         throw SharedMemoryError(ss.str());
     }
-    auto type = shm()->myDetectorType;
-    return type;
+    return shm()->myDetectorType;
 }
 
 void Module::initSharedMemory(detectorType type, int det_id, bool verify) {
@@ -2806,8 +2784,7 @@ void Module::checkDetectorVersionCompatibility() {
 
 void Module::checkReceiverVersionCompatibility() {
     // TODO! Verify that this works as intended when version don't match
-    int64_t arg = APIRECEIVER;
-    sendToReceiver(F_RECEIVER_CHECK_VERSION, arg, nullptr);
+    sendToReceiver(F_RECEIVER_CHECK_VERSION, int64_t(APIRECEIVER), nullptr);
 }
 
 void Module::restreamStopFromReceiver() {
@@ -3217,5 +3194,4 @@ void Module::programFPGAviaNios(std::vector<char> buffer) {
     LOG(logINFO) << "FPGA programmed successfully";
     rebootController();
 }
-
 } // namespace sls

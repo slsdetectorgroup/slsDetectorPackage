@@ -16,5 +16,7 @@ abs(std::chrono::duration<Rep, Period> d) {
     return d >= d.zero() ? d : -d;
 }
 
+static_assert(sizeof(ns) == 8, "ns needs to be 64bit");
+
 } // namespace time
 } // namespace sls

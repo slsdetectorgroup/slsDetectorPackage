@@ -154,21 +154,39 @@ threaded 1
 \end{verbatim}
 
 In the config file, if client, receiver and detector commands are on 1Gb, but detector data to receiver are sent using \textbf{10GbE} the following lines are mandatory (see slsDetectorsPackage/examples/eiger\_10Gb.config):
+ It has been adapted to the the new 5.0 major release change:
+\begin{verbatim}
+detsize 1024 512
+hostname beb059+beb058+ 
+rx_hostname pc1875:1955+pc1875:1956+
+0:udp_dstport 50011
+0:udp_dstport2 50012
+0:udp_dstip 10.0.30.210 
+0:udp_srcip 10.0.30.100  
+1:flippeddatax 1
+1:udp_dstport 50013
+1:udp_dstport2 50014
+1:udp_dstip 0.0.40.210 
+1:udp_srcip 10.0.40.101
+fpath /sls/X12SA/data/x12saop/Data10/Eiger0.5M
+\end{verbatim}
+In the old 3.x and 4.x release it was: 
 \begin{verbatim}
 detsizechan 1024 512 #detector geometry, long side of the module first
 hostname beb059+beb058+ #1Gb detector hostname for controls
-0:rx_tcpport 1991 #tcpport for the first halfmodule                 
+0:rx_tcpport 1955 #tcpport for the first halfmodule                 
 0:rx_udpport 50011 #udp port first quadrant, first halfmodule       
 0:rx_udpport2 50012 #udp port second quadrant, first halfmodule       
 0:rx_udpip 10.0.30.210 #udp IP of the receiver over 10Gb              
 0:detectorip 10.0.30.100  #first half module 10 Gb IP 
-1:rx_tcpport 1992 #tcpport for the second halfmodule                  
+1:flippeddatax 1
+1:rx_tcpport 1956 #tcpport for the second halfmodule                  
 1:rx_udpport 50013 #udp port first quadrant, second halfmodule     
 1:rx_udpport2 50014 #udp port second quadrant, second halfmodule  
 1:rx_udpip 10.0.40.210  #udp IP of the receiver over 10Gb, 
                         can be the same or different from 0:rx_udpip                                   
 1:detectorip 10.0.40.101 #second half module 10 Gb IP 
-rx_hostname x12sa-vcons #1Gb receiver pc hostname
+rx_hostname  pc1875   #1Gb receiver pc hostname
 outdir /sls/X12SA/data/x12saop/Data10/Eiger0.5M
 threaded 1
 \end{verbatim}
@@ -269,11 +287,11 @@ In this acquisition 10 consecutive 1~s frames will be acquired. Note that {\tt{p
 
 You need to setup where the files will be written to
 \begin{verbatim}
-sls_detector_put 0-outdir /scratch
+sls_detector_put 0-outdir /scratch (\textcolor{red}{0-fpath})
 sls_detector_put 0-fname run
-sls_detector_put 0-index 0
+sls_detector_put 0-index 0 (\textcolor{red}{0-findex})
 \end{verbatim}
-this way your files will all be named /scratch/run\_dj\_i.raw where $j$ is relative to each specific half module, $i$ in the {\tt{index}} starts from 0 when starting the detector the first time and is automatically incremented. The next acquisition {\tt{index}} will be 1. One can reset the  {\tt{index}} to what wished.
+this way your files will all be named /scratch/run\_dj\_i.raw where $j$ is relative to each specific half module, $i$ in the {\tt{index}} starts from 0 when starting the detector the first time and is automatically incremented. The next acquisition {\tt{index}} will be 1. One can reset the  {\tt{index}} (\tt{\textcolor{red}{findex}}) to what wished.
 
 To acquire simply type:
 \begin{verbatim}
@@ -792,7 +810,7 @@ Extremely advanced options allow to:
 \begin{itemize}
 \item Activate the flow control for 10~Gb/s~E (by default the 1~Gb/s~E is always active and cannot be switched off:
 \begin{verbatim}
-./sls_detector_put flowcontrol_10g 1
+./sls_detector_put flowcontrol_10g 1 (\textcolor{red}{flowcontrol10g})
 \end{verbatim}
 \item  Delay the transmission of the left port. This delay option is useful in the case of many simultaneous receivers running, such that it reduces the throughput to the receivers all at the same time. To be used board by board (i.e {\tt{X:, Y:,etc..}} with different units:
 \begin{verbatim}
@@ -885,7 +903,7 @@ NOTE THAT THIS SETTINGS WILL BE LOST IF YOU REBOOT THE COMPUTER.
 
 Very important is to activate the flow control in 10Gb (in 1Gb it is on by default and not configurable)
 \begin{verbatim}
-./sls_detector_put flowcontrol_10g 1
+./sls_detector_put flowcontrol_10g 1 (\textcolor{red}{flowcontrol10g 1})
 \end{verbatim}
 You ned to check that flow control is setup on the reeceiving interfaces. Check with:
 \begin{verbatim}
@@ -1174,10 +1192,10 @@ In 500k--2M pixel systems there is a hardware temperature safety switch, which w
  
 The HV can also be set and read through the software:
 \begin{verbatim}
-./sls_detector_put highvoltage 150
-./sls_detector_get highvoltage 
+./sls_detector_put vhighvoltage 150 (\textcolor{red}{highvoltage})
+./sls_detector_get vhighvoltage (\textcolor{red}{highvoltage})
 \end{verbatim}
-Note that the get {\tt{highvoltage}} would return the measured HV from the master module only. If getting the highvoltage for individual halfmodules, only the master will have a value different from -999.
+Note that the get {\tt{vhighvoltage}}(\tt{\textcolor{red}{highvoltage}}) would return the measured HV from the master module only. If getting the highvoltage for individual halfmodules, only the master will have a value different from -999.
 
 \appendix
 
@@ -1333,10 +1351,10 @@ We have also been requested if we could speed up the threshold scan. At the mome
 \begin{verbatim}
 ./sls_detector_put exptime 0.01
 ./sls_detector_put timing trigger
-./sls_detector_put enablefwrite 0
-./sls_detector_put resetframescaught 0 
-./sls_detector_put index 0
-./sls_detector_put cycles 21  (\textcolor{red}{triggers})
+./sls_detector_put enablefwrite 0 (\textcolor{red}{fwrite} 0)
+./sls_detector_put resetframescaught 0  (\textcolor{red}{not needed anymore})
+./sls_detector_put index 0  (\textcolor{red}{findex} 0)
+./sls_detector_put cycles 21  (\textcolor{red}{triggers} 21)
 ./sls_detector_put receiver start
 ./sls_detector_put status start 
 for i in $(seq 0 20); 

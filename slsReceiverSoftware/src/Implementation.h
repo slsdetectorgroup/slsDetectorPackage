@@ -295,8 +295,9 @@ class Implementation : private virtual slsDetectorDefs {
 
     // network configuration (UDP)
     int numUDPInterfaces{1};
-    std::array<std::string,MAX_NUMBER_OF_LISTENING_THREADS>eth;
-    std::array<uint32_t,MAX_NUMBER_OF_LISTENING_THREADS> udpPortNum{{DEFAULT_UDP_PORTNO, DEFAULT_UDP_PORTNO+1}};
+    std::array<std::string, MAX_NUMBER_OF_LISTENING_THREADS> eth;
+    std::array<uint32_t, MAX_NUMBER_OF_LISTENING_THREADS> udpPortNum{
+        {DEFAULT_UDP_PORTNO, DEFAULT_UDP_PORTNO + 1}};
     int64_t udpSocketBufferSize{0};
     int64_t actualUDPSocketBufferSize{0};
 
@@ -350,12 +351,13 @@ class Implementation : private virtual slsDetectorDefs {
     // callbacks
     int (*startAcquisitionCallBack)(std::string, std::string, uint64_t,
                                     uint32_t, void *){nullptr};
-    void *pStartAcquisition;
-    void (*acquisitionFinishedCallBack)(uint64_t, void *);
-    void *pAcquisitionFinished;
-    void (*rawDataReadyCallBack)(char *, char *, uint32_t, void *);
-    void (*rawDataModifyReadyCallBack)(char *, char *, uint32_t &, void *);
-    void *pRawDataReady;
+    void *pStartAcquisition{nullptr};
+    void (*acquisitionFinishedCallBack)(uint64_t, void *){nullptr};
+    void *pAcquisitionFinished{nullptr};
+    void (*rawDataReadyCallBack)(char *, char *, uint32_t, void *){nullptr};
+    void (*rawDataModifyReadyCallBack)(char *, char *, uint32_t &,
+                                       void *){nullptr};
+    void *pRawDataReady{nullptr};
 
     // class objects
     GeneralData *generalData;

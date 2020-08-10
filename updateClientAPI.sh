@@ -14,10 +14,10 @@ do
 done
 
 #find branch
-CURR_BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
+CURR_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 #update branch
-BRANCH=$(cat $API_FILE | grep GITBRANCH | cut -d' ' -f3)
+BRANCH=$(cat $API_FILE | grep GITBRANCH | awk '{print $3}' )
 sed -i s/$BRANCH/\"$CURR_BRANCH\"/g $API_FILE
 
 

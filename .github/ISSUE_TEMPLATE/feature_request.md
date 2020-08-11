@@ -5,34 +5,18 @@ title: New Feature Request
 labels: action - Enhancement, priority - Unclassified, status - Pending
 template: feature_request.md
 ---
-
-<!--  Check an option by - [x], Uncheck an option by - [ ] -->
-<!-- Please preview to see your option has been selected -->
-
+<!-- Preview changes before submitting -->
 <!-- Please fill out everything with an *, as this report will be discarded otherwise -->
+<!-- This is a comment, the syntax is a bit different from c++ or bash -->
 
 ##### *Detector type: 
-- [x] Not applicable
-- [ ] Eiger
-- [ ] Jungfrau
-- [ ] Mythen3
-- [ ] Gotthard2
-- [ ] Gotthard
-- [ ] Moench
-- [ ] ChipTestBoard
+<!-- If applicable, Eiger, Jungfrau, Mythen3, Gotthard2, Gotthard, Moench, ChipTestBoard -->
 
 ##### *Software Package Version: 
-- [ ] developer
-- [ ] 4.2.0
-- [ ] 4.1.1
-<!-- If others, please describe -->
+<!-- developer, 4.2.0, 4.1.1, etc -->
 
 ##### Priority:
-- [ ] Super Low
-- [ ] Low
-- [ ] Medium
-- [ ] High
-- [ ] Super High
+<!-- Super Low, Low, Medium, High, Super High -->
 
 ##### *State the feature:
 <!--  A clear and concise description of what the feature is -->

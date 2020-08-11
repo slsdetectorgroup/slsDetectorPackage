@@ -12,33 +12,17 @@ template: bug_report.md
 <!-- Please fill out everything with an *, as this report will be discarded otherwise -->
 
 ##### *Distribution: 
-- [x] RHEL7
-- [ ] RHEL6
-- [ ] Fedora
-- [ ] Other
+<!-- RHEL7, RHEL6, Fedora, etc -->
+
 
 ##### *Detector type: 
-- [x] Not applicable
-- [ ] Eiger
-- [ ] Jungfrau
-- [ ] Mythen3
-- [ ] Gotthard2
-- [ ] Gotthard
-- [ ] Moench
-- [ ] ChipTestBoard
+<!-- If applicable, Eiger, Jungfrau, Mythen3, Gotthard2, Gotthard, Moench, ChipTestBoard -->
 
 ##### *Software Package Version: 
-- [ ] developer
-- [ ] 4.2.0
-- [ ] 4.1.1
-<!-- If others, please describe -->
+<!-- developer, 4.2.0, 4.1.1, etc -->
 
 ##### Priority:
-- [ ] Super Low
-- [ ] Low
-- [ ] Medium
-- [ ] High
-- [ ] Super High
+<!-- Super Low, Low, Medium, High, Super High -->
 
 ##### *Describe the bug
 <!--  A clear and concise description of what the bug is -->

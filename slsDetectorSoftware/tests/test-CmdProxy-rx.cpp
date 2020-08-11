@@ -36,7 +36,7 @@ TEST_CASE("rx_version", "[.cmd][.rx][.new]") {
 TEST_CASE("rx_start", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    det.setFileWrite(false);  //avoid writing or error on file creation
+    det.setFileWrite(false); // avoid writing or error on file creation
     // PUT only command
     REQUIRE_THROWS(proxy.Call("rx_start", {}, -1, GET));
     {
@@ -70,7 +70,7 @@ TEST_CASE("rx_stop", "[.cmd][.rx][.new]") {
 
 TEST_CASE("rx_status", "[.cmd][.rx][.new]") {
     Detector det;
-    det.setFileWrite(false);  //avoid writing or error on file creation
+    det.setFileWrite(false); // avoid writing or error on file creation
     CmdProxy proxy(&det);
     det.startReceiver();
     {
@@ -91,7 +91,7 @@ TEST_CASE("rx_framescaught", "[.cmd][.rx][.new]") {
     CmdProxy proxy(&det);
 
     // This ensures 0 caught frames
-    det.setFileWrite(false);  //avoid writing or error on file creation
+    det.setFileWrite(false); // avoid writing or error on file creation
     det.startReceiver();
     det.stopReceiver();
     {
@@ -113,7 +113,7 @@ TEST_CASE("rx_framescaught", "[.cmd][.rx][.new]") {
 
 TEST_CASE("rx_missingpackets", "[.cmd][.rx][.new]") {
     Detector det;
-    det.setFileWrite(false);  //avoid writing or error on file creation
+    det.setFileWrite(false); // avoid writing or error on file creation
     CmdProxy proxy(&det);
     {
         // some missing packets

@@ -137,17 +137,17 @@ enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
 #define ASIC_ADC_MAX_VAL          (0x7F)
 #define ASIC_GLOBAL_SETT_MAX_BITS (6)
 
-#define ASIC_EXT_MEMCTRL_OFST     (0)
-#define ASIC_EXT_MEMCTRL_MSK      (0x1 << ASIC_EXT_MEMCTRL_OFST)
-#define ASIC_EXT_TIMING_OFST      (1)
-#define ASIC_EXT_TIMING_MSK       (0x1 << ASIC_EXT_TIMING_OFST)
-#define ASIC_CONT_MODE_OFST       (2)
-#define ASIC_CONT_MODE_MSK        (0x1 << ASIC_CONT_MODE_OFST)
-#define ASIC_FILTER_OFST          (3)
-#define ASIC_FILTER_MSK           (0x3 << ASIC_FILTER_OFST)
-#define ASIC_FILTER_MAX_VALUE     (3)
-#define ASIC_CDS_GAIN_OFST        (5)
-#define ASIC_CDS_GAIN_MSK         (0x1 << ASIC_CDS_GAIN_OFST)
+#define ASIC_EXT_MEMCTRL_OFST (0)
+#define ASIC_EXT_MEMCTRL_MSK  (0x1 << ASIC_EXT_MEMCTRL_OFST)
+#define ASIC_EXT_TIMING_OFST  (1)
+#define ASIC_EXT_TIMING_MSK   (0x1 << ASIC_EXT_TIMING_OFST)
+#define ASIC_CONT_MODE_OFST   (2)
+#define ASIC_CONT_MODE_MSK    (0x1 << ASIC_CONT_MODE_OFST)
+#define ASIC_FILTER_OFST      (3)
+#define ASIC_FILTER_MSK       (0x3 << ASIC_FILTER_OFST)
+#define ASIC_FILTER_MAX_VALUE (3)
+#define ASIC_CDS_GAIN_OFST    (5)
+#define ASIC_CDS_GAIN_MSK     (0x1 << ASIC_CDS_GAIN_OFST)
 
 /* Struct Definitions */
 typedef struct udp_header_struct {

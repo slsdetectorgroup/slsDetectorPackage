@@ -2048,11 +2048,12 @@ void *start_timer(void *arg) {
     int colRight = top ? eiger_virtual_detPos[1] + 1 : eiger_virtual_detPos[1];
     int ntotpixels = 256 * 256 * 4;
 
-    LOG(logDEBUG1, (" dr:%d\n bytesperpixel:%f\n tgenable:%d\n datasize:%d\n "
-                  "packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n "
-                  "ntotpixels:%d\n",
-                  dr, bytesPerPixel, tgEnable, datasize, packetsize,
-                  numPacketsPerFrame, npixelsx, databytes, ntotpixels));
+    LOG(logDEBUG1,
+        (" dr:%d\n bytesperpixel:%f\n tgenable:%d\n datasize:%d\n "
+         "packetsize:%d\n numpackes:%d\n npixelsx:%d\n databytes:%d\n "
+         "ntotpixels:%d\n",
+         dr, bytesPerPixel, tgEnable, datasize, packetsize, numPacketsPerFrame,
+         npixelsx, databytes, ntotpixels));
 
     // Generate data
     char imageData[databytes * 2];
@@ -2181,7 +2182,8 @@ void *start_timer(void *arg) {
                 usleep(eiger_virtual_transmission_delay_right);
                 sendUDPPacket(1, packetData2, packetsize);
             }
-            LOG(logINFO, ("Sent frame: %d[%lld]\n", iframes, (long long unsigned int)(frameNr + iframes)));
+            LOG(logINFO, ("Sent frame: %d[%lld]\n", iframes,
+                          (long long unsigned int)(frameNr + iframes)));
             clock_gettime(CLOCK_REALTIME, &end);
             int64_t timeNs = ((end.tv_sec - begin.tv_sec) * 1E9 +
                               (end.tv_nsec - begin.tv_nsec));

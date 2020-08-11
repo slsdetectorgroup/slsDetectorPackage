@@ -1,11 +1,11 @@
 #pragma once
 
-#include <vector>
 #include <bitset>
+#include <vector>
 namespace sls {
 template <typename T> std::vector<int> getSetBits(T val) {
     constexpr size_t bitsPerByte = 8;
-    constexpr size_t numBits  = sizeof(T)*bitsPerByte;
+    constexpr size_t numBits = sizeof(T) * bitsPerByte;
     std::bitset<numBits> bs(val);
     std::vector<int> set_bits;
     set_bits.reserve(bs.count());

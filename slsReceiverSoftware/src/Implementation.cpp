@@ -22,9 +22,7 @@
 
 /** cosntructor & destructor */
 
-Implementation::Implementation(const detectorType d) {
-    setDetectorType(d);
-}
+Implementation::Implementation(const detectorType d) { setDetectorType(d); }
 
 Implementation::~Implementation() {
     delete generalData;

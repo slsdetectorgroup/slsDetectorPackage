@@ -1,7 +1,7 @@
 #include "CmdProxy.h"
-#include "bit_utils.h"
 #include "TimeHelper.h"
 #include "ToString.h"
+#include "bit_utils.h"
 #include "container_utils.h"
 #include "logger.h"
 #include "sls_detector_defs.h"

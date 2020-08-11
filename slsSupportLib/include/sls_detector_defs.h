@@ -135,8 +135,9 @@ class slsDetectorDefs {
     } sls_detector_header;
 
 #ifdef __cplusplus
-    //For sending and receiving data
-    static_assert(sizeof(detectorType) == sizeof(int), "enum and int differ in size");
+    // For sending and receiving data
+    static_assert(sizeof(detectorType) == sizeof(int),
+                  "enum and int differ in size");
 #define MAX_NUM_PACKETS 512
     using sls_bitset = std::bitset<MAX_NUM_PACKETS>;
     using bitset_storage = uint8_t[MAX_NUM_PACKETS / 8];

@@ -5,9 +5,9 @@ title: New Bug Report
 labels: action - Bug, priority - Unclassified, status - Pending
 template: bug_report.md
 ---
+<!-- Preview changes before submitting -->
 <!-- Please fill out everything with an *, as this report will be discarded otherwise -->
 <!-- This is a comment, the syntax is a bit different from c++ or bash -->
-<!-- Preview changes before submitting -->
 
 ##### *Distribution: 
 <!-- RHEL7, RHEL6, Fedora, etc -->

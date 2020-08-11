@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest a feature
+about: Suggest a feature, documentation or submit a question
 title: New Feature Request
 labels: action - Enhancement, priority - Unclassified, status - Pending
 template: feature_request.md

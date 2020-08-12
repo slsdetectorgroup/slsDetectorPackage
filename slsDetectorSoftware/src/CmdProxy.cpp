@@ -962,12 +962,12 @@ std::string CmdProxy::DacValues(int action) {
         auto t = det->getDacList();
         os << '[';
         auto it = t.cbegin();
-        os << ToString(*it) << ' '
-           << OutString(det->getDAC(*it++, mv, {det_id}))
+        os << ToString(*it) << ' ';
+        os << OutString(det->getDAC(*it++, mv, {det_id}))
            << (!args.empty() ? " mv" : "");
         while (it != t.cend()) {
-            os << ", " << ToString(*it) << ' '
-               << OutString(det->getDAC(*it++, mv, {det_id}))
+            os << ", " << ToString(*it) << ' ';
+            os << OutString(det->getDAC(*it++, mv, {det_id}))
                << (!args.empty() ? " mv" : "");
         }
         os << "]\n";

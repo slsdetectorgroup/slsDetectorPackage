@@ -12,6 +12,7 @@ TESTS=0
 SIMULATOR=0
 CTBGUI=0
 MANUALS=0
+MANUALS_ONLY_RST=0
 MOENCHZMQ=0
 
 
@@ -21,7 +22,7 @@ CMAKE_PRE=""
 CMAKE_POST=""
 
 usage() { echo -e "
-Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [-h] [z] [-d <HDF5 directory>] [-j] <Number of threads>
+Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [n] [-h] [z] [-d <HDF5 directory>] [-j] <Number of threads>
  -[no option]: only make
  -c: Clean
  -b: Builds/Rebuilds CMake files normal mode
@@ -37,6 +38,7 @@ Usage: $0 [-c] [-b] [-p] [e] [t] [r] [g] [s] [u] [i] [m] [-h] [z] [-d <HDF5 dire
  -e: Debug mode
  -i: Builds tests
  -m: Manuals
+ -n: Manuals without compiling doxygen (only rst)
  -z: Moench zmq processor
 
 Rebuild when you switch to a new build and compile in parallel:
@@ -73,7 +75,7 @@ For rebuilding only certain sections
  
  " ; exit 1; }
 
-while getopts ":bpchd:j:trgeisumz" opt ; do
+while getopts ":bpchd:j:trgeisumnz" opt ; do
 	case $opt in
 	b) 
 		echo "Building of CMake files Required"
@@ -131,6 +133,10 @@ while getopts ":bpchd:j:trgeisumz" opt ; do
 	m)	
 		echo "Compiling Manuals"
 		MANUALS=1
+		;;
+	n)	
+		echo "Compiling Manuals (Only RST)"
+		MANUALS_ONLY_RST=1
 		;;
 	z)	
 		echo "Compiling Moench Zmq Processor"
@@ -268,20 +274,33 @@ fi
 
 #make
 if [ $COMPILERTHREADS -gt 0 ]; then
-	BUILDCOMMAND="make -j$COMPILERTHREADS"
-	echo $BUILDCOMMAND
-	eval $BUILDCOMMAND
-	if [ $MANUALS -eq 1 ]; then
-		BUILDCOMMAND="make docs -j$COMPILERTHREADS"
+	if [ $MANUALS -eq 0 ] && [ $MANUALS_ONLY_RST -eq 0 ]; then
+		BUILDCOMMAND="make -j$COMPILERTHREADS"
 		echo $BUILDCOMMAND
 		eval $BUILDCOMMAND
+	else
+		if [ $MANUALS -eq 1 ]; then
+			BUILDCOMMAND="make docs -j$COMPILERTHREADS"
+			echo $BUILDCOMMAND
+			eval $BUILDCOMMAND
+		else
+			BUILDCOMMAND="make rst -j$COMPILERTHREADS"
+			echo $BUILDCOMMAND
+			eval $BUILDCOMMAND		
+		fi
 	fi 
 else
-	echo "make"
-	make
-	if [ $MANUALS -eq 1 ]; then
-		echo "make docs"
-		make docs
+	if [ $MANUALS -eq 0 ] && [ $MANUALS_ONLY_RST -eq 0 ]; then
+		echo "make"
+		make
+	else
+		if [ $MANUALS -eq 1 ]; then
+			echo "make docs"
+			make docs
+		else
+			echo "make rst"
+			make rst
+		fi
 	fi 
 fi
 

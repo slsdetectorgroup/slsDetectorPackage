@@ -205,7 +205,7 @@ std::string CmdProxy::Acquire(int action) {
 
 std::string CmdProxy::free(int action) {
     // This  function is purely for help, actual functionality is in the caller
-    return "\n\tFree detector shared memory\n";
+    return "free\n\tFree detector shared memory\n";
 }
 
 std::string CmdProxy::FirmwareVersion(int action) {

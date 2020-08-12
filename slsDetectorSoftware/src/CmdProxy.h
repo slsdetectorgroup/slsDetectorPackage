@@ -385,7 +385,7 @@
             if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
-            det->SETFCN(args[0]);                                              \
+            det->SETFCN(args[0], {det_id});                                    \
             os << args.front() << '\n';                                        \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \

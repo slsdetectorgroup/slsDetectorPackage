@@ -241,6 +241,7 @@ Result<ns> Detector::getExptime(Positions pos) const {
 
 void Detector::setExptime(ns t, Positions pos) {
     pimpl->Parallel(&Module::setExptime, pos, -1, t.count());
+    updateRxRateCorrections();
 }
 
 Result<ns> Detector::getPeriod(Positions pos) const {
@@ -1432,7 +1433,6 @@ Result<ns> Detector::getExptime(int gateIndex, Positions pos) const {
 
 void Detector::setExptime(int gateIndex, ns t, Positions pos) {
     pimpl->Parallel(&Module::setExptime, pos, gateIndex, t.count());
-    updateRxRateCorrections();
 }
 
 Result<std::array<ns, 3>> Detector::getExptimeForAllGates(Positions pos) const {

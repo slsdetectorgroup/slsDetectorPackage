@@ -173,6 +173,8 @@ class Detector {
 
     void setNumberOfTriggers(int64_t value);
 
+    /** [Gotthard][Jungfrau][Eiger][CTB][Moench][Gotthard2]  For Mythen3, use
+     * function with gate index **/
     Result<ns> getExptime(Positions pos = {}) const;
 
     void setExptime(ns t, Positions pos = {});

@@ -19,7 +19,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     ~qDrawPlot();
     bool GetIsRunning();
     void SetRunning(bool enable);
-    int GetProgress();
+    double GetProgress();
     int64_t GetCurrentFrameIndex();
     void Select1dPlot(bool enable);
     void SetPlotTitlePrefix(QString title);
@@ -152,7 +152,7 @@ class qDrawPlot : public QWidget, private Ui::PlotObject {
     bool disableZoom{false};
     int numDiscardBits{0};
 
-    int progress{0};
+    double progress{0};
     int64_t currentFrame{0};
     mutable std::mutex mPlots;
     int64_t currentAcqIndex{0};

@@ -248,7 +248,7 @@ bool qDrawPlot::GetIsRunning() { return isRunning; }
 
 void qDrawPlot::SetRunning(bool enable) { isRunning = enable; }
 
-int qDrawPlot::GetProgress() { return progress; }
+double qDrawPlot::GetProgress() { return progress; }
 
 int64_t qDrawPlot::GetCurrentFrameIndex() { return currentFrame; }
 
@@ -717,7 +717,7 @@ void qDrawPlot::AcquisitionFinished(double currentProgress,
         LOG(logERROR) << "Acquisition finished [Status: ERROR]";
     } else {
         LOG(logINFO) << "Acquisition finished [ Status:" << status
-                     << ", Progress: " << currentProgress << " ]";
+                     << ", Progress: " << currentProgress << "% ]";
     }
     emit AcquireFinishedSignal();
 }
@@ -741,10 +741,10 @@ void qDrawPlot::GetData(detectorData *data, uint64_t frameIndex,
                   << "  \t complete image: " << data->completeImage << std::endl
                   << "  ]";
 
-    progress = (int)data->progressIndex;
+    progress = data->progressIndex;
     currentAcqIndex = data->fileIndex;
     currentFrame = frameIndex;
-    LOG(logDEBUG) << "[ Progress:" << progress << ", Frame:" << currentFrame
+    LOG(logDEBUG) << "[ Progress:" << progress << "%, Frame:" << currentFrame
                   << " ]";
 
     // 1d check if npixelX has changed (m3 for different counters enabled)

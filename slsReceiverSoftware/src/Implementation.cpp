@@ -449,7 +449,7 @@ uint64_t Implementation::getAcquisitionIndex() const {
     return min;
 }
 
-int Implementation::getProgress() const {
+double Implementation::getProgress() const {
     // get minimum of processed frame indices
     uint64_t currentFrameIndex = -1;
     uint32_t flagsum = 0;

@@ -41,7 +41,7 @@ struct zmqHeader {
     /** frame index (starting at 0 for each acquisition) */
     uint64_t frameIndex{0};
     /** progress in percentage */
-    int progress{0};
+    double progress{0};
     /** file name prefix */
     std::string fname;
     /** header from detector */

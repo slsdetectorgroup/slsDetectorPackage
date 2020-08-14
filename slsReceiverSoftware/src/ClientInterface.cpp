@@ -1538,7 +1538,7 @@ int ClientInterface::get_additional_json_parameter(Interface &socket) {
 }
 
 int ClientInterface::get_progress(Interface &socket) {
-    int retval = impl()->getProgress();
+    double retval = impl()->getProgress();
     LOG(logDEBUG1) << "progress retval: " << retval;
     return socket.sendResult(retval);
 }

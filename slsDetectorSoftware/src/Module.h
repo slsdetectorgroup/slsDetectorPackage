@@ -162,7 +162,7 @@ class Module : public virtual slsDetectorDefs {
     void startAndReadAll();
     runStatus getRunStatus() const;
     runStatus getReceiverStatus() const;
-    int getReceiverProgress() const;
+    double getReceiverProgress() const;
     int64_t getFramesCaughtByReceiver() const;
     std::vector<uint64_t> getNumMissingPackets() const;
     uint64_t getStartingFrameNumber() const;

@@ -429,8 +429,8 @@ slsDetectorDefs::runStatus Module::getReceiverStatus() const {
     return sendToReceiver<runStatus>(F_GET_RECEIVER_STATUS);
 }
 
-int Module::getReceiverProgress() const {
-    return sendToReceiver<int>(F_GET_RECEIVER_PROGRESS);
+double Module::getReceiverProgress() const {
+    return sendToReceiver<double>(F_GET_RECEIVER_PROGRESS);
 }
 
 int64_t Module::getFramesCaughtByReceiver() const {

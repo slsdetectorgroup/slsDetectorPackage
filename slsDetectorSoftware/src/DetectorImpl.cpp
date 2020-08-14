@@ -464,7 +464,7 @@ void DetectorImpl::readFrameFromReceiver() {
     std::string currentFileName;
     uint64_t currentAcquisitionIndex = -1, currentFrameIndex = -1,
              currentFileIndex = -1;
-    int currentProgress = -1;
+    double currentProgress = 0.00;
     uint32_t currentSubFrameIndex = -1, coordX = -1, coordY = -1,
              flippedDataX = -1;
 
@@ -1074,8 +1074,8 @@ int DetectorImpl::acquire() {
         if (acquisition_finished != nullptr) {
             int status = Parallel(&Module::getRunStatus, {}).squash(ERROR);
             auto a = Parallel(&Module::getReceiverProgress, {});
-            int progress = (*std::min_element(a.begin(), a.end()));
-            acquisition_finished((double)progress, status, acqFinished_p);
+            double progress = (*std::min_element(a.begin(), a.end()));
+            acquisition_finished(progress, status, acqFinished_p);
         }
 
         sem_destroy(&sem_newRTAcquisition);

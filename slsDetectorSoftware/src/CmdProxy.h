@@ -414,6 +414,27 @@
         return os.str();                                                       \
     }
 
+/** get only no id (vector, not result) */
+#define GET_COMMAND_NOID(CMDNAME, GETFCN, HLPSTR)                              \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            if (!args.empty()) {                                               \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            auto t = det->GETFCN();                                            \
+            os << sls::ToString(t) << '\n';                                    \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            throw sls::RuntimeError("Cannot put");                             \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
 /** get only hex*/
 #define GET_COMMAND_HEX(CMDNAME, GETFCN, HLPSTR)                               \
     std::string CMDNAME(const int action) {                                    \
@@ -627,7 +648,7 @@ class CmdProxy {
         {"detectornumber", &CmdProxy::detectornumber},
         {"type", &CmdProxy::type},
         {"detsize", &CmdProxy::DetectorSize},
-        {"settingslist", &CmdProxy::SettingsList},
+        {"settingslist", &CmdProxy::settingslist},
         {"settings", &CmdProxy::settings},
         {"trimbits", &CmdProxy::trimbits},
         {"trimval", &CmdProxy::trimval},
@@ -645,7 +666,9 @@ class CmdProxy {
         {"delayl", &CmdProxy::delayl},
         {"periodl", &CmdProxy::periodl},
         {"dr", &CmdProxy::DynamicRange},
+        {"drlist", &CmdProxy::drlist},
         {"timing", &CmdProxy::timing},
+        {"timinglist", &CmdProxy::timinglist},
         {"speed", &CmdProxy::Speed},
         {"adcphase", &CmdProxy::Adcphase},
         {"maxadcphaseshift", &CmdProxy::maxadcphaseshift},
@@ -737,7 +760,7 @@ class CmdProxy {
         {"ibias_sfp", &CmdProxy::ibias_sfp},
 
         {"dac", &CmdProxy::Dac},
-        {"daclist", &CmdProxy::DacList},
+        {"daclist", &CmdProxy::daclist},
         {"dacvalues", &CmdProxy::DacValues},
 
         /* on chip dacs */
@@ -994,7 +1017,6 @@ class CmdProxy {
     std::string PackageVersion(int action);
     std::string ClientVersion(int action);
     std::string DetectorSize(int action);
-    std::string SettingsList(int action);
     std::string GapPixels(int action);
     /* acquisition parameters */
     std::string Acquire(int action);
@@ -1011,7 +1033,6 @@ class CmdProxy {
     /** temperature */
     /* dacs */
     std::string Dac(int action);
-    std::string DacList(int action);
     std::string DacValues(int action);
     /* acquisition */
     std::string ReceiverStatus(int action);
@@ -1103,6 +1124,9 @@ class CmdProxy {
     GET_COMMAND(type, getDetectorType,
                 "\n\tSerial number or MAC of detector (hex).");
 
+    GET_COMMAND_NOID(settingslist, getSettingsList,
+                     "\n\tList of settings implemented for this detector.");
+
     INTEGER_COMMAND(settings, getSettings, setSettings,
                     sls::StringTo<slsDetectorDefs::detectorSettings>,
                     "[standard, fast, highgain, dynamicgain, lowgain, "
@@ -1172,6 +1196,9 @@ class CmdProxy {
                      " Period left for current frame."
                      "\n\t[Gotthard2] only in continuous mode.");
 
+    GET_COMMAND_NOID(drlist, getDynamicRangeList,
+                     "\n\tGets the list of dynamic ranges for this detector.");
+
     INTEGER_COMMAND(timing, getTimingMode, setTimingMode,
                     sls::StringTo<slsDetectorDefs::timingMode>,
                     "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of "
@@ -1179,6 +1206,9 @@ class CmdProxy {
                     "[auto|trigger]\n\t[Gotthard2] "
                     "[auto|trigger|gating|trigger_gating]\n\t[Eiger] "
                     "[auto|trigger|gating|burst_trigger]");
+
+    GET_COMMAND_NOID(timinglist, getTimingModeList,
+                     "\n\tGets the list of timing modes for this detector.");
 
     GET_COMMAND(maxadcphaseshift, getMaxADCPhaseShift,
                 "\n\t[Jungfrau][CTB][Moench] Absolute maximum Phase shift of "
@@ -1509,6 +1539,10 @@ class CmdProxy {
 
     DAC_COMMAND(ibias_sfp, getDAC, setDAC, defs::IBIAS_SFP,
                 "[dac or mv value][(optional unit) mv] \n\t[Moench] Dac for 7");
+
+    GET_COMMAND_NOID(
+        daclist, getDacList,
+        "\n\tGets the list of commands for every dac for this detector.");
 
     /* on chip dacs */
     INTEGER_USER_IND_COMMAND(

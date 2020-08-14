@@ -215,6 +215,9 @@ class Detector {
      */
     void setDynamicRange(int value);
 
+    /** list of possible dynamic ranges for this detector */
+    std::vector<int> getDynamicRangeList() const;
+
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
@@ -224,6 +227,9 @@ class Detector {
      * [Eiger] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
      */
     void setTimingMode(defs::timingMode value, Positions pos = {});
+
+    /** list of possible timing modes for this detector */
+    std::vector<defs::timingMode> getTimingModeList() const;
 
     /** [Eiger][Jungfrau] */
     Result<defs::speedLevel> getSpeed(Positions pos = {}) const;

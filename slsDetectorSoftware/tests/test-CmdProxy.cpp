@@ -493,6 +493,13 @@ TEST_CASE("dr", "[.cmd][.new]") {
     }
 }
 
+TEST_CASE("drlist", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("drlist", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("drlist", {}, -1, PUT));
+}
+
 TEST_CASE("timing", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
@@ -553,6 +560,13 @@ TEST_CASE("timing", "[.cmd][.new]") {
     for (int i = 0; i != det.size(); ++i) {
         det.setTimingMode(prev_val[i], {i});
     }
+}
+
+TEST_CASE("timinglist", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("timinglist", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("timinglist", {}, -1, PUT));
 }
 
 TEST_CASE("speed", "[.cmd][.new]") {

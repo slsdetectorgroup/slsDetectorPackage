@@ -285,12 +285,39 @@ void Detector::setDynamicRange(int value) {
     updateRxRateCorrections();
 }
 
+std::vector<int> Detector::getDynamicRangeList() const {
+    switch (getDetectorType().squash()) {
+    case defs::EIGER:
+        return std::vector<int>{4, 8, 16, 32};
+    case defs::MYTHEN3:
+        return std::vector<int>{8, 16, 32};
+    default:
+        return std::vector<int>{16};
+    }
+}
+
 Result<defs::timingMode> Detector::getTimingMode(Positions pos) const {
     return pimpl->Parallel(&Module::getTimingMode, pos);
 }
 
 void Detector::setTimingMode(defs::timingMode value, Positions pos) {
     pimpl->Parallel(&Module::setTimingMode, pos, value);
+}
+
+std::vector<defs::timingMode> Detector::getTimingModeList() const {
+    switch (getDetectorType().squash()) {
+    case defs::EIGER:
+        return std::vector<defs::timingMode>{defs::AUTO_TIMING,
+                                             defs::TRIGGER_EXPOSURE,
+                                             defs::GATED, defs::BURST_TRIGGER};
+    case defs::MYTHEN3:
+        return std::vector<defs::timingMode>{defs::AUTO_TIMING,
+                                             defs::TRIGGER_EXPOSURE,
+                                             defs::GATED, defs::TRIGGER_GATED};
+    default:
+        return std::vector<defs::timingMode>{defs::AUTO_TIMING,
+                                             defs::TRIGGER_EXPOSURE};
+    }
 }
 
 Result<defs::speedLevel> Detector::getSpeed(Positions pos) const {

@@ -332,25 +332,6 @@ std::string CmdProxy::DetectorSize(int action) {
     return os.str();
 }
 
-std::string CmdProxy::SettingsList(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "\n\tList of settings implemented for this detector" << '\n';
-    } else if (action == defs::GET_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getSettingsList();
-        os << ToString(t) << "\n";
-    } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("Cannot put");
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
 std::string CmdProxy::GapPixels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
@@ -915,26 +896,6 @@ std::string CmdProxy::Dac(int action) {
         det->setDAC(static_cast<defs::dacIndex>(StringTo<int>(args[0])),
                     StringTo<int>(args[1]), mv, {det_id});
         os << args[0] << ' ' << args[1] << (args.size() > 2 ? " mv\n" : "\n");
-    } else {
-        throw sls::RuntimeError("Unknown action");
-    }
-    return os.str();
-}
-
-std::string CmdProxy::DacList(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        os << "\n\tGets the list of commands for every dac for this detector."
-           << '\n';
-    } else if (action == defs::GET_ACTION) {
-        if (!args.empty()) {
-            WrongNumberOfParameters(0);
-        }
-        auto t = det->getDacList();
-        os << ToString(t) << '\n';
-    } else if (action == defs::PUT_ACTION) {
-        throw sls::RuntimeError("Cannot put");
     } else {
         throw sls::RuntimeError("Unknown action");
     }

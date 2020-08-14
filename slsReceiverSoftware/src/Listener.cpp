@@ -593,11 +593,13 @@ uint32_t Listener::ListenToAnImage(char *buf) {
 
 void Listener::PrintFifoStatistics() {
     LOG(logDEBUG1) << "numFramesStatistic:" << numFramesStatistic
-                   << " numPacketsStatistic:" << numPacketsStatistic;
+                   << " numPacketsStatistic:" << numPacketsStatistic
+                   << " packetsperframe:" << generalData->packetsPerFrame;
 
     // calculate packet loss
-    int64_t loss = (numFramesStatistic * (generalData->packetsPerFrame)) -
-                   numPacketsStatistic;
+    int64_t totalP = numFramesStatistic * (generalData->packetsPerFrame);
+    int64_t loss = totalP - numPacketsStatistic;
+    int lossPercent = ((double)loss / (double)totalP) * 100.00;
     numPacketsStatistic = 0;
     numFramesStatistic = 0;
 
@@ -605,7 +607,7 @@ void Listener::PrintFifoStatistics() {
     LOG(color) << "[" << *udpPortNumber
                << "]:  "
                   "Packet_Loss:"
-               << loss
+               << loss << " (" << lossPercent << "%)"
                << "  Used_Fifo_Max_Level:" << fifo->GetMaxLevelForFifoBound()
                << " \tFree_Slots_Min_Level:" << fifo->GetMinLevelForFifoFree()
                << " \tCurrent_Frame#:" << currentFrameIndex;

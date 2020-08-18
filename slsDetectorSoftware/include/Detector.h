@@ -529,13 +529,13 @@ class Detector {
     /** [Eiger][CTB][Moench][Mythen3] */
     void setTenGiga(bool value, Positions pos = {});
 
-    /** [Eiger, Jungfrau] */
+    /** [Eiger][Jungfrau] */
     Result<bool> getTenGigaFlowControl(Positions pos = {}) const;
 
-    /** [Eiger, Jungfrau] */
+    /** [Eiger][Jungfrau] */
     void setTenGigaFlowControl(bool enable, Positions pos = {});
 
-    /** [Eiger, Jungfrau] */
+    /** [Eiger][Jungfrau][Mythen3] */
     Result<int> getTransmissionDelayFrame(Positions pos = {}) const;
 
     /**
@@ -543,6 +543,8 @@ class Detector {
      * streamed out of the module. Options: 0 - 31, each value represenets 1 ms
      * [Eiger]: Sets the transmission delay of entire frame streamed out for
      * both left and right UDP ports. Options: //TODO possible values
+     * [Mythen3] Options: [0-16777215] Each value represents 8 ns (125 MHz
+     * clock), max is 134 ms.
      */
     void setTransmissionDelayFrame(int value, Positions pos = {});
 

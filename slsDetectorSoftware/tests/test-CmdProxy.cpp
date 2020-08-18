@@ -1648,7 +1648,8 @@ TEST_CASE("txndelay_frame", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
-    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU) {
+    if (det_type == defs::EIGER || det_type == defs::JUNGFRAU ||
+        det_type == defs::MYTHEN3) {
         auto prev_val = det.getTransmissionDelayFrame();
         auto val = 5000;
         if (det_type == defs::JUNGFRAU) {

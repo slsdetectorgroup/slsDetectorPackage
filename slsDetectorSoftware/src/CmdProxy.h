@@ -1706,10 +1706,13 @@ class CmdProxy {
     INTEGER_COMMAND(
         txndelay_frame, getTransmissionDelayFrame, setTransmissionDelayFrame,
         StringTo<int>,
-        "[n_delay]\n\t[Eiger][Jungfrau] Transmission delay of each image being "
+        "[n_delay]\n\t[Eiger][Jungfrau][Mythen3] Transmission delay of each "
+        "image being "
         "streamed out of the module.\n\t[Jungfrau] [0-31] Each value "
         "represents 1 ms\n\t[Eiger] Additional delay to txndelay_left and "
-        "txndelay_right. Each value represents 10ns. Typical value is 50000.");
+        "txndelay_right. Each value represents 10ns. Typical value is "
+        "50000.\n\t[Mythen3] [0-16777215] Each value represents 8 ns (125 MHz "
+        "clock), max is 134 ms.");
 
     INTEGER_COMMAND(
         txndelay_left, getTransmissionDelayLeft, setTransmissionDelayLeft,

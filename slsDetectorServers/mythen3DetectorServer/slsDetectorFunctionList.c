@@ -2067,6 +2067,28 @@ int getClockDivider(enum CLKINDEX ind) {
     return clkDivider[ind];
 }
 
+int getTransmissionDelayFrame() {
+    return ((bus_r(FMT_CONFIG_REG) & FMT_CONFIG_TXN_DELAY_MSK) >>
+            FMT_CONFIG_TXN_DELAY_OFST);
+}
+
+int setTransmissionDelayFrame(int value) {
+    if (value < 0 || value > MAX_TIMESLOT_VAL) {
+        LOG(logERROR, ("Transmission delay %d should be in range: 0 - %d\n",
+                       value, MAX_TIMESLOT_VAL));
+        return FAIL;
+    }
+    LOG(logINFO, ("Setting transmission delay: %d\n", value));
+    uint32_t addr = FMT_CONFIG_REG;
+    bus_w(addr, bus_r(addr) & ~FMT_CONFIG_TXN_DELAY_MSK);
+    bus_w(addr, (bus_r(addr) | ((value << FMT_CONFIG_TXN_DELAY_OFST) &
+                                FMT_CONFIG_TXN_DELAY_MSK)));
+    LOG(logDEBUG1, ("Transmission delay read %d\n",
+                    ((bus_r(addr) & FMT_CONFIG_TXN_DELAY_MSK) >>
+                     FMT_CONFIG_TXN_DELAY_OFST)));
+    return OK;
+}
+
 /* aquisition */
 
 int startStateMachine() {

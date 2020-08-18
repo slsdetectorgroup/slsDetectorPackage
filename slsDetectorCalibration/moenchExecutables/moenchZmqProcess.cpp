@@ -241,7 +241,7 @@ int main(int argc, char *argv[]) {
 #endif
 	if (zmqsocket->Connect()) {
 	  cprintf(RED, "Error: Could not connect to socket  %s\n",
-		  zmqsocket->GetZmqServerAddress());
+		  (zmqsocket->GetZmqServerAddress()).c_str());
 	  delete zmqsocket;
 	  return EXIT_FAILURE;
 	} else 
@@ -281,12 +281,12 @@ int main(int argc, char *argv[]) {
 #endif	
 		if (zmqsocket2->Connect()) {
 		  cprintf(RED, "BBB Error: Could not connect to socket  %s\n",
-					zmqsocket2->GetZmqServerAddress());
+			  zmqsocket2->GetZmqServerAddress().c_str());
 		  //	delete zmqsocket2;
 		send = false;
 		//	return EXIT_FAILURE;
 	} else 
-		  printf("Zmq Client at %s\n", zmqsocket2->GetZmqServerAddress());
+		  printf("Zmq Client at %s\n", zmqsocket2->GetZmqServerAddress().c_str());
 
 	}
 
@@ -388,6 +388,7 @@ int main(int argc, char *argv[]) {
 	    while (mt->isBusy()) {;}//wait until all data are processed from the queues
 	    
 	    if (of) {
+	      mt->setFilePointer(NULL);
 	      fclose(of);
 	      of=NULL;
 	    }

@@ -39,6 +39,10 @@ uint64_t Beb_deactivatedStartFrameNumber = 0;
 int Beb_quadEnable = 0;
 int Beb_positions[2] = {0, 0};
 int Beb_readNLines = MAX_ROWS_PER_READOUT;
+int Beb_deactivated_transmission_flowcontrol_10g = 0;
+int Beb_deactivated_transmission_delay_frame = 0;
+int Beb_deactivated_transmission_delay_left = 0;
+int Beb_deactivated_transmission_delay_right = 0;
 
 void BebInfo_BebInfo(struct BebInfo *bebInfo, unsigned int beb_num) {
     bebInfo->beb_number = beb_num;
@@ -180,6 +184,11 @@ void Beb_GetModuleConfiguration(int *master, int *top, int *normal) {
 }
 
 int Beb_IsTransmitting(int *retval, int tengiga, int waitForDelay) {
+    if (!Beb_activated) {
+        // not transmitting
+        *retval = 0;
+        return OK;
+    }
     // mapping new memory
     u_int32_t *csp0base = 0;
     int addr_l_txndelaycounter = 0, addr_l_framedelaycounter = 0;
@@ -482,6 +491,9 @@ int Beb_Set32bitOverflow(int val) {
 }
 
 int Beb_GetTenGigaFlowControl() {
+    if (!Beb_activated)
+        return Beb_deactivated_transmission_flowcontrol_10g;
+
     u_int32_t offset = FLOW_REG_OFFSET;
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
@@ -501,6 +513,11 @@ int Beb_GetTenGigaFlowControl() {
 
 int Beb_SetTenGigaFlowControl(int value) {
     LOG(logINFO, ("Setting ten giga flow control to %d\n", value));
+    if (!Beb_activated) {
+        Beb_deactivated_transmission_flowcontrol_10g = value;
+        return 1;
+    }
+
     value = value == 0 ? 0 : 1;
     u_int32_t offset = FLOW_REG_OFFSET;
     u_int32_t *csp0base = 0;
@@ -521,12 +538,17 @@ int Beb_SetTenGigaFlowControl(int value) {
                     retval | ((value << FLOW_REG_TXM_FLOW_CNTRL_10G_OFST) &
                               FLOW_REG_TXM_FLOW_CNTRL_10G_MSK));
 
+        Beb_deactivated_transmission_flowcontrol_10g = value;
         Beb_close(fd, csp0base);
         return 1;
     }
 }
 
 int Beb_GetTransmissionDelayFrame() {
+    if (!Beb_activated) {
+        return Beb_deactivated_transmission_delay_frame;
+    }
+
     u_int32_t offset = TXM_DELAY_FRAME_OFFSET;
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
@@ -547,6 +569,10 @@ int Beb_SetTransmissionDelayFrame(int value) {
         LOG(logERROR, ("Invalid transmission delay frame value %d\n", value));
         return 0;
     }
+    if (!Beb_activated) {
+        Beb_deactivated_transmission_delay_frame = value;
+        return 1;
+    }
     u_int32_t offset = TXM_DELAY_FRAME_OFFSET;
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
@@ -556,12 +582,16 @@ int Beb_SetTransmissionDelayFrame(int value) {
         return 0;
     } else {
         Beb_Write32(csp0base, offset, value);
+        Beb_deactivated_transmission_delay_frame = value;
         Beb_close(fd, csp0base);
         return 1;
     }
 }
 
 int Beb_GetTransmissionDelayLeft() {
+    if (!Beb_activated) {
+        return Beb_deactivated_transmission_delay_left;
+    }
     u_int32_t offset = TXM_DELAY_LEFT_OFFSET;
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
@@ -582,6 +612,10 @@ int Beb_SetTransmissionDelayLeft(int value) {
         LOG(logERROR, ("Invalid transmission delay left value %d\n", value));
         return 0;
     }
+    if (!Beb_activated) {
+        Beb_deactivated_transmission_delay_left = value;
+        return 1;
+    }
     u_int32_t offset = TXM_DELAY_LEFT_OFFSET;
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
@@ -591,12 +625,17 @@ int Beb_SetTransmissionDelayLeft(int value) {
         return 0;
     } else {
         Beb_Write32(csp0base, offset, value);
+        Beb_deactivated_transmission_delay_left = value;
         Beb_close(fd, csp0base);
         return 1;
     }
 }
 
 int Beb_GetTransmissionDelayRight() {
+    if (!Beb_activated) {
+        return Beb_deactivated_transmission_delay_right;
+    }
+
     u_int32_t offset = TXM_DELAY_RIGHT_OFFSET;
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
@@ -617,6 +656,10 @@ int Beb_SetTransmissionDelayRight(int value) {
         LOG(logERROR, ("Invalid transmission delay right value %d\n", value));
         return 0;
     }
+    if (!Beb_activated) {
+        Beb_deactivated_transmission_delay_right = value;
+        return 1;
+    }
     u_int32_t offset = TXM_DELAY_RIGHT_OFFSET;
     u_int32_t *csp0base = 0;
     int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
@@ -626,55 +669,10 @@ int Beb_SetTransmissionDelayRight(int value) {
         return 0;
     } else {
         Beb_Write32(csp0base, offset, value);
+        Beb_deactivated_transmission_delay_right = value;
         Beb_close(fd, csp0base);
         return 1;
     }
-}
-
-int Beb_SetNetworkParameter(enum NETWORKINDEX mode, int val) {
-
-    if (!Beb_activated)
-        return val;
-
-    // mapping new memory
-    u_int32_t *csp0base = 0;
-    u_int32_t valueread = 0;
-    u_int32_t offset = TXM_DELAY_LEFT_OFFSET;
-    char modename[100] = "";
-
-    switch (mode) {
-    case TXN_LEFT:
-        offset = TXM_DELAY_LEFT_OFFSET;
-        strcpy(modename, "Transmission Delay Left");
-        break;
-    case TXN_RIGHT:
-        offset = TXM_DELAY_RIGHT_OFFSET;
-        strcpy(modename, "Transmission Delay Right");
-        break;
-
-    default:
-        LOG(logERROR, ("Unrecognized mode in network parameter: %d\n", mode));
-        return -1;
-    }
-    // open file pointer
-    int fd = Beb_open(&csp0base, XPAR_PLB_GPIO_SYS_BASEADDR);
-    if (fd < 0) {
-        LOG(logERROR,
-            ("Could not read register to set network parameter. FAIL\n"));
-        return -1;
-    } else {
-        if (val > -1) {
-            valueread = Beb_Read32(csp0base, offset);
-            Beb_Write32(csp0base, offset, val);
-        }
-
-        valueread = Beb_Read32(csp0base, offset);
-    }
-    // close file pointer
-    if (fd > 0)
-        Beb_close(fd, csp0base);
-
-    return valueread;
 }
 
 u_int32_t Beb_GetFirmwareRevision() {

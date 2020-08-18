@@ -140,6 +140,13 @@
 
 #define DTA_OFFSET_REG                  (0x24 * REG_OFFSET + BASE_CONTROL)
 
+/* Formatting for data core -----------------------------------------------*/
+#define FMT_CONFIG_REG                  (0x00 * REG_OFFSET + BASE_FMT)
+
+#define FMT_CONFIG_TXN_DELAY_OFST       (0)
+#define FMT_CONFIG_TXN_DELAY_MSK        (0x00FFFFFF << FMT_CONFIG_TXN_DELAY_OFST)
+
+
 /* Packetizer -------------------------------------------------------------*/
 
 /* Packetizer Config Register */

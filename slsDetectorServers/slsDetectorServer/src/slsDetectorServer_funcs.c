@@ -3489,12 +3489,12 @@ int set_transmission_delay_frame(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting transmission delay frame: %d\n", arg));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
     if (Server_VerifyLock() == OK) {
-#ifdef JUNGFRAUD
+#if defined(JUNGFRAUD) || defined(MYTHEN3D)
         if (arg > MAX_TIMESLOT_VAL) {
             ret = FAIL;
             sprintf(mess, "Transmission delay %d should be in range: 0 - %d\n",
@@ -3526,7 +3526,7 @@ int get_transmission_delay_frame(int file_des) {
 
     LOG(logDEBUG1, ("Getting transmission delay frame\n"));
 
-#if !defined(EIGERD) && !defined(JUNGFRAUD)
+#if !defined(EIGERD) && !defined(JUNGFRAUD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only

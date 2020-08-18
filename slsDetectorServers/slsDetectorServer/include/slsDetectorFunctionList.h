@@ -531,6 +531,8 @@ int *getBadChannels(int *nch);
 #if defined(JUNGFRAUD) || defined(EIGERD)
 int getTenGigaFlowControl();
 int setTenGigaFlowControl(int value);
+#endif
+#if defined(JUNGFRAUD) || defined(EIGERD) || defined(MYTHEN3D)
 int getTransmissionDelayFrame();
 int setTransmissionDelayFrame(int value);
 #endif

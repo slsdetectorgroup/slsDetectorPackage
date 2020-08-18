@@ -45,6 +45,7 @@
 #define DEFAULT_MSTR_OTPT_P1_NUM_PULSES  (20)
 
 /* Firmware Definitions */
+#define MAX_TIMESLOT_VAL        (0xFFFFFF)
 #define IP_HEADER_SIZE          (20)
 #define FIXED_PLL_FREQUENCY     (020000000)  // 20MHz
 #define READOUT_PLL_VCO_FREQ_HZ (1250000000) // 1.25GHz

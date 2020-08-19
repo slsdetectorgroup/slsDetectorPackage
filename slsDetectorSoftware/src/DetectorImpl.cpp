@@ -1095,8 +1095,9 @@ int DetectorImpl::acquire() {
 }
 
 void DetectorImpl::printProgress(double progress) {
-    std::cout << std::fixed << std::setprecision(2) << std::setw(6) << progress
-              << " \%";
+    // spaces for python printout
+    std::cout << "    " << std::fixed << std::setprecision(2) << std::setw(6)
+              << progress << " \%";
     std::cout << '\r' << std::flush;
 }
 

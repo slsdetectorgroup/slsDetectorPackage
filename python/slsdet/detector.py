@@ -620,6 +620,14 @@ class Detector(CppDetectorApi):
         return self._register
 
     @property
+        """[Jungfrau][Ctb][Moench][Gotthard] Writes to an adc register 
+
+        Note
+        -----
+        Advanced user Function!
+
+        :getter: Not implemented     
+        """ 
     def adcreg(self):
         return self._adc_register
 

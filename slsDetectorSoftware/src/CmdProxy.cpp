@@ -2516,7 +2516,7 @@ std::string CmdProxy::AdcRegister(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[address] [value]\n\t[Jungfrau][Ctb][Moench][Gotthard] Writes "
               "to an adc "
-              "register in hex."
+              "register in hex. Advanced user Function."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get.");

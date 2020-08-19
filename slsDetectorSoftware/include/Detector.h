@@ -1427,7 +1427,8 @@ class Detector {
     /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] */
     void executeBusTest(Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB][Moench] not possible to read back*/
+    /** [Gotthard][Jungfrau][CTB][Moench] Advanced user Function. not possible
+     * to read back */
     void writeAdcRegister(uint32_t addr, uint32_t value, Positions pos = {});
 
     bool getInitialChecks() const;

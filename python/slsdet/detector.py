@@ -992,6 +992,8 @@ class Detector(CppDetectorApi):
         | [Jungfrau] Absolute phase shift. Changing Speed also resets adcphase to recommended defaults.
         | [Ctb][Moench] Absolute phase shift. Changing adcclk also resets adcphase and sets it to previous values.
         | [Gotthard] Relative phase shift.
+
+        :getter: Not implemented for Gotthard
         """
         return element_if_equal(self.getADCPhase())
 
@@ -1001,6 +1003,8 @@ class Detector(CppDetectorApi):
 
     @property
     def adcpipeline(self):
+        """[Ctb][Moench] Sets pipeline for ADC clock.      
+        """ 
         return element_if_equal(self.getADCPipeline())
 
     @adcpipeline.setter

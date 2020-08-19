@@ -563,7 +563,7 @@ std::string CmdProxy::Adcphase(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_value] "
-              "[(optional)deg]\n\t[Jungfrau][Ctb][Moench][Moench][Gotthard] "
+              "[(optional)deg]\n\t[Jungfrau][Ctb][Moench][Gotthard] "
               "Phase "
               "shift of ADC clock. \n\t[Jungfrau] Absolute phase shift. If deg "
               "used, then shift in degrees. Changing Speed also resets "
@@ -571,7 +571,7 @@ std::string CmdProxy::Adcphase(int action) {
               "phase "
               "shift. If deg used, then shift in degrees. Changing adcclk also "
               "resets adcphase and sets it to previous values.\n\t[Gotthard] "
-              "Relative phase shift"
+              "Relative phase shift. Cannot get"
            << '\n';
     } else {
         auto det_type = det->getDetectorType().squash(defs::GENERIC);

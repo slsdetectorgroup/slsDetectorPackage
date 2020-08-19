@@ -238,7 +238,7 @@ class Detector {
      * Options: FULL_SPEED, HALF_SPEED, QUARTER_SPEED */
     void setSpeed(defs::speedLevel value, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB][Moench] */
+    /** [Jungfrau][CTB][Moench] */
     Result<int> getADCPhase(Positions pos = {}) const;
 
     /** [Gotthard][Jungfrau][CTB][Moench]

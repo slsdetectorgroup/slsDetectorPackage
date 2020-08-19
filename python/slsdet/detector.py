@@ -95,6 +95,7 @@ class Detector(CppDetectorApi):
 
     @config.setter
     def config(self, fname):
+        fname = ut.make_string_path(fname)
         self.loadConfig(fname)
 
     @property
@@ -119,6 +120,7 @@ class Detector(CppDetectorApi):
 
     @parameters.setter
     def parameters(self, fname):
+        fname = ut.make_string_path(fname)
         self.loadParameters(fname)
 
     @property
@@ -359,6 +361,7 @@ class Detector(CppDetectorApi):
 
     @fpath.setter
     def fpath(self, path):
+        path = ut.make_string_path(path)
         self.setFilePath(path)
 
     @property
@@ -589,6 +592,7 @@ class Detector(CppDetectorApi):
 
     @trimbits.setter
     def trimbits(self, fname):
+        fname = ut.make_string_path(fname)
         self.loadTrimbits(fname)
 
     @property
@@ -1040,6 +1044,7 @@ class Detector(CppDetectorApi):
 
     @pattern.setter
     def pattern(self, fname):
+        fname = ut.make_string_path(fname)
         self.setPattern(fname)
 
     @property

@@ -7,6 +7,7 @@ Testing functions from utils.py
 import pytest
 from slsdet.utils import *
 import datetime as dt
+import pathlib
 
 def test_iterable():
     assert is_iterable(5) == False
@@ -94,3 +95,22 @@ def test_make_timedelta_from_timedelta():
     r = make_timedelta(t)
     assert 60 == r.total_seconds()
     assert r == dt.timedelta(minutes=1)
+
+
+def test_make_string_path_from_Path():
+    pathstr = "/some/temp/path"
+    p = pathlib.Path(pathstr)
+    r = make_string_path(p)
+    assert isinstance(r, str)
+    assert r == p.as_posix()
+    assert r == pathstr
+
+def test_make_string_path_expand_user():
+    pathstr = "~/tmp/virtual.config"
+    home = pathlib.Path.home()
+    expanded_str = pathstr.replace('~', home.as_posix())
+    p = pathlib.Path(pathstr)
+    rp = make_string_path(p)
+    rs = make_string_path(pathstr)
+    assert rp == expanded_str
+    assert rs == expanded_str

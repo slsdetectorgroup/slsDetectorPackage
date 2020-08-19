@@ -8,6 +8,8 @@ from collections import namedtuple
 import _slsdet #C++ lib
 import functools
 import datetime as dt
+import pathlib
+import os
 
 Geometry = namedtuple('Geometry', ['x', 'y'])
 
@@ -77,6 +79,7 @@ def element(func):
         return element_if_equal(func(self, *args, **kwargs))
     return wrapper
 
+
 def eiger_register_to_time(register):
     """
     Decode register value and return time in s. Values are stored in
@@ -93,3 +96,15 @@ def make_timedelta(t):
            return t
     else:
         return dt.timedelta(seconds=t)
+
+def make_string_path(path):
+    """
+    Accepts either a pathlib.Path or a string, expands ~ to user and convert
+    Path to str
+    """
+    if isinstance(path, pathlib.Path):
+        return path.expanduser().as_posix()
+    elif isinstance(path, str):
+        return os.path.expanduser(path)
+    else:
+        raise ValueError("Cannot convert argument to posix path")

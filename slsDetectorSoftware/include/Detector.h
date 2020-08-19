@@ -1382,26 +1382,30 @@ class Detector {
      *                                                *
      * ************************************************/
 
-    /** [Jungfrau][CTB][Moench] fname is a pof file
+    /**  Advanced user Function!
+     * [Jungfrau][CTB][Moench] fname is a pof file
      * [Mythen3][Gotthard2] fname is an rbf file
      */
     void programFPGA(const std::string &fname, Positions pos = {});
 
-    /** [Jungfrau][CTB][Moench] */
+    /** [Jungfrau][CTB][Moench]  Advanced user Function!  */
     void resetFPGA(Positions pos = {});
 
     /** [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2]
+     * Advanced user Function!
      * Copy detector server fname from tftp folder of hostname to detector
      * Also changes respawn server, which is effective after a reboot.
      */
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname, Positions pos = {});
 
-    /** [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2] */
+    /** [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2] Advanced user
+     * Function! */
     void rebootController(Positions pos = {});
 
     /**
      * [Jungfrau][Gotthard][CTB][Moench]
+     * Advanced user Function!
      * Updates the firmware, detector server and then reboots detector
      * controller blackfin.
      * sname is name of detector server binary found on tftp folder of host
@@ -1413,34 +1417,41 @@ class Detector {
                                  const std::string &hostname,
                                  const std::string &fname, Positions pos = {});
 
+    /** Advanced user Function!  */
     Result<uint32_t> readRegister(uint32_t addr, Positions pos = {}) const;
 
+    /** Advanced user Function!  */
     void writeRegister(uint32_t addr, uint32_t val, Positions pos = {});
 
+    /** Advanced user Function!  */
     void setBit(uint32_t addr, int bitnr, Positions pos = {});
 
+    /** Advanced user Function!  */
     void clearBit(uint32_t addr, int bitnr, Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] */
+    /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Advanced user
+     * Function! */
     void executeFirmwareTest(Positions pos = {});
 
-    /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] */
+    /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Advanced user
+     * Function! */
     void executeBusTest(Positions pos = {});
 
-    /** [Gotthard][Jungfrau][CTB][Moench] Advanced user Function. not possible
+    /** [Gotthard][Jungfrau][CTB][Moench] Advanced user Function! not possible
      * to read back */
     void writeAdcRegister(uint32_t addr, uint32_t value, Positions pos = {});
 
+    /** Advanced user Function!  */
     bool getInitialChecks() const;
 
     /** initial compaibility and other server start up checks
-     * default enabled */
+     * default enabled Advanced user Function! */
     void setInitialChecks(const bool value);
 
-    /** [CTB][Moench][Jungfrau] */
+    /** [CTB][Moench][Jungfrau] Advanced user Function! */
     Result<uint32_t> getADCInvert(Positions pos = {}) const;
 
-    /** [CTB][Moench][Jungfrau] */
+    /** [CTB][Moench][Jungfrau] Advanced user Function! */
     void setADCInvert(uint32_t value, Positions pos = {});
 
     /**************************************************

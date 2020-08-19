@@ -706,6 +706,10 @@ class Detector(CppDetectorApi):
     def vthreshold(self):
         return element_if_equal(self.getDAC(dacIndex.VTHRESHOLD, False))
 
+    @vthreshold.setter
+    def vthreshold(self, value):
+        self.setDAC(dacIndex.VTHRESHOLD, value, False)
+
     @property
     def type(self):
         return element_if_equal(self.getDetectorType())

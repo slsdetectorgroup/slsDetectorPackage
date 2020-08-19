@@ -240,6 +240,22 @@ class Detector(CppDetectorApi):
     def delayl(self):
         return ut.reduce_time(self.getDelayAfterTriggerLeft())
 
+    def start(self):
+        """Start detector"""
+        self.startDetector()
+
+    def rx_start(self):
+        """Start receiver"""
+        self.startReceiver()
+
+    def rx_stop(self):
+        """Stop receiver"""
+        self.stopReceiver()
+
+    def stop(self):
+        """Stop detector"""
+        self.stopDetector()
+
     # Time
     @property
     def rx_framescaught(self):

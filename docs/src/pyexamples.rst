@@ -86,8 +86,8 @@ But lets start looking at the at the manual way:
 
     #Start the measurement
     t0 = time.time()
-    d.start_receiver()
-    d.start_detector()
+    d.startDetector()
+    d.startReceiver()
 
     #Wait for the detector to be ready or do other important stuff
     time.sleep(t*n)
@@ -98,7 +98,7 @@ But lets start looking at the at the manual way:
 
     #Stop the receiver after we got the frames
     #Detector is already idle so we don't need to stop it
-    d.stop_receiver()
+    d.stopReceiver()
 
     lost = d.frames_caught - n
     print(f'{n} frames of {t}s took {time.time()-t0:{.3}}s with {lost} frames lost ')

@@ -985,6 +985,14 @@ class Detector(CppDetectorApi):
 
     @property
     def adcphase(self):
+        """[Gotthard][Jungfrau][CTB][Moench] Sets phase shift of ADC clock. 
+
+        Note
+        -----
+        | [Jungfrau] Absolute phase shift. Changing Speed also resets adcphase to recommended defaults.
+        | [Ctb][Moench] Absolute phase shift. Changing adcclk also resets adcphase and sets it to previous values.
+        | [Gotthard] Relative phase shift.
+        """
         return element_if_equal(self.getADCPhase())
 
     @adcphase.setter
@@ -1001,6 +1009,8 @@ class Detector(CppDetectorApi):
 
     @property
     def adcclk(self):
+        """[Ctb][Moench] Sets ADC clock frequency in MHz.      
+        """        
         return element_if_equal(self.getADCClock())
 
     @adcclk.setter

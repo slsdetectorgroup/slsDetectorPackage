@@ -241,7 +241,13 @@ class Detector {
     /** [Gotthard][Jungfrau][CTB][Moench] */
     Result<int> getADCPhase(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Moench] */
+    /** [Gotthard][Jungfrau][CTB][Moench]
+     * [Jungfrau] Absolute phase shift. Changing Speed also resets adcphase to
+     * recommended defaults. \n
+     * [Ctb][Moench] Absolute phase shift. Changing adcclk also resets adcphase
+     * and sets it to previous values. \n
+     * [Gotthard] Relative phase shift
+     */
     void setADCPhase(int value, Positions pos = {});
 
     /** [Jungfrau][CTB][Moench] */

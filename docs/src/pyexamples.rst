@@ -74,15 +74,15 @@ But lets start looking at the at the manual way:
 ::
 
     import time
-    from slsdet import Eiger
+    from slsdet import Eiger, runStatus
     d = Eiger()
 
     n = 10
     t = 1
 
-    d.exposure_time = t
-    d.n_frames = n
-    d.reset_frames_caught()
+    d.exptime = t
+    d.frames = n
+
 
     #Start the measurement
     t0 = time.time()
@@ -93,18 +93,16 @@ But lets start looking at the at the manual way:
     time.sleep(t*n)
 
     #check if the detector is ready otherwise wait a bit longer
-    while d.status != 'idle':
+    while d.status != runStatus.IDLE:
         time.sleep(0.1)
 
     #Stop the receiver after we got the frames
     #Detector is already idle so we don't need to stop it
     d.stopReceiver()
 
-    lost = d.frames_caught - n
+    lost = d.rx_framescaught - n
     print(f'{n} frames of {t}s took {time.time()-t0:{.3}}s with {lost} frames lost ')
 
-    #Reset to not interfere with a potential next measurement
-    d.reset_frames_caught()
 
 Instead launching d.acq() from a different process is a bit easier since the control of receiver and detector
 is handled in the acq call. However, you need to join the process used otherwise a lot of zombie processes would

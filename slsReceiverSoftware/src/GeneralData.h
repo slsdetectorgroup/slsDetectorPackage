@@ -470,21 +470,7 @@ class Mythen3Data : public GeneralData {
         LOG(logINFO) << "Packets Per Frame: " << packetsPerFrame;
         packetSize = headerSizeinPacket + dataSize;
         LOG(logINFO) << "PacketSize: " << packetSize;
-    }
-
-    /**
-     * Setting dynamic range changes member variables
-     * @param dr dynamic range
-     * @param tgEnable (discarded, of no value to mythen3)
-     */
-    void SetDynamicRange(int dr, bool tgEnable) {
-        imageSize = nPixelsX * nPixelsY * ((double)dr / 8.00);
-
-        packetsPerFrame = tgEnable ? 2 : 20;
-        dataSize = imageSize / packetsPerFrame;
-        packetSize = headerSizeinPacket + dataSize;
-        LOG(logINFO) << "PacketSize: " << packetSize;
-    }
+    };
 };
 
 class Gotthard2Data : public GeneralData {
@@ -541,7 +527,7 @@ class Gotthard2Data : public GeneralData {
         frameNumber = *reinterpret_cast<uint64_t *>(packetData);
         bunchId = *reinterpret_cast<uint64_t *>(packetData + 8);
         packetNumber = 0;
-    }
+    };
 };
 
 class ChipTestBoardData : public GeneralData {

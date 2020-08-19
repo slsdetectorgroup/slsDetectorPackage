@@ -71,10 +71,26 @@ class Detector(CppDetectorApi):
         return "{}(id = {})".format(self.__class__.__name__, self.getShmId())
 
     def free(self):
+        """Free detector shared memory"""
         self.freeSharedMemory()
 
     @property
     def config(self):
+        """Load configuration file.
+
+        Note
+        -----
+        Frees shared memory before loading configuration file. This function does not support ~ for home. 
+
+        
+        :getter: Not implemented
+        :setter: Loads config file
+
+        Examples
+        -----------
+        >>> d.config = "/path/to/config/file.config"
+
+        """
         return NotImplementedError("config is set only")
 
     @config.setter
@@ -83,6 +99,22 @@ class Detector(CppDetectorApi):
 
     @property
     def parameters(self):
+        """Sets detector measurement parameters to those contained in fname. Set up per measurement.
+        
+        Note 
+        -----
+        Equivalent to config, but does not free shared memory. 
+
+
+        :getter: Not implemented
+        :setter: loads parameters file
+
+        Example
+        ---------
+
+        >>> d.parameters = 'path/to/file.par'
+        
+        """
         return NotImplementedError("parameters is set only")
 
     @parameters.setter
@@ -170,6 +202,9 @@ class Detector(CppDetectorApi):
 
     @property
     def exptime(self):
+        """
+        Exposure time, accepts either a value in seconds or datetime.timedelta
+        """
         if self.type == detectorType.MYTHEN3:
             res = self.getExptimeForAllGates()
         else:
@@ -203,7 +238,6 @@ class Detector(CppDetectorApi):
     def delayl(self):
         return ut.reduce_time(self.getDelayAfterTriggerLeft())
 
-   
     # Time
     @property
     def rx_framescaught(self):
@@ -216,6 +250,7 @@ class Detector(CppDetectorApi):
     @startingfnum.setter
     def startingfnum(self, value):
         self.setStartingFrameNumber(value)
+
     # TODO! add txdelay
 
     @property
@@ -282,6 +317,7 @@ class Detector(CppDetectorApi):
     @property
     def rx_lastclient(self):
         return element_if_equal(self.getRxLastClientIP())
+
     # FILE
 
     @property
@@ -655,6 +691,7 @@ class Detector(CppDetectorApi):
     """
     Some Eiger stuff, does this have to be here or can we move it to subclass?
     """
+
     @property
     def subexptime(self):
         res = self.getSubExptime()
@@ -731,7 +768,6 @@ class Detector(CppDetectorApi):
         res = self.getMeasuredSubFramePeriod()
         return element_if_equal([it.total_seconds() for it in res])
 
-
     """
     Jungfrau specific
     """
@@ -801,7 +837,6 @@ class Detector(CppDetectorApi):
     def temp_control(self, value):
         self.setTemperatureControl(value)
 
-
     @property
     @element
     def selinterface(self):
@@ -818,12 +853,14 @@ class Detector(CppDetectorApi):
     @property
     @element
     def veto(self):
+        """
+        [Gotthard2] Enable or disable veto data streaming from detector. Default is 0.
+        """
         return self.getVeto()
 
     @veto.setter
     def veto(self, value):
         self.setVeto(value)
-
 
     """
     Mythen3 specific
@@ -844,6 +881,9 @@ class Detector(CppDetectorApi):
 
     @property
     def counters(self):
+        """
+        [Mythen3] List of counters enabled. Each element in list can be 0 - 2 and must be non repetitive.
+        """
         mask = self.getCounterMask()
         mask = element_if_equal(mask)
         if type(mask) == int:

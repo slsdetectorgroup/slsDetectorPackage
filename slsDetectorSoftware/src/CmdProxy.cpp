@@ -850,6 +850,36 @@ std::string CmdProxy::ExternalSignal(int action) {
 }
 
 /** temperature */
+std::string CmdProxy::TemperatureValues(int action) {
+    std::ostringstream os;
+    os << cmd << ' ';
+    if (action == defs::HELP_ACTION) {
+        os << "\n\tGets the values for every temperature for this detector."
+           << '\n';
+    } else if (action == defs::GET_ACTION) {
+        if (args.size() != 0) {
+            WrongNumberOfParameters(0);
+        }
+        auto t = det->getTemperatureList();
+        os << '[';
+        if (t.size() > 0) {
+            auto it = t.cbegin();
+            os << ToString(*it) << ' ';
+            os << OutString(det->getTemperature(*it++, {det_id})) << " °C";
+            while (it != t.cend()) {
+                os << ", " << ToString(*it) << ' ';
+                os << OutString(det->getTemperature(*it++, {det_id})) << " °C";
+            }
+        }
+        os << "]\n";
+    } else if (action == defs::PUT_ACTION) {
+        throw sls::RuntimeError("Cannot put");
+    } else {
+        throw sls::RuntimeError("Unknown action");
+    }
+    return os.str();
+}
+
 /* dacs */
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;
@@ -902,7 +932,7 @@ std::string CmdProxy::DacValues(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[(optional unit) mv] \n\tGets the list of commands for every "
+        os << "[(optional unit) mv] \n\tGets the values for every "
               "dac for this detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {

@@ -338,6 +338,9 @@ class Detector {
      * Only for virtual servers */
     void setImageTestMode(const int value, Positions pos = {});
 
+    /** gets list of temperature indices for this detector */
+    std::vector<defs::dacIndex> getTemperatureList() const;
+
     /**
      * (Degrees)
      * [Gotthard] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA

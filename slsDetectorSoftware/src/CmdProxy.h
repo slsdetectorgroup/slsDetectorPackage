@@ -684,6 +684,8 @@ class CmdProxy {
         {"extsig", &CmdProxy::ExternalSignal},
 
         /** temperature */
+        {"templist", &CmdProxy::templist},
+        {"tempvalues", &CmdProxy::TemperatureValues},
         {"temp_adc", &CmdProxy::temp_adc},
         {"temp_fpga", &CmdProxy::temp_fpga},
         {"temp_fpgaext", &CmdProxy::temp_fpgaext},
@@ -693,6 +695,7 @@ class CmdProxy {
         {"temp_sodr", &CmdProxy::temp_sodr},
         {"temp_fpgafl", &CmdProxy::temp_fpgafl},
         {"temp_fpgafr", &CmdProxy::temp_fpgafr},
+        {"temp_slowadc", &CmdProxy::temp_slowadc},
 
         /* dacs */
         {"vthreshold", &CmdProxy::vthreshold},
@@ -1031,6 +1034,7 @@ class CmdProxy {
     std::string ClockDivider(int action);
     std::string ExternalSignal(int action);
     /** temperature */
+    std::string TemperatureValues(int action);
     /* dacs */
     std::string Dac(int action);
     std::string DacValues(int action);
@@ -1243,6 +1247,9 @@ class CmdProxy {
         "intensity incremented by 1. If 1, all pixels almost saturated.");
 
     /** temperature */
+    GET_COMMAND_NOID(
+        templist, getTemperatureList,
+        "\n\tList of temperature commands implemented for this detector.");
 
     GET_IND_COMMAND(temp_adc, getTemperature, slsDetectorDefs::TEMPERATURE_ADC,
                     " °C", "[n_value]\n\t[Jungfrau][Gotthard] ADC Temperature");
@@ -1278,6 +1285,10 @@ class CmdProxy {
     GET_IND_COMMAND(
         temp_fpgafr, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA3, " °C",
         "[n_value]\n\t[Eiger]Temperature of the left front end board fpga");
+
+    GET_IND_COMMAND(temp_slowadc, getTemperature,
+                    slsDetectorDefs::SLOW_ADC_TEMP, " °C",
+                    "[n_value]\n\t[Ctb]Temperature of the slow adc");
 
     /* dacs */
 

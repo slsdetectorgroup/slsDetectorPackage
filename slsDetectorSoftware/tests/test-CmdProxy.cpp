@@ -1047,6 +1047,20 @@ TEST_CASE("extsig", "[.cmd][.new]") {
 
 /** temperature */
 
+TEST_CASE("templist", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("templist", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("templist", {}, -1, PUT));
+}
+
+TEST_CASE("tempvalues", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    REQUIRE_NOTHROW(proxy.Call("tempvalues", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("tempvalues", {}, -1, PUT));
+}
+
 TEST_CASE("temp_adc", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);

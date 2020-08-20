@@ -515,6 +515,26 @@ std::string ToString(const defs::dacIndex s) {
         return std::string("highvoltage");
     case defs::IO_DELAY:
         return std::string("iodelay");
+    case defs::TEMPERATURE_ADC:
+        return std::string("temp_adc");
+    case defs::TEMPERATURE_FPGA:
+        return std::string("temp_fpga");
+    case defs::TEMPERATURE_FPGAEXT:
+        return std::string("temp_fpgaext");
+    case defs::TEMPERATURE_10GE:
+        return std::string("temp_10ge");
+    case defs::TEMPERATURE_DCDC:
+        return std::string("temp_dcdc");
+    case defs::TEMPERATURE_SODL:
+        return std::string("temp_sodl");
+    case defs::TEMPERATURE_SODR:
+        return std::string("temp_sodr");
+    case defs::TEMPERATURE_FPGA2:
+        return std::string("temp_fpgafl");
+    case defs::TEMPERATURE_FPGA3:
+        return std::string("temp_fpgafr");
+    case defs::SLOW_ADC_TEMP:
+        return std::string("temp_slowadc");
     default:
         return std::string("Unknown");
     }
@@ -874,7 +894,26 @@ template <> defs::dacIndex StringTo(const std::string &s) {
         return defs::HIGH_VOLTAGE;
     if (s == "iodelay")
         return defs::IO_DELAY;
-
+    if (s == "temp_adc")
+        return defs::TEMPERATURE_ADC;
+    if (s == "temp_fpga")
+        return defs::TEMPERATURE_FPGA;
+    if (s == "temp_fpgaext")
+        return defs::TEMPERATURE_FPGAEXT;
+    if (s == "temp_10ge")
+        return defs::TEMPERATURE_10GE;
+    if (s == "temp_dcdc")
+        return defs::TEMPERATURE_DCDC;
+    if (s == "temp_sodl")
+        return defs::TEMPERATURE_SODL;
+    if (s == "temp_sodr")
+        return defs::TEMPERATURE_SODR;
+    if (s == "temp_fpgafl")
+        return defs::TEMPERATURE_FPGA2;
+    if (s == "temp_fpgafr")
+        return defs::TEMPERATURE_FPGA3;
+    if (s == "temp_slowadc")
+        return defs::SLOW_ADC_TEMP;
     throw sls::RuntimeError("Unknown dac Index " + s);
 }
 

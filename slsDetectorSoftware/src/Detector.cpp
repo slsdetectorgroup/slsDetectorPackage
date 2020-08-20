@@ -445,6 +445,26 @@ void Detector::setImageTestMode(int value, Positions pos) {
     pimpl->Parallel(&Module::setImageTestMode, pos, value);
 }
 
+std::vector<defs::dacIndex> Detector::getTemperatureList() const {
+    std::vector<defs::dacIndex> retval;
+    switch (getDetectorType().squash()) {
+    case defs::CHIPTESTBOARD:
+        return std::vector<defs::dacIndex>{defs::SLOW_ADC_TEMP};
+    case defs::JUNGFRAU:
+    case defs::GOTTHARD:
+        return std::vector<defs::dacIndex>{defs::TEMPERATURE_ADC,
+                                           defs::TEMPERATURE_FPGA};
+    case defs::EIGER:
+        return std::vector<defs::dacIndex>{
+            defs::TEMPERATURE_FPGA,  defs::TEMPERATURE_FPGAEXT,
+            defs::TEMPERATURE_10GE,  defs::TEMPERATURE_DCDC,
+            defs::TEMPERATURE_SODL,  defs::TEMPERATURE_SODR,
+            defs::TEMPERATURE_FPGA2, defs::TEMPERATURE_FPGA3};
+    default:
+        return std::vector<defs::dacIndex>{};
+    }
+}
+
 Result<int> Detector::getTemperature(defs::dacIndex index,
                                      Positions pos) const {
     switch (index) {

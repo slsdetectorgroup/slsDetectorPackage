@@ -35,6 +35,7 @@ set( PYTHON_FILES
     jungfrau.py
     mythen3.py
     registers.py
+    temperature.py
     lookup.py
     utils.py
 

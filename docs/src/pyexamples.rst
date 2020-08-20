@@ -74,34 +74,38 @@ But lets start looking at the at the manual way:
 ::
 
     import time
-    from slsdet import Eiger, runStatus
-    d = Eiger()
-
-    n = 10
-    t = 1
-
-    d.exptime = t
-    d.frames = n
+    from slsdet import Detector, runStatus
 
 
-    #Start the measurement
+    n_frames = 10
+    t_exp = 1
+
+    # Set exposure time and number of frames
+    d = Detector()
+    d.exptime = t_exp
+    d.frames = n_frames
+
+    # Start the measurement
     t0 = time.time()
     d.startDetector()
     d.startReceiver()
 
-    #Wait for the detector to be ready or do other important stuff
-    time.sleep(t*n)
+    # Wait for the detector to be ready or do other important stuff
+    time.sleep(t_exp * n_frames)
 
-    #check if the detector is ready otherwise wait a bit longer
+    # check if the detector is ready otherwise wait a bit longer
     while d.status != runStatus.IDLE:
         time.sleep(0.1)
 
-    #Stop the receiver after we got the frames
-    #Detector is already idle so we don't need to stop it
+    # Stop the receiver after we got the frames
+    # Detector is already idle so we don't need to stop it
     d.stopReceiver()
 
-    lost = d.rx_framescaught - n
-    print(f'{n} frames of {t}s took {time.time()-t0:{.3}}s with {lost} frames lost ')
+    lost = d.rx_framescaught - n_frames
+    print(
+        f"{n_frames} frames of {t_exp}s took {time.time()-t0:{.3}}s with {lost} frames lost "
+    )
+
 
 
 Instead launching d.acq() from a different process is a bit easier since the control of receiver and detector
@@ -112,30 +116,53 @@ hang around until the main process exits.
 
     import time
     from multiprocessing import Process
-    from slsdet import Eiger
+    from slsdet import Detector, runStatus
 
-    def acquire():
-        """
-        Create a new Eiger object that still referes to the same actual detector
-        and same shared memory. Then launch acq.
-        """
-        detector = Eiger()
-        detector.acq()
 
-    #This is the detector we use throughout the session
-    d = Eiger()
+    d = Detector()
 
-    #Process to run acquire
-    p = Process(target=acquire)
+    #Create a separate process to run acquire in
+    p = Process(target=d.acquire)
 
     #Start the thread and short sleep to allow the acq to start
     p.start()
     time.sleep(0.01)
 
     #Do some other work
-    while d.busy is True:
-        print(d.busy)
+    while d.status != runStatus.IDLE:
+        print("Working")
         time.sleep(0.1)
 
     #Join the process
     p.join()
+
+
+------------------------------
+Setting and getting times
+------------------------------
+
+::
+
+    import datetime as dt
+    from slsdet import Detector
+
+    d = Detector()
+
+    # The simplest way is to set the exposure time in 
+    # seconds by using the exptime property
+    # This sets the exposure time for all modules
+    d.exptime = 0.5
+
+    # exptime also accepts a python datetime.timedelta
+    # which can be used to set the time in almost any unit
+
+    t = dt.timedelta(milliseconds = 2.3)
+    d.exptime = t
+
+    # or combination of units
+    t = dt.timedelta(minutes = 3, seconds = 1.23)
+    d.exptime = t
+
+    #exptime however always returns the time in seconds
+    >>> d.exptime
+    181.23 

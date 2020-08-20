@@ -34,8 +34,7 @@ class Dac(DetectorProperty):
         dacstr = ''.join([f'{item:5d}' for item in self.get()])
         return f'{self.__name__:10s}:{dacstr}'
 
-# a = Dac('vrf', dacIndex.VRF, 0, 4000, 2500, d )
-# @freeze
+
 class DetectorDacs:
     _dacs = []
     _dacnames = [_d[0] for _d in _dacs]

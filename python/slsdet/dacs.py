@@ -92,6 +92,9 @@ class DetectorDacs:
             dac_array[i,:] = _d[:]
         return dac_array
 
+    def to_array(self):
+        return self.get_asarray()
+
     def set_from_array(self, dac_array):
         """
         Set the dacs from an numpy array with dac values. [ndacs, nmodules]

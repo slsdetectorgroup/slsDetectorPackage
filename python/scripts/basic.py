@@ -8,7 +8,7 @@ from slsdet import dacIndex, readoutMode
 from slsdet.lookup import view, find
 
 d = Detector()
-# e = Eiger()
+e = Eiger()
 c = Ctb()
 # j = Jungfrau()
 # m = Mythen3()

@@ -9,7 +9,7 @@ Created on Wed Dec  6 11:51:18 2017
 
 from .detector import Detector
 
-# from .adcs import Adc, DetectorAdcs
+from .temperature import Temperature, DetectorTemperature
 from .dacs import DetectorDacs
 import _slsdet
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
@@ -79,58 +79,6 @@ class EigerDacs(DetectorDacs):
              ('iodelay',  dacIndex.IO_DELAY,0, 4000,  660)]
     _dacnames = [_d[0] for _d in _dacs]
 
-# # noinspection PyProtectedMember
-# class DetectorDelays:
-#     _delaynames = ['frame', 'left', 'right']
-
-#     def __init__(self, detector):
-#         # We need to at least initially know which detector we are connected to
-#         self._detector = detector
-        
-#         setattr(self, '_frame', DetectorProperty(detector._api.getDelayFrame,
-#                                                  detector._api.setDelayFrame,
-#                                                  detector._api.getNumberOfDetectors,
-#                                                  'frame'))
-
-#         setattr(self, '_left', DetectorProperty(detector._api.getDelayLeft,
-#                                                 detector._api.setDelayLeft,
-#                                                 detector._api.getNumberOfDetectors,
-#                                                 'left'))
-
-#         setattr(self, '_right', DetectorProperty(detector._api.getDelayRight,
-#                                                  detector._api.setDelayRight,
-#                                                  detector._api.getNumberOfDetectors,
-#                                                  'right'))
-#         # Index to support iteration
-#         self._current = 0
-
-#     def __getattr__(self, name):
-#         return self.__getattribute__('_' + name)
-
-#     def __setattr__(self, name, value):
-#         if name in self._delaynames:
-#             return self.__getattribute__('_' + name).__setitem__(slice(None, None, None), value)
-#         else:
-#             super().__setattr__(name, value)
-
-#     def __next__(self):
-#         if self._current >= len(self._delaynames):
-#             self._current = 0
-#             raise StopIteration
-#         else:
-#             self._current += 1
-#             return self.__getattr__(self._delaynames[self._current-1])
-
-#     def __iter__(self):
-#         return self
-
-#     def __repr__(self):
-#         hn = self._detector.hostname
-#         r_str = ['Transmission delay [ns]\n'
-#                  '{:11s}{:>8s}{:>8s}{:>8s}'.format('', 'left', 'right', 'frame')]
-#         for i in range(self._detector.n_modules):
-#             r_str.append('{:2d}:{:8s}{:>8d}{:>8d}{:>8d}'.format(i, hn[i], self.left[i], self.right[i], self.frame[i]))
-#         return '\n'.join(r_str)
 
 from .detector import freeze
 
@@ -152,76 +100,18 @@ class Eiger(Detector):
         self._dacs = EigerDacs(self)
         self._vcmp = EigerVcmp(self)
 
-        # self._active = DetectorProperty(self.getActive,
-        #                                 self.setActive,
-        #                                 self.size,
-        #                                 'active')   
+        # Eiger specific adcs
+        self._temp = DetectorTemperature()
+        self._temp.fpga = Temperature('temp_fpga', dacIndex.TEMPERATURE_FPGA, self)
+        self._temp.fpgaext = Temperature('temp_fpgaext', dacIndex.TEMPERATURE_FPGAEXT, self)
+        self._temp.t10ge = Temperature('temp_10ge', dacIndex.TEMPERATURE_10GE, self)
+        self._temp.dcdc = Temperature('temp_dcdc', dacIndex.TEMPERATURE_DCDC, self)
+        self._temp.sodl = Temperature('temp_sodl', dacIndex.TEMPERATURE_SODL, self)
+        self._temp.sodr = Temperature('temp_sodl', dacIndex.TEMPERATURE_SODR, self)
+        self._temp.temp_fpgafl = Temperature('temp_fpgafl', dacIndex.TEMPERATURE_FPGA2, self)
+        self._temp.temp_fpgafr = Temperature('temp_fpgafr', dacIndex.TEMPERATURE_FPGA3, self)
 
-#         self._trimbit_limits = namedtuple('trimbit_limits', ['min', 'max'])(0, 63)
-#         self._delay = DetectorDelays(self)
-        
-#         # Eiger specific adcs
-#         self._temp = DetectorAdcs()
-#         self._temp.fpga = Adc('temp_fpga', self)
-#         self._temp.fpgaext = Adc('temp_fpgaext', self)
-#         self._temp.t10ge = Adc('temp_10ge', self)
-#         self._temp.dcdc = Adc('temp_dcdc', self)
-#         self._temp.sodl = Adc('temp_sodl', self)
-#         self._temp.sodr = Adc('temp_sodr', self)
-#         self._temp.fpgafl = Adc('temp_fpgafl', self)
-#         self._temp.fpgafr = Adc('temp_fpgafr', self)
 
-    # @property
-    # def active(self):
-    #     """
-    #     Is the detector active? Can be used to enable or disable a detector
-    #     module
-        
-    #     Examples
-    #     ----------
-        
-    #     ::
-            
-    #         d.active
-    #         >> active: [True, True]
-            
-    #         d.active[1] = False
-    #         >> active: [True, False]
-    #     """
-    #     return self._active
-    
-    # @active.setter
-    # def active(self, value):
-    #     self._active[:] = value
-    
-#     @property
-#     def measured_period(self):
-#         return self._api.getMeasuredPeriod()
-
-#     @property
-#     def measured_subperiod(self):
-#         return self._api.getMeasuredSubPeriod()
-
-#     @property
-#     def add_gappixels(self):
-#        """Enable or disable the (virual) pixels between ASICs
-
-#        Examples
-#        ----------
-
-#        ::
-
-#            d.add_gappixels = True
-
-#            d.add_gappixels
-#            >> True
-
-#        """
-#        return self._api.getGapPixels()
-
-#     @add_gappixels.setter
-#     def add_gappixels(self, value):
-#        self._api.setGapPixels(value)
 
     @property
     def dacs(self):
@@ -284,68 +174,6 @@ class Eiger(Detector):
         """
         return self._dacs
 
-#     @property
-#     def tx_delay(self):
-#         """
-#         Transmission delay of the modules to allow running the detector
-#         in a network not supporting the full speed of the detector.
-
-
-#         ::
-            
-#             d.tx_delay
-#             >>
-#             Transmission delay [ns]
-#                            left   right   frame
-#              0:beb048         0   15000       0
-#              1:beb049       100  190000     100
-             
-#              d.tx_delay.left = [2000,5000]
-#         """
-#         return self._delay
-
-#     def pulse_all_pixels(self, n):
-#         """
-#         Pulse each pixel of the chip **n** times using the analog test pulses.
-#         The pulse height is set using d.dacs.vcall with 4000 being 0 and 0 being
-#         the highest pulse.
-        
-#         ::
-            
-#             #Pulse all pixels ten times
-#             d.pulse_all_pixels(10)
-            
-#             #Avoid resetting before acq
-#             d.eiger_matrix_reset = False
-            
-#             d.acq() #take frame
-            
-#             #Restore normal behaviour
-#             d.eiger_matrix_reset = True
-        
-        
-#         """
-#         self._api.pulseAllPixels(n)
-        
-
-#     def pulse_diagonal(self, n):
-#         """
-#         Pulse pixels in super colums in a diagonal fashion. Used for calibration
-#         of vcall. Saves time compared to pulsing all pixels.
-#         """
-#         self._api.pulseDiagonal(n)
-
-
-#     def pulse_chip(self, n):
-#         """
-#         Advance the counter by toggling enable. Gives 2*n+2 int the counter
-        
-#         """
-#         n = int(n)
-#         if n >= -1:
-#             self._api.pulseChip(n)
-#         else:
-#             raise ValueError('n must be equal or larger than -1')
 
     @property
     def vcmp(self):
@@ -437,40 +265,33 @@ class Eiger(Detector):
 #         else:
 #             self._api.setReceiverStreamingPort(port, -1)
 
-#     @property
-#     def temp(self):
-#         """
-#         An instance of DetectorAdcs used to read the temperature
-#         of different components
+    @property
+    def temp(self):
+        """
+        An instance of DetectorAdcs used to read the temperature
+        of different components
 
-#         Examples
-#         -----------
+        Examples
+        -----------
 
-#         ::
+        ::
 
-#             detector.temp
-#             >>
-#             temp_fpga     :  36.90°C,  45.60°C
-#             temp_fpgaext  :  31.50°C,  32.50°C
-#             temp_10ge     :   0.00°C,   0.00°C
-#             temp_dcdc     :  36.00°C,  36.00°C
-#             temp_sodl     :  33.00°C,  34.50°C
-#             temp_sodr     :  33.50°C,  34.00°C
-#             temp_fpgafl   :  33.81°C,  30.93°C
-#             temp_fpgafr   :  27.88°C,  29.15°C
+            detector.temp
+            >>
+            temp_fpga     :  36.90°C,  45.60°C
+            temp_fpgaext  :  31.50°C,  32.50°C
+            temp_10ge     :   0.00°C,   0.00°C
+            temp_dcdc     :  36.00°C,  36.00°C
+            temp_sodl     :  33.00°C,  34.50°C
+            temp_sodr     :  33.50°C,  34.00°C
+            temp_fpgafl   :  33.81°C,  30.93°C
+            temp_fpgafr   :  27.88°C,  29.15°C
 
-#             a = detector.temp.fpga[:]
-#             a
-#             >> [36.568, 45.542]
-
-
-#         """
-#         return self._temp
+            a = detector.temp.fpga[:]
+            a
+            >> [36.568, 45.542]
 
 
-
-#     def set_delays(self, delta):
-#         self.tx_delay.left = [delta*(i*2) for i in range(self.n_modules)]
-#         self.tx_delay.right = [delta*(i*2+1) for i in range(self.n_modules)]
-
+        """
+        return self._temp
 

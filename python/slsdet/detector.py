@@ -80,8 +80,8 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        Frees shared memory before loading configuration file. This function does not support ~ for home. 
-
+        Frees shared memory before loading configuration file. 
+        Set up once.
         
         :getter: Not implemented
         :setter: Loads config file
@@ -809,6 +809,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def auto_comp_disable(self):
+        """[Jungfrau] Enable or disable auto comparator disable mode. 
+
+        Note
+        -----
+        By default, the on-chip gain switching is active during the entire exposure. This mode disables the on-chip gain switching comparator automatically after 93.75% of exposure time (only for longer than 100us).\n
+        Default is 0 or this mode disabled (comparator enabled throughout). 1 enables mode. 0 disables mode. 
+        """
         return self.getAutoCompDisable()
 
     @auto_comp_disable.setter
@@ -916,7 +923,16 @@ class Detector(CppDetectorApi):
     @property
     def counters(self):
         """
-        [Mythen3] List of counters enabled. Each element in list can be 0 - 2 and must be non repetitive.
+        [Mythen3] List of counter indices enabled. 
+        
+        Note
+        -----
+        Each element in list can be 0 - 2 and must be non repetitive.
+
+        Examples
+        -----------
+        >>> d.counters = [0, 1]
+
         """
         mask = self.getCounterMask()
         mask = element_if_equal(mask)
@@ -951,6 +967,7 @@ class Detector(CppDetectorApi):
 
     @property
     def asamples(self):
+        """[Ctb][Moench] Number of analog samples expected. """ 
         return element_if_equal(self.getNumberOfAnalogSamples())
 
     @asamples.setter
@@ -967,6 +984,12 @@ class Detector(CppDetectorApi):
 
     @property
     def dbitphase(self):
+        """[Ctb][Jungfrau] Phase shift of clock to latch digital bits. Absolute phase shift.
+
+        Note
+        -----
+        [Ctb]Changing dbitclk also resets dbitphase and sets to previous values.
+        """
         return element_if_equal(self.getDBITPhase())
 
     @dbitphase.setter
@@ -975,6 +998,7 @@ class Detector(CppDetectorApi):
 
     @property
     def dbitclk(self):
+        """[Ctb] Clock for latching the digital bits in MHz."""
         return element_if_equal(self.getDBITClock())
 
     @dbitclk.setter
@@ -983,6 +1007,7 @@ class Detector(CppDetectorApi):
 
     @property
     def dbitpipeline(self):
+        """ [Ctb] Pipeline of the clock for latching digital bits. """    
         return element_if_equal(self.getDBITPipeline())
 
     @dbitpipeline.setter
@@ -1019,9 +1044,9 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        | [Jungfrau] Absolute phase shift. Changing Speed also resets adcphase to recommended defaults.
-        | [Ctb][Moench] Absolute phase shift. Changing adcclk also resets adcphase and sets it to previous values.
-        | [Gotthard] Relative phase shift.
+        [Jungfrau] Absolute phase shift. Changing Speed also resets adcphase to recommended defaults.\n
+        [Ctb][Moench] Absolute phase shift. Changing adcclk also resets adcphase and sets it to previous values.\n
+        [Gotthard] Relative phase shift.
 
         :getter: Not implemented for Gotthard
         """
@@ -1033,8 +1058,7 @@ class Detector(CppDetectorApi):
 
     @property
     def adcpipeline(self):
-        """[Ctb][Moench] Sets pipeline for ADC clock.      
-        """ 
+        """[Ctb][Moench] Sets pipeline for ADC clock. """ 
         return element_if_equal(self.getADCPipeline())
 
     @adcpipeline.setter
@@ -1043,8 +1067,7 @@ class Detector(CppDetectorApi):
 
     @property
     def adcclk(self):
-        """[Ctb][Moench] Sets ADC clock frequency in MHz.      
-        """        
+        """[Ctb][Moench] Sets ADC clock frequency in MHz. """        
         return element_if_equal(self.getADCClock())
 
     @adcclk.setter

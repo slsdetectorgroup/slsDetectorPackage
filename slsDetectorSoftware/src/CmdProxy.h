@@ -1103,7 +1103,7 @@ class CmdProxy {
     /* configuration */
     EXECUTE_SET_COMMAND_NOID_1ARG(
         config, loadConfig,
-        "[fname]\n\tConfigures detector to configuration contained in fname. "
+        "[fname]\n\tFrees shared memory before loading configuration file. "
         "Set up once.");
 
     EXECUTE_SET_COMMAND_NOID_1ARG(
@@ -1953,11 +1953,12 @@ class CmdProxy {
     INTEGER_COMMAND(
         auto_comp_disable, getAutoCompDisable, setAutoCompDisable,
         StringTo<int>,
-        "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. Default 0 or this "
-        "mode disabled(comparator enabled throughout). 1 enables mode. 0 "
-        "disables mode. This mode disables the on-chip gain switching "
-        "comparator automatically after 93.75% of exposure time (only for "
-        "longer than 100us).");
+        "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the "
+        "on-chip gain switching is active during the entire exposure.This mode "
+        "disables the on - chip gain switching comparator automatically after "
+        "93.75% of exposure time (only for longer than 100us). \n\tDefault is "
+        "0 or this mode disabled(comparator enabled throughout). 1 enables "
+        "mode. 0 disables mode. ");
 
     INTEGER_COMMAND_NOID(
         storagecells, getNumberOfAdditionalStorageCells,
@@ -2028,7 +2029,7 @@ class CmdProxy {
     INTEGER_COMMAND(
         asamples, getNumberOfAnalogSamples, setNumberOfAnalogSamples,
         StringTo<int>,
-        "[0, 1]\n\t[CTB][Moench] Number of analog samples expected.");
+        "[n_samples]\n\t[CTB][Moench] Number of analog samples expected.");
 
     INTEGER_COMMAND(
         adcclk, getADCClock, setADCClock, StringTo<int>,
@@ -2064,7 +2065,7 @@ class CmdProxy {
 
     INTEGER_COMMAND(dsamples, getNumberOfDigitalSamples,
                     setNumberOfDigitalSamples, StringTo<int>,
-                    "[0, 1]\n\t[CTB] Number of digital samples expected.");
+                    "[n_value]\n\t[CTB] Number of digital samples expected.");
 
     INTEGER_COMMAND(romode, getReadoutMode, setReadoutMode,
                     sls::StringTo<slsDetectorDefs::readoutMode>,

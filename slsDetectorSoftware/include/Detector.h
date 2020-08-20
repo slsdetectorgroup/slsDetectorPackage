@@ -46,8 +46,11 @@ class Detector {
      * belonging to it */
     void freeSharedMemory();
 
+    /** Frees shared memory before loading configuration file. Set up once
+     * normally */
     void loadConfig(const std::string &fname);
 
+    /** Shared memory not freed prior. Set up per measurement. */
     void loadParameters(const std::string &fname);
 
     Result<std::string> getHostname(Positions pos = {}) const;
@@ -256,13 +259,21 @@ class Detector {
     /** [Gotthard][Jungfrau][CTB][Moench] */
     Result<int> getADCPhaseInDegrees(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Moench] */
+    /** [Gotthard][Jungfrau][CTB][Moench]
+     * [Jungfrau] Absolute phase shift. Changing Speed also resets adcphase to
+     * recommended defaults. \n
+     * [Ctb][Moench] Absolute phase shift. Changing adcclk also resets adcphase
+     * and sets it to previous values. \n
+     * [Gotthard] Relative phase shift
+     */
     void setADCPhaseInDegrees(int value, Positions pos = {});
 
     /** [CTB][Jungfrau] */
     Result<int> getDBITPhase(Positions pos = {}) const;
 
-    /** [CTB][Jungfrau] */
+    /** [CTB][Jungfrau] Absolute phase shift \n
+     * [CTB] changing dbitclk also resets dbitphase and sets to previous values.
+     */
     void setDBITPhase(int value, Positions pos = {});
 
     /** [CTB][Jungfrau] */
@@ -271,7 +282,9 @@ class Detector {
     /** [CTB][Jungfrau] */
     Result<int> getDBITPhaseInDegrees(Positions pos = {}) const;
 
-    /** [CTB][Jungfrau] */
+    /** [CTB][Jungfrau] Absolute phase shift \n
+     * [CTB] changing dbitclk also resets dbitphase and sets to previous values.
+     */
     void setDBITPhaseInDegrees(int value, Positions pos = {});
 
     /** [Mythen3][Gotthard2] Hz */
@@ -925,7 +938,10 @@ class Detector {
      * //TODO naming
      * By default, the on-chip gain switching is active during the entire
      * exposure. This mode disables the on-chip gain switching comparator
-     * automatically after 93.75% of exposure time (only for longer than 100us).
+     * automatically after 93.75% of exposure time (only for longer than
+     * 100us).\n
+     * Default is false or this mode disabled(comparator enabled throughout).
+     * true enables " "mode. 0 disables mode.
      */
     void setAutoCompDisable(bool value, Positions pos = {});
 
@@ -1075,7 +1091,7 @@ class Detector {
     /** [Mythen3] */
     Result<uint32_t> getCounterMask(Positions pos = {}) const;
 
-    /** [Mythen3] countermask bit set for each counter enabled */
+    /** [Mythen3] countermask bit set for each counter index enabled */
     void setCounterMask(uint32_t countermask, Positions pos = {});
 
     Result<int> getNumberOfGates(Positions pos = {}) const;

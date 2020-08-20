@@ -6,21 +6,16 @@ Created on Wed Dec  6 11:51:18 2017
 @author: l_frojdh
 """
 
-
 from .detector import Detector
-
 from .temperature import Temperature, DetectorTemperature
 from .dacs import DetectorDacs
 import _slsdet
 dacIndex = _slsdet.slsDetectorDefs.dacIndex
 from .detector_property import DetectorProperty
-# from .utils import element_if_equal
-# from sls_detector.errors import DetectorValueError, DetectorError
 
 class EigerVcmp:
     """
     Convenience class to be able to loop over vcmp for Eiger
-    
     
     .. todo::
         

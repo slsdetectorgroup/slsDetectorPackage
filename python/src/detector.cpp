@@ -305,6 +305,9 @@ void init_det(py::module &m) {
              (void (Detector::*)(const int, sls::Positions)) &
                  Detector::setImageTestMode,
              py::arg(), py::arg() = Positions{})
+        .def("getTemperatureList",
+             (std::vector<defs::dacIndex>(Detector::*)() const) &
+                 Detector::getTemperatureList)
         .def("getTemperature",
              (Result<int>(Detector::*)(defs::dacIndex, sls::Positions) const) &
                  Detector::getTemperature,

@@ -646,6 +646,10 @@ class Detector(CppDetectorApi):
         return self.getTimingModeList()
 
     @property
+    def templist(self):
+        return self.getTemperatureList()
+
+    @property
     def settingslist(self):
         return self.getSettingsList()
 

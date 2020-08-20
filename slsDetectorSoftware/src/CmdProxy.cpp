@@ -387,25 +387,21 @@ std::string CmdProxy::Exptime(int action) {
             os << "[duration] [(optional unit) "
                   "ns|us|ms|s]\n\t[Eiger][Jungfrau][Gotthard][Gotthard2]["
                   "Moench][Ctb] Exposure time"
-                  "\n\t[Gotthard2] Uploaded to detector just before "
-                  "acquisition starts"
                   "\n\t[Mythen3] Exposure time of all gate signals in auto and "
-                  "trigger mode (internal gating)."
+                  "trigger mode (internal gating). To specify gate index, use "
+                  "exptime1, exptime2, exptime3."
                << '\n';
         } else if (cmd == "exptime1") {
             os << "[n_value]\n\t[Mythen3] Exposure time of gate signal 1 in "
-                  "auto and "
-                  "trigger mode (internal gating)."
+                  "auto and trigger mode (internal gating)."
                << '\n';
         } else if (cmd == "exptime2") {
             os << "[n_value]\n\t[Mythen3] Exposure time of gate signal 2 in "
-                  "auto and "
-                  "trigger mode (internal gating)."
+                  "auto and trigger mode (internal gating)."
                << '\n';
         } else {
             os << "[n_value]\n\t[Mythen3] Exposure time of gate signal 3 in "
-                  "auto and "
-                  "trigger mode (internal gating)."
+                  "auto and trigger mode (internal gating)."
                << '\n';
         }
     } else if (action == defs::GET_ACTION) {

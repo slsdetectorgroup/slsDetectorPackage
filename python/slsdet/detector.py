@@ -206,6 +206,21 @@ class Detector(CppDetectorApi):
     def exptime(self):
         """
         Exposure time, accepts either a value in seconds or datetime.timedelta
+
+        Note
+        -----
+        [Mythen3] sets exposure time to all gate signals in auto and trigger mode (internal gating). To specify gateIndex, use getExptime or setExptime.
+        
+        :getter: always returns in seconds. To get in datetime.delta, use getExptime
+
+        Examples
+        -----------
+        >>> d.exptime = 1.05
+        >>> d.exptime = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>> d.exptime
+        181.23
+        >>> d.getExptime()
+        [datetime.timedelta(seconds=181, microseconds=230000)]
         """
         if self.type == detectorType.MYTHEN3:
             res = self.getExptimeForAllGates()
@@ -231,6 +246,22 @@ class Detector(CppDetectorApi):
     @property
     @element
     def delay(self):
+        """
+        [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] Delay after trigger, accepts either a value in seconds or datetime.timedelta
+
+        Note
+        -----
+        :getter: always returns in seconds. To get in datetime.delta, use getDelayAfterTrigger
+
+        Examples
+        -----------
+        >>> d.delay = 1.05
+        >>> d.delay = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>> d.delay
+        181.23
+        >>> d.getDelayAfterTrigger()
+        [datetime.timedelta(seconds=181, microseconds=230000)]
+        """
         return ut.reduce_time(self.getDelayAfterTrigger())
 
     @delay.setter

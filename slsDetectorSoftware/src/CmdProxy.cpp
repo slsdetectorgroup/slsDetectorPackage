@@ -564,14 +564,12 @@ std::string CmdProxy::Adcphase(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[n_value] "
               "[(optional)deg]\n\t[Jungfrau][Ctb][Moench][Gotthard] "
-              "Phase "
-              "shift of ADC clock. \n\t[Jungfrau] Absolute phase shift. If deg "
-              "used, then shift in degrees. Changing Speed also resets "
+              "Phase shift of ADC clock. \n\t[Jungfrau] Absolute phase shift. "
+              "If deg used, then shift in degrees. Changing Speed also resets "
               "adcphase to recommended defaults.\n\t[Ctb][Moench] Absolute "
-              "phase "
-              "shift. If deg used, then shift in degrees. Changing adcclk also "
-              "resets adcphase and sets it to previous values.\n\t[Gotthard] "
-              "Relative phase shift. Cannot get"
+              "phase shift. If deg used, then shift in degrees. Changing "
+              "adcclk also resets adcphase and sets it to previous "
+              "values.\n\t[Gotthard] Relative phase shift. Cannot get"
            << '\n';
     } else {
         auto det_type = det->getDetectorType().squash(defs::GENERIC);
@@ -622,11 +620,9 @@ std::string CmdProxy::Dbitphase(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_value] [(optional)deg]\n\t[Ctb][Jungfrau] Phase shift of "
-              "clock to "
-              "latch digital bits. Absolute phase shift. If deg used, then "
-              "shift in degrees. \n\t[Ctb]Changing dbitclk also resets "
-              "dbitphase and "
-              "sets to previous values."
+              "clock to latch digital bits. Absolute phase shift. If deg used, "
+              "then shift in degrees. \n\t[Ctb]Changing dbitclk also resets "
+              "dbitphase and sets to previous values."
            << '\n';
     } else {
         auto det_type = det->getDetectorType().squash(defs::GENERIC);
@@ -1764,8 +1760,9 @@ std::string CmdProxy::Counters(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[i0] [i1] [i2]... \n\t[Mythen3] List of counters enabled. Each "
-              "element in list can be 0 - 2 and must be non repetitive."
+        os << "[i0] [i1] [i2]... \n\t[Mythen3] List of counters indices "
+              "enabled. Each element in list can be 0 - 2 and must be non "
+              "repetitive."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {

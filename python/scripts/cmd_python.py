@@ -15,7 +15,9 @@ pycmd += ['vrf', 'vtr', 'vrs', 'vtgstv', 'vsvn', 'vtrim',
 'vpreamp', 'vref_comp', 'vref_comp_fe vref_ds', 'vref_h_adc', 
 'vref_l_adc', 'iodelay', 'list', 'vref_ds', 'vis', 'vpl', 
 'vref_comp_fe', 'vph', 'vout_cm', 'vcp', 'vcn', 'vcmp_ll', 'vcmp_lr'
-, 'vcmp_rl', 'vcmp_rr', 'daclist', 'dacvalues', 'vcal', 'vcas']
+, 'vcmp_rl', 'vcmp_rr', 'vcal', 'vcas', 'vipre',
+'vin_com', 'vin_cm', 'vrshaper', 'vrshaper_n', 'vrpreamp', 'vishaper',
+'vicin', 'vcassh', 'vcal_n', 'vcal_p']
 
 missing = []
 for c in cmd:

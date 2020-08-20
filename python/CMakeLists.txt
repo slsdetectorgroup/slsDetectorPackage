@@ -31,6 +31,7 @@ set( PYTHON_FILES
     detector.py
     eiger.py
     errors.py
+    gotthard2.py
     ctb.py
     jungfrau.py
     mythen3.py

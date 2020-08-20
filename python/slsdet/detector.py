@@ -17,7 +17,7 @@ import datetime as dt
 from functools import wraps
 from collections import namedtuple
 import socket
-
+import numpy as np
 
 def freeze(cls):
     cls._frozen = False
@@ -642,6 +642,13 @@ class Detector(CppDetectorApi):
         return self.getDacList()
 
     @property
+    def dacvalues(self):
+        return {
+            dac.name.lower(): np.array(self.getDAC(dac, False))
+            for dac in self.getDacList()
+        }
+
+    @property
     def timinglist(self):
         return self.getTimingModeList()
 
@@ -662,7 +669,7 @@ class Detector(CppDetectorApi):
         Advanced user Function!
 
         :getter: Not implemented     
-        """ 
+        """
         return self._adc_register
 
     @property
@@ -983,7 +990,7 @@ class Detector(CppDetectorApi):
 
     @property
     def asamples(self):
-        """[Ctb][Moench] Number of analog samples expected. """ 
+        """[Ctb][Moench] Number of analog samples expected. """
         return element_if_equal(self.getNumberOfAnalogSamples())
 
     @asamples.setter
@@ -1023,7 +1030,7 @@ class Detector(CppDetectorApi):
 
     @property
     def dbitpipeline(self):
-        """ [Ctb] Pipeline of the clock for latching digital bits. """    
+        """ [Ctb] Pipeline of the clock for latching digital bits. """
         return element_if_equal(self.getDBITPipeline())
 
     @dbitpipeline.setter
@@ -1074,7 +1081,7 @@ class Detector(CppDetectorApi):
 
     @property
     def adcpipeline(self):
-        """[Ctb][Moench] Sets pipeline for ADC clock. """ 
+        """[Ctb][Moench] Sets pipeline for ADC clock. """
         return element_if_equal(self.getADCPipeline())
 
     @adcpipeline.setter
@@ -1083,7 +1090,7 @@ class Detector(CppDetectorApi):
 
     @property
     def adcclk(self):
-        """[Ctb][Moench] Sets ADC clock frequency in MHz. """        
+        """[Ctb][Moench] Sets ADC clock frequency in MHz. """
         return element_if_equal(self.getADCClock())
 
     @adcclk.setter

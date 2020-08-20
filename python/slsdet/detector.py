@@ -271,6 +271,21 @@ class Detector(CppDetectorApi):
     @property
     @element
     def delayl(self):
+        """
+        [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] Delay left after trigger during acquisition, accepts either a value in seconds or datetime.timedelta
+
+        Note
+        -----
+        [Gotthard2] only in continuous mdoe.
+        :getter: always returns in seconds. To get in datetime.delta, use getDelayAfterTriggerLeft
+
+        Examples
+        -----------
+        >>> d.delay
+        181.23
+        >>> d.getDelayAfterTrigger()
+        [datetime.timedelta(seconds=181, microseconds=230000)]
+        """
         return ut.reduce_time(self.getDelayAfterTriggerLeft())
 
     def start(self):

@@ -1,5 +1,6 @@
 from functools import partial
 from collections.abc import Iterable
+import numpy as np
 class Temperature:
     degree_sign = u"\N{DEGREE SIGN}"
 
@@ -39,4 +40,11 @@ class DetectorTemperature:
         r_str = '\n'.join([repr(temp) for temp in self])
         return r_str
 
+    def to_dict(self):
+        """Get temperatures as a dictionary with numpy arrays"""
+        return {attr:np.array(value.get()) for attr, value in self.__dict__.items()}
 
+    def to_array(self):
+        """Get all temperatures as a numpy array"""
+        t = self.to_dict()
+        return np.vstack([value for key, value in t.items()])

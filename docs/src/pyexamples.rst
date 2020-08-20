@@ -143,7 +143,6 @@ Setting and getting times
 
 ::
 
-
     import datetime as dt
     from slsdet import Detector
     from slsdet.utils import element_if_equal

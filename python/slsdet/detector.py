@@ -638,6 +638,10 @@ class Detector(CppDetectorApi):
         return self._register
 
     @property
+    def daclist(self):
+        return self.getDacList()
+
+    @property
     def adcreg(self):
         """[Jungfrau][Ctb][Moench][Gotthard] Writes to an adc register 
 

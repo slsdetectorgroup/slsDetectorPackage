@@ -32,7 +32,7 @@ class Dac(DetectorProperty):
     def __repr__(self):
         """String representation for a single dac in all modules"""
         dacstr = ''.join([f'{item:5d}' for item in self.get()])
-        return f'{self.__name__:10s}:{dacstr}'
+        return f'{self.__name__:15s}:{dacstr}'
 
 
 class DetectorDacs:

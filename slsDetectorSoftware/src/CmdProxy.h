@@ -1805,15 +1805,17 @@ class CmdProxy {
 
     STRING_COMMAND(
         fpath, getFilePath, setFilePath,
-        "[path]\n\tDirectory where output data files are written in receiver.");
+        "[path]\n\tDirectory where output data files are written in receiver. "
+        "If path does not exist, it will try to create it.");
 
     STRING_COMMAND(fname, getFileNamePrefix, setFileNamePrefix,
-                   "[path]\n\tFile name prefix for output data file. Default "
+                   "[name]\n\tFile name prefix for output data file. Default "
                    "is run. File name: [file name prefix]_d[detector "
                    "index]_f[sub file index]_[acquisition/file index].raw.");
 
     INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex,
-                    StringTo<int64_t>, "[0, 1]\n\tFile or Acquisition index.");
+                    StringTo<int64_t>,
+                    "[n_value]\n\tFile or Acquisition index.");
 
     INTEGER_COMMAND(
         fwrite, getFileWrite, setFileWrite, StringTo<int>,

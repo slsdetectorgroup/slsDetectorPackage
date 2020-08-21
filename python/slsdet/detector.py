@@ -159,6 +159,15 @@ class Detector(CppDetectorApi):
 
     @property
     def dr(self):
+        """
+        Dynamic range or number of bits per pixel/channel.
+
+        Note
+        -----
+        [Eiger] Options: 4, 8, 16, 32. If set to 32, also sets clkdivider to 2 (quarter speed), else to 0 (full speed)\n
+        [Mythen3] Options: 8, 16, 32 \n
+        [Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16
+        """
         return element_if_equal(self.getDynamicRange())
 
     @dr.setter
@@ -397,6 +406,17 @@ class Detector(CppDetectorApi):
 
     @property
     def fformat(self):
+        """ File format of data file in receiver.
+        
+            Note
+            -----
+            For HDF5, package must be compiled with HDF5 flags. Default is binary. 
+
+            Example
+            --------
+            d.fformat = slsDetectorDefs.fileFormat.BINARY
+
+            """
         return element_if_equal(self.getFileFormat())
 
     @fformat.setter
@@ -405,6 +425,7 @@ class Detector(CppDetectorApi):
 
     @property
     def findex(self):
+        """File or Acquisition index in receiver."""
         return element_if_equal(self.getAcquisitionIndex())
 
     @findex.setter
@@ -413,6 +434,17 @@ class Detector(CppDetectorApi):
 
     @property
     def fname(self):
+        """File name prefix for output data file in receiver. Default is run. 
+        
+        Note
+        -----
+        File name: [file name prefix]_d[detector index]_f[sub file index]_[acquisition/file index].[raw/h5].
+
+        Examples
+        --------
+        d.fname = 'run'
+        eg. file name: run_d0_f0_5.raw
+        """
         return element_if_equal(self.getFileNamePrefix())
 
     @fname.setter
@@ -421,6 +453,16 @@ class Detector(CppDetectorApi):
 
     @property
     def fpath(self):
+        """Directory where output data files are written in receiver.
+
+        Note
+        ----
+        If path does not exist, it will try to create it.
+        
+        Examples
+        --------
+        d.fpath = '/tmp/run_20201705'
+        """
         return element_if_equal(self.getFilePath())
 
     @fpath.setter
@@ -438,6 +480,7 @@ class Detector(CppDetectorApi):
 
     @property
     def foverwrite(self):
+        """Enable or disable receiver file overwriting. Default is enabled. """
         return element_if_equal(self.getFileOverWrite())
 
     @foverwrite.setter
@@ -446,6 +489,7 @@ class Detector(CppDetectorApi):
 
     @property
     def fmaster(self):
+        """Enable or disable receiver master file. Default is enabled."""
         return element_if_equal(self.getMasterFileWrite())
 
     @fmaster.setter
@@ -685,10 +729,12 @@ class Detector(CppDetectorApi):
 
     @property
     def daclist(self):
+        """Gets the list of enums for every dac for this detector."""
         return self.getDacList()
 
     @property
     def dacvalues(self):
+        """Gets the dac values for every dac for this detector."""
         return {
             dac.name.lower(): np.array(self.getDAC(dac, False))
             for dac in self.getDacList()
@@ -839,6 +885,7 @@ class Detector(CppDetectorApi):
 
     @property
     def flowcontrol10g(self):
+        """[Eiger][Jungfrau] Enable or disable 10GbE Flow Control."""
         return element_if_equal(self.getTenGigaFlowControl())
 
     @flowcontrol10g.setter
@@ -1045,6 +1092,7 @@ class Detector(CppDetectorApi):
 
     @property
     def dsamples(self):
+        """[CTB] Number of digital samples expected. """
         return element_if_equal(self.getNumberOfDigitalSamples())
 
     @dsamples.setter

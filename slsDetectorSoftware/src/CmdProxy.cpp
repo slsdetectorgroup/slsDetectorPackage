@@ -472,7 +472,8 @@ std::string CmdProxy::DynamicRange(int action) {
         os << "[value]\n\tDynamic Range or number of bits per "
               "pixel in detector.\n\t"
               "[Eiger] Options: 4, 8, 16, 32\n\t"
-              "[Mythen3] Options: 8, 16, 32"
+              "[Mythen3] Options: 8, 16, 32\n\t"
+              "[Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {

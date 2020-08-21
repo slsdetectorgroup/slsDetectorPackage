@@ -214,10 +214,9 @@ class Detector {
     Result<int> getDynamicRange(Positions pos = {}) const;
 
     /**
-     * [Eiger] Options: 4, 8, 16, 32
-     * [Mythen3] Options: 8, 16, 32
-     * [Eiger] If i is 32, also sets clkdivider to 2, if 16, sets clkdivider to
-     * 1
+     * [Eiger] Options: 4, 8, 16, 32. If i is 32, also sets clkdivider to 2, if
+     * 16, sets clkdivider to 1 \n [Mythen3] Options: 8, 16, 32 \n
+     * [Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16
      */
     void setDynamicRange(int value);
 
@@ -355,7 +354,7 @@ class Detector {
      */
     Result<int> getTemperature(defs::dacIndex index, Positions pos = {}) const;
 
-    /** gets list of dac indices for this detector */
+    /** gets list of dac enums for this detector */
     std::vector<defs::dacIndex> getDacList() const;
 
     Result<int> getDAC(defs::dacIndex index, bool mV, Positions pos = {}) const;
@@ -680,6 +679,7 @@ class Detector {
 
     Result<std::string> getFilePath(Positions pos = {}) const;
 
+    /** If path does not exist, it will try to create it */
     void setFilePath(const std::string &fpath, Positions pos = {});
 
     Result<std::string> getFileNamePrefix(Positions pos = {}) const;
@@ -692,16 +692,17 @@ class Detector {
 
     Result<int64_t> getAcquisitionIndex(Positions pos = {}) const;
 
+    /** file or Acquisition index in receiver */
     void setAcquisitionIndex(int64_t i, Positions pos = {});
 
     Result<bool> getFileWrite(Positions pos = {}) const;
 
-    /** default writes */
+    /** default enabled */
     void setFileWrite(bool value, Positions pos = {});
 
     Result<bool> getMasterFileWrite(Positions pos = {}) const;
 
-    /* default writes */
+    /* default enabled */
     void setMasterFileWrite(bool value, Positions pos = {});
 
     Result<bool> getFileOverWrite(Positions pos = {}) const;

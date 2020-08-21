@@ -457,10 +457,13 @@ class Detector {
     /** [Jungfrau][Gotthard2] */
     Result<int> getNumberofUDPInterfaces(Positions pos = {}) const;
 
-    /** [Jungfrau][Gotthard2] Also restarts client and receiver zmq sockets
-     * [Gotthard2] second interface enabled to send veto information via 10gbps
-     * for debugging. By default it is sent via 2.5gbps if veto enabled
-     * n can be 1 or 2 */
+    /** [Jungfrau][Gotthard2]  Number of udp interfaces to stream data from
+     * detector. Default is 1. \n Also enables second interface in receiver for
+     * listening (Writes a file per interface if writing enabled). \n Also
+     * restarts client and receiver zmq sockets if zmq streaming enabled. \n
+     * [Gotthard2] second interface enabled to send veto information via 10Gbps
+     * for debugging. By default, if veto enabled, it is sent via 2.5 gbps
+     * interface. */
     void setNumberofUDPInterfaces(int n, Positions pos = {});
 
     /** [Jungfrau] */
@@ -822,7 +825,7 @@ class Detector {
     /** [Eiger] */
     Result<bool> getOverFlowMode(Positions pos = {}) const;
 
-    /** [Eiger] */
+    /** [Eiger] Overflow in 32 bit mode. Default is disabled.*/
     void setOverFlowMode(bool value, Positions pos = {});
 
     /** [Eiger] */
@@ -861,7 +864,9 @@ class Detector {
     /** [Eiger] */
     Result<bool> getInterruptSubframe(Positions pos = {}) const;
 
-    /** [Eiger] when set, the last subframe is interrupted at end of acq */
+    /** [Eiger] Enable last subframe interrupt at required exposure time.
+     * Disabling will wait for last sub frame to finish exposing. Default is
+     * disabled. */
     void setInterruptSubframe(const bool enable, Positions pos = {});
 
     /** [Eiger] minimum two frames */
@@ -885,8 +890,7 @@ class Detector {
     /** [Eiger] Advanced */
     Result<bool> getPartialReset(Positions pos = {}) const;
 
-    /** [Eiger] Advanced
-     * used for pulsing chips */
+    /** [Eiger] Advanced used for pulsing chips. Default is Complete reset */
     void setPartialReset(bool value, Positions pos = {});
 
     /** [Eiger] Advanced
@@ -1267,7 +1271,7 @@ class Detector {
     /** [CTB] */
     Result<bool> getLEDEnable(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB] Default is enabled. */
     void setLEDEnable(bool enable, Positions pos = {});
 
     /**************************************************
@@ -1340,9 +1344,8 @@ class Detector {
     /** [CTB][Moench][Mythen3]  */
     Result<uint64_t> getPatternBitMask(Positions pos = {}) const;
 
-    /** [CTB][Moench][Mythen3] Sets the bitmask that the mask will be applied to
-     * for every pattern
-     */
+    /** [CTB][Moench][Mythen3] Sets the bits that will have a pattern mask
+     * applied to the selected patmask for every pattern. */
     void setPatternBitMask(uint64_t mask, Positions pos = {});
 
     /** [Mythen3] */
@@ -1498,6 +1501,7 @@ class Detector {
 
     Result<bool> getDetectorLock(Positions pos = {}) const;
 
+    /** lock detector to one client IP. default is unlocked */
     void setDetectorLock(bool lock, Positions pos = {});
 
     /** Get last client IP saved on detector server */

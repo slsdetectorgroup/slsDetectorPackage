@@ -2106,8 +2106,7 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
     if (action == defs::HELP_ACTION) {
         if (cmd == "patlimits") {
             os << "[start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] Limits "
-                  "of complete "
-                  "pattern."
+                  "of complete pattern."
                << '\n';
         } else if (cmd == "patloop0") {
             os << "[start addr] [stop addr] \n\t[Ctb][Moench][Mythen3] Limits "

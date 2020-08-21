@@ -407,6 +407,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def numinterfaces(self):
+        """[Jungfrau][Gotthard2] Number of udp interfaces to stream data from detector. Default is 1.
+        Note
+        -----
+        Also enables second interface in receiver for listening (Writes a file per interface if writing enabled). \n
+        Also restarts client and receiver zmq sockets if zmq streaming enabled. \n
+        [Gotthard2] second interface enabled to send veto information via 10Gbps for debugging. By default, if veto enabled, it is sent via 2.5 gbps interface.
+        """
         return self.getNumberofUDPInterfaces()
 
     @numinterfaces.setter
@@ -670,8 +677,8 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        [Gotthard] 0, 90, 110, 120, 150, 180, 200
-        [Eiger][Mythen3][Gotthard2] 0 - 200
+        [Gotthard] 0, 90, 110, 120, 150, 180, 200 \n
+        [Eiger][Mythen3][Gotthard2] 0 - 200 \n
         [Jungfrau][Ctb][Moench] 0, 60 - 200
         """
         return element_if_equal(self.getHighVoltage())
@@ -723,6 +730,7 @@ class Detector(CppDetectorApi):
 
     @property
     def lock(self):
+        """Lock detector to one client IP, 1 locks, 0 unlocks. Default is unlocked."""
         return element_if_equal(self.getDetectorLock())
 
     @lock.setter
@@ -739,6 +747,7 @@ class Detector(CppDetectorApi):
 
     @property
     def lastclient(self):
+        """Get Client IP Address that last communicated with the detector."""
         return element_if_equal(self.getLastClientIP())
 
     @property
@@ -784,6 +793,7 @@ class Detector(CppDetectorApi):
 
     @property
     def led(self):
+        """[Ctb] Switches on/off all LEDs. Default is enabled. """
         return element_if_equal(self.getLEDEnable())
 
     @led.setter
@@ -879,6 +889,11 @@ class Detector(CppDetectorApi):
 
     @property
     def partialreset(self):
+        """[Eiger] Sets up detector to do partial or complete reset at start of acquisition. 0 complete reset, 1 partial reset. Default is complete reset.
+        Note
+        -----
+        Advanced Function!
+        """
         return element_if_equal(self.getPartialReset())
 
     @partialreset.setter
@@ -895,6 +910,7 @@ class Detector(CppDetectorApi):
 
     @property
     def overflow(self):
+        """[Eiger] Enable or disable show overflow flag in 32 bit mode. Default is disabled. """
         return element_if_equal(self.getOverFlowMode())
 
     @overflow.setter
@@ -912,6 +928,7 @@ class Detector(CppDetectorApi):
 
     @property
     def interruptsubframe(self):
+        """[Eiger] Enable last subframe interrupt at required exposure time. Disabling will wait for last sub frame to finish exposing. Default is disabled."""
         return element_if_equal(self.getInterruptSubframe())
 
     @interruptsubframe.setter
@@ -929,11 +946,25 @@ class Detector(CppDetectorApi):
 
     @property
     def measuredperiod(self):
+        """
+        [Eiger] Measured frame period between last frame and previous one. 
+        
+        Note
+        -----
+        Can be measured with minimum 2 frames in an acquisition. 
+        :setter: Not implemented
+        """
         res = self.getMeasuredPeriod()
         return element_if_equal([it.total_seconds() for it in res])
 
     @property
     def measuredsubperiod(self):
+        """
+        [Eiger] Measured sub frame period between last sub frame and previous one. 
+        Note
+        -----
+        :setter: Not implemented
+        """
         res = self.getMeasuredSubFramePeriod()
         return element_if_equal([it.total_seconds() for it in res])
 
@@ -1164,7 +1195,7 @@ class Detector(CppDetectorApi):
 
     @property
     def dbitpipeline(self):
-        """ [Ctb] Pipeline of the clock for latching digital bits. """
+        """[Ctb] Pipeline of the clock for latching digital bits. """
         return element_if_equal(self.getDBITPipeline())
 
     @dbitpipeline.setter
@@ -1173,6 +1204,11 @@ class Detector(CppDetectorApi):
 
     @property
     def maxdbitphaseshift(self):
+        """[CTB][Jungfrau] Absolute maximum Phase shift of of the clock to latch digital bits.
+        Note
+        -----
+        :setter: Not Implemented
+        """
         return element_if_equal(self.getMaxDBITPhaseShift())
 
     @property
@@ -1193,6 +1229,11 @@ class Detector(CppDetectorApi):
 
     @property
     def maxadcphaseshift(self):
+        """[Jungfrau][CTB][Moench] Absolute maximum Phase shift of ADC clock.
+        Note
+        -----
+        :setter: Not Implemented
+        """
         return element_if_equal(self.getMaxADCPhaseShift())
 
     @property
@@ -1237,6 +1278,12 @@ class Detector(CppDetectorApi):
 
     @property
     def pattern(self):
+        """[Mythen3][Moench][Ctb] Loads ASCII pattern file directly to server (instead of executing line by line).
+
+        Examples
+        ---------
+        >>> d.pattern = '/tmp/pat.txt'
+        """
         # TODO! Clean fix
         print("Set only")
         return 0
@@ -1244,6 +1291,7 @@ class Detector(CppDetectorApi):
     # patioctrl
     @property
     def patioctrl(self):
+        """[Ctb][Moench] 64 bit mask defining input (0) and output (1) signals."""
         return element_if_equal(self.getPatternIOControl())
 
     @patioctrl.setter
@@ -1252,6 +1300,12 @@ class Detector(CppDetectorApi):
 
     @property
     def patlimits(self):
+        """[Ctb][Moench][Mythen3] Limits (start and stop address) of complete pattern.
+        
+        Examples
+        ---------
+        >>> d.patlimits = [0x23, 0x40]
+        """
         return element_if_equal(self.getPatternLoopAddresses(-1))
 
     @patlimits.setter
@@ -1260,6 +1314,7 @@ class Detector(CppDetectorApi):
 
     @property
     def patmask(self):
+        """[Ctb][Moench][Mythen3] Sets the bits that will have a pattern mask applied to the selected patmask for every pattern."""
         return element_if_equal(self.getPatternMask())
 
     @patmask.setter
@@ -1273,6 +1328,7 @@ class Detector(CppDetectorApi):
 
     @property
     def patwait0(self):
+        """[Ctb][Moench][Mythen3] Wait 0 address."""
         return element_if_equal(self.getPatternWaitAddr(0))
 
     @patwait0.setter
@@ -1281,6 +1337,7 @@ class Detector(CppDetectorApi):
 
     @property
     def patwait1(self):
+        """[Ctb][Moench][Mythen3] Wait 1 address."""
         return element_if_equal(self.getPatternWaitAddr(1))
 
     @patwait1.setter
@@ -1289,6 +1346,7 @@ class Detector(CppDetectorApi):
 
     @property
     def patwait2(self):
+        """[Ctb][Moench][Mythen3] Wait 2 address."""
         return element_if_equal(self.getPatternWaitAddr(2))
 
     @patwait2.setter
@@ -1297,6 +1355,7 @@ class Detector(CppDetectorApi):
 
     @property
     def patwaittime0(self):
+        """[Ctb][Moench][Mythen3] Wait 0 time in clock cycles."""
         return element_if_equal(self.getPatternWaitTime(0))
 
     @patwaittime0.setter
@@ -1305,6 +1364,7 @@ class Detector(CppDetectorApi):
 
     @property
     def patwaittime1(self):
+        """[Ctb][Moench][Mythen3] Wait 1 time in clock cycles."""
         return element_if_equal(self.getPatternWaitTime(1))
 
     @patwaittime1.setter
@@ -1313,6 +1373,7 @@ class Detector(CppDetectorApi):
 
     @property
     def patwaittime2(self):
+        """[Ctb][Moench][Mythen3] Wait 2 time in clock cycles."""
         return element_if_equal(self.getPatternWaitTime(2))
 
     @patwaittime2.setter
@@ -1321,6 +1382,12 @@ class Detector(CppDetectorApi):
 
     @property
     def patloop0(self):
+        """[Ctb][Moench][Mythen3] Limits (start and stop address) of loop 0.
+        
+        Examples
+        ---------
+        >>> d.patloop0 = [0x23, 0x40]
+        """
         return element_if_equal(self.getPatternLoopAddresses(0))
 
     @patloop0.setter
@@ -1329,6 +1396,12 @@ class Detector(CppDetectorApi):
 
     @property
     def patloop1(self):
+        """[Ctb][Moench][Mythen3] Limits (start and stop address) of loop 1.
+        
+        Examples
+        ---------
+        >>> d.patloop1 = [0x23, 0x40]
+        """
         return element_if_equal(self.getPatternLoopAddresses(1))
 
     @patloop1.setter
@@ -1337,6 +1410,12 @@ class Detector(CppDetectorApi):
 
     @property
     def patloop2(self):
+        """[Ctb][Moench][Mythen3] Limits (start and stop address) of loop 2.
+        
+        Examples
+        ---------
+        >>> d.patloop2 = [0x23, 0x40]
+        """
         return element_if_equal(self.getPatternLoopAddresses(2))
 
     @patloop2.setter
@@ -1345,6 +1424,7 @@ class Detector(CppDetectorApi):
 
     @property
     def patnloop0(self):
+        """[Ctb][Moench][Mythen3] Number of cycles of loop 0."""
         return element_if_equal(self.getPatternLoopCycles(0))
 
     @patnloop0.setter
@@ -1353,6 +1433,7 @@ class Detector(CppDetectorApi):
 
     @property
     def patnloop1(self):
+        """[Ctb][Moench][Mythen3] Number of cycles of loop 1."""
         return element_if_equal(self.getPatternLoopCycles(1))
 
     @patnloop1.setter
@@ -1361,6 +1442,7 @@ class Detector(CppDetectorApi):
 
     @property
     def patnloop2(self):
+        """[Ctb][Moench][Mythen3] Number of cycles of loop 2."""
         return element_if_equal(self.getPatternLoopCycles(2))
 
     @patnloop2.setter

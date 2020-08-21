@@ -1640,11 +1640,12 @@ class CmdProxy {
         numinterfaces, getNumberofUDPInterfaces, setNumberofUDPInterfaces,
         StringTo<int>,
         "[1, 2]\n\t[Jungfrau][Gotthard2] Number of udp interfaces to stream "
-        "data from detector. Default: 1.\n\t"
-        "[Gotthard2] 2 will select 10gbps as channel for veto data streaming "
-        "in detector and also enable second interface in receiver to listen to "
-        "it. This is mainly for debugging purposes. By default, numinterfaces "
-        "is 1 and if veto enabled, it is sent via 2.5 gbps interface");
+        "data from detector. Default: 1.\n\tAlso enables second interface in "
+        "receiver for listening (Writes a file per interface if writing "
+        "enabled).\n\tAlso restarts client and receiver zmq sockets if zmq "
+        "streaming enabled.\n\t[Gotthard2] second interface enabled to send "
+        "veto information via 10Gbps for debugging. By default, if veto "
+        "enabled, it is sent via 2.5 gbps interface.");
 
     INTEGER_COMMAND(
         selinterface, getSelectedUDPInterface, selectUDPInterface,
@@ -1909,7 +1910,7 @@ class CmdProxy {
 
     INTEGER_COMMAND(overflow, getOverFlowMode, setOverFlowMode, StringTo<int>,
                     "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in "
-                    "32 bit mode.");
+                    "32 bit mode. Default is disabled.");
 
     INTEGER_COMMAND(
         flippeddatax, getBottom, setBottom, StringTo<int>,
@@ -1931,8 +1932,8 @@ class CmdProxy {
 
     TIME_GET_COMMAND(measuredperiod, getMeasuredPeriod,
                      "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured frame "
-                     "period between last frame and previous one. Useful data "
-                     "only for acquisitions with more than 1 frame.");
+                     "period between last frame and previous one. Can be "
+                     "measured with minimum 2 frames in an acquisition.");
 
     TIME_GET_COMMAND(measuredsubperiod, getMeasuredSubFramePeriod,
                      "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured sub "
@@ -1941,7 +1942,8 @@ class CmdProxy {
     INTEGER_COMMAND(
         partialreset, getPartialReset, setPartialReset, StringTo<int>,
         "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at "
-        "start of acquisition. 0 complete reset, 1 partial reset.");
+        "start of acquisition. 0 complete reset, 1 partial reset. Default is "
+        "complete reset. Advanced function!");
 
     /* Jungfrau Specific */
 
@@ -2187,8 +2189,8 @@ class CmdProxy {
 
     INTEGER_COMMAND_HEX_WIDTH16(
         patsetbit, getPatternBitMask, setPatternBitMask, StringTo<uint64_t>,
-        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 bit values "
-        "applied to the selected patmask for every pattern.");
+        "[64 bit mask]\n\t[Ctb][Moench][Mythen3] Sets the bits that will have "
+        "a pattern mask applied to the selected patmask for every pattern.");
 
     EXECUTE_SET_COMMAND(patternstart, startPattern,
                         "\n\t[Mythen3] Starts Pattern");

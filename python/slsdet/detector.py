@@ -197,6 +197,14 @@ class Detector(CppDetectorApi):
 
     @property
     def frames(self):
+        """Number of frames per acquisition. In trigger mode, number of frames per trigger.
+
+        Notes
+        -----
+        Cannot be set in modular level. ????
+        In scan mode, number of frames is set to number of steps.
+        [Gotthard2] Burst mode has a maximum of 2720 frames.
+        """
         return element_if_equal(self.getNumberOfFrames())
 
     @frames.setter
@@ -472,6 +480,7 @@ class Detector(CppDetectorApi):
 
     @property
     def fwrite(self):
+        """Enable or disable receiver file write. Default is enabled. """
         return element_if_equal(self.getFileWrite())
 
     @fwrite.setter

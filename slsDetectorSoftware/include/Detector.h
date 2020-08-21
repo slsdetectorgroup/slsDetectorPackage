@@ -170,6 +170,8 @@ class Detector {
 
     Result<int64_t> getNumberOfFrames(Positions pos = {}) const;
 
+    /** In trigger mode, number of frames per trigger. In scan mode, number of
+     * frames is set to number of steps */
     void setNumberOfFrames(int64_t value);
 
     Result<int64_t> getNumberOfTriggers(Positions pos = {}) const;

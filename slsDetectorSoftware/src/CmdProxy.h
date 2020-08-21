@@ -635,7 +635,7 @@ class CmdProxy {
 
         /* configuration */
         {"config", &CmdProxy::config},
-        {"free", &CmdProxy::free},
+        {"free", &CmdProxy::Free},
         {"parameters", &CmdProxy::parameters},
         {"hostname", &CmdProxy::Hostname},
         {"virtual", &CmdProxy::VirtualServer},
@@ -1011,7 +1011,7 @@ class CmdProxy {
     /* Commands */
     std::string ListCommands(int action);
     /* configuration */
-    std::string free(int action);
+    std::string Free(int action);
     // std::string config2(int action);
     std::string Hostname(int action);
     std::string VirtualServer(int action);
@@ -1161,9 +1161,10 @@ class CmdProxy {
 
     INTEGER_COMMAND_NOID(
         frames, getNumberOfFrames, setNumberOfFrames, StringTo<int64_t>,
-        "[n_frames]\n\tNumber of frames per aquire. In trigger mode, number of "
-        "frames per trigger."
-        "\n\t[Gotthard2] Burst mode has a maximum of 2720 frames.");
+        "[n_frames]\n\tNumber of frames per acquisition. In "
+        "trigger mode, number of frames per trigger. Cannot be set in modular "
+        "level. In scan mode, number of frames is set to number of "
+        "steps.\n\t[Gotthard2] Burst mode has a maximum of 2720 frames.");
 
     INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
                          StringTo<int64_t>,

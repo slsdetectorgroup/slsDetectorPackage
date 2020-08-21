@@ -125,6 +125,7 @@ class Detector(CppDetectorApi):
 
     @property
     def hostname(self):
+        """Frees shared memory and sets hostname (or IP address) of all modules concatenated by + """
         return self.getHostname()
 
     @hostname.setter
@@ -665,6 +666,14 @@ class Detector(CppDetectorApi):
 
     @property
     def highvoltage(self):
+        """High voltage to the sensor in Voltage.
+
+        Note
+        -----
+        [Gotthard] 0, 90, 110, 120, 150, 180, 200
+        [Eiger][Mythen3][Gotthard2] 0 - 200
+        [Jungfrau][Ctb][Moench] 0, 60 - 200
+        """
         return element_if_equal(self.getHighVoltage())
 
     @highvoltage.setter
@@ -1415,24 +1424,54 @@ class Detector(CppDetectorApi):
     @property
     @element
     def im_a(self):
+        """[Ctb] Measured current of power supply a in mA.
+        
+        Notes
+        -----
+        :setter: Not implemented
+        """
         return self.getMeasuredCurrent(dacIndex.I_POWER_A)
 
     @property
     @element
     def im_b(self):
+        """[Ctb] Measured current of power supply b in mA.
+        
+        Notes
+        -----
+        :setter: Not implemented
+        """
         return self.getMeasuredCurrent(dacIndex.I_POWER_B)
 
     @property
     @element
     def im_c(self):
+        """[Ctb] Measured current of power supply c in mA.
+                
+        Notes
+        -----
+        :setter: Not implemented
+        """
         return self.getMeasuredCurrent(dacIndex.I_POWER_C)
 
     @property
     @element
     def im_d(self):
+        """[Ctb] Measured current of power supply d in mA.
+                
+        Notes
+        -----
+        :setter: Not implemented
+        """
         return self.getMeasuredCurrent(dacIndex.I_POWER_D)
 
     @property
     @element
     def im_io(self):
+        """[Ctb] Measured current of power supply io in mA.
+                
+        Notes
+        -----
+        :setter: Not implemented
+        """
         return self.getMeasuredCurrent(dacIndex.I_POWER_IO)

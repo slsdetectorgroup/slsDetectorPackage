@@ -1846,19 +1846,16 @@ std::string CmdProxy::GateDelay(int action) {
                   "auto and trigger mode (internal gating)."
                << '\n';
         } else if (cmd == "gatedelay1") {
-            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 1 in "
-                  "auto and "
-                  "trigger mode (internal gating)."
+            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 1 in auto "
+                  "and trigger mode (internal gating)."
                << '\n';
         } else if (cmd == "gatedelay2") {
-            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 2 in "
-                  "auto and "
-                  "trigger mode (internal gating)."
+            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 2 in auto "
+                  "and trigger mode (internal gating)."
                << '\n';
         } else {
-            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 3 in "
-                  "auto and "
-                  "trigger mode (internal gating)."
+            os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 3 in auto "
+                  "and trigger mode (internal gating)."
                << '\n';
         }
     } else if (action == defs::GET_ACTION) {

@@ -55,8 +55,7 @@ class Detector {
 
     Result<std::string> getHostname(Positions pos = {}) const;
 
-    /* Frees shared memory, adds detectors to the list
-     * and updates local detector cache */
+    /* Frees shared memory, adds detectors to the list */
     void setHostname(const std::vector<std::string> &hostname);
 
     /** connects to n servers at local host starting at specific control port */

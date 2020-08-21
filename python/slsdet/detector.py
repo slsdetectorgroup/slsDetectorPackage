@@ -422,7 +422,7 @@ class Detector(CppDetectorApi):
 
             Example
             --------
-            d.fformat = slsDetectorDefs.fileFormat.BINARY
+            d.fformat = slsdet.fileFormat.BINARY
 
             """
         return element_if_equal(self.getFileFormat())
@@ -911,6 +911,7 @@ class Detector(CppDetectorApi):
 
     @property
     def gappixels(self):
+        """[Eiger][Jungfrau] Include Gap pixels in client data call back in Detecor api. Will not be in detector streaming, receiver file or streaming. Default is disabled. """
         return element_if_equal(self.getRxAddGapPixels())
 
     @gappixels.setter
@@ -1034,6 +1035,27 @@ class Detector(CppDetectorApi):
 
     @property
     def gatedelay(self):
+        """
+        [Mythen3] Gate Delay of all gate signals in auto and trigger mode (internal gating), accepts either a value in seconds or datetime.timedelta
+
+        Note
+        -----
+        To specify gateIndex, use getGateDelay or setGateDelay.
+        
+        :getter: always returns in seconds. To get in datetime.delta, use getGateDelayForAllGates or getGateDelay(gateIndex)
+
+        Examples
+        -----------
+        >>> d.gatedelay = 1.05
+        >>> d.gatedelay = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>> d.gatedelay
+        181.23
+        >>> d.setGateDelay(1, datetime.timedelta(seconds = 2))
+        >>> d.gatedelay
+        >>> [1.0, 2.0, 1.0]
+        >>> d.getExptimeForAllGates()
+        >>> [[datetime.timedelta(seconds=181, microseconds=230000), datetime.timedelta(seconds=181, microseconds=230000), datetime.timedelta(seconds=181, microseconds=230000)]]
+        """
         return reduce_time(self.getGateDelayForAllGates())
 
     @gatedelay.setter

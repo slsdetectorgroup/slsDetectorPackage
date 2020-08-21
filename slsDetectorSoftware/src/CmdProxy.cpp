@@ -336,8 +336,9 @@ std::string CmdProxy::GapPixels(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[0, 1]\n\t[Eiger][Jungfrau] Include Gap pixels only in data "
-              "call back."
+        os << "[0, 1]\n\t[Eiger][Jungfrau] Include Gap pixels in client data "
+              "call back in Detecor api. Will not be in detector streaming, "
+              "receiver file or streaming. Default is 0. "
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (det_id != -1) {
@@ -1842,8 +1843,7 @@ std::string CmdProxy::GateDelay(int action) {
         if (cmd == "gatedelay") {
             os << "[duration] [(optional unit) "
                   "ns|us|ms|s]\n\t[Mythen3] Gate Delay of all gate signals in "
-                  "auto and "
-                  "trigger mode (internal gating)."
+                  "auto and trigger mode (internal gating)."
                << '\n';
         } else if (cmd == "gatedelay1") {
             os << "[n_value]\n\t[Mythen3] Gate Delay of gate signal 1 in "

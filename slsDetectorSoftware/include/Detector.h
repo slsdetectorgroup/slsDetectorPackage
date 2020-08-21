@@ -128,8 +128,8 @@ class Detector {
 
     /**
      * [Eiger][Jungfrau]
-     * Only in client data call back
-     * Fills in gap pixels in data
+     * Include gap pixels in client data call back. Will not be in detector
+     * streaming, receiver file or streaming. Default is disabled.
      */
     void setGapPixelsinCallback(const bool enable);
 
@@ -1129,7 +1129,7 @@ class Detector {
      * (internal gating). Gate index: 0-2, -1 for all */
     void setGateDelay(int gateIndex, ns t, Positions pos = {});
 
-    /** [Mythen3] gate delay for each gate signal in auto or trigger timing mode
+    /** [Mythen3] gate delay for all gates in auto or trigger timing mode
      * (internal gating). Gate index: 0-2, -1 for all */
     Result<std::array<ns, 3>> getGateDelayForAllGates(Positions pos = {}) const;
 

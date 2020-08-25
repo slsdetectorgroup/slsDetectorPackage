@@ -883,7 +883,7 @@ std::string CmdProxy::Dac(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[dac index] [dac or mv value] [(optional unit) mv] "
+        os << "[dac index] [dac or mV value] [(optional unit) mV] "
               "\n\t[Ctb] Dac."
            << '\n';
     } else if (det->getDetectorType().squash(defs::GENERIC) !=
@@ -894,9 +894,9 @@ std::string CmdProxy::Dac(int action) {
     } else if (action == defs::GET_ACTION) {
         bool mv = false;
         if (args.size() == 2) {
-            if (args[1] != "mv") {
+            if ((args[1] != "mv") && (args[1] != "mV")) {
                 throw sls::RuntimeError("Unknown argument " + args[1] +
-                                        ". Did you mean mv?");
+                                        ". Did you mean mV?");
             }
             mv = true;
         } else if (args.size() > 2) {
@@ -905,13 +905,13 @@ std::string CmdProxy::Dac(int action) {
         auto t = det->getDAC(
             static_cast<defs::dacIndex>(StringTo<int>(args[0])), mv, {det_id});
         os << args[0] << ' ' << OutString(t)
-           << (args.size() > 1 ? " mv\n" : "\n");
+           << (args.size() > 1 ? " mV\n" : "\n");
     } else if (action == defs::PUT_ACTION) {
         bool mv = false;
         if (args.size() == 3) {
-            if (args[2] != "mv") {
+            if ((args[2] != "mv") && (args[2] != "mV")) {
                 throw sls::RuntimeError("Unknown argument " + args[2] +
-                                        ". Did you mean mv?");
+                                        ". Did you mean mV?");
             }
             mv = true;
         } else if (args.size() > 3 || args.size() < 2) {
@@ -919,7 +919,7 @@ std::string CmdProxy::Dac(int action) {
         }
         det->setDAC(static_cast<defs::dacIndex>(StringTo<int>(args[0])),
                     StringTo<int>(args[1]), mv, {det_id});
-        os << args[0] << ' ' << args[1] << (args.size() > 2 ? " mv\n" : "\n");
+        os << args[0] << ' ' << args[1] << (args.size() > 2 ? " mV\n" : "\n");
     } else {
         throw sls::RuntimeError("Unknown action");
     }
@@ -930,15 +930,15 @@ std::string CmdProxy::DacValues(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[(optional unit) mv] \n\tGets the values for every "
+        os << "[(optional unit) mV] \n\tGets the values for every "
               "dac for this detector."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         bool mv = false;
         if (args.size() == 1) {
-            if (args[0] != "mv") {
+            if ((args[0] != "mv") && (args[0] != "mV")) {
                 throw sls::RuntimeError("Unknown argument " + args[0] +
-                                        ". Did you mean mv?");
+                                        ". Did you mean mV?");
             }
             mv = true;
         } else if (args.size() > 1) {
@@ -949,11 +949,11 @@ std::string CmdProxy::DacValues(int action) {
         auto it = t.cbegin();
         os << ToString(*it) << ' ';
         os << OutString(det->getDAC(*it++, mv, {det_id}))
-           << (!args.empty() ? " mv" : "");
+           << (!args.empty() ? " mV" : "");
         while (it != t.cend()) {
             os << ", " << ToString(*it) << ' ';
             os << OutString(det->getDAC(*it++, mv, {det_id}))
-               << (!args.empty() ? " mv" : "");
+               << (!args.empty() ? " mV" : "");
         }
         os << "]\n";
     } else if (action == defs::PUT_ACTION) {

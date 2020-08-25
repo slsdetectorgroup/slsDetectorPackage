@@ -274,29 +274,29 @@
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
             bool mv = false;                                                   \
             if (args.size() == 1) {                                            \
-                if (args[0] != "mv") {                                         \
+                if ((args[0] != "mv") && (args[0] != "mV")) {                  \
                     throw sls::RuntimeError("Unknown argument " + args[0] +    \
-                                            ". Did you mean mv?");             \
+                                            ". Did you mean mV?");             \
                 }                                                              \
                 mv = true;                                                     \
             } else if (args.size() > 1) {                                      \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
             auto t = det->GETFCN(DAC_INDEX, mv, {det_id});                     \
-            os << OutString(t) << (!args.empty() ? " mv\n" : "\n");            \
+            os << OutString(t) << (!args.empty() ? " mV\n" : "\n");            \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             bool mv = false;                                                   \
             if (args.size() == 2) {                                            \
-                if (args[1] != "mv") {                                         \
+                if ((args[1] != "mv") && (args[1] != "mV")) {                  \
                     throw sls::RuntimeError("Unknown argument " + args[1] +    \
-                                            ". Did you mean mv?");             \
+                                            ". Did you mean mV?");             \
                 }                                                              \
                 mv = true;                                                     \
             } else if (args.size() > 2 || args.empty()) {                      \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             det->SETFCN(DAC_INDEX, StringTo<int>(args[0]), mv, {det_id});      \
-            os << args.front() << (args.size() > 1 ? " mv\n" : "\n");          \
+            os << args.front() << (args.size() > 1 ? " mV\n" : "\n");          \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
         }                                                                      \
@@ -1294,263 +1294,263 @@ class CmdProxy {
     /* dacs */
 
     DAC_COMMAND(vthreshold, getDAC, setDAC, defs::VTHRESHOLD,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger][Mythen3] "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger][Mythen3] "
                 "Detector threshold voltage for single photon counters.");
 
     DAC_COMMAND(vsvp, getDAC, setDAC, defs::VSVP,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vsvn, getDAC, setDAC, defs::VSVN,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? \n\t[Mythen3] voltage "
                 "to define feedback resistance of the first shaper"); // TODO
 
     DAC_COMMAND(vtrim, getDAC, setDAC, defs::VTRIM,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? \n\t[Mythen3] Dac for "
                 "the voltage defining the trim bit size."); // TODO
 
     DAC_COMMAND(vrpreamp, getDAC, setDAC, defs::VRPREAMP,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? \n\t[Mythen3] voltage "
                 "to define the preamplifier feedback resistance."); // TODO
 
     DAC_COMMAND(vrshaper, getDAC, setDAC, defs::VRSHAPER,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? \n\t[Mythen3] voltage to define feedback resistance of "
                 "the first shaper"); // TODO
 
     DAC_COMMAND(vtgstv, getDAC, setDAC, defs::VTGSTV,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vcmp_ll, getDAC, setDAC, defs::VCMP_LL,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vcmp_lr, getDAC, setDAC, defs::VCMP_LR,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vcal, getDAC, setDAC, defs::VCAL,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vcmp_rl, getDAC, setDAC, defs::VCMP_RL,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vcmp_rr, getDAC, setDAC, defs::VCMP_RR,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(rxb_rb, getDAC, setDAC, defs::RXB_RB,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(rxb_lb, getDAC, setDAC, defs::RXB_LB,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vcp, getDAC, setDAC, defs::VCP,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vcn, getDAC, setDAC, defs::VCN,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vishaper, getDAC, setDAC, defs::VISHAPER,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? \n\t[Mythen3] Dac for "
                 "the bias current for the shaper."); // TODO
 
     DAC_COMMAND(iodelay, getDAC, setDAC, defs::IO_DELAY,
-                "[dac or mv value][(optional unit) mv] \n\t[Eiger] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vref_ds, getDAC, setDAC, defs::VREF_DS,
-                "[dac or mv value][(optional unit) mv] "
+                "[dac or mV value][(optional unit) mV] "
                 "\n\t[Gotthard][Jungfrau] Dac for ?? "); // TODO
 
     DAC_COMMAND(vcascn_pb, getDAC, setDAC, defs::VCASCN_PB,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vcascp_pb, getDAC, setDAC, defs::VCASCP_PB,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vout_cm, getDAC, setDAC, defs::VOUT_CM,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard] Dac for "
                 "?? \n\t[Moench] Dac for 5"); // TODO
 
     DAC_COMMAND(vcasc_out, getDAC, setDAC, defs::VCASC_OUT,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vin_cm, getDAC, setDAC, defs::VIN_CM,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard] Dac for "
                 "?? \n\t[Moench] Dac for 2"); // TODO
 
     DAC_COMMAND(vref_comp, getDAC, setDAC, defs::VREF_COMP,
-                "[dac or mv value][(optional unit) mv] "
+                "[dac or mV value][(optional unit) mV] "
                 "\n\t[Gotthard][Jungfrau] Dac for ?? "); // TODO
 
     DAC_COMMAND(ib_test_c, getDAC, setDAC, defs::IB_TESTC,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard] Dac for "
                 "?? "); // TODO
 
     DAC_COMMAND(vrshaper_n, getDAC, setDAC, defs::VRSHAPER_N,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] voltage "
+                "[dac or mV value][(optional unit) mV] \n\t[Mythen3] voltage "
                 "to define feedback resistance of the second shaper.");
 
     DAC_COMMAND(
         vipre, getDAC, setDAC, defs::VIPRE,
-        "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for the "
+        "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for the "
         "preamplifier's input transistor current.\n\t[Moench] Dac for 1");
 
     DAC_COMMAND(vdcsh, getDAC, setDAC, defs::VDCSH,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for "
                 "the reference (DC) voltage for the shaper.");
 
     DAC_COMMAND(vth1, getDAC, setDAC, defs::VTH1,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for "
                 "first detector threshold voltage.");
 
     DAC_COMMAND(vth2, getDAC, setDAC, defs::VTH2,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for "
                 "second detector threshold voltage.");
 
     DAC_COMMAND(vth3, getDAC, setDAC, defs::VTH3,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for "
                 "third detector threshold voltage.");
 
     DAC_COMMAND(vcal_n, getDAC, setDAC, defs::VCAL_N,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for "
                 "the low voltage for analog pulsing.");
 
     DAC_COMMAND(vcal_p, getDAC, setDAC, defs::VCAL_P,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for "
                 "the high voltage for analog pulsing.");
 
     DAC_COMMAND(vcassh, getDAC, setDAC, defs::VCASSH,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for "
                 "the shaper's cascode voltage.");
 
     DAC_COMMAND(vcas, getDAC, setDAC, defs::VCAS,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for "
                 "the preamplifier's cascode voltage.");
 
     DAC_COMMAND(vicin, getDAC, setDAC, defs::VICIN,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for "
                 "the bias current for the comparator.");
 
     DAC_COMMAND(vipre_out, getDAC, setDAC, defs::VIPRE_OUT,
-                "[dac or mv value][(optional unit) mv] \n\t[Mythen3] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Mythen3] Dac for "
                 "preamplifier's output transistor current."); // TODO
 
     DAC_COMMAND(vref_h_adc, getDAC, setDAC, defs::VREF_H_ADC,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
                 "reference voltage high of ADC.");
 
     DAC_COMMAND(vb_comp_fe, getDAC, setDAC, defs::VB_COMP_FE,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
                 "comparator current of analogue front end.");
 
     DAC_COMMAND(vb_comp_adc, getDAC, setDAC, defs::VB_COMP_ADC,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
                 "comparator current of ADC.");
 
     DAC_COMMAND(vcom_cds, getDAC, setDAC, defs::VCOM_CDS,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
                 "common mode voltage of CDS stage.");
 
     DAC_COMMAND(
         vref_rstore, getDAC, setDAC, defs::VREF_RSTORE,
-        "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for "
+        "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
         "reference charging voltage of temparory storage cell in high gain.");
 
     DAC_COMMAND(vb_opa_1st, getDAC, setDAC, defs::VB_OPA_1ST,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] dac dac "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] dac dac "
                 "for opa current for driving the other DACs in chip.");
 
     DAC_COMMAND(vref_comp_fe, getDAC, setDAC, defs::VREF_COMP_FE,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
                 "reference voltage of the comparator of analogue front end.");
 
     DAC_COMMAND(vcom_adc1, getDAC, setDAC, defs::VCOM_ADC1,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
                 "common mode voltage of ADC DAC bank 1.");
 
     DAC_COMMAND(
         vref_prech, getDAC, setDAC, defs::VREF_PRECH,
-        "[dac or mv value][(optional unit) mv] \n\t[Gotthard2][Jungfrau] Dac "
+        "[dac or mV value][(optional unit) mV] \n\t[Gotthard2][Jungfrau] Dac "
         "for reference votlage for precharing the preamplifier."); // TODO also
                                                                    // for
                                                                    // jungfrau?
 
     DAC_COMMAND(vref_l_adc, getDAC, setDAC, defs::VREF_L_ADC,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
                 "reference voltage low for ADC.");
 
     DAC_COMMAND(vref_cds, getDAC, setDAC, defs::VREF_CDS,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
                 "reference voltage of CDS applied to the temporary storage "
                 "cell in medium and low gain.");
 
     DAC_COMMAND(vb_cs, getDAC, setDAC, defs::VB_CS,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
                 "current injection into preamplifier.");
 
     DAC_COMMAND(vb_opa_fd, getDAC, setDAC, defs::VB_OPA_FD,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
                 "current for CDS opa stage.");
 
     DAC_COMMAND(vcom_adc2, getDAC, setDAC, defs::VCOM_ADC2,
-                "[dac or mv value][(optional unit) mv] \n\t[Gotthard2] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Gotthard2] Dac for "
                 "common mode voltage of ADC DAC bank 2.");
 
     DAC_COMMAND(
         adcvpp, getDAC, setDAC, defs::ADC_VPP,
-        "[dac or mv value][(optional unit) mv] \n\t[Ctb][Moench] Vpp of "
+        "[dac or mV value][(optional unit) mV] \n\t[Ctb][Moench] Vpp of "
         "ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V.");
 
     DAC_COMMAND(vb_ds, getDAC, setDAC, defs::VB_DS,
-                "[dac or mv value][(optional unit) mv] \n\t[Jungfrau] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Jungfrau] Dac for "
                 "??"); // TODO
 
     DAC_COMMAND(vb_comp, getDAC, setDAC, defs::VB_COMP,
-                "[dac or mv value][(optional unit) mv] \n\t[Jungfrau] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Jungfrau] Dac for "
                 "??"); // TODO
 
     DAC_COMMAND(vb_pixbuf, getDAC, setDAC, defs::VB_PIXBUF,
-                "[dac or mv value][(optional unit) mv] \n\t[Jungfrau] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Jungfrau] Dac for "
                 "??"); // TODO
 
     DAC_COMMAND(vin_com, getDAC, setDAC, defs::VIN_COM,
-                "[dac or mv value][(optional unit) mv] \n\t[Jungfrau] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Jungfrau] Dac for "
                 "??"); // TODO
 
     DAC_COMMAND(vdd_prot, getDAC, setDAC, defs::VDD_PROT,
-                "[dac or mv value][(optional unit) mv] \n\t[Jungfrau] Dac for "
+                "[dac or mV value][(optional unit) mV] \n\t[Jungfrau] Dac for "
                 "??"); // TODO
 
     DAC_COMMAND(vbp_colbuf, getDAC, setDAC, defs::VBP_COLBUF,
-                "[dac or mv value][(optional unit) mv] \n\t[Moench] Dac for 0");
+                "[dac or mV value][(optional unit) mV] \n\t[Moench] Dac for 0");
 
     DAC_COMMAND(vb_sda, getDAC, setDAC, defs::VB_SDA,
-                "[dac or mv value][(optional unit) mv] \n\t[Moench] Dac for 3");
+                "[dac or mV value][(optional unit) mV] \n\t[Moench] Dac for 3");
 
     DAC_COMMAND(vcasc_sfp, getDAC, setDAC, defs::VCASC_SFP,
-                "[dac or mv value][(optional unit) mv] \n\t[Moench] Dac for 4");
+                "[dac or mV value][(optional unit) mV] \n\t[Moench] Dac for 4");
 
     DAC_COMMAND(vipre_cds, getDAC, setDAC, defs::VIPRE_CDS,
-                "[dac or mv value][(optional unit) mv] \n\t[Moench] Dac for 6");
+                "[dac or mV value][(optional unit) mV] \n\t[Moench] Dac for 6");
 
     DAC_COMMAND(ibias_sfp, getDAC, setDAC, defs::IBIAS_SFP,
-                "[dac or mv value][(optional unit) mv] \n\t[Moench] Dac for 7");
+                "[dac or mV value][(optional unit) mV] \n\t[Moench] Dac for 7");
 
     GET_COMMAND_NOID(
         daclist, getDacList,

@@ -248,9 +248,18 @@ class Detector(CppDetectorApi):
 
     @exptime.setter
     def exptime(self, t):
-        if isinstance(t, int):
-            t = float(t)
-        self.setExptime(t)
+        if self.type == detectorType.MYTHEN3 and is_iterable(t):
+            for i, v in enumerate(t):
+                if isinstance(v, int):
+                    v = float(v)
+                self.setExptime(i, v)
+        else:
+            if isinstance(t, int):
+                t = float(t)
+            self.setExptime(t)
+
+
+
 
     @property
     def period(self):
@@ -1101,10 +1110,13 @@ class Detector(CppDetectorApi):
     @gatedelay.setter
     def gatedelay(self, value):
         if is_iterable(value):
-            if len(value) == 3:
-                for i, v in enumerate(value):
-                    self.setGateDelay(i, v)
+            for i, v in enumerate(value):
+                if isinstance(v, int):
+                    v = float(v)
+                self.setGateDelay(i, v)
         else:
+            if isinstance(value, int):
+                value = float(value)
             self.setGateDelay(-1, value)
 
     @property
@@ -1288,6 +1300,11 @@ class Detector(CppDetectorApi):
         print("Set only")
         return 0
 
+    @pattern.setter
+    def pattern(self, fname):
+        fname = ut.make_string_path(fname)
+        self.setPattern(fname)
+
     # patioctrl
     @property
     def patioctrl(self):
@@ -1324,6 +1341,15 @@ class Detector(CppDetectorApi):
         self.setPatternLoopAddresses(-1, lim[0], lim[1])
 
     @property
+    @element
+    def patsetbit(self):
+        return self.getPatternBitMask()
+
+    @patsetbit.setter
+    def patsetbit(self, mask):
+        self.setPatternBitMask(mask)
+
+    @property
     def patmask(self):
         """[Ctb][Moench][Mythen3] Sets the bits that will have a pattern mask applied to the selected patmask for every pattern.
         
@@ -1339,10 +1365,7 @@ class Detector(CppDetectorApi):
     def patmask(self, mask):
         self.setPatternMask(mask)
 
-    @pattern.setter
-    def pattern(self, fname):
-        fname = ut.make_string_path(fname)
-        self.setPattern(fname)
+
 
     @property
     def patwait0(self):

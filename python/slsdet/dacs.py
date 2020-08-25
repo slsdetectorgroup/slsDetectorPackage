@@ -103,6 +103,9 @@ class DetectorDacs:
         for i, _d in enumerate(self):
             _d[:] = dac_array[i]
 
+    def from_array(self, dac_array):
+        self.set_from_array(dac_array)
+
     def set_default(self):
         """
         Set all dacs to their default values

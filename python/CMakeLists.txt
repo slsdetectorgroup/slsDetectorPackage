@@ -32,7 +32,9 @@ set( PYTHON_FILES
     eiger.py
     enums.py
     errors.py
+    gotthard.py
     gotthard2.py
+    moench.py
     ctb.py
     jungfrau.py
     mythen3.py

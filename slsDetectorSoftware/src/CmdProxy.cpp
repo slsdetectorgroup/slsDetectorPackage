@@ -182,7 +182,7 @@ std::string CmdProxy::VirtualServer(int action) {
 std::string CmdProxy::Acquire(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << cmd << " - Acquire the number of frames set up.\n";
+        os << cmd << "\n\tAcquire the number of frames set up.\n";
     } else {
         if (det->empty()) {
             throw sls::RuntimeError(
@@ -1612,7 +1612,7 @@ std::string CmdProxy::VetoPhoton(int action) {
         os << "[ichip] [#photons] [energy in keV] [reference "
               "file]\n\t[Gotthard2] Set veto reference for 128 channels for "
               "chip ichip according to reference file and #photons and energy "
-              "in keV.\n"
+              "in keV.\n\t"
            << "[ichip] [output file]\n\t Get gain indices and veto reference "
               "for 128 channels for chip ichip, saved to file."
            << '\n';

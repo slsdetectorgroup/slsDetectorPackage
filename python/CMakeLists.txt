@@ -30,6 +30,7 @@ set( PYTHON_FILES
     detector_property.py
     detector.py
     eiger.py
+    enums.py
     errors.py
     gotthard2.py
     ctb.py

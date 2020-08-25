@@ -1288,6 +1288,11 @@ class Detector(CppDetectorApi):
         print("Set only")
         return 0
 
+    @pattern.setter
+    def pattern(self, fname):
+        fname = ut.make_string_path(fname)
+        self.setPattern(fname)
+
     # patioctrl
     @property
     def patioctrl(self):
@@ -1313,6 +1318,15 @@ class Detector(CppDetectorApi):
         self.setPatternLoopAddresses(-1, lim[0], lim[1])
 
     @property
+    @element
+    def patsetbit(self):
+        return self.getPatternBitMask()
+
+    @patsetbit.setter
+    def patsetbit(self, mask):
+        self.setPatternBitMask(mask)
+
+    @property
     def patmask(self):
         """[Ctb][Moench][Mythen3] Sets the bits that will have a pattern mask applied to the selected patmask for every pattern."""
         return element_if_equal(self.getPatternMask())
@@ -1321,10 +1335,7 @@ class Detector(CppDetectorApi):
     def patmask(self, mask):
         self.setPatternMask(mask)
 
-    @pattern.setter
-    def pattern(self, fname):
-        fname = ut.make_string_path(fname)
-        self.setPattern(fname)
+
 
     @property
     def patwait0(self):

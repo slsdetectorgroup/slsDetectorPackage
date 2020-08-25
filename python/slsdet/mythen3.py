@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-This file contains the specialization for the Jungfrau detector
+This file contains the specialization for the Mythen3 detector
 """
 
 

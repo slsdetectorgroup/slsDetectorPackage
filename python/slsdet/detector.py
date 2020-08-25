@@ -248,9 +248,18 @@ class Detector(CppDetectorApi):
 
     @exptime.setter
     def exptime(self, t):
-        if isinstance(t, int):
-            t = float(t)
-        self.setExptime(t)
+        if self.type == detectorType.MYTHEN3 and is_iterable(t):
+            for i, v in enumerate(t):
+                if isinstance(v, int):
+                    v = float(v)
+                self.setExptime(i, v)
+        else:
+            if isinstance(t, int):
+                t = float(t)
+            self.setExptime(t)
+
+
+
 
     @property
     def period(self):
@@ -1101,10 +1110,13 @@ class Detector(CppDetectorApi):
     @gatedelay.setter
     def gatedelay(self, value):
         if is_iterable(value):
-            if len(value) == 3:
-                for i, v in enumerate(value):
-                    self.setGateDelay(i, v)
+            for i, v in enumerate(value):
+                if isinstance(v, int):
+                    v = float(v)
+                self.setGateDelay(i, v)
         else:
+            if isinstance(value, int):
+                value = float(value)
             self.setGateDelay(-1, value)
 
     @property

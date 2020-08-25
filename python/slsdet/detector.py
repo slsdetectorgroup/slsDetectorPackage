@@ -1291,7 +1291,14 @@ class Detector(CppDetectorApi):
     # patioctrl
     @property
     def patioctrl(self):
-        """[Ctb][Moench] 64 bit mask defining input (0) and output (1) signals."""
+        """[Ctb][Moench] 64 bit mask defining input (0) and output (1) signals.
+        
+        Examples
+        --------
+        >>> d.patioctrl = 0x8f0effff6dbffdbf
+        >>> hex(d.patioctrl)
+        '0x8f0effff6dbffdbf'
+        """
         return element_if_equal(self.getPatternIOControl())
 
     @patioctrl.setter
@@ -1304,7 +1311,11 @@ class Detector(CppDetectorApi):
         
         Examples
         ---------
-        >>> d.patlimits = [0x23, 0x40]
+        >>> d.patlimits = [0x0, 0x18c]
+        >>> d.patlimits
+        [0, 396]
+        >>> [hex(l) for l in d.patlimits]
+        ['0x0', '0x18c']
         """
         return element_if_equal(self.getPatternLoopAddresses(-1))
 
@@ -1314,7 +1325,14 @@ class Detector(CppDetectorApi):
 
     @property
     def patmask(self):
-        """[Ctb][Moench][Mythen3] Sets the bits that will have a pattern mask applied to the selected patmask for every pattern."""
+        """[Ctb][Moench][Mythen3] Sets the bits that will have a pattern mask applied to the selected patmask for every pattern.
+        
+        Examples
+        --------
+        >>> d.patmask = 0x8f0effff6dbffdbf
+        >>> hex(d.patmask)
+        '0x8f0effff6dbffdbf' 
+        """
         return element_if_equal(self.getPatternMask())
 
     @patmask.setter
@@ -1328,7 +1346,16 @@ class Detector(CppDetectorApi):
 
     @property
     def patwait0(self):
-        """[Ctb][Moench][Mythen3] Wait 0 address."""
+        """[Ctb][Moench][Mythen3] Wait 0 address.
+                
+        Examples
+        --------
+        >>> d.patwait0 = 0xaa
+        >>> d.patwait0
+        170
+        >>> hex(d.patwait0)
+        '0xaa'
+        """
         return element_if_equal(self.getPatternWaitAddr(0))
 
     @patwait0.setter
@@ -1337,7 +1364,16 @@ class Detector(CppDetectorApi):
 
     @property
     def patwait1(self):
-        """[Ctb][Moench][Mythen3] Wait 1 address."""
+        """[Ctb][Moench][Mythen3] Wait 1 address.
+                
+        Examples
+        --------
+        >>> d.patwait1 = 0xaa
+        >>> d.patwait1
+        170
+        >>> hex(d.patwait1)
+        '0xaa'
+        """
         return element_if_equal(self.getPatternWaitAddr(1))
 
     @patwait1.setter
@@ -1346,7 +1382,16 @@ class Detector(CppDetectorApi):
 
     @property
     def patwait2(self):
-        """[Ctb][Moench][Mythen3] Wait 2 address."""
+        """[Ctb][Moench][Mythen3] Wait 2 address.
+                
+        Examples
+        --------
+        >>> d.patwait2 = 0xaa
+        >>> d.patwait2
+        170
+        >>> hex(d.patwait2)
+        '0xaa'
+        """
         return element_if_equal(self.getPatternWaitAddr(2))
 
     @patwait2.setter
@@ -1386,7 +1431,11 @@ class Detector(CppDetectorApi):
         
         Examples
         ---------
-        >>> d.patloop0 = [0x23, 0x40]
+        >>> d.patloop0 = [0x0, 0x18c]
+        >>> d.patloop0
+        [0, 396]
+        >>> [hex(l) for l in d.patloop0]
+        ['0x0', '0x18c']
         """
         return element_if_equal(self.getPatternLoopAddresses(0))
 
@@ -1400,7 +1449,12 @@ class Detector(CppDetectorApi):
         
         Examples
         ---------
-        >>> d.patloop1 = [0x23, 0x40]
+        >>> d.patloop1 = [0x0, 0x18c]
+        >>> d.patloop1
+        [0, 396]
+        >>> [hex(l) for l in d.patloop1]
+        ['0x0', '0x18c']
+        
         """
         return element_if_equal(self.getPatternLoopAddresses(1))
 
@@ -1414,7 +1468,12 @@ class Detector(CppDetectorApi):
         
         Examples
         ---------
-        >>> d.patloop2 = [0x23, 0x40]
+        >>> d.patloop2 = [0x0, 0x18c]
+        >>> d.patloop2
+        [0, 396]
+        >>> [hex(l) for l in d.patloop2]
+        ['0x0', '0x18c']
+        
         """
         return element_if_equal(self.getPatternLoopAddresses(2))
 

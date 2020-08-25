@@ -1691,7 +1691,7 @@ class CmdProxy {
         StringTo<int>,
         "[n]\n\tDefault is 50002.\n\t[Jungfrau] Port number of the receiver "
         "(destination) udp interface where the second half of detector data is "
-        "sent to. \n[Eiger] Port number of the reciever (desintation) udp "
+        "sent to. \n\t[Eiger] Port number of the reciever (desintation) udp "
         "interface where the right half of the detector data is sent to.");
 
     EXECUTE_SET_COMMAND(

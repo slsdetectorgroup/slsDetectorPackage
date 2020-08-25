@@ -48,7 +48,7 @@ int main() {
         auto tmp = os.str().erase(0, cmd.size());
         auto usage = tmp.substr(0, tmp.find_first_of('\n'));
         tmp.erase(0, usage.size());
-        auto help = replace_all(tmp, "\n\t", "\n\t\t");
+        auto help = replace_all(tmp, "\n\t", "\n\t\t| ");
         fs << '\t' << cmd << usage << help << "\n";
     }
 }

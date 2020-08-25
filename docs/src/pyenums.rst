@@ -4,6 +4,31 @@ Enums
 These enums are defined in slsDetectorDefs in the C++ package and 
 exposed to Python through pybind11.
 
+
+::  
+
+    # Most settings are represented as enums that can be 
+    # explicitly imported
+
+    from slsdet import Detector, fileFormat
+    d = Detector()
+    d.fformat = fileFormat.BINARY
+
+    # Altough not recommended for convenience all enums 
+    # and some other things can be impored using *
+
+    from slsdet import *
+    d.speed = speedLevel.FULL_SPEED 
+
+    # To list the available enums, use dir()
+
+    import slsdet.enums
+    for enum in dir(slsdet.enums):
+        # filter out special memebers
+        if not enum.startswith('_'):
+            print(enum)
+
+
 .. py:currentmodule:: slsdet
 
 .. autoclass:: runStatus

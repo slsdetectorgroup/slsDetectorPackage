@@ -812,7 +812,7 @@ class Detector(CppDetectorApi):
     @property
     def ratecorr(self):
         """ tau in ns """
-        return element_if_equal(self.getRateCorrection())
+        return reduce_time(self.getRateCorrection())
 
     @ratecorr.setter
     def ratecorr(self, tau):

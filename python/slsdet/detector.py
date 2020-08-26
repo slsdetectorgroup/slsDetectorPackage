@@ -843,9 +843,7 @@ class Detector(CppDetectorApi):
         >>> d.getPeriod()
         [datetime.timedelta(seconds=181, microseconds=230000)]
         """
-
-        """
-        return element_if_equal(self.getRateCorrection())
+        return reduce_time(self.getRateCorrection())
 
     @ratecorr.setter
     def ratecorr(self, tau):

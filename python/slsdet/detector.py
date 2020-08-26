@@ -263,6 +263,22 @@ class Detector(CppDetectorApi):
 
     @property
     def period(self):
+        """
+        Period between frames, accepts either a value in seconds or datetime.timedelta
+
+        Note
+        -----
+        :getter: always returns in seconds. To get in datetime.delta, use getPeriod
+
+        Examples
+        -----------
+        >>> d.period = 1.05
+        >>> d.period = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>> d.period
+        181.23
+        >>> d.getPeriod()
+        [datetime.timedelta(seconds=181, microseconds=230000)]
+        """
         res = self.getPeriod()
         return reduce_time(res)
 
@@ -811,7 +827,24 @@ class Detector(CppDetectorApi):
 
     @property
     def ratecorr(self):
-        """ tau in ns """
+        """ 
+        [Eiger] Custom dead time correction constant in ns. 0 will unset rate correction.
+
+        Note
+        -----
+        To set default rate correction, use setDefaultRateCorrection
+
+        Examples
+        -----------
+        >>> d.ratecorr = 1.05
+        >>> d.period = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>> d.period
+        181.23
+        >>> d.getPeriod()
+        [datetime.timedelta(seconds=181, microseconds=230000)]
+        """
+
+        """
         return element_if_equal(self.getRateCorrection())
 
     @ratecorr.setter
@@ -1343,6 +1376,14 @@ class Detector(CppDetectorApi):
     @property
     @element
     def patsetbit(self):
+        """[Ctb][Moench][Mythen3] Selects the bits that will have a pattern mask applied to the selected patmask for every pattern.
+        
+        Examples
+        --------
+        >>> d.patsetbit = 0x8f0effff6dbffdbf
+        >>> hex(d.patsetbit)
+        '0x8f0effff6dbffdbf' 
+        """
         return self.getPatternBitMask()
 
     @patsetbit.setter
@@ -1351,7 +1392,7 @@ class Detector(CppDetectorApi):
 
     @property
     def patmask(self):
-        """[Ctb][Moench][Mythen3] Sets the bits that will have a pattern mask applied to the selected patmask for every pattern.
+        """[Ctb][Moench][Mythen3] Sets the mask applied to every pattern to the selected bits. 
         
         Examples
         --------

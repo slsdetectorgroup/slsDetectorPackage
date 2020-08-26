@@ -1312,8 +1312,8 @@ std::string CmdProxy::RateCorrection(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_rate (in ns)]\n\t[Eiger] Dead time correction constant in "
-              "ns. -1 will set to default tau of settings. 0 will unset rate "
-              "correction."
+              "ns. -1 will set to default tau of settings from trimbit file. 0 "
+              "will unset rate correction."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -2509,7 +2509,8 @@ std::string CmdProxy::Register(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[address] [32 bit value]\n\tReads/writes to a 32 bit register "
-              "in hex.\n\t[Eiger] +0x100 for only left, +0x200 for only right"
+              "in hex. Advanced Function!\n\t[Eiger] +0x100 for only left, "
+              "+0x200 for only right."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {

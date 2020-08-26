@@ -1206,7 +1206,7 @@ class Detector {
     /** [CTB] */
     Result<defs::readoutMode> getReadoutMode(Positions pos = {}) const;
 
-    /** [CTB] Options: ANALOG_ONLY = 0, DIGITAL_ONLY = 1, ANALOG_AND_DIGITAL */
+    /** [CTB] Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
 
     /** [CTB] */
@@ -1444,10 +1444,12 @@ class Detector {
                                  const std::string &hostname,
                                  const std::string &fname, Positions pos = {});
 
-    /** Advanced user Function!  */
+    /** Advanced user Function! \n
+     * [Eiger] Address is +0x100 for only left, +0x200 for only right. */
     Result<uint32_t> readRegister(uint32_t addr, Positions pos = {}) const;
 
-    /** Advanced user Function!  */
+    /** Advanced user Function! \n
+     * [Eiger] Address is +0x100 for only left, +0x200 for only right. */
     void writeRegister(uint32_t addr, uint32_t val, Positions pos = {});
 
     /** Advanced user Function!  */

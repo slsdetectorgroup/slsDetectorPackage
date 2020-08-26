@@ -777,6 +777,14 @@ class Detector(CppDetectorApi):
 
     @property
     def reg(self):
+        """
+        Reads/writes to a 32 bit register.
+
+        Note
+        -----
+        Advanced user Function! \n
+        [Eiger] Address is +0x100 for only left, +0x200 for only right.
+        """
         return self._register
 
     @property
@@ -834,14 +842,18 @@ class Detector(CppDetectorApi):
         -----
         To set default rate correction, use setDefaultRateCorrection
 
+        Known Issue
+        ------------
+        :getter: Always give 0 due to the microseconds precision.
+        :setter: Use scientific notation to set custom rate correction, since timedelta resolution is 1 microseconds. \n
+        Or use setDefaultRateCorrection to set the default one from trimbit file
+
+
         Examples
         -----------
-        >>> d.ratecorr = 1.05
-        >>> d.period = datetime.timedelta(minutes = 3, seconds = 1.23)
-        >>> d.period
-        181.23
-        >>> d.getPeriod()
-        [datetime.timedelta(seconds=181, microseconds=230000)]
+        >>> d.ratecorr = 10e-9 
+        >>> d.setDefaultRateCorrection()
+        >>> d.ratecorr = 0.0
         """
         return reduce_time(self.getRateCorrection())
 
@@ -1181,6 +1193,7 @@ class Detector(CppDetectorApi):
 
     @property
     def runclk(self):
+        """[Ctb][Moench] Run clock in MHz."""
         return element_if_equal(self.getRUNClock())
 
     @runclk.setter
@@ -1189,6 +1202,15 @@ class Detector(CppDetectorApi):
 
     @property
     def romode(self):
+        """
+        [CTB] Readout mode. Default is analog. Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL
+
+        Examples
+        --------
+        >>> d.romode = slsdet.readoutMode.ANALOG_ONLY
+        >>> d.romode
+        readoutMode.ANALOG_ONLY
+        """
         return element_if_equal(self.getReadoutMode())
 
     @romode.setter

@@ -868,6 +868,8 @@ class Detector(CppDetectorApi):
 
     @ratecorr.setter
     def ratecorr(self, tau):
+        if isinstance(tau, int):
+            tau = float(tau)
         self.setRateCorrection(tau)
 
     @property

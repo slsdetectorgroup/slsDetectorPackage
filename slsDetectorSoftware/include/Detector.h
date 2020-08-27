@@ -728,6 +728,13 @@ class Detector {
 
     Result<bool> getRxZmqDataStream(Positions pos = {}) const;
 
+    /** Enable/ disable data streaming from receiver via zmq (eg. to GUI or to
+     * another process for further processing). \n This creates/ destroys zmq
+     * streamer threads in receiver. \n Switching to Gui automatically enables
+     * data streaming in receiver. \n Switching back to command line or API
+     * acquire will require disabling data streaming in receiver for fast
+     * applications (if not needed for client data call backs).
+     */
     void setRxZmqDataStream(bool value, Positions pos = {});
 
     Result<int> getRxZmqFrequency(Positions pos = {}) const;

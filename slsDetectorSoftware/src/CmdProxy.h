@@ -1839,12 +1839,12 @@ class CmdProxy {
 
     INTEGER_COMMAND(
         rx_datastream, getRxZmqDataStream, setRxZmqDataStream, StringTo<int>,
-        "[0, 1]\n\tData streaming from receiver enable (eg. to GUI ot another "
-        "process for further processing). 1 enables zmq data stream (creates "
-        "zmq streamer threads), 0 disables (destroys streamer threads). "
-        "Switching to Gui automatically enables data streaming in receiver. "
-        "Switching back to command line acquire will require disabling data "
-        "streaming in receiver for fast applications.");
+        "[0, 1]\n\tEnable/ disable data streaming from receiver via zmq (eg. "
+        "to GUI or to another process for further processing). This creates/ "
+        "destroys zmq streamer threads in receiver. \n\tSwitching to Gui "
+        "automatically enables data streaming in receiver. \n\tSwitching back "
+        "to command line acquire will require disabling data streaming in "
+        "receiver for fast applications. ");
 
     INTEGER_COMMAND(
         rx_readfreq, getRxZmqFrequency, setRxZmqFrequency, StringTo<int>,

@@ -550,6 +550,12 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_datastream(self):
+        """
+        Enable/ disable data streaming from receiver via zmq (eg. to GUI or to another process for further processing). \n
+        This creates/ destroys zmq streamer threads in receiver. \n
+        Switching to Gui automatically enables data streaming in receiver. \n
+        Switching back to command line acquire will require disabling data streaming in receiver for fast applications.
+        """
         return element_if_equal(self.getRxZmqDataStream())
 
     @rx_datastream.setter
@@ -1286,6 +1292,22 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_dbitlist(self):
+        """
+        [Ctb] List of digital signal bits read out. 
+        
+        Notes
+        -----
+        Each element in list can be 0 - 63 and must be non repetitive.
+
+        Examples
+        ---------
+        >>> d.rxdbitlist = [0, 1, 61, 9]
+        >>> d.rxdbitlist
+        [0, 1, 61, 9]
+        >>> d.rxdbitlist = []
+        >>> d.rxdbitlist
+        []
+        """
         return element_if_equal(self.getRxDbitList())
 
     @rx_dbitlist.setter

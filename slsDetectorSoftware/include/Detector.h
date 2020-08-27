@@ -53,6 +53,8 @@ class Detector {
     /** Shared memory not freed prior. Set up per measurement. */
     void loadParameters(const std::string &fname);
 
+    void loadParameters(const std::vector<std::string>& parameters);
+
     Result<std::string> getHostname(Positions pos = {}) const;
 
     /* Frees shared memory, adds detectors to the list */

@@ -53,7 +53,7 @@ class Detector {
     /** Shared memory not freed prior. Set up per measurement. */
     void loadParameters(const std::string &fname);
 
-    void loadParameters(const std::vector<std::string>& parameters);
+    void loadParameters(const std::vector<std::string> &parameters);
 
     Result<std::string> getHostname(Positions pos = {}) const;
 
@@ -1260,7 +1260,7 @@ class Detector {
     /** [CTB] */
     Result<std::vector<int>> getRxDbitList(Positions pos = {}) const;
 
-    /** [CTB] list contains the set of bits (0-63) to save */
+    /** [CTB] list contains the set of digital signal bits (0-63) to save */
     void setRxDbitList(const std::vector<int> &list, Positions pos = {});
 
     /** [CTB] */

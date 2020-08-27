@@ -119,9 +119,10 @@ class Detector(CppDetectorApi):
         return NotImplementedError("parameters is set only")
 
     @parameters.setter
-    def parameters(self, fname):
-        fname = ut.make_string_path(fname)
-        self.loadParameters(fname)
+    def parameters(self, value):
+        if isinstance(value, str):
+            value = ut.make_string_path(value)
+        self.loadParameters(value)
 
     @property
     def hostname(self):

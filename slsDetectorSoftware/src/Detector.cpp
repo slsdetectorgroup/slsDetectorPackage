@@ -60,29 +60,31 @@ void Detector::loadConfig(const std::string &fname) {
 }
 
 void Detector::loadParameters(const std::string &fname) {
-    CmdProxy proxy(this);
-    CmdParser parser;
-    std::ifstream input_file;
-    input_file.open(fname.c_str(), std::ios_base::in);
-    if (!input_file.is_open()) {
+    std::ifstream input_file(fname);
+    if (!input_file) {
         throw RuntimeError("Could not open configuration file " + fname +
                            " for reading");
     }
-    std::string current_line;
-    while (input_file.good()) {
-        getline(input_file, current_line);
-        if (current_line.find('#') != std::string::npos) {
-            current_line.erase(current_line.find('#'));
+    std::vector<std::string> parameters;
+    for (std::string line; std::getline(input_file, line);) {
+        if (line.find('#') != std::string::npos) {
+            line.erase(line.find('#'));
         }
-        LOG(logDEBUG1) << "current_line after removing comments:\n\t"
-                       << current_line;
-        if (current_line.length() > 1) {
-            parser.Parse(current_line);
-            proxy.Call(parser.command(), parser.arguments(),
-                       parser.detector_id(), defs::PUT_ACTION);
+        if (line.length() > 1) {
+            parameters.push_back(line);
         }
     }
-    input_file.close();
+    loadParameters(parameters);
+}
+
+void Detector::loadParameters(const std::vector<std::string> &parameters) {
+    CmdProxy proxy(this);
+    CmdParser parser;
+    for (const auto &current_line : parameters) {
+        parser.Parse(current_line);
+        proxy.Call(parser.command(), parser.arguments(), parser.detector_id(),
+                   defs::PUT_ACTION);
+    }
 }
 
 Result<std::string> Detector::getHostname(Positions pos) const {

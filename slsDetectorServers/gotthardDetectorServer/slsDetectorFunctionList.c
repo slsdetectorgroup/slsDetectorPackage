@@ -1630,7 +1630,7 @@ int stopStateMachine() {
         sharedMemory_setStop(1);
         // read till status is idle
         while (sharedMemory_getStatus() == RUNNING)
-            ;
+            usleep(500);
         sharedMemory_setStop(0);
         LOG(logINFO, ("Stopped State Machine\n"));
     }

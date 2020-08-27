@@ -442,7 +442,7 @@ class Module : public virtual slsDetectorDefs {
     bool getExternalSampling() const;
     void setExternalSampling(bool value);
     std::vector<int> getReceiverDbitList() const;
-    void setReceiverDbitList(const std::vector<int> &list);
+    void setReceiverDbitList(std::vector<int> list);
     int getReceiverDbitOffset() const;
     void setReceiverDbitOffset(int value);
     void setDigitalIODelay(uint64_t pinMask, int delay);

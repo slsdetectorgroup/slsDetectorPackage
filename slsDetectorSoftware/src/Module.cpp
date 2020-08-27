@@ -1863,7 +1863,7 @@ std::vector<int> Module::getReceiverDbitList() const {
         F_GET_RECEIVER_DBIT_LIST);
 }
 
-void Module::setReceiverDbitList(const std::vector<int> &list) {
+void Module::setReceiverDbitList(std::vector<int> list) {
     LOG(logDEBUG1) << "Setting Receiver Dbit List";
     if (list.size() > 64) {
         throw sls::RuntimeError("Dbit list size cannot be greater than 64\n");
@@ -1874,6 +1874,10 @@ void Module::setReceiverDbitList(const std::vector<int> &list) {
                 "Dbit list value must be between 0 and 63\n");
         }
     }
+    std::sort(begin(list), end(list));
+    auto last = std::unique(begin(list), end(list));
+    list.erase(last, list.end());
+
     sls::StaticVector<int, MAX_RX_DBIT> arg = list;
     sendToReceiver(F_SET_RECEIVER_DBIT_LIST, arg, nullptr);
 }

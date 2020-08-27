@@ -36,6 +36,10 @@ void init_det(py::module &m) {
              (void (Detector::*)(const std::string &)) &
                  Detector::loadParameters,
              py::arg())
+        .def("loadParameters",
+             (void (Detector::*)(const std::vector<std::string> &)) &
+                 Detector::loadParameters,
+             py::arg())
         .def("getHostname",
              (Result<std::string>(Detector::*)(sls::Positions) const) &
                  Detector::getHostname,

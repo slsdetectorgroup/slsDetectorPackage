@@ -422,25 +422,33 @@ void qTabAdvanced::SetStopPort(int port) {
 }
 
 void qTabAdvanced::SetDetectorUDPIP() {
-    std::string s = dispDetectorUDPIP->text().toAscii().constData();
-    LOG(logINFO) << "Setting Detector UDP IP:" << s;
-    try {
-        det->setSourceUDPIP(sls::IpAddr{s}, {comboDetector->currentIndex()});
+    if (dispDetectorUDPIP->isModified()) {
+        dispDetectorUDPIP->setModified(false);
+        std::string s = dispDetectorUDPIP->text().toAscii().constData();
+        LOG(logINFO) << "Setting Detector UDP IP:" << s;
+        try {
+            det->setSourceUDPIP(sls::IpAddr{s},
+                                {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Detector UDP IP.",
+                     "qTabAdvanced::SetDetectorUDPIP", this,
+                     &qTabAdvanced::GetDetectorUDPIP)
     }
-    CATCH_HANDLE("Could not set Detector UDP IP.",
-                 "qTabAdvanced::SetDetectorUDPIP", this,
-                 &qTabAdvanced::GetDetectorUDPIP)
 }
 
 void qTabAdvanced::SetDetectorUDPMAC() {
-    std::string s = dispDetectorUDPMAC->text().toAscii().constData();
-    LOG(logINFO) << "Setting Detector UDP MAC:" << s;
-    try {
-        det->setSourceUDPMAC(sls::MacAddr{s}, {comboDetector->currentIndex()});
+    if (dispDetectorUDPMAC->isModified()) {
+        dispDetectorUDPMAC->setModified(false);
+        std::string s = dispDetectorUDPMAC->text().toAscii().constData();
+        LOG(logINFO) << "Setting Detector UDP MAC:" << s;
+        try {
+            det->setSourceUDPMAC(sls::MacAddr{s},
+                                 {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Detector UDP MAC.",
+                     "qTabAdvanced::SetDetectorUDPMAC", this,
+                     &qTabAdvanced::GetDetectorUDPMAC)
     }
-    CATCH_HANDLE("Could not set Detector UDP MAC.",
-                 "qTabAdvanced::SetDetectorUDPMAC", this,
-                 &qTabAdvanced::GetDetectorUDPMAC)
 }
 
 void qTabAdvanced::SetCltZMQPort(int port) {
@@ -454,26 +462,35 @@ void qTabAdvanced::SetCltZMQPort(int port) {
 }
 
 void qTabAdvanced::SetCltZMQIP() {
-    std::string s = dispZMQIP->text().toAscii().constData();
-    LOG(logINFO) << "Setting Client ZMQ IP:" << s;
-    try {
-        det->setClientZmqIp(sls::IpAddr{s}, {comboDetector->currentIndex()});
+    if (dispZMQIP->isModified()) {
+        dispZMQIP->setModified(false);
+        std::string s = dispZMQIP->text().toAscii().constData();
+        LOG(logINFO) << "Setting Client ZMQ IP:" << s;
+        try {
+            det->setClientZmqIp(sls::IpAddr{s},
+                                {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Client ZMQ IP.",
+                     "qTabAdvanced::SetCltZMQIP", this,
+                     &qTabAdvanced::GetCltZMQIP)
     }
-    CATCH_HANDLE("Could not set Client ZMQ IP.", "qTabAdvanced::SetCltZMQIP",
-                 this, &qTabAdvanced::GetCltZMQIP)
 }
 
 void qTabAdvanced::SetRxrHostname() {
-    std::string s = dispZMQIP->text().toAscii().constData();
-    LOG(logINFO) << "Setting Receiver Hostname:" << s;
-    try {
-        det->setRxHostname(s, {comboDetector->currentIndex()});
-    }
-    CATCH_HANDLE("Could not set Client ZMQ IP.", "qTabAdvanced::SetRxrHostname",
-                 this, &qTabAdvanced::GetRxrHostname)
+    if (dispRxrHostname->isModified()) {
+        dispRxrHostname->setModified(false);
+        std::string s = dispRxrHostname->text().toAscii().constData();
+        LOG(logINFO) << "Setting Receiver Hostname:" << s;
+        try {
+            det->setRxHostname(s, {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Client ZMQ IP.",
+                     "qTabAdvanced::SetRxrHostname", this,
+                     &qTabAdvanced::GetRxrHostname)
 
-    // update all network widgets (receiver mainly)
-    SetDetector();
+        // update all network widgets (receiver mainly)
+        SetDetector();
+    }
 }
 
 void qTabAdvanced::SetRxrTCPPort(int port) {
@@ -497,26 +514,33 @@ void qTabAdvanced::SetRxrUDPPort(int port) {
 }
 
 void qTabAdvanced::SetRxrUDPIP() {
-    std::string s = dispRxrUDPIP->text().toAscii().constData();
-    LOG(logINFO) << "Setting Receiver UDP IP:" << s;
-    try {
-        det->setDestinationUDPIP(sls::IpAddr{s},
-                                 {comboDetector->currentIndex()});
+    if (dispRxrUDPIP->isModified()) {
+        dispRxrUDPIP->setModified(false);
+        std::string s = dispRxrUDPIP->text().toAscii().constData();
+        LOG(logINFO) << "Setting Receiver UDP IP:" << s;
+        try {
+            det->setDestinationUDPIP(sls::IpAddr{s},
+                                     {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Receiver UDP IP.",
+                     "qTabAdvanced::SetRxrUDPIP", this,
+                     &qTabAdvanced::GetRxrUDPIP)
     }
-    CATCH_HANDLE("Could not set Receiver UDP IP.", "qTabAdvanced::SetRxrUDPIP",
-                 this, &qTabAdvanced::GetRxrUDPIP)
 }
 
 void qTabAdvanced::SetRxrUDPMAC() {
-    std::string s = dispRxrUDPMAC->text().toAscii().constData();
-    LOG(logINFO) << "Setting Receiver UDP MAC:" << s;
-    try {
-        det->setDestinationUDPMAC(sls::MacAddr{s},
-                                  {comboDetector->currentIndex()});
+    if (dispRxrUDPMAC->isModified()) {
+        dispRxrUDPMAC->setModified(false);
+        std::string s = dispRxrUDPMAC->text().toAscii().constData();
+        LOG(logINFO) << "Setting Receiver UDP MAC:" << s;
+        try {
+            det->setDestinationUDPMAC(sls::MacAddr{s},
+                                      {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Receiver UDP MAC.",
+                     "qTabAdvanced::SetRxrUDPMAC", this,
+                     &qTabAdvanced::GetRxrUDPMAC)
     }
-    CATCH_HANDLE("Could not set Receiver UDP MAC.",
-                 "qTabAdvanced::SetRxrUDPMAC", this,
-                 &qTabAdvanced::GetRxrUDPMAC)
 }
 
 void qTabAdvanced::SetRxrZMQPort(int port) {
@@ -530,13 +554,17 @@ void qTabAdvanced::SetRxrZMQPort(int port) {
 }
 
 void qTabAdvanced::SetRxrZMQIP() {
-    std::string s = dispRxrZMQIP->text().toAscii().constData();
-    LOG(logINFO) << "Setting Receiver ZMQ IP:" << s;
-    try {
-        det->setRxZmqIP(sls::IpAddr{s}, {comboDetector->currentIndex()});
+    if (dispRxrZMQIP->isModified()) {
+        dispRxrZMQIP->setModified(false);
+        std::string s = dispRxrZMQIP->text().toAscii().constData();
+        LOG(logINFO) << "Setting Receiver ZMQ IP:" << s;
+        try {
+            det->setRxZmqIP(sls::IpAddr{s}, {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Receiver ZMQ IP.",
+                     "qTabAdvanced::SetRxrZMQIP", this,
+                     &qTabAdvanced::GetRxrZMQIP)
     }
-    CATCH_HANDLE("Could not set Receiver ZMQ IP.", "qTabAdvanced::SetRxrZMQIP",
-                 this, &qTabAdvanced::GetRxrZMQIP)
 }
 
 void qTabAdvanced::GetROI() {

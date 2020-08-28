@@ -170,31 +170,34 @@ void qTabDataOutput::BrowseOutputDir() {
 }
 
 void qTabDataOutput::SetOutputDir() {
-    QString path = dispOutputDir->text();
-    LOG(logDEBUG) << "Setting output directory to "
-                  << path.toAscii().constData();
+    if (dispOutputDir->isModified()) {
+        dispOutputDir->setModified(false);
+        QString path = dispOutputDir->text();
+        LOG(logDEBUG) << "Setting output directory to "
+                      << path.toAscii().constData();
 
-    // empty
-    if (path.isEmpty()) {
-        qDefs::Message(qDefs::WARNING,
-                       "Invalid Output Path. Must not be empty.",
-                       "qTabDataOutput::SetOutputDir");
-        LOG(logWARNING) << "Invalid Output Path. Must not be empty.";
-        GetOutputDir();
-    } else {
-        // chop off trailing '/'
-        if (path.endsWith('/')) {
-            while (path.endsWith('/')) {
-                path.chop(1);
+        // empty
+        if (path.isEmpty()) {
+            qDefs::Message(qDefs::WARNING,
+                           "Invalid Output Path. Must not be empty.",
+                           "qTabDataOutput::SetOutputDir");
+            LOG(logWARNING) << "Invalid Output Path. Must not be empty.";
+            GetOutputDir();
+        } else {
+            // chop off trailing '/'
+            if (path.endsWith('/')) {
+                while (path.endsWith('/')) {
+                    path.chop(1);
+                }
             }
+            std::string spath = std::string(path.toAscii().constData());
+            try {
+                det->setFilePath(spath, {comboDetector->currentIndex() - 1});
+            }
+            CATCH_HANDLE("Could not set output file path.",
+                         "qTabDataOutput::SetOutputDir", this,
+                         &qTabDataOutput::GetOutputDir)
         }
-        std::string spath = std::string(path.toAscii().constData());
-        try {
-            det->setFilePath(spath, {comboDetector->currentIndex() - 1});
-        }
-        CATCH_HANDLE("Could not set output file path.",
-                     "qTabDataOutput::SetOutputDir", this,
-                     &qTabDataOutput::GetOutputDir)
     }
 }
 

@@ -174,17 +174,17 @@ void qTabPlot::Initialization() {
     connect(chkXMax, SIGNAL(toggled(bool)), this, SLOT(SetXRange()));
     connect(chkYMin, SIGNAL(toggled(bool)), this, SLOT(SetYRange()));
     connect(chkYMax, SIGNAL(toggled(bool)), this, SLOT(SetYRange()));
-    connect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
-    connect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
-    connect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
-    connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
+    connect(dispXMin, SIGNAL(editingFinished()), this, SLOT(isXMinModified()));
+    connect(dispXMax, SIGNAL(editingFinished()), this, SLOT(isXMaxModified()));
+    connect(dispYMin, SIGNAL(editingFinished()), this, SLOT(isYMinModified()));
+    connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(isYMaxModified()));
     connect(chkAspectRatio, SIGNAL(toggled(bool)), this,
             SLOT(CheckAspectRatio()));
 
     connect(chkZMin, SIGNAL(toggled(bool)), this, SLOT(SetZRange()));
     connect(chkZMax, SIGNAL(toggled(bool)), this, SLOT(SetZRange()));
-    connect(dispZMin, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
-    connect(dispZMax, SIGNAL(editingFinished()), this, SLOT(SetZRange()));
+    connect(dispZMin, SIGNAL(editingFinished()), this, SLOT(isZMinModified()));
+    connect(dispZMax, SIGNAL(editingFinished()), this, SLOT(isZMaxModified()));
 }
 
 void qTabPlot::Select1DPlot(bool enable) {
@@ -389,6 +389,48 @@ void qTabPlot::SetTitles() {
             SLOT(SetTitles()));
 }
 
+void qTabPlot::isXMinModified() {
+    if (dispXMin->isModified()) {
+        dispXmin->setModified(false);
+        SetXRange();
+    }
+}
+
+void qTabPlot::isXMaxModified() {
+    if (dispXMax->isModified()) {
+        dispXMax->setModified(false);
+        SetXRange();
+    }
+}
+
+void qTabPlot::isYMinModified() {
+    if (dispYMin->isModified()) {
+        dispYMin->setModified(false);
+        SetYRange();
+    }
+}
+
+void qTabPlot::isYMaxModified() {
+    if (dispYMax->isModified()) {
+        dispYMax->setModified(false);
+        SetYRange();
+    }
+}
+
+void qTabPlot::isZMinModified() {
+    if (dispZMin->isModified()) {
+        dispZMin->setModified(false);
+        SetZRange();
+    }
+}
+
+void qTabPlot::isZMaxModified() {
+    if (dispZMax->isModified()) {
+        dispZMax->setModified(false);
+        SetZRange();
+    }
+}
+
 void qTabPlot::SetXRange() {
     LOG(logDEBUG) << "Enable X axis range";
 
@@ -452,10 +494,14 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     disconnect(chkXMax, SIGNAL(toggled(bool)), this, SLOT(SetXRange()));
     disconnect(chkYMin, SIGNAL(toggled(bool)), this, SLOT(SetYRange()));
     disconnect(chkYMax, SIGNAL(toggled(bool)), this, SLOT(SetYRange()));
-    disconnect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
-    disconnect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
-    disconnect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
-    disconnect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
+    disconnect(dispXMin, SIGNAL(editingFinished()), this,
+               SLOT(isXMinModified()));
+    disconnect(dispXMax, SIGNAL(editingFinished()), this,
+               SLOT(isXMaxModified()));
+    disconnect(dispYMin, SIGNAL(editingFinished()), this,
+               SLOT(isYMinModified()));
+    disconnect(dispYMax, SIGNAL(editingFinished()), this,
+               SLOT(isYMaxModified()));
 
     // check all, fill all
     chkXMin->setChecked(true);
@@ -550,10 +596,10 @@ void qTabPlot::MaintainAspectRatio(int dimension) {
     connect(chkXMax, SIGNAL(toggled(bool)), this, SLOT(SetXRange()));
     connect(chkYMin, SIGNAL(toggled(bool)), this, SLOT(SetYRange()));
     connect(chkYMax, SIGNAL(toggled(bool)), this, SLOT(SetYRange()));
-    connect(dispXMin, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
-    connect(dispXMax, SIGNAL(editingFinished()), this, SLOT(SetXRange()));
-    connect(dispYMin, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
-    connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(SetYRange()));
+    connect(dispXMin, SIGNAL(editingFinished()), this, SLOT(isXMinModified()));
+    connect(dispXMax, SIGNAL(editingFinished()), this, SLOT(isXMaxModified()));
+    connect(dispYMin, SIGNAL(editingFinished()), this, SLOT(isYMinModified()));
+    connect(dispYMax, SIGNAL(editingFinished()), this, SLOT(isYMaxModified()));
 
     bool isRange[4]{true, true, true, true};
     plot->SetXYRangeChanged(true, ranges, isRange);

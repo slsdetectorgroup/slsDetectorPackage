@@ -724,16 +724,20 @@ void qTabMeasurement::GetFileName() {
 }
 
 void qTabMeasurement::SetFileName() {
-    std::string val = std::string(dispFileName->text().toAscii().constData());
-    LOG(logINFO) << "Setting File Name Prefix:" << val;
-    try {
-        det->setFileNamePrefix(val);
-    }
-    CATCH_HANDLE("Could not set file name prefix.",
-                 "qTabMeasurement::SetFileName", this,
-                 &qTabMeasurement::GetFileName)
+    if (dispFileName->isModified()) {
+        dispFileName->setModified(false);
+        std::string val =
+            std::string(dispFileName->text().toAscii().constData());
+        LOG(logINFO) << "Setting File Name Prefix:" << val;
+        try {
+            det->setFileNamePrefix(val);
+        }
+        CATCH_HANDLE("Could not set file name prefix.",
+                     "qTabMeasurement::SetFileName", this,
+                     &qTabMeasurement::GetFileName)
 
-    emit FileNameChangedSignal(dispFileName->text());
+        emit FileNameChangedSignal(dispFileName->text());
+    }
 }
 
 void qTabMeasurement::GetRunIndex() {

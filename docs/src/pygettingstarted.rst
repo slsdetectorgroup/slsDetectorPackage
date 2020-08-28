@@ -134,3 +134,29 @@ while find returns a list of names.
     'getSubExptime', 'setExptime', 'setSubExptime', 'subexptime']
 
 
+----------------------
+Where are the ENUMs?
+----------------------
+
+To set some of the detector settings like file format you have
+to pass in an enum. 
+
+:: 
+
+    >>> d.setFileFormat(fileFormat.BINARY)
+    
+The enums can be found in slsdet.enums 
+
+::
+
+    import slsdet
+    >>> [e for e in dir(slsdet.enums) if not e.startswith('_')]
+    ['burstMode', 'clockIndex', 'dacIndex', 'detectorModeType', 
+    'detectorSettings', 'detectorType', 'dimension', 'externalSignalFlag', 
+    'fileFormat', 'frameDiscardPolicy', 'frameModeType', 'masterFlags', 
+    'readoutMode', 'runStatus', 'speedLevel', 'timingMode', 
+    'timingSourceType']
+
+    # Even though importing using * is not recommended one could
+    # get all the enums like this: 
+    >>> from slsdet.enums import *

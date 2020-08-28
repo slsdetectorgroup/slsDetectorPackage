@@ -43,6 +43,7 @@ set(SPHINX_SOURCE_FILES
   src/type_traits.rst
   src/ToString.rst
   src/examples.rst
+  src/pygettingstarted.rst
   
 )
 

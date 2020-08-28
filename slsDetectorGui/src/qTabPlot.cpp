@@ -391,7 +391,7 @@ void qTabPlot::SetTitles() {
 
 void qTabPlot::isXMinModified() {
     if (dispXMin->isModified()) {
-        dispXmin->setModified(false);
+        dispXMin->setModified(false);
         SetXRange();
     }
 }

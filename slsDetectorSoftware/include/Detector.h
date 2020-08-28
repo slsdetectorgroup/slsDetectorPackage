@@ -106,12 +106,14 @@ class Detector {
     /** [Jungfrau][Gotthard][Gotthard2] */
     Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
 
-    /** [Jungfrau] Options:DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2,
-     * FORCESWITCHG1, FORCESWITCHG2 [Gotthard] Options: DYNAMICGAIN, HIGHGAIN,
-     * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN [Gotthard2] Options: DYNAMICGAIN,
-     * FIXGAIN1, FIXGAIN2 [Moench] Options: G1_HIGHGAIN, G1_LOWGAIN,
+    /** [Jungfrau] DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2,
+     * FORCESWITCHG1, FORCESWITCHG2 [Gotthard] \n DYNAMICGAIN, HIGHGAIN,
+     * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN [Gotthard2] \n DYNAMICGAIN,
+     * FIXGAIN1, FIXGAIN2 [Moench] \n G1_HIGHGAIN, G1_LOWGAIN,
      * G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN,
-     * G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN
+     * G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN \n [Eiger] Use threshold
+     * command \n [Eiger settings loaded from file found in
+     * settingspath
      */
     void setSettings(defs::detectorSettings value, Positions pos = {});
 
@@ -243,7 +245,11 @@ class Detector {
     Result<defs::speedLevel> getSpeed(Positions pos = {}) const;
 
     /** [Eiger][Jungfrau]
-     * Options: FULL_SPEED, HALF_SPEED, QUARTER_SPEED */
+     * Options: FULL_SPEED, HALF_SPEED, QUARTER_SPEED \n
+     * [Jungfrau] FULL_SPEED option only available from v2.0 boards and with
+     * setting number of interfaces to 2.  \n Also overwrites adcphase to
+     * recommended default.
+     */
     void setSpeed(defs::speedLevel value, Positions pos = {});
 
     /** [Jungfrau][CTB][Moench] */
@@ -842,7 +848,7 @@ class Detector {
     /** [Eiger] */
     Result<std::string> getSettingsPath(Positions pos = {}) const;
 
-    /** [Eiger] */
+    /** [Eiger] Directory where settings files are loaded from/to */
     void setSettingsPath(const std::string &value, Positions pos = {});
 
     /** [Eiger] */

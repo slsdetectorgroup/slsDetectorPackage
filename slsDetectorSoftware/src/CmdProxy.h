@@ -1146,7 +1146,8 @@ class CmdProxy {
                     "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
                     "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
                     "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
-                    "\n\t[Eiger] Use threshold or thresholdnotb.");
+                    "\n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] "
+                    "settings loaded from file found in settingspath.");
 
     EXECUTE_SET_COMMAND_1ARG(
         trimbits, loadTrimbits,

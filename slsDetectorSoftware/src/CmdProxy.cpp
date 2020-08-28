@@ -504,8 +504,9 @@ std::string CmdProxy::Speed(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[0 or full_speed|1 or half_speed|2 or "
               "quarter_speed]\n\t[Eiger][Jungfrau] Readout speed of "
-              "chip.\n\tJungfrau also overwrites adcphase to recommended "
-              "default. "
+              "chip.\n\t[Jungfrau] FULL_SPEED option only available from v2.0 "
+              "boards and with setting number of interfaces to 2. Also "
+              "overwrites adcphase to recommended default. "
            << '\n';
     } else {
         defs::detectorType type = det->getDetectorType().squash();

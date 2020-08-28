@@ -192,6 +192,18 @@ class Detector(CppDetectorApi):
 
     @property
     def settings(self):
+        """
+        Detector settings. Enum: detectorSettings
+        Notes
+        -----
+        
+        [Eiger] Use threshold command to load settings
+        [Jungfrau] DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2, FORCESWITCHG1, FORCESWITCHG2 \n
+        [Gotthard] DYNAMICGAIN, HIGHGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n
+        [Gotthard2] DYNAMICGAIN, FIXGAIN1, FIXGAIN2 \n
+        [Moench] G1_HIGHGAIN, G1_LOWGAIN, G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN, G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN \n
+        [Eiger] settings loaded from file found in settingspath
+        """
         return element_if_equal(self.getSettings())
 
     @settings.setter
@@ -828,6 +840,7 @@ class Detector(CppDetectorApi):
 
     @property
     def settingspath(self):
+        """[Eiger] Directory where settings files are loaded from/to."""
         return element_if_equal(self.getSettingsPath())
 
     @settingspath.setter
@@ -993,6 +1006,14 @@ class Detector(CppDetectorApi):
 
     @property
     def speed(self):
+        """
+        [Eiger][Jungfrau] Readout speed of chip. Enum: speedLevel
+        Notes
+        -----
+        Options: FULL_SPEED, HALF_SPEED, QUARTER_SPEED \n
+        [Jungfrau] FULL_SPEED option only available from v2.0 boards and with setting number of interfaces to 2.  \n
+        Also overwrites adcphase to recommended default.
+        """
         return element_if_equal(self.getSpeed())
 
     @speed.setter
@@ -1231,6 +1252,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def selinterface(self):
+        """[Jungfrau] The udp interface to stream data from detector. 
+        Notes
+        -----
+        Effective only when number of interfaces is 1. Default: 0 (outer). Inner is 1.
+        """
         return self.getSelectedUDPInterface()
 
     @selinterface.setter

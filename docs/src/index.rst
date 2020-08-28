@@ -32,6 +32,7 @@ Welcome to slsDetectorPackage's documentation!
     :caption: Python API
     :maxdepth: 2
 
+    pygettingstarted
     pydetector
     pyenums
     pyexamples

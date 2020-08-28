@@ -69,7 +69,7 @@ void qTabDataOutput::Initialization() {
                 SLOT(EnableRateCorrection()));
         connect(btnGroupRate, SIGNAL(buttonClicked(int)), this,
                 SLOT(SetRateCorrection()));
-        connect(spinCustomDeadTime, SIGNAL(editingFinished()), this,
+        connect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
                 SLOT(SetRateCorrection()));
     }
     // flags, speed
@@ -291,7 +291,7 @@ void qTabDataOutput::GetRateCorrection() {
                SLOT(EnableRateCorrection()));
     disconnect(btnGroupRate, SIGNAL(buttonClicked(int)), this,
                SLOT(SetRateCorrection()));
-    disconnect(spinCustomDeadTime, SIGNAL(editingFinished()), this,
+    disconnect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
                SLOT(SetRateCorrection()));
     try {
         spinCustomDeadTime->setValue(-1);
@@ -308,7 +308,7 @@ void qTabDataOutput::GetRateCorrection() {
     connect(chkRate, SIGNAL(toggled(bool)), this, SLOT(EnableRateCorrection()));
     connect(btnGroupRate, SIGNAL(buttonClicked(int)), this,
             SLOT(SetRateCorrection()));
-    connect(spinCustomDeadTime, SIGNAL(editingFinished()), this,
+    connect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
             SLOT(SetRateCorrection()));
 }
 

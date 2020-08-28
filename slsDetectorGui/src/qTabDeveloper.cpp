@@ -290,7 +290,7 @@ void qTabDeveloper::Initialization() {
             SLOT(Refresh()));
     connect(comboHV, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetHighVoltage()));
-    connect(spinHV, SIGNAL(editingFinished()), this, SLOT(SetHighVoltage()));
+    connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
 }
 
 void qTabDeveloper::PopulateDetectors() {
@@ -312,7 +312,7 @@ void qTabDeveloper::GetHighVoltage() {
     if (!comboHV->isVisible() && !spinHV->isVisible())
         return;
     LOG(logDEBUG) << "Getting High Voltage";
-    disconnect(spinHV, SIGNAL(editingFinished()), this, SLOT(SetHighVoltage()));
+    disconnect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
     disconnect(comboHV, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetHighVoltage()));
     try {
@@ -359,7 +359,7 @@ void qTabDeveloper::GetHighVoltage() {
     }
     CATCH_DISPLAY("Could not get high voltage.",
                   "qTabDeveloper::GetHighVoltage")
-    connect(spinHV, SIGNAL(editingFinished()), this, SLOT(SetHighVoltage()));
+    connect(spinHV, SIGNAL(valueChanged(int)), this, SLOT(SetHighVoltage()));
     connect(comboHV, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetHighVoltage()));
 }

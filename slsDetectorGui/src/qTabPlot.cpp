@@ -87,9 +87,9 @@ void qTabPlot::Initialization() {
             SLOT(SetStreamingFrequency()));
     connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetStreamingFrequency()));
-    connect(spinTimeGap, SIGNAL(editingFinished()), this,
+    connect(spinTimeGap, SIGNAL(valueChanged(double)), this,
             SLOT(SetStreamingFrequency()));
-    connect(spinNthFrame, SIGNAL(editingFinished()), this,
+    connect(spinNthFrame, SIGNAL(valueChanged(int)), this,
             SLOT(SetStreamingFrequency()));
 
     // navigation buttons for options
@@ -629,9 +629,9 @@ void qTabPlot::GetStreamingFrequency() {
                SLOT(SetStreamingFrequency()));
     disconnect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetStreamingFrequency()));
-    disconnect(spinTimeGap, SIGNAL(editingFinished()), this,
+    disconnect(spinTimeGap, SIGNAL(valueChanged(double)), this,
                SLOT(SetStreamingFrequency()));
-    disconnect(spinNthFrame, SIGNAL(editingFinished()), this,
+    disconnect(spinNthFrame, SIGNAL(valueChanged(int)), this,
                SLOT(SetStreamingFrequency()));
     try {
         int freq = det->getRxZmqFrequency().tsquash(
@@ -667,9 +667,9 @@ void qTabPlot::GetStreamingFrequency() {
             SLOT(SetStreamingFrequency()));
     connect(comboTimeGapUnit, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetStreamingFrequency()));
-    connect(spinTimeGap, SIGNAL(editingFinished()), this,
+    connect(spinTimeGap, SIGNAL(valueChanged(double)), this,
             SLOT(SetStreamingFrequency()));
-    connect(spinNthFrame, SIGNAL(editingFinished()), this,
+    connect(spinNthFrame, SIGNAL(valueChanged(int)), this,
             SLOT(SetStreamingFrequency()));
 }
 

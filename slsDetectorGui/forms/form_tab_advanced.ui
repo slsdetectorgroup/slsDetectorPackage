@@ -98,6 +98,9 @@
            <height>25</height>
           </size>
          </property>
+         <property name="keyboardTracking">
+          <bool>false</bool>
+         </property>
          <property name="minimum">
           <number>-1</number>
          </property>

@@ -65,8 +65,7 @@ void qTabAdvanced::Initialization() {
 
     // trimming
     if (tab_trimming->isEnabled()) {
-        // editingFinished to not set trimbits for every character input
-        connect(spinSetAllTrimbits, SIGNAL(editingFinished()), this,
+        connect(spinSetAllTrimbits, SIGNAL(valueChanged(int)), this,
                 SLOT(SetAllTrimbits()));
     }
 
@@ -603,7 +602,7 @@ void qTabAdvanced::SetROI() {
 
 void qTabAdvanced::GetAllTrimbits() {
     LOG(logDEBUG) << "Getting all trimbits value";
-    disconnect(spinSetAllTrimbits, SIGNAL(editingFinished()), this,
+    disconnect(spinSetAllTrimbits, SIGNAL(valueChanged(int)), this,
                SLOT(SetAllTrimbits()));
 
     try {
@@ -612,7 +611,7 @@ void qTabAdvanced::GetAllTrimbits() {
     }
     CATCH_DISPLAY("Could not get all trimbits.", "qTabAdvanced::GetAllTrimbits")
 
-    connect(spinSetAllTrimbits, SIGNAL(editingFinished()), this,
+    connect(spinSetAllTrimbits, SIGNAL(valueChanged(int)), this,
             SLOT(SetAllTrimbits()));
 }
 

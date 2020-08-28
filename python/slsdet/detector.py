@@ -153,6 +153,7 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_version(self):
+        """Receiver version in format [0xYYMMDD]."""
         return element_if_equal(self.getReceiverVersion())
 
     @property
@@ -337,11 +338,11 @@ class Detector(CppDetectorApi):
         self.startDetector()
 
     def rx_start(self):
-        """Start receiver"""
+        """Starts receiver listener for detector data packets and create a data file (if file write enabled)."""
         self.startReceiver()
 
     def rx_stop(self):
-        """Stop receiver"""
+        """Stops receiver listener for detector data packets and closes current data file (if file write enabled)."""
         self.stopReceiver()
 
     def stop(self):
@@ -351,6 +352,7 @@ class Detector(CppDetectorApi):
     # Time
     @property
     def rx_framescaught(self):
+        """Number of frames caught by receiver."""
         return element_if_equal(self.getFramesCaught())
 
     @property
@@ -369,6 +371,24 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_hostname(self):
+        """ Sets receiver hostname or IP address. Used for TCP control communication between client and receiver to configure receiver. Also updates receiver with detector parameters.
+        Notes
+        -----
+        Also resets any prior receiver property (not on detector). \n
+        Can concatenate receiver hostnames for every module. \n
+        If port included, then its the receiver tcp port for every receiver hostname.
+        Example
+        --------
+        >>> d.rx_hostname
+        'mpc1922'
+        >>> d.rx_hostname = 'mpc1922'
+        >>> d.rx_hostname = 'mpc1922:2000'
+        >>> d.rx_hostname = 'mpc1922:2000+mpc1922:2002'
+        >>> d.rx_hostname
+        'mpc1922'
+        >>> d.rx_tcpport
+        [2000, 2002]
+        """
         return element_if_equal(self.getRxHostname())
 
     @rx_hostname.setter
@@ -377,6 +397,21 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_tcpport(self):
+        """
+        TCP port for client-receiver communication. 
+        Notes
+        -----
+        Default is 1954. \n
+        Must be different if multiple receivers on same pc. \n
+        Must be first command to set a receiver parameter to be able to communicate. \n
+        Multi command will automatically increment port for individual modules, which must be set via setRxPort.
+        Example
+        -------
+        >>> d.rx_tcpport
+        2010
+        >>> d.rx_tcpport
+        [2000, 2002]
+        """
         return element_if_equal(self.getRxPort())
 
     @rx_tcpport.setter
@@ -385,6 +420,7 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_fifodepth(self):
+        """Sets the number of frames in the receiver fifo depth (buffer between listener and writer threads)."""
         return element_if_equal(self.getRxFifoDepth())
 
     @rx_fifodepth.setter
@@ -393,6 +429,7 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_silent(self):
+        """When enabled, switches off receiver text output during acquisition. """
         return element_if_equal(self.getRxSilentMode())
 
     @rx_silent.setter
@@ -401,6 +438,20 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_discardpolicy(self):
+        """
+        Frame discard policy of receiver. Enum: frameDiscardPolicy
+        Notes
+        -----
+        Options: NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES \n
+        Default: NO_DISCARD \n
+        DISCARD_PARTIAL_FRAMES is the fastest.
+
+        Example
+        --------
+        >>> d.rx_discardpolicy = slsdet.frameDiscardPolicy.NO_DISCARD
+        >>> d.rx_discardpolicy
+        frameDiscardPolicy.NO_DISCARD
+        """
         return element_if_equal(self.getRxFrameDiscardPolicy())
 
     @rx_discardpolicy.setter
@@ -409,6 +460,12 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_padding(self):
+        """Partial frames padding enable in the receiver. 
+        Notes
+        ------
+        Default: enabled \n
+        Disabling is fastest.
+        """
         return element_if_equal(self.getPartialFramesPadding())
 
     @rx_padding.setter
@@ -426,6 +483,7 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_lastclient(self):
+        """Client IP Address that last communicated with the receiver."""
         return element_if_equal(self.getRxLastClientIP())
 
     # FILE
@@ -448,10 +506,12 @@ class Detector(CppDetectorApi):
 
     @property
     def fformat(self):
-        """ File format of data file in receiver.
+        """ File format of data file in receiver. Enum: fileFormat
         
             Note
             -----
+            Options: BINARY, HDF5
+            Default: BINARY
             For HDF5, package must be compiled with HDF5 flags. Default is binary. 
 
             Example
@@ -541,6 +601,13 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_framesperfile(self):
+        """Sets the number of frames per file in receiver. 
+        
+        Notes
+        -----
+        Default: depends on detector type. \n
+        0 is infinite or all frames in single file.
+        """
         return element_if_equal(self.getFramesPerFile())
 
     @rx_framesperfile.setter
@@ -565,6 +632,13 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_readfreq(self):
+        """Frequency of frames streamed out from receiver via zmq.
+        Notes
+        -----
+        Default: 1, Means every frame is streamed out. \n
+        If 2, every second frame is streamed out. \n
+        If 0, streaming timer is the timeout, after which current frame is sent out. (default timeout is 200 ms). Usually used for gui purposes.
+        """
         return element_if_equal(self.getRxZmqFrequency())
 
     @rx_readfreq.setter
@@ -573,6 +647,21 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_zmqport(self):
+        """
+        Zmq port for data to be streamed out of the receiver. 
+        Notes
+        -----
+        Also restarts receiver zmq streaming if enabled. \n
+        Default is 30001. \n
+        Modified only when using an intermediate process after receiver. \n
+        Must be different for every detector (and udp port). \n
+        Multi command will automatically increment for individual modules, use setRxZmqPort.
+        Exmaples
+        --------
+        >>> d.rx_zmqport
+        [30001, 30002, 30003, 300004]
+        >>> d.rx_zmqport = ?????
+        """
         return element_if_equal(self.getRxZmqPort())
 
     @rx_zmqport.setter
@@ -589,6 +678,20 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_zmqip(self):
+        """
+        Zmq Ip Address from which data is to be streamed out of the receiver. 
+        Notes
+        -----
+        Also restarts receiver zmq streaming if enabled. \n
+        Default is from rx_hostname. \n
+        Modified only when using an intermediate process after receiver.
+
+        Example
+        -------
+        >>> d.rx_zmqip
+        192.168.0.101
+        >>> d.rx_zmqip = ?????
+        """
         return element_if_equal(self.getRxZmqIP())
 
     @rx_zmqip.setter
@@ -737,10 +840,18 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_status(self):
+        """Gets receiver listener status. Enum: runStatus
+        Notes
+        -----
+        Options: IDLE, TRANSMITTING, RUNNING
+        >>> d.rx_status
+        runStatus.IDLE
+        """
         return element_if_equal(self.getReceiverStatus())
 
     @property
     def rx_udpsocksize(self):
+        """UDP socket buffer size in receiver. Tune rmem_default and rmem_max accordingly."""
         return element_if_equal(self.getRxUDPSocketBufferSize())
 
     @rx_udpsocksize.setter
@@ -749,6 +860,7 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_realudpsocksize(self):
+        """Gets actual udp socket buffer size. Double the size of rx_udpsocksize due to kernel bookkeeping."""
         return element_if_equal(self.getRxRealUDPSocketBufferSize())
 
     @property
@@ -771,6 +883,7 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_lock(self):
+        """Lock receiver to one client IP, 1 locks, 0 unlocks. Default is unlocked."""
         return element_if_equal(self.getRxLock())
 
     @rx_lock.setter
@@ -928,10 +1041,12 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_frameindex(self):
+        """Current frame index received in receiver during acquisition."""
         return element_if_equal(self.getRxCurrentFrameIndex())
 
     @property
     def rx_missingpackets(self):
+        """Gets the number of missing packets for each port in receiver."""
         return element_if_equal(self.getNumMissingPackets())
 
     """
@@ -1220,7 +1335,12 @@ class Detector(CppDetectorApi):
     @property
     def romode(self):
         """
-        [CTB] Readout mode. Default is analog. Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL
+        [CTB] Readout mode of detector. Enum: readoutMode
+        
+        Notes
+        ------
+        Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL
+        Default: ANALOG_ONLY
 
         Examples
         --------
@@ -1319,6 +1439,7 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_dbitoffset(self):
+        """[Ctb] Offset in bytes in digital data to skip in receiver."""
         return element_if_equal(self.getRxDbitOffset())
 
     @rx_dbitoffset.setter

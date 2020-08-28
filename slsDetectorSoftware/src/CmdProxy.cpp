@@ -970,7 +970,8 @@ std::string CmdProxy::ReceiverStatus(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "running, idle]\n\tReceiver listener status." << '\n';
+        os << "running, idle, transmitting]\n\tReceiver listener status."
+           << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
             WrongNumberOfParameters(0);
@@ -1149,7 +1150,7 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
 }
 
 /* Receiver Config */
-std::string CmdProxy::ReceiveHostname(int action) {
+std::string CmdProxy::ReceiverHostname(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
@@ -1160,7 +1161,8 @@ std::string CmdProxy::ReceiveHostname(int action) {
               "tcp port.\n\t"
               "Used for TCP control communication between client and receiver "
               "to configure receiver. Also updates receiver with detector "
-              "parameters."
+              "parameters. Also resets any prior receiver property (not on "
+              "detector). "
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {

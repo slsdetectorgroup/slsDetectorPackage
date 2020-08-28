@@ -1607,6 +1607,8 @@ Result<defs::readoutMode> Detector::getReadoutMode(Positions pos) const {
     return pimpl->Parallel(&Module::getReadoutMode, pos);
 }
 
+/** Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL \n
+ * Default: ANALOG_ONLY */
 void Detector::setReadoutMode(defs::readoutMode value, Positions pos) {
     pimpl->Parallel(&Module::setReadoutMode, pos, value);
 }

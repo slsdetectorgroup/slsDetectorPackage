@@ -812,7 +812,7 @@ class CmdProxy {
         {"txndelay_right", &CmdProxy::txndelay_right},
 
         /* Receiver Config */
-        {"rx_hostname", &CmdProxy::ReceiveHostname},
+        {"rx_hostname", &CmdProxy::ReceiverHostname},
         {"rx_tcpport", &CmdProxy::rx_tcpport},
         {"rx_fifodepth", &CmdProxy::rx_fifodepth},
         {"rx_silent", &CmdProxy::rx_silent},
@@ -1046,7 +1046,7 @@ class CmdProxy {
     std::string UDPDestinationIP(int action);
     std::string UDPDestinationIP2(int action);
     /* Receiver Config */
-    std::string ReceiveHostname(int action);
+    std::string ReceiverHostname(int action);
     /* File */
     /* ZMQ Streaming Parameters (Receiver<->Client) */
     /* Eiger Specific */
@@ -1751,7 +1751,7 @@ class CmdProxy {
 
     INTEGER_COMMAND(rx_fifodepth, getRxFifoDepth, setRxFifoDepth, StringTo<int>,
                     "[n_frames]\n\tSet the number of frames in the receiver "
-                    "fifo (buffer between listener and writer threads).");
+                    "fifo depth (buffer between listener and writer threads).");
 
     INTEGER_COMMAND(
         rx_silent, getRxSilentMode, setRxSilentMode, StringTo<int>,
@@ -1768,21 +1768,21 @@ class CmdProxy {
     INTEGER_COMMAND(rx_padding, getPartialFramesPadding,
                     setPartialFramesPadding, StringTo<int>,
                     "[0, 1]\n\tPartial frames padding enable in the "
-                    "receiver. 0 does not pad partial frames(fastest), 1 "
-                    "(default) pads partial frames");
+                    "receiver. Default: enabled. Disabling is fastest.");
 
     INTEGER_COMMAND(
         rx_udpsocksize, getRxUDPSocketBufferSize, setRxUDPSocketBufferSize,
         StringTo<int64_t>,
         "[n_size]\n\tUDP socket buffer size in receiver. Tune rmem_default and "
-        "rmem_max accordingly. rx_hostname sets it to defaults.");
+        "rmem_max accordingly.");
 
     GET_COMMAND(rx_realudpsocksize, getRxRealUDPSocketBufferSize,
                 "\n\tActual udp socket buffer size. Double the size of "
                 "rx_udpsocksize due to kernel bookkeeping.");
 
     INTEGER_COMMAND(rx_lock, getRxLock, setRxLock, StringTo<int>,
-                    "[0, 1]\n\tLock receiver to one IP, 1: locks");
+                    "[0, 1]\n\tLock receiver to one client IP, 1 locks, 0 "
+                    "unlocks. Default is unlocked. 1: locks");
 
     GET_COMMAND(
         rx_lastclient, getRxLastClientIP,
@@ -1848,8 +1848,11 @@ class CmdProxy {
 
     INTEGER_COMMAND(
         rx_readfreq, getRxZmqFrequency, setRxZmqFrequency, StringTo<int>,
-        "[nth frame]\n\tStream out every nth frame. Default is 1. 0 means "
-        "streaming every 200 ms and discarding frames in this interval.");
+        "[nth frame]\n\tFrequency of frames streamed out from receiver via "
+        "zmq\n\tDefault: 1, Means every frame is streamed out. \n\tIf 2, every "
+        "second frame is streamed out. \n\tIf 0, streaming timer is the "
+        "timeout, after which current frame is sent out. (default timeout is "
+        "200 ms). Usually used for gui purposes.");
 
     INTEGER_COMMAND(rx_zmqstartfnum, getRxZmqStartingFrame,
                     setRxZmqStartingFrame, StringTo<int>,
@@ -1880,7 +1883,7 @@ class CmdProxy {
         "[x.x.x.x]\n\tZmq Ip Address from which data is to be streamed out of "
         "the receiver. Also restarts receiver zmq streaming if enabled. "
         "Default is from rx_hostname. Modified only when using an intermediate "
-        "process between receiver and client(gui).");
+        "process between receiver.");
 
     INTEGER_COMMAND(
         zmqip, getClientZmqIp, setClientZmqIp, IpAddr,
@@ -2162,9 +2165,10 @@ class CmdProxy {
                     "[0-63]\n\t[Ctb] Sampling source signal for digital data. "
                     "For advanced users only.");
 
-    INTEGER_COMMAND(
-        rx_dbitoffset, getRxDbitOffset, setRxDbitOffset, StringTo<int>,
-        "[n_bytes]\n\t[Ctb] Offset in bytes in digital data in receiver.");
+    INTEGER_COMMAND(rx_dbitoffset, getRxDbitOffset, setRxDbitOffset,
+                    StringTo<int>,
+                    "[n_bytes]\n\t[Ctb] Offset in bytes in digital data to "
+                    "skip in receiver.");
 
     INTEGER_COMMAND(led, getLEDEnable, setLEDEnable, StringTo<int>,
                     "[0, 1]\n\t[Ctb] Switches on/off all LEDs.");
@@ -2267,8 +2271,9 @@ class CmdProxy {
                      "CTB] Timestamp at a frame start."
                      "\n\t[Gotthard2] only in continuous mode.");
 
-    GET_COMMAND(rx_frameindex, getRxCurrentFrameIndex,
-                "\n\tCurrent frame index received in receiver.");
+    GET_COMMAND(
+        rx_frameindex, getRxCurrentFrameIndex,
+        "\n\tCurrent frame index received in receiver during acquisition.");
 };
 
 } // namespace sls

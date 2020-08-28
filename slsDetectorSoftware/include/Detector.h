@@ -408,10 +408,12 @@ class Detector {
      * acquisition */
     void clearAcquiringFlag();
 
-    /** Non Blocking: Start receiver listener*/
+    /** Non Blocking: Start receiver listener and create data file if file write
+     * enabled */
     void startReceiver();
 
-    /** Non Blocking: Stop receiver listener */
+    /** Non Blocking: Stops receiver listener for detector data packets and
+       closes current data file (if file write enabled). */
     void stopReceiver();
 
     /** Non blocking: start detector acquisition
@@ -421,12 +423,15 @@ class Detector {
     /** Non blocking: abort detector acquisition */
     void stopDetector();
 
+    /** IDLE, ERROR, WAITING, RUN_FINISHED, TRANSMITTING, RUNNING, STOPPED */
     Result<defs::runStatus> getDetectorStatus(Positions pos = {}) const;
 
+    /** Options: IDLE, TRANSMITTING, RUNNING */
     Result<defs::runStatus> getReceiverStatus(Positions pos = {}) const;
 
     Result<int64_t> getFramesCaught(Positions pos = {}) const;
 
+    /** Gets the number of missing packets for each port in receiver. */
     Result<std::vector<uint64_t>>
     getNumMissingPackets(Positions pos = {}) const;
 
@@ -610,22 +615,24 @@ class Detector {
     Result<std::string> getRxHostname(Positions pos = {}) const;
 
     /**
-     * Validates and sets the receiver.
-     * Updates local receiver cache parameters
-     * Configures the detector to the receiver as UDP destination
-     * receiver is receiver hostname or IP address, can include tcp port eg.
-     * hostname:port
+     * Sets receiver hostname or IP address for each module. \n Used for TCP
+     * control communication between client and receiver to configure receiver.
+     * Also updates receiver with detector parameters. \n Also resets any prior
+     * receiver property (not on detector). \n receiver is receiver hostname or
+     * IP address, can include tcp port eg. hostname:port
      */
     void setRxHostname(const std::string &receiver, Positions pos = {});
 
-    /** multiple rx hostnames (same as setRxHostname) */
+    /** multiple rx hostnames. Single element will set it for all */
     void setRxHostname(const std::vector<std::string> &name);
 
     Result<int> getRxPort(Positions pos = {}) const;
 
-    /** Receiver TCP port (for client communication with Receiver)
-     *  module_id is -1 for all detectors, ports for each module is calculated
-     * (increments) */
+    /** TCP port for client-receiver communication. \n
+     *  Default is 1954. \n  Must be different if multiple receivers on same pc.
+     * \n Must be first command to set a receiver parameter to be able to
+     * communicate. \n Multi command will automatically increment port for
+     * individual modules.*/
     void setRxPort(int port, int module_id = -1);
 
     Result<int> getRxFifoDepth(Positions pos = {}) const;
@@ -635,15 +642,15 @@ class Detector {
 
     Result<bool> getRxSilentMode(Positions pos = {}) const;
 
-    /** receiver prints hardly any information while acquiring */
+    /** Switch on or off receiver text output during acquisition */
     void setRxSilentMode(bool value, Positions pos = {});
 
     Result<defs::frameDiscardPolicy>
     getRxFrameDiscardPolicy(Positions pos = {}) const;
 
     /**
-     * default NO_DISCARD
      * Options: NO_DISCARD, DISCARD_EMPTY_FRAMES, DISCARD_PARTIAL_FRAMES
+     * Default: NO_DISCARD
      * discard partial frames is the fastest
      */
     void setRxFrameDiscardPolicy(defs::frameDiscardPolicy f,
@@ -651,22 +658,28 @@ class Detector {
 
     Result<bool> getPartialFramesPadding(Positions pos = {}) const;
 
-    /** padding enabled. Disabling padding is the fastest */
+    /** Default: padding enabled. Disabling padding is the fastest */
     void setPartialFramesPadding(bool value, Positions pos = {});
 
     Result<int64_t> getRxUDPSocketBufferSize(Positions pos = {}) const;
 
+    /** UDP socket buffer size in receiver. Tune rmem_default and rmem_max
+     * accordingly */
     void setRxUDPSocketBufferSize(int64_t udpsockbufsize, Positions pos = {});
+
     /** TODO:
-     * Linux kernel allocates twice the amount you set for bookkeeping purposes
+     * Gets actual udp socket buffer size. Double the size of rx_udpsocksize due
+     * to kernel bookkeeping.
      */
     Result<int64_t> getRxRealUDPSocketBufferSize(Positions pos = {}) const;
 
     Result<bool> getRxLock(Positions pos = {});
 
-    /** locks receiver server to client IP */
+    /** Lock receiver to one client IP, 1 locks, 0 unlocks. Default is unlocked.
+     */
     void setRxLock(bool value, Positions pos = {});
 
+    /** Client IP Address that last communicated with the receiver */
     Result<sls::IpAddr> getRxLastClientIP(Positions pos = {}) const;
 
     Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
@@ -718,7 +731,8 @@ class Detector {
 
     Result<int> getFramesPerFile(Positions pos = {}) const;
 
-    /** 0 will set frames per file to unlimited */
+    /** Default depends on detector type. \n 0 will set frames per file to
+     * unlimited */
     void setFramesPerFile(int n, Positions pos = {});
 
     /**************************************************
@@ -741,12 +755,11 @@ class Detector {
 
     Result<int> getRxZmqFrequency(Positions pos = {}) const;
 
-    /** freq is nth frame streamed out of receiver.
-     * If 0, streaming timer is the timeout,
-     * after which current frame sent out. Default is 0 at 200 ms.
-     * Default is 1: send every frame.
-     * If you want just to see some frames for gui purposes, set to 0 (200ms
-     * default timer).
+    /** Frequency of frames streamed out from receiver via zmq. \n Default: 1,
+     * Means every frame is streamed out. \n If 2, every second frame is
+     * streamed out. \n If 0, streaming timer is the timeout, after which
+     * current frame is sent out. (default timeout is 200 ms). Usually used for
+     * gui purposes.
      */
     void setRxZmqFrequency(int freq, Positions pos = {});
 
@@ -769,14 +782,21 @@ class Detector {
 
     Result<int> getRxZmqPort(Positions pos = {}) const;
 
-    /**
-     * module_id is -1 for all detectors, ports for each module is calculated
-     * (increments) Restarts receiver zmq sockets only if it was already enabled
+    /** Zmq port for data to be streamed out of the receiver. \n
+     * Also restarts receiver zmq streaming if enabled. \n Default is 30001. \n
+     * Modified only when using an intermediate process after receiver. \n Must
+     * be different for every detector (and udp port). \n module_id is -1 for
+     * all detectors, ports for each module is calculated (increments) Restarts
+     * receiver zmq sockets only if it was already enabled
      */
     void setRxZmqPort(int port, int module_id = -1);
 
     Result<IpAddr> getRxZmqIP(Positions pos = {}) const;
 
+    /** Zmq Ip Address from which data is to be streamed out of the receiver. \n
+     * Also restarts receiver zmq streaming if enabled. \n Default is from
+     * rx_hostname. \n Modified only when using an intermediate process between
+     * receiver. */
     void setRxZmqIP(const IpAddr ip, Positions pos = {});
 
     Result<int> getClientZmqPort(Positions pos = {}) const;

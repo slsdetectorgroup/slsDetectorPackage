@@ -1260,7 +1260,8 @@ class Detector {
     /** [CTB] */
     Result<std::vector<int>> getRxDbitList(Positions pos = {}) const;
 
-    /** [CTB] list contains the set of digital signal bits (0-63) to save */
+    /** [CTB] list contains the set of digital signal bits (0-63) to save, must
+     * be non repetitive */
     void setRxDbitList(const std::vector<int> &list, Positions pos = {});
 
     /** [CTB] */

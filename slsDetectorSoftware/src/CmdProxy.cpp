@@ -1989,8 +1989,7 @@ std::string CmdProxy::ReceiverDbitList(int action) {
         os << "[all] or [i0] [i1] [i2]... \n\t[Ctb] List of digital signal "
               "bits read out. If all is used instead of a list, all digital "
               "bits (64) enabled. Each element in list can be 0 - 63 and must "
-              "be non "
-              "repetitive."
+              "be non repetitive."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {

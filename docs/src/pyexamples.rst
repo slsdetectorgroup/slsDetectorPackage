@@ -1,7 +1,46 @@
 Examples
 ================
 
-Some short hints on how to use the detector
+Some short examples on how to use slsdet. If something is missing don't hesitate to
+open an issue in our our  `github repo
+<https://github.com/slsdetectorgroup/slsDetectorPackage>`_. 
+
+
+------------------------------------
+Converting numbers to hex
+------------------------------------
+
+Python support entering numbers in  format by using the 0x prefix. However, when reading 
+back you will get a normal integer. This can then be converted to a hex string representation
+using the built in hex() function. 
+
+.. code-block :: python
+
+    from slsdet import Detector
+    d = Detector()
+    >>> d.patwait0 = 0xaa
+    >>> d.patwait0
+    170
+
+    # Convert to  string
+    >>> (d.patwait0)
+    '0xaa'
+
+For multiple values one can use a list comprehension to loop over the values. 
+
+.. code-block :: python
+
+    >>> values = [1,2,3,4,5]
+    >>> [(v) for v in values]
+    ['0x1', '0x2', '0x3', '0x4', '0x5']
+
+    # or to a single string by passing the list to .join
+    >>> ', '.join([hex(v) for v in values])
+    '0x1, 0x2, 0x3, 0x4, 0x5'
+
+
+
+    
 
 ------------------------
 Simple threshold scan

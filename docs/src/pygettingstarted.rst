@@ -1,6 +1,25 @@
 Getting Started 
 ==================
 
+
+---------------------
+PYTHONPATH 
+---------------------
+
+If you install slsdet using conda everything is set up and you can
+directly start using the Python bindings. However, if you build 
+from source you need to tell Python where to find slsdet. This
+is be done by adding your build/bin directory to PYTHONPATH. 
+
+.. code-block:: bash
+
+    export PYTHONPATH = /path/to/your/build/bin:$PYTHONPATH
+
+.. note ::
+
+    Don't forget to compile with the option SLS_USE_PYTHON=ON to enable
+    the Python bindings or if you use the cmk.sh script -p.
+
 --------------------------------------
 Which detector class should I use? 
 --------------------------------------
@@ -53,11 +72,15 @@ and temperatures.
 Hey, there seems to be two APIs?
 ----------------------------------
 
-To make the Python approachable for both command line users and people 
-used to the C++ API we provide both a property based API similar to the 
-command line and a direct copy of the C++ API. There is also an underlying
-design reason for the two APIs since we auto generate the bindings to
-the C++ code. 
+To make the Python API approachable, both if you come from the command line 
+or are using the C++ API, we provide two interfaces to the detector. 
+One is property based and tries to stay as close to the command line syntax
+as is possible, and the other one directly maps the C++ API found in Detector.h.
+There is also an underlying design reason for the two APIs since we auto 
+generate the bindings to the C++ code using a mix of pybind11 and clang-tools. 
+The property based API covers most of the functionality but in some cases 
+you have to reach for the C++ like interface. 
+
 
 ::  
 
@@ -69,7 +92,7 @@ the C++ code.
     # or a bit more pythonic
     d.exptime = 0.1
 
-The c++ style API offers a bit more control over custom access to modules
+The c++ style API offers more control over access to individual modules
 in a large detector.
 
 :: 
@@ -132,6 +155,33 @@ while find returns a list of names.
     >>> find('exptime')
     ['exptime', 'getExptime', 'getExptimeForAllGates', 'getExptimeLeft', 
     'getSubExptime', 'setExptime', 'setSubExptime', 'subexptime']
+
+
+------------------------------------
+Finding out what the function does
+------------------------------------
+
+To access the documentation of a function directly from the Python prompt use help(). 
+
+.. code-block :: python
+
+    >>> help(Detector.period)
+    Help on property:
+
+        Period between frames, accepts either a value in seconds or datetime.timedelta
+
+        Note
+        -----
+        :getter: always returns in seconds. To get in datetime.delta, use getPeriod
+
+        Examples
+        -----------
+        >>> d.period = 1.05
+        >>> d.period = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>> d.period
+        181.23
+        >>> d.getPeriod()
+        [datetime.timedelta(seconds=181, microseconds=230000)]
 
 
 ----------------------

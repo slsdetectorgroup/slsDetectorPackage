@@ -1892,7 +1892,7 @@ int Feb_Control_GetRightFPGATemp() {
     }
     unsigned int temperature = 0;
     if (!Feb_Interface_ReadRegister(Feb_Control_rightAddress, FEB_REG_STATUS,
-                               &temperature) {
+                                    &temperature)) {
         LOG(logERROR, ("Trouble reading FEB_REG_STATUS reg to get right feb "
                        "temperature\n"));
         return 0;
@@ -1911,7 +1911,7 @@ int64_t Feb_Control_GetMeasuredPeriod() {
     }
     unsigned int value = 0;
     if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress, MEAS_PERIOD_REG,
-                               &value) {
+                                    &value)) {
         LOG(logERROR,
             ("Trouble reading MEAS_PERIOD_REG reg to get measured period\n"));
         return 0;
@@ -1925,7 +1925,7 @@ int64_t Feb_Control_GetSubMeasuredPeriod() {
     }
     unsigned int value = 0;
     if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress, MEAS_SUBPERIOD_REG,
-                               &value) {
+                                    &value)) {
         LOG(logERROR, ("Trouble reading MEAS_SUBPERIOD_REG reg to get measured "
                        "sub period\n"));
         return 0;

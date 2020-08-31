@@ -140,7 +140,7 @@ can use dir()
     'counters', 'daclist', 'dacvalues', 'dbitclk', 'dbitphase' ...
 
 Since the list for Detector is rather long it's an good idea to filter it. 
-This list comprehension gives you properties and methods containing time in 
+The following example gives you properties and methods containing time in 
 their name.
 
 :: 

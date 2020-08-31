@@ -2,6 +2,22 @@ Getting Started
 ==================
 
 
+--------------------
+Which Python?  
+--------------------
+
+We require at lest Python 3.6 and strongly recommended that you don't use the system
+Python installation. The examples in this documentation uses `conda
+<https://docs.conda.io/en/latest/miniconda.html>`_ since it provides good support
+also for non Python packages but there are also other alternatives like, pyenv. 
+
+Using something like conda also allows you to quickly switch beteen different Python 
+environments. 
+
+.. warning ::
+
+    If you use conda avoid also installing packages with pip. 
+
 ---------------------
 PYTHONPATH 
 ---------------------

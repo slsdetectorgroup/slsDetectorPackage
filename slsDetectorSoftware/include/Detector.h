@@ -422,11 +422,12 @@ class Detector {
        closes current data file (if file write enabled). */
     void stopReceiver();
 
-    /** Non blocking: start detector acquisition
-     * detector status changes from RUNNING to IDLE when finished */
+    /** Non blocking: start detector acquisition. Status changes to RUNNING or
+     * WAITING and automatically returns to idle at the end of acquisition. */
     void startDetector();
 
-    /** Non blocking: abort detector acquisition */
+    /** Non blocking: Abort detector acquisition. Status changes to IDLE or
+     * STOPPED */
     void stopDetector();
 
     /** IDLE, ERROR, WAITING, RUN_FINISHED, TRANSMITTING, RUNNING, STOPPED */
@@ -444,7 +445,8 @@ class Detector {
     /** [Eiger][Jungfrau] */
     Result<uint64_t> getStartingFrameNumber(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau] */
+    /** [Eiger][Jungfrau] Stopping acquiistion might result in different frame
+     * numbers for different modules.*/
     void setStartingFrameNumber(uint64_t value, Positions pos = {});
 
     /** [Eiger] Sends an internal software trigger to the detector */
@@ -995,21 +997,23 @@ class Detector {
     /** [Jungfrau] Advanced TODO naming */
     Result<int> getNumberOfAdditionalStorageCells(Positions pos = {}) const;
 
-    /** [Jungfrau] Advanced */
+    /** [Jungfrau] Advanced \n
+     * Options: 0 - 15. Default: 0. \n
+     * The #images = #frames x #triggers x (#storagecells + 1) */
     void setNumberOfAdditionalStorageCells(int value);
 
     /** [Jungfrau] Advanced */
     Result<int> getStorageCellStart(Positions pos = {}) const;
 
     /** [Jungfrau] Advanced. Sets the storage cell storing the first acquisition
-     * of the series. Options: 0-15
+     * of the series. Options: 0-15. Default: 15.
      */
     void setStorageCellStart(int cell, Positions pos = {});
 
     /** [Jungfrau] Advanced*/
     Result<ns> getStorageCellDelay(Positions pos = {}) const;
 
-    /** [Jungfrau] Advanced
+    /** [Jungfrau] Advanced \n
      * Options: (0-1638375 ns (resolution of 25ns) */
     void setStorageCellDelay(ns value, Positions pos = {});
 

@@ -1609,11 +1609,14 @@ class CmdProxy {
         "\n\tStops receiver listener for detector data packets and closes "
         "current data file (if file write enabled).");
 
-    EXECUTE_SET_COMMAND_NOID(start, startDetector,
-                             "\n\tStarts detector state machine.");
+    EXECUTE_SET_COMMAND_NOID(
+        start, startDetector,
+        "\n\tStarts detector acquisition. Status changes to RUNNING or WAITING "
+        "and automatically returns to idle at the end of acquisition.");
 
-    EXECUTE_SET_COMMAND_NOID(stop, stopDetector,
-                             "\n\tStops detector state machine.");
+    EXECUTE_SET_COMMAND_NOID(
+        stop, stopDetector,
+        "\n\tAbort detector acquisition. Status changes to IDLE or STOPPED.");
 
     GET_COMMAND(rx_framescaught, getFramesCaught,
                 "\n\tNumber of frames caught by receiver.");
@@ -1623,8 +1626,9 @@ class CmdProxy {
 
     INTEGER_COMMAND(startingfnum, getStartingFrameNumber,
                     setStartingFrameNumber, StringTo<uint64_t>,
-                    "[n_value]\n\t[Eiger[Jungfrau] Starting frame number for "
-                    "next acquisition.");
+                    "[n_value]\n\t[Eiger][Jungfrau] Starting frame number for "
+                    "next acquisition. Stopping acquiistion might result in "
+                    "different frame numbers for different modules.");
 
     EXECUTE_SET_COMMAND(
         trigger, sendSoftwareTrigger,
@@ -1902,7 +1906,8 @@ class CmdProxy {
 
     TIME_COMMAND(subdeadtime, getSubDeadTime, setSubDeadTime,
                  "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger] Dead time "
-                 "of EIGER subframes. Subperiod = subexptime + subdeadtime.");
+                 "of EIGER subframes in 32 bit mode. Subperiod = subexptime + "
+                 "subdeadtime.");
 
     STRING_COMMAND(
         settingspath, getSettingsPath, setSettingsPath,
@@ -1996,7 +2001,7 @@ class CmdProxy {
         storagecell_delay, getStorageCellDelay, setStorageCellDelay,
         "[duration (0-1638375 ns)] [(optional unit) ns|us|ms|s]\n\t[Jungfrau] "
         "Additional time delay between 2 consecutive exposures in burst mode "
-        "(total time gap = (ET + 1 + 86) * 25ns). For advanced users only.");
+        "(resolution of 25ns). For advanced users only.");
 
     /* Gotthard Specific */
     TIME_GET_COMMAND(exptimel, getExptimeLeft,

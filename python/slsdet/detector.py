@@ -346,7 +346,7 @@ class Detector(CppDetectorApi):
         return ut.reduce_time(self.getDelayAfterTriggerLeft())
 
     def start(self):
-        """Start detector"""
+        """Start detector acquisition. Status changes to RUNNING or WAITING and automatically returns to idle at the end of acquisition."""
         self.startDetector()
 
     def rx_start(self):
@@ -358,7 +358,7 @@ class Detector(CppDetectorApi):
         self.stopReceiver()
 
     def stop(self):
-        """Stop detector"""
+        """Abort detector acquisition. Status changes to IDLE or STOPPED"""
         self.stopDetector()
 
     # Time
@@ -369,6 +369,7 @@ class Detector(CppDetectorApi):
 
     @property
     def startingfnum(self):
+        """[Eiger][Jungfrau] Starting frame number for next acquisition. Stopping acquiistion might result in different frame numbers for different modules. """
         return element_if_equal(self.getStartingFrameNumber())
 
     @startingfnum.setter
@@ -460,7 +461,7 @@ class Detector(CppDetectorApi):
 
         Example
         --------
-        >>> d.rx_discardpolicy = slsdet.frameDiscardPolicy.NO_DISCARD
+        >>> d.rx_discardpolicy = frameDiscardPolicy.NO_DISCARD
         >>> d.rx_discardpolicy
         frameDiscardPolicy.NO_DISCARD
         """
@@ -528,7 +529,7 @@ class Detector(CppDetectorApi):
 
             Example
             --------
-            d.fformat = slsdet.fileFormat.BINARY
+            d.fformat = fileFormat.BINARY
 
             """
         return element_if_equal(self.getFileFormat())
@@ -849,6 +850,13 @@ class Detector(CppDetectorApi):
 
     @property
     def status(self):
+        """Gets detector status. Enum: runStatus
+        Notes
+        -----
+        Options: IDLE, ERROR, WAITING, RUN_FINISHED, TRANSMITTING, RUNNING, STOPPED
+        >>> d.status
+        runStatus.IDLE
+        """
         return element_if_equal(self.getDetectorStatus())
 
     @property
@@ -1076,6 +1084,22 @@ class Detector(CppDetectorApi):
 
     @property
     def subexptime(self):
+        """
+        [Eiger] Exposure time of EIGER subframes in 32 bit mode.
+        Note
+        ----
+        Subperiod = subexptime + subdeadtime.
+        :getter: always returns in seconds. To get in datetime.delta, use getSubExptime
+
+        Examples
+        -----------
+        >>> d.subexptime = 1.230203
+        >>> d.subexptime = datetime.timedelta(seconds = 1.23, microseconds = 203)
+        >>> d.subexptime
+        1.230203
+        >>> d.getSubExptime()
+        [datetime.timedelta(seconds = 1, microseconds = 203)]
+        """
         res = self.getSubExptime()
         return reduce_time(res)
 
@@ -1085,8 +1109,24 @@ class Detector(CppDetectorApi):
 
     @property
     def subdeadtime(self):
+        """
+        [Eiger] Dead time of EIGER subframes in 32 bit mode, accepts either a value in seconds or datetime.timedelta
+        Note
+        ----
+        Subperiod = subexptime + subdeadtime.
+        :getter: always returns in seconds. To get in datetime.delta, use getSubDeadTime
+
+        Examples
+        -----------
+        >>> d.subdeadtime = 1.230203
+        >>> d.subdeadtime = datetime.timedelta(seconds = 1.23, microseconds = 203)
+        >>> d.subdeadtime
+        1.230203
+        >>> d.getSubDeadTime()
+        [datetime.timedelta(seconds = 1, microseconds = 203)]
+        """
         res = self.getSubDeadTime()
-        reduce_time(res)
+        return reduce_time(res)
 
     @subdeadtime.setter
     def subdeadtime(self, t):
@@ -1196,6 +1236,14 @@ class Detector(CppDetectorApi):
     @property
     @element
     def storagecells(self):
+        """
+        [Jungfrau] Number of additional storage cells. 
+        Note
+        ----
+        For advanced users only. \n
+        Options: 0 - 15. Default is 0.
+        The #images = #frames x #triggers x (#storagecells + 1)
+        """
         return self.getNumberOfAdditionalStorageCells()
 
     @storagecells.setter
@@ -1205,6 +1253,14 @@ class Detector(CppDetectorApi):
     @property
     @element
     def storagecell_start(self):
+        """
+        [Jungfrau] Storage cell that stores the first acquisition of the series. 
+        
+        Note
+        ----
+        For advanced users only.
+        Options 0-15. Default is 15. \n
+        """
         return self.getStorageCellStart()
 
     @storagecell_start.setter
@@ -1214,6 +1270,23 @@ class Detector(CppDetectorApi):
     @property
     @element
     def storagecell_delay(self):
+        """
+        [Jungfrau] Additional time delay between 2 consecutive exposures in burst mode, accepts either a value in seconds or datetime.timedelta
+        Note
+        -----
+        For advanced users only \n
+        Value: 0-1638375 ns (resolution of 25ns) \n
+        :getter: always returns in seconds. To get in datetime.delta, use getStorageCellDelay
+
+        Examples
+        -----------
+        >>> d.storagecell_delay = 0.00056
+        >>> d.storagecell_delay = datetime.timedelta(microseconds = 45)
+        >>> d.storagecell_delay
+        4.5e-05
+        >>> d.getStorageCellDelay()
+        [datetime.timedelta(microseconds=45)]
+        """
         return ut.reduce_time(self.getStorageCellDelay())
 
     @storagecell_delay.setter
@@ -1370,7 +1443,7 @@ class Detector(CppDetectorApi):
 
         Examples
         --------
-        >>> d.romode = slsdet.readoutMode.ANALOG_ONLY
+        >>> d.romode = readoutMode.ANALOG_ONLY
         >>> d.romode
         readoutMode.ANALOG_ONLY
         """

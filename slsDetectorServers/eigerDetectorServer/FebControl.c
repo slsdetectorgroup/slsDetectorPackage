@@ -986,11 +986,16 @@ int Feb_Control_StartAcquisition() {
 int Feb_Control_StopAcquisition() { return Feb_Control_Reset(); }
 
 int Feb_Control_SoftwareTrigger() {
-    unsigned int orig_value = 0;
-    Feb_Interface_ReadRegister(Feb_Control_AddressToAll(), DAQ_REG_CHIP_CMDS,
-                               &orig_value);
-    unsigned int cmd = orig_value | DAQ_REG_CHIP_CMDS_INT_TRIGGER;
     if (Feb_Control_activated) {
+        unsigned int orig_value = 0;
+        if (!Feb_Interface_ReadRegister(Feb_Control_AddressToAll(),
+                                        DAQ_REG_CHIP_CMDS, &orig_value)) {
+            LOG(logERROR, ("Could not read DAQ_REG_CHIP_CMDS to send software "
+                           "trigger\n"));
+            return 0;
+        }
+        unsigned int cmd = orig_value | DAQ_REG_CHIP_CMDS_INT_TRIGGER;
+
         // set trigger bit
         LOG(logDEBUG1, ("Setting Trigger, Register:0x%x\n", cmd));
         if (!Feb_Interface_WriteRegister(Feb_Control_AddressToAll(),
@@ -1862,9 +1867,16 @@ int Feb_Control_PrintCorrectedValues() {
 // So if software says now 40.00 you neeed to convert to mdegrees 40000(call it
 // A1) and then A1/65536/0.00198421639-273.15
 int Feb_Control_GetLeftFPGATemp() {
+    if (!Feb_Control_activated) {
+        return 0;
+    }
     unsigned int temperature = 0;
-    Feb_Interface_ReadRegister(Feb_Control_leftAddress, FEB_REG_STATUS,
-                               &temperature);
+    if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress, FEB_REG_STATUS,
+                                    &temperature)) {
+        LOG(logERROR, ("Trouble reading FEB_REG_STATUS reg to get left feb "
+                       "temperature\n"));
+        return 0;
+    }
 
     temperature = temperature >> 16;
     temperature =
@@ -1875,9 +1887,16 @@ int Feb_Control_GetLeftFPGATemp() {
 }
 
 int Feb_Control_GetRightFPGATemp() {
+    if (!Feb_Control_activated) {
+        return 0;
+    }
     unsigned int temperature = 0;
-    Feb_Interface_ReadRegister(Feb_Control_rightAddress, FEB_REG_STATUS,
-                               &temperature);
+    if (!Feb_Interface_ReadRegister(Feb_Control_rightAddress, FEB_REG_STATUS,
+                               &temperature) {
+        LOG(logERROR, ("Trouble reading FEB_REG_STATUS reg to get right feb "
+                       "temperature\n"));
+        return 0;
+    }
     temperature = temperature >> 16;
     temperature =
         ((((float)(temperature) / 65536.0f) / 0.00198421639f) - 273.15f) *
@@ -1887,15 +1906,29 @@ int Feb_Control_GetRightFPGATemp() {
 }
 
 int64_t Feb_Control_GetMeasuredPeriod() {
+    if (!Feb_Control_activated) {
+        return 0;
+    }
     unsigned int value = 0;
-    Feb_Interface_ReadRegister(Feb_Control_leftAddress, MEAS_PERIOD_REG,
-                               &value);
+    if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress, MEAS_PERIOD_REG,
+                               &value) {
+        LOG(logERROR,
+            ("Trouble reading MEAS_PERIOD_REG reg to get measured period\n"));
+        return 0;
+    }
     return (int64_t)value * 10;
 }
 
 int64_t Feb_Control_GetSubMeasuredPeriod() {
+    if (!Feb_Control_activated) {
+        return 0;
+    }
     unsigned int value = 0;
-    Feb_Interface_ReadRegister(Feb_Control_leftAddress, MEAS_SUBPERIOD_REG,
-                               &value);
+    if (!Feb_Interface_ReadRegister(Feb_Control_leftAddress, MEAS_SUBPERIOD_REG,
+                               &value) {
+        LOG(logERROR, ("Trouble reading MEAS_SUBPERIOD_REG reg to get measured "
+                       "sub period\n"));
+        return 0;
+    }
     return (int64_t)value * 10;
 }

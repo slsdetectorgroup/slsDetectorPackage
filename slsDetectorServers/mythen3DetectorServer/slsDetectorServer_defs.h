@@ -36,11 +36,12 @@
 #define DEFAULT_DELAY_AFTER_TRIGGER      (0)
 #define DEFAULT_HIGH_VOLTAGE             (0)
 #define DEFAULT_TIMING_MODE              (AUTO_TIMING)
-#define DEFAULT_READOUT_C0               (10) //(125000000) // rdo_clk, 125 MHz
-#define DEFAULT_READOUT_C1               (10) //(125000000) // rdo_x2_clk, 125 MHz
+#define DEFAULT_READOUT_C0               (8) //(125000000) // rdo_clk, 125 MHz
+#define DEFAULT_READOUT_C1               (8) //(125000000) // rdo_x2_clk, 125 MHz
 #define DEFAULT_SYSTEM_C0                (4) //(250000000) // run_clk, 250 MHz
-#define DEFAULT_SYSTEM_C1                (8) //(125000000) // chip_clk, 125 MHz
-#define DEFAULT_SYSTEM_C2                (8) //(125000000) // sync_clk, 125 MHz
+#define DEFAULT_SYSTEM_C1                (8) //(125000000) // sync_clk, 125 MHz
+#define DEFAULT_SYSTEM_C2                (8) //(125000000) // str_clk, 125 MHz
+#define DEFAULT_SYSTEM_C3                (5) //(200000000) // smp_clk, 200 MHz (only for timing receiver)
 #define DEFAULT_ASIC_LATCHING_NUM_PULSES (10)
 #define DEFAULT_MSTR_OTPT_P1_NUM_PULSES  (20)
 
@@ -48,7 +49,7 @@
 #define MAX_TIMESLOT_VAL        (0xFFFFFF)
 #define IP_HEADER_SIZE          (20)
 #define FIXED_PLL_FREQUENCY     (020000000)  // 20MHz
-#define READOUT_PLL_VCO_FREQ_HZ (1250000000) // 1.25GHz
+#define READOUT_PLL_VCO_FREQ_HZ (1000000000) // 1GHz
 #define SYSTEM_PLL_VCO_FREQ_HZ  (1000000000) // 1GHz
 #define MAX_NUM_DESERIALIZERS   (40)
 
@@ -105,10 +106,11 @@ enum CLKINDEX {
     SYSTEM_C0,
     SYSTEM_C1,
     SYSTEM_C2,
+    SYSTEM_C3,
     NUM_CLOCKS
 };
 #define CLK_NAMES                                                              \
-    "READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2"
+    "READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2", "SYSTEM_C3"
 enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
 
 /* Struct Definitions */

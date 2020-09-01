@@ -378,6 +378,7 @@ void setupDetector() {
     clkDivider[SYSTEM_C0] = DEFAULT_SYSTEM_C0;
     clkDivider[SYSTEM_C1] = DEFAULT_SYSTEM_C1;
     clkDivider[SYSTEM_C2] = DEFAULT_SYSTEM_C2;
+    clkDivider[SYSTEM_C3] = DEFAULT_SYSTEM_C3;
 
     highvoltage = 0;
     trimmingPrint = logINFO;
@@ -2044,6 +2045,7 @@ int setClockDivider(enum CLKINDEX ind, int val) {
         clkPhase[SYSTEM_C0] = 0;
         clkPhase[SYSTEM_C1] = 0;
         clkPhase[SYSTEM_C2] = 0;
+        clkPhase[SYSTEM_C3] = 0;
     }
 
     // set the phase in degrees (reset by pll)

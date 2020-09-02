@@ -78,23 +78,36 @@ void qTabAdvanced::Initialization() {
             SLOT(SetStopPort(int)));
     connect(dispDetectorUDPIP, SIGNAL(editingFinished()), this,
             SLOT(SetDetectorUDPIP()));
+    connect(dispDetectorUDPIP, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetDetectorUDPIP()));
     connect(dispDetectorUDPMAC, SIGNAL(editingFinished()), this,
             SLOT(SetDetectorUDPMAC()));
+    connect(dispDetectorUDPMAC, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetDetectorUDPMAC()));
     connect(spinZMQPort, SIGNAL(valueChanged(int)), this,
             SLOT(SetCltZMQPort(int)));
     connect(dispZMQIP, SIGNAL(editingFinished()), this, SLOT(SetCltZMQIP()));
+    connect(dispZMQIP, SIGNAL(returnPressed()), this, SLOT(ForceSetCltZMQIP()));
     connect(dispRxrHostname, SIGNAL(editingFinished()), this,
             SLOT(SetRxrHostname()));
+    connect(dispRxrHostname, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetRxrHostname()));
     connect(spinRxrTCPPort, SIGNAL(valueChanged(int)), this,
             SLOT(SetRxrTCPPort(int)));
     connect(spinRxrUDPPort, SIGNAL(valueChanged(int)), this,
             SLOT(SetRxrUDPPort(int)));
     connect(dispRxrUDPIP, SIGNAL(editingFinished()), this, SLOT(SetRxrUDPIP()));
+    connect(dispRxrUDPIP, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetRxrUDPIP()));
     connect(dispRxrUDPMAC, SIGNAL(editingFinished()), this,
             SLOT(SetRxrUDPMAC()));
+    connect(dispRxrUDPMAC, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetRxrUDPMAC()));
     connect(spinRxrZMQPort, SIGNAL(valueChanged(int)), this,
             SLOT(SetRxrZMQPort(int)));
     connect(dispRxrZMQIP, SIGNAL(editingFinished()), this, SLOT(SetRxrZMQIP()));
+    connect(dispRxrZMQIP, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetRxrZMQIP()));
 
     // roi
     if (tab_roi->isEnabled()) {
@@ -420,8 +433,9 @@ void qTabAdvanced::SetStopPort(int port) {
                  &qTabAdvanced::GetStopPort)
 }
 
-void qTabAdvanced::SetDetectorUDPIP() {
-    if (dispDetectorUDPIP->isModified()) {
+void qTabAdvanced::SetDetectorUDPIP(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispDetectorUDPIP->isModified() || force) {
         dispDetectorUDPIP->setModified(false);
         std::string s = dispDetectorUDPIP->text().toAscii().constData();
         LOG(logINFO) << "Setting Detector UDP IP:" << s;
@@ -435,8 +449,11 @@ void qTabAdvanced::SetDetectorUDPIP() {
     }
 }
 
-void qTabAdvanced::SetDetectorUDPMAC() {
-    if (dispDetectorUDPMAC->isModified()) {
+void qTabAdvanced::ForceSetDetectorUDPIP() { SetDetectorUDPIP(true); };
+
+void qTabAdvanced::SetDetectorUDPMAC(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispDetectorUDPMAC->isModified() || force) {
         dispDetectorUDPMAC->setModified(false);
         std::string s = dispDetectorUDPMAC->text().toAscii().constData();
         LOG(logINFO) << "Setting Detector UDP MAC:" << s;
@@ -450,6 +467,8 @@ void qTabAdvanced::SetDetectorUDPMAC() {
     }
 }
 
+void qTabAdvanced::ForceSetDetectorUDPMAC() { SetDetectorUDPMAC(true); }
+
 void qTabAdvanced::SetCltZMQPort(int port) {
     LOG(logINFO) << "Setting Client ZMQ Port:" << port;
     try {
@@ -460,8 +479,9 @@ void qTabAdvanced::SetCltZMQPort(int port) {
                  &qTabAdvanced::GetCltZMQPort)
 }
 
-void qTabAdvanced::SetCltZMQIP() {
-    if (dispZMQIP->isModified()) {
+void qTabAdvanced::SetCltZMQIP(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispZMQIP->isModified() || force) {
         dispZMQIP->setModified(false);
         std::string s = dispZMQIP->text().toAscii().constData();
         LOG(logINFO) << "Setting Client ZMQ IP:" << s;
@@ -475,8 +495,11 @@ void qTabAdvanced::SetCltZMQIP() {
     }
 }
 
-void qTabAdvanced::SetRxrHostname() {
-    if (dispRxrHostname->isModified()) {
+void qTabAdvanced::ForceSetCltZMQIP() { SetCltZMQIP(true); }
+
+void qTabAdvanced::SetRxrHostname(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispRxrHostname->isModified() || force) {
         dispRxrHostname->setModified(false);
         std::string s = dispRxrHostname->text().toAscii().constData();
         LOG(logINFO) << "Setting Receiver Hostname:" << s;
@@ -491,6 +514,8 @@ void qTabAdvanced::SetRxrHostname() {
         SetDetector();
     }
 }
+
+void qTabAdvanced::ForceSetRxrHostname() { SetRxrHostname(true); }
 
 void qTabAdvanced::SetRxrTCPPort(int port) {
     LOG(logINFO) << "Setting Receiver TCP Port:" << port;
@@ -512,8 +537,9 @@ void qTabAdvanced::SetRxrUDPPort(int port) {
                  &qTabAdvanced::GetRxrUDPPort)
 }
 
-void qTabAdvanced::SetRxrUDPIP() {
-    if (dispRxrUDPIP->isModified()) {
+void qTabAdvanced::SetRxrUDPIP(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispRxrUDPIP->isModified() || force) {
         dispRxrUDPIP->setModified(false);
         std::string s = dispRxrUDPIP->text().toAscii().constData();
         LOG(logINFO) << "Setting Receiver UDP IP:" << s;
@@ -527,8 +553,11 @@ void qTabAdvanced::SetRxrUDPIP() {
     }
 }
 
-void qTabAdvanced::SetRxrUDPMAC() {
-    if (dispRxrUDPMAC->isModified()) {
+void qTabAdvanced::ForceSetRxrUDPIP() { SetRxrUDPIP(true); }
+
+void qTabAdvanced::SetRxrUDPMAC(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispRxrUDPMAC->isModified() || force) {
         dispRxrUDPMAC->setModified(false);
         std::string s = dispRxrUDPMAC->text().toAscii().constData();
         LOG(logINFO) << "Setting Receiver UDP MAC:" << s;
@@ -542,6 +571,8 @@ void qTabAdvanced::SetRxrUDPMAC() {
     }
 }
 
+void qTabAdvanced::ForceSetRxrUDPMAC() { SetRxrUDPMAC(true); }
+
 void qTabAdvanced::SetRxrZMQPort(int port) {
     LOG(logINFO) << "Setting Receiver ZMQ Port:" << port;
     try {
@@ -552,8 +583,9 @@ void qTabAdvanced::SetRxrZMQPort(int port) {
                  &qTabAdvanced::GetRxrZMQPort)
 }
 
-void qTabAdvanced::SetRxrZMQIP() {
-    if (dispRxrZMQIP->isModified()) {
+void qTabAdvanced::SetRxrZMQIP(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispRxrZMQIP->isModified() || force) {
         dispRxrZMQIP->setModified(false);
         std::string s = dispRxrZMQIP->text().toAscii().constData();
         LOG(logINFO) << "Setting Receiver ZMQ IP:" << s;
@@ -565,6 +597,8 @@ void qTabAdvanced::SetRxrZMQIP() {
                      &qTabAdvanced::GetRxrZMQIP)
     }
 }
+
+void qTabAdvanced::ForceSetRxrZMQIP() { SetRxrZMQIP(true); }
 
 void qTabAdvanced::GetROI() {
     LOG(logDEBUG) << "Getting ROI";

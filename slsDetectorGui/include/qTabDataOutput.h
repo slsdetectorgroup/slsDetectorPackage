@@ -13,7 +13,8 @@ class qTabDataOutput : public QWidget, private Ui::TabDataOutputObject {
   private slots:
     void GetOutputDir();
     void BrowseOutputDir();
-    void SetOutputDir();
+    void SetOutputDir(bool force = false);
+    void ForceSetOutputDir();
     void SetFileFormat(int format);
     void SetOverwriteEnable(bool enable);
     void SetTenGigaEnable(bool enable);

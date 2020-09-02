@@ -54,6 +54,8 @@ void qTabDataOutput::Initialization() {
             SLOT(GetOutputDir()));
     connect(dispOutputDir, SIGNAL(editingFinished()), this,
             SLOT(SetOutputDir()));
+    connect(dispOutputDir, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetOutputDir()));
     connect(btnOutputBrowse, SIGNAL(clicked()), this, SLOT(BrowseOutputDir()));
     connect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetFileFormat(int)));
@@ -169,8 +171,9 @@ void qTabDataOutput::BrowseOutputDir() {
         dispOutputDir->setText(directory);
 }
 
-void qTabDataOutput::SetOutputDir() {
-    if (dispOutputDir->isModified()) {
+void qTabDataOutput::SetOutputDir(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispOutputDir->isModified() || force) {
         dispOutputDir->setModified(false);
         QString path = dispOutputDir->text();
         LOG(logDEBUG) << "Setting output directory to "
@@ -200,6 +203,8 @@ void qTabDataOutput::SetOutputDir() {
         }
     }
 }
+
+void qTabDataOutput::ForceSetOutputDir() { SetOutputDir(true); };
 
 void qTabDataOutput::GetFileFormat() {
     LOG(logDEBUG) << "Getting File Format";

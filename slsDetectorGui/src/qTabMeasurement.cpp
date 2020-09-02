@@ -365,7 +365,6 @@ void qTabMeasurement::GetBurstMode() {
     disconnect(comboBurstMode, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetBurstMode(int)));
     try {
-        auto oldMode = comboBurstMode->currentIndex();
         auto retval = det->getBurstMode().tsquash(
             "Inconsistent burst mode for all detectors.");
         switch (retval) {
@@ -373,10 +372,7 @@ void qTabMeasurement::GetBurstMode() {
         case slsDetectorDefs::BURST_INTERNAL:
         case slsDetectorDefs::BURST_EXTERNAL:
             comboBurstMode->setCurrentIndex((int)retval);
-            // update widget enable only if different
-            if (oldMode != comboBurstMode->currentIndex()) {
-                ShowTriggerDelay();
-            }
+            ShowTriggerDelay();
             break;
         default:
             throw sls::RuntimeError(std::string("Unknown burst mode: ") +
@@ -389,7 +385,7 @@ void qTabMeasurement::GetBurstMode() {
 }
 
 void qTabMeasurement::SetBurstMode(int val) {
-    LOG(logINFO) << "Setting tiburstming mode:"
+    LOG(logINFO) << "Setting burst mode:"
                  << comboBurstMode->currentText().toAscii().data();
     try {
         det->setBurstMode(static_cast<slsDetectorDefs::burstMode>(val));

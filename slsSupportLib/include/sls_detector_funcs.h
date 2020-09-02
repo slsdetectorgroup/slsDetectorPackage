@@ -312,6 +312,7 @@ enum detFuncs {
     F_GET_RECEIVER_STREAMING_START_FNUM,
     F_SET_RECEIVER_STREAMING_START_FNUM,
     F_SET_RECEIVER_RATE_CORRECT,
+    F_SET_RECEIVER_SCAN,
 
     NUM_REC_FUNCTIONS
 };
@@ -625,6 +626,7 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_GET_RECEIVER_STREAMING_START_FNUM: return "F_GET_RECEIVER_STREAMING_START_FNUM";
     case F_SET_RECEIVER_STREAMING_START_FNUM: return "F_SET_RECEIVER_STREAMING_START_FNUM";
     case F_SET_RECEIVER_RATE_CORRECT:       return "F_SET_RECEIVER_RATE_CORRECT";
+    case F_SET_RECEIVER_SCAN:               return "F_SET_RECEIVER_SCAN";
 
     case NUM_REC_FUNCTIONS: 				return "NUM_REC_FUNCTIONS";
 	default:								return "Unknown Function";

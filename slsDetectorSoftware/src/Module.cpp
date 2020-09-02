@@ -474,6 +474,9 @@ defs::scanParameters Module::getScan() const {
 
 void Module::setScan(const defs::scanParameters t) {
     auto retval = sendToDetector<int64_t>(F_SET_SCAN, t);
+    if (shm()->useReceiverFlag) {
+        sendToReceiver(F_SET_RECEIVER_SCAN, t, nullptr);
+    }
     // if disabled, retval is 1, else its number of steps
     setNumberOfFrames(retval);
 }

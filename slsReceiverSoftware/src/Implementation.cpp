@@ -754,6 +754,7 @@ void Implementation::SetupWriter() {
     masterAttributes->gateDelay2 = gateDelay2;
     masterAttributes->gateDelay3 = gateDelay3;
     masterAttributes->gates = numberOfGates;
+    masterAttributes->additionalJsonHeader = additionalJsonHeader;
 
     try {
         for (unsigned int i = 0; i < dataProcessor.size(); ++i) {

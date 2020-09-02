@@ -202,6 +202,8 @@ int ClientInterface::functionTable(){
     flist[F_GET_RECEIVER_STREAMING_START_FNUM] = &ClientInterface::get_streaming_start_fnum;
     flist[F_SET_RECEIVER_STREAMING_START_FNUM] = &ClientInterface::set_streaming_start_fnum;
     flist[F_SET_RECEIVER_RATE_CORRECT]      =   &ClientInterface::set_rate_correct;
+    flist[F_SET_RECEIVER_SCAN]              =   &ClientInterface::set_scan;
+
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -1621,5 +1623,13 @@ int ClientInterface::set_rate_correct(Interface &socket) {
     verifyIdle(socket);
     LOG(logINFOBLUE) << "Setting rate corrections[" << index << ']';
     impl()->setRateCorrections(t);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_scan(Interface &socket) {
+    auto arg = socket.Receive<scanParameters>();
+    LOG(logDEBUG) << "Scan Mode: " << sls::ToString(arg);
+    verifyIdle(socket);
+    impl()->setScan(arg);
     return socket.Send(OK);
 }

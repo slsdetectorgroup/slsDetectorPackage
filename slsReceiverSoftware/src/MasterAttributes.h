@@ -15,8 +15,8 @@ using namespace H5;
 using ns = std::chrono::nanoseconds;
 
 // versions
-#define HDF5_WRITER_VERSION   (6.1) // 1 decimal places
-#define BINARY_WRITER_VERSION (6.1) // 1 decimal places
+#define HDF5_WRITER_VERSION   (6.2) // 1 decimal places
+#define BINARY_WRITER_VERSION (6.2) // 1 decimal places
 
 struct MasterAttributes {
     slsDetectorDefs::detectorType detType{slsDetectorDefs::GENERIC};
@@ -48,6 +48,7 @@ struct MasterAttributes {
     ns gateDelay2{0};
     ns gateDelay3{0};
     uint32_t gates;
+    std::map<std::string, std::string> additionalJsonHeader;
 
     MasterAttributes(){};
     virtual ~MasterAttributes(){};
@@ -74,6 +75,15 @@ struct MasterAttributes {
     };
 
     void WriteBinaryAttributes(FILE *fd, std::string message) {
+        // adding few common parameters to the end
+        if (!additionalJsonHeader.empty()) {
+            std::ostringstream oss;
+            oss << "Additional Json Header     : "
+                << sls::ToString(additionalJsonHeader) << '\n';
+            message += oss.str();
+        }
+
+        // adding sls_receiver header format
         message += std::string("\n#Frame Header\n"
                                "Frame Number               : 8 bytes\n"
                                "SubFrame Number/ExpLength  : 4 bytes\n"
@@ -90,6 +100,7 @@ struct MasterAttributes {
                                "Header Version             : 1 byte\n"
                                "Packets Caught Mask        : 64 bytes\n");
 
+        // writing to file
         if (fwrite((void *)message.c_str(), 1, message.length(), fd) !=
             message.length()) {
             throw sls::RuntimeError(
@@ -103,7 +114,7 @@ struct MasterAttributes {
                          "by a child class";
     };
 
-    void WriteHDF5Attributes(H5File *fd, Group *group){
+    void WriteHDF5Attributes(H5File *fd, Group *group) {
         // clang-format off
         // version
         {
@@ -178,6 +189,15 @@ struct MasterAttributes {
             DataSet dataset = group->createDataSet(
                 "total frames", PredType::STD_U64LE, dataspace);
             dataset.write(&totalFrames, PredType::STD_U64LE);
+        }
+        // additional json header
+        if (!additionalJsonHeader.empty()) {
+            std::string json = sls::ToString(additionalJsonHeader);
+            StrType strdatatype(PredType::C_S1, json.length());
+            DataSpace dataspace = DataSpace(H5S_SCALAR);
+            DataSet dataset =
+                group->createDataSet("additional json header", strdatatype, dataspace);
+            dataset.write(sls::ToString(additionalJsonHeader), strdatatype);
         }
     };
 

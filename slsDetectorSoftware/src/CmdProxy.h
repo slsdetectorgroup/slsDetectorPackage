@@ -1902,7 +1902,7 @@ class CmdProxy {
 
     TIME_COMMAND(subexptime, getSubExptime, setSubExptime,
                  "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger] Exposure "
-                 "time of EIGER subframes");
+                 "time of EIGER subframes in 32 bit mode.");
 
     TIME_COMMAND(subdeadtime, getSubDeadTime, setSubDeadTime,
                  "[duration] [(optional unit) ns|us|ms|s]\n\t[Eiger] Dead time "

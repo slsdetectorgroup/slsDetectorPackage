@@ -17,13 +17,13 @@ using the built in hex() function.
 .. code-block :: python
 
     from slsdet import Detector
-    d = Detector()
+    >>> d = Detector()
     >>> d.patwait0 = 0xaa
     >>> d.patwait0
     170
 
     # Convert to  string
-    >>> (d.patwait0)
+    >>> hex(d.patwait0)
     '0xaa'
 
 For multiple values one can use a list comprehension to loop over the values. 

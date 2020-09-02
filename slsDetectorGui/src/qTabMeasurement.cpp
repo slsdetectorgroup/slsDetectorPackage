@@ -129,6 +129,8 @@ void qTabMeasurement::Initialization() {
     }
     connect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
     connect(dispFileName, SIGNAL(editingFinished()), this, SLOT(SetFileName()));
+    connect(dispFileName, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetFileName()));
     connect(spinIndex, SIGNAL(valueChanged(int)), this, SLOT(SetRunIndex(int)));
     if (startingFnumImplemented) {
         connect(spinStartingFrameNumber, SIGNAL(valueChanged(int)), this,
@@ -723,18 +725,25 @@ void qTabMeasurement::GetFileName() {
     connect(dispFileName, SIGNAL(editingFinished()), this, SLOT(SetFileName()));
 }
 
-void qTabMeasurement::SetFileName() {
-    std::string val = std::string(dispFileName->text().toAscii().constData());
-    LOG(logINFO) << "Setting File Name Prefix:" << val;
-    try {
-        det->setFileNamePrefix(val);
-    }
-    CATCH_HANDLE("Could not set file name prefix.",
-                 "qTabMeasurement::SetFileName", this,
-                 &qTabMeasurement::GetFileName)
+void qTabMeasurement::SetFileName(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispFileName->isModified() || force) {
+        dispFileName->setModified(false);
+        std::string val =
+            std::string(dispFileName->text().toAscii().constData());
+        LOG(logINFO) << "Setting File Name Prefix:" << val;
+        try {
+            det->setFileNamePrefix(val);
+        }
+        CATCH_HANDLE("Could not set file name prefix.",
+                     "qTabMeasurement::SetFileName", this,
+                     &qTabMeasurement::GetFileName)
 
-    emit FileNameChangedSignal(dispFileName->text());
+        emit FileNameChangedSignal(dispFileName->text());
+    }
 }
+
+void qTabMeasurement::ForceSetFileName() { SetFileName(true); }
 
 void qTabMeasurement::GetRunIndex() {
     LOG(logDEBUG) << "Getting Acquisition File index";

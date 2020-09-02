@@ -463,6 +463,9 @@ Compression using Root. Available only for Gotthard in Expert Mode.
           <height>25</height>
          </size>
         </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
         <property name="suffix">
          <string>ns</string>
         </property>

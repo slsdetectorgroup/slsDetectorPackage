@@ -65,8 +65,7 @@ void qTabAdvanced::Initialization() {
 
     // trimming
     if (tab_trimming->isEnabled()) {
-        // editingFinished to not set trimbits for every character input
-        connect(spinSetAllTrimbits, SIGNAL(editingFinished()), this,
+        connect(spinSetAllTrimbits, SIGNAL(valueChanged(int)), this,
                 SLOT(SetAllTrimbits()));
     }
 
@@ -79,23 +78,36 @@ void qTabAdvanced::Initialization() {
             SLOT(SetStopPort(int)));
     connect(dispDetectorUDPIP, SIGNAL(editingFinished()), this,
             SLOT(SetDetectorUDPIP()));
+    connect(dispDetectorUDPIP, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetDetectorUDPIP()));
     connect(dispDetectorUDPMAC, SIGNAL(editingFinished()), this,
             SLOT(SetDetectorUDPMAC()));
+    connect(dispDetectorUDPMAC, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetDetectorUDPMAC()));
     connect(spinZMQPort, SIGNAL(valueChanged(int)), this,
             SLOT(SetCltZMQPort(int)));
     connect(dispZMQIP, SIGNAL(editingFinished()), this, SLOT(SetCltZMQIP()));
+    connect(dispZMQIP, SIGNAL(returnPressed()), this, SLOT(ForceSetCltZMQIP()));
     connect(dispRxrHostname, SIGNAL(editingFinished()), this,
             SLOT(SetRxrHostname()));
+    connect(dispRxrHostname, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetRxrHostname()));
     connect(spinRxrTCPPort, SIGNAL(valueChanged(int)), this,
             SLOT(SetRxrTCPPort(int)));
     connect(spinRxrUDPPort, SIGNAL(valueChanged(int)), this,
             SLOT(SetRxrUDPPort(int)));
     connect(dispRxrUDPIP, SIGNAL(editingFinished()), this, SLOT(SetRxrUDPIP()));
+    connect(dispRxrUDPIP, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetRxrUDPIP()));
     connect(dispRxrUDPMAC, SIGNAL(editingFinished()), this,
             SLOT(SetRxrUDPMAC()));
+    connect(dispRxrUDPMAC, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetRxrUDPMAC()));
     connect(spinRxrZMQPort, SIGNAL(valueChanged(int)), this,
             SLOT(SetRxrZMQPort(int)));
     connect(dispRxrZMQIP, SIGNAL(editingFinished()), this, SLOT(SetRxrZMQIP()));
+    connect(dispRxrZMQIP, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetRxrZMQIP()));
 
     // roi
     if (tab_roi->isEnabled()) {
@@ -421,27 +433,41 @@ void qTabAdvanced::SetStopPort(int port) {
                  &qTabAdvanced::GetStopPort)
 }
 
-void qTabAdvanced::SetDetectorUDPIP() {
-    std::string s = dispDetectorUDPIP->text().toAscii().constData();
-    LOG(logINFO) << "Setting Detector UDP IP:" << s;
-    try {
-        det->setSourceUDPIP(sls::IpAddr{s}, {comboDetector->currentIndex()});
+void qTabAdvanced::SetDetectorUDPIP(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispDetectorUDPIP->isModified() || force) {
+        dispDetectorUDPIP->setModified(false);
+        std::string s = dispDetectorUDPIP->text().toAscii().constData();
+        LOG(logINFO) << "Setting Detector UDP IP:" << s;
+        try {
+            det->setSourceUDPIP(sls::IpAddr{s},
+                                {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Detector UDP IP.",
+                     "qTabAdvanced::SetDetectorUDPIP", this,
+                     &qTabAdvanced::GetDetectorUDPIP)
     }
-    CATCH_HANDLE("Could not set Detector UDP IP.",
-                 "qTabAdvanced::SetDetectorUDPIP", this,
-                 &qTabAdvanced::GetDetectorUDPIP)
 }
 
-void qTabAdvanced::SetDetectorUDPMAC() {
-    std::string s = dispDetectorUDPMAC->text().toAscii().constData();
-    LOG(logINFO) << "Setting Detector UDP MAC:" << s;
-    try {
-        det->setSourceUDPMAC(sls::MacAddr{s}, {comboDetector->currentIndex()});
+void qTabAdvanced::ForceSetDetectorUDPIP() { SetDetectorUDPIP(true); };
+
+void qTabAdvanced::SetDetectorUDPMAC(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispDetectorUDPMAC->isModified() || force) {
+        dispDetectorUDPMAC->setModified(false);
+        std::string s = dispDetectorUDPMAC->text().toAscii().constData();
+        LOG(logINFO) << "Setting Detector UDP MAC:" << s;
+        try {
+            det->setSourceUDPMAC(sls::MacAddr{s},
+                                 {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Detector UDP MAC.",
+                     "qTabAdvanced::SetDetectorUDPMAC", this,
+                     &qTabAdvanced::GetDetectorUDPMAC)
     }
-    CATCH_HANDLE("Could not set Detector UDP MAC.",
-                 "qTabAdvanced::SetDetectorUDPMAC", this,
-                 &qTabAdvanced::GetDetectorUDPMAC)
 }
+
+void qTabAdvanced::ForceSetDetectorUDPMAC() { SetDetectorUDPMAC(true); }
 
 void qTabAdvanced::SetCltZMQPort(int port) {
     LOG(logINFO) << "Setting Client ZMQ Port:" << port;
@@ -453,28 +479,43 @@ void qTabAdvanced::SetCltZMQPort(int port) {
                  &qTabAdvanced::GetCltZMQPort)
 }
 
-void qTabAdvanced::SetCltZMQIP() {
-    std::string s = dispZMQIP->text().toAscii().constData();
-    LOG(logINFO) << "Setting Client ZMQ IP:" << s;
-    try {
-        det->setClientZmqIp(sls::IpAddr{s}, {comboDetector->currentIndex()});
+void qTabAdvanced::SetCltZMQIP(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispZMQIP->isModified() || force) {
+        dispZMQIP->setModified(false);
+        std::string s = dispZMQIP->text().toAscii().constData();
+        LOG(logINFO) << "Setting Client ZMQ IP:" << s;
+        try {
+            det->setClientZmqIp(sls::IpAddr{s},
+                                {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Client ZMQ IP.",
+                     "qTabAdvanced::SetCltZMQIP", this,
+                     &qTabAdvanced::GetCltZMQIP)
     }
-    CATCH_HANDLE("Could not set Client ZMQ IP.", "qTabAdvanced::SetCltZMQIP",
-                 this, &qTabAdvanced::GetCltZMQIP)
 }
 
-void qTabAdvanced::SetRxrHostname() {
-    std::string s = dispZMQIP->text().toAscii().constData();
-    LOG(logINFO) << "Setting Receiver Hostname:" << s;
-    try {
-        det->setRxHostname(s, {comboDetector->currentIndex()});
-    }
-    CATCH_HANDLE("Could not set Client ZMQ IP.", "qTabAdvanced::SetRxrHostname",
-                 this, &qTabAdvanced::GetRxrHostname)
+void qTabAdvanced::ForceSetCltZMQIP() { SetCltZMQIP(true); }
 
-    // update all network widgets (receiver mainly)
-    SetDetector();
+void qTabAdvanced::SetRxrHostname(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispRxrHostname->isModified() || force) {
+        dispRxrHostname->setModified(false);
+        std::string s = dispRxrHostname->text().toAscii().constData();
+        LOG(logINFO) << "Setting Receiver Hostname:" << s;
+        try {
+            det->setRxHostname(s, {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Client ZMQ IP.",
+                     "qTabAdvanced::SetRxrHostname", this,
+                     &qTabAdvanced::GetRxrHostname)
+
+        // update all network widgets (receiver mainly)
+        SetDetector();
+    }
 }
+
+void qTabAdvanced::ForceSetRxrHostname() { SetRxrHostname(true); }
 
 void qTabAdvanced::SetRxrTCPPort(int port) {
     LOG(logINFO) << "Setting Receiver TCP Port:" << port;
@@ -496,28 +537,41 @@ void qTabAdvanced::SetRxrUDPPort(int port) {
                  &qTabAdvanced::GetRxrUDPPort)
 }
 
-void qTabAdvanced::SetRxrUDPIP() {
-    std::string s = dispRxrUDPIP->text().toAscii().constData();
-    LOG(logINFO) << "Setting Receiver UDP IP:" << s;
-    try {
-        det->setDestinationUDPIP(sls::IpAddr{s},
-                                 {comboDetector->currentIndex()});
+void qTabAdvanced::SetRxrUDPIP(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispRxrUDPIP->isModified() || force) {
+        dispRxrUDPIP->setModified(false);
+        std::string s = dispRxrUDPIP->text().toAscii().constData();
+        LOG(logINFO) << "Setting Receiver UDP IP:" << s;
+        try {
+            det->setDestinationUDPIP(sls::IpAddr{s},
+                                     {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Receiver UDP IP.",
+                     "qTabAdvanced::SetRxrUDPIP", this,
+                     &qTabAdvanced::GetRxrUDPIP)
     }
-    CATCH_HANDLE("Could not set Receiver UDP IP.", "qTabAdvanced::SetRxrUDPIP",
-                 this, &qTabAdvanced::GetRxrUDPIP)
 }
 
-void qTabAdvanced::SetRxrUDPMAC() {
-    std::string s = dispRxrUDPMAC->text().toAscii().constData();
-    LOG(logINFO) << "Setting Receiver UDP MAC:" << s;
-    try {
-        det->setDestinationUDPMAC(sls::MacAddr{s},
-                                  {comboDetector->currentIndex()});
+void qTabAdvanced::ForceSetRxrUDPIP() { SetRxrUDPIP(true); }
+
+void qTabAdvanced::SetRxrUDPMAC(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispRxrUDPMAC->isModified() || force) {
+        dispRxrUDPMAC->setModified(false);
+        std::string s = dispRxrUDPMAC->text().toAscii().constData();
+        LOG(logINFO) << "Setting Receiver UDP MAC:" << s;
+        try {
+            det->setDestinationUDPMAC(sls::MacAddr{s},
+                                      {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Receiver UDP MAC.",
+                     "qTabAdvanced::SetRxrUDPMAC", this,
+                     &qTabAdvanced::GetRxrUDPMAC)
     }
-    CATCH_HANDLE("Could not set Receiver UDP MAC.",
-                 "qTabAdvanced::SetRxrUDPMAC", this,
-                 &qTabAdvanced::GetRxrUDPMAC)
 }
+
+void qTabAdvanced::ForceSetRxrUDPMAC() { SetRxrUDPMAC(true); }
 
 void qTabAdvanced::SetRxrZMQPort(int port) {
     LOG(logINFO) << "Setting Receiver ZMQ Port:" << port;
@@ -529,15 +583,22 @@ void qTabAdvanced::SetRxrZMQPort(int port) {
                  &qTabAdvanced::GetRxrZMQPort)
 }
 
-void qTabAdvanced::SetRxrZMQIP() {
-    std::string s = dispRxrZMQIP->text().toAscii().constData();
-    LOG(logINFO) << "Setting Receiver ZMQ IP:" << s;
-    try {
-        det->setRxZmqIP(sls::IpAddr{s}, {comboDetector->currentIndex()});
+void qTabAdvanced::SetRxrZMQIP(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispRxrZMQIP->isModified() || force) {
+        dispRxrZMQIP->setModified(false);
+        std::string s = dispRxrZMQIP->text().toAscii().constData();
+        LOG(logINFO) << "Setting Receiver ZMQ IP:" << s;
+        try {
+            det->setRxZmqIP(sls::IpAddr{s}, {comboDetector->currentIndex()});
+        }
+        CATCH_HANDLE("Could not set Receiver ZMQ IP.",
+                     "qTabAdvanced::SetRxrZMQIP", this,
+                     &qTabAdvanced::GetRxrZMQIP)
     }
-    CATCH_HANDLE("Could not set Receiver ZMQ IP.", "qTabAdvanced::SetRxrZMQIP",
-                 this, &qTabAdvanced::GetRxrZMQIP)
 }
+
+void qTabAdvanced::ForceSetRxrZMQIP() { SetRxrZMQIP(true); }
 
 void qTabAdvanced::GetROI() {
     LOG(logDEBUG) << "Getting ROI";
@@ -575,7 +636,7 @@ void qTabAdvanced::SetROI() {
 
 void qTabAdvanced::GetAllTrimbits() {
     LOG(logDEBUG) << "Getting all trimbits value";
-    disconnect(spinSetAllTrimbits, SIGNAL(editingFinished()), this,
+    disconnect(spinSetAllTrimbits, SIGNAL(valueChanged(int)), this,
                SLOT(SetAllTrimbits()));
 
     try {
@@ -584,7 +645,7 @@ void qTabAdvanced::GetAllTrimbits() {
     }
     CATCH_DISPLAY("Could not get all trimbits.", "qTabAdvanced::GetAllTrimbits")
 
-    connect(spinSetAllTrimbits, SIGNAL(editingFinished()), this,
+    connect(spinSetAllTrimbits, SIGNAL(valueChanged(int)), this,
             SLOT(SetAllTrimbits()));
 }
 

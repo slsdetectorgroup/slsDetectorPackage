@@ -669,17 +669,27 @@ class Detector(CppDetectorApi):
         Modified only when using an intermediate process after receiver. \n
         Must be different for every detector (and udp port). \n
         Multi command will automatically increment for individual modules, use setRxZmqPort.
-        Exmaples
+
+        Examples
         --------
+
         >>> d.rx_zmqport
         [30001, 30002, 30003, 300004]
-        >>> d.rx_zmqport = ?????
+        >>> d.rx_zmqport = 30001
+        >>> d.rx_zmqport = [30001, 30005] #Set ports for the two first detectors
+
         """
         return element_if_equal(self.getRxZmqPort())
 
     @rx_zmqport.setter
     def rx_zmqport(self, port):
-        self.setRxZmqPort(port)
+        if isinstance(port, int):
+            self.setRxZmqPort(port, -1)
+        elif is_iterable(port):
+            for i, p in enumerate(port):
+                self.setRxZmqPort(p, i)
+        else:
+            raise ValueError("Unknown argument type")
 
     @property
     def zmqport(self):
@@ -687,7 +697,13 @@ class Detector(CppDetectorApi):
 
     @zmqport.setter
     def zmqport(self, port):
-        self.setClientZmqPort(port)
+        if isinstance(port, int):
+            self.setClientZmqPort(port, -1)
+        elif is_iterable(port):
+            for i, p in enumerate(port):
+                self.setClientZmqPort(p, i)
+        else:
+            raise ValueError("Unknown argument type")
 
     @property
     def rx_zmqip(self):
@@ -709,7 +725,7 @@ class Detector(CppDetectorApi):
 
     @rx_zmqip.setter
     def rx_zmqip(self, ip):
-        self.setRxZmqIP(ip)
+        self.setRxZmqIP(IpAddr(ip))
 
     @property
     def zmqip(self):
@@ -717,7 +733,7 @@ class Detector(CppDetectorApi):
 
     @zmqip.setter
     def zmqip(self, ip):
-        self.setClientZmqIp(ip)
+        self.setClientZmqIp(IpAddr(ip))
 
     @property
     def udp_dstip(self):
@@ -756,6 +772,30 @@ class Detector(CppDetectorApi):
         self.setDestinationUDPMAC2(MacAddr(mac))
 
     @property
+    def udp_srcmac(self):
+        return element_if_equal(self.getSourceUDPMAC())
+
+    @udp_srcmac.setter
+    def udp_srcmac(self, mac):
+        if isinstance(mac, (list, tuple)):
+            for i, m in enumerate(mac):
+                self.setSourceUDPMAC(MacAddr(m), [i])
+        else:
+            self.setSourceUDPMAC(MacAddr(mac))
+
+    @property
+    def udp_srcmac2(self):
+        return element_if_equal(self.getSourceUDPMAC2())
+
+    @udp_srcmac2.setter
+    def udp_srcmac2(self, mac):
+        if isinstance(mac, (list, tuple)):
+            for i, m in enumerate(mac):
+                self.setSourceUDPMAC2(MacAddr(m), [i])
+        else:
+            self.setSourceUDPMAC2(MacAddr(mac))
+
+    @property
     def udp_srcip(self):
         return element_if_equal(self.getSourceUDPIP())
 
@@ -769,7 +809,7 @@ class Detector(CppDetectorApi):
 
     @udp_srcip2.setter
     def udp_srcip2(self, ip):
-        self.setSourceUDPIP2(ip)
+        self.setSourceUDPIP2(IpAddr(ip))
 
     @property
     def udp_dstport(self):

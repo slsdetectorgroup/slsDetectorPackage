@@ -7,6 +7,33 @@ open an issue in our our  `github repo
 
 
 ------------------------------------
+Setting exposure time 
+------------------------------------
+
+Setting and reading back exposure time can be done either using a Python datetime.timedelta
+or by setting the time in seconds. 
+
+::
+
+    # Set exposure time to 1.2 seconds
+    >>> d.exptime = 1.2
+
+    # Setting exposure time using timedelta
+    import datetime as dt
+    >>> d.exptime = dt.timedelta(seconds = 1.2)
+
+    # With timedelta any arbitrary combination of units can be used
+    >>> t = dt.timedelta(microseconds = 100, seconds = 5.3, minutes = .3)
+
+    # To set exposure time for individual detector one have to resort
+    # to the C++ style API.
+    # Sets exposure time to 1.2 seconds for module 0, 6 and 12
+    >>> d.setExptime(1.2, [0, 6, 12]) 
+    >>> d.setExptime(dt.timedelta(seconds = 1.2), [0, 6, 12]) 
+
+
+
+------------------------------------
 Converting numbers to hex
 ------------------------------------
 
@@ -17,13 +44,13 @@ using the built in hex() function.
 .. code-block :: python
 
     from slsdet import Detector
-    d = Detector()
+    >>> d = Detector()
     >>> d.patwait0 = 0xaa
     >>> d.patwait0
     170
 
     # Convert to  string
-    >>> (d.patwait0)
+    >>> hex(d.patwait0)
     '0xaa'
 
 For multiple values one can use a list comprehension to loop over the values. 

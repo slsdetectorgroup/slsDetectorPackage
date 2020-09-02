@@ -772,6 +772,30 @@ class Detector(CppDetectorApi):
         self.setDestinationUDPMAC2(MacAddr(mac))
 
     @property
+    def udp_srcmac(self):
+        return element_if_equal(self.getSourceUDPMAC())
+
+    @udp_srcmac.setter
+    def udp_srcmac(self, mac):
+        if isinstance(mac, (list, tuple)):
+            for i, m in enumerate(mac):
+                self.setSourceUDPMAC(MacAddr(m), [i])
+        else:
+            self.setSourceUDPMAC(MacAddr(mac))
+
+    @property
+    def udp_srcmac2(self):
+        return element_if_equal(self.getSourceUDPMAC2())
+
+    @udp_srcmac2.setter
+    def udp_srcmac2(self, mac):
+        if isinstance(mac, (list, tuple)):
+            for i, m in enumerate(mac):
+                self.setSourceUDPMAC2(MacAddr(m), [i])
+        else:
+            self.setSourceUDPMAC2(MacAddr(mac))
+
+    @property
     def udp_srcip(self):
         return element_if_equal(self.getSourceUDPIP())
 

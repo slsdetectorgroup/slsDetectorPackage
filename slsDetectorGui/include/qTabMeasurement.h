@@ -31,7 +31,8 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     void SetDelay();
     void SetBurstPeriod();
     void SetFileWrite(bool val);
-    void SetFileName();
+    void SetFileName(bool force=false);
+    void ReallySetFileName(){SetFileName(true);}
     void SetRunIndex(int val);
     void SetStartingFrameNumber(int val);
     void UpdateProgress();

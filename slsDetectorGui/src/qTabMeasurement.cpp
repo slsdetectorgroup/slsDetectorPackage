@@ -249,7 +249,7 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
         spinPeriod->setEnabled(true);
         comboPeriodUnit->setEnabled(true);
         if (det->getDetectorType().squash() == slsDetectorDefs::GOTTHARD2) {
-            GetBurstMode(); // also shows trigger/delay
+            GetBurstMode(); // also decides to show trigger or burst mode
         }
         break;
     case TRIGGER:
@@ -273,7 +273,7 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
             spinDelay->setEnabled(true);
             comboDelayUnit->setEnabled(true);
             if (det->getDetectorType().squash() == slsDetectorDefs::GOTTHARD2) {
-                GetBurstMode(); // also shows trigger/delay
+                GetBurstMode(); // also decides to show trigger or burst mode
             }
         }
         break;

@@ -901,12 +901,13 @@ int setPeriod(int64_t val) {
         LOG(logERROR, ("Invalid period: %lld ns\n", val));
         return FAIL;
     }
-    val *= (1E-9 * systemFrequency);
     if (burstMode == BURST_OFF) {
         LOG(logINFO, ("Setting period %lld ns [Continuous mode]\n", val));
+        val *= (1E-9 * systemFrequency);
         set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
     } else {
         LOG(logINFO, ("Setting period %lld ns [Burst mode]\n", val));
+        val *= (1E-9 * systemFrequency);
         set64BitReg(val, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
     }
     // validate for tolerance

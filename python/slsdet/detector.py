@@ -669,18 +669,22 @@ class Detector(CppDetectorApi):
         Modified only when using an intermediate process after receiver. \n
         Must be different for every detector (and udp port). \n
         Multi command will automatically increment for individual modules, use setRxZmqPort.
-        Exmaples
+
+        Examples
         --------
+
         >>> d.rx_zmqport
         [30001, 30002, 30003, 300004]
-        >>> d.rx_zmqport = ?????
+        >>> d.rx_zmqport = 30001
+        >>> d.rx_zmqport = [30001, 30005] #Set ports for the two first detectors
+
         """
         return element_if_equal(self.getRxZmqPort())
 
     @rx_zmqport.setter
     def rx_zmqport(self, port):
-        if isinstance(port, int) and self.size() == 1:
-            self.setRxZmqPort(port, 0)
+        if isinstance(port, int):
+            self.setRxZmqPort(port, -1)
         elif is_iterable(port):
             for i, p in enumerate(port):
                 self.setRxZmqPort(p, i)
@@ -693,8 +697,8 @@ class Detector(CppDetectorApi):
 
     @zmqport.setter
     def zmqport(self, port):
-        if isinstance(port, int) and self.size() == 1:
-            self.setClientZmqPort(port, 0)
+        if isinstance(port, int):
+            self.setClientZmqPort(port, -1)
         elif is_iterable(port):
             for i, p in enumerate(port):
                 self.setClientZmqPort(p, i)

@@ -129,6 +129,7 @@ void qTabMeasurement::Initialization() {
     }
     connect(chkFile, SIGNAL(toggled(bool)), this, SLOT(SetFileWrite(bool)));
     connect(dispFileName, SIGNAL(editingFinished()), this, SLOT(SetFileName()));
+    connect(dispFileName, SIGNAL(returnPressed()), this, SLOT(ForceSetFileName()));
     connect(spinIndex, SIGNAL(valueChanged(int)), this, SLOT(SetRunIndex(int)));
     if (startingFnumImplemented) {
         connect(spinStartingFrameNumber, SIGNAL(valueChanged(int)), this,
@@ -723,8 +724,8 @@ void qTabMeasurement::GetFileName() {
     connect(dispFileName, SIGNAL(editingFinished()), this, SLOT(SetFileName()));
 }
 
-void qTabMeasurement::SetFileName() {
-    if (dispFileName->isModified()) {
+void qTabMeasurement::SetFileName(bool force) {
+    if (dispFileName->isModified() || force) {
         dispFileName->setModified(false);
         std::string val =
             std::string(dispFileName->text().toAscii().constData());
@@ -739,6 +740,8 @@ void qTabMeasurement::SetFileName() {
         emit FileNameChangedSignal(dispFileName->text());
     }
 }
+
+void qTabMeasurement::ForceSetFileName(){SetFileName(true);}
 
 void qTabMeasurement::GetRunIndex() {
     LOG(logDEBUG) << "Getting Acquisition File index";

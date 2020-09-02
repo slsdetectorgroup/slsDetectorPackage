@@ -709,7 +709,7 @@ class Detector(CppDetectorApi):
 
     @rx_zmqip.setter
     def rx_zmqip(self, ip):
-        self.setRxZmqIP(ip)
+        self.setRxZmqIP(IpAddr(ip))
 
     @property
     def zmqip(self):
@@ -717,7 +717,7 @@ class Detector(CppDetectorApi):
 
     @zmqip.setter
     def zmqip(self, ip):
-        self.setClientZmqIp(ip)
+        self.setClientZmqIp(IpAddr(ip))
 
     @property
     def udp_dstip(self):
@@ -769,7 +769,7 @@ class Detector(CppDetectorApi):
 
     @udp_srcip2.setter
     def udp_srcip2(self, ip):
-        self.setSourceUDPIP2(ip)
+        self.setSourceUDPIP2(IpAddr(ip))
 
     @property
     def udp_dstport(self):

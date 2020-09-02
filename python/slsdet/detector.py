@@ -679,7 +679,13 @@ class Detector(CppDetectorApi):
 
     @rx_zmqport.setter
     def rx_zmqport(self, port):
-        self.setRxZmqPort(port)
+        if isinstance(port, int) and self.size() == 1:
+            self.setRxZmqPort(port, 0)
+        elif is_iterable(port):
+            for i, p in enumerate(port):
+                self.setRxZmqPort(p, i)
+        else:
+            raise ValueError("Unknown argument type")
 
     @property
     def zmqport(self):
@@ -687,7 +693,13 @@ class Detector(CppDetectorApi):
 
     @zmqport.setter
     def zmqport(self, port):
-        self.setClientZmqPort(port)
+        if isinstance(port, int) and self.size() == 1:
+            self.setClientZmqPort(port, 0)
+        elif is_iterable(port):
+            for i, p in enumerate(port):
+                self.setClientZmqPort(p, i)
+        else:
+            raise ValueError("Unknown argument type")
 
     @property
     def rx_zmqip(self):

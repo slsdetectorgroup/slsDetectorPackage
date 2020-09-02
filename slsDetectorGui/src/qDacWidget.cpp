@@ -26,7 +26,7 @@ void qDacWidget::SetupWidgetWindow(std::string name) {
 
 void qDacWidget::Initialization() {
     if (isDac) {
-        connect(spinDac, SIGNAL(editingFinished()), this, SLOT(SetDac()));
+        connect(spinDac, SIGNAL(valueChanged(double)), this, SLOT(SetDac()));
     }
 }
 
@@ -38,7 +38,7 @@ void qDacWidget::SetDetectorIndex(int id) {
 void qDacWidget::GetDac() {
     LOG(logDEBUG) << "Getting Dac " << index;
 
-    disconnect(spinDac, SIGNAL(editingFinished()), this, SLOT(SetDac()));
+    disconnect(spinDac, SIGNAL(valueChanged(double)), this, SLOT(SetDac()));
     try {
         // dac units
         auto retval = det->getDAC(index, 0, {detectorIndex}).squash(-1);
@@ -52,7 +52,7 @@ void qDacWidget::GetDac() {
     CATCH_DISPLAY(std::string("Could not get dac ") + std::to_string(index),
                   "qDacWidget::GetDac")
 
-    connect(spinDac, SIGNAL(editingFinished()), this, SLOT(SetDac()));
+    connect(spinDac, SIGNAL(valueChanged(double)), this, SLOT(SetDac()));
 }
 
 void qDacWidget::SetDac() {

@@ -180,6 +180,9 @@
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;High Voltage. Range: 60 - 200V. Swich off high voltage by setting to 0.&lt;/p&gt;&lt;p&gt;-1 corresponds to different values from detectors.&lt;/p&gt;&lt;p&gt;#highvoltage#&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
+     <property name="keyboardTracking">
+      <bool>false</bool>
+     </property>
      <property name="minimum">
       <number>-1</number>
      </property>

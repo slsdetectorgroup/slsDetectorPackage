@@ -54,6 +54,8 @@ void qTabDataOutput::Initialization() {
             SLOT(GetOutputDir()));
     connect(dispOutputDir, SIGNAL(editingFinished()), this,
             SLOT(SetOutputDir()));
+    connect(dispOutputDir, SIGNAL(returnPressed()), this,
+            SLOT(ForceSetOutputDir()));
     connect(btnOutputBrowse, SIGNAL(clicked()), this, SLOT(BrowseOutputDir()));
     connect(comboFileFormat, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetFileFormat(int)));
@@ -69,7 +71,7 @@ void qTabDataOutput::Initialization() {
                 SLOT(EnableRateCorrection()));
         connect(btnGroupRate, SIGNAL(buttonClicked(int)), this,
                 SLOT(SetRateCorrection()));
-        connect(spinCustomDeadTime, SIGNAL(editingFinished()), this,
+        connect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
                 SLOT(SetRateCorrection()));
     }
     // flags, speed
@@ -169,34 +171,40 @@ void qTabDataOutput::BrowseOutputDir() {
         dispOutputDir->setText(directory);
 }
 
-void qTabDataOutput::SetOutputDir() {
-    QString path = dispOutputDir->text();
-    LOG(logDEBUG) << "Setting output directory to "
-                  << path.toAscii().constData();
+void qTabDataOutput::SetOutputDir(bool force) {
+    // return forces modification (inconsistency from command line)
+    if (dispOutputDir->isModified() || force) {
+        dispOutputDir->setModified(false);
+        QString path = dispOutputDir->text();
+        LOG(logDEBUG) << "Setting output directory to "
+                      << path.toAscii().constData();
 
-    // empty
-    if (path.isEmpty()) {
-        qDefs::Message(qDefs::WARNING,
-                       "Invalid Output Path. Must not be empty.",
-                       "qTabDataOutput::SetOutputDir");
-        LOG(logWARNING) << "Invalid Output Path. Must not be empty.";
-        GetOutputDir();
-    } else {
-        // chop off trailing '/'
-        if (path.endsWith('/')) {
-            while (path.endsWith('/')) {
-                path.chop(1);
+        // empty
+        if (path.isEmpty()) {
+            qDefs::Message(qDefs::WARNING,
+                           "Invalid Output Path. Must not be empty.",
+                           "qTabDataOutput::SetOutputDir");
+            LOG(logWARNING) << "Invalid Output Path. Must not be empty.";
+            GetOutputDir();
+        } else {
+            // chop off trailing '/'
+            if (path.endsWith('/')) {
+                while (path.endsWith('/')) {
+                    path.chop(1);
+                }
             }
+            std::string spath = std::string(path.toAscii().constData());
+            try {
+                det->setFilePath(spath, {comboDetector->currentIndex() - 1});
+            }
+            CATCH_HANDLE("Could not set output file path.",
+                         "qTabDataOutput::SetOutputDir", this,
+                         &qTabDataOutput::GetOutputDir)
         }
-        std::string spath = std::string(path.toAscii().constData());
-        try {
-            det->setFilePath(spath, {comboDetector->currentIndex() - 1});
-        }
-        CATCH_HANDLE("Could not set output file path.",
-                     "qTabDataOutput::SetOutputDir", this,
-                     &qTabDataOutput::GetOutputDir)
     }
 }
+
+void qTabDataOutput::ForceSetOutputDir() { SetOutputDir(true); };
 
 void qTabDataOutput::GetFileFormat() {
     LOG(logDEBUG) << "Getting File Format";
@@ -288,7 +296,7 @@ void qTabDataOutput::GetRateCorrection() {
                SLOT(EnableRateCorrection()));
     disconnect(btnGroupRate, SIGNAL(buttonClicked(int)), this,
                SLOT(SetRateCorrection()));
-    disconnect(spinCustomDeadTime, SIGNAL(editingFinished()), this,
+    disconnect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
                SLOT(SetRateCorrection()));
     try {
         spinCustomDeadTime->setValue(-1);
@@ -305,7 +313,7 @@ void qTabDataOutput::GetRateCorrection() {
     connect(chkRate, SIGNAL(toggled(bool)), this, SLOT(EnableRateCorrection()));
     connect(btnGroupRate, SIGNAL(buttonClicked(int)), this,
             SLOT(SetRateCorrection()));
-    connect(spinCustomDeadTime, SIGNAL(editingFinished()), this,
+    connect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
             SLOT(SetRateCorrection()));
 }
 

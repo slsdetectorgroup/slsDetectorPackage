@@ -24,6 +24,12 @@ class qTabPlot : public QWidget, private Ui::TabPlotObject {
     void SetBinary();
     void SetGapPixels(bool enable);
     void SetTitles();
+    void isXMinModified();
+    void isXMaxModified();
+    void isYMinModified();
+    void isYMaxModified();
+    void isZMinModified();
+    void isZMaxModified();
     void SetXRange();
     void SetYRange();
     void CheckAspectRatio();

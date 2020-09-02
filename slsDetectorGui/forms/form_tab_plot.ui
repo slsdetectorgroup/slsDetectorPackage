@@ -2169,7 +2169,7 @@ Displays minimum, maximum and sum of values for each plot.
       <item row="0" column="2">
        <widget class="QStackedWidget" name="stackedTimeInterval">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="pageTimeGap">
          <layout class="QHBoxLayout" name="horizontalLayout_14">
@@ -2180,6 +2180,9 @@ Displays minimum, maximum and sum of values for each plot.
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="keyboardTracking">
+             <bool>false</bool>
             </property>
             <property name="decimals">
              <number>3</number>
@@ -2248,6 +2251,9 @@ Displays minimum, maximum and sum of values for each plot.
               <width>20</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="keyboardTracking">
+             <bool>false</bool>
             </property>
             <property name="minimum">
              <number>1</number>

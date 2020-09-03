@@ -222,12 +222,12 @@ void qDetectorMain::SetUpDetector(const std::string &config_file, int multiID) {
     actionLoadTrimbits->setEnabled(false);
     switch (detType) {
     case slsDetectorDefs::EIGER:
+    case slsDetectorDefs::MYTHEN3:
         actionLoadTrimbits->setEnabled(true);
         break;
     case slsDetectorDefs::GOTTHARD:
     case slsDetectorDefs::JUNGFRAU:
     case slsDetectorDefs::MOENCH:
-    case slsDetectorDefs::MYTHEN3:
     case slsDetectorDefs::GOTTHARD2:
         break;
     default:
@@ -334,7 +334,8 @@ void qDetectorMain::EnableModes(QAction *action) {
 
         tabs->setTabEnabled(ADVANCED, enable);
         actionLoadTrimbits->setVisible(enable &&
-                                       detType == slsDetectorDefs::EIGER);
+                                       (detType == slsDetectorDefs::EIGER ||
+                                        detType == slsDetectorDefs::MYTHEN3));
         LOG(logINFO) << "Expert Mode: " << qDefs::stringEnable(enable);
     }
 
@@ -400,11 +401,8 @@ void qDetectorMain::ExecuteUtilities(QAction *action) {
                 this, tr("Load Detector Trimbits"), fName,
                 tr("Trimbit files (*.trim noise.sn*);;All Files(*)"));
             fileDialog->setFileMode(QFileDialog::AnyFile);
-            if (fileDialog->exec() == QDialog::Accepted)
+            if (fileDialog->exec() == QDialog::Accepted) {
                 fName = fileDialog->selectedFiles()[0];
-
-            // Gets called when cancelled as well
-            if (!fName.isEmpty()) {
                 det->loadTrimbits(std::string(fName.toAscii().constData()));
                 qDefs::Message(qDefs::INFORMATION,
                                "The Trimbits have been loaded successfully.",

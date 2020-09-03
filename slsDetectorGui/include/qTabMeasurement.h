@@ -20,6 +20,7 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
 
   private slots:
     void SetTimingMode(int val);
+    void SetBurstMode(int val);
     void SetNumMeasurements(int val);
     void SetNumFrames(int val);
     void SetNumTriggers(int val);
@@ -52,6 +53,7 @@ class qTabMeasurement : public QWidget, private Ui::TabMeasurementObject {
     void EnableWidgetsforTimingMode();
 
     void GetTimingMode();
+    void GetBurstMode();
     void GetNumFrames();
     void GetNumTriggers();
     void GetNumBursts();

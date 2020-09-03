@@ -46,6 +46,8 @@ void qTabMeasurement::SetupWidgetWindow() {
     ShowGates();
 
     // enabling according to det type
+    lblBurstMode->hide();
+    comboBurstMode->hide();
     switch (det->getDetectorType().squash()) {
     case slsDetectorDefs::MOENCH:
         lblNumSamples->setEnabled(true);
@@ -64,6 +66,8 @@ void qTabMeasurement::SetupWidgetWindow() {
         startingFnumImplemented = true;
         break;
     case slsDetectorDefs::GOTTHARD2:
+        lblBurstMode->show();
+        comboBurstMode->show();
         lblNumBursts->setEnabled(true);
         spinNumBursts->setEnabled(true);
         lblBurstPeriod->setEnabled(true);
@@ -89,6 +93,10 @@ void qTabMeasurement::SetupWidgetWindow() {
 void qTabMeasurement::Initialization() {
     connect(comboTimingMode, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetTimingMode(int)));
+    if (comboBurstMode->isVisible()) {
+        connect(comboBurstMode, SIGNAL(currentIndexChanged(int)), this,
+                SLOT(SetBurstMode(int)));
+    }
     connect(spinNumMeasurements, SIGNAL(valueChanged(int)), this,
             SLOT(SetNumMeasurements(int)));
     connect(spinNumFrames, SIGNAL(valueChanged(int)), this,
@@ -144,18 +152,11 @@ void qTabMeasurement::Initialization() {
 void qTabMeasurement::ShowTriggerDelay() {
     bool showTrigger = true;
     if (det->getDetectorType().squash() == slsDetectorDefs::GOTTHARD2) {
-        try {
-            LOG(logDEBUG) << "Getting burst mode";
-            auto retval = det->getBurstMode().tsquash(
-                "Inconsistent burst mode for all detectors.");
-            // burst mode and auto timing mode
-            if (retval != slsDetectorDefs::BURST_OFF &&
-                comboTimingMode->currentIndex() == AUTO) {
-                showTrigger = false;
-            }
+        if ((comboBurstMode->currentIndex() != slsDetectorDefs::BURST_OFF) &&
+            (comboTimingMode->currentIndex() == AUTO)) {
+            // show burst, burstperiod, not trigger or delay
+            showTrigger = false;
         }
-        CATCH_DISPLAY("Could not get burst mode.",
-                      "qTabMeasurement::ShowTriggerDelay")
     }
 
     if (showTrigger) {
@@ -248,7 +249,7 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
         spinPeriod->setEnabled(true);
         comboPeriodUnit->setEnabled(true);
         if (det->getDetectorType().squash() == slsDetectorDefs::GOTTHARD2) {
-            ShowTriggerDelay();
+            GetBurstMode(); // also decides to show trigger or burst mode
         }
         break;
     case TRIGGER:
@@ -272,7 +273,7 @@ void qTabMeasurement::EnableWidgetsforTimingMode() {
             spinDelay->setEnabled(true);
             comboDelayUnit->setEnabled(true);
             if (det->getDetectorType().squash() == slsDetectorDefs::GOTTHARD2) {
-                ShowTriggerDelay();
+                GetBurstMode(); // also decides to show trigger or burst mode
             }
         }
         break;
@@ -357,6 +358,41 @@ void qTabMeasurement::SetTimingMode(int val) {
     }
     CATCH_HANDLE("Could not set timing mode.", "qTabMeasurement::SetTimingMode",
                  this, &qTabMeasurement::GetTimingMode)
+}
+
+void qTabMeasurement::GetBurstMode() {
+    LOG(logDEBUG) << "Getting burst mode";
+    disconnect(comboBurstMode, SIGNAL(currentIndexChanged(int)), this,
+               SLOT(SetBurstMode(int)));
+    try {
+        auto retval = det->getBurstMode().tsquash(
+            "Inconsistent burst mode for all detectors.");
+        switch (retval) {
+        case slsDetectorDefs::BURST_OFF:
+        case slsDetectorDefs::BURST_INTERNAL:
+        case slsDetectorDefs::BURST_EXTERNAL:
+            comboBurstMode->setCurrentIndex((int)retval);
+            ShowTriggerDelay();
+            break;
+        default:
+            throw sls::RuntimeError(std::string("Unknown burst mode: ") +
+                                    std::to_string(retval));
+        }
+    }
+    CATCH_DISPLAY("Could not get burst mode.", "qTabMeasurement::GetBurstMode")
+    connect(comboBurstMode, SIGNAL(currentIndexChanged(int)), this,
+            SLOT(SetBurstMode(int)));
+}
+
+void qTabMeasurement::SetBurstMode(int val) {
+    LOG(logINFO) << "Setting burst mode:"
+                 << comboBurstMode->currentText().toAscii().data();
+    try {
+        det->setBurstMode(static_cast<slsDetectorDefs::burstMode>(val));
+        ShowTriggerDelay();
+    }
+    CATCH_HANDLE("Could not set burst mode.", "qTabMeasurement::SetBurstMode",
+                 this, &qTabMeasurement::GetBurstMode)
 }
 
 void qTabMeasurement::SetNumMeasurements(int val) {
@@ -913,6 +949,9 @@ void qTabMeasurement::Refresh() {
 
     if (!plot->GetIsRunning()) {
         GetTimingMode();
+        if (comboBurstMode->isVisible()) {
+            GetBurstMode();
+        }
         GetNumFrames();
         GetExposureTime();
         GetAcquisitionPeriod();

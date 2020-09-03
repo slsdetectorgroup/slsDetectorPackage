@@ -375,6 +375,47 @@ class Detector(CppDetectorApi):
     # TODO! add txdelay
 
     @property
+    @element
+    def txndelay_frame(self):
+        return self.getTransmissionDelayFrame()
+
+    @txndelay_frame.setter
+    def txndelay_frame(self, args):
+        if isinstance(args, dict):
+            for key, value in args.items():
+                self.setTransmissionDelayFrame(value, [key])
+        else:
+            self.setTransmissionDelayFrame(args)
+
+
+    @property
+    @element
+    def txndelay_left(self):
+        return self.getTransmissionDelayLeft()
+
+    @txndelay_left.setter
+    def txndelay_left(self, args):
+        if isinstance(args, dict):
+            for key, value in args.items():
+                self.setTransmissionDelayLeft(value, [key])
+        else:
+            self.setTransmissionDelayLeft(args)
+
+
+    @property
+    @element
+    def txndelay_right(self):
+        return self.getTransmissionDelayRight()
+
+    @txndelay_right.setter
+    def txndelay_right(self, args):
+        if isinstance(args, dict):
+            for key, value in args.items():
+                self.setTransmissionDelayRight(value, [key])
+        else:
+            self.setTransmissionDelayRight(args)
+
+    @property
     def use_receiver(self):
         return element_if_equal(self.getUseReceiverFlag())
 

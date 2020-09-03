@@ -249,15 +249,15 @@ u_int16_t getHardwareVersionNumber() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    return bus_r(MCB_SERIAL_NO_REG);
+    return ((bus_r(MCB_SERIAL_NO_REG) & MCB_SERIAL_NO_VRSN_MSK) >>
+            MCB_SERIAL_NO_VRSN_OFST);
 }
 
 u_int32_t getDetectorNumber() {
 #ifdef VIRTUAL
     return 0;
 #endif
-    return ((bus_r(MCB_SERIAL_NO_REG) & MCB_SERIAL_NO_VRSN_MSK) >>
-            MCB_SERIAL_NO_VRSN_OFST);
+    return bus_r(MCB_SERIAL_NO_REG);
 }
 
 u_int64_t getDetectorMAC() {

@@ -375,6 +375,47 @@ class Detector(CppDetectorApi):
     # TODO! add txdelay
 
     @property
+    @element
+    def txndelay_frame(self):
+        return self.getTransmissionDelayFrame()
+
+    @txndelay_frame.setter
+    def txndelay_frame(self, args):
+        if isinstance(args, dict):
+            for key, value in args.items():
+                self.setTransmissionDelayFrame(value, [key])
+        else:
+            self.setTransmissionDelayFrame(args)
+
+
+    @property
+    @element
+    def txndelay_left(self):
+        return self.getTransmissionDelayLeft()
+
+    @txndelay_left.setter
+    def txndelay_left(self, args):
+        if isinstance(args, dict):
+            for key, value in args.items():
+                self.setTransmissionDelayLeft(value, [key])
+        else:
+            self.setTransmissionDelayLeft(args)
+
+
+    @property
+    @element
+    def txndelay_right(self):
+        return self.getTransmissionDelayRight()
+
+    @txndelay_right.setter
+    def txndelay_right(self, args):
+        if isinstance(args, dict):
+            for key, value in args.items():
+                self.setTransmissionDelayRight(value, [key])
+        else:
+            self.setTransmissionDelayRight(args)
+
+    @property
     def use_receiver(self):
         return element_if_equal(self.getUseReceiverFlag())
 
@@ -930,6 +971,18 @@ class Detector(CppDetectorApi):
         self.loadTrimbits(fname)
 
     @property
+    @element
+    def trimval(self):
+        """
+        [Eiger][Mythen3] Set all trimbits to this value. Returns -1 if all trimbits are different values.
+        """
+        return self.getAllTrimbits()
+
+    @trimval.setter
+    def trimval(self, value):
+        self.setAllTrimbits(value)
+
+    @property
     def lock(self):
         """Lock detector to one client IP, 1 locks, 0 unlocks. Default is unlocked."""
         return element_if_equal(self.getDetectorLock())
@@ -1010,6 +1063,16 @@ class Detector(CppDetectorApi):
         return self._adc_register
 
     @property
+    @element
+    def triggersl(self):
+        return self.getNumberOfTriggersLeft()
+
+    @property
+    @element
+    def timestamp(self):
+        return self.getMeasurementTime()
+
+    @property
     def led(self):
         """[Ctb] Switches on/off all LEDs. Default is enabled. """
         return element_if_equal(self.getLEDEnable())
@@ -1017,6 +1080,13 @@ class Detector(CppDetectorApi):
     @led.setter
     def led(self, value):
         self.setLEDEnable(value)
+
+    def acquire(self):
+        """
+        Run the configured measurement
+        """
+        super().acquire()
+        print('\n', end = '')
 
 
     @property
@@ -1463,6 +1533,35 @@ class Detector(CppDetectorApi):
             raise ValueError("unknow argument to vetofile")
 
         self.setVetoFile(chip_index, fname)
+
+    @property 
+    def vetophoton(self):
+        raise NotImplementedError('vetofile is set only')
+
+    @vetophoton.setter
+    def vetophoton(self, args):
+        chip_index, n_photons, photon_energy, fname = args
+        self.setVetoPhoton(chip_index, n_photons, photon_energy, fname)
+
+    @property
+    @element
+    def vetoref(self):
+        """
+        [Gotthard2] Set veto reference for all 128 channels for all chips.
+
+        Examples:
+        ----------
+
+        >>> d.vetoref = chip, value
+
+        """
+        raise NotImplementedError('vetoref is set only')
+
+    @vetoref.setter
+    def vetoref(self, args):
+        gain_index, value = args
+        self.setVetoReference(gain_index, value)
+
 
     """
     Mythen3 specific

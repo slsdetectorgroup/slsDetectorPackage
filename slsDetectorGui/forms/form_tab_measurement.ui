@@ -432,7 +432,7 @@
       <property name="verticalSpacing">
        <number>4</number>
       </property>
-      <item row="5" column="0">
+      <item row="6" column="0">
        <widget class="QStackedWidget" name="stackedLblTriggerBurst">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -503,7 +503,7 @@
         </widget>
        </widget>
       </item>
-      <item row="4" column="3">
+      <item row="5" column="3">
        <widget class="QComboBox" name="comboPeriodUnit">
         <property name="enabled">
          <bool>false</bool>
@@ -572,7 +572,7 @@ Frame period between exposures.
         </property>
        </widget>
       </item>
-      <item row="1" column="2" colspan="2">
+      <item row="2" column="2" colspan="2">
        <widget class="QSpinBox" name="spinNumMeasurements">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -616,7 +616,7 @@ Frame period between exposures.
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="label_5">
         <property name="minimumSize">
          <size>
@@ -674,7 +674,7 @@ Frame period between exposures.
         </item>
        </widget>
       </item>
-      <item row="3" column="2">
+      <item row="4" column="2">
        <widget class="QDoubleSpinBox" name="spinExpTime">
         <property name="enabled">
          <bool>true</bool>
@@ -718,7 +718,7 @@ Exposure Time of a frame.
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="5" column="0">
        <widget class="QLabel" name="lblPeriod">
         <property name="enabled">
          <bool>false</bool>
@@ -735,7 +735,7 @@ Frame period between exposures.
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="lblNumFrames">
         <property name="enabled">
          <bool>false</bool>
@@ -745,7 +745,7 @@ Frame period between exposures.
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
+      <item row="4" column="0">
        <widget class="QLabel" name="lblExpTime">
         <property name="enabled">
          <bool>true</bool>
@@ -762,7 +762,7 @@ Exposure Time of a frame.
         </property>
        </widget>
       </item>
-      <item row="2" column="2" colspan="2">
+      <item row="3" column="2" colspan="2">
        <widget class="QSpinBox" name="spinNumFrames">
         <property name="enabled">
          <bool>false</bool>
@@ -809,7 +809,7 @@ Exposure Time of a frame.
         </property>
        </widget>
       </item>
-      <item row="3" column="3">
+      <item row="4" column="3">
        <widget class="QComboBox" name="comboExpUnit">
         <property name="enabled">
          <bool>true</bool>
@@ -871,7 +871,7 @@ Exposure Time of a frame.
         </item>
        </widget>
       </item>
-      <item row="4" column="2">
+      <item row="5" column="2">
        <widget class="QDoubleSpinBox" name="spinPeriod">
         <property name="enabled">
          <bool>false</bool>
@@ -931,7 +931,7 @@ Frame period between exposures.
         </property>
        </spacer>
       </item>
-      <item row="5" column="2">
+      <item row="6" column="2">
        <widget class="QStackedWidget" name="stackedSpinTriggerBurst">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1070,7 +1070,7 @@ Frame period between exposures.
         </widget>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="7" column="0">
        <widget class="QStackedWidget" name="stackedLblDelayBurstPeriod">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1141,7 +1141,7 @@ Frame period between exposures.
         </widget>
        </widget>
       </item>
-      <item row="6" column="2">
+      <item row="7" column="2">
        <widget class="QStackedWidget" name="stackedSpinDelayBurstPeriod">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1268,7 +1268,7 @@ Frame period between exposures.
         </widget>
        </widget>
       </item>
-      <item row="6" column="3">
+      <item row="7" column="3">
        <widget class="QStackedWidget" name="stackedComboDelayBurstPeriod">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1431,7 +1431,7 @@ Frame period between exposures.
         </widget>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="8" column="0">
        <widget class="QStackedWidget" name="stackedLblSamplesGates">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1502,7 +1502,7 @@ Frame period between exposures.
         </widget>
        </widget>
       </item>
-      <item row="7" column="2">
+      <item row="8" column="2">
        <widget class="QStackedWidget" name="stackedSpinSamplesGates">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1637,6 +1637,48 @@ Frame period between exposures.
           </item>
          </layout>
         </widget>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblBurstMode">
+        <property name="text">
+         <string>Burst Mode:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2" colspan="2">
+       <widget class="QComboBox" name="comboBurstMode">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Timing Mode of the detector. 
+ #timing#</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>Off</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Burst Internal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Burst external</string>
+         </property>
+        </item>
        </widget>
       </item>
      </layout>

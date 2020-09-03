@@ -139,26 +139,22 @@ class Detector(CppDetectorApi):
             raise ValueError("hostname needs to be string or list of strings")
 
     @property
-    def fw_version(self):
+    def firmwareversion(self):
         return element_if_equal(self.getFirmwareVersion())
 
     @property
-    def server_version(self):
+    def detectorserverversion(self):
         # TODO! handle hex print
         return element_if_equal(self.getDetectorServerVersion())
 
     @property
-    def client_version(self):
-        return element_if_equal(self.getClientVersion())
+    def clientversion(self):
+        return self.getClientVersion()
 
     @property
     def rx_version(self):
         """Receiver version in format [0xYYMMDD]."""
         return element_if_equal(self.getReceiverVersion())
-
-    @property
-    def detector_type(self):
-        return element_if_equal(self.getDetectorType())
 
     @property
     def dr(self):
@@ -1022,6 +1018,41 @@ class Detector(CppDetectorApi):
     def led(self, value):
         self.setLEDEnable(value)
 
+
+    @property
+    def versions(self):
+        return {'type': self.type,
+                'package': self.packageversion, 
+                'client': self.clientversion,
+                'firmware': self.firmwareversion,
+                'detectorserver': self.detectorserverversion,
+                'receiver': self.rx_version}
+
+    @property
+    def virtual(self):
+        """
+        Setup with n virtual servers running on localhost
+        starting with port p
+
+        Examples
+        ---------
+
+        >>> d.virtual = n, p
+
+        """
+        raise NotImplementedError('Virtual is set only')
+
+    @virtual.setter
+    def virtual(self, args):
+        n_detectors, starting_port = args
+        self.setVirtualDetectorServers(n_detectors, starting_port)
+
+    
+
+    @property
+    def packageversion(self):
+        return self.getPackageVersion()
+
     @property
     def ratecorr(self):
         """ 
@@ -1171,6 +1202,19 @@ class Detector(CppDetectorApi):
     @subdeadtime.setter
     def subdeadtime(self, t):
         self.setSubDeadTime(t)
+
+    
+    @property
+    @element
+    def parallel(self):
+        """
+        [Eiger] Enable or disable the parallel readout mode of Eiger. 
+        """
+        return self.getParallelMode()
+
+    @parallel.setter
+    def parallel(self, value):
+        self.setParallelMode(value)
 
     @property
     def partialreset(self):
@@ -1391,6 +1435,34 @@ class Detector(CppDetectorApi):
     @veto.setter
     def veto(self, value):
         self.setVeto(value)
+
+
+    @property
+    def vetofile(self):
+        """
+        [Gotthard2] Set veto reference for each 128 channels for specific chip. 
+        The file should have 128 rows of gain index and 12 bit value in dec
+
+        Examples
+        ---------
+
+        d.vetofile = '/path/to/file.txt' #set for all chips
+        d.vetofile = 3, '/path/to/file.txt' # set for chip 3
+
+        """
+        raise NotImplementedError('vetofile is set only')
+
+    @vetofile.setter
+    def vetofile(self, args):
+        if isinstance(args, str):
+            chip_index = -1
+            fname = args
+        elif isinstance(args, (tuple, list)):
+            chip_index, fname = args
+        else:
+            raise ValueError("unknow argument to vetofile")
+
+        self.setVetoFile(chip_index, fname)
 
     """
     Mythen3 specific

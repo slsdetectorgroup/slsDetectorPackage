@@ -19,6 +19,22 @@ pycmd += ['vrf', 'vtr', 'vrs', 'vtgstv', 'vsvn', 'vtrim',
 'vin_com', 'vin_cm', 'vrshaper', 'vrshaper_n', 'vrpreamp', 'vishaper',
 'vicin', 'vcassh', 'vcal_n', 'vcal_p']
 
+# command : reason
+intentionally_missing  = [
+                        'temp_10ge', #temperatures already available from enum or specialized class
+                        'temp_adc',
+                        'temp_dcdc',
+                        'temp_fpga',
+                        'temp_fpgaext', 
+                        'temp_fpgafl', 
+                        'temp_fpgafr',
+                        'temp_slowadc',
+                        'temp_sodl',
+                        'temp_sodr',
+                        'trigger', #use sendSoftwareTrigger
+]
+
+pycmd += intentionally_missing
 missing = []
 for c in cmd:
     if c not in pycmd:

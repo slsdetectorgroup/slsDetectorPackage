@@ -108,3 +108,11 @@ def make_string_path(path):
         return os.path.expanduser(path)
     else:
         raise ValueError("Cannot convert argument to posix path")
+
+
+def set_using_dict(func, args):
+    if isinstance(args, dict):
+        for key, value in args.items():
+            func(value, [key])
+    else:
+        func(args)

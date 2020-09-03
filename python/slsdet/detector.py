@@ -138,6 +138,17 @@ class Detector(CppDetectorApi):
         else:
             raise ValueError("hostname needs to be string or list of strings")
 
+
+    @property
+    @element
+    def stopport(self):
+        return self.getStopPort()
+
+    @stopport.setter
+    def stopport(self, args):
+        ut.set_using_dict(self.setStopPort, args)
+
+
     @property
     def firmwareversion(self):
         return element_if_equal(self.getFirmwareVersion())
@@ -381,12 +392,7 @@ class Detector(CppDetectorApi):
 
     @txndelay_frame.setter
     def txndelay_frame(self, args):
-        if isinstance(args, dict):
-            for key, value in args.items():
-                self.setTransmissionDelayFrame(value, [key])
-        else:
-            self.setTransmissionDelayFrame(args)
-
+        ut.set_using_dict(self.setTransmissionDelayFrame, args)
 
     @property
     @element
@@ -395,12 +401,7 @@ class Detector(CppDetectorApi):
 
     @txndelay_left.setter
     def txndelay_left(self, args):
-        if isinstance(args, dict):
-            for key, value in args.items():
-                self.setTransmissionDelayLeft(value, [key])
-        else:
-            self.setTransmissionDelayLeft(args)
-
+        ut.set_using_dict(self.setTransmissionDelayLeft, args)
 
     @property
     @element
@@ -409,11 +410,7 @@ class Detector(CppDetectorApi):
 
     @txndelay_right.setter
     def txndelay_right(self, args):
-        if isinstance(args, dict):
-            for key, value in args.items():
-                self.setTransmissionDelayRight(value, [key])
-        else:
-            self.setTransmissionDelayRight(args)
+        ut.set_using_dict(self.setTransmissionDelayRight, args)
 
     @property
     def use_receiver(self):
@@ -1170,6 +1167,16 @@ class Detector(CppDetectorApi):
         self.setSpeed(value)
 
     @property
+    def rx_jsonpara(self):
+        raise NotImplementedError('use d.getAdditionalJsonParameter(\'key\')')
+
+    @rx_jsonpara.setter
+    def rx_jsonpara(self, args):
+        for key, value in args.items():
+            self.setAdditionalJsonParameter(key, str(value))
+
+
+    @property
     def frameindex(self):
         return self.getRxCurrentFrameIndex()
 
@@ -1220,8 +1227,19 @@ class Detector(CppDetectorApi):
         return element_if_equal(self.getNumMissingPackets())
 
     """
-    Some Eiger stuff, does this have to be here or can we move it to subclass?
+
+    <<<Eiger>>>
+
     """
+
+    @property
+    @element
+    def quad(self):
+        return self.getQuad()
+
+    @quad.setter
+    def quad(self, value):
+        self.setQuad(value)
 
     @property
     def subexptime(self):
@@ -1491,8 +1509,18 @@ class Detector(CppDetectorApi):
         self.selectUDPInterface(i)
 
     """
-    Gotthard2
+    <<<Gotthard2>>>
     """
+
+    @property
+    @element
+    def timingsource(self):
+        return self.getTimingSource()
+
+    @timingsource.setter
+    def timingsource(self, args):
+        ut.set_using_dict(self.setTimingSource, args)
+
 
     @property
     @element
@@ -1630,8 +1658,17 @@ class Detector(CppDetectorApi):
         self.setCounterMask(list_to_bitmask(values))
 
     """
-    CTB stuff 
+    <<<CTB>>>
     """
+
+    @property
+    @element
+    def samples(self):
+        return self.getNumberOfAnalogSamples()
+
+    @samples.setter
+    def samples(self, nsamples):
+        self.setNumberOfAnalogSamples(nsamples)
 
     @property
     def runclk(self):

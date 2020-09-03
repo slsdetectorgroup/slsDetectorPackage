@@ -29,6 +29,7 @@ void qTabAdvanced::SetupWidgetWindow() {
         tab_roi->setEnabled(true);
         break;
     case slsDetectorDefs::MYTHEN3:
+        tab_trimming->setEnabled(true);
         lblDiscardBits->setEnabled(true);
         spinDiscardBits->setEnabled(true);
         lblGateIndex->setEnabled(true);

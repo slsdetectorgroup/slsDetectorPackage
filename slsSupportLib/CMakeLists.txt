@@ -12,9 +12,6 @@ set(SOURCES
     src/sls_detector_exceptions.cpp
 )
 
-set(HEADERS
-)
-
 set(PUBLICHEADERS
     include/sls_detector_defs.h
     include/sls_detector_exceptions.h
@@ -26,6 +23,10 @@ set(PUBLICHEADERS
     include/TimeHelper.h
 )
 
+# Additional headers to be installed if SLS_DEVEL_HEADERS
+# is specified as an option. Aim is to give the developer
+# access to utilities in the support library while
+# at the same time offer a minimal install
 if(SLS_DEVEL_HEADERS)
     set(PUBLICHEADERS
         ${PUBLICHEADERS}
@@ -44,14 +45,11 @@ if(SLS_DEVEL_HEADERS)
     )
 endif()
 
-# Create a Object library to avoid duplicating the build
+# Create a Object library to avoidbuilding the library twice
 add_library(slsSupportObject OBJECT
     ${SOURCES}
     ${HEADERS}
 )
-
-
-
 
 target_include_directories(slsSupportObject PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -77,11 +75,11 @@ if (SLS_USE_TESTS)
 endif(SLS_USE_TESTS)
 
 add_library(slsSupportLib SHARED $<TARGET_OBJECTS:slsSupportObject>)
-
-target_include_directories(slsSupportLib PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-)
+target_link_libraries(slsSupportLib PUBLIC slsSupportObject)
+# target_include_directories(slsSupportLib PUBLIC
+#     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+#     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+# )
 
 set_target_properties(slsSupportLib PROPERTIES
     LIBRARY_OUTPUT_NAME SlsSupport
@@ -90,6 +88,7 @@ set_target_properties(slsSupportLib PROPERTIES
 )
 
 add_library(slsSupportLibStatic STATIC $<TARGET_OBJECTS:slsSupportObject>)
+target_link_libraries(slsSupportLibStatic PUBLIC slsSupportObject)
 
 set_target_properties(slsSupportLibStatic PROPERTIES
     ARCHIVE_OUTPUT_NAME SlsSupportStatic
@@ -97,19 +96,19 @@ set_target_properties(slsSupportLibStatic PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
-target_include_directories(slsSupportLibStatic PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-)
+# target_include_directories(slsSupportLibStatic PUBLIC
+#     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+#     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+# )
 
 if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsSupportObject PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-    set_property(TARGET slsSupportLib PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    set_property(TARGET slsSupportLib  PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
     set_property(TARGET slsSupportLibStatic PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 
 # Install the library
-install(TARGETS slsSupportLib slsSupportLibStatic
+install(TARGETS slsSupportLib slsSupportLibStatic slsSupportObject
     EXPORT "${TARGETS_EXPORT_NAME}"
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

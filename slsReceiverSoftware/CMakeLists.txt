@@ -34,10 +34,12 @@ if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsReceiverShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 
-target_link_libraries(slsReceiverShared PUBLIC
+target_link_libraries(slsReceiverShared 
+    PUBLIC
     slsProjectOptions
-    slsProjectWarnings
-    slsSupportLib
+    slsSupportLibStatic
+    PRIVATE
+    slsProjectWarnings #don't propagate warnigns 
 )
 
 target_include_directories(slsReceiverShared PUBLIC

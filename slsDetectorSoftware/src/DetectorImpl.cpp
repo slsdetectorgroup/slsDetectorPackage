@@ -288,16 +288,41 @@ void DetectorImpl::updateDetectorSize() {
     LOG(logDEBUG) << "Updating Multi-Detector Size: " << size();
 
     const slsDetectorDefs::xy det_size = detectors[0]->getNumberOfChannels();
-
-    int maxy = multi_shm()->numberOfChannels.y;
-    if (maxy == 0) {
-        maxy = det_size.y * size();
+    bool is1D = false;
+    switch (multi_shm()->multiDetectorType) {
+    case GOTTHARD:
+    case GOTTHARD2:
+    case MYTHEN3:
+        is1D = true;
+        break;
+    default:
+        is1D = false;
     }
 
-    int ndety = maxy / det_size.y;
-    int ndetx = size() / ndety;
-    if ((maxy % det_size.y) > 0) {
-        ++ndetx;
+    int maxx = multi_shm()->numberOfChannels.x;
+    int maxy = multi_shm()->numberOfChannels.y;
+    int ndetx = 0, ndety = 0;
+    // 1d, add detectors along x axis
+    if (is1D) {
+        if (maxx == 0) {
+            maxx = det_size.x * size();
+        }
+        ndetx = maxx / det_size.x;
+        ndety = size() / ndetx;
+        if ((maxx % det_size.x) > 0) {
+            ++ndety;
+        }
+    }
+    // 2d, add detectors along y axis (due to eiger top/bottom)
+    else {
+        if (maxy == 0) {
+            maxy = det_size.y * size();
+        }
+        ndety = maxy / det_size.y;
+        ndetx = size() / ndety;
+        if ((maxy % det_size.y) > 0) {
+            ++ndetx;
+        }
     }
 
     multi_shm()->numberOfDetector.x = ndetx;

@@ -203,7 +203,7 @@ int ClientInterface::functionTable(){
     flist[F_SET_RECEIVER_STREAMING_START_FNUM] = &ClientInterface::set_streaming_start_fnum;
     flist[F_SET_RECEIVER_RATE_CORRECT]      =   &ClientInterface::set_rate_correct;
     flist[F_SET_RECEIVER_SCAN]              =   &ClientInterface::set_scan;
-
+    flist[F_RECEIVER_SET_THRESHOLD]         =   &ClientInterface::set_threshold;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -366,6 +366,9 @@ int ClientInterface::setup_receiver(Interface &socket) {
     if (myDetectorType == GOTTHARD2) {
         impl()->setNumberOfBursts(arg.bursts);
     }
+    if (myDetectorType == JUNGFRAU) {
+        impl()->setNumberOfAdditionalStorageCells(arg.additionalStorageCells);
+    }
     if (myDetectorType == MOENCH || myDetectorType == CHIPTESTBOARD) {
         try {
             impl()->setNumberofAnalogSamples(arg.analogSamples);
@@ -400,6 +403,8 @@ int ClientInterface::setup_receiver(Interface &socket) {
                                std::to_string(arg.quad) +
                                " due to fifo strucutre memory allocation");
         }
+        impl()->setReadNLines(arg.numLinesReadout);
+        impl()->setThresholdEnergy(arg.thresholdEnergyeV);
     }
     if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
         try {
@@ -461,6 +466,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
     if (myDetectorType == GOTTHARD2) {
         impl()->setBurstMode(arg.burstType);
     }
+    impl()->setScan(arg.scanParams);
 
     return socket.sendResult(retvals);
 }
@@ -1631,5 +1637,15 @@ int ClientInterface::set_scan(Interface &socket) {
     LOG(logDEBUG) << "Scan Mode: " << sls::ToString(arg);
     verifyIdle(socket);
     impl()->setScan(arg);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_threshold(Interface &socket) {
+    auto arg = socket.Receive<int>();
+    LOG(logDEBUG) << "Threshold: " << arg << " eV";
+    if (myDetectorType != EIGER)
+        functionNotImplemented();
+    verifyIdle(socket);
+    impl()->setThresholdEnergy(arg);
     return socket.Send(OK);
 }

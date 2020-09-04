@@ -81,6 +81,7 @@ class Implementation : private virtual slsDetectorDefs {
     uint64_t getAcquisitionIndex() const;
     double getProgress() const;
     std::vector<uint64_t> getNumMissingPackets() const;
+    void setScan(slsDetectorDefs::scanParameters s);
     void startReceiver();
     void setStoppedFlag(bool stopped);
     void stopReceiver();
@@ -214,6 +215,8 @@ class Implementation : private virtual slsDetectorDefs {
     int getReadNLines() const;
     /* [Eiger] */
     void setReadNLines(const int value);
+    /** [Eiger] */
+    void setThresholdEnergy(const int value);
     /* [Eiger] */
     void setRateCorrections(const std::vector<int64_t> &t);
     readoutMode getReadoutMode() const;
@@ -292,6 +295,7 @@ class Implementation : private virtual slsDetectorDefs {
     // acquisition
     std::atomic<runStatus> status{IDLE};
     bool stoppedFlag{false};
+    scanParameters scanParams{};
 
     // network configuration (UDP)
     int numUDPInterfaces{1};
@@ -340,6 +344,7 @@ class Implementation : private virtual slsDetectorDefs {
     bool activated{true};
     bool deactivatedPaddingEnable{true};
     int numLinesReadout{MAX_EIGER_ROWS_PER_READOUT};
+    int thresholdEnergyeV{-1};
     std::vector<int64_t> rateCorrections;
     readoutMode readoutType{ANALOG_ONLY};
     uint32_t adcEnableMaskOneGiga{BIT32_MASK};

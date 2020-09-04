@@ -483,6 +483,11 @@ std::vector<uint64_t> Implementation::getNumMissingPackets() const {
     return mp;
 }
 
+void Implementation::setScan(slsDetectorDefs::scanParameters s) {
+    scanParams = s;
+    LOG(logINFO) << "Scan parameters: " << sls::ToString(scanParams);
+}
+
 void Implementation::startReceiver() {
     LOG(logINFO) << "Starting Receiver";
     stoppedFlag = false;
@@ -719,27 +724,37 @@ void Implementation::SetupWriter() {
             "Unknown detector type to set up master file attributes");
     }
     masterAttributes->detType = myDetectorType;
+    masterAttributes->timingMode = timingMode;
     masterAttributes->imageSize = generalData->imageSize;
     masterAttributes->nPixels =
         xy(generalData->nPixelsX, generalData->nPixelsY);
     masterAttributes->maxFramesPerFile = framesPerFile;
+    masterAttributes->frameDiscardMode = frameDiscardMode;
+    masterAttributes->framePadding = framePadding;
+    masterAttributes->scanParams = scanParams;
     masterAttributes->totalFrames = numberOfTotalFrames;
     masterAttributes->exptime = acquisitionTime;
     masterAttributes->period = acquisitionPeriod;
+    masterAttributes->burstMode = burstMode;
+    masterAttributes->numUDPInterfaces = numUDPInterfaces;
     masterAttributes->dynamicRange = dynamicRange;
     masterAttributes->tenGiga = tengigaEnable;
+    masterAttributes->thresholdEnergyeV = thresholdEnergyeV;
     masterAttributes->subExptime = subExpTime;
     masterAttributes->subPeriod = subPeriod;
     masterAttributes->quad = quadEnable;
+    masterAttributes->numLinesReadout = numLinesReadout;
     masterAttributes->ratecorr = rateCorrections;
     masterAttributes->adcmask =
         tengigaEnable ? adcEnableMaskTenGiga : adcEnableMaskOneGiga;
     masterAttributes->analog =
         (readoutType == ANALOG_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1
                                                                           : 0;
+    masterAttributes->analogSamples = numberOfAnalogSamples;
     masterAttributes->digital =
         (readoutType == DIGITAL_ONLY || readoutType == ANALOG_AND_DIGITAL) ? 1
                                                                            : 0;
+    masterAttributes->digitalSamples = numberOfDigitalSamples;
     masterAttributes->dbitoffset = ctbDbitOffset;
     masterAttributes->dbitlist = 0;
     for (auto &i : ctbDbitList) {
@@ -1463,6 +1478,11 @@ int Implementation::getReadNLines() const { return numLinesReadout; }
 void Implementation::setReadNLines(const int value) {
     numLinesReadout = value;
     LOG(logINFO) << "Number of Lines to readout: " << numLinesReadout;
+}
+
+void Implementation::setThresholdEnergy(const int value) {
+    thresholdEnergyeV = value;
+    LOG(logINFO) << "Threshold Energy: " << thresholdEnergyeV << " eV";
 }
 
 void Implementation::setRateCorrections(const std::vector<int64_t> &t) {

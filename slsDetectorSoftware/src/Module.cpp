@@ -1086,6 +1086,9 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
     // check as there is client processing
     if (shm()->myDetectorType == EIGER) {
         setThresholdEnergyAndSettings(e_eV, isettings, trimbits);
+        if (shm()->useReceiverFlag) {
+            sendToReceiver(F_RECEIVER_SET_THRESHOLD, e_eV, nullptr);
+        }
     }
     // moench - send threshold energy to processor
     else if (shm()->myDetectorType == MOENCH) {

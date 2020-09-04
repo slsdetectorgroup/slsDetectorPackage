@@ -44,27 +44,44 @@ if(SLS_DEVEL_HEADERS)
     )
 endif()
 
-add_library(slsSupportLib SHARED
+# Create a Object library to avoid duplicating the build
+add_library(slsSupportObject OBJECT
     ${SOURCES}
     ${HEADERS}
 )
 
 
-if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
-    set_property(TARGET slsSupportLib PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
-endif()
 
 
+target_include_directories(slsSupportObject PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+
+
+target_include_directories(slsSupportObject PRIVATE
+    ${ZeroMQ_INCLUDE_DIRS}
+)
+
+target_link_libraries(slsSupportObject 
+    PUBLIC
+    slsProjectOptions 
+    zmq
+    rapidjson
+    PRIVATE
+    slsProjectWarnings     
+)
+
+if (SLS_USE_TESTS)
+    add_subdirectory(tests)
+endif(SLS_USE_TESTS)
+
+add_library(slsSupportLib SHARED $<TARGET_OBJECTS:slsSupportObject>)
 
 target_include_directories(slsSupportLib PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
-
-target_include_directories(slsSupportLib PRIVATE
-    ${ZeroMQ_INCLUDE_DIRS}
-)
-
 
 set_target_properties(slsSupportLib PROPERTIES
     LIBRARY_OUTPUT_NAME SlsSupport
@@ -72,26 +89,30 @@ set_target_properties(slsSupportLib PROPERTIES
     PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
-target_link_libraries(slsSupportLib 
-    PUBLIC
-    slsProjectOptions 
-    # ${ZeroMQ_LIBRARIES}
-    zmq
-    rapidjson
-    PRIVATE
-    slsProjectWarnings     
+add_library(slsSupportLibStatic STATIC $<TARGET_OBJECTS:slsSupportObject>)
+
+set_target_properties(slsSupportLibStatic PROPERTIES
+    ARCHIVE_OUTPUT_NAME SlsSupportStatic
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    PUBLIC_HEADER "${PUBLICHEADERS}"
 )
 
+target_include_directories(slsSupportLibStatic PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
 
-
-if (SLS_USE_TESTS)
-    add_subdirectory(tests)
-endif(SLS_USE_TESTS)
+if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
+    set_property(TARGET slsSupportObject PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    set_property(TARGET slsSupportLib PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+    set_property(TARGET slsSupportLibStatic PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
+endif()
 
 # Install the library
-install(TARGETS slsSupportLib
+install(TARGETS slsSupportLib slsSupportLibStatic
     EXPORT "${TARGETS_EXPORT_NAME}"
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
+

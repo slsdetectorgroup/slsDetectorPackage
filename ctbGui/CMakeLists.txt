@@ -59,14 +59,13 @@ set( HEADERS
 #set(ROOT_INCLUDE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
 # ROOT dictionary generation 
-include("${ROOT_DIR}/modules/RootNewMacros.cmake")
+include("${ROOT_DIR}/RootMacros.cmake")
 root_generate_dictionary(ctbDict ${HEADERS} LINKDEF ctbLinkDef.h)
 add_library(ctbRootLib SHARED ctbDict.cxx)
 target_include_directories(ctbRootLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ctbRootLib PUBLIC 
     ROOT::Core 
     slsDetectorShared
-    slsSupportLib
     ${ROOT_LIBRARIES} 
     ${ROOT_EXE_LINKER_FLAGS}
 )
@@ -78,7 +77,6 @@ set_target_properties(
 
 target_link_libraries(ctbGui PUBLIC 
     slsDetectorShared
-    slsSupportLib
     ctbRootLib
     ${TIFF_LIBRARIES}
 )

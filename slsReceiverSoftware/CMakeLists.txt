@@ -34,10 +34,12 @@ if((CMAKE_BUILD_TYPE STREQUAL "Release") AND SLS_LTO_AVAILABLE)
     set_property(TARGET slsReceiverShared PROPERTY INTERPROCEDURAL_OPTIMIZATION True)
 endif()
 
-target_link_libraries(slsReceiverShared PUBLIC
+target_link_libraries(slsReceiverShared 
+  PUBLIC
     slsProjectOptions
-    slsProjectWarnings
-    slsSupportLib
+    slsSupportStatic
+  PRIVATE
+    slsProjectWarnings #don't propagate warnigns 
 )
 
 target_include_directories(slsReceiverShared PUBLIC
@@ -78,13 +80,13 @@ set_target_properties(slsReceiver PROPERTIES
 )
 
 target_link_libraries(slsReceiver PUBLIC
-    slsProjectOptions
-    slsProjectWarnings
-    slsSupportLib
+  PUBLIC
     slsReceiverShared
     pthread
     ${ZeroMQ_LIBRARIES}
     rt
+  PRIVATE
+    slsProjectWarnings
 )
 
 add_executable(slsMultiReceiver
@@ -95,14 +97,14 @@ set_target_properties(slsMultiReceiver PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-target_link_libraries(slsMultiReceiver PUBLIC
-    slsProjectOptions
-    slsProjectWarnings
-    slsSupportLib
+target_link_libraries(slsMultiReceiver 
+  PUBLIC
     slsReceiverShared
     pthread
     ${ZeroMQ_LIBRARIES}
     rt
+  PRIVATE
+    slsProjectWarnings
 )
 
 if (SLS_USE_TESTS)

@@ -11,7 +11,7 @@ pybind11_add_module(_slsdet
 target_link_libraries(_slsdet PUBLIC 
                         slsDetectorShared
                         slsReceiverShared
-                        slsSupportLib
+                        slsSupportShared
                         ${ZeroMQ_LIBRARIES}
                         )  
 

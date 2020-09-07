@@ -288,22 +288,11 @@ void DetectorImpl::updateDetectorSize() {
     LOG(logDEBUG) << "Updating Multi-Detector Size: " << size();
 
     const slsDetectorDefs::xy det_size = detectors[0]->getNumberOfChannels();
-    bool is1D = false;
-    switch (multi_shm()->multiDetectorType) {
-    case GOTTHARD:
-    case GOTTHARD2:
-    case MYTHEN3:
-        is1D = true;
-        break;
-    default:
-        is1D = false;
-    }
-
     int maxx = multi_shm()->numberOfChannels.x;
     int maxy = multi_shm()->numberOfChannels.y;
     int ndetx = 0, ndety = 0;
     // 1d, add detectors along x axis
-    if (is1D) {
+    if (det_size.y == 1) {
         if (maxx == 0) {
             maxx = det_size.x * size();
         }

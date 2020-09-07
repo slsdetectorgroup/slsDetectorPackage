@@ -11,6 +11,7 @@ detectorType = slsDetectorDefs.detectorType
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
 from . import utils as ut
+from .jsonproxy import JsonProxy
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -275,9 +276,7 @@ class Detector(CppDetectorApi):
                     v = float(v)
                 self.setExptime(i, v)
         else:
-            if isinstance(t, int):
-                t = float(t)
-            self.setExptime(t)
+            ut.set_time_using_dict(self.setExptime, t)
 
 
 
@@ -305,7 +304,7 @@ class Detector(CppDetectorApi):
 
     @period.setter
     def period(self, t):
-        self.setPeriod(t)
+        ut.set_time_using_dict(self.setPeriod, t)
 
     @property
     @element
@@ -1168,13 +1167,33 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_jsonpara(self):
-        raise NotImplementedError('use d.getAdditionalJsonParameter(\'key\')')
+        """
+        Get the receiver additional json parameter. In case the parameter is different between
+        the modules a list of strings will be returned. On setting the value is automatically
+        converted to a string. 
+
+        Examples:
+        -----------
+
+        >>> d.rx_jsonpara['emin']
+        '4500'
+
+        >>> d.rx_jsonpara['emin'] = 5000
+
+        """
+        return JsonProxy(self)
+
+
 
     @rx_jsonpara.setter
     def rx_jsonpara(self, args):
         for key, value in args.items():
             self.setAdditionalJsonParameter(key, str(value))
 
+    @property
+    @element
+    def rx_jsonaddheader(self):
+        return self.getAdditionalJsonHeader()
 
     @property
     def frameindex(self):
@@ -1264,7 +1283,8 @@ class Detector(CppDetectorApi):
 
     @subexptime.setter
     def subexptime(self, t):
-        self.setSubExptime(t)
+        ut.set_time_using_dict(self.setSubExptime, t)
+
 
     @property
     def subdeadtime(self):
@@ -1289,9 +1309,8 @@ class Detector(CppDetectorApi):
 
     @subdeadtime.setter
     def subdeadtime(self, t):
-        self.setSubDeadTime(t)
+        ut.set_time_using_dict(self.setSubDeadTime, t)
 
-    
     @property
     @element
     def parallel(self):
@@ -2201,3 +2220,6 @@ class Detector(CppDetectorApi):
         :setter: Not implemented
         """
         return self.getMeasuredCurrent(dacIndex.I_POWER_IO)
+
+
+

@@ -84,6 +84,7 @@ intentionally_missing  = [
                         'update', #use updateServerAndFirmare
                         'udp_validate', #use validateUdpConfiguration
                         'udp_reconfigure', #use reconfigureUdpDestination
+                        'emin', #use rx_jsonpara
 ]
 
 pycmd += intentionally_missing

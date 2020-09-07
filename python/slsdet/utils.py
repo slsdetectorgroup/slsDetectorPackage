@@ -116,3 +116,14 @@ def set_using_dict(func, args):
             func(value, [key])
     else:
         func(args)
+
+def set_time_using_dict(func, args):
+    if isinstance(args, dict):
+        for key, value in args.items():
+            if isinstance(value, int):
+                value = float(value)
+            func(value, [key])
+    else:
+        if isinstance(args, int):
+                args = float(args)
+        func(args)

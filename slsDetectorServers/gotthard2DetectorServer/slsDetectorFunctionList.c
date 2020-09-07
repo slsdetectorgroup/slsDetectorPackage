@@ -2105,12 +2105,14 @@ int setBurstModeinFPGA(enum burstMode value) {
 }
 
 int setBurstMode(enum burstMode burst) {
-    LOG(logINFO, ("Setting burst mode to %s\n",
-                  burst == BURST_INTERNAL
-                      ? "burst_internal"
-                      : (burst == BURST_EXTERNAL ? "burst external" 
-                      : (burst == CONTINUOUS_INTERNAL ? "continuous internal" 
-                      : "continuous external")))));
+    LOG(logINFO,
+        ("Setting burst mode to %s\n",
+         (burst == BURST_INTERNAL
+              ? "burst_internal"
+              : (burst == BURST_EXTERNAL ? "burst external"
+                                         : (burst == CONTINUOUS_INTERNAL
+                                                ? "continuous internal"
+                                                : "continuous external")))));
 
     // update
     int64_t framesReg = 0;

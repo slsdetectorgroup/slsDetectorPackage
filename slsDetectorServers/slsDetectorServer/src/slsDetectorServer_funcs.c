@@ -1941,7 +1941,7 @@ int set_num_frames(int file_des) {
 #ifdef GOTTHARD2D
             // validate #frames in burst mode
             enum burstMode mode = getBurstMode();
-            if ((mode == BURST_INTERNAL || mdoe == BURST_EXTERNAL) &&
+            if ((mode == BURST_INTERNAL || mode == BURST_EXTERNAL) &&
                 arg > MAX_FRAMES_IN_BURST_MODE) {
                 ret = FAIL;
                 sprintf(mess,

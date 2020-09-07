@@ -40,6 +40,7 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << "frames:" << r.frames << std::endl
         << "triggers:" << r.triggers << std::endl
         << "bursts:" << r.bursts << std::endl
+        << "additionalStorageCells:" << r.additionalStorageCells << std::endl
         << "analogSamples:" << r.analogSamples << std::endl
         << "digitalSamples:" << r.digitalSamples << std::endl
         << "expTime:" << ToString(std::chrono::nanoseconds(r.expTimeNs))
@@ -52,6 +53,8 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << std::endl
         << "activate:" << r.activate << std::endl
         << "quad:" << r.quad << std::endl
+        << "numLinesReadout:" << r.numLinesReadout << std::endl
+        << "thresholdEnergyeV:" << r.thresholdEnergyeV << std::endl
         << "dynamicRange:" << r.dynamicRange << std::endl
         << "timMode:" << r.timMode << std::endl
         << "tenGiga:" << r.tenGiga << std::endl
@@ -75,6 +78,7 @@ std::string ToString(const slsDetectorDefs::rxParameters &r) {
         << "gateDelay3:" << ToString(std::chrono::nanoseconds(r.gateDelay3Ns))
         << std::endl
         << "gates:" << r.gates << std::endl
+        << "scanParams:" << sls::ToString(r.scanParams) << std::endl
         << ']';
     return oss.str();
 }

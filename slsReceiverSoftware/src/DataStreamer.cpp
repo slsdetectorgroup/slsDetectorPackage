@@ -69,7 +69,9 @@ void DataStreamer::SetFlippedDataX(int fd) { flippedDataX = fd; }
 
 void DataStreamer::SetAdditionalJsonHeader(
     const std::map<std::string, std::string> &json) {
-    additionJsonHeader = json;
+    std::lock guard<std::mutex> guard(additionalJsonMutex);
+    additionalJsonHeader = json;
+    isAdditionalJsonUpdated = true;
 }
 
 void DataStreamer::CreateZmqSockets(int *nunits, uint32_t port,
@@ -232,7 +234,13 @@ int DataStreamer::SendHeader(sls_receiver_header *rheader, uint32_t size,
     zHeader.quad = *quadEnable;
     zHeader.completeImage =
         (header.packetNumber < generalData->packetsPerFrame ? false : true);
-    zHeader.addJsonHeader = additionJsonHeader;
+
+    if (isAdditionalJsonUpdated) {
+        std::lock_guard<std::mutex> guard(additionalalJsonMutex);
+        localAdditionalJsonHeader = additionalJsonHeader;
+        isAdditionalalJsonUpdated = false;
+    }
+    zHeader.addJsonHeader = localAdditionalJsonHeader;
 
     return zmqSocket->SendHeader(index, zHeader);
 }

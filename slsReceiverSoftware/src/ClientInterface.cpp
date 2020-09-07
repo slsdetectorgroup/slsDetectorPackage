@@ -83,7 +83,8 @@ void ClientInterface::startTCPServer() {
         try {
             auto socket = server.accept();
             try {
-                verifyLock();
+                verifyLock(); // lock should be checked only for set (not get),
+                              // Move it back?
                 ret = decodeFunction(socket);
             } catch (const RuntimeError &e) {
                 // We had an error needs to be sent to client
@@ -1115,7 +1116,7 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
             json[key] = value;
         }
     }
-    verifyIdle(socket);
+    // verifyIdle(socket); allowing it to be set on the fly
     LOG(logDEBUG1) << "Setting additional json header: " << sls::ToString(json);
     impl()->setAdditionalJsonHeader(json);
     return socket.Send(OK);
@@ -1531,7 +1532,7 @@ int ClientInterface::increment_file_index(Interface &socket) {
 int ClientInterface::set_additional_json_parameter(Interface &socket) {
     char args[2][SHORT_STR_LENGTH]{};
     socket.Receive(args);
-    verifyIdle(socket);
+    // verifyIdle(socket); allowing it to be set on the fly
     LOG(logDEBUG1) << "Setting additional json parameter (" << args[0]
                    << "): " << args[1];
     impl()->setAdditionalJsonParameter(args[0], args[1]);

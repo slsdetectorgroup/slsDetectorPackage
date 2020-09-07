@@ -391,9 +391,10 @@ typedef struct {
      * burst mode for gotthard2
      */
     enum burstMode {
-        BURST_OFF,
         BURST_INTERNAL,
         BURST_EXTERNAL,
+        CONTINUOUS_INTERNAL,
+        CONTINUOUS_EXTERNAL,
         NUM_BURST_MODES
     };
 
@@ -437,7 +438,7 @@ typedef struct {
         uint32_t adc10gMask{0};
         ROI roi;
         uint32_t countermask{0};
-        burstMode burstType{BURST_OFF};
+        burstMode burstType{BURST_INTERNAL};
         int64_t expTime1Ns{0};
         int64_t expTime2Ns{0};
         int64_t expTime3Ns{0};

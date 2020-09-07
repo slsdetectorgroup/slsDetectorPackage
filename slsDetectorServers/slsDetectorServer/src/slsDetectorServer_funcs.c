@@ -1940,7 +1940,9 @@ int set_num_frames(int file_des) {
         } else {
 #ifdef GOTTHARD2D
             // validate #frames in burst mode
-            if (getBurstMode() != BURST_OFF && arg > MAX_FRAMES_IN_BURST_MODE) {
+            enum burstMode mode = getBurstMode();
+            if ((mode == BURST_INTERNAL || mdoe == BURST_EXTERNAL) &&
+                arg > MAX_FRAMES_IN_BURST_MODE) {
                 ret = FAIL;
                 sprintf(mess,
                         "Could not set number of frames %lld. Must be <= %d in "
@@ -6494,7 +6496,7 @@ int set_veto_reference(int file_des) {
 int set_burst_mode(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    enum burstMode arg = BURST_OFF;
+    enum burstMode arg = BURST_INTERNAL;
 
     if (receiveData(file_des, &arg, sizeof(arg), INT32) < 0)
         return printSocketReadError();
@@ -6506,9 +6508,10 @@ int set_burst_mode(int file_des) {
     // only set
     if (Server_VerifyLock() == OK) {
         switch (arg) {
-        case BURST_OFF:
         case BURST_INTERNAL:
         case BURST_EXTERNAL:
+        case CONTINUOUS_INTERNAL:
+        case CONTINUOUS_EXTERNAL:
             break;
         default:
             modeNotImplemented("Burst mode", (int)arg);
@@ -6533,7 +6536,7 @@ int set_burst_mode(int file_des) {
 int get_burst_mode(int file_des) {
     ret = OK;
     memset(mess, 0, sizeof(mess));
-    enum burstMode retval = BURST_OFF;
+    enum burstMode retval = BURST_INTERNAL;
 
     LOG(logDEBUG1, ("Getting burst mode\n"));
 

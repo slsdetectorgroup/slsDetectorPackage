@@ -1087,7 +1087,8 @@ class Detector {
     /** [Gotthard2]  */
     Result<defs::burstMode> getBurstMode(Positions pos = {});
 
-    /** [Gotthard2]  BURST_OFF, BURST_INTERNAL (default), BURST_EXTERNAL */
+    /** [Gotthard2]  BURST_INTERNAL (default), BURST_EXTERNAL,
+     * CONTINUOUS_INTERNAL, CONTINUOUS_EXTERNAL */
     void setBurstMode(defs::burstMode value, Positions pos = {});
 
     /** [Gotthard2] */

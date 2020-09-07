@@ -88,6 +88,7 @@ target_include_directories(slsDetectorGui PUBLIC
 )
 
 target_link_libraries(slsDetectorGui PUBLIC
+    slsProjectOptions 
     slsProjectWarnings
     slsDetectorShared
     ${QT_QTCORE_LIBRARIES}
@@ -97,6 +98,7 @@ target_link_libraries(slsDetectorGui PUBLIC
     ZLIB::ZLIB
     Qt4::QtOpenGL
     Qt4::QtSvg
+    expat
 )
 
 set_target_properties(slsDetectorGui PROPERTIES
@@ -104,10 +106,10 @@ set_target_properties(slsDetectorGui PROPERTIES
 )
 
 install(TARGETS slsDetectorGui
-    # EXPORT "${TARGETS_EXPORT_NAME}"
+    EXPORT "${TARGETS_EXPORT_NAME}"
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    # LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    # ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     # PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 

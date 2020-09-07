@@ -27,7 +27,7 @@ target_include_directories(slsDetectorShared PUBLIC
 
 target_link_libraries(slsDetectorShared 
     PUBLIC
-    slsSupportLib
+    slsSupportStatic
     pthread
     rt
     slsProjectOptions

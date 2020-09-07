@@ -8,12 +8,12 @@ set(SLS_TEST_SOURCES
 )
 
 add_executable(testclient src/testclient.cpp)
-target_link_libraries(testclient slsSupportLib)
+target_link_libraries(testclient slsSupportShared)
 set_target_properties(testclient PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_executable(testserver src/testserver.cpp)
-target_link_libraries(testserver slsSupportLib)
+target_link_libraries(testserver slsSupportShared)
 set_target_properties(testserver PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     
@@ -21,7 +21,7 @@ add_executable(tests ${SLS_TEST_SOURCES})
 target_link_libraries(tests 
     slsProjectOptions
     slsProjectWarnings
-    slsSupportLib
+    slsSupportShared
     pthread
     rt
 )  

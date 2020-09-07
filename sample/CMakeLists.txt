@@ -1,6 +1,6 @@
 add_executable(using_logger using_logger.cpp)
 target_link_libraries(using_logger 
-    slsSupportLib
+    slsSupportShared
     pthread
     rt
 )  
@@ -22,7 +22,7 @@ set_target_properties(using_logger PROPERTIES
 # add_executable(udp udp.cpp)
 # target_link_libraries(udp 
 #     slsDetectorShared
-#     slsSupportLib
+#     slsSupportShared
 #     pthread
 #     rt
 #     fmt

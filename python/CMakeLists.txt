@@ -35,6 +35,7 @@ set( PYTHON_FILES
     gotthard.py
     gotthard2.py
     moench.py
+    jsonproxy.py
     ctb.py
     jungfrau.py
     mythen3.py

@@ -33,6 +33,7 @@ requirements:
     - {{ cdt('libselinux') }}            # [linux]
     - {{ cdt('libxdamage') }}            # [linux]
     - {{ cdt('libxxf86vm') }}            # [linux]
+    - expat
 
   host:
     - libstdcxx-ng
@@ -45,6 +46,7 @@ requirements:
     - xorg-libxau
     - xorg-libxrender
     - xorg-libxfixes
+    - expat
 
   run:
     - zeromq
@@ -96,3 +98,4 @@ outputs:
         - {{ pin_subpackage('slsdetlib', exact=True) }}
         - qwt 6.*
         - qt 4.8.*
+        - expat

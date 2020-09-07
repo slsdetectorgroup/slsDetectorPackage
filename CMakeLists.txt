@@ -241,7 +241,7 @@ if(SLS_MASTER_PROJECT)
     # Set install dir CMake packages
     set(CMAKE_INSTALL_DIR "share/cmake/${PROJECT_NAME}")
     # Set the list of exported targets
-    set(PROJECT_LIBRARIES slsSupportLib slsDetectorShared slsReceiverShared)
+    set(PROJECT_LIBRARIES slsSupportShared slsDetectorShared slsReceiverShared)
     # Generate and install package config file and version
     include(cmake/package_config.cmake)
 endif()

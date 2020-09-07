@@ -23,7 +23,7 @@ foreach(exe ${MOENCH_EXECUTABLES})
 
     target_link_libraries(${exe} 
         PUBLIC
-        slsSupportLib 
+        slsSupportShared 
         ${ZeroMQ_LIBRARIES} 
         pthread 
         tiff

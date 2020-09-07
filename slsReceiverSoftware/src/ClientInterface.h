@@ -157,6 +157,8 @@ class ClientInterface : private virtual slsDetectorDefs {
     int get_streaming_start_fnum(sls::ServerInterface &socket);
     int set_streaming_start_fnum(sls::ServerInterface &socket);
     int set_rate_correct(sls::ServerInterface &socket);
+    int set_scan(sls::ServerInterface &socket);
+    int set_threshold(sls::ServerInterface &socket);
 
     Implementation *impl() {
         if (receiver != nullptr) {

@@ -6941,6 +6941,16 @@ int get_receiver_parameters(int file_des) {
     if (n < 0)
         return printSocketReadError();
 
+        // additional storage cells
+#ifdef JUNGFRAUD
+    i32 = getNumAdditionalStorageCells();
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
         // analog samples
 #if defined(CHIPTESTBOARDD) || defined(MOENCHD)
     i32 = getNumAnalogSamples();
@@ -7011,6 +7021,26 @@ int get_receiver_parameters(int file_des) {
         // quad
 #ifdef EIGERD
     i32 = getQuad();
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
+        // readnlines
+#ifdef EIGERD
+    i32 = getReadNLines();
+#else
+    i32 = 0;
+#endif
+    n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
+        // threshold ev
+#ifdef EIGERD
+    i32 = getThresholdEnergy();
 #else
     i32 = 0;
 #endif
@@ -7175,6 +7205,26 @@ int get_receiver_parameters(int file_des) {
     i32 = 0;
 #endif
     n += sendData(file_des, &i32, sizeof(i32), INT32);
+    if (n < 0)
+        return printSocketReadError();
+
+    // scan parameters
+    // scan enable, dac, start, stop, step
+    // scan dac settle time
+    int i32s[5] = {0, 0, 0, 0, 0};
+    i64 = 0;
+    i32s[0] = scan;
+    if (scan) {
+        i32s[1] = scanGlobalIndex;
+        i32s[2] = scanSteps[0];
+        i32s[3] = scanSteps[numScanSteps - 1];
+        i32s[4] = scanSteps[1] - scanSteps[0];
+        i64 = scanSettleTime_ns;
+    }
+    n += sendData(file_des, i32s, sizeof(i32s), INT32);
+    if (n < 0)
+        return printSocketReadError();
+    n += sendData(file_des, &i64, sizeof(i64), INT64);
     if (n < 0)
         return printSocketReadError();
 

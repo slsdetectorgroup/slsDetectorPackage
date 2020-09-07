@@ -404,60 +404,6 @@ typedef struct {
     enum timingSourceType { TIMING_INTERNAL, TIMING_EXTERNAL };
 
 #ifdef __cplusplus
-    /**
-     * structure to udpate receiver
-     */
-    struct rxParameters {
-        detectorType detType{GENERIC};
-        xy numberOfDetector;
-        int moduleId{0};
-        char hostname[MAX_STR_LENGTH];
-        int udpInterfaces{1};
-        int udp_dstport{0};
-        uint32_t udp_dstip{0U};
-        uint64_t udp_dstmac{0LU};
-        int udp_dstport2{0};
-        uint32_t udp_dstip2{0U};
-        uint64_t udp_dstmac2{0LU};
-        int64_t frames{0};
-        int64_t triggers{0};
-        int64_t bursts{0};
-        int analogSamples{0};
-        int digitalSamples{0};
-        int64_t expTimeNs{0};
-        int64_t periodNs{0};
-        int64_t subExpTimeNs{0};
-        int64_t subDeadTimeNs{0};
-        int activate{0};
-        int quad{0};
-        int dynamicRange{16};
-        timingMode timMode{AUTO_TIMING};
-        int tenGiga{0};
-        readoutMode roMode{ANALOG_ONLY};
-        uint32_t adcMask{0};
-        uint32_t adc10gMask{0};
-        ROI roi;
-        uint32_t countermask{0};
-        burstMode burstType{BURST_INTERNAL};
-        int64_t expTime1Ns{0};
-        int64_t expTime2Ns{0};
-        int64_t expTime3Ns{0};
-        int64_t gateDelay1Ns{0};
-        int64_t gateDelay2Ns{0};
-        int64_t gateDelay3Ns{0};
-        int gates{0};
-    } __attribute__((packed));
-
-    /** pattern structure */
-    struct patternParameters {
-        uint64_t word[MAX_PATTERN_LENGTH]{};
-        uint64_t patioctrl{0};
-        uint32_t patlimits[2]{};
-        uint32_t patloop[6]{};
-        uint32_t patnloop[3]{};
-        uint32_t patwait[3]{};
-        uint64_t patwaittime[3]{};
-    } __attribute__((packed));
 
     /** scan structure */
     struct scanParameters {
@@ -488,6 +434,66 @@ typedef struct {
                     (dacSettleTime_ns == other.dacSettleTime_ns));
         }
     } __attribute__((packed));
+
+    /**
+     * structure to udpate receiver
+     */
+    struct rxParameters {
+        detectorType detType{GENERIC};
+        xy numberOfDetector;
+        int moduleId{0};
+        char hostname[MAX_STR_LENGTH];
+        int udpInterfaces{1};
+        int udp_dstport{0};
+        uint32_t udp_dstip{0U};
+        uint64_t udp_dstmac{0LU};
+        int udp_dstport2{0};
+        uint32_t udp_dstip2{0U};
+        uint64_t udp_dstmac2{0LU};
+        int64_t frames{0};
+        int64_t triggers{0};
+        int64_t bursts{0};
+        int additionalStorageCells{0};
+        int analogSamples{0};
+        int digitalSamples{0};
+        int64_t expTimeNs{0};
+        int64_t periodNs{0};
+        int64_t subExpTimeNs{0};
+        int64_t subDeadTimeNs{0};
+        int activate{0};
+        int quad{0};
+        int numLinesReadout{0};
+        int thresholdEnergyeV{0};
+        int dynamicRange{16};
+        timingMode timMode{AUTO_TIMING};
+        int tenGiga{0};
+        readoutMode roMode{ANALOG_ONLY};
+        uint32_t adcMask{0};
+        uint32_t adc10gMask{0};
+        ROI roi;
+        uint32_t countermask{0};
+        burstMode burstType{BURST_INTERNAL};
+        int64_t expTime1Ns{0};
+        int64_t expTime2Ns{0};
+        int64_t expTime3Ns{0};
+        int64_t gateDelay1Ns{0};
+        int64_t gateDelay2Ns{0};
+        int64_t gateDelay3Ns{0};
+        int gates{0};
+        scanParameters scanParams{};
+    } __attribute__((packed));
+
+    /** pattern structure */
+    struct patternParameters {
+        uint64_t word[MAX_PATTERN_LENGTH]{};
+        uint64_t patioctrl{0};
+        uint32_t patlimits[2]{};
+        uint32_t patloop[6]{};
+        uint32_t patnloop[3]{};
+        uint32_t patwait[3]{};
+        uint64_t patwaittime[3]{};
+    } __attribute__((packed));
+
 #endif
 
 #ifdef __cplusplus

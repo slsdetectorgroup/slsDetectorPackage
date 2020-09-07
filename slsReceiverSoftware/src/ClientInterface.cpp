@@ -83,7 +83,8 @@ void ClientInterface::startTCPServer() {
         try {
             auto socket = server.accept();
             try {
-                verifyLock();
+                verifyLock(); // lock should be checked only for set (not get),
+                              // Move it back?
                 ret = decodeFunction(socket);
             } catch (const RuntimeError &e) {
                 // We had an error needs to be sent to client
@@ -202,6 +203,8 @@ int ClientInterface::functionTable(){
     flist[F_GET_RECEIVER_STREAMING_START_FNUM] = &ClientInterface::get_streaming_start_fnum;
     flist[F_SET_RECEIVER_STREAMING_START_FNUM] = &ClientInterface::set_streaming_start_fnum;
     flist[F_SET_RECEIVER_RATE_CORRECT]      =   &ClientInterface::set_rate_correct;
+    flist[F_SET_RECEIVER_SCAN]              =   &ClientInterface::set_scan;
+    flist[F_RECEIVER_SET_THRESHOLD]         =   &ClientInterface::set_threshold;
 
 	for (int i = NUM_DET_FUNCTIONS + 1; i < NUM_REC_FUNCTIONS ; i++) {
 		LOG(logDEBUG1) << "function fnum: " << i << " (" <<
@@ -364,6 +367,9 @@ int ClientInterface::setup_receiver(Interface &socket) {
     if (myDetectorType == GOTTHARD2) {
         impl()->setNumberOfBursts(arg.bursts);
     }
+    if (myDetectorType == JUNGFRAU) {
+        impl()->setNumberOfAdditionalStorageCells(arg.additionalStorageCells);
+    }
     if (myDetectorType == MOENCH || myDetectorType == CHIPTESTBOARD) {
         try {
             impl()->setNumberofAnalogSamples(arg.analogSamples);
@@ -398,6 +404,8 @@ int ClientInterface::setup_receiver(Interface &socket) {
                                std::to_string(arg.quad) +
                                " due to fifo strucutre memory allocation");
         }
+        impl()->setReadNLines(arg.numLinesReadout);
+        impl()->setThresholdEnergy(arg.thresholdEnergyeV);
     }
     if (myDetectorType == EIGER || myDetectorType == MYTHEN3) {
         try {
@@ -459,6 +467,7 @@ int ClientInterface::setup_receiver(Interface &socket) {
     if (myDetectorType == GOTTHARD2) {
         impl()->setBurstMode(arg.burstType);
     }
+    impl()->setScan(arg.scanParams);
 
     return socket.sendResult(retvals);
 }
@@ -1107,7 +1116,7 @@ int ClientInterface::set_additional_json_header(Interface &socket) {
             json[key] = value;
         }
     }
-    verifyIdle(socket);
+    // verifyIdle(socket); allowing it to be set on the fly
     LOG(logDEBUG1) << "Setting additional json header: " << sls::ToString(json);
     impl()->setAdditionalJsonHeader(json);
     return socket.Send(OK);
@@ -1523,7 +1532,7 @@ int ClientInterface::increment_file_index(Interface &socket) {
 int ClientInterface::set_additional_json_parameter(Interface &socket) {
     char args[2][SHORT_STR_LENGTH]{};
     socket.Receive(args);
-    verifyIdle(socket);
+    // verifyIdle(socket); allowing it to be set on the fly
     LOG(logDEBUG1) << "Setting additional json parameter (" << args[0]
                    << "): " << args[1];
     impl()->setAdditionalJsonParameter(args[0], args[1]);
@@ -1621,5 +1630,23 @@ int ClientInterface::set_rate_correct(Interface &socket) {
     verifyIdle(socket);
     LOG(logINFOBLUE) << "Setting rate corrections[" << index << ']';
     impl()->setRateCorrections(t);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_scan(Interface &socket) {
+    auto arg = socket.Receive<scanParameters>();
+    LOG(logDEBUG) << "Scan Mode: " << sls::ToString(arg);
+    verifyIdle(socket);
+    impl()->setScan(arg);
+    return socket.Send(OK);
+}
+
+int ClientInterface::set_threshold(Interface &socket) {
+    auto arg = socket.Receive<int>();
+    LOG(logDEBUG) << "Threshold: " << arg << " eV";
+    if (myDetectorType != EIGER)
+        functionNotImplemented();
+    verifyIdle(socket);
+    impl()->setThresholdEnergy(arg);
     return socket.Send(OK);
 }

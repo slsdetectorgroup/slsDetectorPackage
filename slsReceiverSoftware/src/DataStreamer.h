@@ -16,6 +16,7 @@ class DataStreamer;
 class ZmqSocket;
 
 #include <map>
+#include <mutex>
 
 class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
@@ -170,10 +171,10 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
 
     /** Used by streamer thread to update local copy (reduce number of locks
      * during streaming) */
-    std::atomic<bool>{false};
+    std::atomic<bool> isAdditionalJsonUpdated{false};
 
     /** mutex to update json and to read and update local copy */
-    std::mutex additionalJsonMutex;
+    mutable std::mutex additionalJsonMutex;
 
     /** local copy of additional json header  (it can be update on the fly) */
     std::map<std::string, std::string> localAdditionalJsonHeader;

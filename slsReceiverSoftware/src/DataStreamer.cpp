@@ -69,7 +69,7 @@ void DataStreamer::SetFlippedDataX(int fd) { flippedDataX = fd; }
 
 void DataStreamer::SetAdditionalJsonHeader(
     const std::map<std::string, std::string> &json) {
-    std::lock guard<std::mutex> guard(additionalJsonMutex);
+    std::lock_guard<std::mutex> lock(additionalJsonMutex);
     additionalJsonHeader = json;
     isAdditionalJsonUpdated = true;
 }
@@ -235,10 +235,11 @@ int DataStreamer::SendHeader(sls_receiver_header *rheader, uint32_t size,
     zHeader.completeImage =
         (header.packetNumber < generalData->packetsPerFrame ? false : true);
 
+    // update local copy only if it was updated (to prevent locking each time)
     if (isAdditionalJsonUpdated) {
-        std::lock_guard<std::mutex> guard(additionalalJsonMutex);
+        std::lock_guard<std::mutex> lock(additionalJsonMutex);
         localAdditionalJsonHeader = additionalJsonHeader;
-        isAdditionalalJsonUpdated = false;
+        isAdditionalJsonUpdated = false;
     }
     zHeader.addJsonHeader = localAdditionalJsonHeader;
 

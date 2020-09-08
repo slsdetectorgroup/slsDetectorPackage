@@ -457,7 +457,7 @@ class Detector {
      * numbers for different modules.*/
     void setStartingFrameNumber(uint64_t value, Positions pos = {});
 
-    /** [Eiger] Sends an internal software trigger to the detector */
+    /** [Eiger][Mythen3] Sends an internal software trigger to the detector */
     void sendSoftwareTrigger(Positions pos = {});
 
     Result<defs::scanParameters> getScan(Positions pos = {}) const;

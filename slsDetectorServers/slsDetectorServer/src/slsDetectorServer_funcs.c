@@ -4107,7 +4107,7 @@ int software_trigger(int file_des) {
     memset(mess, 0, sizeof(mess));
 
     LOG(logDEBUG1, ("Software Trigger\n"));
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set

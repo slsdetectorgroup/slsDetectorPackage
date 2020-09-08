@@ -971,10 +971,6 @@ class CmdProxy {
         /* Moench */
         {"rx_jsonaddheader", &CmdProxy::AdditionalJsonHeader},
         {"rx_jsonpara", &CmdProxy::JsonParameter},
-        {"emin", &CmdProxy::MinMaxEnergyThreshold},
-        {"emax", &CmdProxy::MinMaxEnergyThreshold},
-        {"framemode", &CmdProxy::framemode},
-        {"detectormode", &CmdProxy::detectormode},
 
         /* Advanced */
         {"programfpga", &CmdProxy::ProgramFpga},
@@ -1091,7 +1087,6 @@ class CmdProxy {
     /* Moench */
     std::string AdditionalJsonHeader(int action);
     std::string JsonParameter(int action);
-    std::string MinMaxEnergyThreshold(int action);
     /* Advanced */
     std::string ProgramFpga(int action);
     std::string CopyDetectorServer(int action);
@@ -2209,17 +2204,6 @@ class CmdProxy {
                         "\n\t[Mythen3] Starts Pattern");
 
     /* Moench */
-
-    INTEGER_COMMAND(framemode, getFrameMode, setFrameMode,
-                    sls::StringTo<slsDetectorDefs::frameModeType>,
-                    "[pedestal|newpedestal|flatfield|newflatfield]\n\t[Moench] "
-                    "Frame mode (soft setting) in processor.");
-
-    INTEGER_COMMAND(detectormode, getDetectorMode, setDetectorMode,
-                    sls::StringTo<slsDetectorDefs::detectorModeType>,
-                    "[counting|interpolating|analog]\n\t[Moench] Detector mode "
-                    "(soft setting) in processor.");
-
     /* Advanced */
 
     EXECUTE_SET_COMMAND(resetfpga, resetFPGA,

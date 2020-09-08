@@ -792,13 +792,6 @@ void Module::setReceiverHostname(const std::string &receiverIP) {
 
     shm()->numUDPInterfaces = retval.udpInterfaces;
 
-    if (shm()->myDetectorType == MOENCH) {
-        setAdditionalJsonParameter("adcmask_1g",
-                                   std::to_string(retval.adcMask));
-        setAdditionalJsonParameter("adcmask_10g",
-                                   std::to_string(retval.adc10gMask));
-    }
-
     // to use rx_hostname if empty and also update client zmqip
     updateReceiverStreamingIP();
 }
@@ -1073,19 +1066,6 @@ void Module::setSubDeadTime(int64_t value) {
 }
 
 int Module::getThresholdEnergy() const {
-    // moench - get threshold energy from json header
-    if (shm()->myDetectorType == MOENCH) {
-        getAdditionalJsonHeader();
-        std::string result = getAdditionalJsonParameter("threshold");
-        // convert to integer
-        try {
-            return std::stoi(result);
-        }
-        // not found or cannot scan integer
-        catch (...) {
-            return -1;
-        }
-    }
     return sendToDetector<int>(F_GET_THRESHOLD_ENERGY);
 }
 
@@ -1097,10 +1077,6 @@ void Module::setThresholdEnergy(int e_eV, detectorSettings isettings,
         if (shm()->useReceiverFlag) {
             sendToReceiver(F_RECEIVER_SET_THRESHOLD, e_eV, nullptr);
         }
-    }
-    // moench - send threshold energy to processor
-    else if (shm()->myDetectorType == MOENCH) {
-        setAdditionalJsonParameter("threshold", std::to_string(e_eV));
     } else {
         throw RuntimeError(
             "Set threshold energy not implemented for this detector");
@@ -1789,10 +1765,6 @@ void Module::setADCEnableMask(uint32_t mask) {
     // update #nchan, as it depends on #samples, adcmask,
     updateNumberOfChannels();
 
-    // send to processor
-    if (shm()->myDetectorType == MOENCH)
-        setAdditionalJsonParameter("adcmask_1g", std::to_string(mask));
-
     if (shm()->useReceiverFlag) {
         sendToReceiver<int>(F_RECEIVER_SET_ADC_MASK, mask);
     }
@@ -1805,10 +1777,6 @@ uint32_t Module::getTenGigaADCEnableMask() const {
 void Module::setTenGigaADCEnableMask(uint32_t mask) {
     sendToDetector(F_SET_ADC_ENABLE_MASK_10G, mask, nullptr);
     updateNumberOfChannels(); // depends on samples and adcmask
-
-    // send to processor
-    if (shm()->myDetectorType == MOENCH)
-        setAdditionalJsonParameter("adcmask_10g", std::to_string(mask));
 
     if (shm()->useReceiverFlag) {
         sendToReceiver<int>(F_RECEIVER_SET_ADC_MASK_10G, mask);

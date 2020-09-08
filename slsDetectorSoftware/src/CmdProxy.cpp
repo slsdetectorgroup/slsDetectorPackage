@@ -2389,52 +2389,6 @@ std::string CmdProxy::JsonParameter(int action) {
     return os.str();
 }
 
-std::string CmdProxy::MinMaxEnergyThreshold(int action) {
-    std::ostringstream os;
-    os << cmd << ' ';
-    if (action == defs::HELP_ACTION) {
-        if (cmd == "emin") {
-            os << "[n_value]\n\t[Moench] Minimum energy threshold (soft "
-                  "setting) for processor."
-               << '\n';
-        } else if (cmd == "emax") {
-            os << "[n_value]\n\t[Moench] Maximum energy threshold (soft "
-                  "setting) for processor."
-               << '\n';
-        } else {
-            throw sls::RuntimeError(
-                "Unknown command, use list to list all commands");
-        }
-    } else {
-        bool emax = false;
-        if (cmd == "emin") {
-            emax = false;
-        } else if (cmd == "emax") {
-            emax = true;
-        } else {
-            throw sls::RuntimeError(
-                "Unknown command, use list to list all commands");
-        }
-        if (action == defs::GET_ACTION) {
-            if (!args.empty()) {
-                WrongNumberOfParameters(0);
-            }
-            auto t = det->getDetectorMinMaxEnergyThreshold(emax, {det_id});
-            os << OutString(t) << '\n';
-        } else if (action == defs::PUT_ACTION) {
-            if (args.size() != 1) {
-                WrongNumberOfParameters(1);
-            }
-            det->setDetectorMinMaxEnergyThreshold(emax, StringTo<int>(args[0]),
-                                                  {det_id});
-            os << args.front() << '\n';
-        } else {
-            throw sls::RuntimeError("Unknown action");
-        }
-    }
-    return os.str();
-}
-
 /* Advanced */
 
 std::string CmdProxy::ProgramFpga(int action) {

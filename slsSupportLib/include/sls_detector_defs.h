@@ -378,16 +378,6 @@ typedef struct {
     enum masterFlags { NO_MASTER, IS_MASTER, IS_SLAVE };
 
     /**
-     * frame mode for processor
-     */
-    enum frameModeType { PEDESTAL, NEW_PEDESTAL, FLATFIELD, NEW_FLATFIELD };
-
-    /**
-     * detector mode for processor
-     */
-    enum detectorModeType { COUNTING, INTERPOLATING, ANALOG };
-
-    /**
      * burst mode for gotthard2
      */
     enum burstMode {

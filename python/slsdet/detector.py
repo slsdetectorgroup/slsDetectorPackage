@@ -1315,7 +1315,7 @@ class Detector(CppDetectorApi):
     @element
     def parallel(self):
         """
-        [Eiger] Enable or disable the parallel readout mode of Eiger. 
+        [Eiger][Mythen3] Enable or disable the parallel readout mode of detector. 
         """
         return self.getParallelMode()
 

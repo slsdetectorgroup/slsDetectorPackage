@@ -37,13 +37,14 @@
 #define DEFAULT_DELAY_AFTER_TRIGGER (0)
 #define DEFAULT_HIGH_VOLTAGE        (0)
 #define DEFAULT_TIMING_MODE         (AUTO_TIMING)
-#define DEFAULT_READOUT_C0          (8) //(125000000) // rdo_clk, 125 MHz
-#define DEFAULT_READOUT_C1          (8) //(125000000) // rdo_x2_clk, 125 MHz
-#define DEFAULT_SYSTEM_C0           (4) //(250000000) // run_clk, 250 MHz
-#define DEFAULT_SYSTEM_C1           (8) //(125000000) // sync_clk, 125 MHz
-#define DEFAULT_SYSTEM_C2           (8) //(125000000) // str_clk, 125 MHz
-#define DEFAULT_SYSTEM_C3                                                      \
-    (5) //(200000000) // smp_clk, 200 MHz (only for timing receiver)
+#define DEFAULT_READOUT_C0          (10) //(100000000) // rdo_clk, 100 MHz
+#define DEFAULT_READOUT_C1          (10) //(100000000) // smp sample clk (x2), 100 MHz
+#define DEFAULT_SYSTEM_C0           (20) // (50000000) // run_clk, 50 MHz
+#define DEFAULT_SYSTEM_C1           (10) //(100000000) // sync_clk, 100 MHz
+#define DEFAULT_SYSTEM_C2           (10) //(100000000) // str_clk, 100 MHz
+#define DEFAULT_SYSTEM_C3           (10) //(100000000) // smp_clk, 100 MHz
+// (DEFAULT_SYSTEM_C3 only for timing receiver)
+
 #define DEFAULT_ASIC_LATCHING_NUM_PULSES (10)
 #define DEFAULT_MSTR_OTPT_P1_NUM_PULSES  (20)
 

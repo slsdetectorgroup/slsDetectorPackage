@@ -559,12 +559,14 @@ std::string ToString(const std::vector<defs::dacIndex> &vec) {
 
 std::string ToString(const defs::burstMode s) {
     switch (s) {
-    case defs::BURST_OFF:
-        return std::string("off");
     case defs::BURST_INTERNAL:
-        return std::string("internal");
+        return std::string("burst_internal");
     case defs::BURST_EXTERNAL:
-        return std::string("external");
+        return std::string("burst_external");
+    case defs::CONTINUOUS_INTERNAL:
+        return std::string("cw_internal");
+    case defs::CONTINUOUS_EXTERNAL:
+        return std::string("cw_external");
     default:
         return std::string("Unknown");
     }
@@ -922,12 +924,14 @@ template <> defs::dacIndex StringTo(const std::string &s) {
 }
 
 template <> defs::burstMode StringTo(const std::string &s) {
-    if (s == "off")
-        return defs::BURST_OFF;
-    if (s == "internal")
+    if (s == "burst_internal")
         return defs::BURST_INTERNAL;
-    if (s == "external")
+    if (s == "burst_external")
         return defs::BURST_EXTERNAL;
+    if (s == "cw_internal")
+        return defs::CONTINUOUS_INTERNAL;
+    if (s == "cw_external")
+        return defs::CONTINUOUS_EXTERNAL;
     throw sls::RuntimeError("Unknown burst mode " + s);
 }
 

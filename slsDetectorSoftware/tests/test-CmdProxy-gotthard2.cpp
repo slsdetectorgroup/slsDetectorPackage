@@ -230,7 +230,7 @@ TEST_CASE("bursts", "[.cmd][.new]") {
         }
         // continuous mode: reg set to #frames,
         // but bursts should return same value
-        det.setBurstMode(defs::BURST_OFF);
+        det.setBurstMode(defs::CONTINUOUS_INTERNAL);
         det.setNumberOfFrames(2);
         {
             std::ostringstream oss;
@@ -370,18 +370,18 @@ TEST_CASE("burstmode", "[.cmd][.new]") {
         auto burststr = sls::ToString(burst);
         {
             std::ostringstream oss;
-            proxy.Call("burstmode", {"internal"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "burstmode internal\n");
+            proxy.Call("burstmode", {"burst_internal"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "burstmode burst_internal\n");
         }
         {
             std::ostringstream oss;
-            proxy.Call("burstmode", {"off"}, -1, PUT, oss);
-            REQUIRE(oss.str() == "burstmode off\n");
+            proxy.Call("burstmode", {"cw_internal"}, -1, PUT, oss);
+            REQUIRE(oss.str() == "burstmode cw_internal\n");
         }
         {
             std::ostringstream oss;
             proxy.Call("burstmode", {}, -1, GET, oss);
-            REQUIRE(oss.str() == "burstmode off\n");
+            REQUIRE(oss.str() == "burstmode cw_internal\n");
         }
         for (int i = 0; i != det.size(); ++i) {
             det.setBurstMode(burst[i], {i});

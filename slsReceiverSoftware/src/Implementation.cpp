@@ -1125,9 +1125,9 @@ void Implementation::updateTotalNumberOfFrames() {
     int64_t repeats = numberOfTriggers;
     // gotthard2: auto mode
     // burst mode: (bursts instead of triggers)
-    // non burst mode: no bursts or triggers
+    // continuous mode: no bursts or triggers
     if (myDetectorType == GOTTHARD2 && timingMode == AUTO_TIMING) {
-        if (burstMode != BURST_OFF) {
+        if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
             repeats = numberOfBursts;
         } else {
             repeats = 1;

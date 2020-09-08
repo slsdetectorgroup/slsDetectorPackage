@@ -1687,8 +1687,8 @@ std::string CmdProxy::BurstMode(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[off or 0, internal or 1, external or 2]\n\t[Gotthard2] Default "
-              "is burst internal type"
+        os << "[burst_internal or 0, burst_external or 1, cw_internal or 2, "
+              "cw_external or 3]\n\t[Gotthard2] Default is burst_internal type"
            << '\n';
     } else {
         if (action == defs::GET_ACTION) {
@@ -1706,13 +1706,16 @@ std::string CmdProxy::BurstMode(int action) {
                 int ival = StringTo<int>(args[0]);
                 switch (ival) {
                 case 0:
-                    t = defs::BURST_OFF;
-                    break;
-                case 1:
                     t = defs::BURST_INTERNAL;
                     break;
-                case 2:
+                case 1:
                     t = defs::BURST_EXTERNAL;
+                    break;
+                case 2:
+                    t = defs::CONTINUOUS_INTERNAL;
+                    break;
+                case 3:
+                    t = defs::CONTINUOUS_EXTERNAL;
                     break;
                 default:
                     throw sls::RuntimeError("Unknown burst mode " + args[0]);

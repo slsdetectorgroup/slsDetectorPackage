@@ -682,6 +682,7 @@ class CmdProxy {
         {"powerchip", &CmdProxy::powerchip},
         {"imagetest", &CmdProxy::imagetest},
         {"extsig", &CmdProxy::ExternalSignal},
+        {"parallel", &CmdProxy::parallel},
 
         /** temperature */
         {"templist", &CmdProxy::templist},
@@ -849,7 +850,6 @@ class CmdProxy {
         {"threshold", &CmdProxy::Threshold},
         {"thresholdnotb", &CmdProxy::ThresholdNoTb},
         {"settingspath", &CmdProxy::settingspath},
-        {"parallel", &CmdProxy::parallel},
         {"overflow", &CmdProxy::overflow},
         {"flippeddatax", &CmdProxy::flippeddatax},
         {"trimen", &CmdProxy::TrimEnergies},
@@ -1246,6 +1246,12 @@ class CmdProxy {
         "values when taking an acquisition. Default is 0."
         "\n\t[Eiger][Jungfrau] Only for Virtual servers. If 0, each pixel "
         "intensity incremented by 1. If 1, all pixels almost saturated.");
+
+    INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, StringTo<int>,
+                    "[0, 1]\n\t[Eiger][Mythen3] Enable or disable parallel "
+                    "mode.\n\t[Mythen3] If exptime is too short, the "
+                    "acquisition will return ERROR status and take fewer "
+                    "frames than expected.");
 
     /** temperature */
     GET_COMMAND_NOID(
@@ -1912,9 +1918,6 @@ class CmdProxy {
     STRING_COMMAND(
         settingspath, getSettingsPath, setSettingsPath,
         "[path]\n\t[Eiger] Directory where settings files are loaded from/to.");
-
-    INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, StringTo<int>,
-                    "[0, 1]\n\t[Eiger] Enable or disable parallel mode.");
 
     INTEGER_COMMAND(overflow, getOverFlowMode, setOverFlowMode, StringTo<int>,
                     "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in "

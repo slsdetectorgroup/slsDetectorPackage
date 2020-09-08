@@ -149,6 +149,8 @@ class Module : public virtual slsDetectorDefs {
                       int value);
     externalSignalFlag getExternalSignalFlags(int signalIndex) const;
     void setExternalSignalFlags(int signalIndex, externalSignalFlag type);
+    bool getParallelMode() const;
+    void setParallelMode(const bool enable);
 
     /**************************************************
      *                                                *
@@ -303,8 +305,6 @@ class Module : public virtual slsDetectorDefs {
                             bool trimbits);
     std::string getSettingsDir() const;
     std::string setSettingsDir(const std::string &dir);
-    bool getParallelMode() const;
-    void setParallelMode(const bool enable);
     bool getOverFlowMode() const;
     void setOverFlowMode(const bool enable);
     bool getFlippedDataX() const;

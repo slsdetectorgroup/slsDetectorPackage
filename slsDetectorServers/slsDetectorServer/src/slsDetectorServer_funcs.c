@@ -5427,7 +5427,7 @@ int set_parallel_mode(int file_des) {
         return printSocketReadError();
     LOG(logINFO, ("Setting parallel mode: %u\n", arg));
 
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // only set
@@ -5458,7 +5458,7 @@ int get_parallel_mode(int file_des) {
 
     LOG(logDEBUG1, ("Getting parallel mode\n"));
 
-#ifndef EIGERD
+#if !defined(EIGERD) && !defined(MYTHEN3D)
     functionNotImplemented();
 #else
     // get only

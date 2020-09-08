@@ -575,6 +575,14 @@ void Detector::setExternalSignalFlags(int signalIndex,
     pimpl->Parallel(&Module::setExternalSignalFlags, pos, signalIndex, value);
 }
 
+Result<bool> Detector::getParallelMode(Positions pos) const {
+    return pimpl->Parallel(&Module::getParallelMode, pos);
+}
+
+void Detector::setParallelMode(bool value, Positions pos) {
+    pimpl->Parallel(&Module::setParallelMode, pos, value);
+}
+
 // Acquisition
 
 void Detector::acquire() { pimpl->acquire(); }
@@ -1127,14 +1135,6 @@ Result<std::string> Detector::getSettingsPath(Positions pos) const {
 
 void Detector::setSettingsPath(const std::string &value, Positions pos) {
     pimpl->Parallel(&Module::setSettingsDir, pos, value);
-}
-
-Result<bool> Detector::getParallelMode(Positions pos) const {
-    return pimpl->Parallel(&Module::getParallelMode, pos);
-}
-
-void Detector::setParallelMode(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setParallelMode, pos, value);
 }
 
 Result<bool> Detector::getOverFlowMode(Positions pos) const {

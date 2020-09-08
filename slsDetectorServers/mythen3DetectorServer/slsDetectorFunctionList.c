@@ -21,6 +21,7 @@
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
+extern int updateFlag;
 extern int checkModuleFlag;
 extern udpStruct udpDetails;
 extern const enum detectorType myDetectorType;
@@ -80,8 +81,9 @@ void basictests() {
         return;
     }
     // does check only if flag is 0 (by default), set by command line
-    if ((!debugflag) && ((checkType() == FAIL) || (testFpga() == FAIL) ||
-                         (testBus() == FAIL))) {
+    if ((!debugflag) && (!updateFlag) &&
+        ((checkKernelVersion() == FAIL) || (checkType() == FAIL) ||
+         (testFpga() == FAIL) || (testBus() == FAIL))) {
         strcpy(initErrorMessage, "Could not pass basic tests of FPGA and bus. "
                                  "Dangerous to continue.\n");
         LOG(logERROR, ("%s\n\n", initErrorMessage));
@@ -117,7 +119,7 @@ void basictests() {
          (long long int)client_sw_apiversion));
 
     // return if flag is not zero, debug mode
-    if (debugflag) {
+    if (debugflag || updateFlag) {
         return;
     }
 
@@ -159,6 +161,25 @@ void basictests() {
     }
     LOG(logINFO, ("Compatibility - success\n"));
 #endif
+}
+
+int checkKernelVersion() {
+#ifdef VIRTUAL
+    return OK;
+#endif
+    char output[256];
+    memset(output, 0, 256);
+    FILE *sysFile = popen("uname -a | cut -d ' ' -f5-10", "r");
+    fgets(output, sizeof(output), sysFile);
+    pclose(sysFile);
+
+    if (strstr(output, KERNEL_DATE_VRSN) == NULL) {
+        LOG(logERROR, ("Kernel Version Incompatible! Expected: %s, Got: %s\n",
+                       KERNEL_DATE_VRSN, output));
+        return FAIL;
+    }
+    LOG(logINFO, ("Kernel Version Compatible: %s\n", output));
+    return OK;
 }
 
 int checkType() {
@@ -313,7 +334,7 @@ u_int32_t getDetectorIP() {
 /* initialization */
 
 void initControlServer() {
-    if (initError == OK) {
+    if (!updateFlag && initError == OK) {
         setupDetector();
     }
     initCheckDone = 1;

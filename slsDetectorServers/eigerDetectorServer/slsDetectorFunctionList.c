@@ -20,6 +20,7 @@
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
+extern int updateFlag;
 extern udpStruct udpDetails;
 extern const enum detectorType myDetectorType;
 
@@ -140,7 +141,7 @@ void basictests() {
     return;
 #endif
     // return if debugflag is not zero, debug mode
-    if (debugflag) {
+    if (debugflag || updateFlag) {
         return;
     }
 
@@ -319,7 +320,7 @@ u_int32_t getDetectorIP() {
 
 void initControlServer() {
     LOG(logINFOBLUE, ("Configuring Control server\n"));
-    if (initError == OK) {
+    if (!updateFlag && initError == OK) {
         readDetectorNumber();
         getModuleConfiguration();
 #ifndef VIRTUAL

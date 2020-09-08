@@ -21,6 +21,7 @@
 
 // Global variable from slsDetectorServer_funcs
 extern int debugflag;
+extern int updateFlag;
 extern udpStruct udpDetails;
 extern const enum detectorType myDetectorType;
 
@@ -101,8 +102,9 @@ void basictests() {
     }
 
     // does check only if flag is 0 (by default), set by command line
-    if ((!debugflag) && ((checkType() == FAIL) || (testFpga() == FAIL) ||
-                         (testBus() == FAIL))) {
+    if ((!debugflag) && (!updateFlag) &&
+        ((checkType() == FAIL) || (testFpga() == FAIL) ||
+         (testBus() == FAIL))) {
         strcpy(initErrorMessage, "Could not pass basic tests of FPGA and bus. "
                                  "Dangerous to continue.\n");
         LOG(logERROR, ("%s\n\n", initErrorMessage));
@@ -141,7 +143,7 @@ void basictests() {
          (long long int)client_sw_apiversion));
 
     // return if flag is not zero, debug mode
-    if (debugflag) {
+    if (debugflag || updateFlag) {
         return;
     }
 
@@ -413,7 +415,7 @@ uint32_t getDetectorIP() {
 /* initialization */
 
 void initControlServer() {
-    if (initError == OK) {
+    if (!updateFlag && initError == OK) {
         setupDetector();
     }
     initCheckDone = 1;

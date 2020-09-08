@@ -2,6 +2,7 @@
 #include "sls_detector_defs.h"
 
 #define REQRD_FRMWRE_VRSN (0x200707)
+#define KERNEL_DATE_VRSN  "Wed May 20 13:58:38 CEST 2020"
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 

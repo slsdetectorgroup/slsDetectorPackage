@@ -18,6 +18,9 @@
 #include <time.h>
 #endif
 
+// Global variable from slsDetectorServer_funcs
+extern int debugflag;
+extern int updateFlag;
 extern udpStruct udpDetails;
 extern const enum detectorType myDetectorType;
 
@@ -91,7 +94,8 @@ void basictests() {
     }
 
     // does check only if flag is 0 (by default), set by command line
-    if (((checkType() == FAIL) || (testFpga() == FAIL) ||
+    if ((!debugflag) && (!updateFlag) &&
+        ((checkType() == FAIL) || (testFpga() == FAIL) ||
          (testBus() == FAIL))) {
         strcpy(initErrorMessage, "Could not pass basic tests of FPGA and bus. "
                                  "Dangerous to continue.\n");
@@ -125,7 +129,9 @@ void basictests() {
          (long long int)fwversion, (long long int)swversion,
          (long long int)client_sw_apiversion));
 
-    LOG(logINFO, ("Basic Tests - success\n"));
+    if (!debugflag || updateFlag) {
+        LOG(logINFO, ("Basic Tests - success\n"));
+    }
 #endif
 }
 
@@ -343,7 +349,7 @@ u_int32_t getBoardRevision() {
 /* initialization */
 
 void initControlServer() {
-    if (initError == OK) {
+    if (!updateFlag && initError == OK) {
         setupDetector();
     }
     initCheckDone = 1;

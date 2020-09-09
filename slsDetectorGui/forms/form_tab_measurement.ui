@@ -1666,17 +1666,22 @@ Frame period between exposures.
         </property>
         <item>
          <property name="text">
-          <string>Off</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
           <string>Burst Internal</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>Burst external</string>
+          <string>Burst External</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Continuous Internal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Continuous External</string>
          </property>
         </item>
        </widget>

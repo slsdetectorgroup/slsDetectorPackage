@@ -152,7 +152,11 @@ void qTabMeasurement::Initialization() {
 void qTabMeasurement::ShowTriggerDelay() {
     bool showTrigger = true;
     if (det->getDetectorType().squash() == slsDetectorDefs::GOTTHARD2) {
-        if ((comboBurstMode->currentIndex() != slsDetectorDefs::BURST_OFF) &&
+        // burst and auto
+        if ((comboBurstMode->currentIndex() ==
+                 slsDetectorDefs::BURST_INTERNAL ||
+             comboBurstMode->currentIndex() ==
+                 slsDetectorDefs::BURST_EXTERNAL) &&
             (comboTimingMode->currentIndex() == AUTO)) {
             // show burst, burstperiod, not trigger or delay
             showTrigger = false;
@@ -368,9 +372,10 @@ void qTabMeasurement::GetBurstMode() {
         auto retval = det->getBurstMode().tsquash(
             "Inconsistent burst mode for all detectors.");
         switch (retval) {
-        case slsDetectorDefs::BURST_OFF:
         case slsDetectorDefs::BURST_INTERNAL:
         case slsDetectorDefs::BURST_EXTERNAL:
+        case slsDetectorDefs::CONTINUOUS_INTERNAL:
+        case slsDetectorDefs::CONTINUOUS_EXTERNAL:
             comboBurstMode->setCurrentIndex((int)retval);
             ShowTriggerDelay();
             break;

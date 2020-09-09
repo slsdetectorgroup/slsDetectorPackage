@@ -1396,7 +1396,7 @@ class Detector {
 
     /**************************************************
      *                                                *
-     *    Moench                                      *
+     *    Moench specific                             *
      *                                                *
      * ************************************************/
 
@@ -1422,29 +1422,6 @@ class Detector {
     void setAdditionalJsonParameter(const std::string &key,
                                     const std::string &value,
                                     Positions pos = {});
-
-    /** [Moench] TODO! How do we do this best??? Can be refactored to something
-     * else? Use a generic zmq message passing system...
-     * For now limiting to all detectors working the same*/
-    /** [Moench: -1 if not found or cannot convert to int] */
-    Result<int> getDetectorMinMaxEnergyThreshold(const bool isEmax,
-                                                 Positions pos = {}) const;
-
-    /** [Moench] */
-    void setDetectorMinMaxEnergyThreshold(const bool isEmax, const int value,
-                                          Positions pos = {});
-
-    /** [Moench: -1 if unknown mode] */
-    Result<defs::frameModeType> getFrameMode(Positions pos = {}) const;
-
-    /** [Moench] */
-    void setFrameMode(defs::frameModeType value, Positions pos = {});
-
-    /** [Moench: -1 if unknown mode] */
-    Result<defs::detectorModeType> getDetectorMode(Positions pos = {}) const;
-
-    /** [Moench] */
-    void setDetectorMode(defs::detectorModeType value, Positions pos = {});
 
     /**************************************************
      *                                                *

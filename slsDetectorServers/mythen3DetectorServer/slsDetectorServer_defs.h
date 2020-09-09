@@ -42,8 +42,8 @@
 #define DEFAULT_SYSTEM_C0           (20) // (50000000) // run_clk, 50 MHz
 #define DEFAULT_SYSTEM_C1           (10) //(100000000) // sync_clk, 100 MHz
 #define DEFAULT_SYSTEM_C2           (10) //(100000000) // str_clk, 100 MHz
-#define DEFAULT_SYSTEM_C3           (10) //(100000000) // smp_clk, 100 MHz
-// (DEFAULT_SYSTEM_C3 only for timing receiver)
+#define DEFAULT_SYSTEM_C3           (5)  //(200000000) // smp_clk, 200 MHz
+// (DEFAULT_SYSTEM_C3 only for timing receiver) should not be changed
 
 #define DEFAULT_ASIC_LATCHING_NUM_PULSES (10)
 #define DEFAULT_MSTR_OTPT_P1_NUM_PULSES  (20)

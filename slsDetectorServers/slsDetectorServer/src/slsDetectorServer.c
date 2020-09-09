@@ -21,6 +21,7 @@ extern int ret;
 // Global variables from slsDetectorServer_funcs
 extern int sockfd;
 extern int debugflag;
+extern int updateFlag;
 extern int checkModuleFlag;
 
 // Global variables from slsDetectorFunctionList
@@ -41,6 +42,7 @@ int main(int argc, char *argv[]) {
     int portno = DEFAULT_PORTNO;
     isControlServer = 1;
     debugflag = 0;
+    updateFlag = 0;
     checkModuleFlag = 1;
     int version = 0;
 
@@ -53,10 +55,12 @@ int main(int argc, char *argv[]) {
         "Possible arguments are:\n"
         "\t-v, --version            : Software version\n"
         "\t-p, --port <port>        : TCP communication port with client. \n"
-        "\t-d, --devel              : Developer mode. Skips firmware checks. \n"
         "\t-g, --nomodule           : [Mythen3][Gotthard2] Generic or No "
         "Module mode. Skips detector type checks. \n"
         "\t-f, --phaseshift <value> : [Gotthard] only. Sets phase shift. \n"
+        "\t-d, --devel              : Developer mode. Skips firmware checks. \n"
+        "\t-u, --update             : Update mode. Skips firmware checks and "
+        "initial detector setup. \n"
         "\t-s, --stopserver         : Stop server. Do not use as created by "
         "control server \n\n",
         argv[0]);
@@ -68,9 +72,10 @@ int main(int argc, char *argv[]) {
         {"help", no_argument, NULL, 'h'},
         {"version", no_argument, NULL, 'v'},
         {"port", required_argument, NULL, 'p'},
-        {"devel", no_argument, NULL, 'd'},
         {"phaseshift", required_argument, NULL, 'f'},
         {"nomodule", no_argument, NULL, 'g'}, // generic
+        {"devel", no_argument, NULL, 'd'},
+        {"update", no_argument, NULL, 'u'},
         {"stopserver", no_argument, NULL, 's'},
         {NULL, 0, NULL, 0}};
 
@@ -80,7 +85,7 @@ int main(int argc, char *argv[]) {
     int c = 0;
 
     while (c != -1) {
-        c = getopt_long(argc, argv, "hvp:df:gs", long_options, &option_index);
+        c = getopt_long(argc, argv, "hvp:f:gdus", long_options, &option_index);
 
         // Detect the end of the options
         if (c == -1)
@@ -116,11 +121,6 @@ int main(int argc, char *argv[]) {
             LOG(logINFO, ("Detected port: %d\n", portno));
             break;
 
-        case 'd':
-            LOG(logINFO, ("Detected developer mode\n"));
-            debugflag = 1;
-            break;
-
         case 'f':
 #ifndef GOTTHARDD
             LOG(logERROR,
@@ -139,6 +139,16 @@ int main(int argc, char *argv[]) {
         case 'g':
             LOG(logINFO, ("Detected generic mode (no module)\n"));
             checkModuleFlag = 0;
+            break;
+
+        case 'd':
+            LOG(logINFO, ("Detected developer mode\n"));
+            debugflag = 1;
+            break;
+
+        case 'u':
+            LOG(logINFO, ("Detected update mode\n"));
+            updateFlag = 1;
             break;
 
         case 's':

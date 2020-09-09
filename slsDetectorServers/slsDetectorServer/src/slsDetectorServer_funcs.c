@@ -42,6 +42,7 @@ extern char mess[MAX_STR_LENGTH];
 // Variables that will be exported
 int sockfd = 0;
 int debugflag = 0;
+int updateFlag = 0;
 int checkModuleFlag = 1;
 udpStruct udpDetails = {32410, 32411, 50001, 50002, 0, 0, 0, 0, 0, 0, 0, 0};
 int configured = FAIL;

@@ -2,6 +2,7 @@
 #include "sls_detector_defs.h"
 
 #define REQRD_FRMWRE_VRSN 0x190000
+#define KERNEL_DATE_VRSN  "Wed May 20 13:58:38 CEST 2020"
 
 #define CTRL_SRVR_INIT_TIME_US (300 * 1000)
 
@@ -24,24 +25,25 @@
 #define MAX_EXT_SIGNALS             (8)
 
 /** Default Parameters */
-#define DEFAULT_PATTERN_FILE             ("DefaultPattern_mythen3.txt")
-#define DEFAULT_INTERNAL_GATES           (1)
-#define DEFAULT_EXTERNAL_GATES           (1)
-#define DEFAULT_DYNAMIC_RANGE            (32)
-#define DEFAULT_NUM_FRAMES               (1)
-#define DEFAULT_NUM_CYCLES               (1)
-#define DEFAULT_GATE_WIDTH               (100 * 1000 * 1000) // ns
-#define DEFAULT_GATE_DELAY               (0)
-#define DEFAULT_PERIOD                   (2 * 1000 * 1000) // ns
-#define DEFAULT_DELAY_AFTER_TRIGGER      (0)
-#define DEFAULT_HIGH_VOLTAGE             (0)
-#define DEFAULT_TIMING_MODE              (AUTO_TIMING)
-#define DEFAULT_READOUT_C0               (8) //(125000000) // rdo_clk, 125 MHz
-#define DEFAULT_READOUT_C1               (8) //(125000000) // rdo_x2_clk, 125 MHz
-#define DEFAULT_SYSTEM_C0                (4) //(250000000) // run_clk, 250 MHz
-#define DEFAULT_SYSTEM_C1                (8) //(125000000) // sync_clk, 125 MHz
-#define DEFAULT_SYSTEM_C2                (8) //(125000000) // str_clk, 125 MHz
-#define DEFAULT_SYSTEM_C3                (5) //(200000000) // smp_clk, 200 MHz (only for timing receiver)
+#define DEFAULT_PATTERN_FILE        ("DefaultPattern_mythen3.txt")
+#define DEFAULT_INTERNAL_GATES      (1)
+#define DEFAULT_EXTERNAL_GATES      (1)
+#define DEFAULT_DYNAMIC_RANGE       (32)
+#define DEFAULT_NUM_FRAMES          (1)
+#define DEFAULT_NUM_CYCLES          (1)
+#define DEFAULT_GATE_WIDTH          (100 * 1000 * 1000) // ns
+#define DEFAULT_GATE_DELAY          (0)
+#define DEFAULT_PERIOD              (2 * 1000 * 1000) // ns
+#define DEFAULT_DELAY_AFTER_TRIGGER (0)
+#define DEFAULT_HIGH_VOLTAGE        (0)
+#define DEFAULT_TIMING_MODE         (AUTO_TIMING)
+#define DEFAULT_READOUT_C0          (8) //(125000000) // rdo_clk, 125 MHz
+#define DEFAULT_READOUT_C1          (8) //(125000000) // rdo_x2_clk, 125 MHz
+#define DEFAULT_SYSTEM_C0           (4) //(250000000) // run_clk, 250 MHz
+#define DEFAULT_SYSTEM_C1           (8) //(125000000) // sync_clk, 125 MHz
+#define DEFAULT_SYSTEM_C2           (8) //(125000000) // str_clk, 125 MHz
+#define DEFAULT_SYSTEM_C3                                                      \
+    (5) //(200000000) // smp_clk, 200 MHz (only for timing receiver)
 #define DEFAULT_ASIC_LATCHING_NUM_PULSES (10)
 #define DEFAULT_MSTR_OTPT_P1_NUM_PULSES  (20)
 
@@ -110,7 +112,8 @@ enum CLKINDEX {
     NUM_CLOCKS
 };
 #define CLK_NAMES                                                              \
-    "READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2", "SYSTEM_C3"
+    "READOUT_C0", "READOUT_C1", "SYSTEM_C0", "SYSTEM_C1", "SYSTEM_C2",         \
+        "SYSTEM_C3"
 enum PLLINDEX { READOUT_PLL, SYSTEM_PLL };
 
 /* Struct Definitions */

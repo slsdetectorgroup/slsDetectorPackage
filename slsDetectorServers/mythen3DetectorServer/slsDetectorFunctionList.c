@@ -573,239 +573,27 @@ int setDynamicRange(int dr) {
     }
 }
 
-/* parameters - module, speed, readout */
+/* set parameters -  readout */
 
-int setModule(sls_detector_module myMod, char *mess) {
-
-    LOG(logINFO, ("Setting module\n"));
-
-    /* future implementation
-    // settings (not yet implemented)
-    setSettings((enum detectorSettings)myMod.reg);
-    if (myMod.reg >= 0) {
-        detectorModules->reg = myMod.reg;
-    }
-
-    // threshold
-    if (myMod.eV >= 0)
-        setThresholdEnergy(myMod.eV);
-    else {
-        // (loading a random trim file) (dont return fail)
-        setSettings(UNDEFINED);
-        LOG(logERROR,
-            ("Settings has been changed to undefined (random trim
-            file)\n"));
-    }
-    */
-
-    // dacs
-    for (int i = 0; i < NDAC; ++i) {
-        // ignore dacs with -1
-        if (myMod.dacs[i] != -1) {
-            setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
-            if (myMod.dacs[i] != detectorDacs[i]) {
-                sprintf(mess, "Could not set module. Could not set dac %d\n",
-                        i);
-                LOG(logERROR, (mess));
-                // setSettings(UNDEFINED);
-                // LOG(logERROR, ("Settings has been changed to undefined\n"));
-                return FAIL;
-            }
-        }
-    }
-
-    // trimbits
-    if (myMod.nchan == 0) {
-        LOG(logINFO, ("Setting module without trimbits\n"));
-    } else {
-        // set trimbits
-        if (setTrimbits(myMod.chanregs) == FAIL) {
-            sprintf(mess, "Could not set module. Could not set trimbits\n");
-            LOG(logERROR, (mess));
-            // setSettings(UNDEFINED);
-            // LOG(logERROR, ("Settings has been changed to undefined (random "
-            //               "trim file)\n"));
-            return FAIL;
-        }
-    }
-
-    return OK;
-}
-
-int setBit(int ibit, int patword) { return patword |= (1 << ibit); }
-
-int clearBit(int ibit, int patword) { return patword &= ~(1 << ibit); }
-
-int setTrimbits(int *trimbits) {
-    LOG(logINFOBLUE, ("Setting trimbits\n"));
-
-    // validate
-    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
-        if (trimbits[ichan] < 0 || trimbits[ichan] > 63) {
-            LOG(logERROR, ("Trimbit value (%d) for channel %d is invalid\n",
-                           trimbits[ichan], ichan));
-            return FAIL;
-        }
-    }
-    LOG(logINFO, ("Trimbits validated\n"));
-    trimmingPrint = logDEBUG5;
-
-    uint64_t patword = 0;
-    int iaddr = 0;
-    for (int ichip = 0; ichip < NCHIP; ichip++) {
-        LOG(logDEBUG1, (" Chip %d\n", ichip));
-        iaddr = 0;
-        patword = 0;
-        writePatternWord(iaddr++, patword);
-
-        // chip select
-        patword = setBit(SIGNAL_TBLoad_1 + ichip, patword);
-        writePatternWord(iaddr++, patword);
-
-        // reset trimbits
-        patword = setBit(SIGNAL_resStorage, patword);
-        patword = setBit(SIGNAL_resCounter, patword);
-        writePatternWord(iaddr++, patword);
-        writePatternWord(iaddr++, patword);
-        patword = clearBit(SIGNAL_resStorage, patword);
-        patword = clearBit(SIGNAL_resCounter, patword);
-        writePatternWord(iaddr++, patword);
-        writePatternWord(iaddr++, patword);
-
-        // select first channel
-        patword = setBit(SIGNAL_CHSserialIN, patword);
-        writePatternWord(iaddr++, patword);
-        // 1 clk pulse
-        patword = setBit(SIGNAL_CHSclk, patword);
-        writePatternWord(iaddr++, patword);
-        patword = clearBit(SIGNAL_CHSclk, patword);
-        // clear 1st channel
-        writePatternWord(iaddr++, patword);
-        patword = clearBit(SIGNAL_CHSserialIN, patword);
-        // 2 clk pulses
-        for (int i = 0; i < 2; i++) {
-            patword = setBit(SIGNAL_CHSclk, patword);
-            writePatternWord(iaddr++, patword);
-            patword = clearBit(SIGNAL_CHSclk, patword);
-            writePatternWord(iaddr++, patword);
-        }
-
-        // for each channel (all chips)
-        for (int ich = 0; ich < NCHAN_1_COUNTER; ich++) {
-            LOG(logDEBUG1, (" Chip %d, Channel %d\n", ichip, ich));
-            int val = trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
-                               NCOUNTERS * ich] +
-                      trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
-                               NCOUNTERS * ich + 1] *
-                          64 +
-                      trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
-                               NCOUNTERS * ich + 2] *
-                          64 * 64;
-
-            // push 6 0 bits
-            for (int i = 0; i < 6; i++) {
-                patword = clearBit(SIGNAL_serialIN, patword);
-                patword = clearBit(SIGNAL_clk, patword);
-                writePatternWord(iaddr++, patword);
-                patword = setBit(SIGNAL_clk, patword);
-                writePatternWord(iaddr++, patword);
-            }
-
-            // deserialize
-            for (int i = 0; i < 18; i++) {
-                if (val & (1 << i)) {
-                    patword = setBit(SIGNAL_serialIN, patword);
-                } else {
-                    patword = clearBit(SIGNAL_serialIN, patword);
-                }
-                patword = clearBit(SIGNAL_clk, patword);
-                writePatternWord(iaddr++, patword);
-
-                patword = setBit(SIGNAL_clk, patword);
-                writePatternWord(iaddr++, patword);
-            }
-            writePatternWord(iaddr++, patword);
-            writePatternWord(iaddr++, patword);
-
-            // move to next channel
-            for (int i = 0; i < 3; i++) {
-                patword = setBit(SIGNAL_CHSclk, patword);
-                writePatternWord(iaddr++, patword);
-                patword = clearBit(SIGNAL_CHSclk, patword);
-                writePatternWord(iaddr++, patword);
-            }
-        }
-        // chip unselect
-        patword = clearBit(SIGNAL_TBLoad_1 + ichip, patword);
-        writePatternWord(iaddr++, patword);
-
-        // last iaddr check
-        if (iaddr >= MAX_PATTERN_LENGTH) {
-            LOG(logERROR, ("Addr 0x%x is past max_address_length 0x%x!\n",
-                           iaddr, MAX_PATTERN_LENGTH));
-            trimmingPrint = logINFO;
-            return FAIL;
-        }
-
-        // set pattern wait address
-        for (int i = 0; i <= 2; i++)
-            setPatternWaitAddress(i, MAX_PATTERN_LENGTH - 1);
-
-        // pattern loop
-        for (int i = 0; i <= 2; i++) {
-            int stop = MAX_PATTERN_LENGTH - 1, nloop = 0;
-            setPatternLoop(i, &stop, &stop, &nloop);
-        }
-
-        // pattern limits
-        {
-            int start = 0, nloop = 0;
-            setPatternLoop(-1, &start, &iaddr, &nloop);
-        }
-        // send pattern to the chips
-        startPattern();
-    }
-
-    // copy trimbits locally
-    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
-        detectorChans[ichan] = trimbits[ichan];
-    }
-    trimmingPrint = logINFO;
-    LOG(logINFO, ("All trimbits have been loaded\n"));
-    return OK;
-}
-
-int setAllTrimbits(int val) {
-    int *trimbits = malloc(sizeof(int) * ((detectorModules)->nchan));
-    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
-        trimbits[ichan] = val;
-    }
-    if (setTrimbits(trimbits) == FAIL) {
-        LOG(logERROR, ("Could not set all trimbits to %d\n", val));
-        free(trimbits);
+int setParallelMode(int mode) {
+    if (mode < 0)
         return FAIL;
+    LOG(logINFO, ("Setting %s mode\n", (mode ? "Parallel" : "Non Parallel")));
+    uint32_t addr = DEADTIME_CONFIG_REG;
+    if (mode) {
+        bus_w(addr, bus_r(addr) | DEADTIME_FREE_MODE_ENBL_MSK);
+    } else {
+        bus_w(addr, bus_r(addr) & ~DEADTIME_FREE_MODE_ENBL_MSK);
     }
-    // setSettings(UNDEFINED);
-    // LOG(logERROR, ("Settings has been changed to undefined (random "
-    //               "trim file)\n"));
-    LOG(logINFO, ("All trimbits have been set to %d\n", val));
-    free(trimbits);
     return OK;
 }
 
-int getAllTrimbits() {
-    int value = detectorChans[0];
-    if (detectorModules) {
-        for (int ichan = 0; ichan < ((detectorModules)->nchan); ichan++) {
-            if (detectorChans[ichan] != value) {
-                value = -1;
-                break;
-            }
-        }
-    }
-    LOG(logINFO, ("Value of all Trimbits: %d\n", value));
-    return value;
+int getParallelMode() {
+    return ((bus_r(DEADTIME_CONFIG_REG) & DEADTIME_FREE_MODE_ENBL_MSK) >>
+            DEADTIME_FREE_MODE_ENBL_OFST);
 }
+
+/* parameters - timer */
 
 void setNumFrames(int64_t val) {
     if (val > 0) {
@@ -1146,6 +934,240 @@ int64_t getActualTime() {
 int64_t getMeasurementTime() {
     return get64BitReg(START_FRAME_TIME_LSB_REG, START_FRAME_TIME_MSB_REG) /
            (1E-9 * FIXED_PLL_FREQUENCY);
+}
+
+/* parameters - module, speed, readout */
+
+int setModule(sls_detector_module myMod, char *mess) {
+
+    LOG(logINFO, ("Setting module\n"));
+
+    /* future implementation
+    // settings (not yet implemented)
+    setSettings((enum detectorSettings)myMod.reg);
+    if (myMod.reg >= 0) {
+        detectorModules->reg = myMod.reg;
+    }
+
+    // threshold
+    if (myMod.eV >= 0)
+        setThresholdEnergy(myMod.eV);
+    else {
+        // (loading a random trim file) (dont return fail)
+        setSettings(UNDEFINED);
+        LOG(logERROR,
+            ("Settings has been changed to undefined (random trim
+            file)\n"));
+    }
+    */
+
+    // dacs
+    for (int i = 0; i < NDAC; ++i) {
+        // ignore dacs with -1
+        if (myMod.dacs[i] != -1) {
+            setDAC((enum DACINDEX)i, myMod.dacs[i], 0);
+            if (myMod.dacs[i] != detectorDacs[i]) {
+                sprintf(mess, "Could not set module. Could not set dac %d\n",
+                        i);
+                LOG(logERROR, (mess));
+                // setSettings(UNDEFINED);
+                // LOG(logERROR, ("Settings has been changed to undefined\n"));
+                return FAIL;
+            }
+        }
+    }
+
+    // trimbits
+    if (myMod.nchan == 0) {
+        LOG(logINFO, ("Setting module without trimbits\n"));
+    } else {
+        // set trimbits
+        if (setTrimbits(myMod.chanregs) == FAIL) {
+            sprintf(mess, "Could not set module. Could not set trimbits\n");
+            LOG(logERROR, (mess));
+            // setSettings(UNDEFINED);
+            // LOG(logERROR, ("Settings has been changed to undefined (random "
+            //               "trim file)\n"));
+            return FAIL;
+        }
+    }
+
+    return OK;
+}
+
+int setBit(int ibit, int patword) { return patword |= (1 << ibit); }
+
+int clearBit(int ibit, int patword) { return patword &= ~(1 << ibit); }
+
+int setTrimbits(int *trimbits) {
+    LOG(logINFOBLUE, ("Setting trimbits\n"));
+
+    // validate
+    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
+        if (trimbits[ichan] < 0 || trimbits[ichan] > 63) {
+            LOG(logERROR, ("Trimbit value (%d) for channel %d is invalid\n",
+                           trimbits[ichan], ichan));
+            return FAIL;
+        }
+    }
+    LOG(logINFO, ("Trimbits validated\n"));
+    trimmingPrint = logDEBUG5;
+
+    uint64_t patword = 0;
+    int iaddr = 0;
+    for (int ichip = 0; ichip < NCHIP; ichip++) {
+        LOG(logDEBUG1, (" Chip %d\n", ichip));
+        iaddr = 0;
+        patword = 0;
+        writePatternWord(iaddr++, patword);
+
+        // chip select
+        patword = setBit(SIGNAL_TBLoad_1 + ichip, patword);
+        writePatternWord(iaddr++, patword);
+
+        // reset trimbits
+        patword = setBit(SIGNAL_resStorage, patword);
+        patword = setBit(SIGNAL_resCounter, patword);
+        writePatternWord(iaddr++, patword);
+        writePatternWord(iaddr++, patword);
+        patword = clearBit(SIGNAL_resStorage, patword);
+        patword = clearBit(SIGNAL_resCounter, patword);
+        writePatternWord(iaddr++, patword);
+        writePatternWord(iaddr++, patword);
+
+        // select first channel
+        patword = setBit(SIGNAL_CHSserialIN, patword);
+        writePatternWord(iaddr++, patword);
+        // 1 clk pulse
+        patword = setBit(SIGNAL_CHSclk, patword);
+        writePatternWord(iaddr++, patword);
+        patword = clearBit(SIGNAL_CHSclk, patword);
+        // clear 1st channel
+        writePatternWord(iaddr++, patword);
+        patword = clearBit(SIGNAL_CHSserialIN, patword);
+        // 2 clk pulses
+        for (int i = 0; i < 2; i++) {
+            patword = setBit(SIGNAL_CHSclk, patword);
+            writePatternWord(iaddr++, patword);
+            patword = clearBit(SIGNAL_CHSclk, patword);
+            writePatternWord(iaddr++, patword);
+        }
+
+        // for each channel (all chips)
+        for (int ich = 0; ich < NCHAN_1_COUNTER; ich++) {
+            LOG(logDEBUG1, (" Chip %d, Channel %d\n", ichip, ich));
+            int val = trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
+                               NCOUNTERS * ich] +
+                      trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
+                               NCOUNTERS * ich + 1] *
+                          64 +
+                      trimbits[ichip * NCHAN_1_COUNTER * NCOUNTERS +
+                               NCOUNTERS * ich + 2] *
+                          64 * 64;
+
+            // push 6 0 bits
+            for (int i = 0; i < 6; i++) {
+                patword = clearBit(SIGNAL_serialIN, patword);
+                patword = clearBit(SIGNAL_clk, patword);
+                writePatternWord(iaddr++, patword);
+                patword = setBit(SIGNAL_clk, patword);
+                writePatternWord(iaddr++, patword);
+            }
+
+            // deserialize
+            for (int i = 0; i < 18; i++) {
+                if (val & (1 << i)) {
+                    patword = setBit(SIGNAL_serialIN, patword);
+                } else {
+                    patword = clearBit(SIGNAL_serialIN, patword);
+                }
+                patword = clearBit(SIGNAL_clk, patword);
+                writePatternWord(iaddr++, patword);
+
+                patword = setBit(SIGNAL_clk, patword);
+                writePatternWord(iaddr++, patword);
+            }
+            writePatternWord(iaddr++, patword);
+            writePatternWord(iaddr++, patword);
+
+            // move to next channel
+            for (int i = 0; i < 3; i++) {
+                patword = setBit(SIGNAL_CHSclk, patword);
+                writePatternWord(iaddr++, patword);
+                patword = clearBit(SIGNAL_CHSclk, patword);
+                writePatternWord(iaddr++, patword);
+            }
+        }
+        // chip unselect
+        patword = clearBit(SIGNAL_TBLoad_1 + ichip, patword);
+        writePatternWord(iaddr++, patword);
+
+        // last iaddr check
+        if (iaddr >= MAX_PATTERN_LENGTH) {
+            LOG(logERROR, ("Addr 0x%x is past max_address_length 0x%x!\n",
+                           iaddr, MAX_PATTERN_LENGTH));
+            trimmingPrint = logINFO;
+            return FAIL;
+        }
+
+        // set pattern wait address
+        for (int i = 0; i <= 2; i++)
+            setPatternWaitAddress(i, MAX_PATTERN_LENGTH - 1);
+
+        // pattern loop
+        for (int i = 0; i <= 2; i++) {
+            int stop = MAX_PATTERN_LENGTH - 1, nloop = 0;
+            setPatternLoop(i, &stop, &stop, &nloop);
+        }
+
+        // pattern limits
+        {
+            int start = 0, nloop = 0;
+            setPatternLoop(-1, &start, &iaddr, &nloop);
+        }
+        // send pattern to the chips
+        startPattern();
+    }
+
+    // copy trimbits locally
+    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
+        detectorChans[ichan] = trimbits[ichan];
+    }
+    trimmingPrint = logINFO;
+    LOG(logINFO, ("All trimbits have been loaded\n"));
+    return OK;
+}
+
+int setAllTrimbits(int val) {
+    int *trimbits = malloc(sizeof(int) * ((detectorModules)->nchan));
+    for (int ichan = 0; ichan < ((detectorModules)->nchan); ++ichan) {
+        trimbits[ichan] = val;
+    }
+    if (setTrimbits(trimbits) == FAIL) {
+        LOG(logERROR, ("Could not set all trimbits to %d\n", val));
+        free(trimbits);
+        return FAIL;
+    }
+    // setSettings(UNDEFINED);
+    // LOG(logERROR, ("Settings has been changed to undefined (random "
+    //               "trim file)\n"));
+    LOG(logINFO, ("All trimbits have been set to %d\n", val));
+    free(trimbits);
+    return OK;
+}
+
+int getAllTrimbits() {
+    int value = detectorChans[0];
+    if (detectorModules) {
+        for (int ichan = 0; ichan < ((detectorModules)->nchan); ichan++) {
+            if (detectorChans[ichan] != value) {
+                value = -1;
+                break;
+            }
+        }
+    }
+    LOG(logINFO, ("Value of all Trimbits: %d\n", value));
+    return value;
 }
 
 /* parameters - dac, hv */
@@ -2318,8 +2340,17 @@ enum runStatus getRunStatus() {
 
     // not running
     else {
+        // error from too short exptime in parallel mode
+        uint32_t deadtimeReg = bus_r(DEADTIME_CONFIG_REG);
+        if ((deadtimeReg & DEADTIME_EARLY_EXP_FIN_ERR_MSK) >>
+            DEADTIME_EARLY_EXP_FIN_ERR_OFST) {
+            LOG(logERROR,
+                ("Status: ERROR in Dead Time Reg (too short exptime) %08x\n",
+                 deadtimeReg));
+            s = ERROR;
+        }
         // stopped or error
-        if (retval & FLOW_STATUS_FIFO_FULL_MSK) {
+        else if (retval & FLOW_STATUS_FIFO_FULL_MSK) {
             LOG(logINFOBLUE, ("Status: STOPPED\n")); // FIFO FULL??
             s = STOPPED;
         } else if (retval & FLOW_STATUS_CSM_BUSY_MSK) {

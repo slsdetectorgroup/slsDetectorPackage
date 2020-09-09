@@ -49,6 +49,10 @@
 #define BASE_ASIC_RDO                   (0x00500) // 0x1806_0500 - 0x1806_050F
 // https://git.psi.ch/sls_detectors_firmware/mythen_III_mcb/blob/master/code/hdl/asic_rdo/asic_rdo.vhd
 
+/** Dead time Free Controller */
+#define BASE_DEADTIME_FREE_CTRL         (0x00580) // 0x1806_0580 - 0x1806_0587
+// https://git.psi.ch/sls_detectors_firmware/mythen_III_mcb/blob/master/code/hdl/DeadTimeFreeController/DeadTimeFreeCtrl.vhd
+
 /* UDP datagram generator */
 #define BASE_UDP_RAM                    (0x01000) // 0x1806_1000 - 0x1806_1FFF
 
@@ -466,5 +470,16 @@
 
 #define ASICRDO_CNFG_RESSTRG_LNGTH_OFST (0)
 #define ASICRDO_CNFG_RESSTRG_LNGTH_MSK  (0x000000FF << ASICRDO_CNFG_RESSTRG_LNGTH_OFST)
+
+
+/** Dead time Free Controller 
+ * --------------------------------------------------*/
+
+#define DEADTIME_CONFIG_REG             (0x00 * REG_OFFSET + BASE_DEADTIME_FREE_CTRL)
+
+#define DEADTIME_FREE_MODE_ENBL_OFST    (0)
+#define DEADTIME_FREE_MODE_ENBL_MSK     (0x00000001 << DEADTIME_FREE_MODE_ENBL_OFST)
+#define DEADTIME_EARLY_EXP_FIN_ERR_OFST (4)
+#define DEADTIME_EARLY_EXP_FIN_ERR_MSK  (0x00000001 << DEADTIME_EARLY_EXP_FIN_ERR_OFST)
 
 // clang-format on

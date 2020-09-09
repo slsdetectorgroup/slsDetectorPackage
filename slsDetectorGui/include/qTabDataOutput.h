@@ -21,7 +21,7 @@ class qTabDataOutput : public QWidget, private Ui::TabDataOutputObject {
     void EnableRateCorrection();
     void SetRateCorrection();
     void SetSpeed(int speed);
-    void SetFlags();
+    void SetParallel(bool enable);
 
   private:
     void SetupWidgetWindow();
@@ -35,11 +35,9 @@ class qTabDataOutput : public QWidget, private Ui::TabDataOutputObject {
     void GetTenGigaEnable();
     void GetRateCorrection();
     void GetSpeed();
-    void GetFlags();
+    void GetParallel();
 
     sls::Detector *det;
     // Button group for radiobuttons for rate
     QButtonGroup *btnGroupRate;
-    // enum for the Eiger Parallel flag
-    enum { PARALLEL, NONPARALLEL };
 };

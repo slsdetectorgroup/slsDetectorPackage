@@ -32,11 +32,19 @@ void qTabDataOutput::SetupWidgetWindow() {
         radioDefaultDeadtime->setEnabled(true);
         radioCustomDeadtime->setEnabled(true);
         // flags and speed
-        widgetEiger->setVisible(true);
-        widgetEiger->setEnabled(true);
+        lblClkDivider->setEnabled(true);
+        comboClkDivider->setEnabled(true);
+        chkParallel->setEnabled(true);
         break;
     case slsDetectorDefs::MOENCH:
         chkTenGiga->setEnabled(true);
+        break;
+    case slsDetectorDefs::MYTHEN3:
+        chkParallel->setEnabled(true);
+        break;
+    case slsDetectorDefs::JUNGFRAU:
+        lblClkDivider->setEnabled(true);
+        comboClkDivider->setEnabled(true);
         break;
     default:
         break;
@@ -74,12 +82,15 @@ void qTabDataOutput::Initialization() {
         connect(spinCustomDeadTime, SIGNAL(valueChanged(int)), this,
                 SLOT(SetRateCorrection()));
     }
-    // flags, speed
-    if (widgetEiger->isEnabled()) {
-        connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this,
+    // parallel
+    if (chkParallel->isEnabled()) {
+        connect(chkParallel, SIGNAL(toggled(bool)), this,
+                SLOT(SetParallel(bool)));
+    }
+    // speed
+    if (comboClkDivider->isEnabled()) {
+        connect(comboClkDivider, SIGNAL(currentIndexChanged(int)), this,
                 SLOT(SetSpeed(int)));
-        connect(comboEigerParallelFlag, SIGNAL(currentIndexChanged(int)), this,
-                SLOT(SetFlags()));
     }
 }
 
@@ -359,22 +370,21 @@ void qTabDataOutput::SetRateCorrection() {
 
 void qTabDataOutput::GetSpeed() {
     LOG(logDEBUG) << "Getting Speed";
-    disconnect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this,
+    disconnect(comboClkDivider, SIGNAL(currentIndexChanged(int)), this,
                SLOT(SetSpeed(int)));
     try {
         auto retval =
             det->getSpeed().tsquash("Speed is inconsistent for all detectors.");
-        comboEigerClkDivider->setCurrentIndex(static_cast<int>(retval));
+        comboClkDivider->setCurrentIndex(static_cast<int>(retval));
     }
     CATCH_DISPLAY("Could not get speed.", "qTabDataOutput::GetSpeed")
-    connect(comboEigerClkDivider, SIGNAL(currentIndexChanged(int)), this,
+    connect(comboClkDivider, SIGNAL(currentIndexChanged(int)), this,
             SLOT(SetSpeed(int)));
 }
 
 void qTabDataOutput::SetSpeed(int speed) {
     LOG(logINFO) << "Setting Speed to "
-                 << comboEigerClkDivider->currentText().toAscii().data();
-    ;
+                 << comboClkDivider->currentText().toAscii().data();
     try {
         det->setSpeed(static_cast<slsDetectorDefs::speedLevel>(speed));
     }
@@ -382,34 +392,28 @@ void qTabDataOutput::SetSpeed(int speed) {
                  &qTabDataOutput::GetSpeed)
 }
 
-void qTabDataOutput::GetFlags() {
-    LOG(logDEBUG) << "Getting readout flags";
-    disconnect(comboEigerParallelFlag, SIGNAL(currentIndexChanged(int)), this,
-               SLOT(SetFlags()));
+void qTabDataOutput::GetParallel() {
+    LOG(logDEBUG) << "Getting parallel readout";
+    disconnect(chkParallel, SIGNAL(toggled(bool)), this,
+               SLOT(SetParallel(bool)));
     try {
         auto retval = det->getParallelMode().tsquash(
             "Parallel Flag is inconsistent for all detectors.");
-        // parallel or non parallel
-        if (retval)
-            comboEigerParallelFlag->setCurrentIndex(PARALLEL);
-        else
-            comboEigerParallelFlag->setCurrentIndex(NONPARALLEL);
+        chkParallel->setChecked(retval);
     }
-    CATCH_DISPLAY("Could not get flags.", "qTabDataOutput::GetFlags")
-    connect(comboEigerParallelFlag, SIGNAL(currentIndexChanged(int)), this,
-            SLOT(SetFlags()));
+    CATCH_DISPLAY("Could not get parallel readout.",
+                  "qTabDataOutput::GetParallel")
+    connect(chkParallel, SIGNAL(toggled(bool)), this, SLOT(SetParallel(bool)));
 }
 
-void qTabDataOutput::SetFlags() {
-    auto mode =
-        comboEigerParallelFlag->currentIndex() == PARALLEL ? true : false;
+void qTabDataOutput::SetParallel(bool enable) {
+    LOG(logINFO) << "Setting PArallel readout to " << enable;
     try {
-        LOG(logINFO) << "Setting Readout Flags to "
-                     << comboEigerParallelFlag->currentText().toAscii().data();
-        det->setParallelMode(mode);
+        det->setParallelMode(enable);
     }
-    CATCH_HANDLE("Could not set readout flags.", "qTabDataOutput::SetFlags",
-                 this, &qTabDataOutput::GetFlags)
+    CATCH_HANDLE("Could not set parallel readout.",
+                 "qTabDataOutput::SetParallel", this,
+                 &qTabDataOutput::GetParallel)
 }
 
 void qTabDataOutput::Refresh() {
@@ -427,9 +431,11 @@ void qTabDataOutput::Refresh() {
     if (chkTenGiga->isEnabled()) {
         GetTenGigaEnable();
     }
-    if (widgetEiger->isEnabled()) {
+    if (chkParallel->isEnabled()) {
+        GetParallel();
+    }
+    if (comboClkDivider->isEnabled()) {
         GetSpeed();
-        GetFlags();
     }
 
     LOG(logDEBUG) << "**Updated DataOutput Tab";

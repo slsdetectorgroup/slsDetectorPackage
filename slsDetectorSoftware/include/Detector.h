@@ -393,6 +393,14 @@ class Detector {
     void setExternalSignalFlags(int signalIndex, defs::externalSignalFlag value,
                                 Positions pos = {});
 
+    /** [Eiger][Mythen3] */
+    Result<bool> getParallelMode(Positions pos = {}) const;
+
+    /** [Eiger][Mythen3]
+     * [Mythen3] If exposure time is too short, acquisition will return with an
+     * ERROR and take fewer frames than expected */
+    void setParallelMode(bool value, Positions pos = {});
+
     /**************************************************
      *                                                *
      *    Acquisition                                 *
@@ -852,12 +860,6 @@ class Detector {
 
     /** [Eiger] Directory where settings files are loaded from/to */
     void setSettingsPath(const std::string &value, Positions pos = {});
-
-    /** [Eiger] */
-    Result<bool> getParallelMode(Positions pos = {}) const;
-
-    /** [Eiger] */
-    void setParallelMode(bool value, Positions pos = {});
 
     /** [Eiger] */
     Result<bool> getOverFlowMode(Positions pos = {}) const;

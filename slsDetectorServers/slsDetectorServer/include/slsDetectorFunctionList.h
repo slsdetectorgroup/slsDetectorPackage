@@ -179,9 +179,11 @@ int setExternalSampling(int val);
 #endif
 
 // parameters - readout
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
 int setParallelMode(int mode);
 int getParallelMode();
+#endif
+#ifdef EIGERD
 int setOverFlowMode(int mode);
 int getOverFlowMode();
 #endif
@@ -277,9 +279,9 @@ int64_t getMeasurementTime();
 int setModule(sls_detector_module myMod, char *mess);
 #endif
 #ifdef MYTHEN3D
-int setTrimbits(int *trimbits);
 int setBit(int ibit, int patword);
 int clearBit(int ibit, int patword);
+int setTrimbits(int *trimbits);
 int setAllTrimbits(int val);
 int getAllTrimbits();
 #endif

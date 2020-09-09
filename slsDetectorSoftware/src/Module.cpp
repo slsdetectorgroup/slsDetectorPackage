@@ -382,6 +382,14 @@ void Module::setExternalSignalFlags(int signalIndex, externalSignalFlag type) {
     sendToDetector(F_SET_EXTERNAL_SIGNAL_FLAG, args, nullptr);
 }
 
+bool Module::getParallelMode() const {
+    return sendToDetector<int>(F_GET_PARALLEL_MODE);
+}
+
+void Module::setParallelMode(const bool enable) {
+    sendToDetector(F_SET_PARALLEL_MODE, static_cast<int>(enable), nullptr);
+}
+
 // Acquisition
 
 void Module::startReceiver() {
@@ -1106,14 +1114,6 @@ std::string Module::getSettingsDir() const {
 std::string Module::setSettingsDir(const std::string &dir) {
     sls::strcpy_safe(shm()->settingsDir, dir.c_str());
     return shm()->settingsDir;
-}
-
-bool Module::getParallelMode() const {
-    return sendToDetector<int>(F_GET_PARALLEL_MODE);
-}
-
-void Module::setParallelMode(const bool enable) {
-    sendToDetector(F_SET_PARALLEL_MODE, static_cast<int>(enable), nullptr);
 }
 
 bool Module::getOverFlowMode() const {

@@ -51,7 +51,6 @@ int main(int argc, char *argv[]) {
     memset(helpMessage, 0, MAX_STR_LENGTH);
     sprintf(
         helpMessage,
-        "\n\n"
         "Usage: %s [arguments]\n"
         "Possible arguments are:\n"
         "\t-v, --version            : Software version\n"
@@ -158,8 +157,10 @@ int main(int argc, char *argv[]) {
             break;
 
         case 'h':
+            printf("%s", helpMessage);
+            exit(EXIT_SUCCESS);
         default:
-            LOG(logERROR, (helpMessage));
+            printf("\n%s", helpMessage);
             exit(EXIT_FAILURE);
         }
     }

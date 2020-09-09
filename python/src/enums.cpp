@@ -259,20 +259,6 @@ void init_enums(py::module &m) {
         .value("IS_SLAVE", slsDetectorDefs::masterFlags::IS_SLAVE)
         .export_values();
 
-    py::enum_<slsDetectorDefs::frameModeType>(Defs, "frameModeType")
-        .value("PEDESTAL", slsDetectorDefs::frameModeType::PEDESTAL)
-        .value("NEW_PEDESTAL", slsDetectorDefs::frameModeType::NEW_PEDESTAL)
-        .value("FLATFIELD", slsDetectorDefs::frameModeType::FLATFIELD)
-        .value("NEW_FLATFIELD", slsDetectorDefs::frameModeType::NEW_FLATFIELD)
-        .export_values();
-
-    py::enum_<slsDetectorDefs::detectorModeType>(Defs, "detectorModeType")
-        .value("COUNTING", slsDetectorDefs::detectorModeType::COUNTING)
-        .value("INTERPOLATING",
-               slsDetectorDefs::detectorModeType::INTERPOLATING)
-        .value("ANALOG", slsDetectorDefs::detectorModeType::ANALOG)
-        .export_values();
-
     py::enum_<slsDetectorDefs::burstMode>(Defs, "burstMode")
         .value("BURST_INTERNAL", slsDetectorDefs::burstMode::BURST_INTERNAL)
         .value("BURST_EXTERNAL", slsDetectorDefs::burstMode::BURST_EXTERNAL)

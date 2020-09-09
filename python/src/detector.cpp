@@ -346,6 +346,14 @@ void init_det(py::module &m) {
                                  sls::Positions)) &
                  Detector::setExternalSignalFlags,
              py::arg(), py::arg(), py::arg() = Positions{})
+        .def("getParallelMode",
+             (Result<bool>(Detector::*)(sls::Positions) const) &
+                 Detector::getParallelMode,
+             py::arg() = Positions{})
+        .def("setParallelMode",
+             (void (Detector::*)(bool, sls::Positions)) &
+                 Detector::setParallelMode,
+             py::arg(), py::arg() = Positions{})
         .def("acquire", (void (Detector::*)()) & Detector::acquire)
         .def("clearAcquiringFlag",
              (void (Detector::*)()) & Detector::clearAcquiringFlag)
@@ -778,14 +786,6 @@ void init_det(py::module &m) {
         .def("setSettingsPath",
              (void (Detector::*)(const std::string &, sls::Positions)) &
                  Detector::setSettingsPath,
-             py::arg(), py::arg() = Positions{})
-        .def("getParallelMode",
-             (Result<bool>(Detector::*)(sls::Positions) const) &
-                 Detector::getParallelMode,
-             py::arg() = Positions{})
-        .def("setParallelMode",
-             (void (Detector::*)(bool, sls::Positions)) &
-                 Detector::setParallelMode,
              py::arg(), py::arg() = Positions{})
         .def("getOverFlowMode",
              (Result<bool>(Detector::*)(sls::Positions) const) &
@@ -1344,31 +1344,6 @@ void init_det(py::module &m) {
                                  sls::Positions)) &
                  Detector::setAdditionalJsonParameter,
              py::arg(), py::arg(), py::arg() = Positions{})
-        .def("getDetectorMinMaxEnergyThreshold",
-             (Result<int>(Detector::*)(const bool, sls::Positions) const) &
-                 Detector::getDetectorMinMaxEnergyThreshold,
-             py::arg(), py::arg() = Positions{})
-        .def("setDetectorMinMaxEnergyThreshold",
-             (void (Detector::*)(const bool, const int, sls::Positions)) &
-                 Detector::setDetectorMinMaxEnergyThreshold,
-             py::arg(), py::arg(), py::arg() = Positions{})
-        .def("getFrameMode",
-             (Result<defs::frameModeType>(Detector::*)(sls::Positions) const) &
-                 Detector::getFrameMode,
-             py::arg() = Positions{})
-        .def("setFrameMode",
-             (void (Detector::*)(defs::frameModeType, sls::Positions)) &
-                 Detector::setFrameMode,
-             py::arg(), py::arg() = Positions{})
-        .def("getDetectorMode",
-             (Result<defs::detectorModeType>(Detector::*)(sls::Positions)
-                  const) &
-                 Detector::getDetectorMode,
-             py::arg() = Positions{})
-        .def("setDetectorMode",
-             (void (Detector::*)(defs::detectorModeType, sls::Positions)) &
-                 Detector::setDetectorMode,
-             py::arg(), py::arg() = Positions{})
         .def("programFPGA",
              (void (Detector::*)(const std::string &, sls::Positions)) &
                  Detector::programFPGA,

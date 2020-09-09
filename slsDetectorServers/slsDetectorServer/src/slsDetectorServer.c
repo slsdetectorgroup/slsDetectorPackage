@@ -9,6 +9,7 @@
 #include "sls_detector_defs.h"
 #include "versionAPI.h"
 
+#include <getopt.h>
 #include <signal.h>
 #include <string.h>
 #include <unistd.h>
@@ -36,76 +37,129 @@ void sigInterruptHandler(int p) {
 
 int main(int argc, char *argv[]) {
 
-    // print version
-    if (argc > 1 && !strcasecmp(argv[1], "-version")) {
-        int version = 0;
-#ifdef GOTTHARDD
-        version = APIGOTTHARD;
-#elif EIGERD
-        version = APIEIGER;
-#elif JUNGFRAUD
-        version = APIJUNGFRAU;
-#elif CHIPTESTBOARDD
-        version = APICTB;
-#elif MOENCHD
-        version = APIMOENCH;
-#endif
-        LOG(logINFO, ("SLS Detector Server %s (0x%x)\n", GITBRANCH, version));
-    }
-
+    // options
     int portno = DEFAULT_PORTNO;
     isControlServer = 1;
     debugflag = 0;
     checkModuleFlag = 1;
+    int version = 0;
 
-    // if socket crash, ignores SISPIPE, prevents global signal handler
-    // subsequent read/write to socket gives error - must handle locally
-    signal(SIGPIPE, SIG_IGN);
+    // help message
+    char helpMessage[MAX_STR_LENGTH];
+    memset(helpMessage, 0, MAX_STR_LENGTH);
+    sprintf(
+        helpMessage,
+        "Usage: %s [arguments]\n"
+        "Possible arguments are:\n"
+        "\t-v, --version            : Software version\n"
+        "\t-p, --port <port>        : TCP communication port with client. \n"
+        "\t-d, --devel              : Developer mode. Skips firmware checks. \n"
+        "\t-g, --nomodule           : [Mythen3][Gotthard2] Generic or No "
+        "Module mode. Skips detector type checks. \n"
+        "\t-f, --phaseshift <value> : [Gotthard] only. Sets phase shift. \n"
+        "\t-s, --stopserver         : Stop server. Do not use as created by "
+        "control server \n\n",
+        argv[0]);
 
-    // circumvent the basic tests
-    for (int i = 1; i < argc; ++i) {
-        if (!strcasecmp(argv[i], "-stopserver")) {
-            LOG(logINFO, ("Detected stop server\n"));
-            isControlServer = 0;
-        } else if (!strcasecmp(argv[i], "-devel")) {
-            LOG(logINFO, ("Detected developer mode\n"));
-            debugflag = 1;
-        } else if (!strcasecmp(argv[i], "-nomodule")) {
-            LOG(logINFO, ("Detected No Module mode\n"));
-            checkModuleFlag = 0;
-        } else if (!strcasecmp(argv[i], "-port")) {
-            if ((i + 1) >= argc) {
-                LOG(logERROR, ("no port value given. Exiting.\n"));
-                return -1;
-            }
-            if (sscanf(argv[i + 1], "%d", &portno) == 0) {
-                LOG(logERROR,
-                    ("cannot decode port value %s. Exiting.\n", argv[i + 1]));
-                return -1;
+    // parse command line for config
+    static struct option long_options[] = {
+        // These options set a flag.
+        // These options don’t set a flag. We distinguish them by their indices.
+        {"help", no_argument, NULL, 'h'},
+        {"version", no_argument, NULL, 'v'},
+        {"port", required_argument, NULL, 'p'},
+        {"devel", no_argument, NULL, 'd'},
+        {"phaseshift", required_argument, NULL, 'f'},
+        {"nomodule", no_argument, NULL, 'g'}, // generic
+        {"stopserver", no_argument, NULL, 's'},
+        {NULL, 0, NULL, 0}};
+
+    optind = 1;
+    // getopt_long stores the option index here
+    int option_index = 0;
+    int c = 0;
+
+    while (c != -1) {
+        c = getopt_long(argc, argv, "hvp:df:gs", long_options, &option_index);
+
+        // Detect the end of the options
+        if (c == -1)
+            break;
+
+        switch (c) {
+
+        case 'v':
+#ifdef GOTTHARDD
+            version = APIGOTTHARD;
+#elif EIGERD
+            version = APIEIGER;
+#elif JUNGFRAUD
+            version = APIJUNGFRAU;
+#elif CHIPTESTBOARDD
+            version = APICTB;
+#elif MOENCHD
+            version = APIMOENCH;
+#elif MYTHEN3D
+            version = APIMYTHEN3;
+#elif GOTTHARD2D
+            version = APIGOTTHARD2;
+#endif
+            LOG(logINFOBLUE, ("SLS Detector Server Version: %s (0x%x)\n",
+                              GITBRANCH, version));
+            exit(EXIT_SUCCESS);
+
+        case 'p':
+            if (sscanf(optarg, "%d", &portno) != 1) {
+                LOG(logERROR, ("Cannot scan port argument\n%s", helpMessage));
+                exit(EXIT_FAILURE);
             }
             LOG(logINFO, ("Detected port: %d\n", portno));
-        }
-#ifdef GOTTHARDD
-        else if (!strcasecmp(argv[i], "-phaseshift")) {
-            if ((i + 1) >= argc) {
-                LOG(logERROR, ("no phase shift value given. Exiting.\n"));
-                return -1;
+            break;
+
+        case 'd':
+            LOG(logINFO, ("Detected developer mode\n"));
+            debugflag = 1;
+            break;
+
+        case 'f':
+#ifndef GOTTHARDD
+            LOG(logERROR,
+                ("Phase shift argument not implemented for this detector\n"));
+            exit(EXIT_FAILURE);
+#else
+            if (sscanf(optarg, "%d", &phaseShift) != 1) {
+                LOG(logERROR,
+                    ("Cannot scan phase shift argument\n%s", helpMessage));
+                exit(EXIT_FAILURE);
             }
-            if (sscanf(argv[i + 1], "%d", &phaseShift) == 0) {
-                LOG(logERROR, ("cannot decode phase shift value %s. Exiting.\n",
-                               argv[i + 1]));
-                return -1;
-            }
-            LOG(logINFO, ("Detected phase shift of %d\n", phaseShift));
-        }
+            LOG(logINFO, ("Detected phase shift: %d\n", phaseShift));
 #endif
+            break;
+
+        case 'g':
+            LOG(logINFO, ("Detected generic mode (no module)\n"));
+            checkModuleFlag = 0;
+            break;
+
+        case 's':
+            LOG(logINFO, ("Detected stop server\n"));
+            isControlServer = 0;
+            break;
+
+        case 'h':
+            printf("%s", helpMessage);
+            exit(EXIT_SUCCESS);
+        default:
+            printf("\n%s", helpMessage);
+            exit(EXIT_FAILURE);
+        }
     }
 
     // control server
     if (isControlServer) {
         LOG(logINFOBLUE, ("Control Server [%d]\n", portno));
 
-        // Catch signal SIGINT to destroy shm properly
+        // Catch signal SIGINT (Ctrl + c) to destroy shm properly
         struct sigaction sa;
         sa.sa_flags = 0;                     // no flags
         sa.sa_handler = sigInterruptHandler; // handler function
@@ -122,9 +176,18 @@ int main(int argc, char *argv[]) {
         // start stop server process
         char cmd[MAX_STR_LENGTH];
         memset(cmd, 0, MAX_STR_LENGTH);
+        char portCmd[256];
+        memset(portCmd, 0, 256);
+        sprintf(portCmd, "-p%d", portno);
         for (int i = 0; i < argc; ++i) {
-            if (!strcasecmp(argv[i], "-port")) {
-                i += 2;
+            LOG(logINFOBLUE, ("i:%d argv[i]:%s\n", i, argv[i]));
+            // remove port argument (--port) and [value]
+            if (!strcasecmp(argv[i], "--port")) {
+                ++i;
+                continue;
+            }
+            // remove port argument (-p[value])
+            if (!strcasecmp(argv[i], portCmd)) {
                 continue;
             }
             if (i > 0) {
@@ -134,7 +197,7 @@ int main(int argc, char *argv[]) {
         }
         char temp[50];
         memset(temp, 0, sizeof(temp));
-        sprintf(temp, " -stopserver -port %d &", portno + 1);
+        sprintf(temp, " --stopserver --port %d &", portno + 1);
         strcat(cmd, temp);
 
         LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
@@ -148,6 +211,10 @@ int main(int argc, char *argv[]) {
             return -1;
         }
     }
+
+    // if socket crash, ignores SISPIPE, prevents global signal handler
+    // subsequent read/write to socket gives error - must handle locally
+    signal(SIGPIPE, SIG_IGN);
 
     init_detector();
     // bind socket

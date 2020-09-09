@@ -20,7 +20,6 @@ Receiver::~Receiver() = default;
 Receiver::Receiver(int argc, char *argv[]) : tcpipInterface(nullptr) {
 
     // options
-    std::map<std::string, std::string> configuration_map;
     int tcpip_port_no = 1954;
     uid_t userid = -1;
 

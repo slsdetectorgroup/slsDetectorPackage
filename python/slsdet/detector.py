@@ -143,6 +143,15 @@ class Detector(CppDetectorApi):
 
     @property
     @element
+    def port(self):
+        return self.getControlPort()
+
+    @port.setter
+    def port(self, value):
+        ut.set_using_dict(self.setControlPort, value)
+
+    @property
+    @element
     def stopport(self):
         return self.getStopPort()
 
@@ -234,6 +243,20 @@ class Detector(CppDetectorApi):
     @frames.setter
     def frames(self, n_frames):
         self.setNumberOfFrames(n_frames)
+
+    @property
+    @element
+    def nframes(self):
+        return self.getNumberOfFramesFromStart()
+
+    @property
+    @element
+    def powerchip(self):
+        return self.getPowerChip()
+
+    @powerchip.setter
+    def powerchip(self, value):
+        ut.set_using_dict(self.setPowerChip, value)
 
     @property
     def triggers(self):
@@ -1289,6 +1312,15 @@ class Detector(CppDetectorApi):
     @subexptime.setter
     def subexptime(self, t):
         ut.set_time_using_dict(self.setSubExptime, t)
+
+    @property
+    @element
+    def readnlines(self):
+        return self.getPartialReadout()
+
+    @readnlines.setter
+    def readnlines(self, value):
+        ut.set_using_dict(self.setPartialReadout, value)
 
 
     @property

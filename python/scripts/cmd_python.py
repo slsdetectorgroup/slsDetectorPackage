@@ -87,6 +87,9 @@ intentionally_missing  = [
                         'udp_validate', #use validateUdpConfiguration
                         'udp_reconfigure', #use reconfigureUdpDestination
                         'emin', #use rx_jsonpara
+                        'pulse', # use pulseChip pulsePixel pulsePixelNmove
+                        'pulsechip', 
+                        'pulsenmove',
 ]
 
 pycmd += intentionally_missing

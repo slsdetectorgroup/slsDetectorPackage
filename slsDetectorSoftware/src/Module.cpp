@@ -357,6 +357,10 @@ void Module::setImageTestMode(const int value) {
 }
 
 int Module::getADC(dacIndex index) const {
+    // cannot access fpga links simultaneously (eiger) temp fix
+    if (index == TEMPERATURE_FPGA2 || index == TEMPERATURE_FPGA3) {
+        return sendToDetector<int>(F_GET_ADC, index);
+    }
     return sendToDetectorStop<int>(F_GET_ADC, index);
 }
 

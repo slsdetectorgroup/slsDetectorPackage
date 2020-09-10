@@ -557,7 +557,7 @@ int startStateMachine();
 void *start_timer(void *arg);
 #endif
 int stopStateMachine();
-#ifdef EIGERD
+#if defined(EIGERD) || defined(MYTHEN3D)
 int softwareTrigger();
 #endif
 

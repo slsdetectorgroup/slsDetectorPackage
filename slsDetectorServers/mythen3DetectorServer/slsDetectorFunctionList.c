@@ -2318,6 +2318,12 @@ int stopStateMachine() {
     return OK;
 }
 
+int softwareTrigger() {
+    LOG(logINFO, ("Sending Software Trigger\n"));
+    bus_w(CONTROL_REG, bus_r(CONTROL_REG) | CONTROL_STRT_SW_TRIGGER_MSK);
+    return OK;
+}
+
 enum runStatus getRunStatus() {
     LOG(logDEBUG1, ("Getting status\n"));
     // scan error or running

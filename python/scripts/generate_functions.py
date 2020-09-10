@@ -60,6 +60,23 @@ def get_arguments(node):
         args = f", {args}"
     return args
 
+def get_arguments_with_default(node):
+    args = []
+    for arg in node.get_arguments():
+        tokens = [t.spelling for t in arg.get_tokens()]
+        print(tokens)
+        if '=' in tokens:
+            if arg.type.spelling == "sls::Positions": #TODO! automate
+                args.append("py::arg() = Positions{}")
+            else:
+                args.append('py::arg()' + ''.join(tokens[tokens.index('='):]))
+        else:
+            args.append('py::arg()')
+    args = ", ".join(args)
+    if args:
+        args = f", {args}"
+    return args
+
 
 def get_fdec(node):
     args = [a.type.spelling for a in node.get_arguments()]
@@ -86,7 +103,8 @@ def visit(node):
                     and child.access_specifier == cindex.AccessSpecifier.PUBLIC
                 ):
                     m.append(child)
-                    args = get_arguments(child)
+                    # args = get_arguments(child)
+                    args = get_arguments_with_default(child)
                     fs = get_fdec(child)
                     lines.append(
                         f'.def("{child.spelling}",{fs} &Detector::{child.spelling}{args})'

@@ -650,6 +650,7 @@ class CmdProxy {
         {"rx_version", &CmdProxy::rx_version},
         {"detectornumber", &CmdProxy::detectornumber},
         {"type", &CmdProxy::type},
+        {"nmod", &CmdProxy::nmod},
         {"detsize", &CmdProxy::DetectorSize},
         {"settingslist", &CmdProxy::settingslist},
         {"settings", &CmdProxy::settings},
@@ -1125,6 +1126,8 @@ class CmdProxy {
 
     GET_COMMAND(type, getDetectorType,
                 "\n\tSerial number or MAC of detector (hex).");
+
+    GET_COMMAND_NOID(nmod, size, "\n\tNumber of modules in shared memory.");
 
     GET_COMMAND_NOID(settingslist, getSettingsList,
                      "\n\tList of settings implemented for this detector.");

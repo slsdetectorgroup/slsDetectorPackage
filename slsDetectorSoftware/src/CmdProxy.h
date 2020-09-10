@@ -602,7 +602,9 @@ class CmdProxy {
         {"r_framesperfile", "rx_framesperfile"},
 
         /* ZMQ Streaming Parameters (Receiver<->Client) */
-        {"r_readfreq", "rx_readfreq"},
+        {"r_readfreq", "rx_zmqfreq"},
+        {"rx_readfreq", "rx_zmqfreq"},
+        {"rx_datastream", "rx_zmqstream"},
 
         /* Eiger Specific */
         {"trimdir", "settingspath"},
@@ -837,8 +839,8 @@ class CmdProxy {
         {"rx_framesperfile", &CmdProxy::rx_framesperfile},
 
         /* ZMQ Streaming Parameters (Receiver<->Client) */
-        {"rx_datastream", &CmdProxy::rx_datastream},
-        {"rx_readfreq", &CmdProxy::rx_readfreq},
+        {"rx_zmqstream", &CmdProxy::rx_zmqstream},
+        {"rx_zmqfreq", &CmdProxy::rx_zmqfreq},
         {"rx_zmqstartfnum", &CmdProxy::rx_zmqstartfnum},
         {"rx_zmqport", &CmdProxy::rx_zmqport},
         {"zmqport", &CmdProxy::zmqport},
@@ -1847,7 +1849,7 @@ class CmdProxy {
     /* ZMQ Streaming Parameters (Receiver<->Client) */
 
     INTEGER_COMMAND(
-        rx_datastream, getRxZmqDataStream, setRxZmqDataStream, StringTo<int>,
+        rx_zmqstream, getRxZmqDataStream, setRxZmqDataStream, StringTo<int>,
         "[0, 1]\n\tEnable/ disable data streaming from receiver via zmq (eg. "
         "to GUI or to another process for further processing). This creates/ "
         "destroys zmq streamer threads in receiver. \n\tSwitching to Gui "
@@ -1856,7 +1858,7 @@ class CmdProxy {
         "receiver for fast applications. ");
 
     INTEGER_COMMAND(
-        rx_readfreq, getRxZmqFrequency, setRxZmqFrequency, StringTo<int>,
+        rx_zmqfreq, getRxZmqFrequency, setRxZmqFrequency, StringTo<int>,
         "[nth frame]\n\tFrequency of frames streamed out from receiver via "
         "zmq\n\tDefault: 1, Means every frame is streamed out. \n\tIf 2, every "
         "second frame is streamed out. \n\tIf 0, streaming timer is the "

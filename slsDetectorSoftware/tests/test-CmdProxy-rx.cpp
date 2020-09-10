@@ -574,25 +574,25 @@ TEST_CASE("rx_framesperfile", "[.cmd][.rx][.new]") {
 
 /* ZMQ Streaming Parameters (Receiver<->Client) */
 
-TEST_CASE("rx_datastream", "[.cmd][.rx][.new]") {
+TEST_CASE("rx_zmqstream", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getRxZmqDataStream();
     {
         std::ostringstream oss;
-        proxy.Call("rx_datastream", {"1"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_datastream 1\n");
+        proxy.Call("rx_zmqstream", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_zmqstream 1\n");
         REQUIRE(det.getRxZmqDataStream().squash() == true);
     }
     {
         std::ostringstream oss;
-        proxy.Call("rx_datastream", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "rx_datastream 1\n");
+        proxy.Call("rx_zmqstream", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_zmqstream 1\n");
     }
     {
         std::ostringstream oss;
-        proxy.Call("rx_datastream", {"0"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_datastream 0\n");
+        proxy.Call("rx_zmqstream", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_zmqstream 0\n");
         REQUIRE(det.getRxZmqDataStream().squash() == false);
     }
     for (int i = 0; i != det.size(); ++i) {
@@ -600,24 +600,24 @@ TEST_CASE("rx_datastream", "[.cmd][.rx][.new]") {
     }
 }
 
-TEST_CASE("rx_readfreq", "[.cmd][.rx][.new]") {
+TEST_CASE("rx_zmqfreq", "[.cmd][.rx][.new]") {
     Detector det;
     CmdProxy proxy(&det);
     auto prev_val = det.getRxZmqFrequency();
     {
         std::ostringstream oss;
-        proxy.Call("rx_readfreq", {"1"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_readfreq 1\n");
+        proxy.Call("rx_zmqfreq", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_zmqfreq 1\n");
     }
     {
         std::ostringstream oss;
-        proxy.Call("rx_readfreq", {}, -1, GET, oss);
-        REQUIRE(oss.str() == "rx_readfreq 1\n");
+        proxy.Call("rx_zmqfreq", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "rx_zmqfreq 1\n");
     }
     {
         std::ostringstream oss;
-        proxy.Call("rx_readfreq", {"0"}, -1, PUT, oss);
-        REQUIRE(oss.str() == "rx_readfreq 0\n");
+        proxy.Call("rx_zmqfreq", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "rx_zmqfreq 0\n");
     }
     for (int i = 0; i != det.size(); ++i) {
         det.setRxZmqFrequency(prev_val[i], {i});

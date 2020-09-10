@@ -664,7 +664,7 @@ class Detector(CppDetectorApi):
     # ZMQ Streaming Parameters (Receiver<->Client)
 
     @property
-    def rx_datastream(self):
+    def rx_zmqstream(self):
         """
         Enable/ disable data streaming from receiver via zmq (eg. to GUI or to another process for further processing). \n
         This creates/ destroys zmq streamer threads in receiver. \n
@@ -673,12 +673,12 @@ class Detector(CppDetectorApi):
         """
         return element_if_equal(self.getRxZmqDataStream())
 
-    @rx_datastream.setter
+    @rx_zmqstream.setter
     def rx_zmqdatastream(self, enable):
         self.setRxZmqDataStream(enable)
 
     @property
-    def rx_readfreq(self):
+    def rx_zmqfreq(self):
         """Frequency of frames streamed out from receiver via zmq.
         Notes
         -----
@@ -688,8 +688,8 @@ class Detector(CppDetectorApi):
         """
         return element_if_equal(self.getRxZmqFrequency())
 
-    @rx_readfreq.setter
-    def rx_readfreq(self, nth_frame):
+    @rx_zmqfreq.setter
+    def rx_zmqfreq(self, nth_frame):
         self.setRxZmqFrequency(nth_frame)
 
     @property

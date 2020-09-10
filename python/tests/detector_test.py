@@ -412,15 +412,15 @@ def test_set_counters_single(d, mocker):
 #     d.readout_clock = 'Super Slow Speed'
 #     m.assert_called_once_with(3)
 
-# #----------------------------------------------------------------rx_datastream
-# def test_get_rx_datastream(d, mocker):
+# #----------------------------------------------------------------rx_zmqstream
+# def test_get_rx_zmqstream(d, mocker):
 #     m = mocker.patch('_slsdet.DetectorApi.getRxDataStreamStatus')
 #     m.return_value = False
-#     assert d.rx_datastream == False
+#     assert d.rx_zmqstream == False
 
-# def test_set_rx_datastream(d, mocker):
+# def test_set_rx_zmqstream(d, mocker):
 #     m = mocker.patch('_slsdet.DetectorApi.setRxDataStreamStatus')
-#     d.rx_datastream = True
+#     d.rx_zmqstream = True
 #     m.assert_called_once_with(True)
 
 # def test_get_rx_zmqip(d, mocker):

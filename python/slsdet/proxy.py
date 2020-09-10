@@ -72,7 +72,6 @@ class ClkDivProxy:
 
     def __setitem__(self, key, value):
         set_proxy_using_dict(self.det.setClockDivider, key, value)
-        # self.det.setClockDivider(key, value)
 
     def __repr__(self):
         rstr = ''

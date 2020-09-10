@@ -68,6 +68,10 @@ class Detector(CppDetectorApi):
     def __len__(self):
         return self.size()
 
+    @property
+    def nmod(self):
+        return self.size()
+
     def __repr__(self):
         return "{}(id = {})".format(self.__class__.__name__, self.getShmId())
 

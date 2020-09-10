@@ -1492,6 +1492,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def temp_threshold(self):
+        """
+        [Jungfrau] Threshold temperature in degrees. 
+        Note
+        -----
+        If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. \n
+        To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared/reset.
+        """
         return self.getThresholdTemperature()
 
     @temp_threshold.setter
@@ -1501,6 +1508,14 @@ class Detector(CppDetectorApi):
     @property
     @element
     def temp_event(self):
+        """
+        [Jungfrau] 1, if a temperature event occured. \n
+        Note
+        ----
+        If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. \n
+        To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared/reset.
+        :setter: To clear the event, set it to 0.
+        """
         return self.getTemperatureEvent()
 
     @temp_event.setter
@@ -1512,6 +1527,14 @@ class Detector(CppDetectorApi):
     @property
     @element
     def temp_control(self):
+        """
+        [Jungfrau] Temperature control enable. 
+        Note
+        -----
+        Default is 0 (disabled). \n
+        If temperature crosses threshold temperature and temperature control is enabled, power to chip will be switched off and temperature event occurs. \n
+        To power on chip again, temperature has to be less than threshold temperature and temperature event has to be cleared/reset.
+        """
         return self.getTemperatureControl()
 
     @temp_control.setter
@@ -1864,6 +1887,12 @@ class Detector(CppDetectorApi):
 
     @property
     def syncclk(self):
+        """
+        [Ctb][Moench] Sync clock in MHz.
+        Note
+        -----
+        :setter: Not implemented
+        """
         return element_if_equal(self.getSYNCClock())
 
     @property

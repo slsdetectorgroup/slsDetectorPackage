@@ -964,23 +964,24 @@ class Detector {
     /**
      * [Jungfrau]Set threshold temperature
      * If temperature crosses threshold temperature
-     * and temperature control is enabled,
-     * power to chip will be switched off and
-     * temperature event will be set
-     * val is value in degrees
+     * and temperature control is enabled (default is disabled), power to chip
+     * will be switched off and temperature event will be set. \n To power on
+     * chip again, temperature has to be less than threshold temperature and
+     * temperature event has to be cleared. val is value in degrees
      */
     void setThresholdTemperature(int temp, Positions pos = {});
 
     /** [Jungfrau] */
     Result<bool> getTemperatureControl(Positions pos = {}) const;
 
-    /** [Jungfrau] */
+    /** [Jungfrau]  refer to setThresholdTemperature
+     * Default is disabled */
     void setTemperatureControl(bool enable, Positions pos = {});
 
-    /** [Jungfrau] */
+    /** [Jungfrau] refer to setThresdholdTemperature */
     Result<int> getTemperatureEvent(Positions pos = {}) const;
 
-    /** [Jungfrau] */
+    /** [Jungfrau] refer to setThresdholdTemperature */
     void resetTemperatureEvent(Positions pos = {});
 
     /** [Jungfrau] */
@@ -1202,7 +1203,7 @@ class Detector {
     /** [CTB][Moench] */
     void setRUNClock(int value_in_MHz, Positions pos = {});
 
-    /** [CTB][Moench] */
+    /** [CTB][Moench]  in MHZ */
     Result<int> getSYNCClock(Positions pos = {}) const;
 
     /** [CTB][Moench] */

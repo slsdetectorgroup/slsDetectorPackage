@@ -70,6 +70,7 @@ dacs = [
 ]
 
 intentionally_missing  = [
+                        'activate', #use getActive and getRxPadDeactivatedMode syntax is not a good fit for python
                         'temp_10ge', #temperatures already available from enum or specialized class
                         'temp_adc',
                         'temp_dcdc',

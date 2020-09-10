@@ -12,6 +12,7 @@ from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
 from . import utils as ut
 from .jsonproxy import JsonProxy
+from .slowadcproxy import SlowAdcProxy
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -1012,6 +1013,10 @@ class Detector(CppDetectorApi):
         [Eiger] Address is +0x100 for only left, +0x200 for only right.
         """
         return self._register
+
+    @property
+    def slowadc(self):
+        return SlowAdcProxy(self)
 
     @property
     def daclist(self):

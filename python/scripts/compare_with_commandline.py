@@ -8,8 +8,6 @@ from slsdet import Detector
 
 pycmd = dir(Detector)
 
-#Add commands that we should not expect as direct commands in python
-
 
 # dacs are in general not included in the python commands and we expect to
 # set them from the specialized class or using an enum 
@@ -117,6 +115,7 @@ for c in cmd:
 print(f'\nMissing: {len(missing)} commands')
 print(f'Excluded: {len(dacs)} dacs')
 print(f'Excluded: {len(intentionally_missing)} other commands')
+
 
 
 not_in_cmd = []

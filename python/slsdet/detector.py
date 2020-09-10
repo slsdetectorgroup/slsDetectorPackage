@@ -11,8 +11,7 @@ detectorType = slsDetectorDefs.detectorType
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
 from . import utils as ut
-from .jsonproxy import JsonProxy
-from .slowadcproxy import SlowAdcProxy
+from .proxy import JsonProxy, SlowAdcProxy
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -196,6 +195,10 @@ class Detector(CppDetectorApi):
         self.setDynamicRange(dr)
 
     @property
+    def drlist(self):
+        return self.getDynamicRangeList()
+
+    @property
     def module_geometry(self):
         return to_geo(self.getModuleGeometry())
 
@@ -205,7 +208,7 @@ class Detector(CppDetectorApi):
         return element_if_equal(ms)
 
     @property
-    def detector_size(self):
+    def detsize(self):
         return to_geo(self.getDetectorSize())
 
     @property
@@ -243,6 +246,11 @@ class Detector(CppDetectorApi):
     @frames.setter
     def frames(self, n_frames):
         self.setNumberOfFrames(n_frames)
+
+    @property
+    @element
+    def framesl(self):
+        return self.getNumberOfFramesLeft()
 
     @property
     @element
@@ -596,13 +604,14 @@ class Detector(CppDetectorApi):
         self.setFileFormat(format)
 
     @property
+    @element
     def findex(self):
         """File or Acquisition index in receiver."""
-        return element_if_equal(self.getAcquisitionIndex())
+        return self.getAcquisitionIndex()
 
     @findex.setter
     def findex(self, index):
-        self.setAcquisitionIndex(index)
+        ut.set_using_dict(self.setAcquisitionIndex, index)
 
     @property
     def fname(self):
@@ -687,6 +696,7 @@ class Detector(CppDetectorApi):
     # ZMQ Streaming Parameters (Receiver<->Client)
 
     @property
+    @element
     def rx_zmqstream(self):
         """
         Enable/ disable data streaming from receiver via zmq (eg. to GUI or to another process for further processing). \n
@@ -694,11 +704,11 @@ class Detector(CppDetectorApi):
         Switching to Gui automatically enables data streaming in receiver. \n
         Switching back to command line acquire will require disabling data streaming in receiver for fast applications.
         """
-        return element_if_equal(self.getRxZmqDataStream())
+        return self.getRxZmqDataStream()
 
     @rx_zmqstream.setter
-    def rx_zmqdatastream(self, enable):
-        self.setRxZmqDataStream(enable)
+    def rx_zmqstream(self, enable):
+        ut.set_using_dict(self.setRxZmqDataStream, enable)
 
     @property
     def rx_zmqfreq(self):
@@ -1180,19 +1190,17 @@ class Detector(CppDetectorApi):
         return JsonProxy(self)
 
 
-
-    @rx_jsonpara.setter
-    def rx_jsonpara(self, args):
-        for key, value in args.items():
-            self.setAdditionalJsonParameter(key, str(value))
-
     @property
     @element
     def rx_jsonaddheader(self):
         return self.getAdditionalJsonHeader()
 
+    @rx_jsonaddheader.setter
+    def rx_jsonaddheader(self, args):
+        ut.set_using_dict(self.setAdditionalJsonHeader, args)
+
     @property
-    def frameindex(self):
+    def rx_frameindex(self):
         return self.getRxCurrentFrameIndex()
 
     @property
@@ -1243,7 +1251,7 @@ class Detector(CppDetectorApi):
 
     """
 
-    <<<Eiger>>>
+    <<<-----------------------Eiger specific----------------------->>>
 
     """
 
@@ -2263,3 +2271,13 @@ class Detector(CppDetectorApi):
 
 
 
+    """
+
+    <<<-----------------------Gotthard specific----------------------->>>
+
+    """
+
+    @property
+    def exptimel(self):
+        t = self.getExptimeLeft()
+        return reduce_time(t)

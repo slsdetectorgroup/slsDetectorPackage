@@ -11,7 +11,7 @@ detectorType = slsDetectorDefs.detectorType
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
 from . import utils as ut
-from .proxy import JsonProxy, SlowAdcProxy
+from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -2269,6 +2269,10 @@ class Detector(CppDetectorApi):
         """
         return self.getMeasuredCurrent(dacIndex.I_POWER_IO)
 
+
+    @property
+    def clkdiv(self):
+        return ClkDivProxy(self)
 
 
     """

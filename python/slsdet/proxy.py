@@ -1,6 +1,14 @@
 from .utils import element_if_equal
 from .enums import dacIndex
 
+
+def set_proxy_using_dict(func, key, value):
+    if isinstance(value, dict) and all(isinstance(k, int) for k in value.keys()):
+        for dkey, dvalue in value.items():
+            func(key, dvalue, [dkey])
+    else:
+        func(key, value)
+
 class JsonProxy:
     """
     Proxy class to allow for intuitive setting and getting of rx_jsonpara
@@ -49,5 +57,30 @@ class SlowAdcProxy:
                 rstr += ' '.join(f'{item} mV' for item in r)
             else:
                 rstr += f'{i}: {r} mV\n'
+        
+        return rstr.strip('\n')
+
+class ClkDivProxy:
+    """
+    Proxy class to allow for more intuitive reading clockdivider
+    """
+    def __init__(self, det):
+        self.det = det
+
+    def __getitem__(self, key):
+        return element_if_equal(self.det.getClockDivider(key))
+
+    def __setitem__(self, key, value):
+        set_proxy_using_dict(self.det.setClockDivider, key, value)
+        # self.det.setClockDivider(key, value)
+
+    def __repr__(self):
+        rstr = ''
+        for i in range(6):
+            r = element_if_equal(self.__getitem__(i))
+            if isinstance(r, list):
+                rstr += ' '.join(f'{item}' for item in r)
+            else:
+                rstr += f'{i}: {r}\n'
         
         return rstr.strip('\n')

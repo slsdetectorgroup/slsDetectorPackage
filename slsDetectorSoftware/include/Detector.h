@@ -367,9 +367,9 @@ class Detector {
     /** gets list of dac enums for this detector */
     std::vector<defs::dacIndex> getDacList() const;
 
-    Result<int> getDAC(defs::dacIndex index, bool mV, Positions pos = {}) const;
+    Result<int> getDAC(defs::dacIndex index, bool mV = false, Positions pos = {}) const;
 
-    void setDAC(defs::dacIndex index, int value, bool mV, Positions pos = {});
+    void setDAC(defs::dacIndex index, int value, bool mV = false, Positions pos = {});
 
     /* [Gotthard2] */
     Result<int> getOnChipDAC(defs::dacIndex index, int chipIndex,

@@ -1429,6 +1429,12 @@ class Detector(CppDetectorApi):
     def auto_comp_disable(self, value):
         self.setAutoCompDisable(value)
 
+
+    @property
+    @element
+    def now(self):
+        return self.getActualTime()
+
     @property
     @element
     def storagecells(self):

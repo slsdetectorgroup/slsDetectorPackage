@@ -322,11 +322,11 @@ void init_det(py::module &m) {
              (Result<int>(Detector::*)(defs::dacIndex, bool, sls::Positions)
                   const) &
                  Detector::getDAC,
-             py::arg(), py::arg(), py::arg() = Positions{})
+             py::arg(), py::arg() = false, py::arg() = Positions{})
         .def("setDAC",
              (void (Detector::*)(defs::dacIndex, int, bool, sls::Positions)) &
                  Detector::setDAC,
-             py::arg(), py::arg(), py::arg(), py::arg() = Positions{})
+             py::arg(), py::arg(), py::arg() = false, py::arg() = Positions{})
         .def("getOnChipDAC",
              (Result<int>(Detector::*)(defs::dacIndex, int, sls::Positions)
                   const) &
@@ -488,14 +488,14 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("setDestinationUDPPort",
              (void (Detector::*)(int, int)) & Detector::setDestinationUDPPort,
-             py::arg(), py::arg())
+             py::arg(), py::arg() = -1)
         .def("getDestinationUDPPort2",
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getDestinationUDPPort2,
              py::arg() = Positions{})
         .def("setDestinationUDPPort2",
              (void (Detector::*)(int, int)) & Detector::setDestinationUDPPort2,
-             py::arg(), py::arg())
+             py::arg(), py::arg() = -1)
         .def("reconfigureUDPDestination",
              (void (Detector::*)(sls::Positions)) &
                  Detector::reconfigureUDPDestination,
@@ -568,7 +568,7 @@ void init_det(py::module &m) {
                  Detector::getRxPort,
              py::arg() = Positions{})
         .def("setRxPort", (void (Detector::*)(int, int)) & Detector::setRxPort,
-             py::arg(), py::arg())
+             py::arg(), py::arg() = -1)
         .def("getRxFifoDepth",
              (Result<int>(Detector::*)(sls::Positions) const) &
                  Detector::getRxFifoDepth,
@@ -730,7 +730,7 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("setRxZmqPort",
              (void (Detector::*)(int, int)) & Detector::setRxZmqPort, py::arg(),
-             py::arg())
+             py::arg() = -1)
         .def("getRxZmqIP",
              (Result<sls::IpAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getRxZmqIP,
@@ -745,7 +745,7 @@ void init_det(py::module &m) {
              py::arg() = Positions{})
         .def("setClientZmqPort",
              (void (Detector::*)(int, int)) & Detector::setClientZmqPort,
-             py::arg(), py::arg())
+             py::arg(), py::arg() = -1)
         .def("getClientZmqIp",
              (Result<sls::IpAddr>(Detector::*)(sls::Positions) const) &
                  Detector::getClientZmqIp,
@@ -778,7 +778,8 @@ void init_det(py::module &m) {
              (void (Detector::*)(int, defs::detectorSettings, bool,
                                  sls::Positions)) &
                  Detector::setThresholdEnergy,
-             py::arg(), py::arg(), py::arg(), py::arg() = Positions{})
+             py::arg(), py::arg() = defs::STANDARD, py::arg() = true,
+             py::arg() = Positions{})
         .def("getSettingsPath",
              (Result<std::string>(Detector::*)(sls::Positions) const) &
                  Detector::getSettingsPath,

@@ -614,6 +614,7 @@ class CmdProxy {
         /* Gotthard2 Specific */
         /* Mythen3 Specific */
         /* CTB Specific */
+        {"adc", "slowadc"},
         {"flags", "romode"},
         {"i_a", "im_a"},
         {"i_b", "im_b"},
@@ -938,7 +939,7 @@ class CmdProxy {
         {"im_c", &CmdProxy::im_c},
         {"im_d", &CmdProxy::im_d},
         {"im_io", &CmdProxy::im_io},
-        {"adc", &CmdProxy::SlowAdc},
+        {"slowadc", &CmdProxy::SlowAdc},
         {"extsampling", &CmdProxy::extsampling},
         {"extsamplingsrc", &CmdProxy::extsamplingsrc},
         {"rx_dbitlist", &CmdProxy::ReceiverDbitList},

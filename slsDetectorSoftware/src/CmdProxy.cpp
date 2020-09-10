@@ -1957,29 +1957,25 @@ std::string CmdProxy::SlowAdc(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[n_channel (0-7 for channel|8 for temperature)]\n\t[Ctb] Slow "
-              "ADC channel in mV or °C."
+        os << "[n_channel (0-7 for channel]\n\t[Ctb] Slow "
+              "ADC channel in mV"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
             WrongNumberOfParameters(0);
         }
         int nchan = StringTo<int>(args[0]);
-        if (nchan < 0 || nchan > defs::SLOW_ADC_TEMP - defs::SLOW_ADC0) {
+        if (nchan < 0 || nchan > 7) {
             throw sls::RuntimeError("Unknown adc argument " + args[0]);
         }
-        if (nchan == 8) {
-            auto t = det->getTemperature(defs::SLOW_ADC_TEMP, {det_id});
-            os << OutString(t) << " °C\n";
-        } else {
-            auto t = det->getSlowADC(
-                static_cast<defs::dacIndex>(nchan + defs::SLOW_ADC0), {det_id});
-            Result<double> result(t.size());
-            for (unsigned int i = 0; i < t.size(); ++i) {
-                result[i] = t[i] / 1000.00;
-            }
-            os << OutString(result) << " mV\n";
+        auto t = det->getSlowADC(
+            static_cast<defs::dacIndex>(nchan + defs::SLOW_ADC0), {det_id});
+        Result<double> result(t.size());
+        for (unsigned int i = 0; i < t.size(); ++i) {
+            result[i] = t[i] / 1000.00;
         }
+        os << OutString(result) << " mV\n";
+        
     } else if (action == defs::PUT_ACTION) {
         throw sls::RuntimeError("cannot put");
     } else {

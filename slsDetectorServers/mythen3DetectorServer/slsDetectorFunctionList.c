@@ -1,3 +1,4 @@
+#define _GNU_SOURCE // needed for strptime to be at the top
 #include "slsDetectorFunctionList.h"
 #include "ALTERA_PLL_CYCLONE10.h"
 #include "DAC6571.h"
@@ -13,10 +14,10 @@
 
 #include <netinet/in.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h> // usleep
 #ifdef VIRTUAL
 #include <pthread.h>
-#include <time.h>
 #endif
 
 // Global variable from slsDetectorServer_funcs
@@ -167,18 +168,44 @@ int checkKernelVersion() {
 #ifdef VIRTUAL
     return OK;
 #endif
+
+    // extract kernel date string
     char output[256];
     memset(output, 0, 256);
     FILE *sysFile = popen("uname -a | cut -d ' ' -f5-10", "r");
     fgets(output, sizeof(output), sysFile);
     pclose(sysFile);
+    // remove end line
+    output[strlen(output) - 1] = '\0';
 
-    if (strstr(output, KERNEL_DATE_VRSN) == NULL) {
-        LOG(logERROR, ("Kernel Version Incompatible! Expected: %s, Got: %s\n",
-                       KERNEL_DATE_VRSN, output));
+    // convert kernel date string into time
+    struct tm kernelDate;
+    if (NULL == strptime(output, "%a %b %d %H:%M:%S %Z %Y", &kernelDate)) {
+        LOG(logERROR, ("Could not parse retrieved kernel date, %s\n", output));
         return FAIL;
     }
-    LOG(logINFO, ("Kernel Version Compatible: %s\n", output));
+    time_t t_kernelDate = mktime(&kernelDate);
+
+    // convert expected date into time
+    struct tm expDate;
+    if (NULL ==
+        strptime(KERNEL_DATE_VRSN, "%a %b %d %H:%M:%S %Z %Y", &expDate)) {
+        LOG(logERROR,
+            ("Could not parse expected kernel date, %s\n", KERNEL_DATE_VRSN));
+        return FAIL;
+    }
+    time_t t_expDate = mktime(&expDate);
+
+    // compare if kernel time is older than expected time
+    if (t_kernelDate < t_expDate) {
+        LOG(logERROR,
+            ("Kernel Version Incompatible (too old)! Expected: %s, Got %s\n",
+             KERNEL_DATE_VRSN, output));
+        return FAIL;
+    }
+
+    LOG(logINFOBLUE, ("Kernel Version Compatible: %s [min.: %s]\n", output,
+                      KERNEL_DATE_VRSN));
     return OK;
 }
 

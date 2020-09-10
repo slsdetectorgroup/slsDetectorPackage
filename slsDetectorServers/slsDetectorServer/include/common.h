@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <time.h>
 
 /**
  * Convert a value from a range to a different range (eg voltage to dac or vice
@@ -17,3 +18,5 @@ int ConvertToDifferentRange(int inputMin, int inputMax, int outputMin,
                             int outputMax, int inputValue, int *outputValue);
 
 int getAbsPath(char *buf, size_t bufSize, char *fname);
+
+int GetTimeFromString(char *buf, time_t *result);

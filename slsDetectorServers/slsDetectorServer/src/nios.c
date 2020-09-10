@@ -2,10 +2,13 @@
 #include "RegisterDefs.h"
 #include "ansi.h"
 #include "clogger.h"
+#include "common.h"
 #include "sls_detector_defs.h"
 
-#include <fcntl.h>    // open
-#include <sys/mman.h> // mmap
+#include <fcntl.h> // open
+#include <string.h>
+#include <sys/mman.h>    // mmap
+#include <sys/utsname.h> // uname
 
 /* global variables */
 u_int32_t *csp0base = 0;
@@ -127,3 +130,49 @@ int mapCSP0(void) {
 }
 
 u_int32_t *Nios_getBaseAddress() { return csp0base; }
+
+int Nios_checkKernelVersion(char *expectedVersion) {
+    // extract kernel date string
+    struct utsname buf;
+    if (uname(&buf) == -1) {
+        LOG(logERROR, ("Could not get kernel version\n"));
+        return FAIL;
+    }
+
+    // remove first word (#version number)
+    const char *ptr = strchr(buf.version, ' ');
+    if (ptr == NULL) {
+        LOG(logERROR, ("Could not parse kernel version\n"));
+        return FAIL;
+    }
+    char output[256];
+    memset(output, 0, 256);
+    strcpy(output, buf.version + (ptr - buf.version + 1));
+
+    // convert kernel date string into time
+    time_t kernelDate;
+    if (GetTimeFromString(output, &kernelDate) == FAIL) {
+        LOG(logERROR, ("Could not parse retrieved kernel date, %s\n", output));
+        return FAIL;
+    }
+
+    // convert expected date into time
+    time_t expDate;
+    if (GetTimeFromString(expectedVersion, &expDate) == FAIL) {
+        LOG(logERROR,
+            ("Could not parse expected kernel date, %s\n", expectedVersion));
+        return FAIL;
+    }
+
+    // compare if kernel time is older than expected time
+    if (kernelDate < expDate) {
+        LOG(logERROR, ("Kernel Version Incompatible (too old)! Expected: [%s], "
+                       "Got [%s]\n",
+                       expectedVersion, output));
+        return FAIL;
+    }
+
+    LOG(logINFOBLUE, ("Kernel Version Compatible: %s [min.: %s]\n", output,
+                      expectedVersion));
+    return OK;
+}

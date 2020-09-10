@@ -614,6 +614,7 @@ class CmdProxy {
         /* Gotthard2 Specific */
         /* Mythen3 Specific */
         /* CTB Specific */
+        {"adc", "slowadc"},
         {"flags", "romode"},
         {"i_a", "im_a"},
         {"i_b", "im_b"},
@@ -938,7 +939,7 @@ class CmdProxy {
         {"im_c", &CmdProxy::im_c},
         {"im_d", &CmdProxy::im_d},
         {"im_io", &CmdProxy::im_io},
-        {"adc", &CmdProxy::SlowAdc},
+        {"slowadc", &CmdProxy::SlowAdc},
         {"extsampling", &CmdProxy::extsampling},
         {"extsamplingsrc", &CmdProxy::extsamplingsrc},
         {"rx_dbitlist", &CmdProxy::ReceiverDbitList},
@@ -1282,11 +1283,13 @@ class CmdProxy {
 
     GET_IND_COMMAND(
         temp_fpgafl, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA2, " °C",
-        "[n_value]\n\t[Eiger]Temperature of the left front end board fpga");
+        "[n_value]\n\t[Eiger]Temperature of the left front end board fpga. "
+        "Cannot call this while blocking acquire is going on.");
 
     GET_IND_COMMAND(
         temp_fpgafr, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA3, " °C",
-        "[n_value]\n\t[Eiger]Temperature of the left front end board fpga");
+        "[n_value]\n\t[Eiger]Temperature of the left front end board fpga. "
+        "Cannot call this while blocking acquire is going on.");
 
     GET_IND_COMMAND(temp_slowadc, getTemperature,
                     slsDetectorDefs::SLOW_ADC_TEMP, " °C",

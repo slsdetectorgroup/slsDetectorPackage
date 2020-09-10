@@ -885,38 +885,6 @@ class Detector(CppDetectorApi):
         self.setDestinationUDPPort2(port)
 
     @property
-    def src_udpmac(self):
-        return element_if_equal(self.getSourceUDPMAC())
-
-    @src_udpmac.setter
-    def src_udpmac(self, mac):
-        self.setSourceUDPMAC(MacAddr(mac))
-
-    @property
-    def src_udpip2(self):
-        return element_if_equal(self.getSourceUDPIP())
-
-    @src_udpip2.setter
-    def src_udpip2(self, ip):
-        self.setSourceUDPIP(IpAddr(ip))
-
-    @property
-    def src_udpip(self):
-        return element_if_equal(self.getSourceUDPIP())
-
-    @src_udpip.setter
-    def src_udpip(self, ip):
-        self.setSourceUDPIP(IpAddr(ip))
-
-    @property
-    def src_udpmac2(self):
-        return element_if_equal(self.getSourceUDPMAC2())
-
-    @src_udpmac2.setter
-    def src_udpmac2(self, mac):
-        self.setSourceUDPMAC2(MacAddr(mac))
-
-    @property
     def highvoltage(self):
         """High voltage to the sensor in Voltage.
 

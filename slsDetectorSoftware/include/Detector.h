@@ -354,12 +354,13 @@ class Detector {
 
     /**
      * (Degrees)
-     * [Gotthard] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA
-     * [Jungfrau] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA
+     * [Gotthard] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA \n
+     * [Jungfrau] Options: TEMPERATURE_ADC, TEMPERATURE_FPGA \n
      * [Eiger] Options: TEMPERATURE_FPGA, TEMPERATURE_FPGAEXT, TEMPERATURE_10GE,
      * TEMPERATURE_DCDC, TEMPERATURE_SODL, TEMPERATURE_SODR, TEMPERATURE_FPGA2,
-     * TEMPERATURE_FPGA3
-     * [CTB] Options: SLOW_ADC_TEMP
+     * TEMPERATURE_FPGA3 \n
+     * Cannot call TEMPERATURE_FPGA2 and TEMPERATURE_FPGA3 when blocking acquire
+     * in progress \n [CTB] Options: SLOW_ADC_TEMP
      */
     Result<int> getTemperature(defs::dacIndex index, Positions pos = {}) const;
 

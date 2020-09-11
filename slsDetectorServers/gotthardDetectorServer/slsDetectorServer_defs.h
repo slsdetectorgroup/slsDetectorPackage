@@ -41,7 +41,7 @@ enum CLKINDEX { ADC_CLK, NUM_CLOCKS };
 #define DYNAMIC_RANGE      (16)
 #define NUM_BITS_PER_PIXEL (DYNAMIC_RANGE / 8)
 #define DATA_BYTES         (NCHIP * NCHAN * NUM_BITS_PER_PIXEL)
-#define CLK_FREQ           (32007729) /* Hz */
+#define CLK_FREQ           (32007729) // Hz
 #define MAX_EXT_SIGNALS    (1)
 
 /** Firmware Definitions */

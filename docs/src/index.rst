@@ -50,6 +50,11 @@ Welcome to slsDetectorPackage's documentation!
     type_traits
     ToString
 
+.. toctree::
+    :caption: Servers
+
+    servers
+
 .. Indices and tables
 .. ==================
 

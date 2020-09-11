@@ -87,3 +87,7 @@ int mapCSP0(void);
  * Get Nios base address
  */
 u_int32_t *Nios_getBaseAddress();
+
+/** check kernel version against expected version string (complain if too old)
+ * @returns OK or FAIL */
+int Nios_checkKernelVersion(char *expectedVersion);

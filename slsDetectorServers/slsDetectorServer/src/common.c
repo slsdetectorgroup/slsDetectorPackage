@@ -1,3 +1,4 @@
+#define _GNU_SOURCE // needed for strptime to be at the top
 #include "common.h"
 #include "clogger.h"
 #include "sls_detector_defs.h"
@@ -58,5 +59,14 @@ int getAbsPath(char *buf, size_t bufSize, char *fname) {
     memset(buf, 0, bufSize);
     sprintf(buf, "%s/%s", dir, fname);
     LOG(logDEBUG1, ("full path for %s: %s\n", fname, buf));
+    return OK;
+}
+
+int GetTimeFromString(char *buf, time_t *result) {
+    struct tm t;
+    if (NULL == strptime(buf, "%a %b %d %H:%M:%S %Z %Y", &t)) {
+        return FAIL;
+    }
+    *result = mktime(&t);
     return OK;
 }

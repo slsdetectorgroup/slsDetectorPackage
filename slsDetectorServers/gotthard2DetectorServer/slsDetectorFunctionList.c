@@ -181,19 +181,7 @@ int checkKernelVersion() {
 #ifdef VIRTUAL
     return OK;
 #endif
-    char output[256];
-    memset(output, 0, 256);
-    FILE *sysFile = popen("uname -a | cut -d ' ' -f5-10", "r");
-    fgets(output, sizeof(output), sysFile);
-    pclose(sysFile);
-
-    if (strstr(output, KERNEL_DATE_VRSN) == NULL) {
-        LOG(logERROR, ("Kernel Version Incompatible! Expected: %s, Got: %s\n",
-                       KERNEL_DATE_VRSN, output));
-        return FAIL;
-    }
-    LOG(logINFO, ("Kernel Version Compatible: %s\n", output));
-    return OK;
+    return Nios_checkKernelVersion(KERNEL_DATE_VRSN);
 }
 
 int checkType() {

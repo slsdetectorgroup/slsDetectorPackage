@@ -1687,13 +1687,17 @@ class CmdProxy {
     INTEGER_COMMAND(
         udp_dstmac, getDestinationUDPMAC, setDestinationUDPMAC, MacAddr,
         "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp "
-        "interface. Can be unused as udp_dstip retrieves it.");
+        "interface. Not mandatory to set as udp_dstip retrieves it from "
+        "slsReceiver process, but must be set if you use a custom receiver "
+        "(not slsReceiver).");
 
     INTEGER_COMMAND(
         udp_dstmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
         "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) "
-        "udp interface where the second half of detector data is sent to. Can "
-        "be unused as udp_dstip2 retrieves it.");
+        "udp interface 2. Not mandatory to set as udp_dstip2 retrieves it from "
+        "slsReceiver process but must be set if you use a custom receiver (not "
+        "slsReceiver). \n [Jungfrau] bottom half \n [Gotthard2] veto debugging "
+        "\n");
 
     INTEGER_COMMAND(udp_dstport, getDestinationUDPPort, setDestinationUDPPort,
                     StringTo<int>,

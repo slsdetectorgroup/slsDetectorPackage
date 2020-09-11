@@ -1112,10 +1112,10 @@ std::string CmdProxy::UDPDestinationIP2(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[x.x.x.x] or auto\n\t[Jungfrau] Ip address of the receiver "
-              "(destination) udp interface where the second half of detector "
-              "data is sent to. If 'auto' used, then ip is set to ip of "
-              "rx_hostname."
+        os << "[x.x.x.x] or auto\n\t[Jungfrau][Gotthard2] Ip address of the "
+              "receiver (destination) udp interface 2. If 'auto' used, then ip "
+              "is set to ip of rx_hostname.\n\t[Jungfrau] bottom half "
+              "\n\t[Gotthard2] veto debugging. "
            << '\n';
     } else if (action == defs::GET_ACTION) {
         auto t = det->getDestinationUDPIP2({det_id});

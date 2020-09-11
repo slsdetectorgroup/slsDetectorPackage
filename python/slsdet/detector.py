@@ -809,6 +809,17 @@ class Detector(CppDetectorApi):
 
     @property
     def udp_dstip(self):
+        """
+        Ip address of the receiver (destination) udp interface. 
+        Note
+        ----
+        If 'auto' used, then ip is set to ip of rx_hostname.
+        Example
+        ------
+        >>> d.udp_dstip = '192.168.1.110'
+        >>> d.udp_dstip
+        192.168.1.110
+        """
         return element_if_equal(self.getDestinationUDPIP())
 
     @udp_dstip.setter
@@ -819,6 +830,19 @@ class Detector(CppDetectorApi):
 
     @property
     def udp_dstip2(self):
+        """
+        [Jungfrau][Gotthard2] Ip address of the receiver (destination) udp interface 2.
+        Note
+        ----
+        [Jungfrau] bottom half \n
+        [Gotthard2] veto debugging \n
+        If 'auto' used, then ip is set to ip of rx_hostname.
+        Example
+        ------
+        >>> d.udp_dstip2 = '10.1.1.185'
+        >>> d.udp_dstip2
+        10.1.1.185
+        """
         return element_if_equal(self.getDestinationUDPIP2())
 
     @udp_dstip2.setter
@@ -829,6 +853,17 @@ class Detector(CppDetectorApi):
 
     @property
     def udp_dstmac(self):
+        """
+        Mac address of the receiver (destination) udp interface. 
+        Note
+        ----
+        Not mandatory to set as udp_dstip retrieves it from slsReceiver process but must be set if you use a custom receiver (not slsReceiver).
+        Example
+        -------
+        >>> d.udp_dstmac = '00:1b:31:01:8a:de'
+        d.udp_dstmac
+        00:1b:31:01:8a:de
+        """
         return element_if_equal(self.getDestinationUDPMAC())
 
     @udp_dstmac.setter
@@ -837,6 +872,19 @@ class Detector(CppDetectorApi):
 
     @property
     def udp_dstmac2(self):
+        """
+        [Jungfrau][Gotthard2] Mac address of the receiver (destination) udp interface 2.
+        Note
+        ----
+        Not mandatory to set as udp_dstip2 retrieves it from slsReceiver process but must be set if you use a custom receiver (not slsReceiver).
+        [Jungfrau] bottom half \n
+        [Gotthard2] veto debugging \n
+        Example
+        ------
+        >>> d.udp_dstmac2 = '00:1b:31:01:8a:de'
+        d.udp_dstmac2
+        00:1b:31:01:8a:de
+        """
         return element_if_equal(self.getDestinationUDPMAC2())
 
     @udp_dstmac2.setter

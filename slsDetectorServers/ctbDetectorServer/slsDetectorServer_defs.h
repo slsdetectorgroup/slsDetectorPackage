@@ -95,7 +95,7 @@ enum CLKINDEX { RUN_CLK, ADC_CLK, SYNC_CLK, DBIT_CLK, NUM_CLOCKS };
 #define NDAC_ONLY               (NDAC - NPWR)
 #define DYNAMIC_RANGE           (16)
 #define NUM_BYTES_PER_PIXEL     (DYNAMIC_RANGE / 8)
-#define CLK_FREQ                (156.25) /* MHz */
+#define CLK_FREQ                (156.25) // MHz
 #define I2C_POWER_VIO_DEVICE_ID (0x40)
 #define I2C_POWER_VA_DEVICE_ID  (0x41)
 #define I2C_POWER_VB_DEVICE_ID  (0x42)

@@ -6,7 +6,7 @@ from pathlib import Path
 
 src = Path('@CMAKE_SOURCE_DIR@')/'slsDetectorServers/'
 
-detectors = ['Mythen3', 'Gotthard2', 'Eiger', 'Jungfrau', 'Moench', 'Gotthard']
+detectors = ['Mythen3', 'Gotthard2', 'Eiger', 'Jungfrau', 'Moench', 'Gotthard', 'Ctb']
 
 
 for det in detectors:

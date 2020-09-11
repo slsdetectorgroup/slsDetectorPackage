@@ -81,3 +81,5 @@ add_custom_target(rst
               ${SPHINX_BUILD}/src 
               ${SPHINX_BUILD}/html
               COMMENT "Generating documentation with Sphinx")
+
+add_custom_target(server_rst python gen_server_doc.py)

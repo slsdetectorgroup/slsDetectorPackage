@@ -27,6 +27,14 @@ Moench
    :widths: 35, 35
    :header-rows: 1
 
+Ctb
+-------------
+
+.. csv-table:: Default values
+   :file: ctb.csv
+   :widths: 35, 35
+   :header-rows: 1
+
 Eiger
 -------------
 

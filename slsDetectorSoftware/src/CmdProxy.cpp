@@ -1222,7 +1222,8 @@ std::string CmdProxy::Threshold(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[eV] [(optinal settings) standard, lowgain, veryhighgain, "
               "verylowgain]"
-              "\n\t[Eiger] Threshold in eV"
+              "\n\t[Eiger] Threshold in eV. It loads trim files from "
+              "settingspath."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {

@@ -1209,6 +1209,12 @@ class Detector(CppDetectorApi):
 
     @property
     def threshold(self):
+        """[Eiger] Threshold in eV
+        Note
+        ----
+        To change settings as well or set threshold without trimbits, use setThresholdEnergy.
+        :setter: It loads trim files from settingspath.
+        """
         return element_if_equal(self.getThresholdEnergy())
 
     @threshold.setter
@@ -1217,6 +1223,15 @@ class Detector(CppDetectorApi):
 
     @property
     def timing(self):
+        """
+        Set Timing Mode of detector. Enum: timingMode
+        Note
+        -----
+        Default: AUTO_TIMING \n
+        [Jungfrau][Gotthard][Ctb][Moench][Gotthard2] AUTO_TIMING, TRIGGER_EXPOSURE \n
+        [Mythen3] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n
+        [Eiger] AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
+        """
         return element_if_equal(self.getTimingMode())
 
     @timing.setter
@@ -1355,6 +1370,7 @@ class Detector(CppDetectorApi):
 
     @property
     def tengiga(self):
+        """[Eiger][Ctb][Moench][Mythen3] 10GbE Enable."""
         return element_if_equal(self.getTenGiga())
 
     @tengiga.setter

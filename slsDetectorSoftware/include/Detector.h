@@ -231,9 +231,9 @@ class Detector {
     Result<defs::timingMode> getTimingMode(Positions pos = {}) const;
 
     /**
-     * [Gotthard][Jungfrau][CTB][Moench][Mythen3] Options:
-     * AUTO_TIMING, TRIGGER_EXPOSURE
-     * [Gotthard2] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED
+     * [Gotthard][Jungfrau][Gotthard][CTB][Moench][Gotthard2] Options:
+     * AUTO_TIMING, TRIGGER_EXPOSURE \n
+     * [Mythen3] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, TRIGGER_GATED \n
      * [Eiger] Options: AUTO_TIMING, TRIGGER_EXPOSURE, GATED, BURST_TRIGGER
      */
     void setTimingMode(defs::timingMode value, Positions pos = {});
@@ -367,9 +367,11 @@ class Detector {
     /** gets list of dac enums for this detector */
     std::vector<defs::dacIndex> getDacList() const;
 
-    Result<int> getDAC(defs::dacIndex index, bool mV = false, Positions pos = {}) const;
+    Result<int> getDAC(defs::dacIndex index, bool mV = false,
+                       Positions pos = {}) const;
 
-    void setDAC(defs::dacIndex index, int value, bool mV = false, Positions pos = {});
+    void setDAC(defs::dacIndex index, int value, bool mV = false,
+                Positions pos = {});
 
     /* [Gotthard2] */
     Result<int> getOnChipDAC(defs::dacIndex index, int chipIndex,
@@ -851,7 +853,7 @@ class Detector {
     /** [Eiger] */
     Result<int> getThresholdEnergy(Positions pos = {}) const;
 
-    /** [Eiger] */
+    /** [Eiger] It loads trim files from settingspath */
     void setThresholdEnergy(int threshold_ev,
                             defs::detectorSettings settings = defs::STANDARD,
                             bool trimbits = true, Positions pos = {});

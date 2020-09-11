@@ -1208,8 +1208,8 @@ class CmdProxy {
     INTEGER_COMMAND(timing, getTimingMode, setTimingMode,
                     sls::StringTo<slsDetectorDefs::timingMode>,
                     "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of "
-                    "detector.\n\t[Jungfrau][Gotthard][Mythen3][Ctb][Moench] "
-                    "[auto|trigger]\n\t[Gotthard2] "
+                    "detector.\n\t[Jungfrau][Gotthard][Ctb][Moench][Gotthard2] "
+                    "[auto|trigger]\n\t[Mythen3] "
                     "[auto|trigger|gating|trigger_gating]\n\t[Eiger] "
                     "[auto|trigger|gating|burst_trigger]");
 

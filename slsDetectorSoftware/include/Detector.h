@@ -80,6 +80,8 @@ class Detector {
 
     Result<int64_t> getReceiverVersion(Positions pos = {}) const;
 
+    /** Options: EIGER, JUNGFRAU, GOTTHARD, MOENCH, MYTHEN3, GOTTHARD2,
+     * CHIPTESTBOARD */
     Result<defs::detectorType> getDetectorType(Positions pos = {}) const;
 
     /** Gets the total number of detectors */
@@ -118,7 +120,8 @@ class Detector {
      */
     void setSettings(defs::detectorSettings value, Positions pos = {});
 
-    /** [Eiger][Mythen3] */
+    /** [Eiger][Mythen3] If no extension specified, serial number of each module
+     * is attached. */
     void loadTrimbits(const std::string &fname, Positions pos = {});
 
     /** [Eiger][Mythen3] -1 if they are all different */
@@ -903,7 +906,8 @@ class Detector {
     /**[Eiger] Returns energies in eV where the module is trimmed */
     Result<std::vector<int>> getTrimEnergies(Positions pos = {}) const;
 
-    /** [Eiger] Set the energies where the detector is trimmed */
+    /** [Eiger] List of trim energies, where corresponding default trim files
+     * exist in corresponding trim folders */
     void setTrimEnergies(std::vector<int> energies, Positions pos = {});
 
     /** [Eiger] deadtime in ns, 0 = disabled */

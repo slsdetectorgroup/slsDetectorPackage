@@ -1125,7 +1125,8 @@ class CmdProxy {
                     "\n\tReceiver version in format [0xYYMMDD].");
 
     GET_COMMAND(type, getDetectorType,
-                "\n\tSerial number or MAC of detector (hex).");
+                "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, "
+                "Moench, Mythen3, Gotthard2, ChipTestBoard");
 
     GET_COMMAND_NOID(nmod, size, "\n\tNumber of modules in shared memory.");
 
@@ -1170,8 +1171,8 @@ class CmdProxy {
 
     INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
                          StringTo<int64_t>,
-                         "[n_triggers]\n\tNumber of triggers per aquire. Use "
-                         "timing command to set timing mode.");
+                         "[n_triggers]\n\tNumber of triggers per aquire. Set "
+                         "timing mode to use triggers.");
 
     TIME_COMMAND(
         period, getPeriod, setPeriod,

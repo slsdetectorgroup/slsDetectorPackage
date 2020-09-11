@@ -272,6 +272,7 @@ class Detector(CppDetectorApi):
 
     @property
     def triggers(self):
+        """Number of triggers per aquire. Set timing mode to use triggers."""
         return element_if_equal(self.getNumberOfTriggers())
 
     @triggers.setter
@@ -965,6 +966,17 @@ class Detector(CppDetectorApi):
 
     @property
     def trimbits(self):
+        """
+        [Eiger][Mythen3] Loads custom trimbit file to detector. 
+        Note
+        -----
+        If no extension specified, serial number of each module is attached.
+        :getter: Not implemented
+        Example
+        -------
+        >>> d.trimbits = '/path_to_file/noise'
+        - 14:53:27.931 INFO: Settings file loaded: /path_to_file/noise.sn000
+        """
         return NotImplementedError("trimbits are set only")
 
     @trimbits.setter
@@ -1240,6 +1252,16 @@ class Detector(CppDetectorApi):
 
     @property
     def trimen(self):
+        """
+        [Eiger] List of trim energies, where corresponding default trim files exist in corresponding trim folders.
+        Example
+        ------
+        >>> d.trimen
+        []
+        >>> d.trimen = [4500, 5400, 6400]
+        >>> d.trimen
+        [4500, 5400, 6400]
+        """
         return element_if_equal(self.getTrimEnergies())
 
     @trimen.setter
@@ -1256,6 +1278,12 @@ class Detector(CppDetectorApi):
 
     @property
     def type(self):
+        """ Returns detector type. Enum: detectorType
+        Note
+        ----
+        :setter: Not implemented
+        Values: EIGER, JUNGFRAU, GOTTHARD, MOENCH, MYTHEN3, GOTTHARD2, CHIPTESTBOARD
+        """
         return element_if_equal(self.getDetectorType())
 
     @property

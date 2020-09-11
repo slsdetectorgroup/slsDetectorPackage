@@ -63,9 +63,12 @@ configure_file(
   "${SPHINX_BUILD}/gen_server_doc.py"
   @ONLY)
 
+
+add_custom_target(server_rst python gen_server_doc.py)  
+
 add_custom_target(docs
               gendoc
-              python gen_server_doc.py
+              COMMAND python gen_server_doc.py
               COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
               COMMAND ${SPHINX_EXECUTABLE} -a -b html
               -Dbreathe_projects.slsDetectorPackage=${CMAKE_CURRENT_BINARY_DIR}/xml
@@ -82,4 +85,3 @@ add_custom_target(rst
               ${SPHINX_BUILD}/html
               COMMENT "Generating documentation with Sphinx")
 
-add_custom_target(server_rst python gen_server_doc.py)

@@ -23,7 +23,7 @@ Moench
 -------------
 
 .. csv-table:: Default values
-   :file: moech.csv
+   :file: moench.csv
    :widths: 35, 35
    :header-rows: 1
 

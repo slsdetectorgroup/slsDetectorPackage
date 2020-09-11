@@ -2,15 +2,21 @@ import os
 import re
 from pathlib import Path
 
+
+
 # @CMAKE_CURRENT_BINARY_DIR@
 
-src = Path('@CMAKE_SOURCE_DIR@')/'slsDetectorServers/'
+print('\n\n\n\n SERVER CSV')
 
-detectors = ['Mythen3', 'Gotthard2', 'Eiger', 'Jungfrau', 'Moench', 'Gotthard', 'Ctb']
+src = Path('@CMAKE_SOURCE_DIR@')/'slsDetectorServers/'
+detectors = ['Mythen3', 'Gotthard2', 'Eiger', 
+            'Jungfrau', 'Moench', 'Gotthard', 'Ctb']
 
 
 for det in detectors:
-    with open(src/f'{det.lower()}DetectorServer/slsDetectorServer_defs.h') as f:
+    in_fname = src/f'{det.lower()}DetectorServer/slsDetectorServer_defs.h'
+    print(f'Reading: {in_fname}')
+    with open(in_fname) as f:
         lines = f.read().replace('\\\n', '')
         lines = lines.splitlines(keepends = True)
 
@@ -38,6 +44,10 @@ for det in detectors:
 
 
     rstpath = Path('@CMAKE_SOURCE_DIR@')/'docs/src/'
-    with open(f'src/{det.lower()}.csv', 'w') as f:
+
+    out_fname = Path.cwd()/f'src/{det.lower()}.csv'
+    print(f'Writing: {out_fname}')
+    with open(out_fname, 'w') as f:
         f.writelines(output)
 
+print('END\n\n\n\n')

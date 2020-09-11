@@ -35,19 +35,20 @@ class Detector {
      */
     Detector(int shm_id = 0);
     ~Detector();
-
+    /** @name Configuration */
+    ///@{
     /**************************************************
      *                                                *
      *    Configuration                               *
      *                                                *
      * ************************************************/
 
-    /* Free the shared memory of this detector and all modules
-     * belonging to it */
+    /** Free the shared memory of this detector and all modules
+    belonging to it */
     void freeSharedMemory();
 
     /** Frees shared memory before loading configuration file. Set up once
-     * normally */
+    normally */
     void loadConfig(const std::string &fname);
 
     /** Shared memory not freed prior. Set up per measurement. */
@@ -57,7 +58,7 @@ class Detector {
 
     Result<std::string> getHostname(Positions pos = {}) const;
 
-    /* Frees shared memory, adds detectors to the list */
+    /**Frees shared memory, adds detectors to the list */
     void setHostname(const std::vector<std::string> &hostname);
 
     /** connects to n servers at local host starting at specific control port */
@@ -95,7 +96,7 @@ class Detector {
     defs::xy getDetectorSize() const;
 
     /**
-     * Sets the detector size in both dimensions.
+     * Sets the detector size in both dimensions. \n
      * This value is used to calculate row and column positions for each module.
      */
     void setDetectorSize(const defs::xy value);
@@ -107,12 +108,12 @@ class Detector {
     Result<defs::detectorSettings> getSettings(Positions pos = {}) const;
 
     /** [Jungfrau] DYNAMICGAIN, DYNAMICHG0, FIXGAIN1, FIXGAIN2,
-     * FORCESWITCHG1, FORCESWITCHG2 [Gotthard] \n DYNAMICGAIN, HIGHGAIN,
-     * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN [Gotthard2] \n DYNAMICGAIN,
-     * FIXGAIN1, FIXGAIN2 [Moench] \n G1_HIGHGAIN, G1_LOWGAIN,
+     * FORCESWITCHG1, FORCESWITCHG2 \n [Gotthard] DYNAMICGAIN, HIGHGAIN,
+     * LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN \n [Gotthard2] DYNAMICGAIN,
+     * FIXGAIN1, FIXGAIN2 \n [Moench] G1_HIGHGAIN, G1_LOWGAIN,
      * G2_HIGHCAP_HIGHGAIN, G2_HIGHCAP_LOWGAIN, G2_LOWCAP_HIGHGAIN,
      * G2_LOWCAP_LOWGAIN, G4_HIGHGAIN, G4_LOWGAIN \n [Eiger] Use threshold
-     * command \n [Eiger settings loaded from file found in
+     * command. Settings loaded from file found in
      * settingspath
      */
     void setSettings(defs::detectorSettings value, Positions pos = {});
@@ -135,15 +136,17 @@ class Detector {
      * streaming, receiver file or streaming. Default is disabled.
      */
     void setGapPixelsinCallback(const bool enable);
+    ///@{
 
+    /** @name Callbacks */
+    ///@{
     /**************************************************
      *                                                *
      *    Callbacks                                   *
      *                                                *
      * ************************************************/
 
-    /**
-     * register callback for end of acquisition
+    /** register callback for end of acquisition
      * @param func function to be called with parameters:
      * current progress in percentage, detector status, pArg pointer
      * @param pArg pointer that is returned in call back
@@ -164,7 +167,10 @@ class Detector {
     void registerDataCallback(void (*func)(detectorData *, uint64_t, uint32_t,
                                            void *),
                               void *pArg);
+    ///@{
 
+    /** @name Acquisition Parameters */
+    ///@{
     /**************************************************
      *                                                *
      *    Acquisition Parameters                      *
@@ -373,11 +379,11 @@ class Detector {
     void setDAC(defs::dacIndex index, int value, bool mV = false,
                 Positions pos = {});
 
-    /* [Gotthard2] */
+    /**[Gotthard2] */
     Result<int> getOnChipDAC(defs::dacIndex index, int chipIndex,
                              Positions pos = {}) const;
 
-    /* [Gotthard2] */
+    /**[Gotthard2] */
     void setOnChipDAC(defs::dacIndex index, int chipIndex, int value,
                       Positions pos = {});
 
@@ -403,7 +409,10 @@ class Detector {
      * [Mythen3] If exposure time is too short, acquisition will return with an
      * ERROR and take fewer frames than expected */
     void setParallelMode(bool value, Positions pos = {});
+    ///@{
 
+    /** @name Acquisition */
+    ///@{
     /**************************************************
      *                                                *
      *    Acquisition                                 *
@@ -473,7 +482,10 @@ class Detector {
     /** gets scan error message in case of error during scan in case of non
      * blocking acquisition (startDetector, not acquire) */
     Result<std::string> getScanErrorMessage(Positions pos = {}) const;
+    ///@{
 
+    /** @name Network Configuration (Detector<->Receiver) */
+    ///@{
     /**************************************************
      *                                                 *
      *    Network Configuration (Detector<->Receiver)  *
@@ -504,7 +516,7 @@ class Detector {
 
     Result<IpAddr> getSourceUDPIP(Positions pos = {}) const;
 
-    /* For Eiger 1G, the detector will replace with its own DHCP IP
+    /**For Eiger 1G, the detector will replace with its own DHCP IP
      * 10G Eiger and other detectors, the source UDP IP must be in the
      * same subnet of the destination UDP IP
      */
@@ -518,7 +530,7 @@ class Detector {
 
     Result<MacAddr> getSourceUDPMAC(Positions pos = {}) const;
 
-    /* For Eiger 1G, the detector will replace with its own DHCP MAC
+    /**For Eiger 1G, the detector will replace with its own DHCP MAC
      * For Eiger 10G, the detector will replace with its own DHCP MAC + 1
      * Others can be anything (beware of certain bits)
      */
@@ -621,10 +633,13 @@ class Detector {
      * port
      */
     void setTransmissionDelayRight(int value, Positions pos = {});
+    ///@{
 
+    /** @name Receiver Configuration */
+    ///@{
     /**************************************************
      *                                                *
-     *    Receiver Config                             *
+     *    Receiver Configuration                      *
      *                                                *
      * ************************************************/
 
@@ -703,7 +718,10 @@ class Detector {
 
     Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
     getRxThreadIds(Positions pos = {}) const;
+    ///@{
 
+    /** @name File */
+    ///@{
     /**************************************************
      *                                                *
      *    File                                        *
@@ -740,7 +758,7 @@ class Detector {
 
     Result<bool> getMasterFileWrite(Positions pos = {}) const;
 
-    /* default enabled */
+    /**default enabled */
     void setMasterFileWrite(bool value, Positions pos = {});
 
     Result<bool> getFileOverWrite(Positions pos = {}) const;
@@ -753,7 +771,10 @@ class Detector {
     /** Default depends on detector type. \n 0 will set frames per file to
      * unlimited */
     void setFramesPerFile(int n, Positions pos = {});
+    ///@{
 
+    /** @name ZMQ Streaming Parameters (Receiver<->Client) */
+    ///@{
     /**************************************************
      *                                                *
      *    ZMQ Streaming Parameters (Receiver<->Client)*
@@ -831,7 +852,10 @@ class Detector {
     Result<IpAddr> getClientZmqIp(Positions pos = {}) const;
 
     void setClientZmqIp(const IpAddr ip, Positions pos = {});
+    ///@{
 
+    /** @name Eiger Specific */
+    ///@{
     /**************************************************
      *                                                *
      *    Eiger Specific                              *
@@ -953,7 +977,10 @@ class Detector {
 
     /** [Eiger] with specific quad hardware */
     void setQuad(const bool enable);
+    ///@{
 
+    /** @name Jungfrau Specific */
+    ///@{
     /**************************************************
      *                                                *
      *    Jungfrau Specific                           *
@@ -1022,7 +1049,10 @@ class Detector {
     /** [Jungfrau] Advanced \n
      * Options: (0-1638375 ns (resolution of 25ns) */
     void setStorageCellDelay(ns value, Positions pos = {});
+    ///@{
 
+    /** @name Gotthard Specific */
+    ///@{
     /**************************************************
      *                                                *
      *    Gotthard Specific                           *
@@ -1045,7 +1075,10 @@ class Detector {
 
     /** [Gotthard] */
     Result<ns> getExptimeLeft(Positions pos = {}) const;
+    ///@{
 
+    /** @name Gotthard2 Specific */
+    ///@{
     /**************************************************
      *                                                *
      *    Gotthard2 Specific                          *
@@ -1140,7 +1173,10 @@ class Detector {
 
     /** [Gotthard2] */
     void setBadChannels(const std::string &fname, Positions pos = {});
+    ///@{
 
+    /** @name Mythen3 Specific */
+    ///@{
     /**************************************************
      *                                                *
      *    Mythen3 Specific                            *
@@ -1181,7 +1217,10 @@ class Detector {
     /** [Mythen3] gate delay for all gates in auto or trigger timing mode
      * (internal gating). Gate index: 0-2, -1 for all */
     Result<std::array<ns, 3>> getGateDelayForAllGates(Positions pos = {}) const;
+    ///@{
 
+    /** @name CTB / Moench Specific */
+    ///@{
     /**************************************************
      *                                                *
      *    CTB / Moench Specific                       *
@@ -1236,7 +1275,10 @@ class Detector {
 
     /** [CTB][Moench] */
     void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
+    ///@{
 
+    /** @name CTB Specific */
+    ///@{
     /**************************************************
      *                                                *
      *    CTB Specific                                *
@@ -1320,7 +1362,10 @@ class Detector {
 
     /** [CTB] Default is enabled. */
     void setLEDEnable(bool enable, Positions pos = {});
+    ///@{
 
+    /** @name Pattern */
+    ///@{
     /**************************************************
      *                                                *
      *    Pattern                                     *
@@ -1369,7 +1414,7 @@ class Detector {
      * levels */
     void setPatternLoopCycles(int level, int n, Positions pos = {});
 
-    /* [CTB][Moench][Mythen3] */
+    /**[CTB][Moench][Mythen3] */
     Result<int> getPatternWaitAddr(int level, Positions pos = {}) const;
 
     /** [CTB][Moench][Mythen3] Options: level 0-2 */
@@ -1397,7 +1442,10 @@ class Detector {
 
     /** [Mythen3] */
     void startPattern(Positions pos = {});
+    ///@{
 
+    /** @name Moench specific */
+    ///@{
     /**************************************************
      *                                                *
      *    Moench specific                             *
@@ -1426,7 +1474,10 @@ class Detector {
     void setAdditionalJsonParameter(const std::string &key,
                                     const std::string &value,
                                     Positions pos = {});
+    ///@{
 
+    /** @name Advanced */
+    ///@{
     /**************************************************
      *                                                *
      *    Advanced                                    *
@@ -1506,7 +1557,10 @@ class Detector {
 
     /** [CTB][Moench][Jungfrau] Advanced user Function! */
     void setADCInvert(uint32_t value, Positions pos = {});
+    ///@{
 
+    /** @name Insignificant */
+    ///@{
     /**************************************************
      *                                                *
      *    Insignificant                               *
@@ -1552,6 +1606,7 @@ class Detector {
     std::string getUserDetails() const;
 
     Result<uint64_t> getRxCurrentFrameIndex(Positions pos = {}) const;
+    ///@{
 
   private:
     std::vector<int> getPortNumbers(int start_port);

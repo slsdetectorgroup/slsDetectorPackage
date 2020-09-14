@@ -130,7 +130,7 @@ enum MASTERINDEX { MASTER_HARDWARE, OW_MASTER, OW_SLAVE };
 #define DAC_MAX_STEPS   (4096)
 
 #define MAX_SUBFRAME_EXPOSURE_VAL_IN_10NS                                      \
-    (0x1FFFFFFF) /** 29 bit register for max subframe exposure value */
+(0x1FFFFFFF) // 29 bit register for max subframe exposure value
 
 #define SLAVE_HIGH_VOLTAGE_READ_VAL (-999)
 #define HIGH_VOLTAGE_TOLERANCE      (5)

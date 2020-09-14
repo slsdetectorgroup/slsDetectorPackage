@@ -1,0 +1,53 @@
+import os 
+import re
+from pathlib import Path
+
+
+
+# @CMAKE_CURRENT_BINARY_DIR@
+
+print('\n\n\n\n SERVER CSV')
+
+src = Path('@CMAKE_SOURCE_DIR@')/'slsDetectorServers/'
+detectors = ['Mythen3', 'Gotthard2', 'Eiger', 
+            'Jungfrau', 'Moench', 'Gotthard', 'Ctb']
+
+
+for det in detectors:
+    in_fname = src/f'{det.lower()}DetectorServer/slsDetectorServer_defs.h'
+    print(f'Reading: {in_fname}')
+    with open(in_fname) as f:
+        lines = f.read().replace('\\\n', '')
+        lines = lines.splitlines(keepends = True)
+
+    lines = [l.strip('#define').strip(' ') for l in lines if l.startswith('#define')]
+    output = []
+    signals = []
+    fields = ['Name,', 'Value', 'Comment']
+    excluded = ['DAC_NAMES', 'DEFAULT_DAC_VALS', 'CLK_NAMES', 'ONCHIP_DAC_NAMES']
+    header = f'{fields[0]:35}{fields[1]:35}\n'
+    output.append(header)
+    signals.append(header)
+    for line in lines:
+        name, *parts = line.split()
+        arg = ' '.join(parts)
+        value, *comments = arg.split('//') 
+        value = value.strip('() ')
+        # value = value.replace(', ', ' ')
+        value = value.replace('\"', '')
+        if name not in excluded:
+            name += ','
+            if name.startswith('SIGNAL_'):
+                signals.append(f'{name:35}{value}\n')
+            else:
+                output.append(f'{name:35}\"{value}\"\n')
+
+
+    rstpath = Path('@CMAKE_SOURCE_DIR@')/'docs/src/'
+
+    out_fname = Path.cwd()/f'src/{det.lower()}.csv'
+    print(f'Writing: {out_fname}')
+    with open(out_fname, 'w') as f:
+        f.writelines(output)
+
+print('END\n\n\n\n')

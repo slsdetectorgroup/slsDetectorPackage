@@ -38,6 +38,7 @@ set(SPHINX_SOURCE_FILES
   src/pydetector.rst
   src/pyenums.rst
   src/pyexamples.rst
+  src/servers.rst
   src/receiver.rst
   src/result.rst
   src/type_traits.rst
@@ -57,8 +58,21 @@ configure_file(
   "${SPHINX_BUILD}/conf.py"
   @ONLY)
 
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/gen_server_doc.py.in"
+  "${SPHINX_BUILD}/gen_server_doc.py"
+  @ONLY)
+
+  configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/static/extra.css"
+  "${SPHINX_BUILD}/static/css/extra.css"
+  @ONLY)
+
+add_custom_target(server_rst python gen_server_doc.py)  
+
 add_custom_target(docs
               gendoc
+              COMMAND python gen_server_doc.py
               COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
               COMMAND ${SPHINX_EXECUTABLE} -a -b html
               -Dbreathe_projects.slsDetectorPackage=${CMAKE_CURRENT_BINARY_DIR}/xml
@@ -74,3 +88,4 @@ add_custom_target(rst
               ${SPHINX_BUILD}/src 
               ${SPHINX_BUILD}/html
               COMMENT "Generating documentation with Sphinx")
+

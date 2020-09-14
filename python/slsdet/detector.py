@@ -174,6 +174,7 @@ class Detector(CppDetectorApi):
 
     @property
     def clientversion(self):
+        """Client software version in format [YYMMDD]"""
         return self.getClientVersion()
 
     @property
@@ -1256,6 +1257,16 @@ class Detector(CppDetectorApi):
     def acquire(self):
         """
         Run the configured measurement
+        Note
+        ----
+        Blocking command, where control server is blocked and cannot accept other commands until acquisition is done. \n
+        - sets acquiring flag
+        - starts the receiver listener (if enabled)
+        - starts detector acquisition for number of frames set
+        - monitors detector status from running to idle
+        - stops the receiver listener (if enabled)
+        - increments file index if file write enabled
+        - resets acquiring flag
         """
         super().acquire()
         print('\n', end = '')

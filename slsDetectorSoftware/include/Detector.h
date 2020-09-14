@@ -424,12 +424,14 @@ class Detector {
     /**
      * Blocking call: Acquire the number of frames set
      * - sets acquiring flag
-     * - starts the receiver listener
+     * - starts the receiver listener (if enabled)
      * - starts detector acquisition for number of frames set
      * - monitors detector status from running to idle
-     * - stops the receiver listener
+     * - stops the receiver listener (if enabled)
      * - increments file index if file write enabled
      * - resets acquiring flag
+     * Control server is blocked and cannot accept other commands until
+     * acquisition is done.
      */
     void acquire();
 

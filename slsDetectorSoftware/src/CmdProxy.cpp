@@ -182,7 +182,15 @@ std::string CmdProxy::VirtualServer(int action) {
 std::string CmdProxy::Acquire(int action) {
     std::ostringstream os;
     if (action == defs::HELP_ACTION) {
-        os << cmd << "\n\tAcquire the number of frames set up.\n";
+        os << cmd
+           << "\n\tAcquire the number of frames set up.\n\tBlocking command, "
+              "where control server is blocked and cannot accept other "
+              "commands until acquisition is done. \n\t- sets acquiring "
+              "flag\n\t- starts the receiver listener (if enabled)\n\t- starts "
+              "detector acquisition for number of frames set\n\t- monitors "
+              "detector status from running to idle\n\t- stops the receiver "
+              "listener (if enabled)\n\t- increments file index if file write "
+              "enabled\n\t- resets acquiring flag";
     } else {
         if (det->empty()) {
             throw sls::RuntimeError(

@@ -520,15 +520,16 @@ class Detector {
     Result<IpAddr> getSourceUDPIP(Positions pos = {}) const;
 
     /**For Eiger 1G, the detector will replace with its own DHCP IP
-     * 10G Eiger and other detectors, the source UDP IP must be in the
+     * 10G Eiger and other detectors. The source UDP IP must be in the
      * same subnet of the destination UDP IP
      */
     void setSourceUDPIP(const IpAddr ip, Positions pos = {});
 
-    /** [Jungfrau] bottom half */
+    /** [Jungfrau] bottom half [Gotthard2] veto debugging */
     Result<IpAddr> getSourceUDPIP2(Positions pos = {}) const;
 
-    /** [Jungfrau] bottom half */
+    /** [Jungfrau] bottom half [Gotthard2] veto debugging. \n The source UDP IP
+     * must be in the same subnet of the destination UDP IP2 */
     void setSourceUDPIP2(const IpAddr ip, Positions pos = {});
 
     Result<MacAddr> getSourceUDPMAC(Positions pos = {}) const;
@@ -537,13 +538,12 @@ class Detector {
      * For Eiger 10G, the detector will replace with its own DHCP MAC + 1
      * Others can be anything (beware of certain bits)
      */
-
     void setSourceUDPMAC(const MacAddr mac, Positions pos = {});
 
-    /** [Jungfrau] bottom half */
+    /** [Jungfrau] bottom half [Gotthard2] veto debugging */
     Result<MacAddr> getSourceUDPMAC2(Positions pos = {}) const;
 
-    /** [Jungfrau] bottom half */
+    /** [Jungfrau] bottom half [Gotthard2] veto debugging */
     void setSourceUDPMAC2(const MacAddr mac, Positions pos = {});
 
     Result<IpAddr> getDestinationUDPIP(Positions pos = {}) const;
@@ -577,17 +577,16 @@ class Detector {
 
     Result<int> getDestinationUDPPort(Positions pos = {}) const;
 
-    /** module_id is -1 for all detectors, ports for each module is calculated
-     * (increments) */
+    /** Default is 50001. \n If module_id is -1, ports for each module is
+     * calculated (incremented by 1 if no 2nd interface) */
     void setDestinationUDPPort(int port, int module_id = -1);
 
-    /** [Eiger right port][Jungfrau bottom half] */
+    /** [Eiger] right port[Jungfrau] bottom half [Gotthard2] veto debugging */
     Result<int> getDestinationUDPPort2(Positions pos = {}) const;
 
-    /** [Eiger right port][Jungfrau bottom half]
-     * module_id is -1 for all detectors, ports for each module is calculated
-     * (increments)
-     */
+    /** [Eiger] right port[Jungfrau] bottom half [Gotthard2] veto debugging \n
+     * Default is 50002. \n If module_id is -1, ports for each module is
+     * calculated (incremented by 1 if no 2nd interface)*/
     void setDestinationUDPPort2(int port, int module_id = -1);
 
     void reconfigureUDPDestination(Positions pos = {});
@@ -831,10 +830,10 @@ class Detector {
 
     /** Zmq port for data to be streamed out of the receiver. \n
      * Also restarts receiver zmq streaming if enabled. \n Default is 30001. \n
-     * Modified only when using an intermediate process after receiver. \n Must
-     * be different for every detector (and udp port). \n module_id is -1 for
-     * all detectors, ports for each module is calculated (increments) Restarts
-     * receiver zmq sockets only if it was already enabled
+     * Must be different for every detector (and udp port). \n module_id is -1
+     * for all detectors, ports for each module is calculated (increment by 1 if
+     * no 2nd interface). \n Restarts receiver zmq sockets only if it was
+     * already enabled
      */
     void setRxZmqPort(int port, int module_id = -1);
 
@@ -848,16 +847,22 @@ class Detector {
 
     Result<int> getClientZmqPort(Positions pos = {}) const;
 
-    /**
-     * Modified only when using an intermediate process between receiver and
-     * gui/client. Module_id is -1 for all detectors, ports for each module is
-     * calculated (increments) Restarts client zmq sockets only if it was
-     * already enabled
+    /** Port number to listen to zmq data streamed out from receiver or
+     * intermediate process. \n Must be different for every detector (and udp
+     * port). \n Module_id is -1 for all detectors, ports for each module is
+     * calculated (increment by 1 if no 2nd interface). \n Restarts client zmq
+     * sockets only if it was already enabled \n Default connects to receiver
+     * zmq streaming out port (30001).
      */
     void setClientZmqPort(int port, int module_id = -1);
 
     Result<IpAddr> getClientZmqIp(Positions pos = {}) const;
 
+    /** Ip Address to listen to zmq data streamed out from receiver or
+     * intermediate process. Default connects to receiver zmq Ip Address (from
+     * rx_hostname). Modified only when using an intermediate process between
+     * receiver and client(gui). Also restarts client zmq streaming if enabled.
+     */
     void setClientZmqIp(const IpAddr ip, Positions pos = {});
     ///@{
 
@@ -1165,7 +1170,7 @@ class Detector {
     /** [Gotthard2] */
     Result<bool> getVeto(Positions pos = {}) const;
 
-    /** [Gotthard2] */
+    /** [Gotthard2] Default disabled */
     void setVeto(const bool enable, Positions pos = {});
 
     /** [Gotthard2] */
@@ -1611,6 +1616,8 @@ class Detector {
      * [Gotthard2] only in continuous mode */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
 
+    /** get user details from shared memory  (hostname, type, PID, User, Date)
+     */
     std::string getUserDetails() const;
 
     Result<uint64_t> getRxCurrentFrameIndex(Positions pos = {}) const;

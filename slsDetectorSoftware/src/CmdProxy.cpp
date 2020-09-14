@@ -2631,7 +2631,9 @@ std::string CmdProxy::UserDetails(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\tUser details from shared memory." << '\n';
+        os << "\n\tUser details from shared memory (hostname, type, PID, User, "
+              "Date)."
+           << '\n';
     } else if (action == defs::GET_ACTION) {
         if (det_id != -1) {
             throw sls::RuntimeError("Cannot execute this at module level");

@@ -1303,9 +1303,12 @@ class CmdProxy {
 
     /* dacs */
 
-    DAC_COMMAND(vthreshold, getDAC, setDAC, defs::VTHRESHOLD,
-                "[dac or mV value][(optional unit) mV] \n\t[Eiger][Mythen3] "
-                "Detector threshold voltage for single photon counters.");
+    DAC_COMMAND(
+        vthreshold, getDAC, setDAC, defs::VTHRESHOLD,
+        "[dac or mV value][(optional unit) mV] \n\t[Eiger][Mythen3] "
+        "Detector threshold voltage for single photon counters.\n\t[Eiger] "
+        "Sets vcmp_ll, vcmp_lr, vcmp_rl, vcmp_rr and vcp to the same value. "
+        "\n\t[Mythen3] Sets vth1, vth2 and vth3 to the same value.");
 
     DAC_COMMAND(vsvp, getDAC, setDAC, defs::VSVP,
                 "[dac or mV value][(optional unit) mV] \n\t[Eiger] Dac for "
@@ -1669,16 +1672,21 @@ class CmdProxy {
 
     INTEGER_COMMAND(udp_srcip, getSourceUDPIP, setSourceUDPIP, IpAddr,
                     "[x.x.x.x]\n\tIp address of the detector (source) udp "
-                    "interface. Must be same subnet as destination udp ip.");
+                    "interface. Must be same subnet as destination udp "
+                    "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will "
+                    "replace with its own DHCP IP address.");
 
     INTEGER_COMMAND(
         udp_srcip2, getSourceUDPIP2, setSourceUDPIP2, IpAddr,
-        "[x.x.x.x]\n\t[Jungfrau] Ip address of the bottom half of detector "
-        "(source) udp interface. Must be same subnet as destination udp ip2.");
+        "[x.x.x.x]\n\t[Jungfrau][Gotthard2] Ip address of the detector "
+        "(source) udp interface 2. Must be same subnet as destination udp "
+        "ip2.\n\t [Jungfrau] bottom half \n\t [Gotthard2] veto debugging.");
 
-    INTEGER_COMMAND(udp_srcmac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,
-                    "[x:x:x:x:x:x]\n\tMac address of the detector (source) udp "
-                    "interface. ");
+    INTEGER_COMMAND(
+        udp_srcmac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,
+        "[x:x:x:x:x:x]\n\tMac address of the detector (source) udp "
+        "interface. \n\t[Eiger] Do not set as detector will replace with its "
+        "own DHCP Mac (1G) or DHCP Mac + 1 (10G).");
 
     INTEGER_COMMAND(udp_srcmac2, getSourceUDPMAC2, setSourceUDPMAC2, MacAddr,
                     "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom "
@@ -1696,21 +1704,23 @@ class CmdProxy {
         "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) "
         "udp interface 2. Not mandatory to set as udp_dstip2 retrieves it from "
         "slsReceiver process but must be set if you use a custom receiver (not "
-        "slsReceiver). \n [Jungfrau] bottom half \n [Gotthard2] veto debugging "
-        "\n");
-
-    INTEGER_COMMAND(udp_dstport, getDestinationUDPPort, setDestinationUDPPort,
-                    StringTo<int>,
-                    "[n]\n\tPort number of the receiver (destination) udp "
-                    "interface. Default is 50001.");
+        "slsReceiver). \n\t [Jungfrau] bottom half \n\t [Gotthard2] veto "
+        "debugging.");
 
     INTEGER_COMMAND(
-        udp_dstport2, getDestinationUDPPort2, setDestinationUDPPort2,
+        udp_dstport, getDestinationUDPPort, setDestinationUDPPort,
         StringTo<int>,
-        "[n]\n\tDefault is 50002.\n\t[Jungfrau] Port number of the receiver "
-        "(destination) udp interface where the second half of detector data is "
-        "sent to. \n\t[Eiger] Port number of the reciever (desintation) udp "
-        "interface where the right half of the detector data is sent to.");
+        "[n]\n\tPort number of the receiver (destination) udp "
+        "interface. Default is 50001. \n\tIf multi command, ports for each "
+        "module is calculated (incremented by 1 if no 2nd interface)");
+
+    INTEGER_COMMAND(udp_dstport2, getDestinationUDPPort2,
+                    setDestinationUDPPort2, StringTo<int>,
+                    "[n]\n\t[Jungfrau][Eiger][Gotthard2] Port number of the "
+                    "receiver (destination) udp interface 2. Default is 50002. "
+                    "\n\tIf multi command, ports for each module is calculated "
+                    "(incremented by 2) \n\t[Jungfrau] bottom half \n\t[Eiger] "
+                    "right half \n\t[Gotthard2] veto debugging");
 
     EXECUTE_SET_COMMAND(
         udp_reconfigure, reconfigureUDPDestination,
@@ -1890,7 +1900,7 @@ class CmdProxy {
     INTEGER_COMMAND(
         zmqport, getClientZmqPort, setClientZmqPort, StringTo<int>,
         "[port]\n\tZmq port in client(gui) or intermediate process for data to "
-        "be streamed to from receiver. efault connects to receiver zmq "
+        "be streamed to from receiver. Default connects to receiver zmq "
         "streaming out port (30001). Modified only when using an intermediate "
         "process between receiver and client(gui). Also restarts client zmq "
         "streaming if enabled. Must be different for every detector (and udp "
@@ -1906,8 +1916,8 @@ class CmdProxy {
 
     INTEGER_COMMAND(
         zmqip, getClientZmqIp, setClientZmqIp, IpAddr,
-        "[x.x.x.x]\n\tZmq IP Address in client(gui) or intermediate process "
-        "for data to be streamed to from receiver.  Default connects to "
+        "[x.x.x.x]\n\tIp Address to listen to zmq data streamed out from "
+        "receiver or intermediate process. Default connects to "
         "receiver zmq Ip Address (from rx_hostname). Modified only when using "
         "an intermediate process between receiver and client(gui). Also "
         "restarts client zmq streaming if enabled.");
@@ -2082,7 +2092,7 @@ class CmdProxy {
     INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, StringTo<int>,
                         defs::V_LIMIT,
                         "[n_value]\n\t[Ctb][Moench] Soft limit for power "
-                        "supplies(ctb only) and DACS in mV.");
+                        "supplies (ctb only) and DACS in mV.");
 
     INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask,
                         StringTo<uint32_t>,

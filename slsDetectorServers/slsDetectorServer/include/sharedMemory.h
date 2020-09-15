@@ -8,8 +8,8 @@ int sharedMemory_open(int port);
 int sharedMemory_attach();
 int sharedMemory_detach();
 int sharedMemory_remove();
-void sharedMemory_lock();
-void sharedMemory_unlock();
+void sharedMemory_lockStatus();
+void sharedMemory_unlockStatus();
 #ifdef VIRTUAL
 void sharedMemory_setStatus(enum runStatus s);
 enum runStatus sharedMemory_getStatus();
@@ -20,3 +20,7 @@ void sharedMemory_setScanStatus(enum runStatus s);
 enum runStatus sharedMemory_getScanStatus();
 void sharedMemory_setScanStop(int s);
 int sharedMemory_getScanStop();
+#ifdef EIGERD
+void sharedMemory_lockLocalLink();
+void sharedMemory_unlockLocalLink();
+#endif

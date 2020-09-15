@@ -37,7 +37,7 @@ void Feb_Interface_FebInterface() {
         malloc((Feb_Interface_recv_buffer_size + 1) * sizeof(unsigned int));
     Feb_Interface_recv_data = &Feb_Interface_recv_data_raw[1];
 
-    Local_LocalLinkInterface1(
+    Local_LocalLinkInterface(
         ll, XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_RIGHT_BASEADDR);
 }
 

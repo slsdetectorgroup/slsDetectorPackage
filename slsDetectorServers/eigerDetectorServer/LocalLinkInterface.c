@@ -1,13 +1,16 @@
 #include "LocalLinkInterface.h"
 #include "HardwareMMappingDefs.h"
 #include "clogger.h"
+#include "sharedMemory.h"
 
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
-void Local_LocalLinkInterface1(struct LocalLinkInterface *ll,
-                               unsigned int ll_fifo_badr) {
+void Local_LocalLinkInterface(struct LocalLinkInterface *ll,
+                              unsigned int ll_fifo_badr) {
+    sharedMemory_lockLocalLink();
+
     LOG(logDEBUG1, ("Initialize PLB LL FIFOs\n"));
     ll->ll_fifo_base = 0;
     ll->ll_fifo_ctrl_reg = 0;
@@ -18,10 +21,8 @@ void Local_LocalLinkInterface1(struct LocalLinkInterface *ll,
     } else
         LOG(logERROR,
             ("\tCould not map LocalLink : 0x%08x\n\n\n", ll_fifo_badr));
-}
 
-void Local_LocalLinkInterface(struct LocalLinkInterface *ll) {
-    LOG(logDEBUG1, ("Initializing new memory\n"));
+    sharedMemory_unlockLocalLink();
 }
 
 int Local_Init(struct LocalLinkInterface *ll, unsigned int ll_fifo_badr) {
@@ -29,7 +30,7 @@ int Local_Init(struct LocalLinkInterface *ll, unsigned int ll_fifo_badr) {
     void *plb_ll_fifo_ptr;
 
     if ((fd = open("/dev/mem", O_RDWR)) < 0) {
-        fprintf(stderr, "Could not open /dev/mem\n");
+        LOG(logERROR, ("Could not open /dev/mem for local link\n"));
         return 0;
     }
 
@@ -38,7 +39,7 @@ int Local_Init(struct LocalLinkInterface *ll, unsigned int ll_fifo_badr) {
     close(fd);
 
     if (plb_ll_fifo_ptr == MAP_FAILED) {
-        perror("mmap");
+        LOG(logERROR, ("mmap error for local link\n")));
         return 0;
     }
 
@@ -78,6 +79,8 @@ unsigned int Local_StatusVector(struct LocalLinkInterface *ll) {
 
 int Local_Write(struct LocalLinkInterface *ll, unsigned int buffer_len,
                 void *buffer) {
+    sharedMemory_lockLocalLink();
+
     // note: buffer must be word (4 byte) aligned
     // frame_len in byte
     int vacancy = 0;
@@ -87,8 +90,10 @@ int Local_Write(struct LocalLinkInterface *ll, unsigned int buffer_len,
     unsigned int fifo_ctrl;
     xfs_u32 status;
 
-    if (buffer_len < 1)
+    if (buffer_len < 1) {
+        sharedMemory_unlockLocalLink();
         return -1;
+    }
 
     last_word = (buffer_len - 1) / 4;
     word_ptr = (unsigned int *)buffer;
@@ -131,11 +136,16 @@ int Local_Write(struct LocalLinkInterface *ll, unsigned int buffer_len,
                            word_ptr[words_send++]);
         }
     }
+
+    sharedMemory_unlockLocalLink();
+
     return buffer_len;
 }
 
 int Local_Read(struct LocalLinkInterface *ll, unsigned int buffer_len,
                void *buffer) {
+    sharedMemory_lockLocalLink();
+
     static unsigned int buffer_ptr = 0;
     // note: buffer must be word (4 byte) aligned
     // frame_len in byte
@@ -155,6 +165,7 @@ int Local_Read(struct LocalLinkInterface *ll, unsigned int buffer_len,
             if (status & PLB_LL_FIFO_STATUS_LL_SOF) {
                 if (buffer_ptr) {
                     buffer_ptr = 0;
+                    sharedMemory_unlockLocalLink();
                     return -1; // buffer overflow
                 }
                 buffer_ptr = 0;
@@ -170,6 +181,7 @@ int Local_Read(struct LocalLinkInterface *ll, unsigned int buffer_len,
                     word_ptr[buffer_ptr++] = fifo_val; // write to buffer
                 } else {
                     buffer_ptr = 0;
+                    sharedMemory_unlockLocalLink();
                     return -2; // buffer overflow
                 }
 
@@ -179,11 +191,14 @@ int Local_Read(struct LocalLinkInterface *ll, unsigned int buffer_len,
                            PLB_LL_FIFO_STATUS_LL_REM_SHIFT);
                     LOG(logDEBUG1, ("Len: %d\n", len));
                     buffer_ptr = 0;
+                    sharedMemory_unlockLocalLink();
                     return len;
                 }
             }
         }
     } while (!(status & PLB_LL_FIFO_STATUS_EMPTY));
+
+    sharedMemory_unlockLocalLink();
 
     return 0;
 }

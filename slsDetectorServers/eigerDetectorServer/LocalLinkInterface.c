@@ -39,7 +39,7 @@ int Local_Init(struct LocalLinkInterface *ll, unsigned int ll_fifo_badr) {
     close(fd);
 
     if (plb_ll_fifo_ptr == MAP_FAILED) {
-        LOG(logERROR, ("mmap error for local link\n")));
+        LOG(logERROR, ("mmap error for local link\n"));
         return 0;
     }
 

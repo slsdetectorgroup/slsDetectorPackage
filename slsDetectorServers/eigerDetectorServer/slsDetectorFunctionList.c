@@ -2442,10 +2442,12 @@ int startReadOut() {
 enum runStatus getRunStatus() {
     LOG(logDEBUG1, ("Getting status\n"));
     // scan error or running
+    cprintf(YELLOW, "s: going to get scanstatus (err)\n");
     if (sharedMemory_getScanStatus() == ERROR) {
         LOG(logINFOBLUE, ("Status: scan ERROR\n"));
         return ERROR;
     }
+    cprintf(YELLOW, "s: going to get scanstatus (runn)\n");
     if (sharedMemory_getScanStatus() == RUNNING) {
         LOG(logINFOBLUE, ("Status: scan RUNNING\n"));
         return RUNNING;

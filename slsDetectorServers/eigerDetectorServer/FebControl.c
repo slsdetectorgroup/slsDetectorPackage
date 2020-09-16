@@ -2,6 +2,7 @@
 #include "Beb.h"
 #include "FebRegisterDefs.h"
 #include "clogger.h"
+#include "sharedMemory.h"
 #include "slsDetectorServer_defs.h"
 
 #include <errno.h>
@@ -752,16 +753,24 @@ int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag) {
     return 1;
 }
 
-int Feb_Control_WaitForFinishedFlag(int sleep_time_us) {
+int Feb_Control_WaitForFinishedFlag(int sleep_time_us, int tempLock) {
     int is_running = Feb_Control_AcquisitionInProgress();
-
+    // unlock for stop server
+    if (tempLock) {
+        sharedMemory_unlockLocalLink();
+    }
     int check_error = 0;
 
     // it will break out if it is idle or if check_error is more than 5 times
     while (is_running != STATUS_IDLE) {
         usleep(sleep_time_us);
+        if (tempLock) {
+            sharedMemory_lockLocalLink();
+        }
         is_running = Feb_Control_AcquisitionInProgress();
-
+        if (tempLock) {
+            sharedMemory_unlockLocalLink();
+        }
         // check error only 5 times (ensuring it is not something that happens
         // sometimes)
         if (is_running == STATUS_ERROR) {
@@ -771,6 +780,10 @@ int Feb_Control_WaitForFinishedFlag(int sleep_time_us) {
         } // reset check_error for next time
         else
             check_error = 0;
+    }
+    // lock it again to be unlocked later
+    if (tempLock) {
+        sharedMemory_lockLocalLink();
     }
     return is_running;
 }
@@ -800,7 +813,7 @@ int Feb_Control_StartDAQOnlyNWaitForFinish(int sleep_time_us) {
             return 0;
         }
     }
-    return Feb_Control_WaitForFinishedFlag(sleep_time_us);
+    return Feb_Control_WaitForFinishedFlag(sleep_time_us, 0);
 }
 
 int Feb_Control_Reset() {
@@ -816,7 +829,7 @@ int Feb_Control_Reset() {
             return 0;
         }
     }
-    return Feb_Control_WaitForFinishedFlag(5000);
+    return Feb_Control_WaitForFinishedFlag(5000, 0);
 }
 
 int Feb_Control_ResetChipCompletely() {

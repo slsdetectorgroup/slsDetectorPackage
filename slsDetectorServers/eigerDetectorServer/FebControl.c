@@ -754,10 +754,12 @@ int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag) {
 }
 
 int Feb_Control_WaitForFinishedFlag(int sleep_time_us, int tempLock) {
+    cprintf(BLUE, "c: locked1! \n");
     int is_running = Feb_Control_AcquisitionInProgress();
     // unlock for stop server
     if (tempLock) {
         sharedMemory_unlockLocalLink();
+        cprintf(CYAN, "c: unlocked1! \n");
     }
     int check_error = 0;
 
@@ -765,14 +767,14 @@ int Feb_Control_WaitForFinishedFlag(int sleep_time_us, int tempLock) {
     while (is_running != STATUS_IDLE) {
         usleep(sleep_time_us);
         if (tempLock) {
-            LOG(logINFOBLUE,
-                ("c: going to get lock to check acq in progress\n"));
+            cprintf(BLUE, "c: going to get lock2\n");
             sharedMemory_lockLocalLink();
-            LOG(logINFOBLUE, ("c: got lock to check acq in progress!!\n"));
+            cprintf(BLUE, "c: locked2!\n");
         }
         is_running = Feb_Control_AcquisitionInProgress();
         if (tempLock) {
             sharedMemory_unlockLocalLink();
+            cprintf(CYAN, "c: unlocked2!\n");
         }
         // check error only 5 times (ensuring it is not something that happens
         // sometimes)
@@ -786,7 +788,9 @@ int Feb_Control_WaitForFinishedFlag(int sleep_time_us, int tempLock) {
     }
     // lock it again to be unlocked later
     if (tempLock) {
+        cprintf(BLUE, "c: going to get lock3\n");
         sharedMemory_lockLocalLink();
+        cprintf(BLUE, "c: locked3!\n");
     }
     return is_running;
 }

@@ -2458,9 +2458,13 @@ enum runStatus getRunStatus() {
     LOG(logINFOBLUE, ("Status: IDLE\n"));
     return IDLE;
 #else
+    cprintf(GREEN, "s: going to get lock \n");
     sharedMemory_lockLocalLink();
+    cprintf(GREEN, "s: locked!! \n");
     int i = Feb_Control_AcquisitionInProgress();
     sharedMemory_unlockLocalLink();
+    cprintf(MAGENTA, "s: unlocked!!\n");
+
     if (i == STATUS_ERROR) {
         LOG(logERROR, ("Status: ERROR reading status register\n"));
         return ERROR;
@@ -2491,9 +2495,8 @@ void readFrame(int *ret, char *mess) {
     return;
 #else
 
-    LOG(logINFOBLUE, ("c: going to get lock to wait for finished flag\n"));
+    cprintf(BLUE, "c: going to get lock1\n");
     sharedMemory_lockLocalLink();
-    LOG(logINFOBLUE, ("c: Got link to wait for finished flag\n"));
     if (Feb_Control_WaitForFinishedFlag(5000, 1) == STATUS_ERROR) {
         sharedMemory_unlockLocalLink();
         LOG(logERROR, ("Waiting for finished flag\n"));
@@ -2501,7 +2504,8 @@ void readFrame(int *ret, char *mess) {
         return;
     }
     sharedMemory_unlockLocalLink();
-    LOG(logINFOGREEN, ("Acquisition finished\n"));
+    cprintf(CYAN, "c: final unlock\n"));
+    LOG(logINFOGREEN, ("Acquisition finished\n");
 
     // wait for detector to send
     int isTransmitting = 1;

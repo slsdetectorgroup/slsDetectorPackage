@@ -219,7 +219,7 @@ int sharedMemory_getScanStop() {
 
 #ifdef EIGERD
 void sharedMemory_lockLocalLink() {
-    if (pthread_mutex_lock(&(shm->lockLocalLink)) == 0) {
+    if (pthread_mutex_lock(&(shm->lockLocalLink)) != 0) {
         cprintf(RED, "%s: mutex lock error\n", isControlServer ? "c" : "s");
     }
 }

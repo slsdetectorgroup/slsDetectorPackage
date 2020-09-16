@@ -2491,7 +2491,9 @@ void readFrame(int *ret, char *mess) {
     return;
 #else
 
+    LOG(logINFOBLUE, ("c: going to get lock to wait for finished flag\n"));
     sharedMemory_lockLocalLink();
+    LOG(logINFOBLUE, ("c: Got link to wait for finished flag\n"));
     if (Feb_Control_WaitForFinishedFlag(5000, 1) == STATUS_ERROR) {
         sharedMemory_unlockLocalLink();
         LOG(logERROR, ("Waiting for finished flag\n"));

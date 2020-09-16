@@ -765,7 +765,10 @@ int Feb_Control_WaitForFinishedFlag(int sleep_time_us, int tempLock) {
     while (is_running != STATUS_IDLE) {
         usleep(sleep_time_us);
         if (tempLock) {
+            LOG(logINFOBLUE,
+                ("c: going to get lock to check acq in progress\n"));
             sharedMemory_lockLocalLink();
+            LOG(logINFOBLUE, ("c: got lock to check acq in progress!!\n"));
         }
         is_running = Feb_Control_AcquisitionInProgress();
         if (tempLock) {

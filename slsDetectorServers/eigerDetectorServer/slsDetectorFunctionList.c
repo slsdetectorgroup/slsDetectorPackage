@@ -2504,7 +2504,7 @@ void readFrame(int *ret, char *mess) {
         return;
     }
     sharedMemory_unlockLocalLink();
-    cprintf(CYAN, "c: final unlock\n"));
+    cprintf(CYAN, "c: final unlock\n");
     LOG(logINFOGREEN, ("Acquisition finished\n");
 
     // wait for detector to send

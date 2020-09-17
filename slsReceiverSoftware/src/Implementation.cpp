@@ -162,15 +162,15 @@ void Implementation::setDetectorType(const detectorType d) {
             auto fifo_ptr = fifo[i].get();
             listener.push_back(sls::make_unique<Listener>(
                 i, myDetectorType, fifo_ptr, &status, &udpPortNum[i], &eth[i],
-                &numberOfTotalFrames, &dynamicRange, &udpSocketBufferSize,
+                &numberOfTotalFrames, &udpSocketBufferSize,
                 &actualUDPSocketBufferSize, &framesPerFile, &frameDiscardMode,
                 &activated, &deactivatedPaddingEnable, &silentMode));
             dataProcessor.push_back(sls::make_unique<DataProcessor>(
                 i, myDetectorType, fifo_ptr, &fileFormatType, fileWriteEnable,
-                &masterFileWriteEnable, &dataStreamEnable, &dynamicRange,
+                &masterFileWriteEnable, &dataStreamEnable,
                 &streamingFrequency, &streamingTimerInMs, &streamingStartFnum,
                 &framePadding, &activated, &deactivatedPaddingEnable,
-                &silentMode, &quadEnable, &ctbDbitList, &ctbDbitOffset,
+                &silentMode, &ctbDbitList, &ctbDbitOffset,
                 &ctbAnalogDataBytes));
         } catch (...) {
             listener.clear();
@@ -841,7 +841,7 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 auto fifo_ptr = fifo[i].get();
                 listener.push_back(sls::make_unique<Listener>(
                     i, myDetectorType, fifo_ptr, &status, &udpPortNum[i],
-                    &eth[i], &numberOfTotalFrames, &dynamicRange,
+                    &eth[i], &numberOfTotalFrames,
                     &udpSocketBufferSize, &actualUDPSocketBufferSize,
                     &framesPerFile, &frameDiscardMode, &activated,
                     &deactivatedPaddingEnable, &silentMode));
@@ -850,9 +850,9 @@ void Implementation::setNumberofUDPInterfaces(const int n) {
                 dataProcessor.push_back(sls::make_unique<DataProcessor>(
                     i, myDetectorType, fifo_ptr, &fileFormatType,
                     fileWriteEnable, &masterFileWriteEnable, &dataStreamEnable,
-                    &dynamicRange, &streamingFrequency, &streamingTimerInMs,
+                    &streamingFrequency, &streamingTimerInMs,
                     &streamingStartFnum, &framePadding, &activated,
-                    &deactivatedPaddingEnable, &silentMode, &quadEnable,
+                    &deactivatedPaddingEnable, &silentMode,
                     &ctbDbitList, &ctbDbitOffset, &ctbAnalogDataBytes));
                 dataProcessor[i]->SetGeneralData(generalData);
             } catch (...) {

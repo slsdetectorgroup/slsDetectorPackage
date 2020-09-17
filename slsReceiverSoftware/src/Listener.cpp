@@ -21,11 +21,11 @@ const std::string Listener::TypeName = "Listener";
 
 Listener::Listener(int ind, detectorType dtype, Fifo *f,
                    std::atomic<runStatus> *s, uint32_t *portno, std::string *e,
-                   uint64_t *nf, uint32_t *dr, int64_t *us, int64_t *as,
+                   uint64_t *nf, int64_t *us, int64_t *as,
                    uint32_t *fpf, frameDiscardPolicy *fdp, bool *act,
                    bool *depaden, bool *sm)
     : ThreadObject(ind, TypeName), fifo(f), myDetectorType(dtype), status(s),
-      udpPortNumber(portno), eth(e), numImages(nf), dynamicRange(dr),
+      udpPortNumber(portno), eth(e), numImages(nf),
       udpSocketBufferSize(us), actualUDPSocketBufferSize(as),
       framesPerFile(fpf), frameDiscardMode(fdp), activated(act),
       deactivatedPaddingEnable(depaden), silentMode(sm) {

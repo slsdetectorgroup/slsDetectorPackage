@@ -298,7 +298,7 @@ TEST_CASE("triggers", "[.cmd][.new]") {
     det.setNumberOfTriggers(prev_val);
 }
 
-TEST_CASE("exptime", "[.cmd][.new]") {
+TEST_CASE("exptime", "[.cmd][.time]") {
     Detector det;
     CmdProxy proxy(&det);
     auto det_type = det.getDetectorType().squash();
@@ -332,6 +332,12 @@ TEST_CASE("exptime", "[.cmd][.new]") {
         std::ostringstream oss;
         proxy.Call("exptime", {"0"}, -1, PUT, oss);
         REQUIRE(oss.str() == "exptime 0\n");
+    }
+    {
+       //Get exptime of single module
+       std::ostringstream oss;
+       proxy.Call("exptime", {}, 0, GET, oss);
+       REQUIRE(oss.str() == "exptime 0ns\n");
     }
     det.setExptime(-1, prev_val);
 }

@@ -168,7 +168,6 @@ class GeneralData {
 class GotthardData : public GeneralData {
 
   private:
-    const int nChip = 10;
     const int nChan = 128;
     const int nChipsPerAdc = 2;
 
@@ -532,8 +531,6 @@ class Gotthard2Data : public GeneralData {
 
 class ChipTestBoardData : public GeneralData {
   private:
-    /** Number of analog channels */
-    const int NCHAN_ANALOG = 32;
     /** Number of digital channels */
     const int NCHAN_DIGITAL = 64;
     /** Number of bytes per analog channel */
@@ -579,14 +576,8 @@ class ChipTestBoardData : public GeneralData {
         // analog channels (normal, analog/digital readout)
         if (f == slsDetectorDefs::ANALOG_ONLY ||
             f == slsDetectorDefs::ANALOG_AND_DIGITAL) {
-            if (a == BIT32_MASK) {
-                nachans = 32;
-            } else {
-                for (int ich = 0; ich < 32; ++ich) {
-                    if (a & (1 << ich))
-                        ++nachans;
-                }
-            }
+            nachans = __builtin_popcount(a);
+
             adatabytes = nachans * NUM_BYTES_PER_ANALOG_CHANNEL * as;
             LOG(logDEBUG1) << " Number of Analog Channels:" << nachans
                            << " Databytes: " << adatabytes;

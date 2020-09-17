@@ -180,7 +180,7 @@ class DataStreamer : private virtual slsDetectorDefs, public ThreadObject {
     std::map<std::string, std::string> localAdditionalJsonHeader;
 
     /** Aquisition Started flag */
-    bool startedFlag{nullptr};
+    bool startedFlag{false};
 
     /** Frame Number of First Frame */
     uint64_t firstIndex{0};

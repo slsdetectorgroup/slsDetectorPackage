@@ -24,7 +24,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            auto t = det->GETFCN({det_id});                                    \
+            auto t = det->GETFCN(std::vector<int>{det_id});                    \
             if (args.empty()) {                                                \
                 os << OutString(t) << '\n';                                    \
             } else if (args.size() == 1) {                                     \
@@ -37,10 +37,10 @@
                 std::string time_str(args[0]);                                 \
                 std::string unit = RemoveUnit(time_str);                       \
                 auto t = StringTo<time::ns>(time_str, unit);                   \
-                det->SETFCN(t, {det_id});                                      \
+                det->SETFCN(t, std::vector<int>{det_id});                      \
             } else if (args.size() == 2) {                                     \
                 auto t = StringTo<time::ns>(args[0], args[1]);                 \
-                det->SETFCN(t, {det_id});                                      \
+                det->SETFCN(t, std::vector<int>{det_id});                      \
             } else {                                                           \
                 WrongNumberOfParameters(2);                                    \
             }                                                                  \
@@ -64,7 +64,7 @@
         if (action == slsDetectorDefs::HELP_ACTION)                            \
             os << HLPSTR << '\n';                                              \
         else if (action == slsDetectorDefs::GET_ACTION) {                      \
-            auto t = det->GETFCN({det_id});                                    \
+            auto t = det->GETFCN(std::vector<int>{det_id});                    \
             if (args.empty()) {                                                \
                 os << OutString(t) << '\n';                                    \
             } else if (args.size() == 1) {                                     \
@@ -91,13 +91,13 @@
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
-            auto t = det->GETFCN({det_id});                                    \
+            auto t = det->GETFCN(std::vector<int>{det_id});                    \
             os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
-            det->SETFCN(args[0], {det_id});                                    \
+            det->SETFCN(args[0], std::vector<int>{det_id});                    \
             os << args.front() << '\n';                                        \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
@@ -116,14 +116,14 @@
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
-            auto t = det->GETFCN({det_id});                                    \
+            auto t = det->GETFCN(std::vector<int>{det_id});                    \
             os << OutStringHex(t, 16) << '\n';                                 \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             auto val = CONV(args[0]);                                          \
-            det->SETFCN(val, {det_id});                                        \
+            det->SETFCN(val, std::vector<int>{det_id});                        \
             os << ToStringHex(val, 16) << '\n';                                \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
@@ -142,14 +142,14 @@
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
-            auto t = det->GETFCN({det_id});                                    \
+            auto t = det->GETFCN(std::vector<int>{det_id});                    \
             os << OutStringHex(t) << '\n';                                     \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             auto val = CONV(args[0]);                                          \
-            det->SETFCN(val, {det_id});                                        \
+            det->SETFCN(val, std::vector<int>{det_id});                        \
             os << args.front() << '\n';                                        \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
@@ -158,7 +158,7 @@
     }
 
 /** int or enum */
-#define INTEGER_COMMAND(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)                 \
+#define INTEGER_COMMAND_VEC_ID(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)          \
     std::string CMDNAME(const int action) {                                    \
         std::ostringstream os;                                                 \
         os << cmd << ' ';                                                      \
@@ -168,14 +168,66 @@
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
-            auto t = det->GETFCN({det_id});                                    \
+            auto t = det->GETFCN(std::vector<int>{det_id});                    \
             os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             auto val = CONV(args[0]);                                          \
-            det->SETFCN(val, {det_id});                                        \
+            det->SETFCN(val, std::vector<int>{det_id});                        \
+            os << args.front() << '\n';                                        \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+/** int or enum */
+#define INTEGER_COMMAND_VEC_ID_GET(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)      \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            if (!args.empty()) {                                               \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            auto t = det->GETFCN(std::vector<int>{det_id});                    \
+            os << OutString(t) << '\n';                                        \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            auto val = CONV(args[0]);                                          \
+            det->SETFCN(val, det_id);                                          \
+            os << args.front() << '\n';                                        \
+        } else {                                                               \
+            throw sls::RuntimeError("Unknown action");                         \
+        }                                                                      \
+        return os.str();                                                       \
+    }
+
+/** int or enum */
+#define INTEGER_COMMAND_SINGLE_ID(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)       \
+    std::string CMDNAME(const int action) {                                    \
+        std::ostringstream os;                                                 \
+        os << cmd << ' ';                                                      \
+        if (action == slsDetectorDefs::HELP_ACTION)                            \
+            os << HLPSTR << '\n';                                              \
+        else if (action == slsDetectorDefs::GET_ACTION) {                      \
+            if (!args.empty()) {                                               \
+                WrongNumberOfParameters(0);                                    \
+            }                                                                  \
+            auto t = det->GETFCN(det_id);                                      \
+            os << OutString(t) << '\n';                                        \
+        } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
+            if (args.size() != 1) {                                            \
+                WrongNumberOfParameters(1);                                    \
+            }                                                                  \
+            auto val = CONV(args[0]);                                          \
+            det->SETFCN(val, det_id);                                          \
             os << args.front() << '\n';                                        \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
@@ -223,14 +275,14 @@
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
-            auto t = det->GETFCN(INDEX, {det_id});                             \
+            auto t = det->GETFCN(INDEX, std::vector<int>{det_id});             \
             os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             auto val = CONV(args[0]);                                          \
-            det->SETFCN(INDEX, val, {det_id});                                 \
+            det->SETFCN(INDEX, val, std::vector<int>{det_id});                 \
             os << args.front() << '\n';                                        \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
@@ -249,14 +301,16 @@
             if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
-            auto t = det->GETFCN(INDEX, StringTo<int>(args[0]), {det_id});     \
+            auto t = det->GETFCN(INDEX, StringTo<int>(args[0]),                \
+                                 std::vector<int>{det_id});                    \
             os << args[0] << ' ' << OutStringHex(t) << '\n';                   \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 2) {                                            \
                 WrongNumberOfParameters(2);                                    \
             }                                                                  \
             auto val = CONV(args[1]);                                          \
-            det->SETFCN(INDEX, StringTo<int>(args[0]), val, {det_id});         \
+            det->SETFCN(INDEX, StringTo<int>(args[0]), val,                    \
+                        std::vector<int>{det_id});                             \
             os << args[0] << ' ' << args[1] << '\n';                           \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
@@ -282,7 +336,7 @@
             } else if (args.size() > 1) {                                      \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
-            auto t = det->GETFCN(DAC_INDEX, mv, {det_id});                     \
+            auto t = det->GETFCN(DAC_INDEX, mv, std::vector<int>{det_id});     \
             os << OutString(t) << (!args.empty() ? " mV\n" : "\n");            \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             bool mv = false;                                                   \
@@ -295,7 +349,8 @@
             } else if (args.size() > 2 || args.empty()) {                      \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
-            det->SETFCN(DAC_INDEX, StringTo<int>(args[0]), mv, {det_id});      \
+            det->SETFCN(DAC_INDEX, StringTo<int>(args[0]), mv,                 \
+                        std::vector<int>{det_id});                             \
             os << args.front() << (args.size() > 1 ? " mV\n" : "\n");          \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
@@ -340,7 +395,7 @@
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
-            det->SETFCN({det_id});                                             \
+            det->SETFCN(std::vector<int>{det_id});                             \
             os << "successful\n";                                              \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
@@ -385,7 +440,7 @@
             if (args.size() != 1) {                                            \
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
-            det->SETFCN(args[0], {det_id});                                    \
+            det->SETFCN(args[0], std::vector<int>{det_id});                    \
             os << args.front() << '\n';                                        \
         } else {                                                               \
             throw sls::RuntimeError("Unknown action");                         \
@@ -404,7 +459,7 @@
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
-            auto t = det->GETFCN({det_id});                                    \
+            auto t = det->GETFCN(std::vector<int>{det_id});                    \
             os << OutString(t) << '\n';                                        \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             throw sls::RuntimeError("Cannot put");                             \
@@ -446,7 +501,7 @@
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
-            auto t = det->GETFCN({det_id});                                    \
+            auto t = det->GETFCN(std::vector<int>{det_id});                    \
             os << OutStringHex(t) << '\n';                                     \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             throw sls::RuntimeError("Cannot put");                             \
@@ -466,7 +521,7 @@
             if (!args.empty()) {                                               \
                 WrongNumberOfParameters(0);                                    \
             }                                                                  \
-            auto t = det->GETFCN(VAL, {det_id});                               \
+            auto t = det->GETFCN(VAL, std::vector<int>{det_id});               \
             os << OutString(t) << APPEND << '\n';                              \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             throw sls::RuntimeError("Cannot put");                             \
@@ -1133,32 +1188,34 @@ class CmdProxy {
     GET_COMMAND_NOID(settingslist, getSettingsList,
                      "\n\tList of settings implemented for this detector.");
 
-    INTEGER_COMMAND(settings, getSettings, setSettings,
-                    sls::StringTo<slsDetectorDefs::detectorSettings>,
-                    "[standard, fast, highgain, dynamicgain, lowgain, "
-                    "mediumgain, veryhighgain, dynamichg0, "
-                    "fixgain1, fixgain2, forceswitchg1, forceswitchg2, "
-                    "verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, "
-                    "g2_lc_hg, g2_lc_lg, g4_hg, g4_lg]"
-                    "\n\t Detector Settings"
-                    "\n\t[Jungfrau] - [dynamicgain | dynamichg0 | fixgain1 | "
-                    "fixgain2 | forceswitchg1 | forceswitchg2]"
-                    "\n\t[Gotthard] - [dynamicgain | highgain | lowgain | "
-                    "mediumgain | veryhighgain]"
-                    "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
-                    "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
-                    "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
-                    "\n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] "
-                    "settings loaded from file found in settingspath.");
+    INTEGER_COMMAND_VEC_ID(
+        settings, getSettings, setSettings,
+        sls::StringTo<slsDetectorDefs::detectorSettings>,
+        "[standard, fast, highgain, dynamicgain, lowgain, "
+        "mediumgain, veryhighgain, dynamichg0, "
+        "fixgain1, fixgain2, forceswitchg1, forceswitchg2, "
+        "verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, "
+        "g2_lc_hg, g2_lc_lg, g4_hg, g4_lg]"
+        "\n\t Detector Settings"
+        "\n\t[Jungfrau] - [dynamicgain | dynamichg0 | fixgain1 | "
+        "fixgain2 | forceswitchg1 | forceswitchg2]"
+        "\n\t[Gotthard] - [dynamicgain | highgain | lowgain | "
+        "mediumgain | veryhighgain]"
+        "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
+        "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
+        "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
+        "\n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] "
+        "settings loaded from file found in settingspath.");
 
     EXECUTE_SET_COMMAND_1ARG(
         trimbits, loadTrimbits,
         "[fname]\n\t[Eiger][Mythen3] Loads the trimbit file to detector. If no "
         "extension specified, serial number of each module is attached.");
 
-    INTEGER_COMMAND(trimval, getAllTrimbits, setAllTrimbits, StringTo<int>,
-                    "[n_trimval]\n\t[Eiger][Mythen3] All trimbits set to this "
-                    "value. Returns -1 if all trimbits are different values.");
+    INTEGER_COMMAND_VEC_ID(
+        trimval, getAllTrimbits, setAllTrimbits, StringTo<int>,
+        "[n_trimval]\n\t[Eiger][Mythen3] All trimbits set to this "
+        "value. Returns -1 if all trimbits are different values.");
 
     /* acquisition parameters */
 
@@ -1206,13 +1263,14 @@ class CmdProxy {
     GET_COMMAND_NOID(drlist, getDynamicRangeList,
                      "\n\tGets the list of dynamic ranges for this detector.");
 
-    INTEGER_COMMAND(timing, getTimingMode, setTimingMode,
-                    sls::StringTo<slsDetectorDefs::timingMode>,
-                    "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of "
-                    "detector.\n\t[Jungfrau][Gotthard][Ctb][Moench][Gotthard2] "
-                    "[auto|trigger]\n\t[Mythen3] "
-                    "[auto|trigger|gating|trigger_gating]\n\t[Eiger] "
-                    "[auto|trigger|gating|burst_trigger]");
+    INTEGER_COMMAND_VEC_ID(
+        timing, getTimingMode, setTimingMode,
+        sls::StringTo<slsDetectorDefs::timingMode>,
+        "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of "
+        "detector.\n\t[Jungfrau][Gotthard][Ctb][Moench][Gotthard2] "
+        "[auto|trigger]\n\t[Mythen3] "
+        "[auto|trigger|gating|trigger_gating]\n\t[Eiger] "
+        "[auto|trigger|gating|burst_trigger]");
 
     GET_COMMAND_NOID(timinglist, getTimingModeList,
                      "\n\tGets the list of timing modes for this detector.");
@@ -1225,35 +1283,38 @@ class CmdProxy {
                 "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the "
                 "clock to latch digital bits.");
 
-    INTEGER_COMMAND(highvoltage, getHighVoltage, setHighVoltage, StringTo<int>,
-                    "[n_value]\n\tHigh voltage to the sensor in Voltage."
-                    "\n\t[Gotthard] [0|90|110|120|150|180|200]"
-                    "\n\t[Eiger][Mythen3][Gotthard2] 0-200"
-                    "\n\t[Jungfrau][Ctb][Moench] [0|60-200]");
+    INTEGER_COMMAND_VEC_ID(highvoltage, getHighVoltage, setHighVoltage,
+                           StringTo<int>,
+                           "[n_value]\n\tHigh voltage to the sensor in Voltage."
+                           "\n\t[Gotthard] [0|90|110|120|150|180|200]"
+                           "\n\t[Eiger][Mythen3][Gotthard2] 0-200"
+                           "\n\t[Jungfrau][Ctb][Moench] [0|60-200]");
 
-    INTEGER_COMMAND(powerchip, getPowerChip, setPowerChip, StringTo<int>,
-                    "[0, 1]\n\t[Jungfrau][Mythen3][Gotthard2][Moench] Power "
-                    "the chip. Default 0."
-                    "\n\t[Jungfrau] Get will return power status."
-                    "Can be off if temperature event occured (temperature over "
-                    "temp_threshold with temp_control enabled."
-                    "\n\t[Mythen3] If module not connected or wrong module, 1 "
-                    "will fail. By default, not powered on"
-                    "\n\t[Gotthard2] If module not connected or wrong module, "
-                    "1 will fail. By default, powered on at server start up.");
+    INTEGER_COMMAND_VEC_ID(
+        powerchip, getPowerChip, setPowerChip, StringTo<int>,
+        "[0, 1]\n\t[Jungfrau][Mythen3][Gotthard2][Moench] Power "
+        "the chip. Default 0."
+        "\n\t[Jungfrau] Get will return power status."
+        "Can be off if temperature event occured (temperature over "
+        "temp_threshold with temp_control enabled."
+        "\n\t[Mythen3] If module not connected or wrong module, 1 "
+        "will fail. By default, not powered on"
+        "\n\t[Gotthard2] If module not connected or wrong module, "
+        "1 will fail. By default, powered on at server start up.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         imagetest, getImageTestMode, setImageTestMode, StringTo<int>,
         "[0, 1]\n\t[Gotthard] 1 adds channel intensity with precalculated "
         "values when taking an acquisition. Default is 0."
         "\n\t[Eiger][Jungfrau] Only for Virtual servers. If 0, each pixel "
         "intensity incremented by 1. If 1, all pixels almost saturated.");
 
-    INTEGER_COMMAND(parallel, getParallelMode, setParallelMode, StringTo<int>,
-                    "[0, 1]\n\t[Eiger][Mythen3] Enable or disable parallel "
-                    "mode.\n\t[Mythen3] If exptime is too short, the "
-                    "acquisition will return ERROR status and take fewer "
-                    "frames than expected.");
+    INTEGER_COMMAND_VEC_ID(
+        parallel, getParallelMode, setParallelMode, StringTo<int>,
+        "[0, 1]\n\t[Eiger][Mythen3] Enable or disable parallel "
+        "mode.\n\t[Mythen3] If exptime is too short, the "
+        "acquisition will return ERROR status and take fewer "
+        "frames than expected.");
 
     /** temperature */
     GET_COMMAND_NOID(
@@ -1637,11 +1698,12 @@ class CmdProxy {
     GET_COMMAND(rx_missingpackets, getNumMissingPackets,
                 "\n\tNumber of missing packets for each port in receiver.");
 
-    INTEGER_COMMAND(startingfnum, getStartingFrameNumber,
-                    setStartingFrameNumber, StringTo<uint64_t>,
-                    "[n_value]\n\t[Eiger][Jungfrau] Starting frame number for "
-                    "next acquisition. Stopping acquiistion might result in "
-                    "different frame numbers for different modules.");
+    INTEGER_COMMAND_VEC_ID(
+        startingfnum, getStartingFrameNumber, setStartingFrameNumber,
+        StringTo<uint64_t>,
+        "[n_value]\n\t[Eiger][Jungfrau] Starting frame number for "
+        "next acquisition. Stopping acquiistion might result in "
+        "different frame numbers for different modules.");
 
     EXECUTE_SET_COMMAND(
         trigger, sendSoftwareTrigger,
@@ -1653,7 +1715,7 @@ class CmdProxy {
 
     /* Network Configuration (Detector<->Receiver) */
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         numinterfaces, getNumberofUDPInterfaces, setNumberofUDPInterfaces,
         StringTo<int>,
         "[1, 2]\n\t[Jungfrau][Gotthard2] Number of udp interfaces to stream "
@@ -1664,42 +1726,44 @@ class CmdProxy {
         "veto information via 10Gbps for debugging. By default, if veto "
         "enabled, it is sent via 2.5 gbps interface.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         selinterface, getSelectedUDPInterface, selectUDPInterface,
         StringTo<int>,
         "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. "
         "Effective only when number of interfaces is 1. Default: 0 (outer)");
 
-    INTEGER_COMMAND(udp_srcip, getSourceUDPIP, setSourceUDPIP, IpAddr,
-                    "[x.x.x.x]\n\tIp address of the detector (source) udp "
-                    "interface. Must be same subnet as destination udp "
-                    "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will "
-                    "replace with its own DHCP IP address.");
+    INTEGER_COMMAND_VEC_ID(
+        udp_srcip, getSourceUDPIP, setSourceUDPIP, IpAddr,
+        "[x.x.x.x]\n\tIp address of the detector (source) udp "
+        "interface. Must be same subnet as destination udp "
+        "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will "
+        "replace with its own DHCP IP address.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         udp_srcip2, getSourceUDPIP2, setSourceUDPIP2, IpAddr,
         "[x.x.x.x]\n\t[Jungfrau][Gotthard2] Ip address of the detector "
         "(source) udp interface 2. Must be same subnet as destination udp "
         "ip2.\n\t [Jungfrau] bottom half \n\t [Gotthard2] veto debugging.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         udp_srcmac, getSourceUDPMAC, setSourceUDPMAC, MacAddr,
         "[x:x:x:x:x:x]\n\tMac address of the detector (source) udp "
         "interface. \n\t[Eiger] Do not set as detector will replace with its "
         "own DHCP Mac (1G) or DHCP Mac + 1 (10G).");
 
-    INTEGER_COMMAND(udp_srcmac2, getSourceUDPMAC2, setSourceUDPMAC2, MacAddr,
-                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom "
-                    "half of detector (source) udp interface. ");
+    INTEGER_COMMAND_VEC_ID(
+        udp_srcmac2, getSourceUDPMAC2, setSourceUDPMAC2, MacAddr,
+        "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom "
+        "half of detector (source) udp interface. ");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         udp_dstmac, getDestinationUDPMAC, setDestinationUDPMAC, MacAddr,
         "[x:x:x:x:x:x]\n\tMac address of the receiver (destination) udp "
         "interface. Not mandatory to set as udp_dstip retrieves it from "
         "slsReceiver process, but must be set if you use a custom receiver "
         "(not slsReceiver).");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         udp_dstmac2, getDestinationUDPMAC2, setDestinationUDPMAC2, MacAddr,
         "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the receiver (destination) "
         "udp interface 2. Not mandatory to set as udp_dstip2 retrieves it from "
@@ -1707,20 +1771,21 @@ class CmdProxy {
         "slsReceiver). \n\t [Jungfrau] bottom half \n\t [Gotthard2] veto "
         "debugging.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID_GET(
         udp_dstport, getDestinationUDPPort, setDestinationUDPPort,
         StringTo<int>,
         "[n]\n\tPort number of the receiver (destination) udp "
         "interface. Default is 50001. \n\tIf multi command, ports for each "
         "module is calculated (incremented by 1 if no 2nd interface)");
 
-    INTEGER_COMMAND(udp_dstport2, getDestinationUDPPort2,
-                    setDestinationUDPPort2, StringTo<int>,
-                    "[n]\n\t[Jungfrau][Eiger][Gotthard2] Port number of the "
-                    "receiver (destination) udp interface 2. Default is 50002. "
-                    "\n\tIf multi command, ports for each module is calculated "
-                    "(incremented by 2) \n\t[Jungfrau] bottom half \n\t[Eiger] "
-                    "right half \n\t[Gotthard2] veto debugging");
+    INTEGER_COMMAND_VEC_ID_GET(
+        udp_dstport2, getDestinationUDPPort2, setDestinationUDPPort2,
+        StringTo<int>,
+        "[n]\n\t[Jungfrau][Eiger][Gotthard2] Port number of the "
+        "receiver (destination) udp interface 2. Default is 50002. "
+        "\n\tIf multi command, ports for each module is calculated "
+        "(incremented by 2) \n\t[Jungfrau] bottom half \n\t[Eiger] "
+        "right half \n\t[Gotthard2] veto debugging");
 
     EXECUTE_SET_COMMAND(
         udp_reconfigure, reconfigureUDPDestination,
@@ -1737,14 +1802,15 @@ class CmdProxy {
     GET_COMMAND(rx_printconfig, printRxConfiguration,
                 "\n\tPrints the receiver configuration.");
 
-    INTEGER_COMMAND(tengiga, getTenGiga, setTenGiga, StringTo<int>,
-                    "[0, 1]\n\t[Eiger][Ctb][Moench][Mythen3] 10GbE Enable.");
+    INTEGER_COMMAND_VEC_ID(
+        tengiga, getTenGiga, setTenGiga, StringTo<int>,
+        "[0, 1]\n\t[Eiger][Ctb][Moench][Mythen3] 10GbE Enable.");
 
-    INTEGER_COMMAND(flowcontrol10g, getTenGigaFlowControl,
-                    setTenGigaFlowControl, StringTo<int>,
-                    "[0, 1]\n\t[Eiger][Jungfrau] 10GbE Flow Control.");
+    INTEGER_COMMAND_VEC_ID(flowcontrol10g, getTenGigaFlowControl,
+                           setTenGigaFlowControl, StringTo<int>,
+                           "[0, 1]\n\t[Eiger][Jungfrau] 10GbE Flow Control.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         txndelay_frame, getTransmissionDelayFrame, setTransmissionDelayFrame,
         StringTo<int>,
         "[n_delay]\n\t[Eiger][Jungfrau][Mythen3] Transmission delay of each "
@@ -1755,14 +1821,14 @@ class CmdProxy {
         "50000.\n\t[Mythen3] [0-16777215] Each value represents 8 ns (125 MHz "
         "clock), max is 134 ms.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         txndelay_left, getTransmissionDelayLeft, setTransmissionDelayLeft,
         StringTo<int>,
         "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image "
         "being streamed out of the module's left UDP port. Each value "
         "represents 10ns. Typical value is 50000.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         txndelay_right, getTransmissionDelayRight, setTransmissionDelayRight,
         StringTo<int>,
         "[n_delay]\n\t[Eiger] Transmission delay of first packet in an image "
@@ -1771,22 +1837,23 @@ class CmdProxy {
 
     /* Receiver Config */
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID_GET(
         rx_tcpport, getRxPort, setRxPort, StringTo<int>,
         "[port]\n\tTCP port for client-receiver communication. Default is "
         "1954. Must be different if multiple receivers on same pc. Must be "
         "first command to set a receiver parameter. Multi command will "
         "automatically increment for individual modules.");
 
-    INTEGER_COMMAND(rx_fifodepth, getRxFifoDepth, setRxFifoDepth, StringTo<int>,
-                    "[n_frames]\n\tSet the number of frames in the receiver "
-                    "fifo depth (buffer between listener and writer threads).");
+    INTEGER_COMMAND_VEC_ID(
+        rx_fifodepth, getRxFifoDepth, setRxFifoDepth, StringTo<int>,
+        "[n_frames]\n\tSet the number of frames in the receiver "
+        "fifo depth (buffer between listener and writer threads).");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         rx_silent, getRxSilentMode, setRxSilentMode, StringTo<int>,
         "[0, 1]\n\tSwitch on or off receiver text output during acquisition.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         rx_discardpolicy, getRxFrameDiscardPolicy, setRxFrameDiscardPolicy,
         sls::StringTo<slsDetectorDefs::frameDiscardPolicy>,
         "[nodiscard (default)|discardempty|discardpartial(fastest)]\n\tFrame "
@@ -1794,12 +1861,12 @@ class CmdProxy {
         "discardempty discards empty frames, discardpartial discards partial "
         "frames.");
 
-    INTEGER_COMMAND(rx_padding, getPartialFramesPadding,
-                    setPartialFramesPadding, StringTo<int>,
-                    "[0, 1]\n\tPartial frames padding enable in the "
-                    "receiver. Default: enabled. Disabling is fastest.");
+    INTEGER_COMMAND_VEC_ID(rx_padding, getPartialFramesPadding,
+                           setPartialFramesPadding, StringTo<int>,
+                           "[0, 1]\n\tPartial frames padding enable in the "
+                           "receiver. Default: enabled. Disabling is fastest.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         rx_udpsocksize, getRxUDPSocketBufferSize, setRxUDPSocketBufferSize,
         StringTo<int64_t>,
         "[n_size]\n\tUDP socket buffer size in receiver. Tune rmem_default and "
@@ -1809,9 +1876,10 @@ class CmdProxy {
                 "\n\tActual udp socket buffer size. Double the size of "
                 "rx_udpsocksize due to kernel bookkeeping.");
 
-    INTEGER_COMMAND(rx_lock, getRxLock, setRxLock, StringTo<int>,
-                    "[0, 1]\n\tLock receiver to one client IP, 1 locks, 0 "
-                    "unlocks. Default is unlocked. 1: locks");
+    INTEGER_COMMAND_VEC_ID(
+        rx_lock, getRxLock, setRxLock, StringTo<int>,
+        "[0, 1]\n\tLock receiver to one client IP, 1 locks, 0 "
+        "unlocks. Default is unlocked. 1: locks");
 
     GET_COMMAND(
         rx_lastclient, getRxLastClientIP,
@@ -1827,7 +1895,7 @@ class CmdProxy {
 
     /* File */
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         fformat, getFileFormat, setFileFormat,
         sls::StringTo<slsDetectorDefs::fileFormat>,
         "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be "
@@ -1843,11 +1911,11 @@ class CmdProxy {
                    "is run. File name: [file name prefix]_d[detector "
                    "index]_f[sub file index]_[acquisition/file index].raw.");
 
-    INTEGER_COMMAND(findex, getAcquisitionIndex, setAcquisitionIndex,
-                    StringTo<int64_t>,
-                    "[n_value]\n\tFile or Acquisition index.");
+    INTEGER_COMMAND_VEC_ID(findex, getAcquisitionIndex, setAcquisitionIndex,
+                           StringTo<int64_t>,
+                           "[n_value]\n\tFile or Acquisition index.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         fwrite, getFileWrite, setFileWrite, StringTo<int>,
         "[0, 1]\n\tEnable or disable receiver file write. Default is 1.");
 
@@ -1855,18 +1923,18 @@ class CmdProxy {
         fmaster, getMasterFileWrite, setMasterFileWrite, StringTo<int>,
         "[0, 1]\n\tEnable or disable receiver master file. Default is 1.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         foverwrite, getFileOverWrite, setFileOverWrite, StringTo<int>,
         "[0, 1]\n\tEnable or disable file overwriting. Default is 1.");
 
-    INTEGER_COMMAND(rx_framesperfile, getFramesPerFile, setFramesPerFile,
-                    StringTo<int>,
-                    "[n_frames]\n\tNumber of frames per file in receiver. 0 is "
-                    "infinite or all frames in single file.");
+    INTEGER_COMMAND_VEC_ID(
+        rx_framesperfile, getFramesPerFile, setFramesPerFile, StringTo<int>,
+        "[n_frames]\n\tNumber of frames per file in receiver. 0 is "
+        "infinite or all frames in single file.");
 
     /* ZMQ Streaming Parameters (Receiver<->Client) */
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         rx_zmqstream, getRxZmqDataStream, setRxZmqDataStream, StringTo<int>,
         "[0, 1]\n\tEnable/ disable data streaming from receiver via zmq (eg. "
         "to GUI or to another process for further processing). This creates/ "
@@ -1875,7 +1943,7 @@ class CmdProxy {
         "to command line acquire will require disabling data streaming in "
         "receiver for fast applications. ");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         rx_zmqfreq, getRxZmqFrequency, setRxZmqFrequency, StringTo<int>,
         "[nth frame]\n\tFrequency of frames streamed out from receiver via "
         "zmq\n\tDefault: 1, Means every frame is streamed out. \n\tIf 2, every "
@@ -1883,13 +1951,14 @@ class CmdProxy {
         "timeout, after which current frame is sent out. (default timeout is "
         "200 ms). Usually used for gui purposes.");
 
-    INTEGER_COMMAND(rx_zmqstartfnum, getRxZmqStartingFrame,
-                    setRxZmqStartingFrame, StringTo<int>,
-                    "[fnum]\n\tThe starting frame index to stream out. 0 by "
-                    "default, which streams the first frame in an acquisition, "
-                    "and then depending on the rx zmq frequency/ timer");
+    INTEGER_COMMAND_VEC_ID(
+        rx_zmqstartfnum, getRxZmqStartingFrame, setRxZmqStartingFrame,
+        StringTo<int>,
+        "[fnum]\n\tThe starting frame index to stream out. 0 by "
+        "default, which streams the first frame in an acquisition, "
+        "and then depending on the rx zmq frequency/ timer");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID_GET(
         rx_zmqport, getRxZmqPort, setRxZmqPort, StringTo<int>,
         "[port]\n\tZmq port for data to be streamed out of the receiver. Also "
         "restarts receiver zmq streaming if enabled. Default is 30001. "
@@ -1897,7 +1966,7 @@ class CmdProxy {
         "client(gui). Must be different for every detector (and udp port). "
         "Multi command will automatically increment for individual modules.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID_GET(
         zmqport, getClientZmqPort, setClientZmqPort, StringTo<int>,
         "[port]\n\tZmq port in client(gui) or intermediate process for data to "
         "be streamed to from receiver. Default connects to receiver zmq "
@@ -1907,14 +1976,14 @@ class CmdProxy {
         "port). Multi command will automatically increment for individual "
         "modules.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         rx_zmqip, getRxZmqIP, setRxZmqIP, IpAddr,
         "[x.x.x.x]\n\tZmq Ip Address from which data is to be streamed out of "
         "the receiver. Also restarts receiver zmq streaming if enabled. "
         "Default is from rx_hostname. Modified only when using an intermediate "
         "process between receiver.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         zmqip, getClientZmqIp, setClientZmqIp, IpAddr,
         "[x.x.x.x]\n\tIp Address to listen to zmq data streamed out from "
         "receiver or intermediate process. Default connects to "
@@ -1937,27 +2006,29 @@ class CmdProxy {
         settingspath, getSettingsPath, setSettingsPath,
         "[path]\n\t[Eiger] Directory where settings files are loaded from/to.");
 
-    INTEGER_COMMAND(overflow, getOverFlowMode, setOverFlowMode, StringTo<int>,
-                    "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in "
-                    "32 bit mode. Default is disabled.");
+    INTEGER_COMMAND_VEC_ID(
+        overflow, getOverFlowMode, setOverFlowMode, StringTo<int>,
+        "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in "
+        "32 bit mode. Default is disabled.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         flippeddatax, getBottom, setBottom, StringTo<int>,
         "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 "
         "is top. Used to let Receivers and Gui know to flip the bottom image "
         "over the x axis. Files are not written without the flip however.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         readnlines, getPartialReadout, setPartialReadout, StringTo<int>,
         "[1 - 256]\n\t[Eiger] Number of rows to readout per half module "
         "starting from the centre. 256 is default. The permissible values "
         "depend on dynamic range and 10Gbe enabled.");
 
-    INTEGER_COMMAND(interruptsubframe, getInterruptSubframe,
-                    setInterruptSubframe, StringTo<int>,
-                    "[0, 1]\n\t[Eiger] 1 interrupts last subframe at required "
-                    "exposure time. 0 will wait for last sub frame to finish "
-                    "exposing. 0 is default.");
+    INTEGER_COMMAND_VEC_ID(
+        interruptsubframe, getInterruptSubframe, setInterruptSubframe,
+        StringTo<int>,
+        "[0, 1]\n\t[Eiger] 1 interrupts last subframe at required "
+        "exposure time. 0 will wait for last sub frame to finish "
+        "exposing. 0 is default.");
 
     TIME_GET_COMMAND(measuredperiod, getMeasuredPeriod,
                      "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured frame "
@@ -1968,7 +2039,7 @@ class CmdProxy {
                      "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured sub "
                      "frame period between last sub frame and previous one.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         partialreset, getPartialReset, setPartialReset, StringTo<int>,
         "[0, 1]\n\t[Eiger] Sets up detector to do partial or complete reset at "
         "start of acquisition. 0 complete reset, 1 partial reset. Default is "
@@ -1976,7 +2047,7 @@ class CmdProxy {
 
     /* Jungfrau Specific */
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         temp_threshold, getThresholdTemperature, setThresholdTemperature,
         StringTo<int>,
         "[n_temp (in degrees)]\n\t[Jungfrau] Threshold temperature in degrees. "
@@ -1985,7 +2056,7 @@ class CmdProxy {
         "occurs. To power on chip again, temperature has to be less than "
         "threshold temperature and temperature event has to be cleared.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         temp_control, getTemperatureControl, setTemperatureControl,
         StringTo<int>,
         "[0, 1]\n\t[Jungfrau] Temperature control enable. Default is 0 "
@@ -1995,7 +2066,7 @@ class CmdProxy {
         "to be less than threshold temperature and temperature event has to be "
         "cleared.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         auto_comp_disable, getAutoCompDisable, setAutoCompDisable,
         StringTo<int>,
         "[0, 1]\n\t[Jungfrau] Auto comparator disable mode. By default, the "
@@ -2012,7 +2083,7 @@ class CmdProxy {
         "0. For advanced users only. \n\tThe #images = #frames x #triggers x "
         "(#storagecells + 1).");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         storagecell_start, getStorageCellStart, setStorageCellStart,
         StringTo<int>,
         "[0-15]\n\t[Jungfrau] Storage cell that stores the first acquisition "
@@ -2040,54 +2111,57 @@ class CmdProxy {
                  "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] Burst "
                  "period. Only in burst mode and auto timing mode.");
 
-    INTEGER_COMMAND(cdsgain, getCDSGain, setCDSGain, StringTo<bool>,
-                    "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default "
-                    "is disabled.");
+    INTEGER_COMMAND_VEC_ID(
+        cdsgain, getCDSGain, setCDSGain, StringTo<bool>,
+        "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default "
+        "is disabled.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         filter, getFilter, setFilter, StringTo<int>,
         "[0|1|2|3]\n\t[Gotthard2] Set filter resistor. Default is 0.");
 
-    INTEGER_COMMAND(currentsource, getCurrentSource, setCurrentSource,
-                    StringTo<int>,
-                    "[0, 1]\n\t[Gotthard2] Enable or disable current source. "
-                    "Default is disabled.");
+    INTEGER_COMMAND_VEC_ID(
+        currentsource, getCurrentSource, setCurrentSource, StringTo<int>,
+        "[0, 1]\n\t[Gotthard2] Enable or disable current source. "
+        "Default is disabled.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         timingsource, getTimingSource, setTimingSource,
         sls::StringTo<slsDetectorDefs::timingSourceType>,
         "[internal|external]\n\t[Gotthard2] Timing source. Internal is crystal "
         "and external is system timing. Default is internal.");
 
-    INTEGER_COMMAND(veto, getVeto, setVeto, StringTo<int>,
-                    "[0, 1]\n\t[Gotthard2] Enable or disable veto data "
-                    "streaming from detector. Default is 0.");
+    INTEGER_COMMAND_VEC_ID(veto, getVeto, setVeto, StringTo<int>,
+                           "[0, 1]\n\t[Gotthard2] Enable or disable veto data "
+                           "streaming from detector. Default is 0.");
 
     /* Mythen3 Specific */
 
-    INTEGER_COMMAND(gates, getNumberOfGates, setNumberOfGates, StringTo<int>,
-                    "[n_gates]\n\t[Mythen3] Number of external gates in gating "
-                    "or trigger_gating mode (external gating).");
+    INTEGER_COMMAND_VEC_ID(
+        gates, getNumberOfGates, setNumberOfGates, StringTo<int>,
+        "[n_gates]\n\t[Mythen3] Number of external gates in gating "
+        "or trigger_gating mode (external gating).");
 
     /* CTB/ Moench Specific */
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         asamples, getNumberOfAnalogSamples, setNumberOfAnalogSamples,
         StringTo<int>,
         "[n_samples]\n\t[CTB][Moench] Number of analog samples expected.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         adcclk, getADCClock, setADCClock, StringTo<int>,
         "[n_clk in MHz]\n\t[Ctb][Moench] ADC clock frequency in MHz.");
 
-    INTEGER_COMMAND(runclk, getRUNClock, setRUNClock, StringTo<int>,
-                    "[n_clk in MHz]\n\t[Ctb][Moench] Run clock in MHz.");
+    INTEGER_COMMAND_VEC_ID(runclk, getRUNClock, setRUNClock, StringTo<int>,
+                           "[n_clk in MHz]\n\t[Ctb][Moench] Run clock in MHz.");
 
     GET_COMMAND(syncclk, getSYNCClock,
                 "[n_clk in MHz]\n\t[Ctb][Moench] Sync clock in MHz.");
 
-    INTEGER_COMMAND(adcpipeline, getADCPipeline, setADCPipeline, StringTo<int>,
-                    "[n_value]\n\t[Ctb][Moench] Pipeline for ADC clock.");
+    INTEGER_COMMAND_VEC_ID(
+        adcpipeline, getADCPipeline, setADCPipeline, StringTo<int>,
+        "[n_value]\n\t[Ctb][Moench] Pipeline for ADC clock.");
 
     INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, StringTo<int>,
                         defs::V_LIMIT,
@@ -2108,20 +2182,22 @@ class CmdProxy {
 
     /* CTB Specific */
 
-    INTEGER_COMMAND(dsamples, getNumberOfDigitalSamples,
-                    setNumberOfDigitalSamples, StringTo<int>,
-                    "[n_value]\n\t[CTB] Number of digital samples expected.");
+    INTEGER_COMMAND_VEC_ID(
+        dsamples, getNumberOfDigitalSamples, setNumberOfDigitalSamples,
+        StringTo<int>,
+        "[n_value]\n\t[CTB] Number of digital samples expected.");
 
-    INTEGER_COMMAND(romode, getReadoutMode, setReadoutMode,
-                    sls::StringTo<slsDetectorDefs::readoutMode>,
-                    "[analog|digital|analog_digital]\n\t[CTB] Readout mode. "
-                    "Default is analog.");
+    INTEGER_COMMAND_VEC_ID(
+        romode, getReadoutMode, setReadoutMode,
+        sls::StringTo<slsDetectorDefs::readoutMode>,
+        "[analog|digital|analog_digital]\n\t[CTB] Readout mode. "
+        "Default is analog.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         dbitclk, getDBITClock, setDBITClock, StringTo<int>,
         "[n_clk in MHz]\n\t[Ctb] Clock for latching the digital bits in MHz.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         dbitpipeline, getDBITPipeline, setDBITPipeline, StringTo<int>,
         "[n_value]\n\t[Ctb] Pipeline of the clock for latching digital bits.");
 
@@ -2182,23 +2258,24 @@ class CmdProxy {
     GET_IND_COMMAND(im_io, getMeasuredCurrent, defs::I_POWER_IO, "",
                     "\n\t[Ctb] Measured current of power supply io in mA.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         extsampling, getExternalSampling, setExternalSampling, StringTo<int>,
         "[0, 1]\n\t[Ctb] Enable for external sampling signal to extsamplingsrc "
         "signal for digital data. For advanced users only.");
 
-    INTEGER_COMMAND(extsamplingsrc, getExternalSamplingSource,
-                    setExternalSamplingSource, StringTo<int>,
-                    "[0-63]\n\t[Ctb] Sampling source signal for digital data. "
-                    "For advanced users only.");
+    INTEGER_COMMAND_VEC_ID(
+        extsamplingsrc, getExternalSamplingSource, setExternalSamplingSource,
+        StringTo<int>,
+        "[0-63]\n\t[Ctb] Sampling source signal for digital data. "
+        "For advanced users only.");
 
-    INTEGER_COMMAND(rx_dbitoffset, getRxDbitOffset, setRxDbitOffset,
-                    StringTo<int>,
-                    "[n_bytes]\n\t[Ctb] Offset in bytes in digital data to "
-                    "skip in receiver.");
+    INTEGER_COMMAND_VEC_ID(
+        rx_dbitoffset, getRxDbitOffset, setRxDbitOffset, StringTo<int>,
+        "[n_bytes]\n\t[Ctb] Offset in bytes in digital data to "
+        "skip in receiver.");
 
-    INTEGER_COMMAND(led, getLEDEnable, setLEDEnable, StringTo<int>,
-                    "[0, 1]\n\t[Ctb] Switches on/off all LEDs.");
+    INTEGER_COMMAND_VEC_ID(led, getLEDEnable, setLEDEnable, StringTo<int>,
+                           "[0, 1]\n\t[Ctb] Switches on/off all LEDs.");
 
     /* Pattern */
 
@@ -2253,18 +2330,19 @@ class CmdProxy {
 
     /* Insignificant */
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         port, getControlPort, setControlPort, StringTo<int>,
         "[n]\n\tPort number of the control server on detector for "
         "detector-client tcp interface. Default is 1952. Normally unchanged.");
 
-    INTEGER_COMMAND(
+    INTEGER_COMMAND_VEC_ID(
         stopport, getStopPort, setStopPort, StringTo<int>,
         "[n]\n\tPort number of the stop server on detector for detector-client "
         "tcp interface. Default is 1953. Normally unchanged.");
 
-    INTEGER_COMMAND(lock, getDetectorLock, setDetectorLock, StringTo<int>,
-                    "[0, 1]\n\tLock detector to one IP, 1: locks");
+    INTEGER_COMMAND_VEC_ID(lock, getDetectorLock, setDetectorLock,
+                           StringTo<int>,
+                           "[0, 1]\n\tLock detector to one IP, 1: locks");
 
     GET_COMMAND(
         lastclient, getLastClientIP,

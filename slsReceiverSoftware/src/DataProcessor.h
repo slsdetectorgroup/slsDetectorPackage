@@ -49,9 +49,9 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
      * @param cad pointer to ctb analog databytes
      */
     DataProcessor(int ind, detectorType dtype, Fifo *f, fileFormat *ftype,
-                  bool fwenable, bool *mfwenable, bool *dsEnable, uint32_t *dr,
+                  bool fwenable, bool *mfwenable, bool *dsEnable,
                   uint32_t *freq, uint32_t *timer, uint32_t *sfnum, bool *fp,
-                  bool *act, bool *depaden, bool *sm, bool *qe,
+                  bool *act, bool *depaden, bool *sm,
                   std::vector<int> *cdl, int *cdo, int *cad);
 
     /**
@@ -268,9 +268,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
     /** Master File Write Enable */
     bool *masterFileWriteEnable;
 
-    /** Dynamic Range */
-    uint32_t *dynamicRange;
-
     /** Pointer to Streaming frequency, if 0, sending random images with a timer
      */
     uint32_t *streamingFrequency;
@@ -295,9 +292,6 @@ class DataProcessor : private virtual slsDetectorDefs, public ThreadObject {
 
     /** Silent Mode */
     bool *silentMode;
-
-    /** quad enable */
-    bool *quadEnable;
 
     /** frame padding */
     bool *framePadding;

@@ -337,7 +337,7 @@ TEST_CASE("exptime", "[.cmd][.time]") {
        //Get exptime of single module
        std::ostringstream oss;
        proxy.Call("exptime", {}, 0, GET, oss);
-       REQUIRE(oss.str() == "exptime 0\n");
+       REQUIRE(oss.str() == "exptime 0ns\n");
     }
     det.setExptime(-1, prev_val);
 }

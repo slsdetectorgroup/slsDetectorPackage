@@ -183,7 +183,6 @@
         return os.str();                                                       \
     }
 
-
 /** int or enum */
 #define INTEGER_COMMAND_VEC_ID_GET(CMDNAME, GETFCN, SETFCN, CONV, HLPSTR)      \
     std::string CMDNAME(const int action) {                                    \
@@ -303,7 +302,7 @@
                 WrongNumberOfParameters(1);                                    \
             }                                                                  \
             auto t = det->GETFCN(INDEX, StringTo<int>(args[0]),                \
-                                std::vector<int>{det_id});                     \
+                                 std::vector<int>{det_id});                    \
             os << args[0] << ' ' << OutStringHex(t) << '\n';                   \
         } else if (action == slsDetectorDefs::PUT_ACTION) {                    \
             if (args.size() != 2) {                                            \
@@ -1189,32 +1188,34 @@ class CmdProxy {
     GET_COMMAND_NOID(settingslist, getSettingsList,
                      "\n\tList of settings implemented for this detector.");
 
-    INTEGER_COMMAND_VEC_ID(settings, getSettings, setSettings,
-                    sls::StringTo<slsDetectorDefs::detectorSettings>,
-                    "[standard, fast, highgain, dynamicgain, lowgain, "
-                    "mediumgain, veryhighgain, dynamichg0, "
-                    "fixgain1, fixgain2, forceswitchg1, forceswitchg2, "
-                    "verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, "
-                    "g2_lc_hg, g2_lc_lg, g4_hg, g4_lg]"
-                    "\n\t Detector Settings"
-                    "\n\t[Jungfrau] - [dynamicgain | dynamichg0 | fixgain1 | "
-                    "fixgain2 | forceswitchg1 | forceswitchg2]"
-                    "\n\t[Gotthard] - [dynamicgain | highgain | lowgain | "
-                    "mediumgain | veryhighgain]"
-                    "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
-                    "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
-                    "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
-                    "\n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] "
-                    "settings loaded from file found in settingspath.");
+    INTEGER_COMMAND_VEC_ID(
+        settings, getSettings, setSettings,
+        sls::StringTo<slsDetectorDefs::detectorSettings>,
+        "[standard, fast, highgain, dynamicgain, lowgain, "
+        "mediumgain, veryhighgain, dynamichg0, "
+        "fixgain1, fixgain2, forceswitchg1, forceswitchg2, "
+        "verylowgain, g1_hg, g1_lg, g2_hc_hg, g2_hc_lg, "
+        "g2_lc_hg, g2_lc_lg, g4_hg, g4_lg]"
+        "\n\t Detector Settings"
+        "\n\t[Jungfrau] - [dynamicgain | dynamichg0 | fixgain1 | "
+        "fixgain2 | forceswitchg1 | forceswitchg2]"
+        "\n\t[Gotthard] - [dynamicgain | highgain | lowgain | "
+        "mediumgain | veryhighgain]"
+        "\n\t[Gotthard2] - [dynamicgain | fixgain1 | fixgain2]"
+        "\n\t[Moench] - [g1_hg | g1_lg | g2_hc_hg | g2_hc_lg | "
+        "g2_lc_hg | g2_lc_lg | g4_hg | g4_lg]"
+        "\n\t[Eiger] Use threshold or thresholdnotb. \n\t[Eiger] "
+        "settings loaded from file found in settingspath.");
 
     EXECUTE_SET_COMMAND_1ARG(
         trimbits, loadTrimbits,
         "[fname]\n\t[Eiger][Mythen3] Loads the trimbit file to detector. If no "
         "extension specified, serial number of each module is attached.");
 
-    INTEGER_COMMAND_VEC_ID(trimval, getAllTrimbits, setAllTrimbits, StringTo<int>,
-                    "[n_trimval]\n\t[Eiger][Mythen3] All trimbits set to this "
-                    "value. Returns -1 if all trimbits are different values.");
+    INTEGER_COMMAND_VEC_ID(
+        trimval, getAllTrimbits, setAllTrimbits, StringTo<int>,
+        "[n_trimval]\n\t[Eiger][Mythen3] All trimbits set to this "
+        "value. Returns -1 if all trimbits are different values.");
 
     /* acquisition parameters */
 
@@ -1262,13 +1263,14 @@ class CmdProxy {
     GET_COMMAND_NOID(drlist, getDynamicRangeList,
                      "\n\tGets the list of dynamic ranges for this detector.");
 
-    INTEGER_COMMAND_VEC_ID(timing, getTimingMode, setTimingMode,
-                    sls::StringTo<slsDetectorDefs::timingMode>,
-                    "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of "
-                    "detector.\n\t[Jungfrau][Gotthard][Ctb][Moench][Gotthard2] "
-                    "[auto|trigger]\n\t[Mythen3] "
-                    "[auto|trigger|gating|trigger_gating]\n\t[Eiger] "
-                    "[auto|trigger|gating|burst_trigger]");
+    INTEGER_COMMAND_VEC_ID(
+        timing, getTimingMode, setTimingMode,
+        sls::StringTo<slsDetectorDefs::timingMode>,
+        "[auto|trigger|gating|burst_trigger]\n\tTiming Mode of "
+        "detector.\n\t[Jungfrau][Gotthard][Ctb][Moench][Gotthard2] "
+        "[auto|trigger]\n\t[Mythen3] "
+        "[auto|trigger|gating|trigger_gating]\n\t[Eiger] "
+        "[auto|trigger|gating|burst_trigger]");
 
     GET_COMMAND_NOID(timinglist, getTimingModeList,
                      "\n\tGets the list of timing modes for this detector.");
@@ -1281,22 +1283,24 @@ class CmdProxy {
                 "\n\t[CTB][Jungfrau] Absolute maximum Phase shift of of the "
                 "clock to latch digital bits.");
 
-    INTEGER_COMMAND_VEC_ID(highvoltage, getHighVoltage, setHighVoltage, StringTo<int>,
-                    "[n_value]\n\tHigh voltage to the sensor in Voltage."
-                    "\n\t[Gotthard] [0|90|110|120|150|180|200]"
-                    "\n\t[Eiger][Mythen3][Gotthard2] 0-200"
-                    "\n\t[Jungfrau][Ctb][Moench] [0|60-200]");
+    INTEGER_COMMAND_VEC_ID(highvoltage, getHighVoltage, setHighVoltage,
+                           StringTo<int>,
+                           "[n_value]\n\tHigh voltage to the sensor in Voltage."
+                           "\n\t[Gotthard] [0|90|110|120|150|180|200]"
+                           "\n\t[Eiger][Mythen3][Gotthard2] 0-200"
+                           "\n\t[Jungfrau][Ctb][Moench] [0|60-200]");
 
-    INTEGER_COMMAND_VEC_ID(powerchip, getPowerChip, setPowerChip, StringTo<int>,
-                    "[0, 1]\n\t[Jungfrau][Mythen3][Gotthard2][Moench] Power "
-                    "the chip. Default 0."
-                    "\n\t[Jungfrau] Get will return power status."
-                    "Can be off if temperature event occured (temperature over "
-                    "temp_threshold with temp_control enabled."
-                    "\n\t[Mythen3] If module not connected or wrong module, 1 "
-                    "will fail. By default, not powered on"
-                    "\n\t[Gotthard2] If module not connected or wrong module, "
-                    "1 will fail. By default, powered on at server start up.");
+    INTEGER_COMMAND_VEC_ID(
+        powerchip, getPowerChip, setPowerChip, StringTo<int>,
+        "[0, 1]\n\t[Jungfrau][Mythen3][Gotthard2][Moench] Power "
+        "the chip. Default 0."
+        "\n\t[Jungfrau] Get will return power status."
+        "Can be off if temperature event occured (temperature over "
+        "temp_threshold with temp_control enabled."
+        "\n\t[Mythen3] If module not connected or wrong module, 1 "
+        "will fail. By default, not powered on"
+        "\n\t[Gotthard2] If module not connected or wrong module, "
+        "1 will fail. By default, powered on at server start up.");
 
     INTEGER_COMMAND_VEC_ID(
         imagetest, getImageTestMode, setImageTestMode, StringTo<int>,
@@ -1305,11 +1309,12 @@ class CmdProxy {
         "\n\t[Eiger][Jungfrau] Only for Virtual servers. If 0, each pixel "
         "intensity incremented by 1. If 1, all pixels almost saturated.");
 
-    INTEGER_COMMAND_VEC_ID(parallel, getParallelMode, setParallelMode, StringTo<int>,
-                    "[0, 1]\n\t[Eiger][Mythen3] Enable or disable parallel "
-                    "mode.\n\t[Mythen3] If exptime is too short, the "
-                    "acquisition will return ERROR status and take fewer "
-                    "frames than expected.");
+    INTEGER_COMMAND_VEC_ID(
+        parallel, getParallelMode, setParallelMode, StringTo<int>,
+        "[0, 1]\n\t[Eiger][Mythen3] Enable or disable parallel "
+        "mode.\n\t[Mythen3] If exptime is too short, the "
+        "acquisition will return ERROR status and take fewer "
+        "frames than expected.");
 
     /** temperature */
     GET_COMMAND_NOID(
@@ -1693,11 +1698,12 @@ class CmdProxy {
     GET_COMMAND(rx_missingpackets, getNumMissingPackets,
                 "\n\tNumber of missing packets for each port in receiver.");
 
-    INTEGER_COMMAND_VEC_ID(startingfnum, getStartingFrameNumber,
-                    setStartingFrameNumber, StringTo<uint64_t>,
-                    "[n_value]\n\t[Eiger][Jungfrau] Starting frame number for "
-                    "next acquisition. Stopping acquiistion might result in "
-                    "different frame numbers for different modules.");
+    INTEGER_COMMAND_VEC_ID(
+        startingfnum, getStartingFrameNumber, setStartingFrameNumber,
+        StringTo<uint64_t>,
+        "[n_value]\n\t[Eiger][Jungfrau] Starting frame number for "
+        "next acquisition. Stopping acquiistion might result in "
+        "different frame numbers for different modules.");
 
     EXECUTE_SET_COMMAND(
         trigger, sendSoftwareTrigger,
@@ -1726,11 +1732,12 @@ class CmdProxy {
         "[0, 1]\n\t[Jungfrau] The udp interface to stream data from detector. "
         "Effective only when number of interfaces is 1. Default: 0 (outer)");
 
-    INTEGER_COMMAND_VEC_ID(udp_srcip, getSourceUDPIP, setSourceUDPIP, IpAddr,
-                    "[x.x.x.x]\n\tIp address of the detector (source) udp "
-                    "interface. Must be same subnet as destination udp "
-                    "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will "
-                    "replace with its own DHCP IP address.");
+    INTEGER_COMMAND_VEC_ID(
+        udp_srcip, getSourceUDPIP, setSourceUDPIP, IpAddr,
+        "[x.x.x.x]\n\tIp address of the detector (source) udp "
+        "interface. Must be same subnet as destination udp "
+        "ip.\n\t[Eiger] Set only for 10G. For 1G, detector will "
+        "replace with its own DHCP IP address.");
 
     INTEGER_COMMAND_VEC_ID(
         udp_srcip2, getSourceUDPIP2, setSourceUDPIP2, IpAddr,
@@ -1744,9 +1751,10 @@ class CmdProxy {
         "interface. \n\t[Eiger] Do not set as detector will replace with its "
         "own DHCP Mac (1G) or DHCP Mac + 1 (10G).");
 
-    INTEGER_COMMAND_VEC_ID(udp_srcmac2, getSourceUDPMAC2, setSourceUDPMAC2, MacAddr,
-                    "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom "
-                    "half of detector (source) udp interface. ");
+    INTEGER_COMMAND_VEC_ID(
+        udp_srcmac2, getSourceUDPMAC2, setSourceUDPMAC2, MacAddr,
+        "[x:x:x:x:x:x]\n\t[Jungfrau] Mac address of the bottom "
+        "half of detector (source) udp interface. ");
 
     INTEGER_COMMAND_VEC_ID(
         udp_dstmac, getDestinationUDPMAC, setDestinationUDPMAC, MacAddr,
@@ -1770,13 +1778,14 @@ class CmdProxy {
         "interface. Default is 50001. \n\tIf multi command, ports for each "
         "module is calculated (incremented by 1 if no 2nd interface)");
 
-    INTEGER_COMMAND_VEC_ID_GET(udp_dstport2, getDestinationUDPPort2,
-                    setDestinationUDPPort2, StringTo<int>,
-                    "[n]\n\t[Jungfrau][Eiger][Gotthard2] Port number of the "
-                    "receiver (destination) udp interface 2. Default is 50002. "
-                    "\n\tIf multi command, ports for each module is calculated "
-                    "(incremented by 2) \n\t[Jungfrau] bottom half \n\t[Eiger] "
-                    "right half \n\t[Gotthard2] veto debugging");
+    INTEGER_COMMAND_VEC_ID_GET(
+        udp_dstport2, getDestinationUDPPort2, setDestinationUDPPort2,
+        StringTo<int>,
+        "[n]\n\t[Jungfrau][Eiger][Gotthard2] Port number of the "
+        "receiver (destination) udp interface 2. Default is 50002. "
+        "\n\tIf multi command, ports for each module is calculated "
+        "(incremented by 2) \n\t[Jungfrau] bottom half \n\t[Eiger] "
+        "right half \n\t[Gotthard2] veto debugging");
 
     EXECUTE_SET_COMMAND(
         udp_reconfigure, reconfigureUDPDestination,
@@ -1793,12 +1802,13 @@ class CmdProxy {
     GET_COMMAND(rx_printconfig, printRxConfiguration,
                 "\n\tPrints the receiver configuration.");
 
-    INTEGER_COMMAND_VEC_ID(tengiga, getTenGiga, setTenGiga, StringTo<int>,
-                    "[0, 1]\n\t[Eiger][Ctb][Moench][Mythen3] 10GbE Enable.");
+    INTEGER_COMMAND_VEC_ID(
+        tengiga, getTenGiga, setTenGiga, StringTo<int>,
+        "[0, 1]\n\t[Eiger][Ctb][Moench][Mythen3] 10GbE Enable.");
 
     INTEGER_COMMAND_VEC_ID(flowcontrol10g, getTenGigaFlowControl,
-                    setTenGigaFlowControl, StringTo<int>,
-                    "[0, 1]\n\t[Eiger][Jungfrau] 10GbE Flow Control.");
+                           setTenGigaFlowControl, StringTo<int>,
+                           "[0, 1]\n\t[Eiger][Jungfrau] 10GbE Flow Control.");
 
     INTEGER_COMMAND_VEC_ID(
         txndelay_frame, getTransmissionDelayFrame, setTransmissionDelayFrame,
@@ -1834,9 +1844,10 @@ class CmdProxy {
         "first command to set a receiver parameter. Multi command will "
         "automatically increment for individual modules.");
 
-    INTEGER_COMMAND_VEC_ID(rx_fifodepth, getRxFifoDepth, setRxFifoDepth, StringTo<int>,
-                    "[n_frames]\n\tSet the number of frames in the receiver "
-                    "fifo depth (buffer between listener and writer threads).");
+    INTEGER_COMMAND_VEC_ID(
+        rx_fifodepth, getRxFifoDepth, setRxFifoDepth, StringTo<int>,
+        "[n_frames]\n\tSet the number of frames in the receiver "
+        "fifo depth (buffer between listener and writer threads).");
 
     INTEGER_COMMAND_VEC_ID(
         rx_silent, getRxSilentMode, setRxSilentMode, StringTo<int>,
@@ -1851,9 +1862,9 @@ class CmdProxy {
         "frames.");
 
     INTEGER_COMMAND_VEC_ID(rx_padding, getPartialFramesPadding,
-                    setPartialFramesPadding, StringTo<int>,
-                    "[0, 1]\n\tPartial frames padding enable in the "
-                    "receiver. Default: enabled. Disabling is fastest.");
+                           setPartialFramesPadding, StringTo<int>,
+                           "[0, 1]\n\tPartial frames padding enable in the "
+                           "receiver. Default: enabled. Disabling is fastest.");
 
     INTEGER_COMMAND_VEC_ID(
         rx_udpsocksize, getRxUDPSocketBufferSize, setRxUDPSocketBufferSize,
@@ -1865,9 +1876,10 @@ class CmdProxy {
                 "\n\tActual udp socket buffer size. Double the size of "
                 "rx_udpsocksize due to kernel bookkeeping.");
 
-    INTEGER_COMMAND_VEC_ID(rx_lock, getRxLock, setRxLock, StringTo<int>,
-                    "[0, 1]\n\tLock receiver to one client IP, 1 locks, 0 "
-                    "unlocks. Default is unlocked. 1: locks");
+    INTEGER_COMMAND_VEC_ID(
+        rx_lock, getRxLock, setRxLock, StringTo<int>,
+        "[0, 1]\n\tLock receiver to one client IP, 1 locks, 0 "
+        "unlocks. Default is unlocked. 1: locks");
 
     GET_COMMAND(
         rx_lastclient, getRxLastClientIP,
@@ -1900,8 +1912,8 @@ class CmdProxy {
                    "index]_f[sub file index]_[acquisition/file index].raw.");
 
     INTEGER_COMMAND_VEC_ID(findex, getAcquisitionIndex, setAcquisitionIndex,
-                    StringTo<int64_t>,
-                    "[n_value]\n\tFile or Acquisition index.");
+                           StringTo<int64_t>,
+                           "[n_value]\n\tFile or Acquisition index.");
 
     INTEGER_COMMAND_VEC_ID(
         fwrite, getFileWrite, setFileWrite, StringTo<int>,
@@ -1915,10 +1927,10 @@ class CmdProxy {
         foverwrite, getFileOverWrite, setFileOverWrite, StringTo<int>,
         "[0, 1]\n\tEnable or disable file overwriting. Default is 1.");
 
-    INTEGER_COMMAND_VEC_ID(rx_framesperfile, getFramesPerFile, setFramesPerFile,
-                    StringTo<int>,
-                    "[n_frames]\n\tNumber of frames per file in receiver. 0 is "
-                    "infinite or all frames in single file.");
+    INTEGER_COMMAND_VEC_ID(
+        rx_framesperfile, getFramesPerFile, setFramesPerFile, StringTo<int>,
+        "[n_frames]\n\tNumber of frames per file in receiver. 0 is "
+        "infinite or all frames in single file.");
 
     /* ZMQ Streaming Parameters (Receiver<->Client) */
 
@@ -1939,11 +1951,12 @@ class CmdProxy {
         "timeout, after which current frame is sent out. (default timeout is "
         "200 ms). Usually used for gui purposes.");
 
-    INTEGER_COMMAND_VEC_ID(rx_zmqstartfnum, getRxZmqStartingFrame,
-                    setRxZmqStartingFrame, StringTo<int>,
-                    "[fnum]\n\tThe starting frame index to stream out. 0 by "
-                    "default, which streams the first frame in an acquisition, "
-                    "and then depending on the rx zmq frequency/ timer");
+    INTEGER_COMMAND_VEC_ID(
+        rx_zmqstartfnum, getRxZmqStartingFrame, setRxZmqStartingFrame,
+        StringTo<int>,
+        "[fnum]\n\tThe starting frame index to stream out. 0 by "
+        "default, which streams the first frame in an acquisition, "
+        "and then depending on the rx zmq frequency/ timer");
 
     INTEGER_COMMAND_VEC_ID_GET(
         rx_zmqport, getRxZmqPort, setRxZmqPort, StringTo<int>,
@@ -1993,9 +2006,10 @@ class CmdProxy {
         settingspath, getSettingsPath, setSettingsPath,
         "[path]\n\t[Eiger] Directory where settings files are loaded from/to.");
 
-    INTEGER_COMMAND_VEC_ID(overflow, getOverFlowMode, setOverFlowMode, StringTo<int>,
-                    "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in "
-                    "32 bit mode. Default is disabled.");
+    INTEGER_COMMAND_VEC_ID(
+        overflow, getOverFlowMode, setOverFlowMode, StringTo<int>,
+        "[0, 1]\n\t[Eiger] Enable or disable show overflow flag in "
+        "32 bit mode. Default is disabled.");
 
     INTEGER_COMMAND_VEC_ID(
         flippeddatax, getBottom, setBottom, StringTo<int>,
@@ -2009,11 +2023,12 @@ class CmdProxy {
         "starting from the centre. 256 is default. The permissible values "
         "depend on dynamic range and 10Gbe enabled.");
 
-    INTEGER_COMMAND_VEC_ID(interruptsubframe, getInterruptSubframe,
-                    setInterruptSubframe, StringTo<int>,
-                    "[0, 1]\n\t[Eiger] 1 interrupts last subframe at required "
-                    "exposure time. 0 will wait for last sub frame to finish "
-                    "exposing. 0 is default.");
+    INTEGER_COMMAND_VEC_ID(
+        interruptsubframe, getInterruptSubframe, setInterruptSubframe,
+        StringTo<int>,
+        "[0, 1]\n\t[Eiger] 1 interrupts last subframe at required "
+        "exposure time. 0 will wait for last sub frame to finish "
+        "exposing. 0 is default.");
 
     TIME_GET_COMMAND(measuredperiod, getMeasuredPeriod,
                      "[(optional unit) ns|us|ms|s]\n\t[Eiger] Measured frame "
@@ -2096,18 +2111,19 @@ class CmdProxy {
                  "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] Burst "
                  "period. Only in burst mode and auto timing mode.");
 
-    INTEGER_COMMAND_VEC_ID(cdsgain, getCDSGain, setCDSGain, StringTo<bool>,
-                    "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default "
-                    "is disabled.");
+    INTEGER_COMMAND_VEC_ID(
+        cdsgain, getCDSGain, setCDSGain, StringTo<bool>,
+        "[0, 1]\n\t[Gotthard2] Enable or disable CDS gain. Default "
+        "is disabled.");
 
     INTEGER_COMMAND_VEC_ID(
         filter, getFilter, setFilter, StringTo<int>,
         "[0|1|2|3]\n\t[Gotthard2] Set filter resistor. Default is 0.");
 
-    INTEGER_COMMAND_VEC_ID(currentsource, getCurrentSource, setCurrentSource,
-                    StringTo<int>,
-                    "[0, 1]\n\t[Gotthard2] Enable or disable current source. "
-                    "Default is disabled.");
+    INTEGER_COMMAND_VEC_ID(
+        currentsource, getCurrentSource, setCurrentSource, StringTo<int>,
+        "[0, 1]\n\t[Gotthard2] Enable or disable current source. "
+        "Default is disabled.");
 
     INTEGER_COMMAND_VEC_ID(
         timingsource, getTimingSource, setTimingSource,
@@ -2116,14 +2132,15 @@ class CmdProxy {
         "and external is system timing. Default is internal.");
 
     INTEGER_COMMAND_VEC_ID(veto, getVeto, setVeto, StringTo<int>,
-                    "[0, 1]\n\t[Gotthard2] Enable or disable veto data "
-                    "streaming from detector. Default is 0.");
+                           "[0, 1]\n\t[Gotthard2] Enable or disable veto data "
+                           "streaming from detector. Default is 0.");
 
     /* Mythen3 Specific */
 
-    INTEGER_COMMAND_VEC_ID(gates, getNumberOfGates, setNumberOfGates, StringTo<int>,
-                    "[n_gates]\n\t[Mythen3] Number of external gates in gating "
-                    "or trigger_gating mode (external gating).");
+    INTEGER_COMMAND_VEC_ID(
+        gates, getNumberOfGates, setNumberOfGates, StringTo<int>,
+        "[n_gates]\n\t[Mythen3] Number of external gates in gating "
+        "or trigger_gating mode (external gating).");
 
     /* CTB/ Moench Specific */
 
@@ -2137,13 +2154,14 @@ class CmdProxy {
         "[n_clk in MHz]\n\t[Ctb][Moench] ADC clock frequency in MHz.");
 
     INTEGER_COMMAND_VEC_ID(runclk, getRUNClock, setRUNClock, StringTo<int>,
-                    "[n_clk in MHz]\n\t[Ctb][Moench] Run clock in MHz.");
+                           "[n_clk in MHz]\n\t[Ctb][Moench] Run clock in MHz.");
 
     GET_COMMAND(syncclk, getSYNCClock,
                 "[n_clk in MHz]\n\t[Ctb][Moench] Sync clock in MHz.");
 
-    INTEGER_COMMAND_VEC_ID(adcpipeline, getADCPipeline, setADCPipeline, StringTo<int>,
-                    "[n_value]\n\t[Ctb][Moench] Pipeline for ADC clock.");
+    INTEGER_COMMAND_VEC_ID(
+        adcpipeline, getADCPipeline, setADCPipeline, StringTo<int>,
+        "[n_value]\n\t[Ctb][Moench] Pipeline for ADC clock.");
 
     INTEGER_IND_COMMAND(v_limit, getVoltage, setVoltage, StringTo<int>,
                         defs::V_LIMIT,
@@ -2164,14 +2182,16 @@ class CmdProxy {
 
     /* CTB Specific */
 
-    INTEGER_COMMAND_VEC_ID(dsamples, getNumberOfDigitalSamples,
-                    setNumberOfDigitalSamples, StringTo<int>,
-                    "[n_value]\n\t[CTB] Number of digital samples expected.");
+    INTEGER_COMMAND_VEC_ID(
+        dsamples, getNumberOfDigitalSamples, setNumberOfDigitalSamples,
+        StringTo<int>,
+        "[n_value]\n\t[CTB] Number of digital samples expected.");
 
-    INTEGER_COMMAND_VEC_ID(romode, getReadoutMode, setReadoutMode,
-                    sls::StringTo<slsDetectorDefs::readoutMode>,
-                    "[analog|digital|analog_digital]\n\t[CTB] Readout mode. "
-                    "Default is analog.");
+    INTEGER_COMMAND_VEC_ID(
+        romode, getReadoutMode, setReadoutMode,
+        sls::StringTo<slsDetectorDefs::readoutMode>,
+        "[analog|digital|analog_digital]\n\t[CTB] Readout mode. "
+        "Default is analog.");
 
     INTEGER_COMMAND_VEC_ID(
         dbitclk, getDBITClock, setDBITClock, StringTo<int>,
@@ -2243,18 +2263,19 @@ class CmdProxy {
         "[0, 1]\n\t[Ctb] Enable for external sampling signal to extsamplingsrc "
         "signal for digital data. For advanced users only.");
 
-    INTEGER_COMMAND_VEC_ID(extsamplingsrc, getExternalSamplingSource,
-                    setExternalSamplingSource, StringTo<int>,
-                    "[0-63]\n\t[Ctb] Sampling source signal for digital data. "
-                    "For advanced users only.");
+    INTEGER_COMMAND_VEC_ID(
+        extsamplingsrc, getExternalSamplingSource, setExternalSamplingSource,
+        StringTo<int>,
+        "[0-63]\n\t[Ctb] Sampling source signal for digital data. "
+        "For advanced users only.");
 
-    INTEGER_COMMAND_VEC_ID(rx_dbitoffset, getRxDbitOffset, setRxDbitOffset,
-                    StringTo<int>,
-                    "[n_bytes]\n\t[Ctb] Offset in bytes in digital data to "
-                    "skip in receiver.");
+    INTEGER_COMMAND_VEC_ID(
+        rx_dbitoffset, getRxDbitOffset, setRxDbitOffset, StringTo<int>,
+        "[n_bytes]\n\t[Ctb] Offset in bytes in digital data to "
+        "skip in receiver.");
 
     INTEGER_COMMAND_VEC_ID(led, getLEDEnable, setLEDEnable, StringTo<int>,
-                    "[0, 1]\n\t[Ctb] Switches on/off all LEDs.");
+                           "[0, 1]\n\t[Ctb] Switches on/off all LEDs.");
 
     /* Pattern */
 
@@ -2319,8 +2340,9 @@ class CmdProxy {
         "[n]\n\tPort number of the stop server on detector for detector-client "
         "tcp interface. Default is 1953. Normally unchanged.");
 
-    INTEGER_COMMAND_VEC_ID(lock, getDetectorLock, setDetectorLock, StringTo<int>,
-                    "[0, 1]\n\tLock detector to one IP, 1: locks");
+    INTEGER_COMMAND_VEC_ID(lock, getDetectorLock, setDetectorLock,
+                           StringTo<int>,
+                           "[0, 1]\n\tLock detector to one IP, 1: locks");
 
     GET_COMMAND(
         lastclient, getLastClientIP,

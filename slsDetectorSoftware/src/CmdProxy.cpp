@@ -603,14 +603,16 @@ std::string CmdProxy::Adcphase(int action) {
             }
         } else if (action == defs::PUT_ACTION) {
             if (args.size() == 1) {
-                det->setADCPhase(StringTo<int>(args[0]), std::vector<int>{det_id});
+                det->setADCPhase(StringTo<int>(args[0]),
+                                 std::vector<int>{det_id});
                 os << args.front() << '\n';
             } else if (args.size() == 2) {
                 if (args[1] != "deg") {
                     throw sls::RuntimeError("Unknown adcphase   2nd argument " +
                                             args[1] + ". Did you    mean deg?");
                 }
-                det->setADCPhaseInDegrees(StringTo<int>(args[0]), std::vector<int>{det_id});
+                det->setADCPhaseInDegrees(StringTo<int>(args[0]),
+                                          std::vector<int>{det_id});
                 os << args[0] << " " << args[1] << '\n';
             } else {
                 WrongNumberOfParameters(1);
@@ -655,14 +657,16 @@ std::string CmdProxy::Dbitphase(int action) {
             }
         } else if (action == defs::PUT_ACTION) {
             if (args.size() == 1) {
-                det->setDBITPhase(StringTo<int>(args[0]), std::vector<int>{det_id});
+                det->setDBITPhase(StringTo<int>(args[0]),
+                                  std::vector<int>{det_id});
                 os << args.front() << '\n';
             } else if (args.size() == 2) {
                 if (args[1] != "deg") {
                     throw sls::RuntimeError("Unknown dbitphase 2nd  argument " +
                                             args[1] + ". Did you mean deg?  ");
                 }
-                det->setDBITPhaseInDegrees(StringTo<int>(args[0]), std::vector<int>{det_id});
+                det->setDBITPhaseInDegrees(StringTo<int>(args[0]),
+                                           std::vector<int>{det_id});
                 os << args[0] << " " << args[1] << '\n';
             } else {
                 WrongNumberOfParameters(1);
@@ -691,14 +695,16 @@ std::string CmdProxy::ClockFrequency(int action) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            auto t = det->getClockFrequency(StringTo<int>(args[0]), std::vector<int>{det_id});
+            auto t = det->getClockFrequency(StringTo<int>(args[0]),
+                                            std::vector<int>{det_id});
             os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
             if (args.size() != 2) {
                 WrongNumberOfParameters(2);
             }
             det->setClockFrequency(StringTo<int>(args[0]),
-                                   StringTo<int>(args[1]), std::vector<int>{det_id});
+                                   StringTo<int>(args[1]),
+                                   std::vector<int>{det_id});
             os << StringTo<int>(args[1]) << '\n';
         } else {
             throw sls::RuntimeError("Unknown action");
@@ -724,7 +730,8 @@ std::string CmdProxy::ClockPhase(int action) {
         }
         if (action == defs::GET_ACTION) {
             if (args.size() == 1) {
-                auto t = det->getClockPhase(StringTo<int>(args[0]), std::vector<int>{det_id});
+                auto t = det->getClockPhase(StringTo<int>(args[0]),
+                                            std::vector<int>{det_id});
                 os << OutString(t) << '\n';
             } else if (args.size() == 2) {
                 if (args[1] != "deg") {
@@ -740,7 +747,8 @@ std::string CmdProxy::ClockPhase(int action) {
         } else if (action == defs::PUT_ACTION) {
             if (args.size() == 2) {
                 det->setClockPhase(StringTo<int>(args[0]),
-                                   StringTo<int>(args[1]), std::vector<int>{det_id});
+                                   StringTo<int>(args[1]),
+                                   std::vector<int>{det_id});
                 os << args[1] << '\n';
             } else if (args.size() == 3) {
                 if (args[2] != "deg") {
@@ -748,7 +756,8 @@ std::string CmdProxy::ClockPhase(int action) {
                                             ". Did you mean deg?");
                 }
                 det->setClockPhaseinDegrees(StringTo<int>(args[0]),
-                                            StringTo<int>(args[1]), std::vector<int>{det_id});
+                                            StringTo<int>(args[1]),
+                                            std::vector<int>{det_id});
                 os << args[1] << " " << args[2] << '\n';
             } else {
                 WrongNumberOfParameters(1);
@@ -777,8 +786,8 @@ std::string CmdProxy::MaxClockPhaseShift(int action) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            auto t =
-                det->getMaxClockPhaseShift(StringTo<int>(args[0]), std::vector<int>{det_id});
+            auto t = det->getMaxClockPhaseShift(StringTo<int>(args[0]),
+                                                std::vector<int>{det_id});
             os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
             throw sls::RuntimeError("Cannot put");
@@ -806,7 +815,8 @@ std::string CmdProxy::ClockDivider(int action) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            auto t = det->getClockDivider(StringTo<int>(args[0]), std::vector<int>{det_id});
+            auto t = det->getClockDivider(StringTo<int>(args[0]),
+                                          std::vector<int>{det_id});
             os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
             if (args.size() != 2) {
@@ -840,7 +850,8 @@ std::string CmdProxy::ExternalSignal(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        auto t = det->getExternalSignalFlags(StringTo<int>(args[0]), std::vector<int>{det_id});
+        auto t = det->getExternalSignalFlags(StringTo<int>(args[0]),
+                                             std::vector<int>{det_id});
         os << args[0] << " " << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
@@ -848,7 +859,8 @@ std::string CmdProxy::ExternalSignal(int action) {
         }
         det->setExternalSignalFlags(
             StringTo<int>(args[0]),
-            StringTo<slsDetectorDefs::externalSignalFlag>(args[1]), std::vector<int>{det_id});
+            StringTo<slsDetectorDefs::externalSignalFlag>(args[1]),
+            std::vector<int>{det_id});
         os << args[0] << " " << args[1] << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -872,10 +884,14 @@ std::string CmdProxy::TemperatureValues(int action) {
         if (t.size() > 0) {
             auto it = t.cbegin();
             os << ToString(*it) << ' ';
-            os << OutString(det->getTemperature(*it++, std::vector<int>{det_id})) << " °C";
+            os << OutString(
+                      det->getTemperature(*it++, std::vector<int>{det_id}))
+               << " °C";
             while (it != t.cend()) {
                 os << ", " << ToString(*it) << ' ';
-                os << OutString(det->getTemperature(*it++, std::vector<int>{det_id})) << " °C";
+                os << OutString(
+                          det->getTemperature(*it++, std::vector<int>{det_id}))
+                   << " °C";
             }
         }
         os << "]\n";
@@ -911,8 +927,9 @@ std::string CmdProxy::Dac(int action) {
         } else if (args.size() > 2) {
             WrongNumberOfParameters(1);
         }
-        auto t = det->getDAC(
-            static_cast<defs::dacIndex>(StringTo<int>(args[0])), mv, std::vector<int>{det_id});
+        auto t =
+            det->getDAC(static_cast<defs::dacIndex>(StringTo<int>(args[0])), mv,
+                        std::vector<int>{det_id});
         os << args[0] << ' ' << OutString(t)
            << (args.size() > 1 ? " mV\n" : "\n");
     } else if (action == defs::PUT_ACTION) {
@@ -1241,9 +1258,10 @@ std::string CmdProxy::Threshold(int action) {
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() == 1) {
-            auto t = det->getSettings(std::vector<int>{det_id}).tsquash(
-                "Inconsistent settings between detectors");
-            det->setThresholdEnergy(StringTo<int>(args[0]), t, true, std::vector<int>{det_id});
+            auto t = det->getSettings(std::vector<int>{det_id})
+                         .tsquash("Inconsistent settings between detectors");
+            det->setThresholdEnergy(StringTo<int>(args[0]), t, true,
+                                    std::vector<int>{det_id});
         } else if (args.size() == 2) {
             det->setThresholdEnergy(
                 StringTo<int>(args[0]),
@@ -1271,9 +1289,10 @@ std::string CmdProxy::ThresholdNoTb(int action) {
         throw sls::RuntimeError("cannot get");
     } else if (action == defs::PUT_ACTION) {
         if (args.size() == 1) {
-            auto t = det->getSettings(std::vector<int>{det_id}).tsquash(
-                "Inconsistent settings between detectors");
-            det->setThresholdEnergy(StringTo<int>(args[0]), t, false, std::vector<int>{det_id});
+            auto t = det->getSettings(std::vector<int>{det_id})
+                         .tsquash("Inconsistent settings between detectors");
+            det->setThresholdEnergy(StringTo<int>(args[0]), t, false,
+                                    std::vector<int>{det_id});
         } else if (args.size() == 2) {
             det->setThresholdEnergy(
                 StringTo<int>(args[0]),
@@ -1632,14 +1651,16 @@ std::string CmdProxy::VetoPhoton(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->getVetoPhoton(StringTo<int>(args[0]), args[1], std::vector<int>{det_id});
+        det->getVetoPhoton(StringTo<int>(args[0]), args[1],
+                           std::vector<int>{det_id});
         os << "saved to file " << args[1] << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 4) {
             WrongNumberOfParameters(4);
         }
         det->setVetoPhoton(StringTo<int>(args[0]), StringTo<int>(args[1]),
-                           StringTo<int>(args[2]), args[3], std::vector<int>{det_id});
+                           StringTo<int>(args[2]), args[3],
+                           std::vector<int>{det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -1684,7 +1705,8 @@ std::string CmdProxy::VetoFile(int action) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
-        det->setVetoFile(StringTo<int>(args[0]), args[1], std::vector<int>{det_id});
+        det->setVetoFile(StringTo<int>(args[0]), args[1],
+                         std::vector<int>{det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -1755,7 +1777,8 @@ std::string CmdProxy::ConfigureADC(int action) {
             WrongNumberOfParameters(2);
         }
         auto t = det->getADCConfiguration(StringTo<int>(args[0]),
-                                          StringTo<int>(args[1]), std::vector<int>{det_id});
+                                          StringTo<int>(args[1]),
+                                          std::vector<int>{det_id});
         os << OutStringHex(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 3) {
@@ -1948,10 +1971,12 @@ std::string CmdProxy::Samples(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        det->setNumberOfAnalogSamples(StringTo<int>(args[0]), std::vector<int>{det_id});
+        det->setNumberOfAnalogSamples(StringTo<int>(args[0]),
+                                      std::vector<int>{det_id});
         // set also digital samples for ctb
         if (det->getDetectorType().squash() == defs::CHIPTESTBOARD) {
-            det->setNumberOfDigitalSamples(StringTo<int>(args[0]), std::vector<int>{det_id});
+            det->setNumberOfDigitalSamples(StringTo<int>(args[0]),
+                                           std::vector<int>{det_id});
         }
         os << args.front() << '\n';
     } else {
@@ -1978,7 +2003,8 @@ std::string CmdProxy::SlowAdc(int action) {
             throw sls::RuntimeError("Unknown adc argument " + args[0]);
         }
         auto t = det->getSlowADC(
-            static_cast<defs::dacIndex>(nchan + defs::SLOW_ADC0), std::vector<int>{det_id});
+            static_cast<defs::dacIndex>(nchan + defs::SLOW_ADC0),
+            std::vector<int>{det_id});
         Result<double> result(t.size());
         for (unsigned int i = 0; i < t.size(); ++i) {
             result[i] = t[i] / 1000.00;
@@ -2048,7 +2074,8 @@ std::string CmdProxy::DigitalIODelay(int action) {
             WrongNumberOfParameters(2);
         }
         det->setDigitalIODelay(StringTo<uint64_t>(args[0]),
-                               StringTo<int>(args[1]), std::vector<int>{det_id});
+                               StringTo<int>(args[1]),
+                               std::vector<int>{det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -2152,7 +2179,8 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
             if (!args.empty()) {
                 WrongNumberOfParameters(0);
             }
-            auto t = det->getPatternLoopAddresses(level, std::vector<int>{det_id});
+            auto t =
+                det->getPatternLoopAddresses(level, std::vector<int>{det_id});
             os << OutStringHex(t, 4) << '\n';
         } else if (action == defs::PUT_ACTION) {
             if (args.size() != 2) {
@@ -2160,7 +2188,8 @@ std::string CmdProxy::PatternLoopAddresses(int action) {
             }
             int start = StringTo<int>(args[0]);
             int stop = StringTo<int>(args[1]);
-            det->setPatternLoopAddresses(level, start, stop, std::vector<int>{det_id});
+            det->setPatternLoopAddresses(level, start, stop,
+                                         std::vector<int>{det_id});
             os << '[' << ToStringHex(start, 4) << ", " << ToStringHex(stop, 4)
                << "]\n";
         } else {
@@ -2212,7 +2241,8 @@ std::string CmdProxy::PatternLoopCycles(int action) {
             if (args.size() != 1) {
                 WrongNumberOfParameters(1);
             }
-            det->setPatternLoopCycles(level, StringTo<int>(args[0]), std::vector<int>{det_id});
+            det->setPatternLoopCycles(level, StringTo<int>(args[0]),
+                                      std::vector<int>{det_id});
             os << args.front() << '\n';
         } else {
             throw sls::RuntimeError("Unknown action");
@@ -2370,15 +2400,18 @@ std::string CmdProxy::JsonParameter(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        auto t = det->getAdditionalJsonParameter(args[0], std::vector<int>{det_id});
+        auto t =
+            det->getAdditionalJsonParameter(args[0], std::vector<int>{det_id});
         os << OutString(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         switch (args.size()) {
         case 1:
-            det->setAdditionalJsonParameter(args[0], "", std::vector<int>{det_id});
+            det->setAdditionalJsonParameter(args[0], "",
+                                            std::vector<int>{det_id});
             break;
         case 2:
-            det->setAdditionalJsonParameter(args[0], args[1], std::vector<int>{det_id});
+            det->setAdditionalJsonParameter(args[0], args[1],
+                                            std::vector<int>{det_id});
             break;
         default:
             WrongNumberOfParameters(1);
@@ -2460,7 +2493,8 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
         if (args[2].find(".pof") == std::string::npos) {
             throw sls::RuntimeError("Programming file must be a pof file.");
         }
-        det->updateFirmwareAndServer(args[0], args[1], args[2], std::vector<int>{det_id});
+        det->updateFirmwareAndServer(args[0], args[1], args[2],
+                                     std::vector<int>{det_id});
         os << "successful\n";
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -2480,14 +2514,16 @@ std::string CmdProxy::Register(int action) {
         if (args.size() != 1) {
             WrongNumberOfParameters(1);
         }
-        auto t = det->readRegister(StringTo<uint32_t>(args[0]), std::vector<int>{det_id});
+        auto t = det->readRegister(StringTo<uint32_t>(args[0]),
+                                   std::vector<int>{det_id});
         os << OutStringHex(t) << '\n';
     } else if (action == defs::PUT_ACTION) {
         if (args.size() != 2) {
             WrongNumberOfParameters(2);
         }
         det->writeRegister(StringTo<uint32_t>(args[0]),
-                           StringTo<uint32_t>(args[1]), std::vector<int>{det_id});
+                           StringTo<uint32_t>(args[1]),
+                           std::vector<int>{det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");
@@ -2510,7 +2546,8 @@ std::string CmdProxy::AdcRegister(int action) {
             WrongNumberOfParameters(2);
         }
         det->writeAdcRegister(StringTo<uint32_t>(args[0]),
-                              StringTo<uint32_t>(args[1]), std::vector<int>{det_id});
+                              StringTo<uint32_t>(args[1]),
+                              std::vector<int>{det_id});
         os << sls::ToString(args) << '\n';
     } else {
         throw sls::RuntimeError("Unknown action");

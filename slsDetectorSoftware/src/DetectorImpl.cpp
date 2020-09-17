@@ -435,7 +435,6 @@ void DetectorImpl::readFrameFromReceiver() {
 
     bool gapPixels = multi_shm()->gapPixels;
     LOG(logDEBUG) << "Gap pixels: " << gapPixels;
-
     int nX = 0;
     int nY = 0;
     int nDetPixelsX = 0;
@@ -464,7 +463,6 @@ void DetectorImpl::readFrameFromReceiver() {
             runningList[i] = false;
         }
     }
-    int numConnected = numRunning;
     bool data = false;
     bool completeImage = false;
     char *image = nullptr;
@@ -482,14 +480,7 @@ void DetectorImpl::readFrameFromReceiver() {
     uint32_t currentSubFrameIndex = -1, coordX = -1, coordY = -1,
              flippedDataX = -1;
 
-    // wait for real time acquisition to start
-    bool running = true;
-    sem_wait(&sem_newRTAcquisition);
-    if (getJoinThreadFlag()) {
-        running = false;
-    }
-
-    while (running) {
+    while (numRunning != 0) {
         // reset data
         data = false;
         if (multiframe != nullptr) {
@@ -657,26 +648,6 @@ void DetectorImpl::readFrameFromReceiver() {
                 ((dynamicRange == 32 && eiger) ? currentSubFrameIndex : -1),
                 pCallbackArg);
             delete thisData;
-        }
-
-        // all done
-        if (numRunning == 0) {
-            // let main thread know that all dummy packets have been received
-            //(also from external process),
-            // main thread can now proceed to measurement finished call back
-            sem_post(&sem_endRTAcquisition);
-            // wait for next scan/measurement, else join thread
-            sem_wait(&sem_newRTAcquisition);
-            // done with complete acquisition
-            if (getJoinThreadFlag()) {
-                running = false;
-            } else {
-                // starting a new scan/measurement (got dummy data)
-                for (size_t i = 0; i < zmqSocket.size(); ++i) {
-                    runningList[i] = connectList[i];
-                }
-                numRunning = numConnected;
-            }
         }
     }
 
@@ -1030,17 +1001,11 @@ int DetectorImpl::acquire() {
         struct timespec begin, end;
         clock_gettime(CLOCK_REALTIME, &begin);
 
-        // in the real time acquisition loop, processing thread will wait for a
-        // post each time
-        sem_init(&sem_newRTAcquisition, 1, 0);
-        // in the real time acquistion loop, main thread will wait for
-        // processing thread to be done each time (which in turn waits for
-        // receiver/ext process)
-        sem_init(&sem_endRTAcquisition, 1, 0);
-
         bool receiver = Parallel(&Module::getUseReceiverFlag, {}).squash(false);
 
-        setJoinThreadFlag(false);
+        if (dataReady == nullptr) {
+            setJoinThreadFlag(false);
+        }
 
         // verify receiver is idle
         if (receiver) {
@@ -1050,13 +1015,11 @@ int DetectorImpl::acquire() {
             }
         }
 
-        startProcessingThread();
+        startProcessingThread(receiver);
 
         // start receiver
         if (receiver) {
             Parallel(&Module::startReceiver, {});
-            // let processing thread listen to these packets
-            sem_post(&sem_newRTAcquisition);
         }
 
         // start and read all
@@ -1071,18 +1034,13 @@ int DetectorImpl::acquire() {
         // stop receiver
         if (receiver) {
             Parallel(&Module::stopReceiver, {});
-            if (dataReady != nullptr) {
-                sem_wait(&sem_endRTAcquisition); // waits for receiver's
-            }
-            // external process to be
-            // done sending data to gui
-
             Parallel(&Module::incrementFileIndex, {});
         }
 
         // waiting for the data processing thread to finish!
-        setJoinThreadFlag(true);
-        sem_post(&sem_newRTAcquisition);
+        if (dataReady == nullptr) {
+            setJoinThreadFlag(true);
+        }
         dataProcessingThread.join();
 
         if (acquisition_finished != nullptr) {
@@ -1091,9 +1049,6 @@ int DetectorImpl::acquire() {
             double progress = (*std::min_element(a.begin(), a.end()));
             acquisition_finished(progress, status, acqFinished_p);
         }
-
-        sem_destroy(&sem_newRTAcquisition);
-        sem_destroy(&sem_endRTAcquisition);
 
         clock_gettime(CLOCK_REALTIME, &end);
         LOG(logDEBUG1) << "Elapsed time for acquisition:"
@@ -1115,12 +1070,13 @@ void DetectorImpl::printProgress(double progress) {
     std::cout << '\r' << std::flush;
 }
 
-void DetectorImpl::startProcessingThread() {
-    dataProcessingThread = std::thread(&DetectorImpl::processData, this);
+void DetectorImpl::startProcessingThread(bool receiver) {
+    dataProcessingThread =
+        std::thread(&DetectorImpl::processData, this, receiver);
 }
 
-void DetectorImpl::processData() {
-    if (Parallel(&Module::getUseReceiverFlag, {}).squash(false)) {
+void DetectorImpl::processData(bool receiver) {
+    if (receiver) {
         if (dataReady != nullptr) {
             readFrameFromReceiver();
         }

@@ -276,7 +276,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
      * Combines data from all readouts and gives it to the gui
      * or just gives progress of acquisition by polling receivers
      */
-    void processData();
+    void processData(bool receiver);
 
     /**
      * Convert raw file
@@ -352,7 +352,7 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     void printProgress(double progress);
 
-    void startProcessingThread();
+    void startProcessingThread(bool receiver);
 
     /**
      * Check if processing thread is ready to join main thread
@@ -386,14 +386,6 @@ class DetectorImpl : public virtual slsDetectorDefs {
 
     /** ZMQ Socket - Receiver to Client */
     std::vector<std::unique_ptr<ZmqSocket>> zmqSocket;
-
-    /** semaphore to let postprocessing thread continue for next
-     * scan/measurement */
-    sem_t sem_newRTAcquisition;
-
-    /** semaphore to let main thread know it got all the dummy packets (also
-     * from ext. process) */
-    sem_t sem_endRTAcquisition;
 
     /** mutex to synchronize main and data processing threads */
     mutable std::mutex mp;

@@ -843,8 +843,10 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
     if (val < 0)
         return;
 
-    LOG(logDEBUG1, ("Setting dac[%d]: %d %s \n", (int)ind, val,
-                    (mV ? "mV" : "dac units")));
+    char *dac_names[] = {DAC_NAMES};
+    LOG(logINFO, ("Setting DAC %s\n", dac_names[ind]));
+    LOG(logDEBUG1, ("Setting dac[%d - %s]: %d %s \n", (int)ind, dac_names[ind],
+                    val, (mV ? "mV" : "dac units")));
     int dacval = val;
 #ifdef VIRTUAL
     if (!mV) {

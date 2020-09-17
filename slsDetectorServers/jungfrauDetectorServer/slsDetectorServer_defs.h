@@ -47,6 +47,10 @@ enum DACINDEX {
     J_VREF_DS,
     J_VREF_COMP
 };
+#define DAC_NAMES                                                              \
+    "vb_comp", "vdd_prot", "vin_com", "vref_prech", "vb_pixbuf", "vb_ds",      \
+        "vref_ds", "vref_comp"
+
 #define DEFAULT_DAC_VALS                                                       \
     {                                                                          \
         1220, /* J_VB_COMP */                                                  \

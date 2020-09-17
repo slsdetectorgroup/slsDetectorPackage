@@ -17,6 +17,10 @@ enum DACINDEX {
 enum CLKINDEX { ADC_CLK, NUM_CLOCKS };
 #define CLK_NAMES "adc"
 
+#define DAC_NAMES                                                              \
+    "vref_ds", "vcascn_pb", "vcascp_pb", "vout_cm", "vcasc_out", "vin_cm",     \
+        "vref_comp", "ib_testc"
+
 #define DEFAULT_DAC_VALS                                                       \
     {                                                                          \
         660,  /* G_VREF_DS */                                                  \

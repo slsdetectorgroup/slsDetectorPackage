@@ -83,3 +83,46 @@ class ClkDivProxy:
                 rstr += f'{i}: {r}\n'
         
         return rstr.strip('\n')
+
+
+class MaxPhaseProxy:
+    """
+    Proxy class to allow for more intuitive reading clockdivider
+    """
+    def __init__(self, det):
+        self.det = det
+
+    def __getitem__(self, key):
+        return element_if_equal(self.det.getMaxClockPhaseShift(key))
+
+    def __repr__(self):
+        rstr = ''
+        for i in range(5):
+            r = element_if_equal(self.__getitem__(i))
+            if isinstance(r, list):
+                rstr += ' '.join(f'{item}' for item in r)
+            else:
+                rstr += f'{i}: {r}\n'
+        
+        return rstr.strip('\n')
+
+class ClkFreqProxy:
+    """
+    Proxy class to allow for more intuitive reading clockdivider
+    """
+    def __init__(self, det):
+        self.det = det
+
+    def __getitem__(self, key):
+        return element_if_equal(self.det.getClockFrequency(key))
+
+    def __repr__(self):
+        rstr = ''
+        for i in range(5):
+            r = element_if_equal(self.__getitem__(i))
+            if isinstance(r, list):
+                rstr += ' '.join(f'{item}' for item in r)
+            else:
+                rstr += f'{i}: {r}\n'
+        
+        return rstr.strip('\n')

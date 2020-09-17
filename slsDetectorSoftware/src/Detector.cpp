@@ -384,9 +384,6 @@ Result<int> Detector::getClockFrequency(int clkIndex, Positions pos) {
     return pimpl->Parallel(&Module::getClockFrequency, pos, clkIndex);
 }
 
-void Detector::setClockFrequency(int clkIndex, int value, Positions pos) {
-    pimpl->Parallel(&Module::setClockFrequency, pos, clkIndex, value);
-}
 
 Result<int> Detector::getClockPhase(int clkIndex, Positions pos) {
     return pimpl->Parallel(&Module::getClockPhase, pos, clkIndex, false);

@@ -699,13 +699,7 @@ std::string CmdProxy::ClockFrequency(int action) {
                                             std::vector<int>{det_id});
             os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
-            if (args.size() != 2) {
-                WrongNumberOfParameters(2);
-            }
-            det->setClockFrequency(StringTo<int>(args[0]),
-                                   StringTo<int>(args[1]),
-                                   std::vector<int>{det_id});
-            os << StringTo<int>(args[1]) << '\n';
+            throw sls::RuntimeError("cannot put");
         } else {
             throw sls::RuntimeError("Unknown action");
         }

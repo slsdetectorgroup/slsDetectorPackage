@@ -11,7 +11,7 @@ detectorType = slsDetectorDefs.detectorType
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
 from . import utils as ut
-from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy
+from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy
 from .registers import Register, Adc_register
 import datetime as dt
 
@@ -1180,6 +1180,21 @@ class Detector(CppDetectorApi):
     def rx_lock(self, value):
         self.setRxLock(value)
 
+
+    @property
+    @element
+    def scanerrmsg(self):
+        return self.getScanErrorMessage()
+
+    @property
+    @element
+    def rx_zmqstartfnum(self):
+        return self.getRxZmqStartingFrame()
+
+    @rx_zmqstartfnum.setter
+    def rx_zmqstartfnum(self, value):
+        ut.set_using_dict(self.setRxZmqStartingFrame, value)
+
     @property
     def lastclient(self):
         """Get Client IP Address that last communicated with the detector."""
@@ -1245,6 +1260,15 @@ class Detector(CppDetectorApi):
         :getter: Not implemented     
         """
         return self._adc_register
+
+    @property
+    @element
+    def adcinvert(self):
+        return self.getADCInvert()
+
+    @adcinvert.setter
+    def adcinvert(self, value):
+        ut.set_using_dict(self.setADCInvert, value)
 
     @property
     @element
@@ -1801,8 +1825,30 @@ class Detector(CppDetectorApi):
         self.selectUDPInterface(i)
 
     """
-    <<<Gotthard2>>>
+    ---------------------------<<<Gotthard2 specific>>>---------------------------
     """
+
+    @property
+    @element
+    def bursts(self):
+        return self.getNumberOfBursts()
+
+    @bursts.setter
+    def bursts(self, value):
+        self.setNumberOfBursts(value)
+
+    @property
+    @element
+    def filter(self):
+        return self.getFilter()
+
+    @filter.setter
+    def filter(self, value):
+        ut.set_using_dict(self.setFilter, value)
+
+    @property
+    def maxclkphaseshift(self):
+        return MaxPhaseProxy(self)
 
     @property
     @element
@@ -2561,12 +2607,41 @@ class Detector(CppDetectorApi):
 
 
     """
-
-    <<<-----------------------Gotthard specific----------------------->>>
-
+    ---------------------------<<<Gotthard specific>>>---------------------------
     """
 
     @property
     def exptimel(self):
         t = self.getExptimeLeft()
         return reduce_time(t)
+
+
+    """
+    ---------------------------<<<Mythen3 specific>>>---------------------------
+    """
+
+    @property
+    @element
+    def gates(self):
+        return self.getNumberOfGates()
+
+    @gates.setter
+    def gates(self, value):
+        ut.set_using_dict(self.setNumberOfGates, value)
+
+
+    @property
+    def clkfreq(self):
+        return ClkFreqProxy(self)
+
+    """
+    ---------------------------<<<Debug>>>---------------------------
+    """
+
+    @property
+    def initialchecks(self):
+        return self.getInitialChecks()
+    
+    @initialchecks.setter
+    def initialchecks(self, value):
+        self.setInitialChecks(value)

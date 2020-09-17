@@ -80,7 +80,10 @@ dacs = [
         'vth1',
         'vth2',
         'vth3',
-        'vtrim'
+        'vtrim',
+        'ib_test_c',
+        'ibias_sfp',
+
 ]
 
 intentionally_missing  = [
@@ -106,6 +109,10 @@ intentionally_missing  = [
                         'resetfpga', #use resetFPGA()
                         'rebootcontroller', #use rebootController()
                         'firmwaretest', #use executeFirmwareTest
+                        'bustest', # executeBusTest
+                        'programfpga', #programFPGA
+                        'dac', #use setDAC or detector specific class
+                        'clearroi', #clearROI
 ]
 
 pycmd += intentionally_missing

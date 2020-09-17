@@ -310,9 +310,6 @@ class Detector {
     /** [Mythen3][Gotthard2] Hz */
     Result<int> getClockFrequency(int clkIndex, Positions pos = {});
 
-    /** [not implemented] Hz */
-    void setClockFrequency(int clkIndex, int value, Positions pos = {});
-
     /** [Mythen3][Gotthard2] */
     Result<int> getClockPhase(int clkIndex, Positions pos = {});
 

@@ -253,10 +253,6 @@ void init_det(py::module &m) {
              (Result<int>(Detector::*)(int, sls::Positions)) &
                  Detector::getClockFrequency,
              py::arg(), py::arg() = Positions{})
-        .def("setClockFrequency",
-             (void (Detector::*)(int, int, sls::Positions)) &
-                 Detector::setClockFrequency,
-             py::arg(), py::arg(), py::arg() = Positions{})
         .def("getClockPhase",
              (Result<int>(Detector::*)(int, sls::Positions)) &
                  Detector::getClockPhase,

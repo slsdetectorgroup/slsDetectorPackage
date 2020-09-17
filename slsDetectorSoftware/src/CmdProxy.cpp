@@ -420,7 +420,7 @@ std::string CmdProxy::Exptime(int action) {
         // vector of exptimes
         if (gateIndex == -1 &&
             det->getDetectorType().squash() == defs::MYTHEN3) {
-            auto t = det->getExptimeForAllGates({det_id});
+            auto t = det->getExptimeForAllGates(std::vector<int>{det_id});
             if (args.empty()) {
                 os << OutString(t) << '\n';
             } else if (args.size() == 1) {
@@ -431,9 +431,9 @@ std::string CmdProxy::Exptime(int action) {
         else {
             Result<ns> t;
             if (gateIndex == -1) {
-                t = det->getExptime({det_id});
+                t = det->getExptime(std::vector<int>{det_id});
             } else {
-                t = det->getExptime(gateIndex, {det_id});
+                t = det->getExptime(gateIndex, std::vector<int>{det_id});
             }
             if (args.empty()) {
                 os << OutString(t) << '\n';
@@ -448,16 +448,16 @@ std::string CmdProxy::Exptime(int action) {
             std::string unit = RemoveUnit(time_str);
             auto t = StringTo<time::ns>(time_str, unit);
             if (type == defs::MYTHEN3) {
-                det->setExptime(gateIndex, t, {det_id});
+                det->setExptime(gateIndex, t, std::vector<int>{det_id});
             } else {
-                det->setExptime(t, {det_id});
+                det->setExptime(t, std::vector<int>{det_id});
             }
         } else if (args.size() == 2) {
             auto t = StringTo<time::ns>(args[0], args[1]);
             if (type == defs::MYTHEN3) {
-                det->setExptime(gateIndex, t, {det_id});
+                det->setExptime(gateIndex, t, std::vector<int>{det_id});
             } else {
-                det->setExptime(t, {det_id});
+                det->setExptime(t, std::vector<int>{det_id});
             }
         } else {
             WrongNumberOfParameters(2);

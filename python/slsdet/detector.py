@@ -183,6 +183,11 @@ class Detector(CppDetectorApi):
         return element_if_equal(self.getReceiverVersion())
 
     @property
+    @element
+    def rx_threads(self):
+        return self.getRxThreadIds()
+
+    @property
     def dr(self):
         """
         Dynamic range or number of bits per pixel/channel.
@@ -343,6 +348,12 @@ class Detector(CppDetectorApi):
     @period.setter
     def period(self, t):
         ut.set_time_using_dict(self.setPeriod, t)
+
+
+    @property
+    @element
+    def periodl(self):
+        return self.getPeriodLeft()
 
     @property
     @element
@@ -1818,6 +1829,32 @@ class Detector(CppDetectorApi):
     def veto(self, value):
         self.setVeto(value)
 
+    @property
+    @element
+    def cdsgain(self):
+        return self.getCDSGain()
+
+    @cdsgain.setter
+    def cdsgain(self, value):
+        ut.set_using_dict(self.setCDSGain, value)
+
+
+    @property
+    @element
+    def burstmode(self):
+        return self.getBurstMode()
+
+    @burstmode.setter
+    def burstmode(self, value):
+        ut.set_using_dict(self.setBurstMode, value)
+
+    @property
+    def burstperiod(self):
+        return ut.reduce_time(self.getBurstPeriod())
+
+    @burstperiod.setter
+    def burstperiod(self, value):
+        ut.set_time_using_dict(self.setBurstPeriod, value)
 
     @property
     def vetofile(self):
@@ -1944,6 +1981,25 @@ class Detector(CppDetectorApi):
     """
     <<<CTB>>>
     """
+
+    @property
+    @element
+    def adcenable(self):
+        return self.getADCEnableMask()
+
+    @adcenable.setter
+    def adcenable(self, value):
+        ut.set_using_dict(self.setADCEnableMask, value)
+
+    @property
+    @element
+    def adcenable10g(self):
+        return self.getTenGigaADCEnableMask()
+
+    @adcenable10g.setter
+    def adcenable10g(self, value):
+        ut.set_using_dict(self.setTenGigaADCEnableMask, value)
+
 
     @property
     @element

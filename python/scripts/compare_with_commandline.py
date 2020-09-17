@@ -102,6 +102,10 @@ intentionally_missing  = [
                         'pulse', # use pulseChip pulsePixel pulsePixelNmove
                         'pulsechip', 
                         'pulsenmove',
+                        'savepattern', #use savePattern()
+                        'resetfpga', #use resetFPGA()
+                        'rebootcontroller', #use rebootController()
+                        'firmwaretest', #use executeFirmwareTest
 ]
 
 pycmd += intentionally_missing

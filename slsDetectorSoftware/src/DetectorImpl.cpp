@@ -1037,7 +1037,7 @@ int DetectorImpl::acquire() {
             Parallel(&Module::incrementFileIndex, {});
         }
 
-        // waiting for the data processing thread to finish!
+        // let the progress thread (no callback) know acquisition is done
         if (dataReady == nullptr) {
             setJoinThreadFlag(true);
         }

@@ -11,6 +11,11 @@ Mythen3
    :widths: 35, 35
    :header-rows: 1
 
+.. csv-table:: DACS
+   :file: mythen3-dacs.csv
+   :widths: 35, 35
+   :header-rows: 1
+
 Gotthard2
 -------------
 

@@ -1,7 +1,18 @@
 import os 
 import re
 from pathlib import Path
-
+def remove_comments(text):
+    def replacer(match):
+        s = match.group(0)
+        if s.startswith('/'):
+            return " " # note: a space and not an empty string
+        else:
+            return s
+    pattern = re.compile(
+        r'//.*?$|/\*.*?\*/|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"',
+        re.DOTALL | re.MULTILINE
+    )
+    return re.sub(pattern, replacer, text)
 
 
 # @CMAKE_CURRENT_BINARY_DIR@
@@ -14,8 +25,9 @@ detectors = ['Mythen3', 'Gotthard2', 'Eiger',
 
 
 for det in detectors:
+    print(det)
     in_fname = src/f'{det.lower()}DetectorServer/slsDetectorServer_defs.h'
-    print(f'Reading: {in_fname}')
+    #print(f'Reading: {in_fname}')
     with open(in_fname) as f:
         lines = f.read().replace('\\\n', '')
         lines = lines.splitlines(keepends = True)
@@ -28,6 +40,8 @@ for det in detectors:
     header = f'{fields[0]:35}{fields[1]:35}\n'
     output.append(header)
     signals.append(header)
+    dac_names = []
+    dac_values = []
     for line in lines:
         name, *parts = line.split()
         arg = ' '.join(parts)
@@ -41,13 +55,32 @@ for det in detectors:
                 signals.append(f'{name:35}{value}\n')
             else:
                 output.append(f'{name:35}\"{value}\"\n')
+        elif name == 'DAC_NAMES':
+            dac_names = [v.strip(', ') for v in value.split()]
+            dac_names = [n+',' for n in dac_names]
+        elif name == 'DEFAULT_DAC_VALS':
+            dac_values = remove_comments(value).strip('{}; ')
+            dac_values = dac_values.replace(',', '').split()
+            dac_values = [v.strip('') for v in dac_values]
 
+    print(f"dac_names: {len(dac_names)}, dac_values={len(dac_values)}")
+    if len(dac_values) == 0:
+        dac_values = ['N/A']*len(dac_names)
+
+    
 
     rstpath = Path('@CMAKE_SOURCE_DIR@')/'docs/src/'
 
     out_fname = Path.cwd()/f'src/{det.lower()}.csv'
-    print(f'Writing: {out_fname}')
+    out_dac_fname = Path.cwd()/f'src/{det.lower()}-dacs.csv'
+    #print(f'Writing: {out_fname}')
     with open(out_fname, 'w') as f:
+        f.writelines(output)
+
+    output = [f'{n:35}{v}\n' for n,v in zip(dac_names, dac_values)]
+    output.insert(0, header)
+
+    with open(out_dac_fname, 'w') as f:
         f.writelines(output)
 
 print('END\n\n\n\n')

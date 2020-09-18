@@ -824,6 +824,9 @@ void setNumFrames(int64_t val) {
             LOG(logINFO,
                 ("Setting number of frames %lld [Continuous mode]\n", val));
             set64BitReg(val, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+            set64BitReg(val, ASIC_CONT_FRAMES_LSB_REG,
+                        ASIC_CONT_FRAMES_MSB_REG);
+
         }
         // burst
         else {
@@ -2153,6 +2156,8 @@ int setBurstMode(enum burstMode burst) {
     // continuous
     if (burstMode == CONTINUOUS_INTERNAL || burstMode == CONTINUOUS_EXTERNAL) {
         set64BitReg(framesReg, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+        set64BitReg(framesReg, ASIC_CONT_FRAMES_LSB_REG,
+                    ASIC_CONT_FRAMES_MSB_REG);
         set64BitReg(periodReg, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
         LOG(logINFO, ("\tFrames reg: %lld, Period reg: %lldns\n",
                       getNumFrames(), getPeriod()));

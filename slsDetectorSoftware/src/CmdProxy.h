@@ -1350,13 +1350,11 @@ class CmdProxy {
 
     GET_IND_COMMAND(
         temp_fpgafl, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA2, " °C",
-        "[n_value]\n\t[Eiger]Temperature of the left front end board fpga. "
-        "Cannot call this while blocking acquire is going on.");
+        "[n_value]\n\t[Eiger]Temperature of the left front end board fpga.");
 
     GET_IND_COMMAND(
         temp_fpgafr, getTemperature, slsDetectorDefs::TEMPERATURE_FPGA3, " °C",
-        "[n_value]\n\t[Eiger]Temperature of the left front end board fpga. "
-        "Cannot call this while blocking acquire is going on.");
+        "[n_value]\n\t[Eiger]Temperature of the left front end board fpga.");
 
     GET_IND_COMMAND(temp_slowadc, getTemperature,
                     slsDetectorDefs::SLOW_ADC_TEMP, " °C",

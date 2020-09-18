@@ -1313,9 +1313,9 @@ int getADC(enum ADCINDEX ind) {
     return 0;
 #else
     int retval = -1;
-    char tempnames[6][20] = {"FPGA EXT", "10GE", "DCDC",
-                             "SODL",     "SODR", "FPGA"};
+    char *adc_names[] = {ADC_NAMES};
     char cstore[255];
+    memset(cstore, 0, 255);
 
     switch (ind) {
     case TEMP_FPGA:
@@ -1348,7 +1348,7 @@ int getADC(enum ADCINDEX ind) {
     }
 
     LOG(logINFO,
-        ("Temperature %s: %f°C\n", tempnames[ind], (double)retval / 1000.00));
+        ("Temperature %s: %f°C\n", adc_names[ind], (double)retval / 1000.00));
 
     return retval;
 #endif

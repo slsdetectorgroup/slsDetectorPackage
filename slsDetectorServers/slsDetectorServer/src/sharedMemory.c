@@ -2,7 +2,8 @@
 #include "clogger.h"
 
 #include <errno.h>
-#include <pthread.h>
+//#include <pthread.h>
+#include <semaphore.h>
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -19,9 +20,11 @@
 
 typedef struct Memory {
     int version;
-    pthread_mutex_t lockStatus;
+    sem_t semStatus;
+    // pthread_mutex_t lockStatus;
 #ifdef EIGERD
-    pthread_mutex_t lockLocalLink;
+    sem_t semLocalLink;
+    // pthread_mutex_t lockLocalLink;
 #endif
     enum runStatus scanStatus; // idle, running or error
     int scanStop;
@@ -87,17 +90,19 @@ int sharedMemory_create(int port) {
 
 int sharedMemory_initialize() {
     shm->version = SHM_VERSION;
-    if (pthread_mutex_init(&(shm->lockStatus), NULL) != 0) {
+    sem_init(&(shm->semStatus), 1, 1);
+    /*if (pthread_mutex_init(&(shm->lockStatus), NULL) != 0) {
         LOG(logERROR, ("Failed to initialize pthread_mutex_t lockStatus for "
                        "shared memory\n"));
         return FAIL;
-    }
+    }*/
 #ifdef EIGERD
-    if (pthread_mutex_init(&(shm->lockLocalLink), NULL) != 0) {
+    sem_init(&(shm->semLocalLink), 1, 1);
+    /*if (pthread_mutex_init(&(shm->lockLocalLink), NULL) != 0) {
         LOG(logERROR, ("Failed to initialize pthread_mutex_t lockLocalLink for "
                        "shared memory\n"));
         return FAIL;
-    }
+    }*/
 #endif
     shm->scanStatus = IDLE;
     shm->scanStop = 0;
@@ -155,9 +160,13 @@ int sharedMemory_remove() {
     return OK;
 }
 
-void sharedMemory_lockStatus() { pthread_mutex_lock(&(shm->lockStatus)); }
+void sharedMemory_lockStatus() {
+    sem_wait(&(shm->semStatus)); /*pthread_mutex_lock(&(shm->lockStatus)); */
+}
 
-void sharedMemory_unlockStatus() { pthread_mutex_unlock(&(shm->lockStatus)); }
+void sharedMemory_unlockStatus() {
+    sem_post(&(shm->semStatus)); /*pthread_mutex_unlock(&(shm->lockStatus));*/
+}
 
 #ifdef VIRTUAL
 void sharedMemory_setStatus(enum runStatus s) {
@@ -219,12 +228,15 @@ int sharedMemory_getScanStop() {
 
 #ifdef EIGERD
 void sharedMemory_lockLocalLink() {
+    sem_wait(&(shm->semLocalLink));
+    /*
     if (pthread_mutex_lock(&(shm->lockLocalLink)) != 0) {
         cprintf(RED, "%s: mutex lock error\n", isControlServer ? "c" : "s");
-    }
+    }*/
 }
 
 void sharedMemory_unlockLocalLink() {
-    pthread_mutex_unlock(&(shm->lockLocalLink));
+    sem_post(
+        &(shm->semLocalLink)); /*pthread_mutex_unlock(&(shm->lockLocalLink));*/
 }
 #endif

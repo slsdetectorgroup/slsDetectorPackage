@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
         memset(portCmd, 0, 256);
         sprintf(portCmd, "-p%d", portno);
         for (int i = 0; i < argc; ++i) {
-            LOG(logINFOBLUE, ("i:%d argv[i]:%s\n", i, argv[i]));
+            LOG(logDEBUG, ("i:%d argv[i]:%s\n", i, argv[i]));
             // remove port argument (--port) and [value]
             if (!strcasecmp(argv[i], "--port")) {
                 ++i;
@@ -213,6 +213,24 @@ int main(int argc, char *argv[]) {
         LOG(logDEBUG1, ("Command to start stop server:%s\n", cmd));
         system(cmd);
 #endif
+
+#ifdef EIGERD
+        cprintf(RED, "c: going to lock\n");
+        sharedMemory_lockStatus();
+        cprintf(RED, "c:locked\n");
+        usleep(5 * 1000 * 1000);
+        cprintf(RED, "c:sleep done, going to unlock\n");
+        sharedMemory_unlockStatus();
+        cprintf(YELLOW, "c: unlocked!\n");
+        usleep(5 * 1000 * 1000);
+        cprintf(RED, "c: SLEEP DONE. step 2. going to lock\n");
+        sharedMemory_lockStatus();
+        cprintf(RED, "c:locked\n");
+        usleep(5 * 1000 * 1000);
+        cprintf(RED, "c:sleep done, going to unlock\n");
+        sharedMemory_unlockStatus();
+        cprintf(YELLOW, "c: unlocked!\n");
+#endif
     }
     // stop server
     else {
@@ -220,7 +238,19 @@ int main(int argc, char *argv[]) {
         if (sharedMemory_open(portno - 1) == FAIL) {
             return -1;
         }
+#ifdef EIGERD
+        cprintf(GREEN, "s: going to lock\n");
+        sharedMemory_lockStatus();
+        cprintf(GREEN, "s:locked\n");
+        usleep(5 * 1000 * 1000);
+        cprintf(GREEN, "s:sleep done, going to unlock\n");
+        sharedMemory_unlockStatus();
+        cprintf(MAGENTA, "s: unlocked!\n");
+#endif
     }
+
+    while (1)
+        ;
 
     // if socket crash, ignores SISPIPE, prevents global signal handler
     // subsequent read/write to socket gives error - must handle locally

@@ -152,6 +152,10 @@
 #define ASIC_INT_EXPTIME_LSB_REG            (0x04 * REG_OFFSET + BASE_ASIC)
 #define ASIC_INT_EXPTIME_MSB_REG            (0x05 * REG_OFFSET + BASE_ASIC)
 
+/* ASIC Exptime 64bit Register */
+#define ASIC_CONT_FRAMES_LSB_REG            (0x06 * REG_OFFSET + BASE_ASIC)
+#define ASIC_CONT_FRAMES_MSB_REG            (0x07 * REG_OFFSET + BASE_ASIC)
+
 /* Packetizer -------------------------------------------------------------*/
 
 /* Packetizer Config Register */

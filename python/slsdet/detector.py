@@ -253,11 +253,12 @@ class Detector(CppDetectorApi):
         -----
         This value is used to calculate row and column positions for each module and included into udp data packet header. \n 
         By default, it adds modules in y dimension for 2d detectors and in x dimension for 1d detectors.
-        :setter: Not implemented
         Example
         -------
         >>> d.detsize
         Geometry(x=3840, y=1)
+        >>> d.detsize = [1024, 512]
+        Geometry(x=1024, y = 512)
         """
         return to_geo(self.getDetectorSize())
 
@@ -2761,6 +2762,14 @@ class Detector(CppDetectorApi):
 
     @property
     def initialchecks(self):
+        """
+        Enable or disable intial compatibility and other checks at detector start up. 
+        Note
+        ----
+        It is enabled by default. Must come before 'hostname' command to take effect. \n
+        Can be used to reprogram fpga when current firmware is incompatible. \n
+        Advanced user function!
+        """
         return self.getInitialChecks()
     
     @initialchecks.setter

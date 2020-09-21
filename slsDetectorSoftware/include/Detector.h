@@ -353,9 +353,9 @@ class Detector {
     Result<int> getImageTestMode(Positions pos = {});
 
     /** [Gotthard] If 1, adds channel intensity with precalculated values.
-     * Default is 0
-     * [Eiger virtual] If 1, pixels are saturated. If 0, increasing intensity
-     * Only for virtual servers */
+     * Default is 0 \n
+     * [Eiger][Jungfrau] Only for virtual servers, if 1, pixels are saturated.
+     * If 0, increasing intensity */
     void setImageTestMode(const int value, Positions pos = {});
 
     /** gets list of temperature indices for this detector */
@@ -1122,6 +1122,7 @@ class Detector {
     Result<std::array<int, 2>> getInjectChannel(Positions pos = {});
 
     /** [Gotthard2]
+     * Inject channels with current source for calibration.
      * offsetChannel is starting channel to be injected
      * incrementChannel is determines succeeding channels to be injected */
     void setInjectChannel(const int offsetChannel, const int incrementChannel,
@@ -1577,8 +1578,10 @@ class Detector {
     /** Advanced user Function!  */
     bool getInitialChecks() const;
 
-    /** initial compaibility and other server start up checks
-     * default enabled Advanced user Function! */
+    /** Enables/disabled initial compaibility and other server start up checks.
+     * \n Default is enabled. Must come before 'hostname' command to take
+     * effect. \n Can be used to reprogram fpga when current firmware is
+     * incompatible. \n Advanced user Function! */
     void setInitialChecks(const bool value);
 
     /** [CTB][Moench][Jungfrau] Advanced user Function! */

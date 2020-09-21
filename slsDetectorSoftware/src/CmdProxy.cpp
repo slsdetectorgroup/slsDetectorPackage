@@ -2612,7 +2612,8 @@ std::string CmdProxy::InitialChecks(int action) {
         os << "[0, 1]\n\tEnable or disable intial compatibility and other "
               "checks at detector start up. It is enabled by default. Must "
               "come before 'hostname' command to take effect. Can be used to "
-              "reprogram fpga when current firmware is incompatible."
+              "reprogram fpga when current firmware is "
+              "incompatible.\n\tAdvanced User function!"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (det_id != -1) {

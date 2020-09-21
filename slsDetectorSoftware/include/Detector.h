@@ -58,7 +58,7 @@ class Detector {
 
     Result<std::string> getHostname(Positions pos = {}) const;
 
-    /**Frees shared memory, adds detectors to the list */
+    /**Frees shared memory, adds detectors to the list. */
     void setHostname(const std::vector<std::string> &hostname);
 
     /** connects to n servers at local host starting at specific control port */
@@ -98,8 +98,10 @@ class Detector {
     defs::xy getDetectorSize() const;
 
     /**
-     * Sets the detector size in both dimensions. \n
-     * This value is used to calculate row and column positions for each module.
+     * Sets the detector size in both dimensions (number of channels). \n
+     * This value is used to calculate row and column positions for each module
+     * and included into udp data packet header. \n By default, it adds modules
+     * in y dimension for 2d detectors and in x dimension for 1d detectors.
      */
     void setDetectorSize(const defs::xy value);
 
@@ -183,7 +185,8 @@ class Detector {
     Result<int64_t> getNumberOfFrames(Positions pos = {}) const;
 
     /** In trigger mode, number of frames per trigger. In scan mode, number of
-     * frames is set to number of steps */
+     * frames is set to number of steps \n [Gotthard2] Burst mode has a maximum
+     * of 2720 frames. */
     void setNumberOfFrames(int64_t value);
 
     Result<int64_t> getNumberOfTriggers(Positions pos = {}) const;
@@ -228,8 +231,8 @@ class Detector {
     Result<int> getDynamicRange(Positions pos = {}) const;
 
     /**
-     * [Eiger] Options: 4, 8, 16, 32. If i is 32, also sets clkdivider to 2, if
-     * 16, sets clkdivider to 1 \n [Mythen3] Options: 8, 16, 32 \n
+     * [Eiger] Options: 4, 8, 16, 32. If i is 32, also sets clkdivider to 2,
+     * else sets clkdivider to 1 \n [Mythen3] Options: 8, 16, 32 \n
      * [Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16
      */
     void setDynamicRange(int value);
@@ -313,7 +316,7 @@ class Detector {
     /** [Mythen3][Gotthard2] */
     Result<int> getClockPhase(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] */
+    /** [Mythen3][Gotthard2] absolute phase shift */
     void setClockPhase(int clkIndex, int value, Positions pos = {});
 
     /** [Mythen3][Gotthard2] */
@@ -328,7 +331,7 @@ class Detector {
     /** [Mythen3][Gotthard2] */
     Result<int> getClockDivider(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] */
+    /** [Mythen3][Gotthard2] Must be greater than 1. */
     void setClockDivider(int clkIndex, int value, Positions pos = {});
 
     Result<int> getHighVoltage(Positions pos = {}) const;
@@ -350,9 +353,9 @@ class Detector {
     Result<int> getImageTestMode(Positions pos = {});
 
     /** [Gotthard] If 1, adds channel intensity with precalculated values.
-     * Default is 0
-     * [Eiger virtual] If 1, pixels are saturated. If 0, increasing intensity
-     * Only for virtual servers */
+     * Default is 0 \n
+     * [Eiger][Jungfrau] Only for virtual servers, if 1, pixels are saturated.
+     * If 0, increasing intensity */
     void setImageTestMode(const int value, Positions pos = {});
 
     /** gets list of temperature indices for this detector */
@@ -430,8 +433,8 @@ class Detector {
      */
     void acquire();
 
-    /** If acquisition aborted, use this to clear before starting next
-     * acquisition */
+    /** If acquisition aborted during blocking acquire, use this to clear
+     * acquiring flag in shared memory before starting next acquisition */
     void clearAcquiringFlag();
 
     /** Non Blocking: Start receiver listener and create data file if file write
@@ -738,7 +741,7 @@ class Detector {
 
     Result<std::string> getFilePath(Positions pos = {}) const;
 
-    /** If path does not exist, it will try to create it */
+    /** Default is "/"If path does not exist, it will try to create it */
     void setFilePath(const std::string &fpath, Positions pos = {});
 
     Result<std::string> getFileNamePrefix(Positions pos = {}) const;
@@ -751,7 +754,10 @@ class Detector {
 
     Result<int64_t> getAcquisitionIndex(Positions pos = {}) const;
 
-    /** file or Acquisition index in receiver */
+    /** file or Acquisition index in receiver \n
+     * File name: [file name prefix]_d[detector index]_f[sub file
+     * index]_[acquisition/file index].[raw/h5].
+     */
     void setAcquisitionIndex(int64_t i, Positions pos = {});
 
     Result<bool> getFileWrite(Positions pos = {}) const;
@@ -906,7 +912,7 @@ class Detector {
     /** [Eiger] */
     Result<bool> getBottom(Positions pos = {}) const;
 
-    /** [Eiger] for client call back (gui) purposes */
+    /** [Eiger] for client call back (gui) purposes to flip bottom image */
     void setBottom(bool value, Positions pos = {});
 
     /**[Eiger] Returns energies in eV where the module is trimmed */
@@ -954,13 +960,14 @@ class Detector {
     /** [Eiger] */
     Result<bool> getActive(Positions pos = {}) const;
 
-    /** [Eiger] */
+    /** [Eiger] activated by default at hostname command. Deactivated does not
+     * send data or communicated with FEB or BEB */
     void setActive(const bool active, Positions pos = {});
 
     /** [Eiger] */
     Result<bool> getRxPadDeactivatedMode(Positions pos = {}) const;
 
-    /** [Eiger] Pad deactivated modules in receiver */
+    /** [Eiger] Pad deactivated modules in receiver. Enabled by default */
     void setRxPadDeactivatedMode(bool pad, Positions pos = {});
 
     /** [Eiger] Advanced */
@@ -1033,7 +1040,7 @@ class Detector {
      * automatically after 93.75% of exposure time (only for longer than
      * 100us).\n
      * Default is false or this mode disabled(comparator enabled throughout).
-     * true enables " "mode. 0 disables mode.
+     * true enables mode. 0 disables mode.
      */
     void setAutoCompDisable(bool value, Positions pos = {});
 
@@ -1080,7 +1087,8 @@ class Detector {
      */
     void setROI(defs::ROI value, int module_id);
 
-    /** [Gotthard] Clear ROI */
+    /** [Gotthard] Clear ROI to all channels enabled. Default is all channels
+     * enabled. */
     void clearROI(Positions pos = {});
 
     /** [Gotthard] */
@@ -1104,13 +1112,15 @@ class Detector {
     /** [Gotthard2] only in burst mode and auto timing mode */
     Result<ns> getBurstPeriod(Positions pos = {}) const;
 
-    /** [Gotthard2] only in burst mode and auto timing mode */
+    /** [Gotthard2] Period between 2 bursts. Only in burst mode and auto timing
+     * mode */
     void setBurstPeriod(ns value, Positions pos = {});
 
     /** [Gotthard2] offset channel, increment channel */
     Result<std::array<int, 2>> getInjectChannel(Positions pos = {});
 
     /** [Gotthard2]
+     * Inject channels with current source for calibration.
      * offsetChannel is starting channel to be injected
      * incrementChannel is determines succeeding channels to be injected */
     void setInjectChannel(const int offsetChannel, const int incrementChannel,
@@ -1149,7 +1159,7 @@ class Detector {
     /** [Gotthard2] */
     Result<int> getFilter(Positions pos = {}) const;
 
-    /** default 0 */
+    /** [Gotthard2] Set filter resister. Options: 0-3. Default: 0 */
     void setFilter(int value, Positions pos = {});
 
     /** [Gotthard2] */
@@ -1174,7 +1184,8 @@ class Detector {
     Result<int> getADCConfiguration(const int chipIndex, const int adcIndex,
                                     Positions pos = {}) const;
 
-    /** [Gotthard2] */
+    /** [Gotthard2] configures one chip at a time for specific adc, chipIndex
+     * and adcIndex is -1 for all */
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              const int value, Positions pos = {});
 
@@ -1283,7 +1294,8 @@ class Detector {
     /** [CTB][Moench] */
     Result<uint32_t> getTenGigaADCEnableMask(Positions pos = {}) const;
 
-    /** [CTB][Moench] */
+    /** [CTB][Moench] If any of a consecutive 4 bits are enabled, the "
+        "complete 4 bits are enabled */
     void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
     ///@{
 
@@ -1337,13 +1349,13 @@ class Detector {
     /** [CTB] */
     Result<int> getExternalSamplingSource(Positions pos = {}) const;
 
-    /** [CTB] Value between 0-63 */
+    /** [CTB] Value between 0-63 \n For advanced users only.*/
     void setExternalSamplingSource(int value, Positions pos = {});
 
     /** [CTB] */
     Result<bool> getExternalSampling(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB] For advanced users only. */
     void setExternalSampling(bool value, Positions pos = {});
 
     /** [CTB] */
@@ -1504,9 +1516,10 @@ class Detector {
     void resetFPGA(Positions pos = {});
 
     /** [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2]
-     * Advanced user Function!
-     * Copy detector server fname from tftp folder of hostname to detector
-     * Also changes respawn server, which is effective after a reboot.
+     * Advanced user Function! \n
+     * Copy detector server fname from tftp folder of hostname to detector \n
+     * [Jungfrau][Gotthard][CTB][Moench] Also changes respawn server, which is
+     * effective after a reboot.
      */
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname, Positions pos = {});
@@ -1517,13 +1530,14 @@ class Detector {
 
     /**
      * [Jungfrau][Gotthard][CTB][Moench]
-     * Advanced user Function!
+     * Advanced user Function! \n
      * Updates the firmware, detector server and then reboots detector
-     * controller blackfin.
-     * sname is name of detector server binary found on tftp folder of host
-     * pc
-     * hostname is name of pc to tftp from
-     * fname is programming file name
+     * controller blackfin. \n
+     * [Mythen3][Gotthard2] Will still have old server starting up as the new
+     * server is not respawned \n
+      sname is name of detector server binary found on
+     * tftp folder of host pc hostname is name of pc to tftp from fname is
+     * programming file name
      */
     void updateFirmwareAndServer(const std::string &sname,
                                  const std::string &hostname,
@@ -1543,12 +1557,16 @@ class Detector {
     /** Advanced user Function!  */
     void clearBit(uint32_t addr, int bitnr, Positions pos = {});
 
+    /** Advanced user Function!  */
+    Result<int> getBit(uint32_t addr, int bitnr, Positions pos = {});
+
     /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Advanced user
      * Function! */
     void executeFirmwareTest(Positions pos = {});
 
     /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Advanced user
-     * Function! */
+     * Function! Writes different values in a R/W register and confirms the
+     * writes to check bus */
     void executeBusTest(Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB][Moench] Advanced user Function! not possible
@@ -1558,14 +1576,17 @@ class Detector {
     /** Advanced user Function!  */
     bool getInitialChecks() const;
 
-    /** initial compaibility and other server start up checks
-     * default enabled Advanced user Function! */
+    /** Enables/disabled initial compaibility and other server start up checks.
+     * \n Default is enabled. Must come before 'hostname' command to take
+     * effect. \n Can be used to reprogram fpga when current firmware is
+     * incompatible. \n Advanced user Function! */
     void setInitialChecks(const bool value);
 
     /** [CTB][Moench][Jungfrau] Advanced user Function! */
     Result<uint32_t> getADCInvert(Positions pos = {}) const;
 
-    /** [CTB][Moench][Jungfrau] Advanced user Function! */
+    /** [CTB][Moench][Jungfrau] Advanced user Function! \n
+    [Jungfrau] Inversions on top of default mask */
     void setADCInvert(uint32_t value, Positions pos = {});
     ///@{
 
@@ -1606,11 +1627,11 @@ class Detector {
     Result<int64_t> getNumberOfFramesFromStart(Positions pos = {}) const;
 
     /** [Jungfrau][Mythen3][CTB][Moench] Get time from detector start
-     * [Gotthard2] only in continuous mode */
+     * [Gotthard2] not in burst and auto mode */
     Result<ns> getActualTime(Positions pos = {}) const;
 
     /** [Jungfrau][Mythen3][CTB][Moench] Get timestamp at a frame start
-     * [Gotthard2] only in continuous mode */
+     * [Gotthard2] not in burst and auto mode */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
 
     /** get user details from shared memory  (hostname, type, PID, User, Date)

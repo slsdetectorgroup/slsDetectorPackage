@@ -597,6 +597,7 @@ class CmdProxy {
         {"detectorversion", "firmwareversion"},
         {"softwareversion", "detectorserverversion"},
         {"receiverversion", "rx_version"},
+        {"detectornumber", "serialnumber"},
         {"thisversion", "clientversion"},
         {"detsizechan", "detsize"},
 
@@ -703,7 +704,7 @@ class CmdProxy {
         {"firmwareversion", &CmdProxy::FirmwareVersion},
         {"detectorserverversion", &CmdProxy::detectorserverversion},
         {"rx_version", &CmdProxy::rx_version},
-        {"detectornumber", &CmdProxy::detectornumber},
+        {"serialnumber", &CmdProxy::serialnumber},
         {"type", &CmdProxy::type},
         {"nmod", &CmdProxy::nmod},
         {"detsize", &CmdProxy::DetectorSize},
@@ -1176,8 +1177,8 @@ class CmdProxy {
     GET_COMMAND_HEX(rx_version, getReceiverVersion,
                     "\n\tReceiver version in format [0xYYMMDD].");
 
-    GET_COMMAND_HEX(detectornumber, getSerialNumber,
-                    "\n\tReceiver version in format [0xYYMMDD].");
+    GET_COMMAND_HEX(serialnumber, getSerialNumber,
+                    "\n\tSerial number of detector.");
 
     GET_COMMAND(type, getDetectorType,
                 "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, "
@@ -1222,8 +1223,8 @@ class CmdProxy {
     INTEGER_COMMAND_NOID(
         frames, getNumberOfFrames, setNumberOfFrames, StringTo<int64_t>,
         "[n_frames]\n\tNumber of frames per acquisition. In "
-        "trigger mode, number of frames per trigger. Cannot be set in modular "
-        "level. In scan mode, number of frames is set to number of "
+        "trigger mode, number of frames per trigger. \n\tCannot be set in "
+        "modular level. \n\tIn scan mode, number of frames is set to number of "
         "steps.\n\t[Gotthard2] Burst mode has a maximum of 2720 frames.");
 
     INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
@@ -1587,7 +1588,8 @@ class CmdProxy {
     DAC_COMMAND(
         adcvpp, getDAC, setDAC, defs::ADC_VPP,
         "[dac or mV value][(optional unit) mV] \n\t[Ctb][Moench] Vpp of "
-        "ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V.");
+        "ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V. "
+        "\n\tAdvanced User function! ");
 
     DAC_COMMAND(vb_ds, getDAC, setDAC, defs::VB_DS,
                 "[dac or mV value][(optional unit) mV] \n\t[Jungfrau] Dac for "
@@ -1667,9 +1669,10 @@ class CmdProxy {
 
     /* acquisition */
 
-    EXECUTE_SET_COMMAND_NOID(clearbusy, clearAcquiringFlag,
-                             "\n\tClears Acquiring Flag for unexpected acquire "
-                             "command terminations.");
+    EXECUTE_SET_COMMAND_NOID(
+        clearbusy, clearAcquiringFlag,
+        "\n\tIf acquisition aborted during acquire command, use this to clear "
+        "acquiring flag in shared memory before starting next acquisition");
 
     EXECUTE_SET_COMMAND_NOID(
         rx_start, startReceiver,
@@ -1899,10 +1902,10 @@ class CmdProxy {
         "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be "
         "compiled with HDF5 flags. Default is binary.");
 
-    STRING_COMMAND(
-        fpath, getFilePath, setFilePath,
-        "[path]\n\tDirectory where output data files are written in receiver. "
-        "If path does not exist, it will try to create it.");
+    STRING_COMMAND(fpath, getFilePath, setFilePath,
+                   "[path]\n\tDirectory where output data files are written in "
+                   "receiver. Default is '/'. \n\tIf path does not exist, it "
+                   "will try to create it.");
 
     STRING_COMMAND(fname, getFileNamePrefix, setFileNamePrefix,
                    "[name]\n\tFile name prefix for output data file. Default "
@@ -2012,8 +2015,9 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         flippeddatax, getBottom, setBottom, StringTo<int>,
         "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 "
-        "is top. Used to let Receivers and Gui know to flip the bottom image "
-        "over the x axis. Files are not written without the flip however.");
+        "is top. Used to let Gui (via zmq from receiver) know to flip the "
+        "bottom image over the x axis. Files are not written without the flip "
+        "however.");
 
     INTEGER_COMMAND_VEC_ID(
         readnlines, getPartialReadout, setPartialReadout, StringTo<int>,
@@ -2105,9 +2109,10 @@ class CmdProxy {
         "timing mode and burst mode. Use timing command to set timing mode and "
         "burstmode command to set burst mode.");
 
-    TIME_COMMAND(burstperiod, getBurstPeriod, setBurstPeriod,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] Burst "
-                 "period. Only in burst mode and auto timing mode.");
+    TIME_COMMAND(
+        burstperiod, getBurstPeriod, setBurstPeriod,
+        "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] "
+        "Period between 2 bursts. Only in burst mode and auto timing mode.");
 
     INTEGER_COMMAND_VEC_ID(
         cdsgain, getCDSGain, setCDSGain, StringTo<bool>,
@@ -2169,13 +2174,13 @@ class CmdProxy {
     INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask,
                         StringTo<uint32_t>,
                         "[bitmask]\n\t[Ctb][Moench] ADC Enable Mask for 1Gb "
-                        "Mode for each 32 ADC channel.");
+                        "Enable for each 32 ADC channel.");
 
     INTEGER_COMMAND_HEX(
         adcenable10g, getTenGigaADCEnableMask, setTenGigaADCEnableMask,
         StringTo<uint32_t>,
         "[bitmask]\n\t[Ctb][Moench] ADC Enable Mask for 10Gb mode for each 32 "
-        "ADC channel. However, if any of consecutive 4 bits are enabled, the "
+        "ADC channel. However, if any of a consecutive 4 bits are enabled, the "
         "complete 4 bits are enabled.");
 
     /* CTB Specific */
@@ -2258,8 +2263,8 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         extsampling, getExternalSampling, setExternalSampling, StringTo<int>,
-        "[0, 1]\n\t[Ctb] Enable for external sampling signal to extsamplingsrc "
-        "signal for digital data. For advanced users only.");
+        "[0, 1]\n\t[Ctb] Enable for external sampling signal for digital data "
+        "to signal by extsampling src command. For advanced users only.");
 
     INTEGER_COMMAND_VEC_ID(
         extsamplingsrc, getExternalSamplingSource, setExternalSamplingSource,
@@ -2319,7 +2324,8 @@ class CmdProxy {
     EXECUTE_SET_COMMAND(
         bustest, executeBusTest,
         "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb][Moench] Bus test, "
-        "ie. keeps writing and reading back different values in R/W register.");
+        "ie. Writes different values in a R/W register and confirms the "
+        "writes to check bus.\n\tAdvanced User function!");
 
     INTEGER_COMMAND_HEX(
         adcinvert, getADCInvert, setADCInvert, StringTo<uint32_t>,
@@ -2355,13 +2361,13 @@ class CmdProxy {
                      "[(optional unit) "
                      "ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench]["
                      "CTB] Time from detector start up."
-                     "\n\t[Gotthard2] only in continuous mode.");
+                     "\n\t[Gotthard2] not in burst and auto mode.");
 
     TIME_GET_COMMAND(timestamp, getMeasurementTime,
                      "[(optional unit) "
                      "ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench]["
                      "CTB] Timestamp at a frame start."
-                     "\n\t[Gotthard2] only in continuous mode.");
+                     "\n\t[Gotthard2] not in burst and auto mode.");
 
     GET_COMMAND(
         rx_frameindex, getRxCurrentFrameIndex,

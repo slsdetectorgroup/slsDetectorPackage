@@ -41,7 +41,7 @@ def to_geo(value):
     if isinstance(value, _slsdet.xy):
         return Geometry(x = value.x, y = value.y)
     else:
-        raise ValueError("Can only convert sls_detector.xy")
+        raise ValueError("Can only convert slsdet.xy")
 
 def all_equal(mylist):
     """If all elements are equal return true otherwise false"""

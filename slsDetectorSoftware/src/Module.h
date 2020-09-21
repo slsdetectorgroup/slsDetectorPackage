@@ -497,8 +497,9 @@ class Module : public virtual slsDetectorDefs {
     void rebootController();
     uint32_t readRegister(uint32_t addr) const;
     uint32_t writeRegister(uint32_t addr, uint32_t val);
-    uint32_t setBit(uint32_t addr, int n);
-    uint32_t clearBit(uint32_t addr, int n);
+    void setBit(uint32_t addr, int n);
+    void clearBit(uint32_t addr, int n);
+    int getBit(uint32_t addr, int n);
     void executeFirmwareTest();
     void executeBusTest();
     void writeAdcRegister(uint32_t addr, uint32_t val);

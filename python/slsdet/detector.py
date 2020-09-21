@@ -10,6 +10,7 @@ detectorType = slsDetectorDefs.detectorType
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
+from _slsdet import xy
 from . import utils as ut
 from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy
 from .registers import Register, Adc_register
@@ -131,7 +132,15 @@ class Detector(CppDetectorApi):
 
     @property
     def hostname(self):
-        """Frees shared memory and sets hostname (or IP address) of all modules concatenated by + """
+        """Frees shared memory and sets hostname (or IP address) of all modules concatenated by + 
+        Virtual servers can already use the port in hostname separated by ':' and ports incremented by 2 to accomodate the stop server as well.
+        Example
+        -------
+        >>> d.hostname = 'beb031+beb032+'
+        >>> d.hostname = 'localhost:1912+localhost:1914+'
+        >>> d.hostname
+        ['localhost']
+        """
         return self.getHostname()
 
     @hostname.setter
@@ -165,16 +174,35 @@ class Detector(CppDetectorApi):
 
     @property
     def firmwareversion(self):
+        """
+        Fimware version of detector in format [0xYYMMDD] or an increasing 2 digit number for Eiger.
+        Example
+        -------
+        >>> hex(d.firmwareversion)
+        '0x200910'
+        """
         return element_if_equal(self.getFirmwareVersion())
 
     @property
     def detectorserverversion(self):
+        """
+        On-board detector server software version in format [0xYYMMDD]
+        Example
+        -------
+        >>> hex(d.detectorserverversion)
+        '0x200910'
+        """
         # TODO! handle hex print
         return element_if_equal(self.getDetectorServerVersion())
 
     @property
     def clientversion(self):
-        """Client software version in format [YYMMDD]"""
+        """Client software version in format [YYMMDD]
+        Example
+        -------
+        >>> hex(d.clientversion)
+        '0x200810'
+        """
         return self.getClientVersion()
 
     @property
@@ -206,6 +234,7 @@ class Detector(CppDetectorApi):
 
     @property
     def drlist(self):
+        """List of possible dynamic ranges for this detector"""
         return self.getDynamicRangeList()
 
     @property
@@ -219,7 +248,27 @@ class Detector(CppDetectorApi):
 
     @property
     def detsize(self):
+        """
+        Sets the detector size in both dimensions (number of channels). 
+        Note
+        -----
+        This value is used to calculate row and column positions for each module and included into udp data packet header. \n 
+        By default, it adds modules in y dimension for 2d detectors and in x dimension for 1d detectors.
+        Example
+        -------
+        >>> d.detsize
+        Geometry(x=3840, y=1)
+        >>> d.detsize = [1024, 512]
+        Geometry(x=1024, y = 512)
+        """
         return to_geo(self.getDetectorSize())
+
+    @detsize.setter
+    def detsize(self, size):
+        if isinstance(size, xy):
+            self.setDetectorSize(size)
+        else:
+            self.setDetectorSize(xy(*size))
 
     @property
     def settings(self):
@@ -247,8 +296,8 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        Cannot be set in modular level. ????
-        In scan mode, number of frames is set to number of steps.
+        Cannot be set in modular level. \n
+        In scan mode, number of frames is set to number of steps. \n
         [Gotthard2] Burst mode has a maximum of 2720 frames.
         """
         return element_if_equal(self.getNumberOfFrames())
@@ -260,6 +309,10 @@ class Detector(CppDetectorApi):
     @property
     @element
     def framesl(self):
+        """
+        [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Number of frames left in acquisition.\n
+        [Gotthard2] only in continuous mode.
+        """
         return self.getNumberOfFramesLeft()
 
     @property
@@ -393,9 +446,9 @@ class Detector(CppDetectorApi):
 
         Example
         -----------
-        >>> d.delay
+        >>> d.delayl
         181.23
-        >>> d.getDelayAfterTrigger()
+        >>> d.getDelayAfterTriggerLeft()
         [datetime.timedelta(seconds=181, microseconds=230000)]
         """
         return ut.reduce_time(self.getDelayAfterTriggerLeft())
@@ -623,7 +676,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def findex(self):
-        """File or Acquisition index in receiver."""
+        """File or Acquisition index in receiver.
+        Note
+        ----
+        File name: [file name prefix]_d[detector index]_f[sub file index]_[acquisition/file index].[raw/h5].
+        """
         return self.getAcquisitionIndex()
 
     @findex.setter
@@ -651,8 +708,7 @@ class Detector(CppDetectorApi):
 
     @property
     def fpath(self):
-        """Directory where output data files are written in receiver.
-
+        """Directory where output data files are written in receiver. Default is "/".
         Note
         ----
         If path does not exist, it will try to create it.
@@ -1225,7 +1281,7 @@ class Detector(CppDetectorApi):
     def dacvalues(self):
         """Gets the dac values for every dac for this detector."""
         return {
-            dac.name.lower(): np.array(self.getDAC(dac, False))
+            dac.name.lower(): element_if_equal(np.array(self.getDAC(dac, False)))
             for dac in self.getDacList()
         }
 
@@ -1264,6 +1320,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def adcinvert(self):
+        """[Ctb][Moench][Jungfrau] ADC Inversion Mask.
+        Note
+        -----
+        [Jungfrau][Moench] Inversions on top of the default mask.
+        """
         return self.getADCInvert()
 
     @adcinvert.setter
@@ -1831,6 +1892,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def bursts(self):
+        """[Gotthard2] Number of bursts per aquire. Only in auto timing mode and burst mode."""
         return self.getNumberOfBursts()
 
     @bursts.setter
@@ -1840,6 +1902,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def filter(self):
+        """[Gotthard2] Set filter resistor. 
+        Note
+        ----
+        Default is 0. Options: 0-3.
+        """
         return self.getFilter()
 
     @filter.setter
@@ -1878,6 +1945,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def cdsgain(self):
+        """[Gotthard2] Enable or disable CDS gain. Default is disabled. """
         return self.getCDSGain()
 
     @cdsgain.setter
@@ -1888,6 +1956,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def burstmode(self):
+        """[Gotthard2] Burst mode of detector. Enum: burstMode
+        Note
+        ----
+        BURST_INTERNAL (default), BURST_EXTERNAL, CONTINUOUS_INTERNAL, CONTINUOUS_EXTERNAL
+        """
         return self.getBurstMode()
 
     @burstmode.setter
@@ -1896,6 +1969,22 @@ class Detector(CppDetectorApi):
 
     @property
     def burstperiod(self):
+        """
+        [Gotthard2] Period between 2 bursts. Only in burst mode and auto timing mode.
+        Note
+        -----
+        :getter: always returns in seconds. To get in datetime.delta, use getBurstPeriod
+
+        Example
+        -----------
+        >>> d.burstperiod = 1.05
+        >>> d.burstperiod = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>> d.burstperiod
+        181.23
+        >>> d.getBurstPeriod()
+        [datetime.timedelta(seconds=181, microseconds=230000)]
+
+        """
         return ut.reduce_time(self.getBurstPeriod())
 
     @burstperiod.setter
@@ -2031,6 +2120,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def adcenable(self):
+        """[Ctb][Moench] ADC Enable Mask for 1Gb. Enable for each 32 ADC channel."""
         return self.getADCEnableMask()
 
     @adcenable.setter
@@ -2040,6 +2130,10 @@ class Detector(CppDetectorApi):
     @property
     @element
     def adcenable10g(self):
+        """[Ctb][Moench] ADC Enable Mask for 10Gb mode for each 32 ADC channel. 
+        Note
+        -----
+        If any of a consecutive 4 bits are enabled, the complete 4 bits are enabled."""
         return self.getTenGigaADCEnableMask()
 
     @adcenable10g.setter
@@ -2603,6 +2697,19 @@ class Detector(CppDetectorApi):
 
     @property
     def clkdiv(self):
+        """
+        [Gotthard2][Mythen3] Clock Divider of 5 clocks. Must be greater than 1.
+        Example
+        -------
+        >>> d.clkdiv[0] = 20
+        >>> d.clkdiv
+        0: 20
+        1: 10
+        2: 20
+        3: 10
+        4: 10
+        5: 5
+        """
         return ClkDivProxy(self)
 
 
@@ -2612,6 +2719,18 @@ class Detector(CppDetectorApi):
 
     @property
     def exptimel(self):
+        """[Gotthard] Exposure time left for current frame.
+        Note
+        -----
+        :getter: always returns in seconds. To get in datetime.delta, use getExptimeLeft
+
+        Example
+        -----------
+        >>> d.exptimel
+        181.23
+        >>> d.getExptimeLeft()
+        [datetime.timedelta(seconds=181, microseconds=230000)]
+        """
         t = self.getExptimeLeft()
         return reduce_time(t)
 
@@ -2623,6 +2742,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def gates(self):
+        """[Mythen3] Number of external gates in gating or trigger_gating mode (external gating)."""
         return self.getNumberOfGates()
 
     @gates.setter
@@ -2632,6 +2752,16 @@ class Detector(CppDetectorApi):
 
     @property
     def clkfreq(self):
+        """
+        [Gotthard2][Mythen3] Frequency of clock in Hz. 
+        Note
+        -----
+        :setter: Not implemented. Use clkdiv to set frequency
+        Example
+        -------
+        >>> d.clkfreq[0]
+        50000000
+        """
         return ClkFreqProxy(self)
 
     """
@@ -2640,6 +2770,14 @@ class Detector(CppDetectorApi):
 
     @property
     def initialchecks(self):
+        """
+        Enable or disable intial compatibility and other checks at detector start up. 
+        Note
+        ----
+        It is enabled by default. Must come before 'hostname' command to take effect. \n
+        Can be used to reprogram fpga when current firmware is incompatible. \n
+        Advanced user function!
+        """
         return self.getInitialChecks()
     
     @initialchecks.setter

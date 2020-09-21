@@ -1589,7 +1589,8 @@ class CmdProxy {
     DAC_COMMAND(
         adcvpp, getDAC, setDAC, defs::ADC_VPP,
         "[dac or mV value][(optional unit) mV] \n\t[Ctb][Moench] Vpp of "
-        "ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V.");
+        "ADC.\n\t 0 -> 1V ; 1 -> 1.14V ; 2 -> 1.33V ; 3 -> 1.6V ; 4 -> 2V. "
+        "\n\tAdvanced User function! ");
 
     DAC_COMMAND(vb_ds, getDAC, setDAC, defs::VB_DS,
                 "[dac or mV value][(optional unit) mV] \n\t[Jungfrau] Dac for "
@@ -1669,9 +1670,10 @@ class CmdProxy {
 
     /* acquisition */
 
-    EXECUTE_SET_COMMAND_NOID(clearbusy, clearAcquiringFlag,
-                             "\n\tClears Acquiring Flag for unexpected acquire "
-                             "command terminations.");
+    EXECUTE_SET_COMMAND_NOID(
+        clearbusy, clearAcquiringFlag,
+        "\n\tIf acquisition aborted during acquire command, use this to clear "
+        "acquiring flag in shared memory before starting next acquisition");
 
     EXECUTE_SET_COMMAND_NOID(
         rx_start, startReceiver,
@@ -2107,9 +2109,10 @@ class CmdProxy {
         "timing mode and burst mode. Use timing command to set timing mode and "
         "burstmode command to set burst mode.");
 
-    TIME_COMMAND(burstperiod, getBurstPeriod, setBurstPeriod,
-                 "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] Burst "
-                 "period. Only in burst mode and auto timing mode.");
+    TIME_COMMAND(
+        burstperiod, getBurstPeriod, setBurstPeriod,
+        "[duration] [(optional unit) ns|us|ms|s]\n\t[Gotthard2] "
+        "Period between 2 bursts. Only in burst mode and auto timing mode.");
 
     INTEGER_COMMAND_VEC_ID(
         cdsgain, getCDSGain, setCDSGain, StringTo<bool>,
@@ -2171,13 +2174,13 @@ class CmdProxy {
     INTEGER_COMMAND_HEX(adcenable, getADCEnableMask, setADCEnableMask,
                         StringTo<uint32_t>,
                         "[bitmask]\n\t[Ctb][Moench] ADC Enable Mask for 1Gb "
-                        "Mode for each 32 ADC channel.");
+                        "Enable for each 32 ADC channel.");
 
     INTEGER_COMMAND_HEX(
         adcenable10g, getTenGigaADCEnableMask, setTenGigaADCEnableMask,
         StringTo<uint32_t>,
         "[bitmask]\n\t[Ctb][Moench] ADC Enable Mask for 10Gb mode for each 32 "
-        "ADC channel. However, if any of consecutive 4 bits are enabled, the "
+        "ADC channel. However, if any of a consecutive 4 bits are enabled, the "
         "complete 4 bits are enabled.");
 
     /* CTB Specific */
@@ -2321,7 +2324,8 @@ class CmdProxy {
     EXECUTE_SET_COMMAND(
         bustest, executeBusTest,
         "\n\t[Jungfrau][Gotthard][Mythen3][Gotthard2][Ctb][Moench] Bus test, "
-        "ie. keeps writing and reading back different values in R/W register.");
+        "ie. Writes different values in a R/W register and confirms the "
+        "writes to check bus.\n\tAdvanced User function!");
 
     INTEGER_COMMAND_HEX(
         adcinvert, getADCInvert, setADCInvert, StringTo<uint32_t>,

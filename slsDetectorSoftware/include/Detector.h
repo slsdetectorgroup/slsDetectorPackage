@@ -432,8 +432,8 @@ class Detector {
      */
     void acquire();
 
-    /** If acquisition aborted, use this to clear before starting next
-     * acquisition */
+    /** If acquisition aborted during blocking acquire, use this to clear
+     * acquiring flag in shared memory before starting next acquisition */
     void clearAcquiringFlag();
 
     /** Non Blocking: Start receiver listener and create data file if file write
@@ -956,13 +956,14 @@ class Detector {
     /** [Eiger] */
     Result<bool> getActive(Positions pos = {}) const;
 
-    /** [Eiger] */
+    /** [Eiger] activated by default at hostname command. Deactivated does not
+     * send data or communicated with FEB or BEB */
     void setActive(const bool active, Positions pos = {});
 
     /** [Eiger] */
     Result<bool> getRxPadDeactivatedMode(Positions pos = {}) const;
 
-    /** [Eiger] Pad deactivated modules in receiver */
+    /** [Eiger] Pad deactivated modules in receiver. Enabled by default */
     void setRxPadDeactivatedMode(bool pad, Positions pos = {});
 
     /** [Eiger] Advanced */
@@ -1035,7 +1036,7 @@ class Detector {
      * automatically after 93.75% of exposure time (only for longer than
      * 100us).\n
      * Default is false or this mode disabled(comparator enabled throughout).
-     * true enables " "mode. 0 disables mode.
+     * true enables mode. 0 disables mode.
      */
     void setAutoCompDisable(bool value, Positions pos = {});
 
@@ -1082,7 +1083,8 @@ class Detector {
      */
     void setROI(defs::ROI value, int module_id);
 
-    /** [Gotthard] Clear ROI */
+    /** [Gotthard] Clear ROI to all channels enabled. Default is all channels
+     * enabled. */
     void clearROI(Positions pos = {});
 
     /** [Gotthard] */
@@ -1106,7 +1108,8 @@ class Detector {
     /** [Gotthard2] only in burst mode and auto timing mode */
     Result<ns> getBurstPeriod(Positions pos = {}) const;
 
-    /** [Gotthard2] only in burst mode and auto timing mode */
+    /** [Gotthard2] Period between 2 bursts. Only in burst mode and auto timing
+     * mode */
     void setBurstPeriod(ns value, Positions pos = {});
 
     /** [Gotthard2] offset channel, increment channel */
@@ -1285,7 +1288,8 @@ class Detector {
     /** [CTB][Moench] */
     Result<uint32_t> getTenGigaADCEnableMask(Positions pos = {}) const;
 
-    /** [CTB][Moench] */
+    /** [CTB][Moench] If any of a consecutive 4 bits are enabled, the "
+        "complete 4 bits are enabled */
     void setTenGigaADCEnableMask(uint32_t mask, Positions pos = {});
     ///@{
 
@@ -1545,12 +1549,16 @@ class Detector {
     /** Advanced user Function!  */
     void clearBit(uint32_t addr, int bitnr, Positions pos = {});
 
+    /** Advanced user Function!  */
+    Result<int> getBit(uint32_t addr, int bitnr, Positions pos = {});
+
     /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Advanced user
      * Function! */
     void executeFirmwareTest(Positions pos = {});
 
     /** [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Advanced user
-     * Function! */
+     * Function! Writes different values in a R/W register and confirms the
+     * writes to check bus */
     void executeBusTest(Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB][Moench] Advanced user Function! not possible
@@ -1567,7 +1575,8 @@ class Detector {
     /** [CTB][Moench][Jungfrau] Advanced user Function! */
     Result<uint32_t> getADCInvert(Positions pos = {}) const;
 
-    /** [CTB][Moench][Jungfrau] Advanced user Function! */
+    /** [CTB][Moench][Jungfrau] Advanced user Function! \n
+    [Jungfrau] Inversions on top of default mask */
     void setADCInvert(uint32_t value, Positions pos = {});
     ///@{
 

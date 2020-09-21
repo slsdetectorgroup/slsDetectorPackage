@@ -2199,21 +2199,29 @@ uint32_t Module::writeRegister(uint32_t addr, uint32_t val) {
     return sendToDetectorStop<uint32_t>(F_WRITE_REGISTER, args);
 }
 
-uint32_t Module::setBit(uint32_t addr, int n) {
+void Module::setBit(uint32_t addr, int n) {
     if (n < 0 || n > 31) {
         throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
     } else {
         uint32_t val = readRegister(addr);
-        return writeRegister(addr, val | 1 << n);
+        writeRegister(addr, val | 1 << n);
     }
 }
 
-uint32_t Module::clearBit(uint32_t addr, int n) {
+void Module::clearBit(uint32_t addr, int n) {
     if (n < 0 || n > 31) {
         throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
     } else {
         uint32_t val = readRegister(addr);
-        return writeRegister(addr, val & ~(1 << n));
+        writeRegister(addr, val & ~(1 << n));
+    }
+}
+
+int Module::getBit(uint32_t addr, int n) {
+    if (n < 0 || n > 31) {
+        throw RuntimeError("Bit number " + std::to_string(n) + " out of Range");
+    } else {
+        return ((readRegister(addr) >> n) & 0x1);
     }
 }
 

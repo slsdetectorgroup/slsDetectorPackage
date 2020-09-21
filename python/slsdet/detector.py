@@ -1264,6 +1264,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def adcinvert(self):
+        """[Ctb][Moench][Jungfrau] ADC Inversion Mask.
+        Note
+        -----
+        [Jungfrau][Moench] Inversions on top of the default mask.
+        """
         return self.getADCInvert()
 
     @adcinvert.setter
@@ -1831,6 +1836,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def bursts(self):
+        """[Gotthard2] Number of bursts per aquire. Only in auto timing mode and burst mode."""
         return self.getNumberOfBursts()
 
     @bursts.setter
@@ -1878,6 +1884,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def cdsgain(self):
+        """[Gotthard2] Enable or disable CDS gain. Default is disabled. """
         return self.getCDSGain()
 
     @cdsgain.setter
@@ -1888,6 +1895,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def burstmode(self):
+        """[Gotthard2] Burst mode of detector. Enum: burstMode
+        Note
+        ----
+        BURST_INTERNAL (default), BURST_EXTERNAL, CONTINUOUS_INTERNAL, CONTINUOUS_EXTERNAL
+        """
         return self.getBurstMode()
 
     @burstmode.setter
@@ -1896,6 +1908,22 @@ class Detector(CppDetectorApi):
 
     @property
     def burstperiod(self):
+        """
+        [Gotthard2] Period between 2 bursts. Only in burst mode and auto timing mode.
+        Note
+        -----
+        :getter: always returns in seconds. To get in datetime.delta, use getBurstPeriod
+
+        Example
+        -----------
+        >>> d.burstperiod = 1.05
+        >>> d.burstperiod = datetime.timedelta(minutes = 3, seconds = 1.23)
+        >>> d.burstperiod
+        181.23
+        >>> d.getBurstPeriod()
+        [datetime.timedelta(seconds=181, microseconds=230000)]
+
+        """
         return ut.reduce_time(self.getBurstPeriod())
 
     @burstperiod.setter
@@ -2031,6 +2059,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def adcenable(self):
+        """[Ctb][Moench] ADC Enable Mask for 1Gb. Enable for each 32 ADC channel."""
         return self.getADCEnableMask()
 
     @adcenable.setter
@@ -2040,6 +2069,10 @@ class Detector(CppDetectorApi):
     @property
     @element
     def adcenable10g(self):
+        """[Ctb][Moench] ADC Enable Mask for 10Gb mode for each 32 ADC channel. 
+        Note
+        -----
+        If any of a consecutive 4 bits are enabled, the complete 4 bits are enabled."""
         return self.getTenGigaADCEnableMask()
 
     @adcenable10g.setter

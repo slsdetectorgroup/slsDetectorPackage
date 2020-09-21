@@ -384,7 +384,6 @@ Result<int> Detector::getClockFrequency(int clkIndex, Positions pos) {
     return pimpl->Parallel(&Module::getClockFrequency, pos, clkIndex);
 }
 
-
 Result<int> Detector::getClockPhase(int clkIndex, Positions pos) {
     return pimpl->Parallel(&Module::getClockPhase, pos, clkIndex, false);
 }
@@ -1881,6 +1880,10 @@ void Detector::setBit(uint32_t addr, int bitnr, Positions pos) {
 
 void Detector::clearBit(uint32_t addr, int bitnr, Positions pos) {
     pimpl->Parallel(&Module::clearBit, pos, addr, bitnr);
+}
+
+Result<int> Detector::getBit(uint32_t addr, int bitnr, Positions pos) {
+    return pimpl->Parallel(&Module::getBit, pos, addr, bitnr);
 }
 
 void Detector::executeFirmwareTest(Positions pos) {

@@ -1584,7 +1584,7 @@ std::string CmdProxy::ClearROI(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "\n\t[Gotthard] Resets Region of interest in detector. All "
-              "channels enabled. Default is all channels."
+              "channels enabled. Default is all channels enabled."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
@@ -2554,16 +2554,13 @@ std::string CmdProxy::BitOperations(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         if (cmd == "setbit") {
-            os << "[address] [value\n\t[Moench] Minimum energy threshold (soft "
-                  "setting) for processor."
+            os << "[reg address in hex] [bit index]\n\tSets bit in address."
                << '\n';
         } else if (cmd == "clearbit") {
-            os << "[n_value]\n\t[Moench] Maximum energy threshold (soft "
-                  "setting) for processor."
+            os << "[reg address in hex] [bit index]\n\tClears bit in address."
                << '\n';
         } else if (cmd == "getbit") {
-            os << "[n_value]\n\t[Moench] Maximum energy threshold (soft "
-                  "setting) for processor."
+            os << "[reg address in hex] [bit index]\n\tGets bit in address."
                << '\n';
         } else {
             throw sls::RuntimeError(
@@ -2587,12 +2584,8 @@ std::string CmdProxy::BitOperations(int action) {
             if (cmd == "setbit" || cmd == "clearbit") {
                 throw sls::RuntimeError("Cannot get");
             }
-            auto t = det->readRegister(addr, std::vector<int>{det_id});
-            Result<int> result(t.size());
-            for (unsigned int i = 0; i < t.size(); ++i) {
-                result[i] = ((t[i] >> bitnr) & 0x1);
-            }
-            os << OutString(result) << '\n';
+            auto t = det->getBit(addr, bitnr, std::vector<int>{det_id});
+            os << OutString(t) << '\n';
         } else if (action == defs::PUT_ACTION) {
             if (cmd == "getbit") {
                 throw sls::RuntimeError("Cannot put");

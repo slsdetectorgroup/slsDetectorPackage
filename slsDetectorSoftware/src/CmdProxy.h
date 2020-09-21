@@ -2344,9 +2344,9 @@ class CmdProxy {
         "[n]\n\tPort number of the stop server on detector for detector-client "
         "tcp interface. Default is 1953. Normally unchanged.");
 
-    INTEGER_COMMAND_VEC_ID(lock, getDetectorLock, setDetectorLock,
-                           StringTo<int>,
-                           "[0, 1]\n\tLock detector to one IP, 1: locks");
+    INTEGER_COMMAND_VEC_ID(
+        lock, getDetectorLock, setDetectorLock, StringTo<int>,
+        "[0, 1]\n\tLock detector to one IP, 1: locks. Default is unlocked");
 
     GET_COMMAND(
         lastclient, getLastClientIP,

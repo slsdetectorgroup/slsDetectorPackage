@@ -84,7 +84,7 @@ class Detector {
      * CHIPTESTBOARD */
     Result<defs::detectorType> getDetectorType(Positions pos = {}) const;
 
-    /** Gets the total number of detectors */
+    /** Gets the total number of modules in shared memory */
     int size() const;
 
     bool empty() const;

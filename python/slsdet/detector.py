@@ -71,6 +71,7 @@ class Detector(CppDetectorApi):
 
     @property
     def nmod(self):
+        """Number of modules in shared memory."""
         return self.size()
 
     def __repr__(self):
@@ -318,6 +319,12 @@ class Detector(CppDetectorApi):
     @property
     @element
     def nframes(self):
+        """
+        [Jungfrau][Mythen3][Gotthard2][Moench][CTB] Number of frames from start run control.
+        Note
+        -----
+        [Gotthard2] only in continuous mode.
+        """
         return self.getNumberOfFramesFromStart()
 
     @property
@@ -1400,6 +1407,7 @@ class Detector(CppDetectorApi):
 
     @property
     def packageversion(self):
+        """Package version (git branch)."""
         return self.getPackageVersion()
 
     @property
@@ -1644,6 +1652,9 @@ class Detector(CppDetectorApi):
     def parallel(self):
         """
         [Eiger][Mythen3] Enable or disable the parallel readout mode of detector. 
+        Note
+        ----
+        [Mythen3] If exposure time is too short, acquisition will return with an ERROR and take fewer frames than expected. 
         """
         return self.getParallelMode()
 
@@ -1757,6 +1768,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def now(self):
+        """[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Time from detector start up.
+        Note
+        -----
+        [Gotthard2] not in burst and auto mode.
+        """
         return self.getActualTime()
 
     @property
@@ -1915,6 +1931,20 @@ class Detector(CppDetectorApi):
 
     @property
     def maxclkphaseshift(self):
+        """
+        [Gotthard2][Mythen3] Absolute maximum Phase shift of  clocks.
+        Note
+        ----
+        :setter: Not Implemented
+        Example
+        -------
+        >>> d.maxclkphaseshift
+        0: 80
+        1: 80
+        2: 160
+        3: 80
+        4: 80
+        """
         return MaxPhaseProxy(self)
 
     @property
@@ -2698,7 +2728,7 @@ class Detector(CppDetectorApi):
     @property
     def clkdiv(self):
         """
-        [Gotthard2][Mythen3] Clock Divider of 5 clocks. Must be greater than 1.
+        [Gotthard2][Mythen3] Clock Divider of all clocks. Must be greater than 1.
         Example
         -------
         >>> d.clkdiv[0] = 20

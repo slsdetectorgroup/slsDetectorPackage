@@ -1272,7 +1272,7 @@ class Detector(CppDetectorApi):
     def dacvalues(self):
         """Gets the dac values for every dac for this detector."""
         return {
-            dac.name.lower(): np.array(self.getDAC(dac, False))
+            dac.name.lower(): element_if_equal(np.array(self.getDAC(dac, False)))
             for dac in self.getDacList()
         }
 

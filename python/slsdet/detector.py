@@ -10,6 +10,7 @@ detectorType = slsDetectorDefs.detectorType
 
 from .utils import element_if_equal, all_equal, get_set_bits, list_to_bitmask
 from .utils import Geometry, to_geo, element, reduce_time, is_iterable
+from _slsdet import xy
 from . import utils as ut
 from .proxy import JsonProxy, SlowAdcProxy, ClkDivProxy, MaxPhaseProxy, ClkFreqProxy
 from .registers import Register, Adc_register
@@ -220,6 +221,13 @@ class Detector(CppDetectorApi):
     @property
     def detsize(self):
         return to_geo(self.getDetectorSize())
+
+    @detsize.setter
+    def detsize(self, size):
+        if isinstance(size, xy):
+            self.setDetectorSize(size)
+        else:
+            self.setDetectorSize(xy(*size))
 
     @property
     def settings(self):

@@ -597,6 +597,7 @@ class CmdProxy {
         {"detectorversion", "firmwareversion"},
         {"softwareversion", "detectorserverversion"},
         {"receiverversion", "rx_version"},
+        {"detectornumber", "serialnumber"},
         {"thisversion", "clientversion"},
         {"detsizechan", "detsize"},
 
@@ -703,7 +704,7 @@ class CmdProxy {
         {"firmwareversion", &CmdProxy::FirmwareVersion},
         {"detectorserverversion", &CmdProxy::detectorserverversion},
         {"rx_version", &CmdProxy::rx_version},
-        {"detectornumber", &CmdProxy::detectornumber},
+        {"serialnumber", &CmdProxy::serialnumber},
         {"type", &CmdProxy::type},
         {"nmod", &CmdProxy::nmod},
         {"detsize", &CmdProxy::DetectorSize},
@@ -1176,8 +1177,8 @@ class CmdProxy {
     GET_COMMAND_HEX(rx_version, getReceiverVersion,
                     "\n\tReceiver version in format [0xYYMMDD].");
 
-    GET_COMMAND_HEX(detectornumber, getSerialNumber,
-                    "\n\tReceiver version in format [0xYYMMDD].");
+    GET_COMMAND_HEX(serialnumber, getSerialNumber,
+                    "\n\tSerial number of detector.");
 
     GET_COMMAND(type, getDetectorType,
                 "\n\tReturns detector type. Can be Eiger, Jungfrau, Gotthard, "
@@ -1222,8 +1223,8 @@ class CmdProxy {
     INTEGER_COMMAND_NOID(
         frames, getNumberOfFrames, setNumberOfFrames, StringTo<int64_t>,
         "[n_frames]\n\tNumber of frames per acquisition. In "
-        "trigger mode, number of frames per trigger. Cannot be set in modular "
-        "level. In scan mode, number of frames is set to number of "
+        "trigger mode, number of frames per trigger. \n\tCannot be set in "
+        "modular level. \n\tIn scan mode, number of frames is set to number of "
         "steps.\n\t[Gotthard2] Burst mode has a maximum of 2720 frames.");
 
     INTEGER_COMMAND_NOID(triggers, getNumberOfTriggers, setNumberOfTriggers,
@@ -1903,10 +1904,10 @@ class CmdProxy {
         "[binary|hdf5]\n\tFile format of data file. For HDF5, package must be "
         "compiled with HDF5 flags. Default is binary.");
 
-    STRING_COMMAND(
-        fpath, getFilePath, setFilePath,
-        "[path]\n\tDirectory where output data files are written in receiver. "
-        "If path does not exist, it will try to create it.");
+    STRING_COMMAND(fpath, getFilePath, setFilePath,
+                   "[path]\n\tDirectory where output data files are written in "
+                   "receiver. Default is '/'. \n\tIf path does not exist, it "
+                   "will try to create it.");
 
     STRING_COMMAND(fname, getFileNamePrefix, setFileNamePrefix,
                    "[name]\n\tFile name prefix for output data file. Default "
@@ -2016,8 +2017,9 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         flippeddatax, getBottom, setBottom, StringTo<int>,
         "[0, 1]\n\t[Eiger] Top or Bottom Half of Eiger module. 1 is bottom, 0 "
-        "is top. Used to let Receivers and Gui know to flip the bottom image "
-        "over the x axis. Files are not written without the flip however.");
+        "is top. Used to let Gui (via zmq from receiver) know to flip the "
+        "bottom image over the x axis. Files are not written without the flip "
+        "however.");
 
     INTEGER_COMMAND_VEC_ID(
         readnlines, getPartialReadout, setPartialReadout, StringTo<int>,
@@ -2263,8 +2265,8 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         extsampling, getExternalSampling, setExternalSampling, StringTo<int>,
-        "[0, 1]\n\t[Ctb] Enable for external sampling signal to extsamplingsrc "
-        "signal for digital data. For advanced users only.");
+        "[0, 1]\n\t[Ctb] Enable for external sampling signal for digital data "
+        "to signal by extsampling src command. For advanced users only.");
 
     INTEGER_COMMAND_VEC_ID(
         extsamplingsrc, getExternalSamplingSource, setExternalSamplingSource,
@@ -2361,13 +2363,13 @@ class CmdProxy {
                      "[(optional unit) "
                      "ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench]["
                      "CTB] Time from detector start up."
-                     "\n\t[Gotthard2] only in continuous mode.");
+                     "\n\t[Gotthard2] not in burst and auto mode.");
 
     TIME_GET_COMMAND(timestamp, getMeasurementTime,
                      "[(optional unit) "
                      "ns|us|ms|s]\n\t[Jungfrau][Mythen3][Gotthard2][Moench]["
                      "CTB] Timestamp at a frame start."
-                     "\n\t[Gotthard2] only in continuous mode.");
+                     "\n\t[Gotthard2] not in burst and auto mode.");
 
     GET_COMMAND(
         rx_frameindex, getRxCurrentFrameIndex,

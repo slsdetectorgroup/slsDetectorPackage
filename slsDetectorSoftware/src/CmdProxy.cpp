@@ -122,7 +122,9 @@ std::string CmdProxy::Hostname(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "\n\tFrees shared memory and sets hostname (or IP address) of "
-              "all modules concatenated by +."
+              "all modules concatenated by +.\n\t Virtual servers can already "
+              "use the port in hostname separated by ':' and ports incremented "
+              "by 2 to accomodate the stop server as well."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -220,8 +222,8 @@ std::string CmdProxy::FirmwareVersion(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "\n\tFimware version of detector in format [0xYYMMDD] or integer "
-              "for Eiger."
+        os << "\n\tFimware version of detector in format [0xYYMMDD] or an "
+              "increasing 2 digit number for Eiger."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -315,9 +317,9 @@ std::string CmdProxy::DetectorSize(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[nx] [ny]\n\tDetector size, ie. Number of channels in x and y "
-              "dim. If 0, then hostname adds all modules in y dim. This is "
-              "used to calculate module coordinates included in UDP data "
-              "packet header."
+              "dim. This is used to calculate module coordinates included in "
+              "UDP data. \n\tBy default, it adds module in y dimension for 2d "
+              "detectors and in x dimension for 1d detectors packet header."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -480,7 +482,8 @@ std::string CmdProxy::DynamicRange(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[value]\n\tDynamic Range or number of bits per "
               "pixel in detector.\n\t"
-              "[Eiger] Options: 4, 8, 16, 32\n\t"
+              "[Eiger] Options: 4, 8, 16, 32. If set to 32, also sets "
+              "clkdivider to 2, else to 0.\n\t"
               "[Mythen3] Options: 8, 16, 32\n\t"
               "[Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16"
            << '\n';
@@ -838,7 +841,7 @@ std::string CmdProxy::ExternalSignal(int action) {
               "[trigger_in_rising_edge|trigger_in_falling_edge|inversion_on|"
               "inversion_off]\n\t where 0 is master input trigger signal, 1-3 "
               "is master input gate signals, 4 is busy out signal and 5-7 is "
-              "master output gate signals"
+              "master output gate signals."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
@@ -2450,10 +2453,9 @@ std::string CmdProxy::CopyDetectorServer(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[server_name] "
               "[pc_host_name]\n\t[Jungfrau][Ctb][Moench][Mythen3][Gotthard2] "
-              "Copies "
-              "detector "
-              "server via tftp from pc and changes respawn server name in "
-              "/etc/inittab of detector."
+              "Copies detector server via tftp from pc. "
+              "\n\t[Jungfrau][Ctb][Moench]Also changes respawn server, which "
+              "is effective after a reboot."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
@@ -2644,7 +2646,8 @@ std::string CmdProxy::ExecuteCommand(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[command]\n\tExecutes command on detector server." << '\n';
+        os << "[command]\n\tExecutes command on detector server console."
+           << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get.");
     } else if (action == defs::PUT_ACTION) {

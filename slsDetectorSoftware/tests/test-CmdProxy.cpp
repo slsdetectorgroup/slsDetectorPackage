@@ -101,11 +101,11 @@ TEST_CASE("detectorserverversion", "[.cmd][.new]") {
     REQUIRE_THROWS(proxy.Call("detectorserverversion", {"0"}, -1, PUT));
 }
 
-TEST_CASE("detectornumber", "[.cmd][.new]") {
+TEST_CASE("serialnumber", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);
-    REQUIRE_NOTHROW(proxy.Call("detectornumber", {}, -1, GET));
-    REQUIRE_THROWS(proxy.Call("detectornumber", {"0"}, -1, PUT));
+    REQUIRE_NOTHROW(proxy.Call("serialnumber", {}, -1, GET));
+    REQUIRE_THROWS(proxy.Call("serialnumber", {"0"}, -1, PUT));
 }
 
 TEST_CASE("type", "[.cmd][.new]") {
@@ -334,10 +334,10 @@ TEST_CASE("exptime", "[.cmd][.time]") {
         REQUIRE(oss.str() == "exptime 0\n");
     }
     {
-       //Get exptime of single module
-       std::ostringstream oss;
-       proxy.Call("exptime", {}, 0, GET, oss);
-       REQUIRE(oss.str() == "exptime 0ns\n");
+        // Get exptime of single module
+        std::ostringstream oss;
+        proxy.Call("exptime", {}, 0, GET, oss);
+        REQUIRE(oss.str() == "exptime 0ns\n");
     }
     det.setExptime(-1, prev_val);
 }

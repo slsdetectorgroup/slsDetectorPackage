@@ -58,7 +58,7 @@ class Detector {
 
     Result<std::string> getHostname(Positions pos = {}) const;
 
-    /**Frees shared memory, adds detectors to the list */
+    /**Frees shared memory, adds detectors to the list. */
     void setHostname(const std::vector<std::string> &hostname);
 
     /** connects to n servers at local host starting at specific control port */
@@ -98,8 +98,10 @@ class Detector {
     defs::xy getDetectorSize() const;
 
     /**
-     * Sets the detector size in both dimensions. \n
-     * This value is used to calculate row and column positions for each module.
+     * Sets the detector size in both dimensions (number of channels). \n
+     * This value is used to calculate row and column positions for each module
+     * and included into udp data packet header. \n By default, it adds modules
+     * in y dimension for 2d detectors and in x dimension for 1d detectors.
      */
     void setDetectorSize(const defs::xy value);
 
@@ -183,7 +185,8 @@ class Detector {
     Result<int64_t> getNumberOfFrames(Positions pos = {}) const;
 
     /** In trigger mode, number of frames per trigger. In scan mode, number of
-     * frames is set to number of steps */
+     * frames is set to number of steps \n [Gotthard2] Burst mode has a maximum
+     * of 2720 frames. */
     void setNumberOfFrames(int64_t value);
 
     Result<int64_t> getNumberOfTriggers(Positions pos = {}) const;
@@ -228,8 +231,8 @@ class Detector {
     Result<int> getDynamicRange(Positions pos = {}) const;
 
     /**
-     * [Eiger] Options: 4, 8, 16, 32. If i is 32, also sets clkdivider to 2, if
-     * 16, sets clkdivider to 1 \n [Mythen3] Options: 8, 16, 32 \n
+     * [Eiger] Options: 4, 8, 16, 32. If i is 32, also sets clkdivider to 2,
+     * else sets clkdivider to 1 \n [Mythen3] Options: 8, 16, 32 \n
      * [Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16
      */
     void setDynamicRange(int value);
@@ -313,7 +316,7 @@ class Detector {
     /** [Mythen3][Gotthard2] */
     Result<int> getClockPhase(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] */
+    /** [Mythen3][Gotthard2] absolute phase shift */
     void setClockPhase(int clkIndex, int value, Positions pos = {});
 
     /** [Mythen3][Gotthard2] */
@@ -328,7 +331,7 @@ class Detector {
     /** [Mythen3][Gotthard2] */
     Result<int> getClockDivider(int clkIndex, Positions pos = {});
 
-    /** [Mythen3][Gotthard2] */
+    /** [Mythen3][Gotthard2] Must be greater than 1. */
     void setClockDivider(int clkIndex, int value, Positions pos = {});
 
     Result<int> getHighVoltage(Positions pos = {}) const;
@@ -740,7 +743,7 @@ class Detector {
 
     Result<std::string> getFilePath(Positions pos = {}) const;
 
-    /** If path does not exist, it will try to create it */
+    /** Default is "/"If path does not exist, it will try to create it */
     void setFilePath(const std::string &fpath, Positions pos = {});
 
     Result<std::string> getFileNamePrefix(Positions pos = {}) const;
@@ -753,7 +756,10 @@ class Detector {
 
     Result<int64_t> getAcquisitionIndex(Positions pos = {}) const;
 
-    /** file or Acquisition index in receiver */
+    /** file or Acquisition index in receiver \n
+     * File name: [file name prefix]_d[detector index]_f[sub file
+     * index]_[acquisition/file index].[raw/h5].
+     */
     void setAcquisitionIndex(int64_t i, Positions pos = {});
 
     Result<bool> getFileWrite(Positions pos = {}) const;
@@ -908,7 +914,7 @@ class Detector {
     /** [Eiger] */
     Result<bool> getBottom(Positions pos = {}) const;
 
-    /** [Eiger] for client call back (gui) purposes */
+    /** [Eiger] for client call back (gui) purposes to flip bottom image */
     void setBottom(bool value, Positions pos = {});
 
     /**[Eiger] Returns energies in eV where the module is trimmed */
@@ -1154,7 +1160,7 @@ class Detector {
     /** [Gotthard2] */
     Result<int> getFilter(Positions pos = {}) const;
 
-    /** default 0 */
+    /** [Gotthard2] Set filter resister. Options: 0-3. Default: 0 */
     void setFilter(int value, Positions pos = {});
 
     /** [Gotthard2] */
@@ -1179,7 +1185,8 @@ class Detector {
     Result<int> getADCConfiguration(const int chipIndex, const int adcIndex,
                                     Positions pos = {}) const;
 
-    /** [Gotthard2] */
+    /** [Gotthard2] configures one chip at a time for specific adc, chipIndex
+     * and adcIndex is -1 for all */
     void setADCConfiguration(const int chipIndex, const int adcIndex,
                              const int value, Positions pos = {});
 
@@ -1343,13 +1350,13 @@ class Detector {
     /** [CTB] */
     Result<int> getExternalSamplingSource(Positions pos = {}) const;
 
-    /** [CTB] Value between 0-63 */
+    /** [CTB] Value between 0-63 \n For advanced users only.*/
     void setExternalSamplingSource(int value, Positions pos = {});
 
     /** [CTB] */
     Result<bool> getExternalSampling(Positions pos = {}) const;
 
-    /** [CTB] */
+    /** [CTB] For advanced users only. */
     void setExternalSampling(bool value, Positions pos = {});
 
     /** [CTB] */
@@ -1510,9 +1517,10 @@ class Detector {
     void resetFPGA(Positions pos = {});
 
     /** [Jungfrau][Gotthard][CTB][Moench][Mythen3][Gotthard2]
-     * Advanced user Function!
-     * Copy detector server fname from tftp folder of hostname to detector
-     * Also changes respawn server, which is effective after a reboot.
+     * Advanced user Function! \n
+     * Copy detector server fname from tftp folder of hostname to detector \n
+     * [Jungfrau][Gotthard][CTB][Moench] Also changes respawn server, which is
+     * effective after a reboot.
      */
     void copyDetectorServer(const std::string &fname,
                             const std::string &hostname, Positions pos = {});
@@ -1523,13 +1531,14 @@ class Detector {
 
     /**
      * [Jungfrau][Gotthard][CTB][Moench]
-     * Advanced user Function!
+     * Advanced user Function! \n
      * Updates the firmware, detector server and then reboots detector
-     * controller blackfin.
-     * sname is name of detector server binary found on tftp folder of host
-     * pc
-     * hostname is name of pc to tftp from
-     * fname is programming file name
+     * controller blackfin. \n
+     * [Mythen3][Gotthard2] Will still have old server starting up as the new
+     * server is not respawned \n
+      sname is name of detector server binary found on
+     * tftp folder of host pc hostname is name of pc to tftp from fname is
+     * programming file name
      */
     void updateFirmwareAndServer(const std::string &sname,
                                  const std::string &hostname,
@@ -1617,11 +1626,11 @@ class Detector {
     Result<int64_t> getNumberOfFramesFromStart(Positions pos = {}) const;
 
     /** [Jungfrau][Mythen3][CTB][Moench] Get time from detector start
-     * [Gotthard2] only in continuous mode */
+     * [Gotthard2] not in burst and auto mode */
     Result<ns> getActualTime(Positions pos = {}) const;
 
     /** [Jungfrau][Mythen3][CTB][Moench] Get timestamp at a frame start
-     * [Gotthard2] only in continuous mode */
+     * [Gotthard2] not in burst and auto mode */
     Result<ns> getMeasurementTime(Positions pos = {}) const;
 
     /** get user details from shared memory  (hostname, type, PID, User, Date)

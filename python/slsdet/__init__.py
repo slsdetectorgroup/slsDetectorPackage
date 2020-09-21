@@ -10,7 +10,7 @@ from .gotthard import Gotthard
 from .moench import Moench
 
 import _slsdet
-
+xy = _slsdet.xy
 defs = _slsdet.slsDetectorDefs
 
 from .enums import *

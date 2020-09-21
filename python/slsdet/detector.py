@@ -2361,7 +2361,9 @@ class Detector(CppDetectorApi):
     @property
     def pattern(self):
         """[Mythen3][Moench][Ctb] Loads ASCII pattern file directly to server (instead of executing line by line).
-
+        Note
+        ----
+        :getter: Not Implemented
         Example
         ---------
         >>> d.pattern = '/tmp/pat.txt'

@@ -4223,6 +4223,7 @@ int copy_detector_server(int file_des) {
             strcat(cmd, sname);
             executeCommand(cmd, retvals, logDEBUG1);
 
+#if !defined(GOTTHAR2D) && !defined(MYTHEN3D)
             // edit /etc/inittab
             // find line numbers in /etc/inittab where DetectorServer
             strcpy(cmd, "sed -n '/DetectorServer/=' /etc/inittab");
@@ -4247,6 +4248,7 @@ int copy_detector_server(int file_des) {
             executeCommand(cmd, retvals, logDEBUG1);
 
             LOG(logINFO, ("/etc/inittab modified to have %s\n", sname));
+#endif
         }
     }
 #endif

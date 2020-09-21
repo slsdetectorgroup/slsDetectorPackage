@@ -11,8 +11,8 @@ int Local_Init(struct LocalLinkInterface *ll, unsigned int ll_fifo_badr);
 int Local_Reset1(struct LocalLinkInterface *ll, unsigned int rst_mask);
 int Local_ctrl_reg_write_mask(struct LocalLinkInterface *ll, unsigned int mask,
                               unsigned int val);
-void Local_LocalLinkInterface1(struct LocalLinkInterface *ll,
-                               unsigned int ll_fifo_badr);
+void Local_LocalLinkInterface(struct LocalLinkInterface *ll,
+                              unsigned int ll_fifo_badr);
 unsigned int Local_StatusVector(struct LocalLinkInterface *ll);
 int Local_Reset(struct LocalLinkInterface *ll);
 int Local_Write(struct LocalLinkInterface *ll, unsigned int buffer_len,
@@ -21,4 +21,3 @@ int Local_Read(struct LocalLinkInterface *ll, unsigned int buffer_len,
                void *buffer);
 int Local_Test(struct LocalLinkInterface *ll, unsigned int buffer_len,
                void *buffer);
-void Local_LocalLinkInterface(struct LocalLinkInterface *ll);

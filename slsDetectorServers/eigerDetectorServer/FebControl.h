@@ -42,7 +42,7 @@ unsigned int *Feb_Control_GetTrimbits();
 int Feb_Control_AcquisitionInProgress();
 int Feb_Control_AcquisitionStartedBit();
 int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag);
-int Feb_Control_WaitForFinishedFlag(int sleep_time_us);
+int Feb_Control_WaitForFinishedFlag(int sleep_time_us, int tempLock);
 int Feb_Control_GetDAQStatusRegister(unsigned int dst_address,
                                      unsigned int *ret_status);
 int Feb_Control_StartDAQOnlyNWaitForFinish(int sleep_time_us);

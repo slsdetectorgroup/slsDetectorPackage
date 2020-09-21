@@ -324,6 +324,7 @@ void initControlServer() {
         readDetectorNumber();
         getModuleConfiguration();
 #ifndef VIRTUAL
+        sharedMemory_lockLocalLink();
         Feb_Control_SetMasterVariable(master);
         Feb_Interface_FebInterface();
         Feb_Control_FebControl();
@@ -333,6 +334,7 @@ void initControlServer() {
             sprintf(initErrorMessage, "Could not intitalize feb control\n");
             LOG(logERROR, (initErrorMessage));
             initCheckDone = 1;
+            sharedMemory_unlockLocalLink();
             return;
         }
         // master of 9M, check high voltage serial communication to blackfin
@@ -344,9 +346,11 @@ void initControlServer() {
                     "Could not intitalize feb control serial communication\n");
                 LOG(logERROR, (initErrorMessage));
                 initCheckDone = 1;
+                sharedMemory_unlockLocalLink();
                 return;
             }
         }
+        sharedMemory_unlockLocalLink();
         LOG(logDEBUG1, ("Control server: FEB Initialization done\n"));
         Beb_SetTopVariable(top);
         Beb_Beb(detid);
@@ -373,11 +377,13 @@ void initStopServer() {
     // exit(-1);
     readDetectorNumber();
     getModuleConfiguration();
+    sharedMemory_lockLocalLink();
     Feb_Control_SetMasterVariable(master);
     Feb_Interface_FebInterface();
     Feb_Control_FebControl();
     // same addresses for top and bottom
     Feb_Control_Init(master, normal, getDetectorNumber());
+    sharedMemory_unlockLocalLink();
     LOG(logDEBUG1, ("Stop server: FEB Initialization done\n"));
 #endif
     // client first connect (from shm) will activate
@@ -493,14 +499,17 @@ int readConfigFile() {
                     top, line);
                 break;
             }
+            sharedMemory_lockLocalLink();
             if (!Feb_Control_SetTop(ind, 1, 1)) {
                 sprintf(
                     initErrorMessage,
                     "Could not overwrite top to %d in Feb from on-board server "
                     "config file. Line:[%s].\n",
                     top, line);
+                sharedMemory_unlockLocalLink();
                 break;
             }
+            sharedMemory_unlockLocalLink();
             // validate change
             int actual_top = -1, temp = -1, temp2 = -1;
             Beb_GetModuleConfiguration(&temp, &actual_top, &temp2);
@@ -533,14 +542,17 @@ int readConfigFile() {
                         master, line);
                 break;
             }
+            sharedMemory_lockLocalLink();
             if (!Feb_Control_SetMaster(ind)) {
                 sprintf(initErrorMessage,
                         "Could not overwrite master to %d in Feb from on-board "
                         "server "
                         "config file. Line:[%s].\n",
                         master, line);
+                sharedMemory_unlockLocalLink();
                 break;
             }
+            sharedMemory_unlockLocalLink();
             // validate change
             int actual_master = -1, temp = -1, temp2 = -1;
             Beb_GetModuleConfiguration(&actual_master, &temp, &temp2);
@@ -550,7 +562,9 @@ int readConfigFile() {
                         actual_master);
                 break;
             }
+            sharedMemory_lockLocalLink();
             Feb_Control_SetMasterVariable(master);
+            sharedMemory_unlockLocalLink();
 #endif
         }
 
@@ -592,13 +606,16 @@ void resetToHardwareSettings() {
             LOG(logERROR, ("%s\n\n", initErrorMessage));
             return;
         }
+        sharedMemory_lockLocalLink();
         if (!Feb_Control_SetTop(TOP_HARDWARE, 1, 1)) {
             initError = FAIL;
             strcpy(initErrorMessage,
                    "Could not reset Top flag to Feb hardware settings.\n");
             LOG(logERROR, ("%s\n\n", initErrorMessage));
+            sharedMemory_unlockLocalLink();
             return;
         }
+        sharedMemory_unlockLocalLink();
         int temp = -1, temp2 = -1;
         Beb_GetModuleConfiguration(&temp, &top, &temp2);
         Beb_SetTopVariable(top);
@@ -612,16 +629,21 @@ void resetToHardwareSettings() {
             LOG(logERROR, ("%s\n\n", initErrorMessage));
             return;
         }
+        sharedMemory_lockLocalLink();
         if (!Feb_Control_SetMaster(TOP_HARDWARE)) {
             initError = FAIL;
             strcpy(initErrorMessage,
                    "Could not reset Master flag to Feb hardware settings.\n");
             LOG(logERROR, ("%s\n\n", initErrorMessage));
+            sharedMemory_unlockLocalLink();
             return;
         }
+        sharedMemory_unlockLocalLink();
         int temp = -1, temp2 = -1;
         Beb_GetModuleConfiguration(&master, &temp, &temp2);
+        sharedMemory_lockLocalLink();
         Feb_Control_SetMasterVariable(master);
+        sharedMemory_unlockLocalLink();
     }
 #endif
 }
@@ -699,16 +721,21 @@ void setupDetector() {
     int enable[2] = {DEFAULT_EXT_GATING_ENABLE, DEFAULT_EXT_GATING_POLARITY};
     setExternalGating(enable); // disable external gating
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     Feb_Control_SetInTestModeVariable(DEFAULT_TEST_MODE);
+    sharedMemory_unlockLocalLink();
 #endif
     setHighVoltage(DEFAULT_HIGH_VOLTAGE);
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     if (!Feb_Control_CheckSetup()) {
         initError = FAIL;
         sprintf(initErrorMessage, "Could not pass feb control setup checks\n");
         LOG(logERROR, (initErrorMessage));
+        sharedMemory_unlockLocalLink();
         return;
     }
+    sharedMemory_unlockLocalLink();
 #endif
     // force top or master if in config file
     if (readConfigFile() == FAIL) {
@@ -732,9 +759,12 @@ int writeRegister(uint32_t offset, uint32_t data) {
 #ifdef VIRTUAL
     return OK;
 #else
+    sharedMemory_lockLocalLink();
     if (!Feb_Control_WriteRegister(offset, data)) {
+        sharedMemory_unlockLocalLink();
         return FAIL;
     }
+    sharedMemory_unlockLocalLink();
     return OK;
 #endif
 }
@@ -743,9 +773,12 @@ int readRegister(uint32_t offset, uint32_t *retval) {
 #ifdef VIRTUAL
     return OK;
 #else
+    sharedMemory_lockLocalLink();
     if (!Feb_Control_ReadRegister(offset, retval)) {
+        sharedMemory_unlockLocalLink();
         return FAIL;
     }
+    sharedMemory_unlockLocalLink();
     return OK;
 #endif
 }
@@ -757,21 +790,26 @@ int setDynamicRange(int dr) {
     if (dr > 0) {
         LOG(logDEBUG1, ("Setting dynamic range: %d\n", dr));
 #ifndef VIRTUAL
+        sharedMemory_lockLocalLink();
         if (Feb_Control_SetDynamicRange(dr)) {
             on_dst = 0;
             for (int i = 0; i < 32; ++i)
                 dst_requested[i] = 0; // clear dst requested
             if (!Beb_SetUpTransferParameters(dr)) {
                 LOG(logERROR, ("Could not set bit mode in the back end\n"));
+                sharedMemory_unlockLocalLink();
                 return eiger_dynamicrange;
             }
         }
+        sharedMemory_unlockLocalLink();
 #endif
         eiger_dynamicrange = dr;
     }
     // getting dr
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     eiger_dynamicrange = Feb_Control_GetDynamicRange();
+    sharedMemory_unlockLocalLink();
 #endif
     return eiger_dynamicrange;
 }
@@ -781,9 +819,12 @@ int setDynamicRange(int dr) {
 int setParallelMode(int mode) {
     mode = (mode == 0 ? E_NON_PARALLEL : E_PARALLEL);
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     if (!Feb_Control_SetReadoutMode(mode)) {
+        sharedMemory_unlockLocalLink();
         return FAIL;
     }
+    sharedMemory_unlockLocalLink();
 #endif
     eiger_parallelmode = mode;
     return OK;
@@ -828,6 +869,7 @@ void setNumFrames(int64_t val) {
     if (val > 0) {
         LOG(logINFO, ("Setting number of frames %lld\n", (long long int)val));
 #ifndef VIRTUAL
+        sharedMemory_lockLocalLink();
         if (Feb_Control_SetNExposures((unsigned int)val * eiger_ntriggers)) {
             eiger_nexposures = val;
             on_dst = 0;
@@ -836,6 +878,7 @@ void setNumFrames(int64_t val) {
             ndsts_in_use = 1;
             nimages_per_request = eiger_nexposures * eiger_ntriggers;
         }
+        sharedMemory_unlockLocalLink();
 #else
         eiger_nexposures = val;
         nimages_per_request = eiger_nexposures * eiger_ntriggers;
@@ -849,6 +892,7 @@ void setNumTriggers(int64_t val) {
     if (val > 0) {
         LOG(logINFO, ("Setting number of triggers %lld\n", (long long int)val));
 #ifndef VIRTUAL
+        sharedMemory_lockLocalLink();
         if (Feb_Control_SetNExposures((unsigned int)val * eiger_nexposures)) {
             eiger_ntriggers = val;
             on_dst = 0;
@@ -856,6 +900,7 @@ void setNumTriggers(int64_t val) {
                 dst_requested[i] = 0; // clear dst requested
             nimages_per_request = eiger_nexposures * eiger_ntriggers;
         }
+        sharedMemory_unlockLocalLink();
 #else
         eiger_ntriggers = val;
         nimages_per_request = eiger_nexposures * eiger_ntriggers;
@@ -868,7 +913,9 @@ int64_t getNumTriggers() { return eiger_ntriggers; }
 int setExpTime(int64_t val) {
     LOG(logINFO, ("Setting exptime %lld ns\n", (long long int)val));
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     Feb_Control_SetExposureTime(val / (1E9));
+    sharedMemory_unlockLocalLink();
 #else
     eiger_virtual_exptime = val;
 #endif
@@ -877,7 +924,10 @@ int setExpTime(int64_t val) {
 
 int64_t getExpTime() {
 #ifndef VIRTUAL
-    return (Feb_Control_GetExposureTime() * (1E9));
+    sharedMemory_lockLocalLink();
+    int64_t retval = (Feb_Control_GetExposureTime() * (1E9));
+    sharedMemory_unlockLocalLink();
+    return retval;
 #else
     return eiger_virtual_exptime;
 #endif
@@ -886,7 +936,9 @@ int64_t getExpTime() {
 int setPeriod(int64_t val) {
     LOG(logINFO, ("Setting period %lld ns\n", (long long int)val));
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     Feb_Control_SetExposurePeriod(val / (1E9));
+    sharedMemory_unlockLocalLink();
 #else
     eiger_virtual_period = val;
 #endif
@@ -895,7 +947,10 @@ int setPeriod(int64_t val) {
 
 int64_t getPeriod() {
 #ifndef VIRTUAL
-    return (Feb_Control_GetExposurePeriod() * (1E9));
+    sharedMemory_lockLocalLink();
+    int64_t retval = (Feb_Control_GetExposurePeriod() * (1E9));
+    sharedMemory_unlockLocalLink();
+    return retval;
 #else
     return eiger_virtual_period;
 #endif
@@ -904,12 +959,14 @@ int64_t getPeriod() {
 int setSubExpTime(int64_t val) {
     LOG(logINFO, ("Setting subexptime %lld ns\n", (long long int)val));
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     // calculate subdeadtime before settings subexptime
     int64_t subdeadtime =
         Feb_Control_GetSubFramePeriod() - Feb_Control_GetSubFrameExposureTime();
     Feb_Control_SetSubFrameExposureTime(val / 10);
     // set subperiod
     Feb_Control_SetSubFramePeriod((val + subdeadtime) / 10);
+    sharedMemory_unlockLocalLink();
 #else
     int64_t subdeadtime =
         eiger_virtual_subperiod * 10 - eiger_virtual_subexptime * 10;
@@ -921,7 +978,10 @@ int setSubExpTime(int64_t val) {
 
 int64_t getSubExpTime() {
 #ifndef VIRTUAL
-    return (Feb_Control_GetSubFrameExposureTime());
+    sharedMemory_lockLocalLink();
+    int64_t retval = (Feb_Control_GetSubFrameExposureTime());
+    sharedMemory_unlockLocalLink();
+    return retval;
 #else
     return eiger_virtual_subexptime * 10;
 #endif
@@ -930,8 +990,10 @@ int64_t getSubExpTime() {
 int setSubDeadTime(int64_t val) {
     LOG(logINFO, ("Setting subdeadtime %lld ns\n", (long long int)val));
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     // get subexptime
     int64_t subexptime = Feb_Control_GetSubFrameExposureTime();
+    sharedMemory_unlockLocalLink();
 #else
     int64_t subexptime = eiger_virtual_subexptime * 10;
 #endif
@@ -942,7 +1004,9 @@ int setSubDeadTime(int64_t val) {
     // calculate subperiod
     val += subexptime;
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     Feb_Control_SetSubFramePeriod(val / 10);
+    sharedMemory_unlockLocalLink();
 #else
     eiger_virtual_subperiod = (val / 10);
 #endif
@@ -951,13 +1015,18 @@ int setSubDeadTime(int64_t val) {
 
 int64_t getSubDeadTime() {
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     // get subexptime
     int64_t subexptime = Feb_Control_GetSubFrameExposureTime();
+    sharedMemory_unlockLocalLink();
 #else
     int64_t subexptime = eiger_virtual_subexptime * 10;
 #endif
 #ifndef VIRTUAL
-    return (Feb_Control_GetSubFramePeriod() - subexptime);
+    sharedMemory_lockLocalLink();
+    int64_t retval = (Feb_Control_GetSubFramePeriod() - subexptime);
+    sharedMemory_unlockLocalLink();
+    return retval;
 #else
     return (eiger_virtual_subperiod * 10 - subexptime);
 #endif
@@ -967,7 +1036,10 @@ int64_t getMeasuredPeriod() {
 #ifdef VIRTUAL
     return 0;
 #else
-    return Feb_Control_GetMeasuredPeriod();
+    sharedMemory_lockLocalLink();
+    int64_t retval = Feb_Control_GetMeasuredPeriod();
+    sharedMemory_unlockLocalLink();
+    return retval;
 #endif
 }
 
@@ -975,7 +1047,10 @@ int64_t getMeasuredSubPeriod() {
 #ifdef VIRTUAL
     return 0;
 #else
-    return Feb_Control_GetSubMeasuredPeriod();
+    sharedMemory_lockLocalLink();
+    int64_t retval = Feb_Control_GetSubMeasuredPeriod();
+    sharedMemory_unlockLocalLink();
+    return retval;
 #endif
 }
 
@@ -1054,14 +1129,17 @@ int setModule(sls_detector_module myMod, char *mess) {
         }
 
         // set trimbits
+        sharedMemory_lockLocalLink();
         if (!Feb_Control_SetTrimbits(tt, top)) {
             sprintf(mess, "Could not set module. Could not set trimbits\n");
             LOG(logERROR, (mess));
             setSettings(UNDEFINED);
             LOG(logERROR, ("Settings has been changed to undefined (random "
                            "trim file)\n"));
+            sharedMemory_unlockLocalLink();
             return FAIL;
         }
+        sharedMemory_unlockLocalLink();
     }
 #endif
 
@@ -1185,9 +1263,11 @@ void setDAC(enum DACINDEX ind, int val, int mV) {
             return;
         }
     }
+    sharedMemory_lockLocalLink();
     if (Feb_Control_SetDAC(ind, dacval)) {
         (detectorModules)->dacs[ind] = dacval;
     }
+    sharedMemory_unlockLocalLink();
 #endif
 }
 
@@ -1233,19 +1313,23 @@ int getADC(enum ADCINDEX ind) {
     return 0;
 #else
     int retval = -1;
-    char tempnames[6][20] = {"FPGA EXT", "10GE", "DCDC",
-                             "SODL",     "SODR", "FPGA"};
+    char *adc_names[] = {ADC_NAMES};
     char cstore[255];
+    memset(cstore, 0, 255);
 
     switch (ind) {
     case TEMP_FPGA:
         retval = getBebFPGATemp();
         break;
     case TEMP_FPGAFEBL:
+        sharedMemory_lockLocalLink();
         retval = Feb_Control_GetLeftFPGATemp();
+        sharedMemory_unlockLocalLink();
         break;
     case TEMP_FPGAFEBR:
+        sharedMemory_lockLocalLink();
         retval = Feb_Control_GetRightFPGATemp();
+        sharedMemory_unlockLocalLink();
         break;
     case TEMP_FPGAEXT:
     case TEMP_10GE:
@@ -1264,7 +1348,7 @@ int getADC(enum ADCINDEX ind) {
     }
 
     LOG(logINFO,
-        ("Temperature %s: %f°C\n", tempnames[ind], (double)retval / 1000.00));
+        ("Temperature %s: %f°C\n", adc_names[ind], (double)retval / 1000.00));
 
     return retval;
 #endif
@@ -1289,7 +1373,9 @@ int setHighVoltage(int val) {
         // set
         if (val != -1) {
             eiger_theo_highvoltage = val;
+            sharedMemory_lockLocalLink();
             int ret = Feb_Control_SetHighVoltage(val);
+            sharedMemory_unlockLocalLink();
             if (!ret) // could not set
                 return -2;
             else if (ret == -1) // outside range
@@ -1297,10 +1383,13 @@ int setHighVoltage(int val) {
         }
 
         // get
+        sharedMemory_lockLocalLink();
         if (!Feb_Control_GetHighVoltage(&eiger_highvoltage)) {
             LOG(logERROR, ("Could not read high voltage\n"));
+            sharedMemory_unlockLocalLink();
             return -3;
         }
+        sharedMemory_unlockLocalLink();
 
         // tolerance of 5
         if (abs(eiger_theo_highvoltage - eiger_highvoltage) >
@@ -1339,9 +1428,14 @@ void setTiming(enum timingMode arg) {
     }
     LOG(logDEBUG1, ("Setting Triggering Mode: %d\n", (int)ret));
 #ifndef VIRTUAL
-    if (Feb_Control_SetTriggerMode(ret))
-#endif
+    sharedMemory_lockLocalLink();
+    if (Feb_Control_SetTriggerMode(ret)) {
         eiger_triggermode = ret;
+    }
+    sharedMemory_unlockLocalLink();
+#else
+    eiger_triggermode = ret;
+#endif
 }
 
 enum timingMode getTiming() {
@@ -1469,9 +1563,12 @@ int setQuad(int value) {
     if (Beb_SetQuad(value) == FAIL) {
         return FAIL;
     }
+    sharedMemory_lockLocalLink();
     if (!Feb_Control_SetQuad(value)) {
+        sharedMemory_unlockLocalLink();
         return FAIL;
     }
+    sharedMemory_unlockLocalLink();
 #else
     eiger_virtual_quad_mode = value;
 #endif
@@ -1490,9 +1587,12 @@ int setInterruptSubframe(int value) {
     if (value < 0)
         return FAIL;
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     if (!Feb_Control_SetInterruptSubframe(value)) {
+        sharedMemory_unlockLocalLink();
         return FAIL;
     }
+    sharedMemory_unlockLocalLink();
 #else
     eiger_virtual_interrupt_subframe = value;
 #endif
@@ -1503,7 +1603,10 @@ int getInterruptSubframe() {
 #ifdef VIRTUAL
     return eiger_virtual_interrupt_subframe;
 #else
-    return Feb_Control_GetInterruptSubframe();
+    sharedMemory_lockLocalLink();
+    int retval = Feb_Control_GetInterruptSubframe();
+    sharedMemory_unlockLocalLink();
+    return retval;
 #endif
 }
 
@@ -1511,9 +1614,12 @@ int setReadNLines(int value) {
     if (value < 0)
         return FAIL;
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     if (!Feb_Control_SetReadNLines(value)) {
+        sharedMemory_unlockLocalLink();
         return FAIL;
     }
+    sharedMemory_unlockLocalLink();
     Beb_SetReadNLines(value);
 #else
     eiger_virtual_read_nlines = value;
@@ -1525,7 +1631,10 @@ int getReadNLines() {
 #ifdef VIRTUAL
     return eiger_virtual_read_nlines;
 #else
-    return Feb_Control_GetReadNLines();
+    sharedMemory_lockLocalLink();
+    int retval = Feb_Control_GetReadNLines();
+    sharedMemory_unlockLocalLink();
+    return retval;
 #endif
 }
 
@@ -1549,9 +1658,14 @@ int setClockDivider(enum CLKINDEX ind, int val) {
     if (val >= 0) {
         LOG(logINFO, ("Setting Read out Speed: %d\n", val));
 #ifndef VIRTUAL
-        if (Feb_Control_SetReadoutSpeed(val))
-#endif
+        sharedMemory_lockLocalLink();
+        if (Feb_Control_SetReadoutSpeed(val)) {
             eiger_readoutspeed = val;
+        }
+        sharedMemory_unlockLocalLink();
+#else
+        eiger_readoutspeed = val;
+#endif
     }
     return OK;
 }
@@ -1568,9 +1682,14 @@ int setIODelay(int val) {
     if (val != -1) {
         LOG(logDEBUG1, ("Setting IO Delay: %d\n", val));
 #ifndef VIRTUAL
-        if (Feb_Control_SetIDelays(val))
-#endif
+        sharedMemory_lockLocalLink();
+        if (Feb_Control_SetIDelays(val)) {
             eiger_iodelay = val;
+        }
+        sharedMemory_unlockLocalLink();
+#else
+        eiger_iodelay = val;
+#endif
     }
     return eiger_iodelay;
 }
@@ -1581,36 +1700,53 @@ int setCounterBit(int val) {
 #ifdef VIRTUAL
         eiger_virtual_counter_bit = val;
 #else
+        sharedMemory_lockLocalLink();
         Feb_Control_Set_Counter_Bit(val);
+        sharedMemory_unlockLocalLink();
 #endif
     }
 #ifdef VIRTUAL
     return eiger_virtual_counter_bit;
 #else
-    return Feb_Control_Get_Counter_Bit();
+    sharedMemory_lockLocalLink();
+    int retval = Feb_Control_Get_Counter_Bit();
+    sharedMemory_unlockLocalLink();
+    return retval;
 #endif
 }
 
 int pulsePixel(int n, int x, int y) {
 #ifndef VIRTUAL
-    if (!Feb_Control_Pulse_Pixel(n, x, y))
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_Pulse_Pixel(n, x, y)) {
+        sharedMemory_unlockLocalLink();
         return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
 #endif
     return OK;
 }
 
 int pulsePixelNMove(int n, int x, int y) {
 #ifndef VIRTUAL
-    if (!Feb_Control_PulsePixelNMove(n, x, y))
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_PulsePixelNMove(n, x, y)) {
+        sharedMemory_unlockLocalLink();
         return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
 #endif
     return OK;
 }
 
 int pulseChip(int n) {
 #ifndef VIRTUAL
-    if (!Feb_Control_PulseChip(n))
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_PulseChip(n)) {
+        sharedMemory_unlockLocalLink();
         return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
 #endif
     return OK;
 }
@@ -1716,10 +1852,12 @@ int setRateCorrection(
 
     return OK;
 #else
+    sharedMemory_lockLocalLink();
 
     // deactivating rate correction
     if (custom_tau_in_nsec == 0) {
         Feb_Control_SetRateCorrectionVariable(0);
+        sharedMemory_unlockLocalLink();
         return OK;
     }
 
@@ -1758,6 +1896,7 @@ int setRateCorrection(
             LOG(logERROR,
                 ("Rate correction failed. Deactivating rate correction\n"));
             Feb_Control_SetRateCorrectionVariable(0);
+            sharedMemory_unlockLocalLink();
             return FAIL;
         }
     }
@@ -1766,6 +1905,7 @@ int setRateCorrection(
     LOG(logINFO, ("Rate Correction Value set to %lld ns\n",
                   (long long int)Feb_Control_Get_RateTable_Tau_in_nsec()));
     Feb_Control_PrintCorrectedValues();
+    sharedMemory_unlockLocalLink();
 
     return OK;
 #endif
@@ -1775,7 +1915,10 @@ int getRateCorrectionEnable() {
 #ifdef VIRTUAL
     return eiger_virtual_ratecorrection_variable;
 #else
-    return Feb_Control_GetRateCorrectionVariable();
+    sharedMemory_lockLocalLink();
+    int retval = Feb_Control_GetRateCorrectionVariable();
+    sharedMemory_unlockLocalLink();
+    return retval;
 #endif
 }
 
@@ -1792,7 +1935,9 @@ int64_t getCurrentTau() {
         return 0;
     } else {
 #ifndef VIRTUAL
+        sharedMemory_lockLocalLink();
         eiger_tau_ns = Feb_Control_Get_RateTable_Tau_in_nsec();
+        sharedMemory_unlockLocalLink();
 #else
         eiger_tau_ns = eiger_virtual_ratetable_tau_in_ns;
 #endif
@@ -1805,9 +1950,11 @@ void setExternalGating(int enable[]) {
     // default: disable gating with positive polarity
     if (enable[0] >= 0 && enable[1] >= 0) {
 #ifndef VIRTUAL
+        sharedMemory_lockLocalLink();
         Feb_Control_SetExternalEnableMode(
             enable[0], enable[1]); // enable = 0 or 1, polarity = 0 or 1 , where
                                    // 1 is positive
+        sharedMemory_unlockLocalLink();
 #endif
         eiger_extgating = enable[0];
         eiger_extgatingpolarity = enable[1];
@@ -1819,10 +1966,13 @@ void setExternalGating(int enable[]) {
 int setAllTrimbits(int val) {
     LOG(logINFO, ("Setting all trimbits to %d\n", val));
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     if (!Feb_Control_SaveAllTrimbitsTo(val, top)) {
         LOG(logERROR, ("Could not set all trimbits\n"));
+        sharedMemory_unlockLocalLink();
         return FAIL;
     }
+    sharedMemory_unlockLocalLink();
 #endif
     if (detectorModules) {
         for (int ichan = 0; ichan < (detectorModules->nchan); ichan++) {
@@ -1867,7 +2017,9 @@ int setActivate(int enable) {
     if (!Beb_SetActivate(enable)) {
         return FAIL;
     }
+    sharedMemory_lockLocalLink();
     Feb_Control_activate(enable);
+    sharedMemory_unlockLocalLink();
 #endif
     if (enable) {
         LOG(logINFOGREEN, ("Activated in %s Server!\n",
@@ -1970,9 +2122,11 @@ int setTransmissionDelayRight(int value) {
 
 int prepareAcquisition() {
 #ifndef VIRTUAL
+    sharedMemory_lockLocalLink();
     LOG(logINFO, ("Going to prepare for acquisition with counter_bit:%d\n",
                   Feb_Control_Get_Counter_Bit()));
     Feb_Control_PrepareForAcquisition();
+    sharedMemory_unlockLocalLink();
 #endif
     return OK;
 }
@@ -2001,6 +2155,7 @@ int startStateMachine() {
     LOG(logINFO, ("Virtual Acquisition started\n"));
     return OK;
 #else
+    sharedMemory_lockLocalLink();
     LOG(logINFO, ("Acquisition started bit toggled\n"));
     int ret = OK, prev_flag;
     // get the DAQ toggle bit
@@ -2017,10 +2172,12 @@ int startStateMachine() {
         if (!Feb_Control_WaitForStartedFlag(5000, prev_flag)) {
             LOG(logERROR,
                 ("Acquisition did not LOG(logERROR ouble reading register\n"));
+            sharedMemory_unlockLocalLink();
             return FAIL;
         }
         LOG(logINFOGREEN, ("Acquisition started\n"));
     }
+    sharedMemory_unlockLocalLink();
 
     return ret;
 #endif
@@ -2223,11 +2380,14 @@ int stopStateMachine() {
     LOG(logINFO, ("Stopped State Machine\n"));
     return OK;
 #else
+    sharedMemory_lockLocalLink();
     if ((Feb_Control_StopAcquisition() != STATUS_IDLE) ||
         (!Beb_StopAcquisition())) {
         LOG(logERROR, ("failed to stop acquisition\n"));
+        sharedMemory_unlockLocalLink();
         return FAIL;
     }
+    sharedMemory_unlockLocalLink();
 
     // ensure all have same starting frame numbers
     uint64_t retval = 0;
@@ -2242,8 +2402,12 @@ int softwareTrigger() {
 #ifdef VIRTUAL
     return OK;
 #else
-    if (!Feb_Control_SoftwareTrigger())
+    sharedMemory_lockLocalLink();
+    if (!Feb_Control_SoftwareTrigger()) {
+        sharedMemory_unlockLocalLink();
         return FAIL;
+    }
+    sharedMemory_unlockLocalLink();
     return OK;
 #endif
 }
@@ -2294,7 +2458,9 @@ enum runStatus getRunStatus() {
     LOG(logINFOBLUE, ("Status: IDLE\n"));
     return IDLE;
 #else
+    sharedMemory_lockLocalLink();
     int i = Feb_Control_AcquisitionInProgress();
+    sharedMemory_unlockLocalLink();
     if (i == STATUS_ERROR) {
         LOG(logERROR, ("Status: ERROR reading status register\n"));
         return ERROR;
@@ -2325,11 +2491,14 @@ void readFrame(int *ret, char *mess) {
     return;
 #else
 
-    if (Feb_Control_WaitForFinishedFlag(5000) == STATUS_ERROR) {
+    sharedMemory_lockLocalLink();
+    if (Feb_Control_WaitForFinishedFlag(5000, 1) == STATUS_ERROR) {
+        sharedMemory_unlockLocalLink();
         LOG(logERROR, ("Waiting for finished flag\n"));
         *ret = FAIL;
         return;
     }
+    sharedMemory_unlockLocalLink();
     LOG(logINFOGREEN, ("Acquisition finished\n"));
 
     // wait for detector to send

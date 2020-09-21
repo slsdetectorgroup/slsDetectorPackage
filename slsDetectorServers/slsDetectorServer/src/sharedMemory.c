@@ -2,20 +2,27 @@
 #include "clogger.h"
 
 #include <errno.h>
-#include <pthread.h>
+#include <semaphore.h>
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <unistd.h>
 
-#define SHM_NAME    "sls_server_shared_memory"
+#define SHM_NAME "sls_server_shared_memory"
+#ifdef EIGERD
+#define SHM_VERSION 0x200915
+#else
 #define SHM_VERSION 0x200625
-#define SHM_KEY     5678
-#define MEM_SIZE    128
+#endif
+#define SHM_KEY  5678
+#define MEM_SIZE 128
 
 typedef struct Memory {
     int version;
-    pthread_mutex_t lock;
+    sem_t semStatus;
+#ifdef EIGERD
+    sem_t semLocalLink;
+#endif
     enum runStatus scanStatus; // idle, running or error
     int scanStop;
 #ifdef VIRTUAL
@@ -80,11 +87,18 @@ int sharedMemory_create(int port) {
 
 int sharedMemory_initialize() {
     shm->version = SHM_VERSION;
-    if (pthread_mutex_init(&(shm->lock), NULL) != 0) {
-        LOG(logERROR,
-            ("Failed to initialize pthread lock for shared memory\n"));
+    if (sem_init(&(shm->semStatus), 1, 1) != 0) {
+        LOG(logERROR, ("Failed to initialize semaphore semStatus for "
+                       "shared memory\n"));
         return FAIL;
     }
+#ifdef EIGERD
+    if (sem_init(&(shm->semLocalLink), 1, 1) != 0) {
+        LOG(logERROR, ("Failed to initialize semaphore semLocalLink for "
+                       "shared memory\n"));
+        return FAIL;
+    }
+#endif
     shm->scanStatus = IDLE;
     shm->scanStop = 0;
 #ifdef VIRTUAL
@@ -141,64 +155,70 @@ int sharedMemory_remove() {
     return OK;
 }
 
-void sharedMemory_lock() { pthread_mutex_lock(&(shm->lock)); }
+void sharedMemory_lockStatus() { sem_wait(&(shm->semStatus)); }
 
-void sharedMemory_unlock() { pthread_mutex_unlock(&(shm->lock)); }
+void sharedMemory_unlockStatus() { sem_post(&(shm->semStatus)); }
 
 #ifdef VIRTUAL
 void sharedMemory_setStatus(enum runStatus s) {
-    sharedMemory_lock();
+    sharedMemory_lockStatus();
     shm->status = s;
-    sharedMemory_unlock();
+    sharedMemory_unlockStatus();
 }
 
 enum runStatus sharedMemory_getStatus() {
     enum runStatus s = 0;
-    sharedMemory_lock();
+    sharedMemory_lockStatus();
     s = shm->status;
-    sharedMemory_unlock();
+    sharedMemory_unlockStatus();
     return s;
 }
 
 void sharedMemory_setStop(int s) {
-    sharedMemory_lock();
+    sharedMemory_lockStatus();
     shm->stop = s;
-    sharedMemory_unlock();
+    sharedMemory_unlockStatus();
 }
 
 int sharedMemory_getStop() {
     int s = 0;
-    sharedMemory_lock();
+    sharedMemory_lockStatus();
     s = shm->stop;
-    sharedMemory_unlock();
+    sharedMemory_unlockStatus();
     return s;
 }
 #endif
 
 void sharedMemory_setScanStatus(enum runStatus s) {
-    sharedMemory_lock();
+    sharedMemory_lockStatus();
     shm->scanStatus = s;
-    sharedMemory_unlock();
+    sharedMemory_unlockStatus();
 }
 
 enum runStatus sharedMemory_getScanStatus() {
     enum runStatus s = IDLE;
-    sharedMemory_lock();
+    sharedMemory_lockStatus();
     s = shm->scanStatus;
-    sharedMemory_unlock();
+    sharedMemory_unlockStatus();
     return s;
 }
 
 void sharedMemory_setScanStop(int s) {
-    sharedMemory_lock();
+    sharedMemory_lockStatus();
     shm->scanStop = s;
-    sharedMemory_unlock();
+    sharedMemory_unlockStatus();
 }
 
 int sharedMemory_getScanStop() {
     int s = 0;
-    sharedMemory_lock();
+    sharedMemory_lockStatus();
     s = shm->scanStop;
-    sharedMemory_unlock();
+    sharedMemory_unlockStatus();
     return s;
 }
+
+#ifdef EIGERD
+void sharedMemory_lockLocalLink() { sem_wait(&(shm->semLocalLink)); }
+
+void sharedMemory_unlockLocalLink() { sem_post(&(shm->semLocalLink)); }
+#endif

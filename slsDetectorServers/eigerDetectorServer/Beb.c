@@ -151,7 +151,7 @@ void Beb_Beb(int id) {
     Beb_bit_mode = 4;
 
     //  ll_beb = &ll_beb_local;
-    //  Local_LocalLinkInterface1(ll_beb,XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_LEFT_BASEADDR);
+    //  Local_LocalLinkInterface(ll_beb,XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_LEFT_BASEADDR);
 
     //  Beb_SetByteOrder();
 }

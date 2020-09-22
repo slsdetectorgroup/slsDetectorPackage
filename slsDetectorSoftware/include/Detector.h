@@ -84,7 +84,7 @@ class Detector {
      * CHIPTESTBOARD */
     Result<defs::detectorType> getDetectorType(Positions pos = {}) const;
 
-    /** Gets the total number of detectors */
+    /** Gets the total number of modules in shared memory */
     int size() const;
 
     bool empty() const;
@@ -1404,7 +1404,8 @@ class Detector {
      *                                                *
      * ************************************************/
 
-    /** [CTB][Moench][Mythen3] */
+    /** [CTB][Moench][Mythen3]  Loads ASCII pattern file directly to server
+     * (instead of executing line by line)*/
     void setPattern(const std::string &fname, Positions pos = {});
 
     /** [CTB][Moench][Mythen3] */
@@ -1419,9 +1420,9 @@ class Detector {
     /** [CTB][Moench][Mythen3] same as executing for ctb and moench */
     Result<uint64_t> getPatternWord(int addr, Positions pos = {});
 
-    /** [CTB] Caution: If word is  -1  reads the addr (same as
+    /** [CTB][Moench] Caution: If word is  -1  reads the addr (same as
      * executing the pattern)
-     * [Mythen3][Moench] */
+     * [Mythen3] */
     void setPatternWord(int addr, uint64_t word, Positions pos = {});
 
     /**[CTB][Moench][Mythen3] Options: level: -1 (complete pattern) and 0-2
@@ -1437,9 +1438,7 @@ class Detector {
                                  Positions pos = {});
 
     /**[CTB][Moench][Mythen3] Options: level: -1 (complete pattern) and 0-2
-     * levels
-     * @returns number of loops
-     */
+     * levels  */
     Result<int> getPatternLoopCycles(int level, Positions pos = {}) const;
 
     /** [CTB][Moench][Mythen3] n: 0-2, level: -1 (complete pattern) and 0-2

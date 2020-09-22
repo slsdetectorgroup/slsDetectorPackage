@@ -2109,8 +2109,8 @@ std::string CmdProxy::PatternWord(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[step or address] [64 bit mask]\n\t[Ctb][Moench][Mythen3] 64 "
-              "bit pattern at "
-              "address of pattern memory."
+              "bit pattern at address of pattern memory.\n\t[Ctb][Moench] read "
+              "is same as executing pattern"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {

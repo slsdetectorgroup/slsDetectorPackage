@@ -220,7 +220,7 @@ class Detector {
      * [Gotthard2] only in continuous mode */
     Result<int64_t> getNumberOfTriggersLeft(Positions pos = {}) const;
 
-    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3]
+    /** [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2]
      * [Gotthard2] only in continuous mode */
     Result<ns> getPeriodLeft(Positions pos = {}) const;
 
@@ -346,7 +346,13 @@ class Detector {
     /** [Jungfrau][Mythen3][Gotthard2][Moench] */
     Result<bool> getPowerChip(Positions pos = {}) const;
 
-    /** [Jungfrau][Mythen3][Gotthard2][Moench] */
+    /** [Jungfrau][Mythen3][Gotthard2][Moench] Power the chip. \n
+     * [Moench] Default is disabled. \n
+     * [Jungfrau] Default is disabled. Get will return power status. Can be off
+     * if temperature event occured (temperature over temp_threshold with
+     * temp_control enabled. \n [Mythen3][Gotthard2] Default is 1. If module not
+     * connected or wrong module, powerchip will fail.
+     */
     void setPowerChip(bool on, Positions pos = {});
 
     /** [Gotthard][Eiger virtual] */
@@ -677,7 +683,7 @@ class Detector {
 
     Result<int> getRxFifoDepth(Positions pos = {}) const;
 
-    /** fifo between udp listening and processing threads */
+    /** Number of frames in fifo between udp listening and processing threads */
     void setRxFifoDepth(int nframes, Positions pos = {});
 
     Result<bool> getRxSilentMode(Positions pos = {}) const;
@@ -777,8 +783,8 @@ class Detector {
 
     Result<int> getFramesPerFile(Positions pos = {}) const;
 
-    /** Default depends on detector type. \n 0 will set frames per file to
-     * unlimited */
+    /** Default depends on detector type. \n 0 will set frames per file in an
+     * acquisition to unlimited */
     void setFramesPerFile(int n, Positions pos = {});
     ///@{
 
@@ -938,8 +944,8 @@ class Detector {
     Result<int> getPartialReadout(Positions pos = {}) const;
 
     /** [Eiger] Number of lines to read out per half module
-     * Options: 0 - 256. Depending on dynamic range and
-     * 10 GbE enabled, only specific values are accepted.
+     * Options: 0 - 256. 256 is default. The permissible values depend on
+     * dynamic range and 10Gbe enabled.
      */
     void setPartialReadout(const int lines, Positions pos = {});
 
@@ -986,13 +992,16 @@ class Detector {
     void pulsePixelNMove(int n, defs::xy pixel, Positions pos = {});
 
     /** [Eiger] Advanced
-     * Pulse chip n times */
+     * Pulse chip n times. \n
+     * If n is -1, resets to normal mode (reset chip completely at start of
+     * acquisition, where partialreset = 0).  */
     void pulseChip(int n, Positions pos = {});
 
     /** [Eiger] with specific quad hardware */
     Result<bool> getQuad(Positions pos = {}) const;
 
-    /** [Eiger] with specific quad hardware */
+    /** [Eiger] Sets detector size to a quad. 0 (disabled) is default. (Specific
+     * hardware required). */
     void setQuad(const bool enable);
     ///@{
 
@@ -1080,10 +1089,10 @@ class Detector {
     Result<defs::ROI> getROI(Positions pos = {}) const;
 
     /**
-     * [Gotthard]
-     * Options: Only a single ROI per module
-     * Can set only a single ROI at a time
-     * module_id is position index
+     * [Gotthard] Region of interest in detector \n
+     * Options: Only a single ROI per module \n
+     * Either all channels or a single adc or 2 chips (256 channels). Default is
+     * all channels enabled (-1 -1). \n module_id is position index
      */
     void setROI(defs::ROI value, int module_id);
 
@@ -1316,7 +1325,8 @@ class Detector {
     /** [CTB] */
     Result<defs::readoutMode> getReadoutMode(Positions pos = {}) const;
 
-    /** [CTB] Options: ANALOG_ONLY, DIGITAL_ONLY, ANALOG_AND_DIGITAL */
+    /** [CTB] Options: ANALOG_ONLY (default), DIGITAL_ONLY, ANALOG_AND_DIGITAL
+     */
     void setReadoutMode(defs::readoutMode value, Positions pos = {});
 
     /** [CTB] */
@@ -1507,8 +1517,9 @@ class Detector {
      * ************************************************/
 
     /**  Advanced user Function!
-     * [Jungfrau][CTB][Moench] fname is a pof file
-     * [Mythen3][Gotthard2] fname is an rbf file
+     * [Jungfrau][CTB][Moench] fname is a pof file, rebooting the controller is
+     * recommended \n [Mythen3][Gotthard2] fname is an rbf file, power cycling
+     * the detector is recommended
      */
     void programFPGA(const std::string &fname, Positions pos = {});
 
@@ -1544,11 +1555,15 @@ class Detector {
                                  const std::string &fname, Positions pos = {});
 
     /** Advanced user Function! \n
-     * [Eiger] Address is +0x100 for only left, +0x200 for only right. */
+     * Goes to stop server. Hence, can be called while calling blocking
+     * acquire(). \n [Eiger] Address is +0x100 for only left, +0x200 for only
+     * right. */
     Result<uint32_t> readRegister(uint32_t addr, Positions pos = {}) const;
 
     /** Advanced user Function! \n
-     * [Eiger] Address is +0x100 for only left, +0x200 for only right. */
+     * Goes to stop server. Hence, can be called while calling blocking
+     * acquire(). \n [Eiger] Address is +0x100 for only left, +0x200 for only
+     * right. */
     void writeRegister(uint32_t addr, uint32_t val, Positions pos = {});
 
     /** Advanced user Function!  */
@@ -1601,7 +1616,8 @@ class Detector {
     Result<int> getControlPort(Positions pos = {}) const;
 
     /** Detector Control TCP port (for client communication with Detector
-     * control server) */
+     * control server) Default is 1952. Normally unchanged. Set different ports
+     * for virtual servers on same pc */
     void setControlPort(int value, Positions pos = {});
 
     Result<int> getStopPort(Positions pos = {}) const;

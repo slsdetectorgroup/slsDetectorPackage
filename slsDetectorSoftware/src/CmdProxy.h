@@ -1257,7 +1257,7 @@ class CmdProxy {
                      "\n\t[Gotthard2] only in continuous mode.");
 
     TIME_GET_COMMAND(periodl, getPeriodLeft,
-                     "\n\t[Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench]"
+                     "\n\t[Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2]"
                      " Period left for current frame."
                      "\n\t[Gotthard2] only in continuous mode.");
 
@@ -1294,14 +1294,11 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         powerchip, getPowerChip, setPowerChip, StringTo<int>,
         "[0, 1]\n\t[Jungfrau][Mythen3][Gotthard2][Moench] Power "
-        "the chip. Default 0."
-        "\n\t[Jungfrau] Get will return power status."
-        "Can be off if temperature event occured (temperature over "
-        "temp_threshold with temp_control enabled."
-        "\n\t[Mythen3] If module not connected or wrong module, 1 "
-        "will fail. By default, not powered on"
-        "\n\t[Gotthard2] If module not connected or wrong module, "
-        "1 will fail. By default, powered on at server start up.");
+        "the chip. \n\t[Moench] Default is 0. \n\t[Jungfrau] Default is 0. Get "
+        "will return power status. Can be off if temperature event occured "
+        "(temperature over temp_threshold with temp_control "
+        "enabled.\n\t[Mythen3][Gotthard2] Default is 1. If module not "
+        "connected or wrong module, powerchip will fail.");
 
     INTEGER_COMMAND_VEC_ID(
         imagetest, getImageTestMode, setImageTestMode, StringTo<int>,
@@ -1930,8 +1927,9 @@ class CmdProxy {
 
     INTEGER_COMMAND_VEC_ID(
         rx_framesperfile, getFramesPerFile, setFramesPerFile, StringTo<int>,
-        "[n_frames]\n\tNumber of frames per file in receiver. 0 is "
-        "infinite or all frames in single file.");
+        "[n_frames]\n\tNumber of frames per file in receiver in an "
+        "acquisition. Default depends on detector type. 0 is infinite or all "
+        "frames in single file.");
 
     /* ZMQ Streaming Parameters (Receiver<->Client) */
 
@@ -2022,8 +2020,8 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         readnlines, getPartialReadout, setPartialReadout, StringTo<int>,
         "[1 - 256]\n\t[Eiger] Number of rows to readout per half module "
-        "starting from the centre. 256 is default. The permissible values "
-        "depend on dynamic range and 10Gbe enabled.");
+        "starting from the centre. Options: 0 - 256. 256 is default. The "
+        "permissible values depend on dynamic range and 10Gbe enabled.");
 
     INTEGER_COMMAND_VEC_ID(
         interruptsubframe, getInterruptSubframe, setInterruptSubframe,
@@ -2314,7 +2312,7 @@ class CmdProxy {
 
     EXECUTE_SET_COMMAND(rebootcontroller, rebootController,
                         "\n\t[Jungfrau][Ctb][Moench][Gotthard][Mythen3]["
-                        "Gotthard2] Reboot controler (blackfin) of detector.");
+                        "Gotthard2] Reboot controller of detector.");
 
     EXECUTE_SET_COMMAND(
         firmwaretest, executeFirmwareTest,
@@ -2337,7 +2335,8 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         port, getControlPort, setControlPort, StringTo<int>,
         "[n]\n\tPort number of the control server on detector for "
-        "detector-client tcp interface. Default is 1952. Normally unchanged.");
+        "detector-client tcp interface. Default is 1952. Normally unchanged. "
+        "Set different ports for virtual servers on same pc.");
 
     INTEGER_COMMAND_VEC_ID(
         stopport, getStopPort, setStopPort, StringTo<int>,

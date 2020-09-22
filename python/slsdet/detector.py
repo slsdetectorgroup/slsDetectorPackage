@@ -156,6 +156,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def port(self):
+        """
+        Port number of the control server on detector for detector-client tcp interface. 
+        Note
+        ----
+        Default is 1952. Normally unchanged. \n
+        Set different ports for virtual servers on same pc.
+        """
         return self.getControlPort()
 
     @port.setter
@@ -323,6 +330,14 @@ class Detector(CppDetectorApi):
     @property
     @element
     def powerchip(self):
+        """
+        [Jungfrau][Mythen3][Gotthard2][Moench] Power the chip. 
+        Note
+        ----
+        [Moench] Default is disabled. \n
+        [Jungfrau] Default is disabled. Get will return power status. Can be off if temperature event occured (temperature over temp_threshold with temp_control enabled. \n
+        [Mythen3][Gotthard2] Default is 1. If module not connected or wrong module, powerchip will fail.
+        """
         return self.getPowerChip()
 
     @powerchip.setter
@@ -406,6 +421,20 @@ class Detector(CppDetectorApi):
     @property
     @element
     def periodl(self):
+        """
+        [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2] Period left for current frame.
+        Note
+        -----
+        [Gotthard2] only in continuous mode.
+        :getter: always returns in seconds. To get in datetime.delta, use getPeriodLeft
+
+        Example
+        -----------
+        >>> d.periodl
+        181.23
+        >>> d.getPeriodLeft()
+        [datetime.timedelta(seconds=181, microseconds=230000)]
+        """
         return self.getPeriodLeft()
 
     @property
@@ -753,7 +782,7 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_framesperfile(self):
-        """Sets the number of frames per file in receiver. 
+        """Sets the number of frames per file in receiver in an acquisition. 
         
         Note
         -----
@@ -1264,6 +1293,7 @@ class Detector(CppDetectorApi):
         Note
         -----
         Advanced user Function! \n
+        Goes to stop server. Hence, can be called while calling blocking acquire(). \n
         [Eiger] Address is +0x100 for only left, +0x200 for only right.
         """
         return self._register
@@ -1409,7 +1439,7 @@ class Detector(CppDetectorApi):
 
         Note
         -----
-        To set default rate correction, use setDefaultRateCorrection
+        To set default rate correction from trimbit file, use setDefaultRateCorrection
 
         Known Issue
         ------------
@@ -1478,6 +1508,7 @@ class Detector(CppDetectorApi):
 
     @property
     def rx_frameindex(self):
+        """Current frame index received in receiver during acquisition"""
         return self.getRxCurrentFrameIndex()
 
     @property
@@ -1573,6 +1604,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def quad(self):
+        """[Eiger] Sets detector size to a quad. 0 (disabled) is default. (Specific hardware required). """
         return self.getQuad()
 
     @quad.setter
@@ -1607,6 +1639,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def readnlines(self):
+        """
+        [Eiger] Number of lines to read out per half module 
+        Note
+        ----
+        Options: 0 - 256. 256 is default. \n
+        The permissible values depend on dynamic range and 10Gbe enabled.
+        """
         return self.getPartialReadout()
 
     @readnlines.setter

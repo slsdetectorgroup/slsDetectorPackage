@@ -1418,7 +1418,7 @@ std::string CmdProxy::PulsePixel(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_times] [x] [y]\n\t[Eiger] Pulse pixel n number of times at "
-              "coordinates (x, y)."
+              "coordinates (x, y). Advanced User!"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("cannot get");
@@ -1443,7 +1443,7 @@ std::string CmdProxy::PulsePixelAndMove(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_times] [x] [y]\n\t[Eiger] Pulse pixel n number of times and "
-              "moves relatively by (x, y)."
+              "moves relatively by (x, y). Advanced User!"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("cannot get");
@@ -1469,7 +1469,7 @@ std::string CmdProxy::PulseChip(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[n_times] \n\t[Eiger] Pulse chip n times. If n is -1, resets to "
               "normal mode (reset chip completely at start of acquisition, "
-              "where partialreset = 0)."
+              "where partialreset = 0). Advanced User!"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("cannot get");
@@ -1489,8 +1489,8 @@ std::string CmdProxy::Quad(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[0, 1]\n\t[Eiger] 0 is default. 1 sets detector size to a quad "
-              "(Specific hardware required)."
+        os << "[0, 1]\n\t[Eiger] Sets detector size to a quad. 0 (disabled) is "
+              "default. (Specific hardware required)."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -1554,9 +1554,10 @@ std::string CmdProxy::ROI(int action) {
     std::ostringstream os;
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
-        os << "[xmin] [xmax] \n\t[Gotthard] Region of interest in detector. "
-              "Either all channels or a single adc or 2 chips (256 channels). "
-              "Default is all channels enabled (-1 -1). "
+        os << "[xmin] [xmax] \n\t[Gotthard] Region of interest in detector.\n\t"
+              "Options: Only a single ROI per module. \n\tEither all channels "
+              "or a single adc or 2 chips (256 channels). Default is all "
+              "channels enabled (-1 -1). "
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {
@@ -2431,8 +2432,10 @@ std::string CmdProxy::ProgramFpga(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[fname.pof | fname.rbf]\n\t[Jungfrau][Ctb][Moench] Programs "
-              "FPGA from pof file."
-           << "\n\t[Mythen3][Gotthard2] Programs FPGA from rbf file." << '\n';
+              "FPGA from pof file. Rebooting controller is recommended. "
+              "\n\t[Mythen3][Gotthard2] Programs FPGA from rbf file. Power "
+              "cycling the detector is recommended. "
+           << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");
     } else if (action == defs::PUT_ACTION) {
@@ -2503,8 +2506,9 @@ std::string CmdProxy::Register(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[address] [32 bit value]\n\tReads/writes to a 32 bit register "
-              "in hex. Advanced Function!\n\t[Eiger] +0x100 for only left, "
-              "+0x200 for only right."
+              "in hex. Advanced Function!\n\tGoes to stop server. Hence, can "
+              "be called while calling blocking acquire(). \n\t[Eiger] +0x100 "
+              "for only left, +0x200 for only right."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {

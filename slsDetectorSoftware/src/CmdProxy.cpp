@@ -1639,7 +1639,7 @@ std::string CmdProxy::VetoPhoton(int action) {
         os << "[ichip] [#photons] [energy in keV] [reference "
               "file]\n\t[Gotthard2] Set veto reference for 128 channels for "
               "chip ichip according to reference file and #photons and energy "
-              "in keV.\n\t[ichip] [output file]\n\t Get gain indices and veto "
+              "in keV.\n[ichip] [output file]\n\t Get gain indices and veto "
               "reference for 128 channels for chip ichip, saved to file."
            << '\n';
     } else if (action == defs::GET_ACTION) {

@@ -881,9 +881,10 @@ class Detector {
     Result<IpAddr> getClientZmqIp(Positions pos = {}) const;
 
     /** Ip Address to listen to zmq data streamed out from receiver or
-     * intermediate process. Default connects to receiver zmq Ip Address (from
-     * rx_hostname). Modified only when using an intermediate process between
-     * receiver and client(gui). Also restarts client zmq streaming if enabled.
+     * intermediate process. \n Default connects to receiver zmq Ip Address
+     * (from rx_hostname). \n Modified only when using an intermediate process
+     * between receiver and client(gui). \n Also restarts client zmq streaming
+     * if enabled.
      */
     void setClientZmqIp(const IpAddr ip, Positions pos = {});
     ///@{

@@ -1107,6 +1107,7 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setDestinationUDPMAC2, mac)
 
     @property
+    @element
     def udp_srcmac(self):
         """
         Mac address of the receiver (source) udp interface. 
@@ -1120,7 +1121,7 @@ class Detector(CppDetectorApi):
         d.udp_srcmac
         00:1b:31:01:8a:de
         """
-        return element_if_equal(self.getSourceUDPMAC())
+        return self.getSourceUDPMAC()
 
     @udp_srcmac.setter
     def udp_srcmac(self, mac):

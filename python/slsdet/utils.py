@@ -117,17 +117,22 @@ def make_string_path(path):
         return _make_string_path(path)
 
 def make_ip(arg):
-    if isinstance(arg, dict):
-        return {key:_slsdet.IpAddr(value) for key,value in arg.items()}
-    else:
-        return _slsdet.IpAddr(arg)
+    return _make(arg, _slsdet.IpAddr)
 
 def make_mac(arg):
-    if isinstance(arg, dict):
-        return {key:_slsdet.MacAddr(value) for key,value in arg.items()}
-    else:
-        return _slsdet.MacAddr(arg)
+    return _make(arg, _slsdet.MacAddr)
 
+def _make(arg, transform):
+    """Helper function for make_mac and make_ip special cases for
+    dict, list and tuple. Otherwise just calls transform"""
+    if isinstance(arg, dict):
+        return {key:transform(value) for key,value in arg.items()}
+    elif isinstance(arg, list):
+        return [transform(a) for a in arg]
+    elif isinstance(arg, tuple):
+        return tuple(transform(a) for a in arg)
+    else:
+        return transform(arg)
 
 def set_using_dict(func, args):
     if isinstance(args, dict) and all(isinstance(k, int) for k in args.keys()):

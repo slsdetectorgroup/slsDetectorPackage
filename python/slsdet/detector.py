@@ -198,7 +198,7 @@ class Detector(CppDetectorApi):
         Fimware version of detector in format [0xYYMMDD] or an increasing 2 digit number for Eiger.
         Example
         -------
-        >>> hex(d.firmwareversion)
+        >>> d.firmwareversion
         '0x200910'
         """
         return ut.lhex(self.getFirmwareVersion())
@@ -245,6 +245,7 @@ class Detector(CppDetectorApi):
         return self.getRxThreadIds()
 
     @property
+    @element
     def dr(self):
         """
         Dynamic range or number of bits per pixel/channel.
@@ -255,7 +256,7 @@ class Detector(CppDetectorApi):
         [Mythen3] Options: 8, 16, 32 \n
         [Jungfrau][Gotthard][Ctb][Moench][Mythen3][Gotthard2] 16
         """
-        return element_if_equal(self.getDynamicRange())
+        return self.getDynamicRange()
 
     @dr.setter
     def dr(self, dr):
@@ -271,9 +272,10 @@ class Detector(CppDetectorApi):
         return to_geo(self.getModuleGeometry())
 
     @property
+    @element
     def module_size(self):
-        ms = [to_geo(item) for item in self.getModuleSize()]
-        return element_if_equal(ms)
+        return [to_geo(item) for item in self.getModuleSize()]
+        
 
     @property
     def detsize(self):
@@ -320,6 +322,7 @@ class Detector(CppDetectorApi):
         self.setSettings(value)
 
     @property
+    @element
     def frames(self):
         """Number of frames per acquisition. In trigger mode, number of frames per trigger.
 
@@ -329,7 +332,7 @@ class Detector(CppDetectorApi):
         In scan mode, number of frames is set to number of steps. \n
         [Gotthard2] Burst mode has a maximum of 2720 frames.
         """
-        return element_if_equal(self.getNumberOfFrames())
+        return self.getNumberOfFrames()
 
     @frames.setter
     def frames(self, n_frames):
@@ -375,9 +378,10 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setPowerChip, value)
 
     @property
+    @element
     def triggers(self):
         """Number of triggers per aquire. Set timing mode to use triggers."""
-        return element_if_equal(self.getNumberOfTriggers())
+        return self.getNumberOfTriggers()
 
     @triggers.setter
     def triggers(self, n_triggers):

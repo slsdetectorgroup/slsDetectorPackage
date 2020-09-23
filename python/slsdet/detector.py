@@ -2210,6 +2210,7 @@ class Detector(CppDetectorApi):
         Example
         -------
         >>> d.vetophoton = (2, 24, 2560, '/tmp/bla.txt')
+        """
         raise NotImplementedError('vetofile is set only')
 
     @vetophoton.setter

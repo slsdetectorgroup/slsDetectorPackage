@@ -1686,9 +1686,9 @@ class CmdProxy {
         "\n\tStarts detector acquisition. Status changes to RUNNING or WAITING "
         "and automatically returns to idle at the end of acquisition.");
 
-    EXECUTE_SET_COMMAND_NOID(
-        stop, stopDetector,
-        "\n\tAbort detector acquisition. Status changes to IDLE or STOPPED.");
+    EXECUTE_SET_COMMAND_NOID(stop, stopDetector,
+                             "\n\tAbort detector acquisition. Status changes "
+                             "to IDLE or STOPPED. Goes to stop server.");
 
     GET_COMMAND(rx_framescaught, getFramesCaught,
                 "\n\tNumber of frames caught by receiver.");
@@ -1700,7 +1700,7 @@ class CmdProxy {
         startingfnum, getStartingFrameNumber, setStartingFrameNumber,
         StringTo<uint64_t>,
         "[n_value]\n\t[Eiger][Jungfrau] Starting frame number for "
-        "next acquisition. Stopping acquiistion might result in "
+        "next acquisition. Stopping acquisition might result in "
         "different frame numbers for different modules.");
 
     EXECUTE_SET_COMMAND(
@@ -1811,13 +1811,12 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         txndelay_frame, getTransmissionDelayFrame, setTransmissionDelayFrame,
         StringTo<int>,
-        "[n_delay]\n\t[Eiger][Jungfrau][Mythen3] Transmission delay of each "
-        "image being "
-        "streamed out of the module.\n\t[Jungfrau] [0-31] Each value "
-        "represents 1 ms\n\t[Eiger] Additional delay to txndelay_left and "
-        "txndelay_right. Each value represents 10ns. Typical value is "
-        "50000.\n\t[Mythen3] [0-16777215] Each value represents 8 ns (125 MHz "
-        "clock), max is 134 ms.");
+        "[n_delay]\n\t[Eiger][Jungfrau][Mythen3] Transmission delay of first "
+        "udp packet being streamed out of the module.\n\t[Jungfrau] [0-31] "
+        "Each value represents 1 ms\n\t[Eiger] Additional delay to "
+        "txndelay_left and txndelay_right. Each value represents 10ns. Typical "
+        "value is 50000.\n\t[Mythen3] [0-16777215] Each value represents 8 ns "
+        "(125 MHz clock), max is 134 ms.");
 
     INTEGER_COMMAND_VEC_ID(
         txndelay_left, getTransmissionDelayLeft, setTransmissionDelayLeft,

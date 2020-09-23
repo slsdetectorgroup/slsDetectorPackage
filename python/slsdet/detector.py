@@ -173,6 +173,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def stopport(self):
+        """Port number of the stop server on detector for detector-client tcp interface. 
+        Note
+        ----
+        Default is 1953. Normally unchanged.
+        """
         return self.getStopPort()
 
     @stopport.setter
@@ -327,6 +332,7 @@ class Detector(CppDetectorApi):
         """
         [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Number of frames left in acquisition.\n
         [Gotthard2] only in continuous mode.
+        :setter: Not Implemented
         """
         return self.getNumberOfFramesLeft()
 
@@ -338,6 +344,7 @@ class Detector(CppDetectorApi):
         Note
         -----
         [Gotthard2] only in continuous mode.
+        :setter: Not Implemented
         """
         return self.getNumberOfFramesFromStart()
 
@@ -441,7 +448,7 @@ class Detector(CppDetectorApi):
         -----
         [Gotthard2] only in continuous mode.
         :getter: always returns in seconds. To get in datetime.delta, use getPeriodLeft
-
+        :setter: Not Implemented
         Example
         -----------
         >>> d.periodl
@@ -486,7 +493,7 @@ class Detector(CppDetectorApi):
         -----
         [Gotthard2] only in continuous mdoe.
         :getter: always returns in seconds. To get in datetime.delta, use getDelayAfterTriggerLeft
-
+        :setter: Not Implemented
         Example
         -----------
         >>> d.delayl
@@ -509,7 +516,7 @@ class Detector(CppDetectorApi):
         self.stopReceiver()
 
     def stop(self):
-        """Abort detector acquisition. Status changes to IDLE or STOPPED"""
+        """Abort detector acquisition. Status changes to IDLE or STOPPED. Goes to stop server. """
         self.stopDetector()
 
     # Time
@@ -520,7 +527,7 @@ class Detector(CppDetectorApi):
 
     @property
     def startingfnum(self):
-        """[Eiger][Jungfrau] Starting frame number for next acquisition. Stopping acquiistion might result in different frame numbers for different modules. """
+        """[Eiger][Jungfrau] Starting frame number for next acquisition. Stopping acquisition might result in different frame numbers for different modules. """
         return element_if_equal(self.getStartingFrameNumber())
 
     @startingfnum.setter
@@ -532,6 +539,14 @@ class Detector(CppDetectorApi):
     @property
     @element
     def txndelay_frame(self):
+        """
+        [Eiger][Jungfrau][Mythen3] Transmission delay of first udp packet being streamed out of the module.\n
+        Note
+        ----
+        [Jungfrau] [0-31] Each value represents 1 ms. \n 
+        [Eiger] Additional delay to txndelay_left and txndelay_right. Each value represents 10ns. Typical value is 50000. \n
+        [Mythen3] [0-16777215] Each value represents 8 ns (125 MHz clock), max is 134 ms.
+        """
         return self.getTransmissionDelayFrame()
 
     @txndelay_frame.setter
@@ -541,6 +556,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def txndelay_left(self):
+        """[Eiger] Transmission delay of first packet in an image being streamed out of the module's left UDP port. 
+        Note
+        -----
+        Each value represents 10ns. Typical value is 50000.
+        """
         return self.getTransmissionDelayLeft()
 
     @txndelay_left.setter
@@ -550,6 +570,12 @@ class Detector(CppDetectorApi):
     @property
     @element
     def txndelay_right(self):
+        """
+        [Eiger] Transmission delay of first packet in an image being streamed out of the module's right UDP port. 
+        Note
+        ----
+        Each value represents 10ns. Typical value is 50000.
+        """
         return self.getTransmissionDelayRight()
 
     @txndelay_right.setter
@@ -1198,7 +1224,8 @@ class Detector(CppDetectorApi):
         """Gets detector status. Enum: runStatus
         Note
         -----
-        Options: IDLE, ERROR, WAITING, RUN_FINISHED, TRANSMITTING, RUNNING, STOPPED
+        Options: IDLE, ERROR, WAITING, RUN_FINISHED, TRANSMITTING, RUNNING, STOPPED \n
+        Goes to stop server.
         >>> d.status
         runStatus.IDLE
         """
@@ -1354,10 +1381,12 @@ class Detector(CppDetectorApi):
 
     @property
     def timinglist(self):
+        """Gets the list of timing modes (timingMode) for this detector."""
         return self.getTimingModeList()
 
     @property
     def templist(self):
+        """List of temperature enums (dacIndex) implemented for this detector."""
         return self.getTemperatureList()
 
     @property
@@ -1402,11 +1431,23 @@ class Detector(CppDetectorApi):
     @property
     @element
     def triggersl(self):
+        """
+        [Gotthard][Jungfrau][Mythen3][Gotthard2][CTB][Moench] Number of triggers left in acquisition.\n
+        Note
+        ----
+        [Gotthard2] only in continuous mode.
+        :setter: Not Implemented
+        """
         return self.getNumberOfTriggersLeft()
 
     @property
     @element
     def timestamp(self):
+        """[Jungfrau][Mythen3][Gotthard2][Moench][CTB] Timestamp at a frame start.
+        Note
+        ----
+        [Gotthard2] not in burst and auto mode.
+        """
         return self.getMeasurementTime()
 
     @property
@@ -2037,6 +2078,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def timingsource(self):
+        """
+        [Gotthard2] Timing source. Enum: timingSourceType
+        Note
+        -----
+        Options: TIMING_INTERNAL, TIMING_EXTERNAL \n
+        Internal is crystaland external is system timing. Default is internal.
+        """
         return self.getTimingSource()
 
     @timingsource.setter
@@ -2846,7 +2894,7 @@ class Detector(CppDetectorApi):
         Note
         -----
         :getter: always returns in seconds. To get in datetime.delta, use getExptimeLeft
-
+        :setter: Not Implemented
         Example
         -----------
         >>> d.exptimel

@@ -1015,7 +1015,7 @@ std::string CmdProxy::DetectorStatus(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[running, error, transmitting, finished, waiting, "
-              "idle]\n\tDetector status."
+              "idle]\n\tDetector status. Goes to stop server. "
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (!args.empty()) {

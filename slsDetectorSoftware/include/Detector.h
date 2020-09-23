@@ -456,10 +456,11 @@ class Detector {
     void startDetector();
 
     /** Non blocking: Abort detector acquisition. Status changes to IDLE or
-     * STOPPED */
+     * STOPPED. Goes to stop server. */
     void stopDetector();
 
-    /** IDLE, ERROR, WAITING, RUN_FINISHED, TRANSMITTING, RUNNING, STOPPED */
+    /** IDLE, ERROR, WAITING, RUN_FINISHED, TRANSMITTING, RUNNING, STOPPED \n
+     * Goes to stop server */
     Result<defs::runStatus> getDetectorStatus(Positions pos = {}) const;
 
     /** Options: IDLE, TRANSMITTING, RUNNING */
@@ -474,7 +475,7 @@ class Detector {
     /** [Eiger][Jungfrau] */
     Result<uint64_t> getStartingFrameNumber(Positions pos = {}) const;
 
-    /** [Eiger][Jungfrau] Stopping acquiistion might result in different frame
+    /** [Eiger][Jungfrau] Stopping acquisition might result in different frame
      * numbers for different modules.*/
     void setStartingFrameNumber(uint64_t value, Positions pos = {});
 
@@ -619,26 +620,26 @@ class Detector {
     Result<int> getTransmissionDelayFrame(Positions pos = {}) const;
 
     /**
-     * [Jungfrau]: Sets the transmission delay of the first UDP packet being
-     * streamed out of the module. Options: 0 - 31, each value represenets 1 ms
-     * [Eiger]: Sets the transmission delay of entire frame streamed out for
-     * both left and right UDP ports. Options: //TODO possible values
-     * [Mythen3] Options: [0-16777215] Each value represents 8 ns (125 MHz
-     * clock), max is 134 ms.
+     * Eiger][Jungfrau][Mythen3] Transmission delay of first udp packet being
+     * streamed out of the module.\n[Jungfrau] [0-31] Each value represents 1
+     * ms\n[Eiger] Additional delay to txndelay_left and txndelay_right. Each
+     * value represents 10ns. Typical value is 50000.\n[Mythen3] [0-16777215]
+     * Each value represents 8 ns (125 MHz clock), max is 134 ms.
      */
     void setTransmissionDelayFrame(int value, Positions pos = {});
 
     /** [Eiger] */
     Result<int> getTransmissionDelayLeft(Positions pos = {}) const;
 
-    /**
-     * [Eiger]
-     * Sets the transmission delay of first packet streamed out of the left UDP
-     * port
+    /**[Eiger] Transmission delay of first packet in an image being streamed out
+     * of the module's left UDP port. Each value represents 10ns. Typical value
+     * is 50000.
      */
     void setTransmissionDelayLeft(int value, Positions pos = {});
 
-    /** [Eiger] */
+    /** [Eiger] Transmission delay of first packet in an image being streamed
+     * out of the module's right UDP port. Each value represents 10ns. Typical
+     * value is 50000. */
     Result<int> getTransmissionDelayRight(Positions pos = {}) const;
 
     /**
@@ -1022,12 +1023,12 @@ class Detector {
     Result<int> getThresholdTemperature(Positions pos = {}) const;
 
     /**
-     * [Jungfrau]Set threshold temperature
+     * [Jungfrau]Set threshold temperature in degrees.
      * If temperature crosses threshold temperature
      * and temperature control is enabled (default is disabled), power to chip
      * will be switched off and temperature event will be set. \n To power on
      * chip again, temperature has to be less than threshold temperature and
-     * temperature event has to be cleared. val is value in degrees
+     * temperature event has to be cleared.
      */
     void setThresholdTemperature(int temp, Positions pos = {});
 
@@ -1077,8 +1078,9 @@ class Detector {
     /** [Jungfrau] Advanced*/
     Result<ns> getStorageCellDelay(Positions pos = {}) const;
 
-    /** [Jungfrau] Advanced \n
-     * Options: (0-1638375 ns (resolution of 25ns) */
+    /** [Jungfrau] Advanced \n Additional time delay between 2 consecutive
+     * exposures in burst mode. \n Options: (0-1638375 ns (resolution of 25ns)
+     */
     void setStorageCellDelay(ns value, Positions pos = {});
     ///@{
 
@@ -1185,7 +1187,7 @@ class Detector {
     /** [Gotthard2] */
     Result<defs::timingSourceType> getTimingSource(Positions pos = {}) const;
 
-    /** [Gotthard2] Options: TIMING_INTERNAL, TIMING_EXTERNAL */
+    /** [Gotthard2] Options: TIMING_INTERNAL (default), TIMING_EXTERNAL */
     void setTimingSource(defs::timingSourceType value, Positions pos = {});
 
     /** [Gotthard2] */
@@ -1629,8 +1631,8 @@ class Detector {
 
     Result<int> getStopPort(Positions pos = {}) const;
 
-    /** Detector Stop TCP port (for client communication with Detector Stop
-     * server) */
+    /** Port number of the stop server on detector for detector-client tcp
+     * interface. Default is 1953. Normally unchanged. */
     void setStopPort(int value, Positions pos = {});
 
     Result<bool> getDetectorLock(Positions pos = {}) const;

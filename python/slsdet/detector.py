@@ -216,7 +216,6 @@ class Detector(CppDetectorApi):
         return ut.lhex(self.getDetectorServerVersion())
 
     @property
-    @element
     def clientversion(self):
         """Client software version in format [YYMMDD]
         Example
@@ -224,7 +223,7 @@ class Detector(CppDetectorApi):
         >>> d.clientversion
         '0x200810'
         """
-        return ut.lhex(self.getClientVersion())
+        return hex(self.getClientVersion())
 
     @property
     @element
@@ -494,7 +493,7 @@ class Detector(CppDetectorApi):
 
     @delay.setter
     def delay(self, t):
-        self.setDelayAfterTrigger(t)
+        ut.set_time_using_dict(self.setDelayAfterTrigger, t)
 
     @property
     @element
@@ -534,20 +533,20 @@ class Detector(CppDetectorApi):
 
     # Time
     @property
+    @element
     def rx_framescaught(self):
         """Number of frames caught by receiver."""
-        return element_if_equal(self.getFramesCaught())
+        return self.getFramesCaught()
 
     @property
+    @element
     def startingfnum(self):
         """[Eiger][Jungfrau] Starting frame number for next acquisition. Stopping acquisition might result in different frame numbers for different modules. """
-        return element_if_equal(self.getStartingFrameNumber())
+        return self.getStartingFrameNumber()
 
     @startingfnum.setter
     def startingfnum(self, value):
-        self.setStartingFrameNumber(value)
-
-    # TODO! add txdelay
+        ut.set_using_dict(self.setStartingFrameNumber, value)
 
     @property
     @element
@@ -596,10 +595,12 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setTransmissionDelayRight, args)
 
     @property
+    @element
     def use_receiver(self):
-        return element_if_equal(self.getUseReceiverFlag())
+        return self.getUseReceiverFlag()
 
     @property
+    @element
     def rx_hostname(self):
         """ Sets receiver hostname or IP address. Used for TCP control communication between client and receiver to configure receiver. Also updates receiver with detector parameters.
         Note
@@ -619,13 +620,14 @@ class Detector(CppDetectorApi):
         >>> d.rx_tcpport
         [2000, 2002]
         """
-        return element_if_equal(self.getRxHostname())
+        return self.getRxHostname()
 
     @rx_hostname.setter
     def rx_hostname(self, hostname):
         self.setRxHostname(hostname)
 
     @property
+    @element
     def rx_tcpport(self):
         """
         TCP port for client-receiver communication. 
@@ -642,11 +644,11 @@ class Detector(CppDetectorApi):
         >>> d.rx_tcpport
         [2000, 2002]
         """
-        return element_if_equal(self.getRxPort())
+        return self.getRxPort()
 
     @rx_tcpport.setter
     def rx_tcpport(self, port):
-        self.setRxPort(port)
+        ut.set_using_dict(self.setRxPort, port)
 
     @property
     def rx_fifodepth(self):

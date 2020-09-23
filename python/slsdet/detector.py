@@ -651,24 +651,27 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setRxPort, port)
 
     @property
+    @element
     def rx_fifodepth(self):
         """Sets the number of frames in the receiver fifo depth (buffer between listener and writer threads)."""
-        return element_if_equal(self.getRxFifoDepth())
+        return self.getRxFifoDepth()
 
     @rx_fifodepth.setter
     def rx_fifodepth(self, frames):
-        self.setRxFifoDepth(frames)
+        ut.set_using_dict(self.setRxFifoDepth, frames)
 
     @property
+    @element
     def rx_silent(self):
         """When enabled, switches off receiver text output during acquisition. """
-        return element_if_equal(self.getRxSilentMode())
+        return self.getRxSilentMode()
 
     @rx_silent.setter
     def rx_silent(self, value):
-        self.setRxSilentMode(value)
+        ut.set_using_dict(self.setRxSilentMode, value)
 
     @property
+    @element
     def rx_discardpolicy(self):
         """
         Frame discard policy of receiver. Enum: frameDiscardPolicy
@@ -684,13 +687,14 @@ class Detector(CppDetectorApi):
         >>> d.rx_discardpolicy
         frameDiscardPolicy.NO_DISCARD
         """
-        return element_if_equal(self.getRxFrameDiscardPolicy())
+        return self.getRxFrameDiscardPolicy()
 
     @rx_discardpolicy.setter
     def rx_discardpolicy(self, policy):
-        self.setRxFrameDiscardPolicy()
+        ut.set_using_dict(self.setRxFrameDiscardPolicy, policy)
 
     @property
+    @element
     def rx_padding(self):
         """Partial frames padding enable in the receiver. 
         Note
@@ -698,25 +702,27 @@ class Detector(CppDetectorApi):
         Default: enabled \n
         Disabling is fastest.
         """
-        return element_if_equal(self.getPartialFramesPadding())
+        return self.getPartialFramesPadding()
 
     @rx_padding.setter
     def rx_padding(self, policy):
-        self.setPartialFramesPadding(policy)
+        ut.set_using_dict(self.setPartialFramesPadding, policy)
 
     @property
+    @element
     def rx_lock(self):
         """Lock the receiver to a specific IP"""
-        return element_if_equal(self.getRxLock())
+        return self.getRxLock()
 
     @rx_lock.setter
     def rx_lock(self, value):
-        self.setRxLock(value)
+        ut.set_using_dict(self.setRxLock, value)
 
     @property
+    @element
     def rx_lastclient(self):
         """Client IP Address that last communicated with the receiver."""
-        return element_if_equal(self.getRxLastClientIP())
+        return self.getRxLastClientIP()
 
     # FILE
 
@@ -734,9 +740,10 @@ class Detector(CppDetectorApi):
 
     @numinterfaces.setter
     def numinterfaces(self, value):
-        self.setNumberofUDPInterfaces(value)
+        ut.set_using_dict(self.setNumberofUDPInterfaces, value)
 
     @property
+    @element
     def fformat(self):
         """ File format of data file in receiver. Enum: fileFormat
         
@@ -751,11 +758,11 @@ class Detector(CppDetectorApi):
             d.fformat = fileFormat.BINARY
 
             """
-        return element_if_equal(self.getFileFormat())
+        return self.getFileFormat()
 
     @fformat.setter
     def fformat(self, format):
-        self.setFileFormat(format)
+        ut.set_using_dict(self.setFileFormat, format)
 
     @property
     @element
@@ -772,6 +779,7 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setAcquisitionIndex, index)
 
     @property
+    @element
     def fname(self):
         """File name prefix for output data file in receiver. Default is run. 
         
@@ -784,11 +792,11 @@ class Detector(CppDetectorApi):
         d.fname = 'run'
         eg. file name: run_d0_f0_5.raw
         """
-        return element_if_equal(self.getFileNamePrefix())
+        return self.getFileNamePrefix()
 
     @fname.setter
     def fname(self, file_name):
-        self.setFileNamePrefix(file_name)
+        ut.set_using_dict(self.setFileNamePrefix, file_name)
 
     @property
     def fpath(self):

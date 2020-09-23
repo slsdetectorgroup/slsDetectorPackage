@@ -563,11 +563,16 @@ class CmdProxy {
         return ToStringHex(value, width);
     }
 
-    template <typename V> std::string OutString(const V &value) {
+    template <typename V> std::string OutString(const sls::Result<V> &value) {
         if (value.equal())
             return ToString(value.front());
         return ToString(value);
     }
+
+    template <typename V> std::string OutString(const V &value) {
+        return ToString(value);
+    }
+
     template <typename V>
     std::string OutString(const V &value, const std::string &unit) {
         if (value.equal())

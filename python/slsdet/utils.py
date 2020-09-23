@@ -10,6 +10,7 @@ import functools
 import datetime as dt
 import pathlib
 import os
+from pathlib import Path
 
 Geometry = namedtuple('Geometry', ['x', 'y'])
 
@@ -97,7 +98,7 @@ def make_timedelta(t):
     else:
         return dt.timedelta(seconds=t)
 
-def make_string_path(path):
+def _make_string_path(path):
     """
     Accepts either a pathlib.Path or a string, expands ~ to user and convert
     Path to str
@@ -109,6 +110,11 @@ def make_string_path(path):
     else:
         raise ValueError("Cannot convert argument to posix path")
 
+def make_string_path(path):
+    if isinstance(path, dict):
+        return {key:_make_string_path(value) for key,value in path.items()}
+    else:
+        return _make_string_path(path)
 
 def set_using_dict(func, args):
     if isinstance(args, dict) and all(isinstance(k, int) for k in args.keys()):
@@ -133,3 +139,6 @@ def set_time_using_dict(func, args):
 
 def lhex(iterable):
     return [hex(item) for item in iterable]
+
+def lpath(iterable):
+    return [Path(item) for item in iterable]

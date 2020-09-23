@@ -665,13 +665,10 @@ void init_det(py::module &m) {
                  Detector::setFileWrite,
              py::arg(), py::arg() = Positions{})
         .def("getMasterFileWrite",
-             (Result<bool>(Detector::*)(sls::Positions) const) &
-                 Detector::getMasterFileWrite,
-             py::arg() = Positions{})
+             (bool (Detector::*)() const) & Detector::getMasterFileWrite)
         .def("setMasterFileWrite",
-             (void (Detector::*)(bool, sls::Positions)) &
-                 Detector::setMasterFileWrite,
-             py::arg(), py::arg() = Positions{})
+             (void (Detector::*)(bool)) & Detector::setMasterFileWrite,
+             py::arg())
         .def("getFileOverWrite",
              (Result<bool>(Detector::*)(sls::Positions) const) &
                  Detector::getFileOverWrite,
@@ -1376,6 +1373,10 @@ void init_det(py::module &m) {
         .def("clearBit",
              (void (Detector::*)(uint32_t, int, sls::Positions)) &
                  Detector::clearBit,
+             py::arg(), py::arg(), py::arg() = Positions{})
+        .def("getBit",
+             (Result<int>(Detector::*)(uint32_t, int, sls::Positions)) &
+                 Detector::getBit,
              py::arg(), py::arg(), py::arg() = Positions{})
         .def("executeFirmwareTest",
              (void (Detector::*)(sls::Positions)) &

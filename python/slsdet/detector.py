@@ -799,6 +799,7 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setFileNamePrefix, file_name)
 
     @property
+    @element
     def fpath(self):
         """Directory where output data files are written in receiver. Default is "/".
         Note
@@ -809,35 +810,37 @@ class Detector(CppDetectorApi):
         --------
         d.fpath = '/tmp/run_20201705'
         """
-        return element_if_equal(self.getFilePath())
+        return ut.lpath(self.getFilePath())
 
     @fpath.setter
     def fpath(self, path):
         path = ut.make_string_path(path)
-        self.setFilePath(path)
+        ut.set_using_dict(self.setFilePath, path)
 
     @property
+    @element
     def fwrite(self):
         """Enable or disable receiver file write. Default is enabled. """
-        return element_if_equal(self.getFileWrite())
+        return self.getFileWrite()
 
     @fwrite.setter
     def fwrite(self, value):
-        self.setFileWrite(value)
+        ut.set_using_dict(self.setFileWrite, value)
 
     @property
+    @element
     def foverwrite(self):
         """Enable or disable receiver file overwriting. Default is enabled. """
-        return element_if_equal(self.getFileOverWrite())
+        return self.getFileOverWrite()
 
     @foverwrite.setter
     def foverwrite(self, value):
-        self.setFileOverWrite(value)
+        ut.set_using_dict(self.setFileOverWrite, value)
 
     @property
     def fmaster(self):
         """Enable or disable receiver master file. Default is enabled."""
-        return element_if_equal(self.getMasterFileWrite())
+        return self.getMasterFileWrite()
 
     @fmaster.setter
     def fmaster(self, enable):

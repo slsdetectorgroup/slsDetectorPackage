@@ -979,12 +979,12 @@ void Detector::setFileWrite(bool value, Positions pos) {
     pimpl->Parallel(&Module::setFileWrite, pos, value);
 }
 
-void Detector::setMasterFileWrite(bool value, Positions pos) {
-    pimpl->Parallel(&Module::setMasterFileWrite, pos, value);
+void Detector::setMasterFileWrite(bool value) {
+    pimpl->Parallel(&Module::setMasterFileWrite, {0}, value);
 }
 
-Result<bool> Detector::getMasterFileWrite(Positions pos) const {
-    return pimpl->Parallel(&Module::getMasterFileWrite, pos);
+bool Detector::getMasterFileWrite() const {
+    return pimpl->Parallel(&Module::getMasterFileWrite, {0})[0];
 }
 
 Result<bool> Detector::getFileOverWrite(Positions pos) const {

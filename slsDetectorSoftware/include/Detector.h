@@ -784,10 +784,10 @@ class Detector {
     /** default enabled */
     void setFileWrite(bool value, Positions pos = {});
 
-    Result<bool> getMasterFileWrite(Positions pos = {}) const;
+    bool getMasterFileWrite() const;
 
     /**default enabled */
-    void setMasterFileWrite(bool value, Positions pos = {});
+    void setMasterFileWrite(bool value);
 
     Result<bool> getFileOverWrite(Positions pos = {}) const;
 

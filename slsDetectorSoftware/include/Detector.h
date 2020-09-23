@@ -598,8 +598,14 @@ class Detector {
      * calculated (incremented by 1 if no 2nd interface)*/
     void setDestinationUDPPort2(int port, int module_id = -1);
 
+    /** Reconfigures Detector with UDP destination. More for debugging as the
+     * configuration is done automatically when the detector has sufficient UDP
+     * details. */
     void reconfigureUDPDestination(Positions pos = {});
 
+    /** Validates that UDP configuration in the detector is valid. If not
+     * configured, it will throw with error message requesting missing udp
+     * information */
     void validateUDPConfiguration(Positions pos = {});
 
     Result<std::string> printRxConfiguration(Positions pos = {}) const;
@@ -1155,7 +1161,8 @@ class Detector {
     void setVetoReference(const int gainIndex, const int value,
                           Positions pos = {});
 
-    /** [Gotthard2] gain indices and adu values for each channel */
+    /** [Gotthard2] Set veto reference for each 128 channels for specific chip.
+     * The file should have 128 rows of gain index and 12 bit value in dec"*/
     void setVetoFile(const int chipIndex, const std::string &fname,
                      Positions pos = {});
 
@@ -1549,15 +1556,12 @@ class Detector {
     void rebootController(Positions pos = {});
 
     /**
-     * [Jungfrau][Gotthard][CTB][Moench]
-     * Advanced user Function! \n
-     * Updates the firmware, detector server and then reboots detector
-     * controller blackfin. \n
-     * [Mythen3][Gotthard2] Will still have old server starting up as the new
-     * server is not respawned \n
-      sname is name of detector server binary found on
-     * tftp folder of host pc hostname is name of pc to tftp from fname is
-     * programming file name
+     * Advanced user Function!\n [Jungfrau][Gotthard][CTB][Moench] Updates the
+     * firmware, detector server and then reboots detector controller blackfin.
+     * \n [Mythen3][Gotthard2] Will still have old server starting up as the new
+     * server is not respawned \n sname is name of detector server binary found
+     * on tftp folder of host pc \n hostname is name of pc to tftp from \n fname
+     * is programming file name
      */
     void updateFirmwareAndServer(const std::string &sname,
                                  const std::string &hostname,

@@ -1639,9 +1639,8 @@ std::string CmdProxy::VetoPhoton(int action) {
         os << "[ichip] [#photons] [energy in keV] [reference "
               "file]\n\t[Gotthard2] Set veto reference for 128 channels for "
               "chip ichip according to reference file and #photons and energy "
-              "in keV.\n\t"
-           << "[ichip] [output file]\n\t Get gain indices and veto reference "
-              "for 128 channels for chip ichip, saved to file."
+              "in keV.\n\t[ichip] [output file]\n\t Get gain indices and veto "
+              "reference for 128 channels for chip ichip, saved to file."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 2) {
@@ -2476,9 +2475,13 @@ std::string CmdProxy::UpdateFirmwareAndDetectorServer(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[server_name] [pc_host_name] "
-              "[fname.pof]\n\t[Jungfrau][Ctb][Moench] "
-              "Updates detector server via tftp from pc, updates firmware to "
-              "pof file and then reboots controller (blackfin)."
+              "[fname.pof]\n\t[Jungfrau][Gotthard][CTB][Moench] Updates the "
+              "firmware, detector server and then reboots detector controller "
+              "blackfin. \n\t[Mythen3][Gotthard2] Will still have old server "
+              "starting up as the new server is not respawned \n\tsname is "
+              "name of detector server binary found on tftp folder of host pc "
+              "\n\thostname is name of pc to tftp from \n\tfname is "
+              "programming file name"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("Cannot get");

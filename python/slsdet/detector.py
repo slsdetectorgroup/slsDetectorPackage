@@ -2172,8 +2172,8 @@ class Detector(CppDetectorApi):
     @property
     def vetofile(self):
         """
-        [Gotthard2] Set veto reference for each 128 channels for specific chip. 
-        The file should have 128 rows of gain index and 12 bit value in dec
+        [Gotthard2] Set veto reference for each 128 channels for specific chip. \n
+        The file should have 128 rows of gain index and 12 bit value in dec.
 
         Example
         ---------
@@ -2198,6 +2198,16 @@ class Detector(CppDetectorApi):
 
     @property 
     def vetophoton(self):
+        """
+        [Gotthard2] Set veto reference for 128 channels for chip ichip according to reference file 
+        and #photons and energy in keV.
+        Note
+        ----
+        Arguments: (chip_index, n_photons, photon_energy, fname)
+        :getter: Not Implemented
+        Example
+        -------
+        >>> d.vetophoton = (2, 24, 2560, '/tmp/bla.txt')
         raise NotImplementedError('vetofile is set only')
 
     @vetophoton.setter
@@ -2776,7 +2786,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_b(self):
-        """[Ctb] Voltage supply a in mV."""
+        """[Ctb] Voltage supply b in mV."""
         return self.getDAC(dacIndex.V_POWER_B, True)
 
     @v_b.setter
@@ -2786,7 +2796,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_c(self):
-        """[Ctb] Voltage supply a in mV."""
+        """[Ctb] Voltage supply c in mV."""
         return self.getDAC(dacIndex.V_POWER_C, True)
 
     @v_c.setter
@@ -2796,7 +2806,7 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_d(self):
-        """[Ctb] Voltage supply a in mV."""
+        """[Ctb] Voltage supply d in mV."""
         return self.getDAC(dacIndex.V_POWER_D, True)
 
     @v_d.setter
@@ -2806,7 +2816,11 @@ class Detector(CppDetectorApi):
     @property
     @element
     def v_io(self):
-        """[Ctb] Voltage supply a in mV."""
+        """[Ctb] Voltage supply io in mV. Minimum 1200 mV. 
+        Note
+        ----
+        Must be the first power regulator to be set after fpga reset (on-board detector server start up).
+        """
         return self.getDAC(dacIndex.V_POWER_IO, True)
 
     @v_io.setter

@@ -161,7 +161,8 @@ std::string CmdProxy::VirtualServer(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_servers] [starting_port_number]\n\tConnecs to n virtual "
-              "server at local host starting at specific control port."
+              "server at local host starting at specific control port. Every "
+              "virtual server will have a stop port (control port + 1)"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         throw sls::RuntimeError("cannot get");

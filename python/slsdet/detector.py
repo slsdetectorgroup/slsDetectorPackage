@@ -922,8 +922,7 @@ class Detector(CppDetectorApi):
         Also restarts client zmq streaming if enabled. \n
         Default connects to receiver zmq streaming out port (30001). \n
         Must be different for every detector (and udp port). \n
-        Multi command will automatically increment for individual modules, use setClientZmqPort. \n
-
+        Multi command will automatically increment for individual modules, use setClientZmqPort. 
         Example
         --------
         >>> d.zmqport
@@ -1504,14 +1503,13 @@ class Detector(CppDetectorApi):
     @property
     def virtual(self):
         """
-        Setup with n virtual servers running on localhost
-        starting with port p
-
+        Setup with n virtual servers running on localhost starting with control port p
+        Note
+        ----
+        Every virtual server will have a stop port (control port + 1)
         Example
         ---------
-
         >>> d.virtual = n, p
-
         """
         raise NotImplementedError('Virtual is set only')
 
@@ -2223,12 +2221,9 @@ class Detector(CppDetectorApi):
     def vetoref(self):
         """
         [Gotthard2] Set veto reference for all 128 channels for all chips.
-
         Example
         ----------
-
         >>> d.vetoref = chip, value
-
         """
         raise NotImplementedError('vetoref is set only')
 

@@ -61,7 +61,8 @@ class Detector {
     /**Frees shared memory, adds detectors to the list. */
     void setHostname(const std::vector<std::string> &hostname);
 
-    /** connects to n servers at local host starting at specific control port */
+    /** connects to n servers at local host starting at specific control port.
+     * Every virtual server will have a stop port (control port + 1) */
     void setVirtualDetectorServers(int numServers, int startingPort);
 
     /** Gets shared memory ID */
@@ -1157,7 +1158,7 @@ class Detector {
                        const int energy, const std::string &fname,
                        Positions pos = {});
 
-    /** [Gotthard2]  */
+    /** [Gotthard2] for all chips */
     void setVetoReference(const int gainIndex, const int value,
                           Positions pos = {});
 

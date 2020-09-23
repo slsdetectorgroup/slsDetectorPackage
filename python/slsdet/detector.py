@@ -22,6 +22,10 @@ import socket
 import numpy as np
 
 def freeze(cls):
+    """
+    Decorator to prevent assignments to not existing properties. 
+    Protects for example form typos when setting exptime etc.
+    """
     cls._frozen = False
 
     def frozensetattr(self, key, value):
@@ -67,6 +71,7 @@ class Detector(CppDetectorApi):
 
     # CONFIGURATION
     def __len__(self):
+        """Number of modules in shared memory."""
         return self.size()
 
     @property
@@ -107,7 +112,8 @@ class Detector(CppDetectorApi):
 
     @property
     def parameters(self):
-        """Sets detector measurement parameters to those contained in fname. Set up per measurement.
+        """Sets detector measurement parameters to those contained in fname. 
+        Set up per measurement.
         
         Note 
         -----
@@ -186,6 +192,7 @@ class Detector(CppDetectorApi):
 
 
     @property
+    @element
     def firmwareversion(self):
         """
         Fimware version of detector in format [0xYYMMDD] or an increasing 2 digit number for Eiger.
@@ -194,34 +201,36 @@ class Detector(CppDetectorApi):
         >>> hex(d.firmwareversion)
         '0x200910'
         """
-        return element_if_equal(self.getFirmwareVersion())
+        return ut.lhex(self.getFirmwareVersion())
 
     @property
+    @element
     def detectorserverversion(self):
         """
         On-board detector server software version in format [0xYYMMDD]
         Example
         -------
-        >>> hex(d.detectorserverversion)
+        >>> d.detectorserverversion
         '0x200910'
         """
-        # TODO! handle hex print
-        return element_if_equal(self.getDetectorServerVersion())
+        return ut.lhex(self.getDetectorServerVersion())
 
     @property
+    @element
     def clientversion(self):
         """Client software version in format [YYMMDD]
         Example
         -------
-        >>> hex(d.clientversion)
+        >>> d.clientversion
         '0x200810'
         """
-        return self.getClientVersion()
+        return ut.lhex(self.getClientVersion())
 
     @property
+    @element
     def rx_version(self):
         """Receiver version in format [0xYYMMDD]."""
-        return element_if_equal(self.getReceiverVersion())
+        return ut.lhex(self.getReceiverVersion())
 
     @property
     @element

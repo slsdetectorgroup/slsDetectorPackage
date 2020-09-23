@@ -127,3 +127,6 @@ def set_time_using_dict(func, args):
         if isinstance(args, int):
                 args = float(args)
         func(args)
+
+def lhex(iterable):
+    return [hex(item) for item in iterable]

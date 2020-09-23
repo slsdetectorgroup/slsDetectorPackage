@@ -495,29 +495,27 @@ TEST_CASE("fwrite", "[.cmd][.new]") {
     }
 }
 
-// TEST_CASE("fmaster", "[.cmd][.new]") {
-//     Detector det;
-//     CmdProxy proxy(&det);
-//     auto prev_val = det.getMasterFileWrite();
-//     {
-//         std::ostringstream oss;
-//         proxy.Call("fmaster", {"0"}, -1, PUT, oss);
-//         REQUIRE(oss.str() == "fmaster 0\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         proxy.Call("fmaster", {}, -1, GET, oss);
-//         REQUIRE(oss.str() == "fmaster 0\n");
-//     }
-//     {
-//         std::ostringstream oss;
-//         proxy.Call("fmaster", {"1"}, -1, PUT, oss);
-//         REQUIRE(oss.str() == "fmaster 1\n");
-//     }
-//     for (int i = 0; i != det.size(); ++i) {
-//         det.setMasterFileWrite(prev_val[i], {i});
-//     }
-// }
+TEST_CASE("fmaster", "[.cmd]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto prev_val = det.getMasterFileWrite();
+    {
+        std::ostringstream oss;
+        proxy.Call("fmaster", {"0"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fmaster 0\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fmaster", {}, -1, GET, oss);
+        REQUIRE(oss.str() == "fmaster 0\n");
+    }
+    {
+        std::ostringstream oss;
+        proxy.Call("fmaster", {"1"}, -1, PUT, oss);
+        REQUIRE(oss.str() == "fmaster 1\n");
+    }
+    det.setMasterFileWrite(prev_val);
+}
 
 TEST_CASE("foverwrite", "[.cmd][.new]") {
     Detector det;

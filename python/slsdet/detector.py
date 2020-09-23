@@ -847,6 +847,7 @@ class Detector(CppDetectorApi):
         self.setMasterFileWrite(enable)
 
     @property
+    @element
     def rx_framesperfile(self):
         """Sets the number of frames per file in receiver in an acquisition. 
         
@@ -855,11 +856,11 @@ class Detector(CppDetectorApi):
         Default: depends on detector type. \n
         0 is infinite or all frames in single file.
         """
-        return element_if_equal(self.getFramesPerFile())
+        return self.getFramesPerFile()
 
     @rx_framesperfile.setter
     def rx_framesperfile(self, n_frames):
-        self.setFramesPerFile(n_frames)
+        ut.set_using_dict(self.setFramesPerFile, n_frames)
 
     # ZMQ Streaming Parameters (Receiver<->Client)
 
@@ -879,6 +880,7 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setRxZmqDataStream, enable)
 
     @property
+    @element
     def rx_zmqfreq(self):
         """Frequency of frames streamed out from receiver via zmq.
         Note
@@ -887,13 +889,14 @@ class Detector(CppDetectorApi):
         If 2, every second frame is streamed out. \n
         If 0, streaming timer is the timeout, after which current frame is sent out. (default timeout is 200 ms). Usually used for gui purposes.
         """
-        return element_if_equal(self.getRxZmqFrequency())
+        return self.getRxZmqFrequency()
 
     @rx_zmqfreq.setter
     def rx_zmqfreq(self, nth_frame):
-        self.setRxZmqFrequency(nth_frame)
+        ut.set_using_dict(self.setRxZmqFrequency, nth_frame)
 
     @property
+    @element
     def rx_zmqport(self):
         """
         Zmq port for data to be streamed out of the receiver. 
@@ -912,12 +915,14 @@ class Detector(CppDetectorApi):
         >>> d.rx_zmqport = [30001, 30005] #Set ports for the two first detectors
 
         """
-        return element_if_equal(self.getRxZmqPort())
+        return self.getRxZmqPort()
 
     @rx_zmqport.setter
     def rx_zmqport(self, port):
         if isinstance(port, int):
             self.setRxZmqPort(port, -1)
+        elif isinstance(port, dict):
+            ut.set_using_dict(self.setRxZmqPort, port)
         elif is_iterable(port):
             for i, p in enumerate(port):
                 self.setRxZmqPort(p, i)
@@ -925,6 +930,7 @@ class Detector(CppDetectorApi):
             raise ValueError("Unknown argument type")
 
     @property
+    @element
     def zmqport(self):
         """
         Port number to listen to zmq data streamed out from receiver or intermediate process.
@@ -941,12 +947,14 @@ class Detector(CppDetectorApi):
         >>> d.zmqport = 30002
         >>> d.zmqport = [30002, 30004] #Set ports for the two first detectors
         """
-        return element_if_equal(self.getClientZmqPort())
+        return self.getClientZmqPort()
 
     @zmqport.setter
     def zmqport(self, port):
         if isinstance(port, int):
             self.setClientZmqPort(port, -1)
+        elif isinstance(port, dict):
+            ut.set_using_dict(self.setClientZmqPort, port)
         elif is_iterable(port):
             for i, p in enumerate(port):
                 self.setClientZmqPort(p, i)
@@ -954,6 +962,7 @@ class Detector(CppDetectorApi):
             raise ValueError("Unknown argument type")
 
     @property
+    @element
     def rx_zmqip(self):
         """
         Zmq Ip Address from which data is to be streamed out of the receiver. 
@@ -969,13 +978,15 @@ class Detector(CppDetectorApi):
         192.168.0.101
         >>> d.rx_zmqip = '192.168.0.101'
         """
-        return element_if_equal(self.getRxZmqIP())
+        return self.getRxZmqIP()
 
     @rx_zmqip.setter
     def rx_zmqip(self, ip):
-        self.setRxZmqIP(IpAddr(ip))
+        ip = ut.make_ip(ip) #Convert from int or string to IpAddr
+        ut.set_using_dict(self.setRxZmqIP, ip)
 
     @property
+    @element
     def zmqip(self):
         """
         Ip Address to listen to zmq data streamed out from receiver or intermediate process.
@@ -991,13 +1002,15 @@ class Detector(CppDetectorApi):
         192.168.0.101
         >>> d.zmqip = '192.168.0.101'
         """
-        return element_if_equal(self.getClientZmqIp())
+        return self.getClientZmqIp()
 
     @zmqip.setter
     def zmqip(self, ip):
-        self.setClientZmqIp(IpAddr(ip))
+        ip = ut.make_ip(ip) #Convert from int or string to IpAddr
+        ut.set_using_dict(self.setClientZmqIp, ip)
 
     @property
+    @element
     def udp_dstip(self):
         """
         Ip address of the receiver (destination) udp interface. 
@@ -1011,15 +1024,18 @@ class Detector(CppDetectorApi):
         >>> d.udp_dstip
         192.168.1.110
         """
-        return element_if_equal(self.getDestinationUDPIP())
+        return self.getDestinationUDPIP()
 
     @udp_dstip.setter
     def udp_dstip(self, ip):
         if ip == "auto":
             ip = socket.gethostbyname(self.rx_hostname)
-        self.setDestinationUDPIP(IpAddr(ip))
+        ip = ut.make_ip(ip)
+        ut.set_using_dict(self.setDestinationUDPIP, ip)
+
 
     @property
+    @element
     def udp_dstip2(self):
         """
         [Jungfrau][Gotthard2] Ip address of the receiver (destination) udp interface 2.
@@ -1035,15 +1051,17 @@ class Detector(CppDetectorApi):
         >>> d.udp_dstip2
         10.1.1.185
         """
-        return element_if_equal(self.getDestinationUDPIP2())
+        return self.getDestinationUDPIP2()
 
     @udp_dstip2.setter
     def udp_dstip2(self, ip):
         if ip == "auto":
             ip = socket.gethostbyname(self.rx_hostname)
-        self.setDestinationUDPIP2(IpAddr(ip))
+        ip = ut.make_ip(ip)
+        ut.set_using_dict(self.setDestinationUDPIP2, ip)
 
     @property
+    @element
     def udp_dstmac(self):
         """
         Mac address of the receiver (destination) udp interface. 
@@ -1057,13 +1075,15 @@ class Detector(CppDetectorApi):
         d.udp_dstmac
         00:1b:31:01:8a:de
         """
-        return element_if_equal(self.getDestinationUDPMAC())
+        return self.getDestinationUDPMAC()
 
     @udp_dstmac.setter
     def udp_dstmac(self, mac):
-        self.setDestinationUDPMAC(MacAddr(mac))
+        mac = ut.make_mac(mac)
+        ut.set_using_dict(self.setDestinationUDPMAC, mac)
 
     @property
+    @element
     def udp_dstmac2(self):
         """
         [Jungfrau][Gotthard2] Mac address of the receiver (destination) udp interface 2.
@@ -1079,11 +1099,12 @@ class Detector(CppDetectorApi):
         d.udp_dstmac2
         00:1b:31:01:8a:de
         """
-        return element_if_equal(self.getDestinationUDPMAC2())
+        return self.getDestinationUDPMAC2()
 
     @udp_dstmac2.setter
     def udp_dstmac2(self, mac):
-        self.setDestinationUDPMAC2(MacAddr(mac))
+        mac = ut.make_mac(mac)
+        ut.set_using_dict(self.setDestinationUDPMAC2, mac)
 
     @property
     def udp_srcmac(self):

@@ -116,6 +116,19 @@ def make_string_path(path):
     else:
         return _make_string_path(path)
 
+def make_ip(arg):
+    if isinstance(arg, dict):
+        return {key:_slsdet.IpAddr(value) for key,value in arg.items()}
+    else:
+        return _slsdet.IpAddr(arg)
+
+def make_mac(arg):
+    if isinstance(arg, dict):
+        return {key:_slsdet.MacAddr(value) for key,value in arg.items()}
+    else:
+        return _slsdet.MacAddr(arg)
+
+
 def set_using_dict(func, args):
     if isinstance(args, dict) and all(isinstance(k, int) for k in args.keys()):
         for key, value in args.items():

@@ -1037,14 +1037,12 @@ std::string CmdProxy::Scan(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[dac_name|0|trimbit_scan] [start_val] [stop_val] "
-              "[step_size] [dac settling time ns|us|ms|s]\n\tConfigures to "
-              "scan dac and sets number of frames to number of steps. Must "
-              "acquire after this. \n\tTo cancel the scan configuration "
-              "set dac to '0' without further arguments, which also sets "
-              "number "
-              "of frames back to 1."
-              "\n\t[Eiger][Mythen3] Use trimbit_scan as dac name for a trimbit "
-              "scan."
+              "[step_size] [dac settling time ns|us|ms|s]\n\tEnables/ disables "
+              "scans for dac and trimbits \n\tEnabling scan sets number of "
+              "frames to number of steps in receiver. \n\tTo cancel scan "
+              "configuration, set dac to '0', which also sets number of frames "
+              "to 1. \n\t[Eiger][Mythen3] Use trimbit_scan as dac name for a "
+              "trimbit scan."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 0) {
@@ -1990,7 +1988,7 @@ std::string CmdProxy::SlowAdc(int action) {
     os << cmd << ' ';
     if (action == defs::HELP_ACTION) {
         os << "[n_channel (0-7 for channel]\n\t[Ctb] Slow "
-              "ADC channel in mV"
+              "ADC channel in uV"
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {
@@ -2355,9 +2353,8 @@ std::string CmdProxy::AdditionalJsonHeader(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[key1] [value1] [key2] [value2]...[keyn] [valuen]"
               "\n\tAdditional json header to be streamed out from receiver via "
-              "zmq. "
-              "Default is empty. Use only if to be processed by an "
-              "intermediate user process "
+              "zmq. Default is empty. Max 20 characters for each key/value. "
+              "Use only if to be processed by an intermediate user process "
               "listening to receiver zmq packets. Empty value deletes header. "
            << '\n';
     } else if (action == defs::GET_ACTION) {
@@ -2391,8 +2388,8 @@ std::string CmdProxy::JsonParameter(int action) {
     if (action == defs::HELP_ACTION) {
         os << "[key1] [value1]\n\tAdditional json header parameter streamed "
               "out from receiver. If not found in header, the pair is "
-              "appended. "
-              "An empty values deletes parameter."
+              "appended. An empty values deletes parameter. Max 20 characters "
+              "for each key/value."
            << '\n';
     } else if (action == defs::GET_ACTION) {
         if (args.size() != 1) {

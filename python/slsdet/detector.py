@@ -221,6 +221,13 @@ class Detector(CppDetectorApi):
     @property
     @element
     def rx_threads(self):
+        """
+        Get thread ids from the receiver in order of [parent, tcp, listener 0, processor 0, streamer 0, listener 1, processor 1, streamer 1]. 
+        Note
+        -----
+        If no streamer yet or there is no second interface, it gives 0 in its place. 
+        :setter: Not Implemented
+        """
         return self.getRxThreadIds()
 
     @property
@@ -1276,11 +1283,18 @@ class Detector(CppDetectorApi):
     @property
     @element
     def scanerrmsg(self):
+        """Gets Scan error message if scan ended in error for non blocking acquisitions."""
         return self.getScanErrorMessage()
 
     @property
     @element
     def rx_zmqstartfnum(self):
+        """
+        The starting frame index to stream out. 
+        Note
+        ----
+        0 by default, which streams the first frame in an acquisition, and then depending on the rx zmq frequency/ timer.
+        """
         return self.getRxZmqStartingFrame()
 
     @rx_zmqstartfnum.setter
@@ -1307,6 +1321,22 @@ class Detector(CppDetectorApi):
 
     @property
     def slowadc(self):
+        """
+        [Ctb] Slow ADC channel in uV of all channels or specific ones from 0-7.
+        Example
+        -------
+        >>> d.slowadc
+        0: 0 uV
+        1: 0 uV
+        2: 0 uV
+        3: 0 uV
+        4: 0 uV
+        5: 0 uV
+        6: 0 uV
+        7: 0 uV
+        >>> d.slowadc[3]
+        0
+        """
         return SlowAdcProxy(self)
 
     @property
@@ -1340,6 +1370,7 @@ class Detector(CppDetectorApi):
 
     @property
     def settingslist(self):
+        """List of settings implemented for this detector."""
         return self.getSettingsList()
 
     @property
@@ -1489,18 +1520,20 @@ class Detector(CppDetectorApi):
     @property
     def rx_jsonpara(self):
         """
-        Get the receiver additional json parameter. In case the parameter is different between
-        the modules a list of strings will be returned. On setting the value is automatically
-        converted to a string. 
-
+        Set the receiver additional json parameter. 
+        Note
+        ----
+        Use only if to be processed by an intermediate user process listening to receiver zmq packets, such as Moench \n
+        If not found, the pair is appended. Empty value deletes parameter. Max 20 characters for each key/value.\n
+        On setting the value is automatically, it is converted to a string. 
         Example
         -----------
-
         >>> d.rx_jsonpara['emin']
         '4500'
-
         >>> d.rx_jsonpara['emin'] = 5000
-
+        >>> d.rx_jsonpara
+        emax: 30
+        emin: 5000
         """
         return JsonProxy(self)
 
@@ -1508,6 +1541,21 @@ class Detector(CppDetectorApi):
     @property
     @element
     def rx_jsonaddheader(self):
+        """
+        Additional json header to be streamed out from receiver via zmq. 
+        Note
+        -----
+        Default is empty. Max 20 characters for each key/value\n 
+        Use only if to be processed by an intermediate user process listening to receiver zmq packets, such as Moench \n 
+        Empty value deletes header.
+        Example
+        -------
+        >>> d.rx_jsonaddheader
+        {}
+        >>> d.rx_jsonaddheader = {"key1": "value1", "key2":"value2"}
+        >>> d.rx_jsonaddheader
+        {'emax': '30', 'emin': '50'}
+        """
         return self.getAdditionalJsonHeader()
 
     @rx_jsonaddheader.setter
@@ -2213,6 +2261,10 @@ class Detector(CppDetectorApi):
     @property
     @element
     def samples(self):
+        """
+        [CTB] Number of samples (both analog and digitial) expected. \n
+        [Moench] Number of samples (analog only)
+        """
         return self.getNumberOfAnalogSamples()
 
     @samples.setter

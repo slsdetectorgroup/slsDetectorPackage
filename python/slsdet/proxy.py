@@ -51,12 +51,12 @@ class SlowAdcProxy:
 
     def __repr__(self):
         rstr = ''
-        for i in range(7):
+        for i in range(8):
             r = element_if_equal(self.__getitem__(i))
             if isinstance(r, list):
-                rstr += ' '.join(f'{item} mV' for item in r)
+                rstr += ' '.join(f'{item} uV' for item in r)
             else:
-                rstr += f'{i}: {r} mV\n'
+                rstr += f'{i}: {r} uV\n'
         
         return rstr.strip('\n')
 

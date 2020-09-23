@@ -1877,7 +1877,7 @@ class CmdProxy {
     INTEGER_COMMAND_VEC_ID(
         rx_lock, getRxLock, setRxLock, StringTo<int>,
         "[0, 1]\n\tLock receiver to one client IP, 1 locks, 0 "
-        "unlocks. Default is unlocked. 1: locks");
+        "unlocks. Default is unlocked.");
 
     GET_COMMAND(
         rx_lastclient, getRxLastClientIP,
@@ -2282,8 +2282,8 @@ class CmdProxy {
 
     EXECUTE_SET_COMMAND_NOID_1ARG(
         savepattern, savePattern,
-        "[fname]\n\t[Ctb][Moench][Mythen3] Saves pattern to file (ascii). Also "
-        "executes pattern.");
+        "[fname]\n\t[Ctb][Moench][Mythen3] Saves pattern to file (ascii). "
+        "\n\t[Ctb][Moench] Also executes pattern.");
 
     INTEGER_COMMAND_HEX_WIDTH16(patioctrl, getPatternIOControl,
                                 setPatternIOControl, StringTo<uint64_t>,

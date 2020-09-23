@@ -483,13 +483,15 @@ class Detector {
 
     Result<defs::scanParameters> getScan(Positions pos = {}) const;
 
-    /** enables/ disables scans for  dac, trimbits [Eiger/ Mythen3]
-     * TRIMBIT_SCAN. Enabling scan sets number of frames to number of steps in
-     * receiver. Disabling scan sets number of frames to 1 */
+    /** enables/ disables scans for dac and trimbits \n
+     * Enabling scan sets number of frames to number of steps in
+     * receiver. \n To cancel scan configuration, set dac to '0', which also
+     * sets number of frames to 1 \n [Eiger/ Mythen3] Trimbits using
+     * TRIMBIT_SCAN*/
     void setScan(const defs::scanParameters t);
 
-    /** gets scan error message in case of error during scan in case of non
-     * blocking acquisition (startDetector, not acquire) */
+    /** Gets Scan error message if scan ended in error for non blocking
+     * acquisitions.*/
     Result<std::string> getScanErrorMessage(Positions pos = {}) const;
     ///@{
 
@@ -517,7 +519,7 @@ class Detector {
     Result<int> getSelectedUDPInterface(Positions pos = {}) const;
 
     /**
-     * [Jungfrau:
+     * [Jungfrau]
      * Effective only when number of interfaces is 1.
      * Options: 0 (outer, default), 1(inner)] //TODO: enum?
      */
@@ -728,6 +730,9 @@ class Detector {
     /** Client IP Address that last communicated with the receiver */
     Result<sls::IpAddr> getRxLastClientIP(Positions pos = {}) const;
 
+    /** Get thread ids from the receiver in order of [parent, tcp, listener 0,
+     * processor 0, streamer 0, listener 1, processor 1, streamer 1]. If no
+     * streamer yet or there is no second interface, it gives 0 in its place. */
     Result<std::array<pid_t, NUM_RX_THREAD_IDS>>
     getRxThreadIds(Positions pos = {}) const;
     ///@{
@@ -1408,7 +1413,8 @@ class Detector {
      * (instead of executing line by line)*/
     void setPattern(const std::string &fname, Positions pos = {});
 
-    /** [CTB][Moench][Mythen3] */
+    /** [CTB][Moench][Mythen3] [Ctb][Moench][Mythen3] Saves pattern to file
+     * (ascii). \n [Ctb][Moench] Also executes pattern.*/
     void savePattern(const std::string &fname);
 
     /** [CTB][Moench] */
@@ -1487,8 +1493,10 @@ class Detector {
     Result<std::map<std::string, std::string>>
     getAdditionalJsonHeader(Positions pos = {}) const;
 
-    /** [Moench] If empty, reset additional json header. Max 20 characters for
-     * each key/value */
+    /** [Moench] If empty, reset additional json header. Default is empty. Max
+     * 20 characters for each key/value. Empty value deletes header. Use only if
+     * to be processed by an intermediate user process listening to receiver zmq
+     * packets such as in Moench */
     void setAdditionalJsonHeader(
         const std::map<std::string, std::string> &jsonHeader,
         Positions pos = {});
@@ -1498,9 +1506,9 @@ class Detector {
                                                    Positions pos = {}) const;
     /**
      * [Moench]
-     * Sets the value for additional json header parameters if found,
-     * else appends the parameter key and value
-     * If empty, deletes parameter. Max 20 characters for each key/value
+     * Sets the value for additional json header parameters. If not found,
+     * the pair is appended. Empty value deletes parameter. Max 20 characters
+     * for each key/value.
      */
     void setAdditionalJsonParameter(const std::string &key,
                                     const std::string &value,
@@ -1630,7 +1638,7 @@ class Detector {
     /** lock detector to one client IP. default is unlocked */
     void setDetectorLock(bool lock, Positions pos = {});
 
-    /** Get last client IP saved on detector server */
+    /** Client IP Address that last communicated with the detector */
     Result<sls::IpAddr> getLastClientIP(Positions pos = {}) const;
 
     /** Execute a command on the detector server console */

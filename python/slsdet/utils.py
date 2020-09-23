@@ -113,7 +113,10 @@ def make_string_path(path):
 def set_using_dict(func, args):
     if isinstance(args, dict) and all(isinstance(k, int) for k in args.keys()):
         for key, value in args.items():
-            func(value, [key])
+            try:
+                func(value, [key])
+            except TypeError:
+                func(value, key)
     else:
         func(args)
 

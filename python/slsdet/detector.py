@@ -1393,7 +1393,7 @@ class Detector(CppDetectorApi):
     def tempvalues(self):
         """Gets the temp values for every temp for this detector."""
         return {
-            t.name.lower(): np.array(self.getTemperature(t))
+            t.name.lower(): element_if_equal(np.array(self.getTemperature(t)))
             for t in self.getTemperatureList()
         }
 

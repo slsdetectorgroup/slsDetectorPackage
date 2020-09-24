@@ -167,7 +167,7 @@ void qTabMeasurement::ShowTriggerDelay() {
         if ((comboBurstMode->currentIndex() ==
                  slsDetectorDefs::CONTINUOUS_INTERNAL ||
              comboBurstMode->currentIndex() ==
-                 slsDetectorDefs::CONTINUOUS_INTERNAL) &&
+                 slsDetectorDefs::CONTINUOUS_EXTERNAL) &&
             (comboTimingMode->currentIndex() == TRIGGER)) {
             enableFramePeriod = false;
         }

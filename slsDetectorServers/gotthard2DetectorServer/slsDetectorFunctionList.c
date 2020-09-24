@@ -54,6 +54,8 @@ int vetoReference[NCHIP][NCHAN];
 int vetoGainIndices[NCHIP][NCHAN];
 uint8_t adcConfiguration[NCHIP][NADC];
 int burstMode = BURST_INTERNAL;
+int64_t numFramesReg = 1;
+int64_t periodReg = 0;
 int64_t numTriggersReg = 1;
 int64_t delayReg = 0;
 int64_t numBurstsReg = 1;
@@ -377,6 +379,8 @@ void setupDetector() {
     injectedChannelsOffset = 0;
     injectedChannelsIncrement = 0;
     burstMode = BURST_INTERNAL;
+    numFramesReg = 1;
+    periodReg = 0;
     numTriggersReg = 1;
     delayReg = 0;
     numBurstsReg = 1;
@@ -818,15 +822,24 @@ int setDynamicRange(int dr) { return DYNAMIC_RANGE; }
 /* parameters - timer */
 void setNumFrames(int64_t val) {
     if (val > 0) {
+        numFramesReg = val;
         // continuous
         if (burstMode == CONTINUOUS_INTERNAL ||
             burstMode == CONTINUOUS_EXTERNAL) {
             LOG(logINFO,
                 ("Setting number of frames %lld [Continuous mode]\n", val));
-            set64BitReg(val, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-            set64BitReg(val, ASIC_CONT_FRAMES_LSB_REG,
-                        ASIC_CONT_FRAMES_MSB_REG);
-
+            // trigger
+            if (getTiming() == TRIGGER_EXPOSURE) {
+                LOG(logINFO,
+                    ("\tCont. Trigger mode (not writing to register)\n", val));
+                // #frames limited in cont trigger mode
+            }
+            // auto
+            else {
+                set64BitReg(val, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+                set64BitReg(val, ASIC_CONT_FRAMES_LSB_REG,
+                            ASIC_CONT_FRAMES_MSB_REG);
+            }
         }
         // burst
         else {
@@ -844,6 +857,12 @@ void setNumFrames(int64_t val) {
 int64_t getNumFrames() {
     // continuous
     if (burstMode == CONTINUOUS_INTERNAL || burstMode == CONTINUOUS_EXTERNAL) {
+        // trigger
+        if (getTiming() == TRIGGER_EXPOSURE) {
+            // #frames limited in cont trigger mode
+            return numFramesReg;
+        }
+        // auto
         return get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
     }
     // burst
@@ -855,25 +874,37 @@ int64_t getNumFrames() {
 
 void setNumTriggers(int64_t val) {
     if (val > 0) {
+        numTriggersReg = val;
         LOG(logINFO, ("Setting number of triggers %lld\n", val));
+        // auto
         if (getTiming() == AUTO_TIMING) {
-            LOG(logINFO, ("\tNot trigger mode: not writing to register\n"));
-            numTriggersReg = val;
-        } else {
+            LOG(logINFO, ("\tAuto mode (not writing to register)\n"));
+        }
+        // trigger
+        else {
             set64BitReg(val, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+            // continuous
+            if (burstMode == CONTINUOUS_INTERNAL ||
+                burstMode == CONTINUOUS_EXTERNAL) {
+                set64BitReg(val, ASIC_CONT_FRAMES_LSB_REG,
+                            ASIC_CONT_FRAMES_MSB_REG);
+            }
         }
     }
 }
 
 int64_t getNumTriggers() {
+    // auto
     if (getTiming() == AUTO_TIMING) {
         return numTriggersReg;
     }
+    // trigger
     return get64BitReg(SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
 }
 
 void setNumBursts(int64_t val) {
     if (val > 0) {
+        numBurstsReg = val;
         LOG(logINFO, ("Setting number of bursts %lld\n", val));
         // burst and auto
         if ((burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) &&
@@ -884,7 +915,6 @@ void setNumBursts(int64_t val) {
         else {
             LOG(logINFO,
                 ("\tNot (Burst and Auto mode): not writing to register\n"));
-            numBurstsReg = val;
         }
     }
 }
@@ -931,7 +961,16 @@ int setPeriod(int64_t val) {
     if (burstMode == CONTINUOUS_INTERNAL || burstMode == CONTINUOUS_EXTERNAL) {
         LOG(logINFO, ("Setting period %lld ns [Continuous mode]\n", val));
         val *= (1E-9 * systemFrequency);
-        set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
+        // trigger
+        if (getTiming() == TRIGGER_EXPOSURE) {
+            LOG(logINFO,
+                ("\tCont. Trigger mode (not writing to register)\n", val));
+            // #frames limited in cont trigger mode
+        }
+        // auto
+        else {
+            set64BitReg(val, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
+        }
     }
     // burst
     else {
@@ -939,6 +978,7 @@ int setPeriod(int64_t val) {
         val *= (1E-9 * systemFrequency);
         set64BitReg(val, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
     }
+    periodReg = val;
     // validate for tolerance
     int64_t retval = getPeriod();
     val /= (1E-9 * systemFrequency);
@@ -951,6 +991,12 @@ int setPeriod(int64_t val) {
 int64_t getPeriod() {
     // continuous
     if (burstMode == CONTINUOUS_INTERNAL || burstMode == CONTINUOUS_EXTERNAL) {
+        // trigger
+        if (getTiming() == TRIGGER_EXPOSURE) {
+            // #frames limited in cont trigger mode
+            return periodReg;
+        }
+        // auto
         return get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG) /
                (1E-9 * systemFrequency);
     }
@@ -968,9 +1014,9 @@ int setDelayAfterTrigger(int64_t val) {
     }
     LOG(logINFO, ("Setting delay after trigger %lld ns\n", val));
     val *= (1E-9 * systemFrequency);
+    delayReg = val;
     if (getTiming() == AUTO_TIMING) {
-        LOG(logINFO, ("\tNot trigger mode: not writing to register\n"));
-        delayReg = val;
+        LOG(logINFO, ("\tAuto mode (not writing to register)\n"));
     } else {
         set64BitReg(val, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
     }
@@ -998,6 +1044,8 @@ int setBurstPeriod(int64_t val) {
     }
     LOG(logINFO, ("Setting burst period %lld ns\n", val));
     val *= (1E-9 * systemFrequency);
+    burstPeriodReg = val;
+
     // burst and auto
     if ((burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) &&
         getTiming() == AUTO_TIMING) {
@@ -1005,9 +1053,7 @@ int setBurstPeriod(int64_t val) {
     }
     // burst-trigger, continuous
     else {
-        LOG(logINFO,
-            ("\tNot (Burst and Auto mode): not writing to register\n"));
-        burstPeriodReg = val;
+        LOG(logINFO, ("\tNot Burst and Auto mode (not writing to register)\n"));
     }
 
     // validate for tolerance
@@ -1241,20 +1287,201 @@ int setHighVoltage(int val) {
 }
 
 /* parameters - timing */
-void setTiming(enum timingMode arg) {
-    // update
-    // trigger
-    if (getTiming() == TRIGGER_EXPOSURE) {
-        numTriggersReg = get64BitReg(SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
-        delayReg =
-            get64BitReg(SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
-    }
-    // auto and burst
-    else if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
-        numBurstsReg = get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-        burstPeriodReg = get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
-    }
 
+void updatingRegisters() {
+    LOG(logINFO, ("\tUpdating registers\n"));
+    // burst
+    if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
+        // auto
+        if (getTiming() == AUTO_TIMING) {
+            LOG(logINFO, ("\t[Burst, Auto mode]\n"))
+            // trigger reg
+            set64BitReg(1, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+            LOG(logINFO, ("\tTrigger reg: %lld\n",
+                          get64BitReg(SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG)));
+            // delay reg
+            set64BitReg(0, SET_TRIGGER_DELAY_LSB_REG,
+                        SET_TRIGGER_DELAY_MSB_REG);
+            LOG(logINFO,
+                ("\tDelay reg: %lldns\n",
+                 (long long int)(get64BitReg(SET_TRIGGER_DELAY_LSB_REG,
+                                             SET_TRIGGER_DELAY_MSB_REG) /
+                                 (1E-9 * systemFrequency))));
+            // frame reg
+            set64BitReg(numBurstsReg, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+            LOG(logINFO, ("\tFrame reg (bursts): %lld\n",
+                          get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG)));
+            // period reg
+            set64BitReg(burstPeriodReg, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
+            LOG(logINFO, ("\tPeriod reg (burst period): %lldns\n",
+                          (long long int)(get64BitReg(SET_PERIOD_LSB_REG,
+                                                      SET_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
+            // int. frame reg
+            bus_w(ASIC_INT_FRAMES_REG,
+                  bus_r(ASIC_INT_FRAMES_REG) & ~ASIC_INT_FRAMES_MSK);
+            bus_w(ASIC_INT_FRAMES_REG,
+                  bus_r(ASIC_INT_FRAMES_REG) |
+                      (((int)numFramesReg << ASIC_INT_FRAMES_OFST) &
+                       ASIC_INT_FRAMES_MSK));
+            LOG(logINFO, ("\tInt. Frame reg (frames): %d\n",
+                          ((bus_r(ASIC_INT_FRAMES_REG) & ASIC_INT_FRAMES_MSK) >>
+                           ASIC_INT_FRAMES_OFST)));
+            // int. period reg
+            set64BitReg(periodReg, ASIC_INT_PERIOD_LSB_REG,
+                        ASIC_INT_PERIOD_MSB_REG);
+            LOG(logINFO, ("\tInt. Period reg (period): %lldns\n",
+                          (long long int)(get64BitReg(ASIC_INT_PERIOD_LSB_REG,
+                                                      ASIC_INT_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
+            // extra frame reg (N.A)
+        }
+        // trigger
+        else {
+            LOG(logINFO, ("\t[Burst, Trigger mode]\n"))
+            // trigger reg
+            set64BitReg(numTriggersReg, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+            LOG(logINFO, ("\tTrigger reg (triggers): %lld\n",
+                          get64BitReg(SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG)));
+            // delay reg
+            set64BitReg(delayReg, SET_TRIGGER_DELAY_LSB_REG,
+                        SET_TRIGGER_DELAY_MSB_REG);
+            LOG(logINFO,
+                ("\tDelay reg (delay): %lldns\n",
+                 (long long int)(get64BitReg(SET_TRIGGER_DELAY_LSB_REG,
+                                             SET_TRIGGER_DELAY_MSB_REG) /
+                                 (1E-9 * systemFrequency))));
+            // frame reg
+            set64BitReg(1, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+            LOG(logINFO, ("\tFrame reg: %lld\n",
+                          get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG)));
+            // period reg
+            set64BitReg(0, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
+            LOG(logINFO, ("\tPeriod reg: %lldns\n",
+                          (long long int)(get64BitReg(SET_PERIOD_LSB_REG,
+                                                      SET_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
+            // int. frame reg
+            bus_w(ASIC_INT_FRAMES_REG,
+                  bus_r(ASIC_INT_FRAMES_REG) & ~ASIC_INT_FRAMES_MSK);
+            bus_w(ASIC_INT_FRAMES_REG,
+                  bus_r(ASIC_INT_FRAMES_REG) |
+                      (((int)numFramesReg << ASIC_INT_FRAMES_OFST) &
+                       ASIC_INT_FRAMES_MSK));
+            LOG(logINFO, ("\tInt. Frame reg (frames): %d\n",
+                          ((bus_r(ASIC_INT_FRAMES_REG) & ASIC_INT_FRAMES_MSK) >>
+                           ASIC_INT_FRAMES_OFST)));
+            // int. period reg
+            set64BitReg(periodReg, ASIC_INT_PERIOD_LSB_REG,
+                        ASIC_INT_PERIOD_MSB_REG);
+            LOG(logINFO, ("\tInt. Period reg (period): %lldns\n",
+                          (long long int)(get64BitReg(ASIC_INT_PERIOD_LSB_REG,
+                                                      ASIC_INT_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
+            // extra frame reg (N.A)
+        }
+    }
+    // continuous
+    else {
+        // auto
+        if (getTiming() == AUTO_TIMING) {
+            LOG(logINFO, ("\t[Continuous, Auto mode]\n"))
+            // trigger reg
+            set64BitReg(1, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+            LOG(logINFO, ("\tTrigger reg: %lld\n",
+                          get64BitReg(SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG)));
+            // delay reg
+            set64BitReg(0, SET_TRIGGER_DELAY_LSB_REG,
+                        SET_TRIGGER_DELAY_MSB_REG);
+            LOG(logINFO,
+                ("\tDelay reg: %lldns\n",
+                 (long long int)(get64BitReg(SET_TRIGGER_DELAY_LSB_REG,
+                                             SET_TRIGGER_DELAY_MSB_REG) /
+                                 (1E-9 * systemFrequency))));
+            // frame reg
+            set64BitReg(numFramesReg, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+            LOG(logINFO, ("\tFrame reg (frames): %lld\n",
+                          get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG)));
+            // period reg
+            set64BitReg(periodReg, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
+            LOG(logINFO, ("\tPeriod reg (period): %lldns\n",
+                          (long long int)(get64BitReg(SET_PERIOD_LSB_REG,
+                                                      SET_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
+            // int. frame reg
+            bus_w(ASIC_INT_FRAMES_REG,
+                  bus_r(ASIC_INT_FRAMES_REG) & ~ASIC_INT_FRAMES_MSK);
+            bus_w(ASIC_INT_FRAMES_REG,
+                  bus_r(ASIC_INT_FRAMES_REG) |
+                      ((1 << ASIC_INT_FRAMES_OFST) & ASIC_INT_FRAMES_MSK));
+            LOG(logINFO, ("\tInt. Frame reg: %d\n",
+                          ((bus_r(ASIC_INT_FRAMES_REG) & ASIC_INT_FRAMES_MSK) >>
+                           ASIC_INT_FRAMES_OFST)));
+            // int. period reg
+            set64BitReg(0, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
+            LOG(logINFO, ("\tInt. Period reg: %lldns\n",
+                          (long long int)(get64BitReg(ASIC_INT_PERIOD_LSB_REG,
+                                                      ASIC_INT_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
+            // extra frame reg
+            set64BitReg(numFramesReg, ASIC_CONT_FRAMES_LSB_REG,
+                        ASIC_CONT_FRAMES_MSB_REG);
+            LOG(logINFO, ("\tExtra Frame reg (frames): %lld\n",
+                          get64BitReg(ASIC_CONT_FRAMES_LSB_REG,
+                                      ASIC_CONT_FRAMES_MSB_REG)));
+        }
+        // trigger
+        else {
+            LOG(logINFO, ("\t[Continuous, Trigger mode]\n"))
+            // trigger reg
+            set64BitReg(numTriggersReg, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
+            LOG(logINFO, ("\tTrigger reg (triggers): %lld\n",
+                          get64BitReg(SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG)));
+            // delay reg
+            set64BitReg(delayReg, SET_TRIGGER_DELAY_LSB_REG,
+                        SET_TRIGGER_DELAY_MSB_REG);
+            LOG(logINFO,
+                ("\tDelay reg (delay): %lldns\n",
+                 (long long int)(get64BitReg(SET_TRIGGER_DELAY_LSB_REG,
+                                             SET_TRIGGER_DELAY_MSB_REG) /
+                                 (1E-9 * systemFrequency))));
+            // frame reg
+            set64BitReg(1, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
+            LOG(logINFO, ("\tFrame reg: %lld\n",
+                          get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG)));
+            // period reg
+            set64BitReg(0, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
+            LOG(logINFO, ("\tPeriod reg: %lld\n",
+                          (long long int)(get64BitReg(SET_PERIOD_LSB_REG,
+                                                      SET_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
+            // int. frame reg
+            bus_w(ASIC_INT_FRAMES_REG,
+                  bus_r(ASIC_INT_FRAMES_REG) & ~ASIC_INT_FRAMES_MSK);
+            bus_w(ASIC_INT_FRAMES_REG,
+                  bus_r(ASIC_INT_FRAMES_REG) |
+                      ((1 << ASIC_INT_FRAMES_OFST) & ASIC_INT_FRAMES_MSK));
+            LOG(logINFO, ("\tInt. Frame reg: %d\n",
+                          ((bus_r(ASIC_INT_FRAMES_REG) & ASIC_INT_FRAMES_MSK) >>
+                           ASIC_INT_FRAMES_OFST)));
+            // int. period reg
+            set64BitReg(0, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
+            LOG(logINFO, ("\tInt. Period reg: %lldns\n",
+                          (long long int)(get64BitReg(ASIC_INT_PERIOD_LSB_REG,
+                                                      ASIC_INT_PERIOD_MSB_REG) /
+                                          (1E-9 * systemFrequency))));
+            // extra frame reg
+            set64BitReg(numTriggersReg, ASIC_CONT_FRAMES_LSB_REG,
+                        ASIC_CONT_FRAMES_MSB_REG);
+            LOG(logINFO, ("\tExtra Frame reg (triggers): %lld\n",
+                          get64BitReg(ASIC_CONT_FRAMES_LSB_REG,
+                                      ASIC_CONT_FRAMES_MSB_REG)));
+        }
+    }
+    LOG(logINFO, ("\tDone Updating registers\n\n"));
+}
+
+void setTiming(enum timingMode arg) {
     switch (arg) {
     case AUTO_TIMING:
         LOG(logINFO, ("Set Timing: Auto\n"));
@@ -1268,36 +1495,7 @@ void setTiming(enum timingMode arg) {
         LOG(logERROR, ("Unknown timing mode %d\n", arg));
     }
 
-    LOG(logINFO, ("\tUpdating registers\n"))
-    // trigger
-    if (getTiming() == TRIGGER_EXPOSURE) {
-        set64BitReg(numTriggersReg, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
-        set64BitReg(delayReg, SET_TRIGGER_DELAY_LSB_REG,
-                    SET_TRIGGER_DELAY_MSB_REG);
-        LOG(logINFO, ("\tTriggers reg: %lld, Delay reg: %lldns\n",
-                      getNumTriggers(), getDelayAfterTrigger()));
-        // burst
-        if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
-            LOG(logINFO, ("\tFrame reg: 1, Period reg: 0\n"))
-            set64BitReg(1, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-            set64BitReg(0, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
-        }
-    }
-    // auto
-    else {
-        LOG(logINFO, ("\tTrigger reg: 1, Delay reg: 0\n"))
-        set64BitReg(1, SET_CYCLES_LSB_REG, SET_CYCLES_MSB_REG);
-        set64BitReg(0, SET_TRIGGER_DELAY_LSB_REG, SET_TRIGGER_DELAY_MSB_REG);
-        // burst
-        if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
-            set64BitReg(numBurstsReg, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-            set64BitReg(burstPeriodReg, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
-            LOG(logINFO, ("\tFrames reg (bursts): %lld, Period reg(burst "
-                          "period): %lldns\n",
-                          getNumBursts(), getBurstPeriod()));
-        }
-    }
-    LOG(logINFO, ("\tDone Updating registers\n"))
+    updatingRegisters();
 }
 
 enum timingMode getTiming() {
@@ -1469,8 +1667,8 @@ int configureMAC() {
     }
     if (vetoEnabled && numInterfaces == 2 &&
         setUDPDestinationDetails(1, dst_ip2, dstport2) == FAIL) {
-        LOG(logERROR,
-            ("could not set udp destination IP and port for interface 2\n"));
+        LOG(logERROR, ("could not set udp destination IP and port for "
+                       "interface 2\n"));
         return FAIL;
     }
     return OK;
@@ -1881,8 +2079,8 @@ int configureASICVetoReference(int chipIndex, int *gainIndices, int *values) {
         }
     }
 
-    // create command for 4 padding  + 1792 bits + 4 bits address = 1800 bits =
-    // 225 bytes
+    // create command for 4 padding  + 1792 bits + 4 bits address = 1800
+    // bits = 225 bytes
     char buffer[len];
     memset(buffer, 0, len);
     offset = 0;
@@ -1923,7 +2121,8 @@ int configureASICVetoReference(int chipIndex, int *gainIndices, int *values) {
 
 int getVetoPhoton(int chipIndex, int *retvals, int *gainRetvals) {
     if (chipIndex == -1) {
-        // if chipindex is -1, check that all values and gain indices are same
+        // if chipindex is -1, check that all values and gain indices are
+        // same
         for (int i = 0; i < NCHAN; ++i) {
             int val = vetoReference[0][i];
             int gval = vetoGainIndices[0][i];
@@ -1931,7 +2130,8 @@ int getVetoPhoton(int chipIndex, int *retvals, int *gainRetvals) {
                 if (vetoReference[j][i] != val) {
                     LOG(logERROR,
                         ("Get vet photon fail for chipIndex:%d. Different "
-                         "values between [nchip:%d, nchan:%d, value:%d] and "
+                         "values between [nchip:%d, nchan:%d, value:%d] "
+                         "and "
                          "[nchip:0, nchan:%d, value:%d]\n",
                          chipIndex, j, i, vetoReference[j][i], i, val));
                     return FAIL;
@@ -1940,7 +2140,8 @@ int getVetoPhoton(int chipIndex, int *retvals, int *gainRetvals) {
                     LOG(logERROR,
                         ("Get vet photon fail for chipIndex:%d. Different "
                          "gain indices between [nchip:%d, nchan:%d, gain "
-                         "index:%d] and [nchip:0, nchan:%d, gain index:%d]\n",
+                         "index:%d] and [nchip:0, nchan:%d, gain "
+                         "index:%d]\n",
                          chipIndex, j, i, vetoGainIndices[j][i], i, gval));
                     return FAIL;
                 }
@@ -2023,8 +2224,8 @@ int setADCConfiguration(int chipIndex, int adcIndex, int value) {
         }
     }
 
-    // create command for 4 padding + 224 bits + 4 bits address = 232 bits = 29
-    // bytes
+    // create command for 4 padding + 224 bits + 4 bits address = 232 bits =
+    // 29 bytes
     char buffer[len];
     memset(buffer, 0, len);
     offset = 0;
@@ -2077,7 +2278,8 @@ int getADCConfiguration(int chipIndex, int adcIndex) {
         for (int j = adcmin; j < adcmax; ++j) {
             if (adcConfiguration[i][j] != val) {
                 LOG(logINFO,
-                    ("\tADC configuration 0x%x at [%d][%d] differs from 0x%x "
+                    ("\tADC configuration 0x%x at [%d][%d] differs from "
+                     "0x%x "
                      "at "
                      "[%d][%d], returning -1\n",
                      adcConfiguration[i][j], i, j, val, chipmin, adcmin));
@@ -2126,79 +2328,11 @@ int setBurstMode(enum burstMode burst) {
                                                 ? "continuous internal"
                                                 : "continuous external")))));
 
-    // update
-    int64_t framesReg = 0;
-    int64_t periodReg = 0;
-    // burst
-    if (burstMode == BURST_INTERNAL || burstMode == BURST_EXTERNAL) {
-        framesReg = ((bus_r(ASIC_INT_FRAMES_REG) & ASIC_INT_FRAMES_MSK) >>
-                     ASIC_INT_FRAMES_OFST);
-        periodReg =
-            get64BitReg(ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
-        // auto
-        if (getTiming() == AUTO_TIMING) {
-            numBurstsReg = get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-            burstPeriodReg =
-                get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
-        }
-    }
-    // continuous
-    else {
-        framesReg = get64BitReg(SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-        periodReg = get64BitReg(SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
-    }
-
     if (setBurstModeinFPGA(burst) == FAIL) {
         return FAIL;
     }
 
-    LOG(logINFO, ("\tUpdating registers\n"));
-    // continuous
-    if (burstMode == CONTINUOUS_INTERNAL || burstMode == CONTINUOUS_EXTERNAL) {
-        set64BitReg(framesReg, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-        set64BitReg(framesReg, ASIC_CONT_FRAMES_LSB_REG,
-                    ASIC_CONT_FRAMES_MSB_REG);
-        set64BitReg(periodReg, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
-        LOG(logINFO, ("\tFrames reg: %lld, Period reg: %lldns\n",
-                      getNumFrames(), getPeriod()));
-
-        LOG(logINFO, ("\tInt. Frame reg: 1, Int. Period reg: 0\n"))
-        bus_w(ASIC_INT_FRAMES_REG,
-              bus_r(ASIC_INT_FRAMES_REG) & ~ASIC_INT_FRAMES_MSK);
-        bus_w(ASIC_INT_FRAMES_REG,
-              bus_r(ASIC_INT_FRAMES_REG) |
-                  ((1 << ASIC_INT_FRAMES_OFST) & ASIC_INT_FRAMES_MSK));
-        set64BitReg(0, ASIC_INT_PERIOD_LSB_REG, ASIC_INT_PERIOD_MSB_REG);
-    }
-    // burst
-    else {
-        bus_w(ASIC_INT_FRAMES_REG,
-              bus_r(ASIC_INT_FRAMES_REG) & ~ASIC_INT_FRAMES_MSK);
-        bus_w(ASIC_INT_FRAMES_REG,
-              bus_r(ASIC_INT_FRAMES_REG) |
-                  (((int)framesReg << ASIC_INT_FRAMES_OFST) &
-                   ASIC_INT_FRAMES_MSK));
-        set64BitReg(periodReg, ASIC_INT_PERIOD_LSB_REG,
-                    ASIC_INT_PERIOD_MSB_REG);
-        LOG(logINFO, ("\tInt. Frames reg: %lld, Int. Period reg: %lldns\n",
-                      getNumFrames(), getPeriod()));
-
-        // trigger
-        if (getTiming() == TRIGGER_EXPOSURE) {
-            LOG(logINFO, ("\tFrame reg: 1, Period reg: 0\n"))
-            set64BitReg(1, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-            set64BitReg(0, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
-        }
-        // auto
-        else {
-            set64BitReg(numBurstsReg, SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
-            set64BitReg(burstPeriodReg, SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG);
-            LOG(logINFO, ("\tFrames reg (bursts): %lld, Period reg(burst "
-                          "period): %lldns\n",
-                          getNumBursts(), getBurstPeriod()));
-        }
-    }
-    LOG(logINFO, ("\tDone Updating registers\n"))
+    updatingRegisters();
     return configureASICGlobalSettings();
 }
 
@@ -2237,8 +2371,8 @@ int configureASICGlobalSettings() {
             ((value >> (ASIC_GLOBAL_SETT_MAX_BITS - 1 - iBit)) & 0x1);
     }
 
-    // create command for 4 padding + 224 bits + 4 bits address = 232 bits = 29
-    // bytes
+    // create command for 4 padding + 224 bits + 4 bits address = 232 bits =
+    // 29 bytes
     char buffer[len];
     memset(buffer, 0, len);
     offset = 0;

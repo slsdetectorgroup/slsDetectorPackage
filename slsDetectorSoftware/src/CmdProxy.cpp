@@ -906,34 +906,27 @@ std::string CmdProxy::TemperatureValues(int action) {
     return os.str();
 }
 
+
+
 /* dacs */
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;
     os << cmd << ' ';
 
-    // get dac name
-    std::string dacname;
-    if (args.size() > 0) {
-        dacname = args[0];
-        try {
-            int dacIndex = StringTo<int>(args[0]);
-            if (det->getDetectorType().squash(defs::GENERIC) !=
-                defs::CHIPTESTBOARD) {
-                throw sls::RuntimeError(
-                    "Dac indices can only be used for chip test board. Use "
-                    "daclist "
-                    "to get list of dac names for current detector.");
-            }
-            dacname = "dac " + std::to_string(dacIndex);
-        } catch (const std::invalid_argument &e) {
-            ;
+    if (args.size() > 0 && action != defs::HELP_ACTION) {
+        if (is_int(args[0]) &&
+            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            throw sls::RuntimeError(
+                "Dac indices can only be used for chip test board. Use "
+                "daclist "
+                "to get list of dac names for current detector.");
         }
     }
 
     if (action == defs::HELP_ACTION) {
-        os << args[0] << ' ' << GetDacHelp(dacname) << '\n';
+        os << args[0] << ' ' << GetDacHelp(args[0]) << '\n';
     } else if (action == defs::GET_ACTION) {
-        defs::dacIndex dacIndex = StringTo<defs::dacIndex>(dacname);
+        defs::dacIndex dacIndex = StringTo<defs::dacIndex>(args[0]);
         bool mv = false;
         if (args.size() == 2) {
             if ((args[1] != "mv") && (args[1] != "mV")) {
@@ -948,7 +941,7 @@ std::string CmdProxy::Dac(int action) {
         os << args[0] << ' ' << OutString(t)
            << (args.size() > 1 ? " mV\n" : "\n");
     } else if (action == defs::PUT_ACTION) {
-        defs::dacIndex dacIndex = StringTo<defs::dacIndex>(dacname);
+        defs::dacIndex dacIndex = StringTo<defs::dacIndex>(args[0]);
         bool mv = false;
         if (args.size() == 3) {
             if ((args[2] != "mv") && (args[2] != "mV")) {

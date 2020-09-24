@@ -686,41 +686,41 @@ template <> defs::readoutMode StringTo(const std::string &s) {
 }
 
 template <> defs::dacIndex StringTo(const std::string &s) {
-    if (s == "dac 0")
+    if (s == "dac 0" || s == "0")
         return defs::DAC_0;
-    if (s == "dac 1")
+    if (s == "dac 1" || s == "1")
         return defs::DAC_1;
-    if (s == "dac 2")
+    if (s == "dac 2" || s == "2")
         return defs::DAC_2;
-    if (s == "dac 3")
+    if (s == "dac 3" || s == "3")
         return defs::DAC_3;
-    if (s == "dac 4")
+    if (s == "dac 4" || s == "4")
         return defs::DAC_4;
-    if (s == "dac 5")
+    if (s == "dac 5"|| s == "5")
         return defs::DAC_5;
-    if (s == "dac 6")
+    if (s == "dac 6"|| s == "6")
         return defs::DAC_6;
-    if (s == "dac 7")
+    if (s == "dac 7"|| s == "7")
         return defs::DAC_7;
-    if (s == "dac 8")
+    if (s == "dac 8"|| s == "8")
         return defs::DAC_8;
-    if (s == "dac 9")
+    if (s == "dac 9"|| s == "9")
         return defs::DAC_9;
-    if (s == "dac 10")
+    if (s == "dac 10"|| s == "10")
         return defs::DAC_10;
-    if (s == "dac 11")
+    if (s == "dac 11"|| s == "11")
         return defs::DAC_11;
-    if (s == "dac 12")
+    if (s == "dac 12"|| s == "12")
         return defs::DAC_12;
-    if (s == "dac 13")
+    if (s == "dac 13"|| s == "13")
         return defs::DAC_13;
-    if (s == "dac 14")
+    if (s == "dac 14"|| s == "14")
         return defs::DAC_14;
-    if (s == "dac 15")
+    if (s == "dac 15"|| s == "15")
         return defs::DAC_15;
-    if (s == "dac 16")
+    if (s == "dac 16"|| s == "16")
         return defs::DAC_16;
-    if (s == "dac 17")
+    if (s == "dac 17"|| s == "17")
         return defs::DAC_17;
     if (s == "vsvp")
         return defs::VSVP;

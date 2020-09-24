@@ -306,3 +306,18 @@ def test_make_bitmask_from_list_of_int():
 
 def test_make_bitmask_from_dict():
     assert make_bitmask({0: [0, 1], 1: [0, 1, 7]}) == {0: 0b11, 1: 0b10000011}
+
+
+def test_add_argument_before():
+    assert add_argument_before("a", 5) == ("a", 5)
+    assert add_argument_before(3, ("a", "b")) == (3, "a", "b")
+
+
+def test_add_argument_before_dict():
+    assert add_argument_before(5, {0: "a"}) == ({0: (5, "a")},)
+    assert add_argument_before(0, {0: 1}) == ({0: (0, 1)},)
+    assert add_argument_before(5, {0: ("a", "b")}) == ({0: (5, "a", "b")}, )
+    assert add_argument_before(6, "hej") == (6, "hej")
+    assert add_argument_before("another", {9: "string"}) == ({
+        9: ("another", "string")
+    }, )

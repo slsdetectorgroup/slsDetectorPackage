@@ -2563,24 +2563,27 @@ class Detector(CppDetectorApi):
         ut.set_using_dict(self.setADCPhase, value)
 
     @property
+    @element
     def adcpipeline(self):
         """[Ctb][Moench] Sets pipeline for ADC clock. """
-        return element_if_equal(self.getADCPipeline())
+        return self.getADCPipeline()
 
     @adcpipeline.setter
     def adcpipeline(self, value):
-        self.setADCPipeline(value)
+        ut.set_using_dict(self.setADCPipeline, value)
 
     @property
+    @element
     def adcclk(self):
         """[Ctb][Moench] Sets ADC clock frequency in MHz. """
-        return element_if_equal(self.getADCClock())
+        return self.getADCClock()
 
     @adcclk.setter
     def adcclk(self, value):
-        self.setADCClock(value)
+        ut.set_using_dict(self.setADCClock, value)
 
     @property
+    @element
     def syncclk(self):
         """
         [Ctb][Moench] Sync clock in MHz.
@@ -2588,7 +2591,7 @@ class Detector(CppDetectorApi):
         -----
         :setter: Not implemented
         """
-        return element_if_equal(self.getSYNCClock())
+        return self.getSYNCClock()
 
     @property
     def pattern(self):
@@ -2600,17 +2603,16 @@ class Detector(CppDetectorApi):
         ---------
         >>> d.pattern = '/tmp/pat.txt'
         """
-        # TODO! Clean fix
-        print("Set only")
-        return 0
+        raise NotImplementedError("Pattern is set only")
 
     @pattern.setter
     def pattern(self, fname):
         fname = ut.make_string_path(fname)
-        self.setPattern(fname)
+        ut.set_using_dict(self.setPattern, fname)
 
-    # patioctrl
+
     @property
+    @element
     def patioctrl(self):
         """[Ctb][Moench] 64 bit mask defining input (0) and output (1) signals.
         
@@ -2620,13 +2622,14 @@ class Detector(CppDetectorApi):
         >>> hex(d.patioctrl)
         '0x8f0effff6dbffdbf'
         """
-        return element_if_equal(self.getPatternIOControl())
+        return self.getPatternIOControl()
 
     @patioctrl.setter
     def patioctrl(self, mask):
-        self.setPatternIOControl(mask)
+        ut.set_using_dict(self.setPatternIOControl, mask)
 
     @property
+    @element
     def patlimits(self):
         """[Ctb][Moench][Mythen3] Limits (start and stop address) of complete pattern.
         
@@ -2638,11 +2641,15 @@ class Detector(CppDetectorApi):
         >>> [hex(l) for l in d.patlimits]
         ['0x0', '0x18c']
         """
-        return element_if_equal(self.getPatternLoopAddresses(-1))
+        return self.getPatternLoopAddresses(-1)
 
     @patlimits.setter
-    def patlimits(self, lim):
-        self.setPatternLoopAddresses(-1, lim[0], lim[1])
+    def patlimits(self, args):
+        if isinstance(args, tuple):
+            args = (-1, *args)
+        elif isinstance(args, dict):
+            args = ({k:(-1, *v) for k,v in args.items()},)
+        ut.set_using_dict(self.setPatternLoopAddresses, *args)
 
     @property
     @element
@@ -2659,9 +2666,10 @@ class Detector(CppDetectorApi):
 
     @patsetbit.setter
     def patsetbit(self, mask):
-        self.setPatternBitMask(mask)
+        ut.set_using_dict(self.setPatternBitMask, mask)
 
     @property
+    @element
     def patmask(self):
         """[Ctb][Moench][Mythen3] Sets the mask applied to every pattern to the selected bits. 
         
@@ -2671,15 +2679,14 @@ class Detector(CppDetectorApi):
         >>> hex(d.patmask)
         '0x8f0effff6dbffdbf' 
         """
-        return element_if_equal(self.getPatternMask())
+        return self.getPatternMask()
 
     @patmask.setter
     def patmask(self, mask):
-        self.setPatternMask(mask)
-
-
+        ut.set_using_dict(self.setPatternMask, mask)
 
     @property
+    @element
     def patwait0(self):
         """[Ctb][Moench][Mythen3] Wait 0 address.
                 
@@ -2691,13 +2698,15 @@ class Detector(CppDetectorApi):
         >>> hex(d.patwait0)
         '0xaa'
         """
-        return element_if_equal(self.getPatternWaitAddr(0))
+        return self.getPatternWaitAddr(0)
 
     @patwait0.setter
     def patwait0(self, addr):
-        self.setPatternWaitAddr(0, addr)
+        addr = ut.add_argument_before(0, addr)
+        ut.set_using_dict(self.setPatternWaitAddr, *addr)
 
     @property
+    @element
     def patwait1(self):
         """[Ctb][Moench][Mythen3] Wait 1 address.
                 
@@ -2709,13 +2718,15 @@ class Detector(CppDetectorApi):
         >>> hex(d.patwait1)
         '0xaa'
         """
-        return element_if_equal(self.getPatternWaitAddr(1))
+        return self.getPatternWaitAddr(1)
 
     @patwait1.setter
     def patwait1(self, addr):
-        self.setPatternWaitAddr(1, addr)
+        addr = ut.add_argument_before(1, addr)
+        ut.set_using_dict(self.setPatternWaitAddr, *addr)
 
     @property
+    @element
     def patwait2(self):
         """[Ctb][Moench][Mythen3] Wait 2 address.
                 
@@ -2727,11 +2738,12 @@ class Detector(CppDetectorApi):
         >>> hex(d.patwait2)
         '0xaa'
         """
-        return element_if_equal(self.getPatternWaitAddr(2))
+        return self.getPatternWaitAddr(2)
 
     @patwait2.setter
     def patwait2(self, addr):
-        self.setPatternWaitAddr(2, addr)
+        addr = ut.add_argument_before(2, addr)
+        ut.set_using_dict(self.setPatternWaitAddr, *addr)
 
     @property
     def patwaittime0(self):

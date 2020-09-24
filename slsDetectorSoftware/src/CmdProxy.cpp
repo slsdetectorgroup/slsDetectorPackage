@@ -926,35 +926,42 @@ std::string CmdProxy::Dac(int action) {
     if (action == defs::HELP_ACTION) {
         os << args[0] << ' ' << GetDacHelp(args[0]) << '\n';
     } else if (action == defs::GET_ACTION) {
+        if (args.empty())
+            WrongNumberOfParameters(1); // This prints slightly wrong
+
         defs::dacIndex dacIndex = StringTo<defs::dacIndex>(args[0]);
-        bool mv = false;
+        bool mV = false;
+
         if (args.size() == 2) {
             if ((args[1] != "mv") && (args[1] != "mV")) {
                 throw sls::RuntimeError("Unknown argument " + args[1] +
                                         ". Did you mean mV?");
             }
-            mv = true;
+            mV = true;
         } else if (args.size() > 2) {
             WrongNumberOfParameters(1);
         }
-        auto t = det->getDAC(dacIndex, mv, std::vector<int>{det_id});
+        auto t = det->getDAC(dacIndex, mV, std::vector<int>{det_id});
         os << args[0] << ' ' << OutString(t)
-           << (args.size() > 1 ? " mV\n" : "\n");
+           << (mV ? " mV\n" : "\n");
     } else if (action == defs::PUT_ACTION) {
+        if (args.empty())
+            WrongNumberOfParameters(1); // This prints slightly wrong
+
         defs::dacIndex dacIndex = StringTo<defs::dacIndex>(args[0]);
-        bool mv = false;
+        bool mV = false;
         if (args.size() == 3) {
             if ((args[2] != "mv") && (args[2] != "mV")) {
                 throw sls::RuntimeError("Unknown argument " + args[2] +
                                         ". Did you mean mV?");
             }
-            mv = true;
+            mV = true;
         } else if (args.size() > 3 || args.size() < 2) {
             WrongNumberOfParameters(2);
         }
-        det->setDAC(dacIndex, StringTo<int>(args[1]), mv,
+        det->setDAC(dacIndex, StringTo<int>(args[1]), mV,
                     std::vector<int>{det_id});
-        os << args[0] << ' ' << args[1] << (args.size() > 2 ? " mV\n" : "\n");
+        os << args[0] << ' ' << args[1] << (mV ? " mV\n" : "\n");
     } else {
         throw sls::RuntimeError("Unknown action");
     }

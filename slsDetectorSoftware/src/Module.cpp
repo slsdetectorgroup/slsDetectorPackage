@@ -1355,6 +1355,10 @@ void Module::setBurstPeriod(int64_t value) {
     sendToDetector(F_SET_BURST_PERIOD, value, nullptr);
 }
 
+int64_t Module::getNumberOfBurstsLeft() const {
+    return sendToDetectorStop<int64_t>(F_GET_BURSTS_LEFT);
+}
+
 std::array<int, 2> Module::getInjectChannel() const {
     return sendToDetector<std::array<int, 2>>(F_GET_INJECT_CHANNEL);
 }

@@ -51,4 +51,7 @@ implementation should not be used in a performance critical place.
 std::vector<std::string> split(const std::string &strToSplit, char delimeter);
 
 std::string RemoveUnit(std::string &str);
+
+bool is_int(const std::string& s);
 } // namespace sls
+

@@ -214,11 +214,11 @@ class Detector {
     void setDelayAfterTrigger(ns value, Positions pos = {});
 
     /** [Gotthard][Jungfrau][CTB][Moench][Mythen3]
-     * [Gotthard2] only in continuous mode */
+     * [Gotthard2] only in continuous auto mode */
     Result<int64_t> getNumberOfFramesLeft(Positions pos = {}) const;
 
     /** [Gotthard][Jungfrau][CTB][Moench][Mythen3]
-     * [Gotthard2] only in continuous mode */
+     * Only when external trigger used */
     Result<int64_t> getNumberOfTriggersLeft(Positions pos = {}) const;
 
     /** [Gotthard][Jungfrau][CTB][Moench][Mythen3][Gotthard2]
@@ -1139,6 +1139,9 @@ class Detector {
     /** [Gotthard2] Period between 2 bursts. Only in burst mode and auto timing
      * mode */
     void setBurstPeriod(ns value, Positions pos = {});
+
+    /** [Gotthard2] only in burst auto mode */
+    Result<int64_t> getNumberOfBurstsLeft(Positions pos = {}) const;
 
     /** [Gotthard2] offset channel, increment channel */
     Result<std::array<int, 2>> getInjectChannel(Positions pos = {});

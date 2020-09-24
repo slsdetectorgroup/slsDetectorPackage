@@ -1,4 +1,5 @@
 #include "CmdProxy.h"
+#include "HelpDacs.h"
 #include "TimeHelper.h"
 #include "ToString.h"
 #include "bit_utils.h"
@@ -33,7 +34,11 @@ void CmdProxy::Call(const std::string &command,
     args = arguments;
     det_id = detector_id;
 
-    ReplaceIfDepreciated(cmd);
+    std::string temp;
+    while (temp != cmd) {
+        temp = cmd;
+        ReplaceIfDepreciated(cmd);
+    }
 
     auto it = functions.find(cmd);
     if (it != functions.end()) {
@@ -51,6 +56,10 @@ bool CmdProxy::ReplaceIfDepreciated(std::string &command) {
             << command
             << " is depreciated and will be removed. Please migrate to: "
             << d_it->second;
+        // insert old command into arguments (for dacs)
+        if (d_it->second == "dac") {
+            args.insert(args.begin(), command);
+        }
         command = d_it->second;
         return true;
     }
@@ -905,45 +914,59 @@ std::string CmdProxy::TemperatureValues(int action) {
 std::string CmdProxy::Dac(int action) {
     std::ostringstream os;
     os << cmd << ' ';
+
+    // dac indices only for ctb
+    if (args.size() > 0 && action != defs::HELP_ACTION) {
+        if (is_int(args[0]) &&
+            det->getDetectorType().squash() != defs::CHIPTESTBOARD) {
+            throw sls::RuntimeError(
+                "Dac indices can only be used for chip test board. Use daclist "
+                "to get list of dac names for current detector.");
+        }
+    }
+
     if (action == defs::HELP_ACTION) {
-        os << "[dac index] [dac or mV value] [(optional unit) mV] "
-              "\n\t[Ctb] Dac."
-           << '\n';
-    } else if (det->getDetectorType().squash(defs::GENERIC) !=
-               defs::CHIPTESTBOARD) {
-        throw sls::RuntimeError(
-            "Dac command can only be used for chip test board. Use daclist to "
-            "get list of dac commands for current detector.");
+        if (args.size() == 0) {
+            os << GetHelpDac(std::to_string(0)) << '\n';
+        } else {
+            os << args[0] << ' ' << GetHelpDac(args[0]) << '\n';
+        }
     } else if (action == defs::GET_ACTION) {
-        bool mv = false;
+        if (args.empty())
+            WrongNumberOfParameters(1); // This prints slightly wrong
+
+        defs::dacIndex dacIndex = StringTo<defs::dacIndex>(args[0]);
+        bool mV = false;
+
         if (args.size() == 2) {
             if ((args[1] != "mv") && (args[1] != "mV")) {
                 throw sls::RuntimeError("Unknown argument " + args[1] +
                                         ". Did you mean mV?");
             }
-            mv = true;
+            mV = true;
         } else if (args.size() > 2) {
             WrongNumberOfParameters(1);
         }
-        auto t =
-            det->getDAC(static_cast<defs::dacIndex>(StringTo<int>(args[0])), mv,
-                        std::vector<int>{det_id});
-        os << args[0] << ' ' << OutString(t)
-           << (args.size() > 1 ? " mV\n" : "\n");
+        auto t = det->getDAC(dacIndex, mV, std::vector<int>{det_id});
+        os << args[0] << ' ' << OutString(t) << (mV ? " mV\n" : "\n");
     } else if (action == defs::PUT_ACTION) {
-        bool mv = false;
+        if (args.empty())
+            WrongNumberOfParameters(1); // This prints slightly wrong
+
+        defs::dacIndex dacIndex = StringTo<defs::dacIndex>(args[0]);
+        bool mV = false;
         if (args.size() == 3) {
             if ((args[2] != "mv") && (args[2] != "mV")) {
                 throw sls::RuntimeError("Unknown argument " + args[2] +
                                         ". Did you mean mV?");
             }
-            mv = true;
+            mV = true;
         } else if (args.size() > 3 || args.size() < 2) {
             WrongNumberOfParameters(2);
         }
-        det->setDAC(static_cast<defs::dacIndex>(StringTo<int>(args[0])),
-                    StringTo<int>(args[1]), mv, std::vector<int>{det_id});
-        os << args[0] << ' ' << args[1] << (args.size() > 2 ? " mV\n" : "\n");
+        det->setDAC(dacIndex, StringTo<int>(args[1]), mV,
+                    std::vector<int>{det_id});
+        os << args[0] << ' ' << args[1] << (mV ? " mV\n" : "\n");
     } else {
         throw sls::RuntimeError("Unknown action");
     }

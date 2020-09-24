@@ -66,4 +66,14 @@ TEST_CASE("Many characters in a row") {
     REQUIRE(std::string(str) == "someeequite::ongstring");
 }
 
+TEST_CASE("Check is string is integer"){
+
+    REQUIRE(sls::is_int("75"));
+    REQUIRE(sls::is_int("11675"));
+    REQUIRE_FALSE(sls::is_int("7.5"));
+    REQUIRE_FALSE(sls::is_int("hej"));
+    REQUIRE_FALSE(sls::is_int("7a"));
+    REQUIRE_FALSE(sls::is_int(""));
+}
+
 // TEST_CASE("concat things not being strings")

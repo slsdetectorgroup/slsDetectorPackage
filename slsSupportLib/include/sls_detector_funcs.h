@@ -213,6 +213,7 @@ enum detFuncs {
     F_SET_BAD_CHANNELS,
     F_RECONFIGURE_UDP,
     F_VALIDATE_UDP_CONFIG,
+    F_GET_BURSTS_LEFT,
 
     NUM_DET_FUNCTIONS,
     RECEIVER_ENUM_START = 256, /**< detector function should not exceed this
@@ -529,7 +530,8 @@ const char* getFunctionNameFromEnum(enum detFuncs func) {
     case F_SET_BAD_CHANNELS:                return "F_SET_BAD_CHANNELS";
     case F_RECONFIGURE_UDP:                 return "F_RECONFIGURE_UDP";                           
     case F_VALIDATE_UDP_CONFIG:             return "F_VALIDATE_UDP_CONFIG";                               
-
+    case F_GET_BURSTS_LEFT:                 return "F_GET_BURSTS_LEFT";
+    
     case NUM_DET_FUNCTIONS:              	return "NUM_DET_FUNCTIONS";
     case RECEIVER_ENUM_START:				return "RECEIVER_ENUM_START";
 

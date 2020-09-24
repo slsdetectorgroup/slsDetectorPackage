@@ -284,6 +284,17 @@ TEST_CASE("burstperiod", "[.cmd][.new]") {
     }
 }
 
+TEST_CASE("burstsl", "[.cmd][.new]") {
+    Detector det;
+    CmdProxy proxy(&det);
+    auto det_type = det.getDetectorType().squash();
+    if (det_type == defs::GOTTHARD2) {
+        REQUIRE_NOTHROW(proxy.Call("burstsl", {}, -1, GET));
+    } else {
+        REQUIRE_THROWS(proxy.Call("burstsl", {}, -1, GET));
+    }
+}
+
 TEST_CASE("inj_ch", "[.cmd][.new]") {
     Detector det;
     CmdProxy proxy(&det);

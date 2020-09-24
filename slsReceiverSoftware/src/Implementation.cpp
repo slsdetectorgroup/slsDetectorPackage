@@ -962,6 +962,11 @@ void Implementation::setUDPSocketBufferSize(const int s) {
     for (unsigned int i = 0; i < listSize; ++i) {
         listener[i]->CreateDummySocketForUDPSocketBufferSize(size);
     }
+    // custom and didnt set, throw error
+    if (s != 0 && udpSocketBufferSize != s) {
+        throw sls::RuntimeError("Could not set udp socket buffer size. (No "
+                                "CAP_NET_ADMIN privileges?)");
+    }
 }
 
 int Implementation::getActualUDPSocketBufferSize() const {

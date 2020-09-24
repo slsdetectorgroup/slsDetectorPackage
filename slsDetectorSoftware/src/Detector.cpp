@@ -11,7 +11,6 @@
 
 #include <chrono>
 #include <fstream>
-#include <limits.h>
 #include <thread>
 
 namespace sls {
@@ -913,10 +912,6 @@ Result<int> Detector::getRxUDPSocketBufferSize(Positions pos) const {
 }
 
 void Detector::setRxUDPSocketBufferSize(int udpsockbufsize, Positions pos) {
-    if (udpsockbufsize > (INT_MAX / 2)) {
-        throw RuntimeError(
-            "Receiver udp socket buffer size exceeded max (INT_MAX/2).");
-    }
     pimpl->Parallel(&Module::setReceiverUDPSocketBufferSize, pos,
                     udpsockbufsize);
 }

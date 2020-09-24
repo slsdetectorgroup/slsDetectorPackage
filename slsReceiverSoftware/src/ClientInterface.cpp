@@ -1140,7 +1140,10 @@ int ClientInterface::get_additional_json_header(Interface &socket) {
 
 int ClientInterface::set_udp_socket_buffer_size(Interface &socket) {
     auto index = socket.Receive<int>();
-    if (index >= 0) {
+    if (index == 0) {
+        throw RuntimeError("Receiver socket buffer size must be > 0.");
+    }
+    if (index > 0) {
         verifyIdle(socket);
         if (index > INT_MAX / 2) {
             throw RuntimeError(
